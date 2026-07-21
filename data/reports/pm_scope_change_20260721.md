@@ -8,7 +8,7 @@
 
 - 기본 MVP 제품 코드를 `WPUJAC104DWH`, 매뉴얼 적용 계열을 `WPU-JAC104D`로 확정한다.
 - `WPUIAC425SNW`는 기본 MVP가 안정화된 이후 적용하는 후속 확장 모델로 확정한다.
-- 기존 `WPU-IAC506` 데이터와 보고서는 `data/archive/WPU-IAC506_20260720/`에 이력 보관하고 신규 RAG·합성 데이터·UI 구현에서 사용하지 않는다.
+- 기존 `WPU-IAC506` 데이터와 보고서는 원격 커밋 `e909835`에서 저장소 삭제했으며 신규 RAG·합성 데이터·UI 구현에서 사용하지 않는다.
 
 ## 결정 근거
 
@@ -23,9 +23,12 @@
 
 ## 신규 데이터 위치
 
-- 최종 수집 보고서: `data/reports/data_collection_report.md`
+- JAC104D 공식 근거 검증 보고서: `data/reports/team_A_feedback_response_20260721.md`
 - 공식 매뉴얼 페이지 추출: `data/processed/documents/manual_pages.jsonl`
 - 검증된 RAG 샘플: `data/processed/structured/rag_verified_sample.jsonl`
+- IAC425 후속 확장 RAG: `data/processed/structured/rag_expansion_iac425.jsonl`
+- JAC104D 근거 레지스트리: `data/processed/structured/jac104_evidence_registry.jsonl`
+- D/S 문서 계보: `data/processed/metadata/model_document_lineage.csv`
 - FAQ 재선별 후보: `data/processed/structured/selected_faq_candidates.jsonl`
 - 모델 범위 정책: `data/processed/metadata/model_scope.csv`
 
@@ -34,4 +37,3 @@
 - ZIP 패키지를 생성하지 않는다.
 - GitHub 저장소의 표준 데이터 경로를 팀 공용 인계 경로로 사용한다.
 - 팀원 B·D·E와 PM은 `data/handoff_guides/`의 역할별 확인 가이드를 따른다.
-

@@ -6,7 +6,7 @@
 
 - 기본 MVP: `WPUJAC104DWH` / `WPU-JAC104D`
 - 후속 확장: `WPUIAC425SNW` / `WPU-IAC425`
-- 사용 금지: `data/archive/WPU-IAC506_20260720/`의 이전 데이터
+- 사용 금지: 원격 커밋 `e909835`에서 삭제된 `WPU-IAC506` 이전 데이터
 
 ## 역할별 가이드
 
@@ -24,4 +24,3 @@
 5. 검토 결과를 PR 코멘트 또는 팀 협업 채널에 기록
 
 공식 원본 PDF는 GitHub에 포함되지 않는다. 문서 원문 확인이 필요한 경우 `source_inventory.csv`의 공식 URL과 팀 내부 `data/raw/` 경로를 사용한다.
-

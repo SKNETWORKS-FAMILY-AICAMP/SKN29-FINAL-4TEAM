@@ -4,4 +4,6 @@
 "2026-07-15 19:26:24","FAQ-SKMAGIC-WATER-PURIFIER-20260715","SK매직 공식 FAQ 웹 크롤링 결과 파일 재사용","Y(기존 결과 기준)","성공","data/raw/faq/SK매직_정수기공통_FAQ_20260715.md","기존 수집 스크립트·요청 간격·재시도 로그 미확보","원본 해시를 보존하고 이번 범위에 필요한 20건만 재선별","119건 전체를 모델 전용 근거로 사용하지 않음"
 "2026-07-21 11:04:55","PROC-JAC104-IAC425-20260721","scripts/extract_selected_model_data.py 실행","Y","성공","data/processed/","없음","해당 없음","매뉴얼 96쪽 추출·키워드 후보 생성·FAQ 20건 적용성 분류"
 "2026-07-21 11:04:55","QA-JAC104-IAC425-20260721","JSONL·CSV 파싱, SHA-256, PDF 페이지, 핵심 페이지 PNG 시각 검수","Y+수동","성공","data/processed/metadata/quality_review.csv","전체 96쪽 중 핵심 페이지 외 시각 검수 미수행","핵심 상담 페이지 우선 검수하고 나머지는 후속 대상으로 기록","JAC104 37-39쪽·IAC425 37-40,43-46쪽 검증"
-
+"2026-07-21 14:41:47","VERIFY-JAC104D-OFFICIAL-20260721","공식 검색 API·직접 다운로드 URL·SHA-256·PDF 메타데이터·1,37-39쪽 시각 대조","Y+수동","성공","data/processed/metadata/model_document_lineage.csv","없음","해당 없음","공식 API 1건; REV.00; 첨부 등록·수정 2026-05-13; 직접 다운로드 5,131,906 bytes; 로컬 SHA-256 일치"
+"2026-07-21 14:41:47","VERIFY-JAC104S-LINEAGE-20260721","공식 서비스 검색 API에서 S·SWH·SWW 변형 코드별 문서 목록 확인","Y+수동","부분 성공","data/processed/metadata/model_document_lineage.csv","WPU-JAC104S 하이픈 검색 0건; WPUJAC104SWH 정확 검색은 IoT 가이드만 확인","WPUJAC104S로 재검색해 5개 변형과 REV.02 제품 매뉴얼·REV.01 IoT 가이드 분리","S 세대 원문은 수집하지 않고 D 세대 근거에서 제외"
+"2026-07-21 14:41:47","VERIFY-JAC104-FAQ-20260721","공식 FAQ 현재 화면과 2026-07-15 스냅샷 대조","Y+수동","부분 성공","data/processed/structured/jac104_evidence_registry.jsonl","개별 FAQ 영구 URL과 D/S 세대 표기 미확보","목록 URL·섹션 제목·게시 모델 코드·적용 제한을 기록","출수 편차 FAQ는 D 매뉴얼과 함께만 조건부 사용; 공통 저출수 FAQ는 exact 모델 검증 전 제외"
