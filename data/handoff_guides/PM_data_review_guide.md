@@ -8,7 +8,7 @@
 
 ## 필수 확인 파일
 
-1. `data/reports/data_collection_report.md`
+1. `data/reports/team_A_feedback_response_20260721.md`
 2. `data/reports/pm_scope_change_20260721.md`
 3. `data/processed/metadata/final_submission_checklist.csv`
 4. `data/processed/metadata/quality_review.csv`
@@ -28,7 +28,7 @@
 
 - 리뷰 수는 수요 대체 지표이며 판매량으로 표현하지 않음
 - IAC425는 기본 MVP에 포함하지 않음
-- IAC506 archive 데이터는 신규 구현에서 사용하지 않음
+- 저장소에서 삭제된 IAC506 이전 데이터는 신규 구현에서 사용하지 않음
 - 공식 PDF와 원본 포함 ZIP은 GitHub에 없음
 - 방문 일정·처리 상태는 공식 정책이 아닌 `team_designed`
 
@@ -40,4 +40,3 @@
 - [ ] 누수·온수 경고의 안전 분기가 유지됨
 - [ ] 합성 데이터에 실제 개인정보가 없음
 - [ ] 팀원 B·D·E가 각 가이드 확인 결과를 남김
-

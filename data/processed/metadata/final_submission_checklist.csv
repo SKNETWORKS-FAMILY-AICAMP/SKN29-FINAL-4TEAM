@@ -5,8 +5,9 @@
 "CHK-004","핵심 RAG 청크 시각 검증","완료","data/processed/structured/rag_verified_sample.jsonl","2026-07-21","JAC104 7건·IAC425 후속 4건"
 "CHK-005","수집 로그·오류·품질 검수 갱신","완료","data/processed/metadata/","2026-07-21","현재 모델 기준"
 "CHK-006","JAC104 합성 시연 데이터","완료","data/synthetic/demo_scenarios.json","2026-07-21","6개 대표 증상"
-"CHK-007","IAC506 이전 산출물 archive 이동","완료","data/archive/WPU-IAC506_20260720/README.md","2026-07-21","신규 구현 사용 금지"
+"CHK-007","IAC506 이전 산출물 저장소 삭제","완료","원격 커밋 e909835","2026-07-21","신규 구현 사용 금지·운영 테이블 참조 금지"
 "CHK-008","인계 ZIP 제거·GitHub 가이드 전환","완료","data/handoff_guides/README.md","2026-07-21","ZIP 0개"
 "CHK-009","개인정보·저작권·재배포 검토","완료","data/processed/metadata/quality_review.csv","2026-07-21","원본 비공개·합성 PII 0건"
-"CHK-010","최종 수집 보고서 작성","완료","data/reports/data_collection_report.md","2026-07-21","목표·실제·방법·품질·법적·인계 포함"
-
+"CHK-010","데이터 수집 보고서 Markdown 정리","대체 완료","data/reports/team_A_feedback_response_20260721.md","2026-07-21","원격 커밋 12e6c8b의 기존 보고서 삭제를 유지하고 JAC104D 검증 보고서로 연결"
+"CHK-011","JAC104D 공식 원본 URL·문서 계보·페이지 근거 재검증","완료","data/processed/metadata/model_document_lineage.csv; data/processed/structured/jac104_evidence_registry.jsonl","2026-07-21","직접 다운로드 SHA-256 일치·D/S 분리·FAQ 조건부 정책"
+"CHK-012","IAC425 후속 확장 파일 물리 분리","완료","data/processed/structured/rag_expansion_iac425.jsonl","2026-07-21","기본 MVP rag_verified_sample.jsonl에는 JAC104D 7건만 유지"
