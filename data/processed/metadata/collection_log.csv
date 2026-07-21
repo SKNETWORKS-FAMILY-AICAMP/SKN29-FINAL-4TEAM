@@ -1,0 +1,7 @@
+"수집시각","data_id","수집방식","자동화여부","성공여부","저장경로","오류","재시도결과","비고"
+"2026-07-21 10:11:18","MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00","SK인텔릭스서비스 공식 화면에서 직접 다운로드","N","성공","data/raw/manuals/SK매직_WPU-JAC104D_JCC104D_사용설명서_REV00.pdf","없음","해당 없음","공식 검색 WPUJAC104DWH 12건 중 매뉴얼 1건 확인; content_key와 file_id 기록"
+"2026-07-21 10:13:14","MAN-SKMAGIC-WPU-IAC425-REV02","SK인텔릭스서비스 공식 화면에서 직접 다운로드","N","성공","data/raw/manuals/SK매직_WPU-IAC425_사용설명서_REV02.pdf","전체 모델 코드 WPUIAC425SNW 직접 검색 시 동적 화면 0건 표시","WPUIAC425 계열 검색 후 제품 선택하여 매뉴얼 5건 중 대상 모델 매뉴얼 확인","공식 파일명·content_key·file_id 기록"
+"2026-07-15 19:26:24","FAQ-SKMAGIC-WATER-PURIFIER-20260715","SK매직 공식 FAQ 웹 크롤링 결과 파일 재사용","Y(기존 결과 기준)","성공","data/raw/faq/SK매직_정수기공통_FAQ_20260715.md","기존 수집 스크립트·요청 간격·재시도 로그 미확보","원본 해시를 보존하고 이번 범위에 필요한 20건만 재선별","119건 전체를 모델 전용 근거로 사용하지 않음"
+"2026-07-21 11:04:55","PROC-JAC104-IAC425-20260721","scripts/extract_selected_model_data.py 실행","Y","성공","data/processed/","없음","해당 없음","매뉴얼 96쪽 추출·키워드 후보 생성·FAQ 20건 적용성 분류"
+"2026-07-21 11:04:55","QA-JAC104-IAC425-20260721","JSONL·CSV 파싱, SHA-256, PDF 페이지, 핵심 페이지 PNG 시각 검수","Y+수동","성공","data/processed/metadata/quality_review.csv","전체 96쪽 중 핵심 페이지 외 시각 검수 미수행","핵심 상담 페이지 우선 검수하고 나머지는 후속 대상으로 기록","JAC104 37-39쪽·IAC425 37-40,43-46쪽 검증"
+

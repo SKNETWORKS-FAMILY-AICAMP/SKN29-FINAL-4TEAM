@@ -1,0 +1,13 @@
+"scope_role","product_model","topic_code","official_manual","model_direct_faq","common_faq","verified_chunk_count","coverage_status","use_rule"
+"mvp_primary","WPU-JAC104D","symptom_no_water","Y","N","조건부","1","충족","매뉴얼 37쪽 우선"
+"mvp_primary","WPU-JAC104D","symptom_low_flow","Y","Y","조건부","1","충족","매뉴얼 38쪽과 FAQ 2번을 함께 검색 가능하나 매뉴얼 우선"
+"mvp_primary","WPU-JAC104D","symptom_cold_temperature","Y","N","조건부","1","충족","매뉴얼 37쪽 우선"
+"mvp_primary","WPU-JAC104D","symptom_noise","Y","N","조건부","1","충족","매뉴얼 37쪽 우선"
+"mvp_primary","WPU-JAC104D","symptom_leak","Y","N","안전 보조","1","충족","원수 밸브 잠금·전원 분리·상담 연결"
+"mvp_primary","WPU-JAC104D","symptom_taste_odor","Y","N","조건부","1","충족","매뉴얼 38쪽 우선, 수질 안전 단정 금지"
+"mvp_primary","WPU-JAC104D","symptom_hot_water_safety","Y","N","조건부","1","충족","매뉴얼 39쪽 위험 문구 우선"
+"expansion_secondary","WPU-IAC425","ice_noise","Y","N","조건부","1","후속 충족","기본 MVP 완료 후 적재"
+"expansion_secondary","WPU-IAC425","ice_not_dispensing","Y","N","타 모델 FAQ 제외","1","후속 충족","매뉴얼 45쪽만 사용"
+"expansion_secondary","WPU-IAC425","ice_hygiene","Y","N","N","1","후속 충족","매뉴얼 37-40쪽 절차와 금지 조치 사용"
+"expansion_secondary","WPU-IAC425","ice_quality","Y","N","조건부","1","후속 충족","매뉴얼 46쪽 우선"
+

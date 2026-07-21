@@ -1,0 +1,12 @@
+"check_id","검수항목","상태","근거파일","확인일","비고"
+"CHK-001","PM 대상 모델 승인","완료","data/reports/pm_scope_change_20260721.md","2026-07-21","JAC104D 기본 MVP·IAC425 후속 확장"
+"CHK-002","공식 매뉴얼 2개 확보·해시 기록","완료","data/processed/metadata/source_inventory.csv","2026-07-21","원본은 data/raw Git 제외"
+"CHK-003","FAQ 후보와 적용성 분류","완료","data/processed/structured/selected_faq_candidates.jsonl","2026-07-21","20건 후보, 직접 사용 가능 수량 별도 표시"
+"CHK-004","핵심 RAG 청크 시각 검증","완료","data/processed/structured/rag_verified_sample.jsonl","2026-07-21","JAC104 7건·IAC425 후속 4건"
+"CHK-005","수집 로그·오류·품질 검수 갱신","완료","data/processed/metadata/","2026-07-21","현재 모델 기준"
+"CHK-006","JAC104 합성 시연 데이터","완료","data/synthetic/demo_scenarios.json","2026-07-21","6개 대표 증상"
+"CHK-007","IAC506 이전 산출물 archive 이동","완료","data/archive/WPU-IAC506_20260720/README.md","2026-07-21","신규 구현 사용 금지"
+"CHK-008","인계 ZIP 제거·GitHub 가이드 전환","완료","data/handoff_guides/README.md","2026-07-21","ZIP 0개"
+"CHK-009","개인정보·저작권·재배포 검토","완료","data/processed/metadata/quality_review.csv","2026-07-21","원본 비공개·합성 PII 0건"
+"CHK-010","최종 수집 보고서 작성","완료","data/reports/data_collection_report.md","2026-07-21","목표·실제·방법·품질·법적·인계 포함"
+

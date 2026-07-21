@@ -1,0 +1,300 @@
+{
+  "dataset_id": "SYN-WPU-IAC506-DEMO-20260720",
+  "data_classification": "synthetic",
+  "created_at": "2026-07-20",
+  "purpose": "WPU-IAC506 대표 증상 문의-근거 검색-상담·방문 분기 기획 검증",
+  "privacy_policy": {
+    "real_personal_data_included": false,
+    "excluded_fields": [
+      "실제 이름",
+      "실제 전화번호",
+      "실제 주소",
+      "실제 고객번호",
+      "결제정보"
+    ]
+  },
+  "classification_policy": {
+    "official": "매뉴얼에서 확인한 제품 사실·안전 조치·상담 조건",
+    "team_designed": "문의 상태·담당 주체·우선순위·방문 후보·가상 관리 유형",
+    "synthetic": "고객 문의 원문·추가 답변·이력·처리 결과"
+  },
+  "scenarios": [
+    {
+      "scenario_id": "SYN-SC-001",
+      "data_classification": "synthetic",
+      "identifiers": {
+        "customer_id": "CUST-DEMO-001",
+        "subscription_id": "SUB-DEMO-001",
+        "product_id": "PROD-DEMO-001",
+        "inquiry_id": "INQ-DEMO-001"
+      },
+      "product": {
+        "model": "WPU-IAC506",
+        "management_type": {
+          "value": "시연용_셀프관리",
+          "classification": "team_designed"
+        }
+      },
+      "inquiry": {
+        "original_text": "오늘 아침부터 정수 물줄기가 평소보다 약해졌어요.",
+        "additional_answers": {
+          "target_output": "정수",
+          "other_faucet_in_use": false,
+          "valve_open": true,
+          "care_operation_running": false,
+          "hose_kink_observed": false,
+          "last_filter_change": "6개월 전",
+          "error_indicator": null,
+          "accompanying_symptoms": []
+        }
+      },
+      "structured_symptom": {
+        "symptom_type": "출수량 저하",
+        "occurrence_time": "오늘 아침",
+        "target_output": "정수",
+        "occurrence_condition": "다른 수전을 사용하지 않는 상태에서도 지속",
+        "error_code": null,
+        "accompanying_symptoms": [],
+        "risk_level": "일반",
+        "priority": "상담 권고",
+        "current_use_guidance": "판단 보류·상담 필요",
+        "classification": "team_designed_from_official_evidence"
+      },
+      "official_evidence": [
+        {
+          "chunk_id": "MAN-WPU-IAC506-P35-FILTER-CYCLE",
+          "page_refs": [35],
+          "classification": "official"
+        },
+        {
+          "chunk_id": "MAN-WPU-IAC506-P31-P43-LOW-FLOW",
+          "page_refs": [31, 43],
+          "classification": "official"
+        }
+      ],
+      "official_safe_actions": [
+        "필터 교체 주기를 확인한다",
+        "필터 상태 확인 후에도 출수량이 적으면 고객상담센터에 문의한다"
+      ],
+      "workflow": {
+        "classification": "team_designed",
+        "current_status": "상담 권고",
+        "current_owner": "고객",
+        "next_step": "상담 접수 여부 선택",
+        "customer_action_required": true,
+        "consultation_recommended": true,
+        "visit_candidate": false
+      },
+      "expected_followup": {
+        "resolved": "문의 종료 후보",
+        "unresolved": "상담 접수 후 점검 후보 확인"
+      }
+    },
+    {
+      "scenario_id": "SYN-SC-002",
+      "data_classification": "synthetic",
+      "identifiers": {
+        "customer_id": "CUST-DEMO-002",
+        "subscription_id": "SUB-DEMO-002",
+        "product_id": "PROD-DEMO-002",
+        "inquiry_id": "INQ-DEMO-002"
+      },
+      "product": {
+        "model": "WPU-IAC506",
+        "management_type": {
+          "value": "시연용_방문관리",
+          "classification": "team_designed"
+        }
+      },
+      "inquiry": {
+        "original_text": "집을 5일 비운 뒤 물에서 평소와 다른 냄새가 나요.",
+        "additional_answers": {
+          "unused_period_days": 5,
+          "target_output": "냉수·정수·온수",
+          "leak_observed": false,
+          "burning_smell": false,
+          "filter_change_recent": false,
+          "action_already_performed": false
+        }
+      },
+      "structured_symptom": {
+        "symptom_type": "물맛·냄새 이상",
+        "occurrence_time": "5일 미사용 후",
+        "target_output": "냉수·정수·온수",
+        "occurrence_condition": "단기 미사용 후 최초 출수",
+        "error_code": null,
+        "accompanying_symptoms": [],
+        "risk_level": "일반",
+        "priority": "일반 안내",
+        "current_use_guidance": "판단 보류·상담 필요",
+        "classification": "team_designed_from_official_evidence"
+      },
+      "official_evidence": [
+        {
+          "chunk_id": "MAN-WPU-IAC506-P44-TASTE-ODOR",
+          "page_refs": [44],
+          "classification": "official"
+        }
+      ],
+      "official_safe_actions": [
+        "10일 이내 미사용이면 냉수·정수·온수를 각각 1L 이상 출수해 버린 뒤 다시 확인한다"
+      ],
+      "workflow": {
+        "classification": "team_designed",
+        "current_status": "고객 조치 대기",
+        "current_owner": "고객",
+        "next_step": "공식 자가조치 후 해결 여부 입력",
+        "customer_action_required": true,
+        "consultation_recommended": false,
+        "visit_candidate": false
+      },
+      "expected_followup": {
+        "resolved": "일반 사용 가능 상태로 갱신",
+        "unresolved": "판단 보류·상담 필요 상태 유지 후 상담 권고"
+      }
+    },
+    {
+      "scenario_id": "SYN-SC-003",
+      "data_classification": "synthetic",
+      "identifiers": {
+        "customer_id": "CUST-DEMO-003",
+        "subscription_id": "SUB-DEMO-003",
+        "product_id": "PROD-DEMO-003",
+        "inquiry_id": "INQ-DEMO-003"
+      },
+      "product": {
+        "model": "WPU-IAC506",
+        "management_type": {
+          "value": "시연용_방문관리",
+          "classification": "team_designed"
+        }
+      },
+      "inquiry": {
+        "original_text": "정수기 아래에 물이 고여 있고 버튼을 누를 때마다 알림음이 반복돼요.",
+        "additional_answers": {
+          "drip_tray_overflow": false,
+          "water_around_product": true,
+          "repeated_alert": true,
+          "button_operates": false,
+          "burning_smell": false
+        }
+      },
+      "structured_symptom": {
+        "symptom_type": "누수",
+        "occurrence_time": "방금 발견",
+        "target_output": "제품 전체",
+        "occurrence_condition": "물받이 넘침이 아닌 제품 주변 물 고임",
+        "error_code": null,
+        "accompanying_symptoms": [
+          "반복 알림",
+          "버튼 미동작"
+        ],
+        "risk_level": "위험",
+        "priority": "우선 상담",
+        "current_use_guidance": "전체 사용 중지",
+        "classification": "team_designed_from_official_evidence"
+      },
+      "official_evidence": [
+        {
+          "chunk_id": "MAN-WPU-IAC506-P5-P44-LEAK",
+          "page_refs": [5, 44],
+          "classification": "official"
+        }
+      ],
+      "official_safe_actions": [
+        "물받이 넘침이 아니면 중간 밸브 또는 볼 밸브를 잠근다",
+        "SK매직 고객상담센터에 연락한다"
+      ],
+      "prohibited_actions": [
+        "제품 분해",
+        "연결 부위 직접 수리",
+        "누수 상태로 계속 사용"
+      ],
+      "workflow": {
+        "classification": "team_designed",
+        "current_status": "우선 상담",
+        "current_owner": "상담사 배정 중",
+        "next_step": "안전 조치 확인 후 방문 필요성 판단",
+        "customer_action_required": true,
+        "consultation_recommended": true,
+        "visit_candidate": true,
+        "visit_candidate_note": "방문 후보는 팀 설계 상태이며 공식 방문 확정 정책이 아님"
+      },
+      "expected_followup": {
+        "resolved": "상담 또는 방문 결과 입력 후 고객 확인 대기",
+        "unresolved": "우선 상담 상태 유지"
+      }
+    },
+    {
+      "scenario_id": "SYN-SC-004",
+      "data_classification": "synthetic",
+      "identifiers": {
+        "customer_id": "CUST-DEMO-004",
+        "subscription_id": "SUB-DEMO-004",
+        "product_id": "PROD-DEMO-004",
+        "inquiry_id": "INQ-DEMO-004"
+      },
+      "product": {
+        "model": "WPU-IAC506",
+        "management_type": {
+          "value": "시연용_셀프관리",
+          "classification": "team_designed"
+        }
+      },
+      "inquiry": {
+        "original_text": "온수·정수·냉수 버튼이 모두 깜박이고 표시창이 빨간색이에요.",
+        "additional_answers": {
+          "all_temperature_buttons_blinking": true,
+          "display_color": "빨간색",
+          "water_dispensed_after_alert": true,
+          "water_consumed_after_alert": false,
+          "steam_continues": false
+        }
+      },
+      "structured_symptom": {
+        "symptom_type": "온수 온도 이상",
+        "occurrence_time": "온수 출수 중",
+        "target_output": "온수",
+        "occurrence_condition": "전체 온도 버튼 점멸과 빨간 표시창",
+        "error_code": null,
+        "accompanying_symptoms": [
+          "전체 온도 버튼 점멸",
+          "빨간 표시창"
+        ],
+        "risk_level": "위험",
+        "priority": "우선 상담",
+        "current_use_guidance": "일부 사용 중지",
+        "classification": "team_designed_from_official_evidence"
+      },
+      "official_evidence": [
+        {
+          "chunk_id": "MAN-WPU-IAC506-P45-HOT-WATER",
+          "page_refs": [45],
+          "classification": "official"
+        }
+      ],
+      "official_safe_actions": [
+        "경고 상태에서 출수된 물을 마시지 않는다",
+        "SK매직 고객상담센터에 문의한다"
+      ],
+      "prohibited_actions": [
+        "히터나 전기 계통 직접 점검",
+        "경고 상태에서 출수된 물 음용"
+      ],
+      "workflow": {
+        "classification": "team_designed",
+        "current_status": "우선 상담",
+        "current_owner": "상담사 배정 중",
+        "next_step": "경고 상태와 비음용 여부 확인 후 방문 필요성 판단",
+        "customer_action_required": true,
+        "consultation_recommended": true,
+        "visit_candidate": true,
+        "visit_candidate_note": "방문 후보는 팀 설계 상태이며 공식 방문 확정 정책이 아님"
+      },
+      "expected_followup": {
+        "resolved": "상담 또는 방문 결과 입력 후 고객 확인 대기",
+        "unresolved": "우선 상담 상태 유지"
+      }
+    }
+  ]
+}
