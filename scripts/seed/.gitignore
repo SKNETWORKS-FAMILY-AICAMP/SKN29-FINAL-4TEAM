@@ -1,0 +1,13 @@
+.env
+.codex_work/
+tmp/
+outputs/
+__pycache__/
+*.pyc
+
+# 공식 원문은 팀 내부 검토용이며 공개 저장소에 올리지 않는다.
+data/raw/
+
+# 인계는 저장소 파일로 수행하며 ZIP 패키지는 만들지 않는다.
+data/**/*.zip
+
