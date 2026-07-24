@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application android:name=".app.WaterCareApplication" android:label="WaterCare">
+        <activity android:name=".app.MainActivity" android:exported="true" />
+    </application>
+</manifest>

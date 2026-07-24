@@ -1,10 +1,14 @@
-# Mobile directory skeleton
+# Mobile
 
-Kotlin + Jetpack Compose 기반 Android Native 앱용 디렉토리 골격입니다.
+Kotlin + Jetpack Compose 기반 고객·방문기사 Android 애플리케이션입니다.
 
-- 기본 패키지: `com.skn29.watercare`
-- 구조: 단일 `app` 모듈 + 기능 중심 패키지
-- 고객 기능: `CUST-01`~`CUST-06`
-- 방문기사 기능: `TECH-01`~`TECH-03`
-- 빈 디렉토리를 Git에서도 유지할 수 있도록 각 말단 폴더에 `.gitkeep`을 넣었습니다.
-- 실제 Android Studio 프로젝트를 생성한 뒤 이 구조를 덮어쓰거나 필요한 폴더만 이동하여 사용하세요.
+## 구조 원칙
+
+- 단일 `app` Gradle 모듈
+- 기능 중심 패키지
+- 초기 기능은 `Screen + ViewModel + UiState`
+- 상태 전환은 백엔드의 `allowed_actions`와 `state_version`을 기준으로 처리
+- 공식 근거는 백엔드가 조립한 `EvidenceCardDTO`만 사용
+
+> `gradlew`, `gradlew.bat`, `gradle/wrapper/`는 구조 확인용 골격입니다.
+> 실제 Android Studio 프로젝트를 생성한 뒤 Wrapper 파일로 교체해야 합니다.
