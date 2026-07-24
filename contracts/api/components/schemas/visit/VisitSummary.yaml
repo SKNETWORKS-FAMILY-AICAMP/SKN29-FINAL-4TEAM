@@ -1,0 +1,5 @@
+title: VisitSummary
+type: object
+description: 방문 요약
+additionalProperties: false
+properties: {}

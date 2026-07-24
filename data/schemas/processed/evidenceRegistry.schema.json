@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EvidenceRegistry",
+  "description": "근거 사용 정책 레지스트리 검증 Schema",
+  "type": "object",
+  "additionalProperties": true
+}

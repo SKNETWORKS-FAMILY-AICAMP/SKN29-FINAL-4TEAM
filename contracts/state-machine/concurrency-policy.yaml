@@ -1,0 +1,6 @@
+state_version:
+  required_for_transition: true
+idempotency_key:
+  required_for_write_events: true
+correlation_id:
+  required_for_trace: true

@@ -1,0 +1,5 @@
+title: LoginRequest
+type: object
+description: 로그인 요청
+additionalProperties: false
+properties: {}

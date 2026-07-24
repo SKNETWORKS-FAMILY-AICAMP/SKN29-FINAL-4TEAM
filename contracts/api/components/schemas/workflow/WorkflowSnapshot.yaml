@@ -1,0 +1,5 @@
+title: WorkflowSnapshot
+type: object
+description: 현재 업무 상태 스냅샷
+additionalProperties: false
+properties: {}

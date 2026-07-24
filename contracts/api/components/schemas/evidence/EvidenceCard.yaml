@@ -1,0 +1,5 @@
+title: EvidenceCard
+type: object
+description: 화면용 공식 근거 카드
+additionalProperties: false
+properties: {}
