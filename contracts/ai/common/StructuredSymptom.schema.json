@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StructuredSymptom",
+  "description": "구조화된 증상",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
