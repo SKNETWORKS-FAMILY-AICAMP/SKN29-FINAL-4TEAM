@@ -1,0 +1,5 @@
+title: EvidenceSource
+type: object
+description: 공식 근거 출처
+additionalProperties: false
+properties: {}

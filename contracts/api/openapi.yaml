@@ -1,0 +1,14 @@
+openapi: 3.1.0
+info:
+  title: Water Care Support API
+  version: 0.1.0
+  description: 정수기 구독 고객 케어 및 A/S 업무 지원 시스템 API 계약
+servers:
+  - url: /api/v1
+paths: {}
+components:
+  schemas: {}
+  parameters: {}
+  headers: {}
+  responses: {}
+  securitySchemes: {}

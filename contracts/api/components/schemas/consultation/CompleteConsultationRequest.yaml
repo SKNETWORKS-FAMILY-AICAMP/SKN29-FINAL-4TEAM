@@ -1,0 +1,5 @@
+title: CompleteConsultationRequest
+type: object
+description: 상담 완료 요청
+additionalProperties: false
+properties: {}

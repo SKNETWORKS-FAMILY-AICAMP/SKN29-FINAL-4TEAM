@@ -1,0 +1,5 @@
+title: OperationsMetrics
+type: object
+description: 운영 지표
+additionalProperties: false
+properties: {}

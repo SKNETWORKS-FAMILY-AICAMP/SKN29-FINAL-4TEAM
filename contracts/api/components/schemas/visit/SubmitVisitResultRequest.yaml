@@ -1,0 +1,5 @@
+title: SubmitVisitResultRequest
+type: object
+description: 방문 결과 등록 요청
+additionalProperties: false
+properties: {}

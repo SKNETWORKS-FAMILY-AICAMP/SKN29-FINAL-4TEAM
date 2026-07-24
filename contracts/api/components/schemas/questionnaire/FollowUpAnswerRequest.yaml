@@ -1,0 +1,5 @@
+title: FollowUpAnswerRequest
+type: object
+description: 추가 질문 답변 요청
+additionalProperties: false
+properties: {}

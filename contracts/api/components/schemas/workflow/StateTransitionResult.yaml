@@ -1,0 +1,5 @@
+title: StateTransitionResult
+type: object
+description: 상태 전환 결과
+additionalProperties: false
+properties: {}

@@ -1,0 +1,5 @@
+title: CreateVisitRequest
+type: object
+description: 방문 생성 요청
+additionalProperties: false
+properties: {}

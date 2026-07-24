@@ -1,0 +1,5 @@
+title: StateTransitionRequest
+type: object
+description: 상태 전환 요청
+additionalProperties: false
+properties: {}

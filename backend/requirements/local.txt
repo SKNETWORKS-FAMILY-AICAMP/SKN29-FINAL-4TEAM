@@ -1,0 +1,2 @@
+# 개발·Formatter·테스트 의존성을 작성합니다.
+-r base.txt

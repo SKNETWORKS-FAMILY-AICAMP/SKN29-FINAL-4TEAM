@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SafetyAssessment",
+  "description": "위험도·우선순위",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}

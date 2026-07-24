@@ -1,0 +1,5 @@
+name: visitId
+in: path
+required: true
+schema:
+  type: string

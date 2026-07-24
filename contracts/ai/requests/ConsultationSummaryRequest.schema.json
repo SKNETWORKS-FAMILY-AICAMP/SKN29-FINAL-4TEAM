@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ConsultationSummaryRequest",
+  "description": "상담 요약 초안 요청",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
