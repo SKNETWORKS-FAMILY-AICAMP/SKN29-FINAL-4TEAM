@@ -1,0 +1,5 @@
+title: UpdateVisitScheduleRequest
+type: object
+description: 방문 일정 변경 요청
+additionalProperties: false
+properties: {}

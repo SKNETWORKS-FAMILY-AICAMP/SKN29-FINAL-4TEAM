@@ -1,0 +1,5 @@
+title: AuditMetadata
+type: object
+description: 생성·수정 시각과 처리 주체
+additionalProperties: false
+properties: {}

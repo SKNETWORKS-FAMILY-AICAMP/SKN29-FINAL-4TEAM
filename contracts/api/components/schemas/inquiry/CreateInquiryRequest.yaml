@@ -1,0 +1,5 @@
+title: CreateInquiryRequest
+type: object
+description: 문의 생성 요청
+additionalProperties: false
+properties: {}

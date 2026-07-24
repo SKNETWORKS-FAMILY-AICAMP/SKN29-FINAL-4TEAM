@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DemoScenario",
+  "description": "합성 업무 시나리오 검증 Schema",
+  "type": "object",
+  "additionalProperties": true
+}

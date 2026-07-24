@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EvidenceReference",
+  "description": "AI 내부 근거 참조",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
