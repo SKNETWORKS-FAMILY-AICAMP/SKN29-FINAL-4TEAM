@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FaqCandidate",
+  "description": "FAQ 적용성 분류 데이터 검증 Schema",
+  "type": "object",
+  "additionalProperties": true
+}

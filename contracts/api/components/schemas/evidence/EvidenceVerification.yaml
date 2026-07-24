@@ -1,0 +1,5 @@
+title: EvidenceVerification
+type: object
+description: 근거 검증 정보
+additionalProperties: false
+properties: {}

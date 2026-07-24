@@ -1,0 +1,70 @@
+﻿document_id,product_model,scope_role,page,topic,matched_keywords,review_status
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,4,leak,물이 새,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,5,leak,누수,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,6,taste_odor,물맛,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,6,leak,누수,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,6,hot_temperature,온수가,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,6,noise,소음,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,7,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,7,taste_odor,물맛,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,7,leak,누수,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,9,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,12,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,14,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,14,hot_temperature,온수 잠금,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,15,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,16,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,17,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,18,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,25,hot_temperature,온수 잠금,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,34,leak,누수,visual_review_pending
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,37,low_flow_no_water,출수량;출수되지,text_and_visual_verified
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,37,cold_temperature,냉수가 차갑지;냉수 온도,text_and_visual_verified
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,37,noise,소음;소리가,text_and_visual_verified
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,38,low_flow_no_water,출수량,text_and_visual_verified
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,38,taste_odor,맛과 냄새;불쾌한 맛,text_and_visual_verified
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,38,leak,누수,text_and_visual_verified
+MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00,WPU-JAC104D / WPU-JCC104D,mvp_primary,39,hot_temperature,온수가;온수 잠금,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,4,leak,물이 새,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,5,leak,누수,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,5,noise,소음,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,6,leak,누수,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,7,leak,누수,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,9,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,9,ice_hygiene,아이스룸,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,14,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,15,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,15,hot_temperature,온수가;온수 온도,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,15,ice_hygiene,아이스룸,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,16,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,16,ice_hygiene,아이스룸,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,17,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,17,hot_temperature,온수가,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,17,ice_dispense,출빙,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,17,ice_hygiene,아이스룸,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,18,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,18,ice_dispense,출빙;얼음이 나오지,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,18,ice_hygiene,아이스룸,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,19,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,20,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,21,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,21,hot_temperature,온수가,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,23,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,24,low_flow_no_water,출수량,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,35,leak,누수,visual_review_pending
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,37,ice_hygiene,아이스룸,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,39,ice_dispense,출빙,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,40,leak,누수,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,40,ice_dispense,출빙,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,43,low_flow_no_water,출수량,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,43,cold_temperature,냉수가 차갑지;냉수 온도,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,43,noise,소음;소리가,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,44,low_flow_no_water,물이 나오지;출수량,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,44,ice_hygiene,아이스룸,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,44,noise,소음,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,45,taste_odor,맛과 냄새;불쾌한 맛,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,45,leak,누수,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,45,ice_dispense,얼음이 나오지;얼음이 만들어,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,45,ice_hygiene,아이스룸,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,46,hot_temperature,온수가;온수 잠금,text_and_visual_verified
+MAN-SKMAGIC-WPU-IAC425-REV02,WPU-IAC425,expansion_secondary,46,ice_hygiene,얼음 저장,text_and_visual_verified

@@ -1,0 +1,25 @@
+errors:
+  - code: STATE-CONFLICT-01
+    category: workflow
+    http_status: 409
+    retryable: true
+    user_message: 다른 사용자가 문의 상태를 먼저 변경했습니다.
+    recommended_action: REFRESH_AND_RETRY
+  - code: DUPLICATE-EVENT-01
+    category: workflow
+    http_status: 409
+    retryable: false
+    user_message: 이미 처리된 요청입니다.
+    recommended_action: REFRESH
+  - code: AI-FAILED-01
+    category: ai
+    http_status: 503
+    retryable: true
+    user_message: AI 분석을 완료하지 못했습니다.
+    recommended_action: RETRY_OR_REQUEST_CONSULTATION
+  - code: SEARCH-FAILED-01
+    category: retrieval
+    http_status: 503
+    retryable: true
+    user_message: 공식 근거를 조회하지 못했습니다.
+    recommended_action: RETRY_OR_REQUEST_CONSULTATION
