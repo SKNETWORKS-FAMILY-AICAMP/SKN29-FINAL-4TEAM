@@ -1,0 +1,5 @@
+title: InquirySummary
+type: object
+description: 문의 요약
+additionalProperties: false
+properties: {}

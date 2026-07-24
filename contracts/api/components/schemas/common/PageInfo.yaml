@@ -1,0 +1,5 @@
+title: PageInfo
+type: object
+description: 페이지 번호 방식 목록 정보
+additionalProperties: false
+properties: {}
