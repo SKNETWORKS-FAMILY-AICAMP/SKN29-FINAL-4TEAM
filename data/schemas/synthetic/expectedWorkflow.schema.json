@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExpectedWorkflow",
+  "description": "기대 상태 전이와 허용 행동 검증 Schema",
+  "type": "object",
+  "additionalProperties": true
+}

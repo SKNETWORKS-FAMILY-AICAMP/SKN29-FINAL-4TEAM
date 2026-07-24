@@ -1,0 +1,5 @@
+title: AllowedAction
+type: object
+description: 허용 행동
+additionalProperties: false
+properties: {}

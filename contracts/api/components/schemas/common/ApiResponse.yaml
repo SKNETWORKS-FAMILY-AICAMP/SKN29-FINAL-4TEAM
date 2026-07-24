@@ -1,0 +1,5 @@
+title: ApiResponse
+type: object
+description: 공통 success·data·error 응답 Wrapper
+additionalProperties: false
+properties: {}

@@ -1,0 +1,5 @@
+title: ProductSummary
+type: object
+description: 제품 요약
+additionalProperties: false
+properties: {}
