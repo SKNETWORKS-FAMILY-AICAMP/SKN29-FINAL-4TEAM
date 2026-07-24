@@ -1,0 +1,3 @@
+[versions]
+kotlin = "2.0.0"
+agp = "8.5.0"

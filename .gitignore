@@ -5,8 +5,13 @@ outputs/
 __pycache__/
 *.pyc
 
-# 공식 원문은 팀 내부 검토용이며 공개 저장소에 올리지 않는다.
-data/raw/
+# 공식 원본 파일만 제외
+data/raw/manuals/**/*.pdf
+data/raw/faq/snapshots/*
+!data/raw/faq/snapshots/.gitkeep
+
+# 임시 작업물 제외
+data/.temp/
 
 # 인계는 저장소 파일로 수행하며 ZIP 패키지는 만들지 않는다.
 data/**/*.zip
