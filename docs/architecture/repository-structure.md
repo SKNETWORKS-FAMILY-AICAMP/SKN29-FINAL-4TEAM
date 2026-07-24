@@ -2024,7 +2024,6 @@ docs/
 ├─ testing/            # 테스트 문서
 ├─ deployment/         # 실행·배포 방법
 ├─ daily-scrum/        # 데일리 스크럼
-├─ weekly-standup/     # 데일리 스크럼
 ├─ presentation/       # 주간·중간·최종 발표
 └─ submission/         # 최종 제출 준비
 ```
