@@ -1,0 +1,3 @@
+description: 쓰기 요청 중복 방지 키
+schema:
+  type: string

@@ -1,0 +1,5 @@
+title: SymptomSubmissionRequest
+type: object
+description: 증상 제출 요청
+additionalProperties: false
+properties: {}

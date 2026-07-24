@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FollowUpQuestion",
+  "description": "추가 질문",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}

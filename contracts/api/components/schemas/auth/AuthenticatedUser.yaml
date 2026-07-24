@@ -1,0 +1,5 @@
+title: AuthenticatedUser
+type: object
+description: 인증 사용자
+additionalProperties: false
+properties: {}

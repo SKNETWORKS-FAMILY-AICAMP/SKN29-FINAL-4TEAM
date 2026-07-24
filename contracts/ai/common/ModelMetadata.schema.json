@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ModelMetadata",
+  "description": "모델·프롬프트·토큰 정보",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}

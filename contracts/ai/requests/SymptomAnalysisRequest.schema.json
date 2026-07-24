@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SymptomAnalysisRequest",
+  "description": "증상 구조화·안전·RAG·안내 요청",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}

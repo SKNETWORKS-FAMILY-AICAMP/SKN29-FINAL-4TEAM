@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SymptomAnalysisResponse",
+  "description": "증상 분석 결과",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
