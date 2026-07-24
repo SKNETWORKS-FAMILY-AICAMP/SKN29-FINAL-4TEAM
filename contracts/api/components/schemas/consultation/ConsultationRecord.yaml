@@ -1,0 +1,5 @@
+title: ConsultationRecord
+type: object
+description: 상담 기록
+additionalProperties: false
+properties: {}

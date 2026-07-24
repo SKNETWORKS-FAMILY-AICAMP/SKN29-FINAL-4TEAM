@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RagChunk",
+  "description": "RAG 청크 필드·타입·참조 검증 Schema",
+  "type": "object",
+  "additionalProperties": true
+}

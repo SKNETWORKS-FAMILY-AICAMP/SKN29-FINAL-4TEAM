@@ -1,0 +1,5 @@
+description: HTTP 500 공통 오류 응답
+content:
+  application/json:
+    schema:
+      $ref: ../schemas/common/ApiResponse.yaml

@@ -1,0 +1,7 @@
+self_resolution:
+  event: CUSTOMER_REPORTED_SELF_RESOLVED
+  next_state: RESOLVED
+consultation_or_visit:
+  intermediate_state: COMPLETION_PENDING
+  final_event: FINALIZE_INQUIRY
+  next_state: RESOLVED

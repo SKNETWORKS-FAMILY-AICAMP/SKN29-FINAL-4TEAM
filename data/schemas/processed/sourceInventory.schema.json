@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SourceInventory",
+  "description": "공식 출처·무결성 메타데이터 검증 Schema",
+  "type": "object",
+  "additionalProperties": true
+}

@@ -1,0 +1,5 @@
+roles:
+  CUSTOMER: []
+  CONSULTANT: []
+  TECHNICIAN: []
+  OPERATOR: []
