@@ -475,240 +475,244 @@ correlation_id      # 웹→백엔드→AI 처리 흐름 추적
 현재 MVP에서는 **단일 `app` Gradle 모듈 + 기능 중심 패키지 구조**를 사용한다.
 
 ```text
-mobile/                                                 # 모바일 항목의 역할과 책임 설명
-└─ app/                                                 # 실제 Android 애플리케이션을 빌드하는 단일 Gradle 모듈
-   ├─ feature/                                          # 고객·기사 업무 기능
-   └─ core/                                             # 네트워크·저장소·디자인 시스템 등 공통 기능
+mobile/                                             # Kotlin·Jetpack Compose Android 프로젝트
+└─ app/                                             # 실제 Android 애플리케이션을 빌드하는 단일 Gradle 모듈
+   └─ src/main/java/com/skn29/watercare/            # Kotlin 운영 코드 기본 패키지
+      ├─ app/                                       # 앱 시작·세션·Navigation 구성
+      ├─ feature/                                   # 고객·기사 화면별 기능
+      └─ core/                                      # 네트워크·저장소·디자인 시스템 등 공통 기능
 ```
 
-다음 구조는 초기 MVP에서 사용하지 않는다.
+초기 MVP에서는 다음 구조를 사용하지 않는다.
 
 ```text
-feature-customer/               # 별도 Gradle 모듈
-feature-technician/             # 별도 Gradle 모듈
-core-network/                   # 별도 Gradle 모듈
+사용하지 않는 구조
+├─ feature-customer/                                # 고객 기능 전용 별도 Gradle 모듈
+├─ feature-technician/                              # 기사 기능 전용 별도 Gradle 모듈
+├─ core-network/                                    # 네트워크 전용 별도 Gradle 모듈
+└─ 모든 기능의 data/domain/presentation 선생성     # 실제 코드 없이 빈 계층만 늘어나는 구조
 ```
 
-앱 규모가 커지면 현재 패키지를 기준으로 Gradle 다중 모듈로 분리할 수 있다.
+기능별 디렉토리에는 우선 화면, ViewModel, UI 상태 파일을 함께 둔다.
+
+```text
+feature/customer/home/
+├─ CustomerHomeScreen.kt
+├─ CustomerHomeViewModel.kt
+└─ CustomerHomeUiState.kt
+```
+
+API DTO, Repository, UseCase 등 독립 계층이 실제로 필요해지는 기능만 이후에 `data/`, `domain/`, `presentation/`으로 분리한다.
 
 ## 4.3 상세 구조
 
 ```text
-mobile/                                             # Kotlin + Jetpack Compose Android 프로젝트
+mobile/                                             # Kotlin·Jetpack Compose Android 프로젝트
 │
-├─ app/                                                 # 실제 Android 애플리케이션 모듈
+├─ app/                                             # 실제 Android 애플리케이션 모듈
+│  ├─ src/                                         # Android 운영·테스트 Source Set
+│  │  ├─ main/                                     # 운영 코드와 Android 리소스
+│  │  │  ├─ java/com/skn29/watercare/              # Kotlin 기본 패키지
+│  │  │  │  │
+│  │  │  │  ├─ app/                                # 앱 시작·역할 분기·전체 구성
+│  │  │  │  │  ├─ WaterCareApplication.kt          # Android Application 진입점
+│  │  │  │  │  ├─ MainActivity.kt                  # Compose UI 실행 Activity
+│  │  │  │  │  ├─ navigation/                      # 역할별 화면 이동 구조
+│  │  │  │  │  │  ├─ AppNavigation.kt              # 전체 Navigation Graph 조립
+│  │  │  │  │  │  ├─ AuthNavigation.kt             # 로그인·역할 확인 흐름
+│  │  │  │  │  │  ├─ CustomerNavigation.kt         # CUST-01~06 고객 화면 흐름
+│  │  │  │  │  │  └─ TechnicianNavigation.kt       # TECH-01~03 기사 화면 흐름
+│  │  │  │  │  ├─ UserSession.kt                    # 사용자 ID·역할·로그인 상태
+│  │  │  │  │  ├─ SessionManager.kt                 # 세션 조회·갱신·초기화
+│  │  │  │  │  └─ AppConfig.kt                      # API 주소·빌드 환경 공개 설정
+│  │  │  │  │
+│  │  │  │  ├─ feature/                            # 역할·화면별 기능 코드
+│  │  │  │  │  ├─ auth/                            # 가상 로그인·로그아웃·역할 확인
+│  │  │  │  │  │  ├─ LoginScreen.kt                # 가상 로그인 Compose 화면
+│  │  │  │  │  │  ├─ LoginViewModel.kt             # 로그인 요청·화면 상태 관리
+│  │  │  │  │  │  └─ LoginUiState.kt               # 로그인 화면 상태
+│  │  │  │  │  │
+│  │  │  │  │  ├─ customer/                        # 고객용 CUST-01~06 기능
+│  │  │  │  │  │  ├─ home/                         # CUST-01 고객 홈
+│  │  │  │  │  │  │  ├─ CustomerHomeScreen.kt      # 제품·케어·진행 문의 화면
+│  │  │  │  │  │  │  ├─ CustomerHomeViewModel.kt   # 고객 홈 데이터 조회·상태 관리
+│  │  │  │  │  │  │  └─ CustomerHomeUiState.kt     # 고객 홈 화면 상태
+│  │  │  │  │  │  ├─ intake/                       # CUST-02 문진·증상 입력
+│  │  │  │  │  │  │  ├─ SymptomIntakeScreen.kt     # 사전 문진·증상 입력 화면
+│  │  │  │  │  │  │  ├─ SymptomIntakeViewModel.kt  # 임시 저장·증상 제출 처리
+│  │  │  │  │  │  │  └─ SymptomIntakeUiState.kt    # 문진·증상 입력 화면 상태
+│  │  │  │  │  │  ├─ followup/                     # CUST-03 AI 추가 질문
+│  │  │  │  │  │  │  ├─ FollowUpQuestionScreen.kt  # 추가 질문과 답변 입력 화면
+│  │  │  │  │  │  │  ├─ FollowUpQuestionViewModel.kt # 질문 조회·답변 제출 처리
+│  │  │  │  │  │  │  └─ FollowUpQuestionUiState.kt # 추가 질문 화면 상태
+│  │  │  │  │  │  ├─ guidance/                     # CUST-04 근거·안전 안내
+│  │  │  │  │  │  │  ├─ GuidanceScreen.kt          # 위험도·사용 안내·공식 근거 화면
+│  │  │  │  │  │  │  ├─ GuidanceViewModel.kt       # 분석 결과·근거 조회 처리
+│  │  │  │  │  │  │  └─ GuidanceUiState.kt         # 안내 화면 상태
+│  │  │  │  │  │  ├─ actionresult/                 # CUST-05 자가조치 결과
+│  │  │  │  │  │  │  ├─ ActionResultScreen.kt      # 조치 수행 여부·결과 입력 화면
+│  │  │  │  │  │  │  ├─ ActionResultViewModel.kt   # 결과 저장·상담 요청 처리
+│  │  │  │  │  │  │  └─ ActionResultUiState.kt     # 조치 결과 화면 상태
+│  │  │  │  │  │  └─ inquirydetail/                # CUST-06 문의 상세·후속 확인
+│  │  │  │  │  │     ├─ InquiryDetailScreen.kt     # 처리 결과·상태 이력·해결 피드백 화면
+│  │  │  │  │  │     ├─ InquiryDetailViewModel.kt  # 문의 조회·해결 여부·재개 처리
+│  │  │  │  │  │     └─ InquiryDetailUiState.kt    # 문의 상세 화면 상태
+│  │  │  │  │  │
+│  │  │  │  │  ├─ technician/                      # 방문기사용 TECH-01~03 기능
+│  │  │  │  │  │  ├─ worklist/                     # TECH-01 기사 업무 목록
+│  │  │  │  │  │  │  ├─ TechnicianWorkListScreen.kt # 배정 방문 목록·필터 화면
+│  │  │  │  │  │  │  ├─ TechnicianWorkListViewModel.kt # 방문 목록 조회·정렬 처리
+│  │  │  │  │  │  │  └─ TechnicianWorkListUiState.kt # 기사 업무 목록 화면 상태
+│  │  │  │  │  │  ├─ visitdetail/                  # TECH-02 방문 상세·사전 리포트
+│  │  │  │  │  │  │  ├─ VisitDetailScreen.kt       # 방문 정보·근거·사전 리포트 화면
+│  │  │  │  │  │  │  ├─ VisitDetailViewModel.kt    # 방문 조회·방문 시작 처리
+│  │  │  │  │  │  │  └─ VisitDetailUiState.kt      # 방문 상세 화면 상태
+│  │  │  │  │  │  └─ visitresult/                  # TECH-03 방문 결과 등록
+│  │  │  │  │  │     ├─ VisitResultScreen.kt       # 원인·조치·교체·처리 상태 입력 화면
+│  │  │  │  │  │     ├─ VisitResultViewModel.kt    # 결과 임시 저장·완료 처리
+│  │  │  │  │  │     └─ VisitResultUiState.kt      # 방문 결과 화면 상태
+│  │  │  │  │  │
+│  │  │  │  │  └─ shared/                          # 고객·기사 화면에서 공유하는 업무 UI
+│  │  │  │  │     ├─ EvidenceCard.kt               # 공식 근거 요약·출처 버튼 카드
+│  │  │  │  │     ├─ ProductInfoCard.kt            # 제품·구독·관리 이력 카드
+│  │  │  │  │     ├─ StatusBadge.kt                # 문의·방문·위험 상태 배지
+│  │  │  │  │     ├─ StatusTimeline.kt             # 상태 변경 이력 타임라인
+│  │  │  │  │     └─ WorkflowActionButton.kt       # allowed_actions 기반 행동 버튼
+│  │  │  │  │
+│  │  │  │  └─ core/                               # 특정 업무에 속하지 않는 모바일 공통 코드
+│  │  │  │     ├─ network/                         # `/api/v1` REST API 공통 통신
+│  │  │  │     │  ├─ ApiClient.kt                  # 백엔드 API 요청 Client
+│  │  │  │     │  ├─ ApiResponse.kt                # success·data·error 공통 Wrapper
+│  │  │  │     │  ├─ ApiError.kt                   # 업무 오류 코드·사용자 메시지 모델
+│  │  │  │     │  ├─ Pagination.kt                 # page·size·total 목록 응답 모델
+│  │  │  │     │  ├─ AuthInterceptor.kt            # JWT 인증 Header 처리
+│  │  │  │     │  └─ TraceInterceptor.kt           # correlation_id·멱등성 Header 처리
+│  │  │  │     ├─ storage/                         # 기기 내부 최소 상태 저장
+│  │  │  │     │  ├─ SessionStorage.kt             # 토큰·역할·사용자 정보 저장
+│  │  │  │     │  └─ DraftStorage.kt               # 작성 중 문진·결과 임시 보존
+│  │  │  │     ├─ designsystem/                    # 공통 Jetpack Compose UI
+│  │  │  │     │  ├─ theme/                        # 색상·글꼴·크기·Material Theme
+│  │  │  │     │  ├─ component/                    # 버튼·입력·카드·배지·모달
+│  │  │  │     │  └─ feedback/                     # 로딩·빈 상태·오류·성공 UI
+│  │  │  │     ├─ navigation/                      # 화면 경로와 전달 인자
+│  │  │  │     │  ├─ AppRoute.kt                   # 전체 화면 목적지 타입
+│  │  │  │     │  └─ NavigationArgument.kt         # inquiryId·visitId 등 전달 인자
+│  │  │  │     ├─ model/                           # 여러 기능에서 공유하는 기본 모델
+│  │  │  │     │  ├─ UserRole.kt                   # CUSTOMER·TECHNICIAN 역할
+│  │  │  │     │  ├─ RiskLevel.kt                  # general·caution·danger 위험도
+│  │  │  │     │  ├─ WorkflowState.kt              # 문의·방문 상태 표현 모델
+│  │  │  │     │  └─ DataClassification.kt         # official·team_designed·synthetic
+│  │  │  │     ├─ platform/                        # Android 플랫폼 기능 래퍼
+│  │  │  │     │  ├─ ExternalBrowser.kt            # 공식 출처 URL 외부 열기
+│  │  │  │     │  └─ NetworkMonitor.kt             # 네트워크 연결 상태 확인
+│  │  │  │     └─ util/                            # 공통 변환·검증 도구
+│  │  │  │        ├─ DateFormatter.kt              # ISO 8601 날짜·시간 표시 변환
+│  │  │  │        └─ IdentifierValidator.kt        # inquiryId·visitId 등 식별자 검증
+│  │  │  │
+│  │  │  ├─ res/                                   # Android 리소스
+│  │  │  │  ├─ drawable/                           # 벡터 아이콘·배경 리소스
+│  │  │  │  ├─ mipmap/                             # 앱 런처 아이콘
+│  │  │  │  ├─ values/                             # 문자열·색상·테마 공통 리소스
+│  │  │  │  └─ xml/                                # 네트워크 보안·백업 설정
+│  │  │  └─ AndroidManifest.xml                    # 인터넷 권한·앱 구성요소 선언
+│  │  │
+│  │  ├─ test/                                     # JVM 단위 테스트
+│  │  │  └─ java/com/skn29/watercare/              # ViewModel·변환·검증 테스트
+│  │  └─ androidTest/                              # 에뮬레이터·기기 기반 테스트
+│  │     └─ java/com/skn29/watercare/              # Compose UI·Navigation 테스트
 │  │
-│  ├─ src/                                              # Android 운영 코드와 테스트 소스 세트
-│  │  │
-│  │  ├─ main/                                          # 운영 코드와 Android 리소스
-│  │  │  │
-│  │  │  ├─ java/com/skn29/watercare/                   # Kotlin 기본 패키지
-│  │  │  │  │
-│  │  │  │  ├─ app/                                     # 앱 시작·역할 분기·전체 구성
-│  │  │  │  │  ├─ WaterCareApplication.kt               # Android Application 진입점
-│  │  │  │  │  ├─ MainActivity.kt                       # Compose UI를 실행하는 단일 Activity
-│  │  │  │  │  │
-│  │  │  │  │  ├─ navigation/                           # 앱 전체 화면 이동 구조
-│  │  │  │  │  │  ├─ AppNavigation.kt                   # 역할별 Navigation Graph 조립
-│  │  │  │  │  │  ├─ CustomerNavigation.kt              # CUST-01~06 고객 화면 흐름
-│  │  │  │  │  │  ├─ TechnicianNavigation.kt            # TECH-01~03 기사 화면 흐름
-│  │  │  │  │  │  └─ AuthNavigation.kt                  # 로그인·역할 확인 흐름
-│  │  │  │  │  │
-│  │  │  │  │  ├─ session/                              # 현재 로그인 세션과 역할 상태
-│  │  │  │  │  │  ├─ UserSession.kt                     # 사용자 ID·역할·로그인 상태
-│  │  │  │  │  │  └─ SessionManager.kt                  # 세션 조회·갱신·초기화
-│  │  │  │  │  │
-│  │  │  │  │  └─ config/                               # 앱 실행 환경 공개 설정
-│  │  │  │  │     └─ AppConfig.kt                       # API 주소·빌드 환경 설정
-│  │  │  │  │
-│  │  │  │  ├─ feature/                                 # 사용자 행동과 업무 기능별 코드
-│  │  │  │  │  │
-│  │  │  │  │  ├─ auth/                                 # 가상 로그인·로그아웃·역할 확인
-│  │  │  │  │  │  ├─ data/                              # 인증 API와 DTO
-│  │  │  │  │  │  ├─ domain/                            # 인증 상태와 로그인 규칙
-│  │  │  │  │  │  └─ presentation/                      # 로그인 Compose 화면·ViewModel
-│  │  │  │  │  │
-│  │  │  │  │  ├─ customer/                             # 고객용 CUST-01~06 기능
-│  │  │  │  │  │  │
-│  │  │  │  │  │  ├─ home/                              # CUST-01 고객 홈
-│  │  │  │  │  │  │  ├─ data/                           # 제품·케어·문의 현황 API
-│  │  │  │  │  │  │  ├─ domain/                         # 고객 홈 표시 규칙
-│  │  │  │  │  │  │  └─ presentation/                   # 제품·케어·진행 문의 화면
-│  │  │  │  │  │  │
-│  │  │  │  │  │  ├─ intake/                            # CUST-02 문진·증상 입력
-│  │  │  │  │  │  │  ├─ data/                           # 문진 저장·증상 제출 API
-│  │  │  │  │  │  │  ├─ domain/                         # 입력 모드·제출 규칙
-│  │  │  │  │  │  │  └─ presentation/                   # 증상·문진 입력 화면
-│  │  │  │  │  │  │
-│  │  │  │  │  │  ├─ followup/                          # CUST-03 AI 추가 질문
-│  │  │  │  │  │  │  ├─ data/                           # 질문 조회·답변 저장
-│  │  │  │  │  │  │  ├─ domain/                         # 누락 질문·답변 규칙
-│  │  │  │  │  │  │  └─ presentation/                   # 추가 질문 화면
-│  │  │  │  │  │  │
-│  │  │  │  │  │  ├─ guidance/                          # CUST-04 근거·안전 안내
-│  │  │  │  │  │  │  ├─ data/                           # 분석 결과·근거 조회
-│  │  │  │  │  │  │  ├─ domain/                         # 위험도·사용 안내 표시 규칙
-│  │  │  │  │  │  │  └─ presentation/                   # 안전 안내·근거 화면
-│  │  │  │  │  │  │
-│  │  │  │  │  │  ├─ actionresult/                      # CUST-05 자가조치 결과
-│  │  │  │  │  │  │  ├─ data/                           # 조치 결과·상담 요청 API
-│  │  │  │  │  │  │  ├─ domain/                         # 해결·미해결·위험 분기
-│  │  │  │  │  │  │  └─ presentation/                   # 조치 결과 입력 화면
-│  │  │  │  │  │  │
-│  │  │  │  │  │  └─ inquirydetail/                     # CUST-06 문의 상세·후속 확인
-│  │  │  │  │  │     ├─ data/                           # 상태·처리 결과·이력 조회
-│  │  │  │  │  │     ├─ domain/                         # 해결 여부·문의 재개 규칙
-│  │  │  │  │  │     └─ presentation/                   # 처리 결과·해결 피드백 화면
-│  │  │  │  │  │
-│  │  │  │  │  ├─ technician/                           # 방문기사용 TECH-01~03 기능
-│  │  │  │  │  │  │
-│  │  │  │  │  │  ├─ worklist/                          # TECH-01 기사 업무 목록
-│  │  │  │  │  │  │  ├─ data/                           # 배정 방문 목록 API
-│  │  │  │  │  │  │  ├─ domain/                         # 위험·일정별 정렬 규칙
-│  │  │  │  │  │  │  └─ presentation/                   # 방문 목록·필터 화면
-│  │  │  │  │  │  │
-│  │  │  │  │  │  ├─ visitdetail/                       # TECH-02 사전 점검 리포트
-│  │  │  │  │  │  │  ├─ data/                           # 방문 상세·리포트 조회
-│  │  │  │  │  │  │  ├─ domain/                         # 리포트 검토·점검 시작 규칙
-│  │  │  │  │  │  │  └─ presentation/                   # 방문 상세·근거·리포트 화면
-│  │  │  │  │  │  │
-│  │  │  │  │  │  └─ visitresult/                       # TECH-03 방문 결과 등록
-│  │  │  │  │  │     ├─ data/                           # 결과 임시 저장·완료 API
-│  │  │  │  │  │     ├─ domain/                         # 완료·추가 방문 검증 규칙
-│  │  │  │  │  │     └─ presentation/                   # 원인·조치·교체 결과 입력
-│  │  │  │  │  │
-│  │  │  │  │  └─ shared/                               # 고객과 기사가 함께 사용하는 업무 기능
-│  │  │  │  │     ├─ evidence/                          # 공식 근거 카드 표시
-│  │  │  │  │     │  ├─ domain/                         # EvidenceCard 앱 내부 모델
-│  │  │  │  │     │  └─ presentation/                   # 근거 카드·출처 버튼 UI
-│  │  │  │  │     │
-│  │  │  │  │     ├─ workflow/                          # State Machine 행동 처리
-│  │  │  │  │     │  ├─ data/                           # 상태 전환 이벤트 API
-│  │  │  │  │     │  ├─ domain/                         # allowed_actions 처리 규칙
-│  │  │  │  │     │  └─ presentation/                   # 허용 행동 버튼 UI
-│  │  │  │  │     │
-│  │  │  │  │     ├─ product/                           # 제품·구독·관리 정보 표현
-│  │  │  │  │     │  ├─ domain/                         # 제품·케어 공통 모델
-│  │  │  │  │     │  └─ presentation/                   # 제품·케어 정보 카드
-│  │  │  │  │     │
-│  │  │  │  │     └─ status/                            # 문의·방문·위험 상태 표시
-│  │  │  │  │        ├─ domain/                         # 상태 코드·표시 모델
-│  │  │  │  │        └─ presentation/                   # 상태 배지·타임라인 UI
-│  │  │  │  │
-│  │  │  │  └─ core/                                    # 특정 업무에 속하지 않는 모바일 공통 코드
-│  │  │  │     │
-│  │  │  │     ├─ network/                              # REST API 공통 통신
-│  │  │  │     │  ├─ ApiClient.kt                       # `/api/v1` 클라이언트 생성
-│  │  │  │     │  ├─ ApiResponse.kt                     # success·data·error Wrapper
-│  │  │  │     │  ├─ ApiError.kt                        # 업무 오류 코드·오류 모델
-│  │  │  │     │  ├─ Pagination.kt                      # page·size·total 목록 응답
-│  │  │  │     │  └─ interceptor/                       # 인증·추적 헤더 처리
-│  │  │  │     │     ├─ AuthInterceptor.kt              # JWT 인증 헤더
-│  │  │  │     │     └─ TraceInterceptor.kt             # correlation_id·멱등성 헤더
-│  │  │  │     │
-│  │  │  │     ├─ storage/                              # 기기 내부 최소 상태 저장
-│  │  │  │     │  ├─ SessionStorage.kt                  # 토큰·역할·사용자 정보 저장
-│  │  │  │     │  └─ DraftStorage.kt                    # 작성 중 입력 임시 보존
-│  │  │  │     │
-│  │  │  │     ├─ designsystem/                         # 공통 Jetpack Compose 디자인 시스템
-│  │  │  │     │  ├─ theme/                             # 색상·글꼴·크기·Material Theme
-│  │  │  │     │  ├─ component/                         # 버튼·입력·카드·배지·모달
-│  │  │  │     │  ├─ feedback/                          # 로딩·빈 상태·오류·성공 UI
-│  │  │  │     │  └─ preview/                           # Compose Preview용 샘플 데이터
-│  │  │  │     │
-│  │  │  │     ├─ navigation/                           # 기능에서 공유하는 경로·인자 모델
-│  │  │  │     │  ├─ AppRoute.kt                        # 전체 화면 목적지 타입
-│  │  │  │     │  └─ NavigationArgument.kt              # inquiryId·visitId 등 전달 인자
-│  │  │  │     │
-│  │  │  │     ├─ model/                                # 여러 기능에서 공유하는 기본 모델
-│  │  │  │     │  ├─ UserRole.kt                        # CUSTOMER·TECHNICIAN 등 역할
-│  │  │  │     │  ├─ RiskLevel.kt                       # general·caution·danger
-│  │  │  │     │  └─ DataClassification.kt              # official·team_designed·synthetic
-│  │  │  │     │
-│  │  │  │     ├─ platform/                             # Android 플랫폼 기능 래퍼
-│  │  │  │     │  ├─ ExternalBrowser.kt                 # 공식 출처 URL 외부 열기
-│  │  │  │     │  └─ NetworkMonitor.kt                  # 네트워크 연결 상태 확인
-│  │  │  │     │
-│  │  │  │     └─ common/                               # 공통 결과·오류·검증·유틸리티
-│  │  │  │        ├─ result/                            # 성공·실패 처리 공통 타입
-│  │  │  │        ├─ error/                             # 사용자 오류·내부 오류 분리
-│  │  │  │        ├─ validation/                        # 공통 입력 검증
-│  │  │  │        └─ util/                              # 날짜·문자열·식별자 변환
-│  │  │  │
-│  │  │  ├─ res/                                        # Android 리소스
-│  │  │  │  ├─ drawable/                                # 벡터 아이콘·배경 리소스
-│  │  │  │  ├─ mipmap/                                  # 앱 런처 아이콘
-│  │  │  │  ├─ values/                                  # 문자열·색상·테마 공통 리소스
-│  │  │  │  ├─ values-ko/                               # 필요한 경우 한국어 전용 리소스
-│  │  │  │  ├─ xml/                                     # 네트워크 보안·백업 설정
-│  │  │  │  └─ font/                                    # 앱 내장 폰트 사용 시 저장
-│  │  │  │
-│  │  │  └─ AndroidManifest.xml                         # 인터넷 권한·앱 구성요소 선언
-│  │  │
-│  │  ├─ test/                                          # JVM 단위 테스트
-│  │  │  └─ java/com/skn29/watercare/                   # java 관련 파일과 하위 항목을 관리하는 디렉토리
-│  │  │     ├─ feature/                                 # ViewModel·UseCase·검증 테스트
-│  │  │     ├─ core/                                    # 공통 변환·오류 처리 테스트
-│  │  │     └─ fixture/                                 # 테스트용 합성 모델
-│  │  │
-│  │  └─ androidTest/                                   # 에뮬레이터·기기 기반 테스트
-│  │     └─ java/com/skn29/watercare/                   # java 관련 파일과 하위 항목을 관리하는 디렉토리
-│  │        ├─ navigation/                              # 역할별 화면 이동 테스트
-│  │        ├─ customer/                                # CUST-01~06 Compose UI 테스트
-│  │        ├─ technician/                              # TECH-01~03 Compose UI 테스트
-│  │        └─ e2e/                                     # 대표 모바일 사용자 흐름 테스트
-│  │
-│  ├─ build.gradle.kts                                  # 앱 모듈 의존성·빌드 설정
-│  ├─ proguard-rules.pro                                # Release 난독화·최적화 규칙
-│  └─ README.md                                         # 앱 모듈 구조·구현 규칙
+│  ├─ build.gradle.kts                             # 앱 모듈 의존성·빌드 설정
+│  ├─ proguard-rules.pro                           # Release 난독화·최적화 규칙
+│  └─ README.md                                    # 앱 모듈 구조·구현 규칙
 │
-├─ gradle/                                              # Gradle Wrapper와 Version Catalog 관리 영역
-│  ├─ wrapper/                                          # Gradle Wrapper 실행 파일
-│  └─ libs.versions.toml                                # Android·Kotlin 의존성 버전 중앙 관리
-│
-├─ build.gradle.kts                                     # 프로젝트 공통 Gradle 설정
-├─ settings.gradle.kts                                  # `app` 모듈 등록
-├─ gradle.properties                                    # 공통 Gradle·Android 빌드 옵션
-├─ gradlew                                              # macOS·Linux용 Gradle 실행 파일
-├─ gradlew.bat                                          # Windows CMD용 Gradle 실행 파일
-├─ local.properties.example                             # SDK 경로·개발 설정 예시
-├─ .gitignore                                           # APK·빌드 결과·로컬 설정 제외
-└─ README.md                                            # 설치·실행·빌드·테스트 안내
+├─ gradle/                                         # Gradle Wrapper와 Version Catalog
+│  ├─ wrapper/                                     # Gradle Wrapper 실행 파일
+│  └─ libs.versions.toml                           # Android·Kotlin 의존성 버전 중앙 관리
+├─ build.gradle.kts                                # 프로젝트 공통 Gradle 설정
+├─ settings.gradle.kts                             # `app` 모듈 등록
+├─ gradle.properties                               # 공통 Gradle·Android 빌드 옵션
+├─ gradlew                                         # macOS·Linux용 Gradle 실행 파일
+├─ gradlew.bat                                     # Windows CMD용 Gradle 실행 파일
+├─ local.properties.example                        # SDK 경로·로컬 개발 설정 예시
+├─ .gitignore                                      # APK·빌드 결과·로컬 설정 제외
+└─ README.md                                       # 설치·실행·빌드·테스트 안내
 ```
 
-## 4.4 Mobile 기능 내부 공통 형식
+## 4.4 기능 내부 기본 형식과 확장 기준
 
-기능은 필요한 경우 `data`, `domain`, `presentation`으로 분리한다.
+초기에는 각 화면 기능에 다음 세 파일을 기본으로 둔다.
 
 ```text
-feature/<feature>/
-├─ data/                             # 서버·기기 저장소 데이터 접근 구현
-│  ├─ remote/                        # 해당 기능의 REST API
-│  ├─ dto/                           # 백엔드 요청·응답 데이터 형식
-│  ├─ mapper/                        # DTO → 앱 내부 모델 변환
-│  └─ repository/                    # Repository 구현체
-│
-├─ domain/                           # Android UI에 종속되지 않는 업무 규칙
-│  ├─ model/                         # 해당 기능의 내부 모델
-│  ├─ repository/                    # 데이터 접근 인터페이스
-│  └─ usecase/                       # 조회·저장·상태 전환 단위 행동
-│
-└─ presentation/                     # Jetpack Compose UI와 화면 상태
-   ├─ screen/                        # 화면 단위 Composable
-   ├─ component/                     # 해당 기능 전용 Composable
-   ├─ state/                         # 화면 상태·이벤트·일회성 효과
-   └─ viewmodel/                     # UI 상태 관리·UseCase 호출
+feature/<role>/<feature>/
+├─ <Feature>Screen.kt                              # Compose 화면
+├─ <Feature>ViewModel.kt                           # API 호출·입력·화면 상태 처리
+└─ <Feature>UiState.kt                             # 로딩·성공·오류·입력 상태
 ```
 
-빈 디렉토리를 일괄 생성하지 않고 실제 책임이 있을 때만 만든다.
+화면 내부에서만 사용하는 작은 Composable은 같은 디렉토리에 추가한다.
 
 ```text
-공식 근거 상태 배지
-→ domain/ + presentation/
-
-방문 결과 저장
-→ data/ + domain/ + presentation/
+feature/customer/home/
+├─ CustomerHomeScreen.kt
+├─ CustomerHomeViewModel.kt
+├─ CustomerHomeUiState.kt
+├─ CareScheduleSection.kt
+└─ ActiveInquirySection.kt
 ```
+
+다음 조건이 생겼을 때 해당 기능만 계층을 분리한다.
+
+### `data/` 분리 기준
+
+- API 요청·응답 DTO가 화면 모델과 크게 다르다.
+- Remote 데이터와 Local 저장 데이터를 함께 사용한다.
+- Mapper 또는 Repository 구현체가 둘 이상 필요하다.
+- 같은 API 접근 로직을 여러 ViewModel에서 공유한다.
+
+```text
+feature/customer/inquirydetail/
+├─ data/
+│  ├─ InquiryDetailDto.kt
+│  ├─ InquiryDetailMapper.kt
+│  └─ InquiryDetailRepository.kt
+├─ InquiryDetailScreen.kt
+├─ InquiryDetailViewModel.kt
+└─ InquiryDetailUiState.kt
+```
+
+### `domain/` 분리 기준
+
+- Android UI와 무관한 업무 규칙이 복잡해진다.
+- 여러 화면에서 동일한 UseCase를 사용한다.
+- 독립적인 단위 테스트가 필요한 계산·검증 로직이 생긴다.
+
+```text
+feature/customer/inquirydetail/
+├─ domain/
+│  ├─ InquiryDetail.kt
+│  └─ GetInquiryDetailUseCase.kt
+├─ InquiryDetailScreen.kt
+├─ InquiryDetailViewModel.kt
+└─ InquiryDetailUiState.kt
+```
+
+### `presentation/` 분리 기준
+
+- 한 기능의 화면·컴포넌트·ViewModel 파일이 7~10개 이상으로 늘어난다.
+- 화면 코드와 데이터·업무 로직 파일을 한 디렉토리에서 찾기 어려워진다.
+
+```text
+feature/customer/inquirydetail/
+├─ data/
+├─ domain/
+└─ presentation/
+   ├─ InquiryDetailScreen.kt
+   ├─ InquiryDetailViewModel.kt
+   ├─ InquiryDetailUiState.kt
+   └─ component/
+```
+
+모든 기능을 동시에 계층화하지 않고 복잡도가 증가한 기능만 단계적으로 분리한다.
 
 ## 4.5 역할별 Navigation
 
@@ -734,10 +738,12 @@ feature/<feature>/
 - 저장된 역할과 화면 Graph가 일치하지 않으면 진입을 차단한다.
 - 실제 데이터 접근 권한은 백엔드가 최종 검증한다.
 - `CUST-02`는 `CARE_PRECHECK`과 `ADHOC_INQUIRY` 진입 모드를 하나의 화면에서 구분한다.
+- `inquiryId`, `visitId` 등 화면 이동 식별자는 `NavigationArgument.kt`에서 공통 관리한다.
+- 화면 경로는 문자열을 화면마다 직접 작성하지 않고 `AppRoute.kt`를 기준으로 관리한다.
 
 ## 4.6 Mobile State Machine 원칙
 
-모바일은 백엔드 응답을 기준으로 업무 버튼을 구성한다.
+모바일은 문의·방문 상태를 자체 계산하지 않고 백엔드 응답을 기준으로 업무 버튼을 구성한다.
 
 ```text
 백엔드 응답
@@ -745,39 +751,60 @@ feature/<feature>/
 ├─ allowed_actions
 ├─ state_version
 ├─ current_assignee
-└─ next_action
+├─ next_action
+└─ customer_action_required
 
 모바일
-└─ allowed_actions에 포함된 행동만 표시·활성화
+├─ 현재 상태와 다음 행동 표시
+└─ allowed_actions에 포함된 행동만 버튼으로 표시·활성화
 ```
 
-상태 전환 요청에는 다음 추적값을 사용한다.
+상태 전환 요청에는 다음 값을 사용한다.
 
 ```text
-state_version       # 오래된 화면의 동시 수정 방지
-idempotency_key     # 중복 터치·재전송 중복 처리 방지
+state_version       # 오래된 화면에서 발생한 동시 수정 방지
+idempotency_key     # 중복 터치·재전송에 따른 중복 처리 방지
 correlation_id      # 모바일→백엔드→AI 처리 흐름 추적
 ```
 
+- 모바일은 `allowed_actions`에 없는 이벤트를 임의로 전송하지 않는다.
+- 상태 전환 성공 후 응답으로 받은 최신 상태와 `state_version`을 화면에 반영한다.
+- 동시 수정 오류가 발생하면 기존 입력을 보존한 뒤 최신 문의·방문 정보를 다시 조회한다.
+- AI 처리 상태는 문의 상태와 구분하여 로딩·진행 문구에만 사용한다.
+
 ## 4.7 입력 보존과 오류 처리
 
-고객 문진, 자가조치 결과, 기사 방문 결과는 저장 실패나 네트워크 오류가 발생해도 사라지지 않아야 한다.
+고객 문진, 자가조치 결과와 기사 방문 결과는 저장 실패나 네트워크 오류가 발생해도 사라지지 않아야 한다.
 
 ```text
-presentation/state
-└─ 현재 화면 입력 유지
+<Feature>UiState.kt
+└─ 현재 화면 입력·선택값·저장 상태 유지
 
-ViewModel
-└─ 화면 재구성 중 상태 유지
+<Feature>ViewModel.kt
+└─ 화면 재구성·회전 중 상태 유지
 
-core/storage/DraftStorage
+core/storage/DraftStorage.kt
 └─ 화면 이탈·앱 재실행에 대비한 최소 임시 저장
+```
+
+임시 저장 대상은 사용자가 다시 작성하기 어려운 입력으로 제한한다.
+
+```text
+임시 저장 권장
+├─ CUST-02 문진·증상 입력
+├─ CUST-05 자가조치 수행 결과
+└─ TECH-03 방문 점검·조치 결과
+
+임시 저장 제외
+├─ 서버에서 다시 조회할 수 있는 제품·문의 상세
+├─ 공식 근거 원문
+└─ 토큰 외 불필요한 민감정보
 ```
 
 공통 오류 상태는 `core/designsystem/feedback/`에서 제공한다.
 
 ```text
-LoadingContent          # 조회·AI 분석 중
+LoadingContent          # 조회·AI 분석 진행 중
 EmptyContent            # 문의·배정 방문이 없음
 ErrorContent            # 조회·저장 실패
 OfflineContent          # 네트워크 연결 없음
@@ -785,31 +812,46 @@ AccessDeniedContent     # 역할·권한 오류
 SaveStatusContent       # 저장 중·저장 완료·저장 실패
 ```
 
+- 저장 실패 시 입력을 유지하고 재시도 버튼을 제공한다.
+- 세션 만료 시 입력을 보존한 상태로 다시 로그인하도록 안내한다.
+- 복구 불가능한 오류와 사용자 입력 오류를 구분해 표시한다.
+- 백엔드 오류 코드와 사용자 표시 문구는 `ApiError.kt`에서 연결한다.
+
 ## 4.8 Mobile 공식 근거 처리 원칙
 
-모바일 역시 백엔드가 조립한 `EvidenceCardDTO`만 사용한다.
+모바일은 백엔드가 조립한 `EvidenceCardDTO`만 사용한다.
 
 ```text
 표시 가능
 ├─ 문서명
 ├─ 문서 버전
-├─ 페이지
+├─ 근거 페이지
+├─ 항목명
 ├─ 구조화된 근거 요약
 ├─ 위험도
 ├─ 검증 상태
+├─ 안전하게 수행 가능한 조치
+├─ 상담 전환 조건
 └─ 백엔드가 제공한 공식 URL
 ```
 
 ```text
-표시·전달 금지
+표시·저장·전달 금지
 ├─ source_path
 ├─ ManualPage.text 원문 전체
 ├─ retrieval_text
+├─ Vector Store 내부 식별 정보
 ├─ RAG 내부 저장 경로
-└─ 앱에서 임의 생성한 공식 PDF URL
+└─ 앱에서 임의 조합한 공식 PDF URL
 ```
 
----
+- 공식 출처 버튼은 백엔드가 반환한 `source_landing_url`을 기본으로 사용한다.
+- 검증된 `source_direct_download_url`이 존재하는 경우에만 PDF 열기 버튼을 제공한다.
+- URL 열기는 `core/platform/ExternalBrowser.kt`를 통해 처리한다.
+- 직접 링크 열기에 실패하면 공식 랜딩 페이지로 이동할 수 있도록 안내한다.
+- 고객 화면에서는 내부 추적용 `chunk_id`를 표시하지 않는다.
+- 공식 근거와 팀 설계·합성 시연 데이터는 배지로 구분한다.
+
 
 ---
 
@@ -1974,13 +2016,13 @@ tests/fixtures/
 ## 12.1 상세 구조
 
 ```text
-docs/                  # 프로젝트 공통 문서
+docs/
 ├─ planning/           # 공식 산출물
 ├─ architecture/       # 전체 구조
 ├─ technical/          # 영역별 개발 설명
 ├─ testing/            # 테스트 문서
 ├─ deployment/         # 실행·배포 방법
-├─ dail_scrum/         # 데일리 스크럼
+├─ daily-scrum/        # 데일리 스크럼
 ├─ presentation/       # 주간·중간·최종 발표
 └─ submission/         # 최종 제출 준비
 ```
@@ -2003,56 +2045,628 @@ docs/testing/results/
 
 ---
 
-# 13. 최종 전체 구조 요약
+---
+
+# 13. Backend 디렉토리 세부 구조
+
+## 13.1 설계 원칙
+
+공통 개발 규칙의 `Controller–Service–Repository` 구조를 Django·DRF에 맞게 적용한다.
 
 ```text
-SKN29-FINAL-4TEAM/                                      # skn29·최종·4·team 항목의 역할과 책임 설명
+DRF View·ViewSet                                      # HTTP 요청·응답과 인증 진입점
+└─ Serializer                                        # 요청값 검증과 응답 데이터 변환
+   └─ Service                                        # 업무 규칙·트랜잭션·상태 전환
+      └─ Repository                                  # Django ORM 조회·저장
+         └─ Model                                    # DB 스키마와 최소 데이터 제약
+```
+
+```text
+금지 기준
+├─ View에서 복잡한 ORM Query 직접 작성 금지
+├─ Serializer에서 상태 전환·외부 연동 수행 금지
+├─ Model.save()에서 AI 서비스 호출 금지
+├─ Repository에서 업무 상태·권한 판단 금지
+└─ Web·Mobile이 State Machine을 자체 계산하는 것 금지
+```
+
+## 13.2 상세 구조
+
+```text
+backend/                                             # Django·DRF 기반 업무 API 서버
+│
+├─ config/                                          # Django 프로젝트 전역 설정
+│  ├─ __init__.py                                   # config Python 패키지 선언
+│  ├─ settings/                                     # 실행 환경별 Django 설정
+│  │  ├─ __init__.py                                # settings Python 패키지 선언
+│  │  ├─ base.py                                    # 앱·미들웨어·DB·REST Framework 공통 설정
+│  │  ├─ local.py                                   # 로컬 개발 환경 설정
+│  │  ├─ test.py                                    # 자동 테스트 환경 설정
+│  │  └─ production.py                              # Kubernetes Demo 배포 환경 설정
+│  ├─ urls.py                                       # Health·Admin·API 최상위 URL 연결
+│  ├─ api_urls.py                                   # `/api/v1` 하위 도메인 API 통합 URL
+│  ├─ asgi.py                                       # ASGI 서버 실행 진입점
+│  └─ wsgi.py                                       # Gunicorn WSGI 실행 진입점
+│
+├─ apps/                                            # 업무 도메인별 Django Application
+│  │
+│  ├─ accounts/                                     # 사용자·인증·역할·프로필 관리
+│  │  ├─ __init__.py                                # Accounts App Python 패키지 선언
+│  │  ├─ api/                                       # 로그인·현재 사용자 API 계층
+│  │  │  ├─ __init__.py                            # Accounts API 패키지 선언
+│  │  │  ├─ urls.py                                # 인증 API URL
+│  │  │  ├─ views.py                               # 로그인·토큰·현재 사용자 조회 Controller
+│  │  │  └─ serializers.py                         # 로그인 요청·사용자 응답 Serializer
+│  │  ├─ models/                                    # 사용자 관련 DB Model
+│  │  │  ├─ __init__.py                            # Accounts Model 공개 목록
+│  │  │  ├─ user.py                                # 가상 사용자·역할·활성 상태 Model
+│  │  │  └─ customer_profile.py                    # 고객 합성 프로필 Model
+│  │  ├─ services/                                  # 인증·사용자 업무 로직
+│  │  │  ├─ __init__.py                            # Accounts Service 패키지 선언
+│  │  │  ├─ authentication_service.py              # JWT 발급·로그인 검증 Service
+│  │  │  └─ account_service.py                     # 사용자 조회·상태 변경 Service
+│  │  ├─ repositories/                              # 사용자 DB 접근 계층
+│  │  │  ├─ __init__.py                            # Accounts Repository 패키지 선언
+│  │  │  └─ account_repository.py                  # 사용자·역할 ORM 조회 Repository
+│  │  ├─ permissions.py                            # 역할 기반 DRF Permission
+│  │  ├─ admin.py                                  # Django Admin 사용자 설정
+│  │  ├─ apps.py                                   # Accounts App 설정
+│  │  └─ migrations/                               # 사용자 테이블 Migration
+│  │     └─ __init__.py                            # Accounts Migration 패키지 선언
+│  │
+│  ├─ products/                                     # 지원 제품·모델·문서 계보 관리
+│  │  ├─ __init__.py                                # Products App Python 패키지 선언
+│  │  ├─ api/                                       # 제품 조회·등록 API 계층
+│  │  │  ├─ __init__.py                            # Products API 패키지 선언
+│  │  │  ├─ urls.py                                # 지원 제품 조회 API URL
+│  │  │  ├─ views.py                               # 제품 목록·상세 Controller
+│  │  │  └─ serializers.py                         # 제품 요청·응답 Serializer
+│  │  ├─ models/                                    # 제품 관련 DB Model
+│  │  │  ├─ __init__.py                            # Products Model 공개 목록
+│  │  │  ├─ product_model_registry.py              # 판매 코드·모델·세대·지원 범위 Model
+│  │  │  └─ product.py                             # 고객에게 등록되는 실제 제품 Model
+│  │  ├─ services/                                  # 제품 업무 규칙
+│  │  │  ├─ __init__.py                            # Products Service 패키지 선언
+│  │  │  ├─ product_service.py                     # 제품 조회·등록·수정 Service
+│  │  │  └─ product_validation_service.py          # MVP·세대·제외 모델 검증 Service
+│  │  ├─ repositories/                              # 제품 DB 접근 계층
+│  │  │  ├─ __init__.py                            # Products Repository 패키지 선언
+│  │  │  ├─ product_repository.py                  # 제품 ORM 접근 Repository
+│  │  │  └─ model_registry_repository.py           # 제품 모델 레지스트리 조회 Repository
+│  │  ├─ admin.py                                  # Django Admin 제품 설정
+│  │  ├─ apps.py                                   # Products App 설정
+│  │  └─ migrations/                               # 제품 테이블 Migration
+│  │     └─ __init__.py                            # Products Migration 패키지 선언
+│  │
+│  ├─ subscriptions/                                # 고객과 구독 제품 연결 관리
+│  │  ├─ __init__.py                                # Subscriptions App Python 패키지 선언
+│  │  ├─ api/                                       # 구독 조회·등록·수정 API 계층
+│  │  │  ├─ __init__.py                            # Subscriptions API 패키지 선언
+│  │  │  ├─ urls.py                                # 구독 조회·등록·수정 API URL
+│  │  │  ├─ views.py                               # 구독 Controller
+│  │  │  └─ serializers.py                         # 구독 요청·응답 Serializer
+│  │  ├─ models/                                    # 구독 관련 DB Model
+│  │  │  ├─ __init__.py                            # Subscriptions Model 공개 목록
+│  │  │  └─ subscription.py                        # 고객·제품·관리 유형·사용 시작일 Model
+│  │  ├─ services/                                  # 구독 업무 규칙
+│  │  │  ├─ __init__.py                            # Subscriptions Service 패키지 선언
+│  │  │  └─ subscription_service.py                # 본인 구독 조회·수정 Service
+│  │  ├─ repositories/                              # 구독 DB 접근 계층
+│  │  │  ├─ __init__.py                            # Subscriptions Repository 패키지 선언
+│  │  │  └─ subscription_repository.py             # 구독 ORM 접근 Repository
+│  │  ├─ permissions.py                            # 고객 본인 구독 접근 Permission
+│  │  ├─ admin.py                                  # Django Admin 구독 설정
+│  │  ├─ apps.py                                   # Subscriptions App 설정
+│  │  └─ migrations/                               # 구독 테이블 Migration
+│  │     └─ __init__.py                            # Subscriptions Migration 패키지 선언
+│  │
+│  ├─ care/                                         # 케어 이력·관리 일정 관리
+│  │  ├─ __init__.py                                # Care App Python 패키지 선언
+│  │  ├─ api/                                       # 케어 이력·일정 API 계층
+│  │  │  ├─ __init__.py                            # Care API 패키지 선언
+│  │  │  ├─ urls.py                                # 케어 이력·다음 일정 API URL
+│  │  │  ├─ views.py                               # 케어 Controller
+│  │  │  └─ serializers.py                         # 케어 요청·응답 Serializer
+│  │  ├─ models/                                    # 케어 관련 DB Model
+│  │  │  ├─ __init__.py                            # Care Model 공개 목록
+│  │  │  ├─ care_history.py                        # 필터 교체·세척·방문 관리 이력 Model
+│  │  │  └─ care_schedule.py                       # 다음 케어 예정일·확인 필요 상태 Model
+│  │  ├─ services/                                  # 케어 업무 규칙
+│  │  │  ├─ __init__.py                            # Care Service 패키지 선언
+│  │  │  ├─ care_history_service.py                # 케어 이력 등록·조회 Service
+│  │  │  └─ care_schedule_service.py               # 공식 기준 기반 일정 산정·갱신 Service
+│  │  ├─ repositories/                              # 케어 DB 접근 계층
+│  │  │  ├─ __init__.py                            # Care Repository 패키지 선언
+│  │  │  ├─ care_history_repository.py             # 케어 이력 ORM 접근 Repository
+│  │  │  └─ care_schedule_repository.py            # 케어 일정 ORM 접근 Repository
+│  │  ├─ admin.py                                  # Django Admin 케어 설정
+│  │  ├─ apps.py                                   # Care App 설정
+│  │  └─ migrations/                               # 케어 테이블 Migration
+│  │     └─ __init__.py                            # Care Migration 패키지 선언
+│  │
+│  ├─ questionnaires/                               # 사전 문진·추가 질문 답변 관리
+│  │  ├─ __init__.py                                # Questionnaires App Python 패키지 선언
+│  │  ├─ api/                                       # 문진 생성·임시 저장·제출 API 계층
+│  │  │  ├─ __init__.py                            # Questionnaires API 패키지 선언
+│  │  │  ├─ urls.py                                # 문진 생성·임시 저장·제출 API URL
+│  │  │  ├─ views.py                               # 문진 Controller
+│  │  │  └─ serializers.py                         # 문진 문항·답변 Serializer
+│  │  ├─ models/                                    # 문진 관련 DB Model
+│  │  │  ├─ __init__.py                            # Questionnaires Model 공개 목록
+│  │  │  ├─ questionnaire_session.py               # CARE_PRECHECK·ADHOC 문진 세션 Model
+│  │  │  └─ questionnaire_answer.py                # 문항별 누적 답변 Model
+│  │  ├─ services/                                  # 문진 업무 규칙
+│  │  │  ├─ __init__.py                            # Questionnaires Service 패키지 선언
+│  │  │  ├─ questionnaire_service.py               # 문진 생성·임시 저장·제출 Service
+│  │  │  └─ inquiry_link_service.py                # 사전 문진을 새 문의에 연결하는 Service
+│  │  ├─ repositories/                              # 문진 DB 접근 계층
+│  │  │  ├─ __init__.py                            # Questionnaires Repository 패키지 선언
+│  │  │  └─ questionnaire_repository.py            # 문진 세션·답변 ORM 접근 Repository
+│  │  ├─ admin.py                                  # Django Admin 문진 설정
+│  │  ├─ apps.py                                   # Questionnaires App 설정
+│  │  └─ migrations/                               # 문진 테이블 Migration
+│  │     └─ __init__.py                            # Questionnaires Migration 패키지 선언
+│  │
+│  ├─ inquiries/                                    # 고객 문의와 전체 처리 흐름의 중심
+│  │  ├─ __init__.py                                # Inquiries App Python 패키지 선언
+│  │  ├─ api/                                       # 문의 생성·조회·답변·전이 API 계층
+│  │  │  ├─ __init__.py                            # Inquiries API 패키지 선언
+│  │  │  ├─ urls.py                                # 문의 생성·조회·답변·전이 API URL
+│  │  │  ├─ views.py                               # 고객·상담사 문의 Controller
+│  │  │  └─ serializers/                           # 문의 요청·응답별 Serializer
+│  │  │     ├─ __init__.py                         # 문의 Serializer 공개 목록
+│  │  │     ├─ create_inquiry.py                   # START_INQUIRY 요청 Serializer
+│  │  │     ├─ symptom_submission.py               # 자연어·대표 증상 제출 Serializer
+│  │  │     ├─ action_result.py                    # 자가조치 결과 Serializer
+│  │  │     ├─ resolution_feedback.py              # 고객 해결 여부 Serializer
+│  │  │     └─ inquiry_response.py                 # 문의 상세·allowed_actions 응답 Serializer
+│  │  ├─ models/                                    # 문의 관련 DB Model
+│  │  │  ├─ __init__.py                            # Inquiries Model 공개 목록
+│  │  │  ├─ inquiry.py                             # 문의 ID·현재 상태·담당 주체 Model
+│  │  │  ├─ symptom_entry.py                       # 최초 자연어·대표 증상·구조화 결과 Model
+│  │  │  ├─ followup_answer.py                     # AI 추가 질문 누적 답변 Model
+│  │  │  └─ customer_action_result.py              # 자가조치 수행 여부·증상 변화 Model
+│  │  ├─ services/                                  # 문의 업무 규칙·상태 전환
+│  │  │  ├─ __init__.py                            # Inquiries Service 패키지 선언
+│  │  │  ├─ inquiry_service.py                     # 문의 생성·조회·내용 누적 Service
+│  │  │  ├─ inquiry_transition_service.py          # State Machine 실행과 상태 저장 Service
+│  │  │  ├─ resolution_service.py                  # 해결·미해결·재개 처리 Service
+│  │  │  └─ inquiry_ai_service.py                  # 문의 분석 AI 요청 조율 Service
+│  │  ├─ repositories/                              # 문의 DB 접근 계층
+│  │  │  ├─ __init__.py                            # Inquiries Repository 패키지 선언
+│  │  │  ├─ inquiry_repository.py                  # 문의 조회·잠금·저장 Repository
+│  │  │  └─ inquiry_history_repository.py          # 문의 관련 이력 조회 Repository
+│  │  ├─ permissions.py                            # 고객 본인·담당 상담사 접근 Permission
+│  │  ├─ admin.py                                  # Django Admin 문의 설정
+│  │  ├─ apps.py                                   # Inquiries App 설정
+│  │  └─ migrations/                               # 문의 테이블 Migration
+│  │     └─ __init__.py                            # Inquiries Migration 패키지 선언
+│  │
+│  ├─ consultations/                                # 상담사 업무·상담 결과 관리
+│  │  ├─ __init__.py                                # Consultations App Python 패키지 선언
+│  │  ├─ api/                                       # 상담 대기·상세·완료 API 계층
+│  │  │  ├─ __init__.py                            # Consultations API 패키지 선언
+│  │  │  ├─ urls.py                                # 상담 대기·상세·완료 API URL
+│  │  │  ├─ views.py                               # 상담 Controller
+│  │  │  └─ serializers.py                         # 상담 기록·완료 요청 Serializer
+│  │  ├─ models/                                    # 상담 관련 DB Model
+│  │  │  ├─ __init__.py                            # Consultations Model 공개 목록
+│  │  │  ├─ consultation.py                        # 상담 담당자·시작·완료 정보 Model
+│  │  │  └─ consultation_summary.py                # AI 초안·상담사 확정 요약 Model
+│  │  ├─ services/                                  # 상담 업무 규칙
+│  │  │  ├─ __init__.py                            # Consultations Service 패키지 선언
+│  │  │  ├─ consultation_service.py                # 상담 시작·저장·완료 Service
+│  │  │  └─ consultation_summary_service.py        # AI 초안 생성·수정·확정 Service
+│  │  ├─ repositories/                              # 상담 DB 접근 계층
+│  │  │  ├─ __init__.py                            # Consultations Repository 패키지 선언
+│  │  │  └─ consultation_repository.py             # 상담·요약 ORM 접근 Repository
+│  │  ├─ permissions.py                            # 상담사 역할·담당자 Permission
+│  │  ├─ admin.py                                  # Django Admin 상담 설정
+│  │  ├─ apps.py                                   # Consultations App 설정
+│  │  └─ migrations/                               # 상담 테이블 Migration
+│  │     └─ __init__.py                            # Consultations Migration 패키지 선언
+│  │
+│  ├─ visits/                                       # 방문 배정·일정·결과 관리
+│  │  ├─ __init__.py                                # Visits App Python 패키지 선언
+│  │  ├─ api/                                       # 방문 전환·일정·결과 API 계층
+│  │  │  ├─ __init__.py                            # Visits API 패키지 선언
+│  │  │  ├─ urls.py                                # 방문 전환·일정·결과 API URL
+│  │  │  ├─ views.py                               # 방문 Controller
+│  │  │  └─ serializers.py                         # 일정·방문 결과 Serializer
+│  │  ├─ models/                                    # 방문 관련 DB Model
+│  │  │  ├─ __init__.py                            # Visits Model 공개 목록
+│  │  │  ├─ visit.py                               # 담당 기사·희망일·확정일·상태 Model
+│  │  │  ├─ technician_report.py                   # AI 초안·기사용 사전 리포트 Model
+│  │  │  └─ visit_result.py                        # 원인·조치·교체·처리 결과 Model
+│  │  ├─ services/                                  # 방문 업무 규칙
+│  │  │  ├─ __init__.py                            # Visits Service 패키지 선언
+│  │  │  ├─ visit_service.py                       # 방문 생성·배정·일정 수정 Service
+│  │  │  ├─ visit_transition_service.py            # 방문 상태 전이 Service
+│  │  │  ├─ technician_report_service.py           # 기사 사전 리포트 생성 Service
+│  │  │  └─ visit_completion_service.py            # 방문 완료·케어 이력 반영 Service
+│  │  ├─ repositories/                              # 방문 DB 접근 계층
+│  │  │  ├─ __init__.py                            # Visits Repository 패키지 선언
+│  │  │  └─ visit_repository.py                    # 방문·결과 ORM 접근 Repository
+│  │  ├─ permissions.py                            # 배정 기사 접근 Permission
+│  │  ├─ admin.py                                  # Django Admin 방문 설정
+│  │  ├─ apps.py                                   # Visits App 설정
+│  │  └─ migrations/                               # 방문 테이블 Migration
+│  │     └─ __init__.py                            # Visits Migration 패키지 선언
+│  │
+│  ├─ workflow/                                     # 상태·이벤트·가드·허용 행동 엔진
+│  │  ├─ __init__.py                                # Workflow App Python 패키지 선언
+│  │  ├─ domain/                                    # 상태 전이 도메인 객체
+│  │  │  ├─ __init__.py                            # Workflow 도메인 객체 패키지 선언
+│  │  │  ├─ state.py                               # 문의·방문 상태 값 객체
+│  │  │  ├─ event.py                               # State Machine 이벤트 값 객체
+│  │  │  ├─ transition.py                          # 전이 결과 데이터 구조
+│  │  │  └─ workflow_snapshot.py                   # 현재 상태·담당자·버전 Snapshot
+│  │  ├─ engine/                                    # State Machine 계산 엔진
+│  │  │  ├─ __init__.py                            # Workflow Engine 패키지 선언
+│  │  │  ├─ state_machine.py                       # 상태+이벤트 전이 계산 엔진
+│  │  │  ├─ guard_evaluator.py                     # 역할·담당자·필수값 Guard 검사
+│  │  │  └─ allowed_action_resolver.py             # 화면 허용 행동 계산
+│  │  ├─ contracts/                                 # 최상위 상태 계약 연결
+│  │  │  ├─ __init__.py                            # Workflow 계약 로더 패키지 선언
+│  │  │  ├─ state_machine_loader.py                # `contracts/state-machine` YAML 로더
+│  │  │  └─ contract_validator.py                  # 상태·이벤트·가드 참조 검증
+│  │  ├─ models/                                    # 상태 변경·멱등성 DB Model
+│  │  │  ├─ __init__.py                            # Workflow Model 공개 목록
+│  │  │  ├─ transition_history.py                  # 이전·다음 상태·변경자·시각 Model
+│  │  │  └─ idempotency_record.py                  # 중복 쓰기 요청 처리 기록 Model
+│  │  ├─ services/                                  # 멱등성·감사 이력 업무 규칙
+│  │  │  ├─ __init__.py                            # Workflow Service 패키지 선언
+│  │  │  ├─ idempotency_service.py                 # Idempotency-Key 검사·결과 재사용 Service
+│  │  │  └─ transition_history_service.py          # 상태 변경 감사 이력 Service
+│  │  ├─ repositories/                              # 상태 변경·멱등성 DB 접근
+│  │  │  ├─ __init__.py                            # Workflow Repository 패키지 선언
+│  │  │  └─ workflow_repository.py                 # 전이 이력·멱등성 ORM 접근 Repository
+│  │  ├─ apps.py                                   # Workflow App 설정
+│  │  └─ migrations/                               # Workflow 테이블 Migration
+│  │     └─ __init__.py                            # Workflow Migration 패키지 선언
+│  │
+│  ├─ evidence/                                     # 공식 근거·EvidenceCardDTO 조립
+│  │  ├─ __init__.py                                # Evidence App Python 패키지 선언
+│  │  ├─ api/                                       # 문의별 근거 조회 API 계층
+│  │  │  ├─ __init__.py                            # Evidence API 패키지 선언
+│  │  │  ├─ urls.py                                # 문의별 근거 조회 API URL
+│  │  │  ├─ views.py                               # 근거 조회 Controller
+│  │  │  └─ serializers.py                         # EvidenceCard 응답 Serializer
+│  │  ├─ models/                                    # 근거·문서·청크 DB Model
+│  │  │  ├─ __init__.py                            # Evidence Model 공개 목록
+│  │  │  ├─ source_document.py                     # 문서명·버전·제공기관·공식 URL Model
+│  │  │  ├─ document_chunk.py                      # 청크 ID·문서·페이지 참조 Model
+│  │  │  └─ evidence_registry.py                   # 검증 상태·허용 범위·안전조치 Model
+│  │  ├─ services/                                  # 근거 검증과 화면 DTO 조립
+│  │  │  ├─ __init__.py                            # Evidence Service 패키지 선언
+│  │  │  ├─ evidence_card_service.py               # AI 참조와 근거 레지스트리 결합 Service
+│  │  │  ├─ evidence_validation_service.py         # 모델·세대·사용 정책 검증 Service
+│  │  │  └─ source_link_service.py                 # 공식 랜딩·다운로드 URL 제공 Service
+│  │  ├─ repositories/                              # 근거·문서 DB 접근 계층
+│  │  │  ├─ __init__.py                            # Evidence Repository 패키지 선언
+│  │  │  ├─ evidence_repository.py                 # 근거 레지스트리 ORM 접근 Repository
+│  │  │  └─ document_repository.py                 # 문서·청크·페이지 조회 Repository
+│  │  ├─ admin.py                                  # Django Admin 근거 설정
+│  │  ├─ apps.py                                   # Evidence App 설정
+│  │  └─ migrations/                               # 근거 테이블 Migration
+│  │     └─ __init__.py                            # Evidence Migration 패키지 선언
+│  │
+│  ├─ audit/                                        # 변경·AI·오류 추적 기록
+│  │  ├─ __init__.py                                # Audit App Python 패키지 선언
+│  │  ├─ models/                                    # 감사·AI 실행 로그 Model
+│  │  │  ├─ __init__.py                            # Audit Model 공개 목록
+│  │  │  ├─ audit_event.py                         # 주요 생성·수정·상태 변경 이력 Model
+│  │  │  └─ ai_execution_log.py                    # AI 단계·모델·프롬프트·처리시간 Model
+│  │  ├─ services/                                  # 공통 감사 기록 업무 규칙
+│  │  │  ├─ __init__.py                            # Audit Service 패키지 선언
+│  │  │  └─ audit_service.py                       # 공통 감사 이벤트 기록 Service
+│  │  ├─ repositories/                              # 감사 로그 DB 접근 계층
+│  │  │  ├─ __init__.py                            # Audit Repository 패키지 선언
+│  │  │  └─ audit_repository.py                    # 감사 로그 ORM 저장·조회 Repository
+│  │  ├─ apps.py                                   # Audit App 설정
+│  │  └─ migrations/                               # 감사 로그 테이블 Migration
+│  │     └─ __init__.py                            # Audit Migration 패키지 선언
+│  │
+│  └─ operations/                                   # 운영 대시보드·예외 조회 P1
+│     ├─ __init__.py                                # Operations App Python 패키지 선언
+│     ├─ api/                                       # 운영 지표·예외 API 계층
+│     │  ├─ __init__.py                            # Operations API 패키지 선언
+│     │  ├─ urls.py                                # 운영 지표·예외 API URL
+│     │  ├─ views.py                               # 운영 대시보드 Controller
+│     │  └─ serializers.py                         # 운영 집계 응답 Serializer
+│     ├─ services/                                  # 운영 집계 업무 규칙
+│     │  ├─ __init__.py                            # Operations Service 패키지 선언
+│     │  └─ operations_service.py                  # 문의·상담·방문 집계 Service
+│     ├─ repositories/                              # 통계·예외 DB 조회 계층
+│     │  ├─ __init__.py                            # Operations Repository 패키지 선언
+│     │  └─ operations_repository.py               # 통계·예외 ORM Query Repository
+│     ├─ permissions.py                            # 운영 담당자 역할 Permission
+│     ├─ apps.py                                   # Operations App 설정
+│     └─ migrations/                               # 운영 P1 테이블 Migration
+│        └─ __init__.py                            # Operations Migration 패키지 선언
+│
+├─ common/                                          # 백엔드 전 영역 공통 코드
+│  ├─ __init__.py                                   # Backend common Python 패키지 선언
+│  ├─ api/                                          # 공통 API 응답과 페이지네이션
+│  │  ├─ __init__.py                               # 공통 API 패키지 선언
+│  │  ├─ response.py                               # success·data·error 공통 Wrapper
+│  │  ├─ pagination.py                             # page·size·total 페이지네이션
+│  │  └─ metadata.py                               # correlation_id 응답 Metadata
+│  ├─ exceptions/                                   # 공통 예외·업무 오류 처리
+│  │  ├─ __init__.py                               # 공통 예외 패키지 선언
+│  │  ├─ base.py                                   # Backend 기본 예외
+│  │  ├─ business.py                               # 업무 규칙 예외
+│  │  ├─ error_codes.py                            # contracts 오류 코드 로더
+│  │  └─ handler.py                                # DRF 전역 예외 응답 변환
+│  ├─ middleware/                                   # 모든 요청에 적용되는 처리
+│  │  ├─ __init__.py                               # 공통 Middleware 패키지 선언
+│  │  ├─ correlation_id.py                         # X-Correlation-ID 생성·전파
+│  │  ├─ request_logging.py                        # 요청·응답 구조화 로그
+│  │  └─ request_context.py                        # 사용자·역할·추적 Context
+│  ├─ authentication/                               # JWT 공통 인증 처리
+│  │  ├─ __init__.py                               # JWT 공통 인증 패키지 선언
+│  │  ├─ jwt_authentication.py                     # Bearer Token 검증
+│  │  └─ claims.py                                 # 사용자 ID·역할 Claim 파싱
+│  ├─ models/                                       # 공통 Django Model 기반 클래스
+│  │  ├─ __init__.py                               # 공통 Model 패키지 선언
+│  │  ├─ base.py                                   # created_at·updated_at 기반 Model
+│  │  ├─ soft_delete.py                            # deleted_at 논리 삭제 기반 Model
+│  │  └─ versioned.py                              # state_version 낙관적 잠금 기반 Model
+│  ├─ contracts/                                    # 최상위 contracts 접근 보조 코드
+│  │  ├─ __init__.py                               # 계약 접근 패키지 선언
+│  │  ├─ loader.py                                 # YAML·JSON Schema 로더
+│  │  └─ paths.py                                  # 계약 파일 경로 계산
+│  ├─ logging/                                      # 구조화 JSON 로그 설정
+│  │  ├─ __init__.py                               # 구조화 로그 패키지 선언
+│  │  ├─ filters.py                                # 추적·역할·문의 ID 로그 필터
+│  │  └─ formatter.py                              # JSON 로그 Formatter
+│  ├─ validators/                                   # 공통 입력값 검증
+│  │  ├─ __init__.py                               # 공통 Validator 패키지 선언
+│  │  ├─ identifiers.py                            # DEMO-*·SYN-* 식별자 검증
+│  │  └─ datetime.py                               # ISO 8601 날짜·시간 검증
+│  └─ utils/                                        # 특정 도메인에 속하지 않는 유틸리티
+│     ├─ __init__.py                               # 공통 Utility 패키지 선언
+│     ├─ enum.py                                   # 공통 Enum 변환
+│     └─ masking.py                                # 로그·응답 민감정보 마스킹
+│
+├─ integrations/                                    # 외부 서비스 연결 Adapter
+│  ├─ __init__.py                                   # Integrations Python 패키지 선언
+│  ├─ ai/                                           # 독립 AI 서비스 HTTP 연동
+│  │  ├─ __init__.py                               # AI 연동 패키지 선언
+│  │  ├─ client.py                                 # AI API HTTP Client
+│  │  ├─ request_mapper.py                         # Backend Model→AI 요청 변환
+│  │  ├─ response_mapper.py                        # AI 응답→Backend 결과 변환
+│  │  ├─ schema_validator.py                       # `contracts/ai` Schema 검증
+│  │  ├─ retry_policy.py                           # AI 타임아웃·재시도 정책
+│  │  └─ exceptions.py                             # AI 연동 오류
+│  └─ object_storage/                               # S3 등 객체 저장소 연동
+│     ├─ __init__.py                               # 객체 저장소 연동 패키지 선언
+│     ├─ client.py                                 # 객체 저장소 공통 Client
+│     └─ exceptions.py                             # 객체 저장소 연동 오류
+│
+├─ tests/                                           # Backend 내부 자동 테스트
+│  ├─ __init__.py                                   # Backend 테스트 Python 패키지 선언
+│  ├─ unit/                                         # Service·Repository·Engine 단위 테스트
+│  │  ├─ accounts/                                  # 사용자·인증 Service 단위 테스트
+│  │  │  └─ .gitkeep                               # 빈 디렉토리를 Git에 유지
+│  │  ├─ products/                                  # 제품 검증 Service 단위 테스트
+│  │  │  └─ .gitkeep                               # 빈 디렉토리를 Git에 유지
+│  │  ├─ care/                                      # 케어 일정·이력 Service 단위 테스트
+│  │  │  └─ .gitkeep                               # 빈 디렉토리를 Git에 유지
+│  │  ├─ questionnaires/                            # 문진 Service 단위 테스트
+│  │  │  └─ .gitkeep                               # 빈 디렉토리를 Git에 유지
+│  │  ├─ inquiries/                                 # 문의 생성·누적·해결 Service 단위 테스트
+│  │  │  └─ .gitkeep                               # 빈 디렉토리를 Git에 유지
+│  │  ├─ consultations/                             # 상담 Service 단위 테스트
+│  │  │  └─ .gitkeep                               # 빈 디렉토리를 Git에 유지
+│  │  ├─ visits/                                    # 방문 Service 단위 테스트
+│  │  │  └─ .gitkeep                               # 빈 디렉토리를 Git에 유지
+│  │  ├─ workflow/                                  # State Machine·Guard·멱등성 단위 테스트
+│  │  │  └─ .gitkeep                               # 빈 디렉토리를 Git에 유지
+│  │  └─ evidence/                                  # 근거 검증·EvidenceCard 조립 단위 테스트
+│  │     └─ .gitkeep                               # 빈 디렉토리를 Git에 유지
+│  ├─ api/                                          # DRF Endpoint 요청·응답 테스트
+│  │  └─ .gitkeep                                   # 빈 디렉토리를 Git에 유지
+│  ├─ integration/                                  # PostgreSQL·AI Adapter 통합 테스트
+│  │  └─ .gitkeep                                   # 빈 디렉토리를 Git에 유지
+│  ├─ permissions/                                  # 고객·상담사·기사·운영 권한 테스트
+│  │  └─ .gitkeep                                   # 빈 디렉토리를 Git에 유지
+│  ├─ migrations/                                   # Migration 적용·누락·충돌 테스트
+│  │  └─ .gitkeep                                   # 빈 디렉토리를 Git에 유지
+│  ├─ factories/                                    # 테스트 Model Factory
+│  │  └─ .gitkeep                                   # 빈 디렉토리를 Git에 유지
+│  ├─ fixtures/                                     # 소규모 Backend 테스트 데이터
+│  │  └─ .gitkeep                                   # 빈 디렉토리를 Git에 유지
+│  └─ conftest.py                                   # Pytest 공통 Fixture
+│
+├─ requirements/                                    # 실행 환경별 Python 의존성
+│  ├─ base.txt                                      # Django·DRF·공통 운영 의존성
+│  ├─ local.txt                                     # 개발·Formatter·테스트 의존성
+│  └─ production.txt                                # Gunicorn·운영 환경 의존성
+│
+├─ manage.py                                        # Django 명령 실행 진입점
+├─ pyproject.toml                                   # Formatter·Pytest·Python 도구 설정
+├─ .env.example                                     # DB·JWT·AI URL 환경변수 이름 예시
+├─ .dockerignore                                    # 이미지에서 제외할 캐시·비밀값
+├─ Dockerfile                                       # Django·Gunicorn 컨테이너 이미지
+└─ README.md                                        # 설치·Migration·테스트·API 실행 안내
+```
+
+## 13.3 도메인별 책임
+
+| Django App | 핵심 책임 |
+|---|---|
+| `accounts` | 사용자 역할·가상 로그인·JWT 인증·접근 권한 |
+| `products` | 제품 모델·세대·MVP·확장·제외 범위 검증 |
+| `subscriptions` | 고객과 구독 제품·관리 유형 연결 |
+| `care` | 필터·카트리지·방문 관리 이력과 다음 케어 일정 |
+| `questionnaires` | 사전 문진·추가 답변·문의 연결 |
+| `inquiries` | 문의 생성·증상·자가조치·후속 해결 여부 |
+| `consultations` | 상담 시작·기록·요약·방문 필요 판단 |
+| `visits` | 기사 배정·일정·사전 리포트·방문 결과 |
+| `workflow` | 상태·이벤트·가드·allowed_actions·멱등성 |
+| `evidence` | 공식 근거 검증과 화면용 EvidenceCard 조립 |
+| `audit` | 사용자 행위·상태 변경·AI 실행 추적 |
+| `operations` | 운영 대시보드·지연·예외 조회 P1 |
+
+## 13.4 주요 요청 처리 흐름
+
+### 일반 저장 API
+
+```text
+DRF View
+→ Serializer 입력 검증
+→ Service 업무 규칙·transaction.atomic
+→ Repository ORM 조회·저장
+→ 응답 Serializer
+→ 공통 ApiResponse
+```
+
+### 상태 전환 API
+
+```text
+StateTransition View
+→ 이벤트·state_version 검증
+→ Idempotency-Key 검사
+→ select_for_update로 문의 조회
+→ Workflow Engine 전이·Guard 검사
+→ 문의 상태·담당 주체 저장
+→ TransitionHistory 저장
+→ allowed_actions 계산
+→ StateTransitionResult 반환
+```
+
+### AI 분석 요청
+
+```text
+Inquiry Service
+→ 문의·제품·문진·관리 이력 조회
+→ integrations/ai/request_mapper.py
+→ AI Service 호출
+→ contracts/ai 응답 Schema 검증
+→ EvidenceReference 추출
+→ EvidenceCard Service에서 공식 근거 결합
+→ AI 결과·근거·추적 로그 저장
+→ 화면 응답 조립
+```
+
+AI 서비스는 문의 상태를 직접 변경하지 않는다. AI 결과를 받은 백엔드가 State Machine Guard를 검사한 뒤 자동 이벤트를 실행한다.
+
+## 13.5 의존 방향
+
+```text
+api
+ ↓
+services
+ ↓
+repositories
+ ↓
+models
+```
+
+```text
+추가 허용 의존
+├─ services → workflow engine
+├─ services → integrations
+├─ services → common
+├─ repositories → models
+└─ integrations → contracts
+```
+
+```text
+금지 의존
+├─ models → services
+├─ repositories → api
+├─ integrations → DRF View
+├─ common → 특정 업무 App
+└─ AI Service → PostgreSQL 직접 수정
+```
+
+## 13.6 네이밍 기준
+
+| 대상 | 기준 | 예시 |
+|---|---|---|
+| Python 파일 | `snake_case` | `inquiry_service.py` |
+| Python 패키지·디렉토리 | `snake_case` 또는 단일 소문자 | `questionnaires/` |
+| Python 클래스 | `PascalCase` | `InquiryTransitionService` |
+| 함수·변수 | `snake_case` | `transition_inquiry()` |
+| 상수·Enum 값 | `UPPER_SNAKE_CASE` | `CONSULTATION_REQUIRED` |
+| 테스트 파일 | `test_*.py` | `test_inquiry_transition.py` |
+
+## 13.7 초기 생성 우선순위
+
+```text
+P0 초기 생성
+├─ accounts/
+├─ products/
+├─ subscriptions/
+├─ care/
+├─ questionnaires/
+├─ inquiries/
+├─ consultations/
+├─ visits/
+├─ workflow/
+├─ evidence/
+└─ audit/
+
+P1 구현 시 활성화
+└─ operations/
+```
+
+빈 `api/`, `services/`, `repositories/`를 모든 App에 기계적으로 늘리기보다 실제 기능이 생기는 시점에 파일을 추가하되, 계층별 책임과 의존 방향은 위 기준을 유지한다.
+
+---
+
+# 14. 최종 전체 구조 요약
+
+```text
+SKN29-FINAL-4TEAM/                                      # 정수기 고객 케어·A/S 업무 지원 Monorepo
 ├─ web/                                                 # React·TypeScript 상담사·운영 웹
 ├─ mobile/                                              # Kotlin·Jetpack Compose 고객·기사 앱
-├─ backend/                                             # Django·DRF API, 상세 구조는 별도 설계
+├─ backend/                                             # Django·DRF API·State Machine·Evidence 조립
 ├─ ai/                                                  # 구조화·안전·RAG·생성·검증
 ├─ contracts/                                           # API·AI·상태·코드·오류 계약
 ├─ data/                                                # 원본·전처리·구조화·합성 데이터
 ├─ infra/                                               # Docker·Kubernetes·운영 설정
 ├─ scripts/                                             # 저장소 전체 자동화
 ├─ tests/                                               # 계약·통합·E2E·안전·성능 검증
-├─ docs/                                                # 기획·설계·테스트·배포·제출 문서
+├─ docs/                                                # 기획·설계·테스트·배포·발표·제출 문서
 ├─ .github/                                             # 협업 양식과 GitHub Actions CI/CD
 ├─ .editorconfig                                        # 편집기 공통 인코딩·들여쓰기·줄바꿈 설정
 ├─ .gitattributes                                       # 운영체제별 Git 줄바꿈·텍스트 처리 기준
-├─ .gitignore                                           # Git에서 제외할 비밀값·빌드 결과·원본 데이터 지정
+├─ .gitignore                                           # 비밀값·빌드 결과·원본 데이터 제외 규칙
 ├─ .env.example                                         # 필요한 환경변수 이름과 예시 값 안내
 ├─ docker-compose.yml                                   # 로컬 전체 서비스 통합 실행 진입 설정
 ├─ CONTRIBUTING.md                                      # 브랜치·Issue·커밋·PR·리뷰 규칙 안내
-└─ README.md                                            # 현재 디렉토리의 사용·관리·갱신 방법 안내
+└─ README.md                                            # 저장소 실행·구조·협업·배포 개요
 ```
 
-## 13.1 영역 간 의존·책임 원칙
+## 14.1 영역 간 의존·책임 원칙
 
 ```text
 Web·Mobile
-└─ Backend `/api/v1`만 호출  # Backend ` 관련 파일과 하위 항목을 관리하는 디렉토리
+└─ Backend `/api/v1`만 호출
 
 Backend
-├─ 권한·State Machine·업무 저장의 최종 책임
-├─ AI 호출과 결과 저장
-└─ EvidenceCard 최종 조립
+├─ 인증·권한·State Machine·업무 저장의 최종 책임
+├─ AI 서비스 호출과 결과 검증·저장
+└─ 공식 근거를 결합한 EvidenceCard 최종 조립
 
 AI
-├─ 구조화·안전·검색·생성·검증
-└─ 업무 상태·DB를 직접 변경하지 않음
+├─ 증상 구조화·안전 판정·검색·생성·출력 검증
+└─ 업무 상태와 PostgreSQL을 직접 변경하지 않음
 
 Contracts
-└─ 서비스 간 형식의 단일 기준
+└─ 서비스 간 요청·응답·상태·코드 형식의 단일 기준
 
 Data
-└─ 공식 원본과 검증된 전처리·합성 데이터의 계보 관리
+└─ 공식 원본과 검증된 전처리·구조화·합성 데이터의 계보 관리
 
 Infra·CI/CD
-└─ 빌드·검증·배포·롤백 자동화
+└─ 빌드·검증·배포·Smoke Test·롤백 자동화
 ```
 
-## 13.2 네이밍 최종 기준
+## 14.2 네이밍 최종 기준
 
 | 영역 | 기준 |
 |---|---|
@@ -2067,7 +2681,23 @@ Infra·CI/CD
 | JSON 필드 | `snake_case` |
 | 상수·Enum 값 | `UPPER_SNAKE_CASE` |
 
-## 13.3 아직 상세 설계하지 않은 영역
+## 14.3 상세 설계 완료 현황
 
-`backend/`는 최상위 골격과 기술 스택만 확정된 상태다. Django App 분리, Controller·Service·Repository 적용 범위, State Machine·Evidence 조립 위치는 별도 상세 설계 문서에서 확정한다.
+다음 영역의 세부 디렉토리 구조와 책임 경계를 모두 설계했다.
 
+```text
+완료
+├─ web/
+├─ mobile/
+├─ backend/
+├─ ai/
+├─ contracts/
+├─ data/
+├─ infra/
+├─ .github/workflows/
+├─ scripts/
+├─ tests/
+└─ docs/
+```
+
+실제 구현 과정에서는 사용하지 않는 빈 하위 디렉토리를 한꺼번에 생성하지 않고, 해당 기능을 개발하는 시점에 필요한 파일과 디렉토리만 추가한다.

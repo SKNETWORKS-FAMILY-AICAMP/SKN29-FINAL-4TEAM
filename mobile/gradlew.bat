@@ -1,0 +1,2 @@
+@echo off
+REM Android Studio에서 생성되는 Gradle Wrapper 실행 파일로 교체하세요.
