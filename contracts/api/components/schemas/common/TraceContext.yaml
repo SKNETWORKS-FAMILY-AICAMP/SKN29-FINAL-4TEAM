@@ -1,0 +1,5 @@
+title: TraceContext
+type: object
+description: correlation_id 요청 추적 정보
+additionalProperties: false
+properties: {}

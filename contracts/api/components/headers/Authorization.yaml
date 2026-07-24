@@ -1,0 +1,3 @@
+description: JWT Bearer 인증 토큰
+schema:
+  type: string

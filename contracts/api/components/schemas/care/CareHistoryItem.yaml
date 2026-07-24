@@ -1,0 +1,5 @@
+title: CareHistoryItem
+type: object
+description: 케어 이력 항목
+additionalProperties: false
+properties: {}

@@ -1,0 +1,5 @@
+title: OperationsExceptionItem
+type: object
+description: 운영 예외 항목
+additionalProperties: false
+properties: {}
