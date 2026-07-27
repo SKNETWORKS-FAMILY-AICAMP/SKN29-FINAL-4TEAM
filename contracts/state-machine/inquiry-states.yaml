@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 contract:
   name: inquiry-states
   version: 0.1.0
@@ -178,18 +177,3 @@ states:
     terminal: true
     allowed_visit_statuses:
       - CANCELLED
-=======
-states:
-  - DRAFT
-  - QUESTIONNAIRE_IN_PROGRESS
-  - AI_GUIDANCE
-  - CONSULTATION_REQUIRED
-  - CONSULTATION_IN_PROGRESS
-  - VISIT_REVIEW_PENDING
-  - VISIT_SCHEDULING
-  - VISIT_SCHEDULED
-  - COMPLETION_PENDING
-  - REOPENED
-  - REVISIT_REQUIRED
-  - RESOLVED
->>>>>>> 2998a75c72ef8d47f3be00e9e845ed8940ce2ed1

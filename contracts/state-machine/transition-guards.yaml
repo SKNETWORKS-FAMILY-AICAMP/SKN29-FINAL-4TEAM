@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 contract:
   name: transition-guards
   version: 0.1.0
@@ -568,7 +567,3 @@ guard_test_expectations:
 - 같은 Idempotency-Key와 같은 요청은 기존 응답을 반환하고 부수 효과를 중복 수행하지 않는다.
 - 시스템 이벤트 Guard 실패 사유의 내부 원문은 고객 응답에 노출하지 않는다.
 - FINALIZE_INQUIRY는 마지막 처리 담당자와 최신 해결됨 피드백을 모두 요구한다.
-=======
-# 역할·담당자·필수 입력·현재 상태 검사 규칙
-guards: []
->>>>>>> 2998a75c72ef8d47f3be00e9e845ed8940ce2ed1
