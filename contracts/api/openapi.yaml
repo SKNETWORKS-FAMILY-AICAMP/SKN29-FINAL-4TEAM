@@ -1,14 +1,61 @@
 openapi: 3.1.0
 info:
   title: Water Care Support API
-  version: 0.1.0
+  version: 0.5.0
   description: 정수기 구독 고객 케어 및 A/S 업무 지원 시스템 API 계약
 servers:
   - url: /api/v1
-paths: {}
+paths:
+  /auth/demo-login:
+    $ref: ./paths/auth.yaml#/~1auth~1demo-login
+  /auth/refresh:
+    $ref: ./paths/auth.yaml#/~1auth~1refresh
+  /auth/logout:
+    $ref: ./paths/auth.yaml#/~1auth~1logout
+  /me:
+    $ref: ./paths/auth.yaml#/~1me
+  /inquiries:
+    $ref: ./paths/inquiries.yaml#/~1inquiries
+  /inquiries/{id}/questionnaire:
+    $ref: ./paths/inquiries.yaml#/~1inquiries~1{id}~1questionnaire
+  /inquiries/{id}/action-results:
+    $ref: ./paths/inquiries.yaml#/~1inquiries~1{id}~1action-results
+  /health:
+    get:
+      operationId: getProvisionalHealth
+      summary: 임시 서비스 liveness 확인
+      description: |
+        현재 구현된 provisional GET /health의 실행 사실만 기록한다.
+        200 응답은 본문이 없고 X-Correlation-ID 응답 Header를 제공한다.
+        HealthDTO, 공통 Wrapper, 인증·dependency 공개 범위와 최종 성공
+        status는 아직 OPEN이다.
+      x-contract-status: IN_PROGRESS
+      servers:
+        - url: /
+          description: /api/v1 외부의 provisional health 경로
+      responses:
+        "200":
+          description: 현재 구현 기준의 provisional liveness 응답(본문 없음)
+          headers:
+            X-Correlation-ID:
+              $ref: "#/components/headers/X-Correlation-ID"
 components:
-  schemas: {}
+  schemas:
+    ApiResponse:
+      $ref: ./components/schemas/common/ApiResponse.yaml
+    ApiError:
+      $ref: ./components/schemas/common/ApiError.yaml
+    PageInfo:
+      $ref: ./components/schemas/common/PageInfo.yaml
+    TraceContext:
+      $ref: ./components/schemas/common/TraceContext.yaml
   parameters: {}
-  headers: {}
+  headers:
+    X-Correlation-ID:
+      $ref: ./components/headers/CorrelationId.yaml
   responses: {}
-  securitySchemes: {}
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
