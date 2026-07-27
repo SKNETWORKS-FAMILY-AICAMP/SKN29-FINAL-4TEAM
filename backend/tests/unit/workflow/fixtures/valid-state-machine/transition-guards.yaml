@@ -1,0 +1,16 @@
+contract:
+  name: transition-guards
+  version: 0.1.0
+  status: test_fixture
+  owner: TEST
+guard_categories:
+  - CONCURRENCY
+guards:
+  - id: G-STATE-VERSION
+    category: CONCURRENCY
+    conditions:
+      - request.state_version == inquiry.state_version
+    failure:
+      http_status: 409
+      error_code: STATE_VERSION_CONFLICT
+      message: State version mismatch.
