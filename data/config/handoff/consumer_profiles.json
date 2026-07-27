@@ -1,0 +1,262 @@
+{
+  "config_version": "1.0.0",
+  "dataset_scope": "consumer_handoff_only",
+  "service_contracts_used": false,
+  "profiles": {
+    "rag": {
+      "purpose": "검증된 JAC104D 청크 적재와 검색 품질 확인",
+      "readiness": "READY",
+      "contract_dependency": "NONE",
+      "items": [
+        {
+          "path": "processed/structured/rag/mvp/rag_verified_sample.jsonl",
+          "role": "INGEST"
+        },
+        {
+          "path": "processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "role": "REFERENCE"
+        },
+        {
+          "path": "processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+          "role": "REFERENCE"
+        },
+        {
+          "path": "processed/documents/faq/faq_snapshot_normalized.jsonl",
+          "role": "REFERENCE_ONLY"
+        },
+        {
+          "path": "processed/structured/faq/selected_faq_candidates.jsonl",
+          "role": "REFERENCE_ONLY"
+        },
+        {
+          "path": "processed/metadata/model_document_lineage.csv",
+          "role": "REFERENCE"
+        },
+        {
+          "path": "processed/metadata/source_inventory.csv",
+          "role": "REFERENCE"
+        },
+        {
+          "path": "synthetic/fixtures/inquiries.json",
+          "role": "EVALUATION_INPUT"
+        },
+        {
+          "path": "synthetic/expected/evidence_references.json",
+          "role": "EVALUATION_EXPECTED"
+        },
+        {
+          "path": "schemas/processed/ragChunk.schema.json",
+          "role": "SCHEMA"
+        },
+        {
+          "path": "schemas/processed/evidenceRegistry.schema.json",
+          "role": "SCHEMA"
+        }
+      ],
+      "selection": {
+        "index_only_roles": ["INGEST"],
+        "evaluation_scenario_ids": [
+          "SYN-JAC104-001",
+          "SYN-JAC104-002",
+          "SYN-JAC104-003",
+          "SYN-JAC104-004",
+          "SYN-JAC104-005",
+          "SYN-JAC104-006"
+        ]
+      },
+      "excluded": [
+        "FAQ 119건 전체의 기본 임베딩",
+        "IAC425·IAC506 자료",
+        "모델 미검증 FAQ의 단독 근거 사용"
+      ],
+      "commands": [
+        "python -B data/tools/pipeline.py handoff rag",
+        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-27T00:00:00+09:00"
+      ]
+    },
+    "db-smoke": {
+      "purpose": "DB 모델·FK·Seed 적재 확인용 대표 6개 문의",
+      "readiness": "READY_FOR_FIELD_MAPPING",
+      "contract_dependency": "SERVICE_MAPPING_PENDING",
+      "items": [
+        {
+          "path": "synthetic/fixtures/users.json",
+          "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/products.json",
+          "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/customer_products.json",
+          "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/subscriptions.json",
+          "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/inquiries.json",
+          "role": "LOAD_FILTERED"
+        },
+        {
+          "path": "synthetic/fixtures/consultations.json",
+          "role": "LOAD_FILTERED"
+        },
+        {
+          "path": "synthetic/fixtures/visits.json",
+          "role": "LOAD_FILTERED"
+        },
+        {
+          "path": "synthetic/fixtures/care_histories.json",
+          "role": "LOAD_FILTERED"
+        },
+        {
+          "path": "schemas/synthetic/syntheticUser.schema.json",
+          "role": "SCHEMA"
+        },
+        {
+          "path": "schemas/synthetic/syntheticProduct.schema.json",
+          "role": "SCHEMA"
+        },
+        {
+          "path": "schemas/synthetic/syntheticInquiry.schema.json",
+          "role": "SCHEMA"
+        }
+      ],
+      "selection": {
+        "scenario_ids": [
+          "SYN-JAC104-001",
+          "SYN-JAC104-002",
+          "SYN-JAC104-003",
+          "SYN-JAC104-004",
+          "SYN-JAC104-005",
+          "SYN-JAC104-006"
+        ],
+        "filter_rule": "선택 문의가 참조하는 고객·구독·상담·방문·케어 행만 FK 방향으로 포함"
+      },
+      "excluded": [
+        "inquiry_status_histories.json",
+        "audit_events.json",
+        "followup_confirmations.json",
+        "서비스 State Machine 자동 적용"
+      ],
+      "commands": [
+        "python -B data/tools/pipeline.py handoff db-smoke"
+      ]
+    },
+    "db-full": {
+      "purpose": "전체 24개 문의의 데이터 품질·관계 검증",
+      "readiness": "QA_READY_SERVICE_MAPPING_PENDING",
+      "contract_dependency": "SERVICE_MAPPING_PENDING",
+      "items": [
+        {
+          "path": "synthetic/fixtures/users.json",
+          "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/products.json",
+          "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/customer_products.json",
+          "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/subscriptions.json",
+          "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/inquiries.json",
+          "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/consultations.json",
+          "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/visits.json",
+          "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/care_histories.json",
+          "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/followup_confirmations.json",
+          "role": "LOAD_AFTER_MAPPING"
+        },
+        {
+          "path": "synthetic/fixtures/inquiry_status_histories.json",
+          "role": "LOAD_AFTER_MAPPING"
+        },
+        {
+          "path": "synthetic/fixtures/audit_events.json",
+          "role": "LOAD_AFTER_MAPPING"
+        },
+        {
+          "path": "synthetic/expected/evidence_references.json",
+          "role": "QA_EXPECTED"
+        },
+        {
+          "path": "synthetic/expected/safety_assessments.json",
+          "role": "QA_EXPECTED"
+        }
+      ],
+      "selection": {
+        "scenario_count": 24
+      },
+      "excluded": [
+        "계약 담당자 확인 전 상태·이벤트 자동 매핑"
+      ],
+      "commands": [
+        "python -B data/tools/pipeline.py handoff db-full",
+        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-27T00:00:00+09:00"
+      ]
+    },
+    "qa": {
+      "purpose": "팀원이 데이터 품질 결과를 빠르게 확인",
+      "readiness": "READY",
+      "contract_dependency": "NONE",
+      "items": [
+        {
+          "path": "processed/validation/latest_qa_summary.json",
+          "role": "SUMMARY"
+        },
+        {
+          "path": "processed/validation/schema/latest_schema_report.json",
+          "role": "DETAIL"
+        },
+        {
+          "path": "processed/validation/integrity/latest_integrity_report.json",
+          "role": "DETAIL"
+        },
+        {
+          "path": "processed/validation/quality/latest_quality_report.json",
+          "role": "DETAIL"
+        },
+        {
+          "path": "processed/metadata/dataset_manifest.json",
+          "role": "MANIFEST"
+        },
+        {
+          "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
+          "role": "GUIDE"
+        }
+      ],
+      "selection": {
+        "required_status": "PASS",
+        "required_errors": 0,
+        "required_warnings": 0
+      },
+      "excluded": [
+        "삭제 전 원본 목록",
+        "리팩터링 내부 비교 세부 로그"
+      ],
+      "commands": [
+        "python -B data/tools/pipeline.py handoff qa",
+        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-27T00:00:00+09:00"
+      ]
+    }
+  }
+}

@@ -1,0 +1,104 @@
+contract:
+  name: completion-policy
+  version: 0.1.0
+  status: draft_for_review
+  owner: PM_TECHNICAL_INTEGRATION
+  description: 자가조치, 상담, 방문 처리의 완료·미해결·재개 기준과 종료 상태의 불변 조건을 정의한다.
+references:
+  inquiry_states: ./inquiry-states.yaml
+  transition_rules: ./transition-rules.yaml
+  transition_guards: ./transition-guards.yaml
+principles:
+- AI 또는 클라이언트는 RESOLVED를 직접 저장하지 않는다.
+- 자가조치 단독 해결과 상담·방문 처리 완료의 최종 주체를 구분한다.
+- 상담·방문 완료 직후 바로 RESOLVED로 전환하지 않는다.
+- 종료 상태는 불변이며 후속 문제가 생기면 새 Inquiry를 생성한다.
+completion_flows:
+- id: CP-SELF-001
+  name: 자가조치 단독 해결
+  preconditions:
+  - current_status == AI_GUIDANCE
+  - active_consultation is null
+  - active_visit is null
+  - validated_guidance exists
+  - validated_official_evidence exists
+  event: CUSTOMER_REPORTED_SELF_RESOLVED
+  result_state: RESOLVED
+  final_actor: CUSTOMER
+  completion_source: SELF_SERVICE
+  required_audit_fields:
+  - resolved_at
+  - resolved_by_customer_id
+  - completion_source
+  - state_version
+- id: CP-CONSULTATION-001
+  name: 상담 처리 후 완료
+  processing_events:
+  - CONSULTATION_COMPLETED
+  - VISIT_NOT_NEEDED
+  intermediate_state: COMPLETION_PENDING
+  customer_confirmation:
+    resolved_event: SUBMIT_RESOLUTION_FEEDBACK
+    unresolved_event: CUSTOMER_REPORTED_UNRESOLVED
+  final_event: FINALIZE_INQUIRY
+  final_actor: LAST_CONSULTANT_HANDLER
+  result_state: RESOLVED
+  completion_source: CONSULTATION
+  requirements:
+  - latest_resolution_feedback.resolved == true
+  - latest_resolution_feedback.created_at > last_handling_completed_at
+  - actor == last_consultation.consultant
+- id: CP-VISIT-001
+  name: 방문 처리 후 완료
+  processing_event: VISIT_COMPLETED
+  intermediate_state: COMPLETION_PENDING
+  customer_confirmation:
+    resolved_event: SUBMIT_RESOLUTION_FEEDBACK
+    unresolved_event: CUSTOMER_REPORTED_UNRESOLVED
+  final_event: FINALIZE_INQUIRY
+  final_actor: LAST_VISIT_HANDLER
+  result_state: RESOLVED
+  completion_source: VISIT
+  requirements:
+  - latest_resolution_feedback.resolved == true
+  - latest_resolution_feedback.created_at > last_handling_completed_at
+  - actor == last_completed_visit.technician
+unresolved_and_reopen:
+  customer_event: CUSTOMER_REPORTED_UNRESOLVED
+  from_state: COMPLETION_PENDING
+  to_state: REOPENED
+  resume_event: RESUME_CONSULTATION
+  resume_to_state: CONSULTATION_REQUIRED
+  rules:
+  - 기존 입력·상담·방문 이력은 보존한다.
+  - 이전 해결됨 피드백과 최종 완료 가능 상태를 무효화한다.
+  - 재개 횟수와 재개 사유를 감사 로그에 남긴다.
+revisit:
+  event: REVISIT_NEEDED
+  from_inquiry_state: VISIT_SCHEDULED
+  to_inquiry_state: REVISIT_REQUIRED
+  from_visit_status: IN_PROGRESS
+  to_visit_status: FOLLOW_UP_REQUIRED
+  next_event: UPDATE_VISIT_SCHEDULE
+  next_inquiry_state: VISIT_SCHEDULING
+cancellation:
+  terminal_state: CANCELLED
+  required_fields:
+  - reason_code
+  - cancelled_at
+  - cancelled_by
+  post_cancel_transition: DENY
+  restart_policy: CREATE_NEW_INQUIRY
+terminal_state_policy:
+  states:
+  - RESOLVED
+  - CANCELLED
+  allow_mutation: false
+  allow_transition: false
+  allow_reopen_same_inquiry: false
+forbidden_shortcuts:
+- AI_RESULT_TO_RESOLVED
+- CONSULTATION_COMPLETED_TO_RESOLVED
+- VISIT_COMPLETED_TO_RESOLVED
+- CUSTOMER_RESOLVED_FEEDBACK_TO_RESOLVED_WITHOUT_FINALIZE
+- NON_LAST_HANDLER_FINALIZATION

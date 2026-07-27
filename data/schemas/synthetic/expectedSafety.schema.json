@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExpectedSafety",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scenario_id",
+    "inquiry_id",
+    "risk_level",
+    "usage_guidance_status",
+    "safe_actions",
+    "prohibited_actions",
+    "consultation_required",
+    "generated_at"
+  ],
+  "properties": {
+    "scenario_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^SYN-JAC104-\\d{3}$"
+    },
+    "inquiry_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "risk_level": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "general",
+        "caution",
+        "danger"
+      ]
+    },
+    "usage_guidance_status": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "NORMAL",
+        "PARTIAL_STOP",
+        "TOTAL_STOP",
+        "PENDING_CONSULTATION"
+      ]
+    },
+    "safe_actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "prohibited_actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "consultation_required": {
+      "type": "boolean"
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    }
+  }
+}

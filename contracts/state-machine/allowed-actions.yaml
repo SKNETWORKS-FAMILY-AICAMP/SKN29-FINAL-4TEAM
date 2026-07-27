@@ -1,0 +1,399 @@
+contract:
+  name: allowed-actions
+  version: 0.1.0
+  status: draft_for_review
+  owner: PM_TECHNICAL_INTEGRATION
+  description: 'Inquiry의 현재 상태, 실행자 역할, Visit 상태와 Guard 평가 결과를 바탕으로 API가 클라이언트에 반환할 수 있는 행동을 정의한다. 웹·모바일은 상태를 독자적으로 해석하지 않고
+    Backend가 반환한 allowed_actions만 노출한다.
+
+    '
+  source_documents:
+  - docs/planning/md/week3-scope-and-dod.md
+  - (화면설계서_29기_4팀) 정수기 구독 고객 케어 및 A_S 업무 지원 시스템.md
+  - (요구사항정의서_29기_4팀) 정수기 구독 고객 케어 및 A_S 업무 지원 시스템.md
+references:
+  inquiry_states: ./inquiry-states.yaml
+  inquiry_events: ./inquiry-events.yaml
+  transition_rules: ./transition-rules.yaml
+  transition_guards: ./transition-guards.yaml
+  role_permissions: ./role-permissions.yaml
+calculation_policy:
+  authority: BACKEND
+  include_only_external_actions: true
+  include_system_events: false
+  candidate_selection:
+  - 현재 Inquiry 상태와 실행자 역할에 해당하는 state_role_actions를 조회한다.
+  - Visit 조건이 있는 행동은 현재 Visit 존재 여부와 상태를 확인한다.
+  - 연결된 transition_rule_ids 중 현재 Visit 조건과 일치하는 규칙을 선택한다.
+  - 선택된 규칙의 모든 guard_refs를 평가한다.
+  - 모든 Guard를 통과한 행동만 allowed_actions 응답에 포함한다.
+  client_rules:
+  - 웹·모바일은 상태 코드만 보고 행동 가능 여부를 재계산하지 않는다.
+  - allowed_actions에 없는 버튼과 메뉴는 숨기거나 비활성화한다.
+  - 쓰기 요청에는 응답으로 받은 state_version과 새 Idempotency-Key를 사용한다.
+  - 409 STATE_VERSION_CONFLICT가 발생하면 최신 상태와 allowed_actions로 화면을 다시 그린다.
+  security_rules:
+  - 고객에게 Guard 실패 세부 조건이나 다른 사용자의 리소스 존재 여부를 노출하지 않는다.
+  - internal_only 행동과 SYSTEM_EVENT는 외부 allowed_actions에 포함하지 않는다.
+  - operation_id는 API 계약 연결용이며 실제 URL을 이 파일에서 고정하지 않는다.
+response_contract:
+  field_name: allowed_actions
+  item_fields:
+  - code
+  - label
+  - operation_id
+  - style
+  - requires_confirmation
+  - confirmation_message
+  example:
+    current_status: CONSULTATION_REQUIRED
+    state_version: 4
+    allowed_actions:
+    - code: START_CONSULTATION
+      label: 상담 시작
+      operation_id: startConsultation
+      style: PRIMARY
+      requires_confirmation: false
+      confirmation_message: null
+styles:
+- PRIMARY
+- SECONDARY
+- DESTRUCTIVE
+action_catalog:
+- code: SUBMIT_SYMPTOM
+  label: 증상 제출
+  operation_id: submitSymptom
+  style: PRIMARY
+  requires_confirmation: false
+  confirmation_message: null
+- code: CANCEL_INQUIRY
+  label: 문의 취소
+  operation_id: cancelInquiry
+  style: DESTRUCTIVE
+  requires_confirmation: true
+  confirmation_message: 문의를 취소하시겠습니까?
+- code: SUBMIT_ANSWERS
+  label: 추가 답변 제출
+  operation_id: submitFollowUpAnswers
+  style: PRIMARY
+  requires_confirmation: false
+  confirmation_message: null
+- code: CUSTOMER_REPORTED_SELF_RESOLVED
+  label: 해결되었어요
+  operation_id: reportSelfResolution
+  style: PRIMARY
+  requires_confirmation: true
+  confirmation_message: 자가조치로 문제가 해결되었습니까?
+- code: REQUEST_CONSULTATION
+  label: 상담 요청
+  operation_id: requestConsultation
+  style: SECONDARY
+  requires_confirmation: false
+  confirmation_message: null
+- code: START_CONSULTATION
+  label: 상담 시작
+  operation_id: startConsultation
+  style: PRIMARY
+  requires_confirmation: false
+  confirmation_message: null
+- code: UPDATE_CONSULTATION_SUMMARY
+  label: 상담 요약 수정
+  operation_id: updateConsultationSummary
+  style: SECONDARY
+  requires_confirmation: false
+  confirmation_message: null
+- code: CONFIRM_CONSULTATION_SUMMARY
+  label: 상담 요약 확정
+  operation_id: confirmConsultationSummary
+  style: PRIMARY
+  requires_confirmation: true
+  confirmation_message: 수정한 상담 요약을 확정하시겠습니까?
+- code: CONSULTATION_COMPLETED
+  label: 상담 처리 완료
+  operation_id: completeConsultation
+  style: PRIMARY
+  requires_confirmation: true
+  confirmation_message: 상담 처리를 완료하고 고객 확인 단계로 전환하시겠습니까?
+- code: VISIT_REVIEW_REQUIRED
+  label: 방문 필요 여부 검토
+  operation_id: requestVisitReview
+  style: SECONDARY
+  requires_confirmation: false
+  confirmation_message: null
+- code: VISIT_NEEDED
+  label: 방문 필요 확정
+  operation_id: createVisitRequest
+  style: PRIMARY
+  requires_confirmation: true
+  confirmation_message: 방문 요청을 생성하시겠습니까?
+- code: UPDATE_VISIT_SCHEDULE
+  label: 방문 일정 조율
+  operation_id: updateVisitSchedule
+  style: SECONDARY
+  requires_confirmation: false
+  confirmation_message: null
+- code: CONFIRM_VISIT
+  label: 방문 일정 확정
+  operation_id: confirmVisit
+  style: PRIMARY
+  requires_confirmation: true
+  confirmation_message: 담당 기사와 방문 일정을 확정하시겠습니까?
+- code: UPDATE_PREVISIT_REPORT
+  label: 사전 리포트 수정
+  operation_id: updatePrevisitReport
+  style: SECONDARY
+  requires_confirmation: false
+  confirmation_message: null
+- code: CONFIRM_PREVISIT_REPORT
+  label: 사전 리포트 확정
+  operation_id: confirmPrevisitReport
+  style: PRIMARY
+  requires_confirmation: true
+  confirmation_message: 수정한 사전 리포트를 확정하시겠습니까?
+- code: START_VISIT
+  label: 방문 점검 시작
+  operation_id: startVisit
+  style: PRIMARY
+  requires_confirmation: true
+  confirmation_message: 현장 점검을 시작하시겠습니까?
+- code: VISIT_COMPLETED
+  label: 방문 처리 완료
+  operation_id: completeVisit
+  style: PRIMARY
+  requires_confirmation: true
+  confirmation_message: 방문 처리 결과를 저장하고 고객 확인 단계로 전환하시겠습니까?
+- code: REVISIT_NEEDED
+  label: 추가 방문 요청
+  operation_id: requestRevisit
+  style: SECONDARY
+  requires_confirmation: true
+  confirmation_message: 추가 방문이 필요한 것으로 처리하시겠습니까?
+- code: SUBMIT_RESOLUTION_FEEDBACK
+  label: 해결 완료 확인
+  operation_id: submitResolutionFeedback
+  style: PRIMARY
+  requires_confirmation: false
+  confirmation_message: null
+- code: CUSTOMER_REPORTED_UNRESOLVED
+  label: 아직 해결되지 않았어요
+  operation_id: reportUnresolved
+  style: SECONDARY
+  requires_confirmation: false
+  confirmation_message: null
+- code: RESUME_CONSULTATION
+  label: 상담 대기열로 복귀
+  operation_id: resumeConsultation
+  style: PRIMARY
+  requires_confirmation: false
+  confirmation_message: null
+- code: FINALIZE_INQUIRY
+  label: 문의 최종 완료
+  operation_id: finalizeInquiry
+  style: PRIMARY
+  requires_confirmation: true
+  confirmation_message: 고객 해결 확인을 검토하고 문의를 최종 완료하시겠습니까?
+- code: VISIT_NOT_NEEDED
+  label: 방문 불필요 확정
+  operation_id: markVisitNotNeeded
+  style: SECONDARY
+  requires_confirmation: true
+  confirmation_message: 방문 없이 상담 처리 결과 확인 단계로 전환하시겠습니까?
+state_role_actions:
+  DRAFT:
+    CUSTOMER:
+    - action: SUBMIT_SYMPTOM
+      transition_rule_ids:
+      - TR-INQ-002
+    - action: CANCEL_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-004
+    CONSULTANT:
+    - action: CANCEL_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-004
+      dynamic_requirements:
+      - 현재 문의에 상담사로 배정되어 있어야 한다.
+    OPERATOR:
+    - action: CANCEL_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-004
+      dynamic_requirements:
+      - INQUIRY_CANCEL 권한이 있어야 한다.
+  QUESTIONNAIRE_IN_PROGRESS:
+    CUSTOMER:
+    - action: SUBMIT_ANSWERS
+      transition_rule_ids:
+      - TR-INQ-003
+    - action: CANCEL_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-005
+    CONSULTANT:
+    - action: CANCEL_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-005
+      dynamic_requirements:
+      - 현재 문의에 상담사로 배정되어 있어야 한다.
+    OPERATOR:
+    - action: CANCEL_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-005
+      dynamic_requirements:
+      - INQUIRY_CANCEL 권한이 있어야 한다.
+  AI_GUIDANCE:
+    CUSTOMER:
+    - action: CUSTOMER_REPORTED_SELF_RESOLVED
+      transition_rule_ids:
+      - TR-INQ-011
+    - action: REQUEST_CONSULTATION
+      transition_rule_ids:
+      - TR-INQ-012
+  CONSULTATION_REQUIRED:
+    CUSTOMER:
+    - action: REQUEST_CONSULTATION
+      transition_rule_ids:
+      - TR-INQ-013
+      dynamic_requirements:
+      - 시스템 전환으로 생성된 상담 필요 상태에서 고객의 상담 요청 확인을 기록할 수 있다.
+    CONSULTANT:
+    - action: START_CONSULTATION
+      transition_rule_ids:
+      - TR-INQ-014
+      dynamic_requirements:
+      - 현재 문의의 담당 상담사여야 한다.
+  CONSULTATION_IN_PROGRESS:
+    CONSULTANT:
+    - action: UPDATE_CONSULTATION_SUMMARY
+      transition_rule_ids:
+      - TR-INQ-015
+    - action: CONFIRM_CONSULTATION_SUMMARY
+      transition_rule_ids:
+      - TR-INQ-016
+    - action: CONSULTATION_COMPLETED
+      transition_rule_ids:
+      - TR-INQ-017
+    - action: VISIT_REVIEW_REQUIRED
+      transition_rule_ids:
+      - TR-INQ-018
+  VISIT_REVIEW_PENDING:
+    CONSULTANT:
+    - action: VISIT_NEEDED
+      transition_rule_ids:
+      - TR-INQ-019
+    - action: VISIT_NOT_NEEDED
+      transition_rule_ids:
+      - TR-INQ-034
+  VISIT_SCHEDULING:
+    CONSULTANT:
+    - action: UPDATE_VISIT_SCHEDULE
+      transition_rule_ids:
+      - TR-INQ-020
+      - TR-INQ-021
+      visit_conditions:
+        allowed_statuses:
+        - ASSIGNING
+        - SCHEDULING
+    - action: CONFIRM_VISIT
+      transition_rule_ids:
+      - TR-INQ-022
+      visit_conditions:
+        required_status: SCHEDULING
+  VISIT_SCHEDULED:
+    TECHNICIAN:
+    - action: UPDATE_PREVISIT_REPORT
+      transition_rule_ids:
+      - TR-INQ-023
+      visit_conditions:
+        required_status: CONFIRMED
+    - action: CONFIRM_PREVISIT_REPORT
+      transition_rule_ids:
+      - TR-INQ-024
+      visit_conditions:
+        required_status: CONFIRMED
+    - action: START_VISIT
+      transition_rule_ids:
+      - TR-INQ-025
+      visit_conditions:
+        required_status: CONFIRMED
+    - action: VISIT_COMPLETED
+      transition_rule_ids:
+      - TR-INQ-026
+      visit_conditions:
+        required_status: IN_PROGRESS
+    - action: REVISIT_NEEDED
+      transition_rule_ids:
+      - TR-INQ-027
+      visit_conditions:
+        required_status: IN_PROGRESS
+  COMPLETION_PENDING:
+    CUSTOMER:
+    - action: SUBMIT_RESOLUTION_FEEDBACK
+      transition_rule_ids:
+      - TR-INQ-029
+    - action: CUSTOMER_REPORTED_UNRESOLVED
+      transition_rule_ids:
+      - TR-INQ-030
+    - action: REQUEST_CONSULTATION
+      transition_rule_ids:
+      - TR-INQ-031
+    CONSULTANT:
+    - action: FINALIZE_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-033
+      dynamic_requirements:
+      - completion_source가 CONSULTATION이어야 한다.
+      - 실행자가 마지막 상담 처리 담당자여야 한다.
+      - 최신 고객 해결됨 피드백이 존재해야 한다.
+    TECHNICIAN:
+    - action: FINALIZE_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-033
+      dynamic_requirements:
+      - completion_source가 VISIT이어야 한다.
+      - 실행자가 마지막 방문 처리 담당자여야 한다.
+      - 최신 고객 해결됨 피드백이 존재해야 한다.
+  REVISIT_REQUIRED:
+    CONSULTANT:
+    - action: UPDATE_VISIT_SCHEDULE
+      transition_rule_ids:
+      - TR-INQ-028
+      visit_conditions:
+        required_status: FOLLOW_UP_REQUIRED
+  REOPENED:
+    CONSULTANT:
+    - action: RESUME_CONSULTATION
+      transition_rule_ids:
+      - TR-INQ-032
+  RESOLVED: {}
+  CANCELLED: {}
+internal_events_by_state:
+  DRAFT:
+  - PRODUCT_VALIDATION_FAILED
+  QUESTIONNAIRE_IN_PROGRESS:
+  - PRODUCT_VALIDATION_FAILED
+  - SAFE_GUIDANCE_READY
+  - DANGER_DETECTED
+  - NO_EVIDENCE
+  AI_GUIDANCE: []
+  CONSULTATION_REQUIRED: []
+  CONSULTATION_IN_PROGRESS: []
+  VISIT_REVIEW_PENDING: []
+  VISIT_SCHEDULING: []
+  VISIT_SCHEDULED: []
+  COMPLETION_PENDING: []
+  REVISIT_REQUIRED: []
+  REOPENED: []
+  RESOLVED: []
+  CANCELLED: []
+validation_expectations:
+- action_catalog의 모든 code는 inquiry-events.yaml에 존재해야 한다.
+- action_catalog의 operation_id는 inquiry-events.yaml의 operation_id와 일치해야 한다.
+- state_role_actions의 모든 상태는 inquiry-states.yaml에 존재해야 한다.
+- state_role_actions의 모든 action은 action_catalog에 존재해야 한다.
+- 연결된 transition_rule_ids는 transition-rules.yaml에 존재해야 한다.
+- 연결된 전이의 from_inquiry_state는 상위 상태와 일치해야 한다.
+- 역할은 inquiry-events.yaml의 actor_roles에 포함되어야 한다.
+- SYSTEM_EVENT는 외부 state_role_actions에 포함될 수 없다.
+- RESOLVED와 CANCELLED의 외부 행동 목록은 비어 있어야 한다.
+resolved_scope_gaps:
+- id: GAP-AA-001
+  resolution: VISIT_NOT_NEEDED 이벤트와 TR-INQ-034 전이를 추가하여 VISIT_REVIEW_PENDING에서 방문 없이 COMPLETION_PENDING으로 이동할 수 있게 했다.

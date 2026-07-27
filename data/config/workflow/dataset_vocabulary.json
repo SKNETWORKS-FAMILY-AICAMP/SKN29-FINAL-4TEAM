@@ -1,0 +1,30 @@
+{
+  "config_version": "1.2.0",
+  "scope": "dataset_validation_only",
+  "service_contract_mapping": "pending_owner_confirmation",
+  "inquiry_statuses": [
+    "DRAFT",
+    "QUESTIONNAIRE_IN_PROGRESS",
+    "PRODUCT_VALIDATION_FAILED",
+    "AI_GUIDANCE_READY",
+    "CONSULTATION_PENDING",
+    "CONSULTATION_IN_PROGRESS",
+    "VISIT_REVIEW_PENDING",
+    "VISIT_PENDING",
+    "VISIT_IN_PROGRESS",
+    "COMPLETION_PENDING",
+    "RESOLVED",
+    "REOPENED"
+  ],
+  "risk_levels": [
+    "general",
+    "caution",
+    "danger"
+  ],
+  "usage_guidance_statuses": [
+    "NORMAL",
+    "PARTIAL_STOP",
+    "TOTAL_STOP",
+    "PENDING_CONSULTATION"
+  ]
+}

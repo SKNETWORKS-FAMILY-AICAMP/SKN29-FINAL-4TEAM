@@ -1,0 +1,182 @@
+version: 0.8.0
+generated_at: "2026-07-27T00:00:00+09:00"
+datasets:
+  - id: manual_pages_jac104d
+    path: processed/documents/manuals/mvp/manual_pages_jac104d.jsonl
+    classification: official
+    scope: mvp_source
+    records: 44
+    schema: schemas/processed/manualPage.schema.json
+  - id: faq_snapshot_normalized
+    path: processed/documents/faq/faq_snapshot_normalized.jsonl
+    classification: official
+    scope: candidate_pool
+    records: 119
+    schema: schemas/processed/faqNormalized.schema.json
+  - id: faq_ocr_verified
+    path: processed/documents/faq/faq_ocr_verified.jsonl
+    classification: official
+    scope: transcription_archive_rag_excluded
+    records: 5
+    schema: schemas/processed/faqOcrVerified.schema.json
+  - id: selected_faq_candidates
+    path: processed/structured/faq/selected_faq_candidates.jsonl
+    classification: official
+    scope: candidate_only
+    records: 20
+    schema: schemas/processed/faqCandidate.schema.json
+  - id: manual_keyword_hits
+    path: processed/metadata/manual_keyword_hits.csv
+    classification: official
+    scope: preprocessing_review
+    records: 7
+  - id: rag_verified_sample
+    path: processed/structured/rag/mvp/rag_verified_sample.jsonl
+    classification: official
+    scope: mvp_search
+    records: 7
+    schema: schemas/processed/ragChunk.schema.json
+  - id: jac104_evidence_registry
+    path: processed/structured/evidence/jac104_evidence_registry.jsonl
+    classification: official
+    scope: evidence_policy
+    records: 9
+    schema: schemas/processed/evidenceRegistry.schema.json
+  - id: users
+    path: synthetic/fixtures/users.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 16
+    schema: schemas/synthetic/syntheticUser.schema.json
+  - id: products
+    path: synthetic/fixtures/products.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 1
+    schema: schemas/synthetic/syntheticProduct.schema.json
+  - id: customer_products
+    path: synthetic/fixtures/customer_products.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 12
+    schema: schemas/synthetic/syntheticCustomerProduct.schema.json
+  - id: subscriptions
+    path: synthetic/fixtures/subscriptions.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 12
+    schema: schemas/synthetic/syntheticSubscription.schema.json
+  - id: inquiries
+    path: synthetic/fixtures/inquiries.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 24
+    schema: schemas/synthetic/syntheticInquiry.schema.json
+  - id: consultations
+    path: synthetic/fixtures/consultations.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 16
+    schema: schemas/synthetic/syntheticConsultation.schema.json
+  - id: visits
+    path: synthetic/fixtures/visits.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 5
+    schema: schemas/synthetic/syntheticVisit.schema.json
+  - id: care_histories
+    path: synthetic/fixtures/care_histories.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 25
+    schema: schemas/synthetic/syntheticCareHistory.schema.json
+  - id: followup_confirmations
+    path: synthetic/fixtures/followup_confirmations.json
+    classification: synthetic
+    scope: representative_e2e_fixture
+    records: 1
+    schema: schemas/synthetic/syntheticFollowupConfirmation.schema.json
+  - id: inquiry_status_histories
+    path: synthetic/fixtures/inquiry_status_histories.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 115
+    schema: schemas/synthetic/syntheticInquiryStatusHistory.schema.json
+  - id: audit_events
+    path: synthetic/fixtures/audit_events.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 115
+    schema: schemas/synthetic/syntheticAuditEvent.schema.json
+  - id: workflow_states
+    path: synthetic/expected/workflow_states.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 24
+    schema: schemas/synthetic/expectedWorkflow.schema.json
+  - id: evidence_references
+    path: synthetic/expected/evidence_references.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 24
+    schema: schemas/synthetic/expectedEvidence.schema.json
+  - id: safety_assessments
+    path: synthetic/expected/safety_assessments.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 24
+    schema: schemas/synthetic/expectedSafety.schema.json
+  - id: role_handoffs
+    path: synthetic/expected/role_handoffs.json
+    classification: synthetic
+    scope: demo_fixture
+    records: 24
+    schema: schemas/synthetic/expectedHandoff.schema.json
+  - id: demo_scenarios
+    path: synthetic/scenarios/demo_scenarios.json
+    classification: synthetic
+    scope: scenario_catalog
+    records: 24
+    schema: schemas/synthetic/demoScenario.schema.json
+  - id: scenario_self_resolution
+    path: synthetic/scenarios/self_resolution.json
+    classification: synthetic
+    scope: scenario_subset
+    records: 5
+    schema: schemas/synthetic/scenarioSubsetItem.schema.json
+  - id: scenario_information_collection
+    path: synthetic/scenarios/information_collection.json
+    classification: synthetic
+    scope: scenario_subset
+    records: 5
+    schema: schemas/synthetic/scenarioSubsetItem.schema.json
+  - id: scenario_consultation_handoff
+    path: synthetic/scenarios/consultation_handoff.json
+    classification: synthetic
+    scope: scenario_subset
+    records: 14
+    schema: schemas/synthetic/scenarioSubsetItem.schema.json
+  - id: scenario_visit_handoff
+    path: synthetic/scenarios/visit_handoff.json
+    classification: synthetic
+    scope: scenario_subset
+    records: 5
+    schema: schemas/synthetic/scenarioSubsetItem.schema.json
+  - id: scenario_danger_escalation
+    path: synthetic/scenarios/danger_escalation.json
+    classification: synthetic
+    scope: scenario_subset
+    records: 3
+    schema: schemas/synthetic/scenarioSubsetItem.schema.json
+  - id: scenario_no_evidence_fallback
+    path: synthetic/scenarios/no_evidence_fallback.json
+    classification: synthetic
+    scope: scenario_subset
+    records: 3
+    schema: schemas/synthetic/scenarioSubsetItem.schema.json
+  - id: scenario_reopened_inquiry
+    path: synthetic/scenarios/reopened_inquiry.json
+    classification: synthetic
+    scope: scenario_subset
+    records: 2
+    schema: schemas/synthetic/scenarioSubsetItem.schema.json

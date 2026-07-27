@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ManualPage",
+  "description": "JAC104D 공식 매뉴얼 페이지 추출 데이터",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "page_id",
+    "document_id",
+    "source_type",
+    "provider",
+    "exact_sales_code",
+    "product_model",
+    "model_family",
+    "product_generation",
+    "scope_role",
+    "version",
+    "page",
+    "page_count",
+    "section_title",
+    "text",
+    "text_sha256",
+    "source_file_sha256",
+    "extraction_method",
+    "content_status",
+    "verification_status",
+    "source_url",
+    "generated_at"
+  ],
+  "properties": {
+    "page_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^MAN-[A-Z0-9-]+-P\\d{3}$"
+    },
+    "document_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^MAN-[A-Z0-9-]+$"
+    },
+    "source_type": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "official_manual"
+      ]
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "exact_sales_code": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^WPU[A-Z0-9]+$"
+    },
+    "product_model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_family": {
+      "type": "string",
+      "minLength": 1
+    },
+    "product_generation": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "D"
+      ]
+    },
+    "scope_role": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "mvp"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^REV\\.\\d{2}$"
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "page_count": {
+      "type": "integer",
+      "const": 44
+    },
+    "section_title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "text_sha256": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "source_file_sha256": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "extraction_method": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "pdfplumber_text",
+        "manual_visual_transcription"
+      ]
+    },
+    "content_status": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "EXTRACTED_TEXT",
+        "VISUAL_TEXT_TRANSCRIBED"
+      ]
+    },
+    "verification_status": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "TEXT_EXTRACTED",
+        "TEXT_AND_VISUAL_VERIFIED",
+        "VISUALLY_REVIEWED"
+      ]
+    },
+    "source_url": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uri"
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FaqOcrVerified",
+  "description": "공식 FAQ 이미지의 사용자 검수 완료 전사",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "faq_id",
+    "snapshot_id",
+    "source_type",
+    "provider",
+    "title",
+    "ocr_text",
+    "image_urls",
+    "image_sha256s",
+    "image_count",
+    "extraction_method",
+    "transcription_status",
+    "model_applicability",
+    "allowed_use",
+    "source_url",
+    "source_file_sha256",
+    "verified_at",
+    "generated_at",
+    "ocr_record_id",
+    "asset_ids"
+  ],
+  "properties": {
+    "faq_id": {
+      "type": "string",
+      "pattern": "^FAQ-SKMAGIC-[0-9]{4}$"
+    },
+    "snapshot_id": {
+      "type": "string",
+      "const": "SRC-WATER-FAQ-20260715"
+    },
+    "source_type": {
+      "type": "string",
+      "const": "official_faq_snapshot"
+    },
+    "provider": {
+      "type": "string",
+      "const": "SK매직"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ocr_text": {
+      "type": "string",
+      "minLength": 20
+    },
+    "image_urls": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      },
+      "minItems": 1
+    },
+    "image_sha256s": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-F0-9]{64}$"
+      },
+      "minItems": 1
+    },
+    "image_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "extraction_method": {
+      "type": "string",
+      "const": "vision_assisted_transcription"
+    },
+    "transcription_status": {
+      "type": "string",
+      "const": "USER_VERIFIED"
+    },
+    "model_applicability": {
+      "type": "string",
+      "const": "MODEL_UNVERIFIED"
+    },
+    "allowed_use": {
+      "type": "string",
+      "const": "EXCLUDED_FROM_RAG"
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "source_file_sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ocr_record_id": {
+      "type": "string",
+      "pattern": "^OCR-FAQ-SKMAGIC-[0-9]{4}$"
+    },
+    "asset_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^ASSET-OFFICIAL-FAQ-[A-F0-9]{12}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  }
+}

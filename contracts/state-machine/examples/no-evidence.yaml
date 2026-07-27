@@ -1,0 +1,31 @@
+contract:
+  name: no-evidence-example
+  version: 0.1.0
+  status: draft_for_review
+  description: 검색은 수행됐지만 사용할 수 있는 공식 근거가 없어 판단을 보류하고 상담으로 전환하는 예시이다.
+representative_data:
+  product_model_code: WPUJAC104DWH
+  product_serial_number: SYN-JAC104-002
+  inquiry_code: DEMO-INQ-002
+  symptom: 출수량 저하
+  official_evidence:
+    document_type: official_manual
+    page: 38
+initial_context:
+  actor_role: SYSTEM
+  inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+ai_result:
+  retrieval_completed: true
+  official_usable_evidence_count: 0
+  requires_consultation: true
+  usage_guidance_status: PENDING_CONSULTATION
+steps:
+- order: 1
+  actor: SYSTEM
+  event: NO_EVIDENCE
+  from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  to_inquiry_state: CONSULTATION_REQUIRED
+expected_result:
+  inquiry_state: CONSULTATION_REQUIRED
+  usage_guidance_status: PENDING_CONSULTATION
+  invented_guidance_allowed: false

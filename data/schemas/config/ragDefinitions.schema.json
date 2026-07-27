@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RagDefinitionsConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "config_version",
+    "document_id",
+    "exact_sales_code",
+    "chunks",
+    "evidence"
+  ],
+  "properties": {
+    "config_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "document_id": {"type": "string", "minLength": 1},
+    "exact_sales_code": {
+      "type": "string",
+      "const": "WPUJAC104DWH"
+    },
+    "chunks": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "required": [
+          "chunk_id",
+          "document_id",
+          "page_refs",
+          "topic_code",
+          "risk_level",
+          "use_guidance",
+          "chunk_text"
+        ],
+        "properties": {
+          "risk_level": {
+            "type": "string",
+            "enum": ["general", "caution", "danger"]
+          },
+          "use_guidance": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "PARTIAL_STOP",
+              "TOTAL_STOP",
+              "PENDING_CONSULTATION"
+            ]
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 9,
+      "items": {
+        "type": "object",
+        "required": [
+          "evidence_id",
+          "document_id",
+          "page_refs",
+          "risk_level",
+          "use_guidance",
+          "allowed_use"
+        ],
+        "properties": {
+          "risk_level": {
+            "type": "string",
+            "enum": ["general", "caution", "danger"]
+          },
+          "use_guidance": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "PARTIAL_STOP",
+              "TOTAL_STOP",
+              "PENDING_CONSULTATION"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

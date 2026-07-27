@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExpectedHandoff",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scenario_id",
+    "inquiry_id",
+    "handoff_type",
+    "from_role",
+    "to_role",
+    "required_fields",
+    "expected_current_owner_role",
+    "generated_at"
+  ],
+  "properties": {
+    "scenario_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^SYN-JAC104-\\d{3}$"
+    },
+    "inquiry_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "handoff_type": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "NONE",
+        "COUNSELOR",
+        "VISIT",
+        "REOPEN"
+      ]
+    },
+    "from_role": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "CUSTOMER",
+        "SYSTEM",
+        "COUNSELOR"
+      ]
+    },
+    "to_role": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "NONE",
+        "COUNSELOR",
+        "TECHNICIAN"
+      ]
+    },
+    "required_fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "expected_current_owner_role": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "NONE",
+        "COUNSELOR",
+        "TECHNICIAN"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    }
+  }
+}

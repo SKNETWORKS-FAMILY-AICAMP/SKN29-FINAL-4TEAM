@@ -1,0 +1,251 @@
+{
+  "status": "PASS",
+  "stage": 5,
+  "report_type": "SCHEMA",
+  "generated_at": "2026-07-27T00:00:00+09:00",
+  "summary": {
+    "checks": 47,
+    "errors": 0,
+    "warnings": 0
+  },
+  "checks": [
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "processed/documents/manuals/mvp/manual_pages_jac104d.jsonl: expected=44, actual=44"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "processed/documents/manuals/mvp/manual_pages_jac104d.jsonl: records=44"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "processed/documents/faq/faq_snapshot_normalized.jsonl: expected=119, actual=119"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "processed/documents/faq/faq_snapshot_normalized.jsonl: records=119"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "processed/documents/faq/faq_ocr_verified.jsonl: expected=5, actual=5"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "processed/documents/faq/faq_ocr_verified.jsonl: records=5"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "processed/structured/assets/official_faq_assets.jsonl: expected=10, actual=10"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "processed/structured/assets/official_faq_assets.jsonl: records=10"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "processed/structured/faq/selected_faq_candidates.jsonl: expected=20, actual=20"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "processed/structured/faq/selected_faq_candidates.jsonl: records=20"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "processed/metadata/manual_keyword_hits.csv: expected=7, actual=7"
+    },
+    {
+      "code": "SCHEMA_CSV_HEADER",
+      "status": "PASS",
+      "detail": "processed/metadata/manual_keyword_hits.csv: header fields=6"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "processed/structured/rag/mvp/rag_verified_sample.jsonl: expected=7, actual=7"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "processed/structured/rag/mvp/rag_verified_sample.jsonl: records=7"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "processed/structured/evidence/jac104_evidence_registry.jsonl: expected=9, actual=9"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "processed/structured/evidence/jac104_evidence_registry.jsonl: records=9"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/users.json: expected=16, actual=16"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/users.json: records=16"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/products.json: expected=1, actual=1"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/products.json: records=1"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/customer_products.json: expected=12, actual=12"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/customer_products.json: records=12"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/subscriptions.json: expected=12, actual=12"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/subscriptions.json: records=12"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/inquiries.json: expected=24, actual=24"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/inquiries.json: records=24"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/consultations.json: expected=16, actual=16"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/consultations.json: records=16"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/visits.json: expected=5, actual=5"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/visits.json: records=5"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/care_histories.json: expected=24, actual=24"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/care_histories.json: records=24"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/inquiry_status_histories.json: expected=110, actual=110"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/inquiry_status_histories.json: records=110"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/audit_events.json: expected=110, actual=110"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/fixtures/audit_events.json: records=110"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/expected/workflow_states.json: expected=24, actual=24"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/expected/workflow_states.json: records=24"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/expected/evidence_references.json: expected=24, actual=24"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/expected/evidence_references.json: records=24"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/expected/safety_assessments.json: expected=24, actual=24"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/expected/safety_assessments.json: records=24"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/expected/role_handoffs.json: expected=24, actual=24"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/expected/role_handoffs.json: records=24"
+    },
+    {
+      "code": "SCHEMA_RECORD_COUNT",
+      "status": "PASS",
+      "detail": "synthetic/scenarios/demo_scenarios.json: expected=24, actual=24"
+    },
+    {
+      "code": "SCHEMA_STRICT_VALIDATION",
+      "status": "PASS",
+      "detail": "synthetic/scenarios/demo_scenarios.json: records=1"
+    },
+    {
+      "code": "SCHEMA_CONTRACT_STRICTNESS",
+      "status": "PASS",
+      "detail": "schema_files=23, invalid=0"
+    }
+  ],
+  "files_checked": 23,
+  "records_checked": 671,
+  "schema_files_checked": 23
+}

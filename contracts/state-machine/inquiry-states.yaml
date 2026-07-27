@@ -1,0 +1,179 @@
+contract:
+  name: inquiry-states
+  version: 0.1.0
+  status: draft_for_review
+  owner: PM_TECHNICAL_INTEGRATION
+  source_documents:
+    - docs/planning/md/week3-scope-and-dod.md
+    - "(화면설계서_29기_4팀) 정수기 구독 고객 케어 및 A_S 업무 지원 시스템.md"
+  description: >
+    문의의 업무 상태를 정의한다. 방문 진행 상태와 AI 내부 처리 상태는
+    별도 계약으로 관리하며, 화면·API·DB는 이 코드값을 동일하게 사용한다.
+
+initial_state: DRAFT
+
+terminal_states:
+  - RESOLVED
+  - CANCELLED
+
+owner_types:
+  - CUSTOMER
+  - CONSULTANT
+  - TECHNICIAN
+  - SHARED
+  - NONE
+
+visit_status_codes:
+  - ASSIGNING
+  - SCHEDULING
+  - CONFIRMED
+  - IN_PROGRESS
+  - COMPLETED
+  - FOLLOW_UP_REQUIRED
+  - CANCELLED
+
+states:
+  - code: DRAFT
+    display_name: 작성 중
+    work_display_name: 임시 저장
+    description: >
+      START_INQUIRY로 생성된 문의가 최초 증상 제출 전까지 머무르는 상태이다.
+    owner_type: CUSTOMER
+    customer_action_required: true
+    terminal: false
+    allowed_visit_statuses: []
+
+  - code: QUESTIONNAIRE_IN_PROGRESS
+    display_name: 문진 진행 중
+    work_display_name: 문진 진행 중
+    description: >
+      최초 증상과 추가 답변을 수집하고 누락 정보를 확인하는 상태이다.
+      SUBMIT_ANSWERS가 처리되어도 자동 판정 결과가 준비되기 전까지 이 상태를 유지할 수 있다.
+    owner_type: CUSTOMER
+    customer_action_required: true
+    terminal: false
+    allowed_visit_statuses: []
+
+  - code: AI_GUIDANCE
+    display_name: 안내 확인 중
+    work_display_name: AI 안내 제공
+    description: >
+      공식 근거와 안전 검증을 통과한 안내가 준비되어 고객이 자가조치 결과를 확인하는 상태이다.
+      AI 내부 처리 중 상태를 뜻하지 않는다.
+    owner_type: CUSTOMER
+    customer_action_required: true
+    terminal: false
+    allowed_visit_statuses: []
+
+  - code: CONSULTATION_REQUIRED
+    display_name: 상담 대기
+    work_display_name: 상담 필요
+    description: >
+      위험 감지, 공식 근거 부족, 제품 검증 실패 또는 고객 요청으로 상담사 처리가 필요한 상태이다.
+    owner_type: CONSULTANT
+    customer_action_required: false
+    terminal: false
+    allowed_visit_statuses: []
+
+  - code: CONSULTATION_IN_PROGRESS
+    display_name: 상담 진행 중
+    work_display_name: 상담 진행 중
+    description: >
+      담당 상담사가 문의를 인수하여 추가 확인, 안내와 처리 결과를 기록하는 상태이다.
+    owner_type: CONSULTANT
+    customer_action_required: false
+    terminal: false
+    allowed_visit_statuses: []
+
+  - code: VISIT_REVIEW_PENDING
+    display_name: 방문 검토 중
+    work_display_name: 방문 판단 대기
+    description: >
+      상담 결과를 바탕으로 방문 필요 여부와 인계 정보를 검토하는 상태이다.
+    owner_type: CONSULTANT
+    customer_action_required: false
+    terminal: false
+    allowed_visit_statuses:
+      - ASSIGNING
+
+  - code: VISIT_SCHEDULING
+    display_name: 방문 일정 조율 중
+    work_display_name: 방문 일정 조율
+    description: >
+      방문기사 배정, 고객 희망일과 방문 확정일을 조율하는 상태이다.
+    owner_type: CONSULTANT
+    customer_action_required: false
+    terminal: false
+    allowed_visit_statuses:
+      - ASSIGNING
+      - SCHEDULING
+
+  - code: VISIT_SCHEDULED
+    display_name: 방문 예정
+    work_display_name: 방문 확정
+    description: >
+      방문 일정이 확정되었거나 방문기사가 현장 점검을 진행 중인 상태이다.
+      고객 표시명은 방문 상태에 따라 방문 예정 또는 방문 진행 중으로 달라질 수 있다.
+    owner_type: TECHNICIAN
+    customer_action_required: false
+    terminal: false
+    allowed_visit_statuses:
+      - CONFIRMED
+      - IN_PROGRESS
+
+  - code: COMPLETION_PENDING
+    display_name: 처리 결과 확인·최종 완료 대기
+    work_display_name: 고객 확인·담당자 최종 완료 대기
+    description: >
+      상담 또는 방문 처리가 끝난 뒤 고객 해결 피드백 또는 담당자의 최종 완료를 기다리는 상태이다.
+      고객이 해결됨 피드백을 제출해도 담당 상담사 또는 방문기사가 FINALIZE_INQUIRY를 수행하기 전까지 유지된다.
+    owner_type: SHARED
+    customer_action_required: true
+    terminal: false
+    allowed_visit_statuses:
+      - COMPLETED
+
+  - code: REVISIT_REQUIRED
+    display_name: 추가 방문 필요
+    work_display_name: 재방문 필요
+    description: >
+      방문기사 판단으로 추가 방문이 필요하며 새 일정 조율로 이어져야 하는 상태이다.
+    owner_type: CONSULTANT
+    customer_action_required: false
+    terminal: false
+    allowed_visit_statuses:
+      - FOLLOW_UP_REQUIRED
+
+  - code: REOPENED
+    display_name: 문의 재개
+    work_display_name: 고객 미해결 재개
+    description: >
+      고객이 처리 후에도 해결되지 않았음을 제출하여 기존 문의를 다시 상담 흐름으로 연결해야 하는 상태이다.
+    owner_type: CONSULTANT
+    customer_action_required: false
+    terminal: false
+    allowed_visit_statuses:
+      - COMPLETED
+      - FOLLOW_UP_REQUIRED
+
+  - code: RESOLVED
+    display_name: 처리 완료
+    work_display_name: 해결 완료
+    description: >
+      자가조치 단독 해결을 고객이 확정했거나 상담·방문 처리 후 담당자가 최종 완료한 종료 상태이다.
+    owner_type: NONE
+    customer_action_required: false
+    terminal: true
+    allowed_visit_statuses:
+      - COMPLETED
+
+  - code: CANCELLED
+    display_name: 취소됨
+    work_display_name: 취소
+    description: >
+      허용된 취소 조건과 사유에 따라 문의가 종료된 상태이다.
+    owner_type: NONE
+    customer_action_required: false
+    terminal: true
+    allowed_visit_statuses:
+      - CANCELLED

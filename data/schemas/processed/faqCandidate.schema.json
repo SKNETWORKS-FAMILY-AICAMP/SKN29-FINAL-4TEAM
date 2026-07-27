@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FaqCandidate",
+  "description": "MVP 관련 FAQ 재선별 후보",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "faq_id",
+    "snapshot_id",
+    "source_type",
+    "provider",
+    "ordinal",
+    "title",
+    "answer_text",
+    "image_urls",
+    "publisher_model_codes",
+    "exact_sales_code_match",
+    "generation_scope",
+    "topic_code",
+    "risk_level",
+    "applicability",
+    "allowed_use",
+    "rag_policy",
+    "candidate_rank",
+    "selection_reasons",
+    "source_url",
+    "source_locator",
+    "verification_status",
+    "generated_at"
+  ],
+  "properties": {
+    "faq_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^FAQ-SKMAGIC-\\d{4}$"
+    },
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^SRC-[A-Z0-9-]+$"
+    },
+    "source_type": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "official_faq_snapshot"
+      ]
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ordinal": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 119
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "answer_text": {
+      "type": "string",
+      "minLength": 0
+    },
+    "image_urls": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "format": "uri"
+      },
+      "minItems": 0
+    },
+    "publisher_model_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "exact_sales_code_match": {
+      "type": "boolean"
+    },
+    "generation_scope": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "FAMILY_UNSPECIFIED",
+        "UNSPECIFIED"
+      ]
+    },
+    "topic_code": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_]+$"
+    },
+    "risk_level": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "general",
+        "caution",
+        "danger"
+      ]
+    },
+    "applicability": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "MODEL_FAMILY_DIRECT",
+        "MODEL_CAPABILITY_CONFLICT",
+        "IMAGE_ONLY_UNVERIFIED",
+        "CATEGORY_COMMON_UNVERIFIED"
+      ]
+    },
+    "allowed_use": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "CONDITIONAL_SUPPORT",
+        "CANDIDATE_ONLY",
+        "EXCLUDED"
+      ]
+    },
+    "rag_policy": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "INCLUDE_WITH_MANUAL_CORROBORATION",
+        "EXCLUDE_MODEL_CAPABILITY_CONFLICT",
+        "EXCLUDE_IMAGE_ONLY",
+        "EXCLUDE_UNTIL_EXACT_MODEL_VERIFIED"
+      ]
+    },
+    "candidate_rank": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "selection_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "source_url": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uri"
+    },
+    "source_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verification_status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    }
+  }
+}

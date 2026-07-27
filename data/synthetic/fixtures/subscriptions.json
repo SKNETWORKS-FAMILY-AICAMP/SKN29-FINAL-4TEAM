@@ -1,0 +1,134 @@
+[
+  {
+    "subscription_id": "e39f7892-bba1-5add-9f30-7c6bc413c594",
+    "subscription_number": "SUB-SYN-0001",
+    "customer_id": "2fdda38e-2530-5d2d-b0ad-97630b3b5c3e",
+    "customer_product_id": "793af8f4-0a3d-5733-b079-b9d54b9d8d49",
+    "plan_code": "SYNTHETIC_REGULAR_CARE",
+    "status": "ACTIVE",
+    "started_on": "2025-01-14",
+    "next_care_on": "2026-08-04",
+    "data_classification": "synthetic"
+  },
+  {
+    "subscription_id": "c217820b-1754-54fe-ab54-51560b292120",
+    "subscription_number": "SUB-SYN-0002",
+    "customer_id": "18b30d13-a38b-5035-84b3-988406079e0d",
+    "customer_product_id": "e8e9bca4-a0a2-53e4-8cdd-dac2415a8074",
+    "plan_code": "SYNTHETIC_REGULAR_CARE",
+    "status": "ACTIVE",
+    "started_on": "2025-01-27",
+    "next_care_on": "2026-08-07",
+    "data_classification": "synthetic"
+  },
+  {
+    "subscription_id": "659b67fe-0698-529b-8a6f-b559766e133b",
+    "subscription_number": "SUB-SYN-0003",
+    "customer_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c",
+    "customer_product_id": "9f61b804-1cb4-5c0e-b58f-f9999bf0cbb4",
+    "plan_code": "SYNTHETIC_REGULAR_CARE",
+    "status": "ACTIVE",
+    "started_on": "2025-02-09",
+    "next_care_on": "2026-08-10",
+    "data_classification": "synthetic"
+  },
+  {
+    "subscription_id": "c45be27a-1304-5f26-afab-5d3e36097404",
+    "subscription_number": "SUB-SYN-0004",
+    "customer_id": "e48532ad-fa40-54d7-981b-9accfe13e365",
+    "customer_product_id": "59c7bff8-8c66-574e-83c5-9f8f755dd9e1",
+    "plan_code": "SYNTHETIC_REGULAR_CARE",
+    "status": "ACTIVE",
+    "started_on": "2025-02-22",
+    "next_care_on": "2026-08-13",
+    "data_classification": "synthetic"
+  },
+  {
+    "subscription_id": "4fc55848-7798-53fb-ba19-f86728b7abed",
+    "subscription_number": "SUB-SYN-0005",
+    "customer_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da",
+    "customer_product_id": "dfc9cf8f-eff3-55d9-a366-06c7d5eff3e4",
+    "plan_code": "SYNTHETIC_REGULAR_CARE",
+    "status": "ACTIVE",
+    "started_on": "2025-03-07",
+    "next_care_on": "2026-08-16",
+    "data_classification": "synthetic"
+  },
+  {
+    "subscription_id": "dd8bb2df-6152-520a-b4da-0b0eb1e6e986",
+    "subscription_number": "SUB-SYN-0006",
+    "customer_id": "0752efc0-e2c7-5900-bc01-72c9ed38097a",
+    "customer_product_id": "f2a54705-6525-54ea-aac7-6ee819c8a54c",
+    "plan_code": "SYNTHETIC_REGULAR_CARE",
+    "status": "ACTIVE",
+    "started_on": "2025-03-20",
+    "next_care_on": "2026-08-19",
+    "data_classification": "synthetic"
+  },
+  {
+    "subscription_id": "54bef582-d3b1-5afe-b802-005baca71806",
+    "subscription_number": "SUB-SYN-0007",
+    "customer_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
+    "customer_product_id": "6f5f486f-6c89-5bb0-a952-adda1265e794",
+    "plan_code": "SYNTHETIC_REGULAR_CARE",
+    "status": "ACTIVE",
+    "started_on": "2025-04-02",
+    "next_care_on": "2026-08-22",
+    "data_classification": "synthetic"
+  },
+  {
+    "subscription_id": "038aed81-4eb1-575b-9e55-fd0cf499701e",
+    "subscription_number": "SUB-SYN-0008",
+    "customer_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab",
+    "customer_product_id": "f8065aba-04af-541c-a383-972eed605959",
+    "plan_code": "SYNTHETIC_REGULAR_CARE",
+    "status": "ACTIVE",
+    "started_on": "2025-04-15",
+    "next_care_on": "2026-08-25",
+    "data_classification": "synthetic"
+  },
+  {
+    "subscription_id": "b11766d8-28e6-5ec4-b0d7-af9dc46ed159",
+    "subscription_number": "SUB-SYN-0009",
+    "customer_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
+    "customer_product_id": "a95b6795-4156-567c-8f8b-a02c15bce1ea",
+    "plan_code": "SYNTHETIC_REGULAR_CARE",
+    "status": "ACTIVE",
+    "started_on": "2025-04-28",
+    "next_care_on": "2026-08-28",
+    "data_classification": "synthetic"
+  },
+  {
+    "subscription_id": "8b187e7e-cb99-5c8b-8292-449b6534a197",
+    "subscription_number": "SUB-SYN-0010",
+    "customer_id": "df1e5e7d-c016-53fa-9f7e-26ac4359c78e",
+    "customer_product_id": "7db31abc-9666-58c6-b5df-7ae71da240d8",
+    "plan_code": "SYNTHETIC_REGULAR_CARE",
+    "status": "ACTIVE",
+    "started_on": "2025-05-11",
+    "next_care_on": "2026-08-31",
+    "data_classification": "synthetic"
+  },
+  {
+    "subscription_id": "3e9211c8-c00a-54a3-af12-07647de37c68",
+    "subscription_number": "SUB-SYN-0011",
+    "customer_id": "52128217-1800-57ad-88e9-8750c499a55f",
+    "customer_product_id": "522206a8-6c10-5eb2-b709-067bbf3a99a4",
+    "plan_code": "SYNTHETIC_REGULAR_CARE",
+    "status": "ACTIVE",
+    "started_on": "2025-05-24",
+    "next_care_on": "2026-09-03",
+    "data_classification": "synthetic"
+  },
+  {
+    "subscription_id": "f9a7c0eb-02ef-517f-bbe5-04fa02e1bef9",
+    "subscription_number": "SUB-SYN-0012",
+    "customer_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d",
+    "customer_product_id": "5134f121-c503-5ef4-9b1a-bf2653d71530",
+    "plan_code": "SYNTHETIC_REGULAR_CARE",
+    "status": "ACTIVE",
+    "started_on": "2025-06-06",
+    "next_care_on": "2026-09-06",
+    "data_classification": "synthetic"
+  }
+]

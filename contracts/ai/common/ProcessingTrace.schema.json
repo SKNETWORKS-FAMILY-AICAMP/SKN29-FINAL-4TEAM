@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProcessingTrace",
+  "description": "AI 단계별 처리 추적",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}

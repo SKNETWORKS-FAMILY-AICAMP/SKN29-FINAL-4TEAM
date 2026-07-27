@@ -1,0 +1,5 @@
+title: ApiError
+type: object
+description: 공통 업무 오류 응답
+additionalProperties: false
+properties: {}
