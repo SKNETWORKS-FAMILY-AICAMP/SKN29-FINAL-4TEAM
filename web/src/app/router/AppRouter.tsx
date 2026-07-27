@@ -7,6 +7,7 @@ import {
 
 import ConsultantDashboardPage from "../../pages/consultant/ConsultantDashboardPage";
 import InquiryDetailPage from "../../pages/consultant/InquiryDetailPage";
+import VisitTransitionPage from "../../pages/consultant/VisitTransitionPage";
 import { ROUTE_PATHS } from "./routePaths";
 
 export default function AppRouter() {
@@ -31,6 +32,11 @@ export default function AppRouter() {
         <Route
           path={ROUTE_PATHS.consultantInquiryDetail}
           element={<InquiryDetailPage />}
+        />
+
+        <Route
+          path={ROUTE_PATHS.consultantVisitTransition}
+          element={<VisitTransitionPage />}
         />
 
         <Route
