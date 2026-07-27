@@ -1,0 +1,26 @@
+{
+  "wbs": "T-005",
+  "non_author_review": {
+    "status": "PENDING",
+    "reviewer": "",
+    "recorded_at": ""
+  },
+  "runtime_verification_policy": {
+    "status": "NOT_RUN",
+    "authoritative_command": "python scripts/database/validate_t005_schema.py --verify-postgresql",
+    "note": "Model/Migration parity와 PostgreSQL gate는 이 JSON 값이 아니라 명령의 실제 실행 결과만 사용한다."
+  },
+  "seed_idempotency": {
+    "status": "PENDING",
+    "database_vendor": "PostgreSQL",
+    "run_count": 0,
+    "command": "",
+    "verified_by": "",
+    "recorded_at": ""
+  },
+  "external_review": {
+    "status": "PENDING",
+    "reviewer": "",
+    "recorded_at": ""
+  }
+}
