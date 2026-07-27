@@ -1,5 +1,5 @@
-import ConsultantDashboardPage from "../pages/consultant/ConsultantDashboardPage";
+import AppRouter from "./router/AppRouter";
 
 export default function App() {
-  return <ConsultantDashboardPage />;
+  return <AppRouter />;
 }
