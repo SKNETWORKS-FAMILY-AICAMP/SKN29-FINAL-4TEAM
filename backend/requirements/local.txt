@@ -1,2 +1,5 @@
-# 개발·Formatter·테스트 의존성을 작성합니다.
 -r base.txt
+
+httpx==0.28.1
+pytest==9.1.1
+pytest-django==4.12.0
