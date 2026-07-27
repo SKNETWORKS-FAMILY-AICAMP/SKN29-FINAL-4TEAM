@@ -1,0 +1,156 @@
+name: "업무 작업"
+description: "WBS·요구사항과 연결된 개발, 문서, 계약, 테스트 작업을 등록합니다."
+title: "[Task] "
+labels: []
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        작업 범위와 완료 기준을 구체적으로 작성해 주세요.
+        관련 계약이 있는 작업은 계약 PR이 구현 PR보다 먼저 병합되어야 합니다.
+
+  - type: textarea
+    id: requirement_ids
+    attributes:
+      label: "요구사항·WBS ID"
+      description: "관련 요구사항 ID와 WBS 작업 ID를 모두 작성해 주세요."
+      placeholder: |
+        - WBS: T-023
+        - 요구사항: REQ-INQ-004
+    validations:
+      required: true
+
+  - type: dropdown
+    id: owner
+    attributes:
+      label: "담당자"
+      description: "이 작업의 주 담당자를 선택해 주세요."
+      options:
+        - "윤승혁 — PM·기술 통합"
+        - "양정현 — 모바일 앱"
+        - "한예나 — 웹 프론트엔드"
+        - "최지용 — 백엔드·데이터베이스"
+        - "이동윤 — AI·RAG"
+        - "김은진 — 데이터·QA·DevOps"
+    validations:
+      required: true
+
+  - type: input
+    id: target_date
+    attributes:
+      label: "목표 완료일"
+      description: "YYYY-MM-DD 형식으로 입력해 주세요."
+      placeholder: "2026-07-29"
+    validations:
+      required: true
+
+  - type: textarea
+    id: task_summary
+    attributes:
+      label: "작업 개요"
+      description: "무엇을 해결하거나 구현하는 작업인지 간단히 설명해 주세요."
+      placeholder: "State Machine 계약을 기준으로 행동별 API와 전이 서비스를 구현합니다."
+    validations:
+      required: true
+
+  - type: textarea
+    id: task_scope
+    attributes:
+      label: "구체 작업 내용"
+      description: "실제로 수행할 작업을 확인 가능한 단위로 작성해 주세요."
+      placeholder: |
+        - 상태·이벤트 Enum 작성
+        - 행동별 Endpoint 구현
+        - Guard 및 allowed_actions 계산 구현
+        - 정상·오류 테스트 작성
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: "선행 작업·의존성"
+      description: "먼저 완료되거나 협의되어야 하는 Issue, PR, 계약 또는 담당자를 작성해 주세요. 없으면 '없음'으로 작성합니다."
+      placeholder: |
+        - State Machine 계약 PR 병합
+        - AI 응답 스키마 확정
+        - 관련 담당자: 윤승혁, 이동윤
+    validations:
+      required: true
+
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: "예상 결과물"
+      description: "완료 시 생성되거나 변경되는 코드, 문서, 테스트 또는 실행 결과를 작성해 주세요."
+      placeholder: |
+        - 행동별 API
+        - 정상·오류 응답 예시
+        - 단위·계약 테스트
+        - 관련 문서 수정
+    validations:
+      required: true
+
+  - type: textarea
+    id: definition_of_done
+    attributes:
+      label: "완료 기준"
+      description: "다른 팀원이 완료 여부를 객관적으로 확인할 수 있도록 작성해 주세요."
+      placeholder: |
+        - 로컬에서 실행 가능
+        - 정상·오류 사례 테스트 통과
+        - 계약 코드와 구현 코드 일치
+        - PR에 실행 또는 검증 결과 첨부
+    validations:
+      required: true
+
+  - type: textarea
+    id: output_paths
+    attributes:
+      label: "결과물 경로"
+      description: "작업 대상 또는 결과물이 위치할 저장소 경로를 작성해 주세요."
+      placeholder: |
+        - backend/apps/inquiries/**
+        - contracts/api/inquiries/**
+        - tests/contract/state-machine/**
+    validations:
+      required: true
+
+  - type: textarea
+    id: excluded_scope
+    attributes:
+      label: "제외 범위"
+      description: "이번 Issue에서 수행하지 않을 항목을 작성해 주세요. 없으면 비워 둘 수 있습니다."
+      placeholder: |
+        - 전체 E2E
+        - 운영 환경 성능 최적화
+        - P1 기능
+
+  - type: dropdown
+    id: current_status
+    attributes:
+      label: "현재 상태"
+      description: "Issue 등록 시점의 작업 상태를 선택해 주세요."
+      options:
+        - "미착수"
+        - "진행 중"
+        - "검토 대기"
+        - "오류 수정"
+        - "연동 확인"
+        - "다음 주 인계"
+        - "완료"
+        - "범위 제외"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "등록 전 확인"
+      options:
+        - label: "작업 범위, 완료 기준, 결과물 경로를 구체적으로 작성했습니다."
+          required: true
+        - label: "관련 계약과 선행 의존성을 확인했습니다."
+          required: true
