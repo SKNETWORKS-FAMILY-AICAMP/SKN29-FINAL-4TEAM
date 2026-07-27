@@ -1,0 +1,35 @@
+title: ActionResultRequest
+type: object
+description: 동일 inquiry_id에 자가조치 결과를 누적하는 T-022 확정 기준선
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - guidance_item_id
+  - result_code
+  - state_version
+properties:
+  guidance_item_id:
+    type: string
+    minLength: 1
+    maxLength: 48
+  result_code:
+    type: string
+    minLength: 1
+    description: 수행 여부 단일 원천이며 NOT_PERFORMED는 확인된 값
+  result_text:
+    type:
+      - string
+      - "null"
+  customer_comment:
+    type:
+      - string
+      - "null"
+  performed_at:
+    type:
+      - string
+      - "null"
+    format: date-time
+    description: 수행 시각을 나타내는 RFC 3339 DateTimeString
+  state_version:
+    type: integer
+    description: 동시 수정 검사용 Inquiry 기대 version

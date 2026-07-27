@@ -1,0 +1,35 @@
+title: ActionResult
+type: object
+description: 고객 자가조치 결과 T-022 확정 DTO
+x-contract-status: CONFIRMED
+additionalProperties: false
+properties:
+  id:
+    type: string
+    maxLength: 48
+  guidance_item_id:
+    type: string
+    maxLength: 48
+  attempt_no:
+    type: integer
+  result_code:
+    type: string
+  result_text:
+    type:
+      - string
+      - "null"
+  performed_at:
+    type:
+      - string
+      - "null"
+    format: date-time
+  customer_comment:
+    type:
+      - string
+      - "null"
+  submitted_by:
+    type: string
+    maxLength: 48
+  created_at:
+    type: string
+    format: date-time
