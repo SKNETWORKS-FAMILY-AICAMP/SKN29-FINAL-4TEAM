@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 contract:
   name: transition-rules
   version: 0.1.0
@@ -746,3 +747,7 @@ allowed_actions_contract_status: defined_in_allowed-actions_v0.1.0
 role_permissions_contract_status: defined_in_role-permissions_v0.1.0
 completion_policy_contract_status: defined_in_completion-policy_v0.1.0
 concurrency_policy_contract_status: defined_in_concurrency-policy_v0.1.0
+=======
+# current_state + event -> next_state
+transitions: []
+>>>>>>> 2998a75c72ef8d47f3be00e9e845ed8940ce2ed1

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 contract:
   name: allowed-actions
   version: 0.1.0
@@ -397,3 +398,7 @@ validation_expectations:
 resolved_scope_gaps:
 - id: GAP-AA-001
   resolution: VISIT_NOT_NEEDED 이벤트와 TR-INQ-034 전이를 추가하여 VISIT_REVIEW_PENDING에서 방문 없이 COMPLETION_PENDING으로 이동할 수 있게 했다.
+=======
+# 상태·역할별 화면 허용 행동
+rules: []
+>>>>>>> 2998a75c72ef8d47f3be00e9e845ed8940ce2ed1

@@ -11,6 +11,27 @@
 - 검색 차단: WPU-IAC425, WPU-IAC506, JAC104 S세대, 미검증 공통 FAQ
 - 위험도: `general`, `caution`, `danger`
 - 사용 안내: `NORMAL`, `PARTIAL_STOP`, `TOTAL_STOP`, `PENDING_CONSULTATION`
+- 위 상태·분류값은 데이터셋 검증용이며 서비스 계약 매핑은 담당자 확인 대기
+
+## 팀원별 전달 진입점
+
+전체 파일을 복사하지 않고 소비자 프로필이 적재·참조·제외 대상을 구분합니다.
+
+```powershell
+python data/tools/pipeline.py handoff rag
+python data/tools/pipeline.py handoff db-smoke
+python data/tools/pipeline.py handoff db-full
+python data/tools/pipeline.py handoff qa
+```
+
+- `rag`: 검증 청크 7건만 기본 인덱싱, 매뉴얼·FAQ는 참조·평가용
+- `db-smoke`: 대표 6개 문의와 참조 엔티티, 상태 이력·감사 이벤트 제외
+- `db-full`: 전체 24개 문의, 서비스 상태 매핑 후 확장 적재
+- `qa`: 요약·Schema·무결성·품질·Manifest 확인
+
+명령은 데이터를 복제하지 않고
+`processed/metadata/consumer_handoff_manifest.json`에 기존 파일의 경로·역할·
+레코드 수·크기·SHA-256을 기록합니다.
 
 ## 단일 실행 명령
 
@@ -18,6 +39,7 @@
 python data/tools/pipeline.py build processed
 python data/tools/pipeline.py build rag
 python data/tools/pipeline.py build synthetic
+python data/tools/pipeline.py handoff
 python data/tools/pipeline.py qa --verify-rebuild
 python data/tools/pipeline.py inventory
 python data/tools/pipeline.py finalize
@@ -27,7 +49,7 @@ python data/tools/pipeline.py finalize
 
 ## 기준본
 
-- `config/`: 경로·수량·OCR·RAG·합성 시나리오·워크플로·대표 E2E 규칙
+- `config/`: 경로·수량·OCR·RAG·합성 시나리오·전달 프로필·데이터 vocabulary
 - `schemas/`: processed·synthetic·config 정적 JSON Schema
 - `templates/`: 처리 명세와 QA 문서 템플릿
 - `processed/`: 공식 전처리·RAG·근거·검증 결과
@@ -45,4 +67,4 @@ python data/tools/pipeline.py finalize
 기준 생성 시각은 `2026-07-27T00:00:00+09:00`입니다. 동일 설정으로 RAG와 합성
 데이터를 두 번 생성했을 때 모든 정식 파일 해시가 같아야 합니다.
 대표 E2E는 지침서·WBS·기획서·화면설계서의 지정 섹션과 실제
-Fixture·근거·상태 전이가 동시에 일치해야 QA를 통과합니다.
+Fixture·근거·데이터셋 내부 상태 이력이 동시에 일치해야 QA를 통과합니다.

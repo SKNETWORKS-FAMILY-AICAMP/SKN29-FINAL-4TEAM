@@ -1,5 +1,6 @@
 # Contracts Changelog
 
+<<<<<<< HEAD
 ## 2026-07-26 — State Machine v0.1.0 초안
 
 ### Added
@@ -17,3 +18,9 @@
 - `VISIT_NOT_NEEDED` 이벤트 추가
 - `VISIT_REVIEW_PENDING + VISIT_NOT_NEEDED → COMPLETION_PENDING` 전이 추가
 - 상담사 화면용 `방문 불필요 확정` 행동 추가
+=======
+## 0.1.0
+
+- `contracts/` 초기 골격 생성
+- REST API, AI JSON Schema, State Machine, 공통 코드, 오류 코드 영역 분리
+>>>>>>> 2998a75c72ef8d47f3be00e9e845ed8940ce2ed1

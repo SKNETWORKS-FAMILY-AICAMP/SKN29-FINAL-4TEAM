@@ -7,6 +7,10 @@
 python data/tools/pipeline.py build processed
 python data/tools/pipeline.py build rag
 python data/tools/pipeline.py build synthetic
+python data/tools/pipeline.py handoff rag
+python data/tools/pipeline.py handoff db-smoke
+python data/tools/pipeline.py handoff db-full
+python data/tools/pipeline.py handoff qa
 python data/tools/pipeline.py qa
 python data/tools/pipeline.py inventory
 python data/tools/pipeline.py finalize
@@ -18,7 +22,8 @@ python data/tools/pipeline.py finalize
 - `data/config/faq/ocr_transcriptions.json`: 사용자 검수 OCR
 - `data/config/rag/jac104_chunks.json`: RAG 청크와 근거 정의
 - `data/config/synthetic/scenarios.json`: 이름·시나리오·검증 완료 Fixture
-- `data/config/workflow/state_rules.json`: 상태·코드·허용 행동
+- `data/config/workflow/dataset_vocabulary.json`: 데이터셋 검증용 상태·분류값. 서비스 계약 매핑은 담당자 확정 대기
+- `data/config/handoff/consumer_profiles.json`: RAG·DB Smoke·DB Full·QA 전달 파일과 선택 조건
 - `data/templates/**`: 생성 문서 템플릿
 - `data/schemas/**`: 생성하지 않는 정적 데이터 계약
 
@@ -45,6 +50,16 @@ python data/tools/pipeline.py finalize
 - JSON Schema 필수값·타입·enum·추가 필드
 - ID 중복과 FK·근거 참조
 - 위험 문의의 정상 사용 안내 차단
-- canonical 상태와 시나리오 materialization 정합성
+- 데이터셋 상태값과 시나리오 materialization 정합성
 - 금지 코드와 내부 로컬 경로 노출
 - 같은 설정으로 반복 생성했을 때 바이트 동등성
+
+## 전달 Manifest
+
+`handoff` 명령은 새 Fixture 사본을 만들지 않습니다. 기존 기준본의 경로,
+용도, 레코드 수, 크기와 SHA-256을
+`data/processed/metadata/consumer_handoff_manifest.json`에 기록합니다.
+
+`db-smoke`는 대표 6개 시나리오만 선택하며 상태 이력·감사 이벤트를
+제외합니다. `db-full`의 상태·이벤트 관련 파일은 서비스 담당자의 필드
+매핑 확인 후 적재합니다.
