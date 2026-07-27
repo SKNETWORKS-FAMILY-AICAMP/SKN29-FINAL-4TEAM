@@ -160,6 +160,7 @@ SKN29-FINAL-4TEAM/                                      # skn29·최종·4·team
 ├─ docs/                                                # 기획·설계·개발·테스트·배포 지식을 관리하는 문서 영역
 │  ├─ planning/                                         # 기획서·요구사항정의서·WBS
 │  ├─ architecture/                                     # 시스템·모듈·배포 아키텍처
+│  ├─ technical/                                        # 영역별 개발 설명
 │  ├─ screens/                                          # 화면설계서와 화면 흐름
 │  ├─ api/                                              # 사람이 읽는 API 명세와 예시
 │  ├─ database/                                         # ERD·데이터 사전·DB 규칙
@@ -2017,7 +2018,14 @@ tests/fixtures/
 docs/
 ├─ planning/           # 공식 산출물
 ├─ architecture/       # 전체 구조
-├─ technical/          # 영역별 개발 설명
+├─ technical/          # 팀 공용 영역별 개발 설명
+├─ handoffs/           # 팀 공용 인계 진입점과 완료 증거 예시
+├─ individual/         # 담당자별 개발·검증·인계 기록
+│  └─ jiyong/
+│     ├─ manuals/
+│     ├─ technical/
+│     │  ├─ backend/
+│     │  └─ contracts/
 ├─ testing/            # 테스트 문서
 ├─ deployment/         # 실행·배포 방법
 ├─ daily-scrum/        # 데일리 스크럼
@@ -2387,9 +2395,11 @@ backend/                                             # Django·DRF 기반 업무
 │  ├─ __init__.py                                   # Backend common Python 패키지 선언
 │  ├─ api/                                          # 공통 API 응답과 페이지네이션
 │  │  ├─ __init__.py                               # 공통 API 패키지 선언
+│  │  ├─ health.py                                 # 계약 확정 전 최소 liveness 응답
 │  │  ├─ response.py                               # success·data·error 공통 Wrapper
 │  │  ├─ pagination.py                             # page·size·total 페이지네이션
-│  │  └─ metadata.py                               # correlation_id 응답 Metadata
+│  │  ├─ metadata.py                               # correlation_id 응답 Metadata
+│  │  └─ not_found.py                              # 미등록 `/api/v1` 경로 공통 404
 │  ├─ exceptions/                                   # 공통 예외·업무 오류 처리
 │  │  ├─ __init__.py                               # 공통 예외 패키지 선언
 │  │  ├─ base.py                                   # Backend 기본 예외
@@ -2445,6 +2455,9 @@ backend/                                             # Django·DRF 기반 업무
 ├─ tests/                                           # Backend 내부 자동 테스트
 │  ├─ __init__.py                                   # Backend 테스트 Python 패키지 선언
 │  ├─ unit/                                         # Service·Repository·Engine 단위 테스트
+│  │  ├─ common/                                    # 추적·로그 공통 단위 테스트
+│  │  │  ├─ test_correlation_id.py                 # 내부 correlation_id 수명주기 검증
+│  │  │  └─ test_logging.py                        # 구조화 로그·민감정보 비노출 검증
 │  │  ├─ accounts/                                  # 사용자·인증 Service 단위 테스트
 │  │  │  └─ .gitkeep                               # 빈 디렉토리를 Git에 유지
 │  │  ├─ products/                                  # 제품 검증 Service 단위 테스트
@@ -2464,7 +2477,10 @@ backend/                                             # Django·DRF 기반 업무
 │  │  └─ evidence/                                  # 근거 검증·EvidenceCard 조립 단위 테스트
 │  │     └─ .gitkeep                               # 빈 디렉토리를 Git에 유지
 │  ├─ api/                                          # DRF Endpoint 요청·응답 테스트
-│  │  └─ .gitkeep                                   # 빈 디렉토리를 Git에 유지
+│  │  ├─ .gitkeep                                   # 디렉토리를 Git에 유지
+│  │  ├─ test_common_error_response.py             # 공통 오류 Wrapper 검증
+│  │  ├─ test_common_response.py                   # 성공·페이지 응답 Wrapper 검증
+│  │  └─ test_health.py                            # 임시 liveness·비노출 기준 검증
 │  ├─ integration/                                  # PostgreSQL·AI Adapter 통합 테스트
 │  │  └─ .gitkeep                                   # 빈 디렉토리를 Git에 유지
 │  ├─ permissions/                                  # 고객·상담사·기사·운영 권한 테스트
@@ -2699,3 +2715,66 @@ Infra·CI/CD
 ```
 
 실제 구현 과정에서는 사용하지 않는 빈 하위 디렉토리를 한꺼번에 생성하지 않고, 해당 기능을 개발하는 시점에 필요한 파일과 디렉토리만 추가한다.
+
+## 14.4 2026-07-27 최신 백엔드 산출물 구조
+
+중복 문서와 과거 착수 차단 기록을 정리한 뒤의 현재 구조다. 개인 PC
+경로나 `Daily_Process`를 참조하지 않고 저장소 안의 상대 경로만
+사용한다.
+
+현행 Django Runtime은 `backend/**`, 기계 계약은 `contracts/**`를
+기준으로 한다. 루트 `WaterCareBackend/**`와 이를 호출하는 구형 BAT
+파일은 과거 Android 연동 starter 참고본이며 현행 구조·Migration·API
+계약의 권위 원본이 아니다.
+
+```text
+docs/
+├─ api/                                             # Public API 사람용 명세
+├─ database/
+│  └─ t-005/                                       # 확정 ERD·테이블 명세·검증 패키지
+├─ handoffs/
+│  └─ README.md                                    # 현재 인계 문서 진입점
+└─ individual/jiyong/
+   ├─ README.md                                    # 최지용 최신 문서 인덱스
+   ├─ manuals/
+   │  ├─ 20260727_최지용_Django_PostgreSQL_공유패키지_인계서_v1.0.md
+   │  ├─ 20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md
+   │  └─ 20260727_최지용_Auth_API_계약_Runtime_정합화_보고서_v1.0.md
+   └─ technical/
+      ├─ backend/
+      │  ├─ api_contract_handover_guide.md
+      │  ├─ database_schema_handover_guide.md
+      │  ├─ t-022-inquiry-readiness.md
+      │  └─ t-023-workflow-readiness.md
+      └─ contracts/
+         └─ t-005-t-006-alignment-review.md
+
+scripts/
+└─ database/
+   ├─ check_postgresql_connection.py
+   └─ validate_t005_schema.py
+
+backend/tests/
+├─ api/
+└─ unit/
+```
+
+## 14.5 현재 구현 판정
+
+구현 여부는 파일 이름이나 문서 존재가 아니라 Model·Migration·App
+등록·Route·Runtime 테스트와 PostgreSQL 실행 증거로 판정한다.
+
+| 범위 | 2026-07-27 확인 상태 | 다음 순서 |
+| --- | --- | --- |
+| T-005 | ERD·테이블 명세는 최지용 확정 산출물, Runtime은 32개 중 2개 | Wave 1 작업·검증 후 Wave 2 |
+| T-016 | PostgreSQL 16.14 연결, 공통 API 기반과 Health Runtime 동작 | 팀원 로컬 재현 |
+| T-017 | User·CustomerProfile·Migration·Seed·Auth 4개 Runtime 구현 | 기능 확장 시 계약·테스트 동시 갱신 |
+| T-022 | API 기준선 3개 존재, Model·Migration·App·Route·Runtime 없음 | T-005 선행 Wave 뒤 수직 구현 |
+| T-023 | PM 계약 6영역 교차검증 통과, Loader·Validator 구현, Engine·Model·Route Runtime 없음 | Engine부터 한 수직 단계씩 구현·검증 |
+
+현재 변경의 Backend 전체 회귀는 `239 passed`다. 이후 변경에서는 같은
+Commit 기준으로 다시 실행해 수치를 갱신한다.
+ERD·테이블 명세·API 명세 작성에는 별도 팀 승인 대기를 두지 않는다.
+팀원 검토는 소비자 호환성, PR 리뷰와 실행 재현 단계에서 수행한다.
+T-023의 상태 전이·Guard·역할별 허용 동작은 PM 관할 입력이므로
+최지용의 Backend 소비·구현과 구분해 추적한다.
