@@ -28,7 +28,7 @@ config/pipeline.json
 ├─ faq/ocr_transcriptions.json
 ├─ rag/jac104_chunks.json
 ├─ synthetic/scenarios.json
-└─ workflow/state_rules.json
+└─ workflow/dataset_vocabulary.json
         ↓
 tools/pipeline.py
         ↓

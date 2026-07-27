@@ -15,7 +15,7 @@ from .builders import (
     write_preview,
 )
 from .config import PipelineConfig
-from .io import read_json, sha256_file, write_json
+from .io import data_path, read_json, sha256_file, write_json
 from .validation import run_data_qa
 
 
@@ -33,6 +33,82 @@ def _entry(config: PipelineConfig, path: Path) -> dict[str, Any]:
 
 def _files(root: Path) -> list[Path]:
     return sorted(path for path in root.rglob("*") if path.is_file())
+
+
+def _record_count(path: Path) -> int | None:
+    if path.suffix == ".jsonl":
+        return sum(
+            1
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        )
+    if path.suffix == ".csv":
+        rows = path.read_text(encoding="utf-8").splitlines()
+        return max(0, len(rows) - 1)
+    if path.suffix == ".json":
+        value = read_json(path)
+        if isinstance(value, list):
+            return len(value)
+        if isinstance(value, dict) and isinstance(value.get("scenarios"), list):
+            return len(value["scenarios"])
+        return 1
+    return None
+
+
+def build_handoff_manifest(
+    config: PipelineConfig,
+    *,
+    profile: str | None = None,
+) -> dict[str, Any]:
+    definitions = config.config("handoff")
+    available = definitions["profiles"]
+    if profile and profile not in available:
+        raise ValueError(f"unknown handoff profile: {profile}")
+    resolved: dict[str, Any] = {}
+    unique_paths: set[str] = set()
+    for name, value in available.items():
+        items = []
+        for item in value["items"]:
+            path = data_path(config.data_root, item["path"])
+            if not path.is_file():
+                raise ValueError(f"handoff target is missing: {item['path']}")
+            unique_paths.add(item["path"])
+            items.append(
+                {
+                    **item,
+                    "records": _record_count(path),
+                    "size_bytes": path.stat().st_size,
+                    "sha256": sha256_file(path),
+                }
+            )
+        resolved[name] = {**value, "items": items}
+    manifest = {
+        "status": "PASS",
+        "dataset_version": config.dataset_version,
+        "generated_at": config.generated_at,
+        "service_contracts_used": False,
+        "profile_count": len(resolved),
+        "unique_file_count": len(unique_paths),
+        "profiles": resolved,
+    }
+    target = config.path("handoff_manifest")
+    write_json(config.data_root, target, manifest)
+    selected = resolved if profile is None else {profile: resolved[profile]}
+    return {
+        "status": "PASS",
+        "manifest": _relative(config, target),
+        "selected_profiles": selected,
+        "summary": {
+            "profile_count": len(selected),
+            "unique_file_count": len(
+                {
+                    item["path"]
+                    for value in selected.values()
+                    for item in value["items"]
+                }
+            ),
+        },
+    }
 
 
 def _refresh_dataset_manifest(config: PipelineConfig) -> dict[str, Any]:
@@ -196,6 +272,7 @@ def finalize(config: PipelineConfig, *, prepare: bool = False) -> dict[str, Any]
     qa = run_qa(config, verify_rebuild=True)
     if qa["status"] != "PASS":
         raise ValueError("QA must pass before finalize")
+    build_handoff_manifest(config)
     path = config.path("final_manifest")
     dataset = read_json(config.path("dataset_manifest"))
     data_files = []

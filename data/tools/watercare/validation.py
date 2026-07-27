@@ -1,4 +1,4 @@
-"""Equivalence and declarative-contract validation."""
+"""Equivalence and declarative dataset validation."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from .io import json_bytes, read_json, read_jsonl, sha256_bytes
 def validate_configs(config: PipelineConfig) -> list[dict[str, Any]]:
     rag = config.config("rag")
     synthetic = config.config("synthetic")
-    workflow = config.config("workflow")
+    vocabulary = config.config("vocabulary")
     ocr = config.config("ocr")
     e2e = config.config("e2e")
     checks: list[dict[str, Any]] = []
@@ -47,10 +47,14 @@ def validate_configs(config: PipelineConfig) -> list[dict[str, Any]]:
     )
     add(
         "risk_codes_present",
-        workflow["risk_levels"] == ["general", "caution", "danger"],
-        ",".join(workflow["risk_levels"]),
+        vocabulary["risk_levels"] == ["general", "caution", "danger"],
+        ",".join(vocabulary["risk_levels"]),
     )
-    add("usage_codes_present", bool(workflow["usage_guidance_statuses"]), ",".join(workflow["usage_guidance_statuses"]))
+    add(
+        "usage_codes_present",
+        bool(vocabulary["usage_guidance_statuses"]),
+        ",".join(vocabulary["usage_guidance_statuses"]),
+    )
     danger_normal = [
         row["scenario_id"]
         for row in synthetic["scenario_matrix"]
@@ -62,7 +66,7 @@ def validate_configs(config: PipelineConfig) -> list[dict[str, Any]]:
         {
             "rag": rag,
             "synthetic": synthetic,
-            "workflow": workflow,
+            "vocabulary": vocabulary,
             "ocr": ocr,
             "e2e": e2e,
         }
@@ -98,31 +102,6 @@ def compare_bytes(
         "canonical_bytes": len(expected),
         "declarative_bytes": len(generated),
     }
-
-
-def contract_usage_codes(contracts_root: Path) -> list[str]:
-    return _contract_codes(
-        contracts_root / "codes" / "usage-guidance-statuses.yaml"
-    )
-
-
-def contract_risk_codes(contracts_root: Path) -> list[str]:
-    return _contract_codes(contracts_root / "codes" / "risk-levels.yaml")
-
-
-def _contract_codes(path: Path) -> list[str]:
-    codes: list[str] = []
-    in_codes = False
-    for line in path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if stripped == "codes:":
-            in_codes = True
-            continue
-        if stripped.startswith("- code:"):
-            codes.append(stripped.split(":", 1)[1].strip())
-        elif in_codes and stripped.startswith("- "):
-            codes.append(stripped[2:].strip())
-    return codes
 
 
 def schema_risk_codes(data_root: Path) -> dict[str, list[str]]:
@@ -246,20 +225,15 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
     errors: list[str] = []
     files_checked = 0
     records_checked = 0
-    contracts_root = config.data_root.parent / "contracts"
-    workflow = config.config("workflow")
-    risk_contract = contract_risk_codes(contracts_root)
-    usage_contract = contract_usage_codes(contracts_root)
-    if workflow["risk_levels"] != risk_contract:
-        errors.append("risk_contract_config_mismatch")
-    if workflow["usage_guidance_statuses"] != usage_contract:
-        errors.append("usage_contract_config_mismatch")
+    vocabulary = config.config("vocabulary")
+    risk_vocabulary = vocabulary["risk_levels"]
+    usage_vocabulary = vocabulary["usage_guidance_statuses"]
     for name, codes in schema_risk_codes(config.data_root).items():
-        if codes != risk_contract:
-            errors.append(f"risk_contract_schema_mismatch:{name}")
+        if codes != risk_vocabulary:
+            errors.append(f"risk_vocabulary_schema_mismatch:{name}")
     for name, codes in schema_usage_codes(config.data_root).items():
-        if codes != usage_contract:
-            errors.append(f"usage_contract_schema_mismatch:{name}")
+        if codes != usage_vocabulary:
+            errors.append(f"usage_vocabulary_schema_mismatch:{name}")
     for name, relative in config.values["config_schemas"].items():
         value = config.values if name == "pipeline" else config.config(name)
         schema = read_json(config.data_root / relative)
@@ -355,7 +329,7 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
     if set(configured) != set(materialized):
         errors.append("scenario_matrix_materialization_mismatch")
     if any(
-        row["status"] not in workflow["inquiry_statuses"]
+        row["status"] not in vocabulary["inquiry_statuses"]
         for row in outputs["inquiries"]
     ):
         errors.append("noncanonical_inquiry_status")

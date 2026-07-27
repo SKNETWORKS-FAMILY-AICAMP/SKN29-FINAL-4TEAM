@@ -868,3 +868,84 @@ Manifest 밖에 남은 파일은 자기 참조 해시를 만들 수 없는
 - 위험도: `general / caution / danger`
 - 사용 안내: `NORMAL / PARTIAL_STOP / TOTAL_STOP / PENDING_CONSULTATION`
 - Git 커밋·스테이징·푸시: 수행하지 않음
+
+## 21. 팀 전달면 경량화·관할 정리 작업 로그
+
+### 21-1. 작업 결정
+
+데이터 레코드 수는 DB Seed와 RAG 품질 확인에 과하지 않지만, 팀원이
+확인해야 하는 파일이 분산되어 적재 대상과 참조 대상을 구분하기 어려웠다.
+정식 데이터는 삭제하지 않고 소비자별 Manifest로 전달면만 줄이는 방식으로
+정리했다.
+
+`contracts/**`는 김은진 관할이 아니므로 이 PR의 변경을 모두 제거했다.
+작업 트리 기준 `contracts/**`는 `origin/main`과 차이가 없다. 데이터 도구도
+`contracts/**`를 직접 읽지 않으며, 데이터셋의 상태·분류값은
+`dataset_validation_only`와 `pending_owner_confirmation`으로 표시한다.
+
+### 21-2. 처리 로그
+
+| 순서 | 처리 내용 | 결과 |
+|---:|---|---|
+| 1 | PR 변경 174개를 관할 문서와 재대조 | `contracts/**` 12개 범위 초과 확인 |
+| 2 | `contracts/**`를 `origin/main` 기준으로 복구 | 차이 0개 |
+| 3 | QA·테스트·대표 E2E의 `contracts/**` 직접 참조 제거 | 활성 참조 0건 |
+| 4 | `state_rules.json`을 데이터 전용 `dataset_vocabulary.json`으로 축소 | `allowed_actions` 제거, 서비스 매핑 대기 명시 |
+| 5 | 대표 E2E 파일·Schema의 `contract` 명칭을 `case`로 변경 | 데이터 불변식과 서비스 계약 구분 |
+| 6 | RAG·DB Smoke·DB Full·QA 전달 프로필 추가 | 프로필 4개 |
+| 7 | 파일 경로·역할·레코드 수·크기·SHA-256 Manifest 생성 | 중복 데이터 사본 0개 |
+| 8 | 단위·Schema·무결성·재현성·동등성 재검증 | 전체 통과 |
+
+### 21-3. 소비자별 전달 프로필
+
+기준 파일은 `data/config/handoff/consumer_profiles.json`, 생성 결과는
+`data/processed/metadata/consumer_handoff_manifest.json`이다.
+
+| 프로필 | 파일 | 기본 범위 | 준비 상태 |
+|---|---:|---|---|
+| `rag` | 11개 | 검증 RAG 7건 인덱싱, 근거·매뉴얼·FAQ·평가 데이터 참조 | `READY` |
+| `db-smoke` | 11개 | 대표 문의 6건과 참조 엔티티, 상태 이력·감사 이벤트 제외 | `READY_FOR_FIELD_MAPPING` |
+| `db-full` | 13개 | 문의 24건 전체, 상태 관련 파일은 매핑 후 적재 | `QA_READY_SERVICE_MAPPING_PENDING` |
+| `qa` | 6개 | QA 요약·Schema·무결성·품질·Manifest·처리 명세 | `READY` |
+
+RAG 프로필에서 기본 인덱싱 역할 `INGEST`는
+`rag_verified_sample.jsonl` 7건 하나뿐이다. FAQ 119건과 후보 20건은
+`REFERENCE_ONLY`이며 기본 임베딩 대상이 아니다.
+
+DB Smoke는 `SYN-JAC104-001`부터 `SYN-JAC104-006`까지 6개를 선택한다.
+`inquiry_status_histories.json`, `audit_events.json`,
+`followup_confirmations.json`과 서비스 State Machine 자동 적용은 제외한다.
+
+### 21-4. 팀 실행 명령
+
+```powershell
+python -B data/tools/pipeline.py handoff rag
+python -B data/tools/pipeline.py handoff db-smoke
+python -B data/tools/pipeline.py handoff db-full
+python -B data/tools/pipeline.py handoff qa
+```
+
+명령은 데이터를 복제하지 않고 Manifest를 갱신한다. DB 담당자는
+`db-smoke`로 필드·FK 적재를 먼저 확인하고, 상태·이벤트 매핑이 확정된 뒤
+`db-full`의 `LOAD_AFTER_MAPPING` 파일을 사용한다. RAG 담당자는 `INGEST`
+파일만 Vector DB에 넣고 나머지는 출처·평가용으로 사용한다.
+
+### 21-5. 최종 검증
+
+| 검사 | 결과 |
+|---|---|
+| 단위 테스트 | 26/26 통과 |
+| 전체 QA | 42개 파일·697개 레코드 |
+| 오류·경고 | 0건·0건 |
+| 대표 E2E 데이터 불변식 | 17/17 통과 |
+| 재현성 변경 | 0개 파일 |
+| 선언형 동등성 | 32/32파일 바이트 동일 |
+| 전달 프로필 | 4개·고유 파일 31개 |
+| 최종 Manifest | 137개 항목·해시 불일치 0건 |
+| Python | 21개 파일·2,240줄 |
+| 최대 구현 모듈 | 398줄 |
+| `data/.temp`, `data/.work`, `__pycache__` | 없음 |
+
+데이터 버전은 업무 데이터 내용이 바뀌지 않았으므로 `0.8.0`을 유지한다.
+서비스 상태·이벤트·공통 코드의 최종 매핑은 윤승혁·최지용 관할 작업에서
+확정해야 한다.

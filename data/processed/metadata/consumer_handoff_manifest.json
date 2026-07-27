@@ -1,0 +1,390 @@
+{
+  "status": "PASS",
+  "dataset_version": "0.8.0",
+  "generated_at": "2026-07-27T00:00:00+09:00",
+  "service_contracts_used": false,
+  "profile_count": 4,
+  "unique_file_count": 31,
+  "profiles": {
+    "rag": {
+      "purpose": "검증된 JAC104D 청크 적재와 검색 품질 확인",
+      "readiness": "READY",
+      "contract_dependency": "NONE",
+      "items": [
+        {
+          "path": "processed/structured/rag/mvp/rag_verified_sample.jsonl",
+          "role": "INGEST",
+          "records": 7,
+          "size_bytes": 14296,
+          "sha256": "BF50C87FC7652546460FFC9927BB7B37BA341DF734F994CFDFD7A96FE7BE7A26"
+        },
+        {
+          "path": "processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "role": "REFERENCE",
+          "records": 9,
+          "size_bytes": 16234,
+          "sha256": "32EFD1AB081048DAB3B06C6EA264E79DC12208E56DFA1598C74E812B44584E58"
+        },
+        {
+          "path": "processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+          "role": "REFERENCE",
+          "records": 44,
+          "size_bytes": 82618,
+          "sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F"
+        },
+        {
+          "path": "processed/documents/faq/faq_snapshot_normalized.jsonl",
+          "role": "REFERENCE_ONLY",
+          "records": 119,
+          "size_bytes": 173565,
+          "sha256": "FF69800A58A354128E55D6BD4D4675B756EC8A6B8750A228B6A5787388DD780B"
+        },
+        {
+          "path": "processed/structured/faq/selected_faq_candidates.jsonl",
+          "role": "REFERENCE_ONLY",
+          "records": 20,
+          "size_bytes": 29966,
+          "sha256": "AAFD9921698088278A4ABA52F0C445FC09A0CF2211AF69DA2815E40A215F9276"
+        },
+        {
+          "path": "processed/metadata/model_document_lineage.csv",
+          "role": "REFERENCE",
+          "records": 3,
+          "size_bytes": 397,
+          "sha256": "1DEF48EB546C69142FF07294392E504131D2668652BA5CAEBEEA0C71E16B5DA0"
+        },
+        {
+          "path": "processed/metadata/source_inventory.csv",
+          "role": "REFERENCE",
+          "records": 4,
+          "size_bytes": 1670,
+          "sha256": "F9D3589C86FD74629454CA73FBF0D754A8CFB81646408712A854E9F9AF4622F6"
+        },
+        {
+          "path": "synthetic/fixtures/inquiries.json",
+          "role": "EVALUATION_INPUT",
+          "records": 24,
+          "size_bytes": 25011,
+          "sha256": "7412F70DC2D1099C44C9076801E31C3857678D6F9F64831F7D68E543CBFC1CF2"
+        },
+        {
+          "path": "synthetic/expected/evidence_references.json",
+          "role": "EVALUATION_EXPECTED",
+          "records": 24,
+          "size_bytes": 10994,
+          "sha256": "EC52FB1FE15BA5F06773CE56C32A777A19E45DC725B75770496EC63C9F8C4BF6"
+        },
+        {
+          "path": "schemas/processed/ragChunk.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 4344,
+          "sha256": "E95F821D71E5026971C8F9074E02A0BEF9B9339F26E2A6649A5FF8635BDF46FA"
+        },
+        {
+          "path": "schemas/processed/evidenceRegistry.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 4269,
+          "sha256": "B1334C4AAF769F47E3EBE20927F05D44905E0C109474FBD7723F8F92D746DFA6"
+        }
+      ],
+      "selection": {
+        "index_only_roles": [
+          "INGEST"
+        ],
+        "evaluation_scenario_ids": [
+          "SYN-JAC104-001",
+          "SYN-JAC104-002",
+          "SYN-JAC104-003",
+          "SYN-JAC104-004",
+          "SYN-JAC104-005",
+          "SYN-JAC104-006"
+        ]
+      },
+      "excluded": [
+        "FAQ 119건 전체의 기본 임베딩",
+        "IAC425·IAC506 자료",
+        "모델 미검증 FAQ의 단독 근거 사용"
+      ],
+      "commands": [
+        "python -B data/tools/pipeline.py handoff rag",
+        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-27T00:00:00+09:00"
+      ]
+    },
+    "db-smoke": {
+      "purpose": "DB 모델·FK·Seed 적재 확인용 대표 6개 문의",
+      "readiness": "READY_FOR_FIELD_MAPPING",
+      "contract_dependency": "SERVICE_MAPPING_PENDING",
+      "items": [
+        {
+          "path": "synthetic/fixtures/users.json",
+          "role": "LOAD",
+          "records": 16,
+          "size_bytes": 4133,
+          "sha256": "C6C27659F4F0865C3A8A571CAA935340DF2B304DE35BFC69B009BD8B7C43A437"
+        },
+        {
+          "path": "synthetic/fixtures/products.json",
+          "role": "LOAD",
+          "records": 1,
+          "size_bytes": 310,
+          "sha256": "E6FBF4ED6E6CF7EBEC940512DC332F8DE3E2CA51DC4A8B357182478BF8D8EEFF"
+        },
+        {
+          "path": "synthetic/fixtures/customer_products.json",
+          "role": "LOAD",
+          "records": 12,
+          "size_bytes": 4575,
+          "sha256": "32B65E7BBA403D0A8A15C964180F290B50FCD5F5A9F98406EF2CE61CA6F86F4D"
+        },
+        {
+          "path": "synthetic/fixtures/subscriptions.json",
+          "role": "LOAD",
+          "records": 12,
+          "size_bytes": 4959,
+          "sha256": "172FBBA141E48051280002BF688696B6454C210DB6EEA3BFC3C29212EA5D03DE"
+        },
+        {
+          "path": "synthetic/fixtures/inquiries.json",
+          "role": "LOAD_FILTERED",
+          "records": 24,
+          "size_bytes": 25011,
+          "sha256": "7412F70DC2D1099C44C9076801E31C3857678D6F9F64831F7D68E543CBFC1CF2"
+        },
+        {
+          "path": "synthetic/fixtures/consultations.json",
+          "role": "LOAD_FILTERED",
+          "records": 16,
+          "size_bytes": 10800,
+          "sha256": "DF37E0B841F33C8E3A04CE50508ADF44A47F226472D9AA7BF06B76C3A4AC92D3"
+        },
+        {
+          "path": "synthetic/fixtures/visits.json",
+          "role": "LOAD_FILTERED",
+          "records": 5,
+          "size_bytes": 3488,
+          "sha256": "374BEFAD9967F2CBCA65FBE450A735E86CCA4C323FE702F4D2AA14C4C160ABF6"
+        },
+        {
+          "path": "synthetic/fixtures/care_histories.json",
+          "role": "LOAD_FILTERED",
+          "records": 25,
+          "size_bytes": 8368,
+          "sha256": "F1B45969F6670DE210A623D1C85B10827E51AFD2E2AC78A797806D0655F54C21"
+        },
+        {
+          "path": "schemas/synthetic/syntheticUser.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 1379,
+          "sha256": "85FECE77F89D0331139D56C6061A3B8A8816769D0AB0AFB94A8F68ABAAB5B0A4"
+        },
+        {
+          "path": "schemas/synthetic/syntheticProduct.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 1186,
+          "sha256": "2425CA4D4E7C877E3A80B02F0C37607A39358658DCE897F225B1AC024289AD5A"
+        },
+        {
+          "path": "schemas/synthetic/syntheticInquiry.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 3808,
+          "sha256": "200276CA2BC04A933EC3B45A6BEB24ADD13BB627530649D8B356A39EDECBAFF1"
+        }
+      ],
+      "selection": {
+        "scenario_ids": [
+          "SYN-JAC104-001",
+          "SYN-JAC104-002",
+          "SYN-JAC104-003",
+          "SYN-JAC104-004",
+          "SYN-JAC104-005",
+          "SYN-JAC104-006"
+        ],
+        "filter_rule": "선택 문의가 참조하는 고객·구독·상담·방문·케어 행만 FK 방향으로 포함"
+      },
+      "excluded": [
+        "inquiry_status_histories.json",
+        "audit_events.json",
+        "followup_confirmations.json",
+        "서비스 State Machine 자동 적용"
+      ],
+      "commands": [
+        "python -B data/tools/pipeline.py handoff db-smoke"
+      ]
+    },
+    "db-full": {
+      "purpose": "전체 24개 문의의 데이터 품질·관계 검증",
+      "readiness": "QA_READY_SERVICE_MAPPING_PENDING",
+      "contract_dependency": "SERVICE_MAPPING_PENDING",
+      "items": [
+        {
+          "path": "synthetic/fixtures/users.json",
+          "role": "LOAD",
+          "records": 16,
+          "size_bytes": 4133,
+          "sha256": "C6C27659F4F0865C3A8A571CAA935340DF2B304DE35BFC69B009BD8B7C43A437"
+        },
+        {
+          "path": "synthetic/fixtures/products.json",
+          "role": "LOAD",
+          "records": 1,
+          "size_bytes": 310,
+          "sha256": "E6FBF4ED6E6CF7EBEC940512DC332F8DE3E2CA51DC4A8B357182478BF8D8EEFF"
+        },
+        {
+          "path": "synthetic/fixtures/customer_products.json",
+          "role": "LOAD",
+          "records": 12,
+          "size_bytes": 4575,
+          "sha256": "32B65E7BBA403D0A8A15C964180F290B50FCD5F5A9F98406EF2CE61CA6F86F4D"
+        },
+        {
+          "path": "synthetic/fixtures/subscriptions.json",
+          "role": "LOAD",
+          "records": 12,
+          "size_bytes": 4959,
+          "sha256": "172FBBA141E48051280002BF688696B6454C210DB6EEA3BFC3C29212EA5D03DE"
+        },
+        {
+          "path": "synthetic/fixtures/inquiries.json",
+          "role": "LOAD",
+          "records": 24,
+          "size_bytes": 25011,
+          "sha256": "7412F70DC2D1099C44C9076801E31C3857678D6F9F64831F7D68E543CBFC1CF2"
+        },
+        {
+          "path": "synthetic/fixtures/consultations.json",
+          "role": "LOAD",
+          "records": 16,
+          "size_bytes": 10800,
+          "sha256": "DF37E0B841F33C8E3A04CE50508ADF44A47F226472D9AA7BF06B76C3A4AC92D3"
+        },
+        {
+          "path": "synthetic/fixtures/visits.json",
+          "role": "LOAD",
+          "records": 5,
+          "size_bytes": 3488,
+          "sha256": "374BEFAD9967F2CBCA65FBE450A735E86CCA4C323FE702F4D2AA14C4C160ABF6"
+        },
+        {
+          "path": "synthetic/fixtures/care_histories.json",
+          "role": "LOAD",
+          "records": 25,
+          "size_bytes": 8368,
+          "sha256": "F1B45969F6670DE210A623D1C85B10827E51AFD2E2AC78A797806D0655F54C21"
+        },
+        {
+          "path": "synthetic/fixtures/followup_confirmations.json",
+          "role": "LOAD_AFTER_MAPPING",
+          "records": 1,
+          "size_bytes": 714,
+          "sha256": "24B6DC5232CB86D8EAECBCCE2733B4A1F45BE701A04A5C181BAFAFABC7B57A72"
+        },
+        {
+          "path": "synthetic/fixtures/inquiry_status_histories.json",
+          "role": "LOAD_AFTER_MAPPING",
+          "records": 115,
+          "size_bytes": 79054,
+          "sha256": "7A72C193FD04CCA10AF0F3B06A142CE1B4DFE80F54FE86850F85E10416160799"
+        },
+        {
+          "path": "synthetic/fixtures/audit_events.json",
+          "role": "LOAD_AFTER_MAPPING",
+          "records": 115,
+          "size_bytes": 57309,
+          "sha256": "3EDBBBA49906C5D2CA0764765341EC59D0999884BE5F12D43ECAF075C451735F"
+        },
+        {
+          "path": "synthetic/expected/evidence_references.json",
+          "role": "QA_EXPECTED",
+          "records": 24,
+          "size_bytes": 10994,
+          "sha256": "EC52FB1FE15BA5F06773CE56C32A777A19E45DC725B75770496EC63C9F8C4BF6"
+        },
+        {
+          "path": "synthetic/expected/safety_assessments.json",
+          "role": "QA_EXPECTED",
+          "records": 24,
+          "size_bytes": 15294,
+          "sha256": "C6E0671D67CB5B5A7441A7F73E62AF71A814E2565FFDFD94151763DA28633511"
+        }
+      ],
+      "selection": {
+        "scenario_count": 24
+      },
+      "excluded": [
+        "계약 담당자 확인 전 상태·이벤트 자동 매핑"
+      ],
+      "commands": [
+        "python -B data/tools/pipeline.py handoff db-full",
+        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-27T00:00:00+09:00"
+      ]
+    },
+    "qa": {
+      "purpose": "팀원이 데이터 품질 결과를 빠르게 확인",
+      "readiness": "READY",
+      "contract_dependency": "NONE",
+      "items": [
+        {
+          "path": "processed/validation/latest_qa_summary.json",
+          "role": "SUMMARY",
+          "records": 1,
+          "size_bytes": 5477,
+          "sha256": "DE364D1F66EF992E30B8725ADF220254644C63244DB1CD176AB092BD4C63EF3A"
+        },
+        {
+          "path": "processed/validation/schema/latest_schema_report.json",
+          "role": "DETAIL",
+          "records": 1,
+          "size_bytes": 7579,
+          "sha256": "3F502FED6E6A1C1176FEAF27F075DA52D673BE84129CD09BD91B66673632D575"
+        },
+        {
+          "path": "processed/validation/integrity/latest_integrity_report.json",
+          "role": "DETAIL",
+          "records": 1,
+          "size_bytes": 1442,
+          "sha256": "97A2890D722153E6AE151FF59D779F9FDFE19910E67241EA04893FE2A452E914"
+        },
+        {
+          "path": "processed/validation/quality/latest_quality_report.json",
+          "role": "DETAIL",
+          "records": 1,
+          "size_bytes": 1723,
+          "sha256": "E8897B085DEA5BA30012B2FC138CFF67A48392B1193C7BA7EA270A5756DB7B0A"
+        },
+        {
+          "path": "processed/metadata/dataset_manifest.json",
+          "role": "MANIFEST",
+          "records": 1,
+          "size_bytes": 9112,
+          "sha256": "CCAC6AE0D28002234D4198366A62D653EF52191C015B0FB0748052BF57F810D9"
+        },
+        {
+          "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
+          "role": "GUIDE",
+          "records": null,
+          "size_bytes": 3531,
+          "sha256": "9069BE4606A285E24C24CCD8115964DF3BAD9FFDBC01B9CC253D677211573D8B"
+        }
+      ],
+      "selection": {
+        "required_status": "PASS",
+        "required_errors": 0,
+        "required_warnings": 0
+      },
+      "excluded": [
+        "삭제 전 원본 목록",
+        "리팩터링 내부 비교 세부 로그"
+      ],
+      "commands": [
+        "python -B data/tools/pipeline.py handoff qa",
+        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-27T00:00:00+09:00"
+      ]
+    }
+  }
+}

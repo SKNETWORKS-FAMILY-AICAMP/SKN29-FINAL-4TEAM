@@ -1,6 +1,6 @@
 {
   "dataset_version": "0.8.0",
-  "config_version": "1.1.0",
+  "config_version": "1.2.0",
   "generated_at": "2026-07-27T00:00:00+09:00",
   "status": "PASS",
   "mvp_product_code": "WPUJAC104DWH",
@@ -231,8 +231,8 @@
   "metadata_files": [
     {
       "path": "catalog/CHANGELOG.md",
-      "size_bytes": 6144,
-      "sha256": "CF616A4FFA9488299C4F147E1CB4467DF3DB5E48B7607CA640CBF9AE33550F58"
+      "size_bytes": 6560,
+      "sha256": "B5346DAAE9C84BD344F6A799889D762390E74E97E69AB2CF81ABFCDE8F8AB0E2"
     },
     {
       "path": "catalog/datasets.yaml",
@@ -250,9 +250,14 @@
       "sha256": "ACE6636F3706EEC41B799D4ED0BA938D226241220B9D0BD296B86423A5077C61"
     },
     {
+      "path": "processed/metadata/consumer_handoff_manifest.json",
+      "size_bytes": 13658,
+      "sha256": "CD05B4B02626952D6394C192B96B256D02884680283D66EFCA76B5F7C8A531FD"
+    },
+    {
       "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
-      "size_bytes": 3524,
-      "sha256": "FAC5116925B54AAA476FCAE2C77CDF6CAD6A81CA66D2CFBA3BA38411FA141B7C"
+      "size_bytes": 3531,
+      "sha256": "9069BE4606A285E24C24CCD8115964DF3BAD9FFDBC01B9CC253D677211573D8B"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -276,13 +281,13 @@
     },
     {
       "path": "README.md",
-      "size_bytes": 2033,
-      "sha256": "C3980581488ADD1B4D5E3A5AAEBE5754C25EA2E4271097D4C820C1CC7091AE4B"
+      "size_bytes": 3040,
+      "sha256": "EB910A553C704CBC9DD79C67FC6E69DE88B18794C13764843E358EEF2E7D2E70"
     },
     {
       "path": "schemas/README.md",
-      "size_bytes": 1497,
-      "sha256": "FF00FBD2400E03BF7F3128C97855952C528B5201DA52B3084461ADE274399179"
+      "size_bytes": 1606,
+      "sha256": "9C16B474A5B3884EC22829A2D239DE2F668F2A2893BF97A1BC10E0BFE881AB20"
     },
     {
       "path": "synthetic/README.md",
@@ -291,8 +296,8 @@
     },
     {
       "path": "tools/README.md",
-      "size_bytes": 1954,
-      "sha256": "C1D463CF4D281583BFBF6DD5865C16045C593DCC92279B8BEFBE511F4795F6D5"
+      "size_bytes": 2769,
+      "sha256": "9D3405FD901C0BB84AFE2559E268FAD1929636968133FDB0FA37D9D8DCE29447"
     },
     {
       "path": "tools/tests/README.md",
@@ -302,14 +307,24 @@
   ],
   "schema_files": [
     {
+      "path": "schemas/config/consumerProfiles.schema.json",
+      "size_bytes": 2070,
+      "sha256": "C088ABA3B789BB6E70F56BE258806A9496279C837CEAB40A3FFD27576ECBAB69"
+    },
+    {
+      "path": "schemas/config/datasetVocabulary.schema.json",
+      "size_bytes": 1273,
+      "sha256": "3A421492E86D7060F5B06588BFA673213F13F849E09C9628AE2997223BB521CB"
+    },
+    {
       "path": "schemas/config/ocrTranscriptions.schema.json",
       "size_bytes": 985,
       "sha256": "B87532C3572B0D4F238C24B1E283AE0217A8D88EF882F550688DEC548B39F242"
     },
     {
       "path": "schemas/config/pipeline.schema.json",
-      "size_bytes": 2249,
-      "sha256": "1EFF98F4756FED521CE31A9521206389B668C19169C26D883E328411B2EF592A"
+      "size_bytes": 2319,
+      "sha256": "245FB9F6279CEE0DA90FC9DA751692D10CA7A75CA19817223A86417EBFC2006B"
     },
     {
       "path": "schemas/config/ragDefinitions.schema.json",
@@ -317,7 +332,7 @@
       "sha256": "97DEFCDAE938D8AD080E684DD8894070E1F00BA9D2053D63EE5F75980A631D84"
     },
     {
-      "path": "schemas/config/representativeE2E.schema.json",
+      "path": "schemas/config/representativeCase.schema.json",
       "size_bytes": 3533,
       "sha256": "526D00C87555401549A64DA4644C970AFD1E4C4D3D3812E6B9FC34437F6A163E"
     },
@@ -325,11 +340,6 @@
       "path": "schemas/config/syntheticScenarios.schema.json",
       "size_bytes": 2733,
       "sha256": "3C1977FCC57540DC94164EE5D7EAC938448AEA609722DC178BB324C4AE54D496"
-    },
-    {
-      "path": "schemas/config/workflowRules.schema.json",
-      "size_bytes": 3220,
-      "sha256": "3FB550913447567FC932BBDD6073FD23A3E038FCCEF024DE3312B53424146E06"
     },
     {
       "path": "schemas/processed/evidenceRegistry.schema.json",
@@ -504,9 +514,14 @@
       "sha256": "83B5141DF19742303C8FA8B1777E07E0A5C6B7C415AE25D06D6E9952D7180456"
     },
     {
-      "path": "tools/tests/test_config_contracts.py",
-      "size_bytes": 5414,
-      "sha256": "33DBCC3C95F22CC3050FE461AB7744CEC115BAE399A3B30ECC8A3619330B1AAB"
+      "path": "tools/tests/test_data_vocabulary.py",
+      "size_bytes": 4534,
+      "sha256": "CCADFF753DDD0DA18DAE7073BE21D837976C13B0F67E2064FD26079BB02F705C"
+    },
+    {
+      "path": "tools/tests/test_handoff_profiles.py",
+      "size_bytes": 2461,
+      "sha256": "D79FAF7BEE3A40D96D48C10FE02197C8946DD0D44097DC4378892F22E2B9BCB2"
     },
     {
       "path": "tools/tests/test_pipeline_safety.py",
@@ -515,8 +530,8 @@
     },
     {
       "path": "tools/tests/test_representative_e2e.py",
-      "size_bytes": 2142,
-      "sha256": "CD3BB53044DAB1309D9F3A6572094BC9D98AFF1265AF56C2DD6699702683E87F"
+      "size_bytes": 2122,
+      "sha256": "BFCE71D8D66F648289EA4E558E000DB0F6346BF8D3C4F2C4DD2372BF0387691F"
     },
     {
       "path": "tools/watercare/__init__.py",
@@ -530,8 +545,8 @@
     },
     {
       "path": "tools/watercare/cli.py",
-      "size_bytes": 8845,
-      "sha256": "D9E3C06C772B6D392A39309F7FC98941B981C5D37CC0F5C8C2AA4EDF821D0002"
+      "size_bytes": 9086,
+      "sha256": "BDE10750604EB7AAD7C462C84795423E4F8CCEE82192D3EB7331FDA64AE074D8"
     },
     {
       "path": "tools/watercare/config.py",
@@ -540,8 +555,8 @@
     },
     {
       "path": "tools/watercare/e2e_validation.py",
-      "size_bytes": 12005,
-      "sha256": "5E5F18B292F5BC48BACA6C230B8F92BCBBB7BC8624B257E893B1810598A427B7"
+      "size_bytes": 11519,
+      "sha256": "768E92E7A012CB2DE4CA5128164D7A680789101133AD53F1AD8ED940F33198D4"
     },
     {
       "path": "tools/watercare/io.py",
@@ -550,18 +565,18 @@
     },
     {
       "path": "tools/watercare/operations.py",
-      "size_bytes": 11212,
-      "sha256": "43CE6F11A034845D2B3CB4FD38C206BD514938723B7B889EE7784691E4C8D7F3"
+      "size_bytes": 13802,
+      "sha256": "0D881ECD3D31831BD177FDDF615E2EF9B4798EB6269F10EF0E6BE91D945B43D8"
     },
     {
       "path": "tools/watercare/validation.py",
-      "size_bytes": 15613,
-      "sha256": "449457AAA012FC54E99ED68040C625F270CAEB02B154D1C737C12C77F387F474"
+      "size_bytes": 14596,
+      "sha256": "7F83861B24B591F5E92070BC522A204006897B9E116C3F9B45F16C1DEC7334AC"
     }
   ],
   "config_files": [
     {
-      "path": "config/e2e/representative_contract.json",
+      "path": "config/e2e/representative_case.json",
       "size_bytes": 2659,
       "sha256": "C73FB210A947750F81012041EFCA496EE856D811014B6D4F8CB872DB410DD491"
     },
@@ -571,9 +586,14 @@
       "sha256": "21CC6F14F6534B59B5C5A18F26B5C6D6838DAACFA7A38F30EF6FF6527873CE33"
     },
     {
+      "path": "config/handoff/consumer_profiles.json",
+      "size_bytes": 7704,
+      "sha256": "9CFCFBD22F15440F24CBF94761145BE907421D6DC60585E97E5666861F309D6B"
+    },
+    {
       "path": "config/pipeline.json",
-      "size_bytes": 2781,
-      "sha256": "BDAADC60D5C9C9295B623C1D5C306E3B6EF429EA1E929C2292498D604580503D"
+      "size_bytes": 2988,
+      "sha256": "F3164411DC4D730D2D64B0A5BDC635D58CBC4E7C3FD91E8C7823E8D4C061A37D"
     },
     {
       "path": "config/rag/jac104_chunks.json",
@@ -586,21 +606,21 @@
       "sha256": "CC9BB15981B1F8407592C1609063FD68E7A280840C6E8090B3D2DA4BEA3132A4"
     },
     {
-      "path": "config/workflow/state_rules.json",
-      "size_bytes": 1733,
-      "sha256": "0B762DFA438D268FAD4BE84165E97435B70459363E67E46AD1FC77F840BD47C7"
+      "path": "config/workflow/dataset_vocabulary.json",
+      "size_bytes": 636,
+      "sha256": "DD3DFBA321BEDE6C368CCEC6234ADB2B833E8B14E195B286B089B0EF2C75815F"
     }
   ],
   "template_files": [
     {
       "path": "templates/data_readme.md.tpl",
-      "size_bytes": 2036,
-      "sha256": "27B35CD94473E94292702203125AA1E79F0455D1E7686107BA8DA3EA7EDF4415"
+      "size_bytes": 3043,
+      "sha256": "C31B4C6E4601EF072048CB67BF53B7720598172A3A9F5305F2C5D29124E4EA22"
     },
     {
       "path": "templates/processing_spec.md.tpl",
-      "size_bytes": 3527,
-      "sha256": "42DD05A0A6950A1A51066183C02D6F1995CB1B7010A28E37AFD5B960B3F42C9E"
+      "size_bytes": 3534,
+      "sha256": "1145BAFC6FCFA34AE5030DE4F6836AB0064D15DE211C0D4B7D112DC14E172DCB"
     },
     {
       "path": "templates/status_qa.md.tpl",
@@ -621,8 +641,8 @@
     },
     {
       "path": "processed/validation/business/latest_representative_e2e_report.json",
-      "size_bytes": 3169,
-      "sha256": "4AA9E94283C35CECDD6B7EDD5846E04BA4E1E910D0FFA41E133A387F91176F71"
+      "size_bytes": 3172,
+      "sha256": "974BBB7DDF60F4547C4D5E272F89E5FF954FB9A2A8514E0E931209003918592A"
     },
     {
       "path": "processed/validation/DATA_STATUS_QA.md",
@@ -651,8 +671,8 @@
     },
     {
       "path": "processed/validation/latest_qa_summary.json",
-      "size_bytes": 5474,
-      "sha256": "077CD00077FBED1247FE806141E4650E3A53F82546799717E9976596A28A6C71"
+      "size_bytes": 5477,
+      "sha256": "DE364D1F66EF992E30B8725ADF220254644C63244DB1CD176AB092BD4C63EF3A"
     },
     {
       "path": "processed/validation/ocr_evidence/image_manifest.csv",
@@ -681,8 +701,8 @@
     },
     {
       "path": "processed/validation/refactor/latest_equivalence_report.json",
-      "size_bytes": 15187,
-      "sha256": "AF78380BA32A4F49F7FE1ED2CEE1CBFFC192273D9AD1474C86CAC338462BCEFD"
+      "size_bytes": 15077,
+      "sha256": "CE8455D5B080C29772BB70C8F68730AF6E7D083010447D7FF0D0B6B6665559A4"
     },
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
@@ -782,10 +802,10 @@
     "canonical_drift_files": 0
   },
   "toolchain": {
-    "python_files": 20,
-    "python_lines": 2154,
+    "python_files": 21,
+    "python_lines": 2240,
     "max_wrapper_lines": 10,
-    "max_module_lines": 395
+    "max_module_lines": 398
   },
   "rag_policy": {
     "included_model": "WPUJAC104DWH",

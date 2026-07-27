@@ -287,21 +287,21 @@
     {
       "path": "README.md",
       "records": null,
-      "canonical_sha256": "C3980581488ADD1B4D5E3A5AAEBE5754C25EA2E4271097D4C820C1CC7091AE4B",
-      "declarative_sha256": "C3980581488ADD1B4D5E3A5AAEBE5754C25EA2E4271097D4C820C1CC7091AE4B",
+      "canonical_sha256": "EB910A553C704CBC9DD79C67FC6E69DE88B18794C13764843E358EEF2E7D2E70",
+      "declarative_sha256": "EB910A553C704CBC9DD79C67FC6E69DE88B18794C13764843E358EEF2E7D2E70",
       "byte_equal": true,
-      "canonical_bytes": 2033,
-      "declarative_bytes": 2033,
+      "canonical_bytes": 3040,
+      "declarative_bytes": 3040,
       "name": "template:data_readme"
     },
     {
       "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
       "records": null,
-      "canonical_sha256": "FAC5116925B54AAA476FCAE2C77CDF6CAD6A81CA66D2CFBA3BA38411FA141B7C",
-      "declarative_sha256": "FAC5116925B54AAA476FCAE2C77CDF6CAD6A81CA66D2CFBA3BA38411FA141B7C",
+      "canonical_sha256": "9069BE4606A285E24C24CCD8115964DF3BAD9FFDBC01B9CC253D677211573D8B",
+      "declarative_sha256": "9069BE4606A285E24C24CCD8115964DF3BAD9FFDBC01B9CC253D677211573D8B",
       "byte_equal": true,
-      "canonical_bytes": 3524,
-      "declarative_bytes": 3524,
+      "canonical_bytes": 3531,
+      "declarative_bytes": 3531,
       "name": "template:processing_spec"
     },
     {
@@ -377,14 +377,8 @@
       "detail": "checks=17,failed=0"
     }
   ],
-  "usage_contract": {
+  "usage_vocabulary": {
     "configured": [
-      "NORMAL",
-      "PARTIAL_STOP",
-      "TOTAL_STOP",
-      "PENDING_CONSULTATION"
-    ],
-    "contract": [
       "NORMAL",
       "PARTIAL_STOP",
       "TOTAL_STOP",
