@@ -1,6 +1,5 @@
 # Inquiry State Machine 계약
 
-<<<<<<< HEAD
 ## 1. 목적
 
 이 디렉터리는 문의 상태, 이벤트, 전이, Guard, 허용 행동, 역할 권한, 완료 및 동시성 정책의 공통 기준이다.
@@ -22,7 +21,7 @@ Backend가 상태 전이의 최종 권위를 가지며, Web·Mobile·AI·QA는 �
 | `concurrency-policy.yaml` | state_version, 멱등성, 트랜잭션과 충돌 처리 |
 | `inquiry-state-machine.mmd` | Mermaid 상태 흐름도 |
 
-대표 정상·오류 예시는 `../examples/state-machine-transition-examples.yaml`에서 관리한다.
+대표 상태 전이 예시는 `examples/`의 흐름별 YAML 6종에서 관리하고, 상태 버전 충돌 예시는 `../examples/state-conflict.json`에서 관리한다.
 
 ## 3. 구현 활용
 
@@ -72,7 +71,3 @@ python scripts/contracts/validate_state_machine.py
 - 방문 불필요 확정 시 `COMPLETION_PENDING`으로 이동한다.
 - 상담·방문 완료는 고객 해결 확인과 마지막 처리 담당자의 `FINALIZE_INQUIRY`를 거쳐야 한다.
 - `RESOLVED`, `CANCELLED`는 종료 상태이며 같은 문의에서 다시 전이하지 않는다.
-=======
-문의·상담·방문 업무의 상태·이벤트·가드·허용 행동을 관리한다.
-백엔드 State Machine 구현이 단일 실행 기준이며, Web·Mobile은 반환된 `allowed_actions`를 사용한다.
->>>>>>> 2998a75c72ef8d47f3be00e9e845ed8940ce2ed1

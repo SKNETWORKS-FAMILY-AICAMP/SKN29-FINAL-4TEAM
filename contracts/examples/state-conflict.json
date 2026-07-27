@@ -1,5 +1,29 @@
 {
-  "scenario": "state-conflict",
-  "description": "대표 계약 연결 예시를 작성한다.",
-  "steps": []
+  "id": "EX-CONFLICT-001",
+  "name": "오래된 상태 버전 충돌",
+  "request": {
+    "inquiry_public_id": "00000000-0000-0000-0000-000000000002",
+    "event": "START_CONSULTATION",
+    "state_version": 3,
+    "idempotency_key": "00000000-0000-0000-0000-000000000003"
+  },
+  "current": {
+    "status": "CONSULTATION_REQUIRED",
+    "state_version": 4,
+    "allowed_actions": [
+      "START_CONSULTATION"
+    ]
+  },
+  "expected_response": {
+    "http_status": 409,
+    "error_code": "STATE_VERSION_CONFLICT",
+    "message": "문의 상태가 변경되었습니다. 최신 정보를 확인한 뒤 다시 시도해 주세요.",
+    "data": {
+      "current_status": "CONSULTATION_REQUIRED",
+      "current_state_version": 4,
+      "allowed_actions": [
+        "START_CONSULTATION"
+      ]
+    }
+  }
 }

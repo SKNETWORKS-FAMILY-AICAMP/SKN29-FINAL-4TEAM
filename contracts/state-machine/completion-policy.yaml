@@ -37,7 +37,6 @@ completion_flows:
   - CONSULTATION_COMPLETED
   - VISIT_NOT_NEEDED
   intermediate_state: COMPLETION_PENDING
-<<<<<<< HEAD
   customer_confirmation:
     resolved_event: SUBMIT_RESOLUTION_FEEDBACK
     unresolved_event: CUSTOMER_REPORTED_UNRESOLVED
@@ -103,7 +102,3 @@ forbidden_shortcuts:
 - VISIT_COMPLETED_TO_RESOLVED
 - CUSTOMER_RESOLVED_FEEDBACK_TO_RESOLVED_WITHOUT_FINALIZE
 - NON_LAST_HANDLER_FINALIZATION
-=======
-  final_event: FINALIZE_INQUIRY
-  next_state: RESOLVED
->>>>>>> 2998a75c72ef8d47f3be00e9e845ed8940ce2ed1
