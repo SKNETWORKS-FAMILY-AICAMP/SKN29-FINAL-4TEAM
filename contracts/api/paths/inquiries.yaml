@@ -1,3 +1,153 @@
-# inquiries API 경로 계약
-# Endpoint와 request/response 참조는 백엔드 API 설계 확정 후 작성한다.
-{}
+# T-022 최지용 확정 API 기준선이다. Runtime 구현 상태와 별개로 관리한다.
+/inquiries:
+  post:
+    operationId: createInquiry
+    summary: 고객 문의 생성
+    description: |
+      본인의 활성 구독에 자연어 증상 원문을 연결해 신규 문의를 생성한다.
+      문의 ID, 채널 코드와 대표 증상 코드는 확정된 요청 Schema에 따라
+      검증하고 저장한다.
+    x-contract-status: CONFIRMED
+    x-requirements:
+      - FR-008
+      - FR-009
+      - DR-001
+      - DR-006
+    security:
+      - BearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/inquiry/CreateInquiryRequest.yaml
+    responses:
+      "201":
+        description: 신규 문의 생성
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/inquiry/InquiryDetail.yaml
+      "400":
+        $ref: ../components/responses/BadRequest.yaml
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "409":
+        $ref: ../components/responses/Conflict.yaml
+
+/inquiries/{id}/questionnaire:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: 기존 문의의 공개 식별값
+      schema:
+        type: string
+        maxLength: 48
+  patch:
+    operationId: accumulateInquiryQuestionnaire
+    summary: 문의 원문·문진 정보 누적
+    description: |
+      최초 원문을 덮어쓰지 않고 추가 원문과 문진 정보를 동일 문의에
+      누적하며 기존 원문은 보존한다.
+    x-contract-status: CONFIRMED
+    x-requirements:
+      - FR-009
+      - FR-011
+      - DR-006
+    security:
+      - BearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/inquiry/InquiryQuestionnaireRequest.yaml
+    responses:
+      "200":
+        description: 동일 문의에 누적한 결과
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/inquiry/InquiryDetail.yaml
+      "400":
+        $ref: ../components/responses/BadRequest.yaml
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "404":
+        $ref: ../components/responses/NotFound.yaml
+      "409":
+        $ref: ../components/responses/Conflict.yaml
+
+/inquiries/{id}/action-results:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: 기존 문의의 공개 식별값
+      schema:
+        type: string
+        maxLength: 48
+  post:
+    operationId: createInquiryActionResult
+    summary: 고객 자가조치 결과 누적
+    description: |
+      자가조치 결과 원문을 동일 문의에 누적한다. 수행 여부는
+      result_code를 단일 원천으로 사용한다.
+    x-contract-status: CONFIRMED
+    x-requirements:
+      - FR-020
+      - DR-006
+    security:
+      - BearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/inquiry/ActionResultRequest.yaml
+    responses:
+      "201":
+        description: 동일 문의에 누적한 자가조치 결과
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/inquiry/ActionResult.yaml
+      "400":
+        $ref: ../components/responses/BadRequest.yaml
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "404":
+        $ref: ../components/responses/NotFound.yaml
+      "409":
+        $ref: ../components/responses/Conflict.yaml

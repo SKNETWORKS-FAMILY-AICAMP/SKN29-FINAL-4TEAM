@@ -1,0 +1,43 @@
+title: InquiryQuestionnaireRequest
+type: object
+description: |
+  동일 inquiry_id에 원문과 문진 정보를 누적하는 T-022 확정 기준선.
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - state_version
+properties:
+  raw_text:
+    type: string
+    minLength: 1
+    description: 제공되면 trim 후 nonblank이며 기존 원문을 덮어쓰지 않음
+  representative_symptom_code:
+    type: string
+    minLength: 1
+    description: 제공되면 기존 문의의 대표 증상 코드를 갱신
+  occurrence_condition:
+    type:
+      - string
+      - "null"
+  accompanying_symptoms:
+    type:
+      - string
+      - "null"
+  duration_text:
+    type:
+      - string
+      - "null"
+  location_text:
+    type:
+      - string
+      - "null"
+  answers:
+    description: 문진 응답의 object 또는 array 입력
+    oneOf:
+      - type: object
+        additionalProperties: true
+      - type: array
+        items: {}
+  state_version:
+    type: integer
+    description: 동시 수정 검사용 Inquiry 기대 version
