@@ -1,5 +1,16 @@
 title: VisitSummary
 type: object
-description: 방문 요약
+description: T-005 OWNER 기준 방문 요약
 additionalProperties: false
-properties: {}
+required:
+  - visit_id
+  - schedule
+properties:
+  visit_id:
+    type: string
+    maxLength: 48
+  inquiry_id:
+    type: string
+    maxLength: 48
+  schedule:
+    $ref: ./VisitSchedule.yaml

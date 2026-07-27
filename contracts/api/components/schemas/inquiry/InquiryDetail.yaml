@@ -1,5 +1,44 @@
 title: InquiryDetail
 type: object
-description: 문의 상세
+description: T-005 OWNER 기준 사용 안내 필드를 포함한 문의 상세
 additionalProperties: false
-properties: {}
+required:
+  - inquiry_id
+  - usage_guidance_status
+  - usage_guidance_message
+  - restricted_functions
+  - evidence
+  - next_action
+  - requires_consultation
+properties:
+  inquiry_id:
+    type: string
+    maxLength: 48
+  usage_guidance_status:
+    type:
+      - string
+      - "null"
+    enum:
+      - NORMAL
+      - PARTIAL_STOP
+      - TOTAL_STOP
+      - PENDING_CONSULTATION
+      - null
+  usage_guidance_message:
+    type:
+      - string
+      - "null"
+  restricted_functions:
+    type: array
+    items:
+      type: string
+  evidence:
+    type: array
+    items:
+      type: object
+  next_action:
+    type:
+      - string
+      - "null"
+  requires_consultation:
+    type: boolean

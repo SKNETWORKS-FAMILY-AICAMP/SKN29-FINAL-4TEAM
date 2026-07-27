@@ -1,0 +1,28 @@
+{
+  "artifact_version": "3.0.0",
+  "snapshot_status": "HISTORICAL_SNAPSHOT",
+  "source": "./watercare_erd_validation_v3.md",
+  "provenance_note": "2026-07-25에 저장소로 반입한 ERD v3 이력이며 현행 구현 기준은 ADR 0008과 t005_physical_contract_v1.0.json이다.",
+  "copied_on": "2026-07-25",
+  "expected_counts": {
+    "tables": 32,
+    "columns": 526,
+    "physical_fks": 85,
+    "logical_codes": 57
+  },
+  "files": {
+    "watercare_erd_v3.mmd": "7D2DF9651BA90582547AF4AFED9AFD69DDCD4E519CA263ACF0446ADC1929BF9E",
+    "watercare_erd_v3.png": "CBCD9411ACE892E7D6F3FEC641A0053D7606D2DBE05BB948B429F2C88EC08936",
+    "watercare_erd_validation_v3.md": "F9B48AA6ED3A65647CB33D3FCF7DE8F17648DFE99F05ABDE42F7F3BA969C47C8",
+    "watercare_schema_sqlite_v3.sql": "4841CF3F5EF03107C01E2C325A01BF6DDB548EC834F4FF8713D81E2163D5905E",
+    "watercare_schema_v3.json": "D53C3E46770C1A7DF43B10943DE3F53A5629978F34FE8DA2533AAA8612C54724"
+  },
+  "blocking_decisions": [
+    "T005_PRIMARY_KEY_POLICY",
+    "T005_USAGE_GUIDANCE_PHYSICAL_MAPPING",
+    "T005_USAGE_GUIDANCE_CODESET",
+    "T005_VISIT_STORAGE_MAPPING",
+    "T005_VISIT_STATUS_CODESET",
+    "T005_ENUM_SEED_POLICY"
+  ]
+}
