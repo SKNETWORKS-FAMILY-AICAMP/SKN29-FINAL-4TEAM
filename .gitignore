@@ -16,3 +16,7 @@ data/.temp/
 # 인계는 저장소 파일로 수행하며 ZIP 패키지는 만들지 않는다.
 data/**/*.zip
 
+
+# Web generated files
+web/node_modules/
+web/dist/
