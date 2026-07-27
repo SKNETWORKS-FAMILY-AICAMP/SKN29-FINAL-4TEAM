@@ -1,0 +1,187 @@
+.consultant-dashboard {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f6f7f9;
+  color: #1f2937;
+}
+
+.consultant-dashboard__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.consultant-dashboard__header h1 {
+  margin: 4px 0 8px;
+  font-size: 28px;
+}
+
+.consultant-dashboard__header p {
+  margin: 0;
+  color: #64748b;
+}
+
+.consultant-dashboard__eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2563eb !important;
+}
+
+.consultant-dashboard__count {
+  padding: 12px 16px;
+  border: 1px solid #dbe2ea;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.consultant-dashboard__filters {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 180px;
+  gap: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.consultant-dashboard__filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.consultant-dashboard__filters span {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.consultant-dashboard__filters input,
+.consultant-dashboard__filters select {
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  font: inherit;
+}
+
+.consultant-dashboard__filters input:focus,
+.consultant-dashboard__filters select:focus {
+  outline: 2px solid #93c5fd;
+  outline-offset: 1px;
+}
+
+.consultant-dashboard__content {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.consultant-dashboard__table-wrap {
+  overflow-x: auto;
+}
+
+.consultant-dashboard__table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1050px;
+}
+
+.consultant-dashboard__table th,
+.consultant-dashboard__table td {
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.consultant-dashboard__table th {
+  background: #f8fafc;
+  font-size: 13px;
+  color: #475569;
+}
+
+.consultant-dashboard__table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.status-badge,
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-badge {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.risk-badge--general {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.risk-badge--caution {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.risk-badge--danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.detail-button {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.detail-button:hover {
+  background: #1d4ed8;
+}
+
+.consultant-dashboard__empty {
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.consultant-dashboard__empty strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.consultant-dashboard__empty p {
+  margin: 0;
+  color: #64748b;
+}
+
+@media (max-width: 768px) {
+  .consultant-dashboard {
+    padding: 20px;
+  }
+
+  .consultant-dashboard__header {
+    flex-direction: column;
+  }
+
+  .consultant-dashboard__filters {
+    grid-template-columns: 1fr;
+  }
+}
