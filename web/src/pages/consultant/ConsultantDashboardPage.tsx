@@ -1,4 +1,7 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { createInquiryDetailPath } from "../../app/router/routePaths";
 import "./ConsultantDashboardPage.css";
 
 type InquiryStatus =
@@ -76,6 +79,8 @@ function formatDateTime(value: string): string {
 }
 
 export default function ConsultantDashboardPage() {
+  const navigate = useNavigate();
+
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedRisk, setSelectedRisk] = useState<"ALL" | RiskLevel>("ALL");
 
@@ -98,8 +103,7 @@ export default function ConsultantDashboardPage() {
   }, [searchKeyword, selectedRisk]);
 
   const handleInquiryClick = (inquiryId: string) => {
-    // Router 연결 전 임시 확인용 동작입니다.
-    window.alert(`${inquiryId} 상세 화면으로 이동할 예정입니다.`);
+    navigate(createInquiryDetailPath(inquiryId));
   };
 
   return (
@@ -174,14 +178,17 @@ export default function ConsultantDashboardPage() {
                     <td>
                       <strong>{inquiry.inquiryId}</strong>
                     </td>
+
                     <td>{inquiry.customerDisplayName}</td>
                     <td>{inquiry.productModel}</td>
                     <td>{inquiry.symptomSummary}</td>
+
                     <td>
                       <span className="status-badge">
                         {STATUS_LABELS[inquiry.currentState]}
                       </span>
                     </td>
+
                     <td>
                       <span
                         className={`risk-badge risk-badge--${inquiry.riskLevel.toLowerCase()}`}
@@ -189,7 +196,9 @@ export default function ConsultantDashboardPage() {
                         {RISK_LABELS[inquiry.riskLevel]}
                       </span>
                     </td>
+
                     <td>{formatDateTime(inquiry.receivedAt)}</td>
+
                     <td>
                       <button
                         type="button"
