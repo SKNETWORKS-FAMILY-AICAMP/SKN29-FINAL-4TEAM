@@ -1,0 +1,11 @@
+# 로컬 비밀값·개발 환경
+.env
+.env.*
+!.env.example
+.venv/
+
+# 실행 중 생성 파일
+.runtime/
+__pycache__/
+*.pyc
+.pytest_cache/
