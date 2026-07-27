@@ -1,2 +1,4 @@
-# allowed-use 공통 코드 목록
+# legacy 이름 보존용 포인터. 새 코드를 이 파일에 중복 정의하지 않는다.
+deprecated: true
+canonical_contract: usage-guidance-statuses.yaml
 codes: []

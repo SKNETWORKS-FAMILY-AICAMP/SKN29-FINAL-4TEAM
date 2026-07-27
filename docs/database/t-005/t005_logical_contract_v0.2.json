@@ -1,0 +1,128 @@
+{
+  "contract_version": "0.2.0",
+  "status": "HISTORICAL_SNAPSHOT",
+  "owner": "최지용",
+  "purpose": "2026-07-25 당시 T-005 논리 필드와 ERD v3의 물리 매핑 차이를 기록한 이력이다. candidate_code_sets_requiring_approval과 decisions_required는 과거 gap 추적용이며 현재 구현 착수 승인 게이트가 아니다.",
+  "superseded_by": [
+    "../../adr/0008-t005-data-contract-decisions.md",
+    "t005_physical_contract_v1.0.json"
+  ],
+  "sources": [
+    "../../planning/md/WBS.md",
+    "../../planning/md/화면설계서.md",
+    "../../planning/md/API명세서.md",
+    "../../planning/md/공통 개발 규칙.md",
+    "watercare_schema_v3.json"
+  ],
+  "canonical_fields": {
+    "usage_guidance": [
+      "usage_guidance_status",
+      "usage_guidance_message",
+      "restricted_functions",
+      "evidence",
+      "next_action",
+      "requires_consultation"
+    ],
+    "visit_schedule": [
+      "preferred_date",
+      "synthetic_technician_id",
+      "schedule_status",
+      "confirmed_date"
+    ]
+  },
+  "confirmed_code_sets": {
+    "risk_level": [
+      "general",
+      "caution",
+      "danger"
+    ]
+  },
+  "candidate_code_sets_requiring_approval": {
+    "usage_guidance_status": {
+      "screen_contract": [
+        "NORMAL",
+        "PARTIAL_STOP",
+        "TOTAL_STOP",
+        "PENDING_CONSULTATION"
+      ],
+      "erd_v3": [
+        "USE_ALLOWED",
+        "PARTIAL_STOP",
+        "TOTAL_STOP",
+        "PENDING_CONSULTATION"
+      ]
+    },
+    "visit_status": {
+      "screen_contract": [
+        "ASSIGNING",
+        "SCHEDULING",
+        "CONFIRMED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FOLLOW_UP_REQUIRED",
+        "CANCELLED"
+      ],
+      "api_and_erd_v3": [
+        "ASSIGNING",
+        "SCHEDULING",
+        "CONFIRMED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "CANCELLED"
+      ]
+    }
+  },
+  "legacy_snapshot_mappings": [
+    {
+      "canonical": "usage_guidance_status",
+      "snapshot": "support_inquiry.usage_guidance_code",
+      "status": "RENAME_OR_MAPPING_REQUIRED"
+    },
+    {
+      "canonical": "usage_guidance_status",
+      "snapshot": "support_symptom_assessment.usage_guidance_code",
+      "status": "RENAME_OR_MAPPING_REQUIRED"
+    },
+    {
+      "canonical": "preferred_date",
+      "snapshot": null,
+      "status": "PHYSICAL_FIELD_REQUIRED"
+    },
+    {
+      "canonical": "confirmed_date",
+      "snapshot": null,
+      "status": "PHYSICAL_FIELD_REQUIRED"
+    },
+    {
+      "canonical": "schedule_status",
+      "snapshot": "field_service_visit.visit_status_code",
+      "status": "SEMANTIC_MAPPING_REQUIRED"
+    }
+  ],
+  "decisions_required": [
+    {
+      "id": "T005_PRIMARY_KEY_POLICY",
+      "decision": "도메인형 문자열 ID의 접두사, 길이, 발급 주체와 충돌 방지 규칙"
+    },
+    {
+      "id": "T005_USAGE_GUIDANCE_PHYSICAL_MAPPING",
+      "decision": "usage_guidance_status의 물리 필드명과 기존 usage_guidance_code 전환 방식"
+    },
+    {
+      "id": "T005_USAGE_GUIDANCE_CODESET",
+      "decision": "일반 사용 가능 코드 NORMAL과 USE_ALLOWED 중 단일 표준"
+    },
+    {
+      "id": "T005_VISIT_STORAGE_MAPPING",
+      "decision": "방문 희망일, 확정일, 일정 상태의 물리 저장 필드와 타입"
+    },
+    {
+      "id": "T005_VISIT_STATUS_CODESET",
+      "decision": "FOLLOW_UP_REQUIRED를 포함한 방문 상태 단일 코드표"
+    },
+    {
+      "id": "T005_ENUM_SEED_POLICY",
+      "decision": "Enum 관리 방식과 Seed 실행 방식"
+    }
+  ]
+}
