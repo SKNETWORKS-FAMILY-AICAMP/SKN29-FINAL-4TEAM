@@ -1,0 +1,23 @@
+# Android 보안 설정
+WaterCareAndroid/local.properties
+local.properties
+*.jks
+*.keystore
+
+# Django 보안 설정
+WaterCareBackend/.env
+.env
+
+# Python
+WaterCareBackend/.venv/
+.venv/
+venv/
+__pycache__/
+*.pyc
+WaterCareBackend/db.sqlite3
+
+# Android 빌드 파일
+WaterCareAndroid/.gradle/
+WaterCareAndroid/.idea/
+WaterCareAndroid/app/build/
+build/
