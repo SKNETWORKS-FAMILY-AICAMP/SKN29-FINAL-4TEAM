@@ -1,0 +1,34 @@
+contract:
+  name: transition-rules
+  version: 0.1.0
+  status: test_fixture
+  owner: TEST
+rule_semantics:
+  visit_modes:
+    REQUIRE_ABSENT: Visit must not exist.
+    PRESERVE_REQUIRE_STATUS: Visit status must match.
+  version_actions:
+    INCREMENT: Increment the state version.
+defaults:
+  version_action: INCREMENT
+terminal_state_policy:
+  STATE_B:
+    allowed_events: []
+transitions:
+  - id: TR-001
+    event: EVENT_A
+    from_inquiry_state: STATE_A
+    to_inquiry_state: STATE_B
+    visit:
+      mode: REQUIRE_ABSENT
+    history:
+      record_inquiry_state_history: true
+      record_visit_state_history: false
+      record_business_event: true
+    guard_refs:
+      - G-STATE-VERSION
+    effects:
+      - COMPLETE_ACTION
+excluded_events:
+  - event: EVENT_INTERNAL
+    reason: Synthetic internal event without a transition.
