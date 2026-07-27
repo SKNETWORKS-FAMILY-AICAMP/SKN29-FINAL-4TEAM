@@ -1,8 +1,48 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "EvidenceReference",
-  "description": "AI 내부 근거 참조",
+  "description": "공식 매뉴얼/FAQ RAG 근거 참조 Schema",
   "type": "object",
+  "required": [
+    "document_title",
+    "chunk_id",
+    "summary",
+    "verification_status"
+  ],
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "document_title": {
+      "type": "string",
+      "description": "공식 문서 제목"
+    },
+    "document_version": {
+      "type": ["string", "null"],
+      "description": "문서 버전"
+    },
+    "page": {
+      "type": ["integer", "null"],
+      "description": "페이지 번호"
+    },
+    "chunk_id": {
+      "type": "string",
+      "description": "내부 검색 청크 식별자"
+    },
+    "official_url": {
+      "type": ["string", "null"],
+      "description": "공식 랜딩 페이지 URL"
+    },
+    "summary": {
+      "type": "string",
+      "description": "검색 구간 요약"
+    },
+    "similarity_score": {
+      "type": ["number", "null"],
+      "description": "검색 코사인 유사도 점수"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": ["official_verified", "team_verified"],
+      "description": "근거 검증 상태"
+    }
+  }
 }

@@ -1,8 +1,43 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "UsageGuidance",
-  "description": "현재 사용 안내",
+  "description": "현재 정수기 사용 안내 상태 및 다음 행동 Schema",
   "type": "object",
+  "required": [
+    "guidance_status",
+    "message",
+    "restricted_functions",
+    "next_actions"
+  ],
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "guidance_status": {
+      "type": "string",
+      "enum": [
+        "NORMAL",
+        "PARTIAL_STOP",
+        "TOTAL_STOP",
+        "PENDING_CONSULTATION"
+      ],
+      "description": "사용 안내 상태 (4가지 고정 표준 규격)"
+    },
+    "message": {
+      "type": "string",
+      "description": "현재 정수기 사용 안내 메시지"
+    },
+    "restricted_functions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "사용 제한 기능 목록"
+    },
+    "next_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "고객 다음 행동 가이드 목록"
+    }
+  }
 }
