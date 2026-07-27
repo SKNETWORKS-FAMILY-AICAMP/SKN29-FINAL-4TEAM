@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExpectedEvidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scenario_id",
+    "inquiry_id",
+    "expected_evidence_ids",
+    "evidence_mode",
+    "expected_page_refs",
+    "fallback_required",
+    "forbidden_evidence_ids",
+    "generated_at"
+  ],
+  "properties": {
+    "scenario_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^SYN-JAC104-\\d{3}$"
+    },
+    "inquiry_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "expected_evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^EVD-[A-Z0-9-]+$"
+      },
+      "minItems": 0
+    },
+    "evidence_mode": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "EXACT_MODEL",
+        "NO_EVIDENCE",
+        "PARTIAL_EVIDENCE"
+      ]
+    },
+    "expected_page_refs": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "minItems": 0
+    },
+    "fallback_required": {
+      "type": "boolean"
+    },
+    "forbidden_evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    }
+  }
+}

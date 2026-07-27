@@ -1,1 +1,47 @@
-[]
+[
+  {
+    "scenario_id": "SYN-JAC104-003",
+    "family": "COLD_WATER_NOT_COLD",
+    "variant": "CLEAR",
+    "title": "다량 출수 후 냉수 온도 상승",
+    "inquiry_id": "91a8cf0c-9139-5d17-a6bd-818eb9aa7585",
+    "workflow_kind": "SELF_RESOLUTION",
+    "expected_outcome": "RESOLVED"
+  },
+  {
+    "scenario_id": "SYN-JAC104-005",
+    "family": "TASTE_ODOR",
+    "variant": "CLEAR",
+    "title": "단기 부재 후 물 냄새",
+    "inquiry_id": "40b6d3d1-8626-511c-92d3-982699a42f63",
+    "workflow_kind": "SELF_RESOLUTION",
+    "expected_outcome": "RESOLVED"
+  },
+  {
+    "scenario_id": "SYN-JAC104-007",
+    "family": "NO_WATER",
+    "variant": "CLEAR",
+    "title": "단수로 인한 무출수",
+    "inquiry_id": "3ebb394c-1a6f-5793-ac86-1f721350b820",
+    "workflow_kind": "SELF_RESOLUTION",
+    "expected_outcome": "RESOLVED"
+  },
+  {
+    "scenario_id": "SYN-JAC104-009",
+    "family": "LOW_FLOW",
+    "variant": "CLEAR",
+    "title": "동시 수전 사용에 따른 출수량 저하",
+    "inquiry_id": "88b76107-937a-5fca-ae51-1f21935b47db",
+    "workflow_kind": "SELF_RESOLUTION",
+    "expected_outcome": "RESOLVED"
+  },
+  {
+    "scenario_id": "SYN-JAC104-019",
+    "family": "NOISE",
+    "variant": "CLEAR",
+    "title": "정상 작동음 확인",
+    "inquiry_id": "cca8204e-c447-515f-9606-7f78ea00dc6b",
+    "workflow_kind": "SELF_RESOLUTION",
+    "expected_outcome": "RESOLVED"
+  }
+]

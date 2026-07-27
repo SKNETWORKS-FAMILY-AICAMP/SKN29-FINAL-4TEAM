@@ -1,7 +1,209 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "RagChunk",
-  "description": "RAG 청크 필드·타입·참조 검증 Schema",
+  "description": "JAC104D 공식 매뉴얼 근거만 사용하는 MVP RAG 청크",
   "type": "object",
-  "additionalProperties": true
+  "additionalProperties": false,
+  "required": [
+    "chunk_id",
+    "evidence_id",
+    "document_id",
+    "source_page_ids",
+    "source_type",
+    "provider",
+    "exact_sales_code",
+    "product_model",
+    "model_family",
+    "product_generation",
+    "scope_role",
+    "version",
+    "page_start",
+    "page_end",
+    "page_refs",
+    "section_title",
+    "topic_code",
+    "symptom_category",
+    "risk_level",
+    "use_guidance",
+    "requires_consultation",
+    "applicability",
+    "chunk_text",
+    "evidence_summary",
+    "safe_actions",
+    "escalation_conditions",
+    "prohibited_actions",
+    "source_url",
+    "source_file_sha256",
+    "verification_status",
+    "generated_at"
+  ],
+  "properties": {
+    "chunk_id": {
+      "type": "string",
+      "pattern": "^RAG-[A-Z0-9-]+$"
+    },
+    "evidence_id": {
+      "type": "string",
+      "pattern": "^EVD-[A-Z0-9-]+$"
+    },
+    "document_id": {
+      "type": "string",
+      "pattern": "^MAN-[A-Z0-9-]+$"
+    },
+    "source_page_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^MAN-[A-Z0-9-]+-P[0-9]{3}$"
+      },
+      "minItems": 1
+    },
+    "source_type": {
+      "type": "string",
+      "enum": ["official_manual"]
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "exact_sales_code": {
+      "type": "string",
+      "const": "WPUJAC104DWH"
+    },
+    "product_model": {
+      "type": "string",
+      "const": "WPU-JAC104 (D) / WPU-JCC104 (D)"
+    },
+    "model_family": {
+      "type": "string",
+      "const": "WPU-JAC104"
+    },
+    "product_generation": {
+      "type": "string",
+      "const": "D"
+    },
+    "scope_role": {
+      "type": "string",
+      "const": "mvp"
+    },
+    "version": {
+      "type": "string",
+      "const": "REV.00"
+    },
+    "page_start": {
+      "type": "integer",
+      "minimum": 37,
+      "maximum": 39
+    },
+    "page_end": {
+      "type": "integer",
+      "minimum": 37,
+      "maximum": 39
+    },
+    "page_refs": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 37,
+        "maximum": 39
+      },
+      "minItems": 1
+    },
+    "section_title": {
+      "type": "string",
+      "const": "고장 신고 전 확인하기"
+    },
+    "topic_code": {
+      "type": "string",
+      "enum": [
+        "symptom_no_water",
+        "symptom_cold_temperature",
+        "symptom_noise",
+        "symptom_leak",
+        "symptom_taste_odor",
+        "symptom_low_flow",
+        "symptom_hot_water_safety"
+      ]
+    },
+    "symptom_category": {
+      "type": "string",
+      "enum": [
+        "NO_WATER",
+        "COLD_WATER_NOT_COLD",
+        "NOISE",
+        "LEAK",
+        "TASTE_ODOR",
+        "LOW_FLOW",
+        "INSTANT_HOT_WATER_SAFETY"
+      ]
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["general", "caution", "danger"]
+    },
+    "use_guidance": {
+      "type": "string",
+      "enum": [
+        "NORMAL",
+        "PARTIAL_STOP",
+        "TOTAL_STOP",
+        "PENDING_CONSULTATION"
+      ]
+    },
+    "requires_consultation": {
+      "type": "boolean"
+    },
+    "applicability": {
+      "type": "string",
+      "const": "MODEL_EXACT"
+    },
+    "chunk_text": {
+      "type": "string",
+      "minLength": 20
+    },
+    "evidence_summary": {
+      "type": "string",
+      "minLength": 10
+    },
+    "safe_actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "escalation_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "prohibited_actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "source_file_sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "verification_status": {
+      "type": "string",
+      "const": "TEXT_AND_VISUAL_VERIFIED"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
 }

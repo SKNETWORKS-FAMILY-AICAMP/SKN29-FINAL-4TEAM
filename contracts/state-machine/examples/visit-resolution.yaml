@@ -1,2 +1,73 @@
-# visit-resolution 대표 흐름
-steps: []
+contract:
+  name: visit-resolution-example
+  version: 0.1.0
+  status: draft_for_review
+  description: 상담에서 방문으로 전환한 뒤 현장 처리와 고객 확인을 거쳐 완료하는 대표 예시이다.
+representative_data:
+  product_model_code: WPUJAC104DWH
+  product_serial_number: SYN-JAC104-002
+  inquiry_code: DEMO-INQ-002
+  symptom: 출수량 저하
+  official_evidence:
+    document_type: official_manual
+    page: 38
+initial_context:
+  actor_role: CONSULTANT
+  inquiry_state: VISIT_REVIEW_PENDING
+  visit: null
+steps:
+- order: 1
+  actor: CONSULTANT
+  event: VISIT_NEEDED
+  from_inquiry_state: VISIT_REVIEW_PENDING
+  to_inquiry_state: VISIT_SCHEDULING
+  visit_transition:
+    from_status: null
+    to_status: ASSIGNING
+- order: 2
+  actor: CONSULTANT
+  event: UPDATE_VISIT_SCHEDULE
+  from_inquiry_state: VISIT_SCHEDULING
+  to_inquiry_state: VISIT_SCHEDULING
+  visit_transition:
+    from_status: ASSIGNING
+    to_status: SCHEDULING
+- order: 3
+  actor: CONSULTANT
+  event: CONFIRM_VISIT
+  from_inquiry_state: VISIT_SCHEDULING
+  to_inquiry_state: VISIT_SCHEDULED
+  visit_transition:
+    from_status: SCHEDULING
+    to_status: CONFIRMED
+- order: 4
+  actor: TECHNICIAN
+  event: START_VISIT
+  from_inquiry_state: VISIT_SCHEDULED
+  to_inquiry_state: VISIT_SCHEDULED
+  visit_transition:
+    from_status: CONFIRMED
+    to_status: IN_PROGRESS
+- order: 5
+  actor: TECHNICIAN
+  event: VISIT_COMPLETED
+  from_inquiry_state: VISIT_SCHEDULED
+  to_inquiry_state: COMPLETION_PENDING
+  visit_transition:
+    from_status: IN_PROGRESS
+    to_status: COMPLETED
+- order: 6
+  actor: CUSTOMER
+  event: SUBMIT_RESOLUTION_FEEDBACK
+  from_inquiry_state: COMPLETION_PENDING
+  to_inquiry_state: COMPLETION_PENDING
+  changes_inquiry_state: false
+- order: 7
+  actor: TECHNICIAN
+  event: FINALIZE_INQUIRY
+  from_inquiry_state: COMPLETION_PENDING
+  to_inquiry_state: RESOLVED
+expected_result:
+  inquiry_state: RESOLVED
+  visit_status: COMPLETED
+  completion_source: VISIT

@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SyntheticConsultation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "consultation_id",
+    "consultation_number",
+    "inquiry_id",
+    "sequence",
+    "counselor_id",
+    "status",
+    "outcome",
+    "summary",
+    "state_version",
+    "idempotency_key",
+    "correlation_id",
+    "created_at",
+    "started_at",
+    "completed_at",
+    "data_classification"
+  ],
+  "properties": {
+    "consultation_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "consultation_number": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^CON-SYN-\\d{4}-\\d$"
+    },
+    "inquiry_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "counselor_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "WAITING",
+        "ASSIGNED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "CANCELLED"
+      ]
+    },
+    "outcome": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "PENDING",
+        "COMPLETED_NO_VISIT",
+        "VISIT_REQUIRED",
+        "REOPENED_FOLLOWUP"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "correlation_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    },
+    "started_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "data_classification": {
+      "type": "string",
+      "minLength": 1,
+      "const": "synthetic"
+    }
+  }
+}

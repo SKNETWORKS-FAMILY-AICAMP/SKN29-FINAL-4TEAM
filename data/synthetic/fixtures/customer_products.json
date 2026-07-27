@@ -1,0 +1,122 @@
+[
+  {
+    "customer_product_id": "793af8f4-0a3d-5733-b079-b9d54b9d8d49",
+    "customer_id": "2fdda38e-2530-5d2d-b0ad-97630b3b5c3e",
+    "product_id": "c039afdb-f37b-509e-b270-3fe4fcddd91c",
+    "serial_number": "SYN-JAC104D-0001",
+    "installation_date": "2025-01-14",
+    "installation_location": "주방 카운터",
+    "active": true,
+    "data_classification": "synthetic"
+  },
+  {
+    "customer_product_id": "e8e9bca4-a0a2-53e4-8cdd-dac2415a8074",
+    "customer_id": "18b30d13-a38b-5035-84b3-988406079e0d",
+    "product_id": "c039afdb-f37b-509e-b270-3fe4fcddd91c",
+    "serial_number": "SYN-JAC104D-0002",
+    "installation_date": "2025-01-27",
+    "installation_location": "주방 카운터",
+    "active": true,
+    "data_classification": "synthetic"
+  },
+  {
+    "customer_product_id": "9f61b804-1cb4-5c0e-b58f-f9999bf0cbb4",
+    "customer_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c",
+    "product_id": "c039afdb-f37b-509e-b270-3fe4fcddd91c",
+    "serial_number": "SYN-JAC104D-0003",
+    "installation_date": "2025-02-09",
+    "installation_location": "거실 보조장",
+    "active": true,
+    "data_classification": "synthetic"
+  },
+  {
+    "customer_product_id": "59c7bff8-8c66-574e-83c5-9f8f755dd9e1",
+    "customer_id": "e48532ad-fa40-54d7-981b-9accfe13e365",
+    "product_id": "c039afdb-f37b-509e-b270-3fe4fcddd91c",
+    "serial_number": "SYN-JAC104D-0004",
+    "installation_date": "2025-02-22",
+    "installation_location": "주방 카운터",
+    "active": true,
+    "data_classification": "synthetic"
+  },
+  {
+    "customer_product_id": "dfc9cf8f-eff3-55d9-a366-06c7d5eff3e4",
+    "customer_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da",
+    "product_id": "c039afdb-f37b-509e-b270-3fe4fcddd91c",
+    "serial_number": "SYN-JAC104D-0005",
+    "installation_date": "2025-03-07",
+    "installation_location": "주방 카운터",
+    "active": true,
+    "data_classification": "synthetic"
+  },
+  {
+    "customer_product_id": "f2a54705-6525-54ea-aac7-6ee819c8a54c",
+    "customer_id": "0752efc0-e2c7-5900-bc01-72c9ed38097a",
+    "product_id": "c039afdb-f37b-509e-b270-3fe4fcddd91c",
+    "serial_number": "SYN-JAC104D-0006",
+    "installation_date": "2025-03-20",
+    "installation_location": "거실 보조장",
+    "active": true,
+    "data_classification": "synthetic"
+  },
+  {
+    "customer_product_id": "6f5f486f-6c89-5bb0-a952-adda1265e794",
+    "customer_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
+    "product_id": "c039afdb-f37b-509e-b270-3fe4fcddd91c",
+    "serial_number": "SYN-JAC104D-0007",
+    "installation_date": "2025-04-02",
+    "installation_location": "주방 카운터",
+    "active": true,
+    "data_classification": "synthetic"
+  },
+  {
+    "customer_product_id": "f8065aba-04af-541c-a383-972eed605959",
+    "customer_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab",
+    "product_id": "c039afdb-f37b-509e-b270-3fe4fcddd91c",
+    "serial_number": "SYN-JAC104D-0008",
+    "installation_date": "2025-04-15",
+    "installation_location": "주방 카운터",
+    "active": true,
+    "data_classification": "synthetic"
+  },
+  {
+    "customer_product_id": "a95b6795-4156-567c-8f8b-a02c15bce1ea",
+    "customer_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
+    "product_id": "c039afdb-f37b-509e-b270-3fe4fcddd91c",
+    "serial_number": "SYN-JAC104D-0009",
+    "installation_date": "2025-04-28",
+    "installation_location": "거실 보조장",
+    "active": true,
+    "data_classification": "synthetic"
+  },
+  {
+    "customer_product_id": "7db31abc-9666-58c6-b5df-7ae71da240d8",
+    "customer_id": "df1e5e7d-c016-53fa-9f7e-26ac4359c78e",
+    "product_id": "c039afdb-f37b-509e-b270-3fe4fcddd91c",
+    "serial_number": "SYN-JAC104D-0010",
+    "installation_date": "2025-05-11",
+    "installation_location": "주방 카운터",
+    "active": true,
+    "data_classification": "synthetic"
+  },
+  {
+    "customer_product_id": "522206a8-6c10-5eb2-b709-067bbf3a99a4",
+    "customer_id": "52128217-1800-57ad-88e9-8750c499a55f",
+    "product_id": "c039afdb-f37b-509e-b270-3fe4fcddd91c",
+    "serial_number": "SYN-JAC104D-0011",
+    "installation_date": "2025-05-24",
+    "installation_location": "주방 카운터",
+    "active": true,
+    "data_classification": "synthetic"
+  },
+  {
+    "customer_product_id": "5134f121-c503-5ef4-9b1a-bf2653d71530",
+    "customer_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d",
+    "product_id": "c039afdb-f37b-509e-b270-3fe4fcddd91c",
+    "serial_number": "SYN-JAC104D-0012",
+    "installation_date": "2025-06-06",
+    "installation_location": "거실 보조장",
+    "active": true,
+    "data_classification": "synthetic"
+  }
+]

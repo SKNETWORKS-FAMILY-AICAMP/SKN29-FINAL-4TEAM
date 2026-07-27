@@ -1,2 +1,61 @@
-# consultation-resolution 대표 흐름
-steps: []
+contract:
+  name: consultation-resolution-example
+  version: 0.1.0
+  status: draft_for_review
+  description: 상담 처리 후 방문이 불필요하다고 판단하고 고객 확인을 거쳐 완료하는 대표 예시이다.
+representative_data:
+  product_model_code: WPUJAC104DWH
+  product_serial_number: SYN-JAC104-002
+  inquiry_code: DEMO-INQ-002
+  symptom: 출수량 저하
+  official_evidence:
+    document_type: official_manual
+    page: 38
+initial_context:
+  actor_role: CONSULTANT
+  inquiry_state: CONSULTATION_REQUIRED
+  assigned_consultant: true
+  visit: null
+steps:
+- order: 1
+  actor: CONSULTANT
+  event: START_CONSULTATION
+  from_inquiry_state: CONSULTATION_REQUIRED
+  to_inquiry_state: CONSULTATION_IN_PROGRESS
+- order: 2
+  actor: CONSULTANT
+  event: UPDATE_CONSULTATION_SUMMARY
+  from_inquiry_state: CONSULTATION_IN_PROGRESS
+  to_inquiry_state: CONSULTATION_IN_PROGRESS
+  changes_inquiry_state: false
+- order: 3
+  actor: CONSULTANT
+  event: CONFIRM_CONSULTATION_SUMMARY
+  from_inquiry_state: CONSULTATION_IN_PROGRESS
+  to_inquiry_state: CONSULTATION_IN_PROGRESS
+  changes_inquiry_state: false
+- order: 4
+  actor: CONSULTANT
+  event: VISIT_REVIEW_REQUIRED
+  from_inquiry_state: CONSULTATION_IN_PROGRESS
+  to_inquiry_state: VISIT_REVIEW_PENDING
+- order: 5
+  actor: CONSULTANT
+  event: VISIT_NOT_NEEDED
+  from_inquiry_state: VISIT_REVIEW_PENDING
+  to_inquiry_state: COMPLETION_PENDING
+- order: 6
+  actor: CUSTOMER
+  event: SUBMIT_RESOLUTION_FEEDBACK
+  from_inquiry_state: COMPLETION_PENDING
+  to_inquiry_state: COMPLETION_PENDING
+  changes_inquiry_state: false
+- order: 7
+  actor: CONSULTANT
+  event: FINALIZE_INQUIRY
+  from_inquiry_state: COMPLETION_PENDING
+  to_inquiry_state: RESOLVED
+expected_result:
+  inquiry_state: RESOLVED
+  completion_source: CONSULTATION
+  visit_created: false

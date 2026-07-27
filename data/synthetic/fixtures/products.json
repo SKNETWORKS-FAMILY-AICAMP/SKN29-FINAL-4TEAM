@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "product_id": "c039afdb-f37b-509e-b270-3fe4fcddd91c",
+    "product_code": "WPUJAC104DWH",
+    "product_model": "WPU-JAC104 (D)",
+    "model_family": "WPU-JAC104",
+    "product_generation": "D",
+    "manual_revision": "REV.00",
+    "support_scope": "MVP",
+    "data_classification": "synthetic"
+  }
+]

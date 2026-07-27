@@ -1,5 +1,63 @@
 {
-  "status": "not_run",
-  "checked_at": null,
-  "results": []
+  "status": "PASS",
+  "stage": 5,
+  "report_type": "INTEGRITY",
+  "generated_at": "2026-07-27T00:00:00+09:00",
+  "summary": {
+    "checks": 10,
+    "errors": 0,
+    "warnings": 0
+  },
+  "checks": [
+    {
+      "code": "INTEGRITY_MANIFEST_HASH",
+      "status": "PASS",
+      "detail": "files=23, mismatches=0"
+    },
+    {
+      "code": "INTEGRITY_UNIQUE_IDS",
+      "status": "PASS",
+      "detail": "datasets=16, duplicate_sets=[]"
+    },
+    {
+      "code": "INTEGRITY_RAG_PAGE_LINKS",
+      "status": "PASS",
+      "detail": "chunks=7, errors=0"
+    },
+    {
+      "code": "INTEGRITY_RAG_EVIDENCE_LINKS",
+      "status": "PASS",
+      "detail": "chunks=7, errors=0"
+    },
+    {
+      "code": "INTEGRITY_FAQ_LINEAGE",
+      "status": "PASS",
+      "detail": "candidate_errors=0, ocr_errors=0"
+    },
+    {
+      "code": "INTEGRITY_OFFICIAL_ASSET_REFERENCES",
+      "status": "PASS",
+      "detail": "assets=10, occurrences=11, errors=0"
+    },
+    {
+      "code": "INTEGRITY_SOURCE_HASH_LINEAGE",
+      "status": "PASS",
+      "detail": "errors=[]"
+    },
+    {
+      "code": "INTEGRITY_SYNTHETIC_REFERENCES",
+      "status": "PASS",
+      "detail": "reference_errors=0"
+    },
+    {
+      "code": "INTEGRITY_WORKFLOW_HISTORY_AUDIT",
+      "status": "PASS",
+      "detail": "inquiries=24, errors=0"
+    },
+    {
+      "code": "INTEGRITY_SCENARIO_SUBSETS",
+      "status": "PASS",
+      "detail": "subset_files=7, errors=[]"
+    }
+  ]
 }

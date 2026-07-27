@@ -1,0 +1,67 @@
+{
+  "status": "COMPLETED",
+  "generated_at": "2026-07-27T00:00:00+09:00",
+  "user_decision": "LOCAL_FAQ_IMAGES_MAY_BE_DELETED_AND_ARE_NOT_LOCALLY_RECOVERABLE",
+  "initial_targets": {
+    "data/raw": {
+      "target_path": "data/raw",
+      "file_count": 7,
+      "size_bytes": 751,
+      "git_tracked_files": 7,
+      "not_git_recoverable_files": 0
+    },
+    "data/.temp": {
+      "target_path": "data/.temp",
+      "file_count": 25,
+      "size_bytes": 325799,
+      "git_tracked_files": 25,
+      "not_git_recoverable_files": 0
+    },
+    "data/.work": {
+      "target_path": "data/.work",
+      "file_count": 35,
+      "size_bytes": 3636361,
+      "git_tracked_files": 0,
+      "not_git_recoverable_files": 35
+    }
+  },
+  "result": {
+    "data/raw": "POLICY_FILES_RETAINED_NO_RAW_ORIGINALS_PRESENT",
+    "data/.temp": "DELETED",
+    "data/.work": "DELETED",
+    "official_faq_image_binary": "DELETED_NOT_LOCALLY_RECOVERABLE_USER_ACCEPTED"
+  },
+  "preserved": {
+    "ocr_evidence_manifest": {
+      "path": "processed/validation/ocr_evidence/preservation_manifest.json",
+      "sha256": "FB0BD98E6AA6D8080F9E313717A6527BED155DDC5E80A4408217A5DF13B0C88F"
+    },
+    "image_manifest": {
+      "path": "processed/validation/ocr_evidence/image_manifest.csv",
+      "sha256": "9E32BEA8F7F866CC3645C0D8B7D881F9A57B6CA9084336F289B35EDC9B2BDF7C"
+    },
+    "review_checklist": {
+      "path": "processed/validation/ocr_evidence/review_checklist.csv",
+      "sha256": "F9891861DC9BBEA395ADAB4F27B66C88A514CE749CD031E4E26D5FD8AF39F8AD"
+    },
+    "canonical_ocr": {
+      "path": "processed/documents/faq/faq_ocr_verified.jsonl",
+      "sha256": "E5A2DEC934AFA32A1DB9EC0036FDEB9A25307D4D25593009686A77555310348E"
+    },
+    "official_asset_registry": {
+      "path": "processed/structured/assets/official_faq_assets.jsonl",
+      "sha256": "CA64EBF5F4F8948D1113828EB13E3358447EDD2B539AFAB2EC35597BA53CDE00"
+    }
+  },
+  "post_delete_qa": {
+    "status": "PASS",
+    "errors": 0,
+    "warnings": 0
+  },
+  "recovery": {
+    "git_can_restore_temp": true,
+    "git_can_restore_deleted_work_files": false,
+    "repository_can_restore_official_source_binaries": false,
+    "external_backup_required_for_official_sources": true
+  }
+}
