@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { ROUTE_PATHS } from "../../app/router/routePaths";
+import {
+  createVisitTransitionPath,
+  ROUTE_PATHS,
+} from "../../app/router/routePaths";
 import "./InquiryDetailPage.css";
 
 type RiskLevel = "GENERAL" | "CAUTION" | "DANGER";
@@ -273,9 +276,12 @@ export default function InquiryDetailPage() {
   };
 
   const handleRequestVisit = () => {
-    setActionMessage(
-      "Mock 방문 전환 요청이 완료되었습니다. 실제 방문 일정은 아직 생성되지 않습니다.",
-    );
+    navigate(createVisitTransitionPath(inquiry.inquiryId), {
+      state: {
+        stateVersion: inquiry.stateVersion,
+        symptomSummary: inquiry.symptomSummary,
+      },
+    });
   };
 
   return (
