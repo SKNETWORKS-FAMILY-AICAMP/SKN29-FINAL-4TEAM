@@ -1,2 +1,618 @@
-# 역할·담당자·필수 입력·현재 상태 검사 규칙
-guards: []
+contract:
+  name: transition-guards
+  version: 0.1.0
+  status: draft_for_review
+  owner: PM_TECHNICAL_INTEGRATION
+  description: >
+    transition-rules.yaml에서 참조하는 전이 선행조건을 정의한다.
+    백엔드는 현재 상태와 이벤트가 일치하더라도 이 파일의 역할·소유권·담당자·동시성·
+    입력 완전성·안전·완료 조건을 모두 통과한 경우에만 상태 변경과 부수 효과를 커밋한다.
+  source_documents:
+    - docs/planning/md/week3-scope-and-dod.md
+    - "(화면설계서_29기_4팀) 정수기 구독 고객 케어 및 A_S 업무 지원 시스템.md"
+    - "(요구사항정의서_29기_4팀) 정수기 구독 고객 케어 및 A_S 업무 지원 시스템.md"
+
+references:
+  inquiry_states: ./inquiry-states.yaml
+  inquiry_events: ./inquiry-events.yaml
+  transition_rules: ./transition-rules.yaml
+  role_permissions: ./role-permissions.yaml
+  completion_policy: ./completion-policy.yaml
+  concurrency_policy: ./concurrency-policy.yaml
+
+evaluation_policy:
+  default_combiner: ALL
+  evaluate_inside_transaction: true
+  lock_target_inquiry_for_state_change: true
+  stop_on_first_failure: true
+  security_precedence:
+    - AUTHENTICATION
+    - ROLE
+    - RESOURCE_ACCESS
+    - CONCURRENCY
+    - IDEMPOTENCY
+    - PAYLOAD
+    - BUSINESS_RULE
+    - SAFETY_AND_EVIDENCE
+    - COMPLETION
+  response_policy:
+    never_expose:
+      - internal_database_pk
+      - raw_exception
+      - source_storage_path
+      - vector_chunk_id
+      - model_internal_reasoning
+    resource_access_failure:
+      strategy: NOT_FOUND_OR_FORBIDDEN
+      http_status: 404
+      error_code: RESOURCE_NOT_FOUND
+    validation_failure:
+      http_status: 422
+    stale_state_failure:
+      http_status: 409
+      error_code: STATE_VERSION_CONFLICT
+
+condition_language:
+  type: declarative_pseudocode
+  notes:
+    - 조건식은 구현 언어에 종속되지 않는 계약 표현이다.
+    - 배열의 모든 조건은 별도 combiner가 없으면 ALL로 평가한다.
+    - 함수 형태의 조건은 Backend Service 또는 Repository 조회를 뜻한다.
+    - 시스템 이벤트용 Guard 실패는 고객에게 원문을 노출하지 않고 내부 로그와 추적 ID를 남긴다.
+
+guard_categories:
+  - AUTHENTICATION
+  - ROLE
+  - RESOURCE_ACCESS
+  - ASSIGNMENT
+  - CONCURRENCY
+  - IDEMPOTENCY
+  - PAYLOAD
+  - BUSINESS_RULE
+  - SAFETY_AND_EVIDENCE
+  - COMPLETION
+
+guards:
+  # ---------------------------------------------------------------------------
+  # 역할
+  # ---------------------------------------------------------------------------
+  - id: G-ACTOR-CUSTOMER
+    category: ROLE
+    description: 인증된 실행자의 역할이 고객이어야 한다.
+    conditions:
+      - actor.is_authenticated == true
+      - actor.role == CUSTOMER
+    failure:
+      http_status: 403
+      error_code: CUSTOMER_ROLE_REQUIRED
+      message: 고객 권한이 필요한 작업입니다.
+
+  - id: G-ACTOR-CONSULTANT
+    category: ROLE
+    description: 인증된 실행자의 역할이 상담사여야 한다.
+    conditions:
+      - actor.is_authenticated == true
+      - actor.role == CONSULTANT
+    failure:
+      http_status: 403
+      error_code: CONSULTANT_ROLE_REQUIRED
+      message: 상담사 권한이 필요한 작업입니다.
+
+  - id: G-ACTOR-TECHNICIAN
+    category: ROLE
+    description: 인증된 실행자의 역할이 방문기사여야 한다.
+    conditions:
+      - actor.is_authenticated == true
+      - actor.role == TECHNICIAN
+    failure:
+      http_status: 403
+      error_code: TECHNICIAN_ROLE_REQUIRED
+      message: 방문기사 권한이 필요한 작업입니다.
+
+  - id: G-ACTOR-SYSTEM
+    category: ROLE
+    description: 외부 사용자가 아닌 신뢰된 백엔드 내부 프로세스만 실행할 수 있다.
+    conditions:
+      - actor.type == SYSTEM
+      - request.origin == INTERNAL_SERVICE
+      - verify_internal_service_auth(request) == true
+    failure:
+      http_status: 403
+      error_code: INTERNAL_EVENT_ONLY
+      message: 내부 처리 전용 이벤트입니다.
+      expose_to_external_client: false
+
+  - id: G-ACTOR-LAST-HANDLER
+    category: ASSIGNMENT
+    description: >
+      상담·방문 처리 후 문의를 최종 완료하는 실행자는 해당 완료 흐름의 마지막 처리 담당자여야 한다.
+    conditions:
+      - actor.is_authenticated == true
+      - actor.role in [CONSULTANT, TECHNICIAN]
+      - >
+        (inquiry.completion_source == CONSULTATION
+         and actor.role == CONSULTANT
+         and inquiry.last_consultation.consultant_id == actor.user_id)
+        or
+        (inquiry.completion_source == VISIT
+         and actor.role == TECHNICIAN
+         and inquiry.last_completed_visit.technician_id == actor.user_id)
+    failure:
+      http_status: 403
+      error_code: FINALIZATION_HANDLER_MISMATCH
+      message: 해당 처리의 담당자만 문의를 최종 완료할 수 있습니다.
+
+  # ---------------------------------------------------------------------------
+  # 소유권·담당자
+  # ---------------------------------------------------------------------------
+  - id: G-INQUIRY-OWNER
+    category: RESOURCE_ACCESS
+    description: 고객은 본인 소유의 문의에만 접근할 수 있다.
+    conditions:
+      - inquiry.exists == true
+      - inquiry.customer_id == actor.user_id
+    failure:
+      http_status: 404
+      error_code: RESOURCE_NOT_FOUND
+      message: 문의를 찾을 수 없습니다.
+
+  - id: G-CUSTOMER-PRODUCT-OWNERSHIP
+    category: RESOURCE_ACCESS
+    description: 문의에 연결할 제품은 인증 고객에게 등록된 활성 제품이어야 한다.
+    conditions:
+      - request.product_public_id is not null
+      - product.exists == true
+      - product.customer_id == actor.user_id
+      - product.is_active == true
+      - product.deleted_at is null
+    failure:
+      http_status: 404
+      error_code: PRODUCT_NOT_FOUND
+      message: 사용할 수 있는 등록 제품을 찾을 수 없습니다.
+
+  - id: G-ASSIGNED-CONSULTANT
+    category: ASSIGNMENT
+    description: 상담 작업은 현재 문의에 배정된 상담사만 수행한다.
+    conditions:
+      - inquiry.assigned_consultant_id is not null
+      - inquiry.assigned_consultant_id == actor.user_id
+    failure:
+      http_status: 403
+      error_code: CONSULTANT_ASSIGNMENT_REQUIRED
+      message: 해당 문의의 담당 상담사만 처리할 수 있습니다.
+
+  - id: G-ASSIGNED-TECHNICIAN
+    category: ASSIGNMENT
+    description: 방문 작업은 해당 Visit에 배정된 방문기사만 수행한다.
+    conditions:
+      - visit.exists == true
+      - visit.assigned_technician_id is not null
+      - visit.assigned_technician_id == actor.user_id
+    failure:
+      http_status: 403
+      error_code: TECHNICIAN_ASSIGNMENT_REQUIRED
+      message: 해당 방문의 담당 기사만 처리할 수 있습니다.
+
+  - id: G-ASSIGNED-TECHNICIAN-PRESENT
+    category: BUSINESS_RULE
+    description: 방문 확정 전에 활성 방문기사가 배정되어 있어야 한다.
+    conditions:
+      - visit.exists == true
+      - visit.assigned_technician_id is not null
+      - assigned_technician.exists == true
+      - assigned_technician.role == TECHNICIAN
+      - assigned_technician.is_active == true
+    failure:
+      http_status: 422
+      error_code: ASSIGNED_TECHNICIAN_REQUIRED
+      message: 방문을 확정하려면 담당 기사를 배정해야 합니다.
+
+  - id: G-CANCEL-ACTOR-AUTHORIZED
+    category: RESOURCE_ACCESS
+    description: >
+      고객은 본인 문의만 취소할 수 있고, 상담사·운영자는 권한 범위 내 문의만 취소할 수 있다.
+    conditions:
+      combiner: ANY
+      items:
+        - actor.role == CUSTOMER and inquiry.customer_id == actor.user_id
+        - >
+          actor.role == CONSULTANT
+          and inquiry.assigned_consultant_id == actor.user_id
+        - actor.role == OPERATOR and actor.permissions contains INQUIRY_CANCEL
+    failure:
+      http_status: 403
+      error_code: INQUIRY_CANCEL_FORBIDDEN
+      message: 이 문의를 취소할 권한이 없습니다.
+
+  # ---------------------------------------------------------------------------
+  # 동시성·멱등성
+  # ---------------------------------------------------------------------------
+  - id: G-STATE-VERSION
+    category: CONCURRENCY
+    description: 요청의 state_version이 현재 Inquiry의 state_version과 같아야 한다.
+    conditions:
+      - request.state_version is not null
+      - request.state_version == inquiry.state_version
+    failure:
+      http_status: 409
+      error_code: STATE_VERSION_CONFLICT
+      message: 문의 상태가 변경되었습니다. 최신 정보를 확인한 뒤 다시 시도해 주세요.
+      response_fields:
+        - current_status
+        - current_state_version
+        - allowed_actions
+
+  - id: G-IDEMPOTENCY-KEY
+    category: IDEMPOTENCY
+    description: >
+      외부 쓰기 요청은 Idempotency-Key를 포함해야 한다. 같은 사용자·작업 범위에서 같은 키와
+      같은 요청 해시는 기존 성공 응답을 재사용하고, 다른 요청 해시는 충돌로 거부한다.
+    conditions:
+      - request.idempotency_key is not null
+      - request.idempotency_key matches UUID_OR_APPROVED_TOKEN_FORMAT
+      - >
+        no_idempotency_record(actor.id, request.operation_id, request.idempotency_key)
+        or existing_idempotency_record.request_hash == request.body_hash
+    success_behavior:
+      when_same_key_and_same_hash: RETURN_STORED_RESPONSE
+      when_new_key: CONTINUE_AND_STORE_RESULT
+    failure:
+      http_status: 409
+      error_code: IDEMPOTENCY_KEY_REUSE_CONFLICT
+      message: 동일한 멱등성 키가 다른 요청에 이미 사용되었습니다.
+
+  # ---------------------------------------------------------------------------
+  # 일반 입력 검증
+  # ---------------------------------------------------------------------------
+  - id: G-SYMPTOM-PAYLOAD-VALID
+    category: PAYLOAD
+    description: 최초 증상 입력에 필요한 고객 원문과 제품 연결 정보가 유효해야 한다.
+    conditions:
+      - request.customer_message is not null
+      - trim(request.customer_message).length between 2 and 2000
+      - inquiry.product_id is not null
+      - request.attachments count <= configured_attachment_limit
+      - all(request.attachments, attachment.type in allowed_customer_attachment_types)
+    failure:
+      http_status: 422
+      error_code: INVALID_SYMPTOM_PAYLOAD
+      message: 증상 내용을 확인해 주세요.
+
+  - id: G-FOLLOWUP-ANSWERS-VALID
+    category: PAYLOAD
+    description: 추가 질문에 대한 답변은 현재 미응답 질문과 일치하고 형식이 유효해야 한다.
+    conditions:
+      - request.answers is not empty
+      - all(request.answers, answer.question_id in inquiry.open_followup_question_ids)
+      - all(request.answers, validate_answer_type(answer) == true)
+      - no_duplicate_question_ids(request.answers)
+    failure:
+      http_status: 422
+      error_code: INVALID_FOLLOWUP_ANSWERS
+      message: 추가 답변 형식을 확인해 주세요.
+
+  - id: G-CANCELLATION-REASON
+    category: PAYLOAD
+    description: 문의 취소 시 취소 사유 코드와 선택 설명이 유효해야 한다.
+    conditions:
+      - request.reason_code in configured_inquiry_cancellation_reason_codes
+      - request.reason_detail is null or trim(request.reason_detail).length <= 500
+    failure:
+      http_status: 422
+      error_code: INVALID_CANCELLATION_REASON
+      message: 취소 사유를 확인해 주세요.
+
+  - id: G-CONSULTATION-SUMMARY-PAYLOAD-VALID
+    category: PAYLOAD
+    description: 상담사가 수정하는 상담 요약은 필수 영역과 길이 제한을 충족해야 한다.
+    conditions:
+      - request.summary is not null
+      - trim(request.summary).length between 1 and configured_summary_max_length
+      - request.summary contains no_internal_ai_fields
+      - request.summary contains no_raw_source_storage_path
+    failure:
+      http_status: 422
+      error_code: INVALID_CONSULTATION_SUMMARY
+      message: 상담 요약 내용을 확인해 주세요.
+
+  - id: G-CONSULTATION-SUMMARY-CONFIRMABLE
+    category: BUSINESS_RULE
+    description: 비어 있지 않은 상담사 수정본만 확정할 수 있다.
+    conditions:
+      - consultation.edited_summary is not null
+      - trim(consultation.edited_summary).length >= 1
+      - consultation.summary_confirmed_at is null
+    failure:
+      http_status: 422
+      error_code: CONSULTATION_SUMMARY_NOT_CONFIRMABLE
+      message: 확정할 상담 요약을 먼저 작성해 주세요.
+
+  - id: G-CONSULTATION-RESULT-COMPLETE
+    category: COMPLETION
+    description: 상담 완료 전에 필수 상담 결과와 확정 요약이 저장되어 있어야 한다.
+    conditions:
+      - consultation.exists == true
+      - consultation.result_code in configured_consultation_result_codes
+      - consultation.confirmed_summary is not null
+      - consultation.summary_confirmed_at is not null
+      - consultation.completed_at is null
+    failure:
+      http_status: 422
+      error_code: CONSULTATION_RESULT_INCOMPLETE
+      message: 상담 결과와 확정 요약을 모두 입력해 주세요.
+
+  - id: G-VISIT-REVIEW-PAYLOAD-VALID
+    category: PAYLOAD
+    description: 방문 검토 요청에는 판단 사유와 상담 인계에 필요한 최소 정보가 있어야 한다.
+    conditions:
+      - request.reason_code in configured_visit_review_reason_codes
+      - request.reason_detail is null or trim(request.reason_detail).length <= 1000
+      - consultation.confirmed_summary is not null
+    failure:
+      http_status: 422
+      error_code: INVALID_VISIT_REVIEW_PAYLOAD
+      message: 방문 검토 사유와 상담 요약을 확인해 주세요.
+
+  - id: G-VISIT-HANDOFF-COMPLETE
+    category: COMPLETION
+    description: 방문 생성 전에 기사가 확인할 인계 정보가 완성되어야 한다.
+    conditions:
+      - consultation.confirmed_summary is not null
+      - inquiry.product_id is not null
+      - request.visit_reason is not null
+      - request.customer_preferred_date is null or is_valid_local_date(request.customer_preferred_date)
+      - request.usage_guidance_status in [NORMAL, PARTIAL_STOP, TOTAL_STOP, PENDING_CONSULTATION]
+      - request.handoff contains no_internal_ai_fields
+    failure:
+      http_status: 422
+      error_code: VISIT_HANDOFF_INCOMPLETE
+      message: 방문 인계에 필요한 정보를 모두 입력해 주세요.
+
+  - id: G-VISIT-SCHEDULE-PAYLOAD-VALID
+    category: PAYLOAD
+    description: 방문 일정 수정 값은 시간대·기사·일정 정책을 충족해야 한다.
+    conditions:
+      - visit.exists == true
+      - request.scheduled_start is not null
+      - request.scheduled_end is not null
+      - request.scheduled_start < request.scheduled_end
+      - request.scheduled_start is ISO_8601_WITH_OFFSET
+      - request.scheduled_end is ISO_8601_WITH_OFFSET
+      - request.assigned_technician_public_id is null or technician_exists_and_active(request.assigned_technician_public_id)
+      - no_forbidden_schedule_overlap(request.assigned_technician_public_id, request.scheduled_start, request.scheduled_end)
+    failure:
+      http_status: 422
+      error_code: INVALID_VISIT_SCHEDULE
+      message: 방문 일정과 담당 기사 정보를 확인해 주세요.
+
+  - id: G-CONFIRMED-VISIT-DATE
+    category: BUSINESS_RULE
+    description: 방문 확정 전에 최종 시작·종료 시각이 저장되어 있어야 한다.
+    conditions:
+      - visit.scheduled_start is not null
+      - visit.scheduled_end is not null
+      - visit.scheduled_start < visit.scheduled_end
+    failure:
+      http_status: 422
+      error_code: CONFIRMED_VISIT_DATE_REQUIRED
+      message: 방문 확정 일정을 먼저 입력해 주세요.
+
+  - id: G-PREVISIT-REPORT-PAYLOAD-VALID
+    category: PAYLOAD
+    description: 기사 사전 리포트 수정본은 허용된 업무 필드만 포함해야 한다.
+    conditions:
+      - request.report is not null
+      - trim(request.report).length between 1 and configured_previsit_report_max_length
+      - request.report contains no_internal_ai_fields
+      - request.report contains no_raw_source_storage_path
+      - request.report contains no_vector_chunk_id
+    failure:
+      http_status: 422
+      error_code: INVALID_PREVISIT_REPORT
+      message: 기사 사전 리포트 내용을 확인해 주세요.
+
+  - id: G-PREVISIT-REPORT-CONFIRMABLE
+    category: BUSINESS_RULE
+    description: 비어 있지 않은 담당 기사 수정본만 확정할 수 있다.
+    conditions:
+      - visit.edited_previsit_report is not null
+      - trim(visit.edited_previsit_report).length >= 1
+      - visit.previsit_report_confirmed_at is null
+    failure:
+      http_status: 422
+      error_code: PREVISIT_REPORT_NOT_CONFIRMABLE
+      message: 확정할 사전 리포트를 먼저 작성해 주세요.
+
+  - id: G-VISIT-RESULT-COMPLETE
+    category: COMPLETION
+    description: 방문 완료 전에 필수 현장 점검 결과가 저장되어 있어야 한다.
+    conditions:
+      - visit.exists == true
+      - visit.status == IN_PROGRESS
+      - request.result_code in configured_visit_result_codes
+      - request.work_summary is not null
+      - trim(request.work_summary).length between 1 and configured_visit_result_max_length
+      - request.completed_at is not null
+      - request.completed_at is ISO_8601_WITH_OFFSET
+    failure:
+      http_status: 422
+      error_code: VISIT_RESULT_INCOMPLETE
+      message: 방문 처리 결과를 모두 입력해 주세요.
+
+  - id: G-REVISIT-REASON
+    category: PAYLOAD
+    description: 추가 방문 요청에는 표준 사유 코드와 설명이 필요하다.
+    conditions:
+      - request.reason_code in configured_revisit_reason_codes
+      - request.reason_detail is not null
+      - trim(request.reason_detail).length between 1 and 1000
+    failure:
+      http_status: 422
+      error_code: REVISIT_REASON_REQUIRED
+      message: 추가 방문 사유를 입력해 주세요.
+
+  - id: G-RESOLUTION-FEEDBACK-RESOLVED
+    category: PAYLOAD
+    description: 해결됨 피드백 저장 이벤트에는 해결 여부와 선택 의견이 유효해야 한다.
+    conditions:
+      - request.resolved == true
+      - request.comment is null or trim(request.comment).length <= 1000
+    failure:
+      http_status: 422
+      error_code: INVALID_RESOLVED_FEEDBACK
+      message: 해결 여부와 의견을 확인해 주세요.
+
+  - id: G-UNRESOLVED-FEEDBACK-VALID
+    category: PAYLOAD
+    description: 미해결 보고에는 미해결 표시와 선택 사유가 유효해야 한다.
+    conditions:
+      - request.resolved == false
+      - request.reason_code is null or request.reason_code in configured_unresolved_reason_codes
+      - request.comment is null or trim(request.comment).length <= 1000
+    failure:
+      http_status: 422
+      error_code: INVALID_UNRESOLVED_FEEDBACK
+      message: 미해결 사유를 확인해 주세요.
+
+  - id: G-FINALIZATION-PAYLOAD-VALID
+    category: PAYLOAD
+    description: 담당자의 최종 완료 요청에는 선택 메모만 허용하고 민감 내부값을 차단한다.
+    conditions:
+      - request.final_note is null or trim(request.final_note).length <= 1000
+      - request.final_note contains no_internal_ai_fields
+      - request.final_note contains no_raw_source_storage_path
+    failure:
+      http_status: 422
+      error_code: INVALID_FINALIZATION_PAYLOAD
+      message: 최종 완료 내용을 확인해 주세요.
+
+  # ---------------------------------------------------------------------------
+  # 제품 검증·안전·근거
+  # ---------------------------------------------------------------------------
+  - id: G-PRODUCT-VALIDATION-FAILED
+    category: BUSINESS_RULE
+    description: 제품 검증 결과가 명시적으로 실패한 경우에만 실패 이벤트를 적용한다.
+    conditions:
+      - validation_result.exists == true
+      - validation_result.valid == false
+      - validation_result.failure_code in configured_product_validation_failure_codes
+    failure:
+      http_status: 409
+      error_code: PRODUCT_VALIDATION_EVENT_MISMATCH
+      message: 제품 검증 결과와 이벤트가 일치하지 않습니다.
+      expose_to_external_client: false
+
+  - id: G-SAFE-GUIDANCE-VALID
+    category: SAFETY_AND_EVIDENCE
+    description: 고객에게 전달 가능한 형식·안전 검증을 통과한 안내여야 한다.
+    conditions:
+      - ai_result.exists == true
+      - ai_result.validation.passed == true
+      - ai_result.customer_guidance is not null
+      - ai_result.requires_consultation == false
+      - ai_result.output_schema_valid == true
+      - ai_result.customer_guidance contains no_internal_ai_fields
+      - ai_result.customer_guidance contains no_raw_source_storage_path
+      - ai_result.customer_guidance contains no_vector_chunk_id
+    failure:
+      http_status: 409
+      error_code: SAFE_GUIDANCE_PRECONDITION_FAILED
+      message: 안전 안내 전환 조건을 충족하지 못했습니다.
+      expose_to_external_client: false
+
+  - id: G-OFFICIAL-EVIDENCE-AVAILABLE
+    category: SAFETY_AND_EVIDENCE
+    description: 안내에 연결된 사용 가능 공식 근거가 최소 1개 이상 있어야 한다.
+    conditions:
+      - ai_result.evidence is not empty
+      - any(ai_result.evidence, evidence.is_official == true and evidence.is_usable == true)
+      - all(ai_result.cited_evidence_ids, id in ai_result.evidence.ids)
+      - all(ai_result.evidence, evidence.product_model_matches == true)
+    failure:
+      http_status: 409
+      error_code: OFFICIAL_EVIDENCE_REQUIRED
+      message: 사용할 수 있는 공식 근거가 없습니다.
+      expose_to_external_client: false
+
+  - id: G-NO-DANGER-CONFLICT
+    category: SAFETY_AND_EVIDENCE
+    description: 안전 안내 결과와 위험 판정 사이에 충돌이 없어야 한다.
+    conditions:
+      - ai_result.danger_detected == false
+      - ai_result.requires_immediate_stop == false
+      - ai_result.requires_consultation == false
+      - no_active_safety_rule_conflict(ai_result) == true
+    failure:
+      http_status: 409
+      error_code: DANGER_RESULT_CONFLICT
+      message: 위험 판정과 안전 안내 결과가 충돌합니다.
+      expose_to_external_client: false
+
+  - id: G-DANGER-ASSESSMENT-VALID
+    category: SAFETY_AND_EVIDENCE
+    description: 위험 감지 이벤트에는 재현 가능한 명시적 위험 규칙 결과가 있어야 한다.
+    conditions:
+      - ai_result.exists == true
+      - ai_result.danger_detected == true
+      - ai_result.matched_safety_rule_ids is not empty
+      - all(ai_result.matched_safety_rule_ids, id in configured_safety_rule_ids)
+      - ai_result.requires_consultation == true
+      - ai_result.usage_guidance_status in [PARTIAL_STOP, TOTAL_STOP, PENDING_CONSULTATION]
+    failure:
+      http_status: 409
+      error_code: DANGER_EVENT_PRECONDITION_FAILED
+      message: 위험 감지 전환 조건을 충족하지 못했습니다.
+      expose_to_external_client: false
+
+  - id: G-NO-USABLE-EVIDENCE
+    category: SAFETY_AND_EVIDENCE
+    description: 검색은 수행됐지만 고객 안내에 사용할 수 있는 공식 근거가 없어야 한다.
+    conditions:
+      - ai_result.exists == true
+      - ai_result.retrieval_completed == true
+      - count(filter(ai_result.evidence, evidence.is_official == true and evidence.is_usable == true)) == 0
+      - ai_result.requires_consultation == true
+    failure:
+      http_status: 409
+      error_code: NO_EVIDENCE_EVENT_PRECONDITION_FAILED
+      message: 근거 없음 전환 조건을 충족하지 못했습니다.
+      expose_to_external_client: false
+
+  # ---------------------------------------------------------------------------
+  # 완료·재개 정책
+  # ---------------------------------------------------------------------------
+  - id: G-SELF-RESOLUTION-ALLOWED
+    category: COMPLETION
+    description: 자가조치 단독 해결은 방문·상담 처리 없이 AI 안내 흐름에서만 허용한다.
+    conditions:
+      - inquiry.current_status == AI_GUIDANCE
+      - inquiry.active_consultation is null
+      - inquiry.active_visit is null
+      - inquiry.validated_guidance is not null
+      - inquiry.validated_evidence is not empty
+    failure:
+      http_status: 422
+      error_code: SELF_RESOLUTION_NOT_ALLOWED
+      message: 현재 문의는 자가 해결로 완료할 수 없습니다.
+
+  - id: G-RESOLVED-CUSTOMER-FEEDBACK-EXISTS
+    category: COMPLETION
+    description: 상담·방문 처리의 최종 완료 전에 최신 고객 해결됨 피드백이 있어야 한다.
+    conditions:
+      - inquiry.latest_resolution_feedback exists == true
+      - inquiry.latest_resolution_feedback.resolved == true
+      - inquiry.latest_resolution_feedback.created_at > inquiry.last_handling_completed_at
+    failure:
+      http_status: 422
+      error_code: RESOLVED_CUSTOMER_FEEDBACK_REQUIRED
+      message: 고객의 해결 확인 후 최종 완료할 수 있습니다.
+
+guard_test_expectations:
+  - 모든 transition-rules.yaml의 guard_refs는 이 파일에 존재해야 한다.
+  - Guard ID는 중복될 수 없다.
+  - 역할 Guard 실패는 인증된 사용자의 역할 불일치일 때 403을 반환한다.
+  - 고객 소유권 실패는 리소스 존재 여부를 노출하지 않도록 404를 반환한다.
+  - state_version 불일치는 최신 상태·버전·allowed_actions와 함께 409를 반환한다.
+  - 같은 Idempotency-Key와 같은 요청은 기존 응답을 반환하고 부수 효과를 중복 수행하지 않는다.
+  - 시스템 이벤트 Guard 실패 사유의 내부 원문은 고객 응답에 노출하지 않는다.
+  - FINALIZE_INQUIRY는 마지막 처리 담당자와 최신 해결됨 피드백을 모두 요구한다.
