@@ -17,10 +17,9 @@ from .builders import (
 )
 from .config import PipelineConfig, load_pipeline
 from .io import ensure_within, sha256_file, write_bytes, write_json
-from .operations import finalize, inventory, run_qa
+from .operations import build_handoff_manifest, finalize, inventory, run_qa
 from .validation import (
     compare_bytes,
-    contract_usage_codes,
     run_data_qa,
     schema_usage_codes,
     validate_configs,
@@ -144,11 +143,10 @@ def run_equivalence(data_root: Path) -> dict[str, Any]:
         comparison["name"] = name
         comparisons.append(comparison)
     checks = validate_configs(config)
-    contract_codes = contract_usage_codes(data_root.parent / "contracts")
     schema_codes = schema_usage_codes(data_root)
-    configured_codes = config.config("workflow")["usage_guidance_statuses"]
-    usage_consistent = contract_codes == configured_codes and all(
-        codes == contract_codes for codes in schema_codes.values()
+    configured_codes = config.config("vocabulary")["usage_guidance_statuses"]
+    usage_consistent = all(
+        codes == configured_codes for codes in schema_codes.values()
     )
     status = "PASS" if (
         all(item["byte_equal"] for item in comparisons)
@@ -169,9 +167,8 @@ def run_equivalence(data_root: Path) -> dict[str, Any]:
             ],
         },
         "config_checks": checks,
-        "usage_contract": {
+        "usage_vocabulary": {
             "configured": configured_codes,
-            "contract": contract_codes,
             "schemas": schema_codes,
             "consistent": usage_consistent,
         },
@@ -199,6 +196,13 @@ def _parser() -> argparse.ArgumentParser:
     finish = commands.add_parser("finalize")
     finish.add_argument("--generated-at")
     finish.add_argument("--prepare", action="store_true")
+    handoff = commands.add_parser("handoff")
+    handoff.add_argument(
+        "profile",
+        nargs="?",
+        choices=["rag", "db-smoke", "db-full", "qa"],
+    )
+    handoff.add_argument("--generated-at")
     commands.add_parser("equivalence")
     return parser
 
@@ -221,6 +225,12 @@ def main(argv: list[str] | None = None) -> int:
         result, code = inventory(_config(args.generated_at)), 0
     elif args.command == "finalize":
         result, code = finalize(_config(args.generated_at), prepare=args.prepare), 0
+    elif args.command == "handoff":
+        result = build_handoff_manifest(
+            _config(args.generated_at),
+            profile=args.profile,
+        )
+        code = 0
     else:
         result = run_equivalence(_data_root())
         code = 0 if result["status"] == "PASS" else 1

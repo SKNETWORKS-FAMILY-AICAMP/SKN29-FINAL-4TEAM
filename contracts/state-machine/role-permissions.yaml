@@ -17,6 +17,7 @@ default_policy:
   resource_access_failure_status: 404
   role_failure_status: 403
 roles:
+<<<<<<< HEAD
 - code: CUSTOMER
   description: 본인 제품과 문의를 등록하고 증상·문진·해결 피드백·상담 요청을 수행한다.
   resource_scope:
@@ -162,3 +163,9 @@ validation_expectations:
 - SYSTEM_EVENT는 SYSTEM 역할 외에 허용할 수 없다.
 - FINALIZE_INQUIRY는 CONSULTANT와 TECHNICIAN에게만 허용하되 마지막 처리 담당자 Guard를 통과해야 한다.
 - 명시되지 않은 역할·이벤트 조합은 거부한다.
+=======
+  CUSTOMER: []
+  CONSULTANT: []
+  TECHNICIAN: []
+  OPERATOR: []
+>>>>>>> 2998a75c72ef8d47f3be00e9e845ed8940ce2ed1

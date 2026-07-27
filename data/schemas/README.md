@@ -17,7 +17,7 @@
 ## synthetic
 
 사용자·제품·구독·문의·상담·방문·후속확인·관리 이력·감사 이벤트와
-기대 워크플로의 엄격한 계약입니다.
+기대 워크플로를 검증하는 엄격한 데이터 Schema입니다.
 
 - `scenarioSubsetItem.schema.json`: 업무 흐름별 시나리오 부분집합 항목
 
@@ -27,7 +27,8 @@
 - `ocrTranscriptions.schema.json`: 사용자 검수 OCR와 이미지 해시
 - `ragDefinitions.schema.json`: RAG 7건과 근거 9건의 선언형 정의
 - `syntheticScenarios.schema.json`: 합성 이름·시나리오·materialization
-- `workflowRules.schema.json`: 상태·위험도·사용 안내·허용 행동
-- `representativeE2E.schema.json`: 대표 문서·ID·근거·상태·수량 불변식
+- `datasetVocabulary.schema.json`: 데이터셋 상태·위험도·사용 안내 분류값
+- `consumerProfiles.schema.json`: RAG·DB·QA 전달 프로필
+- `representativeCase.schema.json`: 대표 문서·ID·근거·상태·수량 데이터 불변식
 
 설정 Schema도 데이터 QA와 단위 테스트에서 검증합니다.

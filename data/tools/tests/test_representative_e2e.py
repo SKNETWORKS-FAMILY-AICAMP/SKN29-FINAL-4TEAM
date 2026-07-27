@@ -19,7 +19,7 @@ class RepresentativeE2EInvariantTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.config = load_pipeline(DATA_ROOT)
-        cls.contract = cls.config.config("e2e")
+        cls.case = cls.config.config("e2e")
 
     def test_cross_document_and_fixture_invariants_pass(self) -> None:
         result = validate_representative_e2e(self.config)
@@ -28,9 +28,9 @@ class RepresentativeE2EInvariantTests(unittest.TestCase):
         self.assertGreaterEqual(result["summary"]["checks"], 15)
 
     def test_wrong_manual_page_is_detected(self) -> None:
-        drifted = deepcopy(self.contract)
+        drifted = deepcopy(self.case)
         drifted["manual_page"] = 37
-        result = validate_representative_e2e(self.config, contract=drifted)
+        result = validate_representative_e2e(self.config, case=drifted)
         self.assertEqual("FAIL", result["status"])
         self.assertIn(
             "representative_e2e:representative_evidence_lineage",
@@ -38,9 +38,9 @@ class RepresentativeE2EInvariantTests(unittest.TestCase):
         )
 
     def test_workflow_order_drift_is_detected(self) -> None:
-        drifted = deepcopy(self.contract)
+        drifted = deepcopy(self.case)
         drifted["expected_events"][2:4] = reversed(drifted["expected_events"][2:4])
-        result = validate_representative_e2e(self.config, contract=drifted)
+        result = validate_representative_e2e(self.config, case=drifted)
         self.assertEqual("FAIL", result["status"])
         self.assertIn(
             "representative_e2e:representative_workflow_sequence",
