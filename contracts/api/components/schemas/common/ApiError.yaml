@@ -2,4 +2,20 @@ title: ApiError
 type: object
 description: 공통 업무 오류 응답
 additionalProperties: false
-properties: {}
+required:
+  - code
+  - message
+  - details
+properties:
+  code:
+    type: string
+    description: 화면과 연동 코드에서 사용하는 공개 업무 오류 코드
+    minLength: 1
+  message:
+    type: string
+    description: 내부 예외 상세와 분리한 사용자용 오류 문구
+    minLength: 1
+  details:
+    type: object
+    description: 공개 가능한 필드별 또는 업무별 상세 정보
+    additionalProperties: true

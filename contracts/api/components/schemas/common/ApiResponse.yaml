@@ -2,4 +2,21 @@ title: ApiResponse
 type: object
 description: 공통 success·data·error 응답 Wrapper
 additionalProperties: false
-properties: {}
+required:
+  - success
+  - data
+  - error
+  - metadata
+properties:
+  success:
+    type: boolean
+    description: 요청 성공 여부
+  data:
+    description: 성공 시 endpoint별 응답 데이터, 실패 시 null
+  error:
+    description: 실패 시 공통 오류, 성공 시 null
+    oneOf:
+      - $ref: ./ApiError.yaml
+      - type: "null"
+  metadata:
+    $ref: ./TraceContext.yaml

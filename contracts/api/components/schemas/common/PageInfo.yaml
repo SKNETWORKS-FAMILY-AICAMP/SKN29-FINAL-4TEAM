@@ -2,4 +2,21 @@ title: PageInfo
 type: object
 description: 페이지 번호 방식 목록 정보
 additionalProperties: false
-properties: {}
+required:
+  - page
+  - size
+  - total
+properties:
+  page:
+    type: integer
+    minimum: 1
+    description: 1부터 시작하는 현재 페이지 번호
+  size:
+    type: integer
+    minimum: 1
+    maximum: 100
+    description: 한 페이지의 항목 수
+  total:
+    type: integer
+    minimum: 0
+    description: 전체 항목 수
