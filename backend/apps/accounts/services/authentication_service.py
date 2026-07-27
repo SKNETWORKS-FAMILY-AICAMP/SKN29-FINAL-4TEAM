@@ -1,1 +1,155 @@
-"""JWT 발급·로그인 검증 Service."""
+"""합성 사용자 로그인과 JWT 수명주기 Service."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from django.conf import settings
+from django.db import transaction
+from rest_framework.exceptions import (
+    AuthenticationFailed,
+    PermissionDenied,
+)
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.utils import (
+    datetime_from_epoch,
+    datetime_to_epoch,
+)
+
+from apps.accounts.models import User
+from apps.accounts.repositories.account_repository import (
+    AccountRepository,
+)
+from common.authentication.claims import (
+    ROLE_CLAIM,
+    SUBJECT_CLAIM,
+    required_claim,
+)
+
+
+@dataclass(frozen=True)
+class TokenPair:
+    access_token: str
+    refresh_token: str
+    access_expires_in: int
+    refresh_expires_in: int
+
+
+class AuthenticationService:
+    """JWT 발급·rotation·revocation을 단일 경계에서 수행한다."""
+
+    repository = AccountRepository
+
+    @classmethod
+    def demo_login(cls, demo_user_code: str) -> tuple[User, TokenPair]:
+        code = str(demo_user_code).strip()
+        if not settings.DEMO_LOGIN_ENABLED:
+            raise PermissionDenied("가상 로그인이 비활성화되어 있습니다.")
+        if (
+            code not in settings.DEMO_LOGIN_CODES
+            or not code.startswith(("DEMO-", "SYN-"))
+        ):
+            raise AuthenticationFailed(
+                "허용되지 않은 합성 사용자입니다.",
+                code="demo_user_not_allowed",
+            )
+
+        user = cls.repository.find_active_by_demo_code(code)
+        if user is None:
+            raise AuthenticationFailed(
+                "활성 합성 사용자를 찾을 수 없습니다.",
+                code="demo_user_not_found",
+            )
+        return user, cls.issue_pair(user)
+
+    @staticmethod
+    def issue_pair(
+        user: User,
+        *,
+        refresh_absolute_exp: int | None = None,
+    ) -> TokenPair:
+        if not user.is_active:
+            raise AuthenticationFailed(
+                "비활성 사용자는 토큰을 발급받을 수 없습니다.",
+                code="user_inactive",
+            )
+        refresh = RefreshToken.for_user(user)
+        refresh[ROLE_CLAIM] = user.role_code
+        if refresh_absolute_exp is not None:
+            current_epoch = datetime_to_epoch(refresh.current_time)
+            if refresh_absolute_exp <= current_epoch:
+                raise AuthenticationFailed(
+                    "refresh token의 절대 만료시각이 지났습니다.",
+                    code="refresh_token_expired",
+                )
+            refresh["exp"] = refresh_absolute_exp
+            OutstandingToken.objects.filter(
+                jti=str(refresh["jti"])
+            ).update(
+                token=str(refresh),
+                expires_at=datetime_from_epoch(refresh_absolute_exp),
+            )
+        access = refresh.access_token
+        return TokenPair(
+            access_token=str(access),
+            refresh_token=str(refresh),
+            access_expires_in=int(access["exp"]) - int(access["iat"]),
+            refresh_expires_in=max(
+                0,
+                int(refresh["exp"])
+                - datetime_to_epoch(refresh.current_time),
+            ),
+        )
+
+    @classmethod
+    @transaction.atomic
+    def refresh(cls, raw_refresh_token: str) -> tuple[User, TokenPair]:
+        refresh = cls._validated_refresh(raw_refresh_token)
+        user = cls._active_user_for_refresh(refresh)
+        new_pair = cls.issue_pair(
+            user,
+            refresh_absolute_exp=int(refresh["exp"]),
+        )
+        refresh.blacklist()
+        return user, new_pair
+
+    @classmethod
+    @transaction.atomic
+    def logout(cls, raw_refresh_token: str) -> None:
+        refresh = cls._validated_refresh(raw_refresh_token)
+        cls._active_user_for_refresh(refresh)
+        refresh.blacklist()
+
+    @staticmethod
+    def _validated_refresh(raw_refresh_token: str) -> RefreshToken:
+        try:
+            return RefreshToken(str(raw_refresh_token).strip())
+        except (TokenError, ValueError, TypeError) as exc:
+            raise AuthenticationFailed(
+                "유효하지 않거나 만료·폐기된 refresh token입니다.",
+                code="refresh_token_invalid",
+            ) from exc
+
+    @classmethod
+    def _active_user_for_refresh(
+        cls,
+        refresh: RefreshToken,
+    ) -> User:
+        try:
+            user_id = required_claim(refresh, SUBJECT_CLAIM)
+            token_role = required_claim(refresh, ROLE_CLAIM)
+        except ValueError as exc:
+            raise AuthenticationFailed(
+                "refresh token 필수 정보가 없습니다.",
+                code="refresh_claim_missing",
+            ) from exc
+
+        user = cls.repository.find_active_by_id(user_id)
+        if user is None or user.role_code != token_role:
+            raise AuthenticationFailed(
+                "사용자 상태 또는 역할이 변경되었습니다.",
+                code="user_state_changed",
+            )
+        return user
