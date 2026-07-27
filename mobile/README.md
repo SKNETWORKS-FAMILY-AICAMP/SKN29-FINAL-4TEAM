@@ -1,14 +1,54 @@
-# Mobile
+# 정수기 딜러 고객용 Android 시연 앱 v0.4.0
 
-Kotlin + Jetpack Compose 기반 고객·방문기사 Android 애플리케이션입니다.
+친근한 오리지널 물방울 마스코트를 적용한 고객용 Android 시연 앱입니다.
+문진 작성, QR 오류코드 확인, 방문기사 요청과 지도 기반 이동 현황을 한 흐름으로 확인할 수 있습니다.
 
-## 구조 원칙
+## 구현 기능
 
-- 단일 `app` Gradle 모듈
-- 기능 중심 패키지
-- 초기 기능은 `Screen + ViewModel + UiState`
-- 상태 전환은 백엔드의 `allowed_actions`와 `state_version`을 기준으로 처리
-- 공식 근거는 백엔드가 조립한 `EvidenceCardDTO`만 사용
+1. 마스코트 기반 고객 홈·안내 화면
+2. 고객 문진 작성 및 증상 제출
+3. QR 촬영을 통한 제품·오류코드 확인
+4. 발표용 샘플 QR 실행
+5. 오류 결과·사용 안내·공식 근거 예시 표시
+6. 방문기사 요청 및 배정 상태 표시
+7. 기사 이동 상태 자동 갱신
+8. 카카오맵 표시
+9. 카카오 앱 키가 없을 때도 동작하는 시연용 지도
 
-> `gradlew`, `gradlew.bat`, `gradle/wrapper/`는 구조 확인용 골격입니다.
-> 실제 Android Studio 프로젝트를 생성한 뒤 Wrapper 파일로 교체해야 합니다.
+## 실행 경로
+
+Android Studio에서 다음 폴더를 엽니다.
+
+```text
+WaterCareAndroid
+```
+
+`settings.gradle.kts`와 `app` 폴더가 바로 보이는 위치를 선택합니다.
+
+## 카카오맵 설정
+
+프로젝트 루트의 `local.properties`에 다음 값을 추가합니다.
+
+```properties
+KAKAO_NATIVE_APP_KEY=발급받은_네이티브_앱_키
+```
+
+키가 없으면 앱이 중단되지 않고 시연용 지도를 표시합니다.
+
+## 발표용 흐름
+
+```text
+앱 실행
+→ 문진 작성 또는 QR 오류코드 확인
+→ 오류 확인 결과
+→ 방문기사 요청
+→ 방문 접수 현황
+→ 기사 위치 확인
+→ 차량 이동
+→ 도보 이동
+→ 도착 및 점검 중
+```
+
+## 덮어쓰기
+
+`OVERWRITE_GUIDE.md`의 순서를 확인합니다.
