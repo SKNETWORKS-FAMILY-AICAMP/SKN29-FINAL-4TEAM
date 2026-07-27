@@ -1,9 +1,15 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { ROUTE_PATHS } from "../../app/router/routePaths";
 import "./InquiryDetailPage.css";
 
 type RiskLevel = "GENERAL" | "CAUTION" | "DANGER";
+
+type AllowedAction =
+  | "SAVE_RESPONSE_DRAFT"
+  | "SEND_RESPONSE"
+  | "REQUEST_VISIT";
 
 interface EvidenceItem {
   documentTitle: string;
@@ -35,6 +41,9 @@ interface InquiryDetail {
   riskLabel: string;
   priorityLabel: string;
   aiSummary: string;
+  responseDraft: string;
+  stateVersion: number;
+  allowedActions: AllowedAction[];
   evidence: EvidenceItem[];
   statusHistory: StatusHistoryItem[];
 }
@@ -58,6 +67,14 @@ const MOCK_INQUIRY_DETAILS: Record<string, InquiryDetail> = {
     priorityLabel: "보통",
     aiSummary:
       "출수량 저하 문의입니다. 필터 사용 기간과 출수구 막힘 여부를 우선 확인하고, 해결되지 않을 경우 방문 점검 전환을 검토해 주세요.",
+    responseDraft:
+      "안녕하세요, 고객님. 출수량 감소로 불편을 드려 죄송합니다. 먼저 출수구 주변에 이물질이 있는지 확인해 주세요. 동일 증상이 계속되면 방문 점검을 도와드리겠습니다.",
+    stateVersion: 3,
+    allowedActions: [
+      "SAVE_RESPONSE_DRAFT",
+      "SEND_RESPONSE",
+      "REQUEST_VISIT",
+    ],
     evidence: [
       {
         documentTitle: "JAC104D 사용 설명서",
@@ -108,6 +125,10 @@ const MOCK_INQUIRY_DETAILS: Record<string, InquiryDetail> = {
     priorityLabel: "긴급",
     aiSummary:
       "누수 의심 문의입니다. 고객에게 제품 사용 중지를 유지하도록 안내하고, 임의 분해나 부품 교체를 안내하지 마세요. 상담사 확인 후 방문 점검 전환이 필요합니다.",
+    responseDraft:
+      "안녕하세요, 고객님. 안전을 위해 제품 사용을 중지한 상태를 유지해 주세요. 제품을 직접 분해하거나 부품을 교체하지 마시고, 방문 점검을 접수해 드리겠습니다.",
+    stateVersion: 4,
+    allowedActions: ["SAVE_RESPONSE_DRAFT", "REQUEST_VISIT"],
     evidence: [
       {
         documentTitle: "JAC104D 안전 사용 안내",
@@ -158,6 +179,14 @@ const MOCK_INQUIRY_DETAILS: Record<string, InquiryDetail> = {
     priorityLabel: "높음",
     aiSummary:
       "동일 증상이 재발한 문의입니다. 이전 상담 기록과 고객 조치 결과를 확인하고, 반복 안내보다 방문 점검 필요 여부를 우선 검토해 주세요.",
+    responseDraft:
+      "안녕하세요, 고객님. 같은 증상이 다시 발생해 불편을 드려 죄송합니다. 이전 상담 이력을 확인했으며, 정확한 점검을 위해 방문 서비스 전환을 안내드리겠습니다.",
+    stateVersion: 5,
+    allowedActions: [
+      "SAVE_RESPONSE_DRAFT",
+      "SEND_RESPONSE",
+      "REQUEST_VISIT",
+    ],
     evidence: [],
     statusHistory: [
       {
@@ -194,6 +223,14 @@ export default function InquiryDetailPage() {
     ? MOCK_INQUIRY_DETAILS[inquiryId]
     : undefined;
 
+  const [responseDraft, setResponseDraft] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
+
+  useEffect(() => {
+    setResponseDraft(inquiry?.responseDraft ?? "");
+    setActionMessage("");
+  }, [inquiry]);
+
   if (!inquiry) {
     return (
       <main className="inquiry-detail">
@@ -214,6 +251,32 @@ export default function InquiryDetailPage() {
       </main>
     );
   }
+
+  const canPerform = (action: AllowedAction): boolean =>
+    inquiry.allowedActions.includes(action);
+
+  const handleSaveDraft = () => {
+    setActionMessage(
+      `답변 초안을 임시 저장했습니다. 현재 상태 버전: ${inquiry.stateVersion}`,
+    );
+  };
+
+  const handleSendResponse = () => {
+    if (responseDraft.trim().length === 0) {
+      setActionMessage("고객에게 보낼 답변을 입력해 주세요.");
+      return;
+    }
+
+    setActionMessage(
+      "Mock 답변 발송 요청이 완료되었습니다. 실제 API 연동 전에는 고객에게 전송되지 않습니다.",
+    );
+  };
+
+  const handleRequestVisit = () => {
+    setActionMessage(
+      "Mock 방문 전환 요청이 완료되었습니다. 실제 방문 일정은 아직 생성되지 않습니다.",
+    );
+  };
 
   return (
     <main className="inquiry-detail">
@@ -378,6 +441,86 @@ export default function InquiryDetailPage() {
             ))}
           </div>
         )}
+      </section>
+
+      <section className="inquiry-detail__card">
+        <h2>상담 답변 작성</h2>
+
+        <label
+          className="inquiry-detail__response-label"
+          htmlFor="response-draft"
+        >
+          고객에게 보낼 답변
+        </label>
+
+        <textarea
+          id="response-draft"
+          className="inquiry-detail__response-textarea"
+          value={responseDraft}
+          onChange={(event) =>
+            setResponseDraft(event.target.value)
+          }
+          rows={7}
+        />
+
+        <div className="inquiry-detail__response-meta">
+          <span>상태 버전: {inquiry.stateVersion}</span>
+          <span>{responseDraft.length}자</span>
+        </div>
+
+        {inquiry.riskLevel === "DANGER" && (
+          <p className="inquiry-detail__response-warning">
+            위험 문의는 일반 답변 발송보다 방문 전환을 우선
+            검토해 주세요.
+          </p>
+        )}
+
+        <div className="inquiry-detail__action-buttons">
+          {canPerform("SAVE_RESPONSE_DRAFT") && (
+            <button
+              type="button"
+              className="inquiry-detail__action-button inquiry-detail__action-button--secondary"
+              onClick={handleSaveDraft}
+            >
+              임시 저장
+            </button>
+          )}
+
+          {canPerform("SEND_RESPONSE") && (
+            <button
+              type="button"
+              className="inquiry-detail__action-button inquiry-detail__action-button--primary"
+              onClick={handleSendResponse}
+              disabled={responseDraft.trim().length === 0}
+            >
+              고객 답변 발송
+            </button>
+          )}
+
+          {canPerform("REQUEST_VISIT") && (
+            <button
+              type="button"
+              className="inquiry-detail__action-button inquiry-detail__action-button--visit"
+              onClick={handleRequestVisit}
+            >
+              방문 점검으로 전환
+            </button>
+          )}
+        </div>
+
+        {actionMessage && (
+          <p
+            className="inquiry-detail__action-message"
+            aria-live="polite"
+          >
+            {actionMessage}
+          </p>
+        )}
+
+        <p className="inquiry-detail__mock-notice">
+          현재는 Mock 화면입니다. 실제 발송 및 상태 전환 API는
+          연결되지 않았습니다.
+        </p>
       </section>
 
       <section className="inquiry-detail__card">
