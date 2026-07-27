@@ -2,6 +2,7 @@
 
 ```text
 ├─ .dockerignore
+├─ .gitignore
 ├─ .env.example
 ├─ Dockerfile
 ├─ README.md
@@ -22,6 +23,7 @@
 │  │  │  ├─ customer_profile.py
 │  │  │  ├─ user.py
 │  │  ├─ permissions.py
+│  │  ├─ readiness.py
 │  │  ├─ repositories/
 │  │  │  ├─ __init__.py
 │  │  │  ├─ account_repository.py
@@ -139,6 +141,7 @@
 │  │  │  ├─ inquiry.py
 │  │  │  ├─ symptom_entry.py
 │  │  ├─ permissions.py
+│  │  ├─ readiness.py
 │  │  ├─ repositories/
 │  │  │  ├─ __init__.py
 │  │  │  ├─ inquiry_history_repository.py
@@ -261,6 +264,7 @@
 │  ├─ workflow/
 │  │  ├─ __init__.py
 │  │  ├─ apps.py
+│  │  ├─ readiness.py
 │  │  ├─ contracts/
 │  │  │  ├─ __init__.py
 │  │  │  ├─ contract_validator.py
@@ -293,7 +297,9 @@
 │  ├─ __init__.py
 │  ├─ api/
 │  │  ├─ __init__.py
+│  │  ├─ health.py
 │  │  ├─ metadata.py
+│  │  ├─ not_found.py
 │  │  ├─ pagination.py
 │  │  ├─ response.py
 │  ├─ authentication/
@@ -317,6 +323,7 @@
 │  ├─ middleware/
 │  │  ├─ __init__.py
 │  │  ├─ correlation_id.py
+│  │  ├─ cors.py
 │  │  ├─ request_context.py
 │  │  ├─ request_logging.py
 │  ├─ models/
@@ -336,6 +343,7 @@
 │  ├─ __init__.py
 │  ├─ api_urls.py
 │  ├─ asgi.py
+│  ├─ env.py
 │  ├─ settings/
 │  │  ├─ __init__.py
 │  │  ├─ base.py
@@ -368,6 +376,9 @@
 │  ├─ __init__.py
 │  ├─ api/
 │  │  ├─ .gitkeep
+│  │  ├─ test_common_error_response.py
+│  │  ├─ test_common_response.py
+│  │  ├─ test_health.py
 │  ├─ conftest.py
 │  ├─ factories/
 │  │  ├─ .gitkeep
@@ -381,7 +392,17 @@
 │  │  ├─ .gitkeep
 │  ├─ unit/
 │  │  ├─ accounts/
-│  │  │  ├─ .gitkeep
+│  │  │  ├─ test_permissions.py
+│  │  │  ├─ test_t017_readiness.py
+│  │  ├─ common/
+│  │  │  ├─ test_correlation_id.py
+│  │  │  ├─ test_logging.py
+│  │  ├─ database/
+│  │  │  ├─ test_postgresql_connection_check.py
+│  │  │  ├─ test_t005_schema_validator.py
+│  │  ├─ settings/
+│  │  │  ├─ test_env.py
+│  │  │  ├─ test_runtime_environment.py
 │  │  ├─ care/
 │  │  │  ├─ .gitkeep
 │  │  ├─ consultations/
@@ -390,6 +411,7 @@
 │  │  │  ├─ .gitkeep
 │  │  ├─ inquiries/
 │  │  │  ├─ .gitkeep
+│  │  │  ├─ test_t022_readiness.py
 │  │  ├─ products/
 │  │  │  ├─ .gitkeep
 │  │  ├─ questionnaires/
@@ -398,4 +420,5 @@
 │  │  │  ├─ .gitkeep
 │  │  ├─ workflow/
 │  │  │  ├─ .gitkeep
+│  │  │  ├─ test_t023_readiness.py
 ```
