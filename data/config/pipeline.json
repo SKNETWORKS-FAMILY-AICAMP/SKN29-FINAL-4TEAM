@@ -1,0 +1,67 @@
+{
+  "config_version": "1.2.0",
+  "dataset_version": "0.8.0",
+  "generated_at": "2026-07-27T00:00:00+09:00",
+  "mvp_product_code": "WPUJAC104DWH",
+  "mvp_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+  "expected_counts": {
+    "manual_pages": 44,
+    "faq_normalized": 119,
+    "faq_ocr_verified": 5,
+    "official_faq_assets": 10,
+    "rag_chunks": 7,
+    "evidence": 9,
+    "synthetic_inquiries": 24
+  },
+  "paths": {
+    "ocr": "config/faq/ocr_transcriptions.json",
+    "rag": "config/rag/jac104_chunks.json",
+    "synthetic": "config/synthetic/scenarios.json",
+    "vocabulary": "config/workflow/dataset_vocabulary.json",
+    "handoff": "config/handoff/consumer_profiles.json",
+    "e2e": "config/e2e/representative_case.json",
+    "manual_input": "processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+    "faq_input": "processed/documents/faq/faq_snapshot_normalized.jsonl",
+    "faq_candidates": "processed/structured/faq/selected_faq_candidates.jsonl",
+    "keyword_hits": "processed/metadata/manual_keyword_hits.csv",
+    "ocr_output": "processed/documents/faq/faq_ocr_verified.jsonl",
+    "asset_output": "processed/structured/assets/official_faq_assets.jsonl",
+    "rag_output": "processed/structured/rag/mvp/rag_verified_sample.jsonl",
+    "evidence_output": "processed/structured/evidence/jac104_evidence_registry.jsonl",
+    "dataset_manifest": "processed/metadata/dataset_manifest.json",
+    "final_manifest": "processed/metadata/final_dataset_manifest.json",
+    "qa_summary": "processed/validation/latest_qa_summary.json",
+    "equivalence_report": "processed/validation/refactor/latest_equivalence_report.json",
+    "inventory_csv": "processed/validation/deletion/pre_delete_inventory.csv",
+    "inventory_report": "processed/validation/deletion/pre_delete_assessment.json",
+    "handoff_manifest": "processed/metadata/consumer_handoff_manifest.json",
+    "representative_e2e_report": "processed/validation/business/latest_representative_e2e_report.json"
+  },
+  "templates": {
+    "data_readme": {
+      "template": "templates/data_readme.md.tpl",
+      "target": "README.md"
+    },
+    "processing_spec": {
+      "template": "templates/processing_spec.md.tpl",
+      "target": "processed/metadata/DATA_PROCESSING_SPEC.md"
+    },
+    "status_qa": {
+      "template": "templates/status_qa.md.tpl",
+      "target": "processed/validation/DATA_STATUS_QA.md"
+    },
+    "validation_readme": {
+      "template": "templates/validation_readme.md.tpl",
+      "target": "processed/validation/README.md"
+    }
+  },
+  "config_schemas": {
+    "pipeline": "schemas/config/pipeline.schema.json",
+    "ocr": "schemas/config/ocrTranscriptions.schema.json",
+    "rag": "schemas/config/ragDefinitions.schema.json",
+    "synthetic": "schemas/config/syntheticScenarios.schema.json",
+    "vocabulary": "schemas/config/datasetVocabulary.schema.json",
+    "handoff": "schemas/config/consumerProfiles.schema.json",
+    "e2e": "schemas/config/representativeCase.schema.json"
+  }
+}

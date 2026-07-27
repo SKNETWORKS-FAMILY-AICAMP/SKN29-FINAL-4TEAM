@@ -1,0 +1,5 @@
+title: InquiryHistoryItem
+type: object
+description: 문의 이력 항목
+additionalProperties: false
+properties: {}

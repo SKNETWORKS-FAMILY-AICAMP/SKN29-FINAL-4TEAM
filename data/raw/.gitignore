@@ -1,0 +1,9 @@
+# 공식 원본 PDF와 FAQ 스냅샷은 Git에 올리지 않습니다.
+manuals/mvp/*.pdf
+manuals/expansion/*.pdf
+faq/snapshots/*
+
+# 빈 디렉토리 유지 파일은 예외로 추적합니다.
+!manuals/mvp/.gitkeep
+!manuals/expansion/.gitkeep
+!faq/snapshots/.gitkeep

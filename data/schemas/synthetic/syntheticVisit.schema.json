@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SyntheticVisit",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "visit_id",
+    "visit_number",
+    "inquiry_id",
+    "technician_id",
+    "status",
+    "requested_at",
+    "scheduled_at",
+    "started_at",
+    "completed_at",
+    "confirmed_cause",
+    "action_taken",
+    "state_version",
+    "idempotency_key",
+    "correlation_id",
+    "data_classification"
+  ],
+  "properties": {
+    "visit_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "visit_number": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^VIS-SYN-\\d{4}$"
+    },
+    "inquiry_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "technician_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "ASSIGNING",
+        "SCHEDULING",
+        "CONFIRMED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "CANCELLED"
+      ]
+    },
+    "requested_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    },
+    "scheduled_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "started_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "confirmed_cause": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "action_taken": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "state_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "correlation_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "data_classification": {
+      "type": "string",
+      "minLength": 1,
+      "const": "synthetic"
+    }
+  }
+}

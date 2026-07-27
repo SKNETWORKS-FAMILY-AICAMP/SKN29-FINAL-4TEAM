@@ -1,0 +1,19 @@
+[
+  {
+    "followup_id": "76d27142-7b75-5bff-be2f-258f0cf889b2",
+    "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
+    "guidance_id": null,
+    "consultation_id": "c79cabb3-37c8-5e1e-8cb3-b656a45e222a",
+    "visit_id": "15a7b744-e99e-5fd6-bc96-9c1e6d01c1e5",
+    "channel_code": "APP",
+    "resolution_status_code": "RESOLVED",
+    "state_version": 1,
+    "customer_response": "방문 점검 후 출수량이 정상으로 돌아왔습니다.",
+    "unresolved_reason": null,
+    "next_action": "FINALIZE_INQUIRY",
+    "requested_at": "2026-07-04T01:00:00+09:00",
+    "responded_at": "2026-07-04T03:00:00+09:00",
+    "confirmed_at": "2026-07-04T03:30:00+09:00",
+    "data_classification": "synthetic"
+  }
+]

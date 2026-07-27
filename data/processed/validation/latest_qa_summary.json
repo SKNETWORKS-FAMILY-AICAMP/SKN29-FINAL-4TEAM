@@ -1,0 +1,163 @@
+{
+  "status": "PASS",
+  "stage": 5,
+  "generated_at": "2026-07-27T00:00:00+09:00",
+  "reports": [
+    {
+      "path": "processed/validation/schema/latest_schema_report.json",
+      "sha256": "3F502FED6E6A1C1176FEAF27F075DA52D673BE84129CD09BD91B66673632D575"
+    },
+    {
+      "path": "processed/validation/integrity/latest_integrity_report.json",
+      "sha256": "97A2890D722153E6AE151FF59D779F9FDFE19910E67241EA04893FE2A452E914"
+    },
+    {
+      "path": "processed/validation/quality/latest_quality_report.json",
+      "sha256": "E8897B085DEA5BA30012B2FC138CFF67A48392B1193C7BA7EA270A5756DB7B0A"
+    },
+    {
+      "path": "processed/validation/business/latest_business_rules_report.json",
+      "sha256": "E48BDB20534621C8E8201159BD6C007849407C0FFC8094CD66E389049DC06B26"
+    },
+    {
+      "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
+      "sha256": "0C79692EA061D1540119BF69F8ED7649AAE9AD8E2DD7F241A64E98E1DF61B0E2"
+    }
+  ],
+  "totals": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "allowed_warnings": [],
+  "raw_deletion_status": "COMPLETED",
+  "retention": {
+    "raw_originals": "NOT_PRESENT_PRE_DELETE",
+    "raw_policy_files": "RETAINED",
+    "temp_data": "DELETED",
+    "work_data": "DELETED",
+    "local_ocr_images": "DELETED_USER_ACCEPTED_NON_RECOVERABLE",
+    "ocr_audit_metadata": "PRESERVED"
+  },
+  "pipeline_validation": {
+    "status": "PASS",
+    "generated_at": "2026-07-27T00:00:00+09:00",
+    "summary": {
+      "errors": 0,
+      "warnings": 0,
+      "files_checked": 42,
+      "records_checked": 697
+    },
+    "counts": {
+      "manual_pages": 44,
+      "faq_normalized": 119,
+      "rag_chunks": 7,
+      "evidence": 9,
+      "synthetic_inquiries": 24
+    },
+    "errors": [],
+    "representative_e2e": {
+      "status": "PASS",
+      "generated_at": "2026-07-27T00:00:00+09:00",
+      "summary": {
+        "checks": 17,
+        "passed": 17,
+        "failed": 0,
+        "documents_checked": 4
+      },
+      "checks": [
+        {
+          "name": "document_section:docs/weekly-task/김은진_3주차_업무_지침서.md:## 3.4 합성 업무 데이터·DB Seed Fixture·기대 결과 완성",
+          "status": "PASS",
+          "detail": "missing_tokens=[]"
+        },
+        {
+          "name": "document_section:docs/planning/md/WBS.md:# 1. 프로젝트 일정 및 범위",
+          "status": "PASS",
+          "detail": "missing_tokens=[]"
+        },
+        {
+          "name": "document_section:docs/planning/md/기획서.md:## 5-5. 검증 시나리오",
+          "status": "PASS",
+          "detail": "missing_tokens=[]"
+        },
+        {
+          "name": "document_section:docs/planning/md/화면설계서.md:# 3. 시연 시나리오와 근거 매핑",
+          "status": "PASS",
+          "detail": "missing_tokens=[]"
+        },
+        {
+          "name": "document_section:docs/planning/md/화면설계서.md:## 3-7. 대표 E2E 시연 시나리오",
+          "status": "PASS",
+          "detail": "missing_tokens=[]"
+        },
+        {
+          "name": "representative_identity",
+          "status": "PASS",
+          "detail": "matches=1"
+        },
+        {
+          "name": "representative_business_values",
+          "status": "PASS",
+          "detail": "topic=symptom_low_flow,risk=general,usage=NORMAL,status=RESOLVED,state_version=12"
+        },
+        {
+          "name": "representative_product_lineage",
+          "status": "PASS",
+          "detail": "product_code=WPUJAC104DWH"
+        },
+        {
+          "name": "representative_evidence_lineage",
+          "status": "PASS",
+          "detail": "evidence_rows=1,rag_rows=1"
+        },
+        {
+          "name": "representative_workflow_sequence",
+          "status": "PASS",
+          "detail": "events=['START_INQUIRY', 'SUBMIT_SYMPTOM', 'SUBMIT_ANSWERS', 'SAFE_GUIDANCE_READY', 'REQUEST_CONSULTATION', 'START_CONSULTATION', 'VISIT_NEEDED', 'CONFIRM_VISIT', 'START_VISIT', 'VISIT_COMPLETED', 'SUBMIT_RESOLUTION_FEEDBACK', 'FINALIZE_INQUIRY']"
+        },
+        {
+          "name": "history_audit_sequence",
+          "status": "PASS",
+          "detail": "histories=12,audits=12"
+        },
+        {
+          "name": "workflow_statuses_in_dataset_vocabulary",
+          "status": "PASS",
+          "detail": "unknown=[]"
+        },
+        {
+          "name": "consultation_visit_followup_care_chain",
+          "status": "PASS",
+          "detail": "consultations=1,visits=1,followups=1,care_histories=1"
+        },
+        {
+          "name": "visit_completion_actor",
+          "status": "PASS",
+          "detail": "actor_role=TECHNICIAN,assigned_role=TECHNICIAN"
+        },
+        {
+          "name": "correlation_id_continuity",
+          "status": "PASS",
+          "detail": "correlation_ids=['e5a21d79-f423-5795-aae1-10a5ba772937']"
+        },
+        {
+          "name": "representative_dataset_counts",
+          "status": "PASS",
+          "detail": "actual={'inquiries': 24, 'consultations': 16, 'visits': 5, 'care_histories': 25, 'followup_confirmations': 1, 'inquiry_status_histories': 115, 'audit_events': 115, 'representative_steps': 12}"
+        },
+        {
+          "name": "manifest_counts_match_e2e_case",
+          "status": "PASS",
+          "detail": "dataset manifest synthetic counts"
+        }
+      ],
+      "errors": []
+    },
+    "reproducibility": {
+      "enabled": true,
+      "changed_files": [],
+      "canonical_drift_files": [],
+      "status": "PASS"
+    }
+  }
+}

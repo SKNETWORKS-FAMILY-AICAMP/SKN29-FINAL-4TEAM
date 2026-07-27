@@ -1,0 +1,5 @@
+title: SaveConsultationRequest
+type: object
+description: 상담 저장 요청
+additionalProperties: false
+properties: {}

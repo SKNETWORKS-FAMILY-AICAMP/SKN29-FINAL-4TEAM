@@ -1,0 +1,748 @@
+contract:
+  name: transition-rules
+  version: 0.1.0
+  status: draft_for_review
+  owner: PM_TECHNICAL_INTEGRATION
+  description: 'Inquiry의 현재 상태와 이벤트를 다음 Inquiry 상태 및 Visit 상태에 연결한다. 목록에 없는 상태·이벤트 조합은 허용하지 않으며 INVALID_STATE_TRANSITION으로
+    거부한다.
+
+    '
+  source_documents:
+  - docs/planning/md/week3-scope-and-dod.md
+  - (화면설계서_29기_4팀) 정수기 구독 고객 케어 및 A_S 업무 지원 시스템.md
+  - (WBS_29기_4팀) 정수기 구독 고객 케어 및 AS 업무 지원 시스템.md
+references:
+  inquiry_states: ./inquiry-states.yaml
+  inquiry_events: ./inquiry-events.yaml
+  transition_guards: ./transition-guards.yaml
+  allowed_actions: ./allowed-actions.yaml
+  completion_policy: ./completion-policy.yaml
+  concurrency_policy: ./concurrency-policy.yaml
+guard_contract_status: defined_in_transition-guards_v0.1.0
+rule_semantics:
+  unlisted_transition_policy: DENY
+  invalid_transition_error_code: INVALID_STATE_TRANSITION
+  visit_modes:
+    REQUIRE_ABSENT: Visit이 존재하지 않아야 하며 새 Visit을 만들지 않는다.
+    PRESERVE: Visit 존재 여부와 현재 상태를 그대로 유지한다.
+    PRESERVE_REQUIRE_STATUS: 지정한 Visit 상태가 존재해야 하며 상태는 유지한다.
+    CREATE: Visit이 없어야 하며 지정 상태로 새 Visit을 생성한다.
+    TRANSITION: 지정한 기존 Visit 상태를 결과 상태로 변경한다.
+  version_actions:
+    INITIALIZE_1: Inquiry 생성 시 state_version을 1로 설정한다.
+    INCREMENT: 성공한 쓰기 작업마다 state_version을 1 증가시킨다.
+defaults:
+  require_correlation_id: true
+  record_business_event: true
+  version_action: INCREMENT
+  preserve_customer_input_on_failure: true
+terminal_state_policy:
+  RESOLVED:
+    allowed_events: []
+    description: '종료된 문의는 같은 Inquiry 안에서 다시 전이하지 않는다. 새로운 증상이 생기면 새 Inquiry를 생성한다.
+
+      '
+  CANCELLED:
+    allowed_events: []
+    description: '취소된 문의는 다시 전이하지 않는다. 재시작이 필요하면 새 Inquiry를 생성한다.
+
+      '
+transitions:
+- id: TR-INQ-001
+  event: START_INQUIRY
+  from_inquiry_state: null
+  to_inquiry_state: DRAFT
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  version_action: INITIALIZE_1
+  guard_refs:
+  - G-ACTOR-CUSTOMER
+  - G-CUSTOMER-PRODUCT-OWNERSHIP
+  - G-IDEMPOTENCY-KEY
+  effects:
+  - CREATE_INQUIRY
+  - LINK_OPTIONAL_QUESTIONNAIRE_SESSION
+  description: 새 문의를 생성하고 초기 상태 DRAFT로 진입한다.
+- id: TR-INQ-002
+  event: SUBMIT_SYMPTOM
+  from_inquiry_state: DRAFT
+  to_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CUSTOMER
+  - G-INQUIRY-OWNER
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-SYMPTOM-PAYLOAD-VALID
+  effects:
+  - STORE_CUSTOMER_SYMPTOM_INPUT
+  - MARK_QUESTIONNAIRE_SUBMITTED
+  - REQUEST_AI_STRUCTURING
+  description: 최초 증상을 제출하고 AI 구조화·추가 질문 확인 단계로 진입한다.
+- id: TR-INQ-003
+  event: SUBMIT_ANSWERS
+  from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  to_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: false
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CUSTOMER
+  - G-INQUIRY-OWNER
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-FOLLOWUP-ANSWERS-VALID
+  effects:
+  - APPEND_QUESTIONNAIRE_ANSWERS
+  - REQUEST_AI_REEVALUATION
+  description: 추가 답변을 누적하고 Inquiry 상태는 유지한다.
+- id: TR-INQ-004
+  event: CANCEL_INQUIRY
+  from_inquiry_state: DRAFT
+  to_inquiry_state: CANCELLED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-CANCEL-ACTOR-AUTHORIZED
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-CANCELLATION-REASON
+  effects:
+  - CANCEL_ACTIVE_AI_PROCESS_IF_PRESENT
+  - SET_CANCELLED_AT
+  description: 처리 확정 전 작성 중 문의를 취소한다.
+- id: TR-INQ-005
+  event: CANCEL_INQUIRY
+  from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  to_inquiry_state: CANCELLED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-CANCEL-ACTOR-AUTHORIZED
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-CANCELLATION-REASON
+  effects:
+  - CANCEL_ACTIVE_AI_PROCESS_IF_PRESENT
+  - SET_CANCELLED_AT
+  description: 추가 질문·AI 처리 중인 문의를 취소하고 입력은 보존한다.
+- id: TR-INQ-006
+  event: PRODUCT_VALIDATION_FAILED
+  from_inquiry_state: DRAFT
+  to_inquiry_state: CONSULTATION_REQUIRED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-SYSTEM
+  - G-STATE-VERSION
+  - G-PRODUCT-VALIDATION-FAILED
+  effects:
+  - BLOCK_AI_AND_RAG
+  - PRESERVE_CUSTOMER_INPUT
+  - SET_REQUIRES_CONSULTATION
+  - SET_USAGE_GUIDANCE_PENDING_CONSULTATION
+  description: 문의 생성 직후 제품·소유권·지원 범위 검증 실패를 상담 경로로 전환한다.
+- id: TR-INQ-007
+  event: PRODUCT_VALIDATION_FAILED
+  from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  to_inquiry_state: CONSULTATION_REQUIRED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-SYSTEM
+  - G-STATE-VERSION
+  - G-PRODUCT-VALIDATION-FAILED
+  effects:
+  - BLOCK_AI_AND_RAG
+  - PRESERVE_CUSTOMER_INPUT
+  - SET_REQUIRES_CONSULTATION
+  - SET_USAGE_GUIDANCE_PENDING_CONSULTATION
+  description: 증상 제출 후 제품·필수 조건 검증 실패를 상담 경로로 전환한다.
+- id: TR-INQ-008
+  event: SAFE_GUIDANCE_READY
+  from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  to_inquiry_state: AI_GUIDANCE
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-SYSTEM
+  - G-STATE-VERSION
+  - G-SAFE-GUIDANCE-VALID
+  - G-OFFICIAL-EVIDENCE-AVAILABLE
+  - G-NO-DANGER-CONFLICT
+  effects:
+  - STORE_VALIDATED_GUIDANCE
+  - STORE_VALIDATED_EVIDENCE_REFERENCES
+  description: 공식 근거와 안전 검증을 통과한 안내를 고객에게 제공한다.
+- id: TR-INQ-009
+  event: DANGER_DETECTED
+  from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  to_inquiry_state: CONSULTATION_REQUIRED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-SYSTEM
+  - G-STATE-VERSION
+  - G-DANGER-ASSESSMENT-VALID
+  effects:
+  - BLOCK_GENERAL_SELF_GUIDANCE
+  - SET_REQUIRES_CONSULTATION
+  - STORE_USAGE_RESTRICTION
+  description: 위험 규칙에 따라 일반 자가조치 경로를 차단하고 상담 대기로 전환한다.
+- id: TR-INQ-010
+  event: NO_EVIDENCE
+  from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  to_inquiry_state: CONSULTATION_REQUIRED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-SYSTEM
+  - G-STATE-VERSION
+  - G-NO-USABLE-EVIDENCE
+  effects:
+  - BLOCK_UNGROUNDED_GUIDANCE
+  - SET_REQUIRES_CONSULTATION
+  - SET_USAGE_GUIDANCE_PENDING_CONSULTATION
+  description: 사용할 공식 근거가 없으면 임의 안내를 차단하고 상담 대기로 전환한다.
+- id: TR-INQ-011
+  event: CUSTOMER_REPORTED_SELF_RESOLVED
+  from_inquiry_state: AI_GUIDANCE
+  to_inquiry_state: RESOLVED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CUSTOMER
+  - G-INQUIRY-OWNER
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-SELF-RESOLUTION-ALLOWED
+  effects:
+  - STORE_SELF_RESOLUTION_RESULT
+  - SET_RESOLVED_AT
+  - SET_COMPLETION_SOURCE_SELF_SERVICE
+  description: 공식 안내에 따른 자가조치 단독 해결을 고객이 최종 확정한다.
+- id: TR-INQ-012
+  event: REQUEST_CONSULTATION
+  from_inquiry_state: AI_GUIDANCE
+  to_inquiry_state: CONSULTATION_REQUIRED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CUSTOMER
+  - G-INQUIRY-OWNER
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  effects:
+  - UPSERT_CONSULTATION_REQUEST
+  description: 고객이 AI 안내 이후 상담을 요청한다.
+- id: TR-INQ-013
+  event: REQUEST_CONSULTATION
+  from_inquiry_state: CONSULTATION_REQUIRED
+  to_inquiry_state: CONSULTATION_REQUIRED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: false
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CUSTOMER
+  - G-INQUIRY-OWNER
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  effects:
+  - RECORD_CUSTOMER_CONSULTATION_CONFIRMATION
+  - UPSERT_CONSULTATION_REQUEST
+  description: 위험·근거 없음으로 이미 상담 대기인 문의에서 고객의 상담 요청을 기록한다.
+- id: TR-INQ-014
+  event: START_CONSULTATION
+  from_inquiry_state: CONSULTATION_REQUIRED
+  to_inquiry_state: CONSULTATION_IN_PROGRESS
+  visit:
+    mode: PRESERVE
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CONSULTANT
+  - G-ASSIGNED-CONSULTANT
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  effects:
+  - SET_CONSULTATION_STARTED_AT
+  description: 담당 상담사가 상담을 시작한다.
+- id: TR-INQ-015
+  event: UPDATE_CONSULTATION_SUMMARY
+  from_inquiry_state: CONSULTATION_IN_PROGRESS
+  to_inquiry_state: CONSULTATION_IN_PROGRESS
+  visit:
+    mode: PRESERVE
+  history:
+    record_inquiry_state_history: false
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CONSULTANT
+  - G-ASSIGNED-CONSULTANT
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-CONSULTATION-SUMMARY-PAYLOAD-VALID
+  effects:
+  - UPDATE_CONSULTANT_EDITED_SUMMARY
+  description: AI 상담 요약 초안을 상담사가 수정하며 상태는 유지한다.
+- id: TR-INQ-016
+  event: CONFIRM_CONSULTATION_SUMMARY
+  from_inquiry_state: CONSULTATION_IN_PROGRESS
+  to_inquiry_state: CONSULTATION_IN_PROGRESS
+  visit:
+    mode: PRESERVE
+  history:
+    record_inquiry_state_history: false
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CONSULTANT
+  - G-ASSIGNED-CONSULTANT
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-CONSULTATION-SUMMARY-CONFIRMABLE
+  effects:
+  - CONFIRM_CONSULTANT_SUMMARY
+  description: 상담사가 수정한 상담 요약을 확정하며 상태는 유지한다.
+- id: TR-INQ-017
+  event: CONSULTATION_COMPLETED
+  from_inquiry_state: CONSULTATION_IN_PROGRESS
+  to_inquiry_state: COMPLETION_PENDING
+  visit:
+    mode: PRESERVE
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CONSULTANT
+  - G-ASSIGNED-CONSULTANT
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-CONSULTATION-RESULT-COMPLETE
+  effects:
+  - SET_CONSULTATION_COMPLETED_AT
+  - SET_COMPLETION_SOURCE_CONSULTATION
+  - CLEAR_PREVIOUS_RESOLUTION_FEEDBACK
+  description: 상담 처리를 완료하고 고객 피드백·담당자 최종 완료 대기로 전환한다.
+- id: TR-INQ-018
+  event: VISIT_REVIEW_REQUIRED
+  from_inquiry_state: CONSULTATION_IN_PROGRESS
+  to_inquiry_state: VISIT_REVIEW_PENDING
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CONSULTANT
+  - G-ASSIGNED-CONSULTANT
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-VISIT-REVIEW-PAYLOAD-VALID
+  effects:
+  - STORE_VISIT_REVIEW_REASON
+  description: 상담사가 방문 필요 여부 검토 단계로 전환한다.
+- id: TR-INQ-019
+  event: VISIT_NEEDED
+  from_inquiry_state: VISIT_REVIEW_PENDING
+  to_inquiry_state: VISIT_SCHEDULING
+  visit:
+    mode: CREATE
+    from_status: null
+    to_status: ASSIGNING
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: true
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CONSULTANT
+  - G-ASSIGNED-CONSULTANT
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-VISIT-HANDOFF-COMPLETE
+  effects:
+  - CREATE_VISIT_REQUEST
+  - STORE_CUSTOMER_PREFERRED_DATE
+  - STORE_VISIT_HANDOFF
+  description: 방문 필요를 확정하고 기사 배정·일정 조율을 시작한다.
+- id: TR-INQ-020
+  event: UPDATE_VISIT_SCHEDULE
+  from_inquiry_state: VISIT_SCHEDULING
+  to_inquiry_state: VISIT_SCHEDULING
+  visit:
+    mode: TRANSITION
+    from_status: ASSIGNING
+    to_status: SCHEDULING
+  history:
+    record_inquiry_state_history: false
+    record_visit_state_history: true
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CONSULTANT
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-VISIT-SCHEDULE-PAYLOAD-VALID
+  effects:
+  - UPDATE_VISIT_ASSIGNMENT_AND_SCHEDULE
+  description: 기사 배정과 고객 희망일·예정일 조율 정보를 저장한다.
+- id: TR-INQ-021
+  event: UPDATE_VISIT_SCHEDULE
+  from_inquiry_state: VISIT_SCHEDULING
+  to_inquiry_state: VISIT_SCHEDULING
+  visit:
+    mode: TRANSITION
+    from_status: SCHEDULING
+    to_status: SCHEDULING
+  history:
+    record_inquiry_state_history: false
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CONSULTANT
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-VISIT-SCHEDULE-PAYLOAD-VALID
+  effects:
+  - UPDATE_VISIT_ASSIGNMENT_AND_SCHEDULE
+  description: 조율 중인 방문 일정·기사 정보를 다시 수정한다.
+- id: TR-INQ-022
+  event: CONFIRM_VISIT
+  from_inquiry_state: VISIT_SCHEDULING
+  to_inquiry_state: VISIT_SCHEDULED
+  visit:
+    mode: TRANSITION
+    from_status: SCHEDULING
+    to_status: CONFIRMED
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: true
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CONSULTANT
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-CONFIRMED-VISIT-DATE
+  - G-ASSIGNED-TECHNICIAN-PRESENT
+  effects:
+  - SET_VISIT_CONFIRMED_AT
+  description: 기사와 방문 일정을 확정한다.
+- id: TR-INQ-023
+  event: UPDATE_PREVISIT_REPORT
+  from_inquiry_state: VISIT_SCHEDULED
+  to_inquiry_state: VISIT_SCHEDULED
+  visit:
+    mode: PRESERVE_REQUIRE_STATUS
+    required_status: CONFIRMED
+  history:
+    record_inquiry_state_history: false
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-TECHNICIAN
+  - G-ASSIGNED-TECHNICIAN
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-PREVISIT-REPORT-PAYLOAD-VALID
+  effects:
+  - UPDATE_TECHNICIAN_EDITED_REPORT
+  description: 담당 기사가 AI 사전 리포트 초안을 수정한다.
+- id: TR-INQ-024
+  event: CONFIRM_PREVISIT_REPORT
+  from_inquiry_state: VISIT_SCHEDULED
+  to_inquiry_state: VISIT_SCHEDULED
+  visit:
+    mode: PRESERVE_REQUIRE_STATUS
+    required_status: CONFIRMED
+  history:
+    record_inquiry_state_history: false
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-TECHNICIAN
+  - G-ASSIGNED-TECHNICIAN
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-PREVISIT-REPORT-CONFIRMABLE
+  effects:
+  - CONFIRM_TECHNICIAN_REPORT
+  description: 담당 기사가 사전 리포트를 확정한다.
+- id: TR-INQ-025
+  event: START_VISIT
+  from_inquiry_state: VISIT_SCHEDULED
+  to_inquiry_state: VISIT_SCHEDULED
+  visit:
+    mode: TRANSITION
+    from_status: CONFIRMED
+    to_status: IN_PROGRESS
+  history:
+    record_inquiry_state_history: false
+    record_visit_state_history: true
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-TECHNICIAN
+  - G-ASSIGNED-TECHNICIAN
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  effects:
+  - SET_VISIT_STARTED_AT
+  description: 담당 기사가 현장 점검을 시작하며 Inquiry 상태는 유지한다.
+- id: TR-INQ-026
+  event: VISIT_COMPLETED
+  from_inquiry_state: VISIT_SCHEDULED
+  to_inquiry_state: COMPLETION_PENDING
+  visit:
+    mode: TRANSITION
+    from_status: IN_PROGRESS
+    to_status: COMPLETED
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: true
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-TECHNICIAN
+  - G-ASSIGNED-TECHNICIAN
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-VISIT-RESULT-COMPLETE
+  effects:
+  - STORE_VISIT_RESULT
+  - SET_VISIT_COMPLETED_AT
+  - SET_COMPLETION_SOURCE_VISIT
+  - UPDATE_CARE_HISTORY
+  - CLEAR_PREVIOUS_RESOLUTION_FEEDBACK
+  description: 방문 처리를 완료하고 고객 피드백·담당자 최종 완료 대기로 전환한다.
+- id: TR-INQ-027
+  event: REVISIT_NEEDED
+  from_inquiry_state: VISIT_SCHEDULED
+  to_inquiry_state: REVISIT_REQUIRED
+  visit:
+    mode: TRANSITION
+    from_status: IN_PROGRESS
+    to_status: FOLLOW_UP_REQUIRED
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: true
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-TECHNICIAN
+  - G-ASSIGNED-TECHNICIAN
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-REVISIT-REASON
+  effects:
+  - STORE_REVISIT_REASON
+  description: 현장 판단에 따라 추가 방문 필요 상태로 전환한다.
+- id: TR-INQ-028
+  event: UPDATE_VISIT_SCHEDULE
+  from_inquiry_state: REVISIT_REQUIRED
+  to_inquiry_state: VISIT_SCHEDULING
+  visit:
+    mode: TRANSITION
+    from_status: FOLLOW_UP_REQUIRED
+    to_status: SCHEDULING
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: true
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CONSULTANT
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-VISIT-SCHEDULE-PAYLOAD-VALID
+  effects:
+  - UPDATE_REVISIT_SCHEDULE
+  description: 추가 방문 일정을 다시 조율한다.
+- id: TR-INQ-029
+  event: SUBMIT_RESOLUTION_FEEDBACK
+  from_inquiry_state: COMPLETION_PENDING
+  to_inquiry_state: COMPLETION_PENDING
+  visit:
+    mode: PRESERVE
+  history:
+    record_inquiry_state_history: false
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CUSTOMER
+  - G-INQUIRY-OWNER
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-RESOLUTION-FEEDBACK-RESOLVED
+  effects:
+  - STORE_RESOLVED_CUSTOMER_FEEDBACK
+  description: 고객의 해결됨 피드백을 저장하되 담당자 최종 완료 전까지 상태를 유지한다.
+- id: TR-INQ-030
+  event: CUSTOMER_REPORTED_UNRESOLVED
+  from_inquiry_state: COMPLETION_PENDING
+  to_inquiry_state: REOPENED
+  visit:
+    mode: PRESERVE
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CUSTOMER
+  - G-INQUIRY-OWNER
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-UNRESOLVED-FEEDBACK-VALID
+  effects:
+  - STORE_UNRESOLVED_CUSTOMER_FEEDBACK
+  - CLEAR_FINALIZATION_ELIGIBILITY
+  description: 고객 미해결 보고로 기존 문의를 재개한다.
+- id: TR-INQ-031
+  event: REQUEST_CONSULTATION
+  from_inquiry_state: COMPLETION_PENDING
+  to_inquiry_state: CONSULTATION_REQUIRED
+  visit:
+    mode: PRESERVE
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CUSTOMER
+  - G-INQUIRY-OWNER
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  effects:
+  - UPSERT_CONSULTATION_REQUEST
+  - CLEAR_FINALIZATION_ELIGIBILITY
+  description: 고객이 처리 결과 확인 단계에서 상담을 다시 요청한다.
+- id: TR-INQ-032
+  event: RESUME_CONSULTATION
+  from_inquiry_state: REOPENED
+  to_inquiry_state: CONSULTATION_REQUIRED
+  visit:
+    mode: PRESERVE
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CONSULTANT
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  effects:
+  - RESTORE_TO_CONSULTATION_QUEUE
+  description: 재개 문의를 상담 대기열로 복귀시킨다.
+- id: TR-INQ-033
+  event: FINALIZE_INQUIRY
+  from_inquiry_state: COMPLETION_PENDING
+  to_inquiry_state: RESOLVED
+  visit:
+    mode: PRESERVE
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-LAST-HANDLER
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-RESOLVED-CUSTOMER-FEEDBACK-EXISTS
+  - G-FINALIZATION-PAYLOAD-VALID
+  effects:
+  - SET_RESOLVED_AT
+  - STORE_FINALIZED_BY
+  description: 고객의 해결됨 피드백을 확인한 마지막 처리 담당자가 문의를 최종 완료한다.
+- id: TR-INQ-034
+  event: VISIT_NOT_NEEDED
+  from_inquiry_state: VISIT_REVIEW_PENDING
+  to_inquiry_state: COMPLETION_PENDING
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-CONSULTANT
+  - G-ASSIGNED-CONSULTANT
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-VISIT-NOT-NEEDED-RESULT-COMPLETE
+  effects:
+  - STORE_VISIT_NOT_NEEDED_REASON
+  - SET_CONSULTATION_COMPLETED_AT
+  - SET_COMPLETION_SOURCE_CONSULTATION
+  - CLEAR_PREVIOUS_RESOLUTION_FEEDBACK
+  description: 방문 검토 결과 방문이 불필요하다고 확정하고 고객 피드백·담당자 최종 완료 대기로 전환한다.
+excluded_events:
+- event: START_CARE_PRECHECK
+  reason: 'Inquiry가 없는 QuestionnaireSession의 상태는 별도 questionnaire 계약에서 관리한다.
+
+    '
+- event: PRODUCT_UPDATED
+  reason: '제품 정보 수정은 Inquiry State Machine 전이가 아니며 products 계약과 감사 로그에서 관리한다.
+
+    '
+validation_expectations:
+- 모든 from_inquiry_state와 to_inquiry_state는 inquiry-states.yaml에 존재해야 한다.
+- 모든 event는 inquiry-events.yaml에 존재해야 한다.
+- 같은 from_inquiry_state·event·Visit 조건 조합은 하나의 규칙만 가져야 한다.
+- 상태가 바뀌는 규칙은 record_inquiry_state_history가 true여야 한다.
+- Visit 상태가 생성되거나 바뀌는 규칙은 record_visit_state_history가 true여야 한다.
+- RESOLVED와 CANCELLED에는 후속 전이가 없어야 한다.
+- START_INQUIRY 외 규칙은 기존 Inquiry와 state_version을 전제로 한다.
+allowed_actions_contract_status: defined_in_allowed-actions_v0.1.0
+role_permissions_contract_status: defined_in_role-permissions_v0.1.0
+completion_policy_contract_status: defined_in_completion-policy_v0.1.0
+concurrency_policy_contract_status: defined_in_concurrency-policy_v0.1.0

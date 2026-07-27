@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EvidenceRegistry",
+  "description": "공식 매뉴얼·조건부 FAQ·검색 제외 FAQ 근거 레지스트리",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_id",
+    "evidence_class",
+    "source_id",
+    "source_type",
+    "provider",
+    "exact_sales_code",
+    "product_model",
+    "model_family",
+    "product_generation",
+    "document_id",
+    "version",
+    "topic_code",
+    "page_start",
+    "page_end",
+    "page_refs",
+    "risk_level",
+    "use_guidance",
+    "evidence_summary",
+    "safe_actions",
+    "requires_consultation",
+    "consultation_conditions",
+    "prohibited_actions",
+    "applicability",
+    "source_url",
+    "source_file_sha256",
+    "source_asset_sha256s",
+    "verification_status",
+    "allowed_use",
+    "rag_policy",
+    "policy_reason",
+    "classification",
+    "generated_at"
+  ],
+  "properties": {
+    "evidence_id": {
+      "type": "string",
+      "pattern": "^EVD-[A-Z0-9-]+$"
+    },
+    "evidence_class": {
+      "type": "string",
+      "enum": ["MANUAL", "FAQ"]
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_type": {
+      "type": "string",
+      "enum": ["official_manual", "official_faq_snapshot"]
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "exact_sales_code": {
+      "type": ["string", "null"]
+    },
+    "product_model": {
+      "type": ["string", "null"]
+    },
+    "model_family": {
+      "type": ["string", "null"]
+    },
+    "product_generation": {
+      "type": ["string", "null"]
+    },
+    "document_id": {
+      "type": ["string", "null"]
+    },
+    "version": {
+      "type": ["string", "null"]
+    },
+    "topic_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "page_start": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "page_end": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "page_refs": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "minItems": 0
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["general", "caution", "danger"]
+    },
+    "use_guidance": {
+      "type": "string",
+      "enum": [
+        "NORMAL",
+        "PARTIAL_STOP",
+        "TOTAL_STOP",
+        "PENDING_CONSULTATION"
+      ]
+    },
+    "evidence_summary": {
+      "type": "string",
+      "minLength": 10
+    },
+    "safe_actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "requires_consultation": {
+      "type": "boolean"
+    },
+    "consultation_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "prohibited_actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "applicability": {
+      "type": "string",
+      "enum": [
+        "MODEL_EXACT",
+        "CATEGORY_COMMON_UNVERIFIED",
+        "OCR_VERIFIED_MODEL_UNVERIFIED"
+      ]
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "source_file_sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "source_asset_sha256s": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-F0-9]{64}$"
+      },
+      "minItems": 1
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "TEXT_AND_VISUAL_VERIFIED",
+        "SNAPSHOT_TEXT_VERIFIED_MODEL_UNVERIFIED",
+        "OCR_AND_USER_VERIFIED_MODEL_UNVERIFIED"
+      ]
+    },
+    "allowed_use": {
+      "type": "string",
+      "enum": ["MVP", "CONDITIONAL_SUPPORT", "EXCLUDED"]
+    },
+    "rag_policy": {
+      "type": "string",
+      "enum": [
+        "INCLUDE",
+        "EXCLUDE_UNTIL_EXACT_MODEL_VERIFIED",
+        "EXCLUDE_CONFLICTING_MODEL_SCOPE"
+      ]
+    },
+    "policy_reason": {
+      "type": "string",
+      "minLength": 10
+    },
+    "classification": {
+      "type": "string",
+      "const": "official"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

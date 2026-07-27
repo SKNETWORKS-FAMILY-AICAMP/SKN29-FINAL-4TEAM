@@ -1,0 +1,98 @@
+{
+  "status": "PASS",
+  "generated_at": "2026-07-27T00:00:00+09:00",
+  "summary": {
+    "checks": 17,
+    "passed": 17,
+    "failed": 0,
+    "documents_checked": 4
+  },
+  "checks": [
+    {
+      "name": "document_section:docs/weekly-task/김은진_3주차_업무_지침서.md:## 3.4 합성 업무 데이터·DB Seed Fixture·기대 결과 완성",
+      "status": "PASS",
+      "detail": "missing_tokens=[]"
+    },
+    {
+      "name": "document_section:docs/planning/md/WBS.md:# 1. 프로젝트 일정 및 범위",
+      "status": "PASS",
+      "detail": "missing_tokens=[]"
+    },
+    {
+      "name": "document_section:docs/planning/md/기획서.md:## 5-5. 검증 시나리오",
+      "status": "PASS",
+      "detail": "missing_tokens=[]"
+    },
+    {
+      "name": "document_section:docs/planning/md/화면설계서.md:# 3. 시연 시나리오와 근거 매핑",
+      "status": "PASS",
+      "detail": "missing_tokens=[]"
+    },
+    {
+      "name": "document_section:docs/planning/md/화면설계서.md:## 3-7. 대표 E2E 시연 시나리오",
+      "status": "PASS",
+      "detail": "missing_tokens=[]"
+    },
+    {
+      "name": "representative_identity",
+      "status": "PASS",
+      "detail": "matches=1"
+    },
+    {
+      "name": "representative_business_values",
+      "status": "PASS",
+      "detail": "topic=symptom_low_flow,risk=general,usage=NORMAL,status=RESOLVED,state_version=12"
+    },
+    {
+      "name": "representative_product_lineage",
+      "status": "PASS",
+      "detail": "product_code=WPUJAC104DWH"
+    },
+    {
+      "name": "representative_evidence_lineage",
+      "status": "PASS",
+      "detail": "evidence_rows=1,rag_rows=1"
+    },
+    {
+      "name": "representative_workflow_sequence",
+      "status": "PASS",
+      "detail": "events=['START_INQUIRY', 'SUBMIT_SYMPTOM', 'SUBMIT_ANSWERS', 'SAFE_GUIDANCE_READY', 'REQUEST_CONSULTATION', 'START_CONSULTATION', 'VISIT_NEEDED', 'CONFIRM_VISIT', 'START_VISIT', 'VISIT_COMPLETED', 'SUBMIT_RESOLUTION_FEEDBACK', 'FINALIZE_INQUIRY']"
+    },
+    {
+      "name": "history_audit_sequence",
+      "status": "PASS",
+      "detail": "histories=12,audits=12"
+    },
+    {
+      "name": "workflow_statuses_in_dataset_vocabulary",
+      "status": "PASS",
+      "detail": "unknown=[]"
+    },
+    {
+      "name": "consultation_visit_followup_care_chain",
+      "status": "PASS",
+      "detail": "consultations=1,visits=1,followups=1,care_histories=1"
+    },
+    {
+      "name": "visit_completion_actor",
+      "status": "PASS",
+      "detail": "actor_role=TECHNICIAN,assigned_role=TECHNICIAN"
+    },
+    {
+      "name": "correlation_id_continuity",
+      "status": "PASS",
+      "detail": "correlation_ids=['e5a21d79-f423-5795-aae1-10a5ba772937']"
+    },
+    {
+      "name": "representative_dataset_counts",
+      "status": "PASS",
+      "detail": "actual={'inquiries': 24, 'consultations': 16, 'visits': 5, 'care_histories': 25, 'followup_confirmations': 1, 'inquiry_status_histories': 115, 'audit_events': 115, 'representative_steps': 12}"
+    },
+    {
+      "name": "manifest_counts_match_e2e_case",
+      "status": "PASS",
+      "detail": "dataset manifest synthetic counts"
+    }
+  ],
+  "errors": []
+}

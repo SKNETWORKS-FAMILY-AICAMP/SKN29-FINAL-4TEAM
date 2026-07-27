@@ -1,0 +1,81 @@
+version: 0.8.0
+fields:
+  data_classification:
+    type: string
+    allowed: [official, team_designed, synthetic]
+    description: 데이터의 사실 출처 분류
+  exact_sales_code:
+    type: string
+    description: 하이픈 없는 정확 판매 코드
+  product_generation:
+    type: string
+    allowed: [D]
+    description: JAC104 세대 구분
+  risk_level:
+    type: string
+    allowed: [general, caution, danger]
+    description: 안전 위험도 canonical 코드
+  use_guidance:
+    type: string
+    allowed: [NORMAL, PARTIAL_STOP, TOTAL_STOP, PENDING_CONSULTATION]
+    description: 증상별 제품 사용 안내
+  applicability:
+    type: string
+    description: 정확 모델 또는 FAQ의 모델 적용 가능성
+  allowed_use:
+    type: string
+    allowed: [MVP, CONDITIONAL_SUPPORT, CANDIDATE_ONLY, EXCLUDED]
+    description: 검색·보조·후보·제외 사용 정책
+  rag_policy:
+    type: string
+    description: 벡터 검색 포함 또는 차단 정책
+  source_file_sha256:
+    type: string
+    pattern: "^[A-F0-9]{{64}}$"
+    description: 원본 파일의 SHA-256
+  verification_status:
+    type: string
+    description: 텍스트·시각·모델·사용자 검수 단계
+  text_status:
+    type: string
+    allowed: [PUBLISHER_TEXT, OCR_VERIFIED, NOT_TRANSCRIBED]
+    description: FAQ 정규화 본문의 확보·검수 상태
+  retrieval_scope:
+    type: string
+    allowed: [CONDITIONAL_REFERENCE_ONLY, EXCLUDED]
+    description: FAQ 일반 검색·참조 허용 범위
+  asset_id:
+    type: string
+    description: SHA-256 기반 공식 이미지 자산 식별자
+  generated_at:
+    type: datetime
+    format: ISO-8601
+    timezone: Asia/Seoul
+    description: 결정적 산출물 생성 기준 시각
+  inquiry_status:
+    type: string
+    allowed: [DRAFT, QUESTIONNAIRE_IN_PROGRESS, PRODUCT_VALIDATION_FAILED, AI_GUIDANCE_READY, CONSULTATION_PENDING, CONSULTATION_IN_PROGRESS, VISIT_REVIEW_PENDING, VISIT_PENDING, VISIT_IN_PROGRESS, COMPLETION_PENDING, RESOLVED, REOPENED]
+    description: 최신 API·테이블 계약의 문의 canonical 상태
+  state_version:
+    type: integer
+    description: 낙관적 락과 상태 변경 순서
+  care_type:
+    type: string
+    allowed: [REGULAR_INSPECTION, FILTER_REPLACEMENT, VISIT_SERVICE]
+    description: 정기 관리·필터 교체·방문 조치를 구분하는 관리 이력 유형
+  care_result:
+    type: string
+    allowed: [NORMAL, FILTER_REPLACED, ISSUE_RESOLVED]
+    description: 관리 이력의 수행 결과
+  followup_channel_code:
+    type: string
+    allowed: [APP, WEB, PHONE]
+    description: 고객 후속확인을 요청하고 응답받은 채널
+  resolution_status_code:
+    type: string
+    allowed: [PENDING, RESOLVED, UNRESOLVED, REOPENED]
+    description: 방문·상담 후 고객이 확인한 해결 상태
+  followup_next_action:
+    type: string
+    allowed: [FINALIZE_INQUIRY, RESUME_CONSULTATION, NONE]
+    description: 후속확인 결과에 따른 다음 업무 처리

@@ -1,0 +1,5 @@
+title: NextCareSchedule
+type: object
+description: 다음 케어 일정
+additionalProperties: false
+properties: {}

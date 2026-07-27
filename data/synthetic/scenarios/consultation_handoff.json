@@ -1,0 +1,128 @@
+[
+  {
+    "scenario_id": "SYN-JAC104-002",
+    "family": "LOW_FLOW",
+    "variant": "PERSISTENT_OR_RISK",
+    "title": "출수량 저하 대표 E2E",
+    "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
+    "workflow_kind": "VISIT_HANDOFF",
+    "expected_outcome": "RESOLVED"
+  },
+  {
+    "scenario_id": "SYN-JAC104-004",
+    "family": "LEAK",
+    "variant": "CLEAR",
+    "title": "제품 아래 물 고임",
+    "inquiry_id": "8e2e2561-613b-5911-9318-b651f0787a90",
+    "workflow_kind": "DANGER_ESCALATION",
+    "expected_outcome": "CONSULTATION_PENDING"
+  },
+  {
+    "scenario_id": "SYN-JAC104-006",
+    "family": "INSTANT_HOT_WATER_SAFETY",
+    "variant": "CLEAR",
+    "title": "순간온수 모듈 점검 표시",
+    "inquiry_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60",
+    "workflow_kind": "DANGER_ESCALATION",
+    "expected_outcome": "CONSULTATION_PENDING"
+  },
+  {
+    "scenario_id": "SYN-JAC104-008",
+    "family": "NO_WATER",
+    "variant": "PERSISTENT_OR_RISK",
+    "title": "필터 교체 후에도 지속되는 무출수",
+    "inquiry_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
+    "workflow_kind": "VISIT_HANDOFF",
+    "expected_outcome": "VISIT_REVIEW_PENDING"
+  },
+  {
+    "scenario_id": "SYN-JAC104-012",
+    "family": "COLD_WATER_NOT_COLD",
+    "variant": "PERSISTENT_OR_RISK",
+    "title": "처리 후 재발한 냉수 이상",
+    "inquiry_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
+    "workflow_kind": "REOPENED_INQUIRY",
+    "expected_outcome": "REOPENED"
+  },
+  {
+    "scenario_id": "SYN-JAC104-013",
+    "family": "LEAK",
+    "variant": "AMBIGUOUS",
+    "title": "연결부의 지속적인 물방울",
+    "inquiry_id": "205850d3-763c-5256-9d39-82da21be0c31",
+    "workflow_kind": "DANGER_ESCALATION",
+    "expected_outcome": "CONSULTATION_IN_PROGRESS"
+  },
+  {
+    "scenario_id": "SYN-JAC104-014",
+    "family": "LEAK",
+    "variant": "PERSISTENT_OR_RISK",
+    "title": "안전조치 후 재발하는 누수",
+    "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
+    "workflow_kind": "VISIT_HANDOFF",
+    "expected_outcome": "VISIT_IN_PROGRESS"
+  },
+  {
+    "scenario_id": "SYN-JAC104-016",
+    "family": "TASTE_ODOR",
+    "variant": "PERSISTENT_OR_RISK",
+    "title": "점검 후에도 재발한 맛 이상",
+    "inquiry_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
+    "workflow_kind": "REOPENED_INQUIRY",
+    "expected_outcome": "CONSULTATION_IN_PROGRESS"
+  },
+  {
+    "scenario_id": "SYN-JAC104-017",
+    "family": "INSTANT_HOT_WATER_SAFETY",
+    "variant": "AMBIGUOUS",
+    "title": "계속되는 온수 스팀",
+    "inquiry_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
+    "workflow_kind": "CONSULTATION_HANDOFF",
+    "expected_outcome": "COMPLETION_PENDING"
+  },
+  {
+    "scenario_id": "SYN-JAC104-018",
+    "family": "INSTANT_HOT_WATER_SAFETY",
+    "variant": "PERSISTENT_OR_RISK",
+    "title": "재연결 후에도 온수 불량",
+    "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
+    "workflow_kind": "VISIT_HANDOFF",
+    "expected_outcome": "COMPLETION_PENDING"
+  },
+  {
+    "scenario_id": "SYN-JAC104-021",
+    "family": "NOISE",
+    "variant": "PERSISTENT_OR_RISK",
+    "title": "지속되는 큰 소음",
+    "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
+    "workflow_kind": "VISIT_HANDOFF",
+    "expected_outcome": "RESOLVED"
+  },
+  {
+    "scenario_id": "SYN-JAC104-022",
+    "family": "IOT_UNSUPPORTED",
+    "variant": "CLEAR",
+    "title": "앱 필터 상태 조회 문의",
+    "inquiry_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
+    "workflow_kind": "NO_EVIDENCE_FALLBACK",
+    "expected_outcome": "CONSULTATION_PENDING"
+  },
+  {
+    "scenario_id": "SYN-JAC104-023",
+    "family": "IOT_UNSUPPORTED",
+    "variant": "AMBIGUOUS",
+    "title": "와이파이 연결 문의",
+    "inquiry_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067",
+    "workflow_kind": "NO_EVIDENCE_FALLBACK",
+    "expected_outcome": "CONSULTATION_IN_PROGRESS"
+  },
+  {
+    "scenario_id": "SYN-JAC104-024",
+    "family": "IOT_UNSUPPORTED",
+    "variant": "PERSISTENT_OR_RISK",
+    "title": "무출수와 앱 알림이 섞인 문의",
+    "inquiry_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2",
+    "workflow_kind": "NO_EVIDENCE_FALLBACK",
+    "expected_outcome": "CONSULTATION_PENDING"
+  }
+]

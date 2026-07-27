@@ -1,42 +1,70 @@
-# 데이터 디렉터리 안내
+# WaterCare Data
 
-## 적용 모델
+공식 출처에서 검증한 전처리·RAG 데이터와 개인정보가 없는 합성 시연
+데이터의 기준본입니다.
 
-| 역할 | 모델 | 적용 원칙 |
-|---|---|---|
-| 기본 MVP | `WPUJAC104DWH` / `WPU-JAC104D` 계열 | 공식 REV.00 매뉴얼을 1차 근거로 사용하고 계열 FAQ는 조건부 보조로만 사용 |
-| 후속 확장 | `WPUIAC425SNW` / `WPU-IAC425` 계열 | 기본 MVP 완료 후 얼음 특화 시나리오에만 추가 |
-| 삭제·사용 중단 | `WPU-IAC506` | 저장소에서 삭제됐으며 신규 RAG·합성·UI 구현에 사용 금지 |
+## 범위
 
-## 표준 구조
+- 데이터 버전: `0.8.0`
+- MVP: `WPUJAC104DWH` / WPU-JAC104D·WPU-JCC104D REV.00
+- 후속 확장: WPU-IAC425 공식 원본 무결성 검증만 완료, processed·RAG 생성 예정
+- 검색 차단: WPU-IAC425, WPU-IAC506, JAC104 S세대, 미검증 공통 FAQ
+- 위험도: `general`, `caution`, `danger`
+- 사용 안내: `NORMAL`, `PARTIAL_STOP`, `TOTAL_STOP`, `PENDING_CONSULTATION`
+- 위 상태·분류값은 데이터셋 검증용이며 서비스 계약 매핑은 담당자 확인 대기
 
-```text
-data/
-├── raw/                         # 공식 원문, Git 제외
-├── processed/
-│   ├── documents/              # 매뉴얼 페이지 추출본
-│   ├── metadata/               # 출처·로그·품질·오류·정책
-│   └── structured/             # 검증된 RAG·FAQ 후보
-├── synthetic/                  # 개인정보 없는 JAC104 시연 데이터
-├── reports/                    # PM 결정과 공식 근거 검증 보고서
-└── handoff_guides/             # 팀원별 GitHub 데이터 확인 가이드
+## 팀원별 전달 진입점
+
+전체 파일을 복사하지 않고 소비자 프로필이 적재·참조·제외 대상을 구분합니다.
+
+```powershell
+python data/tools/pipeline.py handoff rag
+python data/tools/pipeline.py handoff db-smoke
+python data/tools/pipeline.py handoff db-full
+python data/tools/pipeline.py handoff qa
 ```
 
-## 사용 우선순위
+- `rag`: 검증 청크 7건만 기본 인덱싱, 매뉴얼·FAQ는 참조·평가용
+- `db-smoke`: 대표 6개 문의와 참조 엔티티, 상태 이력·감사 이벤트 제외
+- `db-full`: 전체 24개 문의, 서비스 상태 매핑 후 확장 적재
+- `qa`: 요약·Schema·무결성·품질·Manifest 확인
 
-1. `processed/structured/rag_verified_sample.jsonl`의 JAC104D `model_exact` 청크 7건
-2. `selected_faq_candidates.jsonl` 중 `model_family_direct`이면서 D 매뉴얼과 일치하는 항목
-3. 매뉴얼과 일치하는 `category_common_safety`
-4. 그 외 공통 FAQ는 검증 전 답변 근거로 사용하지 않음
+명령은 데이터를 복제하지 않고
+`processed/metadata/consumer_handoff_manifest.json`에 기존 파일의 경로·역할·
+레코드 수·크기·SHA-256을 기록합니다.
 
-`other_model_only`, `other_product_family`, `image_only_unverified` 항목은 RAG에서 제외합니다.
+## 단일 실행 명령
 
-IAC425 검증 청크는 `processed/structured/rag_expansion_iac425.jsonl`에 별도 보관하며 기본 MVP 인덱스에 포함하지 않습니다. JAC104D의 문서 계보와 페이지 근거는 각각 `processed/metadata/model_document_lineage.csv`, `processed/structured/jac104_evidence_registry.jsonl`에서 확인합니다.
+```powershell
+python data/tools/pipeline.py build processed
+python data/tools/pipeline.py build rag
+python data/tools/pipeline.py build synthetic
+python data/tools/pipeline.py handoff
+python data/tools/pipeline.py qa --verify-rebuild
+python data/tools/pipeline.py inventory
+python data/tools/pipeline.py finalize
+```
 
-## 공식·설계·합성 구분
+기존 `build_step*.py` 파일은 같은 명령으로 위임하는 호환 래퍼입니다.
 
-- `official`: 공식 매뉴얼·FAQ에서 확인한 사실과 조치
-- `team_designed`: 문의 상태·우선순위·상담/방문 흐름
-- `synthetic`: 실제 개인정보를 포함하지 않는 시연용 고객 문의
+## 기준본
 
-공식 사실과 팀 설계 규칙을 같은 근거처럼 표현하지 않습니다.
+- `config/`: 경로·수량·OCR·RAG·합성 시나리오·전달 프로필·데이터 vocabulary
+- `schemas/`: processed·synthetic·config 정적 JSON Schema
+- `templates/`: 처리 명세와 QA 문서 템플릿
+- `processed/`: 공식 전처리·RAG·근거·검증 결과
+- `synthetic/`: 합성 Fixture·시나리오·기대 결과
+
+## 원본 비보관
+
+공식 PDF·FAQ 원본은 외부 백업을 전제로 검증 후 삭제했습니다.
+`raw/`에는 정책 파일 7개만 유지하며, URL·SHA-256·OCR·검수·삭제 기록으로
+계보를 추적합니다. `build processed`는 정식 전처리 기준본을 검증하고,
+외부 원본 경로가 제공된 경우 보존 해시와 일치하는지 확인합니다.
+
+## 결정성
+
+기준 생성 시각은 `2026-07-27T00:00:00+09:00`입니다. 동일 설정으로 RAG와 합성
+데이터를 두 번 생성했을 때 모든 정식 파일 해시가 같아야 합니다.
+대표 E2E는 지침서·WBS·기획서·화면설계서의 지정 섹션과 실제
+Fixture·근거·데이터셋 내부 상태 이력이 동시에 일치해야 QA를 통과합니다.

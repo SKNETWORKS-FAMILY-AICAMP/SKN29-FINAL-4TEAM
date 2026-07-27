@@ -1,0 +1,5 @@
+title: VisitDetail
+type: object
+description: 방문 상세
+additionalProperties: false
+properties: {}

@@ -1,0 +1,5 @@
+title: LoginResponse
+type: object
+description: 로그인 응답
+additionalProperties: false
+properties: {}

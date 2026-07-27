@@ -1,0 +1,48 @@
+{
+  "status": "PRESERVED",
+  "generated_at": "2026-07-25T00:00:00+09:00",
+  "user_decision": "LOCAL_FAQ_IMAGES_MAY_BE_DELETED_AND_ARE_NOT_LOCALLY_RECOVERABLE",
+  "preserved_audit_files": [
+    {
+      "source_path": ".work/faq_ocr_review/image_manifest.csv",
+      "preserved_path": "processed/validation/ocr_evidence/image_manifest.csv",
+      "size_bytes": 2341,
+      "sha256": "9E32BEA8F7F866CC3645C0D8B7D881F9A57B6CA9084336F289B35EDC9B2BDF7C"
+    },
+    {
+      "source_path": ".work/faq_ocr_review/review_checklist.csv",
+      "preserved_path": "processed/validation/ocr_evidence/review_checklist.csv",
+      "size_bytes": 1702,
+      "sha256": "F9891861DC9BBEA395ADAB4F27B66C88A514CE749CD031E4E26D5FD8AF39F8AD"
+    }
+  ],
+  "canonical_ocr": {
+    "path": "processed/documents/faq/faq_ocr_verified.jsonl",
+    "records": 5,
+    "sha256": "65991B74B074E4AAD325F55C5AC1FB62DB9646CB928EB430370C504FDCA884CA",
+    "faq_ids": [
+      "FAQ-SKMAGIC-0004",
+      "FAQ-SKMAGIC-0005",
+      "FAQ-SKMAGIC-0006",
+      "FAQ-SKMAGIC-0008",
+      "FAQ-SKMAGIC-0011"
+    ]
+  },
+  "official_asset_registry": {
+    "path": "processed/structured/assets/official_faq_assets.jsonl",
+    "records": 10,
+    "unique_images": 10,
+    "image_occurrences": 11,
+    "sha256": "B05A391802E96C4DAED59F07D959A29C8DF035C0EE2DFA407D13E44D882CCB64"
+  },
+  "preserved_information": [
+    "official image URL",
+    "SHA-256",
+    "verified OCR text",
+    "user review result",
+    "FAQ-to-asset relationship"
+  ],
+  "not_preserved_locally": [
+    "official FAQ image binary"
+  ]
+}

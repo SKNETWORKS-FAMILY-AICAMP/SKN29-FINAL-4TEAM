@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "stage": 5,
+  "report_type": "REPRODUCIBILITY",
+  "generated_at": "2026-07-27T00:00:00+09:00",
+  "summary": {
+    "checks": 1,
+    "errors": 0,
+    "warnings": 0
+  },
+  "checks": [
+    {
+      "code": "REPRO_FULL_GENERATION_CHAIN",
+      "status": "PASS",
+      "detail": "targets=64, changed=0, missing=0"
+    }
+  ],
+  "method": "two consecutive build_step3 -> build_step4 runs with full canonical hash comparison",
+  "targets_checked": 64,
+  "changed_files": [],
+  "missing_files": [],
+  "command_errors": []
+}

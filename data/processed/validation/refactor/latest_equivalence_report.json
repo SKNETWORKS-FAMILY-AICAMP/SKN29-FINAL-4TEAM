@@ -1,0 +1,415 @@
+{
+  "status": "PASS",
+  "stage": "4-cli-equivalence",
+  "generated_at": "2026-07-27T00:00:00+09:00",
+  "dataset_version": "0.8.0",
+  "comparisons": [
+    {
+      "path": "processed/documents/faq/faq_snapshot_normalized.jsonl",
+      "records": 119,
+      "canonical_sha256": "FF69800A58A354128E55D6BD4D4675B756EC8A6B8750A228B6A5787388DD780B",
+      "declarative_sha256": "FF69800A58A354128E55D6BD4D4675B756EC8A6B8750A228B6A5787388DD780B",
+      "byte_equal": true,
+      "canonical_bytes": 173565,
+      "declarative_bytes": 173565,
+      "name": "faq_normalized"
+    },
+    {
+      "path": "processed/documents/faq/faq_ocr_verified.jsonl",
+      "records": 5,
+      "canonical_sha256": "E5A2DEC934AFA32A1DB9EC0036FDEB9A25307D4D25593009686A77555310348E",
+      "declarative_sha256": "E5A2DEC934AFA32A1DB9EC0036FDEB9A25307D4D25593009686A77555310348E",
+      "byte_equal": true,
+      "canonical_bytes": 11245,
+      "declarative_bytes": 11245,
+      "name": "faq_ocr_verified"
+    },
+    {
+      "path": "processed/structured/assets/official_faq_assets.jsonl",
+      "records": 10,
+      "canonical_sha256": "CA64EBF5F4F8948D1113828EB13E3358447EDD2B539AFAB2EC35597BA53CDE00",
+      "declarative_sha256": "CA64EBF5F4F8948D1113828EB13E3358447EDD2B539AFAB2EC35597BA53CDE00",
+      "byte_equal": true,
+      "canonical_bytes": 5177,
+      "declarative_bytes": 5177,
+      "name": "official_faq_assets"
+    },
+    {
+      "path": "processed/structured/rag/mvp/rag_verified_sample.jsonl",
+      "records": 7,
+      "canonical_sha256": "BF50C87FC7652546460FFC9927BB7B37BA341DF734F994CFDFD7A96FE7BE7A26",
+      "declarative_sha256": "BF50C87FC7652546460FFC9927BB7B37BA341DF734F994CFDFD7A96FE7BE7A26",
+      "byte_equal": true,
+      "canonical_bytes": 14296,
+      "declarative_bytes": 14296,
+      "name": "rag_chunks"
+    },
+    {
+      "path": "processed/structured/evidence/jac104_evidence_registry.jsonl",
+      "records": 9,
+      "canonical_sha256": "32EFD1AB081048DAB3B06C6EA264E79DC12208E56DFA1598C74E812B44584E58",
+      "declarative_sha256": "32EFD1AB081048DAB3B06C6EA264E79DC12208E56DFA1598C74E812B44584E58",
+      "byte_equal": true,
+      "canonical_bytes": 16234,
+      "declarative_bytes": 16234,
+      "name": "evidence_registry"
+    },
+    {
+      "path": "synthetic/fixtures/users.json",
+      "records": 16,
+      "canonical_sha256": "C6C27659F4F0865C3A8A571CAA935340DF2B304DE35BFC69B009BD8B7C43A437",
+      "declarative_sha256": "C6C27659F4F0865C3A8A571CAA935340DF2B304DE35BFC69B009BD8B7C43A437",
+      "byte_equal": true,
+      "canonical_bytes": 4133,
+      "declarative_bytes": 4133,
+      "name": "users"
+    },
+    {
+      "path": "synthetic/fixtures/products.json",
+      "records": 1,
+      "canonical_sha256": "E6FBF4ED6E6CF7EBEC940512DC332F8DE3E2CA51DC4A8B357182478BF8D8EEFF",
+      "declarative_sha256": "E6FBF4ED6E6CF7EBEC940512DC332F8DE3E2CA51DC4A8B357182478BF8D8EEFF",
+      "byte_equal": true,
+      "canonical_bytes": 310,
+      "declarative_bytes": 310,
+      "name": "products"
+    },
+    {
+      "path": "synthetic/fixtures/customer_products.json",
+      "records": 12,
+      "canonical_sha256": "32B65E7BBA403D0A8A15C964180F290B50FCD5F5A9F98406EF2CE61CA6F86F4D",
+      "declarative_sha256": "32B65E7BBA403D0A8A15C964180F290B50FCD5F5A9F98406EF2CE61CA6F86F4D",
+      "byte_equal": true,
+      "canonical_bytes": 4575,
+      "declarative_bytes": 4575,
+      "name": "customer_products"
+    },
+    {
+      "path": "synthetic/fixtures/subscriptions.json",
+      "records": 12,
+      "canonical_sha256": "172FBBA141E48051280002BF688696B6454C210DB6EEA3BFC3C29212EA5D03DE",
+      "declarative_sha256": "172FBBA141E48051280002BF688696B6454C210DB6EEA3BFC3C29212EA5D03DE",
+      "byte_equal": true,
+      "canonical_bytes": 4959,
+      "declarative_bytes": 4959,
+      "name": "subscriptions"
+    },
+    {
+      "path": "synthetic/fixtures/inquiries.json",
+      "records": 24,
+      "canonical_sha256": "7412F70DC2D1099C44C9076801E31C3857678D6F9F64831F7D68E543CBFC1CF2",
+      "declarative_sha256": "7412F70DC2D1099C44C9076801E31C3857678D6F9F64831F7D68E543CBFC1CF2",
+      "byte_equal": true,
+      "canonical_bytes": 25011,
+      "declarative_bytes": 25011,
+      "name": "inquiries"
+    },
+    {
+      "path": "synthetic/fixtures/consultations.json",
+      "records": 16,
+      "canonical_sha256": "DF37E0B841F33C8E3A04CE50508ADF44A47F226472D9AA7BF06B76C3A4AC92D3",
+      "declarative_sha256": "DF37E0B841F33C8E3A04CE50508ADF44A47F226472D9AA7BF06B76C3A4AC92D3",
+      "byte_equal": true,
+      "canonical_bytes": 10800,
+      "declarative_bytes": 10800,
+      "name": "consultations"
+    },
+    {
+      "path": "synthetic/fixtures/visits.json",
+      "records": 5,
+      "canonical_sha256": "374BEFAD9967F2CBCA65FBE450A735E86CCA4C323FE702F4D2AA14C4C160ABF6",
+      "declarative_sha256": "374BEFAD9967F2CBCA65FBE450A735E86CCA4C323FE702F4D2AA14C4C160ABF6",
+      "byte_equal": true,
+      "canonical_bytes": 3488,
+      "declarative_bytes": 3488,
+      "name": "visits"
+    },
+    {
+      "path": "synthetic/fixtures/care_histories.json",
+      "records": 25,
+      "canonical_sha256": "F1B45969F6670DE210A623D1C85B10827E51AFD2E2AC78A797806D0655F54C21",
+      "declarative_sha256": "F1B45969F6670DE210A623D1C85B10827E51AFD2E2AC78A797806D0655F54C21",
+      "byte_equal": true,
+      "canonical_bytes": 8368,
+      "declarative_bytes": 8368,
+      "name": "care_histories"
+    },
+    {
+      "path": "synthetic/fixtures/followup_confirmations.json",
+      "records": 1,
+      "canonical_sha256": "24B6DC5232CB86D8EAECBCCE2733B4A1F45BE701A04A5C181BAFAFABC7B57A72",
+      "declarative_sha256": "24B6DC5232CB86D8EAECBCCE2733B4A1F45BE701A04A5C181BAFAFABC7B57A72",
+      "byte_equal": true,
+      "canonical_bytes": 714,
+      "declarative_bytes": 714,
+      "name": "followup_confirmations"
+    },
+    {
+      "path": "synthetic/fixtures/inquiry_status_histories.json",
+      "records": 115,
+      "canonical_sha256": "7A72C193FD04CCA10AF0F3B06A142CE1B4DFE80F54FE86850F85E10416160799",
+      "declarative_sha256": "7A72C193FD04CCA10AF0F3B06A142CE1B4DFE80F54FE86850F85E10416160799",
+      "byte_equal": true,
+      "canonical_bytes": 79054,
+      "declarative_bytes": 79054,
+      "name": "inquiry_status_histories"
+    },
+    {
+      "path": "synthetic/fixtures/audit_events.json",
+      "records": 115,
+      "canonical_sha256": "3EDBBBA49906C5D2CA0764765341EC59D0999884BE5F12D43ECAF075C451735F",
+      "declarative_sha256": "3EDBBBA49906C5D2CA0764765341EC59D0999884BE5F12D43ECAF075C451735F",
+      "byte_equal": true,
+      "canonical_bytes": 57309,
+      "declarative_bytes": 57309,
+      "name": "audit_events"
+    },
+    {
+      "path": "synthetic/expected/workflow_states.json",
+      "records": 24,
+      "canonical_sha256": "556AB90C232FC74E251F3B23985B1B802DEB3B7D63CA50CBB1BFB3F4D347195D",
+      "declarative_sha256": "556AB90C232FC74E251F3B23985B1B802DEB3B7D63CA50CBB1BFB3F4D347195D",
+      "byte_equal": true,
+      "canonical_bytes": 65897,
+      "declarative_bytes": 65897,
+      "name": "workflow_states"
+    },
+    {
+      "path": "synthetic/expected/evidence_references.json",
+      "records": 24,
+      "canonical_sha256": "EC52FB1FE15BA5F06773CE56C32A777A19E45DC725B75770496EC63C9F8C4BF6",
+      "declarative_sha256": "EC52FB1FE15BA5F06773CE56C32A777A19E45DC725B75770496EC63C9F8C4BF6",
+      "byte_equal": true,
+      "canonical_bytes": 10994,
+      "declarative_bytes": 10994,
+      "name": "evidence_references"
+    },
+    {
+      "path": "synthetic/expected/safety_assessments.json",
+      "records": 24,
+      "canonical_sha256": "C6E0671D67CB5B5A7441A7F73E62AF71A814E2565FFDFD94151763DA28633511",
+      "declarative_sha256": "C6E0671D67CB5B5A7441A7F73E62AF71A814E2565FFDFD94151763DA28633511",
+      "byte_equal": true,
+      "canonical_bytes": 15294,
+      "declarative_bytes": 15294,
+      "name": "safety_assessments"
+    },
+    {
+      "path": "synthetic/expected/role_handoffs.json",
+      "records": 24,
+      "canonical_sha256": "FAB6A97C77AFB2A6520E3A70AC34A9B2AE342769226F30A9BAE26594A1961FEA",
+      "declarative_sha256": "FAB6A97C77AFB2A6520E3A70AC34A9B2AE342769226F30A9BAE26594A1961FEA",
+      "byte_equal": true,
+      "canonical_bytes": 8715,
+      "declarative_bytes": 8715,
+      "name": "role_handoffs"
+    },
+    {
+      "path": "synthetic/scenarios/demo_scenarios.json",
+      "records": 24,
+      "canonical_sha256": "D9C2956C97B5FFDC488A9FA1A70C2A2AE26D9594236137F1B044E4445F57C1B1",
+      "declarative_sha256": "D9C2956C97B5FFDC488A9FA1A70C2A2AE26D9594236137F1B044E4445F57C1B1",
+      "byte_equal": true,
+      "canonical_bytes": 8417,
+      "declarative_bytes": 8417,
+      "name": "demo_scenarios"
+    },
+    {
+      "path": "synthetic/scenarios/self_resolution.json",
+      "records": 5,
+      "canonical_sha256": "78EF0F9189055BF9383511D8504A799506864A99587BAB6DB82EFB8C31B35104",
+      "declarative_sha256": "78EF0F9189055BF9383511D8504A799506864A99587BAB6DB82EFB8C31B35104",
+      "byte_equal": true,
+      "canonical_bytes": 1405,
+      "declarative_bytes": 1405,
+      "name": "scenario_subset:self_resolution.json"
+    },
+    {
+      "path": "synthetic/scenarios/information_collection.json",
+      "records": 5,
+      "canonical_sha256": "BC79995FAEB2F856F96F1B0BE34EA85042CD6C0AC0FB3272029B6B8528AD5815",
+      "declarative_sha256": "BC79995FAEB2F856F96F1B0BE34EA85042CD6C0AC0FB3272029B6B8528AD5815",
+      "byte_equal": true,
+      "canonical_bytes": 1581,
+      "declarative_bytes": 1581,
+      "name": "scenario_subset:information_collection.json"
+    },
+    {
+      "path": "synthetic/scenarios/consultation_handoff.json",
+      "records": 14,
+      "canonical_sha256": "774CF87235E5A0B5E4EEDF448DA1BF3034D009A8F76E83A861594E3FFE81B18C",
+      "declarative_sha256": "774CF87235E5A0B5E4EEDF448DA1BF3034D009A8F76E83A861594E3FFE81B18C",
+      "byte_equal": true,
+      "canonical_bytes": 4236,
+      "declarative_bytes": 4236,
+      "name": "scenario_subset:consultation_handoff.json"
+    },
+    {
+      "path": "synthetic/scenarios/visit_handoff.json",
+      "records": 5,
+      "canonical_sha256": "CB8E43AB841CA14672AD8AD5DB374BD9F8F66B66E12E2A367DE00682BEF99144",
+      "declarative_sha256": "CB8E43AB841CA14672AD8AD5DB374BD9F8F66B66E12E2A367DE00682BEF99144",
+      "byte_equal": true,
+      "canonical_bytes": 1493,
+      "declarative_bytes": 1493,
+      "name": "scenario_subset:visit_handoff.json"
+    },
+    {
+      "path": "synthetic/scenarios/danger_escalation.json",
+      "records": 3,
+      "canonical_sha256": "092EBA863667EF262BA1D824BE868B4C2DE1FA2FB135859BED49ADD76B95167D",
+      "declarative_sha256": "092EBA863667EF262BA1D824BE868B4C2DE1FA2FB135859BED49ADD76B95167D",
+      "byte_equal": true,
+      "canonical_bytes": 891,
+      "declarative_bytes": 891,
+      "name": "scenario_subset:danger_escalation.json"
+    },
+    {
+      "path": "synthetic/scenarios/no_evidence_fallback.json",
+      "records": 3,
+      "canonical_sha256": "6701E361905F9B233789C0B6B3FC179CB85D542414C50C781786C80AA6BB8B09",
+      "declarative_sha256": "6701E361905F9B233789C0B6B3FC179CB85D542414C50C781786C80AA6BB8B09",
+      "byte_equal": true,
+      "canonical_bytes": 931,
+      "declarative_bytes": 931,
+      "name": "scenario_subset:no_evidence_fallback.json"
+    },
+    {
+      "path": "synthetic/scenarios/reopened_inquiry.json",
+      "records": 2,
+      "canonical_sha256": "EF5090AC9DD88E87B5E093D0E0C7E55310152EE36DB70B03B60D782943EAB890",
+      "declarative_sha256": "EF5090AC9DD88E87B5E093D0E0C7E55310152EE36DB70B03B60D782943EAB890",
+      "byte_equal": true,
+      "canonical_bytes": 623,
+      "declarative_bytes": 623,
+      "name": "scenario_subset:reopened_inquiry.json"
+    },
+    {
+      "path": "README.md",
+      "records": null,
+      "canonical_sha256": "EB910A553C704CBC9DD79C67FC6E69DE88B18794C13764843E358EEF2E7D2E70",
+      "declarative_sha256": "EB910A553C704CBC9DD79C67FC6E69DE88B18794C13764843E358EEF2E7D2E70",
+      "byte_equal": true,
+      "canonical_bytes": 3040,
+      "declarative_bytes": 3040,
+      "name": "template:data_readme"
+    },
+    {
+      "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
+      "records": null,
+      "canonical_sha256": "9069BE4606A285E24C24CCD8115964DF3BAD9FFDBC01B9CC253D677211573D8B",
+      "declarative_sha256": "9069BE4606A285E24C24CCD8115964DF3BAD9FFDBC01B9CC253D677211573D8B",
+      "byte_equal": true,
+      "canonical_bytes": 3531,
+      "declarative_bytes": 3531,
+      "name": "template:processing_spec"
+    },
+    {
+      "path": "processed/validation/DATA_STATUS_QA.md",
+      "records": null,
+      "canonical_sha256": "D424F20FC40DBE310BD834031C6924F272698534C79B9C10826700DC46CFBF24",
+      "declarative_sha256": "D424F20FC40DBE310BD834031C6924F272698534C79B9C10826700DC46CFBF24",
+      "byte_equal": true,
+      "canonical_bytes": 1589,
+      "declarative_bytes": 1589,
+      "name": "template:status_qa"
+    },
+    {
+      "path": "processed/validation/README.md",
+      "records": null,
+      "canonical_sha256": "A9742466653F6A3807A2537E33B6D131752EDB4CBB336D5F0DD7E8DF3D4A4B0F",
+      "declarative_sha256": "A9742466653F6A3807A2537E33B6D131752EDB4CBB336D5F0DD7E8DF3D4A4B0F",
+      "byte_equal": true,
+      "canonical_bytes": 753,
+      "declarative_bytes": 753,
+      "name": "template:validation_readme"
+    }
+  ],
+  "summary": {
+    "compared_files": 32,
+    "byte_equal_files": 32,
+    "changed_files": []
+  },
+  "config_checks": [
+    {
+      "name": "ocr_record_count",
+      "status": "PASS",
+      "detail": "records=5"
+    },
+    {
+      "name": "rag_chunk_count",
+      "status": "PASS",
+      "detail": "chunks=7"
+    },
+    {
+      "name": "evidence_count",
+      "status": "PASS",
+      "detail": "evidence=9"
+    },
+    {
+      "name": "scenario_count",
+      "status": "PASS",
+      "detail": "scenarios=24"
+    },
+    {
+      "name": "risk_codes_present",
+      "status": "PASS",
+      "detail": "general,caution,danger"
+    },
+    {
+      "name": "usage_codes_present",
+      "status": "PASS",
+      "detail": "NORMAL,PARTIAL_STOP,TOTAL_STOP,PENDING_CONSULTATION"
+    },
+    {
+      "name": "danger_normal_blocked",
+      "status": "PASS",
+      "detail": "violations=[]"
+    },
+    {
+      "name": "legacy_usage_code_absent",
+      "status": "PASS",
+      "detail": "active config scan"
+    },
+    {
+      "name": "representative_e2e_invariants",
+      "status": "PASS",
+      "detail": "checks=17,failed=0"
+    }
+  ],
+  "usage_vocabulary": {
+    "configured": [
+      "NORMAL",
+      "PARTIAL_STOP",
+      "TOTAL_STOP",
+      "PENDING_CONSULTATION"
+    ],
+    "schemas": {
+      "rag": [
+        "NORMAL",
+        "PARTIAL_STOP",
+        "TOTAL_STOP",
+        "PENDING_CONSULTATION"
+      ],
+      "evidence": [
+        "NORMAL",
+        "PARTIAL_STOP",
+        "TOTAL_STOP",
+        "PENDING_CONSULTATION"
+      ],
+      "inquiry": [
+        "NORMAL",
+        "PARTIAL_STOP",
+        "TOTAL_STOP",
+        "PENDING_CONSULTATION"
+      ],
+      "safety": [
+        "NORMAL",
+        "PARTIAL_STOP",
+        "TOTAL_STOP",
+        "PENDING_CONSULTATION"
+      ]
+    },
+    "consistent": true
+  }
+}

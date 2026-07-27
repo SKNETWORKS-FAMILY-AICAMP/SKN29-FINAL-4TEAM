@@ -1,0 +1,37 @@
+contract:
+  name: danger-detected-example
+  version: 0.1.0
+  status: draft_for_review
+  description: 위험 규칙 감지 시 일반 자가조치를 차단하고 상담으로 전환하는 대표 예시이다.
+representative_data:
+  product_model_code: WPUJAC104DWH
+  product_serial_number: SYN-JAC104-002
+  inquiry_code: DEMO-INQ-002
+  symptom: 출수량 저하
+  official_evidence:
+    document_type: official_manual
+    page: 38
+initial_context:
+  actor_role: SYSTEM
+  inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+ai_result:
+  danger_detected: true
+  matched_safety_rule_ids:
+  - SAFETY-LEAK-001
+  requires_consultation: true
+  usage_guidance_status: TOTAL_STOP
+steps:
+- order: 1
+  actor: SYSTEM
+  event: DANGER_DETECTED
+  from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  to_inquiry_state: CONSULTATION_REQUIRED
+- order: 2
+  actor: CONSULTANT
+  event: START_CONSULTATION
+  from_inquiry_state: CONSULTATION_REQUIRED
+  to_inquiry_state: CONSULTATION_IN_PROGRESS
+expected_result:
+  customer_guidance_exposed: false
+  usage_guidance_status: TOTAL_STOP
+  inquiry_state: CONSULTATION_IN_PROGRESS

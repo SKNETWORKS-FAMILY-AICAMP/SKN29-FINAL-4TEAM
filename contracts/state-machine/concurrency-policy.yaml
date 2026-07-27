@@ -1,0 +1,97 @@
+contract:
+  name: concurrency-policy
+  version: 0.1.0
+  status: draft_for_review
+  owner: PM_TECHNICAL_INTEGRATION
+  description: 상태 전이와 데이터 수정의 동시성, 멱등성, 트랜잭션, 재시도와 충돌 응답 기준을 정의한다.
+references:
+  transition_rules: ./transition-rules.yaml
+  transition_guards: ./transition-guards.yaml
+  allowed_actions: ./allowed-actions.yaml
+state_version:
+  field: state_version
+  type: positive_integer
+  initial_value: 1
+  increment_policy: INCREMENT_ON_EVERY_SUCCESSFUL_EXTERNAL_OR_INTERNAL_WRITE
+  request_requirement: REQUIRED_EXCEPT_CREATE
+  compare_rule: request.state_version == inquiry.state_version
+  conflict_response:
+    http_status: 409
+    error_code: STATE_VERSION_CONFLICT
+    include:
+    - current_status
+    - current_state_version
+    - allowed_actions
+    - correlation_id
+transaction_policy:
+  state_change:
+  - BEGIN_TRANSACTION
+  - SELECT_INQUIRY_FOR_UPDATE
+  - VERIFY_CURRENT_STATE
+  - VERIFY_STATE_VERSION
+  - VERIFY_IDEMPOTENCY
+  - EVALUATE_GUARDS
+  - APPLY_INQUIRY_AND_VISIT_CHANGES
+  - WRITE_STATE_HISTORY
+  - WRITE_BUSINESS_EVENT
+  - INCREMENT_STATE_VERSION
+  - COMMIT
+  rollback_on:
+  - GUARD_FAILURE
+  - STATE_VERSION_CONFLICT
+  - VISIT_STATE_CONFLICT
+  - HISTORY_WRITE_FAILURE
+  - SIDE_EFFECT_PERSISTENCE_FAILURE
+  external_side_effect_rule: DB 커밋이 필요한 외부 알림·AI 호출은 트랜잭션 내부에서 직접 확정하지 않고 Outbox 또는 커밋 이후 작업으로 실행한다.
+idempotency:
+  required_for: ALL_EXTERNAL_WRITE_ACTIONS
+  header_name: Idempotency-Key
+  scope:
+  - actor_id
+  - operation_id
+  - idempotency_key
+  request_hash_fields:
+  - normalized_path_parameters
+  - normalized_request_body
+  - target_public_id
+  same_key_same_hash: RETURN_STORED_RESPONSE_WITHOUT_DUPLICATE_SIDE_EFFECT
+  same_key_different_hash:
+    http_status: 409
+    error_code: IDEMPOTENCY_KEY_REUSE_CONFLICT
+  retention: 구현 전 운영 설정으로 확정하되 모바일·웹의 최대 재시도 기간보다 길게 유지한다.
+visit_concurrency:
+  rule: Inquiry와 Visit을 함께 변경하는 전이는 두 리소스를 동일 트랜잭션에서 잠그고 Inquiry state_version과 Visit 현재 상태를 모두 검증한다.
+  lock_order:
+  - INQUIRY
+  - VISIT
+  deadlock_prevention: 모든 코드 경로에서 동일한 잠금 순서를 사용한다.
+ai_result_concurrency:
+  backend_automatic_retry: 0
+  ai_internal_retry_max: 1
+  timeout_seconds: 30
+  stale_result_policy: AI 요청 시작 시 기록한 inquiry_id와 state_version이 현재 값과 다르면 결과를 상태 전이에 적용하지 않고 stale result로 기록한다.
+  duplicate_result_policy: 같은 ai_request_id의 결과는 최초 성공 처리만 인정하고 이후 결과는 중복 처리하지 않는다.
+client_recovery:
+  on_409:
+  - 응답의 current_status와 current_state_version을 반영한다.
+  - allowed_actions를 교체한다.
+  - 사용자 입력은 가능한 범위에서 보존한다.
+  - 새 Idempotency-Key로 사용자의 재확인 후 다시 요청한다.
+  forbidden:
+  - 클라이언트가 이전 상태를 강제로 다시 저장하는 것
+  - 409 발생 후 같은 상태 버전으로 자동 무한 재시도하는 것
+audit:
+  required_fields:
+  - event_id
+  - correlation_id
+  - inquiry_public_id
+  - event_code
+  - from_state
+  - to_state
+  - actor_type
+  - actor_public_id_or_system
+  - previous_state_version
+  - new_state_version
+  - occurred_at_utc
+  time_storage: UTC
+  api_time_format: ISO_8601_WITH_+09:00
