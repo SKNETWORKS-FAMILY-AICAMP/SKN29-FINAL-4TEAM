@@ -1,5 +1,0 @@
-# Android Studio가 sdk.dir를 자동으로 작성합니다.
-# 아래 값은 카카오 Developers의 네이티브 앱 키를 사용합니다.
-sdk.dir=C\:\\Users\\YOUR_NAME\\AppData\\Local\\Android\\Sdk
-KAKAO_NATIVE_APP_KEY=YOUR_KAKAO_NATIVE_APP_KEY
-BACKEND_BASE_URL=http://10.0.2.2:8000/
