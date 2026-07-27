@@ -1,0 +1,3 @@
+# 기존 sdk.dir 줄은 그대로 유지하세요.
+KAKAO_NATIVE_APP_KEY=본인의_카카오_네이티브_앱_키
+BACKEND_BASE_URL=http://127.0.0.1:8000/
