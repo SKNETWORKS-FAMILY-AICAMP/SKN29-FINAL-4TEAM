@@ -1,5 +1,30 @@
 title: LoginResponse
 type: object
-description: 로그인 응답
+description: access·refresh JWT와 현재 사용자
 additionalProperties: false
-properties: {}
+required:
+  - access_token
+  - refresh_token
+  - token_type
+  - access_expires_in
+  - refresh_expires_in
+  - user
+properties:
+  access_token:
+    type: string
+  refresh_token:
+    type: string
+  token_type:
+    type: string
+    const: Bearer
+  access_expires_in:
+    type: integer
+    const: 3600
+    description: Access Token 유효기간(초), 60분
+  refresh_expires_in:
+    type: integer
+    minimum: 1
+    maximum: 604800
+    description: 최초 Refresh 절대 만료시각까지 남은 초. 로그인 시 최대 604800초이며 rotation으로 연장되지 않는다.
+  user:
+    $ref: ./AuthenticatedUser.yaml

@@ -1,2 +1,7 @@
 category: auth
-errors: []
+errors:
+  - code: AUTH_REQUIRED
+    http_status: 401
+    retryable: false
+    user_message: 인증이 필요합니다.
+    recommended_action: LOGIN

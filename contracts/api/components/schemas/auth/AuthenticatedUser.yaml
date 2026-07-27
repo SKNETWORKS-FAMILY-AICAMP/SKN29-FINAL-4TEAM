@@ -2,4 +2,45 @@ title: AuthenticatedUser
 type: object
 description: 인증 사용자
 additionalProperties: false
-properties: {}
+required:
+  - id
+  - display_name
+  - role_code
+  - is_active
+  - customer_profile
+  - allowed_actions
+properties:
+  id:
+    type: string
+    maxLength: 48
+  display_name:
+    type: string
+    maxLength: 100
+  role_code:
+    type: string
+    enum:
+      - CUSTOMER
+      - CONSULTANT
+      - TECHNICIAN
+      - OPERATOR
+  is_active:
+    type: boolean
+  customer_profile:
+    type:
+      - object
+      - "null"
+    additionalProperties: false
+    properties:
+      id:
+        type: string
+        maxLength: 48
+      customer_no:
+        type: string
+      customer_name:
+        type: string
+      is_synthetic:
+        type: boolean
+  allowed_actions:
+    type: array
+    items:
+      type: string
