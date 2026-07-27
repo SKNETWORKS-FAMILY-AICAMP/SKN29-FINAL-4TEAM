@@ -1,8 +1,41 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "SafetyAssessment",
-  "description": "위험도·우선순위",
+  "description": "위험도 및 안전 평가 결과 Schema",
   "type": "object",
+  "required": [
+    "risk_level",
+    "priority",
+    "requires_consultation",
+    "detected_risks",
+    "safety_reason"
+  ],
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "risk_level": {
+      "type": "string",
+      "enum": ["general", "caution", "danger"],
+      "description": "위험도 레벨"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["general_guidance", "consultation_recommended", "priority_consultation"],
+      "description": "문의 처리 우선순위"
+    },
+    "requires_consultation": {
+      "type": "boolean",
+      "description": "상담 연결 필요 여부"
+    },
+    "detected_risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "감지된 위험 요소 목록"
+    },
+    "safety_reason": {
+      "type": "string",
+      "description": "위험도 판정 사유 설명"
+    }
+  }
 }
