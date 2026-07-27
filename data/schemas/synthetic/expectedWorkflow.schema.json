@@ -1,7 +1,163 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "ExpectedWorkflow",
-  "description": "기대 상태 전이와 허용 행동 검증 Schema",
   "type": "object",
-  "additionalProperties": true
+  "additionalProperties": false,
+  "required": [
+    "scenario_id",
+    "initial_status",
+    "steps",
+    "final_status",
+    "generated_at"
+  ],
+  "properties": {
+    "scenario_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^SYN-JAC104-\\d{3}$"
+    },
+    "initial_status": {
+      "type": "string",
+      "minLength": 1,
+      "const": "DRAFT"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "WorkflowStep",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "order",
+          "event",
+          "from_status",
+          "to_status",
+          "actor_role",
+          "actor_id",
+          "state_version",
+          "occurred_at",
+          "idempotency_key",
+          "correlation_id",
+          "expected_allowed_actions"
+        ],
+        "properties": {
+          "order": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "event": {
+            "type": "string",
+            "minLength": 1
+          },
+          "from_status": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "DRAFT",
+              "QUESTIONNAIRE_IN_PROGRESS",
+              "PRODUCT_VALIDATION_FAILED",
+              "AI_GUIDANCE_READY",
+              "CONSULTATION_PENDING",
+              "CONSULTATION_IN_PROGRESS",
+              "VISIT_REVIEW_PENDING",
+              "VISIT_PENDING",
+              "VISIT_IN_PROGRESS",
+              "COMPLETION_PENDING",
+              "RESOLVED",
+              "REOPENED",
+              null
+            ]
+          },
+          "to_status": {
+            "type": "string",
+            "minLength": 1,
+            "enum": [
+              "DRAFT",
+              "QUESTIONNAIRE_IN_PROGRESS",
+              "PRODUCT_VALIDATION_FAILED",
+              "AI_GUIDANCE_READY",
+              "CONSULTATION_PENDING",
+              "CONSULTATION_IN_PROGRESS",
+              "VISIT_REVIEW_PENDING",
+              "VISIT_PENDING",
+              "VISIT_IN_PROGRESS",
+              "COMPLETION_PENDING",
+              "RESOLVED",
+              "REOPENED"
+            ]
+          },
+          "actor_role": {
+            "type": "string",
+            "minLength": 1,
+            "enum": [
+              "CUSTOMER",
+              "COUNSELOR",
+              "TECHNICIAN",
+              "SYSTEM"
+            ]
+          },
+          "actor_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "state_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "occurred_at": {
+            "type": "string",
+            "minLength": 1,
+            "format": "date-time"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "correlation_id": {
+            "type": "string",
+            "minLength": 1,
+            "format": "uuid"
+          },
+          "expected_allowed_actions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "final_status": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "DRAFT",
+        "QUESTIONNAIRE_IN_PROGRESS",
+        "PRODUCT_VALIDATION_FAILED",
+        "AI_GUIDANCE_READY",
+        "CONSULTATION_PENDING",
+        "CONSULTATION_IN_PROGRESS",
+        "VISIT_REVIEW_PENDING",
+        "VISIT_PENDING",
+        "VISIT_IN_PROGRESS",
+        "COMPLETION_PENDING",
+        "RESOLVED",
+        "REOPENED"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    }
+  }
 }

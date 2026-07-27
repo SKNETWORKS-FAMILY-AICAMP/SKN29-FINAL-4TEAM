@@ -1,5 +1,164 @@
+contract:
+  name: role-permissions
+  version: 0.1.0
+  status: draft_for_review
+  owner: PM_TECHNICAL_INTEGRATION
+  description: State Machine 이벤트 실행 권한과 리소스 접근 범위를 역할별로 정의한다. 명시되지 않은 권한은 기본 거부하며, allowed_actions 계산과 API 권한 검사의 공통 기준으로
+    사용한다.
+references:
+  inquiry_events: ./inquiry-events.yaml
+  transition_rules: ./transition-rules.yaml
+  transition_guards: ./transition-guards.yaml
+  allowed_actions: ./allowed-actions.yaml
+default_policy:
+  unlisted_permission: DENY
+  require_authentication_for_external_actions: true
+  system_events_external_access: DENY
+  resource_access_failure_status: 404
+  role_failure_status: 403
 roles:
-  CUSTOMER: []
-  CONSULTANT: []
-  TECHNICIAN: []
-  OPERATOR: []
+- code: CUSTOMER
+  description: 본인 제품과 문의를 등록하고 증상·문진·해결 피드백·상담 요청을 수행한다.
+  resource_scope:
+  - OWN_CUSTOMER_PROFILE
+  - OWN_REGISTERED_PRODUCTS
+  - OWN_INQUIRIES
+  - OWN_QUESTIONNAIRE_SESSIONS
+  allowed_events:
+  - START_CARE_PRECHECK
+  - START_INQUIRY
+  - PRODUCT_UPDATED
+  - SUBMIT_SYMPTOM
+  - CANCEL_INQUIRY
+  - SUBMIT_ANSWERS
+  - CUSTOMER_REPORTED_SELF_RESOLVED
+  - REQUEST_CONSULTATION
+  - SUBMIT_RESOLUTION_FEEDBACK
+  - CUSTOMER_REPORTED_UNRESOLVED
+  prohibited_capabilities:
+  - ASSIGN_CONSULTANT
+  - ASSIGN_TECHNICIAN
+  - CHANGE_STATE_DIRECTLY
+  - EXECUTE_SYSTEM_EVENT
+  - VIEW_INTERNAL_AI_FIELDS
+- code: CONSULTANT
+  description: 배정된 문의의 상담 처리, 방문 판단·일정 조율과 상담 건 최종 완료를 수행한다.
+  resource_scope:
+  - ASSIGNED_INQUIRIES
+  - ASSIGNED_CONSULTATIONS
+  - RELATED_VISITS_FOR_SCHEDULING
+  allowed_events:
+  - CANCEL_INQUIRY
+  - RESUME_CONSULTATION
+  - START_CONSULTATION
+  - CONSULTATION_COMPLETED
+  - VISIT_REVIEW_REQUIRED
+  - VISIT_NEEDED
+  - VISIT_NOT_NEEDED
+  - UPDATE_VISIT_SCHEDULE
+  - CONFIRM_VISIT
+  - UPDATE_CONSULTATION_SUMMARY
+  - CONFIRM_CONSULTATION_SUMMARY
+  - FINALIZE_INQUIRY
+  prohibited_capabilities:
+  - FINALIZE_OTHER_HANDLER_WORK
+  - START_OR_COMPLETE_FIELD_VISIT
+  - CHANGE_STATE_DIRECTLY
+  - EXECUTE_SYSTEM_EVENT
+  - VIEW_RAW_VECTOR_FIELDS
+- code: TECHNICIAN
+  description: 배정된 방문의 사전 리포트, 현장 점검·완료·재방문 판단과 방문 건 최종 완료를 수행한다.
+  resource_scope:
+  - ASSIGNED_VISITS
+  - INQUIRIES_LINKED_TO_ASSIGNED_VISITS
+  allowed_events:
+  - UPDATE_PREVISIT_REPORT
+  - CONFIRM_PREVISIT_REPORT
+  - START_VISIT
+  - VISIT_COMPLETED
+  - REVISIT_NEEDED
+  - FINALIZE_INQUIRY
+  prohibited_capabilities:
+  - START_CONSULTATION
+  - ASSIGN_SELF_TO_VISIT
+  - FINALIZE_OTHER_HANDLER_WORK
+  - CHANGE_STATE_DIRECTLY
+  - EXECUTE_SYSTEM_EVENT
+  - VIEW_RAW_VECTOR_FIELDS
+- code: OPERATOR
+  description: 운영 권한 범위 안에서 문의 취소 등 제한된 관리 작업을 수행한다.
+  resource_scope:
+  - AUTHORIZED_OPERATIONAL_INQUIRIES
+  allowed_events:
+  - CANCEL_INQUIRY
+  required_permissions:
+    CANCEL_INQUIRY:
+    - INQUIRY_CANCEL
+  prohibited_capabilities:
+  - PERFORM_CONSULTATION
+  - PERFORM_VISIT
+  - FINALIZE_INQUIRY
+  - EXECUTE_SYSTEM_EVENT
+- code: SYSTEM
+  description: 신뢰된 백엔드 내부 프로세스로서 검증된 AI·제품 판정 이벤트만 실행한다.
+  resource_scope:
+  - INTERNAL_SERVICE_CONTEXT
+  allowed_events:
+  - PRODUCT_VALIDATION_FAILED
+  - SAFE_GUIDANCE_READY
+  - DANGER_DETECTED
+  - NO_EVIDENCE
+  prohibited_capabilities:
+  - EXPOSE_INTERNAL_EVENT_AS_PUBLIC_API
+  - BYPASS_STATE_VERSION
+  - WRITE_STATE_WITHOUT_GUARDS
+field_visibility:
+  customer:
+    allow:
+    - public_id
+    - inquiry_code
+    - current_status
+    - state_version
+    - customer_guidance
+    - usage_guidance_status
+    - official_evidence_display
+    - allowed_actions
+    - visit_schedule_display
+    deny:
+    - internal_pk
+    - raw_source_storage_path
+    - vector_chunk_id
+    - model_internal_reasoning
+    - internal_guard_failure_detail
+  consultant:
+    allow:
+    - customer_service_profile
+    - inquiry_details
+    - validated_ai_draft
+    - official_evidence_display
+    - consultation_history
+    - allowed_actions
+    - state_version
+    deny:
+    - raw_source_storage_path
+    - vector_embedding
+    - model_internal_reasoning
+  technician:
+    allow:
+    - visit_handoff
+    - confirmed_previsit_report
+    - product_service_history
+    - visit_schedule
+    - allowed_actions
+    - state_version
+    deny:
+    - unrelated_customer_consultations
+    - raw_source_storage_path
+    - vector_chunk_id
+    - model_internal_reasoning
+validation_expectations:
+- 모든 allowed_events는 inquiry-events.yaml에 존재해야 한다.
+- 각 이벤트의 actor_roles와 이 파일의 역할별 allowed_events가 일치해야 한다.
+- SYSTEM_EVENT는 SYSTEM 역할 외에 허용할 수 없다.
+- FINALIZE_INQUIRY는 CONSULTANT와 TECHNICIAN에게만 허용하되 마지막 처리 담당자 Guard를 통과해야 한다.
+- 명시되지 않은 역할·이벤트 조합은 거부한다.

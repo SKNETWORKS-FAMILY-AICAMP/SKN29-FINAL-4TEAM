@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WaterCarePipelineConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "config_version",
+    "dataset_version",
+    "generated_at",
+    "mvp_product_code",
+    "mvp_document_id",
+    "expected_counts",
+    "paths",
+    "templates",
+    "config_schemas"
+  ],
+  "properties": {
+    "config_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "dataset_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "mvp_product_code": {
+      "type": "string",
+      "const": "WPUJAC104DWH"
+    },
+    "mvp_document_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manual_pages",
+        "faq_normalized",
+        "faq_ocr_verified",
+        "official_faq_assets",
+        "rag_chunks",
+        "evidence",
+        "synthetic_inquiries"
+      ],
+      "properties": {
+        "manual_pages": {"type": "integer", "const": 44},
+        "faq_normalized": {"type": "integer", "const": 119},
+        "faq_ocr_verified": {"type": "integer", "const": 5},
+        "official_faq_assets": {"type": "integer", "const": 10},
+        "rag_chunks": {"type": "integer", "const": 7},
+        "evidence": {"type": "integer", "const": 9},
+        "synthetic_inquiries": {"type": "integer", "const": 24}
+      }
+    },
+    "paths": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "templates": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "config_schemas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pipeline", "ocr", "rag", "synthetic", "workflow", "e2e"],
+      "properties": {
+        "pipeline": {"type": "string", "minLength": 1},
+        "ocr": {"type": "string", "minLength": 1},
+        "rag": {"type": "string", "minLength": 1},
+        "synthetic": {"type": "string", "minLength": 1},
+        "workflow": {"type": "string", "minLength": 1},
+        "e2e": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

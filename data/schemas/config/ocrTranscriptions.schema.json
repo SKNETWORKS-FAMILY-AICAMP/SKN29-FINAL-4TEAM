@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OcrTranscriptionsConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["config_version", "verified_at", "records"],
+  "properties": {
+    "config_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "records": {
+      "type": "array",
+      "minItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ordinal", "hashes", "text"],
+        "properties": {
+          "ordinal": {"type": "integer"},
+          "hashes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^[A-F0-9]{64}$"
+            }
+          },
+          "text": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

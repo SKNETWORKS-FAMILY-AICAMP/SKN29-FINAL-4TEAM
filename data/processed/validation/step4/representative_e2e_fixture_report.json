@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "stage": 4,
+  "generated_at": "2026-07-27T00:00:00+09:00",
+  "representative": {
+    "scenario_id": "SYN-JAC104-002",
+    "inquiry_number": "DEMO-INQ-002",
+    "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
+    "topic_code": "symptom_low_flow",
+    "evidence_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+    "manual_page": 38,
+    "final_status": "RESOLVED",
+    "state_version": 12
+  },
+  "checks": {
+    "single_representative": "PASS",
+    "workflow_12_steps": "PASS",
+    "status_history_matches_workflow": "PASS",
+    "audit_events_match_workflow": "PASS",
+    "visit_result_completed": "PASS",
+    "followup_confirmation_linked": "PASS",
+    "care_history_linked": "PASS",
+    "correlation_id_continuity": "PASS",
+    "evidence_page_38": "PASS"
+  },
+  "counts": {
+    "inquiries": 24,
+    "consultations": 16,
+    "visits": 5,
+    "care_histories": 25,
+    "followup_confirmations": 1,
+    "inquiry_status_histories": 115,
+    "audit_events": 115,
+    "representative_workflow_steps": 12
+  }
+}

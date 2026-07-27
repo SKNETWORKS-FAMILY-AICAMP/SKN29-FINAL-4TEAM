@@ -1,1 +1,5 @@
 target,failure_reason,fallback_action,recorded_at,status
+WPUJAC104DWH service-center search,공식 서비스센터 검색 URL이 현재 Internal Error를 반환함,"공식 상품 페이지와 로컬 백업의 모델·REV·페이지·SHA-256을 검증하고 검색 URL은 계보에 보존",2026-07-24T18:41:53+09:00,OPEN_NON_BLOCKING
+WPUJAC104DWH direct manual download,공식 직접 다운로드 URL이 현재 Internal Error를 반환함,"다른 모델 문서로 대체하지 않고 로컬 백업 해시를 기준으로 MVP 전처리",2026-07-24T18:41:53+09:00,OPEN_NON_BLOCKING
+WPU-IAC506 official manual,"data/raw 및 확인된 외부 백업 경로에 파일이 없음","MVP와 확장 데이터에 사용하지 않고 누락 상태만 유지",2026-07-24T18:41:53+09:00,CLOSED_EXCLUDED
+data/raw official originals,현재 data/raw에 PDF·FAQ 원본이 없음,"외부 백업을 읽기 전용 입력으로 사용하고 저장소 raw에는 복사하지 않음",2026-07-24T18:41:53+09:00,INFO

@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FaqNormalized",
+  "description": "공식 FAQ 스냅샷과 검수 완료 OCR을 결합한 정규화 데이터",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "faq_id",
+    "snapshot_id",
+    "source_type",
+    "provider",
+    "ordinal",
+    "title",
+    "answer_text",
+    "answer_text_sha256",
+    "image_urls",
+    "source_links",
+    "publisher_model_codes",
+    "content_status",
+    "source_url",
+    "source_locator",
+    "source_file_sha256",
+    "collected_at",
+    "generated_at",
+    "text_source",
+    "text_status",
+    "retrieval_eligible",
+    "retrieval_scope",
+    "exclusion_reason",
+    "mvp_rag_eligible",
+    "mvp_exclusion_reason",
+    "ocr_record_id",
+    "asset_ids"
+  ],
+  "properties": {
+    "faq_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^FAQ-SKMAGIC-\\d{4}$"
+    },
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^SRC-[A-Z0-9-]+$"
+    },
+    "source_type": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "official_faq_snapshot"
+      ]
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ordinal": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 119
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "answer_text": {
+      "type": "string",
+      "minLength": 0
+    },
+    "answer_text_sha256": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "image_urls": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "format": "uri"
+      },
+      "minItems": 0
+    },
+    "source_links": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "format": "uri"
+      },
+      "minItems": 0
+    },
+    "publisher_model_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "content_status": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "TEXT_ONLY",
+        "TEXT_AND_IMAGE",
+        "OCR_TEXT_AND_IMAGE",
+        "IMAGE_ONLY",
+        "EMPTY"
+      ]
+    },
+    "source_url": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uri"
+    },
+    "source_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_file_sha256": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "collected_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date"
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    },
+    "text_source": {
+      "type": "string",
+      "enum": [
+        "publisher_text",
+        "ocr_verified",
+        "image_only"
+      ]
+    },
+    "text_status": {
+      "type": "string",
+      "enum": [
+        "PUBLISHER_TEXT",
+        "OCR_VERIFIED",
+        "NOT_TRANSCRIBED"
+      ]
+    },
+    "retrieval_eligible": {
+      "type": "boolean"
+    },
+    "retrieval_scope": {
+      "type": "string",
+      "enum": [
+        "CONDITIONAL_REFERENCE_ONLY",
+        "EXCLUDED"
+      ]
+    },
+    "exclusion_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "OUT_OF_MVP_SCOPE",
+        null
+      ]
+    },
+    "mvp_rag_eligible": {
+      "type": "boolean",
+      "const": false
+    },
+    "mvp_exclusion_reason": {
+      "type": "string",
+      "enum": [
+        "MODEL_UNVERIFIED_FOR_MVP",
+        "OUT_OF_MVP_SCOPE"
+      ]
+    },
+    "ocr_record_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^OCR-FAQ-SKMAGIC-[0-9]{4}$"
+    },
+    "asset_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^ASSET-OFFICIAL-FAQ-[A-F0-9]{12}$"
+      },
+      "uniqueItems": true
+    }
+  }
+}

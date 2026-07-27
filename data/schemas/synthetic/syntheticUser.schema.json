@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SyntheticUser",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "user_id",
+    "user_number",
+    "role",
+    "display_name",
+    "active",
+    "data_classification",
+    "created_at"
+  ],
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "user_number": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(CUS-\\d{4}|CNS-\\d{3}|TEC-\\d{3})$"
+    },
+    "role": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "CUSTOMER",
+        "COUNSELOR",
+        "TECHNICIAN"
+      ]
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "고서온",
+        "구하린",
+        "노재온",
+        "류다은",
+        "문하겸",
+        "백서율",
+        "설도윤",
+        "심나예",
+        "우하람",
+        "위서진",
+        "진가온",
+        "채도현",
+        "표은재",
+        "허다율",
+        "남현오",
+        "봉재율"
+      ]
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "data_classification": {
+      "type": "string",
+      "minLength": 1,
+      "const": "synthetic"
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    }
+  }
+}

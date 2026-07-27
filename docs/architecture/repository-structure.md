@@ -1370,8 +1370,7 @@ data/                                                   # 공식 문서·전처�
 │  │  ├─ manuals/                                       # 공식 제품 매뉴얼 원본 또는 페이지 추출 데이터
 │  │  │  ├─ mvp/                                        # JAC104D 매뉴얼 페이지 추출 본문
 │  │  │  │  └─ manual_pages_jac104d.jsonl               # JAC104D 매뉴얼의 페이지별 추출 텍스트
-│  │  │  └─ expansion/                                  # IAC425 매뉴얼 페이지 추출 본문
-│  │  │     └─ manual_pages_iac425.jsonl                # IAC425 확장 매뉴얼의 페이지별 추출 텍스트
+│  │  │  └─ expansion/                                  # IAC425 매뉴얼 페이지 추출 후속 생성 예정(현재 정식 파일 없음)
 │  │  └─ faq/                                           # 공식 FAQ 원문·정규화·적용성 분류 데이터
 │  │     └─ faq_snapshot_normalized.jsonl               # 공식 FAQ 스냅샷을 표준 필드로 정규화한 문서
 │  ├─ metadata/                                         # 출처·버전·해시·계보·수집 이력
@@ -1385,8 +1384,7 @@ data/                                                   # 공식 문서·전처�
 │  │  ├─ rag/                                           # 검증된 검색용 RAG 청크 데이터
 │  │  │  ├─ mvp/                                        # MVP 검색에 사용되는 검증 RAG 청크
 │  │  │  │  └─ rag_verified_sample.jsonl                # JAC104D MVP용 검증 완료 RAG 청크
-│  │  │  └─ expansion/                                  # 후속 확장용으로 격리한 RAG 청크
-│  │  │     └─ rag_expansion_iac425.jsonl               # IAC425 후속 확장용 RAG 청크
+│  │  │  └─ expansion/                                  # IAC425 확장 RAG 후속 생성 예정(현재 정식 파일 없음)
 │  │  ├─ faq/                                           # 공식 FAQ 원문·정규화·적용성 분류 데이터
 │  │  │  └─ selected_faq_candidates.jsonl               # 적용성·사용 제한을 분류한 FAQ 후보 목록
 │  │  └─ evidence/                                      # 근거 사용 가능 범위를 관리하는 레지스트리

@@ -1,2 +1,6 @@
 # usage-guidance-statuses 공통 코드 목록
-codes: []
+codes:
+  - NORMAL
+  - PARTIAL_STOP
+  - TOTAL_STOP
+  - PENDING_CONSULTATION

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SyntheticCareHistory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "care_history_id",
+    "customer_product_id",
+    "care_type",
+    "performed_on",
+    "result",
+    "note",
+    "data_classification"
+  ],
+  "properties": {
+    "care_history_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "customer_product_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "inquiry_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "visit_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "care_type": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "REGULAR_INSPECTION",
+        "FILTER_REPLACEMENT",
+        "VISIT_SERVICE"
+      ]
+    },
+    "performed_on": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date"
+    },
+    "result": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "NORMAL",
+        "FILTER_REPLACED",
+        "ISSUE_RESOLVED"
+      ]
+    },
+    "note": {
+      "type": "string",
+      "minLength": 1
+    },
+    "data_classification": {
+      "type": "string",
+      "minLength": 1,
+      "const": "synthetic"
+    }
+  }
+}
