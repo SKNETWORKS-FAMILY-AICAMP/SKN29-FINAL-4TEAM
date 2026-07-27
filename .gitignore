@@ -20,3 +20,9 @@ data/**/*.zip
 # Web generated files
 web/node_modules/
 web/dist/
+
+WaterCareAndroid/.idea/
+WaterCareAndroid/.gradle/
+WaterCareAndroid/local.properties
+WaterCareBackend/.env
+WaterCareBackend/.venv/
