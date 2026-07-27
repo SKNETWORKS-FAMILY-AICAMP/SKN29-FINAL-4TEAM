@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SyntheticProduct",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "product_id",
+    "product_code",
+    "product_model",
+    "model_family",
+    "product_generation",
+    "manual_revision",
+    "support_scope",
+    "data_classification"
+  ],
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "product_code": {
+      "type": "string",
+      "minLength": 1,
+      "const": "WPUJAC104DWH"
+    },
+    "product_model": {
+      "type": "string",
+      "minLength": 1,
+      "const": "WPU-JAC104 (D)"
+    },
+    "model_family": {
+      "type": "string",
+      "minLength": 1,
+      "const": "WPU-JAC104"
+    },
+    "product_generation": {
+      "type": "string",
+      "minLength": 1,
+      "const": "D"
+    },
+    "manual_revision": {
+      "type": "string",
+      "minLength": 1,
+      "const": "REV.00"
+    },
+    "support_scope": {
+      "type": "string",
+      "minLength": 1,
+      "const": "MVP"
+    },
+    "data_classification": {
+      "type": "string",
+      "minLength": 1,
+      "const": "synthetic"
+    }
+  }
+}

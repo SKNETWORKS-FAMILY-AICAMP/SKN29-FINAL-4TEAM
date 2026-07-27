@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "generated_at": "2026-07-27T00:00:00+09:00",
+  "inventory_file": "processed/validation/deletion/pre_delete_inventory.csv",
+  "targets": {
+    "data/raw": {
+      "file_count": 7,
+      "size_bytes": 1124,
+      "git_tracked_files": 7,
+      "not_git_recoverable_files": 0
+    },
+    "data/.temp": {
+      "file_count": 0,
+      "size_bytes": 0,
+      "git_tracked_files": 0,
+      "not_git_recoverable_files": 0
+    },
+    "data/.work": {
+      "file_count": 0,
+      "size_bytes": 0,
+      "git_tracked_files": 0,
+      "not_git_recoverable_files": 0
+    }
+  },
+  "raw_original_files_present": 0,
+  "canonical_data_readiness": {
+    "latest_qa_status": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "queryable_without_raw": true
+  }
+}

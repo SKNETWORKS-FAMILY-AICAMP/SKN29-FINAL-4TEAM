@@ -1,7 +1,133 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "DemoScenario",
-  "description": "합성 업무 시나리오 검증 Schema",
   "type": "object",
-  "additionalProperties": true
+  "additionalProperties": false,
+  "required": [
+    "dataset_id",
+    "data_classification",
+    "reference_time",
+    "product_scope",
+    "purpose",
+    "privacy_policy",
+    "scenarios"
+  ],
+  "properties": {
+    "dataset_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^SYN-WPU-JAC104D-[A-Z0-9-]+$"
+    },
+    "data_classification": {
+      "type": "string",
+      "minLength": 1,
+      "const": "synthetic"
+    },
+    "reference_time": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    },
+    "product_scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1
+    },
+    "privacy_policy": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "PrivacyPolicy",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "real_personal_data_included",
+        "rules"
+      ],
+      "properties": {
+        "real_personal_data_included": {
+          "type": "boolean",
+          "const": false
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "DemoScenarioItem",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "scenario_id",
+          "family",
+          "variant",
+          "title",
+          "inquiry_id",
+          "workflow_kind",
+          "expected_outcome"
+        ],
+        "properties": {
+          "scenario_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^SYN-JAC104-\\d{3}$"
+          },
+          "family": {
+            "type": "string",
+            "minLength": 1
+          },
+          "variant": {
+            "type": "string",
+            "minLength": 1,
+            "enum": [
+              "CLEAR",
+              "AMBIGUOUS",
+              "PERSISTENT_OR_RISK"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "inquiry_id": {
+            "type": "string",
+            "minLength": 1,
+            "format": "uuid"
+          },
+          "workflow_kind": {
+            "type": "string",
+            "minLength": 1,
+            "enum": [
+              "SELF_RESOLUTION",
+              "INFORMATION_COLLECTION",
+              "CONSULTATION_HANDOFF",
+              "VISIT_HANDOFF",
+              "DANGER_ESCALATION",
+              "NO_EVIDENCE_FALLBACK",
+              "REOPENED_INQUIRY"
+            ]
+          },
+          "expected_outcome": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "minItems": 1
+    }
+  }
 }

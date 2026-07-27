@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ScenarioSubsetItem",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scenario_id",
+    "family",
+    "variant",
+    "title",
+    "inquiry_id",
+    "workflow_kind",
+    "expected_outcome"
+  ],
+  "properties": {
+    "scenario_id": {
+      "type": "string",
+      "pattern": "^SYN-JAC104-\\d{3}$"
+    },
+    "family": {
+      "type": "string",
+      "minLength": 1
+    },
+    "variant": {
+      "type": "string",
+      "enum": [
+        "CLEAR",
+        "AMBIGUOUS",
+        "PERSISTENT_OR_RISK"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inquiry_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "workflow_kind": {
+      "type": "string",
+      "enum": [
+        "SELF_RESOLUTION",
+        "INFORMATION_COLLECTION",
+        "CONSULTATION_HANDOFF",
+        "VISIT_HANDOFF",
+        "DANGER_ESCALATION",
+        "NO_EVIDENCE_FALLBACK",
+        "REOPENED_INQUIRY"
+      ]
+    },
+    "expected_outcome": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

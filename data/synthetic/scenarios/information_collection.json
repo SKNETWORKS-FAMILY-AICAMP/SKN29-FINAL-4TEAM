@@ -1,0 +1,47 @@
+[
+  {
+    "scenario_id": "SYN-JAC104-001",
+    "family": "NO_WATER",
+    "variant": "AMBIGUOUS",
+    "title": "원인 정보가 부족한 무출수",
+    "inquiry_id": "f72a3b18-a4f8-5f5e-8c86-199ffc1d8aa2",
+    "workflow_kind": "INFORMATION_COLLECTION",
+    "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS"
+  },
+  {
+    "scenario_id": "SYN-JAC104-010",
+    "family": "LOW_FLOW",
+    "variant": "AMBIGUOUS",
+    "title": "출수 종류가 불명확한 출수량 저하",
+    "inquiry_id": "f82886a1-8755-5dd1-b622-480a27a207af",
+    "workflow_kind": "INFORMATION_COLLECTION",
+    "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS"
+  },
+  {
+    "scenario_id": "SYN-JAC104-011",
+    "family": "COLD_WATER_NOT_COLD",
+    "variant": "AMBIGUOUS",
+    "title": "확인 정보가 없는 미지근한 냉수",
+    "inquiry_id": "b987200b-656e-5dbc-837f-ee1e1cb3a93f",
+    "workflow_kind": "INFORMATION_COLLECTION",
+    "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS"
+  },
+  {
+    "scenario_id": "SYN-JAC104-015",
+    "family": "TASTE_ODOR",
+    "variant": "AMBIGUOUS",
+    "title": "기간 정보가 없는 냄새 문의",
+    "inquiry_id": "e9280a2d-fb61-55eb-a9a8-453f116e2b54",
+    "workflow_kind": "INFORMATION_COLLECTION",
+    "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS"
+  },
+  {
+    "scenario_id": "SYN-JAC104-020",
+    "family": "NOISE",
+    "variant": "AMBIGUOUS",
+    "title": "소리 특성이 불명확한 문의",
+    "inquiry_id": "7ae3ddf9-61d3-5b80-9a03-857bdabd81c6",
+    "workflow_kind": "INFORMATION_COLLECTION",
+    "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS"
+  }
+]

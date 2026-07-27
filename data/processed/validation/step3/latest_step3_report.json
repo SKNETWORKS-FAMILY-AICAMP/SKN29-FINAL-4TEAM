@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "stage": 3,
+  "generated_at": "2026-07-27T00:00:00+09:00",
+  "checks": {
+    "schema_errors": 0,
+    "integrity_errors": 0
+  },
+  "counts": {
+    "faq_normalized": 119,
+    "faq_ocr_verified": 5,
+    "official_faq_assets": 10,
+    "rag_chunks": 7,
+    "evidence_registry": 9
+  },
+  "output_sha256": {
+    "faq_normalized": "FF69800A58A354128E55D6BD4D4675B756EC8A6B8750A228B6A5787388DD780B",
+    "faq_ocr_verified": "E5A2DEC934AFA32A1DB9EC0036FDEB9A25307D4D25593009686A77555310348E",
+    "official_faq_assets": "CA64EBF5F4F8948D1113828EB13E3358447EDD2B539AFAB2EC35597BA53CDE00",
+    "rag_chunks": "BF50C87FC7652546460FFC9927BB7B37BA341DF734F994CFDFD7A96FE7BE7A26",
+    "evidence_registry": "32EFD1AB081048DAB3B06C6EA264E79DC12208E56DFA1598C74E812B44584E58"
+  }
+}

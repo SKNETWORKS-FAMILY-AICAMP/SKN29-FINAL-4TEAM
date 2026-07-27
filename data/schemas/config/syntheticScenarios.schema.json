@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SyntheticScenariosConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "config_version",
+    "uuid_namespace",
+    "reference_time",
+    "base_time",
+    "names",
+    "evidence_ids",
+    "scenario_matrix",
+    "outputs",
+    "scenario_subsets",
+    "materialized_outputs",
+    "materialized_subsets"
+  ],
+  "properties": {
+    "config_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "uuid_namespace": {"type": "string", "format": "uuid"},
+    "reference_time": {"type": "string", "format": "date-time"},
+    "base_time": {"type": "string", "format": "date-time"},
+    "names": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["CUSTOMER", "COUNSELOR", "TECHNICIAN"],
+      "properties": {
+        "CUSTOMER": {"type": "array", "minItems": 12},
+        "COUNSELOR": {"type": "array", "minItems": 2},
+        "TECHNICIAN": {"type": "array", "minItems": 2}
+      }
+    },
+    "evidence_ids": {"type": "object", "minProperties": 7},
+    "scenario_matrix": {
+      "type": "array",
+      "minItems": 24,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "number",
+          "scenario_id",
+          "family",
+          "title",
+          "variant",
+          "original_text",
+          "topic_code",
+          "risk_level",
+          "usage_guidance_status",
+          "workflow_kind",
+          "current_status",
+          "evidence_mode"
+        ],
+        "properties": {
+          "number": {"type": "integer"},
+          "scenario_id": {"type": "string", "pattern": "^SYN-JAC104-[0-9]{3}$"},
+          "family": {"type": "string"},
+          "title": {"type": "string"},
+          "variant": {"type": "string"},
+          "original_text": {"type": "string"},
+          "topic_code": {"type": "string"},
+          "risk_level": {
+            "type": "string",
+            "enum": ["general", "caution", "danger"]
+          },
+          "usage_guidance_status": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "PARTIAL_STOP",
+              "TOTAL_STOP",
+              "PENDING_CONSULTATION"
+            ]
+          },
+          "workflow_kind": {"type": "string"},
+          "current_status": {"type": "string"},
+          "evidence_mode": {"type": "string"}
+        }
+      }
+    },
+    "outputs": {"type": "object", "minProperties": 15},
+    "scenario_subsets": {"type": "object", "minProperties": 7},
+    "materialized_outputs": {"type": "object", "minProperties": 15},
+    "materialized_subsets": {"type": "object", "minProperties": 7}
+  }
+}

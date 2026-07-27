@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OfficialFaqAsset",
+  "description": "검수 완료 공식 FAQ 이미지의 내용 주소형 자산 레지스트리",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "asset_id",
+    "source_type",
+    "provider",
+    "sha256",
+    "media_type",
+    "asset_role",
+    "verification_status",
+    "occurrence_count",
+    "occurrences",
+    "generated_at"
+  ],
+  "properties": {
+    "asset_id": {
+      "type": "string",
+      "pattern": "^ASSET-OFFICIAL-FAQ-[A-F0-9]{12}$"
+    },
+    "source_type": {
+      "type": "string",
+      "const": "official_faq_image"
+    },
+    "provider": {
+      "type": "string",
+      "const": "SK매직"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "media_type": {
+      "type": "string",
+      "const": "image/jpeg"
+    },
+    "asset_role": {
+      "type": "string",
+      "enum": [
+        "FAQ_GUIDE_IMAGE",
+        "SHARED_GUIDE_IMAGE"
+      ]
+    },
+    "verification_status": {
+      "type": "string",
+      "const": "USER_VERIFIED_OFFICIAL_ASSET"
+    },
+    "occurrence_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "occurrences": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "faq_id",
+          "image_index",
+          "image_url"
+        ],
+        "properties": {
+          "faq_id": {
+            "type": "string",
+            "pattern": "^FAQ-SKMAGIC-[0-9]{4}$"
+          },
+          "image_index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "image_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
