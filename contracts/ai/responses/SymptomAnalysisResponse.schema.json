@@ -1,8 +1,65 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "SymptomAnalysisResponse",
-  "description": "증상 분석 결과",
+  "description": "구조화 증상, 위험도, 안전 평가, RAG 근거 및 사용 안내 통합 응답 Schema",
   "type": "object",
+  "required": [
+    "inquiry_id",
+    "correlation_id",
+    "structured_symptom",
+    "safety_assessment",
+    "usage_guidance",
+    "evidence_references"
+  ],
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "inquiry_id": {
+      "type": "string",
+      "description": "공개 문의 식별자"
+    },
+    "correlation_id": {
+      "type": "string",
+      "description": "요청 추적 correlation_id"
+    },
+    "structured_symptom": {
+      "$ref": "../common/StructuredSymptom.schema.json"
+    },
+    "missing_fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["field_name", "reason"],
+        "properties": {
+          "field_name": { "type": "string" },
+          "reason": { "type": "string" },
+          "importance": { "type": "string" }
+        }
+      }
+    },
+    "followup_questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["question_id", "question_text", "target_field"],
+        "properties": {
+          "question_id": { "type": "string" },
+          "question_text": { "type": "string" },
+          "options": { "type": "array", "items": { "type": "string" } },
+          "target_field": { "type": "string" }
+        }
+      }
+    },
+    "safety_assessment": {
+      "$ref": "../common/SafetyAssessment.schema.json"
+    },
+    "usage_guidance": {
+      "$ref": "../common/UsageGuidance.schema.json"
+    },
+    "evidence_references": {
+      "type": "array",
+      "items": {
+        "$ref": "../common/EvidenceReference.schema.json"
+      }
+    }
+  }
 }
