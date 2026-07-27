@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SyntheticInquiryStatusHistory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "history_id",
+    "inquiry_id",
+    "sequence",
+    "event",
+    "from_status",
+    "to_status",
+    "actor_role",
+    "actor_id",
+    "assigned_role_after",
+    "assigned_user_id_after",
+    "state_version",
+    "idempotency_key",
+    "correlation_id",
+    "changed_at",
+    "reason",
+    "data_classification"
+  ],
+  "properties": {
+    "history_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "inquiry_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "event": {
+      "type": "string",
+      "minLength": 1
+    },
+    "from_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "DRAFT",
+        "QUESTIONNAIRE_IN_PROGRESS",
+        "PRODUCT_VALIDATION_FAILED",
+        "AI_GUIDANCE_READY",
+        "CONSULTATION_PENDING",
+        "CONSULTATION_IN_PROGRESS",
+        "VISIT_REVIEW_PENDING",
+        "VISIT_PENDING",
+        "VISIT_IN_PROGRESS",
+        "COMPLETION_PENDING",
+        "RESOLVED",
+        "REOPENED",
+        null
+      ]
+    },
+    "to_status": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "DRAFT",
+        "QUESTIONNAIRE_IN_PROGRESS",
+        "PRODUCT_VALIDATION_FAILED",
+        "AI_GUIDANCE_READY",
+        "CONSULTATION_PENDING",
+        "CONSULTATION_IN_PROGRESS",
+        "VISIT_REVIEW_PENDING",
+        "VISIT_PENDING",
+        "VISIT_IN_PROGRESS",
+        "COMPLETION_PENDING",
+        "RESOLVED",
+        "REOPENED"
+      ]
+    },
+    "actor_role": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "CUSTOMER",
+        "COUNSELOR",
+        "TECHNICIAN",
+        "SYSTEM"
+      ]
+    },
+    "actor_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "assigned_role_after": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "NONE",
+        "COUNSELOR",
+        "TECHNICIAN"
+      ]
+    },
+    "assigned_user_id_after": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "state_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "correlation_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "changed_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "data_classification": {
+      "type": "string",
+      "minLength": 1,
+      "const": "synthetic"
+    }
+  }
+}

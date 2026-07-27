@@ -1,0 +1,101 @@
+{
+  "config_version": "1.0.0",
+  "scenario_id": "SYN-JAC104-002",
+  "inquiry_number": "DEMO-INQ-002",
+  "product_code": "WPUJAC104DWH",
+  "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+  "topic_code": "symptom_low_flow",
+  "rag_chunk_id": "RAG-WPUJAC104DWH-LOW-FLOW-001",
+  "evidence_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+  "manual_page": 38,
+  "risk_level": "general",
+  "usage_guidance_status": "NORMAL",
+  "final_status": "RESOLVED",
+  "final_state_version": 12,
+  "final_actor_role": "TECHNICIAN",
+  "expected_events": [
+    "START_INQUIRY",
+    "SUBMIT_SYMPTOM",
+    "SUBMIT_ANSWERS",
+    "SAFE_GUIDANCE_READY",
+    "REQUEST_CONSULTATION",
+    "START_CONSULTATION",
+    "VISIT_NEEDED",
+    "CONFIRM_VISIT",
+    "START_VISIT",
+    "VISIT_COMPLETED",
+    "SUBMIT_RESOLUTION_FEEDBACK",
+    "FINALIZE_INQUIRY"
+  ],
+  "expected_counts": {
+    "inquiries": 24,
+    "consultations": 16,
+    "visits": 5,
+    "care_histories": 25,
+    "followup_confirmations": 1,
+    "inquiry_status_histories": 115,
+    "audit_events": 115,
+    "representative_steps": 12
+  },
+  "document_sections": [
+    {
+      "path": "docs/weekly-task/김은진_3주차_업무_지침서.md",
+      "heading": "## 3.4 합성 업무 데이터·DB Seed Fixture·기대 결과 완성",
+      "required_tokens": [
+        "SYN-JAC104-002",
+        "DEMO-INQ-002",
+        "WPUJAC104DWH",
+        "38쪽",
+        "합성 문의 24건",
+        "후속 확인"
+      ]
+    },
+    {
+      "path": "docs/planning/md/WBS.md",
+      "heading": "# 1. 프로젝트 일정 및 범위",
+      "required_tokens": [
+        "SYN-JAC104-002",
+        "DEMO-INQ-002",
+        "WPUJAC104DWH",
+        "출수량 저하",
+        "매뉴얼 38쪽"
+      ]
+    },
+    {
+      "path": "docs/planning/md/기획서.md",
+      "heading": "## 5-5. 검증 시나리오",
+      "required_tokens": [
+        "SYN-JAC104-002",
+        "DEMO-INQ-002",
+        "WPUJAC104DWH",
+        "출수량 저하",
+        "사용설명서 38쪽",
+        "후속 확인"
+      ]
+    },
+    {
+      "path": "docs/planning/md/화면설계서.md",
+      "heading": "# 3. 시연 시나리오와 근거 매핑",
+      "required_tokens": [
+        "SYN-JAC104-002",
+        "RAG-WPUJAC104DWH-LOW-FLOW-001",
+        "EVD-WPUJAC104DWH-LOW-FLOW-001",
+        "general",
+        "38"
+      ]
+    },
+    {
+      "path": "docs/planning/md/화면설계서.md",
+      "heading": "## 3-7. 대표 E2E 시연 시나리오",
+      "required_tokens": [
+        "SYN-JAC104-002",
+        "DEMO-INQ-002",
+        "WPUJAC104DWH",
+        "출수량 저하",
+        "REV.00",
+        "38페이지",
+        "후속 확인"
+      ]
+    }
+  ]
+}

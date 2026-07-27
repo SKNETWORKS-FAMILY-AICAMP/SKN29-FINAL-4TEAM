@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SyntheticAuditEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "audit_event_id",
+    "entity_type",
+    "entity_id",
+    "event_type",
+    "actor_role",
+    "actor_id",
+    "state_version",
+    "idempotency_key",
+    "correlation_id",
+    "occurred_at",
+    "data_classification"
+  ],
+  "properties": {
+    "audit_event_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "entity_type": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "INQUIRY"
+      ]
+    },
+    "entity_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "event_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actor_role": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "CUSTOMER",
+        "COUNSELOR",
+        "TECHNICIAN",
+        "SYSTEM"
+      ]
+    },
+    "actor_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "state_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "correlation_id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uuid"
+    },
+    "occurred_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    },
+    "data_classification": {
+      "type": "string",
+      "minLength": 1,
+      "const": "synthetic"
+    }
+  }
+}

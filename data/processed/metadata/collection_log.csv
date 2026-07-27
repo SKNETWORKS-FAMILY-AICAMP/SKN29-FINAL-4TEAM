@@ -1,1 +1,10 @@
 collected_at,target,method,status,source_url,message
+2026-07-24T18:41:53+09:00,WPUJAC104DWH official product page,official_web_read,VERIFIED,https://www.skmagic.com/goods/indexGoodsDetail?goodsId=G000070005,"판매 코드 WPUJAC104DWH, 모델명, IOT케어 X, 사용설명서 연결을 공식 상품 페이지에서 확인"
+2026-07-24T18:41:53+09:00,WPUJAC104DWH service-center search,official_web_read,FAILED,https://www.skintellixservice.com/web/easy/easyMain.do?inputBasicKeyword=WPUJAC104DWH&tabIndex=3,현재 검증 클라이언트에서 Internal Error 응답
+2026-07-24T18:41:53+09:00,WPUJAC104DWH direct manual download,official_web_read,FAILED,https://www.skintellixservice.com/common/fileDownloadS3.do,현재 검증 클라이언트에서 Internal Error 응답; 다른 모델 문서로 대체하지 않음
+2026-07-24T18:41:53+09:00,SK Magic purifier FAQ,official_web_read,VERIFIED,https://www.skmagic.com/customer/faq/indexFaqList,공식 FAQ 랜딩 페이지 접근 확인
+2026-07-24T18:41:53+09:00,SRC-JAC104D-MANUAL,local_backup_hash_pdfinfo_visual,VERIFIED,,"SHA-256 일치; 5131906 bytes; 44 pages; 표지 WPU-JAC104 (D)/WPU-JCC104 (D); REV.00"
+2026-07-24T18:41:53+09:00,SRC-IAC425-MANUAL,local_backup_hash_pdfinfo_visual,VERIFIED_EXCLUDED,,"SHA-256 기록; 8571676 bytes; 52 pages; 표지 WPU-IAC425; REV.02; MVP 가공 제외"
+2026-07-24T18:41:53+09:00,SRC-WATER-FAQ-20260715,local_backup_hash_heading_count,VERIFIED,https://www.skmagic.com/customer/faq/indexFaqList,SHA-256 기록; 79555 bytes; FAQ 번호 제목 119건; UTF-8 replacement character 0건
+2026-07-24T18:41:53+09:00,SRC-IAC506-MANUAL,workspace_and_backup_search,MISSING,,"data/raw 및 확인된 Desktop/Documents 백업 경로에서 원본을 찾지 못함; MVP 가공에는 사용하지 않음"
+2026-07-24T18:41:53+09:00,data/raw,recursive_inventory,NO_RAW_ORIGINALS,,"현재 공식 원본은 없고 README/.gitignore/.gitkeep만 존재; 최종 삭제 대상 원본 0건"

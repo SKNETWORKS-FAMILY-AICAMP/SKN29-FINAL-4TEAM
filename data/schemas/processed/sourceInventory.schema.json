@@ -1,7 +1,117 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "SourceInventory",
-  "description": "공식 출처·무결성 메타데이터 검증 Schema",
+  "description": "공식 원본과 누락 자료의 계보 레코드",
   "type": "object",
-  "additionalProperties": true
+  "additionalProperties": false,
+  "required": [
+    "data_id",
+    "source_name",
+    "source_type",
+    "exact_sales_code",
+    "product_model",
+    "version",
+    "page_count",
+    "file_size_bytes",
+    "sha256",
+    "source_url",
+    "local_path",
+    "scope_role",
+    "verification_status",
+    "verified_at",
+    "deletion_scope"
+  ],
+  "properties": {
+    "data_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^SRC-[A-Z0-9-]+$"
+    },
+    "source_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_type": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "official_manual",
+        "official_faq_snapshot"
+      ]
+    },
+    "exact_sales_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "product_model": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "page_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "file_size_bytes": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "source_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "local_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scope_role": {
+      "type": "string",
+      "minLength": 1,
+      "enum": [
+        "mvp",
+        "mvp_candidate",
+        "expansion",
+        "excluded"
+      ]
+    },
+    "verification_status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verified_at": {
+      "type": "string",
+      "minLength": 1,
+      "format": "date-time"
+    },
+    "deletion_scope": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
 }
