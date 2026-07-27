@@ -44,8 +44,8 @@
     "summary": {
       "errors": 0,
       "warnings": 0,
-      "files_checked": 41,
-      "records_checked": 696
+      "files_checked": 42,
+      "records_checked": 697
     },
     "counts": {
       "manual_pages": 44,
@@ -121,9 +121,9 @@
           "detail": "histories=12,audits=12"
         },
         {
-          "name": "workflow_transitions_in_contract",
+          "name": "workflow_statuses_in_dataset_vocabulary",
           "status": "PASS",
-          "detail": "missing=[]"
+          "detail": "unknown=[]"
         },
         {
           "name": "consultation_visit_followup_care_chain",
@@ -146,7 +146,7 @@
           "detail": "actual={'inquiries': 24, 'consultations': 16, 'visits': 5, 'care_histories': 25, 'followup_confirmations': 1, 'inquiry_status_histories': 115, 'audit_events': 115, 'representative_steps': 12}"
         },
         {
-          "name": "manifest_counts_match_e2e_contract",
+          "name": "manifest_counts_match_e2e_case",
           "status": "PASS",
           "detail": "dataset manifest synthetic counts"
         }

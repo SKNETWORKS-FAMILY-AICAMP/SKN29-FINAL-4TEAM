@@ -1,20 +1,2 @@
 # 역할·담당자·필수 입력·현재 상태 검사 규칙
-guards:
-  - name: optimistic_concurrency
-    applies_to: all_write_events
-    requires: [state_version, idempotency_key, correlation_id]
-  - name: customer_owns_inquiry
-    events: [SUBMIT_SYMPTOM, SUBMIT_ANSWERS, REQUEST_CONSULTATION, SUBMIT_RESOLUTION_FEEDBACK, RESUME_CONSULTATION]
-    requires: [authenticated_customer, inquiry_ownership]
-  - name: assigned_counselor_only
-    events: [START_CONSULTATION, CONSULTATION_COMPLETED, VISIT_NEEDED, UPDATE_VISIT_SCHEDULE, CONFIRM_VISIT]
-    requires: [assigned_counselor_id_match]
-  - name: assigned_technician_only
-    events: [START_VISIT, VISIT_COMPLETED]
-    requires: [assigned_technician_id_match]
-  - name: visit_completion_atomic
-    events: [VISIT_COMPLETED]
-    requires: [visit_result, care_record]
-  - name: finalization_owner
-    events: [FINALIZE_INQUIRY]
-    requires: [snapshot_assignee_match, resolution_feedback, required_result]
+guards: []

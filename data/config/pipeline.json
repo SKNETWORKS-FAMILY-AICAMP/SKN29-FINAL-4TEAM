@@ -1,5 +1,5 @@
 {
-  "config_version": "1.1.0",
+  "config_version": "1.2.0",
   "dataset_version": "0.8.0",
   "generated_at": "2026-07-27T00:00:00+09:00",
   "mvp_product_code": "WPUJAC104DWH",
@@ -17,8 +17,9 @@
     "ocr": "config/faq/ocr_transcriptions.json",
     "rag": "config/rag/jac104_chunks.json",
     "synthetic": "config/synthetic/scenarios.json",
-    "workflow": "config/workflow/state_rules.json",
-    "e2e": "config/e2e/representative_contract.json",
+    "vocabulary": "config/workflow/dataset_vocabulary.json",
+    "handoff": "config/handoff/consumer_profiles.json",
+    "e2e": "config/e2e/representative_case.json",
     "manual_input": "processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
     "faq_input": "processed/documents/faq/faq_snapshot_normalized.jsonl",
     "faq_candidates": "processed/structured/faq/selected_faq_candidates.jsonl",
@@ -33,6 +34,7 @@
     "equivalence_report": "processed/validation/refactor/latest_equivalence_report.json",
     "inventory_csv": "processed/validation/deletion/pre_delete_inventory.csv",
     "inventory_report": "processed/validation/deletion/pre_delete_assessment.json",
+    "handoff_manifest": "processed/metadata/consumer_handoff_manifest.json",
     "representative_e2e_report": "processed/validation/business/latest_representative_e2e_report.json"
   },
   "templates": {
@@ -58,7 +60,8 @@
     "ocr": "schemas/config/ocrTranscriptions.schema.json",
     "rag": "schemas/config/ragDefinitions.schema.json",
     "synthetic": "schemas/config/syntheticScenarios.schema.json",
-    "workflow": "schemas/config/workflowRules.schema.json",
-    "e2e": "schemas/config/representativeE2E.schema.json"
+    "vocabulary": "schemas/config/datasetVocabulary.schema.json",
+    "handoff": "schemas/config/consumerProfiles.schema.json",
+    "e2e": "schemas/config/representativeCase.schema.json"
   }
 }

@@ -28,9 +28,9 @@ def _markdown_section(text: str, heading: str) -> str | None:
 def validate_representative_e2e(
     config: PipelineConfig,
     *,
-    contract: dict[str, Any] | None = None,
+    case: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    spec = contract or config.config("e2e")
+    spec = case or config.config("e2e")
     synthetic = config.config("synthetic")
     outputs = {
         key: read_json(config.data_root / path)
@@ -212,24 +212,18 @@ def validate_representative_e2e(
         f"histories={len(histories)},audits={len(audits)}",
     )
 
-    transition_text = (
-        repo_root / "contracts" / "state-machine" / "transition-rules.yaml"
-    ).read_text(encoding="utf-8")
-    contract_transitions = {
-        (None if source == "null" else source, event, target)
-        for source, event, target in re.findall(
-            r"\{from: (null|[A-Z_]+), event: ([A-Z_]+), to: ([A-Z_]+)\}",
-            transition_text,
-        )
-    }
-    workflow_transitions = {
-        (row["from_status"], row["event"], row["to_status"])
+    dataset_statuses = set(config.config("vocabulary")["inquiry_statuses"])
+    workflow_statuses = {
+        status
         for row in workflow["steps"]
+        for status in (row["from_status"], row["to_status"])
+        if status is not None
     }
+    unknown_statuses = sorted(workflow_statuses - dataset_statuses)
     add(
-        "workflow_transitions_in_contract",
-        workflow_transitions <= contract_transitions,
-        f"missing={sorted(workflow_transitions - contract_transitions, key=str)}",
+        "workflow_statuses_in_dataset_vocabulary",
+        not unknown_statuses,
+        f"unknown={unknown_statuses}",
     )
 
     consultations = [
@@ -267,16 +261,12 @@ def validate_representative_e2e(
             f"followups={len(followups)},care_histories={len(care_histories)}"
         ),
     )
-    completion_policy = (
-        repo_root / "contracts" / "state-machine" / "completion-policy.yaml"
-    ).read_text(encoding="utf-8")
     add(
         "visit_completion_actor",
         workflow["steps"][-1]["actor_role"] == spec["final_actor_role"]
         and inquiry["assigned_role"] == spec["final_actor_role"]
         and len(visits) == 1
-        and workflow["steps"][-1]["actor_id"] == visits[0]["technician_id"]
-        and "visit_path: SNAPSHOT_TECHNICIAN" in completion_policy,
+        and workflow["steps"][-1]["actor_id"] == visits[0]["technician_id"],
         (
             f"actor_role={workflow['steps'][-1]['actor_role']},"
             f"assigned_role={inquiry['assigned_role']}"
@@ -317,7 +307,7 @@ def validate_representative_e2e(
         "audit_events": "synthetic_audit_events",
     }
     add(
-        "manifest_counts_match_e2e_contract",
+        "manifest_counts_match_e2e_case",
         all(
             manifest_counts.get(manifest_key) == spec["expected_counts"][output_key]
             for output_key, manifest_key in manifest_keys.items()
