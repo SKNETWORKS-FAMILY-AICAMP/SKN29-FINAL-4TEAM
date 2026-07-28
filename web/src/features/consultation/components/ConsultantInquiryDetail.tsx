@@ -1,8 +1,13 @@
+import PriorityBadge from "../../../common/components/badge/PriorityBadge";
+import RiskBadge from "../../../common/components/badge/RiskBadge";
+import StatusBadge from "../../../common/components/badge/StatusBadge";
+import EvidenceCard from "../../evidence-viewer/components/EvidenceCard";
+import { mapEvidenceToCard } from "../../evidence-viewer/model/evidenceMapper";
 import {
   formatWorkspaceDateTime,
-  getRiskTone,
-  getStatusTone,
-  RISK_LABELS,
+  getPriorityVariant,
+  getStatusBadgeVariant,
+  PRIORITY_LABELS,
   STATUS_LABELS,
 } from "../model/consultantWorkspaceModel";
 import type {
@@ -17,7 +22,20 @@ interface ConsultantInquiryDetailProps {
   inquiry: CounselorInquiry | null;
   onDetailTabChange: (tab: DetailTab) => void;
   onOpenVisit: () => void;
+  sectionStates?: ConsultantDetailSectionStates;
 }
+
+export interface ConsultantDetailSectionStates {
+  aiSummary: "ready" | "error";
+  evidence: "ready" | "error";
+  timeline: "ready" | "error";
+}
+
+const READY_SECTIONS: ConsultantDetailSectionStates = {
+  aiSummary: "ready",
+  evidence: "ready",
+  timeline: "ready",
+};
 
 const DETAIL_TABS: readonly { id: DetailTab; label: string }[] = [
   { id: "summary", label: "통합 요약" },
@@ -164,7 +182,13 @@ function AnswersSection({ inquiry }: { inquiry: CounselorInquiry }) {
   );
 }
 
-function EvidenceSection({ inquiry }: { inquiry: CounselorInquiry }) {
+function EvidenceSection({
+  inquiry,
+  status,
+}: {
+  inquiry: CounselorInquiry;
+  status: ConsultantDetailSectionStates["evidence"];
+}) {
   return (
     <section className="v6-section">
       <div className="v6-section__head">
@@ -172,84 +196,51 @@ function EvidenceSection({ inquiry }: { inquiry: CounselorInquiry }) {
         <span>{inquiry.evidence.length}건</span>
       </div>
 
-      {inquiry.evidence.length === 0 ? (
+      {status === "error" ? (
+        <div className="v6-error" role="alert">
+          <strong>공식 근거를 불러오지 못했습니다.</strong>
+          <p>근거 확인 전에는 AI 초안을 공식 안내처럼 사용하지 마세요. 다른 상세 정보는 계속 확인할 수 있습니다.</p>
+        </div>
+      ) : inquiry.evidence.length === 0 ? (
         <div className="v6-evidence-hold">
           연결된 공식 근거가 없습니다. 임의 안내를 생성하지 말고 상담
           검토를 계속하세요.
         </div>
       ) : (
         <div className="v6-evidence-list">
-          {inquiry.evidence.map((item) => {
-            const metadata = [
-              ["문서 버전", item.documentVersion],
-              ["근거 페이지", `${item.page}쪽`],
-              ["근거 항목", item.sectionTitle],
-              ["출처 유형", "official_manual"],
-              ["제공기관", "SK매직"],
-              ["위험도", item.riskLevel],
-              ["상담 필수", "예"],
-              ["안전 조치", item.safeActions.join(" · ")],
-              ["금지 행동", item.prohibitedActions.join(" · ")],
-              ["검증 상태", "text_and_visual_verified"],
-              ["상품 코드", inquiry.productCode],
-              ["매뉴얼 모델", inquiry.manualModel],
-              ["제품 세대", "D"],
-              ["모델 계열", "WPU-JAC104"],
-              ["적용 범위", "mvp_primary"],
-              ["데이터 분류", "official"],
-            ];
-
-            return (
-              <article key={item.evidenceId} className="v6-evidence-card">
-                <span className="v6-evidence-card__icon">
-                  공식
-                  <br />
-                  매뉴얼
-                </span>
-                <div>
-                  <div className="v6-chip-row">
-                    <WorkspaceChip
-                      label="텍스트·시각 검증 완료"
-                      tone="success"
-                    />
-                    <WorkspaceChip label="mvp_primary" tone="info" />
-                  </div>
-                  <h4>{item.documentTitle}</h4>
-                  <p>{item.summary}</p>
-                  <div className="v6-evidence-meta">
-                    {metadata.map(([label, value]) => (
-                      <span key={label}>
-                        {label} · {value}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="v6-evidence-actions">
-                  <a
-                    href={item.sourceLandingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    공식 출처 보기 ↗
-                  </a>
-                  <a
-                    href={item.sourceDirectDownloadUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    설명서 PDF 열기 ↗
-                  </a>
-                </div>
-              </article>
-            );
-          })}
+          {inquiry.evidence.map((item) => (
+            <EvidenceCard
+              key={`${item.documentTitle}-${item.page}`}
+              evidence={mapEvidenceToCard(item)}
+            />
+          ))}
         </div>
       )}
     </section>
   );
 }
 
-function AiSummarySection({ inquiry }: { inquiry: CounselorInquiry }) {
+function AiSummarySection({
+  inquiry,
+  status,
+}: {
+  inquiry: CounselorInquiry;
+  status: ConsultantDetailSectionStates["aiSummary"];
+}) {
+  if (status === "error") {
+    return (
+      <section className="v6-section">
+        <div className="v6-section__head">
+          <h3>AI 상담 요약·상담사 확정본</h3>
+        </div>
+        <div className="v6-error" role="alert">
+          <strong>AI 상담 요약을 불러오지 못했습니다.</strong>
+          <p>고객 원문과 문진 답변, 공식 근거를 직접 확인해 주세요.</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="v6-section">
       <div className="v6-section__head">
@@ -292,14 +283,25 @@ function AiSummarySection({ inquiry }: { inquiry: CounselorInquiry }) {
   );
 }
 
-function TimelineSection({ inquiry }: { inquiry: CounselorInquiry }) {
+function TimelineSection({
+  inquiry,
+  status,
+}: {
+  inquiry: CounselorInquiry;
+  status: ConsultantDetailSectionStates["timeline"];
+}) {
   return (
     <section className="v6-section">
       <div className="v6-section__head">
         <h3>문의 처리 이력</h3>
         <span>{inquiry.timeline.length}건</span>
       </div>
-      <ol className="v6-timeline">
+      {status === "error" ? (
+        <div className="v6-error" role="alert">
+          <strong>처리 이력을 불러오지 못했습니다.</strong>
+          <p>상세 정보와 상담 입력은 계속 확인할 수 있습니다.</p>
+        </div>
+      ) : <ol className="v6-timeline">
         {inquiry.timeline.map((item) => (
           <li key={`${item.title}-${item.occurredAt}`}>
             <i />
@@ -314,7 +316,7 @@ function TimelineSection({ inquiry }: { inquiry: CounselorInquiry }) {
             </div>
           </li>
         ))}
-      </ol>
+      </ol>}
     </section>
   );
 }
@@ -324,6 +326,7 @@ export default function ConsultantInquiryDetail({
   inquiry,
   onDetailTabChange,
   onOpenVisit,
+  sectionStates = READY_SECTIONS,
 }: ConsultantInquiryDetailProps) {
   if (!inquiry) {
     return (
@@ -344,13 +347,19 @@ export default function ConsultantInquiryDetail({
           <div>
             <div className="v6-chip-row">
               <WorkspaceChip label="합성 시연" tone="info" />
-              <WorkspaceChip
+              <StatusBadge
                 label={STATUS_LABELS[inquiry.status]}
-                tone={getStatusTone(inquiry.status)}
+                size="compact"
+                variant={getStatusBadgeVariant(inquiry.status)}
               />
-              <WorkspaceChip
-                label={RISK_LABELS[inquiry.riskLevel]}
-                tone={getRiskTone(inquiry.riskLevel)}
+              <RiskBadge
+                level={inquiry.riskLevel.toLowerCase()}
+                size="compact"
+              />
+              <PriorityBadge
+                label={PRIORITY_LABELS[inquiry.priority]}
+                size="compact"
+                variant={getPriorityVariant(inquiry.priority)}
               />
               {inquiry.requiresConsultation && (
                 <WorkspaceChip label="상담 필수" tone="danger" />
@@ -409,8 +418,14 @@ export default function ConsultantInquiryDetail({
                 <UsageSection inquiry={inquiry} />
                 <CustomerProductSection inquiry={inquiry} />
                 <AnswersSection inquiry={inquiry} />
-                <EvidenceSection inquiry={inquiry} />
-                <AiSummarySection inquiry={inquiry} />
+                <EvidenceSection
+                  inquiry={inquiry}
+                  status={sectionStates.evidence}
+                />
+                <AiSummarySection
+                  inquiry={inquiry}
+                  status={sectionStates.aiSummary}
+                />
                 {inquiry.feedbackResolved && (
                   <section className="v6-section">
                     <div className="v6-section__head">
@@ -435,12 +450,21 @@ export default function ConsultantInquiryDetail({
             {detailTab === "evidence" && (
               <>
                 <UsageSection inquiry={inquiry} />
-                <EvidenceSection inquiry={inquiry} />
-                <AiSummarySection inquiry={inquiry} />
+                <EvidenceSection
+                  inquiry={inquiry}
+                  status={sectionStates.evidence}
+                />
+                <AiSummarySection
+                  inquiry={inquiry}
+                  status={sectionStates.aiSummary}
+                />
               </>
             )}
             {detailTab === "timeline" && (
-              <TimelineSection inquiry={inquiry} />
+              <TimelineSection
+                inquiry={inquiry}
+                status={sectionStates.timeline}
+              />
             )}
           </div>
 

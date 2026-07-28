@@ -1,32 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import { createVisitTransitionPath } from "../../app/router/routePaths";
+import {
+  createInquiryDetailPath,
+  createVisitTransitionPath,
+} from "../../app/router/routePaths";
 import ConsultantInquiryDetail from "../../features/consultation/components/ConsultantInquiryDetail";
 import ConsultantQueue from "../../features/consultation/components/ConsultantQueue";
 import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
+import useCounselorQueueFilters from "../../features/consultation/hooks/useCounselorQueueFilters";
 import { COUNSELOR_INQUIRIES } from "../../features/consultation/model/consultantWorkspaceMock";
 import {
   filterCounselorInquiries,
+  getCounselorQueuePage,
   getCounselorMetrics,
 } from "../../features/consultation/model/consultantWorkspaceModel";
-import type {
-  CounselorFilters,
-  DetailTab,
-} from "../../features/consultation/model/consultantWorkspaceTypes";
+import type { DetailTab } from "../../features/consultation/model/consultantWorkspaceTypes";
 import "../../common/styles/legacy/fix-base.css";
 import "../../common/styles/legacy/staff-desktop-v6.css";
 
-const INITIAL_FILTERS: CounselorFilters = {
-  query: "",
-  status: "ALL",
-  risk: "ALL",
-  consultation: "ALL",
-};
-
 export default function ConsultantDashboardPage() {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState(INITIAL_FILTERS);
+  const location = useLocation();
+  const { filters, hasChangedConditions, resetFilters, setFilters } =
+    useCounselorQueueFilters();
   const [selectedInquiryId, setSelectedInquiryId] = useState<string | null>(
     COUNSELOR_INQUIRIES[0]?.id ?? null,
   );
@@ -41,17 +38,21 @@ export default function ConsultantDashboardPage() {
     };
   }, []);
 
-  const inquiries = useMemo(
+  const filteredInquiries = useMemo(
     () => filterCounselorInquiries(COUNSELOR_INQUIRIES, filters),
     [filters],
   );
+  const queuePage = useMemo(
+    () => getCounselorQueuePage(COUNSELOR_INQUIRIES, filters),
+    [filters],
+  );
   const metrics = useMemo(
-    () => getCounselorMetrics(inquiries),
-    [inquiries],
+    () => getCounselorMetrics(filteredInquiries),
+    [filteredInquiries],
   );
   const selectedInquiry =
-    inquiries.find((item) => item.id === selectedInquiryId) ??
-    inquiries[0] ??
+    queuePage.items.find((item) => item.id === selectedInquiryId) ??
+    queuePage.items[0] ??
     null;
   const visibleSelectedInquiryId = selectedInquiry?.id ?? null;
   const queueCount =
@@ -87,7 +88,7 @@ export default function ConsultantDashboardPage() {
 
     navigate(createVisitTransitionPath(selectedInquiry.id), {
       state: {
-        returnTo: "/consultant/inquiries",
+        returnTo: `/consultant/inquiries${location.search}`,
         stateVersion: selectedInquiry.stateVersion,
         symptomSummary: selectedInquiry.symptomLabel,
       },
@@ -114,7 +115,7 @@ export default function ConsultantDashboardPage() {
         <div className="v6-page-head__meta">
           <span>고정 상담원 · 한유진</span>
           <span>공식 모델 · WPUJAC104DWH</span>
-          <span>담당·미배정 합성 문의 · {inquiries.length}건</span>
+          <span>담당·미배정 합성 문의 · {queuePage.totalItems}건</span>
         </div>
       </header>
 
@@ -155,12 +156,23 @@ export default function ConsultantDashboardPage() {
 
       <ConsultantQueue
         filters={filters}
-        inquiries={inquiries}
+        hasChangedConditions={hasChangedConditions}
+        inquiries={queuePage.items}
+        page={queuePage.currentPage}
         selectedInquiryId={visibleSelectedInquiryId}
+        totalItems={queuePage.totalItems}
+        totalPages={queuePage.totalPages}
         onFiltersChange={setFilters}
+        onPageChange={(page) => setFilters({ ...filters, page })}
+        onResetFilters={resetFilters}
         onSelectInquiry={(inquiryId) => {
           setSelectedInquiryId(inquiryId);
           setDetailTab("summary");
+          navigate(createInquiryDetailPath(inquiryId), {
+            state: {
+              returnTo: `/consultant/inquiries${location.search}`,
+            },
+          });
         }}
       >
         <ConsultantInquiryDetail
