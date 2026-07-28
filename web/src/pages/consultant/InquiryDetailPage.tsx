@@ -1,16 +1,20 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import {
   createVisitTransitionPath,
   ROUTE_PATHS,
 } from "../../app/router/routePaths";
+import PriorityBadge, {
+  type PriorityBadgeVariant,
+} from "../../common/components/badge/PriorityBadge";
+import RiskBadge, {
+  type RiskLevel,
+} from "../../common/components/badge/RiskBadge";
 import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import LoadingState from "../../common/components/feedback/LoadingState";
 import "./InquiryDetailPage.css";
-
-type RiskLevel = "GENERAL" | "CAUTION" | "DANGER";
 
 type AllowedAction =
   | "SAVE_RESPONSE_DRAFT"
@@ -44,8 +48,8 @@ interface InquiryDetail {
   questionnaireAnswer: string;
   currentStateLabel: string;
   riskLevel: RiskLevel;
-  riskLabel: string;
   priorityLabel: string;
+  priorityVariant: PriorityBadgeVariant;
   aiSummary: string;
   responseDraft: string;
   stateVersion: number;
@@ -68,9 +72,9 @@ const MOCK_INQUIRY_DETAILS: Record<string, InquiryDetail> = {
     questionnaireAnswer:
       "냉수와 정수 모두 출수량이 줄었으며, 제품 외부 누수는 확인되지 않았습니다.",
     currentStateLabel: "상담 필요",
-    riskLevel: "GENERAL",
-    riskLabel: "일반",
+    riskLevel: "general",
     priorityLabel: "보통",
+    priorityVariant: "default",
     aiSummary:
       "출수량 저하 문의입니다. 필터 사용 기간과 출수구 막힘 여부를 우선 확인하고, 해결되지 않을 경우 방문 점검 전환을 검토해 주세요.",
     responseDraft:
@@ -126,9 +130,9 @@ const MOCK_INQUIRY_DETAILS: Record<string, InquiryDetail> = {
     questionnaireAnswer:
       "제품 하단에서 물이 확인되었으며, 전원 플러그 주변에는 물이 닿지 않았습니다.",
     currentStateLabel: "상담 필요",
-    riskLevel: "DANGER",
-    riskLabel: "위험",
+    riskLevel: "danger",
     priorityLabel: "긴급",
+    priorityVariant: "urgent",
     aiSummary:
       "누수 의심 문의입니다. 고객에게 제품 사용 중지를 유지하도록 안내하고, 임의 분해나 부품 교체를 안내하지 마세요. 상담사 확인 후 방문 점검 전환이 필요합니다.",
     responseDraft:
@@ -180,9 +184,9 @@ const MOCK_INQUIRY_DETAILS: Record<string, InquiryDetail> = {
     questionnaireAnswer:
       "이전 안내에 따라 제품을 재시작했으나 증상이 다시 나타났습니다.",
     currentStateLabel: "문의 재개",
-    riskLevel: "CAUTION",
-    riskLabel: "주의",
+    riskLevel: "caution",
     priorityLabel: "높음",
+    priorityVariant: "high",
     aiSummary:
       "동일 증상이 재발한 문의입니다. 이전 상담 기록과 고객 조치 결과를 확인하고, 반복 안내보다 방문 점검 필요 여부를 우선 검토해 주세요.",
     responseDraft:
@@ -211,10 +215,6 @@ const MOCK_INQUIRY_DETAILS: Record<string, InquiryDetail> = {
   },
 };
 
-function getRiskClassName(riskLevel: RiskLevel): string {
-  return `inquiry-detail__badge inquiry-detail__badge--${riskLevel.toLowerCase()}`;
-}
-
 function getVerificationLabel(
   status: EvidenceItem["verificationStatus"],
 ): string {
@@ -233,13 +233,31 @@ export default function InquiryDetailPage() {
   const isLoadError = inquiryId === "DEMO-INQ-ERROR";
   const isForbidden = inquiryId === "DEMO-INQ-FORBIDDEN";
 
-  const [responseDraft, setResponseDraft] = useState("");
-  const [actionMessage, setActionMessage] = useState("");
+  const [responseDraftState, setResponseDraftState] = useState(() => ({
+    inquiryId,
+    value: inquiry?.responseDraft ?? "",
+  }));
+  const [actionMessageState, setActionMessageState] = useState(() => ({
+    inquiryId,
+    value: "",
+  }));
 
-  useEffect(() => {
-    setResponseDraft(inquiry?.responseDraft ?? "");
-    setActionMessage("");
-  }, [inquiry]);
+  const responseDraft =
+    responseDraftState.inquiryId === inquiryId
+      ? responseDraftState.value
+      : (inquiry?.responseDraft ?? "");
+  const actionMessage =
+    actionMessageState.inquiryId === inquiryId
+      ? actionMessageState.value
+      : "";
+
+  const setResponseDraft = (value: string) => {
+    setResponseDraftState({ inquiryId, value });
+  };
+
+  const setActionMessage = (value: string) => {
+    setActionMessageState({ inquiryId, value });
+  };
 
   if (isLoading) {
     return (
@@ -350,7 +368,7 @@ export default function InquiryDetailPage() {
         </button>
       </header>
 
-      {inquiry.riskLevel === "DANGER" && (
+      {inquiry.riskLevel === "danger" && (
         <section
           className="inquiry-detail__danger-alert"
           role="alert"
@@ -376,14 +394,15 @@ export default function InquiryDetailPage() {
         <article>
           <span>위험도</span>
 
-          <strong className={getRiskClassName(inquiry.riskLevel)}>
-            {inquiry.riskLabel}
-          </strong>
+          <RiskBadge level={inquiry.riskLevel} />
         </article>
 
         <article>
           <span>우선순위</span>
-          <strong>{inquiry.priorityLabel}</strong>
+          <PriorityBadge
+            label={inquiry.priorityLabel}
+            variant={inquiry.priorityVariant}
+          />
         </article>
 
         <article>
@@ -525,7 +544,7 @@ export default function InquiryDetailPage() {
           <span>{responseDraft.length}자</span>
         </div>
 
-        {inquiry.riskLevel === "DANGER" && (
+        {inquiry.riskLevel === "danger" && (
           <p className="inquiry-detail__response-warning">
             위험 문의는 일반 답변 발송보다 방문 전환을 우선
             검토해 주세요.

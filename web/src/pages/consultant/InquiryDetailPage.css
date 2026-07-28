@@ -85,29 +85,6 @@
   font-size: 13px;
 }
 
-.inquiry-detail__badge {
-  display: inline-flex;
-  align-self: flex-start;
-  padding: 5px 10px;
-  border-radius: 999px;
-  font-size: 13px;
-}
-
-.inquiry-detail__badge--general {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.inquiry-detail__badge--caution {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.inquiry-detail__badge--danger {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
 .inquiry-detail__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
