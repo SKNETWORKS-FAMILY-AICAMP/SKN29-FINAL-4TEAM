@@ -1,15 +1,81 @@
 import type {
+  CounselorAllowedAction,
   CounselorEvidence,
   CounselorInquiry,
 } from "./consultantWorkspaceTypes";
+
+const ACTIONS = {
+  START_CONSULTATION: {
+    code: "START_CONSULTATION",
+    label: "상담 시작",
+    operationId: "startConsultation",
+    style: "PRIMARY",
+    requiresConfirmation: false,
+    confirmationMessage: null,
+  },
+  UPDATE_CONSULTATION_SUMMARY: {
+    code: "UPDATE_CONSULTATION_SUMMARY",
+    label: "상담 기록 임시 저장",
+    operationId: "updateConsultationSummary",
+    style: "SECONDARY",
+    requiresConfirmation: false,
+    confirmationMessage: null,
+  },
+  CONFIRM_CONSULTATION_SUMMARY: {
+    code: "CONFIRM_CONSULTATION_SUMMARY",
+    label: "상담 요약 확정",
+    operationId: "confirmConsultationSummary",
+    style: "PRIMARY",
+    requiresConfirmation: true,
+    confirmationMessage: "수정한 상담 요약을 확정하시겠습니까?",
+  },
+  CONSULTATION_COMPLETED: {
+    code: "CONSULTATION_COMPLETED",
+    label: "상담 처리 완료",
+    operationId: "completeConsultation",
+    style: "PRIMARY",
+    requiresConfirmation: true,
+    confirmationMessage: "상담 처리를 완료하고 고객 확인 단계로 전환하시겠습니까?",
+  },
+  VISIT_REVIEW_REQUIRED: {
+    code: "VISIT_REVIEW_REQUIRED",
+    label: "방문 필요 여부 검토",
+    operationId: "requestVisitReview",
+    style: "SECONDARY",
+    requiresConfirmation: false,
+    confirmationMessage: null,
+  },
+  UPDATE_VISIT_SCHEDULE: {
+    code: "UPDATE_VISIT_SCHEDULE",
+    label: "방문 일정 조율",
+    operationId: "updateVisitSchedule",
+    style: "SECONDARY",
+    requiresConfirmation: false,
+    confirmationMessage: null,
+  },
+  CONFIRM_VISIT: {
+    code: "CONFIRM_VISIT",
+    label: "방문 일정 확정",
+    operationId: "confirmVisit",
+    style: "PRIMARY",
+    requiresConfirmation: true,
+    confirmationMessage: "담당 기사와 방문 일정을 확정하시겠습니까?",
+  },
+  FINALIZE_INQUIRY: {
+    code: "FINALIZE_INQUIRY",
+    label: "문의 최종 완료",
+    operationId: "finalizeInquiry",
+    style: "PRIMARY",
+    requiresConfirmation: true,
+    confirmationMessage: "고객 해결 확인을 검토하고 문의를 최종 완료하시겠습니까?",
+  },
+} as const satisfies Record<string, CounselorAllowedAction>;
 
 const OFFICIAL_EVIDENCE: CounselorEvidence = {
   documentTitle: "SK매직 WPU-JAC104D/JCC104D 사용설명서",
   summary:
     "순간온수 모듈 점검 문구가 표시되면 출수된 물을 음용하지 말고 전기 계통을 직접 수리하지 않은 채 상담합니다.",
   evidenceId: "EVD-JAC104D-MAN-P39-HOT-SAFETY",
-  chunkId: "MAN-WPU-JAC104D-P39-HOT-WATER-SAFETY",
-  documentId: "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
   documentVersion: "REV.00",
   page: 39,
   sectionTitle: "고장이라고 생각되면",
@@ -66,6 +132,7 @@ function createInquiry(
     aiOutcome: "안전 안내 준비 완료",
     aiSummaryOriginal: `${overrides.symptomLabel} 문의입니다. 고객 원문과 공식 근거를 상담 전에 확인해야 합니다.`,
     stateVersion: 1,
+    allowedActions: [],
     evidence: [OFFICIAL_EVIDENCE],
     timeline: [
       {
@@ -111,6 +178,7 @@ export const COUNSELOR_INQUIRIES: readonly CounselorInquiry[] = [
     aiOutcome: "위험 규칙 감지",
     aiSummaryOriginal:
       "온수 모듈 이상 문의입니다. 고객 원문과 공식 근거 페이지를 상담 전에 확인해야 합니다.",
+    allowedActions: [ACTIONS.FINALIZE_INQUIRY],
     updatedAt: "2026-07-22T14:20:00+09:00",
   }),
   createInquiry({
@@ -126,6 +194,7 @@ export const COUNSELOR_INQUIRIES: readonly CounselorInquiry[] = [
     usageStatus: "TOTAL_STOP",
     usageMessage: "안전을 위해 제품 전체 사용 중지를 유지해 주세요.",
     restrictedFunctions: ["전체 제품 사용"],
+    allowedActions: [ACTIONS.UPDATE_VISIT_SCHEDULE, ACTIONS.CONFIRM_VISIT],
     updatedAt: "2026-07-22T12:20:00+09:00",
   }),
   createInquiry({
@@ -138,6 +207,13 @@ export const COUNSELOR_INQUIRIES: readonly CounselorInquiry[] = [
     riskLevel: "CAUTION",
     priority: "HIGH",
     requiresConsultation: true,
+    // Mock Backend 응답값입니다. 화면은 status로 행동을 재계산하지 않습니다.
+    allowedActions: [
+      ACTIONS.UPDATE_CONSULTATION_SUMMARY,
+      ACTIONS.CONFIRM_CONSULTATION_SUMMARY,
+      ACTIONS.VISIT_REVIEW_REQUIRED,
+      ACTIONS.CONSULTATION_COMPLETED,
+    ],
     updatedAt: "2026-07-22T11:20:00+09:00",
   }),
   createInquiry({
@@ -162,6 +238,7 @@ export const COUNSELOR_INQUIRIES: readonly CounselorInquiry[] = [
     riskLevel: "GENERAL",
     priority: "NORMAL",
     requiresConsultation: true,
+    allowedActions: [ACTIONS.START_CONSULTATION],
     updatedAt: "2026-07-22T10:20:00+09:00",
   }),
   createInquiry({
