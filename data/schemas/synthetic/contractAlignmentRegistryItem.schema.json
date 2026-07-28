@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ContractAlignmentRegistryItem",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scenario_id",
+    "contract_alignment_status",
+    "blocker_ids",
+    "include_in_contract_projection",
+    "reason"
+  ],
+  "properties": {
+    "scenario_id": {
+      "type": "string",
+      "pattern": "^SYN-JAC104-[0-9]{3}$"
+    },
+    "contract_alignment_status": {
+      "type": "string",
+      "enum": [
+        "ALIGNED",
+        "BLOCKED_DECISION"
+      ]
+    },
+    "blocker_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^DEC-[A-Z0-9-]+$"
+      }
+    },
+    "include_in_contract_projection": {
+      "type": "boolean"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

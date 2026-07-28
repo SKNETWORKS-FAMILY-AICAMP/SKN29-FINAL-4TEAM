@@ -10,7 +10,67 @@ from typing import Any
 
 from .config import PipelineConfig
 from .e2e_validation import validate_representative_e2e
-from .io import json_bytes, read_json, read_jsonl, sha256_bytes
+from .io import ensure_within, json_bytes, read_json, read_jsonl, sha256_bytes, sha256_file
+
+
+def validate_service_contract_mapping(config: PipelineConfig) -> list[str]:
+    mapping = config.config("contract_mapping")
+    vocabulary = config.config("vocabulary")
+    repo_root = config.data_root.parent.resolve()
+    errors: list[str] = []
+
+    for source_name, source in mapping["contract_sources"].items():
+        try:
+            path = ensure_within(repo_root, repo_root / source["path"])
+        except ValueError:
+            errors.append(f"contract_source_path_escape:{source_name}")
+            continue
+        if not path.is_file():
+            errors.append(f"contract_source_missing:{source_name}:{source['path']}")
+            continue
+        actual_hash = sha256_file(path)
+        if actual_hash != source["sha256"]:
+            errors.append(
+                f"contract_source_hash_mismatch:{source_name}:"
+                f"{actual_hash}!={source['sha256']}"
+            )
+
+    if mapping["canonical_inquiry_statuses"] != vocabulary["inquiry_statuses"]:
+        errors.append("contract_mapping_inquiry_vocabulary_mismatch")
+    if mapping["canonical_visit_statuses"] != vocabulary["visit_statuses"]:
+        errors.append("contract_mapping_visit_vocabulary_mismatch")
+    return errors
+
+
+def validate_contract_alignment_registry(config: PipelineConfig) -> list[str]:
+    synthetic = config.config("synthetic")
+    mapping = config.config("contract_mapping")
+    registry = synthetic["materialized_outputs"]["contract_alignment_registry"]
+    errors: list[str] = []
+
+    scenario_ids = {row["scenario_id"] for row in synthetic["scenario_matrix"]}
+    registry_ids = {row["scenario_id"] for row in registry}
+    if registry_ids != scenario_ids or len(registry) != len(scenario_ids):
+        errors.append("contract_alignment_registry_scenario_mismatch")
+
+    expected_blocked: dict[str, list[str]] = {}
+    for decision in mapping["blocked_decisions"]:
+        for scenario_id in decision["affected_scenario_ids"]:
+            expected_blocked.setdefault(scenario_id, []).append(decision["id"])
+
+    for row in registry:
+        scenario_id = row["scenario_id"]
+        blocker_ids = sorted(row["blocker_ids"])
+        expected_ids = sorted(expected_blocked.get(scenario_id, []))
+        should_include = not expected_ids
+        if blocker_ids != expected_ids:
+            errors.append(f"contract_alignment_registry_blocker_mismatch:{scenario_id}")
+        if row["include_in_contract_projection"] != should_include:
+            errors.append(f"contract_alignment_registry_inclusion_mismatch:{scenario_id}")
+        expected_status = "ALIGNED" if should_include else "BLOCKED_DECISION"
+        if row["contract_alignment_status"] != expected_status:
+            errors.append(f"contract_alignment_registry_status_mismatch:{scenario_id}")
+    return errors
 
 
 def validate_configs(config: PipelineConfig) -> list[dict[str, Any]]:
@@ -54,6 +114,18 @@ def validate_configs(config: PipelineConfig) -> list[dict[str, Any]]:
         "usage_codes_present",
         bool(vocabulary["usage_guidance_statuses"]),
         ",".join(vocabulary["usage_guidance_statuses"]),
+    )
+    contract_mapping_errors = validate_service_contract_mapping(config)
+    add(
+        "service_contract_mapping",
+        not contract_mapping_errors,
+        ",".join(contract_mapping_errors) if contract_mapping_errors else "hashes_and_vocabularies_match",
+    )
+    alignment_registry_errors = validate_contract_alignment_registry(config)
+    add(
+        "contract_alignment_registry",
+        not alignment_registry_errors,
+        ",".join(alignment_registry_errors) if alignment_registry_errors else "blocked_scenarios_excluded",
     )
     danger_normal = [
         row["scenario_id"]
@@ -226,6 +298,8 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
     files_checked = 0
     records_checked = 0
     vocabulary = config.config("vocabulary")
+    errors.extend(validate_service_contract_mapping(config))
+    errors.extend(validate_contract_alignment_registry(config))
     risk_vocabulary = vocabulary["risk_levels"]
     usage_vocabulary = vocabulary["usage_guidance_statuses"]
     for name, codes in schema_risk_codes(config.data_root).items():

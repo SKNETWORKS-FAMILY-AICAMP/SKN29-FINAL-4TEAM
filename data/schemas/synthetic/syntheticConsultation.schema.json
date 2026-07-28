@@ -8,7 +8,7 @@
     "consultation_number",
     "inquiry_id",
     "sequence",
-    "counselor_id",
+    "consultant_id",
     "status",
     "outcome",
     "summary",
@@ -40,7 +40,7 @@
       "type": "integer",
       "minimum": 1
     },
-    "counselor_id": {
+    "consultant_id": {
       "type": [
         "string",
         "null"

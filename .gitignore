@@ -26,3 +26,6 @@ WaterCareAndroid/.gradle/
 WaterCareAndroid/local.properties
 WaterCareBackend/.env
 WaterCareBackend/.venv/
+
+# 은진 개인 설정
+AGENTS.md
