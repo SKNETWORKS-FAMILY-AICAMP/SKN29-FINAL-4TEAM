@@ -1,0 +1,26 @@
+.common-status-badge {
+  display: inline-flex;
+  padding: 5px 9px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.common-status-badge--default {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.common-status-badge--progress {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.common-status-badge--reopened {
+  background: #ede9fe;
+  color: #6d28d9;
+}
