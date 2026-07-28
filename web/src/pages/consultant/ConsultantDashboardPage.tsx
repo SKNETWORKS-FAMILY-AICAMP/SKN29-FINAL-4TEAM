@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { createInquiryDetailPath } from "../../app/router/routePaths";
+import EmptyState from "../../common/components/feedback/EmptyState";
 import "./ConsultantDashboardPage.css";
 
 type InquiryStatus =
@@ -106,6 +107,11 @@ export default function ConsultantDashboardPage() {
     navigate(createInquiryDetailPath(inquiryId));
   };
 
+  const handleResetFilters = () => {
+    setSearchKeyword("");
+    setSelectedRisk("ALL");
+  };
+
   return (
     <main className="consultant-dashboard">
       <header className="consultant-dashboard__header">
@@ -116,7 +122,7 @@ export default function ConsultantDashboardPage() {
         </div>
 
         <div className="consultant-dashboard__count">
-          전체 문의 <strong>{filteredInquiries.length}</strong>건
+          검색 결과 <strong>{filteredInquiries.length}</strong>건
         </div>
       </header>
 
@@ -126,6 +132,7 @@ export default function ConsultantDashboardPage() {
       >
         <label>
           <span>문의 검색</span>
+
           <input
             type="search"
             value={searchKeyword}
@@ -136,6 +143,7 @@ export default function ConsultantDashboardPage() {
 
         <label>
           <span>위험도</span>
+
           <select
             value={selectedRisk}
             onChange={(event) =>
@@ -152,10 +160,12 @@ export default function ConsultantDashboardPage() {
 
       <section className="consultant-dashboard__content">
         {filteredInquiries.length === 0 ? (
-          <div className="consultant-dashboard__empty">
-            <strong>검색 결과가 없습니다.</strong>
-            <p>검색어나 위험도 조건을 다시 확인해 주세요.</p>
-          </div>
+          <EmptyState
+            title="검색 결과가 없습니다."
+            description="검색어나 위험도 조건을 변경한 뒤 다시 확인해 주세요."
+            actionLabel="검색 조건 초기화"
+            onAction={handleResetFilters}
+          />
         ) : (
           <div className="consultant-dashboard__table-wrap">
             <table className="consultant-dashboard__table">
