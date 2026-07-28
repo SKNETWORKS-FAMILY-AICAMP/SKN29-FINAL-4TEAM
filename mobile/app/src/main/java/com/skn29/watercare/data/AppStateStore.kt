@@ -45,7 +45,7 @@ object AppStateStore {
 
         val (errorName, summary) = errorCatalog(errorCode)
         _inquiry.value = InquiryDraft(
-            state = InquiryState.ERROR_CONFIRMED,
+            state = InquiryState.AI_GUIDANCE,
             detection = ErrorDetectionResult(
                 entryMode = InquiryEntryMode.QR_SCAN,
                 productCode = productCode,
@@ -82,7 +82,7 @@ object AppStateStore {
         }
 
         _inquiry.value = InquiryDraft(
-            state = InquiryState.ERROR_CONFIRMED,
+            state = InquiryState.AI_GUIDANCE,
             detection = ErrorDetectionResult(
                 entryMode = InquiryEntryMode.QUESTIONNAIRE,
                 productCode = "WPUJAC104DWH",
