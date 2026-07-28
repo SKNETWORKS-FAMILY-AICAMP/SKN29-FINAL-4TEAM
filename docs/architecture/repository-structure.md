@@ -450,286 +450,174 @@ correlation_id      # 웹→백엔드→AI 처리 흐름 추적
 
 # 4. Mobile 디렉토리 세부 구조
 
-## 4.1 담당 앱과 화면
+## 4.1 구성 원칙
 
-모바일 영역은 고객과 방문기사가 서로 다른 목적과 권한으로 사용하므로, 하나의 앱에서 역할에 따라 화면을 분기하지 않고 **고객용 앱과 방문기사용 앱을 각각 독립된 Android 애플리케이션으로 구성한다.**
+모바일 영역은 하나의 Gradle 프로젝트 안에서 다음 세 모듈로 구성한다.
+
+```text
+mobile/
+├─ customer-app/       # 고객용 Android 애플리케이션
+├─ technician-app/     # 방문기사용 Android 애플리케이션
+└─ core/               # 두 앱이 공유하는 순수 Kotlin 모듈
+```
+
+고객과 방문기사는 사용자 목적, 권한, 화면 흐름과 배포 단위가 다르므로 각각 독립된 애플리케이션 모듈을 사용한다. 두 앱은 별도의 APK 또는 AAB로 빌드하며 서로의 소스 코드에 직접 의존하지 않는다.
+
+| 모듈 | 유형 | 기본 패키지·식별자 | 담당 범위 |
+|---|---|---|---|
+| `customer-app` | Android Application | `com.skn29.watercare` | 고객용 CUST-01~06 화면, QR·OCR, 고객 위치 조회, 지도 표시 |
+| `technician-app` | Android Application | `com.skn29.watercare.technician` | 방문기사용 TECH-01~03 화면, 기사 GPS 수집·업로드 |
+| `core` | Kotlin/JVM Library | `com.skn29.watercare` | 공통 모델, 문의 상태 및 상태 전이 규칙 |
+
+모듈 의존 방향은 다음과 같다.
+
+```text
+customer-app ───┐
+                ├──> core
+technician-app ─┘
+```
+
+- `customer-app`과 `technician-app`은 서로를 참조하지 않는다.
+- `core`는 Android UI, Activity, Compose, 위치 권한과 같은 플랫폼 코드에 의존하지 않는다.
+- 두 앱에서 함께 사용하는 순수 Kotlin 모델과 업무 규칙만 `core`에 둔다.
+- 고객 위치 조회와 기사 위치 업로드는 각각의 앱 모듈에서 독립적으로 처리한다.
+- 두 앱 사이의 업무 상태와 위치 정보는 로컬 메모리가 아니라 백엔드 API를 통해 공유한다.
+
+## 4.2 담당 화면
 
 ### 고객용 앱
 
 | 화면 ID | 화면 |
 |---|---|
 | `CUST-01` | 고객 홈 |
-| `CUST-02` | 사전 문진·증상 입력 |
-| `CUST-03` | AI 추가 질문 |
-| `CUST-04` | 공식 근거·안전 안내 |
-| `CUST-05` | 자가조치 결과·상담 요청 |
-| `CUST-06` | 문의 상태·처리 결과·후속 확인 |
+| `CUST-02` | QR 확인·사전 문진·증상 입력 |
+| `CUST-03` | 추가 질문 및 증상 보완 |
+| `CUST-04` | 오류 확인 결과·공식 근거·안전 안내 |
+| `CUST-05` | 방문 요청 및 자가조치 결과 처리 |
+| `CUST-06` | 방문 접수 상태·기사 이동 현황·후속 확인 |
+
+고객용 화면은 `WaterCareApp.kt`의 Navigation Graph에서 관리하며, 현재 화면 구현은 `ui/customer/CustomerScreens.kt`에 모아 둔다.
 
 ### 방문기사용 앱
 
-| 화면 ID | 화면 |
-|---|---|
-| `TECH-01` | 기사 업무 목록 |
-| `TECH-02` | 방문 상세·사전 점검 리포트 |
-| `TECH-03` | 방문 결과 등록 |
+| 화면 ID | 화면 | 구현 파일 |
+|---|---|---|
+| `TECH-01` | 기사 업무 목록 | `feature/worklist/TechnicianWorkListScreen.kt` |
+| `TECH-02` | 방문 상세·사전 점검 정보 | `feature/visitdetail/VisitDetailScreen.kt` |
+| `TECH-03` | 방문 결과 등록 | `feature/visitresult/VisitResultScreen.kt` |
 
-## 4.2 구조 선택
-
-현재 MVP에서는 **고객용 `customer-app` 모듈 + 방문기사용 `technician-app` 모듈 + 공통 `core` 모듈** 구조를 사용한다.
-
-```text
-mobile/                                             # Kotlin·Jetpack Compose Android 프로젝트
-├─ customer-app/                                    # 고객용 Android 애플리케이션 모듈
-├─ technician-app/                                  # 방문기사용 Android 애플리케이션 모듈
-└─ core/                                            # 두 앱이 공유하는 Android Library 모듈
-```
-
-각 앱은 별도의 APK 또는 AAB로 빌드하며, 앱 식별자와 실행 진입점도 분리한다.
-
-```text
-customer-app
-├─ applicationId: com.skn29.watercare.customer
-└─ 담당 화면: CUST-01~06
-
-technician-app
-├─ applicationId: com.skn29.watercare.technician
-└─ 담당 화면: TECH-01~03
-```
-
-모듈 의존 방향은 다음과 같다.
-
-```text
-customer-app ───┐
-                ├─> core
-technician-app ─┘
-```
-
-- `customer-app`과 `technician-app`은 서로의 소스에 직접 의존하지 않는다.
-- 두 애플리케이션 모듈은 공통 네트워크·저장소·디자인 시스템·공통 모델이 필요한 경우에만 `core`를 사용한다.
-- `core`는 두 애플리케이션 모듈을 참조하지 않는다.
-- 고객 화면과 기사 화면을 동일 앱의 역할 분기로 합치지 않는다.
-- 고객 앱에는 기사 화면과 기사 Navigation을 포함하지 않는다.
-- 기사 앱에는 고객 화면과 고객 Navigation을 포함하지 않는다.
-
-초기 MVP에서는 다음과 같은 과도한 다중 모듈 구조를 사용하지 않는다.
-
-```text
-사용하지 않는 구조
-├─ feature-home/                                    # 화면 기능마다 별도 Gradle 모듈 생성
-├─ feature-guidance/                                # 고객 기능마다 별도 Gradle 모듈 생성
-├─ feature-visit/                                   # 기사 기능마다 별도 Gradle 모듈 생성
-├─ core-network/                                    # 공통 기능을 여러 Gradle 모듈로 세분화
-├─ core-designsystem/                               # 디자인 시스템 전용 별도 Gradle 모듈
-└─ 모든 기능의 data/domain/presentation 선생성     # 실제 코드 없이 빈 계층만 생성
-```
-
-기능별 디렉토리에는 우선 화면, ViewModel, UI 상태 파일을 함께 둔다.
-
-```text
-customer-app/src/main/java/com/skn29/watercare/customer/feature/home/
-├─ CustomerHomeScreen.kt
-├─ CustomerHomeViewModel.kt
-└─ CustomerHomeUiState.kt
-```
-
-API DTO, Repository, UseCase 등 독립 계층이 실제로 필요해지는 기능만 이후에 `data/`, `domain/`, `presentation/`으로 분리한다.
+방문기사용 화면은 `TechnicianNavigation.kt`에서 독립적으로 관리한다.
 
 ## 4.3 상세 구조
 
 ```text
-mobile/                                             # Kotlin·Jetpack Compose Android 프로젝트
+mobile/                                                     # Kotlin·Jetpack Compose Android 프로젝트
 │
-├─ customer-app/                                    # 고객용 Android 애플리케이션 모듈
-│  ├─ src/                                         # 고객 앱 운영·테스트 Source Set
-│  │  ├─ main/                                     # 고객 앱 운영 코드와 Android 리소스
-│  │  │  ├─ java/com/skn29/watercare/customer/     # 고객 앱 Kotlin 기본 패키지
+├─ customer-app/                                            # 고객용 Android 애플리케이션 모듈
+│  ├─ src/
+│  │  ├─ main/
+│  │  │  ├─ java/com/skn29/watercare/
+│  │  │  │  ├─ MainActivity.kt                             # 고객 앱 Compose 실행 Activity
+│  │  │  │  ├─ WaterPurifierDealerApplication.kt           # 고객 앱 Application·카카오맵 초기화
 │  │  │  │  │
-│  │  │  │  ├─ app/                                # 고객 앱 시작·세션·Navigation 구성
-│  │  │  │  │  ├─ CustomerApplication.kt          # 고객 앱 Android Application 진입점
-│  │  │  │  │  ├─ CustomerMainActivity.kt         # 고객 앱 Compose UI 실행 Activity
-│  │  │  │  │  ├─ navigation/                     # CUST-01~06 화면 이동 구조
-│  │  │  │  │  │  ├─ CustomerAppNavigation.kt     # 고객 앱 전체 Navigation Graph
-│  │  │  │  │  │  ├─ CustomerAuthNavigation.kt    # 고객 로그인·세션 확인 흐름
-│  │  │  │  │  │  └─ CustomerRoute.kt             # 고객 화면 목적지와 경로 타입
-│  │  │  │  │  ├─ CustomerSession.kt              # 고객 ID·로그인 상태
-│  │  │  │  │  ├─ CustomerSessionManager.kt       # 고객 세션 조회·갱신·초기화
-│  │  │  │  │  └─ CustomerAppConfig.kt            # API 주소·고객 앱 빌드 환경 설정
+│  │  │  │  ├─ camera/
+│  │  │  │  │  └─ KoreanOcr.kt                             # 제품·오류 정보 한글 OCR
 │  │  │  │  │
-│  │  │  │  └─ feature/                            # 고객용 CUST-01~06 기능 코드
-│  │  │  │     ├─ auth/                            # 고객 가상 로그인·로그아웃
-│  │  │  │     │  ├─ CustomerLoginScreen.kt        # 고객 로그인 Compose 화면
-│  │  │  │     │  ├─ CustomerLoginViewModel.kt     # 고객 로그인 요청·상태 관리
-│  │  │  │     │  └─ CustomerLoginUiState.kt       # 고객 로그인 화면 상태
-│  │  │  │     │
-│  │  │  │     ├─ home/                            # CUST-01 고객 홈
-│  │  │  │     │  ├─ CustomerHomeScreen.kt         # 제품·케어·진행 문의 화면
-│  │  │  │     │  ├─ CustomerHomeViewModel.kt      # 고객 홈 데이터 조회·상태 관리
-│  │  │  │     │  └─ CustomerHomeUiState.kt        # 고객 홈 화면 상태
-│  │  │  │     │
-│  │  │  │     ├─ intake/                          # CUST-02 문진·증상 입력
-│  │  │  │     │  ├─ SymptomIntakeScreen.kt        # 사전 문진·증상 입력 화면
-│  │  │  │     │  ├─ SymptomIntakeViewModel.kt     # 임시 저장·증상 제출 처리
-│  │  │  │     │  └─ SymptomIntakeUiState.kt       # 문진·증상 입력 화면 상태
-│  │  │  │     │
-│  │  │  │     ├─ followup/                        # CUST-03 AI 추가 질문
-│  │  │  │     │  ├─ FollowUpQuestionScreen.kt     # 추가 질문과 답변 입력 화면
-│  │  │  │     │  ├─ FollowUpQuestionViewModel.kt  # 질문 조회·답변 제출 처리
-│  │  │  │     │  └─ FollowUpQuestionUiState.kt    # 추가 질문 화면 상태
-│  │  │  │     │
-│  │  │  │     ├─ guidance/                        # CUST-04 공식 근거·안전 안내
-│  │  │  │     │  ├─ GuidanceScreen.kt             # 위험도·사용 안내·공식 근거 화면
-│  │  │  │     │  ├─ GuidanceViewModel.kt          # 분석 결과·근거 조회 처리
-│  │  │  │     │  └─ GuidanceUiState.kt            # 안내 화면 상태
-│  │  │  │     │
-│  │  │  │     ├─ actionresult/                    # CUST-05 자가조치 결과·상담 요청
-│  │  │  │     │  ├─ ActionResultScreen.kt         # 조치 수행 여부·결과 입력 화면
-│  │  │  │     │  ├─ ActionResultViewModel.kt      # 결과 저장·상담 요청 처리
-│  │  │  │     │  └─ ActionResultUiState.kt        # 조치 결과 화면 상태
-│  │  │  │     │
-│  │  │  │     └─ inquirydetail/                   # CUST-06 문의 상세·후속 확인
-│  │  │  │        ├─ InquiryDetailScreen.kt        # 처리 결과·상태 이력·해결 피드백 화면
-│  │  │  │        ├─ InquiryDetailViewModel.kt     # 문의 조회·해결 여부·재개 처리
-│  │  │  │        └─ InquiryDetailUiState.kt       # 문의 상세 화면 상태
+│  │  │  │  ├─ data/
+│  │  │  │  │  └─ AppStateStore.kt                         # 고객 문의 작성·화면 흐름 상태
+│  │  │  │  │
+│  │  │  │  ├─ tracking/
+│  │  │  │  │  ├─ CustomerTrackingPoller.kt                # 기사 위치 주기 조회
+│  │  │  │  │  ├─ CustomerVisitTrackingApi.kt              # 최근 기사 위치 조회 API
+│  │  │  │  │  ├─ KakaoDirectionsClient.kt                 # 이동 경로 조회
+│  │  │  │  │  └─ TrackingRepository.kt                    # 고객 화면용 위치 추적 상태
+│  │  │  │  │
+│  │  │  │  ├─ ui/
+│  │  │  │  │  ├─ Routes.kt                                # 고객 화면 Route 상수
+│  │  │  │  │  ├─ WaterCareApp.kt                          # 고객 앱 Navigation Graph
+│  │  │  │  │  ├─ customer/
+│  │  │  │  │  │  └─ CustomerScreens.kt                    # CUST-01~06 Compose 화면
+│  │  │  │  │  ├─ map/
+│  │  │  │  │  │  ├─ DemoTrackingMap.kt                    # 지도 SDK 미사용 시 시연 지도
+│  │  │  │  │  │  └─ KakaoTrackingMap.kt                   # 카카오맵 기반 기사 위치 화면
+│  │  │  │  │  ├─ shared/
+│  │  │  │  │  │  └─ CommonComponents.kt                   # 고객 앱 공통 Composable
+│  │  │  │  │  └─ theme/
+│  │  │  │  │     └─ Theme.kt                              # 고객 앱 Material Theme
+│  │  │  │  │
+│  │  │  │  └─ util/
+│  │  │  │     └─ AppKeyHashLogger.kt                       # 카카오 앱 키 해시 확인
 │  │  │  │
-│  │  │  ├─ res/                                   # 고객 앱 전용 Android 리소스
-│  │  │  │  ├─ drawable/                           # 고객 화면 벡터 아이콘·배경
-│  │  │  │  ├─ mipmap/                             # 고객 앱 런처 아이콘
-│  │  │  │  ├─ values/                             # 고객 앱 문자열·테마 설정
-│  │  │  │  └─ xml/                                # 고객 앱 네트워크 보안·백업 설정
-│  │  │  └─ AndroidManifest.xml                    # 고객 앱 권한·Application·Activity 선언
-│  │  │
-│  │  ├─ test/                                     # 고객 앱 JVM 단위 테스트
-│  │  │  └─ java/com/skn29/watercare/customer/     # 고객 ViewModel·변환·검증 테스트
-│  │  └─ androidTest/                              # 고객 앱 기기·에뮬레이터 테스트
-│  │     └─ java/com/skn29/watercare/customer/     # 고객 Compose UI·Navigation 테스트
-│  │
-│  ├─ build.gradle.kts                             # 고객 앱 Application ID·의존성·빌드 설정
-│  ├─ proguard-rules.pro                           # 고객 앱 Release 난독화·최적화 규칙
-│  └─ README.md                                    # 고객 앱 구조·실행·테스트 안내
+│  │  │  ├─ res/                                            # 고객 앱 아이콘·문자열·테마·지도 리소스
+│  │  │  └─ AndroidManifest.xml                             # 고객 앱 권한·Application·Activity
+│  │  ├─ test/                                              # 고객 앱 JVM 단위 테스트
+│  │  └─ androidTest/                                       # 고객 앱 기기·Compose UI 테스트
+│  ├─ build.gradle.kts                                      # 고객 앱 빌드·의존성·BuildConfig
+│  ├─ proguard-rules.pro                                    # Release 난독화 규칙
+│  └─ README.md                                             # 고객 앱 실행·구조 안내
 │
-├─ technician-app/                                # 방문기사용 Android 애플리케이션 모듈
-│  ├─ src/                                         # 기사 앱 운영·테스트 Source Set
-│  │  ├─ main/                                     # 기사 앱 운영 코드와 Android 리소스
-│  │  │  ├─ java/com/skn29/watercare/technician/   # 기사 앱 Kotlin 기본 패키지
+├─ technician-app/                                         # 방문기사용 Android 애플리케이션 모듈
+│  ├─ src/
+│  │  ├─ main/
+│  │  │  ├─ java/com/skn29/watercare/technician/
+│  │  │  │  ├─ TechnicianApplication.kt                    # 기사 앱 Application
+│  │  │  │  ├─ TechnicianMainActivity.kt                   # 기사 앱 Compose 실행 Activity
 │  │  │  │  │
-│  │  │  │  ├─ app/                                # 기사 앱 시작·세션·Navigation 구성
-│  │  │  │  │  ├─ TechnicianApplication.kt        # 기사 앱 Android Application 진입점
-│  │  │  │  │  ├─ TechnicianMainActivity.kt       # 기사 앱 Compose UI 실행 Activity
-│  │  │  │  │  ├─ navigation/                     # TECH-01~03 화면 이동 구조
-│  │  │  │  │  │  ├─ TechnicianAppNavigation.kt   # 기사 앱 전체 Navigation Graph
-│  │  │  │  │  │  ├─ TechnicianAuthNavigation.kt  # 기사 로그인·세션 확인 흐름
-│  │  │  │  │  │  └─ TechnicianRoute.kt           # 기사 화면 목적지와 경로 타입
-│  │  │  │  │  ├─ TechnicianSession.kt            # 기사 ID·로그인 상태
-│  │  │  │  │  ├─ TechnicianSessionManager.kt     # 기사 세션 조회·갱신·초기화
-│  │  │  │  │  └─ TechnicianAppConfig.kt          # API 주소·기사 앱 빌드 환경 설정
+│  │  │  │  ├─ app/navigation/
+│  │  │  │  │  ├─ TechnicianNavigation.kt                  # TECH-01~03 Navigation Graph
+│  │  │  │  │  └─ TechnicianRoute.kt                       # 기사 화면 Route
 │  │  │  │  │
-│  │  │  │  └─ feature/                            # 방문기사용 TECH-01~03 기능 코드
-│  │  │  │     ├─ auth/                            # 기사 가상 로그인·로그아웃
-│  │  │  │     │  ├─ TechnicianLoginScreen.kt      # 기사 로그인 Compose 화면
-│  │  │  │     │  ├─ TechnicianLoginViewModel.kt   # 기사 로그인 요청·상태 관리
-│  │  │  │     │  └─ TechnicianLoginUiState.kt     # 기사 로그인 화면 상태
-│  │  │  │     │
-│  │  │  │     ├─ worklist/                        # TECH-01 기사 업무 목록
-│  │  │  │     │  ├─ TechnicianWorkListScreen.kt   # 배정 방문 목록·필터 화면
-│  │  │  │     │  ├─ TechnicianWorkListViewModel.kt # 방문 목록 조회·정렬 처리
-│  │  │  │     │  └─ TechnicianWorkListUiState.kt  # 기사 업무 목록 화면 상태
-│  │  │  │     │
-│  │  │  │     ├─ visitdetail/                     # TECH-02 방문 상세·사전 리포트
-│  │  │  │     │  ├─ VisitDetailScreen.kt          # 방문 정보·근거·사전 리포트 화면
-│  │  │  │     │  ├─ VisitDetailViewModel.kt       # 방문 조회·방문 시작 처리
-│  │  │  │     │  └─ VisitDetailUiState.kt         # 방문 상세 화면 상태
-│  │  │  │     │
-│  │  │  │     └─ visitresult/                     # TECH-03 방문 결과 등록
-│  │  │  │        ├─ VisitResultScreen.kt          # 원인·조치·교체·처리 상태 입력 화면
-│  │  │  │        ├─ VisitResultViewModel.kt       # 결과 임시 저장·완료 처리
-│  │  │  │        └─ VisitResultUiState.kt         # 방문 결과 화면 상태
+│  │  │  │  ├─ feature/
+│  │  │  │  │  ├─ worklist/
+│  │  │  │  │  │  └─ TechnicianWorkListScreen.kt           # TECH-01 기사 업무 목록
+│  │  │  │  │  ├─ visitdetail/
+│  │  │  │  │  │  └─ VisitDetailScreen.kt                  # TECH-02 방문 상세
+│  │  │  │  │  └─ visitresult/
+│  │  │  │  │     └─ VisitResultScreen.kt                  # TECH-03 방문 결과 등록
+│  │  │  │  │
+│  │  │  │  ├─ tracking/
+│  │  │  │  │  ├─ TechnicianLocationTracker.kt             # 기사 단말 GPS 수집
+│  │  │  │  │  ├─ TechnicianTrackingCoordinator.kt         # 위치 수집·전송 주기 조정
+│  │  │  │  │  └─ TechnicianVisitTrackingApi.kt            # 기사 위치 백엔드 업로드
+│  │  │  │  │
+│  │  │  │  └─ ui/theme/
+│  │  │  │     └─ Theme.kt                                  # 기사 앱 Material Theme
 │  │  │  │
-│  │  │  ├─ res/                                   # 기사 앱 전용 Android 리소스
-│  │  │  │  ├─ drawable/                           # 기사 화면 벡터 아이콘·배경
-│  │  │  │  ├─ mipmap/                             # 기사 앱 런처 아이콘
-│  │  │  │  ├─ values/                             # 기사 앱 문자열·테마 설정
-│  │  │  │  └─ xml/                                # 기사 앱 네트워크 보안·백업 설정
-│  │  │  └─ AndroidManifest.xml                    # 기사 앱 권한·Application·Activity 선언
-│  │  │
-│  │  ├─ test/                                     # 기사 앱 JVM 단위 테스트
-│  │  │  └─ java/com/skn29/watercare/technician/   # 기사 ViewModel·변환·검증 테스트
-│  │  └─ androidTest/                              # 기사 앱 기기·에뮬레이터 테스트
-│  │     └─ java/com/skn29/watercare/technician/   # 기사 Compose UI·Navigation 테스트
-│  │
-│  ├─ build.gradle.kts                             # 기사 앱 Application ID·의존성·빌드 설정
-│  ├─ proguard-rules.pro                           # 기사 앱 Release 난독화·최적화 규칙
-│  └─ README.md                                    # 기사 앱 구조·실행·테스트 안내
+│  │  │  ├─ res/                                            # 기사 앱 문자열·테마 리소스
+│  │  │  └─ AndroidManifest.xml                             # 기사 앱 위치 권한·Activity
+│  │  ├─ test/                                              # 기사 앱 JVM 단위 테스트
+│  │  └─ androidTest/                                       # 기사 앱 기기·Compose UI 테스트
+│  ├─ build.gradle.kts                                      # 기사 앱 빌드·의존성·BuildConfig
+│  ├─ proguard-rules.pro                                    # Release 난독화 규칙
+│  └─ README.md                                             # 기사 앱 실행·구조 안내
 │
-├─ core/                                            # 두 앱이 공유하는 Android Library 모듈
-│  ├─ src/                                         # 공통 운영·테스트 Source Set
-│  │  ├─ main/                                     # 공통 Kotlin 코드와 Android 리소스
-│  │  │  ├─ java/com/skn29/watercare/core/         # 공통 코드 기본 패키지
-│  │  │  │  ├─ network/                            # `/api/v1` REST API 공통 통신
-│  │  │  │  │  ├─ ApiClient.kt                    # 백엔드 API 요청 Client
-│  │  │  │  │  ├─ ApiResponse.kt                  # success·data·error 공통 Wrapper
-│  │  │  │  │  ├─ ApiError.kt                     # 업무 오류 코드·사용자 메시지 모델
-│  │  │  │  │  ├─ Pagination.kt                   # page·size·total 목록 응답 모델
-│  │  │  │  │  ├─ AuthInterceptor.kt              # JWT 인증 Header 처리
-│  │  │  │  │  └─ TraceInterceptor.kt             # correlation_id·멱등성 Header 처리
-│  │  │  │  │
-│  │  │  │  ├─ storage/                            # 두 앱의 기기 내부 최소 상태 저장 기반
-│  │  │  │  │  ├─ SessionStorage.kt               # 토큰·사용자·역할 정보 저장 인터페이스
-│  │  │  │  │  └─ DraftStorage.kt                 # 작성 중 입력 임시 보존 인터페이스
-│  │  │  │  │
-│  │  │  │  ├─ designsystem/                       # 두 앱이 공유하는 Jetpack Compose UI
-│  │  │  │  │  ├─ theme/                          # 색상·글꼴·크기·Material Theme
-│  │  │  │  │  ├─ component/                      # 버튼·입력·카드·배지·모달
-│  │  │  │  │  └─ feedback/                       # 로딩·빈 상태·오류·성공 UI
-│  │  │  │  │
-│  │  │  │  ├─ component/                          # 고객·기사 앱 공통 업무 UI
-│  │  │  │  │  ├─ EvidenceCard.kt                 # 공식 근거 요약·출처 버튼 카드
-│  │  │  │  │  ├─ ProductInfoCard.kt              # 제품·구독·관리 이력 카드
-│  │  │  │  │  ├─ StatusBadge.kt                  # 문의·방문·위험 상태 배지
-│  │  │  │  │  ├─ StatusTimeline.kt               # 상태 변경 이력 타임라인
-│  │  │  │  │  └─ WorkflowActionButton.kt         # allowed_actions 기반 행동 버튼
-│  │  │  │  │
-│  │  │  │  ├─ navigation/                         # 두 앱에서 공통으로 사용하는 전달 인자
-│  │  │  │  │  └─ NavigationArgument.kt           # inquiryId·visitId 등 전달 인자
-│  │  │  │  │
-│  │  │  │  ├─ model/                              # 두 앱에서 공유하는 기본 모델
-│  │  │  │  │  ├─ UserRole.kt                     # CUSTOMER·TECHNICIAN 역할
-│  │  │  │  │  ├─ RiskLevel.kt                    # general·caution·danger 위험도
-│  │  │  │  │  ├─ WorkflowState.kt                # 문의·방문 상태 표현 모델
-│  │  │  │  │  └─ DataClassification.kt           # official·team_designed·synthetic
-│  │  │  │  │
-│  │  │  │  ├─ platform/                           # Android 플랫폼 기능 래퍼
-│  │  │  │  │  ├─ ExternalBrowser.kt              # 공식 출처 URL 외부 열기
-│  │  │  │  │  └─ NetworkMonitor.kt               # 네트워크 연결 상태 확인
-│  │  │  │  │
-│  │  │  │  └─ util/                               # 공통 변환·검증 도구
-│  │  │  │     ├─ DateFormatter.kt                 # ISO 8601 날짜·시간 표시 변환
-│  │  │  │     └─ IdentifierValidator.kt           # inquiryId·visitId 등 식별자 검증
-│  │  │  │
-│  │  │  ├─ res/                                   # 두 앱이 공유하는 Android 리소스
-│  │  │  │  ├─ drawable/                           # 공통 벡터 아이콘·배경
-│  │  │  │  └─ values/                             # 공통 문자열·색상·테마 토큰
-│  │  │  └─ AndroidManifest.xml                    # Android Library 최소 Manifest
-│  │  │
-│  │  └─ test/                                     # 공통 코드 JVM 단위 테스트
-│  │     └─ java/com/skn29/watercare/core/         # 네트워크·모델·유틸리티 테스트
-│  │
-│  ├─ build.gradle.kts                             # Android Library 플러그인·공통 의존성 설정
-│  └─ README.md                                    # 공통 모듈 책임·사용 규칙
+├─ core/                                                    # 두 앱이 공유하는 순수 Kotlin/JVM 모듈
+│  ├─ src/
+│  │  ├─ main/kotlin/com/skn29/watercare/
+│  │  │  ├─ model/
+│  │  │  │  └─ Models.kt                                   # 문의·방문·위치 공통 모델
+│  │  │  └─ domain/
+│  │  │     └─ InquiryStateMachine.kt                       # 문의 상태 전이 규칙
+│  │  └─ test/kotlin/                                       # 공통 모델·상태 전이 단위 테스트
+│  ├─ build.gradle.kts                                      # Kotlin/JVM·JDK 17 설정
+│  └─ README.md                                             # 공통 모듈 책임과 사용 규칙
 │
-├─ gradle/                                         # Gradle Wrapper와 Version Catalog
-│  ├─ wrapper/                                     # Gradle Wrapper 실행 파일
-│  └─ libs.versions.toml                           # Android·Kotlin 의존성 버전 중앙 관리
-├─ build.gradle.kts                                # 프로젝트 공통 Gradle 설정
-├─ settings.gradle.kts                             # customer-app·technician-app·core 모듈 등록
-├─ gradle.properties                               # 공통 Gradle·Android 빌드 옵션
-├─ gradlew                                         # macOS·Linux용 Gradle 실행 파일
-├─ gradlew.bat                                     # Windows CMD용 Gradle 실행 파일
-├─ local.properties.example                        # SDK 경로·로컬 개발 설정 예시
-├─ .gitignore                                      # APK·AAB·빌드 결과·로컬 설정 제외
-└─ README.md                                       # 두 앱의 설치·실행·빌드·테스트 안내
+├─ gradle/wrapper/                                          # Gradle Wrapper
+├─ build.gradle.kts                                         # 프로젝트 공통 Plugin 버전
+├─ settings.gradle.kts                                      # 세 모듈 등록과 Repository 설정
+├─ gradle.properties                                        # Gradle·Android 공통 설정
+├─ gradlew                                                  # macOS·Linux Gradle 실행 파일
+├─ gradlew.bat                                              # Windows Gradle 실행 파일
+├─ bootstrap-wrapper.bat                                    # Windows Wrapper JAR 준비
+├─ bootstrap-wrapper.sh                                     # macOS·Linux Wrapper JAR 준비
+├─ local.properties.example                                 # SDK·API 주소·카카오 키 예시
+├─ setup-local-properties.bat                               # Windows 로컬 SDK 설정
+├─ verify-build.bat                                         # 세 모듈 통합 빌드 검증
+├─ .gitignore                                               # 로컬 설정·빌드 결과 제외
+└─ README.md                                                # 모바일 프로젝트 실행 안내
 ```
 
-### Gradle 모듈 등록
+## 4.4 Gradle 모듈 설정
 
 `settings.gradle.kts`에는 다음 세 모듈을 등록한다.
 
@@ -739,7 +627,7 @@ include(":technician-app")
 include(":core")
 ```
 
-각 애플리케이션 모듈은 `core`에만 의존한다.
+두 애플리케이션 모듈은 `core`에 의존한다.
 
 ```kotlin
 // customer-app/build.gradle.kts
@@ -749,277 +637,167 @@ implementation(project(":core"))
 implementation(project(":core"))
 ```
 
-### 앱별 빌드 기준
+`core`는 Android Library가 아닌 순수 Kotlin/JVM 모듈로 유지한다.
+
+```kotlin
+plugins {
+    id("org.jetbrains.kotlin.jvm")
+}
+
+kotlin {
+    jvmToolchain(17)
+}
+```
+
+모바일 프로젝트의 기본 빌드 기준은 다음과 같다.
+
+| 항목 | 기준 |
+|---|---|
+| Java·Kotlin JVM Toolchain | JDK 17 |
+| Android 최소 버전 | `minSdk = 26` |
+| Android 컴파일 버전 | `compileSdk = 37` |
+| Android 대상 버전 | `targetSdk = 37` |
+| UI | Jetpack Compose·Material 3 |
+| 고객 앱 지도 | Kakao Maps SDK |
+| 위치 정보 | Google Play Services Location |
+
+## 4.5 고객 앱 Navigation과 상태 관리
+
+고객 앱의 Navigation은 `Routes.kt`와 `WaterCareApp.kt`에서 관리한다.
 
 ```text
-고객 앱 Debug APK
+customer/home
+├─ customer/qr-scan
+├─ customer/questionnaire
+├─ customer/error-result
+├─ customer/visit-status
+└─ customer/tracking
+```
+
+- Route 문자열은 `Routes.kt`에서만 정의한다.
+- `WaterCareApp.kt`는 고객 앱의 화면 등록과 화면 간 이동만 담당한다.
+- 고객 화면은 기사 앱 Route를 포함하지 않는다.
+- 고객 문의 작성 상태는 `AppStateStore.kt`에서 관리한다.
+- 기사 위치 화면 상태는 `TrackingRepository.kt`에서 관리한다.
+- 백엔드에서 조회할 수 있는 데이터와 작성 중 입력 상태를 구분한다.
+- 앱 재실행 이후에도 보존해야 하는 입력은 향후 영속 저장소로 이전한다.
+- 고객 앱은 기사 GPS를 직접 수집하지 않고 백엔드에서 최신 위치를 조회한다.
+
+## 4.6 방문기사 앱 Navigation과 위치 추적
+
+기사 앱의 Navigation은 다음 세 Route로 구성한다.
+
+```text
+work-list
+└─ visit-detail/{visitId}
+   └─ visit-result/{visitId}
+```
+
+- `TechnicianRoute.kt`에서 Route 형식과 생성 함수를 관리한다.
+- `TechnicianNavigation.kt`에서 TECH-01~03 화면 이동을 관리한다.
+- `visitId`는 화면 간 전달되는 방문 업무 식별자로 사용한다.
+- 기사 앱은 고객 화면과 고객 Navigation을 포함하지 않는다.
+- 기사 단말 위치는 `TechnicianLocationTracker.kt`에서 수집한다.
+- 위치 전송 주기는 `TechnicianTrackingCoordinator.kt`에서 관리한다.
+- 기사 위치는 `TechnicianVisitTrackingApi.kt`를 통해 백엔드에 전송한다.
+- 화면 밖에서도 지속적으로 위치를 전송해야 하는 경우 Foreground Service를 별도 도입한다.
+- 위치 권한 거부, GPS 비활성화, 네트워크 오류 상태를 화면에서 구분해 처리한다.
+
+## 4.7 공통 모델과 상태 전이
+
+`core`에는 고객 앱과 기사 앱이 함께 사용하는 순수 업무 모델만 둔다.
+
+```text
+core
+├─ model/Models.kt
+└─ domain/InquiryStateMachine.kt
+```
+
+`Models.kt`는 다음 범주의 공통 타입을 관리한다.
+
+```text
+문의 진입 방식
+문의 상태
+방문 일정 상태
+기사 이동 상태
+좌표·위치 신호 상태
+고객 문의·방문 추적 데이터
+```
+
+`InquiryStateMachine.kt`는 문의 상태와 허용되는 상태 전이를 정의한다.
+
+- 앱 화면에서 상태 문자열을 임의로 생성하지 않는다.
+- 상태 전이 규칙은 고객 앱과 기사 앱에서 중복 구현하지 않는다.
+- 앱이 백엔드 State Machine과 연동된 이후에는 백엔드 응답을 최종 기준으로 사용한다.
+- 모바일의 상태 전이 코드는 오프라인 화면 흐름, 시연과 단위 테스트를 위한 공통 규칙으로 사용한다.
+- Android Context, Compose, HTTP Client와 같은 플랫폼 의존 코드는 `core`에 추가하지 않는다.
+
+## 4.8 로컬 설정과 빌드
+
+로컬 환경 설정은 `local.properties`에서 관리하고 Git에 커밋하지 않는다.
+
+```properties
+sdk.dir=C:/Users/<사용자명>/AppData/Local/Android/Sdk
+BACKEND_BASE_URL=http://10.0.2.2:8000/
+KAKAO_NATIVE_APP_KEY=<고객 앱 카카오 네이티브 앱 키>
+```
+
+- `BACKEND_BASE_URL`은 고객 앱과 기사 앱이 함께 사용한다.
+- `KAKAO_NATIVE_APP_KEY`는 고객 앱에서만 사용한다.
+- 민감한 키를 Kotlin 소스와 `build.gradle.kts`에 직접 작성하지 않는다.
+- 새 개발 환경에서는 `local.properties.example`을 기준으로 값을 설정한다.
+
+Windows 개발 환경에서는 다음 스크립트를 사용할 수 있다.
+
+```bat
+setup-local-properties.bat
+verify-build.bat
+```
+
+개별 빌드 명령은 다음과 같다.
+
+```bash
+./gradlew :core:build
 ./gradlew :customer-app:assembleDebug
-
-방문기사 앱 Debug APK
 ./gradlew :technician-app:assembleDebug
-
-두 앱 전체 테스트
-./gradlew :customer-app:test :technician-app:test :core:test
 ```
 
-## 4.4 기능 내부 기본 형식과 확장 기준
-
-초기에는 각 애플리케이션 모듈의 화면 기능에 다음 세 파일을 기본으로 둔다.
+전체 구조 검증은 다음 조건을 모두 만족해야 완료로 본다.
 
 ```text
-<app-module>/src/main/java/<base-package>/feature/<feature>/
-├─ <Feature>Screen.kt                              # Compose 화면
-├─ <Feature>ViewModel.kt                           # API 호출·입력·화면 상태 처리
-└─ <Feature>UiState.kt                             # 로딩·성공·오류·입력 상태
+:core:build 성공
+:customer-app:assembleDebug 성공
+:technician-app:assembleDebug 성공
+고객 앱에서 기사 화면 Route가 노출되지 않음
+기사 앱에서 고객 화면 Route가 노출되지 않음
+두 앱이 서로의 모듈을 직접 참조하지 않음
+두 앱이 core의 공통 모델과 상태 전이 규칙을 정상 참조함
 ```
 
-고객 앱 예시는 다음과 같다.
+## 4.9 파일 배치와 확장 기준
 
-```text
-customer-app/src/main/java/com/skn29/watercare/customer/feature/home/
-├─ CustomerHomeScreen.kt
-├─ CustomerHomeViewModel.kt
-├─ CustomerHomeUiState.kt
-├─ CareScheduleSection.kt
-└─ ActiveInquirySection.kt
-```
+새 파일은 다음 기준에 따라 배치한다.
 
-기사 앱 예시는 다음과 같다.
+| 코드 유형 | 배치 위치 |
+|---|---|
+| 고객 화면·고객 전용 UI | `customer-app/ui/` |
+| 고객 QR·OCR·지도·위치 조회 | `customer-app/camera/`, `customer-app/tracking/`, `customer-app/ui/map/` |
+| 기사 업무 화면 | `technician-app/feature/` |
+| 기사 GPS 수집·위치 업로드 | `technician-app/tracking/` |
+| 두 앱에서 공유하는 순수 모델 | `core/model/` |
+| 두 앱에서 공유하는 순수 업무 규칙 | `core/domain/` |
+| 앱별 문자열·아이콘·테마 | 각 앱의 `src/main/res/` |
+| 앱별 BuildConfig 값 | 각 앱의 `build.gradle.kts` |
 
-```text
-technician-app/src/main/java/com/skn29/watercare/technician/feature/visitresult/
-├─ VisitResultScreen.kt
-├─ VisitResultViewModel.kt
-├─ VisitResultUiState.kt
-├─ InspectionResultSection.kt
-└─ ReplacementItemSection.kt
-```
+다음 원칙을 적용한다.
 
-화면 내부에서만 사용하는 작은 Composable은 해당 기능 디렉토리에 추가한다. 두 앱에서 실제로 함께 사용하는 컴포넌트만 `core/component/` 또는 `core/designsystem/`으로 이동한다.
-
-다음 조건이 생겼을 때 해당 기능만 계층을 분리한다.
-
-### `data/` 분리 기준
-
-- API 요청·응답 DTO가 화면 모델과 크게 다르다.
-- Remote 데이터와 Local 저장 데이터를 함께 사용한다.
-- Mapper 또는 Repository 구현체가 둘 이상 필요하다.
-- 같은 API 접근 로직을 여러 ViewModel에서 공유한다.
-
-```text
-customer-app/src/main/java/com/skn29/watercare/customer/feature/inquirydetail/
-├─ data/
-│  ├─ InquiryDetailDto.kt
-│  ├─ InquiryDetailMapper.kt
-│  └─ InquiryDetailRepository.kt
-├─ InquiryDetailScreen.kt
-├─ InquiryDetailViewModel.kt
-└─ InquiryDetailUiState.kt
-```
-
-### `domain/` 분리 기준
-
-- Android UI와 무관한 업무 규칙이 복잡해진다.
-- 동일 애플리케이션의 여러 화면에서 같은 UseCase를 사용한다.
-- 독립적인 단위 테스트가 필요한 계산·검증 로직이 생긴다.
-
-```text
-technician-app/src/main/java/com/skn29/watercare/technician/feature/visitresult/
-├─ domain/
-│  ├─ VisitResult.kt
-│  └─ SubmitVisitResultUseCase.kt
-├─ VisitResultScreen.kt
-├─ VisitResultViewModel.kt
-└─ VisitResultUiState.kt
-```
-
-### `presentation/` 분리 기준
-
-- 한 기능의 화면·컴포넌트·ViewModel 파일이 7~10개 이상으로 늘어난다.
-- 화면 코드와 데이터·업무 로직 파일을 한 디렉토리에서 찾기 어려워진다.
-
-```text
-customer-app/src/main/java/com/skn29/watercare/customer/feature/inquirydetail/
-├─ data/
-├─ domain/
-└─ presentation/
-   ├─ InquiryDetailScreen.kt
-   ├─ InquiryDetailViewModel.kt
-   ├─ InquiryDetailUiState.kt
-   └─ component/
-```
-
-모든 기능을 동시에 계층화하지 않고 복잡도가 증가한 기능만 단계적으로 분리한다.
-
-## 4.5 앱별 Navigation
-
-고객 앱과 방문기사 앱은 서로 독립된 Navigation Graph를 가진다.
-
-### 고객 앱 Navigation
-
-```text
-CustomerLogin
-└─ CustomerAppNavigation
-   ├─ CUST-01 고객 홈
-   ├─ CUST-02 문진·증상 입력
-   ├─ CUST-03 추가 질문
-   ├─ CUST-04 근거·안전 안내
-   ├─ CUST-05 조치 결과·상담 요청
-   └─ CUST-06 문의 상세·후속 확인
-```
-
-### 방문기사 앱 Navigation
-
-```text
-TechnicianLogin
-└─ TechnicianAppNavigation
-   ├─ TECH-01 업무 목록
-   ├─ TECH-02 방문 상세·사전 점검 리포트
-   └─ TECH-03 방문 결과 등록
-```
-
-- 고객 앱은 `CustomerAppNavigation.kt`만 사용하고 기사 화면 경로를 등록하지 않는다.
-- 기사 앱은 `TechnicianAppNavigation.kt`만 사용하고 고객 화면 경로를 등록하지 않는다.
-- 고객 계정으로 기사 앱에 로그인하거나 기사 계정으로 고객 앱에 로그인하면 역할 불일치 오류를 표시하고 앱 내부 진입을 차단한다.
-- 실제 데이터 접근 권한은 백엔드가 최종 검증한다.
-- `CUST-02`는 `CARE_PRECHECK`과 `ADHOC_INQUIRY` 진입 모드를 하나의 화면에서 구분한다.
-- `inquiryId`, `visitId` 등 공통 화면 이동 식별자는 `core/navigation/NavigationArgument.kt`에서 관리한다.
-- 고객 화면 경로는 `CustomerRoute.kt`, 기사 화면 경로는 `TechnicianRoute.kt`를 기준으로 관리한다.
-- 화면 경로 문자열을 각 화면에서 직접 작성하지 않는다.
-- 한 앱에서 다른 앱의 화면으로 직접 이동시키지 않는다.
-
-## 4.6 Mobile State Machine 원칙
-
-두 모바일 앱은 문의·방문 상태를 자체 계산하지 않고 백엔드 응답을 기준으로 업무 버튼을 구성한다.
-
-```text
-백엔드 응답
-├─ current_state
-├─ allowed_actions
-├─ state_version
-├─ current_assignee
-├─ next_action
-└─ customer_action_required
-
-고객 앱·기사 앱
-├─ 현재 상태와 다음 행동 표시
-└─ allowed_actions에 포함된 행동만 버튼으로 표시·활성화
-```
-
-상태 전환 요청에는 다음 값을 사용한다.
-
-```text
-state_version       # 오래된 화면에서 발생한 동시 수정 방지
-idempotency_key     # 중복 터치·재전송에 따른 중복 처리 방지
-correlation_id      # 모바일→백엔드→AI 처리 흐름 추적
-```
-
-- 두 앱은 `allowed_actions`에 없는 이벤트를 임의로 전송하지 않는다.
-- 고객 앱은 고객에게 허용된 행동만 표시하고 기사 전용 이벤트를 노출하지 않는다.
-- 기사 앱은 기사에게 허용된 행동만 표시하고 고객 전용 이벤트를 노출하지 않는다.
-- 상태 전환 성공 후 응답으로 받은 최신 상태와 `state_version`을 화면에 반영한다.
-- 동시 수정 오류가 발생하면 기존 입력을 보존한 뒤 최신 문의·방문 정보를 다시 조회한다.
-- AI 처리 상태는 문의 상태와 구분하여 로딩·진행 문구에만 사용한다.
-- 앱 분리는 화면 노출을 제한하는 구조이며, 최종 권한 검증 책임은 백엔드 State Machine에 있다.
-
-## 4.7 입력 보존과 오류 처리
-
-고객 문진, 자가조치 결과와 기사 방문 결과는 저장 실패나 네트워크 오류가 발생해도 사라지지 않아야 한다.
-
-```text
-<Feature>UiState.kt
-└─ 현재 화면 입력·선택값·저장 상태 유지
-
-<Feature>ViewModel.kt
-└─ 화면 재구성·회전 중 상태 유지
-
-core/storage/DraftStorage.kt
-└─ 화면 이탈·앱 재실행에 대비한 최소 임시 저장 기반 제공
-```
-
-`DraftStorage`는 공통 저장 인터페이스와 저장 규칙을 제공하며, 실제 저장 키는 앱과 기능별로 구분한다.
-
-```text
-customer-app
-├─ customer:intake:<inquiryId>
-└─ customer:action-result:<inquiryId>
-
-technician-app
-└─ technician:visit-result:<visitId>
-```
-
-임시 저장 대상은 사용자가 다시 작성하기 어려운 입력으로 제한한다.
-
-```text
-고객 앱 임시 저장 권장
-├─ CUST-02 문진·증상 입력
-└─ CUST-05 자가조치 수행 결과
-
-기사 앱 임시 저장 권장
-└─ TECH-03 방문 점검·조치 결과
-
-임시 저장 제외
-├─ 서버에서 다시 조회할 수 있는 제품·문의·방문 상세
-├─ 공식 근거 원문
-└─ 토큰 외 불필요한 민감정보
-```
-
-공통 오류 상태는 `core/designsystem/feedback/`에서 제공한다.
-
-```text
-LoadingContent          # 조회·AI 분석 진행 중
-EmptyContent            # 문의·배정 방문이 없음
-ErrorContent            # 조회·저장 실패
-OfflineContent          # 네트워크 연결 없음
-AccessDeniedContent     # 역할·권한·앱 불일치 오류
-SaveStatusContent       # 저장 중·저장 완료·저장 실패
-```
-
-- 저장 실패 시 입력을 유지하고 재시도 버튼을 제공한다.
-- 세션 만료 시 입력을 보존한 상태로 다시 로그인하도록 안내한다.
-- 현재 앱과 로그인 계정의 역할이 일치하지 않으면 `AccessDeniedContent`를 표시한다.
-- 복구 불가능한 오류와 사용자 입력 오류를 구분해 표시한다.
-- 백엔드 오류 코드와 사용자 표시 문구는 `core/network/ApiError.kt`에서 연결한다.
-- 고객 앱과 기사 앱의 임시 입력이 서로 같은 저장 키를 사용하지 않도록 앱별 접두사를 적용한다.
-
-## 4.8 Mobile 공식 근거 처리 원칙
-
-고객 앱과 기사 앱은 모두 백엔드가 조립한 `EvidenceCardDTO`만 사용한다.
-
-```text
-표시 가능
-├─ 문서명
-├─ 문서 버전
-├─ 근거 페이지
-├─ 항목명
-├─ 구조화된 근거 요약
-├─ 위험도
-├─ 검증 상태
-├─ 안전하게 수행 가능한 조치
-├─ 상담 전환 조건
-└─ 백엔드가 제공한 공식 URL
-```
-
-```text
-표시·저장·전달 금지
-├─ source_path
-├─ ManualPage.text 원문 전체
-├─ retrieval_text
-├─ Vector Store 내부 식별 정보
-├─ RAG 내부 저장 경로
-└─ 앱에서 임의 조합한 공식 PDF URL
-```
-
-- 공식 근거 카드의 공통 UI는 `core/component/EvidenceCard.kt`에서 제공한다.
-- 고객 앱과 기사 앱은 공통 카드를 사용하되 역할에 맞는 표시 범위만 전달한다.
-- 고객 화면에서는 내부 추적용 `chunk_id`를 표시하지 않는다.
-- 기사 화면에서도 `source_path`, 원문 전체와 RAG 내부 경로는 표시하지 않는다.
-- 공식 출처 버튼은 백엔드가 반환한 `source_landing_url`을 기본으로 사용한다.
-- 검증된 `source_direct_download_url`이 존재하는 경우에만 PDF 열기 버튼을 제공한다.
-- URL 열기는 `core/platform/ExternalBrowser.kt`를 통해 처리한다.
-- 직접 링크 열기에 실패하면 공식 랜딩 페이지로 이동할 수 있도록 안내한다.
-- 공식 근거와 팀 설계·합성 시연 데이터는 배지로 구분한다.
-- 두 앱은 공식 URL을 직접 조합하거나 근거 레지스트리·Vector Store를 직접 조회하지 않는다.
+- 한 앱에서만 사용하는 코드는 해당 애플리케이션 모듈에 둔다.
+- 두 앱에서 실제로 사용하는 순수 Kotlin 코드만 `core`로 이동한다.
+- 단순히 이름이 비슷하다는 이유로 공통 모듈에 넣지 않는다.
+- 화면 파일이 지나치게 커지면 화면 단위 디렉토리로 분리한다.
+- 화면별 ViewModel이 필요해질 때 해당 화면 디렉토리에 함께 둔다.
+- API DTO와 Repository는 사용하는 앱 모듈에 먼저 두고, 양 앱에서 동일한 계약을 실제로 공유할 때만 공통화를 검토한다.
+- 고객 앱과 기사 앱의 독립 빌드가 항상 가능하도록 유지한다.
 
 
 ---
