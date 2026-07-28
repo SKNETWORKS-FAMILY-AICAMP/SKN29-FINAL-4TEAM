@@ -109,7 +109,6 @@
   background: #f8fafc;
 }
 
-.status-badge,
 .risk-badge {
   display: inline-flex;
   align-items: center;
@@ -119,11 +118,6 @@
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
-}
-
-.status-badge {
-  background: #e0e7ff;
-  color: #3730a3;
 }
 
 .risk-badge--general {

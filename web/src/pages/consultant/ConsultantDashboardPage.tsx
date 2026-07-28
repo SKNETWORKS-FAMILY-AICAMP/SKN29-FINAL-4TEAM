@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { createInquiryDetailPath } from "../../app/router/routePaths";
+import StatusBadge from "../../common/components/badge/StatusBadge";
 import EmptyState from "../../common/components/feedback/EmptyState";
 import "./ConsultantDashboardPage.css";
 
@@ -56,6 +57,15 @@ const STATUS_LABELS: Record<InquiryStatus, string> = {
   CONSULTATION_REQUIRED: "상담 필요",
   CONSULTATION_IN_PROGRESS: "상담 진행 중",
   REOPENED: "문의 재개",
+};
+
+const STATUS_VARIANTS: Record<
+  InquiryStatus,
+  "default" | "progress" | "reopened"
+> = {
+  CONSULTATION_REQUIRED: "default",
+  CONSULTATION_IN_PROGRESS: "progress",
+  REOPENED: "reopened",
 };
 
 const RISK_LABELS: Record<RiskLevel, string> = {
@@ -194,9 +204,10 @@ export default function ConsultantDashboardPage() {
                     <td>{inquiry.symptomSummary}</td>
 
                     <td>
-                      <span className="status-badge">
-                        {STATUS_LABELS[inquiry.currentState]}
-                      </span>
+                      <StatusBadge
+                        label={STATUS_LABELS[inquiry.currentState]}
+                        variant={STATUS_VARIANTS[inquiry.currentState]}
+                      />
                     </td>
 
                     <td>
