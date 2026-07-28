@@ -13,7 +13,7 @@
     "scenario_id": "SYN-JAC104-002",
     "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "handoff_type": "VISIT",
-    "from_role": "COUNSELOR",
+    "from_role": "CONSULTANT",
     "to_role": "TECHNICIAN",
     "required_fields": [
       "inquiry_id",
@@ -37,9 +37,9 @@
   {
     "scenario_id": "SYN-JAC104-004",
     "inquiry_id": "8e2e2561-613b-5911-9318-b651f0787a90",
-    "handoff_type": "COUNSELOR",
+    "handoff_type": "CONSULTANT",
     "from_role": "SYSTEM",
-    "to_role": "COUNSELOR",
+    "to_role": "CONSULTANT",
     "required_fields": [
       "inquiry_id",
       "risk_level",
@@ -62,9 +62,9 @@
   {
     "scenario_id": "SYN-JAC104-006",
     "inquiry_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60",
-    "handoff_type": "COUNSELOR",
+    "handoff_type": "CONSULTANT",
     "from_role": "SYSTEM",
-    "to_role": "COUNSELOR",
+    "to_role": "CONSULTANT",
     "required_fields": [
       "inquiry_id",
       "risk_level",
@@ -88,7 +88,7 @@
     "scenario_id": "SYN-JAC104-008",
     "inquiry_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "handoff_type": "VISIT",
-    "from_role": "COUNSELOR",
+    "from_role": "CONSULTANT",
     "to_role": "TECHNICIAN",
     "required_fields": [
       "inquiry_id",
@@ -96,7 +96,7 @@
       "safe_actions",
       "visit_reason"
     ],
-    "expected_current_owner_role": "COUNSELOR",
+    "expected_current_owner_role": "CONSULTANT",
     "generated_at": "2026-07-27T00:00:00+09:00"
   },
   {
@@ -134,7 +134,7 @@
     "inquiry_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "handoff_type": "REOPEN",
     "from_role": "CUSTOMER",
-    "to_role": "COUNSELOR",
+    "to_role": "CONSULTANT",
     "required_fields": [
       "inquiry_id",
       "reopen_reason",
@@ -146,23 +146,23 @@
   {
     "scenario_id": "SYN-JAC104-013",
     "inquiry_id": "205850d3-763c-5256-9d39-82da21be0c31",
-    "handoff_type": "COUNSELOR",
+    "handoff_type": "CONSULTANT",
     "from_role": "SYSTEM",
-    "to_role": "COUNSELOR",
+    "to_role": "CONSULTANT",
     "required_fields": [
       "inquiry_id",
       "risk_level",
       "usage_guidance_status",
       "evidence_mode"
     ],
-    "expected_current_owner_role": "COUNSELOR",
+    "expected_current_owner_role": "CONSULTANT",
     "generated_at": "2026-07-27T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-014",
     "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "handoff_type": "VISIT",
-    "from_role": "COUNSELOR",
+    "from_role": "CONSULTANT",
     "to_role": "TECHNICIAN",
     "required_fields": [
       "inquiry_id",
@@ -188,35 +188,35 @@
     "inquiry_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "handoff_type": "REOPEN",
     "from_role": "CUSTOMER",
-    "to_role": "COUNSELOR",
+    "to_role": "CONSULTANT",
     "required_fields": [
       "inquiry_id",
       "reopen_reason",
       "previous_result"
     ],
-    "expected_current_owner_role": "COUNSELOR",
+    "expected_current_owner_role": "CONSULTANT",
     "generated_at": "2026-07-27T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-017",
     "inquiry_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
-    "handoff_type": "COUNSELOR",
+    "handoff_type": "CONSULTANT",
     "from_role": "SYSTEM",
-    "to_role": "COUNSELOR",
+    "to_role": "CONSULTANT",
     "required_fields": [
       "inquiry_id",
       "risk_level",
       "usage_guidance_status",
       "evidence_mode"
     ],
-    "expected_current_owner_role": "COUNSELOR",
+    "expected_current_owner_role": "CONSULTANT",
     "generated_at": "2026-07-27T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-018",
     "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "handoff_type": "VISIT",
-    "from_role": "COUNSELOR",
+    "from_role": "CONSULTANT",
     "to_role": "TECHNICIAN",
     "required_fields": [
       "inquiry_id",
@@ -251,7 +251,7 @@
     "scenario_id": "SYN-JAC104-021",
     "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "handoff_type": "VISIT",
-    "from_role": "COUNSELOR",
+    "from_role": "CONSULTANT",
     "to_role": "TECHNICIAN",
     "required_fields": [
       "inquiry_id",
@@ -265,9 +265,9 @@
   {
     "scenario_id": "SYN-JAC104-022",
     "inquiry_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
-    "handoff_type": "COUNSELOR",
+    "handoff_type": "CONSULTANT",
     "from_role": "SYSTEM",
-    "to_role": "COUNSELOR",
+    "to_role": "CONSULTANT",
     "required_fields": [
       "inquiry_id",
       "risk_level",
@@ -280,24 +280,24 @@
   {
     "scenario_id": "SYN-JAC104-023",
     "inquiry_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067",
-    "handoff_type": "COUNSELOR",
+    "handoff_type": "CONSULTANT",
     "from_role": "SYSTEM",
-    "to_role": "COUNSELOR",
+    "to_role": "CONSULTANT",
     "required_fields": [
       "inquiry_id",
       "risk_level",
       "usage_guidance_status",
       "evidence_mode"
     ],
-    "expected_current_owner_role": "COUNSELOR",
+    "expected_current_owner_role": "CONSULTANT",
     "generated_at": "2026-07-27T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-024",
     "inquiry_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2",
-    "handoff_type": "COUNSELOR",
+    "handoff_type": "CONSULTANT",
     "from_role": "SYSTEM",
-    "to_role": "COUNSELOR",
+    "to_role": "CONSULTANT",
     "required_fields": [
       "inquiry_id",
       "risk_level",

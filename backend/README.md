@@ -47,18 +47,32 @@ Serializer·테스트 증거로 각각 판정합니다.
 
 ## 개발 환경
 
-`requirements/base.txt`와 `requirements/local.txt`는 2026-07-27
-재현 검증에 사용한 직접 의존성 버전을 고정합니다. 팀이 버전을
-변경하면 요구 파일·검증 기록을 함께 갱신합니다.
+`backend/.python-version`은 Python `3.13.13`,
+`requirements/base.txt`와 `requirements/local.txt`는 직접 의존성,
+`requirements/constraints-py313.txt`는 Python 3.13에서 검증한
+직접·간접 의존성 31개를 고정합니다. 팀이 버전을 변경하면 세 파일과
+검증 기록을 같은 변경 단위로 갱신합니다.
 
-아래 Windows PowerShell 명령은 저장소 루트에서 시작한다.
+새 PC에서는 Python 3.13.13을 준비한 뒤 저장소 루트에서 다음 한 줄로
+`backend/.venv`를 생성·동기화합니다.
 
 ```powershell
-Set-Location .\backend
-
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r .\requirements\local.txt
+python .\scripts\development\bootstrap.py --service backend
 ```
+
+스크립트는 `.env`, Docker, Migration, Seed를 변경하지 않습니다.
+기존 환경이 정상이고 fingerprint가 같으면 패키지 설치를 생략합니다.
+손상되었거나 Python 버전이 다른 환경을 명시적으로 다시 만들 때만
+가상환경 밖의 Python 3.13.13으로 다음 명령을 실행합니다.
+
+```powershell
+python .\scripts\development\bootstrap.py --service backend --recreate
+```
+
+VS Code는 저장소 루트를 열었을 때 `backend/.venv`를 기본 Interpreter로
+사용하고 새 터미널에서 자동 활성화합니다. 폴더 열기 Task는 읽기 전용
+빠른 검사만 실행합니다. `.venv`가 없는 최초 Pull에서는
+`Backend: 환경 최초 생성·동기화` Task를 한 번 실행해야 합니다.
 
 실제 비밀값은 Git에 저장하지 않습니다. `backend/.env.example`에는
 공개 가능한 로컬 기본값과 `replace-with-*` 대체 표식만 둡니다. 이를
@@ -83,22 +97,73 @@ Refresh Token 168시간(7일)입니다. Django의 `USE_TZ=True`로 DB에는
 UTC를 저장하고 API에는 한국 시간대 오프셋을 포함한 ISO 8601 형식을
 사용합니다.
 
-## 검증
+## 설치 완료 후 일상 실행
+
+`.env`와 `backend/.venv`가 이미 준비된 경우 저장소 루트에서 다음
+순서로 PostgreSQL과 Django를 다시 실행합니다. `docker compose up -d`는
+컨테이너가 없으면 생성하고, 이미 있으면 같은 구성을 재사용합니다.
 
 ```powershell
-Set-Location .\backend
+docker compose --env-file .\backend\.env up -d postgres
+docker compose --env-file .\backend\.env ps postgres
 
-$env:DJANGO_SETTINGS_MODULE = 'config.settings.test'
-.\.venv\Scripts\python.exe manage.py check
-.\.venv\Scripts\python.exe manage.py makemigrations --check --dry-run
-.\.venv\Scripts\python.exe -m pytest -q
+python .\scripts\development\check_environment.py `
+  --service backend `
+  --postgresql
+
+Set-Location .\backend
+.\.venv\Scripts\python.exe manage.py migrate --check
+.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
 ```
+
+`migrate --check`가 미적용 Migration을 보고한 경우에만 다음 명령을
+실행한 뒤 서버를 시작합니다.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py migrate --noinput
+```
+
+`seed_demo_accounts`는 새 DB, Seed 변경, Demo 계정 복구 시에만
+실행합니다. Django 서버는 실행 터미널에서 `Ctrl+C`로 종료하거나
+재시작하고, PostgreSQL은 저장소 루트에서 다음 명령으로 데이터를
+보존한 채 중지합니다.
+
+```powershell
+docker compose --env-file .\backend\.env stop postgres
+```
+
+전체 일상 실행·종료·상태 확인·포트 충돌 절차는
+[Django·PostgreSQL 공유 패키지 인계서](../docs/individual/jiyong/manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md)를
+따릅니다.
+
+## 검증
+
+저장소 루트에서 환경만 빠르게 확인합니다.
+
+```powershell
+python .\scripts\development\check_environment.py --service backend
+```
+
+공유 전에는 Migration drift와 전체 Backend 테스트까지 실행합니다.
+
+```powershell
+python .\scripts\development\check_environment.py --service backend --full
+```
+
+이 검사는 Python·pip·31개 constraints·추가 패키지·환경 fingerprint,
+`pip check`, Django check, Migration drift, 전체 pytest,
+`.venv` Git 추적 여부를 확인합니다. `--postgresql`은 Docker
+PostgreSQL이 실행 중일 때 읽기 전용 연결과 적용 Migration을 추가로
+확인합니다.
+
+[Backend 가상환경 재현 가이드](../docs/individual/jiyong/technical/backend/backend_venv_reproducibility_guide.md)와
+[Django·PostgreSQL 공유 패키지 인계서](../docs/individual/jiyong/manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md)에
+설계 근거, 복구 순서와 담당자별 인계사항을 정리했습니다.
 
 실제 로컬 PostgreSQL 실행은 `backend/.env.example`의 키를
 `backend/.env`에 안전하게 채운 뒤 수행합니다.
 
 ```powershell
-Set-Location ..
 docker compose --env-file .\backend\.env up -d postgres
 docker compose --env-file .\backend\.env ps postgres
 
@@ -112,9 +177,9 @@ Set-Location .\backend
 
 PostgreSQL은 로컬 PC의 `127.0.0.1`에만 공개되며, DB 파일은
 `watercare-postgres-data` Docker Volume에 보존됩니다. 단순 중지는
-`docker compose stop postgres`를 사용합니다. `down -v`는 Volume의
-DB 데이터를 삭제하므로 초기화가 명시적으로 필요한 경우에만
-사용합니다.
+`docker compose --env-file .\backend\.env stop postgres`를 사용합니다.
+`down -v`는 Volume의 DB 데이터를 삭제하므로 초기화가 명시적으로
+필요한 경우에만 사용합니다.
 
 Compose는 공식 `postgres:16.14-bookworm` 이미지를 사용하고
 `backend/.env` 전체를 컨테이너에 전달하지 않습니다. DB 이름·사용자·

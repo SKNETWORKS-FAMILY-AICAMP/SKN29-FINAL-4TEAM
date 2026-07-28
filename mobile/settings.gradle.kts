@@ -18,5 +18,8 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "WaterPurifierDealer"
-include(":app")
+rootProject.name = "WaterCareAndroid"
+
+include(":customer-app")
+include(":technician-app")
+include(":core")

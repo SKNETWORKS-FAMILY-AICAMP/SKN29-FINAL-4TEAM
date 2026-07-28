@@ -32,21 +32,48 @@ SK매직 정수기 구독 고객의 고객케어·상담·A/S 업무를 지원�
 > 구형 Android 연동 starter 참고본이며 현행 API·DB·State 계약이나
 > 실행 절차의 기준으로 사용하지 않습니다.
 
+### 새 PC 최초 실행
+
 ```powershell
 Copy-Item .\backend\.env.example .\backend\.env
 # backend/.env의 replace-with-* 두 값을 로컬 난수값으로 교체
 
-Set-Location .\backend
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r .\requirements\local.txt
+python .\scripts\development\bootstrap.py --service backend
 
-Set-Location ..
 docker compose --env-file .\backend\.env up -d postgres
 
 Set-Location .\backend
 .\.venv\Scripts\python.exe manage.py migrate
 .\.venv\Scripts\python.exe manage.py seed_demo_accounts
 .\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
+```
+
+### 설치 완료 후 일상 실행
+
+`.env`와 `backend/.venv`가 이미 준비된 PC에서는 복사·설치·Seed를
+반복하지 않고 저장소 루트에서 다음 순서만 실행합니다.
+
+```powershell
+docker compose --env-file .\backend\.env up -d postgres
+docker compose --env-file .\backend\.env ps postgres
+
+python .\scripts\development\check_environment.py `
+  --service backend `
+  --postgresql
+
+Set-Location .\backend
+.\.venv\Scripts\python.exe manage.py migrate --check
+.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
+```
+
+미적용 Migration이 있을 때만 `manage.py migrate --noinput`을 실행하고,
+Demo Seed가 변경되거나 새 DB를 만든 경우에만 `seed_demo_accounts`를
+실행합니다. Django 서버는 해당 터미널에서 `Ctrl+C`로 종료하며,
+PostgreSQL은 저장소 루트에서 다음 명령으로 데이터를 보존한 채
+중지합니다.
+
+```powershell
+docker compose --env-file .\backend\.env stop postgres
 ```
 
 다른 PowerShell에서 Token을 출력하지 않는 Health·Auth Smoke를
@@ -59,6 +86,14 @@ Set-Location .\backend
 
 실제 `.env`, `.venv`, Runtime 로그와 PostgreSQL Volume은 Git에
 공유하지 않습니다.
+
+Backend 기준 Python은 `backend/.python-version`의 `3.13.13`입니다.
+VS Code는 저장소를 열면 `backend/.venv`를 기본 Interpreter로 선택하고
+빠른 환경 검증 Task를 실행합니다. 새 PC에서 `.venv`가 아직 없다면
+Python 3.13.13을 준비한 뒤 `Backend: 환경 최초 생성·동기화` Task 또는
+위 bootstrap 명령을 한 번 실행합니다. 자세한 재현·복구 절차는
+[Backend 가상환경 재현 가이드](docs/individual/jiyong/technical/backend/backend_venv_reproducibility_guide.md)를
+따릅니다.
 
 ## 작업 산출물
 

@@ -1,6 +1,6 @@
 [
   {
-    "history_id": "a21e6acf-b7ad-5e60-940c-26801aa5b24f",
+    "history_id": "d1a69593-5d2c-5188-8e30-708956186a20",
     "inquiry_id": "f72a3b18-a4f8-5f5e-8c86-199ffc1d8aa2",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -18,7 +18,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "99e2493e-c58b-58a0-8c19-f8ba44d4d8ff",
+    "history_id": "9a95b532-ed6e-5898-b020-8dc905ecd377",
     "inquiry_id": "f72a3b18-a4f8-5f5e-8c86-199ffc1d8aa2",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -36,7 +36,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "343186ef-ace2-5609-919c-9b55361a2840",
+    "history_id": "82207ea3-ac88-55d0-884d-f0fa8af18a97",
     "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -54,7 +54,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "35cf2759-e4ab-5a35-b1f4-88c9a5a61cb6",
+    "history_id": "65f7bb41-c6f6-575e-ae5e-438031c9ec27",
     "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -72,7 +72,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "462f1844-20a5-5a7e-bc75-d433bda7da4b",
+    "history_id": "a7296894-7a05-5bd5-a119-c505744e7067",
     "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "sequence": 3,
     "event": "SUBMIT_ANSWERS",
@@ -90,12 +90,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "a16516b7-66d8-5e5f-be17-e1a8ec5b1cf0",
+    "history_id": "21f4cbb9-64a4-5c26-9cd3-df4dfa8b7adf",
     "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "sequence": 4,
     "event": "SAFE_GUIDANCE_READY",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "AI_GUIDANCE_READY",
+    "to_status": "AI_GUIDANCE",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -108,12 +108,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "8eae4b9a-06a3-5d12-942b-bf75ea8d4c15",
+    "history_id": "1701c8f2-e0ae-5d6d-a330-ed73cb7c67e1",
     "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "sequence": 5,
     "event": "REQUEST_CONSULTATION",
-    "from_status": "AI_GUIDANCE_READY",
-    "to_status": "CONSULTATION_PENDING",
+    "from_status": "AI_GUIDANCE",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "CUSTOMER",
     "actor_id": "18b30d13-a38b-5035-84b3-988406079e0d",
     "assigned_role_after": "NONE",
@@ -126,15 +126,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "6e207f99-005a-5f34-a377-a8db6eb288fc",
+    "history_id": "2f2591da-990e-5a40-b1a5-e5652e255374",
     "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "sequence": 6,
     "event": "START_CONSULTATION",
-    "from_status": "CONSULTATION_PENDING",
+    "from_status": "CONSULTATION_REQUIRED",
     "to_status": "CONSULTATION_IN_PROGRESS",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "state_version": 6,
     "idempotency_key": "idem-SYN-JAC104-002-06",
@@ -144,15 +144,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "50e3d077-5caa-543f-87e6-2c00fc9cba4a",
+    "history_id": "fa743c87-8203-564e-b994-9219980148c4",
     "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "sequence": 7,
-    "event": "VISIT_NEEDED",
+    "event": "VISIT_REVIEW_REQUIRED",
     "from_status": "CONSULTATION_IN_PROGRESS",
     "to_status": "VISIT_REVIEW_PENDING",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "state_version": 7,
     "idempotency_key": "idem-SYN-JAC104-002-07",
@@ -162,17 +162,53 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "13febe5a-86eb-5b6c-aa86-e8eb5a3d421c",
+    "history_id": "e778faef-86f8-5419-b1ef-35732fabaf57",
     "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "sequence": 8,
-    "event": "CONFIRM_VISIT",
+    "event": "VISIT_NEEDED",
     "from_status": "VISIT_REVIEW_PENDING",
-    "to_status": "VISIT_PENDING",
-    "actor_role": "COUNSELOR",
+    "to_status": "VISIT_SCHEDULING",
+    "actor_role": "CONSULTANT",
+    "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "assigned_role_after": "CONSULTANT",
+    "assigned_user_id_after": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "state_version": 8,
+    "idempotency_key": "idem-SYN-JAC104-002-08-create",
+    "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
+    "changed_at": "2026-07-02T00:10:00+09:00",
+    "reason": "SYN-JAC104-002 합성 상태 전이",
+    "data_classification": "synthetic"
+  },
+  {
+    "history_id": "2fc91522-8f93-57c6-bf38-4dc5df3d12d7",
+    "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
+    "sequence": 9,
+    "event": "UPDATE_VISIT_SCHEDULE",
+    "from_status": "VISIT_SCHEDULING",
+    "to_status": "VISIT_SCHEDULING",
+    "actor_role": "CONSULTANT",
+    "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "assigned_role_after": "CONSULTANT",
+    "assigned_user_id_after": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "state_version": 9,
+    "idempotency_key": "idem-SYN-JAC104-002-08-schedule",
+    "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
+    "changed_at": "2026-07-02T00:20:00+09:00",
+    "reason": "SYN-JAC104-002 합성 상태 전이",
+    "data_classification": "synthetic"
+  },
+  {
+    "history_id": "3ce50de8-4008-5f63-91fe-e63028282db0",
+    "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
+    "sequence": 10,
+    "event": "CONFIRM_VISIT",
+    "from_status": "VISIT_SCHEDULING",
+    "to_status": "VISIT_SCHEDULED",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 8,
+    "state_version": 10,
     "idempotency_key": "idem-SYN-JAC104-002-08",
     "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
     "changed_at": "2026-07-02T00:30:00+09:00",
@@ -180,17 +216,17 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "369a811c-0627-52f9-94b4-570ed020c290",
+    "history_id": "5ce3c871-33f0-5053-be47-0cc609101f1e",
     "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
-    "sequence": 9,
+    "sequence": 11,
     "event": "START_VISIT",
-    "from_status": "VISIT_PENDING",
-    "to_status": "VISIT_IN_PROGRESS",
+    "from_status": "VISIT_SCHEDULED",
+    "to_status": "VISIT_SCHEDULED",
     "actor_role": "TECHNICIAN",
     "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 9,
+    "state_version": 11,
     "idempotency_key": "idem-SYN-JAC104-002-09",
     "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
     "changed_at": "2026-07-04T00:00:00+09:00",
@@ -198,17 +234,17 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "b6c3af95-2cda-58d0-b85d-38b5112bf1de",
+    "history_id": "acb7e0ef-2ee4-5aa1-9004-5a954cdfd5c5",
     "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
-    "sequence": 10,
+    "sequence": 12,
     "event": "VISIT_COMPLETED",
-    "from_status": "VISIT_IN_PROGRESS",
+    "from_status": "VISIT_SCHEDULED",
     "to_status": "COMPLETION_PENDING",
     "actor_role": "TECHNICIAN",
     "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 10,
+    "state_version": 12,
     "idempotency_key": "idem-SYN-JAC104-002-10",
     "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
     "changed_at": "2026-07-04T01:00:00+09:00",
@@ -216,9 +252,9 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "bece1884-e891-5893-ab4a-028b08b725f6",
+    "history_id": "662bad9a-599e-525c-93b6-6f9556f77ae8",
     "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
-    "sequence": 11,
+    "sequence": 13,
     "event": "SUBMIT_RESOLUTION_FEEDBACK",
     "from_status": "COMPLETION_PENDING",
     "to_status": "COMPLETION_PENDING",
@@ -226,7 +262,7 @@
     "actor_id": "18b30d13-a38b-5035-84b3-988406079e0d",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 11,
+    "state_version": 13,
     "idempotency_key": "idem-SYN-JAC104-002-11",
     "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
     "changed_at": "2026-07-04T03:00:00+09:00",
@@ -234,9 +270,9 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "001cb2dd-2ade-5657-93aa-2b5d95e254e6",
+    "history_id": "b65a1056-1c52-5de6-8536-f08a3ad21f6e",
     "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
-    "sequence": 12,
+    "sequence": 14,
     "event": "FINALIZE_INQUIRY",
     "from_status": "COMPLETION_PENDING",
     "to_status": "RESOLVED",
@@ -244,7 +280,7 @@
     "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 12,
+    "state_version": 14,
     "idempotency_key": "idem-SYN-JAC104-002-12",
     "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
     "changed_at": "2026-07-04T03:30:00+09:00",
@@ -252,7 +288,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "aeb7414d-69e4-579b-868e-9d25614bc57d",
+    "history_id": "40c1099e-75d9-5ec9-994b-149d41ca103d",
     "inquiry_id": "91a8cf0c-9139-5d17-a6bd-818eb9aa7585",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -270,7 +306,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "1ba3f19d-be90-59b4-92e6-b68bcf8b77ba",
+    "history_id": "09da399c-727c-59bb-be15-9f1a008f46c3",
     "inquiry_id": "91a8cf0c-9139-5d17-a6bd-818eb9aa7585",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -288,12 +324,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "9410f9df-c8bb-584b-a0fa-ebd41ae87892",
+    "history_id": "6191ba3c-3ca0-5468-8736-8d8e3a905874",
     "inquiry_id": "91a8cf0c-9139-5d17-a6bd-818eb9aa7585",
     "sequence": 3,
     "event": "SAFE_GUIDANCE_READY",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "AI_GUIDANCE_READY",
+    "to_status": "AI_GUIDANCE",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -306,11 +342,11 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "d6a30833-e428-5222-90ae-4813be5b62f4",
+    "history_id": "407c27de-daa4-5d5f-90d4-370d54aceeaf",
     "inquiry_id": "91a8cf0c-9139-5d17-a6bd-818eb9aa7585",
     "sequence": 4,
     "event": "CUSTOMER_REPORTED_SELF_RESOLVED",
-    "from_status": "AI_GUIDANCE_READY",
+    "from_status": "AI_GUIDANCE",
     "to_status": "RESOLVED",
     "actor_role": "CUSTOMER",
     "actor_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c",
@@ -324,7 +360,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "bef716a8-56a4-5538-bf29-4c481afd787d",
+    "history_id": "dc41a554-ea6c-5399-b2dd-f32139e39f6e",
     "inquiry_id": "8e2e2561-613b-5911-9318-b651f0787a90",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -342,7 +378,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "baf62b4b-9cd6-5e06-8889-c3185e897f05",
+    "history_id": "22e58309-1e1e-5856-a022-e899eacb714a",
     "inquiry_id": "8e2e2561-613b-5911-9318-b651f0787a90",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -360,12 +396,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "f6f1394b-fd67-5d11-82e1-cc6b6009deca",
+    "history_id": "1fb3089b-91be-5505-b4a5-a17428fdafc6",
     "inquiry_id": "8e2e2561-613b-5911-9318-b651f0787a90",
     "sequence": 3,
     "event": "DANGER_DETECTED",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "CONSULTATION_PENDING",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -378,7 +414,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "636e5660-8914-5339-accb-6dc1a00d4422",
+    "history_id": "a860cabe-e0b7-5a36-9744-5ad3a48f1bd5",
     "inquiry_id": "40b6d3d1-8626-511c-92d3-982699a42f63",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -396,7 +432,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "0a963198-8500-522e-ba99-136aab2d7b9f",
+    "history_id": "a8d30e36-521e-56ff-ab77-8ba786a7402c",
     "inquiry_id": "40b6d3d1-8626-511c-92d3-982699a42f63",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -414,12 +450,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "5c13ff57-9991-5d36-a008-113ee464c945",
+    "history_id": "e099827e-1cd9-5507-a574-c5d4a22b1d99",
     "inquiry_id": "40b6d3d1-8626-511c-92d3-982699a42f63",
     "sequence": 3,
     "event": "SAFE_GUIDANCE_READY",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "AI_GUIDANCE_READY",
+    "to_status": "AI_GUIDANCE",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -432,11 +468,11 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "7d661f4c-6cd8-56d6-a5a9-8f610fb510a0",
+    "history_id": "07db0cad-e5b1-571b-a2e1-2fdd37ad00cb",
     "inquiry_id": "40b6d3d1-8626-511c-92d3-982699a42f63",
     "sequence": 4,
     "event": "CUSTOMER_REPORTED_SELF_RESOLVED",
-    "from_status": "AI_GUIDANCE_READY",
+    "from_status": "AI_GUIDANCE",
     "to_status": "RESOLVED",
     "actor_role": "CUSTOMER",
     "actor_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da",
@@ -450,7 +486,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "bc220c65-6764-5b55-826d-4688993ca934",
+    "history_id": "9d251072-6438-5684-8999-785b61c5be70",
     "inquiry_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -468,7 +504,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "735258a1-a155-56bb-a416-428577aaaa91",
+    "history_id": "81a65b91-f49b-50da-a661-0acdff37ac28",
     "inquiry_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -486,12 +522,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "968da148-c94d-573e-aafd-4df105f11b28",
+    "history_id": "147a685f-a8c6-547a-a9a2-3314e672813a",
     "inquiry_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60",
     "sequence": 3,
     "event": "DANGER_DETECTED",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "CONSULTATION_PENDING",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -504,7 +540,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "7d044bc1-c58e-5b82-b122-aa0c1551cc91",
+    "history_id": "64814b21-2b45-5b00-9a21-72b6ba3c92c1",
     "inquiry_id": "3ebb394c-1a6f-5793-ac86-1f721350b820",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -522,7 +558,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "fff476c8-a996-54d3-8664-325994965ad0",
+    "history_id": "f0ea0a27-d947-5523-9403-3533d2d74af3",
     "inquiry_id": "3ebb394c-1a6f-5793-ac86-1f721350b820",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -540,12 +576,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "b1e79617-d787-52cd-b3e3-23184606927f",
+    "history_id": "2110d020-deb8-5aa1-9974-4afc4be3618f",
     "inquiry_id": "3ebb394c-1a6f-5793-ac86-1f721350b820",
     "sequence": 3,
     "event": "SAFE_GUIDANCE_READY",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "AI_GUIDANCE_READY",
+    "to_status": "AI_GUIDANCE",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -558,11 +594,11 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "ba041249-4d23-50b4-a2fb-464307fe724f",
+    "history_id": "f1504037-09b6-564b-ba0f-be1588220e3e",
     "inquiry_id": "3ebb394c-1a6f-5793-ac86-1f721350b820",
     "sequence": 4,
     "event": "CUSTOMER_REPORTED_SELF_RESOLVED",
-    "from_status": "AI_GUIDANCE_READY",
+    "from_status": "AI_GUIDANCE",
     "to_status": "RESOLVED",
     "actor_role": "CUSTOMER",
     "actor_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
@@ -576,7 +612,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "ea3854b9-704b-5588-8358-26512f6601a2",
+    "history_id": "118da52c-545f-5941-965e-e673efaa2f95",
     "inquiry_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -594,7 +630,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "7ce029f6-8c00-5564-9812-d037486c14de",
+    "history_id": "1a04e636-ee8e-504a-add6-190e2e30de7e",
     "inquiry_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -612,12 +648,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "36b65595-f2af-5cd9-a4b6-d41ae4852c4f",
+    "history_id": "cdf051b4-fdc9-5ecc-9abe-bc114e9463df",
     "inquiry_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "sequence": 3,
     "event": "SAFE_GUIDANCE_READY",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "AI_GUIDANCE_READY",
+    "to_status": "AI_GUIDANCE",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -630,12 +666,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "68e6385e-a1c3-5971-b6b9-fc491e56b593",
+    "history_id": "747f49cd-e3e2-53fe-b0ba-47382f686508",
     "inquiry_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "sequence": 4,
     "event": "REQUEST_CONSULTATION",
-    "from_status": "AI_GUIDANCE_READY",
-    "to_status": "CONSULTATION_PENDING",
+    "from_status": "AI_GUIDANCE",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "CUSTOMER",
     "actor_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab",
     "assigned_role_after": "NONE",
@@ -648,15 +684,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "e84721dc-97f5-54a6-b497-f46d8f7fdefc",
+    "history_id": "aafb71d5-29e2-5a88-ada6-4d5cdf0454c0",
     "inquiry_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "sequence": 5,
     "event": "START_CONSULTATION",
-    "from_status": "CONSULTATION_PENDING",
+    "from_status": "CONSULTATION_REQUIRED",
     "to_status": "CONSULTATION_IN_PROGRESS",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-008-05",
@@ -666,15 +702,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "d1fe1db4-1403-55b3-a583-f76df9caf203",
+    "history_id": "42c9e42d-d519-551d-a2df-b21f4c2bc5fe",
     "inquiry_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "sequence": 6,
-    "event": "VISIT_NEEDED",
+    "event": "VISIT_REVIEW_REQUIRED",
     "from_status": "CONSULTATION_IN_PROGRESS",
     "to_status": "VISIT_REVIEW_PENDING",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 6,
     "idempotency_key": "idem-SYN-JAC104-008-06",
@@ -684,7 +720,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "fd846bdf-a651-57fd-bd82-124ea0a90722",
+    "history_id": "0a43e9bb-7568-559a-bed3-3ad94aaf1072",
     "inquiry_id": "88b76107-937a-5fca-ae51-1f21935b47db",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -702,7 +738,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "5da97bd5-e6ca-5878-ac6f-1c4a459b3a92",
+    "history_id": "b21ad2db-7c69-5411-8c55-4f96a56d6060",
     "inquiry_id": "88b76107-937a-5fca-ae51-1f21935b47db",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -720,12 +756,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "676f885e-5cfe-5a61-bfc5-1ac680d3aa6f",
+    "history_id": "a8c6c958-69a5-5c96-8169-f0a3a5af6810",
     "inquiry_id": "88b76107-937a-5fca-ae51-1f21935b47db",
     "sequence": 3,
     "event": "SAFE_GUIDANCE_READY",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "AI_GUIDANCE_READY",
+    "to_status": "AI_GUIDANCE",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -738,11 +774,11 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "b780b55f-74e1-5235-bf58-0aba3533c8fb",
+    "history_id": "1a94de14-5fa4-5b18-91c6-253c6b7b01ae",
     "inquiry_id": "88b76107-937a-5fca-ae51-1f21935b47db",
     "sequence": 4,
     "event": "CUSTOMER_REPORTED_SELF_RESOLVED",
-    "from_status": "AI_GUIDANCE_READY",
+    "from_status": "AI_GUIDANCE",
     "to_status": "RESOLVED",
     "actor_role": "CUSTOMER",
     "actor_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
@@ -756,7 +792,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "62e864e1-7281-5626-9856-4fc87f6e42c6",
+    "history_id": "9226144c-315a-5ee5-a27a-db4eebd7b1f6",
     "inquiry_id": "f82886a1-8755-5dd1-b622-480a27a207af",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -774,7 +810,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "2e919e73-da7c-550c-81b3-1b6551158678",
+    "history_id": "e73f1526-3c40-5024-8f05-5017616f5887",
     "inquiry_id": "f82886a1-8755-5dd1-b622-480a27a207af",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -792,7 +828,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "d70c9616-7d87-59ea-aeed-1756148adeb8",
+    "history_id": "9f457bd4-af70-5879-9efb-3a0f0e12b1f8",
     "inquiry_id": "b987200b-656e-5dbc-837f-ee1e1cb3a93f",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -810,7 +846,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "c2da6d3c-9c43-592a-9e8d-77f2b38cd2c7",
+    "history_id": "3b599a38-8aea-5ec9-9709-76718d91428e",
     "inquiry_id": "b987200b-656e-5dbc-837f-ee1e1cb3a93f",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -828,7 +864,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "3961f966-f5b1-569a-85c3-12f017a3cea6",
+    "history_id": "f9c9fc92-6012-59c4-96f1-e8f79bab4d3d",
     "inquiry_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -846,7 +882,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "11f58796-8ea2-5ff3-8fc2-f1dad81fbf23",
+    "history_id": "c407c0a2-70f1-5d02-8ab4-e5e091517c3c",
     "inquiry_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -864,12 +900,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "3332e43c-81ca-51d2-8a25-b377a9dc6345",
+    "history_id": "35583e80-a2c2-55d3-aad4-9ad4d0c0f982",
     "inquiry_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "sequence": 3,
     "event": "SAFE_GUIDANCE_READY",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "AI_GUIDANCE_READY",
+    "to_status": "AI_GUIDANCE",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -882,12 +918,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "0ebf504f-f9a6-546e-8d74-a87216e1d389",
+    "history_id": "f5f3b60d-ac44-5fc7-bc5a-6e1cd641d143",
     "inquiry_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "sequence": 4,
     "event": "REQUEST_CONSULTATION",
-    "from_status": "AI_GUIDANCE_READY",
-    "to_status": "CONSULTATION_PENDING",
+    "from_status": "AI_GUIDANCE",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "CUSTOMER",
     "actor_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d",
     "assigned_role_after": "NONE",
@@ -900,15 +936,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "2ae1690b-74d4-5583-a30f-9f95691c442b",
+    "history_id": "44758d22-1cbb-54a5-a2c9-d610c2bee38a",
     "inquiry_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "sequence": 5,
     "event": "START_CONSULTATION",
-    "from_status": "CONSULTATION_PENDING",
+    "from_status": "CONSULTATION_REQUIRED",
     "to_status": "CONSULTATION_IN_PROGRESS",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-012-05",
@@ -918,15 +954,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "d15269f9-e3f7-5c43-8da9-2a860868c0c0",
+    "history_id": "2d8f5ca5-bfc4-5a76-986a-e558c3960d28",
     "inquiry_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "sequence": 6,
     "event": "CONSULTATION_COMPLETED",
     "from_status": "CONSULTATION_IN_PROGRESS",
     "to_status": "COMPLETION_PENDING",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 6,
     "idempotency_key": "idem-SYN-JAC104-012-06",
@@ -936,16 +972,16 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "3e1a0bfd-216b-5a07-9eff-c3dbd765e53f",
+    "history_id": "a3d2cc38-9e20-5fca-a6d9-859158c96dab",
     "inquiry_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "sequence": 7,
     "event": "FINALIZE_INQUIRY",
     "from_status": "COMPLETION_PENDING",
     "to_status": "RESOLVED",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "NONE",
-    "assigned_user_id_after": null,
+    "assigned_role_after": "CONSULTANT",
+    "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 7,
     "idempotency_key": "idem-SYN-JAC104-012-07",
     "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
@@ -954,7 +990,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "ff53de71-fe68-5535-825c-dac8fc5fdbd9",
+    "history_id": "899de538-ef6d-541d-98d1-309a414f6808",
     "inquiry_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "sequence": 8,
     "event": "RESUME_CONSULTATION",
@@ -972,7 +1008,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "4420b522-930e-5931-9b96-7077d82ebd2d",
+    "history_id": "27077751-89d9-5825-b826-2824b0894521",
     "inquiry_id": "205850d3-763c-5256-9d39-82da21be0c31",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -990,7 +1026,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "b1ac7186-8b37-5a83-9bf8-0b74210d774c",
+    "history_id": "ad29799e-79dc-53ed-afe0-ddc4dcb38c03",
     "inquiry_id": "205850d3-763c-5256-9d39-82da21be0c31",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -1008,12 +1044,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "7b30ad6b-81b2-5bfb-8081-ea68acf8d699",
+    "history_id": "772345d8-7b58-51cf-88c8-c16adf40190c",
     "inquiry_id": "205850d3-763c-5256-9d39-82da21be0c31",
     "sequence": 3,
     "event": "DANGER_DETECTED",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "CONSULTATION_PENDING",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -1026,15 +1062,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "cb8dcca5-825e-5cc3-83e7-25b5c8e58340",
+    "history_id": "ef51640b-0e85-5093-acf3-2e8a19dd1191",
     "inquiry_id": "205850d3-763c-5256-9d39-82da21be0c31",
     "sequence": 4,
     "event": "START_CONSULTATION",
-    "from_status": "CONSULTATION_PENDING",
+    "from_status": "CONSULTATION_REQUIRED",
     "to_status": "CONSULTATION_IN_PROGRESS",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 4,
     "idempotency_key": "idem-SYN-JAC104-013-04",
@@ -1044,7 +1080,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "590da494-4803-51ae-a359-67cc0c329bb6",
+    "history_id": "8b07c39c-188f-5f58-ba63-50483244c485",
     "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -1062,7 +1098,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "eba6d02c-d76c-52fa-9bf2-c749132091fa",
+    "history_id": "c5fece44-6a9a-50af-9ab4-a1512984a0fb",
     "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -1080,12 +1116,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "6eba4910-d8bc-5fd1-b7f0-508a370e5070",
+    "history_id": "bba3c629-f8b5-5094-816d-943203ffc508",
     "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "sequence": 3,
     "event": "DANGER_DETECTED",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "CONSULTATION_PENDING",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -1098,15 +1134,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "87373f78-0dc9-5844-b23b-57dbfec88d9b",
+    "history_id": "fa851d2f-6a6b-5858-a697-734d798a8da6",
     "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "sequence": 4,
     "event": "START_CONSULTATION",
-    "from_status": "CONSULTATION_PENDING",
+    "from_status": "CONSULTATION_REQUIRED",
     "to_status": "CONSULTATION_IN_PROGRESS",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "state_version": 4,
     "idempotency_key": "idem-SYN-JAC104-014-04",
@@ -1116,15 +1152,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "9f08f73e-0162-5f26-bdec-fbb688f62732",
+    "history_id": "fb2b47ce-c9b9-5796-8155-a409edbeb025",
     "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "sequence": 5,
-    "event": "VISIT_NEEDED",
+    "event": "VISIT_REVIEW_REQUIRED",
     "from_status": "CONSULTATION_IN_PROGRESS",
     "to_status": "VISIT_REVIEW_PENDING",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-014-05",
@@ -1134,17 +1170,53 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "3b313188-e515-554f-a171-8baf31aa69fb",
+    "history_id": "ae0cc11c-f310-531a-869a-237b4884febf",
     "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "sequence": 6,
-    "event": "CONFIRM_VISIT",
+    "event": "VISIT_NEEDED",
     "from_status": "VISIT_REVIEW_PENDING",
-    "to_status": "VISIT_PENDING",
-    "actor_role": "COUNSELOR",
+    "to_status": "VISIT_SCHEDULING",
+    "actor_role": "CONSULTANT",
+    "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "assigned_role_after": "CONSULTANT",
+    "assigned_user_id_after": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "state_version": 6,
+    "idempotency_key": "idem-SYN-JAC104-014-06-create",
+    "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
+    "changed_at": "2026-07-04T23:10:00+09:00",
+    "reason": "SYN-JAC104-014 합성 상태 전이",
+    "data_classification": "synthetic"
+  },
+  {
+    "history_id": "23b94a37-dfc8-5a5c-ac1b-4f42617f34e9",
+    "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
+    "sequence": 7,
+    "event": "UPDATE_VISIT_SCHEDULE",
+    "from_status": "VISIT_SCHEDULING",
+    "to_status": "VISIT_SCHEDULING",
+    "actor_role": "CONSULTANT",
+    "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "assigned_role_after": "CONSULTANT",
+    "assigned_user_id_after": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "state_version": 7,
+    "idempotency_key": "idem-SYN-JAC104-014-06-schedule",
+    "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
+    "changed_at": "2026-07-04T23:20:00+09:00",
+    "reason": "SYN-JAC104-014 합성 상태 전이",
+    "data_classification": "synthetic"
+  },
+  {
+    "history_id": "663e4575-6df8-50d5-9a17-5e2425e79d71",
+    "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
+    "sequence": 8,
+    "event": "CONFIRM_VISIT",
+    "from_status": "VISIT_SCHEDULING",
+    "to_status": "VISIT_SCHEDULED",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 6,
+    "state_version": 8,
     "idempotency_key": "idem-SYN-JAC104-014-06",
     "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
     "changed_at": "2026-07-04T23:30:00+09:00",
@@ -1152,17 +1224,17 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "998c63bd-8d5c-5ffa-924a-4890bc1256ab",
+    "history_id": "4b7d2bc1-d175-5bea-b96e-324f428264ae",
     "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
-    "sequence": 7,
+    "sequence": 9,
     "event": "START_VISIT",
-    "from_status": "VISIT_PENDING",
-    "to_status": "VISIT_IN_PROGRESS",
+    "from_status": "VISIT_SCHEDULED",
+    "to_status": "VISIT_SCHEDULED",
     "actor_role": "TECHNICIAN",
     "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 7,
+    "state_version": 9,
     "idempotency_key": "idem-SYN-JAC104-014-07",
     "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
     "changed_at": "2026-07-05T00:00:00+09:00",
@@ -1170,7 +1242,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "41ba01a6-6f3a-5130-9134-360b5f4c8139",
+    "history_id": "2bf74d69-54c0-5398-8f13-798648b2e02d",
     "inquiry_id": "e9280a2d-fb61-55eb-a9a8-453f116e2b54",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -1188,7 +1260,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "267e5187-f85c-51b9-9eb5-5a65aaa0b1ac",
+    "history_id": "b32f45cf-6df1-54ce-8728-04543c15d9bf",
     "inquiry_id": "e9280a2d-fb61-55eb-a9a8-453f116e2b54",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -1206,7 +1278,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "506a07ea-67b4-574c-9f74-e0760585c7db",
+    "history_id": "e90cdc05-9bd5-53bc-a3da-132867533597",
     "inquiry_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -1224,7 +1296,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "b950f43a-57b5-58fd-9fd3-a1b46be8bc71",
+    "history_id": "d0824d1f-73d8-50df-9263-d86d00abf382",
     "inquiry_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -1242,12 +1314,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "29019633-a625-5aa0-83a9-81bc691ceba8",
+    "history_id": "7796bc35-c810-53cd-ba23-37a94c5263b0",
     "inquiry_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "sequence": 3,
     "event": "SAFE_GUIDANCE_READY",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "AI_GUIDANCE_READY",
+    "to_status": "AI_GUIDANCE",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -1260,12 +1332,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "a529c70c-614c-5246-b059-c28f1390e4c1",
+    "history_id": "a903543a-fbd5-5c20-a7ef-66764e379431",
     "inquiry_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "sequence": 4,
     "event": "REQUEST_CONSULTATION",
-    "from_status": "AI_GUIDANCE_READY",
-    "to_status": "CONSULTATION_PENDING",
+    "from_status": "AI_GUIDANCE",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "CUSTOMER",
     "actor_id": "e48532ad-fa40-54d7-981b-9accfe13e365",
     "assigned_role_after": "NONE",
@@ -1278,15 +1350,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "8cf234d4-7edd-5de5-b8d1-fb2bae0f6b73",
+    "history_id": "f4741e79-607f-5b2f-9363-4cb76f7b4d73",
     "inquiry_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "sequence": 5,
     "event": "START_CONSULTATION",
-    "from_status": "CONSULTATION_PENDING",
+    "from_status": "CONSULTATION_REQUIRED",
     "to_status": "CONSULTATION_IN_PROGRESS",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-016-05",
@@ -1296,15 +1368,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "d4fb8ee0-af8d-5231-a355-d612176d4934",
+    "history_id": "b4c767c1-0440-5256-be50-a99126b477f2",
     "inquiry_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "sequence": 6,
     "event": "CONSULTATION_COMPLETED",
     "from_status": "CONSULTATION_IN_PROGRESS",
     "to_status": "COMPLETION_PENDING",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 6,
     "idempotency_key": "idem-SYN-JAC104-016-06",
@@ -1314,16 +1386,16 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "d08477a1-2c5a-56bc-8bb8-9afabecb355c",
+    "history_id": "b51ae1b8-273b-5645-8985-e9b5eb8fa101",
     "inquiry_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "sequence": 7,
     "event": "FINALIZE_INQUIRY",
     "from_status": "COMPLETION_PENDING",
     "to_status": "RESOLVED",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "NONE",
-    "assigned_user_id_after": null,
+    "assigned_role_after": "CONSULTANT",
+    "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 7,
     "idempotency_key": "idem-SYN-JAC104-016-07",
     "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
@@ -1332,7 +1404,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "725d2326-e739-5c38-9b87-fe9bdcfd58cd",
+    "history_id": "e50c4531-daab-57ec-9d3a-f0ca174e18e3",
     "inquiry_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "sequence": 8,
     "event": "RESUME_CONSULTATION",
@@ -1350,15 +1422,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "b0a9cb58-412f-5d95-ba3c-77602ae03a9b",
+    "history_id": "2088129b-7fa1-53ef-aaf1-ba06b64f8552",
     "inquiry_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "sequence": 9,
     "event": "START_CONSULTATION",
     "from_status": "REOPENED",
     "to_status": "CONSULTATION_IN_PROGRESS",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 9,
     "idempotency_key": "idem-SYN-JAC104-016-09",
@@ -1368,7 +1440,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "8bb00a1f-c5aa-52c7-af23-31fdde39faad",
+    "history_id": "d9acdb83-010e-5c49-bb05-6a4e4828b9a2",
     "inquiry_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -1386,7 +1458,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "d3aa2266-7471-5670-9435-5a2b4cd64071",
+    "history_id": "336286d3-662f-5a86-b475-b3ab42cb0683",
     "inquiry_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -1404,12 +1476,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "53deda16-23f7-5f53-88ba-483451f962ab",
+    "history_id": "52bffdd2-8e44-56ec-a9d4-c1cf2d781287",
     "inquiry_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
     "sequence": 3,
     "event": "DANGER_DETECTED",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "CONSULTATION_PENDING",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -1422,15 +1494,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "e86f3a19-fe7b-5205-aa43-17b3f12a2c58",
+    "history_id": "bcccd9c1-fecc-56bb-980d-a3b905bc1c81",
     "inquiry_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
     "sequence": 4,
     "event": "START_CONSULTATION",
-    "from_status": "CONSULTATION_PENDING",
+    "from_status": "CONSULTATION_REQUIRED",
     "to_status": "CONSULTATION_IN_PROGRESS",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 4,
     "idempotency_key": "idem-SYN-JAC104-017-04",
@@ -1440,15 +1512,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "dab78349-f415-5aad-b53e-f746487141f4",
+    "history_id": "53e73e4c-e615-5bf7-ab12-cb8fc5a993b9",
     "inquiry_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
     "sequence": 5,
     "event": "CONSULTATION_COMPLETED",
     "from_status": "CONSULTATION_IN_PROGRESS",
     "to_status": "COMPLETION_PENDING",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-017-05",
@@ -1458,7 +1530,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "9740c562-8ab0-537a-8b92-400e76929779",
+    "history_id": "b3049473-86fa-577b-ac6d-ff74b1efce5c",
     "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -1476,7 +1548,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "042d509e-2d07-5484-a657-b8e7fc14c8fc",
+    "history_id": "02f3898a-7b29-5b46-a270-a67e145cde49",
     "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -1494,12 +1566,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "9cd4d705-aa25-566a-892f-a098df43860f",
+    "history_id": "b6697dd0-d59d-5bef-95b6-3bd8e9d18db7",
     "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "sequence": 3,
     "event": "DANGER_DETECTED",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "CONSULTATION_PENDING",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -1512,15 +1584,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "8d478d2e-f2ab-5094-9f0a-803c3f42e01d",
+    "history_id": "525339bd-3c60-5ac0-b039-96e770dc2d88",
     "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "sequence": 4,
     "event": "START_CONSULTATION",
-    "from_status": "CONSULTATION_PENDING",
+    "from_status": "CONSULTATION_REQUIRED",
     "to_status": "CONSULTATION_IN_PROGRESS",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "state_version": 4,
     "idempotency_key": "idem-SYN-JAC104-018-04",
@@ -1530,15 +1602,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "18b263d6-c270-52ee-a004-90688c1ca789",
+    "history_id": "20dad3c1-de4c-5c8a-90b7-3ab536c233ca",
     "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "sequence": 5,
-    "event": "VISIT_NEEDED",
+    "event": "VISIT_REVIEW_REQUIRED",
     "from_status": "CONSULTATION_IN_PROGRESS",
     "to_status": "VISIT_REVIEW_PENDING",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-018-05",
@@ -1548,17 +1620,53 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "1217a24c-97b6-5e8a-8788-d880d38d8eb7",
+    "history_id": "a843e97e-e032-5a6b-8b42-19b78bf099f6",
     "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "sequence": 6,
-    "event": "CONFIRM_VISIT",
+    "event": "VISIT_NEEDED",
     "from_status": "VISIT_REVIEW_PENDING",
-    "to_status": "VISIT_PENDING",
-    "actor_role": "COUNSELOR",
+    "to_status": "VISIT_SCHEDULING",
+    "actor_role": "CONSULTANT",
+    "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "assigned_role_after": "CONSULTANT",
+    "assigned_user_id_after": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "state_version": 6,
+    "idempotency_key": "idem-SYN-JAC104-018-06-create",
+    "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
+    "changed_at": "2026-07-05T23:10:00+09:00",
+    "reason": "SYN-JAC104-018 합성 상태 전이",
+    "data_classification": "synthetic"
+  },
+  {
+    "history_id": "117edb84-8a0d-5ddd-b169-a1e902f6281a",
+    "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
+    "sequence": 7,
+    "event": "UPDATE_VISIT_SCHEDULE",
+    "from_status": "VISIT_SCHEDULING",
+    "to_status": "VISIT_SCHEDULING",
+    "actor_role": "CONSULTANT",
+    "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "assigned_role_after": "CONSULTANT",
+    "assigned_user_id_after": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "state_version": 7,
+    "idempotency_key": "idem-SYN-JAC104-018-06-schedule",
+    "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
+    "changed_at": "2026-07-05T23:20:00+09:00",
+    "reason": "SYN-JAC104-018 합성 상태 전이",
+    "data_classification": "synthetic"
+  },
+  {
+    "history_id": "7abdbec8-3a9c-5ada-a723-182e3b9d70eb",
+    "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
+    "sequence": 8,
+    "event": "CONFIRM_VISIT",
+    "from_status": "VISIT_SCHEDULING",
+    "to_status": "VISIT_SCHEDULED",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 6,
+    "state_version": 8,
     "idempotency_key": "idem-SYN-JAC104-018-06",
     "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
     "changed_at": "2026-07-05T23:30:00+09:00",
@@ -1566,17 +1674,17 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "693248f5-2162-5b20-ba93-48df012568ef",
+    "history_id": "f217b885-64ad-5379-a4aa-d4ec50d69add",
     "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
-    "sequence": 7,
+    "sequence": 9,
     "event": "START_VISIT",
-    "from_status": "VISIT_PENDING",
-    "to_status": "VISIT_IN_PROGRESS",
+    "from_status": "VISIT_SCHEDULED",
+    "to_status": "VISIT_SCHEDULED",
     "actor_role": "TECHNICIAN",
     "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 7,
+    "state_version": 9,
     "idempotency_key": "idem-SYN-JAC104-018-07",
     "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
     "changed_at": "2026-07-06T00:00:00+09:00",
@@ -1584,17 +1692,17 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "be4c7122-9d7e-5cc7-bf9a-54c79f01c6ee",
+    "history_id": "3bc17895-db21-59bb-af50-b3b2002c0a54",
     "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
-    "sequence": 8,
+    "sequence": 10,
     "event": "VISIT_COMPLETED",
-    "from_status": "VISIT_IN_PROGRESS",
+    "from_status": "VISIT_SCHEDULED",
     "to_status": "COMPLETION_PENDING",
     "actor_role": "TECHNICIAN",
     "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 8,
+    "state_version": 10,
     "idempotency_key": "idem-SYN-JAC104-018-08",
     "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
     "changed_at": "2026-07-06T00:30:00+09:00",
@@ -1602,7 +1710,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "15a58016-306f-5e7d-aa6d-8933450b0d2f",
+    "history_id": "a5755cbc-fd22-5ceb-9fd7-ab7a2afe46fd",
     "inquiry_id": "cca8204e-c447-515f-9606-7f78ea00dc6b",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -1620,7 +1728,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "faa8123a-a50c-59f5-9e70-f1a065fa4aaa",
+    "history_id": "cf5a77ff-ddb9-5fa9-a2fe-a8f207c922d1",
     "inquiry_id": "cca8204e-c447-515f-9606-7f78ea00dc6b",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -1638,12 +1746,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "24e2db6b-0206-5407-8ebf-85372223882f",
+    "history_id": "474c882b-bfbc-5ea0-b447-bfd2df586307",
     "inquiry_id": "cca8204e-c447-515f-9606-7f78ea00dc6b",
     "sequence": 3,
     "event": "SAFE_GUIDANCE_READY",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "AI_GUIDANCE_READY",
+    "to_status": "AI_GUIDANCE",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -1656,11 +1764,11 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "cf7b43dd-2da6-5cde-a889-71577102fb81",
+    "history_id": "9611b2fd-c1eb-5dd7-90c2-9b49f34641f5",
     "inquiry_id": "cca8204e-c447-515f-9606-7f78ea00dc6b",
     "sequence": 4,
     "event": "CUSTOMER_REPORTED_SELF_RESOLVED",
-    "from_status": "AI_GUIDANCE_READY",
+    "from_status": "AI_GUIDANCE",
     "to_status": "RESOLVED",
     "actor_role": "CUSTOMER",
     "actor_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
@@ -1674,7 +1782,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "dd75dce6-5ddb-5d7d-ac10-9c9d7e8a2fd5",
+    "history_id": "3985b3d9-5ac2-5fd4-8301-afe1dca9560e",
     "inquiry_id": "7ae3ddf9-61d3-5b80-9a03-857bdabd81c6",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -1692,7 +1800,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "792acbe9-e236-5898-903b-496b4ef559df",
+    "history_id": "e6213363-82a6-5499-9a99-b77e48bcd222",
     "inquiry_id": "7ae3ddf9-61d3-5b80-9a03-857bdabd81c6",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -1710,7 +1818,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "bc2d28e0-3682-52de-a64b-5c35e9145d16",
+    "history_id": "82b6ba4e-e138-59d3-b884-7fb3a92421f5",
     "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -1728,7 +1836,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "d43df021-b837-5f05-8b80-39d7a170025f",
+    "history_id": "5f91c4df-ee85-5a0c-8664-f56f9f4b9965",
     "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -1746,12 +1854,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "194e5593-6257-555f-9978-3ae20e41e520",
+    "history_id": "6ff101b5-bc62-5418-9061-24a46631855b",
     "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "sequence": 3,
     "event": "SAFE_GUIDANCE_READY",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "AI_GUIDANCE_READY",
+    "to_status": "AI_GUIDANCE",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -1764,12 +1872,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "5cbf03a7-bb7d-5be4-b3f9-6cf634a02d0d",
+    "history_id": "c9b33199-2bdf-539b-8083-d28aa2d1d6a0",
     "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "sequence": 4,
     "event": "REQUEST_CONSULTATION",
-    "from_status": "AI_GUIDANCE_READY",
-    "to_status": "CONSULTATION_PENDING",
+    "from_status": "AI_GUIDANCE",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "CUSTOMER",
     "actor_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
     "assigned_role_after": "NONE",
@@ -1782,15 +1890,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "09bfdde7-1b71-5590-9d37-5d2e90d2c350",
+    "history_id": "3f683e5e-7f9d-5e12-ab63-ab2e68097147",
     "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "sequence": 5,
     "event": "START_CONSULTATION",
-    "from_status": "CONSULTATION_PENDING",
+    "from_status": "CONSULTATION_REQUIRED",
     "to_status": "CONSULTATION_IN_PROGRESS",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-021-05",
@@ -1800,15 +1908,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "d076b3b8-fc4f-5b7e-88ae-9a265db409bc",
+    "history_id": "ceab6faf-63a5-58d5-b8d3-2d31106451f1",
     "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "sequence": 6,
-    "event": "VISIT_NEEDED",
+    "event": "VISIT_REVIEW_REQUIRED",
     "from_status": "CONSULTATION_IN_PROGRESS",
     "to_status": "VISIT_REVIEW_PENDING",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 6,
     "idempotency_key": "idem-SYN-JAC104-021-06",
@@ -1818,17 +1926,53 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "a15f911e-5c3b-5763-be07-a89320088588",
+    "history_id": "1a9c85c2-703c-548a-a7c9-68164a489f4e",
     "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "sequence": 7,
-    "event": "CONFIRM_VISIT",
+    "event": "VISIT_NEEDED",
     "from_status": "VISIT_REVIEW_PENDING",
-    "to_status": "VISIT_PENDING",
-    "actor_role": "COUNSELOR",
+    "to_status": "VISIT_SCHEDULING",
+    "actor_role": "CONSULTANT",
+    "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
+    "assigned_role_after": "CONSULTANT",
+    "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
+    "state_version": 7,
+    "idempotency_key": "idem-SYN-JAC104-021-07-create",
+    "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
+    "changed_at": "2026-07-06T17:40:00+09:00",
+    "reason": "SYN-JAC104-021 합성 상태 전이",
+    "data_classification": "synthetic"
+  },
+  {
+    "history_id": "0a16b6c8-3c6f-502b-9207-dc7e1d2117f3",
+    "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
+    "sequence": 8,
+    "event": "UPDATE_VISIT_SCHEDULE",
+    "from_status": "VISIT_SCHEDULING",
+    "to_status": "VISIT_SCHEDULING",
+    "actor_role": "CONSULTANT",
+    "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
+    "assigned_role_after": "CONSULTANT",
+    "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
+    "state_version": 8,
+    "idempotency_key": "idem-SYN-JAC104-021-07-schedule",
+    "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
+    "changed_at": "2026-07-06T17:50:00+09:00",
+    "reason": "SYN-JAC104-021 합성 상태 전이",
+    "data_classification": "synthetic"
+  },
+  {
+    "history_id": "979156ac-f357-5970-a97d-bfda9a231e69",
+    "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
+    "sequence": 9,
+    "event": "CONFIRM_VISIT",
+    "from_status": "VISIT_SCHEDULING",
+    "to_status": "VISIT_SCHEDULED",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
-    "state_version": 7,
+    "state_version": 9,
     "idempotency_key": "idem-SYN-JAC104-021-07",
     "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
     "changed_at": "2026-07-06T18:00:00+09:00",
@@ -1836,17 +1980,17 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "2559cbab-ed81-577f-b027-92d5462ca62d",
+    "history_id": "ebd6bb44-1f14-575d-8827-a9ab558e4f5f",
     "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
-    "sequence": 8,
+    "sequence": 10,
     "event": "START_VISIT",
-    "from_status": "VISIT_PENDING",
-    "to_status": "VISIT_IN_PROGRESS",
+    "from_status": "VISIT_SCHEDULED",
+    "to_status": "VISIT_SCHEDULED",
     "actor_role": "TECHNICIAN",
     "actor_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
-    "state_version": 8,
+    "state_version": 10,
     "idempotency_key": "idem-SYN-JAC104-021-08",
     "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
     "changed_at": "2026-07-06T18:30:00+09:00",
@@ -1854,17 +1998,17 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "b303bab7-bf9e-5c7e-8068-60ac76f5591f",
+    "history_id": "06c61d7f-2493-58ba-b2e9-c362a5809b4a",
     "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
-    "sequence": 9,
+    "sequence": 11,
     "event": "VISIT_COMPLETED",
-    "from_status": "VISIT_IN_PROGRESS",
+    "from_status": "VISIT_SCHEDULED",
     "to_status": "COMPLETION_PENDING",
     "actor_role": "TECHNICIAN",
     "actor_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
-    "state_version": 9,
+    "state_version": 11,
     "idempotency_key": "idem-SYN-JAC104-021-09",
     "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
     "changed_at": "2026-07-06T19:00:00+09:00",
@@ -1872,9 +2016,9 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "59967f4f-0ec6-5f85-b11a-e6f1d5aad780",
+    "history_id": "db49e58e-fc20-5556-a78d-3a7789c23181",
     "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
-    "sequence": 10,
+    "sequence": 12,
     "event": "FINALIZE_INQUIRY",
     "from_status": "COMPLETION_PENDING",
     "to_status": "RESOLVED",
@@ -1882,7 +2026,7 @@
     "actor_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
     "assigned_role_after": "TECHNICIAN",
     "assigned_user_id_after": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
-    "state_version": 10,
+    "state_version": 12,
     "idempotency_key": "idem-SYN-JAC104-021-10",
     "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
     "changed_at": "2026-07-06T19:30:00+09:00",
@@ -1890,7 +2034,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "56c27527-be4e-5727-ae01-448de40bc060",
+    "history_id": "41463796-ea4c-5e18-8c8b-f306113c412d",
     "inquiry_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -1908,7 +2052,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "1066a77f-5b71-5cdd-aa25-909aa312a22d",
+    "history_id": "c886bcd1-5ce6-53f9-bd1e-480d6f268a33",
     "inquiry_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -1926,12 +2070,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "a31b70e3-b5d7-5bc1-be29-e4d32492cb40",
+    "history_id": "d99fac7e-75ec-5f7d-8e81-2960e187bc83",
     "inquiry_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
     "sequence": 3,
     "event": "NO_EVIDENCE",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "CONSULTATION_PENDING",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -1944,7 +2088,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "6e1dedce-7807-55c4-a1b3-ed9008e76acc",
+    "history_id": "10601f18-7297-52bc-8265-3951e743655a",
     "inquiry_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -1962,7 +2106,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "3c5fcfa2-4262-5dee-bcb3-07f030c98aba",
+    "history_id": "dd440005-0594-5d53-9cd7-ca639defa873",
     "inquiry_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -1980,12 +2124,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "888a5a1b-05f9-5cf9-a461-4c28e8701035",
+    "history_id": "f50b3b1f-7df9-582a-b68f-31d99ea0fa26",
     "inquiry_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067",
     "sequence": 3,
     "event": "NO_EVIDENCE",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "CONSULTATION_PENDING",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
@@ -1998,15 +2142,15 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "88b6c5d1-6f52-5de8-94fc-c295959ec43c",
+    "history_id": "0827ce98-5918-5a34-8f57-2e6932ca924e",
     "inquiry_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067",
     "sequence": 4,
     "event": "START_CONSULTATION",
-    "from_status": "CONSULTATION_PENDING",
+    "from_status": "CONSULTATION_REQUIRED",
     "to_status": "CONSULTATION_IN_PROGRESS",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "assigned_role_after": "COUNSELOR",
+    "assigned_role_after": "CONSULTANT",
     "assigned_user_id_after": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 4,
     "idempotency_key": "idem-SYN-JAC104-023-04",
@@ -2016,7 +2160,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "e83e11cd-e226-50d0-85b2-017fdb410146",
+    "history_id": "e15dcc43-aeaa-5aa4-9da3-93a54ad05249",
     "inquiry_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2",
     "sequence": 1,
     "event": "START_INQUIRY",
@@ -2034,7 +2178,7 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "277d673e-d381-5822-9e7f-00f8382005fa",
+    "history_id": "a8a7001b-0206-5c02-8141-b2ae44146f1b",
     "inquiry_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2",
     "sequence": 2,
     "event": "SUBMIT_SYMPTOM",
@@ -2052,12 +2196,12 @@
     "data_classification": "synthetic"
   },
   {
-    "history_id": "764921ac-0748-58bd-8673-5d9ea292fbdb",
+    "history_id": "fed94f3c-c547-5db4-bf45-2b93ba0dbe5c",
     "inquiry_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2",
     "sequence": 3,
     "event": "NO_EVIDENCE",
     "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "to_status": "CONSULTATION_PENDING",
+    "to_status": "CONSULTATION_REQUIRED",
     "actor_role": "SYSTEM",
     "actor_id": null,
     "assigned_role_after": "NONE",
