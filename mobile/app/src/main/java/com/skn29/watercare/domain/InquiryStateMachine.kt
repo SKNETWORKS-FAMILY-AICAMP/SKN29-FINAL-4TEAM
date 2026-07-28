@@ -22,11 +22,11 @@ object InquiryStateMachine {
         InquiryEvent.ConfirmError -> requireState(
             current,
             setOf(InquiryState.DRAFT, InquiryState.QUESTIONNAIRE_IN_PROGRESS),
-            InquiryState.ERROR_CONFIRMED
+            InquiryState.AI_GUIDANCE
         )
         InquiryEvent.RequestVisit -> requireState(
             current,
-            setOf(InquiryState.ERROR_CONFIRMED, InquiryState.VISIT_REVIEW_PENDING),
+            setOf(InquiryState.AI_GUIDANCE, InquiryState.VISIT_REVIEW_PENDING),
             InquiryState.VISIT_SCHEDULED
         )
         InquiryEvent.CompleteVisit -> requireState(

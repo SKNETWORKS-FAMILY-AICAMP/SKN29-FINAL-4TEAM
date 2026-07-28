@@ -5,26 +5,51 @@ enum class InquiryEntryMode {
     QUESTIONNAIRE
 }
 
+/**
+ * 문의 업무 상태.
+ * contracts/state-machine/inquiry-states.yaml 의 13개 코드와 1:1로 일치한다.
+ * 서버 응답 역직렬화에 그대로 쓰이므로 임의로 추가·변경하지 않는다.
+ */
 enum class InquiryState {
     DRAFT,
     QUESTIONNAIRE_IN_PROGRESS,
-    ERROR_CONFIRMED,
+    AI_GUIDANCE,
+    CONSULTATION_REQUIRED,
+    CONSULTATION_IN_PROGRESS,
     VISIT_REVIEW_PENDING,
+    VISIT_SCHEDULING,
     VISIT_SCHEDULED,
     COMPLETION_PENDING,
+    REVISIT_REQUIRED,
+    REOPENED,
     RESOLVED,
     CANCELLED
 }
 
+/**
+ * 방문 진행 상태.
+ * ASSIGNING·SCHEDULING·CONFIRMED·IN_PROGRESS·COMPLETED·FOLLOW_UP_REQUIRED·CANCELLED 는
+ * contracts/state-machine/inquiry-states.yaml 의 visit_status_codes 와 동일하다.
+ * EN_ROUTE·NEARBY·ARRIVED 는 계약 코드가 아닌 앱 내부 이동 표시용 하위 상태이며,
+ * 서버 전송 시 toContractCode() 로 계약 코드에 매핑한다.
+ */
 enum class VisitScheduleStatus {
     ASSIGNING,
+    SCHEDULING,
     CONFIRMED,
     EN_ROUTE,
     NEARBY,
     ARRIVED,
     IN_PROGRESS,
     COMPLETED,
-    CANCELLED
+    FOLLOW_UP_REQUIRED,
+    CANCELLED;
+
+    /** 앱 내부 이동 추적 상태를 계약 visit_status_codes 값으로 변환한다. */
+    fun toContractCode(): String = when (this) {
+        EN_ROUTE, NEARBY, ARRIVED -> CONFIRMED.name
+        else -> name
+    }
 }
 
 enum class TravelMode {

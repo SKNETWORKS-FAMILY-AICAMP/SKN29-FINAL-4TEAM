@@ -21,8 +21,24 @@ data/**/*.zip
 web/node_modules/
 web/dist/
 
-WaterCareAndroid/.idea/
+mobile/.idea/
 WaterCareAndroid/.gradle/
-WaterCareAndroid/local.properties
+mobile/local.properties
 WaterCareBackend/.env
-WaterCareBackend/.venv/
+**/.venv/
+
+# Android
+mobile/.gradle/
+mobile/build/
+mobile/app/build/
+mobile/.kotlin/
+mobile/local.properties
+
+# Python / Django
+**/.venv/
+*.sqlite3
+db.sqlite3
+
+# IDE
+.idea/
+*.iml

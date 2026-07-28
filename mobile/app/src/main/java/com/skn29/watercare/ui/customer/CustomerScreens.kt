@@ -1033,6 +1033,16 @@ fun CustomerTrackingScreen(onBack: () -> Unit) {
                                 "도착 완료"
                             tracking.routeRecalculating ->
                                 "경로 재탐색"
+                            tracking.travelMode ==
+                                TravelMode.DRIVING &&
+                                tracking.connectionState ==
+                                TrackingConnectionState.LIVE ->
+                                "🚙 차량 이동 중"
+                            tracking.travelMode ==
+                                TravelMode.WALKING &&
+                                tracking.connectionState ==
+                                TrackingConnectionState.LIVE ->
+                                "도보 이동 중"
                             tracking.connectionState ==
                                 TrackingConnectionState.LIVE ->
                                 "● LIVE"
@@ -1407,6 +1417,13 @@ private fun TrackingBottomCard(
                     connectionState ==
                         TrackingConnectionState.STALE ->
                         "최근 위치 갱신이 ${staleSeconds}초 지연되고 있습니다."
+                    travelMode == TravelMode.DRIVING &&
+                        isLive ->
+                        "실제 차량이 도로 경로를 따라 이동 중 · " +
+                            "현재 ${speedKph}km/h · 최근 갱신 $lastUpdatedLabel"
+                    travelMode == TravelMode.WALKING &&
+                        isLive ->
+                        "기사님이 차량에서 내려 고객님 댁으로 이동 중입니다."
                     isLive ->
                         "실시간 위치 수신 중 · 최근 갱신 $lastUpdatedLabel · " +
                             signalStatusLabel(
@@ -1533,7 +1550,7 @@ private fun entryModeLabel(entryMode: InquiryEntryMode): String = when (entryMod
 }
 
 private fun trackingMarkerResource(travelMode: TravelMode): Int = when (travelMode) {
-    TravelMode.DRIVING -> R.drawable.ic_marker_vehicle
+    TravelMode.DRIVING -> R.drawable.ic_marker_vehicle_driving
     TravelMode.WAITING,
     TravelMode.WALKING,
     TravelMode.ARRIVED -> R.drawable.ic_marker_technician

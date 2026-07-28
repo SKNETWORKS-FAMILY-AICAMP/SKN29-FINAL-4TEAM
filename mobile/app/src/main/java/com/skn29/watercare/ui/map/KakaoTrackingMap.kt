@@ -39,7 +39,6 @@ import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
-import com.kakao.vectormap.label.TransformMethod
 import com.kakao.vectormap.route.RouteLineOptions
 import com.kakao.vectormap.route.RouteLineSegment
 import com.kakao.vectormap.route.RouteLineStyle
@@ -116,7 +115,6 @@ fun KakaoTrackingMap(
                             LatLng.from(technician.latitude, technician.longitude)
                         )
                             .setStyles(technicianStyles)
-                            .setTransform(TransformMethod.AbsoluteRotation)
                     )
 
                     labelLayer.addLabel(
@@ -215,21 +213,43 @@ fun KakaoTrackingMap(
         technicianLabel?.invalidate(true)
     }
 
-    /** 차량은 진행 방향으로 회전하고, 카메라는 차량 앞쪽을 살짝 바라본다. */
-    LaunchedEffect(technician, headingDegrees, travelMode, kakaoMap, technicianLabel) {
-        val position = LatLng.from(technician.latitude, technician.longitude)
-        val moveDuration = if (travelMode == TravelMode.WALKING) 760 else 590
-        val rotationRadians = Math.toRadians(headingDegrees).toFloat()
+    /**
+     * 차량 마커는 화면 기준으로 똑바로 유지한다.
+     *
+     * 기존처럼 진행 방향에 맞춰 이미지를 계속 회전시키지 않으므로
+     * 급커브나 교차로에서 차량이 360도로 도는 것처럼 보이지 않는다.
+     * 실제 이동감은 도로 위 위치 이동과 주행 효과가 포함된 차량 이미지로 표현한다.
+     */
+    LaunchedEffect(
+        technician,
+        headingDegrees,
+        travelMode,
+        kakaoMap,
+        technicianLabel
+    ) {
+        val position = LatLng.from(
+            technician.latitude,
+            technician.longitude
+        )
 
-        technicianLabel?.rotateTo(rotationRadians, moveDuration)
+        val moveDuration = when (travelMode) {
+            TravelMode.DRIVING -> 640
+            TravelMode.WALKING -> 760
+            TravelMode.ARRIVED -> 420
+            TravelMode.WAITING -> 420
+        }
+
         technicianLabel?.moveTo(position, moveDuration)
 
         val cameraPoint = when (travelMode) {
-            TravelMode.DRIVING -> offsetPoint(technician, headingDegrees, 55.0)
-            TravelMode.WALKING -> offsetPoint(technician, headingDegrees, 24.0)
+            TravelMode.DRIVING ->
+                offsetPoint(technician, headingDegrees, 55.0)
+            TravelMode.WALKING ->
+                offsetPoint(technician, headingDegrees, 24.0)
             TravelMode.ARRIVED -> customer
             TravelMode.WAITING -> technician
         }
+
         val zoomLevel = when (travelMode) {
             TravelMode.WALKING,
             TravelMode.ARRIVED -> 17
@@ -239,10 +259,17 @@ fun KakaoTrackingMap(
         if (autoFollow) {
             kakaoMap?.moveCamera(
                 CameraUpdateFactory.newCenterPosition(
-                    LatLng.from(cameraPoint.latitude, cameraPoint.longitude),
+                    LatLng.from(
+                        cameraPoint.latitude,
+                        cameraPoint.longitude
+                    ),
                     zoomLevel
                 ),
-                CameraAnimation.from(moveDuration, true, true)
+                CameraAnimation.from(
+                    moveDuration,
+                    true,
+                    true
+                )
             )
         }
     }
@@ -343,7 +370,7 @@ private fun markerStyle(
     travelMode: TravelMode
 ): LabelStyle {
     val markerResource = when (travelMode) {
-        TravelMode.DRIVING -> R.drawable.ic_marker_vehicle_map
+        TravelMode.DRIVING -> R.drawable.ic_marker_vehicle_driving
         TravelMode.WAITING,
         TravelMode.WALKING,
         TravelMode.ARRIVED -> R.drawable.ic_marker_technician_map
@@ -356,7 +383,7 @@ private fun markerStyle(
         )
     )
         .setApplyDpScale(false)
-        .setAnchorPoint(0.5f, 0.78f)
+        .setAnchorPoint(0.5f, 0.72f)
 }
 
 private fun markerBitmap(

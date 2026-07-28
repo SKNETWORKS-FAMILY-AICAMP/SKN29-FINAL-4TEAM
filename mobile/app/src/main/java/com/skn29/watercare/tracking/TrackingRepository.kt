@@ -25,7 +25,7 @@ import kotlin.math.sqrt
 
 object TrackingRepository {
     private const val ROUTE_LOG_TAG = "VISIT_ROUTE"
-    private const val ANIMATION_POINT_COUNT = 360
+    private const val ANIMATION_POINT_COUNT = 300
     private const val MAX_ROAD_SNAP_DISTANCE_METERS = 45.0
     private const val WALKING_SWITCH_DISTANCE_METERS = 220
     private const val MAX_ACCEPTABLE_ACCURACY_METERS = 80f
@@ -399,10 +399,10 @@ object TrackingRepository {
     }
 
     fun nextDemoDelayMillis(): Long = when (_snapshot.value.travelMode) {
-        TravelMode.WALKING -> 820L
+        TravelMode.WALKING -> 680L
         TravelMode.ARRIVED -> 1_000L
-        TravelMode.DRIVING -> 650L
-        TravelMode.WAITING -> 900L
+        TravelMode.DRIVING -> 460L
+        TravelMode.WAITING -> 850L
     }
 
     private suspend fun recalculateRouteFrom(
@@ -540,7 +540,7 @@ object TrackingRepository {
         val speedKph = when {
             index >= animationRoute.lastIndex -> 0
             remainingDistance <= WALKING_SWITCH_DISTANCE_METERS -> 4
-            else -> (26 + 10 * sin(progress * Math.PI))
+            else -> (24 + 12 * sin(progress * Math.PI))
                 .roundToInt()
         }
 
