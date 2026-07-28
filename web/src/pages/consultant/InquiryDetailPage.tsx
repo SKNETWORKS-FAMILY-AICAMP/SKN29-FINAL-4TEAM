@@ -136,8 +136,14 @@ export default function InquiryDetailPage() {
       />
       <CustomerProductSection inquiry={inquiry} />
       <SymptomQuestionnaireSection inquiry={inquiry} />
-      <AiSummarySection summary={inquiry.aiSummary} />
-      <EvidenceSection evidence={inquiry.evidence} />
+      <AiSummarySection
+        summary={inquiry.aiSummary}
+        status={inquiryQuery.sections.aiSummary}
+      />
+      <EvidenceSection
+        evidence={inquiry.evidence}
+        status={inquiryQuery.sections.evidence}
+      />
 
       <section className="inquiry-detail__card">
         <h2>상담 답변 작성</h2>
@@ -216,7 +222,10 @@ export default function InquiryDetailPage() {
         </p>
       </section>
 
-      <StatusHistorySection statusHistory={inquiry.statusHistory} />
+      <StatusHistorySection
+        statusHistory={inquiry.statusHistory}
+        status={inquiryQuery.sections.statusHistory}
+      />
     </main>
   );
 }

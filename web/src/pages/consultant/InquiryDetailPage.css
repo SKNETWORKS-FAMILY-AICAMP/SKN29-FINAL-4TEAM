@@ -200,6 +200,34 @@
   color: #64748b;
 }
 
+.inquiry-detail__section-error {
+  display: flex;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fffafa;
+  color: #991b1b;
+}
+
+.inquiry-detail__section-error > span {
+  display: flex;
+  flex: 0 0 28px;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #fee2e2;
+  font-weight: 800;
+}
+
+.inquiry-detail__section-error p {
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 14px;
+}
+
 .inquiry-detail__history {
   padding: 0;
   margin: 0;
