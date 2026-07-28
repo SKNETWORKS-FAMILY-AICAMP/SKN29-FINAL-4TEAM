@@ -8,28 +8,24 @@ from apps.accounts.models import CustomerProfile, User
 
 DEMO_USERS = (
     {
-        "id": "DEMO-USR-001",
         "username": "DEMO-CUSTOMER-001",
         "full_name": "합성 고객 001",
         "role_code": User.Role.CUSTOMER,
         "employee_no": None,
     },
     {
-        "id": "DEMO-USR-002",
         "username": "DEMO-CONSULTANT-001",
         "full_name": "합성 상담사 001",
         "role_code": User.Role.CONSULTANT,
         "employee_no": "DEMO-EMP-CNS-001",
     },
     {
-        "id": "DEMO-USR-003",
         "username": "DEMO-TECHNICIAN-001",
         "full_name": "합성 기사 001",
         "role_code": User.Role.TECHNICIAN,
         "employee_no": "DEMO-EMP-TEC-001",
     },
     {
-        "id": "DEMO-USR-004",
         "username": "DEMO-OPERATOR-001",
         "full_name": "합성 운영자 001",
         "role_code": User.Role.OPERATOR,
@@ -48,9 +44,8 @@ class Command(BaseCommand):
 
         for user_data in DEMO_USERS:
             user, created = User.objects.update_or_create(
-                id=user_data["id"],
+                username=user_data["username"],
                 defaults={
-                    "username": user_data["username"],
                     "full_name": user_data["full_name"],
                     "email": "",
                     "phone": "",
@@ -65,12 +60,11 @@ class Command(BaseCommand):
             created_count += int(created)
             updated_count += int(not created)
 
-        customer = User.objects.get(pk="DEMO-USR-001")
+        customer = User.objects.get(username="DEMO-CUSTOMER-001")
         CustomerProfile.objects.update_or_create(
-            id="DEMO-CUS-001",
+            customer_no="SYN-CUSTOMER-001",
             defaults={
                 "user": customer,
-                "customer_no": "SYN-CUSTOMER-001",
                 "customer_name": "합성 고객 001",
                 "phone": "",
                 "postal_code": "",
