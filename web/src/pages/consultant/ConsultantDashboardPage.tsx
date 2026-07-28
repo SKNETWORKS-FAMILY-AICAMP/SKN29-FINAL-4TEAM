@@ -17,6 +17,8 @@ type InquiryStatus =
   | "CONSULTATION_IN_PROGRESS"
   | "REOPENED";
 
+type InquirySort = "RECEIVED_DESC" | "RECEIVED_ASC";
+
 interface InquiryListItem {
   inquiryId: string;
   customerDisplayName: string;
@@ -39,7 +41,7 @@ const MOCK_INQUIRIES: InquiryListItem[] = [
     riskLevel: "general",
     priorityLabel: "보통",
     priorityVariant: "default",
-    receivedAt: "2026-07-27T09:20:00",
+    receivedAt: "2026-07-27T09:20:00+09:00",
   },
   {
     inquiryId: "DEMO-INQ-002",
@@ -50,7 +52,7 @@ const MOCK_INQUIRIES: InquiryListItem[] = [
     riskLevel: "danger",
     priorityLabel: "긴급",
     priorityVariant: "urgent",
-    receivedAt: "2026-07-27T09:45:00",
+    receivedAt: "2026-07-27T09:45:00+09:00",
   },
   {
     inquiryId: "DEMO-INQ-003",
@@ -61,7 +63,7 @@ const MOCK_INQUIRIES: InquiryListItem[] = [
     riskLevel: "caution",
     priorityLabel: "높음",
     priorityVariant: "high",
-    receivedAt: "2026-07-27T10:10:00",
+    receivedAt: "2026-07-27T10:10:00+09:00",
   },
 ];
 
@@ -88,6 +90,7 @@ function formatDateTime(value: string): string {
   }
 
   return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
@@ -95,11 +98,25 @@ function formatDateTime(value: string): string {
   }).format(date);
 }
 
+function getReceivedTimestamp(value: string): number {
+  const timestamp = Date.parse(value);
+
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
 export default function ConsultantDashboardPage() {
   const navigate = useNavigate();
 
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedRisk, setSelectedRisk] = useState<"ALL" | RiskLevel>("ALL");
+  const [selectedStatus, setSelectedStatus] = useState<
+    "ALL" | InquiryStatus
+  >("ALL");
+  const [selectedPriority, setSelectedPriority] = useState<
+    "ALL" | PriorityBadgeVariant
+  >("ALL");
+  const [selectedSort, setSelectedSort] =
+    useState<InquirySort>("RECEIVED_DESC");
 
   const filteredInquiries = useMemo(() => {
     const keyword = searchKeyword.trim().toLowerCase();
@@ -114,10 +131,32 @@ export default function ConsultantDashboardPage() {
 
       const matchesRisk =
         selectedRisk === "ALL" || inquiry.riskLevel === selectedRisk;
+      const matchesStatus =
+        selectedStatus === "ALL" || inquiry.currentState === selectedStatus;
+      const matchesPriority =
+        selectedPriority === "ALL" ||
+        inquiry.priorityVariant === selectedPriority;
 
-      return matchesKeyword && matchesRisk;
+      return (
+        matchesKeyword &&
+        matchesRisk &&
+        matchesStatus &&
+        matchesPriority
+      );
+    }).sort((left, right) => {
+      const difference =
+        getReceivedTimestamp(right.receivedAt) -
+        getReceivedTimestamp(left.receivedAt);
+
+      return selectedSort === "RECEIVED_DESC" ? difference : -difference;
     });
-  }, [searchKeyword, selectedRisk]);
+  }, [
+    searchKeyword,
+    selectedPriority,
+    selectedRisk,
+    selectedSort,
+    selectedStatus,
+  ]);
 
   const handleInquiryClick = (inquiryId: string) => {
     navigate(createInquiryDetailPath(inquiryId));
@@ -126,6 +165,9 @@ export default function ConsultantDashboardPage() {
   const handleResetFilters = () => {
     setSearchKeyword("");
     setSelectedRisk("ALL");
+    setSelectedStatus("ALL");
+    setSelectedPriority("ALL");
+    setSelectedSort("RECEIVED_DESC");
   };
 
   return (
@@ -172,13 +214,67 @@ export default function ConsultantDashboardPage() {
             <option value="danger">위험</option>
           </select>
         </label>
+
+        <label>
+          <span>상태</span>
+
+          <select
+            value={selectedStatus}
+            onChange={(event) =>
+              setSelectedStatus(
+                event.target.value as "ALL" | InquiryStatus,
+              )
+            }
+          >
+            <option value="ALL">전체</option>
+            <option value="CONSULTATION_REQUIRED">상담 필요</option>
+            <option value="CONSULTATION_IN_PROGRESS">상담 진행 중</option>
+            <option value="REOPENED">문의 재개</option>
+          </select>
+        </label>
+
+        <label>
+          <span>우선순위</span>
+
+          <select
+            value={selectedPriority}
+            onChange={(event) =>
+              setSelectedPriority(
+                event.target.value as "ALL" | PriorityBadgeVariant,
+              )
+            }
+          >
+            <option value="ALL">전체</option>
+            <option value="default">보통</option>
+            <option value="high">높음</option>
+            <option value="urgent">긴급</option>
+          </select>
+        </label>
+
+        <label>
+          <span>정렬</span>
+
+          <select
+            value={selectedSort}
+            onChange={(event) =>
+              setSelectedSort(event.target.value as InquirySort)
+            }
+          >
+            <option value="RECEIVED_DESC">접수 시각 최신순</option>
+            <option value="RECEIVED_ASC">접수 시각 오래된순</option>
+          </select>
+        </label>
+
+        <p className="consultant-dashboard__mock-notice">
+          현재 목록과 우선순위 필터는 Mock 데이터 기준입니다.
+        </p>
       </section>
 
       <section className="consultant-dashboard__content">
         {filteredInquiries.length === 0 ? (
           <EmptyState
             title="검색 결과가 없습니다."
-            description="검색어나 위험도 조건을 변경한 뒤 다시 확인해 주세요."
+            description="검색어나 필터 조건을 변경한 뒤 다시 확인해 주세요."
             actionLabel="검색 조건 초기화"
             onAction={handleResetFilters}
           />
