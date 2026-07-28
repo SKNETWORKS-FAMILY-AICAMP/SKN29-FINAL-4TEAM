@@ -5,6 +5,7 @@ import {
   createVisitTransitionPath,
   ROUTE_PATHS,
 } from "../../app/router/routePaths";
+import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import "./InquiryDetailPage.css";
 
 type RiskLevel = "GENERAL" | "CAUTION" | "DANGER";
@@ -226,6 +227,8 @@ export default function InquiryDetailPage() {
     ? MOCK_INQUIRY_DETAILS[inquiryId]
     : undefined;
 
+  const isForbidden = inquiryId === "DEMO-INQ-FORBIDDEN";  
+
   const [responseDraft, setResponseDraft] = useState("");
   const [actionMessage, setActionMessage] = useState("");
 
@@ -233,6 +236,21 @@ export default function InquiryDetailPage() {
     setResponseDraft(inquiry?.responseDraft ?? "");
     setActionMessage("");
   }, [inquiry]);
+
+  if (isForbidden) {
+  return (
+    <main className="inquiry-detail">
+      <ForbiddenState
+        title="이 문의에 접근할 권한이 없습니다."
+        description="담당 상담사이거나 해당 문의의 조회 권한이 있는지 확인해 주세요."
+        actionLabel="문의 목록으로 돌아가기"
+        onAction={() =>
+          navigate(ROUTE_PATHS.consultantInquiryList)
+        }
+      />
+    </main>
+  );
+}
 
   if (!inquiry) {
     return (
