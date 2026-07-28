@@ -1,0 +1,9 @@
+# T-005 Wave 2 제품 케어 상태
+version: 1.0.0
+status: OWNER_BASELINE
+codes:
+  - DUE
+  - SCHEDULED
+  - COMPLETED
+  - OVERDUE
+  - CANCELLED
