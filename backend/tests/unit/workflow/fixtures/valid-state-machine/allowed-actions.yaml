@@ -1,0 +1,24 @@
+contract:
+  name: allowed-actions
+  version: 0.1.0
+  status: test_fixture
+  owner: TEST
+styles:
+  - PRIMARY
+action_catalog:
+  - code: EVENT_A
+    label: Perform action
+    operation_id: performAction
+    style: PRIMARY
+    requires_confirmation: false
+    confirmation_message: null
+state_role_actions:
+  STATE_A:
+    CUSTOMER:
+      - action: EVENT_A
+        transition_rule_ids:
+          - TR-001
+  STATE_B: {}
+internal_events_by_state:
+  STATE_A: []
+  STATE_B: []

@@ -1,5 +1,12 @@
 title: LoginRequest
 type: object
-description: 로그인 요청
+description: 합성 사용자 allowlist 로그인 요청
 additionalProperties: false
-properties: {}
+required:
+  - demo_user_code
+properties:
+  demo_user_code:
+    type: string
+    minLength: 1
+    maxLength: 150
+    pattern: "^(DEMO|SYN)-"

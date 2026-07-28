@@ -1,0 +1,678 @@
+%% WaterCare ERD v3.0.0
+%% 원본: 20260723/테이블명세서 01~32
+erDiagram
+  common_code_group {
+    varchar_40 group_code PK
+    varchar_100 group_name
+    text description
+    integer display_order
+    boolean is_active
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  common_code {
+    uuid id PK
+    varchar_40 group_code FK
+    varchar_40 code
+    varchar_100 code_name
+    text description
+    integer display_order
+    boolean is_active
+    jsonb metadata
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  accounts_user {
+    uuid id PK
+    varchar_150 username
+    varchar_128 password
+    varchar_254 email
+    varchar_100 full_name
+    varchar_30 phone
+    varchar_40 role_code
+    varchar_40 employee_no
+    timestamptz last_login
+    boolean is_superuser
+    boolean is_staff
+    boolean is_active
+    timestamptz date_joined
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  catalog_product_model {
+    uuid id PK
+    varchar_60 model_code
+    varchar_150 model_name
+    varchar_40 generation_code
+    varchar_100 manufacturer
+    date launched_on
+    date discontinued_on
+    jsonb features
+    boolean is_supported_mvp
+    boolean is_active
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  customers_customer_profile {
+    uuid id PK
+    uuid user_id FK
+    varchar_40 customer_no
+    varchar_100 customer_name
+    varchar_30 phone
+    varchar_10 postal_code
+    varchar_255 address_line1
+    varchar_255 address_line2
+    varchar_40 consent_version
+    timestamptz consented_at
+    boolean is_synthetic
+    timestamptz deleted_at
+    uuid deleted_by_id FK
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  subscriptions_customer_subscription {
+    uuid id PK
+    varchar_50 contract_no
+    uuid customer_id FK
+    uuid product_model_id FK
+    varchar_80 serial_no
+    varchar_40 management_type_code
+    varchar_40 status_code
+    date started_on
+    date ended_on
+    timestamptz installed_at
+    varchar_500 installation_address
+    date next_care_on
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  subscriptions_care_record {
+    uuid id PK
+    uuid subscription_id FK
+    uuid visit_result_id FK
+    varchar_40 care_type_code
+    varchar_40 status_code
+    date scheduled_on
+    timestamptz completed_at
+    timestamptz cancelled_at
+    text cancellation_reason
+    text summary
+    uuid performed_by_id FK
+    varchar_40 source_code
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  support_inquiry {
+    uuid id PK
+    varchar_50 inquiry_no
+    uuid subscription_id FK
+    uuid initiated_by_id FK
+    uuid assigned_counselor_id FK
+    uuid current_owner_id FK
+    varchar_40 current_owner_role_code
+    varchar_40 channel_code
+    text raw_text
+    varchar_40 status_code
+    integer state_version
+    varchar_40 priority_code
+    varchar_40 risk_level_code
+    varchar_40 usage_guidance_code
+    text usage_guidance_message
+    jsonb restricted_functions
+    jsonb next_action
+    boolean requires_consultation
+    boolean customer_action_required
+    varchar_40 completion_route_code
+    varchar_40 required_finalizer_role_code
+    uuid required_finalizer_user_id FK
+    timestamptz opened_at
+    timestamptz closed_at
+    timestamptz deleted_at
+    uuid deleted_by_id FK
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  support_inquiry_symptom {
+    uuid id PK
+    uuid inquiry_id FK
+    varchar_40 symptom_type_code
+    text occurrence_condition
+    text accompanying_symptoms
+    varchar_100 duration_text
+    varchar_200 location_text
+    jsonb structured_payload
+    varchar_30 schema_version
+    uuid source_ai_run_id FK
+    boolean is_customer_confirmed
+    uuid confirmed_by_id FK
+    timestamptz confirmed_at
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  support_inquiry_qa {
+    uuid id PK
+    uuid inquiry_id FK
+    smallint sequence_no
+    varchar_80 question_code
+    text question_text
+    varchar_40 answer_type_code
+    text answer_text
+    jsonb answer_payload
+    varchar_40 asked_by_type_code
+    uuid source_ai_run_id FK
+    uuid answered_by_id FK
+    timestamptz answered_at
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  support_symptom_assessment {
+    uuid id PK
+    uuid inquiry_id FK
+    integer assessment_version
+    varchar_40 ruleset_version
+    varchar_40 risk_level_code
+    varchar_40 priority_code
+    varchar_40 usage_guidance_code
+    boolean requires_counseling
+    text reason
+    jsonb rule_result
+    varchar_40 assessed_by_type_code
+    uuid ai_run_id FK
+    timestamptz created_at
+  }
+  support_guidance {
+    uuid id PK
+    uuid inquiry_id FK
+    integer guidance_version
+    varchar_40 review_status_code
+    varchar_200 title
+    text summary_text
+    text safety_notice
+    varchar_40 evidence_sufficiency_code
+    boolean requires_counseling
+    uuid generated_by_ai_run_id FK
+    uuid reviewed_by_id FK
+    timestamptz reviewed_at
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  support_guidance_item {
+    uuid id PK
+    uuid guidance_id FK
+    smallint step_no
+    varchar_40 action_type_code
+    text instruction_text
+    text caution_text
+    boolean requires_confirmation
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  support_customer_action_result {
+    uuid id PK
+    uuid guidance_item_id FK
+    smallint attempt_no
+    varchar_40 result_code
+    text result_text
+    timestamptz performed_at
+    text customer_comment
+    uuid submitted_by_id FK
+    varchar_128 idempotency_key
+    timestamptz created_at
+  }
+  support_consultation {
+    uuid id PK
+    uuid inquiry_id FK
+    uuid counselor_id FK
+    timestamptz assigned_at
+    varchar_40 status_code
+    integer state_version
+    timestamptz started_at
+    timestamptz ended_at
+    text customer_summary
+    text counselor_notes
+    varchar_40 disposition_code
+    boolean visit_required
+    text ai_summary_draft
+    text final_summary
+    text next_action
+    text cancellation_reason
+    timestamptz deleted_at
+    uuid deleted_by_id FK
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  support_handoff_report {
+    uuid id PK
+    uuid inquiry_id FK
+    uuid consultation_id FK
+    integer report_version
+    varchar_40 report_status_code
+    text product_summary
+    text symptom_summary
+    text action_summary
+    text risk_summary
+    text evidence_summary
+    jsonb priority_check_items
+    text ai_draft
+    text counselor_final
+    uuid generated_by_ai_run_id FK
+    uuid confirmed_by_id FK
+    timestamptz confirmed_at
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  field_service_visit {
+    uuid id PK
+    varchar_50 visit_no
+    uuid inquiry_id FK
+    uuid handoff_report_id FK
+    uuid technician_id FK
+    varchar_40 visit_status_code
+    integer state_version
+    timestamptz scheduled_start_at
+    timestamptz scheduled_end_at
+    varchar_500 address_snapshot
+    varchar_100 contact_snapshot
+    timestamptz assigned_at
+    timestamptz started_at
+    timestamptz completed_at
+    timestamptz cancelled_at
+    text cancellation_reason
+    timestamptz deleted_at
+    uuid deleted_by_id FK
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  field_service_visit_result {
+    uuid id PK
+    uuid visit_id FK
+    varchar_40 cause_category_code
+    text inspection_summary
+    text action_summary
+    text parts_used_text
+    text customer_guidance
+    boolean resolved_on_site
+    boolean revisit_required
+    text revisit_reason
+    text technician_note
+    uuid submitted_by_id FK
+    varchar_128 idempotency_key
+    timestamptz completed_at
+    date next_care_on
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  support_followup_confirmation {
+    uuid id PK
+    uuid inquiry_id FK
+    uuid guidance_id FK
+    uuid consultation_id FK
+    uuid visit_id FK
+    varchar_40 channel_code
+    timestamptz requested_at
+    timestamptz responded_at
+    varchar_40 resolution_status_code
+    integer state_version
+    text customer_response
+    uuid response_recorded_by_id FK
+    varchar_128 response_idempotency_key
+    text unresolved_reason
+    text next_action
+    uuid confirmed_by_id FK
+    timestamptz confirmed_at
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  support_inquiry_status_history {
+    uuid id PK
+    uuid questionnaire_session_id FK
+    uuid inquiry_id FK
+    uuid consultation_id FK
+    uuid visit_id FK
+    varchar_40 target_type_code
+    varchar_60 event_code
+    varchar_40 from_status_code
+    varchar_40 to_status_code
+    integer state_version
+    text change_reason
+    uuid changed_by_id FK
+    varchar_40 changed_by_type_code
+    uuid correlation_id
+    varchar_128 idempotency_key
+    timestamptz changed_at
+  }
+  knowledge_ingestion_batch {
+    uuid id PK
+    varchar_50 batch_no
+    varchar_30 dataset_scope_code
+    varchar_40 source_type_code
+    varchar_40 status_code
+    varchar_128 idempotency_key
+    uuid correlation_id
+    uuid started_by_id FK
+    timestamptz started_at
+    timestamptz completed_at
+    integer total_count
+    integer success_count
+    integer failure_count
+    varchar_50 pipeline_version
+    varchar_500 log_uri
+    text error_summary
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  knowledge_source_document {
+    uuid id PK
+    uuid ingestion_batch_id FK
+    varchar_80 document_code
+    varchar_30 dataset_scope_code
+    uuid supersedes_document_id FK
+    varchar_300 title
+    varchar_150 source_org
+    varchar_40 document_type_code
+    varchar_1000 official_source_url
+    varchar_1000 usage_terms_url
+    text license_note
+    varchar_1000 original_file_uri
+    varchar_300 file_name
+    varchar_100 mime_type
+    bigint file_size_bytes
+    varchar_64 sha256_hash
+    varchar_100 revision_label
+    date published_on
+    timestamptz collected_at
+    uuid collected_by_id FK
+    varchar_40 status_code
+    varchar_50 parser_version
+    timestamptz created_at
+    timestamptz updated_at
+    timestamptz deleted_at
+    uuid deleted_by_id FK
+  }
+  knowledge_document_model_scope {
+    uuid id PK
+    uuid document_id FK
+    uuid product_model_id FK
+    date applicable_from
+    date applicable_to
+    text applicability_note
+    boolean is_verified
+    uuid verified_by_id FK
+    timestamptz verified_at
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  knowledge_document_page {
+    uuid id PK
+    uuid document_id FK
+    integer page_no
+    text extracted_text
+    varchar_64 text_sha256
+    varchar_40 parse_status_code
+    varchar_40 review_status_code
+    boolean is_rag_eligible
+    text exclusion_reason
+    uuid reviewer_id FK
+    timestamptz reviewed_at
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  knowledge_document_chunk {
+    uuid id PK
+    uuid page_id FK
+    integer chunk_no
+    varchar_40 chunk_type_code
+    varchar_500 section_path
+    text chunk_text
+    varchar_64 chunk_text_sha256
+    integer start_offset
+    integer end_offset
+    integer token_count
+    varchar_120 tokenizer_name
+    varchar_50 tokenizer_version
+    jsonb symptom_tags
+    jsonb metadata
+    tsvector search_vector
+    varchar_50 chunking_version
+    boolean is_active
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  knowledge_chunk_embedding {
+    uuid id PK
+    uuid chunk_id FK
+    varchar_120 embedding_model
+    varchar_80 embedding_model_version
+    integer embedding_dimension
+    varchar_64 source_text_sha256
+    vector embedding
+    timestamptz embedded_at
+    boolean is_active
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  knowledge_data_quality_issue {
+    uuid id PK
+    uuid ingestion_batch_id FK
+    uuid document_id FK
+    uuid page_id FK
+    uuid chunk_id FK
+    varchar_40 issue_type_code
+    varchar_80 validation_rule_code
+    varchar_50 validator_version
+    varchar_40 severity_code
+    text issue_message
+    jsonb details
+    varchar_40 status_code
+    timestamptz detected_at
+    uuid resolved_by_id FK
+    timestamptz resolved_at
+    text resolution_note
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  aiops_ai_run {
+    uuid id PK
+    uuid inquiry_id FK
+    varchar_50 task_type_code
+    varchar_30 request_schema_version
+    varchar_30 response_schema_version
+    varchar_80 model_provider
+    varchar_120 model_name
+    varchar_64 model_config_version
+    jsonb model_config
+    varchar_50 prompt_version
+    jsonb input_payload
+    varchar_64 input_sha256
+    varchar_128 idempotency_key
+    text raw_output_text
+    jsonb validated_output_payload
+    varchar_40 schema_validation_status_code
+    jsonb schema_validation_errors
+    varchar_40 status_code
+    timestamptz started_at
+    timestamptz completed_at
+    integer latency_ms
+    integer input_tokens
+    integer output_tokens
+    varchar_80 error_code
+    text error_message
+    smallint retry_count
+    uuid correlation_id
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  aiops_retrieval_run {
+    uuid id PK
+    uuid ai_run_id FK
+    uuid inquiry_id FK
+    text query_text
+    varchar_64 query_sha256
+    jsonb filter_payload
+    varchar_50 retrieval_config_version
+    jsonb retrieval_config
+    varchar_120 embedding_model
+    varchar_80 embedding_model_version
+    varchar_30 distance_metric_code
+    smallint top_k
+    varchar_120 reranker_name
+    varchar_40 status_code
+    timestamptz started_at
+    timestamptz completed_at
+    integer latency_ms
+    text no_evidence_reason
+    varchar_80 error_code
+    text error_message
+    uuid correlation_id
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  aiops_retrieval_hit {
+    uuid id PK
+    uuid retrieval_run_id FK
+    uuid chunk_id FK
+    smallint rank_no
+    numeric_10_6 vector_score
+    numeric_10_6 keyword_score
+    numeric_10_6 hybrid_score
+    numeric_10_6 rerank_score
+    varchar_40 applicability_status_code
+    text applicability_reason
+    boolean selected_for_answer
+    timestamptz selected_at
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  knowledge_evidence_link {
+    uuid id PK
+    uuid inquiry_id FK
+    uuid guidance_id FK
+    uuid consultation_id FK
+    uuid handoff_report_id FK
+    uuid ai_run_id FK
+    uuid chunk_id FK
+    uuid retrieval_hit_id FK
+    uuid retrieval_run_id FK
+    varchar_40 selection_origin_code
+    varchar_40 evidence_role_code
+    smallint display_order
+    varchar_200 citation_label
+    varchar_80 document_code_snapshot
+    varchar_300 document_title_snapshot
+    varchar_150 source_org_snapshot
+    varchar_100 revision_label_snapshot
+    varchar_1000 official_source_url_snapshot
+    varchar_64 document_sha256_snapshot
+    text evidence_summary
+    text cited_text_snapshot
+    integer page_no_snapshot
+    varchar_500 section_snapshot
+    jsonb product_model_codes_snapshot
+    boolean is_verified
+    uuid verified_by_id FK
+    timestamptz verified_at
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  support_questionnaire_session {
+    uuid id PK
+    varchar_40 session_no
+    uuid subscription_id FK
+    uuid inquiry_id FK
+    varchar_40 questionnaire_type_code
+    varchar_40 status_code
+    varchar_40 questionnaire_version
+    jsonb answers_payload
+    integer state_version
+    timestamptz started_at
+    timestamptz submitted_at
+    timestamptz linked_at
+    varchar_128 creation_idempotency_key
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  common_code_group ||--o{ common_code : "group_code"
+  accounts_user ||--o| customers_customer_profile : "user_id"
+  accounts_user ||--o{ customers_customer_profile : "deleted_by_id"
+  customers_customer_profile ||--o{ subscriptions_customer_subscription : "customer_id"
+  catalog_product_model ||--o{ subscriptions_customer_subscription : "product_model_id"
+  subscriptions_customer_subscription ||--o{ subscriptions_care_record : "subscription_id"
+  field_service_visit_result ||--o{ subscriptions_care_record : "visit_result_id"
+  accounts_user ||--o{ subscriptions_care_record : "performed_by_id"
+  subscriptions_customer_subscription ||--o{ support_inquiry : "subscription_id"
+  accounts_user ||--o{ support_inquiry : "initiated_by_id"
+  accounts_user ||--o{ support_inquiry : "assigned_counselor_id"
+  accounts_user ||--o{ support_inquiry : "current_owner_id"
+  accounts_user ||--o{ support_inquiry : "required_finalizer_user_id"
+  accounts_user ||--o{ support_inquiry : "deleted_by_id"
+  support_inquiry ||--o| support_inquiry_symptom : "inquiry_id"
+  aiops_ai_run ||--o{ support_inquiry_symptom : "source_ai_run_id"
+  accounts_user ||--o{ support_inquiry_symptom : "confirmed_by_id"
+  support_inquiry ||--o{ support_inquiry_qa : "inquiry_id"
+  aiops_ai_run ||--o{ support_inquiry_qa : "source_ai_run_id"
+  accounts_user ||--o{ support_inquiry_qa : "answered_by_id"
+  support_inquiry ||--o{ support_symptom_assessment : "inquiry_id"
+  aiops_ai_run ||--o{ support_symptom_assessment : "ai_run_id"
+  support_inquiry ||--o{ support_guidance : "inquiry_id"
+  aiops_ai_run ||--o{ support_guidance : "generated_by_ai_run_id"
+  accounts_user ||--o{ support_guidance : "reviewed_by_id"
+  support_guidance ||--o{ support_guidance_item : "guidance_id"
+  support_guidance_item ||--o{ support_customer_action_result : "guidance_item_id"
+  accounts_user ||--o{ support_customer_action_result : "submitted_by_id"
+  support_inquiry ||--o{ support_consultation : "inquiry_id"
+  accounts_user ||--o{ support_consultation : "counselor_id"
+  accounts_user ||--o{ support_consultation : "deleted_by_id"
+  support_inquiry ||--o{ support_handoff_report : "inquiry_id"
+  support_consultation ||--o{ support_handoff_report : "consultation_id"
+  aiops_ai_run ||--o{ support_handoff_report : "generated_by_ai_run_id"
+  accounts_user ||--o{ support_handoff_report : "confirmed_by_id"
+  support_inquiry ||--o{ field_service_visit : "inquiry_id"
+  support_handoff_report ||--o{ field_service_visit : "handoff_report_id"
+  accounts_user ||--o{ field_service_visit : "technician_id"
+  accounts_user ||--o{ field_service_visit : "deleted_by_id"
+  field_service_visit ||--o| field_service_visit_result : "visit_id"
+  accounts_user ||--o{ field_service_visit_result : "submitted_by_id"
+  support_inquiry ||--o{ support_followup_confirmation : "inquiry_id"
+  support_guidance ||--o{ support_followup_confirmation : "guidance_id"
+  support_consultation ||--o{ support_followup_confirmation : "consultation_id"
+  field_service_visit ||--o{ support_followup_confirmation : "visit_id"
+  accounts_user ||--o{ support_followup_confirmation : "response_recorded_by_id"
+  accounts_user ||--o{ support_followup_confirmation : "confirmed_by_id"
+  support_questionnaire_session ||--o{ support_inquiry_status_history : "questionnaire_session_id"
+  support_inquiry ||--o{ support_inquiry_status_history : "inquiry_id"
+  support_consultation ||--o{ support_inquiry_status_history : "consultation_id"
+  field_service_visit ||--o{ support_inquiry_status_history : "visit_id"
+  accounts_user ||--o{ support_inquiry_status_history : "changed_by_id"
+  accounts_user ||--o{ knowledge_ingestion_batch : "started_by_id"
+  knowledge_ingestion_batch ||--o{ knowledge_source_document : "ingestion_batch_id"
+  knowledge_source_document ||--o{ knowledge_source_document : "supersedes_document_id"
+  accounts_user ||--o{ knowledge_source_document : "collected_by_id"
+  accounts_user ||--o{ knowledge_source_document : "deleted_by_id"
+  knowledge_source_document ||--o{ knowledge_document_model_scope : "document_id"
+  catalog_product_model ||--o{ knowledge_document_model_scope : "product_model_id"
+  accounts_user ||--o{ knowledge_document_model_scope : "verified_by_id"
+  knowledge_source_document ||--o{ knowledge_document_page : "document_id"
+  accounts_user ||--o{ knowledge_document_page : "reviewer_id"
+  knowledge_document_page ||--o{ knowledge_document_chunk : "page_id"
+  knowledge_document_chunk ||--o{ knowledge_chunk_embedding : "chunk_id"
+  knowledge_ingestion_batch ||--o{ knowledge_data_quality_issue : "ingestion_batch_id"
+  knowledge_source_document ||--o{ knowledge_data_quality_issue : "document_id"
+  knowledge_document_page ||--o{ knowledge_data_quality_issue : "page_id"
+  knowledge_document_chunk ||--o{ knowledge_data_quality_issue : "chunk_id"
+  accounts_user ||--o{ knowledge_data_quality_issue : "resolved_by_id"
+  support_inquiry ||--o{ aiops_ai_run : "inquiry_id"
+  aiops_ai_run ||--o{ aiops_retrieval_run : "ai_run_id"
+  support_inquiry ||--o{ aiops_retrieval_run : "inquiry_id"
+  aiops_retrieval_run ||--o{ aiops_retrieval_hit : "retrieval_run_id"
+  knowledge_document_chunk ||--o{ aiops_retrieval_hit : "chunk_id"
+  support_inquiry ||--o{ knowledge_evidence_link : "inquiry_id"
+  support_guidance ||--o{ knowledge_evidence_link : "guidance_id"
+  support_consultation ||--o{ knowledge_evidence_link : "consultation_id"
+  support_handoff_report ||--o{ knowledge_evidence_link : "handoff_report_id"
+  aiops_ai_run ||--o{ knowledge_evidence_link : "ai_run_id"
+  knowledge_document_chunk ||--o{ knowledge_evidence_link : "chunk_id"
+  aiops_retrieval_hit ||--o{ knowledge_evidence_link : "retrieval_hit_id"
+  aiops_retrieval_run ||--o{ knowledge_evidence_link : "retrieval_run_id"
+  accounts_user ||--o{ knowledge_evidence_link : "verified_by_id"
+  subscriptions_customer_subscription ||--o{ support_questionnaire_session : "subscription_id"
+  support_inquiry ||--o| support_questionnaire_session : "inquiry_id"

@@ -1,1 +1,89 @@
-# 누수·전기·화상 등 명시적 안전 분기 규칙
+# 정수기 서비스 명시적 안전 분기 및 위험도 판정 규칙
+
+rules:
+  # 1. 누수 위험 (Danger)
+  leak_danger:
+    name: "제품 하부 및 전원부 주변 누수"
+    risk_level: "danger"
+    usage_guidance_status: "TOTAL_STOP"
+    requires_consultation: true
+    priority: "priority_consultation"
+    keywords:
+      - "누수"
+      - "물 새"
+      - "바닥에 물"
+      - "제품 밑에 물"
+      - "전원선 근처 물"
+      - "플러그 물"
+    restricted_functions:
+      - "전체 출수 기능 중지"
+      - "제품 전원 차단 필요"
+    next_actions:
+      - "즉시 원수 공급 밸브(원수 밸브)를 잠그세요."
+      - "젖은 손으로 전원 플러그를 만지지 마시고, 안전할 때 전원을 차단해 주세요."
+      - "전문 기사 방문 점검을 요청하세요."
+
+  # 2. 전기/감전/화재 위험 (Danger)
+  electrical_danger:
+    name: "전기 냄새·연기·스파크·감전 위험"
+    risk_level: "danger"
+    usage_guidance_status: "TOTAL_STOP"
+    requires_consultation: true
+    priority: "priority_consultation"
+    keywords:
+      - "탄 냄새"
+      - "연기"
+      - "스파크"
+      - "불꽃"
+      - "찌릿"
+      - "감전"
+      - "타는 냄새"
+    restricted_functions:
+      - "제품 전체 기능 사용 중지"
+    next_actions:
+      - "즉시 정수기 전원 플러그를 뽑으세요."
+      - "제품 사용을 중단하고 전문 상담사 및 기사 연결을 기다리세요."
+
+  # 3. 뜨거운 물 / 화상 위험 (Danger or Caution)
+  hot_water_danger:
+    name: "온수 연속 뿜어져 나옴 / 조절 불가"
+    risk_level: "danger"
+    usage_guidance_status: "PARTIAL_STOP"
+    requires_consultation: true
+    priority: "priority_consultation"
+    keywords:
+      - "뜨거운 물 안 멈춤"
+      - "온수 계속 나옴"
+      - "화상"
+      - "온수 추출 안 꺼짐"
+    restricted_functions:
+      - "온수 출수 기능 중지"
+    next_actions:
+      - "온수 버튼을 다시 눌러 멈추지 않을 경우 정수 밸브를 잠그세요."
+      - "화상에 주의하시고 아이들의 접근을 제한하세요."
+
+  # 4. 일반 기능 이상 (Caution)
+  temp_abnormal_caution:
+    name: "냉/온수 미흡 및 출수량 저하"
+    risk_level: "caution"
+    usage_guidance_status: "PARTIAL_STOP"
+    requires_consultation: false
+    priority: "consultation_recommended"
+    keywords:
+      - "안 차가"
+      - "안 뜨거"
+      - "미지근"
+      - "출수량"
+      - "졸졸"
+      - "약하게 나옴"
+    restricted_functions:
+      - "해당 기능(냉수/온수) 한정 확인 필요"
+    next_actions:
+      - "필터 교체 주기 및 전원 램프 상태를 확인하세요."
+      - "자가조치 안내에 따라 점검해 보세요."
+
+# 근거 미발견 정책
+no_evidence_policy:
+  default_risk_level: "caution"
+  default_usage_guidance_status: "PENDING_CONSULTATION"
+  message: "확인 가능한 공식 매뉴얼 근거가 부족하여 자가조치 안내가 제공되지 않습니다. 상담 연결을 도와드리겠습니다."

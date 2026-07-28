@@ -1,0 +1,10 @@
+title: LogoutRequest
+type: object
+description: refresh token 폐기 요청
+additionalProperties: false
+required:
+  - refresh_token
+properties:
+  refresh_token:
+    type: string
+    minLength: 1

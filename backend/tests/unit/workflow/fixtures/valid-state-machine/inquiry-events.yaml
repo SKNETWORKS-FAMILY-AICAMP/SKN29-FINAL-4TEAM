@@ -1,0 +1,38 @@
+contract:
+  name: inquiry-events
+  version: 0.1.0
+  status: test_fixture
+  owner: TEST
+categories:
+  - USER_COMMAND
+  - SYSTEM_EVENT
+scopes:
+  - INQUIRY
+actor_roles:
+  - CUSTOMER
+  - SYSTEM
+events:
+  - code: EVENT_A
+    category: USER_COMMAND
+    scope: INQUIRY
+    actor_roles:
+      - CUSTOMER
+    changes_inquiry_state: true
+    changes_visit_state: false
+    requires_idempotency_key: true
+    requires_state_version: true
+    external_action:
+      exposed: true
+      operation_id: performAction
+  - code: EVENT_INTERNAL
+    category: SYSTEM_EVENT
+    scope: INQUIRY
+    actor_roles:
+      - SYSTEM
+    changes_inquiry_state: false
+    changes_visit_state: false
+    requires_idempotency_key: false
+    requires_state_version: false
+    external_action:
+      exposed: false
+      operation_id: null

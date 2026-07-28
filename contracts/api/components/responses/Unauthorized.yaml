@@ -1,4 +1,7 @@
 description: HTTP 401 공통 오류 응답
+headers:
+  X-Correlation-ID:
+    $ref: ../headers/CorrelationId.yaml
 content:
   application/json:
     schema:

@@ -1,0 +1,139 @@
+{
+  "contract_version": "1.0.0",
+  "status": "OWNER_BASELINE",
+  "confirmation_status": "CONFIRMED",
+  "owner": "최지용",
+  "effective_from": "2026-07-26",
+  "completion_review_status": "PENDING",
+  "completion_review_purpose": "OWNER 기준선의 선행 승인이 아니라 구현 후 소비자 호환성, 실행 재현, 비작성자 PR 품질을 확인하는 완료 게이트다.",
+  "purpose": "T-005 완료 기준인 테이블·필드·표준 코드를 기존 ERD v3 이력과 분리해 구현 가능한 단일 기준으로 정의한다.",
+  "inherits": {
+    "snapshot": "watercare_schema_v3.json",
+    "policy": "아래 override가 우선하며 나머지 테이블 관계와 필드는 v3 Snapshot을 설계 참고로 유지한다.",
+    "immutable_snapshot": true
+  },
+  "identifier_policy": {
+    "option": "DOMAIN_PREFIX_UUID4_WITH_DEMO_SEQUENCE",
+    "database_type": "varchar(48)",
+    "runtime_format": "<ENTITY>-<UUID4_HEX_32>",
+    "runtime_example": "USR-0123456789ABCDEF0123456789ABCDEF",
+    "synthetic_format": "<DEMO|SYN>-<ENTITY>-<SEQUENCE_3_PLUS>",
+    "synthetic_example": "DEMO-INQ-002",
+    "issuer": "Django backend",
+    "collision_control": [
+      "database primary key or unique constraint",
+      "runtime-generated UUID4 entropy",
+      "caller-provided identifiers rejected except validated synthetic seed input"
+    ]
+  },
+  "physical_overrides": {
+    "support_inquiry": {
+      "usage_guidance_status": {
+        "type": "varchar(32)",
+        "nullable": true,
+        "code_contract": "../../../contracts/codes/usage-guidance-statuses.yaml"
+      },
+      "usage_guidance_message": {
+        "type": "text",
+        "nullable": true
+      },
+      "restricted_functions": {
+        "type": "json",
+        "nullable": false,
+        "default": []
+      },
+      "evidence": {
+        "type": "json",
+        "nullable": false,
+        "default": []
+      },
+      "next_action": {
+        "type": "varchar(64)",
+        "nullable": true
+      },
+      "requires_consultation": {
+        "type": "boolean",
+        "nullable": false,
+        "default": false
+      }
+    },
+    "support_symptom_assessment": {
+      "usage_guidance_status": {
+        "type": "varchar(32)",
+        "nullable": true,
+        "code_contract": "../../../contracts/codes/usage-guidance-statuses.yaml"
+      }
+    },
+    "field_service_visit": {
+      "preferred_date": {
+        "type": "date",
+        "nullable": true
+      },
+      "confirmed_date": {
+        "type": "date",
+        "nullable": true
+      },
+      "schedule_status": {
+        "type": "varchar(40)",
+        "nullable": false,
+        "default": "ASSIGNING",
+        "code_contract": "../../../contracts/codes/visit-statuses.yaml"
+      },
+      "synthetic_technician_id": {
+        "type": "varchar(48)",
+        "nullable": true,
+        "reference": "accounts_user.id"
+      }
+    }
+  },
+  "legacy_import_mappings": {
+    "support_inquiry.usage_guidance_code": "support_inquiry.usage_guidance_status",
+    "support_symptom_assessment.usage_guidance_code": "support_symptom_assessment.usage_guidance_status",
+    "usage_guidance_codes": {
+      "USE_ALLOWED": "NORMAL"
+    },
+    "field_service_visit.visit_status_code": "field_service_visit.schedule_status"
+  },
+  "standard_codes": {
+    "usage_guidance_status": [
+      "NORMAL",
+      "PARTIAL_STOP",
+      "TOTAL_STOP",
+      "PENDING_CONSULTATION"
+    ],
+    "visit_schedule_status": [
+      "ASSIGNING",
+      "SCHEDULING",
+      "CONFIRMED",
+      "IN_PROGRESS",
+      "COMPLETED",
+      "FOLLOW_UP_REQUIRED",
+      "CANCELLED"
+    ],
+    "risk_level": [
+      "general",
+      "caution",
+      "danger"
+    ]
+  },
+  "enum_and_seed_policy": {
+    "cross_service_source": "contracts/codes/*.yaml",
+    "django_representation": "TextChoices with contract parity tests",
+    "database_enum": false,
+    "synthetic_seed": "Django update_or_create with validated DEMO/SYN identifiers",
+    "manual_insert": false
+  },
+  "scope_boundary": {
+    "included": [
+      "data design owner baseline",
+      "Django Model and Migration input contract",
+      "API and AI contract field names",
+      "standard code source"
+    ],
+    "excluded": [
+      "state transition rules owned by PM",
+      "PostgreSQL infrastructure provisioning",
+      "consumer compatibility review, non-author PR review, and WBS official status change"
+    ]
+  }
+}

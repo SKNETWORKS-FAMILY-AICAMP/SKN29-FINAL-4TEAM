@@ -1,5 +1,25 @@
 title: InquirySummary
 type: object
-description: 문의 요약
+description: T-005 OWNER 기준 문의 요약
 additionalProperties: false
-properties: {}
+required:
+  - inquiry_id
+  - usage_guidance_status
+  - requires_consultation
+properties:
+  inquiry_id:
+    type: string
+    maxLength: 48
+    description: 도메인형 문의 식별자
+  usage_guidance_status:
+    type:
+      - string
+      - "null"
+    enum:
+      - NORMAL
+      - PARTIAL_STOP
+      - TOTAL_STOP
+      - PENDING_CONSULTATION
+      - null
+  requires_consultation:
+    type: boolean

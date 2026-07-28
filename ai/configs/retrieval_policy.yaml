@@ -1,1 +1,26 @@
-# 검색 Top-k·필터·재정렬 기준 설정
+# RAG 검색 및 Vector Store 검색 정책 설정
+
+embedding:
+  model_name: "BAAI/bge-m3"
+  dimension: 1024
+  normalize_embeddings: true
+
+vector_store:
+  provider: "pgvector"
+  search_type: "exact_search"  # Cosine Exact Search 사용 (MVP HNSW/IVFFlat 미사용)
+  distance_strategy: "cosine"
+
+retrieval_params:
+  top_k: 5
+  score_threshold: 0.4  # 최소 코사인 유사도 점수
+
+metadata_filters:
+  allowed_generations:
+    - "D"  # MVP 대상 세대 (S세대 등 이전 세대 검색 포함 금지)
+  target_models:
+    - "WPUJAC104DWH"
+    - "WPU-JAC104D/JCC104D"
+  excluded_models:
+    - "WPUIAC425SNW"  # 후속 확장 모델 제외
+    - "WPU-IAC506"     # 제거 대상 제외
+  require_official_verification: true

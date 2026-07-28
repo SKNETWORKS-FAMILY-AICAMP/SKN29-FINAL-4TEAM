@@ -1,3 +1,113 @@
-# auth API 경로 계약
-# Endpoint와 request/response 참조는 백엔드 API 설계 확정 후 작성한다.
-{}
+/auth/demo-login:
+  post:
+    operationId: demoLogin
+    summary: allowlist 합성 사용자 로그인
+    x-contract-status: CONFIRMED
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth/LoginRequest.yaml
+    responses:
+      "200":
+        description: JWT session 발급
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/auth/LoginResponse.yaml
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+/auth/refresh:
+  post:
+    operationId: refreshAuthToken
+    summary: refresh token rotation
+    x-contract-status: CONFIRMED
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth/TokenRefreshRequest.yaml
+    responses:
+      "200":
+        description: 기존 refresh 폐기 후 최초 절대 만료시각을 유지하는 새 JWT session 발급
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/auth/LoginResponse.yaml
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+/auth/logout:
+  post:
+    operationId: logout
+    summary: refresh token 폐기
+    x-contract-status: CONFIRMED
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth/LogoutRequest.yaml
+    responses:
+      "200":
+        description: 폐기 완료
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/auth/LogoutResponse.yaml
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+/me:
+  get:
+    operationId: getCurrentUser
+    summary: 현재 활성 사용자와 역할 조회
+    x-contract-status: CONFIRMED
+    security:
+      - BearerAuth: []
+    responses:
+      "200":
+        description: 현재 사용자
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/auth/AuthenticatedUser.yaml
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml

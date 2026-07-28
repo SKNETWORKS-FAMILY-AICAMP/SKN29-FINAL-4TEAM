@@ -1,0 +1,13 @@
+{
+  "wbs": "T-017",
+  "team_review": {
+    "status": "PENDING",
+    "reviewer": "",
+    "recorded_at": ""
+  },
+  "runtime_verification_policy": {
+    "status": "NOT_RUN",
+    "authoritative_command": "python backend/apps/accounts/readiness.py --verify-postgresql",
+    "note": "Model/Migration parity와 PostgreSQL gate는 이 JSON 값이 아니라 명령의 실제 실행 결과만 사용한다."
+  }
+}

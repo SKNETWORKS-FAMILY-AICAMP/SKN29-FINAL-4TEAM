@@ -1,2 +1,2 @@
-# Gunicorn·운영 환경 의존성을 작성합니다.
+# 운영 WSGI/ASGI 서버는 배포 ADR 승인 후 추가합니다.
 -r base.txt

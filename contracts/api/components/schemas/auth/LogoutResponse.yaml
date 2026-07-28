@@ -1,0 +1,10 @@
+title: LogoutResponse
+type: object
+description: refresh token 폐기 결과
+additionalProperties: false
+required:
+  - revoked
+properties:
+  revoked:
+    type: boolean
+    const: true

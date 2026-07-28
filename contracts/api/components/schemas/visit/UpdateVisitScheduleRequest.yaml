@@ -1,5 +1,32 @@
 title: UpdateVisitScheduleRequest
 type: object
-description: 방문 일정 변경 요청
+description: T-005 OWNER 기준 방문 일정 변경 요청
 additionalProperties: false
-properties: {}
+required:
+  - schedule_status
+properties:
+  preferred_date:
+    type:
+      - string
+      - "null"
+    format: date
+  confirmed_date:
+    type:
+      - string
+      - "null"
+    format: date
+  schedule_status:
+    type: string
+    enum:
+      - ASSIGNING
+      - SCHEDULING
+      - CONFIRMED
+      - IN_PROGRESS
+      - COMPLETED
+      - FOLLOW_UP_REQUIRED
+      - CANCELLED
+  synthetic_technician_id:
+    type:
+      - string
+      - "null"
+    maxLength: 48

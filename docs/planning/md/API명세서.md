@@ -37,7 +37,7 @@ v0.8에서 다음 기준은 더 이상 단순 후보가 아니다.
 - 운영 역할 코드와 일부 endpoint별 요청·응답 세부
 - 구현 코드·Migration·OpenAPI·자동 테스트·리뷰 증거
 
-따라서 v0.3의 판정은 **조건부 적합**이며 구현 상태는 44개 모두 `NOT_IMPLEMENTED`다.
+따라서 v0.3의 판정은 **조건부 적합**이다. 2026-07-25 T-016 구현 증거를 반영해 `API-SYS-001`만 `IN_PROGRESS`, 나머지 43개는 `NOT_IMPLEMENTED`이며 `VERIFIED`는 0개다.
 
 ### 1.2 API 현황
 
@@ -331,9 +331,11 @@ Inquiry와 Consultation 또는 Inquiry와 Visit을 같은 transaction에서 변�
 
 | ID | Method | Path | 기능 | 역할 | 계약 | 구현 |
 |---|---|---|---|---|---|---|
-| `API-SYS-001` | GET | `/health` | 서비스 상태 점검 | Anonymous | `OPEN` | `NOT_IMPLEMENTED` |
-| `API-AUTH-001` | POST | `/api/v1/auth/demo-login` | 합성 사용자 로그인 | Anonymous | `CONDITIONAL` | `NOT_IMPLEMENTED` |
-| `API-AUTH-002` | GET | `/api/v1/me` | 현재 사용자 조회 | JWT 사용자 | `ALIGNED` | `NOT_IMPLEMENTED` |
+| `API-SYS-001` | GET | `/health` | 서비스 상태 점검 | Anonymous | `OPEN` | `IN_PROGRESS` |
+| `API-AUTH-001` | POST | `/api/v1/auth/demo-login` | 합성 사용자 로그인 | Anonymous | `ALIGNED` | `IN_PROGRESS` |
+| `API-AUTH-002` | GET | `/api/v1/me` | 현재 사용자 조회 | JWT 사용자 | `ALIGNED` | `IN_PROGRESS` |
+| `API-AUTH-003` | POST | `/api/v1/auth/refresh` | Refresh rotation | Anonymous | `ALIGNED` | `IN_PROGRESS` |
+| `API-AUTH-004` | POST | `/api/v1/auth/logout` | Refresh 폐기 | Anonymous | `ALIGNED` | `IN_PROGRESS` |
 
 ### 4.2 제품·구독·케어
 
@@ -422,8 +424,10 @@ Inquiry와 Consultation 또는 Inquiry와 Visit을 같은 transaction에서 변�
 | ID | 입력 | `data` 응답 | 핵심 계약 |
 |---|---|---|---|
 | `API-SYS-001` | 없음 | `HealthDTO` | host·stack trace·비밀값 비노출. dependency 공개 범위 `OPEN` |
-| `API-AUTH-001` | `DemoLoginRequest` | `AuthSessionDTO` | 합성 사용자 allowlist만 허용. 운영 활성화 금지. JWT 발급 응답·만료 계약 `OPEN-JWT-001` |
+| `API-AUTH-001` | `DemoLoginRequest` | `AuthSessionDTO` | 설정 활성·allowlist·합성 사용자만 허용. 기본 운영 비활성 |
 | `API-AUTH-002` | 없음 | `UserDTO` | JWT 사용자·role·활성 상태를 서버 원장에서 다시 검증 |
+| `API-AUTH-003` | `TokenRefreshRequest` | `AuthSessionDTO` | 활성 사용자·role 재검증, 새 token pair 발급 후 사용한 refresh blacklist |
+| `API-AUTH-004` | `LogoutRequest` | `{revoked: true}` | 사용한 refresh blacklist, 재사용 401 |
 
 ### 5.2 제품·구독·케어
 
@@ -697,8 +701,11 @@ AI 초안과 사람 확정본을 같은 필드에 덮어쓰지 않는다.
 | `risk_summary` | text NOT NULL | 서버 파생 규칙 `OPEN` |
 | `priority_check_items` | JSON array NOT NULL | 생성 규칙 `OPEN` |
 | `address_snapshot` | Visit NOT NULL | 구독 주소 snapshot 규칙 `OPEN` |
-| `technician_id` | nullable | 배정 전 null 가능 |
-| `scheduled_start_at` | nullable | 일정 확정 전 null 가능 |
+| `synthetic_technician_id` | nullable | 배정 전 null 가능, T-005 도메인형 문자열 ID |
+| `preferred_date` | Date/null | 고객 희망일 |
+| `confirmed_date` | Date/null | 확정일 |
+| `schedule_status` | Visit status | 배정·일정·진행 상태 |
+| `scheduled_start_at` | nullable | 후속 시간창 확장 필드 |
 | `inquiry_state_version` | API 동시성 | 필수 |
 | `consultation_state_version` | API 동시성 | 필수 |
 
@@ -709,9 +716,12 @@ AI 초안과 사람 확정본을 같은 필드에 덮어쓰지 않는다.
 | 필드 | 타입 | 필수 |
 |---|---|:---:|
 | `event` | enum | Y |
-| `technician_id` | `Identifier`/null | 조건부 |
-| `scheduled_start_at` | `DateTimeString`/null | 조건부 |
-| `scheduled_end_at` | `DateTimeString`/null | N |
+| `synthetic_technician_id` | `Identifier`/null | 조건부 |
+| `preferred_date` | `DateString`/null | 조건부 |
+| `confirmed_date` | `DateString`/null | 조건부 |
+| `schedule_status` | enum | Y |
+| `scheduled_start_at` | `DateTimeString`/null | N, 후속 시간창 확장 |
+| `scheduled_end_at` | `DateTimeString`/null | N, 후속 시간창 확장 |
 | `change_reason` | string | Y |
 | `visit_state_version` | integer | Y |
 | `inquiry_state_version` | integer | Y |
@@ -886,7 +896,7 @@ Public 금지 필드:
 
 `HandoffReportDTO`: `id`, `inquiry_id`, `consultation_id`, `report_version`, `report_status_code`, `product_summary`, `symptom_summary`, `action_summary`, `risk_summary`, `evidence_summary`, `priority_check_items`, `counselor_final`, `confirmed_by`, `confirmed_at`.
 
-`VisitDTO`: `id`, `visit_no`, `inquiry_id`, `technician`, `visit_status_code`, `state_version`, `scheduled_start_at`, `scheduled_end_at`, `address_display`, `handoff_report`, `result`, `allowed_actions`.
+`VisitDTO`: `id`, `visit_no`, `inquiry_id`, `synthetic_technician_id`, `preferred_date`, `confirmed_date`, `schedule_status`, `state_version`, 선택 확장 필드 `scheduled_start_at`, `scheduled_end_at`, `address_display`, `handoff_report`, `result`, `allowed_actions`.
 
 `VisitResultDTO`: `id`, `visit_id`, `cause_category_code`, `inspection_summary`, `action_summary`, `parts_used_text`, `customer_guidance`, `resolved_on_site`, `revisit_required`, `revisit_reason`, `technician_note`, `completed_at`, `next_care_on`.
 
@@ -970,7 +980,7 @@ Public 금지 필드:
 | QuestionnaireSession | `UNANSWERED`, `IN_PROGRESS`, `SUBMITTED` |
 | Inquiry | `DRAFT`, `QUESTIONNAIRE_IN_PROGRESS`, `PRODUCT_VALIDATION_FAILED`, `AI_GUIDANCE_READY`, `CONSULTATION_PENDING`, `CONSULTATION_IN_PROGRESS`, `VISIT_REVIEW_PENDING`, `VISIT_PENDING`, `VISIT_IN_PROGRESS`, `COMPLETION_PENDING`, `RESOLVED`, `REOPENED` |
 | Consultation | `WAITING`, `ASSIGNED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED` |
-| Visit | `ASSIGNING`, `SCHEDULING`, `CONFIRMED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED` |
+| Visit | `ASSIGNING`, `SCHEDULING`, `CONFIRMED`, `IN_PROGRESS`, `COMPLETED`, `FOLLOW_UP_REQUIRED`, `CANCELLED` |
 | Follow-up resolution | `PENDING`, `RESOLVED`, `UNRESOLVED`, `REOPENED` |
 
 Inquiry와 Visit의 상태·version을 같은 컬럼으로 합치지 않는다.
@@ -1064,7 +1074,7 @@ Inquiry와 Visit의 상태·version을 같은 컬럼으로 합치지 않는다.
 
 ### 9.5 구현 증거
 
-기술스택 문서의 “필수 적용” 또는 WBS 연계 “반영 완료”는 코드 구현 완료를 뜻하지 않는다. 다음 증거가 없으므로 44개 모두 `NOT_IMPLEMENTED`, `VERIFIED` 0개를 유지한다.
+기술스택 문서의 “필수 적용” 또는 WBS 연계 “반영 완료”는 코드 구현 완료를 뜻하지 않는다. `API-SYS-001`은 Django route·자동 테스트·localhost TCP Smoke가 있어 `IN_PROGRESS`로 변경하지만, HealthDTO·OpenAPI path·PostgreSQL local·리뷰가 없어 `VERIFIED`로 올리지 않는다. 나머지 43개는 `NOT_IMPLEMENTED`, `VERIFIED`는 0개를 유지한다.
 
 - 실행 가능한 Django/FastAPI route
 - Django Model·Migration
@@ -1238,6 +1248,19 @@ API 하나를 `VERIFIED`로 변경하려면 다음이 모두 필요하다.
 
 ---
 
+### 14.1 2026-07-25 T-016 누적 갱신
+
+| 구분 | 누적 변경 |
+| --- | --- |
+| API-SYS-001 | 빈 본문 `GET /health` route와 자동 테스트·localhost TCP Smoke를 근거로 `IN_PROGRESS`로 정정 |
+| 공통 Schema | `success/data/error`, `code/message/details`, `page/size/total`만 `contracts/api`에 반영 |
+| 미확정 유지 | HealthDTO·Wrapper·dependency 공개 범위·성공 status·correlation 위치는 계속 `OPEN` |
+| 완료 판정 | PostgreSQL local·승인 계약·사람 리뷰가 없어 `VERIFIED`로 변경하지 않음 |
+
+이 절은 v0.3 최초 Snapshot의 “44개 모두 `NOT_IMPLEMENTED`” 기록을 삭제하지 않고, 이후 확인된 구현 증거를 누적한다.
+
+---
+
 ## 15. 인수 체크리스트
 
 - [ ] Public 39개와 Internal 5개의 Method+Path가 OpenAPI에 정확히 존재한다.
@@ -1258,3 +1281,54 @@ API 하나를 `VERIFIED`로 변경하려면 다음이 모두 필요하다.
 - [ ] 차단된 4개 API와 ID 정책 충돌을 DB 보완 전 완료 처리하지 않는다.
 - [ ] Markdown·OpenAPI·route·Serializer의 계약 diff가 0건이다.
 - [ ] 구현·테스트·리뷰·리포트가 없는 API를 `VERIFIED`로 표시하지 않는다.
+
+---
+
+## 16. 2026-07-26 T-005·T-017 OWNER 기준선 누적
+
+이 절은 v0.3 최초 Snapshot과 14장의 변경 이력을 삭제하지 않고,
+최지용 주담당 구현 후 현재 계약을 누적한다. 최신 인증·ID 판정은 이
+절을 우선한다.
+
+### 16.1 T-005 데이터 계약
+
+| 항목 | OWNER 기준선 |
+| --- | --- |
+| Public ID | 일반 `<ENTITY>-<UUID4_HEX_32>`, 합성 `DEMO/SYN-<ENTITY>-<순번>`, 최대 48자 |
+| 사용 안내 | `usage_guidance_status`와 4개 코드, `USE_ALLOWED`는 import 별칭 |
+| 방문 일정 | `preferred_date`, `confirmed_date`, `schedule_status`, `synthetic_technician_id` |
+| 방문 상태 | `FOLLOW_UP_REQUIRED` 포함 7개 |
+| 근거 | ADR 0008, `t005_physical_contract_v1.0.json`, strict 검증 exit 0 |
+
+### 16.2 T-017 인증 계약
+
+| 항목 | 구현 계약 |
+| --- | --- |
+| 역할 | `CUSTOMER`, `CONSULTANT`, `TECHNICIAN`, `OPERATOR` |
+| Access JWT | 60분, Bearer, DB 활성·role 매 요청 재검증 |
+| Refresh JWT | 최초 발급부터 7일, 사용 시 rotation과 기존 token blacklist |
+| Logout | 제출한 refresh blacklist |
+| Demo 로그인 | `DJANGO_DEMO_LOGIN_ENABLED`와 allowlist에 모두 포함된 합성 코드만 허용 |
+| Claim | `sub`, `role_code`, `token_type`, `jti`, `iat`, `exp` |
+| API | Demo Login, Refresh, Logout, Me 총 4개 |
+| 민감정보 | `/me`에 password·token·전화·주소 비노출 |
+
+`TokenRefreshRequest`와 `LogoutRequest`는 모두 `refresh_token` 문자열
+하나를 필수로 받는다. Auth 응답은 access·refresh token, `Bearer`,
+각 만료 초, 안전한 사용자 projection을 공통 Wrapper의 `data`로
+반환한다.
+
+기존 Public 39개에 refresh·logout 두 경로가 추가되어 현재 누적 범위는
+Public 41개 + Internal 5개 = 46개다. v0.3 원본의 44개 수치는 과거
+Snapshot으로 보존한다.
+
+### 16.3 구현·검토 상태
+
+- Django User·CustomerProfile·Migration, Demo Seed, JWT
+  rotation·blacklist, 네 API와 권한 범위 테스트를 구현했다.
+- 구현과 작성자 자체 자동 검증은 완료했지만 작성자 외 리뷰와 PM의
+  공식 WBS 상태 변경 전이므로 네 API는 `IN_PROGRESS`로 표시한다.
+- 실제 PostgreSQL 환경값이 없어 Migration apply·schema diff는
+  SQLite 검증과 분리해 후속 실행한다.
+- 상태 전이별 역할 권한은 윤승혁(PM) 관할
+  `contracts/state-machine/**`를 변경하지 않았다.
