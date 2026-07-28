@@ -34,11 +34,11 @@ fun DemoTrackingMap(
     travelMode: TravelMode,
     modifier: Modifier = Modifier
 ) {
-    val primary = MaterialTheme.colorScheme.primary
+    val primary = Color(0xFF00A6A6)
     val secondary = MaterialTheme.colorScheme.secondary
     val technicianImage = ImageBitmap.imageResource(
         when (travelMode) {
-            TravelMode.DRIVING -> R.drawable.ic_marker_vehicle_map
+            TravelMode.DRIVING -> R.drawable.ic_marker_vehicle_driving
             TravelMode.WAITING,
             TravelMode.WALKING,
             TravelMode.ARRIVED -> R.drawable.ic_marker_technician_map
@@ -157,18 +157,5 @@ fun DemoTrackingMap(
             )
         }
 
-        Text(
-            text = if (travelMode == TravelMode.DRIVING) "차량 이동 시연" else "도보 이동 시연",
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(14.dp)
-                .background(
-                    MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
-                    RoundedCornerShape(14.dp)
-                )
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Bold
-        )
     }
 }

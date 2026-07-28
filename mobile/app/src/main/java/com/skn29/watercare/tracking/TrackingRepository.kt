@@ -201,6 +201,89 @@ object TrackingRepository {
     }
 
     /**
+     * 방문기사가 현장 도착 버튼을 누른다.
+     */
+    fun markArrived() {
+        if (!_snapshot.value.callAccepted) {
+            return
+        }
+
+        _snapshot.value =
+            _snapshot.value.copy(
+                status =
+                    VisitScheduleStatus.ARRIVED,
+                travelMode =
+                    TravelMode.ARRIVED,
+                remainingDistanceMeters = 0,
+                etaMinutes = 0,
+                lastUpdatedLabel =
+                    "기사님이 현장에 도착했습니다",
+                isLive = false,
+                connectionState =
+                    TrackingConnectionState.LIVE,
+                routeProgress = 1f,
+                speedKph = 0,
+                locationRejectedReason = null
+            )
+    }
+
+    /**
+     * 방문기사가 고객 확인 후 점검을 시작한다.
+     */
+    fun startInspection() {
+        if (
+            _snapshot.value.status !=
+            VisitScheduleStatus.ARRIVED
+        ) {
+            return
+        }
+
+        _snapshot.value =
+            _snapshot.value.copy(
+                status =
+                    VisitScheduleStatus
+                        .IN_PROGRESS,
+                travelMode =
+                    TravelMode.ARRIVED,
+                lastUpdatedLabel =
+                    "현장 점검을 시작했습니다",
+                isLive = false,
+                speedKph = 0,
+                locationRejectedReason = null
+            )
+    }
+
+    /**
+     * 기사 작업 보고 저장 후 방문 업무를 완료한다.
+     */
+    fun completeVisit() {
+        if (
+            _snapshot.value.status !=
+            VisitScheduleStatus
+                .IN_PROGRESS
+        ) {
+            return
+        }
+
+        _snapshot.value =
+            _snapshot.value.copy(
+                status =
+                    VisitScheduleStatus
+                        .COMPLETED,
+                travelMode =
+                    TravelMode.ARRIVED,
+                remainingDistanceMeters = 0,
+                etaMinutes = 0,
+                lastUpdatedLabel =
+                    "방문 작업이 완료되었습니다",
+                isLive = false,
+                routeProgress = 1f,
+                speedKph = 0,
+                locationRejectedReason = null
+            )
+    }
+
+    /**
      * 경로 재시도 버튼을 눌렀을 때 이전 오류 표시를 제거한다.
      */
     fun beginRouteRetry() {
@@ -227,7 +310,17 @@ object TrackingRepository {
             return false
         }
 
-        if (!_snapshot.value.callAccepted) acceptCall()
+        if (!_snapshot.value.callAccepted) {
+            _snapshot.value =
+                _snapshot.value.copy(
+                    locationRejectedReason =
+                        "방문기사 앱에서 콜을 수락한 뒤 출발해 주세요.",
+                    lastUpdatedLabel =
+                        "기사 콜 수락 대기"
+                )
+            return false
+        }
+
         routeIndex = 0
         applyAnimationPoint(routeIndex)
         return true

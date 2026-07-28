@@ -30,6 +30,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -88,224 +89,735 @@ fun CustomerHomeScreen(
     onQuestionnaire: () -> Unit,
     onOpenVisit: () -> Unit
 ) {
-    val inquiry by AppStateStore.inquiry.collectAsState()
+    val inquiry by
+        AppStateStore.inquiry.collectAsState()
 
-    WaterCareScaffold(title = "정수기 딜러") { modifier ->
+    WaterCareScaffold(
+        title = "정수기 딜러"
+    ) { modifier ->
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .background(Color(0xFFF5F9FA))
+                .verticalScroll(
+                    rememberScrollState()
+                )
+                .padding(
+                    horizontal = 16.dp,
+                    vertical = 12.dp
+                ),
+            verticalArrangement =
+                Arrangement.spacedBy(16.dp)
         ) {
-            HomeHero()
+            CustomerHeroCard()
 
             Text(
-                text = "빠른 오류 확인",
-                style = MaterialTheme.typography.titleLarge
+                text = "무엇을 도와드릴까요?",
+                style =
+                    MaterialTheme.typography
+                        .titleLarge,
+                fontWeight = FontWeight.Bold
             )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement =
+                    Arrangement.spacedBy(10.dp)
             ) {
-                HomeActionCard(
-                    icon = "📝",
+                CustomerQuickAction(
+                    icon = "✍️",
                     title = "문진 작성",
-                    description = "증상을 직접 알려주세요",
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    description = "증상 입력",
+                    accent = Color(0xFF00A99D),
                     modifier = Modifier.weight(1f),
                     onClick = onQuestionnaire
                 )
-                HomeActionCard(
+
+                CustomerQuickAction(
                     icon = "▦",
                     title = "QR 확인",
-                    description = "오류코드를 빠르게 확인",
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    description = "제품 확인",
+                    accent = Color(0xFF1677E8),
                     modifier = Modifier.weight(1f),
                     onClick = onQrScan
                 )
+
+                CustomerQuickAction(
+                    icon = "🚙",
+                    title = "방문 현황",
+                    description = "기사 위치",
+                    accent = Color(0xFF6A5AE0),
+                    modifier = Modifier.weight(1f),
+                    onClick = onOpenVisit
+                )
             }
 
-            SectionCard(
-                title = "내 정수기",
-                icon = "💧"
+            CustomerServiceOverview()
+
+            if (
+                inquiry.state ==
+                InquiryState.VISIT_SCHEDULED
+            ) {
+                CustomerVisitNowCard(
+                    onOpenVisit = onOpenVisit
+                )
+            } else {
+                CustomerCareTipCard()
+            }
+
+            Text(
+                text =
+                    "고객님이 입력한 내용은 상담과 방문까지 " +
+                        "안전하게 이어집니다.",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        top = 2.dp,
+                        bottom = 10.dp
+                    ),
+                textAlign = TextAlign.Center,
+                color =
+                    MaterialTheme.colorScheme
+                        .onSurfaceVariant,
+                style =
+                    MaterialTheme.typography
+                        .bodySmall
+            )
+        }
+    }
+}
+
+@Composable
+private fun CustomerHeroCard() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(
+                RoundedCornerShape(30.dp)
+            )
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFFDDF9F5),
+                        Color(0xFFF8FFFF),
+                        Color.White
+                    )
+                )
+            )
+            .border(
+                width = 1.dp,
+                color =
+                    Color(0xFFBCEDE7),
+                shape =
+                    RoundedCornerShape(30.dp)
+            )
+            .padding(
+                start = 22.dp,
+                top = 22.dp,
+                end = 8.dp,
+                bottom = 18.dp
+            )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment =
+                Alignment.CenterVertically
+        ) {
+            Column(
+                modifier =
+                    Modifier.weight(1f),
+                verticalArrangement =
+                    Arrangement.spacedBy(9.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(
+                            RoundedCornerShape(
+                                99.dp
+                            )
+                        )
+                        .background(
+                            Color(0xFF00A99D)
+                                .copy(
+                                    alpha = 0.12f
+                                )
+                        )
+                        .padding(
+                            horizontal = 12.dp,
+                            vertical = 6.dp
+                        )
+                ) {
+                    Text(
+                        text = "고객용 WaterCare",
+                        color =
+                            Color(0xFF007D75),
+                        style =
+                            MaterialTheme
+                                .typography
+                                .labelLarge,
+                        fontWeight =
+                            FontWeight.Bold
+                    )
+                }
+
+                Text(
+                    text =
+                        "깨끗한 물,\n안심되는 관리",
+                    style =
+                        MaterialTheme.typography
+                            .headlineMedium,
+                    color =
+                        Color(0xFF102A3A),
+                    fontWeight =
+                        FontWeight.ExtraBold
+                )
+
+                Text(
+                    text =
+                        "정수기 상태부터 방문기사 위치까지\n" +
+                            "한눈에 확인하세요.",
+                    style =
+                        MaterialTheme.typography
+                            .bodyMedium,
+                    color =
+                        Color(0xFF526572)
+                )
+            }
+
+            Image(
+                painter =
+                    painterResource(
+                        R.drawable
+                            .mascot_water_dealer
+                    ),
+                contentDescription =
+                    "WaterCare 물방울 캐릭터",
+                modifier =
+                    Modifier.size(142.dp),
+                contentScale =
+                    ContentScale.Fit
+            )
+        }
+    }
+}
+
+@Composable
+private fun CustomerQuickAction(
+    icon: String,
+    title: String,
+    description: String,
+    accent: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier
+            .clickable(onClick = onClick),
+        shape =
+            RoundedCornerShape(22.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+        elevation =
+            CardDefaults.cardElevation(
+                defaultElevation = 1.dp
+            )
+    ) {
+        Column(
+            modifier = Modifier.padding(
+                horizontal = 12.dp,
+                vertical = 15.dp
+            ),
+            horizontalAlignment =
+                Alignment.CenterHorizontally,
+            verticalArrangement =
+                Arrangement.spacedBy(7.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(
+                        accent.copy(
+                            alpha = 0.12f
+                        ),
+                        CircleShape
+                    ),
+                contentAlignment =
+                    Alignment.Center
+            ) {
+                Text(
+                    text = icon,
+                    style =
+                        MaterialTheme.typography
+                            .titleLarge
+                )
+            }
+
+            Text(
+                text = title,
+                color = Color(0xFF162B3A),
+                fontWeight = FontWeight.Bold,
+                style =
+                    MaterialTheme.typography
+                        .bodyMedium,
+                textAlign = TextAlign.Center
+            )
+
+            Text(
+                text = description,
+                color = Color(0xFF7B8993),
+                style =
+                    MaterialTheme.typography
+                        .bodySmall,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+private fun CustomerServiceOverview() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape =
+            RoundedCornerShape(28.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+        elevation =
+            CardDefaults.cardElevation(
+                defaultElevation = 1.dp
+            )
+    ) {
+        Column(
+            modifier =
+                Modifier.padding(20.dp),
+            verticalArrangement =
+                Arrangement.spacedBy(14.dp)
+        ) {
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth(),
+                horizontalArrangement =
+                    Arrangement.SpaceBetween,
+                verticalAlignment =
+                    Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "서비스 현황",
+                        style =
+                            MaterialTheme
+                                .typography
+                                .titleLarge,
+                        fontWeight =
+                            FontWeight.ExtraBold
+                    )
+
+                    Text(
+                        text =
+                            "내 정수기 관리 정보를 " +
+                                "확인하세요.",
+                        color =
+                            Color(0xFF7B8993),
+                        style =
+                            MaterialTheme
+                                .typography
+                                .bodyMedium
+                    )
+                }
+
+                StatusPill(
+                    text = "정상 사용 중",
+                    color = SuccessGreen,
+                    backgroundColor =
+                        Color(0xFFE7F7F0)
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(
+                        RoundedCornerShape(
+                            22.dp
+                        )
+                    )
+                    .background(
+                        Color(0xFFF5F8FA)
+                    )
+                    .padding(16.dp)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    verticalAlignment =
+                        Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
                             .size(58.dp)
                             .background(
-                                MaterialTheme.colorScheme.primaryContainer,
-                                RoundedCornerShape(18.dp)
+                                Color(0xFFDDF4F1),
+                                RoundedCornerShape(
+                                    18.dp
+                                )
                             ),
-                        contentAlignment = Alignment.Center
+                        contentAlignment =
+                            Alignment.Center
                     ) {
-                        Text("W", style = MaterialTheme.typography.headlineSmall)
+                        Text(
+                            text = "💧",
+                            style =
+                                MaterialTheme
+                                    .typography
+                                    .headlineSmall
+                        )
                     }
+
                     Column(
                         modifier = Modifier
                             .weight(1f)
                             .padding(start = 14.dp),
-                        verticalArrangement = Arrangement.spacedBy(3.dp)
+                        verticalArrangement =
+                            Arrangement.spacedBy(
+                                3.dp
+                            )
                     ) {
                         Text(
-                            "SK매직 WPU-JAC104D",
-                            style = MaterialTheme.typography.titleMedium
+                            text =
+                                "SK매직 " +
+                                    "WPU-JAC104D",
+                            style =
+                                MaterialTheme
+                                    .typography
+                                    .titleMedium,
+                            fontWeight =
+                                FontWeight.Bold
                         )
+
                         Text(
-                            "방문 관리형 · 정상 사용 중",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text =
+                                "방문 관리형 · " +
+                                    "필터 상태 양호",
+                            color =
+                                Color(0xFF6C7A86),
+                            style =
+                                MaterialTheme
+                                    .typography
+                                    .bodyMedium
                         )
                     }
-                    StatusPill(
-                        text = "관리 중",
-                        color = HeroTeal
-                    )
                 }
-
-                Spacer(Modifier.height(16.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                Spacer(Modifier.height(14.dp))
-                InfoRow("최근 케어", "2026. 6. 12.")
-                Spacer(Modifier.height(8.dp))
-                InfoRow("다음 케어", "2026. 8. 12.")
             }
 
-            if (inquiry.state == InquiryState.VISIT_SCHEDULED) {
-                SectionCard(
-                    title = "진행 중인 방문",
-                    icon = "🚙",
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth(),
+                horizontalArrangement =
+                    Arrangement.spacedBy(10.dp)
+            ) {
+                CustomerInfoMetric(
+                    label = "최근 케어",
+                    value = "6월 12일",
+                    modifier =
+                        Modifier.weight(1f)
+                )
+
+                CustomerInfoMetric(
+                    label = "다음 케어",
+                    value = "8월 12일",
+                    modifier =
+                        Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CustomerInfoMetric(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(
+                RoundedCornerShape(18.dp)
+            )
+            .background(
+                Color(0xFFF2F7F8)
+            )
+            .padding(
+                horizontal = 14.dp,
+                vertical = 12.dp
+            )
+    ) {
+        Column(
+            verticalArrangement =
+                Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = label,
+                color = Color(0xFF7A8993),
+                style =
+                    MaterialTheme.typography
+                        .bodySmall
+            )
+
+            Text(
+                text = value,
+                color = Color(0xFF142B3A),
+                fontWeight = FontWeight.Bold,
+                style =
+                    MaterialTheme.typography
+                        .titleMedium
+            )
+        }
+    }
+}
+
+@Composable
+private fun CustomerVisitNowCard(
+    onOpenVisit: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape =
+            RoundedCornerShape(28.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor =
+                    Color(0xFF0B7E79)
+            )
+    ) {
+        Column(
+            modifier =
+                Modifier.padding(20.dp),
+            verticalArrangement =
+                Arrangement.spacedBy(14.dp)
+        ) {
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth(),
+                horizontalArrangement =
+                    Arrangement.SpaceBetween,
+                verticalAlignment =
+                    Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(
+                            RoundedCornerShape(
+                                99.dp
+                            )
+                        )
+                        .background(
+                            Color.White.copy(
+                                alpha = 0.16f
+                            )
+                        )
+                        .padding(
+                            horizontal = 11.dp,
+                            vertical = 6.dp
+                        )
                 ) {
-                    StatusPill(
-                        text = "방문 일정 확정",
-                        color = HeroTeal,
-                        backgroundColor = Color.White.copy(alpha = 0.75f)
-                    )
-                    Spacer(Modifier.height(12.dp))
                     Text(
-                        "김정수 기사님이 배정되었습니다.",
-                        style = MaterialTheme.typography.titleMedium
+                        text = "기사 이동 중",
+                        color = Color.White,
+                        style =
+                            MaterialTheme
+                                .typography
+                                .labelLarge,
+                        fontWeight =
+                            FontWeight.Bold
                     )
-                    Text(
-                        "기사 출발 후 지도에서 이동 현황을 확인할 수 있어요.",
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.72f)
-                    )
-                    Spacer(Modifier.height(14.dp))
-                    Button(
-                        onClick = onOpenVisit,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = HeroTeal)
-                    ) {
-                        Text("방문 현황 확인")
-                    }
                 }
+
+                Text(
+                    text = "LIVE",
+                    color =
+                        Color(0xFF8DFFF4),
+                    fontWeight =
+                        FontWeight.ExtraBold
+                )
             }
 
             Text(
-                text = "정수기 관리, 쉽고 빠르게. 믿을 수 있는 케어 파트너",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium
+                text =
+                    "김정수 기사님이\n" +
+                        "고객님 댁으로 이동 중이에요",
+                color = Color.White,
+                style =
+                    MaterialTheme.typography
+                        .titleLarge,
+                fontWeight =
+                    FontWeight.ExtraBold
             )
-        }
-    }
-}
 
-@Composable
-private fun HomeHero() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(30.dp))
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(Color(0xFF0E61DA), Color(0xFF16A8C7))
-                )
-            )
-            .padding(start = 22.dp, top = 22.dp, end = 8.dp, bottom = 14.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(9.dp)
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth(),
+                horizontalArrangement =
+                    Arrangement.spacedBy(10.dp)
             ) {
-                StatusPill(
-                    text = "AI 고객 케어",
-                    color = Color.White,
-                    backgroundColor = Color.White.copy(alpha = 0.18f)
+                CustomerVisitMetric(
+                    label = "예상 도착",
+                    value = "10:24",
+                    modifier =
+                        Modifier.weight(1f)
                 )
-                Text(
-                    text = "안녕하세요!\n무엇을 도와드릴까요?",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color.White
+
+                CustomerVisitMetric(
+                    label = "남은 거리",
+                    value = "1.2km",
+                    modifier =
+                        Modifier.weight(1f)
                 )
-                Text(
-                    text = "증상은 한 번만 알려주세요.\n상담과 방문까지 이어서 도와드려요.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.86f)
+
+                CustomerVisitMetric(
+                    label = "소요 시간",
+                    value = "약 7분",
+                    modifier =
+                        Modifier.weight(1f)
                 )
             }
-            Image(
-                painter = painterResource(R.drawable.mascot_water_dealer),
-                contentDescription = "정수기 딜러 마스코트",
-                modifier = Modifier.size(148.dp),
-                contentScale = ContentScale.Fit
+
+            Button(
+                onClick = onOpenVisit,
+                modifier =
+                    Modifier.fillMaxWidth(),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            Color.White,
+                        contentColor =
+                            Color(0xFF08736E)
+                    ),
+                shape =
+                    RoundedCornerShape(18.dp)
+            ) {
+                Text(
+                    text =
+                        "실시간 방문 현황 보기",
+                    fontWeight =
+                        FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CustomerVisitMetric(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(
+                RoundedCornerShape(17.dp)
+            )
+            .background(
+                Color.White.copy(
+                    alpha = 0.12f
+                )
+            )
+            .padding(
+                horizontal = 10.dp,
+                vertical = 11.dp
+            )
+    ) {
+        Column(
+            verticalArrangement =
+                Arrangement.spacedBy(3.dp)
+        ) {
+            Text(
+                text = label,
+                color =
+                    Color.White.copy(
+                        alpha = 0.72f
+                    ),
+                style =
+                    MaterialTheme.typography
+                        .bodySmall
+            )
+
+            Text(
+                text = value,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                style =
+                    MaterialTheme.typography
+                        .titleMedium
             )
         }
     }
 }
 
 @Composable
-private fun HomeActionCard(
-    icon: String,
-    title: String,
-    description: String,
-    containerColor: Color,
-    contentColor: Color,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
+private fun CustomerCareTipCard() {
     Card(
-        modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        modifier = Modifier.fillMaxWidth(),
+        shape =
+            RoundedCornerShape(26.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor =
+                    Color(0xFFEAF7FF)
+            )
     ) {
-        Column(
+        Row(
             modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(9.dp)
+            verticalAlignment =
+                Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .background(Color.White.copy(alpha = 0.75f), CircleShape),
-                contentAlignment = Alignment.Center
+                    .size(48.dp)
+                    .background(
+                        Color.White,
+                        CircleShape
+                    ),
+                contentAlignment =
+                    Alignment.Center
             ) {
-                Text(icon, style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = "🛡️",
+                    style =
+                        MaterialTheme.typography
+                            .titleLarge
+                )
             }
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = contentColor
-            )
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = contentColor.copy(alpha = 0.72f)
-            )
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 14.dp),
+                verticalArrangement =
+                    Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "오늘의 안심 케어",
+                    color = Color(0xFF183B56),
+                    fontWeight =
+                        FontWeight.ExtraBold
+                )
+
+                Text(
+                    text =
+                        "이상 소음·누수·냄새가 있다면 " +
+                            "바로 문진을 시작해 주세요.",
+                    color = Color(0xFF5C7180),
+                    style =
+                        MaterialTheme.typography
+                            .bodyMedium
+                )
+            }
         }
     }
 }
@@ -876,85 +1388,71 @@ private fun VisitTimeline() {
 }
 
 @Composable
-fun CustomerTrackingScreen(onBack: () -> Unit) {
-    val tracking by TrackingRepository.snapshot.collectAsState()
-    val roadRoute by TrackingRepository.route.collectAsState()
+fun CustomerTrackingScreen(
+    onBack: () -> Unit
+) {
+    val tracking by
+        TrackingRepository.snapshot
+            .collectAsState()
+    val roadRoute by
+        TrackingRepository.route
+            .collectAsState()
 
-    val useKakaoMap = KakaoMapRuntime.isReady
-    val coroutineScope = rememberCoroutineScope()
+    val useKakaoMap =
+        KakaoMapRuntime.isReady
+    val coroutineScope =
+        rememberCoroutineScope()
 
-    var isRouteLoading by remember { mutableStateOf(false) }
-    var routeStartRequest by remember { mutableStateOf(0) }
-    var actionError by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(Unit) {
-        /*
-         * 화면 진입 시 기사 배정 상태까지만 준비한다.
-         * 콜 수락과 경로 요청은 사용자가 실제 버튼을 눌렀을 때 실행한다.
-         */
-        TrackingRepository.prepareVisit()
+    var isRouteLoading by remember {
+        mutableStateOf(false)
     }
-
-    LaunchedEffect(routeStartRequest) {
-        if (routeStartRequest <= 0) return@LaunchedEffect
-
-        val trackingStarted = TrackingRepository.startDemoTracking()
-
-        if (!trackingStarted) {
-            actionError =
-                TrackingRepository.snapshot.value.locationRejectedReason
-                    ?: "도로 경로가 준비되지 않아 이동을 시작하지 못했습니다."
-            return@LaunchedEffect
-        }
-
-        while (true) {
-            delay(
-                TrackingRepository
-                    .nextDemoDelayMillis()
-                    .milliseconds
-            )
-
-            val hasNext =
-                TrackingRepository.advanceDemoTracking()
-
-            if (!hasNext) break
-        }
+    var actionError by remember {
+        mutableStateOf<String?>(null)
     }
 
     LaunchedEffect(Unit) {
         while (true) {
             delay(1_000.milliseconds)
-            TrackingRepository.refreshTrackingHealth()
+            TrackingRepository
+                .refreshTrackingHealth()
         }
     }
 
-    fun requestRoadRoute(
-        acceptCallFirst: Boolean
-    ) {
-        if (isRouteLoading) return
+    fun refreshCustomerStatus() {
+        actionError = null
+        TrackingRepository
+            .refreshTrackingHealth()
+    }
+
+    fun refreshRoadRoute() {
+        if (isRouteLoading) {
+            return
+        }
+
+        if (!tracking.callAccepted) {
+            actionError =
+                "방문기사가 콜을 수락하면 " +
+                    "이동 경로가 자동으로 표시됩니다."
+            return
+        }
 
         coroutineScope.launch {
             isRouteLoading = true
             actionError = null
 
-            if (acceptCallFirst) {
-                TrackingRepository.acceptCall()
-            } else {
-                TrackingRepository.beginRouteRetry()
-            }
+            TrackingRepository
+                .beginRouteRetry()
 
-            val routeLoaded =
-                TrackingRepository.loadRoadRoute()
+            val loaded =
+                TrackingRepository
+                    .loadRoadRoute()
 
-            if (routeLoaded) {
-                /*
-                 * 같은 값으로는 LaunchedEffect가 다시 실행되지 않으므로
-                 * 성공할 때마다 요청 번호를 증가시킨다.
-                 */
-                routeStartRequest += 1
-            } else {
+            if (!loaded) {
                 actionError =
-                    TrackingRepository.snapshot.value.locationRejectedReason
+                    TrackingRepository
+                        .snapshot
+                        .value
+                        .locationRejectedReason
                         ?: "도로 경로를 불러오지 못했습니다."
             }
 
@@ -966,161 +1464,127 @@ fun CustomerTrackingScreen(onBack: () -> Unit) {
         title = "방문기사 이동 현황",
         onBack = onBack
     ) { modifier ->
-        Column(
-            modifier = modifier.fillMaxSize()
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(
+                    Color(0xFFF2F5F7)
+                )
         ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                if (useKakaoMap) {
-                    KakaoTrackingMap(
-                        route = roadRoute,
-                        technician = tracking.technicianLocation,
-                        customer = tracking.customerLocation,
-                        travelMode = tracking.travelMode,
-                        headingDegrees = tracking.headingDegrees,
-                        autoFollow = true,
-                        routeRecalculating =
-                            tracking.routeRecalculating,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    DemoTrackingMap(
-                        route = roadRoute,
-                        technician = tracking.technicianLocation,
-                        customer = tracking.customerLocation,
-                        travelMode = tracking.travelMode,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                    horizontalArrangement =
-                        Arrangement.SpaceBetween,
-                    verticalAlignment =
-                        Alignment.CenterVertically
-                ) {
-                    StatusPill(
-                        text = if (useKakaoMap) {
-                            "실제 카카오맵"
-                        } else {
-                            "시연 지도"
-                        },
-                        color = if (useKakaoMap) {
-                            SuccessGreen
-                        } else {
-                            HeroBlue
-                        },
-                        backgroundColor =
-                            Color.White.copy(alpha = 0.94f)
-                    )
-
-                    StatusPill(
-                        text = when {
-                            isRouteLoading ->
-                                "경로 확인 중"
-                            roadRoute.size < 2 &&
-                                tracking.locationRejectedReason != null ->
-                                "경로 오류"
-                            tracking.status ==
-                                VisitScheduleStatus.ARRIVED ->
-                                "도착 완료"
-                            tracking.routeRecalculating ->
-                                "경로 재탐색"
-                            tracking.travelMode ==
-                                TravelMode.DRIVING &&
-                                tracking.connectionState ==
-                                TrackingConnectionState.LIVE ->
-                                "🚙 차량 이동 중"
-                            tracking.travelMode ==
-                                TravelMode.WALKING &&
-                                tracking.connectionState ==
-                                TrackingConnectionState.LIVE ->
-                                "도보 이동 중"
-                            tracking.connectionState ==
-                                TrackingConnectionState.LIVE ->
-                                "● LIVE"
-                            tracking.connectionState ==
-                                TrackingConnectionState.STALE ->
-                                "위치 지연"
-                            tracking.connectionState ==
-                                TrackingConnectionState.OFFLINE ->
-                                "연결 끊김"
-                            tracking.callAccepted ->
-                                "콜 수락"
-                            else ->
-                                "콜 대기"
-                        },
-                        color = when {
-                            isRouteLoading ->
-                                HeroBlue
-                            roadRoute.size < 2 &&
-                                tracking.locationRejectedReason != null ->
-                                MaterialTheme.colorScheme.error
-                            tracking.connectionState ==
-                                TrackingConnectionState.LIVE ->
-                                SuccessGreen
-                            tracking.connectionState ==
-                                TrackingConnectionState.STALE ->
-                                WarningText
-                            tracking.connectionState ==
-                                TrackingConnectionState.OFFLINE ->
-                                MaterialTheme.colorScheme.error
-                            else ->
-                                HeroBlue
-                        },
-                        backgroundColor =
-                            Color.White.copy(alpha = 0.94f)
-                    )
-                }
+            /*
+             * 배달 추적 앱처럼 지도를 화면 전체 배경으로 사용한다.
+             * 정보 카드는 지도 위에 떠 있는 오버레이 형태로 배치한다.
+             */
+            if (useKakaoMap) {
+                KakaoTrackingMap(
+                    route = roadRoute,
+                    technician =
+                        tracking
+                            .technicianLocation,
+                    customer =
+                        tracking
+                            .customerLocation,
+                    travelMode =
+                        tracking.travelMode,
+                    headingDegrees =
+                        tracking
+                            .headingDegrees,
+                    autoFollow = true,
+                    routeRecalculating =
+                        tracking
+                            .routeRecalculating,
+                    modifier =
+                        Modifier.fillMaxSize()
+                )
+            } else {
+                DemoTrackingMap(
+                    route = roadRoute.ifEmpty {
+                        listOf(
+                            tracking
+                                .technicianLocation,
+                            tracking
+                                .customerLocation
+                        )
+                    },
+                    technician =
+                        tracking
+                            .technicianLocation,
+                    customer =
+                        tracking
+                            .customerLocation,
+                    travelMode =
+                        tracking.travelMode,
+                    modifier =
+                        Modifier.fillMaxSize()
+                )
             }
 
-            TrackingBottomCard(
+            CustomerMapHeadline(
+                callAccepted =
+                    tracking.callAccepted,
                 status = tracking.status,
-                travelMode = tracking.travelMode,
-                technicianName = tracking.technicianName,
-                remainingDistanceMeters =
-                    tracking.remainingDistanceMeters,
-                etaMinutes = tracking.etaMinutes,
-                lastUpdatedLabel =
-                    tracking.lastUpdatedLabel,
-                callAccepted = tracking.callAccepted,
-                isLive = tracking.isLive,
-                routeProgress = tracking.routeProgress,
-                speedKph = tracking.speedKph,
-                locationAccuracyMeters =
-                    tracking.locationAccuracyMeters,
-                vehicleNumberMasked =
-                    tracking.vehicleNumberMasked,
+                etaMinutes =
+                    tracking.etaMinutes,
+                isRouteLoading =
+                    isRouteLoading,
                 connectionState =
                     tracking.connectionState,
-                locationSignalStatus =
-                    tracking.locationSignalStatus,
-                staleSeconds = tracking.staleSeconds,
-                routeDeviationMeters =
-                    tracking.routeDeviationMeters,
+                modifier = Modifier
+                    .align(
+                        Alignment.TopCenter
+                    )
+                    .padding(
+                        horizontal = 14.dp,
+                        vertical = 12.dp
+                    )
+            )
+
+            TrackingBottomCard(
+                modifier = Modifier
+                    .align(
+                        Alignment.BottomCenter
+                    )
+                    .padding(
+                        horizontal = 12.dp,
+                        vertical = 12.dp
+                    ),
+                status = tracking.status,
+                travelMode =
+                    tracking.travelMode,
+                technicianName =
+                    tracking.technicianName,
+                remainingDistanceMeters =
+                    tracking
+                        .remainingDistanceMeters,
+                etaMinutes =
+                    tracking.etaMinutes,
+                lastUpdatedLabel =
+                    tracking.lastUpdatedLabel,
+                callAccepted =
+                    tracking.callAccepted,
+                routeProgress =
+                    tracking.routeProgress,
+                vehicleNumberMasked =
+                    tracking
+                        .vehicleNumberMasked,
+                connectionState =
+                    tracking.connectionState,
                 routeRecalculating =
-                    tracking.routeRecalculating,
+                    tracking
+                        .routeRecalculating,
                 locationRejectedReason =
                     actionError
-                        ?: tracking.locationRejectedReason,
-                routeReady = roadRoute.size >= 2,
-                isRouteLoading = isRouteLoading,
-                onAcceptCall = {
-                    requestRoadRoute(
-                        acceptCallFirst = true
-                    )
+                        ?: tracking
+                            .locationRejectedReason,
+                routeReady =
+                    roadRoute.size >= 2,
+                isRouteLoading =
+                    isRouteLoading,
+                onRefreshStatus = {
+                    refreshCustomerStatus()
                 },
                 onRetryRoute = {
-                    requestRoadRoute(
-                        acceptCallFirst = false
-                    )
+                    refreshRoadRoute()
                 }
             )
         }
@@ -1128,7 +1592,135 @@ fun CustomerTrackingScreen(onBack: () -> Unit) {
 }
 
 @Composable
+private fun CustomerMapHeadline(
+    callAccepted: Boolean,
+    status: VisitScheduleStatus,
+    etaMinutes: Int,
+    isRouteLoading: Boolean,
+    connectionState: TrackingConnectionState,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color =
+            Color.White.copy(
+                alpha = 0.96f
+            ),
+        shape =
+            RoundedCornerShape(24.dp),
+        shadowElevation = 6.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(
+                horizontal = 18.dp,
+                vertical = 15.dp
+            ),
+            horizontalArrangement =
+                Arrangement.SpaceBetween,
+            verticalAlignment =
+                Alignment.CenterVertically
+        ) {
+            Column(
+                modifier =
+                    Modifier.weight(1f)
+            ) {
+                Text(
+                    text = when {
+                        status ==
+                            VisitScheduleStatus
+                                .ARRIVED ->
+                            "기사님이 도착했어요"
+
+                        etaMinutes > 0 &&
+                            callAccepted ->
+                            "약 ${etaMinutes}분 후 도착해요"
+
+                        callAccepted ->
+                            "기사님이 출발을 준비 중이에요"
+
+                        else ->
+                            "기사 응답을 기다리고 있어요"
+                    },
+                    color = Color(0xFF102A3A),
+                    style =
+                        MaterialTheme.typography
+                            .titleLarge,
+                    fontWeight =
+                        FontWeight.ExtraBold
+                )
+
+                Spacer(
+                    modifier =
+                        Modifier.height(3.dp)
+                )
+
+                Text(
+                    text = when {
+                        isRouteLoading ->
+                            "실제 도로 경로를 확인하고 있어요."
+
+                        connectionState ==
+                            TrackingConnectionState
+                                .LIVE ->
+                            "기사 위치가 실시간으로 갱신됩니다."
+
+                        connectionState ==
+                            TrackingConnectionState
+                                .STALE ->
+                            "최근 위치가 조금 늦게 도착하고 있어요."
+
+                        else ->
+                            "방문 진행 상태를 확인하고 있습니다."
+                    },
+                    color = Color(0xFF687987),
+                    style =
+                        MaterialTheme.typography
+                            .bodyMedium
+                )
+            }
+
+            StatusPill(
+                text = when {
+                    status ==
+                        VisitScheduleStatus
+                            .ARRIVED ->
+                        "도착"
+
+                    connectionState ==
+                        TrackingConnectionState
+                            .LIVE ->
+                        "LIVE"
+
+                    callAccepted ->
+                        "수락 완료"
+
+                    else ->
+                        "배정 대기"
+                },
+                color = when {
+                    status ==
+                        VisitScheduleStatus
+                            .ARRIVED ->
+                        SuccessGreen
+
+                    connectionState ==
+                        TrackingConnectionState
+                            .LIVE ->
+                        HeroTeal
+
+                    else ->
+                        HeroBlue
+                },
+                backgroundColor =
+                    Color(0xFFF0F6F7)
+            )
+        }
+    }
+}
+
+@Composable
 private fun TrackingBottomCard(
+    modifier: Modifier = Modifier,
     status: VisitScheduleStatus,
     travelMode: TravelMode,
     technicianName: String,
@@ -1136,86 +1728,84 @@ private fun TrackingBottomCard(
     etaMinutes: Int,
     lastUpdatedLabel: String,
     callAccepted: Boolean,
-    isLive: Boolean,
     routeProgress: Float,
-    speedKph: Int,
-    locationAccuracyMeters: Int,
     vehicleNumberMasked: String,
     connectionState: TrackingConnectionState,
-    locationSignalStatus: LocationSignalStatus,
-    staleSeconds: Int,
-    routeDeviationMeters: Int,
     routeRecalculating: Boolean,
     locationRejectedReason: String?,
     routeReady: Boolean,
     isRouteLoading: Boolean,
-    onAcceptCall: () -> Unit,
+    onRefreshStatus: () -> Unit,
     onRetryRoute: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = 12.dp,
-                vertical = 12.dp
+        modifier = modifier.fillMaxWidth(),
+        shape =
+            RoundedCornerShape(30.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor =
+                    Color.White.copy(
+                        alpha = 0.98f
+                    )
             ),
-        shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(
-            containerColor =
-                MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
-        )
+        elevation =
+            CardDefaults.cardElevation(
+                defaultElevation = 10.dp
+            )
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(
+                start = 18.dp,
+                top = 10.dp,
+                end = 18.dp,
+                bottom = 16.dp
+            ),
             verticalArrangement =
-                Arrangement.spacedBy(13.dp)
+                Arrangement.spacedBy(11.dp)
         ) {
+            Box(
+                modifier = Modifier
+                    .align(
+                        Alignment.CenterHorizontally
+                    )
+                    .size(
+                        width = 42.dp,
+                        height = 5.dp
+                    )
+                    .background(
+                        Color(0xFFD8DEE3),
+                        RoundedCornerShape(
+                            99.dp
+                        )
+                    )
+            )
+
             Row(
                 verticalAlignment =
                     Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
-                        .size(52.dp)
+                        .size(48.dp)
                         .background(
-                            MaterialTheme
-                                .colorScheme
-                                .primaryContainer,
+                            Color(0xFFE4F7F4),
                             CircleShape
                         ),
-                    contentAlignment = Alignment.Center
+                    contentAlignment =
+                        Alignment.Center
                 ) {
                     Image(
-                        painter = painterResource(
-                            trackingMarkerResource(
-                                travelMode
-                            )
-                        ),
-                        contentDescription = when (
-                            travelMode
-                        ) {
-                            TravelMode.DRIVING ->
-                                "차량으로 이동 중인 방문기사"
-                            TravelMode.WALKING ->
-                                "도보로 이동 중인 방문기사"
-                            TravelMode.ARRIVED ->
-                                "도착한 방문기사"
-                            TravelMode.WAITING ->
-                                "출발 준비 중인 방문기사"
-                        },
-                        modifier = Modifier.size(
-                            if (
-                                travelMode ==
-                                TravelMode.DRIVING
-                            ) {
-                                44.dp
-                            } else {
-                                48.dp
-                            }
-                        )
+                        painter =
+                            painterResource(
+                                trackingMarkerResource(
+                                    travelMode
+                                )
+                            ),
+                        contentDescription =
+                            "방문기사 이동 상태",
+                        modifier =
+                            Modifier.size(40.dp)
                     )
                 }
 
@@ -1229,50 +1819,49 @@ private fun TrackingBottomCard(
                             status,
                             travelMode
                         ),
+                        color = Color(0xFF142B3A),
                         style =
-                            MaterialTheme
-                                .typography
-                                .titleMedium
+                            MaterialTheme.typography
+                                .titleMedium,
+                        fontWeight =
+                            FontWeight.ExtraBold
                     )
 
                     Text(
                         text = when {
-                            status ==
-                                VisitScheduleStatus.ARRIVED ->
-                                "$technicianName · 고객님 댁에 도착"
                             callAccepted ->
-                                "$technicianName · $vehicleNumberMasked"
+                                "$technicianName · " +
+                                    vehicleNumberMasked
+
                             else ->
-                                "$technicianName · 콜 수락 대기"
+                                "배정된 기사 응답 대기"
                         },
-                        color =
-                            MaterialTheme
-                                .colorScheme
-                                .onSurfaceVariant
+                        color = Color(0xFF74828D),
+                        style =
+                            MaterialTheme.typography
+                                .bodyMedium
                     )
                 }
 
-                StatusPill(
+                Text(
                     text = when {
-                        isRouteLoading ->
-                            "확인 중"
-                        etaMinutes == 0 &&
-                            status ==
-                            VisitScheduleStatus.ARRIVED ->
+                        status ==
+                            VisitScheduleStatus
+                                .ARRIVED ->
                             "도착"
+
                         etaMinutes > 0 ->
                             "${etaMinutes}분"
+
                         else ->
                             "대기"
                     },
-                    color = if (
-                        status ==
-                        VisitScheduleStatus.ARRIVED
-                    ) {
-                        SuccessGreen
-                    } else {
-                        HeroBlue
-                    }
+                    color = HeroTeal,
+                    style =
+                        MaterialTheme.typography
+                            .headlineSmall,
+                    fontWeight =
+                        FontWeight.ExtraBold
                 )
             }
 
@@ -1285,21 +1874,27 @@ private fun TrackingBottomCard(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(8.dp)
+                    .height(7.dp)
                     .clip(
-                        RoundedCornerShape(100.dp)
+                        RoundedCornerShape(
+                            99.dp
+                        )
                     ),
                 color = HeroTeal,
                 trackColor =
-                    MaterialTheme
-                        .colorScheme
-                        .surfaceVariant
+                    Color(0xFFE6EBEE)
+            )
+
+            CustomerTrackingStageRow(
+                status = status,
+                callAccepted = callAccepted
             )
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier =
+                    Modifier.fillMaxWidth(),
                 horizontalArrangement =
-                    Arrangement.spacedBy(10.dp)
+                    Arrangement.spacedBy(8.dp)
             ) {
                 TrackingMetric(
                     label = "남은 거리",
@@ -1308,212 +1903,251 @@ private fun TrackingBottomCard(
                             remainingDistanceMeters
                         )
                     } else {
-                        "경로 확인 전"
+                        "확인 전"
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier =
+                        Modifier.weight(1f)
                 )
 
                 TrackingMetric(
                     label = "예상 도착",
                     value = when {
                         status ==
-                            VisitScheduleStatus.ARRIVED ->
+                            VisitScheduleStatus
+                                .ARRIVED ->
                             "도착 완료"
-                        routeReady &&
-                            etaMinutes > 0 ->
+
+                        etaMinutes > 0 ->
                             "${etaMinutes}분"
+
                         else ->
                             "확인 전"
                     },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement =
-                    Arrangement.spacedBy(10.dp)
-            ) {
-                TrackingMetric(
-                    label = "현재 속도",
-                    value = if (
-                        travelMode ==
-                        TravelMode.ARRIVED
-                    ) {
-                        "정차"
-                    } else {
-                        "${speedKph}km/h"
-                    },
-                    modifier = Modifier.weight(1f)
+                    modifier =
+                        Modifier.weight(1f)
                 )
 
                 TrackingMetric(
-                    label = "GPS 정확도",
-                    value = if (
-                        locationAccuracyMeters > 0
-                    ) {
-                        "±${locationAccuracyMeters}m"
-                    } else {
-                        "확인 중"
-                    },
-                    modifier = Modifier.weight(1f)
+                    label = "최근 갱신",
+                    value =
+                        lastUpdatedLabel.take(
+                            8
+                        ),
+                    modifier =
+                        Modifier.weight(1f)
                 )
             }
 
             if (routeRecalculating) {
                 Text(
                     text =
-                        "기사가 예정 경로를 벗어나 새 경로를 계산하고 있습니다.",
-                    style =
-                        MaterialTheme
-                            .typography
-                            .bodyMedium,
+                        "경로를 벗어나 새로운 길을 찾고 있어요.",
                     color = HeroBlue,
                     fontWeight =
-                        FontWeight.SemiBold
+                        FontWeight.SemiBold,
+                    style =
+                        MaterialTheme.typography
+                            .bodyMedium
                 )
             }
 
-            if (
-                routeDeviationMeters >= 40 &&
-                !routeRecalculating
-            ) {
+            locationRejectedReason?.let {
                 Text(
-                    text =
-                        "예정 경로와 약 ${routeDeviationMeters}m 차이가 있습니다.",
-                    style =
-                        MaterialTheme
-                            .typography
-                            .bodyMedium,
-                    color = WarningText
-                )
-            }
-
-            locationRejectedReason?.let { reason ->
-                Text(
-                    text = reason,
-                    style =
-                        MaterialTheme
-                            .typography
-                            .bodyMedium,
+                    text = it,
                     color =
                         MaterialTheme
                             .colorScheme
-                            .error
+                            .error,
+                    style =
+                        MaterialTheme.typography
+                            .bodySmall
                 )
             }
 
-            Text(
-                text = when {
-                    isRouteLoading ->
-                        "실제 자동차 도로 경로를 확인하고 있습니다."
-                    status ==
-                        VisitScheduleStatus.ARRIVED ->
-                        "기사님이 도착했습니다. 잠시만 기다려 주세요."
-                    connectionState ==
-                        TrackingConnectionState.OFFLINE &&
-                        callAccepted ->
-                        "경로 연결에 실패했습니다. 아래 버튼으로 다시 시도해 주세요."
-                    connectionState ==
-                        TrackingConnectionState.STALE ->
-                        "최근 위치 갱신이 ${staleSeconds}초 지연되고 있습니다."
-                    travelMode == TravelMode.DRIVING &&
-                        isLive ->
-                        "실제 차량이 도로 경로를 따라 이동 중 · " +
-                            "현재 ${speedKph}km/h · 최근 갱신 $lastUpdatedLabel"
-                    travelMode == TravelMode.WALKING &&
-                        isLive ->
-                        "기사님이 차량에서 내려 고객님 댁으로 이동 중입니다."
-                    isLive ->
-                        "실시간 위치 수신 중 · 최근 갱신 $lastUpdatedLabel · " +
-                            signalStatusLabel(
-                                locationSignalStatus
-                            )
-                    callAccepted &&
-                        routeReady ->
-                        "기사님이 콜을 수락하고 이동을 시작했습니다."
-                    callAccepted ->
-                        "콜 수락 완료 · 실제 도로 경로를 확인해 주세요."
-                    else ->
-                        "기사님이 콜을 수락하면 실제 이동 경로가 표시됩니다."
-                },
-                style =
-                    MaterialTheme
-                        .typography
-                        .bodyMedium,
-                color =
-                    MaterialTheme
-                        .colorScheme
-                        .onSurfaceVariant
-            )
-
             when {
                 !callAccepted -> {
-                    Button(
-                        onClick = onAcceptCall,
-                        enabled = !isRouteLoading,
+                    OutlinedButton(
+                        onClick =
+                            onRefreshStatus,
                         modifier =
                             Modifier.fillMaxWidth(),
-                        colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor =
-                                    HeroTeal
+                        shape =
+                            RoundedCornerShape(
+                                17.dp
                             )
                     ) {
-                        if (isRouteLoading) {
-                            CircularProgressIndicator(
-                                modifier =
-                                    Modifier.size(20.dp),
-                                strokeWidth = 2.dp,
-                                color =
-                                    MaterialTheme
-                                        .colorScheme
-                                        .onPrimary
-                            )
-                            Text("  콜 수락 처리 중")
-                        } else {
-                            Text("기사 콜 수락")
-                        }
+                        Text(
+                            "기사 상태 새로고침"
+                        )
                     }
                 }
 
                 !routeReady -> {
                     Button(
                         onClick = onRetryRoute,
-                        enabled = !isRouteLoading,
+                        enabled =
+                            !isRouteLoading,
                         modifier =
-                            Modifier.fillMaxWidth()
-                    ) {
-                        if (isRouteLoading) {
-                            CircularProgressIndicator(
-                                modifier =
-                                    Modifier.size(20.dp),
-                                strokeWidth = 2.dp,
-                                color =
-                                    MaterialTheme
-                                        .colorScheme
-                                        .onPrimary
+                            Modifier.fillMaxWidth(),
+                        shape =
+                            RoundedCornerShape(
+                                17.dp
                             )
-                            Text("  경로 불러오는 중")
-                        } else {
-                            Text("실제 도로 경로 다시 불러오기")
-                        }
+                    ) {
+                        Text(
+                            if (isRouteLoading) {
+                                "경로 확인 중"
+                            } else {
+                                "이동 경로 불러오기"
+                            }
+                        )
                     }
                 }
 
-                status !=
-                    VisitScheduleStatus.ARRIVED -> {
+                connectionState !=
+                    TrackingConnectionState
+                        .LIVE -> {
                     OutlinedButton(
                         onClick = onRetryRoute,
                         enabled =
-                            !isRouteLoading &&
-                                !routeRecalculating,
+                            !isRouteLoading,
                         modifier =
-                            Modifier.fillMaxWidth()
+                            Modifier.fillMaxWidth(),
+                        shape =
+                            RoundedCornerShape(
+                                17.dp
+                            )
                     ) {
-                        Text("경로 새로고침")
+                        Text(
+                            "위치·경로 새로고침"
+                        )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CustomerTrackingStageRow(
+    status: VisitScheduleStatus,
+    callAccepted: Boolean
+) {
+    val currentIndex = when {
+        status ==
+            VisitScheduleStatus.ARRIVED ||
+            status ==
+            VisitScheduleStatus.IN_PROGRESS ||
+            status ==
+            VisitScheduleStatus.COMPLETED ->
+            3
+
+        status ==
+            VisitScheduleStatus.NEARBY ->
+            2
+
+        status ==
+            VisitScheduleStatus.EN_ROUTE ->
+            1
+
+        callAccepted ->
+            0
+
+        else ->
+            -1
+    }
+
+    val labels = listOf(
+        "수락",
+        "이동",
+        "근처",
+        "도착"
+    )
+
+    Row(
+        modifier =
+            Modifier.fillMaxWidth(),
+        horizontalArrangement =
+            Arrangement.SpaceBetween
+    ) {
+        labels.forEachIndexed {
+                index,
+                label ->
+            Column(
+                horizontalAlignment =
+                    Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .background(
+                            if (
+                                index <=
+                                currentIndex
+                            ) {
+                                HeroTeal
+                            } else {
+                                Color(
+                                    0xFFDDE3E7
+                                )
+                            },
+                            CircleShape
+                        ),
+                    contentAlignment =
+                        Alignment.Center
+                ) {
+                    Text(
+                        text =
+                            if (
+                                index <=
+                                currentIndex
+                            ) {
+                                "✓"
+                            } else {
+                                "${index + 1}"
+                            },
+                        color =
+                            if (
+                                index <=
+                                currentIndex
+                            ) {
+                                Color.White
+                            } else {
+                                Color(
+                                    0xFF82909A
+                                )
+                            },
+                        fontWeight =
+                            FontWeight.Bold,
+                        style =
+                            MaterialTheme
+                                .typography
+                                .labelSmall
+                    )
+                }
+
+                Spacer(
+                    modifier =
+                        Modifier.height(3.dp)
+                )
+
+                Text(
+                    text = label,
+                    color =
+                        if (
+                            index <=
+                            currentIndex
+                        ) {
+                            Color(0xFF166E69)
+                        } else {
+                            Color(0xFF85929C)
+                        },
+                    style =
+                        MaterialTheme.typography
+                            .labelSmall,
+                    fontWeight =
+                        FontWeight.SemiBold
+                )
             }
         }
     }
