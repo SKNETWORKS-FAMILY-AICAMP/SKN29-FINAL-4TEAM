@@ -1,266 +1,35 @@
-import { useMemo } from "react";
-import {
-  useLocation,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { createInquiryDetailPath } from "../../app/router/routePaths";
-import PriorityBadge, {
-  type PriorityBadgeVariant,
-} from "../../common/components/badge/PriorityBadge";
-import RiskBadge, {
-  type RiskLevel,
-} from "../../common/components/badge/RiskBadge";
+import PriorityBadge from "../../common/components/badge/PriorityBadge";
+import RiskBadge from "../../common/components/badge/RiskBadge";
 import StatusBadge from "../../common/components/badge/StatusBadge";
 import Pagination from "../../common/components/data-display/Pagination";
 import EmptyState from "../../common/components/feedback/EmptyState";
+import useInquiryQueueFilters from "../../features/inquiry-queue/hooks/useInquiryQueueFilters";
+import useMockInquiryQueue from "../../features/inquiry-queue/hooks/useMockInquiryQueue";
+import {
+  INQUIRY_QUEUE_PAGE_SIZE,
+  STATUS_LABELS,
+  STATUS_VARIANTS,
+} from "../../features/inquiry-queue/model/inquiryQueueConstants";
+import { formatInquiryReceivedAt } from "../../features/inquiry-queue/model/inquiryQueueModel";
 import "./ConsultantDashboardPage.css";
-
-type InquiryStatus =
-  | "CONSULTATION_REQUIRED"
-  | "CONSULTATION_IN_PROGRESS"
-  | "REOPENED";
-
-type InquirySort = "RECEIVED_DESC" | "RECEIVED_ASC";
-
-const PAGE_SIZE = 2;
-
-const RISK_LEVELS: readonly RiskLevel[] = [
-  "general",
-  "caution",
-  "danger",
-];
-
-const INQUIRY_STATUSES: readonly InquiryStatus[] = [
-  "CONSULTATION_REQUIRED",
-  "CONSULTATION_IN_PROGRESS",
-  "REOPENED",
-];
-
-const PRIORITY_VARIANTS: readonly PriorityBadgeVariant[] = [
-  "default",
-  "high",
-  "urgent",
-];
-
-const INQUIRY_SORTS: readonly InquirySort[] = [
-  "RECEIVED_DESC",
-  "RECEIVED_ASC",
-];
-
-interface InquiryListItem {
-  inquiryId: string;
-  customerDisplayName: string;
-  productModel: string;
-  symptomSummary: string;
-  currentState: InquiryStatus;
-  riskLevel: RiskLevel;
-  priorityLabel: string;
-  priorityVariant: PriorityBadgeVariant;
-  receivedAt: string;
-}
-
-const MOCK_INQUIRIES: InquiryListItem[] = [
-  {
-    inquiryId: "DEMO-INQ-001",
-    customerDisplayName: "김*수",
-    productModel: "WPUJAC104DWH",
-    symptomSummary: "출수량이 이전보다 줄어들었어요.",
-    currentState: "CONSULTATION_REQUIRED",
-    riskLevel: "general",
-    priorityLabel: "보통",
-    priorityVariant: "default",
-    receivedAt: "2026-07-27T09:20:00+09:00",
-  },
-  {
-    inquiryId: "DEMO-INQ-002",
-    customerDisplayName: "이*영",
-    productModel: "WPUJAC104DWH",
-    symptomSummary: "제품 하단에서 물이 새는 것 같아요.",
-    currentState: "CONSULTATION_REQUIRED",
-    riskLevel: "danger",
-    priorityLabel: "긴급",
-    priorityVariant: "urgent",
-    receivedAt: "2026-07-27T09:45:00+09:00",
-  },
-  {
-    inquiryId: "DEMO-INQ-003",
-    customerDisplayName: "박*진",
-    productModel: "WPUJAC104DWH",
-    symptomSummary: "이전에 처리했지만 같은 증상이 다시 발생했어요.",
-    currentState: "REOPENED",
-    riskLevel: "caution",
-    priorityLabel: "높음",
-    priorityVariant: "high",
-    receivedAt: "2026-07-27T10:10:00+09:00",
-  },
-];
-
-const STATUS_LABELS: Record<InquiryStatus, string> = {
-  CONSULTATION_REQUIRED: "상담 필요",
-  CONSULTATION_IN_PROGRESS: "상담 진행 중",
-  REOPENED: "문의 재개",
-};
-
-const STATUS_VARIANTS: Record<
-  InquiryStatus,
-  "default" | "progress" | "reopened"
-> = {
-  CONSULTATION_REQUIRED: "default",
-  CONSULTATION_IN_PROGRESS: "progress",
-  REOPENED: "reopened",
-};
-
-function formatDateTime(value: string): string {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "-";
-  }
-
-  return new Intl.DateTimeFormat("ko-KR", {
-    timeZone: "Asia/Seoul",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function getReceivedTimestamp(value: string): number {
-  const timestamp = Date.parse(value);
-
-  return Number.isNaN(timestamp) ? 0 : timestamp;
-}
-
-function getValidatedParam<T extends string>(
-  searchParams: URLSearchParams,
-  key: string,
-  allowedValues: readonly T[],
-  fallback: T,
-): T {
-  const value = searchParams.get(key);
-
-  return value && allowedValues.includes(value as T)
-    ? (value as T)
-    : fallback;
-}
-
-function getPageParam(searchParams: URLSearchParams): number {
-  const value = Number(searchParams.get("page") ?? "1");
-
-  return Number.isInteger(value) && value > 0 ? value : 1;
-}
 
 export default function ConsultantDashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const searchKeyword = searchParams.get("q") ?? "";
-  const selectedRisk = getValidatedParam(
-    searchParams,
-    "risk",
-    RISK_LEVELS,
-    "ALL" as const,
-  );
-  const selectedStatus = getValidatedParam(
-    searchParams,
-    "status",
-    INQUIRY_STATUSES,
-    "ALL" as const,
-  );
-  const selectedPriority = getValidatedParam(
-    searchParams,
-    "priority",
-    PRIORITY_VARIANTS,
-    "ALL" as const,
-  );
-  const selectedSort = getValidatedParam(
-    searchParams,
-    "sort",
-    INQUIRY_SORTS,
-    "RECEIVED_DESC",
-  );
-  const requestedPage = getPageParam(searchParams);
-
-  const filteredInquiries = useMemo(() => {
-    const keyword = searchKeyword.trim().toLowerCase();
-
-    return MOCK_INQUIRIES.filter((inquiry) => {
-      const matchesKeyword =
-        keyword.length === 0 ||
-        inquiry.inquiryId.toLowerCase().includes(keyword) ||
-        inquiry.customerDisplayName.toLowerCase().includes(keyword) ||
-        inquiry.productModel.toLowerCase().includes(keyword) ||
-        inquiry.symptomSummary.toLowerCase().includes(keyword);
-
-      const matchesRisk =
-        selectedRisk === "ALL" || inquiry.riskLevel === selectedRisk;
-      const matchesStatus =
-        selectedStatus === "ALL" || inquiry.currentState === selectedStatus;
-      const matchesPriority =
-        selectedPriority === "ALL" ||
-        inquiry.priorityVariant === selectedPriority;
-
-      return (
-        matchesKeyword &&
-        matchesRisk &&
-        matchesStatus &&
-        matchesPriority
-      );
-    }).sort((left, right) => {
-      const difference =
-        getReceivedTimestamp(right.receivedAt) -
-        getReceivedTimestamp(left.receivedAt);
-
-      return selectedSort === "RECEIVED_DESC" ? difference : -difference;
-    });
-  }, [
-    searchKeyword,
-    selectedPriority,
-    selectedRisk,
-    selectedSort,
-    selectedStatus,
-  ]);
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredInquiries.length / PAGE_SIZE),
-  );
-  const currentPage = Math.min(requestedPage, totalPages);
-  const currentPageInquiries = filteredInquiries.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
-  const hasActiveFilters =
-    searchKeyword.trim().length > 0 ||
-    selectedRisk !== "ALL" ||
-    selectedStatus !== "ALL" ||
-    selectedPriority !== "ALL";
-  const hasChangedConditions =
-    hasActiveFilters || selectedSort !== "RECEIVED_DESC";
-
-  const updateSearchParam = (
-    key: string,
-    value: string,
-    defaultValue: string,
-  ) => {
-    const nextParams = new URLSearchParams(searchParams);
-
-    if (value === defaultValue || value.trim().length === 0) {
-      nextParams.delete(key);
-    } else {
-      nextParams.set(key, value);
-    }
-
-    if (key !== "page") {
-      nextParams.delete("page");
-    }
-
-    setSearchParams(nextParams, { replace: true });
-  };
+  const {
+    filters,
+    resetFilters,
+    setPage,
+    setPriority,
+    setRisk,
+    setSearchKeyword,
+    setSort,
+    setStatus,
+  } = useInquiryQueueFilters();
+  const queue = useMockInquiryQueue(filters);
 
   const handleInquiryClick = (inquiryId: string) => {
     navigate(createInquiryDetailPath(inquiryId), {
@@ -268,10 +37,6 @@ export default function ConsultantDashboardPage() {
         returnTo: `${location.pathname}${location.search}`,
       },
     });
-  };
-
-  const handleResetFilters = () => {
-    setSearchParams(new URLSearchParams(), { replace: true });
   };
 
   return (
@@ -284,7 +49,7 @@ export default function ConsultantDashboardPage() {
         </div>
 
         <div className="consultant-dashboard__count">
-          검색 결과 <strong>{filteredInquiries.length}</strong>건
+          검색 결과 <strong>{queue.totalItems}</strong>건
         </div>
       </header>
 
@@ -297,10 +62,8 @@ export default function ConsultantDashboardPage() {
 
           <input
             type="search"
-            value={searchKeyword}
-            onChange={(event) =>
-              updateSearchParam("q", event.target.value, "")
-            }
+            value={filters.searchKeyword}
+            onChange={(event) => setSearchKeyword(event.target.value)}
             placeholder="문의 번호, 고객명, 제품, 증상 검색"
           />
         </label>
@@ -309,10 +72,8 @@ export default function ConsultantDashboardPage() {
           <span>위험도</span>
 
           <select
-            value={selectedRisk}
-            onChange={(event) =>
-              updateSearchParam("risk", event.target.value, "ALL")
-            }
+            value={filters.risk}
+            onChange={(event) => setRisk(event.target.value)}
           >
             <option value="ALL">전체</option>
             <option value="general">일반</option>
@@ -325,10 +86,8 @@ export default function ConsultantDashboardPage() {
           <span>상태</span>
 
           <select
-            value={selectedStatus}
-            onChange={(event) =>
-              updateSearchParam("status", event.target.value, "ALL")
-            }
+            value={filters.status}
+            onChange={(event) => setStatus(event.target.value)}
           >
             <option value="ALL">전체</option>
             <option value="CONSULTATION_REQUIRED">상담 필요</option>
@@ -341,10 +100,8 @@ export default function ConsultantDashboardPage() {
           <span>우선순위</span>
 
           <select
-            value={selectedPriority}
-            onChange={(event) =>
-              updateSearchParam("priority", event.target.value, "ALL")
-            }
+            value={filters.priority}
+            onChange={(event) => setPriority(event.target.value)}
           >
             <option value="ALL">전체</option>
             <option value="default">보통</option>
@@ -357,14 +114,8 @@ export default function ConsultantDashboardPage() {
           <span>정렬</span>
 
           <select
-            value={selectedSort}
-            onChange={(event) =>
-              updateSearchParam(
-                "sort",
-                event.target.value,
-                "RECEIVED_DESC",
-              )
-            }
+            value={filters.sort}
+            onChange={(event) => setSort(event.target.value)}
           >
             <option value="RECEIVED_DESC">접수 시각 최신순</option>
             <option value="RECEIVED_ASC">접수 시각 오래된순</option>
@@ -373,14 +124,14 @@ export default function ConsultantDashboardPage() {
 
         <div className="consultant-dashboard__filter-footer">
           <p className="consultant-dashboard__mock-notice">
-            {`현재 목록과 우선순위 필터는 Mock 데이터 기준이며 페이지당 ${PAGE_SIZE}건을 표시합니다.`}
+            {`현재 목록과 우선순위 필터는 Mock 데이터 기준이며 페이지당 ${INQUIRY_QUEUE_PAGE_SIZE}건을 표시합니다.`}
           </p>
 
-          {hasChangedConditions && (
+          {queue.hasChangedConditions && (
             <button
               type="button"
               className="consultant-dashboard__reset-button"
-              onClick={handleResetFilters}
+              onClick={resetFilters}
             >
               검색 조건 초기화
             </button>
@@ -389,15 +140,15 @@ export default function ConsultantDashboardPage() {
       </section>
 
       <section className="consultant-dashboard__content">
-        {filteredInquiries.length === 0 ? (
+        {queue.totalItems === 0 ? (
           <EmptyState
             title={
-              hasActiveFilters
+              queue.hasActiveFilters
                 ? "검색 결과가 없습니다."
                 : "접수된 문의가 없습니다."
             }
             description={
-              hasActiveFilters
+              queue.hasActiveFilters
                 ? "검색어나 필터 조건을 변경한 뒤 다시 확인해 주세요."
                 : "새 문의가 접수되면 이 목록에 표시됩니다."
             }
@@ -420,7 +171,7 @@ export default function ConsultantDashboardPage() {
               </thead>
 
               <tbody>
-                {currentPageInquiries.map((inquiry) => (
+                {queue.items.map((inquiry) => (
                   <tr key={inquiry.inquiryId}>
                     <td>
                       <strong>{inquiry.inquiryId}</strong>
@@ -448,7 +199,7 @@ export default function ConsultantDashboardPage() {
                       />
                     </td>
 
-                    <td>{formatDateTime(inquiry.receivedAt)}</td>
+                    <td>{formatInquiryReceivedAt(inquiry.receivedAt)}</td>
 
                     <td>
                       <button
@@ -465,12 +216,10 @@ export default function ConsultantDashboardPage() {
             </table>
 
             <Pagination
-              page={currentPage}
-              totalItems={filteredInquiries.length}
-              totalPages={totalPages}
-              onPageChange={(page) =>
-                updateSearchParam("page", String(page), "1")
-              }
+              page={queue.currentPage}
+              totalItems={queue.totalItems}
+              totalPages={queue.totalPages}
+              onPageChange={setPage}
             />
           </div>
         )}
