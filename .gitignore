@@ -4,7 +4,7 @@ tmp/
 outputs/
 __pycache__/
 *.pyc
-
+AGENTS.md
 # 공식 원본 파일만 제외
 data/raw/manuals/**/*.pdf
 data/raw/faq/snapshots/*
