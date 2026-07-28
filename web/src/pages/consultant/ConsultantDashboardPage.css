@@ -109,32 +109,6 @@
   background: #f8fafc;
 }
 
-.risk-badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.risk-badge--general {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.risk-badge--caution {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.risk-badge--danger {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
 .detail-button {
   padding: 8px 12px;
   border: 0;

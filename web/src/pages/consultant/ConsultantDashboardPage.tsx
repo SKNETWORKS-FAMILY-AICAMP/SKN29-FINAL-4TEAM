@@ -2,6 +2,12 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { createInquiryDetailPath } from "../../app/router/routePaths";
+import PriorityBadge, {
+  type PriorityBadgeVariant,
+} from "../../common/components/badge/PriorityBadge";
+import RiskBadge, {
+  type RiskLevel,
+} from "../../common/components/badge/RiskBadge";
 import StatusBadge from "../../common/components/badge/StatusBadge";
 import EmptyState from "../../common/components/feedback/EmptyState";
 import "./ConsultantDashboardPage.css";
@@ -11,8 +17,6 @@ type InquiryStatus =
   | "CONSULTATION_IN_PROGRESS"
   | "REOPENED";
 
-type RiskLevel = "GENERAL" | "CAUTION" | "DANGER";
-
 interface InquiryListItem {
   inquiryId: string;
   customerDisplayName: string;
@@ -20,6 +24,8 @@ interface InquiryListItem {
   symptomSummary: string;
   currentState: InquiryStatus;
   riskLevel: RiskLevel;
+  priorityLabel: string;
+  priorityVariant: PriorityBadgeVariant;
   receivedAt: string;
 }
 
@@ -30,7 +36,9 @@ const MOCK_INQUIRIES: InquiryListItem[] = [
     productModel: "WPUJAC104DWH",
     symptomSummary: "출수량이 이전보다 줄어들었어요.",
     currentState: "CONSULTATION_REQUIRED",
-    riskLevel: "GENERAL",
+    riskLevel: "general",
+    priorityLabel: "보통",
+    priorityVariant: "default",
     receivedAt: "2026-07-27T09:20:00",
   },
   {
@@ -39,7 +47,9 @@ const MOCK_INQUIRIES: InquiryListItem[] = [
     productModel: "WPUJAC104DWH",
     symptomSummary: "제품 하단에서 물이 새는 것 같아요.",
     currentState: "CONSULTATION_REQUIRED",
-    riskLevel: "DANGER",
+    riskLevel: "danger",
+    priorityLabel: "긴급",
+    priorityVariant: "urgent",
     receivedAt: "2026-07-27T09:45:00",
   },
   {
@@ -48,7 +58,9 @@ const MOCK_INQUIRIES: InquiryListItem[] = [
     productModel: "WPUJAC104DWH",
     symptomSummary: "이전에 처리했지만 같은 증상이 다시 발생했어요.",
     currentState: "REOPENED",
-    riskLevel: "CAUTION",
+    riskLevel: "caution",
+    priorityLabel: "높음",
+    priorityVariant: "high",
     receivedAt: "2026-07-27T10:10:00",
   },
 ];
@@ -66,12 +78,6 @@ const STATUS_VARIANTS: Record<
   CONSULTATION_REQUIRED: "default",
   CONSULTATION_IN_PROGRESS: "progress",
   REOPENED: "reopened",
-};
-
-const RISK_LABELS: Record<RiskLevel, string> = {
-  GENERAL: "일반",
-  CAUTION: "주의",
-  DANGER: "위험",
 };
 
 function formatDateTime(value: string): string {
@@ -161,9 +167,9 @@ export default function ConsultantDashboardPage() {
             }
           >
             <option value="ALL">전체</option>
-            <option value="GENERAL">일반</option>
-            <option value="CAUTION">주의</option>
-            <option value="DANGER">위험</option>
+            <option value="general">일반</option>
+            <option value="caution">주의</option>
+            <option value="danger">위험</option>
           </select>
         </label>
       </section>
@@ -187,6 +193,7 @@ export default function ConsultantDashboardPage() {
                   <th>대표 증상</th>
                   <th>상태</th>
                   <th>위험도</th>
+                  <th>우선순위</th>
                   <th>접수 시각</th>
                   <th aria-label="상세 보기" />
                 </tr>
@@ -211,11 +218,14 @@ export default function ConsultantDashboardPage() {
                     </td>
 
                     <td>
-                      <span
-                        className={`risk-badge risk-badge--${inquiry.riskLevel.toLowerCase()}`}
-                      >
-                        {RISK_LABELS[inquiry.riskLevel]}
-                      </span>
+                      <RiskBadge level={inquiry.riskLevel} />
+                    </td>
+
+                    <td>
+                      <PriorityBadge
+                        label={inquiry.priorityLabel}
+                        variant={inquiry.priorityVariant}
+                      />
                     </td>
 
                     <td>{formatDateTime(inquiry.receivedAt)}</td>
