@@ -16,6 +16,11 @@
 | 컴포넌트 | 허용 행동이 없는 상태의 버튼 미노출 |
 | 통합 | 상담 큐에서 문의 선택 후 상세·상담 Form 전환 |
 | 통합 | 위험도 필터로 위험 문의 두 건 조회 |
+| 통합 | 미인증 사용자의 로그인 이동 |
+| 통합 | Mock 로그인 후 원래 요청 경로 복귀 |
+| 통합 | 상담사·운영자 Route 역할 허용과 403 차단 |
+| 통합 | ADMIN-01 Placeholder 접근 |
+| 통합 | 등록되지 않은 경로의 404 분리 |
 
 ## 실행 명령
 
@@ -27,7 +32,7 @@ npm.cmd run build
 
 ## 2026-07-28 실행 결과
 
-- `npm.cmd run test`: **4개 Test File, 10개 Test 통과**
+- `npm.cmd run test`: **5개 Test File, 17개 Test 통과**
 - `npm.cmd run lint`: 통과
 - `npm.cmd run build`: 통과
 - Production 번들: Vite Build 성공
