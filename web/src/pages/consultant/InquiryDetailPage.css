@@ -85,29 +85,6 @@
   font-size: 13px;
 }
 
-.inquiry-detail__badge {
-  display: inline-flex;
-  align-self: flex-start;
-  padding: 5px 10px;
-  border-radius: 999px;
-  font-size: 13px;
-}
-
-.inquiry-detail__badge--general {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.inquiry-detail__badge--caution {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.inquiry-detail__badge--danger {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
 .inquiry-detail__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -221,6 +198,34 @@
 .inquiry-detail__empty p {
   margin-top: 8px;
   color: #64748b;
+}
+
+.inquiry-detail__section-error {
+  display: flex;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fffafa;
+  color: #991b1b;
+}
+
+.inquiry-detail__section-error > span {
+  display: flex;
+  flex: 0 0 28px;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #fee2e2;
+  font-weight: 800;
+}
+
+.inquiry-detail__section-error p {
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 14px;
 }
 
 .inquiry-detail__history {

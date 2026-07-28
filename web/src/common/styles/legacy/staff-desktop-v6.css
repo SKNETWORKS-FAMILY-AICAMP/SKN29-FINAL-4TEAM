@@ -259,6 +259,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .v6-action-panel form { display: grid; gap: 9px; margin-top: 12px; }
 .v6-action-buttons { display: grid; gap: 7px; margin-top: 11px; }
 .v6-action-note { margin: 9px 0 0; color: var(--v6-ink-500); font-size: 7px; line-height: 1.55; }
+.v6-form-field b { color: var(--v6-red); font-size: 7px; }
+.v6-form-field [aria-invalid="true"] { border-color: #e38b8b; box-shadow: 0 0 0 2px rgba(196, 54, 54, .08); }
+.v6-field-error { color: var(--v6-red); font-size: 7px; font-weight: 750; line-height: 1.4; }
+.v6-check-field { display: flex; align-items: flex-start; gap: 7px; color: var(--v6-ink-600); font-size: 8px; font-weight: 750; line-height: 1.45; }
+.v6-check-field input { width: 13px; height: 13px; margin: 0; accent-color: var(--v6-green); }
+.v6-mock-selector { margin-top: 12px; padding-top: 11px; border-top: 1px dashed var(--v6-ink-200); }
+.v6-mock-selector small { color: var(--v6-ink-400); font-size: 7px; font-weight: 650; line-height: 1.4; }
+.v6-visit-link { margin-top: 9px; }
+.v6-button:disabled { cursor: wait; opacity: .55; }
+.v6-action-message { margin: 10px 0 0; padding: 9px 10px; border: 1px solid transparent; border-radius: 8px; font-size: 8px; font-weight: 750; line-height: 1.45; }
+.v6-action-message small { display: block; margin-top: 3px; font-size: 7px; font-weight: 650; }
+.v6-action-message.is-success { border-color: #b9e5d2; color: #17694d; background: #eefaf5; }
+.v6-action-message.is-forbidden, .v6-action-message.is-validation_error { border-color: #f0c5c5; color: #9f2e2e; background: #fff4f4; }
+.v6-action-message.is-conflict { border-color: #f0d69d; color: #855700; background: #fff9e9; }
+.v6-action-message.is-network_error { border-color: #c8d8ef; color: #315f98; background: #f2f7fd; }
 .v6-readonly-card { margin-top: 12px; padding: 13px; border-radius: 9px; color: var(--v6-ink-600); background: var(--v6-ink-100); font-size: 8px; line-height: 1.55; }
 .v6-readonly-card strong { display: block; margin-bottom: 4px; color: var(--v6-ink-800); font-size: 9px; }
 .v6-guard-list { display: grid; gap: 6px; margin: 11px 0 0; padding: 0; list-style: none; }
