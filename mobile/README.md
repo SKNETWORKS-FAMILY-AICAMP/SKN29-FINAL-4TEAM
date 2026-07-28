@@ -1,54 +1,43 @@
-# 정수기 딜러 고객용 Android 시연 앱 v0.4.0
+# WaterCare Android 분리 구조
 
-친근한 오리지널 물방울 마스코트를 적용한 고객용 Android 시연 앱입니다.
-문진 작성, QR 오류코드 확인, 방문기사 요청과 지도 기반 이동 현황을 한 흐름으로 확인할 수 있습니다.
-
-## 구현 기능
-
-1. 마스코트 기반 고객 홈·안내 화면
-2. 고객 문진 작성 및 증상 제출
-3. QR 촬영을 통한 제품·오류코드 확인
-4. 발표용 샘플 QR 실행
-5. 오류 결과·사용 안내·공식 근거 예시 표시
-6. 방문기사 요청 및 배정 상태 표시
-7. 기사 이동 상태 자동 갱신
-8. 카카오맵 표시
-9. 카카오 앱 키가 없을 때도 동작하는 시연용 지도
-
-## 실행 경로
-
-Android Studio에서 다음 폴더를 엽니다.
+기존 단일 `app` 모듈을 실제 소스 기준으로 다음 세 모듈로 분리한 결과입니다.
 
 ```text
-WaterCareAndroid
+mobile2/
+├─ customer-app/       # 기존에 실제로 실행되던 고객 앱
+├─ technician-app/     # 방문기사 독립 앱
+└─ core/               # 두 앱이 공유하는 순수 Kotlin 모델·상태 전이
 ```
 
-`settings.gradle.kts`와 `app` 폴더가 바로 보이는 위치를 선택합니다.
+## 실행
 
-## 카카오맵 설정
-
-프로젝트 루트의 `local.properties`에 다음 값을 추가합니다.
-
-```properties
-KAKAO_NATIVE_APP_KEY=발급받은_네이티브_앱_키
+```bat
+setup-local-properties.bat
+verify-build.bat
 ```
 
-키가 없으면 앱이 중단되지 않고 시연용 지도를 표시합니다.
+카카오 네이티브 키가 없더라도 고객 앱은 시연용 지도로 대체됩니다.
 
-## 발표용 흐름
+## 중요한 판단
+
+원본의 `app/`, `feature/customer/`, `feature/technician/`,
+`core/` 하위 파일 다수는 내용이 없는 6줄짜리 골격이며
+패키지도 `com.skn29.watercare.skn29.watercare...`로 중복되어 있었습니다.
+
+실제로 실행되는 고객 앱은 다음 코드였습니다.
 
 ```text
-앱 실행
-→ 문진 작성 또는 QR 오류코드 확인
-→ 오류 확인 결과
-→ 방문기사 요청
-→ 방문 접수 현황
-→ 기사 위치 확인
-→ 차량 이동
-→ 도보 이동
-→ 도착 및 점검 중
+MainActivity.kt
+WaterPurifierDealerApplication.kt
+camera/
+data/
+model/
+tracking/
+ui/
+util/
 ```
 
-## 덮어쓰기
+따라서 빈 골격을 기계적으로 이동하지 않고,
+실제 실행 코드만 고객 앱에 보존했습니다.
 
-`OVERWRITE_GUIDE.md`의 순서를 확인합니다.
+고객 앱의 기존 `applicationId=com.skn29.watercare`는 유지하고, 기사 앱만 별도 ID를 사용합니다.
