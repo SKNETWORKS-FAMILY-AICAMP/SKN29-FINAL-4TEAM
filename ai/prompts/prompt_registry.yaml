@@ -1,1 +1,18 @@
-# AI 과업별 현재 적용 프롬프트 버전 등록
+# 과업별 프롬프트 버전 등록 Registry
+
+tasks:
+  symptom_structuring:
+    active_version: "v1"
+    description: "고객 자연어 및 선택 증상 표준 필드 구조화"
+
+  customer_guidance:
+    active_version: "v1"
+    description: "위험도 및 근거 기반 정수기 사용 안내 문구 생성"
+
+  consultation_summary:
+    active_version: "v1"
+    description: "상담사용 문의 요약 초안 생성"
+
+  technician_report:
+    active_version: "v1"
+    description: "방문기사 사전 점검 리포트 생성"
