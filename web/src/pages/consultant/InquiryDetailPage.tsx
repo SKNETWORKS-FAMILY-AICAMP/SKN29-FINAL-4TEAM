@@ -5,7 +5,9 @@ import {
   createVisitTransitionPath,
   ROUTE_PATHS,
 } from "../../app/router/routePaths";
+import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
+import LoadingState from "../../common/components/feedback/LoadingState";
 import "./InquiryDetailPage.css";
 
 type RiskLevel = "GENERAL" | "CAUTION" | "DANGER";
@@ -227,7 +229,9 @@ export default function InquiryDetailPage() {
     ? MOCK_INQUIRY_DETAILS[inquiryId]
     : undefined;
 
-  const isForbidden = inquiryId === "DEMO-INQ-FORBIDDEN";  
+  const isLoading = inquiryId === "DEMO-INQ-LOADING";
+  const isLoadError = inquiryId === "DEMO-INQ-ERROR";
+  const isForbidden = inquiryId === "DEMO-INQ-FORBIDDEN";
 
   const [responseDraft, setResponseDraft] = useState("");
   const [actionMessage, setActionMessage] = useState("");
@@ -237,20 +241,44 @@ export default function InquiryDetailPage() {
     setActionMessage("");
   }, [inquiry]);
 
+  if (isLoading) {
+    return (
+      <main className="inquiry-detail">
+        <LoadingState
+          title="문의 정보를 불러오고 있습니다."
+          description="고객 문의와 상담 정보를 확인하고 있습니다."
+        />
+      </main>
+    );
+  }
+
+  if (isLoadError) {
+    return (
+      <main className="inquiry-detail">
+        <ErrorState
+          title="문의 정보를 불러오지 못했습니다."
+          description="일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
+          retryLabel="다시 시도"
+          onRetry={() => window.location.reload()}
+        />
+      </main>
+    );
+  }
+
   if (isForbidden) {
-  return (
-    <main className="inquiry-detail">
-      <ForbiddenState
-        title="이 문의에 접근할 권한이 없습니다."
-        description="담당 상담사이거나 해당 문의의 조회 권한이 있는지 확인해 주세요."
-        actionLabel="문의 목록으로 돌아가기"
-        onAction={() =>
-          navigate(ROUTE_PATHS.consultantInquiryList)
-        }
-      />
-    </main>
-  );
-}
+    return (
+      <main className="inquiry-detail">
+        <ForbiddenState
+          title="이 문의에 접근할 권한이 없습니다."
+          description="담당 상담사이거나 해당 문의의 조회 권한이 있는지 확인해 주세요."
+          actionLabel="문의 목록으로 돌아가기"
+          onAction={() =>
+            navigate(ROUTE_PATHS.consultantInquiryList)
+          }
+        />
+      </main>
+    );
+  }
 
   if (!inquiry) {
     return (
@@ -328,6 +356,7 @@ export default function InquiryDetailPage() {
           role="alert"
         >
           <strong>위험 문의입니다.</strong>
+
           <p>
             제품 사용 중지를 유지하도록 안내하고 임의 분해나
             부품 교체 방법을 제공하지 마세요.
@@ -346,6 +375,7 @@ export default function InquiryDetailPage() {
 
         <article>
           <span>위험도</span>
+
           <strong className={getRiskClassName(inquiry.riskLevel)}>
             {inquiry.riskLabel}
           </strong>
@@ -436,6 +466,7 @@ export default function InquiryDetailPage() {
         {inquiry.evidence.length === 0 ? (
           <div className="inquiry-detail__empty">
             <strong>표시할 공식 근거가 없습니다.</strong>
+
             <p>
               근거가 없는 경우 AI 초안을 공식 안내처럼 사용하지
               마세요.
@@ -450,6 +481,7 @@ export default function InquiryDetailPage() {
               >
                 <div className="inquiry-detail__evidence-header">
                   <strong>{item.documentTitle}</strong>
+
                   <span>
                     {getVerificationLabel(
                       item.verificationStatus,
@@ -460,6 +492,7 @@ export default function InquiryDetailPage() {
                 <p>
                   {item.revision} · {item.page}페이지
                 </p>
+
                 <p>{item.summary}</p>
               </article>
             ))}
@@ -562,6 +595,7 @@ export default function InquiryDetailPage() {
               <div>
                 <strong>{history.status}</strong>
                 <p>{history.event}</p>
+
                 <span>
                   {history.actor} · {history.occurredAt}
                 </span>
