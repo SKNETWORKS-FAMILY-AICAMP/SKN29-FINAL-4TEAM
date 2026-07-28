@@ -29,7 +29,7 @@
       "minLength": 1,
       "enum": [
         "NONE",
-        "COUNSELOR",
+        "CONSULTANT",
         "VISIT",
         "REOPEN"
       ]
@@ -40,7 +40,7 @@
       "enum": [
         "CUSTOMER",
         "SYSTEM",
-        "COUNSELOR"
+        "CONSULTANT"
       ]
     },
     "to_role": {
@@ -48,7 +48,7 @@
       "minLength": 1,
       "enum": [
         "NONE",
-        "COUNSELOR",
+        "CONSULTANT",
         "TECHNICIAN"
       ]
     },
@@ -65,7 +65,7 @@
       "minLength": 1,
       "enum": [
         "NONE",
-        "COUNSELOR",
+        "CONSULTANT",
         "TECHNICIAN"
       ]
     },

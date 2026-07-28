@@ -1,6 +1,6 @@
 [
   {
-    "audit_event_id": "ed17cf0b-a449-59e9-aea6-2196b5db592c",
+    "audit_event_id": "70c41e81-9c5c-5364-a007-bfe8674276a2",
     "entity_type": "INQUIRY",
     "entity_id": "f72a3b18-a4f8-5f5e-8c86-199ffc1d8aa2",
     "event_type": "START_INQUIRY",
@@ -13,7 +13,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "bdcc1e6b-c97e-52aa-83a4-c34abb076842",
+    "audit_event_id": "f1fbef6f-75e3-5497-a9b6-8798f28926b9",
     "entity_type": "INQUIRY",
     "entity_id": "f72a3b18-a4f8-5f5e-8c86-199ffc1d8aa2",
     "event_type": "SUBMIT_SYMPTOM",
@@ -26,7 +26,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "f2918d72-92a4-5147-83d8-afdfe75716e8",
+    "audit_event_id": "5969ccf3-80ec-554f-b490-f77df302d62d",
     "entity_type": "INQUIRY",
     "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "event_type": "START_INQUIRY",
@@ -39,7 +39,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "017e1c97-6a25-5c2e-8258-97eb801e48fd",
+    "audit_event_id": "6324ab1b-00fc-569c-a1a6-7a0f953c8519",
     "entity_type": "INQUIRY",
     "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "event_type": "SUBMIT_SYMPTOM",
@@ -52,7 +52,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "48f0809c-fa29-51f8-82c2-2f15760e9c75",
+    "audit_event_id": "21b86767-8e53-545e-9f06-2323a920b8ee",
     "entity_type": "INQUIRY",
     "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "event_type": "SUBMIT_ANSWERS",
@@ -65,7 +65,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "1809d9c9-2bcb-5f44-bfd2-1c5d6bf16e63",
+    "audit_event_id": "7bf1da59-cf15-5785-83d7-8f2628df4e9b",
     "entity_type": "INQUIRY",
     "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "event_type": "SAFE_GUIDANCE_READY",
@@ -78,7 +78,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "afadd806-c87f-53bb-a930-b36768049031",
+    "audit_event_id": "c533181c-84ca-5f00-9158-35037b67345e",
     "entity_type": "INQUIRY",
     "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "event_type": "REQUEST_CONSULTATION",
@@ -91,11 +91,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "436376bf-ab35-5131-8bba-8900d3637522",
+    "audit_event_id": "275b6e33-f7a8-5dd1-a8c9-2391cbc58924",
     "entity_type": "INQUIRY",
     "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "event_type": "START_CONSULTATION",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "state_version": 6,
     "idempotency_key": "idem-SYN-JAC104-002-06",
@@ -104,11 +104,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "dbd9f2d5-dd17-57db-94c8-8d9d9464b102",
+    "audit_event_id": "76b133cc-fe04-58cc-b61c-65872ee56772",
     "entity_type": "INQUIRY",
     "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
-    "event_type": "VISIT_NEEDED",
-    "actor_role": "COUNSELOR",
+    "event_type": "VISIT_REVIEW_REQUIRED",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "state_version": 7,
     "idempotency_key": "idem-SYN-JAC104-002-07",
@@ -117,72 +117,98 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "cef0401d-f95d-573b-b6c5-0678c9ef779d",
+    "audit_event_id": "ecb4436d-225c-5d9b-a1c7-7af90128ce7a",
+    "entity_type": "INQUIRY",
+    "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
+    "event_type": "VISIT_NEEDED",
+    "actor_role": "CONSULTANT",
+    "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "state_version": 8,
+    "idempotency_key": "idem-SYN-JAC104-002-08-create",
+    "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
+    "occurred_at": "2026-07-02T00:10:00+09:00",
+    "data_classification": "synthetic"
+  },
+  {
+    "audit_event_id": "d7dc76ea-02f7-555e-85fc-4d77537d118f",
+    "entity_type": "INQUIRY",
+    "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
+    "event_type": "UPDATE_VISIT_SCHEDULE",
+    "actor_role": "CONSULTANT",
+    "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "state_version": 9,
+    "idempotency_key": "idem-SYN-JAC104-002-08-schedule",
+    "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
+    "occurred_at": "2026-07-02T00:20:00+09:00",
+    "data_classification": "synthetic"
+  },
+  {
+    "audit_event_id": "c0438233-8e5b-54fd-a5ab-c50e88f8b1de",
     "entity_type": "INQUIRY",
     "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "event_type": "CONFIRM_VISIT",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
-    "state_version": 8,
+    "state_version": 10,
     "idempotency_key": "idem-SYN-JAC104-002-08",
     "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
     "occurred_at": "2026-07-02T00:30:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "095c1762-435f-5a96-bde1-663bf390ed09",
+    "audit_event_id": "acda5bff-95ba-5fed-af99-39202ff5a632",
     "entity_type": "INQUIRY",
     "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "event_type": "START_VISIT",
     "actor_role": "TECHNICIAN",
     "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 9,
+    "state_version": 11,
     "idempotency_key": "idem-SYN-JAC104-002-09",
     "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
     "occurred_at": "2026-07-04T00:00:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "18bcb761-3a5e-5ceb-9057-be407cec2749",
+    "audit_event_id": "cdc58a9d-871b-5f95-8fb7-363ec196b485",
     "entity_type": "INQUIRY",
     "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "event_type": "VISIT_COMPLETED",
     "actor_role": "TECHNICIAN",
     "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 10,
+    "state_version": 12,
     "idempotency_key": "idem-SYN-JAC104-002-10",
     "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
     "occurred_at": "2026-07-04T01:00:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "5bd2eb5c-ae0b-5f09-b611-55327dd28396",
+    "audit_event_id": "860e7db4-0ecc-5028-b089-7d2ebcc2f728",
     "entity_type": "INQUIRY",
     "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "event_type": "SUBMIT_RESOLUTION_FEEDBACK",
     "actor_role": "CUSTOMER",
     "actor_id": "18b30d13-a38b-5035-84b3-988406079e0d",
-    "state_version": 11,
+    "state_version": 13,
     "idempotency_key": "idem-SYN-JAC104-002-11",
     "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
     "occurred_at": "2026-07-04T03:00:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "3890c95e-2535-591c-95b2-e042cd1c7486",
+    "audit_event_id": "386bbd60-9e8e-5d8e-ad2f-69a5cfb4c6f6",
     "entity_type": "INQUIRY",
     "entity_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "event_type": "FINALIZE_INQUIRY",
     "actor_role": "TECHNICIAN",
     "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 12,
+    "state_version": 14,
     "idempotency_key": "idem-SYN-JAC104-002-12",
     "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
     "occurred_at": "2026-07-04T03:30:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "b91038fe-d4f5-5038-9777-6ed933a980d1",
+    "audit_event_id": "d85b0e16-1c60-5884-b9f8-411c1a464914",
     "entity_type": "INQUIRY",
     "entity_id": "91a8cf0c-9139-5d17-a6bd-818eb9aa7585",
     "event_type": "START_INQUIRY",
@@ -195,7 +221,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "8bdef7a6-f8e8-5bfb-9912-e3179497ca70",
+    "audit_event_id": "c578546c-953f-5b80-9158-00587c95f2a1",
     "entity_type": "INQUIRY",
     "entity_id": "91a8cf0c-9139-5d17-a6bd-818eb9aa7585",
     "event_type": "SUBMIT_SYMPTOM",
@@ -208,7 +234,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "b2f886bb-9db5-500b-af43-1dbe52445c8b",
+    "audit_event_id": "344fae0f-c8a1-53b5-bfb3-d2641292a987",
     "entity_type": "INQUIRY",
     "entity_id": "91a8cf0c-9139-5d17-a6bd-818eb9aa7585",
     "event_type": "SAFE_GUIDANCE_READY",
@@ -221,7 +247,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "43afa0b2-5759-5fe5-9628-a87094e75a81",
+    "audit_event_id": "e65767ce-9c22-5404-9d3e-ad91c03011f4",
     "entity_type": "INQUIRY",
     "entity_id": "91a8cf0c-9139-5d17-a6bd-818eb9aa7585",
     "event_type": "CUSTOMER_REPORTED_SELF_RESOLVED",
@@ -234,7 +260,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "888b80af-d4b7-511a-812c-926e26c1f79c",
+    "audit_event_id": "8cef5ec3-8160-51fa-9198-7631c0875ec3",
     "entity_type": "INQUIRY",
     "entity_id": "8e2e2561-613b-5911-9318-b651f0787a90",
     "event_type": "START_INQUIRY",
@@ -247,7 +273,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "d81cfd04-ac94-50a3-8e56-a40fbed8577e",
+    "audit_event_id": "5cdbb3d8-cc1e-51aa-a394-b7cd5993f69f",
     "entity_type": "INQUIRY",
     "entity_id": "8e2e2561-613b-5911-9318-b651f0787a90",
     "event_type": "SUBMIT_SYMPTOM",
@@ -260,7 +286,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "ba347942-58a1-5ff4-92d8-c72e3a6d8a47",
+    "audit_event_id": "1edec2f3-6a1c-5670-9f45-19dbf4cdd62b",
     "entity_type": "INQUIRY",
     "entity_id": "8e2e2561-613b-5911-9318-b651f0787a90",
     "event_type": "DANGER_DETECTED",
@@ -273,7 +299,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "a1661d6a-118c-5d56-9367-037dbfecefb3",
+    "audit_event_id": "0892e693-de36-5333-b7f7-9068fd1dfffd",
     "entity_type": "INQUIRY",
     "entity_id": "40b6d3d1-8626-511c-92d3-982699a42f63",
     "event_type": "START_INQUIRY",
@@ -286,7 +312,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "273dd273-0187-59f4-8d6e-ed300c6baf81",
+    "audit_event_id": "9669352b-aabc-5a7f-a029-1cb7e9f22c84",
     "entity_type": "INQUIRY",
     "entity_id": "40b6d3d1-8626-511c-92d3-982699a42f63",
     "event_type": "SUBMIT_SYMPTOM",
@@ -299,7 +325,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "a8ec2904-22c0-512b-8d02-414b0d429343",
+    "audit_event_id": "d3672654-ed6f-59ff-9622-4114ffce7b03",
     "entity_type": "INQUIRY",
     "entity_id": "40b6d3d1-8626-511c-92d3-982699a42f63",
     "event_type": "SAFE_GUIDANCE_READY",
@@ -312,7 +338,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "8ef57da3-24ad-54dd-a788-5ad3c054e3a6",
+    "audit_event_id": "66b1ee86-fc04-52ee-9a8b-09d2ffe910d7",
     "entity_type": "INQUIRY",
     "entity_id": "40b6d3d1-8626-511c-92d3-982699a42f63",
     "event_type": "CUSTOMER_REPORTED_SELF_RESOLVED",
@@ -325,7 +351,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "9bff334d-be6b-53f3-a20a-e3592955c09d",
+    "audit_event_id": "f4c3af6d-ebe3-559d-8298-2ec167521497",
     "entity_type": "INQUIRY",
     "entity_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60",
     "event_type": "START_INQUIRY",
@@ -338,7 +364,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "a908ab84-ea31-597b-bdcd-5f5f7df1a434",
+    "audit_event_id": "6426cbfd-9846-52e6-bf89-2bbfc8beccba",
     "entity_type": "INQUIRY",
     "entity_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60",
     "event_type": "SUBMIT_SYMPTOM",
@@ -351,7 +377,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "b5e3c26b-6190-510a-acfa-1c3ba578f96c",
+    "audit_event_id": "7c6a79e3-d3a5-5f00-b760-ce5468a49dcb",
     "entity_type": "INQUIRY",
     "entity_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60",
     "event_type": "DANGER_DETECTED",
@@ -364,7 +390,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "51b85a64-5a3f-581c-b61a-3f2d0d98a70c",
+    "audit_event_id": "b1a0402f-8e78-5169-a9d4-e97baec41c26",
     "entity_type": "INQUIRY",
     "entity_id": "3ebb394c-1a6f-5793-ac86-1f721350b820",
     "event_type": "START_INQUIRY",
@@ -377,7 +403,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "2ec182b1-efc3-5114-9735-2bc1611fd126",
+    "audit_event_id": "d1d56bc2-9a40-59d9-a5a2-b642a85aff8c",
     "entity_type": "INQUIRY",
     "entity_id": "3ebb394c-1a6f-5793-ac86-1f721350b820",
     "event_type": "SUBMIT_SYMPTOM",
@@ -390,7 +416,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "69090da0-d06c-51f9-b23a-fbc83b8e50c1",
+    "audit_event_id": "7a026728-8420-5351-8db5-873c9f2a8447",
     "entity_type": "INQUIRY",
     "entity_id": "3ebb394c-1a6f-5793-ac86-1f721350b820",
     "event_type": "SAFE_GUIDANCE_READY",
@@ -403,7 +429,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "9b3fd640-9e66-508f-8882-7cf0e507f12a",
+    "audit_event_id": "74c47a29-65d6-5515-9b43-0055f8fc5cab",
     "entity_type": "INQUIRY",
     "entity_id": "3ebb394c-1a6f-5793-ac86-1f721350b820",
     "event_type": "CUSTOMER_REPORTED_SELF_RESOLVED",
@@ -416,7 +442,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "ea443695-87bb-5251-9802-57670e3312b4",
+    "audit_event_id": "9cbb5d1d-642e-5406-ade9-4623124bf521",
     "entity_type": "INQUIRY",
     "entity_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "event_type": "START_INQUIRY",
@@ -429,7 +455,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "5e01658f-0d5c-58d3-89f0-41faedfdf1d7",
+    "audit_event_id": "fa24399f-1093-5a5b-900a-7e09ccdc534f",
     "entity_type": "INQUIRY",
     "entity_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "event_type": "SUBMIT_SYMPTOM",
@@ -442,7 +468,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "9eff9d74-8db1-5f63-82bf-1a79fe8c95ba",
+    "audit_event_id": "b80d917d-f64d-5a83-abab-7decfbc7e879",
     "entity_type": "INQUIRY",
     "entity_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "event_type": "SAFE_GUIDANCE_READY",
@@ -455,7 +481,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "139cc303-568f-5191-a187-7bf503180cdb",
+    "audit_event_id": "60a1bd31-93a6-5eb1-8b1d-42cbd3235995",
     "entity_type": "INQUIRY",
     "entity_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "event_type": "REQUEST_CONSULTATION",
@@ -468,11 +494,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "992fcf92-b54e-5942-a927-02e30dde129d",
+    "audit_event_id": "0008683f-9730-5e04-a625-3c594896b7a4",
     "entity_type": "INQUIRY",
     "entity_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "event_type": "START_CONSULTATION",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-008-05",
@@ -481,11 +507,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "31817663-b601-5f6b-b83b-cbf0a269061a",
+    "audit_event_id": "6ec25f88-4af7-5aa5-84e1-a025b83cdc66",
     "entity_type": "INQUIRY",
     "entity_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
-    "event_type": "VISIT_NEEDED",
-    "actor_role": "COUNSELOR",
+    "event_type": "VISIT_REVIEW_REQUIRED",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 6,
     "idempotency_key": "idem-SYN-JAC104-008-06",
@@ -494,7 +520,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "36b99c40-f838-5560-9d00-2b57edab5fcd",
+    "audit_event_id": "15301f38-19c6-540f-8e9f-0f91920aa47d",
     "entity_type": "INQUIRY",
     "entity_id": "88b76107-937a-5fca-ae51-1f21935b47db",
     "event_type": "START_INQUIRY",
@@ -507,7 +533,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "9e567591-11fc-52c8-875b-3d6323785a85",
+    "audit_event_id": "e8175109-7895-51a8-a29d-5245e3f7d779",
     "entity_type": "INQUIRY",
     "entity_id": "88b76107-937a-5fca-ae51-1f21935b47db",
     "event_type": "SUBMIT_SYMPTOM",
@@ -520,7 +546,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "f2d42bfb-8c98-592f-8d61-35e4dfbd7868",
+    "audit_event_id": "7a91c347-42ef-5ca6-84f6-340f1edc725e",
     "entity_type": "INQUIRY",
     "entity_id": "88b76107-937a-5fca-ae51-1f21935b47db",
     "event_type": "SAFE_GUIDANCE_READY",
@@ -533,7 +559,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "b3738edf-10c4-5d8f-a2c6-9fca8261ed4a",
+    "audit_event_id": "331788a0-4f8f-5dae-ad0c-eaba355edd2b",
     "entity_type": "INQUIRY",
     "entity_id": "88b76107-937a-5fca-ae51-1f21935b47db",
     "event_type": "CUSTOMER_REPORTED_SELF_RESOLVED",
@@ -546,7 +572,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "c06f136a-ad70-5507-a1c1-9a7149c63e97",
+    "audit_event_id": "1137f793-bdfe-5dcf-a0ee-46f7d9882e48",
     "entity_type": "INQUIRY",
     "entity_id": "f82886a1-8755-5dd1-b622-480a27a207af",
     "event_type": "START_INQUIRY",
@@ -559,7 +585,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "b4829d8a-970d-5429-956d-3f35da9f5025",
+    "audit_event_id": "3e4b7816-23bc-5eed-b115-995a8ca3ce0f",
     "entity_type": "INQUIRY",
     "entity_id": "f82886a1-8755-5dd1-b622-480a27a207af",
     "event_type": "SUBMIT_SYMPTOM",
@@ -572,7 +598,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "4ee858cb-df8f-58be-8356-f202897b2392",
+    "audit_event_id": "0aab5051-03d3-5cf7-95de-0e272733e474",
     "entity_type": "INQUIRY",
     "entity_id": "b987200b-656e-5dbc-837f-ee1e1cb3a93f",
     "event_type": "START_INQUIRY",
@@ -585,7 +611,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "00976e0d-e37b-50c3-85e7-f64632f83a23",
+    "audit_event_id": "bb7123e0-523c-51f3-ace0-095bdf0365bc",
     "entity_type": "INQUIRY",
     "entity_id": "b987200b-656e-5dbc-837f-ee1e1cb3a93f",
     "event_type": "SUBMIT_SYMPTOM",
@@ -598,7 +624,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "cc7adb5c-7d68-50f5-9eaf-7a026002f116",
+    "audit_event_id": "01bb8108-f625-52b9-823b-510e020a3c2f",
     "entity_type": "INQUIRY",
     "entity_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "event_type": "START_INQUIRY",
@@ -611,7 +637,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "0ca24d3f-2924-5020-b9ae-366b85fcf47a",
+    "audit_event_id": "115b69dd-8902-52fa-955f-d7a2d19e4f3f",
     "entity_type": "INQUIRY",
     "entity_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "event_type": "SUBMIT_SYMPTOM",
@@ -624,7 +650,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "6d3de579-4a0b-58fa-8319-f8dbfc2cd8fb",
+    "audit_event_id": "d51e3abf-0751-5530-a086-d66697c86ab1",
     "entity_type": "INQUIRY",
     "entity_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "event_type": "SAFE_GUIDANCE_READY",
@@ -637,7 +663,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "540e62e7-b036-58c3-a1d9-805ba31e79eb",
+    "audit_event_id": "5f756d72-e24e-5296-aaf1-c2328231ec68",
     "entity_type": "INQUIRY",
     "entity_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "event_type": "REQUEST_CONSULTATION",
@@ -650,11 +676,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "a65c66c8-4f8d-5595-8ca3-dafa1400f290",
+    "audit_event_id": "af2df4f8-f128-593d-81cd-84a0177f8d17",
     "entity_type": "INQUIRY",
     "entity_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "event_type": "START_CONSULTATION",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-012-05",
@@ -663,11 +689,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "08692afc-dae6-55dc-8bca-48e9b70751f8",
+    "audit_event_id": "324d2ed1-8193-5d7a-87fa-9bb41e2deff0",
     "entity_type": "INQUIRY",
     "entity_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "event_type": "CONSULTATION_COMPLETED",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 6,
     "idempotency_key": "idem-SYN-JAC104-012-06",
@@ -676,11 +702,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "2eedb45e-fffd-57eb-a51c-58560ec7d785",
+    "audit_event_id": "9b0f4fea-ec08-5b38-9335-417c7b4fc328",
     "entity_type": "INQUIRY",
     "entity_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "event_type": "FINALIZE_INQUIRY",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 7,
     "idempotency_key": "idem-SYN-JAC104-012-07",
@@ -689,7 +715,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "b7b5c0c7-cd9a-5cc2-95d7-78281948509c",
+    "audit_event_id": "b73da8b6-d827-5e3e-9837-a0ed2f1f50ec",
     "entity_type": "INQUIRY",
     "entity_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
     "event_type": "RESUME_CONSULTATION",
@@ -702,7 +728,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "9a2126b5-45df-5fb8-a609-957b8fccd707",
+    "audit_event_id": "fc33c8c0-6217-5886-ab89-b041df429daa",
     "entity_type": "INQUIRY",
     "entity_id": "205850d3-763c-5256-9d39-82da21be0c31",
     "event_type": "START_INQUIRY",
@@ -715,7 +741,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "c55a5854-9d3a-5370-8d3e-a32edc8bc729",
+    "audit_event_id": "cc27bf3b-be6f-5686-a20a-e7680d63a2ad",
     "entity_type": "INQUIRY",
     "entity_id": "205850d3-763c-5256-9d39-82da21be0c31",
     "event_type": "SUBMIT_SYMPTOM",
@@ -728,7 +754,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "9119d4cb-3efb-508f-b8f3-7bba353fef75",
+    "audit_event_id": "8c600d8c-0978-5b77-b154-6977c9049f0a",
     "entity_type": "INQUIRY",
     "entity_id": "205850d3-763c-5256-9d39-82da21be0c31",
     "event_type": "DANGER_DETECTED",
@@ -741,11 +767,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "362b5945-6970-5e4f-abe9-18bdcbf2b7d7",
+    "audit_event_id": "60b55f65-56b4-56fe-a924-bbc874bbf556",
     "entity_type": "INQUIRY",
     "entity_id": "205850d3-763c-5256-9d39-82da21be0c31",
     "event_type": "START_CONSULTATION",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 4,
     "idempotency_key": "idem-SYN-JAC104-013-04",
@@ -754,7 +780,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "d397c099-5bef-5c42-a86c-e9f0939cd992",
+    "audit_event_id": "eb049add-add6-5989-9e6f-dd198cb44b76",
     "entity_type": "INQUIRY",
     "entity_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "event_type": "START_INQUIRY",
@@ -767,7 +793,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "2978e75f-8461-558d-87ba-efce0663deb3",
+    "audit_event_id": "cd78bb88-c35b-5b35-b41b-ab8444b1b108",
     "entity_type": "INQUIRY",
     "entity_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "event_type": "SUBMIT_SYMPTOM",
@@ -780,7 +806,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "f23602db-584b-5703-8369-2de1f444850e",
+    "audit_event_id": "aeb4ee3b-5a3b-529f-9b7e-1e032d8045ad",
     "entity_type": "INQUIRY",
     "entity_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "event_type": "DANGER_DETECTED",
@@ -793,11 +819,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "00f9c6a9-78cc-5951-ba55-1613f9ad7c51",
+    "audit_event_id": "c22cf5d0-6097-5798-82a4-e60140475692",
     "entity_type": "INQUIRY",
     "entity_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "event_type": "START_CONSULTATION",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "state_version": 4,
     "idempotency_key": "idem-SYN-JAC104-014-04",
@@ -806,11 +832,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "36106fbc-b87a-58b0-84b2-23a06056a871",
+    "audit_event_id": "89ce12c9-83f9-5519-918d-f945491f46a2",
     "entity_type": "INQUIRY",
     "entity_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
-    "event_type": "VISIT_NEEDED",
-    "actor_role": "COUNSELOR",
+    "event_type": "VISIT_REVIEW_REQUIRED",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-014-05",
@@ -819,33 +845,59 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "75728358-4b77-5acb-b42f-9f5bdc105af0",
+    "audit_event_id": "6ec267f7-ddf5-5a58-8910-7c0353883756",
+    "entity_type": "INQUIRY",
+    "entity_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
+    "event_type": "VISIT_NEEDED",
+    "actor_role": "CONSULTANT",
+    "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "state_version": 6,
+    "idempotency_key": "idem-SYN-JAC104-014-06-create",
+    "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
+    "occurred_at": "2026-07-04T23:10:00+09:00",
+    "data_classification": "synthetic"
+  },
+  {
+    "audit_event_id": "4608006d-d031-5644-badf-694badfba54b",
+    "entity_type": "INQUIRY",
+    "entity_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
+    "event_type": "UPDATE_VISIT_SCHEDULE",
+    "actor_role": "CONSULTANT",
+    "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "state_version": 7,
+    "idempotency_key": "idem-SYN-JAC104-014-06-schedule",
+    "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
+    "occurred_at": "2026-07-04T23:20:00+09:00",
+    "data_classification": "synthetic"
+  },
+  {
+    "audit_event_id": "b95367f7-a2bd-5890-a40b-049e53bf9aba",
     "entity_type": "INQUIRY",
     "entity_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "event_type": "CONFIRM_VISIT",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
-    "state_version": 6,
+    "state_version": 8,
     "idempotency_key": "idem-SYN-JAC104-014-06",
     "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
     "occurred_at": "2026-07-04T23:30:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "4156240c-47f1-5b0e-8c66-661d2b0f34b4",
+    "audit_event_id": "76ec43b1-2a8f-58e7-b5f2-42af4377c602",
     "entity_type": "INQUIRY",
     "entity_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "event_type": "START_VISIT",
     "actor_role": "TECHNICIAN",
     "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 7,
+    "state_version": 9,
     "idempotency_key": "idem-SYN-JAC104-014-07",
     "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
     "occurred_at": "2026-07-05T00:00:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "44d9b308-52c4-579b-990f-103cbc2eaa06",
+    "audit_event_id": "bcef5227-4525-5592-a992-5f1788890499",
     "entity_type": "INQUIRY",
     "entity_id": "e9280a2d-fb61-55eb-a9a8-453f116e2b54",
     "event_type": "START_INQUIRY",
@@ -858,7 +910,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "1b2d9c3b-0e2b-534a-bb86-a3bf6e22d322",
+    "audit_event_id": "b196b9fb-51b3-59bd-b27f-17b7a9e5ecbf",
     "entity_type": "INQUIRY",
     "entity_id": "e9280a2d-fb61-55eb-a9a8-453f116e2b54",
     "event_type": "SUBMIT_SYMPTOM",
@@ -871,7 +923,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "adbd4d3b-a7f0-552c-8169-e6f7891067ff",
+    "audit_event_id": "9bbd0f07-1acb-51b3-b73f-730d4f88b3ab",
     "entity_type": "INQUIRY",
     "entity_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "event_type": "START_INQUIRY",
@@ -884,7 +936,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "c8593ba2-6a38-5e52-9172-f317a79548c3",
+    "audit_event_id": "5c5eecd4-fccb-5832-ad63-9ca1fb312709",
     "entity_type": "INQUIRY",
     "entity_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "event_type": "SUBMIT_SYMPTOM",
@@ -897,7 +949,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "def1cdc1-6e25-5a37-968f-2bfb31a2ef06",
+    "audit_event_id": "9a82ac29-dfbb-5347-b5c8-998995fa0457",
     "entity_type": "INQUIRY",
     "entity_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "event_type": "SAFE_GUIDANCE_READY",
@@ -910,7 +962,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "8bab9a59-d4b8-52e5-9cf7-86bd61a4a0e5",
+    "audit_event_id": "6eab2d43-4500-506c-9bde-04bc5a49d154",
     "entity_type": "INQUIRY",
     "entity_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "event_type": "REQUEST_CONSULTATION",
@@ -923,11 +975,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "ecf70e1d-087d-5235-b5c7-3b6d8dd956d6",
+    "audit_event_id": "db6aa23b-88d7-5eaf-8c33-36f9d2dfcb83",
     "entity_type": "INQUIRY",
     "entity_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "event_type": "START_CONSULTATION",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-016-05",
@@ -936,11 +988,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "e3a12346-8fe0-50bf-8b71-470fc6a47e5d",
+    "audit_event_id": "6ffa2043-5817-5842-bbeb-de46301f97c4",
     "entity_type": "INQUIRY",
     "entity_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "event_type": "CONSULTATION_COMPLETED",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 6,
     "idempotency_key": "idem-SYN-JAC104-016-06",
@@ -949,11 +1001,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "eda79da1-f3cf-5f5a-b821-8e30eb475b03",
+    "audit_event_id": "65ddc3b9-db38-5f07-9d2e-63165d18a12e",
     "entity_type": "INQUIRY",
     "entity_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "event_type": "FINALIZE_INQUIRY",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 7,
     "idempotency_key": "idem-SYN-JAC104-016-07",
@@ -962,7 +1014,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "4c0294ca-73c2-5eca-b09e-2129b707a0a0",
+    "audit_event_id": "f9e337e8-3cd9-5569-a9c9-b1e41fb024e5",
     "entity_type": "INQUIRY",
     "entity_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "event_type": "RESUME_CONSULTATION",
@@ -975,11 +1027,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "9deaa449-8c49-55cd-8945-c4d3fc77ba32",
+    "audit_event_id": "f5193d35-78f9-58e1-a0b6-062dc130f4ad",
     "entity_type": "INQUIRY",
     "entity_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
     "event_type": "START_CONSULTATION",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 9,
     "idempotency_key": "idem-SYN-JAC104-016-09",
@@ -988,7 +1040,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "cbc6aacc-b998-5ae0-950c-8b4c01c6d154",
+    "audit_event_id": "199a96b2-1876-5ea1-b34e-7844fcc25d67",
     "entity_type": "INQUIRY",
     "entity_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
     "event_type": "START_INQUIRY",
@@ -1001,7 +1053,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "340e3c9f-7da3-571c-ad84-3d5a38b89be9",
+    "audit_event_id": "eb962351-8fe7-5a54-b2a2-66c48ba9bcea",
     "entity_type": "INQUIRY",
     "entity_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
     "event_type": "SUBMIT_SYMPTOM",
@@ -1014,7 +1066,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "163155f5-67d2-5f0c-a5c8-2785fbb17016",
+    "audit_event_id": "480f2744-6f0c-5259-80ea-d5fb0a778cf5",
     "entity_type": "INQUIRY",
     "entity_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
     "event_type": "DANGER_DETECTED",
@@ -1027,11 +1079,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "c26f759f-8db8-5f55-a830-69292a28446e",
+    "audit_event_id": "fb39bf6e-b14e-5b5f-bd38-13a1839b48b5",
     "entity_type": "INQUIRY",
     "entity_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
     "event_type": "START_CONSULTATION",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 4,
     "idempotency_key": "idem-SYN-JAC104-017-04",
@@ -1040,11 +1092,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "9ae53434-0f32-5223-94dc-8accac180cbd",
+    "audit_event_id": "12cec505-1e53-58d0-bdcd-a6dca26104df",
     "entity_type": "INQUIRY",
     "entity_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
     "event_type": "CONSULTATION_COMPLETED",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-017-05",
@@ -1053,7 +1105,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "2b6c17a8-80c5-5cbe-8b46-58cf8102f44a",
+    "audit_event_id": "8871c95a-3bcd-5edd-9e22-bc1e534684ad",
     "entity_type": "INQUIRY",
     "entity_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "event_type": "START_INQUIRY",
@@ -1066,7 +1118,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "342ce6dc-ae88-53cc-a4f2-3f9115b3f92d",
+    "audit_event_id": "2c0ee6d1-a6f6-5522-a6de-0517c011997f",
     "entity_type": "INQUIRY",
     "entity_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "event_type": "SUBMIT_SYMPTOM",
@@ -1079,7 +1131,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "8002d992-c644-5926-89e8-55d9f3eb81e0",
+    "audit_event_id": "2fe8f2be-4914-5bda-ae50-3292a794b99f",
     "entity_type": "INQUIRY",
     "entity_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "event_type": "DANGER_DETECTED",
@@ -1092,11 +1144,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "05333579-9989-5c34-8955-73a959f47292",
+    "audit_event_id": "3187be5a-a3e4-5093-95ad-2f8ba17a9db7",
     "entity_type": "INQUIRY",
     "entity_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "event_type": "START_CONSULTATION",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "state_version": 4,
     "idempotency_key": "idem-SYN-JAC104-018-04",
@@ -1105,11 +1157,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "28daf5a2-0182-59df-88c9-bacde9fb4939",
+    "audit_event_id": "561ad358-c1bf-556c-a02e-c62cd86a7b29",
     "entity_type": "INQUIRY",
     "entity_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
-    "event_type": "VISIT_NEEDED",
-    "actor_role": "COUNSELOR",
+    "event_type": "VISIT_REVIEW_REQUIRED",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-018-05",
@@ -1118,46 +1170,72 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "41bd5893-1ccc-5e1c-8032-ab12d37ca8fe",
+    "audit_event_id": "b3dea2e7-9a36-54a2-9a34-7bf840cf2c4c",
+    "entity_type": "INQUIRY",
+    "entity_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
+    "event_type": "VISIT_NEEDED",
+    "actor_role": "CONSULTANT",
+    "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "state_version": 6,
+    "idempotency_key": "idem-SYN-JAC104-018-06-create",
+    "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
+    "occurred_at": "2026-07-05T23:10:00+09:00",
+    "data_classification": "synthetic"
+  },
+  {
+    "audit_event_id": "03a3c9b0-f1c3-557b-8556-edf5bd32bf5f",
+    "entity_type": "INQUIRY",
+    "entity_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
+    "event_type": "UPDATE_VISIT_SCHEDULE",
+    "actor_role": "CONSULTANT",
+    "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "state_version": 7,
+    "idempotency_key": "idem-SYN-JAC104-018-06-schedule",
+    "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
+    "occurred_at": "2026-07-05T23:20:00+09:00",
+    "data_classification": "synthetic"
+  },
+  {
+    "audit_event_id": "73b59e47-060e-596c-80e3-c24579bfe24e",
     "entity_type": "INQUIRY",
     "entity_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "event_type": "CONFIRM_VISIT",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
-    "state_version": 6,
+    "state_version": 8,
     "idempotency_key": "idem-SYN-JAC104-018-06",
     "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
     "occurred_at": "2026-07-05T23:30:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "327ead05-2c65-524b-bc7e-97de1cdffb2e",
+    "audit_event_id": "89c094b0-fe42-58e7-94c0-2701e60ff8ba",
     "entity_type": "INQUIRY",
     "entity_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "event_type": "START_VISIT",
     "actor_role": "TECHNICIAN",
     "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 7,
+    "state_version": 9,
     "idempotency_key": "idem-SYN-JAC104-018-07",
     "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
     "occurred_at": "2026-07-06T00:00:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "ef8d66eb-3375-5c9e-a2c7-55bed04a708c",
+    "audit_event_id": "ed559ff1-4de6-5872-89b3-4ca5d6d71618",
     "entity_type": "INQUIRY",
     "entity_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "event_type": "VISIT_COMPLETED",
     "actor_role": "TECHNICIAN",
     "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-    "state_version": 8,
+    "state_version": 10,
     "idempotency_key": "idem-SYN-JAC104-018-08",
     "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
     "occurred_at": "2026-07-06T00:30:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "6599f83a-d4e6-595e-ad55-26b38978da87",
+    "audit_event_id": "f8df54e1-a5c2-5b29-8496-1c86083afea8",
     "entity_type": "INQUIRY",
     "entity_id": "cca8204e-c447-515f-9606-7f78ea00dc6b",
     "event_type": "START_INQUIRY",
@@ -1170,7 +1248,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "4257332c-e264-5c36-add9-f64ee0f74046",
+    "audit_event_id": "65d9fdd5-0c6c-529d-9b37-9cda39540ba2",
     "entity_type": "INQUIRY",
     "entity_id": "cca8204e-c447-515f-9606-7f78ea00dc6b",
     "event_type": "SUBMIT_SYMPTOM",
@@ -1183,7 +1261,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "a974bb6c-f7fd-5536-bab4-f2d211496534",
+    "audit_event_id": "36e80d44-49fe-599a-a343-cce75c15867d",
     "entity_type": "INQUIRY",
     "entity_id": "cca8204e-c447-515f-9606-7f78ea00dc6b",
     "event_type": "SAFE_GUIDANCE_READY",
@@ -1196,7 +1274,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "0d0d0b4c-a66d-515b-960a-bd3ea8254445",
+    "audit_event_id": "2d623f6a-7fb4-5090-97f3-ee5b976d6730",
     "entity_type": "INQUIRY",
     "entity_id": "cca8204e-c447-515f-9606-7f78ea00dc6b",
     "event_type": "CUSTOMER_REPORTED_SELF_RESOLVED",
@@ -1209,7 +1287,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "0d58e39b-51ed-5b10-9ba8-e37289dd1cc6",
+    "audit_event_id": "418fea61-274a-55cf-8fcb-ccb0dc44be07",
     "entity_type": "INQUIRY",
     "entity_id": "7ae3ddf9-61d3-5b80-9a03-857bdabd81c6",
     "event_type": "START_INQUIRY",
@@ -1222,7 +1300,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "e9d00bfd-8703-5c9b-b2d7-4872c39e9e29",
+    "audit_event_id": "b1fc02e9-2139-55e9-a680-cfe8e3ddba07",
     "entity_type": "INQUIRY",
     "entity_id": "7ae3ddf9-61d3-5b80-9a03-857bdabd81c6",
     "event_type": "SUBMIT_SYMPTOM",
@@ -1235,7 +1313,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "fd1fcf22-bfc5-5cd6-adb4-8577afc0c089",
+    "audit_event_id": "94844ee4-4714-54ad-89a2-385618202a0d",
     "entity_type": "INQUIRY",
     "entity_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "event_type": "START_INQUIRY",
@@ -1248,7 +1326,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "a1da87c9-aa19-5600-ba83-428677f31e50",
+    "audit_event_id": "077471d1-2376-55d3-bb81-37a3d773eb2e",
     "entity_type": "INQUIRY",
     "entity_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "event_type": "SUBMIT_SYMPTOM",
@@ -1261,7 +1339,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "c75a0588-a8d9-597b-9349-d53c5d0438c5",
+    "audit_event_id": "06892587-db49-5e0d-9193-54758a414ad0",
     "entity_type": "INQUIRY",
     "entity_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "event_type": "SAFE_GUIDANCE_READY",
@@ -1274,7 +1352,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "fe1fee28-09dc-518a-a268-da7b4103b27a",
+    "audit_event_id": "76455168-af96-57ef-b4c9-3cf7936a097b",
     "entity_type": "INQUIRY",
     "entity_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "event_type": "REQUEST_CONSULTATION",
@@ -1287,11 +1365,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "c48a4ee9-4166-567e-870b-c6c5890dfd05",
+    "audit_event_id": "4bd4073a-6b19-55e0-800c-79aa54035c64",
     "entity_type": "INQUIRY",
     "entity_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "event_type": "START_CONSULTATION",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 5,
     "idempotency_key": "idem-SYN-JAC104-021-05",
@@ -1300,11 +1378,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "28c9b157-42a6-5be8-ac68-000b6030a715",
+    "audit_event_id": "eab6ec6b-c6df-55e0-b99a-e6419bb6a448",
     "entity_type": "INQUIRY",
     "entity_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
-    "event_type": "VISIT_NEEDED",
-    "actor_role": "COUNSELOR",
+    "event_type": "VISIT_REVIEW_REQUIRED",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 6,
     "idempotency_key": "idem-SYN-JAC104-021-06",
@@ -1313,59 +1391,85 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "365baafb-985e-5a3f-bebb-7a782a84420c",
+    "audit_event_id": "5266b015-2fca-5018-a73a-3e0bdf7bd040",
+    "entity_type": "INQUIRY",
+    "entity_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
+    "event_type": "VISIT_NEEDED",
+    "actor_role": "CONSULTANT",
+    "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
+    "state_version": 7,
+    "idempotency_key": "idem-SYN-JAC104-021-07-create",
+    "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
+    "occurred_at": "2026-07-06T17:40:00+09:00",
+    "data_classification": "synthetic"
+  },
+  {
+    "audit_event_id": "0393d7b3-52e0-5acb-9943-a6219547c950",
+    "entity_type": "INQUIRY",
+    "entity_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
+    "event_type": "UPDATE_VISIT_SCHEDULE",
+    "actor_role": "CONSULTANT",
+    "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
+    "state_version": 8,
+    "idempotency_key": "idem-SYN-JAC104-021-07-schedule",
+    "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
+    "occurred_at": "2026-07-06T17:50:00+09:00",
+    "data_classification": "synthetic"
+  },
+  {
+    "audit_event_id": "5884d162-06da-56a5-8b46-0a272131bcd8",
     "entity_type": "INQUIRY",
     "entity_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "event_type": "CONFIRM_VISIT",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-    "state_version": 7,
+    "state_version": 9,
     "idempotency_key": "idem-SYN-JAC104-021-07",
     "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
     "occurred_at": "2026-07-06T18:00:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "fa184974-8898-5ea0-9a05-e3eedf646162",
+    "audit_event_id": "f90f9e08-a602-5d3a-b22b-70dfb6387b35",
     "entity_type": "INQUIRY",
     "entity_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "event_type": "START_VISIT",
     "actor_role": "TECHNICIAN",
     "actor_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
-    "state_version": 8,
+    "state_version": 10,
     "idempotency_key": "idem-SYN-JAC104-021-08",
     "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
     "occurred_at": "2026-07-06T18:30:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "e5dff6f1-adac-5ab8-a90a-8469cb408e4e",
+    "audit_event_id": "a6d750ae-ca44-54bf-901a-937ccab71713",
     "entity_type": "INQUIRY",
     "entity_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "event_type": "VISIT_COMPLETED",
     "actor_role": "TECHNICIAN",
     "actor_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
-    "state_version": 9,
+    "state_version": 11,
     "idempotency_key": "idem-SYN-JAC104-021-09",
     "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
     "occurred_at": "2026-07-06T19:00:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "6c7db419-7229-5062-a9f5-a61dbad7adcb",
+    "audit_event_id": "a664ee58-fd85-5636-be96-c7eced56b267",
     "entity_type": "INQUIRY",
     "entity_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "event_type": "FINALIZE_INQUIRY",
     "actor_role": "TECHNICIAN",
     "actor_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
-    "state_version": 10,
+    "state_version": 12,
     "idempotency_key": "idem-SYN-JAC104-021-10",
     "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
     "occurred_at": "2026-07-06T19:30:00+09:00",
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "9f24c662-2ea1-5aab-b977-1203973e4a66",
+    "audit_event_id": "1c878426-bcf4-5493-94cc-16eacd0ab7ac",
     "entity_type": "INQUIRY",
     "entity_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
     "event_type": "START_INQUIRY",
@@ -1378,7 +1482,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "5b2dfacf-5b79-5a0c-a45c-ac414c07478f",
+    "audit_event_id": "d1111577-e042-514a-b3e6-dda5b49b4028",
     "entity_type": "INQUIRY",
     "entity_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
     "event_type": "SUBMIT_SYMPTOM",
@@ -1391,7 +1495,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "9970354b-d2ff-5220-886f-8ae07a29a1ff",
+    "audit_event_id": "fcb1c858-e19e-5653-82c6-efb788c838f1",
     "entity_type": "INQUIRY",
     "entity_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
     "event_type": "NO_EVIDENCE",
@@ -1404,7 +1508,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "e90ea5a4-b137-5ed8-9bff-2612687df4cc",
+    "audit_event_id": "e3e3ab5f-e2fd-5a49-b2ee-bba50e43d438",
     "entity_type": "INQUIRY",
     "entity_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067",
     "event_type": "START_INQUIRY",
@@ -1417,7 +1521,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "2a0af3f1-02d9-5570-a5a2-6d3a50ff047e",
+    "audit_event_id": "dfec8abc-69f6-575c-9f10-bd039a19cfd3",
     "entity_type": "INQUIRY",
     "entity_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067",
     "event_type": "SUBMIT_SYMPTOM",
@@ -1430,7 +1534,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "0ef759f6-0de4-593b-9a55-7ee10a86c026",
+    "audit_event_id": "8846f819-37ed-59e1-b8e6-dd163462bccb",
     "entity_type": "INQUIRY",
     "entity_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067",
     "event_type": "NO_EVIDENCE",
@@ -1443,11 +1547,11 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "09889e3b-4bea-587b-93c0-b365f9f2ad36",
+    "audit_event_id": "b0a6aac1-11aa-5a5c-a5cf-f20f39994bd4",
     "entity_type": "INQUIRY",
     "entity_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067",
     "event_type": "START_CONSULTATION",
-    "actor_role": "COUNSELOR",
+    "actor_role": "CONSULTANT",
     "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "state_version": 4,
     "idempotency_key": "idem-SYN-JAC104-023-04",
@@ -1456,7 +1560,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "4d05b053-595e-553a-870f-9f0696b37faa",
+    "audit_event_id": "08932f08-b3fc-5feb-af6b-ea2e5237ffa7",
     "entity_type": "INQUIRY",
     "entity_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2",
     "event_type": "START_INQUIRY",
@@ -1469,7 +1573,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "0a3e31f9-e09e-545d-964c-6a2810828cd8",
+    "audit_event_id": "512dac0b-a5d1-5a58-b1c7-28cef114d63b",
     "entity_type": "INQUIRY",
     "entity_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2",
     "event_type": "SUBMIT_SYMPTOM",
@@ -1482,7 +1586,7 @@
     "data_classification": "synthetic"
   },
   {
-    "audit_event_id": "1e71869f-9970-53b8-87e3-f751a1935db1",
+    "audit_event_id": "4cb85aa4-2cd6-5113-9a44-6ade78dbcff3",
     "entity_type": "INQUIRY",
     "entity_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2",
     "event_type": "NO_EVIDENCE",

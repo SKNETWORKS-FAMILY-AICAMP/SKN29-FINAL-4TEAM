@@ -11,26 +11,9 @@
     "completed_at": "2026-07-04T01:00:00+09:00",
     "confirmed_cause": "필터 체결 상태와 출수 유로 점검 필요",
     "action_taken": "필터 체결 상태를 재점검하고 출수 유로를 정비한 뒤 출수량 정상화를 확인함",
-    "state_version": 3,
+    "state_version": 5,
     "idempotency_key": "idem-visit-002-completed",
     "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
-    "data_classification": "synthetic"
-  },
-  {
-    "visit_id": "d7d909d5-b387-5bea-bf97-c890ff033913",
-    "visit_number": "VIS-SYN-0008",
-    "inquiry_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
-    "technician_id": null,
-    "status": "ASSIGNING",
-    "requested_at": "2026-07-03T11:30:00+09:00",
-    "scheduled_at": null,
-    "started_at": null,
-    "completed_at": null,
-    "confirmed_cause": null,
-    "action_taken": null,
-    "state_version": 1,
-    "idempotency_key": "idem-visit-008",
-    "correlation_id": "d9c5de5d-7b45-5893-a1f3-eff31a160642",
     "data_classification": "synthetic"
   },
   {
@@ -45,7 +28,7 @@
     "completed_at": null,
     "confirmed_cause": null,
     "action_taken": null,
-    "state_version": 1,
+    "state_version": 4,
     "idempotency_key": "idem-visit-014",
     "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
     "data_classification": "synthetic"
@@ -62,7 +45,7 @@
     "completed_at": "2026-07-06T00:30:00+09:00",
     "confirmed_cause": "INSTANT_HOT_WATER_SAFETY 합성 확인 원인",
     "action_taken": "합성 점검 및 안전 확인 완료",
-    "state_version": 1,
+    "state_version": 5,
     "idempotency_key": "idem-visit-018",
     "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
     "data_classification": "synthetic"
@@ -79,7 +62,7 @@
     "completed_at": "2026-07-06T19:00:00+09:00",
     "confirmed_cause": "NOISE 합성 확인 원인",
     "action_taken": "합성 점검 및 안전 확인 완료",
-    "state_version": 1,
+    "state_version": 5,
     "idempotency_key": "idem-visit-021",
     "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
     "data_classification": "synthetic"

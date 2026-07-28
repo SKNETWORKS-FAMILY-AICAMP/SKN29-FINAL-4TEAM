@@ -90,7 +90,7 @@
         "order": 4,
         "event": "SAFE_GUIDANCE_READY",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "AI_GUIDANCE_READY",
+        "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 4,
@@ -105,8 +105,8 @@
       {
         "order": 5,
         "event": "REQUEST_CONSULTATION",
-        "from_status": "AI_GUIDANCE_READY",
-        "to_status": "CONSULTATION_PENDING",
+        "from_status": "AI_GUIDANCE",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "CUSTOMER",
         "actor_id": "18b30d13-a38b-5035-84b3-988406079e0d",
         "state_version": 5,
@@ -120,9 +120,9 @@
       {
         "order": 6,
         "event": "START_CONSULTATION",
-        "from_status": "CONSULTATION_PENDING",
+        "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 6,
         "occurred_at": "2026-07-01T23:30:00+09:00",
@@ -130,104 +130,150 @@
         "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
-          "VISIT_NEEDED"
+          "VISIT_REVIEW_REQUIRED"
         ]
       },
       {
         "order": 7,
-        "event": "VISIT_NEEDED",
+        "event": "VISIT_REVIEW_REQUIRED",
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "VISIT_REVIEW_PENDING",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 7,
         "occurred_at": "2026-07-02T00:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-07",
         "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
         "expected_allowed_actions": [
-          "UPDATE_VISIT_SCHEDULE",
-          "CONFIRM_VISIT"
+          "VISIT_NEEDED",
+          "VISIT_NOT_NEEDED"
         ]
       },
       {
         "order": 8,
-        "event": "CONFIRM_VISIT",
+        "event": "VISIT_NEEDED",
         "from_status": "VISIT_REVIEW_PENDING",
-        "to_status": "VISIT_PENDING",
-        "actor_role": "COUNSELOR",
+        "to_status": "VISIT_SCHEDULING",
+        "actor_role": "CONSULTANT",
         "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 8,
+        "occurred_at": "2026-07-02T00:10:00+09:00",
+        "idempotency_key": "idem-SYN-JAC104-002-08-create",
+        "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
+        "expected_allowed_actions": [
+          "UPDATE_VISIT_SCHEDULE"
+        ],
+        "visit_from_status": null,
+        "visit_to_status": "ASSIGNING",
+        "visit_state_version": 1
+      },
+      {
+        "order": 9,
+        "event": "UPDATE_VISIT_SCHEDULE",
+        "from_status": "VISIT_SCHEDULING",
+        "to_status": "VISIT_SCHEDULING",
+        "actor_role": "CONSULTANT",
+        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+        "state_version": 9,
+        "occurred_at": "2026-07-02T00:20:00+09:00",
+        "idempotency_key": "idem-SYN-JAC104-002-08-schedule",
+        "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
+        "expected_allowed_actions": [
+          "UPDATE_VISIT_SCHEDULE",
+          "CONFIRM_VISIT"
+        ],
+        "visit_from_status": "ASSIGNING",
+        "visit_to_status": "SCHEDULING",
+        "visit_state_version": 2
+      },
+      {
+        "order": 10,
+        "event": "CONFIRM_VISIT",
+        "from_status": "VISIT_SCHEDULING",
+        "to_status": "VISIT_SCHEDULED",
+        "actor_role": "CONSULTANT",
+        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+        "state_version": 10,
         "occurred_at": "2026-07-02T00:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-08",
         "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
         "expected_allowed_actions": [
-          "UPDATE_VISIT_SCHEDULE",
           "START_VISIT"
-        ]
+        ],
+        "visit_from_status": "SCHEDULING",
+        "visit_to_status": "CONFIRMED",
+        "visit_state_version": 3
       },
       {
-        "order": 9,
+        "order": 11,
         "event": "START_VISIT",
-        "from_status": "VISIT_PENDING",
-        "to_status": "VISIT_IN_PROGRESS",
+        "from_status": "VISIT_SCHEDULED",
+        "to_status": "VISIT_SCHEDULED",
         "actor_role": "TECHNICIAN",
         "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-        "state_version": 9,
+        "state_version": 11,
         "occurred_at": "2026-07-04T00:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-09",
         "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
         "expected_allowed_actions": [
-          "VISIT_COMPLETED"
-        ]
+          "VISIT_COMPLETED",
+          "REVISIT_NEEDED"
+        ],
+        "visit_from_status": "CONFIRMED",
+        "visit_to_status": "IN_PROGRESS",
+        "visit_state_version": 4
       },
       {
-        "order": 10,
+        "order": 12,
         "event": "VISIT_COMPLETED",
-        "from_status": "VISIT_IN_PROGRESS",
+        "from_status": "VISIT_SCHEDULED",
         "to_status": "COMPLETION_PENDING",
         "actor_role": "TECHNICIAN",
         "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-        "state_version": 10,
+        "state_version": 12,
         "occurred_at": "2026-07-04T01:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-10",
         "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
         "expected_allowed_actions": [
           "SUBMIT_RESOLUTION_FEEDBACK",
-          "FINALIZE_INQUIRY",
-          "RESUME_CONSULTATION"
-        ]
+          "CUSTOMER_REPORTED_UNRESOLVED",
+          "REQUEST_CONSULTATION",
+          "FINALIZE_INQUIRY"
+        ],
+        "visit_from_status": "IN_PROGRESS",
+        "visit_to_status": "COMPLETED",
+        "visit_state_version": 5
       },
       {
-        "order": 11,
+        "order": 13,
         "event": "SUBMIT_RESOLUTION_FEEDBACK",
         "from_status": "COMPLETION_PENDING",
         "to_status": "COMPLETION_PENDING",
         "actor_role": "CUSTOMER",
         "actor_id": "18b30d13-a38b-5035-84b3-988406079e0d",
-        "state_version": 11,
+        "state_version": 13,
         "occurred_at": "2026-07-04T03:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-11",
         "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
         "expected_allowed_actions": [
           "SUBMIT_RESOLUTION_FEEDBACK",
-          "FINALIZE_INQUIRY",
-          "RESUME_CONSULTATION"
+          "CUSTOMER_REPORTED_UNRESOLVED",
+          "REQUEST_CONSULTATION",
+          "FINALIZE_INQUIRY"
         ]
       },
       {
-        "order": 12,
+        "order": 14,
         "event": "FINALIZE_INQUIRY",
         "from_status": "COMPLETION_PENDING",
         "to_status": "RESOLVED",
         "actor_role": "TECHNICIAN",
         "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-        "state_version": 12,
+        "state_version": 14,
         "occurred_at": "2026-07-04T03:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-12",
         "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
-        "expected_allowed_actions": [
-          "RESUME_CONSULTATION"
-        ]
+        "expected_allowed_actions": []
       }
     ],
     "final_status": "RESOLVED",
@@ -271,7 +317,7 @@
         "order": 3,
         "event": "SAFE_GUIDANCE_READY",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "AI_GUIDANCE_READY",
+        "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -286,7 +332,7 @@
       {
         "order": 4,
         "event": "CUSTOMER_REPORTED_SELF_RESOLVED",
-        "from_status": "AI_GUIDANCE_READY",
+        "from_status": "AI_GUIDANCE",
         "to_status": "RESOLVED",
         "actor_role": "CUSTOMER",
         "actor_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c",
@@ -294,9 +340,7 @@
         "occurred_at": "2026-07-02T04:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-003-04",
         "correlation_id": "7f27f464-2cef-5901-b7fa-f149194191e2",
-        "expected_allowed_actions": [
-          "RESUME_CONSULTATION"
-        ]
+        "expected_allowed_actions": []
       }
     ],
     "final_status": "RESOLVED",
@@ -340,7 +384,7 @@
         "order": 3,
         "event": "DANGER_DETECTED",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "CONSULTATION_PENDING",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -352,7 +396,7 @@
         ]
       }
     ],
-    "final_status": "CONSULTATION_PENDING",
+    "final_status": "CONSULTATION_REQUIRED",
     "generated_at": "2026-07-27T00:00:00+09:00"
   },
   {
@@ -393,7 +437,7 @@
         "order": 3,
         "event": "SAFE_GUIDANCE_READY",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "AI_GUIDANCE_READY",
+        "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -408,7 +452,7 @@
       {
         "order": 4,
         "event": "CUSTOMER_REPORTED_SELF_RESOLVED",
-        "from_status": "AI_GUIDANCE_READY",
+        "from_status": "AI_GUIDANCE",
         "to_status": "RESOLVED",
         "actor_role": "CUSTOMER",
         "actor_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da",
@@ -416,9 +460,7 @@
         "occurred_at": "2026-07-02T16:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-005-04",
         "correlation_id": "c532f749-7782-59cd-8d00-6076823aae0b",
-        "expected_allowed_actions": [
-          "RESUME_CONSULTATION"
-        ]
+        "expected_allowed_actions": []
       }
     ],
     "final_status": "RESOLVED",
@@ -462,7 +504,7 @@
         "order": 3,
         "event": "DANGER_DETECTED",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "CONSULTATION_PENDING",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -474,7 +516,7 @@
         ]
       }
     ],
-    "final_status": "CONSULTATION_PENDING",
+    "final_status": "CONSULTATION_REQUIRED",
     "generated_at": "2026-07-27T00:00:00+09:00"
   },
   {
@@ -515,7 +557,7 @@
         "order": 3,
         "event": "SAFE_GUIDANCE_READY",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "AI_GUIDANCE_READY",
+        "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -530,7 +572,7 @@
       {
         "order": 4,
         "event": "CUSTOMER_REPORTED_SELF_RESOLVED",
-        "from_status": "AI_GUIDANCE_READY",
+        "from_status": "AI_GUIDANCE",
         "to_status": "RESOLVED",
         "actor_role": "CUSTOMER",
         "actor_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
@@ -538,9 +580,7 @@
         "occurred_at": "2026-07-03T04:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-007-04",
         "correlation_id": "769a3d96-3aa6-5e00-97a5-17c72e5d8ec5",
-        "expected_allowed_actions": [
-          "RESUME_CONSULTATION"
-        ]
+        "expected_allowed_actions": []
       }
     ],
     "final_status": "RESOLVED",
@@ -584,7 +624,7 @@
         "order": 3,
         "event": "SAFE_GUIDANCE_READY",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "AI_GUIDANCE_READY",
+        "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -599,8 +639,8 @@
       {
         "order": 4,
         "event": "REQUEST_CONSULTATION",
-        "from_status": "AI_GUIDANCE_READY",
-        "to_status": "CONSULTATION_PENDING",
+        "from_status": "AI_GUIDANCE",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "CUSTOMER",
         "actor_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab",
         "state_version": 4,
@@ -614,9 +654,9 @@
       {
         "order": 5,
         "event": "START_CONSULTATION",
-        "from_status": "CONSULTATION_PENDING",
+        "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 5,
         "occurred_at": "2026-07-03T11:00:00+09:00",
@@ -624,23 +664,23 @@
         "correlation_id": "d9c5de5d-7b45-5893-a1f3-eff31a160642",
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
-          "VISIT_NEEDED"
+          "VISIT_REVIEW_REQUIRED"
         ]
       },
       {
         "order": 6,
-        "event": "VISIT_NEEDED",
+        "event": "VISIT_REVIEW_REQUIRED",
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "VISIT_REVIEW_PENDING",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 6,
         "occurred_at": "2026-07-03T11:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-008-06",
         "correlation_id": "d9c5de5d-7b45-5893-a1f3-eff31a160642",
         "expected_allowed_actions": [
-          "UPDATE_VISIT_SCHEDULE",
-          "CONFIRM_VISIT"
+          "VISIT_NEEDED",
+          "VISIT_NOT_NEEDED"
         ]
       }
     ],
@@ -685,7 +725,7 @@
         "order": 3,
         "event": "SAFE_GUIDANCE_READY",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "AI_GUIDANCE_READY",
+        "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -700,7 +740,7 @@
       {
         "order": 4,
         "event": "CUSTOMER_REPORTED_SELF_RESOLVED",
-        "from_status": "AI_GUIDANCE_READY",
+        "from_status": "AI_GUIDANCE",
         "to_status": "RESOLVED",
         "actor_role": "CUSTOMER",
         "actor_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
@@ -708,9 +748,7 @@
         "occurred_at": "2026-07-03T16:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-009-04",
         "correlation_id": "bf71079e-a2fa-5dd1-9a1b-42de9047b882",
-        "expected_allowed_actions": [
-          "RESUME_CONSULTATION"
-        ]
+        "expected_allowed_actions": []
       }
     ],
     "final_status": "RESOLVED",
@@ -830,7 +868,7 @@
         "order": 3,
         "event": "SAFE_GUIDANCE_READY",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "AI_GUIDANCE_READY",
+        "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -845,8 +883,8 @@
       {
         "order": 4,
         "event": "REQUEST_CONSULTATION",
-        "from_status": "AI_GUIDANCE_READY",
-        "to_status": "CONSULTATION_PENDING",
+        "from_status": "AI_GUIDANCE",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "CUSTOMER",
         "actor_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d",
         "state_version": 4,
@@ -860,9 +898,9 @@
       {
         "order": 5,
         "event": "START_CONSULTATION",
-        "from_status": "CONSULTATION_PENDING",
+        "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 5,
         "occurred_at": "2026-07-04T11:00:00+09:00",
@@ -870,7 +908,7 @@
         "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
-          "VISIT_NEEDED"
+          "VISIT_REVIEW_REQUIRED"
         ]
       },
       {
@@ -878,7 +916,7 @@
         "event": "CONSULTATION_COMPLETED",
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "COMPLETION_PENDING",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 6,
         "occurred_at": "2026-07-04T11:30:00+09:00",
@@ -886,8 +924,9 @@
         "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
         "expected_allowed_actions": [
           "SUBMIT_RESOLUTION_FEEDBACK",
-          "FINALIZE_INQUIRY",
-          "RESUME_CONSULTATION"
+          "CUSTOMER_REPORTED_UNRESOLVED",
+          "REQUEST_CONSULTATION",
+          "FINALIZE_INQUIRY"
         ]
       },
       {
@@ -895,15 +934,13 @@
         "event": "FINALIZE_INQUIRY",
         "from_status": "COMPLETION_PENDING",
         "to_status": "RESOLVED",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 7,
         "occurred_at": "2026-07-04T12:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-012-07",
         "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
-        "expected_allowed_actions": [
-          "RESUME_CONSULTATION"
-        ]
+        "expected_allowed_actions": []
       },
       {
         "order": 8,
@@ -917,7 +954,7 @@
         "idempotency_key": "idem-SYN-JAC104-012-08",
         "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
         "expected_allowed_actions": [
-          "START_CONSULTATION"
+          "RESUME_CONSULTATION"
         ]
       }
     ],
@@ -962,7 +999,7 @@
         "order": 3,
         "event": "DANGER_DETECTED",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "CONSULTATION_PENDING",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -976,9 +1013,9 @@
       {
         "order": 4,
         "event": "START_CONSULTATION",
-        "from_status": "CONSULTATION_PENDING",
+        "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 4,
         "occurred_at": "2026-07-04T16:30:00+09:00",
@@ -986,7 +1023,7 @@
         "correlation_id": "c4b05213-cd3b-5e37-a21a-40407963494f",
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
-          "VISIT_NEEDED"
+          "VISIT_REVIEW_REQUIRED"
         ]
       }
     ],
@@ -1031,7 +1068,7 @@
         "order": 3,
         "event": "DANGER_DETECTED",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "CONSULTATION_PENDING",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -1045,9 +1082,9 @@
       {
         "order": 4,
         "event": "START_CONSULTATION",
-        "from_status": "CONSULTATION_PENDING",
+        "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 4,
         "occurred_at": "2026-07-04T22:30:00+09:00",
@@ -1055,58 +1092,101 @@
         "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
-          "VISIT_NEEDED"
+          "VISIT_REVIEW_REQUIRED"
         ]
       },
       {
         "order": 5,
-        "event": "VISIT_NEEDED",
+        "event": "VISIT_REVIEW_REQUIRED",
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "VISIT_REVIEW_PENDING",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 5,
         "occurred_at": "2026-07-04T23:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-014-05",
         "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
         "expected_allowed_actions": [
-          "UPDATE_VISIT_SCHEDULE",
-          "CONFIRM_VISIT"
+          "VISIT_NEEDED",
+          "VISIT_NOT_NEEDED"
         ]
       },
       {
         "order": 6,
-        "event": "CONFIRM_VISIT",
+        "event": "VISIT_NEEDED",
         "from_status": "VISIT_REVIEW_PENDING",
-        "to_status": "VISIT_PENDING",
-        "actor_role": "COUNSELOR",
+        "to_status": "VISIT_SCHEDULING",
+        "actor_role": "CONSULTANT",
         "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 6,
+        "occurred_at": "2026-07-04T23:10:00+09:00",
+        "idempotency_key": "idem-SYN-JAC104-014-06-create",
+        "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
+        "expected_allowed_actions": [
+          "UPDATE_VISIT_SCHEDULE"
+        ],
+        "visit_from_status": null,
+        "visit_to_status": "ASSIGNING",
+        "visit_state_version": 1
+      },
+      {
+        "order": 7,
+        "event": "UPDATE_VISIT_SCHEDULE",
+        "from_status": "VISIT_SCHEDULING",
+        "to_status": "VISIT_SCHEDULING",
+        "actor_role": "CONSULTANT",
+        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+        "state_version": 7,
+        "occurred_at": "2026-07-04T23:20:00+09:00",
+        "idempotency_key": "idem-SYN-JAC104-014-06-schedule",
+        "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
+        "expected_allowed_actions": [
+          "UPDATE_VISIT_SCHEDULE",
+          "CONFIRM_VISIT"
+        ],
+        "visit_from_status": "ASSIGNING",
+        "visit_to_status": "SCHEDULING",
+        "visit_state_version": 2
+      },
+      {
+        "order": 8,
+        "event": "CONFIRM_VISIT",
+        "from_status": "VISIT_SCHEDULING",
+        "to_status": "VISIT_SCHEDULED",
+        "actor_role": "CONSULTANT",
+        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+        "state_version": 8,
         "occurred_at": "2026-07-04T23:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-014-06",
         "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
         "expected_allowed_actions": [
-          "UPDATE_VISIT_SCHEDULE",
           "START_VISIT"
-        ]
+        ],
+        "visit_from_status": "SCHEDULING",
+        "visit_to_status": "CONFIRMED",
+        "visit_state_version": 3
       },
       {
-        "order": 7,
+        "order": 9,
         "event": "START_VISIT",
-        "from_status": "VISIT_PENDING",
-        "to_status": "VISIT_IN_PROGRESS",
+        "from_status": "VISIT_SCHEDULED",
+        "to_status": "VISIT_SCHEDULED",
         "actor_role": "TECHNICIAN",
         "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-        "state_version": 7,
+        "state_version": 9,
         "occurred_at": "2026-07-05T00:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-014-07",
         "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
         "expected_allowed_actions": [
-          "VISIT_COMPLETED"
-        ]
+          "VISIT_COMPLETED",
+          "REVISIT_NEEDED"
+        ],
+        "visit_from_status": "CONFIRMED",
+        "visit_to_status": "IN_PROGRESS",
+        "visit_state_version": 4
       }
     ],
-    "final_status": "VISIT_IN_PROGRESS",
+    "final_status": "VISIT_SCHEDULED",
     "generated_at": "2026-07-27T00:00:00+09:00"
   },
   {
@@ -1185,7 +1265,7 @@
         "order": 3,
         "event": "SAFE_GUIDANCE_READY",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "AI_GUIDANCE_READY",
+        "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -1200,8 +1280,8 @@
       {
         "order": 4,
         "event": "REQUEST_CONSULTATION",
-        "from_status": "AI_GUIDANCE_READY",
-        "to_status": "CONSULTATION_PENDING",
+        "from_status": "AI_GUIDANCE",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "CUSTOMER",
         "actor_id": "e48532ad-fa40-54d7-981b-9accfe13e365",
         "state_version": 4,
@@ -1215,9 +1295,9 @@
       {
         "order": 5,
         "event": "START_CONSULTATION",
-        "from_status": "CONSULTATION_PENDING",
+        "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 5,
         "occurred_at": "2026-07-05T11:00:00+09:00",
@@ -1225,7 +1305,7 @@
         "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
-          "VISIT_NEEDED"
+          "VISIT_REVIEW_REQUIRED"
         ]
       },
       {
@@ -1233,7 +1313,7 @@
         "event": "CONSULTATION_COMPLETED",
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "COMPLETION_PENDING",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 6,
         "occurred_at": "2026-07-05T11:30:00+09:00",
@@ -1241,8 +1321,9 @@
         "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
         "expected_allowed_actions": [
           "SUBMIT_RESOLUTION_FEEDBACK",
-          "FINALIZE_INQUIRY",
-          "RESUME_CONSULTATION"
+          "CUSTOMER_REPORTED_UNRESOLVED",
+          "REQUEST_CONSULTATION",
+          "FINALIZE_INQUIRY"
         ]
       },
       {
@@ -1250,15 +1331,13 @@
         "event": "FINALIZE_INQUIRY",
         "from_status": "COMPLETION_PENDING",
         "to_status": "RESOLVED",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 7,
         "occurred_at": "2026-07-05T12:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-016-07",
         "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
-        "expected_allowed_actions": [
-          "RESUME_CONSULTATION"
-        ]
+        "expected_allowed_actions": []
       },
       {
         "order": 8,
@@ -1272,7 +1351,7 @@
         "idempotency_key": "idem-SYN-JAC104-016-08",
         "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
         "expected_allowed_actions": [
-          "START_CONSULTATION"
+          "RESUME_CONSULTATION"
         ]
       },
       {
@@ -1280,7 +1359,7 @@
         "event": "START_CONSULTATION",
         "from_status": "REOPENED",
         "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 9,
         "occurred_at": "2026-07-05T13:00:00+09:00",
@@ -1288,7 +1367,7 @@
         "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
-          "VISIT_NEEDED"
+          "VISIT_REVIEW_REQUIRED"
         ]
       }
     ],
@@ -1333,7 +1412,7 @@
         "order": 3,
         "event": "DANGER_DETECTED",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "CONSULTATION_PENDING",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -1347,9 +1426,9 @@
       {
         "order": 4,
         "event": "START_CONSULTATION",
-        "from_status": "CONSULTATION_PENDING",
+        "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 4,
         "occurred_at": "2026-07-05T16:30:00+09:00",
@@ -1357,7 +1436,7 @@
         "correlation_id": "bab06bf5-7af5-5f6f-88e1-bcd2bd3b070e",
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
-          "VISIT_NEEDED"
+          "VISIT_REVIEW_REQUIRED"
         ]
       },
       {
@@ -1365,7 +1444,7 @@
         "event": "CONSULTATION_COMPLETED",
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "COMPLETION_PENDING",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 5,
         "occurred_at": "2026-07-05T17:00:00+09:00",
@@ -1373,8 +1452,9 @@
         "correlation_id": "bab06bf5-7af5-5f6f-88e1-bcd2bd3b070e",
         "expected_allowed_actions": [
           "SUBMIT_RESOLUTION_FEEDBACK",
-          "FINALIZE_INQUIRY",
-          "RESUME_CONSULTATION"
+          "CUSTOMER_REPORTED_UNRESOLVED",
+          "REQUEST_CONSULTATION",
+          "FINALIZE_INQUIRY"
         ]
       }
     ],
@@ -1419,7 +1499,7 @@
         "order": 3,
         "event": "DANGER_DETECTED",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "CONSULTATION_PENDING",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -1433,9 +1513,9 @@
       {
         "order": 4,
         "event": "START_CONSULTATION",
-        "from_status": "CONSULTATION_PENDING",
+        "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 4,
         "occurred_at": "2026-07-05T22:30:00+09:00",
@@ -1443,72 +1523,119 @@
         "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
-          "VISIT_NEEDED"
+          "VISIT_REVIEW_REQUIRED"
         ]
       },
       {
         "order": 5,
-        "event": "VISIT_NEEDED",
+        "event": "VISIT_REVIEW_REQUIRED",
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "VISIT_REVIEW_PENDING",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 5,
         "occurred_at": "2026-07-05T23:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-05",
         "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
         "expected_allowed_actions": [
-          "UPDATE_VISIT_SCHEDULE",
-          "CONFIRM_VISIT"
+          "VISIT_NEEDED",
+          "VISIT_NOT_NEEDED"
         ]
       },
       {
         "order": 6,
-        "event": "CONFIRM_VISIT",
+        "event": "VISIT_NEEDED",
         "from_status": "VISIT_REVIEW_PENDING",
-        "to_status": "VISIT_PENDING",
-        "actor_role": "COUNSELOR",
+        "to_status": "VISIT_SCHEDULING",
+        "actor_role": "CONSULTANT",
         "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 6,
+        "occurred_at": "2026-07-05T23:10:00+09:00",
+        "idempotency_key": "idem-SYN-JAC104-018-06-create",
+        "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
+        "expected_allowed_actions": [
+          "UPDATE_VISIT_SCHEDULE"
+        ],
+        "visit_from_status": null,
+        "visit_to_status": "ASSIGNING",
+        "visit_state_version": 1
+      },
+      {
+        "order": 7,
+        "event": "UPDATE_VISIT_SCHEDULE",
+        "from_status": "VISIT_SCHEDULING",
+        "to_status": "VISIT_SCHEDULING",
+        "actor_role": "CONSULTANT",
+        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+        "state_version": 7,
+        "occurred_at": "2026-07-05T23:20:00+09:00",
+        "idempotency_key": "idem-SYN-JAC104-018-06-schedule",
+        "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
+        "expected_allowed_actions": [
+          "UPDATE_VISIT_SCHEDULE",
+          "CONFIRM_VISIT"
+        ],
+        "visit_from_status": "ASSIGNING",
+        "visit_to_status": "SCHEDULING",
+        "visit_state_version": 2
+      },
+      {
+        "order": 8,
+        "event": "CONFIRM_VISIT",
+        "from_status": "VISIT_SCHEDULING",
+        "to_status": "VISIT_SCHEDULED",
+        "actor_role": "CONSULTANT",
+        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+        "state_version": 8,
         "occurred_at": "2026-07-05T23:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-06",
         "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
         "expected_allowed_actions": [
-          "UPDATE_VISIT_SCHEDULE",
           "START_VISIT"
-        ]
+        ],
+        "visit_from_status": "SCHEDULING",
+        "visit_to_status": "CONFIRMED",
+        "visit_state_version": 3
       },
       {
-        "order": 7,
+        "order": 9,
         "event": "START_VISIT",
-        "from_status": "VISIT_PENDING",
-        "to_status": "VISIT_IN_PROGRESS",
+        "from_status": "VISIT_SCHEDULED",
+        "to_status": "VISIT_SCHEDULED",
         "actor_role": "TECHNICIAN",
         "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-        "state_version": 7,
+        "state_version": 9,
         "occurred_at": "2026-07-06T00:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-07",
         "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
         "expected_allowed_actions": [
-          "VISIT_COMPLETED"
-        ]
+          "VISIT_COMPLETED",
+          "REVISIT_NEEDED"
+        ],
+        "visit_from_status": "CONFIRMED",
+        "visit_to_status": "IN_PROGRESS",
+        "visit_state_version": 4
       },
       {
-        "order": 8,
+        "order": 10,
         "event": "VISIT_COMPLETED",
-        "from_status": "VISIT_IN_PROGRESS",
+        "from_status": "VISIT_SCHEDULED",
         "to_status": "COMPLETION_PENDING",
         "actor_role": "TECHNICIAN",
         "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
-        "state_version": 8,
+        "state_version": 10,
         "occurred_at": "2026-07-06T00:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-08",
         "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
         "expected_allowed_actions": [
           "SUBMIT_RESOLUTION_FEEDBACK",
-          "FINALIZE_INQUIRY",
-          "RESUME_CONSULTATION"
-        ]
+          "CUSTOMER_REPORTED_UNRESOLVED",
+          "REQUEST_CONSULTATION",
+          "FINALIZE_INQUIRY"
+        ],
+        "visit_from_status": "IN_PROGRESS",
+        "visit_to_status": "COMPLETED",
+        "visit_state_version": 5
       }
     ],
     "final_status": "COMPLETION_PENDING",
@@ -1552,7 +1679,7 @@
         "order": 3,
         "event": "SAFE_GUIDANCE_READY",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "AI_GUIDANCE_READY",
+        "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -1567,7 +1694,7 @@
       {
         "order": 4,
         "event": "CUSTOMER_REPORTED_SELF_RESOLVED",
-        "from_status": "AI_GUIDANCE_READY",
+        "from_status": "AI_GUIDANCE",
         "to_status": "RESOLVED",
         "actor_role": "CUSTOMER",
         "actor_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
@@ -1575,9 +1702,7 @@
         "occurred_at": "2026-07-06T04:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-019-04",
         "correlation_id": "b8613fad-3a6f-591f-9217-936b04b81f1c",
-        "expected_allowed_actions": [
-          "RESUME_CONSULTATION"
-        ]
+        "expected_allowed_actions": []
       }
     ],
     "final_status": "RESOLVED",
@@ -1659,7 +1784,7 @@
         "order": 3,
         "event": "SAFE_GUIDANCE_READY",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "AI_GUIDANCE_READY",
+        "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -1674,8 +1799,8 @@
       {
         "order": 4,
         "event": "REQUEST_CONSULTATION",
-        "from_status": "AI_GUIDANCE_READY",
-        "to_status": "CONSULTATION_PENDING",
+        "from_status": "AI_GUIDANCE",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "CUSTOMER",
         "actor_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
         "state_version": 4,
@@ -1689,9 +1814,9 @@
       {
         "order": 5,
         "event": "START_CONSULTATION",
-        "from_status": "CONSULTATION_PENDING",
+        "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 5,
         "occurred_at": "2026-07-06T17:00:00+09:00",
@@ -1699,87 +1824,132 @@
         "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
-          "VISIT_NEEDED"
+          "VISIT_REVIEW_REQUIRED"
         ]
       },
       {
         "order": 6,
-        "event": "VISIT_NEEDED",
+        "event": "VISIT_REVIEW_REQUIRED",
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "VISIT_REVIEW_PENDING",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 6,
         "occurred_at": "2026-07-06T17:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-06",
         "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
         "expected_allowed_actions": [
-          "UPDATE_VISIT_SCHEDULE",
-          "CONFIRM_VISIT"
+          "VISIT_NEEDED",
+          "VISIT_NOT_NEEDED"
         ]
       },
       {
         "order": 7,
-        "event": "CONFIRM_VISIT",
+        "event": "VISIT_NEEDED",
         "from_status": "VISIT_REVIEW_PENDING",
-        "to_status": "VISIT_PENDING",
-        "actor_role": "COUNSELOR",
+        "to_status": "VISIT_SCHEDULING",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 7,
+        "occurred_at": "2026-07-06T17:40:00+09:00",
+        "idempotency_key": "idem-SYN-JAC104-021-07-create",
+        "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
+        "expected_allowed_actions": [
+          "UPDATE_VISIT_SCHEDULE"
+        ],
+        "visit_from_status": null,
+        "visit_to_status": "ASSIGNING",
+        "visit_state_version": 1
+      },
+      {
+        "order": 8,
+        "event": "UPDATE_VISIT_SCHEDULE",
+        "from_status": "VISIT_SCHEDULING",
+        "to_status": "VISIT_SCHEDULING",
+        "actor_role": "CONSULTANT",
+        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
+        "state_version": 8,
+        "occurred_at": "2026-07-06T17:50:00+09:00",
+        "idempotency_key": "idem-SYN-JAC104-021-07-schedule",
+        "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
+        "expected_allowed_actions": [
+          "UPDATE_VISIT_SCHEDULE",
+          "CONFIRM_VISIT"
+        ],
+        "visit_from_status": "ASSIGNING",
+        "visit_to_status": "SCHEDULING",
+        "visit_state_version": 2
+      },
+      {
+        "order": 9,
+        "event": "CONFIRM_VISIT",
+        "from_status": "VISIT_SCHEDULING",
+        "to_status": "VISIT_SCHEDULED",
+        "actor_role": "CONSULTANT",
+        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
+        "state_version": 9,
         "occurred_at": "2026-07-06T18:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-07",
         "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
         "expected_allowed_actions": [
-          "UPDATE_VISIT_SCHEDULE",
           "START_VISIT"
-        ]
+        ],
+        "visit_from_status": "SCHEDULING",
+        "visit_to_status": "CONFIRMED",
+        "visit_state_version": 3
       },
       {
-        "order": 8,
+        "order": 10,
         "event": "START_VISIT",
-        "from_status": "VISIT_PENDING",
-        "to_status": "VISIT_IN_PROGRESS",
+        "from_status": "VISIT_SCHEDULED",
+        "to_status": "VISIT_SCHEDULED",
         "actor_role": "TECHNICIAN",
         "actor_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
-        "state_version": 8,
+        "state_version": 10,
         "occurred_at": "2026-07-06T18:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-08",
         "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
         "expected_allowed_actions": [
-          "VISIT_COMPLETED"
-        ]
+          "VISIT_COMPLETED",
+          "REVISIT_NEEDED"
+        ],
+        "visit_from_status": "CONFIRMED",
+        "visit_to_status": "IN_PROGRESS",
+        "visit_state_version": 4
       },
       {
-        "order": 9,
+        "order": 11,
         "event": "VISIT_COMPLETED",
-        "from_status": "VISIT_IN_PROGRESS",
+        "from_status": "VISIT_SCHEDULED",
         "to_status": "COMPLETION_PENDING",
         "actor_role": "TECHNICIAN",
         "actor_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
-        "state_version": 9,
+        "state_version": 11,
         "occurred_at": "2026-07-06T19:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-09",
         "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
         "expected_allowed_actions": [
           "SUBMIT_RESOLUTION_FEEDBACK",
-          "FINALIZE_INQUIRY",
-          "RESUME_CONSULTATION"
-        ]
+          "CUSTOMER_REPORTED_UNRESOLVED",
+          "REQUEST_CONSULTATION",
+          "FINALIZE_INQUIRY"
+        ],
+        "visit_from_status": "IN_PROGRESS",
+        "visit_to_status": "COMPLETED",
+        "visit_state_version": 5
       },
       {
-        "order": 10,
+        "order": 12,
         "event": "FINALIZE_INQUIRY",
         "from_status": "COMPLETION_PENDING",
         "to_status": "RESOLVED",
         "actor_role": "TECHNICIAN",
         "actor_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
-        "state_version": 10,
+        "state_version": 12,
         "occurred_at": "2026-07-06T19:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-10",
         "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
-        "expected_allowed_actions": [
-          "RESUME_CONSULTATION"
-        ]
+        "expected_allowed_actions": []
       }
     ],
     "final_status": "RESOLVED",
@@ -1823,7 +1993,7 @@
         "order": 3,
         "event": "NO_EVIDENCE",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "CONSULTATION_PENDING",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -1835,7 +2005,7 @@
         ]
       }
     ],
-    "final_status": "CONSULTATION_PENDING",
+    "final_status": "CONSULTATION_REQUIRED",
     "generated_at": "2026-07-27T00:00:00+09:00"
   },
   {
@@ -1876,7 +2046,7 @@
         "order": 3,
         "event": "NO_EVIDENCE",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "CONSULTATION_PENDING",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -1890,9 +2060,9 @@
       {
         "order": 4,
         "event": "START_CONSULTATION",
-        "from_status": "CONSULTATION_PENDING",
+        "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "COUNSELOR",
+        "actor_role": "CONSULTANT",
         "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 4,
         "occurred_at": "2026-07-07T04:30:00+09:00",
@@ -1900,7 +2070,7 @@
         "correlation_id": "493826d3-b66b-5ac6-a5a1-840c00506b4b",
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
-          "VISIT_NEEDED"
+          "VISIT_REVIEW_REQUIRED"
         ]
       }
     ],
@@ -1945,7 +2115,7 @@
         "order": 3,
         "event": "NO_EVIDENCE",
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "CONSULTATION_PENDING",
+        "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
         "actor_id": null,
         "state_version": 3,
@@ -1957,7 +2127,7 @@
         ]
       }
     ],
-    "final_status": "CONSULTATION_PENDING",
+    "final_status": "CONSULTATION_REQUIRED",
     "generated_at": "2026-07-27T00:00:00+09:00"
   }
 ]

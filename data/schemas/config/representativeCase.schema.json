@@ -73,7 +73,7 @@
     },
     "final_state_version": {
       "type": "integer",
-      "const": 12
+      "const": 14
     },
     "final_actor_role": {
       "type": "string",
@@ -105,12 +105,12 @@
       "properties": {
         "inquiries": {"type": "integer", "const": 24},
         "consultations": {"type": "integer", "const": 16},
-        "visits": {"type": "integer", "const": 5},
+        "visits": {"type": "integer", "const": 4},
         "care_histories": {"type": "integer", "const": 25},
         "followup_confirmations": {"type": "integer", "const": 1},
-        "inquiry_status_histories": {"type": "integer", "const": 115},
-        "audit_events": {"type": "integer", "const": 115},
-        "representative_steps": {"type": "integer", "const": 12}
+        "inquiry_status_histories": {"type": "integer", "const": 123},
+        "audit_events": {"type": "integer", "const": 123},
+        "representative_steps": {"type": "integer", "const": 14}
       }
     },
     "document_sections": {

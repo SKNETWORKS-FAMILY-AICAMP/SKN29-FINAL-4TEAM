@@ -44,7 +44,7 @@
     ],
     "evidence_mode": "EXACT_MODEL",
     "requires_fallback": false,
-    "state_version": 12,
+    "state_version": 14,
     "idempotency_key": "idem-SYN-JAC104-002-current",
     "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
     "data_classification": "synthetic",
@@ -88,7 +88,7 @@
     "variant": "CLEAR",
     "risk_level": "danger",
     "usage_guidance_status": "TOTAL_STOP",
-    "status": "CONSULTATION_PENDING",
+    "status": "CONSULTATION_REQUIRED",
     "assigned_role": "NONE",
     "assigned_user_id": null,
     "evidence_ids": [
@@ -140,7 +140,7 @@
     "variant": "CLEAR",
     "risk_level": "danger",
     "usage_guidance_status": "PENDING_CONSULTATION",
-    "status": "CONSULTATION_PENDING",
+    "status": "CONSULTATION_REQUIRED",
     "assigned_role": "NONE",
     "assigned_user_id": null,
     "evidence_ids": [
@@ -193,7 +193,7 @@
     "risk_level": "caution",
     "usage_guidance_status": "PARTIAL_STOP",
     "status": "VISIT_REVIEW_PENDING",
-    "assigned_role": "COUNSELOR",
+    "assigned_role": "CONSULTANT",
     "assigned_user_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "evidence_ids": [
       "EVD-WPUJAC104DWH-NO-WATER-001"
@@ -323,7 +323,7 @@
     "risk_level": "danger",
     "usage_guidance_status": "TOTAL_STOP",
     "status": "CONSULTATION_IN_PROGRESS",
-    "assigned_role": "COUNSELOR",
+    "assigned_role": "CONSULTANT",
     "assigned_user_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "evidence_ids": [
       "EVD-WPUJAC104DWH-LEAK-001"
@@ -348,7 +348,7 @@
     "variant": "PERSISTENT_OR_RISK",
     "risk_level": "danger",
     "usage_guidance_status": "TOTAL_STOP",
-    "status": "VISIT_IN_PROGRESS",
+    "status": "VISIT_SCHEDULED",
     "assigned_role": "TECHNICIAN",
     "assigned_user_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
     "evidence_ids": [
@@ -356,7 +356,7 @@
     ],
     "evidence_mode": "EXACT_MODEL",
     "requires_fallback": false,
-    "state_version": 7,
+    "state_version": 9,
     "idempotency_key": "idem-SYN-JAC104-014-current",
     "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
     "data_classification": "synthetic",
@@ -401,7 +401,7 @@
     "risk_level": "caution",
     "usage_guidance_status": "PARTIAL_STOP",
     "status": "CONSULTATION_IN_PROGRESS",
-    "assigned_role": "COUNSELOR",
+    "assigned_role": "CONSULTANT",
     "assigned_user_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "evidence_ids": [
       "EVD-WPUJAC104DWH-TASTE-ODOR-001"
@@ -427,7 +427,7 @@
     "risk_level": "danger",
     "usage_guidance_status": "PENDING_CONSULTATION",
     "status": "COMPLETION_PENDING",
-    "assigned_role": "COUNSELOR",
+    "assigned_role": "CONSULTANT",
     "assigned_user_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "evidence_ids": [
       "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001"
@@ -460,7 +460,7 @@
     ],
     "evidence_mode": "EXACT_MODEL",
     "requires_fallback": false,
-    "state_version": 8,
+    "state_version": 10,
     "idempotency_key": "idem-SYN-JAC104-018-current",
     "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
     "data_classification": "synthetic",
@@ -538,7 +538,7 @@
     ],
     "evidence_mode": "EXACT_MODEL",
     "requires_fallback": false,
-    "state_version": 10,
+    "state_version": 12,
     "idempotency_key": "idem-SYN-JAC104-021-current",
     "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
     "data_classification": "synthetic",
@@ -556,7 +556,7 @@
     "variant": "CLEAR",
     "risk_level": "general",
     "usage_guidance_status": "PENDING_CONSULTATION",
-    "status": "CONSULTATION_PENDING",
+    "status": "CONSULTATION_REQUIRED",
     "assigned_role": "NONE",
     "assigned_user_id": null,
     "evidence_ids": [],
@@ -581,7 +581,7 @@
     "risk_level": "general",
     "usage_guidance_status": "PENDING_CONSULTATION",
     "status": "CONSULTATION_IN_PROGRESS",
-    "assigned_role": "COUNSELOR",
+    "assigned_role": "CONSULTANT",
     "assigned_user_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "evidence_ids": [],
     "evidence_mode": "NO_EVIDENCE",
@@ -604,7 +604,7 @@
     "variant": "PERSISTENT_OR_RISK",
     "risk_level": "caution",
     "usage_guidance_status": "PENDING_CONSULTATION",
-    "status": "CONSULTATION_PENDING",
+    "status": "CONSULTATION_REQUIRED",
     "assigned_role": "NONE",
     "assigned_user_id": null,
     "evidence_ids": [
