@@ -1966,7 +1966,7 @@ private fun TrackingBottomCard(
 
             when {
                 !callAccepted -> {
-                    OutlinedButton(
+                    Start-Sleep -Seconds 2OutlinedButton(
                         onClick =
                             onRefreshStatus,
                         modifier =
