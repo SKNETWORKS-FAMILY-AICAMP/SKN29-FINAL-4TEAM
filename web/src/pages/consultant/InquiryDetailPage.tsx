@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
 import {
   createVisitTransitionPath,
-  ROUTE_PATHS,
+  getSafeInquiryListReturnPath,
 } from "../../app/router/routePaths";
 import PriorityBadge, {
   type PriorityBadgeVariant,
@@ -34,6 +38,10 @@ interface StatusHistoryItem {
   event: string;
   actor: string;
   occurredAt: string;
+}
+
+interface InquiryDetailLocationState {
+  returnTo?: unknown;
 }
 
 interface InquiryDetail {
@@ -223,7 +231,13 @@ function getVerificationLabel(
 
 export default function InquiryDetailPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { inquiryId } = useParams<{ inquiryId: string }>();
+
+  const locationState = location.state as InquiryDetailLocationState | null;
+  const inquiryListReturnPath = getSafeInquiryListReturnPath(
+    locationState?.returnTo,
+  );
 
   const inquiry = inquiryId
     ? MOCK_INQUIRY_DETAILS[inquiryId]
@@ -290,9 +304,7 @@ export default function InquiryDetailPage() {
           title="이 문의에 접근할 권한이 없습니다."
           description="담당 상담사이거나 해당 문의의 조회 권한이 있는지 확인해 주세요."
           actionLabel="문의 목록으로 돌아가기"
-          onAction={() =>
-            navigate(ROUTE_PATHS.consultantInquiryList)
-          }
+          onAction={() => navigate(inquiryListReturnPath)}
         />
       </main>
     );
@@ -308,9 +320,7 @@ export default function InquiryDetailPage() {
 
           <button
             type="button"
-            onClick={() =>
-              navigate(ROUTE_PATHS.consultantInquiryList)
-            }
+            onClick={() => navigate(inquiryListReturnPath)}
           >
             문의 목록으로 돌아가기
           </button>
@@ -342,6 +352,7 @@ export default function InquiryDetailPage() {
   const handleRequestVisit = () => {
     navigate(createVisitTransitionPath(inquiry.inquiryId), {
       state: {
+        returnTo: inquiryListReturnPath,
         stateVersion: inquiry.stateVersion,
         symptomSummary: inquiry.symptomSummary,
       },
@@ -360,9 +371,7 @@ export default function InquiryDetailPage() {
         <button
           type="button"
           className="inquiry-detail__back-button"
-          onClick={() =>
-            navigate(ROUTE_PATHS.consultantInquiryList)
-          }
+          onClick={() => navigate(inquiryListReturnPath)}
         >
           목록으로 돌아가기
         </button>

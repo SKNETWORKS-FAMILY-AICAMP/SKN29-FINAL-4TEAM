@@ -1,5 +1,9 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo } from "react";
+import {
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 
 import { createInquiryDetailPath } from "../../app/router/routePaths";
 import PriorityBadge, {
@@ -9,6 +13,7 @@ import RiskBadge, {
   type RiskLevel,
 } from "../../common/components/badge/RiskBadge";
 import StatusBadge from "../../common/components/badge/StatusBadge";
+import Pagination from "../../common/components/data-display/Pagination";
 import EmptyState from "../../common/components/feedback/EmptyState";
 import "./ConsultantDashboardPage.css";
 
@@ -18,6 +23,31 @@ type InquiryStatus =
   | "REOPENED";
 
 type InquirySort = "RECEIVED_DESC" | "RECEIVED_ASC";
+
+const PAGE_SIZE = 2;
+
+const RISK_LEVELS: readonly RiskLevel[] = [
+  "general",
+  "caution",
+  "danger",
+];
+
+const INQUIRY_STATUSES: readonly InquiryStatus[] = [
+  "CONSULTATION_REQUIRED",
+  "CONSULTATION_IN_PROGRESS",
+  "REOPENED",
+];
+
+const PRIORITY_VARIANTS: readonly PriorityBadgeVariant[] = [
+  "default",
+  "high",
+  "urgent",
+];
+
+const INQUIRY_SORTS: readonly InquirySort[] = [
+  "RECEIVED_DESC",
+  "RECEIVED_ASC",
+];
 
 interface InquiryListItem {
   inquiryId: string;
@@ -104,19 +134,56 @@ function getReceivedTimestamp(value: string): number {
   return Number.isNaN(timestamp) ? 0 : timestamp;
 }
 
+function getValidatedParam<T extends string>(
+  searchParams: URLSearchParams,
+  key: string,
+  allowedValues: readonly T[],
+  fallback: T,
+): T {
+  const value = searchParams.get(key);
+
+  return value && allowedValues.includes(value as T)
+    ? (value as T)
+    : fallback;
+}
+
+function getPageParam(searchParams: URLSearchParams): number {
+  const value = Number(searchParams.get("page") ?? "1");
+
+  return Number.isInteger(value) && value > 0 ? value : 1;
+}
+
 export default function ConsultantDashboardPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [selectedRisk, setSelectedRisk] = useState<"ALL" | RiskLevel>("ALL");
-  const [selectedStatus, setSelectedStatus] = useState<
-    "ALL" | InquiryStatus
-  >("ALL");
-  const [selectedPriority, setSelectedPriority] = useState<
-    "ALL" | PriorityBadgeVariant
-  >("ALL");
-  const [selectedSort, setSelectedSort] =
-    useState<InquirySort>("RECEIVED_DESC");
+  const searchKeyword = searchParams.get("q") ?? "";
+  const selectedRisk = getValidatedParam(
+    searchParams,
+    "risk",
+    RISK_LEVELS,
+    "ALL" as const,
+  );
+  const selectedStatus = getValidatedParam(
+    searchParams,
+    "status",
+    INQUIRY_STATUSES,
+    "ALL" as const,
+  );
+  const selectedPriority = getValidatedParam(
+    searchParams,
+    "priority",
+    PRIORITY_VARIANTS,
+    "ALL" as const,
+  );
+  const selectedSort = getValidatedParam(
+    searchParams,
+    "sort",
+    INQUIRY_SORTS,
+    "RECEIVED_DESC",
+  );
+  const requestedPage = getPageParam(searchParams);
 
   const filteredInquiries = useMemo(() => {
     const keyword = searchKeyword.trim().toLowerCase();
@@ -158,16 +225,51 @@ export default function ConsultantDashboardPage() {
     selectedStatus,
   ]);
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredInquiries.length / PAGE_SIZE),
+  );
+  const currentPage = Math.min(requestedPage, totalPages);
+  const currentPageInquiries = filteredInquiries.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+  const hasActiveFilters =
+    searchKeyword.trim().length > 0 ||
+    selectedRisk !== "ALL" ||
+    selectedStatus !== "ALL" ||
+    selectedPriority !== "ALL";
+
+  const updateSearchParam = (
+    key: string,
+    value: string,
+    defaultValue: string,
+  ) => {
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (value === defaultValue || value.trim().length === 0) {
+      nextParams.delete(key);
+    } else {
+      nextParams.set(key, value);
+    }
+
+    if (key !== "page") {
+      nextParams.delete("page");
+    }
+
+    setSearchParams(nextParams, { replace: true });
+  };
+
   const handleInquiryClick = (inquiryId: string) => {
-    navigate(createInquiryDetailPath(inquiryId));
+    navigate(createInquiryDetailPath(inquiryId), {
+      state: {
+        returnTo: `${location.pathname}${location.search}`,
+      },
+    });
   };
 
   const handleResetFilters = () => {
-    setSearchKeyword("");
-    setSelectedRisk("ALL");
-    setSelectedStatus("ALL");
-    setSelectedPriority("ALL");
-    setSelectedSort("RECEIVED_DESC");
+    setSearchParams(new URLSearchParams(), { replace: true });
   };
 
   return (
@@ -194,7 +296,9 @@ export default function ConsultantDashboardPage() {
           <input
             type="search"
             value={searchKeyword}
-            onChange={(event) => setSearchKeyword(event.target.value)}
+            onChange={(event) =>
+              updateSearchParam("q", event.target.value, "")
+            }
             placeholder="문의 번호, 고객명, 제품, 증상 검색"
           />
         </label>
@@ -205,7 +309,7 @@ export default function ConsultantDashboardPage() {
           <select
             value={selectedRisk}
             onChange={(event) =>
-              setSelectedRisk(event.target.value as "ALL" | RiskLevel)
+              updateSearchParam("risk", event.target.value, "ALL")
             }
           >
             <option value="ALL">전체</option>
@@ -221,9 +325,7 @@ export default function ConsultantDashboardPage() {
           <select
             value={selectedStatus}
             onChange={(event) =>
-              setSelectedStatus(
-                event.target.value as "ALL" | InquiryStatus,
-              )
+              updateSearchParam("status", event.target.value, "ALL")
             }
           >
             <option value="ALL">전체</option>
@@ -239,9 +341,7 @@ export default function ConsultantDashboardPage() {
           <select
             value={selectedPriority}
             onChange={(event) =>
-              setSelectedPriority(
-                event.target.value as "ALL" | PriorityBadgeVariant,
-              )
+              updateSearchParam("priority", event.target.value, "ALL")
             }
           >
             <option value="ALL">전체</option>
@@ -257,7 +357,11 @@ export default function ConsultantDashboardPage() {
           <select
             value={selectedSort}
             onChange={(event) =>
-              setSelectedSort(event.target.value as InquirySort)
+              updateSearchParam(
+                "sort",
+                event.target.value,
+                "RECEIVED_DESC",
+              )
             }
           >
             <option value="RECEIVED_DESC">접수 시각 최신순</option>
@@ -266,17 +370,25 @@ export default function ConsultantDashboardPage() {
         </label>
 
         <p className="consultant-dashboard__mock-notice">
-          현재 목록과 우선순위 필터는 Mock 데이터 기준입니다.
+          {`현재 목록과 우선순위 필터는 Mock 데이터 기준이며 페이지당 ${PAGE_SIZE}건을 표시합니다.`}
         </p>
       </section>
 
       <section className="consultant-dashboard__content">
         {filteredInquiries.length === 0 ? (
           <EmptyState
-            title="검색 결과가 없습니다."
-            description="검색어나 필터 조건을 변경한 뒤 다시 확인해 주세요."
-            actionLabel="검색 조건 초기화"
-            onAction={handleResetFilters}
+            title={
+              hasActiveFilters
+                ? "검색 결과가 없습니다."
+                : "접수된 문의가 없습니다."
+            }
+            description={
+              hasActiveFilters
+                ? "검색어나 필터 조건을 변경한 뒤 다시 확인해 주세요."
+                : "새 문의가 접수되면 이 목록에 표시됩니다."
+            }
+            actionLabel={hasActiveFilters ? "검색 조건 초기화" : undefined}
+            onAction={hasActiveFilters ? handleResetFilters : undefined}
           />
         ) : (
           <div className="consultant-dashboard__table-wrap">
@@ -296,7 +408,7 @@ export default function ConsultantDashboardPage() {
               </thead>
 
               <tbody>
-                {filteredInquiries.map((inquiry) => (
+                {currentPageInquiries.map((inquiry) => (
                   <tr key={inquiry.inquiryId}>
                     <td>
                       <strong>{inquiry.inquiryId}</strong>
@@ -339,6 +451,15 @@ export default function ConsultantDashboardPage() {
                 ))}
               </tbody>
             </table>
+
+            <Pagination
+              page={currentPage}
+              totalItems={filteredInquiries.length}
+              totalPages={totalPages}
+              onPageChange={(page) =>
+                updateSearchParam("page", String(page), "1")
+              }
+            />
           </div>
         )}
       </section>
