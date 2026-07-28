@@ -1,10 +1,10 @@
 {
-  "status": "PASS",
+  "status": "FAIL",
   "generated_at": "2026-07-27T00:00:00+09:00",
   "summary": {
     "checks": 17,
-    "passed": 17,
-    "failed": 0,
+    "passed": 16,
+    "failed": 1,
     "documents_checked": 4
   },
   "checks": [
@@ -41,7 +41,7 @@
     {
       "name": "representative_business_values",
       "status": "PASS",
-      "detail": "topic=symptom_low_flow,risk=general,usage=NORMAL,status=RESOLVED,state_version=12"
+      "detail": "topic=symptom_low_flow,risk=general,usage=NORMAL,status=RESOLVED,state_version=14"
     },
     {
       "name": "representative_product_lineage",
@@ -56,12 +56,12 @@
     {
       "name": "representative_workflow_sequence",
       "status": "PASS",
-      "detail": "events=['START_INQUIRY', 'SUBMIT_SYMPTOM', 'SUBMIT_ANSWERS', 'SAFE_GUIDANCE_READY', 'REQUEST_CONSULTATION', 'START_CONSULTATION', 'VISIT_NEEDED', 'CONFIRM_VISIT', 'START_VISIT', 'VISIT_COMPLETED', 'SUBMIT_RESOLUTION_FEEDBACK', 'FINALIZE_INQUIRY']"
+      "detail": "events=['START_INQUIRY', 'SUBMIT_SYMPTOM', 'SUBMIT_ANSWERS', 'SAFE_GUIDANCE_READY', 'REQUEST_CONSULTATION', 'START_CONSULTATION', 'VISIT_REVIEW_REQUIRED', 'VISIT_NEEDED', 'UPDATE_VISIT_SCHEDULE', 'CONFIRM_VISIT', 'START_VISIT', 'VISIT_COMPLETED', 'SUBMIT_RESOLUTION_FEEDBACK', 'FINALIZE_INQUIRY']"
     },
     {
       "name": "history_audit_sequence",
       "status": "PASS",
-      "detail": "histories=12,audits=12"
+      "detail": "histories=14,audits=14"
     },
     {
       "name": "workflow_statuses_in_dataset_vocabulary",
@@ -86,13 +86,15 @@
     {
       "name": "representative_dataset_counts",
       "status": "PASS",
-      "detail": "actual={'inquiries': 24, 'consultations': 16, 'visits': 5, 'care_histories': 25, 'followup_confirmations': 1, 'inquiry_status_histories': 115, 'audit_events': 115, 'representative_steps': 12}"
+      "detail": "actual={'inquiries': 24, 'consultations': 16, 'visits': 4, 'care_histories': 25, 'followup_confirmations': 1, 'inquiry_status_histories': 123, 'audit_events': 123, 'representative_steps': 14}"
     },
     {
       "name": "manifest_counts_match_e2e_case",
-      "status": "PASS",
+      "status": "FAIL",
       "detail": "dataset manifest synthetic counts"
     }
   ],
-  "errors": []
+  "errors": [
+    "representative_e2e:manifest_counts_match_e2e_case"
+  ]
 }

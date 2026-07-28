@@ -1,0 +1,44 @@
+.common-priority-badge {
+  display: inline-flex;
+  min-height: 28px;
+  padding: 4px 10px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.common-priority-badge__icon {
+  font-size: 10px;
+}
+
+.common-priority-badge--default {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.common-priority-badge--high {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.common-priority-badge--urgent {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.common-priority-badge--compact {
+  min-height: 22px;
+  padding: 0 7px;
+  gap: 3px;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.common-priority-badge--compact .common-priority-badge__icon {
+  font-size: 6px;
+}

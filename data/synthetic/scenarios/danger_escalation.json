@@ -6,7 +6,7 @@
     "title": "제품 아래 물 고임",
     "inquiry_id": "8e2e2561-613b-5911-9318-b651f0787a90",
     "workflow_kind": "DANGER_ESCALATION",
-    "expected_outcome": "CONSULTATION_PENDING"
+    "expected_outcome": "CONSULTATION_REQUIRED"
   },
   {
     "scenario_id": "SYN-JAC104-006",
@@ -15,7 +15,7 @@
     "title": "순간온수 모듈 점검 표시",
     "inquiry_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60",
     "workflow_kind": "DANGER_ESCALATION",
-    "expected_outcome": "CONSULTATION_PENDING"
+    "expected_outcome": "CONSULTATION_REQUIRED"
   },
   {
     "scenario_id": "SYN-JAC104-013",

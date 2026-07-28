@@ -58,16 +58,17 @@
             "enum": [
               "DRAFT",
               "QUESTIONNAIRE_IN_PROGRESS",
-              "PRODUCT_VALIDATION_FAILED",
-              "AI_GUIDANCE_READY",
-              "CONSULTATION_PENDING",
+              "AI_GUIDANCE",
+              "CONSULTATION_REQUIRED",
               "CONSULTATION_IN_PROGRESS",
               "VISIT_REVIEW_PENDING",
-              "VISIT_PENDING",
-              "VISIT_IN_PROGRESS",
+              "VISIT_SCHEDULING",
+              "VISIT_SCHEDULED",
               "COMPLETION_PENDING",
-              "RESOLVED",
+              "REVISIT_REQUIRED",
               "REOPENED",
+              "RESOLVED",
+              "CANCELLED",
               null
             ]
           },
@@ -77,24 +78,64 @@
             "enum": [
               "DRAFT",
               "QUESTIONNAIRE_IN_PROGRESS",
-              "PRODUCT_VALIDATION_FAILED",
-              "AI_GUIDANCE_READY",
-              "CONSULTATION_PENDING",
+              "AI_GUIDANCE",
+              "CONSULTATION_REQUIRED",
               "CONSULTATION_IN_PROGRESS",
               "VISIT_REVIEW_PENDING",
-              "VISIT_PENDING",
-              "VISIT_IN_PROGRESS",
+              "VISIT_SCHEDULING",
+              "VISIT_SCHEDULED",
               "COMPLETION_PENDING",
+              "REVISIT_REQUIRED",
+              "REOPENED",
               "RESOLVED",
-              "REOPENED"
+              "CANCELLED"
             ]
+          },
+          "visit_from_status": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "ASSIGNING",
+              "SCHEDULING",
+              "CONFIRMED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "FOLLOW_UP_REQUIRED",
+              "CANCELLED",
+              null
+            ]
+          },
+          "visit_to_status": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "ASSIGNING",
+              "SCHEDULING",
+              "CONFIRMED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "FOLLOW_UP_REQUIRED",
+              "CANCELLED",
+              null
+            ]
+          },
+          "visit_state_version": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
           },
           "actor_role": {
             "type": "string",
             "minLength": 1,
             "enum": [
               "CUSTOMER",
-              "COUNSELOR",
+              "CONSULTANT",
               "TECHNICIAN",
               "SYSTEM"
             ]
@@ -142,16 +183,17 @@
       "enum": [
         "DRAFT",
         "QUESTIONNAIRE_IN_PROGRESS",
-        "PRODUCT_VALIDATION_FAILED",
-        "AI_GUIDANCE_READY",
-        "CONSULTATION_PENDING",
+        "AI_GUIDANCE",
+        "CONSULTATION_REQUIRED",
         "CONSULTATION_IN_PROGRESS",
         "VISIT_REVIEW_PENDING",
-        "VISIT_PENDING",
-        "VISIT_IN_PROGRESS",
+        "VISIT_SCHEDULING",
+        "VISIT_SCHEDULED",
         "COMPLETION_PENDING",
+        "REVISIT_REQUIRED",
+        "REOPENED",
         "RESOLVED",
-        "REOPENED"
+        "CANCELLED"
       ]
     },
     "generated_at": {

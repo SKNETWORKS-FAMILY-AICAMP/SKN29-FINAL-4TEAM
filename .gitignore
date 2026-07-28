@@ -4,6 +4,11 @@ tmp/
 outputs/
 __pycache__/
 *.pyc
+.venv/
+.runtime/
+.pytest_cache/
+pytest-cache-files-*/
+
 AGENTS.md
 # 공식 원본 파일만 제외
 data/raw/manuals/**/*.pdf
@@ -21,8 +26,28 @@ data/**/*.zip
 web/node_modules/
 web/dist/
 
-WaterCareAndroid/.idea/
+mobile/.idea/
 WaterCareAndroid/.gradle/
-WaterCareAndroid/local.properties
+mobile/local.properties
 WaterCareBackend/.env
 WaterCareBackend/.venv/
+
+# 은진 개인 설정
+AGENTS.md
+**/.venv/
+
+# Android
+mobile/.gradle/
+mobile/build/
+mobile/app/build/
+mobile/.kotlin/
+mobile/local.properties
+
+# Python / Django
+**/.venv/
+*.sqlite3
+db.sqlite3
+
+# IDE
+.idea/
+*.iml

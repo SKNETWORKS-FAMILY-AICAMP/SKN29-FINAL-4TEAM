@@ -24,7 +24,7 @@
     "title": "안전조치 후 재발하는 누수",
     "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "workflow_kind": "VISIT_HANDOFF",
-    "expected_outcome": "VISIT_IN_PROGRESS"
+    "expected_outcome": "VISIT_SCHEDULED"
   },
   {
     "scenario_id": "SYN-JAC104-018",

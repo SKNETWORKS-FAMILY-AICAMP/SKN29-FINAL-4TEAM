@@ -1,0 +1,65 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Backend: 환경 빠른 검증",
+            "type": "process",
+            "command": "python3",
+            "windows": {
+                "command": "python"
+            },
+            "args": [
+                "${workspaceFolder}/scripts/development/check_environment.py",
+                "--service",
+                "backend"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "Backend: 환경 최초 생성·동기화",
+            "type": "process",
+            "command": "python3",
+            "windows": {
+                "command": "python"
+            },
+            "args": [
+                "${workspaceFolder}/scripts/development/bootstrap.py",
+                "--service",
+                "backend"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Backend: 환경 전체 검증",
+            "type": "process",
+            "command": "${workspaceFolder}/backend/.venv/bin/python",
+            "windows": {
+                "command": "${workspaceFolder}\\backend\\.venv\\Scripts\\python.exe"
+            },
+            "args": [
+                "${workspaceFolder}/scripts/development/check_environment.py",
+                "--service",
+                "backend",
+                "--full"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

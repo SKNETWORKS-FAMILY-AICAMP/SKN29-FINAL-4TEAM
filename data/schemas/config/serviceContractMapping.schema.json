@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ServiceContractMappingConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mapping_version",
+    "scope",
+    "status",
+    "contract_sources",
+    "canonical_role_codes",
+    "legacy_role_aliases",
+    "canonical_inquiry_statuses",
+    "canonical_visit_statuses",
+    "legacy_state_aliases",
+    "compound_state_mappings",
+    "blocked_decisions"
+  ],
+  "properties": {
+    "mapping_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "scope": {
+      "const": "data_contract_alignment"
+    },
+    "status": {
+      "const": "PARTIAL_BLOCKED_DECISIONS"
+    },
+    "contract_sources": {
+      "type": "object",
+      "minProperties": 5,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^contracts/"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[A-F0-9]{64}$"
+          }
+        }
+      }
+    },
+    "canonical_role_codes": {
+      "type": "array",
+      "const": ["CUSTOMER", "CONSULTANT", "TECHNICIAN", "OPERATOR"]
+    },
+    "legacy_role_aliases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["COUNSELOR"],
+      "properties": {
+        "COUNSELOR": {
+          "const": "CONSULTANT"
+        }
+      }
+    },
+    "canonical_inquiry_statuses": {
+      "type": "array",
+      "minItems": 13,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      }
+    },
+    "canonical_visit_statuses": {
+      "type": "array",
+      "minItems": 7,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      }
+    },
+    "legacy_state_aliases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["AI_GUIDANCE_READY", "CONSULTATION_PENDING"],
+      "properties": {
+        "AI_GUIDANCE_READY": {"const": "AI_GUIDANCE"},
+        "CONSULTATION_PENDING": {"const": "CONSULTATION_REQUIRED"}
+      }
+    },
+    "compound_state_mappings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["VISIT_PENDING", "VISIT_IN_PROGRESS"],
+      "properties": {
+        "VISIT_PENDING": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["inquiry_status", "visit_status"],
+          "properties": {
+            "inquiry_status": {"const": "VISIT_SCHEDULED"},
+            "visit_status": {"const": "CONFIRMED"}
+          }
+        },
+        "VISIT_IN_PROGRESS": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["inquiry_status", "visit_status"],
+          "properties": {
+            "inquiry_status": {"const": "VISIT_SCHEDULED"},
+            "visit_status": {"const": "IN_PROGRESS"}
+          }
+        }
+      }
+    },
+    "blocked_decisions": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "description",
+          "affected_scenario_ids",
+          "treatment"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^DEC-[A-Z0-9-]+$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "affected_scenario_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^SYN-JAC104-[0-9]{3}$"
+            }
+          },
+          "treatment": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}
