@@ -7,11 +7,12 @@ import {
 
 import {
   createInquiryDetailPath,
-  ROUTE_PATHS,
+  getSafeInquiryListReturnPath,
 } from "../../app/router/routePaths";
 import "./VisitTransitionPage.css";
 
 interface VisitTransitionLocationState {
+  returnTo?: unknown;
   stateVersion?: number;
   symptomSummary?: string;
 }
@@ -38,6 +39,9 @@ export default function VisitTransitionPage() {
 
   const locationState =
     location.state as VisitTransitionLocationState | null;
+  const inquiryListReturnPath = getSafeInquiryListReturnPath(
+    locationState?.returnTo,
+  );
 
   const stateVersion = locationState?.stateVersion ?? 1;
   const symptomSummary =
@@ -61,9 +65,7 @@ export default function VisitTransitionPage() {
 
           <button
             type="button"
-            onClick={() =>
-              navigate(ROUTE_PATHS.consultantInquiryList)
-            }
+            onClick={() => navigate(inquiryListReturnPath)}
           >
             문의 목록으로 돌아가기
           </button>
@@ -106,7 +108,9 @@ export default function VisitTransitionPage() {
           type="button"
           className="visit-transition__back-button"
           onClick={() =>
-            navigate(createInquiryDetailPath(inquiryId))
+            navigate(createInquiryDetailPath(inquiryId), {
+              state: { returnTo: inquiryListReturnPath },
+            })
           }
         >
           문의 상세로 돌아가기

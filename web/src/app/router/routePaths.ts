@@ -15,3 +15,15 @@ export function createVisitTransitionPath(inquiryId: string): string {
     inquiryId,
   )}/visit-transition`;
 }
+
+export function getSafeInquiryListReturnPath(value: unknown): string {
+  if (
+    typeof value === "string" &&
+    (value === ROUTE_PATHS.consultantInquiryList ||
+      value.startsWith(`${ROUTE_PATHS.consultantInquiryList}?`))
+  ) {
+    return value;
+  }
+
+  return ROUTE_PATHS.consultantInquiryList;
+}
