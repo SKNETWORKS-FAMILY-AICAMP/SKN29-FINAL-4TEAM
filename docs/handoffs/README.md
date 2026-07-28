@@ -1,13 +1,13 @@
 # WaterCare 현재 작업 인계
 
-> 기준일: 2026-07-27
+> 기준일: 2026-07-28
 > 원칙: 최신 실행·검증 문서만 연결하며, 저장소 밖 경로와 개인 PC 절대경로는 사용하지 않는다.
 
 ## 현재 인계 기준
 
 | 범위 | 기준 문서 | 현재 상태 | 다음 작업 |
 | --- | --- | --- | --- |
-| Django·PostgreSQL·Auth 공통 기반 | [공유 패키지 인계서](<../individual/jiyong/manuals/20260727_최지용_Django_PostgreSQL_공유패키지_인계서_v1.0.md>) | 현재 변경 재검증: PostgreSQL 16.14 연결, Health 1개·Auth 4개 Runtime, 전체 회귀 `239 passed` | 팀원은 현재 Commit에서 동일 절차로 재실행 |
+| Django·PostgreSQL·Auth 공통 기반 | [공유 패키지 인계서](<../individual/jiyong/manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md>) | 새 `.venv`: Python 3.13.13·전체 `239 passed`; PostgreSQL 16.14·Migration은 2026-07-28 재검증 통과 | 새 PC는 4장, 설치 완료 PC는 5장의 일상 실행·종료·재시작 순서 사용 |
 | T-005 데이터 설계·DB 구현 | [T-005 기준 패키지](<../database/t-005/README.md>) · [DB 스키마 개발 가이드](<../individual/jiyong/technical/backend/database_schema_handover_guide.md>) | ERD·테이블 명세 확정, Runtime은 32개 중 2개 | Wave 1 구현·검증 후 Wave 2 진행 |
 | API 계약 | [Public API 명세](<../api/watercare_api_specification.md>) · [API 계약 개발 가이드](<../individual/jiyong/technical/backend/api_contract_handover_guide.md>) | 최지용 작성 기준선 확정, Runtime 정합화는 기능별 진행 | 계약·Route·테스트를 한 단위로 갱신 |
 | T-022 문의 관리 | [T-022 현재 준비도](<../individual/jiyong/technical/backend/t-022-inquiry-readiness.md>) | 계약 기준선은 있으나 Model·Migration·Route·Runtime 미구현 | T-005 선행 Wave 검증 후 수직 구현 |
@@ -30,8 +30,9 @@
 
 ## 인계 시 필수 확인
 
-1. [공유 패키지 인계서](<../individual/jiyong/manuals/20260727_최지용_Django_PostgreSQL_공유패키지_인계서_v1.0.md>)대로 환경을 재현한다.
+1. [공유 패키지 인계서](<../individual/jiyong/manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md>)대로 환경을 재현한다.
 2. 비밀값은 `.env`에만 두고 로그·문서·커밋에 포함하지 않는다.
 3. 기능별로 `작업 → 검증 → 작업 → 검증` 순서를 지킨다.
 4. 계약 변경 시 OpenAPI·Django Route·테스트·사람용 명세를 같은 변경 단위에서 맞춘다.
 5. 새 인계 문서를 중복 생성하지 않고 위 기준 문서를 갱신한다.
+6. 서버를 다시 켤 때는 환경 설치·Seed를 반복하지 않고 공유 패키지 인계서 5장의 일상 실행 절차를 사용한다.

@@ -2683,19 +2683,23 @@ docs/
 └─ individual/jiyong/
    ├─ README.md                                    # 최지용 최신 문서 인덱스
    ├─ manuals/
-   │  ├─ 20260727_최지용_Django_PostgreSQL_공유패키지_인계서_v1.0.md
+   │  ├─ 20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md
    │  ├─ 20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md
    │  └─ 20260727_최지용_Auth_API_계약_Runtime_정합화_보고서_v1.0.md
    └─ technical/
-      ├─ backend/
-      │  ├─ api_contract_handover_guide.md
-      │  ├─ database_schema_handover_guide.md
+       ├─ backend/
+       │  ├─ api_contract_handover_guide.md
+       │  ├─ backend_venv_reproducibility_guide.md
+       │  ├─ database_schema_handover_guide.md
       │  ├─ t-022-inquiry-readiness.md
       │  └─ t-023-workflow-readiness.md
       └─ contracts/
          └─ t-005-t-006-alignment-review.md
 
 scripts/
+├─ development/
+│  ├─ bootstrap.py                                # Backend .venv 생성·동기화·안전 재생성
+│  └─ check_environment.py                        # 경량·전체·PostgreSQL 환경 검증
 └─ database/
    ├─ check_postgresql_connection.py
    └─ validate_t005_schema.py

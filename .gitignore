@@ -4,6 +4,10 @@ tmp/
 outputs/
 __pycache__/
 *.pyc
+.venv/
+.runtime/
+.pytest_cache/
+pytest-cache-files-*/
 
 # 공식 원본 파일만 제외
 data/raw/manuals/**/*.pdf
