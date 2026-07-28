@@ -20,8 +20,15 @@ def test_demo_seed_is_idempotent_and_contains_no_real_profile_data():
 
     assert User.objects.filter(username__startswith="DEMO-").count() == 4
     assert CustomerProfile.objects.count() == 1
-    customer = CustomerProfile.objects.get(pk="DEMO-CUS-001")
-    assert customer.user_id == "DEMO-USR-001"
+    customer = CustomerProfile.objects.get(
+        customer_no="SYN-CUSTOMER-001"
+    )
+    assert customer.pk.startswith("CUS-")
+    assert customer.user_id.startswith("USR-")
+    assert not customer.pk.startswith(("DEMO-", "SYN-"))
+    assert not customer.user_id.startswith(("DEMO-", "SYN-"))
+    assert customer.public_id is not None
+    assert customer.user.public_id is not None
     assert customer.is_synthetic is True
     assert customer.phone == ""
     assert customer.address_line1 == ""
