@@ -1,0 +1,23 @@
+contract:
+  name: inquiry-states
+  version: 0.1.0
+  status: test_fixture
+  owner: TEST
+initial_state: STATE_A
+terminal_states:
+  - STATE_B
+owner_types:
+  - CUSTOMER
+  - NONE
+visit_status_codes:
+  - READY
+states:
+  - code: STATE_A
+    owner_type: CUSTOMER
+    terminal: false
+    allowed_visit_statuses: []
+  - code: STATE_B
+    owner_type: NONE
+    terminal: true
+    allowed_visit_statuses:
+      - READY

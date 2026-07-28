@@ -1,5 +1,27 @@
 title: VisitDetail
 type: object
-description: 방문 상세
+description: T-005 OWNER 기준 방문 상세
 additionalProperties: false
-properties: {}
+required:
+  - visit_id
+  - inquiry_id
+  - schedule
+properties:
+  visit_id:
+    type: string
+    maxLength: 48
+  inquiry_id:
+    type: string
+    maxLength: 48
+  schedule:
+    $ref: ./VisitSchedule.yaml
+  scheduled_start_at:
+    type:
+      - string
+      - "null"
+    description: 후속 시간창 확장 필드
+  scheduled_end_at:
+    type:
+      - string
+      - "null"
+    description: 후속 시간창 확장 필드

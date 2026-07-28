@@ -1,0 +1,20 @@
+contract:
+  name: role-permissions
+  version: 0.1.0
+  status: test_fixture
+  owner: TEST
+roles:
+  - code: CUSTOMER
+    resource_scope:
+      - OWN_INQUIRIES
+    allowed_events:
+      - EVENT_A
+    prohibited_capabilities:
+      - CHANGE_STATE_DIRECTLY
+  - code: SYSTEM
+    resource_scope:
+      - INTERNAL_SERVICE_CONTEXT
+    allowed_events:
+      - EVENT_INTERNAL
+    prohibited_capabilities:
+      - EXPOSE_INTERNAL_EVENT

@@ -1,5 +1,21 @@
 title: CreateVisitRequest
 type: object
-description: 방문 생성 요청
+description: T-005 OWNER 기준 방문 생성 요청
 additionalProperties: false
-properties: {}
+required:
+  - inquiry_id
+  - preferred_date
+properties:
+  inquiry_id:
+    type: string
+    maxLength: 48
+  preferred_date:
+    type:
+      - string
+      - "null"
+    format: date
+  synthetic_technician_id:
+    type:
+      - string
+      - "null"
+    maxLength: 48

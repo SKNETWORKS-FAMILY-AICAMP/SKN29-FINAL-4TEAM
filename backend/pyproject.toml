@@ -1,1 +1,5 @@
-# Formatter·Pytest·Python 도구 설정을 작성합니다.
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py"]
+testpaths = ["tests"]
+addopts = "-ra -p no:cacheprovider"

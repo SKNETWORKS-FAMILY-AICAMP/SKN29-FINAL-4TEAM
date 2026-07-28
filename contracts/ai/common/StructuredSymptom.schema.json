@@ -1,8 +1,48 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "StructuredSymptom",
-  "description": "구조화된 증상",
+  "description": "구조화 증상 표준 객체 Schema",
   "type": "object",
+  "required": [
+    "symptom_type",
+    "accompanying_symptoms",
+    "actions_taken"
+  ],
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "symptom_type": {
+      "type": "string",
+      "description": "증상 대표 유형 (출수량 저하, 물맛/냄새 이상, 누수, 온도 이상 등)"
+    },
+    "occurrence_time": {
+      "type": ["string", "null"],
+      "description": "증상 발생 시점"
+    },
+    "target_water_type": {
+      "type": ["string", "null"],
+      "description": "대상 출수 종류 (냉수, 온수, 정수, 전체)"
+    },
+    "occurrence_condition": {
+      "type": ["string", "null"],
+      "description": "발생 조건 및 특이사항"
+    },
+    "error_code": {
+      "type": ["string", "null"],
+      "description": "제품 디스플레이 오류 코드"
+    },
+    "accompanying_symptoms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "동반 증상 목록"
+    },
+    "actions_taken": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "고객 수행 조치 사항"
+    }
+  }
 }

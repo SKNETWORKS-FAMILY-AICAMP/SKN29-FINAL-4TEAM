@@ -1,8 +1,50 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "SymptomAnalysisRequest",
-  "description": "증상 구조화·안전·RAG·안내 요청",
+  "description": "증상 분석, 위험도 판정, RAG 근거 검색 및 사용 안내 요청 Schema",
   "type": "object",
+  "required": [
+    "inquiry_id",
+    "correlation_id",
+    "raw_symptom",
+    "model_code"
+  ],
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "inquiry_id": {
+      "type": "string",
+      "description": "공개 문의 식별자 (예: DEMO-INQ-002)"
+    },
+    "correlation_id": {
+      "type": "string",
+      "description": "요청 추적 correlation_id"
+    },
+    "raw_symptom": {
+      "type": "string",
+      "description": "고객 최초 입력 자연어 증상"
+    },
+    "model_code": {
+      "type": "string",
+      "description": "문의 제품 모델 코드 (예: WPUJAC104DWH)"
+    },
+    "selected_symptoms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "고객이 선택한 대표 증상 유형"
+    },
+    "previous_answers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["question_id", "answer_text"],
+        "properties": {
+          "question_id": { "type": "string" },
+          "answer_text": { "type": "string" }
+        }
+      },
+      "description": "이전 추가 문진 답변 목록"
+    }
+  }
 }

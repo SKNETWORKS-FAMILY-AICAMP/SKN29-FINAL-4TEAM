@@ -1,2 +1,7 @@
 category: permission
-errors: []
+errors:
+  - code: FORBIDDEN
+    http_status: 403
+    retryable: false
+    user_message: 요청한 작업을 수행할 권한이 없습니다.
+    recommended_action: CHECK_ROLE_OR_ASSIGNMENT

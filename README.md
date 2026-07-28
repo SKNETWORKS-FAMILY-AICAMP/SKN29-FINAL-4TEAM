@@ -19,13 +19,54 @@ SK매직 정수기 구독 고객의 고객케어·상담·A/S 업무를 지원�
 
 현재 프로토타입은 실제 운영 서비스가 아니라 가상 데이터와 브라우저 로컬 상태로 업무 흐름을 검증하는 단계입니다. 실제 AI/RAG, 사내 API, 서버 인증·DB와 외부 알림은 아직 연동하지 않았습니다.
 
+## Backend·PostgreSQL 로컬 실행
+
+최지용 담당 Django·PostgreSQL 기준선은
+[Backend README](backend/README.md)에 정리되어 있습니다. 로컬 실행은
+다음 순서를 따릅니다.
+
+> [!IMPORTANT]
+> 현행 실행·Migration 기준은 `backend/**`, 기계 계약 기준은
+> `contracts/**`입니다. 루트의 `WaterCareBackend/**`와 이를 호출하는
+> `RUN_WATERCARE_MIGRATION_FIXED.bat`, `FIX_MIGRATIONS_AND_START.bat`는
+> 구형 Android 연동 starter 참고본이며 현행 API·DB·State 계약이나
+> 실행 절차의 기준으로 사용하지 않습니다.
+
+```powershell
+Copy-Item .\backend\.env.example .\backend\.env
+# backend/.env의 replace-with-* 두 값을 로컬 난수값으로 교체
+
+Set-Location .\backend
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r .\requirements\local.txt
+
+Set-Location ..
+docker compose --env-file .\backend\.env up -d postgres
+
+Set-Location .\backend
+.\.venv\Scripts\python.exe manage.py migrate
+.\.venv\Scripts\python.exe manage.py seed_demo_accounts
+.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
+```
+
+다른 PowerShell에서 Token을 출력하지 않는 Health·Auth Smoke를
+실행합니다.
+
+```powershell
+Set-Location .\backend
+.\.venv\Scripts\python.exe ..\scripts\smoke\check_backend_auth.py
+```
+
+실제 `.env`, `.venv`, Runtime 로그와 PostgreSQL Volume은 Git에
+공유하지 않습니다.
+
 ## 작업 산출물
 
 2026-07-22 기준 프로젝트 기획, 데이터 수집·가공, 사용자별 화면·업무 흐름을 정리한 현재 단계의 주간 산출물입니다.
 
-- [프로젝트 기획서 v0.2](weekly_output/기획서%20v0.2.docx) — 프로젝트 범위와 대표 시나리오, 문제 정의, 시장·BM 분석, 시스템 구성과 검증 방향을 정리했습니다.
-- [수집 데이터 보고서 v1](weekly_output/수집_데이터_보고서_v1.docx) — MVP·후속 확장 대상의 공식 매뉴얼·FAQ 수집, 자동화 절차, 저장 포맷, 법적·윤리적 검토와 품질 관리 방안을 정리했습니다.
-- [화면설계서 초안 v3](weekly_output/화면설계서_초안_v3.docx) — 고객·상담사·방문기사·운영 담당자의 화면 목록과 업무 인계 흐름, 상태·권한 정책, 주요 와이어프레임을 정리했습니다.
+- [프로젝트 기획서](docs/planning/etc/기획서.docx) — 프로젝트 범위와 대표 시나리오, 문제 정의, 시장·BM 분석, 시스템 구성과 검증 방향을 정리했습니다.
+- [수집 데이터 보고서](docs/planning/etc/수집데이터보고서.docx) — MVP·후속 확장 대상의 공식 매뉴얼·FAQ 수집, 자동화 절차, 저장 포맷, 법적·윤리적 검토와 품질 관리 방안을 정리했습니다.
+- [화면설계서](docs/planning/etc/화면설계서.docx) — 고객·상담사·방문기사·운영 담당자의 화면 목록과 업무 인계 흐름, 상태·권한 정책, 주요 와이어프레임을 정리했습니다.
 
 ## 팀원별 역할 분담
 
@@ -64,9 +105,9 @@ SK매직 정수기 구독 고객의 고객케어·상담·A/S 업무를 지원�
 ## 데이터 확인
 
 - [데이터 구조와 사용 규칙](data/README.md)
-- [JAC104D 공식 근거 검증 보고서](data/reports/team_A_feedback_response_20260721.md)
-- [팀원별 데이터 확인 가이드](data/handoff_guides/README.md)
-- [검증 완료 RAG 샘플](data/processed/structured/rag_verified_sample.jsonl)
-- [합성 시연 시나리오](data/synthetic/demo_scenarios.json)
+- [데이터 상태·품질 검증](data/processed/validation/DATA_STATUS_QA.md)
+- [데이터·QA 검증 및 팀 인계 보고서](docs/individual/eunjin/팀_공유용_데이터_QA_작업_보고서.md)
+- [검증 완료 RAG 샘플](data/processed/structured/rag/mvp/rag_verified_sample.jsonl)
+- [합성 시연 시나리오](data/synthetic/scenarios/demo_scenarios.json)
 
 공식 매뉴얼 원문은 저작권과 재배포 범위가 확인되지 않아 `data/raw/`에만 보관하며 GitHub에는 업로드하지 않습니다. 저장소에서는 출처·버전·해시·페이지 근거와 공식 자료 기반 구조화 데이터만 공유합니다.

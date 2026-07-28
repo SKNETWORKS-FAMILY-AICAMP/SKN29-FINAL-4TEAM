@@ -1,3 +1,4 @@
-description: 웹·모바일→백엔드→AI 요청 추적 ID
+description: 요청·응답·구조화 로그를 연결하는 UUID
 schema:
   type: string
+  format: uuid

@@ -1,2 +1,11 @@
-# visit-statuses 공통 코드 목록
-codes: []
+# T-005 OWNER 기준 방문 일정 상태 코드
+version: 1.0.0
+status: OWNER_BASELINE
+codes:
+  - ASSIGNING
+  - SCHEDULING
+  - CONFIRMED
+  - IN_PROGRESS
+  - COMPLETED
+  - FOLLOW_UP_REQUIRED
+  - CANCELLED

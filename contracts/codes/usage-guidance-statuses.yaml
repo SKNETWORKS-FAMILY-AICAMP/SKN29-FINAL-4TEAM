@@ -1,2 +1,10 @@
-# usage-guidance-statuses 공통 코드 목록
-codes: []
+# T-005 OWNER 기준 사용 안내 상태 코드
+version: 1.0.0
+status: OWNER_BASELINE
+codes:
+  - NORMAL
+  - PARTIAL_STOP
+  - TOTAL_STOP
+  - PENDING_CONSULTATION
+legacy_import_aliases:
+  USE_ALLOWED: NORMAL
