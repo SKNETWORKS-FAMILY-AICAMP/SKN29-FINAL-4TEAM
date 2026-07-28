@@ -7,16 +7,28 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(
+        RepositoriesMode.FAIL_ON_PROJECT_REPOS
+    )
 
     repositories {
         google()
         mavenCentral()
+
         maven {
-            url = uri("https://devrepo.kakao.com/nexus/repository/kakaomap-releases/")
+            url = uri(
+                "https://devrepo.kakao.com/" +
+                    "nexus/repository/" +
+                    "kakaomap-releases/"
+            )
         }
     }
 }
 
 rootProject.name = "WaterPurifierDealer"
-include(":app")
+
+include(":customerApp")
+project(":customerApp").projectDir =
+    file("app")
+
+include(":technicianApp")

@@ -61,7 +61,19 @@ class TechnicianTrackingCoordinator(
         tracker.hasPermission()
 
     fun start(): Boolean {
-        TrackingRepository.acceptCall()
+        if (
+            !TrackingRepository
+                .snapshot
+                .value
+                .callAccepted
+        ) {
+            Log.w(
+                "TECHNICIAN_TRACKING",
+                "콜 수락 전에는 위치 추적을 시작할 수 없습니다."
+            )
+            return false
+        }
+
         return tracker.start()
     }
 

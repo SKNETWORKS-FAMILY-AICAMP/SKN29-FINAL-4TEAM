@@ -1,50 +1,61 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
-title WaterCare Connection Setup V3
+title WaterCare Connection and Route Setup V6
 
 cd /d "%~dp0"
 set "ROOT=%CD%"
+set "BACKEND=%ROOT%\WaterCareBackend"
+set "ANDROID=%ROOT%\mobile"
+set "ROUTE_RESULT=%ROOT%\watercare_route_test.json"
 
 echo ============================================
-echo WaterCare Connection Setup V3
-echo ASCII-only, no PowerShell script required
+echo WaterCare Connection and Route Setup V6
 echo ============================================
 echo.
 
+rem The repository contains both backend and WaterCareBackend.
+rem The Kakao driving route API is implemented in WaterCareBackend.
+if not exist "%BACKEND%\manage.py" (
+    echo ERROR: WaterCareBackend\manage.py was not found.
+    echo Put this file directly in C:\skn29\WaterCare
+    goto :FAIL
+)
+
+if not exist "%BACKEND%\apps\visits\kakao_directions.py" (
+    echo ERROR: Kakao route implementation was not found.
+    echo Expected:
+    echo %BACKEND%\apps\visits\kakao_directions.py
+    goto :FAIL
+)
+
+if not exist "%BACKEND%\apps\visits\urls.py" (
+    echo ERROR: route URL configuration was not found.
+    goto :FAIL
+)
+
 rem --------------------------------------------------
-rem 1. Find adb.exe
+rem Find adb.exe and select a physical Android phone.
 rem --------------------------------------------------
 set "ADB="
 
 if defined ANDROID_HOME if exist "%ANDROID_HOME%\platform-tools\adb.exe" (
     set "ADB=%ANDROID_HOME%\platform-tools\adb.exe"
 )
-
 if not defined ADB if defined ANDROID_SDK_ROOT if exist "%ANDROID_SDK_ROOT%\platform-tools\adb.exe" (
     set "ADB=%ANDROID_SDK_ROOT%\platform-tools\adb.exe"
 )
-
 if not defined ADB if exist "%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe" (
     set "ADB=%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe"
 )
-
 if not defined ADB if exist "C:\Users\Playdata\AppData\Local\Android\Sdk\platform-tools\adb.exe" (
     set "ADB=C:\Users\Playdata\AppData\Local\Android\Sdk\platform-tools\adb.exe"
 )
 
 if not defined ADB (
     echo ERROR: adb.exe was not found.
-    echo Check Android SDK installation.
     goto :FAIL
 )
 
-echo ADB:
-echo %ADB%
-echo.
-
-rem --------------------------------------------------
-rem 2. Select a physical Android phone
-rem --------------------------------------------------
 set "PHONE_SERIAL="
 
 for /f "skip=1 tokens=1,2" %%A in ('"%ADB%" devices') do (
@@ -69,7 +80,7 @@ echo %PHONE_SERIAL%
 echo.
 
 rem --------------------------------------------------
-rem 3. Apply adb reverse
+rem Apply USB port forwarding.
 rem --------------------------------------------------
 "%ADB%" -s "%PHONE_SERIAL%" reverse --remove tcp:8000 >nul 2>&1
 "%ADB%" -s "%PHONE_SERIAL%" reverse tcp:8000 tcp:8000
@@ -84,136 +95,169 @@ echo Reverse mappings:
 echo.
 
 rem --------------------------------------------------
-rem 4. Find Android project and update local.properties
+rem Keep Android backend URL consistent.
 rem --------------------------------------------------
-set "ANDROID_DIR="
+if exist "%ANDROID%\local.properties" (
+    findstr /v /b /c:"BACKEND_BASE_URL=" "%ANDROID%\local.properties" > "%ANDROID%\local.properties.tmp"
+    echo BACKEND_BASE_URL=http://127.0.0.1:8000/>>"%ANDROID%\local.properties.tmp"
+    move /y "%ANDROID%\local.properties.tmp" "%ANDROID%\local.properties" >nul
 
-if exist "%ROOT%\mobile\settings.gradle.kts" set "ANDROID_DIR=%ROOT%\mobile"
-if not defined ANDROID_DIR if exist "%ROOT%\mobile\settings.gradle" set "ANDROID_DIR=%ROOT%\mobile"
-if not defined ANDROID_DIR if exist "%ROOT%\WaterCareAndroid\settings.gradle.kts" set "ANDROID_DIR=%ROOT%\WaterCareAndroid"
-if not defined ANDROID_DIR if exist "%ROOT%\WaterCareAndroid\settings.gradle" set "ANDROID_DIR=%ROOT%\WaterCareAndroid"
-
-if defined ANDROID_DIR (
-    set "LOCAL_PROPERTIES=%ANDROID_DIR%\local.properties"
-
-    if exist "!LOCAL_PROPERTIES!" (
-        findstr /v /b /c:"BACKEND_BASE_URL=" "!LOCAL_PROPERTIES!" > "!LOCAL_PROPERTIES!.tmp"
-        echo BACKEND_BASE_URL=http://127.0.0.1:8000/>>"!LOCAL_PROPERTIES!.tmp"
-        move /y "!LOCAL_PROPERTIES!.tmp" "!LOCAL_PROPERTIES!" >nul
-        echo BACKEND_BASE_URL updated:
-        echo !LOCAL_PROPERTIES!
-        echo.
-    ) else (
-        echo WARNING: local.properties was not found.
-        echo Create it in:
-        echo %ANDROID_DIR%
-        echo.
-    )
+    echo BACKEND_BASE_URL updated:
+    echo %ANDROID%\local.properties
+    echo.
 ) else (
-    echo WARNING: Android project folder was not found.
+    echo WARNING: mobile\local.properties was not found.
     echo.
 )
 
 rem --------------------------------------------------
-rem 5. Find Django backend
+rem Check whether the correct route API is already running.
 rem --------------------------------------------------
-set "BACKEND="
+set "HTTP_CODE=000"
 
-if exist "%ROOT%\WaterCareBackend\manage.py" (
-    set "BACKEND=%ROOT%\WaterCareBackend"
+for /f %%H in ('curl.exe -s -o "%ROUTE_RESULT%" -w "%%{http_code}" "http://127.0.0.1:8000/api/routes/driving/?origin_lat=37.55860^&origin_lng=126.98600^&destination_lat=37.56650^&destination_lng=126.97800"') do (
+    set "HTTP_CODE=%%H"
 )
 
-if not defined BACKEND if exist "%ROOT%\backend\manage.py" (
-    set "BACKEND=%ROOT%\backend"
+if "!HTTP_CODE!"=="200" (
+    echo The correct route backend is already running.
+    goto :SUCCESS
 )
 
-if not defined BACKEND if exist "%ROOT%\backend\mobile_tracking_server\manage.py" (
-    set "BACKEND=%ROOT%\backend\mobile_tracking_server"
+rem --------------------------------------------------
+rem Stop a different server already occupying port 8000.
+rem --------------------------------------------------
+set "OLD_PID="
+
+for /f "tokens=5" %%P in ('netstat -ano ^| findstr /r /c:":8000 .*LISTENING"') do (
+    if not defined OLD_PID set "OLD_PID=%%P"
 )
 
-if not defined BACKEND (
-    for /r "%ROOT%" %%F in (manage.py) do (
-        if not defined BACKEND (
-            echo %%~fF | findstr /i /c:"\.venv\" /c:"\venv\" /c:"\site-packages\" >nul
-            if errorlevel 1 set "BACKEND=%%~dpF"
+if defined OLD_PID (
+    echo Port 8000 is used by PID !OLD_PID!.
+    echo The active server did not return the route API.
+    choice /c YN /n /m "Stop PID !OLD_PID! and start WaterCareBackend? [Y/N]: "
+
+    if errorlevel 2 (
+        echo Existing process was not stopped.
+        goto :FAIL
+    )
+
+    taskkill /PID !OLD_PID! /F >nul 2>&1
+    timeout /t 2 /nobreak >nul
+)
+
+rem --------------------------------------------------
+rem Prepare the WaterCareBackend Python environment.
+rem --------------------------------------------------
+set "PYTHON_EXE=%BACKEND%\.venv\Scripts\python.exe"
+
+if not exist "%PYTHON_EXE%" (
+    echo Creating WaterCareBackend virtual environment...
+
+    where py >nul 2>&1
+    if not errorlevel 1 (
+        pushd "%BACKEND%"
+        py -3.13 -m venv .venv
+        if errorlevel 1 py -m venv .venv
+        popd
+    ) else (
+        where python >nul 2>&1
+        if errorlevel 1 (
+            echo ERROR: Python was not found.
+            goto :FAIL
         )
+
+        pushd "%BACKEND%"
+        python -m venv .venv
+        popd
     )
 )
 
-if not defined BACKEND (
-    echo ERROR: Django manage.py was not found.
+if not exist "%PYTHON_EXE%" (
+    echo ERROR: virtual environment creation failed.
     goto :FAIL
 )
 
-if "%BACKEND:~-1%"=="\" set "BACKEND=%BACKEND:~0,-1%"
-
-echo Backend:
-echo %BACKEND%
-echo.
-
-rem --------------------------------------------------
-rem 6. Find Python
-rem --------------------------------------------------
-set "PYTHON_EXE="
-
-if exist "%BACKEND%\.venv\Scripts\python.exe" (
-    set "PYTHON_EXE=%BACKEND%\.venv\Scripts\python.exe"
-)
-
-if not defined PYTHON_EXE if exist "%BACKEND%\venv\Scripts\python.exe" (
-    set "PYTHON_EXE=%BACKEND%\venv\Scripts\python.exe"
-)
-
-if not defined PYTHON_EXE (
-    where python >nul 2>&1
-    if not errorlevel 1 set "PYTHON_EXE=python"
-)
-
-if not defined PYTHON_EXE (
-    echo ERROR: Python was not found.
-    goto :FAIL
-)
-
-echo Python:
-echo %PYTHON_EXE%
-echo.
-
-rem --------------------------------------------------
-rem 7. Check Django and migrate
-rem --------------------------------------------------
 pushd "%BACKEND%"
 
+"%PYTHON_EXE%" -c "import django, rest_framework, requests" >nul 2>&1
+
+if errorlevel 1 (
+    echo Installing WaterCareBackend packages...
+    "%PYTHON_EXE%" -m pip install -r requirements.txt
+
+    if errorlevel 1 (
+        popd
+        echo ERROR: package installation failed.
+        goto :FAIL
+    )
+)
+
+echo Checking WaterCareBackend...
 "%PYTHON_EXE%" manage.py check
+
 if errorlevel 1 (
     popd
     echo ERROR: Django check failed.
     goto :FAIL
 )
 
+echo Applying migrations...
 "%PYTHON_EXE%" manage.py migrate
+
 if errorlevel 1 (
     popd
-    echo ERROR: Django migration failed.
+    echo ERROR: migration failed.
     goto :FAIL
 )
 
 popd
 
 rem --------------------------------------------------
-rem 8. Start Django in a separate window
+rem Start only the backend that contains the Kakao route API.
 rem --------------------------------------------------
-echo Starting Django server...
-start "WaterCare Django Server" cmd /k "cd /d ""%BACKEND%"" && ""%PYTHON_EXE%"" manage.py runserver 127.0.0.1:8000"
+start "WaterCare Route Backend" cmd /k "cd /d ""%BACKEND%"" && ""%PYTHON_EXE%"" manage.py runserver 127.0.0.1:8000"
 
+echo Waiting for the route API...
+set "HTTP_CODE=000"
+
+for /L %%I in (1,1,30) do (
+    timeout /t 1 /nobreak >nul
+
+    for /f %%H in ('curl.exe -s -o "%ROUTE_RESULT%" -w "%%{http_code}" "http://127.0.0.1:8000/api/routes/driving/?origin_lat=37.55860^&origin_lng=126.98600^&destination_lat=37.56650^&destination_lng=126.97800"') do (
+        set "HTTP_CODE=%%H"
+    )
+
+    if "!HTTP_CODE!"=="200" goto :SUCCESS
+    if "!HTTP_CODE!"=="502" goto :KAKAO_ERROR
+)
+
+echo ERROR: route API did not return HTTP 200.
+echo HTTP code: !HTTP_CODE!
+echo Response:
+type "%ROUTE_RESULT%"
+goto :FAIL
+
+:KAKAO_ERROR
+echo.
+echo ERROR: Django is running, but Kakao Directions returned HTTP 502.
+echo Check KAKAO_REST_API_KEY in WaterCareBackend\.env.
+echo Response:
+type "%ROUTE_RESULT%"
+goto :FAIL
+
+:SUCCESS
 echo.
 echo ============================================
-echo SUCCESS
+echo SUCCESS: Android route connection is ready
 echo ============================================
-echo Android phone: %PHONE_SERIAL%
-echo Backend URL : http://127.0.0.1:8000
+echo Backend : %BACKEND%
+echo Phone   : %PHONE_SERIAL%
+echo API     : http://127.0.0.1:8000/api/routes/driving/
 echo.
-echo Keep the new Django server window open.
-echo Rebuild the Android app and reload the road route.
+echo Keep the WaterCare Route Backend window open.
+echo Rebuild the Android app and reload the route.
 echo.
 pause
 exit /b 0
@@ -221,10 +265,9 @@ exit /b 0
 :FAIL
 echo.
 echo ============================================
-echo SETUP FAILED
+echo ROUTE SETUP FAILED
 echo ============================================
-echo The window will stay open.
-echo Check the error above.
+echo Check the message above.
 echo.
 pause
 exit /b 1

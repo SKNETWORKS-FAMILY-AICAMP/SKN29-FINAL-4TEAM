@@ -194,8 +194,8 @@ fun KakaoTrackingMap(
                 map = map,
                 routeId = "watercare-remaining-route",
                 points = remainingRoute,
-                width = 13f,
-                lineColor = AndroidColor.rgb(32, 112, 232),
+                width = 14f,
+                lineColor = AndroidColor.rgb(0, 166, 166),
                 borderWidth = 4f,
                 borderColor = AndroidColor.WHITE
             )
@@ -301,7 +301,7 @@ fun KakaoTrackingMap(
                 text = "경로를 다시 계산하고 있어요",
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 64.dp)
+                    .padding(top = 96.dp)
                     .background(
                         MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
                         RoundedCornerShape(18.dp)
