@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 interface ConsultantWorkspaceLayoutProps {
+  activeSection?: "queue" | "detail" | "visit";
   children: ReactNode;
   notificationOpen: boolean;
   queueCount: number;
@@ -10,6 +11,7 @@ interface ConsultantWorkspaceLayoutProps {
 }
 
 export default function ConsultantWorkspaceLayout({
+  activeSection = "queue",
   children,
   notificationOpen,
   queueCount,
@@ -40,7 +42,7 @@ export default function ConsultantWorkspaceLayout({
 
         <div className="v6-topbar__context" aria-label="현재 업무 컨텍스트">
           <span className="v6-live-dot">
-            <i /> 공유 상태 연결
+            <i /> 합성 Mock 화면
           </span>
           <span>
             기준 모델 <b>WPUJAC104DWH</b>
@@ -75,8 +77,9 @@ export default function ConsultantWorkspaceLayout({
           <div className="v6-sidebar__section">
             <p>COUNSELOR</p>
             <button
-              className="v6-nav-item is-active"
+              className={`v6-nav-item ${activeSection === "queue" ? "is-active" : ""}`}
               type="button"
+              aria-current={activeSection === "queue" ? "page" : undefined}
               onClick={() => onNavigate("queue")}
             >
               <span aria-hidden="true">◎</span>
@@ -84,16 +87,18 @@ export default function ConsultantWorkspaceLayout({
               <b>{queueCount}</b>
             </button>
             <button
-              className="v6-nav-item"
+              className={`v6-nav-item ${activeSection === "detail" ? "is-active" : ""}`}
               type="button"
+              aria-current={activeSection === "detail" ? "page" : undefined}
               onClick={() => onNavigate("detail")}
             >
               <span aria-hidden="true">▤</span>
               <span>문의 상세</span>
             </button>
             <button
-              className="v6-nav-item"
+              className={`v6-nav-item ${activeSection === "visit" ? "is-active" : ""}`}
               type="button"
+              aria-current={activeSection === "visit" ? "page" : undefined}
               onClick={() => onNavigate("visit")}
             >
               <span aria-hidden="true">□</span>

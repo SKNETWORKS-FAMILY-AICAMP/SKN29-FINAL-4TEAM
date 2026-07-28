@@ -49,11 +49,18 @@ npm.cmd run build
 
 409에서는 사용자가 작성한 내용을 버리지 않고 최신 `stateVersion`과 `allowed_actions`를 반영하며 자동 재전송하지 않습니다. 이 선택 항목과 `consultationMockApi.ts`는 실제 상담 API가 확정되면 교체해야 합니다.
 
+## 방문 전환 Mock 확인
+
+브라우저에서 `http://localhost:5173/consultant/inquiries/DEMO-INQ-004/visit-transition`를 열면 `CONS-03` 방문 전환 화면을 바로 확인할 수 있습니다.
+
+고객 희망일과 가상 방문기사를 선택해 `일정 조율 저장`을 누르거나, 가상 방문 확정일까지 입력해 `방문 확정`을 누릅니다. 두 동작은 화면 안의 상태와 `stateVersion`만 변경하며 실제 API 요청, 기사 배정, 알림, 일정 저장은 수행하지 않습니다.
+
 ## 현재 연동 상태
 
 - 문의 목록·상세·상담 처리: 합성 Mock
 - 인증·역할: `AuthProvider` 합성 사용자 Mock, `AuthGuard`·`RoleGuard` 실제 Route 제어
 - 상담 쓰기 API: 계약 미확정으로 Provisional Mock DTO 사용
+- 방문 전환 저장·확정: 프론트 화면 전용 Mock, 실제 API 호출 없음
 - `allowed_actions`, `state_version`, `Idempotency-Key`, `X-Correlation-ID`: 상태 머신 계약의 연결 위치 반영
 - 실제 고객 개인정보: 사용하지 않음
 
