@@ -1,20 +1,30 @@
 {
-  "config_version": "1.2.0",
+  "config_version": "1.3.0",
   "scope": "dataset_validation_only",
-  "service_contract_mapping": "pending_owner_confirmation",
+  "service_contract_mapping": "partial_with_blocked_decisions",
   "inquiry_statuses": [
     "DRAFT",
     "QUESTIONNAIRE_IN_PROGRESS",
-    "PRODUCT_VALIDATION_FAILED",
-    "AI_GUIDANCE_READY",
-    "CONSULTATION_PENDING",
+    "AI_GUIDANCE",
+    "CONSULTATION_REQUIRED",
     "CONSULTATION_IN_PROGRESS",
     "VISIT_REVIEW_PENDING",
-    "VISIT_PENDING",
-    "VISIT_IN_PROGRESS",
+    "VISIT_SCHEDULING",
+    "VISIT_SCHEDULED",
     "COMPLETION_PENDING",
+    "REVISIT_REQUIRED",
+    "REOPENED",
     "RESOLVED",
-    "REOPENED"
+    "CANCELLED"
+  ],
+  "visit_statuses": [
+    "ASSIGNING",
+    "SCHEDULING",
+    "CONFIRMED",
+    "IN_PROGRESS",
+    "COMPLETED",
+    "FOLLOW_UP_REQUIRED",
+    "CANCELLED"
   ],
   "risk_levels": [
     "general",

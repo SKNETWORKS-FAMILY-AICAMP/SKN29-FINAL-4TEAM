@@ -50,7 +50,7 @@
       "title": "제품 아래 물 고임",
       "inquiry_id": "8e2e2561-613b-5911-9318-b651f0787a90",
       "workflow_kind": "DANGER_ESCALATION",
-      "expected_outcome": "CONSULTATION_PENDING"
+      "expected_outcome": "CONSULTATION_REQUIRED"
     },
     {
       "scenario_id": "SYN-JAC104-005",
@@ -68,7 +68,7 @@
       "title": "순간온수 모듈 점검 표시",
       "inquiry_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60",
       "workflow_kind": "DANGER_ESCALATION",
-      "expected_outcome": "CONSULTATION_PENDING"
+      "expected_outcome": "CONSULTATION_REQUIRED"
     },
     {
       "scenario_id": "SYN-JAC104-007",
@@ -140,7 +140,7 @@
       "title": "안전조치 후 재발하는 누수",
       "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
       "workflow_kind": "VISIT_HANDOFF",
-      "expected_outcome": "VISIT_IN_PROGRESS"
+      "expected_outcome": "VISIT_SCHEDULED"
     },
     {
       "scenario_id": "SYN-JAC104-015",
@@ -212,7 +212,7 @@
       "title": "앱 필터 상태 조회 문의",
       "inquiry_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
       "workflow_kind": "NO_EVIDENCE_FALLBACK",
-      "expected_outcome": "CONSULTATION_PENDING"
+      "expected_outcome": "CONSULTATION_REQUIRED"
     },
     {
       "scenario_id": "SYN-JAC104-023",
@@ -230,7 +230,7 @@
       "title": "무출수와 앱 알림이 섞인 문의",
       "inquiry_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2",
       "workflow_kind": "NO_EVIDENCE_FALLBACK",
-      "expected_outcome": "CONSULTATION_PENDING"
+      "expected_outcome": "CONSULTATION_REQUIRED"
     }
   ]
 }

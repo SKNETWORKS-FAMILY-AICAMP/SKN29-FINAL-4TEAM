@@ -6,7 +6,7 @@
     "title": "앱 필터 상태 조회 문의",
     "inquiry_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
     "workflow_kind": "NO_EVIDENCE_FALLBACK",
-    "expected_outcome": "CONSULTATION_PENDING"
+    "expected_outcome": "CONSULTATION_REQUIRED"
   },
   {
     "scenario_id": "SYN-JAC104-023",
@@ -24,6 +24,6 @@
     "title": "무출수와 앱 알림이 섞인 문의",
     "inquiry_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2",
     "workflow_kind": "NO_EVIDENCE_FALLBACK",
-    "expected_outcome": "CONSULTATION_PENDING"
+    "expected_outcome": "CONSULTATION_REQUIRED"
   }
 ]
