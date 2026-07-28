@@ -1,5 +1,9 @@
 export const ROUTE_PATHS = {
   home: "/",
+  login: "/login",
+  forbidden: "/forbidden",
+  error: "/error",
+  adminDashboard: "/admin",
   consultantInquiryList: "/consultant/inquiries",
   consultantInquiryDetail: "/consultant/inquiries/:inquiryId",
   consultantVisitTransition:

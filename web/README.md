@@ -17,6 +17,19 @@ npm.cmd run dev
 
 브라우저에서 `http://localhost:5173/consultant/inquiries`를 엽니다.
 
+## 환경변수와 Mock 인증
+
+`web/.env.example`을 기준으로 로컬 설정을 구성합니다.
+
+| 환경변수 | 기본값 | 용도 |
+| --- | --- | --- |
+| `VITE_API_BASE_URL` | `/api/v1` | Backend API 기준 경로 |
+| `VITE_USE_MOCK_API` | `true` | 합성 Mock 사용 여부 |
+| `VITE_MOCK_AUTHENTICATED` | `true` | 시작 시 Mock 인증 여부 |
+| `VITE_MOCK_ROLE` | `CONSULTANT` | `CUSTOMER`, `CONSULTANT`, `TECHNICIAN`, `OPERATOR` 중 역할 |
+
+기본 설정에서는 기존처럼 상담사 문의 화면이 바로 열립니다. 미인증·역할별 Guard를 수동 확인하려면 `.env.local`에서 Mock 인증과 역할을 변경한 뒤 개발 서버를 다시 시작합니다. 실제 JWT나 비밀값은 `.env` 파일에 하드코딩하지 않습니다.
+
 ## 검증 명령
 
 ```powershell
@@ -39,8 +52,10 @@ npm.cmd run build
 ## 현재 연동 상태
 
 - 문의 목록·상세·상담 처리: 합성 Mock
+- 인증·역할: `AuthProvider` 합성 사용자 Mock, `AuthGuard`·`RoleGuard` 실제 Route 제어
 - 상담 쓰기 API: 계약 미확정으로 Provisional Mock DTO 사용
 - `allowed_actions`, `state_version`, `Idempotency-Key`, `X-Correlation-ID`: 상태 머신 계약의 연결 위치 반영
 - 실제 고객 개인정보: 사용하지 않음
 
 필드별 확정·미확정 상태는 [week3-screen-api-db-map.md](./docs/week3-screen-api-db-map.md)를 확인합니다.
+기술 선택과 미연동 범위는 [week3-web-decisions.md](./docs/week3-web-decisions.md), [week3-open-issues.md](./docs/week3-open-issues.md)를 확인합니다.
