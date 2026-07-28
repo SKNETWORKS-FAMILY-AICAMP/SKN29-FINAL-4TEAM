@@ -1,0 +1,65 @@
+title: CreateInquiryResult
+type: object
+description: START_INQUIRY로 생성되거나 안전하게 재생된 DRAFT 문의
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - inquiry_id
+  - inquiry_code
+  - status_code
+  - state_version
+  - idempotent_replay
+  - allowed_actions
+properties:
+  inquiry_id:
+    type: string
+    format: uuid
+    description: 문의 공개 UUID
+  inquiry_code:
+    type: string
+    minLength: 1
+    maxLength: 50
+    description: 화면 및 업무 인계용 문의 번호
+  status_code:
+    type: string
+    const: DRAFT
+  state_version:
+    type: integer
+    const: 1
+  idempotent_replay:
+    type: boolean
+    description: 같은 키와 같은 요청의 저장 결과 재사용 여부
+  allowed_actions:
+    type: array
+    minItems: 2
+    items:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - label
+        - operation_id
+        - style
+        - requires_confirmation
+        - confirmation_message
+      properties:
+        code:
+          type: string
+          enum:
+            - SUBMIT_SYMPTOM
+            - CANCEL_INQUIRY
+        label:
+          type: string
+          minLength: 1
+        operation_id:
+          type: string
+          minLength: 1
+        style:
+          type: string
+          minLength: 1
+        requires_confirmation:
+          type: boolean
+        confirmation_message:
+          type:
+            - string
+            - "null"

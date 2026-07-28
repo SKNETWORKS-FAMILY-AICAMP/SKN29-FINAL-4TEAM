@@ -1,8 +1,8 @@
 title: CreateInquiryRequest
 type: object
 description: |
-  T-022 문의 생성 확정 기준선. 고객 원문과 선택한 대표 증상 코드를
-  본인의 활성 구독에 연결한다.
+  CUSTOMER가 본인 ACTIVE 구독의 공개 UUID로 DRAFT 문의를 생성한다.
+  생성 요청에는 state_version을 보내지 않으며 서버가 1로 초기화한다.
 x-contract-status: CONFIRMED
 additionalProperties: false
 required:
@@ -12,26 +12,31 @@ required:
 properties:
   subscription_id:
     type: string
-    minLength: 1
-    maxLength: 48
-    description: 인증 고객 본인의 활성 구독 식별값
+    format: uuid
+    description: 인증 고객 본인의 ACTIVE 구독 공개 UUID
   channel_code:
     type: string
-    minLength: 1
-    description: 허용된 문의 접수 채널 코드
+    enum:
+      - WEB
+      - MOBILE
+      - PHONE
+      - OPERATOR
+    description: 문의 접수 채널
   raw_text:
     type: string
     minLength: 1
-    description: trim 후 비어 있지 않아야 하며 최초 원문으로 보존
+    maxLength: 5000
+    description: trim 후 비어 있지 않은 최초 고객 원문
   representative_symptom_code:
     type:
       - string
       - "null"
     minLength: 1
+    maxLength: 40
     description: 선택한 대표 증상 코드
   questionnaire_session_id:
     type:
       - string
       - "null"
-    maxLength: 48
-    description: 제출된 동일 구독 사전 문진 식별값
+    format: uuid
+    description: 연결할 사전 문진 세션 공개 UUID
