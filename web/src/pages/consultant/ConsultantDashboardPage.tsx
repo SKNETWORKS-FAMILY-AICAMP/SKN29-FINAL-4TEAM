@@ -239,6 +239,8 @@ export default function ConsultantDashboardPage() {
     selectedRisk !== "ALL" ||
     selectedStatus !== "ALL" ||
     selectedPriority !== "ALL";
+  const hasChangedConditions =
+    hasActiveFilters || selectedSort !== "RECEIVED_DESC";
 
   const updateSearchParam = (
     key: string,
@@ -369,9 +371,21 @@ export default function ConsultantDashboardPage() {
           </select>
         </label>
 
-        <p className="consultant-dashboard__mock-notice">
-          {`현재 목록과 우선순위 필터는 Mock 데이터 기준이며 페이지당 ${PAGE_SIZE}건을 표시합니다.`}
-        </p>
+        <div className="consultant-dashboard__filter-footer">
+          <p className="consultant-dashboard__mock-notice">
+            {`현재 목록과 우선순위 필터는 Mock 데이터 기준이며 페이지당 ${PAGE_SIZE}건을 표시합니다.`}
+          </p>
+
+          {hasChangedConditions && (
+            <button
+              type="button"
+              className="consultant-dashboard__reset-button"
+              onClick={handleResetFilters}
+            >
+              검색 조건 초기화
+            </button>
+          )}
+        </div>
       </section>
 
       <section className="consultant-dashboard__content">
@@ -387,8 +401,6 @@ export default function ConsultantDashboardPage() {
                 ? "검색어나 필터 조건을 변경한 뒤 다시 확인해 주세요."
                 : "새 문의가 접수되면 이 목록에 표시됩니다."
             }
-            actionLabel={hasActiveFilters ? "검색 조건 초기화" : undefined}
-            onAction={hasActiveFilters ? handleResetFilters : undefined}
           />
         ) : (
           <div className="consultant-dashboard__table-wrap">
