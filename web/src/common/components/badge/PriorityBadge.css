@@ -30,3 +30,15 @@
   background: #fee2e2;
   color: #b91c1c;
 }
+
+.common-priority-badge--compact {
+  min-height: 22px;
+  padding: 0 7px;
+  gap: 3px;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.common-priority-badge--compact .common-priority-badge__icon {
+  font-size: 6px;
+}

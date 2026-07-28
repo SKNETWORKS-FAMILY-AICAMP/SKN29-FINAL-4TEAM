@@ -6,6 +6,7 @@ import {
   getSafeInquiryListReturnPath,
   ROUTE_PATHS,
 } from "../../app/router/routePaths";
+import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import "../../common/styles/legacy/fix-base.css";
 import "../../common/styles/legacy/staff-desktop-v6.css";
 import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
@@ -36,6 +37,17 @@ export default function VisitTransitionPage() {
     locationState?.stateVersion ?? inquiry?.stateVersion ?? 1,
   );
   const [lastAction, setLastAction] = useState<VisitMockAction | null>(null);
+  const allowedActionCodes = inquiry?.allowedActions.map((item) => item.code) ?? [];
+  const availableMockActions: VisitMockAction[] = [];
+  if (
+    allowedActionCodes.includes("VISIT_REVIEW_REQUIRED") ||
+    allowedActionCodes.includes("UPDATE_VISIT_SCHEDULE")
+  ) {
+    availableMockActions.push("SAVE_SCHEDULE");
+  }
+  if (allowedActionCodes.includes("CONFIRM_VISIT")) {
+    availableMockActions.push("CONFIRM_VISIT");
+  }
 
   useEffect(() => {
     document.body.classList.add("v6-body", "v6-body--counselor");
@@ -89,6 +101,15 @@ export default function VisitTransitionPage() {
             상담 큐로 돌아가기
           </button>
         </section>
+      ) : availableMockActions.length === 0 ? (
+        <section className="v6-panel visit-v13-access-blocked">
+          <ForbiddenState
+            title="현재 상태에서는 방문 전환을 처리할 수 없습니다."
+            description="Backend Mock allowed_actions에 방문 검토·일정 조율·방문 확정 행동이 없습니다."
+            actionLabel="상담 큐로 돌아가기"
+            onAction={() => navigate(inquiryListReturnPath)}
+          />
+        </section>
       ) : (
         <div id="visit-transition-form" className="visit-v13-page">
           <header className="v6-page-head visit-v13-page-head">
@@ -134,6 +155,7 @@ export default function VisitTransitionPage() {
 
           <VisitTransitionForm
             key={inquiry.id}
+            availableActions={availableMockActions}
             inquiry={inquiry}
             stateVersion={stateVersion}
             symptomSummary={

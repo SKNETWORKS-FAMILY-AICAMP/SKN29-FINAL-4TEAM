@@ -8,6 +8,8 @@ export type CounselorStatus =
   | "COMPLETION_PENDING";
 
 export type CounselorPriority = "NORMAL" | "HIGH" | "URGENT";
+export type CounselorSort = "UPDATED_DESC" | "UPDATED_ASC";
+export type CounselorAssigneeFilter = "ALL" | "MINE" | "UNASSIGNED";
 
 export type DetailTab = "summary" | "answers" | "evidence" | "timeline";
 
@@ -98,8 +100,21 @@ export interface CounselorInquiry {
 }
 
 export interface CounselorFilters {
-  query: string;
-  status: "ALL" | CounselorStatus;
-  risk: "ALL" | CounselorRisk;
+  assignee: CounselorAssigneeFilter;
   consultation: "ALL" | "REQUIRED" | "FINAL";
+  page: number;
+  priority: "ALL" | CounselorPriority;
+  query: string;
+  receivedFrom: string;
+  receivedTo: string;
+  risk: "ALL" | CounselorRisk;
+  sort: CounselorSort;
+  status: "ALL" | CounselorStatus;
+}
+
+export interface CounselorQueuePage {
+  currentPage: number;
+  items: CounselorInquiry[];
+  totalItems: number;
+  totalPages: number;
 }
