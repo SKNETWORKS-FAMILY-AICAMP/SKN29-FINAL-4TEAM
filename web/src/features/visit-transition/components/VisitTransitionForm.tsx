@@ -14,6 +14,7 @@ import type {
 import { validateVisitTransition } from "../validation/visitTransitionSchema";
 
 interface VisitTransitionFormProps {
+  availableActions?: readonly VisitMockAction[];
   inquiry: CounselorInquiry;
   stateVersion: number;
   symptomSummary: string;
@@ -26,11 +27,14 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export default function VisitTransitionForm({
+  availableActions = ["SAVE_SCHEDULE", "CONFIRM_VISIT"],
   inquiry,
   stateVersion,
   symptomSummary,
   onMockSaved,
 }: VisitTransitionFormProps) {
+  const canSaveSchedule = availableActions.includes("SAVE_SCHEDULE");
+  const canConfirmVisit = availableActions.includes("CONFIRM_VISIT");
   const [values, setValues] = useState<VisitTransitionValues>(() =>
     createVisitTransitionMockValues(symptomSummary),
   );
@@ -239,16 +243,20 @@ export default function VisitTransitionForm({
         </form>
 
         <div className="visit-v13-actions">
-          <button type="button" onClick={() => submitMock("SAVE_SCHEDULE")}>
-            일정 조율 저장
-          </button>
-          <button
-            className="is-primary"
-            type="button"
-            onClick={() => submitMock("CONFIRM_VISIT")}
-          >
-            방문 확정
-          </button>
+          {canSaveSchedule && (
+            <button type="button" onClick={() => submitMock("SAVE_SCHEDULE")}>
+              일정 조율 저장
+            </button>
+          )}
+          {canConfirmVisit && (
+            <button
+              className="is-primary"
+              type="button"
+              onClick={() => submitMock("CONFIRM_VISIT")}
+            >
+              방문 확정
+            </button>
+          )}
         </div>
 
         {Object.keys(errors).length > 0 && (

@@ -55,3 +55,22 @@
 - 일정 저장과 방문 확정은 브라우저 메모리에서만 상태를 바꾸며 API 요청, 기사 배정, 알림, 일정 생성을 수행하지 않는다.
 - 희망일과 확정일을 구분하고, 확정일이 희망일보다 빠르지 않은지만 프론트에서 검증한다.
 - 실제 Backend 계약이 준비되면 화면 구조를 유지한 채 Mock 저장 함수만 교체한다.
+
+## 결정 9. 공통 API 기반은 계약 Wrapper만 확정하고 실제 호출은 보류한다
+
+- `ApiResponse`, `ApiError`, `PageInfo`, `TraceContext`는 `contracts/api/components/schemas/common/**` 구조를 따른다.
+- `httpClient`는 JSON, Bearer Header 연결 지점, Timeout, 400·401·403·404·409·422·5xx·네트워크·파싱 오류를 구분한다.
+- Backend Runtime이 없으므로 상담 화면에서 실제 Endpoint를 호출하지 않는다.
+- 실제 인증 토큰 저장·Refresh 정책은 계약 확정 전 구현하지 않는다.
+
+## 결정 10. CONS-01 조건은 URL에, CONS-02 식별자는 경로에 둔다
+
+- 검색·상태·위험도·우선순위·담당자·기간·정렬·페이지를 URL Query로 보존한다.
+- 문의 선택 시 `/consultant/inquiries/{inquiryId}`로 이동하고 목록 복귀 경로에 기존 Query를 보존한다.
+- 위험·대기 우선순위 점수를 Web에서 계산하지 않고 Mock이 제공한 값과 계약된 시간 정렬만 사용한다.
+
+## 결정 11. 공식 근거는 공통 공개 View Model로 제한한다
+
+- `EvidenceCard`에는 문서명, 버전, 페이지, 섹션, 요약, 검증 상태, 안전·금지 행동, 데이터 분류와 HTTPS 공식 URL만 전달한다.
+- `chunk_id`, 내부 문서 ID, 검색 점수, 내부 경로, 원문 전체, Prompt, Trace 필드는 View Model에 두지 않는다.
+- 근거 부분 실패는 상세 전체를 가리지 않고 별도 오류 상태로 표시한다.

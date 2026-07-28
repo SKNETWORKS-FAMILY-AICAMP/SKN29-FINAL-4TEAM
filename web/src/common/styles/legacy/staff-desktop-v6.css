@@ -147,6 +147,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .v6-metric-card small { color: var(--v6-ink-500); font-size: 8px; }
 
 .v6-filter-panel { display: grid; align-items: end; margin-bottom: 14px; padding: 14px; grid-template-columns: minmax(250px, 1.5fr) repeat(3, minmax(130px, .65fr)) auto; gap: 10px; }
+.v6-filter-panel--expanded { grid-template-columns: repeat(5, minmax(130px, 1fr)); }
+.v6-filter-panel--expanded .v6-filter:first-child { grid-column: span 2; }
+.v6-filter-reset { height: 39px; }
 .v6-filter, .v6-form-field { display: grid; min-width: 0; gap: 5px; color: var(--v6-ink-600); font-size: 8px; font-weight: 850; }
 .v6-filter input, .v6-filter select, .v6-form-field input, .v6-form-field select, .v6-form-field textarea { width: 100%; border: 1px solid var(--v6-ink-200); border-radius: 9px; color: var(--v6-ink-900); background: #fff; font-size: 10px; }
 .v6-filter input, .v6-filter select, .v6-form-field input, .v6-form-field select { height: 39px; padding: 0 10px; }
@@ -168,6 +171,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .v6-queue-column__head strong { font-size: 10px; }
 .v6-queue-column__head span { color: var(--v6-ink-500); font-size: 8px; }
 .v6-queue-list { display: grid; max-height: calc(100vh - 310px); overflow: auto; }
+.v6-queue-column .common-pagination { padding: 10px 12px; }
+.v6-queue-column .common-pagination__summary { font-size: 8px; }
+.v6-queue-column .common-pagination__actions { gap: 5px; }
+.v6-queue-column .common-pagination__actions button, .v6-queue-column .common-pagination__actions span { min-width: 28px; height: 28px; padding: 0 7px; font-size: 8px; }
 .v6-queue-item { display: grid; min-height: 130px; gap: 7px; padding: 14px 15px; border-bottom: 1px solid var(--v6-ink-100); color: var(--v6-ink-800); background: transparent; text-align: left; }
 .v6-queue-item:hover { background: var(--v6-green-50); }
 .v6-queue-item.is-selected { position: relative; background: #fff; box-shadow: inset 3px 0 var(--v6-green); }
@@ -354,6 +361,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .v6-queue-layout { grid-template-columns: 300px minmax(0, 1fr); }
   .v6-detail-body { grid-template-columns: minmax(0, 1fr) 270px; }
   .v6-operator-filters { grid-template-columns: repeat(3, minmax(145px, 1fr)); }
+  .v6-filter-panel--expanded { grid-template-columns: repeat(3, minmax(140px, 1fr)); }
 }
 
 @media (prefers-reduced-motion: reduce) {

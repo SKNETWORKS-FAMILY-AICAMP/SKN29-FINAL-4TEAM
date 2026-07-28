@@ -1,7 +1,7 @@
 # 3주차 상담 화면–API–DB 필드 매핑
 
 - 기준일: 2026-07-28
-- 대상: `CONS-01`, `CONS-02`, 상담 기록·행동 영역
+- 대상: `CONS-01`, `CONS-02`, `CONS-03`, 상담 기록·행동 영역
 - 상태: Web 검수용. API `consultation/**` 스키마와 `AllowedAction` OpenAPI Schema는 현재 빈 객체이므로 아래의 `OPEN` 항목을 확정 계약으로 사용하면 안 된다.
 - DB 기준: `docs/database/watercare_table_dictionary.md`의 `Design Draft`
 
@@ -30,6 +30,19 @@
 | 고객 표시명 | `customerName` | OPEN | `customers_customer_profile` 역할별 조회 | 합성 데이터 또는 마스킹 표시명만 사용 |
 | 제품 모델 | `productCode` | OPEN | `catalog_product_model`, 구독 연결 | MVP 모델 오인 방지 |
 
+## 문의 목록 조회 조건
+
+| 화면 조건 | URL Query / Web 필드 | API 계약 상태 | 비고 |
+| --- | --- | --- | --- |
+| 검색 | `q` / `query` | 목록 Endpoint 확정 전 | 문의·시나리오·표시명·제품 모델 대상 Mock |
+| 상태 | `status` | 상태 계약 사용 | Web에서 별칭 추측 금지 |
+| 위험도 | `risk` | 대소문자 Mapper 확정 필요 | 현재 Workspace Mock은 대문자 |
+| 우선순위 | `priority` | 목록 Endpoint 확정 전 | Backend 반환값만 필터 |
+| 담당자 | `assignee` | 목록 Endpoint 확정 전 | `MINE`, `UNASSIGNED` 화면 조건 |
+| 접수 기간 | `from`, `to` | 목록 Endpoint 확정 전 | KST 날짜 기준 Mock |
+| 정렬 | `sort` | 목록 Endpoint 확정 전 | 최근 변경 시각 오름·내림차순만 제공 |
+| 페이지 | `page` | `PageInfo.page` 구조 사용 | 1부터 시작 |
+
 ## 상담 기록 Form과 쓰기 요청
 
 | 화면 입력·제어 | Web 필드 / 임시 요청 필드 | API 상태 | DB 설계 후보 | 확정 전 확인사항 |
@@ -53,6 +66,19 @@
 
 화면에는 문서명, 리비전, 페이지, 섹션, 요약, 안전·금지 행동, 검증 상태, 데이터 분류, 공식 URL만 표시한다. `chunk_id`, 내부 `document_id`, 검색 점수, 내부 파일 경로, 원문 전체, Prompt와 Trace는 표시하지 않는다.
 
+## 방문 전환 Mock
+
+| 화면 입력·표시 | Web 필드 | DB 설계 후보 | 상태 |
+| --- | --- | --- | --- |
+| 방문 필요 사유 | `visitReason` | `support_handoff_report`, `field_service_visit` | Mock |
+| 고객 희망일 | `desiredAt` | `field_service_visit` 희망 일정 필드 확인 필요 | Mock |
+| 가상 기사 | `technicianId` | 기사 계정·방문 배정 관계 | Mock |
+| 점검 우선순위 | `inspectionPriority` | `support_handoff_report` | Mock |
+| 기사 전달사항 | `notes` | `support_handoff_report` | Mock |
+| 안전 유의사항 | `safetyNotes` | `support_handoff_report` | Mock |
+| 가상 방문 확정일 | `confirmedAt` | `field_service_visit` 확정 일정 | Mock |
+| 진입·버튼 | `allowedActions` | Backend Guard 계산 | 화면에서 상태 기반 재계산 금지 |
+
 ## Backend 협의가 필요한 차단 항목
 
 1. `SaveConsultationRequest`, `CompleteConsultationRequest`, `ConsultationRecord`, `ConsultationSummary` 속성 확정
@@ -61,4 +87,3 @@
 4. `additional_check`, `customer_guidance`, 자유문 상담 결과의 저장 구조
 5. 성공 응답의 최신 상세·`state_version`·`allowed_actions` 반환 방식
 6. 403·409·422 오류의 `field_errors`, 최신 상태 스냅샷 형식
-

@@ -59,5 +59,6 @@
 .visit-v13-not-found > span { display: grid; width: 52px; height: 52px; place-items: center; border-radius: 16px; color: var(--v6-green); background: var(--v6-green-100); font-size: 20px; }
 .visit-v13-not-found h1 { margin: 13px 0 5px; font-size: 20px; }
 .visit-v13-not-found p { margin: 0 0 16px; color: var(--v6-ink-500); font-size: 9px; }
+.visit-v13-access-blocked { padding: 24px; }
 @media (max-width: 1050px) { .visit-v13-layout { grid-template-columns: 1fr; } .visit-v13-context { position: static; } }
 @media (max-width: 760px) { .visit-v13-toolbar { align-items: stretch; flex-direction: column; } .visit-v13-toolbar > div { margin-left: 0; } .visit-v13-form, .visit-v13-actions, .visit-v13-status-card { grid-template-columns: 1fr; } .visit-v13-status-card > div { border-right: 0; border-bottom: 1px solid var(--v6-ink-100); } .visit-v13-status-card > div:last-child { border-bottom: 0; } }

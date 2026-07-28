@@ -4,6 +4,7 @@ export type PriorityBadgeVariant = "default" | "high" | "urgent";
 
 interface PriorityBadgeProps {
   label?: string | null;
+  size?: "default" | "compact";
   variant?: PriorityBadgeVariant;
 }
 
@@ -15,13 +16,14 @@ const PRIORITY_ICONS: Record<PriorityBadgeVariant, string> = {
 
 export default function PriorityBadge({
   label,
+  size = "default",
   variant = "default",
 }: PriorityBadgeProps) {
   const displayLabel = label?.trim() || "미확인";
 
   return (
     <span
-      className={`common-priority-badge common-priority-badge--${variant}`}
+      className={`common-priority-badge common-priority-badge--${variant} common-priority-badge--${size}`}
       aria-label={`우선순위: ${displayLabel}`}
     >
       <span className="common-priority-badge__icon" aria-hidden="true">

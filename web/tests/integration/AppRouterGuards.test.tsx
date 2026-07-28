@@ -70,6 +70,47 @@ describe("App Router Guard", () => {
     ).toBeInTheDocument();
   });
 
+  it("상담사는 CONS-02 v13 상세 경로에 직접 접근할 수 있다", async () => {
+    renderRoute(
+      "/consultant/inquiries/DEMO-INQ-003",
+      createUser("CONSULTANT"),
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "문의 상세·상담 처리" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "냉수 온도 이상" }),
+    ).toBeInTheDocument();
+  });
+
+  it("CONS-02 근거 부분 실패가 상세 전체를 가리지 않는다", async () => {
+    renderRoute(
+      "/consultant/inquiries/DEMO-INQ-EVIDENCE-ERROR",
+      createUser("CONSULTANT"),
+    );
+
+    expect(
+      await screen.findByText("공식 근거를 불러오지 못했습니다."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "고객·제품·관리 이력" }),
+    ).toBeInTheDocument();
+  });
+
+  it("방문 행동이 없는 문의의 CONS-03 직접 진입을 차단한다", async () => {
+    renderRoute(
+      "/consultant/inquiries/DEMO-INQ-001/visit-transition",
+      createUser("CONSULTANT"),
+    );
+
+    expect(
+      await screen.findByText(
+        "현재 상태에서는 방문 전환을 처리할 수 없습니다.",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("운영 담당자는 ADMIN-01 Placeholder에 접근할 수 있다", async () => {
     renderRoute("/admin", createUser("OPERATOR"));
 

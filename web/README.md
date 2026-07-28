@@ -17,6 +17,8 @@ npm.cmd run dev
 
 브라우저에서 `http://localhost:5173/consultant/inquiries`를 엽니다.
 
+상담 큐의 검색·상태·위험도·우선순위·담당자·접수 기간·정렬·페이지 조건은 URL Query에 유지됩니다. 문의를 선택하면 `CONS-02` 상세 경로로 이동하고, 상단의 상담 큐 복귀 버튼을 누르면 기존 조건으로 돌아갑니다.
+
 ## 환경변수와 Mock 인증
 
 `web/.env.example`을 기준으로 로컬 설정을 구성합니다.
@@ -58,6 +60,7 @@ npm.cmd run build
 ## 현재 연동 상태
 
 - 문의 목록·상세·상담 처리: 합성 Mock
+- 공통 API Wrapper·오류·페이지네이션: 계약 타입과 테스트 구현 완료, 실제 Endpoint 호출 보류
 - 인증·역할: `AuthProvider` 합성 사용자 Mock, `AuthGuard`·`RoleGuard` 실제 Route 제어
 - 상담 쓰기 API: 계약 미확정으로 Provisional Mock DTO 사용
 - 방문 전환 저장·확정: 프론트 화면 전용 Mock, 실제 API 호출 없음
@@ -66,3 +69,4 @@ npm.cmd run build
 
 필드별 확정·미확정 상태는 [week3-screen-api-db-map.md](./docs/week3-screen-api-db-map.md)를 확인합니다.
 기술 선택과 미연동 범위는 [week3-web-decisions.md](./docs/week3-web-decisions.md), [week3-open-issues.md](./docs/week3-open-issues.md)를 확인합니다.
+3주차 완료 기준 대조표는 [week3-completion-checklist.md](./docs/week3-completion-checklist.md)를 확인합니다.
