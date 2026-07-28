@@ -11,7 +11,7 @@
   "risk_level": "general",
   "usage_guidance_status": "NORMAL",
   "final_status": "RESOLVED",
-  "final_state_version": 12,
+  "final_state_version": 14,
   "final_actor_role": "TECHNICIAN",
   "expected_events": [
     "START_INQUIRY",
@@ -20,7 +20,9 @@
     "SAFE_GUIDANCE_READY",
     "REQUEST_CONSULTATION",
     "START_CONSULTATION",
+    "VISIT_REVIEW_REQUIRED",
     "VISIT_NEEDED",
+    "UPDATE_VISIT_SCHEDULE",
     "CONFIRM_VISIT",
     "START_VISIT",
     "VISIT_COMPLETED",
@@ -30,12 +32,12 @@
   "expected_counts": {
     "inquiries": 24,
     "consultations": 16,
-    "visits": 5,
+    "visits": 4,
     "care_histories": 25,
     "followup_confirmations": 1,
-    "inquiry_status_histories": 115,
-    "audit_events": 115,
-    "representative_steps": 12
+    "inquiry_status_histories": 123,
+    "audit_events": 123,
+    "representative_steps": 14
   },
   "document_sections": [
     {

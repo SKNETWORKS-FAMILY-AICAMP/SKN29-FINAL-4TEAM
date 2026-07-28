@@ -1,0 +1,91 @@
+{
+  "mapping_version": "1.0.0",
+  "scope": "data_contract_alignment",
+  "status": "PARTIAL_BLOCKED_DECISIONS",
+  "contract_sources": {
+    "user_roles": {
+      "path": "contracts/codes/user-roles.yaml",
+      "sha256": "95F3B461059209035123F84862A0799100ECC624951C2B6658D05BA15363F1D5"
+    },
+    "inquiry_states": {
+      "path": "contracts/state-machine/inquiry-states.yaml",
+      "sha256": "AB56E554DF0FE4ED192808D9A8D1BE1412F57AEFCD595F40A1983843534F3F3C"
+    },
+    "inquiry_events": {
+      "path": "contracts/state-machine/inquiry-events.yaml",
+      "sha256": "BB92EE8947BBE2AB7C820752BC360FFCE4617EB7AB66F5C395D070706AE2BFB2"
+    },
+    "transition_rules": {
+      "path": "contracts/state-machine/transition-rules.yaml",
+      "sha256": "3A5BB8373C08AE261B77D83FE669A30BCDA0057CB4E5E203160924C72C369DC1"
+    },
+    "allowed_actions": {
+      "path": "contracts/state-machine/allowed-actions.yaml",
+      "sha256": "941221DB5BA80D8036E1D8A20F44B4353B8E3BF3330D289F321174C94B473C27"
+    }
+  },
+  "canonical_role_codes": [
+    "CUSTOMER",
+    "CONSULTANT",
+    "TECHNICIAN",
+    "OPERATOR"
+  ],
+  "legacy_role_aliases": {
+    "COUNSELOR": "CONSULTANT"
+  },
+  "canonical_inquiry_statuses": [
+    "DRAFT",
+    "QUESTIONNAIRE_IN_PROGRESS",
+    "AI_GUIDANCE",
+    "CONSULTATION_REQUIRED",
+    "CONSULTATION_IN_PROGRESS",
+    "VISIT_REVIEW_PENDING",
+    "VISIT_SCHEDULING",
+    "VISIT_SCHEDULED",
+    "COMPLETION_PENDING",
+    "REVISIT_REQUIRED",
+    "REOPENED",
+    "RESOLVED",
+    "CANCELLED"
+  ],
+  "canonical_visit_statuses": [
+    "ASSIGNING",
+    "SCHEDULING",
+    "CONFIRMED",
+    "IN_PROGRESS",
+    "COMPLETED",
+    "FOLLOW_UP_REQUIRED",
+    "CANCELLED"
+  ],
+  "legacy_state_aliases": {
+    "AI_GUIDANCE_READY": "AI_GUIDANCE",
+    "CONSULTATION_PENDING": "CONSULTATION_REQUIRED"
+  },
+  "compound_state_mappings": {
+    "VISIT_PENDING": {
+      "inquiry_status": "VISIT_SCHEDULED",
+      "visit_status": "CONFIRMED"
+    },
+    "VISIT_IN_PROGRESS": {
+      "inquiry_status": "VISIT_SCHEDULED",
+      "visit_status": "IN_PROGRESS"
+    }
+  },
+  "blocked_decisions": [
+    {
+      "id": "DEC-RESOLVED-REOPEN-001",
+      "description": "RESOLVED 문의를 같은 ID로 재개할지 관련 새 문의를 생성할지 결정 필요",
+      "affected_scenario_ids": [
+        "SYN-JAC104-012",
+        "SYN-JAC104-016"
+      ],
+      "treatment": "PRESERVE_AND_EXCLUDE_FROM_CONTRACT_ALIGNED_PROJECTION"
+    },
+    {
+      "id": "DEC-PRODUCT-VALIDATION-001",
+      "description": "제품 검증 실패에서 고객 직접 수정과 재검증을 지원할지 결정 필요",
+      "affected_scenario_ids": [],
+      "treatment": "DO_NOT_MATERIALIZE_AS_INQUIRY_STATE"
+    }
+  ]
+}

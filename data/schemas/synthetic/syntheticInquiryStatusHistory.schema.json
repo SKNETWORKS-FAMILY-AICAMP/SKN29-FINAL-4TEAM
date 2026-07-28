@@ -48,16 +48,17 @@
       "enum": [
         "DRAFT",
         "QUESTIONNAIRE_IN_PROGRESS",
-        "PRODUCT_VALIDATION_FAILED",
-        "AI_GUIDANCE_READY",
-        "CONSULTATION_PENDING",
+        "AI_GUIDANCE",
+        "CONSULTATION_REQUIRED",
         "CONSULTATION_IN_PROGRESS",
         "VISIT_REVIEW_PENDING",
-        "VISIT_PENDING",
-        "VISIT_IN_PROGRESS",
+        "VISIT_SCHEDULING",
+        "VISIT_SCHEDULED",
         "COMPLETION_PENDING",
-        "RESOLVED",
+        "REVISIT_REQUIRED",
         "REOPENED",
+        "RESOLVED",
+        "CANCELLED",
         null
       ]
     },
@@ -67,16 +68,17 @@
       "enum": [
         "DRAFT",
         "QUESTIONNAIRE_IN_PROGRESS",
-        "PRODUCT_VALIDATION_FAILED",
-        "AI_GUIDANCE_READY",
-        "CONSULTATION_PENDING",
+        "AI_GUIDANCE",
+        "CONSULTATION_REQUIRED",
         "CONSULTATION_IN_PROGRESS",
         "VISIT_REVIEW_PENDING",
-        "VISIT_PENDING",
-        "VISIT_IN_PROGRESS",
+        "VISIT_SCHEDULING",
+        "VISIT_SCHEDULED",
         "COMPLETION_PENDING",
+        "REVISIT_REQUIRED",
+        "REOPENED",
         "RESOLVED",
-        "REOPENED"
+        "CANCELLED"
       ]
     },
     "actor_role": {
@@ -84,7 +86,7 @@
       "minLength": 1,
       "enum": [
         "CUSTOMER",
-        "COUNSELOR",
+        "CONSULTANT",
         "TECHNICIAN",
         "SYSTEM"
       ]
@@ -101,7 +103,7 @@
       "minLength": 1,
       "enum": [
         "NONE",
-        "COUNSELOR",
+        "CONSULTANT",
         "TECHNICIAN"
       ]
     },

@@ -110,7 +110,7 @@
   {
     "user_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "user_number": "CNS-001",
-    "role": "COUNSELOR",
+    "role": "CONSULTANT",
     "display_name": "표은재",
     "active": true,
     "data_classification": "synthetic",
@@ -119,7 +119,7 @@
   {
     "user_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "user_number": "CNS-002",
-    "role": "COUNSELOR",
+    "role": "CONSULTANT",
     "display_name": "허다율",
     "active": true,
     "data_classification": "synthetic",

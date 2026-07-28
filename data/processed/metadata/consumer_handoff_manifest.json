@@ -64,8 +64,8 @@
           "path": "synthetic/fixtures/inquiries.json",
           "role": "EVALUATION_INPUT",
           "records": 24,
-          "size_bytes": 25011,
-          "sha256": "7412F70DC2D1099C44C9076801E31C3857678D6F9F64831F7D68E543CBFC1CF2"
+          "size_bytes": 25019,
+          "sha256": "F25973282DB8871B2269FDCE0BE806DECD4AB2C06B535CC583DCB524C18586CA"
         },
         {
           "path": "synthetic/expected/evidence_references.json",
@@ -121,8 +121,8 @@
           "path": "synthetic/fixtures/users.json",
           "role": "LOAD",
           "records": 16,
-          "size_bytes": 4133,
-          "sha256": "C6C27659F4F0865C3A8A571CAA935340DF2B304DE35BFC69B009BD8B7C43A437"
+          "size_bytes": 4135,
+          "sha256": "B94D4A243E780AC694E0BD5BA0CF14583013DD4062FDC89D4DD4DE47208F46F8"
         },
         {
           "path": "synthetic/fixtures/products.json",
@@ -149,22 +149,22 @@
           "path": "synthetic/fixtures/inquiries.json",
           "role": "LOAD_FILTERED",
           "records": 24,
-          "size_bytes": 25011,
-          "sha256": "7412F70DC2D1099C44C9076801E31C3857678D6F9F64831F7D68E543CBFC1CF2"
+          "size_bytes": 25019,
+          "sha256": "F25973282DB8871B2269FDCE0BE806DECD4AB2C06B535CC583DCB524C18586CA"
         },
         {
           "path": "synthetic/fixtures/consultations.json",
           "role": "LOAD_FILTERED",
           "records": 16,
-          "size_bytes": 10800,
-          "sha256": "DF37E0B841F33C8E3A04CE50508ADF44A47F226472D9AA7BF06B76C3A4AC92D3"
+          "size_bytes": 10816,
+          "sha256": "D2311D0B7D31A783E115903DBE16E31D5AABC77C5C30D4A387380C0281125ADF"
         },
         {
           "path": "synthetic/fixtures/visits.json",
           "role": "LOAD_FILTERED",
-          "records": 5,
-          "size_bytes": 3488,
-          "sha256": "374BEFAD9967F2CBCA65FBE450A735E86CCA4C323FE702F4D2AA14C4C160ABF6"
+          "records": 4,
+          "size_bytes": 2929,
+          "sha256": "9C94F9F8EF7F7347716F93DC3946ECCCF44D436A6F2BD08B9F41D52AF4AECA75"
         },
         {
           "path": "synthetic/fixtures/care_histories.json",
@@ -177,8 +177,8 @@
           "path": "schemas/synthetic/syntheticUser.schema.json",
           "role": "SCHEMA",
           "records": 1,
-          "size_bytes": 1379,
-          "sha256": "85FECE77F89D0331139D56C6061A3B8A8816769D0AB0AFB94A8F68ABAAB5B0A4"
+          "size_bytes": 1380,
+          "sha256": "7DA2268F8BE144A00EC1C6177BA120DB648ED4D62855C5EF94CB159741E1C037"
         },
         {
           "path": "schemas/synthetic/syntheticProduct.schema.json",
@@ -191,8 +191,8 @@
           "path": "schemas/synthetic/syntheticInquiry.schema.json",
           "role": "SCHEMA",
           "records": 1,
-          "size_bytes": 3808,
-          "sha256": "200276CA2BC04A933EC3B45A6BEB24ADD13BB627530649D8B356A39EDECBAFF1"
+          "size_bytes": 3817,
+          "sha256": "3C73D24E0A3FBA8BA144446D272EC75E8FE9D9421B4FE6C1B3D78EF782E68359"
         }
       ],
       "selection": {
@@ -225,8 +225,8 @@
           "path": "synthetic/fixtures/users.json",
           "role": "LOAD",
           "records": 16,
-          "size_bytes": 4133,
-          "sha256": "C6C27659F4F0865C3A8A571CAA935340DF2B304DE35BFC69B009BD8B7C43A437"
+          "size_bytes": 4135,
+          "sha256": "B94D4A243E780AC694E0BD5BA0CF14583013DD4062FDC89D4DD4DE47208F46F8"
         },
         {
           "path": "synthetic/fixtures/products.json",
@@ -253,22 +253,22 @@
           "path": "synthetic/fixtures/inquiries.json",
           "role": "LOAD",
           "records": 24,
-          "size_bytes": 25011,
-          "sha256": "7412F70DC2D1099C44C9076801E31C3857678D6F9F64831F7D68E543CBFC1CF2"
+          "size_bytes": 25019,
+          "sha256": "F25973282DB8871B2269FDCE0BE806DECD4AB2C06B535CC583DCB524C18586CA"
         },
         {
           "path": "synthetic/fixtures/consultations.json",
           "role": "LOAD",
           "records": 16,
-          "size_bytes": 10800,
-          "sha256": "DF37E0B841F33C8E3A04CE50508ADF44A47F226472D9AA7BF06B76C3A4AC92D3"
+          "size_bytes": 10816,
+          "sha256": "D2311D0B7D31A783E115903DBE16E31D5AABC77C5C30D4A387380C0281125ADF"
         },
         {
           "path": "synthetic/fixtures/visits.json",
           "role": "LOAD",
-          "records": 5,
-          "size_bytes": 3488,
-          "sha256": "374BEFAD9967F2CBCA65FBE450A735E86CCA4C323FE702F4D2AA14C4C160ABF6"
+          "records": 4,
+          "size_bytes": 2929,
+          "sha256": "9C94F9F8EF7F7347716F93DC3946ECCCF44D436A6F2BD08B9F41D52AF4AECA75"
         },
         {
           "path": "synthetic/fixtures/care_histories.json",
@@ -287,16 +287,16 @@
         {
           "path": "synthetic/fixtures/inquiry_status_histories.json",
           "role": "LOAD_AFTER_MAPPING",
-          "records": 115,
-          "size_bytes": 79054,
-          "sha256": "7A72C193FD04CCA10AF0F3B06A142CE1B4DFE80F54FE86850F85E10416160799"
+          "records": 123,
+          "size_bytes": 85015,
+          "sha256": "9781C4D9E6935B0D3E97782900BCAF9C8C78A63E0FFB7A6368800A28E45B1A61"
         },
         {
           "path": "synthetic/fixtures/audit_events.json",
           "role": "LOAD_AFTER_MAPPING",
-          "records": 115,
-          "size_bytes": 57309,
-          "sha256": "3EDBBBA49906C5D2CA0764765341EC59D0999884BE5F12D43ECAF075C451735F"
+          "records": 123,
+          "size_bytes": 61500,
+          "sha256": "B5A30A05314025BFC2786547E108C88D89C48FDECFF227A744D661E5E80DF852"
         },
         {
           "path": "synthetic/expected/evidence_references.json",
@@ -333,8 +333,8 @@
           "path": "processed/validation/latest_qa_summary.json",
           "role": "SUMMARY",
           "records": 1,
-          "size_bytes": 5477,
-          "sha256": "DE364D1F66EF992E30B8725ADF220254644C63244DB1CD176AB092BD4C63EF3A"
+          "size_bytes": 5997,
+          "sha256": "985424C17F987DECB68689960F0E5CE65A1B81506E48E39427C6833E9088187F"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",
