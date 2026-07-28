@@ -185,6 +185,8 @@ def inspect_state_machine_contract() -> dict:
             "allowed_actions": 0,
             "role_permissions": 0,
         },
+        "statuses": {},
+        "team_approved": False,
         "errors": [],
     }
 
@@ -263,10 +265,19 @@ def inspect_state_machine_contract() -> dict:
         "role_permissions": len(roles) if isinstance(roles, list) else 0,
     }
     errors = list(validator.collect_contract_errors(documents))
+    statuses = {
+        name: document.get("contract", {}).get("status")
+        for name, document in documents.items()
+    }
     return {
         "valid": all(sections.values()) and not errors,
         "sections": sections,
         "counts": counts,
+        "statuses": statuses,
+        "team_approved": all(
+            status in TEAM_APPROVED_CONTRACT_STATUSES
+            for status in statuses.values()
+        ),
         "errors": errors,
     }
 
@@ -539,6 +550,7 @@ def runtime_test_files() -> list[Path]:
         ).glob("test_*.py"),
         *(BACKEND_DIR / "tests" / "api").glob("*workflow*.py"),
         *(BACKEND_DIR / "tests" / "api").glob("*transition*.py"),
+        *(BACKEND_DIR / "tests" / "api").glob("*inquiry*.py"),
     }
     return sorted(
         path
@@ -724,6 +736,8 @@ def audit_readiness(
         "qa_reviewer": "김은진",
         "contract": contract_evidence,
         "contract_counts": contract_inspection["counts"],
+        "contract_statuses": contract_inspection["statuses"],
+        "contract_team_approved": contract_inspection["team_approved"],
         "contract_validation_status": (
             "PASSED" if contract_inspection["valid"] else "FAILED"
         ),
@@ -768,6 +782,8 @@ def audit_readiness(
     owner_blockers = []
     if not contract_inspection["valid"]:
         owner_blockers.append("PM_STATE_MACHINE_CONTRACT_INCOMPLETE")
+    elif not contract_inspection["team_approved"]:
+        owner_blockers.append("PM_STATE_MACHINE_CONTRACT_REVIEW_PENDING")
     if evidence["runtime_implemented_file_count"] != len(RUNTIME_FILES):
         owner_blockers.append("WORKFLOW_RUNTIME_INCOMPLETE")
     if model_count == 0:

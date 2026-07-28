@@ -120,6 +120,23 @@ def test_unknown_transition_and_guard_references_are_rejected():
     assert any("등록되지 않은 guard 'UNKNOWN_GUARD'" in error for error in errors)
 
 
+def test_idempotency_required_event_requires_idempotency_guard():
+    documents = valid_documents()
+    transition = documents["transitions"]["transitions"][0]
+    transition["guard_refs"].remove("G-IDEMPOTENCY-KEY")
+
+    errors = collect_contract_errors(documents)
+
+    assert any(
+        (
+            "requires_idempotency_key=true인 이벤트는 "
+            "G-IDEMPOTENCY-KEY를 포함해야 합니다."
+        )
+        in error
+        for error in errors
+    )
+
+
 def test_transition_uniqueness_includes_visit_conditions():
     documents = valid_documents()
     second = deepcopy(documents["transitions"]["transitions"][0])
