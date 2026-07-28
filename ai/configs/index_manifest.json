@@ -1,0 +1,10 @@
+{
+  "model_name": "BAAI/bge-m3",
+  "dimension": 1024,
+  "index_type": "exact_search",
+  "chunk_count": 5,
+  "document_hashes": {
+    "WPU-JAC104D/JCC104D 사용 설명서": "hash_wpu_104_v1.0"
+  },
+  "indexed_at": "2026-07-28T01:44:28.060939Z"
+}
