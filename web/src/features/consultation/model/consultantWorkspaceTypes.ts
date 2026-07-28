@@ -11,12 +11,29 @@ export type CounselorPriority = "NORMAL" | "HIGH" | "URGENT";
 
 export type DetailTab = "summary" | "answers" | "evidence" | "timeline";
 
+export type CounselorActionCode =
+  | "START_CONSULTATION"
+  | "UPDATE_CONSULTATION_SUMMARY"
+  | "CONFIRM_CONSULTATION_SUMMARY"
+  | "CONSULTATION_COMPLETED"
+  | "VISIT_REVIEW_REQUIRED"
+  | "UPDATE_VISIT_SCHEDULE"
+  | "CONFIRM_VISIT"
+  | "FINALIZE_INQUIRY";
+
+export interface CounselorAllowedAction {
+  code: CounselorActionCode;
+  label: string;
+  operationId: string;
+  style: "PRIMARY" | "SECONDARY" | "DESTRUCTIVE";
+  requiresConfirmation: boolean;
+  confirmationMessage: string | null;
+}
+
 export interface CounselorEvidence {
   documentTitle: string;
   summary: string;
   evidenceId: string;
-  chunkId: string;
-  documentId: string;
   documentVersion: string;
   page: number;
   sectionTitle: string;
@@ -75,6 +92,7 @@ export interface CounselorInquiry {
   aiSummaryRevision?: string;
   confirmedSummary?: string;
   stateVersion: number;
+  allowedActions: readonly CounselorAllowedAction[];
   evidence: readonly CounselorEvidence[];
   timeline: readonly CounselorTimelineItem[];
 }

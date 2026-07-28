@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import {
   formatWorkspaceDateTime,
   getRiskTone,
@@ -11,6 +9,7 @@ import type {
   CounselorInquiry,
   DetailTab,
 } from "../model/consultantWorkspaceTypes";
+import ConsultationActionPanel from "./ConsultationActionPanel";
 import WorkspaceChip from "./WorkspaceChip";
 
 interface ConsultantInquiryDetailProps {
@@ -182,9 +181,6 @@ function EvidenceSection({ inquiry }: { inquiry: CounselorInquiry }) {
         <div className="v6-evidence-list">
           {inquiry.evidence.map((item) => {
             const metadata = [
-              ["evidence_id", item.evidenceId],
-              ["chunk_id", item.chunkId],
-              ["document_id", item.documentId],
               ["문서 버전", item.documentVersion],
               ["근거 페이지", `${item.page}쪽`],
               ["근거 항목", item.sectionTitle],
@@ -323,151 +319,6 @@ function TimelineSection({ inquiry }: { inquiry: CounselorInquiry }) {
   );
 }
 
-function ActionPanel({
-  inquiry,
-  onOpenVisit,
-}: {
-  inquiry: CounselorInquiry;
-  onOpenVisit: () => void;
-}) {
-  const [note, setNote] = useState("");
-  const [outcome, setOutcome] = useState("");
-  const [message, setMessage] = useState("");
-
-  const submit = () => {
-    if (!note.trim()) {
-      setMessage("상담 기록을 입력해 주세요.");
-      return;
-    }
-    setMessage(
-      "Mock 상담 기록을 저장했습니다. 실제 API에는 전송되지 않습니다.",
-    );
-  };
-
-  return (
-    <aside
-      id="counselor-action-panel"
-      className="v6-action-panel"
-      aria-label="상담 처리 작업"
-    >
-      <div className="v6-action-panel__head">
-        <small>COUNSEL DESK</small>
-        <h3>상담 처리</h3>
-        <p>
-          {inquiry.id} · stateVersion {inquiry.stateVersion}
-        </p>
-      </div>
-
-      {inquiry.status === "COMPLETION_PENDING" ? (
-        <>
-          <div className="v6-readonly-card">
-            <strong>
-              {inquiry.feedbackResolved
-                ? "고객 해결 피드백이 도착했습니다."
-                : "고객 해결 피드백을 기다리고 있습니다."}
-            </strong>
-            {inquiry.feedbackComment ??
-              "상담 결과를 확인한 고객이 해결 여부를 제출하면 최종 완료할 수 있습니다."}
-          </div>
-          <ul className="v6-guard-list">
-            <li className={inquiry.feedbackResolved ? "" : "is-failed"}>
-              해결됨 피드백 저장
-            </li>
-            <li>상담 경로 문의</li>
-            <li>현재 상담원 담당 건</li>
-            <li>상담 결과 필수값 완료</li>
-          </ul>
-          <div className="v6-action-buttons">
-            <button
-              className="v6-button v6-button--primary v6-button--full"
-              type="button"
-              disabled
-            >
-              문의 최종 완료
-            </button>
-          </div>
-        </>
-      ) : inquiry.status === "VISIT_SCHEDULED" ? (
-        <>
-          <div className="v6-readonly-card">
-            <strong>방문 일정 상태</strong>
-            방문 예정 · 기사 배정과 확정 일정을 확인해 주세요.
-          </div>
-          <div className="v6-action-buttons">
-            <button
-              className="v6-button v6-button--primary v6-button--full"
-              type="button"
-              onClick={onOpenVisit}
-            >
-              방문 전환 정보 확인
-            </button>
-          </div>
-        </>
-      ) : inquiry.status === "CONSULTATION_REQUIRED" ? (
-        <div className="v6-action-buttons">
-          <button
-            className="v6-button v6-button--primary v6-button--full"
-            type="button"
-            onClick={() => setMessage("Mock 상담을 시작했습니다.")}
-          >
-            상담 시작
-          </button>
-        </div>
-      ) : (
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            submit();
-          }}
-        >
-          <label className="v6-form-field">
-            상담 기록
-            <textarea
-              required
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              placeholder="고객에게 추가로 확인한 내용과 안내를 기록하세요."
-            />
-          </label>
-          <label className="v6-form-field">
-            상담 결과
-            <textarea
-              value={outcome}
-              onChange={(event) => setOutcome(event.target.value)}
-              placeholder="상담 완료 시 처리 결과를 입력하세요."
-            />
-          </label>
-          <label className="v6-form-field">
-            처리 후 사용 안내
-            <select defaultValue={inquiry.usageStatus}>
-              <option value="NORMAL">일반 사용 가능</option>
-              <option value="PARTIAL_STOP">일부 출수·기능 사용 중지</option>
-              <option value="TOTAL_STOP">제품 전체 사용 중지</option>
-            </select>
-          </label>
-          <div className="v6-action-buttons">
-            <button
-              className="v6-button v6-button--secondary v6-button--full"
-              type="button"
-              onClick={onOpenVisit}
-            >
-              방문 필요 검토
-            </button>
-            <button
-              className="v6-button v6-button--primary v6-button--full"
-              type="submit"
-            >
-              방문 불필요 · 상담 완료
-            </button>
-          </div>
-        </form>
-      )}
-
-      {message && <p className="v6-action-note">{message}</p>}
-    </aside>
-  );
-}
-
 export default function ConsultantInquiryDetail({
   detailTab,
   inquiry,
@@ -593,7 +444,11 @@ export default function ConsultantInquiryDetail({
             )}
           </div>
 
-          <ActionPanel inquiry={inquiry} onOpenVisit={onOpenVisit} />
+          <ConsultationActionPanel
+            key={inquiry.id}
+            inquiry={inquiry}
+            onOpenVisit={onOpenVisit}
+          />
         </div>
       </article>
     </section>
