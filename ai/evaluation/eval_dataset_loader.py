@@ -17,16 +17,24 @@ class EvalDatasetLoader:
 
     def load_rag_dataset(self) -> List[Dict[str, Any]]:
         """RAG 검색 정답셋 로딩"""
-        filepath = os.path.join(self.dataset_dir, "rag_eval_dataset.json")
-        if not os.path.exists(filepath):
-            return []
-        with open(filepath, "r", encoding="utf-8") as f:
-            return json.load(f)
+        paths = [
+            os.path.join(self.dataset_dir, "retrieval", "rag_eval_dataset.json"),
+            os.path.join(self.dataset_dir, "rag_eval_dataset.json")
+        ]
+        for path in paths:
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+        return []
 
     def load_safety_dataset(self) -> List[Dict[str, Any]]:
         """안전 규칙 평가셋 로딩"""
-        filepath = os.path.join(self.dataset_dir, "safety_eval_dataset.json")
-        if not os.path.exists(filepath):
-            return []
-        with open(filepath, "r", encoding="utf-8") as f:
-            return json.load(f)
+        paths = [
+            os.path.join(self.dataset_dir, "safety", "safety_eval_dataset.json"),
+            os.path.join(self.dataset_dir, "safety_eval_dataset.json")
+        ]
+        for path in paths:
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+        return []
