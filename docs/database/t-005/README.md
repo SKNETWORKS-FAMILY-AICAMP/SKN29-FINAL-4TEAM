@@ -1,6 +1,6 @@
 # T-005 WaterCare 데이터 설계 기준선
 
-> Snapshot 기준일: 2026-07-25 · 상태 갱신일: 2026-07-27
+> Snapshot 기준일: 2026-07-25 · 상태 갱신일: 2026-07-28
 > 담당: 최지용
 > WBS 해석: OWNER 설계 기준선 확정, Runtime 완료율은 재실행 증거로 별도 판정
 > 저장소 판정: OWNER 설계 기준선 확정·Django Runtime 구현 진행
@@ -12,10 +12,15 @@ WaterCare ERD v3.0.0을 저장소 안에서 재현 가능하게 검토하기 위
 snake_case 이름으로 보존했으며 `manifest.json`에 SHA-256을 기록했다.
 
 이 디렉터리의 v3 파일은 당시 설계 Snapshot이고, 현재 구현 기준은
-[`ADR 0008`](../../adr/0008-t005-data-contract-decisions.md)과
-[`t005_physical_contract_v1.0.json`](t005_physical_contract_v1.0.json)이다.
+[`ADR 0010`](../../adr/0010-t005-three-layer-identifier-bridge.md),
+[`ADR 0011`](../../adr/0011-t005-status-history-idempotency-scope.md),
+[`t005_logical_contract_v0.3.json`](t005_logical_contract_v0.3.json),
+[`t005_decision_register_v0.3.json`](t005_decision_register_v0.3.json),
+[`t005_physical_contract_v1.2.json`](t005_physical_contract_v1.2.json)이다.
 Django Model·Migration과 PostgreSQL 완료 여부는 별도 Runtime 증거로
-판정한다.
+판정한다. 현재 Accounts는 문자열 PK를 즉시 제거하지 않고
+`public_id(UUID)`를 추가하는 전환 브리지 단계이며, 전 테이블 내부
+BigInt PK 전환과 PostgreSQL 재현 검증 전에는 완료로 판정하지 않는다.
 
 ## 2. 포함 파일
 
@@ -48,18 +53,23 @@ Django Model·Migration과 PostgreSQL 완료 여부는 별도 Runtime 증거로
 
 | ID | Legacy Snapshot 차이 | 현재 OWNER 해법 |
 | --- | --- | --- |
-| `T005_PRIMARY_KEY_POLICY` | Snapshot의 주요 PK는 UUID다. | `<ENTITY>-<UUID4_HEX_32>` 도메인 문자열 ID를 사용한다. |
-| `T005_USAGE_GUIDANCE_PHYSICAL_MAPPING` | WBS에서 canonical 이름은 `usage_guidance_status`로 확정됐지만 ERD v3에는 `usage_guidance_code`가 남아 있다. | v0.2 논리 계약에 확정 이름을 반영하고, v3 물리 Snapshot은 변경 이력으로 보존 |
+| `T005_PRIMARY_KEY_POLICY` | Snapshot의 주요 PK는 UUID다. | 목표 구조는 내부 BigInt PK + 외부 UUID `public_id` + 별도 업무 코드다. Accounts에는 우선 `public_id`를 추가하고 기존 문자열 PK는 호환 브리지 동안 유지한다. |
+| `T005_USAGE_GUIDANCE_PHYSICAL_MAPPING` | WBS에서 canonical 이름은 `usage_guidance_status`로 확정됐지만 ERD v3에는 `usage_guidance_code`가 남아 있다. | 활성 v0.3 논리 계약에 확정 이름을 반영하고, v0.2와 v3 물리 Snapshot은 변경 이력으로 보존 |
 | `T005_USAGE_GUIDANCE_CODESET` | 화면은 일반 사용 가능을 `NORMAL`, ERD v3는 `USE_ALLOWED`로 표현한다. | `NORMAL`을 표준으로 사용하고 legacy `USE_ALLOWED`를 import 시 변환한다. |
 | `T005_VISIT_STORAGE_MAPPING` | 화면과 v3의 일정 필드 구조가 다르다. | `preferred_date`, `confirmed_date`, `schedule_status`, `synthetic_technician_id`를 분리 저장한다. |
 | `T005_VISIT_STATUS_CODESET` | 화면 상태표에는 `FOLLOW_UP_REQUIRED`가 있으나 ERD v3에는 없다. | `FOLLOW_UP_REQUIRED`를 포함한 7개 방문 상태를 사용한다. |
 | `T005_ENUM_SEED_POLICY` | v3에는 Enum·Seed 운영 방식이 확정되지 않았다. | 계약 YAML과 Django `TextChoices`를 맞추고 합성 Seed는 `update_or_create`로 재실행 가능하게 한다. |
+| `T005_STATUS_HISTORY_IDEMPOTENCY_SCOPE` | 상태 이력의 `idempotency_key`가 전역 `UNIQUE`여서 한 요청이 여러 Aggregate 이력을 기록할 수 없다. | replay·payload 충돌은 `workflow_idempotency_record`의 `(actor, operation_id, idempotency_key)`가 판정한다. 상태 이력 Key는 대상·이벤트별 비고유 partial index로 추적하고, 대상별 `state_version`만 partial `UNIQUE`로 보호한다. |
 
-`t005_logical_contract_v0.2.json`에는 WBS에서 확정된 공통 사용 안내 필드, 방문 일정 논리 필드와 위험도 코드를 별도 기록했다. 기존 v3 Snapshot은 당시 설계 이력으로 유지한다.
+`t005_logical_contract_v0.2.json`과 `t005_decision_register_v0.2.json`,
+`t005_physical_contract_v1.1.json`은 결정 당시 내용을 보존하는 역사본이다.
+현행 논리 기준과 일곱 결정은 v0.3, 현행 물리 기준은 v1.2에만 누적한다.
+기존 v3 Snapshot도 당시 설계 이력으로 유지한다.
 
-따라서 Snapshot과 v0.2 논리 계약은 구조·차이 추적에 사용하고, 신규
-구현은 ADR 0008과 물리 계약 v1.0을 사용한다. 명세 기준선 확정과
-Django·PostgreSQL Runtime 완료 판정은 분리한다.
+따라서 Snapshot과 v0.2·v1.1 계약은 구조·차이 추적에 사용하고, 신규
+구현은 ADR 0010·0011, 논리 계약 v0.3, 결정 등록부 v0.3, 물리 계약
+v1.2를 사용한다. 명세 기준선 확정과 Django·PostgreSQL Runtime 완료
+판정은 분리한다.
 
 ## 5. 검증 명령
 
@@ -76,8 +86,8 @@ python .\scripts\database\validate_t005_schema.py
 python .\scripts\database\validate_t005_schema.py --require-wbs-complete
 ```
 
-엄격 검사의 exit code는 미정 결정 6건이 아니라 현재 Runtime·PostgreSQL·
-Seed·작성자 외 리뷰 증거에 따라 판정한다.
+엄격 검사의 exit code는 과거 미정 결정 건수가 아니라 현재 Runtime·PostgreSQL·
+Seed·작성자 외 리뷰 증거와 3계층 식별자 전환 완료 여부에 따라 판정한다.
 
 검증 출력은 `OWNER_BASELINE_CONFIRMED`와 `confirmation_status:
 CONFIRMED`로 설계 기준선 확정을 표시한다. 구현 후 완료 증거는
@@ -87,7 +97,7 @@ JSON 호환 alias로만 읽는다. 어느 이름도 명세 작성 허가를 뜻�
 
 ## 6. 구현·검증 순서
 
-1. ADR 0008과 물리 계약 v1.0을 해당 Wave의 구현 입력으로 고정한다.
+1. ADR 0010·0011과 물리 계약 v1.2를 해당 Wave의 구현 입력으로 고정한다.
 2. Django Model·Migration을 한 Wave만 구현한다.
 3. `makemigrations --check --dry-run`과 빈 PostgreSQL Migration을
    즉시 검증한다.
@@ -394,3 +404,24 @@ exit `2`였다. 현재 Branch 판정에는 이 수치를 재사용하지 않는�
 | 버전 | 날짜 | 변경 내용 |
 | --- | --- | --- |
 | v1.0 | 2026-07-27 | 32개 계약 테이블과 Model 선언·App 등록·Migration을 항목별로 대조하는 구현 매핑 감사와 회귀 테스트 추가 |
+
+## 2026-07-28 활성 계약 v0.3·v1.2 — 상태 이력 책임 분리
+
+이전 Logical·Decision v0.2와 Physical v1.1은 역사본으로 보존하고,
+현행 기준을 Logical·Decision v0.3과 Physical v1.2로 올렸다.
+
+- 요청 replay·payload 충돌 권위:
+  `workflow_idempotency_record(actor, operation_id, idempotency_key)`
+- 상태 이력 Key: 대상 FK·`event_code`·Key 비고유 partial index
+- 상태 이력 중복 버전: 대상 FK·`state_version` partial `UNIQUE`
+- 대상 무결성: 정확히 하나의 FK와 `target_type_code` 일치를 명시적
+  PostgreSQL `CHECK` 식 두 개로 검증
+- 완료 게이트: 올바른 `TRANSITIONAL_BRIDGE`와 실제 `COMPLETE` 상태를
+  각각 허용하고 두 상태가 섞인 경우 거부
+- 역할 기준: 계약·물리 override 모두 `CONSULTANT`
+
+2026-07-28 재실행 결과는 T-005 집중 테스트 `40 passed`, 전체 Backend
+테스트 `331 passed`, 구조 오류 0, PostgreSQL 16.14 Migration 검사
+통과다. 통합 상태 이력 Django Model·Migration과 쓰기 가능한 빈
+PostgreSQL Seed 2회 검증은 아직 완료되지 않았으므로 Runtime 완료로
+표시하지 않는다.

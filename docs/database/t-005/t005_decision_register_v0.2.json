@@ -1,0 +1,63 @@
+{
+  "version": "0.2",
+  "status": "ACCEPTED",
+  "confirmation_scope": "T005_OWNER_BASELINE",
+  "purpose": "T-005 물리 계약 결정의 선택값, 결정자, 근거와 반영 기한을 기록한다. v0.2는 3계층 식별자 결정을 반영한다.",
+  "supersedes": "t005_decision_register_v0.1.json",
+  "decisions": [
+    {
+      "id": "T005_PRIMARY_KEY_POLICY",
+      "status": "ACCEPTED",
+      "selected_option": "INTERNAL_BIGINT_PK_PUBLIC_UUID_BUSINESS_CODE",
+      "decided_by": "최지용 (T-005 OWNER)",
+      "decided_at": "2026-07-28",
+      "rationale": "내부 조인용 자동 증가 정수 PK, 외부 API용 UUID public_id, DEMO/SYN 업무·시연 코드를 분리한다. 기존 Accounts 문자열 PK는 Auth 호환 브리지로만 한시 보존한다.",
+      "effective_from": "2026-07-28"
+    },
+    {
+      "id": "T005_USAGE_GUIDANCE_PHYSICAL_MAPPING",
+      "status": "ACCEPTED",
+      "selected_option": "CANONICAL_STATUS_RENAME_NO_DUAL_WRITE",
+      "decided_by": "최지용 (T-005 OWNER)",
+      "decided_at": "2026-07-26",
+      "rationale": "WBS와 화면 계약의 canonical 이름인 usage_guidance_status를 신규 물리 계약에 직접 사용하고, usage_guidance_code는 과거 Snapshot·외부 반입 변환에서만 다룬다.",
+      "effective_from": "2026-07-26"
+    },
+    {
+      "id": "T005_USAGE_GUIDANCE_CODESET",
+      "status": "ACCEPTED",
+      "selected_option": "NORMAL_CANONICAL_USE_ALLOWED_IMPORT_ALIAS",
+      "decided_by": "최지용 (T-005 OWNER)",
+      "decided_at": "2026-07-26",
+      "rationale": "현재 WBS·화면 계약의 NORMAL을 저장·API 표준으로 사용하고 USE_ALLOWED는 legacy 입력을 NORMAL로 바꾸는 반입 별칭으로만 유지한다.",
+      "effective_from": "2026-07-26"
+    },
+    {
+      "id": "T005_VISIT_STORAGE_MAPPING",
+      "status": "ACCEPTED",
+      "selected_option": "DATE_FIELDS_PLUS_SCHEDULE_STATUS",
+      "decided_by": "최지용 (T-005 OWNER)",
+      "decided_at": "2026-07-26",
+      "rationale": "고객 희망일과 확정일은 날짜 계약이므로 각각 Date로 분리하고 일정 상태를 별도 필드로 둔다. 시간대가 필요한 작업 시간창은 후속 선택 필드로 분리한다.",
+      "effective_from": "2026-07-26"
+    },
+    {
+      "id": "T005_VISIT_STATUS_CODESET",
+      "status": "ACCEPTED",
+      "selected_option": "SEVEN_VISIT_STATUSES_WITH_FOLLOW_UP",
+      "decided_by": "최지용 (T-005 OWNER)",
+      "decided_at": "2026-07-26",
+      "rationale": "화면 계약의 후속 조치 표현을 보존하기 위해 FOLLOW_UP_REQUIRED를 포함한 일곱 상태를 데이터 코드로 정의한다. 전이 규칙은 PM 관할 State Machine에 위임한다.",
+      "effective_from": "2026-07-26"
+    },
+    {
+      "id": "T005_ENUM_SEED_POLICY",
+      "status": "ACCEPTED",
+      "selected_option": "CONTRACT_YAML_TEXTCHOICES_UPSERT",
+      "decided_by": "최지용 (T-005 OWNER)",
+      "decided_at": "2026-07-26",
+      "rationale": "서비스 간 표준 코드는 contracts/codes YAML을 기준으로 두고 Django TextChoices와 일치시킨다. 합성 데이터는 별도 업무코드로 update_or_create하여 반복 실행에 안전하게 만든다.",
+      "effective_from": "2026-07-26"
+    }
+  ]
+}

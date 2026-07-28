@@ -1,9 +1,10 @@
 # WaterCare Database Documentation
 
 > 상태: **OWNER_CONFIRMED DB DESIGN BASELINE — Runtime 구현과 분리**
-> 설계 기준: `T-005 Physical Contract v1.0` / 기준일: 2026-07-27
+> 설계 기준: `T-005 Physical Contract v1.2` / 기준일: 2026-07-28
 > 구현 경계: 설계 기준선은 확정됐으며 Django Model·Migration은 현재
-> `2/32` 테이블까지 구현됐다.
+> `7/32` 테이블까지 구현됐다. Accounts는 `public_id(UUID)`를 추가하는
+> 전환 브리지 단계로, 전체 내부 BigInt PK 전환 완료를 뜻하지 않는다.
 
 ## 문서 구성
 
@@ -27,8 +28,11 @@
 
 ## 기준 우선순위
 
-1. DB 설계 기준은 [ADR-0008](../adr/0008-t005-data-contract-decisions.md)과
-   [Physical Contract v1.0](t-005/t005_physical_contract_v1.0.json)을
+1. DB 설계 기준은 [ADR-0010](../adr/0010-t005-three-layer-identifier-bridge.md),
+   [ADR-0011](../adr/0011-t005-status-history-idempotency-scope.md),
+   [Logical Contract v0.3](t-005/t005_logical_contract_v0.3.json),
+   [Decision Register v0.3](t-005/t005_decision_register_v0.3.json),
+   [Physical Contract v1.2](t-005/t005_physical_contract_v1.2.json)을
    우선한다.
 2. 서비스 간 필드·코드 교환은 현재 `contracts/**`의 기계 계약을
    함께 적용한다.
@@ -36,6 +40,8 @@
    검증 결과로 판정한다.
 4. 이 디렉터리의 공개 데이터 사전·ERD는 당시 설계를 보존한 역사
    스냅샷이며, 현행 override나 Runtime 완료 증거로 사용하지 않는다.
+5. Logical·Decision v0.2와 Physical v1.1은 이전 세대의 역사본이다.
+   신규 결정은 활성 v0.3·v1.2에만 누적한다.
 
 ## 열람 방법
 
