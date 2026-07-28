@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     "apps.products.apps.ProductsConfig",
     "apps.subscriptions.apps.SubscriptionsConfig",
     "apps.care.apps.CareConfig",
+    "apps.inquiries.apps.InquiriesConfig",
+    "apps.workflow.apps.WorkflowConfig",
 ]
 
 MIDDLEWARE = [
