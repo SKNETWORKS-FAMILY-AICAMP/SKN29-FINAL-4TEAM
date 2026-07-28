@@ -1,6 +1,6 @@
-# 최지용 Django·PostgreSQL 공유 패키지 인계서 v1.0
+# 최지용 Django·PostgreSQL 공유 패키지 인계서 v1.1
 
-> 기준일: 2026-07-27
+> 기준일: 2026-07-28
 > 명령 실행 기준: 저장소 루트
 > 목적: 팀원이 Git Pull 직후 동일한 Backend 환경을 재현하도록 지원
 
@@ -28,23 +28,28 @@ ERD·테이블 명세·API 명세는 최지용이 작성·개정하는 확정 �
 팀원 확인을 구현 시작 조건으로 두지 않고, 확정 명세를 Django
 Runtime과 PostgreSQL에 순차 반영한다.
 
-다음 표는 2026-07-27 실행 당시의 공유 최소선 스냅샷이다.
+다음 표는 환경 재현은 2026-07-28 현재 검증, PostgreSQL Runtime은
+2026-07-27 마지막 실행 기록을 구분한 공유 최소선이다.
 
-| 항목 | 2026-07-27 당시 결과 |
+| 항목 | 현재 결과 |
 | --- | --- |
-| PostgreSQL | 16.14, 실제 연결 통과 |
+| Backend Python | 3.13.13, 실제 `.venv` 재생성 통과 |
+| pip·의존성 | pip 26.0.1, constraints 31개 일치, 추가 패키지 0개 |
+| 환경 검증 | `pip check`, Django check, Migration drift, Git 제외 통과 |
+| PostgreSQL | 16.14 구성 완료, 2026-07-27 실제 연결 통과·현재 Docker 미실행으로 재검증 대기 |
 | Django Model | 확정 도메인 테이블 32개 중 2개 구현 |
 | Django Migration | `accounts` 최초 Migration 적용 |
 | Runtime Route | Health 1개 + Auth 4개 |
 | JWT | Access 60분, Refresh 최초 발급부터 최대 7일이며 rotation으로 절대 만료 연장 없음 |
 | Demo Seed | 1차 4명 생성, 2차 4명 갱신, 중복 0 |
 | Health·Auth Smoke | 실제 HTTP 2회 통과 |
-| Backend 전체 회귀 | 239 passed |
+| Backend 전체 회귀 | 2026-07-28 새 `.venv`에서 `239 passed` |
 
-위 결과는 당시 로컬 실행 기반과 구현된 범위의 검증 기록이다. 현재
-Branch의 결과로 재사용하지 않고 아래 명령을 같은 Commit에서 다시
-실행한다. 또한 32개 도메인 테이블과 전체 API Runtime 구현 완료를
-뜻하지 않는다.
+환경과 전체 회귀 결과는 현재 작업의 새 `.venv`에서 재실행했다.
+PostgreSQL 연결·Migration·Seed·HTTP Smoke는 Docker가 실행 중이던
+2026-07-27 기록이므로 현재 Branch의 DB 결과로 재사용하지 않고 아래
+명령을 같은 Commit에서 다시 실행한다. 어느 결과도 32개 도메인
+테이블과 전체 API Runtime 구현 완료를 뜻하지 않는다.
 
 ## 2. 공유 파일
 
@@ -52,6 +57,12 @@ Branch의 결과로 재사용하지 않고 아래 명령을 같은 Commit에서 
 | --- | --- |
 | [저장소 README](<../../../../README.md>) | 프로젝트 진입점 |
 | [Backend README](<../../../../backend/README.md>) | 설치·DB·Migration·Seed·실행·테스트 |
+| [Python 버전](<../../../../backend/.python-version>) | Backend Python 3.13.13 기준 |
+| [의존성 constraints](<../../../../backend/requirements/constraints-py313.txt>) | Python 3.13 직접·간접 의존성 잠금 |
+| [환경 생성 스크립트](<../../../../scripts/development/bootstrap.py>) | `.venv` 생성·동기화·안전 재생성 |
+| [환경 검증 스크립트](<../../../../scripts/development/check_environment.py>) | 경량·전체·PostgreSQL 읽기 전용 검사 |
+| [VS Code 설정](<../../../../.vscode/settings.json>) | 상대경로 Backend Interpreter·자동 활성화 |
+| [VS Code Task](<../../../../.vscode/tasks.json>) | 폴더 열기 검사·최초 생성·전체 검증 |
 | [환경변수 예시](<../../../../backend/.env.example>) | 공개 가능한 로컬 기본값과 비밀값 교체 표식 |
 | [PostgreSQL Compose](<../../../../docker-compose.yml>) | PostgreSQL 16.14 로컬 실행 |
 | [PostgreSQL 연결 검사기](<../../../../scripts/database/check_postgresql_connection.py>) | 비밀값을 출력하지 않는 읽기 전용 연결 검사 |
@@ -65,6 +76,7 @@ Branch의 결과로 재사용하지 않고 아래 명령을 같은 Commit에서 
 
 - [Django·PostgreSQL Migration 검증](<./20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md>)
 - [Auth API 계약·Runtime 정합화](<./20260727_최지용_Auth_API_계약_Runtime_정합화_보고서_v1.0.md>)
+- [Backend `.venv` 재현성과 VS Code 환경 설계](<../technical/backend/backend_venv_reproducibility_guide.md>)
 - [T-005 데이터 설계 기준선](<../../../database/t-005/README.md>)
 
 ## 3. 로컬 Runtime 기준
@@ -116,14 +128,47 @@ Copy-Item .\backend\.env.example .\backend\.env
 
 ### 4.2 Python
 
+현재 PC에 Python 3.13.13을 준비한 뒤 저장소 루트에서 실행한다.
+
 ```powershell
-Set-Location .\backend
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r .\requirements\local.txt
-Set-Location ..
+python --version
+python .\scripts\development\bootstrap.py --service backend
 ```
 
-`.venv`와 `.runtime`은 Git 공유 대상이 아니다.
+정상 기준은 Python 3.13.13, pip 26.0.1, constraints 31개 일치,
+constraints 밖 추가 패키지 0개다. `.venv`와 `.runtime`은 Git 공유
+대상이 아니다. Conda의 Python을 생성 기반으로 사용할 수 있지만
+결과는 표준 `backend/.venv`이며 Conda 환경 자체를 공유하지 않는다.
+
+VS Code는 저장소를 열면 `backend/.venv`를 기본 Interpreter로 선택하고
+새 터미널에서 활성화한다. 폴더 열기 Task는 읽기 전용 빠른 검사만
+실행한다. 최초 Pull에서 `.venv`가 없다면
+`Backend: 환경 최초 생성·동기화` Task를 한 번 실행한다.
+
+일상 확인:
+
+```powershell
+python .\scripts\development\check_environment.py --service backend
+```
+
+공유 전 전체 확인:
+
+```powershell
+python .\scripts\development\check_environment.py --service backend --full
+```
+
+환경이 손상되었거나 Python 기준이 달라진 경우에만 `.venv` 밖의
+Python 3.13.13으로 안전 재생성을 실행한다.
+
+```powershell
+python .\scripts\development\bootstrap.py --service backend --recreate
+```
+
+기존 환경은 `.runtime/venv-backups/<timestamp>/.venv`로 이동된다.
+새 환경 생성·경량 검증이 실패하면 자동 복원되며, 성공한 경우에도
+`--full` 통과 전에는 출력된 백업을 삭제하지 않는다. 세부 복구 기준은
+[Backend `.venv` 재현 가이드](<../technical/backend/backend_venv_reproducibility_guide.md>)를
+따른다.
 
 ### 4.3 PostgreSQL
 
@@ -234,9 +279,84 @@ Smoke는 다음 Route를 실제 HTTP로 확인한다.
 재사용 401, 미인증 요청과 Allowlist 밖 Demo 코드 차단이 포함된다.
 스크립트는 실제 Token을 출력하지 않는다.
 
-## 5. 운영 안전 수칙
+## 5. 일상 실행·종료·재시작
 
-### 5.1 PostgreSQL 중지
+### 5.1 설치 완료 후 매일 다시 켜기
+
+다음 절차는 `backend/.env`와 `backend/.venv`가 이미 준비된 PC의
+일상 실행 기준이다. `.env` 복사, bootstrap과 Seed를 매번 반복하지
+않는다. 저장소 루트에서 실행한다.
+
+```powershell
+docker compose --env-file .\backend\.env up -d postgres
+docker compose --env-file .\backend\.env ps postgres
+
+python .\scripts\development\check_environment.py `
+  --service backend `
+  --postgresql
+
+Set-Location .\backend
+.\.venv\Scripts\python.exe manage.py migrate --check
+.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
+```
+
+`migrate --check`가 미적용 Migration을 보고하면 서버를 시작하기 전에
+다음 명령을 실행한다.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py migrate --noinput
+```
+
+`seed_demo_accounts`는 다음 경우에만 실행한다.
+
+- PostgreSQL Volume을 새로 만들었을 때
+- Seed Command 또는 합성 계정 기준이 변경됐을 때
+- Demo 계정을 명시적으로 복구해야 할 때
+
+requirements fingerprint가 같고 환경 검사가 통과하면 bootstrap도
+다시 실행하지 않는다.
+
+### 5.2 Django 종료·재시작
+
+Django 개발 서버는 foreground Process다. 정상 종료는 서버를 실행한
+PowerShell에서 `Ctrl+C`를 사용한다. 재시작은 종료 후 같은 명령을
+다시 실행한다.
+
+```powershell
+Set-Location .\backend
+.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
+```
+
+8000번 포트를 사용할 수 없다는 오류가 발생하면 먼저 Listener와 PID를
+확인한다.
+
+```powershell
+$listener = Get-NetTCPConnection -LocalPort 8000 -State Listen
+$listener
+Get-Process -Id $listener.OwningProcess
+```
+
+기존 Django Process가 맞는지 확인하기 전에는 임의로 종료하지 않는다.
+
+### 5.3 실행 상태와 오류 확인
+
+PostgreSQL Container와 Django Liveness는 각각 다음 명령으로 확인한다.
+
+```powershell
+docker compose --env-file .\backend\.env ps postgres
+
+$response = Invoke-WebRequest 'http://127.0.0.1:8000/health'
+$response.StatusCode
+$response.Headers['X-Correlation-ID']
+```
+
+Compose에서 필수 `POSTGRES_*` 변수가 없다는 오류가 발생하면
+`--env-file .\backend\.env` 누락 여부와 `.env` 키 이름을 확인한다.
+Docker API 또는 named pipe 권한 오류가 발생하면 Docker Desktop 실행
+상태와 현재 Docker Context를 확인한 뒤 같은 명령을 재실행한다.
+비밀번호와 전체 DSN은 오류 보고에 포함하지 않는다.
+
+### 5.4 PostgreSQL 중지·재시작
 
 데이터를 보존하면서 중지한다.
 
@@ -258,7 +378,7 @@ docker compose --env-file .\backend\.env start postgres
 사용자 비밀번호는 자동으로 바뀌지 않는다. 비밀번호 회전은 DB 내부
 변경과 `.env` 갱신을 같은 작업으로 수행한다.
 
-### 5.2 공유하지 않는 항목
+### 5.5 공유하지 않는 항목
 
 - `backend/.env`
 - `backend/.venv`
@@ -270,7 +390,7 @@ docker compose --env-file .\backend\.env start postgres
 - 개인 DB Dump
 - 로컬 PostgreSQL Volume
 
-### 5.3 pgvector 경계
+### 5.6 pgvector 경계
 
 pgvector는 임베딩 Model과 1024차원 VectorField를 구현하는 Wave에서
 Django Migration으로 추가한다. 별도 Init SQL로 미리 생성하지 않고,
@@ -280,6 +400,7 @@ Django Migration으로 추가한다. 별도 Init SQL로 미리 생성하지 않�
 
 | 우선 | 항목 | 현재 사실 | 다음 처리 |
 | ---: | --- | --- | --- |
+| 완료 | Backend 환경 | Python·pip·constraints·bootstrap·VS Code·전체 239 테스트 검증 | 김은진의 독립 재현과 윤승혁의 Workspace 통합 확인 |
 | P0 | 도메인 테이블 | 32개 중 2개 구현 | T-005 Wave별 Model·Migration 구현 |
 | P0 | API Runtime | Health 1개·Auth 4개 | Model Wave 후 업무 API 수직 구현 |
 | P0 | T-022 문의 | 명세 존재, Runtime·Model·Migration 없음 | Wave 2 검증 후 구현 |
@@ -297,12 +418,14 @@ T-023의 상태·이벤트·Guard·`allowed_actions`는 PM 관할의 실제 외�
 
 한 번에 여러 기능을 구현하지 않고 다음 순서를 지킨다.
 
-1. T-005 Wave 1 작업
-2. Wave 1 Model·Migration·제약·Seed 검증
-3. T-005 Wave 2 작업
-4. Wave 2 Model·Migration·FK·UNIQUE·CHECK 검증
-5. T-022 문의 최소 수직 흐름 구현
-6. T-022 Runtime·권한·PostgreSQL 검증
+1. 현재 Docker PostgreSQL 연결·Migration·Seed·Auth Smoke 재검증
+2. PostgreSQL 재검증 결과 기록
+3. T-005 Wave 1 작업
+4. Wave 1 Model·Migration·제약·Seed 검증
+5. T-005 Wave 2 작업
+6. Wave 2 Model·Migration·FK·UNIQUE·CHECK 검증
+7. T-022 문의 최소 수직 흐름 구현
+8. T-022 Runtime·권한·PostgreSQL 검증
 
 Wave 1은 공통 코드와 현재 User·CustomerProfile 기준선을 함께
 검증한다. Wave 2는 Product Model·Subscription·Care Record를
@@ -327,13 +450,14 @@ Wave 1은 공통 코드와 현재 User·CustomerProfile 기준선을 함께
 | 버전 | 날짜 | 내용 |
 | --- | --- | --- |
 | v1.0 | 2026-07-27 | 환경변수·PostgreSQL·Migration·Seed·Smoke·공유 경계를 하나의 팀 Runbook으로 통합 |
+| v1.1 | 2026-07-28 | Python 3.13.13·pip 26.0.1·constraints·bootstrap·VS Code·안전 재생성·일상 실행·종료·재시작 및 새 `.venv` 239 테스트 결과 반영 |
 
 ## 10. 인계 사항
 
 | 대상 | 전달 항목 | 다음 행동 | 완료 확인 | 현재 상태 |
 | --- | --- | --- | --- | --- |
-| 윤승혁(PM) | 현재 Runtime 범위, Known Issues, WBS별 공유 경계와 전체 실행 순서 | 다른 영역의 통합 순서와 충돌 여부를 확인하고 비작성자 리뷰 후 PR 병합 | 통합 검토 의견 또는 승인 기록과 병합 Commit이 남음 | 문서 준비 완료, 검토·병합 증거 미확인 |
-| 김은진 | `.env.example`, PostgreSQL Compose, Migration·Seed·Smoke·전체 회귀 명령과 기대 결과 | 새 Git Pull 환경에서 PostgreSQL 시작부터 전체 회귀까지 재현하고 실패 시 명령·오류·환경 차이만 기록 | 연결·Migration·Seed 2회·Smoke·전체 회귀 결과가 PR 또는 Issue에 남음 | 작성자 환경 검증 완료, 제3자 재현 증거 미확인 |
+| 윤승혁(PM) | `.vscode/**`, 현재 Runtime 범위, Known Issues, WBS별 공유 경계와 전체 실행 순서 | 공통 Workspace가 Web·AI 설정과 충돌하지 않는지 확인하고 비작성자 리뷰 후 PR 병합 | 통합 검토 의견 또는 승인 기록과 병합 Commit이 남음 | 문서·설정 준비 완료, 검토·병합 증거 미확인 |
+| 김은진 | `scripts/development/**`, Python·constraints, `.env.example`, PostgreSQL Compose, Migration·Seed·Smoke·전체 회귀 명령 | 새 Git Pull 환경에서 bootstrap·전체 환경 검사와 PostgreSQL 시작부터 Smoke까지 재현하고 실패 시 명령·오류·환경 차이만 기록 | Python·패키지·전체 239 테스트와 연결·Migration·Seed 2회·Smoke 결과가 PR 또는 Issue에 남음 | 작성자 새 `.venv` 검증 완료, 제3자 재현 증거 미확인 |
 | 한예나 | Backend 주소, Auth 4개 Route, CORS·오류·Token 사용 기준과 합성 계정 코드 | Web에서 로그인·현재 사용자·재발급·로그아웃과 오류 처리를 연동 확인 | Web 연동 결과와 불일치 항목이 PR 또는 Issue에 남음 | 인계 자료 준비 완료, 소비 확인 미확인 |
 | 양정현 | Backend 주소, Auth 4개 Route, Authorization Header·오류·Token 수명과 합성 계정 코드 | Mobile에서 인증 흐름과 401·403 처리 호환성을 확인 | Mobile 연동 결과와 불일치 항목이 PR 또는 Issue에 남음 | 인계 자료 준비 완료, 소비 확인 미확인 |
 | 이동윤 | Backend↔AI 개발 주소, 인증·Correlation 경계와 현재 AI 연동 미구현 범위 | AI Runtime 준비 후 Adapter·오류·추적 계약의 호환성을 확인 | 연동 Smoke 결과 또는 차이 목록이 PR 또는 Issue에 남음 | 경계 문서화 완료, AI Runtime 연동 확인 미실시 |

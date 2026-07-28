@@ -1,4 +1,16 @@
 {
-    "python-envs.defaultEnvManager": "ms-python.python:conda",
-    "python-envs.defaultPackageManager": "ms-python.python:conda"
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv",
+    "python.terminal.activateEnvironment": true,
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/backend"
+    ],
+    "python.testing.cwd": "${workspaceFolder}/backend",
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python-envs.defaultEnvManager": "ms-python.python:venv",
+    "python-envs.defaultPackageManager": "ms-python.python:pip"
 }
