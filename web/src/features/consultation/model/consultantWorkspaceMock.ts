@@ -258,6 +258,7 @@ export const COUNSELOR_INQUIRIES: readonly CounselorInquiry[] = [
     customerId: "DEMO-CUST-007",
     customerName: "합성 고객 007",
     symptomLabel: "무출수 분석 실패",
+    assignedCounselor: "미배정",
     status: "QUESTIONNAIRE_IN_PROGRESS",
     riskLevel: "CAUTION",
     priority: "HIGH",

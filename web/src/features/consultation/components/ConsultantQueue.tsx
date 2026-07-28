@@ -1,16 +1,23 @@
 import type { ReactNode } from "react";
 
+import Pagination from "../../../common/components/data-display/Pagination";
+import PriorityBadge from "../../../common/components/badge/PriorityBadge";
+import RiskBadge from "../../../common/components/badge/RiskBadge";
+import StatusBadge from "../../../common/components/badge/StatusBadge";
 import {
   formatWorkspaceDateTime,
-  getRiskTone,
-  getStatusTone,
-  RISK_LABELS,
+  getPriorityVariant,
+  getStatusBadgeVariant,
+  PRIORITY_LABELS,
   STATUS_LABELS,
 } from "../model/consultantWorkspaceModel";
 import type {
+  CounselorAssigneeFilter,
   CounselorFilters,
   CounselorInquiry,
+  CounselorPriority,
   CounselorRisk,
+  CounselorSort,
   CounselorStatus,
 } from "../model/consultantWorkspaceTypes";
 import WorkspaceChip from "./WorkspaceChip";
@@ -18,18 +25,30 @@ import WorkspaceChip from "./WorkspaceChip";
 interface ConsultantQueueProps {
   children: ReactNode;
   filters: CounselorFilters;
+  hasChangedConditions: boolean;
   inquiries: readonly CounselorInquiry[];
+  page: number;
   selectedInquiryId: string | null;
+  totalItems: number;
+  totalPages: number;
   onFiltersChange: (filters: CounselorFilters) => void;
+  onPageChange: (page: number) => void;
+  onResetFilters: () => void;
   onSelectInquiry: (inquiryId: string) => void;
 }
 
 export default function ConsultantQueue({
   children,
   filters,
+  hasChangedConditions,
   inquiries,
+  page,
   selectedInquiryId,
+  totalItems,
+  totalPages,
   onFiltersChange,
+  onPageChange,
+  onResetFilters,
   onSelectInquiry,
 }: ConsultantQueueProps) {
   const updateFilter = <Key extends keyof CounselorFilters>(
@@ -41,7 +60,7 @@ export default function ConsultantQueue({
     <>
       <section
         id="counselor-queue-filter"
-        className="v6-panel v6-filter-panel"
+        className="v6-panel v6-filter-panel v6-filter-panel--expanded"
         aria-label="상담 큐 검색과 필터"
       >
         <label className="v6-filter">
@@ -93,6 +112,41 @@ export default function ConsultantQueue({
         </label>
 
         <label className="v6-filter">
+          우선순위
+          <select
+            value={filters.priority}
+            onChange={(event) =>
+              updateFilter(
+                "priority",
+                event.target.value as "ALL" | CounselorPriority,
+              )
+            }
+          >
+            <option value="ALL">전체 우선순위</option>
+            <option value="URGENT">긴급</option>
+            <option value="HIGH">높음</option>
+            <option value="NORMAL">보통</option>
+          </select>
+        </label>
+
+        <label className="v6-filter">
+          담당자
+          <select
+            value={filters.assignee}
+            onChange={(event) =>
+              updateFilter(
+                "assignee",
+                event.target.value as CounselorAssigneeFilter,
+              )
+            }
+          >
+            <option value="ALL">담당·미배정 전체</option>
+            <option value="MINE">내 담당 · 한유진</option>
+            <option value="UNASSIGNED">미배정</option>
+          </select>
+        </label>
+
+        <label className="v6-filter">
           업무 우선 조건
           <select
             value={filters.consultation}
@@ -109,8 +163,48 @@ export default function ConsultantQueue({
           </select>
         </label>
 
+        <label className="v6-filter">
+          접수 시작일
+          <input
+            type="date"
+            value={filters.receivedFrom}
+            onChange={(event) => updateFilter("receivedFrom", event.target.value)}
+          />
+        </label>
+
+        <label className="v6-filter">
+          접수 종료일
+          <input
+            type="date"
+            value={filters.receivedTo}
+            onChange={(event) => updateFilter("receivedTo", event.target.value)}
+          />
+        </label>
+
+        <label className="v6-filter">
+          정렬
+          <select
+            value={filters.sort}
+            onChange={(event) =>
+              updateFilter("sort", event.target.value as CounselorSort)
+            }
+          >
+            <option value="UPDATED_DESC">최근 변경 최신순</option>
+            <option value="UPDATED_ASC">최근 변경 오래된순</option>
+          </select>
+        </label>
+
+        <button
+          className="v6-button v6-button--secondary v6-filter-reset"
+          type="button"
+          disabled={!hasChangedConditions}
+          onClick={onResetFilters}
+        >
+          조건 초기화
+        </button>
+
         <span className="v6-filter-summary">
-          <b>{inquiries.length}</b>건
+          <b>{totalItems}</b>건
         </span>
       </section>
 
@@ -142,9 +236,14 @@ export default function ConsultantQueue({
                   <span className="v6-queue-item__top">
                     <span className="v6-chip-row">
                       <WorkspaceChip label="합성 시연" tone="info" />
-                      <WorkspaceChip
-                        label={RISK_LABELS[inquiry.riskLevel]}
-                        tone={getRiskTone(inquiry.riskLevel)}
+                      <RiskBadge
+                        level={inquiry.riskLevel.toLowerCase()}
+                        size="compact"
+                      />
+                      <PriorityBadge
+                        label={PRIORITY_LABELS[inquiry.priority]}
+                        size="compact"
+                        variant={getPriorityVariant(inquiry.priority)}
                       />
                       {inquiry.requiresConsultation && (
                         <WorkspaceChip label="상담 필수" tone="danger" />
@@ -168,9 +267,10 @@ export default function ConsultantQueue({
                   </small>
 
                   <span className="v6-queue-item__bottom">
-                    <WorkspaceChip
+                    <StatusBadge
                       label={STATUS_LABELS[inquiry.status]}
-                      tone={getStatusTone(inquiry.status)}
+                      size="compact"
+                      variant={getStatusBadgeVariant(inquiry.status)}
                     />
                     <b>{inquiry.id}</b>
                   </span>
@@ -178,6 +278,13 @@ export default function ConsultantQueue({
               ))
             )}
           </div>
+
+          <Pagination
+            page={page}
+            totalItems={totalItems}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
         </aside>
 
         {children}

@@ -35,3 +35,15 @@
   background: #e2e8f0;
   color: #475569;
 }
+
+.common-risk-badge--compact {
+  min-height: 22px;
+  padding: 0 7px;
+  gap: 3px;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.common-risk-badge--compact .common-risk-badge__icon {
+  font-size: 6px;
+}

@@ -1,0 +1,104 @@
+.common-evidence-card {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  gap: 11px;
+  padding: 12px;
+  border: 1px solid var(--v6-ink-100, #e4e9e8);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.common-evidence-card__icon {
+  display: grid;
+  width: 40px;
+  height: 44px;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--v6-blue, #2169e8);
+  background: var(--v6-blue-100, #eaf2ff);
+  font-size: 7px;
+  font-weight: 950;
+  text-align: center;
+}
+
+.common-evidence-card__content h4 {
+  margin: 6px 0 3px;
+  font-size: 10px;
+}
+
+.common-evidence-card__content > p {
+  margin: 0 0 7px;
+  color: var(--v6-ink-600, #5f706d);
+  font-size: 8px;
+  line-height: 1.5;
+}
+
+.common-evidence-card__verified {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  padding: 0 7px;
+  border-radius: 999px;
+  color: var(--v6-green-700, #087252);
+  background: var(--v6-green-100, #e5f7f0);
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.common-evidence-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0;
+}
+
+.common-evidence-card__meta div {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px 5px;
+  border-radius: 5px;
+  color: var(--v6-ink-600, #5f706d);
+  background: var(--v6-ink-50, #f6f8f8);
+  font-size: 6px;
+}
+
+.common-evidence-card__meta dt,
+.common-evidence-card__meta dd {
+  margin: 0;
+}
+
+.common-evidence-card__meta dt::after {
+  content: " ·";
+}
+
+.common-evidence-card__actions {
+  display: flex;
+  min-width: 112px;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.common-evidence-card__actions a {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border: 1px solid var(--v6-ink-200, #cad4d2);
+  border-radius: 8px;
+  color: var(--v6-blue, #2169e8);
+  background: #fff;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+@media (max-width: 760px) {
+  .common-evidence-card {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .common-evidence-card__actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+  }
+}

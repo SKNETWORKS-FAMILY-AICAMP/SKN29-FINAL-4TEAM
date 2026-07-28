@@ -113,4 +113,23 @@ describe("VisitTransitionForm", () => {
     );
     expect(onMockSaved).toHaveBeenCalledWith(5, "CONFIRM_VISIT");
   });
+
+  it("allowed_actions에 없는 방문 확정 버튼은 표시하지 않는다", () => {
+    render(
+      <VisitTransitionForm
+        availableActions={["SAVE_SCHEDULE"]}
+        inquiry={getVisitInquiry()}
+        stateVersion={4}
+        symptomSummary="누수 의심"
+        onMockSaved={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "일정 조율 저장" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "방문 확정" }),
+    ).not.toBeInTheDocument();
+  });
 });

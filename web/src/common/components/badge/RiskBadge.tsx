@@ -22,13 +22,17 @@ const UNKNOWN_RISK: RiskPresentation = {
 
 interface RiskBadgeProps {
   level?: string | null;
+  size?: "default" | "compact";
 }
 
 function isRiskLevel(value: string): value is RiskLevel {
   return value in RISK_PRESENTATIONS;
 }
 
-export default function RiskBadge({ level }: RiskBadgeProps) {
+export default function RiskBadge({
+  level,
+  size = "default",
+}: RiskBadgeProps) {
   const presentation =
     level && isRiskLevel(level)
       ? RISK_PRESENTATIONS[level]
@@ -36,7 +40,7 @@ export default function RiskBadge({ level }: RiskBadgeProps) {
 
   return (
     <span
-      className={`common-risk-badge common-risk-badge--${presentation.level}`}
+      className={`common-risk-badge common-risk-badge--${presentation.level} common-risk-badge--${size}`}
       aria-label={`위험도: ${presentation.label}`}
     >
       <span className="common-risk-badge__icon" aria-hidden="true">

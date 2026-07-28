@@ -1,231 +1,201 @@
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import {
   createVisitTransitionPath,
   getSafeInquiryListReturnPath,
+  ROUTE_PATHS,
 } from "../../app/router/routePaths";
 import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import LoadingState from "../../common/components/feedback/LoadingState";
-import AiSummarySection from "../../features/inquiry-detail/components/AiSummarySection";
-import CustomerProductSection from "../../features/inquiry-detail/components/CustomerProductSection";
-import EvidenceSection from "../../features/inquiry-detail/components/EvidenceSection";
-import InquiryHeader from "../../features/inquiry-detail/components/InquiryHeader";
-import StatusHistorySection from "../../features/inquiry-detail/components/StatusHistorySection";
-import SymptomQuestionnaireSection from "../../features/inquiry-detail/components/SymptomQuestionnaireSection";
-import useInquiryResponseForm from "../../features/inquiry-detail/hooks/useInquiryResponseForm";
-import useMockInquiryDetail from "../../features/inquiry-detail/hooks/useMockInquiryDetail";
-import { canPerformInquiryAction } from "../../features/inquiry-detail/model/inquiryDetailMapper";
+import "../../common/styles/legacy/fix-base.css";
+import "../../common/styles/legacy/staff-desktop-v6.css";
+import ConsultantInquiryDetail, {
+  type ConsultantDetailSectionStates,
+} from "../../features/consultation/components/ConsultantInquiryDetail";
+import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
+import { COUNSELOR_INQUIRIES } from "../../features/consultation/model/consultantWorkspaceMock";
+import { getCounselorMetrics } from "../../features/consultation/model/consultantWorkspaceModel";
+import type { DetailTab } from "../../features/consultation/model/consultantWorkspaceTypes";
 import "./InquiryDetailPage.css";
 
 interface InquiryDetailLocationState {
   returnTo?: unknown;
 }
 
+interface PartialFailureScenario {
+  sourceInquiryId: string;
+  sections: ConsultantDetailSectionStates;
+}
+
+const PARTIAL_FAILURES: Record<string, PartialFailureScenario> = {
+  "DEMO-INQ-AI-ERROR": {
+    sourceInquiryId: "DEMO-INQ-002",
+    sections: { aiSummary: "error", evidence: "ready", timeline: "ready" },
+  },
+  "DEMO-INQ-EVIDENCE-ERROR": {
+    sourceInquiryId: "DEMO-INQ-002",
+    sections: { aiSummary: "ready", evidence: "error", timeline: "ready" },
+  },
+  "DEMO-INQ-HISTORY-ERROR": {
+    sourceInquiryId: "DEMO-INQ-002",
+    sections: { aiSummary: "ready", evidence: "ready", timeline: "error" },
+  },
+};
+
+const READY_SECTIONS: ConsultantDetailSectionStates = {
+  aiSummary: "ready",
+  evidence: "ready",
+  timeline: "ready",
+};
+
 export default function InquiryDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { inquiryId } = useParams<{ inquiryId: string }>();
+  const [detailTab, setDetailTab] = useState<DetailTab>("summary");
+  const [notificationOpen, setNotificationOpen] = useState(false);
 
   const locationState = location.state as InquiryDetailLocationState | null;
   const inquiryListReturnPath = getSafeInquiryListReturnPath(
     locationState?.returnTo,
   );
-  const inquiryQuery = useMockInquiryDetail(inquiryId);
-  const initialResponseDraft =
-    inquiryQuery.status === "success"
-      ? inquiryQuery.data.responseDraft
-      : "";
-  const {
-    actionMessage,
-    responseDraft,
-    setActionMessage,
-    setResponseDraft,
-  } = useInquiryResponseForm(inquiryId, initialResponseDraft);
+  const partialFailure = inquiryId ? PARTIAL_FAILURES[inquiryId] : undefined;
+  const sourceInquiryId = partialFailure?.sourceInquiryId ?? inquiryId;
+  const inquiry = COUNSELOR_INQUIRIES.find(
+    (item) => item.id === sourceInquiryId,
+  );
 
-  if (inquiryQuery.status === "loading") {
-    return (
-      <main className="inquiry-detail">
+  useEffect(() => {
+    document.body.classList.add("v6-body", "v6-body--counselor");
+    return () => {
+      document.body.classList.remove("v6-body", "v6-body--counselor");
+    };
+  }, []);
+
+  const metrics = useMemo(
+    () => getCounselorMetrics(COUNSELOR_INQUIRIES),
+    [],
+  );
+  const queueCount = metrics.consultation + metrics.danger + metrics.finalizable;
+
+  const handleNavigate = (target: "queue" | "detail" | "visit") => {
+    if (target === "queue") {
+      navigate(inquiryListReturnPath);
+      return;
+    }
+    if (target === "visit" && inquiry) {
+      navigate(createVisitTransitionPath(inquiry.id), {
+        state: {
+          returnTo: inquiryListReturnPath,
+          stateVersion: inquiry.stateVersion,
+          symptomSummary: inquiry.symptomLabel,
+        },
+      });
+      return;
+    }
+    document.getElementById("counselor-detail")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  const renderDetail = () => {
+    if (inquiryId === "DEMO-INQ-LOADING") {
+      return (
         <LoadingState
           title="문의 정보를 불러오고 있습니다."
           description="고객 문의와 상담 정보를 확인하고 있습니다."
         />
-      </main>
-    );
-  }
-
-  if (inquiryQuery.status === "error") {
-    return (
-      <main className="inquiry-detail">
+      );
+    }
+    if (inquiryId === "DEMO-INQ-ERROR") {
+      return (
         <ErrorState
           title="문의 정보를 불러오지 못했습니다."
-          description="일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
-          retryLabel="다시 시도"
-          onRetry={() => window.location.reload()}
+          description="Mock 조회 오류입니다. 작성 중인 상담 내용은 전송되지 않았습니다."
+          retryLabel="문의 목록으로 돌아가기"
+          onRetry={() => navigate(inquiryListReturnPath)}
         />
-      </main>
-    );
-  }
-
-  if (inquiryQuery.status === "forbidden") {
-    return (
-      <main className="inquiry-detail">
+      );
+    }
+    if (inquiryId === "DEMO-INQ-FORBIDDEN") {
+      return (
         <ForbiddenState
           title="이 문의에 접근할 권한이 없습니다."
           description="담당 상담사이거나 해당 문의의 조회 권한이 있는지 확인해 주세요."
           actionLabel="문의 목록으로 돌아가기"
           onAction={() => navigate(inquiryListReturnPath)}
         />
-      </main>
-    );
-  }
-
-  if (inquiryQuery.status === "notFound") {
-    return (
-      <main className="inquiry-detail">
-        <section className="inquiry-detail__not-found">
-          <p className="inquiry-detail__eyebrow">CONS-02</p>
+      );
+    }
+    if (!inquiry) {
+      return (
+        <section className="v6-panel inquiry-v13-not-found">
+          <span aria-hidden="true">▤</span>
           <h1>문의를 찾을 수 없습니다.</h1>
-          <p>문의 번호를 다시 확인해 주세요.</p>
-
+          <p>합성 Mock 목록에서 문의를 다시 선택해 주세요.</p>
           <button
+            className="v6-button v6-button--primary"
+            type="button"
+            onClick={() => navigate(ROUTE_PATHS.consultantInquiryList)}
+          >
+            상담 큐로 돌아가기
+          </button>
+        </section>
+      );
+    }
+
+    return (
+      <>
+        <header className="v6-page-head inquiry-v13-page-head">
+          <div className="v6-page-head__copy">
+            <small>CONS-02 · SCREEN DESIGN V13</small>
+            <h1>문의 상세·상담 처리</h1>
+            <p>고객 원문, 사용 안내, AI 초안, 공식 근거와 상담사 확정 내용을 구분해 확인합니다.</p>
+          </div>
+          <div className="v6-page-head__meta">
+            <span>문의 · {inquiryId}</span>
+            <span>상태 버전 · {inquiry.stateVersion}</span>
+            <span>합성 Mock 상세</span>
+          </div>
+        </header>
+
+        <div className="inquiry-v13-toolbar">
+          <button
+            className="v6-button v6-button--secondary"
             type="button"
             onClick={() => navigate(inquiryListReturnPath)}
           >
-            문의 목록으로 돌아가기
+            ← 검색 조건을 유지하고 상담 큐로
           </button>
+          <span>실제 고객 응답·상태 변경 API는 연결되지 않았습니다.</span>
+        </div>
+
+        <section className="v6-panel inquiry-v13-detail-shell">
+          <ConsultantInquiryDetail
+            detailTab={detailTab}
+            inquiry={inquiry}
+            sectionStates={partialFailure?.sections ?? READY_SECTIONS}
+            onDetailTabChange={setDetailTab}
+            onOpenVisit={() => handleNavigate("visit")}
+          />
         </section>
-      </main>
+      </>
     );
-  }
-
-  const inquiry = inquiryQuery.data;
-
-  const handleSaveDraft = () => {
-    setActionMessage(
-      `답변 초안을 임시 저장했습니다. 현재 상태 버전: ${inquiry.stateVersion}`,
-    );
-  };
-
-  const handleSendResponse = () => {
-    if (responseDraft.trim().length === 0) {
-      setActionMessage("고객에게 보낼 답변을 입력해 주세요.");
-      return;
-    }
-
-    setActionMessage(
-      "Mock 답변 발송 요청이 완료되었습니다. 실제 API 연동 전에는 고객에게 전송되지 않습니다.",
-    );
-  };
-
-  const handleRequestVisit = () => {
-    navigate(createVisitTransitionPath(inquiry.inquiryId), {
-      state: {
-        returnTo: inquiryListReturnPath,
-        stateVersion: inquiry.stateVersion,
-        symptomSummary: inquiry.symptomSummary,
-      },
-    });
   };
 
   return (
-    <main className="inquiry-detail">
-      <InquiryHeader
-        inquiry={inquiry}
-        onBack={() => navigate(inquiryListReturnPath)}
-      />
-      <CustomerProductSection inquiry={inquiry} />
-      <SymptomQuestionnaireSection inquiry={inquiry} />
-      <AiSummarySection
-        summary={inquiry.aiSummary}
-        status={inquiryQuery.sections.aiSummary}
-      />
-      <EvidenceSection
-        evidence={inquiry.evidence}
-        status={inquiryQuery.sections.evidence}
-      />
-
-      <section className="inquiry-detail__card">
-        <h2>상담 답변 작성</h2>
-
-        <label
-          className="inquiry-detail__response-label"
-          htmlFor="response-draft"
-        >
-          고객에게 보낼 답변
-        </label>
-
-        <textarea
-          id="response-draft"
-          className="inquiry-detail__response-textarea"
-          value={responseDraft}
-          onChange={(event) => setResponseDraft(event.target.value)}
-          rows={7}
-        />
-
-        <div className="inquiry-detail__response-meta">
-          <span>상태 버전: {inquiry.stateVersion}</span>
-          <span>{responseDraft.length}자</span>
-        </div>
-
-        {inquiry.isDanger && (
-          <p className="inquiry-detail__response-warning">
-            위험 문의는 일반 답변 발송보다 방문 전환을 우선 검토해 주세요.
-          </p>
-        )}
-
-        <div className="inquiry-detail__action-buttons">
-          {canPerformInquiryAction(inquiry, "SAVE_RESPONSE_DRAFT") && (
-            <button
-              type="button"
-              className="inquiry-detail__action-button inquiry-detail__action-button--secondary"
-              onClick={handleSaveDraft}
-            >
-              임시 저장
-            </button>
-          )}
-
-          {canPerformInquiryAction(inquiry, "SEND_RESPONSE") && (
-            <button
-              type="button"
-              className="inquiry-detail__action-button inquiry-detail__action-button--primary"
-              onClick={handleSendResponse}
-              disabled={responseDraft.trim().length === 0}
-            >
-              고객 답변 발송
-            </button>
-          )}
-
-          {canPerformInquiryAction(inquiry, "REQUEST_VISIT") && (
-            <button
-              type="button"
-              className="inquiry-detail__action-button inquiry-detail__action-button--visit"
-              onClick={handleRequestVisit}
-            >
-              방문 점검으로 전환
-            </button>
-          )}
-        </div>
-
-        {actionMessage && (
-          <p
-            className="inquiry-detail__action-message"
-            aria-live="polite"
-          >
-            {actionMessage}
-          </p>
-        )}
-
-        <p className="inquiry-detail__mock-notice">
-          현재는 Mock 화면입니다. 실제 발송 및 상태 전환 API는 연결되지
-          않았습니다.
-        </p>
-      </section>
-
-      <StatusHistorySection
-        statusHistory={inquiry.statusHistory}
-        status={inquiryQuery.sections.statusHistory}
-      />
-    </main>
+    <ConsultantWorkspaceLayout
+      activeSection="detail"
+      notificationOpen={notificationOpen}
+      queueCount={queueCount}
+      onCloseNotifications={() => setNotificationOpen(false)}
+      onNavigate={handleNavigate}
+      onToggleNotifications={() => setNotificationOpen((open) => !open)}
+    >
+      {renderDetail()}
+    </ConsultantWorkspaceLayout>
   );
 }
