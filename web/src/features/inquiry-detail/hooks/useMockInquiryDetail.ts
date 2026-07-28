@@ -1,8 +1,20 @@
 import { useMemo } from "react";
 
 import { mapInquiryDetailToViewModel } from "../model/inquiryDetailMapper";
-import { MOCK_INQUIRY_DETAILS } from "../model/inquiryDetailMock";
-import type { InquiryDetailQueryResult } from "../model/inquiryDetailTypes";
+import {
+  MOCK_INQUIRY_DETAIL_FAILURE_SCENARIOS,
+  MOCK_INQUIRY_DETAILS,
+} from "../model/inquiryDetailMock";
+import type {
+  InquiryDetailQueryResult,
+  InquiryDetailSectionStates,
+} from "../model/inquiryDetailTypes";
+
+const READY_SECTIONS: InquiryDetailSectionStates = {
+  aiSummary: "ready",
+  evidence: "ready",
+  statusHistory: "ready",
+};
 
 function getMockInquiryDetailResult(
   inquiryId?: string,
@@ -19,14 +31,22 @@ function getMockInquiryDetailResult(
     return { status: "forbidden" };
   }
 
-  const inquiry = inquiryId
-    ? MOCK_INQUIRY_DETAILS[inquiryId]
+  const failureScenario = inquiryId
+    ? MOCK_INQUIRY_DETAIL_FAILURE_SCENARIOS[inquiryId]
+    : undefined;
+  const sourceInquiryId = failureScenario?.sourceInquiryId ?? inquiryId;
+  const inquiry = sourceInquiryId
+    ? MOCK_INQUIRY_DETAILS[sourceInquiryId]
     : undefined;
 
   return inquiry
     ? {
         status: "success",
-        data: mapInquiryDetailToViewModel(inquiry),
+        data: {
+          ...mapInquiryDetailToViewModel(inquiry),
+          inquiryId: inquiryId ?? inquiry.inquiryId,
+        },
+        sections: failureScenario?.sections ?? READY_SECTIONS,
       }
     : { status: "notFound" };
 }

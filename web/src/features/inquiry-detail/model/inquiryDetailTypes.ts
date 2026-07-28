@@ -58,9 +58,21 @@ export interface InquiryDetailViewModel
   isDanger: boolean;
 }
 
+export type InquiryDetailSectionStatus = "ready" | "error";
+
+export interface InquiryDetailSectionStates {
+  aiSummary: InquiryDetailSectionStatus;
+  evidence: InquiryDetailSectionStatus;
+  statusHistory: InquiryDetailSectionStatus;
+}
+
 export type InquiryDetailQueryResult =
   | { status: "loading" }
   | { status: "error" }
   | { status: "forbidden" }
   | { status: "notFound" }
-  | { status: "success"; data: InquiryDetailViewModel };
+  | {
+      status: "success";
+      data: InquiryDetailViewModel;
+      sections: InquiryDetailSectionStates;
+    };

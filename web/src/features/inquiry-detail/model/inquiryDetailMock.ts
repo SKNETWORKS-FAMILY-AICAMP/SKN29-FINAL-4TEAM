@@ -1,4 +1,12 @@
-import type { InquiryDetail } from "./inquiryDetailTypes";
+import type {
+  InquiryDetail,
+  InquiryDetailSectionStates,
+} from "./inquiryDetailTypes";
+
+interface MockInquiryDetailFailureScenario {
+  sourceInquiryId: string;
+  sections: InquiryDetailSectionStates;
+}
 
 // Mock: 문의 상세 API 계약이 확정되기 전 화면과 상태별 동작 검증용 데이터입니다.
 export const MOCK_INQUIRY_DETAILS: Record<string, InquiryDetail> = {
@@ -156,5 +164,35 @@ export const MOCK_INQUIRY_DETAILS: Record<string, InquiryDetail> = {
         occurredAt: "2026-07-27 10:10",
       },
     ],
+  },
+};
+
+export const MOCK_INQUIRY_DETAIL_FAILURE_SCENARIOS: Record<
+  string,
+  MockInquiryDetailFailureScenario
+> = {
+  "DEMO-INQ-AI-ERROR": {
+    sourceInquiryId: "DEMO-INQ-001",
+    sections: {
+      aiSummary: "error",
+      evidence: "ready",
+      statusHistory: "ready",
+    },
+  },
+  "DEMO-INQ-EVIDENCE-ERROR": {
+    sourceInquiryId: "DEMO-INQ-001",
+    sections: {
+      aiSummary: "ready",
+      evidence: "error",
+      statusHistory: "ready",
+    },
+  },
+  "DEMO-INQ-HISTORY-ERROR": {
+    sourceInquiryId: "DEMO-INQ-001",
+    sections: {
+      aiSummary: "ready",
+      evidence: "ready",
+      statusHistory: "error",
+    },
   },
 };
