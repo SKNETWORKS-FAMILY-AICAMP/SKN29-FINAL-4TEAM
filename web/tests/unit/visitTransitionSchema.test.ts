@@ -1,0 +1,45 @@
+import { describe, expect, it } from "vitest";
+
+import type { VisitTransitionValues } from "../../src/features/visit-transition/model/visitTransitionTypes";
+import { validateVisitTransition } from "../../src/features/visit-transition/validation/visitTransitionSchema";
+
+const VALID_VALUES: VisitTransitionValues = {
+  visitReason: "현장 점검이 필요합니다.",
+  desiredAt: "2026-07-29T10:00",
+  technicianId: "STAFF-TECH-01",
+  inspectionPriority: "누수 여부를 먼저 확인합니다.",
+  notes: "고객 통화 후 방문해 주세요.",
+  safetyNotes: "전원 차단 여부를 확인해 주세요.",
+  confirmedAt: "",
+};
+
+describe("validateVisitTransition", () => {
+  it("일정 조율 저장에 필요한 기본 필드를 검사한다", () => {
+    expect(
+      validateVisitTransition(
+        { ...VALID_VALUES, desiredAt: "", technicianId: "" },
+        "SAVE_SCHEDULE",
+      ),
+    ).toEqual({
+      desiredAt: "고객 희망일을 선택해 주세요.",
+      technicianId: "가상 방문기사를 선택해 주세요.",
+    });
+  });
+
+  it("방문 확정에는 가상 방문 확정일을 추가로 요구한다", () => {
+    expect(validateVisitTransition(VALID_VALUES, "CONFIRM_VISIT")).toEqual({
+      confirmedAt: "가상 방문 확정일을 선택해 주세요.",
+    });
+  });
+
+  it("확정일이 고객 희망일보다 빠르면 오류를 반환한다", () => {
+    expect(
+      validateVisitTransition(
+        { ...VALID_VALUES, confirmedAt: "2026-07-29T09:00" },
+        "CONFIRM_VISIT",
+      ),
+    ).toEqual({
+      confirmedAt: "확정일은 고객 희망일보다 빠를 수 없습니다.",
+    });
+  });
+});
