@@ -1,0 +1,174 @@
+[
+  {
+    "scenario_id": "SYN-JAC104-001",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-002",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-003",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-004",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-005",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-006",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-007",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-008",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-009",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-010",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-011",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-012",
+    "contract_alignment_status": "BLOCKED_DECISION",
+    "blocker_ids": [
+      "DEC-RESOLVED-REOPEN-001"
+    ],
+    "include_in_contract_projection": false,
+    "reason": "RESOLVED 이후 동일 문의 재개 정책 결정 대기"
+  },
+  {
+    "scenario_id": "SYN-JAC104-013",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-014",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-015",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-016",
+    "contract_alignment_status": "BLOCKED_DECISION",
+    "blocker_ids": [
+      "DEC-RESOLVED-REOPEN-001"
+    ],
+    "include_in_contract_projection": false,
+    "reason": "RESOLVED 이후 동일 문의 재개 정책 결정 대기"
+  },
+  {
+    "scenario_id": "SYN-JAC104-017",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-018",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-019",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-020",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-021",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-022",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-023",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  },
+  {
+    "scenario_id": "SYN-JAC104-024",
+    "contract_alignment_status": "ALIGNED",
+    "blocker_ids": [],
+    "include_in_contract_projection": true,
+    "reason": "현행 저장소 계약에 정합화됨"
+  }
+]

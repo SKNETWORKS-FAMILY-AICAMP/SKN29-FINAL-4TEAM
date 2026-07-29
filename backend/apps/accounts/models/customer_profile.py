@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import uuid
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -24,6 +26,11 @@ class CustomerProfile(TimestampedModel, SoftDeleteModel):
         default=generate_customer_profile_id,
         editable=False,
         validators=[validate_domain_id],
+    )
+    public_id = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
     )
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,

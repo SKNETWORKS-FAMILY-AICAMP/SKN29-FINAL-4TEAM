@@ -96,6 +96,23 @@ def test_auth_session_contract_uses_confirmed_token_lifetimes():
     assert refresh_expires_in["maximum"] == 7 * 24 * 60 * 60
 
 
+def test_authenticated_user_contract_exposes_public_uuid_only():
+    response = load_yaml(
+        "contracts/api/components/schemas/auth/AuthenticatedUser.yaml"
+    )
+
+    assert response["properties"]["id"] == {
+        "type": "string",
+        "format": "uuid",
+    }
+    assert response["properties"]["customer_profile"]["properties"][
+        "id"
+    ] == {
+        "type": "string",
+        "format": "uuid",
+    }
+
+
 def test_auth_request_contracts_match_runtime_serializers():
     login = load_yaml(
         "contracts/api/components/schemas/auth/LoginRequest.yaml"

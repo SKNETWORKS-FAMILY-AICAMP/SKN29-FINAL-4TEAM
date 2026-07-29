@@ -1,0 +1,8 @@
+# T-005 Wave 2 제품 케어 유형
+version: 1.0.0
+status: OWNER_BASELINE
+codes:
+  - FILTER_REPLACEMENT
+  - PERIODIC_CHECK
+  - CLEANING
+  - OTHER

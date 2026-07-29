@@ -1,0 +1,49 @@
+.common-risk-badge {
+  display: inline-flex;
+  min-height: 28px;
+  padding: 4px 10px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.common-risk-badge__icon {
+  font-size: 10px;
+}
+
+.common-risk-badge--general {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.common-risk-badge--caution {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.common-risk-badge--danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.common-risk-badge--unknown {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.common-risk-badge--compact {
+  min-height: 22px;
+  padding: 0 7px;
+  gap: 3px;
+  font-size: 7px;
+  font-weight: 900;
+}
+
+.common-risk-badge--compact .common-risk-badge__icon {
+  font-size: 6px;
+}

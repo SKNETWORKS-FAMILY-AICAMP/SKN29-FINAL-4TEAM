@@ -1,3 +1,70 @@
-# workflow API 경로 계약
-# Endpoint와 request/response 참조는 백엔드 API 설계 확정 후 작성한다.
-{}
+# T-023 최소 수직 흐름의 행동 기반 API 계약이다.
+# PM State Machine 원본은 contracts/state-machine에서 읽기 전용으로 소비한다.
+/inquiries/{id}/cancel:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: 취소할 문의의 공개 UUID
+      schema:
+        type: string
+        format: uuid
+  post:
+    operationId: cancelInquiry
+    summary: 고객 문의 취소
+    description: |
+      인증 고객이 본인 소유의 DRAFT 문의를 CANCEL_INQUIRY 이벤트로
+      취소한다. 성공 시 DRAFT에서 CANCELLED로 전환하고 state_version을
+      1 증가시킨다. 동일 Idempotency-Key와 동일 요청은 저장된 결과를
+      재사용하며 상태 변경과 이력을 중복 생성하지 않는다.
+    x-contract-status: CONFIRMED
+    x-state-machine:
+      event: CANCEL_INQUIRY
+      transition_rule: TR-INQ-004
+      from_state: DRAFT
+      to_state: CANCELLED
+      actor_role: CUSTOMER
+    security:
+      - BearerAuth: []
+    parameters:
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/workflow/CancelInquiryRequest.yaml
+    responses:
+      "200":
+        description: 문의 취소 성공 또는 동일 요청의 멱등 재사용
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/workflow/CancelInquiryResult.yaml
+      "400":
+        $ref: ../components/responses/BadRequest.yaml
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "404":
+        $ref: ../components/responses/NotFound.yaml
+      "409":
+        $ref: ../components/responses/WorkflowConflict.yaml
+      "422":
+        description: 요청 본문 또는 필수 헤더 검증 실패
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/common/ApiResponse.yaml

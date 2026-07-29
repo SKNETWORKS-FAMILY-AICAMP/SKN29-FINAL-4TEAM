@@ -27,10 +27,10 @@
     "names": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["CUSTOMER", "COUNSELOR", "TECHNICIAN"],
+      "required": ["CUSTOMER", "CONSULTANT", "TECHNICIAN"],
       "properties": {
         "CUSTOMER": {"type": "array", "minItems": 12},
-        "COUNSELOR": {"type": "array", "minItems": 2},
+        "CONSULTANT": {"type": "array", "minItems": 2},
         "TECHNICIAN": {"type": "array", "minItems": 2}
       }
     },

@@ -60,6 +60,15 @@ def configure_owner_ready(module, monkeypatch):
                 "allowed_actions": 1,
                 "role_permissions": 1,
             },
+            "statuses": {
+                "states": "TEAM_APPROVED",
+                "events": "TEAM_APPROVED",
+                "transitions": "TEAM_APPROVED",
+                "guards": "TEAM_APPROVED",
+                "allowed_actions": "TEAM_APPROVED",
+                "role_permissions": "TEAM_APPROVED",
+            },
+            "team_approved": True,
             "errors": [],
         },
     )
@@ -89,13 +98,13 @@ def configure_owner_ready(module, monkeypatch):
     monkeypatch.setattr(module, "test_function_count", lambda _path: 1)
 
 
-def test_current_contract_is_valid_but_runtime_gaps_remain():
+def test_current_contract_and_runtime_files_are_present_but_owner_gates_remain():
     result = load_module().audit_readiness(environ={})
 
     assert result["status"] == "PARTIAL"
     assert result["evidence"]["contract_owner"] == "윤승혁(PM)"
     assert result["evidence"]["backend_implementation_owner"] == "최지용"
-    assert result["evidence"]["model_class_count"] == 0
+    assert result["evidence"]["model_class_count"] == 2
     assert result["evidence"]["contract"]["states"] is True
     assert result["evidence"]["contract"]["events"] is True
     assert result["evidence"]["contract"]["transitions"] is True
@@ -113,13 +122,19 @@ def test_current_contract_is_valid_but_runtime_gaps_remain():
         "role_permissions": 5,
     }
     assert "PM_STATE_MACHINE_CONTRACT_INCOMPLETE" not in result["blockers"]
-    assert "WORKFLOW_RUNTIME_INCOMPLETE" in result["blockers"]
-    assert "WORKFLOW_ROUTES_NOT_REGISTERED" in result["blockers"]
+    assert result["evidence"]["contract_team_approved"] is False
+    assert (
+        "PM_STATE_MACHINE_CONTRACT_REVIEW_PENDING"
+        in result["blockers"]
+    )
+    assert result["evidence"]["runtime_implemented_file_count"] == 10
+    assert "WORKFLOW_RUNTIME_INCOMPLETE" not in result["blockers"]
+    assert "WORKFLOW_ROUTES_NOT_REGISTERED" not in result["blockers"]
     assert "WORKFLOW_RUNTIME_TESTS_MISSING" not in result["blockers"]
     assert result["evidence"]["api_structure_decision"] == (
-        "STRUCTURE_DECISION_PENDING"
+        "CONTRACT_REVIEW_PENDING"
     )
-    assert "WORKFLOW_API_STRUCTURE_DECISION_PENDING" in result["blockers"]
+    assert "WORKFLOW_API_CONTRACT_REVIEW_PENDING" in result["blockers"]
     assert "BACKEND_REVIEWED" in result["completion_blockers"]
 
 

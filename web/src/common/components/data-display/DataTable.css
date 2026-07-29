@@ -1,0 +1,42 @@
+.common-data-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.common-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #1f2937;
+  font-size: 13px;
+}
+
+.common-data-table caption {
+  padding: 12px 14px;
+  color: #475569;
+  font-weight: 800;
+  text-align: left;
+}
+
+.common-data-table th,
+.common-data-table td {
+  padding: 11px 14px;
+  border-top: 1px solid #e2e8f0;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.common-data-table th {
+  color: #475569;
+  background: #f8fafc;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.common-data-table__empty {
+  padding: 28px !important;
+  color: #64748b;
+  text-align: center !important;
+}
