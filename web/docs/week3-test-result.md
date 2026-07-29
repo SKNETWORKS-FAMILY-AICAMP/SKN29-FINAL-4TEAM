@@ -12,12 +12,15 @@
 | 단위 | 방문 일정 저장·확정 필수값과 날짜 순서 Validation |
 | 단위 | 논리 쓰기별 UUID `Idempotency-Key`, 전송별 `X-Correlation-ID` 생성 |
 | 단위 | 네트워크 재시도 키 보존, 성공·새 행동·요청 변경 후 키 교체 |
+| 단위 | 성공 Action 객체와 상태 충돌 Action code 배열 Mapper 분리 |
+| 단위 | `DUPLICATE-EVENT-01` 빈 details의 Snapshot 미적용 |
 | 단위 | 공통 API Wrapper·HTTP 오류 분류·PageInfo 정규화 |
 | 단위 | 담당자·우선순위·기간 필터와 페이지 범위 보정 |
 | 단위 | UUID `inquiry_id`와 표시용 `inquiry_code` 분리·검증 |
 | 컴포넌트 | `allowed_actions` 기반 버튼 노출 |
 | 컴포넌트 | 완료 필수값과 필드 오류 연결 |
 | 컴포넌트 | 409 충돌 후 입력 유지, 최신 `stateVersion` 반영 |
+| 컴포넌트 | 멱등 키 재사용 409 입력 유지, 상태 Snapshot 미적용 |
 | 컴포넌트 | 허용 행동이 없는 상태의 버튼 미노출 |
 | 컴포넌트 | 방문 전환 필드 노출, 입력 유지, Mock 저장·확정 |
 | 컴포넌트 | 공통 EvidenceCard 공개 필드·HTTPS 링크 제한 |
@@ -45,7 +48,7 @@ npm.cmd run build
 
 ## 2026-07-29 실행 결과
 
-- `npm.cmd test`: **14개 Test File, 49개 Test 통과**
+- `npm.cmd test`: **15개 Test File, 54개 Test 통과**
 - `npm.cmd run lint`: 통과
 - `npm.cmd run build`: 통과
 - Production 번들: Vite Build 성공

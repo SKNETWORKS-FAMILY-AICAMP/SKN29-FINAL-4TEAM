@@ -43,6 +43,7 @@ describe("useSaveConsultation", () => {
       .mockResolvedValue({
         message: "저장 완료",
         stateVersion: inquiry.stateVersion,
+        allowedActions: inquiry.allowedActions,
         correlationId: "server-correlation-id",
       });
     const { result } = renderHook(() => useSaveConsultation(inquiry));

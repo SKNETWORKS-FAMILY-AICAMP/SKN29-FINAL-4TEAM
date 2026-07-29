@@ -68,9 +68,13 @@ describe("공통 API 기반", () => {
             success: false,
             data: null,
             error: {
-              code: "STATE_VERSION_CONFLICT",
+              code: "STATE-CONFLICT-01",
               message: "최신 상태를 다시 확인해 주세요.",
-              details: { current_state_version: 3 },
+              details: {
+                current_status: "CONSULTATION_IN_PROGRESS",
+                current_state_version: 3,
+                allowed_actions: ["UPDATE_CONSULTATION_SUMMARY"],
+              },
             },
             metadata: {
               correlation_id: "00000000-0000-4000-8000-000000000002",
@@ -88,8 +92,43 @@ describe("공통 API 기반", () => {
       Partial<ApiClientError>
     >({
       kind: "CONFLICT",
-      code: "STATE_VERSION_CONFLICT",
+      code: "STATE-CONFLICT-01",
       correlationId: "00000000-0000-4000-8000-000000000002",
+    });
+  });
+
+  it("멱등 키 재사용 409의 빈 details를 그대로 보존한다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: false,
+            data: null,
+            error: {
+              code: "DUPLICATE-EVENT-01",
+              message: "같은 키에 다른 요청이 사용되었습니다.",
+              details: {},
+            },
+            metadata: {
+              correlation_id: "00000000-0000-4000-8000-000000000003",
+            },
+          }),
+          {
+            status: 409,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      ),
+    );
+
+    await expect(requestApi("/test")).rejects.toMatchObject<
+      Partial<ApiClientError>
+    >({
+      kind: "CONFLICT",
+      code: "DUPLICATE-EVENT-01",
+      details: {},
+      correlationId: "00000000-0000-4000-8000-000000000003",
     });
   });
 });
