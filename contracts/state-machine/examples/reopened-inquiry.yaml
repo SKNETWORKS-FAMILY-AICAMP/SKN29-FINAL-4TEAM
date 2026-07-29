@@ -1,7 +1,7 @@
 contract:
   name: reopened-inquiry-example
-  version: 0.1.0
-  status: draft_for_review
+  version: 1.0.0
+  status: TEAM_APPROVED
   description: 처리 후 고객이 미해결을 보고하여 기존 문의를 상담 대기열로 복귀시키는 대표 예시이다.
 representative_data:
   product_model_code: WPUJAC104DWH

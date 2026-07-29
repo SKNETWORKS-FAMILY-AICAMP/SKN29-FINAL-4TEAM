@@ -1,5 +1,7 @@
 # Inquiry State Machine 계약
 
+> 채택 기준: `v1.0.0` · `TEAM_APPROVED` · 2026-07-29
+
 ## 1. 목적
 
 이 디렉터리는 문의 상태, 이벤트, 전이, Guard, 허용 행동, 역할 권한, 완료 및 동시성 정책의 공통 기준이다.
@@ -19,9 +21,12 @@ Backend가 상태 전이의 최종 권위를 가지며, Web·Mobile·AI·QA는 �
 | `role-permissions.yaml` | 역할별 이벤트와 리소스 접근 범위 |
 | `completion-policy.yaml` | 자가조치·상담·방문 완료와 재개 정책 |
 | `concurrency-policy.yaml` | state_version, 멱등성, 트랜잭션과 충돌 처리 |
-| `inquiry-state-machine.mmd` | Mermaid 상태 흐름도 |
+| `data-state-crosswalk.yaml` | Data 기존 상태와 Inquiry·Visit 계약 간 변환 기준 |
+| `diagrams/inquiry-state-machine.mmd` | Mermaid 상태 흐름도 |
 
-대표 상태 전이 예시는 `examples/`의 흐름별 YAML 6종에서 관리하고, 상태 버전 충돌 예시는 `../examples/state-conflict.json`에서 관리한다.
+대표 상태 전이 예시는 `examples/`의 흐름별 YAML 7종에서 관리한다.
+`representative-e2e.yaml`은 `SYN-JAC104-002`의 14단계 공식 기준이며,
+상태 버전 충돌 예시는 `../examples/state-conflict.json`에서 관리한다.
 
 ## 3. 구현 활용
 
@@ -67,6 +72,8 @@ python scripts/contracts/validate_state_machine.py
 
 ## 5. 현재 결정 사항
 
+- 이 계약의 최초 채택 버전은 `1.0.0`이며 승인 상태는 `TEAM_APPROVED`이다.
+- Data의 기존 상태 표현은 `data-state-crosswalk.yaml`을 통해서만 변환한다.
 - `VISIT_REVIEW_PENDING`에는 `VISIT_NEEDED`와 `VISIT_NOT_NEEDED` 두 분기가 존재한다.
 - 방문 불필요 확정 시 `COMPLETION_PENDING`으로 이동한다.
 - 상담·방문 완료는 고객 해결 확인과 마지막 처리 담당자의 `FINALIZE_INQUIRY`를 거쳐야 한다.
