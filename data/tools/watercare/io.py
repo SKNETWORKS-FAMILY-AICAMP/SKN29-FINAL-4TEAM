@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import tempfile
+import time
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -53,7 +56,31 @@ def jsonl_bytes(rows: Iterable[dict[str, Any]]) -> bytes:
 def write_bytes(data_root: Path, path: Path, content: bytes) -> None:
     path = ensure_within(data_root, path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(content)
+    temp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as stream:
+            temp_path = Path(stream.name)
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        for attempt in range(3):
+            try:
+                os.replace(temp_path, path)
+                temp_path = None
+                return
+            except OSError:
+                if attempt == 2:
+                    raise
+                time.sleep(0.05 * (attempt + 1))
+    finally:
+        if temp_path is not None:
+            temp_path.unlink(missing_ok=True)
 
 
 def write_json(data_root: Path, path: Path, value: Any) -> None:

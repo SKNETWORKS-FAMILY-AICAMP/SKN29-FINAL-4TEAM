@@ -5,23 +5,23 @@
   "reports": [
     {
       "path": "processed/validation/schema/latest_schema_report.json",
-      "sha256": "17F413E5B1C651F2235C7B21A0D1F892BBB020EC7522A42FDF13DB0C3DD8D9DC"
+      "sha256": "B30C44123C6A7F0532D5098469DD9C9C8928BE5DC21D8ABD3AB34BDBC537630F"
     },
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
-      "sha256": "EEC7039FB97B7DA91F2DE6FD7327FF5915C788CBB702DC6CED78A221CA80D731"
+      "sha256": "AD53F5E35B702715235F66AD156CAA8E6EF29DBBC2A11F55A6F8EA2751E90371"
     },
     {
       "path": "processed/validation/quality/latest_quality_report.json",
-      "sha256": "3E383AFC6E5F8F3658A12D0D6E1F6F3DDF56CCD7F5ECB41ACC18B9FE852CF47C"
+      "sha256": "BDE4884033B5091C0CE79528BBA64744CC21F81FBE8605C98A5F69B7EC951014"
     },
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
-      "sha256": "84F9E0912598AD371513D52BE3EA1272A976C749807F594E0E9D4B4BB5F76B44"
+      "sha256": "4C79B25A04C41547EA66F2FFE1DFA2ABAF108A513ABEA1F4CD7510FEC6E1DC1B"
     },
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
-      "sha256": "7DE7AD5B3DD0BAE9A6802BEF6B5FF9C66703DBA804EC7CEE1B40DBFDECBC9DDD"
+      "sha256": "58A7D84A6444BD0982B3FACAB24838A1E65D6FF408DB98427089A31504D447AC"
     }
   ],
   "totals": {
@@ -44,8 +44,8 @@
     "summary": {
       "errors": 0,
       "warnings": 0,
-      "files_checked": 47,
-      "records_checked": 739
+      "files_checked": 48,
+      "records_checked": 740
     },
     "counts": {
       "manual_pages": 44,
@@ -154,11 +154,59 @@
       "errors": []
     },
     "reproducibility": {
-      "enabled": true,
+      "enabled": false,
       "changed_files": [],
       "canonical_drift_files": [],
       "regenerated_files": [],
       "status": "PASS"
+    },
+    "source_commit": "2c93fd14feeb01443215e0bb49187702995a747c",
+    "contract_alignment": {
+      "version": "1.0.0",
+      "status": "TEAM_APPROVED",
+      "data_projection_consumes_contract": true,
+      "backend_runtime_verified": false,
+      "pipeline_config_sha256": "041E91B6D0D0ED6DE8DBA4A21918293BE9FBE21EBE350617C445B9EABEE2B31D",
+      "contract_mapping_sha256": "06ABB56D86253584FE27E97B0F3371F5041BEE4D938024D6E1EF7B4F6AEAB6BE",
+      "source_hashes_verified": true
+    },
+    "error_categories": {
+      "DATA_ERROR": {
+        "count": 0,
+        "items": []
+      },
+      "CONTRACT_SOURCE_DRIFT": {
+        "count": 0,
+        "items": []
+      },
+      "EXTERNAL_BLOCKER": {
+        "count": 0,
+        "items": []
+      }
+    }
+  },
+  "source_commit": "2c93fd14feeb01443215e0bb49187702995a747c",
+  "contract_alignment": {
+    "version": "1.0.0",
+    "status": "TEAM_APPROVED",
+    "data_projection_consumes_contract": true,
+    "backend_runtime_verified": false,
+    "pipeline_config_sha256": "041E91B6D0D0ED6DE8DBA4A21918293BE9FBE21EBE350617C445B9EABEE2B31D",
+    "contract_mapping_sha256": "06ABB56D86253584FE27E97B0F3371F5041BEE4D938024D6E1EF7B4F6AEAB6BE",
+    "source_hashes_verified": true
+  },
+  "error_categories": {
+    "DATA_ERROR": {
+      "count": 0,
+      "items": []
+    },
+    "CONTRACT_SOURCE_DRIFT": {
+      "count": 0,
+      "items": []
+    },
+    "EXTERNAL_BLOCKER": {
+      "count": 0,
+      "items": []
     }
   }
 }

@@ -982,3 +982,48 @@ python -B data/tools/pipeline.py handoff qa
 ### 22-3. 판정 범위
 
 생성 산출물은 데이터 QA `PASS`까지만 표시한다. PM 상태 계약은 `draft_for_review`이고 Backend import는 실행 검증되지 않았으므로 `service_contracts_used=false`, Service mapping pending, 비-`DB_VERIFIED` 상태를 유지한다. Backend Model·Migration·Service는 이번 변경에 포함하지 않았다.
+
+## 23. State Machine v1.0.0·DB/RAG 후속 개선 기록
+
+이 절은 22절 작성 이후 승인된 State Machine 계약과 최신 외부 진행
+상태를 반영한다. 과거 0.8.0·0.9.0 실행 기록은 변경하지 않는다.
+
+### 23-1. 계약·QA
+
+- State Machine `1.0.0/TEAM_APPROVED` source를 데이터 매핑에 고정했다.
+- `data-state-crosswalk.yaml`과 대표 14단계 E2E 계약을 추적 source에
+  추가했다.
+- QA summary에 계약 source commit, 설정 SHA, 오류 분류를 기록한다.
+- 데이터 오류, 계약 source drift, 외부 blocker를 별도 분류한다.
+- DB handoff는 `BACKEND_RUNTIME_MAPPING_PENDING`으로 표시해 승인 계약과
+  실제 Runtime 적재 mapping 상태를 분리한다.
+
+### 23-2. DB·RAG 판정
+
+- Backend DB 적재는 사용자 확인상 성공했다.
+- commit·Migration·테이블별 건수·2회 적재 로그가 없으므로 현재 데이터
+  판정은 `USER_CONFIRMED_EVIDENCE_PENDING`이며 `DB_VERIFIED`가 아니다.
+- RAG는 승인 청크 7건 양성 Case와 범위·출처 차단 부정 Case 5건을
+  제공한다. 실제 embedding·Index·Recall@K·MRR 결과는 이동윤 담당자의
+  실행 증빙을 기다린다.
+
+### 23-3. 회귀 방지·제출물
+
+- Data 단위 테스트·계약 검증·결정적 rebuild·tracked diff를 실행하는
+  Data CI를 추가했다.
+- P0 인수 기준과 요구사항–Fixture–Schema–QA 매트릭스를 작성했다.
+- 전처리 결과서와 DB·저장소 설계서의 Markdown 기준본을 추가했으며
+  외부 증빙이 없는 수치는 pending으로 유지한다.
+
+### 23-4. 최신 실행 결과
+
+| 검사 | 결과 |
+|---|---|
+| State Machine v1.0.0 계약 검증 | PASS |
+| 데이터 단위 테스트 | 55/55 통과 |
+| 전체 QA | 48개 파일·740개 레코드 |
+| 오류·경고 | 0건·0건 |
+| 대표 E2E | 17/17 통과 |
+| 결정적 재생성 drift | 0건 |
+| 최종 Manifest | 154개 항목 |
+| Data CI | Workflow 추가·로컬 동등 명령 통과, 원격 Actions 실행 대기 |

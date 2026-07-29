@@ -22,6 +22,18 @@ class HandoffProfileTests(unittest.TestCase):
 
     def test_profiles_are_data_only_and_all_paths_exist(self) -> None:
         self.assertFalse(self.definitions["service_contracts_used"])
+        self.assertEqual(
+            {
+                "state_machine_version": "1.0.0",
+                "state_machine_status": "TEAM_APPROVED",
+                "data_projection_consumes_contract": True,
+                "backend_runtime_verified": False,
+                "legacy_service_contracts_used_semantics": (
+                    "BACKEND_RUNTIME_INTEGRATION_ONLY"
+                ),
+            },
+            self.definitions["contract_alignment"],
+        )
         for name, profile in self.definitions["profiles"].items():
             self.assertTrue(profile["items"], name)
             for item in profile["items"]:
@@ -39,6 +51,17 @@ class HandoffProfileTests(unittest.TestCase):
             if item["path"].endswith("faq_snapshot_normalized.jsonl")
         )
         self.assertEqual("REFERENCE_ONLY", faq["role"])
+        evaluation = next(
+            item
+            for item in profile["items"]
+            if item["role"] == "EVALUATION_CONTRACT"
+        )
+        cases = read_json(data_path(DATA_ROOT, evaluation["path"]))
+        self.assertEqual(12, len(cases["cases"]))
+        self.assertEqual(
+            {"POSITIVE", "NEGATIVE_SCOPE", "NEGATIVE_SOURCE"},
+            {row["case_type"] for row in cases["cases"]},
+        )
 
     def test_db_smoke_selects_six_existing_scenarios(self) -> None:
         selected = self.definitions["profiles"]["db-smoke"]["selection"][
@@ -52,6 +75,12 @@ class HandoffProfileTests(unittest.TestCase):
 
     def test_db_profiles_use_crosswalk_and_exclude_unconfirmed_care_load(self) -> None:
         for profile_name in ("db-smoke", "db-full"):
+            self.assertEqual(
+                "BACKEND_RUNTIME_MAPPING_PENDING",
+                self.definitions["profiles"][profile_name][
+                    "contract_dependency"
+                ],
+            )
             items = {
                 row["path"]: row["role"]
                 for row in self.definitions["profiles"][profile_name]["items"]

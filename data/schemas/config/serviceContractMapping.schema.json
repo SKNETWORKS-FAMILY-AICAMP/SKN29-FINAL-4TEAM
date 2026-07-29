@@ -7,6 +7,7 @@
     "mapping_version",
     "scope",
     "status",
+    "state_machine_contract",
     "contract_sources",
     "canonical_role_codes",
     "legacy_role_aliases",
@@ -30,9 +31,25 @@
     "status": {
       "const": "PARTIAL_BLOCKED_DECISIONS"
     },
+    "state_machine_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "status",
+        "data_projection_consumes_contract",
+        "backend_runtime_verified"
+      ],
+      "properties": {
+        "version": {"const": "1.0.0"},
+        "status": {"const": "TEAM_APPROVED"},
+        "data_projection_consumes_contract": {"const": true},
+        "backend_runtime_verified": {"const": false}
+      }
+    },
     "contract_sources": {
       "type": "object",
-      "minProperties": 9,
+      "minProperties": 11,
       "additionalProperties": {
         "type": "object",
         "additionalProperties": false,
