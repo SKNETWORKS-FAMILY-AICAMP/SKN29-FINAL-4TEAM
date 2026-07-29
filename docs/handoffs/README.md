@@ -465,6 +465,9 @@ netstat -ano -p tcp | Select-String ':8000'
 
 ### 7.2 김은진 — Data 원본·Crosswalk·통합 QA
 
+> 최지용 작성 실행 상세:
+> [김은진 인계 및 요청사항](../individual/jiyong/team_handover/20260729_최지용_김은진_인계및요청사항.md)
+
 **현재 책임**
 
 - `data/**`의 원본·가공·Fixture·QA
@@ -491,6 +494,9 @@ python -B -m unittest discover -s data\tools\tests -v
 
 ### 7.3 윤승혁 — PM·State 계약·통합
 
+> 최지용 작성 실행 상세:
+> [윤승혁(PM) 인계 및 요청사항](../individual/jiyong/team_handover/20260729_최지용_윤승혁PM_인계및요청사항.md)
+
 **현재 책임**
 
 - State Machine v1.0.0 유지
@@ -514,6 +520,9 @@ known_blockers=<남은 Blocker>
 ```
 
 ### 7.4 한예나 — Web
+
+> 최지용 작성 실행 상세:
+> [한예나 인계 및 요청사항](../individual/jiyong/team_handover/20260729_최지용_한예나_인계및요청사항.md)
 
 **현재 책임**
 
@@ -573,6 +582,9 @@ Browser/API Smoke가 없으면 Web 실제 연동은 계속 `BLOCKED`다.
 
 ### 7.5 양정현 — Mobile
 
+> 최지용 작성 실행 상세:
+> [양정현 인계 및 요청사항](../individual/jiyong/team_handover/20260729_최지용_양정현_인계및요청사항.md)
+
 **현재 책임**
 
 - `customer-app`·`technician-app`·`core` 3모듈 유지
@@ -602,6 +614,9 @@ App이 Backend에 실제 요청을 보내는지 검증한다. JWT·DTO·Network�
 `FOLLOW_UP`이다. `local.properties`와 Key는 Git에 올리지 않는다.
 
 ### 7.6 이동윤 — AI
+
+> 최지용 작성 실행 상세:
+> [이동윤 인계 및 요청사항](../individual/jiyong/team_handover/20260729_최지용_이동윤_인계및요청사항.md)
 
 **현재 책임**
 
