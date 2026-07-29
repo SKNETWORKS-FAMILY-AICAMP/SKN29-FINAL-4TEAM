@@ -1,7 +1,7 @@
 contract:
   name: self-resolution-example
-  version: 0.1.0
-  status: draft_for_review
+  version: 1.0.0
+  status: TEAM_APPROVED
   description: 공식 근거 기반 자가조치 안내 후 고객이 해결을 확정하는 대표 전이 예시이다.
 representative_data:
   product_model_code: WPUJAC104DWH

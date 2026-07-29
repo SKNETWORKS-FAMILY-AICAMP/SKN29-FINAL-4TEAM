@@ -1,7 +1,7 @@
 contract:
   name: concurrency-policy
-  version: 0.1.0
-  status: draft_for_review
+  version: 1.0.0
+  status: TEAM_APPROVED
   owner: PM_TECHNICAL_INTEGRATION
   description: 상태 전이와 데이터 수정의 동시성, 멱등성, 트랜잭션, 재시도와 충돌 응답 기준을 정의한다.
 references:

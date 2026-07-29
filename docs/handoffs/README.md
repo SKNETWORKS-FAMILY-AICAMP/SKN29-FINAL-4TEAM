@@ -74,7 +74,7 @@ T-005 전체 완료라고 쓰지 않는다.
 | 영역 | 2026-07-28 실측 | 팀원이 따라야 할 판단 |
 | --- | --- | --- |
 | Git 기준선 | 최신 `origin/main`을 반영하고 최지용 변경을 C1~C10 작업 단위로 분리 Commit | 최지용이 공유한 40자리 `origin/jiyong` SHA를 확인한 뒤 팀별 Branch에 반영 |
-| PM 계약 | YAML·예시가 아직 `draft_for_review` | 윤승혁이 채택 상태·Version·Changelog를 기록하기 전에는 Data가 임의 확정 금지 |
+| PM 계약 | State Machine `v1.0.0`을 `TEAM_APPROVED`로 채택하고 Crosswalk·14단계 예시·Changelog 기록 완료 | Backend·Data·Web·Mobile·AI는 v1.0.0을 기준으로 구현 차이를 수정하고 계약 변경 필요 시 Issue로 보고 |
 | State Machine 생성물 | 최신 `origin/main` 기준 파일과 순수 계산 Engine·Guard 단위 기반을 `jiyong`에 반영했으나 운영 Service에는 미연결 | PM 계약·생성 Script·산출물을 삭제하거나 구형 수동본으로 되돌리지 않음 |
 | Web | 환경·공통 API·인증 관련 핵심 파일이 비어 있고 Test Script가 없음 | 상담사 실제 연동 완료가 아니라 공통 Client·인증·계약 Fixture부터 구현 |
 | Mobile | 지침은 단일 `:app`, 최신 `main`은 3모듈과 `mobile_prev`를 함께 보유 | 구조 결정과 지침 갱신 전 양정현 작업은 `BLOCKED` |
@@ -399,7 +399,7 @@ docker compose --env-file .\backend\.env stop postgres
 | ---: | --- | --- | --- |
 | 0 | 양정현·윤승혁(PM)·최지용 | Mobile 단일 App·3모듈 및 `mobile_prev` 처리 방향 기록 | `main` 반영에 사용할 확정 구조 |
 | 1 | 최지용 | Backend 대표 기준선과 정확한 Commit SHA 공유 | 실행 가능한 API·DB 기준선 |
-| 2 | 윤승혁(PM) | PM 계약의 14단계·Terminal 정책 모순 제거 | 변경된 계약 또는 변경 없음 증거 |
+| 2 | 윤승혁(PM) | PM 계약의 14단계·Terminal 정책 모순 제거 | 완료: State Machine v1.0.0·Crosswalk·14단계 대표 예시 |
 | 3 | 김은진 | Data ID·Role·상태 Crosswalk와 Fixture·QA 갱신 | Data Mapping·Fixture·QA 결과 |
 | 4 | 최지용 | Data Mapping을 Backend Import·Visit·Guard에 반영 | 안정된 Backend 계약·Runtime |
 | 5 | 한예나·양정현 | Web·Mobile 소비 코드 갱신 | 소비자 계약·빌드·오류 복구 결과 |
@@ -539,8 +539,8 @@ FINALIZE_INQUIRY
   오류 `STATE-CONFLICT-01`·`DUPLICATE-EVENT-01`의 Mapping을 명시한다.
 - 성공 `allowed_actions` 객체 배열, 상태 충돌의 Action code 배열,
   멱등 Key 재사용 충돌의 빈 `details`를 서로 섞지 않는다.
-- 현재 계약 YAML·예시의 `draft_for_review`를 그대로 두고 확정이라고
-  보고하지 않는다. 채택 상태·Version·Changelog를 함께 갱신한다.
+- State Machine YAML·예시는 `v1.0.0`·`TEAM_APPROVED`로 채택되었다.
+  계약 채택을 Backend·Data·Web·Mobile·AI Runtime 완료로 보고하지 않는다.
 
 ### 9.3 작업 순서
 
