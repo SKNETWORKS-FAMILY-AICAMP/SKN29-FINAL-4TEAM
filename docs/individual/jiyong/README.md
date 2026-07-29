@@ -93,6 +93,20 @@ T-005 전체 완료를 뜻하지 않는다. 팀원은 현재 로컬 후보가 �
 | T-022 | [문의 관리 현재 준비도](<technical/backend/t-022-inquiry-readiness.md>) | 구현된 것과 미구현 Runtime 범위 |
 | T-023 | [Workflow 착수 전 스냅샷](<technical/backend/t-023-workflow-readiness.md>) | 2026-07-27 역사 기록. 현재 상태는 API Runtime 상태표와 팀 인계 문서를 참조 |
 
+## 팀원별 실행 인계
+
+팀 공용 순서와 현재 Blocker는 [팀 인계 허브](<../../handoffs/README.md>)를
+기준으로 한다. 아래 문서는 각 담당자가 자신의 Branch에서 실행하고
+최지용에게 반환할 명령·증거·금지사항을 상세화한 보조 문서다.
+
+| 대상 | 문서 | 현재 요청 |
+| --- | --- | --- |
+| 김은진 | [Data·QA Owner Review 인계](<team_handover/20260729_최지용_김은진_인계및요청사항.md>) | 기능·Data 기준 SHA의 19개 Data 소유 경로 검토와 QA 결과 반환 |
+| 윤승혁(PM) | [병합 Gate·다음 Wave 결정 인계](<team_handover/20260729_최지용_윤승혁PM_인계및요청사항.md>) | Data Owner Review 확인 후 `main` 병합과 T-005·T-023 결정 |
+| 한예나 | [Web Runtime 소비 인계](<team_handover/20260729_최지용_한예나_인계및요청사항.md>) | Runtime 7개 범위의 Auth·식별자·오류 처리 검증 |
+| 양정현 | [Mobile DTO·Network 인계](<team_handover/20260729_최지용_양정현_인계및요청사항.md>) | 3모듈 기준 Auth·문의 START/CANCEL 연동과 두 App 검증 |
+| 이동윤 | [AI Runtime·Schema 인계](<team_handover/20260729_최지용_이동윤_인계및요청사항.md>) | 재현 가능한 AI 실행 환경·Schema·Commit SHA 반환 |
+
 ## 공용 기준 문서
 
 | 기준 | 링크 |
