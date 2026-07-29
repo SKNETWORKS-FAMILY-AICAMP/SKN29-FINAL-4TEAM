@@ -1,6 +1,6 @@
 # Backend `.venv` 재현성과 VS Code 환경 설계 가이드
 
-> 기준일: 2026-07-28
+> 기준일: 2026-07-29
 > 문서 상태: `CURRENT`
 > 작성·유지 책임: 최지용
 > 적용 범위: `backend/.venv`, Backend Python 의존성, 로컬 VS Code 연결
@@ -137,7 +137,10 @@ python .\scripts\development\check_environment.py --service backend --full
 - Backend 전체 pytest
 - `backend/.venv` Git 추적 파일 0개
 
-PostgreSQL이 실행 중인 경우에만 읽기 전용 연결 검사를 추가한다.
+PostgreSQL이 실행 중이고 현재 Commit의 Migration 적용까지 끝난 경우에만
+읽기 전용 연결과 적용 Migration 검사를 추가한다. 새 DB에서는 먼저
+[공유 패키지 인계서 v1.2](<../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md>)의
+5.5 사전 검사 → 5.6 Migration·Seed → 5.7 최종 게이트 순서를 따른다.
 
 ```powershell
 python .\scripts\development\check_environment.py `
@@ -146,17 +149,41 @@ python .\scripts\development\check_environment.py `
   --postgresql
 ```
 
-Seed와 Smoke는 DB와 HTTP 상태를 바꾸므로 이 읽기 전용 검사에
-포함하지 않고 [공유 패키지 인계서](<../../manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md>)의
+Seed와 Health·Auth Smoke는 DB와 HTTP 상태를 바꾸므로 이 읽기 전용 검사에
+포함하지 않고 [공유 패키지 인계서 v1.2](<../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md>)의
 명시적 순서로 실행한다.
 
 ### 5.4 환경 준비 후 서버 다시 켜기
 
 이 문서는 `.venv` 생성·검증·복구까지만 책임진다. 최초 설치가 끝난
 PC에서 PostgreSQL과 Django를 다시 켜거나 종료·재시작할 때는
-[공유 패키지 인계서](<../../manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md>)의
-5장을 사용한다. requirements fingerprint가 같고 빠른 검사가 통과하면
+[공유 패키지 인계서 v1.2](<../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md>)의
+6장을 사용한다. requirements fingerprint가 같고 빠른 검사가 통과하면
 bootstrap과 패키지 설치를 다시 실행하지 않는다.
+
+### 5.5 fingerprint 불일치 해석과 동기화
+
+빠른 검사에서 다음 결과가 나오면 requirements 파일 자체가 잘못됐다고
+바로 판정하지 않는다.
+
+```text
+[FAIL] requirements fingerprint 불일치. bootstrap.py를 실행하세요.
+```
+
+이 메시지는 `base.txt`, `local.txt`, constraints와 Python·pip 기준을
+합친 현재 SHA-256과 `.venv` 내부 상태파일에 기록된 SHA-256이 다르다는
+뜻이다. 저장소 루트에서 같은 작업을 반복하지 말고 다음 두 단계만
+순서대로 실행한다.
+
+```powershell
+python .\scripts\development\bootstrap.py --service backend
+python .\scripts\development\check_environment.py --service backend
+```
+
+첫 명령은 현재 패키지 집합을 검사하고 필요한 경우에만 동기화한 뒤
+fingerprint 상태를 갱신한다. 두 번째 명령에서 같은 64자리 SHA-256,
+`failures=0`, Exit code `0`이 확인되면 동기화 완료다. Python 버전이
+다르거나 환경이 손상된 경우에만 다음 장의 `--recreate`를 사용한다.
 
 ## 6. 안전 재생성·복구
 
@@ -189,30 +216,40 @@ python .\scripts\development\bootstrap.py --service backend --recreate
 - 팀 공유는 버전 파일, requirements, constraints, 자동화, 검증 기록으로
   한정한다.
 
-## 8. 2026-07-28 작성자 환경 검증
+## 8. 2026-07-29 작성자 환경·Runtime 검증
 
 | 검증 | 결과 |
 | --- | --- |
-| 사전 임시환경 설치 | 통과 |
-| 실제 `backend/.venv` 안전 재생성 | 통과 |
+| bootstrap 동기화 | Exit code `0` |
 | Python | `3.13.13` |
 | pip | `26.0.1` |
 | constraints 패키지 | 31개 일치 |
 | constraints 밖 추가 패키지 | 0개 |
+| requirements fingerprint | `60a914129e00735559d54b1429d76933cee4817a1c62bc968dd8808ab085c758` |
 | `pip check` | 통과 |
 | Django system check | 통과 |
 | Migration drift | 없음 |
-| Backend 전체 테스트 | `239 passed` |
+| Backend 전체 테스트 | `353 passed` |
 | `.venv` Git 추적 파일 | 0개 |
+| Docker daemon | Docker Desktop 4.75.0·Engine 29.5.2 연결 통과 |
+| PostgreSQL | 16.14, `running`·`healthy`, UTC 읽기 전용 연결 통과 |
+| 적용 Migration | 누락 없음 |
+| Health·Auth Smoke | `status=PASSED`, Exit code `0` |
 
-이 표는 최지용 작성자 PC의 현재 실행 증거다. 김은진의 독립 재현이나
-PR 비작성자 리뷰가 완료됐다는 증거로 해석하지 않는다.
+이 표는 최지용 작성자 PC에서 2026-07-29에 실행한 증거다. 테스트가
+추가되면 개수는 달라질 수 있으므로 장기 정상 기준은 Exit code `0`,
+`failures=0`, Migration drift 없음이다. 김은진의 독립 재현이나 PR
+비작성자 리뷰가 완료됐다는 증거로 해석하지 않는다.
+
+`353 passed`는 `backend/`의 Python 테스트만 집계한 값이다. Web의
+Node·npm 버전, 자동 테스트와 실제 Browser API 소비 검증은 별도
+게이트이며 이 숫자에 포함되지 않는다.
 
 ## 9. 담당자별 인계
 
 | 대상 | 전달 범위 | 다음 행동 | 완료 증거 | 현재 상태 |
 | --- | --- | --- | --- | --- |
-| 김은진 | `scripts/development/**`, requirements·constraints, 전체 검사 | 새 Pull 환경에서 bootstrap과 `--full`을 재현하고 Windows/Linux 차이를 기록 | 사용한 Python, 명령, exit code, 테스트 수를 PR 또는 Issue에 기록 | 작성자 검증 완료·독립 재현 미확인 |
+| 김은진 | `scripts/development/**`, requirements·constraints, 전체 검사 | 새 Pull 환경에서 bootstrap과 Migration 적용 후 `--full --postgresql`, Health·Auth Smoke를 재현하고 Windows/Linux 차이를 기록 | 사용한 Python, 명령, exit code, 테스트 수를 PR 또는 Issue에 기록 | 작성자 353 테스트·PostgreSQL·Health·Auth Smoke 검증 완료, 독립 재현 미확인 |
 | 윤승혁(PM) | `.vscode/**`, 루트 `.gitignore`, 서비스별 환경 경계 | Web·AI Workspace 설정과 충돌이 없는지 확인하고 비작성자 리뷰 후 통합 | 검토 의견 또는 PR 리뷰와 병합 Commit | 통합 검토 미확인 |
 | 이동윤 | Backend와 분리된 AI 환경 원칙 | AI Manifest·Python·실행 명령 확정 후 `ai/.venv` 재현 입력 작성 | AI 단독 설치·테스트 기록 | AI 환경 기준 미확정 |
 | 한예나·양정현 | Backend Interpreter가 아닌 HTTP API 소비 경계 | `.venv`를 복사받지 않고 Backend URL·계약으로 연동 | Web·Mobile 소비 호환성 결과 | 소비 확인 미확인 |
@@ -225,7 +262,7 @@ PR 비작성자 리뷰가 완료됐다는 증거로 해석하지 않는다.
 2. 깨끗한 임시환경 설치·전체 검증
 3. 실제 `backend/.venv` 재생성
 4. 실제 환경 전체 검증
-5. 문서·업무계획표 갱신
+5. 공유 패키지 인계서 v1.2와 환경 검증 기록 갱신
 6. 환경 기준선이 통과한 뒤 T-005의 다음 한 Wave 작업
 7. 해당 Wave 검증 후 다음 작업
 
