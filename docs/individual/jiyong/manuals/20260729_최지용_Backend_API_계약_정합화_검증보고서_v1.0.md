@@ -141,10 +141,10 @@ $env:PYTHONDONTWRITEBYTECODE = "1"
 
 | 검증 | Exit code | 실제 결과 |
 |---|---:|---|
-| API·계약 + Auth 계약 | 0 | `94 passed in 4.45s` |
-| 권한·소유권 + T-022·T-023 | 0 | `31 passed in 2.65s` |
+| API·계약 + Auth 계약 | 0 | `94 passed` |
+| 권한·소유권 + T-022·T-023 | 0 | `31 passed` |
 | Django System Check | 0 | `System check identified no issues (0 silenced)` |
-| 전체 Backend | 0 | `352 passed in 23.72s` |
+| 전체 Backend | 0 | `352 passed` |
 
 각 묶음에는 겹치는 테스트가 있으므로 통과 수를 합산하지 않는다.
 Git 공유 직전 문서까지 포함한 최종 HEAD에서 전체 Backend와
