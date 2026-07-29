@@ -212,7 +212,7 @@
     {
       "path": "synthetic/expected/contract_alignment_registry.json",
       "records": 24,
-      "sha256": "56CF00225E391CF1E92BD4114903338AEBD137D92DE36D6C9851D83DAD956261",
+      "sha256": "E38D75A1838D8DAE2B3E133F10C052612610F9D9871009FB0A0D2FECCF5EBFD0",
       "schema": "schemas/synthetic/contractAlignmentRegistryItem.schema.json"
     },
     {

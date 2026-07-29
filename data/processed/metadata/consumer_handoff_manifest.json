@@ -2,9 +2,17 @@
   "status": "PASS",
   "dataset_version": "0.9.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
+  "source_commit": "2c93fd14feeb01443215e0bb49187702995a747c",
   "service_contracts_used": false,
+  "contract_alignment": {
+    "state_machine_version": "1.0.0",
+    "state_machine_status": "TEAM_APPROVED",
+    "data_projection_consumes_contract": true,
+    "backend_runtime_verified": false,
+    "legacy_service_contracts_used_semantics": "BACKEND_RUNTIME_INTEGRATION_ONLY"
+  },
   "profile_count": 4,
-  "unique_file_count": 38,
+  "unique_file_count": 40,
   "profiles": {
     "rag": {
       "purpose": "검증된 JAC104D 청크 적재와 검색 품질 확인",
@@ -75,6 +83,20 @@
           "sha256": "7AC08424EA4A9613A46B86941F26857333AEB8976CFA9C698411CEE4C8A94E6C"
         },
         {
+          "path": "config/rag/jac104_retrieval_cases.json",
+          "role": "EVALUATION_CONTRACT",
+          "records": 1,
+          "size_bytes": 7513,
+          "sha256": "EFE99197B3DE5CC9076BC2BF39BAF46136CE2A669D7899CBA67D74F8CA04BE79"
+        },
+        {
+          "path": "schemas/config/ragEvaluationCases.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 3429,
+          "sha256": "7956A73D14D52B3F5FAC0CE89AD2716F56924715EB16CF6C1FB4BC513E54F39F"
+        },
+        {
           "path": "schemas/processed/ragChunk.schema.json",
           "role": "SCHEMA",
           "records": 1,
@@ -115,7 +137,7 @@
     "db-smoke": {
       "purpose": "DB 모델·FK·Seed 적재 확인용 대표 6개 문의",
       "readiness": "READY_FOR_FIELD_MAPPING",
-      "contract_dependency": "SERVICE_MAPPING_PENDING",
+      "contract_dependency": "BACKEND_RUNTIME_MAPPING_PENDING",
       "items": [
         {
           "path": "synthetic/fixtures/users.json",
@@ -239,8 +261,8 @@
     },
     "db-full": {
       "purpose": "원본 24개 중 차단 2개를 제외한 활성 projection 22개의 데이터 품질·관계 검증",
-      "readiness": "QA_READY_SERVICE_MAPPING_PENDING",
-      "contract_dependency": "SERVICE_MAPPING_PENDING",
+      "readiness": "QA_READY_BACKEND_RUNTIME_MAPPING_PENDING",
+      "contract_dependency": "BACKEND_RUNTIME_MAPPING_PENDING",
       "items": [
         {
           "path": "synthetic/fixtures/users.json",
@@ -365,8 +387,8 @@
           "path": "synthetic/expected/contract_alignment_registry.json",
           "role": "QA_EXPECTED",
           "records": 24,
-          "size_bytes": 5245,
-          "sha256": "56CF00225E391CF1E92BD4114903338AEBD137D92DE36D6C9851D83DAD956261"
+          "size_bytes": 5417,
+          "sha256": "E38D75A1838D8DAE2B3E133F10C052612610F9D9871009FB0A0D2FECCF5EBFD0"
         }
       ],
       "selection": {
@@ -377,7 +399,7 @@
         ]
       },
       "excluded": [
-        "계약 담당자 확인 전 상태·이벤트 자동 매핑"
+        "Backend Runtime 상태·이벤트 적재 매핑 검증 전 자동 load"
       ],
       "commands": [
         "python -B data/tools/pipeline.py handoff db-full",
@@ -393,50 +415,50 @@
           "path": "processed/validation/latest_qa_summary.json",
           "role": "SUMMARY",
           "records": 1,
-          "size_bytes": 5558,
-          "sha256": "6180CCB9A6638CCDA8B281C2C3801C017E8DCDC84880A9E46CEDF98391EAA4CA"
+          "size_bytes": 7009,
+          "sha256": "F219BB8CFDC713DDFC4A54176191CF2D0E3EF60B21E5A45EE5FD2C7F5B7286AD"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 7771,
-          "sha256": "17F413E5B1C651F2235C7B21A0D1F892BBB020EC7522A42FDF13DB0C3DD8D9DC"
+          "size_bytes": 8472,
+          "sha256": "B30C44123C6A7F0532D5098469DD9C9C8928BE5DC21D8ABD3AB34BDBC537630F"
         },
         {
           "path": "processed/validation/integrity/latest_integrity_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 640,
-          "sha256": "EEC7039FB97B7DA91F2DE6FD7327FF5915C788CBB702DC6CED78A221CA80D731"
+          "size_bytes": 1341,
+          "sha256": "AD53F5E35B702715235F66AD156CAA8E6EF29DBBC2A11F55A6F8EA2751E90371"
         },
         {
           "path": "processed/validation/quality/latest_quality_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 546,
-          "sha256": "3E383AFC6E5F8F3658A12D0D6E1F6F3DDF56CCD7F5ECB41ACC18B9FE852CF47C"
+          "size_bytes": 1247,
+          "sha256": "BDE4884033B5091C0CE79528BBA64744CC21F81FBE8605C98A5F69B7EC951014"
         },
         {
           "path": "processed/validation/business/latest_business_rules_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 844,
-          "sha256": "84F9E0912598AD371513D52BE3EA1272A976C749807F594E0E9D4B4BB5F76B44"
+          "size_bytes": 1545,
+          "sha256": "4C79B25A04C41547EA66F2FFE1DFA2ABAF108A513ABEA1F4CD7510FEC6E1DC1B"
         },
         {
           "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 451,
-          "sha256": "7DE7AD5B3DD0BAE9A6802BEF6B5FF9C66703DBA804EC7CEE1B40DBFDECBC9DDD"
+          "size_bytes": 1153,
+          "sha256": "58A7D84A6444BD0982B3FACAB24838A1E65D6FF408DB98427089A31504D447AC"
         },
         {
           "path": "processed/metadata/dataset_manifest.json",
           "role": "MANIFEST",
           "records": 1,
           "size_bytes": 10039,
-          "sha256": "052173502789B7BE83086DD0194BC75C47AD5C2065C1E4DB5A56E5268A6BBD31"
+          "sha256": "31775E3EFECA8B7907F58B066E8154520432B9010D54AA80D8912EE74C57E68D"
         },
         {
           "path": "processed/metadata/DATA_PROCESSING_SPEC.md",

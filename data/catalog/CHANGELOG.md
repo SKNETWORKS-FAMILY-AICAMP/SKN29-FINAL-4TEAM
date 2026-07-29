@@ -9,6 +9,10 @@
 - CustomerProfile fixture와 Backend import crosswalk를 추가했다. Fixture PK 직접 주입은 금지하고 Public UUID·업무키 lookup 뒤 실제 DB FK를 사용하도록 명시했다.
 - Dataset manifest·최종 manifest·handoff manifest와 5종 QA 리포트를 실제 산출물의 건수와 SHA-256으로 재생성하도록 복구했다.
 - 생성 데이터의 상태는 데이터 QA `PASS`까지만 기록하며 Backend import나 `DB_VERIFIED`를 주장하지 않는다.
+- State Machine v1.0.0 `TEAM_APPROVED` source와 data-state crosswalk·대표 E2E 계약을 데이터 매핑에 고정했다.
+- 승인 RAG 청크 7건의 양성 Case와 범위·출처 차단 부정 Case 5건을 데이터 평가 계약으로 추가했다.
+- QA 결과에 계약 source commit, 설정 SHA와 `DATA_ERROR`·`CONTRACT_SOURCE_DRIFT`·`EXTERNAL_BLOCKER` 분류를 추가했다.
+- DB 적재 성공 사용자 확인과 실행 증빙 대기를 분리하고, 증빙 전에는 `DOCUMENTED_NOT_DB_VERIFIED`를 유지한다.
 
 ## 0.8.0 — 2026-07-27
 

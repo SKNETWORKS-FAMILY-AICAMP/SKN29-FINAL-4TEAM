@@ -1,5 +1,5 @@
 {
-  "config_version": "1.4.0",
+  "config_version": "1.5.0",
   "dataset_version": "0.9.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
   "mvp_product_code": "WPUJAC104DWH",
@@ -17,6 +17,7 @@
   "paths": {
     "ocr": "config/faq/ocr_transcriptions.json",
     "rag": "config/rag/jac104_chunks.json",
+    "rag_evaluation_cases": "config/rag/jac104_retrieval_cases.json",
     "synthetic": "config/synthetic/scenarios.json",
     "vocabulary": "config/workflow/dataset_vocabulary.json",
     "contract_mapping": "config/workflow/service_contract_mapping.json",
@@ -67,6 +68,7 @@
     "pipeline": "schemas/config/pipeline.schema.json",
     "ocr": "schemas/config/ocrTranscriptions.schema.json",
     "rag": "schemas/config/ragDefinitions.schema.json",
+    "rag_evaluation_cases": "schemas/config/ragEvaluationCases.schema.json",
     "synthetic": "schemas/config/syntheticScenarios.schema.json",
     "vocabulary": "schemas/config/datasetVocabulary.schema.json",
     "contract_mapping": "schemas/config/serviceContractMapping.schema.json",

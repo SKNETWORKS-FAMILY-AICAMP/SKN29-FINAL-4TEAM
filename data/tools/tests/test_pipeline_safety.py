@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -11,7 +12,7 @@ sys.path.insert(0, str(TOOLS_ROOT))
 
 from watercare.builders import build_rag_preview, build_synthetic_preview
 from watercare.config import load_pipeline
-from watercare.io import data_path, sha256_bytes
+from watercare.io import data_path, sha256_bytes, write_bytes
 
 
 class PipelineSafetyTests(unittest.TestCase):
@@ -24,6 +25,18 @@ class PipelineSafetyTests(unittest.TestCase):
             data_path(DATA_ROOT, "../outside.json")
         with self.assertRaises(ValueError):
             data_path(DATA_ROOT, str(DATA_ROOT.parent / "outside.json"))
+
+    def test_atomic_write_replaces_content_without_temp_residue(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "nested/result.json"
+            write_bytes(root, target, b'{"version":1}\n')
+            write_bytes(root, target, b'{"version":2}\n')
+            self.assertEqual(b'{"version":2}\n', target.read_bytes())
+            self.assertEqual(
+                [],
+                list(target.parent.glob(f".{target.name}.*.tmp")),
+            )
 
     def test_two_builds_are_byte_deterministic(self) -> None:
         first = {**build_rag_preview(self.config), **build_synthetic_preview(self.config)}
