@@ -1,0 +1,4 @@
+interface:
+  display_name: "커밋 메시지 형식화"
+  short_description: "팀 규칙에 맞는 커밋 메시지를 생성하고 검증합니다."
+  default_prompt: "Use $format-commit-message to create a Korean commit message for the current changes."
