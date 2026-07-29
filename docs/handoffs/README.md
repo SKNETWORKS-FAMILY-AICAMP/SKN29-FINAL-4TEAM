@@ -84,7 +84,7 @@ T-005 전체 완료라고 쓰지 않는다.
 | 영역 | 2026-07-29 실측 | 팀원이 따라야 할 판단 |
 | --- | --- | --- |
 | Git 기준선 | API 정합화·자동 회귀는 완료했으며 작업 단위 Commit·`jiyong` Push·PM 병합 대기 | `jiyong` SHA는 PR·추적 기준이다. PM이 검토해 `main`에 병합하고 전달한 40자리 `main` SHA만 팀별 Branch에 반영 |
-| PM 계약 | YAML·예시가 아직 `draft_for_review` | 윤승혁이 채택 상태·Version·Changelog를 기록하기 전에는 Data가 임의 확정 금지 |
+| PM 계약 | State Machine `v1.0.0`이 2026-07-29 `TEAM_APPROVED`로 채택됨 | Data는 `data-state-crosswalk.yaml`과 대표 14단계 계약을 기준으로 Fixture·QA를 갱신하고, Backend는 승인된 값을 중복 정의하지 않고 소비 |
 | State Machine 생성물 | 최신 `origin/main` 기준 파일과 순수 계산 Engine·Guard 단위 기반을 `jiyong`에 반영했으나 운영 Service에는 미연결 | PM 계약·생성 Script·산출물을 삭제하거나 구형 수동본으로 되돌리지 않음 |
 | Web | 환경·공통 API·인증 관련 핵심 파일이 비어 있고 Test Script가 없음 | 상담사 실제 연동 완료가 아니라 공통 Client·인증·계약 Fixture부터 구현 |
 | Mobile | 구조 V2·최신 `main`·`jiyong` 모두 `:customer-app`·`:technician-app`·`:core` 3모듈이며 `mobile/app`·`mobile_prev` 없음 | 구조 충돌은 해소됐다. 양정현은 3모듈 의존성·Network 위치·Build 기준을 검증한 뒤 기능 작업 |
@@ -440,7 +440,7 @@ docker compose --env-file .\backend\.env stop postgres
 | 1 | Action Endpoint 부족 | START·CANCEL 대표 흐름만 구현 | 최지용 | 윤승혁(PM), 한예나, 양정현 |
 | 2 | 상태·버전·409 Snapshot | 대표 흐름만 구현 | 최지용 | 한예나, 양정현, 김은진 |
 | 3 | Inquiry·Visit Aggregate 분리 | Inquiry 구현, Visit 후속 | 최지용 | 윤승혁(PM), 김은진 |
-| 4 | Data 12단계·PM 전이 차이 | 미해결 | 윤승혁(PM), 김은진 | 최지용 |
+| 4 | Data 12단계·PM 전이 차이 | PM `v1.0.0` Crosswalk·대표 14단계에서 계약 충돌 해결, Data Fixture·Backend 소비 검증 후속 | 윤승혁(PM), 김은진 | 최지용 |
 | 5 | Terminal·Reopen 정책 | 순수 엔진 단위 기반 구현, 운영 Service·Reopen Runtime 후속 | 윤승혁(PM), 최지용 | 김은진 |
 | 6 | Data UUID·업무 코드·Seed 연결 | Backend 분리 완료, Mapping 후속 | 김은진, 최지용 | 한예나, 양정현 |
 | 7 | `COUNSELOR`·`CONSULTANT` | Backend 표준 완료, Data 후속 | 김은진 | 최지용 |
@@ -454,7 +454,7 @@ docker compose --env-file .\backend\.env stop postgres
 | --- | ---: | --- | --- | --- |
 | 독립 선행 | A | 최지용 | 현재 Runtime 7개의 OpenAPI·Serializer·오류·예시·테스트 정합화 | 소비 가능한 현재 Backend 계약 |
 | 독립 선행 | B | 양정현 | V2 3모듈 의존성·Network 위치·Build 기준 확인 | `:customer-app`·`:technician-app`·`:core` 실행·검증 기준 |
-| 팀 의존성 | 1 | 윤승혁(PM) | 14단계·Terminal·Guard·채택 상태 정합화 | 채택된 State 계약 SHA·Transition·Guard ID |
+| 완료 입력 | 1 | 윤승혁(PM) | 14단계·Terminal·Guard를 State `v1.0.0 TEAM_APPROVED`로 채택 | 채택된 State 계약·Crosswalk·Transition·Guard ID |
 | 팀 의존성 | 2 | 김은진 | PM 계약 기준 Data ID·Role·상태 Mapping·Fixture·QA 갱신 | Mapping 파일·Fixture SHA·QA 결과 |
 | 팀 의존성 | 3 | 최지용 | 확정 Mapping을 Backend Import·Visit·Guard에 한 수직 흐름씩 반영 | 안정된 Backend 계약·Runtime |
 | 팀 의존성 | 4 | 한예나·양정현 | Web·Mobile 소비 코드와 오류 복구 갱신 | 소비자 계약·Build·Smoke 결과 |
@@ -462,7 +462,8 @@ docker compose --env-file .\backend\.env stop postgres
 | 최종 검증 | 6 | 김은진 | 동일 Commit 계약·DB·E2E·안전 통합 QA | 최종 QA 결과 |
 | 공유 게이트 | G | 최지용 → 윤승혁(PM) | 최지용 `jiyong` Push → PM 검토·`main` 병합·40자리 SHA 공유 | 팀원이 반영할 공식 `main` SHA |
 
-개발 의존성은 `PM → Data → Backend → 소비자 → AI → QA` 순서다.
+개발 의존성은 `PM 승인 입력 완료 → Data → Backend → 소비자 → AI → QA`
+순서다.
 독립 선행 A·B는 필요한 외부 입력을 기다리지 않고 진행할 수 있다.
 공유 게이트 G는 개발 기능 순위가 아니라 검증된 결과를 배포하는
 절차다. 팀원은 자기 선행 입력이 오지 않았으면 임의 Mock을 확정
@@ -533,8 +534,8 @@ docker compose --env-file .\backend\.env stop postgres
    Backend Importer를 한 Wave씩 구현한다.
 2. Visit Aggregate와 `VisitResult` FK는 해당 Data Mapping·Wave
    입력 뒤에 구현한다.
-3. 윤승혁의 State·Terminal·Reopen 계약이 채택되면 Action별 Guard
-   Adapter를 한 Action씩 Service Runtime에 연결한다.
+3. 채택된 State `v1.0.0`·Terminal·Reopen 계약을 입력으로 Action별
+   Guard Adapter를 한 Action씩 Service Runtime에 연결한다.
 4. 재문의 부모 문의는 PM 계약에 포함된 경우 계약·Model·Migration·
    API·테스트를 한 변경 단위로 구현한다.
 5. 소비자가 필요한 구독·문의 조회 API는 2.4의 정합 게이트와
@@ -589,7 +590,7 @@ python .\scripts\development\check_environment.py `
 - AI Schema·Runtime 입력 전에는 `BLOCKED`를 기록하고, 입력 후
   Backend AI Client를 연결했다면 해당 Commit과 검증 결과를 전달
 
-## 9. 윤승혁(PM) 인계 작업
+## 9. 윤승혁(PM) 계약 유지·변경 인계
 
 ### 9.1 주관 파일
 
@@ -605,7 +606,7 @@ Backend API·ERD 작성을 다시 승인하는 절차가 아니다. PM은 자기
 순서를 책임진다. 최지용이 확정한 Backend API·ERD를 다시 승인
 대기시키지 않는다.
 
-### 9.2 해결할 충돌
+### 9.2 `v1.0.0` 채택으로 해결된 계약 충돌과 남은 Runtime 경계
 
 - 충돌 3: Inquiry 13상태와 Visit 7상태를 별도 Aggregate로 유지한다.
 - 충돌 4: Data의 12단계 흐름에 빠진
@@ -637,10 +638,11 @@ FINALIZE_INQUIRY
   오류 `STATE-CONFLICT-01`·`DUPLICATE-EVENT-01`의 Mapping을 명시한다.
 - 성공 `allowed_actions` 객체 배열, 상태 충돌의 Action code 배열,
   멱등 Key 재사용 충돌의 빈 `details`를 서로 섞지 않는다.
-- 현재 계약 YAML·예시의 `draft_for_review`를 그대로 두고 확정이라고
-  보고하지 않는다. 채택 상태·Version·Changelog를 함께 갱신한다.
+- 현재 계약 YAML·대표 예시는 `v1.0.0 TEAM_APPROVED`이며 Version과
+  Changelog도 기록됐다. 계약 채택과 Backend의 전체 Action Runtime
+  구현 완료는 별도 상태로 보고한다.
 
-### 9.3 작업 순서
+### 9.3 후속 계약 변경 시 유지 절차
 
 1. 최신 `main` 반영 과정에서
    `scripts/contracts/render_state_machine.py`와 자동 생성
@@ -648,8 +650,8 @@ FINALIZE_INQUIRY
 2. `inquiry-states.yaml`, `transition-rules.yaml`,
    `completion-policy.yaml` 사이의 모순을 확인한다.
 3. PM 소유의 기계 판독 Crosswalk
-   `contracts/state-machine/data-state-crosswalk.yaml` 또는 동등한
-   계약을 만든다.
+   `contracts/state-machine/data-state-crosswalk.yaml`을 상태·전이
+   변경과 같은 Commit에서 함께 갱신한다.
 4. Data 구상태를 다음처럼 분리해서 Mapping한다.
 
 | Data 구값 | PM 계약 Mapping |
@@ -664,8 +666,8 @@ FINALIZE_INQUIRY
    치환하지 않는다.
 6. 14단계 대표 예시, Terminal/Reopen, 오류 Mapping,
    `allowed_actions` 형태를 함께 갱신한다.
-7. 채택 상태·Version·Changelog를 기록하고 생성 Diagram을 다시
-   만든다.
+7. 채택 상태·Version·Changelog의 일관성을 유지·갱신하고 생성
+   Diagram을 다시 만든다.
 8. 계약 변경이 없으면 변경 없음과 기준 Commit SHA를 전달한다.
 9. 계약 변경이 있으면 김은진·최지용에게 변경 이벤트·전이·Guard ID와
    Migration 영향 여부를 먼저 전달한다.
