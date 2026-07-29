@@ -1,9 +1,18 @@
-# T-023 Backend State Machine 구현 준비도
+# T-023 Backend State Machine 구현 준비도 — 착수 전 스냅샷
 
 > 기준일: 2026-07-27
 > State Machine 업무 규칙: 윤승혁(PM)
 > Backend·API 구현: 최지용
-> 현재 판정: PM 계약 6영역 교차검증 통과, Engine·저장·API 미구현
+> 문서 시점 판정: 2026-07-27 당시 PM 계약 6영역 교차검증 통과, Engine·저장·API 미구현
+
+> **현재 상태 안내:** 이 문서의 구현 수치와 `미구현` 판정은 착수 전
+> 기록이므로 현행 완료 판정에 사용하지 않는다. 2026-07-29 현재
+> CANCEL Runtime·Workflow 409·멱등성 대표 흐름은 구현돼 있다.
+> 현재 지원 경계는
+> [API Runtime 구현 상태](../../../../api/runtime_implementation_status.md),
+> 실행 증거는
+> [Backend API 계약 정합화 검증보고서](../../manuals/20260729_최지용_Backend_API_계약_정합화_검증보고서_v1.0.md)를
+> 따른다.
 
 ## 0. 문서 책임·협업·검토
 

@@ -21,7 +21,9 @@ interface ConsultantInquiryDetailProps {
   detailTab: DetailTab;
   inquiry: CounselorInquiry | null;
   onDetailTabChange: (tab: DetailTab) => void;
-  onOpenVisit: () => void;
+  onOpenVisit: (
+    entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED",
+  ) => void;
   sectionStates?: ConsultantDetailSectionStates;
 }
 
@@ -51,7 +53,9 @@ function UsageSection({ inquiry }: { inquiry: CounselorInquiry }) {
       ? "제품 전체 사용 중지"
       : inquiry.usageStatus === "PARTIAL_STOP"
         ? "일부 출수·기능 사용 중지"
-        : "일반 사용 가능";
+        : inquiry.usageStatus === "PENDING_CONSULTATION"
+          ? "상담 확인 전 안내 보류"
+          : "일반 사용 가능";
 
   return (
     <section className="v6-section">
@@ -103,7 +107,8 @@ function CustomerProductSection({ inquiry }: { inquiry: CounselorInquiry }) {
   const rows = [
     ["고객·구독", `${inquiry.customerId} · ${inquiry.subscriptionId}`],
     ["제품·매뉴얼", `${inquiry.productCode} · ${inquiry.manualModel}`],
-    ["문의·시나리오", `${inquiry.id} · ${inquiry.scenarioId}`],
+    ["문의·시나리오", `${inquiry.inquiryCode} · ${inquiry.scenarioId}`],
+    ["문의 공개 ID", inquiry.inquiryId],
     ["담당 상담원", inquiry.assignedCounselor],
     [
       "관리 유형·사용 시작일",
@@ -367,7 +372,7 @@ export default function ConsultantInquiryDetail({
             </div>
             <h2>{inquiry.symptomLabel}</h2>
             <p>
-              {inquiry.id} · {inquiry.scenarioId} · 접수{" "}
+              {inquiry.inquiryCode} · {inquiry.scenarioId} · 접수{" "}
               {formatWorkspaceDateTime(inquiry.createdAt)}
             </p>
           </div>
@@ -469,7 +474,7 @@ export default function ConsultantInquiryDetail({
           </div>
 
           <ConsultationActionPanel
-            key={inquiry.id}
+            key={inquiry.inquiryId}
             inquiry={inquiry}
             onOpenVisit={onOpenVisit}
           />

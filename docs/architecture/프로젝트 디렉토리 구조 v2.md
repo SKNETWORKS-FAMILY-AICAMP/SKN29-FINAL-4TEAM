@@ -1266,6 +1266,7 @@ contracts/                                          # 서비스 간 공통 데�
 │  │  ├─ ai.yaml                                        # AI 생성·Schema 검증 오류 코드
 │  │  ├─ retrieval.yaml                                 # 검색·재정렬 오류 코드
 │  │  ├─ persistence.yaml                               # 저장·수정·DB 처리 오류 코드
+│  │  ├─ system.yaml                                    # Backend 내부 처리·예상 밖 오류 코드
 │  │  └─ external.yaml                                  # 외부 URL·서비스 연동 오류 코드
 │  └─ README.md                                         # 현재 디렉토리의 사용·관리·갱신 방법 안내
 │

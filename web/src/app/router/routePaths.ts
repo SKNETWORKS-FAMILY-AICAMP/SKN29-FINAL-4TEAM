@@ -10,11 +10,11 @@ export const ROUTE_PATHS = {
     "/consultant/inquiries/:inquiryId/visit-transition",
 } as const;
 
-export function createInquiryDetailPath(inquiryId: string): string {
+export function createInquiryDetailPath(inquiryId: InquiryId): string {
   return `/consultant/inquiries/${encodeURIComponent(inquiryId)}`;
 }
 
-export function createVisitTransitionPath(inquiryId: string): string {
+export function createVisitTransitionPath(inquiryId: InquiryId): string {
   return `/consultant/inquiries/${encodeURIComponent(
     inquiryId,
   )}/visit-transition`;
@@ -31,3 +31,4 @@ export function getSafeInquiryListReturnPath(value: unknown): string {
 
   return ROUTE_PATHS.consultantInquiryList;
 }
+import type { InquiryId } from "../../entities/inquiry/inquiryIdentifiers";

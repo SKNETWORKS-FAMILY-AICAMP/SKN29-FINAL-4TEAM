@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
@@ -72,7 +72,7 @@ describe("App Router Guard", () => {
 
   it("상담사는 CONS-02 v13 상세 경로에 직접 접근할 수 있다", async () => {
     renderRoute(
-      "/consultant/inquiries/DEMO-INQ-003",
+      "/consultant/inquiries/205850d3-763c-5256-9d39-82da21be0c31",
       createUser("CONSULTANT"),
     );
 
@@ -80,13 +80,13 @@ describe("App Router Guard", () => {
       await screen.findByRole("heading", { name: "문의 상세·상담 처리" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "냉수 온도 이상" }),
+      screen.getByRole("heading", { name: "제품 누수" }),
     ).toBeInTheDocument();
   });
 
   it("CONS-02 근거 부분 실패가 상세 전체를 가리지 않는다", async () => {
     renderRoute(
-      "/consultant/inquiries/DEMO-INQ-EVIDENCE-ERROR",
+      "/consultant/inquiries/205850d3-763c-5256-9d39-82da21be0c31?mockFailure=evidence",
       createUser("CONSULTANT"),
     );
 
@@ -100,7 +100,7 @@ describe("App Router Guard", () => {
 
   it("방문 행동이 없는 문의의 CONS-03 직접 진입을 차단한다", async () => {
     renderRoute(
-      "/consultant/inquiries/DEMO-INQ-001/visit-transition",
+      "/consultant/inquiries/f72a3b18-a4f8-5f5e-8c86-199ffc1d8aa2/visit-transition",
       createUser("CONSULTANT"),
     );
 
@@ -111,13 +111,87 @@ describe("App Router Guard", () => {
     ).toBeInTheDocument();
   });
 
-  it("운영 담당자는 ADMIN-01 Placeholder에 접근할 수 있다", async () => {
+  it("방문 검토 상태는 요청 생성 후에만 일정 조율 행동을 연다", async () => {
+    const user = userEvent.setup();
+    renderRoute(
+      "/consultant/inquiries/a6bdf6b7-b9ba-553a-8447-f928384c1ad1/visit-transition",
+      createUser("CONSULTANT"),
+    );
+
+    expect(
+      await screen.findByRole("button", {
+        name: "방문 필요 확정·요청 생성",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "일정 조율 저장" }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("고객 희망일"), {
+      target: { value: "2026-07-29T10:00" },
+    });
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: /가상 방문기사/ }),
+      "STAFF-TECH-01",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "방문 필요 확정·요청 생성" }),
+    );
+
+    expect(
+      screen.getByRole("button", { name: "일정 조율 저장" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "방문 확정" }),
+    ).toBeInTheDocument();
+  });
+
+  it.each([
+    ["loading", "문의 정보를 불러오고 있습니다."],
+    ["error", "문의 정보를 불러오지 못했습니다."],
+    ["forbidden", "이 문의에 접근할 권한이 없습니다."],
+    ["unsupported", "지원하지 않는 제품 모델입니다."],
+  ])("CONS-02 %s 상태를 명확히 표시한다", async (state, message) => {
+    renderRoute(
+      `/consultant/inquiries/205850d3-763c-5256-9d39-82da21be0c31?mockState=${state}`,
+      createUser("CONSULTANT"),
+    );
+
+    expect(await screen.findByText(message)).toBeInTheDocument();
+  });
+
+  it("무근거 문의는 AI 실패와 근거 없음 안내를 함께 표시한다", async () => {
+    const user = userEvent.setup();
+    renderRoute(
+      "/consultant/inquiries/dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
+      createUser("CONSULTANT"),
+    );
+
+    expect(await screen.findByText("FAILED")).toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "공식 근거·사용 상태" }));
+    expect(
+      screen.getByText(/연결된 공식 근거가 없습니다/),
+    ).toBeInTheDocument();
+  });
+
+  it("표시용 문의 번호는 상세 URL의 리소스 ID로 사용하지 않는다", async () => {
+    renderRoute(
+      "/consultant/inquiries/INQ-20260704-0013",
+      createUser("CONSULTANT"),
+    );
+
+    expect(
+      await screen.findByText("문의를 찾을 수 없습니다."),
+    ).toBeInTheDocument();
+  });
+
+  it("운영 담당자는 ADMIN-01 운영 대시보드에 접근할 수 있다", async () => {
     renderRoute("/admin", createUser("OPERATOR"));
 
     expect(
       await screen.findByRole("heading", { name: "운영 대시보드" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("ADMIN-01 · PLACEHOLDER")).toBeInTheDocument();
+    expect(screen.getByText("ADMIN-01 · P1 MOCK")).toBeInTheDocument();
   });
 
   it("상담사가 운영 경로에 접근하면 403 화면으로 이동한다", async () => {
