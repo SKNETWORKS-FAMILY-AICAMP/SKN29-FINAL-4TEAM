@@ -1454,3 +1454,14 @@ AI 환경·테스트가 아직 확정되지 않았으면 `BLOCKED`로 보고하�
 
 새 인계 문서를 중복 생성하지 않고 이 문서와 연결된 최신 기준
 문서를 계속 갱신한다.
+
+## 19. 2026-07-29 Data 후속 Gate
+
+- Data projection은 State Machine `1.0.0/TEAM_APPROVED`를 소비한다.
+- `service_contracts_used=false`는 Backend Runtime 연동 미검증을 뜻하는
+  호환 필드이며 승인 상태 계약 소비 여부와 분리한다.
+- Backend DB 적재는 사용자 확인상 성공했지만 실행 증빙 대기 상태다.
+- RAG 평가 입력은 Data의 양성 7건·부정 5건을 기준으로 하고, 실제
+  Index 결과와 canonical AI 평가 경로는 이동윤이 확정한다.
+- `SYN-JAC104-012`, `016`은 새 관련 문의 방식 재설계 승인 전까지
+  `BLOCKED_DECISION`과 load 제외를 유지한다.

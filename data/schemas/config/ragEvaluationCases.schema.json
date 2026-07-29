@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RagEvaluationCases",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "config_version",
+    "status",
+    "approved_chunk_count",
+    "evaluation_policy",
+    "cases",
+    "ai_execution"
+  ],
+  "properties": {
+    "config_version": {"const": "1.0.0"},
+    "status": {"const": "DATA_EXPECTATION_READY_AI_EXECUTION_PENDING"},
+    "approved_chunk_count": {"const": 7},
+    "evaluation_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default_top_k",
+        "positive_min_expected_hits",
+        "negative_max_forbidden_hits",
+        "required_result_metadata"
+      ],
+      "properties": {
+        "default_top_k": {"type": "integer", "minimum": 1},
+        "positive_min_expected_hits": {"const": 1},
+        "negative_max_forbidden_hits": {"const": 0},
+        "required_result_metadata": {
+          "type": "array",
+          "minItems": 8,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "case_id",
+          "case_type",
+          "scenario_id",
+          "query",
+          "product_model_code",
+          "expected_chunk_ids",
+          "expected_document_id",
+          "expected_page_numbers",
+          "forbidden_model_codes",
+          "forbidden_document_ids",
+          "top_k",
+          "expected_no_evidence"
+        ],
+        "properties": {
+          "case_id": {"type": "string", "pattern": "^RAG-(POS|NEG)-[A-Z0-9-]+$"},
+          "case_type": {"enum": ["POSITIVE", "NEGATIVE_SCOPE", "NEGATIVE_SOURCE"]},
+          "scenario_id": {
+            "type": ["string", "null"],
+            "pattern": "^SYN-JAC104-[0-9]{3}$"
+          },
+          "query": {"type": "string", "minLength": 1},
+          "product_model_code": {"type": "string", "minLength": 1},
+          "expected_chunk_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "expected_document_id": {"type": ["string", "null"], "minLength": 1},
+          "expected_page_numbers": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "integer", "minimum": 1}
+          },
+          "forbidden_model_codes": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "forbidden_document_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "top_k": {"type": "integer", "minimum": 1},
+          "expected_no_evidence": {"type": "boolean"}
+        }
+      }
+    },
+    "ai_execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "canonical_dataset_path",
+        "result_manifest_path",
+        "owner"
+      ],
+      "properties": {
+        "status": {"const": "PENDING_AI_OWNER"},
+        "canonical_dataset_path": {"const": "PENDING_AI_OWNER_DECISION"},
+        "result_manifest_path": {"const": "PENDING_AI_OWNER"},
+        "owner": {"const": "LEE_DONGYUN"}
+      }
+    }
+  }
+}

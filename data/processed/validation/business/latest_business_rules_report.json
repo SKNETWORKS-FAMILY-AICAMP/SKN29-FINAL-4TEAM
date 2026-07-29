@@ -1,6 +1,30 @@
 {
   "dataset_version": "0.9.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
+  "source_commit": "2c93fd14feeb01443215e0bb49187702995a747c",
+  "contract_alignment": {
+    "version": "1.0.0",
+    "status": "TEAM_APPROVED",
+    "data_projection_consumes_contract": true,
+    "backend_runtime_verified": false,
+    "pipeline_config_sha256": "041E91B6D0D0ED6DE8DBA4A21918293BE9FBE21EBE350617C445B9EABEE2B31D",
+    "contract_mapping_sha256": "06ABB56D86253584FE27E97B0F3371F5041BEE4D938024D6E1EF7B4F6AEAB6BE",
+    "source_hashes_verified": true
+  },
+  "error_categories": {
+    "DATA_ERROR": {
+      "count": 0,
+      "items": []
+    },
+    "CONTRACT_SOURCE_DRIFT": {
+      "count": 0,
+      "items": []
+    },
+    "EXTERNAL_BLOCKER": {
+      "count": 0,
+      "items": []
+    }
+  },
   "status": "PASS",
   "report_type": "BUSINESS",
   "records": 22,
