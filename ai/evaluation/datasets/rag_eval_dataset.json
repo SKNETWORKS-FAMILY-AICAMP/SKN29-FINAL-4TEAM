@@ -3,18 +3,19 @@
     "eval_id": "rag_eval_001",
     "query": "정수기 밑에서 물이 새요 전원선에 물이 닿을 것 같아요",
     "model_code": "WPUJAC104DWH",
-    "expected_chunk_ids": ["chunk_wpu_104_leak_01"]
+    "expected_chunk_ids": ["RAG-WPUJAC104DWH-LEAK-001"]
   },
   {
     "eval_id": "rag_eval_002",
     "query": "냉수가 안 차갑고 졸졸 나와서 물량이 적습니다",
     "model_code": "WPUJAC104DWH",
-    "expected_chunk_ids": ["chunk_wpu_104_flow_02", "chunk_wpu_104_temp_03"]
+    "expected_chunk_ids": ["RAG-WPUJAC104DWH-LOW-FLOW-001", "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001"]
   },
   {
     "eval_id": "rag_eval_003",
-    "query": "온수가 안 나오고 미지근합니다",
+    "query": "냉수가 안 차갑고 미지근합니다",
     "model_code": "WPUJAC104DWH",
-    "expected_chunk_ids": ["chunk_wpu_104_temp_03"]
+    "expected_chunk_ids": ["RAG-WPUJAC104DWH-COLD-TEMPERATURE-001"]
   }
 ]
+

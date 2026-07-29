@@ -1,0 +1,18 @@
+{
+  "request": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b204",
+    "correlation_id": "corr-trace-20260729-004",
+    "raw_symptom": "",
+    "model_code": "INVALID_MODEL_CODE"
+  },
+  "error_response": {
+    "error_code": "AI-VALIDATION-01",
+    "error_message": "요청 데이터 입력 검증에 실패했습니다.",
+    "retryable": false,
+    "failed_stage": "input_validation",
+    "details": {
+      "raw_symptom": ["고객 최초 입력 증상이 비어있습니다."],
+      "model_code": ["지원되지 않거나 삭제된 모델 코드입니다."]
+    }
+  }
+}
