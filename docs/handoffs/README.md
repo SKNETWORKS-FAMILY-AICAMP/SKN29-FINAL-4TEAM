@@ -86,9 +86,9 @@ T-005 전체 완료라고 쓰지 않는다.
 | Git 기준선 | API 정합화·최신 `main` 통합·자동 회귀를 작업 단위 Commit으로 고정 | `jiyong` SHA는 PR·추적 기준이다. PM이 검토해 `main`에 병합하고 전달한 40자리 `main` SHA만 팀별 Branch에 반영 |
 | PM 계약 | State Machine `v1.0.0`이 2026-07-29 `TEAM_APPROVED`로 채택됨 | Data는 `data-state-crosswalk.yaml`과 대표 14단계 계약을 기준으로 Fixture·QA를 갱신하고, Backend는 승인된 값을 중복 정의하지 않고 소비 |
 | State Machine 생성물 | 최신 `origin/main` 기준 파일과 순수 계산 Engine·Guard 단위 기반을 `jiyong`에 반영했으나 운영 Service에는 미연결 | PM 계약·생성 Script·산출물을 삭제하거나 구형 수동본으로 되돌리지 않음 |
-| Web | 환경·공통 API·인증 관련 핵심 파일이 비어 있고 Test Script가 없음 | 상담사 실제 연동 완료가 아니라 공통 Client·인증·계약 Fixture부터 구현 |
+| Web | Auth·공통 Client·운영 Dashboard·Test Script 반영, build·lint 통과. 다만 최신 Data Fixture의 `public_id` 전환을 Mock이 소비하지 못해 8개 Suite import 실패 | 한예나는 `inquiry_id`→`public_id` Mapping과 내부 정수 FK/Public UUID 경계를 수정하고 `npm test` 전체 통과 후 인계 |
 | Mobile | 구조 V2·최신 `main`·`jiyong` 모두 `:customer-app`·`:technician-app`·`:core` 3모듈이며 `mobile/app`·`mobile_prev` 없음 | 구조 충돌은 해소됐다. 양정현은 3모듈 의존성·Network 위치·Build 기준을 검증한 뒤 기능 작업 |
-| AI | 계약 일부가 비어 있고 `pyproject.toml`·Runtime·Health가 Placeholder | 확정 설치 명령이 없으므로 이동윤이 환경·Schema·Runtime을 먼저 완성 |
+| AI | 평가 Dataset·Loader와 App 코드는 있으나 `pyproject.toml` 의존성 선언이 비어 있어 재현 가능한 AI 환경이 없음 | Backend `.venv`에 AI 패키지를 섞지 않고 이동윤이 `ai/.venv` 재현 계약·의존성·테스트 명령을 확정 |
 | API 구현 상태 | OpenAPI 9·Runtime 7·OpenAPI-only 2, JSON 22개, Registry 공통 코드 정합화 완료 | 미구현 2개를 호출하지 않고 PM `main` SHA에서 소비 검증 |
 | 설명 문서 Drift | 사람용 명세와 Runtime 상태표를 기계 계약·실제 Route의 9·7로 갱신 | 이후 수치는 Runtime·OpenAPI 계약 테스트를 통과한 변경에서만 갱신 |
 
@@ -446,7 +446,7 @@ docker compose --env-file .\backend\.env stop postgres
 | 7 | `COUNSELOR`·`CONSULTANT` | Backend 표준 완료, Data 후속 | 김은진 | 최지용 |
 | 8 | AI Schema·Timeout·Retry | 정책만 확정, Runtime 후속 | 이동윤, 최지용 | 김은진 |
 | 9 | Mobile 단일 App·3모듈 구조 충돌 | **해결** — V2·`main`·`jiyong` 모두 3모듈, `mobile/app`·`mobile_prev` 없음 | 양정현 | 윤승혁(PM), 최지용 |
-| 10 | Web 상담사 UI·고객 전용 START/CANCEL | 상담사 Runtime API 미구현 | 한예나, 최지용 | 윤승혁(PM) |
+| 10 | Web 상담사 UI·고객 전용 START/CANCEL | Web 화면·Auth 기반 반영, 상담사 Runtime API 미구현·Data Fixture `public_id` 소비 테스트 후속 | 한예나, 최지용 | 윤승혁(PM), 김은진 |
 
 ## 7. 권장 협업 실행 순서
 
@@ -883,18 +883,33 @@ Backend Seed 2회와 DB E2E 승인은 최지용의 최종 통합 게이트다. �
 고객 계약 Harness가 필요할 때만 `DEMO-CUSTOMER-001`을 사용하고
 상담사 화면 기능과 명확히 구분한다.
 
-또한 Web의 `.env.example`, 환경 Loader, 공통 HTTP Client,
-Response·Error·Request Context, Auth·Role Guard가 현재 비어 있고
-`package.json`에 Test Script도 없다. 다음을 구현하기 전에는 실제
-Web 연동 완료로 보고하지 않는다.
+최신 `main`에는 환경 Loader, 공통 HTTP Client, Auth·Role Guard,
+운영 Dashboard와 Vitest Script가 반영됐다. 통합 Gate의 `npm run
+build`와 `npm run lint`는 통과했지만 `npm test`는 22개 Suite 중
+14개만 통과하고 8개가 import 단계에서 실패했다. 실행에 진입한
+38개 Test 자체는 모두 통과했다.
 
-- `VITE_API_BASE_URL=http://127.0.0.1:8000/api/v1`처럼 비밀값이 아닌
-  공개 환경변수의 검증
-- Demo Login·Refresh·Logout·`/me` 네 Auth Route
-- 401 동시 요청의 Refresh Single-flight와 원요청 최대 1회 재시도
-- Refresh 실패·Logout 시 Token·사용자 상태 제거 기준
-- `DEMO-CONSULTANT-001` 로그인과 상담사 Role Guard
-- Vitest 등 팀이 채택한 Test Runner와 `npm test` 계열 Script
+원인은 [상담사 Mock](../../web/src/features/consultation/model/consultantWorkspaceMock.ts)이
+`row.inquiry_id`를 읽는 반면
+[최신 Inquiry Fixture](../../data/synthetic/fixtures/inquiries.json)와
+[Schema](../../data/schemas/synthetic/syntheticInquiry.schema.json)는
+공개 UUID를 `public_id`로 제공하기 때문이다. 한예나는 다음 순서로
+수정하고 김은진은 소비 Mapping을 교차검증한다.
+
+1. `OfficialInquiryFixture.inquiry_id`와 `row.inquiry_id`를
+   `public_id` 기준으로 갱신한다.
+2. 정수 `customer_id`·`subscription_id`를 Public UUID처럼 문자열
+   강제 변환하지 않고
+   [Backend Import Crosswalk](../../data/config/handoff/backend_import_crosswalk.json)의
+   조회 순서를 따른다.
+3. 계약 Fixture를 다시 생성해야 하면 생성 전후 Diff를 확인하고,
+   원본 Data Fixture를 Web에서 수정하지 않는다.
+4. `npm test`의 Suite import 실패 0건과 전체 Test 통과를 확인한다.
+
+`npm ci`는 완료됐지만 로컬 Node `24.14.0`이 `jsdom@30.0.0`의
+요구 조건인 Node `24.15.0` 이상보다 낮아 `EBADENGINE` 경고가
+발생했다. Node `24.15.0+`, `22.22.2+` 또는 `26+` 중 팀이 잠근
+버전에서 다시 설치·검증하고 High 취약점 2건을 검토한다.
 
 활성 구독 UUID 조회 API와 상담사 문의 목록·상세·Action Runtime도
 전체 구현되지 않았다. 다음 중 하나가 제공되기 전에는 해당 화면을
@@ -929,13 +944,10 @@ Set-Location .\web
 
 node --version
 npm ci
+npm test
 npm run lint
 npm run build
 ```
-
-현재 `package.json`에는 Test Script가 없으므로 테스트 환경을 추가한
-뒤에는 팀이 확정한 Script도 함께 실행한다. Test Script가 없는데
-테스트까지 완료했다고 보고하지 않는다.
 
 개발 서버:
 
@@ -1136,9 +1148,14 @@ AI 호출 시점은 `START_INQUIRY` 직후가 아니다.
 
 ### 13.4 환경·검증 명령
 
-현재 `ai/pyproject.toml`이 설명 주석뿐이고 App 진입점도
-Placeholder다. 따라서 아래는 **현재 실행 명령이 아니라 이동윤이
-호환성을 검증하고 README에 확정한 뒤 사용할 명령 형식**이다.
+최신 `main`에는 평가 Dataset·Loader와 FastAPI App 코드가 있지만
+`ai/pyproject.toml`은 여전히 설명 주석뿐이다. Backend `.venv`로
+`ai/tests`를 실행하면 `fastapi`·`pydantic` 부재로 6개 Module이
+수집 단계에서 중단된다. 이는 Backend 회귀가 아니라 AI 재현 환경
+미확정 Gate이며, Backend `.venv`에 AI 의존성을 임의 설치하지 않는다.
+
+따라서 아래는 **현재 실행 명령이 아니라 이동윤이 의존성·호환성을
+검증하고 README에 확정한 뒤 사용할 명령 형식**이다.
 
 ```powershell
 Set-Location (git rev-parse --show-toplevel)
