@@ -1,2 +1,18 @@
 category: ai
-errors: []
+errors:
+  - code: AI-FAILED-01
+    http_status: 503
+    retryable: true
+    user_message: AI 분석을 완료하지 못했습니다.
+    recommended_action: RETRY_OR_REQUEST_CONSULTATION
+  - code: AI-VALIDATION-01
+    http_status: 400
+    retryable: false
+    user_message: AI 분석 요청 스키마 검증에 실패했습니다.
+    recommended_action: CHECK_REQUEST_SCHEMA
+  - code: AI-TIMEOUT-01
+    http_status: 504
+    retryable: true
+    user_message: AI 서비스 처리 시간이 초과되었습니다.
+    recommended_action: RETRY_OR_FALLBACK_CONSULTATION
+

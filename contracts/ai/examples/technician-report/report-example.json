@@ -1,0 +1,17 @@
+{
+  "request": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b202",
+    "correlation_id": "corr-trace-20260729-102",
+    "visit_id": "visit-uuid-20260729-001",
+    "symptom_notes": "제품 하부 누수 및 타는 냄새",
+    "action_notes": "원수 밸브 연결 부위 피팅 교체 및 전원부 내부 케이블 점검 완료"
+  },
+  "response": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b202",
+    "correlation_id": "corr-trace-20260729-102",
+    "visit_id": "visit-uuid-20260729-001",
+    "tech_summary": "피팅 누수 교체 및 전원부 이상 없음 확인 완료",
+    "parts_replaced": ["원수 튜빙 피팅 1/4"],
+    "final_status": "VISIT_COMPLETED"
+  }
+}
