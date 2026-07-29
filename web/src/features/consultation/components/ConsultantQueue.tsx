@@ -1,10 +1,16 @@
 import type { ReactNode } from "react";
 
+import type { InquiryId } from "../../../entities/inquiry/inquiryIdentifiers";
+import EmptyState from "../../../common/components/feedback/EmptyState";
+import ErrorState from "../../../common/components/feedback/ErrorState";
+import ForbiddenState from "../../../common/components/feedback/ForbiddenState";
+import LoadingState from "../../../common/components/feedback/LoadingState";
 import Pagination from "../../../common/components/data-display/Pagination";
 import PriorityBadge from "../../../common/components/badge/PriorityBadge";
 import RiskBadge from "../../../common/components/badge/RiskBadge";
 import StatusBadge from "../../../common/components/badge/StatusBadge";
 import {
+  formatWaitingTime,
   formatWorkspaceDateTime,
   getPriorityVariant,
   getStatusBadgeVariant,
@@ -28,14 +34,21 @@ interface ConsultantQueueProps {
   hasChangedConditions: boolean;
   inquiries: readonly CounselorInquiry[];
   page: number;
-  selectedInquiryId: string | null;
+  selectedInquiryId: InquiryId | null;
   totalItems: number;
   totalPages: number;
+  loadState?: "ready" | "loading" | "error" | "forbidden";
   onFiltersChange: (filters: CounselorFilters) => void;
   onPageChange: (page: number) => void;
   onResetFilters: () => void;
-  onSelectInquiry: (inquiryId: string) => void;
+  onSelectInquiry: (inquiryId: InquiryId) => void;
+  onRetry?: () => void;
 }
+
+const FILTERABLE_STATUSES = Object.entries(STATUS_LABELS) as readonly [
+  CounselorStatus,
+  string,
+][];
 
 export default function ConsultantQueue({
   children,
@@ -46,10 +59,12 @@ export default function ConsultantQueue({
   selectedInquiryId,
   totalItems,
   totalPages,
+  loadState = "ready",
   onFiltersChange,
   onPageChange,
   onResetFilters,
   onSelectInquiry,
+  onRetry,
 }: ConsultantQueueProps) {
   const updateFilter = <Key extends keyof CounselorFilters>(
     key: Key,
@@ -85,11 +100,11 @@ export default function ConsultantQueue({
             }
           >
             <option value="ALL">전체 상태</option>
-            <option value="COMPLETION_PENDING">최종 완료 대기</option>
-            <option value="VISIT_SCHEDULED">방문 예정</option>
-            <option value="CONSULTATION_IN_PROGRESS">상담 진행 중</option>
-            <option value="CONSULTATION_REQUIRED">상담 대기</option>
-            <option value="QUESTIONNAIRE_IN_PROGRESS">문진 진행 중</option>
+            {FILTERABLE_STATUSES.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
           </select>
         </label>
 
@@ -216,22 +231,47 @@ export default function ConsultantQueue({
           </div>
 
           <div className="v6-queue-list">
-            {inquiries.length === 0 ? (
-              <div className="v6-empty">
-                <span>⌕</span>
-                <strong>조건에 맞는 문의가 없습니다.</strong>
-                <p>검색어나 필터를 변경해 주세요.</p>
-              </div>
+            {loadState === "loading" ? (
+              <LoadingState
+                title="상담 문의 목록을 불러오고 있습니다."
+                description="담당 문의와 우선순위를 확인하고 있습니다."
+              />
+            ) : loadState === "error" ? (
+              <ErrorState
+                title="상담 문의 목록을 불러오지 못했습니다."
+                description="잠시 후 다시 시도해 주세요."
+                onRetry={onRetry}
+              />
+            ) : loadState === "forbidden" ? (
+              <ForbiddenState
+                title="상담 문의 목록을 볼 권한이 없습니다."
+                description="상담사 역할과 담당 범위를 확인해 주세요."
+              />
+            ) : inquiries.length === 0 ? (
+              <EmptyState
+                title={
+                  hasChangedConditions
+                    ? "조건에 맞는 문의가 없습니다."
+                    : "아직 접수된 문의가 없습니다."
+                }
+                description={
+                  hasChangedConditions
+                    ? "검색어나 필터를 변경해 주세요."
+                    : "새 문의가 접수되면 이 목록에 표시됩니다."
+                }
+                actionLabel={hasChangedConditions ? "조건 초기화" : undefined}
+                onAction={hasChangedConditions ? onResetFilters : undefined}
+              />
             ) : (
               inquiries.map((inquiry) => (
                 <button
-                  key={inquiry.id}
+                  key={inquiry.inquiryId}
                   className={`v6-queue-item${
-                    selectedInquiryId === inquiry.id ? " is-selected" : ""
+                    selectedInquiryId === inquiry.inquiryId ? " is-selected" : ""
                   }`}
                   type="button"
-                  aria-pressed={selectedInquiryId === inquiry.id}
-                  onClick={() => onSelectInquiry(inquiry.id)}
+                  aria-pressed={selectedInquiryId === inquiry.inquiryId}
+                  onClick={() => onSelectInquiry(inquiry.inquiryId)}
                 >
                   <span className="v6-queue-item__top">
                     <span className="v6-chip-row">
@@ -255,16 +295,28 @@ export default function ConsultantQueue({
                         />
                       )}
                     </span>
-                    <time dateTime={inquiry.updatedAt}>
-                      {formatWorkspaceDateTime(inquiry.updatedAt)}
-                    </time>
+                    <span className="v6-queue-item__wait">
+                      대기 {formatWaitingTime(inquiry.waitingMinutes)}
+                    </span>
                   </span>
 
-                  <strong>{inquiry.symptomLabel}</strong>
+                  <span className="v6-queue-item__symptoms">
+                    {inquiry.symptomLabels.map((symptom) => (
+                      <span key={symptom}>{symptom}</span>
+                    ))}
+                  </span>
                   <small>
-                    {inquiry.scenarioId} · {inquiry.customerName} ·{" "}
+                    {inquiry.scenarioId} · {inquiry.customerDisplayName} ·{" "}
                     {inquiry.productCode}
                   </small>
+                  <span className="v6-queue-item__times">
+                    <time dateTime={inquiry.createdAt}>
+                      접수 {formatWorkspaceDateTime(inquiry.createdAt)}
+                    </time>
+                    <time dateTime={inquiry.updatedAt}>
+                      변경 {formatWorkspaceDateTime(inquiry.updatedAt)}
+                    </time>
+                  </span>
 
                   <span className="v6-queue-item__bottom">
                     <StatusBadge
@@ -272,19 +324,21 @@ export default function ConsultantQueue({
                       size="compact"
                       variant={getStatusBadgeVariant(inquiry.status)}
                     />
-                    <b>{inquiry.id}</b>
+                    <b>{inquiry.inquiryCode}</b>
                   </span>
                 </button>
               ))
             )}
           </div>
 
-          <Pagination
-            page={page}
-            totalItems={totalItems}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
+          {loadState === "ready" && (
+            <Pagination
+              page={page}
+              totalItems={totalItems}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+            />
+          )}
         </aside>
 
         {children}

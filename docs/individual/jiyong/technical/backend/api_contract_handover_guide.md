@@ -33,7 +33,7 @@ Model과 테스트로 옮기는 절차를 정의한다. 구현 여부와 실행 
 
 | 구분 | 원본 | 용도 |
 | --- | --- | --- |
-| Public API 설명 | [WaterCare API 명세](../../../../api/watercare_api_specification.md) | Public 후보 41개의 Method·Path·입출력 기준 |
+| Public API 설명 | [WaterCare API 명세](../../../../api/watercare_api_specification.md) | Public 후보 42개의 Method·Path·입출력 기준 |
 | 기획 기준 | [API 명세서](../../../../planning/md/API명세서.md) | 업무 요구사항과 API ID 연결 |
 | 기계 계약 | [OpenAPI](../../../../../contracts/api/openapi.yaml) | 자동 검증 가능한 Path·Schema·Header |
 | 공통 코드 | [공통 코드 계약](../../../../../contracts/codes) | 역할·상태·위험도·사용 안내 코드 |
@@ -53,6 +53,8 @@ Model과 테스트로 옮기는 절차를 정의한다. 구현 여부와 실행 
 | Auth 계약·Route·Token 동작·HTTP 검증 | [Auth 계약·Runtime 정합화 보고서](../../manuals/20260727_최지용_Auth_API_계약_Runtime_정합화_보고서_v1.0.md) |
 | PostgreSQL·Migration·Seed 구현 경계 | [Migration 검증 보고서](../../manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md) |
 | 새 환경 실행·재현 순서 | [Django·PostgreSQL 공유 패키지 인계서](../../manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md) |
+| OpenAPI·Runtime 현재 지원 경계 | [API Runtime 구현 상태](../../../../api/runtime_implementation_status.md) |
+| 오류 Registry·JSON 예시·최종 회귀 증거 | [Backend API 계약 정합화 검증보고서](../../manuals/20260729_최지용_Backend_API_계약_정합화_검증보고서_v1.0.md) |
 | 문의 API 구현 Gap | [T-022 문의 관리 구현 준비도](t-022-inquiry-readiness.md) |
 | 상태 전이 구현 Gap·PM 입력 경계 | [T-023 Workflow 구현 준비도](t-023-workflow-readiness.md) |
 

@@ -10,6 +10,9 @@
         application/json:
           schema:
             $ref: ../components/schemas/auth/LoginRequest.yaml
+          examples:
+            demoLoginRequest:
+              externalValue: ../examples/auth/demo-login-request.json
     responses:
       "200":
         description: JWT session 발급
@@ -25,10 +28,17 @@
                   properties:
                     data:
                       $ref: ../components/schemas/auth/LoginResponse.yaml
+            examples:
+              demoLoginSuccess:
+                externalValue: ../examples/auth/demo-login-success-response.json
+      "400":
+        $ref: ../components/responses/BadRequest.yaml
       "401":
         $ref: ../components/responses/Unauthorized.yaml
       "403":
         $ref: ../components/responses/Forbidden.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
 /auth/refresh:
   post:
     operationId: refreshAuthToken
@@ -41,6 +51,9 @@
         application/json:
           schema:
             $ref: ../components/schemas/auth/TokenRefreshRequest.yaml
+          examples:
+            refreshRequest:
+              externalValue: ../examples/auth/refresh-request.json
     responses:
       "200":
         description: 기존 refresh 폐기 후 최초 절대 만료시각을 유지하는 새 JWT session 발급
@@ -56,8 +69,15 @@
                   properties:
                     data:
                       $ref: ../components/schemas/auth/LoginResponse.yaml
+            examples:
+              refreshSuccess:
+                externalValue: ../examples/auth/refresh-success-response.json
+      "400":
+        $ref: ../components/responses/BadRequest.yaml
       "401":
         $ref: ../components/responses/Unauthorized.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
 /auth/logout:
   post:
     operationId: logout
@@ -70,6 +90,9 @@
         application/json:
           schema:
             $ref: ../components/schemas/auth/LogoutRequest.yaml
+          examples:
+            logoutRequest:
+              externalValue: ../examples/auth/logout-request.json
     responses:
       "200":
         description: 폐기 완료
@@ -85,8 +108,15 @@
                   properties:
                     data:
                       $ref: ../components/schemas/auth/LogoutResponse.yaml
+            examples:
+              logoutSuccess:
+                externalValue: ../examples/auth/logout-success-response.json
+      "400":
+        $ref: ../components/responses/BadRequest.yaml
       "401":
         $ref: ../components/responses/Unauthorized.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
 /me:
   get:
     operationId: getCurrentUser
@@ -109,5 +139,8 @@
                   properties:
                     data:
                       $ref: ../components/schemas/auth/AuthenticatedUser.yaml
+            examples:
+              currentUser:
+                externalValue: ../examples/auth/me-success-response.json
       "401":
         $ref: ../components/responses/Unauthorized.yaml

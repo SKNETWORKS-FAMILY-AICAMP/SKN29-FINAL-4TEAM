@@ -7,7 +7,7 @@ import { COUNSELOR_INQUIRIES } from "../../src/features/consultation/model/consu
 
 function getVisitInquiry() {
   const inquiry = COUNSELOR_INQUIRIES.find(
-    (item) => item.id === "DEMO-INQ-004",
+    (item) => item.inquiryCode === "INQ-20260703-0008",
   );
   if (!inquiry) throw new Error("방문 전환 테스트 문의를 찾을 수 없습니다.");
   return inquiry;

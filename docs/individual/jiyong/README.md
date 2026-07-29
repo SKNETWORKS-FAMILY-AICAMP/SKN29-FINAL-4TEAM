@@ -1,6 +1,6 @@
 # 최지용 개발문서
 
-> 기준일: 2026-07-28
+> 기준일: 2026-07-29
 > 작성·유지 책임: 최지용
 > 산출물 범위: Backend · Database · API 계약
 > 검토 상태: 미요청 또는 검토 증거 미확인
@@ -62,11 +62,13 @@ WBS 목적은 유지하되, 현재 순서와 상태는 v0.5 및 실제 검증 �
 | 환경 설계 | [Backend `.venv` 재현성과 VS Code 환경 설계](<technical/backend/backend_venv_reproducibility_guide.md>) | 서비스 경계·버전 잠금·자동화·검증·복구 기준 |
 | DB 검증 | [Django·PostgreSQL Migration 검증 보고서 v1.0](<manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md>) | PostgreSQL 적용 증거와 2/32 구현 경계 |
 | Auth 검증 | [Auth API 계약·Runtime 정합화 보고서 v1.0](<manuals/20260727_최지용_Auth_API_계약_Runtime_정합화_보고서_v1.0.md>) | Auth 4개 계약·Route·보안·테스트 근거 |
+| API 현행 상태 | [API Runtime 구현 상태](<../../api/runtime_implementation_status.md>) | OpenAPI 9·Runtime 7·OpenAPI-only 2의 팀 공용 현재 상태 |
+| API 정합 검증 | [Backend API 계약 정합화 검증보고서 v1.0](<manuals/20260729_최지용_Backend_API_계약_정합화_검증보고서_v1.0.md>) | 오류 Registry·JSON 22개·계약·권한·전체 회귀 실행 증거 |
 | API 공통 | [API 계약 개발·인계 가이드](<technical/backend/api_contract_handover_guide.md>) | 계약·Route·테스트 동시 갱신 절차 |
 | DB 공통 | [DB 스키마 개발·인계 가이드](<technical/backend/database_schema_handover_guide.md>) | Model·Migration·Seed의 Wave별 구현 절차 |
 | DB↔AI | [T-005/T-006 정합성 검토](<technical/contracts/t-005-t-006-alignment-review.md>) | 확정 DB 계약과 남은 AI Schema 차이 |
 | T-022 | [문의 관리 현재 준비도](<technical/backend/t-022-inquiry-readiness.md>) | 구현된 것과 미구현 Runtime 범위 |
-| T-023 | [Workflow 현재 준비도](<technical/backend/t-023-workflow-readiness.md>) | PM 입력과 Backend 구현 경계 |
+| T-023 | [Workflow 착수 전 스냅샷](<technical/backend/t-023-workflow-readiness.md>) | 2026-07-27 역사 기록. 현재 상태는 API Runtime 상태표와 팀 인계 문서를 참조 |
 
 ## 공용 기준 문서
 
@@ -150,9 +152,9 @@ Android 연동 starter 참고본이며 현재 구현·Migration·API·State·AI
 
 | 검사 | 결과 |
 | --- | ---: |
-| 개인 개발문서 | 10개 |
-| 저장소 내부 파일 링크 | 138개 |
-| 고유 링크 대상 | 75개 (파일 71·디렉터리 4) |
+| 개인 개발문서 | 11개 |
+| 저장소 내부 파일 링크 | 166개 |
+| 고유 링크 대상 | 88개 (파일 79·디렉터리 9) |
 | 절대 파일 하이퍼링크 | 0개 |
 | 깨진 상대 링크 | 0개 |
 

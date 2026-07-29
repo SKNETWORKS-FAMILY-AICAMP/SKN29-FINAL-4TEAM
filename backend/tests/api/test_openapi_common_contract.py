@@ -141,6 +141,7 @@ def test_common_error_responses_expose_trace_header():
         "InternalServerError.yaml",
         "NotFound.yaml",
         "Unauthorized.yaml",
+        "UnprocessableEntity.yaml",
     ):
         response = load_yaml(response_dir / name)
         assert response["headers"]["X-Correlation-ID"] == {
