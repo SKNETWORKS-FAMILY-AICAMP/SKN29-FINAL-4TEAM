@@ -2,6 +2,12 @@
   "mapping_version": "1.0.0",
   "scope": "data_contract_alignment",
   "status": "PARTIAL_BLOCKED_DECISIONS",
+  "state_machine_contract": {
+    "version": "1.0.0",
+    "status": "TEAM_APPROVED",
+    "data_projection_consumes_contract": true,
+    "backend_runtime_verified": false
+  },
   "contract_sources": {
     "user_roles": {
       "path": "contracts/codes/user-roles.yaml",
@@ -9,19 +15,27 @@
     },
     "inquiry_states": {
       "path": "contracts/state-machine/inquiry-states.yaml",
-      "sha256": "AB56E554DF0FE4ED192808D9A8D1BE1412F57AEFCD595F40A1983843534F3F3C"
+      "sha256": "D3490FCD08BC13CCDC0319B108FAAA25216B44E579B0CD4F4456867888AD0FA8"
     },
     "inquiry_events": {
       "path": "contracts/state-machine/inquiry-events.yaml",
-      "sha256": "BB92EE8947BBE2AB7C820752BC360FFCE4617EB7AB66F5C395D070706AE2BFB2"
+      "sha256": "D6817A5CEE1F8DE365953A4A1E3A4DD4C98DF2BF0CBE6F6D40ECD22CEA794789"
     },
     "transition_rules": {
       "path": "contracts/state-machine/transition-rules.yaml",
-      "sha256": "3A5BB8373C08AE261B77D83FE669A30BCDA0057CB4E5E203160924C72C369DC1"
+      "sha256": "10C3410CC9D30DD3CC5ED31680E8DE06054F65BF48EF5D946E36FD543F6277C7"
     },
     "allowed_actions": {
       "path": "contracts/state-machine/allowed-actions.yaml",
-      "sha256": "941221DB5BA80D8036E1D8A20F44B4353B8E3BF3330D289F321174C94B473C27"
+      "sha256": "03CD9F8D6C404F9E9D279DBF24A9441CB801749A6FC3F2DE3FB8A080E96781D0"
+    },
+    "data_state_crosswalk": {
+      "path": "contracts/state-machine/data-state-crosswalk.yaml",
+      "sha256": "195E1EE7A7538E1F70391F69DE91ABEC71C721DB3C6E6A2DF5617F78BA03A637"
+    },
+    "representative_e2e_contract": {
+      "path": "contracts/state-machine/examples/representative-e2e.yaml",
+      "sha256": "82D2384238501FF77EA41B49D6C2DC92A5B9BF0317F2EBEBF11246022164CD02"
     },
     "adr_0010_identifier_bridge": {
       "path": "docs/adr/0010-t005-three-layer-identifier-bridge.md",
@@ -127,7 +141,7 @@
   "blocked_decisions": [
     {
       "id": "DEC-RESOLVED-REOPEN-001",
-      "description": "RESOLVED 문의를 같은 ID로 재개할지 관련 새 문의를 생성할지 결정 필요",
+      "description": "State Machine v1.0.0은 terminal 문의의 동일 ID 재개를 금지한다. 기존 재개 시나리오는 새 관련 문의 형태로 재설계 승인되기 전까지 차단한다.",
       "affected_scenario_ids": [
         "SYN-JAC104-012",
         "SYN-JAC104-016"

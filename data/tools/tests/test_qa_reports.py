@@ -11,6 +11,7 @@ sys.path.insert(0, str(TOOLS_ROOT))
 
 from watercare.config import load_pipeline
 from watercare.io import read_json, sha256_file
+from watercare.operations import _source_commit
 
 
 class QaReportTests(unittest.TestCase):
@@ -20,6 +21,16 @@ class QaReportTests(unittest.TestCase):
 
     def test_summary_tracks_all_current_detailed_report_hashes(self) -> None:
         summary = read_json(self.config.path("qa_summary"))
+        self.assertEqual(_source_commit(self.config), summary["source_commit"])
+        self.assertEqual("1.0.0", summary["contract_alignment"]["version"])
+        self.assertEqual(
+            "TEAM_APPROVED",
+            summary["contract_alignment"]["status"],
+        )
+        self.assertEqual(
+            {"DATA_ERROR", "CONTRACT_SOURCE_DRIFT", "EXTERNAL_BLOCKER"},
+            set(summary["error_categories"]),
+        )
         expected_paths = {
             self.config.path(name).relative_to(DATA_ROOT).as_posix()
             for name in (
@@ -37,6 +48,11 @@ class QaReportTests(unittest.TestCase):
             report = read_json(report_path)
             self.assertEqual(self.config.dataset_version, report["dataset_version"])
             self.assertEqual(self.config.generated_at, report["generated_at"])
+            self.assertEqual(summary["source_commit"], report["source_commit"])
+            self.assertEqual(
+                summary["error_categories"],
+                report["error_categories"],
+            )
             self.assertIsInstance(report["records"], int)
             self.assertEqual(item["sha256"], sha256_file(report_path))
 

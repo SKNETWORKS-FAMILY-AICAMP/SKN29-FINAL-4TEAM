@@ -30,6 +30,8 @@ class ServiceContractMappingTests(unittest.TestCase):
         self.assertEqual([], validate_service_contract_mapping(self.config))
         self.assertEqual(
             {
+                "data_state_crosswalk",
+                "representative_e2e_contract",
                 "adr_0010_identifier_bridge",
                 "adr_0011_idempotency_scope",
                 "t005_physical_contract_v1_2",
@@ -42,6 +44,15 @@ class ServiceContractMappingTests(unittest.TestCase):
                 "transition_rules",
                 "allowed_actions",
             },
+        )
+        self.assertEqual(
+            {
+                "version": "1.0.0",
+                "status": "TEAM_APPROVED",
+                "data_projection_consumes_contract": True,
+                "backend_runtime_verified": False,
+            },
+            self.mapping["state_machine_contract"],
         )
 
     def test_backend_crosswalk_blocks_direct_pk_and_unconfirmed_care(self) -> None:
@@ -179,6 +190,10 @@ class ServiceContractMappingTests(unittest.TestCase):
         self.assertEqual(
             ["SYN-JAC104-012", "SYN-JAC104-016"],
             blocked["DEC-RESOLVED-REOPEN-001"]["affected_scenario_ids"],
+        )
+        self.assertIn(
+            "terminal 문의의 동일 ID 재개를 금지",
+            blocked["DEC-RESOLVED-REOPEN-001"]["description"],
         )
         self.assertEqual(
             [],

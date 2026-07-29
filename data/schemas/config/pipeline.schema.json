@@ -70,11 +70,12 @@
     "config_schemas": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["pipeline", "ocr", "rag", "synthetic", "vocabulary", "contract_mapping", "handoff", "backend_crosswalk", "e2e"],
+      "required": ["pipeline", "ocr", "rag", "rag_evaluation_cases", "synthetic", "vocabulary", "contract_mapping", "handoff", "backend_crosswalk", "e2e"],
       "properties": {
         "pipeline": {"type": "string", "minLength": 1},
         "ocr": {"type": "string", "minLength": 1},
         "rag": {"type": "string", "minLength": 1},
+        "rag_evaluation_cases": {"type": "string", "minLength": 1},
         "synthetic": {"type": "string", "minLength": 1},
         "vocabulary": {"type": "string", "minLength": 1},
         "contract_mapping": {"type": "string", "minLength": 1},
