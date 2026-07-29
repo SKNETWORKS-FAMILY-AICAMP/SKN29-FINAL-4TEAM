@@ -1,31 +1,31 @@
 {
-  "status": "FAIL",
+  "status": "PASS",
   "stage": 5,
-  "generated_at": "2026-07-27T00:00:00+09:00",
+  "generated_at": "2026-07-29T00:00:00+09:00",
   "reports": [
     {
       "path": "processed/validation/schema/latest_schema_report.json",
-      "sha256": "3F502FED6E6A1C1176FEAF27F075DA52D673BE84129CD09BD91B66673632D575"
+      "sha256": "17F413E5B1C651F2235C7B21A0D1F892BBB020EC7522A42FDF13DB0C3DD8D9DC"
     },
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
-      "sha256": "97A2890D722153E6AE151FF59D779F9FDFE19910E67241EA04893FE2A452E914"
+      "sha256": "EEC7039FB97B7DA91F2DE6FD7327FF5915C788CBB702DC6CED78A221CA80D731"
     },
     {
       "path": "processed/validation/quality/latest_quality_report.json",
-      "sha256": "E8897B085DEA5BA30012B2FC138CFF67A48392B1193C7BA7EA270A5756DB7B0A"
+      "sha256": "3E383AFC6E5F8F3658A12D0D6E1F6F3DDF56CCD7F5ECB41ACC18B9FE852CF47C"
     },
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
-      "sha256": "E48BDB20534621C8E8201159BD6C007849407C0FFC8094CD66E389049DC06B26"
+      "sha256": "84F9E0912598AD371513D52BE3EA1272A976C749807F594E0E9D4B4BB5F76B44"
     },
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
-      "sha256": "0C79692EA061D1540119BF69F8ED7649AAE9AD8E2DD7F241A64E98E1DF61B0E2"
+      "sha256": "7DE7AD5B3DD0BAE9A6802BEF6B5FF9C66703DBA804EC7CEE1B40DBFDECBC9DDD"
     }
   ],
   "totals": {
-    "errors": 6,
+    "errors": 0,
     "warnings": 0
   },
   "allowed_warnings": [],
@@ -39,36 +39,29 @@
     "ocr_audit_metadata": "PRESERVED"
   },
   "pipeline_validation": {
-    "status": "FAIL",
-    "generated_at": "2026-07-27T00:00:00+09:00",
+    "status": "PASS",
+    "generated_at": "2026-07-29T00:00:00+09:00",
     "summary": {
-      "errors": 6,
+      "errors": 0,
       "warnings": 0,
-      "files_checked": 43,
-      "records_checked": 713
+      "files_checked": 47,
+      "records_checked": 739
     },
     "counts": {
       "manual_pages": 44,
       "faq_normalized": 119,
       "rag_chunks": 7,
       "evidence": 9,
-      "synthetic_inquiries": 24
+      "synthetic_inquiries": 22
     },
-    "errors": [
-      "config/e2e $.final_state_version: const mismatch",
-      "config/e2e $.expected_counts.visits: const mismatch",
-      "config/e2e $.expected_counts.inquiry_status_histories: const mismatch",
-      "config/e2e $.expected_counts.audit_events: const mismatch",
-      "config/e2e $.expected_counts.representative_steps: const mismatch",
-      "representative_e2e:manifest_counts_match_e2e_case"
-    ],
+    "errors": [],
     "representative_e2e": {
-      "status": "FAIL",
-      "generated_at": "2026-07-27T00:00:00+09:00",
+      "status": "PASS",
+      "generated_at": "2026-07-29T00:00:00+09:00",
       "summary": {
         "checks": 17,
-        "passed": 16,
-        "failed": 1,
+        "passed": 17,
+        "failed": 0,
         "documents_checked": 4
       },
       "checks": [
@@ -150,22 +143,21 @@
         {
           "name": "representative_dataset_counts",
           "status": "PASS",
-          "detail": "actual={'inquiries': 24, 'consultations': 16, 'visits': 4, 'care_histories': 25, 'followup_confirmations': 1, 'inquiry_status_histories': 123, 'audit_events': 123, 'representative_steps': 14}"
+          "detail": "actual={'inquiries': 22, 'consultations': 12, 'visits': 4, 'care_histories': 25, 'followup_confirmations': 1, 'inquiry_status_histories': 125, 'audit_events': 125, 'representative_steps': 14}"
         },
         {
           "name": "manifest_counts_match_e2e_case",
-          "status": "FAIL",
+          "status": "PASS",
           "detail": "dataset manifest synthetic counts"
         }
       ],
-      "errors": [
-        "representative_e2e:manifest_counts_match_e2e_case"
-      ]
+      "errors": []
     },
     "reproducibility": {
       "enabled": true,
       "changed_files": [],
       "canonical_drift_files": [],
+      "regenerated_files": [],
       "status": "PASS"
     }
   }

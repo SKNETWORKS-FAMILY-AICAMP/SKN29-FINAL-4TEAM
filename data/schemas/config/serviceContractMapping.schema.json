@@ -14,6 +14,9 @@
     "canonical_visit_statuses",
     "legacy_state_aliases",
     "compound_state_mappings",
+    "status_history_policy",
+    "identifier_policy",
+    "product_validation_expectation",
     "blocked_decisions"
   ],
   "properties": {
@@ -29,7 +32,7 @@
     },
     "contract_sources": {
       "type": "object",
-      "minProperties": 5,
+      "minProperties": 9,
       "additionalProperties": {
         "type": "object",
         "additionalProperties": false,
@@ -37,7 +40,7 @@
         "properties": {
           "path": {
             "type": "string",
-            "pattern": "^contracts/"
+            "pattern": "^(contracts|docs)/"
           },
           "sha256": {
             "type": "string",
@@ -110,6 +113,75 @@
             "visit_status": {"const": "IN_PROGRESS"}
           }
         }
+      }
+    },
+    "status_history_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_type_codes",
+        "target_fk_fields",
+        "exactly_one_target_fk",
+        "idempotency_key_unique",
+        "idempotency_key_role",
+        "state_version_unique_scope"
+      ],
+      "properties": {
+        "target_type_codes": {
+          "type": "array",
+          "const": ["QUESTIONNAIRE", "INQUIRY", "CONSULTATION", "VISIT"]
+        },
+        "target_fk_fields": {
+          "type": "object",
+          "const": {
+            "QUESTIONNAIRE": "questionnaire_session_id",
+            "INQUIRY": "inquiry_id",
+            "CONSULTATION": "consultation_id",
+            "VISIT": "visit_id"
+          }
+        },
+        "exactly_one_target_fk": {"const": true},
+        "idempotency_key_unique": {"const": false},
+        "idempotency_key_role": {"const": "REQUEST_HISTORY_TRACE"},
+        "state_version_unique_scope": {
+          "type": "array",
+          "const": ["target_type_code", "resolved_target_fk", "state_version"]
+        }
+      }
+    },
+    "identifier_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "internal_primary_key",
+        "public_identifier",
+        "business_identifier_prefixes",
+        "fixture_foreign_keys_use",
+        "expected_api_identifiers_use"
+      ],
+      "properties": {
+        "internal_primary_key": {"const": "INTEGER_ID"},
+        "public_identifier": {"const": "UUID_PUBLIC_ID"},
+        "business_identifier_prefixes": {
+          "type": "array",
+          "const": ["DEMO-", "SYN-"]
+        },
+        "fixture_foreign_keys_use": {"const": "INTEGER_ID"},
+        "expected_api_identifiers_use": {"const": "UUID_PUBLIC_ID"}
+      }
+    },
+    "product_validation_expectation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_code",
+        "to_inquiry_status",
+        "materialize_event_as_inquiry_status"
+      ],
+      "properties": {
+        "event_code": {"const": "PRODUCT_VALIDATION_FAILED"},
+        "to_inquiry_status": {"const": "CONSULTATION_REQUIRED"},
+        "materialize_event_as_inquiry_status": {"const": false}
       }
     },
     "blocked_decisions": {

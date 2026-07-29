@@ -103,13 +103,13 @@
         "representative_steps"
       ],
       "properties": {
-        "inquiries": {"type": "integer", "const": 24},
-        "consultations": {"type": "integer", "const": 16},
+        "inquiries": {"type": "integer", "const": 22},
+        "consultations": {"type": "integer", "const": 12},
         "visits": {"type": "integer", "const": 4},
         "care_histories": {"type": "integer", "const": 25},
         "followup_confirmations": {"type": "integer", "const": 1},
-        "inquiry_status_histories": {"type": "integer", "const": 123},
-        "audit_events": {"type": "integer", "const": 123},
+        "inquiry_status_histories": {"type": "integer", "const": 125},
+        "audit_events": {"type": "integer", "const": 125},
         "representative_steps": {"type": "integer", "const": 14}
       }
     },

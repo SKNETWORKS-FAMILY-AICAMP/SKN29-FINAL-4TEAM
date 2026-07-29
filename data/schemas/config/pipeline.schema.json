@@ -45,6 +45,7 @@
         "official_faq_assets",
         "rag_chunks",
         "evidence",
+        "synthetic_source_scenarios",
         "synthetic_inquiries"
       ],
       "properties": {
@@ -54,7 +55,8 @@
         "official_faq_assets": {"type": "integer", "const": 10},
         "rag_chunks": {"type": "integer", "const": 7},
         "evidence": {"type": "integer", "const": 9},
-        "synthetic_inquiries": {"type": "integer", "const": 24}
+        "synthetic_source_scenarios": {"type": "integer", "const": 24},
+        "synthetic_inquiries": {"type": "integer", "const": 22}
       }
     },
     "paths": {
@@ -68,7 +70,7 @@
     "config_schemas": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["pipeline", "ocr", "rag", "synthetic", "vocabulary", "contract_mapping", "handoff", "e2e"],
+      "required": ["pipeline", "ocr", "rag", "synthetic", "vocabulary", "contract_mapping", "handoff", "backend_crosswalk", "e2e"],
       "properties": {
         "pipeline": {"type": "string", "minLength": 1},
         "ocr": {"type": "string", "minLength": 1},
@@ -77,6 +79,7 @@
         "vocabulary": {"type": "string", "minLength": 1},
         "contract_mapping": {"type": "string", "minLength": 1},
         "handoff": {"type": "string", "minLength": 1},
+        "backend_crosswalk": {"type": "string", "minLength": 1},
         "e2e": {"type": "string", "minLength": 1}
       }
     }

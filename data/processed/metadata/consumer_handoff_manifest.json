@@ -1,10 +1,10 @@
 {
   "status": "PASS",
-  "dataset_version": "0.8.0",
-  "generated_at": "2026-07-27T00:00:00+09:00",
+  "dataset_version": "0.9.0",
+  "generated_at": "2026-07-29T00:00:00+09:00",
   "service_contracts_used": false,
   "profile_count": 4,
-  "unique_file_count": 31,
+  "unique_file_count": 38,
   "profiles": {
     "rag": {
       "purpose": "검증된 JAC104D 청크 적재와 검색 품질 확인",
@@ -16,14 +16,14 @@
           "role": "INGEST",
           "records": 7,
           "size_bytes": 14296,
-          "sha256": "BF50C87FC7652546460FFC9927BB7B37BA341DF734F994CFDFD7A96FE7BE7A26"
+          "sha256": "2BF3582E42A309D846BC383BE9C3E08874512318DD4046082498DBFBC8584DD0"
         },
         {
           "path": "processed/structured/evidence/jac104_evidence_registry.jsonl",
           "role": "REFERENCE",
           "records": 9,
           "size_bytes": 16234,
-          "sha256": "32EFD1AB081048DAB3B06C6EA264E79DC12208E56DFA1598C74E812B44584E58"
+          "sha256": "483D82DC9F199C9EEAC373508461288F3558C9AC9D8D1AB433D26540CA680145"
         },
         {
           "path": "processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
@@ -37,7 +37,7 @@
           "role": "REFERENCE_ONLY",
           "records": 119,
           "size_bytes": 173565,
-          "sha256": "FF69800A58A354128E55D6BD4D4675B756EC8A6B8750A228B6A5787388DD780B"
+          "sha256": "E2040220C22F26042F1662029FA45776A7261336956DF6D8C7102485A27F41F4"
         },
         {
           "path": "processed/structured/faq/selected_faq_candidates.jsonl",
@@ -63,16 +63,16 @@
         {
           "path": "synthetic/fixtures/inquiries.json",
           "role": "EVALUATION_INPUT",
-          "records": 24,
-          "size_bytes": 25019,
-          "sha256": "F25973282DB8871B2269FDCE0BE806DECD4AB2C06B535CC583DCB524C18586CA"
+          "records": 22,
+          "size_bytes": 21243,
+          "sha256": "4F43D4EDC7ECFEA682728C77E3A79740AA62AD6BB411D2170FD13371596B6CC5"
         },
         {
           "path": "synthetic/expected/evidence_references.json",
           "role": "EVALUATION_EXPECTED",
-          "records": 24,
-          "size_bytes": 10994,
-          "sha256": "EC52FB1FE15BA5F06773CE56C32A777A19E45DC725B75770496EC63C9F8C4BF6"
+          "records": 22,
+          "size_bytes": 10220,
+          "sha256": "7AC08424EA4A9613A46B86941F26857333AEB8976CFA9C698411CEE4C8A94E6C"
         },
         {
           "path": "schemas/processed/ragChunk.schema.json",
@@ -109,7 +109,7 @@
       ],
       "commands": [
         "python -B data/tools/pipeline.py handoff rag",
-        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-27T00:00:00+09:00"
+        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-29T00:00:00+09:00"
       ]
     },
     "db-smoke": {
@@ -121,78 +121,99 @@
           "path": "synthetic/fixtures/users.json",
           "role": "LOAD",
           "records": 16,
-          "size_bytes": 4135,
-          "sha256": "B94D4A243E780AC694E0BD5BA0CF14583013DD4062FDC89D4DD4DE47208F46F8"
+          "size_bytes": 4382,
+          "sha256": "C450F72529C3A288E8175B3FDDD504C16EA7BCBB93FBABBA03AE78342A971FC0"
+        },
+        {
+          "path": "synthetic/fixtures/customer_profiles.json",
+          "role": "LOAD_AFTER_LOOKUP_MAPPING",
+          "records": 12,
+          "size_bytes": 3537,
+          "sha256": "5918EC8D52D731402CCDFCC6DAEEF468BCDEFFA850A045CB35EBD5D8A3129CA8"
         },
         {
           "path": "synthetic/fixtures/products.json",
           "role": "LOAD",
           "records": 1,
-          "size_bytes": 310,
-          "sha256": "E6FBF4ED6E6CF7EBEC940512DC332F8DE3E2CA51DC4A8B357182478BF8D8EEFF"
+          "size_bytes": 322,
+          "sha256": "EA4D3F710A72AF64B41318F4662F296AD74D977AE1B488418E144E7E622B9E4F"
         },
         {
           "path": "synthetic/fixtures/customer_products.json",
           "role": "LOAD",
           "records": 12,
-          "size_bytes": 4575,
-          "sha256": "32B65E7BBA403D0A8A15C964180F290B50FCD5F5A9F98406EF2CE61CA6F86F4D"
+          "size_bytes": 3729,
+          "sha256": "83FF8FF825380AF9ECA07C952655D2096CCB8F33B1D33B264547B207E65AFCE3"
         },
         {
           "path": "synthetic/fixtures/subscriptions.json",
           "role": "LOAD",
           "records": 12,
-          "size_bytes": 4959,
-          "sha256": "172FBBA141E48051280002BF688696B6454C210DB6EEA3BFC3C29212EA5D03DE"
+          "size_bytes": 4260,
+          "sha256": "2667B19F662FFAAC1A473E263E35C28642E360ACEBA07FF55563CB24759DC77F"
         },
         {
           "path": "synthetic/fixtures/inquiries.json",
           "role": "LOAD_FILTERED",
-          "records": 24,
-          "size_bytes": 25019,
-          "sha256": "F25973282DB8871B2269FDCE0BE806DECD4AB2C06B535CC583DCB524C18586CA"
+          "records": 22,
+          "size_bytes": 21243,
+          "sha256": "4F43D4EDC7ECFEA682728C77E3A79740AA62AD6BB411D2170FD13371596B6CC5"
         },
         {
           "path": "synthetic/fixtures/consultations.json",
           "role": "LOAD_FILTERED",
-          "records": 16,
-          "size_bytes": 10816,
-          "sha256": "D2311D0B7D31A783E115903DBE16E31D5AABC77C5C30D4A387380C0281125ADF"
+          "records": 12,
+          "size_bytes": 7417,
+          "sha256": "0DA954EF7615A10385145CD583B3B3C7B2D4FBB3D4C65E67BC8618B2D102E7EB"
         },
         {
           "path": "synthetic/fixtures/visits.json",
           "role": "LOAD_FILTERED",
           "records": 4,
-          "size_bytes": 2929,
-          "sha256": "9C94F9F8EF7F7347716F93DC3946ECCCF44D436A6F2BD08B9F41D52AF4AECA75"
+          "size_bytes": 2696,
+          "sha256": "1D4892E06A9CE189DC984516A5894DCC8B93509EE2D07087C61A762BE33E6F00"
         },
         {
           "path": "synthetic/fixtures/care_histories.json",
-          "role": "LOAD_FILTERED",
+          "role": "EXCLUDE_BLOCKED_OWNER_CONFIRMATION",
           "records": 25,
-          "size_bytes": 8368,
-          "sha256": "F1B45969F6670DE210A623D1C85B10827E51AFD2E2AC78A797806D0655F54C21"
+          "size_bytes": 9770,
+          "sha256": "643C0E160E25E07E81C7C1406F90D877EE24080FAC1A597B3D78221F89EB0470"
+        },
+        {
+          "path": "config/handoff/backend_import_crosswalk.json",
+          "role": "MAPPING_NOT_DB_VERIFIED",
+          "records": 1,
+          "size_bytes": 4427,
+          "sha256": "7557D800905BBE5A8E03136D115DF6C85D57FFC5EDB83F16B2F6256546401BC1"
+        },
+        {
+          "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 820,
+          "sha256": "3DE5409A17F92E2BC02FE09EF0F347EB22171EA10E9F08F9ECE553E9D4C9CC7C"
         },
         {
           "path": "schemas/synthetic/syntheticUser.schema.json",
           "role": "SCHEMA",
           "records": 1,
-          "size_bytes": 1380,
-          "sha256": "7DA2268F8BE144A00EC1C6177BA120DB648ED4D62855C5EF94CB159741E1C037"
+          "size_bytes": 781,
+          "sha256": "E0935C7D4DC3B0941A10288628E1D8F414020FDED9C261AC332AE331B23E834D"
         },
         {
           "path": "schemas/synthetic/syntheticProduct.schema.json",
           "role": "SCHEMA",
           "records": 1,
-          "size_bytes": 1186,
-          "sha256": "2425CA4D4E7C877E3A80B02F0C37607A39358658DCE897F225B1AC024289AD5A"
+          "size_bytes": 879,
+          "sha256": "5A79A0839A5C2563ED7D86B7FF51D6F9C4EEDFA2369794DEABE2EE184513E189"
         },
         {
           "path": "schemas/synthetic/syntheticInquiry.schema.json",
           "role": "SCHEMA",
           "records": 1,
-          "size_bytes": 3817,
-          "sha256": "3C73D24E0A3FBA8BA144446D272EC75E8FE9D9421B4FE6C1B3D78EF782E68359"
+          "size_bytes": 2578,
+          "sha256": "8ED31ACBAAB14A4112E17FD2940C8C3E97D41FB3DBDD2DE5B350334E1EE92346"
         }
       ],
       "selection": {
@@ -217,7 +238,7 @@
       ]
     },
     "db-full": {
-      "purpose": "전체 24개 문의의 데이터 품질·관계 검증",
+      "purpose": "원본 24개 중 차단 2개를 제외한 활성 projection 22개의 데이터 품질·관계 검증",
       "readiness": "QA_READY_SERVICE_MAPPING_PENDING",
       "contract_dependency": "SERVICE_MAPPING_PENDING",
       "items": [
@@ -225,103 +246,142 @@
           "path": "synthetic/fixtures/users.json",
           "role": "LOAD",
           "records": 16,
-          "size_bytes": 4135,
-          "sha256": "B94D4A243E780AC694E0BD5BA0CF14583013DD4062FDC89D4DD4DE47208F46F8"
+          "size_bytes": 4382,
+          "sha256": "C450F72529C3A288E8175B3FDDD504C16EA7BCBB93FBABBA03AE78342A971FC0"
+        },
+        {
+          "path": "synthetic/fixtures/customer_profiles.json",
+          "role": "LOAD_AFTER_LOOKUP_MAPPING",
+          "records": 12,
+          "size_bytes": 3537,
+          "sha256": "5918EC8D52D731402CCDFCC6DAEEF468BCDEFFA850A045CB35EBD5D8A3129CA8"
         },
         {
           "path": "synthetic/fixtures/products.json",
           "role": "LOAD",
           "records": 1,
-          "size_bytes": 310,
-          "sha256": "E6FBF4ED6E6CF7EBEC940512DC332F8DE3E2CA51DC4A8B357182478BF8D8EEFF"
+          "size_bytes": 322,
+          "sha256": "EA4D3F710A72AF64B41318F4662F296AD74D977AE1B488418E144E7E622B9E4F"
         },
         {
           "path": "synthetic/fixtures/customer_products.json",
           "role": "LOAD",
           "records": 12,
-          "size_bytes": 4575,
-          "sha256": "32B65E7BBA403D0A8A15C964180F290B50FCD5F5A9F98406EF2CE61CA6F86F4D"
+          "size_bytes": 3729,
+          "sha256": "83FF8FF825380AF9ECA07C952655D2096CCB8F33B1D33B264547B207E65AFCE3"
         },
         {
           "path": "synthetic/fixtures/subscriptions.json",
           "role": "LOAD",
           "records": 12,
-          "size_bytes": 4959,
-          "sha256": "172FBBA141E48051280002BF688696B6454C210DB6EEA3BFC3C29212EA5D03DE"
+          "size_bytes": 4260,
+          "sha256": "2667B19F662FFAAC1A473E263E35C28642E360ACEBA07FF55563CB24759DC77F"
         },
         {
           "path": "synthetic/fixtures/inquiries.json",
           "role": "LOAD",
-          "records": 24,
-          "size_bytes": 25019,
-          "sha256": "F25973282DB8871B2269FDCE0BE806DECD4AB2C06B535CC583DCB524C18586CA"
+          "records": 22,
+          "size_bytes": 21243,
+          "sha256": "4F43D4EDC7ECFEA682728C77E3A79740AA62AD6BB411D2170FD13371596B6CC5"
         },
         {
           "path": "synthetic/fixtures/consultations.json",
           "role": "LOAD",
-          "records": 16,
-          "size_bytes": 10816,
-          "sha256": "D2311D0B7D31A783E115903DBE16E31D5AABC77C5C30D4A387380C0281125ADF"
+          "records": 12,
+          "size_bytes": 7417,
+          "sha256": "0DA954EF7615A10385145CD583B3B3C7B2D4FBB3D4C65E67BC8618B2D102E7EB"
         },
         {
           "path": "synthetic/fixtures/visits.json",
           "role": "LOAD",
           "records": 4,
-          "size_bytes": 2929,
-          "sha256": "9C94F9F8EF7F7347716F93DC3946ECCCF44D436A6F2BD08B9F41D52AF4AECA75"
+          "size_bytes": 2696,
+          "sha256": "1D4892E06A9CE189DC984516A5894DCC8B93509EE2D07087C61A762BE33E6F00"
         },
         {
           "path": "synthetic/fixtures/care_histories.json",
-          "role": "LOAD",
+          "role": "EXCLUDE_BLOCKED_OWNER_CONFIRMATION",
           "records": 25,
-          "size_bytes": 8368,
-          "sha256": "F1B45969F6670DE210A623D1C85B10827E51AFD2E2AC78A797806D0655F54C21"
+          "size_bytes": 9770,
+          "sha256": "643C0E160E25E07E81C7C1406F90D877EE24080FAC1A597B3D78221F89EB0470"
+        },
+        {
+          "path": "config/handoff/backend_import_crosswalk.json",
+          "role": "MAPPING_NOT_DB_VERIFIED",
+          "records": 1,
+          "size_bytes": 4427,
+          "sha256": "7557D800905BBE5A8E03136D115DF6C85D57FFC5EDB83F16B2F6256546401BC1"
+        },
+        {
+          "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 820,
+          "sha256": "3DE5409A17F92E2BC02FE09EF0F347EB22171EA10E9F08F9ECE553E9D4C9CC7C"
         },
         {
           "path": "synthetic/fixtures/followup_confirmations.json",
           "role": "LOAD_AFTER_MAPPING",
           "records": 1,
-          "size_bytes": 714,
-          "sha256": "24B6DC5232CB86D8EAECBCCE2733B4A1F45BE701A04A5C181BAFAFABC7B57A72"
+          "size_bytes": 658,
+          "sha256": "5172FEF53B6AB4F2DC292F15B96F68DB801C7247C79A3C5D3720475C0594703A"
         },
         {
           "path": "synthetic/fixtures/inquiry_status_histories.json",
           "role": "LOAD_AFTER_MAPPING",
-          "records": 123,
-          "size_bytes": 85015,
-          "sha256": "9781C4D9E6935B0D3E97782900BCAF9C8C78A63E0FFB7A6368800A28E45B1A61"
+          "records": 125,
+          "size_bytes": 93075,
+          "sha256": "26E49C6E468AAEF5E1FD18340E9A7B0DF58E290ADA61075749511FB71DA7D7AF"
         },
         {
           "path": "synthetic/fixtures/audit_events.json",
           "role": "LOAD_AFTER_MAPPING",
-          "records": 123,
-          "size_bytes": 61500,
-          "sha256": "B5A30A05314025BFC2786547E108C88D89C48FDECFF227A744D661E5E80DF852"
+          "records": 125,
+          "size_bytes": 62197,
+          "sha256": "2B9A586B14B0F44E9A30A458D6E152B87F6161D3D7367AEEA46BFD3208A90FFD"
         },
         {
           "path": "synthetic/expected/evidence_references.json",
           "role": "QA_EXPECTED",
-          "records": 24,
-          "size_bytes": 10994,
-          "sha256": "EC52FB1FE15BA5F06773CE56C32A777A19E45DC725B75770496EC63C9F8C4BF6"
+          "records": 22,
+          "size_bytes": 10220,
+          "sha256": "7AC08424EA4A9613A46B86941F26857333AEB8976CFA9C698411CEE4C8A94E6C"
         },
         {
           "path": "synthetic/expected/safety_assessments.json",
           "role": "QA_EXPECTED",
+          "records": 22,
+          "size_bytes": 14220,
+          "sha256": "56847D276BA99D82AE768D33C349431E28428D0E7FF0213965A72CD680F97055"
+        },
+        {
+          "path": "synthetic/expected/api_idempotency_cases.json",
+          "role": "QA_EXPECTED",
+          "records": 3,
+          "size_bytes": 2404,
+          "sha256": "DCA2A7C29EE34BEEB61CEA9B60F580943102C8B7C9310A9A3CA82BA7C310A58E"
+        },
+        {
+          "path": "synthetic/expected/contract_alignment_registry.json",
+          "role": "QA_EXPECTED",
           "records": 24,
-          "size_bytes": 15294,
-          "sha256": "C6E0671D67CB5B5A7441A7F73E62AF71A814E2565FFDFD94151763DA28633511"
+          "size_bytes": 5245,
+          "sha256": "56CF00225E391CF1E92BD4114903338AEBD137D92DE36D6C9851D83DAD956261"
         }
       ],
       "selection": {
-        "scenario_count": 24
+        "scenario_count": 22,
+        "excluded_scenario_ids": [
+          "SYN-JAC104-012",
+          "SYN-JAC104-016"
+        ]
       },
       "excluded": [
         "계약 담당자 확인 전 상태·이벤트 자동 매핑"
       ],
       "commands": [
         "python -B data/tools/pipeline.py handoff db-full",
-        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-27T00:00:00+09:00"
+        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-29T00:00:00+09:00"
       ]
     },
     "qa": {
@@ -333,43 +393,57 @@
           "path": "processed/validation/latest_qa_summary.json",
           "role": "SUMMARY",
           "records": 1,
-          "size_bytes": 5997,
-          "sha256": "985424C17F987DECB68689960F0E5CE65A1B81506E48E39427C6833E9088187F"
+          "size_bytes": 5558,
+          "sha256": "6180CCB9A6638CCDA8B281C2C3801C017E8DCDC84880A9E46CEDF98391EAA4CA"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 7579,
-          "sha256": "3F502FED6E6A1C1176FEAF27F075DA52D673BE84129CD09BD91B66673632D575"
+          "size_bytes": 7771,
+          "sha256": "17F413E5B1C651F2235C7B21A0D1F892BBB020EC7522A42FDF13DB0C3DD8D9DC"
         },
         {
           "path": "processed/validation/integrity/latest_integrity_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 1442,
-          "sha256": "97A2890D722153E6AE151FF59D779F9FDFE19910E67241EA04893FE2A452E914"
+          "size_bytes": 640,
+          "sha256": "EEC7039FB97B7DA91F2DE6FD7327FF5915C788CBB702DC6CED78A221CA80D731"
         },
         {
           "path": "processed/validation/quality/latest_quality_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 1723,
-          "sha256": "E8897B085DEA5BA30012B2FC138CFF67A48392B1193C7BA7EA270A5756DB7B0A"
+          "size_bytes": 546,
+          "sha256": "3E383AFC6E5F8F3658A12D0D6E1F6F3DDF56CCD7F5ECB41ACC18B9FE852CF47C"
+        },
+        {
+          "path": "processed/validation/business/latest_business_rules_report.json",
+          "role": "DETAIL",
+          "records": 1,
+          "size_bytes": 844,
+          "sha256": "84F9E0912598AD371513D52BE3EA1272A976C749807F594E0E9D4B4BB5F76B44"
+        },
+        {
+          "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
+          "role": "DETAIL",
+          "records": 1,
+          "size_bytes": 451,
+          "sha256": "7DE7AD5B3DD0BAE9A6802BEF6B5FF9C66703DBA804EC7CEE1B40DBFDECBC9DDD"
         },
         {
           "path": "processed/metadata/dataset_manifest.json",
           "role": "MANIFEST",
           "records": 1,
-          "size_bytes": 9112,
-          "sha256": "CCAC6AE0D28002234D4198366A62D653EF52191C015B0FB0748052BF57F810D9"
+          "size_bytes": 10039,
+          "sha256": "052173502789B7BE83086DD0194BC75C47AD5C2065C1E4DB5A56E5268A6BBD31"
         },
         {
           "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
           "role": "GUIDE",
           "records": null,
-          "size_bytes": 3531,
-          "sha256": "9069BE4606A285E24C24CCD8115964DF3BAD9FFDBC01B9CC253D677211573D8B"
+          "size_bytes": 2037,
+          "sha256": "4568D2B1CEEE18D7B88346D2F4AC0615CEA512E8DC8BF732D289E4CC8D12EA6D"
         }
       ],
       "selection": {
@@ -383,7 +457,7 @@
       ],
       "commands": [
         "python -B data/tools/pipeline.py handoff qa",
-        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-27T00:00:00+09:00"
+        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-29T00:00:00+09:00"
       ]
     }
   }

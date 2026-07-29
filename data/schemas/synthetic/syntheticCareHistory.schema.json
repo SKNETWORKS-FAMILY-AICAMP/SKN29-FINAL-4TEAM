@@ -3,71 +3,18 @@
   "title": "SyntheticCareHistory",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "care_history_id",
-    "customer_product_id",
-    "care_type",
-    "performed_on",
-    "result",
-    "note",
-    "data_classification"
-  ],
+  "required": ["id", "public_id", "care_history_number", "customer_product_id", "inquiry_id", "visit_id", "care_type", "performed_on", "result", "note", "data_classification"],
   "properties": {
-    "care_history_id": {
-      "type": "string",
-      "minLength": 1,
-      "format": "uuid"
-    },
-    "customer_product_id": {
-      "type": "string",
-      "minLength": 1,
-      "format": "uuid"
-    },
-    "inquiry_id": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "uuid"
-    },
-    "visit_id": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "uuid"
-    },
-    "care_type": {
-      "type": "string",
-      "minLength": 1,
-      "enum": [
-        "REGULAR_INSPECTION",
-        "FILTER_REPLACEMENT",
-        "VISIT_SERVICE"
-      ]
-    },
-    "performed_on": {
-      "type": "string",
-      "minLength": 1,
-      "format": "date"
-    },
-    "result": {
-      "type": "string",
-      "minLength": 1,
-      "enum": [
-        "NORMAL",
-        "FILTER_REPLACED",
-        "ISSUE_RESOLVED"
-      ]
-    },
-    "note": {
-      "type": "string",
-      "minLength": 1
-    },
-    "data_classification": {
-      "type": "string",
-      "minLength": 1,
-      "const": "synthetic"
-    }
+    "id": {"type": "integer", "minimum": 1},
+    "public_id": {"type": "string", "format": "uuid"},
+    "care_history_number": {"type": "string", "pattern": "^SYN-CARE-\\d{4}$"},
+    "customer_product_id": {"type": "integer", "minimum": 1},
+    "inquiry_id": {"type": ["integer", "null"], "minimum": 1},
+    "visit_id": {"type": ["integer", "null"], "minimum": 1},
+    "care_type": {"type": "string", "enum": ["REGULAR_INSPECTION", "FILTER_REPLACEMENT", "VISIT_SERVICE"]},
+    "performed_on": {"type": "string", "format": "date"},
+    "result": {"type": "string", "enum": ["NORMAL", "FILTER_REPLACED", "ISSUE_RESOLVED"]},
+    "note": {"type": "string", "minLength": 1},
+    "data_classification": {"type": "string", "const": "synthetic"}
   }
 }

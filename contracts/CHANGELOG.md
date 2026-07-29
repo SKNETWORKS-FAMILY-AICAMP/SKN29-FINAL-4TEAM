@@ -1,5 +1,28 @@
 # Contracts Changelog
 
+## 2026-07-29 — State Machine v1.0.0 채택
+
+### Adopted
+
+- State Machine 핵심 계약 8종과 대표 예시를 `TEAM_APPROVED`로 채택
+- Inquiry 13상태와 Visit 7상태를 별도 Aggregate로 확정
+- `RESOLVED`, `CANCELLED`를 변경 불가능한 Terminal 상태로 확정
+- `REOPENED`를 `COMPLETION_PENDING + CUSTOMER_REPORTED_UNRESOLVED` 경로로 제한
+- Backend를 상태 전이의 최종 권위로 확정하고 Web·Mobile은 `allowed_actions`만 소비
+- 외부 쓰기의 `state_version`·`Idempotency-Key`·409 충돌 정책 확정
+
+### Added
+
+- `contracts/state-machine/data-state-crosswalk.yaml`
+- `contracts/state-machine/examples/representative-e2e.yaml`
+- `SYN-JAC104-002` 기준 14단계 대표 이벤트 순서와 최종 Version 14 검증
+
+### Implementation status
+
+- 계약 채택은 구현 완료를 의미하지 않는다.
+- Backend Runtime은 START·CANCEL 대표 흐름만 부분 구현 상태이다.
+- Consultation·Visit Runtime과 Web·Mobile·AI 실제 연동은 후속 이행 대상으로 유지한다.
+
 ## 2026-07-26 — State Machine v0.1.0 초안
 
 ### Added
