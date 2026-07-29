@@ -31,7 +31,7 @@ describe("공통 API 기반", () => {
       new Response(
         JSON.stringify({
           success: true,
-          data: { inquiry_id: "DEMO-INQ-001" },
+          data: { inquiry_id: "f72a3b18-a4f8-5f5e-8c86-199ffc1d8aa2" },
           error: null,
           metadata: { correlation_id: "00000000-0000-4000-8000-000000000001" },
         }),
@@ -50,7 +50,9 @@ describe("공통 API 기반", () => {
       requestContext: context,
     });
 
-    expect(result.data?.inquiry_id).toBe("DEMO-INQ-001");
+    expect(result.data?.inquiry_id).toBe(
+      "f72a3b18-a4f8-5f5e-8c86-199ffc1d8aa2",
+    );
     const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
     const headers = request.headers as Headers;
     expect(headers.get("X-Correlation-ID")).toBe(context.correlationId);

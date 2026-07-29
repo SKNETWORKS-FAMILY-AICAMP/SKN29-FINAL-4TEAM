@@ -11,6 +11,7 @@ import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import LoadingState from "../../common/components/feedback/LoadingState";
 import "../../common/styles/legacy/fix-base.css";
 import "../../common/styles/legacy/staff-desktop-v6.css";
+import { toInquiryId } from "../../entities/inquiry/inquiryIdentifiers";
 import ConsultantInquiryDetail, {
   type ConsultantDetailSectionStates,
 } from "../../features/consultation/components/ConsultantInquiryDetail";
@@ -24,24 +25,10 @@ interface InquiryDetailLocationState {
   returnTo?: unknown;
 }
 
-interface PartialFailureScenario {
-  sourceInquiryId: string;
-  sections: ConsultantDetailSectionStates;
-}
-
-const PARTIAL_FAILURES: Record<string, PartialFailureScenario> = {
-  "DEMO-INQ-AI-ERROR": {
-    sourceInquiryId: "DEMO-INQ-002",
-    sections: { aiSummary: "error", evidence: "ready", timeline: "ready" },
-  },
-  "DEMO-INQ-EVIDENCE-ERROR": {
-    sourceInquiryId: "DEMO-INQ-002",
-    sections: { aiSummary: "ready", evidence: "error", timeline: "ready" },
-  },
-  "DEMO-INQ-HISTORY-ERROR": {
-    sourceInquiryId: "DEMO-INQ-002",
-    sections: { aiSummary: "ready", evidence: "ready", timeline: "error" },
-  },
+const PARTIAL_FAILURES: Record<string, ConsultantDetailSectionStates> = {
+  ai: { aiSummary: "error", evidence: "ready", timeline: "ready" },
+  evidence: { aiSummary: "ready", evidence: "error", timeline: "ready" },
+  timeline: { aiSummary: "ready", evidence: "ready", timeline: "error" },
 };
 
 const READY_SECTIONS: ConsultantDetailSectionStates = {
@@ -53,7 +40,7 @@ const READY_SECTIONS: ConsultantDetailSectionStates = {
 export default function InquiryDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { inquiryId } = useParams<{ inquiryId: string }>();
+  const { inquiryId: rawInquiryId } = useParams<{ inquiryId: string }>();
   const [detailTab, setDetailTab] = useState<DetailTab>("summary");
   const [notificationOpen, setNotificationOpen] = useState(false);
 
@@ -61,10 +48,12 @@ export default function InquiryDetailPage() {
   const inquiryListReturnPath = getSafeInquiryListReturnPath(
     locationState?.returnTo,
   );
-  const partialFailure = inquiryId ? PARTIAL_FAILURES[inquiryId] : undefined;
-  const sourceInquiryId = partialFailure?.sourceInquiryId ?? inquiryId;
+  const inquiryId = rawInquiryId ? toInquiryId(rawInquiryId) : null;
+  const query = new URLSearchParams(location.search);
+  const partialFailure = PARTIAL_FAILURES[query.get("mockFailure") ?? ""];
+  const mockState = query.get("mockState");
   const inquiry = COUNSELOR_INQUIRIES.find(
-    (item) => item.id === sourceInquiryId,
+    (item) => item.inquiryId === inquiryId,
   );
 
   useEffect(() => {
@@ -86,7 +75,7 @@ export default function InquiryDetailPage() {
       return;
     }
     if (target === "visit" && inquiry) {
-      navigate(createVisitTransitionPath(inquiry.id), {
+      navigate(createVisitTransitionPath(inquiry.inquiryId), {
         state: {
           returnTo: inquiryListReturnPath,
           stateVersion: inquiry.stateVersion,
@@ -106,7 +95,7 @@ export default function InquiryDetailPage() {
   ) => {
     if (!inquiry) return;
 
-    navigate(createVisitTransitionPath(inquiry.id), {
+    navigate(createVisitTransitionPath(inquiry.inquiryId), {
       state: {
         returnTo: inquiryListReturnPath,
         stateVersion: inquiry.stateVersion,
@@ -117,7 +106,7 @@ export default function InquiryDetailPage() {
   };
 
   const renderDetail = () => {
-    if (inquiryId === "DEMO-INQ-LOADING") {
+    if (mockState === "loading") {
       return (
         <LoadingState
           title="문의 정보를 불러오고 있습니다."
@@ -125,7 +114,7 @@ export default function InquiryDetailPage() {
         />
       );
     }
-    if (inquiryId === "DEMO-INQ-ERROR") {
+    if (mockState === "error") {
       return (
         <ErrorState
           title="문의 정보를 불러오지 못했습니다."
@@ -135,7 +124,7 @@ export default function InquiryDetailPage() {
         />
       );
     }
-    if (inquiryId === "DEMO-INQ-FORBIDDEN") {
+    if (mockState === "forbidden") {
       return (
         <ForbiddenState
           title="이 문의에 접근할 권한이 없습니다."
@@ -171,7 +160,7 @@ export default function InquiryDetailPage() {
             <p>고객 원문, 사용 안내, AI 초안, 공식 근거와 상담사 확정 내용을 구분해 확인합니다.</p>
           </div>
           <div className="v6-page-head__meta">
-            <span>문의 · {inquiryId}</span>
+            <span>문의 · {inquiry.inquiryCode}</span>
             <span>상태 버전 · {inquiry.stateVersion}</span>
             <span>합성 Mock 상세</span>
           </div>
@@ -192,7 +181,7 @@ export default function InquiryDetailPage() {
           <ConsultantInquiryDetail
             detailTab={detailTab}
             inquiry={inquiry}
-            sectionStates={partialFailure?.sections ?? READY_SECTIONS}
+            sectionStates={partialFailure ?? READY_SECTIONS}
             onDetailTabChange={setDetailTab}
             onOpenVisit={handleOpenVisit}
           />

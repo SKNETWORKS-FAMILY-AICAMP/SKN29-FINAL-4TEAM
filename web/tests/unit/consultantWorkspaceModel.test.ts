@@ -30,7 +30,9 @@ describe("상담 큐 View Model", () => {
       receivedTo: "2026-07-04",
     });
 
-    expect(result.map((item) => item.id)).toEqual(["INQ-20260704-0013"]);
+    expect(result.map((item) => item.inquiryCode)).toEqual([
+      "INQ-20260704-0013",
+    ]);
   });
 
   it("페이지 범위를 넘으면 마지막 페이지로 보정한다", () => {

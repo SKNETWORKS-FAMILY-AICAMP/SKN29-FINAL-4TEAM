@@ -72,7 +72,7 @@ describe("App Router Guard", () => {
 
   it("상담사는 CONS-02 v13 상세 경로에 직접 접근할 수 있다", async () => {
     renderRoute(
-      "/consultant/inquiries/INQ-20260704-0013",
+      "/consultant/inquiries/205850d3-763c-5256-9d39-82da21be0c31",
       createUser("CONSULTANT"),
     );
 
@@ -86,7 +86,7 @@ describe("App Router Guard", () => {
 
   it("CONS-02 근거 부분 실패가 상세 전체를 가리지 않는다", async () => {
     renderRoute(
-      "/consultant/inquiries/DEMO-INQ-EVIDENCE-ERROR",
+      "/consultant/inquiries/205850d3-763c-5256-9d39-82da21be0c31?mockFailure=evidence",
       createUser("CONSULTANT"),
     );
 
@@ -100,7 +100,7 @@ describe("App Router Guard", () => {
 
   it("방문 행동이 없는 문의의 CONS-03 직접 진입을 차단한다", async () => {
     renderRoute(
-      "/consultant/inquiries/INQ-20260701-0001/visit-transition",
+      "/consultant/inquiries/f72a3b18-a4f8-5f5e-8c86-199ffc1d8aa2/visit-transition",
       createUser("CONSULTANT"),
     );
 
@@ -114,7 +114,7 @@ describe("App Router Guard", () => {
   it("방문 검토 상태는 요청 생성 후에만 일정 조율 행동을 연다", async () => {
     const user = userEvent.setup();
     renderRoute(
-      "/consultant/inquiries/INQ-20260703-0008/visit-transition",
+      "/consultant/inquiries/a6bdf6b7-b9ba-553a-8447-f928384c1ad1/visit-transition",
       createUser("CONSULTANT"),
     );
 
@@ -143,6 +143,17 @@ describe("App Router Guard", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "방문 확정" }),
+    ).toBeInTheDocument();
+  });
+
+  it("표시용 문의 번호는 상세 URL의 리소스 ID로 사용하지 않는다", async () => {
+    renderRoute(
+      "/consultant/inquiries/INQ-20260704-0013",
+      createUser("CONSULTANT"),
+    );
+
+    expect(
+      await screen.findByText("문의를 찾을 수 없습니다."),
     ).toBeInTheDocument();
   });
 

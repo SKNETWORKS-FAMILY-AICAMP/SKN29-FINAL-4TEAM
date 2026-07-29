@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import type { InquiryId } from "../../../entities/inquiry/inquiryIdentifiers";
 import Pagination from "../../../common/components/data-display/Pagination";
 import PriorityBadge from "../../../common/components/badge/PriorityBadge";
 import RiskBadge from "../../../common/components/badge/RiskBadge";
@@ -29,13 +30,13 @@ interface ConsultantQueueProps {
   hasChangedConditions: boolean;
   inquiries: readonly CounselorInquiry[];
   page: number;
-  selectedInquiryId: string | null;
+  selectedInquiryId: InquiryId | null;
   totalItems: number;
   totalPages: number;
   onFiltersChange: (filters: CounselorFilters) => void;
   onPageChange: (page: number) => void;
   onResetFilters: () => void;
-  onSelectInquiry: (inquiryId: string) => void;
+  onSelectInquiry: (inquiryId: InquiryId) => void;
 }
 
 const FILTERABLE_STATUSES = Object.entries(STATUS_LABELS) as readonly [
@@ -231,13 +232,13 @@ export default function ConsultantQueue({
             ) : (
               inquiries.map((inquiry) => (
                 <button
-                  key={inquiry.id}
+                  key={inquiry.inquiryId}
                   className={`v6-queue-item${
-                    selectedInquiryId === inquiry.id ? " is-selected" : ""
+                    selectedInquiryId === inquiry.inquiryId ? " is-selected" : ""
                   }`}
                   type="button"
-                  aria-pressed={selectedInquiryId === inquiry.id}
-                  onClick={() => onSelectInquiry(inquiry.id)}
+                  aria-pressed={selectedInquiryId === inquiry.inquiryId}
+                  onClick={() => onSelectInquiry(inquiry.inquiryId)}
                 >
                   <span className="v6-queue-item__top">
                     <span className="v6-chip-row">
@@ -290,7 +291,7 @@ export default function ConsultantQueue({
                       size="compact"
                       variant={getStatusBadgeVariant(inquiry.status)}
                     />
-                    <b>{inquiry.id}</b>
+                    <b>{inquiry.inquiryCode}</b>
                   </span>
                 </button>
               ))

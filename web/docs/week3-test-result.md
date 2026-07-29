@@ -1,6 +1,6 @@
 # 3주차 Web 테스트 결과
 
-- 기준일: 2026-07-28
+- 기준일: 2026-07-29
 - 실행 위치: `web/`
 - 자동화 도구: Vitest, jsdom, React Testing Library
 
@@ -13,6 +13,7 @@
 | 단위 | 요청별 `Idempotency-Key`, `X-Correlation-ID` 생성 |
 | 단위 | 공통 API Wrapper·HTTP 오류 분류·PageInfo 정규화 |
 | 단위 | 담당자·우선순위·기간 필터와 페이지 범위 보정 |
+| 단위 | UUID `inquiry_id`와 표시용 `inquiry_code` 분리·검증 |
 | 컴포넌트 | `allowed_actions` 기반 버튼 노출 |
 | 컴포넌트 | 완료 필수값과 필드 오류 연결 |
 | 컴포넌트 | 409 충돌 후 입력 유지, 최신 `stateVersion` 반영 |
@@ -23,7 +24,8 @@
 | 통합 | 상담 큐에서 문의 선택 후 상세·상담 Form 전환 |
 | 통합 | 위험도 필터로 위험 문의 두 건 조회 |
 | 통합 | 담당자·페이지 조건 URL Query 복원 |
-| 통합 | 목록 선택 후 `/consultant/inquiries/{id}` 상세 경로 전환 |
+| 통합 | 목록 선택 후 UUID `/consultant/inquiries/{inquiry_id}` 상세 경로 전환 |
+| 통합 | 표시용 `inquiry_code`의 상세 URL 리소스 ID 사용 차단 |
 | 통합 | 상세 근거 부분 실패 시 다른 영역 유지 |
 | 통합 | 방문 행동이 없는 문의의 CONS-03 진입 차단 |
 | 통합 | 미인증 사용자의 로그인 이동 |
@@ -40,9 +42,9 @@ npm.cmd run lint
 npm.cmd run build
 ```
 
-## 2026-07-28 실행 결과
+## 2026-07-29 실행 결과
 
-- `npm.cmd test`: **11개 Test File, 40개 Test 통과**
+- `npm.cmd test`: **12개 Test File, 44개 Test 통과**
 - `npm.cmd run lint`: 통과
 - `npm.cmd run build`: 통과
 - Production 번들: Vite Build 성공
@@ -55,8 +57,8 @@ npm.cmd run build
 - 409 충돌 후 작성 내용 유지와 자동 재시도 방지
 - 문진 상태에서 행동 버튼 미노출
 - 공식 근거에서 `chunk_id`, 내부 `document_id` 미노출
-- 기존 `/consultant/inquiries/{id}` 상세 경로 회귀
-- `/consultant/inquiries/DEMO-INQ-004/visit-transition` 직접 접근과 v13 레이아웃
+- UUID `/consultant/inquiries/{inquiry_id}` 상세 경로 회귀
+- `/consultant/inquiries/a6bdf6b7-b9ba-553a-8447-f928384c1ad1/visit-transition` 직접 접근과 v13 레이아웃
 - 방문 전환 필수값 오류, 희망일·기사 선택, Mock 저장·확정, `stateVersion` 증가
 - 검색·상태·위험도·우선순위·담당자·기간·정렬 조건의 URL 유지
 - 목록 페이지 이동 후 상세 진입과 검색 조건 복귀

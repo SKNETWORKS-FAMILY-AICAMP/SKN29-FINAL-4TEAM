@@ -9,6 +9,7 @@ import {
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import "../../common/styles/legacy/fix-base.css";
 import "../../common/styles/legacy/staff-desktop-v6.css";
+import { toInquiryId } from "../../entities/inquiry/inquiryIdentifiers";
 import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
 import { COUNSELOR_INQUIRIES } from "../../features/consultation/model/consultantWorkspaceMock";
 import { getCounselorMetrics } from "../../features/consultation/model/consultantWorkspaceModel";
@@ -26,14 +27,17 @@ interface VisitTransitionLocationState {
 export default function VisitTransitionPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { inquiryId } = useParams<{ inquiryId: string }>();
+  const { inquiryId: rawInquiryId } = useParams<{ inquiryId: string }>();
   const [notificationOpen, setNotificationOpen] = useState(false);
 
   const locationState = location.state as VisitTransitionLocationState | null;
   const inquiryListReturnPath = getSafeInquiryListReturnPath(
     locationState?.returnTo,
   );
-  const inquiry = COUNSELOR_INQUIRIES.find((item) => item.id === inquiryId);
+  const inquiryId = rawInquiryId ? toInquiryId(rawInquiryId) : null;
+  const inquiry = COUNSELOR_INQUIRIES.find(
+    (item) => item.inquiryId === inquiryId,
+  );
   const [stateVersion, setStateVersion] = useState(
     locationState?.stateVersion ?? inquiry?.stateVersion ?? 1,
   );
@@ -79,8 +83,8 @@ export default function VisitTransitionPage() {
       navigate(inquiryListReturnPath);
       return;
     }
-    if (target === "detail" && inquiryId) {
-      navigate(createInquiryDetailPath(inquiryId), {
+    if (target === "detail" && inquiry) {
+      navigate(createInquiryDetailPath(inquiry.inquiryId), {
         state: { returnTo: inquiryListReturnPath },
       });
       return;
@@ -134,7 +138,7 @@ export default function VisitTransitionPage() {
               </p>
             </div>
             <div className="v6-page-head__meta">
-              <span>문의 · {inquiry.id}</span>
+              <span>문의 · {inquiry.inquiryCode}</span>
               <span>제품 · {inquiry.productCode}</span>
               <span>실제 API 연결 없음</span>
             </div>
@@ -152,7 +156,7 @@ export default function VisitTransitionPage() {
               className="v6-button v6-button--secondary"
               type="button"
               onClick={() =>
-                navigate(createInquiryDetailPath(inquiry.id), {
+                navigate(createInquiryDetailPath(inquiry.inquiryId), {
                   state: { returnTo: inquiryListReturnPath },
                 })
               }
@@ -175,7 +179,7 @@ export default function VisitTransitionPage() {
           </div>
 
           <VisitTransitionForm
-            key={inquiry.id}
+            key={inquiry.inquiryId}
             availableActions={availableMockActions}
             inquiry={inquiry}
             stateVersion={stateVersion}

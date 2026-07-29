@@ -1,6 +1,6 @@
 # 3주차 상담 화면–API–DB 필드 매핑
 
-- 기준일: 2026-07-28
+- 기준일: 2026-07-29
 - 대상: `CONS-01`, `CONS-02`, `CONS-03`, 상담 기록·행동 영역
 - 상태: Web 검수용. API `consultation/**` 스키마와 `AllowedAction` OpenAPI Schema는 현재 빈 객체이므로 아래의 `OPEN` 항목을 확정 계약으로 사용하면 안 된다.
 - DB 기준: `docs/database/watercare_table_dictionary.md`의 `Design Draft`
@@ -16,7 +16,8 @@
 
 | 화면 정보 | Web View Model | API 계약 | DB 설계 기준 | 마스킹·비고 |
 | --- | --- | --- | --- | --- |
-| 문의 번호 | `CounselorInquiry.id` | `InquiryDetail.inquiry_id` | `support_inquiry.inquiry_no` 또는 공개 ID 매핑 필요 | 내부 UUID 직접 노출 금지 |
+| 문의 공개 ID | `CounselorInquiry.inquiryId` | `inquiry_id` | `support_inquiry.inquiry_id` | UUID, URL·API 리소스 식별에만 사용 |
+| 문의 표시 번호 | `CounselorInquiry.inquiryCode` | `inquiry_code` | `support_inquiry.inquiry_no` | 목록·상세 화면 표시용, URL 리소스 ID 사용 금지 |
 | 상태 | `status` | OpenAPI 상세 Schema에는 아직 없음 | `support_inquiry.status_code` | 표시명 Mapper 사용 |
 | 상태 버전 | `stateVersion` | 상태 머신 `state_version` | `support_inquiry.state_version` | 쓰기 동시성 제어값 |
 | 허용 행동 | `allowedActions` | 상태 머신 `allowed_actions[]` | Backend Guard 계산값, 직접 저장 필드 아님 | 상태 코드로 Web 재계산 금지 |

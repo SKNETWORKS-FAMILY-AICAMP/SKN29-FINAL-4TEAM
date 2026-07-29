@@ -5,6 +5,7 @@ import {
   createInquiryDetailPath,
   createVisitTransitionPath,
 } from "../../app/router/routePaths";
+import type { InquiryId } from "../../entities/inquiry/inquiryIdentifiers";
 import ConsultantInquiryDetail from "../../features/consultation/components/ConsultantInquiryDetail";
 import ConsultantQueue from "../../features/consultation/components/ConsultantQueue";
 import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
@@ -24,8 +25,8 @@ export default function ConsultantDashboardPage() {
   const location = useLocation();
   const { filters, hasChangedConditions, resetFilters, setFilters } =
     useCounselorQueueFilters();
-  const [selectedInquiryId, setSelectedInquiryId] = useState<string | null>(
-    COUNSELOR_INQUIRIES[0]?.id ?? null,
+  const [selectedInquiryId, setSelectedInquiryId] = useState<InquiryId | null>(
+    COUNSELOR_INQUIRIES[0]?.inquiryId ?? null,
   );
   const [detailTab, setDetailTab] = useState<DetailTab>("summary");
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -51,10 +52,10 @@ export default function ConsultantDashboardPage() {
     [filteredInquiries],
   );
   const selectedInquiry =
-    queuePage.items.find((item) => item.id === selectedInquiryId) ??
+    queuePage.items.find((item) => item.inquiryId === selectedInquiryId) ??
     queuePage.items[0] ??
     null;
-  const visibleSelectedInquiryId = selectedInquiry?.id ?? null;
+  const visibleSelectedInquiryId = selectedInquiry?.inquiryId ?? null;
   const queueCount =
     metrics.consultation +
     metrics.danger +
@@ -86,7 +87,7 @@ export default function ConsultantDashboardPage() {
   const handleOpenVisit = (entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED") => {
     if (!selectedInquiry) return;
 
-    navigate(createVisitTransitionPath(selectedInquiry.id), {
+    navigate(createVisitTransitionPath(selectedInquiry.inquiryId), {
       state: {
         returnTo: `/consultant/inquiries${location.search}`,
         stateVersion: selectedInquiry.stateVersion,
