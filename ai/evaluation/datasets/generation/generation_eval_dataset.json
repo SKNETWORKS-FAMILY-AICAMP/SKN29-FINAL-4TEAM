@@ -1,0 +1,7 @@
+[
+  {
+    "eval_id": "gen_eval_001",
+    "prompt_version": "v1",
+    "expected_prohibited_phrases": ["고장이 확실합니다", "절대 안전합니다"]
+  }
+]
