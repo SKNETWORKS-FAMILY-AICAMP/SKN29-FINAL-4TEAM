@@ -1,6 +1,6 @@
 # 3주차 Web 미해결 이슈
 
-- 기준일: 2026-07-28
+- 기준일: 2026-07-29
 - 원칙: 아래 항목은 화면에서 임의 확정하지 않고 담당 계약·Backend 구현 확인 후 처리한다.
 
 ## P0 · 실제 연동 전 필수
@@ -34,7 +34,8 @@
 
 - 공통 계약·DB: `general`, `caution`, `danger`
 - 프로토타입 Workspace Mock: `GENERAL`, `CAUTION`, `DANGER`
-- 실제 API Mapper 연결 시 공통 소문자 타입으로 통합 필요
+- Web Mock Mapper는 대소문자를 정규화하고 알 수 없는 값은 `UNKNOWN`으로 안전하게 표시한다.
+- 실제 API 연결 시 공통 소문자 계약을 최종 타입 원천으로 교체할 필요가 있다.
 
 ### CONTRACT-03 운영 대시보드 응답
 

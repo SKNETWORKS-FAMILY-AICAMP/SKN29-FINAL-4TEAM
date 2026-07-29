@@ -15,6 +15,10 @@ import type {
   CounselorRisk,
   CounselorStatus,
 } from "./consultantWorkspaceTypes";
+import {
+  normalizeCounselorRisk,
+  normalizeCounselorStatus,
+} from "./consultantWorkspaceModel";
 
 interface OfficialInquiryFixture {
   inquiry_id: string;
@@ -226,7 +230,8 @@ function getAllowedActions(
 function getPriority(riskLevel: CounselorRisk): CounselorPriority {
   if (riskLevel === "DANGER") return "URGENT";
   if (riskLevel === "CAUTION") return "HIGH";
-  return "NORMAL";
+  if (riskLevel === "GENERAL") return "NORMAL";
+  return "UNKNOWN";
 }
 
 function getUsageMessage(status: CounselorInquiry["usageStatus"]): string {
@@ -287,8 +292,8 @@ function createInquiry(
   row: OfficialInquiryFixture,
   index: number,
 ): CounselorInquiry {
-  const status = row.status as CounselorStatus;
-  const riskLevel = row.risk_level.toUpperCase() as CounselorRisk;
+  const status = normalizeCounselorStatus(row.status);
+  const riskLevel = normalizeCounselorRisk(row.risk_level);
   const usageStatus =
     row.usage_guidance_status as CounselorInquiry["usageStatus"];
   const presentation = TOPIC_PRESENTATION[row.topic_code] ?? {

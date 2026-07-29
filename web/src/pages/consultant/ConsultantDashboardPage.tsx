@@ -30,6 +30,16 @@ export default function ConsultantDashboardPage() {
   );
   const [detailTab, setDetailTab] = useState<DetailTab>("summary");
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const mockState = new URLSearchParams(location.search).get("mockState");
+  const loadState = ["loading", "error", "forbidden"].includes(
+    mockState ?? "",
+  )
+    ? (mockState as "loading" | "error" | "forbidden")
+    : "ready";
+  const sourceInquiries = useMemo(
+    () => (mockState === "empty" ? [] : COUNSELOR_INQUIRIES),
+    [mockState],
+  );
 
   useEffect(() => {
     document.body.classList.add("v6-body", "v6-body--counselor");
@@ -40,12 +50,12 @@ export default function ConsultantDashboardPage() {
   }, []);
 
   const filteredInquiries = useMemo(
-    () => filterCounselorInquiries(COUNSELOR_INQUIRIES, filters),
-    [filters],
+    () => filterCounselorInquiries(sourceInquiries, filters),
+    [filters, sourceInquiries],
   );
   const queuePage = useMemo(
-    () => getCounselorQueuePage(COUNSELOR_INQUIRIES, filters),
-    [filters],
+    () => getCounselorQueuePage(sourceInquiries, filters),
+    [filters, sourceInquiries],
   );
   const metrics = useMemo(
     () => getCounselorMetrics(filteredInquiries),
@@ -164,9 +174,11 @@ export default function ConsultantDashboardPage() {
         selectedInquiryId={visibleSelectedInquiryId}
         totalItems={queuePage.totalItems}
         totalPages={queuePage.totalPages}
+        loadState={loadState}
         onFiltersChange={setFilters}
         onPageChange={(page) => setFilters({ ...filters, page })}
         onResetFilters={resetFilters}
+        onRetry={() => navigate("/consultant/inquiries", { replace: true })}
         onSelectInquiry={(inquiryId) => {
           setSelectedInquiryId(inquiryId);
           setDetailTab("summary");

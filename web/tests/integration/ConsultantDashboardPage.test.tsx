@@ -62,4 +62,30 @@ describe("ConsultantDashboardPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("총 15건 · 1/5페이지")).toBeInTheDocument();
   });
+
+  it.each([
+    ["loading", "상담 문의 목록을 불러오고 있습니다."],
+    ["error", "상담 문의 목록을 불러오지 못했습니다."],
+    ["forbidden", "상담 문의 목록을 볼 권한이 없습니다."],
+    ["empty", "아직 접수된 문의가 없습니다."],
+  ])("목록 %s 상태를 다른 상태와 구분한다", async (state, message) => {
+    renderPage(`/consultant/inquiries?mockState=${state}`);
+
+    expect(await screen.findByText(message)).toBeInTheDocument();
+  });
+
+  it("검색 결과가 없으면 초기 빈 목록과 다른 안내와 초기화 행동을 제공한다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.type(
+      screen.getByRole("searchbox", { name: "문의 검색" }),
+      "존재하지 않는 문의",
+    );
+
+    expect(screen.getByText("조건에 맞는 문의가 없습니다.")).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("button", { name: "조건 초기화" }).length,
+    ).toBeGreaterThan(0);
+  });
 });

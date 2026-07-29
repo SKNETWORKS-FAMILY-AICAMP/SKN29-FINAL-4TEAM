@@ -38,18 +38,22 @@ npm.cmd run dev
 npm.cmd run lint
 npm.cmd run test
 npm.cmd run build
+npm.cmd run fixtures:generate
 ```
 
 - `lint`: TypeScript·React 정적 검사
 - `test`: Vitest 단위·컴포넌트·통합 테스트 1회 실행
 - `test:watch`: 파일 변경을 감지하는 테스트 개발 모드
 - `build`: TypeScript 검사 후 Production 번들 생성
+- `fixtures:generate`: 공식 `data/synthetic/fixtures/inquiries.json`에서 Web 계약 테스트 Fixture 재생성
 
 ## 상담 처리 Mock 확인
 
 상담 큐에서 `INQ-20260704-0013 · 제품 누수`를 선택하면 상담 기록 Form을 확인할 수 있습니다. 우측 `Mock 응답 테스트`에서 성공, 403, 409, 422, 네트워크 오류를 선택할 수 있습니다. 목록은 `data/synthetic/fixtures/inquiries.json`의 공식 합성 문의 24건을, 근거 카드는 검증된 `data/processed/structured/evidence/jac104_evidence_registry.jsonl`의 공개 필드만 View Model로 변환해 사용합니다.
 
 `STATE-CONFLICT-01`에서는 사용자가 작성한 내용을 버리지 않고 최신 `stateVersion`과 Action code 배열을 화면 행동 객체로 복구하며 자동 재전송하지 않습니다. `DUPLICATE-EVENT-01`의 빈 `details`는 최신 상태 Snapshot으로 적용하지 않고 새 멱등 키가 필요한 오류로 안내합니다. 성공 응답의 `allowed_actions`는 label·operation 정보가 포함된 객체 배열로 별도 처리합니다. 이 선택 항목과 `consultationMockApi.ts`는 실제 상담 API가 확정되면 교체해야 합니다.
+
+목록 상태는 `?mockState=loading|empty|error|forbidden`, 상세 상태는 `?mockState=loading|error|forbidden|unsupported`, 상세 부분 실패는 `?mockFailure=ai|evidence|timeline`으로 확인할 수 있습니다. 이 Query는 개발용 Mock 검증 경로입니다.
 
 ## 방문 전환 Mock 확인
 

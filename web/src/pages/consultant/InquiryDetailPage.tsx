@@ -134,6 +134,16 @@ export default function InquiryDetailPage() {
         />
       );
     }
+    if (mockState === "unsupported") {
+      return (
+        <ErrorState
+          title="지원하지 않는 제품 모델입니다."
+          description="현재 등록된 설명서와 모델 범위를 확인한 뒤 상담 관리자에게 문의해 주세요."
+          retryLabel="문의 목록으로 돌아가기"
+          onRetry={() => navigate(inquiryListReturnPath)}
+        />
+      );
+    }
     if (!inquiry) {
       return (
         <section className="v6-panel inquiry-v13-not-found">

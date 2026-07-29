@@ -25,19 +25,43 @@ export const STATUS_LABELS: Record<CounselorStatus, string> = {
   REOPENED: "문의 재개",
   RESOLVED: "처리 완료",
   CANCELLED: "취소",
+  UNKNOWN: "미확인",
 };
 
 export const RISK_LABELS: Record<CounselorRisk, string> = {
   GENERAL: "일반",
   CAUTION: "주의",
   DANGER: "위험",
+  UNKNOWN: "미확인",
 };
 
 export const PRIORITY_LABELS: Record<CounselorPriority, string> = {
   NORMAL: "보통",
   HIGH: "높음",
   URGENT: "긴급",
+  UNKNOWN: "미확인",
 };
+
+const COUNSELOR_STATUSES = new Set<CounselorStatus>(
+  Object.keys(STATUS_LABELS) as CounselorStatus[],
+);
+const COUNSELOR_RISKS = new Set<CounselorRisk>(
+  Object.keys(RISK_LABELS) as CounselorRisk[],
+);
+
+export function normalizeCounselorStatus(value: unknown): CounselorStatus {
+  return typeof value === "string" &&
+    COUNSELOR_STATUSES.has(value as CounselorStatus)
+    ? (value as CounselorStatus)
+    : "UNKNOWN";
+}
+
+export function normalizeCounselorRisk(value: unknown): CounselorRisk {
+  const normalized = typeof value === "string" ? value.toUpperCase() : "";
+  return COUNSELOR_RISKS.has(normalized as CounselorRisk)
+    ? (normalized as CounselorRisk)
+    : "UNKNOWN";
+}
 
 export function getPriorityVariant(
   priority: CounselorPriority,
@@ -69,7 +93,7 @@ export function getStatusBadgeVariant(
 export function getRiskTone(risk: CounselorRisk): string {
   if (risk === "DANGER") return "danger";
   if (risk === "CAUTION") return "warning";
-  return "success";
+  return risk === "GENERAL" ? "success" : "default";
 }
 
 export function getStatusTone(status: CounselorStatus): string {
