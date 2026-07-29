@@ -152,6 +152,38 @@ Auth 테스트는 `00.900초 → 01.100초` 경계를 강제로 재현해
 응답의 `access_expires_in`과 JWT의 `exp - iat`가 모두 3600인지
 검사한다. 단순히 기대 범위를 3599~3600으로 완화하지 않았다.
 
+### 2.6 동시 `main` Web·AI 병합의 연쇄 오류 Gate
+
+첫 `jiyong` Push 직후 원격 `main`이 한예나 Web·이동윤 AI 평가
+변경을 포함한 `9f3b1b108210de5aa39de975676d662d7fe9f60d`로
+갱신됐다. 읽기 전용 Merge Tree가 Exit code `0`인 것을 확인한 뒤
+`jiyong`에 충돌 없이 통합했다. Web·Data·AI 파일은 `origin/main`과
+차이가 0건이며 최지용이 재작성하지 않았다.
+
+통합 직후 Gate:
+
+| 영역 | 결과 | 판정·다음 담당 |
+|---|---|---|
+| Backend 전체 | `353 passed` | 최지용 변경과 새 `main` 사이 회귀 없음 |
+| State·T-005·Django | Validator·System Check Exit code `0` | Backend 공유 가능 |
+| Web build·lint | 모두 Exit code `0` | 정적 빌드 기준 통과 |
+| Web test | Exit code `1`; 22 Suite 중 14 통과·8 import 실패, 실행된 Test 38개는 모두 통과 | 한예나·김은진 후속 |
+| AI test | 6 Module 수집 오류 | 이동윤이 `ai/.venv` 의존성 계약을 먼저 확정 |
+
+Web 실패 원인은
+[상담사 Mock](../../../../web/src/features/consultation/model/consultantWorkspaceMock.ts)이
+`row.inquiry_id`를 읽지만
+[최신 Data Fixture](../../../../data/synthetic/fixtures/inquiries.json)는
+공개 UUID를 `public_id`로 제공하는 Schema Drift다. Web·Data가
+`origin/main`과 byte 단위로 동일하므로 이번 Backend 변경이 만든
+회귀가 아니다. 최지용이 Web 또는 Data를 대신 수정하면 소유권과
+Fixture 원본이 다시 갈라질 수 있어 코드 수정 없이
+[팀 인계 진입점](../../../handoffs/README.md)에 담당·순서를 기록했다.
+
+AI는 평가 Dataset이 추가됐지만 `ai/pyproject.toml`에 설치 의존성이
+없다. Backend `.venv`에 `fastapi`·`pydantic`을 임의 설치하지 않고
+이동윤의 재현 가능한 AI 환경 인계를 기다린다.
+
 ## 3. 최종 회귀 결과
 
 저장소 루트에서 실행했다.
