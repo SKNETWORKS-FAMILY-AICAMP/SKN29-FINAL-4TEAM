@@ -4,7 +4,7 @@ export interface RequestContext {
   headers: Readonly<Record<"Idempotency-Key" | "X-Correlation-ID", string>>;
 }
 
-function createUuid(): string {
+export function createCorrelationId(): string {
   const webCrypto = globalThis.crypto as
     | {
         getRandomValues?: (values: Uint8Array) => Uint8Array;
@@ -35,13 +35,13 @@ function createUuid(): string {
 }
 
 export function createIdempotencyKey(): string {
-  return createUuid();
+  return createCorrelationId();
 }
 
 export function createRequestContext(
   options: { idempotencyKey?: string } = {},
 ): RequestContext {
-  const correlationId = createUuid();
+  const correlationId = createCorrelationId();
   const idempotencyKey = options.idempotencyKey ?? createIdempotencyKey();
 
   return {

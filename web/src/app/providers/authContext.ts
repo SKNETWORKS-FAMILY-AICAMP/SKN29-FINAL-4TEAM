@@ -13,8 +13,8 @@ export interface AuthContextValue {
   user: AuthenticatedUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  signInAs: (role: AppRole) => void;
-  signOut: () => void;
+  signInAs: (role: AppRole) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);

@@ -9,7 +9,7 @@ export default function ForbiddenPage() {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
 
-  const handleAction = () => {
+  const handleAction = async () => {
     if (user?.roleCode === "CONSULTANT") {
       navigate(ROUTE_PATHS.consultantInquiryList, { replace: true });
       return;
@@ -18,7 +18,7 @@ export default function ForbiddenPage() {
       navigate(ROUTE_PATHS.adminDashboard, { replace: true });
       return;
     }
-    signOut();
+    await signOut();
     navigate(ROUTE_PATHS.login, { replace: true });
   };
 

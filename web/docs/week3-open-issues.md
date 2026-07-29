@@ -5,12 +5,11 @@
 
 ## P0 · 실제 연동 전 필수
 
-### AUTH-01 실제 인증 Provider 연결
+### AUTH-01 실제 인증 Runtime E2E
 
-- 현재: 합성 사용자 Mock 로그인
-- 계약: `/api/v1/auth/demo-login`, `/auth/refresh`, `/auth/logout`, `/me` 경로 확인
-- 남은 결정: Access Token 보관 위치, Refresh rotation, 앱 시작 시 `/me` 조회, 401 동시 요청 처리
-- 완료 조건: 실제 로그인·만료·로그아웃 후 Guard가 동일하게 동작
+- 현재: `/auth/demo-login`, `/auth/refresh`, `/auth/logout`, `/me` 계약 Client와 Mapper, 메모리 Token 세션, Authorization Header, 401 Refresh single-flight·원요청 1회 재시도 구현
+- 남은 검증: 실제 Backend에서 로그인·Refresh rotation·만료·로그아웃·`/me` 응답과 브라우저 Redirect 확인
+- 완료 조건: 실제 로그인·만료·로그아웃 후 동일한 Guard와 세션 제거 동작 확인
 
 ### CONS-API-01 상담 요청·응답 Schema 확정
 

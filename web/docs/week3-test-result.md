@@ -15,6 +15,11 @@
 | 단위 | 성공 Action 객체와 상태 충돌 Action code 배열 Mapper 분리 |
 | 단위 | `DUPLICATE-EVENT-01` 빈 details의 Snapshot 미적용 |
 | 단위 | 공통 API Wrapper·HTTP 오류 분류·PageInfo 정규화 |
+| 단위 | 로그인 응답 DTO의 메모리 인증 세션 Mapper |
+| 단위 | Access Token 자동 Authorization·요청별 Correlation Header |
+| 단위 | 동시 401 Refresh single-flight·원요청 1회 재시도 |
+| 단위 | Refresh 실패·재시도 401의 세션 제거와 인증 제외 요청 |
+| 단위 | 401 쓰기 재시도의 멱등 키 보존·추적 ID 교체 |
 | 단위 | 담당자·우선순위·기간 필터와 페이지 범위 보정 |
 | 단위 | UUID `inquiry_id`와 표시용 `inquiry_code` 분리·검증 |
 | 컴포넌트 | `allowed_actions` 기반 버튼 노출 |
@@ -48,7 +53,7 @@ npm.cmd run build
 
 ## 2026-07-29 실행 결과
 
-- `npm.cmd test`: **15개 Test File, 54개 Test 통과**
+- `npm.cmd test`: **16개 Test File, 61개 Test 통과**
 - `npm.cmd run lint`: 통과
 - `npm.cmd run build`: 통과
 - Production 번들: Vite Build 성공
@@ -70,6 +75,6 @@ npm.cmd run build
 ## 아직 자동화하지 않은 항목
 
 - 실제 Backend API 통합
-- 인증 토큰 만료와 실제 401 Redirect
+- 실제 Backend 인증 토큰 만료와 401 Redirect E2E
 - 브라우저 간 E2E
 - API 확정 후 403·409·422 실제 응답 Mapper

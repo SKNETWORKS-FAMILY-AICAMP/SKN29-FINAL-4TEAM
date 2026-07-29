@@ -30,7 +30,7 @@ npm.cmd run dev
 | `VITE_MOCK_AUTHENTICATED` | `true` | 시작 시 Mock 인증 여부 |
 | `VITE_MOCK_ROLE` | `CONSULTANT` | `CUSTOMER`, `CONSULTANT`, `TECHNICIAN`, `OPERATOR` 중 역할 |
 
-기본 설정에서는 기존처럼 상담사 문의 화면이 바로 열립니다. 미인증·역할별 Guard를 수동 확인하려면 `.env.local`에서 Mock 인증과 역할을 변경한 뒤 개발 서버를 다시 시작합니다. 실제 JWT나 비밀값은 `.env` 파일에 하드코딩하지 않습니다.
+기본 설정에서는 기존처럼 상담사 문의 화면이 바로 열립니다. 미인증·역할별 Guard를 수동 확인하려면 `.env.local`에서 Mock 인증과 역할을 변경한 뒤 개발 서버를 다시 시작합니다. Access·Refresh Token은 Web Storage에 저장하지 않고 실행 중인 메모리 세션에만 보관하며, 실제 JWT나 비밀값은 `.env` 파일에 하드코딩하지 않습니다.
 
 ## 검증 명령
 
@@ -60,8 +60,8 @@ npm.cmd run build
 ## 현재 연동 상태
 
 - 문의 목록·상세·상담 처리: 합성 Mock
-- 공통 API Wrapper·오류·페이지네이션: 계약 타입과 테스트 구현 완료, 실제 Endpoint 호출 보류
-- 인증·역할: `AuthProvider` 합성 사용자 Mock, `AuthGuard`·`RoleGuard` 실제 Route 제어
+- 공통 API Wrapper·오류·페이지네이션: 계약 타입과 테스트 구현 완료, Authorization·Correlation 공통 적용
+- 인증·역할: Demo Login·Refresh·Logout·`/me` 계약 Client, 메모리 세션, 401 Refresh single-flight·원요청 1회 재시도, `AuthGuard`·`RoleGuard` 구현. 기본 실행은 합성 Mock이며 실제 Backend E2E는 보류
 - 상담 쓰기 API: 계약 미확정으로 Provisional Mock DTO 사용
 - 방문 전환 저장·확정: 프론트 화면 전용 Mock, 실제 API 호출 없음
 - `allowed_actions`, `state_version`: 상태 머신 계약의 연결 위치 반영
