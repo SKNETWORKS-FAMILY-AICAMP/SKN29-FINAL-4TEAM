@@ -5,7 +5,7 @@
 > 검증 협업 요청: 김은진(Data·통합 QA)
 > 소비 호환성 확인 요청: 한예나(Web), 양정현(Mobile)
 > AI 경계 확인: 이동윤(AI Schema·Runtime)
-> 검토 상태: 로컬 자동 검증 완료, `jiyong` Push·PM 리뷰·`main` 병합 전
+> 검토 상태: 로컬 자동 검증 완료. `jiyong`은 PM 검토용 소스이며 팀 완료 기준은 PM `main` 병합 SHA
 > 실행 원칙: `작업 → 집중 검증 → 증거 기록 → 다음 작업`
 
 ## 1. 목적과 기준
@@ -180,7 +180,7 @@ $env:PYTHONDONTWRITEBYTECODE = "1"
 | API·계약 + Auth 계약 | 0 | `94 passed` |
 | 권한·소유권 + T-022·T-023 | 0 | `31 passed` |
 | Django System Check | 0 | `System check identified no issues (0 silenced)` |
-| 전체 Backend | 0 | `352 passed` |
+| 전체 Backend | 0 | `353 passed` |
 
 각 묶음에는 겹치는 테스트가 있으므로 통과 수를 합산하지 않는다.
 Git 공유 직전 문서까지 포함한 최종 HEAD에서 전체 Backend와
@@ -255,9 +255,11 @@ Client 연결은 별도 수직 작업으로 진행한다.
 - 시작 HEAD·`origin/jiyong`:
   `540c4ce99eaa13fe66d7b321357b193e510ce6a2`
 
-현재 보고서 작성 시점에는 최종 `jiyong` Push와 PM `main` SHA가
-아직 없다. 팀원은 로컬 작업트리나 위 시작 SHA를 소비 기준으로
-사용하지 않는다.
+최종 SHA를 같은 Commit 안에 자기 참조로 고정하지 않는다. Push 뒤
+`git rev-parse jiyong`과 `git ls-remote origin refs/heads/jiyong`의
+40자리 SHA 일치 여부로 공유 결과를 검증한다. 팀원은 로컬 작업트리,
+위 시작 SHA 또는 `jiyong` SHA를 소비 기준으로 사용하지 않고 PM이
+병합·전달한 `main` SHA만 사용한다.
 
 공유 순서:
 
