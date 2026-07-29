@@ -5,6 +5,7 @@
 > 관련 업무: `윤승혁_3주차_업무_지침서.md` 3.3, 3.6  
 > 계약 기준선: State Machine `v1.0.0 / TEAM_APPROVED`  
 > 문서 상태: 1차 검토 완료·담당자 조치 대기
+> 담당자 전달용 요청서: [`../handoffs/week3-contract-alignment-action-requests.md`](../handoffs/week3-contract-alignment-action-requests.md)
 
 ## 1. 목적
 
