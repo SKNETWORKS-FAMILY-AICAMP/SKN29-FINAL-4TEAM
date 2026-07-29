@@ -36,7 +36,7 @@
 | 범위 | 현재 기준 |
 | --- | --- |
 | 환경 | Python 3.13.13, pip 26.0.1, PostgreSQL 16.14 |
-| Backend 전체 회귀 | 현재 API 정합 작업트리에서 `352 passed`; 문서 포함 최종 HEAD 재검증·Push 대기 |
+| Backend 전체 회귀 | 최신 `main` 통합·Auth 초 경계 회귀 보정·문서 반영을 포함한 최종 HEAD에서 `353 passed` |
 | Migration | drift 없음, PostgreSQL 16.14 연결·적용 Migration 검사 통과 |
 | Seed | Accounts → Products → Subscriptions → Care 순서로 PostgreSQL에서 2회 연속 실행 통과 |
 | T-005 | 계약 테이블 32개 중 7개 구현, 25개 후속 |
@@ -83,7 +83,7 @@ T-005 전체 완료라고 쓰지 않는다.
 
 | 영역 | 2026-07-29 실측 | 팀원이 따라야 할 판단 |
 | --- | --- | --- |
-| Git 기준선 | API 정합화·자동 회귀는 완료했으며 작업 단위 Commit·`jiyong` Push·PM 병합 대기 | `jiyong` SHA는 PR·추적 기준이다. PM이 검토해 `main`에 병합하고 전달한 40자리 `main` SHA만 팀별 Branch에 반영 |
+| Git 기준선 | API 정합화·최신 `main` 통합·자동 회귀를 작업 단위 Commit으로 고정 | `jiyong` SHA는 PR·추적 기준이다. PM이 검토해 `main`에 병합하고 전달한 40자리 `main` SHA만 팀별 Branch에 반영 |
 | PM 계약 | State Machine `v1.0.0`이 2026-07-29 `TEAM_APPROVED`로 채택됨 | Data는 `data-state-crosswalk.yaml`과 대표 14단계 계약을 기준으로 Fixture·QA를 갱신하고, Backend는 승인된 값을 중복 정의하지 않고 소비 |
 | State Machine 생성물 | 최신 `origin/main` 기준 파일과 순수 계산 Engine·Guard 단위 기반을 `jiyong`에 반영했으나 운영 Service에는 미연결 | PM 계약·생성 Script·산출물을 삭제하거나 구형 수동본으로 되돌리지 않음 |
 | Web | 환경·공통 API·인증 관련 핵심 파일이 비어 있고 Test Script가 없음 | 상담사 실제 연동 완료가 아니라 공통 Client·인증·계약 Fixture부터 구현 |
@@ -125,7 +125,7 @@ OpenAPI에는 있지만 Runtime이 없는 다음 2개는 `NOT_IMPLEMENTED`로
 | 1 | OpenAPI 9개를 Runtime 7개·OpenAPI-only 2개로 매핑 | 완료·계약 검증 통과 |
 | 2 | Runtime 공통 오류 4개와 HTTP 선택 규칙 정합화 | 완료·400~599 Mapping 검증 통과 |
 | 3 | 구현 Endpoint 정상·오류·Replay 예시 | 총 22개·상대 참조·비밀값 검증 통과 |
-| 4 | 계약·권한·전체 Backend 회귀 | 94건·31건·352건 통과 |
+| 4 | 계약·권한·전체 Backend 회귀 | 94건·31건·353건 통과 |
 | 5 | 지원·미구현 경계와 소비자 인계 | 문서 반영 완료·PM 리뷰 대기 |
 
 다음 중 하나라도 발생하면 신규 기능으로 넘어가지 않는다.
@@ -494,7 +494,7 @@ docker compose --env-file .\backend\.env stop postgres
   고정했다.
 - 사람용 API 설명 문서와 Runtime 상태표는 OpenAPI 9·Runtime 7·
   OpenAPI-only 2로 갱신됐다.
-- 계약 94건, 권한·소유권 31건, 전체 Backend 352건이 현재
+- 계약 94건, 권한·소유권 31건, 전체 Backend 353건이 현재
   작업트리에서 통과했다.
 - Public UUID와 업무 코드는 분리돼 있다.
 - JWT `sub`는 Public UUID를 우선하며 기존 문자열 PK는 호환
@@ -523,7 +523,7 @@ docker compose --env-file .\backend\.env stop postgres
 1. OpenAPI 9개를 Runtime 7개와 OpenAPI-only 2개로 분리했다.
 2. Runtime 공통 오류 4개와 Handler 선택 규칙을 가산 정합화했다.
 3. 구현된 Auth 4개·START·CANCEL만 JSON 22개로 연결했다.
-4. 계약 94건·권한 31건·전체 Backend 352건을 통과했다.
+4. 계약 94건·권한 31건·전체 Backend 353건을 통과했다.
 5. 상세 증거와 팀별 다음 행동은
    [검증보고서](../individual/jiyong/manuals/20260729_최지용_Backend_API_계약_정합화_검증보고서_v1.0.md)에
    기록했다.

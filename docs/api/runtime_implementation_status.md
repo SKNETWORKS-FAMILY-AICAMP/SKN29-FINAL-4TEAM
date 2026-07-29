@@ -17,7 +17,7 @@ Django Runtime Route가 있는 Operation은 7개이고, 2개는 계약만
 | Django Runtime | 7 | 실제 Route·View 존재 |
 | OpenAPI-only | 2 | 계약은 있으나 Runtime 미구현 |
 | 자동 계약 검증 | 9 | Runtime 7개와 미구현 경계 2개 모두 통과 |
-| 팀 리뷰 완료 | 0 | `jiyong` Push·PM 검토·`main` 병합 전 |
+| 팀 리뷰 완료 | 0 | PM `main` 병합·팀 소비 검증 전 |
 
 `x-contract-status: CONFIRMED`는 Method·Path·Schema의 OWNER 계약이
 확정됐다는 뜻이며 Runtime 구현 완료를 의미하지 않는다.
@@ -48,7 +48,7 @@ Server `/`를 사용한다. Django의 Path Parameter 이름
 | 1 | OpenAPI 9개 ↔ Runtime 7개 매핑 | 지원 7개·OpenAPI-only 2개 고정 | Route·View·`operationId` 검증 통과 |
 | 2 | Runtime 공통 오류 Registry 정합화 | 누락 4개 추가, 최상위 Registry 총 10개 | 대표 상태와 `runtime_http_mapping` 검증 통과 |
 | 3 | 구현 API JSON 예시 | 신규 20개, 기존 409 2개, 총 22개 | JSON·Serializer·참조·비밀값 검증 통과 |
-| 4 | 회귀 검증 | 계약 94건·권한 31건·전체 Backend 352건 통과 | Git 공유 범위 확인 가능 |
+| 4 | 회귀 검증 | 계약 94건·권한 31건·전체 Backend 353건 통과 | Git 공유 범위 확인 가능 |
 
 오류 코드별 `http_status`는 대표 상태다. `INVALID_REQUEST`의 기타
 4xx fallback과 `INTERNAL_ERROR`의 5xx fallback은
@@ -112,7 +112,7 @@ $env:PYTHONDONTWRITEBYTECODE = "1"
 | API·계약 + Auth 계약 | 0 | `94 passed` |
 | 권한·소유권 + T-022·T-023 | 0 | `31 passed` |
 | Django System Check | 0 | `System check identified no issues` |
-| 전체 Backend | 0 | `352 passed` |
+| 전체 Backend | 0 | `353 passed` |
 
 검증 묶음은 일부 테스트가 서로 겹치므로 수치를 합산하지 않는다.
 최종 Git 공유 전에는 문서 변경까지 포함한 HEAD에서 전체 Backend와
