@@ -10,7 +10,15 @@ from typing import Any
 
 from .config import PipelineConfig
 from .e2e_validation import validate_representative_e2e
-from .io import ensure_within, json_bytes, read_json, read_jsonl, sha256_bytes, sha256_file
+from .io import (
+    ensure_within,
+    json_bytes,
+    read_json,
+    read_jsonl,
+    sha256_bytes,
+    sha256_file,
+    sha256_text_file,
+)
 
 
 def validate_service_contract_mapping(config: PipelineConfig) -> list[str]:
@@ -28,7 +36,7 @@ def validate_service_contract_mapping(config: PipelineConfig) -> list[str]:
         if not path.is_file():
             errors.append(f"contract_source_missing:{source_name}:{source['path']}")
             continue
-        actual_hash = sha256_file(path)
+        actual_hash = sha256_text_file(path)
         if actual_hash != source["sha256"]:
             errors.append(
                 f"contract_source_hash_mismatch:{source_name}:"
@@ -55,7 +63,7 @@ def validate_backend_import_crosswalk(config: PipelineConfig) -> list[str]:
         if not path.is_file():
             errors.append(f"backend_source_missing:{source_name}:{source['path']}")
             continue
-        actual_hash = sha256_file(path)
+        actual_hash = sha256_text_file(path)
         if actual_hash != source["sha256"]:
             errors.append(
                 f"backend_source_hash_mismatch:{source_name}:"

@@ -12,7 +12,7 @@ sys.path.insert(0, str(TOOLS_ROOT))
 
 from watercare.builders import build_rag_preview, build_synthetic_preview
 from watercare.config import load_pipeline
-from watercare.io import data_path, sha256_bytes, write_bytes
+from watercare.io import data_path, sha256_bytes, sha256_text_file, write_bytes
 
 
 class PipelineSafetyTests(unittest.TestCase):
@@ -37,6 +37,18 @@ class PipelineSafetyTests(unittest.TestCase):
                 [],
                 list(target.parent.glob(f".{target.name}.*.tmp")),
             )
+
+    def test_text_source_hash_is_line_ending_independent(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lf = root / "lf.txt"
+            crlf = root / "crlf.txt"
+            lone_cr = root / "cr.txt"
+            lf.write_bytes(b"first\nsecond\n")
+            crlf.write_bytes(b"first\r\nsecond\r\n")
+            lone_cr.write_bytes(b"first\rsecond\r")
+            self.assertEqual(sha256_text_file(lf), sha256_text_file(crlf))
+            self.assertEqual(sha256_text_file(lf), sha256_text_file(lone_cr))
 
     def test_two_builds_are_byte_deterministic(self) -> None:
         first = {**build_rag_preview(self.config), **build_synthetic_preview(self.config)}
