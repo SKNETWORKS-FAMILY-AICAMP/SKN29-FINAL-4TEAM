@@ -1,0 +1,30 @@
+title: CancelInquiryRequest
+type: object
+description: CANCEL_INQUIRY 실행에 필요한 상태 버전과 취소 사유
+additionalProperties: false
+required:
+  - state_version
+  - reason_code
+properties:
+  state_version:
+    type: integer
+    minimum: 1
+    description: 클라이언트가 마지막으로 확인한 문의 상태 버전
+  reason_code:
+    type: string
+    minLength: 1
+    maxLength: 40
+    pattern: "^[A-Z][A-Z0-9_]{0,39}$"
+    enum:
+      - CUSTOMER_REQUEST
+      - DUPLICATE_INQUIRY
+      - ISSUE_RESOLVED
+      - OTHER
+    x-code-contract: ../../../../codes/inquiry-cancellation-reasons.yaml
+    description: Backend 공통 코드 계약에 등록된 문의 취소 사유 코드
+  reason_detail:
+    type:
+      - string
+      - "null"
+    maxLength: 500
+    description: 선택 입력인 취소 사유 보충 설명

@@ -12,7 +12,7 @@ required:
 properties:
   id:
     type: string
-    maxLength: 48
+    format: uuid
   display_name:
     type: string
     maxLength: 100
@@ -33,7 +33,7 @@ properties:
     properties:
       id:
         type: string
-        maxLength: 48
+        format: uuid
       customer_no:
         type: string
       customer_name:

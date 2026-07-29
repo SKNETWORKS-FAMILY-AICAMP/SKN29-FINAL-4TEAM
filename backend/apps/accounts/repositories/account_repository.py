@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from uuid import UUID
+
 from apps.accounts.models import User
 
 
@@ -20,12 +22,25 @@ class AccountRepository:
         )
 
     @staticmethod
-    def find_active_by_id(user_id: str) -> User | None:
+    def find_active_by_subject(subject: str) -> User | None:
+        """공개 UUID subject를 우선하고 기존 문자열 PK도 임시 허용한다."""
+        normalized = str(subject).strip()
+        try:
+            public_id = UUID(normalized)
+        except (ValueError, AttributeError, TypeError):
+            filters = {"pk": normalized}
+        else:
+            filters = {"public_id": public_id}
         return (
             User.objects.filter(
-                pk=user_id,
                 is_active=True,
+                **filters,
             )
             .select_related("customer_profile")
             .first()
         )
+
+    @classmethod
+    def find_active_by_id(cls, user_id: str) -> User | None:
+        """기존 호출자 호환용 alias."""
+        return cls.find_active_by_subject(user_id)

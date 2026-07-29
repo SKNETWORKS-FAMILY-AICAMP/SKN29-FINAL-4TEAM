@@ -138,7 +138,7 @@ Set-Location .\backend
 ```
 
 Smoke 사전조건과 전체 실행 순서는
-[공유 패키지 인계서](<./20260727_최지용_Django_PostgreSQL_공유패키지_인계서_v1.0.md>)를
+[공유 패키지 인계서](<./20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md>)를
 따른다.
 
 ## 6. 실제 HTTP 검증
@@ -187,7 +187,7 @@ Smoke 사전조건과 전체 실행 순서는
 
 ## 8. 연결 문서
 
-- [공유 패키지 인계서](<./20260727_최지용_Django_PostgreSQL_공유패키지_인계서_v1.0.md>)
+- [공유 패키지 인계서](<./20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md>)
 - [Django·PostgreSQL Migration 검증](<./20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md>)
 - [API 계약 인계 가이드](<../technical/backend/api_contract_handover_guide.md>)
 - [ADR-0009](<../../../adr/0009-t017-jwt-rbac-owner-baseline.md>)

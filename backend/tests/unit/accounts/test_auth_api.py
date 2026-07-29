@@ -58,7 +58,7 @@ def test_demo_login_issues_role_bound_token_pair(client, demo_customer):
     assert session["token_type"] == "Bearer"
     assert session["access_expires_in"] == 60 * 60
     assert session["refresh_expires_in"] == 7 * 24 * 60 * 60
-    assert access["sub"] == demo_customer.pk
+    assert access["sub"] == str(demo_customer.public_id)
     assert access["role_code"] == User.Role.CUSTOMER
     assert refresh["role_code"] == User.Role.CUSTOMER
 
@@ -94,7 +94,10 @@ def test_me_returns_safe_projection_only(client, demo_customer):
 
     assert response.status_code == 200
     data = response.json()["data"]
-    assert data["id"] == demo_customer.pk
+    assert data["id"] == str(demo_customer.public_id)
+    assert data["customer_profile"]["id"] == str(
+        demo_customer.customer_profile.public_id
+    )
     assert data["role_code"] == User.Role.CUSTOMER
     assert data["customer_profile"]["customer_no"] == "SYN-CUSTOMER-001"
     serialized = response.content.decode("utf-8")
@@ -120,6 +123,25 @@ def test_me_requires_valid_bearer_token(client, demo_customer):
     assert malformed.status_code == 401
     assert missing.json()["error"]["code"] == "AUTH_REQUIRED"
     assert malformed.json()["error"]["code"] == "AUTH_REQUIRED"
+
+
+def test_me_accepts_legacy_string_primary_key_subject(
+    client,
+    demo_customer,
+):
+    legacy_access = AccessToken.for_user(demo_customer)
+    legacy_access["sub"] = demo_customer.pk
+    legacy_access["role_code"] = demo_customer.role_code
+
+    response = client.get(
+        "/api/v1/me",
+        HTTP_AUTHORIZATION=f"Bearer {legacy_access}",
+    )
+
+    assert response.status_code == 200
+    assert response.json()["data"]["id"] == str(
+        demo_customer.public_id
+    )
 
 
 @override_settings(
@@ -149,6 +171,35 @@ def test_refresh_rotates_and_blacklists_previous_token(
     )
     assert replay.status_code == 401
     assert replay.json()["error"]["code"] == "AUTH_REQUIRED"
+
+
+def test_refresh_accepts_legacy_subject_and_rotates_to_public_uuid(
+    client,
+    demo_customer,
+):
+    legacy_refresh = RefreshToken.for_user(demo_customer)
+    legacy_refresh["sub"] = demo_customer.pk
+    legacy_refresh["role_code"] = demo_customer.role_code
+    raw_legacy_refresh = str(legacy_refresh)
+
+    response = client.post(
+        "/api/v1/auth/refresh",
+        {"refresh_token": raw_legacy_refresh},
+        content_type="application/json",
+    )
+
+    assert response.status_code == 200
+    replacement = response.json()["data"]
+    assert RefreshToken(replacement["refresh_token"])["sub"] == str(
+        demo_customer.public_id
+    )
+
+    replay = client.post(
+        "/api/v1/auth/refresh",
+        {"refresh_token": raw_legacy_refresh},
+        content_type="application/json",
+    )
+    assert replay.status_code == 401
 
 
 @override_settings(

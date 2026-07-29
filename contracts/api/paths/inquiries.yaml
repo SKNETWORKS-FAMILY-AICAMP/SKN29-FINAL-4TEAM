@@ -1,7 +1,7 @@
 # T-022 최지용 확정 API 기준선이다. Runtime 구현 상태와 별개로 관리한다.
 /inquiries:
   post:
-    operationId: createInquiry
+    operationId: startInquiry
     summary: 고객 문의 생성
     description: |
       본인의 활성 구독에 자연어 증상 원문을 연결해 신규 문의를 생성한다.
@@ -13,8 +13,17 @@
       - FR-009
       - DR-001
       - DR-006
+    x-state-machine:
+      event: START_INQUIRY
+      operation_id: startInquiry
+      transition_rule: TR-INQ-001
+      from_state: null
+      to_state: DRAFT
+      actor_role: CUSTOMER
     security:
       - BearerAuth: []
+    parameters:
+      - $ref: ../components/parameters/IdempotencyKey.yaml
     requestBody:
       required: true
       content:
@@ -35,15 +44,26 @@
                 - type: object
                   properties:
                     data:
-                      $ref: ../components/schemas/inquiry/InquiryDetail.yaml
+                      $ref: ../components/schemas/inquiry/CreateInquiryResult.yaml
       "400":
         $ref: ../components/responses/BadRequest.yaml
       "401":
         $ref: ../components/responses/Unauthorized.yaml
       "403":
         $ref: ../components/responses/Forbidden.yaml
+      "404":
+        $ref: ../components/responses/NotFound.yaml
       "409":
-        $ref: ../components/responses/Conflict.yaml
+        $ref: ../components/responses/WorkflowConflict.yaml
+      "422":
+        description: 요청 본문 또는 필수 헤더 검증 실패
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/common/ApiResponse.yaml
 
 /inquiries/{id}/questionnaire:
   parameters:

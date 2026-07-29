@@ -43,7 +43,7 @@
       "minLength": 1,
       "enum": [
         "CUSTOMER",
-        "COUNSELOR",
+        "CONSULTANT",
         "TECHNICIAN",
         "SYSTEM"
       ]

@@ -1,5 +1,7 @@
 """T-017 사용자·합성 고객 Profile Model 검증."""
 
+from uuid import UUID
+
 import pytest
 from django.core.exceptions import ValidationError
 from django.db.models.deletion import ProtectedError
@@ -19,6 +21,7 @@ def test_user_manager_hashes_password_and_uses_domain_id():
     )
 
     assert user.pk.startswith("USR-")
+    assert isinstance(user.public_id, UUID)
     assert user.check_password("not-a-real-password") is True
     assert user.password != "not-a-real-password"
 
@@ -63,12 +66,14 @@ def test_customer_profile_rejects_non_customer_and_protects_user():
         full_name="합성 고객 104",
         role_code=User.Role.CUSTOMER,
     )
-    CustomerProfile.objects.create(
+    profile = CustomerProfile.objects.create(
         id="DEMO-CUS-104",
         user=customer,
         customer_no="SYN-CUSTOMER-104",
         customer_name="합성 고객 104",
     )
+    assert isinstance(profile.public_id, UUID)
+    assert profile.public_id != customer.public_id
 
     with pytest.raises(ProtectedError):
         customer.delete()

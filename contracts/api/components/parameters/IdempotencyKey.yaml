@@ -1,0 +1,11 @@
+name: Idempotency-Key
+in: header
+required: true
+description: |
+  외부 쓰기 요청의 중복 부수 효과를 방지하는 요청별 키.
+  동일 사용자·operation에서 같은 키와 다른 요청 본문을 재사용하면
+  HTTP 409 DUPLICATE-EVENT-01을 반환한다.
+schema:
+  type: string
+  minLength: 1
+  maxLength: 128

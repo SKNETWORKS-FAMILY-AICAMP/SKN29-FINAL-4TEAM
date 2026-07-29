@@ -36,7 +36,7 @@ def readiness_module() -> ModuleType:
     return load_module()
 
 
-def test_model_declarations_ignore_docstring_only_placeholder(
+def test_model_declarations_distinguish_placeholder_and_implemented_model(
     readiness_module: ModuleType,
 ):
     placeholder = (
@@ -45,22 +45,22 @@ def test_model_declarations_ignore_docstring_only_placeholder(
         / "apps"
         / "inquiries"
         / "models"
-        / "inquiry.py"
+        / "customer_action_result.py"
     )
     actual = (
         REPOSITORY_ROOT
         / "backend"
         / "apps"
-        / "accounts"
+        / "inquiries"
         / "models"
-        / "user.py"
+        / "inquiry.py"
     )
 
     assert readiness_module.collect_model_declarations(placeholder) == []
     declarations = readiness_module.collect_model_declarations(actual)
     assert len(declarations) == 1
-    assert declarations[0]["class_name"] == "User"
-    assert declarations[0]["db_table"] == "accounts_user"
+    assert declarations[0]["class_name"] == "Inquiry"
+    assert declarations[0]["db_table"] == "support_inquiry"
 
 
 def test_migration_declarations_read_actual_db_tables(
@@ -177,16 +177,21 @@ def test_repository_audit_maps_all_32_tables_without_false_completion(
     assert result["status"] == "NOT_READY"
     assert result["scope"] == "T005_DJANGO_MODEL_MIGRATION_MAPPING"
     assert summary["contract_table_count"] == 32
-    assert summary["declared_contract_model_count"] == 2
-    assert summary["registered_contract_model_count"] == 2
-    assert summary["migration_contract_table_count"] == 2
-    assert summary["fully_implemented_contract_table_count"] == 2
+    assert summary["declared_contract_model_count"] == 7
+    assert summary["registered_contract_model_count"] == 7
+    assert summary["migration_contract_table_count"] == 7
+    assert summary["fully_implemented_contract_table_count"] == 7
     assert mapping["implemented_tables"] == [
         "accounts_user",
+        "catalog_product_model",
         "customers_customer_profile",
+        "subscriptions_care_record",
+        "subscriptions_customer_subscription",
+        "support_inquiry",
+        "support_inquiry_symptom",
     ]
-    assert len(mapping["missing_model_tables"]) == 30
-    assert len(mapping["missing_migration_tables"]) == 30
+    assert len(mapping["missing_model_tables"]) == 25
+    assert len(mapping["missing_migration_tables"]) == 25
     assert result["evidence"]["contract"]["contract_status"] == (
         "OWNER_BASELINE"
     )
