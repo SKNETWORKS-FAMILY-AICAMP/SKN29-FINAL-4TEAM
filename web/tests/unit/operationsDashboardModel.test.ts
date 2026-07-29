@@ -15,13 +15,15 @@ describe("운영 현황 대시보드 View Model", () => {
       DEFAULT_OPERATIONS_FILTERS,
     );
 
-    expect(summary.inquiries).toHaveLength(24);
-    expect(summary.metrics.find((metric) => metric.key === "TOTAL")?.count).toBe(24);
+    const total = COUNSELOR_INQUIRIES.length;
+
+    expect(summary.inquiries).toHaveLength(total);
+    expect(summary.metrics.find((metric) => metric.key === "TOTAL")?.count).toBe(total);
     expect(summary.metrics.find((metric) => metric.key === "DANGER")?.count).toBe(
       COUNSELOR_INQUIRIES.filter((inquiry) => inquiry.riskLevel === "DANGER").length,
     );
-    expect(summary.symptomDistribution.reduce((sum, item) => sum + item.count, 0)).toBe(24);
-    expect(summary.statusDistribution.reduce((sum, item) => sum + item.count, 0)).toBe(24);
+    expect(summary.symptomDistribution.reduce((sum, item) => sum + item.count, 0)).toBe(total);
+    expect(summary.statusDistribution.reduce((sum, item) => sum + item.count, 0)).toBe(total);
   });
 
   it("기간·위험도·처리 결과 조건을 함께 적용한다", () => {
