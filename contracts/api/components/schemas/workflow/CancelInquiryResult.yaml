@@ -1,0 +1,25 @@
+title: CancelInquiryResult
+type: object
+description: CANCEL_INQUIRY 성공 또는 멱등 재사용 결과
+additionalProperties: false
+required:
+  - inquiry_id
+  - state
+  - state_version
+  - idempotent_replay
+properties:
+  inquiry_id:
+    type: string
+    format: uuid
+    description: 취소된 문의의 외부 공개 UUID
+  state:
+    type: string
+    const: CANCELLED
+    description: CANCEL_INQUIRY 성공 후 문의 상태
+  state_version:
+    type: integer
+    minimum: 2
+    description: 성공한 상태 전환으로 1 증가한 최신 문의 상태 버전
+  idempotent_replay:
+    type: boolean
+    description: 동일 Idempotency-Key와 동일 요청의 저장 결과 재사용 여부

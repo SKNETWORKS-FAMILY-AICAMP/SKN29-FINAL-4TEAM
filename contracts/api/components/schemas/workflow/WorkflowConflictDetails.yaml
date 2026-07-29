@@ -1,0 +1,16 @@
+title: WorkflowConflictDetails
+type: object
+description: 상태 버전 또는 멱등 키 충돌 시 공개 가능한 복구 정보
+additionalProperties: false
+properties:
+  current_status:
+    type:
+      - string
+      - "null"
+  current_state_version:
+    type: integer
+    minimum: 1
+  allowed_actions:
+    type: array
+    items:
+      type: string

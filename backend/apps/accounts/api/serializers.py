@@ -15,7 +15,7 @@ class RefreshTokenRequestSerializer(serializers.Serializer):
 
 
 class AuthenticatedUserSerializer(serializers.Serializer):
-    id = serializers.CharField(max_length=48)
+    id = serializers.UUIDField()
     display_name = serializers.CharField(max_length=100)
     role_code = serializers.ChoiceField(
         choices=[

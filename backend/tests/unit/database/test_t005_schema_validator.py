@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import importlib.util
 import json
 import subprocess
@@ -33,6 +34,7 @@ EXPECTED_BLOCKER_IDS = {
     "T005_VISIT_STORAGE_MAPPING",
     "T005_VISIT_STATUS_CODESET",
     "T005_ENUM_SEED_POLICY",
+    "T005_STATUS_HISTORY_IDEMPOTENCY_SCOPE",
 }
 
 
@@ -63,18 +65,23 @@ def baseline_data() -> dict[str, dict[str, Any]]:
         ),
         "logical_contract": json.loads(
             (
-                ARTIFACT_DIR / "t005_logical_contract_v0.2.json"
+                ARTIFACT_DIR / "t005_logical_contract_v0.3.json"
             ).read_text(encoding="utf-8")
         ),
         "decision_register": json.loads(
             (
-                ARTIFACT_DIR / "t005_decision_register_v0.1.json"
+                ARTIFACT_DIR / "t005_decision_register_v0.3.json"
+            ).read_text(encoding="utf-8")
+        ),
+        "physical_contract": json.loads(
+            (
+                ARTIFACT_DIR / "t005_physical_contract_v1.2.json"
             ).read_text(encoding="utf-8")
         ),
     }
 
 
-def test_current_snapshot_keeps_six_legacy_gaps_but_owner_baseline_resolves_them(
+def test_current_snapshot_keeps_seven_legacy_gaps_but_owner_baseline_resolves_them(
     validator_module: ModuleType,
 ):
     result = validator_module.audit_snapshot()
@@ -82,7 +89,7 @@ def test_current_snapshot_keeps_six_legacy_gaps_but_owner_baseline_resolves_them
     assert result["errors"] == []
     assert result["decision_alignment"]["matches"] is True
     assert result["decision_register"]["valid"] is True
-    assert result["decision_register"]["accepted_count"] == 6
+    assert result["decision_register"]["accepted_count"] == 7
     assert (
         result["owner_baseline"]["status"]
         == "OWNER_BASELINE_CONFIRMED"
@@ -97,6 +104,16 @@ def test_current_snapshot_keeps_six_legacy_gaps_but_owner_baseline_resolves_them
     assert result["gaps"] == []
     assert result["completion_gates"]["owner_baseline_confirmed"] is True
     assert result["completion_gates"]["non_author_review_confirmed"] is False
+    assert (
+        result["completion_gates"][
+            "three_layer_identifier_runtime_complete"
+        ]
+        is False
+    )
+    assert (
+        "three_layer_identifier_runtime_complete"
+        in result["wbs_completion_gaps"]
+    )
     assert "postgresql_migration_verified" in result[
         "wbs_completion_gaps"
     ]
@@ -401,6 +418,301 @@ def test_owner_baseline_rejects_code_contract_drift(
         error["id"] == "T005_OWNER_BASELINE_INVALID"
         for error in result["errors"]
     )
+
+
+def test_historical_contract_generations_remain_frozen():
+    logical_v02 = json.loads(
+        (
+            ARTIFACT_DIR / "t005_logical_contract_v0.2.json"
+        ).read_text(encoding="utf-8")
+    )
+    decision_v02 = json.loads(
+        (
+            ARTIFACT_DIR / "t005_decision_register_v0.2.json"
+        ).read_text(encoding="utf-8")
+    )
+    physical_v11 = json.loads(
+        (
+            ARTIFACT_DIR / "t005_physical_contract_v1.1.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert logical_v02["status"] == "HISTORICAL_SNAPSHOT"
+    assert len(logical_v02["decisions_required"]) == 6
+    assert len(decision_v02["decisions"]) == 6
+    assert "T005_STATUS_HISTORY_IDEMPOTENCY_SCOPE" not in {
+        decision["id"] for decision in logical_v02["decisions_required"]
+    }
+    assert "support_inquiry_status_history" not in (
+        physical_v11["physical_overrides"]
+    )
+
+
+def test_manifest_points_to_active_contract_generation(
+    validator_module: ModuleType,
+    baseline_data: dict[str, dict[str, Any]],
+):
+    assert validator_module.audit_snapshot()[
+        "active_contract_alignment"
+    ]["matches"] is True
+
+    manifest = baseline_data["manifest"]
+    manifest["active_physical_contract"] = (
+        "t005_physical_contract_v1.1.json"
+    )
+    result = validator_module.audit_snapshot(
+        manifest=manifest,
+        schema=baseline_data["schema"],
+        logical_contract=baseline_data["logical_contract"],
+        decision_register=baseline_data["decision_register"],
+        physical_contract=baseline_data["physical_contract"],
+        verify_artifact_hashes=False,
+    )
+
+    assert result["active_contract_alignment"]["matches"] is False
+    assert any(
+        error["id"] == "T005_ACTIVE_CONTRACT_POINTER_MISMATCH"
+        for error in result["errors"]
+    )
+
+
+def test_status_history_idempotency_uses_request_ledger_and_trace_indexes(
+    validator_module: ModuleType,
+    baseline_data: dict[str, dict[str, Any]],
+):
+    physical_contract = baseline_data["physical_contract"]
+    history = physical_contract["physical_overrides"][
+        "support_inquiry_status_history"
+    ]
+
+    assert history["idempotency_key"]["global_unique"] is False
+    assert history["idempotency_key"]["request_scope_owner"] == (
+        "workflow_idempotency_record"
+    )
+    assert history["idempotency_key"]["request_scope_fields"] == [
+        "actor",
+        "operation_id",
+        "idempotency_key",
+    ]
+    assert history["idempotency_key"]["history_unique"] is False
+    assert history["idempotency_key"]["trace_only"] is True
+    assert "postgresql_partial_unique_constraints" not in history
+    assert {
+        index["target_type_code"]
+        for index in history["postgresql_partial_idempotency_indexes"]
+    } == {"QUESTIONNAIRE", "INQUIRY", "CONSULTATION", "VISIT"}
+    assert all(
+        index["unique"] is False
+        for index in history["postgresql_partial_idempotency_indexes"]
+    )
+
+    history["postgresql_partial_idempotency_indexes"][0]["unique"] = True
+    result = validator_module.audit_snapshot(
+        manifest=baseline_data["manifest"],
+        schema=baseline_data["schema"],
+        logical_contract=baseline_data["logical_contract"],
+        decision_register=baseline_data["decision_register"],
+        physical_contract=physical_contract,
+        verify_artifact_hashes=False,
+    )
+
+    assert result["owner_baseline"]["valid"] is False
+    assert (
+        result["owner_baseline"]["checks"][
+            "status_history_idempotency_scope"
+        ]
+        is False
+    )
+
+    physical_contract = copy.deepcopy(baseline_data["physical_contract"])
+    physical_contract["physical_overrides"][
+        "support_inquiry_status_history"
+    ]["idempotency_key"]["history_unique"] = True
+    result = validator_module.audit_snapshot(
+        manifest=baseline_data["manifest"],
+        schema=baseline_data["schema"],
+        logical_contract=baseline_data["logical_contract"],
+        decision_register=baseline_data["decision_register"],
+        physical_contract=physical_contract,
+        verify_artifact_hashes=False,
+    )
+    assert result["owner_baseline"]["checks"][
+        "status_history_idempotency_scope"
+    ] is False
+
+
+def test_status_history_check_constraint_expression_drift_is_rejected(
+    validator_module: ModuleType,
+    baseline_data: dict[str, dict[str, Any]],
+):
+    physical_contract = baseline_data["physical_contract"]
+    checks = physical_contract["physical_overrides"][
+        "support_inquiry_status_history"
+    ]["target_integrity"]["check_constraints"]
+    checks[0]["expression"] = "num_nonnulls(inquiry_id, visit_id) <= 1"
+
+    result = validator_module.audit_snapshot(
+        manifest=baseline_data["manifest"],
+        schema=baseline_data["schema"],
+        logical_contract=baseline_data["logical_contract"],
+        decision_register=baseline_data["decision_register"],
+        physical_contract=physical_contract,
+        verify_artifact_hashes=False,
+    )
+
+    assert result["owner_baseline"]["checks"][
+        "status_history_target_integrity"
+    ] is False
+
+
+def test_status_history_state_version_constraint_must_be_unique(
+    validator_module: ModuleType,
+    baseline_data: dict[str, dict[str, Any]],
+):
+    physical_contract = baseline_data["physical_contract"]
+    constraints = physical_contract["physical_overrides"][
+        "support_inquiry_status_history"
+    ]["postgresql_partial_version_constraints"]
+    constraints[0]["unique"] = False
+
+    result = validator_module.audit_snapshot(
+        manifest=baseline_data["manifest"],
+        schema=baseline_data["schema"],
+        logical_contract=baseline_data["logical_contract"],
+        decision_register=baseline_data["decision_register"],
+        physical_contract=physical_contract,
+        verify_artifact_hashes=False,
+    )
+
+    assert result["owner_baseline"]["checks"][
+        "status_history_state_version_scope"
+    ] is False
+
+
+def test_request_ledger_runtime_constraint_matches_contract_scope():
+    from apps.workflow.models import IdempotencyRecord
+
+    constraint = next(
+        constraint
+        for constraint in IdempotencyRecord._meta.constraints
+        if constraint.name == "ux_workflow_idempotency_scope"
+    )
+
+    assert tuple(constraint.fields) == (
+        "actor",
+        "operation_id",
+        "idempotency_key",
+    )
+
+
+def test_owner_baseline_accepts_transitional_and_complete_gate_states(
+    validator_module: ModuleType,
+    baseline_data: dict[str, dict[str, Any]],
+):
+    transitional = validator_module.audit_snapshot(
+        manifest=copy.deepcopy(baseline_data["manifest"]),
+        schema=baseline_data["schema"],
+        logical_contract=baseline_data["logical_contract"],
+        decision_register=baseline_data["decision_register"],
+        physical_contract=copy.deepcopy(baseline_data["physical_contract"]),
+        verify_artifact_hashes=False,
+    )
+    assert transitional["owner_baseline"]["checks"][
+        "implementation_gate_valid"
+    ] is True
+
+    complete_manifest = copy.deepcopy(baseline_data["manifest"])
+    complete_manifest["implementation_gate"].update(
+        {
+            "status": "COMPLETE",
+            "completion_claim_allowed": True,
+        }
+    )
+    complete_contract = copy.deepcopy(baseline_data["physical_contract"])
+    complete_contract["identifier_policy"]["compatibility_bridge"][
+        "status"
+    ] = "COMPLETE"
+    complete_contract["implementation_gate"] = {
+        "status": "COMPLETE",
+        "completion_claim_allowed": True,
+        "incomplete_items": [],
+    }
+    complete = validator_module.audit_snapshot(
+        manifest=complete_manifest,
+        schema=baseline_data["schema"],
+        logical_contract=baseline_data["logical_contract"],
+        decision_register=baseline_data["decision_register"],
+        physical_contract=complete_contract,
+        verify_artifact_hashes=False,
+    )
+    assert complete["owner_baseline"]["checks"][
+        "implementation_gate_valid"
+    ] is True
+    assert complete["completion_gates"][
+        "three_layer_identifier_runtime_complete"
+    ] is True
+
+    hybrid_contract = copy.deepcopy(complete_contract)
+    hybrid_contract["identifier_policy"]["compatibility_bridge"][
+        "status"
+    ] = "TRANSITIONAL"
+    hybrid = validator_module.audit_snapshot(
+        manifest=complete_manifest,
+        schema=baseline_data["schema"],
+        logical_contract=baseline_data["logical_contract"],
+        decision_register=baseline_data["decision_register"],
+        physical_contract=hybrid_contract,
+        verify_artifact_hashes=False,
+    )
+    assert hybrid["owner_baseline"]["checks"][
+        "implementation_gate_valid"
+    ] is False
+
+
+def test_identifier_and_role_contract_parity_rejects_counselor_alias(
+    validator_module: ModuleType,
+    baseline_data: dict[str, dict[str, Any]],
+):
+    physical_contract = baseline_data["physical_contract"]
+    physical_contract["physical_overrides"]["accounts_user"]["role_code"][
+        "codes"
+    ][1] = "COUNSELOR"
+
+    result = validator_module.audit_snapshot(
+        manifest=baseline_data["manifest"],
+        schema=baseline_data["schema"],
+        logical_contract=baseline_data["logical_contract"],
+        decision_register=baseline_data["decision_register"],
+        physical_contract=physical_contract,
+        verify_artifact_hashes=False,
+    )
+
+    assert result["owner_baseline"]["checks"][
+        "user_role_code_parity"
+    ] is False
+
+
+def test_physical_identifier_parity_rejects_public_id_type_drift(
+    validator_module: ModuleType,
+    baseline_data: dict[str, dict[str, Any]],
+):
+    physical_contract = baseline_data["physical_contract"]
+    physical_contract["physical_overrides"]["support_inquiry"][
+        "public_id"
+    ]["type"] = "varchar(48)"
+
+    result = validator_module.audit_snapshot(
+        manifest=baseline_data["manifest"],
+        schema=baseline_data["schema"],
+        logical_contract=baseline_data["logical_contract"],
+        decision_register=baseline_data["decision_register"],
+        physical_contract=physical_contract,
+        verify_artifact_hashes=False,
+    )
+
+    assert result["owner_baseline"]["checks"][
+        "physical_identifier_parity"
+    ] is False
 
 
 def test_api_schemas_use_owner_baseline_field_names_and_codes():
