@@ -251,6 +251,11 @@
   ],
   "metadata_files": [
     {
+      "path": "README.md",
+      "size_bytes": 2785,
+      "sha256": "43EE6218A5D80C8CC113F9976973AC994E35BD4E008E7BF102B001E70AB5ABE3"
+    },
+    {
       "path": "catalog/CHANGELOG.md",
       "size_bytes": 8223,
       "sha256": "1B7172117ED7A0DEB679D12FEEB2110B5DDE4D5C6840B8BD10409505C7EFFE7D"
@@ -266,6 +271,11 @@
       "sha256": "D50D212CF45CDAAEAB12F2AE0A0D309AAD0C0B88654779BDE08BE65528576E6B"
     },
     {
+      "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
+      "size_bytes": 2037,
+      "sha256": "4568D2B1CEEE18D7B88346D2F4AC0615CEA512E8DC8BF732D289E4CC8D12EA6D"
+    },
+    {
       "path": "processed/metadata/collection_log.csv",
       "size_bytes": 1952,
       "sha256": "ACE6636F3706EEC41B799D4ED0BA938D226241220B9D0BD296B86423A5077C61"
@@ -274,11 +284,6 @@
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 17464,
       "sha256": "82336DDDF4D6346F70602999DAF85CCB6FC849DDED26402FF9EF48C155A78DFE"
-    },
-    {
-      "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
-      "size_bytes": 2037,
-      "sha256": "4568D2B1CEEE18D7B88346D2F4AC0615CEA512E8DC8BF732D289E4CC8D12EA6D"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -299,11 +304,6 @@
       "path": "processed/metadata/source_inventory.csv",
       "size_bytes": 1670,
       "sha256": "F9D3589C86FD74629454CA73FBF0D754A8CFB81646408712A854E9F9AF4622F6"
-    },
-    {
-      "path": "README.md",
-      "size_bytes": 2785,
-      "sha256": "43EE6218A5D80C8CC113F9976973AC994E35BD4E008E7BF102B001E70AB5ABE3"
     },
     {
       "path": "schemas/README.md",
@@ -581,8 +581,8 @@
     },
     {
       "path": "tools/tests/test_pipeline_safety.py",
-      "size_bytes": 4435,
-      "sha256": "674C4C47A3367FFC5946AB3A2F07EAC51F0E75AF5862BB67B6CC6FEDA0885E70"
+      "size_bytes": 4938,
+      "sha256": "D8D0DFAB04249A1E9DE90E7EBA3F3AD1731495E7B4C7AC1DF0E5A76409E4AB39"
     },
     {
       "path": "tools/tests/test_qa_reports.py",
@@ -641,8 +641,8 @@
     },
     {
       "path": "tools/watercare/operations.py",
-      "size_bytes": 26392,
-      "sha256": "EF2DAEA2A5F0B85A42ED994644D0D7ECE16872522CB5F58C7585F3BBD55EA9FD"
+      "size_bytes": 26448,
+      "sha256": "4531E270241ECC92CF4FDD9269AEE30537D6D1F861F53415457E07E871095C09"
     },
     {
       "path": "tools/watercare/validation.py",
@@ -726,6 +726,16 @@
   ],
   "validation_reports": [
     {
+      "path": "processed/validation/DATA_STATUS_QA.md",
+      "size_bytes": 1148,
+      "sha256": "3E860FF6F0A39D0DCAC51E01D69CB4ABA652F96557EA709262690573AE1AC5E7"
+    },
+    {
+      "path": "processed/validation/README.md",
+      "size_bytes": 858,
+      "sha256": "6D0C3B3EAF90A252709CCBEDB85E61845A4E8E95E380696264ADDA71D032678C"
+    },
+    {
       "path": "processed/validation/business/latest_business_rules_report.json",
       "size_bytes": 1545,
       "sha256": "40B196EC454ABB5831973A3450751BC40021FB358BC79D4328FB6DAA41EFD82A"
@@ -734,11 +744,6 @@
       "path": "processed/validation/business/latest_representative_e2e_report.json",
       "size_bytes": 3222,
       "sha256": "733FAF034F4B3B34191EEA4D36D54DB8859A29C4960E9F15B42F69069F8C8624"
-    },
-    {
-      "path": "processed/validation/DATA_STATUS_QA.md",
-      "size_bytes": 1148,
-      "sha256": "3E860FF6F0A39D0DCAC51E01D69CB4ABA652F96557EA709262690573AE1AC5E7"
     },
     {
       "path": "processed/validation/deletion/deletion_report.json",
@@ -784,11 +789,6 @@
       "path": "processed/validation/quality/latest_quality_report.json",
       "size_bytes": 1247,
       "sha256": "6C45DDAE762E0DCF6CEDEBA78D000736545A27C98F632B4495B25D1176569CAF"
-    },
-    {
-      "path": "processed/validation/README.md",
-      "size_bytes": 858,
-      "sha256": "6D0C3B3EAF90A252709CCBEDB85E61845A4E8E95E380696264ADDA71D032678C"
     },
     {
       "path": "processed/validation/refactor/latest_equivalence_report.json",
@@ -838,6 +838,11 @@
       "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
     },
     {
+      "path": "raw/README.md",
+      "size_bytes": 848,
+      "sha256": "A848FAD0E16ED07A6277A5601DB420C39F9B23EBE40897A7CC1BE9F54664F7D2"
+    },
+    {
       "path": "raw/faq/snapshots/.gitkeep",
       "size_bytes": 0,
       "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
@@ -856,11 +861,6 @@
       "path": "raw/manuals/mvp/.gitkeep",
       "size_bytes": 0,
       "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
-    },
-    {
-      "path": "raw/README.md",
-      "size_bytes": 848,
-      "sha256": "A848FAD0E16ED07A6277A5601DB420C39F9B23EBE40897A7CC1BE9F54664F7D2"
     }
   ],
   "counts": {
@@ -898,7 +898,7 @@
   },
   "toolchain": {
     "python_files": 26,
-    "python_lines": 4627,
+    "python_lines": 4645,
     "max_wrapper_lines": 10,
     "max_module_lines": 745
   },

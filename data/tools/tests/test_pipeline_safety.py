@@ -58,6 +58,20 @@ class PipelineSafetyTests(unittest.TestCase):
             self.assertEqual(read_lf_bytes(lf), read_lf_bytes(crlf))
             self.assertEqual(len(read_lf_bytes(lf)), len(read_lf_bytes(crlf)))
 
+    def test_final_manifest_groups_use_platform_independent_path_order(self) -> None:
+        manifest = self.config.config("final_manifest")
+        for group in (
+            "metadata_files",
+            "schema_files",
+            "build_tools",
+            "config_files",
+            "template_files",
+            "validation_reports",
+            "policy_files",
+        ):
+            paths = [item["path"] for item in manifest[group]]
+            self.assertEqual(sorted(paths), paths, group)
+
     def test_two_builds_are_byte_deterministic(self) -> None:
         first = {**build_rag_preview(self.config), **build_synthetic_preview(self.config)}
         second = {**build_rag_preview(self.config), **build_synthetic_preview(self.config)}

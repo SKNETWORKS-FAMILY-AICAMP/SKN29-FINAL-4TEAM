@@ -46,7 +46,10 @@ def _entry(config: PipelineConfig, path: Path) -> dict[str, Any]:
 
 
 def _files(root: Path) -> list[Path]:
-    return sorted(path for path in root.rglob("*") if path.is_file())
+    return sorted(
+        (path for path in root.rglob("*") if path.is_file()),
+        key=lambda path: path.as_posix(),
+    )
 
 
 def _source_commit(config: PipelineConfig) -> str:
@@ -526,7 +529,7 @@ def inventory(config: PipelineConfig) -> dict[str, Any]:
     targets: dict[str, Any] = {}
     for name in ("raw", ".temp", ".work"):
         root = config.data_root / name
-        files = sorted(path for path in root.rglob("*") if path.is_file()) if root.exists() else []
+        files = _files(root) if root.exists() else []
         tracked_count = 0
         for path in files:
             relative = f"data/{_relative(config, path)}"
@@ -633,7 +636,8 @@ def _write_final_manifest(config: PipelineConfig) -> dict[str, Any]:
             item
             for item in metadata_paths
             if _relative(config, item) not in data_path_set
-        }
+        },
+        key=lambda item: item.as_posix(),
     )
     groups = {
         "data_files": data_files,
