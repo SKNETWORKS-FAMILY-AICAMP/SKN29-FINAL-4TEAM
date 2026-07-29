@@ -95,6 +95,11 @@ class AuthenticationService:
                 expires_at=datetime_from_epoch(refresh_absolute_exp),
             )
         access = refresh.access_token
+        # SimpleJWT anchors the access expiry to the refresh creation time,
+        # while its default access iat can cross into the next second.
+        # Keep both claims on the same token-pair clock so the advertised
+        # one-hour lifetime and the JWT claim lifetime remain identical.
+        access.set_iat(at_time=refresh.current_time)
         return TokenPair(
             access_token=str(access),
             refresh_token=str(refresh),

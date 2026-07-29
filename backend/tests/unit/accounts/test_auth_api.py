@@ -63,6 +63,39 @@ def test_demo_login_issues_role_bound_token_pair(client, demo_customer):
     assert refresh["role_code"] == User.Role.CUSTOMER
 
 
+@override_settings(
+    DEMO_LOGIN_ENABLED=True,
+    DEMO_LOGIN_CODES={DEMO_CODE},
+)
+def test_demo_login_keeps_access_lifetime_across_second_boundary(
+    client,
+    demo_customer,
+):
+    refresh_time = datetime(
+        2026,
+        7,
+        29,
+        0,
+        0,
+        0,
+        900_000,
+        tzinfo=timezone.utc,
+    )
+    access_time = refresh_time + timedelta(milliseconds=200)
+
+    with patch(
+        "rest_framework_simplejwt.tokens.aware_utcnow",
+        side_effect=(refresh_time, access_time),
+    ):
+        response = login(client)
+
+    assert response.status_code == 200
+    session = response.json()["data"]
+    access = AccessToken(session["access_token"], verify=False)
+    assert session["access_expires_in"] == 60 * 60
+    assert int(access["exp"]) - int(access["iat"]) == 60 * 60
+
+
 def test_demo_login_is_disabled_by_default(client, demo_customer):
     response = login(client)
 

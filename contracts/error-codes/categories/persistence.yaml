@@ -1,2 +1,8 @@
 category: persistence
-errors: []
+errors:
+  - code: RESOURCE_NOT_FOUND
+    category: persistence
+    http_status: 404
+    retryable: false
+    user_message: 요청한 대상을 찾을 수 없습니다.
+    recommended_action: RETURN_TO_LIST

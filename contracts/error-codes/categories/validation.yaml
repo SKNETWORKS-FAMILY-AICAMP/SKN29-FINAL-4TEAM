@@ -1,2 +1,14 @@
 category: validation
-errors: []
+errors:
+  - code: INVALID_REQUEST
+    category: validation
+    http_status: 400
+    retryable: false
+    user_message: 요청 형식을 확인해 주세요.
+    recommended_action: CORRECT_REQUEST
+  - code: VALIDATION_ERROR
+    category: validation
+    http_status: 422
+    retryable: false
+    user_message: 입력값을 확인해 주세요.
+    recommended_action: CORRECT_INPUT
