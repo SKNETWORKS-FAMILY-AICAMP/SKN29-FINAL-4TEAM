@@ -3,12 +3,13 @@
 > 기준일: 2026-07-27
 > 명령 실행 기준: 저장소 루트
 > 대상: PostgreSQL 16.14·`config.settings.local`
+> 문서 시점: `HISTORICAL SNAPSHOT` — 현재 실행·재현은 [공유 패키지 인계서 v1.2](<./20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md>)를 사용
 
 ## 0. 문서 책임·협업·검토
 
 | 항목 | 내용 |
 | --- | --- |
-| 문서 상태 | `CURRENT` — 현재 구현된 Model·Migration의 PostgreSQL 검증 기준 |
+| 문서 상태 | `HISTORICAL SNAPSHOT` — 2026-07-27 당시 Model·Migration 적용 증거 |
 | 관련 WBS | `T-005`, `T-016` |
 | 작성·유지 책임 | 최지용 — Model·Migration 구현 범위와 실행 증거 갱신 |
 | 산출물/내용 의사결정자 | 최지용 — ERD·테이블 명세·Migration Wave와 PostgreSQL 구현 기준 |
@@ -139,7 +140,7 @@ Migration 사이의 차이가 없다는 뜻이다. 확정 32개 테이블 전체
 | 사용 가능한 비밀번호 | 0 |
 
 Seed 명령과 전체 로컬 재현 순서는
-[공유 패키지 인계서](<./20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md>)를
+[공유 패키지 인계서 v1.2](<./20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md>)를
 따른다.
 
 ## 7. Wave 구현 순서

@@ -47,7 +47,7 @@ Model·Migration·Serializer에 순차 반영한다.
 | --- | --- |
 | 설계 테이블·계약·결정 상태 | [T-005 데이터 설계](../../../../database/t-005/README.md) |
 | 실제 Model·Migration·PostgreSQL 적용 범위 | [Migration 검증 보고서](../../manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md) |
-| 환경 구성·Seed·Smoke 재현 순서 | [Django·PostgreSQL 공유 패키지 인계서](../../manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md) |
+| 환경 구성·Seed·Smoke 재현 순서 | [Django·PostgreSQL 공유 패키지 인계서 v1.2](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md) |
 
 이 문서는 실행 결과 보고서가 아니라, 설계를 Model·Migration·Seed로
 옮기고 검증하는 반복 절차의 단일 원본으로 유지한다.
@@ -71,8 +71,8 @@ ID, 코드, Legacy 변환, 방문 일정, Enum과 Seed의 구체 값은 이 가�
 
 한 Wave를 구현한 뒤 다음 순서로 검증하고, 통과하기 전에는 다음
 Wave로 이동하지 않는다. 실행 전 PostgreSQL 상태는
-[공유 패키지 인계서](../../manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md)
-5장의 일상 실행 절차로 확인하며, 이 가이드에는 서버 시작·종료
+[공유 패키지 인계서 v1.2](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)
+6장의 일상 실행 절차로 확인하며, 이 가이드에는 서버 시작·종료
 명령을 중복하지 않는다.
 
 ```powershell
@@ -104,7 +104,7 @@ Set-Location .\backend
 - 입력 계약이 달라지면 변환 규칙을 명시하고 Silent Dual-write를 금지한다.
 
 현재 Demo Seed 결과와 재현 절차는
-[Django·PostgreSQL 공유 패키지 인계서](../../manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md)를
+[Django·PostgreSQL 공유 패키지 인계서 v1.2](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)를
 따른다.
 
 ## 7. 검증 체크리스트

@@ -58,9 +58,9 @@ WBS 목적은 유지하되, 현재 순서와 상태는 v0.5 및 실제 검증 �
 
 | 구분 | 문서 | 용도 |
 | --- | --- | --- |
-| 실행·인계 | [Django·PostgreSQL 공유 패키지 인계서 v1.1](<manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md>) | 최초 환경 구성과 설치 완료 후 일상 실행·종료·재시작의 단일 순서 |
+| 실행·인계 | [Django·PostgreSQL 공유 패키지 인계서 v1.2](<manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md>) | 구성요소 역할, 최초 환경 구성, fingerprint 복구, PostgreSQL·API 검증과 일상 실행의 단일 순서 |
 | 환경 설계 | [Backend `.venv` 재현성과 VS Code 환경 설계](<technical/backend/backend_venv_reproducibility_guide.md>) | 서비스 경계·버전 잠금·자동화·검증·복구 기준 |
-| DB 검증 | [Django·PostgreSQL Migration 검증 보고서 v1.0](<manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md>) | PostgreSQL 적용 증거와 2/32 구현 경계 |
+| DB 검증 | [Django·PostgreSQL Migration 검증 보고서 v1.0](<manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md>) | 2026-07-27 당시 PostgreSQL 적용과 2/32 구현의 역사 증거 |
 | Auth 검증 | [Auth API 계약·Runtime 정합화 보고서 v1.0](<manuals/20260727_최지용_Auth_API_계약_Runtime_정합화_보고서_v1.0.md>) | Auth 4개 계약·Route·보안·테스트 근거 |
 | API 현행 상태 | [API Runtime 구현 상태](<../../api/runtime_implementation_status.md>) | OpenAPI 9·Runtime 7·OpenAPI-only 2의 팀 공용 현재 상태 |
 | API 정합 검증 | [Backend API 계약 정합화 검증보고서 v1.0](<manuals/20260729_최지용_Backend_API_계약_정합화_검증보고서_v1.0.md>) | 오류 Registry·JSON 22개·계약·권한·전체 회귀 실행 증거 |
@@ -86,8 +86,8 @@ WBS 목적은 유지하되, 현재 순서와 상태는 v0.5 및 실제 검증 �
 
 ## 문서 사용 순서
 
-1. 새 환경에서는 환경 설계 가이드로 Python·`.venv` 경계를 확인하고 공유 패키지 인계서 4장 순서로 PostgreSQL·Django·Seed·Smoke를 재현한다.
-2. 설치가 끝난 PC에서는 공유 패키지 인계서 5장의 일상 실행·종료·재시작 절차만 사용한다.
+1. 새 환경에서는 환경 설계 가이드로 Python·`.venv` 경계를 확인하고 공유 패키지 인계서 v1.2의 5장 순서로 PostgreSQL·Django·Seed·Smoke를 재현한다.
+2. 설치가 끝난 PC에서는 공유 패키지 인계서 v1.2의 6장 일상 실행·종료 절차만 사용한다.
 3. DB 작업은 DB 스키마 가이드의 한 Wave를 구현하고 Migration 보고서 기준으로 즉시 검증한다.
 4. API 작업은 API 계약 가이드대로 명세·OpenAPI·Route·테스트를 한 변경 단위로 맞춘다.
 5. T-022와 T-023은 각 준비도 문서의 미구현 항목을 한 수직 흐름씩 처리한다.
@@ -152,9 +152,9 @@ Android 연동 starter 참고본이며 현재 구현·Migration·API·State·AI
 
 | 검사 | 결과 |
 | --- | ---: |
-| 개인 개발문서 | 11개 |
-| 저장소 내부 파일 링크 | 166개 |
-| 고유 링크 대상 | 88개 (파일 79·디렉터리 9) |
+| 개인 개발문서 | 12개 |
+| 저장소 내부 파일 링크 | 188개 |
+| 고유 링크 대상 | 90개 (파일 81·디렉터리 9) |
 | 절대 파일 하이퍼링크 | 0개 |
 | 깨진 상대 링크 | 0개 |
 
@@ -174,4 +174,9 @@ Pull 환경에서도 실제로 열린다.
 - Backend Python 3.13.13·pip 26.0.1·constraints 31개를 고정했다.
 - 실제 `backend/.venv`를 안전 재생성하고 전체 `239 passed`를 확인했다.
 - 환경 설계는 기술 가이드, 팀 실행은 공유 패키지 인계서 v1.1로 분리했다.
-- 기존 인계서 v1.0은 v1.1에 병합하고 모든 참조를 최신 상대경로로 갱신했다.
+
+## 2026-07-29 환경·API 재검증 기록
+
+- requirements fingerprint를 현재 입력과 동기화하고 빠른 환경 검사를 Exit code `0`으로 재확인했다.
+- 전체 Backend `353 passed`, PostgreSQL 16.14 `healthy`, 적용 Migration 누락 없음과 Health·Auth Smoke `PASSED`를 확인했다.
+- v1.1은 2026-07-28 역사 기록으로 보존하고, 현재 진입점은 구성요소 역할·순서별 명령·정상 기준·오류 복구·Web 실제 API 확인이 추가된 v1.2로 갱신했다.

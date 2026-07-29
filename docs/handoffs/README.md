@@ -53,7 +53,7 @@
 
 - [Backend 실행 기준](../../backend/README.md)
 - [Backend 가상환경 재현 가이드](../individual/jiyong/technical/backend/backend_venv_reproducibility_guide.md)
-- [Django·PostgreSQL 공유 패키지 인계서](../individual/jiyong/manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md)
+- [Django·PostgreSQL 공유 패키지 인계서 v1.2](../individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)
 - [T-005 구현 기준](../database/t-005/README.md)
 - [T-005 3계층 식별자 ADR](../adr/0010-t005-three-layer-identifier-bridge.md)
 - [T-005 상태 이력 멱등성 ADR](../adr/0011-t005-status-history-idempotency-scope.md)
@@ -372,7 +372,7 @@ python .\scripts\development\check_environment.py --service backend
 Set-Location (git rev-parse --show-toplevel)
 
 if (-not (Test-Path .\backend\.env)) {
-    throw 'backend/.env가 없습니다. 별도 전달받은 파일을 먼저 배치하세요.'
+    throw 'backend/.env가 없습니다. 공유 패키지 인계서 v1.2의 5.1에 따라 .env.example에서 생성하고 로컬 비밀값을 설정하세요.'
 }
 
 docker version
@@ -380,10 +380,13 @@ docker compose --env-file .\backend\.env config --quiet
 docker compose --env-file .\backend\.env up -d postgres
 docker compose --env-file .\backend\.env ps postgres
 
-python .\scripts\development\check_environment.py `
-  --service backend `
-  --postgresql
+Set-Location .\backend
+.\.venv\Scripts\python.exe ..\scripts\database\check_postgresql_connection.py
+Set-Location ..
 ```
+
+이 단계는 PostgreSQL 접속만 확인한다. 새 DB에는 아직 Migration이
+없으므로 적용 Migration 검사는 5.3의 적용 작업 뒤 실행한다.
 
 ### 5.3 Migration·Seed
 
@@ -409,8 +412,33 @@ if ($LASTEXITCODE -ne 0) { throw 'Subscriptions Seed 실패' }
 & $python manage.py seed_demo_care_records
 if ($LASTEXITCODE -ne 0) { throw 'Care Seed 실패' }
 
+# 같은 순서를 한 번 더 실행해 Seed 멱등성을 검증한다.
+& $python manage.py seed_demo_accounts
+if ($LASTEXITCODE -ne 0) { throw 'Accounts Seed 2차 실패' }
+
+& $python manage.py seed_demo_products
+if ($LASTEXITCODE -ne 0) { throw 'Products Seed 2차 실패' }
+
+& $python manage.py seed_demo_subscriptions
+if ($LASTEXITCODE -ne 0) { throw 'Subscriptions Seed 2차 실패' }
+
+& $python manage.py seed_demo_care_records
+if ($LASTEXITCODE -ne 0) { throw 'Care Seed 2차 실패' }
+
 Set-Location ..
+
+python .\scripts\development\check_environment.py `
+  --service backend `
+  --full `
+  --postgresql
+if ($LASTEXITCODE -ne 0) {
+    throw 'Backend·PostgreSQL 최종 게이트 실패'
+}
 ```
+
+마지막 명령이 Exit code `0`이어야 환경·전체 Backend 회귀·PostgreSQL
+연결·적용 Migration이 같은 Commit에서 검증된 것이다. Seed 2차 실행은
+새 중복 행 없이 기존 Demo 데이터가 갱신돼야 한다.
 
 ### 5.4 서버 실행·종료
 
@@ -421,6 +449,11 @@ Set-Location (git rev-parse --show-toplevel)
 Set-Location .\backend
 .\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
 ```
+
+서버가 실행되면 다른 PowerShell에서
+[공유 패키지 인계서 v1.2](../individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)의
+5.8을 실행해 Health·Auth Smoke `status=PASSED`와 Exit code `0`을
+확인한다.
 
 - Django 종료: 서버 터미널에서 `Ctrl+C`
 - PostgreSQL 데이터 보존 중지:

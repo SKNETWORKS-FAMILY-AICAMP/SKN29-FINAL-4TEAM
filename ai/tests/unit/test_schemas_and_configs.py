@@ -77,3 +77,27 @@ def test_load_prohibited_expressions_config():
     assert "prohibited_diagnosis_phrases" in prohibited_yaml
     assert "prohibited_guarantee_phrases" in prohibited_yaml
     assert "고장이 확실합니다" in prohibited_yaml["prohibited_diagnosis_phrases"]
+
+
+def test_ai_contract_examples_json_schema():
+    """contracts/ai/examples/ 하위 예시 JSON 파일들이 존재하고 올바른 JSON 구조인지 검증"""
+    import json
+    examples_dir = os.path.join("contracts", "ai", "examples")
+    assert os.path.exists(examples_dir)
+
+    example_files = [
+        os.path.join(examples_dir, "symptom-analysis", "general-guidance.json"),
+        os.path.join(examples_dir, "symptom-analysis", "danger-detected.json"),
+        os.path.join(examples_dir, "symptom-analysis", "no-evidence.json"),
+        os.path.join(examples_dir, "symptom-analysis", "validation-failed.json"),
+        os.path.join(examples_dir, "fallback", "fallback-response.json"),
+        os.path.join(examples_dir, "consultation-summary", "summary-example.json"),
+        os.path.join(examples_dir, "technician-report", "report-example.json"),
+    ]
+
+    for file_path in example_files:
+        assert os.path.exists(file_path), f"예시 파일 없음: {file_path}"
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            assert isinstance(data, dict), f"JSON 형식 오류: {file_path}"
+
