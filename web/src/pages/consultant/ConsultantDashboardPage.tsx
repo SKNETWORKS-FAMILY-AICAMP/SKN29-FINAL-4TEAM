@@ -83,7 +83,7 @@ export default function ConsultantDashboardPage() {
     }
   };
 
-  const handleOpenVisit = () => {
+  const handleOpenVisit = (entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED") => {
     if (!selectedInquiry) return;
 
     navigate(createVisitTransitionPath(selectedInquiry.id), {
@@ -91,6 +91,7 @@ export default function ConsultantDashboardPage() {
         returnTo: `/consultant/inquiries${location.search}`,
         stateVersion: selectedInquiry.stateVersion,
         symptomSummary: selectedInquiry.symptomLabel,
+        entryAction,
       },
     });
   };

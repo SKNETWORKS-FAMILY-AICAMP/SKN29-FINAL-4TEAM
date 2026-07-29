@@ -5,6 +5,7 @@ import PriorityBadge from "../../../common/components/badge/PriorityBadge";
 import RiskBadge from "../../../common/components/badge/RiskBadge";
 import StatusBadge from "../../../common/components/badge/StatusBadge";
 import {
+  formatWaitingTime,
   formatWorkspaceDateTime,
   getPriorityVariant,
   getStatusBadgeVariant,
@@ -36,6 +37,11 @@ interface ConsultantQueueProps {
   onResetFilters: () => void;
   onSelectInquiry: (inquiryId: string) => void;
 }
+
+const FILTERABLE_STATUSES = Object.entries(STATUS_LABELS) as readonly [
+  CounselorStatus,
+  string,
+][];
 
 export default function ConsultantQueue({
   children,
@@ -85,11 +91,11 @@ export default function ConsultantQueue({
             }
           >
             <option value="ALL">전체 상태</option>
-            <option value="COMPLETION_PENDING">최종 완료 대기</option>
-            <option value="VISIT_SCHEDULED">방문 예정</option>
-            <option value="CONSULTATION_IN_PROGRESS">상담 진행 중</option>
-            <option value="CONSULTATION_REQUIRED">상담 대기</option>
-            <option value="QUESTIONNAIRE_IN_PROGRESS">문진 진행 중</option>
+            {FILTERABLE_STATUSES.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
           </select>
         </label>
 
@@ -255,16 +261,28 @@ export default function ConsultantQueue({
                         />
                       )}
                     </span>
-                    <time dateTime={inquiry.updatedAt}>
-                      {formatWorkspaceDateTime(inquiry.updatedAt)}
-                    </time>
+                    <span className="v6-queue-item__wait">
+                      대기 {formatWaitingTime(inquiry.waitingMinutes)}
+                    </span>
                   </span>
 
-                  <strong>{inquiry.symptomLabel}</strong>
+                  <span className="v6-queue-item__symptoms">
+                    {inquiry.symptomLabels.map((symptom) => (
+                      <span key={symptom}>{symptom}</span>
+                    ))}
+                  </span>
                   <small>
-                    {inquiry.scenarioId} · {inquiry.customerName} ·{" "}
+                    {inquiry.scenarioId} · {inquiry.customerDisplayName} ·{" "}
                     {inquiry.productCode}
                   </small>
+                  <span className="v6-queue-item__times">
+                    <time dateTime={inquiry.createdAt}>
+                      접수 {formatWorkspaceDateTime(inquiry.createdAt)}
+                    </time>
+                    <time dateTime={inquiry.updatedAt}>
+                      변경 {formatWorkspaceDateTime(inquiry.updatedAt)}
+                    </time>
+                  </span>
 
                   <span className="v6-queue-item__bottom">
                     <StatusBadge

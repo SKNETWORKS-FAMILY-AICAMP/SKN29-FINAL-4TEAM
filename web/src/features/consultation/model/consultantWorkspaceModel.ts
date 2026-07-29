@@ -12,11 +12,19 @@ import type { StatusBadgeVariant } from "../../../common/components/badge/Status
 export const COUNSELOR_QUEUE_PAGE_SIZE = 3;
 
 export const STATUS_LABELS: Record<CounselorStatus, string> = {
+  DRAFT: "작성 중",
   QUESTIONNAIRE_IN_PROGRESS: "문진 진행 중",
+  AI_GUIDANCE: "AI 안내 완료",
   CONSULTATION_REQUIRED: "상담 대기",
   CONSULTATION_IN_PROGRESS: "상담 진행 중",
+  VISIT_REVIEW_PENDING: "방문 필요 검토 중",
+  VISIT_SCHEDULING: "방문 일정 조율 중",
   VISIT_SCHEDULED: "방문 예정",
   COMPLETION_PENDING: "최종 완료 대기",
+  REVISIT_REQUIRED: "재방문 필요",
+  REOPENED: "문의 재개",
+  RESOLVED: "처리 완료",
+  CANCELLED: "취소",
 };
 
 export const RISK_LABELS: Record<CounselorRisk, string> = {
@@ -42,9 +50,19 @@ export function getPriorityVariant(
 export function getStatusBadgeVariant(
   status: CounselorStatus,
 ): StatusBadgeVariant {
-  if (status === "COMPLETION_PENDING") return "success";
+  if (status === "COMPLETION_PENDING" || status === "RESOLVED") {
+    return "success";
+  }
   if (status === "CONSULTATION_IN_PROGRESS") return "progress";
-  if (status === "VISIT_SCHEDULED") return "reopened";
+  if (
+    status === "VISIT_REVIEW_PENDING" ||
+    status === "VISIT_SCHEDULING" ||
+    status === "VISIT_SCHEDULED" ||
+    status === "REVISIT_REQUIRED" ||
+    status === "REOPENED"
+  ) {
+    return "reopened";
+  }
   return "default";
 }
 
@@ -62,8 +80,24 @@ export function getStatusTone(status: CounselorStatus): string {
     return "warning";
   }
 
-  if (status === "VISIT_SCHEDULED") return "purple";
+  if (
+    status === "VISIT_REVIEW_PENDING" ||
+    status === "VISIT_SCHEDULING" ||
+    status === "VISIT_SCHEDULED" ||
+    status === "REVISIT_REQUIRED" ||
+    status === "REOPENED"
+  ) {
+    return "purple";
+  }
   return "info";
+}
+
+export function formatWaitingTime(minutes: number): string {
+  if (minutes < 60) return `${minutes}분`;
+
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  return remainder === 0 ? `${hours}시간` : `${hours}시간 ${remainder}분`;
 }
 
 export function formatWorkspaceDateTime(value: string): string {
@@ -91,8 +125,9 @@ export function filterCounselorInquiries(
     const searchable = [
       inquiry.id,
       inquiry.scenarioId,
-      inquiry.symptomLabel,
+      ...inquiry.symptomLabels,
       inquiry.customerName,
+      inquiry.customerDisplayName,
       inquiry.productCode,
     ]
       .join(" ")
@@ -190,8 +225,14 @@ export function getCounselorMetrics(
     ).length,
     danger: inquiries.filter((item) => item.riskLevel === "DANGER")
       .length,
-    visit: inquiries.filter((item) => item.status === "VISIT_SCHEDULED")
-      .length,
+    visit: inquiries.filter((item) =>
+      [
+        "VISIT_REVIEW_PENDING",
+        "VISIT_SCHEDULING",
+        "VISIT_SCHEDULED",
+        "REVISIT_REQUIRED",
+      ].includes(item.status),
+    ).length,
     finalizable: inquiries.filter(
       (item) =>
         item.status === "COMPLETION_PENDING" && item.feedbackResolved,

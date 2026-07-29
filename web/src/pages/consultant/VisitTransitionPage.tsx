@@ -17,6 +17,7 @@ import type { VisitMockAction } from "../../features/visit-transition/model/visi
 import "./VisitTransitionPage.css";
 
 interface VisitTransitionLocationState {
+  entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED";
   returnTo?: unknown;
   stateVersion?: number;
   symptomSummary?: string;
@@ -40,12 +41,23 @@ export default function VisitTransitionPage() {
   const allowedActionCodes = inquiry?.allowedActions.map((item) => item.code) ?? [];
   const availableMockActions: VisitMockAction[] = [];
   if (
-    allowedActionCodes.includes("VISIT_REVIEW_REQUIRED") ||
-    allowedActionCodes.includes("UPDATE_VISIT_SCHEDULE")
+    allowedActionCodes.includes("VISIT_NEEDED") ||
+    locationState?.entryAction === "VISIT_REVIEW_REQUIRED"
+  ) {
+    availableMockActions.push("CREATE_VISIT_REQUEST");
+  }
+  if (
+    allowedActionCodes.includes("UPDATE_VISIT_SCHEDULE") ||
+    locationState?.entryAction === "VISIT_NEEDED" ||
+    lastAction === "CREATE_VISIT_REQUEST"
   ) {
     availableMockActions.push("SAVE_SCHEDULE");
   }
-  if (allowedActionCodes.includes("CONFIRM_VISIT")) {
+  if (
+    allowedActionCodes.includes("CONFIRM_VISIT") ||
+    locationState?.entryAction === "VISIT_NEEDED" ||
+    lastAction === "CREATE_VISIT_REQUEST"
+  ) {
     availableMockActions.push("CONFIRM_VISIT");
   }
 
@@ -105,7 +117,7 @@ export default function VisitTransitionPage() {
         <section className="v6-panel visit-v13-access-blocked">
           <ForbiddenState
             title="현재 상태에서는 방문 전환을 처리할 수 없습니다."
-            description="Backend Mock allowed_actions에 방문 검토·일정 조율·방문 확정 행동이 없습니다."
+            description="Backend Mock allowed_actions에 방문 필요 확정·일정 조율·방문 확정 행동이 없습니다."
             actionLabel="상담 큐로 돌아가기"
             onAction={() => navigate(inquiryListReturnPath)}
           />
@@ -148,7 +160,16 @@ export default function VisitTransitionPage() {
               문의 상세 보기
             </button>
             <div>
-              <span>방문 상태 · {lastAction === "CONFIRM_VISIT" ? "방문 확정 Mock" : "일정 조율 Mock"}</span>
+              <span>
+                방문 상태 ·{" "}
+                {lastAction === "CONFIRM_VISIT"
+                  ? "방문 확정 Mock"
+                  : lastAction === "CREATE_VISIT_REQUEST"
+                    ? "방문 요청 생성 Mock"
+                    : availableMockActions.includes("CREATE_VISIT_REQUEST")
+                      ? "방문 필요 검토 Mock"
+                      : "일정 조율 Mock"}
+              </span>
               <span>상태 버전 · {stateVersion}</span>
             </div>
           </div>

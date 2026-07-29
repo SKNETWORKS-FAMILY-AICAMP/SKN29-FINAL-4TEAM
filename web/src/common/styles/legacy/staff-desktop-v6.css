@@ -175,13 +175,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .v6-queue-column .common-pagination__summary { font-size: 8px; }
 .v6-queue-column .common-pagination__actions { gap: 5px; }
 .v6-queue-column .common-pagination__actions button, .v6-queue-column .common-pagination__actions span { min-width: 28px; height: 28px; padding: 0 7px; font-size: 8px; }
-.v6-queue-item { display: grid; min-height: 130px; gap: 7px; padding: 14px 15px; border-bottom: 1px solid var(--v6-ink-100); color: var(--v6-ink-800); background: transparent; text-align: left; }
+.v6-queue-item { display: grid; min-height: 160px; gap: 7px; padding: 14px 15px; border-bottom: 1px solid var(--v6-ink-100); color: var(--v6-ink-800); background: transparent; text-align: left; }
 .v6-queue-item:hover { background: var(--v6-green-50); }
 .v6-queue-item.is-selected { position: relative; background: #fff; box-shadow: inset 3px 0 var(--v6-green); }
 .v6-queue-item__top, .v6-queue-item__bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .v6-queue-item__top time, .v6-queue-item__bottom b { color: var(--v6-ink-400); font-size: 7px; }
 .v6-queue-item > strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .v6-queue-item > small { overflow: hidden; color: var(--v6-ink-600); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.v6-queue-item__wait { color: var(--v6-ink-500); font-size: 7px; font-weight: 900; white-space: nowrap; }
+.v6-queue-item__symptoms { display: flex; min-width: 0; flex-wrap: wrap; gap: 4px; }
+.v6-queue-item__symptoms span { padding: 3px 7px; border-radius: 999px; color: var(--v6-ink-700); background: var(--v6-ink-100); font-size: 8px; font-weight: 900; }
+.v6-queue-item__symptoms span:first-child { color: var(--v6-ink-900); background: transparent; padding-left: 0; font-size: 11px; }
+.v6-queue-item__times { display: flex; flex-wrap: wrap; gap: 4px 9px; color: var(--v6-ink-500); font-size: 7px; }
 .v6-chip-row { display: flex; min-width: 0; flex-wrap: wrap; gap: 5px; }
 .v6-chip { display: inline-flex; min-height: 22px; align-items: center; padding: 0 7px; border-radius: 999px; color: var(--v6-ink-600); background: var(--v6-ink-100); font-size: 7px; font-weight: 900; white-space: nowrap; }
 .v6-chip--danger { color: #ad3834; background: var(--v6-red-100); }

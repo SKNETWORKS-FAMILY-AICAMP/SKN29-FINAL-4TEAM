@@ -42,7 +42,7 @@ npm.cmd run build
 
 ## 2026-07-28 실행 결과
 
-- `npm.cmd run test`: **11개 Test File, 38개 Test 통과**
+- `npm.cmd test`: **11개 Test File, 40개 Test 통과**
 - `npm.cmd run lint`: 통과
 - `npm.cmd run build`: 통과
 - Production 번들: Vite Build 성공

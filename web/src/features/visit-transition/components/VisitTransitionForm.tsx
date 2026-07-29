@@ -35,6 +35,9 @@ export default function VisitTransitionForm({
 }: VisitTransitionFormProps) {
   const canSaveSchedule = availableActions.includes("SAVE_SCHEDULE");
   const canConfirmVisit = availableActions.includes("CONFIRM_VISIT");
+  const canCreateVisitRequest = availableActions.includes(
+    "CREATE_VISIT_REQUEST",
+  );
   const [values, setValues] = useState<VisitTransitionValues>(() =>
     createVisitTransitionMockValues(symptomSummary),
   );
@@ -129,7 +132,15 @@ export default function VisitTransitionForm({
         <div className="visit-v13-status-card">
           <div>
             <small>방문 일정 상태</small>
-            <strong>{successAction === "CONFIRM_VISIT" ? "방문 확정 · Mock" : "일정 조율 중 · Mock"}</strong>
+            <strong>
+              {successAction === "CONFIRM_VISIT"
+                ? "방문 확정 · Mock"
+                : successAction === "CREATE_VISIT_REQUEST"
+                  ? "방문 요청 생성 · Mock"
+                  : canCreateVisitRequest
+                    ? "방문 필요 검토 · Mock"
+                    : "일정 조율 중 · Mock"}
+            </strong>
           </div>
           <div>
             <small>선택 기사</small>
@@ -243,6 +254,15 @@ export default function VisitTransitionForm({
         </form>
 
         <div className="visit-v13-actions">
+          {canCreateVisitRequest && (
+            <button
+              className="is-primary"
+              type="button"
+              onClick={() => submitMock("CREATE_VISIT_REQUEST")}
+            >
+              방문 필요 확정·요청 생성
+            </button>
+          )}
           {canSaveSchedule && (
             <button type="button" onClick={() => submitMock("SAVE_SCHEDULE")}>
               일정 조율 저장
@@ -272,7 +292,9 @@ export default function VisitTransitionForm({
               <strong>
                 {successAction === "CONFIRM_VISIT"
                   ? "Mock 방문 일정이 확정되었습니다."
-                  : "Mock 일정 조율 내용을 저장했습니다."}
+                  : successAction === "CREATE_VISIT_REQUEST"
+                    ? "Mock 방문 요청을 생성하고 일정 조율 단계로 전환했습니다."
+                    : "Mock 일정 조율 내용을 저장했습니다."}
               </strong>
               <p>
                 실제 기사 배정·알림·일정 생성은 수행하지 않았습니다. 화면 시연용
