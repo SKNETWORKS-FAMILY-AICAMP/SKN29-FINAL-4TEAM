@@ -949,3 +949,36 @@ python -B data/tools/pipeline.py handoff qa
 데이터 버전은 업무 데이터 내용이 바뀌지 않았으므로 `0.8.0`을 유지한다.
 서비스 상태·이벤트·공통 코드의 최종 매핑은 윤승혁·최지용 관할 작업에서
 확정해야 한다.
+## 22. 0.9.0 T-005 정합화·QA 복구 실행 기록
+
+이 절은 0.8.0 당시 기록과 수치를 보존한 채 2026-07-29 현재 결과를 추가한 것이다.
+
+### 22-1. 변경 범위
+
+- 원본 시나리오 24개 보존, 활성 projection 22개
+- `SYN-JAC104-012`, `SYN-JAC104-016`의 `BLOCKED_DECISION` 유지
+- T-005 통합 상태이력과 Audit 각 125건
+- CustomerProfile 12건과 User→Profile→Subscription→Product→Care 추적
+- 내부 정수 PK·Public UUID·업무 코드 3계층 분리
+- API 멱등성 내부 코드 `IDEMPOTENCY_KEY_REUSE_CONFLICT`와 Public 코드 `DUPLICATE-EVENT-01` 분리
+- Backend import crosswalk 추가와 fixture PK 직접 주입 금지
+- 미확정 Care mapping의 `BLOCKED_OWNER_CONFIRMATION`·직접 load 제외
+- dataset/final/handoff manifest와 상세 QA 리포트 5종의 파이프라인 재생성
+
+### 22-2. 현재 데이터 수치
+
+| 항목 | 0.9.0 |
+|---|---:|
+| 원본 시나리오 | 24 |
+| 활성 Inquiry | 22 |
+| CustomerProfile | 12 |
+| Consultation | 12 |
+| Visit | 4 |
+| 통합 상태이력 | 125 |
+| Audit | 125 |
+| subset | 7파일·33건 |
+| API 멱등성 사례 | 3 |
+
+### 22-3. 판정 범위
+
+생성 산출물은 데이터 QA `PASS`까지만 표시한다. PM 상태 계약은 `draft_for_review`이고 Backend import는 실행 검증되지 않았으므로 `service_contracts_used=false`, Service mapping pending, 비-`DB_VERIFIED` 상태를 유지한다. Backend Model·Migration·Service는 이번 변경에 포함하지 않았다.

@@ -3,69 +3,15 @@
   "title": "SyntheticUser",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "user_id",
-    "user_number",
-    "role",
-    "display_name",
-    "active",
-    "data_classification",
-    "created_at"
-  ],
+  "required": ["id", "public_id", "user_number", "role", "display_name", "active", "data_classification", "created_at"],
   "properties": {
-    "user_id": {
-      "type": "string",
-      "minLength": 1,
-      "format": "uuid"
-    },
-    "user_number": {
-      "type": "string",
-      "minLength": 1,
-      "pattern": "^(CUS-\\d{4}|CNS-\\d{3}|TEC-\\d{3})$"
-    },
-    "role": {
-      "type": "string",
-      "minLength": 1,
-      "enum": [
-        "CUSTOMER",
-        "CONSULTANT",
-        "TECHNICIAN"
-      ]
-    },
-    "display_name": {
-      "type": "string",
-      "minLength": 1,
-      "enum": [
-        "고서온",
-        "구하린",
-        "노재온",
-        "류다은",
-        "문하겸",
-        "백서율",
-        "설도윤",
-        "심나예",
-        "우하람",
-        "위서진",
-        "진가온",
-        "채도현",
-        "표은재",
-        "허다율",
-        "남현오",
-        "봉재율"
-      ]
-    },
-    "active": {
-      "type": "boolean"
-    },
-    "data_classification": {
-      "type": "string",
-      "minLength": 1,
-      "const": "synthetic"
-    },
-    "created_at": {
-      "type": "string",
-      "minLength": 1,
-      "format": "date-time"
-    }
+    "id": {"type": "integer", "minimum": 1},
+    "public_id": {"type": "string", "format": "uuid"},
+    "user_number": {"type": "string", "pattern": "^(CUS-\\d{4}|CNS-\\d{3}|TEC-\\d{3})$"},
+    "role": {"type": "string", "enum": ["CUSTOMER", "CONSULTANT", "TECHNICIAN"]},
+    "display_name": {"type": "string", "minLength": 1},
+    "active": {"type": "boolean"},
+    "data_classification": {"type": "string", "const": "synthetic"},
+    "created_at": {"type": "string", "format": "date-time"}
   }
 }

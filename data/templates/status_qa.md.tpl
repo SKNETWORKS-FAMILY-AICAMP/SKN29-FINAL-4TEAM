@@ -1,53 +1,30 @@
-# WaterCare 데이터 상태 검수
+# WaterCare 데이터 상태 QA
 
-## 최종 판정
+## 현재 기준
 
 - 데이터 버전: `${dataset_version}`
 - 검증 기준 시각: `${generated_at}`
-- 상태: **PASS**
-- 오류: **0건**
-- 경고: **0건**
+- 목표 상태: 데이터 QA `PASS`
+- 금지 표시: `DB_VERIFIED`, Runtime 검증 완료
 
-## 계약·데이터
+## 고정 검증 항목
 
-| 항목 | 결과 |
-|---|---|
-| 사용 안내 4개 코드 계약 | PASS |
-| 활성 구 사용 안내 코드 | 0건 |
-| `danger + NORMAL 사용 안내` | 0건 |
-| RAG 7건·근거 9건 | 유지 |
-| 합성 문의 24건 | 유지 |
-| 상태 이력·감사 이벤트 각 115건 | 유지 |
-| 대표 후속확인 1건·방문 연계 관리 이력 1건 | PASS |
-| 대표 E2E 문서·Fixture 불변식 17개 | PASS |
-| 업무 흐름별 시나리오 부분집합 7파일·37건 | PASS |
-| 모델·세대·FAQ 오염 | 0건 |
-| 개인정보·내부 경로 노출 | 0건 |
+| 항목 | 기대값 |
+|---|---:|
+| 원본 시나리오 | 24 |
+| 활성 projection | 22 |
+| 차단 시나리오 | 2 |
+| Inquiry | 22 |
+| Consultation | 12 |
+| Visit | 4 |
+| CustomerProfile | 12 |
+| 통합 상태이력 | 125 |
+| Audit | 125 |
+| subset | 7파일·33건 |
+| API 멱등성 사례 | 3 |
 
-## 파이프라인
+QA는 대상 FK exactly-one, 대상별 상태 집합, 연속 `state_version`, 상태이력·Audit 대응, 멱등키 공유, 3계층 식별자, CustomerProfile 관계, Backend PK 직접 주입 금지, Care 미확정 mapping 제외를 검사합니다.
 
-| 항목 | 결과 |
-|---|---|
-| 설정 파일 정적 Schema | PASS |
-| processed·synthetic Schema | PASS |
-| ID·FK·근거 참조 | PASS |
-| 설정과 정식 출력 바이트 동등성 | PASS |
-| 두 번 생성 재현성 | 변경 0건 |
-| 기존 래퍼와 통합 CLI | 동일 |
-| Python 총량 3,500줄 이하 | PASS |
-| 래퍼 파일당 30줄 이하 | PASS |
-| 구현 모듈 파일당 700줄 이하 | PASS |
+`SYN-JAC104-012`, `SYN-JAC104-016`은 계속 `BLOCKED_DECISION`입니다. `PRODUCT_VALIDATION_FAILED`는 Inquiry 상태 fixture로 생성하지 않습니다.
 
-## 비보관 정책
-
-- `data/raw`: 정책 파일 7개
-- 공식 PDF·FAQ 원본: 0건
-- `data/.temp`: 없음
-- `data/.work`: 없음
-- `__pycache__`: 없음
-- URL·해시·OCR·검수·삭제 기록: 보존
-
-## 미해결 차단 사항
-
-없음. 공식 원본이 저장소에 없으므로 저장소 단독 재추출은 지원하지
-않으며, 이는 승인된 비보관 정책이다.
+실제 PASS·오류·경고 수치는 `latest_qa_summary.json`과 5개 상세 리포트에서 확인합니다. 이 문서는 테스트 실행 전부터 PASS를 선기록하지 않습니다.

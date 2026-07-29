@@ -1,7 +1,6 @@
 [
   {
     "scenario_id": "SYN-JAC104-001",
-    "inquiry_id": "f72a3b18-a4f8-5f5e-8c86-199ffc1d8aa2",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-NO-WATER-001"
     ],
@@ -14,11 +13,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "f72a3b18-a4f8-5f5e-8c86-199ffc1d8aa2"
   },
   {
     "scenario_id": "SYN-JAC104-002",
-    "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-LOW-FLOW-001"
     ],
@@ -31,11 +30,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde"
   },
   {
     "scenario_id": "SYN-JAC104-003",
-    "inquiry_id": "91a8cf0c-9139-5d17-a6bd-818eb9aa7585",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001"
     ],
@@ -48,11 +47,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "91a8cf0c-9139-5d17-a6bd-818eb9aa7585"
   },
   {
     "scenario_id": "SYN-JAC104-004",
-    "inquiry_id": "8e2e2561-613b-5911-9318-b651f0787a90",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-LEAK-001"
     ],
@@ -65,11 +64,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "8e2e2561-613b-5911-9318-b651f0787a90"
   },
   {
     "scenario_id": "SYN-JAC104-005",
-    "inquiry_id": "40b6d3d1-8626-511c-92d3-982699a42f63",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-TASTE-ODOR-001"
     ],
@@ -82,11 +81,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "40b6d3d1-8626-511c-92d3-982699a42f63"
   },
   {
     "scenario_id": "SYN-JAC104-006",
-    "inquiry_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001"
     ],
@@ -100,11 +99,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60"
   },
   {
     "scenario_id": "SYN-JAC104-007",
-    "inquiry_id": "3ebb394c-1a6f-5793-ac86-1f721350b820",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-NO-WATER-001"
     ],
@@ -117,11 +116,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "3ebb394c-1a6f-5793-ac86-1f721350b820"
   },
   {
     "scenario_id": "SYN-JAC104-008",
-    "inquiry_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-NO-WATER-001"
     ],
@@ -134,11 +133,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1"
   },
   {
     "scenario_id": "SYN-JAC104-009",
-    "inquiry_id": "88b76107-937a-5fca-ae51-1f21935b47db",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-LOW-FLOW-001"
     ],
@@ -151,11 +150,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "88b76107-937a-5fca-ae51-1f21935b47db"
   },
   {
     "scenario_id": "SYN-JAC104-010",
-    "inquiry_id": "f82886a1-8755-5dd1-b622-480a27a207af",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-LOW-FLOW-001"
     ],
@@ -168,11 +167,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "f82886a1-8755-5dd1-b622-480a27a207af"
   },
   {
     "scenario_id": "SYN-JAC104-011",
-    "inquiry_id": "b987200b-656e-5dbc-837f-ee1e1cb3a93f",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001"
     ],
@@ -185,28 +184,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
-  },
-  {
-    "scenario_id": "SYN-JAC104-012",
-    "inquiry_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
-    "expected_evidence_ids": [
-      "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001"
-    ],
-    "evidence_mode": "EXACT_MODEL",
-    "expected_page_refs": [
-      37
-    ],
-    "fallback_required": false,
-    "forbidden_evidence_ids": [
-      "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
-      "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
-    ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "b987200b-656e-5dbc-837f-ee1e1cb3a93f"
   },
   {
     "scenario_id": "SYN-JAC104-013",
-    "inquiry_id": "205850d3-763c-5256-9d39-82da21be0c31",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-LEAK-001"
     ],
@@ -219,11 +201,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "205850d3-763c-5256-9d39-82da21be0c31"
   },
   {
     "scenario_id": "SYN-JAC104-014",
-    "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-LEAK-001"
     ],
@@ -236,11 +218,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177"
   },
   {
     "scenario_id": "SYN-JAC104-015",
-    "inquiry_id": "e9280a2d-fb61-55eb-a9a8-453f116e2b54",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-TASTE-ODOR-001"
     ],
@@ -253,28 +235,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
-  },
-  {
-    "scenario_id": "SYN-JAC104-016",
-    "inquiry_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
-    "expected_evidence_ids": [
-      "EVD-WPUJAC104DWH-TASTE-ODOR-001"
-    ],
-    "evidence_mode": "EXACT_MODEL",
-    "expected_page_refs": [
-      38
-    ],
-    "fallback_required": false,
-    "forbidden_evidence_ids": [
-      "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
-      "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
-    ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "e9280a2d-fb61-55eb-a9a8-453f116e2b54"
   },
   {
     "scenario_id": "SYN-JAC104-017",
-    "inquiry_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001"
     ],
@@ -288,11 +253,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146"
   },
   {
     "scenario_id": "SYN-JAC104-018",
-    "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001"
     ],
@@ -306,11 +271,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d"
   },
   {
     "scenario_id": "SYN-JAC104-019",
-    "inquiry_id": "cca8204e-c447-515f-9606-7f78ea00dc6b",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-NOISE-001"
     ],
@@ -323,11 +288,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "cca8204e-c447-515f-9606-7f78ea00dc6b"
   },
   {
     "scenario_id": "SYN-JAC104-020",
-    "inquiry_id": "7ae3ddf9-61d3-5b80-9a03-857bdabd81c6",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-NOISE-001"
     ],
@@ -340,11 +305,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "7ae3ddf9-61d3-5b80-9a03-857bdabd81c6"
   },
   {
     "scenario_id": "SYN-JAC104-021",
-    "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-NOISE-001"
     ],
@@ -357,11 +322,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "d8155085-e77d-5a61-a6e3-57a7d584487a"
   },
   {
     "scenario_id": "SYN-JAC104-022",
-    "inquiry_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
     "expected_evidence_ids": [],
     "evidence_mode": "NO_EVIDENCE",
     "expected_page_refs": [],
@@ -370,11 +335,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985"
   },
   {
     "scenario_id": "SYN-JAC104-023",
-    "inquiry_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067",
     "expected_evidence_ids": [],
     "evidence_mode": "NO_EVIDENCE",
     "expected_page_refs": [],
@@ -383,11 +348,11 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067"
   },
   {
     "scenario_id": "SYN-JAC104-024",
-    "inquiry_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2",
     "expected_evidence_ids": [
       "EVD-WPUJAC104DWH-NO-WATER-001"
     ],
@@ -400,6 +365,7 @@
       "EVD-FAQ-SKMAGIC-0103-CONDITIONAL",
       "EVD-FAQ-SKMAGIC-0011-EXCLUDED"
     ],
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00",
+    "inquiry_public_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2"
   }
 ]

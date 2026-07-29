@@ -42,6 +42,41 @@ def validate_service_contract_mapping(config: PipelineConfig) -> list[str]:
     return errors
 
 
+def validate_backend_import_crosswalk(config: PipelineConfig) -> list[str]:
+    crosswalk = config.config("backend_crosswalk")
+    repo_root = config.data_root.parent.resolve()
+    errors: list[str] = []
+    for source_name, source in crosswalk["backend_sources"].items():
+        try:
+            path = ensure_within(repo_root, repo_root / source["path"])
+        except ValueError:
+            errors.append(f"backend_source_path_escape:{source_name}")
+            continue
+        if not path.is_file():
+            errors.append(f"backend_source_missing:{source_name}:{source['path']}")
+            continue
+        actual_hash = sha256_file(path)
+        if actual_hash != source["sha256"]:
+            errors.append(
+                f"backend_source_hash_mismatch:{source_name}:"
+                f"{actual_hash}!={source['sha256']}"
+            )
+    resolution = crosswalk["identifier_resolution"]
+    if resolution["backend_primary_key_injection"] != "FORBIDDEN":
+        errors.append("backend_fixture_pk_injection_not_forbidden")
+    if resolution["foreign_key_resolution"] != "LOOKUP_THEN_USE_BACKEND_INTERNAL_PK":
+        errors.append("backend_fk_resolution_policy_mismatch")
+    care_mapping = crosswalk["code_mappings"]["care_type"]
+    if care_mapping.get("VISIT_SERVICE") is not None:
+        errors.append("unconfirmed_care_mapping_enabled")
+    blocked = {
+        row["id"]: row["treatment"] for row in crosswalk["blocked_mappings"]
+    }
+    if blocked.get("CARE-VISIT-SERVICE-TYPE") != "EXCLUDE_FROM_DIRECT_LOAD":
+        errors.append("unconfirmed_care_mapping_not_excluded")
+    return errors
+
+
 def validate_contract_alignment_registry(config: PipelineConfig) -> list[str]:
     synthetic = config.config("synthetic")
     mapping = config.config("contract_mapping")
@@ -102,7 +137,8 @@ def validate_configs(config: PipelineConfig) -> list[dict[str, Any]]:
     )
     add(
         "scenario_count",
-        len(synthetic["scenario_matrix"]) == expected["synthetic_inquiries"],
+        len(synthetic["scenario_matrix"])
+        == expected["synthetic_source_scenarios"],
         f"scenarios={len(synthetic['scenario_matrix'])}",
     )
     add(
@@ -126,6 +162,14 @@ def validate_configs(config: PipelineConfig) -> list[dict[str, Any]]:
         "contract_alignment_registry",
         not alignment_registry_errors,
         ",".join(alignment_registry_errors) if alignment_registry_errors else "blocked_scenarios_excluded",
+    )
+    backend_crosswalk_errors = validate_backend_import_crosswalk(config)
+    add(
+        "backend_import_crosswalk",
+        not backend_crosswalk_errors,
+        ",".join(backend_crosswalk_errors)
+        if backend_crosswalk_errors
+        else "lookup_bridge_and_blocked_mappings_verified",
     )
     danger_normal = [
         row["scenario_id"]
@@ -292,6 +336,71 @@ def _duplicates(rows: list[dict[str, Any]], key: str) -> list[str]:
     return sorted({str(value) for value in values if values.count(value) > 1})
 
 
+def validate_dataset_catalog(
+    config: PipelineConfig,
+    manifest: dict[str, Any],
+) -> list[str]:
+    catalog_path = config.data_root / "catalog/datasets.yaml"
+    lines = catalog_path.read_text(encoding="utf-8").splitlines()
+    errors: list[str] = []
+    version_match = re.match(r"^version:\s*(\S+)", lines[0]) if lines else None
+    if not version_match or version_match.group(1) != config.dataset_version:
+        errors.append("catalog_dataset_version_mismatch")
+    rows: list[dict[str, Any]] = []
+    current: dict[str, Any] | None = None
+    for line in lines:
+        item_match = re.match(r"^\s*-\s+id:\s*(\S+)\s*$", line)
+        if item_match:
+            if current is not None:
+                rows.append(current)
+            current = {"id": item_match.group(1)}
+            continue
+        field_match = re.match(
+            r"^\s+(path|records|schema):\s*(.*?)\s*$",
+            line,
+        )
+        if current is not None and field_match:
+            key, raw_value = field_match.groups()
+            current[key] = (
+                int(raw_value)
+                if key == "records"
+                else raw_value.strip("\"'")
+            )
+    if current is not None:
+        rows.append(current)
+    catalog_by_path = {row.get("path"): row for row in rows if row.get("path")}
+    manifest_by_path = {row["path"]: row for row in manifest["files"]}
+    if set(catalog_by_path) != set(manifest_by_path):
+        errors.append("catalog_manifest_path_set_mismatch")
+    for path, manifest_row in manifest_by_path.items():
+        catalog_row = catalog_by_path.get(path)
+        if catalog_row is None:
+            continue
+        if catalog_row.get("records") != manifest_row["records"]:
+            errors.append(f"catalog_record_count_mismatch:{path}")
+        if catalog_row.get("schema") != manifest_row["schema"]:
+            errors.append(f"catalog_schema_mismatch:{path}")
+        schema_path = catalog_row.get("schema", "")
+        if schema_path.endswith(".json") and not (
+            config.data_root / schema_path
+        ).is_file():
+            errors.append(f"catalog_schema_missing:{path}:{schema_path}")
+    field_dictionary = (
+        config.data_root / "catalog/field_dictionary.yaml"
+    ).read_text(encoding="utf-8")
+    if not field_dictionary.startswith(f"version: {config.dataset_version}\n"):
+        errors.append("field_dictionary_version_mismatch")
+    changelog = (config.data_root / "catalog/CHANGELOG.md").read_text(
+        encoding="utf-8"
+    )
+    if f"## {config.dataset_version}" not in changelog:
+        errors.append("catalog_changelog_version_missing")
+    data_readme = (config.data_root / "README.md").read_text(encoding="utf-8")
+    if config.dataset_version not in data_readme:
+        errors.append("data_readme_version_mismatch")
+    return errors
+
+
 def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
     manifest = read_json(config.path("dataset_manifest"))
     errors: list[str] = []
@@ -300,6 +409,8 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
     vocabulary = config.config("vocabulary")
     errors.extend(validate_service_contract_mapping(config))
     errors.extend(validate_contract_alignment_registry(config))
+    errors.extend(validate_backend_import_crosswalk(config))
+    errors.extend(validate_dataset_catalog(config, manifest))
     risk_vocabulary = vocabulary["risk_levels"]
     usage_vocabulary = vocabulary["usage_guidance_statuses"]
     for name, codes in schema_risk_codes(config.data_root).items():
@@ -341,21 +452,24 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
         for key, path in synthetic["outputs"].items()
     }
     id_fields = {
-        "users": "user_id",
-        "products": "product_id",
-        "customer_products": "customer_product_id",
-        "subscriptions": "subscription_id",
-        "inquiries": "inquiry_id",
-        "consultations": "consultation_id",
-        "visits": "visit_id",
-        "care_histories": "care_history_id",
-        "followup_confirmations": "followup_id",
-        "inquiry_status_histories": "history_id",
-        "audit_events": "audit_event_id",
+        "users": "id",
+        "customer_profiles": "id",
+        "products": "id",
+        "customer_products": "id",
+        "subscriptions": "id",
+        "inquiries": "id",
+        "consultations": "id",
+        "visits": "id",
+        "care_histories": "id",
+        "followup_confirmations": "id",
+        "inquiry_status_histories": "id",
+        "audit_events": "id",
     }
     for dataset, key in id_fields.items():
         for duplicate in _duplicates(outputs[dataset], key):
             errors.append(f"duplicate:{dataset}:{duplicate}")
+        for duplicate in _duplicates(outputs[dataset], "public_id"):
+            errors.append(f"duplicate_public_id:{dataset}:{duplicate}")
 
     ids = {
         name: {row[key] for row in outputs[name]}
@@ -364,13 +478,121 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
     for row in outputs["customer_products"]:
         if row["customer_id"] not in ids["users"] or row["product_id"] not in ids["products"]:
             errors.append(f"broken_fk:customer_product:{row['customer_product_id']}")
+    profiles_by_user = {
+        row["user_id"]: row for row in outputs["customer_profiles"]
+    }
+    if len(profiles_by_user) != len(outputs["customer_profiles"]):
+        errors.append("customer_profile_user_not_one_to_one")
+    customer_user_ids = {
+        row["id"] for row in outputs["users"] if row["role"] == "CUSTOMER"
+    }
+    if set(profiles_by_user) != customer_user_ids:
+        errors.append("customer_profile_customer_user_coverage")
+    profiles_by_id = {
+        row["id"]: row for row in outputs["customer_profiles"]
+    }
+    customer_products_by_id = {
+        row["id"]: row for row in outputs["customer_products"]
+    }
     for row in outputs["subscriptions"]:
-        if row["customer_id"] not in ids["users"] or row["customer_product_id"] not in ids["customer_products"]:
+        if (
+            row["customer_profile_id"] not in ids["customer_profiles"]
+            or row["customer_product_id"] not in ids["customer_products"]
+        ):
             errors.append(f"broken_fk:subscription:{row['subscription_id']}")
-    for name in ("consultations", "visits", "inquiry_status_histories"):
+            continue
+        profile = profiles_by_id[row["customer_profile_id"]]
+        customer_product = customer_products_by_id[row["customer_product_id"]]
+        if profile["user_id"] != customer_product["customer_id"]:
+            errors.append(f"subscription_customer_chain_mismatch:{row['subscription_id']}")
+    for name in ("consultations", "visits"):
         for row in outputs[name]:
             if row["inquiry_id"] not in ids["inquiries"]:
                 errors.append(f"broken_fk:{name}:{row[id_fields[name]]}")
+    target_sets = {
+        "QUESTIONNAIRE": set(),
+        "INQUIRY": ids["inquiries"],
+        "CONSULTATION": ids["consultations"],
+        "VISIT": ids["visits"],
+    }
+    target_fields = {
+        "QUESTIONNAIRE": "questionnaire_session_id",
+        "INQUIRY": "inquiry_id",
+        "CONSULTATION": "consultation_id",
+        "VISIT": "visit_id",
+    }
+    history_versions: set[tuple[str, int, int]] = set()
+    versions_by_target: dict[tuple[str, int], list[int]] = {}
+    for row in outputs["inquiry_status_histories"]:
+        configured_targets = [
+            name for name in target_fields.values() if row.get(name) is not None
+        ]
+        if len(configured_targets) != 1:
+            errors.append(f"history_target_count:{row['id']}")
+            continue
+        target_type = row["target_type_code"]
+        expected_field = target_fields[target_type]
+        if configured_targets[0] != expected_field:
+            errors.append(f"history_target_type_mismatch:{row['id']}")
+            continue
+        target_id = row[expected_field]
+        if target_id not in target_sets[target_type]:
+            errors.append(f"broken_fk:inquiry_status_histories:{row['id']}")
+        allowed_statuses = (
+            vocabulary["inquiry_statuses"]
+            if target_type == "INQUIRY"
+            else vocabulary["visit_statuses"]
+            if target_type == "VISIT"
+            else []
+        )
+        for field in ("from_status_code", "to_status_code"):
+            value = row[field]
+            if value is not None and value not in allowed_statuses:
+                errors.append(
+                    f"history_status_set_mismatch:{row['id']}:{target_type}:{field}:{value}"
+                )
+        version_key = (target_type, target_id, row["state_version"])
+        if version_key in history_versions:
+            errors.append(
+                "duplicate_history_state_version:"
+                f"{target_type}:{target_id}:{row['state_version']}"
+            )
+        history_versions.add(version_key)
+        versions_by_target.setdefault((target_type, target_id), []).append(
+            row["state_version"]
+        )
+    for (target_type, target_id), versions in versions_by_target.items():
+        expected_versions = list(range(1, max(versions) + 1))
+        if sorted(versions) != expected_versions:
+            errors.append(
+                f"non_contiguous_history_state_version:{target_type}:{target_id}"
+            )
+    history_audit_keys = {
+        (
+            row["target_type_code"],
+            row[target_fields[row["target_type_code"]]],
+            row["event_code"],
+            row["state_version"],
+            row["idempotency_key"],
+            row["correlation_id"],
+            row["changed_at"],
+        )
+        for row in outputs["inquiry_status_histories"]
+    }
+    audit_keys = {
+        (
+            row["entity_type"],
+            row["entity_id"],
+            row["event_type"],
+            row["state_version"],
+            row["idempotency_key"],
+            row["correlation_id"],
+            row["occurred_at"],
+        )
+        for row in outputs["audit_events"]
+    }
+    if history_audit_keys != audit_keys:
+        errors.append("status_history_audit_correspondence_mismatch")
     for row in outputs["care_histories"]:
         broken = row["customer_product_id"] not in ids["customer_products"]
         broken |= bool(row.get("inquiry_id")) and row["inquiry_id"] not in ids["inquiries"]
@@ -402,11 +624,83 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
     }
     if set(configured) != set(materialized):
         errors.append("scenario_matrix_materialization_mismatch")
+    registry = {
+        row["scenario_id"]: row
+        for row in outputs["contract_alignment_registry"]
+    }
+    active_scenarios = {
+        scenario_id
+        for scenario_id, row in registry.items()
+        if row["include_in_contract_projection"]
+    }
+    projected_scenarios = {
+        row["scenario_id"] for row in outputs["inquiries"]
+    }
+    if projected_scenarios != active_scenarios:
+        errors.append("active_scenario_projection_mismatch")
+    if len(active_scenarios) != 22:
+        errors.append(f"active_scenario_count:{len(active_scenarios)}!=22")
+    if {"SYN-JAC104-012", "SYN-JAC104-016"} & projected_scenarios:
+        errors.append("blocked_scenario_materialized")
     if any(
         row["status"] not in vocabulary["inquiry_statuses"]
         for row in outputs["inquiries"]
     ):
         errors.append("noncanonical_inquiry_status")
+    if any(
+        row["target_type_code"] == "INQUIRY"
+        and row["to_status_code"] == "PRODUCT_VALIDATION_FAILED"
+        for row in outputs["inquiry_status_histories"]
+    ):
+        errors.append("product_validation_failed_materialized_as_state")
+
+    idempotency_cases = outputs["api_idempotency_cases"]
+    by_outcome = {row["expected_outcome"]: row for row in idempotency_cases}
+    if set(by_outcome) != {"PROCESSED", "REPLAY", "CONFLICT"}:
+        errors.append("api_idempotency_case_coverage")
+    else:
+        processed = by_outcome["PROCESSED"]
+        replay = by_outcome["REPLAY"]
+        conflict = by_outcome["CONFLICT"]
+        scope_fields = ("actor", "operation_id", "idempotency_key")
+        if any(processed[field] != replay[field] for field in scope_fields):
+            errors.append("api_idempotency_replay_scope_mismatch")
+        if (
+            processed["request_payload_sha256"]
+            != replay["request_payload_sha256"]
+            or replay["expected_history_rows_created"] != 0
+            or not replay["replay"]
+        ):
+            errors.append("api_idempotency_replay_expectation")
+        if (
+            processed["idempotency_key"] != conflict["idempotency_key"]
+            or processed["request_payload_sha256"]
+            == conflict["request_payload_sha256"]
+            or conflict["internal_conflict_code"]
+            != "IDEMPOTENCY_KEY_REUSE_CONFLICT"
+            or conflict["expected_api_error_code"] != "DUPLICATE-EVENT-01"
+            or conflict["expected_history_rows_created"] != 0
+        ):
+            errors.append("api_idempotency_conflict_expectation")
+        if any(
+            row["internal_conflict_code"] is not None
+            or row["expected_api_error_code"] is not None
+            for row in (processed, replay)
+        ):
+            errors.append("api_idempotency_success_error_code_present")
+        shared_histories = [
+            row
+            for row in outputs["inquiry_status_histories"]
+            if row["idempotency_key"] == processed["idempotency_key"]
+            and row["event_code"] == "CONFIRM_VISIT"
+        ]
+        if (
+            processed["expected_history_rows_created"] != 2
+            or {row["target_type_code"] for row in shared_histories}
+            != {"INQUIRY", "VISIT"}
+            or len({row["correlation_id"] for row in shared_histories}) != 1
+        ):
+            errors.append("api_idempotency_shared_history_expectation")
 
     active_text = json_bytes(outputs).decode("utf-8")
     retired_code = "USE_" + "ALLOWED"

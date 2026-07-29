@@ -1,145 +1,28 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "SyntheticInquiryStatusHistory",
+  "title": "SyntheticT005StatusHistory",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "history_id",
-    "inquiry_id",
-    "sequence",
-    "event",
-    "from_status",
-    "to_status",
-    "actor_role",
-    "actor_id",
-    "assigned_role_after",
-    "assigned_user_id_after",
-    "state_version",
-    "idempotency_key",
-    "correlation_id",
-    "changed_at",
-    "reason",
-    "data_classification"
-  ],
+  "required": ["id", "public_id", "status_history_number", "questionnaire_session_id", "inquiry_id", "consultation_id", "visit_id", "target_type_code", "event_code", "from_status_code", "to_status_code", "state_version", "change_reason", "changed_by_id", "changed_by_type_code", "correlation_id", "idempotency_key", "changed_at", "data_classification"],
   "properties": {
-    "history_id": {
-      "type": "string",
-      "minLength": 1,
-      "format": "uuid"
-    },
-    "inquiry_id": {
-      "type": "string",
-      "minLength": 1,
-      "format": "uuid"
-    },
-    "sequence": {
-      "type": "integer",
-      "minimum": 1
-    },
-    "event": {
-      "type": "string",
-      "minLength": 1
-    },
-    "from_status": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "enum": [
-        "DRAFT",
-        "QUESTIONNAIRE_IN_PROGRESS",
-        "AI_GUIDANCE",
-        "CONSULTATION_REQUIRED",
-        "CONSULTATION_IN_PROGRESS",
-        "VISIT_REVIEW_PENDING",
-        "VISIT_SCHEDULING",
-        "VISIT_SCHEDULED",
-        "COMPLETION_PENDING",
-        "REVISIT_REQUIRED",
-        "REOPENED",
-        "RESOLVED",
-        "CANCELLED",
-        null
-      ]
-    },
-    "to_status": {
-      "type": "string",
-      "minLength": 1,
-      "enum": [
-        "DRAFT",
-        "QUESTIONNAIRE_IN_PROGRESS",
-        "AI_GUIDANCE",
-        "CONSULTATION_REQUIRED",
-        "CONSULTATION_IN_PROGRESS",
-        "VISIT_REVIEW_PENDING",
-        "VISIT_SCHEDULING",
-        "VISIT_SCHEDULED",
-        "COMPLETION_PENDING",
-        "REVISIT_REQUIRED",
-        "REOPENED",
-        "RESOLVED",
-        "CANCELLED"
-      ]
-    },
-    "actor_role": {
-      "type": "string",
-      "minLength": 1,
-      "enum": [
-        "CUSTOMER",
-        "CONSULTANT",
-        "TECHNICIAN",
-        "SYSTEM"
-      ]
-    },
-    "actor_id": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "uuid"
-    },
-    "assigned_role_after": {
-      "type": "string",
-      "minLength": 1,
-      "enum": [
-        "NONE",
-        "CONSULTANT",
-        "TECHNICIAN"
-      ]
-    },
-    "assigned_user_id_after": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "uuid"
-    },
-    "state_version": {
-      "type": "integer",
-      "minimum": 1
-    },
-    "idempotency_key": {
-      "type": "string",
-      "minLength": 1
-    },
-    "correlation_id": {
-      "type": "string",
-      "minLength": 1,
-      "format": "uuid"
-    },
-    "changed_at": {
-      "type": "string",
-      "minLength": 1,
-      "format": "date-time"
-    },
-    "reason": {
-      "type": "string",
-      "minLength": 1
-    },
-    "data_classification": {
-      "type": "string",
-      "minLength": 1,
-      "const": "synthetic"
-    }
+    "id": {"type": "integer", "minimum": 1},
+    "public_id": {"type": "string", "format": "uuid"},
+    "status_history_number": {"type": "string", "pattern": "^SYN-HIST-(QUESTIONNAIRE|INQUIRY|CONSULTATION|VISIT)-\\d{3}-\\d{3}$"},
+    "questionnaire_session_id": {"type": ["integer", "null"], "minimum": 1},
+    "inquiry_id": {"type": ["integer", "null"], "minimum": 1},
+    "consultation_id": {"type": ["integer", "null"], "minimum": 1},
+    "visit_id": {"type": ["integer", "null"], "minimum": 1},
+    "target_type_code": {"type": "string", "enum": ["QUESTIONNAIRE", "INQUIRY", "CONSULTATION", "VISIT"]},
+    "event_code": {"type": "string", "minLength": 1},
+    "from_status_code": {"type": ["string", "null"]},
+    "to_status_code": {"type": "string", "minLength": 1},
+    "state_version": {"type": "integer", "minimum": 1},
+    "change_reason": {"type": "string", "minLength": 1},
+    "changed_by_id": {"type": ["integer", "null"], "minimum": 1},
+    "changed_by_type_code": {"type": "string", "enum": ["USER", "SYSTEM"]},
+    "correlation_id": {"type": "string", "format": "uuid"},
+    "idempotency_key": {"type": "string", "minLength": 1},
+    "changed_at": {"type": "string", "format": "date-time"},
+    "data_classification": {"type": "string", "const": "synthetic"}
   }
 }

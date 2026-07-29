@@ -225,8 +225,84 @@ def build_synthetic_preview(config: PipelineConfig) -> Preview:
     definitions = replace_tokens(
         config.config("synthetic"), {"generated_at": config.generated_at}
     )
+    outputs = definitions["materialized_outputs"]
+    active_scenarios = {
+        row["scenario_id"]
+        for row in outputs["contract_alignment_registry"]
+        if row["include_in_contract_projection"]
+    }
+    outputs["inquiries"] = [
+        row for row in outputs["inquiries"]
+        if row["scenario_id"] in active_scenarios
+    ]
+    active_inquiry_ids = {row["id"] for row in outputs["inquiries"]}
+    outputs["consultations"] = [
+        row for row in outputs["consultations"]
+        if row["inquiry_id"] in active_inquiry_ids
+    ]
+    active_consultation_ids = {row["id"] for row in outputs["consultations"]}
+    outputs["visits"] = [
+        row for row in outputs["visits"]
+        if row["inquiry_id"] in active_inquiry_ids
+    ]
+    active_visit_ids = {row["id"] for row in outputs["visits"]}
+    outputs["care_histories"] = [
+        row for row in outputs["care_histories"]
+        if (
+            row.get("inquiry_id") is None
+            or row["inquiry_id"] in active_inquiry_ids
+        )
+        and (
+            row.get("visit_id") is None
+            or row["visit_id"] in active_visit_ids
+        )
+    ]
+    outputs["followup_confirmations"] = [
+        row for row in outputs["followup_confirmations"]
+        if row["inquiry_id"] in active_inquiry_ids
+        and (
+            row.get("consultation_id") is None
+            or row["consultation_id"] in active_consultation_ids
+        )
+        and (
+            row.get("visit_id") is None
+            or row["visit_id"] in active_visit_ids
+        )
+    ]
+    target_ids = {
+        "QUESTIONNAIRE": set(),
+        "INQUIRY": active_inquiry_ids,
+        "CONSULTATION": active_consultation_ids,
+        "VISIT": active_visit_ids,
+    }
+    outputs["inquiry_status_histories"] = [
+        row for row in outputs["inquiry_status_histories"]
+        if row[f"{row['target_type_code'].lower()}_id"]
+        in target_ids[row["target_type_code"]]
+    ]
+    outputs["audit_events"] = [
+        row for row in outputs["audit_events"]
+        if row["entity_id"] in target_ids[row["entity_type"]]
+    ]
+    for name in (
+        "workflow_states",
+        "evidence_references",
+        "safety_assessments",
+        "role_handoffs",
+        "api_idempotency_cases",
+    ):
+        outputs[name] = [
+            row for row in outputs[name]
+            if row["scenario_id"] in active_scenarios
+        ]
+    definitions["materialized_subsets"] = {
+        filename: [
+            row for row in rows if row["scenario_id"] in active_scenarios
+        ]
+        for filename, rows in definitions["materialized_subsets"].items()
+    }
     result: Preview = {}
-    for key, rows in definitions["materialized_outputs"].items():
+    for key, rows in outputs.items():
         count = len(rows["scenarios"]) if key == "demo_scenarios" else len(rows)
         result[key] = (
             config.data_root / definitions["outputs"][key],

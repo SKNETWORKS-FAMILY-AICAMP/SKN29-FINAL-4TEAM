@@ -3,115 +3,24 @@
   "title": "SyntheticFollowupConfirmation",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "followup_id",
-    "inquiry_id",
-    "guidance_id",
-    "consultation_id",
-    "visit_id",
-    "channel_code",
-    "resolution_status_code",
-    "state_version",
-    "customer_response",
-    "unresolved_reason",
-    "next_action",
-    "requested_at",
-    "responded_at",
-    "confirmed_at",
-    "data_classification"
-  ],
+  "required": ["id", "public_id", "followup_number", "inquiry_id", "guidance_id", "consultation_id", "visit_id", "channel_code", "resolution_status_code", "state_version", "customer_response", "unresolved_reason", "next_action", "requested_at", "responded_at", "confirmed_at", "data_classification"],
   "properties": {
-    "followup_id": {
-      "type": "string",
-      "format": "uuid"
-    },
-    "inquiry_id": {
-      "type": "string",
-      "format": "uuid"
-    },
-    "guidance_id": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "uuid"
-    },
-    "consultation_id": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "uuid"
-    },
-    "visit_id": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "uuid"
-    },
-    "channel_code": {
-      "type": "string",
-      "enum": [
-        "APP",
-        "WEB",
-        "PHONE"
-      ]
-    },
-    "resolution_status_code": {
-      "type": "string",
-      "enum": [
-        "PENDING",
-        "RESOLVED",
-        "UNRESOLVED",
-        "REOPENED"
-      ]
-    },
-    "state_version": {
-      "type": "integer",
-      "minimum": 1
-    },
-    "customer_response": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "unresolved_reason": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "next_action": {
-      "type": "string",
-      "enum": [
-        "FINALIZE_INQUIRY",
-        "RESUME_CONSULTATION",
-        "NONE"
-      ]
-    },
-    "requested_at": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "responded_at": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "date-time"
-    },
-    "confirmed_at": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "date-time"
-    },
-    "data_classification": {
-      "type": "string",
-      "const": "synthetic"
-    }
+    "id": {"type": "integer", "minimum": 1},
+    "public_id": {"type": "string", "format": "uuid"},
+    "followup_number": {"type": "string", "pattern": "^SYN-FOLLOWUP-\\d{4}$"},
+    "inquiry_id": {"type": "integer", "minimum": 1},
+    "guidance_id": {"type": ["integer", "null"], "minimum": 1},
+    "consultation_id": {"type": ["integer", "null"], "minimum": 1},
+    "visit_id": {"type": ["integer", "null"], "minimum": 1},
+    "channel_code": {"type": "string", "enum": ["APP", "WEB", "PHONE"]},
+    "resolution_status_code": {"type": "string", "enum": ["PENDING", "RESOLVED", "UNRESOLVED", "REOPENED"]},
+    "state_version": {"type": "integer", "minimum": 1},
+    "customer_response": {"type": ["string", "null"]},
+    "unresolved_reason": {"type": ["string", "null"]},
+    "next_action": {"type": "string", "enum": ["FINALIZE_INQUIRY", "RESUME_CONSULTATION", "NONE"]},
+    "requested_at": {"type": "string", "format": "date-time"},
+    "responded_at": {"type": ["string", "null"], "format": "date-time"},
+    "confirmed_at": {"type": ["string", "null"], "format": "date-time"},
+    "data_classification": {"type": "string", "const": "synthetic"}
   }
 }

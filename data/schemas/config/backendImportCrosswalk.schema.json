@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BackendImportCrosswalk",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mapping_version",
+    "status",
+    "service_contracts_used",
+    "backend_sources",
+    "identifier_resolution",
+    "entity_mappings",
+    "code_mappings",
+    "blocked_mappings"
+  ],
+  "properties": {
+    "mapping_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "status": {"const": "DOCUMENTED_NOT_DB_VERIFIED"},
+    "service_contracts_used": {"const": false},
+    "backend_sources": {
+      "type": "object",
+      "minProperties": 5,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {"type": "string", "pattern": "^backend/"},
+          "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}
+        }
+      }
+    },
+    "identifier_resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fixture_internal_id_role",
+        "backend_primary_key_injection",
+        "lookup_order",
+        "foreign_key_resolution",
+        "accounts_legacy_string_pk"
+      ],
+      "properties": {
+        "fixture_internal_id_role": {"const": "LOCAL_RELATIONSHIP_ONLY"},
+        "backend_primary_key_injection": {"const": "FORBIDDEN"},
+        "lookup_order": {"const": ["public_id", "business_key"]},
+        "foreign_key_resolution": {
+          "const": "LOOKUP_THEN_USE_BACKEND_INTERNAL_PK"
+        },
+        "accounts_legacy_string_pk": {
+          "const": "BACKEND_COMPATIBILITY_BRIDGE_NOT_FIXTURE_ID"
+        }
+      }
+    },
+    "entity_mappings": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fixture",
+          "backend_model",
+          "readiness",
+          "business_key",
+          "field_mappings"
+        ],
+        "properties": {
+          "fixture": {"type": "string", "pattern": "^synthetic/fixtures/"},
+          "backend_model": {"type": "string", "minLength": 1},
+          "readiness": {"type": "string", "minLength": 1},
+          "business_key": {"type": "string", "minLength": 1},
+          "field_mappings": {
+            "type": "object",
+            "minProperties": 2,
+            "additionalProperties": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "code_mappings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plan_code", "care_type"],
+      "properties": {
+        "plan_code": {"type": "object", "minProperties": 1},
+        "care_type": {"type": "object", "minProperties": 3}
+      }
+    },
+    "blocked_mappings": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "source_values",
+          "reason",
+          "treatment",
+          "owner"
+        ],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "source_values": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1},
+          "treatment": {"const": "EXCLUDE_FROM_DIRECT_LOAD"},
+          "owner": {"const": "BACKEND"}
+        }
+      }
+    }
+  }
+}

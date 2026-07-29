@@ -1,23 +1,22 @@
 {
+  "dataset_version": "0.9.0",
+  "generated_at": "2026-07-29T00:00:00+09:00",
   "status": "PASS",
-  "stage": 5,
   "report_type": "REPRODUCIBILITY",
-  "generated_at": "2026-07-27T00:00:00+09:00",
+  "records": 0,
   "summary": {
-    "checks": 1,
-    "errors": 0,
-    "warnings": 0
+    "enabled": true,
+    "changed_files": [],
+    "canonical_drift_files": [],
+    "regenerated_files": [],
+    "status": "PASS"
   },
   "checks": [
     {
-      "code": "REPRO_FULL_GENERATION_CHAIN",
+      "code": "BYTE_DETERMINISM",
       "status": "PASS",
-      "detail": "targets=64, changed=0, missing=0"
+      "changed_files": [],
+      "canonical_drift_files": []
     }
-  ],
-  "method": "two consecutive build_step3 -> build_step4 runs with full canonical hash comparison",
-  "targets_checked": 64,
-  "changed_files": [],
-  "missing_files": [],
-  "command_errors": []
+  ]
 }
