@@ -1,5 +1,19 @@
 # Contracts Changelog
 
+## 2026-07-29 — AI 공개 응답 계약 정합화
+
+### Changed
+
+- `SymptomAnalysisResult` 공개 DTO의 `inquiry_id`, `correlation_id` 위치를 JSON Schema와 동일한 최상위로 통일
+- 내부 전용 `model_metadata`, `processing_traces`, 중첩 `trace_context`를 공개 분석 응답에서 제외
+- `inquiry_id`를 UUID로 강제하지 않고 Backend가 발급한 공개 UUID 또는 업무·시연 코드를 허용하되 내부 정수 PK는 금지
+- 요청 원문 길이와 빈 문자열 검증 조건 추가
+
+### Verification
+
+- 정상·위험·근거 없음 예시와 Pydantic 직렬화 결과를 Draft 2020-12 Schema로 검증
+- Backend 상태 변경은 AI가 수행하지 않으며, AI는 분석 결과만 반환하는 책임 경계를 유지
+
 ## 2026-07-29 — State Machine v1.0.0 채택
 
 ### Adopted

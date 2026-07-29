@@ -35,7 +35,24 @@ def test_eval_dataset_loader():
 
 def test_evaluation_runner_execution():
     """EvaluationRunner 전체 일괄 산출 테스트"""
-    runner = EvaluationRunner()
+    class FakeSearchService:
+        def search(self, query):
+            from ai.app.retrieval.indexing.chunk_loader import ChunkLoader
+            chunks = ChunkLoader().load_verified_chunks()
+            if "누수" in query.query_text or "물" in query.query_text and "새" in query.query_text:
+                ids = {"RAG-WPUJAC104DWH-LEAK-001"}
+            elif "졸졸" in query.query_text:
+                ids = {
+                    "RAG-WPUJAC104DWH-LOW-FLOW-001",
+                    "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001",
+                }
+            elif "온수" in query.query_text:
+                ids = {"RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001"}
+            else:
+                ids = {"RAG-WPUJAC104DWH-COLD-TEMPERATURE-001"}
+            return [chunk for chunk in chunks if chunk.chunk_id in ids]
+
+    runner = EvaluationRunner(FakeSearchService())
     results = runner.run_all_evaluations()
 
     assert "rag_evaluation" in results

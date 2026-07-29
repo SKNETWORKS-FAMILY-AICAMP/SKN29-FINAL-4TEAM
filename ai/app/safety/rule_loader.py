@@ -4,6 +4,8 @@ import os
 from typing import Any, Dict
 import yaml
 
+from ..schemas import RiskLevel, UsageGuidanceStatus
+
 
 class SafetyRuleLoader:
     """안전 규칙 및 정책 YAML 로더 (캐싱 지원)"""
@@ -31,6 +33,23 @@ class SafetyRuleLoader:
         if os.path.exists(prohibited_path):
             with open(prohibited_path, "r", encoding="utf-8") as f:
                 self._prohibited_expressions = yaml.safe_load(f) or {}
+
+        self._validate()
+
+    def _validate(self) -> None:
+        rules = self._safety_rules.get("rules")
+        no_evidence = self._safety_rules.get("no_evidence_policy")
+        if not isinstance(rules, dict) or not rules or not isinstance(no_evidence, dict):
+            raise ValueError("safety_rules.yaml에는 rules와 no_evidence_policy가 필요합니다.")
+        for rule_id, rule in rules.items():
+            required = {"risk_level", "usage_guidance_status", "keywords", "requires_consultation"}
+            missing = required.difference(rule)
+            if missing:
+                raise ValueError(f"안전 규칙 {rule_id} 필수 키 누락: {sorted(missing)}")
+            RiskLevel(rule["risk_level"])
+            status = UsageGuidanceStatus(rule["usage_guidance_status"])
+            if rule["risk_level"] == RiskLevel.DANGER.value and status == UsageGuidanceStatus.NORMAL:
+                raise ValueError(f"안전 규칙 {rule_id}: danger와 NORMAL을 함께 사용할 수 없습니다.")
 
     def get_safety_rules(self) -> Dict[str, Any]:
         """안전 규칙 딕셔너리 반환"""

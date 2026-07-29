@@ -3,7 +3,6 @@
 from .filters import DocumentPolicyFilter, ProductFilter
 from .indexing import ChunkLoader, IndexManifest
 from .models import RetrievalQuery, RetrievedChunk
-from .search import VectorSearchService
 
 __all__ = [
     "RetrievalQuery",
@@ -12,5 +11,4 @@ __all__ = [
     "DocumentPolicyFilter",
     "IndexManifest",
     "ChunkLoader",
-    "VectorSearchService"
 ]
