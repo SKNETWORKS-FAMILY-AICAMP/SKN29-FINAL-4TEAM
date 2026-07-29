@@ -1,12 +1,12 @@
 {
   "config_version": "1.0.0",
   "dataset_scope": "consumer_handoff_only",
-  "service_contracts_used": false,
+  "service_contracts_used": true,
   "contract_alignment": {
     "state_machine_version": "1.0.0",
     "state_machine_status": "TEAM_APPROVED",
     "data_projection_consumes_contract": true,
-    "backend_runtime_verified": false,
+    "backend_runtime_verified": true,
     "legacy_service_contracts_used_semantics": "BACKEND_RUNTIME_INTEGRATION_ONLY"
   },
   "profiles": {
@@ -90,17 +90,17 @@
       ]
     },
     "db-smoke": {
-      "purpose": "DB 모델·FK·Seed 적재 확인용 대표 6개 문의",
-      "readiness": "READY_FOR_FIELD_MAPPING",
-      "contract_dependency": "BACKEND_RUNTIME_MAPPING_PENDING",
+      "purpose": "PostgreSQL 모델·FK·Importer 반복 안전성을 검증한 대표 6개 문의",
+      "readiness": "DB_SMOKE_VERIFIED",
+      "contract_dependency": "NONE",
       "items": [
         {
           "path": "synthetic/fixtures/users.json",
-          "role": "LOAD"
+          "role": "LOAD_FILTERED"
         },
         {
           "path": "synthetic/fixtures/customer_profiles.json",
-          "role": "LOAD_AFTER_LOOKUP_MAPPING"
+          "role": "LOAD_FILTERED"
         },
         {
           "path": "synthetic/fixtures/products.json",
@@ -108,11 +108,11 @@
         },
         {
           "path": "synthetic/fixtures/customer_products.json",
-          "role": "LOAD"
+          "role": "PROJECT_FILTERED"
         },
         {
           "path": "synthetic/fixtures/subscriptions.json",
-          "role": "LOAD"
+          "role": "LOAD_FILTERED"
         },
         {
           "path": "synthetic/fixtures/inquiries.json",
@@ -127,12 +127,24 @@
           "role": "LOAD_FILTERED"
         },
         {
+          "path": "synthetic/fixtures/followup_confirmations.json",
+          "role": "VALIDATE_ONLY_PROFILE_EXCLUDED"
+        },
+        {
           "path": "synthetic/fixtures/care_histories.json",
-          "role": "EXCLUDE_BLOCKED_OWNER_CONFIRMATION"
+          "role": "VALIDATE_ONLY_PROFILE_EXCLUDED"
+        },
+        {
+          "path": "synthetic/fixtures/inquiry_status_histories.json",
+          "role": "VALIDATE_ONLY_PROFILE_EXCLUDED"
+        },
+        {
+          "path": "synthetic/fixtures/audit_events.json",
+          "role": "VALIDATE_ONLY_PROFILE_EXCLUDED"
         },
         {
           "path": "config/handoff/backend_import_crosswalk.json",
-          "role": "MAPPING_NOT_DB_VERIFIED"
+          "role": "MAPPING_DB_FULL_VERIFIED"
         },
         {
           "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
@@ -152,6 +164,7 @@
         }
       ],
       "selection": {
+        "source_count": 37,
         "scenario_ids": [
           "SYN-JAC104-001",
           "SYN-JAC104-002",
@@ -163,19 +176,18 @@
         "filter_rule": "선택 문의가 참조하는 고객·구독·상담·방문·케어 행만 FK 방향으로 포함"
       },
       "excluded": [
-        "inquiry_status_histories.json",
-        "audit_events.json",
-        "followup_confirmations.json",
+        "smoke profile에서는 후속확정·케어·상태이력·감사 fixture를 전수 검증하되 적재하지 않음",
         "서비스 State Machine 자동 적용"
       ],
       "commands": [
-        "python -B data/tools/pipeline.py handoff db-smoke"
+        "python -B data/tools/pipeline.py handoff db-smoke",
+        "python backend/manage.py import_synthetic_handoff --profile db-smoke"
       ]
     },
     "db-full": {
-      "purpose": "원본 24개 중 차단 2개를 제외한 활성 projection 22개의 데이터 품질·관계 검증",
-      "readiness": "QA_READY_BACKEND_RUNTIME_MAPPING_PENDING",
-      "contract_dependency": "BACKEND_RUNTIME_MAPPING_PENDING",
+      "purpose": "활성 projection 22개·source 367행의 PostgreSQL 전체 적재와 반복 안전성 검증 완료",
+      "readiness": "DB_FULL_VERIFIED",
+      "contract_dependency": "NONE",
       "items": [
         {
           "path": "synthetic/fixtures/users.json",
@@ -183,7 +195,7 @@
         },
         {
           "path": "synthetic/fixtures/customer_profiles.json",
-          "role": "LOAD_AFTER_LOOKUP_MAPPING"
+          "role": "LOAD"
         },
         {
           "path": "synthetic/fixtures/products.json",
@@ -191,7 +203,7 @@
         },
         {
           "path": "synthetic/fixtures/customer_products.json",
-          "role": "LOAD"
+          "role": "PROJECT"
         },
         {
           "path": "synthetic/fixtures/subscriptions.json",
@@ -211,11 +223,11 @@
         },
         {
           "path": "synthetic/fixtures/care_histories.json",
-          "role": "EXCLUDE_BLOCKED_OWNER_CONFIRMATION"
+          "role": "LOAD"
         },
         {
           "path": "config/handoff/backend_import_crosswalk.json",
-          "role": "MAPPING_NOT_DB_VERIFIED"
+          "role": "MAPPING_DB_FULL_VERIFIED"
         },
         {
           "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
@@ -223,15 +235,15 @@
         },
         {
           "path": "synthetic/fixtures/followup_confirmations.json",
-          "role": "LOAD_AFTER_MAPPING"
+          "role": "LOAD"
         },
         {
           "path": "synthetic/fixtures/inquiry_status_histories.json",
-          "role": "LOAD_AFTER_MAPPING"
+          "role": "LOAD"
         },
         {
           "path": "synthetic/fixtures/audit_events.json",
-          "role": "LOAD_AFTER_MAPPING"
+          "role": "LOAD"
         },
         {
           "path": "synthetic/expected/evidence_references.json",
@@ -251,6 +263,7 @@
         }
       ],
       "selection": {
+        "source_count": 367,
         "scenario_count": 22,
         "excluded_scenario_ids": [
           "SYN-JAC104-012",
@@ -258,10 +271,11 @@
         ]
       },
       "excluded": [
-        "Backend Runtime 상태·이벤트 적재 매핑 검증 전 자동 load"
+        "SYN-JAC104-012·SYN-JAC104-016 활성 projection 및 적재 제외"
       ],
       "commands": [
         "python -B data/tools/pipeline.py handoff db-full",
+        "python backend/manage.py import_synthetic_handoff --profile db-full",
         "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-29T00:00:00+09:00"
       ]
     },

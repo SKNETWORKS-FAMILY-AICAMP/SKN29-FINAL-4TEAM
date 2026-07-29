@@ -99,14 +99,22 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest().upper()
 
 
+def normalize_text_bytes(content: bytes) -> bytes:
+    """Normalize UTF-8 BOM and platform line endings for semantic hashing."""
+
+    text = content.decode("utf-8-sig")
+    return text.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+
+
 def read_lf_bytes(path: Path) -> bytes:
-    """Read text source bytes with platform-independent LF line endings."""
-    content = path.read_bytes()
-    return content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    """Read semantic UTF-8 bytes with BOM removed and LF line endings."""
+
+    return normalize_text_bytes(path.read_bytes())
 
 
 def sha256_text_file(path: Path) -> str:
-    """Hash text source bytes with platform-independent LF line endings."""
+    """Hash semantic UTF-8 text independently of checkout line endings."""
+
     return sha256_bytes(read_lf_bytes(path))
 
 

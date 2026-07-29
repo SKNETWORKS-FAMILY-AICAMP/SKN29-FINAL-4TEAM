@@ -5,15 +5,19 @@ from unittest.mock import patch
 
 import pytest
 from django.test import override_settings
+from django.utils import timezone as django_timezone
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 from apps.accounts.models import CustomerProfile, User
+from apps.accounts.repositories.account_repository import AccountRepository
 
 
 pytestmark = pytest.mark.django_db
 
 DEMO_CODE = "DEMO-CUSTOMER-001"
+SYNTHETIC_CUSTOMER_CODE = "SYN-CUSTOMER-001"
+IMPORTED_USERNAME = "CUS-0001"
 
 
 @pytest.fixture
@@ -34,10 +38,36 @@ def demo_customer():
     return user
 
 
+@pytest.fixture
+def imported_customer():
+    user = User.objects.create_user(
+        id="SYN-USR-101",
+        username=IMPORTED_USERNAME,
+        full_name="합성 적재 고객 001",
+        role_code=User.Role.CUSTOMER,
+    )
+    CustomerProfile.objects.create(
+        id="SYN-CUS-101",
+        user=user,
+        customer_no=SYNTHETIC_CUSTOMER_CODE,
+        customer_name="합성 적재 고객 001",
+        is_synthetic=True,
+    )
+    return user
+
+
 def login(client):
     return client.post(
         "/api/v1/auth/demo-login",
         {"demo_user_code": DEMO_CODE},
+        content_type="application/json",
+    )
+
+
+def login_with_code(client, code):
+    return client.post(
+        "/api/v1/auth/demo-login",
+        {"demo_user_code": code},
         content_type="application/json",
     )
 
@@ -112,6 +142,86 @@ def test_demo_login_rejects_non_allowlisted_user(client, demo_customer):
 
     assert response.status_code == 401
     assert response.json()["error"]["code"] == "AUTH_REQUIRED"
+
+
+@override_settings(
+    DEMO_LOGIN_ENABLED=True,
+    DEMO_LOGIN_CODES={SYNTHETIC_CUSTOMER_CODE},
+)
+def test_synthetic_customer_code_authenticates_imported_customer_username(
+    client,
+    imported_customer,
+):
+    response = login_with_code(client, SYNTHETIC_CUSTOMER_CODE)
+
+    assert response.status_code == 200
+    session = response.json()["data"]
+    access = AccessToken(session["access_token"])
+    assert imported_customer.username == IMPORTED_USERNAME
+    assert access["sub"] == str(imported_customer.public_id)
+    assert access["role_code"] == User.Role.CUSTOMER
+    assert session["user"]["customer_profile"]["customer_no"] == (
+        SYNTHETIC_CUSTOMER_CODE
+    )
+
+
+@override_settings(
+    DEMO_LOGIN_ENABLED=True,
+    DEMO_LOGIN_CODES={IMPORTED_USERNAME},
+)
+def test_direct_imported_username_remains_rejected(
+    client,
+    imported_customer,
+):
+    response = login_with_code(client, IMPORTED_USERNAME)
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "AUTH_REQUIRED"
+
+
+@override_settings(
+    DEMO_LOGIN_ENABLED=True,
+    DEMO_LOGIN_CODES={SYNTHETIC_CUSTOMER_CODE},
+)
+@pytest.mark.parametrize("invalid_state", ["inactive", "deleted", "role"])
+def test_synthetic_customer_code_rejects_invalid_account_or_profile_state(
+    client,
+    imported_customer,
+    invalid_state,
+):
+    if invalid_state == "inactive":
+        User.objects.filter(pk=imported_customer.pk).update(is_active=False)
+    elif invalid_state == "deleted":
+        CustomerProfile.objects.filter(user=imported_customer).update(
+            deleted_at=django_timezone.now()
+        )
+    else:
+        User.objects.filter(pk=imported_customer.pk).update(
+            role_code=User.Role.CONSULTANT,
+            employee_no="SYN-EMP-101",
+        )
+
+    response = login_with_code(client, SYNTHETIC_CUSTOMER_CODE)
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "AUTH_REQUIRED"
+
+
+def test_synthetic_alias_repository_requires_synthetic_profile():
+    with patch(
+        "apps.accounts.repositories.account_repository.User.objects.filter"
+    ) as filter_mock:
+        related = filter_mock.return_value.select_related.return_value
+        related.first.return_value = None
+        AccountRepository.find_active_by_demo_code(SYNTHETIC_CUSTOMER_CODE)
+
+    filter_mock.assert_called_once_with(
+        is_active=True,
+        role_code=User.Role.CUSTOMER,
+        customer_profile__customer_no=SYNTHETIC_CUSTOMER_CODE,
+        customer_profile__is_synthetic=True,
+        customer_profile__deleted_at__isnull=True,
+    )
 
 
 @override_settings(

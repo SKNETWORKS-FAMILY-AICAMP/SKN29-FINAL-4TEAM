@@ -30,6 +30,12 @@ def test_care_status_contract_matches_text_choices():
     )
 
 
+def test_care_result_contract_matches_text_choices():
+    assert contract_codes("care-results.yaml") == set(
+        CareRecord.Result.values
+    )
+
+
 def test_data_source_contract_matches_text_choices():
     assert contract_codes("data-sources.yaml") == set(
         CareRecord.Source.values

@@ -19,6 +19,7 @@ class CareRecord(TimestampedModel):
         FILTER_REPLACEMENT = "FILTER_REPLACEMENT", "필터 교체"
         PERIODIC_CHECK = "PERIODIC_CHECK", "정기 점검"
         CLEANING = "CLEANING", "세척"
+        VISIT_SERVICE = "VISIT_SERVICE", "방문 서비스"
         OTHER = "OTHER", "기타"
 
     class Status(models.TextChoices):
@@ -35,6 +36,11 @@ class CareRecord(TimestampedModel):
         SYSTEM = "SYSTEM", "시스템"
         IMPORT = "IMPORT", "가져오기"
 
+    class Result(models.TextChoices):
+        NORMAL = "NORMAL", "정상"
+        FILTER_REPLACED = "FILTER_REPLACED", "필터 교체 완료"
+        ISSUE_RESOLVED = "ISSUE_RESOLVED", "문제 해결"
+
     id = models.BigAutoField(primary_key=True)
     public_id = models.UUIDField(
         default=uuid.uuid4,
@@ -48,6 +54,22 @@ class CareRecord(TimestampedModel):
         related_name="care_records",
         db_column="subscription_id",
         db_index=False,
+    )
+    inquiry = models.ForeignKey(
+        "inquiries.Inquiry",
+        on_delete=models.PROTECT,
+        related_name="care_records",
+        db_column="inquiry_id",
+        null=True,
+        blank=True,
+    )
+    visit = models.ForeignKey(
+        "visits.Visit",
+        on_delete=models.PROTECT,
+        related_name="care_records",
+        db_column="visit_id",
+        null=True,
+        blank=True,
     )
     # Wave 4에서 field_service.VisitResult가 구현되면 실제 FK로 전환한다.
     # 그 전까지는 앱 간 migration 순환을 막는 nullable UUID bridge이다.
@@ -64,7 +86,14 @@ class CareRecord(TimestampedModel):
         choices=Status.choices,
         default=Status.SCHEDULED,
     )
-    scheduled_on = models.DateField()
+    scheduled_on = models.DateField(null=True, blank=True)
+    performed_on = models.DateField(null=True, blank=True)
+    result_code = models.CharField(
+        max_length=40,
+        choices=Result.choices,
+        null=True,
+        blank=True,
+    )
     completed_at = models.DateTimeField(null=True, blank=True)
     cancelled_at = models.DateTimeField(null=True, blank=True)
     cancellation_reason = models.TextField(null=True, blank=True)
@@ -91,12 +120,26 @@ class CareRecord(TimestampedModel):
                 condition=Q(
                     care_type_code__in=[
                         "FILTER_REPLACEMENT",
-                        "PERIODIC_CHECK",
-                        "CLEANING",
-                        "OTHER",
+                            "PERIODIC_CHECK",
+                            "CLEANING",
+                            "VISIT_SERVICE",
+                            "OTHER",
                     ]
                 ),
                 name="ck_care_type_code",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(result_code__isnull=True)
+                    | Q(
+                        result_code__in=[
+                            "NORMAL",
+                            "FILTER_REPLACED",
+                            "ISSUE_RESOLVED",
+                        ]
+                    )
+                ),
+                name="ck_care_result_code",
             ),
             models.CheckConstraint(
                 condition=Q(
@@ -126,10 +169,20 @@ class CareRecord(TimestampedModel):
                 condition=(
                     ~Q(status_code="COMPLETED")
                     | (
-                        Q(completed_at__isnull=False)
-                        & Q(performed_by__isnull=False)
-                        & Q(cancelled_at__isnull=True)
+                        Q(cancelled_at__isnull=True)
                         & Q(cancellation_reason__isnull=True)
+                        & (
+                            Q(
+                                source_code="IMPORT",
+                                performed_on__isnull=False,
+                                result_code__isnull=False,
+                            )
+                            | (
+                                ~Q(source_code="IMPORT")
+                                & Q(completed_at__isnull=False)
+                                & Q(performed_by__isnull=False)
+                            )
+                        )
                     )
                 ),
                 name="ck_care_completed_state",
@@ -140,6 +193,8 @@ class CareRecord(TimestampedModel):
                     | (
                         Q(completed_at__isnull=True)
                         & Q(performed_by__isnull=True)
+                        & Q(performed_on__isnull=True)
+                        & Q(result_code__isnull=True)
                         & Q(cancelled_at__isnull=False)
                         & Q(cancellation_reason__isnull=False)
                     )
@@ -158,6 +213,8 @@ class CareRecord(TimestampedModel):
                     | (
                         Q(completed_at__isnull=True)
                         & Q(performed_by__isnull=True)
+                        & Q(performed_on__isnull=True)
+                        & Q(result_code__isnull=True)
                         & Q(cancelled_at__isnull=True)
                         & Q(cancellation_reason__isnull=True)
                     )

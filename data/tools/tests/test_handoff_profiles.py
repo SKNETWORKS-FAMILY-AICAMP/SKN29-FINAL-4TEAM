@@ -21,13 +21,13 @@ class HandoffProfileTests(unittest.TestCase):
         cls.definitions = cls.config.config("handoff")
 
     def test_profiles_are_data_only_and_all_paths_exist(self) -> None:
-        self.assertFalse(self.definitions["service_contracts_used"])
+        self.assertTrue(self.definitions["service_contracts_used"])
         self.assertEqual(
             {
                 "state_machine_version": "1.0.0",
                 "state_machine_status": "TEAM_APPROVED",
                 "data_projection_consumes_contract": True,
-                "backend_runtime_verified": False,
+                "backend_runtime_verified": True,
                 "legacy_service_contracts_used_semantics": (
                     "BACKEND_RUNTIME_INTEGRATION_ONLY"
                 ),
@@ -73,30 +73,79 @@ class HandoffProfileTests(unittest.TestCase):
         self.assertEqual(6, len(set(selected)))
         self.assertLessEqual(set(selected), available)
 
-    def test_db_profiles_use_crosswalk_and_exclude_unconfirmed_care_load(self) -> None:
+    def test_db_profiles_record_verified_runtime_import(self) -> None:
+        fixture_paths = {
+            f"synthetic/fixtures/{name}.json"
+            for name in (
+                "users",
+                "customer_profiles",
+                "products",
+                "customer_products",
+                "subscriptions",
+                "inquiries",
+                "consultations",
+                "visits",
+                "followup_confirmations",
+                "care_histories",
+                "inquiry_status_histories",
+                "audit_events",
+            )
+        }
+        expected_readiness = {
+            "db-smoke": "DB_SMOKE_VERIFIED",
+            "db-full": "DB_FULL_VERIFIED",
+        }
         for profile_name in ("db-smoke", "db-full"):
+            profile = self.definitions["profiles"][profile_name]
             self.assertEqual(
-                "BACKEND_RUNTIME_MAPPING_PENDING",
-                self.definitions["profiles"][profile_name][
-                    "contract_dependency"
-                ],
+                expected_readiness[profile_name],
+                profile["readiness"],
+            )
+            self.assertEqual(
+                "NONE",
+                profile["contract_dependency"],
             )
             items = {
                 row["path"]: row["role"]
-                for row in self.definitions["profiles"][profile_name]["items"]
+                for row in profile["items"]
             }
+            self.assertLessEqual(fixture_paths, set(items))
             self.assertEqual(
-                "MAPPING_NOT_DB_VERIFIED",
+                "MAPPING_DB_FULL_VERIFIED",
                 items["config/handoff/backend_import_crosswalk.json"],
             )
-            self.assertEqual(
-                "EXCLUDE_BLOCKED_OWNER_CONFIRMATION",
-                items["synthetic/fixtures/care_histories.json"],
-            )
-            self.assertEqual(
-                "LOAD_AFTER_LOOKUP_MAPPING",
-                items["synthetic/fixtures/customer_profiles.json"],
-            )
+
+        smoke = self.definitions["profiles"]["db-smoke"]
+        smoke_items = {
+            row["path"]: row["role"] for row in smoke["items"]
+        }
+        self.assertEqual(37, smoke["selection"]["source_count"])
+        self.assertEqual(
+            "VALIDATE_ONLY_PROFILE_EXCLUDED",
+            smoke_items["synthetic/fixtures/care_histories.json"],
+        )
+        self.assertEqual(
+            "LOAD_FILTERED",
+            smoke_items["synthetic/fixtures/customer_profiles.json"],
+        )
+
+        full = self.definitions["profiles"]["db-full"]
+        full_items = {
+            row["path"]: row["role"] for row in full["items"]
+        }
+        self.assertEqual(367, full["selection"]["source_count"])
+        self.assertEqual(
+            "LOAD",
+            full_items["synthetic/fixtures/care_histories.json"],
+        )
+        self.assertEqual(
+            "LOAD",
+            full_items["synthetic/fixtures/customer_profiles.json"],
+        )
+        self.assertEqual(
+            "PROJECT",
+            full_items["synthetic/fixtures/customer_products.json"],
+        )
 
     def test_handoff_manifest_is_deterministic(self) -> None:
         first = build_handoff_manifest(self.config)

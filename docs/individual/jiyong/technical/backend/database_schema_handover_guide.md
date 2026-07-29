@@ -1,6 +1,6 @@
 # Database Schema 개발·인계 가이드
 
-> 기준일: 2026-07-27
+> 기준일: 2026-07-29
 > 담당: 최지용
 > 적용 원칙: ERD와 테이블 명세는 확정 기준선이며, Model·Migration을 Wave별로 구현하고 즉시 검증한다.
 
@@ -46,8 +46,10 @@ Model·Migration·Serializer에 순차 반영한다.
 | 확인 목적 | 단일 원본 |
 | --- | --- |
 | 설계 테이블·계약·결정 상태 | [T-005 데이터 설계](../../../../database/t-005/README.md) |
-| 실제 Model·Migration·PostgreSQL 적용 범위 | [Migration 검증 보고서](../../manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md) |
-| 환경 구성·Seed·Smoke 재현 순서 | [Django·PostgreSQL 공유 패키지 인계서 v1.2](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md) |
+| 2026-07-27 Model·Migration 역사 기준 | [Migration 검증 보고서](../../manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md) |
+| 현재 합성 Schema·Migration 체인 | [합성 데이터 도메인 Schema·Migration 인계서](20260729_synthetic_domain_schema_migration.md) |
+| 현재 PostgreSQL 적용·Seed·Importer 경계 | [PostgreSQL 합성 Handoff Runtime 검증·인계서](../../manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md) |
+| 환경 구성·Migration·Seed·Smoke 재현 순서 | [Django·PostgreSQL 공유 패키지 인계서 v1.3](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md) |
 
 이 문서는 실행 결과 보고서가 아니라, 설계를 Model·Migration·Seed로
 옮기고 검증하는 반복 절차의 단일 원본으로 유지한다.
@@ -66,13 +68,13 @@ ID, 코드, Legacy 변환, 방문 일정, Enum과 Seed의 구체 값은 이 가�
 | 1 | 공통 코드, User, CustomerProfile | Migration·PK·UNIQUE·CHECK·Seed |
 | 2 | ProductModel, CustomerSubscription, CareRecord | FK·삭제 정책·중복 방지 |
 | 3 | Inquiry, Symptom, QA, Assessment, Guidance | 단일 Inquiry 추적·입력 누적 |
-| 4 | Consultation, Handoff, Visit, Follow-up, 상태 이력 | Transaction·상태 전이·멱등성 |
+| 4 | Consultation, Handoff, Visit, Follow-up, 상태 이력·감사·Import 원장 | Transaction·상태 전이·멱등성·원장 추적 |
 | 5 | Knowledge, Document, Chunk, Embedding, Evidence, AI Run | pgvector·근거 추적·버전 |
 
 한 Wave를 구현한 뒤 다음 순서로 검증하고, 통과하기 전에는 다음
 Wave로 이동하지 않는다. 실행 전 PostgreSQL 상태는
-[공유 패키지 인계서 v1.2](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)
-6장의 일상 실행 절차로 확인하며, 이 가이드에는 서버 시작·종료
+[공유 패키지 인계서 v1.3](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)의
+일상 실행 절차로 확인하며, 이 가이드에는 서버 시작·종료
 명령을 중복하지 않는다.
 
 ```powershell
@@ -104,24 +106,34 @@ Set-Location .\backend
 - 입력 계약이 달라지면 변환 규칙을 명시하고 Silent Dual-write를 금지한다.
 
 현재 Demo Seed 결과와 재현 절차는
-[Django·PostgreSQL 공유 패키지 인계서 v1.2](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)를
+[Django·PostgreSQL 공유 패키지 인계서 v1.3](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)을
 따른다.
+
+2026-07-29 기본 `watercare`에서는 Demo Seed 4종을 2회 실행해 비의도
+중복 0을 확인했다. 이 기본 DB에는 canonical fixture와 공개 UUID가 다른
+기존 레코드가 있으므로 합성 Importer와 `--dry-run`은 실행하지 않는다.
+Importer는 새 빈 격리 PostgreSQL 전용이며, dry-run도 Sequence 값을
+변경할 수 있다.
 
 ## 7. 검증 체크리스트
 
 - [ ] Model 수와 대상 테이블을 기록했다.
 - [ ] Model과 Migration 사이에 변경 누락이 없다.
+- [ ] `operations.0001`과 `workflow.0003`을 포함한 현재 Migration graph를 적용했다.
 - [ ] 빈 PostgreSQL에서 Migration이 처음부터 적용된다.
 - [ ] PK·FK·UNIQUE·CHECK·Index가 명세와 일치한다.
 - [ ] Seed 2회 후 비의도 중복이 없다.
 - [ ] API Schema·Serializer가 같은 필드와 Enum을 사용한다.
 - [ ] 실제 개인정보·Token·비밀값이 없다.
 - [ ] 현재 구현 개수와 남은 테이블 개수를 분리해 기록했다.
+- [ ] 기본 DB Migration·Demo Seed와 빈 격리 DB Import 검증을 분리했다.
 
 현재 테스트 수, PostgreSQL 적용 범위와 미구현 테이블 수는 이 가이드에
 복제하지 않고
-[Migration 검증 보고서](../../manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md)를
-참조한다. 변경 PR에는 해당 Wave에서 다시 실행한 결과만 기록한다.
+[PostgreSQL 합성 Handoff Runtime 검증·인계서](../../manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md)를
+참조한다. 이전 [Migration 검증 보고서](../../manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md)의
+수치는 2026-07-27 역사 기록으로 보존한다. 변경 PR에는 해당 Wave에서
+다시 실행한 결과만 기록한다.
 
 ## 8. 인계 사항
 

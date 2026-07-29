@@ -1,17 +1,21 @@
 {
-  "mapping_version": "1.0.0",
+  "mapping_version": "1.0.1",
   "scope": "data_contract_alignment",
   "status": "PARTIAL_BLOCKED_DECISIONS",
   "state_machine_contract": {
     "version": "1.0.0",
     "status": "TEAM_APPROVED",
     "data_projection_consumes_contract": true,
-    "backend_runtime_verified": false
+    "backend_runtime_verified": true
   },
   "contract_sources": {
     "user_roles": {
       "path": "contracts/codes/user-roles.yaml",
       "sha256": "EF0BFCC6D4FA3456ECAE27E09DB014413DC6309AFCE544825D460537BF67598E"
+    },
+    "care_results": {
+      "path": "contracts/codes/care-results.yaml",
+      "sha256": "017F4B5A2EA8F5CCC91EFFF02AB869DF30F79518C77B63D92221C790E99DDF2D"
     },
     "inquiry_states": {
       "path": "contracts/state-machine/inquiry-states.yaml",

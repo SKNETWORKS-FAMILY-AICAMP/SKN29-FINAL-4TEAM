@@ -1,7 +1,9 @@
 # 최지용 Django·PostgreSQL 공유 패키지 인계서 v1.2
 
+> 문서 상태: `SUPERSEDED`
+> 현재 실행 기준: [Django·PostgreSQL 공유 패키지 인계서 v1.3](<./20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md>)
+
 > 기준일: 2026-07-29
-> 문서 상태: `CURRENT`
 > 명령 실행 기준: 별도 표시가 없으면 저장소 루트
 > 목적: 팀원이 Git Pull 후 Backend 환경을 재현하고 PostgreSQL·Django·API를 같은 순서로 검증하도록 지원
 > 실행 원칙: `작업 → 즉시 검증 → 증거 확인 → 다음 작업`

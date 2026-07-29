@@ -5,6 +5,7 @@ from __future__ import annotations
 import uuid
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 
@@ -60,6 +61,30 @@ class Inquiry(TimestampedModel):
         ISSUE_RESOLVED = "ISSUE_RESOLVED", "Issue resolved"
         OTHER = "OTHER", "Other"
 
+    class AssignedRole(models.TextChoices):
+        NONE = "NONE", "No assignee"
+        CONSULTANT = "CONSULTANT", "Consultant"
+        TECHNICIAN = "TECHNICIAN", "Technician"
+
+    class RiskLevel(models.TextChoices):
+        GENERAL = "general", "General"
+        CAUTION = "caution", "Caution"
+        DANGER = "danger", "Danger"
+
+    class UsageGuidanceStatus(models.TextChoices):
+        NORMAL = "NORMAL", "Normal use"
+        PARTIAL_STOP = "PARTIAL_STOP", "Partial stop"
+        TOTAL_STOP = "TOTAL_STOP", "Total stop"
+        PENDING_CONSULTATION = (
+            "PENDING_CONSULTATION",
+            "Pending consultation",
+        )
+
+    class EvidenceMode(models.TextChoices):
+        EXACT_MODEL = "EXACT_MODEL", "Exact model evidence"
+        NO_EVIDENCE = "NO_EVIDENCE", "No evidence"
+        PARTIAL_EVIDENCE = "PARTIAL_EVIDENCE", "Partial evidence"
+
     id = models.BigAutoField(primary_key=True)
     public_id = models.UUIDField(
         default=uuid.uuid4,
@@ -71,6 +96,13 @@ class Inquiry(TimestampedModel):
         unique=True,
         default=generate_inquiry_code,
         editable=False,
+    )
+    scenario_code = models.CharField(
+        max_length=40,
+        null=True,
+        blank=True,
+        unique=True,
+        help_text="합성 시나리오 추적용 업무 식별자",
     )
     subscription = models.ForeignKey(
         CustomerSubscription,
@@ -84,11 +116,53 @@ class Inquiry(TimestampedModel):
         related_name="initiated_inquiries",
         db_column="initiated_by_id",
     )
+    assigned_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="assigned_inquiries",
+        db_column="assigned_user_id",
+        null=True,
+        blank=True,
+    )
+    assigned_role_code = models.CharField(
+        max_length=40,
+        choices=AssignedRole.choices,
+        default=AssignedRole.NONE,
+    )
     channel_code = models.CharField(
         max_length=40,
         choices=Channel.choices,
+        null=True,
+        blank=True,
+        help_text="원본에 접수 채널이 없으면 NULL로 보존",
     )
     raw_text = models.TextField()
+    risk_level_code = models.CharField(
+        max_length=40,
+        choices=RiskLevel.choices,
+        null=True,
+        blank=True,
+    )
+    usage_guidance_status = models.CharField(
+        max_length=40,
+        choices=UsageGuidanceStatus.choices,
+        null=True,
+        blank=True,
+    )
+    evidence_ids = models.JSONField(default=list, blank=True)
+    evidence_mode = models.CharField(
+        max_length=40,
+        choices=EvidenceMode.choices,
+        null=True,
+        blank=True,
+    )
+    requires_fallback = models.BooleanField(default=False)
+    source_idempotency_key = models.CharField(
+        max_length=128,
+        null=True,
+        blank=True,
+    )
+    source_correlation_id = models.UUIDField(null=True, blank=True)
     questionnaire_session_public_id = models.UUIDField(
         null=True,
         blank=True,
@@ -124,6 +198,72 @@ class Inquiry(TimestampedModel):
                     ]
                 ),
                 name="ck_inquiry_channel_code",
+            ),
+            models.CheckConstraint(
+                condition=Q(
+                    assigned_role_code__in=[
+                        "NONE",
+                        "CONSULTANT",
+                        "TECHNICIAN",
+                    ]
+                ),
+                name="ck_inquiry_assigned_role",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        assigned_role_code="NONE",
+                        assigned_user__isnull=True,
+                    )
+                    | Q(
+                        assigned_role_code__in=[
+                            "CONSULTANT",
+                            "TECHNICIAN",
+                        ],
+                        assigned_user__isnull=False,
+                    )
+                ),
+                name="ck_inquiry_assignment_pair",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(risk_level_code__isnull=True)
+                    | Q(
+                        risk_level_code__in=[
+                            "general",
+                            "caution",
+                            "danger",
+                        ]
+                    )
+                ),
+                name="ck_inquiry_risk_level",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(usage_guidance_status__isnull=True)
+                    | Q(
+                        usage_guidance_status__in=[
+                            "NORMAL",
+                            "PARTIAL_STOP",
+                            "TOTAL_STOP",
+                            "PENDING_CONSULTATION",
+                        ]
+                    )
+                ),
+                name="ck_inquiry_usage_status",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(evidence_mode__isnull=True)
+                    | Q(
+                        evidence_mode__in=[
+                            "EXACT_MODEL",
+                            "NO_EVIDENCE",
+                            "PARTIAL_EVIDENCE",
+                        ]
+                    )
+                ),
+                name="ck_inquiry_evidence_mode",
             ),
             models.CheckConstraint(
                 condition=Q(
@@ -197,3 +337,17 @@ class Inquiry(TimestampedModel):
 
     def __str__(self) -> str:
         return f"{self.inquiry_code} ({self.status_code})"
+
+    def clean(self) -> None:
+        super().clean()
+        if not self.assigned_user_id:
+            return
+        user_role = getattr(self.assigned_user, "role_code", None)
+        if user_role != self.assigned_role_code:
+            raise ValidationError(
+                {
+                    "assigned_user": (
+                        "assigned_user 역할과 assigned_role_code가 일치해야 합니다."
+                    )
+                }
+            )

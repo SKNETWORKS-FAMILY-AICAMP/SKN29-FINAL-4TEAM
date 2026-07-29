@@ -27,6 +27,10 @@ CONFIG_TARGETS = (
     ),
 )
 
+BACKEND_CROSSWALK_PATH = (
+    DATA_ROOT / "config/handoff/backend_import_crosswalk.json"
+)
+
 
 def refresh_config(
     config_path: Path,
@@ -55,6 +59,38 @@ def refresh_config(
     return changes
 
 
+def refresh_runtime_document_hash(*, check: bool) -> list[dict[str, str]]:
+    """Refresh verified runtime-document evidence when it is present."""
+
+    config = read_json(BACKEND_CROSSWALK_PATH)
+    actual = config.get("verification", {}).get("actual")
+    if not isinstance(actual, dict):
+        return []
+    document = actual.get("evidence", {}).get("runtime_document")
+    if not isinstance(document, dict):
+        return []
+
+    source_path = ensure_within(
+        REPO_ROOT,
+        REPO_ROOT / document["path"],
+    )
+    actual_hash = sha256_text_file(source_path)
+    before = document["text_sha256"]
+    if before == actual_hash:
+        return []
+
+    change = {
+        "source": "runtime_document",
+        "path": document["path"],
+        "before": before,
+        "after": actual_hash,
+    }
+    if not check:
+        document["text_sha256"] = actual_hash
+        write_json(DATA_ROOT, BACKEND_CROSSWALK_PATH, config)
+    return [change]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Refresh LF-canonical hashes for contract source mappings."
@@ -71,6 +107,7 @@ def main() -> int:
         for config_path, source_key in CONFIG_TARGETS
         for change in refresh_config(config_path, source_key, check=args.check)
     ]
+    changes.extend(refresh_runtime_document_hash(check=args.check))
     if args.check:
         status = "STALE" if changes else "PASS"
     else:

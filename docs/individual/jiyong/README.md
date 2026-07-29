@@ -3,7 +3,7 @@
 > 기준일: 2026-07-29
 > 작성·유지 책임: 최지용
 > 산출물 범위: Backend · Database · API 계약
-> 검토 상태: 미요청 또는 검토 증거 미확인
+> 검토 상태: 최신 `main` 기준 로컬 검증 완료 / 김은진 Data Owner Review 대기
 > 문서 정책: 현재 실행 기준과 검증 근거가 있는 최신본만 유지한다.
 
 ## 문서 범위
@@ -24,16 +24,16 @@
 
 | 판단 항목 | 1순위 | 보조 기준 |
 | --- | --- | --- |
-| 현재 작업 순서·완료 경계 | `최지용_업무계획표_v0.5.md` | 같은 버전의 Excel 시트, 3주차 업무 지침서 |
-| 역할·협업자·검토자 | `팀원별 관할 영역.md`의 가장 구체적인 경로 규칙 | v0.5에서 확정한 최지용 산출물 책임 |
+| 현재 작업 순서·완료 경계 | 2026-07-29 `최지용_업무계획표_v0.6.md` | 같은 버전의 Excel 시트, 3주차 업무 지침서 |
+| 역할·협업자·검토자 | `팀원별 관할 영역 v2.md`의 가장 구체적인 경로 규칙 | v0.6에서 확정한 최지용 산출물 책임 |
 | PR·리뷰·보안·테스트 절차 | `공통 개발 규칙.md` | 저장소의 실제 설정과 자동화 결과 |
-| 디렉터리·계약 원본 위치 | 현재 저장소 구조와 `프로젝트 디렉토리 구조.md` | 가장 가까운 상위 경로의 관할 |
+| 디렉터리·계약 원본 위치 | 현재 저장소 구조와 `프로젝트 디렉토리 구조 v2.md` | 가장 가까운 상위 경로의 관할 |
 | Runtime·진행도·테스트 수치 | 최신 실행 결과와 아래 검증 보고서 | 계획 문서의 수치는 목표 또는 당시 스냅샷으로만 사용 |
 
-동일한 v0.5 파일끼리 충돌하면 더 나중에 수정된 Markdown의 실행 방향을
+동일한 v0.6 파일끼리 충돌하면 더 나중에 수정된 Markdown의 실행 방향을
 우선하고, Excel의 `확정_실행기준`·`연동_공유` 시트는 역할 및 인계
 매트릭스를 보완하는 자료로 사용한다. `최지용_3주차_업무_지침서.md`의
-WBS 목적은 유지하되, 현재 순서와 상태는 v0.5 및 실제 검증 결과로
+WBS 목적은 유지하되, 현재 순서와 상태는 v0.6 및 실제 검증 결과로
 갱신한다.
 
 ## 책임·협업·검토 원칙
@@ -51,14 +51,37 @@ WBS 목적은 유지하되, 현재 순서와 상태는 v0.5 및 실제 검증 �
 팀원의 검토는 통합·재현·소비 호환성을 확인하는 절차이며, 최지용이
 담당 산출물을 작성하기 위한 선행 승인 절차가 아니다. 실제 PR·Issue·
 커밋 등 검토 증거가 연결되기 전에는 `검토 완료`로 기록하지 않는다.
-현재 이 디렉터리의 문서는 모두 `미요청 또는 검토 증거 미확인` 상태를
-기본값으로 삼는다.
+현재 Backend·PostgreSQL·Data 자동 검증은 완료했지만,
+`data/**`·`scripts/data/**` 변경은 김은진의 Owner Review가 남아 있다.
+따라서 현재 문서는 `로컬 검증 완료`와 `팀 검토 완료`를 구분한다.
+
+## 2026-07-29 최신 통합 후보
+
+| 항목 | 현재 판정 |
+| --- | --- |
+| 기준 `main` | `0bcb8b514f2b0d1476882d926b667dbdb5d8c06a` |
+| Crosswalk | v2.0.0, Backend Source 17개·Fixture Mapping 12개, `DB_FULL_VERIFIED` |
+| PostgreSQL | 16.14, Smoke 37·Full 367·Replay 중복 생성 0 |
+| Backend | `397 passed` |
+| Data | `61 passed` |
+| QA | 2회 연속 PASS, 오류 0·경고 0·대표 E2E 17/17 |
+| T-005 | 32개 중 10개 구현, 22개 미구현 — `NOT_READY` |
+| 다음 Gate | 김은진 Data Owner Review → 최지용 재검증 → PM `main` 병합 |
+
+위 `DB_FULL_VERIFIED`는 합성 Handoff 367행의 격리 DB Import 범위다.
+T-005 전체 완료를 뜻하지 않는다. 팀원은 현재 로컬 후보가 아니라
+윤승혁 PM이 병합 후 전달한 40자리 `main` SHA를 공용 기준으로 사용한다.
 
 ## 최신 문서
 
 | 구분 | 문서 | 용도 |
 | --- | --- | --- |
-| 실행·인계 | [Django·PostgreSQL 공유 패키지 인계서 v1.2](<manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md>) | 구성요소 역할, 최초 환경 구성, fingerprint 복구, PostgreSQL·API 검증과 일상 실행의 단일 순서 |
+| 합성 데이터 Runtime | [PostgreSQL 합성 Handoff Runtime 검증·인계서](<manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md>) | 격리 DB 367행 Import 검증과 기본 `watercare` 10개 Migration·Seed 후속 실측을 분리한 누적 증거 |
+| 합성 데이터 Importer | [합성 Handoff Importer 개발 인계서](<technical/backend/20260729_synthetic_handoff_importer.md>) | 빈 격리 DB 전용 관리 명령, UUID 충돌 차단, 원장·멱등성과 dry-run Sequence 주의 |
+| 합성 데이터 Schema | [합성 데이터 도메인 Schema·Migration 인계서](<technical/backend/20260729_synthetic_domain_schema_migration.md>) | 상담·방문·후속확인·Care·감사·Operations 원장과 `workflow.0003` 보정 Migration 체인 |
+| 합성 데이터 QA | [Fixture Hash·Crosswalk 강화 인계서](<technical/contracts/20260729_data_qa_fixture_hash_hardening.md>) | 367건 불변식, semantic text hash, 계약·Crosswalk 정합성 |
+| 합성 고객 Auth | [합성 고객 Demo Login 별칭 가이드](<manuals/20260729_synthetic_customer_auth_alias.md>) | `SYN-CUSTOMER-001` 공개 별칭과 내부 `CUS-*` 직접 로그인 차단 |
+| 실행·인계 | [Django·PostgreSQL 공유 패키지 인계서 v1.3](<manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md>) | 기본 DB Migration·Seed·복구와 격리 Import 경계를 포함한 현재 실행 절차의 단일 원본 |
 | 환경 설계 | [Backend `.venv` 재현성과 VS Code 환경 설계](<technical/backend/backend_venv_reproducibility_guide.md>) | 서비스 경계·버전 잠금·자동화·검증·복구 기준 |
 | DB 검증 | [Django·PostgreSQL Migration 검증 보고서 v1.0](<manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md>) | 2026-07-27 당시 PostgreSQL 적용과 2/32 구현의 역사 증거 |
 | Auth 검증 | [Auth API 계약·Runtime 정합화 보고서 v1.0](<manuals/20260727_최지용_Auth_API_계약_Runtime_정합화_보고서_v1.0.md>) | Auth 4개 계약·Route·보안·테스트 근거 |
@@ -86,12 +109,13 @@ WBS 목적은 유지하되, 현재 순서와 상태는 v0.5 및 실제 검증 �
 
 ## 문서 사용 순서
 
-1. 새 환경에서는 환경 설계 가이드로 Python·`.venv` 경계를 확인하고 공유 패키지 인계서 v1.2의 5장 순서로 PostgreSQL·Django·Seed·Smoke를 재현한다.
-2. 설치가 끝난 PC에서는 공유 패키지 인계서 v1.2의 6장 일상 실행·종료 절차만 사용한다.
-3. DB 작업은 DB 스키마 가이드의 한 Wave를 구현하고 Migration 보고서 기준으로 즉시 검증한다.
+1. 새 환경에서는 환경 설계 가이드로 Python·`.venv` 경계를 확인하고 공유 패키지 인계서 v1.3의 신규 환경 순서로 PostgreSQL·Django·Migration·Seed·Smoke를 재현한다.
+2. 설치가 끝난 PC에서는 공유 패키지 인계서 v1.3의 일상 실행·종료 절차를 사용한다.
+3. DB 작업은 DB 스키마 가이드의 한 Wave를 구현하고 현재 Runtime 검증서 기준으로 즉시 검증한다. 2026-07-27 Migration 보고서는 당시 기준선의 역사 증거로만 사용한다.
 4. API 작업은 API 계약 가이드대로 명세·OpenAPI·Route·테스트를 한 변경 단위로 맞춘다.
 5. T-022와 T-023은 각 준비도 문서의 미구현 항목을 한 수직 흐름씩 처리한다.
-6. 새 누적 일지나 중복 인계서를 만들지 않고 위 최신 문서에 현재 결과만 갱신한다.
+6. 합성 Importer는 기본 `watercare`에서 dry-run을 포함해 실행하지 않고 새 빈 격리 PostgreSQL에서만 검증한다.
+7. 새 누적 일지나 중복 인계서를 만들지 않고 위 최신 문서에 현재 결과만 갱신한다.
 
 ## 인계 라우팅
 
@@ -152,9 +176,9 @@ Android 연동 starter 참고본이며 현재 구현·Migration·API·State·AI
 
 | 검사 | 결과 |
 | --- | ---: |
-| 개인 개발문서 | 12개 |
-| 저장소 내부 파일 링크 | 188개 |
-| 고유 링크 대상 | 90개 (파일 81·디렉터리 9) |
+| 개인 개발문서 | 18개 |
+| 저장소 내부 파일 링크 | 304개 |
+| 고유 링크 대상 | 146개 (파일 135·디렉터리 11) |
 | 절대 파일 하이퍼링크 | 0개 |
 | 깨진 상대 링크 | 0개 |
 
@@ -180,3 +204,7 @@ Pull 환경에서도 실제로 열린다.
 - requirements fingerprint를 현재 입력과 동기화하고 빠른 환경 검사를 Exit code `0`으로 재확인했다.
 - 전체 Backend `353 passed`, PostgreSQL 16.14 `healthy`, 적용 Migration 누락 없음과 Health·Auth Smoke `PASSED`를 확인했다.
 - v1.1은 2026-07-28 역사 기록으로 보존하고, 현재 진입점은 구성요소 역할·순서별 명령·정상 기준·오류 복구·Web 실제 API 확인이 추가된 v1.2로 갱신했다.
+- 위 `353 passed`와 v1.2 전환은 같은 날의 이전 기준선으로 보존한다.
+- 후속 로컬 통합에서는 SQLite Backend `397 passed`와 PostgreSQL 16.14 읽기 전용 연결·적용 Migration 누락 0을 확인했다.
+- 기본 `watercare`에 기존 미적용 9개와 `workflow.0003`을 적용하면서 기존 row count를 보존하고 Workflow `changed_at` 11건을 보정했으며, Demo Seed 4종을 2회 실행해 비의도 중복 0을 확인했다.
+- 현재 실행 단일 원본은 v1.3이며, 기본 DB의 예상 UUID mismatch를 우회하지 않고 합성 Importer를 빈 격리 DB 전용으로 분리한다.
