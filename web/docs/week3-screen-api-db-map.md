@@ -11,6 +11,7 @@
 2. 모든 외부 쓰기는 최신 Inquiry `state_version`을 사용한다. `Idempotency-Key`는 새 논리 쓰기에서 생성하고 같은 요청의 네트워크 재시도에만 보존한다.
 3. `STATE-CONFLICT-01`은 입력을 보존하고 최신 상태·버전·행동 코드 배열을 반영한다. `DUPLICATE-EVENT-01`의 빈 `details`는 Snapshot으로 간주하지 않는다.
 4. API에 없는 이름은 현재 Web Mock의 임시 이름이며 Backend 합의 후 Mapper에서 교체한다.
+5. Mock 최초 분기는 `GENERAL → FIELD_TECHNICIAN`, `CAUTION·DANGER → CONSULTANT`를 사용한다. 이는 2026-07-29 화면 검증 규칙이며 실제 연동에서는 Backend의 담당 주체·상태·`allowed_actions` 응답으로 교체한다.
 
 ## 문의 목록·상세 표시
 
@@ -88,3 +89,16 @@
 4. `additional_check`, `customer_guidance`, 자유문 상담 결과의 저장 구조
 5. 성공 응답의 최신 상세 반환 범위
 6. 403·422 오류의 `field_errors` 형식
+
+## OPEN 항목 처리 책임과 임시 정책
+
+| 결정 항목 | 확인 담당 | 결정 시점 | Web 임시 처리 |
+| --- | --- | --- | --- |
+| 상담 목록·상세 Endpoint와 Query | 최지용 | 실제 API Adapter 착수 전 | 공식 합성 22건과 URL Query Mock 사용 |
+| 상담 저장·요약 확정·완료·방문 검토 Body | 최지용·윤승혁 | `consultations.yaml` 계약 PR 병합 전 | Provisional DTO와 Mock 성공·403·409·422만 사용 |
+| 상태·담당 주체·`allowed_actions` | 윤승혁·최지용 | State Machine·OpenAPI 교차 검수 전 | 상태로 화면 버튼을 재계산하지 않고 Mock 응답 Action만 표시 |
+| 고객 표시명·역할별 마스킹 | 최지용·김은진 | 실제 상세 응답 Fixture 작성 전 | 합성 고객 표시명만 사용, 실제 개인정보 입력 금지 |
+| Evidence 공개 필드·공식 URL | 이동윤 | 실제 Evidence DTO 연결 전 | 공개 View Model 외 내부 RAG 필드 타입 자체를 배제 |
+| 409·422 Wrapper와 `field_errors` | 최지용·김은진 | Backend 통합 테스트 전 | 입력 보존·자동 재전송 금지 Mock 계약 유지 |
+
+담당자 확인 전에는 위 임시 필드를 확정 계약으로 승격하거나 Endpoint를 추측해 호출하지 않는다. 계약이 준비되었다는 판정 기준은 `contracts/api/paths/consultations.yaml`이 실제 경로와 Schema `$ref`를 포함하고 관련 Schema의 `properties`가 채워진 상태이다.
