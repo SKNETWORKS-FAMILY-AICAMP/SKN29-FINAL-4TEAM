@@ -42,10 +42,13 @@ describe("상담 큐 View Model", () => {
       ...DEFAULT_FILTERS,
       page: 99,
     });
+    const expectedLastPage = Math.ceil(COUNSELOR_INQUIRIES.length / 3);
+    const expectedLastPageItems =
+      COUNSELOR_INQUIRIES.length - (expectedLastPage - 1) * 3;
 
-    expect(result.currentPage).toBe(8);
-    expect(result.totalItems).toBe(24);
-    expect(result.items).toHaveLength(3);
+    expect(result.currentPage).toBe(expectedLastPage);
+    expect(result.totalItems).toBe(COUNSELOR_INQUIRIES.length);
+    expect(result.items).toHaveLength(expectedLastPageItems);
   });
 
   it("공식 fixture의 무근거 문의는 임의 안내 없이 상담 확인 대기 상태다", () => {
