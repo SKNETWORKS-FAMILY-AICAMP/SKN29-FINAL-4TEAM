@@ -74,7 +74,7 @@ T-005 전체 완료라고 쓰지 않는다.
 | 영역 | 2026-07-28 실측 | 팀원이 따라야 할 판단 |
 | --- | --- | --- |
 | Git 기준선 | 최신 `origin/main`을 반영하고 최지용 변경을 C1~C10 작업 단위로 분리 Commit | 최지용이 공유한 40자리 `origin/jiyong` SHA를 확인한 뒤 팀별 Branch에 반영 |
-| PM 계약 | State Machine `v1.0.0`을 `TEAM_APPROVED`로 채택하고 Crosswalk·14단계 예시·Changelog 기록 완료 | Backend·Data·Web·Mobile·AI는 v1.0.0을 기준으로 구현 차이를 수정하고 계약 변경 필요 시 Issue로 보고 |
+| PM 계약 | YAML·예시가 아직 `draft_for_review` | 윤승혁이 채택 상태·Version·Changelog를 기록하기 전에는 Data가 임의 확정 금지 |
 | State Machine 생성물 | 최신 `origin/main` 기준 파일과 순수 계산 Engine·Guard 단위 기반을 `jiyong`에 반영했으나 운영 Service에는 미연결 | PM 계약·생성 Script·산출물을 삭제하거나 구형 수동본으로 되돌리지 않음 |
 | Web | 환경·공통 API·인증 관련 핵심 파일이 비어 있고 Test Script가 없음 | 상담사 실제 연동 완료가 아니라 공통 Client·인증·계약 Fixture부터 구현 |
 | Mobile | 지침은 단일 `:app`, 최신 `main`은 3모듈과 `mobile_prev`를 함께 보유 | 구조 결정과 지침 갱신 전 양정현 작업은 `BLOCKED` |
@@ -399,7 +399,7 @@ docker compose --env-file .\backend\.env stop postgres
 | ---: | --- | --- | --- |
 | 0 | 양정현·윤승혁(PM)·최지용 | Mobile 단일 App·3모듈 및 `mobile_prev` 처리 방향 기록 | `main` 반영에 사용할 확정 구조 |
 | 1 | 최지용 | Backend 대표 기준선과 정확한 Commit SHA 공유 | 실행 가능한 API·DB 기준선 |
-| 2 | 윤승혁(PM) | PM 계약의 14단계·Terminal 정책 모순 제거 | 완료: State Machine v1.0.0·Crosswalk·14단계 대표 예시 |
+| 2 | 윤승혁(PM) | PM 계약의 14단계·Terminal 정책 모순 제거 | 변경된 계약 또는 변경 없음 증거 |
 | 3 | 김은진 | Data ID·Role·상태 Crosswalk와 Fixture·QA 갱신 | Data Mapping·Fixture·QA 결과 |
 | 4 | 최지용 | Data Mapping을 Backend Import·Visit·Guard에 반영 | 안정된 Backend 계약·Runtime |
 | 5 | 한예나·양정현 | Web·Mobile 소비 코드 갱신 | 소비자 계약·빌드·오류 복구 결과 |
@@ -539,8 +539,8 @@ FINALIZE_INQUIRY
   오류 `STATE-CONFLICT-01`·`DUPLICATE-EVENT-01`의 Mapping을 명시한다.
 - 성공 `allowed_actions` 객체 배열, 상태 충돌의 Action code 배열,
   멱등 Key 재사용 충돌의 빈 `details`를 서로 섞지 않는다.
-- State Machine YAML·예시는 `v1.0.0`·`TEAM_APPROVED`로 채택되었다.
-  계약 채택을 Backend·Data·Web·Mobile·AI Runtime 완료로 보고하지 않는다.
+- 현재 계약 YAML·예시의 `draft_for_review`를 그대로 두고 확정이라고
+  보고하지 않는다. 채택 상태·Version·Changelog를 함께 갱신한다.
 
 ### 9.3 작업 순서
 
@@ -645,7 +645,7 @@ git diff --check
 | Data 현행 | Backend·계약 기준 | 해야 할 일 |
 | --- | --- | --- |
 | `COUNSELOR` | `CONSULTANT` | Fixture·이력·Schema·Vocabulary를 단일화 |
-| Fixture `public_id` UUID | Backend Public UUID | Public ID lookup 또는 명시적 1:1 Mapping |
+| Fixture UUID | Backend Public UUID | 원본 보존 또는 명시적 1:1 Mapping |
 | `DEMO-*` 업무 코드 | API 리소스 UUID | PK/FK로 사용하지 않도록 분리 |
 | `customer_id` | User와 CustomerProfile 분리 | User→CustomerProfile Mapping |
 | `customer_products` | 현행 Subscription 평탄화 | Product·설치·시리얼 Mapping |
@@ -655,21 +655,16 @@ git diff --check
 | Data 12단계 | PM 계약 전이 | 대표 Fixture·이력 재작성 |
 | RESOLVED 직접 Reopen | Terminal 정책 | PM 계약에 맞는 신규 문의 또는 허용 전이로 수정 |
 
-ADR 0010에 따라 Data 식별자는 정수 fixture-local PK, Public UUID,
-사람이 읽는 업무 코드의 3계층으로 분리한다. Fixture 정수 PK는 파일 내부
-FK에만 사용하고 Backend PK로 직접 주입하지 않는다. `SYN-*`·`DEMO-*`
-업무 코드는 PK/FK 또는 Public API ID로 사용하지 않는다. Backend import는
-`public_id` 또는 업무키를 조회한 뒤 실제 Backend PK로 FK를 설정한다.
+Data UUID v5는 이미 PK/FK이므로 `SYN-*` 코드로 바꾸지 않는다.
+Backend와는 다음 공개 식별자 Mapping을 사용한다.
 
 | Data | Backend |
 | --- | --- |
-| 각 `public_id` UUID | 각 Model의 `public_id` |
-| fixture-local 정수 `id`·FK | 직접 주입 금지, lookup 후 Backend 내부 PK 사용 |
+| 각 `*_id` UUID | 각 Model의 `public_id` |
 | `inquiry_number` | `inquiry_code` |
 | `subscription_number` | `contract_no` |
 | `product_code` | `model_code` |
-| User `public_id` | `User.public_id`; 고객 Role이면 CustomerProfile을 별도 lookup |
-| `customer_profile_id` | CustomerProfile lookup 뒤 Backend Subscription 고객 FK로 변환 |
+| User UUID | `User.public_id`; 고객 Role이면 `CustomerProfile` FK로 해석 |
 | `customer_product_id` | `Subscription`의 고객·제품·시리얼 필드로 평탄화 |
 
 원본 Data UUID와 저장된 Backend `public_id`를 양방향 추적할
