@@ -39,6 +39,11 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "apps.accounts.apps.AccountsConfig",
+    "apps.products.apps.ProductsConfig",
+    "apps.subscriptions.apps.SubscriptionsConfig",
+    "apps.care.apps.CareConfig",
+    "apps.inquiries.apps.InquiriesConfig",
+    "apps.workflow.apps.WorkflowConfig",
 ]
 
 MIDDLEWARE = [
@@ -142,7 +147,7 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("Bearer",),
-    "USER_ID_FIELD": "id",
+    "USER_ID_FIELD": "public_id",
     "USER_ID_CLAIM": "sub",
     "TOKEN_TYPE_CLAIM": "token_type",
     "JTI_CLAIM": "jti",

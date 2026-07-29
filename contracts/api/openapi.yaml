@@ -20,6 +20,8 @@ paths:
     $ref: ./paths/inquiries.yaml#/~1inquiries~1{id}~1questionnaire
   /inquiries/{id}/action-results:
     $ref: ./paths/inquiries.yaml#/~1inquiries~1{id}~1action-results
+  /inquiries/{id}/cancel:
+    $ref: ./paths/workflow.yaml#/~1inquiries~1{id}~1cancel
   /health:
     get:
       operationId: getProvisionalHealth
@@ -49,11 +51,15 @@ components:
       $ref: ./components/schemas/common/PageInfo.yaml
     TraceContext:
       $ref: ./components/schemas/common/TraceContext.yaml
-  parameters: {}
+  parameters:
+    Idempotency-Key:
+      $ref: ./components/parameters/IdempotencyKey.yaml
   headers:
     X-Correlation-ID:
       $ref: ./components/headers/CorrelationId.yaml
-  responses: {}
+  responses:
+    WorkflowConflict:
+      $ref: ./components/responses/WorkflowConflict.yaml
   securitySchemes:
     BearerAuth:
       type: http

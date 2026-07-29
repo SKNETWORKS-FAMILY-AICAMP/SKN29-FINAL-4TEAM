@@ -19,7 +19,7 @@ COMPOSE_PATH = REPOSITORY_ROOT / "docker-compose.yml"
 ARTIFACT_DIR = REPOSITORY_ROOT / "docs" / "database" / "t-005"
 MANIFEST_PATH = ARTIFACT_DIR / "manifest.json"
 SCHEMA_PATH = ARTIFACT_DIR / "watercare_schema_v3.json"
-PHYSICAL_CONTRACT_PATH = ARTIFACT_DIR / "t005_physical_contract_v1.0.json"
+PHYSICAL_CONTRACT_PATH = ARTIFACT_DIR / "t005_physical_contract_v1.2.json"
 REQUIRED_POSTGRES_ENV_KEYS = {
     "POSTGRES_DB",
     "POSTGRES_USER",

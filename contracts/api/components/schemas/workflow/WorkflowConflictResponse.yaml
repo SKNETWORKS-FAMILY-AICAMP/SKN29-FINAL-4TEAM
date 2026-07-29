@@ -1,0 +1,35 @@
+title: WorkflowConflictResponse
+type: object
+description: 상태 버전 또는 Idempotency-Key 재사용 충돌 응답
+additionalProperties: false
+required:
+  - success
+  - data
+  - error
+  - metadata
+properties:
+  success:
+    type: boolean
+    const: false
+  data:
+    type: "null"
+  error:
+    type: object
+    additionalProperties: false
+    required:
+      - code
+      - message
+      - details
+    properties:
+      code:
+        type: string
+        enum:
+          - STATE-CONFLICT-01
+          - DUPLICATE-EVENT-01
+      message:
+        type: string
+        minLength: 1
+      details:
+        $ref: ./WorkflowConflictDetails.yaml
+  metadata:
+    $ref: ../common/TraceContext.yaml

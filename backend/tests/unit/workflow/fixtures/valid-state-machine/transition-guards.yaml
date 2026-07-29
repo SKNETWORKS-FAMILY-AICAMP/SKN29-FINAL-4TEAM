@@ -5,6 +5,7 @@ contract:
   owner: TEST
 guard_categories:
   - CONCURRENCY
+  - IDEMPOTENCY
 guards:
   - id: G-STATE-VERSION
     category: CONCURRENCY
@@ -14,3 +15,11 @@ guards:
       http_status: 409
       error_code: STATE_VERSION_CONFLICT
       message: State version mismatch.
+  - id: G-IDEMPOTENCY-KEY
+    category: IDEMPOTENCY
+    conditions:
+      - request.idempotency_key is not null
+    failure:
+      http_status: 409
+      error_code: IDEMPOTENCY_KEY_REUSE_CONFLICT
+      message: Idempotency key conflict.

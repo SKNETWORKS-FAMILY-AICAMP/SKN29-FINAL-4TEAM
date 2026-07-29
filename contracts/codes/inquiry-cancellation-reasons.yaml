@@ -1,0 +1,9 @@
+# T-023 inquiry cancellation reason owner baseline
+version: 1.0.0
+status: OWNER_BASELINE
+owner: BACKEND
+codes:
+  - CUSTOMER_REQUEST
+  - DUPLICATE_INQUIRY
+  - ISSUE_RESOLVED
+  - OTHER
