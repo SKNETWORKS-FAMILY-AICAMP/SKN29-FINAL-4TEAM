@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": {
+    "inquiry_id": "30000000-0000-4000-8000-000000000001",
+    "state": "CANCELLED",
+    "state_version": 2,
+    "idempotent_replay": false
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "4e437c06-5023-4b40-a0d1-ef8fef76d107"
+  }
+}

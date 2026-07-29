@@ -1,0 +1,12 @@
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "AUTH_REQUIRED",
+    "message": "인증이 필요합니다.",
+    "details": {}
+  },
+  "metadata": {
+    "correlation_id": "4e437c06-5023-4b40-a0d1-ef8fef76d110"
+  }
+}

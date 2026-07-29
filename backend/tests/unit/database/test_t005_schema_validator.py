@@ -224,6 +224,39 @@ def test_snapshot_hash_mutation_is_detected(
     )
 
 
+def test_text_artifact_hash_is_line_ending_independent(
+    validator_module: ModuleType,
+):
+    assert validator_module.sha256_content(
+        b"first line\nsecond line\n",
+        ".md",
+    ) == validator_module.sha256_content(
+        b"first line\r\nsecond line\r\n",
+        ".md",
+    )
+
+
+def test_manifest_hash_policy_mutation_is_detected(
+    validator_module: ModuleType,
+    baseline_data: dict[str, dict[str, Any]],
+):
+    manifest = baseline_data["manifest"]
+    manifest["hash_policy"]["text_line_endings"] = "CRLF"
+
+    result = validator_module.audit_snapshot(
+        manifest=manifest,
+        schema=baseline_data["schema"],
+        logical_contract=baseline_data["logical_contract"],
+        decision_register=baseline_data["decision_register"],
+        verify_artifact_hashes=False,
+    )
+
+    assert any(
+        error["id"] == "T005_HASH_POLICY_MISMATCH"
+        for error in result["errors"]
+    )
+
+
 def test_missing_fk_target_is_detected(
     validator_module: ModuleType,
     baseline_data: dict[str, dict[str, Any]],

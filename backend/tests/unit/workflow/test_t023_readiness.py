@@ -122,10 +122,10 @@ def test_current_contract_and_runtime_files_are_present_but_owner_gates_remain()
         "role_permissions": 5,
     }
     assert "PM_STATE_MACHINE_CONTRACT_INCOMPLETE" not in result["blockers"]
-    assert result["evidence"]["contract_team_approved"] is False
+    assert result["evidence"]["contract_team_approved"] is True
     assert (
         "PM_STATE_MACHINE_CONTRACT_REVIEW_PENDING"
-        in result["blockers"]
+        not in result["blockers"]
     )
     assert result["evidence"]["runtime_implemented_file_count"] == 10
     assert "WORKFLOW_RUNTIME_INCOMPLETE" not in result["blockers"]
