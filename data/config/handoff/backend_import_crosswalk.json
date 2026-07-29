@@ -5,29 +5,32 @@
   "backend_sources": {
     "user_model": {
       "path": "backend/apps/accounts/models/user.py",
-      "sha256": "65F3C7E840750B68412CC2D777834385291BBEAED3ED912A6B8D55AAAA2F1672"
+      "sha256": "0E03791FC5622B93CE4ECBD3050882ED9EEF07031A109F9B6EDCA2183CC5B2F0"
     },
     "customer_profile_model": {
       "path": "backend/apps/accounts/models/customer_profile.py",
-      "sha256": "E1D2ACDD3F7243CEBDA52D7BE41D507DC844C04169B71D60F7A4954EDEDFB592"
+      "sha256": "28CAA2DD62236AFC06CA64867699B2F47A1A6FEC9199F62AA28DF16BD59DE17A"
     },
     "product_model": {
       "path": "backend/apps/products/models/product_model_registry.py",
-      "sha256": "8BF8353591EBFA5AE90D14D15C29C5D49035474863E5B3037CB746816C5CE71B"
+      "sha256": "23D746B4050BD438F8ED8007D685C6CB5683FB88280679ED89F0B6DB92FFBD97"
     },
     "subscription_model": {
       "path": "backend/apps/subscriptions/models/subscription.py",
-      "sha256": "E631BA8CAF76287F36CDD721D6DBC6D0776D1CEBAE5AD31673E67B3B35289E26"
+      "sha256": "5C74AAAD4D4DEC0A6F9C5719AF132C06EF451146383E3701E0D14E08227019AA"
     },
     "care_model": {
       "path": "backend/apps/care/models/care_history.py",
-      "sha256": "F47073E7DC0D75F9A1DE7DA179EAE2BCDB933611A5E795A3B42179ABC971C550"
+      "sha256": "98FE50E08B5D71AC5AF8F26160A4941EF64541DAB439883E372B672AEE600CF4"
     }
   },
   "identifier_resolution": {
     "fixture_internal_id_role": "LOCAL_RELATIONSHIP_ONLY",
     "backend_primary_key_injection": "FORBIDDEN",
-    "lookup_order": ["public_id", "business_key"],
+    "lookup_order": [
+      "public_id",
+      "business_key"
+    ],
     "foreign_key_resolution": "LOOKUP_THEN_USE_BACKEND_INTERNAL_PK",
     "accounts_legacy_string_pk": "BACKEND_COMPATIBILITY_BRIDGE_NOT_FIXTURE_ID"
   },
@@ -112,14 +115,18 @@
   "blocked_mappings": [
     {
       "id": "CARE-VISIT-SERVICE-TYPE",
-      "source_values": ["VISIT_SERVICE"],
+      "source_values": [
+        "VISIT_SERVICE"
+      ],
       "reason": "Backend CareType에 의미가 같은 직접 대응 코드가 없음",
       "treatment": "EXCLUDE_FROM_DIRECT_LOAD",
       "owner": "BACKEND"
     },
     {
       "id": "CARE-COMPLETED-AT-TIME",
-      "source_values": ["performed_on"],
+      "source_values": [
+        "performed_on"
+      ],
       "reason": "Data 날짜를 Backend 완료 시각으로 임의 승격할 수 없음",
       "treatment": "EXCLUDE_FROM_DIRECT_LOAD",
       "owner": "BACKEND"
