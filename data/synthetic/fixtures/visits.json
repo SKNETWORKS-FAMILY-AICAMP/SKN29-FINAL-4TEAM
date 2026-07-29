@@ -1,9 +1,10 @@
 [
   {
-    "visit_id": "15a7b744-e99e-5fd6-bc96-9c1e6d01c1e5",
+    "id": 1,
+    "public_id": "15a7b744-e99e-5fd6-bc96-9c1e6d01c1e5",
     "visit_number": "VIS-SYN-0002",
-    "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
-    "technician_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
+    "inquiry_id": 2,
+    "technician_id": 16,
     "status": "COMPLETED",
     "requested_at": "2026-07-02T00:00:00+09:00",
     "scheduled_at": "2026-07-04T00:00:00+09:00",
@@ -17,10 +18,11 @@
     "data_classification": "synthetic"
   },
   {
-    "visit_id": "db1143fa-1f1a-5e1e-b469-9f841846a778",
+    "id": 2,
+    "public_id": "db1143fa-1f1a-5e1e-b469-9f841846a778",
     "visit_number": "VIS-SYN-0014",
-    "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
-    "technician_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
+    "inquiry_id": 14,
+    "technician_id": 16,
     "status": "IN_PROGRESS",
     "requested_at": "2026-07-04T23:00:00+09:00",
     "scheduled_at": "2026-07-06T23:30:00+09:00",
@@ -34,10 +36,11 @@
     "data_classification": "synthetic"
   },
   {
-    "visit_id": "541316f8-42a4-53e8-baac-56878489b654",
+    "id": 3,
+    "public_id": "541316f8-42a4-53e8-baac-56878489b654",
     "visit_number": "VIS-SYN-0018",
-    "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
-    "technician_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
+    "inquiry_id": 18,
+    "technician_id": 16,
     "status": "COMPLETED",
     "requested_at": "2026-07-05T23:00:00+09:00",
     "scheduled_at": "2026-07-07T23:30:00+09:00",
@@ -51,10 +54,11 @@
     "data_classification": "synthetic"
   },
   {
-    "visit_id": "8bb05560-d890-54f0-802d-c38bb64bca23",
+    "id": 4,
+    "public_id": "8bb05560-d890-54f0-802d-c38bb64bca23",
     "visit_number": "VIS-SYN-0021",
-    "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
-    "technician_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
+    "inquiry_id": 21,
+    "technician_id": 15,
     "status": "COMPLETED",
     "requested_at": "2026-07-06T17:30:00+09:00",
     "scheduled_at": "2026-07-08T18:00:00+09:00",

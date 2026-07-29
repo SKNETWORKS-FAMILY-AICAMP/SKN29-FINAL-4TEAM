@@ -1,7 +1,7 @@
 {
-  "config_version": "1.3.0",
-  "dataset_version": "0.8.0",
-  "generated_at": "2026-07-27T00:00:00+09:00",
+  "config_version": "1.4.0",
+  "dataset_version": "0.9.0",
+  "generated_at": "2026-07-29T00:00:00+09:00",
   "mvp_product_code": "WPUJAC104DWH",
   "mvp_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
   "expected_counts": {
@@ -11,7 +11,8 @@
     "official_faq_assets": 10,
     "rag_chunks": 7,
     "evidence": 9,
-    "synthetic_inquiries": 24
+    "synthetic_source_scenarios": 24,
+    "synthetic_inquiries": 22
   },
   "paths": {
     "ocr": "config/faq/ocr_transcriptions.json",
@@ -20,6 +21,7 @@
     "vocabulary": "config/workflow/dataset_vocabulary.json",
     "contract_mapping": "config/workflow/service_contract_mapping.json",
     "handoff": "config/handoff/consumer_profiles.json",
+    "backend_crosswalk": "config/handoff/backend_import_crosswalk.json",
     "e2e": "config/e2e/representative_case.json",
     "manual_input": "processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
     "faq_input": "processed/documents/faq/faq_snapshot_normalized.jsonl",
@@ -32,6 +34,11 @@
     "dataset_manifest": "processed/metadata/dataset_manifest.json",
     "final_manifest": "processed/metadata/final_dataset_manifest.json",
     "qa_summary": "processed/validation/latest_qa_summary.json",
+    "schema_report": "processed/validation/schema/latest_schema_report.json",
+    "integrity_report": "processed/validation/integrity/latest_integrity_report.json",
+    "quality_report": "processed/validation/quality/latest_quality_report.json",
+    "business_report": "processed/validation/business/latest_business_rules_report.json",
+    "reproducibility_report": "processed/validation/reproducibility/latest_reproducibility_report.json",
     "equivalence_report": "processed/validation/refactor/latest_equivalence_report.json",
     "inventory_csv": "processed/validation/deletion/pre_delete_inventory.csv",
     "inventory_report": "processed/validation/deletion/pre_delete_assessment.json",
@@ -64,6 +71,7 @@
     "vocabulary": "schemas/config/datasetVocabulary.schema.json",
     "contract_mapping": "schemas/config/serviceContractMapping.schema.json",
     "handoff": "schemas/config/consumerProfiles.schema.json",
+    "backend_crosswalk": "schemas/config/backendImportCrosswalk.schema.json",
     "e2e": "schemas/config/representativeCase.schema.json"
   }
 }

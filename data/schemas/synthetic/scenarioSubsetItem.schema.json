@@ -8,7 +8,7 @@
     "family",
     "variant",
     "title",
-    "inquiry_id",
+    "inquiry_public_id",
     "workflow_kind",
     "expected_outcome"
   ],
@@ -33,7 +33,7 @@
       "type": "string",
       "minLength": 1
     },
-    "inquiry_id": {
+    "inquiry_public_id": {
       "type": "string",
       "format": "uuid"
     },

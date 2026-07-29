@@ -13,6 +13,7 @@ sys.path.insert(0, str(TOOLS_ROOT))
 from watercare.config import load_pipeline
 from watercare.io import read_json
 from watercare.validation import (
+    validate_backend_import_crosswalk,
     validate_contract_alignment_registry,
     validate_schema,
     validate_service_contract_mapping,
@@ -27,6 +28,38 @@ class ServiceContractMappingTests(unittest.TestCase):
 
     def test_contract_sources_and_vocabularies_are_current(self) -> None:
         self.assertEqual([], validate_service_contract_mapping(self.config))
+        self.assertEqual(
+            {
+                "adr_0010_identifier_bridge",
+                "adr_0011_idempotency_scope",
+                "t005_physical_contract_v1_2",
+                "public_api_idempotency_conflict",
+            },
+            set(self.mapping["contract_sources"]) - {
+                "user_roles",
+                "inquiry_states",
+                "inquiry_events",
+                "transition_rules",
+                "allowed_actions",
+            },
+        )
+
+    def test_backend_crosswalk_blocks_direct_pk_and_unconfirmed_care(self) -> None:
+        self.assertEqual([], validate_backend_import_crosswalk(self.config))
+        crosswalk = self.config.config("backend_crosswalk")
+        self.assertEqual(
+            "FORBIDDEN",
+            crosswalk["identifier_resolution"]["backend_primary_key_injection"],
+        )
+        self.assertIsNone(
+            crosswalk["code_mappings"]["care_type"]["VISIT_SERVICE"]
+        )
+        self.assertTrue(
+            all(
+                row["treatment"] == "EXCLUDE_FROM_DIRECT_LOAD"
+                for row in crosswalk["blocked_mappings"]
+            )
+        )
 
     def test_canonical_role_is_consultant(self) -> None:
         self.assertEqual(
@@ -67,13 +100,13 @@ class ServiceContractMappingTests(unittest.TestCase):
 
         review = inquiries["SYN-JAC104-008"]
         self.assertEqual("VISIT_REVIEW_PENDING", review["status"])
-        self.assertNotIn(review["inquiry_id"], visits_by_inquiry)
+        self.assertNotIn(review["id"], visits_by_inquiry)
 
         in_progress = inquiries["SYN-JAC104-014"]
         self.assertEqual("VISIT_SCHEDULED", in_progress["status"])
         self.assertEqual(
             "IN_PROGRESS",
-            visits_by_inquiry[in_progress["inquiry_id"]]["status"],
+            visits_by_inquiry[in_progress["id"]]["status"],
         )
 
         representative = workflows["SYN-JAC104-002"]

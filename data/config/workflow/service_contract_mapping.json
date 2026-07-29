@@ -22,6 +22,22 @@
     "allowed_actions": {
       "path": "contracts/state-machine/allowed-actions.yaml",
       "sha256": "941221DB5BA80D8036E1D8A20F44B4353B8E3BF3330D289F321174C94B473C27"
+    },
+    "adr_0010_identifier_bridge": {
+      "path": "docs/adr/0010-t005-three-layer-identifier-bridge.md",
+      "sha256": "345D33A85D872D827062B0DE48F177D9CBB4A39ED8D17D5311DABE711566F35F"
+    },
+    "adr_0011_idempotency_scope": {
+      "path": "docs/adr/0011-t005-status-history-idempotency-scope.md",
+      "sha256": "264C67CD986E9B949270EAB7EC972AF909964784AC18FD02A43169110783E561"
+    },
+    "t005_physical_contract_v1_2": {
+      "path": "docs/database/t-005/t005_physical_contract_v1.2.json",
+      "sha256": "ADD4A6AFB255F3F18D72D8AAB87AA6EFF5356D5EE51BC85613E390C84CD72041"
+    },
+    "public_api_idempotency_conflict": {
+      "path": "contracts/api/examples/workflow/idempotency-key-reuse-conflict.json",
+      "sha256": "31B47573909BB2911A409C787425F5B8B660A797B0B3AD4ABBAEE64E674AFC15"
     }
   },
   "canonical_role_codes": [
@@ -70,6 +86,43 @@
       "inquiry_status": "VISIT_SCHEDULED",
       "visit_status": "IN_PROGRESS"
     }
+  },
+  "status_history_policy": {
+    "target_type_codes": [
+      "QUESTIONNAIRE",
+      "INQUIRY",
+      "CONSULTATION",
+      "VISIT"
+    ],
+    "target_fk_fields": {
+      "QUESTIONNAIRE": "questionnaire_session_id",
+      "INQUIRY": "inquiry_id",
+      "CONSULTATION": "consultation_id",
+      "VISIT": "visit_id"
+    },
+    "exactly_one_target_fk": true,
+    "idempotency_key_unique": false,
+    "idempotency_key_role": "REQUEST_HISTORY_TRACE",
+    "state_version_unique_scope": [
+      "target_type_code",
+      "resolved_target_fk",
+      "state_version"
+    ]
+  },
+  "identifier_policy": {
+    "internal_primary_key": "INTEGER_ID",
+    "public_identifier": "UUID_PUBLIC_ID",
+    "business_identifier_prefixes": [
+      "DEMO-",
+      "SYN-"
+    ],
+    "fixture_foreign_keys_use": "INTEGER_ID",
+    "expected_api_identifiers_use": "UUID_PUBLIC_ID"
+  },
+  "product_validation_expectation": {
+    "event_code": "PRODUCT_VALIDATION_FAILED",
+    "to_inquiry_status": "CONSULTATION_REQUIRED",
+    "materialize_event_as_inquiry_status": false
   },
   "blocked_decisions": [
     {

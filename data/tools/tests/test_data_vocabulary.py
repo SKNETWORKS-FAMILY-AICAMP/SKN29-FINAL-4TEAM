@@ -13,7 +13,12 @@ sys.path.insert(0, str(TOOLS_ROOT))
 
 from watercare.config import load_pipeline
 from watercare.io import read_json, sha256_file
-from watercare.validation import schema_risk_codes, schema_usage_codes, validate_schema
+from watercare.validation import (
+    schema_risk_codes,
+    schema_usage_codes,
+    validate_dataset_catalog,
+    validate_schema,
+)
 
 
 class DataVocabularyTests(unittest.TestCase):
@@ -88,13 +93,17 @@ class DataVocabularyTests(unittest.TestCase):
         history_statuses = {
             status
             for row in synthetic["inquiry_status_histories"]
-            for status in (row["from_status"], row["to_status"])
+            if row["target_type_code"] == "INQUIRY"
+            for status in (
+                row["from_status_code"],
+                row["to_status_code"],
+            )
             if status is not None
         }
         self.assertLessEqual(inquiry_statuses | history_statuses, statuses)
 
     def test_dataset_version_is_e2e_release(self) -> None:
-        self.assertEqual("0.8.0", self.config.dataset_version)
+        self.assertEqual("0.9.0", self.config.dataset_version)
 
     def test_dataset_manifest_version_and_hashes_are_current(self) -> None:
         manifest = read_json(self.config.path("dataset_manifest"))
@@ -102,6 +111,10 @@ class DataVocabularyTests(unittest.TestCase):
         for item in manifest["files"]:
             path = DATA_ROOT / item["path"]
             self.assertEqual(item["sha256"], sha256_file(path), item["path"])
+
+    def test_dataset_catalog_matches_manifest_and_release_metadata(self) -> None:
+        manifest = read_json(self.config.path("dataset_manifest"))
+        self.assertEqual([], validate_dataset_catalog(self.config, manifest))
 
 
 if __name__ == "__main__":

@@ -3,62 +3,17 @@
   "title": "SyntheticSubscription",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "subscription_id",
-    "subscription_number",
-    "customer_id",
-    "customer_product_id",
-    "plan_code",
-    "status",
-    "started_on",
-    "next_care_on",
-    "data_classification"
-  ],
+  "required": ["id", "public_id", "subscription_number", "customer_profile_id", "customer_product_id", "plan_code", "status", "started_on", "next_care_on", "data_classification"],
   "properties": {
-    "subscription_id": {
-      "type": "string",
-      "minLength": 1,
-      "format": "uuid"
-    },
-    "subscription_number": {
-      "type": "string",
-      "minLength": 1,
-      "pattern": "^SUB-SYN-\\d{4}$"
-    },
-    "customer_id": {
-      "type": "string",
-      "minLength": 1,
-      "format": "uuid"
-    },
-    "customer_product_id": {
-      "type": "string",
-      "minLength": 1,
-      "format": "uuid"
-    },
-    "plan_code": {
-      "type": "string",
-      "minLength": 1,
-      "const": "SYNTHETIC_REGULAR_CARE"
-    },
-    "status": {
-      "type": "string",
-      "minLength": 1,
-      "const": "ACTIVE"
-    },
-    "started_on": {
-      "type": "string",
-      "minLength": 1,
-      "format": "date"
-    },
-    "next_care_on": {
-      "type": "string",
-      "minLength": 1,
-      "format": "date"
-    },
-    "data_classification": {
-      "type": "string",
-      "minLength": 1,
-      "const": "synthetic"
-    }
+    "id": {"type": "integer", "minimum": 1},
+    "public_id": {"type": "string", "format": "uuid"},
+    "subscription_number": {"type": "string", "pattern": "^SUB-SYN-\\d{4}$"},
+    "customer_profile_id": {"type": "integer", "minimum": 1},
+    "customer_product_id": {"type": "integer", "minimum": 1},
+    "plan_code": {"type": "string", "const": "SYNTHETIC_REGULAR_CARE"},
+    "status": {"type": "string", "const": "ACTIVE"},
+    "started_on": {"type": "string", "format": "date"},
+    "next_care_on": {"type": "string", "format": "date"},
+    "data_classification": {"type": "string", "const": "synthetic"}
   }
 }
