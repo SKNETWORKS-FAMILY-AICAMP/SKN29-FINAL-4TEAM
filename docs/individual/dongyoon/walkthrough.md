@@ -48,6 +48,16 @@
 * [eval_dataset_loader.py](file:///c:/Project/SKN29-FINAL-4TEAM/ai/evaluation/eval_dataset_loader.py): `rag_eval_dataset.json` 및 `safety_eval_dataset.json` 로더
 * [evaluation_runner.py](file:///c:/Project/SKN29-FINAL-4TEAM/ai/evaluation/evaluation_runner.py): AI/RAG 전체 파이프라인 및 검색 정답률 종합 자동 평가 실행기
 
+### 7. 백엔드/팀 간 계약 및 인계용 예시 JSON, 에러 카테고리 확정 (`contracts/ai/examples/` & `contracts/error-codes/`)
+* **계약 스키마 정합화**: `SymptomAnalysisRequest.schema.json` 식별자를 UUID 공개 규격으로 정정 및 명시
+* **에러 코드 카테고리 정합화**: `contracts/error-codes/categories/ai.yaml`에 `AI-FAILED-01`, `AI-VALIDATION-01`, `AI-TIMEOUT-01` 카테고리 정의
+* **계약 검증용 예시 JSON 작성**:
+  * `symptom-analysis/`: `general-guidance.json` (정상 사용), `danger-detected.json` (위험 감지), `no-evidence.json` (근거 없음), `validation-failed.json` (검증 실패)
+  * `fallback/`: `fallback-response.json` (시스템 Fallback 응답)
+  * `consultation-summary/`: `summary-example.json` (상담 요약 예시)
+  * `technician-report/`: `report-example.json` (기사 리포트 예시)
+* **계약 검증 자동 테스트 추가**: `ai/tests/unit/test_schemas_and_configs.py` 내 `test_ai_contract_examples_json_schema` 추가 완료
+
 ---
 
 ## 🧪 전체 검증 결과 (`pytest ai/tests/unit/`)
@@ -56,19 +66,20 @@
 ============================= test session starts =============================
 platform win32 -- Python 3.10.20, pytest-9.0.3, pluggy-1.6.0
 rootdir: C:\Project\SKN29-FINAL-4TEAM\ai
-collected 22 items
+collected 23 items
 
-ai\tests\unit\test_api_routes.py ....                                    [ 18%]
-ai\tests\unit\test_evaluation.py ...                                     [ 31%]
-ai\tests\unit\test_pipeline.py ..                                        [ 40%]
-ai\tests\unit\test_retrieval.py ...                                      [ 54%]
-ai\tests\unit\test_safety_classifier.py ......                           [ 81%]
-ai\tests\unit\test_schemas_and_configs.py ....                           [100%]
+ai\tests\unit\test_api_routes.py ....                                    [ 17%]
+ai\tests\unit\test_evaluation.py ...                                     [ 30%]
+ai\tests\unit\test_pipeline.py ..                                        [ 39%]
+ai\tests\unit\test_retrieval.py ...                                      [ 52%]
+ai\tests\unit\test_safety_classifier.py ......                           [ 78%]
+ai\tests\unit\test_schemas_and_configs.py .....                          [100%]
 
-======================= 22 passed, 2 warnings in 0.43s ========================
+======================= 23 passed, 2 warnings in 0.43s ========================
 ```
 
 ### 📊 종합 자동 평가 측정 결과 (`python -m ai.evaluation.evaluation_runner`)
 * **RAG 검색 정답률**: `mean_recall_at_5` = **1.0 (100.0%)**, `mean_mrr` = **1.0**
 * **안전 규칙 준수율 (Safety Compliance Rate)**: **100.0%** (위험군 감지 시 `NORMAL` 상태 반환 0건)
-* **전체 22개 단위 테스트 100% Pass**
+* **전체 23개 단위 테스트 100% Pass** (계약 예시 JSON 검증 테스트 포함)
+

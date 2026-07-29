@@ -1,0 +1,54 @@
+{
+  "request": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b202",
+    "correlation_id": "corr-trace-20260729-002",
+    "raw_symptom": "정수기 밑 바닥으로 물이 줄줄 새고 전선 근처에서 타는 냄새가 나요.",
+    "model_code": "WPUJAC104DWH",
+    "selected_symptoms": ["누수", "전기 이상"],
+    "previous_answers": []
+  },
+  "response": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b202",
+    "correlation_id": "corr-trace-20260729-002",
+    "structured_symptom": {
+      "symptom_type": "누수",
+      "occurrence_time": "방금 전",
+      "target_water_type": "전체",
+      "occurrence_condition": "제품 하단 누수 및 타는 냄새",
+      "error_code": null,
+      "accompanying_symptoms": ["타는 냄새", "전선 스파크 위험"],
+      "actions_taken": []
+    },
+    "missing_fields": [],
+    "followup_questions": [],
+    "safety_assessment": {
+      "risk_level": "danger",
+      "priority": "priority_consultation",
+      "requires_consultation": true,
+      "detected_risks": ["누수", "전기 냄새/연기"],
+      "safety_reason": "제품 하부 누수 및 전선 주위 탄냄새로 심각한 감전/화재 위험이 감지되었습니다."
+    },
+    "usage_guidance": {
+      "guidance_status": "TOTAL_STOP",
+      "message": "안전을 위해 정수기 사용을 즉시 전면 중단하시고 전원 플러그를 뽑으신 뒤 원수 공급 밸브를 잠가주십시오.",
+      "restricted_functions": ["전체 기능"],
+      "next_actions": [
+        "정수기 전원 코드를 콘센트에서 즉시 분리하세요.",
+        "정수기와 연결된 중간 급수 밸브(원수 밸브)를 잠가주세요.",
+        "직접 수리를 시도하지 마시고 전문 A/S 기사 방문을 요청하세요."
+      ]
+    },
+    "evidence_references": [
+      {
+        "document_title": "WPU-JAC104D 사용설명서",
+        "document_version": "v1.0",
+        "page": 5,
+        "chunk_id": "WPUJAC104DWH_MANUAL_P05_C02",
+        "official_url": "https://www.skmagic.com/manual/WPUJAC104DWH",
+        "summary": "안전을 위한 주의사항: 제품 누수 및 타는 냄새 발생 시 전원을 끄고 원수 밸브를 잠근 후 고객센터로 연락하십시오.",
+        "similarity_score": 0.95,
+        "verification_status": "official_verified"
+      }
+    ]
+  }
+}
