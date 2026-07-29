@@ -1,0 +1,20 @@
+{
+  "success": true,
+  "data": {
+    "id": "10000000-0000-4000-8000-000000000001",
+    "display_name": "합성 고객 001",
+    "role_code": "CUSTOMER",
+    "is_active": true,
+    "customer_profile": {
+      "id": "10000000-0000-4000-8000-000000000002",
+      "customer_no": "SYN-CUSTOMER-001",
+      "customer_name": "합성 고객 001",
+      "is_synthetic": true
+    },
+    "allowed_actions": []
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "4e437c06-5023-4b40-a0d1-ef8fef76d104"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "data": {
+    "revoked": true
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "4e437c06-5023-4b40-a0d1-ef8fef76d103"
+  }
+}

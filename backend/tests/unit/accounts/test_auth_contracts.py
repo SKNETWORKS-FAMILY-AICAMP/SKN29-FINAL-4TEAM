@@ -63,6 +63,19 @@ def test_auth_path_contract_contains_four_implemented_operations():
     assert auth_paths["/auth/demo-login"]["post"]["responses"][
         "403"
     ] == {"$ref": "../components/responses/Forbidden.yaml"}
+    assert {
+        path: set(path_item["post"]["responses"])
+        for path, path_item in auth_paths.items()
+        if "post" in path_item
+    } == {
+        "/auth/demo-login": {"200", "400", "401", "403", "422"},
+        "/auth/refresh": {"200", "400", "401", "422"},
+        "/auth/logout": {"200", "400", "401", "422"},
+    }
+    assert auth_paths["/me"]["get"]["responses"].keys() == {
+        "200",
+        "401",
+    }
 
 
 def test_openapi_registers_auth_paths_and_bearer_scheme():

@@ -1,13 +1,17 @@
 import type {
-  CounselorAllowedAction,
   CounselorActionCode,
   CounselorInquiry,
 } from "./consultantWorkspaceTypes";
+import type {
+  WorkflowActionSuccess,
+  WorkflowConflict,
+} from "../../workflow-action/model/workflowActionMapper";
 
 export type ConsultationMockScenario =
   | "SUCCESS"
   | "FORBIDDEN"
   | "CONFLICT"
+  | "DUPLICATE_EVENT"
   | "VALIDATION_ERROR"
   | "NETWORK_ERROR";
 
@@ -47,25 +51,22 @@ export interface ProvisionalConsultationActionRequest {
   correlation_id: string;
 }
 
-export interface ConsultationActionSuccess {
-  message: string;
-  stateVersion: number;
-  correlationId: string;
-}
+export type ConsultationActionSuccess =
+  WorkflowActionSuccess<CounselorActionCode>;
 
 export type ConsultationActionErrorKind =
   | "FORBIDDEN"
-  | "CONFLICT"
   | "VALIDATION_ERROR"
   | "NETWORK_ERROR";
 
-export interface ConsultationActionErrorDetails {
+interface ConsultationNonConflictErrorDetails {
   kind: ConsultationActionErrorKind;
   message: string;
   fieldErrors?: ConsultationFieldErrors;
-  currentStatus?: CounselorInquiry["status"];
-  currentStateVersion?: number;
-  allowedActions?: readonly CounselorAllowedAction[];
   correlationId?: string;
 }
+
+export type ConsultationActionErrorDetails =
+  | ConsultationNonConflictErrorDetails
+  | WorkflowConflict<CounselorActionCode, CounselorInquiry["status"]>;
 

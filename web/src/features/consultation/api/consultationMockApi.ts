@@ -1,4 +1,17 @@
 import type { CounselorAllowedAction } from "../model/consultantWorkspaceTypes";
+import {
+  mapWorkflowActionSuccess,
+  mapWorkflowConflict,
+} from "../../workflow-action/model/workflowActionMapper";
+import type {
+  WorkflowActionSuccessDto,
+  WorkflowAllowedActionDto,
+  WorkflowConflictErrorDto,
+} from "../../workflow-action/model/workflowActionDtos";
+import type {
+  CounselorActionCode,
+  CounselorStatus,
+} from "../model/consultantWorkspaceTypes";
 import type {
   ConsultationActionErrorDetails,
   ConsultationActionSuccess,
@@ -38,15 +51,39 @@ export async function submitConsultationMock(
   }
 
   if (scenario === "CONFLICT") {
-    throw new ConsultationMockError({
-      kind: "CONFLICT",
+    const errorDto: WorkflowConflictErrorDto<CounselorActionCode> = {
+      code: "STATE-CONFLICT-01",
       message:
         "다른 담당자가 먼저 문의를 변경했습니다. 작성 내용은 유지했으며 최신 상태를 반영했습니다.",
-      currentStatus: "CONSULTATION_IN_PROGRESS",
-      currentStateVersion: request.state_version + 1,
-      allowedActions: currentAllowedActions,
-      correlationId: request.correlation_id,
-    });
+      details: {
+        current_status: "CONSULTATION_IN_PROGRESS",
+        current_state_version: request.state_version + 1,
+        allowed_actions: currentAllowedActions.map((action) => action.code),
+      },
+    };
+    throw new ConsultationMockError(
+      mapWorkflowConflict<CounselorActionCode, CounselorStatus>(
+        errorDto,
+        request.correlation_id,
+        currentAllowedActions,
+      ),
+    );
+  }
+
+  if (scenario === "DUPLICATE_EVENT") {
+    const errorDto: WorkflowConflictErrorDto<CounselorActionCode> = {
+      code: "DUPLICATE-EVENT-01",
+      message:
+        "같은 Idempotency-Key에 다른 요청 내용이 사용되었습니다. 새 작업으로 다시 시도해 주세요.",
+      details: {},
+    };
+    throw new ConsultationMockError(
+      mapWorkflowConflict<CounselorActionCode, CounselorStatus>(
+        errorDto,
+        request.correlation_id,
+        currentAllowedActions,
+      ),
+    );
   }
 
   if (scenario === "VALIDATION_ERROR") {
@@ -68,10 +105,40 @@ export async function submitConsultationMock(
     });
   }
 
-  return {
+  const allowedActionDtos: readonly WorkflowAllowedActionDto<CounselorActionCode>[] =
+    currentAllowedActions.map((action) => ({
+      code: action.code,
+      label: action.label,
+      operation_id: action.operationId,
+      style: action.style,
+      requires_confirmation: action.requiresConfirmation,
+      confirmation_message: action.confirmationMessage,
+    }));
+  const successDto: WorkflowActionSuccessDto<CounselorActionCode> = {
     message: "Mock 저장 완료 · 최신 문의 정보를 다시 불러왔습니다.",
-    stateVersion: request.state_version + 1,
-    correlationId: request.correlation_id,
+    state_version: request.state_version + 1,
+    allowed_actions: allowedActionDtos,
+  };
+
+  return mapWorkflowActionSuccess(successDto, request.correlation_id);
+}
+
+export interface ConsultationDetailSnapshot {
+  inquiryId: string;
+  stateVersion: number;
+  allowedActions: readonly CounselorAllowedAction[];
+  refreshedAt: string;
+}
+
+export async function reloadConsultationDetailMock(
+  inquiryId: string,
+  result: ConsultationActionSuccess,
+): Promise<ConsultationDetailSnapshot> {
+  return {
+    inquiryId,
+    stateVersion: result.stateVersion,
+    allowedActions: result.allowedActions,
+    refreshedAt: new Date().toISOString(),
   };
 }
 
