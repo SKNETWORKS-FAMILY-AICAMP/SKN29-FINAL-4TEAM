@@ -1,16 +1,18 @@
 # 3주차 Web 검토 공유안
 
 - 작성자: 한예나
-- 기준일: 2026-07-28
+- 기준일: 2026-07-29
 - 검토 대상: 상담사 `CONS-01 → CONS-02 → CONS-03` Mock 흐름과 공통 Web 계약
 - 공유 대상: 최지용, 김은진, 이동윤
+- 공유 경로: `yena` 브랜치와 본 문서
 
 ## 실행·검증 결과
 
-- `npm.cmd run test`: 11개 Test File, 38개 Test 통과
+- `npm.cmd run test`: 20개 Test File, 80개 Test 통과
 - `npm.cmd run lint`: 통과
 - `npm.cmd run build`: 통과
 - 실제 고객 개인정보 없이 합성 데이터만 사용
+- 로컬 브라우저 기본 목록·초기 빈 목록·조회 오류·상담 저장 후 상세 갱신 확인, Console Error 0건
 
 ## 최지용 확인 요청
 
@@ -36,6 +38,8 @@
 - 상태·위험도·우선순위와 행동 가능 여부를 Web에서 추론하지 않는다.
 - `chunk_id`, 내부 문서 ID, 검색 점수, 내부 경로, 원문 전체, Prompt, Trace를 표시하지 않는다.
 - 409에서 사용자 입력을 버리거나 자동 덮어쓰기·자동 재전송하지 않는다.
+- 알 수 없는 상태·위험도·우선순위는 `미확인`으로 표시하고 화면을 중단하지 않는다.
+- 저장 중 중복 클릭은 전송하지 않고 성공 뒤 최신 상세 Snapshot을 다시 반영한다.
 - 실제 Backend가 없는 동작은 화면에 Mock이라고 명시한다.
 
 ## 관련 문서
@@ -44,3 +48,4 @@
 - `web/docs/week3-screen-api-db-map.md`
 - `web/docs/week3-test-result.md`
 - `web/docs/week3-open-issues.md`
+- `docs/screens/admin-dashboard-field-plan.md`

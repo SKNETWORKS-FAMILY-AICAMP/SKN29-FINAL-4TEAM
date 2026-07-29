@@ -1,0 +1,26 @@
+{
+  "inquiry_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
+  "inquiry_number": "INQ-20260704-0012",
+  "scenario_id": "SYN-JAC104-012",
+  "customer_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d",
+  "subscription_id": "f9a7c0eb-02ef-517f-bbe5-04fa02e1bef9",
+  "original_text": "상담 후 잠시 괜찮았지만 냉수가 다시 미지근해졌어요. 2시간을 기다려도 같습니다.",
+  "topic_code": "symptom_cold_temperature",
+  "variant": "PERSISTENT_OR_RISK",
+  "risk_level": "general",
+  "usage_guidance_status": "NORMAL",
+  "status": "REOPENED",
+  "assigned_role": "NONE",
+  "assigned_user_id": null,
+  "evidence_ids": [
+    "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001"
+  ],
+  "evidence_mode": "EXACT_MODEL",
+  "requires_fallback": false,
+  "state_version": 8,
+  "idempotency_key": "idem-SYN-JAC104-012-current",
+  "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
+  "data_classification": "synthetic",
+  "created_at": "2026-07-04T09:00:00+09:00",
+  "updated_at": "2026-07-04T12:30:00+09:00"
+}

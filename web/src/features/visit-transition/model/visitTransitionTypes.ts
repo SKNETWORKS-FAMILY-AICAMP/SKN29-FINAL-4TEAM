@@ -1,4 +1,7 @@
-export type VisitMockAction = "SAVE_SCHEDULE" | "CONFIRM_VISIT";
+export type VisitMockAction =
+  | "CREATE_VISIT_REQUEST"
+  | "SAVE_SCHEDULE"
+  | "CONFIRM_VISIT";
 
 export interface VisitTransitionValues {
   visitReason: string;

@@ -16,6 +16,11 @@
     "reason": "Accounts 문자열 PK의 정수 PK 전환과 legacy JWT sub fallback 제거가 남아 있다."
   },
   "copied_on": "2026-07-25",
+  "hash_policy": {
+    "algorithm": "SHA-256",
+    "text_line_endings": "LF",
+    "binary": "raw-bytes"
+  },
   "expected_counts": {
     "tables": 32,
     "columns": 526,
@@ -23,11 +28,11 @@
     "logical_codes": 57
   },
   "files": {
-    "watercare_erd_v3.mmd": "7D2DF9651BA90582547AF4AFED9AFD69DDCD4E519CA263ACF0446ADC1929BF9E",
+    "watercare_erd_v3.mmd": "37E4428827AF5A16C3751EF9EB0B1781D66F78F573D383F90CB08DB4BE3FAE24",
     "watercare_erd_v3.png": "CBCD9411ACE892E7D6F3FEC641A0053D7606D2DBE05BB948B429F2C88EC08936",
-    "watercare_erd_validation_v3.md": "F9B48AA6ED3A65647CB33D3FCF7DE8F17648DFE99F05ABDE42F7F3BA969C47C8",
-    "watercare_schema_sqlite_v3.sql": "4841CF3F5EF03107C01E2C325A01BF6DDB548EC834F4FF8713D81E2163D5905E",
-    "watercare_schema_v3.json": "D53C3E46770C1A7DF43B10943DE3F53A5629978F34FE8DA2533AAA8612C54724"
+    "watercare_erd_validation_v3.md": "CAFC54EB4ABC88EBDF1E7510BCF10A25D3525DCC39C454912E83DF95F80F2F54",
+    "watercare_schema_sqlite_v3.sql": "A17C77127E84B2016A65C4F3C795F9178B0D81C379B877CFF0FB8264576F95E0",
+    "watercare_schema_v3.json": "5931C5A354E5BA1207BFADDFFF40E7F93C772E6A895DC5B99AC6D6CC84FC43C6"
   },
   "blocking_decisions": [
     "T005_PRIMARY_KEY_POLICY",

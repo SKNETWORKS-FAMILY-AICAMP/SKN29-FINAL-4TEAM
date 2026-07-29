@@ -164,7 +164,7 @@ export default function ConsultantWorkspaceLayout({
               <span>!</span>
               <div>
                 <strong>고객 해결 피드백 도착</strong>
-                <p>DEMO-INQ-006 문의를 최종 확인해 주세요.</p>
+                <p>INQ-20260705-0017 문의를 최종 확인해 주세요.</p>
                 <small>합성 시연 · 방금 전</small>
               </div>
             </button>

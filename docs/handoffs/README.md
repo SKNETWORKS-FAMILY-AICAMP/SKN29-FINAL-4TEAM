@@ -1,28 +1,33 @@
 # WaterCare 팀별 충돌 해결·Pull 작업 인계
 
-> 기준일: 2026-07-28
-> 공유 Branch: `jiyong`
+> 기준일: 2026-07-29
+> 작업 소스 Branch: `jiyong`
+> 팀 반영 기준: 최지용 `jiyong` Push → PM 검토·`main` 병합 → PM이 공유한 40자리 `main` Commit SHA
+> 개발 최우선: 현재 구현 Runtime 7개의 OpenAPI·Serializer·오류 Registry·정상/오류 예시 정합화
 > 실행 원칙: `작업 → 검증 → 작업 → 검증`
 > 문서 원칙: 저장소 안의 상대경로만 연결하고 개인 PC 절대경로는 사용하지 않는다.
 
 ## 1. 이 문서의 목적
 
-이 문서는 최지용의 Backend 기준선을 각 팀원이 자기 PC와 자기
-Branch에 반영한 뒤, 남아 있는 협업 충돌을 자기 관할에서 해결하기
-위한 단일 팀 공용 인계 진입점이다.
+이 문서는 최지용이 `jiyong` Branch에 Push한 Backend 기준선을 PM이
+검토해 `main`에 병합한 뒤, 각 팀원이 자기 PC와 자기 Branch에
+반영하고 남아 있는 협업 충돌을 자기 관할에서 해결하기 위한 단일
+팀 공용 인계 진입점이다.
 
 이 문서 하나만 보고도 다음을 판단할 수 있어야 한다.
 
-- 어느 Branch를 받아야 하는가
+- 어느 `main` Commit을 받아야 하는가
 - 최초 실행에 무엇이 필요한가
 - 현재 구현된 범위와 아직 구현되지 않은 범위는 무엇인가
 - 각 팀원이 어느 파일을 수정하고 무엇을 검증해야 하는가
 - 다음 팀원에게 무엇을 전달해야 하는가
 - 어떤 상태에서 완료라고 보고하면 안 되는가
 
-최지용이 공유 메시지로 전달한 `jiyong` Commit SHA가 인계 기준이다.
-문서에 고정 SHA를 적어 오래된 값으로 만들지 않고, 각 팀원이 아래
-명령으로 전달받은 SHA가 자기 Branch의 조상인지 확인한다.
+최지용의 `jiyong` Commit SHA는 PR·추적용 소스 기준이다. 팀원이 실제
+작업 기준으로 반영할 값은 PM이 `jiyong` 변경을 검토·병합한 뒤
+전달하는 40자리 `main` Commit SHA다. 문서에 고정 SHA를 적어 오래된
+값으로 만들지 않고, 각 팀원이 아래 명령으로 전달받은 SHA가
+`origin/main`과 자기 Branch의 조상인지 확인한다.
 
 ## 2. 현재 기준과 완료 범위
 
@@ -31,7 +36,7 @@ Branch에 반영한 뒤, 남아 있는 협업 충돌을 자기 관할에서 해�
 | 범위 | 현재 기준 |
 | --- | --- |
 | 환경 | Python 3.13.13, pip 26.0.1, PostgreSQL 16.14 |
-| Backend 전체 회귀 | 2026-07-28 최종 공유 검증에서 `331 passed` |
+| Backend 전체 회귀 | 최신 `main` 통합·Auth 초 경계 회귀 보정·문서 반영을 포함한 최종 HEAD에서 `353 passed` |
 | Migration | drift 없음, PostgreSQL 16.14 연결·적용 Migration 검사 통과 |
 | Seed | Accounts → Products → Subscriptions → Care 순서로 PostgreSQL에서 2회 연속 실행 통과 |
 | T-005 | 계약 테이블 32개 중 7개 구현, 25개 후속 |
@@ -40,6 +45,9 @@ Branch에 반영한 뒤, 남아 있는 협업 충돌을 자기 관할에서 해�
 | 충돌 처리 | 상태 충돌 `STATE-CONFLICT-01`, 키 재사용 `DUPLICATE-EVENT-01` |
 | 멱등성 | 동일 Key·동일 Body 재생, 동일 Key·다른 Body 409 |
 | 공개 식별자 | 외부 UUID와 업무 표시 코드를 분리 |
+| API 계약·Runtime | OpenAPI Operation 9개, 실제 Runtime 7개, 설계 전용 2개 |
+| API JSON 예시 | 총 22개: 신규 20개 + 기존 Workflow 409 두 종류 |
+| 오류 Registry | Runtime 공통 코드 4개 추가, 최상위 총 10개와 `runtime_http_mapping` 검증 |
 
 관련 기준 문서:
 
@@ -52,6 +60,8 @@ Branch에 반영한 뒤, 남아 있는 협업 충돌을 자기 관할에서 해�
 - [OpenAPI 원본](../../contracts/api/openapi.yaml)
 - [문의 API 계약](../../contracts/api/paths/inquiries.yaml)
 - [Workflow Action 계약](../../contracts/api/paths/workflow.yaml)
+- [API Runtime 구현 상태](../api/runtime_implementation_status.md)
+- [Backend API 계약 정합화 검증보고서](../individual/jiyong/manuals/20260729_최지용_Backend_API_계약_정합화_검증보고서_v1.0.md)
 
 ### 2.2 완료로 보고하면 안 되는 범위
 
@@ -71,18 +81,67 @@ T-005 전체 완료라고 쓰지 않는다.
 
 ### 2.3 팀 작업을 막는 현재 기준 불일치
 
-| 영역 | 2026-07-28 실측 | 팀원이 따라야 할 판단 |
+| 영역 | 2026-07-29 실측 | 팀원이 따라야 할 판단 |
 | --- | --- | --- |
-| Git 기준선 | 최신 `origin/main`을 반영하고 최지용 변경을 C1~C10 작업 단위로 분리 Commit | 최지용이 공유한 40자리 `origin/jiyong` SHA를 확인한 뒤 팀별 Branch에 반영 |
-| PM 계약 | YAML·예시가 아직 `draft_for_review` | 윤승혁이 채택 상태·Version·Changelog를 기록하기 전에는 Data가 임의 확정 금지 |
+| Git 기준선 | API 정합화·최신 `main` 통합·자동 회귀를 작업 단위 Commit으로 고정 | `jiyong` SHA는 PR·추적 기준이다. PM이 검토해 `main`에 병합하고 전달한 40자리 `main` SHA만 팀별 Branch에 반영 |
+| PM 계약 | State Machine `v1.0.0`이 2026-07-29 `TEAM_APPROVED`로 채택됨 | Data는 `data-state-crosswalk.yaml`과 대표 14단계 계약을 기준으로 Fixture·QA를 갱신하고, Backend는 승인된 값을 중복 정의하지 않고 소비 |
 | State Machine 생성물 | 최신 `origin/main` 기준 파일과 순수 계산 Engine·Guard 단위 기반을 `jiyong`에 반영했으나 운영 Service에는 미연결 | PM 계약·생성 Script·산출물을 삭제하거나 구형 수동본으로 되돌리지 않음 |
-| Web | 환경·공통 API·인증 관련 핵심 파일이 비어 있고 Test Script가 없음 | 상담사 실제 연동 완료가 아니라 공통 Client·인증·계약 Fixture부터 구현 |
-| Mobile | 지침은 단일 `:app`, 최신 `main`은 3모듈과 `mobile_prev`를 함께 보유 | 구조 결정과 지침 갱신 전 양정현 작업은 `BLOCKED` |
-| AI | 계약 일부가 비어 있고 `pyproject.toml`·Runtime·Health가 Placeholder | 확정 설치 명령이 없으므로 이동윤이 환경·Schema·Runtime을 먼저 완성 |
+| Web | Auth·공통 Client·운영 Dashboard·Test Script 반영, build·lint 통과. 다만 최신 Data Fixture의 `public_id` 전환을 Mock이 소비하지 못해 8개 Suite import 실패 | 한예나는 `inquiry_id`→`public_id` Mapping과 내부 정수 FK/Public UUID 경계를 수정하고 `npm test` 전체 통과 후 인계 |
+| Mobile | 구조 V2·최신 `main`·`jiyong` 모두 `:customer-app`·`:technician-app`·`:core` 3모듈이며 `mobile/app`·`mobile_prev` 없음 | 구조 충돌은 해소됐다. 양정현은 3모듈 의존성·Network 위치·Build 기준을 검증한 뒤 기능 작업 |
+| AI | 평가 Dataset·Loader와 App 코드는 있으나 `pyproject.toml` 의존성 선언이 비어 있어 재현 가능한 AI 환경이 없음 | Backend `.venv`에 AI 패키지를 섞지 않고 이동윤이 `ai/.venv` 재현 계약·의존성·테스트 명령을 확정 |
+| API 구현 상태 | OpenAPI 9·Runtime 7·OpenAPI-only 2, JSON 22개, Registry 공통 코드 정합화 완료 | 미구현 2개를 호출하지 않고 PM `main` SHA에서 소비 검증 |
+| 설명 문서 Drift | 사람용 명세와 Runtime 상태표를 기계 계약·실제 Route의 9·7로 갱신 | 이후 수치는 Runtime·OpenAPI 계약 테스트를 통과한 변경에서만 갱신 |
 
-따라서 개별 테스트 통과와 “모든 팀원이 Pull해도 되는 최종 공유
-SHA”는 같은 뜻이 아니다. 4.0의 공유 게이트를 통과한
-`jiyong` Commit만 팀 인계 기준으로 사용한다.
+따라서 개별 테스트 통과, `jiyong` Push, “모든 팀원이 Pull해도 되는
+최종 공유 SHA”는 서로 다른 뜻이다. 4.0의 공유 게이트를 거쳐 PM이
+병합·전달한 `main` Commit만 팀 인계 기준으로 사용한다.
+
+### 2.4 2026-07-29 개발 최우선 게이트
+
+새 Model Wave, 후속 Workflow Action, Data Importer 또는 AI Client를
+추가하기 전에 현재 등록된 Runtime을 먼저 정합화한다. 이 작업은
+PM·Data·AI의 신규 입력을 기다리지 않고 최지용이 바로 수행할 수 있다.
+
+현재 대상 Runtime은 다음 7개다.
+
+- `GET /health`
+- `POST /api/v1/auth/demo-login`
+- `POST /api/v1/auth/refresh`
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/me`
+- `POST /api/v1/inquiries`
+- `POST /api/v1/inquiries/{inquiry_id}/cancel`
+
+OpenAPI에는 있지만 Runtime이 없는 다음 2개는 `NOT_IMPLEMENTED`로
+분리하며, 구현된 것처럼 JSON 예시나 완료 상태를 만들지 않는다.
+
+- `PATCH /api/v1/inquiries/{id}/questionnaire`
+- `POST /api/v1/inquiries/{id}/action-results`
+
+순차 작업 결과:
+
+| 순서 | 작업 | 현재 결과 |
+|---:|---|---|
+| 1 | OpenAPI 9개를 Runtime 7개·OpenAPI-only 2개로 매핑 | 완료·계약 검증 통과 |
+| 2 | Runtime 공통 오류 4개와 HTTP 선택 규칙 정합화 | 완료·400~599 Mapping 검증 통과 |
+| 3 | 구현 Endpoint 정상·오류·Replay 예시 | 총 22개·상대 참조·비밀값 검증 통과 |
+| 4 | 계약·권한·전체 Backend 회귀 | 94건·31건·353건 통과 |
+| 5 | 지원·미구현 경계와 소비자 인계 | 문서 반영 완료·PM 리뷰 대기 |
+
+다음 중 하나라도 발생하면 신규 기능으로 넘어가지 않는다.
+
+- OpenAPI와 Route의 Path·Method·`operationId` 대응이 다름
+- Schema와 Serializer의 필드·필수값·Enum이 다름
+- Runtime 오류 코드가 Registry에 없거나 HTTP 상태가 다름
+- 구현됐다고 선언한 응답의 검증 가능한 예시가 없음
+- 계약 또는 Runtime 테스트 실패
+
+현재 로컬 자동 검증에서는 위 중단 조건이 발생하지 않았다. 팀 공용
+완료 상태는 `jiyong` Push와 PM `main` 병합 뒤에만 선언한다.
+
+T-005 다음 Wave는 김은진의 Data Mapping·Fixture 입력 뒤에,
+T-023 후속 Action·Service 연결은 윤승혁의 State·Terminal·Reopen
+계약 입력 뒤에 한 단위씩 진행한다.
 
 ## 3. 변경하지 않는 확정 계약
 
@@ -116,7 +175,7 @@ SHA”는 같은 뜻이 아니다. 4.0의 공유 게이트를 통과한
 - [동시성 정책](../../contracts/state-machine/concurrency-policy.yaml)
 - [완료 정책](../../contracts/state-machine/completion-policy.yaml)
 
-## 4. 팀 Branch와 Pull 전 준비
+## 4. 팀 Branch·PM 병합·Pull 전 준비
 
 | 담당자 | 역할 | 원격 Branch |
 | --- | --- | --- |
@@ -127,34 +186,34 @@ SHA”는 같은 뜻이 아니다. 4.0의 공유 게이트를 통과한
 | 이동윤 | AI·RAG | `dongyoon` |
 | 윤승혁(PM) | PM·기술 통합 | `seunghyuk` |
 
-### 4.0 최지용의 공유 시작 조건
+### 4.0 Git 공유 게이트 — 개발 우선순위와 분리
 
-팀원은 최지용이 다음 조건을 모두 충족했다는 메시지와 40자리 Commit
-SHA를 전달한 뒤 Pull 작업을 시작한다.
+이 절은 정합화된 결과를 팀에 배포하기 위한 절차다. 2.4의 Runtime
+계약 정합보다 먼저 수행해야 하는 개발 우선순위가 아니다.
 
-1. `git fetch --prune origin` 후 `jiyong`과 최신 `origin/main`의
-   차이를 파일 단위로 확인한다.
+팀원은 최지용의 `jiyong` Push만 보고 Pull하지 않는다. 최지용이
+작업·검증·Push를 끝내고 PM이 검토·`main` 병합을 완료한 뒤, PM이
+40자리 `main` Commit SHA를 전달해야 Pull 작업을 시작한다.
+
+1. 최지용은 `jiyong`의 변경 범위와 최신 `origin/main`과의 차이를
+   파일 단위로 확인한다.
 2. `origin/main`의 State Machine Render Script와 자동 생성
    MMD·SVG를 보존한다.
-3. 최신 `origin/main`의 Mobile 3모듈 구조는 Backend 공유 과정에서
-   삭제하거나 구형 단일 모듈로 되돌리지 않는다. Mobile은 다음 두
-   방향 중 하나를 양정현 주담당·윤승혁 PM의 결정 기록과 최신
-   지침에 맞춰 확정한다.
-   - 지침의 단일 `mobile/:app`을 유지하고 `main`의 3모듈 변경을
-     재정리
-   - `:customer-app`·`:technician-app`·`:core`를 채택하고 지침을
-     갱신한 뒤 `mobile_prev`의 보존·삭제·통합 방침을 함께 기록
-4. Mobile 구조가 미결이면 Mobile 관할 작업만 `BLOCKED`로 표시하고,
-   이미 `main`에 반영된 팀원 파일을 Backend Branch에서 임의
-   수정하거나 되돌리지 않는다.
-5. 최신 `origin/main` 변경을 `jiyong`에 반영하고
-   `git merge-base --is-ancestor origin/main HEAD`를 통과시킨다.
-6. Backend 구현·계약·Migration·테스트·인계 문서를 모두 Commit한다.
-7. 같은 Commit에서 PostgreSQL·Seed 2회·전체 Backend 회귀를
+3. 구조 V2와 최신 `origin/main`의 Mobile 3모듈
+   `:customer-app`·`:technician-app`·`:core`를 보존하고 Backend
+   공유 과정에서 삭제하거나 단일 `:app`으로 되돌리지 않는다.
+4. `mobile/app` 또는 `mobile_prev`가 다시 나타나면 기능 작업을
+   진행하지 않고 구조 V2와 전달 SHA를 대조해 중복 유입 원인을 먼저
+   기록한다.
+5. Backend 구현·계약·Migration·테스트·인계 문서를 모두 Commit한다.
+6. 같은 Commit에서 PostgreSQL·Seed 2회·전체 Backend 회귀를
    통과한다.
-8. `git diff --check`를 통과시키고 원격 `origin/jiyong`과 로컬
+7. `git diff --check`를 통과시키고 원격 `origin/jiyong`과 로컬
    `jiyong` SHA를 일치시킨다.
-9. 공유 메시지에 완료 범위·미구현 범위·Mobile 결정 결과를 명시한다.
+8. PM은 `jiyong` PR을 검토하고 충돌·보존 범위를 확인한 뒤
+   `main`에 병합한다.
+9. PM은 병합된 40자리 `main` SHA와 완료·미구현 범위를 팀에
+   전달한다.
 
 최지용은 아래 명령으로 공유 가능 여부를 확인한다.
 
@@ -169,14 +228,9 @@ if ((git branch --show-current) -ne 'jiyong') {
 
 git status --short
 git rev-list --left-right --count origin/main...HEAD
-git diff --name-status HEAD..origin/main
+git diff --name-status origin/main...HEAD
 Get-Content .\mobile\settings.gradle.kts
 git ls-tree -d --name-only origin/main -- mobile mobile_prev
-
-git merge-base --is-ancestor origin/main HEAD
-if ($LASTEXITCODE -ne 0) {
-    throw '최신 main 또는 Mobile 구조 결정이 반영되지 않아 아직 공유할 수 없습니다.'
-}
 
 if (git status --porcelain) {
     throw '미커밋 변경이 있어 아직 공유할 수 없습니다.'
@@ -189,8 +243,9 @@ if ($localSha -ne $remoteSha) {
 }
 ```
 
-단순히 “Push 완료”라는 메시지만 받고 시작하지 않는다. 반드시
-40자리 Commit SHA와 이 문서의 경로를 함께 받는다.
+단순히 “`jiyong` Push 완료”라는 메시지만 받고 시작하지 않는다.
+반드시 PM이 병합해 전달한 40자리 `main` Commit SHA와 이 문서의
+경로를 함께 받는다.
 
 ### 4.1 공통 준비물
 
@@ -232,30 +287,30 @@ git status --short
 기존 작업을 없애기 위해 `git reset --hard`나 다른 사람 파일 삭제를
 사용하지 않는다.
 
-### 4.3 자기 Branch에 `jiyong` 인계 Commit 반영
+### 4.3 자기 Branch에 PM 병합 `main` Commit 반영
 
 아래 두 값만 자기 정보로 변경한다.
 
 ```powershell
 $myBranch = '<본인-Branch>'
-$handoffSha = '<최지용이-공유한-jiyong-Commit-SHA>'
+$mainSha = '<PM이-공유한-main-Commit-SHA>'
 
 Set-Location (git rev-parse --show-toplevel)
 
-if ($handoffSha -notmatch '^[0-9a-fA-F]{40}$') {
-    throw '최지용에게 전달받은 40자리 Commit SHA를 입력하세요.'
+if ($mainSha -notmatch '^[0-9a-fA-F]{40}$') {
+    throw 'PM에게 전달받은 40자리 main Commit SHA를 입력하세요.'
 }
 
 git fetch --prune origin
 
-git merge-base --is-ancestor $handoffSha origin/jiyong
+git merge-base --is-ancestor $mainSha origin/main
 if ($LASTEXITCODE -ne 0) {
-    throw '전달받은 SHA가 origin/jiyong에 없습니다. Merge하지 말고 최지용에게 확인하세요.'
+    throw '전달받은 SHA가 origin/main에 없습니다. Merge하지 말고 PM에게 확인하세요.'
 }
 
 git switch $myBranch
 git pull --ff-only origin $myBranch
-git merge --no-ff $handoffSha
+git merge --no-ff $mainSha
 
 if ($LASTEXITCODE -ne 0) {
     git status --short
@@ -263,9 +318,9 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Merge 충돌입니다. 임의 삭제하지 말고 충돌 파일과 담당자를 확인하세요.'
 }
 
-git merge-base --is-ancestor $handoffSha HEAD
+git merge-base --is-ancestor $mainSha HEAD
 if ($LASTEXITCODE -ne 0) {
-    throw '전달받은 jiyong Commit이 현재 Branch에 포함되지 않았습니다.'
+    throw '전달받은 main Commit이 현재 Branch에 포함되지 않았습니다.'
 }
 
 git status --short
@@ -385,30 +440,34 @@ docker compose --env-file .\backend\.env stop postgres
 | 1 | Action Endpoint 부족 | START·CANCEL 대표 흐름만 구현 | 최지용 | 윤승혁(PM), 한예나, 양정현 |
 | 2 | 상태·버전·409 Snapshot | 대표 흐름만 구현 | 최지용 | 한예나, 양정현, 김은진 |
 | 3 | Inquiry·Visit Aggregate 분리 | Inquiry 구현, Visit 후속 | 최지용 | 윤승혁(PM), 김은진 |
-| 4 | Data 12단계·PM 전이 차이 | 미해결 | 윤승혁(PM), 김은진 | 최지용 |
+| 4 | Data 12단계·PM 전이 차이 | PM `v1.0.0` Crosswalk·대표 14단계에서 계약 충돌 해결, Data Fixture·Backend 소비 검증 후속 | 윤승혁(PM), 김은진 | 최지용 |
 | 5 | Terminal·Reopen 정책 | 순수 엔진 단위 기반 구현, 운영 Service·Reopen Runtime 후속 | 윤승혁(PM), 최지용 | 김은진 |
 | 6 | Data UUID·업무 코드·Seed 연결 | Backend 분리 완료, Mapping 후속 | 김은진, 최지용 | 한예나, 양정현 |
 | 7 | `COUNSELOR`·`CONSULTANT` | Backend 표준 완료, Data 후속 | 김은진 | 최지용 |
 | 8 | AI Schema·Timeout·Retry | 정책만 확정, Runtime 후속 | 이동윤, 최지용 | 김은진 |
-| 9 | Mobile 단일 App·3모듈·`mobile_prev` 중복 | 구조 결정 전 | 양정현, 윤승혁(PM) | 최지용 |
-| 10 | Web 상담사 UI·고객 전용 START/CANCEL | 상담사 Runtime API 미구현 | 한예나, 최지용 | 윤승혁(PM) |
+| 9 | Mobile 단일 App·3모듈 구조 충돌 | **해결** — V2·`main`·`jiyong` 모두 3모듈, `mobile/app`·`mobile_prev` 없음 | 양정현 | 윤승혁(PM), 최지용 |
+| 10 | Web 상담사 UI·고객 전용 START/CANCEL | Web 화면·Auth 기반 반영, 상담사 Runtime API 미구현·Data Fixture `public_id` 소비 테스트 후속 | 한예나, 최지용 | 윤승혁(PM), 김은진 |
 
 ## 7. 권장 협업 실행 순서
 
-| 순서 | 담당 | 작업 | 다음 담당자에게 주는 결과 |
-| ---: | --- | --- | --- |
-| 0 | 양정현·윤승혁(PM)·최지용 | Mobile 단일 App·3모듈 및 `mobile_prev` 처리 방향 기록 | `main` 반영에 사용할 확정 구조 |
-| 1 | 최지용 | Backend 대표 기준선과 정확한 Commit SHA 공유 | 실행 가능한 API·DB 기준선 |
-| 2 | 윤승혁(PM) | PM 계약의 14단계·Terminal 정책 모순 제거 | 변경된 계약 또는 변경 없음 증거 |
-| 3 | 김은진 | Data ID·Role·상태 Crosswalk와 Fixture·QA 갱신 | Data Mapping·Fixture·QA 결과 |
-| 4 | 최지용 | Data Mapping을 Backend Import·Visit·Guard에 반영 | 안정된 Backend 계약·Runtime |
-| 5 | 한예나·양정현 | Web·Mobile 소비 코드 갱신 | 소비자 계약·빌드·오류 복구 결과 |
-| 6 | 이동윤 | AI Schema·실행환경·Runtime 확정 | AI Commit SHA·실행 명령·JSON 예시 |
-| 7 | 최지용 | Backend AI Client 구현 | Backend↔AI 연동 결과 |
-| 8 | 김은진 | 동일 Commit 통합 QA | 계약·DB·E2E·안전 최종 결과 |
+| 구분 | 순서 | 담당 | 작업 | 다음 담당자에게 주는 결과 |
+| --- | ---: | --- | --- | --- |
+| 독립 선행 | A | 최지용 | 현재 Runtime 7개의 OpenAPI·Serializer·오류·예시·테스트 정합화 | 소비 가능한 현재 Backend 계약 |
+| 독립 선행 | B | 양정현 | V2 3모듈 의존성·Network 위치·Build 기준 확인 | `:customer-app`·`:technician-app`·`:core` 실행·검증 기준 |
+| 완료 입력 | 1 | 윤승혁(PM) | 14단계·Terminal·Guard를 State `v1.0.0 TEAM_APPROVED`로 채택 | 채택된 State 계약·Crosswalk·Transition·Guard ID |
+| 팀 의존성 | 2 | 김은진 | PM 계약 기준 Data ID·Role·상태 Mapping·Fixture·QA 갱신 | Mapping 파일·Fixture SHA·QA 결과 |
+| 팀 의존성 | 3 | 최지용 | 확정 Mapping을 Backend Import·Visit·Guard에 한 수직 흐름씩 반영 | 안정된 Backend 계약·Runtime |
+| 팀 의존성 | 4 | 한예나·양정현 | Web·Mobile 소비 코드와 오류 복구 갱신 | 소비자 계약·Build·Smoke 결과 |
+| 팀 의존성 | 5 | 이동윤 → 최지용 | AI Schema·Runtime 확정 후 Backend AI Client 연결 | Backend↔AI 통합 결과 |
+| 최종 검증 | 6 | 김은진 | 동일 Commit 계약·DB·E2E·안전 통합 QA | 최종 QA 결과 |
+| 공유 게이트 | G | 최지용 → 윤승혁(PM) | 최지용 `jiyong` Push → PM 검토·`main` 병합·40자리 SHA 공유 | 팀원이 반영할 공식 `main` SHA |
 
-팀원은 자기 선행 입력이 오지 않았으면 임의 Mock을 확정 계약처럼
-고정하지 않고 `BLOCKED`와 필요한 입력을 기록한다.
+개발 의존성은 `PM 승인 입력 완료 → Data → Backend → 소비자 → AI → QA`
+순서다.
+독립 선행 A·B는 필요한 외부 입력을 기다리지 않고 진행할 수 있다.
+공유 게이트 G는 개발 기능 순위가 아니라 검증된 결과를 배포하는
+절차다. 팀원은 자기 선행 입력이 오지 않았으면 임의 Mock을 확정
+계약처럼 고정하지 않고 `BLOCKED`와 필요한 입력을 기록한다.
 
 ## 8. 최지용 인계·후속 작업
 
@@ -426,6 +485,17 @@ docker compose --env-file .\backend\.env stop postgres
 
 ### 8.2 현재 전달할 내용
 
+- 현재 계약은 OpenAPI 9개, 실제 Runtime 7개, OpenAPI-only 2개다.
+- 실제 JSON 예시는 Auth 7·Errors 7·Inquiries 3·Workflow 5로
+  총 22개이며 모든 파일이 OpenAPI 상대 참조로 연결됐다.
+- Runtime 공통 오류 `INVALID_REQUEST`, `RESOURCE_NOT_FOUND`,
+  `VALIDATION_ERROR`, `INTERNAL_ERROR`를 최상위 Registry와 Category에
+  가산했고 Handler의 4xx·5xx 선택 규칙을 `runtime_http_mapping`으로
+  고정했다.
+- 사람용 API 설명 문서와 Runtime 상태표는 OpenAPI 9·Runtime 7·
+  OpenAPI-only 2로 갱신됐다.
+- 계약 94건, 권한·소유권 31건, 전체 Backend 353건이 현재
+  작업트리에서 통과했다.
 - Public UUID와 업무 코드는 분리돼 있다.
 - JWT `sub`는 Public UUID를 우선하며 기존 문자열 PK는 호환
   fallback이다.
@@ -446,24 +516,47 @@ docker compose --env-file .\backend\.env stop postgres
   QA·Assessment·Guidance와 Wave 4·5의 상담·방문·지식·Evidence·
   AI Run 저장 Model은 후속이다.
 
-### 8.3 남은 충돌 해결 작업
+### 8.3 완료한 독립 작업과 입력 대기 작업
 
-1. Data Mapping이 확정되면 Backend Importer를 구현한다.
-2. Visit Aggregate와 `VisitResult` FK를 해당 Wave에서 구현한다.
-3. Action별 Guard Adapter를 작성해 순수 Engine을 Service Runtime에
-   한 Action씩 연결하고 Terminal/Reopen 정책을 검증한다.
-4. 재문의에 부모 문의가 필요하면 계약·Model·Migration·API·테스트를
-   한 변경 단위로 구현한다.
-5. 소비자가 필요한 구독·문의 조회 API를 계약부터 수직 구현한다.
-6. T-005 Wave 3→4→5의 저장 Model·Migration을 순서대로 완성한다.
-7. `SUBMIT_SYMPTOM` 수직 흐름을 구현하고 전이 Commit 뒤 AI 작업을
-   예약한다.
-8. 이동윤의 AI Schema Commit 이후에만 Backend AI Client를 구현한다.
+다음 독립 작업은 `작업 → 집중 검증 → 증거 기록` 순서로 완료했다.
+
+1. OpenAPI 9개를 Runtime 7개와 OpenAPI-only 2개로 분리했다.
+2. Runtime 공통 오류 4개와 Handler 선택 규칙을 가산 정합화했다.
+3. 구현된 Auth 4개·START·CANCEL만 JSON 22개로 연결했다.
+4. 계약 94건·권한 31건·전체 Backend 353건을 통과했다.
+5. 상세 증거와 팀별 다음 행동은
+   [검증보고서](../individual/jiyong/manuals/20260729_최지용_Backend_API_계약_정합화_검증보고서_v1.0.md)에
+   기록했다.
+
+아래 작업은 선행 입력을 받은 뒤에만 진행한다.
+
+1. 김은진의 Data Mapping·Fixture가 확정되면 T-005 다음 Wave와
+   Backend Importer를 한 Wave씩 구현한다.
+2. Visit Aggregate와 `VisitResult` FK는 해당 Data Mapping·Wave
+   입력 뒤에 구현한다.
+3. 채택된 State `v1.0.0`·Terminal·Reopen 계약을 입력으로 Action별
+   Guard Adapter를 한 Action씩 Service Runtime에 연결한다.
+4. 재문의 부모 문의는 PM 계약에 포함된 경우 계약·Model·Migration·
+   API·테스트를 한 변경 단위로 구현한다.
+5. 소비자가 필요한 구독·문의 조회 API는 2.4의 정합 게이트와
+   소비자 입력 뒤 계약부터 수직 구현한다.
+6. 이동윤의 AI Schema·Runtime Commit 이후에만 Backend AI Client를
+   구현한다.
 
 ### 8.4 검증 명령
 
 ```powershell
 Set-Location (git rev-parse --show-toplevel)
+
+.\backend\.venv\Scripts\python.exe -m pytest `
+  backend/tests/unit/accounts/test_auth_contracts.py `
+  backend/tests/unit/accounts/test_auth_api.py `
+  backend/tests/api/test_health.py `
+  backend/tests/api/test_openapi_common_contract.py `
+  backend/tests/api/test_openapi_inquiry_contract.py `
+  backend/tests/api/test_cancel_inquiry_contract.py `
+  backend/tests/api/test_workflow_conflict_contract.py `
+  -q
 
 .\backend\.venv\Scripts\python.exe -m pytest `
   backend/tests/api/test_t022_create_inquiry.py `
@@ -485,13 +578,19 @@ python .\scripts\development\check_environment.py `
 
 ### 8.5 완료·인계 기준
 
-- 실제 `jiyong` Commit SHA 전달
+- 현재 Runtime 7개의 OpenAPI·Route·Serializer 대응 차이 0건
+- Runtime·Registry 오류 코드와 HTTP 상태 차이 0건
+- 구현된 Endpoint의 정상·오류 예시 누락 0건
+- 관련 계약·Runtime 테스트 실패 0건
+- 최지용의 실제 `jiyong` 소스 SHA와 PM이 병합·전달한 실제 `main`
+  SHA를 함께 기록
 - OpenAPI·Route·Serializer·Service·Migration·테스트가 같은 Commit
 - PostgreSQL·Seed 2회·전체 회귀 결과 전달
 - 구현하지 않은 T-005·T-022·T-023 범위를 명시
-- AI Schema Commit을 기록하고 Backend AI Client 결과 전달
+- AI Schema·Runtime 입력 전에는 `BLOCKED`를 기록하고, 입력 후
+  Backend AI Client를 연결했다면 해당 Commit과 검증 결과를 전달
 
-## 9. 윤승혁(PM) 인계 작업
+## 9. 윤승혁(PM) 계약 유지·변경 인계
 
 ### 9.1 주관 파일
 
@@ -507,7 +606,7 @@ Backend API·ERD 작성을 다시 승인하는 절차가 아니다. PM은 자기
 순서를 책임진다. 최지용이 확정한 Backend API·ERD를 다시 승인
 대기시키지 않는다.
 
-### 9.2 해결할 충돌
+### 9.2 `v1.0.0` 채택으로 해결된 계약 충돌과 남은 Runtime 경계
 
 - 충돌 3: Inquiry 13상태와 Visit 7상태를 별도 Aggregate로 유지한다.
 - 충돌 4: Data의 12단계 흐름에 빠진
@@ -539,10 +638,11 @@ FINALIZE_INQUIRY
   오류 `STATE-CONFLICT-01`·`DUPLICATE-EVENT-01`의 Mapping을 명시한다.
 - 성공 `allowed_actions` 객체 배열, 상태 충돌의 Action code 배열,
   멱등 Key 재사용 충돌의 빈 `details`를 서로 섞지 않는다.
-- 현재 계약 YAML·예시의 `draft_for_review`를 그대로 두고 확정이라고
-  보고하지 않는다. 채택 상태·Version·Changelog를 함께 갱신한다.
+- 현재 계약 YAML·대표 예시는 `v1.0.0 TEAM_APPROVED`이며 Version과
+  Changelog도 기록됐다. 계약 채택과 Backend의 전체 Action Runtime
+  구현 완료는 별도 상태로 보고한다.
 
-### 9.3 작업 순서
+### 9.3 후속 계약 변경 시 유지 절차
 
 1. 최신 `main` 반영 과정에서
    `scripts/contracts/render_state_machine.py`와 자동 생성
@@ -550,8 +650,8 @@ FINALIZE_INQUIRY
 2. `inquiry-states.yaml`, `transition-rules.yaml`,
    `completion-policy.yaml` 사이의 모순을 확인한다.
 3. PM 소유의 기계 판독 Crosswalk
-   `contracts/state-machine/data-state-crosswalk.yaml` 또는 동등한
-   계약을 만든다.
+   `contracts/state-machine/data-state-crosswalk.yaml`을 상태·전이
+   변경과 같은 Commit에서 함께 갱신한다.
 4. Data 구상태를 다음처럼 분리해서 Mapping한다.
 
 | Data 구값 | PM 계약 Mapping |
@@ -566,8 +666,8 @@ FINALIZE_INQUIRY
    치환하지 않는다.
 6. 14단계 대표 예시, Terminal/Reopen, 오류 Mapping,
    `allowed_actions` 형태를 함께 갱신한다.
-7. 채택 상태·Version·Changelog를 기록하고 생성 Diagram을 다시
-   만든다.
+7. 채택 상태·Version·Changelog의 일관성을 유지·갱신하고 생성
+   Diagram을 다시 만든다.
 8. 계약 변경이 없으면 변경 없음과 기준 Commit SHA를 전달한다.
 9. 계약 변경이 있으면 김은진·최지용에게 변경 이벤트·전이·Guard ID와
    Migration 영향 여부를 먼저 전달한다.
@@ -783,18 +883,33 @@ Backend Seed 2회와 DB E2E 승인은 최지용의 최종 통합 게이트다. �
 고객 계약 Harness가 필요할 때만 `DEMO-CUSTOMER-001`을 사용하고
 상담사 화면 기능과 명확히 구분한다.
 
-또한 Web의 `.env.example`, 환경 Loader, 공통 HTTP Client,
-Response·Error·Request Context, Auth·Role Guard가 현재 비어 있고
-`package.json`에 Test Script도 없다. 다음을 구현하기 전에는 실제
-Web 연동 완료로 보고하지 않는다.
+최신 `main`에는 환경 Loader, 공통 HTTP Client, Auth·Role Guard,
+운영 Dashboard와 Vitest Script가 반영됐다. 통합 Gate의 `npm run
+build`와 `npm run lint`는 통과했지만 `npm test`는 22개 Suite 중
+14개만 통과하고 8개가 import 단계에서 실패했다. 실행에 진입한
+38개 Test 자체는 모두 통과했다.
 
-- `VITE_API_BASE_URL=http://127.0.0.1:8000/api/v1`처럼 비밀값이 아닌
-  공개 환경변수의 검증
-- Demo Login·Refresh·Logout·`/me` 네 Auth Route
-- 401 동시 요청의 Refresh Single-flight와 원요청 최대 1회 재시도
-- Refresh 실패·Logout 시 Token·사용자 상태 제거 기준
-- `DEMO-CONSULTANT-001` 로그인과 상담사 Role Guard
-- Vitest 등 팀이 채택한 Test Runner와 `npm test` 계열 Script
+원인은 [상담사 Mock](../../web/src/features/consultation/model/consultantWorkspaceMock.ts)이
+`row.inquiry_id`를 읽는 반면
+[최신 Inquiry Fixture](../../data/synthetic/fixtures/inquiries.json)와
+[Schema](../../data/schemas/synthetic/syntheticInquiry.schema.json)는
+공개 UUID를 `public_id`로 제공하기 때문이다. 한예나는 다음 순서로
+수정하고 김은진은 소비 Mapping을 교차검증한다.
+
+1. `OfficialInquiryFixture.inquiry_id`와 `row.inquiry_id`를
+   `public_id` 기준으로 갱신한다.
+2. 정수 `customer_id`·`subscription_id`를 Public UUID처럼 문자열
+   강제 변환하지 않고
+   [Backend Import Crosswalk](../../data/config/handoff/backend_import_crosswalk.json)의
+   조회 순서를 따른다.
+3. 계약 Fixture를 다시 생성해야 하면 생성 전후 Diff를 확인하고,
+   원본 Data Fixture를 Web에서 수정하지 않는다.
+4. `npm test`의 Suite import 실패 0건과 전체 Test 통과를 확인한다.
+
+`npm ci`는 완료됐지만 로컬 Node `24.14.0`이 `jsdom@30.0.0`의
+요구 조건인 Node `24.15.0` 이상보다 낮아 `EBADENGINE` 경고가
+발생했다. Node `24.15.0+`, `22.22.2+` 또는 `26+` 중 팀이 잠근
+버전에서 다시 설치·검증하고 High 취약점 2건을 검토한다.
 
 활성 구독 UUID 조회 API와 상담사 문의 목록·상세·Action Runtime도
 전체 구현되지 않았다. 다음 중 하나가 제공되기 전에는 해당 화면을
@@ -829,13 +944,10 @@ Set-Location .\web
 
 node --version
 npm ci
+npm test
 npm run lint
 npm run build
 ```
-
-현재 `package.json`에는 Test Script가 없으므로 테스트 환경을 추가한
-뒤에는 팀이 확정한 Script도 함께 실행한다. Test Script가 없는데
-테스트까지 완료했다고 보고하지 않는다.
 
 개발 서버:
 
@@ -868,13 +980,18 @@ npm run dev -- --host 127.0.0.1
   존재하는 계약처럼 참조하지 않는다.
 - [Mobile 전체](../../mobile/)
 
-### 12.2 Branch 구조 선행 확인
+### 12.2 확정된 3모듈 구조 확인
 
-현재 네 지침서는 단일 `mobile/:app`을 기준으로 하지만 최신
-`origin/main`은 `:customer-app`·`:technician-app`·`:core`와
-루트의 `mobile_prev`를 함께 추가했다. 현재 `origin/jeonghyun`도
-아직 단일 `:app`이다. 어느 쪽이 최종 구조인지 문서만으로 확정할 수
-없으므로 양정현은 구조 결정 전 기능 코드를 시작하지 않는다.
+프로젝트 구조 V2와 최신 `origin/main`·`jiyong`은 다음 구조로
+일치한다.
+
+- `:customer-app`: 고객용 Android Application
+- `:technician-app`: 방문기사용 Android Application
+- `:core`: 두 앱의 공통 순수 Kotlin Module
+- `mobile/app`, `mobile_prev`: 존재하지 않음
+
+양정현은 구조 선택을 다시 시작하지 않고, 전달받은 SHA에서 이 기준이
+유지되는지 확인한 뒤 Network·DTO·화면 연동을 진행한다.
 
 최지용이 공유한 SHA를 반영한 뒤 다음을 확인한다.
 
@@ -884,17 +1001,11 @@ Get-Content .\mobile\settings.gradle.kts
 git ls-tree -d --name-only HEAD -- mobile mobile_prev
 ```
 
-다음 세 항목이 인계 메시지와 최신 지침에 모두 기록돼 있어야
-`BLOCKED`를 해제한다.
-
-1. 단일 `:app` 유지 또는 3모듈 채택
-2. 3모듈 채택 시 `mobile_prev` 보존·삭제·통합 방침
-3. 선택한 구조의 Package Namespace·Network 구현 위치·검증 명령
-
-구형 `mobile/app` Network Placeholder의 중복 Package 경로를 새
-구조로 복사하지 않는다. 3모듈을 채택할 경우 현재 `core`에 없는
-Retrofit·OkHttp·Serialization 의존성과 Network Package 위치를
-먼저 설계한다.
+`settings.gradle.kts`에 세 Module이 모두 있고 `mobile/app`과
+`mobile_prev`가 없으면 구조 게이트를 통과한다. 다음으로 Package
+Namespace·Network 구현 위치·검증 명령을 기록한다. `core`에 없는
+Retrofit·OkHttp·Serialization 의존성과 Network Package 위치는
+양정현 관할에서 설계·검증한다.
 
 ### 12.3 해결할 충돌
 
@@ -918,9 +1029,9 @@ Retrofit·OkHttp·Serialization 의존성과 Network Package 위치를
 
 ### 12.4 작업 순서
 
-1. 구조 결정 기록·최신 지침·Module 설정 일치 확인
-2. JDK·SDK와 선택한 Module별 의존성 확인
-3. 선택한 공통 Module에 Network·응답·오류 DTO 구현
+1. 구조 V2·전달 SHA·3모듈 설정 일치 확인
+2. JDK·SDK와 Module별 의존성 확인
+3. `core` 또는 문서화한 공통 Network 위치에 응답·오류 DTO 구현
 4. 인증·Correlation과 Operation 단위 Idempotency 처리
 5. Inquiry ID·Code Type 분리
 6. 성공 Action·두 종류 409 Mapper
@@ -932,7 +1043,7 @@ Retrofit·OkHttp·Serialization 의존성과 Network Package 위치를
 
 ### 12.5 준비·검증 명령
 
-다음 명령은 **3모듈 채택이 기록된 뒤에만** 사용한다.
+다음 명령은 확정된 3모듈 구조에서 실행한다.
 
 ```powershell
 Set-Location (git rev-parse --show-toplevel)
@@ -948,17 +1059,14 @@ java -version
 .\gradlew.bat :technician-app:lintDebug
 ```
 
-단일 `:app` 유지가 확정되면 위 명령을 섞지 않고 해당 구조의
-`:app:testDebugUnitTest`·`:app:assembleDebug`·`:app:lintDebug`로
-인계 문서를 갱신한 뒤 실행한다.
-
 기준은 JDK 17이다. Gradle·Android Plugin·SDK 호환성은 문서 추정이
 아니라 위 실제 명령 통과로 판정한다.
 
 ### 12.6 완료·인계 기준
 
 - UUID와 표시 코드 분리
-- 선택한 구조·`mobile_prev` 처리·Package 위치가 지침과 일치
+- V2 3모듈·Package·Network 위치가 지침과 일치하고
+  `mobile/app`·`mobile_prev`가 없음
 - 인증·Correlation Header와 Operation 단위 Idempotency 처리
 - 서버 상태·Action만 소비
 - 정상·401·403·404·두 종류 409·Timeout 테스트
@@ -1040,9 +1148,14 @@ AI 호출 시점은 `START_INQUIRY` 직후가 아니다.
 
 ### 13.4 환경·검증 명령
 
-현재 `ai/pyproject.toml`이 설명 주석뿐이고 App 진입점도
-Placeholder다. 따라서 아래는 **현재 실행 명령이 아니라 이동윤이
-호환성을 검증하고 README에 확정한 뒤 사용할 명령 형식**이다.
+최신 `main`에는 평가 Dataset·Loader와 FastAPI App 코드가 있지만
+`ai/pyproject.toml`은 여전히 설명 주석뿐이다. Backend `.venv`로
+`ai/tests`를 실행하면 `fastapi`·`pydantic` 부재로 6개 Module이
+수집 단계에서 중단된다. 이는 Backend 회귀가 아니라 AI 재현 환경
+미확정 Gate이며, Backend `.venv`에 AI 의존성을 임의 설치하지 않는다.
+
+따라서 아래는 **현재 실행 명령이 아니라 이동윤이 의존성·호환성을
+검증하고 README에 확정한 뒤 사용할 명령 형식**이다.
 
 ```powershell
 Set-Location (git rev-parse --show-toplevel)
@@ -1135,7 +1248,8 @@ git diff --name-only
 
 ### 15.2 Commit 원칙
 
-- Merge로 들어온 최지용 파일을 다시 별도 수정본처럼 Stage하지 않는다.
+- PM `main` 병합으로 들어온 최지용 파일을 다시 별도 수정본처럼
+  Stage하지 않는다.
 - 자기 주관 파일만 명시적으로 Stage한다.
 - 생성물·Cache·가상환경·비밀값을 Stage하지 않는다.
 - 하나의 작업과 검증을 하나의 Commit 단위로 묶는다.
@@ -1143,11 +1257,11 @@ git diff --name-only
 예시 Commit:
 
 ```text
-Data ID·Role·상태 Mapping 및 QA 갱신 | 2026-07-28
-Web Workflow API·409 복구 연동 | 2026-07-28
-Mobile Workflow API·상태 복구 연동 | 2026-07-28
-AI Schema·Runtime·Timeout 정책 정합화 | 2026-07-28
-PM State 대표 전이·Terminal 정책 정합화 | 2026-07-28
+Data ID·Role·상태 Mapping 및 QA 갱신 | 2026-07-29
+Web Workflow API·409 복구 연동 | 2026-07-29
+Mobile Workflow API·상태 복구 연동 | 2026-07-29
+AI Schema·Runtime·Timeout 정책 정합화 | 2026-07-29
+PM State 대표 전이·Terminal 정책 정합화 | 2026-07-29
 ```
 
 ### 15.3 자기 Branch Push
@@ -1220,7 +1334,7 @@ Web 담당자가 Test Script를 추가하지 않았다면 이 단계는 실패�
 
 ### 16.5 Mobile
 
-아래 Script는 확정 Module 구조를 감지해 해당 명령만 실행한다.
+아래 Script는 V2 3모듈을 확인한 뒤 해당 명령만 실행한다.
 
 ```powershell
 Set-Location .\mobile
@@ -1239,20 +1353,15 @@ if (
     .\gradlew.bat :customer-app:lintDebug
     .\gradlew.bat :technician-app:lintDebug
 }
-elseif ($settings.Contains('include(":app")')) {
-    .\gradlew.bat :app:testDebugUnitTest
-    .\gradlew.bat :app:assembleDebug
-    .\gradlew.bat :app:lintDebug
-}
 else {
-    throw '확정되지 않은 Mobile Module 구조입니다.'
+    throw '프로젝트 구조 V2의 Mobile 3모듈과 일치하지 않습니다.'
 }
 
 Set-Location ..
 ```
 
-Module 구조·`mobile_prev` 처리 결정이 인계 기록에 없으면 명령이
-통과해도 Mobile 통합 승인으로 쓰지 않는다.
+Module 구조가 통과해도 Network 위치·API 계약 소비·Build 결과가
+인계 기록에 없으면 Mobile 통합 승인으로 쓰지 않는다.
 
 ### 16.6 AI
 
@@ -1271,7 +1380,8 @@ AI 환경·테스트가 아직 확정되지 않았으면 `BLOCKED`로 보고하�
 [담당자]
 [Branch]
 [최종 Commit SHA]
-[반영한 jiyong 인계 SHA]
+[반영한 PM main SHA]
+[참고한 jiyong 소스 SHA]
 [수정 파일]
 [해결한 충돌 번호]
 [실행 명령]
@@ -1283,7 +1393,7 @@ AI 환경·테스트가 아직 확정되지 않았으면 `BLOCKED`로 보고하�
 
 최소 전달물:
 
-- 윤승혁(PM): 최종 전이·Terminal 계약 SHA
+- 윤승혁(PM): `jiyong` 병합 `main` SHA·최종 전이·Terminal 계약 SHA
 - 김은진: Data Mapping·Fixture·QA SHA
 - 한예나: Web 계약 소비·Build·오류 복구 SHA
 - 양정현: Mobile 계약 소비·Build·오류 복구 SHA
@@ -1294,7 +1404,7 @@ AI 환경·테스트가 아직 확정되지 않았으면 `BLOCKED`로 보고하�
 
 - 같은 Commit에서 환경·계약·Migration·Seed·전체 테스트 통과
 - 최신 `main`의 State Machine 생성 Script·MMD·SVG 보존
-- Mobile 단일 App·3모듈 및 `mobile_prev` 처리 결정이 지침과 일치
+- Mobile이 V2의 3모듈과 일치하고 `mobile/app`·`mobile_prev`가 없음
 - Public UUID와 업무 코드가 모든 소비자에서 분리
 - `COUNSELOR`·`CONSULTANT` 정책이 Data와 Backend에서 일치
 - PM 계약의 채택 상태·Version·Changelog가 기록되고 14단계 대표
@@ -1304,6 +1414,8 @@ AI 환경·테스트가 아직 확정되지 않았으면 `BLOCKED`로 보고하�
 - Key 재사용 409를 Snapshot으로 오인하지 않음
 - AI Schema와 Backend AI Client가 상호 검증
 - Stale·Duplicate AI 응답을 차단하고 AI가 DB 상태를 직접 변경하지 않음
+- 현재 구현 Runtime의 OpenAPI·Serializer·오류 Registry·예시 정합
+  차이 0건
 - 미구현 범위와 Blocker가 숨겨지지 않음
 - `main` 직접 Push 없이 각자 Branch와 Commit SHA로 인계
 
