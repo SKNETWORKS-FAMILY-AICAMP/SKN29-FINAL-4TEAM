@@ -4,6 +4,8 @@ import { COUNSELOR_INQUIRIES } from "../../src/features/consultation/model/consu
 import {
   filterCounselorInquiries,
   getCounselorQueuePage,
+  normalizeCounselorRisk,
+  normalizeCounselorStatus,
 } from "../../src/features/consultation/model/consultantWorkspaceModel";
 import type { CounselorFilters } from "../../src/features/consultation/model/consultantWorkspaceTypes";
 
@@ -26,13 +28,12 @@ describe("상담 큐 View Model", () => {
       ...DEFAULT_FILTERS,
       assignee: "MINE",
       priority: "URGENT",
-      receivedFrom: "2026-07-22",
-      receivedTo: "2026-07-22",
+      receivedFrom: "2026-07-04",
+      receivedTo: "2026-07-04",
     });
 
-    expect(result.map((item) => item.id)).toEqual([
-      "DEMO-INQ-006",
-      "DEMO-INQ-004",
+    expect(result.map((item) => item.inquiryCode)).toEqual([
+      "INQ-20260704-0013",
     ]);
   });
 
@@ -42,8 +43,27 @@ describe("상담 큐 View Model", () => {
       page: 99,
     });
 
-    expect(result.currentPage).toBe(3);
-    expect(result.totalItems).toBe(7);
-    expect(result.items).toHaveLength(1);
+    expect(result.currentPage).toBe(8);
+    expect(result.totalItems).toBe(24);
+    expect(result.items).toHaveLength(3);
+  });
+
+  it("공식 fixture의 무근거 문의는 임의 안내 없이 상담 확인 대기 상태다", () => {
+    const inquiry = COUNSELOR_INQUIRIES.find(
+      (item) => item.scenarioId === "SYN-JAC104-022",
+    );
+
+    expect(inquiry).toMatchObject({
+      usageStatus: "PENDING_CONSULTATION",
+      requiresConsultation: true,
+      aiStatus: "FAILED",
+      evidence: [],
+    });
+  });
+
+  it("알 수 없는 상태·위험도 코드는 미확인 값으로 안전하게 변환한다", () => {
+    expect(normalizeCounselorStatus("NEW_SERVER_STATUS")).toBe("UNKNOWN");
+    expect(normalizeCounselorRisk("new-risk")).toBe("UNKNOWN");
+    expect(normalizeCounselorRisk(null)).toBe("UNKNOWN");
   });
 });

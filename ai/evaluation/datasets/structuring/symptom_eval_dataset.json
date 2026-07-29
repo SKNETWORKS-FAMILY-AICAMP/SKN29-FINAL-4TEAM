@@ -1,0 +1,8 @@
+[
+  {
+    "eval_id": "struct_eval_001",
+    "raw_symptom": "냉수가 미지근하고 출수 버튼 누르면 물이 졸졸 나옵니다",
+    "expected_symptom_type": "출수량 저하",
+    "expected_target_water_type": "냉수"
+  }
+]
