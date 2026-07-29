@@ -1,10 +1,10 @@
 {
-  "status": "FAIL",
-  "generated_at": "2026-07-27T00:00:00+09:00",
+  "status": "PASS",
+  "generated_at": "2026-07-29T00:00:00+09:00",
   "summary": {
     "checks": 17,
-    "passed": 16,
-    "failed": 1,
+    "passed": 17,
+    "failed": 0,
     "documents_checked": 4
   },
   "checks": [
@@ -86,15 +86,13 @@
     {
       "name": "representative_dataset_counts",
       "status": "PASS",
-      "detail": "actual={'inquiries': 24, 'consultations': 16, 'visits': 4, 'care_histories': 25, 'followup_confirmations': 1, 'inquiry_status_histories': 123, 'audit_events': 123, 'representative_steps': 14}"
+      "detail": "actual={'inquiries': 22, 'consultations': 12, 'visits': 4, 'care_histories': 25, 'followup_confirmations': 1, 'inquiry_status_histories': 125, 'audit_events': 125, 'representative_steps': 14}"
     },
     {
       "name": "manifest_counts_match_e2e_case",
-      "status": "FAIL",
+      "status": "PASS",
       "detail": "dataset manifest synthetic counts"
     }
   ],
-  "errors": [
-    "representative_e2e:manifest_counts_match_e2e_case"
-  ]
+  "errors": []
 }

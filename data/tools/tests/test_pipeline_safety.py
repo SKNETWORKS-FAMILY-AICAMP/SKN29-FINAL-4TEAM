@@ -40,7 +40,9 @@ class PipelineSafetyTests(unittest.TestCase):
     def test_deterministic_ids_and_times_are_preserved(self) -> None:
         synthetic = self.config.config("synthetic")
         inquiries = synthetic["materialized_outputs"]["inquiries"]
-        self.assertEqual(24, len({row["inquiry_id"] for row in inquiries}))
+        self.assertEqual(24, len({row["id"] for row in inquiries}))
+        self.assertEqual(24, len({row["public_id"] for row in inquiries}))
+        self.assertTrue(all(isinstance(row["id"], int) for row in inquiries))
         self.assertTrue(all(row["created_at"].endswith("+09:00") for row in inquiries))
         self.assertTrue(all(row["correlation_id"] for row in inquiries))
 

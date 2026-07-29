@@ -4,44 +4,44 @@
     "family": "LOW_FLOW",
     "variant": "PERSISTENT_OR_RISK",
     "title": "출수량 저하 대표 E2E",
-    "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
     "workflow_kind": "VISIT_HANDOFF",
-    "expected_outcome": "RESOLVED"
+    "expected_outcome": "RESOLVED",
+    "inquiry_public_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde"
   },
   {
     "scenario_id": "SYN-JAC104-008",
     "family": "NO_WATER",
     "variant": "PERSISTENT_OR_RISK",
     "title": "필터 교체 후에도 지속되는 무출수",
-    "inquiry_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
     "workflow_kind": "VISIT_HANDOFF",
-    "expected_outcome": "VISIT_REVIEW_PENDING"
+    "expected_outcome": "VISIT_REVIEW_PENDING",
+    "inquiry_public_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1"
   },
   {
     "scenario_id": "SYN-JAC104-014",
     "family": "LEAK",
     "variant": "PERSISTENT_OR_RISK",
     "title": "안전조치 후 재발하는 누수",
-    "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
     "workflow_kind": "VISIT_HANDOFF",
-    "expected_outcome": "VISIT_SCHEDULED"
+    "expected_outcome": "VISIT_SCHEDULED",
+    "inquiry_public_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177"
   },
   {
     "scenario_id": "SYN-JAC104-018",
     "family": "INSTANT_HOT_WATER_SAFETY",
     "variant": "PERSISTENT_OR_RISK",
     "title": "재연결 후에도 온수 불량",
-    "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
     "workflow_kind": "VISIT_HANDOFF",
-    "expected_outcome": "COMPLETION_PENDING"
+    "expected_outcome": "COMPLETION_PENDING",
+    "inquiry_public_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d"
   },
   {
     "scenario_id": "SYN-JAC104-021",
     "family": "NOISE",
     "variant": "PERSISTENT_OR_RISK",
     "title": "지속되는 큰 소음",
-    "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
     "workflow_kind": "VISIT_HANDOFF",
-    "expected_outcome": "RESOLVED"
+    "expected_outcome": "RESOLVED",
+    "inquiry_public_id": "d8155085-e77d-5a61-a6e3-57a7d584487a"
   }
 ]

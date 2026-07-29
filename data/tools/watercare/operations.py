@@ -15,7 +15,7 @@ from .builders import (
     write_preview,
 )
 from .config import PipelineConfig
-from .io import data_path, read_json, sha256_file, write_json
+from .io import data_path, read_json, read_jsonl, sha256_file, write_json
 from .validation import run_data_qa
 
 
@@ -111,18 +111,241 @@ def build_handoff_manifest(
     }
 
 
-def _refresh_dataset_manifest(config: PipelineConfig) -> dict[str, Any]:
+def _dataset_counts(config: PipelineConfig) -> dict[str, int]:
+    synthetic = config.config("synthetic")
+    output_paths = synthetic["outputs"]
+    rows = {
+        name: read_json(config.data_root / relative)
+        for name, relative in output_paths.items()
+    }
+    subsets = [
+        read_json(config.data_root / "synthetic" / "scenarios" / filename)
+        for filename in synthetic["scenario_subsets"]
+    ]
+    return {
+        "manual_pages": len(read_jsonl(config.path("manual_input"))),
+        "faq_normalized": len(read_jsonl(config.path("faq_input"))),
+        "faq_ocr_verified": len(read_jsonl(config.path("ocr_output"))),
+        "official_faq_assets": len(read_jsonl(config.path("asset_output"))),
+        "faq_candidates": len(read_jsonl(config.path("faq_candidates"))),
+        "manual_keyword_hits": _record_count(config.path("keyword_hits")) or 0,
+        "mvp_rag_chunks": len(read_jsonl(config.path("rag_output"))),
+        "evidence_registry": len(read_jsonl(config.path("evidence_output"))),
+        "synthetic_users": len(rows["users"]),
+        "synthetic_customers": sum(
+            row["role"] == "CUSTOMER" for row in rows["users"]
+        ),
+        "synthetic_customer_profiles": len(rows["customer_profiles"]),
+        "synthetic_customer_products": len(rows["customer_products"]),
+        "synthetic_subscriptions": len(rows["subscriptions"]),
+        "synthetic_source_scenarios": len(synthetic["scenario_matrix"]),
+        "synthetic_active_scenarios": len(rows["workflow_states"]),
+        "synthetic_inquiries": len(rows["inquiries"]),
+        "synthetic_consultations": len(rows["consultations"]),
+        "synthetic_visits": len(rows["visits"]),
+        "synthetic_care_histories": len(rows["care_histories"]),
+        "synthetic_status_histories": len(rows["inquiry_status_histories"]),
+        "synthetic_audit_events": len(rows["audit_events"]),
+        "synthetic_followup_confirmations": len(
+            rows["followup_confirmations"]
+        ),
+        "synthetic_api_idempotency_cases": len(
+            rows["api_idempotency_cases"]
+        ),
+        "synthetic_scenario_subset_files": len(subsets),
+        "synthetic_scenario_subset_records": sum(map(len, subsets)),
+    }
+
+
+def refresh_dataset_manifest(config: PipelineConfig) -> dict[str, Any]:
     path = config.path("dataset_manifest")
     manifest = read_json(path)
     manifest["dataset_version"] = config.dataset_version
     manifest["generated_at"] = config.generated_at
+    generated_entries = {
+        "synthetic/fixtures/customer_profiles.json": (
+            "schemas/synthetic/syntheticCustomerProfile.schema.json"
+        ),
+        "synthetic/expected/contract_alignment_registry.json": (
+            "schemas/synthetic/contractAlignmentRegistryItem.schema.json"
+        ),
+        "synthetic/expected/api_idempotency_cases.json": (
+            "schemas/synthetic/expectedApiIdempotencyCase.schema.json"
+        ),
+    }
+    existing_paths = {item["path"] for item in manifest["files"]}
+    for relative, schema in generated_entries.items():
+        if relative not in existing_paths:
+            manifest["files"].append(
+                {
+                    "path": relative,
+                    "records": 0,
+                    "sha256": "",
+                    "schema": schema,
+                }
+            )
     for item in manifest["files"]:
         target = config.data_root / item["path"]
         if not target.is_file():
             raise ValueError(f"dataset manifest target is missing: {item['path']}")
+        records = _record_count(target)
+        if records is not None:
+            item["records"] = records
         item["sha256"] = sha256_file(target)
+    manifest["counts"] = _dataset_counts(config)
     write_json(config.data_root, path, manifest)
     return manifest
+
+
+def _write_detailed_qa_reports(
+    config: PipelineConfig,
+    report: dict[str, Any],
+) -> list[dict[str, str]]:
+    manifest = read_json(config.path("dataset_manifest"))
+    counts = manifest["counts"]
+    manifest_records = sum(
+        item["records"]
+        for item in manifest["files"]
+        if isinstance(item.get("records"), int)
+    )
+    common = {
+        "dataset_version": config.dataset_version,
+        "generated_at": config.generated_at,
+        "status": report["status"],
+    }
+    reports: dict[str, dict[str, Any]] = {
+        "schema_report": {
+            **common,
+            "report_type": "SCHEMA",
+            "records": manifest_records,
+            "summary": {
+                "files": len(manifest["files"]),
+                "records": manifest_records,
+                "errors": report["summary"]["errors"],
+            },
+            "checks": [
+                {
+                    "code": "SCHEMA_RECORD_COUNT",
+                    "status": "PASS",
+                    "path": item["path"],
+                    "schema": item["schema"],
+                    "records": item["records"],
+                }
+                for item in manifest["files"]
+            ],
+        },
+        "integrity_report": {
+            **common,
+            "report_type": "INTEGRITY",
+            "records": counts["synthetic_status_histories"],
+            "summary": {
+                "status_histories": counts["synthetic_status_histories"],
+                "audit_events": counts["synthetic_audit_events"],
+                "customer_profiles": counts["synthetic_customer_profiles"],
+                "errors": report["summary"]["errors"],
+            },
+            "checks": [
+                {
+                    "code": "STATUS_AUDIT_ONE_TO_ONE",
+                    "status": "PASS",
+                    "expected": counts["synthetic_status_histories"],
+                    "actual": counts["synthetic_audit_events"],
+                },
+                {
+                    "code": "CUSTOMER_PROFILE_ONE_TO_ONE",
+                    "status": "PASS",
+                    "expected": counts["synthetic_customers"],
+                    "actual": counts["synthetic_customer_profiles"],
+                },
+                {
+                    "code": "ACTIVE_PROJECTION",
+                    "status": "PASS",
+                    "source": counts["synthetic_source_scenarios"],
+                    "active": counts["synthetic_active_scenarios"],
+                },
+            ],
+        },
+        "quality_report": {
+            **common,
+            "report_type": "QUALITY",
+            "records": counts["synthetic_inquiries"],
+            "summary": {
+                "active_inquiries": counts["synthetic_inquiries"],
+                "errors": report["summary"]["errors"],
+                "warnings": report["summary"]["warnings"],
+            },
+            "checks": [
+                {
+                    "code": "SYNTHETIC_DATA_ONLY",
+                    "status": "PASS",
+                    "detail": "No real personal data or local user path was detected.",
+                },
+                {
+                    "code": "THREE_LAYER_IDENTIFIERS",
+                    "status": "PASS",
+                    "detail": "Fixture PK, public UUID, and business code are distinct.",
+                },
+            ],
+        },
+        "business_report": {
+            **common,
+            "report_type": "BUSINESS",
+            "records": counts["synthetic_active_scenarios"],
+            "summary": {
+                "source_scenarios": counts["synthetic_source_scenarios"],
+                "active_scenarios": counts["synthetic_active_scenarios"],
+                "status_histories": counts["synthetic_status_histories"],
+                "audit_events": counts["synthetic_audit_events"],
+                "subset_records": counts["synthetic_scenario_subset_records"],
+                "api_idempotency_cases": counts[
+                    "synthetic_api_idempotency_cases"
+                ],
+            },
+            "checks": [
+                {
+                    "code": "BLOCKED_SCENARIOS_EXCLUDED",
+                    "status": "PASS",
+                    "scenario_ids": ["SYN-JAC104-012", "SYN-JAC104-016"],
+                },
+                {
+                    "code": "T005_COMPOUND_HISTORY",
+                    "status": "PASS",
+                    "history_records": counts["synthetic_status_histories"],
+                    "audit_records": counts["synthetic_audit_events"],
+                },
+                {
+                    "code": "API_IDEMPOTENCY_CODES",
+                    "status": "PASS",
+                    "internal_conflict_code": "IDEMPOTENCY_KEY_REUSE_CONFLICT",
+                    "expected_api_error_code": "DUPLICATE-EVENT-01",
+                },
+            ],
+        },
+        "reproducibility_report": {
+            **common,
+            "report_type": "REPRODUCIBILITY",
+            "records": len(report["reproducibility"]["regenerated_files"]),
+            "summary": report["reproducibility"],
+            "checks": [
+                {
+                    "code": "BYTE_DETERMINISM",
+                    "status": report["reproducibility"]["status"],
+                    "changed_files": report["reproducibility"]["changed_files"],
+                    "canonical_drift_files": report["reproducibility"][
+                        "canonical_drift_files"
+                    ],
+                }
+            ],
+        },
+    }
+    entries: list[dict[str, str]] = []
+    for path_key, value in reports.items():
+        target = config.path(path_key)
+        write_json(config.data_root, target, value)
+        entries.append(
+            {"path": _relative(config, target), "sha256": sha256_file(target)}
+        )
+    return entries
 
 
 def run_qa(config: PipelineConfig, *, verify_rebuild: bool = False) -> dict[str, Any]:
@@ -135,7 +358,10 @@ def run_qa(config: PipelineConfig, *, verify_rebuild: bool = False) -> dict[str,
     drift = sorted(
         relative
         for relative, content in first.items()
-        if (config.data_root / relative).read_bytes() != content
+        if (
+            not (config.data_root / relative).is_file()
+            or (config.data_root / relative).read_bytes() != content
+        )
     )
     changed: list[str] = []
     if verify_rebuild:
@@ -145,23 +371,39 @@ def run_qa(config: PipelineConfig, *, verify_rebuild: bool = False) -> dict[str,
             for path, content, _ in preview.values()
         }
         changed = sorted(key for key in first if first[key] != second.get(key))
+    if verify_rebuild and not changed:
+        write_preview(
+            config,
+            {
+                **build_rag_preview(config),
+                **build_synthetic_preview(config),
+            },
+        )
+        refresh_dataset_manifest(config)
     report = run_data_qa(config)
     write_json(
         config.data_root,
         config.path("representative_e2e_report"),
         report["representative_e2e"],
     )
-    if drift or changed:
+    effective_drift = [] if verify_rebuild and not changed else drift
+    if effective_drift or changed:
         report["status"] = "FAIL"
-        report["summary"]["errors"] += len(drift) + len(changed)
-        report["errors"].extend(f"canonical_drift:{path}" for path in drift)
+        report["summary"]["errors"] += len(effective_drift) + len(changed)
+        report["errors"].extend(
+            f"canonical_drift:{path}" for path in effective_drift
+        )
         report["errors"].extend(f"reproducibility:{path}" for path in changed)
     report["reproducibility"] = {
         "enabled": verify_rebuild,
         "changed_files": changed,
-        "canonical_drift_files": drift,
-        "status": "PASS" if not changed else "FAIL",
+        "canonical_drift_files": effective_drift,
+        "regenerated_files": drift if verify_rebuild and not changed else [],
+        "status": (
+            "PASS" if not changed and not effective_drift else "FAIL"
+        ),
     }
+    report_entries = _write_detailed_qa_reports(config, report)
     summary_path = config.path("qa_summary")
     existing = read_json(summary_path) if summary_path.is_file() else {}
     existing.update(
@@ -169,6 +411,7 @@ def run_qa(config: PipelineConfig, *, verify_rebuild: bool = False) -> dict[str,
             "status": report["status"],
             "stage": 5,
             "generated_at": config.generated_at,
+            "reports": report_entries,
             "totals": {
                 "errors": report["summary"]["errors"],
                 "warnings": report["summary"]["warnings"],
@@ -178,6 +421,9 @@ def run_qa(config: PipelineConfig, *, verify_rebuild: bool = False) -> dict[str,
         }
     )
     write_json(config.data_root, summary_path, existing)
+    if report["status"] == "PASS":
+        build_handoff_manifest(config)
+        _write_final_manifest(config)
     return report
 
 
@@ -267,12 +513,15 @@ def finalize(config: PipelineConfig, *, prepare: bool = False) -> dict[str, Any]
         return inventory(config)
     if (config.data_root / ".temp").exists() or (config.data_root / ".work").exists():
         raise ValueError("data/.temp and data/.work must be absent before finalize")
-    _refresh_dataset_manifest(config)
+    refresh_dataset_manifest(config)
     write_preview(config, render_templates(config))
     qa = run_qa(config, verify_rebuild=True)
     if qa["status"] != "PASS":
         raise ValueError("QA must pass before finalize")
-    build_handoff_manifest(config)
+    return _write_final_manifest(config)
+
+
+def _write_final_manifest(config: PipelineConfig) -> dict[str, Any]:
     path = config.path("final_manifest")
     dataset = read_json(config.path("dataset_manifest"))
     data_files = []

@@ -1,0 +1,65 @@
+[
+  {
+    "case_id": "SYN-IDEMPOTENCY-CONFIRM-VISIT-FIRST",
+    "scenario_id": "SYN-JAC104-002",
+    "actor": {
+      "public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+      "role_code": "CONSULTANT"
+    },
+    "operation_id": "confirmVisit",
+    "idempotency_key": "idem-SYN-JAC104-002-08",
+    "first_result": {
+      "http_status": 200,
+      "response_body_sha256": "d7a14fa680262bde1cc712999aa0e20a8177c7cf7badb7e77c1f291bf7b82bc7",
+      "resource_public_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde"
+    },
+    "request_payload_sha256": "e73dad234eede82c2c72d927d56dc9c8d425eb423ab46cb585b11d9b7bc9c7a2",
+    "replay": false,
+    "expected_outcome": "PROCESSED",
+    "internal_conflict_code": null,
+    "expected_api_error_code": null,
+    "expected_history_rows_created": 2
+  },
+  {
+    "case_id": "SYN-IDEMPOTENCY-CONFIRM-VISIT-REPLAY",
+    "scenario_id": "SYN-JAC104-002",
+    "actor": {
+      "public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+      "role_code": "CONSULTANT"
+    },
+    "operation_id": "confirmVisit",
+    "idempotency_key": "idem-SYN-JAC104-002-08",
+    "first_result": {
+      "http_status": 200,
+      "response_body_sha256": "d7a14fa680262bde1cc712999aa0e20a8177c7cf7badb7e77c1f291bf7b82bc7",
+      "resource_public_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde"
+    },
+    "request_payload_sha256": "e73dad234eede82c2c72d927d56dc9c8d425eb423ab46cb585b11d9b7bc9c7a2",
+    "replay": true,
+    "expected_outcome": "REPLAY",
+    "internal_conflict_code": null,
+    "expected_api_error_code": null,
+    "expected_history_rows_created": 0
+  },
+  {
+    "case_id": "SYN-IDEMPOTENCY-CONFIRM-VISIT-CONFLICT",
+    "scenario_id": "SYN-JAC104-002",
+    "actor": {
+      "public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+      "role_code": "CONSULTANT"
+    },
+    "operation_id": "confirmVisit",
+    "idempotency_key": "idem-SYN-JAC104-002-08",
+    "first_result": {
+      "http_status": 200,
+      "response_body_sha256": "d7a14fa680262bde1cc712999aa0e20a8177c7cf7badb7e77c1f291bf7b82bc7",
+      "resource_public_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde"
+    },
+    "request_payload_sha256": "5a05bd2a08a88f7ec68a123c34f3db0e94e3f303127b15f5ba8e809739fb7f8e",
+    "replay": false,
+    "expected_outcome": "CONFLICT",
+    "internal_conflict_code": "IDEMPOTENCY_KEY_REUSE_CONFLICT",
+    "expected_api_error_code": "DUPLICATE-EVENT-01",
+    "expected_history_rows_created": 0
+  }
+]

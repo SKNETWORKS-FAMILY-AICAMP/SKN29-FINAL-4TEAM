@@ -17,7 +17,13 @@ from .builders import (
 )
 from .config import PipelineConfig, load_pipeline
 from .io import ensure_within, sha256_file, write_bytes, write_json
-from .operations import build_handoff_manifest, finalize, inventory, run_qa
+from .operations import (
+    build_handoff_manifest,
+    finalize,
+    inventory,
+    refresh_dataset_manifest,
+    run_qa,
+)
 from .validation import (
     compare_bytes,
     run_data_qa,
@@ -108,6 +114,7 @@ def _build(
         _changed_scenario_records(preview) if target == "synthetic" else 0
     )
     summary = write_preview(config, preview)
+    refresh_dataset_manifest(config)
     stage = 3 if target == "rag" else 4
     _stage_report(config, stage=stage, preview=preview)
     qa = run_data_qa(config)
