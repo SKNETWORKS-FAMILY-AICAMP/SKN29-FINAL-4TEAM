@@ -1,0 +1,31 @@
+{
+  "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b999",
+  "correlation_id": "corr-trace-fallback-001",
+  "structured_symptom": {
+    "symptom_type": "미분류",
+    "occurrence_time": null,
+    "target_water_type": null,
+    "occurrence_condition": null,
+    "error_code": null,
+    "accompanying_symptoms": [],
+    "actions_taken": []
+  },
+  "missing_fields": [],
+  "followup_questions": [],
+  "safety_assessment": {
+    "risk_level": "caution",
+    "priority": "consultation_recommended",
+    "requires_consultation": true,
+    "detected_risks": [],
+    "safety_reason": "AI 파이프라인 처리 중 타임아웃 또는 안전 가드레일 작동으로 기본 상담 안내 Fallback으로 전환되었습니다."
+  },
+  "usage_guidance": {
+    "guidance_status": "PENDING_CONSULTATION",
+    "message": "현재 서비스 응답 지연으로 안전을 위해 전문 상담원 연결을 추천합니다.",
+    "restricted_functions": [],
+    "next_actions": [
+      "고객센터 상담사와 상담을 진행해주세요."
+    ]
+  },
+  "evidence_references": []
+}

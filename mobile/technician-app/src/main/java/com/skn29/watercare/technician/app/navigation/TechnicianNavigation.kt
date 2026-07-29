@@ -20,9 +20,9 @@ fun TechnicianNavigation() {
     ) {
         composable(TechnicianRoute.WORK_LIST) {
             TechnicianWorkListScreen(
-                onVisitClick = { visitId ->
+                onVisitClick = { callId ->
                     navController.navigate(
-                        TechnicianRoute.visitDetail(visitId)
+                        TechnicianRoute.visitDetail(callId)
                     )
                 }
             )
@@ -36,16 +36,16 @@ fun TechnicianNavigation() {
                 }
             )
         ) { entry ->
-            val visitId = entry.arguments
+            val callId = entry.arguments
                 ?.getString("visitId")
                 .orEmpty()
 
             VisitDetailScreen(
-                visitId = visitId,
+                visitId = callId,
                 onBack = navController::popBackStack,
                 onRegisterResult = {
                     navController.navigate(
-                        TechnicianRoute.visitResult(visitId)
+                        TechnicianRoute.visitResult(callId)
                     )
                 }
             )
@@ -59,12 +59,12 @@ fun TechnicianNavigation() {
                 }
             )
         ) { entry ->
-            val visitId = entry.arguments
+            val callId = entry.arguments
                 ?.getString("visitId")
                 .orEmpty()
 
             VisitResultScreen(
-                visitId = visitId,
+                visitId = callId,
                 onBack = navController::popBackStack,
                 onCompleted = {
                     navController.popBackStack(

@@ -1,0 +1,15 @@
+{
+  "request": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b201",
+    "correlation_id": "corr-trace-20260729-101",
+    "customer_raw_text": "냉수가 미지근하게 나와요. 2일 전부터 그랬어요.",
+    "agent_notes": "대용량 출수 후 냉수 재생성 시간 안내함. 고객 추가 방문 요청 없음."
+  },
+  "response": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b201",
+    "correlation_id": "corr-trace-20260729-101",
+    "summary_text": "고객 냉수 온수 미지근함 문의건에 대해 대용량 출수 후 냉각 시간 필요성을 설명하고 정상 사용 안내 완료함.",
+    "key_issues": ["냉수 온도 미지근함"],
+    "recommended_followup": "추후 동일 증상 재발 시 방문 서비스 안내"
+  }
+}
