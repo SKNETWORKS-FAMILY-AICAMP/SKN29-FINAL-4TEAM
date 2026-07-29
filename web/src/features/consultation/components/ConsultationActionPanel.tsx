@@ -23,6 +23,7 @@ const MOCK_SCENARIOS: readonly {
   { value: "SUCCESS", label: "성공" },
   { value: "FORBIDDEN", label: "403 권한 없음" },
   { value: "CONFLICT", label: "409 상태 충돌" },
+  { value: "DUPLICATE_EVENT", label: "409 멱등 키 재사용 충돌" },
   { value: "VALIDATION_ERROR", label: "422 입력 오류" },
   { value: "NETWORK_ERROR", label: "네트워크 오류" },
 ];
@@ -97,8 +98,12 @@ export default function ConsultationActionPanel({
       scenario,
     });
 
+    const serverError =
+      outcome && "error" in outcome ? outcome.error : undefined;
     const serverFieldErrors =
-      outcome && "error" in outcome ? outcome.error?.fieldErrors : undefined;
+      serverError && "fieldErrors" in serverError
+        ? serverError.fieldErrors
+        : undefined;
     if (serverFieldErrors) {
       form.setServerFieldErrors(serverFieldErrors);
     }
@@ -131,6 +136,7 @@ export default function ConsultationActionPanel({
         <p>
           {inquiry.inquiryCode} · stateVersion {save.stateVersion}
         </p>
+        <small>currentStatus {save.currentStatus}</small>
       </div>
 
       {inquiry.status === "COMPLETION_PENDING" && (
@@ -332,12 +338,19 @@ export default function ConsultationActionPanel({
           role="alert"
         >
           {save.error.message}
-          {save.error.kind === "CONFLICT" && (
+          {save.error.kind === "CONFLICT" &&
+            save.error.conflictCode === "STATE-CONFLICT-01" && (
             <small>
               최신 stateVersion {save.error.currentStateVersion} 반영 · 자동
               재시도 안 함
             </small>
           )}
+          {save.error.kind === "CONFLICT" &&
+            save.error.conflictCode === "DUPLICATE-EVENT-01" && (
+              <small>
+                최신 상태 Snapshot 미적용 · 새 멱등 키로 사용자 재시도 필요
+              </small>
+            )}
         </p>
       )}
     </aside>

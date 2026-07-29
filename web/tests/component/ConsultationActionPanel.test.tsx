@@ -74,6 +74,32 @@ describe("ConsultationActionPanel", () => {
     );
   });
 
+  it("멱등 키 재사용 409를 최신 상태 Snapshot으로 오인하지 않는다", async () => {
+    const user = userEvent.setup();
+    const inquiry = getInquiry("INQ-20260704-0013");
+    render(
+      <ConsultationActionPanel inquiry={inquiry} onOpenVisit={vi.fn()} />,
+    );
+
+    const note = screen.getByRole("textbox", { name: /상담 기록/ });
+    await user.type(note, "재시도 전 작성한 상담 기록");
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: /Mock 응답 테스트/ }),
+      "DUPLICATE_EVENT",
+    );
+    await user.click(screen.getByRole("button", { name: "상담 요약 수정" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("같은 Idempotency-Key에 다른 요청 내용이 사용되었습니다.");
+    expect(alert).toHaveTextContent("최신 상태 Snapshot 미적용");
+    expect(note).toHaveValue("재시도 전 작성한 상담 기록");
+    expect(
+      screen.getByText(
+        `${inquiry.inquiryCode} · stateVersion ${inquiry.stateVersion}`,
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("상담사 행동이 허용되지 않은 문진 상태에서는 처리 버튼을 숨긴다", () => {
     render(
       <ConsultationActionPanel

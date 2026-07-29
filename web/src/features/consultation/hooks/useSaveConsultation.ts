@@ -28,6 +28,7 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState<ConsultationActionSuccess | null>(null);
   const [error, setError] = useState<ConsultationActionErrorDetails | null>(null);
+  const [currentStatus, setCurrentStatus] = useState(inquiry.status);
   const [stateVersion, setStateVersion] = useState(inquiry.stateVersion);
   const [allowedActions, setAllowedActions] = useState(inquiry.allowedActions);
   const [operationTracker] = useState(
@@ -86,6 +87,7 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
       operationTracker.finish();
       setSuccess(result);
       setStateVersion(result.stateVersion);
+      setAllowedActions(result.allowedActions);
       return { ok: true as const, result };
     } catch (caught) {
       const nextError =
@@ -98,13 +100,15 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
 
       setError(nextError);
       operationTracker.fail(nextError.kind === "NETWORK_ERROR");
-      if (nextError.kind === "CONFLICT") {
-        if (nextError.currentStateVersion) {
-          setStateVersion(nextError.currentStateVersion);
+      if (
+        nextError.kind === "CONFLICT" &&
+        nextError.conflictCode === "STATE-CONFLICT-01"
+      ) {
+        if (nextError.currentStatus) {
+          setCurrentStatus(nextError.currentStatus);
         }
-        if (nextError.allowedActions) {
-          setAllowedActions(nextError.allowedActions);
-        }
+        setStateVersion(nextError.currentStateVersion);
+        setAllowedActions(nextError.allowedActions);
       }
       return { ok: false as const, error: nextError };
     } finally {
@@ -116,6 +120,7 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
     isSaving,
     success,
     error,
+    currentStatus,
     stateVersion,
     allowedActions,
     execute,

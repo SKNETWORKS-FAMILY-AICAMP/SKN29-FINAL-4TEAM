@@ -18,10 +18,10 @@
 - 영향: 상담 Form 필드와 Endpoint별 Body를 확정 타입으로 만들 수 없음
 - 완료 조건: 임시 저장·요약 수정·확정·완료·방문 검토 요청과 성공·오류 응답 확정
 
-### CONS-API-02 409·422 오류 Mapper 확정
+### CONS-API-02 실제 409·422 응답 연결
 
-- 현재: Web Mock으로 입력 보존과 최신 버전 반영만 검증
-- 남은 결정: `field_errors`, `current_status`, `current_state_version`, `allowed_actions` 실제 Wrapper
+- 현재: Web 계약 Mock에서 `STATE-CONFLICT-01`과 `DUPLICATE-EVENT-01` DTO·Mapper, 입력 보존과 상태 Snapshot 적용 경계를 검증
+- 남은 결정: `field_errors` 실제 Wrapper와 Backend Runtime 응답 연결
 - 완료 조건: Backend 테스트 API의 409·422 Fixture와 Web 통합 테스트 통과
 
 ## P1 · 계약 정합성

@@ -35,6 +35,8 @@
 - 상담 화면은 상태 코드를 보고 버튼을 재계산하지 않는다.
 - 현재 고정 `allowedActions`는 Mock Backend 응답 Fixture로 취급한다.
 - `code`, `label`, `operation_id`, `style`, 확인 메시지를 View Model로 변환한다.
+- 성공 응답은 Action 객체 배열을 변환하고, `STATE-CONFLICT-01`은 Action code 배열을 기존 catalog와 결합한다.
+- `DUPLICATE-EVENT-01`의 빈 `details`는 최신 상태 Snapshot으로 해석하지 않는다.
 
 ## 결정 6. 상담 쓰기는 교체 가능한 Provisional Mock으로 둔다
 
@@ -42,7 +44,7 @@
 - `state_version`은 화면의 최신 값을 사용한다.
 - `Idempotency-Key`는 논리 쓰기 작업에서 생성해 같은 네트워크 재시도에 보존하고, 성공·새 행동·요청 내용 변경 후에는 새로 생성한다.
 - `X-Correlation-ID`는 각 전송 시도마다 새 UUID를 생성한다.
-- 409에서는 입력 보존, 최신 상태·버전·허용 행동 반영, 사용자 재시도 원칙을 지킨다.
+- 상태 충돌 409에서만 입력 보존, 최신 상태·버전·허용 행동 반영, 사용자 재시도 원칙을 지킨다.
 
 ## 결정 7. 테스트는 사용자 행동 중심으로 작성한다
 
