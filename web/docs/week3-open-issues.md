@@ -39,8 +39,9 @@
 
 ### CONTRACT-03 운영 대시보드 응답
 
-- 현재: `/admin` Placeholder와 OPERATOR Guard만 구현
-- 남은 결정: 집계 기준 시각, 상태·위험도 그룹, 지연·오류·근거 부족 예외 응답, 역할별 공개 필드
+- 현재: `/admin` P1 Mock 화면과 OPERATOR Guard 구현. 공식 합성 문의를 기준으로 필터·지표·분포·예외 목록 제공
+- 남은 결정: 실제 집계 API의 기준 시각, SLA 지연 기준, 부분 실패 응답, 역할별 공개 필드
+- 교체 지점: `features/operations-dashboard/model` 입력을 실제 API Adapter 응답으로 교체하며 화면·URL 필터 계약은 유지
 
 ## P2 · 품질·운영 준비
 

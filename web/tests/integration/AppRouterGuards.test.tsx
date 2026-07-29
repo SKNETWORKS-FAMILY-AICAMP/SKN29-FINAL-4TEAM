@@ -185,13 +185,13 @@ describe("App Router Guard", () => {
     ).toBeInTheDocument();
   });
 
-  it("운영 담당자는 ADMIN-01 Placeholder에 접근할 수 있다", async () => {
+  it("운영 담당자는 ADMIN-01 운영 대시보드에 접근할 수 있다", async () => {
     renderRoute("/admin", createUser("OPERATOR"));
 
     expect(
       await screen.findByRole("heading", { name: "운영 대시보드" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("ADMIN-01 · PLACEHOLDER")).toBeInTheDocument();
+    expect(screen.getByText("ADMIN-01 · P1 MOCK")).toBeInTheDocument();
   });
 
   it("상담사가 운영 경로에 접근하면 403 화면으로 이동한다", async () => {

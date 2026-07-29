@@ -61,9 +61,16 @@ npm.cmd run fixtures:generate
 
 고객 희망일과 가상 방문기사를 선택해 `일정 조율 저장`을 누르거나, 가상 방문 확정일까지 입력해 `방문 확정`을 누릅니다. 두 동작은 화면 안의 상태와 `stateVersion`만 변경하며 실제 API 요청, 기사 배정, 알림, 일정 저장은 수행하지 않습니다.
 
+## 운영 대시보드 P1 Mock
+
+`VITE_MOCK_ROLE=OPERATOR`로 설정한 뒤 `/admin`에서 확인합니다. 기간·제품·관리유형·담당자·증상·위험도·상태·처리 결과 필터, 핵심 지표, 증상·상태 분포, 운영 예외 목록과 반응형 화면을 구현했습니다. 현재 공식 합성 문의 24건을 사용하며 실제 운영 집계 API만 미연동 상태입니다.
+
+개발 상태는 `/admin?mockState=loading|empty|error`로 확인할 수 있습니다.
+
 ## 현재 연동 상태
 
 - 문의 목록·상세·상담 처리: 합성 Mock
+- 운영 대시보드: T-101~T-104 프론트 P1 Mock 완료, 실제 집계 API 미연동
 - 공통 API Wrapper·오류·페이지네이션: 계약 타입과 테스트 구현 완료, Authorization·Correlation 공통 적용
 - 인증·역할: Demo Login·Refresh·Logout·`/me` 계약 Client, 메모리 세션, 401 Refresh single-flight·원요청 1회 재시도, `AuthGuard`·`RoleGuard` 구현. 기본 실행은 합성 Mock이며 실제 Backend E2E는 보류
 - 상담 쓰기 API: 계약 미확정으로 Provisional Mock DTO 사용
