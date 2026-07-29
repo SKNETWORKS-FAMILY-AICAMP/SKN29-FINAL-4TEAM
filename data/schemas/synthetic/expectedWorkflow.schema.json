@@ -34,7 +34,7 @@
           "from_status",
           "to_status",
           "actor_role",
-          "actor_id",
+          "actor_public_id",
           "state_version",
           "occurred_at",
           "idempotency_key",
@@ -140,7 +140,7 @@
               "SYSTEM"
             ]
           },
-          "actor_id": {
+          "actor_public_id": {
             "type": [
               "string",
               "null"

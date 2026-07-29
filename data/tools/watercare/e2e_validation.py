@@ -103,12 +103,13 @@ def validate_representative_e2e(
 
     inquiry = representatives[0]
     subscriptions = {
-        row["subscription_id"]: row for row in outputs["subscriptions"]
+        row["id"]: row for row in outputs["subscriptions"]
     }
     customer_products = {
-        row["customer_product_id"]: row for row in outputs["customer_products"]
+        row["id"]: row for row in outputs["customer_products"]
     }
-    products = {row["product_id"]: row for row in outputs["products"]}
+    products = {row["id"]: row for row in outputs["products"]}
+    users = {row["id"]: row for row in outputs["users"]}
     subscription = subscriptions.get(inquiry["subscription_id"])
     customer_product = (
         customer_products.get(subscription["customer_product_id"])
@@ -183,15 +184,17 @@ def validate_representative_e2e(
         (
             row
             for row in outputs["inquiry_status_histories"]
-            if row["inquiry_id"] == inquiry["inquiry_id"]
+            if row["target_type_code"] == "INQUIRY"
+            and row["inquiry_id"] == inquiry["id"]
         ),
-        key=lambda row: row["sequence"],
+        key=lambda row: row["state_version"],
     )
     audits = sorted(
         (
             row
             for row in outputs["audit_events"]
-            if row["entity_id"] == inquiry["inquiry_id"]
+            if row["entity_type"] == "INQUIRY"
+            and row["entity_id"] == inquiry["id"]
         ),
         key=lambda row: row["state_version"],
     )
@@ -205,7 +208,7 @@ def validate_representative_e2e(
     )
     add(
         "history_audit_sequence",
-        [row["event"] for row in histories] == expected_events
+        [row["event_code"] for row in histories] == expected_events
         and [row["event_type"] for row in audits] == expected_events
         and [row["state_version"] for row in histories]
         == list(range(1, spec["final_state_version"] + 1)),
@@ -229,28 +232,28 @@ def validate_representative_e2e(
     consultations = [
         row
         for row in outputs["consultations"]
-        if row["inquiry_id"] == inquiry["inquiry_id"]
+        if row["inquiry_id"] == inquiry["id"]
     ]
     visits = [
-        row for row in outputs["visits"] if row["inquiry_id"] == inquiry["inquiry_id"]
+        row for row in outputs["visits"] if row["inquiry_id"] == inquiry["id"]
     ]
     followups = [
-        row
-        for row in outputs["followup_confirmations"]
-        if row["inquiry_id"] == inquiry["inquiry_id"]
+            row
+            for row in outputs["followup_confirmations"]
+            if row["inquiry_id"] == inquiry["id"]
     ]
     care_histories = [
-        row
-        for row in outputs["care_histories"]
-        if row.get("inquiry_id") == inquiry["inquiry_id"]
+            row
+            for row in outputs["care_histories"]
+            if row.get("inquiry_id") == inquiry["id"]
     ]
     chain_ok = (
         len(consultations) == len(visits) == len(followups) == len(care_histories) == 1
         and visits[0]["status"] == "COMPLETED"
-        and followups[0]["consultation_id"] == consultations[0]["consultation_id"]
-        and followups[0]["visit_id"] == visits[0]["visit_id"]
+        and followups[0]["consultation_id"] == consultations[0]["id"]
+        and followups[0]["visit_id"] == visits[0]["id"]
         and followups[0]["resolution_status_code"] == spec["final_status"]
-        and care_histories[0]["visit_id"] == visits[0]["visit_id"]
+        and care_histories[0]["visit_id"] == visits[0]["id"]
         and care_histories[0]["result"] == "ISSUE_RESOLVED"
     )
     add(
@@ -266,7 +269,8 @@ def validate_representative_e2e(
         workflow["steps"][-1]["actor_role"] == spec["final_actor_role"]
         and inquiry["assigned_role"] == spec["final_actor_role"]
         and len(visits) == 1
-        and workflow["steps"][-1]["actor_id"] == visits[0]["technician_id"],
+        and workflow["steps"][-1]["actor_public_id"]
+        == users[visits[0]["technician_id"]]["public_id"],
         (
             f"actor_role={workflow['steps'][-1]['actor_role']},"
             f"assigned_role={inquiry['assigned_role']}"

@@ -645,7 +645,7 @@ git diff --check
 | Data 현행 | Backend·계약 기준 | 해야 할 일 |
 | --- | --- | --- |
 | `COUNSELOR` | `CONSULTANT` | Fixture·이력·Schema·Vocabulary를 단일화 |
-| Fixture UUID | Backend Public UUID | 원본 보존 또는 명시적 1:1 Mapping |
+| Fixture `public_id` UUID | Backend Public UUID | Public ID lookup 또는 명시적 1:1 Mapping |
 | `DEMO-*` 업무 코드 | API 리소스 UUID | PK/FK로 사용하지 않도록 분리 |
 | `customer_id` | User와 CustomerProfile 분리 | User→CustomerProfile Mapping |
 | `customer_products` | 현행 Subscription 평탄화 | Product·설치·시리얼 Mapping |
@@ -655,16 +655,21 @@ git diff --check
 | Data 12단계 | PM 계약 전이 | 대표 Fixture·이력 재작성 |
 | RESOLVED 직접 Reopen | Terminal 정책 | PM 계약에 맞는 신규 문의 또는 허용 전이로 수정 |
 
-Data UUID v5는 이미 PK/FK이므로 `SYN-*` 코드로 바꾸지 않는다.
-Backend와는 다음 공개 식별자 Mapping을 사용한다.
+ADR 0010에 따라 Data 식별자는 정수 fixture-local PK, Public UUID,
+사람이 읽는 업무 코드의 3계층으로 분리한다. Fixture 정수 PK는 파일 내부
+FK에만 사용하고 Backend PK로 직접 주입하지 않는다. `SYN-*`·`DEMO-*`
+업무 코드는 PK/FK 또는 Public API ID로 사용하지 않는다. Backend import는
+`public_id` 또는 업무키를 조회한 뒤 실제 Backend PK로 FK를 설정한다.
 
 | Data | Backend |
 | --- | --- |
-| 각 `*_id` UUID | 각 Model의 `public_id` |
+| 각 `public_id` UUID | 각 Model의 `public_id` |
+| fixture-local 정수 `id`·FK | 직접 주입 금지, lookup 후 Backend 내부 PK 사용 |
 | `inquiry_number` | `inquiry_code` |
 | `subscription_number` | `contract_no` |
 | `product_code` | `model_code` |
-| User UUID | `User.public_id`; 고객 Role이면 `CustomerProfile` FK로 해석 |
+| User `public_id` | `User.public_id`; 고객 Role이면 CustomerProfile을 별도 lookup |
+| `customer_profile_id` | CustomerProfile lookup 뒤 Backend Subscription 고객 FK로 변환 |
 | `customer_product_id` | `Subscription`의 고객·제품·시리얼 필드로 평탄화 |
 
 원본 Data UUID와 저장된 Backend `public_id`를 양방향 추적할
