@@ -9,6 +9,7 @@ import {
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import "../../common/styles/legacy/fix-base.css";
 import "../../common/styles/legacy/staff-desktop-v6.css";
+import { toInquiryId } from "../../entities/inquiry/inquiryIdentifiers";
 import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
 import { COUNSELOR_INQUIRIES } from "../../features/consultation/model/consultantWorkspaceMock";
 import { getCounselorMetrics } from "../../features/consultation/model/consultantWorkspaceModel";
@@ -17,6 +18,7 @@ import type { VisitMockAction } from "../../features/visit-transition/model/visi
 import "./VisitTransitionPage.css";
 
 interface VisitTransitionLocationState {
+  entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED";
   returnTo?: unknown;
   stateVersion?: number;
   symptomSummary?: string;
@@ -25,14 +27,17 @@ interface VisitTransitionLocationState {
 export default function VisitTransitionPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { inquiryId } = useParams<{ inquiryId: string }>();
+  const { inquiryId: rawInquiryId } = useParams<{ inquiryId: string }>();
   const [notificationOpen, setNotificationOpen] = useState(false);
 
   const locationState = location.state as VisitTransitionLocationState | null;
   const inquiryListReturnPath = getSafeInquiryListReturnPath(
     locationState?.returnTo,
   );
-  const inquiry = COUNSELOR_INQUIRIES.find((item) => item.id === inquiryId);
+  const inquiryId = rawInquiryId ? toInquiryId(rawInquiryId) : null;
+  const inquiry = COUNSELOR_INQUIRIES.find(
+    (item) => item.inquiryId === inquiryId,
+  );
   const [stateVersion, setStateVersion] = useState(
     locationState?.stateVersion ?? inquiry?.stateVersion ?? 1,
   );
@@ -40,12 +45,23 @@ export default function VisitTransitionPage() {
   const allowedActionCodes = inquiry?.allowedActions.map((item) => item.code) ?? [];
   const availableMockActions: VisitMockAction[] = [];
   if (
-    allowedActionCodes.includes("VISIT_REVIEW_REQUIRED") ||
-    allowedActionCodes.includes("UPDATE_VISIT_SCHEDULE")
+    allowedActionCodes.includes("VISIT_NEEDED") ||
+    locationState?.entryAction === "VISIT_REVIEW_REQUIRED"
+  ) {
+    availableMockActions.push("CREATE_VISIT_REQUEST");
+  }
+  if (
+    allowedActionCodes.includes("UPDATE_VISIT_SCHEDULE") ||
+    locationState?.entryAction === "VISIT_NEEDED" ||
+    lastAction === "CREATE_VISIT_REQUEST"
   ) {
     availableMockActions.push("SAVE_SCHEDULE");
   }
-  if (allowedActionCodes.includes("CONFIRM_VISIT")) {
+  if (
+    allowedActionCodes.includes("CONFIRM_VISIT") ||
+    locationState?.entryAction === "VISIT_NEEDED" ||
+    lastAction === "CREATE_VISIT_REQUEST"
+  ) {
     availableMockActions.push("CONFIRM_VISIT");
   }
 
@@ -67,8 +83,8 @@ export default function VisitTransitionPage() {
       navigate(inquiryListReturnPath);
       return;
     }
-    if (target === "detail" && inquiryId) {
-      navigate(createInquiryDetailPath(inquiryId), {
+    if (target === "detail" && inquiry) {
+      navigate(createInquiryDetailPath(inquiry.inquiryId), {
         state: { returnTo: inquiryListReturnPath },
       });
       return;
@@ -105,7 +121,7 @@ export default function VisitTransitionPage() {
         <section className="v6-panel visit-v13-access-blocked">
           <ForbiddenState
             title="현재 상태에서는 방문 전환을 처리할 수 없습니다."
-            description="Backend Mock allowed_actions에 방문 검토·일정 조율·방문 확정 행동이 없습니다."
+            description="Backend Mock allowed_actions에 방문 필요 확정·일정 조율·방문 확정 행동이 없습니다."
             actionLabel="상담 큐로 돌아가기"
             onAction={() => navigate(inquiryListReturnPath)}
           />
@@ -122,7 +138,7 @@ export default function VisitTransitionPage() {
               </p>
             </div>
             <div className="v6-page-head__meta">
-              <span>문의 · {inquiry.id}</span>
+              <span>문의 · {inquiry.inquiryCode}</span>
               <span>제품 · {inquiry.productCode}</span>
               <span>실제 API 연결 없음</span>
             </div>
@@ -140,7 +156,7 @@ export default function VisitTransitionPage() {
               className="v6-button v6-button--secondary"
               type="button"
               onClick={() =>
-                navigate(createInquiryDetailPath(inquiry.id), {
+                navigate(createInquiryDetailPath(inquiry.inquiryId), {
                   state: { returnTo: inquiryListReturnPath },
                 })
               }
@@ -148,13 +164,22 @@ export default function VisitTransitionPage() {
               문의 상세 보기
             </button>
             <div>
-              <span>방문 상태 · {lastAction === "CONFIRM_VISIT" ? "방문 확정 Mock" : "일정 조율 Mock"}</span>
+              <span>
+                방문 상태 ·{" "}
+                {lastAction === "CONFIRM_VISIT"
+                  ? "방문 확정 Mock"
+                  : lastAction === "CREATE_VISIT_REQUEST"
+                    ? "방문 요청 생성 Mock"
+                    : availableMockActions.includes("CREATE_VISIT_REQUEST")
+                      ? "방문 필요 검토 Mock"
+                      : "일정 조율 Mock"}
+              </span>
               <span>상태 버전 · {stateVersion}</span>
             </div>
           </div>
 
           <VisitTransitionForm
-            key={inquiry.id}
+            key={inquiry.inquiryId}
             availableActions={availableMockActions}
             inquiry={inquiry}
             stateVersion={stateVersion}

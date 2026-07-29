@@ -20,8 +20,28 @@ function readRole(value: string | undefined): AppRole {
   throw new Error(`지원하지 않는 Mock 역할입니다: ${role}`);
 }
 
+export function readApiBaseUrl(value: string | undefined): string {
+  const apiBaseUrl = value?.trim() || "/api/v1";
+
+  if (apiBaseUrl.startsWith("/")) {
+    return apiBaseUrl.length > 1 ? apiBaseUrl.replace(/\/+$/, "") : apiBaseUrl;
+  }
+
+  try {
+    const parsed = new URL(apiBaseUrl);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      throw new Error();
+    }
+    return apiBaseUrl.replace(/\/+$/, "");
+  } catch {
+    throw new Error(
+      `VITE_API_BASE_URL은 /로 시작하거나 http(s) URL이어야 합니다: ${apiBaseUrl}`,
+    );
+  }
+}
+
 export const appEnv = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "/api/v1",
+  apiBaseUrl: readApiBaseUrl(import.meta.env.VITE_API_BASE_URL),
   useMockApi: readBoolean(import.meta.env.VITE_USE_MOCK_API, true),
   mockAuthenticated: readBoolean(
     import.meta.env.VITE_MOCK_AUTHENTICATED,

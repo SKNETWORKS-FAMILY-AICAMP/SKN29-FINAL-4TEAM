@@ -1,6 +1,6 @@
 # 3주차 Web 기술 결정
 
-- 기준일: 2026-07-28
+- 기준일: 2026-07-29
 - 범위: React 실행 기반, 상담사 P0 흐름, Mock 교체 구조, Router·권한, 테스트
 
 ## 결정 1. 팀 Vite 프로젝트 설정을 유지한다
@@ -21,8 +21,9 @@
 
 - `VITE_USE_MOCK_API=true`, `VITE_MOCK_AUTHENTICATED=true`, `VITE_MOCK_ROLE=CONSULTANT`를 기본으로 한다.
 - 따라서 환경변수를 만들지 않아도 `/`에서 상담 큐로 진입한다.
-- 실제 JWT·Refresh Token을 Web 저장소에 임의 저장하지 않는다.
-- Backend 인증 연동 시 Provider 내부 구현만 교체하고 Guard와 페이지 계약은 유지한다.
+- Access·Refresh Token은 `localStorage`·`sessionStorage`에 저장하지 않고 메모리 세션에서만 관리한다.
+- 공통 HTTP Client가 Access Token과 Correlation ID를 Header에 적용한다.
+- 동시 401은 Refresh 요청 하나를 공유하고, 성공 시 각 원요청을 최대 한 번만 재시도한다. Refresh 실패 또는 재시도 401에서는 세션과 사용자를 제거한다.
 
 ## 결정 4. 운영 화면은 계약 확정 전 Placeholder로 제한한다
 
@@ -35,12 +36,16 @@
 - 상담 화면은 상태 코드를 보고 버튼을 재계산하지 않는다.
 - 현재 고정 `allowedActions`는 Mock Backend 응답 Fixture로 취급한다.
 - `code`, `label`, `operation_id`, `style`, 확인 메시지를 View Model로 변환한다.
+- 성공 응답은 Action 객체 배열을 변환하고, `STATE-CONFLICT-01`은 Action code 배열을 기존 catalog와 결합한다.
+- `DUPLICATE-EVENT-01`의 빈 `details`는 최신 상태 Snapshot으로 해석하지 않는다.
 
 ## 결정 6. 상담 쓰기는 교체 가능한 Provisional Mock으로 둔다
 
 - 상담 OpenAPI Schema가 비어 있으므로 Mock DTO를 확정 API 타입으로 부르지 않는다.
-- `state_version`, `Idempotency-Key`, `X-Correlation-ID` 연결 위치만 계약대로 준비한다.
-- 409에서는 입력 보존, 최신 상태·버전·허용 행동 반영, 사용자 재시도 원칙을 지킨다.
+- `state_version`은 화면의 최신 값을 사용한다.
+- `Idempotency-Key`는 논리 쓰기 작업에서 생성해 같은 네트워크 재시도에 보존하고, 성공·새 행동·요청 내용 변경 후에는 새로 생성한다.
+- `X-Correlation-ID`는 각 전송 시도마다 새 UUID를 생성한다.
+- 상태 충돌 409에서만 입력 보존, 최신 상태·버전·허용 행동 반영, 사용자 재시도 원칙을 지킨다.
 
 ## 결정 7. 테스트는 사용자 행동 중심으로 작성한다
 
@@ -61,7 +66,7 @@
 - `ApiResponse`, `ApiError`, `PageInfo`, `TraceContext`는 `contracts/api/components/schemas/common/**` 구조를 따른다.
 - `httpClient`는 JSON, Bearer Header 연결 지점, Timeout, 400·401·403·404·409·422·5xx·네트워크·파싱 오류를 구분한다.
 - Backend Runtime이 없으므로 상담 화면에서 실제 Endpoint를 호출하지 않는다.
-- 실제 인증 토큰 저장·Refresh 정책은 계약 확정 전 구현하지 않는다.
+- Demo Login·Refresh·Logout·`/me` 계약 Client와 메모리 세션을 사용하며 실제 Backend Runtime E2E는 별도 검증한다.
 
 ## 결정 10. CONS-01 조건은 URL에, CONS-02 식별자는 경로에 둔다
 
