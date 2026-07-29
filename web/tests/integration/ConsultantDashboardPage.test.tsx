@@ -30,25 +30,25 @@ describe("ConsultantDashboardPage", () => {
 
     await user.type(
       screen.getByRole("searchbox", { name: "문의 검색" }),
-      "냉수 온도 이상",
+      "INQ-20260704-0013",
     );
-    await user.click(screen.getByRole("button", { name: /냉수 온도 이상/ }));
+    await user.click(screen.getByRole("button", { name: /INQ-20260704-0013/ }));
 
-    expect(screen.getByRole("heading", { name: "냉수 온도 이상" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "제품 누수" })).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: /상담 기록/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "상담 처리 완료" })).toBeInTheDocument();
   });
 
-  it("위험도 필터는 위험 문의 두 건만 큐에 남긴다", async () => {
+  it("위험도 필터는 공식 fixture의 위험 문의만 큐에 남긴다", async () => {
     const user = userEvent.setup();
     renderPage();
 
     await user.selectOptions(screen.getByRole("combobox", { name: "위험도" }), "DANGER");
 
     const queue = screen.getByRole("complementary", { name: "상담 문의 목록" });
-    expect(queue.querySelectorAll(".v6-queue-item")).toHaveLength(2);
-    expect(within(queue).getByText("온수 모듈 이상")).toBeInTheDocument();
-    expect(within(queue).getByText("제품 누수")).toBeInTheDocument();
+    expect(queue.querySelectorAll(".v6-queue-item")).toHaveLength(3);
+    expect(screen.getByText("총 6건 · 1/2페이지")).toBeInTheDocument();
+    expect(within(queue).getAllByText("온수 모듈 이상")).toHaveLength(2);
   });
 
   it("페이지와 담당자 조건을 URL Query에서 복원한다", () => {
@@ -58,8 +58,8 @@ describe("ConsultantDashboardPage", () => {
       "UNASSIGNED",
     );
     expect(
-      screen.getByRole("heading", { name: "무출수 분석 실패" }),
+      screen.getByRole("heading", { name: "IoT 기능 지원 문의" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("총 1건 · 1/1페이지")).toBeInTheDocument();
+    expect(screen.getByText("총 15건 · 1/5페이지")).toBeInTheDocument();
   });
 });

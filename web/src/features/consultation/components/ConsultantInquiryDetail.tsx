@@ -21,7 +21,9 @@ interface ConsultantInquiryDetailProps {
   detailTab: DetailTab;
   inquiry: CounselorInquiry | null;
   onDetailTabChange: (tab: DetailTab) => void;
-  onOpenVisit: () => void;
+  onOpenVisit: (
+    entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED",
+  ) => void;
   sectionStates?: ConsultantDetailSectionStates;
 }
 
@@ -51,7 +53,9 @@ function UsageSection({ inquiry }: { inquiry: CounselorInquiry }) {
       ? "제품 전체 사용 중지"
       : inquiry.usageStatus === "PARTIAL_STOP"
         ? "일부 출수·기능 사용 중지"
-        : "일반 사용 가능";
+        : inquiry.usageStatus === "PENDING_CONSULTATION"
+          ? "상담 확인 전 안내 보류"
+          : "일반 사용 가능";
 
   return (
     <section className="v6-section">

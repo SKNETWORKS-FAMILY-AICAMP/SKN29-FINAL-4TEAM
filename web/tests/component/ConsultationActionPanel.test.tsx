@@ -15,13 +15,13 @@ describe("ConsultationActionPanel", () => {
   it("Backend Mock allowed_actions에 포함된 상담 진행 행동만 표시한다", () => {
     render(
       <ConsultationActionPanel
-        inquiry={getInquiry("DEMO-INQ-003")}
+        inquiry={getInquiry("INQ-20260704-0013")}
         onOpenVisit={vi.fn()}
       />,
     );
 
     const panel = screen.getByRole("complementary", { name: "상담 처리 작업" });
-    expect(within(panel).getByRole("button", { name: "상담 기록 임시 저장" })).toBeInTheDocument();
+    expect(within(panel).getByRole("button", { name: "상담 요약 수정" })).toBeInTheDocument();
     expect(within(panel).getByRole("button", { name: "상담 요약 확정" })).toBeInTheDocument();
     expect(within(panel).getByRole("button", { name: "방문 필요 여부 검토" })).toBeInTheDocument();
     expect(within(panel).getByRole("button", { name: "상담 처리 완료" })).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe("ConsultationActionPanel", () => {
     const user = userEvent.setup();
     render(
       <ConsultationActionPanel
-        inquiry={getInquiry("DEMO-INQ-003")}
+        inquiry={getInquiry("INQ-20260704-0013")}
         onOpenVisit={vi.fn()}
       />,
     );
@@ -49,7 +49,7 @@ describe("ConsultationActionPanel", () => {
     const user = userEvent.setup();
     render(
       <ConsultationActionPanel
-        inquiry={getInquiry("DEMO-INQ-003")}
+        inquiry={getInquiry("INQ-20260704-0013")}
         onOpenVisit={vi.fn()}
       />,
     );
@@ -60,20 +60,22 @@ describe("ConsultationActionPanel", () => {
       screen.getByRole("combobox", { name: /Mock 응답 테스트/ }),
       "CONFLICT",
     );
-    await user.click(screen.getByRole("button", { name: "상담 기록 임시 저장" }));
+    await user.click(screen.getByRole("button", { name: "상담 요약 수정" }));
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(
       "작성 내용은 유지했으며 최신 상태를 반영했습니다.",
     );
     expect(note).toHaveValue("고객 사용 상태를 추가로 확인했습니다.");
-    expect(alert).toHaveTextContent("최신 stateVersion 2 반영");
+    expect(alert).toHaveTextContent(
+      `최신 stateVersion ${getInquiry("INQ-20260704-0013").stateVersion + 1} 반영`,
+    );
   });
 
   it("상담사 행동이 허용되지 않은 문진 상태에서는 처리 버튼을 숨긴다", () => {
     render(
       <ConsultationActionPanel
-        inquiry={getInquiry("DEMO-INQ-001")}
+        inquiry={getInquiry("INQ-20260701-0001")}
         onOpenVisit={vi.fn()}
       />,
     );

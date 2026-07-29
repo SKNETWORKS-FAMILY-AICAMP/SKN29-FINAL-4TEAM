@@ -26,14 +26,11 @@ describe("상담 큐 View Model", () => {
       ...DEFAULT_FILTERS,
       assignee: "MINE",
       priority: "URGENT",
-      receivedFrom: "2026-07-22",
-      receivedTo: "2026-07-22",
+      receivedFrom: "2026-07-04",
+      receivedTo: "2026-07-04",
     });
 
-    expect(result.map((item) => item.id)).toEqual([
-      "DEMO-INQ-006",
-      "DEMO-INQ-004",
-    ]);
+    expect(result.map((item) => item.id)).toEqual(["INQ-20260704-0013"]);
   });
 
   it("페이지 범위를 넘으면 마지막 페이지로 보정한다", () => {
@@ -42,8 +39,21 @@ describe("상담 큐 View Model", () => {
       page: 99,
     });
 
-    expect(result.currentPage).toBe(3);
-    expect(result.totalItems).toBe(7);
-    expect(result.items).toHaveLength(1);
+    expect(result.currentPage).toBe(8);
+    expect(result.totalItems).toBe(24);
+    expect(result.items).toHaveLength(3);
+  });
+
+  it("공식 fixture의 무근거 문의는 임의 안내 없이 상담 확인 대기 상태다", () => {
+    const inquiry = COUNSELOR_INQUIRIES.find(
+      (item) => item.scenarioId === "SYN-JAC104-022",
+    );
+
+    expect(inquiry).toMatchObject({
+      usageStatus: "PENDING_CONSULTATION",
+      requiresConsultation: true,
+      aiStatus: "FAILED",
+      evidence: [],
+    });
   });
 });

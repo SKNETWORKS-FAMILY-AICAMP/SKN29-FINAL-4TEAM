@@ -11,7 +11,9 @@ import type { ConsultationMockScenario } from "../model/consultationTypes";
 
 interface ConsultationActionPanelProps {
   inquiry: CounselorInquiry;
-  onOpenVisit: () => void;
+  onOpenVisit: (
+    entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED",
+  ) => void;
 }
 
 const MOCK_SCENARIOS: readonly {
@@ -100,6 +102,15 @@ export default function ConsultationActionPanel({
     if (serverFieldErrors) {
       form.setServerFieldErrors(serverFieldErrors);
     }
+
+    if (
+      outcome &&
+      !("error" in outcome) &&
+      (action.code === "VISIT_REVIEW_REQUIRED" ||
+        action.code === "VISIT_NEEDED")
+    ) {
+      onOpenVisit(action.code);
+    }
   };
 
   const handleScenarioChange = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -144,16 +155,22 @@ export default function ConsultationActionPanel({
         </>
       )}
 
-      {inquiry.status === "VISIT_SCHEDULED" && (
+      {[
+        "VISIT_REVIEW_PENDING",
+        "VISIT_SCHEDULING",
+        "VISIT_SCHEDULED",
+        "REVISIT_REQUIRED",
+      ].includes(inquiry.status) && (
         <>
           <div className="v6-readonly-card">
             <strong>방문 일정 상태</strong>
-            방문 예정 · 기사 배정과 확정 일정을 확인해 주세요.
+            현재 상태와 allowed_actions에 따라 방문 요청 또는 일정 정보를
+            확인해 주세요.
           </div>
           <button
             className="v6-button v6-button--secondary v6-button--full v6-visit-link"
             type="button"
-            onClick={onOpenVisit}
+            onClick={() => onOpenVisit()}
           >
             방문 전환 정보 확인
           </button>
@@ -270,6 +287,9 @@ export default function ConsultationActionPanel({
               <option value="NORMAL">일반 사용 가능</option>
               <option value="PARTIAL_STOP">일부 출수·기능 사용 중지</option>
               <option value="TOTAL_STOP">제품 전체 사용 중지</option>
+              <option value="PENDING_CONSULTATION">
+                상담 확인 전 안내 보류
+              </option>
             </select>
           </label>
         </form>

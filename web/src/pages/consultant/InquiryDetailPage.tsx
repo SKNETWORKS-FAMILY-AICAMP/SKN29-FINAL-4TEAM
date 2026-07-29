@@ -101,6 +101,21 @@ export default function InquiryDetailPage() {
     });
   };
 
+  const handleOpenVisit = (
+    entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED",
+  ) => {
+    if (!inquiry) return;
+
+    navigate(createVisitTransitionPath(inquiry.id), {
+      state: {
+        returnTo: inquiryListReturnPath,
+        stateVersion: inquiry.stateVersion,
+        symptomSummary: inquiry.symptomLabel,
+        entryAction,
+      },
+    });
+  };
+
   const renderDetail = () => {
     if (inquiryId === "DEMO-INQ-LOADING") {
       return (
@@ -179,7 +194,7 @@ export default function InquiryDetailPage() {
             inquiry={inquiry}
             sectionStates={partialFailure?.sections ?? READY_SECTIONS}
             onDetailTabChange={setDetailTab}
-            onOpenVisit={() => handleNavigate("visit")}
+            onOpenVisit={handleOpenVisit}
           />
         </section>
       </>
