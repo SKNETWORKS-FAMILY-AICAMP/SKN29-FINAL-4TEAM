@@ -5,6 +5,7 @@ import {
   createInquiryDetailPath,
   createVisitTransitionPath,
 } from "../../app/router/routePaths";
+import type { InquiryId } from "../../entities/inquiry/inquiryIdentifiers";
 import ConsultantInquiryDetail from "../../features/consultation/components/ConsultantInquiryDetail";
 import ConsultantQueue from "../../features/consultation/components/ConsultantQueue";
 import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
@@ -24,11 +25,21 @@ export default function ConsultantDashboardPage() {
   const location = useLocation();
   const { filters, hasChangedConditions, resetFilters, setFilters } =
     useCounselorQueueFilters();
-  const [selectedInquiryId, setSelectedInquiryId] = useState<string | null>(
-    COUNSELOR_INQUIRIES[0]?.id ?? null,
+  const [selectedInquiryId, setSelectedInquiryId] = useState<InquiryId | null>(
+    COUNSELOR_INQUIRIES[0]?.inquiryId ?? null,
   );
   const [detailTab, setDetailTab] = useState<DetailTab>("summary");
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const mockState = new URLSearchParams(location.search).get("mockState");
+  const loadState = ["loading", "error", "forbidden"].includes(
+    mockState ?? "",
+  )
+    ? (mockState as "loading" | "error" | "forbidden")
+    : "ready";
+  const sourceInquiries = useMemo(
+    () => (mockState === "empty" ? [] : COUNSELOR_INQUIRIES),
+    [mockState],
+  );
 
   useEffect(() => {
     document.body.classList.add("v6-body", "v6-body--counselor");
@@ -39,22 +50,22 @@ export default function ConsultantDashboardPage() {
   }, []);
 
   const filteredInquiries = useMemo(
-    () => filterCounselorInquiries(COUNSELOR_INQUIRIES, filters),
-    [filters],
+    () => filterCounselorInquiries(sourceInquiries, filters),
+    [filters, sourceInquiries],
   );
   const queuePage = useMemo(
-    () => getCounselorQueuePage(COUNSELOR_INQUIRIES, filters),
-    [filters],
+    () => getCounselorQueuePage(sourceInquiries, filters),
+    [filters, sourceInquiries],
   );
   const metrics = useMemo(
     () => getCounselorMetrics(filteredInquiries),
     [filteredInquiries],
   );
   const selectedInquiry =
-    queuePage.items.find((item) => item.id === selectedInquiryId) ??
+    queuePage.items.find((item) => item.inquiryId === selectedInquiryId) ??
     queuePage.items[0] ??
     null;
-  const visibleSelectedInquiryId = selectedInquiry?.id ?? null;
+  const visibleSelectedInquiryId = selectedInquiry?.inquiryId ?? null;
   const queueCount =
     metrics.consultation +
     metrics.danger +
@@ -83,14 +94,15 @@ export default function ConsultantDashboardPage() {
     }
   };
 
-  const handleOpenVisit = () => {
+  const handleOpenVisit = (entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED") => {
     if (!selectedInquiry) return;
 
-    navigate(createVisitTransitionPath(selectedInquiry.id), {
+    navigate(createVisitTransitionPath(selectedInquiry.inquiryId), {
       state: {
         returnTo: `/consultant/inquiries${location.search}`,
         stateVersion: selectedInquiry.stateVersion,
         symptomSummary: selectedInquiry.symptomLabel,
+        entryAction,
       },
     });
   };
@@ -162,9 +174,11 @@ export default function ConsultantDashboardPage() {
         selectedInquiryId={visibleSelectedInquiryId}
         totalItems={queuePage.totalItems}
         totalPages={queuePage.totalPages}
+        loadState={loadState}
         onFiltersChange={setFilters}
         onPageChange={(page) => setFilters({ ...filters, page })}
         onResetFilters={resetFilters}
+        onRetry={() => navigate("/consultant/inquiries", { replace: true })}
         onSelectInquiry={(inquiryId) => {
           setSelectedInquiryId(inquiryId);
           setDetailTab("summary");

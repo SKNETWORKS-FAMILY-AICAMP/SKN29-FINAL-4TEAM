@@ -1,13 +1,27 @@
-export type CounselorRisk = "GENERAL" | "CAUTION" | "DANGER";
+import type {
+  InquiryCode,
+  InquiryId,
+} from "../../../entities/inquiry/inquiryIdentifiers";
+
+export type CounselorRisk = "GENERAL" | "CAUTION" | "DANGER" | "UNKNOWN";
 
 export type CounselorStatus =
+  | "DRAFT"
   | "QUESTIONNAIRE_IN_PROGRESS"
+  | "AI_GUIDANCE"
   | "CONSULTATION_REQUIRED"
   | "CONSULTATION_IN_PROGRESS"
+  | "VISIT_REVIEW_PENDING"
+  | "VISIT_SCHEDULING"
   | "VISIT_SCHEDULED"
-  | "COMPLETION_PENDING";
+  | "COMPLETION_PENDING"
+  | "REVISIT_REQUIRED"
+  | "REOPENED"
+  | "RESOLVED"
+  | "CANCELLED"
+  | "UNKNOWN";
 
-export type CounselorPriority = "NORMAL" | "HIGH" | "URGENT";
+export type CounselorPriority = "NORMAL" | "HIGH" | "URGENT" | "UNKNOWN";
 export type CounselorSort = "UPDATED_DESC" | "UPDATED_ASC";
 export type CounselorAssigneeFilter = "ALL" | "MINE" | "UNASSIGNED";
 
@@ -19,8 +33,11 @@ export type CounselorActionCode =
   | "CONFIRM_CONSULTATION_SUMMARY"
   | "CONSULTATION_COMPLETED"
   | "VISIT_REVIEW_REQUIRED"
+  | "VISIT_NEEDED"
+  | "VISIT_NOT_NEEDED"
   | "UPDATE_VISIT_SCHEDULE"
   | "CONFIRM_VISIT"
+  | "RESUME_CONSULTATION"
   | "FINALIZE_INQUIRY";
 
 export interface CounselorAllowedAction {
@@ -35,15 +52,11 @@ export interface CounselorAllowedAction {
 export interface CounselorEvidence {
   documentTitle: string;
   summary: string;
-  evidenceId: string;
   documentVersion: string;
   page: number;
-  sectionTitle: string;
-  riskLevel: string;
-  safeActions: readonly string[];
-  prohibitedActions: readonly string[];
+  verificationLabel: string;
+  dataClassification: "official" | "team_designed" | "synthetic";
   sourceLandingUrl: string;
-  sourceDirectDownloadUrl: string;
 }
 
 export interface CounselorTimelineItem {
@@ -54,14 +67,17 @@ export interface CounselorTimelineItem {
 }
 
 export interface CounselorInquiry {
-  id: string;
+  inquiryId: InquiryId;
+  inquiryCode: InquiryCode;
   scenarioId: string;
   customerId: string;
   customerName: string;
+  customerDisplayName: string;
   subscriptionId: string;
   productCode: string;
   manualModel: string;
   symptomLabel: string;
+  symptomLabels: readonly string[];
   customerMessage: string;
   conditions: string;
   displayCode: string;
@@ -75,6 +91,7 @@ export interface CounselorInquiry {
   feedbackComment?: string;
   createdAt: string;
   updatedAt: string;
+  waitingMinutes: number;
   assignedCounselor: string;
   managementType: string;
   serviceStartDate: string;
@@ -82,7 +99,11 @@ export interface CounselorInquiry {
   lastFilterDate: string;
   nextCareDate: string;
   nextCareBasis: string;
-  usageStatus: "NORMAL" | "PARTIAL_STOP" | "TOTAL_STOP";
+  usageStatus:
+    | "NORMAL"
+    | "PARTIAL_STOP"
+    | "TOTAL_STOP"
+    | "PENDING_CONSULTATION";
   usageMessage: string;
   restrictedWaterTypes: readonly string[];
   restrictedFunctions: readonly string[];

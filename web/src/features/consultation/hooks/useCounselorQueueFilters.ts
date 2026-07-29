@@ -16,18 +16,21 @@ const STATUS_VALUES: readonly ("ALL" | CounselorStatus)[] = [
   "CONSULTATION_IN_PROGRESS",
   "VISIT_SCHEDULED",
   "COMPLETION_PENDING",
+  "UNKNOWN",
 ];
 const RISK_VALUES: readonly ("ALL" | CounselorRisk)[] = [
   "ALL",
   "GENERAL",
   "CAUTION",
   "DANGER",
+  "UNKNOWN",
 ];
 const PRIORITY_VALUES: readonly ("ALL" | CounselorPriority)[] = [
   "ALL",
   "NORMAL",
   "HIGH",
   "URGENT",
+  "UNKNOWN",
 ];
 const ASSIGNEE_VALUES: readonly CounselorAssigneeFilter[] = [
   "ALL",
