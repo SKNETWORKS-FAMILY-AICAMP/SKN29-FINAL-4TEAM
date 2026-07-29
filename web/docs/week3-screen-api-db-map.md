@@ -1,6 +1,6 @@
 # 3주차 상담 화면–API–DB 필드 매핑
 
-- 기준일: 2026-07-28
+- 기준일: 2026-07-29
 - 대상: `CONS-01`, `CONS-02`, `CONS-03`, 상담 기록·행동 영역
 - 상태: Web 검수용. API `consultation/**` 스키마와 `AllowedAction` OpenAPI Schema는 현재 빈 객체이므로 아래의 `OPEN` 항목을 확정 계약으로 사용하면 안 된다.
 - DB 기준: `docs/database/watercare_table_dictionary.md`의 `Design Draft`
@@ -8,18 +8,19 @@
 ## 계약 해석 원칙
 
 1. 화면은 상태로 행동을 계산하지 않고 Backend의 `allowed_actions`를 그대로 표시한다.
-2. 모든 외부 쓰기는 최신 Inquiry `state_version`과 새 `Idempotency-Key`를 사용한다.
-3. 409 충돌 시 입력을 보존하고 최신 상태·버전·허용 행동을 반영한 뒤 사용자가 재시도한다.
+2. 모든 외부 쓰기는 최신 Inquiry `state_version`을 사용한다. `Idempotency-Key`는 새 논리 쓰기에서 생성하고 같은 요청의 네트워크 재시도에만 보존한다.
+3. `STATE-CONFLICT-01`은 입력을 보존하고 최신 상태·버전·행동 코드 배열을 반영한다. `DUPLICATE-EVENT-01`의 빈 `details`는 Snapshot으로 간주하지 않는다.
 4. API에 없는 이름은 현재 Web Mock의 임시 이름이며 Backend 합의 후 Mapper에서 교체한다.
 
 ## 문의 목록·상세 표시
 
 | 화면 정보 | Web View Model | API 계약 | DB 설계 기준 | 마스킹·비고 |
 | --- | --- | --- | --- | --- |
-| 문의 번호 | `CounselorInquiry.id` | `InquiryDetail.inquiry_id` | `support_inquiry.inquiry_no` 또는 공개 ID 매핑 필요 | 내부 UUID 직접 노출 금지 |
+| 문의 공개 ID | `CounselorInquiry.inquiryId` | `inquiry_id` | `support_inquiry.inquiry_id` | UUID, URL·API 리소스 식별에만 사용 |
+| 문의 표시 번호 | `CounselorInquiry.inquiryCode` | `inquiry_code` | `support_inquiry.inquiry_no` | 목록·상세 화면 표시용, URL 리소스 ID 사용 금지 |
 | 상태 | `status` | OpenAPI 상세 Schema에는 아직 없음 | `support_inquiry.status_code` | 표시명 Mapper 사용 |
 | 상태 버전 | `stateVersion` | 상태 머신 `state_version` | `support_inquiry.state_version` | 쓰기 동시성 제어값 |
-| 허용 행동 | `allowedActions` | 상태 머신 `allowed_actions[]` | Backend Guard 계산값, 직접 저장 필드 아님 | 상태 코드로 Web 재계산 금지 |
+| 허용 행동 | `allowedActions` | 성공: Action 객체 배열, 상태 충돌: Action code 배열 | Backend Guard 계산값, 직접 저장 필드 아님 | 상태 코드로 Web 재계산 금지, 충돌 코드는 Mapper로 기존 Action catalog와 결합 |
 | 위험도 | `riskLevel` | OpenAPI 상세 Schema에는 아직 없음 | `support_inquiry.risk_level_code`, `support_symptom_assessment.risk_level_code` | Backend 반환값만 표시 |
 | 우선순위 | `priority` | OpenAPI 상세 Schema에는 아직 없음 | `support_inquiry.priority_code`, `support_symptom_assessment.priority_code` | Web 점수 계산 금지 |
 | 사용 안내 상태 | `usageStatus` | `usage_guidance_status` | `support_inquiry.usage_guidance_status` | 계약 Enum 사용 |
@@ -59,8 +60,8 @@
 | 행동 코드 | `action.code` / `action_code` | 상태 머신 action catalog | 상태 이력·업무 이벤트 기록 | canonical code만 사용 |
 | Operation | `action.operationId` / `operation_id` | 상태 머신 `operation_id` | 직접 저장 필드 아님 | 실제 Endpoint 연결 필요 |
 | 상태 버전 | `stateVersion` / `state_version` | 동시성 계약 확정 | `support_inquiry.state_version` | 성공 쓰기마다 증가 |
-| 멱등 키 | Request Context / `Idempotency-Key` | 동시성 계약 확정 | 저장 위치 구현 `OPEN` | 매 시도 새 키, 같은 요청 재전송 정책 준수 |
-| 추적 ID | Request Context / `X-Correlation-ID` | Header 계약 존재 | 감사·로그 상관관계 | 개인정보 포함 금지 |
+| 멱등 키 | Operation Tracker / `Idempotency-Key` | 동시성 계약 확정 | 저장 위치 구현 `OPEN` | 네트워크 재시도에는 같은 키, 성공·새 행동·요청 변경에는 새 키 |
+| 추적 ID | Request Context / `X-Correlation-ID` | Header 계약 존재 | 감사·로그 상관관계 | 전송 시도마다 새 UUID, 개인정보 포함 금지 |
 
 ## 공식 근거 공개 범위
 
@@ -85,5 +86,5 @@
 2. OpenAPI `AllowedAction` 속성과 상태 머신 계약의 일치
 3. 상담 임시 저장·요약 확정·완료·방문 검토별 Endpoint와 요청 Body 분리
 4. `additional_check`, `customer_guidance`, 자유문 상담 결과의 저장 구조
-5. 성공 응답의 최신 상세·`state_version`·`allowed_actions` 반환 방식
-6. 403·409·422 오류의 `field_errors`, 최신 상태 스냅샷 형식
+5. 성공 응답의 최신 상세 반환 범위
+6. 403·422 오류의 `field_errors` 형식

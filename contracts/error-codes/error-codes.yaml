@@ -35,3 +35,55 @@ errors:
     retryable: true
     user_message: 공식 근거를 조회하지 못했습니다.
     recommended_action: RETRY_OR_REQUEST_CONSULTATION
+  - code: INVALID_REQUEST
+    category: validation
+    http_status: 400
+    retryable: false
+    user_message: 요청 형식을 확인해 주세요.
+    recommended_action: CORRECT_REQUEST
+  - code: RESOURCE_NOT_FOUND
+    category: persistence
+    http_status: 404
+    retryable: false
+    user_message: 요청한 대상을 찾을 수 없습니다.
+    recommended_action: RETURN_TO_LIST
+  - code: VALIDATION_ERROR
+    category: validation
+    http_status: 422
+    retryable: false
+    user_message: 입력값을 확인해 주세요.
+    recommended_action: CORRECT_INPUT
+  - code: INTERNAL_ERROR
+    category: system
+    http_status: 500
+    retryable: false
+    user_message: 요청 처리 중 오류가 발생했습니다.
+    recommended_action: REPORT_WITH_CORRELATION_ID
+
+runtime_http_mapping:
+  precedence:
+    - backend_error_passthrough
+    - exception_overrides
+    - server_error_family_fallback
+    - status_overrides
+    - client_error_family_fallback
+    - unhandled_exception
+  exception_overrides:
+    - exception: rest_framework.exceptions.ValidationError
+      code: VALIDATION_ERROR
+      http_status: 422
+  status_overrides:
+    400: INVALID_REQUEST
+    401: AUTH_REQUIRED
+    403: FORBIDDEN
+    404: RESOURCE_NOT_FOUND
+  family_fallbacks:
+    - minimum: 500
+      maximum: 599
+      code: INTERNAL_ERROR
+    - minimum: 400
+      maximum: 499
+      code: INVALID_REQUEST
+  unhandled_exception:
+    code: INTERNAL_ERROR
+    http_status: 500

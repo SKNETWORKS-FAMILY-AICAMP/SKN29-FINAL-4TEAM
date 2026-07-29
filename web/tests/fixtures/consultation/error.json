@@ -1,0 +1,5 @@
+{
+  "code": "INQUIRY-LIST-MOCK-ERROR",
+  "message": "공식 fixture 조회 실패 시나리오",
+  "details": {}
+}

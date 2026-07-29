@@ -6,3 +6,6 @@ content:
   application/json:
     schema:
       $ref: ../schemas/common/ApiResponse.yaml
+    examples:
+      internalError:
+        externalValue: ../../examples/errors/internal-error.json
