@@ -23,7 +23,9 @@ SK매직 정수기 구독 고객의 고객케어·상담·A/S 업무를 지원�
 
 최지용 담당 Django·PostgreSQL 기준선은
 [Backend README](backend/README.md)에 정리되어 있습니다. 로컬 실행은
-다음 순서를 따릅니다.
+다음 순서를 따릅니다. 신규 PC의 전체 복사·검증 명령과 정상 출력은
+[Django·PostgreSQL 공유 패키지 인계서 v1.2](docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)를
+현재 기준으로 사용합니다.
 
 > [!IMPORTANT]
 > 현행 실행·Migration 기준은 `backend/**`, 기계 계약 기준은
@@ -35,18 +37,21 @@ SK매직 정수기 구독 고객의 고객케어·상담·A/S 업무를 지원�
 ### 새 PC 최초 실행
 
 ```powershell
-Copy-Item .\backend\.env.example .\backend\.env
+if (-not (Test-Path .\backend\.env)) {
+    Copy-Item .\backend\.env.example .\backend\.env
+}
 # backend/.env의 replace-with-* 두 값을 로컬 난수값으로 교체
 
+python --version
 python .\scripts\development\bootstrap.py --service backend
-
-docker compose --env-file .\backend\.env up -d postgres
-
-Set-Location .\backend
-.\.venv\Scripts\python.exe manage.py migrate
-.\.venv\Scripts\python.exe manage.py seed_demo_accounts
-.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
+python .\scripts\development\check_environment.py --service backend
 ```
+
+기존 `.env`가 있으면 위 명령은 덮어쓰지 않습니다. Python은 정확히
+`3.13.13`이어야 합니다. 이어서 인계서 v1.2의 5.4~5.8을 실행해
+Docker → Backend 전체 검사 → PostgreSQL 연결 → Migration → 네 종류
+Seed 2회 → 최종 PostgreSQL 게이트 → Django·Health·Auth Smoke 순으로
+검증합니다.
 
 ### 설치 완료 후 일상 실행
 
@@ -57,18 +62,35 @@ Set-Location .\backend
 docker compose --env-file .\backend\.env up -d postgres
 docker compose --env-file .\backend\.env ps postgres
 
+Set-Location .\backend
+.\.venv\Scripts\python.exe manage.py migrate --check
+```
+
+미적용 Migration이 있을 때만 `manage.py migrate --noinput`을 실행한 뒤
+`migrate --check`를 다시 실행합니다. 통과하면 저장소 루트에서 다음
+명령으로 PostgreSQL 적용 상태를 확인하고 서버를 시작합니다.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py migrate --noinput
+.\.venv\Scripts\python.exe manage.py migrate --check
+```
+
+```powershell
+Set-Location ..
 python .\scripts\development\check_environment.py `
   --service backend `
   --postgresql
+if ($LASTEXITCODE -ne 0) {
+    throw "Backend·PostgreSQL 일상 시작 검사 실패"
+}
 
 Set-Location .\backend
-.\.venv\Scripts\python.exe manage.py migrate --check
 .\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
 ```
 
-미적용 Migration이 있을 때만 `manage.py migrate --noinput`을 실행하고,
-Demo Seed가 변경되거나 새 DB를 만든 경우에만 `seed_demo_accounts`를
-실행합니다. Django 서버는 해당 터미널에서 `Ctrl+C`로 종료하며,
+Demo Seed는 새 DB, Seed 변경 또는 Demo 데이터 복구 때만 Accounts →
+Products → Subscriptions → Care 순으로 실행합니다. Django 서버는 해당
+터미널에서 `Ctrl+C`로 종료하며,
 PostgreSQL은 저장소 루트에서 다음 명령으로 데이터를 보존한 채
 중지합니다.
 
