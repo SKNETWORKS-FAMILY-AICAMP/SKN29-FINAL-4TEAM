@@ -16,6 +16,37 @@ actions = load("allowed-actions.yaml")
 permissions = load("role-permissions.yaml")
 completion = load("completion-policy.yaml")
 concurrency = load("concurrency-policy.yaml")
+crosswalk = load("data-state-crosswalk.yaml")
+representative = load("examples/representative-e2e.yaml")
+flow_examples = [
+    load("examples/consultation-resolution.yaml"),
+    load("examples/danger-detected.yaml"),
+    load("examples/no-evidence.yaml"),
+    load("examples/reopened-inquiry.yaml"),
+    load("examples/self-resolution.yaml"),
+    load("examples/visit-resolution.yaml"),
+]
+
+CONTRACT_VERSION = "1.0.0"
+APPROVED_STATUS = "TEAM_APPROVED"
+
+approved_documents = [
+    states,
+    events,
+    rules,
+    guards,
+    actions,
+    permissions,
+    completion,
+    concurrency,
+    crosswalk,
+    representative,
+    *flow_examples,
+]
+
+for document in approved_documents:
+    assert document["contract"]["version"] == CONTRACT_VERSION
+    assert document["contract"]["status"] == APPROVED_STATUS
 
 state_codes = {x["code"] for x in states["states"]}
 event_by_code = {x["code"]: x for x in events["events"]}
@@ -80,9 +111,50 @@ assert any(
 assert completion["terminal_state_policy"]["allow_transition"] is False
 assert concurrency["state_version"]["conflict_response"]["http_status"] == 409
 
+assert crosswalk["terminal_and_reopen_policy"]["terminal_states"] == (
+    states["terminal_states"]
+)
+assert crosswalk["terminal_and_reopen_policy"][
+    "same_inquiry_reopen_from_terminal"
+] is False
+
+representative_steps = representative["steps"]
+representative_events = [step["event"] for step in representative_steps]
+assert len(representative_steps) == 14
+assert [step["order"] for step in representative_steps] == list(range(1, 15))
+assert [step["state_version_after"] for step in representative_steps] == list(
+    range(1, 15)
+)
+assert representative_events == crosswalk["representative_flow"][
+    "event_sequence"
+]
+
+for step in representative_steps:
+    assert step["event"] in event_by_code
+    if step["from_inquiry_state"] is not None:
+        assert step["from_inquiry_state"] in state_codes
+    assert step["to_inquiry_state"] in state_codes
+    assert step["actor"] in event_by_code[step["event"]]["actor_roles"]
+    assert any(
+        rule["event"] == step["event"]
+        and rule["from_inquiry_state"] == step["from_inquiry_state"]
+        and rule["to_inquiry_state"] == step["to_inquiry_state"]
+        for rule in rules["transitions"]
+    )
+
+assert representative["expected_result"] == {
+    "inquiry_state": "RESOLVED",
+    "state_version": 14,
+    "visit_status": "COMPLETED",
+    "terminal": True,
+    "additional_allowed_actions": [],
+}
+
 print("State Machine contract validation PASSED")
+print(f"- contract version: {CONTRACT_VERSION} ({APPROVED_STATUS})")
 print(f"- states: {len(state_codes)}")
 print(f"- events: {len(event_by_code)}")
 print(f"- transitions: {len(rule_by_id)}")
 print(f"- guards: {len(guard_ids)}")
 print(f"- external actions: {len(action_by_code)}")
+print(f"- representative steps: {len(representative_steps)}")

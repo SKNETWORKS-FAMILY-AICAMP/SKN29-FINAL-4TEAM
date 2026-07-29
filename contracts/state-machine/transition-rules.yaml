@@ -1,7 +1,7 @@
 contract:
   name: transition-rules
-  version: 0.1.0
-  status: draft_for_review
+  version: 1.0.0
+  status: TEAM_APPROVED
   owner: PM_TECHNICAL_INTEGRATION
   description: 'Inquiry의 현재 상태와 이벤트를 다음 Inquiry 상태 및 Visit 상태에 연결한다. 목록에 없는 상태·이벤트 조합은 허용하지 않으며 INVALID_STATE_TRANSITION으로
     거부한다.
@@ -18,7 +18,7 @@ references:
   allowed_actions: ./allowed-actions.yaml
   completion_policy: ./completion-policy.yaml
   concurrency_policy: ./concurrency-policy.yaml
-guard_contract_status: defined_in_transition-guards_v0.1.0
+guard_contract_status: defined_in_transition-guards_v1.0.0
 rule_semantics:
   unlisted_transition_policy: DENY
   invalid_transition_error_code: INVALID_STATE_TRANSITION
@@ -742,7 +742,7 @@ validation_expectations:
 - Visit 상태가 생성되거나 바뀌는 규칙은 record_visit_state_history가 true여야 한다.
 - RESOLVED와 CANCELLED에는 후속 전이가 없어야 한다.
 - START_INQUIRY 외 규칙은 기존 Inquiry와 state_version을 전제로 한다.
-allowed_actions_contract_status: defined_in_allowed-actions_v0.1.0
-role_permissions_contract_status: defined_in_role-permissions_v0.1.0
-completion_policy_contract_status: defined_in_completion-policy_v0.1.0
-concurrency_policy_contract_status: defined_in_concurrency-policy_v0.1.0
+allowed_actions_contract_status: defined_in_allowed-actions_v1.0.0
+role_permissions_contract_status: defined_in_role-permissions_v1.0.0
+completion_policy_contract_status: defined_in_completion-policy_v1.0.0
+concurrency_policy_contract_status: defined_in_concurrency-policy_v1.0.0

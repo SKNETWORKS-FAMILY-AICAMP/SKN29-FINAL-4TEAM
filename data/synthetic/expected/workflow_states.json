@@ -9,14 +9,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "2fdda38e-2530-5d2d-b0ad-97630b3b5c3e",
         "state_version": 1,
         "occurred_at": "2026-07-01T15:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-001-01",
         "correlation_id": "ce49a0ed-c435-5efe-b0d3-06b97f4f7083",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "2fdda38e-2530-5d2d-b0ad-97630b3b5c3e"
       },
       {
         "order": 2,
@@ -24,18 +24,18 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "2fdda38e-2530-5d2d-b0ad-97630b3b5c3e",
         "state_version": 2,
         "occurred_at": "2026-07-01T15:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-001-02",
         "correlation_id": "ce49a0ed-c435-5efe-b0d3-06b97f4f7083",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "2fdda38e-2530-5d2d-b0ad-97630b3b5c3e"
       }
     ],
     "final_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-002",
@@ -47,14 +47,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "18b30d13-a38b-5035-84b3-988406079e0d",
         "state_version": 1,
         "occurred_at": "2026-07-01T21:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-01",
         "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "18b30d13-a38b-5035-84b3-988406079e0d"
       },
       {
         "order": 2,
@@ -62,14 +62,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "18b30d13-a38b-5035-84b3-988406079e0d",
         "state_version": 2,
         "occurred_at": "2026-07-01T21:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-02",
         "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "18b30d13-a38b-5035-84b3-988406079e0d"
       },
       {
         "order": 3,
@@ -77,14 +77,14 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "18b30d13-a38b-5035-84b3-988406079e0d",
         "state_version": 3,
         "occurred_at": "2026-07-01T22:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-03",
         "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "18b30d13-a38b-5035-84b3-988406079e0d"
       },
       {
         "order": 4,
@@ -92,7 +92,6 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 4,
         "occurred_at": "2026-07-01T22:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-04",
@@ -100,7 +99,8 @@
         "expected_allowed_actions": [
           "CUSTOMER_REPORTED_SELF_RESOLVED",
           "REQUEST_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       },
       {
         "order": 5,
@@ -108,14 +108,14 @@
         "from_status": "AI_GUIDANCE",
         "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "CUSTOMER",
-        "actor_id": "18b30d13-a38b-5035-84b3-988406079e0d",
         "state_version": 5,
         "occurred_at": "2026-07-01T23:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-05",
         "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
         "expected_allowed_actions": [
           "START_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": "18b30d13-a38b-5035-84b3-988406079e0d"
       },
       {
         "order": 6,
@@ -123,7 +123,6 @@
         "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 6,
         "occurred_at": "2026-07-01T23:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-06",
@@ -131,7 +130,8 @@
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
           "VISIT_REVIEW_REQUIRED"
-        ]
+        ],
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 7,
@@ -139,7 +139,6 @@
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "VISIT_REVIEW_PENDING",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 7,
         "occurred_at": "2026-07-02T00:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-07",
@@ -147,7 +146,8 @@
         "expected_allowed_actions": [
           "VISIT_NEEDED",
           "VISIT_NOT_NEEDED"
-        ]
+        ],
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 8,
@@ -155,7 +155,6 @@
         "from_status": "VISIT_REVIEW_PENDING",
         "to_status": "VISIT_SCHEDULING",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 8,
         "occurred_at": "2026-07-02T00:10:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-08-create",
@@ -165,7 +164,8 @@
         ],
         "visit_from_status": null,
         "visit_to_status": "ASSIGNING",
-        "visit_state_version": 1
+        "visit_state_version": 1,
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 9,
@@ -173,7 +173,6 @@
         "from_status": "VISIT_SCHEDULING",
         "to_status": "VISIT_SCHEDULING",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 9,
         "occurred_at": "2026-07-02T00:20:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-08-schedule",
@@ -184,7 +183,8 @@
         ],
         "visit_from_status": "ASSIGNING",
         "visit_to_status": "SCHEDULING",
-        "visit_state_version": 2
+        "visit_state_version": 2,
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 10,
@@ -192,7 +192,6 @@
         "from_status": "VISIT_SCHEDULING",
         "to_status": "VISIT_SCHEDULED",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 10,
         "occurred_at": "2026-07-02T00:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-08",
@@ -202,7 +201,8 @@
         ],
         "visit_from_status": "SCHEDULING",
         "visit_to_status": "CONFIRMED",
-        "visit_state_version": 3
+        "visit_state_version": 3,
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 11,
@@ -210,7 +210,6 @@
         "from_status": "VISIT_SCHEDULED",
         "to_status": "VISIT_SCHEDULED",
         "actor_role": "TECHNICIAN",
-        "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
         "state_version": 11,
         "occurred_at": "2026-07-04T00:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-09",
@@ -221,7 +220,8 @@
         ],
         "visit_from_status": "CONFIRMED",
         "visit_to_status": "IN_PROGRESS",
-        "visit_state_version": 4
+        "visit_state_version": 4,
+        "actor_public_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8"
       },
       {
         "order": 12,
@@ -229,7 +229,6 @@
         "from_status": "VISIT_SCHEDULED",
         "to_status": "COMPLETION_PENDING",
         "actor_role": "TECHNICIAN",
-        "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
         "state_version": 12,
         "occurred_at": "2026-07-04T01:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-10",
@@ -242,7 +241,8 @@
         ],
         "visit_from_status": "IN_PROGRESS",
         "visit_to_status": "COMPLETED",
-        "visit_state_version": 5
+        "visit_state_version": 5,
+        "actor_public_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8"
       },
       {
         "order": 13,
@@ -250,7 +250,6 @@
         "from_status": "COMPLETION_PENDING",
         "to_status": "COMPLETION_PENDING",
         "actor_role": "CUSTOMER",
-        "actor_id": "18b30d13-a38b-5035-84b3-988406079e0d",
         "state_version": 13,
         "occurred_at": "2026-07-04T03:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-11",
@@ -260,7 +259,8 @@
           "CUSTOMER_REPORTED_UNRESOLVED",
           "REQUEST_CONSULTATION",
           "FINALIZE_INQUIRY"
-        ]
+        ],
+        "actor_public_id": "18b30d13-a38b-5035-84b3-988406079e0d"
       },
       {
         "order": 14,
@@ -268,16 +268,16 @@
         "from_status": "COMPLETION_PENDING",
         "to_status": "RESOLVED",
         "actor_role": "TECHNICIAN",
-        "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
         "state_version": 14,
         "occurred_at": "2026-07-04T03:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-002-12",
         "correlation_id": "e5a21d79-f423-5795-aae1-10a5ba772937",
-        "expected_allowed_actions": []
+        "expected_allowed_actions": [],
+        "actor_public_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8"
       }
     ],
     "final_status": "RESOLVED",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-003",
@@ -289,14 +289,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c",
         "state_version": 1,
         "occurred_at": "2026-07-02T03:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-003-01",
         "correlation_id": "7f27f464-2cef-5901-b7fa-f149194191e2",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c"
       },
       {
         "order": 2,
@@ -304,14 +304,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c",
         "state_version": 2,
         "occurred_at": "2026-07-02T03:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-003-02",
         "correlation_id": "7f27f464-2cef-5901-b7fa-f149194191e2",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c"
       },
       {
         "order": 3,
@@ -319,7 +319,6 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-02T04:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-003-03",
@@ -327,7 +326,8 @@
         "expected_allowed_actions": [
           "CUSTOMER_REPORTED_SELF_RESOLVED",
           "REQUEST_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       },
       {
         "order": 4,
@@ -335,16 +335,16 @@
         "from_status": "AI_GUIDANCE",
         "to_status": "RESOLVED",
         "actor_role": "CUSTOMER",
-        "actor_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c",
         "state_version": 4,
         "occurred_at": "2026-07-02T04:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-003-04",
         "correlation_id": "7f27f464-2cef-5901-b7fa-f149194191e2",
-        "expected_allowed_actions": []
+        "expected_allowed_actions": [],
+        "actor_public_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c"
       }
     ],
     "final_status": "RESOLVED",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-004",
@@ -356,14 +356,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "e48532ad-fa40-54d7-981b-9accfe13e365",
         "state_version": 1,
         "occurred_at": "2026-07-02T09:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-004-01",
         "correlation_id": "8d8f04b3-08a1-5d20-8ab1-4e5dd2545e10",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "e48532ad-fa40-54d7-981b-9accfe13e365"
       },
       {
         "order": 2,
@@ -371,14 +371,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "e48532ad-fa40-54d7-981b-9accfe13e365",
         "state_version": 2,
         "occurred_at": "2026-07-02T09:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-004-02",
         "correlation_id": "8d8f04b3-08a1-5d20-8ab1-4e5dd2545e10",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "e48532ad-fa40-54d7-981b-9accfe13e365"
       },
       {
         "order": 3,
@@ -386,18 +386,18 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-02T10:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-004-03",
         "correlation_id": "8d8f04b3-08a1-5d20-8ab1-4e5dd2545e10",
         "expected_allowed_actions": [
           "START_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       }
     ],
     "final_status": "CONSULTATION_REQUIRED",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-005",
@@ -409,14 +409,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da",
         "state_version": 1,
         "occurred_at": "2026-07-02T15:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-005-01",
         "correlation_id": "c532f749-7782-59cd-8d00-6076823aae0b",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da"
       },
       {
         "order": 2,
@@ -424,14 +424,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da",
         "state_version": 2,
         "occurred_at": "2026-07-02T15:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-005-02",
         "correlation_id": "c532f749-7782-59cd-8d00-6076823aae0b",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da"
       },
       {
         "order": 3,
@@ -439,7 +439,6 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-02T16:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-005-03",
@@ -447,7 +446,8 @@
         "expected_allowed_actions": [
           "CUSTOMER_REPORTED_SELF_RESOLVED",
           "REQUEST_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       },
       {
         "order": 4,
@@ -455,16 +455,16 @@
         "from_status": "AI_GUIDANCE",
         "to_status": "RESOLVED",
         "actor_role": "CUSTOMER",
-        "actor_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da",
         "state_version": 4,
         "occurred_at": "2026-07-02T16:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-005-04",
         "correlation_id": "c532f749-7782-59cd-8d00-6076823aae0b",
-        "expected_allowed_actions": []
+        "expected_allowed_actions": [],
+        "actor_public_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da"
       }
     ],
     "final_status": "RESOLVED",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-006",
@@ -476,14 +476,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "0752efc0-e2c7-5900-bc01-72c9ed38097a",
         "state_version": 1,
         "occurred_at": "2026-07-02T21:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-006-01",
         "correlation_id": "b9f59d18-3065-5e3b-8e5c-859008b16ba6",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "0752efc0-e2c7-5900-bc01-72c9ed38097a"
       },
       {
         "order": 2,
@@ -491,14 +491,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "0752efc0-e2c7-5900-bc01-72c9ed38097a",
         "state_version": 2,
         "occurred_at": "2026-07-02T21:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-006-02",
         "correlation_id": "b9f59d18-3065-5e3b-8e5c-859008b16ba6",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "0752efc0-e2c7-5900-bc01-72c9ed38097a"
       },
       {
         "order": 3,
@@ -506,18 +506,18 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-02T22:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-006-03",
         "correlation_id": "b9f59d18-3065-5e3b-8e5c-859008b16ba6",
         "expected_allowed_actions": [
           "START_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       }
     ],
     "final_status": "CONSULTATION_REQUIRED",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-007",
@@ -529,14 +529,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
         "state_version": 1,
         "occurred_at": "2026-07-03T03:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-007-01",
         "correlation_id": "769a3d96-3aa6-5e00-97a5-17c72e5d8ec5",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6"
       },
       {
         "order": 2,
@@ -544,14 +544,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
         "state_version": 2,
         "occurred_at": "2026-07-03T03:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-007-02",
         "correlation_id": "769a3d96-3aa6-5e00-97a5-17c72e5d8ec5",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6"
       },
       {
         "order": 3,
@@ -559,7 +559,6 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-03T04:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-007-03",
@@ -567,7 +566,8 @@
         "expected_allowed_actions": [
           "CUSTOMER_REPORTED_SELF_RESOLVED",
           "REQUEST_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       },
       {
         "order": 4,
@@ -575,16 +575,16 @@
         "from_status": "AI_GUIDANCE",
         "to_status": "RESOLVED",
         "actor_role": "CUSTOMER",
-        "actor_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
         "state_version": 4,
         "occurred_at": "2026-07-03T04:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-007-04",
         "correlation_id": "769a3d96-3aa6-5e00-97a5-17c72e5d8ec5",
-        "expected_allowed_actions": []
+        "expected_allowed_actions": [],
+        "actor_public_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6"
       }
     ],
     "final_status": "RESOLVED",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-008",
@@ -596,14 +596,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab",
         "state_version": 1,
         "occurred_at": "2026-07-03T09:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-008-01",
         "correlation_id": "d9c5de5d-7b45-5893-a1f3-eff31a160642",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab"
       },
       {
         "order": 2,
@@ -611,14 +611,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab",
         "state_version": 2,
         "occurred_at": "2026-07-03T09:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-008-02",
         "correlation_id": "d9c5de5d-7b45-5893-a1f3-eff31a160642",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab"
       },
       {
         "order": 3,
@@ -626,7 +626,6 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-03T10:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-008-03",
@@ -634,7 +633,8 @@
         "expected_allowed_actions": [
           "CUSTOMER_REPORTED_SELF_RESOLVED",
           "REQUEST_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       },
       {
         "order": 4,
@@ -642,14 +642,14 @@
         "from_status": "AI_GUIDANCE",
         "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "CUSTOMER",
-        "actor_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab",
         "state_version": 4,
         "occurred_at": "2026-07-03T10:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-008-04",
         "correlation_id": "d9c5de5d-7b45-5893-a1f3-eff31a160642",
         "expected_allowed_actions": [
           "START_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab"
       },
       {
         "order": 5,
@@ -657,7 +657,6 @@
         "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
         "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 5,
         "occurred_at": "2026-07-03T11:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-008-05",
@@ -665,7 +664,8 @@
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
           "VISIT_REVIEW_REQUIRED"
-        ]
+        ],
+        "actor_public_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027"
       },
       {
         "order": 6,
@@ -673,7 +673,6 @@
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "VISIT_REVIEW_PENDING",
         "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 6,
         "occurred_at": "2026-07-03T11:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-008-06",
@@ -681,11 +680,12 @@
         "expected_allowed_actions": [
           "VISIT_NEEDED",
           "VISIT_NOT_NEEDED"
-        ]
+        ],
+        "actor_public_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027"
       }
     ],
     "final_status": "VISIT_REVIEW_PENDING",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-009",
@@ -697,14 +697,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
         "state_version": 1,
         "occurred_at": "2026-07-03T15:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-009-01",
         "correlation_id": "bf71079e-a2fa-5dd1-9a1b-42de9047b882",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c"
       },
       {
         "order": 2,
@@ -712,14 +712,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
         "state_version": 2,
         "occurred_at": "2026-07-03T15:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-009-02",
         "correlation_id": "bf71079e-a2fa-5dd1-9a1b-42de9047b882",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c"
       },
       {
         "order": 3,
@@ -727,7 +727,6 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-03T16:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-009-03",
@@ -735,7 +734,8 @@
         "expected_allowed_actions": [
           "CUSTOMER_REPORTED_SELF_RESOLVED",
           "REQUEST_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       },
       {
         "order": 4,
@@ -743,16 +743,16 @@
         "from_status": "AI_GUIDANCE",
         "to_status": "RESOLVED",
         "actor_role": "CUSTOMER",
-        "actor_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
         "state_version": 4,
         "occurred_at": "2026-07-03T16:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-009-04",
         "correlation_id": "bf71079e-a2fa-5dd1-9a1b-42de9047b882",
-        "expected_allowed_actions": []
+        "expected_allowed_actions": [],
+        "actor_public_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c"
       }
     ],
     "final_status": "RESOLVED",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-010",
@@ -764,14 +764,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "df1e5e7d-c016-53fa-9f7e-26ac4359c78e",
         "state_version": 1,
         "occurred_at": "2026-07-03T21:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-010-01",
         "correlation_id": "94eee4e7-7b1f-502e-9ae8-5ad19498c21c",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "df1e5e7d-c016-53fa-9f7e-26ac4359c78e"
       },
       {
         "order": 2,
@@ -779,18 +779,18 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "df1e5e7d-c016-53fa-9f7e-26ac4359c78e",
         "state_version": 2,
         "occurred_at": "2026-07-03T21:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-010-02",
         "correlation_id": "94eee4e7-7b1f-502e-9ae8-5ad19498c21c",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "df1e5e7d-c016-53fa-9f7e-26ac4359c78e"
       }
     ],
     "final_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-011",
@@ -802,14 +802,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "52128217-1800-57ad-88e9-8750c499a55f",
         "state_version": 1,
         "occurred_at": "2026-07-04T03:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-011-01",
         "correlation_id": "9dbd81bc-67e6-54f2-8a40-9a949c07c735",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "52128217-1800-57ad-88e9-8750c499a55f"
       },
       {
         "order": 2,
@@ -817,149 +817,18 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "52128217-1800-57ad-88e9-8750c499a55f",
         "state_version": 2,
         "occurred_at": "2026-07-04T03:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-011-02",
         "correlation_id": "9dbd81bc-67e6-54f2-8a40-9a949c07c735",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "52128217-1800-57ad-88e9-8750c499a55f"
       }
     ],
     "final_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "generated_at": "2026-07-27T00:00:00+09:00"
-  },
-  {
-    "scenario_id": "SYN-JAC104-012",
-    "initial_status": "DRAFT",
-    "steps": [
-      {
-        "order": 1,
-        "event": "START_INQUIRY",
-        "from_status": null,
-        "to_status": "DRAFT",
-        "actor_role": "CUSTOMER",
-        "actor_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d",
-        "state_version": 1,
-        "occurred_at": "2026-07-04T09:00:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-012-01",
-        "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
-        "expected_allowed_actions": [
-          "SUBMIT_SYMPTOM"
-        ]
-      },
-      {
-        "order": 2,
-        "event": "SUBMIT_SYMPTOM",
-        "from_status": "DRAFT",
-        "to_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "actor_role": "CUSTOMER",
-        "actor_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d",
-        "state_version": 2,
-        "occurred_at": "2026-07-04T09:30:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-012-02",
-        "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
-        "expected_allowed_actions": [
-          "SUBMIT_ANSWERS"
-        ]
-      },
-      {
-        "order": 3,
-        "event": "SAFE_GUIDANCE_READY",
-        "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "AI_GUIDANCE",
-        "actor_role": "SYSTEM",
-        "actor_id": null,
-        "state_version": 3,
-        "occurred_at": "2026-07-04T10:00:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-012-03",
-        "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
-        "expected_allowed_actions": [
-          "CUSTOMER_REPORTED_SELF_RESOLVED",
-          "REQUEST_CONSULTATION"
-        ]
-      },
-      {
-        "order": 4,
-        "event": "REQUEST_CONSULTATION",
-        "from_status": "AI_GUIDANCE",
-        "to_status": "CONSULTATION_REQUIRED",
-        "actor_role": "CUSTOMER",
-        "actor_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d",
-        "state_version": 4,
-        "occurred_at": "2026-07-04T10:30:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-012-04",
-        "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
-        "expected_allowed_actions": [
-          "START_CONSULTATION"
-        ]
-      },
-      {
-        "order": 5,
-        "event": "START_CONSULTATION",
-        "from_status": "CONSULTATION_REQUIRED",
-        "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-        "state_version": 5,
-        "occurred_at": "2026-07-04T11:00:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-012-05",
-        "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
-        "expected_allowed_actions": [
-          "CONSULTATION_COMPLETED",
-          "VISIT_REVIEW_REQUIRED"
-        ]
-      },
-      {
-        "order": 6,
-        "event": "CONSULTATION_COMPLETED",
-        "from_status": "CONSULTATION_IN_PROGRESS",
-        "to_status": "COMPLETION_PENDING",
-        "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-        "state_version": 6,
-        "occurred_at": "2026-07-04T11:30:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-012-06",
-        "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
-        "expected_allowed_actions": [
-          "SUBMIT_RESOLUTION_FEEDBACK",
-          "CUSTOMER_REPORTED_UNRESOLVED",
-          "REQUEST_CONSULTATION",
-          "FINALIZE_INQUIRY"
-        ]
-      },
-      {
-        "order": 7,
-        "event": "FINALIZE_INQUIRY",
-        "from_status": "COMPLETION_PENDING",
-        "to_status": "RESOLVED",
-        "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-        "state_version": 7,
-        "occurred_at": "2026-07-04T12:00:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-012-07",
-        "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
-        "expected_allowed_actions": []
-      },
-      {
-        "order": 8,
-        "event": "RESUME_CONSULTATION",
-        "from_status": "RESOLVED",
-        "to_status": "REOPENED",
-        "actor_role": "CUSTOMER",
-        "actor_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d",
-        "state_version": 8,
-        "occurred_at": "2026-07-04T12:30:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-012-08",
-        "correlation_id": "b5a2af15-a2ef-5d32-ac86-c35fe0325e90",
-        "expected_allowed_actions": [
-          "RESUME_CONSULTATION"
-        ]
-      }
-    ],
-    "final_status": "REOPENED",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-013",
@@ -971,14 +840,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "2fdda38e-2530-5d2d-b0ad-97630b3b5c3e",
         "state_version": 1,
         "occurred_at": "2026-07-04T15:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-013-01",
         "correlation_id": "c4b05213-cd3b-5e37-a21a-40407963494f",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "2fdda38e-2530-5d2d-b0ad-97630b3b5c3e"
       },
       {
         "order": 2,
@@ -986,14 +855,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "2fdda38e-2530-5d2d-b0ad-97630b3b5c3e",
         "state_version": 2,
         "occurred_at": "2026-07-04T15:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-013-02",
         "correlation_id": "c4b05213-cd3b-5e37-a21a-40407963494f",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "2fdda38e-2530-5d2d-b0ad-97630b3b5c3e"
       },
       {
         "order": 3,
@@ -1001,14 +870,14 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-04T16:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-013-03",
         "correlation_id": "c4b05213-cd3b-5e37-a21a-40407963494f",
         "expected_allowed_actions": [
           "START_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       },
       {
         "order": 4,
@@ -1016,7 +885,6 @@
         "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
         "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 4,
         "occurred_at": "2026-07-04T16:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-013-04",
@@ -1024,11 +892,12 @@
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
           "VISIT_REVIEW_REQUIRED"
-        ]
+        ],
+        "actor_public_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027"
       }
     ],
     "final_status": "CONSULTATION_IN_PROGRESS",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-014",
@@ -1040,14 +909,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "18b30d13-a38b-5035-84b3-988406079e0d",
         "state_version": 1,
         "occurred_at": "2026-07-04T21:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-014-01",
         "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "18b30d13-a38b-5035-84b3-988406079e0d"
       },
       {
         "order": 2,
@@ -1055,14 +924,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "18b30d13-a38b-5035-84b3-988406079e0d",
         "state_version": 2,
         "occurred_at": "2026-07-04T21:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-014-02",
         "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "18b30d13-a38b-5035-84b3-988406079e0d"
       },
       {
         "order": 3,
@@ -1070,14 +939,14 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-04T22:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-014-03",
         "correlation_id": "6485e221-0f76-54ca-84ce-1da93c81a4bb",
         "expected_allowed_actions": [
           "START_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       },
       {
         "order": 4,
@@ -1085,7 +954,6 @@
         "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 4,
         "occurred_at": "2026-07-04T22:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-014-04",
@@ -1093,7 +961,8 @@
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
           "VISIT_REVIEW_REQUIRED"
-        ]
+        ],
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 5,
@@ -1101,7 +970,6 @@
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "VISIT_REVIEW_PENDING",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 5,
         "occurred_at": "2026-07-04T23:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-014-05",
@@ -1109,7 +977,8 @@
         "expected_allowed_actions": [
           "VISIT_NEEDED",
           "VISIT_NOT_NEEDED"
-        ]
+        ],
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 6,
@@ -1117,7 +986,6 @@
         "from_status": "VISIT_REVIEW_PENDING",
         "to_status": "VISIT_SCHEDULING",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 6,
         "occurred_at": "2026-07-04T23:10:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-014-06-create",
@@ -1127,7 +995,8 @@
         ],
         "visit_from_status": null,
         "visit_to_status": "ASSIGNING",
-        "visit_state_version": 1
+        "visit_state_version": 1,
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 7,
@@ -1135,7 +1004,6 @@
         "from_status": "VISIT_SCHEDULING",
         "to_status": "VISIT_SCHEDULING",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 7,
         "occurred_at": "2026-07-04T23:20:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-014-06-schedule",
@@ -1146,7 +1014,8 @@
         ],
         "visit_from_status": "ASSIGNING",
         "visit_to_status": "SCHEDULING",
-        "visit_state_version": 2
+        "visit_state_version": 2,
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 8,
@@ -1154,7 +1023,6 @@
         "from_status": "VISIT_SCHEDULING",
         "to_status": "VISIT_SCHEDULED",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 8,
         "occurred_at": "2026-07-04T23:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-014-06",
@@ -1164,7 +1032,8 @@
         ],
         "visit_from_status": "SCHEDULING",
         "visit_to_status": "CONFIRMED",
-        "visit_state_version": 3
+        "visit_state_version": 3,
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 9,
@@ -1172,7 +1041,6 @@
         "from_status": "VISIT_SCHEDULED",
         "to_status": "VISIT_SCHEDULED",
         "actor_role": "TECHNICIAN",
-        "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
         "state_version": 9,
         "occurred_at": "2026-07-05T00:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-014-07",
@@ -1183,11 +1051,12 @@
         ],
         "visit_from_status": "CONFIRMED",
         "visit_to_status": "IN_PROGRESS",
-        "visit_state_version": 4
+        "visit_state_version": 4,
+        "actor_public_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8"
       }
     ],
     "final_status": "VISIT_SCHEDULED",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-015",
@@ -1199,14 +1068,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c",
         "state_version": 1,
         "occurred_at": "2026-07-05T03:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-015-01",
         "correlation_id": "04859f79-bb46-5f7a-8b57-4c3d5d1cdf14",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c"
       },
       {
         "order": 2,
@@ -1214,165 +1083,18 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c",
         "state_version": 2,
         "occurred_at": "2026-07-05T03:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-015-02",
         "correlation_id": "04859f79-bb46-5f7a-8b57-4c3d5d1cdf14",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c"
       }
     ],
     "final_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "generated_at": "2026-07-27T00:00:00+09:00"
-  },
-  {
-    "scenario_id": "SYN-JAC104-016",
-    "initial_status": "DRAFT",
-    "steps": [
-      {
-        "order": 1,
-        "event": "START_INQUIRY",
-        "from_status": null,
-        "to_status": "DRAFT",
-        "actor_role": "CUSTOMER",
-        "actor_id": "e48532ad-fa40-54d7-981b-9accfe13e365",
-        "state_version": 1,
-        "occurred_at": "2026-07-05T09:00:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-016-01",
-        "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
-        "expected_allowed_actions": [
-          "SUBMIT_SYMPTOM"
-        ]
-      },
-      {
-        "order": 2,
-        "event": "SUBMIT_SYMPTOM",
-        "from_status": "DRAFT",
-        "to_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "actor_role": "CUSTOMER",
-        "actor_id": "e48532ad-fa40-54d7-981b-9accfe13e365",
-        "state_version": 2,
-        "occurred_at": "2026-07-05T09:30:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-016-02",
-        "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
-        "expected_allowed_actions": [
-          "SUBMIT_ANSWERS"
-        ]
-      },
-      {
-        "order": 3,
-        "event": "SAFE_GUIDANCE_READY",
-        "from_status": "QUESTIONNAIRE_IN_PROGRESS",
-        "to_status": "AI_GUIDANCE",
-        "actor_role": "SYSTEM",
-        "actor_id": null,
-        "state_version": 3,
-        "occurred_at": "2026-07-05T10:00:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-016-03",
-        "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
-        "expected_allowed_actions": [
-          "CUSTOMER_REPORTED_SELF_RESOLVED",
-          "REQUEST_CONSULTATION"
-        ]
-      },
-      {
-        "order": 4,
-        "event": "REQUEST_CONSULTATION",
-        "from_status": "AI_GUIDANCE",
-        "to_status": "CONSULTATION_REQUIRED",
-        "actor_role": "CUSTOMER",
-        "actor_id": "e48532ad-fa40-54d7-981b-9accfe13e365",
-        "state_version": 4,
-        "occurred_at": "2026-07-05T10:30:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-016-04",
-        "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
-        "expected_allowed_actions": [
-          "START_CONSULTATION"
-        ]
-      },
-      {
-        "order": 5,
-        "event": "START_CONSULTATION",
-        "from_status": "CONSULTATION_REQUIRED",
-        "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-        "state_version": 5,
-        "occurred_at": "2026-07-05T11:00:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-016-05",
-        "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
-        "expected_allowed_actions": [
-          "CONSULTATION_COMPLETED",
-          "VISIT_REVIEW_REQUIRED"
-        ]
-      },
-      {
-        "order": 6,
-        "event": "CONSULTATION_COMPLETED",
-        "from_status": "CONSULTATION_IN_PROGRESS",
-        "to_status": "COMPLETION_PENDING",
-        "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-        "state_version": 6,
-        "occurred_at": "2026-07-05T11:30:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-016-06",
-        "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
-        "expected_allowed_actions": [
-          "SUBMIT_RESOLUTION_FEEDBACK",
-          "CUSTOMER_REPORTED_UNRESOLVED",
-          "REQUEST_CONSULTATION",
-          "FINALIZE_INQUIRY"
-        ]
-      },
-      {
-        "order": 7,
-        "event": "FINALIZE_INQUIRY",
-        "from_status": "COMPLETION_PENDING",
-        "to_status": "RESOLVED",
-        "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-        "state_version": 7,
-        "occurred_at": "2026-07-05T12:00:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-016-07",
-        "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
-        "expected_allowed_actions": []
-      },
-      {
-        "order": 8,
-        "event": "RESUME_CONSULTATION",
-        "from_status": "RESOLVED",
-        "to_status": "REOPENED",
-        "actor_role": "CUSTOMER",
-        "actor_id": "e48532ad-fa40-54d7-981b-9accfe13e365",
-        "state_version": 8,
-        "occurred_at": "2026-07-05T12:30:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-016-08",
-        "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
-        "expected_allowed_actions": [
-          "RESUME_CONSULTATION"
-        ]
-      },
-      {
-        "order": 9,
-        "event": "START_CONSULTATION",
-        "from_status": "REOPENED",
-        "to_status": "CONSULTATION_IN_PROGRESS",
-        "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
-        "state_version": 9,
-        "occurred_at": "2026-07-05T13:00:00+09:00",
-        "idempotency_key": "idem-SYN-JAC104-016-09",
-        "correlation_id": "823ba8ce-fe16-5e04-b4b6-41737a6c1e17",
-        "expected_allowed_actions": [
-          "CONSULTATION_COMPLETED",
-          "VISIT_REVIEW_REQUIRED"
-        ]
-      }
-    ],
-    "final_status": "CONSULTATION_IN_PROGRESS",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-017",
@@ -1384,14 +1106,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da",
         "state_version": 1,
         "occurred_at": "2026-07-05T15:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-017-01",
         "correlation_id": "bab06bf5-7af5-5f6f-88e1-bcd2bd3b070e",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da"
       },
       {
         "order": 2,
@@ -1399,14 +1121,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da",
         "state_version": 2,
         "occurred_at": "2026-07-05T15:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-017-02",
         "correlation_id": "bab06bf5-7af5-5f6f-88e1-bcd2bd3b070e",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da"
       },
       {
         "order": 3,
@@ -1414,14 +1136,14 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-05T16:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-017-03",
         "correlation_id": "bab06bf5-7af5-5f6f-88e1-bcd2bd3b070e",
         "expected_allowed_actions": [
           "START_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       },
       {
         "order": 4,
@@ -1429,7 +1151,6 @@
         "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
         "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 4,
         "occurred_at": "2026-07-05T16:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-017-04",
@@ -1437,7 +1158,8 @@
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
           "VISIT_REVIEW_REQUIRED"
-        ]
+        ],
+        "actor_public_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027"
       },
       {
         "order": 5,
@@ -1445,7 +1167,6 @@
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "COMPLETION_PENDING",
         "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 5,
         "occurred_at": "2026-07-05T17:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-017-05",
@@ -1455,11 +1176,12 @@
           "CUSTOMER_REPORTED_UNRESOLVED",
           "REQUEST_CONSULTATION",
           "FINALIZE_INQUIRY"
-        ]
+        ],
+        "actor_public_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027"
       }
     ],
     "final_status": "COMPLETION_PENDING",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-018",
@@ -1471,14 +1193,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "0752efc0-e2c7-5900-bc01-72c9ed38097a",
         "state_version": 1,
         "occurred_at": "2026-07-05T21:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-01",
         "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "0752efc0-e2c7-5900-bc01-72c9ed38097a"
       },
       {
         "order": 2,
@@ -1486,14 +1208,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "0752efc0-e2c7-5900-bc01-72c9ed38097a",
         "state_version": 2,
         "occurred_at": "2026-07-05T21:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-02",
         "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "0752efc0-e2c7-5900-bc01-72c9ed38097a"
       },
       {
         "order": 3,
@@ -1501,14 +1223,14 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-05T22:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-03",
         "correlation_id": "7d61749d-e291-543f-af63-837f088fd3d7",
         "expected_allowed_actions": [
           "START_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       },
       {
         "order": 4,
@@ -1516,7 +1238,6 @@
         "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 4,
         "occurred_at": "2026-07-05T22:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-04",
@@ -1524,7 +1245,8 @@
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
           "VISIT_REVIEW_REQUIRED"
-        ]
+        ],
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 5,
@@ -1532,7 +1254,6 @@
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "VISIT_REVIEW_PENDING",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 5,
         "occurred_at": "2026-07-05T23:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-05",
@@ -1540,7 +1261,8 @@
         "expected_allowed_actions": [
           "VISIT_NEEDED",
           "VISIT_NOT_NEEDED"
-        ]
+        ],
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 6,
@@ -1548,7 +1270,6 @@
         "from_status": "VISIT_REVIEW_PENDING",
         "to_status": "VISIT_SCHEDULING",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 6,
         "occurred_at": "2026-07-05T23:10:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-06-create",
@@ -1558,7 +1279,8 @@
         ],
         "visit_from_status": null,
         "visit_to_status": "ASSIGNING",
-        "visit_state_version": 1
+        "visit_state_version": 1,
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 7,
@@ -1566,7 +1288,6 @@
         "from_status": "VISIT_SCHEDULING",
         "to_status": "VISIT_SCHEDULING",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 7,
         "occurred_at": "2026-07-05T23:20:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-06-schedule",
@@ -1577,7 +1298,8 @@
         ],
         "visit_from_status": "ASSIGNING",
         "visit_to_status": "SCHEDULING",
-        "visit_state_version": 2
+        "visit_state_version": 2,
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 8,
@@ -1585,7 +1307,6 @@
         "from_status": "VISIT_SCHEDULING",
         "to_status": "VISIT_SCHEDULED",
         "actor_role": "CONSULTANT",
-        "actor_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
         "state_version": 8,
         "occurred_at": "2026-07-05T23:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-06",
@@ -1595,7 +1316,8 @@
         ],
         "visit_from_status": "SCHEDULING",
         "visit_to_status": "CONFIRMED",
-        "visit_state_version": 3
+        "visit_state_version": 3,
+        "actor_public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f"
       },
       {
         "order": 9,
@@ -1603,7 +1325,6 @@
         "from_status": "VISIT_SCHEDULED",
         "to_status": "VISIT_SCHEDULED",
         "actor_role": "TECHNICIAN",
-        "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
         "state_version": 9,
         "occurred_at": "2026-07-06T00:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-07",
@@ -1614,7 +1335,8 @@
         ],
         "visit_from_status": "CONFIRMED",
         "visit_to_status": "IN_PROGRESS",
-        "visit_state_version": 4
+        "visit_state_version": 4,
+        "actor_public_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8"
       },
       {
         "order": 10,
@@ -1622,7 +1344,6 @@
         "from_status": "VISIT_SCHEDULED",
         "to_status": "COMPLETION_PENDING",
         "actor_role": "TECHNICIAN",
-        "actor_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
         "state_version": 10,
         "occurred_at": "2026-07-06T00:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-018-08",
@@ -1635,11 +1356,12 @@
         ],
         "visit_from_status": "IN_PROGRESS",
         "visit_to_status": "COMPLETED",
-        "visit_state_version": 5
+        "visit_state_version": 5,
+        "actor_public_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8"
       }
     ],
     "final_status": "COMPLETION_PENDING",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-019",
@@ -1651,14 +1373,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
         "state_version": 1,
         "occurred_at": "2026-07-06T03:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-019-01",
         "correlation_id": "b8613fad-3a6f-591f-9217-936b04b81f1c",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6"
       },
       {
         "order": 2,
@@ -1666,14 +1388,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
         "state_version": 2,
         "occurred_at": "2026-07-06T03:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-019-02",
         "correlation_id": "b8613fad-3a6f-591f-9217-936b04b81f1c",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6"
       },
       {
         "order": 3,
@@ -1681,7 +1403,6 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-06T04:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-019-03",
@@ -1689,7 +1410,8 @@
         "expected_allowed_actions": [
           "CUSTOMER_REPORTED_SELF_RESOLVED",
           "REQUEST_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       },
       {
         "order": 4,
@@ -1697,16 +1419,16 @@
         "from_status": "AI_GUIDANCE",
         "to_status": "RESOLVED",
         "actor_role": "CUSTOMER",
-        "actor_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
         "state_version": 4,
         "occurred_at": "2026-07-06T04:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-019-04",
         "correlation_id": "b8613fad-3a6f-591f-9217-936b04b81f1c",
-        "expected_allowed_actions": []
+        "expected_allowed_actions": [],
+        "actor_public_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6"
       }
     ],
     "final_status": "RESOLVED",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-020",
@@ -1718,14 +1440,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab",
         "state_version": 1,
         "occurred_at": "2026-07-06T09:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-020-01",
         "correlation_id": "a95e0f23-7ec4-5d93-b794-89fc8870bc4b",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab"
       },
       {
         "order": 2,
@@ -1733,18 +1455,18 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab",
         "state_version": 2,
         "occurred_at": "2026-07-06T09:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-020-02",
         "correlation_id": "a95e0f23-7ec4-5d93-b794-89fc8870bc4b",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab"
       }
     ],
     "final_status": "QUESTIONNAIRE_IN_PROGRESS",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-021",
@@ -1756,14 +1478,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
         "state_version": 1,
         "occurred_at": "2026-07-06T15:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-01",
         "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c"
       },
       {
         "order": 2,
@@ -1771,14 +1493,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
         "state_version": 2,
         "occurred_at": "2026-07-06T15:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-02",
         "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c"
       },
       {
         "order": 3,
@@ -1786,7 +1508,6 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "AI_GUIDANCE",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-06T16:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-03",
@@ -1794,7 +1515,8 @@
         "expected_allowed_actions": [
           "CUSTOMER_REPORTED_SELF_RESOLVED",
           "REQUEST_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       },
       {
         "order": 4,
@@ -1802,14 +1524,14 @@
         "from_status": "AI_GUIDANCE",
         "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "CUSTOMER",
-        "actor_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
         "state_version": 4,
         "occurred_at": "2026-07-06T16:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-04",
         "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
         "expected_allowed_actions": [
           "START_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c"
       },
       {
         "order": 5,
@@ -1817,7 +1539,6 @@
         "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
         "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 5,
         "occurred_at": "2026-07-06T17:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-05",
@@ -1825,7 +1546,8 @@
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
           "VISIT_REVIEW_REQUIRED"
-        ]
+        ],
+        "actor_public_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027"
       },
       {
         "order": 6,
@@ -1833,7 +1555,6 @@
         "from_status": "CONSULTATION_IN_PROGRESS",
         "to_status": "VISIT_REVIEW_PENDING",
         "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 6,
         "occurred_at": "2026-07-06T17:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-06",
@@ -1841,7 +1562,8 @@
         "expected_allowed_actions": [
           "VISIT_NEEDED",
           "VISIT_NOT_NEEDED"
-        ]
+        ],
+        "actor_public_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027"
       },
       {
         "order": 7,
@@ -1849,7 +1571,6 @@
         "from_status": "VISIT_REVIEW_PENDING",
         "to_status": "VISIT_SCHEDULING",
         "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 7,
         "occurred_at": "2026-07-06T17:40:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-07-create",
@@ -1859,7 +1580,8 @@
         ],
         "visit_from_status": null,
         "visit_to_status": "ASSIGNING",
-        "visit_state_version": 1
+        "visit_state_version": 1,
+        "actor_public_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027"
       },
       {
         "order": 8,
@@ -1867,7 +1589,6 @@
         "from_status": "VISIT_SCHEDULING",
         "to_status": "VISIT_SCHEDULING",
         "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 8,
         "occurred_at": "2026-07-06T17:50:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-07-schedule",
@@ -1878,7 +1599,8 @@
         ],
         "visit_from_status": "ASSIGNING",
         "visit_to_status": "SCHEDULING",
-        "visit_state_version": 2
+        "visit_state_version": 2,
+        "actor_public_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027"
       },
       {
         "order": 9,
@@ -1886,7 +1608,6 @@
         "from_status": "VISIT_SCHEDULING",
         "to_status": "VISIT_SCHEDULED",
         "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 9,
         "occurred_at": "2026-07-06T18:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-07",
@@ -1896,7 +1617,8 @@
         ],
         "visit_from_status": "SCHEDULING",
         "visit_to_status": "CONFIRMED",
-        "visit_state_version": 3
+        "visit_state_version": 3,
+        "actor_public_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027"
       },
       {
         "order": 10,
@@ -1904,7 +1626,6 @@
         "from_status": "VISIT_SCHEDULED",
         "to_status": "VISIT_SCHEDULED",
         "actor_role": "TECHNICIAN",
-        "actor_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
         "state_version": 10,
         "occurred_at": "2026-07-06T18:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-08",
@@ -1915,7 +1636,8 @@
         ],
         "visit_from_status": "CONFIRMED",
         "visit_to_status": "IN_PROGRESS",
-        "visit_state_version": 4
+        "visit_state_version": 4,
+        "actor_public_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca"
       },
       {
         "order": 11,
@@ -1923,7 +1645,6 @@
         "from_status": "VISIT_SCHEDULED",
         "to_status": "COMPLETION_PENDING",
         "actor_role": "TECHNICIAN",
-        "actor_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
         "state_version": 11,
         "occurred_at": "2026-07-06T19:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-09",
@@ -1936,7 +1657,8 @@
         ],
         "visit_from_status": "IN_PROGRESS",
         "visit_to_status": "COMPLETED",
-        "visit_state_version": 5
+        "visit_state_version": 5,
+        "actor_public_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca"
       },
       {
         "order": 12,
@@ -1944,16 +1666,16 @@
         "from_status": "COMPLETION_PENDING",
         "to_status": "RESOLVED",
         "actor_role": "TECHNICIAN",
-        "actor_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
         "state_version": 12,
         "occurred_at": "2026-07-06T19:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-021-10",
         "correlation_id": "33cbb0d7-41ec-538d-8698-c6ab0bd6ee3e",
-        "expected_allowed_actions": []
+        "expected_allowed_actions": [],
+        "actor_public_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca"
       }
     ],
     "final_status": "RESOLVED",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-022",
@@ -1965,14 +1687,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "df1e5e7d-c016-53fa-9f7e-26ac4359c78e",
         "state_version": 1,
         "occurred_at": "2026-07-06T21:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-022-01",
         "correlation_id": "87f1e6ed-2000-58c8-a3aa-e71ae7998ed3",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "df1e5e7d-c016-53fa-9f7e-26ac4359c78e"
       },
       {
         "order": 2,
@@ -1980,14 +1702,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "df1e5e7d-c016-53fa-9f7e-26ac4359c78e",
         "state_version": 2,
         "occurred_at": "2026-07-06T21:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-022-02",
         "correlation_id": "87f1e6ed-2000-58c8-a3aa-e71ae7998ed3",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "df1e5e7d-c016-53fa-9f7e-26ac4359c78e"
       },
       {
         "order": 3,
@@ -1995,18 +1717,18 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-06T22:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-022-03",
         "correlation_id": "87f1e6ed-2000-58c8-a3aa-e71ae7998ed3",
         "expected_allowed_actions": [
           "START_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       }
     ],
     "final_status": "CONSULTATION_REQUIRED",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-023",
@@ -2018,14 +1740,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "52128217-1800-57ad-88e9-8750c499a55f",
         "state_version": 1,
         "occurred_at": "2026-07-07T03:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-023-01",
         "correlation_id": "493826d3-b66b-5ac6-a5a1-840c00506b4b",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "52128217-1800-57ad-88e9-8750c499a55f"
       },
       {
         "order": 2,
@@ -2033,14 +1755,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "52128217-1800-57ad-88e9-8750c499a55f",
         "state_version": 2,
         "occurred_at": "2026-07-07T03:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-023-02",
         "correlation_id": "493826d3-b66b-5ac6-a5a1-840c00506b4b",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "52128217-1800-57ad-88e9-8750c499a55f"
       },
       {
         "order": 3,
@@ -2048,14 +1770,14 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-07T04:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-023-03",
         "correlation_id": "493826d3-b66b-5ac6-a5a1-840c00506b4b",
         "expected_allowed_actions": [
           "START_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       },
       {
         "order": 4,
@@ -2063,7 +1785,6 @@
         "from_status": "CONSULTATION_REQUIRED",
         "to_status": "CONSULTATION_IN_PROGRESS",
         "actor_role": "CONSULTANT",
-        "actor_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
         "state_version": 4,
         "occurred_at": "2026-07-07T04:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-023-04",
@@ -2071,11 +1792,12 @@
         "expected_allowed_actions": [
           "CONSULTATION_COMPLETED",
           "VISIT_REVIEW_REQUIRED"
-        ]
+        ],
+        "actor_public_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027"
       }
     ],
     "final_status": "CONSULTATION_IN_PROGRESS",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   },
   {
     "scenario_id": "SYN-JAC104-024",
@@ -2087,14 +1809,14 @@
         "from_status": null,
         "to_status": "DRAFT",
         "actor_role": "CUSTOMER",
-        "actor_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d",
         "state_version": 1,
         "occurred_at": "2026-07-07T09:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-024-01",
         "correlation_id": "c1b770e7-1930-57f9-b374-3372a618358d",
         "expected_allowed_actions": [
           "SUBMIT_SYMPTOM"
-        ]
+        ],
+        "actor_public_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d"
       },
       {
         "order": 2,
@@ -2102,14 +1824,14 @@
         "from_status": "DRAFT",
         "to_status": "QUESTIONNAIRE_IN_PROGRESS",
         "actor_role": "CUSTOMER",
-        "actor_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d",
         "state_version": 2,
         "occurred_at": "2026-07-07T09:30:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-024-02",
         "correlation_id": "c1b770e7-1930-57f9-b374-3372a618358d",
         "expected_allowed_actions": [
           "SUBMIT_ANSWERS"
-        ]
+        ],
+        "actor_public_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d"
       },
       {
         "order": 3,
@@ -2117,17 +1839,17 @@
         "from_status": "QUESTIONNAIRE_IN_PROGRESS",
         "to_status": "CONSULTATION_REQUIRED",
         "actor_role": "SYSTEM",
-        "actor_id": null,
         "state_version": 3,
         "occurred_at": "2026-07-07T10:00:00+09:00",
         "idempotency_key": "idem-SYN-JAC104-024-03",
         "correlation_id": "c1b770e7-1930-57f9-b374-3372a618358d",
         "expected_allowed_actions": [
           "START_CONSULTATION"
-        ]
+        ],
+        "actor_public_id": null
       }
     ],
     "final_status": "CONSULTATION_REQUIRED",
-    "generated_at": "2026-07-27T00:00:00+09:00"
+    "generated_at": "2026-07-29T00:00:00+09:00"
   }
 ]

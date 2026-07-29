@@ -1,7 +1,7 @@
 contract:
   name: completion-policy
-  version: 0.1.0
-  status: draft_for_review
+  version: 1.0.0
+  status: TEAM_APPROVED
   owner: PM_TECHNICAL_INTEGRATION
   description: 자가조치, 상담, 방문 처리의 완료·미해결·재개 기준과 종료 상태의 불변 조건을 정의한다.
 references:

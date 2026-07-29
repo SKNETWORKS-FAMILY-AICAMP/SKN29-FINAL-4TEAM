@@ -1,102 +1,44 @@
 # WaterCare 데이터 처리 명세
 
-## 1. 기준 정보
+## 기준
 
 - 데이터 버전: `${dataset_version}`
-- 기준 생성 시각: `${generated_at}`
-- MVP 판매 코드: `WPUJAC104DWH`
-- 공식 문서: WPU-JAC104D·WPU-JCC104D REV.00, 44쪽
-- 출처 분류: `official`, `team_designed`, `synthetic`
+- 생성 기준 시각: `${generated_at}`
+- 공식 문서: WPU-JAC104D·WPU-JCC104D REV.00 44페이지
 - 시간 표현: ISO 8601, `+09:00`
+- 데이터 분류: `official`, `team_designed`, `synthetic`
 
-## 2. 원본·계보 정책
-
-공식 PDF와 FAQ 원본은 외부 백업을 전제로 검증 후 삭제했다. `data/raw/`는
-정책 파일 7개만 보관한다. 저장소에서 원본 재추출은 불가능하며 다음
-자료를 영구 계보로 사용한다.
-
-- 공식 URL과 수집 로그
-- 원본 파일명·크기·SHA-256·페이지 수
-- 모델·세대·개정 연결표
-- 이미지 FAQ OCR·이미지 해시·사용자 검수 기록
-- 원본·임시 데이터 삭제 보고서
-
-## 3. 선언형 처리 구조
-
-```text
-config/pipeline.json
-├─ faq/ocr_transcriptions.json
-├─ rag/jac104_chunks.json
-├─ synthetic/scenarios.json
-└─ workflow/dataset_vocabulary.json
-        ↓
-tools/pipeline.py
-        ↓
-processed/** + synthetic/**
-        ↓
-static schemas + QA + final manifest
-```
-
-Python에는 OCR 원문, RAG 본문, 합성 이름·시나리오, Schema와 Markdown
-본문을 넣지 않는다. 업무 정의는 JSON, 문서는 템플릿, 데이터 계약은
-정적 JSON Schema를 기준으로 한다.
-
-## 4. 데이터 규모
+## 생성 규모
 
 | 데이터 | 건수 |
 |---|---:|
-| JAC104D 매뉴얼 페이지 | 44 |
+| 매뉴얼 페이지 | 44 |
 | FAQ 정규화 | 119 |
-| 검수 OCR FAQ | 5 |
+| OCR 검증 FAQ | 5 |
 | 공식 FAQ 이미지 자산 | 10 |
-| FAQ 후보 | 20 |
-| MVP RAG 청크 | 7 |
-| 근거 레지스트리 | 9 |
+| MVP RAG chunk | 7 |
+| 근거 registry | 9 |
 | 합성 사용자 | 16 |
-| 합성 문의 | 24 |
-| 상담 | 16 |
-| 방문 | 5 |
-| 상태 이력 | 110 |
-| 감사 이벤트 | 110 |
+| CustomerProfile | 12 |
+| 원본 시나리오 | 24 |
+| 활성 Inquiry | 22 |
+| Consultation | 12 |
+| Visit | 4 |
+| 통합 상태이력 | 125 |
+| Audit | 125 |
+| subset | 7파일·33건 |
+| API 멱등성 사례 | 3 |
 
-## 5. RAG 정책
+## 생성·검증 규칙
 
-매뉴얼 37~39쪽의 무출수, 냉수 온도, 소음, 누수, 물맛·냄새, 출수량
-저하, 순간온수 안전 7개 주제만 MVP 검색에 포함한다. 조건부 FAQ와
-미검증 공통 FAQ는 검색 근거로 사용하지 않는다.
+1. `config/**`를 선언적 입력으로 사용해 `processed/**`, `synthetic/**`를 생성합니다.
+2. `SYN-JAC104-012`, `SYN-JAC104-016`은 원본과 `BLOCKED_DECISION` 기록을 보존하되 활성 projection에서 제외합니다.
+3. 복합 방문 이벤트는 Inquiry와 Visit 상태이력을 분리하며 같은 `idempotency_key`, `correlation_id`를 공유합니다.
+4. 상태이력과 Audit은 대상·이벤트·버전·요청 키·상관 ID·시각이 1:1로 대응해야 합니다.
+5. CustomerProfile은 User와 1:1이며 Subscription은 CustomerProfile과 CustomerProduct를 함께 참조합니다.
+6. Backend import는 `public_id` 또는 업무키 lookup 후 실제 DB FK를 사용합니다. Fixture PK 직접 주입은 금지합니다.
+7. 미확정 Care mapping은 `BLOCKED_OWNER_CONFIRMATION`으로 load 후보에서 제외합니다.
+8. `PRODUCT_VALIDATION_FAILED`는 이벤트와 `CONSULTATION_REQUIRED` 기대 전환만 유지하고 Inquiry 상태로 생성하지 않습니다.
+9. 상세 QA 리포트 5종과 summary는 같은 version·generated_at을 사용하며 summary는 실제 리포트 SHA-256을 기록합니다.
 
-각 청크에는 문서·판매 코드·세대·개정·페이지·위험도·사용 안내·안전
-조치·상담 조건·금지 조치·검증 상태를 둔다.
-
-## 6. 합성 데이터 정책
-
-- 실제 개인정보와 운영 연락처를 사용하지 않는다.
-- 공개 정치인·기업인 등 유명 인물의 이름을 의도적으로 사용하지 않는다.
-- 내부 UUID와 사람이 읽는 업무 번호를 분리한다.
-- 상태 변경에는 `state_version`, `idempotency_key`, `correlation_id`를 둔다.
-- 위험 문의에서 정상 사용 안내를 허용하지 않는다.
-- 결정적 기준 시각과 ID를 사용한다.
-
-## 7. 검증
-
-- 설정 파일과 processed·synthetic JSON Schema
-- ID 중복·FK·페이지·문서·근거 참조
-- 모델·세대·FAQ 오염 차단
-- 개인정보·내부 경로·구 코드·빈 본문
-- canonical 상태와 안전 우선 업무 규칙
-- 설정 materialization과 정식 파일 바이트 동등성
-- 기존 래퍼와 통합 CLI 결과 동등성
-- 두 번 생성했을 때 파일 해시 동일성
-
-## 8. 실행
-
-```powershell
-python -B -m unittest discover -s data/tools/tests -v
-python data/tools/pipeline.py qa --verify-rebuild
-python data/tools/pipeline.py inventory
-python data/tools/pipeline.py finalize
-```
-
-외부 패키지는 추가하지 않는다. PDF 원문 재처리가 필요한 경우에만 기존
-선택 의존성인 `pdfplumber`를 사용할 수 있으나, 현재 원본 비보관
-파이프라인은 정식 전처리 기준본과 보존 해시를 검증한다.
+이 산출물은 데이터 QA `PASS`까지만 주장합니다. Backend import와 Runtime 검증은 완료되지 않았습니다.

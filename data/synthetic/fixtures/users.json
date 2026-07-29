@@ -1,146 +1,162 @@
 [
   {
-    "user_id": "2fdda38e-2530-5d2d-b0ad-97630b3b5c3e",
+    "id": 1,
+    "public_id": "2fdda38e-2530-5d2d-b0ad-97630b3b5c3e",
     "user_number": "CUS-0001",
     "role": "CUSTOMER",
     "display_name": "고서온",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "18b30d13-a38b-5035-84b3-988406079e0d",
+    "id": 2,
+    "public_id": "18b30d13-a38b-5035-84b3-988406079e0d",
     "user_number": "CUS-0002",
     "role": "CUSTOMER",
     "display_name": "구하린",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c",
+    "id": 3,
+    "public_id": "cbfd135a-ae43-51a6-88a6-2ef6635aee6c",
     "user_number": "CUS-0003",
     "role": "CUSTOMER",
     "display_name": "노재온",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "e48532ad-fa40-54d7-981b-9accfe13e365",
+    "id": 4,
+    "public_id": "e48532ad-fa40-54d7-981b-9accfe13e365",
     "user_number": "CUS-0004",
     "role": "CUSTOMER",
     "display_name": "류다은",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da",
+    "id": 5,
+    "public_id": "d69b2bf0-50a0-5f81-8ff4-928bf85092da",
     "user_number": "CUS-0005",
     "role": "CUSTOMER",
     "display_name": "문하겸",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "0752efc0-e2c7-5900-bc01-72c9ed38097a",
+    "id": 6,
+    "public_id": "0752efc0-e2c7-5900-bc01-72c9ed38097a",
     "user_number": "CUS-0006",
     "role": "CUSTOMER",
     "display_name": "백서율",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
+    "id": 7,
+    "public_id": "4863ba6e-e7ee-5b82-bbcf-04916f63c9f6",
     "user_number": "CUS-0007",
     "role": "CUSTOMER",
     "display_name": "설도윤",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab",
+    "id": 8,
+    "public_id": "f1eacc1d-f87c-53b6-b873-3a77f46369ab",
     "user_number": "CUS-0008",
     "role": "CUSTOMER",
     "display_name": "심나예",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
+    "id": 9,
+    "public_id": "ce22bdf0-bace-5aa3-bdf9-8d9f44c40b2c",
     "user_number": "CUS-0009",
     "role": "CUSTOMER",
     "display_name": "우하람",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "df1e5e7d-c016-53fa-9f7e-26ac4359c78e",
+    "id": 10,
+    "public_id": "df1e5e7d-c016-53fa-9f7e-26ac4359c78e",
     "user_number": "CUS-0010",
     "role": "CUSTOMER",
     "display_name": "위서진",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "52128217-1800-57ad-88e9-8750c499a55f",
+    "id": 11,
+    "public_id": "52128217-1800-57ad-88e9-8750c499a55f",
     "user_number": "CUS-0011",
     "role": "CUSTOMER",
     "display_name": "진가온",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d",
+    "id": 12,
+    "public_id": "e8ca960a-66d2-5b9f-88fb-093212ece13d",
     "user_number": "CUS-0012",
     "role": "CUSTOMER",
     "display_name": "채도현",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
+    "id": 13,
+    "public_id": "626a015c-51d2-53cd-b2c2-1cfbd85d1027",
     "user_number": "CNS-001",
     "role": "CONSULTANT",
     "display_name": "표은재",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
+    "id": 14,
+    "public_id": "9791249c-4e86-539c-8c50-b8d02c3fc57f",
     "user_number": "CNS-002",
     "role": "CONSULTANT",
     "display_name": "허다율",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
+    "id": 15,
+    "public_id": "2ebf6029-15f2-5a1a-89db-ed7aa0fb1fca",
     "user_number": "TEC-001",
     "role": "TECHNICIAN",
     "display_name": "남현오",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   },
   {
-    "user_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
+    "id": 16,
+    "public_id": "c2bafcaf-b050-5388-8c90-03367c0e34e8",
     "user_number": "TEC-002",
     "role": "TECHNICIAN",
     "display_name": "봉재율",
     "active": true,
     "data_classification": "synthetic",
-    "created_at": "2026-07-27T00:00:00+09:00"
+    "created_at": "2026-07-29T00:00:00+09:00"
   }
 ]

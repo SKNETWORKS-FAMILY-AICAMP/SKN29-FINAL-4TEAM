@@ -1,7 +1,7 @@
 contract:
   name: role-permissions
-  version: 0.1.0
-  status: draft_for_review
+  version: 1.0.0
+  status: TEAM_APPROVED
   owner: PM_TECHNICAL_INTEGRATION
   description: State Machine 이벤트 실행 권한과 리소스 접근 범위를 역할별로 정의한다. 명시되지 않은 권한은 기본 거부하며, allowed_actions 계산과 API 권한 검사의 공통 기준으로
     사용한다.

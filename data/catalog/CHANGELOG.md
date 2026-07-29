@@ -1,5 +1,15 @@
 # Data Changelog
 
+## 0.9.0 — 2026-07-29
+
+- T-005 상태이력을 대상별 FK 방식으로 통합하고 `idempotency_key` 공유와 대상별 `state_version` 유일성·연속성을 분리 검증했다.
+- 원본 시나리오 24개를 보존하면서 `SYN-JAC104-012`, `SYN-JAC104-016`을 제외한 활성 projection 22개만 fixture·expected·DB handoff 후보에 반영했다.
+- 복합 방문 이벤트의 Inquiry·Visit 상태이력과 Audit을 각각 생성해 상태이력 125건, Audit 125건으로 정합화했다.
+- API 멱등성 예상 데이터를 내부 Guard 코드 `IDEMPOTENCY_KEY_REUSE_CONFLICT`와 Public API 코드 `DUPLICATE-EVENT-01`로 분리했다.
+- CustomerProfile fixture와 Backend import crosswalk를 추가했다. Fixture PK 직접 주입은 금지하고 Public UUID·업무키 lookup 뒤 실제 DB FK를 사용하도록 명시했다.
+- Dataset manifest·최종 manifest·handoff manifest와 5종 QA 리포트를 실제 산출물의 건수와 SHA-256으로 재생성하도록 복구했다.
+- 생성 데이터의 상태는 데이터 QA `PASS`까지만 기록하며 Backend import나 `DB_VERIFIED`를 주장하지 않는다.
+
 ## 0.8.0 — 2026-07-27
 
 - `contracts/**` 변경과 데이터 도구의 직접 의존을 제거하고 서비스 매핑 대기를 명시

@@ -1,7 +1,7 @@
 contract:
   name: allowed-actions
-  version: 0.1.0
-  status: draft_for_review
+  version: 1.0.0
+  status: TEAM_APPROVED
   owner: PM_TECHNICAL_INTEGRATION
   description: 'Inquiry의 현재 상태, 실행자 역할, Visit 상태와 Guard 평가 결과를 바탕으로 API가 클라이언트에 반환할 수 있는 행동을 정의한다. 웹·모바일은 상태를 독자적으로 해석하지 않고
     Backend가 반환한 allowed_actions만 노출한다.
