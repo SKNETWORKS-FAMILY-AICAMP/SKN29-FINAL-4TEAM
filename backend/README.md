@@ -118,21 +118,36 @@ UTC를 저장하고 API에는 한국 시간대 오프셋을 포함한 ISO 8601 �
 docker compose --env-file .\backend\.env up -d postgres
 docker compose --env-file .\backend\.env ps postgres
 
-python .\scripts\development\check_environment.py `
-  --service backend `
-  --postgresql
-
 Set-Location .\backend
 .\.venv\Scripts\python.exe manage.py migrate --check
-.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
 ```
 
 `migrate --check`가 미적용 Migration을 보고한 경우에만 다음 명령을
-실행한 뒤 서버를 시작합니다.
+실행합니다.
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py migrate --noinput
+.\.venv\Scripts\python.exe manage.py migrate --check
 ```
+
+Migration 확인이 통과하면 저장소 루트에서 PostgreSQL 적용 상태를
+검사한 뒤 서버를 시작합니다.
+
+```powershell
+Set-Location ..
+python .\scripts\development\check_environment.py `
+  --service backend `
+  --postgresql
+if ($LASTEXITCODE -ne 0) {
+    throw "Backend·PostgreSQL 일상 시작 검사 실패"
+}
+
+Set-Location .\backend
+.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
+```
+
+PostgreSQL 검사를 Migration보다 먼저 실행하면 새 Migration을 Pull한
+날 적용 누락으로 중단될 수 있으므로 위 순서를 유지합니다.
 
 Demo Seed는 새 DB, Seed 변경, Demo 데이터 복구 시에만 Accounts →
 Products → Subscriptions → Care 순서로 실행합니다. Django 서버는
@@ -144,7 +159,7 @@ docker compose --env-file .\backend\.env stop postgres
 ```
 
 전체 일상 실행·종료·상태 확인·포트 충돌 절차는
-[Django·PostgreSQL 공유 패키지 인계서](../docs/individual/jiyong/manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md)를
+[Django·PostgreSQL 공유 패키지 인계서 v1.2](../docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)를
 따릅니다.
 
 ## 검증
@@ -168,11 +183,14 @@ PostgreSQL이 실행 중일 때 읽기 전용 연결과 적용 Migration을 추�
 확인합니다.
 
 [Backend 가상환경 재현 가이드](../docs/individual/jiyong/technical/backend/backend_venv_reproducibility_guide.md)와
-[Django·PostgreSQL 공유 패키지 인계서](../docs/individual/jiyong/manuals/20260728_최지용_Django_PostgreSQL_공유패키지_인계서_v1.1.md)에
+[Django·PostgreSQL 공유 패키지 인계서 v1.2](../docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)에
 설계 근거, 복구 순서와 담당자별 인계사항을 정리했습니다.
 
 실제 로컬 PostgreSQL 실행은 `backend/.env.example`의 키를
-`backend/.env`에 안전하게 채운 뒤 수행합니다.
+`backend/.env`에 안전하게 채운 뒤 수행합니다. 아래 블록은 기능 실행을
+위한 1회 Seed 경로입니다. 팀 인계용 멱등성 증거는 이 블록만으로
+완료 판정하지 않고, 공유 패키지 인계서 v1.2의 5.6에서 네 Seed를 2회
+실행한 뒤 5.7 최종 게이트까지 통과합니다.
 
 ```powershell
 docker compose --env-file .\backend\.env up -d postgres
@@ -209,9 +227,12 @@ $response.Headers['X-Correlation-ID']
 ```
 
 Health와 인증 전체 흐름은 Token을 출력하지 않는 Smoke 스크립트로
-재현할 수 있습니다.
+재현할 수 있습니다. 새 PowerShell을 열었다면 저장소 루트로 이동한 뒤
+실행합니다.
 
 ```powershell
+Set-Location (git rev-parse --show-toplevel)
+Set-Location .\backend
 .\.venv\Scripts\python.exe ..\scripts\smoke\check_backend_auth.py
 ```
 
@@ -226,9 +247,11 @@ DB 연결은 별도 PostgreSQL 검사와 Migration으로 확인합니다. 공통
 
 T-022·T-023의 현재 차단점은 다음 명령으로 확인합니다. 기본 실행은
 증거를 출력하고, `--require-ready`는 미충족 시 exit code 2를
-반환합니다.
+반환합니다. 아래 명령도 `backend`에서 실행합니다.
 
 ```powershell
+Set-Location (git rev-parse --show-toplevel)
+Set-Location .\backend
 .\.venv\Scripts\python.exe .\apps\inquiries\readiness.py
 .\.venv\Scripts\python.exe .\apps\workflow\readiness.py
 .\.venv\Scripts\python.exe .\apps\inquiries\readiness.py --run-runtime-tests --verify-postgresql --require-ready

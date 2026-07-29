@@ -1,6 +1,7 @@
 # 최지용 Django·PostgreSQL 공유 패키지 인계서 v1.1
 
 > 기준일: 2026-07-28
+> 문서 상태: `SUPERSEDED` — 현재 실행 기준은 [v1.2](<./20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md>)
 > 명령 실행 기준: 저장소 루트
 > 목적: 팀원이 Git Pull 직후 동일한 Backend 환경을 재현하도록 지원
 
@@ -8,7 +9,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 문서 상태 | `CURRENT` — Django·PostgreSQL 로컬 실행과 팀 재현의 현재 인계 기준 |
+| 문서 상태 | `SUPERSEDED` — 2026-07-28 실행 기록으로 보존하며 현재 기준은 v1.2 |
 | 관련 WBS | `T-005`, `T-016`, `T-017` |
 | 작성·유지 책임 | 최지용 — 문서와 Backend·DB·Auth 실행 기준 갱신 |
 | 산출물/내용 의사결정자 | 최지용 — ERD·테이블·API 명세와 Django·PostgreSQL 구현 기준 |
