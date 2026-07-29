@@ -12,7 +12,13 @@ sys.path.insert(0, str(TOOLS_ROOT))
 
 from watercare.builders import build_rag_preview, build_synthetic_preview
 from watercare.config import load_pipeline
-from watercare.io import data_path, sha256_bytes, sha256_text_file, write_bytes
+from watercare.io import (
+    data_path,
+    read_lf_bytes,
+    sha256_bytes,
+    sha256_text_file,
+    write_bytes,
+)
 
 
 class PipelineSafetyTests(unittest.TestCase):
@@ -49,6 +55,8 @@ class PipelineSafetyTests(unittest.TestCase):
             lone_cr.write_bytes(b"first\rsecond\r")
             self.assertEqual(sha256_text_file(lf), sha256_text_file(crlf))
             self.assertEqual(sha256_text_file(lf), sha256_text_file(lone_cr))
+            self.assertEqual(read_lf_bytes(lf), read_lf_bytes(crlf))
+            self.assertEqual(len(read_lf_bytes(lf)), len(read_lf_bytes(crlf)))
 
     def test_two_builds_are_byte_deterministic(self) -> None:
         first = {**build_rag_preview(self.config), **build_synthetic_preview(self.config)}
