@@ -35,17 +35,23 @@ function getSafeReturnTo(state: unknown, role: AppRole) {
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, signInAs, user } = useAuth();
+  const { isAuthenticated, isLoading, signInAs, user } = useAuth();
   const [role, setRole] = useState<AppRole>("CONSULTANT");
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   if (isAuthenticated && user) {
     return <Navigate to={getRoleHome(user.roleCode)} replace />;
   }
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    signInAs(role);
-    navigate(getSafeReturnTo(location.state, role), { replace: true });
+    setLoginError(null);
+    try {
+      await signInAs(role);
+      navigate(getSafeReturnTo(location.state, role), { replace: true });
+    } catch {
+      setLoginError("로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    }
   };
 
   return (
@@ -71,7 +77,10 @@ export default function LoginPage() {
               ))}
             </select>
           </label>
-          <button type="submit">Mock 계정으로 로그인</button>
+          <button type="submit" disabled={isLoading}>
+            {isLoading ? "로그인 중…" : "Mock 계정으로 로그인"}
+          </button>
+          {loginError && <p role="alert">{loginError}</p>}
         </form>
       </section>
     </main>
