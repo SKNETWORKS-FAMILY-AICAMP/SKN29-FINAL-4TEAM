@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import { AuthProvider } from "../../src/app/providers/AuthProvider";
 import { AppRoutes } from "../../src/app/router/AppRouter";
+import { COUNSELOR_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
 
 const CONSULTANT_USER = {
   id: "STAFF-CONS-TEST",
@@ -53,6 +54,10 @@ describe("ConsultantDashboardPage", () => {
 
   it("페이지와 담당자 조건을 URL Query에서 복원한다", () => {
     renderPage("/consultant/inquiries?assignee=UNASSIGNED&page=1");
+    const unassignedCount = COUNSELOR_INQUIRIES.filter(
+      (item) => item.assignedCounselor === "미배정",
+    ).length;
+    const totalPages = Math.ceil(unassignedCount / 3);
 
     expect(screen.getByRole("combobox", { name: "담당자" })).toHaveValue(
       "UNASSIGNED",
@@ -60,7 +65,9 @@ describe("ConsultantDashboardPage", () => {
     expect(
       screen.getByRole("heading", { name: "IoT 기능 지원 문의" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("총 15건 · 1/5페이지")).toBeInTheDocument();
+    expect(
+      screen.getByText(`총 ${unassignedCount}건 · 1/${totalPages}페이지`),
+    ).toBeInTheDocument();
   });
 
   it.each([
