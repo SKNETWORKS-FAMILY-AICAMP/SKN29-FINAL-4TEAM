@@ -123,7 +123,8 @@ export function filterCounselorInquiries(
 
   return inquiries.filter((inquiry) => {
     const searchable = [
-      inquiry.id,
+      inquiry.inquiryId,
+      inquiry.inquiryCode,
       inquiry.scenarioId,
       ...inquiry.symptomLabels,
       inquiry.customerName,

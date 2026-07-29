@@ -94,7 +94,7 @@ export default function VisitTransitionForm({
         <dl className="visit-v13-summary-list">
           <div>
             <dt>문의·시나리오</dt>
-            <dd>{inquiry.id}</dd>
+            <dd>{inquiry.inquiryCode}</dd>
             <dd>{inquiry.scenarioId}</dd>
           </div>
           <div>

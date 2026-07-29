@@ -129,7 +129,7 @@ export default function ConsultationActionPanel({
         <small>COUNSEL DESK · MOCK</small>
         <h3>상담 처리</h3>
         <p>
-          {inquiry.id} · stateVersion {save.stateVersion}
+          {inquiry.inquiryCode} · stateVersion {save.stateVersion}
         </p>
       </div>
 

@@ -5,9 +5,11 @@ import { describe, expect, it, vi } from "vitest";
 import ConsultationActionPanel from "../../src/features/consultation/components/ConsultationActionPanel";
 import { COUNSELOR_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
 
-function getInquiry(id: string) {
-  const inquiry = COUNSELOR_INQUIRIES.find((item) => item.id === id);
-  if (!inquiry) throw new Error(`테스트 문의를 찾을 수 없습니다: ${id}`);
+function getInquiry(code: string) {
+  const inquiry = COUNSELOR_INQUIRIES.find(
+    (item) => item.inquiryCode === code,
+  );
+  if (!inquiry) throw new Error(`테스트 문의를 찾을 수 없습니다: ${code}`);
   return inquiry;
 }
 

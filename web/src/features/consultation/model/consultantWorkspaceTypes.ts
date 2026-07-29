@@ -1,3 +1,8 @@
+import type {
+  InquiryCode,
+  InquiryId,
+} from "../../../entities/inquiry/inquiryIdentifiers";
+
 export type CounselorRisk = "GENERAL" | "CAUTION" | "DANGER";
 
 export type CounselorStatus =
@@ -61,7 +66,8 @@ export interface CounselorTimelineItem {
 }
 
 export interface CounselorInquiry {
-  id: string;
+  inquiryId: InquiryId;
+  inquiryCode: InquiryCode;
   scenarioId: string;
   customerId: string;
   customerName: string;

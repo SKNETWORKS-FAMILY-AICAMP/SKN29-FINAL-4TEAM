@@ -1,6 +1,11 @@
 import officialInquiryFixtures from "../../../../../data/synthetic/fixtures/inquiries.json";
 import evidenceRegistrySource from "../../../../../data/processed/structured/evidence/jac104_evidence_registry.jsonl?raw";
 
+import {
+  parseInquiryCode,
+  parseInquiryId,
+} from "../../../entities/inquiry/inquiryIdentifiers";
+
 import type {
   CounselorActionCode,
   CounselorAllowedAction,
@@ -12,6 +17,7 @@ import type {
 } from "./consultantWorkspaceTypes";
 
 interface OfficialInquiryFixture {
+  inquiry_id: string;
   inquiry_number: string;
   scenario_id: string;
   customer_id: string;
@@ -301,7 +307,8 @@ function createInquiry(
     status === "VISIT_REVIEW_PENDING";
 
   return {
-    id: row.inquiry_number,
+    inquiryId: parseInquiryId(row.inquiry_id),
+    inquiryCode: parseInquiryCode(row.inquiry_number),
     scenarioId: row.scenario_id,
     customerId: row.customer_id,
     customerName: `합성 고객 ${customerSequence}`,

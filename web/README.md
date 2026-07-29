@@ -17,7 +17,7 @@ npm.cmd run dev
 
 브라우저에서 `http://localhost:5173/consultant/inquiries`를 엽니다.
 
-상담 큐의 검색·상태·위험도·우선순위·담당자·접수 기간·정렬·페이지 조건은 URL Query에 유지됩니다. 문의를 선택하면 `CONS-02` 상세 경로로 이동하고, 상단의 상담 큐 복귀 버튼을 누르면 기존 조건으로 돌아갑니다.
+상담 큐의 검색·상태·위험도·우선순위·담당자·접수 기간·정렬·페이지 조건은 URL Query에 유지됩니다. 문의를 선택하면 UUID `inquiry_id`를 사용하는 `CONS-02` 상세 경로로 이동하고, 화면에는 표시용 `inquiry_code`가 노출됩니다. 상단의 상담 큐 복귀 버튼을 누르면 기존 조건으로 돌아갑니다.
 
 ## 환경변수와 Mock 인증
 
@@ -53,7 +53,7 @@ npm.cmd run build
 
 ## 방문 전환 Mock 확인
 
-브라우저에서 `http://localhost:5173/consultant/inquiries/DEMO-INQ-004/visit-transition`를 열면 `CONS-03` 방문 전환 화면을 바로 확인할 수 있습니다.
+브라우저에서 `http://localhost:5173/consultant/inquiries/a6bdf6b7-b9ba-553a-8447-f928384c1ad1/visit-transition`를 열면 `CONS-03` 방문 전환 화면을 바로 확인할 수 있습니다. 이 UUID의 화면 표시용 문의 번호는 `INQ-20260703-0008`입니다.
 
 고객 희망일과 가상 방문기사를 선택해 `일정 조율 저장`을 누르거나, 가상 방문 확정일까지 입력해 `방문 확정`을 누릅니다. 두 동작은 화면 안의 상태와 `stateVersion`만 변경하며 실제 API 요청, 기사 배정, 알림, 일정 저장은 수행하지 않습니다.
 

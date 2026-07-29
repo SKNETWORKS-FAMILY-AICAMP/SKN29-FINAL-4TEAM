@@ -45,7 +45,7 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
 
     const context = createRequestContext();
     const request: ProvisionalConsultationActionRequest = {
-      inquiry_id: inquiry.id,
+      inquiry_id: inquiry.inquiryId,
       action_code: action.code,
       operation_id: action.operationId,
       state_version: stateVersion,
