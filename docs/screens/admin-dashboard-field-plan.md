@@ -1,34 +1,38 @@
-# ADMIN-01 운영 대시보드 필드 계획
+# ADMIN-01 운영 대시보드 구현·연동 계획
 
 - 담당: 한예나(Web)
-- 상태: P1 Placeholder 완료, 집계 API 계약 대기
-- 원칙: 계약 전 임의 수치·내부 식별자·개인정보를 화면에 표시하지 않는다.
+- 화면 상태: P1 Mock 구현 완료
+- 데이터 상태: 공식 합성 문의 24건 기반, 실제 운영 API 미연동
+- 원칙: 계약 확정 전 실제 고객 정보·내부 문서 ID·검색 점수·프롬프트를 화면에 노출하지 않는다.
 
-## 지표 계획
+## 현재 구현 범위
 
-| 지표 | 정의 | 화면 필드 | 예상 API 필드 |
-| --- | --- | --- | --- |
-| 처리 지연 문의 | SLA 기준을 초과한 진행 중 문의 | 건수, 최장 대기 시간 | `delayed_count`, `max_wait_minutes` |
-| 처리 오류 | 조회·AI·워크플로 처리 오류 | 오류 유형별 건수 | `error_counts[]` |
-| 근거 부족 | 공개 가능한 공식 근거가 없는 문의 | 건수, 제품 모델 | `no_evidence_count`, `product_model` |
-| 위험 문의 | 위험도 `danger`인 미완료 문의 | 건수, 상태별 분포 | `danger_count`, `status_counts[]` |
+| WBS | 구현 내용 | 화면 상태 |
+| --- | --- | --- |
+| T-101 | 기간, 제품 모델, 관리 유형, 담당자, 증상, 위험도, 문의 상태, 처리 결과 필터 | URL Query로 유지, 초기화 지원 |
+| T-102 | 조회 문의, 위험 문의, 상담 전환, 방문 전환, 처리 완료 지표 및 증상·상태 분포 | 공식 합성 문의 ViewModel 집계 |
+| T-103 | 케어 일정 미산정, 문진 미응답, 처리 지연, 근거 검색 실패, AI 실패 목록 | 문의별 복수 사유와 마지막 처리 단계 표시 |
+| T-104 | 운영 화면 및 상담사 화면 반응형 | 1180/900/820/700/560/460px 구간 대응 |
 
-## 필터 계획
+개발 상태는 `?mockState=loading|empty|error`로 확인할 수 있다. 운영 화면은 `OPERATOR` 역할만 접근할 수 있다.
 
-- 조회 기간: `from`, `to`
-- 문의 상태: `status`
-- 위험도: `risk_level`
-- 담당 역할: `assigned_role`
-- 제품 모델: `product_model`
-- 집계 기준 시각: 응답의 `generated_at`으로 표시
+## API 교체 지점
 
-## API 계약 요청안
+실제 Backend 계약이 확정되면 `operationsDashboardModel.ts` 앞에 API Adapter를 추가하고, 현재 공식 합성 문의 입력만 API 응답 ViewModel로 교체한다. 화면 컴포넌트와 URL 필터 계약은 유지한다.
 
-`GET /api/v1/admin/operations/summary`를 후보로 두되 Backend/OpenAPI 확정 전에는 호출하지 않는다. 성공 응답은 `generated_at`, 지표 객체, 필터 선택지, `correlation_id`를 포함하고, 화면 Drill-down용 내부 ID·검색 점수·원문은 포함하지 않는다.
+예상 조회 계약은 다음 필드를 포함해야 한다.
 
-## 완료 조건
+- 요청: `from`, `to`, `product_model`, `management_type`, `assignee`, `symptom_type`, `risk_level`, `status`, `result`
+- 지표: 전체, 위험, 상담 전환, 방문 전환, 완료 건수
+- 분포: 증상 유형별·문의 상태별 건수
+- 예외: 문의 공개 식별자, 예외 코드 목록, 마지막 처리 단계, 담당자, 변경 시각
+- 메타: `generated_at`, `correlation_id`
 
-1. 운영 집계 기준과 역할별 공개 필드 확정
-2. OpenAPI와 Backend Runtime 구현
-3. 로딩·빈 상태·403·오류·부분 실패 Fixture 확보
-4. Placeholder를 실제 API 화면으로 교체하고 OPERATOR Guard 통합 테스트 통과
+예외 상세 응답에는 내부 문서 ID, Chunk ID, 검색 원점수, 원문 전체, Prompt, Trace를 포함하지 않는다.
+
+## 실제 연동 완료 조건
+
+1. Backend/OpenAPI 운영 집계 계약 확정
+2. 로딩·빈 상태·403·전체 오류·부분 실패 Fixture 확정
+3. API Adapter 및 Mapper 연결
+4. 실제 Backend 권한·필터·집계 E2E 통과
