@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import uuid
+
 from django.contrib.auth.base_user import (
     AbstractBaseUser,
     BaseUserManager,
@@ -83,6 +85,11 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
         default=generate_user_id,
         editable=False,
         validators=[validate_domain_id],
+    )
+    public_id = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
     )
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(blank=True)

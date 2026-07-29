@@ -1,2 +1,14 @@
 category: workflow
-errors: []
+errors:
+  - code: STATE-CONFLICT-01
+    category: workflow
+    http_status: 409
+    retryable: true
+    user_message: 다른 사용자가 문의 상태를 먼저 변경했습니다.
+    recommended_action: REFRESH_AND_RETRY
+  - code: DUPLICATE-EVENT-01
+    category: workflow
+    http_status: 409
+    retryable: false
+    user_message: 동일 Idempotency-Key가 다른 요청에 재사용되었습니다.
+    recommended_action: USE_NEW_IDEMPOTENCY_KEY

@@ -27,6 +27,7 @@ transitions:
       record_business_event: true
     guard_refs:
       - G-STATE-VERSION
+      - G-IDEMPOTENCY-KEY
     effects:
       - COMPLETE_ACTION
 excluded_events:

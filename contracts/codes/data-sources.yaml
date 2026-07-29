@@ -1,0 +1,9 @@
+# T-005 Wave 2 데이터 출처
+version: 1.0.0
+status: OWNER_BASELINE
+codes:
+  - CUSTOMER
+  - CONSULTANT
+  - TECHNICIAN
+  - SYSTEM
+  - IMPORT

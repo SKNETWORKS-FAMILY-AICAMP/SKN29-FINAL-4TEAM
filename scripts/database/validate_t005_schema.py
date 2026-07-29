@@ -26,9 +26,9 @@ POSTGRESQL_CHECK_PATH = (
 ARTIFACT_DIR = REPOSITORY_ROOT / "docs" / "database" / "t-005"
 MANIFEST_PATH = ARTIFACT_DIR / "manifest.json"
 SCHEMA_PATH = ARTIFACT_DIR / "watercare_schema_v3.json"
-LOGICAL_CONTRACT_PATH = ARTIFACT_DIR / "t005_logical_contract_v0.2.json"
-DECISION_REGISTER_PATH = ARTIFACT_DIR / "t005_decision_register_v0.1.json"
-PHYSICAL_CONTRACT_PATH = ARTIFACT_DIR / "t005_physical_contract_v1.0.json"
+LOGICAL_CONTRACT_PATH = ARTIFACT_DIR / "t005_logical_contract_v0.3.json"
+DECISION_REGISTER_PATH = ARTIFACT_DIR / "t005_decision_register_v0.3.json"
+PHYSICAL_CONTRACT_PATH = ARTIFACT_DIR / "t005_physical_contract_v1.2.json"
 USAGE_CODE_CONTRACT_PATH = (
     REPOSITORY_ROOT
     / "contracts"
@@ -41,9 +41,15 @@ VISIT_CODE_CONTRACT_PATH = (
     / "codes"
     / "visit-statuses.yaml"
 )
+USER_ROLE_CODE_CONTRACT_PATH = (
+    REPOSITORY_ROOT
+    / "contracts"
+    / "codes"
+    / "user-roles.yaml"
+)
 DECISION_STATUSES = {"PENDING", "ACCEPTED", "REJECTED", "DEFERRED"}
 DECISION_REGISTER_STATUSES = DECISION_STATUSES | {"PARTIAL"}
-DECISION_REGISTER_VERSION = "0.1"
+DECISION_REGISTER_VERSION = "0.3"
 ACCEPTED_DECISION_FIELDS = {
     "selected_option",
     "decided_by",
@@ -278,7 +284,9 @@ def verify_postgresql_runtime() -> dict[str, Any]:
 
 
 EXPECTED_DECISIONS = {
-    "T005_PRIMARY_KEY_POLICY": "DOMAIN_PREFIX_UUID4_WITH_DEMO_SEQUENCE",
+    "T005_PRIMARY_KEY_POLICY": (
+        "INTERNAL_BIGINT_PK_PUBLIC_UUID_BUSINESS_CODE"
+    ),
     "T005_USAGE_GUIDANCE_PHYSICAL_MAPPING": (
         "CANONICAL_STATUS_RENAME_NO_DUAL_WRITE"
     ),
@@ -290,6 +298,47 @@ EXPECTED_DECISIONS = {
         "SEVEN_VISIT_STATUSES_WITH_FOLLOW_UP"
     ),
     "T005_ENUM_SEED_POLICY": "CONTRACT_YAML_TEXTCHOICES_UPSERT",
+    "T005_STATUS_HISTORY_IDEMPOTENCY_SCOPE": (
+        "REQUEST_LEDGER_OWNED_IDEMPOTENCY_HISTORY_TRACE_ONLY_TARGET_VERSION_UNIQUE"
+    ),
+}
+
+EXPECTED_STATUS_HISTORY_TARGET_FKS = {
+    "QUESTIONNAIRE": "questionnaire_session_id",
+    "INQUIRY": "inquiry_id",
+    "CONSULTATION": "consultation_id",
+    "VISIT": "visit_id",
+}
+EXPECTED_USER_ROLES = {
+    "CUSTOMER",
+    "CONSULTANT",
+    "TECHNICIAN",
+    "OPERATOR",
+}
+EXPECTED_ACTIVE_CONTRACTS = {
+    "active_logical_contract": "t005_logical_contract_v0.3.json",
+    "active_decision_register": "t005_decision_register_v0.3.json",
+    "active_physical_contract": "t005_physical_contract_v1.2.json",
+}
+EXPECTED_STATUS_HISTORY_CHECKS = {
+    "ck_status_history_exactly_one_target": (
+        "num_nonnulls(questionnaire_session_id, inquiry_id, "
+        "consultation_id, visit_id) = 1"
+    ),
+    "ck_status_history_target_type_matches_fk": (
+        "(target_type_code = 'QUESTIONNAIRE' AND "
+        "questionnaire_session_id IS NOT NULL AND inquiry_id IS NULL AND "
+        "consultation_id IS NULL AND visit_id IS NULL) OR "
+        "(target_type_code = 'INQUIRY' AND questionnaire_session_id IS NULL "
+        "AND inquiry_id IS NOT NULL AND consultation_id IS NULL AND "
+        "visit_id IS NULL) OR "
+        "(target_type_code = 'CONSULTATION' AND "
+        "questionnaire_session_id IS NULL AND inquiry_id IS NULL AND "
+        "consultation_id IS NOT NULL AND visit_id IS NULL) OR "
+        "(target_type_code = 'VISIT' AND questionnaire_session_id IS NULL "
+        "AND inquiry_id IS NULL AND consultation_id IS NULL AND "
+        "visit_id IS NOT NULL)"
+    ),
 }
 
 
@@ -328,8 +377,9 @@ def audit_owner_baseline(
     decision_register: dict[str, Any],
     usage_code_contract: dict[str, Any],
     visit_code_contract: dict[str, Any],
+    user_role_code_contract: dict[str, Any],
 ) -> dict[str, Any]:
-    """별도 물리 계약이 v3 Snapshot의 여섯 gap을 모두 해소하는지 검사한다."""
+    """별도 물리 계약이 v3 Snapshot의 일곱 gap을 모두 해소하는지 검사한다."""
 
     physical_overrides = physical_contract.get("physical_overrides", {})
     inquiry_fields = set(
@@ -341,6 +391,89 @@ def audit_owner_baseline(
     visit_fields = set(
         physical_overrides.get("field_service_visit", {})
     )
+    status_history = physical_overrides.get(
+        "support_inquiry_status_history",
+        {},
+    )
+    status_history_target_integrity = status_history.get(
+        "target_integrity",
+        {},
+    )
+    status_history_idempotency = status_history.get(
+        "idempotency_key",
+        {},
+    )
+    status_history_state_version = status_history.get(
+        "state_version",
+        {},
+    )
+    target_check_entries = status_history_target_integrity.get(
+        "check_constraints",
+        [],
+    )
+    target_check_constraints = {
+        entry.get("name"): entry.get("expression")
+        for entry in target_check_entries
+        if isinstance(entry, dict)
+    }
+    idempotency_index_entries = status_history.get(
+        "postgresql_partial_idempotency_indexes",
+        [],
+    )
+    idempotency_indexes = {
+        (
+            index.get("name"),
+            index.get("target_type_code"),
+            index.get("target_fk"),
+            tuple(index.get("fields", [])),
+            index.get("predicate"),
+            index.get("unique"),
+        )
+        for index in idempotency_index_entries
+        if isinstance(index, dict)
+    }
+    version_constraint_entries = status_history.get(
+        "postgresql_partial_version_constraints",
+        [],
+    )
+    version_constraints = {
+        (
+            constraint.get("target_type_code"),
+            constraint.get("target_fk"),
+            constraint.get("name"),
+            tuple(constraint.get("fields", [])),
+            constraint.get("predicate"),
+            constraint.get("unique"),
+        )
+        for constraint in version_constraint_entries
+        if isinstance(constraint, dict)
+    }
+    expected_idempotency_indexes = {
+        (
+            f"ix_status_history_{target_type.lower()}_event_idempotency",
+            target_type,
+            target_fk,
+            (target_fk, "event_code", "idempotency_key"),
+            f"target_type_code = '{target_type}'",
+            False,
+        )
+        for target_type, target_fk in (
+            EXPECTED_STATUS_HISTORY_TARGET_FKS.items()
+        )
+    }
+    expected_version_constraints = {
+        (
+            target_type,
+            target_fk,
+            f"uq_status_history_{target_type.lower()}_version",
+            (target_fk, "state_version"),
+            f"target_type_code = '{target_type}'",
+            True,
+        )
+        for target_type, target_fk in (
+            EXPECTED_STATUS_HISTORY_TARGET_FKS.items()
+        )
+    }
     standard_codes = physical_contract.get("standard_codes", {})
     registered_decisions = {
         decision.get("id"): decision.get("selected_option")
@@ -355,10 +488,67 @@ def audit_owner_baseline(
         "enum_and_seed_policy",
         {},
     )
+    identifier_policy = physical_contract.get("identifier_policy", {})
+    internal_primary_key = identifier_policy.get(
+        "internal_primary_key",
+        {},
+    )
+    public_identifier = identifier_policy.get("public_identifier", {})
+    business_identifier = identifier_policy.get(
+        "business_identifier",
+        {},
+    )
+    compatibility_bridge = identifier_policy.get(
+        "compatibility_bridge",
+        {},
+    )
+    implementation_gate = physical_contract.get(
+        "implementation_gate",
+        {},
+    )
+    transitional_gate_valid = (
+        compatibility_bridge.get("status") == "TRANSITIONAL"
+        and implementation_gate.get("status") == "TRANSITIONAL_BRIDGE"
+        and implementation_gate.get("completion_claim_allowed") is False
+        and bool(implementation_gate.get("incomplete_items"))
+    )
+    complete_gate_valid = (
+        compatibility_bridge.get("status") == "COMPLETE"
+        and implementation_gate.get("status") == "COMPLETE"
+        and implementation_gate.get("completion_claim_allowed") is True
+        and not implementation_gate.get("incomplete_items")
+    )
+    user_override = physical_overrides.get("accounts_user", {})
+    customer_override = physical_overrides.get(
+        "customers_customer_profile",
+        {},
+    )
+    inquiry_override = physical_overrides.get("support_inquiry", {})
+    expected_public_id = {
+        "type": "uuid",
+        "nullable": False,
+        "unique": True,
+        "api_exposed": True,
+    }
+    expected_internal_id = {
+        "type": "bigint",
+        "auto_generated": True,
+        "primary_key": True,
+        "api_exposed": False,
+    }
+    contract_user_roles = code_values(user_role_code_contract)
+    override_user_roles = set(
+        user_override.get("role_code", {}).get("codes", [])
+    )
+    standard_user_roles = set(standard_codes.get("user_role", []))
 
     checks = {
         "contract_version": (
-            physical_contract.get("contract_version") == "1.0.0"
+            physical_contract.get("contract_version") == "1.2.0"
+        ),
+        "contract_provenance": (
+            physical_contract.get("supersedes")
+            == "t005_physical_contract_v1.1.json"
         ),
         "owner_status": (
             physical_contract.get("status") == "OWNER_BASELINE"
@@ -376,12 +566,47 @@ def audit_owner_baseline(
             registered_decisions == EXPECTED_DECISIONS
         ),
         "identifier_policy": (
-            physical_contract.get("identifier_policy", {}).get("option")
+            identifier_policy.get("option")
             == EXPECTED_DECISIONS["T005_PRIMARY_KEY_POLICY"]
-            and physical_contract.get("identifier_policy", {}).get(
-                "database_type"
+            and internal_primary_key.get("database_type") == "bigint"
+            and internal_primary_key.get("auto_generated") is True
+            and internal_primary_key.get("api_exposed") is False
+            and public_identifier.get("database_type") == "uuid"
+            and public_identifier.get("unique") is True
+            and public_identifier.get("api_exposed") is True
+            and business_identifier.get("separate_from_primary_key") is True
+        ),
+        "implementation_gate_valid": (
+            transitional_gate_valid or complete_gate_valid
+        ),
+        "physical_identifier_parity": (
+            user_override.get("public_id") == expected_public_id
+            and customer_override.get("public_id") == expected_public_id
+            and inquiry_override.get("id") == expected_internal_id
+            and inquiry_override.get("public_id") == expected_public_id
+            and customer_override.get("customer_no", {}).get("type")
+            == "varchar(40)"
+            and customer_override.get("customer_no", {}).get("unique") is True
+            and customer_override.get("customer_no", {}).get(
+                "business_identifier"
             )
-            == "varchar(48)"
+            is True
+            and inquiry_override.get("inquiry_code", {}).get("type")
+            == "varchar(50)"
+            and inquiry_override.get("inquiry_code", {}).get("unique") is True
+            and inquiry_override.get("inquiry_code", {}).get(
+                "business_identifier"
+            )
+            is True
+        ),
+        "user_role_code_parity": (
+            contract_user_roles
+            == override_user_roles
+            == standard_user_roles
+            == EXPECTED_USER_ROLES
+            and "COUNSELOR" not in contract_user_roles
+            and user_override.get("role_code", {}).get("code_contract")
+            == "../../../contracts/codes/user-roles.yaml"
         ),
         "usage_guidance_fields": (
             EXPECTED_USAGE_GUIDANCE_FIELDS <= inquiry_fields
@@ -417,6 +642,48 @@ def audit_owner_baseline(
             and enum_seed_policy.get("database_enum") is False
             and enum_seed_policy.get("manual_insert") is False
         ),
+        "status_history_target_integrity": (
+            status_history_target_integrity.get("target_type_field")
+            == "target_type_code"
+            and status_history_target_integrity.get("target_fks")
+            == EXPECTED_STATUS_HISTORY_TARGET_FKS
+            and len(target_check_entries)
+            == len(EXPECTED_STATUS_HISTORY_CHECKS)
+            and target_check_constraints
+            == EXPECTED_STATUS_HISTORY_CHECKS
+        ),
+        "status_history_idempotency_scope": (
+            status_history_idempotency.get("global_unique") is False
+            and status_history_idempotency.get("history_unique") is False
+            and status_history_idempotency.get("request_scope_owner")
+            == "workflow_idempotency_record"
+            and status_history_idempotency.get("request_scope_fields")
+            == [
+                "actor",
+                "operation_id",
+                "idempotency_key",
+            ]
+            and status_history_idempotency.get("trace_only") is True
+            and "postgresql_partial_unique_constraints"
+            not in status_history
+            and len(idempotency_index_entries)
+            == len(EXPECTED_STATUS_HISTORY_TARGET_FKS)
+            and idempotency_indexes == expected_idempotency_indexes
+        ),
+        "status_history_state_version_scope": (
+            status_history_state_version.get("minimum") == 1
+            and status_history_state_version.get(
+                "aggregate_scoped_unique"
+            )
+            == [
+                "target_type_code",
+                "resolved_target_fk",
+                "state_version",
+            ]
+            and len(version_constraint_entries)
+            == len(EXPECTED_STATUS_HISTORY_TARGET_FKS)
+            and version_constraints == expected_version_constraints
+        ),
     }
     return {
         "status": (
@@ -433,6 +700,7 @@ def audit_owner_baseline(
             "completion_review_status",
             "PENDING",
         ),
+        "implementation_gate": implementation_gate,
         "checks": checks,
         "valid": all(checks.values()),
     }
@@ -447,6 +715,7 @@ def audit_snapshot(
     physical_contract: dict[str, Any] | None = None,
     usage_code_contract: dict[str, Any] | None = None,
     visit_code_contract: dict[str, Any] | None = None,
+    user_role_code_contract: dict[str, Any] | None = None,
     completion_evidence: dict[str, Any] | None = None,
     postgresql_verification: dict[str, Any] | None = None,
     verify_artifact_hashes: bool = True,
@@ -475,6 +744,10 @@ def audit_snapshot(
         visit_code_contract = yaml.safe_load(
             VISIT_CODE_CONTRACT_PATH.read_text(encoding="utf-8")
         )
+    if user_role_code_contract is None:
+        user_role_code_contract = yaml.safe_load(
+            USER_ROLE_CODE_CONTRACT_PATH.read_text(encoding="utf-8")
+        )
     tables = schema.get("tables", {})
     columns = [
         (table_name, column)
@@ -498,6 +771,33 @@ def audit_snapshot(
         "logical_codes": len(logical_codes),
     }
     errors: list[dict[str, str]] = []
+    actual_active_contracts = {
+        field: manifest.get(field)
+        for field in EXPECTED_ACTIVE_CONTRACTS
+    }
+    active_contract_alignment = {
+        "expected": EXPECTED_ACTIVE_CONTRACTS,
+        "actual": actual_active_contracts,
+        "files_exist": all(
+            isinstance(filename, str)
+            and (ARTIFACT_DIR / filename).is_file()
+            for filename in actual_active_contracts.values()
+        ),
+    }
+    active_contract_alignment["matches"] = (
+        actual_active_contracts == EXPECTED_ACTIVE_CONTRACTS
+        and active_contract_alignment["files_exist"]
+    )
+    if not active_contract_alignment["matches"]:
+        errors.append(
+            {
+                "id": "T005_ACTIVE_CONTRACT_POINTER_MISMATCH",
+                "message": json.dumps(
+                    active_contract_alignment,
+                    ensure_ascii=False,
+                ),
+            }
+        )
 
     contract_usage_fields = set(
         logical_contract["canonical_fields"]["usage_guidance"]
@@ -600,6 +900,10 @@ def audit_snapshot(
     decision_register_check = {
         "version": register_version,
         "version_valid": register_version == DECISION_REGISTER_VERSION,
+        "supersedes_valid": (
+            decision_register.get("supersedes")
+            == "t005_decision_register_v0.2.json"
+        ),
         "status": register_status,
         "expected_status": expected_register_status,
         "status_valid": (
@@ -625,6 +929,8 @@ def audit_snapshot(
             and None not in register_id_set
             and not invalid_register_decisions
             and register_version == DECISION_REGISTER_VERSION
+            and decision_register.get("supersedes")
+            == "t005_decision_register_v0.2.json"
             and register_status in DECISION_REGISTER_STATUSES
             and register_status == expected_register_status
         ),
@@ -644,6 +950,7 @@ def audit_snapshot(
         decision_register=decision_register,
         usage_code_contract=usage_code_contract,
         visit_code_contract=visit_code_contract,
+        user_role_code_contract=user_role_code_contract,
     )
     if not owner_baseline["valid"]:
         errors.append(
@@ -656,6 +963,12 @@ def audit_snapshot(
             }
         )
     logical_contract_checks = {
+        "active_generation": (
+            logical_contract.get("contract_version") == "0.3.0"
+            and logical_contract.get("status") == "OWNER_BASELINE"
+            and logical_contract.get("supersedes")
+            == "t005_logical_contract_v0.2.json"
+        ),
         "usage_guidance_fields": (
             contract_usage_fields == EXPECTED_USAGE_GUIDANCE_FIELDS
         ),
@@ -674,6 +987,31 @@ def audit_snapshot(
                 "id": "T005_LOGICAL_CONTRACT_INVALID",
                 "message": json.dumps(
                     logical_contract_checks,
+                    ensure_ascii=False,
+                ),
+            }
+        )
+
+    manifest_gate = manifest.get("implementation_gate", {})
+    physical_gate = physical_contract.get("implementation_gate", {})
+    implementation_gate_alignment = {
+        "status_matches": (
+            manifest_gate.get("status") == physical_gate.get("status")
+        ),
+        "completion_claim_matches": (
+            manifest_gate.get("completion_claim_allowed")
+            == physical_gate.get("completion_claim_allowed")
+        ),
+    }
+    implementation_gate_alignment["matches"] = all(
+        implementation_gate_alignment.values()
+    )
+    if not implementation_gate_alignment["matches"]:
+        errors.append(
+            {
+                "id": "T005_IMPLEMENTATION_GATE_MISMATCH",
+                "message": json.dumps(
+                    implementation_gate_alignment,
                     ensure_ascii=False,
                 ),
             }
@@ -757,7 +1095,8 @@ def audit_snapshot(
             {
                 "id": "T005_PRIMARY_KEY_POLICY",
                 "message": (
-                    "UUID PK Snapshot과 도메인형 문자열 ID 공통 규칙이 충돌한다."
+                    "UUID PK Snapshot과 내부 정수 PK·공개 UUID 분리 규칙이 "
+                    "충돌한다."
                 ),
                 "examples": uuid_primary_keys[:5],
                 "count": len(uuid_primary_keys),
@@ -884,6 +1223,18 @@ def audit_snapshot(
         "seed_idempotency_verified_on_postgresql": evidence_gates[
             "seed_idempotency_verified_on_postgresql"
         ],
+        "three_layer_identifier_runtime_complete": (
+            owner_baseline.get("implementation_gate", {}).get("status")
+            == "COMPLETE"
+            and owner_baseline.get("implementation_gate", {}).get(
+                "completion_claim_allowed"
+            )
+            is True
+            and not owner_baseline.get("implementation_gate", {}).get(
+                "incomplete_items",
+                [],
+            )
+        ),
         "external_review_verified": evidence_gates[
             "external_review_verified"
         ],
@@ -929,9 +1280,11 @@ def audit_snapshot(
         "counts": counts,
         "coverage": coverage,
         "logical_contract_checks": logical_contract_checks,
+        "active_contract_alignment": active_contract_alignment,
         "decision_alignment": decision_alignment,
         "decision_register": decision_register_check,
         "owner_baseline": owner_baseline,
+        "implementation_gate_alignment": implementation_gate_alignment,
         "blocker_alignment": blocker_alignment,
         "errors": errors,
         "legacy_snapshot_gaps": legacy_snapshot_gaps,

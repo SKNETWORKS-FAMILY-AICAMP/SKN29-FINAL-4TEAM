@@ -1,0 +1,15 @@
+description: 상태 버전 또는 Idempotency-Key 재사용 충돌
+headers:
+  X-Correlation-ID:
+    $ref: ../headers/CorrelationId.yaml
+content:
+  application/json:
+    schema:
+      $ref: ../schemas/workflow/WorkflowConflictResponse.yaml
+    examples:
+      stateVersionConflict:
+        summary: 요청 state_version이 현재 버전과 다른 경우
+        externalValue: ../../examples/workflow/state-version-conflict.json
+      idempotencyKeyReuseConflict:
+        summary: 같은 Idempotency-Key를 다른 요청에 재사용한 경우
+        externalValue: ../../examples/workflow/idempotency-key-reuse-conflict.json

@@ -2,7 +2,19 @@
   "artifact_version": "3.0.0",
   "snapshot_status": "HISTORICAL_SNAPSHOT",
   "source": "./watercare_erd_validation_v3.md",
-  "provenance_note": "2026-07-25에 저장소로 반입한 ERD v3 이력이며 현행 구현 기준은 ADR 0008과 t005_physical_contract_v1.0.json이다.",
+  "provenance_note": "2026-07-25에 저장소로 반입한 ERD v3 이력이며 현행 구현 기준은 ADR 0010·0011, t005_logical_contract_v0.3.json, t005_decision_register_v0.3.json, t005_physical_contract_v1.2.json이다.",
+  "active_adrs": [
+    "../../adr/0010-t005-three-layer-identifier-bridge.md",
+    "../../adr/0011-t005-status-history-idempotency-scope.md"
+  ],
+  "active_logical_contract": "t005_logical_contract_v0.3.json",
+  "active_decision_register": "t005_decision_register_v0.3.json",
+  "active_physical_contract": "t005_physical_contract_v1.2.json",
+  "implementation_gate": {
+    "status": "TRANSITIONAL_BRIDGE",
+    "completion_claim_allowed": false,
+    "reason": "Accounts 문자열 PK의 정수 PK 전환과 legacy JWT sub fallback 제거가 남아 있다."
+  },
   "copied_on": "2026-07-25",
   "expected_counts": {
     "tables": 32,
@@ -23,6 +35,7 @@
     "T005_USAGE_GUIDANCE_CODESET",
     "T005_VISIT_STORAGE_MAPPING",
     "T005_VISIT_STATUS_CODESET",
-    "T005_ENUM_SEED_POLICY"
+    "T005_ENUM_SEED_POLICY",
+    "T005_STATUS_HISTORY_IDEMPOTENCY_SCOPE"
   ]
 }
