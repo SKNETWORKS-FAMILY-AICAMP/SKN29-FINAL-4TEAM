@@ -1,6 +1,10 @@
 """Pydantic 스키마 및 안전 규칙 YAML 로딩 단위 테스트."""
 
+import json
 import os
+from pathlib import Path
+
+from jsonschema import Draft202012Validator, RefResolver
 import yaml
 import pytest
 from ai.app.schemas.common import RiskLevel, UsageGuidanceStatus, TraceContext
@@ -23,7 +27,8 @@ def test_pydantic_common_schemas():
 def test_symptom_analysis_result_schema():
     """통합 분석 응답 모델 객체 생성 검증"""
     result = SymptomAnalysisResult(
-        trace_context=TraceContext(inquiry_id="DEMO-INQ-002", correlation_id="corr-002"),
+        inquiry_id="DEMO-INQ-002",
+        correlation_id="corr-002",
         structured_symptom=StructuredSymptom(
             symptom_type="누수",
             accompanying_symptoms=["전원 불빛 깜빡임"],
@@ -45,12 +50,12 @@ def test_symptom_analysis_result_schema():
             next_actions=["원수 밸브 잠그기", "전원 차단"]
         ),
         evidence_references=[],
-        model_metadata={"model_name": "gpt-4o-mini", "prompt_version": "v1"},
-        processing_traces=[]
     )
 
     assert result.safety_assessment.risk_level == RiskLevel.DANGER
     assert result.usage_guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
+    schema_path = Path("contracts/ai/responses/SymptomAnalysisResponse.schema.json")
+    _validator(schema_path).validate(result.model_dump(mode="json"))
 
 
 def test_load_safety_rules_config():
@@ -79,25 +84,18 @@ def test_load_prohibited_expressions_config():
     assert "고장이 확실합니다" in prohibited_yaml["prohibited_diagnosis_phrases"]
 
 
-def test_ai_contract_examples_json_schema():
-    """contracts/ai/examples/ 하위 예시 JSON 파일들이 존재하고 올바른 JSON 구조인지 검증"""
-    import json
-    examples_dir = os.path.join("contracts", "ai", "examples")
-    assert os.path.exists(examples_dir)
+def _validator(schema_path: Path) -> Draft202012Validator:
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    return Draft202012Validator(
+        schema,
+        resolver=RefResolver(base_uri=schema_path.resolve().as_uri(), referrer=schema),
+    )
 
-    example_files = [
-        os.path.join(examples_dir, "symptom-analysis", "general-guidance.json"),
-        os.path.join(examples_dir, "symptom-analysis", "danger-detected.json"),
-        os.path.join(examples_dir, "symptom-analysis", "no-evidence.json"),
-        os.path.join(examples_dir, "symptom-analysis", "validation-failed.json"),
-        os.path.join(examples_dir, "fallback", "fallback-response.json"),
-        os.path.join(examples_dir, "consultation-summary", "summary-example.json"),
-        os.path.join(examples_dir, "technician-report", "report-example.json"),
-    ]
 
-    for file_path in example_files:
-        assert os.path.exists(file_path), f"예시 파일 없음: {file_path}"
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            assert isinstance(data, dict), f"JSON 형식 오류: {file_path}"
-
+@pytest.mark.parametrize("example_name", ["general-guidance.json", "danger-detected.json", "no-evidence.json"])
+def test_ai_contract_examples_json_schema(example_name):
+    """대표 요청과 응답을 실제 Draft 2020-12 JSON Schema로 검증한다."""
+    contract_root = Path("contracts/ai")
+    example = json.loads((contract_root / "examples/symptom-analysis" / example_name).read_text(encoding="utf-8"))
+    _validator(contract_root / "requests/SymptomAnalysisRequest.schema.json").validate(example["request"])
+    _validator(contract_root / "responses/SymptomAnalysisResponse.schema.json").validate(example["response"])

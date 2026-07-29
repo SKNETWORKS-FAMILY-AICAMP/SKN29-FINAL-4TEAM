@@ -1,12 +1,13 @@
 """공식 문서 RAG 검색 Stage 모듈."""
 
 import time
-from ...retrieval import RetrievalQuery, VectorSearchService
+from ...retrieval import RetrievalQuery
+from ...retrieval.search.vector_search import VectorSearchService
 from ...schemas import EvidenceReference, ProcessingTrace
 from ..pipeline_context import PipelineContext
 
 
-def execute_retrieval_stage(ctx: PipelineContext) -> None:
+def execute_retrieval_stage(ctx: PipelineContext, search_service: VectorSearchService | None = None) -> None:
     """bge-m3 pgvector Exact Search 기반 관련 매뉴얼/FAQ 청크 검색"""
     start_time = time.perf_counter()
 
@@ -18,8 +19,7 @@ def execute_retrieval_stage(ctx: PipelineContext) -> None:
         require_official_verified=True
     )
 
-    search_service = VectorSearchService()
-    chunks = search_service.search(query)
+    chunks = search_service.search(query) if search_service is not None else []
 
     # RetrievedChunk -> EvidenceReference 변환
     evidence_list = []
