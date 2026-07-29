@@ -1,0 +1,128 @@
+{
+  "mapping_version": "1.0.0",
+  "status": "DOCUMENTED_NOT_DB_VERIFIED",
+  "service_contracts_used": false,
+  "backend_sources": {
+    "user_model": {
+      "path": "backend/apps/accounts/models/user.py",
+      "sha256": "65F3C7E840750B68412CC2D777834385291BBEAED3ED912A6B8D55AAAA2F1672"
+    },
+    "customer_profile_model": {
+      "path": "backend/apps/accounts/models/customer_profile.py",
+      "sha256": "E1D2ACDD3F7243CEBDA52D7BE41D507DC844C04169B71D60F7A4954EDEDFB592"
+    },
+    "product_model": {
+      "path": "backend/apps/products/models/product_model_registry.py",
+      "sha256": "8BF8353591EBFA5AE90D14D15C29C5D49035474863E5B3037CB746816C5CE71B"
+    },
+    "subscription_model": {
+      "path": "backend/apps/subscriptions/models/subscription.py",
+      "sha256": "E631BA8CAF76287F36CDD721D6DBC6D0776D1CEBAE5AD31673E67B3B35289E26"
+    },
+    "care_model": {
+      "path": "backend/apps/care/models/care_history.py",
+      "sha256": "F47073E7DC0D75F9A1DE7DA179EAE2BCDB933611A5E795A3B42179ABC971C550"
+    }
+  },
+  "identifier_resolution": {
+    "fixture_internal_id_role": "LOCAL_RELATIONSHIP_ONLY",
+    "backend_primary_key_injection": "FORBIDDEN",
+    "lookup_order": ["public_id", "business_key"],
+    "foreign_key_resolution": "LOOKUP_THEN_USE_BACKEND_INTERNAL_PK",
+    "accounts_legacy_string_pk": "BACKEND_COMPATIBILITY_BRIDGE_NOT_FIXTURE_ID"
+  },
+  "entity_mappings": [
+    {
+      "fixture": "synthetic/fixtures/users.json",
+      "backend_model": "accounts.User",
+      "readiness": "LOOKUP_OR_UPSERT_AFTER_MAPPING",
+      "business_key": "user_number",
+      "field_mappings": {
+        "public_id": "public_id",
+        "user_number": "username",
+        "display_name": "display_name",
+        "role": "role_code",
+        "active": "is_active"
+      }
+    },
+    {
+      "fixture": "synthetic/fixtures/customer_profiles.json",
+      "backend_model": "accounts.CustomerProfile",
+      "readiness": "LOOKUP_OR_UPSERT_AFTER_MAPPING",
+      "business_key": "customer_profile_number",
+      "field_mappings": {
+        "public_id": "public_id",
+        "customer_profile_number": "customer_no",
+        "customer_name": "customer_name",
+        "user_id": "user"
+      }
+    },
+    {
+      "fixture": "synthetic/fixtures/products.json",
+      "backend_model": "products.ProductModel",
+      "readiness": "LOOKUP_OR_UPSERT_AFTER_MAPPING",
+      "business_key": "product_code",
+      "field_mappings": {
+        "public_id": "public_id",
+        "product_code": "model_code",
+        "product_name": "model_name"
+      }
+    },
+    {
+      "fixture": "synthetic/fixtures/subscriptions.json",
+      "backend_model": "subscriptions.CustomerSubscription",
+      "readiness": "LOOKUP_OR_UPSERT_AFTER_MAPPING",
+      "business_key": "subscription_number",
+      "field_mappings": {
+        "public_id": "public_id",
+        "subscription_number": "contract_no",
+        "customer_profile_id": "customer",
+        "customer_product_id": "product_model_and_serial_lookup",
+        "plan_code": "management_type_code",
+        "status": "status_code",
+        "started_on": "started_on",
+        "next_care_on": "next_care_on"
+      }
+    },
+    {
+      "fixture": "synthetic/fixtures/care_histories.json",
+      "backend_model": "care.CareRecord",
+      "readiness": "PARTIAL_BLOCKED_OWNER_CONFIRMATION",
+      "business_key": "care_history_number",
+      "field_mappings": {
+        "public_id": "public_id",
+        "care_history_number": "care_code",
+        "customer_product_id": "subscription_lookup",
+        "care_type": "care_type_code",
+        "performed_on": "completed_at",
+        "note": "summary"
+      }
+    }
+  ],
+  "code_mappings": {
+    "plan_code": {
+      "SYNTHETIC_REGULAR_CARE": "VISIT_CARE"
+    },
+    "care_type": {
+      "REGULAR_INSPECTION": "PERIODIC_CHECK",
+      "FILTER_REPLACEMENT": "FILTER_REPLACEMENT",
+      "VISIT_SERVICE": null
+    }
+  },
+  "blocked_mappings": [
+    {
+      "id": "CARE-VISIT-SERVICE-TYPE",
+      "source_values": ["VISIT_SERVICE"],
+      "reason": "Backend CareType에 의미가 같은 직접 대응 코드가 없음",
+      "treatment": "EXCLUDE_FROM_DIRECT_LOAD",
+      "owner": "BACKEND"
+    },
+    {
+      "id": "CARE-COMPLETED-AT-TIME",
+      "source_values": ["performed_on"],
+      "reason": "Data 날짜를 Backend 완료 시각으로 임의 승격할 수 없음",
+      "treatment": "EXCLUDE_FROM_DIRECT_LOAD",
+      "owner": "BACKEND"
+    }
+  ]
+}

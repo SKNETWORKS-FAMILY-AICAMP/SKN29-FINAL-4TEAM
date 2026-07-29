@@ -3,57 +3,16 @@
   "title": "SyntheticCustomerProduct",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "customer_product_id",
-    "customer_id",
-    "product_id",
-    "serial_number",
-    "installation_date",
-    "installation_location",
-    "active",
-    "data_classification"
-  ],
+  "required": ["id", "public_id", "customer_id", "product_id", "serial_number", "installation_date", "installation_location", "active", "data_classification"],
   "properties": {
-    "customer_product_id": {
-      "type": "string",
-      "minLength": 1,
-      "format": "uuid"
-    },
-    "customer_id": {
-      "type": "string",
-      "minLength": 1,
-      "format": "uuid"
-    },
-    "product_id": {
-      "type": "string",
-      "minLength": 1,
-      "format": "uuid"
-    },
-    "serial_number": {
-      "type": "string",
-      "minLength": 1,
-      "pattern": "^SYN-JAC104D-\\d{4}$"
-    },
-    "installation_date": {
-      "type": "string",
-      "minLength": 1,
-      "format": "date"
-    },
-    "installation_location": {
-      "type": "string",
-      "minLength": 1,
-      "enum": [
-        "주방 카운터",
-        "거실 보조장"
-      ]
-    },
-    "active": {
-      "type": "boolean"
-    },
-    "data_classification": {
-      "type": "string",
-      "minLength": 1,
-      "const": "synthetic"
-    }
+    "id": {"type": "integer", "minimum": 1},
+    "public_id": {"type": "string", "format": "uuid"},
+    "customer_id": {"type": "integer", "minimum": 1},
+    "product_id": {"type": "integer", "minimum": 1},
+    "serial_number": {"type": "string", "pattern": "^SYN-JAC104D-\\d{4}$"},
+    "installation_date": {"type": "string", "format": "date"},
+    "installation_location": {"type": "string", "minLength": 1},
+    "active": {"type": "boolean"},
+    "data_classification": {"type": "string", "const": "synthetic"}
   }
 }

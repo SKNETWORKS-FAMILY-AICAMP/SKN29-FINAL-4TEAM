@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExpectedApiIdempotencyCase",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["case_id", "scenario_id", "actor", "operation_id", "idempotency_key", "request_payload_sha256", "first_result", "replay", "expected_outcome", "internal_conflict_code", "expected_api_error_code", "expected_history_rows_created"],
+  "properties": {
+    "case_id": {"type": "string", "pattern": "^SYN-IDEMPOTENCY-[A-Z0-9-]+$"},
+    "scenario_id": {"type": "string", "pattern": "^SYN-JAC104-\\d{3}$"},
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["public_id", "role_code"],
+      "properties": {
+        "public_id": {"type": "string", "format": "uuid"},
+        "role_code": {"type": "string", "enum": ["CUSTOMER", "CONSULTANT", "TECHNICIAN", "OPERATOR"]}
+      }
+    },
+    "operation_id": {"type": "string", "minLength": 1},
+    "idempotency_key": {"type": "string", "minLength": 1},
+    "request_payload_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "first_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["http_status", "response_body_sha256", "resource_public_id"],
+      "properties": {
+        "http_status": {"type": "integer", "minimum": 100, "maximum": 599},
+        "response_body_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "resource_public_id": {"type": "string", "format": "uuid"}
+      }
+    },
+    "replay": {"type": "boolean"},
+    "expected_outcome": {"type": "string", "enum": ["PROCESSED", "REPLAY", "CONFLICT"]},
+    "internal_conflict_code": {"type": ["string", "null"], "enum": ["IDEMPOTENCY_KEY_REUSE_CONFLICT", null]},
+    "expected_api_error_code": {"type": ["string", "null"], "enum": ["DUPLICATE-EVENT-01", null]},
+    "expected_history_rows_created": {"type": "integer", "minimum": 0}
+  }
+}

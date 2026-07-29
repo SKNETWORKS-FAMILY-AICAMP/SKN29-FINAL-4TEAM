@@ -1,0 +1,72 @@
+contract:
+  name: data-state-crosswalk
+  version: 1.0.0
+  status: TEAM_APPROVED
+  owner: PM_TECHNICAL_INTEGRATION
+  adopted_at: 2026-07-29
+  description: >
+    Data의 기존 역할·상태 표현을 State Machine v1.0.0의 Inquiry와
+    Visit 계약으로 변환하기 위한 기계 판독 기준이다.
+
+canonical_contract:
+  inquiry_states: ./inquiry-states.yaml
+  inquiry_events: ./inquiry-events.yaml
+  transition_rules: ./transition-rules.yaml
+  completion_policy: ./completion-policy.yaml
+  concurrency_policy: ./concurrency-policy.yaml
+
+role_aliases:
+  COUNSELOR: CONSULTANT
+
+legacy_inquiry_state_mappings:
+  AI_GUIDANCE_READY:
+    kind: STATE_ALIAS
+    inquiry_state: AI_GUIDANCE
+  CONSULTATION_PENDING:
+    kind: STATE_ALIAS
+    inquiry_state: CONSULTATION_REQUIRED
+  PRODUCT_VALIDATION_FAILED:
+    kind: EVENT_TO_STATE
+    event: PRODUCT_VALIDATION_FAILED
+    inquiry_state_after: CONSULTATION_REQUIRED
+
+compound_state_mappings:
+  VISIT_PENDING:
+    inquiry_state: VISIT_SCHEDULED
+    visit_status: CONFIRMED
+  VISIT_IN_PROGRESS:
+    inquiry_state: VISIT_SCHEDULED
+    visit_status: IN_PROGRESS
+
+terminal_and_reopen_policy:
+  terminal_states:
+    - RESOLVED
+    - CANCELLED
+  same_inquiry_reopen_from_terminal: false
+  reopened_transition:
+    from_inquiry_state: COMPLETION_PENDING
+    event: CUSTOMER_REPORTED_UNRESOLVED
+    to_inquiry_state: REOPENED
+
+representative_flow:
+  scenario_id: SYN-JAC104-002
+  source: data/config/e2e/representative_case.json
+  example: ./examples/representative-e2e.yaml
+  expected_final_inquiry_state: RESOLVED
+  expected_final_visit_status: COMPLETED
+  expected_final_state_version: 14
+  event_sequence:
+    - START_INQUIRY
+    - SUBMIT_SYMPTOM
+    - SUBMIT_ANSWERS
+    - SAFE_GUIDANCE_READY
+    - REQUEST_CONSULTATION
+    - START_CONSULTATION
+    - VISIT_REVIEW_REQUIRED
+    - VISIT_NEEDED
+    - UPDATE_VISIT_SCHEDULE
+    - CONFIRM_VISIT
+    - START_VISIT
+    - VISIT_COMPLETED
+    - SUBMIT_RESOLUTION_FEEDBACK
+    - FINALIZE_INQUIRY

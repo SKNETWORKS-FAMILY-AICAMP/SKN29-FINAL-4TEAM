@@ -1,7 +1,7 @@
 contract:
   name: inquiry-events
-  version: 0.1.0
-  status: draft_for_review
+  version: 1.0.0
+  status: TEAM_APPROVED
   owner: PM_TECHNICAL_INTEGRATION
   source_documents:
   - docs/planning/md/week3-scope-and-dod.md

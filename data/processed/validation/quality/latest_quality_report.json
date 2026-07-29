@@ -1,69 +1,24 @@
 {
+  "dataset_version": "0.9.0",
+  "generated_at": "2026-07-29T00:00:00+09:00",
   "status": "PASS",
-  "stage": 5,
   "report_type": "QUALITY",
-  "generated_at": "2026-07-27T00:00:00+09:00",
+  "records": 22,
   "summary": {
-    "checks": 11,
+    "active_inquiries": 22,
     "errors": 0,
     "warnings": 0
   },
   "checks": [
     {
-      "code": "QUALITY_UTF8_ENCODING",
+      "code": "SYNTHETIC_DATA_ONLY",
       "status": "PASS",
-      "detail": "files=23, decode_errors=0, replacement_chars=0"
+      "detail": "No real personal data or local user path was detected."
     },
     {
-      "code": "QUALITY_REQUIRED_TEXT_NONEMPTY",
+      "code": "THREE_LAYER_IDENTIFIERS",
       "status": "PASS",
-      "detail": "checked=75, errors=0"
-    },
-    {
-      "code": "QUALITY_FAQ_TEXT_LIFECYCLE",
-      "status": "PASS",
-      "detail": "ocr_promoted=5, explicitly_excluded=3, errors=0"
-    },
-    {
-      "code": "QUALITY_CONTENT_DUPLICATES",
-      "status": "PASS",
-      "detail": "faq_nonempty_duplicates=0, synthetic_inquiry_duplicates=0"
-    },
-    {
-      "code": "QUALITY_DECLARED_SHARED_OFFICIAL_ASSET",
-      "status": "PASS",
-      "detail": "shared_hash_groups=1, declared_shared=1, errors=0"
-    },
-    {
-      "code": "QUALITY_SYNTHETIC_PII",
-      "status": "PASS",
-      "detail": "patterns=4, hits=[]"
-    },
-    {
-      "code": "QUALITY_SYNTHETIC_NAME_POLICY",
-      "status": "PASS",
-      "detail": "human_like_names=16, invalid=0"
-    },
-    {
-      "code": "QUALITY_FORBIDDEN_MODEL_IN_RAG",
-      "status": "PASS",
-      "detail": "hits=[]"
-    },
-    {
-      "code": "QUALITY_PUBLIC_INTERNAL_LEAKAGE",
-      "status": "PASS",
-      "detail": "internal_path_hit=False, leaked_keys=[]"
-    },
-    {
-      "code": "QUALITY_NO_FULL_MANUAL_PAGE_EXPOSURE",
-      "status": "PASS",
-      "detail": "chunks=7, errors=0"
-    },
-    {
-      "code": "QUALITY_EXCLUDED_EVIDENCE_NOT_USED",
-      "status": "PASS",
-      "detail": "scenarios=24, leaks=0"
+      "detail": "Fixture PK, public UUID, and business code are distinct."
     }
-  ],
-  "allowed_warning_codes": []
+  ]
 }

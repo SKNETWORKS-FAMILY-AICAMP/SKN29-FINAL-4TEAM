@@ -1,7 +1,7 @@
 contract:
   name: no-evidence-example
-  version: 0.1.0
-  status: draft_for_review
+  version: 1.0.0
+  status: TEAM_APPROVED
   description: 검색은 수행됐지만 사용할 수 있는 공식 근거가 없어 판단을 보류하고 상담으로 전환하는 예시이다.
 representative_data:
   product_model_code: WPUJAC104DWH

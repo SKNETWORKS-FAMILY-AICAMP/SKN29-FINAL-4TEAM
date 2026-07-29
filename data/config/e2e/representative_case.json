@@ -30,13 +30,13 @@
     "FINALIZE_INQUIRY"
   ],
   "expected_counts": {
-    "inquiries": 24,
-    "consultations": 16,
+    "inquiries": 22,
+    "consultations": 12,
     "visits": 4,
     "care_histories": 25,
     "followup_confirmations": 1,
-    "inquiry_status_histories": 123,
-    "audit_events": 123,
+    "inquiry_status_histories": 125,
+    "audit_events": 125,
     "representative_steps": 14
   },
   "document_sections": [

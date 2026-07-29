@@ -131,3 +131,20 @@ QA를 대상으로 한다.
 - 새 업무 규칙을 확정해야 하는 항목을 발견하면 수정하지 않고 이 문서에
   blocker와 영향 범위를 기록한 뒤 사용자에게 보고한다.
 - 기존 미결 항목이 필수 생성 경로를 차단하면 정상 데이터로 임의 변환하지 않는다.
+## 2026-07-29 — ADR 승인 후 T-005 데이터 projection 재개·완료
+
+2026-07-28의 중단 사유는 ADR 0010·0011과 T-005 Physical Contract v1.2가 기준으로 추가되면서 데이터 영역에서 해소됐다. 다만 Backend Model·Migration·Service가 완료됐다는 의미는 아니다.
+
+- `idempotency_key`는 상태이력 UNIQUE가 아니라 요청과 이력을 연결하는 추적값으로 반영했다.
+- 한 요청이 Inquiry와 Visit을 함께 바꾸면 두 Aggregate의 이력을 별도 생성하고 같은 `idempotency_key`, `correlation_id`를 공유한다.
+- 중복 차단은 대상별 연속 `state_version`으로 검증한다.
+- 범용 `target_id` 없이 `questionnaire_session_id`, `inquiry_id`, `consultation_id`, `visit_id` 중 하나만 설정한다.
+- Fixture 식별자는 정수 local PK, Public UUID, `DEMO-*`·`SYN-*` 업무 코드의 3계층으로 분리했다.
+- 원본 24개는 보존하고 012·016을 제외한 22개만 활성 projection으로 생성한다.
+- CustomerProfile fixture와 Backend import crosswalk를 추가했으며 fixture PK 직접 주입을 금지했다.
+- Care의 미확정 코드는 `BLOCKED_OWNER_CONFIRMATION`으로 유지하고 직접 load 후보에서 제외했다.
+- API 멱등성 expected data는 내부 Guard 코드와 Public API 409 코드를 분리했다.
+
+현재 데이터 기준은 Inquiry 22건, Consultation 12건, Visit 4건, 통합 상태이력 125건, Audit 125건, subset 33건이다. 상세 QA 리포트와 manifest는 파이프라인이 실데이터에서 재생성한다.
+
+상태는 데이터 QA `PASS`까지만 기록한다. `service_contracts_used=false`, Service mapping pending, 비-`DB_VERIFIED` 상태를 유지하며 Backend import 실증은 Backend 담당자의 후속 범위다.
