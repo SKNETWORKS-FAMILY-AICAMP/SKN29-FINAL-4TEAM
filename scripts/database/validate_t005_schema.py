@@ -320,6 +320,11 @@ EXPECTED_ACTIVE_CONTRACTS = {
     "active_decision_register": "t005_decision_register_v0.3.json",
     "active_physical_contract": "t005_physical_contract_v1.2.json",
 }
+EXPECTED_HASH_POLICY = {
+    "algorithm": "SHA-256",
+    "text_line_endings": "LF",
+    "binary": "raw-bytes",
+}
 EXPECTED_STATUS_HISTORY_CHECKS = {
     "ck_status_history_exactly_one_target": (
         "num_nonnulls(questionnaire_session_id, inquiry_id, "
@@ -342,12 +347,24 @@ EXPECTED_STATUS_HISTORY_CHECKS = {
 }
 
 
+TEXT_ARTIFACT_SUFFIXES = {
+    ".json",
+    ".md",
+    ".mmd",
+    ".sql",
+    ".yaml",
+    ".yml",
+}
+
+
+def sha256_content(content: bytes, suffix: str) -> str:
+    if suffix.lower() in TEXT_ARTIFACT_SUFFIXES:
+        content = content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(content).hexdigest().upper()
+
+
 def sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest().upper()
+    return sha256_content(path.read_bytes(), path.suffix)
 
 
 def table_columns(
@@ -794,6 +811,23 @@ def audit_snapshot(
                 "id": "T005_ACTIVE_CONTRACT_POINTER_MISMATCH",
                 "message": json.dumps(
                     active_contract_alignment,
+                    ensure_ascii=False,
+                ),
+            }
+        )
+
+    actual_hash_policy = manifest.get("hash_policy")
+    hash_policy_alignment = {
+        "expected": EXPECTED_HASH_POLICY,
+        "actual": actual_hash_policy,
+        "matches": actual_hash_policy == EXPECTED_HASH_POLICY,
+    }
+    if not hash_policy_alignment["matches"]:
+        errors.append(
+            {
+                "id": "T005_HASH_POLICY_MISMATCH",
+                "message": json.dumps(
+                    hash_policy_alignment,
                     ensure_ascii=False,
                 ),
             }
@@ -1281,6 +1315,7 @@ def audit_snapshot(
         "coverage": coverage,
         "logical_contract_checks": logical_contract_checks,
         "active_contract_alignment": active_contract_alignment,
+        "hash_policy_alignment": hash_policy_alignment,
         "decision_alignment": decision_alignment,
         "decision_register": decision_register_check,
         "owner_baseline": owner_baseline,
