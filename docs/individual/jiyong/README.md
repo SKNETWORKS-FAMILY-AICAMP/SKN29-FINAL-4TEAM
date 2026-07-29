@@ -68,7 +68,7 @@ WBS 목적은 유지하되, 현재 순서와 상태는 v0.5 및 실제 검증 �
 | DB 공통 | [DB 스키마 개발·인계 가이드](<technical/backend/database_schema_handover_guide.md>) | Model·Migration·Seed의 Wave별 구현 절차 |
 | DB↔AI | [T-005/T-006 정합성 검토](<technical/contracts/t-005-t-006-alignment-review.md>) | 확정 DB 계약과 남은 AI Schema 차이 |
 | T-022 | [문의 관리 현재 준비도](<technical/backend/t-022-inquiry-readiness.md>) | 구현된 것과 미구현 Runtime 범위 |
-| T-023 | [Workflow 현재 준비도](<technical/backend/t-023-workflow-readiness.md>) | PM 입력과 Backend 구현 경계 |
+| T-023 | [Workflow 착수 전 스냅샷](<technical/backend/t-023-workflow-readiness.md>) | 2026-07-27 역사 기록. 현재 상태는 API Runtime 상태표와 팀 인계 문서를 참조 |
 
 ## 공용 기준 문서
 

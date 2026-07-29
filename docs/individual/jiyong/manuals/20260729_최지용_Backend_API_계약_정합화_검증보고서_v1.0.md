@@ -24,8 +24,9 @@
 
 이번 작업에서는 Method·Path·`operationId`, Public UUID 의미,
 `Idempotency-Key`, State Version, Token 정책과 PM State 전이를
-변경하지 않았다. `contracts/state-machine/**`, `data/**`, `web/**`,
-`mobile/**`, `ai/**`도 수정하지 않았다.
+변경하지 않았다. Backend 작업에서 `contracts/state-machine/**`,
+`data/**`, `web/**`, `mobile/**`, `ai/**`를 직접 수정하지 않았으며,
+최신 `main` 통합 때 해당 주담당자 변경을 원본 그대로 반영했다.
 
 ## 2. 순차 작업과 즉시 검증
 
@@ -115,6 +116,41 @@ Token은 실제 JWT가 아닌 `NOT_FOR_AUTHENTICATION` Placeholder만
 - 미구현 API·No-Body Health 예시 부재
 
 - [JSON 예시 계약 테스트](../../../../backend/tests/api/test_runtime_examples_contract.py)
+
+### 2.4 최신 `main`의 PM State 승인 입력 반영
+
+작업 중 `origin/main`이
+`e34369ac7fff7f33bd6a13aa30d9130152bd88ad`로 갱신돼, 별도 깨끗한
+Worktree에서 충돌 없는 통합과 회귀를 먼저 확인한 뒤 `jiyong`에
+Fast-forward했다. PM·Data 주관 파일은 Backend에서 재작성하지 않았다.
+
+통합된 State Machine 계약은 다음과 같다.
+
+- 계약 버전·상태: `v1.0.0 TEAM_APPROVED`
+- 상태 13·이벤트 30·전이 34·Guard 39·외부 Action 23
+- 대표 E2E 단계 14
+- 공식 Validator: Exit code `0`
+
+따라서 준비도 감사의
+`PM_STATE_MACHINE_CONTRACT_REVIEW_PENDING`은 해소됐다. 다만
+Workflow OpenAPI Operation의 `x-contract-status`는 현재
+`CONFIRMED`이므로 `WORKFLOW_API_CONTRACT_REVIEW_PENDING`, 실행하지
+않은 Runtime·PostgreSQL 검증, Backend 검토 증거는 서로 독립된
+후속 Gate로 유지한다. PM 계약 승인만으로 전체 Workflow Runtime
+완료라고 판정하지 않는다.
+
+### 2.5 최신 `main` 통합 회귀 2건의 순차 보정
+
+최신 `main` 통합 직후 전체 Backend 회귀에서 2건이 실패했다.
+
+| 회귀 | 원인 | 보정 | 집중 검증 |
+|---|---|---|---|
+| Auth `access_expires_in`이 간헐적으로 3599 | SimpleJWT가 Refresh 생성 시각으로 Access `exp`를 만들고 Access `iat`는 다음 초에 만들 수 있음 | Access `iat`를 같은 Token Pair의 Refresh 생성 시각으로 맞춰 JWT와 응답을 모두 3600초로 고정 | Auth API·계약 `21 passed` |
+| T-023 준비도 테스트가 PM 계약 미승인을 기대 | 테스트가 `draft_for_review` 시점의 오래된 기대값을 유지 | 실제 `TEAM_APPROVED` 입력을 기대하고 PM State 검토 Blocker 부재를 검증 | 준비도 `16 passed`, 공식 State Validator 통과 |
+
+Auth 테스트는 `00.900초 → 01.100초` 경계를 강제로 재현해
+응답의 `access_expires_in`과 JWT의 `exp - iat`가 모두 3600인지
+검사한다. 단순히 기대 범위를 3599~3600으로 완화하지 않았다.
 
 ## 3. 최종 회귀 결과
 

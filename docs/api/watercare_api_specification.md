@@ -1153,9 +1153,9 @@ projection에서는 내부 메모와 불필요한 개인정보를 제외한다.
 `CANCELLED`.
 
 PM State 계약에는 13개 상태, 30개 이벤트, 34개 전이, 39개 Guard,
-5개 역할과 상태별 `allowed_actions`가 `draft_for_review` 상태로
-채워져 있다. 계약 내용 존재와 Backend Engine·Model·API Runtime
-구현 완료는 별도 판정한다.
+5개 역할과 상태별 `allowed_actions`가 `v1.0.0 TEAM_APPROVED`로
+채택돼 있다. 계약 채택과 Backend Engine·Model·API Runtime 구현
+완료는 별도 판정한다.
 
 문의, 문진, 상담, 방문과 후속 확인은 별도 원장과 별도 version으로
 관리한다. 하나의 transaction에서 둘 이상의 원장을 변경하면 각각의
@@ -1213,7 +1213,8 @@ Backend 저장 Model·보존 기간·Runtime 테스트가 끝나기 전에는 �
 - State 업무 규칙의 입력 원본은
   [`contracts/state-machine/**`](../../contracts/state-machine/README.md)다.
   현재 13개 상태, 30개 이벤트, 34개 전이, 39개 Guard, 5개 역할과
-  23개 행동 카탈로그가 존재하며 계약 상태는 `draft_for_review`다.
+  23개 행동 카탈로그가 존재하며 계약 상태는
+  `v1.0.0 TEAM_APPROVED`다.
 - AI 입출력 Schema의 입력 원본은
   [`contracts/ai/**`](../../contracts/ai/README.md)다.
   증상 분석 Request·Response와 사용 안내·안전 평가 Schema는 채워져
