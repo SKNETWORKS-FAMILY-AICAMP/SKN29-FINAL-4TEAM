@@ -71,7 +71,7 @@
       ],
       "commands": [
         "python -B data/tools/pipeline.py handoff rag",
-        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-27T00:00:00+09:00"
+        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-29T00:00:00+09:00"
       ]
     },
     "db-smoke": {
@@ -82,6 +82,10 @@
         {
           "path": "synthetic/fixtures/users.json",
           "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/customer_profiles.json",
+          "role": "LOAD_AFTER_LOOKUP_MAPPING"
         },
         {
           "path": "synthetic/fixtures/products.json",
@@ -109,7 +113,15 @@
         },
         {
           "path": "synthetic/fixtures/care_histories.json",
-          "role": "LOAD_FILTERED"
+          "role": "EXCLUDE_BLOCKED_OWNER_CONFIRMATION"
+        },
+        {
+          "path": "config/handoff/backend_import_crosswalk.json",
+          "role": "MAPPING_NOT_DB_VERIFIED"
+        },
+        {
+          "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
+          "role": "SCHEMA"
         },
         {
           "path": "schemas/synthetic/syntheticUser.schema.json",
@@ -146,13 +158,17 @@
       ]
     },
     "db-full": {
-      "purpose": "전체 24개 문의의 데이터 품질·관계 검증",
+      "purpose": "원본 24개 중 차단 2개를 제외한 활성 projection 22개의 데이터 품질·관계 검증",
       "readiness": "QA_READY_SERVICE_MAPPING_PENDING",
       "contract_dependency": "SERVICE_MAPPING_PENDING",
       "items": [
         {
           "path": "synthetic/fixtures/users.json",
           "role": "LOAD"
+        },
+        {
+          "path": "synthetic/fixtures/customer_profiles.json",
+          "role": "LOAD_AFTER_LOOKUP_MAPPING"
         },
         {
           "path": "synthetic/fixtures/products.json",
@@ -180,7 +196,15 @@
         },
         {
           "path": "synthetic/fixtures/care_histories.json",
-          "role": "LOAD"
+          "role": "EXCLUDE_BLOCKED_OWNER_CONFIRMATION"
+        },
+        {
+          "path": "config/handoff/backend_import_crosswalk.json",
+          "role": "MAPPING_NOT_DB_VERIFIED"
+        },
+        {
+          "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
+          "role": "SCHEMA"
         },
         {
           "path": "synthetic/fixtures/followup_confirmations.json",
@@ -201,17 +225,29 @@
         {
           "path": "synthetic/expected/safety_assessments.json",
           "role": "QA_EXPECTED"
+        },
+        {
+          "path": "synthetic/expected/api_idempotency_cases.json",
+          "role": "QA_EXPECTED"
+        },
+        {
+          "path": "synthetic/expected/contract_alignment_registry.json",
+          "role": "QA_EXPECTED"
         }
       ],
       "selection": {
-        "scenario_count": 24
+        "scenario_count": 22,
+        "excluded_scenario_ids": [
+          "SYN-JAC104-012",
+          "SYN-JAC104-016"
+        ]
       },
       "excluded": [
         "계약 담당자 확인 전 상태·이벤트 자동 매핑"
       ],
       "commands": [
         "python -B data/tools/pipeline.py handoff db-full",
-        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-27T00:00:00+09:00"
+        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-29T00:00:00+09:00"
       ]
     },
     "qa": {
@@ -236,6 +272,14 @@
           "role": "DETAIL"
         },
         {
+          "path": "processed/validation/business/latest_business_rules_report.json",
+          "role": "DETAIL"
+        },
+        {
+          "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
+          "role": "DETAIL"
+        },
+        {
           "path": "processed/metadata/dataset_manifest.json",
           "role": "MANIFEST"
         },
@@ -255,7 +299,7 @@
       ],
       "commands": [
         "python -B data/tools/pipeline.py handoff qa",
-        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-27T00:00:00+09:00"
+        "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-29T00:00:00+09:00"
       ]
     }
   }

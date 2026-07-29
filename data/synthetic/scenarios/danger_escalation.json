@@ -4,26 +4,26 @@
     "family": "LEAK",
     "variant": "CLEAR",
     "title": "제품 아래 물 고임",
-    "inquiry_id": "8e2e2561-613b-5911-9318-b651f0787a90",
     "workflow_kind": "DANGER_ESCALATION",
-    "expected_outcome": "CONSULTATION_REQUIRED"
+    "expected_outcome": "CONSULTATION_REQUIRED",
+    "inquiry_public_id": "8e2e2561-613b-5911-9318-b651f0787a90"
   },
   {
     "scenario_id": "SYN-JAC104-006",
     "family": "INSTANT_HOT_WATER_SAFETY",
     "variant": "CLEAR",
     "title": "순간온수 모듈 점검 표시",
-    "inquiry_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60",
     "workflow_kind": "DANGER_ESCALATION",
-    "expected_outcome": "CONSULTATION_REQUIRED"
+    "expected_outcome": "CONSULTATION_REQUIRED",
+    "inquiry_public_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60"
   },
   {
     "scenario_id": "SYN-JAC104-013",
     "family": "LEAK",
     "variant": "AMBIGUOUS",
     "title": "연결부의 지속적인 물방울",
-    "inquiry_id": "205850d3-763c-5256-9d39-82da21be0c31",
     "workflow_kind": "DANGER_ESCALATION",
-    "expected_outcome": "CONSULTATION_IN_PROGRESS"
+    "expected_outcome": "CONSULTATION_IN_PROGRESS",
+    "inquiry_public_id": "205850d3-763c-5256-9d39-82da21be0c31"
   }
 ]

@@ -1,7 +1,7 @@
 contract:
   name: consultation-resolution-example
-  version: 0.1.0
-  status: draft_for_review
+  version: 1.0.0
+  status: TEAM_APPROVED
   description: 상담 처리 후 방문이 불필요하다고 판단하고 고객 확인을 거쳐 완료하는 대표 예시이다.
 representative_data:
   product_model_code: WPUJAC104DWH

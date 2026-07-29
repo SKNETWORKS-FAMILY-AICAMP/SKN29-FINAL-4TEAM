@@ -1,16 +1,9 @@
-version: 0.8.0
+version: 0.9.0
 fields:
   data_classification:
     type: string
     allowed: [official, team_designed, synthetic]
-    description: 데이터의 사실 출처 분류
-  exact_sales_code:
-    type: string
-    description: 하이픈 없는 정확 판매 코드
-  product_generation:
-    type: string
-    allowed: [D]
-    description: JAC104 세대 구분
+    description: 데이터의 출처 분류
   risk_level:
     type: string
     allowed: [general, caution, danger]
@@ -19,67 +12,52 @@ fields:
     type: string
     allowed: [NORMAL, PARTIAL_STOP, TOTAL_STOP, PENDING_CONSULTATION]
     description: 증상별 제품 사용 안내
-  applicability:
+  inquiry_status:
     type: string
-    description: 정확 모델 또는 FAQ의 모델 적용 가능성
-  allowed_use:
+    allowed: [DRAFT, QUESTIONNAIRE_IN_PROGRESS, AI_GUIDANCE, CONSULTATION_REQUIRED, CONSULTATION_IN_PROGRESS, VISIT_REVIEW_PENDING, VISIT_SCHEDULING, VISIT_SCHEDULED, COMPLETION_PENDING, REVISIT_REQUIRED, REOPENED, RESOLVED, CANCELLED]
+    description: Inquiry 상태 집합
+  visit_status:
     type: string
-    allowed: [MVP, CONDITIONAL_SUPPORT, CANDIDATE_ONLY, EXCLUDED]
-    description: 검색·보조·후보·제외 사용 정책
-  rag_policy:
+    allowed: [ASSIGNING, SCHEDULING, CONFIRMED, IN_PROGRESS, COMPLETED, FOLLOW_UP_REQUIRED, CANCELLED]
+    description: Visit 상태 집합
+  id:
+    type: integer
+    description: Fixture 내부 관계에만 사용하는 local PK
+  public_id:
+    type: uuid
+    description: Public API에서 사용하는 외부 식별자
+  business_code:
     type: string
-    description: 벡터 검색 포함 또는 차단 정책
+    pattern: "^(DEMO|SYN)-"
+    description: 사람이 확인하는 업무 코드이며 DB FK나 Public API ID로 사용하지 않음
+  state_version:
+    type: integer
+    description: 대상 Aggregate별 연속 상태 변경 버전이며 중복 차단 기준
+  target_type_code:
+    type: string
+    allowed: [QUESTIONNAIRE, INQUIRY, CONSULTATION, VISIT]
+    description: 상태이력 대상 유형이며 설정된 대상별 FK와 반드시 일치
+  target_foreign_key:
+    type: integer
+    allowed_fields: [questionnaire_session_id, inquiry_id, consultation_id, visit_id]
+    description: 네 대상 FK 중 정확히 하나만 설정
+  idempotency_key:
+    type: string
+    description: 요청과 상태이력을 연결하는 추적값이며 상태이력에서 UNIQUE가 아님
+  internal_conflict_code:
+    type: string
+    allowed: [IDEMPOTENCY_KEY_REUSE_CONFLICT]
+    description: 상태 계약 내부 Guard 충돌 코드
+  expected_api_error_code:
+    type: string
+    allowed: [DUPLICATE-EVENT-01]
+    description: Public API 409 응답에서 기대하는 외부 오류 코드
   source_file_sha256:
     type: string
-    pattern: "^[A-F0-9]{{64}}$"
+    pattern: "^[A-F0-9]{64}$"
     description: 원본 파일의 SHA-256
-  verification_status:
-    type: string
-    description: 텍스트·시각·모델·사용자 검수 단계
-  text_status:
-    type: string
-    allowed: [PUBLISHER_TEXT, OCR_VERIFIED, NOT_TRANSCRIBED]
-    description: FAQ 정규화 본문의 확보·검수 상태
-  retrieval_scope:
-    type: string
-    allowed: [CONDITIONAL_REFERENCE_ONLY, EXCLUDED]
-    description: FAQ 일반 검색·참조 허용 범위
-  asset_id:
-    type: string
-    description: SHA-256 기반 공식 이미지 자산 식별자
   generated_at:
     type: datetime
     format: ISO-8601
     timezone: Asia/Seoul
     description: 결정적 산출물 생성 기준 시각
-  inquiry_status:
-    type: string
-    allowed: [DRAFT, QUESTIONNAIRE_IN_PROGRESS, AI_GUIDANCE, CONSULTATION_REQUIRED, CONSULTATION_IN_PROGRESS, VISIT_REVIEW_PENDING, VISIT_SCHEDULING, VISIT_SCHEDULED, COMPLETION_PENDING, REVISIT_REQUIRED, REOPENED, RESOLVED, CANCELLED]
-    description: 최신 API·테이블 계약의 문의 canonical 상태
-  visit_status:
-    type: string
-    allowed: [ASSIGNING, SCHEDULING, CONFIRMED, IN_PROGRESS, COMPLETED, FOLLOW_UP_REQUIRED, CANCELLED]
-    description: 문의 상태와 독립적으로 관리하는 방문 canonical 상태
-  state_version:
-    type: integer
-    description: 낙관적 락과 상태 변경 순서
-  care_type:
-    type: string
-    allowed: [REGULAR_INSPECTION, FILTER_REPLACEMENT, VISIT_SERVICE]
-    description: 정기 관리·필터 교체·방문 조치를 구분하는 관리 이력 유형
-  care_result:
-    type: string
-    allowed: [NORMAL, FILTER_REPLACED, ISSUE_RESOLVED]
-    description: 관리 이력의 수행 결과
-  followup_channel_code:
-    type: string
-    allowed: [APP, WEB, PHONE]
-    description: 고객 후속확인을 요청하고 응답받은 채널
-  resolution_status_code:
-    type: string
-    allowed: [PENDING, RESOLVED, UNRESOLVED, REOPENED]
-    description: 방문·상담 후 고객이 확인한 해결 상태
-  followup_next_action:
-    type: string
-    allowed: [FINALIZE_INQUIRY, RESUME_CONSULTATION, NONE]
-    description: 후속확인 결과에 따른 다음 업무 처리

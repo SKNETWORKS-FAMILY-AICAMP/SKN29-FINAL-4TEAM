@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "required": [
     "scenario_id",
-    "inquiry_id",
+    "inquiry_public_id",
     "handoff_type",
     "from_role",
     "to_role",
@@ -19,7 +19,7 @@
       "minLength": 1,
       "pattern": "^SYN-JAC104-\\d{3}$"
     },
-    "inquiry_id": {
+    "inquiry_public_id": {
       "type": "string",
       "minLength": 1,
       "format": "uuid"

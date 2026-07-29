@@ -20,8 +20,8 @@
     "WPUJAC104S family",
     "model-unverified common FAQ"
   ],
-  "dataset_version": "0.8.0",
-  "generated_at": "2026-07-27T00:00:00+09:00",
+  "dataset_version": "0.9.0",
+  "generated_at": "2026-07-29T00:00:00+09:00",
   "files": [
     {
       "path": "processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
@@ -32,19 +32,19 @@
     {
       "path": "processed/documents/faq/faq_snapshot_normalized.jsonl",
       "records": 119,
-      "sha256": "FF69800A58A354128E55D6BD4D4675B756EC8A6B8750A228B6A5787388DD780B",
+      "sha256": "E2040220C22F26042F1662029FA45776A7261336956DF6D8C7102485A27F41F4",
       "schema": "schemas/processed/faqNormalized.schema.json"
     },
     {
       "path": "processed/documents/faq/faq_ocr_verified.jsonl",
       "records": 5,
-      "sha256": "E5A2DEC934AFA32A1DB9EC0036FDEB9A25307D4D25593009686A77555310348E",
+      "sha256": "AD4B8EA45E0D7B03A50530BBE666CAED227CD58BBBE84996B1645ABC1080FD98",
       "schema": "schemas/processed/faqOcrVerified.schema.json"
     },
     {
       "path": "processed/structured/assets/official_faq_assets.jsonl",
       "records": 10,
-      "sha256": "CA64EBF5F4F8948D1113828EB13E3358447EDD2B539AFAB2EC35597BA53CDE00",
+      "sha256": "599F4E14F135D7D101D1B3BEBE61A62D1D72EFF17ECA72C128A569B6A36F04EC",
       "schema": "schemas/processed/officialAsset.schema.json"
     },
     {
@@ -62,152 +62,170 @@
     {
       "path": "processed/structured/rag/mvp/rag_verified_sample.jsonl",
       "records": 7,
-      "sha256": "BF50C87FC7652546460FFC9927BB7B37BA341DF734F994CFDFD7A96FE7BE7A26",
+      "sha256": "2BF3582E42A309D846BC383BE9C3E08874512318DD4046082498DBFBC8584DD0",
       "schema": "schemas/processed/ragChunk.schema.json"
     },
     {
       "path": "processed/structured/evidence/jac104_evidence_registry.jsonl",
       "records": 9,
-      "sha256": "32EFD1AB081048DAB3B06C6EA264E79DC12208E56DFA1598C74E812B44584E58",
+      "sha256": "483D82DC9F199C9EEAC373508461288F3558C9AC9D8D1AB433D26540CA680145",
       "schema": "schemas/processed/evidenceRegistry.schema.json"
     },
     {
       "path": "synthetic/fixtures/users.json",
       "records": 16,
-      "sha256": "C6C27659F4F0865C3A8A571CAA935340DF2B304DE35BFC69B009BD8B7C43A437",
+      "sha256": "C450F72529C3A288E8175B3FDDD504C16EA7BCBB93FBABBA03AE78342A971FC0",
       "schema": "schemas/synthetic/syntheticUser.schema.json"
     },
     {
       "path": "synthetic/fixtures/products.json",
       "records": 1,
-      "sha256": "E6FBF4ED6E6CF7EBEC940512DC332F8DE3E2CA51DC4A8B357182478BF8D8EEFF",
+      "sha256": "EA4D3F710A72AF64B41318F4662F296AD74D977AE1B488418E144E7E622B9E4F",
       "schema": "schemas/synthetic/syntheticProduct.schema.json"
     },
     {
       "path": "synthetic/fixtures/customer_products.json",
       "records": 12,
-      "sha256": "32B65E7BBA403D0A8A15C964180F290B50FCD5F5A9F98406EF2CE61CA6F86F4D",
+      "sha256": "83FF8FF825380AF9ECA07C952655D2096CCB8F33B1D33B264547B207E65AFCE3",
       "schema": "schemas/synthetic/syntheticCustomerProduct.schema.json"
     },
     {
       "path": "synthetic/fixtures/subscriptions.json",
       "records": 12,
-      "sha256": "172FBBA141E48051280002BF688696B6454C210DB6EEA3BFC3C29212EA5D03DE",
+      "sha256": "2667B19F662FFAAC1A473E263E35C28642E360ACEBA07FF55563CB24759DC77F",
       "schema": "schemas/synthetic/syntheticSubscription.schema.json"
     },
     {
       "path": "synthetic/fixtures/inquiries.json",
-      "records": 24,
-      "sha256": "7412F70DC2D1099C44C9076801E31C3857678D6F9F64831F7D68E543CBFC1CF2",
+      "records": 22,
+      "sha256": "4F43D4EDC7ECFEA682728C77E3A79740AA62AD6BB411D2170FD13371596B6CC5",
       "schema": "schemas/synthetic/syntheticInquiry.schema.json"
     },
     {
       "path": "synthetic/fixtures/consultations.json",
-      "records": 16,
-      "sha256": "DF37E0B841F33C8E3A04CE50508ADF44A47F226472D9AA7BF06B76C3A4AC92D3",
+      "records": 12,
+      "sha256": "0DA954EF7615A10385145CD583B3B3C7B2D4FBB3D4C65E67BC8618B2D102E7EB",
       "schema": "schemas/synthetic/syntheticConsultation.schema.json"
     },
     {
       "path": "synthetic/fixtures/visits.json",
-      "records": 5,
-      "sha256": "374BEFAD9967F2CBCA65FBE450A735E86CCA4C323FE702F4D2AA14C4C160ABF6",
+      "records": 4,
+      "sha256": "1D4892E06A9CE189DC984516A5894DCC8B93509EE2D07087C61A762BE33E6F00",
       "schema": "schemas/synthetic/syntheticVisit.schema.json"
     },
     {
       "path": "synthetic/fixtures/care_histories.json",
       "records": 25,
-      "sha256": "F1B45969F6670DE210A623D1C85B10827E51AFD2E2AC78A797806D0655F54C21",
+      "sha256": "643C0E160E25E07E81C7C1406F90D877EE24080FAC1A597B3D78221F89EB0470",
       "schema": "schemas/synthetic/syntheticCareHistory.schema.json"
     },
     {
       "path": "synthetic/fixtures/followup_confirmations.json",
       "records": 1,
-      "sha256": "24B6DC5232CB86D8EAECBCCE2733B4A1F45BE701A04A5C181BAFAFABC7B57A72",
+      "sha256": "5172FEF53B6AB4F2DC292F15B96F68DB801C7247C79A3C5D3720475C0594703A",
       "schema": "schemas/synthetic/syntheticFollowupConfirmation.schema.json"
     },
     {
       "path": "synthetic/fixtures/inquiry_status_histories.json",
-      "records": 115,
-      "sha256": "7A72C193FD04CCA10AF0F3B06A142CE1B4DFE80F54FE86850F85E10416160799",
+      "records": 125,
+      "sha256": "26E49C6E468AAEF5E1FD18340E9A7B0DF58E290ADA61075749511FB71DA7D7AF",
       "schema": "schemas/synthetic/syntheticInquiryStatusHistory.schema.json"
     },
     {
       "path": "synthetic/fixtures/audit_events.json",
-      "records": 115,
-      "sha256": "3EDBBBA49906C5D2CA0764765341EC59D0999884BE5F12D43ECAF075C451735F",
+      "records": 125,
+      "sha256": "2B9A586B14B0F44E9A30A458D6E152B87F6161D3D7367AEEA46BFD3208A90FFD",
       "schema": "schemas/synthetic/syntheticAuditEvent.schema.json"
     },
     {
       "path": "synthetic/expected/workflow_states.json",
-      "records": 24,
-      "sha256": "556AB90C232FC74E251F3B23985B1B802DEB3B7D63CA50CBB1BFB3F4D347195D",
+      "records": 22,
+      "sha256": "83FBB87DC99C94E936F20000123291284B2DB6DA26E99AFA932F8EB4D98AFFD6",
       "schema": "schemas/synthetic/expectedWorkflow.schema.json"
     },
     {
       "path": "synthetic/expected/evidence_references.json",
-      "records": 24,
-      "sha256": "EC52FB1FE15BA5F06773CE56C32A777A19E45DC725B75770496EC63C9F8C4BF6",
+      "records": 22,
+      "sha256": "7AC08424EA4A9613A46B86941F26857333AEB8976CFA9C698411CEE4C8A94E6C",
       "schema": "schemas/synthetic/expectedEvidence.schema.json"
     },
     {
       "path": "synthetic/expected/safety_assessments.json",
-      "records": 24,
-      "sha256": "C6E0671D67CB5B5A7441A7F73E62AF71A814E2565FFDFD94151763DA28633511",
+      "records": 22,
+      "sha256": "56847D276BA99D82AE768D33C349431E28428D0E7FF0213965A72CD680F97055",
       "schema": "schemas/synthetic/expectedSafety.schema.json"
     },
     {
       "path": "synthetic/expected/role_handoffs.json",
-      "records": 24,
-      "sha256": "FAB6A97C77AFB2A6520E3A70AC34A9B2AE342769226F30A9BAE26594A1961FEA",
+      "records": 22,
+      "sha256": "1A506DFB39CBD80A9E8FA35DDB29CE94BC3F011C08CE53154C43EDB820A5D608",
       "schema": "schemas/synthetic/expectedHandoff.schema.json"
     },
     {
       "path": "synthetic/scenarios/demo_scenarios.json",
       "records": 24,
-      "sha256": "D9C2956C97B5FFDC488A9FA1A70C2A2AE26D9594236137F1B044E4445F57C1B1",
+      "sha256": "8BA340BCEE576DCC57AF647515C8CEFD356CF524D525DAC69526E2801FFBB49E",
       "schema": "schemas/synthetic/demoScenario.schema.json"
     },
     {
       "path": "synthetic/scenarios/self_resolution.json",
       "records": 5,
-      "sha256": "78EF0F9189055BF9383511D8504A799506864A99587BAB6DB82EFB8C31B35104",
+      "sha256": "6A102CC331CC0AEF88C221A5B975F5DDAF99E466979948323CB3AA621F851FBD",
       "schema": "schemas/synthetic/scenarioSubsetItem.schema.json"
     },
     {
       "path": "synthetic/scenarios/information_collection.json",
       "records": 5,
-      "sha256": "BC79995FAEB2F856F96F1B0BE34EA85042CD6C0AC0FB3272029B6B8528AD5815",
+      "sha256": "5BF5EBF92799B230AA2F670B4B5B2BD1E5C7A135F4125B2020AAB4D4C9F2D1A3",
       "schema": "schemas/synthetic/scenarioSubsetItem.schema.json"
     },
     {
       "path": "synthetic/scenarios/consultation_handoff.json",
-      "records": 14,
-      "sha256": "774CF87235E5A0B5E4EEDF448DA1BF3034D009A8F76E83A861594E3FFE81B18C",
+      "records": 12,
+      "sha256": "6C8FE648EA5523797F86D735027230821D27B8E86B3000D34B0C73EFFD350B10",
       "schema": "schemas/synthetic/scenarioSubsetItem.schema.json"
     },
     {
       "path": "synthetic/scenarios/visit_handoff.json",
       "records": 5,
-      "sha256": "CB8E43AB841CA14672AD8AD5DB374BD9F8F66B66E12E2A367DE00682BEF99144",
+      "sha256": "E0A323E4A02ADFBE33CBB438E2E14E0A678A7F5B4EDB27818C8DA5B9B6A6A312",
       "schema": "schemas/synthetic/scenarioSubsetItem.schema.json"
     },
     {
       "path": "synthetic/scenarios/danger_escalation.json",
       "records": 3,
-      "sha256": "092EBA863667EF262BA1D824BE868B4C2DE1FA2FB135859BED49ADD76B95167D",
+      "sha256": "8E7DED72AA81D859C2B08EBC4A5ADB71A6B50C949DB23B6FE2F1200457101711",
       "schema": "schemas/synthetic/scenarioSubsetItem.schema.json"
     },
     {
       "path": "synthetic/scenarios/no_evidence_fallback.json",
       "records": 3,
-      "sha256": "6701E361905F9B233789C0B6B3FC179CB85D542414C50C781786C80AA6BB8B09",
+      "sha256": "2CA9198B6A68F41B537CC2030A4D0197522DCC9AF910FB4D3507403AD3B9C2D1",
       "schema": "schemas/synthetic/scenarioSubsetItem.schema.json"
     },
     {
       "path": "synthetic/scenarios/reopened_inquiry.json",
-      "records": 2,
-      "sha256": "EF5090AC9DD88E87B5E093D0E0C7E55310152EE36DB70B03B60D782943EAB890",
+      "records": 0,
+      "sha256": "37517E5F3DC66819F61F5A7BB8ACE1921282415F10551D2DEFA5C3EB0985B570",
       "schema": "schemas/synthetic/scenarioSubsetItem.schema.json"
+    },
+    {
+      "path": "synthetic/expected/contract_alignment_registry.json",
+      "records": 24,
+      "sha256": "56CF00225E391CF1E92BD4114903338AEBD137D92DE36D6C9851D83DAD956261",
+      "schema": "schemas/synthetic/contractAlignmentRegistryItem.schema.json"
+    },
+    {
+      "path": "synthetic/expected/api_idempotency_cases.json",
+      "records": 3,
+      "sha256": "DCA2A7C29EE34BEEB61CEA9B60F580943102C8B7C9310A9A3CA82BA7C310A58E",
+      "schema": "schemas/synthetic/expectedApiIdempotencyCase.schema.json"
+    },
+    {
+      "path": "synthetic/fixtures/customer_profiles.json",
+      "records": 12,
+      "sha256": "5918EC8D52D731402CCDFCC6DAEEF468BCDEFFA850A045CB35EBD5D8A3129CA8",
+      "schema": "schemas/synthetic/syntheticCustomerProfile.schema.json"
     }
   ],
   "counts": {
@@ -221,17 +239,21 @@
     "evidence_registry": 9,
     "synthetic_users": 16,
     "synthetic_customers": 12,
+    "synthetic_customer_profiles": 12,
     "synthetic_customer_products": 12,
     "synthetic_subscriptions": 12,
-    "synthetic_inquiries": 24,
-    "synthetic_consultations": 16,
-    "synthetic_visits": 5,
+    "synthetic_source_scenarios": 24,
+    "synthetic_active_scenarios": 22,
+    "synthetic_inquiries": 22,
+    "synthetic_consultations": 12,
+    "synthetic_visits": 4,
     "synthetic_care_histories": 25,
-    "synthetic_status_histories": 115,
-    "synthetic_audit_events": 115,
+    "synthetic_status_histories": 125,
+    "synthetic_audit_events": 125,
     "synthetic_followup_confirmations": 1,
+    "synthetic_api_idempotency_cases": 3,
     "synthetic_scenario_subset_files": 7,
-    "synthetic_scenario_subset_records": 37
+    "synthetic_scenario_subset_records": 33
   },
   "synthetic_scope": {
     "topic_families": 8,

@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "public_id": "0fedbd89-0d9a-5fd4-9dba-3b1bc803f07d",
+    "customer_profile_number": "SYN-CUSTOMER-001",
+    "user_id": 1,
+    "customer_name": "고서온",
+    "is_synthetic": true,
+    "data_classification": "synthetic",
+    "created_at": "2026-07-29T00:00:00+09:00"
+  },
+  {
+    "id": 2,
+    "public_id": "c9ff824a-0844-58af-94fc-3a64806d4c4b",
+    "customer_profile_number": "SYN-CUSTOMER-002",
+    "user_id": 2,
+    "customer_name": "구하린",
+    "is_synthetic": true,
+    "data_classification": "synthetic",
+    "created_at": "2026-07-29T00:00:00+09:00"
+  },
+  {
+    "id": 3,
+    "public_id": "d929dddb-0d48-52bd-999f-e3ebecf53293",
+    "customer_profile_number": "SYN-CUSTOMER-003",
+    "user_id": 3,
+    "customer_name": "노재온",
+    "is_synthetic": true,
+    "data_classification": "synthetic",
+    "created_at": "2026-07-29T00:00:00+09:00"
+  },
+  {
+    "id": 4,
+    "public_id": "74a1df3a-819b-5802-9e52-105587468683",
+    "customer_profile_number": "SYN-CUSTOMER-004",
+    "user_id": 4,
+    "customer_name": "류다은",
+    "is_synthetic": true,
+    "data_classification": "synthetic",
+    "created_at": "2026-07-29T00:00:00+09:00"
+  },
+  {
+    "id": 5,
+    "public_id": "cc0dc809-6ada-5258-afb0-d812a1a6af90",
+    "customer_profile_number": "SYN-CUSTOMER-005",
+    "user_id": 5,
+    "customer_name": "문하겸",
+    "is_synthetic": true,
+    "data_classification": "synthetic",
+    "created_at": "2026-07-29T00:00:00+09:00"
+  },
+  {
+    "id": 6,
+    "public_id": "9e0abdc2-c00a-57e9-a1b2-998a821ec09f",
+    "customer_profile_number": "SYN-CUSTOMER-006",
+    "user_id": 6,
+    "customer_name": "백서율",
+    "is_synthetic": true,
+    "data_classification": "synthetic",
+    "created_at": "2026-07-29T00:00:00+09:00"
+  },
+  {
+    "id": 7,
+    "public_id": "6382f133-629b-55c3-98c7-9973a084aece",
+    "customer_profile_number": "SYN-CUSTOMER-007",
+    "user_id": 7,
+    "customer_name": "설도윤",
+    "is_synthetic": true,
+    "data_classification": "synthetic",
+    "created_at": "2026-07-29T00:00:00+09:00"
+  },
+  {
+    "id": 8,
+    "public_id": "e5aa9a01-da09-5092-acca-2b1151570609",
+    "customer_profile_number": "SYN-CUSTOMER-008",
+    "user_id": 8,
+    "customer_name": "심나예",
+    "is_synthetic": true,
+    "data_classification": "synthetic",
+    "created_at": "2026-07-29T00:00:00+09:00"
+  },
+  {
+    "id": 9,
+    "public_id": "22a76ff5-4ccc-596b-a055-af63cb4116dc",
+    "customer_profile_number": "SYN-CUSTOMER-009",
+    "user_id": 9,
+    "customer_name": "우하람",
+    "is_synthetic": true,
+    "data_classification": "synthetic",
+    "created_at": "2026-07-29T00:00:00+09:00"
+  },
+  {
+    "id": 10,
+    "public_id": "7c633e0f-0af5-5b39-ad17-9d84bfcfe6f1",
+    "customer_profile_number": "SYN-CUSTOMER-010",
+    "user_id": 10,
+    "customer_name": "위서진",
+    "is_synthetic": true,
+    "data_classification": "synthetic",
+    "created_at": "2026-07-29T00:00:00+09:00"
+  },
+  {
+    "id": 11,
+    "public_id": "e2bc0dfe-369a-5fdb-b442-41e6d37a8b3d",
+    "customer_profile_number": "SYN-CUSTOMER-011",
+    "user_id": 11,
+    "customer_name": "진가온",
+    "is_synthetic": true,
+    "data_classification": "synthetic",
+    "created_at": "2026-07-29T00:00:00+09:00"
+  },
+  {
+    "id": 12,
+    "public_id": "1376e829-9c5d-5056-b3f1-d93eac94b10f",
+    "customer_profile_number": "SYN-CUSTOMER-012",
+    "user_id": 12,
+    "customer_name": "채도현",
+    "is_synthetic": true,
+    "data_classification": "synthetic",
+    "created_at": "2026-07-29T00:00:00+09:00"
+  }
+]

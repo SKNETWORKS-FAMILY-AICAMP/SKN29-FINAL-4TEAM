@@ -50,6 +50,25 @@ class HandoffProfileTests(unittest.TestCase):
         self.assertEqual(6, len(set(selected)))
         self.assertLessEqual(set(selected), available)
 
+    def test_db_profiles_use_crosswalk_and_exclude_unconfirmed_care_load(self) -> None:
+        for profile_name in ("db-smoke", "db-full"):
+            items = {
+                row["path"]: row["role"]
+                for row in self.definitions["profiles"][profile_name]["items"]
+            }
+            self.assertEqual(
+                "MAPPING_NOT_DB_VERIFIED",
+                items["config/handoff/backend_import_crosswalk.json"],
+            )
+            self.assertEqual(
+                "EXCLUDE_BLOCKED_OWNER_CONFIRMATION",
+                items["synthetic/fixtures/care_histories.json"],
+            )
+            self.assertEqual(
+                "LOAD_AFTER_LOOKUP_MAPPING",
+                items["synthetic/fixtures/customer_profiles.json"],
+            )
+
     def test_handoff_manifest_is_deterministic(self) -> None:
         first = build_handoff_manifest(self.config)
         target = self.config.path("handoff_manifest")

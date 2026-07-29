@@ -21,216 +21,216 @@
       "family": "NO_WATER",
       "variant": "AMBIGUOUS",
       "title": "원인 정보가 부족한 무출수",
-      "inquiry_id": "f72a3b18-a4f8-5f5e-8c86-199ffc1d8aa2",
       "workflow_kind": "INFORMATION_COLLECTION",
-      "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS"
+      "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS",
+      "inquiry_public_id": "f72a3b18-a4f8-5f5e-8c86-199ffc1d8aa2"
     },
     {
       "scenario_id": "SYN-JAC104-002",
       "family": "LOW_FLOW",
       "variant": "PERSISTENT_OR_RISK",
       "title": "출수량 저하 대표 E2E",
-      "inquiry_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
       "workflow_kind": "VISIT_HANDOFF",
-      "expected_outcome": "RESOLVED"
+      "expected_outcome": "RESOLVED",
+      "inquiry_public_id": "bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde"
     },
     {
       "scenario_id": "SYN-JAC104-003",
       "family": "COLD_WATER_NOT_COLD",
       "variant": "CLEAR",
       "title": "다량 출수 후 냉수 온도 상승",
-      "inquiry_id": "91a8cf0c-9139-5d17-a6bd-818eb9aa7585",
       "workflow_kind": "SELF_RESOLUTION",
-      "expected_outcome": "RESOLVED"
+      "expected_outcome": "RESOLVED",
+      "inquiry_public_id": "91a8cf0c-9139-5d17-a6bd-818eb9aa7585"
     },
     {
       "scenario_id": "SYN-JAC104-004",
       "family": "LEAK",
       "variant": "CLEAR",
       "title": "제품 아래 물 고임",
-      "inquiry_id": "8e2e2561-613b-5911-9318-b651f0787a90",
       "workflow_kind": "DANGER_ESCALATION",
-      "expected_outcome": "CONSULTATION_REQUIRED"
+      "expected_outcome": "CONSULTATION_REQUIRED",
+      "inquiry_public_id": "8e2e2561-613b-5911-9318-b651f0787a90"
     },
     {
       "scenario_id": "SYN-JAC104-005",
       "family": "TASTE_ODOR",
       "variant": "CLEAR",
       "title": "단기 부재 후 물 냄새",
-      "inquiry_id": "40b6d3d1-8626-511c-92d3-982699a42f63",
       "workflow_kind": "SELF_RESOLUTION",
-      "expected_outcome": "RESOLVED"
+      "expected_outcome": "RESOLVED",
+      "inquiry_public_id": "40b6d3d1-8626-511c-92d3-982699a42f63"
     },
     {
       "scenario_id": "SYN-JAC104-006",
       "family": "INSTANT_HOT_WATER_SAFETY",
       "variant": "CLEAR",
       "title": "순간온수 모듈 점검 표시",
-      "inquiry_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60",
       "workflow_kind": "DANGER_ESCALATION",
-      "expected_outcome": "CONSULTATION_REQUIRED"
+      "expected_outcome": "CONSULTATION_REQUIRED",
+      "inquiry_public_id": "2b7d96e6-25a1-52eb-a8e2-9e52caf68b60"
     },
     {
       "scenario_id": "SYN-JAC104-007",
       "family": "NO_WATER",
       "variant": "CLEAR",
       "title": "단수로 인한 무출수",
-      "inquiry_id": "3ebb394c-1a6f-5793-ac86-1f721350b820",
       "workflow_kind": "SELF_RESOLUTION",
-      "expected_outcome": "RESOLVED"
+      "expected_outcome": "RESOLVED",
+      "inquiry_public_id": "3ebb394c-1a6f-5793-ac86-1f721350b820"
     },
     {
       "scenario_id": "SYN-JAC104-008",
       "family": "NO_WATER",
       "variant": "PERSISTENT_OR_RISK",
       "title": "필터 교체 후에도 지속되는 무출수",
-      "inquiry_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1",
       "workflow_kind": "VISIT_HANDOFF",
-      "expected_outcome": "VISIT_REVIEW_PENDING"
+      "expected_outcome": "VISIT_REVIEW_PENDING",
+      "inquiry_public_id": "a6bdf6b7-b9ba-553a-8447-f928384c1ad1"
     },
     {
       "scenario_id": "SYN-JAC104-009",
       "family": "LOW_FLOW",
       "variant": "CLEAR",
       "title": "동시 수전 사용에 따른 출수량 저하",
-      "inquiry_id": "88b76107-937a-5fca-ae51-1f21935b47db",
       "workflow_kind": "SELF_RESOLUTION",
-      "expected_outcome": "RESOLVED"
+      "expected_outcome": "RESOLVED",
+      "inquiry_public_id": "88b76107-937a-5fca-ae51-1f21935b47db"
     },
     {
       "scenario_id": "SYN-JAC104-010",
       "family": "LOW_FLOW",
       "variant": "AMBIGUOUS",
       "title": "출수 종류가 불명확한 출수량 저하",
-      "inquiry_id": "f82886a1-8755-5dd1-b622-480a27a207af",
       "workflow_kind": "INFORMATION_COLLECTION",
-      "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS"
+      "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS",
+      "inquiry_public_id": "f82886a1-8755-5dd1-b622-480a27a207af"
     },
     {
       "scenario_id": "SYN-JAC104-011",
       "family": "COLD_WATER_NOT_COLD",
       "variant": "AMBIGUOUS",
       "title": "확인 정보가 없는 미지근한 냉수",
-      "inquiry_id": "b987200b-656e-5dbc-837f-ee1e1cb3a93f",
       "workflow_kind": "INFORMATION_COLLECTION",
-      "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS"
+      "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS",
+      "inquiry_public_id": "b987200b-656e-5dbc-837f-ee1e1cb3a93f"
     },
     {
       "scenario_id": "SYN-JAC104-012",
       "family": "COLD_WATER_NOT_COLD",
       "variant": "PERSISTENT_OR_RISK",
       "title": "처리 후 재발한 냉수 이상",
-      "inquiry_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d",
       "workflow_kind": "REOPENED_INQUIRY",
-      "expected_outcome": "REOPENED"
+      "expected_outcome": "REOPENED",
+      "inquiry_public_id": "46b60ae4-9ea0-5dea-b414-f9eda839056d"
     },
     {
       "scenario_id": "SYN-JAC104-013",
       "family": "LEAK",
       "variant": "AMBIGUOUS",
       "title": "연결부의 지속적인 물방울",
-      "inquiry_id": "205850d3-763c-5256-9d39-82da21be0c31",
       "workflow_kind": "DANGER_ESCALATION",
-      "expected_outcome": "CONSULTATION_IN_PROGRESS"
+      "expected_outcome": "CONSULTATION_IN_PROGRESS",
+      "inquiry_public_id": "205850d3-763c-5256-9d39-82da21be0c31"
     },
     {
       "scenario_id": "SYN-JAC104-014",
       "family": "LEAK",
       "variant": "PERSISTENT_OR_RISK",
       "title": "안전조치 후 재발하는 누수",
-      "inquiry_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177",
       "workflow_kind": "VISIT_HANDOFF",
-      "expected_outcome": "VISIT_SCHEDULED"
+      "expected_outcome": "VISIT_SCHEDULED",
+      "inquiry_public_id": "60d83c53-efc8-5467-a13b-0f45f9ea9177"
     },
     {
       "scenario_id": "SYN-JAC104-015",
       "family": "TASTE_ODOR",
       "variant": "AMBIGUOUS",
       "title": "기간 정보가 없는 냄새 문의",
-      "inquiry_id": "e9280a2d-fb61-55eb-a9a8-453f116e2b54",
       "workflow_kind": "INFORMATION_COLLECTION",
-      "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS"
+      "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS",
+      "inquiry_public_id": "e9280a2d-fb61-55eb-a9a8-453f116e2b54"
     },
     {
       "scenario_id": "SYN-JAC104-016",
       "family": "TASTE_ODOR",
       "variant": "PERSISTENT_OR_RISK",
       "title": "점검 후에도 재발한 맛 이상",
-      "inquiry_id": "596a3d42-4301-5bd9-a561-dca39150fe24",
       "workflow_kind": "REOPENED_INQUIRY",
-      "expected_outcome": "CONSULTATION_IN_PROGRESS"
+      "expected_outcome": "CONSULTATION_IN_PROGRESS",
+      "inquiry_public_id": "596a3d42-4301-5bd9-a561-dca39150fe24"
     },
     {
       "scenario_id": "SYN-JAC104-017",
       "family": "INSTANT_HOT_WATER_SAFETY",
       "variant": "AMBIGUOUS",
       "title": "계속되는 온수 스팀",
-      "inquiry_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146",
       "workflow_kind": "CONSULTATION_HANDOFF",
-      "expected_outcome": "COMPLETION_PENDING"
+      "expected_outcome": "COMPLETION_PENDING",
+      "inquiry_public_id": "be4c7a29-fa4f-5e8f-bb9e-1dab0badf146"
     },
     {
       "scenario_id": "SYN-JAC104-018",
       "family": "INSTANT_HOT_WATER_SAFETY",
       "variant": "PERSISTENT_OR_RISK",
       "title": "재연결 후에도 온수 불량",
-      "inquiry_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d",
       "workflow_kind": "VISIT_HANDOFF",
-      "expected_outcome": "COMPLETION_PENDING"
+      "expected_outcome": "COMPLETION_PENDING",
+      "inquiry_public_id": "cd9adf11-fd61-57fd-956a-6dfac43fcb3d"
     },
     {
       "scenario_id": "SYN-JAC104-019",
       "family": "NOISE",
       "variant": "CLEAR",
       "title": "정상 작동음 확인",
-      "inquiry_id": "cca8204e-c447-515f-9606-7f78ea00dc6b",
       "workflow_kind": "SELF_RESOLUTION",
-      "expected_outcome": "RESOLVED"
+      "expected_outcome": "RESOLVED",
+      "inquiry_public_id": "cca8204e-c447-515f-9606-7f78ea00dc6b"
     },
     {
       "scenario_id": "SYN-JAC104-020",
       "family": "NOISE",
       "variant": "AMBIGUOUS",
       "title": "소리 특성이 불명확한 문의",
-      "inquiry_id": "7ae3ddf9-61d3-5b80-9a03-857bdabd81c6",
       "workflow_kind": "INFORMATION_COLLECTION",
-      "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS"
+      "expected_outcome": "QUESTIONNAIRE_IN_PROGRESS",
+      "inquiry_public_id": "7ae3ddf9-61d3-5b80-9a03-857bdabd81c6"
     },
     {
       "scenario_id": "SYN-JAC104-021",
       "family": "NOISE",
       "variant": "PERSISTENT_OR_RISK",
       "title": "지속되는 큰 소음",
-      "inquiry_id": "d8155085-e77d-5a61-a6e3-57a7d584487a",
       "workflow_kind": "VISIT_HANDOFF",
-      "expected_outcome": "RESOLVED"
+      "expected_outcome": "RESOLVED",
+      "inquiry_public_id": "d8155085-e77d-5a61-a6e3-57a7d584487a"
     },
     {
       "scenario_id": "SYN-JAC104-022",
       "family": "IOT_UNSUPPORTED",
       "variant": "CLEAR",
       "title": "앱 필터 상태 조회 문의",
-      "inquiry_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
       "workflow_kind": "NO_EVIDENCE_FALLBACK",
-      "expected_outcome": "CONSULTATION_REQUIRED"
+      "expected_outcome": "CONSULTATION_REQUIRED",
+      "inquiry_public_id": "dcf13b8e-e15f-5fc3-b194-0a3af2f54985"
     },
     {
       "scenario_id": "SYN-JAC104-023",
       "family": "IOT_UNSUPPORTED",
       "variant": "AMBIGUOUS",
       "title": "와이파이 연결 문의",
-      "inquiry_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067",
       "workflow_kind": "NO_EVIDENCE_FALLBACK",
-      "expected_outcome": "CONSULTATION_IN_PROGRESS"
+      "expected_outcome": "CONSULTATION_IN_PROGRESS",
+      "inquiry_public_id": "2159fcea-b772-5bad-b6f3-6bfe444fb067"
     },
     {
       "scenario_id": "SYN-JAC104-024",
       "family": "IOT_UNSUPPORTED",
       "variant": "PERSISTENT_OR_RISK",
       "title": "무출수와 앱 알림이 섞인 문의",
-      "inquiry_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2",
       "workflow_kind": "NO_EVIDENCE_FALLBACK",
-      "expected_outcome": "CONSULTATION_REQUIRED"
+      "expected_outcome": "CONSULTATION_REQUIRED",
+      "inquiry_public_id": "c99ad03e-b625-5669-86c8-e37f121bd6a2"
     }
   ]
 }

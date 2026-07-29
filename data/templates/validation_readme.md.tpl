@@ -1,19 +1,17 @@
 # Validation Reports
 
-데이터 버전 `${dataset_version}`의 최신 검증 결과입니다.
+데이터 버전 `${dataset_version}`, 생성 기준 `${generated_at}`의 검증 산출물입니다.
 
-- `schema/`: processed·synthetic Schema 결과
-- `integrity/`: ID·FK·문서·페이지·근거 참조
-- `quality/`: 결측·중복·인코딩·개인정보·모델 범위
-- `business/`: 상태 전이·안전·완료·재오픈 규칙
-- `reproducibility/`: 반복 생성 해시
-- `refactor/`: 선언형 설정·CLI 동등성
-- `deletion/`: 원본·임시 데이터 비보관 기록
-- `ocr_evidence/`: OCR·이미지 해시·사용자 검수 근거
+- `schema/`: manifest 등록 파일의 schema·records
+- `integrity/`: FK, CustomerProfile 1:1, 상태이력·Audit 대응
+- `quality/`: 합성 데이터 안전성·3계층 식별자
+- `business/`: 24개 원본·22개 활성 projection, T-005, API 멱등성
+- `reproducibility/`: 두 번 생성한 byte 결정성과 canonical drift
+- `latest_qa_summary.json`: 위 5개 리포트의 실제 SHA-256과 전체 결과
 
 ```powershell
 python -B -m unittest discover -s data/tools/tests -v
-python data/tools/pipeline.py qa --verify-rebuild
+python -B data/tools/pipeline.py qa --verify-rebuild
 ```
 
-오류가 있으면 종료 코드 `1`, 오류와 경고가 없으면 종료 코드 `0`입니다.
+오류·경고·rebuild drift·manifest 불일치가 모두 0일 때 데이터 QA만 `PASS`로 표시합니다. Backend import와 Runtime은 별도 검증 전까지 `DB_VERIFIED`가 아닙니다.

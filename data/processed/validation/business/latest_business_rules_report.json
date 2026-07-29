@@ -1,58 +1,37 @@
 {
+  "dataset_version": "0.9.0",
+  "generated_at": "2026-07-29T00:00:00+09:00",
   "status": "PASS",
-  "stage": 5,
-  "report_type": "BUSINESS_RULES",
-  "generated_at": "2026-07-27T00:00:00+09:00",
+  "report_type": "BUSINESS",
+  "records": 22,
   "summary": {
-    "checks": 9,
-    "errors": 0,
-    "warnings": 0
+    "source_scenarios": 24,
+    "active_scenarios": 22,
+    "status_histories": 125,
+    "audit_events": 125,
+    "subset_records": 33,
+    "api_idempotency_cases": 3
   },
   "checks": [
     {
-      "code": "BUSINESS_CANONICAL_TRANSITIONS",
+      "code": "BLOCKED_SCENARIOS_EXCLUDED",
       "status": "PASS",
-      "detail": "inquiries=24, errors=0"
+      "scenario_ids": [
+        "SYN-JAC104-012",
+        "SYN-JAC104-016"
+      ]
     },
     {
-      "code": "BUSINESS_CANONICAL_STATUS_VALUES",
+      "code": "T005_COMPOUND_HISTORY",
       "status": "PASS",
-      "detail": "used=11, invalid=[]"
+      "history_records": 125,
+      "audit_records": 125
     },
     {
-      "code": "BUSINESS_SAFETY_FIRST",
+      "code": "API_IDEMPOTENCY_CODES",
       "status": "PASS",
-      "detail": "danger_errors=0, leak_errors=0"
-    },
-    {
-      "code": "BUSINESS_NO_EVIDENCE_FALLBACK",
-      "status": "PASS",
-      "detail": "iot_scenarios=3, errors=0"
-    },
-    {
-      "code": "BUSINESS_COMPLETION_PENDING_POLICY",
-      "status": "PASS",
-      "detail": "errors=0"
-    },
-    {
-      "code": "BUSINESS_ASSIGNED_ACTOR_CONFIRMATION",
-      "status": "PASS",
-      "detail": "errors=0"
-    },
-    {
-      "code": "BUSINESS_REOPEN_POLICY",
-      "status": "PASS",
-      "detail": "reopened=2, errors=0"
-    },
-    {
-      "code": "BUSINESS_IDEMPOTENCY_UNIQUENESS",
-      "status": "PASS",
-      "detail": "events=110, duplicates=0"
-    },
-    {
-      "code": "BUSINESS_COMPLETION_REQUIRED_FIELDS",
-      "status": "PASS",
-      "detail": "consultation_errors=0, visit_errors=0"
+      "internal_conflict_code": "IDEMPOTENCY_KEY_REUSE_CONFLICT",
+      "expected_api_error_code": "DUPLICATE-EVENT-01"
     }
   ]
 }
