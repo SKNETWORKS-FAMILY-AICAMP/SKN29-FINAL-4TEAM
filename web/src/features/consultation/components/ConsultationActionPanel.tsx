@@ -330,6 +330,9 @@ export default function ConsultationActionPanel({
             stateVersion {save.success.stateVersion} · correlation_id {" "}
             {save.success.correlationId.slice(0, 8)}…
           </small>
+          {save.lastRefreshedAt && (
+            <small>최신 상세 Snapshot 갱신 완료</small>
+          )}
         </p>
       )}
       {save.error && (

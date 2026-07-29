@@ -113,4 +113,24 @@ describe("ConsultationActionPanel", () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
+
+  it("저장 성공 후 최신 상세 Snapshot 갱신 완료를 표시한다", async () => {
+    const user = userEvent.setup();
+    render(
+      <ConsultationActionPanel
+        inquiry={getInquiry("INQ-20260704-0013")}
+        onOpenVisit={vi.fn()}
+      />,
+    );
+
+    await user.type(
+      screen.getByRole("textbox", { name: /상담 기록/ }),
+      "고객 상태 확인",
+    );
+    await user.click(screen.getByRole("button", { name: "상담 요약 수정" }));
+
+    expect(
+      await screen.findByText("최신 상세 Snapshot 갱신 완료"),
+    ).toBeInTheDocument();
+  });
 });

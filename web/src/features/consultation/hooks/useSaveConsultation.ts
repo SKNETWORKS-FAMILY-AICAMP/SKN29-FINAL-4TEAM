@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { IdempotencyOperationTracker } from "../../../common/api/idempotencyOperation";
 import { createRequestContext } from "../../../common/api/requestContext";
 import {
   ConsultationMockError,
+  reloadConsultationDetailMock,
   submitConsultationMock,
 } from "../api/consultationMockApi";
 import type {
@@ -31,6 +32,8 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
   const [currentStatus, setCurrentStatus] = useState(inquiry.status);
   const [stateVersion, setStateVersion] = useState(inquiry.stateVersion);
   const [allowedActions, setAllowedActions] = useState(inquiry.allowedActions);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
+  const savingRef = useRef(false);
   const [operationTracker] = useState(
     () => new IdempotencyOperationTracker(),
   );
@@ -40,6 +43,10 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
     values,
     scenario,
   }: ExecuteConsultationArgs) => {
+    if (savingRef.current) {
+      return { ok: false as const, duplicateClick: true as const };
+    }
+
     if (
       action.requiresConfirmation &&
       action.confirmationMessage &&
@@ -74,6 +81,7 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
       correlation_id: context.correlationId,
     };
 
+    savingRef.current = true;
     setIsSaving(true);
     setSuccess(null);
     setError(null);
@@ -84,10 +92,15 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
         scenario,
         allowedActions,
       );
+      const latestDetail = await reloadConsultationDetailMock(
+        inquiry.inquiryId,
+        result,
+      );
       operationTracker.finish();
       setSuccess(result);
-      setStateVersion(result.stateVersion);
-      setAllowedActions(result.allowedActions);
+      setStateVersion(latestDetail.stateVersion);
+      setAllowedActions(latestDetail.allowedActions);
+      setLastRefreshedAt(latestDetail.refreshedAt);
       return { ok: true as const, result };
     } catch (caught) {
       const nextError =
@@ -112,6 +125,7 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
       }
       return { ok: false as const, error: nextError };
     } finally {
+      savingRef.current = false;
       setIsSaving(false);
     }
   };
@@ -123,6 +137,7 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
     currentStatus,
     stateVersion,
     allowedActions,
+    lastRefreshedAt,
     execute,
   };
 }

@@ -123,3 +123,22 @@ export async function submitConsultationMock(
   return mapWorkflowActionSuccess(successDto, request.correlation_id);
 }
 
+export interface ConsultationDetailSnapshot {
+  inquiryId: string;
+  stateVersion: number;
+  allowedActions: readonly CounselorAllowedAction[];
+  refreshedAt: string;
+}
+
+export async function reloadConsultationDetailMock(
+  inquiryId: string,
+  result: ConsultationActionSuccess,
+): Promise<ConsultationDetailSnapshot> {
+  return {
+    inquiryId,
+    stateVersion: result.stateVersion,
+    allowedActions: result.allowedActions,
+    refreshedAt: new Date().toISOString(),
+  };
+}
+

@@ -3,7 +3,7 @@ import type {
   InquiryId,
 } from "../../../entities/inquiry/inquiryIdentifiers";
 
-export type CounselorRisk = "GENERAL" | "CAUTION" | "DANGER";
+export type CounselorRisk = "GENERAL" | "CAUTION" | "DANGER" | "UNKNOWN";
 
 export type CounselorStatus =
   | "DRAFT"
@@ -18,9 +18,10 @@ export type CounselorStatus =
   | "REVISIT_REQUIRED"
   | "REOPENED"
   | "RESOLVED"
-  | "CANCELLED";
+  | "CANCELLED"
+  | "UNKNOWN";
 
-export type CounselorPriority = "NORMAL" | "HIGH" | "URGENT";
+export type CounselorPriority = "NORMAL" | "HIGH" | "URGENT" | "UNKNOWN";
 export type CounselorSort = "UPDATED_DESC" | "UPDATED_ASC";
 export type CounselorAssigneeFilter = "ALL" | "MINE" | "UNASSIGNED";
 

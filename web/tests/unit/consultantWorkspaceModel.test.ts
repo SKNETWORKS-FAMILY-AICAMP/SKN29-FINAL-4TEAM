@@ -4,6 +4,8 @@ import { COUNSELOR_INQUIRIES } from "../../src/features/consultation/model/consu
 import {
   filterCounselorInquiries,
   getCounselorQueuePage,
+  normalizeCounselorRisk,
+  normalizeCounselorStatus,
 } from "../../src/features/consultation/model/consultantWorkspaceModel";
 import type { CounselorFilters } from "../../src/features/consultation/model/consultantWorkspaceTypes";
 
@@ -57,5 +59,11 @@ describe("상담 큐 View Model", () => {
       aiStatus: "FAILED",
       evidence: [],
     });
+  });
+
+  it("알 수 없는 상태·위험도 코드는 미확인 값으로 안전하게 변환한다", () => {
+    expect(normalizeCounselorStatus("NEW_SERVER_STATUS")).toBe("UNKNOWN");
+    expect(normalizeCounselorRisk("new-risk")).toBe("UNKNOWN");
+    expect(normalizeCounselorRisk(null)).toBe("UNKNOWN");
   });
 });

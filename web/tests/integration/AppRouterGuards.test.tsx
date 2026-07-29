@@ -146,6 +146,34 @@ describe("App Router Guard", () => {
     ).toBeInTheDocument();
   });
 
+  it.each([
+    ["loading", "문의 정보를 불러오고 있습니다."],
+    ["error", "문의 정보를 불러오지 못했습니다."],
+    ["forbidden", "이 문의에 접근할 권한이 없습니다."],
+    ["unsupported", "지원하지 않는 제품 모델입니다."],
+  ])("CONS-02 %s 상태를 명확히 표시한다", async (state, message) => {
+    renderRoute(
+      `/consultant/inquiries/205850d3-763c-5256-9d39-82da21be0c31?mockState=${state}`,
+      createUser("CONSULTANT"),
+    );
+
+    expect(await screen.findByText(message)).toBeInTheDocument();
+  });
+
+  it("무근거 문의는 AI 실패와 근거 없음 안내를 함께 표시한다", async () => {
+    const user = userEvent.setup();
+    renderRoute(
+      "/consultant/inquiries/dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
+      createUser("CONSULTANT"),
+    );
+
+    expect(await screen.findByText("FAILED")).toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "공식 근거·사용 상태" }));
+    expect(
+      screen.getByText(/연결된 공식 근거가 없습니다/),
+    ).toBeInTheDocument();
+  });
+
   it("표시용 문의 번호는 상세 URL의 리소스 ID로 사용하지 않는다", async () => {
     renderRoute(
       "/consultant/inquiries/INQ-20260704-0013",

@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 
 import type { InquiryId } from "../../../entities/inquiry/inquiryIdentifiers";
+import EmptyState from "../../../common/components/feedback/EmptyState";
+import ErrorState from "../../../common/components/feedback/ErrorState";
+import ForbiddenState from "../../../common/components/feedback/ForbiddenState";
+import LoadingState from "../../../common/components/feedback/LoadingState";
 import Pagination from "../../../common/components/data-display/Pagination";
 import PriorityBadge from "../../../common/components/badge/PriorityBadge";
 import RiskBadge from "../../../common/components/badge/RiskBadge";
@@ -33,10 +37,12 @@ interface ConsultantQueueProps {
   selectedInquiryId: InquiryId | null;
   totalItems: number;
   totalPages: number;
+  loadState?: "ready" | "loading" | "error" | "forbidden";
   onFiltersChange: (filters: CounselorFilters) => void;
   onPageChange: (page: number) => void;
   onResetFilters: () => void;
   onSelectInquiry: (inquiryId: InquiryId) => void;
+  onRetry?: () => void;
 }
 
 const FILTERABLE_STATUSES = Object.entries(STATUS_LABELS) as readonly [
@@ -53,10 +59,12 @@ export default function ConsultantQueue({
   selectedInquiryId,
   totalItems,
   totalPages,
+  loadState = "ready",
   onFiltersChange,
   onPageChange,
   onResetFilters,
   onSelectInquiry,
+  onRetry,
 }: ConsultantQueueProps) {
   const updateFilter = <Key extends keyof CounselorFilters>(
     key: Key,
@@ -223,12 +231,37 @@ export default function ConsultantQueue({
           </div>
 
           <div className="v6-queue-list">
-            {inquiries.length === 0 ? (
-              <div className="v6-empty">
-                <span>⌕</span>
-                <strong>조건에 맞는 문의가 없습니다.</strong>
-                <p>검색어나 필터를 변경해 주세요.</p>
-              </div>
+            {loadState === "loading" ? (
+              <LoadingState
+                title="상담 문의 목록을 불러오고 있습니다."
+                description="담당 문의와 우선순위를 확인하고 있습니다."
+              />
+            ) : loadState === "error" ? (
+              <ErrorState
+                title="상담 문의 목록을 불러오지 못했습니다."
+                description="잠시 후 다시 시도해 주세요."
+                onRetry={onRetry}
+              />
+            ) : loadState === "forbidden" ? (
+              <ForbiddenState
+                title="상담 문의 목록을 볼 권한이 없습니다."
+                description="상담사 역할과 담당 범위를 확인해 주세요."
+              />
+            ) : inquiries.length === 0 ? (
+              <EmptyState
+                title={
+                  hasChangedConditions
+                    ? "조건에 맞는 문의가 없습니다."
+                    : "아직 접수된 문의가 없습니다."
+                }
+                description={
+                  hasChangedConditions
+                    ? "검색어나 필터를 변경해 주세요."
+                    : "새 문의가 접수되면 이 목록에 표시됩니다."
+                }
+                actionLabel={hasChangedConditions ? "조건 초기화" : undefined}
+                onAction={hasChangedConditions ? onResetFilters : undefined}
+              />
             ) : (
               inquiries.map((inquiry) => (
                 <button
@@ -298,12 +331,14 @@ export default function ConsultantQueue({
             )}
           </div>
 
-          <Pagination
-            page={page}
-            totalItems={totalItems}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
+          {loadState === "ready" && (
+            <Pagination
+              page={page}
+              totalItems={totalItems}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+            />
+          )}
         </aside>
 
         {children}
