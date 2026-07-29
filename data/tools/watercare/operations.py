@@ -15,7 +15,15 @@ from .builders import (
     write_preview,
 )
 from .config import PipelineConfig
-from .io import data_path, read_json, read_jsonl, sha256_file, write_json
+from .io import (
+    data_path,
+    read_json,
+    read_jsonl,
+    read_lf_bytes,
+    sha256_bytes,
+    sha256_file,
+    write_json,
+)
 from .validation import run_data_qa, validate_service_contract_mapping
 
 
@@ -24,10 +32,16 @@ def _relative(config: PipelineConfig, path: Path) -> str:
 
 
 def _entry(config: PipelineConfig, path: Path) -> dict[str, Any]:
+    binary_suffixes = {".gif", ".jpeg", ".jpg", ".pdf", ".png"}
+    content = (
+        path.read_bytes()
+        if path.suffix.lower() in binary_suffixes
+        else read_lf_bytes(path)
+    )
     return {
         "path": _relative(config, path),
-        "size_bytes": path.stat().st_size,
-        "sha256": sha256_file(path),
+        "size_bytes": len(content),
+        "sha256": sha256_bytes(content),
     }
 
 
