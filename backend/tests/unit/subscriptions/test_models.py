@@ -1,7 +1,7 @@
 """CustomerSubscription 필드·제약·삭제 정책 검증."""
 
 from datetime import date
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from django.db import IntegrityError, transaction
@@ -61,6 +61,19 @@ def test_subscription_uses_three_layer_identifier_and_defaults():
         == CustomerSubscription.ManagementType.VISIT_CARE
     )
     assert subscription.status_code == CustomerSubscription.Status.ACTIVE
+
+
+def test_customer_product_fixture_is_projected_without_timestamp_invention():
+    source_public_id = uuid4()
+    subscription = create_subscription(
+        installed_on=date(2025, 1, 14),
+        installed_at=None,
+        source_customer_product_public_id=source_public_id,
+    )
+
+    assert subscription.installed_on == date(2025, 1, 14)
+    assert subscription.installed_at is None
+    assert subscription.source_customer_product_public_id == source_public_id
 
 
 def test_active_and_suspended_subscriptions_cannot_share_serial():

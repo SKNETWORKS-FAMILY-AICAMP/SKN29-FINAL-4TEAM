@@ -48,7 +48,7 @@ Server `/`를 사용한다. Django의 Path Parameter 이름
 | 1 | OpenAPI 9개 ↔ Runtime 7개 매핑 | 지원 7개·OpenAPI-only 2개 고정 | Route·View·`operationId` 검증 통과 |
 | 2 | Runtime 공통 오류 Registry 정합화 | 누락 4개 추가, 최상위 Registry 총 10개 | 대표 상태와 `runtime_http_mapping` 검증 통과 |
 | 3 | 구현 API JSON 예시 | 신규 20개, 기존 409 2개, 총 22개 | JSON·Serializer·참조·비밀값 검증 통과 |
-| 4 | 회귀 검증 | 계약 94건·권한 31건·전체 Backend 353건 통과 | Git 공유 범위 확인 가능 |
+| 4 | 회귀 검증 | 계약 94건·권한 31건·전체 Backend 397건 통과 | Git 공유 범위 확인 가능 |
 
 오류 코드별 `http_status`는 대표 상태다. `INVALID_REQUEST`의 기타
 4xx fallback과 `INTERNAL_ERROR`의 5xx fallback은
@@ -112,7 +112,7 @@ $env:PYTHONDONTWRITEBYTECODE = "1"
 | API·계약 + Auth 계약 | 0 | `94 passed` |
 | 권한·소유권 + T-022·T-023 | 0 | `31 passed` |
 | Django System Check | 0 | `System check identified no issues` |
-| 전체 Backend | 0 | `353 passed` |
+| 전체 Backend | 0 | `397 passed` |
 
 검증 묶음은 일부 테스트가 서로 겹치므로 수치를 합산하지 않는다.
 최종 Git 공유 전에는 문서 변경까지 포함한 HEAD에서 전체 Backend와
@@ -120,9 +120,11 @@ $env:PYTHONDONTWRITEBYTECODE = "1"
 
 ## 6. 남은 공유 게이트와 인계
 
-구현·자동 검증은 완료됐지만 팀 공용 완료 상태는 아니다. 남은 순서는
-`jiyong` 범위 확인·Commit·Push → 윤승혁(PM) 검토·`main` 병합 →
-PM의 40자리 `main` SHA 공유다.
+구현·자동 검증은 완료됐지만 팀 공용 완료 상태는 아니다. 최신 후보는
+Data Crosswalk v2도 포함하므로 남은 순서는 `jiyong` 범위
+확인·Commit·Push → 김은진 Data Owner 검토 반환 → 최지용 동일
+기준선 재검증 → 윤승혁(PM) 검토·`main` 병합 → PM의 40자리 `main`
+SHA 공유다. 김은진 검토 전에는 PM이 병합하지 않는다.
 
 Web·Mobile·QA 담당자는 OpenAPI-only 2개를 구현 API로 소비하지 않는다.
 상세 변경·검증·팀별 다음 행동은

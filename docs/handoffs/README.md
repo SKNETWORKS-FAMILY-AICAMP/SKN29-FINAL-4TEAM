@@ -3,9 +3,11 @@
 > 기준일: 2026-07-29
 > 작업 소스 Branch: `jiyong`
 > 팀 반영 기준: 최지용 `jiyong` Push → PM 검토·`main` 병합 → PM이 공유한 40자리 `main` Commit SHA
-> 개발 최우선: 현재 구현 Runtime 7개의 OpenAPI·Serializer·오류 Registry·정상/오류 예시 정합화
+> 개발 최우선: Crosswalk v2의 Data Owner 검토 반환 → 동일 기준선 재검증 → PM 병합
 > 실행 원칙: `작업 → 검증 → 작업 → 검증`
 > 문서 원칙: 저장소 안의 상대경로만 연결하고 개인 PC 절대경로는 사용하지 않는다.
+> 현재 게시 게이트: 김은진 Data Owner 검토 전 PM `main` 병합 금지
+> 최신 통합 검증: Crosswalk v2 Source Hash 17/17 · Fixture Mapping 12/12 · Backend 397/397 · Data 61/61 · QA 2회 · PostgreSQL `DB_FULL_VERIFIED`
 
 ## 1. 이 문서의 목적
 
@@ -36,10 +38,11 @@
 | 범위 | 현재 기준 |
 | --- | --- |
 | 환경 | Python 3.13.13, pip 26.0.1, PostgreSQL 16.14 |
-| Backend 전체 회귀 | 최신 `main` 통합·Auth 초 경계 회귀 보정·문서 반영을 포함한 최종 HEAD에서 `353 passed` |
-| Migration | drift 없음, PostgreSQL 16.14 연결·적용 Migration 검사 통과 |
-| Seed | Accounts → Products → Subscriptions → Care 순서로 PostgreSQL에서 2회 연속 실행 통과 |
-| T-005 | 계약 테이블 32개 중 7개 구현, 25개 후속 |
+| Backend 전체 회귀 | 최신 `main` 기반 Crosswalk v2·합성 Importer·문서 반영 기준에서 `397 passed` |
+| Data 전체 회귀 | `61/61 PASS`, QA Pipeline 2회 연속 오류·경고 0, 대표 E2E `17/17 PASS` |
+| Migration | drift 없음, PostgreSQL 16.14의 새 빈 격리 DB 2개에서 전체 Migration 적용·미적용 0 확인 |
+| 합성 Import | Fixture 12종·367 source 행을 smoke/full 격리 DB에 적재하고 재실행 무변경·감사 이력 125쌍 검증 |
+| T-005 | 계약 테이블 32개 중 10개 구현, 22개 후속. 현재 감사 결과 `NOT_READY` |
 | T-022 | `POST /api/v1/inquiries` 대표 `START_INQUIRY` 구현 |
 | T-023 | `POST /api/v1/inquiries/{inquiry_id}/cancel` 대표 `CANCEL_INQUIRY` 구현 |
 | 충돌 처리 | 상태 충돌 `STATE-CONFLICT-01`, 키 재사용 `DUPLICATE-EVENT-01` |
@@ -53,7 +56,10 @@
 
 - [Backend 실행 기준](../../backend/README.md)
 - [Backend 가상환경 재현 가이드](../individual/jiyong/technical/backend/backend_venv_reproducibility_guide.md)
-- [Django·PostgreSQL 공유 패키지 인계서 v1.2](../individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)
+- [Django·PostgreSQL 공유 패키지 인계서 v1.3](../individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)
+- [PostgreSQL 합성 Handoff Runtime 검증](../individual/jiyong/manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md)
+- [합성 Handoff Importer 개발문서](../individual/jiyong/technical/backend/20260729_synthetic_handoff_importer.md)
+- [Data QA·Fixture Hash 강화 검토서](../individual/jiyong/technical/contracts/20260729_data_qa_fixture_hash_hardening.md)
 - [T-005 구현 기준](../database/t-005/README.md)
 - [T-005 3계층 식별자 ADR](../adr/0010-t005-three-layer-identifier-bridge.md)
 - [T-005 상태 이력 멱등성 ADR](../adr/0011-t005-status-history-idempotency-scope.md)
@@ -71,7 +77,7 @@
 - 문의 문진·자가조치·목록·상세 전체 Runtime
 - `CANCEL_INQUIRY` 이외의 전체 Workflow Action
 - 범용 State Engine·Guard의 Service 연결, Reopen·부모 문의 Runtime
-- Data Fixture와 Backend Seed의 자동 변환
+- 기본 `watercare` DB에 Data Fixture를 자동 병합하는 운영 절차
 - Web·Mobile 실제 API 전체 전환
 - AI 실행환경·AI Runtime·Backend AI Client
 
@@ -89,6 +95,7 @@ T-005 전체 완료라고 쓰지 않는다.
 | Web | Auth·공통 Client·운영 Dashboard·Test Script 반영, build·lint 통과. 다만 최신 Data Fixture의 `public_id` 전환을 Mock이 소비하지 못해 8개 Suite import 실패 | 한예나는 `inquiry_id`→`public_id` Mapping과 내부 정수 FK/Public UUID 경계를 수정하고 `npm test` 전체 통과 후 인계 |
 | Mobile | 구조 V2·최신 `main`·`jiyong` 모두 `:customer-app`·`:technician-app`·`:core` 3모듈이며 `mobile/app`·`mobile_prev` 없음 | 구조 충돌은 해소됐다. 양정현은 3모듈 의존성·Network 위치·Build 기준을 검증한 뒤 기능 작업 |
 | AI | 평가 Dataset·Loader와 App 코드는 있으나 `pyproject.toml` 의존성 선언이 비어 있어 재현 가능한 AI 환경이 없음 | Backend `.venv`에 AI 패키지를 섞지 않고 이동윤이 `ai/.venv` 재현 계약·의존성·테스트 명령을 확정 |
+| Data Crosswalk v2 | Backend Source Hash 17/17, Fixture Mapping 12/12, Data 61/61, QA 2회, Manifest 154 entries가 로컬 검증을 통과했으나 `data/**`·`scripts/data/**`는 김은진 주담당 범위 | 김은진이 19개 Data 소유 경로의 의미·생성물·결정성을 검토해 승인 또는 수정 Diff와 40자리 SHA를 반환하기 전에는 PM이 `main`에 병합하지 않음 |
 | API 구현 상태 | OpenAPI 9·Runtime 7·OpenAPI-only 2, JSON 22개, Registry 공통 코드 정합화 완료 | 미구현 2개를 호출하지 않고 PM `main` SHA에서 소비 검증 |
 | 설명 문서 Drift | 사람용 명세와 Runtime 상태표를 기계 계약·실제 Route의 9·7로 갱신 | 이후 수치는 Runtime·OpenAPI 계약 테스트를 통과한 변경에서만 갱신 |
 
@@ -125,8 +132,8 @@ OpenAPI에는 있지만 Runtime이 없는 다음 2개는 `NOT_IMPLEMENTED`로
 | 1 | OpenAPI 9개를 Runtime 7개·OpenAPI-only 2개로 매핑 | 완료·계약 검증 통과 |
 | 2 | Runtime 공통 오류 4개와 HTTP 선택 규칙 정합화 | 완료·400~599 Mapping 검증 통과 |
 | 3 | 구현 Endpoint 정상·오류·Replay 예시 | 총 22개·상대 참조·비밀값 검증 통과 |
-| 4 | 계약·권한·전체 Backend 회귀 | 94건·31건·353건 통과 |
-| 5 | 지원·미구현 경계와 소비자 인계 | 문서 반영 완료·PM 리뷰 대기 |
+| 4 | 계약·권한·전체 Backend·Data 회귀 | 계약 94건·권한 31건·Backend 397건·Data 61건·QA 2회 통과 |
+| 5 | 지원·미구현 경계와 소비자 인계 | 문서 반영 완료·김은진 Data Owner 검토 대기 |
 
 다음 중 하나라도 발생하면 신규 기능으로 넘어가지 않는다.
 
@@ -136,11 +143,14 @@ OpenAPI에는 있지만 Runtime이 없는 다음 2개는 `NOT_IMPLEMENTED`로
 - 구현됐다고 선언한 응답의 검증 가능한 예시가 없음
 - 계약 또는 Runtime 테스트 실패
 
-현재 로컬 자동 검증에서는 위 중단 조건이 발생하지 않았다. 팀 공용
-완료 상태는 `jiyong` Push와 PM `main` 병합 뒤에만 선언한다.
+현재 로컬 자동 검증에서는 위 중단 조건이 발생하지 않았다. 다만
+Crosswalk v2가 김은진의 주담당 경로를 포함하므로 팀 공용 완료 상태는
+김은진 검토 반환, `jiyong` 재검증, PM `main` 병합 뒤에만 선언한다.
 
-T-005 다음 Wave는 김은진의 Data Mapping·Fixture 입력 뒤에,
-T-023 후속 Action·Service 연결은 윤승혁의 State·Terminal·Reopen
+T-005 합성 Handoff Mapping·Importer 기술 구현은 완료됐지만 김은진의
+Data Owner 검토가 남아 있다. 그 검토가 끝난 뒤에만 다음 Model Wave로
+넘어간다. T-023 후속 Action·Service 연결은 윤승혁의
+State·Terminal·Reopen
 계약 입력 뒤에 한 단위씩 진행한다.
 
 ## 3. 변경하지 않는 확정 계약
@@ -208,12 +218,16 @@ T-023 후속 Action·Service 연결은 윤승혁의 State·Terminal·Reopen
 5. Backend 구현·계약·Migration·테스트·인계 문서를 모두 Commit한다.
 6. 같은 Commit에서 PostgreSQL·Seed 2회·전체 Backend 회귀를
    통과한다.
-7. `git diff --check`를 통과시키고 원격 `origin/jiyong`과 로컬
-   `jiyong` SHA를 일치시킨다.
-8. PM은 `jiyong` PR을 검토하고 충돌·보존 범위를 확인한 뒤
-   `main`에 병합한다.
-9. PM은 병합된 40자리 `main` SHA와 완료·미구현 범위를 팀에
-   전달한다.
+7. `git diff --check`를 통과시키고 원격 `origin/jiyong`과 게시
+   Commit SHA를 일치시킨다.
+8. 최지용은 게시 SHA와 19개 Data 소유 경로를 김은진에게 전달하고,
+   김은진은 `APPROVED` 또는 수정 Diff·40자리 SHA를 반환한다.
+9. 수정 요청이 있으면 최지용은 승인된 Diff만 반영해 6~8번을 다시
+   수행한다. Data Owner 결과가 `APPROVED`가 아니면 여기서 중단한다.
+10. PM은 Data Owner 승인된 `jiyong` 후보의 충돌·보존 범위를 확인한
+    뒤 `main`에 병합한다.
+11. PM은 병합된 40자리 `main` SHA와 완료·미구현 범위를 팀에
+    전달한다.
 
 최지용은 아래 명령으로 공유 가능 여부를 확인한다.
 
@@ -372,7 +386,7 @@ python .\scripts\development\check_environment.py --service backend
 Set-Location (git rev-parse --show-toplevel)
 
 if (-not (Test-Path .\backend\.env)) {
-    throw 'backend/.env가 없습니다. 공유 패키지 인계서 v1.2의 5.1에 따라 .env.example에서 생성하고 로컬 비밀값을 설정하세요.'
+    throw 'backend/.env가 없습니다. 공유 패키지 인계서 v1.3의 신규 환경 절차에 따라 .env.example에서 생성하고 로컬 비밀값을 설정하세요.'
 }
 
 docker version
@@ -451,8 +465,8 @@ Set-Location .\backend
 ```
 
 서버가 실행되면 다른 PowerShell에서
-[공유 패키지 인계서 v1.2](../individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)의
-5.8을 실행해 Health·Auth Smoke `status=PASSED`와 Exit code `0`을
+[공유 패키지 인계서 v1.3](../individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)의
+기본 DB Health·Auth Smoke 절차를 실행해 `status=PASSED`와 Exit code `0`을
 확인한다.
 
 - Django 종료: 서버 터미널에서 `Ctrl+C`
@@ -472,11 +486,11 @@ docker compose --env-file .\backend\.env stop postgres
 | ---: | --- | --- | --- | --- |
 | 1 | Action Endpoint 부족 | START·CANCEL 대표 흐름만 구현 | 최지용 | 윤승혁(PM), 한예나, 양정현 |
 | 2 | 상태·버전·409 Snapshot | 대표 흐름만 구현 | 최지용 | 한예나, 양정현, 김은진 |
-| 3 | Inquiry·Visit Aggregate 분리 | Inquiry 구현, Visit 후속 | 최지용 | 윤승혁(PM), 김은진 |
-| 4 | Data 12단계·PM 전이 차이 | PM `v1.0.0` Crosswalk·대표 14단계에서 계약 충돌 해결, Data Fixture·Backend 소비 검증 후속 | 윤승혁(PM), 김은진 | 최지용 |
+| 3 | Inquiry·Visit Aggregate 분리 | Inquiry·Visit Model과 Migration 구현, `VisitResult` FK는 후속 | 최지용 | 윤승혁(PM), 김은진 |
+| 4 | Data 12단계·PM 전이 차이 | PM `v1.0.0` 계약 기준 Crosswalk v2·Fixture·Backend 소비 기술 검증 완료, 김은진 Owner Review 대기 | 김은진 | 윤승혁(PM), 최지용 |
 | 5 | Terminal·Reopen 정책 | 순수 엔진 단위 기반 구현, 운영 Service·Reopen Runtime 후속 | 윤승혁(PM), 최지용 | 김은진 |
-| 6 | Data UUID·업무 코드·Seed 연결 | Backend 분리 완료, Mapping 후속 | 김은진, 최지용 | 한예나, 양정현 |
-| 7 | `COUNSELOR`·`CONSULTANT` | Backend 표준 완료, Data 후속 | 김은진 | 최지용 |
+| 6 | Data UUID·업무 코드·Seed 연결 | 12개 Mapping·격리 DB Import·Replay 검증 완료, Data Owner Review와 기본 DB 운영 정책 후속 | 김은진, 최지용 | 한예나, 양정현 |
+| 7 | `COUNSELOR`·`CONSULTANT` | Backend `CONSULTANT` 표준과 Data 계약 정합화 기술 검증 완료, Data Owner Review 대기 | 김은진 | 최지용 |
 | 8 | AI Schema·Timeout·Retry | 정책만 확정, Runtime 후속 | 이동윤, 최지용 | 김은진 |
 | 9 | Mobile 단일 App·3모듈 구조 충돌 | **해결** — V2·`main`·`jiyong` 모두 3모듈, `mobile/app`·`mobile_prev` 없음 | 양정현 | 윤승혁(PM), 최지용 |
 | 10 | Web 상담사 UI·고객 전용 START/CANCEL | Web 화면·Auth 기반 반영, 상담사 Runtime API 미구현·Data Fixture `public_id` 소비 테스트 후속 | 한예나, 최지용 | 윤승혁(PM), 김은진 |
@@ -488,15 +502,15 @@ docker compose --env-file .\backend\.env stop postgres
 | 독립 선행 | A | 최지용 | 현재 Runtime 7개의 OpenAPI·Serializer·오류·예시·테스트 정합화 | 소비 가능한 현재 Backend 계약 |
 | 독립 선행 | B | 양정현 | V2 3모듈 의존성·Network 위치·Build 기준 확인 | `:customer-app`·`:technician-app`·`:core` 실행·검증 기준 |
 | 완료 입력 | 1 | 윤승혁(PM) | 14단계·Terminal·Guard를 State `v1.0.0 TEAM_APPROVED`로 채택 | 채택된 State 계약·Crosswalk·Transition·Guard ID |
-| 팀 의존성 | 2 | 김은진 | PM 계약 기준 Data ID·Role·상태 Mapping·Fixture·QA 갱신 | Mapping 파일·Fixture SHA·QA 결과 |
-| 팀 의존성 | 3 | 최지용 | 확정 Mapping을 Backend Import·Visit·Guard에 한 수직 흐름씩 반영 | 안정된 Backend 계약·Runtime |
+| 팀 의존성 | 2 | 김은진 | Crosswalk v2의 Data ID·Role·상태 Mapping·Fixture·QA 생성물 19개 경로 검토 | `APPROVED` 또는 수정 Diff·Data 61·QA 2회 결과 |
+| 팀 의존성 | 3 | 최지용 | 김은진 반환본을 동일 기준선에서 Backend 397·PostgreSQL·Source Hash로 재검증 | 안정된 Backend·Data 계약 후보 |
 | 팀 의존성 | 4 | 한예나·양정현 | Web·Mobile 소비 코드와 오류 복구 갱신 | 소비자 계약·Build·Smoke 결과 |
 | 팀 의존성 | 5 | 이동윤 → 최지용 | AI Schema·Runtime 확정 후 Backend AI Client 연결 | Backend↔AI 통합 결과 |
 | 최종 검증 | 6 | 김은진 | 동일 Commit 계약·DB·E2E·안전 통합 QA | 최종 QA 결과 |
 | 공유 게이트 | G | 최지용 → 윤승혁(PM) | 최지용 `jiyong` Push → PM 검토·`main` 병합·40자리 SHA 공유 | 팀원이 반영할 공식 `main` SHA |
 
-개발 의존성은 `PM 승인 입력 완료 → Data → Backend → 소비자 → AI → QA`
-순서다.
+개발 의존성은 `PM 승인 입력 완료 → Data Owner 검토 → Backend 재검증
+→ PM 병합 → 소비자 → AI → 최종 QA` 순서다.
 독립 선행 A·B는 필요한 외부 입력을 기다리지 않고 진행할 수 있다.
 공유 게이트 G는 개발 기능 순위가 아니라 검증된 결과를 배포하는
 절차다. 팀원은 자기 선행 입력이 오지 않았으면 임의 Mock을 확정
@@ -527,8 +541,12 @@ docker compose --env-file .\backend\.env stop postgres
   고정했다.
 - 사람용 API 설명 문서와 Runtime 상태표는 OpenAPI 9·Runtime 7·
   OpenAPI-only 2로 갱신됐다.
-- 계약 94건, 권한·소유권 31건, 전체 Backend 353건이 현재
-  작업트리에서 통과했다.
+- 계약 94건, 권한·소유권 31건, 전체 Backend 397건, Data 61건,
+  QA Pipeline 2회가 현재 검토 후보에서 통과했다.
+- Crosswalk v2의 Backend Source Hash 17/17과 Fixture Mapping 12/12,
+  PostgreSQL 합성 367행의 반복 안전성을 확인했다.
+- 위 Data 결과는 기술 검증 통과이며, 김은진의 Data Owner 검토 전에는
+  팀 공용 확정본으로 선언하지 않는다.
 - Public UUID와 업무 코드는 분리돼 있다.
 - JWT `sub`는 Public UUID를 우선하며 기존 문자열 PK는 호환
   fallback이다.
@@ -556,24 +574,28 @@ docker compose --env-file .\backend\.env stop postgres
 1. OpenAPI 9개를 Runtime 7개와 OpenAPI-only 2개로 분리했다.
 2. Runtime 공통 오류 4개와 Handler 선택 규칙을 가산 정합화했다.
 3. 구현된 Auth 4개·START·CANCEL만 JSON 22개로 연결했다.
-4. 계약 94건·권한 31건·전체 Backend 353건을 통과했다.
-5. 상세 증거와 팀별 다음 행동은
+4. 계약 94건·권한 31건·전체 Backend 397건을 통과했다.
+5. Data 61건·QA Pipeline 2회·대표 E2E 17건과 Source Hash 17/17을
+   통과했다.
+6. 상세 증거와 팀별 다음 행동은
    [검증보고서](../individual/jiyong/manuals/20260729_최지용_Backend_API_계약_정합화_검증보고서_v1.0.md)에
    기록했다.
 
 아래 작업은 선행 입력을 받은 뒤에만 진행한다.
 
-1. 김은진의 Data Mapping·Fixture가 확정되면 T-005 다음 Wave와
-   Backend Importer를 한 Wave씩 구현한다.
-2. Visit Aggregate와 `VisitResult` FK는 해당 Data Mapping·Wave
+1. 김은진이 Crosswalk v2의 19개 Data 소유 경로를 검토해 승인 또는
+   수정 Diff를 반환하면 최지용이 같은 기준선에서 재검증한다.
+2. Data Owner 검토와 PM 병합 뒤에만 T-005 다음 Model Wave를 한
+   Wave씩 구현한다. 현재 합성 Handoff Importer 자체는 구현·검증됐다.
+3. Visit Aggregate와 `VisitResult` FK는 해당 Data Mapping·Wave
    입력 뒤에 구현한다.
-3. 채택된 State `v1.0.0`·Terminal·Reopen 계약을 입력으로 Action별
+4. 채택된 State `v1.0.0`·Terminal·Reopen 계약을 입력으로 Action별
    Guard Adapter를 한 Action씩 Service Runtime에 연결한다.
-4. 재문의 부모 문의는 PM 계약에 포함된 경우 계약·Model·Migration·
+5. 재문의 부모 문의는 PM 계약에 포함된 경우 계약·Model·Migration·
    API·테스트를 한 변경 단위로 구현한다.
-5. 소비자가 필요한 구독·문의 조회 API는 2.4의 정합 게이트와
+6. 소비자가 필요한 구독·문의 조회 API는 2.4의 정합 게이트와
    소비자 입력 뒤 계약부터 수직 구현한다.
-6. 이동윤의 AI Schema·Runtime Commit 이후에만 Backend AI Client를
+7. 이동윤의 AI Schema·Runtime Commit 이후에만 Backend AI Client를
    구현한다.
 
 ### 8.4 검증 명령

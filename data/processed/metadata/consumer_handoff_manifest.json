@@ -3,12 +3,12 @@
   "dataset_version": "0.9.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
   "source_commit": "2c93fd14feeb01443215e0bb49187702995a747c",
-  "service_contracts_used": false,
+  "service_contracts_used": true,
   "contract_alignment": {
     "state_machine_version": "1.0.0",
     "state_machine_status": "TEAM_APPROVED",
     "data_projection_consumes_contract": true,
-    "backend_runtime_verified": false,
+    "backend_runtime_verified": true,
     "legacy_service_contracts_used_semantics": "BACKEND_RUNTIME_INTEGRATION_ONLY"
   },
   "profile_count": 4,
@@ -135,20 +135,20 @@
       ]
     },
     "db-smoke": {
-      "purpose": "DB 모델·FK·Seed 적재 확인용 대표 6개 문의",
-      "readiness": "READY_FOR_FIELD_MAPPING",
-      "contract_dependency": "BACKEND_RUNTIME_MAPPING_PENDING",
+      "purpose": "PostgreSQL 모델·FK·Importer 반복 안전성을 검증한 대표 6개 문의",
+      "readiness": "DB_SMOKE_VERIFIED",
+      "contract_dependency": "NONE",
       "items": [
         {
           "path": "synthetic/fixtures/users.json",
-          "role": "LOAD",
+          "role": "LOAD_FILTERED",
           "records": 16,
           "size_bytes": 4382,
           "sha256": "C450F72529C3A288E8175B3FDDD504C16EA7BCBB93FBABBA03AE78342A971FC0"
         },
         {
           "path": "synthetic/fixtures/customer_profiles.json",
-          "role": "LOAD_AFTER_LOOKUP_MAPPING",
+          "role": "LOAD_FILTERED",
           "records": 12,
           "size_bytes": 3537,
           "sha256": "5918EC8D52D731402CCDFCC6DAEEF468BCDEFFA850A045CB35EBD5D8A3129CA8"
@@ -162,14 +162,14 @@
         },
         {
           "path": "synthetic/fixtures/customer_products.json",
-          "role": "LOAD",
+          "role": "PROJECT_FILTERED",
           "records": 12,
           "size_bytes": 3729,
           "sha256": "83FF8FF825380AF9ECA07C952655D2096CCB8F33B1D33B264547B207E65AFCE3"
         },
         {
           "path": "synthetic/fixtures/subscriptions.json",
-          "role": "LOAD",
+          "role": "LOAD_FILTERED",
           "records": 12,
           "size_bytes": 4260,
           "sha256": "2667B19F662FFAAC1A473E263E35C28642E360ACEBA07FF55563CB24759DC77F"
@@ -196,18 +196,39 @@
           "sha256": "1D4892E06A9CE189DC984516A5894DCC8B93509EE2D07087C61A762BE33E6F00"
         },
         {
+          "path": "synthetic/fixtures/followup_confirmations.json",
+          "role": "VALIDATE_ONLY_PROFILE_EXCLUDED",
+          "records": 1,
+          "size_bytes": 658,
+          "sha256": "5172FEF53B6AB4F2DC292F15B96F68DB801C7247C79A3C5D3720475C0594703A"
+        },
+        {
           "path": "synthetic/fixtures/care_histories.json",
-          "role": "EXCLUDE_BLOCKED_OWNER_CONFIRMATION",
+          "role": "VALIDATE_ONLY_PROFILE_EXCLUDED",
           "records": 25,
           "size_bytes": 9770,
           "sha256": "643C0E160E25E07E81C7C1406F90D877EE24080FAC1A597B3D78221F89EB0470"
         },
         {
+          "path": "synthetic/fixtures/inquiry_status_histories.json",
+          "role": "VALIDATE_ONLY_PROFILE_EXCLUDED",
+          "records": 125,
+          "size_bytes": 93075,
+          "sha256": "26E49C6E468AAEF5E1FD18340E9A7B0DF58E290ADA61075749511FB71DA7D7AF"
+        },
+        {
+          "path": "synthetic/fixtures/audit_events.json",
+          "role": "VALIDATE_ONLY_PROFILE_EXCLUDED",
+          "records": 125,
+          "size_bytes": 62197,
+          "sha256": "2B9A586B14B0F44E9A30A458D6E152B87F6161D3D7367AEEA46BFD3208A90FFD"
+        },
+        {
           "path": "config/handoff/backend_import_crosswalk.json",
-          "role": "MAPPING_NOT_DB_VERIFIED",
+          "role": "MAPPING_DB_FULL_VERIFIED",
           "records": 1,
-          "size_bytes": 4477,
-          "sha256": "BA8E12FDC8AD8873340B59EAFEF14BDD8BC96310F7B364F600150E49AFAA2904"
+          "size_bytes": 18600,
+          "sha256": "2091BB0B448BACE5AA8AB31A0DAE613B7D51BBDB11F8AEBF666DFB9571020E87"
         },
         {
           "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
@@ -239,6 +260,7 @@
         }
       ],
       "selection": {
+        "source_count": 37,
         "scenario_ids": [
           "SYN-JAC104-001",
           "SYN-JAC104-002",
@@ -250,19 +272,18 @@
         "filter_rule": "선택 문의가 참조하는 고객·구독·상담·방문·케어 행만 FK 방향으로 포함"
       },
       "excluded": [
-        "inquiry_status_histories.json",
-        "audit_events.json",
-        "followup_confirmations.json",
+        "smoke profile에서는 후속확정·케어·상태이력·감사 fixture를 전수 검증하되 적재하지 않음",
         "서비스 State Machine 자동 적용"
       ],
       "commands": [
-        "python -B data/tools/pipeline.py handoff db-smoke"
+        "python -B data/tools/pipeline.py handoff db-smoke",
+        "python backend/manage.py import_synthetic_handoff --profile db-smoke"
       ]
     },
     "db-full": {
-      "purpose": "원본 24개 중 차단 2개를 제외한 활성 projection 22개의 데이터 품질·관계 검증",
-      "readiness": "QA_READY_BACKEND_RUNTIME_MAPPING_PENDING",
-      "contract_dependency": "BACKEND_RUNTIME_MAPPING_PENDING",
+      "purpose": "활성 projection 22개·source 367행의 PostgreSQL 전체 적재와 반복 안전성 검증 완료",
+      "readiness": "DB_FULL_VERIFIED",
+      "contract_dependency": "NONE",
       "items": [
         {
           "path": "synthetic/fixtures/users.json",
@@ -273,7 +294,7 @@
         },
         {
           "path": "synthetic/fixtures/customer_profiles.json",
-          "role": "LOAD_AFTER_LOOKUP_MAPPING",
+          "role": "LOAD",
           "records": 12,
           "size_bytes": 3537,
           "sha256": "5918EC8D52D731402CCDFCC6DAEEF468BCDEFFA850A045CB35EBD5D8A3129CA8"
@@ -287,7 +308,7 @@
         },
         {
           "path": "synthetic/fixtures/customer_products.json",
-          "role": "LOAD",
+          "role": "PROJECT",
           "records": 12,
           "size_bytes": 3729,
           "sha256": "83FF8FF825380AF9ECA07C952655D2096CCB8F33B1D33B264547B207E65AFCE3"
@@ -322,17 +343,17 @@
         },
         {
           "path": "synthetic/fixtures/care_histories.json",
-          "role": "EXCLUDE_BLOCKED_OWNER_CONFIRMATION",
+          "role": "LOAD",
           "records": 25,
           "size_bytes": 9770,
           "sha256": "643C0E160E25E07E81C7C1406F90D877EE24080FAC1A597B3D78221F89EB0470"
         },
         {
           "path": "config/handoff/backend_import_crosswalk.json",
-          "role": "MAPPING_NOT_DB_VERIFIED",
+          "role": "MAPPING_DB_FULL_VERIFIED",
           "records": 1,
-          "size_bytes": 4477,
-          "sha256": "BA8E12FDC8AD8873340B59EAFEF14BDD8BC96310F7B364F600150E49AFAA2904"
+          "size_bytes": 18600,
+          "sha256": "2091BB0B448BACE5AA8AB31A0DAE613B7D51BBDB11F8AEBF666DFB9571020E87"
         },
         {
           "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
@@ -343,21 +364,21 @@
         },
         {
           "path": "synthetic/fixtures/followup_confirmations.json",
-          "role": "LOAD_AFTER_MAPPING",
+          "role": "LOAD",
           "records": 1,
           "size_bytes": 658,
           "sha256": "5172FEF53B6AB4F2DC292F15B96F68DB801C7247C79A3C5D3720475C0594703A"
         },
         {
           "path": "synthetic/fixtures/inquiry_status_histories.json",
-          "role": "LOAD_AFTER_MAPPING",
+          "role": "LOAD",
           "records": 125,
           "size_bytes": 93075,
           "sha256": "26E49C6E468AAEF5E1FD18340E9A7B0DF58E290ADA61075749511FB71DA7D7AF"
         },
         {
           "path": "synthetic/fixtures/audit_events.json",
-          "role": "LOAD_AFTER_MAPPING",
+          "role": "LOAD",
           "records": 125,
           "size_bytes": 62197,
           "sha256": "2B9A586B14B0F44E9A30A458D6E152B87F6161D3D7367AEEA46BFD3208A90FFD"
@@ -392,6 +413,7 @@
         }
       ],
       "selection": {
+        "source_count": 367,
         "scenario_count": 22,
         "excluded_scenario_ids": [
           "SYN-JAC104-012",
@@ -399,10 +421,11 @@
         ]
       },
       "excluded": [
-        "Backend Runtime 상태·이벤트 적재 매핑 검증 전 자동 load"
+        "SYN-JAC104-012·SYN-JAC104-016 활성 projection 및 적재 제외"
       ],
       "commands": [
         "python -B data/tools/pipeline.py handoff db-full",
+        "python backend/manage.py import_synthetic_handoff --profile db-full",
         "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-29T00:00:00+09:00"
       ]
     },
@@ -415,43 +438,43 @@
           "path": "processed/validation/latest_qa_summary.json",
           "role": "SUMMARY",
           "records": 1,
-          "size_bytes": 7008,
-          "sha256": "6150E10B2AF342A19CAD3CDED19BC219A35DFEE315B7B0CA09F2B40411345252"
+          "size_bytes": 7006,
+          "sha256": "0C50F231FF6CEBD0B6A77281B02E61FD39BF7805E48044152ABE9601CEBC2C57"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 8472,
-          "sha256": "180B2B191B220B2D3F3E260329D03B8706E8BB913326465CBABAD96E9A4C5AB0"
+          "size_bytes": 8471,
+          "sha256": "D3123FB6F41F1E4701488E3F2351993E1BEFB82EAAA9E319B7904165A25CFCB3"
         },
         {
           "path": "processed/validation/integrity/latest_integrity_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 1341,
-          "sha256": "02783A43D543FF39407148C38222078B320A8BE57D86CC5962545CD1E3ADDB8D"
+          "size_bytes": 1340,
+          "sha256": "1B8E6C073154928AD2A35C9FFB556923292E8EF9B7B19B1E1B0739C23EAEECDA"
         },
         {
           "path": "processed/validation/quality/latest_quality_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 1247,
-          "sha256": "6C45DDAE762E0DCF6CEDEBA78D000736545A27C98F632B4495B25D1176569CAF"
+          "size_bytes": 1246,
+          "sha256": "61A45A2ED705ED1D90546D69B9C4ECEC1D07FC595568D0142BFE92DBC6011965"
         },
         {
           "path": "processed/validation/business/latest_business_rules_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 1545,
-          "sha256": "40B196EC454ABB5831973A3450751BC40021FB358BC79D4328FB6DAA41EFD82A"
+          "size_bytes": 1544,
+          "sha256": "133C4852E14B07DD6875E9018CC8646AA0BF4408F35C2FF552CC59C0B4C4103C"
         },
         {
           "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 1152,
-          "sha256": "09FC4B72D4FD908A0DB3F922DE0CD8EC9B32AF38FFFC944FBB77F3737A6B7E4F"
+          "size_bytes": 1151,
+          "sha256": "A1F3287C1663101BC45CC9077FD6D288B9C8BE556ECFA573734F7E074088D79C"
         },
         {
           "path": "processed/metadata/dataset_manifest.json",

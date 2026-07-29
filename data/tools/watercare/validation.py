@@ -20,6 +20,267 @@ from .io import (
     sha256_text_file,
 )
 
+TEXT_HASH_POLICY = {
+    "algorithm": "SHA-256",
+    "encoding": "UTF-8",
+    "bom": "IGNORE",
+    "text_line_endings": "LF",
+}
+
+BACKEND_CROSSWALK_SOURCE_PATHS = {
+    "user_model": "backend/apps/accounts/models/user.py",
+    "customer_profile_model": (
+        "backend/apps/accounts/models/customer_profile.py"
+    ),
+    "product_model": (
+        "backend/apps/products/models/product_model_registry.py"
+    ),
+    "subscription_model": (
+        "backend/apps/subscriptions/models/subscription.py"
+    ),
+    "inquiry_model": "backend/apps/inquiries/models/inquiry.py",
+    "symptom_entry_model": (
+        "backend/apps/inquiries/models/symptom_entry.py"
+    ),
+    "consultation_model": (
+        "backend/apps/consultations/models/consultation.py"
+    ),
+    "visit_model": "backend/apps/visits/models/visit.py",
+    "followup_confirmation_model": (
+        "backend/apps/inquiries/models/followup_confirmation.py"
+    ),
+    "care_model": "backend/apps/care/models/care_history.py",
+    "transition_history_model": (
+        "backend/apps/workflow/models/transition_history.py"
+    ),
+    "audit_event_model": (
+        "backend/apps/audit/models/audit_event.py"
+    ),
+    "import_ledger_model": (
+        "backend/apps/operations/models/synthetic_import_ledger.py"
+    ),
+    "import_repository": (
+        "backend/apps/operations/repositories/operations_repository.py"
+    ),
+    "import_service": (
+        "backend/apps/operations/services/operations_service.py"
+    ),
+    "import_command": (
+        "backend/apps/operations/management/commands/"
+        "import_synthetic_handoff.py"
+    ),
+    "demo_auth_repository": (
+        "backend/apps/accounts/repositories/account_repository.py"
+    ),
+}
+
+BACKEND_CROSSWALK_ENTITY_RULES = {
+    "synthetic/fixtures/users.json": (
+        "accounts.User",
+        "DIRECT",
+        "user_number",
+    ),
+    "synthetic/fixtures/customer_profiles.json": (
+        "accounts.CustomerProfile",
+        "DIRECT",
+        "customer_profile_number",
+    ),
+    "synthetic/fixtures/products.json": (
+        "products.ProductModel",
+        "DIRECT",
+        "product_code",
+    ),
+    "synthetic/fixtures/customer_products.json": (
+        "subscriptions.CustomerSubscription",
+        "PROJECTED",
+        "serial_number",
+    ),
+    "synthetic/fixtures/subscriptions.json": (
+        "subscriptions.CustomerSubscription",
+        "DIRECT",
+        "subscription_number",
+    ),
+    "synthetic/fixtures/inquiries.json": (
+        "inquiries.Inquiry",
+        "DIRECT",
+        "inquiry_number",
+    ),
+    "synthetic/fixtures/consultations.json": (
+        "consultations.Consultation",
+        "DIRECT",
+        "consultation_number",
+    ),
+    "synthetic/fixtures/visits.json": (
+        "visits.Visit",
+        "DIRECT",
+        "visit_number",
+    ),
+    "synthetic/fixtures/followup_confirmations.json": (
+        "inquiries.FollowupConfirmation",
+        "DIRECT",
+        "followup_number",
+    ),
+    "synthetic/fixtures/care_histories.json": (
+        "care.CareRecord",
+        "DIRECT",
+        "care_history_number",
+    ),
+    "synthetic/fixtures/inquiry_status_histories.json": (
+        "workflow.TransitionHistory",
+        "DIRECT",
+        "status_history_number",
+    ),
+    "synthetic/fixtures/audit_events.json": (
+        "audit.AuditEvent",
+        "DIRECT",
+        "audit_record_number",
+    ),
+}
+
+BACKEND_CROSSWALK_REQUIRED_FIELD_MAPPINGS = {
+    "synthetic/fixtures/users.json": {
+        "public_id": "public_id",
+        "user_number": (
+            "username; employee_no when role is not CUSTOMER"
+        ),
+        "display_name": "full_name",
+        "role": "role_code",
+    },
+    "synthetic/fixtures/customer_profiles.json": {
+        "public_id": "public_id",
+        "customer_profile_number": "customer_no",
+        "user_id": "user lookup",
+    },
+    "synthetic/fixtures/products.json": {
+        "public_id": "public_id",
+        "product_code": "model_code",
+        "product_model": "model_name",
+        "product_generation": "generation_code",
+    },
+    "synthetic/fixtures/customer_products.json": {
+        "public_id": "source_customer_product_public_id",
+        "serial_number": "serial_no",
+        "installation_date": "installed_on",
+        "installation_location": "installation_address",
+    },
+    "synthetic/fixtures/subscriptions.json": {
+        "public_id": "public_id",
+        "subscription_number": "contract_no",
+        "customer_profile_id": "customer lookup",
+        "customer_product_id": "customer product projection lookup",
+    },
+    "synthetic/fixtures/inquiries.json": {
+        "public_id": "public_id",
+        "inquiry_number": "inquiry_code",
+        "subscription_id": "subscription lookup",
+        "customer_id": "initiated_by customer user lookup",
+        "topic_code": "representative_symptom.symptom_type_code",
+        "status": "status_code",
+    },
+    "synthetic/fixtures/consultations.json": {
+        "public_id": "public_id",
+        "consultation_number": "consultation_code",
+        "inquiry_id": "inquiry lookup",
+        "status": "status",
+    },
+    "synthetic/fixtures/visits.json": {
+        "public_id": "public_id",
+        "visit_number": "visit_code",
+        "inquiry_id": "inquiry lookup",
+        "status": "status",
+    },
+    "synthetic/fixtures/followup_confirmations.json": {
+        "public_id": "public_id",
+        "followup_number": "followup_code",
+        "inquiry_id": "inquiry lookup",
+        "resolution_status_code": "resolution_status_code",
+    },
+    "synthetic/fixtures/care_histories.json": {
+        "public_id": "public_id",
+        "care_history_number": "care_code",
+        "customer_product_id": "subscription lookup",
+        "care_type": "care_type_code",
+        "performed_on": "performed_on",
+        "result": "result_code",
+    },
+    "synthetic/fixtures/inquiry_status_histories.json": {
+        "public_id": "public_id",
+        "status_history_number": "status_history_code",
+        "target_type_code": "target_type_code",
+        "to_status_code": "to_state",
+        "state_version": "state_version",
+    },
+    "synthetic/fixtures/audit_events.json": {
+        "public_id": "public_id",
+        "audit_record_number": "audit_code",
+        "entity_type": "entity_type",
+        "event_type": "event_code",
+        "state_version": "state_version; transition lookup",
+    },
+}
+
+EXPECTED_BACKEND_VERIFICATION_GATES = {
+    "db-smoke": {
+        "source_count": 37,
+        "dry_run_persisted_domain_rows": 0,
+        "dry_run_persisted_batch_rows": 0,
+        "dry_run_persisted_item_rows": 0,
+        "first_run": {
+            "created_count": 31,
+            "updated_count": 0,
+            "unchanged_count": 0,
+            "projected_count": 6,
+        },
+        "replay_run": {
+            "created_count": 0,
+            "updated_count": 0,
+            "unchanged_count": 31,
+            "projected_count": 6,
+        },
+        "source_items": 37,
+        "projection_checks": 6,
+        "aggregate_checks": 0,
+        "audit_history_checks": 0,
+    },
+    "db-full": {
+        "source_count": 367,
+        "dry_run_persisted_domain_rows": 0,
+        "dry_run_persisted_batch_rows": 0,
+        "dry_run_persisted_item_rows": 0,
+        "first_run": {
+            "created_count": 355,
+            "updated_count": 0,
+            "unchanged_count": 0,
+            "projected_count": 12,
+        },
+        "replay_run": {
+            "created_count": 0,
+            "updated_count": 0,
+            "unchanged_count": 355,
+            "projected_count": 12,
+        },
+        "source_items": 367,
+        "projection_checks": 12,
+        "aggregate_checks": 26,
+        "audit_history_checks": 125,
+    },
+}
+
+EXPECTED_CARE_TYPE_MAPPING = {
+    "REGULAR_INSPECTION": "PERIODIC_CHECK",
+    "FILTER_REPLACEMENT": "FILTER_REPLACEMENT",
+    "VISIT_SERVICE": "VISIT_SERVICE",
+}
+
+EXPECTED_SYNTHETIC_FIXTURE_SET_SHA256 = (
+    "7C407CB6F013BE584011E446650BACD4A6A958895F88448B17EE523AA5B9D068"
+)
+
+RUNTIME_DATABASE_PATTERN = re.compile(
+    r"^watercare_synthetic_(smoke|full)_verify_[0-9]{8}"
+    r"(?:_[a-z0-9]+)?$"
+)
+
 
 def validate_service_contract_mapping(config: PipelineConfig) -> list[str]:
     mapping = config.config("contract_mapping")
@@ -54,7 +315,27 @@ def validate_backend_import_crosswalk(config: PipelineConfig) -> list[str]:
     crosswalk = config.config("backend_crosswalk")
     repo_root = config.data_root.parent.resolve()
     errors: list[str] = []
-    for source_name, source in crosswalk["backend_sources"].items():
+
+    if crosswalk.get("mapping_version") != "2.0.0":
+        errors.append("backend_mapping_version_mismatch")
+    status = crosswalk.get("status")
+    if status not in {
+        "IMPLEMENTED_PENDING_DB_VERIFICATION",
+        "DB_FULL_VERIFIED",
+    }:
+        errors.append("backend_mapping_status_invalid")
+    if crosswalk.get("service_contracts_used") is not True:
+        errors.append("backend_service_contracts_not_enabled")
+    if crosswalk.get("hash_policy") != TEXT_HASH_POLICY:
+        errors.append("backend_source_hash_policy_mismatch")
+
+    backend_sources = crosswalk.get("backend_sources", {})
+    if {
+        name: source.get("path")
+        for name, source in backend_sources.items()
+    } != BACKEND_CROSSWALK_SOURCE_PATHS:
+        errors.append("backend_source_registry_mismatch")
+    for source_name, source in backend_sources.items():
         try:
             path = ensure_within(repo_root, repo_root / source["path"])
         except ValueError:
@@ -74,14 +355,187 @@ def validate_backend_import_crosswalk(config: PipelineConfig) -> list[str]:
         errors.append("backend_fixture_pk_injection_not_forbidden")
     if resolution["foreign_key_resolution"] != "LOOKUP_THEN_USE_BACKEND_INTERNAL_PK":
         errors.append("backend_fk_resolution_policy_mismatch")
+
+    mappings = crosswalk.get("entity_mappings", [])
+    fixtures = [row.get("fixture") for row in mappings]
+    if (
+        len(mappings) != len(BACKEND_CROSSWALK_ENTITY_RULES)
+        or len(fixtures) != len(set(fixtures))
+        or set(fixtures) != set(BACKEND_CROSSWALK_ENTITY_RULES)
+    ):
+        errors.append("backend_entity_fixture_coverage_mismatch")
+    expected_readiness = (
+        "IMPLEMENTED_PENDING_DB_VERIFICATION"
+        if status == "IMPLEMENTED_PENDING_DB_VERIFICATION"
+        else None
+    )
+    for row in mappings:
+        fixture = row.get("fixture")
+        rule = BACKEND_CROSSWALK_ENTITY_RULES.get(fixture)
+        if rule is None:
+            continue
+        actual_rule = (
+            row.get("backend_model"),
+            row.get("load_mode"),
+            row.get("business_key"),
+        )
+        if actual_rule != rule:
+            errors.append(f"backend_entity_mapping_mismatch:{fixture}")
+        field_mappings = row.get("field_mappings", {})
+        required_fields = BACKEND_CROSSWALK_REQUIRED_FIELD_MAPPINGS[
+            fixture
+        ]
+        if any(
+            field_mappings.get(source_field) != target_field
+            for source_field, target_field in required_fields.items()
+        ):
+            errors.append(
+                f"backend_entity_field_mapping_mismatch:{fixture}"
+            )
+        readiness = row.get("readiness")
+        if expected_readiness is not None:
+            if readiness != expected_readiness:
+                errors.append(
+                    f"backend_entity_readiness_mismatch:{fixture}"
+                )
+        else:
+            final_readiness = (
+                "PROJECTED_DB_FULL_VERIFIED"
+                if row.get("load_mode") == "PROJECTED"
+                else "DB_FULL_VERIFIED"
+            )
+            if readiness != final_readiness:
+                errors.append(
+                    f"backend_entity_readiness_mismatch:{fixture}"
+                )
+
     care_mapping = crosswalk["code_mappings"]["care_type"]
-    if care_mapping.get("VISIT_SERVICE") is not None:
-        errors.append("unconfirmed_care_mapping_enabled")
-    blocked = {
-        row["id"]: row["treatment"] for row in crosswalk["blocked_mappings"]
-    }
-    if blocked.get("CARE-VISIT-SERVICE-TYPE") != "EXCLUDE_FROM_DIRECT_LOAD":
-        errors.append("unconfirmed_care_mapping_not_excluded")
+    if care_mapping != EXPECTED_CARE_TYPE_MAPPING:
+        errors.append("backend_care_mapping_mismatch")
+    if crosswalk.get("blocked_mappings") != []:
+        errors.append("backend_blocked_mapping_present")
+
+    verification = crosswalk.get("verification", {})
+    verification_status = verification.get("status")
+    actual_evidence = verification.get("actual")
+    if verification.get("database_engine") != "PostgreSQL":
+        errors.append("backend_verification_engine_mismatch")
+    if verification.get("dry_run_rollback_required") is not True:
+        errors.append("backend_dry_run_rollback_not_required")
+    if verification.get("expected") != EXPECTED_BACKEND_VERIFICATION_GATES:
+        errors.append("backend_verification_gate_mismatch")
+    if status == "IMPLEMENTED_PENDING_DB_VERIFICATION":
+        if verification_status != "PENDING" or actual_evidence is not None:
+            errors.append("backend_pending_verification_state_mismatch")
+        return errors
+
+    if (
+        verification_status != "DB_FULL_VERIFIED"
+        or not isinstance(actual_evidence, dict)
+    ):
+        errors.append("backend_full_verification_evidence_missing")
+        return errors
+
+    for profile, expected_gate in EXPECTED_BACKEND_VERIFICATION_GATES.items():
+        if actual_evidence.get(profile) != expected_gate:
+            errors.append(
+                f"backend_full_verification_evidence_mismatch:{profile}"
+            )
+    if not str(actual_evidence.get("verified_at", "")).strip():
+        errors.append("backend_full_verification_time_missing")
+    if not str(actual_evidence.get("database_version", "")).startswith(
+        "PostgreSQL "
+    ):
+        errors.append("backend_full_verification_version_invalid")
+
+    runtime_evidence = actual_evidence.get("evidence")
+    if not isinstance(runtime_evidence, dict):
+        errors.append("backend_runtime_evidence_missing")
+        return errors
+    if (
+        runtime_evidence.get("fixture_set_sha256")
+        != EXPECTED_SYNTHETIC_FIXTURE_SET_SHA256
+    ):
+        errors.append("backend_runtime_fixture_hash_mismatch")
+
+    base_commit_sha = str(runtime_evidence.get("base_commit_sha", ""))
+    if re.fullmatch(r"[a-f0-9]{40}", base_commit_sha) is None:
+        errors.append("backend_runtime_base_commit_invalid")
+
+    document = runtime_evidence.get("runtime_document", {})
+    try:
+        document_path = ensure_within(
+            repo_root,
+            repo_root / document["path"],
+        )
+    except (KeyError, ValueError):
+        errors.append("backend_runtime_document_path_invalid")
+    else:
+        if not document_path.is_file():
+            errors.append("backend_runtime_document_missing")
+        elif (
+            sha256_text_file(document_path)
+            != document.get("text_sha256")
+        ):
+            errors.append("backend_runtime_document_hash_mismatch")
+
+    profiles = runtime_evidence.get("profiles", {})
+    batch_codes: list[str] = []
+    for profile in ("db-smoke", "db-full"):
+        profile_evidence = profiles.get(profile, {})
+        database_name = str(profile_evidence.get("database_name", ""))
+        match = RUNTIME_DATABASE_PATTERN.fullmatch(database_name)
+        expected_kind = profile.removeprefix("db-")
+        if match is None or match.group(1) != expected_kind:
+            errors.append(f"backend_runtime_database_mismatch:{profile}")
+        expected_command = (
+            "python backend/manage.py import_synthetic_handoff "
+            f"--profile {profile}"
+        )
+        if (
+            profile_evidence.get("migration_command")
+            != "python backend/manage.py migrate --noinput"
+            or profile_evidence.get("dry_run_command")
+            != f"{expected_command} --dry-run"
+            or profile_evidence.get("first_run_command")
+            != expected_command
+            or profile_evidence.get("replay_run_command")
+            != expected_command
+        ):
+            errors.append(
+                f"backend_runtime_command_mismatch:{profile}"
+            )
+        batch_codes.extend(
+            [
+                str(profile_evidence.get("first_batch_code", "")),
+                str(profile_evidence.get("replay_batch_code", "")),
+            ]
+        )
+        try:
+            first_completed = datetime.fromisoformat(
+                profile_evidence["first_completed_at"]
+            )
+            replay_completed = datetime.fromisoformat(
+                profile_evidence["replay_completed_at"]
+            )
+        except (KeyError, TypeError, ValueError):
+            errors.append(
+                f"backend_runtime_timestamp_invalid:{profile}"
+            )
+        else:
+            if replay_completed <= first_completed:
+                errors.append(
+                    f"backend_runtime_replay_order_invalid:{profile}"
+                )
+    if (
+        len(batch_codes) != 4
+        or len(set(batch_codes)) != 4
+        or any(
+            re.fullmatch(r"SYN-IMPORT-[A-F0-9]{32}", code) is None
+            for code in batch_codes
+        )
+    ):
+        errors.append("backend_runtime_batch_codes_invalid")
     return errors
 
 
@@ -177,7 +631,7 @@ def validate_configs(config: PipelineConfig) -> list[dict[str, Any]]:
         not backend_crosswalk_errors,
         ",".join(backend_crosswalk_errors)
         if backend_crosswalk_errors
-        else "lookup_bridge_and_blocked_mappings_verified",
+        else "lookup_bridge_and_runtime_verification_gate_verified",
     )
     danger_normal = [
         row["scenario_id"]

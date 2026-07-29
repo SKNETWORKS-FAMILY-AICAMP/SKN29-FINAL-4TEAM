@@ -139,8 +139,8 @@ python .\scripts\development\check_environment.py --service backend --full
 
 PostgreSQL이 실행 중이고 현재 Commit의 Migration 적용까지 끝난 경우에만
 읽기 전용 연결과 적용 Migration 검사를 추가한다. 새 DB에서는 먼저
-[공유 패키지 인계서 v1.2](<../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md>)의
-5.5 사전 검사 → 5.6 Migration·Seed → 5.7 최종 게이트 순서를 따른다.
+[공유 패키지 인계서 v1.3](<../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md>)의
+사전 검사 → Migration·Seed → 최종 Gate 순서를 따른다.
 
 ```powershell
 python .\scripts\development\check_environment.py `
@@ -150,15 +150,15 @@ python .\scripts\development\check_environment.py `
 ```
 
 Seed와 Health·Auth Smoke는 DB와 HTTP 상태를 바꾸므로 이 읽기 전용 검사에
-포함하지 않고 [공유 패키지 인계서 v1.2](<../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md>)의
+포함하지 않고 [공유 패키지 인계서 v1.3](<../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md>)의
 명시적 순서로 실행한다.
 
 ### 5.4 환경 준비 후 서버 다시 켜기
 
 이 문서는 `.venv` 생성·검증·복구까지만 책임진다. 최초 설치가 끝난
 PC에서 PostgreSQL과 Django를 다시 켜거나 종료·재시작할 때는
-[공유 패키지 인계서 v1.2](<../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md>)의
-6장을 사용한다. requirements fingerprint가 같고 빠른 검사가 통과하면
+[공유 패키지 인계서 v1.3](<../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md>)을
+사용한다. requirements fingerprint가 같고 빠른 검사가 통과하면
 bootstrap과 패키지 설치를 다시 실행하지 않는다.
 
 ### 5.5 fingerprint 불일치 해석과 동기화
@@ -218,7 +218,10 @@ python .\scripts\development\bootstrap.py --service backend --recreate
 
 ## 8. 2026-07-29 작성자 환경·Runtime 검증
 
-| 검증 | 결과 |
+다음 표는 합성 Schema·Migration 통합 전 v1.2 기준선의 역사 기록이다.
+후속 테스트 수와 기본 DB Migration 결과로 이 수치를 덮어쓰지 않는다.
+
+| v1.2 기준선 검증 | 당시 결과 |
 | --- | --- |
 | bootstrap 동기화 | Exit code `0` |
 | Python | `3.13.13` |
@@ -236,7 +239,7 @@ python .\scripts\development\bootstrap.py --service backend --recreate
 | 적용 Migration | 누락 없음 |
 | Health·Auth Smoke | `status=PASSED`, Exit code `0` |
 
-이 표는 최지용 작성자 PC에서 2026-07-29에 실행한 증거다. 테스트가
+이 표는 최지용 작성자 PC에서 2026-07-29에 실행한 당시 증거다. 테스트가
 추가되면 개수는 달라질 수 있으므로 장기 정상 기준은 Exit code `0`,
 `failures=0`, Migration drift 없음이다. 김은진의 독립 재현이나 PR
 비작성자 리뷰가 완료됐다는 증거로 해석하지 않는다.
@@ -245,11 +248,37 @@ python .\scripts\development\bootstrap.py --service backend --recreate
 Node·npm 버전, 자동 테스트와 실제 Browser API 소비 검증은 별도
 게이트이며 이 숫자에 포함되지 않는다.
 
+### 8.1 합성 Schema·Migration 통합 후 현재 실측
+
+| 현재 검증 | 결과 |
+| --- | --- |
+| Backend 전체 테스트 | `397 passed` |
+| 테스트 DB | `config.settings.test`의 SQLite |
+| PostgreSQL | 16.14, 기본 `watercare` 읽기 전용 연결 통과 |
+| 적용 Migration | 기존 미적용 9개 + `workflow.0003`, 누락 0 |
+| 기존 데이터 | 적용 전후 테이블별 row count 보존 |
+| Workflow 보정 | 기존 11건의 `changed_at`을 원래 `created_at`으로 보정 |
+| Demo Seed | 4종 명령 2회 실행, 비의도 중복 0 |
+| Migration drift | 없음 |
+
+`397 passed`는 PostgreSQL에서 실행한 테스트 수가 아니다. Pytest는
+SQLite 테스트 설정을 사용하고, 같은 `--full --postgresql` Gate가 실제
+PostgreSQL 연결과 적용 Migration을 별도의 읽기 전용 단계로 확인한다.
+상세 적용·보정 증거는
+[PostgreSQL 합성 Handoff Runtime 검증·인계서](<../../manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md>)에
+누적했다.
+
+기본 `watercare`에서는 합성 Importer와 `--dry-run`을 실행하지 않는다.
+canonical fixture와 기존 공개 UUID가 달라 예상되는 UUID mismatch를
+우회하지 않으며, Importer는 새 빈 격리 DB에서만 검증한다. dry-run도
+PostgreSQL Sequence를 바꿀 수 있으므로 기본 DB의 읽기 전용 환경 Gate와
+동일시하지 않는다.
+
 ## 9. 담당자별 인계
 
 | 대상 | 전달 범위 | 다음 행동 | 완료 증거 | 현재 상태 |
 | --- | --- | --- | --- | --- |
-| 김은진 | `scripts/development/**`, requirements·constraints, 전체 검사 | 새 Pull 환경에서 bootstrap과 Migration 적용 후 `--full --postgresql`, Health·Auth Smoke를 재현하고 Windows/Linux 차이를 기록 | 사용한 Python, 명령, exit code, 테스트 수를 PR 또는 Issue에 기록 | 작성자 353 테스트·PostgreSQL·Health·Auth Smoke 검증 완료, 독립 재현 미확인 |
+| 김은진 | `scripts/development/**`, requirements·constraints, 전체 검사 | 새 Pull 환경에서 bootstrap과 Migration 적용 후 `--full --postgresql`, Health·Auth Smoke를 재현하고 Windows/Linux 차이를 기록 | 사용한 Python, 명령, exit code, 테스트 수를 PR 또는 Issue에 기록 | 작성자 현재 397 테스트·PostgreSQL 읽기 전용 Gate 검증 완료, 독립 재현 미확인 |
 | 윤승혁(PM) | `.vscode/**`, 루트 `.gitignore`, 서비스별 환경 경계 | Web·AI Workspace 설정과 충돌이 없는지 확인하고 비작성자 리뷰 후 통합 | 검토 의견 또는 PR 리뷰와 병합 Commit | 통합 검토 미확인 |
 | 이동윤 | Backend와 분리된 AI 환경 원칙 | AI Manifest·Python·실행 명령 확정 후 `ai/.venv` 재현 입력 작성 | AI 단독 설치·테스트 기록 | AI 환경 기준 미확정 |
 | 한예나·양정현 | Backend Interpreter가 아닌 HTTP API 소비 경계 | `.venv`를 복사받지 않고 Backend URL·계약으로 연동 | Web·Mobile 소비 호환성 결과 | 소비 확인 미확인 |
@@ -262,7 +291,7 @@ Node·npm 버전, 자동 테스트와 실제 Browser API 소비 검증은 별도
 2. 깨끗한 임시환경 설치·전체 검증
 3. 실제 `backend/.venv` 재생성
 4. 실제 환경 전체 검증
-5. 공유 패키지 인계서 v1.2와 환경 검증 기록 갱신
+5. 공유 패키지 인계서 v1.3과 환경 검증 기록 갱신
 6. 환경 기준선이 통과한 뒤 T-005의 다음 한 Wave 작업
 7. 해당 Wave 검증 후 다음 작업
 

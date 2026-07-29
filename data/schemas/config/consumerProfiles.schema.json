@@ -19,7 +19,7 @@
       "const": "consumer_handoff_only"
     },
     "service_contracts_used": {
-      "const": false
+      "const": true
     },
     "contract_alignment": {
       "type": "object",
@@ -35,7 +35,7 @@
         "state_machine_version": {"const": "1.0.0"},
         "state_machine_status": {"const": "TEAM_APPROVED"},
         "data_projection_consumes_contract": {"const": true},
-        "backend_runtime_verified": {"const": false},
+        "backend_runtime_verified": {"const": true},
         "legacy_service_contracts_used_semantics": {
           "const": "BACKEND_RUNTIME_INTEGRATION_ONLY"
         }
@@ -70,7 +70,11 @@
         "purpose": {"type": "string", "minLength": 1},
         "readiness": {"type": "string", "minLength": 1},
         "contract_dependency": {
-          "enum": ["NONE", "BACKEND_RUNTIME_MAPPING_PENDING"]
+          "enum": [
+            "NONE",
+            "BACKEND_RUNTIME_MAPPING_PENDING",
+            "BACKEND_RUNTIME_VERIFICATION_PENDING"
+          ]
         },
         "items": {
           "type": "array",

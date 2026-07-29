@@ -177,21 +177,24 @@ def test_repository_audit_maps_all_32_tables_without_false_completion(
     assert result["status"] == "NOT_READY"
     assert result["scope"] == "T005_DJANGO_MODEL_MIGRATION_MAPPING"
     assert summary["contract_table_count"] == 32
-    assert summary["declared_contract_model_count"] == 7
-    assert summary["registered_contract_model_count"] == 7
-    assert summary["migration_contract_table_count"] == 7
-    assert summary["fully_implemented_contract_table_count"] == 7
+    assert summary["declared_contract_model_count"] == 10
+    assert summary["registered_contract_model_count"] == 10
+    assert summary["migration_contract_table_count"] == 10
+    assert summary["fully_implemented_contract_table_count"] == 10
     assert mapping["implemented_tables"] == [
         "accounts_user",
         "catalog_product_model",
         "customers_customer_profile",
+        "field_service_visit",
         "subscriptions_care_record",
         "subscriptions_customer_subscription",
+        "support_consultation",
+        "support_followup_confirmation",
         "support_inquiry",
         "support_inquiry_symptom",
     ]
-    assert len(mapping["missing_model_tables"]) == 25
-    assert len(mapping["missing_migration_tables"]) == 25
+    assert len(mapping["missing_model_tables"]) == 22
+    assert len(mapping["missing_migration_tables"]) == 22
     assert result["evidence"]["contract"]["contract_status"] == (
         "OWNER_BASELINE"
     )

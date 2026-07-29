@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import unittest
 import json
+import re
 from pathlib import Path
 
 
@@ -11,7 +12,7 @@ DATA_ROOT = TOOLS_ROOT.parent
 sys.path.insert(0, str(TOOLS_ROOT))
 
 from watercare.config import load_pipeline
-from watercare.io import read_json
+from watercare.io import normalize_text_bytes, read_json, sha256_bytes
 from watercare.validation import (
     validate_backend_import_crosswalk,
     validate_contract_alignment_registry,
@@ -36,6 +37,7 @@ class ServiceContractMappingTests(unittest.TestCase):
                 "adr_0011_idempotency_scope",
                 "t005_physical_contract_v1_2",
                 "public_api_idempotency_conflict",
+                "care_results",
             },
             set(self.mapping["contract_sources"]) - {
                 "user_roles",
@@ -50,27 +52,132 @@ class ServiceContractMappingTests(unittest.TestCase):
                 "version": "1.0.0",
                 "status": "TEAM_APPROVED",
                 "data_projection_consumes_contract": True,
-                "backend_runtime_verified": False,
+                "backend_runtime_verified": True,
             },
             self.mapping["state_machine_contract"],
         )
 
-    def test_backend_crosswalk_blocks_direct_pk_and_unconfirmed_care(self) -> None:
+    def test_care_results_match_contract_schema_and_fixture_values(
+        self,
+    ) -> None:
+        contract_text = (
+            DATA_ROOT.parent / "contracts" / "codes" / "care-results.yaml"
+        ).read_text(encoding="utf-8")
+        contract_codes = set(
+            re.findall(
+                r"^\s*-\s+([A-Z][A-Z0-9_]*)\s*$",
+                contract_text,
+                re.M,
+            )
+        )
+        care_schema = read_json(
+            DATA_ROOT
+            / "schemas"
+            / "synthetic"
+            / "syntheticCareHistory.schema.json"
+        )
+        fixture_rows = read_json(
+            DATA_ROOT / "synthetic" / "fixtures" / "care_histories.json"
+        )
+
+        self.assertEqual(
+            {"NORMAL", "FILTER_REPLACED", "ISSUE_RESOLVED"},
+            contract_codes,
+        )
+        self.assertEqual(
+            contract_codes,
+            set(care_schema["properties"]["result"]["enum"]),
+        )
+        self.assertEqual(
+            contract_codes,
+            {row["result"] for row in fixture_rows},
+        )
+
+    def test_text_source_hash_is_line_ending_and_bom_independent(self) -> None:
+        lf = b"version: 1\nstate: approved\n"
+        crlf = b"version: 1\r\nstate: approved\r\n"
+        cr = b"version: 1\rstate: approved\r"
+        bom = b"\xef\xbb\xbf" + cr
+
+        expected = sha256_bytes(normalize_text_bytes(lf))
+        for variant in (crlf, cr, bom):
+            self.assertEqual(
+                expected,
+                sha256_bytes(normalize_text_bytes(variant)),
+            )
+
+    def test_text_source_hash_changes_when_content_changes(self) -> None:
+        approved = normalize_text_bytes(b"version: 1\nstate: approved\n")
+        blocked = normalize_text_bytes(b"version: 1\nstate: blocked\n")
+        self.assertNotEqual(sha256_bytes(approved), sha256_bytes(blocked))
+
+    def test_text_source_hash_rejects_invalid_utf8(self) -> None:
+        with self.assertRaises(UnicodeDecodeError):
+            normalize_text_bytes(b"version: 1\nstate: \xff\n")
+
+    def test_backend_crosswalk_v2_matches_runtime_importer(self) -> None:
         self.assertEqual([], validate_backend_import_crosswalk(self.config))
         crosswalk = self.config.config("backend_crosswalk")
+        self.assertEqual("2.0.0", crosswalk["mapping_version"])
+        self.assertIn(
+            crosswalk["status"],
+            {
+                "IMPLEMENTED_PENDING_DB_VERIFICATION",
+                "DB_FULL_VERIFIED",
+            },
+        )
+        self.assertTrue(crosswalk["service_contracts_used"])
+        self.assertEqual(17, len(crosswalk["backend_sources"]))
         self.assertEqual(
             "FORBIDDEN",
             crosswalk["identifier_resolution"]["backend_primary_key_injection"],
         )
-        self.assertIsNone(
-            crosswalk["code_mappings"]["care_type"]["VISIT_SERVICE"]
+        mappings = {
+            row["fixture"]: row
+            for row in crosswalk["entity_mappings"]
+        }
+        self.assertEqual(12, len(mappings))
+        self.assertEqual(
+            "PROJECTED",
+            mappings[
+                "synthetic/fixtures/customer_products.json"
+            ]["load_mode"],
         )
-        self.assertTrue(
-            all(
-                row["treatment"] == "EXCLUDE_FROM_DIRECT_LOAD"
-                for row in crosswalk["blocked_mappings"]
+        self.assertEqual(
+            "VISIT_SERVICE",
+            crosswalk["code_mappings"]["care_type"]["VISIT_SERVICE"],
+        )
+        self.assertEqual([], crosswalk["blocked_mappings"])
+
+        verification = crosswalk["verification"]
+        if crosswalk["status"] == "IMPLEMENTED_PENDING_DB_VERIFICATION":
+            self.assertEqual("PENDING", verification["status"])
+            self.assertIsNone(verification["actual"])
+            self.assertTrue(
+                all(
+                    row["readiness"]
+                    == "IMPLEMENTED_PENDING_DB_VERIFICATION"
+                    for row in mappings.values()
+                )
             )
+        else:
+            self.assertEqual("DB_FULL_VERIFIED", verification["status"])
+            self.assertEqual(
+                verification["expected"]["db-smoke"],
+                verification["actual"]["db-smoke"],
+            )
+            self.assertEqual(
+                verification["expected"]["db-full"],
+                verification["actual"]["db-full"],
+            )
+
+        schema = read_json(
+            DATA_ROOT
+            / "schemas"
+            / "config"
+            / "backendImportCrosswalk.schema.json"
         )
+        self.assertEqual([], validate_schema(crosswalk, schema))
 
     def test_canonical_role_is_consultant(self) -> None:
         self.assertEqual(

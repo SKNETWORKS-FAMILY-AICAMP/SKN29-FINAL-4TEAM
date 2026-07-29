@@ -3,7 +3,7 @@
 > 상태: **OWNER_CONFIRMED DB DESIGN BASELINE — Runtime 구현과 분리**
 > 설계 기준: `T-005 Physical Contract v1.2` / 기준일: 2026-07-28
 > 구현 경계: 설계 기준선은 확정됐으며 Django Model·Migration은 현재
-> `7/32` 테이블까지 구현됐다. Accounts는 `public_id(UUID)`를 추가하는
+> `10/32` 테이블까지 구현됐고 22개가 남았다. Accounts는 `public_id(UUID)`를 추가하는
 > 전환 브리지 단계로, 전체 내부 BigInt PK 전환 완료를 뜻하지 않는다.
 
 ## 문서 구성

@@ -1,0 +1,180 @@
+# 합성 고객 Demo Login 별칭 개발·운영 가이드
+
+- 작성일: 2026-07-29
+- 대상: Backend·Frontend·Data/QA 협업자
+- 상태: 코드·자동화 검증 완료 / 기본 DB HTTP 검증 완료 / 최신 `main` 격리 DB HTTP 재실행은 후속
+- 적용 API: `POST /api/v1/auth/demo-login`
+
+> 후속 통합 검증(2026-07-29): 아래의 PostgreSQL 미검증 문구는 Auth
+> 코드 단계 당시의 범위를 설명한다. 이후 full 격리 DB의 실제 적재
+> 계정으로 `SYN-CUSTOMER-001`은 HTTP 200, 내부 `CUS-0001` 직접
+> 요청은 HTTP 401을 확인했다. 최신 `main` 기준 Crosswalk v2와
+> PostgreSQL Smoke·Full은 다시 검증했지만 HTTP 서버 Smoke는 같은
+> 격리 DB에서 재실행하지 않았으므로 두 증거를 합쳐 쓰지 않는다.
+> 최종 실행 근거는
+> [PostgreSQL 합성 Handoff Runtime 검증·인계서](20260729_postgresql_synthetic_handoff_runtime_verification.md)를
+> 따른다.
+
+## 1. 작업 목적
+
+데이터 원장의 실제 사용자명 `CUS-0001`을 공개 Demo Login 코드로 노출하지 않고, 합성 고객 번호 `SYN-CUSTOMER-001`을 안전한 로그인 별칭으로 사용하도록 조회 경로를 보강했다.
+
+별칭 해석은 다음 관계를 따른다.
+
+```text
+요청 코드 SYN-CUSTOMER-001
+  → CustomerProfile.customer_no = SYN-CUSTOMER-001
+  → CustomerProfile.user
+  → User.username = CUS-0001
+  → 공개 UUID를 JWT subject(sub)로 발급
+```
+
+`SYN-*`은 고객 프로필을 찾는 별칭이며 사용자명을 새 값으로 바꾸는 기능이 아니다. 따라서 `CUS-0001`을 `demo_user_code`로 직접 보내는 요청은 계속 거부된다.
+
+## 2. 구현 위치와 역할
+
+| 구성요소 | 구현 내용 | 근거 |
+|---|---|---|
+| 요청 계약 | `demo_user_code`가 `DEMO-` 또는 `SYN-`으로 시작하도록 허용 | [LoginRequest 계약](../../../../contracts/api/components/schemas/auth/LoginRequest.yaml) |
+| API 라우팅 | Demo Login, refresh, logout, 현재 사용자 조회 경로 제공 | [Accounts URL](../../../../backend/apps/accounts/api/urls.py), [프로젝트 URL](../../../../backend/config/urls.py) |
+| 입력 검증 | 공백을 제거한 최대 150자 문자열로 수신 | [Accounts Serializer](../../../../backend/apps/accounts/api/serializers.py) |
+| 인증 정책 | 기능 플래그, allowlist, `DEMO-`/`SYN-` 접두사를 순서대로 확인한 뒤 계정 조회 | [AuthenticationService](../../../../backend/apps/accounts/services/authentication_service.py) |
+| 별칭 조회 | `SYN-*`을 합성 고객 프로필의 `customer_no`로 조회하고 연결된 활성 고객 사용자를 반환 | [AccountRepository](../../../../backend/apps/accounts/repositories/account_repository.py) |
+| 합성 프로필 조건 | 고객 번호, 합성 여부, soft delete 상태를 고객 프로필에 보관 | [CustomerProfile 모델](../../../../backend/apps/accounts/models/customer_profile.py) |
+| 환경 설정 | Demo Login 기본 비활성화와 쉼표 구분 allowlist 구성 | [Backend 설정](../../../../backend/config/settings/base.py), [환경변수 예시](../../../../backend/.env.example) |
+| 회귀 테스트 | 정상 별칭 로그인, 직접 사용자명 차단, 비활성·삭제·역할변경 차단, Repository 필터 검증 | [Auth API 테스트](../../../../backend/tests/unit/accounts/test_auth_api.py) |
+
+API 계약은 작업 전부터 `SYN-*` 접두사를 허용하고 있어 계약 파일을 추가 수정하지 않았다. 이번 작업의 핵심은 Backend Repository가 계약상 허용된 별칭을 실제 합성 고객 프로필로 안전하게 해석하도록 만든 것이다.
+
+## 3. 보안 제한
+
+`SYN-*` 요청은 아래 조건을 모두 만족해야 한다.
+
+| 순서 | 조건 | 실패 결과 | 방어 목적 |
+|---:|---|---|---|
+| 1 | `DJANGO_DEMO_LOGIN_ENABLED=true` | HTTP 403 | 운영 환경에서 Demo Login이 기본 활성화되는 것을 방지 |
+| 2 | 요청 코드가 `DJANGO_DEMO_LOGIN_CODES` allowlist에 포함 | HTTP 401 | 임의 합성 고객 번호 열거·로그인 방지 |
+| 3 | 코드가 `DEMO-` 또는 `SYN-` 접두사 사용 | HTTP 401 | `CUS-0001` 같은 내부 사용자명 직접 사용 차단 |
+| 4 | 연결 `User.is_active=true` | HTTP 401 | 비활성 계정 토큰 발급 차단 |
+| 5 | 연결 사용자의 역할이 `CUSTOMER` | HTTP 401 | 직원 계정·역할 변경 계정의 고객 별칭 사용 차단 |
+| 6 | `CustomerProfile.customer_no`가 요청 코드와 일치 | HTTP 401 | 별칭과 고객 원장 간 잘못된 연결 방지 |
+| 7 | `CustomerProfile.is_synthetic=true` | HTTP 401 | 실제 고객 프로필을 Demo Login으로 사용하는 것을 방지 |
+| 8 | `CustomerProfile.deleted_at IS NULL` | HTTP 401 | soft delete된 고객 프로필의 재사용 방지 |
+
+로그인 성공 시 토큰의 `sub`에는 `CUS-0001`이 아니라 사용자의 공개 UUID가 들어가고, `role_code`가 함께 발급된다. refresh 시에도 현재 활성 상태와 역할을 다시 확인한다.
+
+## 4. 로컬 설정
+
+로컬 `.env`에는 최소 다음 값을 명시한다.
+
+```dotenv
+DJANGO_DEMO_LOGIN_ENABLED=true
+DJANGO_DEMO_LOGIN_CODES=DEMO-CUSTOMER-001,DEMO-CONSULTANT-001,DEMO-TECHNICIAN-001,DEMO-OPERATOR-001,SYN-CUSTOMER-001
+```
+
+[환경변수 예시](../../../../backend/.env.example)에 `SYN-CUSTOMER-001`이 포함되어 있다. 실제 비밀값을 문서나 저장소에 추가하지 말고, 운영 환경은 Demo Login을 비활성화한 상태를 기본값으로 유지한다.
+
+별칭 로그인 전에 DB에 다음 관계가 존재해야 한다.
+
+| 모델 | 필드 | 필요한 값 |
+|---|---|---|
+| `User` | `username` | `CUS-0001` |
+| `User` | `role_code` | `CUSTOMER` |
+| `User` | `is_active` | `true` |
+| `CustomerProfile` | `user` | 위 `User` |
+| `CustomerProfile` | `customer_no` | `SYN-CUSTOMER-001` |
+| `CustomerProfile` | `is_synthetic` | `true` |
+| `CustomerProfile` | `deleted_at` | `NULL` |
+
+이 표는 선행조건 설명이다. 기본 DB의 HTTP 검증과 최신 `main` 격리 DB
+Import 검증은 각각 완료했지만, 최신 `main` 격리 DB를 사용한 HTTP
+Smoke는 후속 재현 범위다.
+
+## 5. 자동화 검증 결과
+
+`backend` 디렉터리에서 다음 전체 회귀 게이트를 통과했다.
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q -p no:cacheprovider
+```
+
+이 기능 구현 단계의 역사 결과는 `390 passed in 50.08s`였다. 현재
+최신 `main` 통합 후보의 전체 Backend 회귀는 `397 passed`이며, 포함된
+[Auth API 테스트](../../../../backend/tests/unit/accounts/test_auth_api.py)는 다음을 자동 검증한다.
+
+1. `SYN-CUSTOMER-001`이 `username=CUS-0001`인 합성 고객에게 연결되고 HTTP 200과 JWT를 반환한다.
+2. `CUS-0001`이 allowlist에 있더라도 허용 접두사가 아니므로 HTTP 401을 반환한다.
+3. 비활성 사용자, soft delete된 고객 프로필, 고객이 아닌 역할은 각각 HTTP 401을 반환한다.
+4. Repository 조회에 `customer_no`, `is_synthetic=true`, `deleted_at IS NULL` 필터가 포함된다.
+5. Demo Login 기능 플래그가 꺼져 있으면 HTTP 403을 반환한다.
+
+같은 테스트 파일만 분리 실행한 결과도 `20 passed in 8.38s`였다.
+
+이 자동화 테스트는 [테스트 설정](../../../../backend/config/settings/test.py)의 메모리 SQLite DB에서 수행됐다. 실제 PostgreSQL의 importer 적재 계정이나 실행 중인 서버에 대한 curl 성공을 증명하지 않는다.
+
+## 6. 수동 curl 확인 절차
+
+아래 절차는 로컬 DB에 앞의 계정·프로필 관계가 준비되어 있을 때 사용한다.
+
+### 6.1 서버 실행
+
+```powershell
+cd backend
+.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
+```
+
+### 6.2 합성 고객 별칭 로그인
+
+다른 PowerShell 창에서 실행한다.
+
+```powershell
+curl.exe -i -sS -X POST "http://127.0.0.1:8000/api/v1/auth/demo-login" `
+  -H "Content-Type: application/json" `
+  -d "{\"demo_user_code\":\"SYN-CUSTOMER-001\"}"
+```
+
+선행조건이 충족되면 HTTP 200과 `access_token`, `refresh_token`, `user`가 포함된 성공 응답을 기대한다. 응답의 고객 프로필 `customer_no`는 `SYN-CUSTOMER-001`이어야 한다.
+
+### 6.3 내부 사용자명 직접 로그인 차단
+
+```powershell
+curl.exe -i -sS -X POST "http://127.0.0.1:8000/api/v1/auth/demo-login" `
+  -H "Content-Type: application/json" `
+  -d "{\"demo_user_code\":\"CUS-0001\"}"
+```
+
+HTTP 401을 기대한다. 자동화 테스트는 `CUS-0001`을 allowlist에 넣은 조건에서도 접두사 제한으로 차단되는지 별도로 확인한다.
+
+### 6.4 현재 사용자 확인
+
+성공 응답에서 받은 실제 access token을 로컬 변수에만 넣는다.
+
+```powershell
+$accessToken = "<ACCESS_TOKEN>"
+curl.exe -i -sS "http://127.0.0.1:8000/api/v1/me" `
+  -H "Authorization: Bearer $accessToken"
+```
+
+HTTP 200, `role_code=CUSTOMER`, 고객 프로필 `customer_no=SYN-CUSTOMER-001`을 확인한다. 토큰을 문서·터미널 로그·Git에 저장하지 않는다.
+
+### 6.5 기능 플래그 차단 확인
+
+`DJANGO_DEMO_LOGIN_ENABLED=false`로 서버를 재시작한 뒤 같은 별칭 요청이 HTTP 403을 반환하는지 확인한다. 검증 후 로컬 설정을 필요한 상태로 되돌리고, 운영 환경에는 활성화 값을 반영하지 않는다.
+
+## 7. 변경하지 않은 기준 자산과 인계
+
+- PM 소유 [`contracts/state-machine/**`](../../../../contracts/state-machine/)는 인증 별칭 작업에서 변경하지 않았다.
+- Data/QA 소유 [`data/synthetic/fixtures/**`](../../../../data/synthetic/fixtures/)도 변경하지 않았다.
+- LoginRequest API 계약은 이미 `SYN-*`을 허용했으므로 이번 별칭 작업에서 수정하지 않았다.
+
+| 담당 | 인계 내용 |
+|---|---|
+| Backend | 별칭 조회 조건을 완화하거나 내부 사용자명 로그인을 추가할 때 보안 테스트를 먼저 갱신한다. |
+| Data/QA | importer가 `customer_no`, `is_synthetic`, soft delete 상태를 정확히 적재하고 중복 고객 번호를 만들지 않게 한다. |
+| Frontend | 공개 Demo Login에는 `SYN-CUSTOMER-001`만 사용하고 `CUS-0001`을 화면·요청에 노출하지 않는다. |
+| 운영 | Demo Login은 기본 비활성화하고, 필요한 비운영 환경에서만 최소 allowlist로 활성화한다. |
+| QA | PM `main` SHA의 PostgreSQL에서 HTTP 200/401/403, `/me`, refresh·logout을 독립 재현한다. |
+
+`DB_FULL_VERIFIED`는 최신 `main` 후보의 합성 Handoff Import 범위에만
+적용한다. Auth HTTP 완료는 기본 DB 역사 증거와 PM `main` SHA의 후속
+재현 결과를 구분해 기록한다.
