@@ -5,23 +5,23 @@
   "reports": [
     {
       "path": "processed/validation/schema/latest_schema_report.json",
-      "sha256": "B30C44123C6A7F0532D5098469DD9C9C8928BE5DC21D8ABD3AB34BDBC537630F"
+      "sha256": "180B2B191B220B2D3F3E260329D03B8706E8BB913326465CBABAD96E9A4C5AB0"
     },
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
-      "sha256": "AD53F5E35B702715235F66AD156CAA8E6EF29DBBC2A11F55A6F8EA2751E90371"
+      "sha256": "02783A43D543FF39407148C38222078B320A8BE57D86CC5962545CD1E3ADDB8D"
     },
     {
       "path": "processed/validation/quality/latest_quality_report.json",
-      "sha256": "BDE4884033B5091C0CE79528BBA64744CC21F81FBE8605C98A5F69B7EC951014"
+      "sha256": "6C45DDAE762E0DCF6CEDEBA78D000736545A27C98F632B4495B25D1176569CAF"
     },
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
-      "sha256": "4C79B25A04C41547EA66F2FFE1DFA2ABAF108A513ABEA1F4CD7510FEC6E1DC1B"
+      "sha256": "40B196EC454ABB5831973A3450751BC40021FB358BC79D4328FB6DAA41EFD82A"
     },
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
-      "sha256": "58A7D84A6444BD0982B3FACAB24838A1E65D6FF408DB98427089A31504D447AC"
+      "sha256": "09FC4B72D4FD908A0DB3F922DE0CD8EC9B32AF38FFFC944FBB77F3737A6B7E4F"
     }
   ],
   "totals": {
@@ -154,7 +154,7 @@
       "errors": []
     },
     "reproducibility": {
-      "enabled": false,
+      "enabled": true,
       "changed_files": [],
       "canonical_drift_files": [],
       "regenerated_files": [],
@@ -167,7 +167,7 @@
       "data_projection_consumes_contract": true,
       "backend_runtime_verified": false,
       "pipeline_config_sha256": "041E91B6D0D0ED6DE8DBA4A21918293BE9FBE21EBE350617C445B9EABEE2B31D",
-      "contract_mapping_sha256": "06ABB56D86253584FE27E97B0F3371F5041BEE4D938024D6E1EF7B4F6AEAB6BE",
+      "contract_mapping_sha256": "6FF9DE35F1EDFA41B07854EDB701A0A426DCFFB03FEA5C30BACE1449254713BC",
       "source_hashes_verified": true
     },
     "error_categories": {
@@ -192,7 +192,7 @@
     "data_projection_consumes_contract": true,
     "backend_runtime_verified": false,
     "pipeline_config_sha256": "041E91B6D0D0ED6DE8DBA4A21918293BE9FBE21EBE350617C445B9EABEE2B31D",
-    "contract_mapping_sha256": "06ABB56D86253584FE27E97B0F3371F5041BEE4D938024D6E1EF7B4F6AEAB6BE",
+    "contract_mapping_sha256": "6FF9DE35F1EDFA41B07854EDB701A0A426DCFFB03FEA5C30BACE1449254713BC",
     "source_hashes_verified": true
   },
   "error_categories": {
