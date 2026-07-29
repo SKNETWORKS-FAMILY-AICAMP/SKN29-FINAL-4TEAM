@@ -34,6 +34,9 @@
         application/json:
           schema:
             $ref: ../components/schemas/workflow/CancelInquiryRequest.yaml
+          examples:
+            cancelInquiryRequest:
+              externalValue: ../examples/workflow/cancel-inquiry-request.json
     responses:
       "200":
         description: 문의 취소 성공 또는 동일 요청의 멱등 재사용
@@ -49,6 +52,11 @@
                   properties:
                     data:
                       $ref: ../components/schemas/workflow/CancelInquiryResult.yaml
+            examples:
+              cancelled:
+                externalValue: ../examples/workflow/cancel-inquiry-success-response.json
+              idempotentReplay:
+                externalValue: ../examples/workflow/cancel-inquiry-replay-response.json
       "400":
         $ref: ../components/responses/BadRequest.yaml
       "401":
@@ -60,11 +68,4 @@
       "409":
         $ref: ../components/responses/WorkflowConflict.yaml
       "422":
-        description: 요청 본문 또는 필수 헤더 검증 실패
-        headers:
-          X-Correlation-ID:
-            $ref: ../components/headers/CorrelationId.yaml
-        content:
-          application/json:
-            schema:
-              $ref: ../components/schemas/common/ApiResponse.yaml
+        $ref: ../components/responses/UnprocessableEntity.yaml

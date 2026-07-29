@@ -1,0 +1,13 @@
+description: HTTP 422 입력값 검증 오류 응답
+headers:
+  X-Correlation-ID:
+    $ref: ../headers/CorrelationId.yaml
+content:
+  application/json:
+    schema:
+      $ref: ../schemas/common/ApiResponse.yaml
+    examples:
+      bodyValidation:
+        externalValue: ../../examples/errors/body-validation-error.json
+      idempotencyKeyValidation:
+        externalValue: ../../examples/errors/idempotency-key-validation-error.json

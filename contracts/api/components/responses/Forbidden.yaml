@@ -6,3 +6,6 @@ content:
   application/json:
     schema:
       $ref: ../schemas/common/ApiResponse.yaml
+    examples:
+      forbidden:
+        externalValue: ../../examples/errors/forbidden.json

@@ -9,11 +9,6 @@ export default function EvidenceCard({ evidence }: EvidenceCardProps) {
   const metadata = [
     ["문서 버전", evidence.documentVersion],
     ["근거 페이지", `${evidence.page}쪽`],
-    ["근거 항목", evidence.sectionTitle],
-    ["제공기관", evidence.sourceOrganization],
-    ["위험도", evidence.riskLevel],
-    ["안전 조치", evidence.safeActions.join(" · ") || "없음"],
-    ["금지 행동", evidence.prohibitedActions.join(" · ") || "없음"],
     ["검증 상태", evidence.verificationLabel],
     ["데이터 분류", evidence.dataClassification],
   ];
@@ -48,15 +43,6 @@ export default function EvidenceCard({ evidence }: EvidenceCardProps) {
             rel="noopener noreferrer"
           >
             공식 출처 보기 ↗
-          </a>
-        )}
-        {evidence.sourceDirectDownloadUrl && (
-          <a
-            href={evidence.sourceDirectDownloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            설명서 PDF 열기 ↗
           </a>
         )}
       </div>

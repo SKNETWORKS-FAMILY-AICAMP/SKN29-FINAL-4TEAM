@@ -425,3 +425,23 @@ exit `2`였다. 현재 Branch 판정에는 이 수치를 재사용하지 않는�
 통과다. 통합 상태 이력 Django Model·Migration과 쓰기 가능한 빈
 PostgreSQL Seed 2회 검증은 아직 완료되지 않았으므로 Runtime 완료로
 표시하지 않는다.
+
+## 2026-07-28 v1.1 — 운영체제 독립 Snapshot 해시 검증
+
+기존 Manifest의 텍스트 파일 해시는 CRLF 바이트 기준이어서 LF Checkout
+환경에서 같은 내용이 `T005_ARTIFACT_HASH_MISMATCH`로 판정됐다. 저장소
+최상위 공통 설정을 변경하지 않고 `scripts/database/**` 주관 범위에서
+다음과 같이 정정했다.
+
+- `.md`, `.mmd`, `.sql`, `.json`, `.yaml`, `.yml`은 줄바꿈을 LF로
+  정규화한 뒤 SHA-256을 계산한다.
+- PNG를 포함한 바이너리 파일은 원본 바이트 그대로 SHA-256을 계산한다.
+- `manifest.json`에 `hash_policy`를 기록하고 텍스트 4개 파일의 해시를
+  LF canonical 값으로 갱신했다.
+- LF와 CRLF 입력이 같은 해시가 되는 회귀 테스트를 추가했다.
+
+작업 직후 기본 구조 검증은 `structure_valid=true`, `errors=[]`로
+통과했다. T-005 Validator 단위 테스트는 `37 passed`, 전체 Backend
+회귀는 `333 passed`다. 이는 Snapshot 해시 재현성의 복구 증거이며,
+Manifest의 `completion_claim_allowed=false`와 남은 WBS 완료 게이트를
+해제하지 않는다.

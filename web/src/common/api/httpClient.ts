@@ -5,17 +5,36 @@ import {
   type ApiErrorPayload,
 } from "./apiError";
 import { isApiResponse, type ApiResponse } from "./apiResponse";
-import type { RequestContext } from "./requestContext";
+import {
+  createCorrelationId,
+  createRequestContext,
+  type RequestContext,
+} from "./requestContext";
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 
 export interface ApiRequestOptions
   extends Omit<RequestInit, "body" | "headers" | "signal"> {
   accessToken?: string;
+  auth?: "auto" | "none";
   body?: unknown;
   headers?: Record<string, string>;
   requestContext?: RequestContext;
   timeoutMs?: number;
+}
+
+export interface ApiAuthHandler {
+  clearSession: () => void;
+  getAccessToken: () => string | null;
+  refreshAccessToken: () => Promise<string | null>;
+}
+
+let apiAuthHandler: ApiAuthHandler | null = null;
+let refreshInFlight: Promise<string | null> | null = null;
+
+export function configureApiAuth(handler: ApiAuthHandler | null): void {
+  apiAuthHandler = handler;
+  refreshInFlight = null;
 }
 
 function createUrl(path: string): string {
@@ -59,22 +78,32 @@ async function parseResponse(response: Response): Promise<unknown> {
   }
 }
 
-export async function requestApi<TData>(
+async function executeApiRequest<TData>(
   path: string,
-  options: ApiRequestOptions = {},
+  options: ApiRequestOptions,
+  accessToken: string | undefined,
+  isRetry: boolean,
 ): Promise<ApiResponse<TData>> {
-  const {
-    accessToken,
-    body,
-    headers: headerValues,
-    requestContext,
-    timeoutMs = DEFAULT_TIMEOUT_MS,
-    ...requestInit
-  } = options;
+  const body = options.body;
+  const headerValues = options.headers;
+  const requestContext = options.requestContext;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const requestInit = { ...options };
+  delete requestInit.accessToken;
+  delete requestInit.auth;
+  delete requestInit.body;
+  delete requestInit.headers;
+  delete requestInit.requestContext;
+  delete requestInit.timeoutMs;
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
   const headers = new Headers(headerValues);
   headers.set("Accept", "application/json");
+  headers.delete("Authorization");
+  const attemptContext =
+    isRetry && requestContext
+      ? createRequestContext({ idempotencyKey: requestContext.idempotencyKey })
+      : requestContext;
 
   if (body !== undefined) {
     headers.set("Content-Type", "application/json");
@@ -82,10 +111,12 @@ export async function requestApi<TData>(
   if (accessToken) {
     headers.set("Authorization", `Bearer ${accessToken}`);
   }
-  if (requestContext) {
-    Object.entries(requestContext.headers).forEach(([key, value]) => {
+  if (attemptContext) {
+    Object.entries(attemptContext.headers).forEach(([key, value]) => {
       headers.set(key, value);
     });
+  } else {
+    headers.set("X-Correlation-ID", createCorrelationId());
   }
 
   try {
@@ -144,5 +175,72 @@ export async function requestApi<TData>(
     });
   } finally {
     window.clearTimeout(timeoutId);
+  }
+}
+
+async function refreshAccessTokenOnce(): Promise<string | null> {
+  if (!apiAuthHandler) return null;
+
+  if (!refreshInFlight) {
+    refreshInFlight = apiAuthHandler.refreshAccessToken().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+
+  return refreshInFlight;
+}
+
+export async function requestApi<TData>(
+  path: string,
+  options: ApiRequestOptions = {},
+): Promise<ApiResponse<TData>> {
+  const useAuth = (options.auth ?? "auto") === "auto";
+  const initialAccessToken = useAuth
+    ? options.accessToken ?? apiAuthHandler?.getAccessToken() ?? undefined
+    : undefined;
+
+  try {
+    return await executeApiRequest<TData>(
+      path,
+      options,
+      initialAccessToken,
+      false,
+    );
+  } catch (caught) {
+    if (
+      !useAuth ||
+      !apiAuthHandler ||
+      !(caught instanceof ApiClientError) ||
+      caught.status !== 401
+    ) {
+      throw caught;
+    }
+
+    let refreshedAccessToken: string | null;
+    try {
+      refreshedAccessToken = await refreshAccessTokenOnce();
+    } catch {
+      apiAuthHandler.clearSession();
+      throw caught;
+    }
+
+    if (!refreshedAccessToken) {
+      apiAuthHandler.clearSession();
+      throw caught;
+    }
+
+    try {
+      return await executeApiRequest<TData>(
+        path,
+        options,
+        refreshedAccessToken,
+        true,
+      );
+    } catch (retryError) {
+      if (retryError instanceof ApiClientError && retryError.status === 401) {
+        apiAuthHandler.clearSession();
+      }
+      throw retryError;
+    }
   }
 }
