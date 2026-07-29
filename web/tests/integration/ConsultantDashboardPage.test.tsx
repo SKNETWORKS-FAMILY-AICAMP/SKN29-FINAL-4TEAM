@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import { AuthProvider } from "../../src/app/providers/AuthProvider";
 import { AppRoutes } from "../../src/app/router/AppRouter";
-import { COUNSELOR_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
+import { CONSULTANT_QUEUE_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
 
 const CONSULTANT_USER = {
   id: "STAFF-CONS-TEST",
@@ -44,21 +44,33 @@ describe("ConsultantDashboardPage", () => {
     const user = userEvent.setup();
     renderPage();
 
+    await user.click(screen.getByText("추가 필터"));
     await user.selectOptions(screen.getByRole("combobox", { name: "위험도" }), "DANGER");
 
     const queue = screen.getByRole("complementary", { name: "상담 문의 목록" });
-    expect(queue.querySelectorAll(".v6-queue-item")).toHaveLength(3);
-    expect(screen.getByText("총 6건 · 1/2페이지")).toBeInTheDocument();
-    expect(within(queue).getAllByText("온수 모듈 이상")).toHaveLength(2);
+    const dangerCount = CONSULTANT_QUEUE_INQUIRIES.filter(
+      (item) => item.riskLevel === "DANGER",
+    ).length;
+    const firstPageCount = Math.min(dangerCount, 3);
+
+    expect(queue.querySelectorAll(".v6-queue-item")).toHaveLength(firstPageCount);
+    expect(
+      screen.getByText(`총 ${dangerCount}건 · 1/${Math.ceil(dangerCount / 3)}페이지`),
+    ).toBeInTheDocument();
+    expect(within(queue).getAllByLabelText("위험도: 긴급")).toHaveLength(
+      firstPageCount,
+    );
   });
 
-  it("페이지와 담당자 조건을 URL Query에서 복원한다", () => {
+  it("페이지와 담당자 조건을 URL Query에서 복원한다", async () => {
+    const user = userEvent.setup();
     renderPage("/consultant/inquiries?assignee=UNASSIGNED&page=1");
-    const unassignedCount = COUNSELOR_INQUIRIES.filter(
+    const unassignedCount = CONSULTANT_QUEUE_INQUIRIES.filter(
       (item) => item.assignedCounselor === "미배정",
     ).length;
     const totalPages = Math.ceil(unassignedCount / 3);
 
+    await user.click(screen.getByText("추가 필터"));
     expect(screen.getByRole("combobox", { name: "담당자" })).toHaveValue(
       "UNASSIGNED",
     );
@@ -68,6 +80,18 @@ describe("ConsultantDashboardPage", () => {
     expect(
       screen.getByText(`총 ${unassignedCount}건 · 1/${totalPages}페이지`),
     ).toBeInTheDocument();
+  });
+
+  it("일반 문의는 AI가 방문기사에게 자동 인계하여 상담사 큐에 노출하지 않는다", () => {
+    renderPage();
+
+    const queue = screen.getByRole("complementary", { name: "상담 문의 목록" });
+    expect(within(queue).queryByLabelText("위험도: 일반")).not.toBeInTheDocument();
+    expect(
+      CONSULTANT_QUEUE_INQUIRIES.every(
+        (item) => item.riskLevel === "CAUTION" || item.riskLevel === "DANGER",
+      ),
+    ).toBe(true);
   });
 
   it.each([
