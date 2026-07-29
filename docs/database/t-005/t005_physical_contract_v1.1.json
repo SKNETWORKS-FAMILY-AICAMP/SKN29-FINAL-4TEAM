@@ -1,0 +1,235 @@
+{
+  "contract_version": "1.1.0",
+  "status": "OWNER_BASELINE",
+  "confirmation_status": "CONFIRMED",
+  "owner": "최지용",
+  "effective_from": "2026-07-28",
+  "supersedes": "t005_physical_contract_v1.0.json",
+  "completion_review_status": "PENDING",
+  "completion_review_purpose": "OWNER 설계 기준선과 Runtime 완료를 분리한다. Accounts 정수 PK 전환이 남아 있는 동안 3계층 식별자 Runtime 완료를 주장하지 않는다.",
+  "purpose": "T-005 테이블·필드·표준 코드와 내부 PK·외부 UUID·업무코드 분리 원칙을 구현 가능한 단일 기준으로 정의한다.",
+  "inherits": {
+    "snapshot": "watercare_schema_v3.json",
+    "policy": "아래 override가 우선하며 나머지 테이블 관계와 필드는 v3 Snapshot을 설계 참고로 유지한다.",
+    "immutable_snapshot": true
+  },
+  "identifier_policy": {
+    "option": "INTERNAL_BIGINT_PK_PUBLIC_UUID_BUSINESS_CODE",
+    "internal_primary_key": {
+      "field": "id",
+      "database_type": "bigint",
+      "auto_generated": true,
+      "api_exposed": false
+    },
+    "public_identifier": {
+      "field": "public_id",
+      "database_type": "uuid",
+      "generated_by": "Django uuid.uuid4",
+      "nullable": false,
+      "unique": true,
+      "api_exposed": true
+    },
+    "business_identifier": {
+      "database_type": "varchar",
+      "separate_from_primary_key": true,
+      "synthetic_prefixes": [
+        "DEMO-",
+        "SYN-"
+      ],
+      "examples": [
+        "DEMO-INQ-002",
+        "SYN-CUSTOMER-001"
+      ]
+    },
+    "compatibility_bridge": {
+      "status": "TRANSITIONAL",
+      "accounts_user": {
+        "current_primary_key": "varchar(48)",
+        "public_id_required": true,
+        "jwt_subject": "public_id",
+        "legacy_subject_fallback": true
+      },
+      "customers_customer_profile": {
+        "current_primary_key": "varchar(48)",
+        "public_id_required": true,
+        "business_identifier": "customer_no"
+      },
+      "new_major_tables": "USE_TARGET_POLICY_IMMEDIATELY"
+    }
+  },
+  "implementation_gate": {
+    "status": "TRANSITIONAL_BRIDGE",
+    "completion_claim_allowed": false,
+    "incomplete_items": [
+      "accounts_user_integer_primary_key",
+      "customers_customer_profile_integer_primary_key",
+      "legacy_jwt_subject_fallback_removal",
+      "blank_postgresql_migration_and_seed_verification"
+    ]
+  },
+  "physical_overrides": {
+    "accounts_user": {
+      "public_id": {
+        "type": "uuid",
+        "nullable": false,
+        "unique": true,
+        "api_exposed": true
+      },
+      "role_code": {
+        "type": "varchar(40)",
+        "nullable": false,
+        "codes": [
+          "CUSTOMER",
+          "CONSULTANT",
+          "TECHNICIAN",
+          "OPERATOR"
+        ],
+        "code_contract": "../../../contracts/codes/user-roles.yaml"
+      }
+    },
+    "customers_customer_profile": {
+      "public_id": {
+        "type": "uuid",
+        "nullable": false,
+        "unique": true,
+        "api_exposed": true
+      },
+      "customer_no": {
+        "type": "varchar(40)",
+        "nullable": false,
+        "unique": true,
+        "business_identifier": true
+      }
+    },
+    "support_inquiry": {
+      "public_id": {
+        "type": "uuid",
+        "nullable": false,
+        "unique": true,
+        "api_exposed": true
+      },
+      "inquiry_code": {
+        "type": "varchar(50)",
+        "nullable": false,
+        "unique": true,
+        "business_identifier": true,
+        "legacy_field": "inquiry_no"
+      },
+      "usage_guidance_status": {
+        "type": "varchar(32)",
+        "nullable": true,
+        "code_contract": "../../../contracts/codes/usage-guidance-statuses.yaml"
+      },
+      "usage_guidance_message": {
+        "type": "text",
+        "nullable": true
+      },
+      "restricted_functions": {
+        "type": "json",
+        "nullable": false,
+        "default": []
+      },
+      "evidence": {
+        "type": "json",
+        "nullable": false,
+        "default": []
+      },
+      "next_action": {
+        "type": "varchar(64)",
+        "nullable": true
+      },
+      "requires_consultation": {
+        "type": "boolean",
+        "nullable": false,
+        "default": false
+      }
+    },
+    "support_symptom_assessment": {
+      "usage_guidance_status": {
+        "type": "varchar(32)",
+        "nullable": true,
+        "code_contract": "../../../contracts/codes/usage-guidance-statuses.yaml"
+      }
+    },
+    "field_service_visit": {
+      "preferred_date": {
+        "type": "date",
+        "nullable": true
+      },
+      "confirmed_date": {
+        "type": "date",
+        "nullable": true
+      },
+      "schedule_status": {
+        "type": "varchar(40)",
+        "nullable": false,
+        "default": "ASSIGNING",
+        "code_contract": "../../../contracts/codes/visit-statuses.yaml"
+      },
+      "synthetic_technician_id": {
+        "type": "varchar(48)",
+        "nullable": true,
+        "reference": "accounts_user.id",
+        "bridge_note": "Accounts 정수 PK 전환 전 legacy FK 타입이며 외부 API에는 노출하지 않는다."
+      }
+    }
+  },
+  "legacy_import_mappings": {
+    "support_inquiry.inquiry_no": "support_inquiry.inquiry_code",
+    "support_inquiry.usage_guidance_code": "support_inquiry.usage_guidance_status",
+    "support_symptom_assessment.usage_guidance_code": "support_symptom_assessment.usage_guidance_status",
+    "usage_guidance_codes": {
+      "USE_ALLOWED": "NORMAL"
+    },
+    "field_service_visit.visit_status_code": "field_service_visit.schedule_status"
+  },
+  "standard_codes": {
+    "user_role": [
+      "CUSTOMER",
+      "CONSULTANT",
+      "TECHNICIAN",
+      "OPERATOR"
+    ],
+    "usage_guidance_status": [
+      "NORMAL",
+      "PARTIAL_STOP",
+      "TOTAL_STOP",
+      "PENDING_CONSULTATION"
+    ],
+    "visit_schedule_status": [
+      "ASSIGNING",
+      "SCHEDULING",
+      "CONFIRMED",
+      "IN_PROGRESS",
+      "COMPLETED",
+      "FOLLOW_UP_REQUIRED",
+      "CANCELLED"
+    ],
+    "risk_level": [
+      "general",
+      "caution",
+      "danger"
+    ]
+  },
+  "enum_and_seed_policy": {
+    "cross_service_source": "contracts/codes/*.yaml",
+    "django_representation": "TextChoices with contract parity tests",
+    "database_enum": false,
+    "synthetic_seed": "Django update_or_create with separate DEMO/SYN business identifiers",
+    "manual_insert": false
+  },
+  "scope_boundary": {
+    "included": [
+      "data design owner baseline",
+      "Django Model and Migration input contract",
+      "API public UUID and business code field policy",
+      "standard code source"
+    ],
+    "excluded": [
+      "state transition rules owned by PM",
+      "PostgreSQL infrastructure provisioning",
+      "Accounts integer PK completion in the transitional bridge",
+      "consumer compatibility review, non-author PR review, and WBS official status change"
+    ]
+  }
+}

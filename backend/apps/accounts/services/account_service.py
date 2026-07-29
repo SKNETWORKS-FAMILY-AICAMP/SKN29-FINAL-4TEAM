@@ -18,14 +18,14 @@ class AccountService:
                 profile = None
             if profile is not None and profile.deleted_at is None:
                 profile_data = {
-                    "id": profile.pk,
+                    "id": str(profile.public_id),
                     "customer_no": profile.customer_no,
                     "customer_name": profile.customer_name,
                     "is_synthetic": profile.is_synthetic,
                 }
 
         return {
-            "id": user.pk,
+            "id": str(user.public_id),
             "display_name": user.full_name,
             "role_code": user.role_code,
             "is_active": user.is_active,

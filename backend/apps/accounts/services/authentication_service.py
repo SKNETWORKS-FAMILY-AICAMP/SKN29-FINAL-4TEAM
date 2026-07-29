@@ -11,7 +11,10 @@ from rest_framework.exceptions import (
     PermissionDenied,
 )
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.utils import (
     datetime_from_epoch,
@@ -112,15 +115,15 @@ class AuthenticationService:
             user,
             refresh_absolute_exp=int(refresh["exp"]),
         )
-        refresh.blacklist()
+        cls._blacklist_refresh(refresh, user)
         return user, new_pair
 
     @classmethod
     @transaction.atomic
     def logout(cls, raw_refresh_token: str) -> None:
         refresh = cls._validated_refresh(raw_refresh_token)
-        cls._active_user_for_refresh(refresh)
-        refresh.blacklist()
+        user = cls._active_user_for_refresh(refresh)
+        cls._blacklist_refresh(refresh, user)
 
     @staticmethod
     def _validated_refresh(raw_refresh_token: str) -> RefreshToken:
@@ -146,10 +149,24 @@ class AuthenticationService:
                 code="refresh_claim_missing",
             ) from exc
 
-        user = cls.repository.find_active_by_id(user_id)
+        user = cls.repository.find_active_by_subject(user_id)
         if user is None or user.role_code != token_role:
             raise AuthenticationFailed(
                 "사용자 상태 또는 역할이 변경되었습니다.",
                 code="user_state_changed",
             )
         return user
+
+    @staticmethod
+    def _blacklist_refresh(refresh: RefreshToken, user: User) -> None:
+        """legacy 문자열 subject도 UUID 변환 없이 jti 기준으로 폐기한다."""
+        outstanding, _ = OutstandingToken.objects.get_or_create(
+            jti=str(refresh["jti"]),
+            defaults={
+                "user": user,
+                "token": str(refresh),
+                "created_at": datetime_from_epoch(int(refresh["iat"])),
+                "expires_at": datetime_from_epoch(int(refresh["exp"])),
+            },
+        )
+        BlacklistedToken.objects.get_or_create(token=outstanding)

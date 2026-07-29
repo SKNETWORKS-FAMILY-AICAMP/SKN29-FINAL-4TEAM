@@ -21,8 +21,8 @@ errors:
     category: workflow
     http_status: 409
     retryable: false
-    user_message: 이미 처리된 요청입니다.
-    recommended_action: REFRESH
+    user_message: 동일 Idempotency-Key가 다른 요청에 재사용되었습니다.
+    recommended_action: USE_NEW_IDEMPOTENCY_KEY
   - code: AI-FAILED-01
     category: ai
     http_status: 503

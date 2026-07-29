@@ -714,6 +714,15 @@ def _validate_transitions(
                 f"{path}.guard_refs: START_INQUIRY 외 전이는 "
                 "G-STATE-VERSION을 포함해야 합니다."
             )
+        event_contract = event_by_code.get(event, {})
+        if (
+            event_contract.get("requires_idempotency_key") is True
+            and "G-IDEMPOTENCY-KEY" not in guard_refs
+        ):
+            errors.append(
+                f"{path}.guard_refs: requires_idempotency_key=true인 "
+                "이벤트는 G-IDEMPOTENCY-KEY를 포함해야 합니다."
+            )
 
         history = _required_mapping(
             entry.get("history"),
