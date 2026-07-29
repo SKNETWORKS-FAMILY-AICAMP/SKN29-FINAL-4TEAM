@@ -1,4 +1,6 @@
 import officialInquiryFixtures from "../../../../../data/synthetic/fixtures/inquiries.json";
+import officialCustomerFixtures from "../../../../../data/synthetic/fixtures/customer_profiles.json";
+import officialSubscriptionFixtures from "../../../../../data/synthetic/fixtures/subscriptions.json";
 import evidenceRegistrySource from "../../../../../data/processed/structured/evidence/jac104_evidence_registry.jsonl?raw";
 
 import {
@@ -21,11 +23,12 @@ import {
 } from "./consultantWorkspaceModel";
 
 interface OfficialInquiryFixture {
-  inquiry_id: string;
+  id: number;
+  public_id: string;
   inquiry_number: string;
   scenario_id: string;
-  customer_id: string;
-  subscription_id: string;
+  customer_id: number;
+  subscription_id: number;
   original_text: string;
   topic_code: string;
   variant: string;
@@ -40,6 +43,11 @@ interface OfficialInquiryFixture {
   state_version: number;
   created_at: string;
   updated_at: string;
+}
+
+interface OfficialPublicIdFixture {
+  id: number;
+  public_id: string;
 }
 
 interface OfficialEvidenceRegistryRow {
@@ -234,6 +242,18 @@ function getPriority(riskLevel: CounselorRisk): CounselorPriority {
   return "UNKNOWN";
 }
 
+const CUSTOMER_PUBLIC_IDS = new Map(
+  (officialCustomerFixtures as readonly OfficialPublicIdFixture[]).map(
+    (row) => [row.id, row.public_id],
+  ),
+);
+
+const SUBSCRIPTION_PUBLIC_IDS = new Map(
+  (officialSubscriptionFixtures as readonly OfficialPublicIdFixture[]).map(
+    (row) => [row.id, row.public_id],
+  ),
+);
+
 function getUsageMessage(status: CounselorInquiry["usageStatus"]): string {
   if (status === "TOTAL_STOP") {
     return "안전을 위해 제품 전체 사용을 중지하고 상담원의 안내를 기다려 주세요.";
@@ -312,13 +332,14 @@ function createInquiry(
     status === "VISIT_REVIEW_PENDING";
 
   return {
-    inquiryId: parseInquiryId(row.inquiry_id),
+    inquiryId: parseInquiryId(row.public_id),
     inquiryCode: parseInquiryCode(row.inquiry_number),
     scenarioId: row.scenario_id,
-    customerId: row.customer_id,
+    customerId: CUSTOMER_PUBLIC_IDS.get(row.customer_id) ?? "공개 고객 ID 확인 필요",
     customerName: `합성 고객 ${customerSequence}`,
     customerDisplayName: `합성 고객 ${customerSequence.slice(0, 1)}**`,
-    subscriptionId: row.subscription_id,
+    subscriptionId:
+      SUBSCRIPTION_PUBLIC_IDS.get(row.subscription_id) ?? "공개 구독 ID 확인 필요",
     productCode: "WPUJAC104DWH",
     manualModel: "WPU-JAC104D",
     symptomLabel: presentation.label,
