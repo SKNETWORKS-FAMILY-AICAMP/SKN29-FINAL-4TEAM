@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { COUNSELOR_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
+import {
+  CONSULTANT_QUEUE_INQUIRIES,
+  COUNSELOR_INQUIRIES,
+} from "../../src/features/consultation/model/consultantWorkspaceMock";
 import {
   filterCounselorInquiries,
+  getCounselorRoutingDecision,
   getCounselorQueuePage,
   normalizeCounselorRisk,
   normalizeCounselorStatus,
@@ -51,17 +55,33 @@ describe("상담 큐 View Model", () => {
     expect(result.items).toHaveLength(expectedLastPageItems);
   });
 
-  it("공식 fixture의 무근거 문의는 임의 안내 없이 상담 확인 대기 상태다", () => {
+  it("공식 fixture의 일반 문의는 AI가 방문기사에게 자동 인계한다", () => {
     const inquiry = COUNSELOR_INQUIRIES.find(
       (item) => item.scenarioId === "SYN-JAC104-022",
     );
 
     expect(inquiry).toMatchObject({
       usageStatus: "PENDING_CONSULTATION",
-      requiresConsultation: true,
+      requiresConsultation: false,
       aiStatus: "FAILED",
       evidence: [],
+      routingTarget: "FIELD_TECHNICIAN",
+      status: "VISIT_SCHEDULING",
+      assignedCounselor: "방문기사 자동 인계",
     });
+  });
+
+  it("일반은 방문기사, 주의·긴급은 상담사로 최초 라우팅한다", () => {
+    expect(getCounselorRoutingDecision("GENERAL").target).toBe(
+      "FIELD_TECHNICIAN",
+    );
+    expect(getCounselorRoutingDecision("CAUTION").target).toBe("CONSULTANT");
+    expect(getCounselorRoutingDecision("DANGER").target).toBe("CONSULTANT");
+    expect(
+      CONSULTANT_QUEUE_INQUIRIES.every(
+        (item) => item.routingTarget === "CONSULTANT",
+      ),
+    ).toBe(true);
   });
 
   it("알 수 없는 상태·위험도 코드는 미확인 값으로 안전하게 변환한다", () => {

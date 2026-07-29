@@ -11,7 +11,7 @@ interface RiskPresentation {
 const RISK_PRESENTATIONS: Record<RiskLevel, RiskPresentation> = {
   general: { icon: "●", label: "일반", level: "general" },
   caution: { icon: "▲", label: "주의", level: "caution" },
-  danger: { icon: "!", label: "위험", level: "danger" },
+  danger: { icon: "!", label: "긴급", level: "danger" },
 };
 
 const UNKNOWN_RISK: RiskPresentation = {
