@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
+import { IdempotencyOperationTracker } from "../../../common/api/idempotencyOperation";
 import { createRequestContext } from "../../../common/api/requestContext";
 import {
   ConsultationMockError,
+  reloadConsultationDetailMock,
   submitConsultationMock,
 } from "../api/consultationMockApi";
 import type {
@@ -27,14 +29,24 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState<ConsultationActionSuccess | null>(null);
   const [error, setError] = useState<ConsultationActionErrorDetails | null>(null);
+  const [currentStatus, setCurrentStatus] = useState(inquiry.status);
   const [stateVersion, setStateVersion] = useState(inquiry.stateVersion);
   const [allowedActions, setAllowedActions] = useState(inquiry.allowedActions);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
+  const savingRef = useRef(false);
+  const [operationTracker] = useState(
+    () => new IdempotencyOperationTracker(),
+  );
 
   const execute = async ({
     action,
     values,
     scenario,
   }: ExecuteConsultationArgs) => {
+    if (savingRef.current) {
+      return { ok: false as const, duplicateClick: true as const };
+    }
+
     if (
       action.requiresConfirmation &&
       action.confirmationMessage &&
@@ -43,9 +55,11 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
       return { ok: false as const, cancelled: true as const };
     }
 
-    const context = createRequestContext();
-    const request: ProvisionalConsultationActionRequest = {
-      inquiry_id: inquiry.id,
+    const requestPayload: Omit<
+      ProvisionalConsultationActionRequest,
+      "idempotency_key" | "correlation_id"
+    > = {
+      inquiry_id: inquiry.inquiryId,
       action_code: action.code,
       operation_id: action.operationId,
       state_version: stateVersion,
@@ -57,10 +71,17 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
       summary_confirmed: values.summaryConfirmed,
       visit_required: values.visitRequired,
       usage_guidance_status: values.usageStatus,
+    };
+    const operationSignature = JSON.stringify(requestPayload);
+    const idempotencyKey = operationTracker.begin(operationSignature);
+    const context = createRequestContext({ idempotencyKey });
+    const request: ProvisionalConsultationActionRequest = {
+      ...requestPayload,
       idempotency_key: context.idempotencyKey,
       correlation_id: context.correlationId,
     };
 
+    savingRef.current = true;
     setIsSaving(true);
     setSuccess(null);
     setError(null);
@@ -71,8 +92,15 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
         scenario,
         allowedActions,
       );
+      const latestDetail = await reloadConsultationDetailMock(
+        inquiry.inquiryId,
+        result,
+      );
+      operationTracker.finish();
       setSuccess(result);
-      setStateVersion(result.stateVersion);
+      setStateVersion(latestDetail.stateVersion);
+      setAllowedActions(latestDetail.allowedActions);
+      setLastRefreshedAt(latestDetail.refreshedAt);
       return { ok: true as const, result };
     } catch (caught) {
       const nextError =
@@ -84,16 +112,20 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
             };
 
       setError(nextError);
-      if (nextError.kind === "CONFLICT") {
-        if (nextError.currentStateVersion) {
-          setStateVersion(nextError.currentStateVersion);
+      operationTracker.fail(nextError.kind === "NETWORK_ERROR");
+      if (
+        nextError.kind === "CONFLICT" &&
+        nextError.conflictCode === "STATE-CONFLICT-01"
+      ) {
+        if (nextError.currentStatus) {
+          setCurrentStatus(nextError.currentStatus);
         }
-        if (nextError.allowedActions) {
-          setAllowedActions(nextError.allowedActions);
-        }
+        setStateVersion(nextError.currentStateVersion);
+        setAllowedActions(nextError.allowedActions);
       }
       return { ok: false as const, error: nextError };
     } finally {
+      savingRef.current = false;
       setIsSaving(false);
     }
   };
@@ -102,8 +134,10 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
     isSaving,
     success,
     error,
+    currentStatus,
     stateVersion,
     allowedActions,
+    lastRefreshedAt,
     execute,
   };
 }
