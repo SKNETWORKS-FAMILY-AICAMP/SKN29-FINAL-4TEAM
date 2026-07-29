@@ -3,6 +3,10 @@
 - 기준일: 2026-07-29
 - 실행 위치: `web/`
 - 자동화 도구: Vitest, jsdom, React Testing Library
+- 실행 시각: 2026-07-29 16:29 KST
+- 실행 기준: `yena` 브랜치 본 변경 작업 트리
+- 실행 환경: Windows, Node.js `v26.4.0`, npm `11.17.0`
+- 깨끗한 재현 환경: 저장소 전체 임시 복사본에서 `npm.cmd ci` 후 lint·test·build 수행
 
 ## 자동화 범위
 
@@ -22,6 +26,8 @@
 | 단위 | 401 쓰기 재시도의 멱등 키 보존·추적 ID 교체 |
 | 단위 | 담당자·우선순위·기간 필터와 페이지 범위 보정 |
 | 단위 | API Base URL 형식 검증과 알 수 없는 상태·위험도 `UNKNOWN` 정규화 |
+| 단위 | `+09:00` 일시의 날짜 경계·오전/오후 값을 시간대 재변환 없이 표시 |
+| 단위 | 일반 문의의 방문기사 자동 인계와 주의·긴급 문의의 상담사 라우팅 |
 | 단위 | 공식 합성 원천 기반 정상·위험·재개·무근거·빈 목록 Fixture |
 | 단위 | UUID `inquiry_id`와 표시용 `inquiry_code` 분리·검증 |
 | 컴포넌트 | `allowed_actions` 기반 버튼 노출 |
@@ -34,7 +40,8 @@
 | 컴포넌트 | 공통 EvidenceCard 공개 필드·HTTPS 링크 제한 |
 | 컴포넌트 | 공통 DataTable 행·빈 상태 접근성 |
 | 통합 | 상담 큐에서 문의 선택 후 상세·상담 Form 전환 |
-| 통합 | 위험도 필터로 위험 문의 두 건 조회 |
+| 통합 | 긴급 필터와 상담사 라우팅 대상 문의 조회 |
+| 통합 | 일반 문의의 상담사 큐 미노출 |
 | 통합 | 담당자·페이지 조건 URL Query 복원 |
 | 통합 | 목록 로딩·초기 빈 목록·검색 결과 없음·403·조회 오류 분리 |
 | 통합 | 목록 선택 후 UUID `/consultant/inquiries/{inquiry_id}` 상세 경로 전환 |
@@ -59,12 +66,22 @@ npm.cmd run build
 
 ## 2026-07-29 실행 결과
 
-- `npm.cmd run test`: **20개 Test File, 80개 Test 통과**
+- `npm.cmd run test`: **23개 Test File, 92개 Test 통과**
 - `npm.cmd run lint`: 통과
 - `npm.cmd run build`: 통과
-- Production 번들: Vite Build 성공
+- Production 번들: Vite `8.1.5`, 107 modules transformed, Build 성공
+- README 재현: 저장소 전체를 받은 조건에서 설치·검증 명령 통과. `web/`만 단독 복사하면 상위 `data/` Fixture 참조를 해석할 수 없으므로 지원하지 않음
 
 ## 수동 브라우저 검증 병행 항목
+
+| Case ID | 입력·환경 | 기대 결과 | 실제 결과 |
+| --- | --- | --- | --- |
+| WEB-MANUAL-01 | 1920×1080, `/consultant/inquiries` | 기본 상담 화면이 문서 전체 스크롤 없이 표시됨 | 통과. page·목록·처리 영역 `clientHeight === scrollHeight` 확인 |
+| WEB-MANUAL-02 | `추가 필터` 선택 | 위험도·담당자 필터가 필요할 때만 펼쳐짐 | 통과. 필터 `open`, 위험도 Select 표시 확인 |
+| WEB-MANUAL-03 | `완료 내용과 AI 요약 확인` 선택 | 고객 안내·처리 결과·AI 요약이 펼쳐짐 | 통과. 처리 결과 입력 표시 확인 |
+| WEB-MANUAL-04 | `http://192.168.0.15:5173/consultant/inquiries` | 같은 내부망에서 개발 화면 응답 | 통과. HTTP 200 확인 |
+
+아래 항목은 자동 테스트와 수동 확인을 함께 유지한다.
 
 - 상담 진행 문의 Form 레이아웃
 - 빈 값 완료 처리 시 필드별 오류
