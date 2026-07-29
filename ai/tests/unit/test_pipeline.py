@@ -31,15 +31,17 @@ def test_single_rag_pipeline_execution():
     assert analysis_res.safety_assessment.risk_level == RiskLevel.DANGER
     assert analysis_res.safety_assessment.requires_consultation is True
 
-    # Stage 3: RAG 검색 결과 연동 확인
-    assert len(analysis_res.evidence_references) > 0
-    assert analysis_res.evidence_references[0].document_title != ""
+    # 위험 입력은 일반 검색·생성 경로보다 먼저 분기한다.
+    assert analysis_res.evidence_references == []
 
     # Stage 4: 사용 안내 상태 TOTAL_STOP 확인
     assert analysis_res.usage_guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
 
-    # Stage 5: 처리 트레이스 5개 Stage 기록 확인
-    assert len(analysis_res.processing_traces) == 5
+    # 내부 처리 트레이스는 공개 DTO가 아니라 내부 Context에만 남는다.
+    assert [trace.stage for trace in result.context.processing_traces] == [
+        "structuring_stage", "safety_check_stage", "generation_stage", "validation_stage"
+    ]
+    assert not hasattr(analysis_res, "processing_traces")
 
 
 def test_prompt_registry_and_templates_exist():
@@ -61,3 +63,17 @@ def test_prompt_registry_and_templates_exist():
     user_txt = os.path.join(prompts_dir, "symptom_structuring", "v1", "user_template.txt")
     assert os.path.exists(sys_txt)
     assert os.path.exists(user_txt)
+
+
+def test_no_evidence_uses_pending_consultation_branch():
+    """Vector Store 미설정 시 일반 자가조치를 만들지 않고 상담으로 전환한다."""
+    result = PipelineRouter(search_service=None).run_pipeline(
+        inquiry_id="DEMO-INQ-NO-EVIDENCE",
+        correlation_id="corr-no-evidence",
+        raw_symptom="처음 보는 알 수 없는 표시가 나타났습니다.",
+        model_code="WPUJAC104DWH",
+    )
+    response = result.to_analysis_result()
+    assert response.evidence_references == []
+    assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
+    assert response.safety_assessment.risk_level != RiskLevel.DANGER

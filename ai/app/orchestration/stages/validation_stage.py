@@ -1,7 +1,7 @@
 """출력 가드레일 및 Schema 검증 Stage 모듈."""
 
 import time
-from ...validation.safety import ProhibitedPhraseValidator
+from ...validation.safety import ProhibitedPhraseValidator, UsageGuidanceValidator
 from ...schemas import ProcessingTrace
 from ..pipeline_context import PipelineContext
 
@@ -15,6 +15,11 @@ def execute_validation_stage(ctx: PipelineContext) -> None:
         is_valid, sanitized_msg, detected = validator.validate(ctx.usage_guidance.message)
         if not is_valid:
             ctx.usage_guidance.message = sanitized_msg
+        UsageGuidanceValidator().validate(
+            ctx.safety_assessment,
+            ctx.usage_guidance,
+            has_evidence=bool(ctx.evidence_references),
+        )
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000.0
     ctx.processing_traces.append(
