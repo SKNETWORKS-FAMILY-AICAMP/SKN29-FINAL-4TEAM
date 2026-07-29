@@ -30,6 +30,9 @@
         application/json:
           schema:
             $ref: ../components/schemas/inquiry/CreateInquiryRequest.yaml
+          examples:
+            startInquiryRequest:
+              externalValue: ../examples/inquiries/start-inquiry-request.json
     responses:
       "201":
         description: 신규 문의 생성
@@ -45,6 +48,11 @@
                   properties:
                     data:
                       $ref: ../components/schemas/inquiry/CreateInquiryResult.yaml
+            examples:
+              created:
+                externalValue: ../examples/inquiries/start-inquiry-success-response.json
+              idempotentReplay:
+                externalValue: ../examples/inquiries/start-inquiry-replay-response.json
       "400":
         $ref: ../components/responses/BadRequest.yaml
       "401":
@@ -56,14 +64,7 @@
       "409":
         $ref: ../components/responses/WorkflowConflict.yaml
       "422":
-        description: 요청 본문 또는 필수 헤더 검증 실패
-        headers:
-          X-Correlation-ID:
-            $ref: ../components/headers/CorrelationId.yaml
-        content:
-          application/json:
-            schema:
-              $ref: ../components/schemas/common/ApiResponse.yaml
+        $ref: ../components/responses/UnprocessableEntity.yaml
 
 /inquiries/{id}/questionnaire:
   parameters:

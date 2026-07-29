@@ -1,0 +1,8 @@
+category: system
+errors:
+  - code: INTERNAL_ERROR
+    category: system
+    http_status: 500
+    retryable: false
+    user_message: 요청 처리 중 오류가 발생했습니다.
+    recommended_action: REPORT_WITH_CORRELATION_ID

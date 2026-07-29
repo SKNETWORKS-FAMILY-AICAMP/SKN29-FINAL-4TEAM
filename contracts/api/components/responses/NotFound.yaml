@@ -6,3 +6,6 @@ content:
   application/json:
     schema:
       $ref: ../schemas/common/ApiResponse.yaml
+    examples:
+      resourceNotFound:
+        externalValue: ../../examples/errors/resource-not-found.json

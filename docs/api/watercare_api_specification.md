@@ -19,11 +19,11 @@
 개인별 진행 증거, 로컬 경로, 파일 해시와 내부 AI/RAG 경로는 포함하지
 않는다.
 
-`OWNER_CONFIRMED DESIGN BASELINE`은 최지용의 41개 API 작성·설계
+`OWNER_CONFIRMED DESIGN BASELINE`은 최지용의 42개 API 작성·설계
 기준선이 확정됐다는 뜻이다. OpenAPI 세부 정합화, Runtime 구현과
 소비자 검증의 진행 상태는 아래 항목별 상태로 별도 표시한다.
 
-현재 문서에는 최지용이 확정한 Public API 설계 기준선 41개가 있다.
+현재 문서에는 최지용이 확정한 Public API 설계 기준선 42개가 있다.
 이 수치는 Runtime 구현 완료 개수가 아니며, 다음 상태와 분리해 읽는다.
 
 | 상태 | 의미 |
@@ -38,10 +38,10 @@
 
 | 항목 | 수량 | 비고 |
 |---|---:|---|
-| Public API 설계 기준선 | 41 | 내부 API 5개와 분리 |
-| OpenAPI 등록 operation | 8 | 상태 점검 1, 인증 4, 문의 3 |
-| Runtime route | 5 | 상태 점검 1, 인증 4 |
-| Runtime 미구현 설계 항목 | 36 | OpenAPI-only 3개 포함 |
+| Public API 설계 기준선 | 42 | 기존 41개와 `CANCEL_INQUIRY` 행동별 Endpoint 1개 |
+| OpenAPI 등록 operation | 9 | 상태 점검 1, 인증 4, 문의·Workflow 4 |
+| Runtime route | 7 | 상태 점검 1, 인증 4, 문의 생성·취소 2 |
+| Runtime 미구현 설계 항목 | 35 | OpenAPI-only 2개 포함 |
 | 구현 차단 항목 | 4 | 저장 모델 보완 필요 |
 | `VERIFIED` | 0 | 문서 정합성은 구현 완료 증거가 아님 |
 
@@ -275,7 +275,7 @@ Refresh Token은 최초 발급 시점부터 7일이며 재발급으로 절대 �
 
 | ID | Method | Path | 기능 | 역할 | OpenAPI | Runtime | 상태 |
 |---|---|---|---|---|:---:|:---:|---|
-| `API-INQ-001` | POST | `/api/v1/inquiries` | 문의 생성 | CUSTOMER | Y | N | `OPENAPI_CONFIRMED` |
+| `API-INQ-001` | POST | `/api/v1/inquiries` | 문의 생성 | CUSTOMER | Y | Y | `RUNTIME_IN_PROGRESS` |
 | `API-INQ-002` | PATCH | `/api/v1/inquiries/{id}/questionnaire` | 문의 원문·답변 보완 | CUSTOMER | Y | N | `OPENAPI_CONFIRMED` |
 | `API-INQ-003` | POST | `/api/v1/inquiries/{id}/submit` | 문의 제출·분석 시작 | CUSTOMER | N | N | `DESIGN_BASELINE_ONLY` |
 | `API-INQ-004` | POST | `/api/v1/inquiries/{id}/events` | 상태 event 실행 후보 | 역할별 | N | N | `DESIGN_BASELINE_ONLY` |
@@ -287,6 +287,7 @@ Refresh Token은 최초 발급 시점부터 7일이며 재발급으로 절대 �
 | `API-INQ-010` | GET | `/api/v1/inquiries/{id}` | 문의 상세 조회 | 역할별 | N | N | `DESIGN_BASELINE_ONLY` |
 | `API-INQ-011` | POST | `/api/v1/inquiries/{id}/feedback` | 해결 여부·후속 피드백 | CUSTOMER | N | N | `DESIGN_BASELINE_ONLY` |
 | `API-INQ-012` | POST | `/api/v1/inquiries/{id}/reopen` | 문의 재개 | CUSTOMER | N | N | `DESIGN_BASELINE_ONLY` |
+| `API-INQ-013` | POST | `/api/v1/inquiries/{id}/cancel` | DRAFT 문의 취소 | CUSTOMER | Y | Y | `RUNTIME_IN_PROGRESS` |
 
 `API-INQ-004`의 generic `/events`는 역사적 설계 후보다. 현재 PM
 State 계약은 외부 행동별 `operation_id`를 제공하므로 최지용이 행동별
@@ -377,6 +378,7 @@ Endpoint와 OpenAPI를 정합화한다. 클라이언트는 임의의 event code�
 | `API-INQ-010` | 없음 | `InquiryDetailDTO` | Guidance·상담·방문·후속 확인은 배열로 반환 |
 | `API-INQ-011` | `ResolutionFeedbackRequest` | 후속 확인·문의 상세 | 문의·후속 확인 version을 별도로 검사 |
 | `API-INQ-012` | `ReopenRequest` | `InquiryDetailDTO` | 미해결·재발 사유 필수 |
+| `API-INQ-013` | `CancelInquiryRequest` | `CancelInquiryResult` | 본인 DRAFT 문의, `Idempotency-Key`·`state_version`·취소 사유 필수 |
 
 ### 6.4 상담·방문·운영
 
@@ -1116,14 +1118,16 @@ projection에서는 내부 메모와 불필요한 개인정보를 제외한다.
 
 | HTTP | 공개 오류 코드 후보 | 의미 | 상태 |
 |---:|---|---|---|
-| 400 | `INVALID_REQUEST` | 잘못된 요청 | Runtime 관찰 |
+| 400 | `INVALID_REQUEST` | 잘못된 요청 | Registry·Runtime 일치 |
+| 405 등 기타 4xx | `INVALID_REQUEST` | 허용되지 않은 Method 등 공통 4xx fallback | Registry 정책·Runtime 일치 |
 | 401 | `AUTH_REQUIRED` | 인증 필요 | Registry·Runtime 일치 |
 | 403 | `FORBIDDEN` | 역할 부족 | Registry·Runtime 일치 |
-| 404 | `RESOURCE_NOT_FOUND` | 미존재 또는 객체 접근 은닉 | Runtime 관찰, Registry 동기화 필요 |
-| 409 | `STATE-CONFLICT-01` | 상태·version 충돌 | Registry 존재, Runtime 미구현 |
-| 409 | `DUPLICATE-EVENT-01` | 중복 event | Registry 존재, Runtime 미구현 |
-| 422 | `VALIDATION_ERROR` | 필드 검증 실패 | Runtime 관찰, Registry 동기화 필요 |
-| 500 | `INTERNAL_ERROR` | 예상하지 못한 오류 | Runtime 관찰, Registry 동기화 필요 |
+| 404 | `RESOURCE_NOT_FOUND` | 미존재 또는 객체 접근 은닉 | Registry·Runtime 일치 |
+| 409 | `STATE-CONFLICT-01` | 상태·version 충돌 | Registry·START/CANCEL Runtime 일치 |
+| 409 | `DUPLICATE-EVENT-01` | 중복 event | Registry·START/CANCEL Runtime 일치 |
+| 422 | `VALIDATION_ERROR` | 필드 검증 실패 | Registry·Runtime 일치 |
+| 500 | `INTERNAL_ERROR` | 예상하지 못한 오류 | Registry·Runtime 일치 |
+| 501~599 | `INTERNAL_ERROR` | Runtime에서 처리한 서버 계열 오류 | Registry 정책·Runtime 일치 |
 | 503 | `AI-FAILED-01` | AI 처리 실패 | Registry 존재, Runtime 미구현 |
 | 503 | `SEARCH-FAILED-01` | 검색 처리 실패 | Registry 존재, Runtime 미구현 |
 
@@ -1230,9 +1234,9 @@ OpenAPI 3.1.0, 문서 버전 0.5.0이며
 
 | 비교 항목 | 사람용 공개 명세 | 현재 OpenAPI | 판정 |
 |---|---|---|---|
-| Public operation | 41개 OWNER 기준선 | 8개 등록 | 33개 미등록 |
-| Runtime operation | 5개 | 5개 모두 등록 | 구현 인수는 별도 필요 |
-| 문의 operation | 12개 OWNER 기준선 | 3개 `CONFIRMED` | 9개 미등록 |
+| Public operation | 42개 OWNER 기준선 | 9개 등록 | 33개 미등록 |
+| Runtime operation | 7개 | 7개 모두 등록 | 구현 인수는 별도 필요 |
+| 문의 operation | 13개 OWNER 기준선 | 4개 `CONFIRMED` | 9개 미등록 |
 | 다른 업무 도메인 | 제품·구독·케어·문진·상담·방문·운영 포함 | path 파일이 비어 있음 | 기계 계약 미완성 |
 | 문의 생성 조건 | `raw_text` 필수, 대표 증상 코드 선택 | `raw_text` 필수, `representative_symptom_code` 선택 | T-022 계약 일치 |
 | `InquiryDetailDTO` | 상태·원문·문진·안내·상담·방문·이력 등 | 최소 7개 필드만 존재 | projection 확정 필요 |
