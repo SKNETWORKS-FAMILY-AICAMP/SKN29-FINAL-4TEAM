@@ -10,7 +10,8 @@
 | --- | --- |
 | 단위 | 상담 임시 저장·완료·방문 검토 Validation |
 | 단위 | 방문 일정 저장·확정 필수값과 날짜 순서 Validation |
-| 단위 | 요청별 `Idempotency-Key`, `X-Correlation-ID` 생성 |
+| 단위 | 논리 쓰기별 UUID `Idempotency-Key`, 전송별 `X-Correlation-ID` 생성 |
+| 단위 | 네트워크 재시도 키 보존, 성공·새 행동·요청 변경 후 키 교체 |
 | 단위 | 공통 API Wrapper·HTTP 오류 분류·PageInfo 정규화 |
 | 단위 | 담당자·우선순위·기간 필터와 페이지 범위 보정 |
 | 단위 | UUID `inquiry_id`와 표시용 `inquiry_code` 분리·검증 |
@@ -44,7 +45,7 @@ npm.cmd run build
 
 ## 2026-07-29 실행 결과
 
-- `npm.cmd test`: **12개 Test File, 44개 Test 통과**
+- `npm.cmd test`: **14개 Test File, 49개 Test 통과**
 - `npm.cmd run lint`: 통과
 - `npm.cmd run build`: 통과
 - Production 번들: Vite Build 성공

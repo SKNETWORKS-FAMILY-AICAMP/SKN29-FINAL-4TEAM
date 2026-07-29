@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { IdempotencyOperationTracker } from "../../../common/api/idempotencyOperation";
 import { createRequestContext } from "../../../common/api/requestContext";
 import {
   ConsultationMockError,
@@ -29,6 +30,9 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
   const [error, setError] = useState<ConsultationActionErrorDetails | null>(null);
   const [stateVersion, setStateVersion] = useState(inquiry.stateVersion);
   const [allowedActions, setAllowedActions] = useState(inquiry.allowedActions);
+  const [operationTracker] = useState(
+    () => new IdempotencyOperationTracker(),
+  );
 
   const execute = async ({
     action,
@@ -43,8 +47,10 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
       return { ok: false as const, cancelled: true as const };
     }
 
-    const context = createRequestContext();
-    const request: ProvisionalConsultationActionRequest = {
+    const requestPayload: Omit<
+      ProvisionalConsultationActionRequest,
+      "idempotency_key" | "correlation_id"
+    > = {
       inquiry_id: inquiry.inquiryId,
       action_code: action.code,
       operation_id: action.operationId,
@@ -57,6 +63,12 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
       summary_confirmed: values.summaryConfirmed,
       visit_required: values.visitRequired,
       usage_guidance_status: values.usageStatus,
+    };
+    const operationSignature = JSON.stringify(requestPayload);
+    const idempotencyKey = operationTracker.begin(operationSignature);
+    const context = createRequestContext({ idempotencyKey });
+    const request: ProvisionalConsultationActionRequest = {
+      ...requestPayload,
       idempotency_key: context.idempotencyKey,
       correlation_id: context.correlationId,
     };
@@ -71,6 +83,7 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
         scenario,
         allowedActions,
       );
+      operationTracker.finish();
       setSuccess(result);
       setStateVersion(result.stateVersion);
       return { ok: true as const, result };
@@ -84,6 +97,7 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
             };
 
       setError(nextError);
+      operationTracker.fail(nextError.kind === "NETWORK_ERROR");
       if (nextError.kind === "CONFLICT") {
         if (nextError.currentStateVersion) {
           setStateVersion(nextError.currentStateVersion);

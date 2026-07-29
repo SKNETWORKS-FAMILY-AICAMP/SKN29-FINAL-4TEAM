@@ -64,7 +64,9 @@ npm.cmd run build
 - 인증·역할: `AuthProvider` 합성 사용자 Mock, `AuthGuard`·`RoleGuard` 실제 Route 제어
 - 상담 쓰기 API: 계약 미확정으로 Provisional Mock DTO 사용
 - 방문 전환 저장·확정: 프론트 화면 전용 Mock, 실제 API 호출 없음
-- `allowed_actions`, `state_version`, `Idempotency-Key`, `X-Correlation-ID`: 상태 머신 계약의 연결 위치 반영
+- `allowed_actions`, `state_version`: 상태 머신 계약의 연결 위치 반영
+- `Idempotency-Key`: 논리 쓰기 시작 시 생성하고 동일한 네트워크 재시도에만 보존
+- `X-Correlation-ID`: 전송 시도마다 새 UUID를 생성
 - 실제 고객 개인정보: 사용하지 않음
 
 필드별 확정·미확정 상태는 [week3-screen-api-db-map.md](./docs/week3-screen-api-db-map.md)를 확인합니다.

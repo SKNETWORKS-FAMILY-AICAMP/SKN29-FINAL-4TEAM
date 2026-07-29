@@ -8,7 +8,7 @@
 ## 계약 해석 원칙
 
 1. 화면은 상태로 행동을 계산하지 않고 Backend의 `allowed_actions`를 그대로 표시한다.
-2. 모든 외부 쓰기는 최신 Inquiry `state_version`과 새 `Idempotency-Key`를 사용한다.
+2. 모든 외부 쓰기는 최신 Inquiry `state_version`을 사용한다. `Idempotency-Key`는 새 논리 쓰기에서 생성하고 같은 요청의 네트워크 재시도에만 보존한다.
 3. 409 충돌 시 입력을 보존하고 최신 상태·버전·허용 행동을 반영한 뒤 사용자가 재시도한다.
 4. API에 없는 이름은 현재 Web Mock의 임시 이름이며 Backend 합의 후 Mapper에서 교체한다.
 
@@ -60,8 +60,8 @@
 | 행동 코드 | `action.code` / `action_code` | 상태 머신 action catalog | 상태 이력·업무 이벤트 기록 | canonical code만 사용 |
 | Operation | `action.operationId` / `operation_id` | 상태 머신 `operation_id` | 직접 저장 필드 아님 | 실제 Endpoint 연결 필요 |
 | 상태 버전 | `stateVersion` / `state_version` | 동시성 계약 확정 | `support_inquiry.state_version` | 성공 쓰기마다 증가 |
-| 멱등 키 | Request Context / `Idempotency-Key` | 동시성 계약 확정 | 저장 위치 구현 `OPEN` | 매 시도 새 키, 같은 요청 재전송 정책 준수 |
-| 추적 ID | Request Context / `X-Correlation-ID` | Header 계약 존재 | 감사·로그 상관관계 | 개인정보 포함 금지 |
+| 멱등 키 | Operation Tracker / `Idempotency-Key` | 동시성 계약 확정 | 저장 위치 구현 `OPEN` | 네트워크 재시도에는 같은 키, 성공·새 행동·요청 변경에는 새 키 |
+| 추적 ID | Request Context / `X-Correlation-ID` | Header 계약 존재 | 감사·로그 상관관계 | 전송 시도마다 새 UUID, 개인정보 포함 금지 |
 
 ## 공식 근거 공개 범위
 
