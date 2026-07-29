@@ -99,6 +99,17 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest().upper()
 
 
+def read_lf_bytes(path: Path) -> bytes:
+    """Read text source bytes with platform-independent LF line endings."""
+    content = path.read_bytes()
+    return content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def sha256_text_file(path: Path) -> str:
+    """Hash text source bytes with platform-independent LF line endings."""
+    return sha256_bytes(read_lf_bytes(path))
+
+
 def replace_tokens(value: Any, tokens: dict[str, str]) -> Any:
     if isinstance(value, dict):
         return {key: replace_tokens(item, tokens) for key, item in value.items()}

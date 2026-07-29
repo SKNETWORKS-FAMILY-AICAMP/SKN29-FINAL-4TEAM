@@ -12,7 +12,13 @@ sys.path.insert(0, str(TOOLS_ROOT))
 
 from watercare.builders import build_rag_preview, build_synthetic_preview
 from watercare.config import load_pipeline
-from watercare.io import data_path, sha256_bytes, write_bytes
+from watercare.io import (
+    data_path,
+    read_lf_bytes,
+    sha256_bytes,
+    sha256_text_file,
+    write_bytes,
+)
 
 
 class PipelineSafetyTests(unittest.TestCase):
@@ -37,6 +43,34 @@ class PipelineSafetyTests(unittest.TestCase):
                 [],
                 list(target.parent.glob(f".{target.name}.*.tmp")),
             )
+
+    def test_text_source_hash_is_line_ending_independent(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lf = root / "lf.txt"
+            crlf = root / "crlf.txt"
+            lone_cr = root / "cr.txt"
+            lf.write_bytes(b"first\nsecond\n")
+            crlf.write_bytes(b"first\r\nsecond\r\n")
+            lone_cr.write_bytes(b"first\rsecond\r")
+            self.assertEqual(sha256_text_file(lf), sha256_text_file(crlf))
+            self.assertEqual(sha256_text_file(lf), sha256_text_file(lone_cr))
+            self.assertEqual(read_lf_bytes(lf), read_lf_bytes(crlf))
+            self.assertEqual(len(read_lf_bytes(lf)), len(read_lf_bytes(crlf)))
+
+    def test_final_manifest_groups_use_platform_independent_path_order(self) -> None:
+        manifest = self.config.config("final_manifest")
+        for group in (
+            "metadata_files",
+            "schema_files",
+            "build_tools",
+            "config_files",
+            "template_files",
+            "validation_reports",
+            "policy_files",
+        ):
+            paths = [item["path"] for item in manifest[group]]
+            self.assertEqual(sorted(paths), paths, group)
 
     def test_two_builds_are_byte_deterministic(self) -> None:
         first = {**build_rag_preview(self.config), **build_synthetic_preview(self.config)}

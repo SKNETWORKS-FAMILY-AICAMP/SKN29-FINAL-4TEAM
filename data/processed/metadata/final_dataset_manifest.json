@@ -251,6 +251,11 @@
   ],
   "metadata_files": [
     {
+      "path": "README.md",
+      "size_bytes": 2785,
+      "sha256": "43EE6218A5D80C8CC113F9976973AC994E35BD4E008E7BF102B001E70AB5ABE3"
+    },
+    {
       "path": "catalog/CHANGELOG.md",
       "size_bytes": 8223,
       "sha256": "1B7172117ED7A0DEB679D12FEEB2110B5DDE4D5C6840B8BD10409505C7EFFE7D"
@@ -266,6 +271,11 @@
       "sha256": "D50D212CF45CDAAEAB12F2AE0A0D309AAD0C0B88654779BDE08BE65528576E6B"
     },
     {
+      "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
+      "size_bytes": 2037,
+      "sha256": "4568D2B1CEEE18D7B88346D2F4AC0615CEA512E8DC8BF732D289E4CC8D12EA6D"
+    },
+    {
       "path": "processed/metadata/collection_log.csv",
       "size_bytes": 1952,
       "sha256": "ACE6636F3706EEC41B799D4ED0BA938D226241220B9D0BD296B86423A5077C61"
@@ -273,12 +283,7 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 17464,
-      "sha256": "01CC23B9D2E4FE2D331A946ABD18675D3694D68E07E301BF6C3361C377C796E2"
-    },
-    {
-      "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
-      "size_bytes": 2037,
-      "sha256": "4568D2B1CEEE18D7B88346D2F4AC0615CEA512E8DC8BF732D289E4CC8D12EA6D"
+      "sha256": "82336DDDF4D6346F70602999DAF85CCB6FC849DDED26402FF9EF48C155A78DFE"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -299,11 +304,6 @@
       "path": "processed/metadata/source_inventory.csv",
       "size_bytes": 1670,
       "sha256": "F9D3589C86FD74629454CA73FBF0D754A8CFB81646408712A854E9F9AF4622F6"
-    },
-    {
-      "path": "README.md",
-      "size_bytes": 2785,
-      "sha256": "43EE6218A5D80C8CC113F9976973AC994E35BD4E008E7BF102B001E70AB5ABE3"
     },
     {
       "path": "schemas/README.md",
@@ -581,8 +581,8 @@
     },
     {
       "path": "tools/tests/test_pipeline_safety.py",
-      "size_bytes": 3651,
-      "sha256": "BA2A3274D26FF5FA7160B063A269145F9CDCC25A03449525AF5F79EDBD0AF1E6"
+      "size_bytes": 4938,
+      "sha256": "D8D0DFAB04249A1E9DE90E7EBA3F3AD1731495E7B4C7AC1DF0E5A76409E4AB39"
     },
     {
       "path": "tools/tests/test_qa_reports.py",
@@ -631,23 +631,23 @@
     },
     {
       "path": "tools/watercare/e2e_validation.py",
-      "size_bytes": 11635,
-      "sha256": "CD6F46A0B682DE0DDBDC334CA0066A2CF939087E9802019D40AE7B5F2C8C94D1"
+      "size_bytes": 11624,
+      "sha256": "65A5EB5691E45DE117B6A0DA5E69D36339E1DE987811621DF033E7B6C4E4E2AD"
     },
     {
       "path": "tools/watercare/io.py",
-      "size_bytes": 3384,
-      "sha256": "C36B1890B4C53D7CAA56A00D677F964118293055B3BA6F220E3B228EB49D88E4"
+      "size_bytes": 3763,
+      "sha256": "A008C394C133281BB433383A6220438AD36F627DC9394EC1A9D9F7562FE16AD9"
     },
     {
       "path": "tools/watercare/operations.py",
-      "size_bytes": 26138,
-      "sha256": "9B5C90CE2F29FDBB7380BC858F65F260648C89D265A30AFBD074FFC0F0BF7847"
+      "size_bytes": 26448,
+      "sha256": "4531E270241ECC92CF4FDD9269AEE30537D6D1F861F53415457E07E871095C09"
     },
     {
       "path": "tools/watercare/validation.py",
-      "size_bytes": 30440,
-      "sha256": "A451D3BB3D7C0C2F657CBE0FD7213FF88974D5B7EE0C090D1144DC82EA8FAD4B"
+      "size_bytes": 30500,
+      "sha256": "3DA8938837B637E0AFF47B9CD6780231C0D2B5AE2FD23D892B24772F5A112DD5"
     }
   ],
   "config_files": [
@@ -663,8 +663,8 @@
     },
     {
       "path": "config/handoff/backend_import_crosswalk.json",
-      "size_bytes": 4427,
-      "sha256": "7557D800905BBE5A8E03136D115DF6C85D57FFC5EDB83F16B2F6256546401BC1"
+      "size_bytes": 4477,
+      "sha256": "BA8E12FDC8AD8873340B59EAFEF14BDD8BC96310F7B364F600150E49AFAA2904"
     },
     {
       "path": "config/handoff/consumer_profiles.json",
@@ -699,7 +699,7 @@
     {
       "path": "config/workflow/service_contract_mapping.json",
       "size_bytes": 5183,
-      "sha256": "06ABB56D86253584FE27E97B0F3371F5041BEE4D938024D6E1EF7B4F6AEAB6BE"
+      "sha256": "6FF9DE35F1EDFA41B07854EDB701A0A426DCFFB03FEA5C30BACE1449254713BC"
     }
   ],
   "template_files": [
@@ -726,19 +726,24 @@
   ],
   "validation_reports": [
     {
+      "path": "processed/validation/DATA_STATUS_QA.md",
+      "size_bytes": 1148,
+      "sha256": "3E860FF6F0A39D0DCAC51E01D69CB4ABA652F96557EA709262690573AE1AC5E7"
+    },
+    {
+      "path": "processed/validation/README.md",
+      "size_bytes": 858,
+      "sha256": "6D0C3B3EAF90A252709CCBEDB85E61845A4E8E95E380696264ADDA71D032678C"
+    },
+    {
       "path": "processed/validation/business/latest_business_rules_report.json",
       "size_bytes": 1545,
-      "sha256": "4C79B25A04C41547EA66F2FFE1DFA2ABAF108A513ABEA1F4CD7510FEC6E1DC1B"
+      "sha256": "40B196EC454ABB5831973A3450751BC40021FB358BC79D4328FB6DAA41EFD82A"
     },
     {
       "path": "processed/validation/business/latest_representative_e2e_report.json",
       "size_bytes": 3222,
       "sha256": "733FAF034F4B3B34191EEA4D36D54DB8859A29C4960E9F15B42F69069F8C8624"
-    },
-    {
-      "path": "processed/validation/DATA_STATUS_QA.md",
-      "size_bytes": 1148,
-      "sha256": "3E860FF6F0A39D0DCAC51E01D69CB4ABA652F96557EA709262690573AE1AC5E7"
     },
     {
       "path": "processed/validation/deletion/deletion_report.json",
@@ -758,12 +763,12 @@
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
       "size_bytes": 1341,
-      "sha256": "AD53F5E35B702715235F66AD156CAA8E6EF29DBBC2A11F55A6F8EA2751E90371"
+      "sha256": "02783A43D543FF39407148C38222078B320A8BE57D86CC5962545CD1E3ADDB8D"
     },
     {
       "path": "processed/validation/latest_qa_summary.json",
-      "size_bytes": 7009,
-      "sha256": "F219BB8CFDC713DDFC4A54176191CF2D0E3EF60B21E5A45EE5FD2C7F5B7286AD"
+      "size_bytes": 7008,
+      "sha256": "6150E10B2AF342A19CAD3CDED19BC219A35DFEE315B7B0CA09F2B40411345252"
     },
     {
       "path": "processed/validation/ocr_evidence/image_manifest.csv",
@@ -783,12 +788,7 @@
     {
       "path": "processed/validation/quality/latest_quality_report.json",
       "size_bytes": 1247,
-      "sha256": "BDE4884033B5091C0CE79528BBA64744CC21F81FBE8605C98A5F69B7EC951014"
-    },
-    {
-      "path": "processed/validation/README.md",
-      "size_bytes": 858,
-      "sha256": "6D0C3B3EAF90A252709CCBEDB85E61845A4E8E95E380696264ADDA71D032678C"
+      "sha256": "6C45DDAE762E0DCF6CEDEBA78D000736545A27C98F632B4495B25D1176569CAF"
     },
     {
       "path": "processed/validation/refactor/latest_equivalence_report.json",
@@ -797,13 +797,13 @@
     },
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
-      "size_bytes": 1153,
-      "sha256": "58A7D84A6444BD0982B3FACAB24838A1E65D6FF408DB98427089A31504D447AC"
+      "size_bytes": 1152,
+      "sha256": "09FC4B72D4FD908A0DB3F922DE0CD8EC9B32AF38FFFC944FBB77F3737A6B7E4F"
     },
     {
       "path": "processed/validation/schema/latest_schema_report.json",
       "size_bytes": 8472,
-      "sha256": "B30C44123C6A7F0532D5098469DD9C9C8928BE5DC21D8ABD3AB34BDBC537630F"
+      "sha256": "180B2B191B220B2D3F3E260329D03B8706E8BB913326465CBABAD96E9A4C5AB0"
     },
     {
       "path": "processed/validation/step3/latest_step3_report.json",
@@ -829,13 +829,18 @@
     },
     {
       "path": "raw/.gitignore",
-      "size_bytes": 276,
-      "sha256": "D8C90F39E4C6F4CAF8AF60B15760ADB4DA931F251768F5D9B6E21A7217D4DA7A"
+      "size_bytes": 267,
+      "sha256": "650801F5DDDF3BAC1D872B96BDF2CD7B3E7AAF8C019824FF00BB2E3505C309F4"
     },
     {
       "path": "raw/.gitkeep",
       "size_bytes": 0,
       "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "path": "raw/README.md",
+      "size_bytes": 848,
+      "sha256": "A848FAD0E16ED07A6277A5601DB420C39F9B23EBE40897A7CC1BE9F54664F7D2"
     },
     {
       "path": "raw/faq/snapshots/.gitkeep",
@@ -856,11 +861,6 @@
       "path": "raw/manuals/mvp/.gitkeep",
       "size_bytes": 0,
       "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
-    },
-    {
-      "path": "raw/README.md",
-      "size_bytes": 848,
-      "sha256": "A848FAD0E16ED07A6277A5601DB420C39F9B23EBE40897A7CC1BE9F54664F7D2"
     }
   ],
   "counts": {
@@ -898,9 +898,9 @@
   },
   "toolchain": {
     "python_files": 26,
-    "python_lines": 4574,
+    "python_lines": 4645,
     "max_wrapper_lines": 10,
-    "max_module_lines": 737
+    "max_module_lines": 745
   },
   "rag_policy": {
     "included_model": "WPUJAC104DWH",

@@ -15,7 +15,15 @@ from .builders import (
     write_preview,
 )
 from .config import PipelineConfig
-from .io import data_path, read_json, read_jsonl, sha256_file, write_json
+from .io import (
+    data_path,
+    read_json,
+    read_jsonl,
+    read_lf_bytes,
+    sha256_bytes,
+    sha256_file,
+    write_json,
+)
 from .validation import run_data_qa, validate_service_contract_mapping
 
 
@@ -24,15 +32,24 @@ def _relative(config: PipelineConfig, path: Path) -> str:
 
 
 def _entry(config: PipelineConfig, path: Path) -> dict[str, Any]:
+    binary_suffixes = {".gif", ".jpeg", ".jpg", ".pdf", ".png"}
+    content = (
+        path.read_bytes()
+        if path.suffix.lower() in binary_suffixes
+        else read_lf_bytes(path)
+    )
     return {
         "path": _relative(config, path),
-        "size_bytes": path.stat().st_size,
-        "sha256": sha256_file(path),
+        "size_bytes": len(content),
+        "sha256": sha256_bytes(content),
     }
 
 
 def _files(root: Path) -> list[Path]:
-    return sorted(path for path in root.rglob("*") if path.is_file())
+    return sorted(
+        (path for path in root.rglob("*") if path.is_file()),
+        key=lambda path: path.as_posix(),
+    )
 
 
 def _source_commit(config: PipelineConfig) -> str:
@@ -512,7 +529,7 @@ def inventory(config: PipelineConfig) -> dict[str, Any]:
     targets: dict[str, Any] = {}
     for name in ("raw", ".temp", ".work"):
         root = config.data_root / name
-        files = sorted(path for path in root.rglob("*") if path.is_file()) if root.exists() else []
+        files = _files(root) if root.exists() else []
         tracked_count = 0
         for path in files:
             relative = f"data/{_relative(config, path)}"
@@ -619,7 +636,8 @@ def _write_final_manifest(config: PipelineConfig) -> dict[str, Any]:
             item
             for item in metadata_paths
             if _relative(config, item) not in data_path_set
-        }
+        },
+        key=lambda item: item.as_posix(),
     )
     groups = {
         "data_files": data_files,

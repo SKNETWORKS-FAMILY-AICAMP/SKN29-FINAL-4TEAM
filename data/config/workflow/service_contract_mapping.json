@@ -11,47 +11,47 @@
   "contract_sources": {
     "user_roles": {
       "path": "contracts/codes/user-roles.yaml",
-      "sha256": "95F3B461059209035123F84862A0799100ECC624951C2B6658D05BA15363F1D5"
+      "sha256": "EF0BFCC6D4FA3456ECAE27E09DB014413DC6309AFCE544825D460537BF67598E"
     },
     "inquiry_states": {
       "path": "contracts/state-machine/inquiry-states.yaml",
-      "sha256": "D3490FCD08BC13CCDC0319B108FAAA25216B44E579B0CD4F4456867888AD0FA8"
+      "sha256": "A81D26DD26635C500A4B6D9BC3A7186A866D741358DD07F0D31EA556A113952D"
     },
     "inquiry_events": {
       "path": "contracts/state-machine/inquiry-events.yaml",
-      "sha256": "D6817A5CEE1F8DE365953A4A1E3A4DD4C98DF2BF0CBE6F6D40ECD22CEA794789"
+      "sha256": "8D61B168FD2EC836F454386BE613D2BE57E52549230259FFABCF3CCA4B7BB60F"
     },
     "transition_rules": {
       "path": "contracts/state-machine/transition-rules.yaml",
-      "sha256": "10C3410CC9D30DD3CC5ED31680E8DE06054F65BF48EF5D946E36FD543F6277C7"
+      "sha256": "FBAF11B15B3193351AE94B5A8A300DF741E1B099906B6D0F2B6EC4A5CA2B86D6"
     },
     "allowed_actions": {
       "path": "contracts/state-machine/allowed-actions.yaml",
-      "sha256": "03CD9F8D6C404F9E9D279DBF24A9441CB801749A6FC3F2DE3FB8A080E96781D0"
+      "sha256": "6EF5441E50E3907F7604EA6CADC4E1E730FE9B99000BD9EEFDB2F20D887E5450"
     },
     "data_state_crosswalk": {
       "path": "contracts/state-machine/data-state-crosswalk.yaml",
-      "sha256": "195E1EE7A7538E1F70391F69DE91ABEC71C721DB3C6E6A2DF5617F78BA03A637"
+      "sha256": "9E34117D32BAA9D47B64A9040F6C2AFBDB62A6C30DD0C7F04B8DAC371B412500"
     },
     "representative_e2e_contract": {
       "path": "contracts/state-machine/examples/representative-e2e.yaml",
-      "sha256": "82D2384238501FF77EA41B49D6C2DC92A5B9BF0317F2EBEBF11246022164CD02"
+      "sha256": "5E4F92772AEB71D34CA1B9C46E61B82090B404226B6437713BDF8769ED07A58F"
     },
     "adr_0010_identifier_bridge": {
       "path": "docs/adr/0010-t005-three-layer-identifier-bridge.md",
-      "sha256": "345D33A85D872D827062B0DE48F177D9CBB4A39ED8D17D5311DABE711566F35F"
+      "sha256": "C938744432680B12FF02F8FC326AF396B2017652989FD75B29238E77930ED69A"
     },
     "adr_0011_idempotency_scope": {
       "path": "docs/adr/0011-t005-status-history-idempotency-scope.md",
-      "sha256": "264C67CD986E9B949270EAB7EC972AF909964784AC18FD02A43169110783E561"
+      "sha256": "90731017C7B64E0D29A829AE0DADD407F8DD5E9F50D90FE1FB65C2CFA789186A"
     },
     "t005_physical_contract_v1_2": {
       "path": "docs/database/t-005/t005_physical_contract_v1.2.json",
-      "sha256": "ADD4A6AFB255F3F18D72D8AAB87AA6EFF5356D5EE51BC85613E390C84CD72041"
+      "sha256": "6A8582EC55CB57DC7FC4E7279D6C0B9BF9CA86D4F8148212348256154876CAF8"
     },
     "public_api_idempotency_conflict": {
       "path": "contracts/api/examples/workflow/idempotency-key-reuse-conflict.json",
-      "sha256": "31B47573909BB2911A409C787425F5B8B660A797B0B3AD4ABBAEE64E674AFC15"
+      "sha256": "0156662EF5BCCF5C936A4AB2798B2BA95D3A49E9C4C57C371120194215394798"
     }
   },
   "canonical_role_codes": [
