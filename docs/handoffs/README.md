@@ -1,14 +1,14 @@
 # 정수기 딜러 팀 통합 인계 허브
 
-> 기준일: 2026-07-29
+> 기준일: 2026-07-30
 >
 > 문서 책임: 공동 편집(`docs/**`)
 >
-> 현재 상태: `SHARED_CANDIDATE_DATA_OWNER_REVIEW_REQUIRED`
+> 현재 상태: `DATA_OWNER_REVIEW_APPROVED_BACKEND_REVERIFY_REQUIRED`
 >
 > 기능 통합 Commit: `cbf1b6cfa3c56e95e30284ab1e8424f77e1594ec`
 >
-> 현재 원격 후보 SHA: `git fetch origin --prune` 후 `git rev-parse origin/jiyong`으로 확인
+> 현재 원격 `main` SHA: `e5cc511189b54060dfafde9215b2cb0799b1bf7a`
 >
 > 실행 원칙: `작업 → 즉시 검증 → 다음 작업`
 
@@ -70,7 +70,7 @@
 | 게시 기준 `origin/main` | `0bcb8b514f2b0d1476882d926b667dbdb5d8c06a` | 게시 직전 최신 Snapshot |
 | 게시 후보의 위 `main` 포함 여부 | 포함됨 | 최신 `main` 기반, PM 병합은 아직 대기 |
 | Backend 회귀 | `397 passed` | 같은 후보 내용 기준 |
-| Data 회귀 | `61 passed`, QA 2회·E2E `17/17` | 김은진 Owner Review 대기 |
+| Data 회귀 | `61 passed`, QA 2회·E2E `17/17` | 김은진 Owner Review `APPROVED` |
 | Crosswalk v2 | Backend Source `17/17`, Fixture Mapping `12/12` | Source Hash PASS |
 | T-005 | `10/32`, 잔여 22 | 전체 `NOT_READY` |
 
@@ -82,7 +82,7 @@
 | 항목 | 현재 확인 결과 | 공유 판정 |
 | --- | --- | --- |
 | Backend 전체 테스트 | `397 passed` | `SHARED_CANDIDATE` |
-| Data 도구 테스트 | `61 passed`, QA 2회 결정성 확인 | `SHARED_CANDIDATE`, Owner Review 대기 |
+| Data 도구 테스트 | `61 passed`, QA 2회 결정성 확인 | Owner Review `APPROVED`, Backend 재검증 대기 |
 | Django System Check | 오류 0 | `SHARED_CANDIDATE` |
 | Migration drift | 새 Migration 생성 필요 없음 | `SHARED_CANDIDATE` |
 | T-005 구현 | `10/32`, 잔여 22 | `SHARED_CANDIDATE`, 전체 `NOT_READY` |
@@ -101,9 +101,10 @@
   Fixture와 충돌하므로 이 DB에서는 합성 Importer를 실행하지 않는다.
   합성 Importer는 빈 격리 DB 전용이다.
 
-따라서 현재 `jiyong` 후보를 전 팀의 Pull 기준으로 전달하면 안 된다.
-김은진 Data Owner Review와 최지용 재검증 뒤 PM이 병합해 전달한
-40자리 `main` SHA만 `TEAM_BASELINE`이다.
+후보는 Data Owner Review 전에 `main`에 병합됐다. 2026-07-30 김은진이
+현재 `main`과 동일한 `e5cc511`에서 19개 Data 경로를 사후 검토해
+`APPROVED`했다. 이 절차 편차를 숨기지 않으며, 최지용의 현재 `main`
+기준 재검증이 끝나기 전에는 `TEAM_BASELINE_READY`로 승격하지 않는다.
 
 ### 2.3 기본 개발 DB에 적용한 Migration과 보정
 
@@ -166,15 +167,15 @@ DB 복원 리허설까지 완료했다는 의미는 아니다.
 - [State Machine 계약](../../contracts/state-machine/README.md)
 - [Mobile 모듈 설정](../../mobile/settings.gradle.kts)
 
-### 3.2 이번 공유 후보에서 해결했으며 검토가 남은 항목
+### 3.2 이번 공유 후보에서 해결했으며 후속 재검증이 남은 항목
 
 | 항목 | 해결 내용 | 공유 전 남은 Gate |
 | --- | --- | --- |
-| Data→Backend Mapping | `service_contracts_used=true`, Source 17·Mapping 12 검증 | 김은진 Data 19경로 Owner Review |
+| Data→Backend Mapping | `service_contracts_used=true`, Source 17·Mapping 12 검증 | Owner Review `APPROVED`, 최지용 재검증 |
 | 기본 개발 DB Migration | 기존 9개와 `workflow.0003` 적용·검증 | PM 병합 뒤 팀원 로컬 DB 재현 |
 | Workflow 시간 이력 | 기존 11건 보정, MigrationExecutor 회귀 추가 | PM 병합 뒤 팀원 로컬 DB 재현 |
 | 합성 Handoff Importer | 격리 DB에서 `DB_SMOKE_VERIFIED`·`DB_FULL_VERIFIED` | 기본 DB 실행 금지, 빈 격리 DB만 사용 |
-| 합성 데이터 적재 | 12종, Source 367행, 재실행 생성·수정 0 | 김은진 Owner Review 뒤 최지용 재검증 |
+| 합성 데이터 적재 | 12종, Source 367행, 재실행 생성·수정 0 | 최지용 현재 `main` 재검증 |
 | Health·Auth Smoke | 현재 Backend를 8001에 실행해 전체 흐름 통과 | 팀 기준선에서 기본 포트 재검증 |
 | Backend 실행 매뉴얼 | v1.3에 설치·실행·Migration·복구 절차 통합 | 게시 완료 |
 | T-005 | 7개에서 10개로 증가 | 잔여 22개 및 계약 밖 Table 판정 |
@@ -191,7 +192,9 @@ DB 복원 리허설까지 완료했다는 의미는 아니다.
 
 위 링크와 근거 파일은 기능 통합 Commit
 `cbf1b6cfa3c56e95e30284ab1e8424f77e1594ec`부터 함께 게시됐다.
-김은진 검토 전 PM이 `main`에 병합하지 않는다.
+후보는 Owner Review 전 `main`에 병합됐으며, 사후 검토 결과는
+[김은진 Crosswalk v2 Data Owner Review](../individual/eunjin/20260730_데이터_Owner_Review.md)에
+기록했다.
 
 ---
 
@@ -199,8 +202,8 @@ DB 복원 리허설까지 완료했다는 의미는 아니다.
 
 | 우선순위 | Blocker | 주담당 | 필요한 입력 | 다음 소비자 |
 | --- | --- | --- | --- | --- |
-| P0 | Data 변경 19개가 `jiyong` 후보에 함께 게시됨 | 김은진(원본·QA) + 최지용(Backend 소비) | 김은진 `APPROVED` 또는 수정 Diff·Branch SHA | PM |
-| P0 | PM `main` 병합 SHA 미전달 | 윤승혁 | 담당자 Branch 검토·병합 | 전 팀원 |
+| P0 | Owner Review 승인 뒤 Backend 재검증 미실시 | 최지용 | 현재 `main`의 Data 61·QA·Backend 397·PostgreSQL 증거 재확인 | PM |
+| P0 | Owner Review 전 병합 절차 편차 | 윤승혁 | 사후 승인·재검증 증거 검토 후 기준선 판정 | 전 팀원 |
 | P1 | T-005 `10/32`, 잔여 22개 | 최지용 | PM State·Data·AI 입력별 Wave | Backend·QA |
 | P1 | T-005 계약 밖 Table이 Auditor에 검출 | 최지용 + 윤승혁 | `audit`·`operations`·`workflow` Table의 계약 편입/별도 분류 결정 | QA |
 | P1 | `SYN-JAC104-012`, `SYN-JAC104-016` 업무 결정 미확정 | 윤승혁 | Reopen·제품 검증 정책 | 김은진·최지용 |
@@ -251,14 +254,13 @@ T-005는 현재 `NOT_READY`다. 10개 구현을 32개 완료로 표현하지 않
    `cbf1b6cfa3c56e95e30284ab1e8424f77e1594ec`부터 `jiyong`에 게시했다.
 2. Hash graph와 생성 Manifest가 하나의 검증 단위이므로 Backend·Data·
    문서를 원자적 후보로 묶었지만, Data 소유권 승인을 생략하지 않는다.
-3. 김은진이 Data 원본·Crosswalk·QA 19경로를 검토해 `APPROVED` 또는
-   수정 Diff·`eunjin` 40자리 SHA를 반환한다.
-4. 수정이 있으면 최지용이 승인된 변경만 반영한 뒤 Backend 397,
-   Data 61, QA 2회, T-005 Auditor, PostgreSQL, Import Replay를 다시
-   검증하고 `jiyong` 후속 SHA를 게시한다.
-5. 김은진 승인 전에는 PM이 `main`에 병합하지 않는다.
-6. 승인 뒤 윤승혁이 후보의 충돌·보존 범위를 검토해 `main`에 병합하고
-   40자리 SHA를 공유한다.
+3. 후보는 Owner Review 전에 `main`에 병합됐다.
+4. 김은진은 현재 `main`과 동일한 `e5cc511`에서 Data 원본·Crosswalk·QA
+   19경로를 사후 검토해 `APPROVED`를 반환했다.
+5. 최지용은 현재 `main`에서 Backend 397, Data 61, QA 2회, T-005
+   Auditor, PostgreSQL과 Import Replay 증거를 재확인한다.
+6. 윤승혁은 사후 승인과 Backend 재검증을 확인한 뒤 다음 팀 기준선을
+   판정하고 40자리 SHA를 공유한다.
 
 G0 전에는 Web·Mobile·AI 담당자가 로컬 미공유 파일 경로를 복사해
 구현하지 않는다.
@@ -474,15 +476,17 @@ netstat -ano -p tcp | Select-String ':8000'
 - Hash·Manifest·Crosswalk의 재현성
 - Data 변경이 Backend Import 계약과 일치하는지 검토
 
-**지금 할 일**
+**검토 결과와 다음 할 일**
 
-1. 현재 로컬 Data 변경을 검토해 승인 범위와 자신의 Branch SHA를 남긴다.
-2. `service_contracts_used=true`와 367행 Manifest가 현재 파일 Hash와
-   일치하는지 재검증한다.
+1. Data 19경로 Owner Review는 `APPROVED`다.
+2. `service_contracts_used=true`, 367행 Manifest, Source Hash, Data
+   61건과 QA 2회 결정성을 재검증했다.
 3. `SYN-JAC104-012`, `SYN-JAC104-016`은 PM 결정 전 Projection에서
    차단 상태를 유지한다.
 4. 실제 운영 데이터 적재와 합성 Fixture 적재를 같은 완료 항목으로
    표현하지 않는다.
+5. WBS는 직접 수정하지 않고 T-007·T-013 완료 후보와 T-012 진행 중
+   유지 근거를 PM에게 전달한다.
 
 ```powershell
 Set-Location (git rev-parse --show-toplevel)
@@ -815,8 +819,9 @@ pr_url: <담당자 Branch PR URL>
 - [x] 기본 개발 DB와 격리 검증 DB의 Migration 적용 상태를 확인했다.
 - [x] Backend·Data·T-005·PostgreSQL 검증 결과를 같은 후보 내용 기준으로 남겼다.
 - [x] `jiyong` 후보가 Push되고 원격 SHA 일치를 확인했다.
-- [ ] 김은진이 Data 19경로를 `APPROVED`했거나 수정 SHA를 반환했다.
-- [ ] PM이 `main`에 병합하고 40자리 SHA를 공유했다.
+- [x] 김은진이 Data 19경로를 `APPROVED`했다.
+- [x] 후보가 `main`에 병합되고 40자리 SHA가 확인됐다.
+- [ ] 최지용이 Owner Review 이후 현재 `main`에서 Backend·Data·PostgreSQL 증거를 재검증했다.
 - [ ] Web `public_id` Mapping, 지원 Node, Test·Lint·Build,
       지원 Runtime 범위의 Auth Browser/API Smoke가 통과했다.
 - [ ] Mobile DTO·Network 연동, JDK 17, Test·Lint·두 App Build,
