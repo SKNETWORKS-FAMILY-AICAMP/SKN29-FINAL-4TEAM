@@ -1,0 +1,306 @@
+{
+  "verification_status": "PASS",
+  "verified_at": "2026-07-30T01:54:48.502400+00:00",
+  "embedding_model": "BAAI/bge-m3",
+  "embedding_model_version": "5617a9f61b028005a4858fdac845db406aefb181",
+  "dimension": 1024,
+  "search_type": "cosine_exact_search",
+  "top_k": 5,
+  "score_threshold": 0.4,
+  "ann_used": false,
+  "database": {
+    "postgres_version": "16.14 (Debian 16.14-1.pgdg12+1)",
+    "pgvector_version": "0.8.6",
+    "row_count": 7,
+    "distinct_chunk_ids": 7,
+    "min_dimension": 1024,
+    "max_dimension": 1024,
+    "source_hash_count": 1
+  },
+  "sql_filter_verification": {
+    "fixture_count": 4,
+    "leaked_fixture_ids": [],
+    "metadata_filter_passed": true,
+    "invalid_dimension_rejected": true
+  },
+  "summary": {
+    "case_count": 12,
+    "passed_count": 12,
+    "failed_count": 0,
+    "mean_positive_recall_at_5": 1.0,
+    "mean_positive_mrr": 0.8857142857142858,
+    "forbidden_hit_count": 0
+  },
+  "cases": [
+    {
+      "case_id": "RAG-POS-NO-WATER",
+      "case_type": "POSITIVE",
+      "ranked_chunk_ids": [
+        "RAG-WPUJAC104DWH-NO-WATER-001",
+        "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "RAG-WPUJAC104DWH-LOW-FLOW-001",
+        "RAG-WPUJAC104DWH-TASTE-ODOR-001",
+        "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001"
+      ],
+      "ranked_document_ids": [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+      ],
+      "scores": [
+        0.69487,
+        0.668441,
+        0.660322,
+        0.651911,
+        0.635279
+      ],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": false,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-POS-COLD-TEMPERATURE",
+      "case_type": "POSITIVE",
+      "ranked_chunk_ids": [
+        "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001",
+        "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "RAG-WPUJAC104DWH-TASTE-ODOR-001",
+        "RAG-WPUJAC104DWH-LOW-FLOW-001",
+        "RAG-WPUJAC104DWH-NO-WATER-001"
+      ],
+      "ranked_document_ids": [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+      ],
+      "scores": [
+        0.707032,
+        0.645908,
+        0.634469,
+        0.610325,
+        0.559018
+      ],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": false,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-POS-NOISE",
+      "case_type": "POSITIVE",
+      "ranked_chunk_ids": [
+        "RAG-WPUJAC104DWH-NOISE-001",
+        "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "RAG-WPUJAC104DWH-LEAK-001",
+        "RAG-WPUJAC104DWH-TASTE-ODOR-001",
+        "RAG-WPUJAC104DWH-LOW-FLOW-001"
+      ],
+      "ranked_document_ids": [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+      ],
+      "scores": [
+        0.598631,
+        0.580029,
+        0.558179,
+        0.556432,
+        0.527896
+      ],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": false,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-POS-LEAK",
+      "case_type": "POSITIVE",
+      "ranked_chunk_ids": [
+        "RAG-WPUJAC104DWH-NO-WATER-001",
+        "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "RAG-WPUJAC104DWH-TASTE-ODOR-001",
+        "RAG-WPUJAC104DWH-LOW-FLOW-001",
+        "RAG-WPUJAC104DWH-LEAK-001"
+      ],
+      "ranked_document_ids": [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+      ],
+      "scores": [
+        0.59543,
+        0.578165,
+        0.57133,
+        0.568504,
+        0.56393
+      ],
+      "recall_at_5": 1.0,
+      "mrr": 0.2,
+      "forbidden_hits": [],
+      "expected_no_evidence": false,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-POS-TASTE-ODOR",
+      "case_type": "POSITIVE",
+      "ranked_chunk_ids": [
+        "RAG-WPUJAC104DWH-TASTE-ODOR-001",
+        "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "RAG-WPUJAC104DWH-LOW-FLOW-001",
+        "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001",
+        "RAG-WPUJAC104DWH-NO-WATER-001"
+      ],
+      "ranked_document_ids": [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+      ],
+      "scores": [
+        0.632927,
+        0.560323,
+        0.529281,
+        0.502228,
+        0.496554
+      ],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": false,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-POS-LOW-FLOW",
+      "case_type": "POSITIVE",
+      "ranked_chunk_ids": [
+        "RAG-WPUJAC104DWH-LOW-FLOW-001",
+        "RAG-WPUJAC104DWH-NO-WATER-001",
+        "RAG-WPUJAC104DWH-TASTE-ODOR-001",
+        "RAG-WPUJAC104DWH-LEAK-001",
+        "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001"
+      ],
+      "ranked_document_ids": [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+      ],
+      "scores": [
+        0.747171,
+        0.694574,
+        0.629062,
+        0.617285,
+        0.61402
+      ],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": false,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-POS-INSTANT-HOT-WATER-SAFETY",
+      "case_type": "POSITIVE",
+      "ranked_chunk_ids": [
+        "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "RAG-WPUJAC104DWH-LOW-FLOW-001",
+        "RAG-WPUJAC104DWH-TASTE-ODOR-001",
+        "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001",
+        "RAG-WPUJAC104DWH-LEAK-001"
+      ],
+      "ranked_document_ids": [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+      ],
+      "scores": [
+        0.597247,
+        0.495729,
+        0.480108,
+        0.45774,
+        0.43794
+      ],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": false,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-NEG-JAC104-S-GENERATION",
+      "case_type": "NEGATIVE_SCOPE",
+      "ranked_chunk_ids": [],
+      "ranked_document_ids": [],
+      "scores": [],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": true,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-NEG-IAC425",
+      "case_type": "NEGATIVE_SCOPE",
+      "ranked_chunk_ids": [],
+      "ranked_document_ids": [],
+      "scores": [],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": true,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-NEG-IAC506",
+      "case_type": "NEGATIVE_SCOPE",
+      "ranked_chunk_ids": [],
+      "ranked_document_ids": [],
+      "scores": [],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": true,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-NEG-UNVERIFIED-FAQ",
+      "case_type": "NEGATIVE_SOURCE",
+      "ranked_chunk_ids": [],
+      "ranked_document_ids": [],
+      "scores": [],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": true,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-NEG-UNKNOWN-MODEL",
+      "case_type": "NEGATIVE_SCOPE",
+      "ranked_chunk_ids": [],
+      "ranked_document_ids": [],
+      "scores": [],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": true,
+      "passed": true
+    }
+  ]
+}

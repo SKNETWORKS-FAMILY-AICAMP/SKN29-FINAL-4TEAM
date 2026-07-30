@@ -1,7 +1,7 @@
 """증상 필드 구조화 Stage 모듈."""
 
 import time
-from ...schemas import ProcessingTrace, StructuredSymptom
+from ...schemas import AiStage, ProcessingTrace, StructuredSymptom
 from ..pipeline_context import PipelineContext
 
 
@@ -22,5 +22,5 @@ def execute_structuring_stage(ctx: PipelineContext) -> None:
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000.0
     ctx.processing_traces.append(
-        ProcessingTrace(stage="structuring_stage", status="success", latency_ms=round(elapsed_ms, 2))
+        ProcessingTrace(stage=AiStage.STRUCTURING, status="SUCCEEDED", latency_ms=round(elapsed_ms, 2))
     )
