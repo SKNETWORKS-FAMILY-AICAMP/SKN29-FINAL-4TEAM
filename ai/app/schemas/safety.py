@@ -1,11 +1,11 @@
 """안전 평가 및 위험도 관련 Pydantic 데이터 모델."""
 
 from typing import List
-from pydantic import BaseModel, Field
-from .common import RiskLevel
+from pydantic import Field
+from .common import ContractModel, RiskLevel
 
 
-class SafetyAssessment(BaseModel):
+class SafetyAssessment(ContractModel):
     """위험도 및 안전 규칙 평가 모델"""
     risk_level: RiskLevel = Field(..., description="위험도 분류 (general, caution, danger)")
     priority: str = Field(..., description="문의 처리 우선순위 (general_guidance, consultation_recommended, priority_consultation)")

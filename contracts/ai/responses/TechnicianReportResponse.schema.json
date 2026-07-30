@@ -1,8 +1,28 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "TechnicianReportResponse.schema.json",
+  "x-contract-version": "1.1.0",
   "title": "TechnicianReportResponse",
-  "description": "기사 사전 리포트 결과",
+  "description": "기사 작업 결과 요약 초안. Backend가 검토·상태 전환·저장을 담당한다.",
   "type": "object",
+  "required": ["inquiry_id", "correlation_id", "ai_request_id", "state_version", "status", "failure_stage", "retry_count", "visit_id", "tech_summary", "parts_replaced", "suggested_final_status"],
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "inquiry_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "correlation_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "ai_request_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "state_version": { "type": "integer", "minimum": 1 },
+    "status": { "type": "string", "enum": ["SUCCEEDED", "FALLBACK"] },
+    "failure_stage": { "type": ["string", "null"], "enum": ["GENERATING", "VALIDATING", "FAILED", "CANCELLED", null], "x-code-registry": "../../codes/ai-stages.yaml" },
+    "retry_count": { "type": "integer", "minimum": 0, "maximum": 1 },
+    "visit_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "tech_summary": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "parts_replaced": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 500 } },
+    "suggested_final_status": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Backend Guard가 검토할 제안값이며 AI가 상태를 직접 변경하지 않는다"
+    }
+  }
 }

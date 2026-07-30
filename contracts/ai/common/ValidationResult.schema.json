@@ -1,8 +1,20 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://watercare.local/contracts/ai/1.1.0/common/ValidationResult.schema.json",
+  "x-contract-version": "1.1.0",
   "title": "ValidationResult",
   "description": "스키마·근거·안전 검증 결과",
   "type": "object",
+  "required": ["is_valid", "schema_valid", "grounding_valid", "safety_valid", "violations"],
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "is_valid": { "type": "boolean" },
+    "schema_valid": { "type": "boolean" },
+    "grounding_valid": { "type": "boolean" },
+    "safety_valid": { "type": "boolean" },
+    "violations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    }
+  }
 }

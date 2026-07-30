@@ -2,10 +2,11 @@
 
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
-from pydantic import BaseModel, Field
+from pydantic import Field
+from ...schemas import AiStage, ContractModel
 
 
-class HealthCheckResponse(BaseModel):
+class HealthCheckResponse(ContractModel):
     """Health Check 응답 DTO"""
     status: str = Field("ok", description="서버 Liveness 상태 (ok, degraded, error)")
     service: str = Field("ai-service", description="서비스명")
@@ -14,15 +15,21 @@ class HealthCheckResponse(BaseModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="현재 시각 (UTC)")
 
 
-class ApiErrorDetail(BaseModel):
+class ApiErrorDetail(ContractModel):
     """업무 오류 상세 구조"""
     code: str = Field(..., description="공통 오류 코드")
     message: str = Field(..., description="사용자 친화적 오류 메시지")
     details: Optional[Dict[str, Any]] = Field(None, description="오류 상세 메타데이터")
     retryable: bool = Field(False, description="재시도 가능 여부")
+    failure_stage: AiStage = Field(..., description="실패한 표준 AI Stage")
+    retry_count: int = Field(0, ge=0, le=1, description="AI 내부 재시도 횟수")
 
 
-class ApiErrorResponse(BaseModel):
+class ApiErrorResponse(ContractModel):
     """FastAPI 공통 오류 응답 Wrapper"""
     success: bool = Field(False, description="성공 여부 (항상 False)")
+    inquiry_id: Optional[str] = Field(None, description="공개 문의 식별자")
+    correlation_id: Optional[str] = Field(None, description="요청·응답·로그 추적 식별자")
+    ai_request_id: Optional[str] = Field(None, description="AI 호출 멱등 식별자")
+    state_version: Optional[int] = Field(None, ge=1, description="호출 시작 시점 상태 버전")
     error: ApiErrorDetail = Field(..., description="오류 상세")

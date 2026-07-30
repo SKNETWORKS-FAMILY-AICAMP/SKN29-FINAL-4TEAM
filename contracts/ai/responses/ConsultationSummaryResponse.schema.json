@@ -1,8 +1,22 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ConsultationSummaryResponse.schema.json",
+  "x-contract-version": "1.1.0",
   "title": "ConsultationSummaryResponse",
-  "description": "상담 요약 초안 결과",
+  "description": "상담 요약 초안 결과. Backend가 검토·저장하며 AI는 업무 상태를 변경하지 않는다.",
   "type": "object",
+  "required": ["inquiry_id", "correlation_id", "ai_request_id", "state_version", "status", "failure_stage", "retry_count", "summary_text", "key_issues", "recommended_followup"],
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "inquiry_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "correlation_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "ai_request_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "state_version": { "type": "integer", "minimum": 1 },
+    "status": { "type": "string", "enum": ["SUCCEEDED", "FALLBACK"] },
+    "failure_stage": { "type": ["string", "null"], "enum": ["GENERATING", "VALIDATING", "FAILED", "CANCELLED", null], "x-code-registry": "../../codes/ai-stages.yaml" },
+    "retry_count": { "type": "integer", "minimum": 0, "maximum": 1 },
+    "summary_text": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "key_issues": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 500 } },
+    "recommended_followup": { "type": "string", "minLength": 1, "maxLength": 2000 }
+  }
 }

@@ -1,18 +1,25 @@
 {
   "request": {
-    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b204",
+    "inquiry_id": "DEMO-INQ-204",
     "correlation_id": "corr-trace-20260729-004",
+    "ai_request_id": "ai-req-20260729-004",
+    "state_version": 1,
     "raw_symptom": "",
     "model_code": "INVALID_MODEL_CODE"
   },
   "error_response": {
-    "error_code": "AI-VALIDATION-01",
-    "error_message": "요청 데이터 입력 검증에 실패했습니다.",
-    "retryable": false,
-    "failed_stage": "input_validation",
-    "details": {
-      "raw_symptom": ["고객 최초 입력 증상이 비어있습니다."],
-      "model_code": ["지원되지 않거나 삭제된 모델 코드입니다."]
+    "success": false,
+    "inquiry_id": "DEMO-INQ-204",
+    "correlation_id": "corr-trace-20260729-004",
+    "ai_request_id": "ai-req-20260729-004",
+    "state_version": 1,
+    "error": {
+      "code": "AI-VALIDATION-01",
+      "message": "AI 분석 요청 스키마 검증에 실패했습니다.",
+      "details": { "errors": [{ "location": ["body", "raw_symptom"], "type": "string_too_short", "message": "String should have at least 1 character" }] },
+      "retryable": false,
+      "failure_stage": "STRUCTURING",
+      "retry_count": 0
     }
   }
 }

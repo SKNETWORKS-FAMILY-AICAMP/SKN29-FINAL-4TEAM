@@ -6,6 +6,7 @@ from ...integrations.embedding.embedding_client import EmbeddingProvider
 from ...integrations.vector_store.vector_store import VectorStore
 from ..models.retrieval_query import RetrievalQuery
 from ..models.retrieved_chunk import RetrievedChunk
+from ..verification.faq_usage_validator import FaqUsageValidator
 
 
 class VectorSearchService:
@@ -23,6 +24,8 @@ class VectorSearchService:
         """질의를 bge-m3로 임베딩하고 DB 필터가 적용된 Exact Search를 수행한다."""
         if not query.model_code:
             raise ValueError("검색에는 공개 제품 모델 코드가 필요합니다.")
+        if not FaqUsageValidator().allows_query(query.query_text):
+            return []
         vector = self.embedding_client.embed_query(query.query_text)
         return self.vector_store.search(
             vector,

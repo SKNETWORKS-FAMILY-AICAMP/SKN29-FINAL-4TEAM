@@ -1,54 +1,51 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "SymptomAnalysisRequest.schema.json",
+  "x-contract-version": "1.1.0",
   "title": "SymptomAnalysisRequest",
-  "description": "증상 분석, 위험도 판정, RAG 근거 검색 및 사용 안내 요청 Schema",
+  "description": "증상 분석, 위험도 판정, RAG 근거 검색 및 사용 안내 요청",
   "type": "object",
-  "required": [
-    "inquiry_id",
-    "correlation_id",
-    "raw_symptom",
-    "model_code"
-  ],
+  "required": ["inquiry_id", "correlation_id", "ai_request_id", "state_version", "raw_symptom", "model_code"],
   "additionalProperties": false,
   "properties": {
     "inquiry_id": {
       "type": "string",
       "minLength": 1,
-      "description": "Backend가 발급한 공개 문의 식별자(UUID 또는 DEMO-INQ-002 같은 업무·시연 코드). 내부 정수 PK는 금지"
+      "maxLength": 100,
+      "pattern": ".*[^0-9].*",
+      "description": "Backend가 발급한 공개 업무 식별자. 내부 정수 PK는 금지"
     },
-    "correlation_id": {
-      "type": "string",
-      "description": "요청 추적 correlation_id"
-    },
-    "raw_symptom": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 4000,
-      "description": "고객 최초 입력 자연어 증상"
-    },
-    "model_code": {
+    "correlation_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "ai_request_id": {
       "type": "string",
       "minLength": 1,
-      "description": "문의 제품 모델 코드 (예: WPUJAC104DWH)"
+      "maxLength": 100,
+      "description": "Backend가 AI 호출마다 발급하는 멱등 식별자. 동일 요청 재전송 시 재사용"
     },
+    "state_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "AI 호출 시작 시점 문의 상태 버전"
+    },
+    "raw_symptom": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "model_code": { "type": "string", "minLength": 1, "maxLength": 100 },
     "selected_symptoms": {
       "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "고객이 선택한 대표 증상 유형"
+      "maxItems": 30,
+      "items": { "type": "string", "minLength": 1, "maxLength": 200 }
     },
     "previous_answers": {
       "type": "array",
+      "maxItems": 50,
       "items": {
         "type": "object",
         "required": ["question_id", "answer_text"],
+        "additionalProperties": false,
         "properties": {
-          "question_id": { "type": "string" },
-          "answer_text": { "type": "string" }
+          "question_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "answer_text": { "type": "string", "minLength": 1, "maxLength": 1000 }
         }
-      },
-      "description": "이전 추가 문진 답변 목록"
+      }
     }
   }
 }
