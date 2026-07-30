@@ -236,6 +236,13 @@ function getAllowedActions(
   return byStatus[status] ?? [];
 }
 
+export function getConsultantAllowedActions(
+  status: CounselorStatus,
+  feedbackResolved = false,
+): readonly CounselorAllowedAction[] {
+  return getAllowedActions(status, "CONSULTANT", feedbackResolved);
+}
+
 function getPriority(riskLevel: CounselorRisk): CounselorPriority {
   if (riskLevel === "DANGER") return "URGENT";
   if (riskLevel === "CAUTION") return "HIGH";
@@ -384,6 +391,10 @@ function createInquiry(
     customerId: CUSTOMER_PUBLIC_IDS.get(row.customer_id) ?? "공개 고객 ID 확인 필요",
     customerName: `합성 고객 ${customerSequence}`,
     customerDisplayName: `합성 고객 ${customerSequence.slice(0, 1)}**`,
+    customerPhone: `010-****-${String(1200 + index).slice(-4)} (합성)`,
+    serviceAddress: "서울특별시 마포구 월드컵북로 ** (합성)",
+    warrantyLabel: "무상보증 · 2027.02까지",
+    previousVisitCount: index % 3,
     subscriptionId:
       SUBSCRIPTION_PUBLIC_IDS.get(row.subscription_id) ?? "공개 구독 ID 확인 필요",
     productCode: "WPUJAC104DWH",

@@ -7,6 +7,7 @@ import {
   reloadConsultationDetailMock,
   submitConsultationMock,
 } from "../api/consultationMockApi";
+import { getConsultantAllowedActions } from "../model/consultantWorkspaceMock";
 import type {
   CounselorAllowedAction,
   CounselorInquiry,
@@ -96,12 +97,34 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
         inquiry.inquiryId,
         result,
       );
+      const nextStatus =
+        action.code === "START_CONSULTATION"
+          ? "CONSULTATION_IN_PROGRESS"
+          : action.code === "VISIT_REVIEW_REQUIRED"
+            ? "VISIT_REVIEW_PENDING"
+            : action.code === "CONSULTATION_COMPLETED"
+              ? "COMPLETION_PENDING"
+          : currentStatus;
+      const nextAllowedActions =
+        nextStatus === currentStatus
+          ? latestDetail.allowedActions
+          : getConsultantAllowedActions(
+              nextStatus,
+              inquiry.feedbackResolved,
+            );
       operationTracker.finish();
       setSuccess(result);
+      setCurrentStatus(nextStatus);
       setStateVersion(latestDetail.stateVersion);
-      setAllowedActions(latestDetail.allowedActions);
+      setAllowedActions(nextAllowedActions);
       setLastRefreshedAt(latestDetail.refreshedAt);
-      return { ok: true as const, result };
+      return {
+        ok: true as const,
+        result,
+        currentStatus: nextStatus,
+        stateVersion: latestDetail.stateVersion,
+        allowedActions: nextAllowedActions,
+      };
     } catch (caught) {
       const nextError =
         caught instanceof ConsultationMockError

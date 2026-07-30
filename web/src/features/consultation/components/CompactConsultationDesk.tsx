@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import RiskBadge from "../../../common/components/badge/RiskBadge";
 import StatusBadge from "../../../common/components/badge/StatusBadge";
+import InlineVisitScheduler from "../../visit-transition/components/InlineVisitScheduler";
 import { useConsultationForm } from "../hooks/useConsultationForm";
 import { useSaveConsultation } from "../hooks/useSaveConsultation";
 import {
@@ -12,14 +13,20 @@ import {
 import type {
   CounselorAllowedAction,
   CounselorInquiry,
+  CounselorStatus,
 } from "../model/consultantWorkspaceTypes";
 
 interface CompactConsultationDeskProps {
   inquiry: CounselorInquiry | null;
+  autoAdvance: boolean;
+  onAutoAdvanceChange: (checked: boolean) => void;
+  onAdvanceToNext: () => void;
+  onInquiryStateChange: (update: {
+    status: CounselorStatus;
+    stateVersion: number;
+    allowedActions: readonly CounselorAllowedAction[];
+  }) => void;
   onOpenFullDetail: () => void;
-  onOpenVisit: (
-    entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED",
-  ) => void;
 }
 
 function FieldError({ message }: { message?: string }) {
@@ -52,8 +59,11 @@ function getNextStep(status: CounselorInquiry["status"]) {
 
 export default function CompactConsultationDesk({
   inquiry,
+  autoAdvance,
+  onAutoAdvanceChange,
+  onAdvanceToNext,
+  onInquiryStateChange,
   onOpenFullDetail,
-  onOpenVisit,
 }: CompactConsultationDeskProps) {
   if (!inquiry) {
     return (
@@ -68,18 +78,36 @@ export default function CompactConsultationDesk({
   return (
     <CompactConsultationDeskContent
       inquiry={inquiry}
+      autoAdvance={autoAdvance}
+      onAutoAdvanceChange={onAutoAdvanceChange}
+      onAdvanceToNext={onAdvanceToNext}
+      onInquiryStateChange={onInquiryStateChange}
       onOpenFullDetail={onOpenFullDetail}
-      onOpenVisit={onOpenVisit}
     />
   );
 }
 
 function CompactConsultationDeskContent({
   inquiry,
+  autoAdvance,
+  onAutoAdvanceChange,
+  onAdvanceToNext,
+  onInquiryStateChange,
   onOpenFullDetail,
-  onOpenVisit,
 }: CompactConsultationDeskProps & { inquiry: CounselorInquiry }) {
-  const [isAdvancedOpen, setAdvancedOpen] = useState(false);
+  const [isVisitSchedulerOpen, setVisitSchedulerOpen] = useState(false);
+  const [visitDesiredAt, setVisitDesiredAt] = useState("");
+  const [visitNotes, setVisitNotes] = useState("");
+  const [addressConfirmed, setAddressConfirmed] = useState(false);
+  const [visitFieldErrors, setVisitFieldErrors] = useState<{
+    addressConfirmed?: string;
+    visitDesiredAt?: string;
+  }>({});
+  const [visitSnapshot, setVisitSnapshot] = useState<{
+    status: CounselorStatus;
+    stateVersion: number;
+    allowedActions: readonly CounselorAllowedAction[];
+  } | null>(null);
   const form = useConsultationForm({
     consultationNote: "",
     additionalCheck: "",
@@ -91,22 +119,41 @@ function CompactConsultationDeskContent({
     usageStatus: inquiry.usageStatus,
   });
   const save = useSaveConsultation(inquiry);
-  const isConsultationForm = inquiry.status === "CONSULTATION_IN_PROGRESS";
-  const summaryAction = save.allowedActions.find(
-    (action) => action.code === "CONFIRM_CONSULTATION_SUMMARY",
-  );
-  const visibleActions = save.allowedActions.filter(
+  const displayStatus = visitSnapshot?.status ?? save.currentStatus;
+  const displayStateVersion =
+    visitSnapshot?.stateVersion ?? save.stateVersion;
+  const currentAllowedActions =
+    visitSnapshot?.allowedActions ?? save.allowedActions;
+  const isConsultationForm =
+    !isVisitSchedulerOpen && displayStatus === "CONSULTATION_IN_PROGRESS";
+  const visibleActions = currentAllowedActions.filter(
     (action) => action.code !== "CONFIRM_CONSULTATION_SUMMARY",
+  );
+  const draftAction = currentAllowedActions.find(
+    (action) => action.code === "UPDATE_CONSULTATION_SUMMARY",
+  );
+  const completionAction = currentAllowedActions.find((action) =>
+    form.values.visitRequired === "REQUIRED"
+      ? action.code === "VISIT_REVIEW_REQUIRED"
+      : form.values.visitRequired === "NOT_REQUIRED"
+        ? action.code === "CONSULTATION_COMPLETED"
+        : false,
   );
 
   const handleAction = async (action: CounselorAllowedAction) => {
-    if (!form.validate(action.code)) {
-      if (
-        action.code === "CONSULTATION_COMPLETED" ||
-        action.code === "CONFIRM_CONSULTATION_SUMMARY"
-      ) {
-        setAdvancedOpen(true);
+    if (action.code === "VISIT_REVIEW_REQUIRED") {
+      const nextVisitErrors: typeof visitFieldErrors = {};
+      if (!visitDesiredAt) {
+        nextVisitErrors.visitDesiredAt = "고객의 방문 희망 일시를 선택해 주세요.";
       }
+      if (!addressConfirmed) {
+        nextVisitErrors.addressConfirmed = "방문 주소를 고객과 확인해 주세요.";
+      }
+      setVisitFieldErrors(nextVisitErrors);
+      if (Object.keys(nextVisitErrors).length > 0) return;
+    }
+
+    if (!form.validate(action.code)) {
       return;
     }
 
@@ -119,24 +166,47 @@ function CompactConsultationDeskContent({
     if (serverError && "fieldErrors" in serverError && serverError.fieldErrors) {
       form.setServerFieldErrors(serverError.fieldErrors);
     }
+    if (outcome?.ok) {
+      onInquiryStateChange({
+        status: outcome.currentStatus,
+        stateVersion: outcome.stateVersion,
+        allowedActions: outcome.allowedActions,
+      });
+      if (action.code === "CONSULTATION_COMPLETED" && autoAdvance) {
+        onAdvanceToNext();
+      }
+    }
     if (
-      outcome &&
-      !("error" in outcome) &&
+      outcome?.ok &&
       (action.code === "VISIT_REVIEW_REQUIRED" || action.code === "VISIT_NEEDED")
     ) {
-      onOpenVisit(action.code);
+      setVisitSnapshot({
+        status: outcome.currentStatus,
+        stateVersion: outcome.stateVersion,
+        allowedActions: outcome.allowedActions,
+      });
+      setVisitSchedulerOpen(true);
     }
   };
 
   return (
-    <section className="simple-desk" aria-label="선택 문의 처리">
+    <section
+      className={`simple-desk${isVisitSchedulerOpen ? " is-scheduling" : ""}${
+        isConsultationForm ? " is-consulting" : ""
+      }${
+        isConsultationForm && form.values.visitRequired !== "UNDECIDED"
+          ? " is-decided"
+          : ""
+      }`}
+      aria-label="선택 문의 처리"
+    >
       <header className="simple-case-head">
         <div>
           <span className="simple-badge-row">
             <StatusBadge
-              label={STATUS_LABELS[inquiry.status]}
+              label={STATUS_LABELS[displayStatus]}
               size="compact"
-              variant={getStatusBadgeVariant(inquiry.status)}
+              variant={getStatusBadgeVariant(displayStatus)}
             />
             <RiskBadge level={inquiry.riskLevel.toLowerCase()} size="compact" />
           </span>
@@ -150,9 +220,28 @@ function CompactConsultationDeskContent({
         </button>
       </header>
 
+      <dl className="simple-mini-profile" aria-label="고객 및 제품 빠른 정보">
+        <div>
+          <dt>연락처</dt>
+          <dd>{inquiry.customerPhone}</dd>
+        </div>
+        <div className="is-address">
+          <dt>방문 주소</dt>
+          <dd>{inquiry.serviceAddress}</dd>
+        </div>
+        <div>
+          <dt>보증</dt>
+          <dd>{inquiry.warrantyLabel}</dd>
+        </div>
+        <div>
+          <dt>이전 방문</dt>
+          <dd>{inquiry.previousVisitCount}회</dd>
+        </div>
+      </dl>
+
       <section className="simple-next-step">
         <span>지금 할 일</span>
-        <strong>{inquiry.routingReason}</strong>
+        <strong>{getNextStep(displayStatus)}</strong>
       </section>
 
       <div className="simple-focus-grid">
@@ -180,12 +269,29 @@ function CompactConsultationDeskContent({
         <header>
           <div>
             <small>QUICK ACTION</small>
-            <h3>{isConsultationForm ? "상담 기록" : "다음 처리"}</h3>
+            <h3>
+              {isVisitSchedulerOpen
+                ? "기사 배정"
+                : isConsultationForm
+                  ? "상담 기록"
+                  : "다음 처리"}
+            </h3>
           </div>
-          <span>상태 버전 {save.stateVersion}</span>
+          <span>상태 버전 {displayStateVersion}</span>
         </header>
 
-        {isConsultationForm ? (
+        {isVisitSchedulerOpen ? (
+          <InlineVisitScheduler
+            inquiry={inquiry}
+            stateVersion={displayStateVersion}
+            initialDesiredAt={visitDesiredAt}
+            onBack={() => setVisitSchedulerOpen(false)}
+            onStateChange={(update) => {
+              setVisitSnapshot(update);
+              onInquiryStateChange(update);
+            }}
+          />
+        ) : isConsultationForm ? (
           <form className="simple-consultation-form" onSubmit={(event) => event.preventDefault()} noValidate>
             <label className="simple-main-note">
               <span>상담 기록 <b>필수</b></span>
@@ -220,99 +326,182 @@ function CompactConsultationDeskContent({
                 <span>방문 필요</span>
               </label>
               <FieldError message={form.fieldErrors.visitRequired} />
+              <p
+                className={`simple-visit-choice__hint${
+                  form.values.visitRequired === "UNDECIDED" ? "" : " is-ready"
+                }`}
+                role="status"
+              >
+                {form.values.visitRequired === "REQUIRED"
+                  ? "선택 완료 · 기사와 방문 일정을 바로 배정할 수 있습니다."
+                  : form.values.visitRequired === "NOT_REQUIRED"
+                    ? "선택 완료 · 상담 결과를 확인하고 처리를 완료하세요."
+                    : "방문 여부를 선택하면 다음 처리 버튼이 표시됩니다."}
+              </p>
             </fieldset>
 
-            <details
-              className="simple-more-fields"
-              open={isAdvancedOpen}
-              onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}
-            >
-              <summary>완료 내용과 AI 요약 확인</summary>
-              <div className="simple-more-fields__grid">
-                <label>
-                  <span>고객 안내</span>
-                  <textarea
-                    aria-label="고객 안내"
-                    value={form.values.customerGuidance}
-                    aria-invalid={Boolean(form.fieldErrors.customerGuidance)}
-                    onChange={(event) => form.updateField("customerGuidance", event.target.value)}
-                  />
-                  <FieldError message={form.fieldErrors.customerGuidance} />
-                </label>
-                <label>
-                  <span>처리 결과</span>
-                  <textarea
-                    aria-label="처리 결과"
-                    value={form.values.consultationResult}
-                    aria-invalid={Boolean(form.fieldErrors.consultationResult)}
-                    onChange={(event) => form.updateField("consultationResult", event.target.value)}
-                    placeholder="고객이 확인한 결과를 한 줄로 적으세요."
-                  />
-                  <FieldError message={form.fieldErrors.consultationResult} />
-                </label>
-                <label className="simple-summary-field">
-                  <span>AI 상담 요약</span>
-                  <textarea
-                    aria-label="AI 상담 요약"
-                    value={form.values.summaryRevision}
-                    aria-invalid={Boolean(form.fieldErrors.summaryRevision)}
-                    onChange={(event) => form.updateField("summaryRevision", event.target.value)}
-                  />
-                  <FieldError message={form.fieldErrors.summaryRevision} />
-                </label>
-              </div>
-              {summaryAction && (
-                <button
-                  className="simple-summary-action"
-                  type="button"
-                  disabled={save.isSaving}
-                  onClick={() => handleAction(summaryAction)}
-                >
-                  AI 요약만 확정
-                </button>
-              )}
-            </details>
+            <section className="simple-ai-assist" aria-labelledby="simple-ai-summary-title">
+              <header>
+                <div>
+                  <small>AI ASSIST</small>
+                  <h4 id="simple-ai-summary-title">AI 상담 요약</h4>
+                </div>
+                <span>항상 표시</span>
+              </header>
+              <label>
+                <span>AI 요약 수정본</span>
+                <textarea
+                  aria-label="AI 상담 요약"
+                  value={form.values.summaryRevision}
+                  aria-invalid={Boolean(form.fieldErrors.summaryRevision)}
+                  onChange={(event) => form.updateField("summaryRevision", event.target.value)}
+                />
+                <FieldError message={form.fieldErrors.summaryRevision} />
+              </label>
+              <label className="simple-confirm">
+                <input
+                  type="checkbox"
+                  checked={form.values.summaryConfirmed}
+                  onChange={(event) =>
+                    form.updateField("summaryConfirmed", event.target.checked)
+                  }
+                />
+                <span>AI 요약을 확인했습니다</span>
+                <FieldError message={form.fieldErrors.summaryConfirmed} />
+              </label>
+            </section>
 
-            <label className="simple-confirm">
-              <input
-                type="checkbox"
-                checked={form.values.summaryConfirmed}
-                onChange={(event) =>
-                  form.updateField("summaryConfirmed", event.target.checked)
-                }
-              />
-              <span>AI 요약을 확인했습니다</span>
-              <FieldError message={form.fieldErrors.summaryConfirmed} />
-            </label>
+            {form.values.visitRequired === "NOT_REQUIRED" && (
+              <label className="simple-result-field">
+                <span>상담 결과 <b>필수</b></span>
+                <textarea
+                  aria-label="상담 결과 (필수)"
+                  value={form.values.consultationResult}
+                  aria-invalid={Boolean(form.fieldErrors.consultationResult)}
+                  onChange={(event) => form.updateField("consultationResult", event.target.value)}
+                  placeholder="고객이 확인한 해결 결과를 한 줄로 적으세요."
+                />
+                <FieldError message={form.fieldErrors.consultationResult} />
+              </label>
+            )}
+
+            {form.values.visitRequired === "REQUIRED" && (
+              <section className="simple-visit-followup" aria-labelledby="simple-visit-followup-title">
+                <header>
+                  <div>
+                    <small>NEXT STEP</small>
+                    <h4 id="simple-visit-followup-title">방문 접수 정보</h4>
+                  </div>
+                  <span>기사 배정에 전달</span>
+                </header>
+                <div>
+                  <label>
+                    <span>방문 희망 일시 <b>필수</b></span>
+                    <input
+                      type="datetime-local"
+                      aria-label="방문 희망 일시"
+                      value={visitDesiredAt}
+                      aria-invalid={Boolean(visitFieldErrors.visitDesiredAt)}
+                      onChange={(event) => {
+                        setVisitDesiredAt(event.target.value);
+                        setVisitFieldErrors((current) => ({
+                          ...current,
+                          visitDesiredAt: undefined,
+                        }));
+                      }}
+                    />
+                    <FieldError message={visitFieldErrors.visitDesiredAt} />
+                  </label>
+                  <label>
+                    <span>기사 전달 메모</span>
+                    <input
+                      type="text"
+                      aria-label="기사 전달 메모"
+                      value={visitNotes}
+                      onChange={(event) => setVisitNotes(event.target.value)}
+                      placeholder="현장에서 먼저 확인할 내용을 적으세요."
+                    />
+                  </label>
+                </div>
+                <label className="simple-address-confirm">
+                  <input
+                    type="checkbox"
+                    checked={addressConfirmed}
+                    onChange={(event) => {
+                      setAddressConfirmed(event.target.checked);
+                      setVisitFieldErrors((current) => ({
+                        ...current,
+                        addressConfirmed: undefined,
+                      }));
+                    }}
+                  />
+                  <span>
+                    <b>방문 주소 확인</b>
+                    {inquiry.serviceAddress}
+                  </span>
+                </label>
+                <FieldError message={visitFieldErrors.addressConfirmed} />
+              </section>
+            )}
           </form>
         ) : (
           <div className="simple-readonly-action">
-            <strong>{STATUS_LABELS[inquiry.status]}</strong>
+            <strong>{STATUS_LABELS[displayStatus]}</strong>
             <p>
               {inquiry.feedbackResolved
                 ? inquiry.feedbackComment
-                : getNextStep(inquiry.status)}
+                : getNextStep(displayStatus)}
             </p>
           </div>
         )}
 
-        <div className="simple-action-buttons">
-          {visibleActions.length === 0 ? (
-            <span>지금은 상담사가 처리할 작업이 없습니다.</span>
-          ) : (
-            visibleActions.map((action) => (
-              <button
-                key={action.code}
-                className={action.style === "PRIMARY" ? "is-primary" : ""}
-                type="button"
-                disabled={save.isSaving}
-                onClick={() => handleAction(action)}
-              >
-                {save.isSaving ? "처리 중…" : action.label}
-              </button>
-            ))
-          )}
-        </div>
+        {!isVisitSchedulerOpen && (
+          <div className="simple-action-buttons">
+            {isConsultationForm ? (
+              <>
+                <label className="simple-auto-advance">
+                  <input
+                    type="checkbox"
+                    checked={autoAdvance}
+                    onChange={(event) => onAutoAdvanceChange(event.target.checked)}
+                  />
+                  <span>완료 후 다음 문의 자동 열기</span>
+                </label>
+                {draftAction && (
+                  <button
+                    type="button"
+                    disabled={save.isSaving}
+                    onClick={() => handleAction(draftAction)}
+                  >
+                    임시 저장
+                  </button>
+                )}
+                <button
+                  className="is-primary"
+                  type="button"
+                  disabled={save.isSaving || !completionAction}
+                  onClick={() => completionAction && handleAction(completionAction)}
+                >
+                  {save.isSaving ? "처리 중…" : "상담 처리 완료"}
+                </button>
+              </>
+            ) : visibleActions.length === 0 ? (
+              <span>지금은 상담사가 처리할 작업이 없습니다.</span>
+            ) : (
+              visibleActions.map((action) => (
+                <button
+                  key={action.code}
+                  className={action.style === "PRIMARY" ? "is-primary" : ""}
+                  type="button"
+                  disabled={save.isSaving}
+                  onClick={() => handleAction(action)}
+                >
+                  {save.isSaving ? "처리 중…" : action.label}
+                </button>
+              ))
+            )}
+          </div>
+        )}
 
         {save.success && (
           <p className="simple-action-message is-success" role="status">
