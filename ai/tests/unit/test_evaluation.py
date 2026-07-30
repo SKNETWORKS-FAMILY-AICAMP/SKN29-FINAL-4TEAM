@@ -36,7 +36,7 @@ def test_eval_dataset_loader():
 def test_evaluation_runner_execution():
     """EvaluationRunner 전체 일괄 산출 테스트"""
     class FakeSearchService:
-        def search(self, query):
+        def search(self, query, *, cancellation_token=None):
             from ai.app.retrieval.indexing.chunk_loader import ChunkLoader
             chunks = ChunkLoader().load_verified_chunks()
             if "누수" in query.query_text or "물" in query.query_text and "새" in query.query_text:

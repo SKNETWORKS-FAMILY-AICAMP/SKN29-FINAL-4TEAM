@@ -1,6 +1,6 @@
 {
   "request": {
-    "inquiry_id": "DEMO-INQ-TIMEOUT-001",
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b205",
     "correlation_id": "corr-timeout-001",
     "ai_request_id": "ai-req-timeout-001",
     "state_version": 6,
@@ -11,7 +11,7 @@
   },
   "error_response": {
     "success": false,
-    "inquiry_id": "DEMO-INQ-TIMEOUT-001",
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b205",
     "correlation_id": "corr-timeout-001",
     "ai_request_id": "ai-req-timeout-001",
     "state_version": 6,

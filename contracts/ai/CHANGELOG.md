@@ -1,5 +1,13 @@
 # AI Contract Changelog
 
+## 2026-07-30 — 1.1.0 Runtime parity correction
+
+- `inquiry_id`를 Backend Public UUID로 강제
+- 요청 배열 개수와 항목 문자열 길이를 Pydantic Runtime에도 동일 적용
+- 오류 응답의 `success=false`, 오류 코드, 메시지 길이, 실패 Stage를 Runtime에서 강제
+- 안전 우선순위와 근거 검증 상태를 Runtime Enum으로 강제
+- 다중 페이지 근거 보존을 위한 선택적 `page_refs` 추가
+
 ## 1.1.0 - 2026-07-30
 
 - 모든 Schema에 `$id`와 `x-contract-version` 추가

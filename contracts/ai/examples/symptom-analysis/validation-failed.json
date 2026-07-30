@@ -1,6 +1,6 @@
 {
   "request": {
-    "inquiry_id": "DEMO-INQ-204",
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b204",
     "correlation_id": "corr-trace-20260729-004",
     "ai_request_id": "ai-req-20260729-004",
     "state_version": 1,
@@ -9,7 +9,7 @@
   },
   "error_response": {
     "success": false,
-    "inquiry_id": "DEMO-INQ-204",
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b204",
     "correlation_id": "corr-trace-20260729-004",
     "ai_request_id": "ai-req-20260729-004",
     "state_version": 1,

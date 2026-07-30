@@ -10,10 +10,8 @@
   "properties": {
     "inquiry_id": {
       "type": "string",
-      "minLength": 1,
-      "maxLength": 100,
-      "pattern": ".*[^0-9].*",
-      "description": "Backend가 발급한 공개 업무 식별자. 내부 정수 PK는 금지"
+      "format": "uuid",
+      "description": "Backend가 발급한 Public UUID. 내부 정수 PK와 업무 코드는 금지"
     },
     "correlation_id": { "type": "string", "minLength": 1, "maxLength": 100 },
     "ai_request_id": {

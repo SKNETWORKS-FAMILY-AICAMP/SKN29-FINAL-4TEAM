@@ -9,6 +9,7 @@ from ..retrieval.search.vector_search import VectorSearchService
 from .pipeline_context import PipelineContext
 from .pipeline_result import PipelineResult
 from .pipelines.single_rag_pipeline import SingleRAGPipeline
+from ..common.timeout import CancellationToken
 from ..schemas import TraceContext
 
 
@@ -41,9 +42,12 @@ class PipelineRouter:
         raw_symptom: str,
         model_code: str = "WPUJAC104DWH",
         selected_symptoms: Optional[List[str]] = None,
-        previous_answers: Optional[List[Dict[str, str]]] = None
+        previous_answers: Optional[List[Dict[str, str]]] = None,
+        cancellation_token: CancellationToken | None = None,
     ) -> PipelineResult:
         """단일 RAG 파이프라인 가동 및 결과 반환"""
+        token = cancellation_token or CancellationToken()
+        token.raise_if_cancelled()
         ctx = PipelineContext(
             trace_context=TraceContext(
                 inquiry_id=inquiry_id,
@@ -58,4 +62,4 @@ class PipelineRouter:
         )
 
         pipeline = SingleRAGPipeline(self.search_service)
-        return pipeline.run(ctx)
+        return pipeline.run(ctx, cancellation_token=token)

@@ -1,7 +1,7 @@
 [
   {
     "eval_id": "e2e_eval_001",
-    "inquiry_id": "EVAL-INQ-001",
+    "inquiry_id": "00000000-0000-0000-0000-000000000001",
     "expected_pipeline_status": "success"
   }
 ]

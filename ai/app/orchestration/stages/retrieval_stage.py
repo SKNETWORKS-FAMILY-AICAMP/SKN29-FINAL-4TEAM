@@ -5,9 +5,14 @@ from ...retrieval import RetrievalQuery
 from ...retrieval.search.vector_search import VectorSearchService
 from ...schemas import AiStage, EvidenceReference, ProcessingTrace
 from ..pipeline_context import PipelineContext
+from ...common.timeout import CancellationToken
 
 
-def execute_retrieval_stage(ctx: PipelineContext, search_service: VectorSearchService | None = None) -> None:
+def execute_retrieval_stage(
+    ctx: PipelineContext,
+    search_service: VectorSearchService | None = None,
+    cancellation_token: CancellationToken | None = None,
+) -> None:
     """bge-m3 pgvector Exact Search 기반 관련 매뉴얼/FAQ 청크 검색"""
     start_time = time.perf_counter()
 
@@ -19,7 +24,11 @@ def execute_retrieval_stage(ctx: PipelineContext, search_service: VectorSearchSe
         require_official_verified=True
     )
 
-    chunks = search_service.search(query) if search_service is not None else []
+    chunks = (
+        search_service.search(query, cancellation_token=cancellation_token)
+        if search_service is not None
+        else []
+    )
 
     # RetrievedChunk -> EvidenceReference 변환
     evidence_list = []
@@ -29,6 +38,7 @@ def execute_retrieval_stage(ctx: PipelineContext, search_service: VectorSearchSe
                 document_title=chunk.document_title,
                 document_version=chunk.document_version,
                 page=chunk.page,
+                page_refs=chunk.page_refs,
                 chunk_id=chunk.chunk_id,
                 official_url=chunk.official_url,
                 summary=chunk.content,

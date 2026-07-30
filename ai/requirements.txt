@@ -1,0 +1,12 @@
+# Complete direct dependencies verified with Python 3.10.20.
+# Keep versions aligned with pyproject.toml.
+fastapi==0.136.3
+uvicorn[standard]==0.48.0
+pydantic==2.13.4
+pyyaml==6.0.3
+httpx==0.28.1
+jsonschema==4.26.0
+langgraph==1.2.2
+sentence-transformers==5.5.1
+psycopg[binary]==3.2.9
+pytest==9.0.3
