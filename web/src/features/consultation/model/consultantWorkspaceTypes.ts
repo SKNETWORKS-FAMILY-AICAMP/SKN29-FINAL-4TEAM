@@ -23,6 +23,8 @@ export type CounselorStatus =
 
 export type CounselorPriority = "NORMAL" | "HIGH" | "URGENT" | "UNKNOWN";
 export type CounselorRoutingTarget = "CONSULTANT" | "FIELD_TECHNICIAN";
+
+export type CounselorWorkBucket = "NEW" | "IN_PROGRESS" | "COMPLETED";
 export type CounselorSort =
   | "UPDATED_DESC"
   | "UPDATED_ASC"

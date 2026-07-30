@@ -9,6 +9,7 @@ import {
   filterCounselorInquiries,
   getCounselorRoutingDecision,
   getCounselorQueuePage,
+  getCounselorWorkBucket,
   normalizeCounselorRisk,
   normalizeCounselorStatus,
 } from "../../src/features/consultation/model/consultantWorkspaceModel";
@@ -86,6 +87,17 @@ describe("상담 큐 View Model", () => {
         (item) => item.routingTarget === "CONSULTANT",
       ),
     ).toBe(true);
+  });
+
+  it("문의 상태를 새 문의·처리 중·처리 완료 세 업무로 분류한다", () => {
+    expect(getCounselorWorkBucket("CONSULTATION_REQUIRED")).toBe("NEW");
+    expect(getCounselorWorkBucket("REOPENED")).toBe("NEW");
+    expect(getCounselorWorkBucket("CONSULTATION_IN_PROGRESS")).toBe(
+      "IN_PROGRESS",
+    );
+    expect(getCounselorWorkBucket("VISIT_SCHEDULED")).toBe("IN_PROGRESS");
+    expect(getCounselorWorkBucket("RESOLVED")).toBe("COMPLETED");
+    expect(getCounselorWorkBucket("CANCELLED")).toBe("COMPLETED");
   });
 
   it("알 수 없는 상태·위험도 코드는 미확인 값으로 안전하게 변환한다", () => {

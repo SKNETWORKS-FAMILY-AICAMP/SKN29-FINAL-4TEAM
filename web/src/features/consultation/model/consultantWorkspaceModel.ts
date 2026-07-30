@@ -6,6 +6,7 @@ import type {
   CounselorQueuePage,
   CounselorRisk,
   CounselorStatus,
+  CounselorWorkBucket,
 } from "./consultantWorkspaceTypes";
 import type { PriorityBadgeVariant } from "../../../common/components/badge/PriorityBadge";
 import type { StatusBadgeVariant } from "../../../common/components/badge/StatusBadge";
@@ -36,6 +37,26 @@ export const RISK_LABELS: Record<CounselorRisk, string> = {
   DANGER: "긴급",
   UNKNOWN: "미확인",
 };
+
+export const WORK_BUCKET_LABELS: Record<CounselorWorkBucket, string> = {
+  NEW: "새로 들어온 문의",
+  IN_PROGRESS: "처리 중인 문의",
+  COMPLETED: "처리 완료된 문의",
+};
+
+export function getCounselorWorkBucket(
+  status: CounselorStatus,
+): CounselorWorkBucket {
+  if (status === "RESOLVED" || status === "CANCELLED") {
+    return "COMPLETED";
+  }
+
+  if (status === "CONSULTATION_REQUIRED" || status === "REOPENED") {
+    return "NEW";
+  }
+
+  return "IN_PROGRESS";
+}
 
 export interface CounselorRoutingDecision {
   target: CounselorRoutingTarget;

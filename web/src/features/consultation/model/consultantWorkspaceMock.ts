@@ -505,11 +505,24 @@ export const COUNSELOR_INQUIRIES: readonly CounselorInquiry[] = (
   officialInquiryFixtures as unknown as readonly OfficialInquiryFixture[]
 ).map(createInquiry);
 
-// 상담사 화면에는 상담사에게 현재 처리 권한이 있는 주의·긴급 문의만 노출한다.
-// 일반 문의는 AI가 방문기사에게 자동 인계하므로 운영 화면에서 추적한다.
+const CONSULTANT_VISIBLE_STATUSES = new Set<CounselorStatus>([
+  "CONSULTATION_REQUIRED",
+  "CONSULTATION_IN_PROGRESS",
+  "VISIT_REVIEW_PENDING",
+  "VISIT_SCHEDULING",
+  "VISIT_SCHEDULED",
+  "COMPLETION_PENDING",
+  "REVISIT_REQUIRED",
+  "REOPENED",
+  "RESOLVED",
+  "CANCELLED",
+]);
+
+// 상담사 화면에는 상담사에게 배정된 주의·긴급 문의의 현재 업무와 완료 이력을 노출한다.
+// 일반 문의는 AI가 방문기사에게 자동 인계하며, 문진 중 문의는 상담 큐에 진입하기 전이므로 제외한다.
 export const CONSULTANT_QUEUE_INQUIRIES: readonly CounselorInquiry[] =
   COUNSELOR_INQUIRIES.filter(
     (inquiry) =>
       inquiry.routingTarget === "CONSULTANT" &&
-      inquiry.allowedActions.length > 0,
+      CONSULTANT_VISIBLE_STATUSES.has(inquiry.status),
   );
