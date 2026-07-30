@@ -283,7 +283,7 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 18405,
-      "sha256": "7532400DEEA323C16EDE5E98F463BBC962ED4470F6490F9D5E406056EDA6859C"
+      "sha256": "EE372FDA830AC0DB5E65C7C51C1F92CBBA35C4706E311016C10DEFC8385DA9D3"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -359,8 +359,8 @@
     },
     {
       "path": "schemas/config/ragEvaluationCases.schema.json",
-      "size_bytes": 6030,
-      "sha256": "DB9368F017444EA57C1955E63F9F054F655DBFAC61FBCD8BFDA0E19578E21F4C"
+      "size_bytes": 6443,
+      "sha256": "ED2E36026D76B88C9FFFAD428B4429F1F8DE9950B3778DF2D826B9BAB641644A"
     },
     {
       "path": "schemas/config/representativeCase.schema.json",
@@ -591,8 +591,8 @@
     },
     {
       "path": "tools/tests/test_rag_evaluation_contract.py",
-      "size_bytes": 7041,
-      "sha256": "F7CB914538575941C965D2DC41C4DC77EA9F187A0A3F1F3C3BBA5E5F214F3E4D"
+      "size_bytes": 7352,
+      "sha256": "72949485EC41E8821ECBD0BEC289FBCED4F0798617B0BCC6B9639D485983375D"
     },
     {
       "path": "tools/tests/test_representative_e2e.py",
@@ -683,8 +683,8 @@
     },
     {
       "path": "config/rag/jac104_retrieval_cases.json",
-      "size_bytes": 8617,
-      "sha256": "54B7EF9509CF48D220AC0D28235C0F899436A1EE84B78A930C2D1EFCF86D3210"
+      "size_bytes": 8840,
+      "sha256": "82BDC4B4E11170EA2BBFC93C877F1E0B969A7D56872987D5358753B09F0A081A"
     },
     {
       "path": "config/synthetic/scenarios.json",
@@ -898,7 +898,7 @@
   },
   "toolchain": {
     "python_files": 26,
-    "python_lines": 5364,
+    "python_lines": 5372,
     "max_wrapper_lines": 10,
     "max_module_lines": 1199
   },

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import sys
 import unittest
@@ -13,7 +12,7 @@ REPOSITORY_ROOT = DATA_ROOT.parent
 sys.path.insert(0, str(TOOLS_ROOT))
 
 from watercare.config import load_pipeline
-from watercare.io import read_json
+from watercare.io import read_json, sha256_text_file
 from watercare.validation import validate_schema
 
 
@@ -37,8 +36,8 @@ class RagEvaluationContractTests(unittest.TestCase):
         )
         return artifact
 
-    def assert_sha256(self, path: Path, expected: str) -> None:
-        actual = hashlib.sha256(path.read_bytes()).hexdigest().upper()
+    def assert_text_sha256(self, path: Path, expected: str) -> None:
+        actual = sha256_text_file(path)
         self.assertEqual(expected, actual)
 
     def test_cases_match_schema_and_cover_every_approved_chunk(self) -> None:
@@ -117,10 +116,11 @@ class RagEvaluationContractTests(unittest.TestCase):
             "APPROVED_FOR_MVP_INGEST",
             execution["approval_scope"],
         )
+        self.assertEqual("UTF8_LF_NO_BOM", execution["hash_policy"])
 
         dataset_evidence = execution["canonical_dataset"]
         dataset_path = self.repository_artifact(dataset_evidence["path"])
-        self.assert_sha256(dataset_path, dataset_evidence["sha256"])
+        self.assert_text_sha256(dataset_path, dataset_evidence["sha256"])
         dataset_rows = [
             json.loads(line)
             for line in dataset_path.read_text(encoding="utf-8").splitlines()
@@ -134,7 +134,11 @@ class RagEvaluationContractTests(unittest.TestCase):
 
         report_evidence = execution["result_manifest"]
         report_path = self.repository_artifact(report_evidence["path"])
-        self.assert_sha256(report_path, report_evidence["sha256"])
+        self.assert_text_sha256(report_path, report_evidence["sha256"])
+        self.assertNotEqual(
+            report_evidence["sha256"],
+            report_evidence["received_sha256"],
+        )
         report = read_json(report_path)
         self.assertEqual(
             report_evidence["verification_status"],
@@ -183,7 +187,11 @@ class RagEvaluationContractTests(unittest.TestCase):
 
         index_evidence = execution["index_manifest"]
         index_path = self.repository_artifact(index_evidence["path"])
-        self.assert_sha256(index_path, index_evidence["sha256"])
+        self.assert_text_sha256(index_path, index_evidence["sha256"])
+        self.assertNotEqual(
+            index_evidence["sha256"],
+            index_evidence["received_sha256"],
+        )
         index = read_json(index_path)
         self.assertEqual(index_evidence["embedding_model"], index["model_name"])
         self.assertEqual(
