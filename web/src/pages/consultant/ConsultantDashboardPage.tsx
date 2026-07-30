@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import {
-  createInquiryDetailPath,
-} from "../../app/router/routePaths";
+import { createInquiryDetailPath } from "../../app/router/routePaths";
 import { useAuth } from "../../app/providers/authContext";
 import RiskBadge from "../../common/components/badge/RiskBadge";
 import StatusBadge from "../../common/components/badge/StatusBadge";
@@ -19,24 +17,39 @@ import { CONSULTANT_QUEUE_INQUIRIES } from "../../features/consultation/model/co
 import {
   formatWaitingTime,
   getCounselorQueuePage,
+  getCounselorWorkBucket,
   getStatusBadgeVariant,
   STATUS_LABELS,
+  WORK_BUCKET_LABELS,
 } from "../../features/consultation/model/consultantWorkspaceModel";
 import type {
   CounselorAllowedAction,
-  CounselorAssigneeFilter,
-  CounselorRisk,
-  CounselorSort,
   CounselorStatus,
+  CounselorWorkBucket,
 } from "../../features/consultation/model/consultantWorkspaceTypes";
 import "./ConsultantDashboardPage.css";
 
-const DEFAULT_SELECTED_INQUIRY =
-  CONSULTANT_QUEUE_INQUIRIES.find(
-    (inquiry) => inquiry.status === "CONSULTATION_IN_PROGRESS",
-  )?.inquiryId ??
-  CONSULTANT_QUEUE_INQUIRIES[0]?.inquiryId ??
-  null;
+const WORK_BUCKETS: readonly {
+  id: CounselorWorkBucket;
+  description: string;
+  eyebrow: string;
+}[] = [
+  {
+    id: "NEW",
+    eyebrow: "바로 확인",
+    description: "새로 배정되거나 다시 열린 문의",
+  },
+  {
+    id: "IN_PROGRESS",
+    eyebrow: "이어서 처리",
+    description: "상담·기사 배정·일정 조율 중인 문의",
+  },
+  {
+    id: "COMPLETED",
+    eyebrow: "처리 이력",
+    description: "최종 완료 또는 취소된 문의",
+  },
+];
 
 export default function ConsultantDashboardPage() {
   const navigate = useNavigate();
@@ -44,9 +57,10 @@ export default function ConsultantDashboardPage() {
   const { user } = useAuth();
   const { filters, hasChangedConditions, resetFilters, setFilters } =
     useCounselorQueueFilters();
-  const [selectedInquiryId, setSelectedInquiryId] = useState<InquiryId | null>(
-    DEFAULT_SELECTED_INQUIRY,
-  );
+  const [activeBucket, setActiveBucket] =
+    useState<CounselorWorkBucket>("NEW");
+  const [selectedInquiryId, setSelectedInquiryId] =
+    useState<InquiryId | null>(null);
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [inquiryStateUpdates, setInquiryStateUpdates] = useState<
     Record<
@@ -58,6 +72,7 @@ export default function ConsultantDashboardPage() {
       }
     >
   >({});
+
   const mockState = new URLSearchParams(location.search).get("mockState");
   const loadState = ["loading", "error", "forbidden"].includes(
     mockState ?? "",
@@ -80,32 +95,73 @@ export default function ConsultantDashboardPage() {
     return () => document.body.classList.remove("compact-consultant-body");
   }, []);
 
+  useEffect(() => {
+    if (!selectedInquiryId) return;
+
+    document.body.classList.add("consultant-detail-open");
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelectedInquiryId(null);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.classList.remove("consultant-detail-open");
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [selectedInquiryId]);
+
+  const bucketCounts = useMemo(
+    () =>
+      sourceInquiries.reduce<Record<CounselorWorkBucket, number>>(
+        (counts, inquiry) => {
+          counts[getCounselorWorkBucket(inquiry.status)] += 1;
+          return counts;
+        },
+        { NEW: 0, IN_PROGRESS: 0, COMPLETED: 0 },
+      ),
+    [sourceInquiries],
+  );
+  const bucketInquiries = useMemo(
+    () =>
+      sourceInquiries.filter(
+        (inquiry) => getCounselorWorkBucket(inquiry.status) === activeBucket,
+      ),
+    [activeBucket, sourceInquiries],
+  );
   const queuePage = useMemo(
-    () => getCounselorQueuePage(sourceInquiries, filters),
-    [filters, sourceInquiries],
+    () => getCounselorQueuePage(bucketInquiries, filters),
+    [bucketInquiries, filters],
   );
   const selectedInquiry =
-    queuePage.items.find((item) => item.inquiryId === selectedInquiryId) ??
-    queuePage.items.find(
-      (item) => item.status === "CONSULTATION_IN_PROGRESS",
-    ) ??
-    queuePage.items[0] ??
-    null;
+    sourceInquiries.find((item) => item.inquiryId === selectedInquiryId) ?? null;
+  const activeBucketCopy = WORK_BUCKETS.find(
+    (bucket) => bucket.id === activeBucket,
+  );
+
+  const changeBucket = (bucket: CounselorWorkBucket) => {
+    setActiveBucket(bucket);
+    setSelectedInquiryId(null);
+    if (filters.page !== 1) setFilters({ ...filters, page: 1 });
+  };
 
   const advanceToNextInquiry = () => {
-    if (!selectedInquiry || queuePage.items.length < 2) return;
+    if (!selectedInquiry || queuePage.items.length < 2) {
+      setSelectedInquiryId(null);
+      return;
+    }
+
     const currentIndex = queuePage.items.findIndex(
       (item) => item.inquiryId === selectedInquiry.inquiryId,
     );
     const nextInquiry =
-      queuePage.items[currentIndex + 1] ?? queuePage.items[0];
-    if (nextInquiry.inquiryId !== selectedInquiry.inquiryId) {
-      setSelectedInquiryId(nextInquiry.inquiryId);
-    }
+      currentIndex < 0
+        ? queuePage.items[0]
+        : queuePage.items[currentIndex + 1] ?? queuePage.items[0];
+    setSelectedInquiryId(nextInquiry.inquiryId);
   };
 
   return (
-    <div className="simple-consultant-app">
+    <div className="simple-consultant-app consultant-queue-app">
       <header className="simple-topbar">
         <a className="simple-brand" href="/" aria-label="워터케어 홈으로 이동">
           <span aria-hidden="true">W</span>
@@ -113,7 +169,7 @@ export default function ConsultantDashboardPage() {
         </a>
 
         <span className="simple-topbar__notice">
-          <i aria-hidden="true" /> 상담 화면 · Mock 데이터
+          <i aria-hidden="true" /> 실시간 상담 업무 · Mock 데이터
         </span>
 
         <div className="simple-user">
@@ -122,26 +178,57 @@ export default function ConsultantDashboardPage() {
         </div>
       </header>
 
-      <main className="simple-consultant-main">
+      <main className="simple-consultant-main consultant-queue-main">
         <section className="simple-page-head" aria-labelledby="simple-page-title">
           <div>
-            <h1 id="simple-page-title">상담·문의 큐</h1>
-            <p>문의 하나를 선택하고 필요한 다음 처리만 진행하세요.</p>
+            <small className="consultant-page-eyebrow">CONSULTANT DESK</small>
+            <h1 id="simple-page-title">고객 문의</h1>
+            <p>상태를 선택하고, 지금 처리할 문의만 열어보세요.</p>
           </div>
-          <b>처리 대상 {queuePage.totalItems}건</b>
+          <div className="consultant-live-summary" aria-label="실시간 새 문의 현황">
+            <span aria-hidden="true" />
+            <small>지금 확인할 문의</small>
+            <strong>{bucketCounts.NEW}건</strong>
+          </div>
         </section>
 
-        <section className="simple-workspace">
-          <aside className="simple-inbox" aria-label="상담 문의 목록">
-            <header className="simple-inbox__head">
-              <div>
-                <small>MY QUEUE</small>
-                <h2>처리할 문의</h2>
-              </div>
-              <strong>{queuePage.totalItems}</strong>
-            </header>
+        <nav className="consultant-work-tabs" aria-label="문의 처리 상태" role="tablist">
+          {WORK_BUCKETS.map((bucket) => (
+            <button
+              key={bucket.id}
+              type="button"
+              role="tab"
+              aria-selected={activeBucket === bucket.id}
+              aria-controls="consultant-queue-panel"
+              className={`consultant-work-tab consultant-work-tab--${bucket.id.toLowerCase()}${
+                activeBucket === bucket.id ? " is-active" : ""
+              }`}
+              onClick={() => changeBucket(bucket.id)}
+            >
+              <span>
+                <small>{bucket.eyebrow}</small>
+                <strong>{WORK_BUCKET_LABELS[bucket.id]}</strong>
+                <em>{bucket.description}</em>
+              </span>
+              <b>{bucketCounts[bucket.id]}</b>
+            </button>
+          ))}
+        </nav>
 
-            <div className="simple-search-row">
+        <section
+          id="consultant-queue-panel"
+          className="consultant-queue-panel"
+          role="tabpanel"
+          aria-label={WORK_BUCKET_LABELS[activeBucket]}
+        >
+          <header className="consultant-queue-panel__head">
+            <div>
+              <small>{activeBucketCopy?.eyebrow}</small>
+              <h2>{WORK_BUCKET_LABELS[activeBucket]}</h2>
+              <p>{activeBucketCopy?.description}</p>
+            </div>
+
+            <div className="consultant-queue-tools">
               <label className="simple-search">
                 <span aria-hidden="true">⌕</span>
                 <input
@@ -151,181 +238,165 @@ export default function ConsultantDashboardPage() {
                   onChange={(event) =>
                     setFilters({ ...filters, query: event.target.value, page: 1 })
                   }
-                  placeholder="고객, 증상, 문의번호 검색"
+                  placeholder="고객명, 증상, 문의번호 검색"
                 />
               </label>
               {hasChangedConditions && (
                 <button type="button" onClick={resetFilters}>
-                  초기화
+                  검색 초기화
                 </button>
               )}
             </div>
+          </header>
 
-            <section className="simple-filter-panel" aria-label="문의 정렬 및 필터">
-              <strong>빠른 정렬·필터</strong>
-              <div>
-                <label className="simple-filter-panel__sort">
-                  <span>정렬</span>
-                  <select
-                    aria-label="문의 정렬"
-                    value={filters.sort}
-                    onChange={(event) =>
-                      setFilters({
-                        ...filters,
-                        sort: event.target.value as CounselorSort,
-                        page: 1,
-                      })
-                    }
-                  >
-                    <option value="UPDATED_DESC">최근 업데이트순</option>
-                    <option value="WAITING_DESC">대기시간 긴 순</option>
-                    <option value="RISK_DESC">긴급도·대기시간순</option>
-                    <option value="UPDATED_ASC">오래된 업데이트순</option>
-                  </select>
-                </label>
-                <label>
-                  <span>위험도</span>
-                  <select
-                    aria-label="위험도"
-                    value={filters.risk}
-                    onChange={(event) =>
-                      setFilters({
-                        ...filters,
-                        risk: event.target.value as "ALL" | CounselorRisk,
-                        page: 1,
-                      })
-                    }
-                  >
-                    <option value="ALL">전체</option>
-                    <option value="DANGER">긴급</option>
-                    <option value="CAUTION">주의</option>
-                  </select>
-                </label>
-                <label>
-                  <span>담당자</span>
-                  <select
-                    aria-label="담당자"
-                    value={filters.assignee}
-                    onChange={(event) =>
-                      setFilters({
-                        ...filters,
-                        assignee: event.target.value as CounselorAssigneeFilter,
-                        page: 1,
-                      })
-                    }
-                  >
-                    <option value="ALL">전체</option>
-                    <option value="MINE">내 담당</option>
-                    <option value="UNASSIGNED">미배정</option>
-                  </select>
-                </label>
-              </div>
-            </section>
-
-            <div className="simple-inbox__list">
-              {loadState === "loading" ? (
-                <LoadingState
-                  title="상담 문의 목록을 불러오고 있습니다."
-                  description="잠시만 기다려 주세요."
-                />
-              ) : loadState === "error" ? (
-                <ErrorState
-                  title="상담 문의 목록을 불러오지 못했습니다."
-                  description="잠시 후 다시 시도해 주세요."
-                  onRetry={() => navigate("/consultant/inquiries", { replace: true })}
-                />
-              ) : loadState === "forbidden" ? (
-                <ForbiddenState
-                  title="상담 문의 목록을 볼 권한이 없습니다."
-                  description="상담사 역할과 담당 범위를 확인해 주세요."
-                />
-              ) : queuePage.items.length === 0 ? (
-                <EmptyState
-                  title={
-                    hasChangedConditions
-                      ? "조건에 맞는 문의가 없습니다."
-                      : "아직 접수된 문의가 없습니다."
-                  }
-                  description={
-                    hasChangedConditions
-                      ? "검색어를 바꾸거나 초기화해 주세요."
-                      : "새 문의가 들어오면 여기에 표시됩니다."
-                  }
-                  actionLabel={hasChangedConditions ? "조건 초기화" : undefined}
-                  onAction={hasChangedConditions ? resetFilters : undefined}
-                />
-              ) : (
-                queuePage.items.map((inquiry) => (
-                  <button
-                    key={inquiry.inquiryId}
-                    className={`v6-queue-item simple-inquiry-card${
-                      selectedInquiry?.inquiryId === inquiry.inquiryId
-                        ? " is-selected"
-                        : ""
-                    }`}
-                    type="button"
-                    aria-pressed={selectedInquiry?.inquiryId === inquiry.inquiryId}
-                    onClick={() => setSelectedInquiryId(inquiry.inquiryId)}
-                  >
-                    <span className="simple-inquiry-card__meta">
-                      <RiskBadge
-                        level={inquiry.riskLevel.toLowerCase()}
-                        size="compact"
-                      />
-                      <em>대기 {formatWaitingTime(inquiry.waitingMinutes)}</em>
-                    </span>
-                    <strong>{inquiry.symptomLabel}</strong>
-                    <span className="simple-inquiry-card__customer">
-                      {inquiry.customerDisplayName} · {inquiry.productCode}
-                    </span>
-                    <span className="simple-inquiry-card__summary">
-                      “{inquiry.customerMessage}”
-                    </span>
-                    <span className="simple-inquiry-card__status">
-                      <StatusBadge
-                        label={STATUS_LABELS[inquiry.status]}
-                        size="compact"
-                        variant={getStatusBadgeVariant(inquiry.status)}
-                      />
-                      <small>{inquiry.inquiryCode}</small>
-                    </span>
-                  </button>
-                ))
-              )}
-            </div>
-
-            {loadState === "ready" && queuePage.totalItems > 0 && (
-              <Pagination
-                page={queuePage.currentPage}
-                totalItems={queuePage.totalItems}
-                totalPages={queuePage.totalPages}
-                onPageChange={(page) => setFilters({ ...filters, page })}
+          <div className="consultant-list" aria-label="상담 문의 목록">
+            {loadState === "loading" ? (
+              <LoadingState
+                title="상담 문의 목록을 불러오고 있습니다."
+                description="잠시만 기다려 주세요."
               />
-            )}
-          </aside>
+            ) : loadState === "error" ? (
+              <ErrorState
+                title="상담 문의 목록을 불러오지 못했습니다."
+                description="잠시 후 다시 시도해 주세요."
+                onRetry={() => navigate("/consultant/inquiries", { replace: true })}
+              />
+            ) : loadState === "forbidden" ? (
+              <ForbiddenState
+                title="상담 문의 목록을 볼 권한이 없습니다."
+                description="상담사 역할과 담당 범위를 확인해 주세요."
+              />
+            ) : queuePage.items.length === 0 ? (
+              <EmptyState
+                title={
+                  hasChangedConditions
+                    ? "검색 조건에 맞는 문의가 없습니다."
+                    : `${WORK_BUCKET_LABELS[activeBucket]}가 없습니다.`
+                }
+                description={
+                  hasChangedConditions
+                    ? "검색어를 바꾸거나 초기화해 주세요."
+                    : activeBucket === "NEW"
+                      ? "새 문의가 들어오면 여기에 바로 표시됩니다."
+                      : "현재 해당 상태의 문의가 없습니다."
+                }
+                actionLabel={hasChangedConditions ? "검색 초기화" : undefined}
+                onAction={hasChangedConditions ? resetFilters : undefined}
+              />
+            ) : (
+              queuePage.items.map((inquiry) => (
+                <button
+                  key={inquiry.inquiryId}
+                  className="v6-queue-item consultant-list-item"
+                  type="button"
+                  aria-label={`${inquiry.inquiryCode} ${inquiry.customerDisplayName} ${inquiry.symptomLabel} 상세 열기`}
+                  onClick={() => setSelectedInquiryId(inquiry.inquiryId)}
+                >
+                  <span className="consultant-list-item__risk">
+                    <RiskBadge
+                      level={inquiry.riskLevel.toLowerCase()}
+                      size="compact"
+                    />
+                    <em>
+                      {activeBucket === "COMPLETED"
+                        ? "처리 기록"
+                        : `대기 ${formatWaitingTime(inquiry.waitingMinutes)}`}
+                    </em>
+                  </span>
 
-          <CompactConsultationDesk
-            key={selectedInquiry?.inquiryId ?? "empty"}
-            inquiry={selectedInquiry}
-            autoAdvance={autoAdvance}
-            onAutoAdvanceChange={setAutoAdvance}
-            onAdvanceToNext={advanceToNextInquiry}
-            onInquiryStateChange={(update) => {
-              if (!selectedInquiry) return;
-              setInquiryStateUpdates((current) => ({
-                ...current,
-                [selectedInquiry.inquiryId]: update,
-              }));
-            }}
-            onOpenFullDetail={() => {
-              if (!selectedInquiry) return;
-              navigate(createInquiryDetailPath(selectedInquiry.inquiryId), {
-                state: { returnTo: `/consultant/inquiries${location.search}` },
-              });
-            }}
-          />
+                  <span className="consultant-list-item__subject">
+                    <strong>{inquiry.symptomLabel}</strong>
+                    <small>{inquiry.customerMessage}</small>
+                  </span>
+
+                  <span className="consultant-list-item__customer">
+                    <strong>{inquiry.customerDisplayName}</strong>
+                    <small>{inquiry.productCode}</small>
+                  </span>
+
+                  <span className="consultant-list-item__status">
+                    <StatusBadge
+                      label={STATUS_LABELS[inquiry.status]}
+                      size="compact"
+                      variant={getStatusBadgeVariant(inquiry.status)}
+                    />
+                    <small>{inquiry.inquiryCode}</small>
+                  </span>
+
+                  <span className="consultant-list-item__open" aria-hidden="true">
+                    상세 보기 <b>›</b>
+                  </span>
+                </button>
+              ))
+            )}
+          </div>
+
+          {loadState === "ready" && queuePage.totalItems > 0 && (
+            <Pagination
+              page={queuePage.currentPage}
+              totalItems={queuePage.totalItems}
+              totalPages={queuePage.totalPages}
+              onPageChange={(page) => setFilters({ ...filters, page })}
+            />
+          )}
         </section>
       </main>
+
+      {selectedInquiry && (
+        <div className="consultant-detail-layer">
+          <button
+            type="button"
+            className="consultant-detail-backdrop"
+            aria-label="문의 상세 닫기"
+            onClick={() => setSelectedInquiryId(null)}
+          />
+          <section
+            className="consultant-detail-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="consultant-detail-title"
+          >
+            <header className="consultant-detail-drawer__head">
+              <div>
+                <small>{selectedInquiry.inquiryCode}</small>
+                <h2 id="consultant-detail-title">
+                  {selectedInquiry.customerDisplayName} · {selectedInquiry.symptomLabel}
+                </h2>
+                <p>선택한 문의의 상담과 기사 일정을 여기에서 처리합니다.</p>
+              </div>
+              <button
+                type="button"
+                aria-label="문의 상세 닫기"
+                onClick={() => setSelectedInquiryId(null)}
+              >
+                <span aria-hidden="true">×</span>
+              </button>
+            </header>
+
+            <div className="consultant-detail-drawer__body">
+              <CompactConsultationDesk
+                key={selectedInquiry.inquiryId}
+                inquiry={selectedInquiry}
+                autoAdvance={autoAdvance}
+                onAutoAdvanceChange={setAutoAdvance}
+                onAdvanceToNext={advanceToNextInquiry}
+                onInquiryStateChange={(update) => {
+                  setInquiryStateUpdates((current) => ({
+                    ...current,
+                    [selectedInquiry.inquiryId]: update,
+                  }));
+                  setActiveBucket(getCounselorWorkBucket(update.status));
+                }}
+                onOpenFullDetail={() =>
+                  navigate(createInquiryDetailPath(selectedInquiry.inquiryId), {
+                    state: { returnTo: `/consultant/inquiries${location.search}` },
+                  })
+                }
+              />
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }
