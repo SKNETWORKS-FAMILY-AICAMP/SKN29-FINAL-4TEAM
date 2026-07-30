@@ -1,16 +1,18 @@
 # 최지용 Django·PostgreSQL 공유 패키지 인계서 v1.3
 
 > 기준일: 2026-07-29
-> 문서 상태: `CURRENT_LOCAL_VERIFIED`
+> 문서 상태: `CURRENT_SINGLE_SOURCE`
 > 작성·유지 책임: 최지용
 > 명령 실행 기준: 별도 표시가 없으면 저장소 루트
 > 목적: 새 PC 설치, 기존 PC 갱신, PostgreSQL Migration, Django 실행과
 > 팀 인계를 한 순서로 재현
 > 실행 원칙: `대상 확인 → 작업 → 즉시 검증 → 증거 확인 → 다음 작업`
 
-이 문서는 v1.2의 환경 재현 절차를 유지하면서, 2026-07-29 기본
-`watercare` 개발 DB에 새 Migration을 적용한 실측 결과와 안전 규칙을
-반영한 최신 실행 기준이다.
+이 문서는 v1.1·v1.2의 유효한 환경 재현·실행·복구 절차와 당시 검증
+증거를 통합하고, 2026-07-29 기본 `watercare` 개발 DB에 새 Migration을
+적용한 실측 결과와 안전 규칙을 반영한 최종 단일 원본이다. 이전 버전의
+별도 파일은 유지하지 않으며, 버전별 검증 수치와 정책 변화는 15장에
+보존한다.
 
 로컬 검증 결과가 Git과 PM `main`에 자동으로 포함되는 것은 아니다.
 팀원이 공용 기준으로 사용할 때는 PM이 병합 후 전달한 40자리 `main`
@@ -116,6 +118,10 @@ Password, Token, 전체 DSN은 증거에 포함하지 않는다.
 | PostgreSQL Compose | [`docker-compose.yml`](<../../../../docker-compose.yml>) |
 | DB 연결 검사 | [`check_postgresql_connection.py`](<../../../../scripts/database/check_postgresql_connection.py>) |
 | Health·Auth Smoke | [`check_backend_auth.py`](<../../../../scripts/smoke/check_backend_auth.py>) |
+| API 현재 지원 범위 | [API Runtime 구현 상태](<../../../api/runtime_implementation_status.md>) |
+| 기계 API 계약 | [OpenAPI](<../../../../contracts/api/openapi.yaml>) |
+| 환경 설계·복구 | [Backend `.venv` 재현 가이드](<../technical/backend/backend_venv_reproducibility_guide.md>) |
+| API 계약 검증 | [Backend API 계약 정합화 검증보고서](<./20260729_최지용_Backend_API_계약_정합화_검증보고서_v1.0.md>) |
 | `changed_at` 보정 | [`workflow.0003`](<../../../../backend/apps/workflow/migrations/0003_backfill_legacy_changed_at.py>) |
 | 합성 Importer 상세 | [합성 Handoff Importer](<../technical/backend/20260729_synthetic_handoff_importer.md>) |
 | 격리 DB Importer 실측 | [PostgreSQL 합성 Handoff Runtime 검증](<./20260729_postgresql_synthetic_handoff_runtime_verification.md>) |
@@ -503,6 +509,16 @@ if ($LASTEXITCODE -ne 0) {
 3. Subscriptions
 4. Care
 
+Accounts Seed가 생성·갱신하는 공개 Demo 식별자는 다음과 같다. 비밀번호는
+각 PC의 로컬 `.env`에서만 관리하고 문서나 Git에 기록하지 않는다.
+
+| 역할 | 사용자 코드 | 고객 프로필 |
+| --- | --- | --- |
+| 고객 | `DEMO-CUSTOMER-001` | `DEMO-CUS-001` |
+| 상담사 | `DEMO-CONSULTANT-001` | 해당 없음 |
+| 방문기사 | `DEMO-TECHNICIAN-001` | 해당 없음 |
+| 운영자 | `DEMO-OPERATOR-001` | 해당 없음 |
+
 각 명령을 두 번 실행해 멱등성을 확인한다.
 
 ```powershell
@@ -527,6 +543,10 @@ if ($LASTEXITCODE -ne 0) {
 
 각 명령 뒤 `$LASTEXITCODE`를 확인한다. 두 번째 실행에서 비의도 중복이
 생기면 다음 단계로 넘어가지 않는다.
+
+`seed_demo_accounts`의 현재 회귀 기준은 첫 실행 출력에 `created=4`,
+두 번째 실행 출력에 `updated=4`가 포함되는 것이다. 다른 Seed는
+각 Command의 검증 결과와 DB 행 수를 함께 확인한다.
 
 기본 `watercare`에는 `import_synthetic_handoff`를 실행하지 않는다.
 그 이유와 격리 절차는 9장에서 설명한다.
@@ -898,6 +918,19 @@ Web·Mobile 담당자는 자기 PC의 로컬 DB에 Migration을 적용한 뒤 �
 Network 요청, HTTP 상태, 오류 Wrapper와 Correlation ID를 확인한다.
 Mock 응답만으로 Backend 연동 완료를 판정하지 않는다.
 
+Web은 기본적으로 Mock API를 사용한다. 실제 Backend 소비를 검증할
+PowerShell에서 다음 값을 명시한다.
+
+```powershell
+Set-Location .\web
+$env:VITE_API_BASE_URL = "http://127.0.0.1:8000/api/v1"
+$env:VITE_USE_MOCK_API = "false"
+npm.cmd run dev
+```
+
+Backend가 다른 Port에서 실행 중이면 `VITE_API_BASE_URL`의 Port도 같은
+값으로 바꾼다. 위 환경변수는 현재 PowerShell Process에만 적용된다.
+
 ---
 
 ## 11. 오류별 복구
@@ -927,6 +960,17 @@ python .\scripts\development\bootstrap.py `
 
 새 환경이 성공해도 전체 Gate와 Smoke가 통과하기 전에는 백업된 기존
 환경을 삭제하지 않는다.
+
+`--recreate`는 기존 환경을 다음 경로로 먼저 이동한다.
+
+```text
+backend/.runtime/venv-backups/<timestamp>/.venv
+```
+
+새 환경 생성이나 경량 검증이 실패하면 bootstrap이 위 백업을
+`backend/.venv`로 자동 복원한다. 성공한 경우 출력된
+`rollback_backup` 경로를 기록하고, 전체 Gate·PostgreSQL·Health·Auth
+Smoke가 모두 통과한 뒤에만 백업 삭제 여부를 판단한다.
 
 ### 11.3 Docker daemon·PostgreSQL 오류
 
@@ -1117,11 +1161,56 @@ Password, Token, 전체 DSN, 실제 고객정보는 넣지 않는다.
 
 ---
 
-## 15. 변경 이력
+## 15. v1.1·v1.2 통합 버전 이력
 
-| 버전 | 날짜 | 변경 |
+> 2026-07-30부터 이 파일만 공유 패키지 인계서의 단일 원본으로
+> 유지한다. v1.1·v1.2의 현재 유효한 절차는 0~14장에 흡수했으며,
+> 아래 수치는 당시 검증 증거다. 실행 명령이나 정책이 충돌하면
+> 0~14장의 현재 절차와 실제 코드·기계 검증 결과를 우선한다.
+
+### 15.1 문서 계보
+
+| 버전 | 날짜 | 통합 상태 | 핵심 변경 |
+| --- | --- | --- | --- |
+| v1.0 | 2026-07-27 | v1.3에 통합 | `.env`·PostgreSQL·Migration·Seed·Smoke·공유 경계 수립 |
+| v1.1 | 2026-07-28 | v1.3에 통합 | Python 3.13.13·pip 26.0.1·constraints·bootstrap·VS Code·안전 재생성·일상 실행 추가 |
+| v1.2 | 2026-07-29 | v1.3에 통합 | requirements fingerprint·Docker·PostgreSQL·Health·Auth 실검증과 오류 복구·Web 실제 API 절차 상세화 |
+| v1.3 | 2026-07-29 | `CURRENT_SINGLE_SOURCE` | 기본 DB Migration 9개와 `workflow.0003`, Legacy `changed_at` 11건 보정, 397 테스트, Port 8001 Auth Smoke, Writer 중단·백업·복원 검증·Importer 격리 원칙 반영 |
+| v1.3 단일화 | 2026-07-30 | `CURRENT_SINGLE_SOURCE` | v1.1·v1.2 별도 파일 제거, 유효 절차·검증 스냅샷·정책 변경 이력을 이 문서에 통합 |
+
+### 15.2 이전 버전 내용의 현재 위치
+
+| 이전 버전 내용 | 현재 단일 원본 위치 |
+| --- | --- |
+| `.venv`·`.env`·Docker·Django·검사기 역할 구분 | 0.1 |
+| 공유 대상과 Secret·Token·Volume 제외 원칙 | 0.2 |
+| Python·pip·constraints·bootstrap과 환경 검사 | 5.3 |
+| 안전한 `.venv` 재생성·자동 복원·백업 유지 | 11.2 |
+| PostgreSQL 시작·연결·Migration·Seed | 5.4~5.10 |
+| 설치 후 일상 시작·종료·재검증 | 6~8장 |
+| Web 실제 Backend 전환과 Mobile 소비 확인 | 10장 |
+| 오류별 복구 | 11장 |
+| 담당자별 인계와 반환 증거 | 12~14장 |
+
+### 15.3 당시 검증 스냅샷
+
+| 버전 | 환경·테스트 증거 | DB·API 증거 | 현재 해석 |
+| --- | --- | --- | --- |
+| v1.1 | Python 3.13.13, pip 26.0.1, constraints 31개 일치, 추가 패키지 0개, 새 `.venv`에서 `239 passed` | PostgreSQL·Migration·Seed·HTTP 결과는 2026-07-27 기록, 당시 Model 2/32·Health 1개·Auth 4개 | 최초 서비스별 환경 재현 기준. 제3자 재현·PM 병합 증거는 당시 미확인 |
+| v1.2 | fingerprint `60a914129e00735559d54b1429d76933cee4817a1c62bc968dd8808ab085c758`, `353 passed` | PostgreSQL 16.14 `healthy`, 미적용 Migration 없음, Health·Auth `PASSED`, OpenAPI 9개 중 Runtime 7개 | 2026-07-29 당시 기준. Web 22 Suite 중 14개 통과·8개는 `inquiry_id/public_id` 정합화 대기 |
+| v1.3 | 3장의 현재 실측 참조 | Migration 10개, Legacy `changed_at` 11건 보정, Port 8001 Smoke | 현재 실행 기준. 고정 테스트 수보다 Exit code 0과 실패 0을 우선 |
+
+과거 테스트 수치는 해당 날짜와 Commit의 증거일 뿐 현재 합격 기준으로
+재사용하지 않는다. 이후 테스트가 추가되면 개수는 달라질 수 있다.
+
+### 15.4 안전 정책 변경 기록
+
+| 항목 | v1.1·v1.2 당시 기준 | 현재 v1.3 기준 |
 | --- | --- | --- |
-| v1.0 | 2026-07-27 | `.env`·PostgreSQL·Migration·Seed·Smoke·공유 경계 통합 |
-| v1.1 | 2026-07-28 | Python·constraints·bootstrap·VS Code·일상 실행 추가 |
-| v1.2 | 2026-07-29 | 환경 fingerprint·Docker·PostgreSQL·Auth 실검증과 오류 복구 상세화 |
-| v1.3 | 2026-07-29 | 기본 DB Migration 9개와 `workflow.0003`, Legacy `changed_at` 11건 보정, 397 테스트, Port 8001 Auth Smoke, Writer 중단·백업·복원 검증·Importer 격리 원칙 반영 |
+| 새 Migration 발견 | 일상 실행 중 적용 절차로 이어질 수 있음 | 서버를 시작하지 않고 대상 DB·Writer·백업·Plan 절차로 복귀 |
+| Migration 대상 | 로컬 PostgreSQL 중심 | DB 이름·사용자·활성 Session·Writer를 먼저 확인 |
+| 백업 | 선택적 설명 | 기존 데이터 DB는 `pg_dump`와 백업 구조 검사를 먼저 수행 |
+| `.venv` 교체 | 안전 재생성 도입 | 자동 복원 경로를 확인하고 전체 Gate·Smoke 전까지 백업 유지 |
+| 합성 Importer | 별도 실행 경계가 없음 | 기본 `watercare` 실행 금지, 빈 격리 DB 전용 |
+| Smoke Port | 8000 중심 | 실제 Port 8000·8001과 AI Port 충돌을 구분 |
+| 공용 기준 | 작성자 로컬 검증 중심 | PM이 병합해 전달한 `main` 40자리 SHA 우선 |
