@@ -50,7 +50,7 @@ describe("App Router Guard", () => {
     );
 
     expect(
-      await screen.findByRole("heading", { name: "상담·문의 큐" }),
+      await screen.findByRole("heading", { name: "고객 문의" }),
     ).toBeInTheDocument();
   });
 
@@ -66,7 +66,7 @@ describe("App Router Guard", () => {
     renderRoute("/consultant/inquiries", createUser("CONSULTANT"));
 
     expect(
-      await screen.findByRole("heading", { name: "상담·문의 큐" }),
+      await screen.findByRole("heading", { name: "고객 문의" }),
     ).toBeInTheDocument();
   });
 

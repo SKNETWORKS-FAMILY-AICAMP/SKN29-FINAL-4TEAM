@@ -37,13 +37,13 @@
 }
 
 .common-risk-badge--compact {
-  min-height: 22px;
-  padding: 0 7px;
-  gap: 3px;
-  font-size: 7px;
+  min-height: 24px;
+  padding: 0 8px;
+  gap: 4px;
+  font-size: 10px;
   font-weight: 900;
 }
 
 .common-risk-badge--compact .common-risk-badge__icon {
-  font-size: 6px;
+  font-size: 9px;
 }
