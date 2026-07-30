@@ -236,6 +236,13 @@ function getAllowedActions(
   return byStatus[status] ?? [];
 }
 
+export function getConsultantAllowedActions(
+  status: CounselorStatus,
+  feedbackResolved = false,
+): readonly CounselorAllowedAction[] {
+  return getAllowedActions(status, "CONSULTANT", feedbackResolved);
+}
+
 function getPriority(riskLevel: CounselorRisk): CounselorPriority {
   if (riskLevel === "DANGER") return "URGENT";
   if (riskLevel === "CAUTION") return "HIGH";
@@ -384,6 +391,10 @@ function createInquiry(
     customerId: CUSTOMER_PUBLIC_IDS.get(row.customer_id) ?? "공개 고객 ID 확인 필요",
     customerName: `합성 고객 ${customerSequence}`,
     customerDisplayName: `합성 고객 ${customerSequence.slice(0, 1)}**`,
+    customerPhone: `010-****-${String(1200 + index).slice(-4)} (합성)`,
+    serviceAddress: "서울특별시 마포구 월드컵북로 ** (합성)",
+    warrantyLabel: "무상보증 · 2027.02까지",
+    previousVisitCount: index % 3,
     subscriptionId:
       SUBSCRIPTION_PUBLIC_IDS.get(row.subscription_id) ?? "공개 구독 ID 확인 필요",
     productCode: "WPUJAC104DWH",
@@ -494,11 +505,24 @@ export const COUNSELOR_INQUIRIES: readonly CounselorInquiry[] = (
   officialInquiryFixtures as unknown as readonly OfficialInquiryFixture[]
 ).map(createInquiry);
 
-// 상담사 화면에는 상담사에게 현재 처리 권한이 있는 주의·긴급 문의만 노출한다.
-// 일반 문의는 AI가 방문기사에게 자동 인계하므로 운영 화면에서 추적한다.
+const CONSULTANT_VISIBLE_STATUSES = new Set<CounselorStatus>([
+  "CONSULTATION_REQUIRED",
+  "CONSULTATION_IN_PROGRESS",
+  "VISIT_REVIEW_PENDING",
+  "VISIT_SCHEDULING",
+  "VISIT_SCHEDULED",
+  "COMPLETION_PENDING",
+  "REVISIT_REQUIRED",
+  "REOPENED",
+  "RESOLVED",
+  "CANCELLED",
+]);
+
+// 상담사 화면에는 상담사에게 배정된 주의·긴급 문의의 현재 업무와 완료 이력을 노출한다.
+// 일반 문의는 AI가 방문기사에게 자동 인계하며, 문진 중 문의는 상담 큐에 진입하기 전이므로 제외한다.
 export const CONSULTANT_QUEUE_INQUIRIES: readonly CounselorInquiry[] =
   COUNSELOR_INQUIRIES.filter(
     (inquiry) =>
       inquiry.routingTarget === "CONSULTANT" &&
-      inquiry.allowedActions.length > 0,
+      CONSULTANT_VISIBLE_STATUSES.has(inquiry.status),
   );

@@ -45,6 +45,8 @@ const CONSULTATION_VALUES: readonly CounselorFilters["consultation"][] = [
 const SORT_VALUES: readonly CounselorSort[] = [
   "UPDATED_DESC",
   "UPDATED_ASC",
+  "WAITING_DESC",
+  "RISK_DESC",
 ];
 
 function readAllowed<TValue extends string>(
