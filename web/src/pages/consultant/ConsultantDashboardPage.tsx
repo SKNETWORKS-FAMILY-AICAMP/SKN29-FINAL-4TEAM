@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import {
   createInquiryDetailPath,
-  createVisitTransitionPath,
 } from "../../app/router/routePaths";
 import { useAuth } from "../../app/providers/authContext";
 import RiskBadge from "../../common/components/badge/RiskBadge";
@@ -24,8 +23,11 @@ import {
   STATUS_LABELS,
 } from "../../features/consultation/model/consultantWorkspaceModel";
 import type {
+  CounselorAllowedAction,
   CounselorAssigneeFilter,
   CounselorRisk,
+  CounselorSort,
+  CounselorStatus,
 } from "../../features/consultation/model/consultantWorkspaceTypes";
 import "./ConsultantDashboardPage.css";
 
@@ -45,6 +47,17 @@ export default function ConsultantDashboardPage() {
   const [selectedInquiryId, setSelectedInquiryId] = useState<InquiryId | null>(
     DEFAULT_SELECTED_INQUIRY,
   );
+  const [autoAdvance, setAutoAdvance] = useState(true);
+  const [inquiryStateUpdates, setInquiryStateUpdates] = useState<
+    Record<
+      string,
+      {
+        status: CounselorStatus;
+        stateVersion: number;
+        allowedActions: readonly CounselorAllowedAction[];
+      }
+    >
+  >({});
   const mockState = new URLSearchParams(location.search).get("mockState");
   const loadState = ["loading", "error", "forbidden"].includes(
     mockState ?? "",
@@ -52,8 +65,14 @@ export default function ConsultantDashboardPage() {
     ? (mockState as "loading" | "error" | "forbidden")
     : "ready";
   const sourceInquiries = useMemo(
-    () => (mockState === "empty" ? [] : CONSULTANT_QUEUE_INQUIRIES),
-    [mockState],
+    () =>
+      mockState === "empty"
+        ? []
+        : CONSULTANT_QUEUE_INQUIRIES.map((inquiry) => ({
+            ...inquiry,
+            ...inquiryStateUpdates[inquiry.inquiryId],
+          })),
+    [inquiryStateUpdates, mockState],
   );
 
   useEffect(() => {
@@ -73,18 +92,16 @@ export default function ConsultantDashboardPage() {
     queuePage.items[0] ??
     null;
 
-  const handleOpenVisit = (
-    entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED",
-  ) => {
-    if (!selectedInquiry) return;
-    navigate(createVisitTransitionPath(selectedInquiry.inquiryId), {
-      state: {
-        returnTo: `/consultant/inquiries${location.search}`,
-        stateVersion: selectedInquiry.stateVersion,
-        symptomSummary: selectedInquiry.symptomLabel,
-        entryAction,
-      },
-    });
+  const advanceToNextInquiry = () => {
+    if (!selectedInquiry || queuePage.items.length < 2) return;
+    const currentIndex = queuePage.items.findIndex(
+      (item) => item.inquiryId === selectedInquiry.inquiryId,
+    );
+    const nextInquiry =
+      queuePage.items[currentIndex + 1] ?? queuePage.items[0];
+    if (nextInquiry.inquiryId !== selectedInquiry.inquiryId) {
+      setSelectedInquiryId(nextInquiry.inquiryId);
+    }
   };
 
   return (
@@ -144,9 +161,28 @@ export default function ConsultantDashboardPage() {
               )}
             </div>
 
-            <details className="simple-filter-panel">
-              <summary>추가 필터</summary>
+            <section className="simple-filter-panel" aria-label="문의 정렬 및 필터">
+              <strong>빠른 정렬·필터</strong>
               <div>
+                <label className="simple-filter-panel__sort">
+                  <span>정렬</span>
+                  <select
+                    aria-label="문의 정렬"
+                    value={filters.sort}
+                    onChange={(event) =>
+                      setFilters({
+                        ...filters,
+                        sort: event.target.value as CounselorSort,
+                        page: 1,
+                      })
+                    }
+                  >
+                    <option value="UPDATED_DESC">최근 업데이트순</option>
+                    <option value="WAITING_DESC">대기시간 긴 순</option>
+                    <option value="RISK_DESC">긴급도·대기시간순</option>
+                    <option value="UPDATED_ASC">오래된 업데이트순</option>
+                  </select>
+                </label>
                 <label>
                   <span>위험도</span>
                   <select
@@ -184,7 +220,7 @@ export default function ConsultantDashboardPage() {
                   </select>
                 </label>
               </div>
-            </details>
+            </section>
 
             <div className="simple-inbox__list">
               {loadState === "loading" ? (
@@ -242,6 +278,9 @@ export default function ConsultantDashboardPage() {
                     <span className="simple-inquiry-card__customer">
                       {inquiry.customerDisplayName} · {inquiry.productCode}
                     </span>
+                    <span className="simple-inquiry-card__summary">
+                      “{inquiry.customerMessage}”
+                    </span>
                     <span className="simple-inquiry-card__status">
                       <StatusBadge
                         label={STATUS_LABELS[inquiry.status]}
@@ -268,13 +307,22 @@ export default function ConsultantDashboardPage() {
           <CompactConsultationDesk
             key={selectedInquiry?.inquiryId ?? "empty"}
             inquiry={selectedInquiry}
+            autoAdvance={autoAdvance}
+            onAutoAdvanceChange={setAutoAdvance}
+            onAdvanceToNext={advanceToNextInquiry}
+            onInquiryStateChange={(update) => {
+              if (!selectedInquiry) return;
+              setInquiryStateUpdates((current) => ({
+                ...current,
+                [selectedInquiry.inquiryId]: update,
+              }));
+            }}
             onOpenFullDetail={() => {
               if (!selectedInquiry) return;
               navigate(createInquiryDetailPath(selectedInquiry.inquiryId), {
                 state: { returnTo: `/consultant/inquiries${location.search}` },
               });
             }}
-            onOpenVisit={handleOpenVisit}
           />
         </section>
       </main>

@@ -5,6 +5,7 @@ import {
   COUNSELOR_INQUIRIES,
 } from "../../src/features/consultation/model/consultantWorkspaceMock";
 import {
+  COUNSELOR_QUEUE_PAGE_SIZE,
   filterCounselorInquiries,
   getCounselorRoutingDecision,
   getCounselorQueuePage,
@@ -46,9 +47,12 @@ describe("상담 큐 View Model", () => {
       ...DEFAULT_FILTERS,
       page: 99,
     });
-    const expectedLastPage = Math.ceil(COUNSELOR_INQUIRIES.length / 3);
+    const expectedLastPage = Math.ceil(
+      COUNSELOR_INQUIRIES.length / COUNSELOR_QUEUE_PAGE_SIZE,
+    );
     const expectedLastPageItems =
-      COUNSELOR_INQUIRIES.length - (expectedLastPage - 1) * 3;
+      COUNSELOR_INQUIRIES.length -
+      (expectedLastPage - 1) * COUNSELOR_QUEUE_PAGE_SIZE;
 
     expect(result.currentPage).toBe(expectedLastPage);
     expect(result.totalItems).toBe(COUNSELOR_INQUIRIES.length);

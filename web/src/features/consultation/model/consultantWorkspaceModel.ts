@@ -11,7 +11,7 @@ import type { PriorityBadgeVariant } from "../../../common/components/badge/Prio
 import type { StatusBadgeVariant } from "../../../common/components/badge/StatusBadge";
 import { formatContractDateTimeLong } from "../../../common/date-time/contractDateTime";
 
-export const COUNSELOR_QUEUE_PAGE_SIZE = 3;
+export const COUNSELOR_QUEUE_PAGE_SIZE = 10;
 
 export const STATUS_LABELS: Record<CounselorStatus, string> = {
   DRAFT: "작성 중",
@@ -171,6 +171,7 @@ export function filterCounselorInquiries(
       inquiry.customerName,
       inquiry.customerDisplayName,
       inquiry.productCode,
+      inquiry.customerMessage,
     ]
       .join(" ")
       .toLocaleLowerCase("ko-KR");
@@ -228,6 +229,15 @@ export function filterCounselorInquiries(
 
     return true;
   }).sort((left, right) => {
+    if (filters.sort === "WAITING_DESC") {
+      return right.waitingMinutes - left.waitingMinutes;
+    }
+    if (filters.sort === "RISK_DESC") {
+      const riskScore = { DANGER: 3, CAUTION: 2, GENERAL: 1, UNKNOWN: 0 };
+      const riskDifference =
+        riskScore[right.riskLevel] - riskScore[left.riskLevel];
+      return riskDifference || right.waitingMinutes - left.waitingMinutes;
+    }
     const difference =
       new Date(right.updatedAt).getTime() -
       new Date(left.updatedAt).getTime();
