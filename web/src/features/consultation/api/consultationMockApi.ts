@@ -115,7 +115,12 @@ export async function submitConsultationMock(
       confirmation_message: action.confirmationMessage,
     }));
   const successDto: WorkflowActionSuccessDto<CounselorActionCode> = {
-    message: "Mock 저장 완료 · 최신 문의 정보를 다시 불러왔습니다.",
+    message:
+      request.action_code === "START_CONSULTATION"
+        ? "상담을 시작했습니다. 확인한 내용을 상담 기록에 입력해 주세요."
+        : request.action_code === "VISIT_REVIEW_REQUIRED"
+          ? "방문 필요를 확인했습니다. 기사와 방문 일정을 바로 조율해 주세요."
+        : "Mock 저장 완료 · 최신 문의 정보를 다시 불러왔습니다.",
     state_version: request.state_version + 1,
     allowed_actions: allowedActionDtos,
   };

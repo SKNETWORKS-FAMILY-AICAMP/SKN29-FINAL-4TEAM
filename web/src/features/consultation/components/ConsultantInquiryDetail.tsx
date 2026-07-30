@@ -103,40 +103,6 @@ function UsageSection({ inquiry }: { inquiry: CounselorInquiry }) {
   );
 }
 
-function CustomerProductSection({ inquiry }: { inquiry: CounselorInquiry }) {
-  const rows = [
-    ["고객·구독", `${inquiry.customerId} · ${inquiry.subscriptionId}`],
-    ["제품·매뉴얼", `${inquiry.productCode} · ${inquiry.manualModel}`],
-    ["문의·시나리오", `${inquiry.inquiryCode} · ${inquiry.scenarioId}`],
-    ["문의 공개 ID", inquiry.inquiryId],
-    ["담당 상담원", inquiry.assignedCounselor],
-    [
-      "관리 유형·사용 시작일",
-      `${inquiry.managementType} · ${formatWorkspaceDateTime(inquiry.serviceStartDate)}`,
-    ],
-    ["최근 관리일", formatWorkspaceDateTime(inquiry.lastCareDate)],
-    ["최근 필터·카트리지 교체일", formatWorkspaceDateTime(inquiry.lastFilterDate)],
-    ["다음 케어 예정·기준", `${inquiry.nextCareDate} · ${inquiry.nextCareBasis}`],
-  ];
-
-  return (
-    <section className="v6-section">
-      <div className="v6-section__head">
-        <h3>고객·제품·관리 이력</h3>
-        <span>고객 재입력 없음</span>
-      </div>
-      <dl className="v6-summary-grid">
-        {rows.map(([label, value]) => (
-          <div key={label}>
-            <dt>{label}</dt>
-            <dd>{value}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  );
-}
-
 function AnswersSection({ inquiry }: { inquiry: CounselorInquiry }) {
   return (
     <>
@@ -326,6 +292,182 @@ function TimelineSection({
   );
 }
 
+function InquiryDashboardSection({
+  inquiry,
+  sectionStates,
+}: {
+  inquiry: CounselorInquiry;
+  sectionStates: ConsultantDetailSectionStates;
+}) {
+  const recentTimeline = inquiry.timeline.slice(0, 4);
+
+  return (
+    <section className="inquiry-dashboard" aria-labelledby="inquiry-dashboard-title">
+      <div className="inquiry-dashboard__title">
+        <div>
+          <small>AT A GLANCE</small>
+          <h3 id="inquiry-dashboard-title">문의 핵심 현황</h3>
+        </div>
+        <span>갱신 {formatWorkspaceDateTime(inquiry.updatedAt)}</span>
+      </div>
+
+      <div className="inquiry-dashboard__metrics">
+        <article>
+          <span>현재 상태</span>
+          <StatusBadge
+            label={STATUS_LABELS[inquiry.status]}
+            size="compact"
+            variant={getStatusBadgeVariant(inquiry.status)}
+          />
+        </article>
+        <article>
+          <span>위험도</span>
+          <RiskBadge level={inquiry.riskLevel.toLowerCase()} size="compact" />
+        </article>
+        <article>
+          <span>담당 상담원</span>
+          <strong>{inquiry.assignedCounselor}</strong>
+        </article>
+        <article>
+          <span>공식 근거</span>
+          <strong>{inquiry.evidence.length}건</strong>
+        </article>
+      </div>
+
+      {sectionStates.evidence === "error" && (
+        <div className="inquiry-dashboard__error" role="alert">
+          <strong>공식 근거를 불러오지 못했습니다.</strong>
+          <span>근거 확인 전에는 AI 초안을 공식 안내처럼 사용하지 마세요.</span>
+        </div>
+      )}
+
+      <div className="inquiry-dashboard__grid">
+        <article className="inquiry-dashboard__card">
+          <header>
+            <span className="inquiry-dashboard__icon" aria-hidden="true">“</span>
+            <div>
+              <small>CUSTOMER VOICE</small>
+              <h4>고객 문의</h4>
+            </div>
+          </header>
+          <blockquote>“{inquiry.customerMessage}”</blockquote>
+          <dl>
+            <div>
+              <dt>발생 조건</dt>
+              <dd>{inquiry.conditions}</dd>
+            </div>
+            <div>
+              <dt>고객 조치</dt>
+              <dd>{inquiry.performedAction}</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article
+          className={`inquiry-dashboard__card inquiry-dashboard__card--guidance${
+            inquiry.usageStatus !== "NORMAL" ? " is-danger" : ""
+          }`}
+        >
+          <header>
+            <span className="inquiry-dashboard__icon" aria-hidden="true">!</span>
+            <div>
+              <small>FIRST GUIDANCE</small>
+              <h4>즉시 사용 안내</h4>
+            </div>
+          </header>
+          <strong className="inquiry-dashboard__guidance">
+            {inquiry.usageMessage}
+          </strong>
+          <p>{inquiry.guidanceBasis}</p>
+          <footer>다음 행동 · {inquiry.nextAction}</footer>
+        </article>
+
+        <article className="inquiry-dashboard__card inquiry-dashboard__card--ai">
+          <header>
+            <span className="inquiry-dashboard__icon" aria-hidden="true">AI</span>
+            <div>
+              <small>AI SUMMARY</small>
+              <h4>AI 상담 요약</h4>
+            </div>
+          </header>
+          {sectionStates.aiSummary === "error" ? (
+            <div className="inquiry-dashboard__error" role="alert">
+              요약을 불러오지 못했습니다. 고객 답변을 직접 확인해 주세요.
+            </div>
+          ) : (
+            <>
+              <p>{inquiry.aiSummaryOriginal}</p>
+              <footer className="inquiry-dashboard__ai-status">
+                <WorkspaceChip label={inquiry.aiOutcome} tone="danger" />
+                <WorkspaceChip
+                  label={inquiry.aiStatus}
+                  tone={inquiry.aiStatus === "FAILED" ? "danger" : "success"}
+                />
+              </footer>
+            </>
+          )}
+        </article>
+
+        <article className="inquiry-dashboard__card inquiry-dashboard__card--customer">
+          <header>
+            <span className="inquiry-dashboard__icon" aria-hidden="true">▤</span>
+            <div>
+              <small>CUSTOMER &amp; PRODUCT</small>
+              <h4>고객·제품·관리 이력</h4>
+            </div>
+          </header>
+          <dl>
+            <div>
+              <dt>고객</dt>
+              <dd>{inquiry.customerName} · {inquiry.customerId}</dd>
+            </div>
+            <div>
+              <dt>제품</dt>
+              <dd>{inquiry.productCode} · {inquiry.manualModel}</dd>
+            </div>
+            <div>
+              <dt>관리 유형</dt>
+              <dd>{inquiry.managementType}</dd>
+            </div>
+            <div>
+              <dt>다음 케어</dt>
+              <dd>{inquiry.nextCareDate}</dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+
+      <article className="inquiry-dashboard__timeline">
+        <header>
+          <div>
+            <small>RECENT ACTIVITY</small>
+            <h4>최근 처리 이력</h4>
+          </div>
+          <span>전체 {inquiry.timeline.length}건</span>
+        </header>
+        {sectionStates.timeline === "error" ? (
+          <div className="inquiry-dashboard__error" role="alert">
+            처리 이력을 불러오지 못했습니다.
+          </div>
+        ) : (
+          <ol>
+            {recentTimeline.map((item) => (
+              <li key={`${item.title}-${item.occurredAt}`}>
+                <i />
+                <div>
+                  <strong>{item.title}</strong>
+                  <p>{item.description} · {item.actor}</p>
+                </div>
+                <time>{item.occurredAt}</time>
+              </li>
+            ))}
+          </ol>
+        )}
+      </article>
+    </section>
+  );
+}
+
 export default function ConsultantInquiryDetail({
   detailTab,
   inquiry,
@@ -420,16 +562,9 @@ export default function ConsultantInquiryDetail({
 
             {detailTab === "summary" && (
               <>
-                <UsageSection inquiry={inquiry} />
-                <CustomerProductSection inquiry={inquiry} />
-                <AnswersSection inquiry={inquiry} />
-                <EvidenceSection
+                <InquiryDashboardSection
                   inquiry={inquiry}
-                  status={sectionStates.evidence}
-                />
-                <AiSummarySection
-                  inquiry={inquiry}
-                  status={sectionStates.aiSummary}
+                  sectionStates={sectionStates}
                 />
                 {inquiry.feedbackResolved && (
                   <section className="v6-section">
