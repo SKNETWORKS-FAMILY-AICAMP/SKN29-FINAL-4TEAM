@@ -1065,3 +1065,44 @@ WBS는 이 검토에서 수정하지 않는다.
 - `T-007`: P0 인수 기준과 Case Matrix 증거로 완료 후보
 - `T-013`: 합성 Fixture와 격리 PostgreSQL Import 증거로 완료 후보
 - `T-012`: 실제 AI 검색·Recall@K·MRR 증거가 없어 진행 중 유지
+
+## 25. JAC104D MVP RAG 실행 증거 확정
+
+24절 이후 이동윤이 RAG 증거 병합 Commit `4adc84d`에 실제
+PostgreSQL/pgvector 적재와 검색 결과를 포함하고 Data 적합성 판정을
+반환했다. 이번 정합화의 작업 기준 `main`은 `643b23f`다. 23·24절은
+당시 판정을 보존하며 현재 RAG 판정은 이 절을 따른다.
+
+### 25-1. 실행 결과
+
+| 항목 | 결과 |
+|---|---|
+| Canonical dataset | `data/processed/structured/rag/mvp/rag_verified_sample.jsonl` |
+| 승인 청크 | 7건, SHA-256 `2BF3582E...4DD0` |
+| PostgreSQL·pgvector | 16.14·0.8.6 |
+| Embedding | `BAAI/bge-m3`, revision `5617a9f...` |
+| Index | exact search, 1024차원, version `1.0.0` |
+| 평가 | 12/12 PASS |
+| 양성 Recall@5·MRR | `1.0`·`0.8857142857142858` |
+| 금지 모델·문서 유입 | 0건 |
+| 누수 Case | 기대 청크 5위, MRR `0.2`, P1 품질 후속 |
+
+Data 계약의 `ai_execution`은 `PASS`,
+`approval_scope=APPROVED_FOR_MVP_INGEST`로 갱신한다. 실행 결과와
+Index Manifest의 경로·SHA·모델 revision·Chunk Set SHA를 Schema와
+Data 테스트에서 교차검증한다.
+
+### 25-2. 승인 범위와 후속
+
+승인은 `WPUJAC104DWH`, D세대, 공식 매뉴얼 REV.00 37~39쪽의 7개
+증상에 한정한다. 전체 제품군·운영 Vector Store·Backend AI Client
+완료를 뜻하지 않는다.
+
+- `TEXT_AND_VISUAL_VERIFIED → official_verified` 의미는 Data·AI가
+  동의하되 공통 코드 확정은 윤승혁에게 요청한다.
+- 지침서 3.3의 동일 모델 정책 차단 Case와 Case별 Page·Filter·
+  수동 검토 결과는 v2 계약으로 분리한다.
+- v2는 이동윤의 13개 재실행 전까지
+  `DATA_EXPECTATION_READY_AI_REVERIFY_REQUIRED`로 관리한다.
+- WBS는 직접 수정하지 않고 `T-012`를 조건부 완료 후보로 PM에게
+  재판정 요청한다.

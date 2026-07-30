@@ -1,6 +1,6 @@
 {
-  "config_version": "1.0.0",
-  "status": "DATA_EXPECTATION_READY_AI_EXECUTION_PENDING",
+  "config_version": "1.1.0",
+  "status": "DATA_EXPECTATION_AND_AI_EXECUTION_VERIFIED",
   "approved_chunk_count": 7,
   "evaluation_policy": {
     "default_top_k": 5,
@@ -188,9 +188,35 @@
     }
   ],
   "ai_execution": {
-    "status": "PENDING_AI_OWNER",
-    "canonical_dataset_path": "PENDING_AI_OWNER_DECISION",
-    "result_manifest_path": "PENDING_AI_OWNER",
-    "owner": "LEE_DONGYUN"
+    "status": "PASS",
+    "approval_scope": "APPROVED_FOR_MVP_INGEST",
+    "owner": "LEE_DONGYUN",
+    "evaluated_contract_sha256": "EFE99197B3DE5CC9076BC2BF39BAF46136CE2A669D7899CBA67D74F8CA04BE79",
+    "canonical_dataset": {
+      "path": "data/processed/structured/rag/mvp/rag_verified_sample.jsonl",
+      "records": 7,
+      "sha256": "2BF3582E42A309D846BC383BE9C3E08874512318DD4046082498DBFBC8584DD0"
+    },
+    "result_manifest": {
+      "path": "ai/evaluation/reports/pgvector_verification.json",
+      "sha256": "84C8669A8EE4D49761B2BC57068231DC4CDEBB13E983AC1ED5799460A4543339",
+      "verification_status": "PASS",
+      "case_count": 12,
+      "passed_count": 12,
+      "failed_count": 0
+    },
+    "index_manifest": {
+      "path": "ai/configs/index_manifest.json",
+      "sha256": "FDFECC8048F75B1E69116C07915A72CD1013D6714E70A5008CDCD2C14945CA86",
+      "embedding_model": "BAAI/bge-m3",
+      "embedding_model_version": "5617a9f61b028005a4858fdac845db406aefb181",
+      "index_version": "1.0.0",
+      "dimension": 1024,
+      "chunk_set_sha256": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+    },
+    "limitations": [
+      "JAC104D_D_GENERATION_REV00_PAGES_37_39_SEVEN_TOPICS_ONLY",
+      "RAG_POS_LEAK_EXPECTED_CHUNK_RANK_5"
+    ]
   }
 }

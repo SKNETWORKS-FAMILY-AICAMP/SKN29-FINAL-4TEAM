@@ -12,5 +12,25 @@
   전용 부정 Case로 유지한다.
 
 AI 평가 데이터의 canonical 경로와 실제 결과 Manifest는 이동윤 담당자가
-확정한다. 그 전까지 데이터 문서는 평가 기준만 `READY`, 실행 결과는
-`PENDING_AI_OWNER`로 표시한다.
+확정했다.
+
+- Canonical dataset:
+  `data/processed/structured/rag/mvp/rag_verified_sample.jsonl`
+- Result manifest:
+  `ai/evaluation/reports/pgvector_verification.json`
+- Index manifest: `ai/configs/index_manifest.json`
+- 실행 환경: PostgreSQL 16.14, pgvector 0.8.6, cosine exact search
+- Embedding: `BAAI/bge-m3`,
+  revision `5617a9f61b028005a4858fdac845db406aefb181`
+- 실행 결과: 12/12 PASS, 양성 Recall@5 `1.0`, 평균 MRR
+  `0.8857142857142858`, 금지 hit 0
+
+Data 실행 상태는 `PASS`, 승인 범위는 `APPROVED_FOR_MVP_INGEST`다.
+이 승인은 JAC104D D세대 REV.00 37~39쪽의 7개 증상에 한정한다.
+누수 Case는 기대 청크가 5위로 Recall@5는 통과했지만 MRR `0.2`이므로
+검색 품질 후속으로 유지한다.
+
+지침서 3.3의 동일 모델 정책 차단 Case, Case별 Page·Filter·
+`PASS/FAIL/MANUAL_REVIEW` 결과 구조는 v2 평가 계약에서 추가한다.
+v2는 이동윤의 13개 재실행 결과를 받기 전까지
+`DATA_EXPECTATION_READY_AI_REVERIFY_REQUIRED`로 관리한다.
