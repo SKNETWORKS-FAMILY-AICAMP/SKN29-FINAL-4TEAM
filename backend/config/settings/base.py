@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
+    "apps.common_codes.apps.CommonCodesConfig",
     "apps.accounts.apps.AccountsConfig",
     "apps.products.apps.ProductsConfig",
     "apps.subscriptions.apps.SubscriptionsConfig",
