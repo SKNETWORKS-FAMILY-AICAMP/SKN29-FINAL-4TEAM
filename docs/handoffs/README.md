@@ -4,11 +4,13 @@
 >
 > 문서 책임: 공동 편집(`docs/**`)
 >
-> 현재 상태: `DATA_OWNER_REVIEW_APPROVED_BACKEND_REVERIFY_REQUIRED`
+> 현재 상태: `COMMON_CODE_WAVE_LOCAL_VERIFIED_SHARE_PENDING`
 >
-> 기능 통합 Commit: `cbf1b6cfa3c56e95e30284ab1e8424f77e1594ec`
+> 직전 기능 통합 Commit: `cbf1b6cfa3c56e95e30284ab1e8424f77e1594ec`
 >
-> 현재 원격 `main` SHA: `e5cc511189b54060dfafde9215b2cb0799b1bf7a`
+> 현재 로컬 원격 추적 `main` SHA: `643b23ffce1d804198b0ff54a374e91e288e7f24`
+>
+> 이번 공통코드 변경 Commit: 미생성 — 팀 실행 금지
 >
 > 실행 원칙: `작업 → 즉시 검증 → 다음 작업`
 
@@ -18,6 +20,43 @@
 
 상세 구현 이력과 긴 실행 설명은 각 원본 문서로 연결하고, 이 문서에는
 현재 기준선·차단 요소·담당자·실행 순서만 유지한다.
+
+---
+
+## 0. 2026-07-30 공통코드 Local Wave
+
+이번 변경은 최지용 로컬에서 검증됐지만 아직 `jiyong` Push와 PM
+`main` 병합 전이다. 팀원은 이 문서의 명령을 먼저 실행하지 말고,
+윤승혁 PM이 공유하는 병합 후 40자리 `main` SHA를 기다린다.
+
+최종 점검 시 `origin/main`은 작업 진행도 문서만 변경한 1개 Commit만큼
+현재 `jiyong`보다 앞서 있다. 공통코드 Wave 경로와 직접 겹치는 파일은
+0개지만, dirty 작업 트리에서 즉시 병합하지 않고 Commit 분리·PM 검토
+단계에서 최신 main 포함 여부를 다시 확인한다.
+
+| 항목 | 로컬 검증 결과 | 팀 공유 판정 |
+| --- | --- | --- |
+| 구현 테이블 | `common_code_group`, `common_code` | `LOCAL_VERIFIED` |
+| T-005 | `12/32`, 미구현 20, 전체 `NOT_READY` | 공유 `main` 반영 전 |
+| PostgreSQL | 빈 DB 전체 Migration·기본 DB 백업 후 적용 | 김은진 독립 재현 대기 |
+| 공통코드 Seed | 10 Group·43 Code, 2회차 신규 0 | 독립 Seed 2회 대기 |
+| 관련 테스트 | 63 passed | 로컬 증거 |
+| Backend 전체 | 418 passed | 로컬 증거 |
+| 차단 계약 | 위험도 소문자, AI Stage Group Mapping | 별도 계약 결정 필요 |
+
+PM 병합 뒤 팀원이 실행할 순서는 다음과 같다.
+
+1. PM이 공유한 `main` 40자리 SHA를 반영한다.
+2. 대상 DB와 백업 여부를 확인하고 `common_codes.0001`,
+   `common_codes.0002` Migration을 적용한다.
+3. `seed_common_codes`를 두 번 실행한다.
+4. Group 10개·Code 43개, 2차 신규 0과
+   `BLOCKED_CONTRACT_MAPPING` 경고를 확인한다.
+5. 담당 영역 회귀 결과를 최지용·김은진·PM에게 전달한다.
+
+명령·제약·롤백·후속 인계는
+[T-005 공통코드 Registry 구현·재현 가이드](../individual/jiyong/technical/backend/t005_common_code_registry_implementation.md)를
+따른다. `field_service_visit_result`는 이번 변경에 포함하지 않았다.
 
 ---
 
@@ -59,9 +98,13 @@
 
 ---
 
-## 2. 2026-07-29 기준선
+## 2. 2026-07-29 역사 기준선
 
-### 2.1 원격에 존재하는 공유 후보
+이 절은 2026-07-29에 실제로 공유했던 후보의 이력이다. 현재 실행 기준은
+위 0절의 2026-07-30 공통코드 Local Wave이며, 아래 수치를 현재 T-005
+구현 수나 현재 Backend 테스트 수로 재사용하지 않는다.
+
+### 2.1 당시 원격에 존재한 공유 후보
 
 | 항목 | 값 | 판정 |
 | --- | --- | --- |
@@ -77,7 +120,7 @@
 팀원이 작업을 시작할 최종 기준은 위 `origin/main` Snapshot을 임의로
 사용하는 것이 아니라, PM이 병합 후 새로 전달한 `main` 40자리 SHA다.
 
-### 2.2 원격에 게시한 통합 후보
+### 2.2 당시 원격에 게시한 통합 후보
 
 | 항목 | 현재 확인 결과 | 공유 판정 |
 | --- | --- | --- |
@@ -202,9 +245,12 @@ DB 복원 리허설까지 완료했다는 의미는 아니다.
 
 | 우선순위 | Blocker | 주담당 | 필요한 입력 | 다음 소비자 |
 | --- | --- | --- | --- | --- |
-| P0 | Owner Review 승인 뒤 Backend 재검증 미실시 | 최지용 | 현재 `main`의 Data 61·QA·Backend 397·PostgreSQL 증거 재확인 | PM |
-| P0 | Owner Review 전 병합 절차 편차 | 윤승혁 | 사후 승인·재검증 증거 검토 후 기준선 판정 | 전 팀원 |
-| P1 | T-005 `10/32`, 잔여 22개 | 최지용 | PM State·Data·AI 입력별 Wave | Backend·QA |
+| P0 | 공통코드 Wave가 아직 미커밋·미Push | 최지용 | 이번 Wave 파일만 분리한 Commit과 Backend 418·PostgreSQL 증거 | 김은진·PM |
+| P0 | 공통코드 빈 PostgreSQL·Seed 2회 독립 QA 미실시 | 김은진 | 최지용의 `jiyong` 40자리 검토 SHA | PM |
+| P0 | 공통코드 Wave PM `main` 병합 전 | 윤승혁 | 최지용 Commit 범위와 김은진 독립 QA 결과 | 전 팀원 |
+| P1 | T-005 `12/32`, 잔여 20개 | 최지용 | PM State·Data·AI 입력별 한 Wave | Backend·QA |
+| P1 | 위험도 소문자 계약과 대문자 DB Check 불일치 | 김은진 + 최지용 | Data 코드 표준 또는 DB 정책의 단일 결정 | Backend·Data |
+| P1 | `ai-stages`의 공통코드 Group Mapping 미확정 | 이동윤 + 최지용 | AI Stage의 공통코드 편입 또는 독립 계약 결정 | Backend AI Client |
 | P1 | T-005 계약 밖 Table이 Auditor에 검출 | 최지용 + 윤승혁 | `audit`·`operations`·`workflow` Table의 계약 편입/별도 분류 결정 | QA |
 | P1 | `SYN-JAC104-012`, `SYN-JAC104-016` 업무 결정 미확정 | 윤승혁 | Reopen·제품 검증 정책 | 김은진·최지용 |
 | P1 | Web `public_id` 소비 불일치 | 한예나 | PM `main` SHA·Data Crosswalk | Backend E2E |
@@ -398,13 +444,15 @@ PM `main` SHA 반영 후 다음 작업은 서로 병렬로 진행할 수 있다.
 
 **지금 할 일**
 
-1. 작업트리를 경로별 소유자와 작업 단위로 분리한다.
-2. 완료한 9개 Migration과 `workflow.0003` 보정·회귀를 같은 작업 단위로
-   유지한다.
-3. 기본 DB에서는 Demo Seed만 사용하고 합성 Importer를 실행하지 않는다.
-4. T-005 10/32 상태와 잔여 22개를 그대로 보고한다.
-5. 사용자 승인 전에는 Commit·Push하지 않는다.
-6. 승인 후 문서·구현·검증 근거를 같은 작업 단위로 `jiyong`에 Push한다.
+1. 공통코드 App·Migration·Seed·Test·관련 문서만 하나의 작업 단위로
+   분리한다.
+2. 기존 Data 변경·루트 README·다른 팀원 인계문서를 해당 Commit에서
+   제외한다.
+3. T-005 상태를 `12/32`, 잔여 20개, 전체 `NOT_READY`로 보고한다.
+4. 사용자 승인 후 검증 근거와 함께 `jiyong`에 Push하고 40자리 SHA를
+   김은진과 PM에게 전달한다.
+5. 김은진의 빈 PostgreSQL·Seed 2회 독립 QA 뒤 PM이 `main`에 병합한다.
+6. 다음 20개는 관계·Backfill·담당 계약이 확인된 한 Wave씩 진행한다.
 
 **재현·검증**
 
@@ -677,6 +725,10 @@ failures 0, warnings 0이다. 이 397개 Pytest는 `config.settings.test`의
 SQLite 테스트이며, `--postgresql` 단계는 실제 PostgreSQL 연결과 적용
 Migration을 읽기 전용으로 확인한다. “PostgreSQL에서 397개 테스트 통과”로
 표현하지 않는다.
+
+2026-07-30 공통코드 Local Wave에서는 같은 검사로 Backend `418 passed`,
+PostgreSQL 16.14 연결, 적용 Migration 누락 0, failures 0, warnings 0을
+확인했다. 이 결과는 아직 미커밋 로컬 증거이며 PM `main` 기준선이 아니다.
 
 ### 8.2 T-005
 

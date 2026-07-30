@@ -3,7 +3,9 @@
 > 상태: **OWNER_CONFIRMED DB DESIGN BASELINE — Runtime 구현과 분리**
 > 설계 기준: `T-005 Physical Contract v1.2` / 기준일: 2026-07-28
 > 구현 경계: 설계 기준선은 확정됐으며 Django Model·Migration은 현재
-> `10/32` 테이블까지 구현됐고 22개가 남았다. Accounts는 `public_id(UUID)`를 추가하는
+> `12/32` 테이블까지 구현됐고 20개가 남았다. 공통코드 2개 테이블은
+> 2026-07-30 `LOCAL_VERIFIED` 상태이며, 담당 Branch Push와 PM 병합
+> 전에는 팀 기준선이 아니다. Accounts는 `public_id(UUID)`를 추가하는
 > 전환 브리지 단계로, 전체 내부 BigInt PK 전환 완료를 뜻하지 않는다.
 
 ## 문서 구성
@@ -15,6 +17,7 @@
 | [대화형 ERD](erd/watercare_erd.html) | 역사적 v0.5 테이블·PK·FK 관계 탐색 |
 | [ERD 정적 미리보기](erd/watercare_erd.png) | 역사적 v0.5 관계도 화면 |
 | [DB 스키마 개발·인계 가이드](../individual/jiyong/technical/backend/database_schema_handover_guide.md) | Model·Migration·Seed·검증과 역할별 인계 절차 |
+| [공통코드 Registry 구현 가이드](../individual/jiyong/technical/backend/t005_common_code_registry_implementation.md) | `common_code_group`·`common_code` Migration, Seed 2회와 차단 계약 |
 
 [![WaterCare ERD 정적 미리보기](erd/watercare_erd.png)](erd/watercare_erd.html)
 
