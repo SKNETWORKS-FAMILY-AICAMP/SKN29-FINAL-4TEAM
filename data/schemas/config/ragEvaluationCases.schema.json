@@ -12,8 +12,8 @@
     "ai_execution"
   ],
   "properties": {
-    "config_version": {"const": "1.0.0"},
-    "status": {"const": "DATA_EXPECTATION_READY_AI_EXECUTION_PENDING"},
+    "config_version": {"const": "1.1.0"},
+    "status": {"const": "DATA_EXPECTATION_AND_AI_EXECUTION_VERIFIED"},
     "approved_chunk_count": {"const": 7},
     "evaluation_policy": {
       "type": "object",
@@ -96,15 +96,94 @@
       "additionalProperties": false,
       "required": [
         "status",
-        "canonical_dataset_path",
-        "result_manifest_path",
-        "owner"
+        "approval_scope",
+        "owner",
+        "evaluated_contract_sha256",
+        "canonical_dataset",
+        "result_manifest",
+        "index_manifest",
+        "limitations"
       ],
       "properties": {
-        "status": {"const": "PENDING_AI_OWNER"},
-        "canonical_dataset_path": {"const": "PENDING_AI_OWNER_DECISION"},
-        "result_manifest_path": {"const": "PENDING_AI_OWNER"},
-        "owner": {"const": "LEE_DONGYUN"}
+        "status": {"const": "PASS"},
+        "approval_scope": {"const": "APPROVED_FOR_MVP_INGEST"},
+        "owner": {"const": "LEE_DONGYUN"},
+        "evaluated_contract_sha256": {
+          "const": "EFE99197B3DE5CC9076BC2BF39BAF46136CE2A669D7899CBA67D74F8CA04BE79"
+        },
+        "canonical_dataset": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "records", "sha256"],
+          "properties": {
+            "path": {
+              "const": "data/processed/structured/rag/mvp/rag_verified_sample.jsonl"
+            },
+            "records": {"const": 7},
+            "sha256": {
+              "const": "2BF3582E42A309D846BC383BE9C3E08874512318DD4046082498DBFBC8584DD0"
+            }
+          }
+        },
+        "result_manifest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "sha256",
+            "verification_status",
+            "case_count",
+            "passed_count",
+            "failed_count"
+          ],
+          "properties": {
+            "path": {
+              "const": "ai/evaluation/reports/pgvector_verification.json"
+            },
+            "sha256": {
+              "const": "84C8669A8EE4D49761B2BC57068231DC4CDEBB13E983AC1ED5799460A4543339"
+            },
+            "verification_status": {"const": "PASS"},
+            "case_count": {"const": 12},
+            "passed_count": {"const": 12},
+            "failed_count": {"const": 0}
+          }
+        },
+        "index_manifest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "sha256",
+            "embedding_model",
+            "embedding_model_version",
+            "index_version",
+            "dimension",
+            "chunk_set_sha256"
+          ],
+          "properties": {
+            "path": {"const": "ai/configs/index_manifest.json"},
+            "sha256": {
+              "const": "FDFECC8048F75B1E69116C07915A72CD1013D6714E70A5008CDCD2C14945CA86"
+            },
+            "embedding_model": {"const": "BAAI/bge-m3"},
+            "embedding_model_version": {
+              "const": "5617a9f61b028005a4858fdac845db406aefb181"
+            },
+            "index_version": {"const": "1.0.0"},
+            "dimension": {"const": 1024},
+            "chunk_set_sha256": {
+              "const": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+            }
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "const": [
+            "JAC104D_D_GENERATION_REV00_PAGES_37_39_SEVEN_TOPICS_ONLY",
+            "RAG_POS_LEAK_EXPECTED_CHUNK_RANK_5"
+          ]
+        }
       }
     }
   }

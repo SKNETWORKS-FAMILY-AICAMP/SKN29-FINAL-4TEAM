@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -7,6 +9,7 @@ from pathlib import Path
 
 TOOLS_ROOT = Path(__file__).resolve().parents[1]
 DATA_ROOT = TOOLS_ROOT.parent
+REPOSITORY_ROOT = DATA_ROOT.parent
 sys.path.insert(0, str(TOOLS_ROOT))
 
 from watercare.config import load_pipeline
@@ -20,6 +23,23 @@ class RagEvaluationContractTests(unittest.TestCase):
         cls.config = load_pipeline(DATA_ROOT)
         cls.contract = cls.config.config("rag_evaluation_cases")
         cls.rag = cls.config.config("rag")
+
+    def repository_artifact(self, relative_path: str) -> Path:
+        repository_root = REPOSITORY_ROOT.resolve()
+        artifact = (repository_root / relative_path).resolve()
+        self.assertTrue(
+            artifact.is_relative_to(repository_root),
+            f"저장소 밖 RAG 실행 증거 경로입니다: {relative_path}",
+        )
+        self.assertTrue(
+            artifact.is_file(),
+            f"RAG 실행 증거 파일이 없습니다: {relative_path}",
+        )
+        return artifact
+
+    def assert_sha256(self, path: Path, expected: str) -> None:
+        actual = hashlib.sha256(path.read_bytes()).hexdigest().upper()
+        self.assertEqual(expected, actual)
 
     def test_cases_match_schema_and_cover_every_approved_chunk(self) -> None:
         schema = read_json(
@@ -74,7 +94,7 @@ class RagEvaluationContractTests(unittest.TestCase):
             {row["product_model_code"] for row in negative},
         )
 
-    def test_ai_result_metadata_gate_is_explicitly_pending(self) -> None:
+    def test_ai_execution_evidence_is_complete_and_hash_pinned(self) -> None:
         required = set(
             self.contract["evaluation_policy"]["required_result_metadata"]
         )
@@ -91,9 +111,90 @@ class RagEvaluationContractTests(unittest.TestCase):
             },
             required,
         )
+        execution = self.contract["ai_execution"]
+        self.assertEqual("PASS", execution["status"])
         self.assertEqual(
-            "PENDING_AI_OWNER",
-            self.contract["ai_execution"]["status"],
+            "APPROVED_FOR_MVP_INGEST",
+            execution["approval_scope"],
+        )
+
+        dataset_evidence = execution["canonical_dataset"]
+        dataset_path = self.repository_artifact(dataset_evidence["path"])
+        self.assert_sha256(dataset_path, dataset_evidence["sha256"])
+        dataset_rows = [
+            json.loads(line)
+            for line in dataset_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        self.assertEqual(dataset_evidence["records"], len(dataset_rows))
+        self.assertEqual(
+            len(dataset_rows),
+            len({row["chunk_id"] for row in dataset_rows}),
+        )
+
+        report_evidence = execution["result_manifest"]
+        report_path = self.repository_artifact(report_evidence["path"])
+        self.assert_sha256(report_path, report_evidence["sha256"])
+        report = read_json(report_path)
+        self.assertEqual(
+            report_evidence["verification_status"],
+            report["verification_status"],
+        )
+        self.assertEqual(report_evidence["case_count"], report["summary"]["case_count"])
+        self.assertEqual(
+            report_evidence["passed_count"],
+            report["summary"]["passed_count"],
+        )
+        self.assertEqual(
+            report_evidence["failed_count"],
+            report["summary"]["failed_count"],
+        )
+        self.assertEqual(0, report["summary"]["forbidden_hit_count"])
+        self.assertAlmostEqual(
+            1.0,
+            report["summary"]["mean_positive_recall_at_5"],
+        )
+        self.assertAlmostEqual(
+            0.8857142857142858,
+            report["summary"]["mean_positive_mrr"],
+        )
+        self.assertEqual(
+            {row["case_id"] for row in self.contract["cases"]},
+            {row["case_id"] for row in report["cases"]},
+        )
+        self.assertTrue(
+            report["sql_filter_verification"]["metadata_filter_passed"]
+        )
+        self.assertEqual(
+            [],
+            report["sql_filter_verification"]["leaked_fixture_ids"],
+        )
+
+        leak = next(
+            row for row in report["cases"] if row["case_id"] == "RAG-POS-LEAK"
+        )
+        expected_leak_chunk = next(
+            row["expected_chunk_ids"][0]
+            for row in self.contract["cases"]
+            if row["case_id"] == "RAG-POS-LEAK"
+        )
+        self.assertEqual(5, leak["ranked_chunk_ids"].index(expected_leak_chunk) + 1)
+        self.assertAlmostEqual(0.2, leak["mrr"])
+
+        index_evidence = execution["index_manifest"]
+        index_path = self.repository_artifact(index_evidence["path"])
+        self.assert_sha256(index_path, index_evidence["sha256"])
+        index = read_json(index_path)
+        self.assertEqual(index_evidence["embedding_model"], index["model_name"])
+        self.assertEqual(
+            index_evidence["embedding_model_version"],
+            index["model_revision"],
+        )
+        self.assertEqual(index_evidence["index_version"], index["index_version"])
+        self.assertEqual(index_evidence["dimension"], index["dimension"])
+        self.assertEqual(
+            index_evidence["chunk_set_sha256"],
+            index["chunk_set_sha256"],
         )
 
 

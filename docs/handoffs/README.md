@@ -210,7 +210,8 @@ DB 복원 리허설까지 완료했다는 의미는 아니다.
 | P1 | Web `public_id` 소비 불일치 | 한예나 | PM `main` SHA·Data Crosswalk | Backend E2E |
 | P1 | Web Node 호환·Test Startup 미검증 | 한예나 | 지원 Node로 재설치 후 Test 재실행 | PM 통합 QA |
 | P1 | Mobile API·DTO·Network 미완료 | 양정현 | PM `main` SHA·OpenAPI 7개 Runtime 범위 | Backend E2E |
-| P1 | AI 재현 환경·Runtime 명령 미확정 | 이동윤 | 의존성 Manifest·Schema·실행·테스트 결과 | 최지용 AI Client |
+| P1 | AI 전체 Runtime·Backend Client 통합 미완료 | 이동윤 + 최지용 | 병합된 AI Runtime 증거·Backend Client·통합 E2E | PM 통합 QA |
+| P1 | RAG 3.3 v2 평가 포맷·누수 순위 후속 | 김은진 + 이동윤 | 13번째 정책 차단 Case·Page/Filter 결과·pgvector 재실행 | T-012 최종 판정 |
 | P1 | Backend AI Client가 Placeholder | 최지용 | 이동윤의 AI Commit SHA와 Runtime 계약 | 통합 E2E |
 | P2 | 동일 Commit Web·Mobile·AI 포함 E2E 미수행 | 각 담당 + PM | 위 P0·P1 완료 | 최종 QA |
 
@@ -630,9 +631,15 @@ App이 Backend에 실제 요청을 보내는지 검증한다. JWT·DTO·Network�
 
 **현재 Blocker**
 
-AI App 코드는 존재하지만 `ai/pyproject.toml`과 `ai/README.md`만으로는
-동일 환경을 재현할 수 없다. 검증되지 않은 설치·실행 명령을 이 문서에서
-추측하지 않는다.
+JAC104D MVP RAG는 PostgreSQL 16.14·pgvector 0.8.6에서 승인 청크
+7건과 평가 12/12 PASS를 확인했다. Result·Index Manifest와
+`BAAI/bge-m3` revision은 RAG 증거 병합 Commit `4adc84d`에 포함되며,
+이번 Data 정합화의 작업 기준 `main`은 `643b23f`다. 다만 이 증거는
+전체 AI Runtime·Backend AI Client·통합 E2E 완료를 뜻하지 않는다.
+
+RAG Data 인계의 남은 항목은 동일 모델 정책 차단 Case, Case별
+Page·Filter·수동 검토 결과 포맷, 누수 기대 청크 5위 개선과 검증 상태
+공통 코드다.
 
 다음 내용을 먼저 인계한다.
 
@@ -753,8 +760,12 @@ Backend 대표 API Smoke 증거를 요구한다.
 
 ### 8.7 AI
 
-AI 담당자가 검증한 Manifest와 명령을 인계하기 전에는 공식 공통 명령을
-정하지 않는다.
+JAC104D MVP RAG의 기계 실행 증거는
+`ai/evaluation/reports/pgvector_verification.json`과
+`ai/configs/index_manifest.json`이다. 실행 결과는 12/12 PASS,
+Recall@5 `1.0`, 평균 MRR `0.8857142857142858`, 금지 hit 0이다.
+AI 전체 Runtime의 공통 시작·Smoke 명령은 Backend Client와 함께
+별도 통합 Gate에서 확정한다.
 
 ---
 
@@ -827,6 +838,7 @@ pr_url: <담당자 Branch PR URL>
 - [ ] Mobile DTO·Network 연동, JDK 17, Test·Lint·두 App Build,
       Emulator API Smoke가 통과했다.
 - [ ] AI 재현 환경·Schema·Runtime 증거가 인계됐다.
+- [x] JAC104D MVP RAG 적재·검색 12/12와 Index Manifest가 인계됐다.
 - [ ] Backend AI Client와 대표 E2E가 통과했다.
 - [ ] 남은 Blocker와 미구현 범위를 완료로 숨기지 않았다.
 

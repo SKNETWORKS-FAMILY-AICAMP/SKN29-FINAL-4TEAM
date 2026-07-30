@@ -13,7 +13,14 @@
 - 상태이력·감사이력: 각 125건
 - 시나리오 subset: 7파일, 33건
 - 상태 계약: State Machine v1.0.0 / `TEAM_APPROVED`
-- RAG 평가 계약: 양성 7건·부정 5건, 실제 AI 실행 결과 대기
+- RAG 평가 계약: 양성 7건·부정 5건, JAC104D MVP pgvector 12/12 PASS
+
+RAG 실행 승인은 `WPUJAC104DWH`, D세대, 공식 매뉴얼 REV.00
+37~39쪽의 7개 증상에 한정합니다. `BAAI/bge-m3`와 PostgreSQL
+16.14·pgvector 0.8.6으로 7개 청크를 적재했고, 양성 Recall@5
+`1.0`, 평균 MRR `0.8857142857`, 금지 문서·모델 유입 0건을
+확인했습니다. 누수 기대 청크는 Top-5의 5위이므로 적재 승인을
+막지는 않지만 검색 품질 P1 후속으로 유지합니다.
 
 원본 24개 카탈로그와 alignment registry는 보존합니다. Fixture·expected·DB handoff 후보에는 차단된 두 시나리오를 제외한 22개만 투영합니다.
 

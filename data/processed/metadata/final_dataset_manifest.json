@@ -252,8 +252,8 @@
   "metadata_files": [
     {
       "path": "README.md",
-      "size_bytes": 2921,
-      "sha256": "3CFBFD6D7E9459874BCDB5C0651469EA3E380C4A528ED57E5545CA24D0D68483"
+      "size_bytes": 3360,
+      "sha256": "F5D9F3356A5BF937E4B2EA69AECC338DD55C6D19137A71BDD9F47AD23AB5AACE"
     },
     {
       "path": "catalog/CHANGELOG.md",
@@ -283,7 +283,7 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 18405,
-      "sha256": "ACDF29627B0E78A86B547013FEEB275A8F4081C457BBA6AA934DDD06817E49B5"
+      "sha256": "7532400DEEA323C16EDE5E98F463BBC962ED4470F6490F9D5E406056EDA6859C"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -359,8 +359,8 @@
     },
     {
       "path": "schemas/config/ragEvaluationCases.schema.json",
-      "size_bytes": 3429,
-      "sha256": "7956A73D14D52B3F5FAC0CE89AD2716F56924715EB16CF6C1FB4BC513E54F39F"
+      "size_bytes": 6030,
+      "sha256": "DB9368F017444EA57C1955E63F9F054F655DBFAC61FBCD8BFDA0E19578E21F4C"
     },
     {
       "path": "schemas/config/representativeCase.schema.json",
@@ -591,8 +591,8 @@
     },
     {
       "path": "tools/tests/test_rag_evaluation_contract.py",
-      "size_bytes": 3059,
-      "sha256": "52E6080B5362D45BDFDCE732CF765CAEF1F3C7CBA80A677B873808939E72E346"
+      "size_bytes": 7041,
+      "sha256": "F7CB914538575941C965D2DC41C4DC77EA9F187A0A3F1F3C3BBA5E5F214F3E4D"
     },
     {
       "path": "tools/tests/test_representative_e2e.py",
@@ -683,8 +683,8 @@
     },
     {
       "path": "config/rag/jac104_retrieval_cases.json",
-      "size_bytes": 7513,
-      "sha256": "EFE99197B3DE5CC9076BC2BF39BAF46136CE2A669D7899CBA67D74F8CA04BE79"
+      "size_bytes": 8617,
+      "sha256": "54B7EF9509CF48D220AC0D28235C0F899436A1EE84B78A930C2D1EFCF86D3210"
     },
     {
       "path": "config/synthetic/scenarios.json",
@@ -705,8 +705,8 @@
   "template_files": [
     {
       "path": "templates/data_readme.md.tpl",
-      "size_bytes": 2924,
-      "sha256": "7446531BF8524F677B5CC62A98299FCB2F2B02E17F58F3F13507E1B86ED1C6EF"
+      "size_bytes": 3363,
+      "sha256": "21FED70B4859B4B0CEE2C7939BBF2955709D2E60F441F199C012512114339DD3"
     },
     {
       "path": "templates/processing_spec.md.tpl",
@@ -898,7 +898,7 @@
   },
   "toolchain": {
     "python_files": 26,
-    "python_lines": 5263,
+    "python_lines": 5364,
     "max_wrapper_lines": 10,
     "max_module_lines": 1199
   },

@@ -86,15 +86,15 @@
           "path": "config/rag/jac104_retrieval_cases.json",
           "role": "EVALUATION_CONTRACT",
           "records": 1,
-          "size_bytes": 7513,
-          "sha256": "EFE99197B3DE5CC9076BC2BF39BAF46136CE2A669D7899CBA67D74F8CA04BE79"
+          "size_bytes": 8617,
+          "sha256": "54B7EF9509CF48D220AC0D28235C0F899436A1EE84B78A930C2D1EFCF86D3210"
         },
         {
           "path": "schemas/config/ragEvaluationCases.schema.json",
           "role": "SCHEMA",
           "records": 1,
-          "size_bytes": 3429,
-          "sha256": "7956A73D14D52B3F5FAC0CE89AD2716F56924715EB16CF6C1FB4BC513E54F39F"
+          "size_bytes": 6030,
+          "sha256": "DB9368F017444EA57C1955E63F9F054F655DBFAC61FBCD8BFDA0E19578E21F4C"
         },
         {
           "path": "schemas/processed/ragChunk.schema.json",
