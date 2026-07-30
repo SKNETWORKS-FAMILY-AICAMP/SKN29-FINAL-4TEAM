@@ -1,5 +1,5 @@
 {
-  "config_version": "1.1.0",
+  "config_version": "1.1.1",
   "status": "DATA_EXPECTATION_AND_AI_EXECUTION_VERIFIED",
   "approved_chunk_count": 7,
   "evaluation_policy": {
@@ -191,6 +191,7 @@
     "status": "PASS",
     "approval_scope": "APPROVED_FOR_MVP_INGEST",
     "owner": "LEE_DONGYUN",
+    "hash_policy": "UTF8_LF_NO_BOM",
     "evaluated_contract_sha256": "EFE99197B3DE5CC9076BC2BF39BAF46136CE2A669D7899CBA67D74F8CA04BE79",
     "canonical_dataset": {
       "path": "data/processed/structured/rag/mvp/rag_verified_sample.jsonl",
@@ -199,7 +200,8 @@
     },
     "result_manifest": {
       "path": "ai/evaluation/reports/pgvector_verification.json",
-      "sha256": "84C8669A8EE4D49761B2BC57068231DC4CDEBB13E983AC1ED5799460A4543339",
+      "sha256": "F2F6242181912868A80C8FE4266F088770EE164ADE6A41B39F00CD53DE57D5DE",
+      "received_sha256": "84C8669A8EE4D49761B2BC57068231DC4CDEBB13E983AC1ED5799460A4543339",
       "verification_status": "PASS",
       "case_count": 12,
       "passed_count": 12,
@@ -207,7 +209,8 @@
     },
     "index_manifest": {
       "path": "ai/configs/index_manifest.json",
-      "sha256": "FDFECC8048F75B1E69116C07915A72CD1013D6714E70A5008CDCD2C14945CA86",
+      "sha256": "8980219AF2BB9456F0CC43CD60A6A064AD6B2942090EED6E9A1BE6BB86AE6279",
+      "received_sha256": "FDFECC8048F75B1E69116C07915A72CD1013D6714E70A5008CDCD2C14945CA86",
       "embedding_model": "BAAI/bge-m3",
       "embedding_model_version": "5617a9f61b028005a4858fdac845db406aefb181",
       "index_version": "1.0.0",
