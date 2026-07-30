@@ -1,8 +1,58 @@
 # AI Contracts
 
-백엔드와 AI 서비스 사이의 요청·응답 JSON Schema를 관리한다.
+Backend와 AI 서비스 사이의 요청·응답 JSON Schema 단일 진실원칙(SSOT)이다.
 
-- `requests/`: 백엔드 → AI
-- `responses/`: AI → 백엔드
-- `common/`: 공통 하위 객체
-- `examples/`: 정상·Fallback 예시
+## 현재 버전
+
+- 계약 버전: `1.1.0`
+- JSON Schema: Draft 2020-12
+- 분석 Endpoint: `POST /api/v1/ai/analyze`
+- 추가 속성: 모든 공개 요청·응답에서 금지
+
+각 `*.schema.json`은 `$id`와 `x-contract-version`을 가진다. 계약을 변경할
+때는 Runtime Pydantic 모델, 실제 JSON 예시, 검증 테스트와 이 문서를 같은
+Commit에서 갱신한다.
+
+## 추적·멱등·상태 버전
+
+모든 AI 작업 계약은 다음 필드를 최상위에 둔다. 별도 `trace_context`는
+공개 요청·응답에 중복 노출하지 않는다.
+
+- `inquiry_id`: 내부 정수 PK가 아닌 공개 업무 식별자
+- `correlation_id`: Backend → AI → 응답·오류·`X-Correlation-ID` Header 추적값
+- `ai_request_id`: Backend가 발급하는 AI 호출 멱등 키. 같은 논리 요청 재전송 시 재사용
+- `state_version`: 호출 시작 시점 버전. AI가 변경하지 않고 응답에 Echo
+
+AI 응답의 `state_version`은 상태 전환 결과가 아니다. Backend가 현재 문의
+버전과 다시 비교한 뒤 결과 적용 여부를 결정한다.
+
+## 실행 결과
+
+- `status`: `SUCCEEDED` 또는 `FALLBACK`
+- `failure_stage`: `contracts/codes/ai-stages.yaml` 표준 코드 또는 `null`
+- `retry_count`: AI 내부 실제 재시도 횟수, `0..1`
+
+AI는 증상 구조화·안전 평가·사용 안내·근거 참조 또는 요약 초안만 반환한다.
+업무 상태·권한·최종 EvidenceCard·DB 기록은 Backend가 담당한다.
+
+## 오류 계약
+
+`common/AIErrorResponse.schema.json`을 사용한다.
+
+| 코드 | HTTP | retryable | 대표 Stage |
+| --- | ---: | --- | --- |
+| `AI-VALIDATION-01` | 400 또는 422 | false | `STRUCTURING` |
+| `AI-FAILED-01` | 503 | true | `FAILED` |
+| `AI-TIMEOUT-01` | 504 | true | `CANCELLED` |
+
+오류 응답에도 사용 가능한 추적 식별자를 보존한다. 입력 원문, Prompt,
+Stack Trace, Secret, 개인정보는 오류 상세에 포함하지 않는다.
+
+## 디렉토리
+
+- `requests/`: Backend → AI
+- `responses/`: AI → Backend
+- `common/`: 공통 하위 객체 및 오류 응답
+- `examples/`: 정상·위험·근거 없음·검증 오류·Timeout·요약 예시
+
+변경 이력은 [CHANGELOG.md](CHANGELOG.md)를 따른다.

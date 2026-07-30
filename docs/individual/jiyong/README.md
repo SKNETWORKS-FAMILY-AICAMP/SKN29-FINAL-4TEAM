@@ -211,14 +211,17 @@ Pull 환경에서도 실제로 열린다.
 
 - Backend Python 3.13.13·pip 26.0.1·constraints 31개를 고정했다.
 - 실제 `backend/.venv`를 안전 재생성하고 전체 `239 passed`를 확인했다.
-- 환경 설계는 기술 가이드, 팀 실행은 공유 패키지 인계서 v1.1로 분리했다.
+- 환경 설계는 기술 가이드, 당시 팀 실행은 공유 패키지 인계서 v1.1로
+  분리했으며 현재 유효 내용은 v1.3의 통합 버전 이력에 보존했다.
 
 ## 2026-07-29 환경·API 재검증 기록
 
 - requirements fingerprint를 현재 입력과 동기화하고 빠른 환경 검사를 Exit code `0`으로 재확인했다.
 - 전체 Backend `353 passed`, PostgreSQL 16.14 `healthy`, 적용 Migration 누락 없음과 Health·Auth Smoke `PASSED`를 확인했다.
-- v1.1은 2026-07-28 역사 기록으로 보존하고, 현재 진입점은 구성요소 역할·순서별 명령·정상 기준·오류 복구·Web 실제 API 확인이 추가된 v1.2로 갱신했다.
-- 위 `353 passed`와 v1.2 전환은 같은 날의 이전 기준선으로 보존한다.
+- v1.1·v1.2의 별도 파일은 v1.3으로 통합했으며, 당시 실행 절차·검증
+  수치·정책 변화는 v1.3의 통합 버전 이력에 보존한다.
+- 위 `353 passed`와 v1.2 전환은 현재 기준이 아니라 같은 날의 이전
+  검증 스냅샷이다.
 - 후속 로컬 통합에서는 SQLite Backend `397 passed`와 PostgreSQL 16.14 읽기 전용 연결·적용 Migration 누락 0을 확인했다.
 - 기본 `watercare`에 기존 미적용 9개와 `workflow.0003`을 적용하면서 기존 row count를 보존하고 Workflow `changed_at` 11건을 보정했으며, Demo Seed 4종을 2회 실행해 비의도 중복 0을 확인했다.
 - 현재 실행 단일 원본은 v1.3이며, 기본 DB의 예상 UUID mismatch를 우회하지 않고 합성 Importer를 빈 격리 DB 전용으로 분리한다.

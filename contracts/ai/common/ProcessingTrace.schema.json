@@ -1,8 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://watercare.local/contracts/ai/1.1.0/common/ProcessingTrace.schema.json",
+  "x-contract-version": "1.1.0",
   "title": "ProcessingTrace",
-  "description": "AI 단계별 처리 추적",
+  "description": "내부 감사용 AI 단계별 처리 추적. Prompt와 원문은 기록하지 않는다.",
   "type": "object",
+  "required": ["stage", "status", "latency_ms", "retry_count"],
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "stage": {
+      "type": "string",
+      "enum": ["STRUCTURING", "CHECKING_MISSING_FIELDS", "SAFETY_CHECK", "RETRIEVING", "RERANKING", "GENERATING", "VALIDATING", "COMPLETED", "FAILED", "CANCELLED"],
+      "x-code-registry": "../../../codes/ai-stages.yaml"
+    },
+    "status": { "type": "string", "enum": ["SUCCEEDED", "FAILED", "SKIPPED"] },
+    "latency_ms": { "type": "number", "minimum": 0 },
+    "retry_count": { "type": "integer", "minimum": 0, "maximum": 1 },
+    "error_code": { "type": ["string", "null"], "maxLength": 100 }
+  }
 }

@@ -12,6 +12,9 @@ from ai.app.schemas.symptom import StructuredSymptom
 from ai.app.schemas.safety import SafetyAssessment
 from ai.app.schemas.guidance import UsageGuidance
 from ai.app.schemas.pipeline import SymptomAnalysisResult
+from ai.app.interfaces.http.request_models import SymptomAnalysisApiRequest
+from ai.app.schemas.consultation_summary import ConsultationSummaryRequest, ConsultationSummaryResult
+from ai.app.schemas.technician_report import TechnicianReportRequest, TechnicianReportResult
 
 
 def test_pydantic_common_schemas():
@@ -19,7 +22,12 @@ def test_pydantic_common_schemas():
     assert RiskLevel.GENERAL.value == "general"
     assert UsageGuidanceStatus.TOTAL_STOP.value == "TOTAL_STOP"
 
-    trace = TraceContext(inquiry_id="DEMO-INQ-001", correlation_id="test-corr-id-123")
+    trace = TraceContext(
+        inquiry_id="DEMO-INQ-001",
+        correlation_id="test-corr-id-123",
+        ai_request_id="ai-req-001",
+        state_version=1,
+    )
     assert trace.inquiry_id == "DEMO-INQ-001"
     assert trace.correlation_id == "test-corr-id-123"
 
@@ -29,6 +37,8 @@ def test_symptom_analysis_result_schema():
     result = SymptomAnalysisResult(
         inquiry_id="DEMO-INQ-002",
         correlation_id="corr-002",
+        ai_request_id="ai-req-002",
+        state_version=1,
         structured_symptom=StructuredSymptom(
             symptom_type="누수",
             accompanying_symptoms=["전원 불빛 깜빡임"],
@@ -99,3 +109,65 @@ def test_ai_contract_examples_json_schema(example_name):
     example = json.loads((contract_root / "examples/symptom-analysis" / example_name).read_text(encoding="utf-8"))
     _validator(contract_root / "requests/SymptomAnalysisRequest.schema.json").validate(example["request"])
     _validator(contract_root / "responses/SymptomAnalysisResponse.schema.json").validate(example["response"])
+
+
+@pytest.mark.parametrize(
+    ("example_path", "request_schema", "response_schema", "request_model", "response_model"),
+    [
+        (
+            "examples/consultation-summary/summary-example.json",
+            "requests/ConsultationSummaryRequest.schema.json",
+            "responses/ConsultationSummaryResponse.schema.json",
+            ConsultationSummaryRequest,
+            ConsultationSummaryResult,
+        ),
+        (
+            "examples/technician-report/report-example.json",
+            "requests/TechnicianReportRequest.schema.json",
+            "responses/TechnicianReportResponse.schema.json",
+            TechnicianReportRequest,
+            TechnicianReportResult,
+        ),
+    ],
+)
+def test_secondary_ai_contract_examples_round_trip(
+    example_path, request_schema, response_schema, request_model, response_model
+):
+    contract_root = Path("contracts/ai")
+    example = json.loads((contract_root / example_path).read_text(encoding="utf-8"))
+    _validator(contract_root / request_schema).validate(example["request"])
+    _validator(contract_root / response_schema).validate(example["response"])
+    assert request_model.model_validate(example["request"]).model_dump(mode="json") == example["request"]
+    assert response_model.model_validate(example["response"]).model_dump(mode="json") == example["response"]
+
+
+@pytest.mark.parametrize(
+    "example_path",
+    [
+        "examples/symptom-analysis/validation-failed.json",
+        "examples/fallback/timeout-error.json",
+    ],
+)
+def test_ai_error_examples_match_contract(example_path):
+    contract_root = Path("contracts/ai")
+    example = json.loads((contract_root / example_path).read_text(encoding="utf-8"))
+    _validator(contract_root / "common/AIErrorResponse.schema.json").validate(example["error_response"])
+
+
+def test_symptom_runtime_and_contract_top_level_fields_match():
+    contract_root = Path("contracts/ai")
+    request_contract = json.loads((contract_root / "requests/SymptomAnalysisRequest.schema.json").read_text(encoding="utf-8"))
+    response_contract = json.loads((contract_root / "responses/SymptomAnalysisResponse.schema.json").read_text(encoding="utf-8"))
+    assert set(SymptomAnalysisApiRequest.model_json_schema()["properties"]) == set(request_contract["properties"])
+    assert set(SymptomAnalysisResult.model_json_schema()["properties"]) == set(response_contract["properties"])
+    assert request_contract["x-contract-version"] == response_contract["x-contract-version"] == "1.1.0"
+
+
+def test_all_ai_contract_schemas_are_versioned_and_well_formed():
+    schema_paths = sorted(Path("contracts/ai").rglob("*.schema.json"))
+    assert schema_paths
+    for schema_path in schema_paths:
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        Draft202012Validator.check_schema(schema)
+        assert schema["$id"]
+        assert schema["x-contract-version"] == "1.1.0"

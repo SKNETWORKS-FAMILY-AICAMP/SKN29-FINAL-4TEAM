@@ -1,7 +1,7 @@
 """파이프라인 실행 결과 Wrapper 모듈."""
 
 from pydantic import BaseModel, Field
-from ..schemas import SymptomAnalysisResult
+from ..schemas import AiExecutionStatus, AiStage, SymptomAnalysisResult, UsageGuidanceStatus
 from .pipeline_context import PipelineContext
 
 
@@ -13,9 +13,18 @@ class PipelineResult(BaseModel):
     def to_analysis_result(self) -> SymptomAnalysisResult:
         """SymptomAnalysisResult DTO 변환"""
         ctx = self.context
+        is_no_evidence_fallback = (
+            not ctx.evidence_references
+            and ctx.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
+        )
         return SymptomAnalysisResult(
             inquiry_id=ctx.trace_context.inquiry_id,
             correlation_id=ctx.trace_context.correlation_id,
+            ai_request_id=ctx.trace_context.ai_request_id,
+            state_version=ctx.trace_context.state_version,
+            status=AiExecutionStatus.FALLBACK if is_no_evidence_fallback else AiExecutionStatus.SUCCEEDED,
+            failure_stage=AiStage.RETRIEVING if is_no_evidence_fallback else None,
+            retry_count=0,
             structured_symptom=ctx.structured_symptom,
             missing_fields=[],
             followup_questions=[],
