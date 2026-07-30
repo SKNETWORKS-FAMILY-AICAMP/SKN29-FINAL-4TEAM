@@ -986,7 +986,8 @@ python -B data/tools/pipeline.py handoff qa
 ## 23. State Machine v1.0.0·DB/RAG 후속 개선 기록
 
 이 절은 22절 작성 이후 승인된 State Machine 계약과 최신 외부 진행
-상태를 반영한다. 과거 0.8.0·0.9.0 실행 기록은 변경하지 않는다.
+상태를 반영한 2026-07-29 당시 기록이다. 과거 0.8.0·0.9.0 실행 기록과
+이 절의 당시 수치는 변경하지 않으며, 현재 판정은 24절을 따른다.
 
 ### 23-1. 계약·QA
 
@@ -1027,3 +1028,40 @@ python -B data/tools/pipeline.py handoff qa
 | 결정적 재생성 drift | 0건 |
 | 최종 Manifest | 154개 항목 |
 | Data CI | Workflow 추가·로컬 동등 명령 통과, 원격 Actions 실행 대기 |
+
+## 24. Crosswalk v2 Data Owner Review
+
+2026-07-30 현재 Crosswalk v2의 Data 소유 변경 19개를 사후 Owner
+Review했다. 상세 경로·의미 검토·실행 명령은
+[Crosswalk v2 Data Owner Review](20260730_데이터_Owner_Review.md)에
+기록했다.
+
+### 24-1. 현재 판정
+
+- Owner Review: `APPROVED`
+- 검토 HEAD: `e5cc511189b54060dfafde9215b2cb0799b1bf7a`
+- Backend Source: 17/17 Hash 일치
+- Fixture Mapping: 12/12, 차단 Mapping 0
+- Source Hash 검사: `PASS`, 변경 0
+- Data 단위 테스트: 61/61 통과
+- QA: 2회 연속 PASS, 오류 0, 경고 0, 대표 E2E 17/17
+- 생성물·canonical drift: 0
+
+### 24-2. DB 검증 범위
+
+`DB_FULL_VERIFIED`는 빈 격리 PostgreSQL에서 합성 Handoff `db-full`
+프로필 367 Source를 최초 적재하고 같은 입력으로 Replay한 범위다.
+T-005 전체 32개 중 구현된 10개 Table과 Handoff용 운영 Table을 사용한
+검증이며, 잔여 22개 구현이나 운영 DB·배포 완료를 뜻하지 않는다.
+
+Data Mapping 의미는 변경하지 않았으므로 새 격리 DB 생성 조건은
+발생하지 않았다. 최지용은 Owner Review 반환 후 현재 `main` 기준
+Backend 397건과 기존 PostgreSQL Import 증거를 재확인한다.
+
+### 24-3. PM 재판정 요청
+
+WBS는 이 검토에서 수정하지 않는다.
+
+- `T-007`: P0 인수 기준과 Case Matrix 증거로 완료 후보
+- `T-013`: 합성 Fixture와 격리 PostgreSQL Import 증거로 완료 후보
+- `T-012`: 실제 AI 검색·Recall@K·MRR 증거가 없어 진행 중 유지
