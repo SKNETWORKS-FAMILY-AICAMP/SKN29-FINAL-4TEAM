@@ -47,6 +47,18 @@
 * [metrics.py](file:///c:/Project/SKN29-FINAL-4TEAM/ai/evaluation/metrics.py): `Recall@K`, `MRR`, `is_safety_compliant` 지표 연산기
 * [eval_dataset_loader.py](file:///c:/Project/SKN29-FINAL-4TEAM/ai/evaluation/eval_dataset_loader.py): `rag_eval_dataset.json` 및 `safety_eval_dataset.json` 로더
 * [evaluation_runner.py](file:///c:/Project/SKN29-FINAL-4TEAM/ai/evaluation/evaluation_runner.py): AI/RAG 전체 파이프라인 및 검색 정답률 종합 자동 평가 실행기
+* **김은진 데이터 0.8.0 릴리스 정합화**: `rag_eval_dataset.json` 내 평가 청크 ID를 김은진 님 정제 청크 규격(`RAG-WPUJAC104DWH-*`)으로 100% 동기화 완료
+
+### 7. 백엔드/팀 간 계약 및 인계용 예시 JSON, 에러 카테고리 확정 (`contracts/ai/examples/` & `contracts/error-codes/`)
+* **계약 스키마 정합화**: `SymptomAnalysisRequest.schema.json` 식별자를 UUID 공개 규격으로 정정 및 명시
+* **에러 코드 카테고리 정합화**: `contracts/error-codes/categories/ai.yaml`에 `AI-FAILED-01`, `AI-VALIDATION-01`, `AI-TIMEOUT-01` 카테고리 정의
+* **계약 검증용 예시 JSON 작성**:
+  * `symptom-analysis/`: `general-guidance.json` (정상 사용), `danger-detected.json` (위험 감지), `no-evidence.json` (근거 없음), `validation-failed.json` (검증 실패)
+  * `fallback/`: `fallback-response.json` (시스템 Fallback 응답)
+  * `consultation-summary/`: `summary-example.json` (상담 요약 예시)
+  * `technician-report/`: `report-example.json` (기사 리포트 예시)
+* **계약 검증 자동 테스트 추가**: `ai/tests/unit/test_schemas_and_configs.py` 내 `test_ai_contract_examples_json_schema` 추가 완료
+
 
 ---
 
@@ -56,19 +68,49 @@
 ============================= test session starts =============================
 platform win32 -- Python 3.10.20, pytest-9.0.3, pluggy-1.6.0
 rootdir: C:\Project\SKN29-FINAL-4TEAM\ai
-collected 22 items
+collected 23 items
 
-ai\tests\unit\test_api_routes.py ....                                    [ 18%]
-ai\tests\unit\test_evaluation.py ...                                     [ 31%]
-ai\tests\unit\test_pipeline.py ..                                        [ 40%]
-ai\tests\unit\test_retrieval.py ...                                      [ 54%]
-ai\tests\unit\test_safety_classifier.py ......                           [ 81%]
-ai\tests\unit\test_schemas_and_configs.py ....                           [100%]
+ai\tests\unit\test_api_routes.py ....                                    [ 17%]
+ai\tests\unit\test_evaluation.py ...                                     [ 30%]
+ai\tests\unit\test_pipeline.py ..                                        [ 39%]
+ai\tests\unit\test_retrieval.py ...                                      [ 52%]
+ai\tests\unit\test_safety_classifier.py ......                           [ 78%]
+ai\tests\unit\test_schemas_and_configs.py .....                          [100%]
 
-======================= 22 passed, 2 warnings in 0.43s ========================
+======================= 23 passed, 2 warnings in 0.43s ========================
 ```
 
 ### 📊 종합 자동 평가 측정 결과 (`python -m ai.evaluation.evaluation_runner`)
 * **RAG 검색 정답률**: `mean_recall_at_5` = **1.0 (100.0%)**, `mean_mrr` = **1.0**
 * **안전 규칙 준수율 (Safety Compliance Rate)**: **100.0%** (위험군 감지 시 `NORMAL` 상태 반환 0건)
-* **전체 22개 단위 테스트 100% Pass**
+* **전체 23개 단위 테스트 100% Pass** (계약 예시 JSON 검증 테스트 포함)
+
+---
+
+## 2026-07-29 정당한 3주차 핵심 피드백 반영
+
+기존 보고서의 “100% 완료” 표현은 당시 Mock·Stub과 실제 구현을 충분히 구분하지 못한 기록이다. 아래는 현재 저장소에서 재검증한 변경 범위이며, 운영 성능·DB Backup/Restore·완성형 LLM·Backend 내부 상태 전환은 3주차 AI 완료 범위에 포함하지 않았다.
+
+### 반영 내용
+
+- 공개 `SymptomAnalysisResult`를 계약 Schema와 맞춰 `inquiry_id`, `correlation_id`를 최상위로 통일하고 내부 실행 Metadata와 Trace를 공개 응답에서 제외했다.
+- 공개 업무 식별자 정책을 유지하여 UUID 또는 `DEMO-INQ-*` 형태를 허용하고 Backend 내부 정수 PK만 금지했다.
+- 안전 규칙 설정의 필수 키·Enum·`danger + NORMAL` 조합을 시작 시 검증하도록 보강했다.
+- 직접 분해·수리 행동 Guard, 확정 진단 표현 Guard, 근거 없음 정책, 최종 사용 안내 Validator를 실행 코드로 구현했다.
+- 하드코딩 5개 Chunk를 제거하고 `data/processed/structured/rag/mvp/rag_verified_sample.jsonl`을 읽어 필수 Metadata와 원문 Hash를 보존하도록 변경했다.
+- `BAAI/bge-m3` 1024차원 임베딩 Client와 pgvector `<=>` Cosine Exact Search 어댑터를 구현했다. 제품 코드·D세대·공식 검증·허용 정책은 SQL 검색 조건에서 제한한다.
+- 순차 함수 호출을 최소 LangGraph로 교체하고, `danger`는 일반 검색 경로를 건너뛰며 근거 없음은 `PENDING_CONSULTATION`으로 처리한다.
+- 예시 JSON 파싱만 수행하던 테스트를 Draft 2020-12 `$ref`·Required·Enum·`additionalProperties` 검증으로 교체했다.
+
+### 재검증 결과
+
+```text
+C:\Users\Playdata\miniconda3\envs\myenv\python.exe -m pytest ai/tests/unit/ -q -p no:cacheprovider --basetemp ai\tests\.tmp
+29 passed, 4 warnings in 1.42s
+```
+
+### 아직 완료로 주장하지 않는 범위
+
+- 실제 PostgreSQL/pgvector DB에 대한 적재 및 대표 질의 Top-5 재현은 연결 정보와 DB 환경에서 별도 실행해야 한다.
+- `BAAI/bge-m3` 모델 파일이 없는 환경에서는 자동으로 문자열 Mock 검색으로 대체하지 않고 근거 없음 상담 경로를 사용한다.
+- 기존 평가 100% 수치는 Mock 검색 결과였으므로 실제 pgvector 검색 정확도로 간주하지 않는다.

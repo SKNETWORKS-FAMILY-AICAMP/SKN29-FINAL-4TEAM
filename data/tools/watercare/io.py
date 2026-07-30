@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import tempfile
+import time
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -53,7 +56,31 @@ def jsonl_bytes(rows: Iterable[dict[str, Any]]) -> bytes:
 def write_bytes(data_root: Path, path: Path, content: bytes) -> None:
     path = ensure_within(data_root, path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(content)
+    temp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as stream:
+            temp_path = Path(stream.name)
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        for attempt in range(3):
+            try:
+                os.replace(temp_path, path)
+                temp_path = None
+                return
+            except OSError:
+                if attempt == 2:
+                    raise
+                time.sleep(0.05 * (attempt + 1))
+    finally:
+        if temp_path is not None:
+            temp_path.unlink(missing_ok=True)
 
 
 def write_json(data_root: Path, path: Path, value: Any) -> None:
@@ -70,6 +97,25 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest().upper()
+
+
+def normalize_text_bytes(content: bytes) -> bytes:
+    """Normalize UTF-8 BOM and platform line endings for semantic hashing."""
+
+    text = content.decode("utf-8-sig")
+    return text.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+
+
+def read_lf_bytes(path: Path) -> bytes:
+    """Read semantic UTF-8 bytes with BOM removed and LF line endings."""
+
+    return normalize_text_bytes(path.read_bytes())
+
+
+def sha256_text_file(path: Path) -> str:
+    """Hash semantic UTF-8 text independently of checkout line endings."""
+
+    return sha256_bytes(read_lf_bytes(path))
 
 
 def replace_tokens(value: Any, tokens: dict[str, str]) -> Any:

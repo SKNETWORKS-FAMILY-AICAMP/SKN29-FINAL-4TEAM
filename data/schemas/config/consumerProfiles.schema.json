@@ -7,6 +7,7 @@
     "config_version",
     "dataset_scope",
     "service_contracts_used",
+    "contract_alignment",
     "profiles"
   ],
   "properties": {
@@ -18,7 +19,27 @@
       "const": "consumer_handoff_only"
     },
     "service_contracts_used": {
-      "const": false
+      "const": true
+    },
+    "contract_alignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state_machine_version",
+        "state_machine_status",
+        "data_projection_consumes_contract",
+        "backend_runtime_verified",
+        "legacy_service_contracts_used_semantics"
+      ],
+      "properties": {
+        "state_machine_version": {"const": "1.0.0"},
+        "state_machine_status": {"const": "TEAM_APPROVED"},
+        "data_projection_consumes_contract": {"const": true},
+        "backend_runtime_verified": {"const": true},
+        "legacy_service_contracts_used_semantics": {
+          "const": "BACKEND_RUNTIME_INTEGRATION_ONLY"
+        }
+      }
     },
     "profiles": {
       "type": "object",
@@ -49,7 +70,11 @@
         "purpose": {"type": "string", "minLength": 1},
         "readiness": {"type": "string", "minLength": 1},
         "contract_dependency": {
-          "enum": ["NONE", "SERVICE_MAPPING_PENDING"]
+          "enum": [
+            "NONE",
+            "BACKEND_RUNTIME_MAPPING_PENDING",
+            "BACKEND_RUNTIME_VERIFICATION_PENDING"
+          ]
         },
         "items": {
           "type": "array",

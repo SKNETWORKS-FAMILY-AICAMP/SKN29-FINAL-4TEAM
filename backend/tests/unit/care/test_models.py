@@ -122,6 +122,22 @@ def test_completed_state_requires_timestamp_and_performer():
     assert completed.status_code == CareRecord.Status.COMPLETED
 
 
+def test_imported_completed_care_preserves_date_without_inventing_actor():
+    imported = create_care_record(
+        status_code=CareRecord.Status.COMPLETED,
+        care_type_code=CareRecord.CareType.VISIT_SERVICE,
+        source_code=CareRecord.Source.IMPORT,
+        performed_on=date(2026, 7, 4),
+        result_code=CareRecord.Result.ISSUE_RESOLVED,
+        completed_at=None,
+        performed_by=None,
+    )
+
+    assert imported.performed_on == date(2026, 7, 4)
+    assert imported.completed_at is None
+    assert imported.performed_by is None
+
+
 def test_completed_state_rejects_cancellation_fields():
     technician = create_technician()
 

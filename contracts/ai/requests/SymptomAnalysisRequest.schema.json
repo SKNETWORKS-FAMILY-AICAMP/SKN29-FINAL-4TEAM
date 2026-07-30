@@ -13,7 +13,8 @@
   "properties": {
     "inquiry_id": {
       "type": "string",
-      "description": "공개 문의 식별자 (예: DEMO-INQ-002)"
+      "minLength": 1,
+      "description": "Backend가 발급한 공개 문의 식별자(UUID 또는 DEMO-INQ-002 같은 업무·시연 코드). 내부 정수 PK는 금지"
     },
     "correlation_id": {
       "type": "string",
@@ -21,10 +22,13 @@
     },
     "raw_symptom": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
       "description": "고객 최초 입력 자연어 증상"
     },
     "model_code": {
       "type": "string",
+      "minLength": 1,
       "description": "문의 제품 모델 코드 (예: WPUJAC104DWH)"
     },
     "selected_symptoms": {

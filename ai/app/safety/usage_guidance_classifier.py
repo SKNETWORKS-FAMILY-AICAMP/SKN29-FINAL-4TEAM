@@ -3,6 +3,7 @@
 from typing import Optional
 from ..schemas import RiskLevel, SafetyAssessment, UsageGuidance, UsageGuidanceStatus
 from .rule_loader import SafetyRuleLoader
+from .no_evidence_policy import NoEvidencePolicy
 
 
 class UsageGuidanceClassifier:
@@ -23,15 +24,7 @@ class UsageGuidanceClassifier:
 
         # 1. 공식 근거 미발견 시 정책 적용
         if not has_evidence and safety_assessment.risk_level != RiskLevel.DANGER:
-            return UsageGuidance(
-                guidance_status=UsageGuidanceStatus.PENDING_CONSULTATION,
-                message=self.no_evidence_policy.get(
-                    "message",
-                    "확인 가능한 공식 매뉴얼 근거가 부족하여 자가조치 안내가 제공되지 않습니다. 상담 연결을 도와드리겠습니다."
-                ),
-                restricted_functions=["자가조치 안내 생성 제한"],
-                next_actions=["전문 상담사 연결을 요청해 주세요."]
-            )
+            return NoEvidencePolicy(self.loader).apply()
 
         # 2. 위험도 danger 인 경우 안전 가드레일 (절대 NORMAL 반환 금지)
         if safety_assessment.risk_level == RiskLevel.DANGER:

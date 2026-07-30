@@ -1,6 +1,11 @@
 """파이프라인 라우터 모듈."""
 
-from typing import Any, Dict, List, Optional
+import os
+from typing import Dict, List, Optional
+
+from ..integrations.embedding.embedding_client import BgeM3EmbeddingClient
+from ..integrations.vector_store.vector_store import PgVectorStore
+from ..retrieval.search.vector_search import VectorSearchService
 from .pipeline_context import PipelineContext
 from .pipeline_result import PipelineResult
 from .pipelines.single_rag_pipeline import SingleRAGPipeline
@@ -9,12 +14,15 @@ from ..schemas import TraceContext
 
 class PipelineRouter:
     """파이프라인 실행 라우터 싱글톤"""
-    _instance = None
+    def __init__(self, search_service: VectorSearchService | None = None):
+        self.search_service = search_service if search_service is not None else self._configured_search_service()
 
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(PipelineRouter, cls).__new__(cls)
-        return cls._instance
+    @staticmethod
+    def _configured_search_service() -> VectorSearchService | None:
+        dsn = os.getenv("AI_VECTOR_DSN")
+        if not dsn:
+            return None
+        return VectorSearchService(BgeM3EmbeddingClient(), PgVectorStore(dsn))
 
     def run_pipeline(
         self,
@@ -37,5 +45,5 @@ class PipelineRouter:
             previous_answers=previous_answers or []
         )
 
-        pipeline = SingleRAGPipeline()
+        pipeline = SingleRAGPipeline(self.search_service)
         return pipeline.run(ctx)

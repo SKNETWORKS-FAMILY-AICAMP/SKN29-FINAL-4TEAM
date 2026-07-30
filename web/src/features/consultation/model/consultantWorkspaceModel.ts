@@ -2,12 +2,14 @@ import type {
   CounselorFilters,
   CounselorInquiry,
   CounselorPriority,
+  CounselorRoutingTarget,
   CounselorQueuePage,
   CounselorRisk,
   CounselorStatus,
 } from "./consultantWorkspaceTypes";
 import type { PriorityBadgeVariant } from "../../../common/components/badge/PriorityBadge";
 import type { StatusBadgeVariant } from "../../../common/components/badge/StatusBadge";
+import { formatContractDateTimeLong } from "../../../common/date-time/contractDateTime";
 
 export const COUNSELOR_QUEUE_PAGE_SIZE = 3;
 
@@ -31,9 +33,35 @@ export const STATUS_LABELS: Record<CounselorStatus, string> = {
 export const RISK_LABELS: Record<CounselorRisk, string> = {
   GENERAL: "일반",
   CAUTION: "주의",
-  DANGER: "위험",
+  DANGER: "긴급",
   UNKNOWN: "미확인",
 };
+
+export interface CounselorRoutingDecision {
+  target: CounselorRoutingTarget;
+  reason: string;
+}
+
+export function getCounselorRoutingDecision(
+  risk: CounselorRisk,
+): CounselorRoutingDecision {
+  if (risk === "GENERAL") {
+    return {
+      target: "FIELD_TECHNICIAN",
+      reason: "일반 문의는 AI가 방문기사에게 자동 인계합니다.",
+    };
+  }
+
+  return {
+    target: "CONSULTANT",
+    reason:
+      risk === "DANGER"
+        ? "긴급 문의는 상담사가 안전 안내를 먼저 확인합니다."
+        : risk === "CAUTION"
+          ? "주의 문의는 상담사가 안내 내용을 먼저 확인합니다."
+          : "위험도를 확인할 수 없어 상담사가 먼저 확인합니다.",
+  };
+}
 
 export const PRIORITY_LABELS: Record<CounselorPriority, string> = {
   NORMAL: "보통",
@@ -125,18 +153,7 @@ export function formatWaitingTime(minutes: number): string {
 }
 
 export function formatWorkspaceDateTime(value: string): string {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return value;
-
-  return new Intl.DateTimeFormat("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Seoul",
-  }).format(date);
+  return formatContractDateTimeLong(value) ?? value;
 }
 
 export function filterCounselorInquiries(

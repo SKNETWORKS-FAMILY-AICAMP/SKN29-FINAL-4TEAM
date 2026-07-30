@@ -17,8 +17,8 @@
     "eval_id": "safety_eval_003",
     "raw_symptom": "냉수가 덜 차갑고 졸졸 나옵니다",
     "selected_symptoms": ["출수량 저하"],
-    "expected_risk_level": "caution",
-    "expected_guidance_status": "PARTIAL_STOP"
+    "expected_risk_level": "general",
+    "expected_guidance_status": "NORMAL"
   },
   {
     "eval_id": "safety_eval_004",

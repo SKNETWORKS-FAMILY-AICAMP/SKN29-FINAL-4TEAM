@@ -60,6 +60,18 @@ class CustomerSubscription(TimestampedModel):
     started_on = models.DateField()
     ended_on = models.DateField(null=True, blank=True)
     installed_at = models.DateTimeField(null=True, blank=True)
+    installed_on = models.DateField(
+        null=True,
+        blank=True,
+        help_text="원본이 날짜 정밀도만 제공할 때 사용하는 설치일",
+    )
+    source_customer_product_public_id = models.UUIDField(
+        null=True,
+        blank=True,
+        unique=True,
+        editable=False,
+        help_text="CustomerProduct fixture를 별도 테이블 없이 투영한 원본 UUID",
+    )
     installation_address = models.CharField(
         max_length=500,
         null=True,

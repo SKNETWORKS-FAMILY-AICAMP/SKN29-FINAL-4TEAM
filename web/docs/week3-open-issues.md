@@ -16,6 +16,12 @@
 - 현재: `SaveConsultationRequest`, `CompleteConsultationRequest`, `ConsultationRecord`, `ConsultationSummary`가 빈 객체
 - 영향: 상담 Form 필드와 Endpoint별 Body를 확정 타입으로 만들 수 없음
 - 완료 조건: 임시 저장·요약 수정·확정·완료·방문 검토 요청과 성공·오류 응답 확정
+- 전달 요청 체크리스트:
+  1. 목록·상세·상담 시작·메모 저장·요약 확정·상담 완료·방문 검토의 Method와 URL
+  2. 각 요청의 Body, `state_version`, Header와 성공 응답의 최신 Snapshot 범위
+  3. `allowed_actions` 객체 Schema 및 담당 주체 필드
+  4. 403·409·422 공통 Wrapper와 `field_errors` 구조
+  5. 일반→방문기사, 주의·긴급→상담사 최초 분기 이벤트
 
 ### CONS-API-02 실제 409·422 응답 연결
 
@@ -54,6 +60,20 @@
 
 - 현재: jsdom 통합 테스트와 수동 브라우저 검증
 - 남음: 로그인→목록→상세→상담 저장→방문 전환 실제 API E2E
+
+### WEB-04 다른 팀원 README 재현 확인
+
+- 완료한 Web 작업: 개인 절대 경로를 제거하고 저장소 루트 기준 `cd web`, `npm.cmd ci`, 실행·검증 명령으로 수정
+- 로컬 재현 결과: 저장소 전체의 깨끗한 임시 복사본에서 설치·lint·23개 파일 92개 테스트·build 통과
+- 실행 전제: `web/`이 상위 `data/` Fixture를 참조하므로 저장소 전체 clone·pull이 필요하며 `web/` 단독 복사는 지원하지 않음
+- 남은 외부 확인: 별도 PC에서 README만 보고 설치·실행한 결과
+- 완료 조건: 팀원 1명 이상이 사용한 Node·npm 버전, 실행 URL, 성공 또는 실패 로그를 검토 문서에 회신
+
+### WEB-05 공개 필드·마스킹 공동 승인
+
+- 현재: 실제 고객정보 대신 합성 표시명만 사용하고 Evidence 내부 필드를 타입에서 배제
+- 남은 외부 확인: 역할별 고객 마스킹 범위는 최지용·김은진, Evidence 공개 필드와 URL은 이동윤 확인
+- 완료 조건: 검토 회신 또는 계약 PR 링크를 `docs/testing/week3-web-review.md`에 기록
 
 ### WEB-03 개발 의존성 보안 경고 검토
 

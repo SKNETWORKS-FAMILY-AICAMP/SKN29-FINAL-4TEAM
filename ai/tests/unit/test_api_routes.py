@@ -38,7 +38,10 @@ def test_analyze_endpoint_mock_mode(client):
     assert response.status_code == 200
     data = response.json()
 
-    assert data["trace_context"]["inquiry_id"] == "DEMO-INQ-002"
+    assert data["inquiry_id"] == "DEMO-INQ-002"
+    assert data["correlation_id"] == "corr-test-999"
+    assert "model_metadata" not in data
+    assert "processing_traces" not in data
     assert data["safety_assessment"]["risk_level"] == "caution"
     assert data["usage_guidance"]["guidance_status"] == "PARTIAL_STOP"
 

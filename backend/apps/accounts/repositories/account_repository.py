@@ -12,11 +12,25 @@ class AccountRepository:
 
     @staticmethod
     def find_active_by_demo_code(demo_user_code: str) -> User | None:
+        code = str(demo_user_code).strip()
+        if code.startswith("DEMO-"):
+            filters = {
+                "username": code,
+                "is_active": True,
+            }
+        elif code.startswith("SYN-"):
+            filters = {
+                "is_active": True,
+                "role_code": User.Role.CUSTOMER,
+                "customer_profile__customer_no": code,
+                "customer_profile__is_synthetic": True,
+                "customer_profile__deleted_at__isnull": True,
+            }
+        else:
+            return None
+
         return (
-            User.objects.filter(
-                username=demo_user_code,
-                is_active=True,
-            )
+            User.objects.filter(**filters)
             .select_related("customer_profile")
             .first()
         )

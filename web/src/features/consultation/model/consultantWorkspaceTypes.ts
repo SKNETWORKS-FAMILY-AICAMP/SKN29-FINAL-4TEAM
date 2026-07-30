@@ -22,6 +22,7 @@ export type CounselorStatus =
   | "UNKNOWN";
 
 export type CounselorPriority = "NORMAL" | "HIGH" | "URGENT" | "UNKNOWN";
+export type CounselorRoutingTarget = "CONSULTANT" | "FIELD_TECHNICIAN";
 export type CounselorSort = "UPDATED_DESC" | "UPDATED_ASC";
 export type CounselorAssigneeFilter = "ALL" | "MINE" | "UNASSIGNED";
 
@@ -86,6 +87,8 @@ export interface CounselorInquiry {
   status: CounselorStatus;
   riskLevel: CounselorRisk;
   priority: CounselorPriority;
+  routingTarget: CounselorRoutingTarget;
+  routingReason: string;
   requiresConsultation: boolean;
   feedbackResolved: boolean;
   feedbackComment?: string;

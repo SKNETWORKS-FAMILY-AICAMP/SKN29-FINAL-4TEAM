@@ -120,7 +120,7 @@ export default function ConsultantQueue({
             }
           >
             <option value="ALL">전체 위험도</option>
-            <option value="DANGER">위험</option>
+            <option value="DANGER">긴급</option>
             <option value="CAUTION">주의</option>
             <option value="GENERAL">일반</option>
           </select>

@@ -1,43 +1,61 @@
 {
-  "mapping_version": "1.0.0",
+  "mapping_version": "1.0.1",
   "scope": "data_contract_alignment",
   "status": "PARTIAL_BLOCKED_DECISIONS",
+  "state_machine_contract": {
+    "version": "1.0.0",
+    "status": "TEAM_APPROVED",
+    "data_projection_consumes_contract": true,
+    "backend_runtime_verified": true
+  },
   "contract_sources": {
     "user_roles": {
       "path": "contracts/codes/user-roles.yaml",
-      "sha256": "95F3B461059209035123F84862A0799100ECC624951C2B6658D05BA15363F1D5"
+      "sha256": "EF0BFCC6D4FA3456ECAE27E09DB014413DC6309AFCE544825D460537BF67598E"
+    },
+    "care_results": {
+      "path": "contracts/codes/care-results.yaml",
+      "sha256": "017F4B5A2EA8F5CCC91EFFF02AB869DF30F79518C77B63D92221C790E99DDF2D"
     },
     "inquiry_states": {
       "path": "contracts/state-machine/inquiry-states.yaml",
-      "sha256": "AB56E554DF0FE4ED192808D9A8D1BE1412F57AEFCD595F40A1983843534F3F3C"
+      "sha256": "A81D26DD26635C500A4B6D9BC3A7186A866D741358DD07F0D31EA556A113952D"
     },
     "inquiry_events": {
       "path": "contracts/state-machine/inquiry-events.yaml",
-      "sha256": "BB92EE8947BBE2AB7C820752BC360FFCE4617EB7AB66F5C395D070706AE2BFB2"
+      "sha256": "8D61B168FD2EC836F454386BE613D2BE57E52549230259FFABCF3CCA4B7BB60F"
     },
     "transition_rules": {
       "path": "contracts/state-machine/transition-rules.yaml",
-      "sha256": "3A5BB8373C08AE261B77D83FE669A30BCDA0057CB4E5E203160924C72C369DC1"
+      "sha256": "FBAF11B15B3193351AE94B5A8A300DF741E1B099906B6D0F2B6EC4A5CA2B86D6"
     },
     "allowed_actions": {
       "path": "contracts/state-machine/allowed-actions.yaml",
-      "sha256": "941221DB5BA80D8036E1D8A20F44B4353B8E3BF3330D289F321174C94B473C27"
+      "sha256": "6EF5441E50E3907F7604EA6CADC4E1E730FE9B99000BD9EEFDB2F20D887E5450"
+    },
+    "data_state_crosswalk": {
+      "path": "contracts/state-machine/data-state-crosswalk.yaml",
+      "sha256": "9E34117D32BAA9D47B64A9040F6C2AFBDB62A6C30DD0C7F04B8DAC371B412500"
+    },
+    "representative_e2e_contract": {
+      "path": "contracts/state-machine/examples/representative-e2e.yaml",
+      "sha256": "5E4F92772AEB71D34CA1B9C46E61B82090B404226B6437713BDF8769ED07A58F"
     },
     "adr_0010_identifier_bridge": {
       "path": "docs/adr/0010-t005-three-layer-identifier-bridge.md",
-      "sha256": "345D33A85D872D827062B0DE48F177D9CBB4A39ED8D17D5311DABE711566F35F"
+      "sha256": "C938744432680B12FF02F8FC326AF396B2017652989FD75B29238E77930ED69A"
     },
     "adr_0011_idempotency_scope": {
       "path": "docs/adr/0011-t005-status-history-idempotency-scope.md",
-      "sha256": "264C67CD986E9B949270EAB7EC972AF909964784AC18FD02A43169110783E561"
+      "sha256": "90731017C7B64E0D29A829AE0DADD407F8DD5E9F50D90FE1FB65C2CFA789186A"
     },
     "t005_physical_contract_v1_2": {
       "path": "docs/database/t-005/t005_physical_contract_v1.2.json",
-      "sha256": "ADD4A6AFB255F3F18D72D8AAB87AA6EFF5356D5EE51BC85613E390C84CD72041"
+      "sha256": "6A8582EC55CB57DC7FC4E7279D6C0B9BF9CA86D4F8148212348256154876CAF8"
     },
     "public_api_idempotency_conflict": {
       "path": "contracts/api/examples/workflow/idempotency-key-reuse-conflict.json",
-      "sha256": "31B47573909BB2911A409C787425F5B8B660A797B0B3AD4ABBAEE64E674AFC15"
+      "sha256": "0156662EF5BCCF5C936A4AB2798B2BA95D3A49E9C4C57C371120194215394798"
     }
   },
   "canonical_role_codes": [
@@ -127,7 +145,7 @@
   "blocked_decisions": [
     {
       "id": "DEC-RESOLVED-REOPEN-001",
-      "description": "RESOLVED 문의를 같은 ID로 재개할지 관련 새 문의를 생성할지 결정 필요",
+      "description": "State Machine v1.0.0은 terminal 문의의 동일 ID 재개를 금지한다. 기존 재개 시나리오는 새 관련 문의 형태로 재설계 승인되기 전까지 차단한다.",
       "affected_scenario_ids": [
         "SYN-JAC104-012",
         "SYN-JAC104-016"

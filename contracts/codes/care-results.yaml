@@ -1,0 +1,8 @@
+# T-005 합성 Full 적재 케어 결과 코드
+version: 1.0.0
+status: OWNER_BASELINE
+description: 합성 케어 이력 result와 Backend CareRecord.Result의 공통 기준
+codes:
+  - NORMAL
+  - FILTER_REPLACED
+  - ISSUE_RESOLVED
