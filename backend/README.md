@@ -162,8 +162,9 @@ if ($LASTEXITCODE -ne 0) {
 }
 ```
 
-Demo Seed는 새 DB, Seed 변경, Demo 데이터 복구 시에만 Accounts →
-Products → Subscriptions → Care 순서로 실행합니다. Django 서버는
+공통코드 Seed는 새 DB와 코드 계약 변경 시 먼저 실행하고, Demo Seed는
+새 DB·Demo 데이터 복구 시에만 Accounts → Products → Subscriptions →
+Care 순서로 실행합니다. Django 서버는
 실행 터미널에서 `Ctrl+C`로 종료하거나 재시작하고, PostgreSQL은
 저장소 루트에서 다음 명령으로 데이터를 보존한 채 중지합니다.
 
@@ -213,12 +214,15 @@ PostgreSQL이 실행 중일 때 읽기 전용 연결과 적용 Migration을 추�
 
 실제 로컬 PostgreSQL 실행은 `backend/.env.example`의 키를
 `backend/.env`에 안전하게 채운 뒤 수행합니다. 기본 `watercare` DB에는
-다음 Demo Seed 네 종류만 실행합니다. 팀 인계용 멱등성 증거와 실행
-전제는 v1.3을 따릅니다.
+공통코드 Seed를 먼저 실행한 뒤 Demo Seed 네 종류를 순서대로
+실행합니다. 팀 인계용 멱등성 증거와 실행 전제는 v1.3 및
+[공통코드 Registry 구현 가이드](../docs/individual/jiyong/technical/backend/t005_common_code_registry_implementation.md)를
+따릅니다.
 
 ```powershell
 Set-Location (git rev-parse --show-toplevel)
 Set-Location .\backend
+.\.venv\Scripts\python.exe manage.py seed_common_codes
 .\.venv\Scripts\python.exe manage.py seed_demo_accounts
 .\.venv\Scripts\python.exe manage.py seed_demo_products
 .\.venv\Scripts\python.exe manage.py seed_demo_subscriptions
