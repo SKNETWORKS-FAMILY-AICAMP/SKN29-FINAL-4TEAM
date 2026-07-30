@@ -1,5 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://watercare.local/contracts/ai/1.1.0/common/SafetyAssessment.schema.json",
+  "x-contract-version": "1.1.0",
   "title": "SafetyAssessment",
   "description": "위험도 및 안전 평가 결과 Schema",
   "type": "object",
@@ -15,6 +17,7 @@
     "risk_level": {
       "type": "string",
       "enum": ["general", "caution", "danger"],
+      "x-code-registry": "../../../codes/risk-levels.yaml",
       "description": "위험도 레벨"
     },
     "priority": {

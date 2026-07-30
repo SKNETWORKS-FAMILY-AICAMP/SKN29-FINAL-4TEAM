@@ -114,3 +114,143 @@ C:\Users\Playdata\miniconda3\envs\myenv\python.exe -m pytest ai/tests/unit/ -q -
 - 실제 PostgreSQL/pgvector DB에 대한 적재 및 대표 질의 Top-5 재현은 연결 정보와 DB 환경에서 별도 실행해야 한다.
 - `BAAI/bge-m3` 모델 파일이 없는 환경에서는 자동으로 문자열 Mock 검색으로 대체하지 않고 근거 없음 상담 경로를 사용한다.
 - 기존 평가 100% 수치는 Mock 검색 결과였으므로 실제 pgvector 검색 정확도로 간주하지 않는다.
+
+---
+
+## 2026-07-30 Backend AI 연동 선행 계약 정합화
+
+최지용 인계서의 `AI_CONTRACT_INPUT_REQUIRED`를 기준으로 계약 → Runtime →
+검증 순서로 반영했다. 이 변경은 AI 분석 결과를 Backend 업무 상태에 직접
+적용하거나 최종 EvidenceCard를 저장하지 않는다.
+
+### 계약 1.1.0
+
+- `contracts/ai/**` 모든 Schema에 `$id`, `x-contract-version=1.1.0`을 부여했다.
+- 비어 있던 `MissingField`, `FollowUpQuestion`, `ModelMetadata`,
+  `ProcessingTrace`, `ValidationResult`, 상담 요약, 기사 리포트 Schema를
+  실제 Properties·Required·Enum·`additionalProperties=false` 계약으로
+  구체화했다.
+- `inquiry_id`, `correlation_id`, `ai_request_id`, `state_version`을 요청과
+  응답 최상위에서 전달·Echo하도록 확정했다. 공개 `trace_context`는 두지 않는다.
+- 응답에 `status`, `failure_stage`, `retry_count`를 추가하고 Stage는
+  `contracts/codes/ai-stages.yaml`의 대문자 표준 코드를 사용한다.
+- `AIErrorResponse`와 정상·위험·근거 없음·Schema 오류·Timeout JSON 예시를
+  추가·갱신했다.
+
+### Runtime
+
+- Pydantic 공개 모델은 미정의 속성을 거부하고 계약 1.1.0 추적 필드를 보존한다.
+- Body와 `X-Correlation-ID` Header가 다르면 `AI-VALIDATION-01`로 거부하며,
+  성공·오류 응답 Header에 동일한 값을 반환한다.
+- `retry_policy.yaml`의 전체 30초, AI 내부 최대 1회, Backend 자동 재시도
+  0회 값을 App 시작 시 검증한다.
+- Local 파이프라인은 Blocking 작업을 Worker Thread에서 실행하고 30초를
+  넘기면 HTTP 504 `AI-TIMEOUT-01`, Stage `CANCELLED`로 종료한다.
+- 근거 없음 상담 경로는 `FALLBACK`/`RETRIEVING`, 정상 처리와 명시적 위험
+  차단은 `SUCCEEDED`로 구분한다.
+
+### 재현 환경과 검증 증거
+
+```text
+branch=dongyoon
+base_commit=e5cc511189b54060dfafde9215b2cb0799b1bf7a
+python=3.10.20
+dependency_manifest=ai/pyproject.toml
+service_base_url=http://127.0.0.1:8000
+health_url=http://127.0.0.1:8000/health
+analysis_endpoint=POST /api/v1/ai/analyze?mode=mock|local
+request_schema_version=1.1.0
+response_schema_version=1.1.0
+```
+
+단위 테스트 중간 검증:
+
+```text
+C:\Users\Playdata\miniconda3\envs\myenv\python.exe -m pytest ai/tests/unit/
+38 passed, 3 warnings
+```
+
+실제 Uvicorn `127.0.0.1:8000` Smoke:
+
+```text
+GET /health -> 200, status=ok, version=1.0.0
+POST /api/v1/ai/analyze?mode=local -> 200
+X-Correlation-ID=corr-smoke-001
+risk_level=danger
+usage_guidance_status=TOTAL_STOP
+state_version=1
+ai_request_id=ai-req-smoke-001
+```
+
+### 남은 통합 Gate
+
+- 현재 변경은 아직 Commit 전이므로 최종 40자리 AI Commit SHA 인계가 남았다.
+- 공통 `contracts/error-codes/error-codes.yaml`에 `AI-VALIDATION-01`,
+  `AI-TIMEOUT-01`을 편입하는 작업은 공통 계약 담당자 검토가 필요하다.
+- `contracts/codes/verification-statuses.yaml`이 비어 있어 AI 근거의
+  `official_verified`, `team_verified` 공통 코드 편입 검토가 필요하다.
+- 실제 PostgreSQL/pgvector 적재·Top-5 대표 질의는 DB 연결 환경에서 별도
+  실증해야 하며 이번 결과를 실제 pgvector 완료 증거로 사용하지 않는다.
+- 공유 Conda 환경의 `pip check`는 프로젝트 외 Jupyter/PyMuPDF 누락과
+  설치된 `langchain 1.3.4` 대 `langgraph 1.2.2` 요구 버전 차이로 실패했다.
+  AI 단위 테스트는 통과했으나 독립 가상환경 또는 팀 의존성 버전 결정이
+  재현성 Gate로 남아 있다.
+
+---
+
+## 2026-07-30 실제 PostgreSQL/pgvector 수직 검증
+
+기존 개발 DB와 분리된 `pgvector/pgvector:pg16` 컨테이너에서 실제
+`CREATE EXTENSION vector` → `vector(1024)` Table → bge-m3 임베딩 →
+UPSERT → `<=>` Top-5 검색을 실행했다. 검증용 컨테이너는
+`watercare-pgvector-verify-20260730`, Host Port는 `55432`이며 프로젝트
+기본 DB와 Volume을 공유하지 않는다.
+
+### 고정 입력
+
+```text
+PostgreSQL=16.14
+pgvector=0.8.6
+embedding_model=BAAI/bge-m3
+embedding_model_revision=5617a9f61b028005a4858fdac845db406aefb181
+dimension=1024
+search=cosine_exact_search
+ANN=false
+top_k=5
+score_threshold=0.4
+approved_chunks=7
+chunk_set_sha256=175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958
+source_sha256=0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C
+```
+
+### 실행 결과
+
+- 첫 적재: UPSERT 7건, 저장 7건
+- 동일 적재 재실행: UPSERT 7건, 저장 행 수 7건 유지
+- 서로 다른 `chunk_id`: 7건
+- 저장 Vector 최소·최대 차원: 모두 1024
+- 실제 평가 케이스: 12/12 PASS
+- 양성 Recall@5 평균: 1.0
+- 양성 MRR 평균: 0.8857142857142858
+- 금지 문서·모델 혼입: 0건
+- 유사도 1.0 검증 Fixture 4종의 SQL Filter 누출: 0건
+- 3차원 Vector의 `vector(1024)` 적재: DB에서 거부
+- 실제 DB 통합 Pytest: 1 passed
+- 전체 AI 단위 테스트 재검증: 41 passed, 3 warnings
+
+첫 평가에서는 `RAG-NEG-UNVERIFIED-FAQ`가 공식 매뉴얼을 반환하여 11/12였다.
+미검증 출처만 단독 근거로 요구하는 요청을 검색 전 차단하는
+`FaqUsageValidator`를 구현한 뒤 같은 DB에서 재실행하여 12/12를 확인했다.
+
+증거 파일:
+
+- `ai/configs/index_manifest.json`
+- `ai/evaluation/reports/pgvector_verification.json`
+- `ai/tests/integration/test_pgvector_runtime.py`
+
+이 결과는 AI 검색 구현과 SQL 수직 흐름의 실증이다. 팀 공용 Backend DB의
+영구 Table·Migration·Backup 정책 승인까지 의미하지 않으며, 해당 반영은
+Backend/DB 담당자 검토가 필요하다.
+
+검증 종료 후 컨테이너는 삭제하지 않고 중지하여 격리 데이터와 재현성을
+보존했고, 작업 전 상태에 맞춰 Docker Desktop도 종료했다.

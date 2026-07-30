@@ -3,7 +3,7 @@
 import time
 from ...retrieval import RetrievalQuery
 from ...retrieval.search.vector_search import VectorSearchService
-from ...schemas import EvidenceReference, ProcessingTrace
+from ...schemas import AiStage, EvidenceReference, ProcessingTrace
 from ..pipeline_context import PipelineContext
 
 
@@ -41,5 +41,5 @@ def execute_retrieval_stage(ctx: PipelineContext, search_service: VectorSearchSe
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000.0
     ctx.processing_traces.append(
-        ProcessingTrace(stage="retrieval_stage", status="success", latency_ms=round(elapsed_ms, 2))
+        ProcessingTrace(stage=AiStage.RETRIEVING, status="SUCCEEDED", latency_ms=round(elapsed_ms, 2))
     )
