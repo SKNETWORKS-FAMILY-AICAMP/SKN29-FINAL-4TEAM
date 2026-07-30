@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "AIErrorResponse.schema.json",
+  "x-contract-version": "1.1.0",
+  "title": "AIErrorResponse",
+  "description": "AI HTTP 오류 응답. 원문 입력·Prompt·Stack Trace를 포함하지 않는다.",
+  "type": "object",
+  "required": ["success", "inquiry_id", "correlation_id", "ai_request_id", "state_version", "error"],
+  "additionalProperties": false,
+  "properties": {
+    "success": { "const": false },
+    "inquiry_id": { "type": ["string", "null"] },
+    "correlation_id": { "type": ["string", "null"] },
+    "ai_request_id": { "type": ["string", "null"] },
+    "state_version": { "type": ["integer", "null"], "minimum": 1 },
+    "error": {
+      "type": "object",
+      "required": ["code", "message", "details", "retryable", "failure_stage", "retry_count"],
+      "additionalProperties": false,
+      "properties": {
+        "code": { "type": "string", "enum": ["AI-FAILED-01", "AI-VALIDATION-01", "AI-TIMEOUT-01"] },
+        "message": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "details": { "type": ["object", "null"] },
+        "retryable": { "type": "boolean" },
+        "failure_stage": { "type": "string", "enum": ["STRUCTURING", "CHECKING_MISSING_FIELDS", "SAFETY_CHECK", "RETRIEVING", "RERANKING", "GENERATING", "VALIDATING", "FAILED", "CANCELLED"] },
+        "retry_count": { "type": "integer", "minimum": 0, "maximum": 1 }
+      }
+    }
+  }
+}

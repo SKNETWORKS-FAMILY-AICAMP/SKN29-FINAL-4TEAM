@@ -1,8 +1,19 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "TechnicianReportRequest.schema.json",
+  "x-contract-version": "1.1.0",
   "title": "TechnicianReportRequest",
-  "description": "기사 사전 리포트 요청",
+  "description": "기사 작업 결과 요약 초안 요청",
   "type": "object",
+  "required": ["inquiry_id", "correlation_id", "ai_request_id", "state_version", "visit_id", "symptom_notes", "action_notes"],
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "inquiry_id": { "type": "string", "minLength": 1, "maxLength": 100, "pattern": ".*[^0-9].*" },
+    "correlation_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "ai_request_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "state_version": { "type": "integer", "minimum": 1 },
+    "visit_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "symptom_notes": { "type": "string", "minLength": 1, "maxLength": 8000 },
+    "action_notes": { "type": "string", "minLength": 1, "maxLength": 8000 }
+  }
 }

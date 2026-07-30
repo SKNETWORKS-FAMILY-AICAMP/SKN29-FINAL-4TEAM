@@ -1,0 +1,27 @@
+{
+  "request": {
+    "inquiry_id": "DEMO-INQ-TIMEOUT-001",
+    "correlation_id": "corr-timeout-001",
+    "ai_request_id": "ai-req-timeout-001",
+    "state_version": 6,
+    "raw_symptom": "정수기에서 알 수 없는 표시가 반복됩니다.",
+    "model_code": "WPUJAC104DWH",
+    "selected_symptoms": [],
+    "previous_answers": []
+  },
+  "error_response": {
+    "success": false,
+    "inquiry_id": "DEMO-INQ-TIMEOUT-001",
+    "correlation_id": "corr-timeout-001",
+    "ai_request_id": "ai-req-timeout-001",
+    "state_version": 6,
+    "error": {
+      "code": "AI-TIMEOUT-01",
+      "message": "AI 서비스 처리 시간이 초과되었습니다.",
+      "details": null,
+      "retryable": true,
+      "failure_stage": "CANCELLED",
+      "retry_count": 0
+    }
+  }
+}

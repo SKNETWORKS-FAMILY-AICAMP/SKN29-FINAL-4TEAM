@@ -1,8 +1,20 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://watercare.local/contracts/ai/1.1.0/common/FollowUpQuestion.schema.json",
+  "x-contract-version": "1.1.0",
   "title": "FollowUpQuestion",
-  "description": "추가 질문",
+  "description": "고객에게 전달할 안전한 추가 질문",
   "type": "object",
+  "required": ["question_id", "question_text", "options", "target_field"],
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "question_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "question_text": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "options": {
+      "type": "array",
+      "maxItems": 10,
+      "items": { "type": "string", "minLength": 1, "maxLength": 200 }
+    },
+    "target_field": { "type": "string", "minLength": 1, "maxLength": 100 }
+  }
 }
