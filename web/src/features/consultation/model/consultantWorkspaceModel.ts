@@ -6,12 +6,13 @@ import type {
   CounselorQueuePage,
   CounselorRisk,
   CounselorStatus,
+  CounselorWorkBucket,
 } from "./consultantWorkspaceTypes";
 import type { PriorityBadgeVariant } from "../../../common/components/badge/PriorityBadge";
 import type { StatusBadgeVariant } from "../../../common/components/badge/StatusBadge";
 import { formatContractDateTimeLong } from "../../../common/date-time/contractDateTime";
 
-export const COUNSELOR_QUEUE_PAGE_SIZE = 3;
+export const COUNSELOR_QUEUE_PAGE_SIZE = 10;
 
 export const STATUS_LABELS: Record<CounselorStatus, string> = {
   DRAFT: "작성 중",
@@ -36,6 +37,26 @@ export const RISK_LABELS: Record<CounselorRisk, string> = {
   DANGER: "긴급",
   UNKNOWN: "미확인",
 };
+
+export const WORK_BUCKET_LABELS: Record<CounselorWorkBucket, string> = {
+  NEW: "새로 들어온 문의",
+  IN_PROGRESS: "처리 중인 문의",
+  COMPLETED: "처리 완료된 문의",
+};
+
+export function getCounselorWorkBucket(
+  status: CounselorStatus,
+): CounselorWorkBucket {
+  if (status === "RESOLVED" || status === "CANCELLED") {
+    return "COMPLETED";
+  }
+
+  if (status === "CONSULTATION_REQUIRED" || status === "REOPENED") {
+    return "NEW";
+  }
+
+  return "IN_PROGRESS";
+}
 
 export interface CounselorRoutingDecision {
   target: CounselorRoutingTarget;
@@ -171,6 +192,7 @@ export function filterCounselorInquiries(
       inquiry.customerName,
       inquiry.customerDisplayName,
       inquiry.productCode,
+      inquiry.customerMessage,
     ]
       .join(" ")
       .toLocaleLowerCase("ko-KR");
@@ -228,6 +250,15 @@ export function filterCounselorInquiries(
 
     return true;
   }).sort((left, right) => {
+    if (filters.sort === "WAITING_DESC") {
+      return right.waitingMinutes - left.waitingMinutes;
+    }
+    if (filters.sort === "RISK_DESC") {
+      const riskScore = { DANGER: 3, CAUTION: 2, GENERAL: 1, UNKNOWN: 0 };
+      const riskDifference =
+        riskScore[right.riskLevel] - riskScore[left.riskLevel];
+      return riskDifference || right.waitingMinutes - left.waitingMinutes;
+    }
     const difference =
       new Date(right.updatedAt).getTime() -
       new Date(left.updatedAt).getTime();
