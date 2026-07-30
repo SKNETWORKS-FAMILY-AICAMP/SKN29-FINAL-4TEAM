@@ -37,10 +37,21 @@ def main() -> None:
         raise RuntimeError("공식 검증·고객 안내 허용 청크만 적재할 수 있습니다.")
 
     embedding_client = BgeM3EmbeddingClient(model_revision=model_revision)
-    vectors = embedding_client.embed_documents(chunk.content for chunk in chunks)
+    chunk_set_sha256 = _chunk_set_sha256(chunks)
+    index_version = "1.0.0"
+    indexed_chunks = [
+        chunk.model_copy(update={
+            "embedding_model": embedding_client.model_name,
+            "embedding_model_revision": model_revision,
+            "index_version": index_version,
+            "chunk_set_sha256": chunk_set_sha256,
+        })
+        for chunk in chunks
+    ]
+    vectors = embedding_client.embed_documents(chunk.content for chunk in indexed_chunks)
     store = PgVectorStore(dsn)
-    upserted = store.upsert(chunks, vectors)
-    chunk_ids = [chunk.chunk_id for chunk in chunks]
+    upserted = store.upsert(indexed_chunks, vectors)
+    chunk_ids = [chunk.chunk_id for chunk in indexed_chunks]
     stored_count = store.count(chunk_ids)
     if stored_count != len(chunks):
         raise RuntimeError(f"적재 행 수 불일치: expected={len(chunks)}, actual={stored_count}")
@@ -52,12 +63,12 @@ def main() -> None:
         model_revision=model_revision,
         dimension=embedding_client.dimension,
         index_type="exact_search",
-        index_version="1.0.0",
+        index_version=index_version,
         chunk_count=stored_count,
-        chunk_set_sha256=_chunk_set_sha256(chunks),
+        chunk_set_sha256=chunk_set_sha256,
         document_hashes={
             chunk.document_id or chunk.document_title: chunk.source_hash
-            for chunk in chunks
+            for chunk in indexed_chunks
             if chunk.source_hash
         },
     )

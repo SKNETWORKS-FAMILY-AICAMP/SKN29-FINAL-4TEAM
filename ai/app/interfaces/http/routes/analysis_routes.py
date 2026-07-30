@@ -1,9 +1,11 @@
 """증상 분석 API 라우터 모듈."""
 
 import asyncio
+import os
 import time
+from threading import BoundedSemaphore
 
-from fastapi import APIRouter, Header, Query, Response
+from fastapi import APIRouter, Header, Query, Request, Response
 from ..request_models import SymptomAnalysisApiRequest
 from ..errors import AiServiceError
 from ..runtime_policy import get_runtime_policy
@@ -19,15 +21,43 @@ from ..structured_logging import log_analysis_event
 router = APIRouter(prefix="/api/v1/ai", tags=["Analysis"])
 
 
+def _worker_limit() -> int:
+    raw = os.getenv("AI_MAX_IN_FLIGHT_WORKERS", "2")
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise RuntimeError("AI_MAX_IN_FLIGHT_WORKERS는 정수여야 합니다.") from exc
+    if not 1 <= value <= 32:
+        raise RuntimeError("AI_MAX_IN_FLIGHT_WORKERS는 1~32 범위여야 합니다.")
+    return value
+
+
+_WORKER_SLOTS = BoundedSemaphore(_worker_limit())
+
+
+def _release_worker_slot(task: asyncio.Task, slots: BoundedSemaphore) -> None:
+    """HTTP Timeout 뒤에도 실행 중인 Thread가 끝날 때까지 Slot을 유지한다."""
+    try:
+        if not task.cancelled():
+            task.exception()
+    finally:
+        slots.release()
+
+
 @router.post("/analyze", response_model=SymptomAnalysisResult, summary="증상 분석 및 사용 안내 통합 API")
 async def analyze_symptom(
     req: SymptomAnalysisApiRequest,
+    request: Request,
     response: Response,
     mode: str = Query("local", pattern="^(mock|local)$", description="실행 모드"),
     x_correlation_id: str | None = Header(None, alias="X-Correlation-ID"),
 ):
     """백엔드에서 호출하는 증상 분석·안전평가·RAG근거·사용안내 API"""
 
+    request.state.inquiry_id = req.inquiry_id
+    request.state.correlation_id = req.correlation_id
+    request.state.ai_request_id = req.ai_request_id
+    request.state.state_version = req.state_version
     if x_correlation_id is not None and x_correlation_id != req.correlation_id:
         raise AiServiceError(
             code="AI-VALIDATION-01",
@@ -42,6 +72,7 @@ async def analyze_symptom(
         )
     response.headers["X-Correlation-ID"] = req.correlation_id
     started_at = time.perf_counter()
+    request.state.analysis_started_at = started_at
     log_fields = {
         "inquiry_id": req.inquiry_id,
         "correlation_id": req.correlation_id,
@@ -98,6 +129,19 @@ async def analyze_symptom(
 
     policy = get_runtime_policy()
     cancellation_token = CancellationToken()
+    worker_slots = _WORKER_SLOTS
+    if not worker_slots.acquire(blocking=False):
+        raise AiServiceError(
+            code="AI-FAILED-01",
+            http_status=503,
+            message="AI 분석 작업이 포화 상태입니다. 잠시 후 다시 시도해 주세요.",
+            retryable=True,
+            failure_stage=AiStage.FAILED,
+            correlation_id=req.correlation_id,
+            inquiry_id=req.inquiry_id,
+            ai_request_id=req.ai_request_id,
+            state_version=req.state_version,
+        )
     try:
         worker = asyncio.create_task(
             asyncio.to_thread(
@@ -113,20 +157,12 @@ async def analyze_symptom(
                 cancellation_token=cancellation_token,
             )
         )
+        worker.add_done_callback(lambda task: _release_worker_slot(task, worker_slots))
         pipeline_result = await asyncio.wait_for(
             asyncio.shield(worker), timeout=policy.overall_timeout_seconds
         )
     except asyncio.TimeoutError as exc:
         cancellation_token.cancel()
-        worker.add_done_callback(lambda task: task.exception() if not task.cancelled() else None)
-        log_analysis_event(
-            "analysis_failed",
-            stage=AiStage.CANCELLED.value,
-            status="TIMEOUT",
-            latency_ms=round((time.perf_counter() - started_at) * 1000, 2),
-            error_code="AI-TIMEOUT-01",
-            **log_fields,
-        )
         raise AiServiceError(
             code="AI-TIMEOUT-01",
             http_status=504,
@@ -140,14 +176,8 @@ async def analyze_symptom(
             retry_count=0,
         ) from exc
     except Exception as exc:
-        log_analysis_event(
-            "analysis_failed",
-            stage=AiStage.FAILED.value,
-            status="FAILED",
-            latency_ms=round((time.perf_counter() - started_at) * 1000, 2),
-            error_code="AI-FAILED-01",
-            **log_fields,
-        )
+        if "worker" not in locals():
+            worker_slots.release()
         raise AiServiceError(
             code="AI-FAILED-01",
             http_status=503,
@@ -160,6 +190,10 @@ async def analyze_symptom(
             state_version=req.state_version,
             retry_count=0,
         ) from exc
+    except BaseException:
+        if "worker" not in locals():
+            worker_slots.release()
+        raise
 
     result = pipeline_result.to_analysis_result()
     log_analysis_event(

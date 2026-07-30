@@ -21,4 +21,8 @@ class RetrievedChunk(BaseModel):
     verification_status: str = Field("official_verified", description="검증 상태")
     allowed_use: bool = Field(True, description="고객 안내 제공 허용 여부")
     source_hash: Optional[str] = Field(None, description="원문 SHA-256")
+    embedding_model: Optional[str] = Field(None, description="적재에 사용한 Embedding 모델")
+    embedding_model_revision: Optional[str] = Field(None, description="Embedding 모델 Commit SHA")
+    index_version: Optional[str] = Field(None, description="적재·검색 설정 버전")
+    chunk_set_sha256: Optional[str] = Field(None, description="적재 청크 집합 SHA-256")
     safe_actions: List[str] = Field(default_factory=list, description="근거에 명시된 안전 행동")
