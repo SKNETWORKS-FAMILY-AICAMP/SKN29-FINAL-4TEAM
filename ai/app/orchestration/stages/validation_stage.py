@@ -2,7 +2,7 @@
 
 import time
 from ...validation.safety import ProhibitedPhraseValidator, UsageGuidanceValidator
-from ...schemas import ProcessingTrace
+from ...schemas import AiStage, ProcessingTrace
 from ..pipeline_context import PipelineContext
 
 
@@ -23,5 +23,5 @@ def execute_validation_stage(ctx: PipelineContext) -> None:
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000.0
     ctx.processing_traces.append(
-        ProcessingTrace(stage="validation_stage", status="success", latency_ms=round(elapsed_ms, 2))
+        ProcessingTrace(stage=AiStage.VALIDATING, status="SUCCEEDED", latency_ms=round(elapsed_ms, 2))
     )

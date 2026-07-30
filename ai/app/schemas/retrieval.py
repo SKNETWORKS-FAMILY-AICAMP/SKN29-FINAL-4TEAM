@@ -1,10 +1,11 @@
 """RAG 근거 참조 Pydantic 데이터 모델."""
 
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import Field
+from .common import ContractModel
 
 
-class EvidenceReference(BaseModel):
+class EvidenceReference(ContractModel):
     """공식 문서 RAG 근거 참조 모델"""
     document_title: str = Field(..., description="공식 매뉴얼/FAQ 문서명")
     document_version: Optional[str] = Field(None, description="문서 버전")
