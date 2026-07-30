@@ -445,3 +445,51 @@ PostgreSQL Seed 2회 검증은 아직 완료되지 않았으므로 Runtime 완�
 회귀는 `333 passed`다. 이는 Snapshot 해시 재현성의 복구 증거이며,
 Manifest의 `completion_claim_allowed=false`와 남은 WBS 완료 게이트를
 해제하지 않는다.
+
+## 2026-07-29 v1.2 Runtime 구현 현황
+
+최신 `main` 기준의 Model 선언·App 등록·Migration 매핑 감사를 다시
+실행했다. 이전 절의 2/32·7/32 수치는 해당 시점의 역사 기록이며 현재
+완료율로 사용하지 않는다.
+
+| 항목 | 현재 결과 |
+| --- | ---: |
+| 계약 테이블 | 32개 |
+| Model·등록·Migration 모두 확인 | 10개 |
+| 미구현 | 22개 |
+| T-005 전체 판정 | `NOT_READY` |
+| Backend 전체 회귀 | `397 passed` |
+| Data 전체 회귀 | `61 passed` |
+
+현재 구현으로 확인된 계약 테이블은 다음과 같다.
+
+- `accounts_user`
+- `catalog_product_model`
+- `customers_customer_profile`
+- `field_service_visit`
+- `subscriptions_care_record`
+- `subscriptions_customer_subscription`
+- `support_consultation`
+- `support_followup_confirmation`
+- `support_inquiry`
+- `support_inquiry_symptom`
+
+Crosswalk v2의 17개 Backend Source·12개 Fixture Mapping과 PostgreSQL
+Smoke 37행·Full 367행 적재는 별도 합성 Handoff 범위에서
+`DB_FULL_VERIFIED`다. 이는 T-005 32개 테이블 전체 구현을 뜻하지 않는다.
+실행 명령·DB명·Replay·Hash 증거는
+[PostgreSQL 합성 Handoff Runtime 검증·인계서](../../individual/jiyong/manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md)를
+따른다.
+
+미구현 22개는 한 번에 추가하지 않는다.
+
+| 다음 Wave | 수량 | 착수 조건 |
+| --- | ---: | --- |
+| 공통 코드·방문 결과·문의·안내·문진 | 11 | 현재 후보 병합 후, 상태 이력 충돌은 PM 결정 |
+| AI 운영·Knowledge·Evidence | 11 | 이동윤 AI Runtime·Schema 인계 후 |
+
+Runtime에 존재하지만 현재 32개 계약 밖인 `audit_event`,
+`operations_synthetic_import_batch`, `operations_synthetic_import_item`,
+`workflow_idempotency_record`, `workflow_transition_history`는 PM이
+계약 테이블 또는 지원 Runtime 테이블로 분류하기 전까지 T-005 완료
+개수에 더하지 않는다.

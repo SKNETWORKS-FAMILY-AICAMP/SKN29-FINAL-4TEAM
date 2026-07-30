@@ -148,3 +148,25 @@ QA를 대상으로 한다.
 현재 데이터 기준은 Inquiry 22건, Consultation 12건, Visit 4건, 통합 상태이력 125건, Audit 125건, subset 33건이다. 상세 QA 리포트와 manifest는 파이프라인이 실데이터에서 재생성한다.
 
 상태는 데이터 QA `PASS`까지만 기록한다. `service_contracts_used=false`, Service mapping pending, 비-`DB_VERIFIED` 상태를 유지하며 Backend import 실증은 Backend 담당자의 후속 범위다.
+
+## 2026-07-29 — State Machine v1.0.0 승인 후속 정합화
+
+- 계약 담당자의 `2c93fd1` 커밋에서 State Machine `1.0.0`이
+  `TEAM_APPROVED`로 채택된 사실을 확인했다.
+- 네 핵심 계약 SHA와 신규 `data-state-crosswalk.yaml`, 대표 E2E 계약을
+  데이터 매핑 source로 고정했다.
+- `service_contracts_used=false`는 Backend Runtime 연동 미검증을 뜻하는
+  호환 필드로 유지하고, 데이터 projection의 승인 계약 소비 상태를 별도
+  metadata로 기록한다.
+- DB handoff의 dependency 명칭도 `BACKEND_RUNTIME_MAPPING_PENDING`으로
+  바꿔 승인된 State Machine 계약과 미검증 Runtime mapping을 구분했다.
+- `SYN-JAC104-012`, `016`은 terminal 동일 ID 재개 금지와 충돌하므로
+  새 관련 문의 방식의 시나리오 재설계 승인 전까지 `BLOCKED_DECISION`과
+  활성 projection 제외를 유지한다.
+- Backend DB 적재는 사용자 확인상 성공했지만 commit·Migration·건수·
+  재적재 로그를 받기 전까지 `DOCUMENTED_NOT_DB_VERIFIED`를 유지한다.
+- RAG는 승인 청크 7건의 양성 Case와 범위 밖 자료 부정 Case 5건을
+  데이터 평가 계약으로 제공하며 실제 Index 결과는 AI 담당자 대기다.
+- 최신 로컬 검증은 단위 테스트 55/55, 계약 검증 PASS,
+  QA 48개 파일·740개 레코드, 오류·경고·재생성 drift 0건이다.
+- 최종 Manifest 154개 항목을 검사했고 `.temp`·`.work` 잔존물은 없다.

@@ -14,13 +14,12 @@ class PipelineResult(BaseModel):
         """SymptomAnalysisResult DTO 변환"""
         ctx = self.context
         return SymptomAnalysisResult(
-            trace_context=ctx.trace_context,
+            inquiry_id=ctx.trace_context.inquiry_id,
+            correlation_id=ctx.trace_context.correlation_id,
             structured_symptom=ctx.structured_symptom,
             missing_fields=[],
             followup_questions=[],
             safety_assessment=ctx.safety_assessment,
             usage_guidance=ctx.usage_guidance,
             evidence_references=ctx.evidence_references,
-            model_metadata=ctx.model_metadata,
-            processing_traces=ctx.processing_traces
         )

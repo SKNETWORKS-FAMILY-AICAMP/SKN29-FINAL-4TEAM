@@ -1,0 +1,53 @@
+{
+  "request": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b201",
+    "correlation_id": "corr-trace-20260729-001",
+    "raw_symptom": "정수기 냉수가 예전만큼 차갑지 않고 미지근하게 나옵니다.",
+    "model_code": "WPUJAC104DWH",
+    "selected_symptoms": ["온도 이상", "출수 이상"],
+    "previous_answers": []
+  },
+  "response": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b201",
+    "correlation_id": "corr-trace-20260729-001",
+    "structured_symptom": {
+      "symptom_type": "온도 이상",
+      "occurrence_time": "최근 2일 전부터",
+      "target_water_type": "냉수",
+      "occurrence_condition": "연속 출수 시 미지근함",
+      "error_code": null,
+      "accompanying_symptoms": [],
+      "actions_taken": ["전원 재가동 시도"]
+    },
+    "missing_fields": [],
+    "followup_questions": [],
+    "safety_assessment": {
+      "risk_level": "general",
+      "priority": "general_guidance",
+      "requires_consultation": false,
+      "detected_risks": [],
+      "safety_reason": "전기, 누수, 화상 등 직간접적 위험 요소가 감지되지 않은 일반 문의건입니다."
+    },
+    "usage_guidance": {
+      "guidance_status": "NORMAL",
+      "message": "현재 입력에서는 즉시 사용을 중지해야 할 위험 신호가 확인되지 않았습니다. 연속으로 많은 양의 냉수를 출수할 경우 일시적으로 냉수 온도가 미지근해질 수 있습니다.",
+      "restricted_functions": [],
+      "next_actions": [
+        "대용량 출수 후 약 30분~1시간 동안 냉수가 다듬어질 시간을 기다려주세요.",
+        "제품 후면 통풍구 주위 장애물을 치워 통풍이 잘 되도록 해주세요."
+      ]
+    },
+    "evidence_references": [
+      {
+        "document_title": "WPU-JAC104D 사용설명서",
+        "document_version": "v1.0",
+        "page": 38,
+        "chunk_id": "WPUJAC104DWH_MANUAL_P38_C01",
+        "official_url": "https://www.skmagic.com/manual/WPUJAC104DWH",
+        "summary": "냉수 기능 안내: 대량 사용 시 냉수가 연속 출수되면 일시적으로 냉수 온도가 상승할 수 있습니다.",
+        "similarity_score": 0.92,
+        "verification_status": "official_verified"
+      }
+    ]
+  }
+}

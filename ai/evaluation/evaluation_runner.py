@@ -4,7 +4,8 @@ import json
 import os
 from typing import Any, Dict
 from ai.app.orchestration.pipeline_router import PipelineRouter
-from ai.app.retrieval import RetrievalQuery, VectorSearchService
+from ai.app.retrieval import RetrievalQuery
+from ai.app.retrieval.search.vector_search import VectorSearchService
 from ai.evaluation.eval_dataset_loader import EvalDatasetLoader
 from ai.evaluation.metrics import calculate_mrr, calculate_recall_at_k, is_safety_compliant
 
@@ -12,14 +13,21 @@ from ai.evaluation.metrics import calculate_mrr, calculate_recall_at_k, is_safet
 class EvaluationRunner:
     """RAG 정답률(Recall@5) 및 안전 규칙 준수율 평가 실행기"""
 
-    def __init__(self):
+    def __init__(self, search_service: VectorSearchService | None = None):
         self.loader = EvalDatasetLoader()
-        self.search_service = VectorSearchService()
-        self.pipeline_router = PipelineRouter()
+        self.search_service = search_service
+        self.pipeline_router = PipelineRouter(search_service)
 
     def run_rag_evaluation(self) -> Dict[str, Any]:
         """RAG 검색 Recall@5 및 MRR 지표 평가"""
         dataset = self.loader.load_rag_dataset()
+        if self.search_service is None:
+            return {
+                "total_cases": len(dataset),
+                "mean_recall_at_5": 0.0,
+                "mean_mrr": 0.0,
+                "status": "vector_store_not_configured",
+            }
         if not dataset:
             return {"total_cases": 0, "mean_recall_at_5": 0.0, "mean_mrr": 0.0}
 

@@ -1,11 +1,6 @@
 """RAG Retrieval 및 메타데이터 필터 단위 테스트."""
 
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
-
-import pytest
+from pathlib import Path
 from ai.app.retrieval.filters.document_policy_filter import DocumentPolicyFilter
 from ai.app.retrieval.filters.product_filter import ProductFilter
 from ai.app.retrieval.indexing.chunk_loader import ChunkLoader
@@ -54,8 +49,20 @@ def test_product_filter_s_generation_exclusion():
 
 
 def test_vector_search_top_k_and_filtering():
-    """VectorSearchService Top-5 반환 및 필터링 적용 테스트"""
-    search_service = VectorSearchService()
+    """검색 서비스가 임베딩과 Vector Store에 모델 필터를 전달하는지 검증"""
+    class FakeEmbedding:
+        dimension = 1024
+        def embed_query(self, text):
+            return [0.0] * 1024
+
+    class FakeStore:
+        def search(self, vector, *, model_code, product_generation, top_k):
+            assert len(vector) == 1024
+            assert model_code == "WPUJAC104DWH"
+            assert product_generation == "D"
+            return ChunkLoader().load_verified_chunks()[:top_k]
+
+    search_service = VectorSearchService(FakeEmbedding(), FakeStore())
     query = RetrievalQuery(query_text="제품 밑에서 물이 새요", model_code="WPUJAC104DWH", top_k=5)
 
     results = search_service.search(query)
@@ -66,8 +73,15 @@ def test_vector_search_top_k_and_filtering():
     # 2. 결과에 S세대나 WPU-IAC506 모델이 포함되지 않았는지 확인
     for chunk in results:
         assert chunk.product_generation == "D"
-        assert chunk.manual_model != "WPU-IAC506"
-        assert chunk.manual_model != "WPUIAC425SNW"
+        assert chunk.model_code == "WPUJAC104DWH"
+
+
+def test_chunk_loader_reads_verified_common_data():
+    chunks = ChunkLoader().load_verified_chunks()
+    assert len(chunks) >= 7
+    assert {chunk.page for chunk in chunks}.issuperset({37, 38})
+    assert all(chunk.source_hash for chunk in chunks)
+    assert all(chunk.verification_status == "official_verified" for chunk in chunks)
 
 
 def test_index_manifest_save_and_load(tmp_path):

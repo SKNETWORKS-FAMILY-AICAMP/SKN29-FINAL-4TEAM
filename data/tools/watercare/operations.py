@@ -15,8 +15,16 @@ from .builders import (
     write_preview,
 )
 from .config import PipelineConfig
-from .io import data_path, read_json, read_jsonl, sha256_file, write_json
-from .validation import run_data_qa
+from .io import (
+    data_path,
+    read_json,
+    read_jsonl,
+    read_lf_bytes,
+    sha256_bytes,
+    sha256_file,
+    write_json,
+)
+from .validation import run_data_qa, validate_service_contract_mapping
 
 
 def _relative(config: PipelineConfig, path: Path) -> str:
@@ -24,15 +32,80 @@ def _relative(config: PipelineConfig, path: Path) -> str:
 
 
 def _entry(config: PipelineConfig, path: Path) -> dict[str, Any]:
+    binary_suffixes = {".gif", ".jpeg", ".jpg", ".pdf", ".png"}
+    content = (
+        path.read_bytes()
+        if path.suffix.lower() in binary_suffixes
+        else read_lf_bytes(path)
+    )
     return {
         "path": _relative(config, path),
-        "size_bytes": path.stat().st_size,
-        "sha256": sha256_file(path),
+        "size_bytes": len(content),
+        "sha256": sha256_bytes(content),
     }
 
 
 def _files(root: Path) -> list[Path]:
-    return sorted(path for path in root.rglob("*") if path.is_file())
+    return sorted(
+        (path for path in root.rglob("*") if path.is_file()),
+        key=lambda path: path.as_posix(),
+    )
+
+
+def _source_commit(config: PipelineConfig) -> str:
+    result = subprocess.run(
+        [
+            "git",
+            "log",
+            "-1",
+            "--format=%H",
+            "--",
+            "contracts/state-machine",
+        ],
+        cwd=config.data_root.parent,
+        text=True,
+        encoding="utf-8",
+        capture_output=True,
+        check=True,
+    )
+    return result.stdout.strip()
+
+
+def _contract_alignment(config: PipelineConfig) -> dict[str, Any]:
+    mapping = config.config("contract_mapping")
+    return {
+        **mapping["state_machine_contract"],
+        "pipeline_config_sha256": sha256_file(
+            config.data_root / "config/pipeline.json"
+        ),
+        "contract_mapping_sha256": sha256_file(
+            config.path("contract_mapping")
+        ),
+        "source_hashes_verified": not any(
+            error.startswith("contract_source_")
+            for error in validate_service_contract_mapping(config)
+        ),
+    }
+
+
+def _error_categories(errors: list[str]) -> dict[str, dict[str, Any]]:
+    categorized: dict[str, list[str]] = {
+        "DATA_ERROR": [],
+        "CONTRACT_SOURCE_DRIFT": [],
+        "EXTERNAL_BLOCKER": [],
+    }
+    for error in errors:
+        if error.startswith("contract_source_"):
+            category = "CONTRACT_SOURCE_DRIFT"
+        elif error.startswith(("backend_source_", "external_source_")):
+            category = "EXTERNAL_BLOCKER"
+        else:
+            category = "DATA_ERROR"
+        categorized[category].append(error)
+    return {
+        category: {"count": len(items), "items": items}
+        for category, items in categorized.items()
+    }
 
 
 def _record_count(path: Path) -> int | None:
@@ -86,7 +159,9 @@ def build_handoff_manifest(
         "status": "PASS",
         "dataset_version": config.dataset_version,
         "generated_at": config.generated_at,
-        "service_contracts_used": False,
+        "source_commit": _source_commit(config),
+        "service_contracts_used": definitions["service_contracts_used"],
+        "contract_alignment": definitions["contract_alignment"],
         "profile_count": len(resolved),
         "unique_file_count": len(unique_paths),
         "profiles": resolved,
@@ -211,6 +286,9 @@ def _write_detailed_qa_reports(
     common = {
         "dataset_version": config.dataset_version,
         "generated_at": config.generated_at,
+        "source_commit": report["source_commit"],
+        "contract_alignment": report["contract_alignment"],
+        "error_categories": report["error_categories"],
         "status": report["status"],
     }
     reports: dict[str, dict[str, Any]] = {
@@ -403,6 +481,9 @@ def run_qa(config: PipelineConfig, *, verify_rebuild: bool = False) -> dict[str,
             "PASS" if not changed and not effective_drift else "FAIL"
         ),
     }
+    report["source_commit"] = _source_commit(config)
+    report["contract_alignment"] = _contract_alignment(config)
+    report["error_categories"] = _error_categories(report["errors"])
     report_entries = _write_detailed_qa_reports(config, report)
     summary_path = config.path("qa_summary")
     existing = read_json(summary_path) if summary_path.is_file() else {}
@@ -411,6 +492,9 @@ def run_qa(config: PipelineConfig, *, verify_rebuild: bool = False) -> dict[str,
             "status": report["status"],
             "stage": 5,
             "generated_at": config.generated_at,
+            "source_commit": report["source_commit"],
+            "contract_alignment": report["contract_alignment"],
+            "error_categories": report["error_categories"],
             "reports": report_entries,
             "totals": {
                 "errors": report["summary"]["errors"],
@@ -445,7 +529,7 @@ def inventory(config: PipelineConfig) -> dict[str, Any]:
     targets: dict[str, Any] = {}
     for name in ("raw", ".temp", ".work"):
         root = config.data_root / name
-        files = sorted(path for path in root.rglob("*") if path.is_file()) if root.exists() else []
+        files = _files(root) if root.exists() else []
         tracked_count = 0
         for path in files:
             relative = f"data/{_relative(config, path)}"
@@ -552,7 +636,8 @@ def _write_final_manifest(config: PipelineConfig) -> dict[str, Any]:
             item
             for item in metadata_paths
             if _relative(config, item) not in data_path_set
-        }
+        },
+        key=lambda item: item.as_posix(),
     )
     groups = {
         "data_files": data_files,

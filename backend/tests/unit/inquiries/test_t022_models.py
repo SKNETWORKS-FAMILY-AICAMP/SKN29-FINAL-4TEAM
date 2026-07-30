@@ -4,6 +4,7 @@ from datetime import date
 from uuid import UUID, uuid4
 
 import pytest
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
@@ -84,6 +85,57 @@ def test_inquiry_uses_three_layer_identifiers_and_pm_initial_state():
         "RESOLVED",
         "CANCELLED",
     }
+
+
+def test_synthetic_inquiry_fields_preserve_unknown_channel_and_assignment():
+    subscription = create_subscription()
+    consultant = User.objects.create_user(
+        id="DEMO-USR-990",
+        username="T022-CONSULTANT-990",
+        password=None,
+        full_name="Synthetic consultant",
+        role_code=User.Role.CONSULTANT,
+        employee_no="T022-EMP-990",
+    )
+    inquiry = Inquiry(
+        subscription=subscription,
+        initiated_by=subscription.customer.user,
+        channel_code=None,
+        raw_text="Fixture has no source channel.",
+        scenario_code="SYN-JAC104-990",
+        assigned_role_code=Inquiry.AssignedRole.CONSULTANT,
+        assigned_user=consultant,
+        risk_level_code=Inquiry.RiskLevel.CAUTION,
+        usage_guidance_status=(
+            Inquiry.UsageGuidanceStatus.PARTIAL_STOP
+        ),
+        evidence_ids=["EVD-WPUJAC104DWH-TEST-990"],
+        evidence_mode=Inquiry.EvidenceMode.EXACT_MODEL,
+        requires_fallback=False,
+        source_idempotency_key="source-inquiry-990",
+        source_correlation_id=uuid4(),
+    )
+    inquiry.full_clean()
+    inquiry.save()
+
+    assert inquiry.channel_code is None
+    assert inquiry.assigned_user == consultant
+    assert inquiry.scenario_code == "SYN-JAC104-990"
+
+
+def test_inquiry_assignment_role_must_match_user_role():
+    subscription = create_subscription()
+    inquiry = Inquiry(
+        subscription=subscription,
+        initiated_by=subscription.customer.user,
+        channel_code=None,
+        raw_text="Mismatched synthetic assignment.",
+        assigned_role_code=Inquiry.AssignedRole.TECHNICIAN,
+        assigned_user=subscription.customer.user,
+    )
+
+    with pytest.raises(ValidationError):
+        inquiry.full_clean()
 
 
 def test_inquiry_database_checks_reject_invalid_codes_and_version():

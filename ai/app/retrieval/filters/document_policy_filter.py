@@ -1,7 +1,7 @@
 """공식 문서 정책 및 미검증 FAQ 필터 모듈."""
 
 from typing import List
-from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk
+from ..models.retrieved_chunk import RetrievedChunk
 
 
 class DocumentPolicyFilter:

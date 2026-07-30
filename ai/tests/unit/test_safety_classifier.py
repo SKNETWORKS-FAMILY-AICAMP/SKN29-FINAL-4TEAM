@@ -3,6 +3,7 @@
 import pytest
 from ai.app.schemas import RiskLevel, UsageGuidanceStatus
 from ai.app.safety import RiskClassifier, UsageGuidanceClassifier
+from ai.app.safety import ProhibitedActionGuard
 from ai.app.validation.safety import ProhibitedPhraseValidator
 
 
@@ -99,3 +100,16 @@ def test_prohibited_phrase_validation(phrase_validator):
     assert valid is False
     assert len(detected) > 0
     assert "[직접수리유도 금지]" in detected[0]
+
+
+def test_hot_water_burn_risk_never_returns_normal(risk_classifier, guidance_classifier):
+    raw_text = "온수가 계속 나오고 멈추지 않아 화상 위험이 있습니다."
+    assessment = risk_classifier.classify(raw_text)
+    guidance = guidance_classifier.determine_guidance(assessment, raw_text, has_evidence=True)
+    assert assessment.risk_level == RiskLevel.DANGER
+    assert guidance.guidance_status in {UsageGuidanceStatus.PARTIAL_STOP, UsageGuidanceStatus.TOTAL_STOP}
+
+
+def test_prohibited_action_guard_blocks_disassembly():
+    with pytest.raises(ValueError, match="직접 분해"):
+        ProhibitedActionGuard().validate(["정수기 커버를 분해하세요."])

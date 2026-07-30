@@ -655,7 +655,8 @@ def normalize(config: dict[str, Any]) -> dict[str, Any]:
                 row["scenario_id"] not in BLOCKED_SCENARIOS
             ),
             "reason": (
-                "RESOLVED 이후 동일 문의 재개 정책 결정 대기"
+                "State Machine v1.0.0은 terminal 문의의 동일 ID 재개를 "
+                "금지하므로 새 관련 문의 형태의 시나리오 재설계 승인 대기"
                 if row["scenario_id"] in BLOCKED_SCENARIOS
                 else "현행 저장소 계약에 정합화됨"
             ),

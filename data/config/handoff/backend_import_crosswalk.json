@@ -1,83 +1,300 @@
 {
-  "mapping_version": "1.0.0",
-  "status": "DOCUMENTED_NOT_DB_VERIFIED",
-  "service_contracts_used": false,
+  "mapping_version": "2.0.0",
+  "status": "DB_FULL_VERIFIED",
+  "service_contracts_used": true,
+  "hash_policy": {
+    "algorithm": "SHA-256",
+    "encoding": "UTF-8",
+    "bom": "IGNORE",
+    "text_line_endings": "LF"
+  },
   "backend_sources": {
     "user_model": {
       "path": "backend/apps/accounts/models/user.py",
-      "sha256": "65F3C7E840750B68412CC2D777834385291BBEAED3ED912A6B8D55AAAA2F1672"
+      "sha256": "0E03791FC5622B93CE4ECBD3050882ED9EEF07031A109F9B6EDCA2183CC5B2F0"
     },
     "customer_profile_model": {
       "path": "backend/apps/accounts/models/customer_profile.py",
-      "sha256": "E1D2ACDD3F7243CEBDA52D7BE41D507DC844C04169B71D60F7A4954EDEDFB592"
+      "sha256": "28CAA2DD62236AFC06CA64867699B2F47A1A6FEC9199F62AA28DF16BD59DE17A"
     },
     "product_model": {
       "path": "backend/apps/products/models/product_model_registry.py",
-      "sha256": "8BF8353591EBFA5AE90D14D15C29C5D49035474863E5B3037CB746816C5CE71B"
+      "sha256": "23D746B4050BD438F8ED8007D685C6CB5683FB88280679ED89F0B6DB92FFBD97"
     },
     "subscription_model": {
       "path": "backend/apps/subscriptions/models/subscription.py",
-      "sha256": "E631BA8CAF76287F36CDD721D6DBC6D0776D1CEBAE5AD31673E67B3B35289E26"
+      "sha256": "091AEEF9A4D8422A790D31D9B9575AF83755AFBF2EC2DB06F96EC172A97BB24B"
+    },
+    "inquiry_model": {
+      "path": "backend/apps/inquiries/models/inquiry.py",
+      "sha256": "F6520FF52BC170321CA71AA2FFDB8B73658021060CFAFD12DBE0EEDF3E8645C3"
+    },
+    "symptom_entry_model": {
+      "path": "backend/apps/inquiries/models/symptom_entry.py",
+      "sha256": "74DA903DEBB67816AAD59FEDBE437EEBB2758E9FF294DF26D1B4BEED6A442885"
+    },
+    "consultation_model": {
+      "path": "backend/apps/consultations/models/consultation.py",
+      "sha256": "4BC4298AF906AD6ADEBF3A9C40E29946BECC61BF9A61E04C04CD534A82515BE8"
+    },
+    "visit_model": {
+      "path": "backend/apps/visits/models/visit.py",
+      "sha256": "07D0D5B97F7DFF87EEC892AC34606ADC283802AE74CBFE11352E246892FEE32D"
+    },
+    "followup_confirmation_model": {
+      "path": "backend/apps/inquiries/models/followup_confirmation.py",
+      "sha256": "4D5735B710A6795E1B6C2C1F6AE7BA8D31AC569E41297059E987CC90DED3FA88"
     },
     "care_model": {
       "path": "backend/apps/care/models/care_history.py",
-      "sha256": "F47073E7DC0D75F9A1DE7DA179EAE2BCDB933611A5E795A3B42179ABC971C550"
+      "sha256": "5F1F87690261883EF79E9A3AE815A0F3B0DA0DA17F14E599D73D19E060AD41AC"
+    },
+    "transition_history_model": {
+      "path": "backend/apps/workflow/models/transition_history.py",
+      "sha256": "9C16495E25D9D058F944836346D63D6EE0E047EAE83EAFECB42D19487BB5999C"
+    },
+    "audit_event_model": {
+      "path": "backend/apps/audit/models/audit_event.py",
+      "sha256": "5A70E24037237B35F566D540724EEBF79375A359026EB9752FBDDF5F5F628FE9"
+    },
+    "import_ledger_model": {
+      "path": "backend/apps/operations/models/synthetic_import_ledger.py",
+      "sha256": "E05BD632AE9690F4B91736DFED1E314169AF6DCE652EFDB4BDB321DCCD5A408F"
+    },
+    "import_repository": {
+      "path": "backend/apps/operations/repositories/operations_repository.py",
+      "sha256": "B5C7E1CFF6AC1835C81786C64D514155C5E9B141F40989961D6A1DF8483F6197"
+    },
+    "import_service": {
+      "path": "backend/apps/operations/services/operations_service.py",
+      "sha256": "71170D33992A0A7A96ADE3BFBA1BD2411E150C7B4510D8CCF304B2146EB7EB96"
+    },
+    "import_command": {
+      "path": "backend/apps/operations/management/commands/import_synthetic_handoff.py",
+      "sha256": "6C94918402DF07FCD77840A7C58B457B24C3E973E48961BBAA3CD39575B90AE2"
+    },
+    "demo_auth_repository": {
+      "path": "backend/apps/accounts/repositories/account_repository.py",
+      "sha256": "D68531A25E4409D918D3E2D0EBC7465FE4E54B58AD215E5867BF80865FEB9FFF"
     }
   },
   "identifier_resolution": {
     "fixture_internal_id_role": "LOCAL_RELATIONSHIP_ONLY",
     "backend_primary_key_injection": "FORBIDDEN",
-    "lookup_order": ["public_id", "business_key"],
+    "lookup_order": [
+      "public_id",
+      "business_key"
+    ],
     "foreign_key_resolution": "LOOKUP_THEN_USE_BACKEND_INTERNAL_PK",
     "accounts_legacy_string_pk": "BACKEND_COMPATIBILITY_BRIDGE_NOT_FIXTURE_ID"
+  },
+  "verification": {
+    "status": "DB_FULL_VERIFIED",
+    "database_engine": "PostgreSQL",
+    "dry_run_rollback_required": true,
+    "expected": {
+      "db-smoke": {
+        "source_count": 37,
+        "dry_run_persisted_domain_rows": 0,
+        "dry_run_persisted_batch_rows": 0,
+        "dry_run_persisted_item_rows": 0,
+        "first_run": {
+          "created_count": 31,
+          "updated_count": 0,
+          "unchanged_count": 0,
+          "projected_count": 6
+        },
+        "replay_run": {
+          "created_count": 0,
+          "updated_count": 0,
+          "unchanged_count": 31,
+          "projected_count": 6
+        },
+        "source_items": 37,
+        "projection_checks": 6,
+        "aggregate_checks": 0,
+        "audit_history_checks": 0
+      },
+      "db-full": {
+        "source_count": 367,
+        "dry_run_persisted_domain_rows": 0,
+        "dry_run_persisted_batch_rows": 0,
+        "dry_run_persisted_item_rows": 0,
+        "first_run": {
+          "created_count": 355,
+          "updated_count": 0,
+          "unchanged_count": 0,
+          "projected_count": 12
+        },
+        "replay_run": {
+          "created_count": 0,
+          "updated_count": 0,
+          "unchanged_count": 355,
+          "projected_count": 12
+        },
+        "source_items": 367,
+        "projection_checks": 12,
+        "aggregate_checks": 26,
+        "audit_history_checks": 125
+      }
+    },
+    "actual": {
+      "verified_at": "2026-07-29T20:01:04+09:00",
+      "database_version": "PostgreSQL 16.14 (Debian 16.14-1.pgdg12+1)",
+      "evidence": {
+        "base_commit_sha": "0bcb8b514f2b0d1476882d926b667dbdb5d8c06a",
+        "worktree_state": "UNCOMMITTED_VERIFIED_CHANGES",
+        "fixture_set_sha256": "7C407CB6F013BE584011E446650BACD4A6A958895F88448B17EE523AA5B9D068",
+        "runtime_document": {
+          "path": "docs/individual/jiyong/manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md",
+          "text_sha256": "07F08FB08C74ADB5F007202C6F1F423DA21CE11267E98F8004972A432E49AD8F"
+        },
+        "profiles": {
+          "db-smoke": {
+            "database_name": "watercare_synthetic_smoke_verify_20260729_mainv2",
+            "migration_command": "python backend/manage.py migrate --noinput",
+            "dry_run_command": "python backend/manage.py import_synthetic_handoff --profile db-smoke --dry-run",
+            "first_run_command": "python backend/manage.py import_synthetic_handoff --profile db-smoke",
+            "replay_run_command": "python backend/manage.py import_synthetic_handoff --profile db-smoke",
+            "first_batch_code": "SYN-IMPORT-6ADD1A8220654C28B40EC6A8A0908EFC",
+            "replay_batch_code": "SYN-IMPORT-7617F68A827A4CF1B4C875E618967D77",
+            "first_completed_at": "2026-07-29T10:58:01.967425+00:00",
+            "replay_completed_at": "2026-07-29T10:58:15.486953+00:00"
+          },
+          "db-full": {
+            "database_name": "watercare_synthetic_full_verify_20260729_mainv2",
+            "migration_command": "python backend/manage.py migrate --noinput",
+            "dry_run_command": "python backend/manage.py import_synthetic_handoff --profile db-full --dry-run",
+            "first_run_command": "python backend/manage.py import_synthetic_handoff --profile db-full",
+            "replay_run_command": "python backend/manage.py import_synthetic_handoff --profile db-full",
+            "first_batch_code": "SYN-IMPORT-22B7EA784F88432399625A6E6E4C4C1C",
+            "replay_batch_code": "SYN-IMPORT-1C0E022644654F2BBFF84B2DF5F3BAD3",
+            "first_completed_at": "2026-07-29T11:00:02.490369+00:00",
+            "replay_completed_at": "2026-07-29T11:00:24.370239+00:00"
+          }
+        }
+      },
+      "db-smoke": {
+        "source_count": 37,
+        "dry_run_persisted_domain_rows": 0,
+        "dry_run_persisted_batch_rows": 0,
+        "dry_run_persisted_item_rows": 0,
+        "first_run": {
+          "created_count": 31,
+          "updated_count": 0,
+          "unchanged_count": 0,
+          "projected_count": 6
+        },
+        "replay_run": {
+          "created_count": 0,
+          "updated_count": 0,
+          "unchanged_count": 31,
+          "projected_count": 6
+        },
+        "source_items": 37,
+        "projection_checks": 6,
+        "aggregate_checks": 0,
+        "audit_history_checks": 0
+      },
+      "db-full": {
+        "source_count": 367,
+        "dry_run_persisted_domain_rows": 0,
+        "dry_run_persisted_batch_rows": 0,
+        "dry_run_persisted_item_rows": 0,
+        "first_run": {
+          "created_count": 355,
+          "updated_count": 0,
+          "unchanged_count": 0,
+          "projected_count": 12
+        },
+        "replay_run": {
+          "created_count": 0,
+          "updated_count": 0,
+          "unchanged_count": 355,
+          "projected_count": 12
+        },
+        "source_items": 367,
+        "projection_checks": 12,
+        "aggregate_checks": 26,
+        "audit_history_checks": 125
+      }
+    }
   },
   "entity_mappings": [
     {
       "fixture": "synthetic/fixtures/users.json",
       "backend_model": "accounts.User",
-      "readiness": "LOOKUP_OR_UPSERT_AFTER_MAPPING",
+      "load_mode": "DIRECT",
+      "readiness": "DB_FULL_VERIFIED",
       "business_key": "user_number",
       "field_mappings": {
         "public_id": "public_id",
-        "user_number": "username",
-        "display_name": "display_name",
+        "user_number": "username; employee_no when role is not CUSTOMER",
+        "display_name": "full_name",
         "role": "role_code",
-        "active": "is_active"
+        "active": "is_active",
+        "created_at": "created_at; date_joined"
       }
     },
     {
       "fixture": "synthetic/fixtures/customer_profiles.json",
       "backend_model": "accounts.CustomerProfile",
-      "readiness": "LOOKUP_OR_UPSERT_AFTER_MAPPING",
+      "load_mode": "DIRECT",
+      "readiness": "DB_FULL_VERIFIED",
       "business_key": "customer_profile_number",
       "field_mappings": {
         "public_id": "public_id",
         "customer_profile_number": "customer_no",
         "customer_name": "customer_name",
-        "user_id": "user"
+        "user_id": "user lookup",
+        "is_synthetic": "is_synthetic",
+        "created_at": "created_at"
       }
     },
     {
       "fixture": "synthetic/fixtures/products.json",
       "backend_model": "products.ProductModel",
-      "readiness": "LOOKUP_OR_UPSERT_AFTER_MAPPING",
+      "load_mode": "DIRECT",
+      "readiness": "DB_FULL_VERIFIED",
       "business_key": "product_code",
       "field_mappings": {
         "public_id": "public_id",
         "product_code": "model_code",
-        "product_name": "model_name"
+        "product_model": "model_name",
+        "product_generation": "generation_code",
+        "model_family": "features.model_family",
+        "manual_revision": "features.manual_revision",
+        "support_scope": "features.support_scope; is_supported_mvp",
+        "data_classification": "features.data_classification"
+      }
+    },
+    {
+      "fixture": "synthetic/fixtures/customer_products.json",
+      "backend_model": "subscriptions.CustomerSubscription",
+      "load_mode": "PROJECTED",
+      "readiness": "PROJECTED_DB_FULL_VERIFIED",
+      "business_key": "serial_number",
+      "field_mappings": {
+        "public_id": "source_customer_product_public_id",
+        "customer_id": "validate subscription customer chain",
+        "product_id": "product_model lookup",
+        "serial_number": "serial_no",
+        "installation_date": "installed_on",
+        "installation_location": "installation_address",
+        "active": "validate active projection"
       }
     },
     {
       "fixture": "synthetic/fixtures/subscriptions.json",
       "backend_model": "subscriptions.CustomerSubscription",
-      "readiness": "LOOKUP_OR_UPSERT_AFTER_MAPPING",
+      "load_mode": "DIRECT",
+      "readiness": "DB_FULL_VERIFIED",
       "business_key": "subscription_number",
       "field_mappings": {
         "public_id": "public_id",
         "subscription_number": "contract_no",
-        "customer_profile_id": "customer",
-        "customer_product_id": "product_model_and_serial_lookup",
+        "customer_profile_id": "customer lookup",
+        "customer_product_id": "customer product projection lookup",
         "plan_code": "management_type_code",
         "status": "status_code",
         "started_on": "started_on",
@@ -85,17 +302,174 @@
       }
     },
     {
+      "fixture": "synthetic/fixtures/inquiries.json",
+      "backend_model": "inquiries.Inquiry",
+      "derived_backend_models": [
+        "inquiries.SymptomEntry"
+      ],
+      "load_mode": "DIRECT",
+      "readiness": "DB_FULL_VERIFIED",
+      "business_key": "inquiry_number",
+      "field_mappings": {
+        "public_id": "public_id",
+        "inquiry_number": "inquiry_code",
+        "scenario_id": "scenario_code; representative_symptom.structured_payload.scenario_id",
+        "subscription_id": "subscription lookup",
+        "customer_id": "initiated_by customer user lookup",
+        "assigned_user_id": "assigned_user lookup",
+        "assigned_role": "assigned_role_code; representative_symptom.structured_payload.assigned_role",
+        "original_text": "raw_text",
+        "topic_code": "representative_symptom.symptom_type_code",
+        "variant": "representative_symptom.structured_payload.variant",
+        "risk_level": "risk_level_code",
+        "usage_guidance_status": "usage_guidance_status",
+        "evidence_ids": "evidence_ids",
+        "evidence_mode": "evidence_mode",
+        "requires_fallback": "requires_fallback",
+        "idempotency_key": "source_idempotency_key",
+        "correlation_id": "source_correlation_id",
+        "status": "status_code",
+        "state_version": "state_version",
+        "created_at": "created_at",
+        "updated_at": "updated_at"
+      }
+    },
+    {
+      "fixture": "synthetic/fixtures/consultations.json",
+      "backend_model": "consultations.Consultation",
+      "load_mode": "DIRECT",
+      "readiness": "DB_FULL_VERIFIED",
+      "business_key": "consultation_number",
+      "field_mappings": {
+        "public_id": "public_id",
+        "consultation_number": "consultation_code",
+        "inquiry_id": "inquiry lookup",
+        "sequence": "sequence",
+        "consultant_id": "consultant lookup",
+        "status": "status",
+        "outcome": "outcome",
+        "summary": "summary",
+        "state_version": "state_version",
+        "idempotency_key": "idempotency_key",
+        "correlation_id": "correlation_id",
+        "started_at": "started_at",
+        "completed_at": "completed_at",
+        "data_classification": "data_classification",
+        "created_at": "created_at"
+      }
+    },
+    {
+      "fixture": "synthetic/fixtures/visits.json",
+      "backend_model": "visits.Visit",
+      "load_mode": "DIRECT",
+      "readiness": "DB_FULL_VERIFIED",
+      "business_key": "visit_number",
+      "field_mappings": {
+        "public_id": "public_id",
+        "visit_number": "visit_code",
+        "inquiry_id": "inquiry lookup",
+        "technician_id": "technician lookup",
+        "status": "status",
+        "requested_at": "requested_at",
+        "scheduled_at": "scheduled_at",
+        "started_at": "started_at",
+        "completed_at": "completed_at",
+        "confirmed_cause": "confirmed_cause",
+        "action_taken": "action_taken",
+        "state_version": "state_version",
+        "idempotency_key": "idempotency_key",
+        "correlation_id": "correlation_id",
+        "data_classification": "data_classification"
+      }
+    },
+    {
+      "fixture": "synthetic/fixtures/followup_confirmations.json",
+      "backend_model": "inquiries.FollowupConfirmation",
+      "load_mode": "DIRECT",
+      "readiness": "DB_FULL_VERIFIED",
+      "business_key": "followup_number",
+      "field_mappings": {
+        "public_id": "public_id",
+        "followup_number": "followup_code",
+        "inquiry_id": "inquiry lookup",
+        "consultation_id": "consultation lookup",
+        "visit_id": "visit lookup",
+        "guidance_id": "guidance_public_id; null only until guidance model exists",
+        "channel_code": "channel_code",
+        "resolution_status_code": "resolution_status_code",
+        "state_version": "state_version",
+        "customer_response": "customer_response",
+        "unresolved_reason": "unresolved_reason",
+        "next_action": "next_action",
+        "requested_at": "requested_at",
+        "responded_at": "responded_at",
+        "confirmed_at": "confirmed_at"
+      }
+    },
+    {
       "fixture": "synthetic/fixtures/care_histories.json",
       "backend_model": "care.CareRecord",
-      "readiness": "PARTIAL_BLOCKED_OWNER_CONFIRMATION",
+      "load_mode": "DIRECT",
+      "readiness": "DB_FULL_VERIFIED",
       "business_key": "care_history_number",
       "field_mappings": {
         "public_id": "public_id",
         "care_history_number": "care_code",
-        "customer_product_id": "subscription_lookup",
+        "customer_product_id": "subscription lookup",
+        "inquiry_id": "inquiry lookup",
+        "visit_id": "visit lookup",
         "care_type": "care_type_code",
-        "performed_on": "completed_at",
-        "note": "summary"
+        "performed_on": "performed_on",
+        "result": "result_code",
+        "note": "summary",
+        "data_classification": "validate synthetic; source_code IMPORT"
+      }
+    },
+    {
+      "fixture": "synthetic/fixtures/inquiry_status_histories.json",
+      "backend_model": "workflow.TransitionHistory",
+      "load_mode": "DIRECT",
+      "readiness": "DB_FULL_VERIFIED",
+      "business_key": "status_history_number",
+      "field_mappings": {
+        "public_id": "public_id",
+        "status_history_number": "status_history_code",
+        "target_type_code": "target_type_code",
+        "questionnaire_session_id": "questionnaire_session_public_id; null only",
+        "inquiry_id": "inquiry lookup",
+        "consultation_id": "consultation lookup",
+        "visit_id": "visit lookup",
+        "changed_by_id": "actor lookup",
+        "changed_by_type_code": "changed_by_type_code",
+        "event_code": "event_code",
+        "from_status_code": "from_state",
+        "to_status_code": "to_state",
+        "state_version": "state_version",
+        "correlation_id": "correlation_id",
+        "idempotency_key": "idempotency_key",
+        "change_reason": "change_reason",
+        "changed_at": "changed_at"
+      }
+    },
+    {
+      "fixture": "synthetic/fixtures/audit_events.json",
+      "backend_model": "audit.AuditEvent",
+      "load_mode": "DIRECT",
+      "readiness": "DB_FULL_VERIFIED",
+      "business_key": "audit_record_number",
+      "field_mappings": {
+        "public_id": "public_id",
+        "audit_record_number": "audit_code",
+        "entity_type": "entity_type",
+        "entity_id": "inquiry or visit lookup",
+        "event_type": "event_code",
+        "actor_id": "actor lookup",
+        "actor_role": "actor_role",
+        "state_version": "state_version; transition lookup",
+        "idempotency_key": "idempotency_key",
+        "correlation_id": "correlation_id",
+        "occurred_at": "occurred_at",
+        "data_classification": "data_classification"
       }
     }
   ],
@@ -106,23 +480,8 @@
     "care_type": {
       "REGULAR_INSPECTION": "PERIODIC_CHECK",
       "FILTER_REPLACEMENT": "FILTER_REPLACEMENT",
-      "VISIT_SERVICE": null
+      "VISIT_SERVICE": "VISIT_SERVICE"
     }
   },
-  "blocked_mappings": [
-    {
-      "id": "CARE-VISIT-SERVICE-TYPE",
-      "source_values": ["VISIT_SERVICE"],
-      "reason": "Backend CareType에 의미가 같은 직접 대응 코드가 없음",
-      "treatment": "EXCLUDE_FROM_DIRECT_LOAD",
-      "owner": "BACKEND"
-    },
-    {
-      "id": "CARE-COMPLETED-AT-TIME",
-      "source_values": ["performed_on"],
-      "reason": "Data 날짜를 Backend 완료 시각으로 임의 승격할 수 없음",
-      "treatment": "EXCLUDE_FROM_DIRECT_LOAD",
-      "owner": "BACKEND"
-    }
-  ]
+  "blocked_mappings": []
 }

@@ -5,6 +5,7 @@ object Routes {
     const val QR_SCAN = "customer/qr-scan"
     const val QUESTIONNAIRE = "customer/questionnaire"
     const val ERROR_RESULT = "customer/error-result"
+    const val SERVICE_CALL = "customer/service-call"
     const val VISIT_STATUS = "customer/visit-status"
     const val TRACKING = "customer/tracking"
 }

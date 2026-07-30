@@ -10,6 +10,10 @@ API 계약과 PM State 입력은 실제 Runtime 준비도와 분리해 판정합
 연동 starter 참고본이며 현재 Migration·API·State 계약의 실행 기준이
 아닙니다.
 
+DB 변경·복구·인계의 최신 단일 실행 기준은
+[Django·PostgreSQL 공유 패키지 인계서 v1.3](../docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)입니다.
+이 README는 일상 실행을 위한 빠른 진입점만 제공합니다.
+
 ## 현재 구현 범위
 
 - `GET /health`: 외부 상세를 노출하지 않는 liveness
@@ -115,39 +119,48 @@ UTC를 저장하고 API에는 한국 시간대 오프셋을 포함한 ISO 8601 �
 컨테이너가 없으면 생성하고, 이미 있으면 같은 구성을 재사용합니다.
 
 ```powershell
+Set-Location (git rev-parse --show-toplevel)
 docker compose --env-file .\backend\.env up -d postgres
 docker compose --env-file .\backend\.env ps postgres
 
+Get-Content .\backend\.env |
+    Select-String '^(POSTGRES_DB|POSTGRES_HOST|POSTGRES_PORT)='
+
 Set-Location .\backend
-.\.venv\Scripts\python.exe manage.py migrate --check
+$python = '.\.venv\Scripts\python.exe'
+
+& $python ..\scripts\database\check_postgresql_connection.py
+if ($LASTEXITCODE -ne 0) {
+    throw "PostgreSQL 대상 연결 확인 실패"
+}
+
+& $python manage.py migrate --check
+if ($LASTEXITCODE -ne 0) {
+    throw "미적용 Migration이 있습니다. 자동 적용하지 말고 v1.3의 안전 적용 절차를 따르세요."
+}
 ```
 
-`migrate --check`가 미적용 Migration을 보고한 경우에만 다음 명령을
-실행합니다.
+`migrate --check` 실패는 자동 Migration 실행 조건이 아니라 즉시 중단
+조건입니다. 적용이 필요하면 v1.3에 따라 ① DB 이름·Host·Port 재확인,
+② Django·Importer·Job 등 모든 Writer 중단, ③ `migrate --plan` 검토,
+④ 데이터 유무에 따른 백업·복원 검증 필요 여부 결정, ⑤ 승인된
+`migrate --noinput` 명시 실행, ⑥ `migrate --check`와 전체 Gate 재검증
+순서로 진행합니다.
+
+Migration 확인이 통과하면 저장소 루트에서 읽기 전용 PostgreSQL
+Gate를 실행합니다. 서버 시작과 포트 선택은 아래 Health·Auth Smoke
+절차를 따릅니다.
 
 ```powershell
-.\.venv\Scripts\python.exe manage.py migrate --noinput
-.\.venv\Scripts\python.exe manage.py migrate --check
-```
-
-Migration 확인이 통과하면 저장소 루트에서 PostgreSQL 적용 상태를
-검사한 뒤 서버를 시작합니다.
-
-```powershell
-Set-Location ..
-python .\scripts\development\check_environment.py `
+Set-Location (git rev-parse --show-toplevel)
+& .\backend\.venv\Scripts\python.exe `
+  .\scripts\development\check_environment.py `
   --service backend `
   --postgresql
 if ($LASTEXITCODE -ne 0) {
     throw "Backend·PostgreSQL 일상 시작 검사 실패"
 }
-
-Set-Location .\backend
-.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
 ```
-
-PostgreSQL 검사를 Migration보다 먼저 실행하면 새 Migration을 Pull한
-날 적용 누락으로 중단될 수 있으므로 위 순서를 유지합니다.
 
 Demo Seed는 새 DB, Seed 변경, Demo 데이터 복구 시에만 Accounts →
 Products → Subscriptions → Care 순서로 실행합니다. Django 서버는
@@ -159,7 +172,7 @@ docker compose --env-file .\backend\.env stop postgres
 ```
 
 전체 일상 실행·종료·상태 확인·포트 충돌 절차는
-[Django·PostgreSQL 공유 패키지 인계서 v1.2](../docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)를
+[Django·PostgreSQL 공유 패키지 인계서 v1.3](../docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)를
 따릅니다.
 
 ## 검증
@@ -182,29 +195,39 @@ python .\scripts\development\check_environment.py --service backend --full
 PostgreSQL이 실행 중일 때 읽기 전용 연결과 적용 Migration을 추가로
 확인합니다.
 
+2026-07-29 현재 로컬 작업 트리에서 확인한 실측 증거는 다음과 같습니다.
+병합된 팀 `main`의 영구 기준으로 간주하지 말고 v1.3의 재현 절차로
+다시 확인합니다.
+
+| 항목 | 실측 결과 | 범위 |
+| --- | --- | --- |
+| PostgreSQL | `16.14` | Compose와 실제 연결 버전 |
+| Migration | 기존 미적용 9개와 `workflow.0003` 적용 | 현재 로컬 `watercare` |
+| Legacy 보정 | `changed_at` 11행을 `created_at`으로 보정 | `workflow.0003` |
+| 전체 Gate | `397 passed`와 PostgreSQL Gate 통과 | pytest는 SQLite, PostgreSQL은 읽기 전용 연결·적용 Migration 확인 |
+| Health·Auth Smoke | Port `8001`, `status=PASSED` | 기존 Process가 8000을 점유해 현재 코드에 8001 사용 |
+
 [Backend 가상환경 재현 가이드](../docs/individual/jiyong/technical/backend/backend_venv_reproducibility_guide.md)와
-[Django·PostgreSQL 공유 패키지 인계서 v1.2](../docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)에
+[Django·PostgreSQL 공유 패키지 인계서 v1.3](../docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)에
 설계 근거, 복구 순서와 담당자별 인계사항을 정리했습니다.
 
 실제 로컬 PostgreSQL 실행은 `backend/.env.example`의 키를
-`backend/.env`에 안전하게 채운 뒤 수행합니다. 아래 블록은 기능 실행을
-위한 1회 Seed 경로입니다. 팀 인계용 멱등성 증거는 이 블록만으로
-완료 판정하지 않고, 공유 패키지 인계서 v1.2의 5.6에서 네 Seed를 2회
-실행한 뒤 5.7 최종 게이트까지 통과합니다.
+`backend/.env`에 안전하게 채운 뒤 수행합니다. 기본 `watercare` DB에는
+다음 Demo Seed 네 종류만 실행합니다. 팀 인계용 멱등성 증거와 실행
+전제는 v1.3을 따릅니다.
 
 ```powershell
-docker compose --env-file .\backend\.env up -d postgres
-docker compose --env-file .\backend\.env ps postgres
-
+Set-Location (git rev-parse --show-toplevel)
 Set-Location .\backend
-.\.venv\Scripts\python.exe ..\scripts\database\check_postgresql_connection.py
-.\.venv\Scripts\python.exe manage.py migrate
 .\.venv\Scripts\python.exe manage.py seed_demo_accounts
 .\.venv\Scripts\python.exe manage.py seed_demo_products
 .\.venv\Scripts\python.exe manage.py seed_demo_subscriptions
 .\.venv\Scripts\python.exe manage.py seed_demo_care_records
-.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
 ```
+
+Canonical `import_synthetic_handoff`는 기본 `watercare`에서 실행하지
+않습니다. 새로 만든 격리 DB의 이름과 연결 대상을 확인한 경우에만
+v1.3의 전용 절차로 실행합니다.
 
 PostgreSQL은 로컬 PC의 `127.0.0.1`에만 공개되며, DB 파일은
 `watercare-postgres-data` Docker Volume에 보존됩니다. 단순 중지는
@@ -218,27 +241,60 @@ Compose는 공식 `postgres:16.14-bookworm` 이미지를 사용하고
 소유하는 Django Migration과 함께 추가·검증하며 이 초기 연결
 기준선에서는 선행 생성하지 않습니다.
 
-다른 터미널에서 liveness 확인:
+### 서버와 Health·Auth Smoke
 
-```powershell
-$response = Invoke-WebRequest 'http://127.0.0.1:8000/health'
-$response.StatusCode
-$response.Headers['X-Correlation-ID']
-```
-
-Health와 인증 전체 흐름은 Token을 출력하지 않는 Smoke 스크립트로
-재현할 수 있습니다. 새 PowerShell을 열었다면 저장소 루트로 이동한 뒤
-실행합니다.
+저장소 루트에서 8000 점유 Process를 먼저 확인한 뒤 서버를 시작합니다.
+점유 Process를 임의 종료하지 않으며, 8000이 사용 중이고 8001이
+비어 있을 때만 8001로 대체합니다.
 
 ```powershell
 Set-Location (git rev-parse --show-toplevel)
+$port = 8000
+$listener = @(Get-NetTCPConnection `
+    -LocalPort $port `
+    -State Listen `
+    -ErrorAction SilentlyContinue)
+
+if ($listener) {
+    $listener | Select-Object LocalAddress, LocalPort, OwningProcess
+    Get-Process -Id ($listener.OwningProcess | Select-Object -Unique)
+    $port = 8001
+    if (Get-NetTCPConnection `
+        -LocalPort $port `
+        -State Listen `
+        -ErrorAction SilentlyContinue) {
+        throw "Port 8000과 8001이 모두 사용 중입니다."
+    }
+}
+
 Set-Location .\backend
-.\.venv\Scripts\python.exe ..\scripts\smoke\check_backend_auth.py
+& .\.venv\Scripts\python.exe `
+  manage.py runserver "127.0.0.1:$port" --noreload
+```
+
+새 PowerShell에서는 저장소 루트에서 실제 서버 Port와 같은 Base URL로
+liveness와 Auth Smoke를 실행합니다. 기본값은 8000이며 위 대체 경로를
+사용했다면 8001로 바꿉니다.
+
+```powershell
+Set-Location (git rev-parse --show-toplevel)
+$baseUrl = 'http://127.0.0.1:8000' # 대체 실행 시 8001
+
+$response = Invoke-WebRequest "$baseUrl/health"
+$response.StatusCode
+$response.Headers['X-Correlation-ID']
+
+& .\backend\.venv\Scripts\python.exe `
+  .\scripts\smoke\check_backend_auth.py `
+  --base-url $baseUrl
 ```
 
 스크립트는 Health, CORS, Demo 로그인, `/me`, Refresh rotation,
 Logout과 폐기 Token 재사용 차단을 검사합니다. 출력에는 HTTP 상태,
-만료 초, 검증 여부만 포함하고 실제 Token은 포함하지 않습니다.
+만료 초, 검증 여부만 포함하고 실제 Token은 포함하지 않습니다. 다만
+읽기 전용 검사가 아니며 로그인·Refresh·Logout 과정에서 DB의 Token
+행을 생성·회전·폐기하므로 의도한 로컬 Demo DB에서만 실행하고
+공유·운영 DB에서는 실행하지 않습니다.
 
 `/health`는 Liveness 200·빈 본문과 `X-Correlation-ID`만 제공합니다.
 DB 연결은 별도 PostgreSQL 검사와 Migration으로 확인합니다. 공통 DRF

@@ -7,30 +7,76 @@
     "mapping_version",
     "status",
     "service_contracts_used",
+    "hash_policy",
     "backend_sources",
     "identifier_resolution",
+    "verification",
     "entity_mappings",
     "code_mappings",
     "blocked_mappings"
   ],
   "properties": {
-    "mapping_version": {
-      "type": "string",
-      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    "mapping_version": {"const": "2.0.0"},
+    "status": {
+      "enum": [
+        "IMPLEMENTED_PENDING_DB_VERIFICATION",
+        "DB_FULL_VERIFIED"
+      ]
     },
-    "status": {"const": "DOCUMENTED_NOT_DB_VERIFIED"},
-    "service_contracts_used": {"const": false},
+    "service_contracts_used": {"const": true},
+    "hash_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "encoding", "bom", "text_line_endings"],
+      "properties": {
+        "algorithm": {"const": "SHA-256"},
+        "encoding": {"const": "UTF-8"},
+        "bom": {"const": "IGNORE"},
+        "text_line_endings": {"const": "LF"}
+      }
+    },
     "backend_sources": {
       "type": "object",
-      "minProperties": 5,
-      "additionalProperties": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["path", "sha256"],
-        "properties": {
-          "path": {"type": "string", "pattern": "^backend/"},
-          "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}
-        }
+      "additionalProperties": false,
+      "minProperties": 17,
+      "maxProperties": 17,
+      "required": [
+        "user_model",
+        "customer_profile_model",
+        "product_model",
+        "subscription_model",
+        "inquiry_model",
+        "symptom_entry_model",
+        "consultation_model",
+        "visit_model",
+        "followup_confirmation_model",
+        "care_model",
+        "transition_history_model",
+        "audit_event_model",
+        "import_ledger_model",
+        "import_repository",
+        "import_service",
+        "import_command",
+        "demo_auth_repository"
+      ],
+      "properties": {
+        "user_model": {"$ref": "#/$defs/backendSource"},
+        "customer_profile_model": {"$ref": "#/$defs/backendSource"},
+        "product_model": {"$ref": "#/$defs/backendSource"},
+        "subscription_model": {"$ref": "#/$defs/backendSource"},
+        "inquiry_model": {"$ref": "#/$defs/backendSource"},
+        "symptom_entry_model": {"$ref": "#/$defs/backendSource"},
+        "consultation_model": {"$ref": "#/$defs/backendSource"},
+        "visit_model": {"$ref": "#/$defs/backendSource"},
+        "followup_confirmation_model": {"$ref": "#/$defs/backendSource"},
+        "care_model": {"$ref": "#/$defs/backendSource"},
+        "transition_history_model": {"$ref": "#/$defs/backendSource"},
+        "audit_event_model": {"$ref": "#/$defs/backendSource"},
+        "import_ledger_model": {"$ref": "#/$defs/backendSource"},
+        "import_repository": {"$ref": "#/$defs/backendSource"},
+        "import_service": {"$ref": "#/$defs/backendSource"},
+        "import_command": {"$ref": "#/$defs/backendSource"},
+        "demo_auth_repository": {"$ref": "#/$defs/backendSource"}
       }
     },
     "identifier_resolution": {
@@ -55,15 +101,49 @@
         }
       }
     },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "database_engine",
+        "dry_run_rollback_required",
+        "expected",
+        "actual"
+      ],
+      "properties": {
+        "status": {"enum": ["PENDING", "DB_FULL_VERIFIED"]},
+        "database_engine": {"const": "PostgreSQL"},
+        "dry_run_rollback_required": {"const": true},
+        "expected": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["db-smoke", "db-full"],
+          "properties": {
+            "db-smoke": {"$ref": "#/$defs/verificationGate"},
+            "db-full": {"$ref": "#/$defs/verificationGate"}
+          }
+        },
+        "actual": {
+          "oneOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/actualVerification"}
+          ]
+        }
+      }
+    },
     "entity_mappings": {
       "type": "array",
-      "minItems": 5,
+      "minItems": 12,
+      "maxItems": 12,
+      "uniqueItems": true,
       "items": {
         "type": "object",
         "additionalProperties": false,
         "required": [
           "fixture",
           "backend_model",
+          "load_mode",
           "readiness",
           "business_key",
           "field_mappings"
@@ -71,7 +151,20 @@
         "properties": {
           "fixture": {"type": "string", "pattern": "^synthetic/fixtures/"},
           "backend_model": {"type": "string", "minLength": 1},
-          "readiness": {"type": "string", "minLength": 1},
+          "derived_backend_models": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "load_mode": {"enum": ["DIRECT", "PROJECTED"]},
+          "readiness": {
+            "enum": [
+              "IMPLEMENTED_PENDING_DB_VERIFICATION",
+              "DB_FULL_VERIFIED",
+              "PROJECTED_DB_FULL_VERIFIED"
+            ]
+          },
           "business_key": {"type": "string", "minLength": 1},
           "field_mappings": {
             "type": "object",
@@ -86,34 +179,188 @@
       "additionalProperties": false,
       "required": ["plan_code", "care_type"],
       "properties": {
-        "plan_code": {"type": "object", "minProperties": 1},
-        "care_type": {"type": "object", "minProperties": 3}
+        "plan_code": {
+          "const": {
+            "SYNTHETIC_REGULAR_CARE": "VISIT_CARE"
+          }
+        },
+        "care_type": {
+          "const": {
+            "REGULAR_INSPECTION": "PERIODIC_CHECK",
+            "FILTER_REPLACEMENT": "FILTER_REPLACEMENT",
+            "VISIT_SERVICE": "VISIT_SERVICE"
+          }
+        }
       }
     },
     "blocked_mappings": {
       "type": "array",
-      "minItems": 2,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "source_values",
-          "reason",
-          "treatment",
-          "owner"
-        ],
-        "properties": {
-          "id": {"type": "string", "minLength": 1},
-          "source_values": {
-            "type": "array",
-            "minItems": 1,
-            "items": {"type": "string", "minLength": 1}
-          },
-          "reason": {"type": "string", "minLength": 1},
-          "treatment": {"const": "EXCLUDE_FROM_DIRECT_LOAD"},
-          "owner": {"const": "BACKEND"}
+      "maxItems": 0
+    }
+  },
+  "$defs": {
+    "backendSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^backend/"},
+        "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}
+      }
+    },
+    "actionCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "created_count",
+        "updated_count",
+        "unchanged_count",
+        "projected_count"
+      ],
+      "properties": {
+        "created_count": {"type": "integer", "minimum": 0},
+        "updated_count": {"type": "integer", "minimum": 0},
+        "unchanged_count": {"type": "integer", "minimum": 0},
+        "projected_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "verificationGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_count",
+        "dry_run_persisted_domain_rows",
+        "dry_run_persisted_batch_rows",
+        "dry_run_persisted_item_rows",
+        "first_run",
+        "replay_run",
+        "source_items",
+        "projection_checks",
+        "aggregate_checks",
+        "audit_history_checks"
+      ],
+      "properties": {
+        "source_count": {"type": "integer", "minimum": 1},
+        "dry_run_persisted_domain_rows": {"const": 0},
+        "dry_run_persisted_batch_rows": {"const": 0},
+        "dry_run_persisted_item_rows": {"const": 0},
+        "first_run": {"$ref": "#/$defs/actionCounts"},
+        "replay_run": {"$ref": "#/$defs/actionCounts"},
+        "source_items": {"type": "integer", "minimum": 1},
+        "projection_checks": {"type": "integer", "minimum": 0},
+        "aggregate_checks": {"type": "integer", "minimum": 0},
+        "audit_history_checks": {"type": "integer", "minimum": 0}
+      }
+    },
+    "actualVerification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verified_at",
+        "database_version",
+        "evidence",
+        "db-smoke",
+        "db-full"
+      ],
+      "properties": {
+        "verified_at": {"type": "string", "format": "date-time"},
+        "database_version": {"type": "string", "minLength": 1},
+        "evidence": {"$ref": "#/$defs/runtimeEvidence"},
+        "db-smoke": {"$ref": "#/$defs/verificationGate"},
+        "db-full": {"$ref": "#/$defs/verificationGate"}
+      }
+    },
+    "runtimeEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base_commit_sha",
+        "worktree_state",
+        "fixture_set_sha256",
+        "runtime_document",
+        "profiles"
+      ],
+      "properties": {
+        "base_commit_sha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "worktree_state": {
+          "const": "UNCOMMITTED_VERIFIED_CHANGES"
+        },
+        "fixture_set_sha256": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        },
+        "runtime_document": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "text_sha256"],
+          "properties": {
+            "path": {
+              "const": "docs/individual/jiyong/manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md"
+            },
+            "text_sha256": {
+              "type": "string",
+              "pattern": "^[A-F0-9]{64}$"
+            }
+          }
+        },
+        "profiles": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["db-smoke", "db-full"],
+          "properties": {
+            "db-smoke": {"$ref": "#/$defs/runtimeProfileEvidence"},
+            "db-full": {"$ref": "#/$defs/runtimeProfileEvidence"}
+          }
         }
+      }
+    },
+    "runtimeProfileEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "database_name",
+        "migration_command",
+        "dry_run_command",
+        "first_run_command",
+        "replay_run_command",
+        "first_batch_code",
+        "replay_batch_code",
+        "first_completed_at",
+        "replay_completed_at"
+      ],
+      "properties": {
+        "database_name": {
+          "type": "string",
+          "pattern": "^watercare_synthetic_(smoke|full)_verify_[0-9]{8}(_[a-z0-9]+)?$"
+        },
+        "migration_command": {
+          "const": "python backend/manage.py migrate --noinput"
+        },
+        "dry_run_command": {
+          "type": "string",
+          "pattern": "^python backend/manage\\.py import_synthetic_handoff --profile db-(smoke|full) --dry-run$"
+        },
+        "first_run_command": {
+          "type": "string",
+          "pattern": "^python backend/manage\\.py import_synthetic_handoff --profile db-(smoke|full)$"
+        },
+        "replay_run_command": {
+          "type": "string",
+          "pattern": "^python backend/manage\\.py import_synthetic_handoff --profile db-(smoke|full)$"
+        },
+        "first_batch_code": {
+          "type": "string",
+          "pattern": "^SYN-IMPORT-[A-F0-9]{32}$"
+        },
+        "replay_batch_code": {
+          "type": "string",
+          "pattern": "^SYN-IMPORT-[A-F0-9]{32}$"
+        },
+        "first_completed_at": {"type": "string", "format": "date-time"},
+        "replay_completed_at": {"type": "string", "format": "date-time"}
       }
     }
   }

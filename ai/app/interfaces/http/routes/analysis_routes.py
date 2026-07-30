@@ -1,13 +1,13 @@
 """증상 분석 API 라우터 모듈."""
 
 from fastapi import APIRouter, Query
-from ai.app.interfaces.http.request_models import SymptomAnalysisApiRequest
-from ai.app.orchestration.pipeline_router import PipelineRouter
-from ai.app.schemas.common import ModelMetadata, ProcessingTrace, RiskLevel, TraceContext, UsageGuidanceStatus
-from ai.app.schemas.guidance import UsageGuidance
-from ai.app.schemas.pipeline import SymptomAnalysisResult
-from ai.app.schemas.safety import SafetyAssessment
-from ai.app.schemas.symptom import StructuredSymptom
+from ..request_models import SymptomAnalysisApiRequest
+from ....orchestration.pipeline_router import PipelineRouter
+from ....schemas.common import RiskLevel, UsageGuidanceStatus
+from ....schemas.guidance import UsageGuidance
+from ....schemas.pipeline import SymptomAnalysisResult
+from ....schemas.safety import SafetyAssessment
+from ....schemas.symptom import StructuredSymptom
 
 router = APIRouter(prefix="/api/v1/ai", tags=["Analysis"])
 
@@ -22,10 +22,8 @@ async def analyze_symptom(
     # 1. Mock 모드 (연동 테스트용)
     if mode == "mock":
         return SymptomAnalysisResult(
-            trace_context=TraceContext(
-                inquiry_id=req.inquiry_id,
-                correlation_id=req.correlation_id
-            ),
+            inquiry_id=req.inquiry_id,
+            correlation_id=req.correlation_id,
             structured_symptom=StructuredSymptom(
                 symptom_type="출수량 저하",
                 occurrence_time="3일 전",
@@ -50,16 +48,6 @@ async def analyze_symptom(
                 next_actions=["필터 교체 주기 확인", "원수 밸브 열림 확인"]
             ),
             evidence_references=[],
-            model_metadata=ModelMetadata(
-                model_name="mock-model-v1",
-                prompt_version="symptom_structuring/v1",
-                tokens_used=0,
-                latency_ms=5.0
-            ),
-            processing_traces=[
-                ProcessingTrace(stage="structuring", status="success", latency_ms=2.0),
-                ProcessingTrace(stage="safety_check", status="success", latency_ms=3.0)
-            ]
         )
 
     # 2. Local 모드 (단일 RAG LangGraph/파이프라인 오케스트레이터 가동)

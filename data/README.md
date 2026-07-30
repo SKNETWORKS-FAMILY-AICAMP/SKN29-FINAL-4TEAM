@@ -12,6 +12,8 @@
 - 차단 유지: `SYN-JAC104-012`, `SYN-JAC104-016`
 - 상태이력·감사이력: 각 125건
 - 시나리오 subset: 7파일, 33건
+- 상태 계약: State Machine v1.0.0 / `TEAM_APPROVED`
+- RAG 평가 계약: 양성 7건·부정 5건, 실제 AI 실행 결과 대기
 
 원본 24개 카탈로그와 alignment registry는 보존합니다. Fixture·expected·DB handoff 후보에는 차단된 두 시나리오를 제외한 22개만 투영합니다.
 
@@ -24,7 +26,11 @@
 - `idempotency_key`는 요청과 이력을 연결하는 추적값이며 UNIQUE가 아닙니다.
 - 이력 중복은 대상 Aggregate별 `state_version`으로 차단합니다.
 
-CustomerProfile fixture와 Backend import crosswalk는 lookup 변환 규칙만 제공합니다. Fixture 정수 PK를 Backend PK로 직접 주입하지 않으며, 현재 결과를 `DB_VERIFIED`로 표시하지 않습니다.
+CustomerProfile fixture와 Backend import crosswalk는 lookup 변환 규칙만 제공합니다. Fixture 정수 PK를 Backend PK로 직접 주입하지 않습니다. Backend DB 적재는 사용자 확인상 성공했지만 실행 증빙을 받기 전까지 `DOCUMENTED_NOT_DB_VERIFIED`를 유지합니다.
+
+`service_contracts_used=false`는 기존 소비자 호환 필드이며 Backend Runtime
+연동이 검증되지 않았다는 뜻입니다. 데이터 projection은 승인된 State
+Machine v1.0.0을 사용하고, 두 상태는 handoff metadata에서 분리합니다.
 
 ## 실행
 
@@ -40,3 +46,13 @@ python -B data/tools/pipeline.py finalize
 ```
 
 생성 결과 JSON을 수동 수정하지 않습니다. 같은 설정으로 두 번 생성한 byte 결과, manifest 건수·SHA-256, 상세 QA 리포트 해시를 파이프라인이 검증합니다.
+
+외부 보존 원본을 다시 확인할 때는 Inventory의 `local_path`가 상대적인
+루트를 지정합니다.
+
+```powershell
+python -B scripts/data/verify_source_inventory.py `
+  --external-root 'C:\approved-source-root'
+```
+
+PDF 페이지 수 검증에는 팀이 승인한 `pypdf` Runtime이 필요합니다.
