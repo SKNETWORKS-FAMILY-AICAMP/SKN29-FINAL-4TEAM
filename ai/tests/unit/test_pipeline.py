@@ -15,6 +15,8 @@ def test_single_rag_pipeline_execution():
     result = router.run_pipeline(
         inquiry_id="DEMO-INQ-005",
         correlation_id="corr-pipeline-test",
+        ai_request_id="ai-req-pipeline-test",
+        state_version=1,
         raw_symptom="정수기 밑 바닥에 물이 새서 누수가 심합니다.",
         model_code="WPUJAC104DWH",
         selected_symptoms=["누수"],
@@ -39,7 +41,7 @@ def test_single_rag_pipeline_execution():
 
     # 내부 처리 트레이스는 공개 DTO가 아니라 내부 Context에만 남는다.
     assert [trace.stage for trace in result.context.processing_traces] == [
-        "structuring_stage", "safety_check_stage", "generation_stage", "validation_stage"
+        "STRUCTURING", "SAFETY_CHECK", "GENERATING", "VALIDATING"
     ]
     assert not hasattr(analysis_res, "processing_traces")
 
@@ -70,6 +72,8 @@ def test_no_evidence_uses_pending_consultation_branch():
     result = PipelineRouter(search_service=None).run_pipeline(
         inquiry_id="DEMO-INQ-NO-EVIDENCE",
         correlation_id="corr-no-evidence",
+        ai_request_id="ai-req-no-evidence",
+        state_version=2,
         raw_symptom="처음 보는 알 수 없는 표시가 나타났습니다.",
         model_code="WPUJAC104DWH",
     )
@@ -77,3 +81,12 @@ def test_no_evidence_uses_pending_consultation_branch():
     assert response.evidence_references == []
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
     assert response.safety_assessment.risk_level != RiskLevel.DANGER
+    assert response.status.value == "FALLBACK"
+    assert response.failure_stage.value == "RETRIEVING"
+
+
+def test_vector_dsn_requires_pinned_embedding_revision(monkeypatch):
+    monkeypatch.setenv("AI_VECTOR_DSN", "postgresql://configured-but-not-connected")
+    monkeypatch.delenv("AI_EMBEDDING_REVISION", raising=False)
+    with pytest.raises(RuntimeError, match="AI_EMBEDDING_REVISION"):
+        PipelineRouter()

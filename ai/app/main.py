@@ -1,7 +1,7 @@
 """FastAPI 서비스 진입점 파일."""
 
 import uvicorn
-from ai.app.bootstrap import create_app
+from .bootstrap import create_app
 
 app = create_app()
 

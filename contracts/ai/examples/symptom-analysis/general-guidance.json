@@ -2,6 +2,8 @@
   "request": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b201",
     "correlation_id": "corr-trace-20260729-001",
+    "ai_request_id": "ai-req-20260729-001",
+    "state_version": 1,
     "raw_symptom": "정수기 냉수가 예전만큼 차갑지 않고 미지근하게 나옵니다.",
     "model_code": "WPUJAC104DWH",
     "selected_symptoms": ["온도 이상", "출수 이상"],
@@ -10,6 +12,11 @@
   "response": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b201",
     "correlation_id": "corr-trace-20260729-001",
+    "ai_request_id": "ai-req-20260729-001",
+    "state_version": 1,
+    "status": "SUCCEEDED",
+    "failure_stage": null,
+    "retry_count": 0,
     "structured_symptom": {
       "symptom_type": "온도 이상",
       "occurrence_time": "최근 2일 전부터",

@@ -1,67 +1,46 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "SymptomAnalysisResponse.schema.json",
+  "x-contract-version": "1.1.0",
   "title": "SymptomAnalysisResponse",
-  "description": "구조화 증상, 위험도, 안전 평가, RAG 근거 및 사용 안내 통합 응답 Schema",
+  "description": "구조화 증상, 위험도, RAG 근거 및 사용 안내 통합 응답. 업무 상태를 직접 변경하지 않는 제안 결과",
   "type": "object",
   "required": [
-    "inquiry_id",
-    "correlation_id",
-    "structured_symptom",
-    "safety_assessment",
-    "usage_guidance",
-    "evidence_references"
+    "inquiry_id", "correlation_id", "ai_request_id", "state_version", "status",
+    "failure_stage", "retry_count", "structured_symptom", "missing_fields",
+    "followup_questions", "safety_assessment", "usage_guidance", "evidence_references"
   ],
   "additionalProperties": false,
   "properties": {
-    "inquiry_id": {
-      "type": "string",
-      "description": "공개 문의 식별자"
+    "inquiry_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "correlation_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "ai_request_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "state_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "요청에서 받은 호출 시작 시점 버전의 Echo. Backend가 최신 버전과 다시 비교한다"
     },
-    "correlation_id": {
-      "type": "string",
-      "description": "요청 추적 correlation_id"
+    "status": { "type": "string", "enum": ["SUCCEEDED", "FALLBACK"] },
+    "failure_stage": {
+      "type": ["string", "null"],
+      "enum": ["STRUCTURING", "CHECKING_MISSING_FIELDS", "SAFETY_CHECK", "RETRIEVING", "RERANKING", "GENERATING", "VALIDATING", "FAILED", "CANCELLED", null],
+      "x-code-registry": "../../codes/ai-stages.yaml"
     },
-    "structured_symptom": {
-      "$ref": "../common/StructuredSymptom.schema.json"
-    },
+    "retry_count": { "type": "integer", "minimum": 0, "maximum": 1 },
+    "structured_symptom": { "$ref": "../common/StructuredSymptom.schema.json" },
     "missing_fields": {
       "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["field_name", "reason"],
-        "additionalProperties": false,
-        "properties": {
-          "field_name": { "type": "string" },
-          "reason": { "type": "string" },
-          "importance": { "type": "string" }
-        }
-      }
+      "items": { "$ref": "../common/MissingField.schema.json" }
     },
     "followup_questions": {
       "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["question_id", "question_text", "target_field"],
-        "additionalProperties": false,
-        "properties": {
-          "question_id": { "type": "string" },
-          "question_text": { "type": "string" },
-          "options": { "type": "array", "items": { "type": "string" } },
-          "target_field": { "type": "string" }
-        }
-      }
+      "items": { "$ref": "../common/FollowUpQuestion.schema.json" }
     },
-    "safety_assessment": {
-      "$ref": "../common/SafetyAssessment.schema.json"
-    },
-    "usage_guidance": {
-      "$ref": "../common/UsageGuidance.schema.json"
-    },
+    "safety_assessment": { "$ref": "../common/SafetyAssessment.schema.json" },
+    "usage_guidance": { "$ref": "../common/UsageGuidance.schema.json" },
     "evidence_references": {
       "type": "array",
-      "items": {
-        "$ref": "../common/EvidenceReference.schema.json"
-      }
+      "items": { "$ref": "../common/EvidenceReference.schema.json" }
     }
   }
 }

@@ -1,6 +1,11 @@
 {
   "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b999",
   "correlation_id": "corr-trace-fallback-001",
+  "ai_request_id": "ai-req-fallback-001",
+  "state_version": 4,
+  "status": "FALLBACK",
+  "failure_stage": "CANCELLED",
+  "retry_count": 0,
   "structured_symptom": {
     "symptom_type": "미분류",
     "occurrence_time": null,

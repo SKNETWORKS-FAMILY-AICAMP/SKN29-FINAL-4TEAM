@@ -1,52 +1,92 @@
 """FastAPI 공통 오류 핸들러 등록 모듈."""
 
+from typing import Any
+
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from ai.app.interfaces.http.response_models import ApiErrorDetail, ApiErrorResponse
+
+from ...schemas import AiStage
+from .errors import AiServiceError
+from .response_models import ApiErrorDetail, ApiErrorResponse
+
+
+def _request_ids(body: Any) -> dict[str, Any]:
+    """검증 실패 Body에서 안전한 추적 식별자만 추출한다."""
+    if not isinstance(body, dict):
+        return {}
+    return {
+        key: body.get(key)
+        for key in ("inquiry_id", "correlation_id", "ai_request_id", "state_version")
+        if body.get(key) is not None
+    }
+
+
+def _response(payload: ApiErrorResponse, http_status: int) -> JSONResponse:
+    response = JSONResponse(status_code=http_status, content=payload.model_dump(mode="json"))
+    if payload.correlation_id:
+        response.headers["X-Correlation-ID"] = payload.correlation_id
+    return response
 
 
 def register_error_handlers(app: FastAPI) -> None:
-    """FastAPI 예외 처리 핸들러 일괄 등록"""
+    """FastAPI 예외 처리 핸들러 일괄 등록."""
+
+    @app.exception_handler(AiServiceError)
+    async def ai_service_error_handler(request: Request, exc: AiServiceError):
+        detail = ApiErrorDetail(
+            code=exc.code,
+            message=exc.message,
+            retryable=exc.retryable,
+            failure_stage=exc.failure_stage,
+            retry_count=exc.retry_count,
+        )
+        return _response(
+            ApiErrorResponse(
+                inquiry_id=exc.inquiry_id,
+                correlation_id=exc.correlation_id,
+                ai_request_id=exc.ai_request_id,
+                state_version=exc.state_version,
+                error=detail,
+            ),
+            exc.http_status,
+        )
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
-        """Pydantic / 입력 파라미터 검증 오류 (422)"""
-        error_detail = ApiErrorDetail(
-            code="INVALID_INPUT_FORMAT",
-            message="요청 데이터 형식이 올바르지 않거나 필수 필드가 누락되었습니다.",
-            details={"errors": exc.errors()},
-            retryable=False
+        ids = _request_ids(exc.body)
+        safe_errors = [
+            {"location": list(error["loc"]), "type": error["type"], "message": error["msg"]}
+            for error in exc.errors()
+        ]
+        detail = ApiErrorDetail(
+            code="AI-VALIDATION-01",
+            message="AI 분석 요청 스키마 검증에 실패했습니다.",
+            details={"errors": safe_errors},
+            retryable=False,
+            failure_stage=AiStage.STRUCTURING,
+            retry_count=0,
         )
-        return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content=ApiErrorResponse(error=error_detail).model_dump(mode="json")
-        )
+        return _response(ApiErrorResponse(**ids, error=detail), status.HTTP_422_UNPROCESSABLE_CONTENT)
 
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):
-        """HTTP 표준 예외"""
-        error_detail = ApiErrorDetail(
-            code=f"HTTP_{exc.status_code}",
-            message=exc.detail if isinstance(exc.detail, str) else "요청 처리 중 오류가 발생했습니다.",
-            details=exc.detail if isinstance(exc.detail, dict) else None,
-            retryable=exc.status_code >= 500
+        detail = ApiErrorDetail(
+            code="AI-FAILED-01",
+            message=exc.detail if isinstance(exc.detail, str) else "AI 요청 처리 중 오류가 발생했습니다.",
+            retryable=exc.status_code >= 500,
+            failure_stage=AiStage.FAILED,
+            retry_count=0,
         )
-        return JSONResponse(
-            status_code=exc.status_code,
-            content=ApiErrorResponse(error=error_detail).model_dump(mode="json")
-        )
+        return _response(ApiErrorResponse(error=detail), exc.status_code)
 
     @app.exception_handler(Exception)
     async def unhandled_exception_handler(request: Request, exc: Exception):
-        """예상하지 못한 서버 내부 오류 (500) - 스택 트레이스 은닉"""
-        error_detail = ApiErrorDetail(
-            code="AI_INTERNAL_SERVER_ERROR",
-            message="AI 서비스 내부에서 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-            details=None,
-            retryable=True
+        detail = ApiErrorDetail(
+            code="AI-FAILED-01",
+            message="AI 분석을 완료하지 못했습니다.",
+            retryable=True,
+            failure_stage=AiStage.FAILED,
+            retry_count=0,
         )
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=ApiErrorResponse(error=error_detail).model_dump(mode="json")
-        )
+        return _response(ApiErrorResponse(error=detail), status.HTTP_503_SERVICE_UNAVAILABLE)
