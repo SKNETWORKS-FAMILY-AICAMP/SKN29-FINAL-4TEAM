@@ -252,8 +252,8 @@
   "metadata_files": [
     {
       "path": "README.md",
-      "size_bytes": 2785,
-      "sha256": "43EE6218A5D80C8CC113F9976973AC994E35BD4E008E7BF102B001E70AB5ABE3"
+      "size_bytes": 2921,
+      "sha256": "3CFBFD6D7E9459874BCDB5C0651469EA3E380C4A528ED57E5545CA24D0D68483"
     },
     {
       "path": "catalog/CHANGELOG.md",
@@ -705,8 +705,8 @@
   "template_files": [
     {
       "path": "templates/data_readme.md.tpl",
-      "size_bytes": 2788,
-      "sha256": "06B9B55568CC42A7CC6E13DBC92C0424F8CE9ACF1503457CB743B9E863C0DA47"
+      "size_bytes": 2924,
+      "sha256": "7446531BF8524F677B5CC62A98299FCB2F2B02E17F58F3F13507E1B86ED1C6EF"
     },
     {
       "path": "templates/processing_spec.md.tpl",
