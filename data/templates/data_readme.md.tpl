@@ -26,11 +26,17 @@
 - `idempotency_key`는 요청과 이력을 연결하는 추적값이며 UNIQUE가 아닙니다.
 - 이력 중복은 대상 Aggregate별 `state_version`으로 차단합니다.
 
-CustomerProfile fixture와 Backend import crosswalk는 lookup 변환 규칙만 제공합니다. Fixture 정수 PK를 Backend PK로 직접 주입하지 않습니다. Backend DB 적재는 사용자 확인상 성공했지만 실행 증빙을 받기 전까지 `DOCUMENTED_NOT_DB_VERIFIED`를 유지합니다.
+CustomerProfile fixture와 Backend import crosswalk는 lookup 변환 규칙만
+제공합니다. Fixture 정수 PK를 Backend PK로 직접 주입하지 않습니다.
+Crosswalk v2의 `DB_FULL_VERIFIED`는 빈 격리 PostgreSQL에서 합성 Handoff
+`db-full` 프로필 367 Source의 최초 Import와 Replay를 검증했다는
+뜻입니다. T-005 전체 32개 테이블, 운영 DB 적재 또는 서비스 배포 완료를
+뜻하지 않습니다.
 
-`service_contracts_used=false`는 기존 소비자 호환 필드이며 Backend Runtime
-연동이 검증되지 않았다는 뜻입니다. 데이터 projection은 승인된 State
-Machine v1.0.0을 사용하고, 두 상태는 handoff metadata에서 분리합니다.
+`service_contracts_used=true`는 Data projection과 Backend Importer가 승인된
+State Machine v1.0.0과 Crosswalk v2를 사용한다는 뜻입니다. T-005 전체
+구현 상태와 Backend Runtime Import 검증 상태는 handoff metadata에서
+분리합니다.
 
 ## 실행
 
