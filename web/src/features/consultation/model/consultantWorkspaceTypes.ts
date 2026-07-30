@@ -23,7 +23,13 @@ export type CounselorStatus =
 
 export type CounselorPriority = "NORMAL" | "HIGH" | "URGENT" | "UNKNOWN";
 export type CounselorRoutingTarget = "CONSULTANT" | "FIELD_TECHNICIAN";
-export type CounselorSort = "UPDATED_DESC" | "UPDATED_ASC";
+
+export type CounselorWorkBucket = "NEW" | "IN_PROGRESS" | "COMPLETED";
+export type CounselorSort =
+  | "UPDATED_DESC"
+  | "UPDATED_ASC"
+  | "WAITING_DESC"
+  | "RISK_DESC";
 export type CounselorAssigneeFilter = "ALL" | "MINE" | "UNASSIGNED";
 
 export type DetailTab = "summary" | "answers" | "evidence" | "timeline";
@@ -74,6 +80,10 @@ export interface CounselorInquiry {
   customerId: string;
   customerName: string;
   customerDisplayName: string;
+  customerPhone: string;
+  serviceAddress: string;
+  warrantyLabel: string;
+  previousVisitCount: number;
   subscriptionId: string;
   productCode: string;
   manualModel: string;
