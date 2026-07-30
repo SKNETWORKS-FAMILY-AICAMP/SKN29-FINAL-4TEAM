@@ -24,7 +24,7 @@ SK매직 정수기 구독 고객의 고객케어·상담·A/S 업무를 지원�
 최지용 담당 Django·PostgreSQL 기준선은
 [Backend README](backend/README.md)에 정리되어 있습니다. 로컬 실행은
 다음 순서를 따릅니다. 신규 PC의 전체 복사·검증 명령과 정상 출력은
-[Django·PostgreSQL 공유 패키지 인계서 v1.2](docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.2.md)를
+[Django·PostgreSQL 공유 패키지 인계서 v1.3](docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)를
 현재 기준으로 사용합니다.
 
 > [!IMPORTANT]
