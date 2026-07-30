@@ -493,3 +493,50 @@ Runtime에 존재하지만 현재 32개 계약 밖인 `audit_event`,
 `workflow_idempotency_record`, `workflow_transition_history`는 PM이
 계약 테이블 또는 지원 Runtime 테이블로 분류하기 전까지 T-005 완료
 개수에 더하지 않는다.
+
+## 2026-07-30 v1.3 공통코드 Runtime Wave
+
+앞선 10/32 상태에서 Wave 1의 공통코드 두 테이블을 독립 Django App으로
+구현했다. 아래 수치는 이 변경 단위의 `LOCAL_VERIFIED` 결과이며 담당
+Branch Push와 PM `main` 병합 전에는 팀 기준선이 아니다.
+
+| 항목 | 현재 결과 |
+| --- | ---: |
+| 계약 테이블 | 32개 |
+| Model·등록·Migration 모두 확인 | 12개 |
+| 미구현 | 20개 |
+| T-005 전체 판정 | `NOT_READY` |
+| 관련 집중 검증 | `63 passed` |
+| Backend 전체 회귀 | `418 passed` |
+| 빈 PostgreSQL Migration | 16.14에서 전체 적용 성공 |
+| 공통코드 Seed | 10 Group·43 Code, 2회차 신규 0 |
+
+이번에 추가한 테이블은 다음 두 개다.
+
+- `common_code_group`
+- `common_code`
+
+`CommonCodeGroup`은 계약의 자연키 예외에 따라 `group_code`를 PK로
+유지하고 변경·물리 삭제를 차단한다. `CommonCode`는 활성 Physical
+Contract의 식별자 정책에 따라 내부 `bigint id`와 공개
+`uuid public_id`를 분리했다. UUID PK로 먼저 검증했던 로컬 초안은
+공유 전에 두 Migration만 되돌린 뒤 수정했으며, 빈 PostgreSQL과 기본
+개발 DB에서 최종 Migration을 처음부터 다시 적용했다.
+
+공통코드 Seed는 확정 10개 Group과 43개 Code만 Upsert한다. 두 번째
+실행은 Group `created=0, updated=10`, Code
+`created=0, updated=43, deactivated=0`으로 비의도 중복이 없었다.
+계약에서 제거된 기존 관리 Code는 삭제하지 않고 비활성화한다.
+
+다음 항목은 자동 변환하지 않고 차단 상태로 남긴다.
+
+- `risk-levels.yaml`의 소문자 `general/caution/danger`와 대문자 DB
+  CHECK의 충돌
+- 확정된 `common_code` Group Mapping이 없는 `ai-stages.yaml`
+- 소문자 코드 계약, 빈 계약과 deprecated 포인터
+
+구현·Migration·Seed·재현 명령과 팀원별 인계는
+[공통코드 Registry 구현·재현 가이드](../../individual/jiyong/technical/backend/t005_common_code_registry_implementation.md)를
+따른다. `field_service_visit_result`는 기존 Visit 결과 필드,
+CareRecord Bridge와 상태·Backfill 의존성이 있어 이번 Wave에 섞지
+않았다.

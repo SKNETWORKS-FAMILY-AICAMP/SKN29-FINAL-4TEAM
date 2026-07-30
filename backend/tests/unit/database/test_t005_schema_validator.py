@@ -416,7 +416,7 @@ def test_implementation_readiness_stays_separate_from_design_completion():
     result = readiness_module.audit_readiness()
 
     assert result["status"] == "NOT_READY"
-    assert result["evidence"]["app_skeleton_count"] == 12
+    assert result["evidence"]["app_skeleton_count"] == 13
     assert result["evidence"]["postgres_env_complete"] is False
     assert result["evidence"]["docker_compose_configured"] is True
     assert "DOCKER_COMPOSE_NOT_CONFIGURED" not in result["blockers"]
