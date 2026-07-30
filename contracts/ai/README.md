@@ -18,7 +18,7 @@ Commit에서 갱신한다.
 모든 AI 작업 계약은 다음 필드를 최상위에 둔다. 별도 `trace_context`는
 공개 요청·응답에 중복 노출하지 않는다.
 
-- `inquiry_id`: 내부 정수 PK가 아닌 공개 업무 식별자
+- `inquiry_id`: Backend가 발급한 Public UUID. 내부 정수 PK와 업무 코드는 금지
 - `correlation_id`: Backend → AI → 응답·오류·`X-Correlation-ID` Header 추적값
 - `ai_request_id`: Backend가 발급하는 AI 호출 멱등 키. 같은 논리 요청 재전송 시 재사용
 - `state_version`: 호출 시작 시점 버전. AI가 변경하지 않고 응답에 Echo

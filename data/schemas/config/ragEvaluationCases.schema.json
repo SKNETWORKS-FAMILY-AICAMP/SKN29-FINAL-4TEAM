@@ -12,7 +12,7 @@
     "ai_execution"
   ],
   "properties": {
-    "config_version": {"const": "1.1.1"},
+    "config_version": {"const": "1.1.2"},
     "status": {"const": "DATA_EXPECTATION_AND_AI_EXECUTION_VERIFIED"},
     "approved_chunk_count": {"const": 7},
     "evaluation_policy": {
@@ -144,10 +144,10 @@
               "const": "ai/evaluation/reports/pgvector_verification.json"
             },
             "sha256": {
-              "const": "F2F6242181912868A80C8FE4266F088770EE164ADE6A41B39F00CD53DE57D5DE"
+              "const": "50C65C7F8B1C750E8EB8C6A599B776F3417402466B64A32EFE325BFE631E0B4D"
             },
             "received_sha256": {
-              "const": "84C8669A8EE4D49761B2BC57068231DC4CDEBB13E983AC1ED5799460A4543339"
+              "const": "0C5EC8431B9DA2689CBEA5218B21AB75E9572FEC8CE308764CC952D41ADBAD13"
             },
             "verification_status": {"const": "PASS"},
             "case_count": {"const": 12},
@@ -171,10 +171,10 @@
           "properties": {
             "path": {"const": "ai/configs/index_manifest.json"},
             "sha256": {
-              "const": "8980219AF2BB9456F0CC43CD60A6A064AD6B2942090EED6E9A1BE6BB86AE6279"
+              "const": "635DB1A133DC6892C5176249268B060E9FB2E7C2AA4F2EFC654D514F22685403"
             },
             "received_sha256": {
-              "const": "FDFECC8048F75B1E69116C07915A72CD1013D6714E70A5008CDCD2C14945CA86"
+              "const": "928AB09B4357C699C90463F321A4E39C678137FEA8A98C3D4AC9471C26E7ADBF"
             },
             "embedding_model": {"const": "BAAI/bge-m3"},
             "embedding_model_version": {

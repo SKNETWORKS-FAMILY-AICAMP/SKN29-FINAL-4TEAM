@@ -1,6 +1,7 @@
 """FastAPI 공통 오류 핸들러 등록 모듈."""
 
 from typing import Any
+from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -15,11 +16,17 @@ def _request_ids(body: Any) -> dict[str, Any]:
     """검증 실패 Body에서 안전한 추적 식별자만 추출한다."""
     if not isinstance(body, dict):
         return {}
-    return {
+    values = {
         key: body.get(key)
         for key in ("inquiry_id", "correlation_id", "ai_request_id", "state_version")
         if body.get(key) is not None
     }
+    if "inquiry_id" in values:
+        try:
+            values["inquiry_id"] = UUID(str(values["inquiry_id"]))
+        except (TypeError, ValueError):
+            values.pop("inquiry_id")
+    return values
 
 
 def _response(payload: ApiErrorResponse, http_status: int) -> JSONResponse:

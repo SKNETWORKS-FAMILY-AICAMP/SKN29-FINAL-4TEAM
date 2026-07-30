@@ -1,17 +1,20 @@
 """증상 분석 API 라우터 모듈."""
 
 import asyncio
+import time
 
 from fastapi import APIRouter, Header, Query, Response
 from ..request_models import SymptomAnalysisApiRequest
 from ..errors import AiServiceError
 from ..runtime_policy import get_runtime_policy
 from ....orchestration.pipeline_router import PipelineRouter
+from ....common.timeout import CancellationToken
 from ....schemas.common import AiStage, RiskLevel, UsageGuidanceStatus
 from ....schemas.guidance import UsageGuidance
 from ....schemas.pipeline import SymptomAnalysisResult
 from ....schemas.safety import SafetyAssessment
 from ....schemas.symptom import StructuredSymptom
+from ..structured_logging import log_analysis_event
 
 router = APIRouter(prefix="/api/v1/ai", tags=["Analysis"])
 
@@ -38,10 +41,19 @@ async def analyze_symptom(
             state_version=req.state_version,
         )
     response.headers["X-Correlation-ID"] = req.correlation_id
+    started_at = time.perf_counter()
+    log_fields = {
+        "inquiry_id": req.inquiry_id,
+        "correlation_id": req.correlation_id,
+        "ai_request_id": req.ai_request_id,
+        "state_version": req.state_version,
+        "retry_count": 0,
+    }
+    log_analysis_event("analysis_started", stage=AiStage.STRUCTURING.value, status="STARTED", **log_fields)
 
     # 1. Mock 모드 (계약 연동 테스트 전용)
     if mode == "mock":
-        return SymptomAnalysisResult(
+        result = SymptomAnalysisResult(
             inquiry_id=req.inquiry_id,
             correlation_id=req.correlation_id,
             ai_request_id=req.ai_request_id,
@@ -71,14 +83,23 @@ async def analyze_symptom(
             ),
             evidence_references=[],
         )
+        log_analysis_event(
+            "analysis_completed",
+            stage=AiStage.COMPLETED.value,
+            status="SUCCEEDED",
+            latency_ms=round((time.perf_counter() - started_at) * 1000, 2),
+            **log_fields,
+        )
+        return result
 
     # 2. Local 모드 (단일 RAG LangGraph/파이프라인 오케스트레이터 가동)
     router_instance = PipelineRouter()
     previous_answers_list = [{"question_id": ans.question_id, "answer_text": ans.answer_text} for ans in req.previous_answers]
 
     policy = get_runtime_policy()
+    cancellation_token = CancellationToken()
     try:
-        pipeline_result = await asyncio.wait_for(
+        worker = asyncio.create_task(
             asyncio.to_thread(
                 router_instance.run_pipeline,
                 inquiry_id=req.inquiry_id,
@@ -89,10 +110,23 @@ async def analyze_symptom(
                 model_code=req.model_code,
                 selected_symptoms=req.selected_symptoms,
                 previous_answers=previous_answers_list,
-            ),
-            timeout=policy.overall_timeout_seconds,
+                cancellation_token=cancellation_token,
+            )
+        )
+        pipeline_result = await asyncio.wait_for(
+            asyncio.shield(worker), timeout=policy.overall_timeout_seconds
         )
     except asyncio.TimeoutError as exc:
+        cancellation_token.cancel()
+        worker.add_done_callback(lambda task: task.exception() if not task.cancelled() else None)
+        log_analysis_event(
+            "analysis_failed",
+            stage=AiStage.CANCELLED.value,
+            status="TIMEOUT",
+            latency_ms=round((time.perf_counter() - started_at) * 1000, 2),
+            error_code="AI-TIMEOUT-01",
+            **log_fields,
+        )
         raise AiServiceError(
             code="AI-TIMEOUT-01",
             http_status=504,
@@ -106,6 +140,14 @@ async def analyze_symptom(
             retry_count=0,
         ) from exc
     except Exception as exc:
+        log_analysis_event(
+            "analysis_failed",
+            stage=AiStage.FAILED.value,
+            status="FAILED",
+            latency_ms=round((time.perf_counter() - started_at) * 1000, 2),
+            error_code="AI-FAILED-01",
+            **log_fields,
+        )
         raise AiServiceError(
             code="AI-FAILED-01",
             http_status=503,
@@ -119,4 +161,12 @@ async def analyze_symptom(
             retry_count=0,
         ) from exc
 
-    return pipeline_result.to_analysis_result()
+    result = pipeline_result.to_analysis_result()
+    log_analysis_event(
+        "analysis_completed",
+        stage=AiStage.COMPLETED.value,
+        status=result.status.value,
+        latency_ms=round((time.perf_counter() - started_at) * 1000, 2),
+        **log_fields,
+    )
+    return result

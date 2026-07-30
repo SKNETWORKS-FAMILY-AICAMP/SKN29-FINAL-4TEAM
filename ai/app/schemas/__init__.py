@@ -2,14 +2,17 @@
 
 from .common import (
     AiExecutionStatus,
+    AiErrorCode,
     AiStage,
     ContractModel,
     DataClassification,
     ModelMetadata,
     ProcessingTrace,
     RiskLevel,
+    SafetyPriority,
     TraceContext,
     UsageGuidanceStatus,
+    VerificationStatus,
 )
 from .consultation_summary import ConsultationSummaryRequest, ConsultationSummaryResult
 from .guidance import UsageGuidance
@@ -22,9 +25,12 @@ from .technician_report import TechnicianReportRequest, TechnicianReportResult
 __all__ = [
     "RiskLevel",
     "AiExecutionStatus",
+    "AiErrorCode",
     "AiStage",
     "ContractModel",
     "UsageGuidanceStatus",
+    "SafetyPriority",
+    "VerificationStatus",
     "DataClassification",
     "TraceContext",
     "ModelMetadata",

@@ -1,6 +1,6 @@
 # Database Schema 개발·인계 가이드
 
-> 기준일: 2026-07-29
+> 기준일: 2026-07-30
 > 담당: 최지용
 > 적용 원칙: ERD와 테이블 명세는 확정 기준선이며, Model·Migration을 Wave별로 구현하고 즉시 검증한다.
 
@@ -50,6 +50,7 @@ Model·Migration·Serializer에 순차 반영한다.
 | 현재 합성 Schema·Migration 체인 | [합성 데이터 도메인 Schema·Migration 인계서](20260729_synthetic_domain_schema_migration.md) |
 | 현재 PostgreSQL 적용·Seed·Importer 경계 | [PostgreSQL 합성 Handoff Runtime 검증·인계서](../../manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md) |
 | 환경 구성·Migration·Seed·Smoke 재현 순서 | [Django·PostgreSQL 공유 패키지 인계서 v1.3](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md) |
+| 공통코드 구현·재현 | [T-005 공통코드 Registry 구현 가이드](t005_common_code_registry_implementation.md) |
 
 이 문서는 실행 결과 보고서가 아니라, 설계를 Model·Migration·Seed로
 옮기고 검증하는 반복 절차의 단일 원본으로 유지한다.
@@ -57,9 +58,11 @@ Model·Migration·Serializer에 순차 반영한다.
 ## 3. 확정 데이터 기준
 
 ID, 코드, Legacy 변환, 방문 일정, Enum과 Seed의 구체 값은 이 가이드에
-복사하지 않는다. [결정 등록부](../../../../database/t-005/t005_decision_register_v0.1.json)와
-[물리 계약](../../../../database/t-005/t005_physical_contract_v1.0.json)을
-구현 입력으로 사용하고, 값이 바뀌면 해당 계약만 갱신한다.
+복사하지 않는다. 활성
+[결정 등록부 v0.3](../../../../database/t-005/t005_decision_register_v0.3.json)과
+[물리 계약 v1.2](../../../../database/t-005/t005_physical_contract_v1.2.json)을
+구현 입력으로 사용하고, 값이 바뀌면 해당 계약만 갱신한다. v0.1·v1.0은
+역사본이며 신규 구현 입력으로 사용하지 않는다.
 
 ## 4. Wave별 구현 순서
 
@@ -108,6 +111,19 @@ Set-Location .\backend
 현재 Demo Seed 결과와 재현 절차는
 [Django·PostgreSQL 공유 패키지 인계서 v1.3](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)을
 따른다.
+
+Wave 1 공통코드는 Migration 통과 후 다음 명령을 두 번 실행한다.
+
+```powershell
+Set-Location .\backend
+.\.venv\Scripts\python.exe manage.py seed_common_codes
+.\.venv\Scripts\python.exe manage.py seed_common_codes
+```
+
+현재 확정 범위와 정상 경고, 기대 건수는
+[공통코드 Registry 구현 가이드](t005_common_code_registry_implementation.md)를
+따른다. 위험도 소문자 계약을 임의 변환하지 않으며, 계약에서 제거된
+관리 Code는 삭제하지 않고 비활성화한다.
 
 2026-07-29 기본 `watercare`에서는 Demo Seed 4종을 2회 실행해 비의도
 중복 0을 확인했다. 이 기본 DB에는 canonical fixture와 공개 UUID가 다른
