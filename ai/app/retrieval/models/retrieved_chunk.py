@@ -11,6 +11,7 @@ class RetrievedChunk(BaseModel):
     document_title: str = Field(..., description="공식 매뉴얼/FAQ 문서명")
     document_version: Optional[str] = Field("1.0", description="문서 버전")
     page: Optional[int] = Field(None, description="해당 내용 페이지 번호")
+    page_refs: List[int] = Field(default_factory=list, description="전체 근거 페이지 번호")
     manual_model: str = Field(..., description="해당 청크 제품 모델명")
     model_code: Optional[str] = Field(None, description="정확한 판매 모델 코드")
     product_generation: str = Field("D", description="제품 세대")

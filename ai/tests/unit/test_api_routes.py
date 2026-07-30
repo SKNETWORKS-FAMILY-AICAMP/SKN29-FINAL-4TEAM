@@ -1,10 +1,15 @@
 """FastAPI HTTP API 라우터 단위 테스트."""
 
+import json
+import logging
 import time
+from threading import Event
 import pytest
 from fastapi.testclient import TestClient
 from ai.app.bootstrap import create_app
 from ai.app.interfaces.http.runtime_policy import RuntimePolicy, get_runtime_policy
+
+INQUIRY_ID = "018f2f9b-7c30-7981-b541-1a987c88b301"
 
 @pytest.fixture
 def client():
@@ -28,7 +33,7 @@ def test_health_check_endpoint(client):
 def test_analyze_endpoint_mock_mode(client):
     """POST /api/v1/ai/analyze?mode=mock 테스트"""
     payload = {
-        "inquiry_id": "DEMO-INQ-002",
+        "inquiry_id": INQUIRY_ID,
         "correlation_id": "corr-test-999",
         "ai_request_id": "ai-req-test-999",
         "state_version": 3,
@@ -42,7 +47,7 @@ def test_analyze_endpoint_mock_mode(client):
     assert response.status_code == 200
     data = response.json()
 
-    assert data["inquiry_id"] == "DEMO-INQ-002"
+    assert data["inquiry_id"] == INQUIRY_ID
     assert data["correlation_id"] == "corr-test-999"
     assert data["ai_request_id"] == "ai-req-test-999"
     assert data["state_version"] == 3
@@ -56,7 +61,7 @@ def test_analyze_endpoint_mock_mode(client):
 def test_analyze_endpoint_local_mode_leak(client):
     """POST /api/v1/ai/analyze?mode=local 누수 감지 테스트"""
     payload = {
-        "inquiry_id": "DEMO-INQ-003",
+        "inquiry_id": INQUIRY_ID,
         "correlation_id": "corr-test-leak",
         "ai_request_id": "ai-req-test-leak",
         "state_version": 1,
@@ -78,7 +83,7 @@ def test_analyze_endpoint_local_mode_leak(client):
 def test_analyze_endpoint_validation_error(client):
     """필수 필드 누락 시 422 오류 처리 테스트"""
     payload = {
-        "inquiry_id": "DEMO-INQ-999"
+        "inquiry_id": INQUIRY_ID
         # raw_symptom, correlation_id 누락
     }
 
@@ -91,9 +96,26 @@ def test_analyze_endpoint_validation_error(client):
     assert data["error"]["failure_stage"] == "STRUCTURING"
 
 
+def test_analyze_endpoint_rejects_non_uuid_inquiry_id_without_handler_failure(client):
+    response = client.post("/api/v1/ai/analyze?mode=mock", json={
+        "inquiry_id": "DEMO-INQ-001",
+        "correlation_id": "corr-invalid-uuid",
+        "ai_request_id": "ai-req-invalid-uuid",
+        "state_version": 1,
+        "raw_symptom": "물이 나오지 않습니다.",
+        "model_code": "WPUJAC104DWH",
+    })
+    assert response.status_code == 422
+    body = response.json()
+    assert body["success"] is False
+    assert body["inquiry_id"] is None
+    assert body["correlation_id"] == "corr-invalid-uuid"
+    assert body["error"]["code"] == "AI-VALIDATION-01"
+
+
 def test_analyze_endpoint_rejects_correlation_id_mismatch(client):
     payload = {
-        "inquiry_id": "DEMO-INQ-CORR",
+        "inquiry_id": INQUIRY_ID,
         "correlation_id": "corr-body",
         "ai_request_id": "ai-req-corr",
         "state_version": 1,
@@ -114,7 +136,7 @@ def test_analyze_endpoint_timeout_contract(client, monkeypatch):
     from ai.app.interfaces.http.routes import analysis_routes
 
     payload = {
-        "inquiry_id": "DEMO-INQ-TIMEOUT",
+        "inquiry_id": INQUIRY_ID,
         "correlation_id": "corr-timeout",
         "ai_request_id": "ai-req-timeout",
         "state_version": 4,
@@ -143,4 +165,48 @@ def test_runtime_retry_and_timeout_policy_is_contract_value():
     policy = get_runtime_policy()
     assert policy.overall_timeout_seconds == 30.0
     assert policy.ai_internal_max_retry_count == 1
+    assert policy.ai_internal_retry_enabled is False
     assert policy.backend_retry_count == 0
+
+
+def test_timeout_signals_cooperative_worker_cancellation(client, monkeypatch):
+    from ai.app.interfaces.http.routes import analysis_routes
+
+    cancellation_observed = Event()
+
+    def cooperative_pipeline(*args, cancellation_token, **kwargs):
+        while not cancellation_token.is_cancelled:
+            time.sleep(0.001)
+        cancellation_observed.set()
+        cancellation_token.raise_if_cancelled()
+
+    monkeypatch.setattr(analysis_routes, "get_runtime_policy", lambda: RuntimePolicy(0.01, 0, 1))
+    monkeypatch.setattr(analysis_routes.PipelineRouter, "run_pipeline", cooperative_pipeline)
+    response = client.post("/api/v1/ai/analyze?mode=local", json={
+        "inquiry_id": INQUIRY_ID,
+        "correlation_id": "corr-cancel",
+        "ai_request_id": "ai-req-cancel",
+        "state_version": 1,
+        "raw_symptom": "취소 검증",
+        "model_code": "WPUJAC104DWH",
+    })
+    assert response.status_code == 504
+    assert cancellation_observed.wait(0.2)
+
+
+def test_structured_log_excludes_customer_text(client, caplog):
+    raw_text = "로그에 남으면 안 되는 고객 원문"
+    with caplog.at_level(logging.INFO, logger="watercare.ai.analysis"):
+        response = client.post("/api/v1/ai/analyze?mode=mock", json={
+            "inquiry_id": INQUIRY_ID,
+            "correlation_id": "corr-log",
+            "ai_request_id": "ai-req-log",
+            "state_version": 1,
+            "raw_symptom": raw_text,
+            "model_code": "WPUJAC104DWH",
+        })
+    assert response.status_code == 200
+    assert raw_text not in caplog.text
+    payloads = [json.loads(record.message) for record in caplog.records]
+    assert {payload["event"] for payload in payloads} == {"analysis_started", "analysis_completed"}
+    assert all(payload["correlation_id"] == "corr-log" for payload in payloads)

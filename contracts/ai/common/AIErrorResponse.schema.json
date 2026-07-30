@@ -9,7 +9,7 @@
   "additionalProperties": false,
   "properties": {
     "success": { "const": false },
-    "inquiry_id": { "type": ["string", "null"] },
+    "inquiry_id": { "type": ["string", "null"], "format": "uuid" },
     "correlation_id": { "type": ["string", "null"] },
     "ai_request_id": { "type": ["string", "null"] },
     "state_version": { "type": ["integer", "null"], "minimum": 1 },
