@@ -37,15 +37,19 @@ class EvaluationRunner:
         for item in dataset:
             query = RetrievalQuery(
                 query_text=item["query"],
-                model_code=item.get("model_code", "WPUJAC104DWH"),
-                top_k=5
+                model_code=item["product_model_code"],
+                top_k=item.get("top_k", 5),
             )
             chunks = self.search_service.search(query)
             retrieved_ids = [c.chunk_id for c in chunks]
 
             expected_ids = item["expected_chunk_ids"]
-            recall = calculate_recall_at_k(retrieved_ids, expected_ids, k=5)
-            mrr = calculate_mrr(retrieved_ids, expected_ids)
+            if item.get("expected_no_evidence"):
+                recall = 1.0 if not retrieved_ids else 0.0
+                mrr = recall
+            else:
+                recall = calculate_recall_at_k(retrieved_ids, expected_ids, k=item.get("top_k", 5))
+                mrr = calculate_mrr(retrieved_ids, expected_ids)
 
             total_recall += recall
             total_mrr += mrr
