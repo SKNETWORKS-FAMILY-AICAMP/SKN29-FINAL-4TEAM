@@ -42,6 +42,7 @@ class ChunkLoader:
                     document_title=raw.get("section_title") or raw["document_id"],
                     document_version=raw["version"],
                     page=raw["page_start"],
+                    page_refs=raw.get("page_refs", [raw["page_start"]]),
                     manual_model=raw.get("model_family") or raw["exact_sales_code"],
                     model_code=raw["exact_sales_code"],
                     product_generation=raw["product_generation"],

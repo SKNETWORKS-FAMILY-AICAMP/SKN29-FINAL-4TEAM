@@ -5,6 +5,7 @@ backend_integration:
   backend_retry_count: 0         # Backend의 자동 재시도는 0회로 제한 (중복 LLM 호출 방지)
 
 ai_internal_retry:
+  enabled: false                  # 현재 Runtime 실제 재시도는 0회다.
   max_retry_count: 1             # AI 내부 최대 재시도 횟수 1회 (JSON Schema 검증 / 근거 검증 실패 시)
   backoff_factor: 0.5            # 재시도 대기 시간 백오프 (초)
   retry_on_exceptions:

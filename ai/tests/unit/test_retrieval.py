@@ -8,6 +8,7 @@ from ai.app.retrieval.indexing.index_manifest import IndexManifest
 from ai.app.retrieval.models.retrieval_query import RetrievalQuery
 from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk
 from ai.app.retrieval.search.vector_search import VectorSearchService
+from ai.app.common.timeout import CancellationToken, PipelineCancelledError
 
 
 def test_product_filter_s_generation_exclusion():
@@ -82,6 +83,8 @@ def test_chunk_loader_reads_verified_common_data():
     assert {chunk.page for chunk in chunks}.issuperset({37, 38})
     assert all(chunk.source_hash for chunk in chunks)
     assert all(chunk.verification_status == "official_verified" for chunk in chunks)
+    hot_water = next(chunk for chunk in chunks if chunk.chunk_id.endswith("HOT-WATER-SAFETY-001"))
+    assert hot_water.page_refs == [38, 39]
 
 
 def test_index_manifest_save_and_load(tmp_path):
@@ -141,3 +144,60 @@ def test_unverified_source_only_query_is_blocked_before_embedding():
         model_code="WPUJAC104DWH",
     )
     assert service.search(query) == []
+
+
+def test_unsupported_model_is_blocked_at_real_search_entry_before_embedding():
+    class FailingEmbedding:
+        dimension = 1024
+
+        def embed_query(self, text):
+            raise AssertionError("미지원 모델은 임베딩하지 않아야 합니다.")
+
+    class FailingStore:
+        def search(self, *args, **kwargs):
+            raise AssertionError("미지원 모델은 DB를 조회하지 않아야 합니다.")
+
+    service = VectorSearchService(FailingEmbedding(), FailingStore())
+    query = RetrievalQuery(query_text="누수 조치", model_code="WPU-IAC506")
+    assert service.execution_path(query) == "POLICY_BLOCK_UNSUPPORTED_MODEL"
+    assert service.search(query) == []
+
+
+def test_schema_initialization_requires_explicit_disposable_confirmation():
+    from ai.app.integrations.vector_store.vector_store import PgVectorStore
+
+    store = PgVectorStore("postgresql://unused")
+    try:
+        store.initialize_schema()
+        assert False, "공유 DB에서 기본 DDL 실행을 거부해야 합니다."
+    except RuntimeError as exc:
+        assert "Disposable" in str(exc)
+
+
+def test_index_builder_never_initializes_schema():
+    source = Path("ai/scripts/build_vector_index.py").read_text(encoding="utf-8")
+    assert ".initialize_schema(" not in source
+    assert "schema_ddl_executed" in source
+
+
+def test_timeout_during_embedding_prevents_following_db_query():
+    token = CancellationToken()
+
+    class CancellingEmbedding:
+        dimension = 1024
+
+        def embed_query(self, text):
+            token.cancel()
+            return [0.0] * 1024
+
+    class FailingStore:
+        def search(self, *args, **kwargs):
+            raise AssertionError("취소된 임베딩 뒤에는 DB Query를 실행하지 않아야 합니다.")
+
+    service = VectorSearchService(CancellingEmbedding(), FailingStore())
+    query = RetrievalQuery(query_text="누수 조치", model_code="WPUJAC104DWH")
+    try:
+        service.search(query, cancellation_token=token)
+        assert False, "취소 신호를 예외로 전달해야 합니다."
+    except PipelineCancelledError:
+        pass

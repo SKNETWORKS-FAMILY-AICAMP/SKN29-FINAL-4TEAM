@@ -67,7 +67,7 @@ class EvaluationRunner:
 
         for idx, item in enumerate(dataset, start=1):
             res = self.pipeline_router.run_pipeline(
-                inquiry_id=f"EVAL-INQ-{idx:03d}",
+                inquiry_id=f"00000000-0000-0000-0000-{idx:012d}",
                 correlation_id=f"eval-corr-{idx}",
                 ai_request_id=f"eval-ai-request-{idx}",
                 state_version=1,

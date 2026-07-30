@@ -4,6 +4,7 @@ from langgraph.graph import END, START, StateGraph
 
 from ..pipeline_context import PipelineContext
 from ..pipeline_result import PipelineResult
+from ...common.timeout import CancellationToken
 from ..stages import (
     execute_generation_stage,
     execute_retrieval_stage,
@@ -18,6 +19,7 @@ class SingleRAGPipeline:
 
     def __init__(self, search_service=None) -> None:
         self.search_service = search_service
+        self.cancellation_token = CancellationToken()
         graph = StateGraph(dict)
         graph.add_node("structuring", self._structuring)
         graph.add_node("safety", self._safety)
@@ -36,13 +38,13 @@ class SingleRAGPipeline:
         graph.add_edge("validation", END)
         self.graph = graph.compile()
 
-    @staticmethod
-    def _structuring(state):
+    def _structuring(self, state):
+        self.cancellation_token.raise_if_cancelled()
         execute_structuring_stage(state["ctx"])
         return state
 
-    @staticmethod
-    def _safety(state):
+    def _safety(self, state):
+        self.cancellation_token.raise_if_cancelled()
         execute_safety_check_stage(state["ctx"])
         return state
 
@@ -51,20 +53,32 @@ class SingleRAGPipeline:
         return "danger" if state["ctx"].safety_assessment.risk_level.value == "danger" else "retrieve"
 
     def _retrieval(self, state):
-        execute_retrieval_stage(state["ctx"], self.search_service)
+        self.cancellation_token.raise_if_cancelled()
+        execute_retrieval_stage(
+            state["ctx"],
+            self.search_service,
+            cancellation_token=self.cancellation_token,
+        )
         return state
 
-    @staticmethod
-    def _generation(state):
+    def _generation(self, state):
+        self.cancellation_token.raise_if_cancelled()
         execute_generation_stage(state["ctx"])
         return state
 
-    @staticmethod
-    def _validation(state):
+    def _validation(self, state):
+        self.cancellation_token.raise_if_cancelled()
         execute_validation_stage(state["ctx"])
         return state
 
-    def run(self, ctx: PipelineContext) -> PipelineResult:
+    def run(
+        self,
+        ctx: PipelineContext,
+        *,
+        cancellation_token: CancellationToken | None = None,
+    ) -> PipelineResult:
         """LangGraph를 실행하고 공개 응답 변환용 결과를 반환한다."""
+        self.cancellation_token = cancellation_token or CancellationToken()
+        self.cancellation_token.raise_if_cancelled()
         state = self.graph.invoke({"ctx": ctx})
         return PipelineResult(success=True, context=state["ctx"])

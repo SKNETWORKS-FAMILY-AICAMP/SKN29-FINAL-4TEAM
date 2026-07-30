@@ -254,3 +254,33 @@ Backend/DB 담당자 검토가 필요하다.
 
 검증 종료 후 컨테이너는 삭제하지 않고 중지하여 격리 데이터와 재현성을
 보존했고, 작업 전 상태에 맞춰 Docker Desktop도 종료했다.
+
+---
+
+## 2026-07-30 Data 담당 RAG 적합성 판단 인계
+
+김은진(Data) 담당자에게 전달할 `20260730_이동윤_김은진_RAG_AI_데이터_적합성_판단보고서.md`를 작성했다.
+승인 청크 7건의 구조·출처·안전 메타데이터와 실제 pgvector 12/12 PASS 결과를 대조해
+JAC104D MVP 적재 적합으로 판정했다. Data 측 `ai_execution` 갱신, 검증 상태 공통 코드 확정,
+누수 정답 청크 5위 검색의 후속 개선을 요청사항으로 분리했다.
+
+---
+
+## 2026-07-30 최지용 인계 10.1 AI·RAG 반송 보완
+
+`20260729_최지용_이동윤_인계및요청사항.md` 10.1 가운데 AI·RAG 담당 범위를
+보완하고 `20260730_이동윤_최지용_10_1_반송보완_회신.md`에 증빙을 정리했다.
+
+- Public UUID, 배열·문자열 경계, 오류 상수·Enum, 안전·근거 Enum 계약 정합화
+- AI Port 8001 통일, 개인 절대 경로 제거, 독립 `.venv` 전체 의존성 Lock 추가
+- 30초 Timeout의 협력적 취소, DB 하위 Timeout, 실제 Retry 0회 명시
+- 원문·Prompt·Secret을 제외한 추적 식별자·Stage·latency 구조화 로그
+- 검색 진입점 모델·세대 Allowlist와 DB Query/정책 차단 지표 분리
+- DDL과 UPSERT 분리, Disposable DB 식별 Guard, Fixture Transaction Rollback
+- 다중 페이지 근거 `[38, 39]` 보존 및 문서·페이지 Assertion
+
+검증 결과는 독립 `.venv`에서 `pip check` PASS, 전체 회귀 `50 passed,
+1 skipped, 3 warnings`다. 격리 pgvector 환경에서는 배치 UPSERT 7건,
+실제 Query 7건·정책 차단 5건, 평가 12/12 PASS, Integration `1 passed`,
+검증 Fixture 잔존 0건을 확인했다. HTTP Smoke는 `127.0.0.1:8001`의 Health와
+Public UUID 분석 요청이 모두 성공했다.
