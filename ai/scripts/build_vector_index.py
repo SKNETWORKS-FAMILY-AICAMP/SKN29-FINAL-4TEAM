@@ -39,9 +39,9 @@ def main() -> None:
     embedding_client = BgeM3EmbeddingClient(model_revision=model_revision)
     vectors = embedding_client.embed_documents(chunk.content for chunk in chunks)
     store = PgVectorStore(dsn)
-    store.initialize_schema()
     upserted = store.upsert(chunks, vectors)
-    stored_count = store.count()
+    chunk_ids = [chunk.chunk_id for chunk in chunks]
+    stored_count = store.count(chunk_ids)
     if stored_count != len(chunks):
         raise RuntimeError(f"적재 행 수 불일치: expected={len(chunks)}, actual={stored_count}")
 
@@ -64,6 +64,7 @@ def main() -> None:
     manifest.save_manifest(str(manifest_path))
     print(json.dumps({
         "status": "PGVECTOR_INDEX_VERIFIED",
+        "schema_ddl_executed": False,
         "upserted": upserted,
         "stored_count": stored_count,
         "dimension": embedding_client.dimension,

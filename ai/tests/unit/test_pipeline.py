@@ -13,7 +13,7 @@ def test_single_rag_pipeline_execution():
 
     # 1. 누수 위험 시나리오 실행
     result = router.run_pipeline(
-        inquiry_id="DEMO-INQ-005",
+        inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b305",
         correlation_id="corr-pipeline-test",
         ai_request_id="ai-req-pipeline-test",
         state_version=1,
@@ -70,7 +70,7 @@ def test_prompt_registry_and_templates_exist():
 def test_no_evidence_uses_pending_consultation_branch():
     """Vector Store 미설정 시 일반 자가조치를 만들지 않고 상담으로 전환한다."""
     result = PipelineRouter(search_service=None).run_pipeline(
-        inquiry_id="DEMO-INQ-NO-EVIDENCE",
+        inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b306",
         correlation_id="corr-no-evidence",
         ai_request_id="ai-req-no-evidence",
         state_version=2,

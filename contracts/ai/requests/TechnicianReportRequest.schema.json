@@ -8,7 +8,7 @@
   "required": ["inquiry_id", "correlation_id", "ai_request_id", "state_version", "visit_id", "symptom_notes", "action_notes"],
   "additionalProperties": false,
   "properties": {
-    "inquiry_id": { "type": "string", "minLength": 1, "maxLength": 100, "pattern": ".*[^0-9].*" },
+    "inquiry_id": { "type": "string", "format": "uuid" },
     "correlation_id": { "type": "string", "minLength": 1, "maxLength": 100 },
     "ai_request_id": { "type": "string", "minLength": 1, "maxLength": 100 },
     "state_version": { "type": "integer", "minimum": 1 },

@@ -1,9 +1,9 @@
 # 최지용 개발문서
 
-> 기준일: 2026-07-29
+> 기준일: 2026-07-30
 > 작성·유지 책임: 최지용
 > 산출물 범위: Backend · Database · API 계약
-> 검토 상태: 최신 `main` 기준 로컬 검증 완료 / 김은진 Data Owner Review 대기
+> 검토 상태: 공통코드 Wave 로컬 검증 완료 / 담당 Branch Push·독립 QA·PM 병합 대기
 > 문서 정책: 현재 실행 기준과 검증 근거가 있는 최신본만 유지한다.
 
 ## 문서 범위
@@ -24,16 +24,16 @@
 
 | 판단 항목 | 1순위 | 보조 기준 |
 | --- | --- | --- |
-| 현재 작업 순서·완료 경계 | 2026-07-29 `최지용_업무계획표_v0.6.md` | 같은 버전의 Excel 시트, 3주차 업무 지침서 |
+| 현재 작업 순서·완료 경계 | 2026-07-30 `최지용_업무계획표_v0.7.md` | 같은 버전의 Excel 시트, 3주차 업무 지침서 |
 | 역할·협업자·검토자 | `팀원별 관할 영역 v2.md`의 가장 구체적인 경로 규칙 | v0.6에서 확정한 최지용 산출물 책임 |
 | PR·리뷰·보안·테스트 절차 | `공통 개발 규칙.md` | 저장소의 실제 설정과 자동화 결과 |
 | 디렉터리·계약 원본 위치 | 현재 저장소 구조와 `프로젝트 디렉토리 구조 v2.md` | 가장 가까운 상위 경로의 관할 |
 | Runtime·진행도·테스트 수치 | 최신 실행 결과와 아래 검증 보고서 | 계획 문서의 수치는 목표 또는 당시 스냅샷으로만 사용 |
 
-동일한 v0.6 파일끼리 충돌하면 더 나중에 수정된 Markdown의 실행 방향을
-우선하고, Excel의 `확정_실행기준`·`연동_공유` 시트는 역할 및 인계
-매트릭스를 보완하는 자료로 사용한다. `최지용_3주차_업무_지침서.md`의
-WBS 목적은 유지하되, 현재 순서와 상태는 v0.6 및 실제 검증 결과로
+동일한 v0.7 파일끼리 충돌하면 더 나중에 수정된 Markdown의 실행 방향을
+우선하고, Excel 시트는 역할 및 인계 매트릭스를 보완하는 자료로
+사용한다. `최지용_3주차_업무_지침서.md`의 WBS 목적은 유지하되,
+현재 순서와 상태는 v0.7 및 실제 검증 결과로
 갱신한다.
 
 ## 책임·협업·검토 원칙
@@ -52,10 +52,32 @@ WBS 목적은 유지하되, 현재 순서와 상태는 v0.6 및 실제 검증 �
 담당 산출물을 작성하기 위한 선행 승인 절차가 아니다. 실제 PR·Issue·
 커밋 등 검토 증거가 연결되기 전에는 `검토 완료`로 기록하지 않는다.
 현재 Backend·PostgreSQL·Data 자동 검증은 완료했지만,
-`data/**`·`scripts/data/**` 변경은 김은진의 Owner Review가 남아 있다.
-따라서 현재 문서는 `로컬 검증 완료`와 `팀 검토 완료`를 구분한다.
+공통코드 Wave는 김은진의 독립 PostgreSQL·Seed 재현과 PM 병합이
+남아 있다. 따라서 현재 문서는 `로컬 검증 완료`와 `팀 검토 완료`를
+구분한다.
 
-## 2026-07-29 최신 통합 후보
+## 2026-07-30 공통코드 Local Wave
+
+| 항목 | 현재 판정 |
+| --- | --- |
+| 구현 테이블 | `common_code_group`, `common_code` |
+| T-005 | `12/32`, 미구현 20 — 전체 `NOT_READY` |
+| 식별자 | Group 자연키 예외, Code 내부 bigint PK + 공개 UUID |
+| PostgreSQL | 빈 DB 전체 Migration·기본 DB 백업 후 적용 통과 |
+| Seed | 10 Group·43 Code, 2회차 신규 0 |
+| 관련 검증 | 63 passed |
+| Backend 전체 회귀 | 418 passed |
+| 공유 상태 | `LOCAL_VERIFIED`, Push·독립 QA·PM 병합 전 |
+| 차단 | 위험도 소문자 계약, AI Stage Group Mapping |
+
+실행·제약·차단·인계의 단일 기술 원본은
+[T-005 공통코드 Registry 구현·재현 가이드](<technical/backend/t005_common_code_registry_implementation.md>)다.
+
+## 2026-07-29 통합 후보 이력
+
+아래 값은 2026-07-29 당시 공유 후보의 역사 증거다. 현재 값은 위의
+2026-07-30 공통코드 Wave 절을 우선하며, 아래 10/32·397개 수치를 현재
+완료율로 사용하지 않는다.
 
 | 항목 | 현재 판정 |
 | --- | --- |
@@ -76,6 +98,7 @@ T-005 전체 완료를 뜻하지 않는다. 팀원은 현재 로컬 후보가 �
 
 | 구분 | 문서 | 용도 |
 | --- | --- | --- |
+| 공통코드 Runtime | [T-005 공통코드 Registry 구현·재현 가이드](<technical/backend/t005_common_code_registry_implementation.md>) | 공통코드 2개 Model·Migration, 10 Group·43 Code Seed, PostgreSQL 재현과 차단 계약 |
 | 합성 데이터 Runtime | [PostgreSQL 합성 Handoff Runtime 검증·인계서](<manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md>) | 격리 DB 367행 Import 검증과 기본 `watercare` 10개 Migration·Seed 후속 실측을 분리한 누적 증거 |
 | 합성 데이터 Importer | [합성 Handoff Importer 개발 인계서](<technical/backend/20260729_synthetic_handoff_importer.md>) | 빈 격리 DB 전용 관리 명령, UUID 충돌 차단, 원장·멱등성과 dry-run Sequence 주의 |
 | 합성 데이터 Schema | [합성 데이터 도메인 Schema·Migration 인계서](<technical/backend/20260729_synthetic_domain_schema_migration.md>) | 상담·방문·후속확인·Care·감사·Operations 원장과 `workflow.0003` 보정 Migration 체인 |

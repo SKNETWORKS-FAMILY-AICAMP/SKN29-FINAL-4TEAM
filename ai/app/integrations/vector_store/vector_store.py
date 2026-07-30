@@ -61,7 +61,8 @@ class PgVectorStore:
             LIMIT %s
         """
         literal = self._vector_literal(vector)
-        with psycopg.connect(self.dsn) as connection, connection.cursor() as cursor:
+        with psycopg.connect(self.dsn, connect_timeout=5) as connection, connection.cursor() as cursor:
+            cursor.execute("SET LOCAL statement_timeout = '5s'")
             cursor.execute(
                 sql,
                 (literal, model_code, product_generation, self.score_threshold, top_k),
@@ -75,8 +76,10 @@ class PgVectorStore:
             chunks.append(RetrievedChunk.model_validate(values))
         return chunks
 
-    def initialize_schema(self) -> None:
+    def initialize_schema(self, *, disposable_confirm: bool = False) -> None:
         """격리 검증 DB에 vector 확장과 1024차원 청크 테이블을 생성한다."""
+        if not disposable_confirm:
+            raise RuntimeError("Schema 초기화는 명시적으로 확인된 Disposable DB에서만 허용됩니다.")
         try:
             import psycopg
         except ImportError as exc:
@@ -109,7 +112,13 @@ class PgVectorStore:
                     CHECK (vector_dims(embedding) = 1024)
             );
         """
-        with psycopg.connect(self.dsn) as connection, connection.cursor() as cursor:
+        with psycopg.connect(self.dsn, connect_timeout=5) as connection, connection.cursor() as cursor:
+            cursor.execute("SELECT current_database()")
+            database_name = str(cursor.fetchone()[0])
+            if not re.search(r"(verify|test|tmp|disposable)", database_name, re.IGNORECASE):
+                raise RuntimeError(
+                    f"Disposable DB 식별 Guard를 통과하지 못했습니다: {database_name}"
+                )
             cursor.execute(sql)
 
     def upsert(self, chunks: Sequence[RetrievedChunk], vectors: Sequence[Sequence[float]]) -> int:
@@ -174,14 +183,24 @@ class PgVectorStore:
                 json.dumps(chunk.safe_actions, ensure_ascii=False),
                 json.dumps(metadata, ensure_ascii=False),
             ))
-        with psycopg.connect(self.dsn) as connection, connection.cursor() as cursor:
+        with psycopg.connect(self.dsn, connect_timeout=5) as connection, connection.cursor() as cursor:
+            cursor.execute("SET LOCAL statement_timeout = '10s'")
             cursor.executemany(sql, rows)
         return len(rows)
 
-    def count(self) -> int:
-        """현재 적재 행 수를 반환한다."""
+    def count(self, chunk_ids: Sequence[str] | None = None) -> int:
+        """전체 또는 이번 배치 청크 범위의 적재 행 수를 반환한다."""
         import psycopg
 
-        with psycopg.connect(self.dsn) as connection, connection.cursor() as cursor:
-            cursor.execute(f"SELECT COUNT(*) FROM {self.table_name}")
+        with psycopg.connect(self.dsn, connect_timeout=5) as connection, connection.cursor() as cursor:
+            if chunk_ids is None:
+                cursor.execute(f"SELECT COUNT(*) FROM {self.table_name}")
+            elif not chunk_ids:
+                return 0
+            else:
+                placeholders = ", ".join(["%s"] * len(chunk_ids))
+                cursor.execute(
+                    f"SELECT COUNT(*) FROM {self.table_name} WHERE chunk_id IN ({placeholders})",
+                    tuple(chunk_ids),
+                )
             return int(cursor.fetchone()[0])

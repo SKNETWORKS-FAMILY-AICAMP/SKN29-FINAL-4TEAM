@@ -26,6 +26,7 @@ def test_actual_pgvector_rows_dimension_and_exact_search():
             SELECT COUNT(*), COUNT(DISTINCT chunk_id),
                    MIN(vector_dims(embedding)), MAX(vector_dims(embedding))
             FROM ai_rag_chunks
+            WHERE chunk_id LIKE 'RAG-WPUJAC104DWH-%'
             """
         )
         assert cursor.fetchone() == (7, 7, 1024, 1024)
@@ -43,3 +44,5 @@ def test_actual_pgvector_rows_dimension_and_exact_search():
     assert results[0].chunk_id == "RAG-WPUJAC104DWH-NO-WATER-001"
     assert all(result.verification_status == "official_verified" for result in results)
     assert all(result.allowed_use for result in results)
+    assert all(result.document_id == "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00" for result in results)
+    assert all(result.page_refs for result in results)
