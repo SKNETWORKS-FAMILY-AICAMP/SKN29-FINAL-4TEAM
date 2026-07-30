@@ -2,7 +2,7 @@
 
 import time
 from ...safety import RiskClassifier
-from ...schemas import ProcessingTrace
+from ...schemas import AiStage, ProcessingTrace
 from ..pipeline_context import PipelineContext
 
 
@@ -15,5 +15,5 @@ def execute_safety_check_stage(ctx: PipelineContext) -> None:
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000.0
     ctx.processing_traces.append(
-        ProcessingTrace(stage="safety_check_stage", status="success", latency_ms=round(elapsed_ms, 2))
+        ProcessingTrace(stage=AiStage.SAFETY_CHECK, status="SUCCEEDED", latency_ms=round(elapsed_ms, 2))
     )

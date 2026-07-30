@@ -1,11 +1,11 @@
 """사용 안내 상태 및 조치 가이드 Pydantic 데이터 모델."""
 
 from typing import List
-from pydantic import BaseModel, Field
-from .common import UsageGuidanceStatus
+from pydantic import Field
+from .common import ContractModel, UsageGuidanceStatus
 
 
-class UsageGuidance(BaseModel):
+class UsageGuidance(ContractModel):
     """현재 사용 안내 상태 및 다음 행동 가이드 모델"""
     guidance_status: UsageGuidanceStatus = Field(..., description="사용 안내 상태 (NORMAL, PARTIAL_STOP, TOTAL_STOP, PENDING_CONSULTATION)")
     message: str = Field(..., description="고객 친화적 현재 정수기 사용 상태 안내 문구")

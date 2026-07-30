@@ -25,3 +25,4 @@ dependencies = [
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
+addopts = ["--basetemp=ai/tests/.pytest-tmp", "-p", "no:cacheprovider"]

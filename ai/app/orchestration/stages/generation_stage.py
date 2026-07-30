@@ -2,7 +2,7 @@
 
 import time
 from ...safety import UsageGuidanceClassifier
-from ...schemas import ProcessingTrace
+from ...schemas import AiStage, ProcessingTrace
 from ..pipeline_context import PipelineContext
 
 
@@ -21,5 +21,5 @@ def execute_generation_stage(ctx: PipelineContext) -> None:
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000.0
     ctx.processing_traces.append(
-        ProcessingTrace(stage="generation_stage", status="success", latency_ms=round(elapsed_ms, 2))
+        ProcessingTrace(stage=AiStage.GENERATING, status="SUCCEEDED", latency_ms=round(elapsed_ms, 2))
     )

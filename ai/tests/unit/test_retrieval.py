@@ -90,8 +90,10 @@ def test_index_manifest_save_and_load(tmp_path):
 
     manifest = IndexManifest(
         model_name="BAAI/bge-m3",
+        model_revision="a" * 40,
         dimension=1024,
         chunk_count=10,
+        chunk_set_sha256="b" * 64,
         document_hashes={"manual.pdf": "hash_123"}
     )
     manifest.save_manifest(str(manifest_file))
@@ -101,3 +103,41 @@ def test_index_manifest_save_and_load(tmp_path):
     assert loaded.model_name == "BAAI/bge-m3"
     assert loaded.dimension == 1024
     assert loaded.chunk_count == 10
+    assert loaded.model_revision == "a" * 40
+    assert loaded.chunk_set_sha256 == "b" * 64
+
+
+def test_pgvector_rejects_non_1024_dimension_and_invalid_table_name():
+    from ai.app.integrations.vector_store.vector_store import PgVectorStore
+
+    store = PgVectorStore("postgresql://unused")
+    try:
+        store._vector_literal([0.0] * 3)
+        assert False, "3차원 Vector를 거부해야 합니다."
+    except ValueError as exc:
+        assert "1024" in str(exc)
+
+    try:
+        PgVectorStore("postgresql://unused", table_name="ai_rag_chunks; DROP TABLE users")
+        assert False, "허용되지 않은 Table 이름을 거부해야 합니다."
+    except ValueError:
+        pass
+
+
+def test_unverified_source_only_query_is_blocked_before_embedding():
+    class FailingEmbedding:
+        dimension = 1024
+
+        def embed_query(self, text):
+            raise AssertionError("차단된 질의는 임베딩하지 않아야 합니다.")
+
+    class FailingStore:
+        def search(self, *args, **kwargs):
+            raise AssertionError("차단된 질의는 DB를 조회하지 않아야 합니다.")
+
+    service = VectorSearchService(FailingEmbedding(), FailingStore())
+    query = RetrievalQuery(
+        query_text="모델 확인이 안 된 FAQ만 근거로 누수 조치를 확정해 주세요.",
+        model_code="WPUJAC104DWH",
+    )
+    assert service.search(query) == []

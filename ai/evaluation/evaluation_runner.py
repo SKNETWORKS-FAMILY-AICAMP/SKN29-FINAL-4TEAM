@@ -69,6 +69,8 @@ class EvaluationRunner:
             res = self.pipeline_router.run_pipeline(
                 inquiry_id=f"EVAL-INQ-{idx:03d}",
                 correlation_id=f"eval-corr-{idx}",
+                ai_request_id=f"eval-ai-request-{idx}",
+                state_version=1,
                 raw_symptom=item["raw_symptom"],
                 selected_symptoms=item.get("selected_symptoms", [])
             ).to_analysis_result()

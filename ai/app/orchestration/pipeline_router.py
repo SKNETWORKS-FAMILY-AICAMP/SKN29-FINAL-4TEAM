@@ -22,12 +22,22 @@ class PipelineRouter:
         dsn = os.getenv("AI_VECTOR_DSN")
         if not dsn:
             return None
-        return VectorSearchService(BgeM3EmbeddingClient(), PgVectorStore(dsn))
+        model_revision = os.getenv("AI_EMBEDDING_REVISION")
+        if not model_revision:
+            raise RuntimeError(
+                "AI_VECTOR_DSN 사용 시 재현 가능한 AI_EMBEDDING_REVISION이 필요합니다."
+            )
+        return VectorSearchService(
+            BgeM3EmbeddingClient(model_revision=model_revision),
+            PgVectorStore(dsn),
+        )
 
     def run_pipeline(
         self,
         inquiry_id: str,
         correlation_id: str,
+        ai_request_id: str,
+        state_version: int,
         raw_symptom: str,
         model_code: str = "WPUJAC104DWH",
         selected_symptoms: Optional[List[str]] = None,
@@ -37,7 +47,9 @@ class PipelineRouter:
         ctx = PipelineContext(
             trace_context=TraceContext(
                 inquiry_id=inquiry_id,
-                correlation_id=correlation_id
+                correlation_id=correlation_id,
+                ai_request_id=ai_request_id,
+                state_version=state_version,
             ),
             raw_symptom=raw_symptom,
             model_code=model_code,

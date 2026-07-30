@@ -1,8 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://watercare.local/contracts/ai/1.1.0/common/MissingField.schema.json",
+  "x-contract-version": "1.1.0",
   "title": "MissingField",
-  "description": "누락 필드",
+  "description": "추가 문진이 필요한 누락 필드",
   "type": "object",
+  "required": ["field_name", "reason", "importance"],
   "additionalProperties": false,
-  "properties": {}
+  "properties": {
+    "field_name": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "reason": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "importance": { "type": "string", "enum": ["high", "medium", "low"] }
+  }
 }
