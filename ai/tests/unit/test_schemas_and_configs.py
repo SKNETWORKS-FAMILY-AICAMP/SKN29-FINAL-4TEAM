@@ -4,7 +4,7 @@ import json
 import os
 from pathlib import Path
 
-from jsonschema import Draft202012Validator, RefResolver
+from jsonschema import Draft202012Validator, FormatChecker, RefResolver
 import yaml
 import pytest
 from ai.app.schemas.common import RiskLevel, UsageGuidanceStatus, TraceContext
@@ -12,7 +12,10 @@ from ai.app.schemas.symptom import StructuredSymptom
 from ai.app.schemas.safety import SafetyAssessment
 from ai.app.schemas.guidance import UsageGuidance
 from ai.app.schemas.pipeline import SymptomAnalysisResult
+from pydantic import ValidationError
 from ai.app.interfaces.http.request_models import SymptomAnalysisApiRequest
+from ai.app.interfaces.http.response_models import ApiErrorResponse
+from ai.app.schemas.retrieval import EvidenceReference
 from ai.app.schemas.consultation_summary import ConsultationSummaryRequest, ConsultationSummaryResult
 from ai.app.schemas.technician_report import TechnicianReportRequest, TechnicianReportResult
 
@@ -23,19 +26,19 @@ def test_pydantic_common_schemas():
     assert UsageGuidanceStatus.TOTAL_STOP.value == "TOTAL_STOP"
 
     trace = TraceContext(
-        inquiry_id="DEMO-INQ-001",
+        inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b307",
         correlation_id="test-corr-id-123",
         ai_request_id="ai-req-001",
         state_version=1,
     )
-    assert trace.inquiry_id == "DEMO-INQ-001"
+    assert str(trace.inquiry_id) == "018f2f9b-7c30-7981-b541-1a987c88b307"
     assert trace.correlation_id == "test-corr-id-123"
 
 
 def test_symptom_analysis_result_schema():
     """통합 분석 응답 모델 객체 생성 검증"""
     result = SymptomAnalysisResult(
-        inquiry_id="DEMO-INQ-002",
+        inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b308",
         correlation_id="corr-002",
         ai_request_id="ai-req-002",
         state_version=1,
@@ -99,6 +102,7 @@ def _validator(schema_path: Path) -> Draft202012Validator:
     return Draft202012Validator(
         schema,
         resolver=RefResolver(base_uri=schema_path.resolve().as_uri(), referrer=schema),
+        format_checker=FormatChecker(),
     )
 
 
@@ -152,6 +156,7 @@ def test_ai_error_examples_match_contract(example_path):
     contract_root = Path("contracts/ai")
     example = json.loads((contract_root / example_path).read_text(encoding="utf-8"))
     _validator(contract_root / "common/AIErrorResponse.schema.json").validate(example["error_response"])
+    ApiErrorResponse.model_validate(example["error_response"])
 
 
 def test_symptom_runtime_and_contract_top_level_fields_match():
@@ -161,6 +166,67 @@ def test_symptom_runtime_and_contract_top_level_fields_match():
     assert set(SymptomAnalysisApiRequest.model_json_schema()["properties"]) == set(request_contract["properties"])
     assert set(SymptomAnalysisResult.model_json_schema()["properties"]) == set(response_contract["properties"])
     assert request_contract["x-contract-version"] == response_contract["x-contract-version"] == "1.1.0"
+
+
+def test_symptom_request_contract_and_runtime_reject_same_boundaries():
+    schema = _validator(Path("contracts/ai/requests/SymptomAnalysisRequest.schema.json"))
+    base = {
+        "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b309",
+        "correlation_id": "corr-parity",
+        "ai_request_id": "ai-req-parity",
+        "state_version": 1,
+        "raw_symptom": "물이 나오지 않습니다.",
+        "model_code": "WPUJAC104DWH",
+    }
+    invalid_payloads = [
+        {**base, "inquiry_id": "DEMO-INQ-001"},
+        {**base, "selected_symptoms": ["증상"] * 31},
+        {**base, "selected_symptoms": [""]},
+        {**base, "selected_symptoms": ["가" * 201]},
+        {**base, "previous_answers": [{"question_id": "q", "answer_text": "a"}] * 51},
+        {**base, "previous_answers": [{"question_id": "", "answer_text": "a"}]},
+        {**base, "previous_answers": [{"question_id": "q", "answer_text": "가" * 1001}]},
+    ]
+    for payload in invalid_payloads:
+        assert list(schema.iter_errors(payload))
+        with pytest.raises(ValidationError):
+            SymptomAnalysisApiRequest.model_validate(payload)
+
+
+def test_error_and_evidence_nested_contract_constraints_are_enforced():
+    valid_error = {
+        "success": False,
+        "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b310",
+        "correlation_id": "corr-error",
+        "ai_request_id": "ai-req-error",
+        "state_version": 1,
+        "error": {
+            "code": "AI-FAILED-01",
+            "message": "분석 실패",
+            "details": None,
+            "retryable": True,
+            "failure_stage": "FAILED",
+            "retry_count": 0,
+        },
+    }
+    for mutate in (
+        lambda value: value.update(success=True),
+        lambda value: value["error"].update(code="UNKNOWN"),
+        lambda value: value["error"].update(message="가" * 501),
+        lambda value: value["error"].update(failure_stage="COMPLETED"),
+    ):
+        payload = json.loads(json.dumps(valid_error))
+        mutate(payload)
+        with pytest.raises(ValidationError):
+            ApiErrorResponse.model_validate(payload)
+
+    with pytest.raises(ValidationError):
+        EvidenceReference(
+            document_title="매뉴얼",
+            chunk_id="RAG-1",
+            summary="근거",
+            verification_status="unverified",
+        )
 
 
 def test_all_ai_contract_schemas_are_versioned_and_well_formed():

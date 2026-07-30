@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
+from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -17,6 +18,29 @@ class RiskLevel(str, Enum):
     GENERAL = "general"
     CAUTION = "caution"
     DANGER = "danger"
+
+
+class SafetyPriority(str, Enum):
+    """SafetyAssessment 계약의 처리 우선순위."""
+
+    GENERAL_GUIDANCE = "general_guidance"
+    CONSULTATION_RECOMMENDED = "consultation_recommended"
+    PRIORITY_CONSULTATION = "priority_consultation"
+
+
+class VerificationStatus(str, Enum):
+    """공식 근거 검증 상태."""
+
+    OFFICIAL_VERIFIED = "official_verified"
+    TEAM_VERIFIED = "team_verified"
+
+
+class AiErrorCode(str, Enum):
+    """AI HTTP 오류 계약에서 공개 가능한 코드."""
+
+    FAILED = "AI-FAILED-01"
+    VALIDATION = "AI-VALIDATION-01"
+    TIMEOUT = "AI-TIMEOUT-01"
 
 
 class UsageGuidanceStatus(str, Enum):
@@ -58,9 +82,9 @@ class DataClassification(str, Enum):
 
 class TraceContext(ContractModel):
     """요청 추적 Context 모델"""
-    inquiry_id: str = Field(..., description="공개 문의 식별자 (예: DEMO-INQ-002)")
-    correlation_id: str = Field(..., description="시스템 전반 공통 추적 ID")
-    ai_request_id: str = Field(..., description="Backend가 발급한 AI 호출 멱등 식별자")
+    inquiry_id: UUID = Field(..., description="Backend가 발급한 Public UUID")
+    correlation_id: str = Field(..., min_length=1, max_length=100, description="시스템 전반 공통 추적 ID")
+    ai_request_id: str = Field(..., min_length=1, max_length=100, description="Backend가 발급한 AI 호출 멱등 식별자")
     state_version: int = Field(..., ge=1, description="AI 호출 시작 시점 문의 상태 버전")
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="요청 시각 (ISO 8601 UTC)")
 
