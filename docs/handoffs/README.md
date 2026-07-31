@@ -4,13 +4,13 @@
 >
 > 문서 책임: 공동 편집(`docs/**`)
 >
-> 현재 상태: `T005_SHARED_CANDIDATE_TECHNICALLY_COMPLETE_NON_AUTHOR_REVIEW_PENDING`
+> 현재 상태: `WATERBRIDGE_LOCAL_GATE_PASS_T005_TECHNICALLY_READY_APPROVAL_PENDING`
 >
-> 게시된 T-005 구현 기준 Commit: `051c7cc9b45f1b353384ee72e67ac8210a4f3bb1`
+> 현재 기본 DB: `waterbridge` / Schema: `public`
 >
-> 최종 검토 대상: 이 문서가 포함된 `origin/jiyong` 40자리 HEAD를 확인하고, PM이 병합 후 공유하는 `main` SHA로 다시 고정
+> 역사적 T-005 구현 게시 Commit: `051c7cc9b45f1b353384ee72e67ac8210a4f3bb1`
 >
-> T-005 32개 테이블 변경: 경로별 7개 Commit으로 `jiyong` 게시 완료, 물리 계약 v1.3·Data 해시 후속 후보는 비작성자·PM 리뷰 대기
+> 최종 소비 기준: 이 문서가 포함된 `origin/jiyong` 40자리 HEAD를 확인하고, PM이 병합 후 공유하는 `main` SHA로 다시 고정
 >
 > 실행 원칙: `작업 → 즉시 검증 → 다음 작업`
 
@@ -23,33 +23,45 @@
 
 ---
 
-## 0. 2026-07-31 T-005 32/32 Gate 1·Gate 2 후보
+## 0. 2026-07-31 WaterBridge 현재 Gate
 
-현재 `jiyong` 후보에서는 계약 대상 32개 테이블을 모두 Django Model,
-`INSTALLED_APPS`, 번호 Migration과 PostgreSQL Runtime에 연결했다.
-Auditor 판정은 `READY 32/32`, 누락·미등록·미분류·차단은 각각 0이다.
-기본 `watercare` DB와 빈 격리 DB에서 전체 Migration, 멱등 Seed,
-합성 데이터 Importer 실행과 재실행을 검증했다. 이후 활성 물리 계약을
-v1.3으로 올리고 상태를 `TECHNICALLY_COMPLETE_REVIEW_PENDING`과
-`NON_AUTHOR_REVIEW_PENDING`으로 고정했다. 최지용의 재실행은 기술
-증거일 뿐, 비작성자 확인이나 PM 승인으로 대체하지 않는다.
+현재 기본 개발 DB의 이름은 `waterbridge`, PostgreSQL Schema는
+`public`이다. 프로젝트 계약 대상 32개 테이블은 물리적으로 유지하되,
+오늘의 MVP 데이터 범위는 Active 13개 테이블로 제한한다. Target-only
+19개 테이블은 삭제하지 않고 모두 0행으로 유지하며, 데이터와 소비 기능이
+준비될 때 계약·Migration·회귀 검증을 거쳐 단계적으로 활성화한다.
 
-| 항목 | 현재 로컬 검증 결과 | 공식 완료 경계 |
+T-005 Auditor 판정은 `READY 32/32`이고 누락·미등록·미분류·차단은 0이다.
+이는 기술 구현 준비 완료를 의미한다. 공식 완료 선언에는 별도로
+비작성자 독립 재현, 외부 소비자 리뷰, PM 승인이 필요하며 현재 모두
+승인 대기 상태다.
+
+| 항목 | 2026-07-31 검증 결과 | 현재 판정 |
 | --- | --- | --- |
-| T-005 Runtime | `32/32 READY`, Runtime 지원 테이블 4개 승인 분류 | 로컬 기술 완료 |
-| PostgreSQL | 기본 DB 백업 후 24개 Migration 적용, 빈 격리 DB 전체 재현 | 비작성자 독립 재현 대기 |
-| Seed·Importer | Seed 2회 멱등, Importer dry-run·실행·재실행 통과 | Data Owner 확인 대기 |
-| Backend 전체 | SQLite `740 passed, 11 skipped`, PostgreSQL `751 passed` | 로컬 회귀 통과 |
-| Data QA | 단위 `67 passed`, QA `48 files / 740 records`, 오류·경고 0 | 로컬 QA 통과 |
-| Auth 전환 | 정수 내부 PK·공개 UUID JWT, legacy subject fallback 제거 | Web·Mobile 소비자 확인 대기 |
-| 물리 계약 | v1.3, 3계층 식별자 Runtime 완료 반영 | `completion_claim_allowed=false` |
-| 공식 T-005 상태 | 기술 증거는 충족했으나 계약 완료 승인은 미반영 | 비작성자 독립 재현·외부 리뷰·PM 승인 필요 |
+| PostgreSQL 기준 | DB `waterbridge`, Schema `public`, PostgreSQL 16.14 | `PASS` |
+| T-005 물리 범위 | 계약 테이블 `32/32`, Active 13개 유지 | `TECHNICALLY_READY` |
+| Target-only 범위 | 19개 테이블 보존, 각 테이블 0행 | `PASS` |
+| Migration·Seed | Migration drift·미적용 0, 기본 Seed 2회 멱등 | `PASS` |
+| 합성 Importer | 기본 `waterbridge` 실행 금지, 빈 격리 DB에서만 dry-run·실행·Replay 검증 | `PASS_WITH_SAFETY_RULE` |
+| 표적 API 회귀 | `21 passed` | `PASS` |
+| Backend SQLite 회귀 | `740 passed, 11 skipped` | `PASS` |
+| Backend PostgreSQL 회귀 | `751 passed` | `PASS` |
+| Data 단위 회귀 | `67 passed` | `PASS` |
+| Data 대표 QA | `17/17 passed`, 오류·경고 0 | `PASS` |
+| 환경·실행 점검 | 기본 환경, `--full --postgresql`, Health·Auth Smoke | 모두 `PASS` |
+| 공식 T-005 완료 | 기술 Gate 통과, 계약 완료 승인은 미반영 | 비작성자·외부 리뷰·PM 승인 대기 |
 
-팀원은 `origin/jiyong`을 곧바로 공용 기준선으로 간주하지 않는다.
-먼저 아래 명령으로 최지용이 전달한 후보 SHA와 원격 HEAD가 같은지
-확인하고, 지정 비작성자만 새 worktree·새 PostgreSQL Volume에서
-Migration·Seed·Importer·회귀를 독립 재현한다. 나머지 팀원은 PM이
-검토·병합한 40자리 `main` SHA를 받은 뒤 자기 담당 소비 검증을 한다.
+합성 Importer는 기본 `waterbridge`에서 실행하지 않는다. 기본 DB에는
+운영 중인 식별자와 이력이 있으므로 canonical Fixture UUID 충돌을 막기
+위해 `waterbridge_import_verify_*` 형식의 새 빈 격리 DB에서만
+Migration 후 검증한다. 격리 DB의 결과를 기본 DB로 복사하거나 기본 DB에서
+Importer 명령을 재실행하지 않는다.
+
+팀원은 `origin/jiyong`을 곧바로 공용 기준선으로 간주하지 않는다. 아래
+명령으로 전달받은 후보 SHA와 원격 HEAD가 같은지 확인한 뒤, 지정
+비작성자는 새 worktree·새 PostgreSQL Volume에서 독립 재현한다. 나머지
+팀원은 PM이 검토·병합한 40자리 `main` SHA를 받은 뒤 자기 담당 소비
+검증을 한다.
 
 ```powershell
 git fetch origin
@@ -57,19 +69,38 @@ git rev-parse origin/jiyong
 git rev-parse origin/main
 ```
 
-구현 파일, Migration 순서, 백업·롤백, 실행 명령과 최종 수치는
-[T-005 32개 테이블 PostgreSQL·Seed·Importer 최종 검증 보고서](../individual/jiyong/technical/backend/t005_final_32_table_postgresql_seed_importer_validation_report.md)를
-단일 현행 원본으로 사용한다.
+DB 이름 전환, 32/13/19 범위, 백업·롤백, 실행 명령과 이번 검증 수치는
+[2026-07-31 WaterBridge DB 전환 및 Active 범위 검증 보고서](../individual/jiyong/technical/backend/20260731_waterbridge_database_transition_and_active_scope_validation.md)를
+단일 현행 원본으로 사용한다. 기존 T-005 구현·Migration·Importer 이력은
+[T-005 32개 테이블 PostgreSQL·Seed·Importer 최종 검증 보고서](../individual/jiyong/technical/backend/t005_final_32_table_postgresql_seed_importer_validation_report.md)에
+보존한다.
 
 작성자 격리 재현의 실제 후보 SHA와 수치는
 [2026-07-31 작성자 격리 재현 증거](../database/t-005/t005_author_isolated_reproduction_evidence_20260731.json)에서
 확인한다.
 
-### 0.1 지금 인계할 순서
+### 0.1 Backend 다음 P0의 완료 경계
+
+WaterBridge DB Gate 뒤 최지용이 바로 수행할 수 있는 범위는 다음과
+같다.
+
+| 항목 | 현행 판정 | 팀 인계 |
+| --- | --- | --- |
+| Request·Exception 로그 민감정보 비노출 | `14 passed`, 현재 경로 `PASS` | [로그 보안 감사](../individual/jiyong/technical/backend/20260731_backend_log_security_audit.md)를 김은진이 통합 환경 로그로 재확인 |
+| T-017A 계정 관리 OWNER 설계 | `OWNER_DESIGN_READY_REVIEW_PENDING` | [T-017A 설계](../individual/jiyong/technical/backend/20260731_t017a_account_management_owner_design.md)를 윤승혁·김은진이 검토 |
+| T-017B Django Admin | `NOT_IMPLEMENTED`, 2026-08-03 대상 | T-017A 검토 뒤 최지용 구현·김은진 재현 |
+| T-017C 계정 수명주기·감사 | `NOT_IMPLEMENTED`, 2026-08-04~05 대상 | T-017B 통과 뒤 최지용 구현·김은진 재현 |
+| `SUBMIT_SYMPTOM` Runtime | 미구현 | PM State 계약을 바꾸지 않고 첫 수직 Slice부터 작업·검증 |
+
+T-017A 설계에 적힌 신규 필드·오류 코드·감사 Model은 아직 제안이다.
+현재 계약이나 Runtime으로 소비하지 않는다. 또한 현재 로그 감사 통과를
+T-024 전체 추적성 구현 완료로 확대하지 않는다.
+
+### 0.2 지금 인계할 순서
 
 | 순서 | 담당 | 해야 할 일 | 완료 증거 |
 | ---: | --- | --- | --- |
-| 1 | 최지용 | 최종 `jiyong` SHA·테스트 결과를 PM과 비작성자에게 전달 | 40자리 SHA, clean 상태, 검증 수치 |
+| 1 | 최지용 | WaterBridge 후보 `jiyong` SHA·테스트 결과를 PM과 비작성자에게 전달 | 40자리 SHA, clean 상태, 위 검증 수치 |
 | 2 | 김은진 또는 지정 비작성자 | 같은 SHA를 새 worktree·새 PostgreSQL Volume에서 독립 재현 | 32/32, Seed 2회차 신규 0, Importer Replay 동일, 전체 회귀 |
 | 3 | 윤승혁 PM | v1.3 계약·비작성자 증거 검토 후 완료 여부 결정 | 승인 기록과 병합된 `main` 40자리 SHA |
 | 4 | 한예나·양정현 | PM `main` 기준 UUID JWT·401/403 소비 검증 | Gate 3 결과 — 현재 `BLOCKED_EXTERNAL` |
@@ -306,7 +337,6 @@ DB 복원 리허설까지 완료했다는 의미는 아니다.
 
 | 우선순위 | Blocker | 주담당 | 필요한 입력 | 다음 소비자 |
 | --- | --- | --- | --- | --- |
-| P0 | T-005 32/32 변경이 아직 미커밋·미Push | 최지용 | 경로별 Commit과 740/751·PostgreSQL·Data QA 증거 | 김은진·PM |
 | P0 | 기본·빈 PostgreSQL·Seed·Importer 비작성자 재현 미실시 | 김은진 또는 지정 리뷰어 | 최지용의 40자리 병합 후보 SHA와 최종 실행 가이드 | PM |
 | P0 | T-005 완료 계약 리뷰와 PM `main` 병합 전 | 윤승혁 | `READY 32/32`·3계층 식별자·비작성자 재현 결과 | 전 팀원 |
 | P1 | T-005 공식 완료 Gate 3개 대기 | 최지용 + 윤승혁 | 비작성자 확인·3계층 식별자 계약 확인·외부 리뷰 증거 | Backend·QA |

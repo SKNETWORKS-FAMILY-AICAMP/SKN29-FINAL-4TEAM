@@ -146,14 +146,14 @@ PostgreSQL Sequence는 일반 테이블 행과 같은 방식으로 트랜잭션
 
 아래 명령은 저장소의 `backend` 디렉터리에서 실행한다. 실행 전
 [v1.3 매뉴얼](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)에
-따라 새 빈 격리 PostgreSQL DB를 만들고 `POSTGRES_DB`가 `watercare`가
-아닌지 확인한다. 기본 `watercare`에서는 아래 실제 Import뿐 아니라
+따라 새 빈 격리 PostgreSQL DB를 만들고 `POSTGRES_DB`가 `waterbridge`
+또는 기존 기본명 `watercare`가 아닌지 확인한다. 기본 개발 DB에서는 아래 실제 Import뿐 아니라
 `--dry-run`도 실행하지 않는다.
 
 ```powershell
-$env:POSTGRES_DB = 'watercare_synthetic_isolated_<yyyymmdd>'
-if ($env:POSTGRES_DB -eq 'watercare') {
-    throw '합성 Importer는 기본 watercare DB에서 실행할 수 없습니다.'
+$env:POSTGRES_DB = 'waterbridge_synthetic_isolated_<yyyymmdd>'
+if ($env:POSTGRES_DB -in @('waterbridge', 'watercare')) {
+    throw '합성 Importer는 기본 개발 DB에서 실행할 수 없습니다.'
 }
 
 .\.venv\Scripts\python.exe manage.py check
@@ -180,7 +180,7 @@ if ($env:POSTGRES_DB -eq 'watercare') {
 발생하면 일부 적재를 성공으로 간주하지 말고 원본 식별자·관계·코드 값을
 수정한 뒤 dry-run부터 다시 시작한다.
 
-현재 기본 `watercare`의 `SYN-CUSTOMER-001` 관련 기존 레코드는 canonical
+현재 기본 `waterbridge`의 `SYN-CUSTOMER-001` 관련 기존 레코드는 canonical
 fixture와 공개 UUID가 다르다. 따라서 그 DB에서 importer dry-run을
 실행하면 `public UUID mismatch`로 실패하는 것이 예상 결과다. 이 충돌을
 자동 병합하거나 기존 UUID를 fixture 값으로 바꾸지 않는다. 기본 DB의

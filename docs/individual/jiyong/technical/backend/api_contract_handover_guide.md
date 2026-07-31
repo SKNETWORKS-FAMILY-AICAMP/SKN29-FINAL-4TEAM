@@ -1,6 +1,6 @@
 # API 계약 개발·인계 가이드
 
-> 기준일: 2026-07-27
+> 기준일: 2026-07-31
 > 담당: 최지용
 > 적용 원칙: API 명세는 최지용 확정 기준선이며, 구현은 `작업 → 검증` 단위로 진행한다.
 
@@ -56,6 +56,7 @@ Model과 테스트로 옮기는 절차를 정의한다. 구현 여부와 실행 
 | OpenAPI·Runtime 현재 지원 경계 | [API Runtime 구현 상태](../../../../api/runtime_implementation_status.md) |
 | 오류 Registry·JSON 예시·최종 회귀 증거 | [Backend API 계약 정합화 검증보고서](../../manuals/20260729_최지용_Backend_API_계약_정합화_검증보고서_v1.0.md) |
 | 문의 API 구현 Gap | [T-022 문의 관리 구현 준비도](t-022-inquiry-readiness.md) |
+| `SUBMIT_SYMPTOM` 첫 수직 Slice 설계 | [2026-07-31 T-022 증상 제출 수직 Slice 설계](20260731_t022_submit_symptom_vertical_slice_design.md) |
 | 상태 전이 구현 Gap·PM 입력 경계 | [T-023 Workflow 구현 준비도](t-023-workflow-readiness.md) |
 
 이 문서는 위 결과를 다시 요약하는 보고서가 아니라, 어떤 API에도 반복

@@ -1,16 +1,24 @@
 # 최지용 Django·PostgreSQL 공유 패키지 인계서 v1.3
 
 > 기준일: 2026-07-29
-> 문서 상태: `CURRENT_SINGLE_SOURCE`
+> 문서 상태: `HISTORICAL_20260729`
 > 작성·유지 책임: 최지용
 > 명령 실행 기준: 별도 표시가 없으면 저장소 루트
 > 목적: 새 PC 설치, 기존 PC 갱신, PostgreSQL Migration, Django 실행과
 > 팀 인계를 한 순서로 재현
 > 실행 원칙: `대상 확인 → 작업 → 즉시 검증 → 증거 확인 → 다음 작업`
 
+> **현행 실행 기준:** 2026-07-31부터 기본 PostgreSQL DB는
+> `waterbridge`, Schema는 `public`이다. 현재 설치·환경 검사는
+> [Backend README](../../../../backend/README.md)와
+> [Backend `.venv` 재현 가이드](../technical/backend/backend_venv_reproducibility_guide.md),
+> DB 전환·복구·32/13/19 범위·Seed·Importer·회귀는
+> [WaterBridge DB 전환 및 Active 범위 검증](../technical/backend/20260731_waterbridge_database_transition_and_active_scope_validation.md)을
+> 따른다. 아래 `watercare` DB명과 실행 수치는 2026-07-29 당시 증거다.
+
 이 문서는 v1.1·v1.2의 유효한 환경 재현·실행·복구 절차와 당시 검증
 증거를 통합하고, 2026-07-29 기본 `watercare` 개발 DB에 새 Migration을
-적용한 실측 결과와 안전 규칙을 반영한 최종 단일 원본이다. 이전 버전의
+적용한 실측 결과와 안전 규칙을 보존한 역사 원본이다. 이전 버전의
 별도 파일은 유지하지 않으며, 버전별 검증 수치와 정책 변화는 15장에
 보존한다.
 
@@ -289,7 +297,7 @@ docker compose --env-file .\backend\.env ps postgres
 - Docker Client와 Server가 모두 응답
 - Compose 문법 오류 없음
 - `postgres`가 `running`, `healthy`
-- 공식 Image `postgres:16.14-bookworm`
+- 실제 Compose Image `pgvector/pgvector:0.8.6-pg16-bookworm`
 
 Client 정보만 있고 Server 정보가 없거나 `healthy`가 아니면 Migration을
 실행하지 않는다.
