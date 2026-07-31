@@ -33,17 +33,17 @@ class ApiErrorDetail(ContractModel):
     """업무 오류 상세 구조"""
     code: AiErrorCode = Field(..., description="공통 오류 코드")
     message: str = Field(..., min_length=1, max_length=500, description="사용자 친화적 오류 메시지")
-    details: Optional[Dict[str, Any]] = Field(None, description="오류 상세 메타데이터")
-    retryable: bool = Field(False, description="재시도 가능 여부")
+    details: Optional[Dict[str, Any]] = Field(..., description="오류 상세 메타데이터")
+    retryable: bool = Field(..., description="재시도 가능 여부")
     failure_stage: ErrorFailureStage = Field(..., description="실패한 표준 AI Stage")
-    retry_count: int = Field(0, ge=0, le=1, description="AI 내부 재시도 횟수")
+    retry_count: int = Field(..., ge=0, le=1, description="AI 내부 재시도 횟수")
 
 
 class ApiErrorResponse(ContractModel):
     """FastAPI 공통 오류 응답 Wrapper"""
-    success: Literal[False] = Field(False, description="성공 여부 (항상 False)")
-    inquiry_id: Optional[UUID] = Field(None, description="Backend Public UUID")
-    correlation_id: Optional[str] = Field(None, description="요청·응답·로그 추적 식별자")
-    ai_request_id: Optional[str] = Field(None, description="AI 호출 멱등 식별자")
-    state_version: Optional[int] = Field(None, ge=1, description="호출 시작 시점 상태 버전")
+    success: Literal[False] = Field(..., description="성공 여부 (항상 False)")
+    inquiry_id: Optional[UUID] = Field(..., description="Backend Public UUID")
+    correlation_id: Optional[str] = Field(..., description="요청·응답·로그 추적 식별자")
+    ai_request_id: Optional[str] = Field(..., description="AI 호출 멱등 식별자")
+    state_version: Optional[int] = Field(..., ge=1, description="호출 시작 시점 상태 버전")
     error: ApiErrorDetail = Field(..., description="오류 상세")

@@ -1,11 +1,13 @@
 """파이프라인 라우터 모듈."""
 
 import os
+from pathlib import Path
 from typing import Dict, List, Optional
 
 from ..integrations.embedding.embedding_client import BgeM3EmbeddingClient
 from ..integrations.vector_store.vector_store import PgVectorStore
 from ..retrieval.search.vector_search import VectorSearchService
+from ..retrieval.indexing.index_manifest import IndexManifest
 from .pipeline_context import PipelineContext
 from .pipeline_result import PipelineResult
 from .pipelines.single_rag_pipeline import SingleRAGPipeline
@@ -28,9 +30,15 @@ class PipelineRouter:
             raise RuntimeError(
                 "AI_VECTOR_DSN 사용 시 재현 가능한 AI_EMBEDDING_REVISION이 필요합니다."
             )
+        repository_root = Path(__file__).resolve().parents[3]
+        manifest_path = repository_root / "ai" / "configs" / "index_manifest.json"
+        manifest = IndexManifest.load_manifest(str(manifest_path))
+        if manifest is None:
+            raise RuntimeError("AI_VECTOR_DSN 사용 시 Index Manifest가 필요합니다.")
         return VectorSearchService(
             BgeM3EmbeddingClient(model_revision=model_revision),
             PgVectorStore(dsn),
+            index_manifest=manifest,
         )
 
     def run_pipeline(
