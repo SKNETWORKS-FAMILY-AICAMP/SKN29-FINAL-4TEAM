@@ -68,7 +68,9 @@
       ],
       "properties": {
         "purpose": {"type": "string", "minLength": 1},
-        "readiness": {"type": "string", "minLength": 1},
+        "readiness": {
+          "enum": ["READY", "DB_SMOKE_VERIFIED", "DB_FULL_VERIFIED"]
+        },
         "contract_dependency": {
           "enum": [
             "NONE",
@@ -85,7 +87,28 @@
             "required": ["path", "role"],
             "properties": {
               "path": {"type": "string", "minLength": 1},
-              "role": {"type": "string", "minLength": 1}
+              "role": {
+                "enum": [
+                  "INGEST",
+                  "REFERENCE",
+                  "REFERENCE_ONLY",
+                  "EVALUATION_INPUT",
+                  "EVALUATION_EXPECTED",
+                  "EVALUATION_CONTRACT",
+                  "LOAD",
+                  "LOAD_FILTERED",
+                  "PROJECT",
+                  "PROJECT_FILTERED",
+                  "VALIDATE_ONLY_PROFILE_EXCLUDED",
+                  "MAPPING_DB_FULL_VERIFIED",
+                  "SCHEMA",
+                  "QA_EXPECTED",
+                  "SUMMARY",
+                  "DETAIL",
+                  "MANIFEST",
+                  "GUIDE"
+                ]
+              }
             }
           }
         },

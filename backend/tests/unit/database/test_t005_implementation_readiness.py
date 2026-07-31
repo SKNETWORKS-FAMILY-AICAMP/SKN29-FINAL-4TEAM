@@ -36,10 +36,10 @@ def readiness_module() -> ModuleType:
     return load_module()
 
 
-def test_model_declarations_distinguish_placeholder_and_implemented_model(
+def test_model_declarations_detect_implemented_contract_models(
     readiness_module: ModuleType,
 ):
-    placeholder = (
+    action_result = (
         REPOSITORY_ROOT
         / "backend"
         / "apps"
@@ -56,11 +56,26 @@ def test_model_declarations_distinguish_placeholder_and_implemented_model(
         / "inquiry.py"
     )
 
-    assert readiness_module.collect_model_declarations(placeholder) == []
-    declarations = readiness_module.collect_model_declarations(actual)
-    assert len(declarations) == 1
-    assert declarations[0]["class_name"] == "Inquiry"
-    assert declarations[0]["db_table"] == "support_inquiry"
+    action_result_declarations = (
+        readiness_module.collect_model_declarations(action_result)
+    )
+    inquiry_declarations = (
+        readiness_module.collect_model_declarations(actual)
+    )
+
+    assert action_result_declarations == [
+        {
+            "class_name": "CustomerActionResult",
+            "db_table": "support_customer_action_result",
+            "module_path": (
+                "backend/apps/inquiries/models/"
+                "customer_action_result.py"
+            ),
+        }
+    ]
+    assert len(inquiry_declarations) == 1
+    assert inquiry_declarations[0]["class_name"] == "Inquiry"
+    assert inquiry_declarations[0]["db_table"] == "support_inquiry"
 
 
 def test_migration_declarations_read_actual_db_tables(
@@ -167,36 +182,158 @@ def test_mapping_distinguishes_each_implementation_layer(
     ]
 
 
-def test_repository_audit_maps_all_32_tables_without_false_completion(
+def test_runtime_support_allowlist_is_exact_and_unknown_fifth_table_blocks(
     readiness_module: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
 ):
+    contract_table = "contract_table"
+    unknown_table = "unapproved_runtime_table"
+    runtime_tables = sorted(
+        readiness_module.APPROVED_RUNTIME_SUPPORT_TABLES
+    )
+    all_tables = [contract_table, *runtime_tables, unknown_table]
+    model_declarations = [
+        {
+            "class_name": f"Model{index}",
+            "db_table": table_name,
+            "module_path": f"model_{index}.py",
+        }
+        for index, table_name in enumerate(all_tables)
+    ]
+    registered_models = [
+        {
+            "label": f"sample.Model{index}",
+            "db_table": table_name,
+            "module": f"sample.model_{index}",
+        }
+        for index, table_name in enumerate(all_tables)
+    ]
+    migration_declarations = [
+        {
+            "app_label": "sample",
+            "model_name": f"Model{index}",
+            "db_table": table_name,
+            "migration_path": "0001_initial.py",
+        }
+        for index, table_name in enumerate(all_tables)
+    ]
+    contract = {
+        "manifest_expected_table_count": 1,
+        "contract_table_count": 1,
+        "contract_snapshot": readiness_module.SCHEMA_PATH.name,
+        "contract_snapshot_immutable": True,
+        "contract_status": "OWNER_BASELINE",
+        "contract_confirmation_status": "CONFIRMED",
+        "completion_review_status": "PENDING",
+        "tables": {
+            contract_table: {
+                "domain": "test",
+                "owner": "Django",
+            }
+        },
+    }
+    static = {
+        "model_declarations": model_declarations,
+        "migration_declarations": migration_declarations,
+        "model_class_count": len(model_declarations),
+        "numbered_migration_count": 1,
+        "docker_compose_configured": True,
+        "postgres_env_complete": True,
+    }
+    django_evidence = {
+        "registered_models": registered_models,
+        "registered_local_apps": ["apps.sample"],
+        "registered_model_count": len(registered_models),
+    }
+
+    monkeypatch.setattr(
+        readiness_module,
+        "collect_contract_evidence",
+        lambda: contract,
+    )
+    monkeypatch.setattr(
+        readiness_module,
+        "collect_static_evidence",
+        lambda: static,
+    )
+    monkeypatch.setattr(
+        readiness_module,
+        "collect_django_evidence",
+        lambda _settings_module: django_evidence,
+    )
+
+    result = readiness_module.audit_readiness()
+    mapping = result["evidence"]["implementation_mapping"]
+
+    assert mapping["approved_runtime_support_model_tables"] == (
+        runtime_tables
+    )
+    assert mapping["approved_runtime_support_migration_tables"] == (
+        runtime_tables
+    )
+    assert mapping["unknown_model_tables"] == [unknown_table]
+    assert mapping["unknown_migration_tables"] == [unknown_table]
+    assert result["status"] == "NOT_READY"
+    assert result["blockers"] == [
+        "MODEL_TABLES_OUTSIDE_CONTRACT",
+        "MIGRATION_TABLES_OUTSIDE_CONTRACT",
+    ]
+
+
+def test_repository_audit_reports_ready_when_all_32_layers_match(
+    readiness_module: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    for key in readiness_module.REQUIRED_POSTGRES_ENV_KEYS:
+        monkeypatch.setenv(key, "readiness-test-value")
+
     result = readiness_module.audit_readiness()
     mapping = result["evidence"]["implementation_mapping"]
     summary = mapping["summary"]
 
-    assert result["status"] == "NOT_READY"
+    assert result["status"] == "READY"
     assert result["scope"] == "T005_DJANGO_MODEL_MIGRATION_MAPPING"
-    assert summary["contract_table_count"] == 32
-    assert summary["declared_contract_model_count"] == 12
-    assert summary["registered_contract_model_count"] == 12
-    assert summary["migration_contract_table_count"] == 12
-    assert summary["fully_implemented_contract_table_count"] == 12
-    assert mapping["implemented_tables"] == [
-        "accounts_user",
-        "catalog_product_model",
-        "common_code",
-        "common_code_group",
-        "customers_customer_profile",
-        "field_service_visit",
-        "subscriptions_care_record",
-        "subscriptions_customer_subscription",
-        "support_consultation",
-        "support_followup_confirmation",
-        "support_inquiry",
-        "support_inquiry_symptom",
-    ]
-    assert len(mapping["missing_model_tables"]) == 20
-    assert len(mapping["missing_migration_tables"]) == 20
+    assert summary == {
+        "contract_table_count": 32,
+        "declared_contract_model_count": 32,
+        "registered_contract_model_count": 32,
+        "migration_contract_table_count": 32,
+        "fully_implemented_contract_table_count": 32,
+    }
+    assert len(mapping["implemented_tables"]) == 32
+    assert {
+        item["status"] for item in mapping["tables"]
+    } == {"IMPLEMENTED"}
+    assert mapping["missing_model_tables"] == []
+    assert mapping["unregistered_model_tables"] == []
+    assert mapping["missing_migration_tables"] == []
+    runtime_tables = sorted(
+        readiness_module.APPROVED_RUNTIME_SUPPORT_TABLES
+    )
+    assert mapping["approved_runtime_support_model_tables"] == (
+        runtime_tables
+    )
+    assert mapping["approved_runtime_support_migration_tables"] == (
+        runtime_tables
+    )
+    assert mapping["unknown_model_tables"] == []
+    assert mapping["unknown_migration_tables"] == []
+    approved_evidence = {
+        item["table"]: item
+        for item in result["evidence"][
+            "approved_runtime_support_tables"
+        ]
+    }
+    assert set(approved_evidence) == set(runtime_tables)
+    for table_name, reason in (
+        readiness_module.APPROVED_RUNTIME_SUPPORT_TABLES.items()
+    ):
+        assert approved_evidence[table_name] == {
+            "table": table_name,
+            "reason": reason,
+            "model_present": True,
+            "migration_present": True,
+        }
     assert result["evidence"]["contract"]["contract_status"] == (
         "OWNER_BASELINE"
     )
@@ -204,12 +341,9 @@ def test_repository_audit_maps_all_32_tables_without_false_completion(
         "CONFIRMED"
     )
     assert result["evidence"]["contract"]["completion_review_status"] == (
-        "PENDING"
+        "NON_AUTHOR_REVIEW_PENDING"
     )
-    assert "PHYSICAL_CONTRACT_REVIEW_PENDING" not in result["blockers"]
-    assert "PHYSICAL_CONTRACT_NOT_CONFIRMED" not in result["blockers"]
-    assert "CONTRACT_MODEL_DECLARATIONS_INCOMPLETE" in result["blockers"]
-    assert "CONTRACT_MIGRATIONS_INCOMPLETE" in result["blockers"]
+    assert result["blockers"] == []
 
 
 def test_postgresql_environment_requires_nonblank_values(

@@ -7,7 +7,7 @@ name = "watercare-ai"
 version = "1.0.0"
 description = "SKmagic WaterCare 정수기 구독 고객 케어 AI 및 RAG 파이프라인 서비스"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "fastapi==0.136.3",
     "uvicorn[standard]==0.48.0",

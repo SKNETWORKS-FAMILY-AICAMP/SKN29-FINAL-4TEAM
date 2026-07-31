@@ -188,6 +188,10 @@ class Inquiry(TimestampedModel):
     class Meta:
         db_table = "support_inquiry"
         constraints = [
+            models.UniqueConstraint(
+                fields=["id", "subscription"],
+                name="ux_inquiry_id_subscription",
+            ),
             models.CheckConstraint(
                 condition=Q(
                     channel_code__in=[

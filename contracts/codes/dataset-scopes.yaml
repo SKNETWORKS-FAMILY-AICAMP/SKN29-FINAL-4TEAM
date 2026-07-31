@@ -1,0 +1,6 @@
+# T-005 Wave 1 데이터 범위 코드
+version: 1.0.0
+status: OWNER_BASELINE
+codes:
+  - MVP
+  - EXPANSION

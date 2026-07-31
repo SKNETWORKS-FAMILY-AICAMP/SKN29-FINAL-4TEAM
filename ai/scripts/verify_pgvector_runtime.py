@@ -2,6 +2,7 @@
 
 import json
 import os
+import platform
 import re
 from datetime import datetime, timezone
 from pathlib import Path
@@ -12,6 +13,7 @@ from ai.app.integrations.embedding.embedding_client import BgeM3EmbeddingClient
 from ai.app.integrations.vector_store.vector_store import PgVectorStore
 from ai.app.retrieval.models.retrieval_query import RetrievalQuery
 from ai.app.retrieval.search.vector_search import VectorSearchService
+from ai.app.retrieval.indexing.index_manifest import IndexManifest
 from ai.evaluation.metrics import calculate_mrr, calculate_recall_at_k
 
 
@@ -25,11 +27,29 @@ def _database_facts(dsn: str) -> dict:
             """
             SELECT COUNT(*), COUNT(DISTINCT chunk_id),
                    MIN(vector_dims(embedding)), MAX(vector_dims(embedding)),
-                   COUNT(DISTINCT source_hash)
+                   COUNT(DISTINCT source_hash),
+                   ARRAY_AGG(DISTINCT metadata->>'embedding_model_revision'),
+                   ARRAY_AGG(DISTINCT metadata->>'index_version'),
+                   ARRAY_AGG(DISTINCT metadata->>'chunk_set_sha256')
             FROM ai_rag_chunks
             """
         )
-        row_count, distinct_ids, min_dimension, max_dimension, source_hash_count = cursor.fetchone()
+        (
+            row_count, distinct_ids, min_dimension, max_dimension, source_hash_count,
+            embedding_revisions, index_versions, chunk_set_hashes,
+        ) = cursor.fetchone()
+        cursor.execute(
+            """
+            SELECT document_id, ARRAY_AGG(DISTINCT source_hash)
+            FROM ai_rag_chunks
+            GROUP BY document_id
+            ORDER BY document_id
+            """
+        )
+        document_source_hashes = {
+            document_id: hashes[0] if len(hashes) == 1 else hashes
+            for document_id, hashes in cursor.fetchall()
+        }
     return {
         "postgres_version": postgres_version,
         "pgvector_version": vector_version,
@@ -38,6 +58,10 @@ def _database_facts(dsn: str) -> dict:
         "min_dimension": min_dimension,
         "max_dimension": max_dimension,
         "source_hash_count": source_hash_count,
+        "embedding_model_revisions": embedding_revisions,
+        "index_versions": index_versions,
+        "chunk_set_sha256_values": chunk_set_hashes,
+        "document_source_hashes": document_source_hashes,
     }
 
 
@@ -87,6 +111,19 @@ def _evaluate(search_service: VectorSearchService, config_path: Path) -> list[di
             expected_pages.issubset(set(chunk.page_refs or ([chunk.page] if chunk.page else [])))
             for chunk in expected_chunks
         )
+        model_generation_match = all(
+            chunk.model_code == case["product_model_code"] and chunk.product_generation == "D"
+            for chunk in chunks
+        )
+        provenance_match = all(
+            chunk.embedding_model
+            and chunk.embedding_model_revision
+            and chunk.index_version
+            and chunk.chunk_set_sha256
+            and chunk.source_hash
+            and chunk.document_version
+            for chunk in chunks
+        )
         recall = calculate_recall_at_k(ranked_ids, expected_ids, k=case["top_k"]) if expected_ids else 1.0
         mrr = calculate_mrr(ranked_ids, expected_ids) if expected_ids else 1.0
         no_evidence_pass = not case["expected_no_evidence"] or not ranked_ids
@@ -96,6 +133,8 @@ def _evaluate(search_service: VectorSearchService, config_path: Path) -> list[di
             and no_evidence_pass
             and document_match
             and page_match
+            and model_generation_match
+            and provenance_match
         )
         results.append({
             "case_id": case["case_id"],
@@ -103,6 +142,12 @@ def _evaluate(search_service: VectorSearchService, config_path: Path) -> list[di
             "ranked_chunk_ids": ranked_ids,
             "ranked_document_ids": ranked_documents,
             "ranked_page_refs": [chunk.page_refs for chunk in chunks],
+            "ranked_model_codes": [chunk.model_code for chunk in chunks],
+            "ranked_product_generations": [chunk.product_generation for chunk in chunks],
+            "ranked_document_versions": [chunk.document_version for chunk in chunks],
+            "ranked_embedding_revisions": [chunk.embedding_model_revision for chunk in chunks],
+            "ranked_index_versions": [chunk.index_version for chunk in chunks],
+            "ranked_chunk_set_sha256": [chunk.chunk_set_sha256 for chunk in chunks],
             "execution_path": execution_path,
             "scores": [round(chunk.similarity_score, 6) for chunk in chunks],
             "recall_at_5": recall,
@@ -111,6 +156,8 @@ def _evaluate(search_service: VectorSearchService, config_path: Path) -> list[di
             "expected_no_evidence": case["expected_no_evidence"],
             "document_metadata_passed": document_match,
             "page_metadata_passed": page_match,
+            "model_generation_passed": model_generation_match,
+            "provenance_passed": provenance_match,
             "passed": passed,
         })
     return results
@@ -239,12 +286,22 @@ def main() -> None:
     repository_root = Path(__file__).resolve().parents[2]
     config_path = repository_root / "data" / "config" / "rag" / "jac104_retrieval_cases.json"
     report_path = repository_root / "ai" / "evaluation" / "reports" / "pgvector_verification.json"
+    manifest_path = repository_root / "ai" / "configs" / "index_manifest.json"
 
     embedding_client = BgeM3EmbeddingClient(model_revision=model_revision)
     store = PgVectorStore(dsn)
-    search_service = VectorSearchService(embedding_client, store)
+    manifest = IndexManifest.load_manifest(str(manifest_path))
+    if manifest is None:
+        raise RuntimeError("pgvector 검증에는 Index Manifest가 필요합니다.")
+    search_service = VectorSearchService(embedding_client, store, index_manifest=manifest)
     sql_filter_verification = _verify_sql_filters(dsn, store, embedding_client)
     facts = _database_facts(dsn)
+    database_provenance_passed = all((
+        set(facts["embedding_model_revisions"]) == {manifest.model_revision},
+        set(facts["index_versions"]) == {manifest.index_version},
+        set(facts["chunk_set_sha256_values"]) == {manifest.chunk_set_sha256},
+        facts["document_source_hashes"] == manifest.document_hashes,
+    ))
     cases = _evaluate(search_service, config_path)
     positive = [case for case in cases if case["case_type"] == "POSITIVE"]
     forbidden_hit_count = sum(len(case["forbidden_hits"]) for case in cases)
@@ -253,16 +310,25 @@ def main() -> None:
             all(case["passed"] for case in cases)
             and sql_filter_verification["metadata_filter_passed"]
             and sql_filter_verification["invalid_dimension_rejected"]
+            and database_provenance_passed
         ) else "PARTIAL",
         "verified_at": datetime.now(timezone.utc).isoformat(),
+        "runtime": {
+            "python_version": platform.python_version(),
+            "os": platform.system(),
+            "machine": platform.machine(),
+        },
         "embedding_model": embedding_client.model_name,
         "embedding_model_version": model_revision,
+        "index_version": manifest.index_version,
+        "chunk_set_sha256": manifest.chunk_set_sha256,
         "dimension": embedding_client.dimension,
         "search_type": "cosine_exact_search",
         "top_k": 5,
         "score_threshold": store.score_threshold,
         "ann_used": False,
         "database": facts,
+        "database_provenance_passed": database_provenance_passed,
         "database_guard": {
             "mode": "DISPOSABLE_ONLY",
             "database_name": database_name,
@@ -291,6 +357,7 @@ def main() -> None:
         "report_path": str(report_path.relative_to(repository_root)),
         **report["summary"],
         "database": facts,
+        "database_provenance_passed": database_provenance_passed,
         "sql_filter_verification": sql_filter_verification,
     }, ensure_ascii=False))
 

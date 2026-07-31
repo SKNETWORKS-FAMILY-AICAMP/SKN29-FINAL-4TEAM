@@ -23,13 +23,11 @@ IMPORTED_USERNAME = "CUS-0001"
 @pytest.fixture
 def demo_customer():
     user = User.objects.create_user(
-        id="DEMO-USR-001",
         username=DEMO_CODE,
         full_name="합성 고객 001",
         role_code=User.Role.CUSTOMER,
     )
     CustomerProfile.objects.create(
-        id="DEMO-CUS-001",
         user=user,
         customer_no="SYN-CUSTOMER-001",
         customer_name="합성 고객 001",
@@ -41,13 +39,11 @@ def demo_customer():
 @pytest.fixture
 def imported_customer():
     user = User.objects.create_user(
-        id="SYN-USR-101",
         username=IMPORTED_USERNAME,
         full_name="합성 적재 고객 001",
         role_code=User.Role.CUSTOMER,
     )
     CustomerProfile.objects.create(
-        id="SYN-CUS-101",
         user=user,
         customer_no=SYNTHETIC_CUSTOMER_CODE,
         customer_name="합성 적재 고객 001",
@@ -224,6 +220,16 @@ def test_synthetic_alias_repository_requires_synthetic_profile():
     )
 
 
+def test_subject_repository_rejects_non_uuid_without_pk_fallback():
+    with patch(
+        "apps.accounts.repositories.account_repository.User.objects.filter"
+    ) as filter_mock:
+        user = AccountRepository.find_active_by_subject("DEMO-USR-001")
+
+    assert user is None
+    filter_mock.assert_not_called()
+
+
 @override_settings(
     DEMO_LOGIN_ENABLED=True,
     DEMO_LOGIN_CODES={DEMO_CODE},
@@ -268,12 +274,12 @@ def test_me_requires_valid_bearer_token(client, demo_customer):
     assert malformed.json()["error"]["code"] == "AUTH_REQUIRED"
 
 
-def test_me_accepts_legacy_string_primary_key_subject(
+def test_me_rejects_legacy_string_primary_key_subject(
     client,
     demo_customer,
 ):
     legacy_access = AccessToken.for_user(demo_customer)
-    legacy_access["sub"] = demo_customer.pk
+    legacy_access["sub"] = "DEMO-USR-001"
     legacy_access["role_code"] = demo_customer.role_code
 
     response = client.get(
@@ -281,10 +287,8 @@ def test_me_accepts_legacy_string_primary_key_subject(
         HTTP_AUTHORIZATION=f"Bearer {legacy_access}",
     )
 
-    assert response.status_code == 200
-    assert response.json()["data"]["id"] == str(
-        demo_customer.public_id
-    )
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "AUTH_REQUIRED"
 
 
 @override_settings(
@@ -316,12 +320,12 @@ def test_refresh_rotates_and_blacklists_previous_token(
     assert replay.json()["error"]["code"] == "AUTH_REQUIRED"
 
 
-def test_refresh_accepts_legacy_subject_and_rotates_to_public_uuid(
+def test_refresh_rejects_legacy_string_primary_key_subject(
     client,
     demo_customer,
 ):
     legacy_refresh = RefreshToken.for_user(demo_customer)
-    legacy_refresh["sub"] = demo_customer.pk
+    legacy_refresh["sub"] = "DEMO-USR-001"
     legacy_refresh["role_code"] = demo_customer.role_code
     raw_legacy_refresh = str(legacy_refresh)
 
@@ -331,18 +335,8 @@ def test_refresh_accepts_legacy_subject_and_rotates_to_public_uuid(
         content_type="application/json",
     )
 
-    assert response.status_code == 200
-    replacement = response.json()["data"]
-    assert RefreshToken(replacement["refresh_token"])["sub"] == str(
-        demo_customer.public_id
-    )
-
-    replay = client.post(
-        "/api/v1/auth/refresh",
-        {"refresh_token": raw_legacy_refresh},
-        content_type="application/json",
-    )
-    assert replay.status_code == 401
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "AUTH_REQUIRED"
 
 
 @override_settings(

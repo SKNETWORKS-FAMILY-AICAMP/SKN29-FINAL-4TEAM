@@ -48,10 +48,13 @@ class TransitionHistory(TimestampedModel):
         choices=TargetType.choices,
         default=TargetType.INQUIRY,
     )
-    questionnaire_session_public_id = models.UUIDField(
+    questionnaire_session = models.ForeignKey(
+        "questionnaires.QuestionnaireSession",
+        on_delete=models.PROTECT,
+        related_name="transition_history",
+        db_column="questionnaire_session_id",
         null=True,
         blank=True,
-        help_text="Questionnaire 모델 도입 전 공개 UUID 호환 브리지",
     )
     inquiry = models.ForeignKey(
         "inquiries.Inquiry",
@@ -81,86 +84,123 @@ class TransitionHistory(TimestampedModel):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="workflow_transitions",
-        db_column="actor_id",
+        db_column="changed_by_id",
         null=True,
         blank=True,
     )
     changed_by_type_code = models.CharField(
-        max_length=20,
+        max_length=40,
         choices=ChangedByType.choices,
         default=ChangedByType.USER,
     )
-    event_code = models.CharField(max_length=80)
-    from_state = models.CharField(max_length=40, null=True, blank=True)
-    to_state = models.CharField(max_length=40)
+    event_code = models.CharField(max_length=60)
+    from_state = models.CharField(
+        max_length=40,
+        null=True,
+        blank=True,
+        db_column="from_status_code",
+    )
+    to_state = models.CharField(
+        max_length=40,
+        db_column="to_status_code",
+    )
     state_version = models.PositiveIntegerField()
     correlation_id = models.UUIDField()
     idempotency_key = models.CharField(max_length=128)
-    change_reason = models.TextField(blank=True, default="")
+    change_reason = models.TextField(null=True, blank=True)
     changed_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        db_table = "workflow_transition_history"
+        db_table = "support_inquiry_status_history"
         constraints = [
             models.UniqueConstraint(
                 fields=["inquiry", "state_version"],
                 condition=Q(target_type_code="INQUIRY"),
-                name="uq_hist_inquiry_version",
+                name="uq_status_history_inquiry_version",
             ),
             models.UniqueConstraint(
                 fields=["consultation", "state_version"],
                 condition=Q(target_type_code="CONSULTATION"),
-                name="uq_hist_consult_version",
+                name="uq_status_history_consultation_version",
             ),
             models.UniqueConstraint(
                 fields=["visit", "state_version"],
                 condition=Q(target_type_code="VISIT"),
-                name="uq_hist_visit_version",
+                name="uq_status_history_visit_version",
             ),
             models.UniqueConstraint(
                 fields=[
-                    "questionnaire_session_public_id",
+                    "questionnaire_session",
                     "state_version",
                 ],
                 condition=Q(target_type_code="QUESTIONNAIRE"),
-                name="uq_hist_question_version",
+                name="uq_status_history_questionnaire_version",
             ),
             models.CheckConstraint(
                 condition=Q(state_version__gt=0),
-                name="ck_transition_state_version_positive",
+                name="ck_status_history_version_positive",
             ),
             models.CheckConstraint(
                 condition=(
                     Q(
                         target_type_code="QUESTIONNAIRE",
-                        questionnaire_session_public_id__isnull=False,
+                        questionnaire_session__isnull=False,
                         inquiry__isnull=True,
                         consultation__isnull=True,
                         visit__isnull=True,
                     )
                     | Q(
                         target_type_code="INQUIRY",
-                        questionnaire_session_public_id__isnull=True,
+                        questionnaire_session__isnull=True,
                         inquiry__isnull=False,
                         consultation__isnull=True,
                         visit__isnull=True,
                     )
                     | Q(
                         target_type_code="CONSULTATION",
-                        questionnaire_session_public_id__isnull=True,
+                        questionnaire_session__isnull=True,
                         inquiry__isnull=True,
                         consultation__isnull=False,
                         visit__isnull=True,
                     )
                     | Q(
                         target_type_code="VISIT",
-                        questionnaire_session_public_id__isnull=True,
+                        questionnaire_session__isnull=True,
                         inquiry__isnull=True,
                         consultation__isnull=True,
                         visit__isnull=False,
                     )
                 ),
-                name="ck_hist_target_matches_type",
+                name="ck_status_history_target_type_matches_fk",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        questionnaire_session__isnull=False,
+                        inquiry__isnull=True,
+                        consultation__isnull=True,
+                        visit__isnull=True,
+                    )
+                    | Q(
+                        questionnaire_session__isnull=True,
+                        inquiry__isnull=False,
+                        consultation__isnull=True,
+                        visit__isnull=True,
+                    )
+                    | Q(
+                        questionnaire_session__isnull=True,
+                        inquiry__isnull=True,
+                        consultation__isnull=False,
+                        visit__isnull=True,
+                    )
+                    | Q(
+                        questionnaire_session__isnull=True,
+                        inquiry__isnull=True,
+                        consultation__isnull=True,
+                        visit__isnull=False,
+                    )
+                ),
+                name="ck_status_history_exactly_one_target",
             ),
             models.CheckConstraint(
                 condition=(
@@ -173,35 +213,52 @@ class TransitionHistory(TimestampedModel):
                         actor__isnull=True,
                     )
                 ),
-                name="ck_hist_actor_matches_type",
+                name="ck_status_history_changed_by",
             ),
             models.CheckConstraint(
                 condition=(
                     Q(state_version=1, from_state__isnull=True)
                     | Q(state_version__gt=1, from_state__isnull=False)
                 ),
-                name="ck_hist_version_origin",
+                name="ck_status_history_version_origin",
             ),
         ]
         indexes = [
             models.Index(
+                fields=[
+                    "target_type_code",
+                    "event_code",
+                    "-changed_at",
+                ],
+                name="ix_status_hist_target_event",
+            ),
+            models.Index(
                 fields=["correlation_id"],
-                name="ix_transition_correlation",
+                name="ix_status_hist_correlation",
+            ),
+            models.Index(
+                fields=[
+                    "questionnaire_session",
+                    "event_code",
+                    "idempotency_key",
+                ],
+                condition=Q(target_type_code="QUESTIONNAIRE"),
+                name="ix_status_q_event_idem",
             ),
             models.Index(
                 fields=["inquiry", "event_code", "idempotency_key"],
                 condition=Q(target_type_code="INQUIRY"),
-                name="ix_hist_inquiry_event_idem",
+                name="ix_status_inq_event_idem",
             ),
             models.Index(
                 fields=["consultation", "event_code", "idempotency_key"],
                 condition=Q(target_type_code="CONSULTATION"),
-                name="ix_hist_consult_event_idem",
+                name="ix_status_cons_event_idem",
             ),
             models.Index(
                 fields=["visit", "event_code", "idempotency_key"],
                 condition=Q(target_type_code="VISIT"),
-                name="ix_hist_visit_event_idem",
+                name="ix_status_visit_event_idem",
             ),
         ]
 
