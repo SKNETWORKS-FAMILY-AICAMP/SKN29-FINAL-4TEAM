@@ -1,9 +1,9 @@
 # T-005 WaterCare 데이터 설계 기준선
 
-> Snapshot 기준일: 2026-07-25 · 상태 갱신일: 2026-07-28
+> Snapshot 기준일: 2026-07-25 · 상태 갱신일: 2026-07-30
 > 담당: 최지용
 > WBS 해석: OWNER 설계 기준선 확정, Runtime 완료율은 재실행 증거로 별도 판정
-> 저장소 판정: OWNER 설계 기준선 확정·Django Runtime 구현 진행
+> 저장소 판정: OWNER 설계 기준선 확정·Django Runtime 32/32 로컬 기술 검증 완료·공식 완료 리뷰 대기
 
 ## 1. 목적
 
@@ -18,9 +18,32 @@ snake_case 이름으로 보존했으며 `manifest.json`에 SHA-256을 기록했�
 [`t005_decision_register_v0.3.json`](t005_decision_register_v0.3.json),
 [`t005_physical_contract_v1.2.json`](t005_physical_contract_v1.2.json)이다.
 Django Model·Migration과 PostgreSQL 완료 여부는 별도 Runtime 증거로
-판정한다. 현재 Accounts는 문자열 PK를 즉시 제거하지 않고
-`public_id(UUID)`를 추가하는 전환 브리지 단계이며, 전 테이블 내부
-BigInt PK 전환과 PostgreSQL 재현 검증 전에는 완료로 판정하지 않는다.
+판정한다. 현재 Runtime은 Accounts 내부 BigInt PK·공개 UUID 분리,
+UUID-only JWT, 계약 테이블 32/32와 빈 PostgreSQL Migration·Seed·
+Importer 검증까지 완료했다. 다만 불변 물리 계약의
+`completion_review_status=PENDING`과
+`completion_claim_allowed=false`는 계약 담당자의 리뷰 전까지
+유지하므로 공식 WBS 완료와 로컬 기술 완료를 구분한다.
+
+## 현재 Runtime 판정
+
+| 항목 | 2026-07-30 재실행 결과 |
+| --- | --- |
+| 계약 테이블 | 32개 |
+| Model·App Registry·Migration | **32/32** |
+| Auditor | `READY`, blocker 0 |
+| 승인된 계약 외 지원 Runtime | 4개 |
+| Accounts 식별자 | 내부 BigInt PK·공개 UUID·업무 코드 분리 |
+| JWT subject | 공개 UUID만 허용, Legacy 문자열 fallback 제거 |
+| 빈 PostgreSQL | 전체 Migration·5종 Seed 2회·367건 Import 2회 PASS |
+| 기본 `watercare` | 백업 후 미적용 24개 Migration·Seed·367건 Replay PASS |
+| 전체 회귀 | SQLite `740 passed, 11 skipped`, PostgreSQL `751 passed` |
+| Data QA | 48개 파일·740개 레코드, 오류·경고 0, 67 tests OK |
+| 공식 완료 상태 | `PENDING` — 비작성자·외부 리뷰와 계약 완료 승인 필요 |
+
+최종 실행 근거와 남은 공식 Gate는
+[T-005 32개 테이블 구현·PostgreSQL 최종 검증 보고서](../../individual/jiyong/technical/backend/t005_final_32_table_postgresql_seed_importer_validation_report.md)를
+단일 원본으로 사용한다.
 
 ## 2. 포함 파일
 
@@ -53,7 +76,7 @@ BigInt PK 전환과 PostgreSQL 재현 검증 전에는 완료로 판정하지 �
 
 | ID | Legacy Snapshot 차이 | 현재 OWNER 해법 |
 | --- | --- | --- |
-| `T005_PRIMARY_KEY_POLICY` | Snapshot의 주요 PK는 UUID다. | 목표 구조는 내부 BigInt PK + 외부 UUID `public_id` + 별도 업무 코드다. Accounts에는 우선 `public_id`를 추가하고 기존 문자열 PK는 호환 브리지 동안 유지한다. |
+| `T005_PRIMARY_KEY_POLICY` | Snapshot의 주요 PK는 UUID다. | 목표 구조는 내부 BigInt PK + 외부 UUID `public_id` + 별도 업무 코드다. 활성 v1.2는 전환 경로의 문자열 PK 호환 브리지를 기록한 불변 계약이고, 2026-07-30 Runtime 전환은 완료됐다. 계약 담당자는 비작성자 검증 후 후속 계약 버전에 완료 상태를 승인 반영한다. |
 | `T005_USAGE_GUIDANCE_PHYSICAL_MAPPING` | WBS에서 canonical 이름은 `usage_guidance_status`로 확정됐지만 ERD v3에는 `usage_guidance_code`가 남아 있다. | 활성 v0.3 논리 계약에 확정 이름을 반영하고, v0.2와 v3 물리 Snapshot은 변경 이력으로 보존 |
 | `T005_USAGE_GUIDANCE_CODESET` | 화면은 일반 사용 가능을 `NORMAL`, ERD v3는 `USE_ALLOWED`로 표현한다. | `NORMAL`을 표준으로 사용하고 legacy `USE_ALLOWED`를 import 시 변환한다. |
 | `T005_VISIT_STORAGE_MAPPING` | 화면과 v3의 일정 필드 구조가 다르다. | `preferred_date`, `confirmed_date`, `schedule_status`, `synthetic_technician_id`를 분리 저장한다. |
@@ -540,3 +563,124 @@ Contract의 식별자 정책에 따라 내부 `bigint id`와 공개
 따른다. `field_service_visit_result`는 기존 Visit 결과 필드,
 CareRecord Bridge와 상태·Backfill 의존성이 있어 이번 Wave에 섞지
 않았다.
+
+## 2026-07-30 v1.4 문진 세션 Runtime Wave 1A
+
+공통코드 Wave 다음 작은 단위로 `support_questionnaire_session`
+한 테이블의 Django Model·App 등록·번호 Migration을 구현했다.
+아래 수치는 `jiyong` Branch의 `LOCAL_VERIFIED` 결과이며 독립 QA와
+PM `main` 병합 전에는 팀 공용 완료 기준선이 아니다.
+
+| 항목 | 현재 결과 |
+| --- | ---: |
+| 계약 테이블 | 32개 |
+| Model·등록·Migration 모두 확인 | 13개 |
+| 미구현 | 19개 |
+| T-005 전체 판정 | `NOT_READY` |
+| 문진·T-005 집중 검증 | `50 passed` |
+| Backend 전체 회귀 | `426 passed` |
+| Data 전체 회귀 | `67 passed`, subtest 4개 통과 |
+| 빈 PostgreSQL Migration | 16.14에서 전체 적용 성공 |
+| PostgreSQL JSON object CHECK | ORM 우회 update 거부 확인 |
+| 기존 Seed 5종 | 2회차 신규 0, 문진 행 0 |
+
+활성 Physical Contract v1.2에 따라 문진 세션은 내부 `bigint id`,
+공개 `uuid public_id`, 업무 식별자 `session_no`를 분리했다.
+`answers_payload`는 Model 검증에 더해 PostgreSQL
+`ck_questionnaire_answers_object`로 최상위 JSON object를 강제한다.
+
+이번 매핑 증가는 모든 문진 계약이 끝났다는 뜻이 아니다. 다음 항목은
+별도 Wave가 필요하다.
+
+- `(inquiry_id, subscription_id)` 복합 FK와 선행
+  `support_inquiry(id, subscription_id)` UNIQUE
+- `session_no` 서버 생성 규칙과 API DTO 정합화
+- 문진 Service·API·상태 전이·멱등 처리
+- `QUESTIONNAIRE_TYPE`, `QUESTIONNAIRE_STATUS` 계약·Seed
+- Inquiry·Workflow 공개 UUID Bridge Backfill·내부 FK 전환
+
+구현 파일, PostgreSQL 실측, Data·Seed 경계와 협업 인계는
+[Wave 1A 문진 세션 구현·재현 가이드](../../individual/jiyong/technical/backend/t005_wave_1a_support_questionnaire_session_implementation.md)를
+따른다.
+
+## 2026-07-30 v1.5 문진·문의 동일 구독 제약 Wave 1B
+
+Wave 1A의 알려진 P0였던 문진과 문의의 동일 구독 무결성을 별도 증분
+Migration으로 보강했다. 아래 수치는 `jiyong` Branch의
+`LOCAL_VERIFIED` 결과이며 독립 QA와 PM `main` 병합 전에는 팀 공용
+완료 기준선이 아니다.
+
+| 항목 | 현재 결과 |
+| --- | ---: |
+| 계약 테이블 | 32개 |
+| Model·등록·Migration 모두 확인 | 13개 |
+| 미구현 | 19개 |
+| T-005 전체 판정 | `NOT_READY` |
+| 부모 제약 | `ux_inquiry_id_subscription` |
+| 자식 제약 | `fk_questionnaire_inquiry_subscription` |
+| PostgreSQL 전용 통합 검증 | `1 passed` |
+| Backend 전체 회귀 | `428 passed`, PostgreSQL 전용 1개 skip |
+| Data 전체 회귀 | `67 passed` |
+| 기존 Seed 5종 | 2회차 신규 0, 문진 행 0 |
+
+`support_inquiry(id, subscription_id)`에 복합 UNIQUE를 추가하고,
+`support_questionnaire_session(inquiry_id, subscription_id)`이 같은
+부모 조합만 참조하도록 `MATCH SIMPLE ON DELETE RESTRICT` 복합 FK를
+추가했다. 빈 PostgreSQL 16.14에서 두 제약의 catalog와 validated
+상태를 확인하고, 정상 연결·미연결은 허용하면서 ORM·raw SQL·부모
+update를 통한 교차 구독 변경은 정확한 복합 FK에서 거부됨을 검증했다.
+
+이번 변경은 제약 보강이므로 구현 테이블 수는 13개로 유지한다. Inquiry
+Model 변경으로 Data Crosswalk의 source hash가 stale이 된 연쇄 오류는
+공식 hash refresh와 Pipeline QA 재생성으로 정정했고, Fixture·Schema·
+레코드·Importer 로직은 변경하지 않았다.
+
+구현 순서, rollback, 실제 제약명, 쓰기 우회 검증, Data 연쇄 보정과
+협업 인계는 [Wave 1B 복합 FK 구현·재현 가이드](../../individual/jiyong/technical/backend/t005_wave_1b_questionnaire_inquiry_composite_fk.md)를
+따른다. `session_no` 생성 규칙, 문진 API·상태 전이·공통코드·Fixture와
+나머지 19개 계약 테이블은 별도 Wave로 남아 있다.
+
+## 2026-07-30 v1.6 — 32/32 Runtime 로컬 기술 검증 완료
+
+Wave 1B 이후 Accounts 식별자/JWT Gate와 잔여 의존성 Wave를
+작업·검증 순서로 모두 구현했다. 앞 절의 13/32·잔여 19개 수치는
+해당 시점의 역사 기록이며 현재 완료율로 사용하지 않는다.
+
+| 항목 | 현재 결과 |
+| --- | ---: |
+| 계약 테이블 | 32개 |
+| Model·App Registry·Migration 모두 확인 | **32개** |
+| 미구현 | **0개** |
+| T-005 Auditor | `READY`, blocker 0 |
+| 승인된 계약 외 지원 Runtime | 4개 |
+| 빈 PostgreSQL | 전체 Migration·Seed·Importer PASS |
+| SQLite 전체 회귀 | `740 passed, 11 skipped` |
+| PostgreSQL 전체 회귀 | `751 passed` |
+| Data 전체 회귀 | `67 tests`, `OK` |
+
+최종 검증 DB에서는 5종 Seed를 두 번 실행해 두 번째 실행의 비의도
+신규 생성을 0으로 확인했다. 합성 Handoff 367건은 두 번 적재했으며
+1차 `CREATED 355`·`PROJECTED 12`, 2차 `UNCHANGED 355`·
+`PROJECTED 12`로 기록됐다. `knowledge_chunk_embedding.embedding`은
+PostgreSQL `vector(1024)`이고 pgvector 0.8.6에서 Exact Search를
+검증했으며 ANN Index는 생성하지 않았다.
+
+최종 격리 DB 검증 뒤에는 기본 `watercare`를 custom-format으로
+백업하고 미적용 Migration 24개를 모두 적용했다. 과거 Demo Profile의
+`SYN-CUSTOMER-001` 업무키 때문에 발생한 User OneToOne 충돌은
+`seed_demo_accounts`를 User 기준 Upsert로 보강해 해결했다. 기본 DB도
+5종 Seed 2회와 367건 Import·Replay, Auditor·Validator·Health·
+Demo Login을 통과했다.
+
+이 Runtime 증거는 불변 물리 계약을 자동 갱신하지 않는다. 현재
+완료 주장 차단 상태는 다음 3개 공식 Gate가 남아 있기 때문이다.
+
+- `non_author_review_confirmed`
+- `three_layer_identifier_runtime_complete`
+- `external_review_verified`
+
+구현자는 완료 Evidence를 제공하되 비작성자 리뷰나 계약 담당자 승인을
+대신 기록하지 않는다. 전체 작업·오류 해결·PostgreSQL 건수·직접 실행
+결과·인계는
+[최종 검증 보고서](../../individual/jiyong/technical/backend/t005_final_32_table_postgresql_seed_importer_validation_report.md)를
+따른다.

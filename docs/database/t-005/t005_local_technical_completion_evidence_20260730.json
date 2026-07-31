@@ -1,0 +1,109 @@
+{
+  "evidence_version": "1.1",
+  "scope": "LOCAL_TECHNICAL_VERIFICATION",
+  "runtime_readiness": {
+    "status": "READY",
+    "contract_table_count": 32,
+    "declared_model_count": 32,
+    "registered_model_count": 32,
+    "migration_table_count": 32,
+    "fully_implemented_count": 32,
+    "approved_runtime_support_table_count": 4,
+    "blocker_count": 0
+  },
+  "blank_postgresql_migration": {
+    "status": "VERIFIED",
+    "database_name": "watercare_t005_final_verify_20260730_01",
+    "database_vendor": "PostgreSQL",
+    "migrate_from_empty": true,
+    "migrate_check_passed": true,
+    "schema_validator_error_count": 0
+  },
+  "seed_idempotency": {
+    "status": "VERIFIED",
+    "database_vendor": "PostgreSQL",
+    "database_names": [
+      "watercare_t005_final_verify_20260730_01",
+      "watercare"
+    ],
+    "run_count": 2,
+    "command": "seed_common_codes -> seed_demo_accounts -> seed_demo_products -> seed_demo_subscriptions -> seed_demo_care_records",
+    "verified_by": "최지용",
+    "recorded_at": "2026-07-30T23:15:12+09:00"
+  },
+  "importer_replay": {
+    "status": "VERIFIED",
+    "database_name": "watercare_t005_final_verify_20260730_01",
+    "profile": "db-full",
+    "source_count": 367,
+    "dry_run_persisted_batch_count": 0,
+    "dry_run_persisted_item_count": 0,
+    "first_run": {
+      "created_count": 355,
+      "updated_count": 0,
+      "unchanged_count": 0,
+      "projected_count": 12
+    },
+    "second_run": {
+      "created_count": 0,
+      "updated_count": 0,
+      "unchanged_count": 355,
+      "projected_count": 12
+    },
+    "persisted_batch_count": 2,
+    "persisted_item_count": 734,
+    "audit_event_count": 125,
+    "status_history_count": 125,
+    "recorded_at": "2026-07-30T23:15:12+09:00"
+  },
+  "default_database_sync": {
+    "status": "VERIFIED",
+    "database_name": "watercare",
+    "backup_file": "watercare_before_t005_sync_20260730-235107.dump",
+    "backup_sha256": "2EEF758492BAD66AC300C646041414EC46C2D1BEE8A070BE0CB1A58BED57FC9E",
+    "unapplied_migration_count_before": 24,
+    "unapplied_migration_count_after": 0,
+    "seed_run_count": 2,
+    "import_source_count": 367,
+    "first_run_created_count": 355,
+    "second_run_unchanged_count": 355,
+    "projected_count_per_run": 12,
+    "persisted_batch_count": 2,
+    "persisted_item_count": 734,
+    "audit_event_count": 125,
+    "status_history_count": 136,
+    "health_status": 200,
+    "demo_login_uuid_subject_verified": true,
+    "recorded_at": "2026-07-31T00:04:50+09:00"
+  },
+  "regression": {
+    "sqlite": {
+      "passed": 740,
+      "skipped": 11,
+      "failed": 0
+    },
+    "postgresql": {
+      "passed": 751,
+      "skipped": 0,
+      "failed": 0
+    },
+    "data_tests": {
+      "passed": 67,
+      "failed": 0
+    },
+    "data_qa": {
+      "status": "PASS",
+      "files_checked": 48,
+      "records_checked": 740,
+      "errors": 0,
+      "warnings": 0,
+      "representative_e2e_passed": 17
+    }
+  },
+  "approval_boundary": {
+    "non_author_review_recorded": false,
+    "external_review_recorded": false,
+    "physical_contract_completion_claim_allowed": false,
+    "note": "This file records local technical evidence only and does not represent a non-author or external approval."
+  }
+}

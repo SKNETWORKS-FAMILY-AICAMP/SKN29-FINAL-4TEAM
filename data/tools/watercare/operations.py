@@ -24,7 +24,11 @@ from .io import (
     sha256_file,
     write_json,
 )
-from .validation import run_data_qa, validate_service_contract_mapping
+from .validation import (
+    count_synthetic_fixture_records,
+    run_data_qa,
+    validate_service_contract_mapping,
+)
 
 
 def _relative(config: PipelineConfig, path: Path) -> str:
@@ -211,6 +215,7 @@ def _dataset_counts(config: PipelineConfig) -> dict[str, int]:
             row["role"] == "CUSTOMER" for row in rows["users"]
         ),
         "synthetic_customer_profiles": len(rows["customer_profiles"]),
+        "synthetic_products": len(rows["products"]),
         "synthetic_customer_products": len(rows["customer_products"]),
         "synthetic_subscriptions": len(rows["subscriptions"]),
         "synthetic_source_scenarios": len(synthetic["scenario_matrix"]),
@@ -224,6 +229,7 @@ def _dataset_counts(config: PipelineConfig) -> dict[str, int]:
         "synthetic_followup_confirmations": len(
             rows["followup_confirmations"]
         ),
+        "synthetic_fixture_records": count_synthetic_fixture_records(rows),
         "synthetic_api_idempotency_cases": len(
             rows["api_idempotency_cases"]
         ),

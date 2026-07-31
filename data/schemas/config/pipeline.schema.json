@@ -46,7 +46,8 @@
         "rag_chunks",
         "evidence",
         "synthetic_source_scenarios",
-        "synthetic_inquiries"
+        "synthetic_inquiries",
+        "synthetic_fixture_records"
       ],
       "properties": {
         "manual_pages": {"type": "integer", "const": 44},
@@ -56,7 +57,8 @@
         "rag_chunks": {"type": "integer", "const": 7},
         "evidence": {"type": "integer", "const": 9},
         "synthetic_source_scenarios": {"type": "integer", "const": 24},
-        "synthetic_inquiries": {"type": "integer", "const": 22}
+        "synthetic_inquiries": {"type": "integer", "const": 22},
+        "synthetic_fixture_records": {"type": "integer", "const": 367}
       }
     },
     "paths": {

@@ -18,14 +18,12 @@ pytestmark = pytest.mark.django_db
 
 def create_subscription(sequence: int = 1) -> CustomerSubscription:
     customer_user = User.objects.create_user(
-        id=f"DEMO-USR-{sequence + 400:03d}",
         username=f"TEST-CARE-CUSTOMER-{sequence:03d}",
         password=None,
         full_name=f"케어 테스트 고객 {sequence}",
         role_code=User.Role.CUSTOMER,
     )
     customer = CustomerProfile.objects.create(
-        id=f"DEMO-CUS-{sequence + 400:03d}",
         user=customer_user,
         customer_no=f"TEST-CARE-CUSTOMER-NO-{sequence:03d}",
         customer_name=f"케어 테스트 고객 {sequence}",
@@ -45,7 +43,6 @@ def create_subscription(sequence: int = 1) -> CustomerSubscription:
 
 def create_technician(sequence: int = 1) -> User:
     return User.objects.create_user(
-        id=f"DEMO-USR-{sequence + 500:03d}",
         username=f"TEST-CARE-TECHNICIAN-{sequence:03d}",
         password=None,
         full_name=f"케어 테스트 기사 {sequence}",

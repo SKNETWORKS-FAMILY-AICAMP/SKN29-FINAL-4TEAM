@@ -407,20 +407,27 @@ def test_decision_register_header_mutation_is_detected(
     )
 
 
-def test_implementation_readiness_stays_separate_from_design_completion():
+def test_implementation_readiness_stays_separate_from_design_completion(
+    monkeypatch: pytest.MonkeyPatch,
+):
     readiness_module = load_script(
         READINESS_PATH,
         "t005_implementation_readiness",
     )
+    for key in readiness_module.REQUIRED_POSTGRES_ENV_KEYS:
+        monkeypatch.setenv(key, "readiness-test-value")
 
     result = readiness_module.audit_readiness()
 
-    assert result["status"] == "NOT_READY"
+    assert result["status"] == "READY"
     assert result["evidence"]["app_skeleton_count"] == 13
-    assert result["evidence"]["postgres_env_complete"] is False
+    assert result["evidence"]["postgres_env_complete"] is True
     assert result["evidence"]["docker_compose_configured"] is True
-    assert "DOCKER_COMPOSE_NOT_CONFIGURED" not in result["blockers"]
-    assert "POSTGRES_ENV_INCOMPLETE" in result["blockers"]
+    assert result["blockers"] == []
+    assert (
+        result["evidence"]["contract"]["completion_review_status"]
+        == "PENDING"
+    )
 
 
 def test_owner_baseline_rejects_code_contract_drift(

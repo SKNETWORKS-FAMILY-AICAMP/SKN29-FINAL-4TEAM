@@ -8,6 +8,12 @@
     "data_projection_consumes_contract": true,
     "backend_runtime_verified": true
   },
+  "hash_policy": {
+    "algorithm": "SHA-256",
+    "encoding": "UTF-8",
+    "bom": "IGNORE",
+    "text_line_endings": "LF"
+  },
   "contract_sources": {
     "user_roles": {
       "path": "contracts/codes/user-roles.yaml",

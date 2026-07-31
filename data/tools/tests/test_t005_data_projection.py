@@ -14,6 +14,8 @@ sys.path.insert(0, str(TOOLS_ROOT))
 import align_synthetic_contract
 from watercare.config import load_pipeline
 from watercare.io import read_json
+from watercare.operations import _dataset_counts
+from watercare.validation import validate_schema
 
 
 class T005DataProjectionTests(unittest.TestCase):
@@ -35,6 +37,43 @@ class T005DataProjectionTests(unittest.TestCase):
         self.assertEqual(125, len(self.outputs["inquiry_status_histories"]))
         self.assertEqual(125, len(self.outputs["audit_events"]))
         self.assertEqual(22, len(self.outputs["workflow_states"]))
+
+    def test_active_fixture_files_have_exact_counts_and_total(self) -> None:
+        expected = {
+            "users": 16,
+            "customer_profiles": 12,
+            "products": 1,
+            "customer_products": 12,
+            "subscriptions": 12,
+            "inquiries": 22,
+            "consultations": 12,
+            "visits": 4,
+            "care_histories": 25,
+            "followup_confirmations": 1,
+            "inquiry_status_histories": 125,
+            "audit_events": 125,
+        }
+        actual = {
+            name: len(self.outputs[name])
+            for name in expected
+        }
+        self.assertEqual(expected, actual)
+        self.assertEqual(
+            self.config.values["expected_counts"]["synthetic_fixture_records"],
+            sum(actual.values()),
+        )
+
+    def test_operations_counts_products_and_all_fixture_records(self) -> None:
+        counts = _dataset_counts(self.config)
+        self.assertEqual(1, counts["synthetic_products"])
+        self.assertEqual(367, counts["synthetic_fixture_records"])
+
+    def test_pipeline_schema_requires_exact_fixture_total(self) -> None:
+        schema = read_json(DATA_ROOT / "schemas/config/pipeline.schema.json")
+        self.assertEqual([], validate_schema(self.config.values, schema))
+        invalid = deepcopy(self.config.values)
+        invalid["expected_counts"]["synthetic_fixture_records"] = 366
+        self.assertTrue(validate_schema(invalid, schema))
 
     def test_status_history_has_exactly_one_matching_target(self) -> None:
         target_fields = {

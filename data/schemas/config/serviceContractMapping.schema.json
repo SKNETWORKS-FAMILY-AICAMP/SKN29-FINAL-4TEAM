@@ -8,6 +8,7 @@
     "scope",
     "status",
     "state_machine_contract",
+    "hash_policy",
     "contract_sources",
     "canonical_role_codes",
     "legacy_role_aliases",
@@ -45,6 +46,17 @@
         "status": {"const": "TEAM_APPROVED"},
         "data_projection_consumes_contract": {"const": true},
         "backend_runtime_verified": {"const": true}
+      }
+    },
+    "hash_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "encoding", "bom", "text_line_endings"],
+      "properties": {
+        "algorithm": {"const": "SHA-256"},
+        "encoding": {"const": "UTF-8"},
+        "bom": {"const": "IGNORE"},
+        "text_line_endings": {"const": "LF"}
       }
     },
     "contract_sources": {

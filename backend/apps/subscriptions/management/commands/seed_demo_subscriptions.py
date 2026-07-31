@@ -5,6 +5,9 @@ from datetime import date, datetime, timezone
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+from apps.accounts.management.commands.seed_demo_accounts import (
+    DEMO_CUSTOMER_NO,
+)
 from apps.accounts.models import CustomerProfile
 from apps.products.management.commands.seed_demo_products import (
     DEMO_PRODUCT_MODEL_CODE,
@@ -13,7 +16,6 @@ from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
 
 
-DEMO_CUSTOMER_NO = "SYN-CUSTOMER-001"
 DEMO_SUBSCRIPTION_CONTRACT_NO = "DEMO-SUB-001"
 
 
@@ -42,7 +44,7 @@ class Command(BaseCommand):
                 defaults={
                     "customer": customer,
                     "product_model": product_model,
-                    "serial_no": "SYN-JAC104D-0001",
+                    "serial_no": "DEMO-JAC104D-0001",
                     "management_type_code": (
                         CustomerSubscription.ManagementType.VISIT_CARE
                     ),

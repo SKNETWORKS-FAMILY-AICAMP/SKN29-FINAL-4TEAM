@@ -886,7 +886,7 @@ class SyntheticHandoffImportService:
                 },
                 immutable_values={
                     "target_type_code": target_type,
-                    "questionnaire_session_public_id": None,
+                    "questionnaire_session": None,
                     "inquiry": inquiry,
                     "consultation": None,
                     "visit": visit,
