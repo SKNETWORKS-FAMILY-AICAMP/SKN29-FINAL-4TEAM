@@ -1,0 +1,12 @@
+# T-005 Wave 1 AI 실행 상태 코드
+version: 1.0.0
+status: OWNER_BASELINE
+codes:
+  - QUEUED
+  - RUNNING
+  - SUCCEEDED
+  - NO_EVIDENCE
+  - FAILED
+  - TIMED_OUT
+  - RETRYING
+  - CANCELLED
