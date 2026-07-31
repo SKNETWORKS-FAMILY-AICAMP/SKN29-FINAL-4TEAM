@@ -1,5 +1,5 @@
 {
-  "mapping_version": "1.0.1",
+  "mapping_version": "1.0.2",
   "scope": "data_contract_alignment",
   "status": "PARTIAL_BLOCKED_DECISIONS",
   "state_machine_contract": {
@@ -55,9 +55,9 @@
       "path": "docs/adr/0011-t005-status-history-idempotency-scope.md",
       "sha256": "90731017C7B64E0D29A829AE0DADD407F8DD5E9F50D90FE1FB65C2CFA789186A"
     },
-    "t005_physical_contract_v1_2": {
-      "path": "docs/database/t-005/t005_physical_contract_v1.2.json",
-      "sha256": "6A8582EC55CB57DC7FC4E7279D6C0B9BF9CA86D4F8148212348256154876CAF8"
+    "t005_physical_contract_v1_3": {
+      "path": "docs/database/t-005/t005_physical_contract_v1.3.json",
+      "sha256": "939C0DBE0439B8C079F88DB8A2AF6A5512E393645EADB7F38F15AC6CBC4C20AC"
     },
     "public_api_idempotency_conflict": {
       "path": "contracts/api/examples/workflow/idempotency-key-reuse-conflict.json",
