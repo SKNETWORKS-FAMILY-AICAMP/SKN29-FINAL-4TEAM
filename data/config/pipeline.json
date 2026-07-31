@@ -12,7 +12,8 @@
     "rag_chunks": 7,
     "evidence": 9,
     "synthetic_source_scenarios": 24,
-    "synthetic_inquiries": 22
+    "synthetic_inquiries": 22,
+    "synthetic_fixture_records": 367
   },
   "paths": {
     "ocr": "config/faq/ocr_transcriptions.json",

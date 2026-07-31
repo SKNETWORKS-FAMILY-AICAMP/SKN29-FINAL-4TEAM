@@ -16,7 +16,6 @@ from .io import (
     read_json,
     read_jsonl,
     sha256_bytes,
-    sha256_file,
     sha256_text_file,
 )
 
@@ -26,6 +25,21 @@ TEXT_HASH_POLICY = {
     "bom": "IGNORE",
     "text_line_endings": "LF",
 }
+
+SYNTHETIC_FIXTURE_OUTPUTS = (
+    "users",
+    "customer_profiles",
+    "products",
+    "customer_products",
+    "subscriptions",
+    "inquiries",
+    "consultations",
+    "visits",
+    "care_histories",
+    "followup_confirmations",
+    "inquiry_status_histories",
+    "audit_events",
+)
 
 BACKEND_CROSSWALK_SOURCE_PATHS = {
     "user_model": "backend/apps/accounts/models/user.py",
@@ -282,11 +296,20 @@ RUNTIME_DATABASE_PATTERN = re.compile(
 )
 
 
+def count_synthetic_fixture_records(outputs: dict[str, Any]) -> int:
+    """Count only the 12 active backend handoff fixture collections."""
+
+    return sum(len(outputs[name]) for name in SYNTHETIC_FIXTURE_OUTPUTS)
+
+
 def validate_service_contract_mapping(config: PipelineConfig) -> list[str]:
     mapping = config.config("contract_mapping")
     vocabulary = config.config("vocabulary")
     repo_root = config.data_root.parent.resolve()
     errors: list[str] = []
+
+    if mapping.get("hash_policy") != TEXT_HASH_POLICY:
+        errors.append("contract_source_hash_policy_mismatch")
 
     for source_name, source in mapping["contract_sources"].items():
         try:
@@ -427,115 +450,118 @@ def validate_backend_import_crosswalk(config: PipelineConfig) -> list[str]:
     if status == "IMPLEMENTED_PENDING_DB_VERIFICATION":
         if verification_status != "PENDING" or actual_evidence is not None:
             errors.append("backend_pending_verification_state_mismatch")
-        return errors
-
-    if (
+    elif (
         verification_status != "DB_FULL_VERIFIED"
         or not isinstance(actual_evidence, dict)
     ):
         errors.append("backend_full_verification_evidence_missing")
-        return errors
-
-    for profile, expected_gate in EXPECTED_BACKEND_VERIFICATION_GATES.items():
-        if actual_evidence.get(profile) != expected_gate:
-            errors.append(
-                f"backend_full_verification_evidence_mismatch:{profile}"
-            )
-    if not str(actual_evidence.get("verified_at", "")).strip():
-        errors.append("backend_full_verification_time_missing")
-    if not str(actual_evidence.get("database_version", "")).startswith(
-        "PostgreSQL "
-    ):
-        errors.append("backend_full_verification_version_invalid")
-
-    runtime_evidence = actual_evidence.get("evidence")
-    if not isinstance(runtime_evidence, dict):
-        errors.append("backend_runtime_evidence_missing")
-        return errors
-    if (
-        runtime_evidence.get("fixture_set_sha256")
-        != EXPECTED_SYNTHETIC_FIXTURE_SET_SHA256
-    ):
-        errors.append("backend_runtime_fixture_hash_mismatch")
-
-    base_commit_sha = str(runtime_evidence.get("base_commit_sha", ""))
-    if re.fullmatch(r"[a-f0-9]{40}", base_commit_sha) is None:
-        errors.append("backend_runtime_base_commit_invalid")
-
-    document = runtime_evidence.get("runtime_document", {})
-    try:
-        document_path = ensure_within(
-            repo_root,
-            repo_root / document["path"],
-        )
-    except (KeyError, ValueError):
-        errors.append("backend_runtime_document_path_invalid")
     else:
-        if not document_path.is_file():
-            errors.append("backend_runtime_document_missing")
-        elif (
-            sha256_text_file(document_path)
-            != document.get("text_sha256")
+        for profile, expected_gate in (
+            EXPECTED_BACKEND_VERIFICATION_GATES.items()
         ):
-            errors.append("backend_runtime_document_hash_mismatch")
-
-    profiles = runtime_evidence.get("profiles", {})
-    batch_codes: list[str] = []
-    for profile in ("db-smoke", "db-full"):
-        profile_evidence = profiles.get(profile, {})
-        database_name = str(profile_evidence.get("database_name", ""))
-        match = RUNTIME_DATABASE_PATTERN.fullmatch(database_name)
-        expected_kind = profile.removeprefix("db-")
-        if match is None or match.group(1) != expected_kind:
-            errors.append(f"backend_runtime_database_mismatch:{profile}")
-        expected_command = (
-            "python backend/manage.py import_synthetic_handoff "
-            f"--profile {profile}"
-        )
-        if (
-            profile_evidence.get("migration_command")
-            != "python backend/manage.py migrate --noinput"
-            or profile_evidence.get("dry_run_command")
-            != f"{expected_command} --dry-run"
-            or profile_evidence.get("first_run_command")
-            != expected_command
-            or profile_evidence.get("replay_run_command")
-            != expected_command
-        ):
-            errors.append(
-                f"backend_runtime_command_mismatch:{profile}"
-            )
-        batch_codes.extend(
-            [
-                str(profile_evidence.get("first_batch_code", "")),
-                str(profile_evidence.get("replay_batch_code", "")),
-            ]
-        )
-        try:
-            first_completed = datetime.fromisoformat(
-                profile_evidence["first_completed_at"]
-            )
-            replay_completed = datetime.fromisoformat(
-                profile_evidence["replay_completed_at"]
-            )
-        except (KeyError, TypeError, ValueError):
-            errors.append(
-                f"backend_runtime_timestamp_invalid:{profile}"
-            )
-        else:
-            if replay_completed <= first_completed:
+            if actual_evidence.get(profile) != expected_gate:
                 errors.append(
-                    f"backend_runtime_replay_order_invalid:{profile}"
+                    f"backend_full_verification_evidence_mismatch:{profile}"
                 )
-    if (
-        len(batch_codes) != 4
-        or len(set(batch_codes)) != 4
-        or any(
-            re.fullmatch(r"SYN-IMPORT-[A-F0-9]{32}", code) is None
-            for code in batch_codes
-        )
-    ):
-        errors.append("backend_runtime_batch_codes_invalid")
+        if not str(actual_evidence.get("verified_at", "")).strip():
+            errors.append("backend_full_verification_time_missing")
+        if not str(actual_evidence.get("database_version", "")).startswith(
+            "PostgreSQL "
+        ):
+            errors.append("backend_full_verification_version_invalid")
+        runtime_evidence = actual_evidence.get("evidence")
+        if not isinstance(runtime_evidence, dict):
+            errors.append("backend_runtime_evidence_missing")
+        else:
+            if (
+                runtime_evidence.get("fixture_set_sha256")
+                != EXPECTED_SYNTHETIC_FIXTURE_SET_SHA256
+            ):
+                errors.append("backend_runtime_fixture_hash_mismatch")
+
+            base_commit_sha = str(
+                runtime_evidence.get("base_commit_sha", "")
+            )
+            if re.fullmatch(r"[a-f0-9]{40}", base_commit_sha) is None:
+                errors.append("backend_runtime_base_commit_invalid")
+
+            document = runtime_evidence.get("runtime_document", {})
+            try:
+                document_path = ensure_within(
+                    repo_root,
+                    repo_root / document["path"],
+                )
+            except (KeyError, ValueError):
+                errors.append("backend_runtime_document_path_invalid")
+            else:
+                if not document_path.is_file():
+                    errors.append("backend_runtime_document_missing")
+                elif (
+                    sha256_text_file(document_path)
+                    != document.get("text_sha256")
+                ):
+                    errors.append("backend_runtime_document_hash_mismatch")
+            profiles = runtime_evidence.get("profiles", {})
+            batch_codes: list[str] = []
+            for profile in ("db-smoke", "db-full"):
+                profile_evidence = profiles.get(profile, {})
+                database_name = str(
+                    profile_evidence.get("database_name", "")
+                )
+                match = RUNTIME_DATABASE_PATTERN.fullmatch(database_name)
+                expected_kind = profile.removeprefix("db-")
+                if match is None or match.group(1) != expected_kind:
+                    errors.append(
+                        f"backend_runtime_database_mismatch:{profile}"
+                    )
+                expected_command = (
+                    "python backend/manage.py import_synthetic_handoff "
+                    f"--profile {profile}"
+                )
+                if (
+                    profile_evidence.get("migration_command")
+                    != "python backend/manage.py migrate --noinput"
+                    or profile_evidence.get("dry_run_command")
+                    != f"{expected_command} --dry-run"
+                    or profile_evidence.get("first_run_command")
+                    != expected_command
+                    or profile_evidence.get("replay_run_command")
+                    != expected_command
+                ):
+                    errors.append(
+                        f"backend_runtime_command_mismatch:{profile}"
+                    )
+                batch_codes.extend(
+                    [
+                        str(profile_evidence.get("first_batch_code", "")),
+                        str(profile_evidence.get("replay_batch_code", "")),
+                    ]
+                )
+                try:
+                    first_completed = datetime.fromisoformat(
+                        profile_evidence["first_completed_at"]
+                    )
+                    replay_completed = datetime.fromisoformat(
+                        profile_evidence["replay_completed_at"]
+                    )
+                except (KeyError, TypeError, ValueError):
+                    errors.append(
+                        f"backend_runtime_timestamp_invalid:{profile}"
+                    )
+                else:
+                    if replay_completed <= first_completed:
+                        errors.append(
+                            f"backend_runtime_replay_order_invalid:{profile}"
+                        )
+            if (
+                len(batch_codes) != 4
+                or len(set(batch_codes)) != 4
+                or any(
+                    re.fullmatch(r"SYN-IMPORT-[A-F0-9]{32}", code) is None
+                    for code in batch_codes
+                )
+            ):
+                errors.append("backend_runtime_batch_codes_invalid")
     return errors
 
 
@@ -1177,6 +1203,7 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
         "rag_chunks": len(read_jsonl(config.path("rag_output"))),
         "evidence": len(read_jsonl(config.path("evidence_output"))),
         "synthetic_inquiries": len(outputs["inquiries"]),
+        "synthetic_fixture_records": count_synthetic_fixture_records(outputs),
     }
     for key, value in actual.items():
         if value != expected[key]:
