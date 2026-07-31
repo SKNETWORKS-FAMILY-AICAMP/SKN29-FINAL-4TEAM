@@ -21,14 +21,12 @@ pytestmark = pytest.mark.django_db
 
 def create_subscription(sequence: int = 1) -> CustomerSubscription:
     user = User.objects.create_user(
-        id=f"DEMO-USR-{sequence + 700:03d}",
         username=f"T022-MODEL-CUSTOMER-{sequence:03d}",
         password=None,
         full_name=f"T022 model customer {sequence}",
         role_code=User.Role.CUSTOMER,
     )
     customer = CustomerProfile.objects.create(
-        id=f"DEMO-CUS-{sequence + 700:03d}",
         user=user,
         customer_no=f"T022-MODEL-CUS-{sequence:03d}",
         customer_name=f"T022 model customer {sequence}",
@@ -90,7 +88,6 @@ def test_inquiry_uses_three_layer_identifiers_and_pm_initial_state():
 def test_synthetic_inquiry_fields_preserve_unknown_channel_and_assignment():
     subscription = create_subscription()
     consultant = User.objects.create_user(
-        id="DEMO-USR-990",
         username="T022-CONSULTANT-990",
         password=None,
         full_name="Synthetic consultant",
