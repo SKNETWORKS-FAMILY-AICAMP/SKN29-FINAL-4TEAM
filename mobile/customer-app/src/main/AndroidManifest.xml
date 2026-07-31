@@ -1,27 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
     <application
-        android:name=".WaterPurifierDealerApplication"
-        android:allowBackup="true"
-        android:icon="@drawable/app_icon_mascot"
-        android:roundIcon="@drawable/app_icon_mascot"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:theme="@style/Theme.WaterCare">
-
-        <meta-data
-            android:name="com.google.mlkit.vision.DEPENDENCIES"
-            android:value="barcode_ui" />
-
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
+        android:icon="@mipmap/ic_launcher_watercare"
+        android:roundIcon="@mipmap/ic_launcher_watercare" android:usesCleartextTraffic="true" android:name=".CustomerApplication" android:allowBackup="true" android:label="WaterCare 고객" android:theme="@style/Theme.WaterCare">
+        <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -29,4 +11,3 @@
         </activity>
     </application>
 </manifest>
-

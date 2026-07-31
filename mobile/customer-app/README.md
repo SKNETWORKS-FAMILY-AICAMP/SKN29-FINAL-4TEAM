@@ -1,12 +1,11 @@
-# customer-app
+# WaterCare customer app
 
-기존 `mobile/app`에서 실제로 실행되던 고객용 시연 앱을 보존한 모듈입니다.
+Week 3 mandatory customer flow:
 
-- 고객 홈
-- 문진 및 QR/OCR
-- 오류 결과
-- 방문 요청
-- 기사 이동 현황과 카카오맵
+- actual Backend health and Demo customer authentication
+- CUST-01 product/subscription summary with synthetic marker
+- CUST-02 symptom selection and validated intake state
+- CUST-04 safe guidance and official evidence presentation
+- deterministic normal, caution, danger, no-evidence, AI-failure and network-failure fixtures
 
-`applicationId`, `namespace`, Kotlin 패키지는 기존의 `com.skn29.watercare`를 유지합니다.
-기존 설치본과 카카오 Android 패키지 등록을 깨뜨리지 않기 위한 결정입니다.
+The app defaults to `http://127.0.0.1:8000/` for a physical device using `adb reverse`. Override `BACKEND_BASE_URL` in untracked `mobile/local.properties` for an emulator.

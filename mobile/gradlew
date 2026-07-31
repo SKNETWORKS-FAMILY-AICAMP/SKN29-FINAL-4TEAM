@@ -5,9 +5,5 @@ if [ ! -f "$JAR" ]; then
   echo "gradle-wrapper.jar가 없습니다. ./bootstrap-wrapper.sh 를 먼저 실행하세요." >&2
   exit 1
 fi
-if [ -n "$JAVA_HOME" ]; then
-  JAVA="$JAVA_HOME/bin/java"
-else
-  JAVA=java
-fi
+if [ -n "$JAVA_HOME" ]; then JAVA="$JAVA_HOME/bin/java"; else JAVA=java; fi
 exec "$JAVA" -classpath "$JAR" org.gradle.wrapper.GradleWrapperMain "$@"
