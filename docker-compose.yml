@@ -2,7 +2,7 @@ name: watercare-local
 
 services:
   postgres:
-    image: postgres:16.14-bookworm
+    image: pgvector/pgvector:0.8.6-pg16-bookworm
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
