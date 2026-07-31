@@ -51,3 +51,6 @@ db.sqlite3
 # IDE
 .idea/
 *.iml
+
+#
+ai/tests/.tmp/
