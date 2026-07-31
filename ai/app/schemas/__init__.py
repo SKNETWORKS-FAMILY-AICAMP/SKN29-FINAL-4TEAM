@@ -12,6 +12,7 @@ from .common import (
     SafetyPriority,
     TraceContext,
     UsageGuidanceStatus,
+    ValidationResult,
     VerificationStatus,
 )
 from .consultation_summary import ConsultationSummaryRequest, ConsultationSummaryResult
@@ -31,6 +32,7 @@ __all__ = [
     "UsageGuidanceStatus",
     "SafetyPriority",
     "VerificationStatus",
+    "ValidationResult",
     "DataClassification",
     "TraceContext",
     "ModelMetadata",

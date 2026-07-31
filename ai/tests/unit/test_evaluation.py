@@ -29,31 +29,33 @@ def test_eval_dataset_loader():
     rag_data = loader.load_rag_dataset()
     safety_data = loader.load_safety_dataset()
 
-    assert len(rag_data) > 0
+    assert len(rag_data) == 12
+    assert {item["case_id"] for item in rag_data}
     assert len(safety_data) > 0
 
 
 def test_evaluation_runner_execution():
     """EvaluationRunner 전체 일괄 산출 테스트"""
+    expected_by_query = {
+        item["query"]: item["expected_chunk_ids"]
+        for item in EvalDatasetLoader().load_rag_dataset()
+    }
+
     class FakeSearchService:
         def search(self, query, *, cancellation_token=None):
             from ai.app.retrieval.indexing.chunk_loader import ChunkLoader
             chunks = ChunkLoader().load_verified_chunks()
-            if "누수" in query.query_text or "물" in query.query_text and "새" in query.query_text:
-                ids = {"RAG-WPUJAC104DWH-LEAK-001"}
+            expected = expected_by_query.get(query.query_text)
+            if expected is not None:
+                ids = set(expected)
             elif "졸졸" in query.query_text:
-                ids = {
-                    "RAG-WPUJAC104DWH-LOW-FLOW-001",
-                    "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001",
-                }
-            elif "온수" in query.query_text:
-                ids = {"RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001"}
+                ids = {"RAG-WPUJAC104DWH-LOW-FLOW-001"}
             else:
                 ids = {"RAG-WPUJAC104DWH-COLD-TEMPERATURE-001"}
             return [chunk for chunk in chunks if chunk.chunk_id in ids]
 
     runner = EvaluationRunner(FakeSearchService())
-    results = runner.run_all_evaluations()
+    results = runner.run_all_evaluations(save_report=False)
 
     assert "rag_evaluation" in results
     assert "safety_evaluation" in results
