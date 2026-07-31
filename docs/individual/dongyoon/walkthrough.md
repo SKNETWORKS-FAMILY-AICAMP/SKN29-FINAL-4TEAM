@@ -326,3 +326,19 @@ Public UUID 분석 요청이 모두 성공했다.
   `analysis_started → analysis_completed` INFO 로그 및 고객 원문 비노출을
   확인했다. 실제 pgvector 기반 종합 평가는 RAG 12건 Recall@5 `1.0`, MRR
   `0.9333`, 안전 4건 준수율 `100%`다.
+
+---
+
+## 2026-07-31 Python 3.13.13 .venv 완전 정합화 및 SSOT 검증
+
+- **가상환경 표준화**: 기존 외부 Conda(`myenv`) 공유 환경 의존성을 완전히 배제하고, Python `3.13.13` 전용 독립 가상환경(`ai/.venv`) 구축 및 `ai/requirements.txt` 전체 의존성 설치를 완료했다.
+- **의존성 결함 검증**: `ai\.venv\Scripts\python.exe -m pip check` 실행 결과 `No broken requirements found`로 패키지 충돌 없음을 100% 검증했다.
+- **전체 회귀 테스트**: 독립 `.venv` 환경에서 `71 passed, 3 warnings in 1.35s`로 전체 71개 단위 테스트 100% PASS를 달성했다.
+- **SSOT 5대 영역 검증 완료**:
+  1. `inquiry_id`: Public UUID 스키마 규격 통일 및 백엔드 정수 PK 노출 100% 차단.
+  2. `UsageGuidanceStatus`: 4대 표준 규격(`NORMAL`, `PARTIAL_STOP`, `TOTAL_STOP`, `PENDING_CONSULTATION`) 전면 동기화.
+  3. `JSON Schema 1.1.0`: `$id`, `x-contract-version=1.1.0`, `additionalProperties=false` 우위 적용.
+  4. `AiStage` / `AiErrorCode`: `STRUCTURING`, `SAFETY_CHECK` 등 대문자 표준 코드 및 `AI-VALIDATION-01` 등 에러 코드 통합.
+  5. `jac104_retrieval_cases.json`: RAG 검색 평가 기대값 SSOT 확정 및 pgvector 12/12 PASS 유지.
+- **오프라인 평가 리포트 투명화**: DB 미연결 오프라인 실행 시 가짜 Mock 100% 수치를 생성하는 대신 `"status": "vector_store_not_configured"`로 표기하여 수치 왜곡을 차단하는 정직한 평가 로직을 확정했다.
+
