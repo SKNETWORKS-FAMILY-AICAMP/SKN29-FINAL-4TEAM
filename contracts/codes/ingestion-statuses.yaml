@@ -1,0 +1,9 @@
+# T-005 Wave 1 지식 수집 실행 상태 코드
+version: 1.0.0
+status: OWNER_BASELINE
+codes:
+  - QUEUED
+  - RUNNING
+  - SUCCEEDED
+  - PARTIAL
+  - FAILED

@@ -1,0 +1,7 @@
+# T-005 Wave 1 AI 응답 스키마 검증 상태 코드
+version: 1.0.0
+status: OWNER_BASELINE
+codes:
+  - NOT_RUN
+  - PASSED
+  - FAILED
