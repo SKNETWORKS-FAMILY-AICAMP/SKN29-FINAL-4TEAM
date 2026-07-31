@@ -18,7 +18,7 @@
 | [Python 버전](<../../../../../backend/.python-version>) | Python `3.13.13` 고정 |
 | [직접 공통 의존성](<../../../../../backend/requirements/base.txt>) | Django Runtime 직접 의존성 |
 | [직접 로컬 의존성](<../../../../../backend/requirements/local.txt>) | 개발·테스트 직접 의존성 |
-| [간접 의존성 constraints](<../../../../../backend/requirements/constraints-py313.txt>) | Python 3.13 검증 해상도 31개 고정 |
+| [간접 의존성 constraints](<../../../../../backend/requirements/constraints-py313.txt>) | Python 3.13 검증 해상도 32개 고정 |
 | [환경 생성 스크립트](<../../../../../scripts/development/bootstrap.py>) | 생성·동기화·안전 재생성 |
 | [환경 검증 스크립트](<../../../../../scripts/development/check_environment.py>) | 읽기 전용 재현성 게이트 |
 | [VS Code 설정](<../../../../../.vscode/settings.json>) | 상대경로 Interpreter·터미널 활성화 |
@@ -78,7 +78,7 @@ bootstrap을 한 번 실행해야 한다.
 - 직접 의존성: `base.txt`, `local.txt`
 - 직접·간접 해상도: `constraints-py313.txt`
 - 설치 명령은 `local.txt`와 constraints를 함께 사용한다.
-- 현재 검증 기준은 constraints 31개, constraints 밖 추가 패키지 0개다.
+- 현재 검증 기준은 constraints 32개, constraints 밖 추가 패키지 0개다.
 
 의존성을 바꿀 때는 직접 요구 파일만 수정하고 끝내지 않는다. 깨끗한
 임시 환경에서 새 해상도를 설치하고 `pip check`, Django check,
@@ -130,7 +130,7 @@ python .\scripts\development\check_environment.py --service backend --full
 
 - `pyvenv.cfg`와 system site-packages 격리
 - Python·pip 정확한 버전
-- constraints 31개 버전과 추가 패키지
+- constraints 32개 버전과 추가 패키지
 - requirements fingerprint
 - `pip check`, Django system check
 - Migration drift
@@ -226,9 +226,9 @@ python .\scripts\development\bootstrap.py --service backend --recreate
 | bootstrap 동기화 | Exit code `0` |
 | Python | `3.13.13` |
 | pip | `26.0.1` |
-| constraints 패키지 | 31개 일치 |
+| constraints 패키지 | 32개 일치 |
 | constraints 밖 추가 패키지 | 0개 |
-| requirements fingerprint | `60a914129e00735559d54b1429d76933cee4817a1c62bc968dd8808ab085c758` |
+| requirements fingerprint | `350a1d4c0a03d91be0a5b95361ae7a32634d1cc99475d9e58bce2e7a87c8fdb5` |
 | `pip check` | 통과 |
 | Django system check | 통과 |
 | Migration drift | 없음 |
