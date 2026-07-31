@@ -1,10 +1,10 @@
 # T-005 32개 테이블 구현·PostgreSQL 최종 검증 보고서
 
-> 기준일: 2026-07-30  
+> 기준일: 2026-07-31
 > 작성·구현 책임: 최지용  
 > 범위: Django Model·App 로딩·번호 Migration, Accounts 식별자/JWT 전환,
 > 빈 PostgreSQL Migration·Seed·367건 Importer, Backend·Data 회귀  
-> 판정: **로컬 기술 검증 완료 / 공식 WBS 완료 승인 대기**
+> 판정: **작성자 격리 기술 검증 완료 / 비작성자·PM 공식 승인 대기**
 
 ## 1. 결론
 
@@ -21,10 +21,14 @@ Seed를 두 번 실행했으며, 합성 Handoff 367건을 두 번 적재했다.
 Data QA 테스트는 `67 tests, OK`다.
 
 이 결과는 구현과 로컬 기술 검증의 완료를 뜻하지만, 자동으로 공식
-WBS 완료 승인을 뜻하지 않는다. 불변 물리 계약의 완료 리뷰 상태는
-아직 `PENDING`이고 `completion_claim_allowed=false`다. 비작성자
+WBS 완료 승인을 뜻하지 않는다. 활성 물리 계약 v1.3의 완료 리뷰 상태는
+`NON_AUTHOR_REVIEW_PENDING`이고 `completion_claim_allowed=false`다. 비작성자
 리뷰와 외부 재현이 기록되고 계약 담당자가 완료 상태를 승인하기 전에는
 T-005를 공식 `완료`로 표시하지 않는다.
+
+2026-07-31 작성자 격리 재현의 후보 SHA·환경·수치는
+[T-005 작성자 격리 재현 증거](../../../../database/t-005/t005_author_isolated_reproduction_evidence_20260731.json)에
+고정했다. 이 증거는 비작성자 리뷰를 대신하지 않는다.
 
 ## 2. 작업 전후 비교
 
@@ -165,10 +169,10 @@ Schema Validator의 구현·PostgreSQL·Seed 기술 Gate는 모두 통과했다.
 | 남은 Gate | 현재 | 필요한 행동 | 주담당·협업 |
 | --- | --- | --- | --- |
 | `non_author_review_confirmed` | false | 비작성자가 동일 SHA에서 빈 PostgreSQL·Seed·회귀를 재현하고 결과 기록 | 김은진 또는 지정 리뷰어 |
-| `three_layer_identifier_runtime_complete` | false | 실제 Runtime은 구현됐으므로 계약 담당자가 불변 물리 계약의 `TRANSITIONAL_BRIDGE` 해제 여부를 검토·승인 | 최지용 근거 제공, 윤승혁(PM)·계약 리뷰 |
+| `three_layer_identifier_runtime_complete` | false | Runtime은 구현됐고 v1.3은 `TECHNICALLY_COMPLETE_REVIEW_PENDING`이다. 비작성자 증거와 PM 승인 후에만 후속 계약을 `COMPLETE`로 승격 | 최지용 근거 제공, 윤승혁(PM)·계약 리뷰 |
 | `external_review_verified` | false | PR/리뷰 또는 독립 검증 증거를 완료 Evidence에 연결 | 비작성자 리뷰어·PM |
 
-현재 물리 계약의 `completion_review_status=PENDING`,
+현재 물리 계약의 `completion_review_status=NON_AUTHOR_REVIEW_PENDING`,
 `completion_claim_allowed=false`를 코드 구현만으로 임의 변경하지
 않는다. 승인 전 판정은 다음처럼 분리한다.
 

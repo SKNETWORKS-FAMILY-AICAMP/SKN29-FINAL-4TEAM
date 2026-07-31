@@ -1,16 +1,16 @@
 # 정수기 딜러 팀 통합 인계 허브
 
-> 기준일: 2026-07-30
+> 기준일: 2026-07-31
 >
 > 문서 책임: 공동 편집(`docs/**`)
 >
-> 현재 상태: `T005_32_TABLE_LOCAL_TECHNICAL_VERIFIED_REVIEW_PENDING`
+> 현재 상태: `T005_SHARED_CANDIDATE_TECHNICALLY_COMPLETE_NON_AUTHOR_REVIEW_PENDING`
 >
-> 현재 소스 기준 Commit: `765047c2342bc30363a5c543a1f9ea324730d079`
+> 게시된 T-005 구현 기준 Commit: `051c7cc9b45f1b353384ee72e67ac8210a4f3bb1`
 >
-> 현재 로컬 원격 추적 `main` SHA: `765047c2342bc30363a5c543a1f9ea324730d079`
+> 최종 검토 대상: 이 문서가 포함된 `origin/jiyong` 40자리 HEAD를 확인하고, PM이 병합 후 공유하는 `main` SHA로 다시 고정
 >
-> T-005 32개 테이블 변경 Commit: 미생성 — 로컬 기술 검증 완료, 팀 실행 금지
+> T-005 32개 테이블 변경: 경로별 7개 Commit으로 `jiyong` 게시 완료, 물리 계약 v1.3·Data 해시 후속 후보는 비작성자·PM 리뷰 대기
 >
 > 실행 원칙: `작업 → 즉시 검증 → 다음 작업`
 
@@ -23,13 +23,16 @@
 
 ---
 
-## 0. 2026-07-30 T-005 32/32 로컬 기술 검증
+## 0. 2026-07-31 T-005 32/32 Gate 1·Gate 2 후보
 
-현재 작업 트리에서는 계약 대상 32개 테이블을 모두 Django Model,
+현재 `jiyong` 후보에서는 계약 대상 32개 테이블을 모두 Django Model,
 `INSTALLED_APPS`, 번호 Migration과 PostgreSQL Runtime에 연결했다.
 Auditor 판정은 `READY 32/32`, 누락·미등록·미분류·차단은 각각 0이다.
 기본 `watercare` DB와 빈 격리 DB에서 전체 Migration, 멱등 Seed,
-합성 데이터 Importer 실행과 재실행을 검증했다.
+합성 데이터 Importer 실행과 재실행을 검증했다. 이후 활성 물리 계약을
+v1.3으로 올리고 상태를 `TECHNICALLY_COMPLETE_REVIEW_PENDING`과
+`NON_AUTHOR_REVIEW_PENDING`으로 고정했다. 최지용의 재실행은 기술
+증거일 뿐, 비작성자 확인이나 PM 승인으로 대체하지 않는다.
 
 | 항목 | 현재 로컬 검증 결과 | 공식 완료 경계 |
 | --- | --- | --- |
@@ -39,15 +42,42 @@ Auditor 판정은 `READY 32/32`, 누락·미등록·미분류·차단은 각각 
 | Backend 전체 | SQLite `740 passed, 11 skipped`, PostgreSQL `751 passed` | 로컬 회귀 통과 |
 | Data QA | 단위 `67 passed`, QA `48 files / 740 records`, 오류·경고 0 | 로컬 QA 통과 |
 | Auth 전환 | 정수 내부 PK·공개 UUID JWT, legacy subject fallback 제거 | Web·Mobile 소비자 확인 대기 |
-| 공식 T-005 상태 | 기술 증거는 충족했으나 계약 완료 승인은 미반영 | 비작성자 확인·3계층 식별자 계약 갱신·외부 리뷰 필요 |
+| 물리 계약 | v1.3, 3계층 식별자 Runtime 완료 반영 | `completion_claim_allowed=false` |
+| 공식 T-005 상태 | 기술 증거는 충족했으나 계약 완료 승인은 미반영 | 비작성자 독립 재현·외부 리뷰·PM 승인 필요 |
 
-현재 변경은 아직 Commit·Push·PM 병합 전이다. 팀원은 로컬 검증 결과를
-공유 기준선으로 간주하지 말고, PM이 검토·병합한 40자리 `main` SHA를
-받은 뒤 같은 Migration·Seed·Importer·회귀 절차를 독립 재현해야 한다.
+팀원은 `origin/jiyong`을 곧바로 공용 기준선으로 간주하지 않는다.
+먼저 아래 명령으로 최지용이 전달한 후보 SHA와 원격 HEAD가 같은지
+확인하고, 지정 비작성자만 새 worktree·새 PostgreSQL Volume에서
+Migration·Seed·Importer·회귀를 독립 재현한다. 나머지 팀원은 PM이
+검토·병합한 40자리 `main` SHA를 받은 뒤 자기 담당 소비 검증을 한다.
+
+```powershell
+git fetch origin
+git rev-parse origin/jiyong
+git rev-parse origin/main
+```
 
 구현 파일, Migration 순서, 백업·롤백, 실행 명령과 최종 수치는
 [T-005 32개 테이블 PostgreSQL·Seed·Importer 최종 검증 보고서](../individual/jiyong/technical/backend/t005_final_32_table_postgresql_seed_importer_validation_report.md)를
 단일 현행 원본으로 사용한다.
+
+작성자 격리 재현의 실제 후보 SHA와 수치는
+[2026-07-31 작성자 격리 재현 증거](../database/t-005/t005_author_isolated_reproduction_evidence_20260731.json)에서
+확인한다.
+
+### 0.1 지금 인계할 순서
+
+| 순서 | 담당 | 해야 할 일 | 완료 증거 |
+| ---: | --- | --- | --- |
+| 1 | 최지용 | 최종 `jiyong` SHA·테스트 결과를 PM과 비작성자에게 전달 | 40자리 SHA, clean 상태, 검증 수치 |
+| 2 | 김은진 또는 지정 비작성자 | 같은 SHA를 새 worktree·새 PostgreSQL Volume에서 독립 재현 | 32/32, Seed 2회차 신규 0, Importer Replay 동일, 전체 회귀 |
+| 3 | 윤승혁 PM | v1.3 계약·비작성자 증거 검토 후 완료 여부 결정 | 승인 기록과 병합된 `main` 40자리 SHA |
+| 4 | 한예나·양정현 | PM `main` 기준 UUID JWT·401/403 소비 검증 | Gate 3 결과 — 현재 `BLOCKED_EXTERNAL` |
+| 5 | 이동윤 | PM `main` 기준 Vector·Evidence 소비 검증 | Gate 4 결과 — 현재 `BLOCKED_EXTERNAL` |
+
+Gate 3·4 준비가 끝나지 않았다는 이유로 Gate 1·2 검증 결과를 임의로
+완료 처리하지 않으며, 반대로 Gate 3·4 담당 파일을 최지용이 대신
+수정하지 않는다.
 
 ---
 
