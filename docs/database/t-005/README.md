@@ -1,693 +1,159 @@
-# T-005 WaterCare 데이터 설계 기준선
+# T-005 데이터베이스 설계·구현 기준
 
-> Snapshot 기준일: 2026-07-25 · 상태 갱신일: 2026-07-31
+> 기준일: 2026-07-31
+>
 > 담당: 최지용
-> WBS 해석: OWNER 설계 기준선 확정, Runtime 완료율은 재실행 증거로 별도 판정
-> 저장소 판정: OWNER 설계 기준선 확정·Django Runtime 32/32 로컬 기술 검증 완료·공식 완료 리뷰 대기
+>
+> 현재 상태: `TECHNICALLY_READY_REVIEW_PENDING`
+>
+> 실행 기준: PostgreSQL `waterbridge` 데이터베이스의 `public` Schema
 
-## 1. 목적
+## 1. 문서 역할
 
-WaterCare ERD v3.0.0을 저장소 안에서 재현 가능하게 검토하기 위한
-기준선이다. 원본 Snapshot을 수정하지 않고 동일한 파일 내용을
-snake_case 이름으로 보존했으며 `manifest.json`에 SHA-256을 기록했다.
+이 디렉터리는 T-005 데이터베이스 계약과 기계 검증 자료의 진입점이다.
+현재 구현에 반복 적용할 절차, 특정 시점의 실행 증거와 과거 Wave 이력은
+개인 개발문서에서 역할별로 분리한다.
 
-이 디렉터리의 v3 파일은 당시 설계 Snapshot이고, 현재 구현 기준은
-[`ADR 0010`](../../adr/0010-t005-three-layer-identifier-bridge.md),
-[`ADR 0011`](../../adr/0011-t005-status-history-idempotency-scope.md),
-[`t005_logical_contract_v0.3.json`](t005_logical_contract_v0.3.json),
-[`t005_decision_register_v0.3.json`](t005_decision_register_v0.3.json),
-[`t005_physical_contract_v1.3.json`](t005_physical_contract_v1.3.json)이다.
-Django Model·Migration과 PostgreSQL 완료 여부는 별도 Runtime 증거로
-판정한다. 현재 Runtime은 Accounts 내부 BigInt PK·공개 UUID 분리,
-UUID-only JWT, 계약 테이블 32/32와 빈 PostgreSQL Migration·Seed·
-Importer 검증까지 완료했다. 현행 물리 계약 v1.3은
-`completion_review_status=NON_AUTHOR_REVIEW_PENDING`과
-`completion_claim_allowed=false`는 계약 담당자의 리뷰 전까지
-유지하므로 공식 WBS 완료와 로컬 기술 완료를 구분한다.
+| 역할 | 단일 기준 |
+| --- | --- |
+| 기계 판독 계약 | 이 디렉터리의 Logical·Decision·Physical Contract |
+| 현재 스키마 변경 절차 | [T-005 데이터베이스 스키마 변경 실행 가이드](../../individual/jiyong/technical/backend/t005_데이터베이스_스키마_변경_실행_가이드.md) |
+| 2026-07-31 실행 증거 | [T-005 WaterBridge PostgreSQL 통합 검증 보고서](../../individual/jiyong/technical/backend/20260731_t005_워터브리지_postgresql_통합_검증_보고서.md) |
+| 구현 변화와 사고 이력 | [T-005 테이블 구현·변경 이력](../../individual/jiyong/technical/backend/20260730_t005_테이블_구현_및_변경_이력.md) |
+| 사람이 읽는 전체 테이블 설명 | [WaterCare 테이블 명세](../watercare_table_dictionary.md) |
 
-## 현재 Runtime 판정
+문서와 Runtime이 다르면 ADR·활성 계약·Django Model·Migration·실제
+PostgreSQL 검증 결과를 순서대로 대조한다. 과거 Snapshot의 수치나
+파일 존재만으로 구현 완료를 판정하지 않는다.
 
-| 항목 | 2026-07-31 작성자 격리 재실행 결과 |
+## 2. 현재 Runtime 판정
+
+| 항목 | 2026-07-31 결과 |
 | --- | --- |
 | 계약 테이블 | 32개 |
 | Model·App Registry·Migration | **32/32** |
-| Auditor | `READY`, blocker 0 |
+| T-005 Auditor | `READY`, blocker 0 |
 | 승인된 계약 외 지원 Runtime | 4개 |
 | Accounts 식별자 | 내부 BigInt PK·공개 UUID·업무 코드 분리 |
 | JWT subject | 공개 UUID만 허용, Legacy 문자열 fallback 제거 |
+| PostgreSQL | `waterbridge.public`, PostgreSQL 16.14 |
+| Active 범위 | 13개 테이블·총 369행 |
+| Target-only 범위 | 19개 테이블·각 0행 |
 | 빈 PostgreSQL | 전체 Migration·5종 Seed 2회·367건 Import 2회 PASS |
-| 기본 `watercare` | 백업 후 미적용 24개 Migration·Seed·367건 Replay PASS |
 | 전체 회귀 | SQLite `740 passed, 11 skipped`, PostgreSQL `751 passed` |
-| Data QA | 48개 파일·740개 레코드, 오류·경고 0, 67 tests OK |
-| 공식 완료 상태 | `NON_AUTHOR_REVIEW_PENDING` — 비작성자·외부 리뷰와 PM 계약 완료 승인 필요 |
+| Data QA | 67 tests, 대표 E2E 17/17, 오류·경고 0 |
+| 공식 완료 | 비작성자 독립 재현·외부 소비 검토·PM 승인 대기 |
 
-최종 실행 근거와 남은 공식 Gate는
-[T-005 32개 테이블 구현·PostgreSQL 최종 검증 보고서](../../individual/jiyong/technical/backend/t005_final_32_table_postgresql_seed_importer_validation_report.md)를
-단일 원본으로 사용한다.
+Active 13은 현재 데이터가 있는 범위다. Target-only 19개 테이블도
+물리 계약과 Migration에 포함되므로 삭제하거나 별도 축소 Schema로
+분리하지 않는다.
 
-작성자 격리 재현의 후보 SHA·환경·수치와 공식 완료 경계는
-[`t005_author_isolated_reproduction_evidence_20260731.json`](t005_author_isolated_reproduction_evidence_20260731.json)에
-기록했다. 이 파일은 비작성자 승인 증거가 아니며, 최종 후보 SHA가
-바뀌면 같은 격리 절차를 새 DB에서 다시 실행해야 한다.
+## 3. 활성 계약
 
-## 2. 포함 파일
+현재 구현 입력은 다음 자료다.
 
-| 파일 | 역할 |
+1. [ADR 0010: 3계층 식별자](../../adr/0010-t005-three-layer-identifier-bridge.md)
+2. [ADR 0011: 상태 이력·멱등성](../../adr/0011-t005-status-history-idempotency-scope.md)
+3. [`t005_logical_contract_v0.3.json`](t005_logical_contract_v0.3.json)
+4. [`t005_decision_register_v0.3.json`](t005_decision_register_v0.3.json)
+5. [`t005_physical_contract_v1.3.json`](t005_physical_contract_v1.3.json)
+
+이전 버전과 v3 ERD는 당시 결정과 차이를 추적하는 역사 자료다. 현재
+계약을 덮어쓰지 않으며 이름을 바꾸거나 삭제하지 않는다.
+
+## 4. 포함 파일
+
+| 파일군 | 역할 |
 | --- | --- |
+| `manifest.json` | Snapshot 버전·개수·파일 해시 |
 | `watercare_schema_v3.json` | 32개 테이블·526개 컬럼의 기계 검증용 스키마 |
 | `watercare_erd_v3.mmd` | Mermaid ERD 원본 |
 | `watercare_erd_v3.png` | 팀 공유용 정적 ERD |
-| `watercare_schema_sqlite_v3.sql` | PostgreSQL 명세를 변환한 SQLite 호환 검증 스키마 |
-| `watercare_erd_validation_v3.md` | 원본 v3 교차검증 결과 |
-| `manifest.json` | 버전·개수·파일 해시·차단 결정 목록 |
-| `t005_physical_contract_v1.3.json` | 32/32 Runtime과 3계층 식별자 기술 완료·리뷰 대기 물리 계약 |
-| `t005_author_isolated_reproduction_evidence_20260731.json` | 작성자 격리 PostgreSQL 재현 이력과 공식 승인 경계 |
+| `watercare_schema_sqlite_v3.sql` | SQLite 호환 구조 검증 스키마 |
+| `watercare_erd_validation_v3.md` | ERD·Schema 교차검증 결과 |
+| `t005_logical_contract_v0.2~v0.3.json` | 논리 계약 이력과 활성본 |
+| `t005_decision_register_v0.1~v0.3.json` | 결정 등록 이력과 활성본 |
+| `t005_physical_contract_v1.0~v1.3.json` | 물리 계약 이력과 활성본 |
+| `t005_local_technical_completion_evidence_20260730.json` | 작성자 로컬 기술 완료 증거 |
+| `t005_author_isolated_reproduction_evidence_20260731.json` | 작성자 격리 재현 증거 |
 
-## 3. 확인된 구조
+기본 Snapshot 구조는 테이블 32개, 컬럼 526개, 물리 FK 85개, 논리
+공통코드 참조 57개다.
 
-| 항목 | 결과 |
-| --- | ---: |
-| 테이블 | 32 |
-| 컬럼 | 526 |
-| 물리 FK | 85 |
-| 논리 공통코드 참조 | 57 |
-| 원본 HTML 자동 테스트 | Snapshot 작성 당시 5건 통과 |
-| Snapshot 해시·FK 검증 | 통과 |
+## 5. 핵심 설계 결정
 
-`support_inquiry`에는 현재 담당자, 사용 안내, 제한 기능, 고객 행동 필요 여부가 포함돼 있다. `knowledge_evidence_link`와 `support_guidance`에는 판단 근거를 연결할 구조가 존재한다.
+| 주제 | 현재 기준 |
+| --- | --- |
+| 식별자 | 내부 자동 증가 정수 PK, 외부 공개 UUID, 업무 코드를 분리 |
+| Schema 변경 | Django Migration만 사용하고 적용된 Migration을 수정하지 않음 |
+| 공통코드 | 계약 YAML·Django `TextChoices`·멱등 Seed를 일치시킴 |
+| 상태 이력 | 요청 멱등성 원장과 Aggregate 상태 이력의 책임을 분리 |
+| 합성 데이터 | `data/synthetic/fixtures/**`를 원본으로 사용하고 Upsert·Replay 검증 |
+| Vector | pgvector `vector(1024)`와 Exact Search 사용, ANN Index는 미적용 |
+| 삭제 | 계약 테이블과 감사 이력은 임의 삭제하지 않음 |
 
-## 4. Legacy Snapshot 차이와 현재 OWNER 해법
+Legacy `usage_guidance_code`는 import 별칭으로만 취급하고 현행 필드는
+`usage_guidance_status`를 사용한다. 방문 일정은
+`preferred_date`, `confirmed_date`, `schedule_status`를 분리하며
+방문 상태에는 `FOLLOW_UP_REQUIRED`를 포함한다.
 
-아래 항목은 v3 Snapshot과 현재 기준선의 차이를 추적하는 역사 기록이다.
-최지용 OWNER 기준선은 이미 확정됐으며 구현 착수 승인 대기 항목이 아니다.
-
-| ID | Legacy Snapshot 차이 | 현재 OWNER 해법 |
-| --- | --- | --- |
-| `T005_PRIMARY_KEY_POLICY` | Snapshot의 주요 PK는 UUID다. | 목표 구조는 내부 BigInt PK + 외부 UUID `public_id` + 별도 업무 코드다. 활성 v1.3은 Runtime 전환 완료와 legacy import 전용 `legacy_id` 경계를 기록한다. 비작성자 재현·PM 승인 전에는 공식 완료로 올리지 않는다. |
-| `T005_USAGE_GUIDANCE_PHYSICAL_MAPPING` | WBS에서 canonical 이름은 `usage_guidance_status`로 확정됐지만 ERD v3에는 `usage_guidance_code`가 남아 있다. | 활성 v0.3 논리 계약에 확정 이름을 반영하고, v0.2와 v3 물리 Snapshot은 변경 이력으로 보존 |
-| `T005_USAGE_GUIDANCE_CODESET` | 화면은 일반 사용 가능을 `NORMAL`, ERD v3는 `USE_ALLOWED`로 표현한다. | `NORMAL`을 표준으로 사용하고 legacy `USE_ALLOWED`를 import 시 변환한다. |
-| `T005_VISIT_STORAGE_MAPPING` | 화면과 v3의 일정 필드 구조가 다르다. | `preferred_date`, `confirmed_date`, `schedule_status`, `synthetic_technician_id`를 분리 저장한다. |
-| `T005_VISIT_STATUS_CODESET` | 화면 상태표에는 `FOLLOW_UP_REQUIRED`가 있으나 ERD v3에는 없다. | `FOLLOW_UP_REQUIRED`를 포함한 7개 방문 상태를 사용한다. |
-| `T005_ENUM_SEED_POLICY` | v3에는 Enum·Seed 운영 방식이 확정되지 않았다. | 계약 YAML과 Django `TextChoices`를 맞추고 합성 Seed는 `update_or_create`로 재실행 가능하게 한다. |
-| `T005_STATUS_HISTORY_IDEMPOTENCY_SCOPE` | 상태 이력의 `idempotency_key`가 전역 `UNIQUE`여서 한 요청이 여러 Aggregate 이력을 기록할 수 없다. | replay·payload 충돌은 `workflow_idempotency_record`의 `(actor, operation_id, idempotency_key)`가 판정한다. 상태 이력 Key는 대상·이벤트별 비고유 partial index로 추적하고, 대상별 `state_version`만 partial `UNIQUE`로 보호한다. |
-
-`t005_logical_contract_v0.2.json`과 `t005_decision_register_v0.2.json`,
-`t005_physical_contract_v1.1.json`은 결정 당시 내용을 보존하는 역사본이다.
-현행 논리 기준과 일곱 결정은 v0.3, 현행 물리 기준은 v1.3에만 누적한다.
-기존 v3 Snapshot도 당시 설계 이력으로 유지한다.
-
-따라서 Snapshot과 v0.2·v1.1 계약은 구조·차이 추적에 사용하고, 신규
-구현은 ADR 0010·0011, 논리 계약 v0.3, 결정 등록부 v0.3, 물리 계약
-v1.3을 사용한다. 명세 기준선 확정과 Django·PostgreSQL Runtime 완료
-판정은 분리한다.
-
-## 5. 검증 명령
+## 6. 검증 명령
 
 저장소 루트에서 실행한다.
 
 ```powershell
-python .\scripts\database\validate_t005_schema.py
+$python = ".\backend\.venv\Scripts\python.exe"
+
+& $python .\scripts\database\validate_t005_schema.py
+& $python .\scripts\database\audit_t005_implementation_readiness.py --require-ready
+& $python .\backend\manage.py makemigrations --check --dry-run
 ```
 
-구조 오류가 없으면 기본 검증은 성공한다. WBS 완료 증거까지 검사하려면
-다음 명령을 사용한다.
+실제 PostgreSQL 연결까지 검사할 때만 환경 변수를 확인한 뒤 다음 명령을
+추가한다.
 
 ```powershell
-python .\scripts\database\validate_t005_schema.py --require-wbs-complete
+& $python .\scripts\database\validate_t005_schema.py --verify-postgresql
 ```
 
-엄격 검사의 exit code는 과거 미정 결정 건수가 아니라 현재 Runtime·PostgreSQL·
-Seed·작성자 외 리뷰 증거와 3계층 식별자 전환 완료 여부에 따라 판정한다.
-
-검증 출력은 `OWNER_BASELINE_CONFIRMED`와 `confirmation_status:
-CONFIRMED`로 설계 기준선 확정을 표시한다. 구현 후 완료 증거는
-`non_author_review`로 기록하며, 기존 `team_review` 입력은 과거 증거
-JSON 호환 alias로만 읽는다. 어느 이름도 명세 작성 허가를 뜻하지 않고,
-구현 결과의 소비자 호환성·실행 재현·비작성자 PR 품질을 확인한다.
-
-## 6. 구현·검증 순서
-
-1. ADR 0010·0011과 물리 계약 v1.3을 해당 Wave의 구현 입력으로 고정한다.
-2. Django Model·Migration을 한 Wave만 구현한다.
-3. `makemigrations --check --dry-run`과 빈 PostgreSQL Migration을
-   즉시 검증한다.
-4. PK·FK·UNIQUE·CHECK·Index와 Seed 참조를 검증한다.
-5. API Serializer·예시와 정합성을 확인한 뒤 다음 Wave로 이동한다.
-6. 소비자 호환성·재현 검토와 비작성자 PR 리뷰는 구현 결과에 대해
-   수행한다. 이는 작업 착수 승인이 아니다.
-
-## 7. 변경 이력
-
-| 버전 | 날짜 | 변경 내용 |
-| --- | --- | --- |
-| v0.1 | 2026-07-25 | ERD v3 Snapshot, 해시·FK 검증과 네 차단 항목 기록 |
-| v0.2 | 2026-07-25 | 확정된 `usage_guidance_status`와 방문 일정 논리 필드를 별도 계약으로 누적하고 코드값·물리 매핑 충돌을 분리 |
-| v0.3 | 2026-07-25 | 과거 Manifest의 stale 차단 ID 4개를 실제 gap ID 6개로 정합화하고, Manifest와 검증기 gap 목록의 자동 일치 검사를 추가 |
-
-> [!NOTE]
-> 아래 v0.3~v0.6의 `PENDING`, exit code와 테스트 수는 OWNER 기준선
-> 확정 전 실행 이력이다. 현재 결정·Runtime·완료 판정으로 재사용하지
-> 않으며, 현재 Branch는 이 문서의 활성 기준 파일과 재실행 결과로
-> 판정한다.
-
-## 8. 2026-07-25 v0.3 누적 정정
-
-v0.1 변경 이력의 “네 차단 항목”은 당시 Manifest 상태를 설명하는 과거
-기록으로 보존한다. v0.3 당시 유효했던 여섯 ID는 현재 Manifest에서도
-`legacy_snapshot_gaps` 정합성용으로 유지한다. 이는 현재 OWNER 차단
-항목이 아니며, 활성 OWNER 기준선의 `gaps`는 0개다.
-
-- 결정 제안서: [ADR 제안 0008](<../../adr/proposals/0008-t005-data-contract-decisions-proposal.md>)
-- 기본 구조 검증: exit code `0`
-- 엄격 완료 검사: 당시 OWNER 결정 입력 전 여섯 gap이 남아 있어 exit
-  code `2`
-
-제안서는 현재 `SUPERSEDED` 보관본이다. 활성 구현 기준은
-`OWNER_BASELINE_ACCEPTED` 상태의 ADR 0008과 물리 계약 v1.0이다.
-
-## 9. 2026-07-26 관할 정정
-
-루트 `tests/**`는 김은진 주관 QA 경로이므로 최지용이 추가했던 T-005 계약 테스트는 철회했다. 8장의 `4 passed`는 당시 실행 이력으로만 읽으며 현재 증거로 사용하지 않는다. `scripts/database/**`는 최지용 주관 경로이므로 기본 검증 `exit 0`과 엄격 완료 게이트 `exit 2`를 현재 재현 기준으로 유지한다.
-
-## 10. 2026-07-26 v0.4 구현 준비도 검증 보강
-
-기존 논리 계약의 `decisions_required`에는 Manifest에 존재하는
-`T005_USAGE_GUIDANCE_PHYSICAL_MAPPING`이 누락돼 있었다. 결정값을
-추가한 것이 아니라 누락된 결정 질문을 `PENDING` 상태로 복원했다.
-이제 Manifest, 논리 계약, 실제 계산 gap의 여섯 ID가 모두 정확히
-일치해야 기본 검증이 통과한다.
-
-| 보강 항목 | v0.4 작성 당시 결과 |
-| --- | --- |
-| Manifest·논리 계약 결정 ID | 정확히 6개, 중복·누락 없음 |
-| 계산 gap·Manifest ID | 정확히 6개, 중복·누락 없음 |
-| Snapshot 기본 검증 | exit `0` |
-| 엄격 완료 게이트 | exit `2`, 6개 결정 대기 |
-| 변조·누락·중복·FK 회귀 테스트 | `9 passed` |
-| Django 구현 준비도 | `NOT_READY` |
-
-구현 준비도 감사는 App 골격이 있는지와 실제 Model·Migration·등록
-상태를 구분한다. 당시 App 골격은 12개였지만 업무 Model 클래스,
-번호 Migration, 등록된 프로젝트 App·Model은 모두 0개다. 따라서
-`makemigrations --check --dry-run`의 `No changes detected`는 T-005
-구현 완료 증거가 아니다.
-
-```powershell
-python .\scripts\database\validate_t005_schema.py
-python .\scripts\database\validate_t005_schema.py --require-wbs-complete
-python .\scripts\database\audit_t005_implementation_readiness.py
-python -m pytest .\backend\tests\unit\database\test_t005_schema_validator.py -q
-```
-
-| 버전 | 날짜 | 변경 내용 |
-| --- | --- | --- |
-| v0.4 | 2026-07-26 | 누락 결정 질문 복원, 세 목록 정확 일치 검증, 9개 회귀 테스트와 구현 준비도 감사 추가 |
-
-## 11. 2026-07-26 v0.5 결정 등록부 보강
-
-여섯 미정 항목의 회신을 문장으로만 전달받아 누락하지 않도록
-`t005_decision_register_v0.1.json`을 추가했다. 이 파일은 immutable
-Snapshot의 일부가 아니라 결정값·결정자·근거·반영 기한을 받는
-가변 입력 문서다. 당시 여섯 항목은 모두 `PENDING`이며 선택값을
-임의로 넣지 않았다.
-
-`ACCEPTED`로 바꾸려면 다음 다섯 필드가 모두 필요하다.
-
-- `selected_option`
-- `decided_by`
-- `decided_at`
-- `rationale`
-- `effective_from`
-
-검증기는 등록부 ID가 Manifest의 여섯 blocker와 정확히 일치하는지,
-중복·미등록 상태가 없는지, `ACCEPTED` 결정의 추적 필드가 모두
-채워졌는지 검사한다. `ACCEPTED` 기록만으로 strict 검사가 통과하지는
-않는다. ERD와
-논리·물리 계약까지 결정대로 바뀌어 실제 gap이 없어져야 한다.
-
-| 검증 항목 | v0.5 작성 당시 결과 |
-| --- | --- |
-| 결정 등록부 ID | 6개, Manifest와 일치 |
-| `ACCEPTED` 결정 | 0개 |
-| 등록부 유효성 | `true` |
-| T-005 대상 회귀 | `12 passed` |
-| 기본 구조 검증 | exit `0` |
-| 엄격 완료 게이트 | exit `2`, 실제 gap 6개 |
-| Django 구현 준비도 | `NOT_READY` |
-
-| 버전 | 날짜 | 변경 내용 |
-| --- | --- | --- |
-| v0.5 | 2026-07-26 | 결정 등록부와 결정 추적 필드 검증, 등록부 변이 테스트를 추가하고 회귀 테스트를 12건으로 확대 |
-
-## 12. 2026-07-26 v0.6 결정 이력·등록부 헤더 재검증
-
-v0.5 이후 작성자 외 교차검토에서 등록부의 최상위 `version`·`status`
-변조와 `REJECTED`·`DEFERRED` 이력 누락 가능성을 추가 확인했다. 기존
-내용은 당시 이력으로 보존하고 다음 검증을 v0.6 작성 시점 기준으로
-삼았다.
-
-- 등록부 버전은 `0.1`만 유효하다.
-- 최상위 상태는 여섯 개별 결정 상태를 집계한 값과 같아야 한다.
-- `ACCEPTED`는 선택값·결정자·결정 시각·근거·반영일이 모두 필요하다.
-- `REJECTED`·`DEFERRED`도 결정자·결정 시각·근거 없이는 유효하지 않다.
-- 당시 `PENDING` 결정에는 임의의 선택값이나 결정자를 넣지 않는다.
-
-| 재검증 | v0.6 작성 당시 결과 |
-| --- | --- |
-| T-005 대상 회귀 | `17 passed` |
-| 전체 백엔드 회귀 | `101 passed` |
-| 기본 구조 검증 | exit `0`, 등록부 `valid=true` |
-| 엄격 완료 게이트 | exit `2`, 실제 gap 6개 |
-| `ACCEPTED` 결정 | 0/6 |
-| Django 구현 준비도 | `NOT_READY` |
-
-| 버전 | 날짜 | 변경 내용 |
-| --- | --- | --- |
-| v0.6 | 2026-07-26 | 등록부 버전·집계 상태와 반려·보류 결정 이력 검증을 추가하고 대상 17건·전체 101건을 재검증 |
-
-## 13. 2026-07-26 v0.7 OWNER 물리 계약 기준선
-
-최지용이 T-005 주담당 산출물을 먼저 완성하고 팀에 공유한다는 실행
-원칙에 따라, 기존 ERD v3 Snapshot은 이력으로 보존하고 구현 입력을
-별도 기준선으로 확정했다.
-
-- 결정 등록부:
-  [`t005_decision_register_v0.1.json`](<t005_decision_register_v0.1.json>)
-- 물리 계약:
-  [`t005_physical_contract_v1.0.json`](<t005_physical_contract_v1.0.json>)
-- 결정 근거:
-  [`ADR-0008`](<../../adr/0008-t005-data-contract-decisions.md>)
-
-| 결정 | OWNER 기준선 |
-| --- | --- |
-| PK | `<ENTITY>-<UUID4_HEX_32>`, 합성 Seed만 `DEMO/SYN` 순번 |
-| 사용 안내 필드 | `usage_guidance_status` |
-| 사용 안내 코드 | `NORMAL`, `PARTIAL_STOP`, `TOTAL_STOP`, `PENDING_CONSULTATION` |
-| legacy 반입 | `USE_ALLOWED`를 `NORMAL`로 변환, dual-write 금지 |
-| 방문 일정 | `preferred_date`, `confirmed_date`, `schedule_status`, `synthetic_technician_id` |
-| 방문 상태 | `FOLLOW_UP_REQUIRED`를 포함한 7개 |
-| Enum·Seed | 계약 YAML↔`TextChoices` 일치, 합성 Seed `update_or_create` |
-
-### 작업·검증 반복
-
-| 회차 | 작업 | 즉시 검증 | 결과 |
-| ---: | --- | --- | --- |
-| 1 | 결정 6건을 `T005_OWNER_BASELINE`으로 기록 | 결정 추적 필드·집계 상태 검사 | 6/6 `ACCEPTED` |
-| 2 | 불변 Snapshot과 별도 물리 override 작성 | Snapshot 해시·override 참조 검사 | 유효 |
-| 3 | 코드 YAML·Inquiry/Visit API Schema 동기화 | T-005 대상 테스트 | `19 passed` |
-| 4 | OWNER 물리 계약까지 strict 판정 확장 | 기본·strict CLI | exit `0` / exit `0` |
-
-`legacy_snapshot_gaps` 6개는 과거 Snapshot과 현재 요구의 차이를
-추적하기 위해 그대로 남긴다. 현재 OWNER 기준선 판정은 별도
-`owner_baseline_gaps` 0개를 사용한다.
-
-아래 테스트 수와 exit code는 v0.7 작성 당시 실행 스냅샷이다.
-
-| v0.7 작성 당시 판정 | 결과 |
-| --- | --- |
-| T-005 대상 | `19 passed` |
-| 기본 구조 검증 | exit `0` |
-| strict 완료 게이트 | exit `0` |
-| OWNER 기준선 gap | 0개 |
-| 공식 WBS 상태 | `진행 중`, PM 상태 반영 전 |
-
-| 버전 | 날짜 | 변경 내용 |
-| --- | --- | --- |
-| v0.7 | 2026-07-26 | 결정 6건·물리 계약·표준 코드·API Schema를 OWNER 기준선으로 확정하고 대상 19건·strict exit 0을 검증 |
-
-## 2026-07-27 v0.8 — WBS 완료 증거 입력
-
-위 v0.7 strict는 OWNER 기준선 내부 정합성의 과거 기록이다. 현재
-`--require-wbs-complete`는 다음 5개 외부 완료 증거가 없으면 exit
-code 2를 반환한다.
-
-1. 구현 결과의 소비 호환성·재현 검토
-2. Django Model·Migration parity
-3. 실제 PostgreSQL Migration
-4. PostgreSQL Seed 2회 멱등성
-5. 작성자 외 리뷰
-
-위 항목은 WBS 최종 완료·공유·PR 품질 게이트이며 최지용의 명세 작성이나
-구현 착수 승인이 아니다. 게이트를 코드의 고정 `False`나 bare boolean으로 두지 않고, 비밀값
-없는 증거 JSON을 `--completion-evidence <상대경로>`로 받는다. 각
-기록에는 status, 실행 command, 검증자, 기록 시각을 포함하고
-PostgreSQL 기록에는 vendor를 명시한다. 최지용의 자기 승인은 외부
-리뷰로 인정하지 않는다.
-
-```powershell
-python .\scripts\database\validate_t005_schema.py `
-  --completion-evidence .\docs\handoffs\<완료-증거파일>.json `
-  --require-wbs-complete
-```
-
-증거 파일에는 비밀번호·DSN·Token·개인정보를 넣지 않는다.
-
-| 버전 | 날짜 | 변경 내용 |
-| --- | --- | --- |
-| v0.8 | 2026-07-27 | 리뷰·Model/Migration·실제 PostgreSQL·Seed 2회 증거 입력을 추가해 영구 고정 게이트 제거 |
-
-## 2026-07-27 v0.9 — 실제 Runtime 검증만 PG·Parity 증거로 인정
-
-v0.8의 completion JSON 입력은 팀 리뷰·Seed·외부 리뷰 이력을 전달하는
-용도로 계속 사용한다. 다만 JSON에
-`django_model_migration_parity=VERIFIED` 또는
-`postgresql_migration=VERIFIED` 문자열을 적는 것만으로는
-Model·Migration parity와 PostgreSQL 게이트를 통과할 수 없다.
-
-두 게이트의 권위 증거는 `--verify-postgresql`이 실제로 실행한 다음
-결과뿐이다.
-
-1. `DJANGO_SETTINGS_MODULE=config.settings.local`을 강제한다.
-2. PostgreSQL 읽기 전용 연결 검사를 실행한다.
-3. 연결 성공 여부와 무관하게
-   `makemigrations --check --dry-run --settings=config.settings.local`을
-   실행한다.
-4. PostgreSQL 연결이 성공한 경우에만
-   `migrate --check --noinput --settings=config.settings.local`을
-   실행한다.
-
-따라서 completion JSON은 실제 Runtime 검증 결과를 대신하거나
-덮어쓸 수 없다. JSON 구조가 잘못되거나 중첩 값의 타입이 올바르지
-않으면 해당 증거는 안전하게 미충족으로 판정한다.
-
-```powershell
-python .\scripts\database\validate_t005_schema.py `
-  --completion-evidence .\docs\handoffs\<완료-증거파일>.json `
-  --verify-postgresql `
-  --require-wbs-complete
-```
-
-### v0.9 작성 당시 실행 결과
-
-| 항목 | 2026-07-27 결과 |
-| --- | --- |
-| PostgreSQL 연결 | `NOT_CONFIGURED` |
-| Django Model·Migration parity | `FAILED` |
-| PostgreSQL `migrate --check` | `NOT_RUN` |
-| completion gap | 5개 |
-| 대상 회귀 | T-005·T-017 집중 테스트 `35 passed` |
-
-당시 5개 completion gap은 소비 호환성 검토, Django Model·Migration parity,
-실제 PostgreSQL Migration, PostgreSQL Seed 2회 멱등성, 작성자 외
-리뷰였다. 당시 환경에서는 PostgreSQL 연결과 local settings 필수
-환경변수가 준비되지 않았으므로 PG·parity 완료로 기록하지 않았다.
-
-| 버전 | 날짜 | 변경 내용 |
-| --- | --- | --- |
-| v0.9 | 2026-07-27 | JSON 자기신고형 PG·parity 통과를 차단하고 실제 local-settings 검증 결과만 완료 게이트에 반영 |
-
-## 2026-07-27 v1.0 — 계약 테이블과 Django 구현 매핑 감사
-
-`scripts/database/audit_t005_implementation_readiness.py`가 32개 계약
-테이블을 다음 세 단계로 나누어 감사하도록 보강됐다.
-
-1. 실제 Django Model 클래스 선언
-2. Django App 등록 후 Model 인식
-3. 번호가 있는 Django Migration의 테이블 생성
-
-Docstring만 있는 Model 골격은 구현으로 계산하지 않는다. 계약에 없는
-Model·Migration도 별도 항목으로 보고하며, 실제 비밀값은 출력하지
-않고 PostgreSQL 필수 키의 구성 여부만 확인한다.
-
-| 구현 매핑 | v1.0 작성 당시 결과 |
-| --- | ---: |
-| 계약 테이블 | 32개 |
-| Model 선언·등록·Migration 모두 확인 | 2개 |
-| 확인된 테이블 | `accounts_user`, `customers_customer_profile` |
-| Model 미구현 | 30개 |
-| Migration 미구현 | 30개 |
-
-이 v1.0 실행 당시 상태는 `NOT_READY`였다. 당시에는 나머지 30개
-Model·Migration, Docker Compose, PostgreSQL 환경이 남아 있었다.
-현재 상태는 Migration 검증 보고서와 같은 Commit에서 실행한 준비도
-감사 결과를 우선한다.
-
-```powershell
-python .\scripts\database\audit_t005_implementation_readiness.py
-python .\scripts\database\audit_t005_implementation_readiness.py `
-  --require-ready
-```
-
-v1.0 작성 당시 Database 단위 테스트는 `36 passed`, strict 실행은
-exit `2`였다. 현재 Branch 판정에는 이 수치를 재사용하지 않는다.
-
-| 버전 | 날짜 | 변경 내용 |
-| --- | --- | --- |
-| v1.0 | 2026-07-27 | 32개 계약 테이블과 Model 선언·App 등록·Migration을 항목별로 대조하는 구현 매핑 감사와 회귀 테스트 추가 |
-
-## 2026-07-28 활성 계약 v0.3·v1.2 — 상태 이력 책임 분리
-
-이전 Logical·Decision v0.2와 Physical v1.1은 역사본으로 보존하고,
-현행 기준을 Logical·Decision v0.3과 Physical v1.2로 올렸다.
-
-- 요청 replay·payload 충돌 권위:
-  `workflow_idempotency_record(actor, operation_id, idempotency_key)`
-- 상태 이력 Key: 대상 FK·`event_code`·Key 비고유 partial index
-- 상태 이력 중복 버전: 대상 FK·`state_version` partial `UNIQUE`
-- 대상 무결성: 정확히 하나의 FK와 `target_type_code` 일치를 명시적
-  PostgreSQL `CHECK` 식 두 개로 검증
-- 완료 게이트: 올바른 `TRANSITIONAL_BRIDGE`와 실제 `COMPLETE` 상태를
-  각각 허용하고 두 상태가 섞인 경우 거부
-- 역할 기준: 계약·물리 override 모두 `CONSULTANT`
-
-2026-07-28 재실행 결과는 T-005 집중 테스트 `40 passed`, 전체 Backend
-테스트 `331 passed`, 구조 오류 0, PostgreSQL 16.14 Migration 검사
-통과다. 통합 상태 이력 Django Model·Migration과 쓰기 가능한 빈
-PostgreSQL Seed 2회 검증은 아직 완료되지 않았으므로 Runtime 완료로
-표시하지 않는다.
-
-## 2026-07-28 v1.1 — 운영체제 독립 Snapshot 해시 검증
-
-기존 Manifest의 텍스트 파일 해시는 CRLF 바이트 기준이어서 LF Checkout
-환경에서 같은 내용이 `T005_ARTIFACT_HASH_MISMATCH`로 판정됐다. 저장소
-최상위 공통 설정을 변경하지 않고 `scripts/database/**` 주관 범위에서
-다음과 같이 정정했다.
-
-- `.md`, `.mmd`, `.sql`, `.json`, `.yaml`, `.yml`은 줄바꿈을 LF로
-  정규화한 뒤 SHA-256을 계산한다.
-- PNG를 포함한 바이너리 파일은 원본 바이트 그대로 SHA-256을 계산한다.
-- `manifest.json`에 `hash_policy`를 기록하고 텍스트 4개 파일의 해시를
-  LF canonical 값으로 갱신했다.
-- LF와 CRLF 입력이 같은 해시가 되는 회귀 테스트를 추가했다.
-
-작업 직후 기본 구조 검증은 `structure_valid=true`, `errors=[]`로
-통과했다. T-005 Validator 단위 테스트는 `37 passed`, 전체 Backend
-회귀는 `333 passed`다. 이는 Snapshot 해시 재현성의 복구 증거이며,
-Manifest의 `completion_claim_allowed=false`와 남은 WBS 완료 게이트를
-해제하지 않는다.
-
-## 2026-07-29 v1.2 Runtime 구현 현황
-
-최신 `main` 기준의 Model 선언·App 등록·Migration 매핑 감사를 다시
-실행했다. 이전 절의 2/32·7/32 수치는 해당 시점의 역사 기록이며 현재
-완료율로 사용하지 않는다.
-
-| 항목 | 현재 결과 |
-| --- | ---: |
-| 계약 테이블 | 32개 |
-| Model·등록·Migration 모두 확인 | 10개 |
-| 미구현 | 22개 |
-| T-005 전체 판정 | `NOT_READY` |
-| Backend 전체 회귀 | `397 passed` |
-| Data 전체 회귀 | `61 passed` |
-
-현재 구현으로 확인된 계약 테이블은 다음과 같다.
-
-- `accounts_user`
-- `catalog_product_model`
-- `customers_customer_profile`
-- `field_service_visit`
-- `subscriptions_care_record`
-- `subscriptions_customer_subscription`
-- `support_consultation`
-- `support_followup_confirmation`
-- `support_inquiry`
-- `support_inquiry_symptom`
-
-Crosswalk v2의 17개 Backend Source·12개 Fixture Mapping과 PostgreSQL
-Smoke 37행·Full 367행 적재는 별도 합성 Handoff 범위에서
-`DB_FULL_VERIFIED`다. 이는 T-005 32개 테이블 전체 구현을 뜻하지 않는다.
-실행 명령·DB명·Replay·Hash 증거는
-[PostgreSQL 합성 Handoff Runtime 검증·인계서](../../individual/jiyong/manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md)를
-따른다.
-
-미구현 22개는 한 번에 추가하지 않는다.
-
-| 다음 Wave | 수량 | 착수 조건 |
-| --- | ---: | --- |
-| 공통 코드·방문 결과·문의·안내·문진 | 11 | 현재 후보 병합 후, 상태 이력 충돌은 PM 결정 |
-| AI 운영·Knowledge·Evidence | 11 | 이동윤 AI Runtime·Schema 인계 후 |
-
-Runtime에 존재하지만 현재 32개 계약 밖인 `audit_event`,
-`operations_synthetic_import_batch`, `operations_synthetic_import_item`,
-`workflow_idempotency_record`, `workflow_transition_history`는 PM이
-계약 테이블 또는 지원 Runtime 테이블로 분류하기 전까지 T-005 완료
-개수에 더하지 않는다.
-
-## 2026-07-30 v1.3 공통코드 Runtime Wave
-
-앞선 10/32 상태에서 Wave 1의 공통코드 두 테이블을 독립 Django App으로
-구현했다. 아래 수치는 이 변경 단위의 `LOCAL_VERIFIED` 결과이며 담당
-Branch Push와 PM `main` 병합 전에는 팀 기준선이 아니다.
-
-| 항목 | 현재 결과 |
-| --- | ---: |
-| 계약 테이블 | 32개 |
-| Model·등록·Migration 모두 확인 | 12개 |
-| 미구현 | 20개 |
-| T-005 전체 판정 | `NOT_READY` |
-| 관련 집중 검증 | `63 passed` |
-| Backend 전체 회귀 | `418 passed` |
-| 빈 PostgreSQL Migration | 16.14에서 전체 적용 성공 |
-| 공통코드 Seed | 10 Group·43 Code, 2회차 신규 0 |
-
-이번에 추가한 테이블은 다음 두 개다.
-
-- `common_code_group`
-- `common_code`
-
-`CommonCodeGroup`은 계약의 자연키 예외에 따라 `group_code`를 PK로
-유지하고 변경·물리 삭제를 차단한다. `CommonCode`는 활성 Physical
-Contract의 식별자 정책에 따라 내부 `bigint id`와 공개
-`uuid public_id`를 분리했다. UUID PK로 먼저 검증했던 로컬 초안은
-공유 전에 두 Migration만 되돌린 뒤 수정했으며, 빈 PostgreSQL과 기본
-개발 DB에서 최종 Migration을 처음부터 다시 적용했다.
-
-공통코드 Seed는 확정 10개 Group과 43개 Code만 Upsert한다. 두 번째
-실행은 Group `created=0, updated=10`, Code
-`created=0, updated=43, deactivated=0`으로 비의도 중복이 없었다.
-계약에서 제거된 기존 관리 Code는 삭제하지 않고 비활성화한다.
-
-다음 항목은 자동 변환하지 않고 차단 상태로 남긴다.
-
-- `risk-levels.yaml`의 소문자 `general/caution/danger`와 대문자 DB
-  CHECK의 충돌
-- 확정된 `common_code` Group Mapping이 없는 `ai-stages.yaml`
-- 소문자 코드 계약, 빈 계약과 deprecated 포인터
-
-구현·Migration·Seed·재현 명령과 팀원별 인계는
-[공통코드 Registry 구현·재현 가이드](../../individual/jiyong/technical/backend/t005_common_code_registry_implementation.md)를
-따른다. `field_service_visit_result`는 기존 Visit 결과 필드,
-CareRecord Bridge와 상태·Backfill 의존성이 있어 이번 Wave에 섞지
-않았다.
-
-## 2026-07-30 v1.4 문진 세션 Runtime Wave 1A
-
-공통코드 Wave 다음 작은 단위로 `support_questionnaire_session`
-한 테이블의 Django Model·App 등록·번호 Migration을 구현했다.
-아래 수치는 `jiyong` Branch의 `LOCAL_VERIFIED` 결과이며 독립 QA와
-PM `main` 병합 전에는 팀 공용 완료 기준선이 아니다.
-
-| 항목 | 현재 결과 |
-| --- | ---: |
-| 계약 테이블 | 32개 |
-| Model·등록·Migration 모두 확인 | 13개 |
-| 미구현 | 19개 |
-| T-005 전체 판정 | `NOT_READY` |
-| 문진·T-005 집중 검증 | `50 passed` |
-| Backend 전체 회귀 | `426 passed` |
-| Data 전체 회귀 | `67 passed`, subtest 4개 통과 |
-| 빈 PostgreSQL Migration | 16.14에서 전체 적용 성공 |
-| PostgreSQL JSON object CHECK | ORM 우회 update 거부 확인 |
-| 기존 Seed 5종 | 2회차 신규 0, 문진 행 0 |
-
-활성 Physical Contract v1.2에 따라 문진 세션은 내부 `bigint id`,
-공개 `uuid public_id`, 업무 식별자 `session_no`를 분리했다.
-`answers_payload`는 Model 검증에 더해 PostgreSQL
-`ck_questionnaire_answers_object`로 최상위 JSON object를 강제한다.
-
-이번 매핑 증가는 모든 문진 계약이 끝났다는 뜻이 아니다. 다음 항목은
-별도 Wave가 필요하다.
-
-- `(inquiry_id, subscription_id)` 복합 FK와 선행
-  `support_inquiry(id, subscription_id)` UNIQUE
-- `session_no` 서버 생성 규칙과 API DTO 정합화
-- 문진 Service·API·상태 전이·멱등 처리
-- `QUESTIONNAIRE_TYPE`, `QUESTIONNAIRE_STATUS` 계약·Seed
-- Inquiry·Workflow 공개 UUID Bridge Backfill·내부 FK 전환
-
-구현 파일, PostgreSQL 실측, Data·Seed 경계와 협업 인계는
-[Wave 1A 문진 세션 구현·재현 가이드](../../individual/jiyong/technical/backend/t005_wave_1a_support_questionnaire_session_implementation.md)를
-따른다.
-
-## 2026-07-30 v1.5 문진·문의 동일 구독 제약 Wave 1B
-
-Wave 1A의 알려진 P0였던 문진과 문의의 동일 구독 무결성을 별도 증분
-Migration으로 보강했다. 아래 수치는 `jiyong` Branch의
-`LOCAL_VERIFIED` 결과이며 독립 QA와 PM `main` 병합 전에는 팀 공용
-완료 기준선이 아니다.
-
-| 항목 | 현재 결과 |
-| --- | ---: |
-| 계약 테이블 | 32개 |
-| Model·등록·Migration 모두 확인 | 13개 |
-| 미구현 | 19개 |
-| T-005 전체 판정 | `NOT_READY` |
-| 부모 제약 | `ux_inquiry_id_subscription` |
-| 자식 제약 | `fk_questionnaire_inquiry_subscription` |
-| PostgreSQL 전용 통합 검증 | `1 passed` |
-| Backend 전체 회귀 | `428 passed`, PostgreSQL 전용 1개 skip |
-| Data 전체 회귀 | `67 passed` |
-| 기존 Seed 5종 | 2회차 신규 0, 문진 행 0 |
-
-`support_inquiry(id, subscription_id)`에 복합 UNIQUE를 추가하고,
-`support_questionnaire_session(inquiry_id, subscription_id)`이 같은
-부모 조합만 참조하도록 `MATCH SIMPLE ON DELETE RESTRICT` 복합 FK를
-추가했다. 빈 PostgreSQL 16.14에서 두 제약의 catalog와 validated
-상태를 확인하고, 정상 연결·미연결은 허용하면서 ORM·raw SQL·부모
-update를 통한 교차 구독 변경은 정확한 복합 FK에서 거부됨을 검증했다.
-
-이번 변경은 제약 보강이므로 구현 테이블 수는 13개로 유지한다. Inquiry
-Model 변경으로 Data Crosswalk의 source hash가 stale이 된 연쇄 오류는
-공식 hash refresh와 Pipeline QA 재생성으로 정정했고, Fixture·Schema·
-레코드·Importer 로직은 변경하지 않았다.
-
-구현 순서, rollback, 실제 제약명, 쓰기 우회 검증, Data 연쇄 보정과
-협업 인계는 [Wave 1B 복합 FK 구현·재현 가이드](../../individual/jiyong/technical/backend/t005_wave_1b_questionnaire_inquiry_composite_fk.md)를
-따른다. `session_no` 생성 규칙, 문진 API·상태 전이·공통코드·Fixture와
-나머지 19개 계약 테이블은 별도 Wave로 남아 있다.
-
-## 2026-07-30 v1.6 — 32/32 Runtime 로컬 기술 검증 완료
-
-Wave 1B 이후 Accounts 식별자/JWT Gate와 잔여 의존성 Wave를
-작업·검증 순서로 모두 구현했다. 앞 절의 13/32·잔여 19개 수치는
-해당 시점의 역사 기록이며 현재 완료율로 사용하지 않는다.
-
-| 항목 | 현재 결과 |
-| --- | ---: |
-| 계약 테이블 | 32개 |
-| Model·App Registry·Migration 모두 확인 | **32개** |
-| 미구현 | **0개** |
-| T-005 Auditor | `READY`, blocker 0 |
-| 승인된 계약 외 지원 Runtime | 4개 |
-| 빈 PostgreSQL | 전체 Migration·Seed·Importer PASS |
-| SQLite 전체 회귀 | `740 passed, 11 skipped` |
-| PostgreSQL 전체 회귀 | `751 passed` |
-| Data 전체 회귀 | `67 tests`, `OK` |
-
-최종 검증 DB에서는 5종 Seed를 두 번 실행해 두 번째 실행의 비의도
-신규 생성을 0으로 확인했다. 합성 Handoff 367건은 두 번 적재했으며
-1차 `CREATED 355`·`PROJECTED 12`, 2차 `UNCHANGED 355`·
-`PROJECTED 12`로 기록됐다. `knowledge_chunk_embedding.embedding`은
-PostgreSQL `vector(1024)`이고 pgvector 0.8.6에서 Exact Search를
-검증했으며 ANN Index는 생성하지 않았다.
-
-최종 격리 DB 검증 뒤에는 기본 `watercare`를 custom-format으로
-백업하고 미적용 Migration 24개를 모두 적용했다. 과거 Demo Profile의
-`SYN-CUSTOMER-001` 업무키 때문에 발생한 User OneToOne 충돌은
-`seed_demo_accounts`를 User 기준 Upsert로 보강해 해결했다. 기본 DB도
-5종 Seed 2회와 367건 Import·Replay, Auditor·Validator·Health·
-Demo Login을 통과했다.
-
-이 Runtime 증거는 불변 물리 계약을 자동 갱신하지 않는다. 현재
-완료 주장 차단 상태는 다음 3개 공식 Gate가 남아 있기 때문이다.
-
-- `non_author_review_confirmed`
-- `three_layer_identifier_runtime_complete`
-- `external_review_verified`
-
-구현자는 완료 Evidence를 제공하되 비작성자 리뷰나 계약 담당자 승인을
-대신 기록하지 않는다. 전체 작업·오류 해결·PostgreSQL 건수·직접 실행
-결과·인계는
-[최종 검증 보고서](../../individual/jiyong/technical/backend/t005_final_32_table_postgresql_seed_importer_validation_report.md)를
-따른다.
+`--require-wbs-complete`는 공식 완료 Evidence까지 검사한다. 작성자 로컬
+기술 완료만으로 비작성자 리뷰나 PM 승인을 대신 기록하지 않는다.
+
+## 7. 변경·검증 순서
+
+1. 활성 ADR·Logical·Decision·Physical Contract를 구현 입력으로 고정한다.
+2. 한 작업 단위의 Model·Migration만 변경한다.
+3. `makemigrations --check --dry-run`과 빈 PostgreSQL Migration을 즉시
+   검증한다.
+4. PK·FK·UNIQUE·CHECK·Index와 계약 코드·Seed를 검증한다.
+5. Seed와 격리 Importer는 두 번 실행해 두 번째 실행의 비의도 신규 생성을
+   허용하지 않는다.
+6. API Serializer·OpenAPI·예시와 식별자 의미를 대조한다.
+7. 집중 테스트 후 SQLite·PostgreSQL·Data 회귀를 실행한다.
+8. 실행 증거와 변경 이력을 갱신한 뒤 비작성자에게 재현을 요청한다.
+
+기본 `waterbridge`에는 합성 Handoff Importer를 실행하지 않는다.
+Importer는 새 빈 격리 DB에서 Migration 후 실행·Replay하고 검증 뒤
+격리 DB를 제거한다.
+
+## 8. 완료 경계
+
+현재 `32/32`와 Auditor `READY`는 작성자 환경의 기술 검증 결과다.
+공식 T-005 완료에는 다음 증거가 모두 필요하다.
+
+- 동일 후보 SHA의 비작성자 독립 PostgreSQL 재현
+- 내부 PK·공개 UUID·업무 코드와 UUID-only JWT 계약 검토
+- Web·Mobile·AI 소비 호환성 확인
+- PM의 완료 승인과 `main` 병합 SHA
+
+후보 SHA나 활성 계약이 바뀌면 빈 PostgreSQL·Seed·Importer·전체 회귀를
+같은 SHA에서 다시 실행한다.
+
+## 9. 이력 관리
+
+과거 v0.1~v1.6 서술과 Wave별 세부 실행 기록은
+[T-005 테이블 구현·변경 이력](../../individual/jiyong/technical/backend/20260730_t005_테이블_구현_및_변경_이력.md)으로
+통합했다. 이 README에는 현재 계약·검증 방법·완료 경계만 유지한다.
+
+정확한 과거 원문은 Git 이력에서 확인하며, 이전 계약 JSON·ERD·Evidence
+파일은 감사 추적을 위해 그대로 보존한다.

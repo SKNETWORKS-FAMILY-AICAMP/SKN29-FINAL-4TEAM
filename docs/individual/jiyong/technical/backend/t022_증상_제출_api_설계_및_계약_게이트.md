@@ -1,4 +1,4 @@
-# T-022 `SUBMIT_SYMPTOM` 첫 수직 Slice 안전 설계
+# T-022 증상 제출 API 설계 및 계약 게이트
 
 > 기준일: 2026-07-31
 > 작성·설계 책임: 최지용(Backend·Database)
@@ -57,6 +57,31 @@ Slice A만 끝낸 상태를 T-022 전체 완료나 AI 연동 완료로 표시하
 [공통 개발 규칙](../../../../planning/md/공통%20개발%20규칙.md)에 따라
 클라이언트는 다음 상태를 직접 지정하지 않고 행동 API를 호출한다. Backend가
 역할·소유권·현재 상태·`state_version`·멱등성을 다시 검사한다.
+
+### 2.1 기존 T-022 준비도에서 승계한 유효 기준
+
+2026-07-27 착수 전 준비도 문서의 Model·Migration·Route `0개` 판정은
+현재 사실이 아니므로 폐기한다. 다음 계약·구현 원칙만 이 설계서에
+승계한다.
+
+| 범위 | 현재 경계 | 이 설계에서 유지할 기준 |
+| --- | --- | --- |
+| `POST /api/v1/inquiries` | Runtime 구현 | 자연어 원문과 선택 입력 `representative_symptom_code`를 저장하고 공개 UUID를 반환 |
+| `PATCH /api/v1/inquiries/{id}/questionnaire` | OpenAPI-only | 동일 `inquiry_id`에 문진을 누적하고 고객 본인 범위·Transaction을 적용 |
+| `POST /api/v1/inquiries/{id}/action-results` | OpenAPI-only | 동일 `inquiry_id`에 자가조치 결과를 누적하고 실패 시 반쪽 데이터를 남기지 않음 |
+| `submitSymptom` | State 계약에 존재, OpenAPI·Runtime 미구현 | 본 문서의 Slice A 계약 Gate를 먼저 닫은 뒤 행동별 Endpoint로 구현 |
+
+대표 증상은 선택 단수 필드 `representative_symptom_code`가 기준이다.
+과거 후보였던 복수 `symptom_codes`를 별도 표준처럼 추가하지 않는다.
+세 문의 API와 `submitSymptom`은 모두 다음 공통 경계를 지킨다.
+
+- 다른 고객의 문의는 존재 여부를 숨기는 404로 처리한다.
+- 문진·자가조치·상태 이력은 같은 문의 Public UUID 아래 누적한다.
+- 저장 실패 시 Transaction 전체를 Rollback하고 기존 고객 입력을
+  보존한다.
+- API 완료는 Model·번호 Migration·Service·Route뿐 아니라 실제
+  PostgreSQL 수직 Smoke까지 통과해야 한다.
+- 제품 차단 조건에서는 AI·RAG 호출을 실행하지 않는다.
 
 ## 3. 검증된 사실
 

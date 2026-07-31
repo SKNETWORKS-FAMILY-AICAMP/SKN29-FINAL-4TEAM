@@ -1,12 +1,15 @@
-# WaterCare Database Documentation
+# WaterCare 데이터베이스 문서 안내
 
-> 상태: **OWNER_CONFIRMED DB DESIGN BASELINE — Runtime 구현과 분리**
-> 설계 기준: `T-005 Physical Contract v1.2` / 기준일: 2026-07-28
-> 구현 경계: 설계 기준선은 확정됐으며 Django Model·Migration은 현재
-> `12/32` 테이블까지 구현됐고 20개가 남았다. 공통코드 2개 테이블은
-> 2026-07-30 `LOCAL_VERIFIED` 상태이며, 담당 Branch Push와 PM 병합
-> 전에는 팀 기준선이 아니다. Accounts는 `public_id(UUID)`를 추가하는
-> 전환 브리지 단계로, 전체 내부 BigInt PK 전환 완료를 뜻하지 않는다.
+> 상태: **T-005 OWNER 기준선 확정·Runtime 32/32 로컬 기술 검증 완료·공식 리뷰 대기**
+>
+> 현행 설계 기준: `T-005 Physical Contract v1.3`
+>
+> 현행 실행 기준: PostgreSQL `waterbridge` 데이터베이스의 `public` Schema
+
+설계 계약과 Django Runtime은 모두 32개 대상 테이블을 포함한다.
+Model·App Registry·Migration·빈 PostgreSQL·Seed·격리 Importer 검증은
+완료됐지만, 비작성자 독립 재현·외부 소비 검토·PM 완료 승인은 별도
+Gate로 남아 있다. 따라서 로컬 기술 완료와 공식 WBS 완료를 구분한다.
 
 ## 문서 구성
 
@@ -16,8 +19,9 @@
 | [WaterCare 테이블 명세](watercare_table_dictionary.md) | 32개 테이블과 526개 필드의 역사적 v0.5 공개 스냅샷 |
 | [대화형 ERD](erd/watercare_erd.html) | 역사적 v0.5 테이블·PK·FK 관계 탐색 |
 | [ERD 정적 미리보기](erd/watercare_erd.png) | 역사적 v0.5 관계도 화면 |
-| [DB 스키마 개발·인계 가이드](../individual/jiyong/technical/backend/database_schema_handover_guide.md) | Model·Migration·Seed·검증과 역할별 인계 절차 |
-| [공통코드 Registry 구현 가이드](../individual/jiyong/technical/backend/t005_common_code_registry_implementation.md) | `common_code_group`·`common_code` Migration, Seed 2회와 차단 계약 |
+| [T-005 데이터베이스 스키마 변경 실행 가이드](../individual/jiyong/technical/backend/t005_데이터베이스_스키마_변경_실행_가이드.md) | Model·Migration·Seed·Importer·Auditor 검증과 역할별 인계 절차 |
+| [T-005 WaterBridge PostgreSQL 통합 검증 보고서](../individual/jiyong/technical/backend/20260731_t005_워터브리지_postgresql_통합_검증_보고서.md) | 32/32, Backup·Restore, Seed·Importer, SQLite·PostgreSQL 회귀 증거 |
+| [T-005 테이블 구현·변경 이력](../individual/jiyong/technical/backend/20260730_t005_테이블_구현_및_변경_이력.md) | Wave별 Model·Migration·제약·당시 검증과 최종 상태 |
 
 [![WaterCare ERD 정적 미리보기](erd/watercare_erd.png)](erd/watercare_erd.html)
 
@@ -35,7 +39,7 @@
    [ADR-0011](../adr/0011-t005-status-history-idempotency-scope.md),
    [Logical Contract v0.3](t-005/t005_logical_contract_v0.3.json),
    [Decision Register v0.3](t-005/t005_decision_register_v0.3.json),
-   [Physical Contract v1.2](t-005/t005_physical_contract_v1.2.json)을
+   [Physical Contract v1.3](t-005/t005_physical_contract_v1.3.json)을
    우선한다.
 2. 서비스 간 필드·코드 교환은 현재 `contracts/**`의 기계 계약을
    함께 적용한다.
@@ -43,15 +47,15 @@
    검증 결과로 판정한다.
 4. 이 디렉터리의 공개 데이터 사전·ERD는 당시 설계를 보존한 역사
    스냅샷이며, 현행 override나 Runtime 완료 증거로 사용하지 않는다.
-5. Logical·Decision v0.2와 Physical v1.1은 이전 세대의 역사본이다.
-   신규 결정은 활성 v0.3·v1.2에만 누적한다.
+5. Logical·Decision v0.2와 Physical v1.0~v1.2는 이전 세대의
+   역사본이다. 신규 결정과 완료 경계는 활성 v0.3·v1.3에만 누적한다.
 
 ## 열람 방법
 
 - 빠른 관계 파악: PNG 미리보기
 - 검색·전체 필드 확인: HTML을 내려받아 브라우저에서 열거나 GitHub Pages로 게시
 - PR 리뷰·필드 검색: Markdown 테이블 명세
-- 구현 변경: DB 스키마 개발·인계 가이드의 순서에 따라 Migration·문서·테스트를 함께 갱신
+- 구현 변경: T-005 데이터베이스 스키마 변경 실행 가이드의 순서에 따라 Migration·문서·테스트를 함께 갱신
 
 ## 주의사항
 

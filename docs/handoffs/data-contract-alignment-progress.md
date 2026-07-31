@@ -195,5 +195,5 @@ PostgreSQL에서 smoke 37건과 full 367건을
 현행 기계 근거는
 [Backend Import Crosswalk](../../data/config/handoff/backend_import_crosswalk.json),
 실행·안전·재현 절차는
-[PostgreSQL 합성 Handoff Runtime 검증·인계서](../individual/jiyong/manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md)를
+[합성 데이터 Schema·Importer·PostgreSQL 검증 가이드](../individual/jiyong/technical/backend/합성_데이터_스키마_적재기_postgresql_검증_가이드.md)를
 따른다.
