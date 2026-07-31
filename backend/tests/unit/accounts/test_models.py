@@ -12,7 +12,7 @@ from apps.accounts.models import CustomerProfile, User
 pytestmark = pytest.mark.django_db
 
 
-def test_user_manager_hashes_password_and_uses_domain_id():
+def test_user_manager_hashes_password_and_uses_internal_integer_id():
     user = User.objects.create_user(
         username="DEMO-CUSTOMER-101",
         password="not-a-real-password",
@@ -20,7 +20,8 @@ def test_user_manager_hashes_password_and_uses_domain_id():
         role_code=User.Role.CUSTOMER,
     )
 
-    assert user.pk.startswith("USR-")
+    assert isinstance(user.pk, int)
+    assert user.legacy_id is None
     assert isinstance(user.public_id, UUID)
     assert user.check_password("not-a-real-password") is True
     assert user.password != "not-a-real-password"
@@ -51,7 +52,6 @@ def test_customer_profile_rejects_non_customer_and_protects_user():
         employee_no="DEMO-EMP-103",
     )
     invalid_profile = CustomerProfile(
-        id="DEMO-CUS-103",
         user=technician,
         customer_no="SYN-CUSTOMER-103",
         customer_name="잘못된 프로필",
@@ -61,18 +61,18 @@ def test_customer_profile_rejects_non_customer_and_protects_user():
         invalid_profile.full_clean()
 
     customer = User.objects.create_user(
-        id="DEMO-USR-104",
         username="DEMO-CUSTOMER-104",
         full_name="합성 고객 104",
         role_code=User.Role.CUSTOMER,
     )
     profile = CustomerProfile.objects.create(
-        id="DEMO-CUS-104",
         user=customer,
         customer_no="SYN-CUSTOMER-104",
         customer_name="합성 고객 104",
     )
     assert isinstance(profile.public_id, UUID)
+    assert isinstance(profile.pk, int)
+    assert profile.legacy_id is None
     assert profile.public_id != customer.public_id
 
     with pytest.raises(ProtectedError):

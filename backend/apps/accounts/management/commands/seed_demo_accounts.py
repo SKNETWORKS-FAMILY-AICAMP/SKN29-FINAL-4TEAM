@@ -33,6 +33,8 @@ DEMO_USERS = (
     },
 )
 
+DEMO_CUSTOMER_NO = "DEMO-CUSTOMER-001"
+
 
 class Command(BaseCommand):
     help = "T-017 합성 Demo 계정 4개를 update_or_create합니다."
@@ -62,9 +64,9 @@ class Command(BaseCommand):
 
         customer = User.objects.get(username="DEMO-CUSTOMER-001")
         CustomerProfile.objects.update_or_create(
-            customer_no="SYN-CUSTOMER-001",
+            user=customer,
             defaults={
-                "user": customer,
+                "customer_no": DEMO_CUSTOMER_NO,
                 "customer_name": "합성 고객 001",
                 "phone": "",
                 "postal_code": "",
