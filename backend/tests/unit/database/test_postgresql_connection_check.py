@@ -111,6 +111,8 @@ def test_success_uses_read_only_option_and_read_only_queries(
 ):
     query_values = {
         "SELECT 1": 1,
+        "SELECT current_database()": "waterbridge",
+        "SELECT current_schema()": "public",
         "SHOW server_version": "17.5",
         "SHOW server_version_num": "170005",
         "SHOW TimeZone": "Asia/Seoul",
@@ -130,6 +132,8 @@ def test_success_uses_read_only_option_and_read_only_queries(
         "status": "CONNECTED",
         "vendor": "PostgreSQL",
         "select_one": 1,
+        "current_database": "waterbridge",
+        "current_schema": "public",
         "server_version": "17.5",
         "server_version_num": "170005",
         "database_timezone": "Asia/Seoul",

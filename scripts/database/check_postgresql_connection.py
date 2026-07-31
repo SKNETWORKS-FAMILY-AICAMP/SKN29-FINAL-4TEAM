@@ -29,6 +29,8 @@ REQUIRED_ENV_KEYS = (
 )
 READ_ONLY_QUERIES = (
     ("select_one", "SELECT 1"),
+    ("current_database", "SELECT current_database()"),
+    ("current_schema", "SELECT current_schema()"),
     ("server_version", "SHOW server_version"),
     ("server_version_num", "SHOW server_version_num"),
     ("database_timezone", "SHOW TimeZone"),
