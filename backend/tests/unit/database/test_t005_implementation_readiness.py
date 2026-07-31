@@ -341,7 +341,7 @@ def test_repository_audit_reports_ready_when_all_32_layers_match(
         "CONFIRMED"
     )
     assert result["evidence"]["contract"]["completion_review_status"] == (
-        "PENDING"
+        "NON_AUTHOR_REVIEW_PENDING"
     )
     assert result["blockers"] == []
 

@@ -1,0 +1,419 @@
+{
+  "contract_version": "1.3.0",
+  "status": "OWNER_BASELINE",
+  "confirmation_status": "CONFIRMED",
+  "owner": "최지용",
+  "effective_from": "2026-07-31",
+  "supersedes": "t005_physical_contract_v1.2.json",
+  "completion_review_status": "NON_AUTHOR_REVIEW_PENDING",
+  "completion_review_purpose": "32개 계약 테이블, Accounts 정수 PK, 공개 UUID JWT, 빈 PostgreSQL Migration, Seed 2회, Importer Replay 및 PostgreSQL 회귀의 작성자 격리 기술 검증을 반영한다. 비작성자 독립 재현과 PM 계약 승인 전에는 공식 완료를 주장하지 않는다.",
+  "purpose": "T-005 32개 테이블의 구현 완료 Runtime 기준과 내부 bigint PK·공개 UUID·업무코드 분리, 상태 이력 무결성, 멱등성 책임, PostgreSQL·pgvector 물리 계약을 정의한다.",
+  "inherits": {
+    "snapshot": "watercare_schema_v3.json",
+    "policy": "아래 override가 우선하며 나머지 테이블 관계와 필드는 v3 Snapshot을 설계 참고로 유지한다.",
+    "immutable_snapshot": true
+  },
+  "identifier_policy": {
+    "option": "INTERNAL_BIGINT_PK_PUBLIC_UUID_BUSINESS_CODE",
+    "internal_primary_key": {
+      "field": "id",
+      "database_type": "bigint",
+      "auto_generated": true,
+      "api_exposed": false
+    },
+    "public_identifier": {
+      "field": "public_id",
+      "database_type": "uuid",
+      "generated_by": "Django uuid.uuid4",
+      "nullable": false,
+      "unique": true,
+      "api_exposed": true
+    },
+    "business_identifier": {
+      "database_type": "varchar",
+      "separate_from_primary_key": true,
+      "synthetic_prefixes": [
+        "DEMO-",
+        "SYN-"
+      ],
+      "examples": [
+        "DEMO-INQ-002",
+        "SYN-CUSTOMER-001"
+      ]
+    },
+    "compatibility_bridge": {
+      "status": "COMPLETE",
+      "accounts_user": {
+        "current_primary_key": "bigint",
+        "public_id_required": true,
+        "jwt_subject": "public_id",
+        "legacy_subject_fallback": false,
+        "legacy_import_field": "legacy_id"
+      },
+      "customers_customer_profile": {
+        "current_primary_key": "bigint",
+        "public_id_required": true,
+        "business_identifier": "customer_no",
+        "legacy_import_field": "legacy_id"
+      },
+      "new_major_tables": "USE_TARGET_POLICY_IMMEDIATELY"
+    }
+  },
+  "implementation_gate": {
+    "status": "TECHNICALLY_COMPLETE_REVIEW_PENDING",
+    "completion_claim_allowed": false,
+    "incomplete_items": [],
+    "pending_review_gates": [
+      "non_author_review_confirmed",
+      "external_review_verified",
+      "pm_contract_approval"
+    ]
+  },
+  "physical_overrides": {
+    "accounts_user": {
+      "public_id": {
+        "type": "uuid",
+        "nullable": false,
+        "unique": true,
+        "api_exposed": true
+      },
+      "role_code": {
+        "type": "varchar(40)",
+        "nullable": false,
+        "codes": [
+          "CUSTOMER",
+          "CONSULTANT",
+          "TECHNICIAN",
+          "OPERATOR"
+        ],
+        "code_contract": "../../../contracts/codes/user-roles.yaml"
+      },
+      "id": {
+        "type": "bigint",
+        "auto_generated": true,
+        "primary_key": true,
+        "api_exposed": false
+      },
+      "legacy_id": {
+        "type": "varchar(48)",
+        "nullable": true,
+        "unique": true,
+        "editable": false,
+        "import_compatibility_only": true,
+        "api_exposed": false
+      }
+    },
+    "customers_customer_profile": {
+      "public_id": {
+        "type": "uuid",
+        "nullable": false,
+        "unique": true,
+        "api_exposed": true
+      },
+      "customer_no": {
+        "type": "varchar(40)",
+        "nullable": false,
+        "unique": true,
+        "business_identifier": true
+      },
+      "id": {
+        "type": "bigint",
+        "auto_generated": true,
+        "primary_key": true,
+        "api_exposed": false
+      },
+      "legacy_id": {
+        "type": "varchar(48)",
+        "nullable": true,
+        "unique": true,
+        "editable": false,
+        "import_compatibility_only": true,
+        "api_exposed": false
+      }
+    },
+    "support_inquiry": {
+      "id": {
+        "type": "bigint",
+        "auto_generated": true,
+        "primary_key": true,
+        "api_exposed": false
+      },
+      "public_id": {
+        "type": "uuid",
+        "nullable": false,
+        "unique": true,
+        "api_exposed": true
+      },
+      "inquiry_code": {
+        "type": "varchar(50)",
+        "nullable": false,
+        "unique": true,
+        "business_identifier": true,
+        "legacy_field": "inquiry_no"
+      },
+      "usage_guidance_status": {
+        "type": "varchar(32)",
+        "nullable": true,
+        "code_contract": "../../../contracts/codes/usage-guidance-statuses.yaml"
+      },
+      "usage_guidance_message": {
+        "type": "text",
+        "nullable": true
+      },
+      "restricted_functions": {
+        "type": "json",
+        "nullable": false,
+        "default": []
+      },
+      "evidence": {
+        "type": "json",
+        "nullable": false,
+        "default": []
+      },
+      "next_action": {
+        "type": "varchar(64)",
+        "nullable": true
+      },
+      "requires_consultation": {
+        "type": "boolean",
+        "nullable": false,
+        "default": false
+      }
+    },
+    "support_inquiry_status_history": {
+      "target_integrity": {
+        "target_type_field": "target_type_code",
+        "target_fks": {
+          "QUESTIONNAIRE": "questionnaire_session_id",
+          "INQUIRY": "inquiry_id",
+          "CONSULTATION": "consultation_id",
+          "VISIT": "visit_id"
+        },
+        "check_constraints": [
+          {
+            "name": "ck_status_history_exactly_one_target",
+            "expression": "num_nonnulls(questionnaire_session_id, inquiry_id, consultation_id, visit_id) = 1"
+          },
+          {
+            "name": "ck_status_history_target_type_matches_fk",
+            "expression": "(target_type_code = 'QUESTIONNAIRE' AND questionnaire_session_id IS NOT NULL AND inquiry_id IS NULL AND consultation_id IS NULL AND visit_id IS NULL) OR (target_type_code = 'INQUIRY' AND questionnaire_session_id IS NULL AND inquiry_id IS NOT NULL AND consultation_id IS NULL AND visit_id IS NULL) OR (target_type_code = 'CONSULTATION' AND questionnaire_session_id IS NULL AND inquiry_id IS NULL AND consultation_id IS NOT NULL AND visit_id IS NULL) OR (target_type_code = 'VISIT' AND questionnaire_session_id IS NULL AND inquiry_id IS NULL AND consultation_id IS NULL AND visit_id IS NOT NULL)"
+          }
+        ]
+      },
+      "idempotency_key": {
+        "type": "varchar(128)",
+        "nullable": false,
+        "global_unique": false,
+        "history_unique": false,
+        "request_scope_owner": "workflow_idempotency_record",
+        "request_scope_fields": [
+          "actor",
+          "operation_id",
+          "idempotency_key"
+        ],
+        "trace_only": true
+      },
+      "postgresql_partial_idempotency_indexes": [
+        {
+          "name": "ix_status_history_questionnaire_event_idempotency",
+          "target_type_code": "QUESTIONNAIRE",
+          "target_fk": "questionnaire_session_id",
+          "fields": [
+            "questionnaire_session_id",
+            "event_code",
+            "idempotency_key"
+          ],
+          "predicate": "target_type_code = 'QUESTIONNAIRE'",
+          "unique": false
+        },
+        {
+          "name": "ix_status_history_inquiry_event_idempotency",
+          "target_type_code": "INQUIRY",
+          "target_fk": "inquiry_id",
+          "fields": [
+            "inquiry_id",
+            "event_code",
+            "idempotency_key"
+          ],
+          "predicate": "target_type_code = 'INQUIRY'",
+          "unique": false
+        },
+        {
+          "name": "ix_status_history_consultation_event_idempotency",
+          "target_type_code": "CONSULTATION",
+          "target_fk": "consultation_id",
+          "fields": [
+            "consultation_id",
+            "event_code",
+            "idempotency_key"
+          ],
+          "predicate": "target_type_code = 'CONSULTATION'",
+          "unique": false
+        },
+        {
+          "name": "ix_status_history_visit_event_idempotency",
+          "target_type_code": "VISIT",
+          "target_fk": "visit_id",
+          "fields": [
+            "visit_id",
+            "event_code",
+            "idempotency_key"
+          ],
+          "predicate": "target_type_code = 'VISIT'",
+          "unique": false
+        }
+      ],
+      "state_version": {
+        "type": "integer",
+        "nullable": false,
+        "minimum": 1,
+        "aggregate_scoped_unique": [
+          "target_type_code",
+          "resolved_target_fk",
+          "state_version"
+        ]
+      },
+      "postgresql_partial_version_constraints": [
+        {
+          "name": "uq_status_history_questionnaire_version",
+          "target_type_code": "QUESTIONNAIRE",
+          "target_fk": "questionnaire_session_id",
+          "fields": [
+            "questionnaire_session_id",
+            "state_version"
+          ],
+          "predicate": "target_type_code = 'QUESTIONNAIRE'",
+          "unique": true
+        },
+        {
+          "name": "uq_status_history_inquiry_version",
+          "target_type_code": "INQUIRY",
+          "target_fk": "inquiry_id",
+          "fields": [
+            "inquiry_id",
+            "state_version"
+          ],
+          "predicate": "target_type_code = 'INQUIRY'",
+          "unique": true
+        },
+        {
+          "name": "uq_status_history_consultation_version",
+          "target_type_code": "CONSULTATION",
+          "target_fk": "consultation_id",
+          "fields": [
+            "consultation_id",
+            "state_version"
+          ],
+          "predicate": "target_type_code = 'CONSULTATION'",
+          "unique": true
+        },
+        {
+          "name": "uq_status_history_visit_version",
+          "target_type_code": "VISIT",
+          "target_fk": "visit_id",
+          "fields": [
+            "visit_id",
+            "state_version"
+          ],
+          "predicate": "target_type_code = 'VISIT'",
+          "unique": true
+        }
+      ]
+    },
+    "support_symptom_assessment": {
+      "usage_guidance_status": {
+        "type": "varchar(32)",
+        "nullable": true,
+        "code_contract": "../../../contracts/codes/usage-guidance-statuses.yaml"
+      }
+    },
+    "field_service_visit": {
+      "preferred_date": {
+        "type": "date",
+        "nullable": true
+      },
+      "confirmed_date": {
+        "type": "date",
+        "nullable": true
+      },
+      "schedule_status": {
+        "type": "varchar(40)",
+        "nullable": false,
+        "default": "ASSIGNING",
+        "code_contract": "../../../contracts/codes/visit-statuses.yaml"
+      },
+      "synthetic_technician_id": {
+        "type": "varchar(48)",
+        "nullable": true,
+        "input_only": true,
+        "resolves_by": "accounts_user.legacy_id",
+        "stored_as": "technician_id",
+        "stored_type": "bigint",
+        "reference": "accounts_user.id",
+        "api_exposed": false,
+        "bridge_note": "외부 합성 업무 식별자는 legacy_id로 내부 사용자를 해석하고 Runtime에는 bigint technician_id FK만 저장한다."
+      }
+    }
+  },
+  "legacy_import_mappings": {
+    "support_inquiry.inquiry_no": "support_inquiry.inquiry_code",
+    "support_inquiry.usage_guidance_code": "support_inquiry.usage_guidance_status",
+    "support_symptom_assessment.usage_guidance_code": "support_symptom_assessment.usage_guidance_status",
+    "usage_guidance_codes": {
+      "USE_ALLOWED": "NORMAL"
+    },
+    "field_service_visit.visit_status_code": "field_service_visit.schedule_status"
+  },
+  "standard_codes": {
+    "user_role": [
+      "CUSTOMER",
+      "CONSULTANT",
+      "TECHNICIAN",
+      "OPERATOR"
+    ],
+    "usage_guidance_status": [
+      "NORMAL",
+      "PARTIAL_STOP",
+      "TOTAL_STOP",
+      "PENDING_CONSULTATION"
+    ],
+    "visit_schedule_status": [
+      "ASSIGNING",
+      "SCHEDULING",
+      "CONFIRMED",
+      "IN_PROGRESS",
+      "COMPLETED",
+      "FOLLOW_UP_REQUIRED",
+      "CANCELLED"
+    ],
+    "risk_level": [
+      "general",
+      "caution",
+      "danger"
+    ]
+  },
+  "enum_and_seed_policy": {
+    "cross_service_source": "contracts/codes/*.yaml",
+    "django_representation": "TextChoices with contract parity tests",
+    "database_enum": false,
+    "synthetic_seed": "Django update_or_create with separate DEMO/SYN business identifiers",
+    "manual_insert": false
+  },
+  "scope_boundary": {
+    "included": [
+      "data design owner baseline",
+      "Django Model and Migration input contract",
+      "API public UUID and business code field policy",
+      "standard code source",
+      "status history integrity and idempotency responsibility boundary",
+      "32-table Runtime implementation and author-isolated PostgreSQL reproduction evidence"
+    ],
+    "excluded": [
+      "state transition rules owned by PM",
+      "PostgreSQL infrastructure provisioning",
+      "non-author independent reproduction, PM contract approval, and WBS official status change",
+      "Gate 3 Web/Mobile UUID JWT consumer verification",
+      "Gate 4 AI Vector and Evidence consumer verification"
+    ]
+  }
+}

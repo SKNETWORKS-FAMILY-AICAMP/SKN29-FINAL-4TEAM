@@ -2,18 +2,18 @@
   "artifact_version": "3.0.0",
   "snapshot_status": "HISTORICAL_SNAPSHOT",
   "source": "./watercare_erd_validation_v3.md",
-  "provenance_note": "2026-07-25에 저장소로 반입한 ERD v3 이력이며 현행 구현 기준은 ADR 0010·0011, t005_logical_contract_v0.3.json, t005_decision_register_v0.3.json, t005_physical_contract_v1.2.json이다.",
+  "provenance_note": "2026-07-25에 저장소로 반입한 ERD v3 이력이며 현행 구현 기준은 ADR 0010·0011, t005_logical_contract_v0.3.json, t005_decision_register_v0.3.json, t005_physical_contract_v1.3.json이다.",
   "active_adrs": [
     "../../adr/0010-t005-three-layer-identifier-bridge.md",
     "../../adr/0011-t005-status-history-idempotency-scope.md"
   ],
   "active_logical_contract": "t005_logical_contract_v0.3.json",
   "active_decision_register": "t005_decision_register_v0.3.json",
-  "active_physical_contract": "t005_physical_contract_v1.2.json",
+  "active_physical_contract": "t005_physical_contract_v1.3.json",
   "implementation_gate": {
-    "status": "TRANSITIONAL_BRIDGE",
+    "status": "TECHNICALLY_COMPLETE_REVIEW_PENDING",
     "completion_claim_allowed": false,
-    "reason": "Accounts 문자열 PK의 정수 PK 전환과 legacy JWT sub fallback 제거가 남아 있다."
+    "reason": "32개 계약 테이블과 3계층 식별자 Runtime의 작성자 격리 기술 검증은 통과했다. 비작성자 독립 재현과 PM 계약 승인 전에는 공식 완료를 주장하지 않는다."
   },
   "copied_on": "2026-07-25",
   "hash_policy": {

@@ -28,7 +28,7 @@ MANIFEST_PATH = ARTIFACT_DIR / "manifest.json"
 SCHEMA_PATH = ARTIFACT_DIR / "watercare_schema_v3.json"
 LOGICAL_CONTRACT_PATH = ARTIFACT_DIR / "t005_logical_contract_v0.3.json"
 DECISION_REGISTER_PATH = ARTIFACT_DIR / "t005_decision_register_v0.3.json"
-PHYSICAL_CONTRACT_PATH = ARTIFACT_DIR / "t005_physical_contract_v1.2.json"
+PHYSICAL_CONTRACT_PATH = ARTIFACT_DIR / "t005_physical_contract_v1.3.json"
 USAGE_CODE_CONTRACT_PATH = (
     REPOSITORY_ROOT
     / "contracts"
@@ -318,7 +318,7 @@ EXPECTED_USER_ROLES = {
 EXPECTED_ACTIVE_CONTRACTS = {
     "active_logical_contract": "t005_logical_contract_v0.3.json",
     "active_decision_register": "t005_decision_register_v0.3.json",
-    "active_physical_contract": "t005_physical_contract_v1.2.json",
+    "active_physical_contract": "t005_physical_contract_v1.3.json",
 }
 EXPECTED_HASH_POLICY = {
     "algorithm": "SHA-256",
@@ -523,17 +523,64 @@ def audit_owner_baseline(
         "implementation_gate",
         {},
     )
+    completion_review_status = physical_contract.get(
+        "completion_review_status",
+        "PENDING",
+    )
+    pending_review_gates = implementation_gate.get(
+        "pending_review_gates",
+        [],
+    )
     transitional_gate_valid = (
         compatibility_bridge.get("status") == "TRANSITIONAL"
         and implementation_gate.get("status") == "TRANSITIONAL_BRIDGE"
         and implementation_gate.get("completion_claim_allowed") is False
         and bool(implementation_gate.get("incomplete_items"))
     )
+    review_pending_gate_valid = (
+        compatibility_bridge.get("status") == "COMPLETE"
+        and implementation_gate.get("status")
+        == "TECHNICALLY_COMPLETE_REVIEW_PENDING"
+        and implementation_gate.get("completion_claim_allowed") is False
+        and not implementation_gate.get("incomplete_items")
+        and bool(pending_review_gates)
+        and completion_review_status
+        in {
+            "NON_AUTHOR_REVIEW_PENDING",
+            "PM_REVIEW_PENDING",
+        }
+    )
     complete_gate_valid = (
         compatibility_bridge.get("status") == "COMPLETE"
         and implementation_gate.get("status") == "COMPLETE"
         and implementation_gate.get("completion_claim_allowed") is True
         and not implementation_gate.get("incomplete_items")
+        and not pending_review_gates
+    )
+    review_status_consistent = (
+        (
+            transitional_gate_valid
+            and completion_review_status == "PENDING"
+        )
+        or (
+            review_pending_gate_valid
+            and completion_review_status == "NON_AUTHOR_REVIEW_PENDING"
+            and set(pending_review_gates)
+            == {
+                "non_author_review_confirmed",
+                "external_review_verified",
+                "pm_contract_approval",
+            }
+        )
+        or (
+            review_pending_gate_valid
+            and completion_review_status == "PM_REVIEW_PENDING"
+            and set(pending_review_gates) == {"pm_contract_approval"}
+        )
+        or (
+            complete_gate_valid
+            and completion_review_status == "CONFIRMED"
+        )
     )
     user_override = physical_overrides.get("accounts_user", {})
     customer_override = physical_overrides.get(
@@ -561,11 +608,11 @@ def audit_owner_baseline(
 
     checks = {
         "contract_version": (
-            physical_contract.get("contract_version") == "1.2.0"
+            physical_contract.get("contract_version") == "1.3.0"
         ),
         "contract_provenance": (
             physical_contract.get("supersedes")
-            == "t005_physical_contract_v1.1.json"
+            == "t005_physical_contract_v1.2.json"
         ),
         "owner_status": (
             physical_contract.get("status") == "OWNER_BASELINE"
@@ -594,13 +641,26 @@ def audit_owner_baseline(
             and business_identifier.get("separate_from_primary_key") is True
         ),
         "implementation_gate_valid": (
-            transitional_gate_valid or complete_gate_valid
+            transitional_gate_valid
+            or review_pending_gate_valid
+            or complete_gate_valid
         ),
+        "completion_review_status_valid": review_status_consistent,
         "physical_identifier_parity": (
             user_override.get("public_id") == expected_public_id
             and customer_override.get("public_id") == expected_public_id
+            and user_override.get("id") == expected_internal_id
+            and customer_override.get("id") == expected_internal_id
             and inquiry_override.get("id") == expected_internal_id
             and inquiry_override.get("public_id") == expected_public_id
+            and user_override.get("legacy_id", {}).get(
+                "import_compatibility_only"
+            )
+            is True
+            and customer_override.get("legacy_id", {}).get(
+                "import_compatibility_only"
+            )
+            is True
             and customer_override.get("customer_no", {}).get("type")
             == "varchar(40)"
             and customer_override.get("customer_no", {}).get("unique") is True
@@ -652,6 +712,24 @@ def audit_owner_baseline(
             .get("schedule_status", {})
             .get("default")
             == "ASSIGNING"
+        ),
+        "visit_technician_identifier_bridge": (
+            physical_overrides.get("field_service_visit", {})
+            .get("synthetic_technician_id", {})
+            .get("resolves_by")
+            == "accounts_user.legacy_id"
+            and physical_overrides.get("field_service_visit", {})
+            .get("synthetic_technician_id", {})
+            .get("stored_as")
+            == "technician_id"
+            and physical_overrides.get("field_service_visit", {})
+            .get("synthetic_technician_id", {})
+            .get("stored_type")
+            == "bigint"
+            and physical_overrides.get("field_service_visit", {})
+            .get("synthetic_technician_id", {})
+            .get("reference")
+            == "accounts_user.id"
         ),
         "enum_seed_policy": (
             enum_seed_policy.get("django_representation")
@@ -713,10 +791,7 @@ def audit_owner_baseline(
             "confirmation_status",
             "UNCONFIRMED",
         ),
-        "completion_review_status": physical_contract.get(
-            "completion_review_status",
-            "PENDING",
-        ),
+        "completion_review_status": completion_review_status,
         "implementation_gate": implementation_gate,
         "checks": checks,
         "valid": all(checks.values()),
