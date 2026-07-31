@@ -35,7 +35,7 @@ class ServiceContractMappingTests(unittest.TestCase):
                 "representative_e2e_contract",
                 "adr_0010_identifier_bridge",
                 "adr_0011_idempotency_scope",
-                "t005_physical_contract_v1_2",
+                "t005_physical_contract_v1_3",
                 "public_api_idempotency_conflict",
                 "care_results",
             },
