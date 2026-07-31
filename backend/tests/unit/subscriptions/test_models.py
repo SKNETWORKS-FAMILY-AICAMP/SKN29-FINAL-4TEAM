@@ -17,14 +17,12 @@ pytestmark = pytest.mark.django_db
 
 def create_customer(sequence: int = 1) -> CustomerProfile:
     user = User.objects.create_user(
-        id=f"DEMO-USR-{sequence + 200:03d}",
         username=f"TEST-CUSTOMER-{sequence:03d}",
         password=None,
         full_name=f"테스트 고객 {sequence}",
         role_code=User.Role.CUSTOMER,
     )
     return CustomerProfile.objects.create(
-        id=f"DEMO-CUS-{sequence + 200:03d}",
         user=user,
         customer_no=f"TEST-CUSTOMER-NO-{sequence:03d}",
         customer_name=f"테스트 고객 {sequence}",

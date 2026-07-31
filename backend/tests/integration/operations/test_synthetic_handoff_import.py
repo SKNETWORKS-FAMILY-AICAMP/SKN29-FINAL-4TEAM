@@ -272,6 +272,57 @@ def test_full_import_preserves_provenance_and_history_invariants():
 
 
 @pytest.mark.django_db
+def test_demo_seed_bundle_and_full_handoff_import_do_not_collide():
+    """Demo seed와 canonical handoff를 같은 DB에서 반복 실행할 수 있다."""
+
+    seed_commands = (
+        "seed_common_codes",
+        "seed_demo_accounts",
+        "seed_demo_products",
+        "seed_demo_subscriptions",
+        "seed_demo_care_records",
+    )
+    for _ in range(2):
+        for command in seed_commands:
+            call_command(command, verbosity=0)
+
+    service = SyntheticHandoffImportService()
+    first = service.run(profile="db-full")
+    second = service.run(profile="db-full")
+
+    assert (
+        first.created_count,
+        first.updated_count,
+        first.unchanged_count,
+        first.projected_count,
+    ) == (355, 0, 0, 12)
+    assert (
+        second.created_count,
+        second.updated_count,
+        second.unchanged_count,
+        second.projected_count,
+    ) == (0, 0, 355, 12)
+
+    assert User.objects.count() == 20
+    assert CustomerProfile.objects.count() == 13
+    assert ProductModel.objects.count() == 2
+    assert CustomerSubscription.objects.count() == 13
+    assert CareRecord.objects.count() == 28
+    assert CustomerProfile.objects.filter(
+        customer_no="DEMO-CUSTOMER-001"
+    ).exists()
+    assert CustomerProfile.objects.filter(
+        customer_no="SYN-CUSTOMER-001"
+    ).exists()
+    assert CustomerSubscription.objects.filter(
+        serial_no="DEMO-JAC104D-0001"
+    ).exists()
+    assert CustomerSubscription.objects.filter(
+        serial_no="SYN-JAC104D-0001"
+    ).exists()
+
+
+@pytest.mark.django_db
 def test_identifier_conflict_rolls_back_the_whole_import():
     ProductModel.objects.create(
         public_id=uuid4(),

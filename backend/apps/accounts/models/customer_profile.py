@@ -9,10 +9,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 
-from common.identifiers import (
-    generate_customer_profile_id,
-    validate_domain_id,
-)
+from common.identifiers import validate_domain_id
 from common.models.base import TimestampedModel
 from common.models.soft_delete import SoftDeleteModel
 
@@ -20,10 +17,12 @@ from common.models.soft_delete import SoftDeleteModel
 class CustomerProfile(TimestampedModel, SoftDeleteModel):
     """실제 개인정보를 배제한 고객 업무 프로필."""
 
-    id = models.CharField(
-        primary_key=True,
+    id = models.BigAutoField(primary_key=True)
+    legacy_id = models.CharField(
         max_length=48,
-        default=generate_customer_profile_id,
+        null=True,
+        blank=True,
+        unique=True,
         editable=False,
         validators=[validate_domain_id],
     )

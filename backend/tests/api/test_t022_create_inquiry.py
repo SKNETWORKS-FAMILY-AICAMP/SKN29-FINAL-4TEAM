@@ -41,7 +41,6 @@ def create_customer(sequence: int, *, role: str = "CUSTOMER") -> User:
         else f"T022-API-EMP-{sequence:03d}"
     )
     user = User.objects.create_user(
-        id=f"DEMO-USR-{sequence + 800:03d}",
         username=f"T022-API-{role}-{sequence:03d}",
         password=None,
         full_name=f"T022 API {role} {sequence}",
@@ -50,7 +49,6 @@ def create_customer(sequence: int, *, role: str = "CUSTOMER") -> User:
     )
     if role == User.Role.CUSTOMER:
         CustomerProfile.objects.create(
-            id=f"DEMO-CUS-{sequence + 800:03d}",
             user=user,
             customer_no=f"T022-API-CUS-{sequence:03d}",
             customer_name=f"T022 API customer {sequence}",

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -40,7 +41,7 @@ def test_current_t017_owner_implementation_is_ready_for_team_review():
     assert result["evidence"]["runtime_implemented_file_count"] == 11
     assert result["evidence"]["accounts_app_registered"] is True
     assert result["evidence"]["account_model_class_count"] == 2
-    assert result["evidence"]["account_migration_count"] == 2
+    assert result["evidence"]["account_migration_count"] == 3
     assert result["evidence"]["authentication_class_configured"] is True
     assert result["evidence"]["auth_routes_registered"] is True
     assert result["owner_blockers"] == []
@@ -284,9 +285,18 @@ def test_yaml_shape_helpers_reject_empty_contract_variants():
 
 
 def test_readiness_cli_requires_team_and_postgresql_gates():
+    readiness_environment = os.environ.copy()
+    readiness_environment["DJANGO_SETTINGS_MODULE"] = (
+        "config.settings.test"
+    )
+    readiness_environment["DJANGO_DEMO_LOGIN_ENABLED"] = "false"
+    readiness_environment["DJANGO_CORS_ALLOWED_ORIGINS"] = (
+        "https://approved.example"
+    )
     basic = subprocess.run(
         [sys.executable, str(READINESS_SCRIPT)],
         cwd=REPOSITORY_ROOT,
+        env=readiness_environment,
         check=False,
         capture_output=True,
         text=True,
@@ -295,6 +305,7 @@ def test_readiness_cli_requires_team_and_postgresql_gates():
     strict = subprocess.run(
         [sys.executable, str(READINESS_SCRIPT), "--require-ready"],
         cwd=REPOSITORY_ROOT,
+        env=readiness_environment,
         check=False,
         capture_output=True,
         text=True,

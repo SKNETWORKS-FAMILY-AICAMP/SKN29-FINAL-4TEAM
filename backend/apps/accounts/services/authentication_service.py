@@ -164,7 +164,7 @@ class AuthenticationService:
 
     @staticmethod
     def _blacklist_refresh(refresh: RefreshToken, user: User) -> None:
-        """legacy 문자열 subject도 UUID 변환 없이 jti 기준으로 폐기한다."""
+        """검증된 공개 UUID subject의 refresh token을 jti 기준으로 폐기한다."""
         outstanding, _ = OutstandingToken.objects.get_or_create(
             jti=str(refresh["jti"]),
             defaults={
