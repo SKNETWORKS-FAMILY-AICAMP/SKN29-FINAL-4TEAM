@@ -21,12 +21,12 @@ def test_demo_seed_is_idempotent_and_contains_no_real_profile_data():
     assert User.objects.filter(username__startswith="DEMO-").count() == 4
     assert CustomerProfile.objects.count() == 1
     customer = CustomerProfile.objects.get(
-        customer_no="SYN-CUSTOMER-001"
+        customer_no="DEMO-CUSTOMER-001"
     )
-    assert customer.pk.startswith("CUS-")
-    assert customer.user_id.startswith("USR-")
-    assert not customer.pk.startswith(("DEMO-", "SYN-"))
-    assert not customer.user_id.startswith(("DEMO-", "SYN-"))
+    assert isinstance(customer.pk, int)
+    assert isinstance(customer.user_id, int)
+    assert customer.legacy_id is None
+    assert customer.user.legacy_id is None
     assert customer.public_id is not None
     assert customer.user.public_id is not None
     assert customer.is_synthetic is True
@@ -34,3 +34,19 @@ def test_demo_seed_is_idempotent_and_contains_no_real_profile_data():
     assert customer.address_line1 == ""
     assert "created=4" in first_output.getvalue()
     assert "updated=4" in second_output.getvalue()
+
+
+def test_demo_seed_upgrades_existing_customer_profile_business_key():
+    call_command("seed_demo_accounts", stdout=StringIO())
+    customer = User.objects.get(username="DEMO-CUSTOMER-001")
+    profile = CustomerProfile.objects.get(user=customer)
+    profile.customer_no = "SYN-CUSTOMER-001"
+    profile.save(update_fields=["customer_no", "updated_at"])
+
+    output = StringIO()
+    call_command("seed_demo_accounts", stdout=output)
+
+    profile.refresh_from_db()
+    assert CustomerProfile.objects.filter(user=customer).count() == 1
+    assert profile.customer_no == "DEMO-CUSTOMER-001"
+    assert "updated=4" in output.getvalue()

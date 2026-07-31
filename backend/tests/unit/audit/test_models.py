@@ -24,14 +24,12 @@ def create_inquiry(sequence: int) -> Inquiry:
     """Create the minimum protected aggregate graph for one audit event."""
 
     user = User.objects.create_user(
-        id=f"DEMO-USR-{sequence + 800:03d}",
         username=f"AUDIT-CUSTOMER-{sequence:03d}",
         password=None,
         full_name=f"Audit customer {sequence}",
         role_code=User.Role.CUSTOMER,
     )
     customer = CustomerProfile.objects.create(
-        id=f"DEMO-CUS-{sequence + 800:03d}",
         user=user,
         customer_no=f"AUDIT-CUS-{sequence:03d}",
         customer_name=f"Audit customer {sequence}",

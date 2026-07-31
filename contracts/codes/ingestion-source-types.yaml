@@ -1,0 +1,8 @@
+# T-005 Wave 1 지식 수집 소스 유형 코드
+version: 1.0.0
+status: OWNER_BASELINE
+codes:
+  - LOCAL_FILE
+  - HTTP_DOWNLOAD
+  - WEB_PAGE
+  - MANUAL_UPLOAD

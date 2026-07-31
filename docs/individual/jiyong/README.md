@@ -3,7 +3,7 @@
 > 기준일: 2026-07-30
 > 작성·유지 책임: 최지용
 > 산출물 범위: Backend · Database · API 계약
-> 검토 상태: 공통코드 Wave 로컬 검증 완료 / 담당 Branch Push·독립 QA·PM 병합 대기
+> 검토 상태: T-005 계약 테이블 32/32·빈 PostgreSQL·Seed·367건 Importer·전체 회귀 로컬 검증 완료 / 비작성자 리뷰·계약 완료 승인·PM 병합 대기
 > 문서 정책: 현재 실행 기준과 검증 근거가 있는 최신본만 유지한다.
 
 ## 문서 범위
@@ -24,16 +24,16 @@
 
 | 판단 항목 | 1순위 | 보조 기준 |
 | --- | --- | --- |
-| 현재 작업 순서·완료 경계 | 2026-07-30 `최지용_업무계획표_v0.7.md` | 같은 버전의 Excel 시트, 3주차 업무 지침서 |
+| 현재 작업 순서·완료 경계 | 2026-07-30 `최지용_업무계획표_v0.8.md` | 같은 버전의 Excel 시트, 3주차 업무 지침서 |
 | 역할·협업자·검토자 | `팀원별 관할 영역 v2.md`의 가장 구체적인 경로 규칙 | v0.6에서 확정한 최지용 산출물 책임 |
 | PR·리뷰·보안·테스트 절차 | `공통 개발 규칙.md` | 저장소의 실제 설정과 자동화 결과 |
 | 디렉터리·계약 원본 위치 | 현재 저장소 구조와 `프로젝트 디렉토리 구조 v2.md` | 가장 가까운 상위 경로의 관할 |
 | Runtime·진행도·테스트 수치 | 최신 실행 결과와 아래 검증 보고서 | 계획 문서의 수치는 목표 또는 당시 스냅샷으로만 사용 |
 
-동일한 v0.7 파일끼리 충돌하면 더 나중에 수정된 Markdown의 실행 방향을
+동일한 v0.8 파일끼리 충돌하면 더 나중에 수정된 Markdown의 실행 방향을
 우선하고, Excel 시트는 역할 및 인계 매트릭스를 보완하는 자료로
 사용한다. `최지용_3주차_업무_지침서.md`의 WBS 목적은 유지하되,
-현재 순서와 상태는 v0.7 및 실제 검증 결과로
+현재 순서와 상태는 v0.8 및 실제 검증 결과로
 갱신한다.
 
 ## 책임·협업·검토 원칙
@@ -51,14 +51,40 @@
 팀원의 검토는 통합·재현·소비 호환성을 확인하는 절차이며, 최지용이
 담당 산출물을 작성하기 위한 선행 승인 절차가 아니다. 실제 PR·Issue·
 커밋 등 검토 증거가 연결되기 전에는 `검토 완료`로 기록하지 않는다.
-현재 Backend·PostgreSQL·Data 자동 검증은 완료했지만,
-공통코드 Wave는 김은진의 독립 PostgreSQL·Seed 재현과 PM 병합이
-남아 있다. 따라서 현재 문서는 `로컬 검증 완료`와 `팀 검토 완료`를
+현재 Backend·PostgreSQL·Data 자동 검증은 완료했지만, 비작성자의
+독립 PostgreSQL·Seed 재현과 계약 완료 리뷰, PM 병합은 남아 있다.
+따라서 현재 문서는 `로컬 기술 검증 완료`와 `팀 검토·공식 완료`를
 구분한다.
 
-## 2026-07-30 공통코드 Local Wave
+## 2026-07-30 T-005 32/32 최종 로컬 기술 검증
+
+아래 상태가 이 README의 과거 10/32·12/32·13/32 절보다 우선한다.
+과거 Wave 절은 문제 해결과 증가 과정을 보존하는 실행 이력이다.
 
 | 항목 | 현재 판정 |
+| --- | --- |
+| 계약 테이블 | **32/32** Model·App Registry·Migration |
+| T-005 Auditor | `READY`, blocker 0 |
+| Accounts | 내부 BigInt PK·공개 UUID·업무 코드 분리 |
+| JWT | UUID-only subject, Legacy 문자열 fallback 제거 |
+| PostgreSQL | 빈 DB 전체 Migration·5종 Seed 2회, 기본 `watercare` 백업·24개 Migration 동기화 |
+| 합성 Handoff | 367건 2회, 2회차 355 unchanged·12 projected |
+| Vector | pgvector 0.8.6·`vector(1024)`·Exact Search |
+| Backend 전체 회귀 | SQLite `740 passed, 11 skipped`·PostgreSQL `751 passed` |
+| Data QA | 오류·경고 0, 대표 E2E 17/17, 67 tests OK |
+| 직접 실행 | Health 200·Demo Login·UUID JWT·`/me` PASS |
+| 공식 완료 | `PENDING` — 비작성자·외부 리뷰와 계약 완료 승인 필요 |
+
+작업 범위, PostgreSQL 건수, 연쇄 오류와 해결, 남은 공식 Gate, 팀 인계는
+[T-005 최종 검증 보고서](technical/backend/t005_final_32_table_postgresql_seed_importer_validation_report.md)를
+단일 원본으로 사용한다.
+
+## 2026-07-30 공통코드 Local Wave — 역사 스냅샷
+
+> 아래 값은 해당 Wave 직후 수치다. 현재 판정은 위 32/32 최종 로컬
+> 기술 검증 절과 최종 보고서를 우선한다.
+
+| 항목 | 당시 Wave 판정 |
 | --- | --- |
 | 구현 테이블 | `common_code_group`, `common_code` |
 | T-005 | `12/32`, 미구현 20 — 전체 `NOT_READY` |
@@ -73,13 +99,55 @@
 실행·제약·차단·인계의 단일 기술 원본은
 [T-005 공통코드 Registry 구현·재현 가이드](<technical/backend/t005_common_code_registry_implementation.md>)다.
 
+## 2026-07-30 T-005 Wave 1A — 문진 세션 역사 스냅샷
+
+> 아래 값은 Wave 1A 직후 수치다. 현재 판정은 위 32/32 최종 로컬
+> 기술 검증 절과 최종 보고서를 우선한다.
+
+| 항목 | 당시 Wave 판정 |
+| --- | --- |
+| 구현 테이블 | `support_questionnaire_session` |
+| T-005 | `13/32`, 미구현 19 — 전체 `NOT_READY` |
+| 식별자 | 내부 bigint PK + 공개 UUID + 업무 번호 |
+| PostgreSQL | 빈 DB 전체 Migration, JSON object 물리 CHECK 실측 통과 |
+| Seed | 기존 5종 2회, 2회차 신규 0, 문진 행 0 |
+| 집중 검증 | 50 passed |
+| Backend 전체 회귀 | 426 passed |
+| Data 전체 회귀 | 67 passed·4 subtests passed, `data/**` 수정 없음 |
+| 공유 상태 | `LOCAL_VERIFIED`, Push·독립 QA·PM 병합 전 |
+| Wave 1A 당시 P0 | 동일 구독 복합 FK는 아래 Wave 1B에서 로컬 해결, 번호 생성 규칙·API·상태 전이는 잔여 |
+
+구현·Migration·PostgreSQL 실측·알려진 계약 공백·인계의 단일 원본은
+[T-005 Wave 1A 문진 세션 구현·재현 가이드](<technical/backend/t005_wave_1a_support_questionnaire_session_implementation.md>)다.
+
+## 2026-07-30 T-005 Wave 1B — 문진·문의 동일 구독 복합 FK 역사 스냅샷
+
+> 아래 값은 Wave 1B 직후 수치다. 현재 판정은 위 32/32 최종 로컬
+> 기술 검증 절과 최종 보고서를 우선한다.
+
+| 항목 | 당시 Wave 판정 |
+| --- | --- |
+| 구현 범위 | `support_inquiry(id, subscription_id)` UNIQUE + 문진 복합 FK |
+| T-005 | 신규 테이블 없음, `13/32`, 미구현 19 — 전체 `NOT_READY` |
+| PostgreSQL | 빈 DB 전체 Migration·catalog·rollback·재적용 통과 |
+| 우회 차단 | ORM·raw SQL·부모 update 3종 모두 정확한 복합 FK 위반 |
+| Seed | 기존 5종 2회, 2회차 신규 0, 문진 행 0 |
+| 집중 검증 | 100 passed + PostgreSQL 전용 1 passed |
+| Backend 전체 회귀 | 428 passed, PostgreSQL 전용 1 skipped |
+| Data 전체 회귀 | 67 passed, Inquiry Crosswalk hash 공식 동기화 |
+| 공유 상태 | `LOCAL_VERIFIED`, Push·독립 QA·PM 병합 전 |
+| 후속 P0 | 번호 생성 규칙, API·상태 전이, UUID Bridge |
+
+구현·실제 제약명·우회 검증·Data hash 연쇄 보정·rollback·인계의 단일
+원본은 [T-005 Wave 1B 복합 FK 구현·재현 가이드](<technical/backend/t005_wave_1b_questionnaire_inquiry_composite_fk.md>)다.
+
 ## 2026-07-29 통합 후보 이력
 
 아래 값은 2026-07-29 당시 공유 후보의 역사 증거다. 현재 값은 위의
-2026-07-30 공통코드 Wave 절을 우선하며, 아래 10/32·397개 수치를 현재
-완료율로 사용하지 않는다.
+2026-07-30 T-005 32/32 최종 로컬 기술 검증 절과 최종 보고서를
+우선하며, 아래 10/32·397개 수치를 현재 완료율로 사용하지 않는다.
 
-| 항목 | 현재 판정 |
+| 항목 | 당시 판정 |
 | --- | --- |
 | 기준 `main` | `0bcb8b514f2b0d1476882d926b667dbdb5d8c06a` |
 | Crosswalk | v2.0.0, Backend Source 17개·Fixture Mapping 12개, `DB_FULL_VERIFIED` |
@@ -98,6 +166,9 @@ T-005 전체 완료를 뜻하지 않는다. 팀원은 현재 로컬 후보가 �
 
 | 구분 | 문서 | 용도 |
 | --- | --- | --- |
+| T-005 최종 검증 | [32개 테이블·PostgreSQL·Seed·Importer 최종 보고서](<technical/backend/t005_final_32_table_postgresql_seed_importer_validation_report.md>) | 32/32 Auditor READY, 빈 DB·5종 Seed·367건 Replay·전체 회귀·공식 승인 대기 Gate |
+| 문진 동일 구독 제약 | [T-005 Wave 1B 복합 FK 구현·재현 가이드](<technical/backend/t005_wave_1b_questionnaire_inquiry_composite_fk.md>) | 부모 UNIQUE·문진 복합 FK·PostgreSQL 우회 차단·rollback·Data hash 보정 |
+| 문진 세션 Runtime | [T-005 Wave 1A 문진 세션 구현·재현 가이드](<technical/backend/t005_wave_1a_support_questionnaire_session_implementation.md>) | `support_questionnaire_session` Model·Migration·PostgreSQL CHECK와 Wave 1A 완료 경계 |
 | 공통코드 Runtime | [T-005 공통코드 Registry 구현·재현 가이드](<technical/backend/t005_common_code_registry_implementation.md>) | 공통코드 2개 Model·Migration, 10 Group·43 Code Seed, PostgreSQL 재현과 차단 계약 |
 | 합성 데이터 Runtime | [PostgreSQL 합성 Handoff Runtime 검증·인계서](<manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md>) | 격리 DB 367행 Import 검증과 기본 `watercare` 10개 Migration·Seed 후속 실측을 분리한 누적 증거 |
 | 합성 데이터 Importer | [합성 Handoff Importer 개발 인계서](<technical/backend/20260729_synthetic_handoff_importer.md>) | 빈 격리 DB 전용 관리 명령, UUID 충돌 차단, 원장·멱등성과 dry-run Sequence 주의 |
@@ -213,9 +284,9 @@ Android 연동 starter 참고본이며 현재 구현·Migration·API·State·AI
 
 | 검사 | 결과 |
 | --- | ---: |
-| 개인 개발문서 | 18개 |
-| 저장소 내부 파일 링크 | 304개 |
-| 고유 링크 대상 | 146개 (파일 135·디렉터리 11) |
+| 개인 개발문서 | 51개 |
+| Markdown 링크 | 692개 |
+| 고유 저장소 내부 대상 | 309개 (파일 291·디렉터리 18) |
 | 절대 파일 하이퍼링크 | 0개 |
 | 깨진 상대 링크 | 0개 |
 

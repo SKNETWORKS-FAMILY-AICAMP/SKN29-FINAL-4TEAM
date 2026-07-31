@@ -31,5 +31,5 @@ def test_demo_subscription_seed_preserves_internal_and_public_ids():
 
     assert CustomerSubscription.objects.count() == 1
     assert (second.pk, second.public_id) == first_identity
-    assert second.customer.customer_no == "SYN-CUSTOMER-001"
+    assert second.customer.customer_no == "DEMO-CUSTOMER-001"
     assert second.product_model.model_code == "DEMO-PMD-001"

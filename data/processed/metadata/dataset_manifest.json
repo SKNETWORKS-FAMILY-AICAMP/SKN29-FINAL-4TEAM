@@ -240,6 +240,7 @@
     "synthetic_users": 16,
     "synthetic_customers": 12,
     "synthetic_customer_profiles": 12,
+    "synthetic_products": 1,
     "synthetic_customer_products": 12,
     "synthetic_subscriptions": 12,
     "synthetic_source_scenarios": 24,
@@ -251,6 +252,7 @@
     "synthetic_status_histories": 125,
     "synthetic_audit_events": 125,
     "synthetic_followup_confirmations": 1,
+    "synthetic_fixture_records": 367,
     "synthetic_api_idempotency_cases": 3,
     "synthetic_scenario_subset_files": 7,
     "synthetic_scenario_subset_records": 33

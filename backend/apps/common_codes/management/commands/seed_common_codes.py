@@ -51,6 +51,36 @@ SEED_SPECS = (
         "사용 안내 상태",
     ),
     SeedSpec("visit-statuses.yaml", "VISIT_STATUS", "방문 상태"),
+    SeedSpec(
+        "ai-task-types.yaml",
+        "AI_TASK_TYPE",
+        "AI 작업 유형",
+    ),
+    SeedSpec(
+        "ai-schema-validation-statuses.yaml",
+        "AI_SCHEMA_VALIDATION_STATUS",
+        "AI 스키마 검증 상태",
+    ),
+    SeedSpec(
+        "ai-run-statuses.yaml",
+        "AI_RUN_STATUS",
+        "AI 실행 상태",
+    ),
+    SeedSpec(
+        "dataset-scopes.yaml",
+        "DATASET_SCOPE",
+        "데이터 범위",
+    ),
+    SeedSpec(
+        "ingestion-source-types.yaml",
+        "INGESTION_SOURCE_TYPE",
+        "수집 소스 유형",
+    ),
+    SeedSpec(
+        "ingestion-statuses.yaml",
+        "INGESTION_STATUS",
+        "수집 실행 상태",
+    ),
 )
 
 
@@ -88,7 +118,7 @@ def load_contract_codes(path: Path) -> list[str]:
 
 class Command(BaseCommand):
     help = (
-        "T-005 공통코드 중 물리 계약과 충돌하지 않는 확정 10개 "
+        "T-005 공통코드 중 물리 계약과 충돌하지 않는 확정 16개 "
         "그룹을 update_or_create합니다."
     )
 

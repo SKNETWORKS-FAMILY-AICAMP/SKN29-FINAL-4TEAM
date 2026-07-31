@@ -4,13 +4,13 @@
 >
 > 문서 책임: 공동 편집(`docs/**`)
 >
-> 현재 상태: `COMMON_CODE_WAVE_LOCAL_VERIFIED_SHARE_PENDING`
+> 현재 상태: `T005_32_TABLE_LOCAL_TECHNICAL_VERIFIED_REVIEW_PENDING`
 >
-> 직전 기능 통합 Commit: `cbf1b6cfa3c56e95e30284ab1e8424f77e1594ec`
+> 현재 소스 기준 Commit: `765047c2342bc30363a5c543a1f9ea324730d079`
 >
-> 현재 로컬 원격 추적 `main` SHA: `643b23ffce1d804198b0ff54a374e91e288e7f24`
+> 현재 로컬 원격 추적 `main` SHA: `765047c2342bc30363a5c543a1f9ea324730d079`
 >
-> 이번 공통코드 변경 Commit: 미생성 — 팀 실행 금지
+> T-005 32개 테이블 변경 Commit: 미생성 — 로컬 기술 검증 완료, 팀 실행 금지
 >
 > 실행 원칙: `작업 → 즉시 검증 → 다음 작업`
 
@@ -23,7 +23,38 @@
 
 ---
 
-## 0. 2026-07-30 공통코드 Local Wave
+## 0. 2026-07-30 T-005 32/32 로컬 기술 검증
+
+현재 작업 트리에서는 계약 대상 32개 테이블을 모두 Django Model,
+`INSTALLED_APPS`, 번호 Migration과 PostgreSQL Runtime에 연결했다.
+Auditor 판정은 `READY 32/32`, 누락·미등록·미분류·차단은 각각 0이다.
+기본 `watercare` DB와 빈 격리 DB에서 전체 Migration, 멱등 Seed,
+합성 데이터 Importer 실행과 재실행을 검증했다.
+
+| 항목 | 현재 로컬 검증 결과 | 공식 완료 경계 |
+| --- | --- | --- |
+| T-005 Runtime | `32/32 READY`, Runtime 지원 테이블 4개 승인 분류 | 로컬 기술 완료 |
+| PostgreSQL | 기본 DB 백업 후 24개 Migration 적용, 빈 격리 DB 전체 재현 | 비작성자 독립 재현 대기 |
+| Seed·Importer | Seed 2회 멱등, Importer dry-run·실행·재실행 통과 | Data Owner 확인 대기 |
+| Backend 전체 | SQLite `740 passed, 11 skipped`, PostgreSQL `751 passed` | 로컬 회귀 통과 |
+| Data QA | 단위 `67 passed`, QA `48 files / 740 records`, 오류·경고 0 | 로컬 QA 통과 |
+| Auth 전환 | 정수 내부 PK·공개 UUID JWT, legacy subject fallback 제거 | Web·Mobile 소비자 확인 대기 |
+| 공식 T-005 상태 | 기술 증거는 충족했으나 계약 완료 승인은 미반영 | 비작성자 확인·3계층 식별자 계약 갱신·외부 리뷰 필요 |
+
+현재 변경은 아직 Commit·Push·PM 병합 전이다. 팀원은 로컬 검증 결과를
+공유 기준선으로 간주하지 말고, PM이 검토·병합한 40자리 `main` SHA를
+받은 뒤 같은 Migration·Seed·Importer·회귀 절차를 독립 재현해야 한다.
+
+구현 파일, Migration 순서, 백업·롤백, 실행 명령과 최종 수치는
+[T-005 32개 테이블 PostgreSQL·Seed·Importer 최종 검증 보고서](../individual/jiyong/technical/backend/t005_final_32_table_postgresql_seed_importer_validation_report.md)를
+단일 현행 원본으로 사용한다.
+
+---
+
+## 0-A. 2026-07-30 공통코드 Local Wave 역사 기록
+
+> 아래 `12/32`, `418 passed` 수치는 공통코드 Wave 직후의 역사
+> 스냅샷이다. 현재 상태 판정에는 위 32/32 최종 검증 절을 사용한다.
 
 이번 변경은 최지용 로컬에서 검증됐지만 아직 `jiyong` Push와 PM
 `main` 병합 전이다. 팀원은 이 문서의 명령을 먼저 실행하지 말고,
@@ -221,7 +252,7 @@ DB 복원 리허설까지 완료했다는 의미는 아니다.
 | 합성 데이터 적재 | 12종, Source 367행, 재실행 생성·수정 0 | 최지용 현재 `main` 재검증 |
 | Health·Auth Smoke | 현재 Backend를 8001에 실행해 전체 흐름 통과 | 팀 기준선에서 기본 포트 재검증 |
 | Backend 실행 매뉴얼 | v1.3에 설치·실행·Migration·복구 절차 통합 | 게시 완료 |
-| T-005 | 7개에서 10개로 증가 | 잔여 22개 및 계약 밖 Table 판정 |
+| T-005 | 당시 7개에서 10개로 증가 | 현재 32/32 최종 보고서로 대체 |
 | Role 정규화 | 활성 데이터의 `CONSULTANT` 기준 정합화 | Legacy Alias 회귀 금지 |
 
 로컬 근거:
@@ -245,13 +276,13 @@ DB 복원 리허설까지 완료했다는 의미는 아니다.
 
 | 우선순위 | Blocker | 주담당 | 필요한 입력 | 다음 소비자 |
 | --- | --- | --- | --- | --- |
-| P0 | 공통코드 Wave가 아직 미커밋·미Push | 최지용 | 이번 Wave 파일만 분리한 Commit과 Backend 418·PostgreSQL 증거 | 김은진·PM |
-| P0 | 공통코드 빈 PostgreSQL·Seed 2회 독립 QA 미실시 | 김은진 | 최지용의 `jiyong` 40자리 검토 SHA | PM |
-| P0 | 공통코드 Wave PM `main` 병합 전 | 윤승혁 | 최지용 Commit 범위와 김은진 독립 QA 결과 | 전 팀원 |
-| P1 | T-005 `12/32`, 잔여 20개 | 최지용 | PM State·Data·AI 입력별 한 Wave | Backend·QA |
+| P0 | T-005 32/32 변경이 아직 미커밋·미Push | 최지용 | 경로별 Commit과 740/751·PostgreSQL·Data QA 증거 | 김은진·PM |
+| P0 | 기본·빈 PostgreSQL·Seed·Importer 비작성자 재현 미실시 | 김은진 또는 지정 리뷰어 | 최지용의 40자리 병합 후보 SHA와 최종 실행 가이드 | PM |
+| P0 | T-005 완료 계약 리뷰와 PM `main` 병합 전 | 윤승혁 | `READY 32/32`·3계층 식별자·비작성자 재현 결과 | 전 팀원 |
+| P1 | T-005 공식 완료 Gate 3개 대기 | 최지용 + 윤승혁 | 비작성자 확인·3계층 식별자 계약 확인·외부 리뷰 증거 | Backend·QA |
 | P1 | 위험도 소문자 계약과 대문자 DB Check 불일치 | 김은진 + 최지용 | Data 코드 표준 또는 DB 정책의 단일 결정 | Backend·Data |
 | P1 | `ai-stages`의 공통코드 Group Mapping 미확정 | 이동윤 + 최지용 | AI Stage의 공통코드 편입 또는 독립 계약 결정 | Backend AI Client |
-| P1 | T-005 계약 밖 Table이 Auditor에 검출 | 최지용 + 윤승혁 | `audit`·`operations`·`workflow` Table의 계약 편입/별도 분류 결정 | QA |
+| P1 | Runtime 지원 Table 4개 완료 승인 대기 | 최지용 + 윤승혁 | Auditor allowlist 근거와 계약 담당자 완료 리뷰 | QA |
 | P1 | `SYN-JAC104-012`, `SYN-JAC104-016` 업무 결정 미확정 | 윤승혁 | Reopen·제품 검증 정책 | 김은진·최지용 |
 | P1 | Web `public_id` 소비 불일치 | 한예나 | PM `main` SHA·Data Crosswalk | Backend E2E |
 | P1 | Web Node 호환·Test Startup 미검증 | 한예나 | 지원 Node로 재설치 후 Test 재실행 | PM 통합 QA |
@@ -261,9 +292,10 @@ DB 복원 리허설까지 완료했다는 의미는 아니다.
 | P1 | Backend AI Client가 Placeholder | 최지용 | 이동윤의 AI Commit SHA와 Runtime 계약 | 통합 E2E |
 | P2 | 동일 Commit Web·Mobile·AI 포함 E2E 미수행 | 각 담당 + PM | 위 P0·P1 완료 | 최종 QA |
 
-T-005는 현재 `NOT_READY`다. 10개 구현을 32개 완료로 표현하지 않는다.
-잔여 22개를 한 번에 구현하지 말고, 계약 입력이 확정된 작은 Wave별로
-`작업 → Migration/계약 검증 → 테스트`를 반복한다.
+T-005 Runtime은 현재 `READY 32/32`, 구현 blocker 0이다. 다만
+비작성자 PostgreSQL 재현·3계층 식별자 계약 확인·외부 리뷰가
+완료되지 않았으므로 공식 WBS 상태는 `진행 중`으로 유지한다.
+팀 재현도 `작업 → Migration/계약 검증 → 테스트` 순서로 반복한다.
 
 ---
 
@@ -445,15 +477,18 @@ PM `main` SHA 반영 후 다음 작업은 서로 병렬로 진행할 수 있다.
 
 **지금 할 일**
 
-1. 공통코드 App·Migration·Seed·Test·관련 문서만 하나의 작업 단위로
-   분리한다.
+1. T-005 32/32 App·Migration·Seed·Importer·Test·관련 문서를
+   검토 가능한 경로별 작업 단위로 분리한다.
 2. 기존 Data 변경·루트 README·다른 팀원 인계문서를 해당 Commit에서
    제외한다.
-3. T-005 상태를 `12/32`, 잔여 20개, 전체 `NOT_READY`로 보고한다.
-4. 사용자 승인 후 검증 근거와 함께 `jiyong`에 Push하고 40자리 SHA를
+3. Runtime은 `READY 32/32`, 공식 상태는 3개 Gate 대기라고 분리해
+   보고한다.
+4. 검증 근거와 함께 `jiyong`에 Push할 병합 후보를 만들고 40자리 SHA를
    김은진과 PM에게 전달한다.
-5. 김은진의 빈 PostgreSQL·Seed 2회 독립 QA 뒤 PM이 `main`에 병합한다.
-6. 다음 20개는 관계·Backfill·담당 계약이 확인된 한 Wave씩 진행한다.
+5. 김은진 또는 지정 비작성자의 기본·빈 PostgreSQL·Seed·Importer
+   독립 재현 뒤 PM이 `main`에 병합한다.
+6. Web·Mobile·AI 소비자 검증과 계약 완료 승인을 받은 뒤 공식 WBS
+   상태를 갱신한다.
 
 **재현·검증**
 
@@ -477,9 +512,10 @@ python .\scripts\database\audit_t005_implementation_readiness.py --settings conf
 `migrate --check`가 실패하면 곧바로 `migrate`하지 말고, v1.3의
 대상 DB 확인·Writer 중단·Plan·백업 판단·적용 절차를 따른다.
 
-현재 마지막 명령의 정상 상태는 Process 성공이 아니라 JSON
-`status=NOT_READY`, `fully_implemented_contract_table_count=10`을 정확히
-보고하는 것이다. 전체 완료 Gate에서는 `--require-ready`가 필요하다.
+현재 마지막 명령의 정상 상태는 JSON `status=READY`,
+`fully_implemented_contract_table_count=32`, blocker 0이다. 공식 완료
+Gate는 별도 Schema Validator의 비작성자·계약·외부 리뷰 증거로
+판정하며 Auditor `READY`만으로 대신하지 않는다.
 
 Migration과 자기 DB 경로에 맞는 Seed 또는 Importer Gate가 통과한 뒤
 실제 HTTP를 검증할 때는 터미널을 두 개 사용한다. 기본 개발 DB에는

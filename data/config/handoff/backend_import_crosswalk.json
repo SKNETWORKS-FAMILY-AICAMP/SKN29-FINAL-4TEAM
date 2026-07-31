@@ -11,11 +11,11 @@
   "backend_sources": {
     "user_model": {
       "path": "backend/apps/accounts/models/user.py",
-      "sha256": "0E03791FC5622B93CE4ECBD3050882ED9EEF07031A109F9B6EDCA2183CC5B2F0"
+      "sha256": "1D952ABF2AD30F5D18097F4354C83D212E80A61525ECC4903625E7049505D17D"
     },
     "customer_profile_model": {
       "path": "backend/apps/accounts/models/customer_profile.py",
-      "sha256": "28CAA2DD62236AFC06CA64867699B2F47A1A6FEC9199F62AA28DF16BD59DE17A"
+      "sha256": "F3406AF7D09268C85ECD9042D04CF5A5261F7993D2B4BEC95415C1326CAB578C"
     },
     "product_model": {
       "path": "backend/apps/products/models/product_model_registry.py",
@@ -27,7 +27,7 @@
     },
     "inquiry_model": {
       "path": "backend/apps/inquiries/models/inquiry.py",
-      "sha256": "F6520FF52BC170321CA71AA2FFDB8B73658021060CFAFD12DBE0EEDF3E8645C3"
+      "sha256": "D00816D974E72118F67137549CE38DC7F5BCACA7B86A9D79B8D8A0824310C05D"
     },
     "symptom_entry_model": {
       "path": "backend/apps/inquiries/models/symptom_entry.py",
@@ -39,7 +39,7 @@
     },
     "visit_model": {
       "path": "backend/apps/visits/models/visit.py",
-      "sha256": "07D0D5B97F7DFF87EEC892AC34606ADC283802AE74CBFE11352E246892FEE32D"
+      "sha256": "C22C1E640EABFF1A173D51EE2DFABDB2C825A72FB03D8880342BFFC15DAD152A"
     },
     "followup_confirmation_model": {
       "path": "backend/apps/inquiries/models/followup_confirmation.py",
@@ -51,7 +51,7 @@
     },
     "transition_history_model": {
       "path": "backend/apps/workflow/models/transition_history.py",
-      "sha256": "9C16495E25D9D058F944836346D63D6EE0E047EAE83EAFECB42D19487BB5999C"
+      "sha256": "B0657E47C1B8A311BC8C61A1ECEFD41556D0F7551B153588171C78A832DE4E9F"
     },
     "audit_event_model": {
       "path": "backend/apps/audit/models/audit_event.py",
@@ -67,7 +67,7 @@
     },
     "import_service": {
       "path": "backend/apps/operations/services/operations_service.py",
-      "sha256": "71170D33992A0A7A96ADE3BFBA1BD2411E150C7B4510D8CCF304B2146EB7EB96"
+      "sha256": "3443E083D5DF69C0783DB74279C9EA04F9BBFAD6F0D582C06CDA2674F0FF37A0"
     },
     "import_command": {
       "path": "backend/apps/operations/management/commands/import_synthetic_handoff.py",
@@ -75,7 +75,7 @@
     },
     "demo_auth_repository": {
       "path": "backend/apps/accounts/repositories/account_repository.py",
-      "sha256": "D68531A25E4409D918D3E2D0EBC7465FE4E54B58AD215E5867BF80865FEB9FFF"
+      "sha256": "1E958690D4049075652D935B0AE2050B70F2C245D81F68D9BA99802E90E3FC52"
     }
   },
   "identifier_resolution": {
