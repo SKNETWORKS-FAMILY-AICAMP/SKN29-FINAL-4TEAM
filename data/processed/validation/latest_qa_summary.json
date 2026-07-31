@@ -21,7 +21,7 @@
     },
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
-      "sha256": "2380F369F9FBE1CB1DAC90158B369837F97934DFA60040E65E3AD1E9C026480B"
+      "sha256": "7128BA567667194202489DE40A508CDCA6845B4E1A6E1C1D6FF743C1BA39E363"
     }
   ],
   "totals": {
@@ -155,7 +155,7 @@
       "errors": []
     },
     "reproducibility": {
-      "enabled": false,
+      "enabled": true,
       "changed_files": [],
       "canonical_drift_files": [],
       "regenerated_files": [],
