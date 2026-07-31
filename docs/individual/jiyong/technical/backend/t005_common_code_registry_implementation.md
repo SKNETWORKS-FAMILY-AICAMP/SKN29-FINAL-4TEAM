@@ -3,8 +3,13 @@
 > 기준일: 2026-07-30
 > 작성·구현 책임: 최지용
 > 협업 검증: 김은진(Database·Seed·QA), 윤승혁(PM·병합 Gate)
-> 현재 상태: `LOCAL_VERIFIED` — 담당 Branch Push와 PM `main` 병합 전
+> Wave 당시 상태: `LOCAL_VERIFIED` — 담당 Branch Push와 PM `main` 병합 전
 > 적용 원칙: `작업 → 즉시 검증 → 다음 작업`
+
+> 역사 스냅샷: 이 문서의 12/32·418 passed 수치는 공통코드 Wave
+> 직후 값이다. 현재 상태는
+> [T-005 32개 테이블 최종 검증 보고서](t005_final_32_table_postgresql_seed_importer_validation_report.md)의
+> `READY 32/32`, SQLite 740·PostgreSQL 751 결과를 우선한다.
 
 ## 1. 이번 문서가 다루는 범위
 
