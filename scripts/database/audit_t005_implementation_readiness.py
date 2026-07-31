@@ -27,6 +27,26 @@ REQUIRED_POSTGRES_ENV_KEYS = {
     "POSTGRES_HOST",
     "POSTGRES_PORT",
 }
+APPROVED_RUNTIME_SUPPORT_TABLES = {
+    "audit_event": (
+        "Append-only workflow audit ledger; runtime audit support outside "
+        "the immutable 32-table domain contract."
+    ),
+    "operations_synthetic_import_batch": (
+        "Synthetic importer execution and provenance ledger; operational "
+        "import support outside the immutable 32-table domain contract."
+    ),
+    "operations_synthetic_import_item": (
+        "Synthetic importer per-item outcome and provenance ledger; "
+        "operational import support outside the immutable 32-table domain "
+        "contract."
+    ),
+    "workflow_idempotency_record": (
+        "HTTP replay and payload-conflict request ledger defined by ADR "
+        "0011; runtime idempotency support outside the immutable 32-table "
+        "domain contract."
+    ),
+}
 
 
 def _relative_path(path: Path) -> str:
@@ -442,6 +462,13 @@ def build_table_mapping(
     declared_tables = set(declared_by_table)
     registered_tables = set(registered_by_table)
     migrated_tables = set(migrated_by_table)
+    approved_runtime_tables = set(APPROVED_RUNTIME_SUPPORT_TABLES)
+    outside_contract_model_tables = (
+        declared_tables | registered_tables
+    ) - expected_tables
+    outside_contract_migration_tables = (
+        migrated_tables - expected_tables
+    )
     fully_implemented = {
         item["table"]
         for item in table_results
@@ -471,11 +498,17 @@ def build_table_mapping(
         "missing_migration_tables": sorted(
             expected_tables - migrated_tables
         ),
+        "approved_runtime_support_model_tables": sorted(
+            outside_contract_model_tables & approved_runtime_tables
+        ),
+        "approved_runtime_support_migration_tables": sorted(
+            outside_contract_migration_tables & approved_runtime_tables
+        ),
         "unknown_model_tables": sorted(
-            (declared_tables | registered_tables) - expected_tables
+            outside_contract_model_tables - approved_runtime_tables
         ),
         "unknown_migration_tables": sorted(
-            migrated_tables - expected_tables
+            outside_contract_migration_tables - approved_runtime_tables
         ),
         "tables": table_results,
     }
@@ -498,10 +531,30 @@ def audit_readiness(
         for key, value in contract.items()
         if key != "tables"
     }
+    approved_runtime_support_tables = [
+        {
+            "table": table_name,
+            "reason": reason,
+            "model_present": (
+                table_name
+                in mapping["approved_runtime_support_model_tables"]
+            ),
+            "migration_present": (
+                table_name
+                in mapping["approved_runtime_support_migration_tables"]
+            ),
+        }
+        for table_name, reason in sorted(
+            APPROVED_RUNTIME_SUPPORT_TABLES.items()
+        )
+    ]
     evidence = {
         **static,
         **django_evidence,
         "contract": contract_public,
+        "approved_runtime_support_tables": (
+            approved_runtime_support_tables
+        ),
         "implementation_mapping": mapping,
     }
     blockers = []

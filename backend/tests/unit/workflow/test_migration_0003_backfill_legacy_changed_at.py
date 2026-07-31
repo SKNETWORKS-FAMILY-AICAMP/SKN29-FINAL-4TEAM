@@ -24,14 +24,12 @@ def create_inquiry(sequence: int) -> Inquiry:
     """Create the minimum isolated domain graph for one transition."""
 
     user = User.objects.create_user(
-        id=f"DEMO-USR-{sequence:03d}",
         username=f"WORKFLOW-MIGRATION-{sequence:03d}",
         password=None,
         full_name=f"Workflow migration user {sequence}",
         role_code=User.Role.CUSTOMER,
     )
     customer = CustomerProfile.objects.create(
-        id=f"DEMO-CUS-{sequence:03d}",
         user=user,
         customer_no=f"WORKFLOW-MIGRATION-CUS-{sequence:03d}",
         customer_name=f"Workflow migration customer {sequence}",
@@ -121,12 +119,26 @@ def test_backfill_corrects_only_changed_at_after_created_at():
 def test_migration_executor_applies_0002_to_0003_transition():
     """Exercise the registered Migration operation, not only its function."""
 
+    target_0002 = [("workflow", "0002_expand_transition_targets")]
+    target_0003 = [("workflow", "0003_backfill_legacy_changed_at")]
+    target_0004 = [("workflow", "0004_align_contract_status_history")]
     executor = MigrationExecutor(connection)
-    executor.migrate(
-        [("workflow", "0002_expand_transition_targets")],
+    executor.migrate(target_0002)
+    history_0002 = executor.loader.project_state(
+        target_0002
+    ).apps.get_model("workflow", "TransitionHistory")
+    inquiry = create_inquiry(903)
+    affected = history_0002.objects.create(
+        inquiry_id=inquiry.pk,
+        actor_id=inquiry.initiated_by_id,
+        event_code="START_INQUIRY",
+        from_state=None,
+        to_state=Inquiry.Status.DRAFT,
+        state_version=1,
+        correlation_id=uuid4(),
+        idempotency_key="workflow-migration-903",
     )
-    affected = create_transition(903)
-    TransitionHistory.objects.filter(pk=affected.pk).update(
+    history_0002.objects.filter(pk=affected.pk).update(
         changed_at=affected.created_at + timedelta(days=1),
         status_history_code=(
             f"HST-{affected.public_id.hex.upper()}"
@@ -134,23 +146,28 @@ def test_migration_executor_applies_0002_to_0003_transition():
     )
 
     executor = MigrationExecutor(connection)
-    executor.migrate(
-        [("workflow", "0003_backfill_legacy_changed_at")],
-    )
-
-    affected.refresh_from_db()
-    assert affected.changed_at == affected.created_at
-
-    executor = MigrationExecutor(connection)
-    executor.migrate(
-        [("workflow", "0002_expand_transition_targets")],
-    )
-    affected.refresh_from_db()
-    assert affected.changed_at == affected.created_at
+    executor.migrate(target_0003)
+    history_0003 = executor.loader.project_state(
+        target_0003
+    ).apps.get_model("workflow", "TransitionHistory")
+    migrated = history_0003.objects.get(pk=affected.pk)
+    assert migrated.changed_at == migrated.created_at
 
     executor = MigrationExecutor(connection)
-    executor.migrate(
-        [("workflow", "0003_backfill_legacy_changed_at")],
-    )
-    affected.refresh_from_db()
-    assert affected.changed_at == affected.created_at
+    executor.migrate(target_0002)
+    history_0002 = executor.loader.project_state(
+        target_0002
+    ).apps.get_model("workflow", "TransitionHistory")
+    rolled_back = history_0002.objects.get(pk=affected.pk)
+    assert rolled_back.changed_at == rolled_back.created_at
+
+    executor = MigrationExecutor(connection)
+    executor.migrate(target_0003)
+    history_0003 = executor.loader.project_state(
+        target_0003
+    ).apps.get_model("workflow", "TransitionHistory")
+    reapplied = history_0003.objects.get(pk=affected.pk)
+    assert reapplied.changed_at == reapplied.created_at
+
+    executor = MigrationExecutor(connection)
+    executor.migrate(target_0004)
