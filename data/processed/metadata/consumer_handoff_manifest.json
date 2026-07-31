@@ -135,7 +135,7 @@
       ]
     },
     "db-smoke": {
-      "purpose": "PostgreSQL 모델·FK·Importer 반복 안전성을 검증한 대표 6개 문의",
+      "purpose": "PostgreSQL 모델·FK·Importer/Seed 적재와 재실행 멱등성을 검증한 대표 6개 문의",
       "readiness": "DB_SMOKE_VERIFIED",
       "contract_dependency": "NONE",
       "items": [
@@ -228,7 +228,7 @@
           "role": "MAPPING_DB_FULL_VERIFIED",
           "records": 1,
           "size_bytes": 18600,
-          "sha256": "2091BB0B448BACE5AA8AB31A0DAE613B7D51BBDB11F8AEBF666DFB9571020E87"
+          "sha256": "47A47CE38ACC714FF5DE64AB8F69A234B38675D0F3A6C2B991ECB69CDB0945F9"
         },
         {
           "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
@@ -281,7 +281,7 @@
       ]
     },
     "db-full": {
-      "purpose": "활성 projection 22개·source 367행의 PostgreSQL 전체 적재와 반복 안전성 검증 완료",
+      "purpose": "차단 2개를 제외한 활성 projection 22개·source 367행의 PostgreSQL 전체 적재·관계·재실행 멱등성 검증 완료",
       "readiness": "DB_FULL_VERIFIED",
       "contract_dependency": "NONE",
       "items": [
@@ -342,32 +342,18 @@
           "sha256": "1D4892E06A9CE189DC984516A5894DCC8B93509EE2D07087C61A762BE33E6F00"
         },
         {
-          "path": "synthetic/fixtures/care_histories.json",
-          "role": "LOAD",
-          "records": 25,
-          "size_bytes": 9770,
-          "sha256": "643C0E160E25E07E81C7C1406F90D877EE24080FAC1A597B3D78221F89EB0470"
-        },
-        {
-          "path": "config/handoff/backend_import_crosswalk.json",
-          "role": "MAPPING_DB_FULL_VERIFIED",
-          "records": 1,
-          "size_bytes": 18600,
-          "sha256": "2091BB0B448BACE5AA8AB31A0DAE613B7D51BBDB11F8AEBF666DFB9571020E87"
-        },
-        {
-          "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
-          "role": "SCHEMA",
-          "records": 1,
-          "size_bytes": 820,
-          "sha256": "3DE5409A17F92E2BC02FE09EF0F347EB22171EA10E9F08F9ECE553E9D4C9CC7C"
-        },
-        {
           "path": "synthetic/fixtures/followup_confirmations.json",
           "role": "LOAD",
           "records": 1,
           "size_bytes": 658,
           "sha256": "5172FEF53B6AB4F2DC292F15B96F68DB801C7247C79A3C5D3720475C0594703A"
+        },
+        {
+          "path": "synthetic/fixtures/care_histories.json",
+          "role": "LOAD",
+          "records": 25,
+          "size_bytes": 9770,
+          "sha256": "643C0E160E25E07E81C7C1406F90D877EE24080FAC1A597B3D78221F89EB0470"
         },
         {
           "path": "synthetic/fixtures/inquiry_status_histories.json",
@@ -382,6 +368,20 @@
           "records": 125,
           "size_bytes": 62197,
           "sha256": "2B9A586B14B0F44E9A30A458D6E152B87F6161D3D7367AEEA46BFD3208A90FFD"
+        },
+        {
+          "path": "config/handoff/backend_import_crosswalk.json",
+          "role": "MAPPING_DB_FULL_VERIFIED",
+          "records": 1,
+          "size_bytes": 18600,
+          "sha256": "47A47CE38ACC714FF5DE64AB8F69A234B38675D0F3A6C2B991ECB69CDB0945F9"
+        },
+        {
+          "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 820,
+          "sha256": "3DE5409A17F92E2BC02FE09EF0F347EB22171EA10E9F08F9ECE553E9D4C9CC7C"
         },
         {
           "path": "synthetic/expected/evidence_references.json",
@@ -438,50 +438,50 @@
           "path": "processed/validation/latest_qa_summary.json",
           "role": "SUMMARY",
           "records": 1,
-          "size_bytes": 7006,
-          "sha256": "0C50F231FF6CEBD0B6A77281B02E61FD39BF7805E48044152ABE9601CEBC2C57"
+          "size_bytes": 7047,
+          "sha256": "352B323FE72F52498889035F7D597E8561E539ACC72C2C4E552AD27500450379"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 8471,
-          "sha256": "D3123FB6F41F1E4701488E3F2351993E1BEFB82EAAA9E319B7904165A25CFCB3"
+          "sha256": "FF8328BEF1FA40E3BF6B5612EFBA1E72F2D0CDB62DA070E94F929FFC9EFD8A6C"
         },
         {
           "path": "processed/validation/integrity/latest_integrity_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1340,
-          "sha256": "1B8E6C073154928AD2A35C9FFB556923292E8EF9B7B19B1E1B0739C23EAEECDA"
+          "sha256": "8B86D3F7CA35AB674FC2F03C43083696D57512745E291009B2E5585C66E18B9E"
         },
         {
           "path": "processed/validation/quality/latest_quality_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1246,
-          "sha256": "61A45A2ED705ED1D90546D69B9C4ECEC1D07FC595568D0142BFE92DBC6011965"
+          "sha256": "415B4B8000C13EB890F3E35D83315905FCD34A3AED119C3518C43D0009183334"
         },
         {
           "path": "processed/validation/business/latest_business_rules_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1544,
-          "sha256": "133C4852E14B07DD6875E9018CC8646AA0BF4408F35C2FF552CC59C0B4C4103C"
+          "sha256": "2A60C374CDE76D0BC991C03715AE65BFC6C063CB7D69A1EDFD5FBD354D820E37"
         },
         {
           "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 1151,
-          "sha256": "A1F3287C1663101BC45CC9077FD6D288B9C8BE556ECFA573734F7E074088D79C"
+          "size_bytes": 1152,
+          "sha256": "53D79F1135EED244E8C73A8B6B93E58C5F73A732964CCEBE25711CDD3A944095"
         },
         {
           "path": "processed/metadata/dataset_manifest.json",
           "role": "MANIFEST",
           "records": 1,
-          "size_bytes": 10039,
-          "sha256": "31775E3EFECA8B7907F58B066E8154520432B9010D54AA80D8912EE74C57E68D"
+          "size_bytes": 10106,
+          "sha256": "DDB2B080DC692687B9A333F9D32E989BB498B4DDAD695B46192597462E860B42"
         },
         {
           "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
