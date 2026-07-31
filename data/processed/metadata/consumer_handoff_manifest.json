@@ -87,14 +87,14 @@
           "role": "EVALUATION_CONTRACT",
           "records": 1,
           "size_bytes": 8840,
-          "sha256": "4DE28B7E62302551273AE13E01FFD7464DFC16ED7269739A89C21EE902FC56D7"
+          "sha256": "6E9F202F902F965B0C6875D8FCDF26333651E680019CC8B34416E8A444A12E4F"
         },
         {
           "path": "schemas/config/ragEvaluationCases.schema.json",
           "role": "SCHEMA",
           "records": 1,
           "size_bytes": 6443,
-          "sha256": "B3532037AED3F984BCA1BC2D176C131F14D4AB0DE2C9D5E1CB2ECFFEFBFF4D24"
+          "sha256": "99AB170BCB26F799CCC0977AFC05D8B59F8E1958099B45C9BD1BA47136A12224"
         },
         {
           "path": "schemas/processed/ragChunk.schema.json",
@@ -438,8 +438,8 @@
           "path": "processed/validation/latest_qa_summary.json",
           "role": "SUMMARY",
           "records": 1,
-          "size_bytes": 7047,
-          "sha256": "74349BD831E160EDE9D72A2B3543DEA3573032EDD82D54FC460C347FAEE0B60B"
+          "size_bytes": 7046,
+          "sha256": "BAADEA4EF0B1539B4EC2D8F8E33DBC538EB9E9A0C0EFB1199E005CD4369968DF"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",
@@ -473,8 +473,8 @@
           "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 1152,
-          "sha256": "2380F369F9FBE1CB1DAC90158B369837F97934DFA60040E65E3AD1E9C026480B"
+          "size_bytes": 1151,
+          "sha256": "7128BA567667194202489DE40A508CDCA6845B4E1A6E1C1D6FF743C1BA39E363"
         },
         {
           "path": "processed/metadata/dataset_manifest.json",

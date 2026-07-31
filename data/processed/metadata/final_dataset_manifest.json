@@ -283,7 +283,7 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 18457,
-      "sha256": "4DA1968FEB4362107A292C5EB48F87F47C68719CD1E06677273AF00E3DC46360"
+      "sha256": "FE1E19273C728CA55574C60F5BCA6343CE139A8E7D040EF49D2C53AE5DAC2B89"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -360,7 +360,7 @@
     {
       "path": "schemas/config/ragEvaluationCases.schema.json",
       "size_bytes": 6443,
-      "sha256": "B3532037AED3F984BCA1BC2D176C131F14D4AB0DE2C9D5E1CB2ECFFEFBFF4D24"
+      "sha256": "99AB170BCB26F799CCC0977AFC05D8B59F8E1958099B45C9BD1BA47136A12224"
     },
     {
       "path": "schemas/config/representativeCase.schema.json",
@@ -684,7 +684,7 @@
     {
       "path": "config/rag/jac104_retrieval_cases.json",
       "size_bytes": 8840,
-      "sha256": "4DE28B7E62302551273AE13E01FFD7464DFC16ED7269739A89C21EE902FC56D7"
+      "sha256": "6E9F202F902F965B0C6875D8FCDF26333651E680019CC8B34416E8A444A12E4F"
     },
     {
       "path": "config/synthetic/scenarios.json",
@@ -767,8 +767,8 @@
     },
     {
       "path": "processed/validation/latest_qa_summary.json",
-      "size_bytes": 7047,
-      "sha256": "74349BD831E160EDE9D72A2B3543DEA3573032EDD82D54FC460C347FAEE0B60B"
+      "size_bytes": 7046,
+      "sha256": "BAADEA4EF0B1539B4EC2D8F8E33DBC538EB9E9A0C0EFB1199E005CD4369968DF"
     },
     {
       "path": "processed/validation/ocr_evidence/image_manifest.csv",
@@ -797,8 +797,8 @@
     },
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
-      "size_bytes": 1152,
-      "sha256": "2380F369F9FBE1CB1DAC90158B369837F97934DFA60040E65E3AD1E9C026480B"
+      "size_bytes": 1151,
+      "sha256": "7128BA567667194202489DE40A508CDCA6845B4E1A6E1C1D6FF743C1BA39E363"
     },
     {
       "path": "processed/validation/schema/latest_schema_report.json",
