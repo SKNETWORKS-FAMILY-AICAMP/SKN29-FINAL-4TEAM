@@ -10,9 +10,16 @@ API 계약과 PM State 입력은 실제 Runtime 준비도와 분리해 판정합
 연동 starter 참고본이며 현재 Migration·API·State 계약의 실행 기준이
 아닙니다.
 
-DB 변경·복구·인계의 최신 단일 실행 기준은
-[Django·PostgreSQL 공유 패키지 인계서 v1.3](../docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)입니다.
-이 README는 일상 실행을 위한 빠른 진입점만 제공합니다.
+현재 로컬 개발의 실행 기준은 PostgreSQL **database `waterbridge`**와
+그 안의 **schema `public`**입니다. database 이름과 schema 이름을
+혼동하지 않습니다. 이번 전환과 Active 범위 검증 결과는
+[WaterBridge DB 전환·Active 범위 검증서](../docs/individual/jiyong/technical/backend/20260731_waterbridge_database_transition_and_active_scope_validation.md)에
+정리돼 있습니다.
+
+DB 변경·복구·인계의 현행 실행 기준은 위 WaterBridge 검증서입니다.
+[Django·PostgreSQL 공유 패키지 인계서 v1.3](../docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)은
+2026-07-29 `watercare` 환경의 역사 증거로 보존합니다. 이 README는
+일상 실행을 위한 빠른 진입점만 제공합니다.
 
 ## 현재 구현 범위
 
@@ -27,6 +34,15 @@ DB 변경·복구·인계의 최신 단일 실행 기준은
 - 기존 process environment를 우선하는 `backend/.env` 선택 로딩
 - View가 명시한 역할·소유자·배정자를 검사하는 detail 요청용
   fail-closed Permission
+
+T-005 물리 계약은 `waterbridge.public`에 **32개 테이블을 유지**하는
+것입니다. 이 가운데 **Active MVP 13개 테이블**만 현재 데이터 생성·
+조회 범위로 사용하고, **Target-only 19개 테이블**은 후속 데이터와
+기능 계약이 준비될 때까지 테이블만 유지하며 **0행**을 보장합니다.
+따라서 `13개만 사용한다`는 말은 19개 테이블을 삭제하거나 별도
+schema로 분리한다는 뜻이 아닙니다. 확장 시에도 기존 32개 계약 안에서
+Target-only 테이블을 하나씩 활성화하고 Migration·Seed·회귀 검증을
+같은 Commit에서 수행합니다.
 
 T-017에는 합성 계정 Demo 로그인, JWT 발급·회전·폐기, `/me`,
 `User`·`CustomerProfile`, `0001_initial.py`, 역할·소유권 Permission,
@@ -65,7 +81,7 @@ Serializer·테스트 증거로 각각 판정합니다.
 `backend/.python-version`은 Python `3.13.13`,
 `requirements/base.txt`와 `requirements/local.txt`는 직접 의존성,
 `requirements/constraints-py313.txt`는 Python 3.13에서 검증한
-직접·간접 의존성 31개를 고정합니다. 팀이 버전을 변경하면 세 파일과
+직접·간접 의존성 32개를 고정합니다. 팀이 버전을 변경하면 세 파일과
 검증 기록을 같은 변경 단위로 갱신합니다.
 
 새 PC에서는 Python 3.13.13을 준비한 뒤 저장소 루트에서 다음 한 줄로
@@ -136,12 +152,13 @@ if ($LASTEXITCODE -ne 0) {
 
 & $python manage.py migrate --check
 if ($LASTEXITCODE -ne 0) {
-    throw "미적용 Migration이 있습니다. 자동 적용하지 말고 v1.3의 안전 적용 절차를 따르세요."
+    throw "미적용 Migration이 있습니다. 자동 적용하지 말고 WaterBridge 검증서의 안전 적용 절차를 따르세요."
 }
 ```
 
 `migrate --check` 실패는 자동 Migration 실행 조건이 아니라 즉시 중단
-조건입니다. 적용이 필요하면 v1.3에 따라 ① DB 이름·Host·Port 재확인,
+조건입니다. 적용이 필요하면 WaterBridge 검증서에 따라
+① DB 이름·Host·Port 재확인,
 ② Django·Importer·Job 등 모든 Writer 중단, ③ `migrate --plan` 검토,
 ④ 데이터 유무에 따른 백업·복원 검증 필요 여부 결정, ⑤ 승인된
 `migrate --noinput` 명시 실행, ⑥ `migrate --check`와 전체 Gate 재검증
@@ -173,32 +190,52 @@ docker compose --env-file .\backend\.env stop postgres
 ```
 
 전체 일상 실행·종료·상태 확인·포트 충돌 절차는
-[Django·PostgreSQL 공유 패키지 인계서 v1.3](../docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)를
-따릅니다.
+[Backend 가상환경 재현 가이드](../docs/individual/jiyong/technical/backend/backend_venv_reproducibility_guide.md)와
+위 WaterBridge 검증서를 따릅니다.
 
 ## 검증
 
-저장소 루트에서 환경만 빠르게 확인합니다.
+저장소 루트에서 환경만 빠르게 확인합니다. 시스템 Python 대신
+프로젝트의 `backend/.venv`를 사용하므로 그대로 복사해 실행할 수
+있습니다.
 
 ```powershell
-python .\scripts\development\check_environment.py --service backend
+Set-Location (git rev-parse --show-toplevel)
+& .\backend\.venv\Scripts\python.exe `
+  .\scripts\development\check_environment.py `
+  --service backend
+```
+
+PostgreSQL을 실행한 뒤에는 실제 `waterbridge.public` 연결과 적용
+Migration을 읽기 전용으로 확인합니다.
+
+```powershell
+& .\backend\.venv\Scripts\python.exe `
+  .\scripts\development\check_environment.py `
+  --service backend `
+  --postgresql
 ```
 
 공유 전에는 Migration drift와 전체 Backend 테스트까지 실행합니다.
 
 ```powershell
-python .\scripts\development\check_environment.py --service backend --full
+& .\backend\.venv\Scripts\python.exe `
+  .\scripts\development\check_environment.py `
+  --service backend `
+  --full
 ```
 
-이 검사는 Python·pip·31개 constraints·추가 패키지·환경 fingerprint,
+이 검사는 Python·pip·32개 constraints·추가 패키지·환경 fingerprint,
 `pip check`, Django check, Migration drift, 전체 pytest,
 `.venv` Git 추적 여부를 확인합니다. `--postgresql`은 Docker
 PostgreSQL이 실행 중일 때 읽기 전용 연결과 적용 Migration을 추가로
 확인합니다.
 
-2026-07-29 현재 로컬 작업 트리에서 확인한 실측 증거는 다음과 같습니다.
-병합된 팀 `main`의 영구 기준으로 간주하지 말고 v1.3의 재현 절차로
-다시 확인합니다.
+> **HISTORICAL — 2026-07-29 `watercare` 실측**
+>
+> 다음 표는 DB 이름 전환 전 로컬 작업 트리의 과거 증거입니다.
+> 현재 `waterbridge.public` 기준이나 병합된 팀 `main`의 영구 증거로
+> 재사용하지 말고, 위 명령과 최신 검증서로 다시 확인합니다.
 
 | 항목 | 실측 결과 | 범위 |
 | --- | --- | --- |
@@ -210,14 +247,15 @@ PostgreSQL이 실행 중일 때 읽기 전용 연결과 적용 Migration을 추�
 
 [Backend 가상환경 재현 가이드](../docs/individual/jiyong/technical/backend/backend_venv_reproducibility_guide.md)와
 [Django·PostgreSQL 공유 패키지 인계서 v1.3](../docs/individual/jiyong/manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)에
-설계 근거, 복구 순서와 담당자별 인계사항을 정리했습니다.
+환경 설계 근거와 2026-07-29 역사 절차를 정리했습니다. 현재 복구
+순서와 검증 결과는 위 WaterBridge 검증서를 우선합니다.
 
 실제 로컬 PostgreSQL 실행은 `backend/.env.example`의 키를
-`backend/.env`에 안전하게 채운 뒤 수행합니다. 기본 `watercare` DB에는
+`backend/.env`에 안전하게 채운 뒤 수행합니다. 기본 `waterbridge` DB에는
 공통코드 Seed를 먼저 실행한 뒤 Demo Seed 네 종류를 순서대로
 실행합니다. 팀 인계용 멱등성 증거와 실행 전제는 v1.3 및
 [공통코드 Registry 구현 가이드](../docs/individual/jiyong/technical/backend/t005_common_code_registry_implementation.md)를
-따릅니다.
+참고하되, 현재 DB 이름과 검증 결과는 WaterBridge 검증서를 따릅니다.
 
 ```powershell
 Set-Location (git rev-parse --show-toplevel)
@@ -229,9 +267,9 @@ Set-Location .\backend
 .\.venv\Scripts\python.exe manage.py seed_demo_care_records
 ```
 
-Canonical `import_synthetic_handoff`는 기본 `watercare`에서 실행하지
+Canonical `import_synthetic_handoff`는 기본 `waterbridge`에서 실행하지
 않습니다. 새로 만든 격리 DB의 이름과 연결 대상을 확인한 경우에만
-v1.3의 전용 절차로 실행합니다.
+WaterBridge 검증서의 격리 DB 전용 절차로 실행합니다.
 
 PostgreSQL은 로컬 PC의 `127.0.0.1`에만 공개되며, DB 파일은
 `watercare-postgres-data` Docker Volume에 보존됩니다. 단순 중지는
@@ -239,11 +277,11 @@ PostgreSQL은 로컬 PC의 `127.0.0.1`에만 공개되며, DB 파일은
 `down -v`는 Volume의 DB 데이터를 삭제하므로 초기화가 명시적으로
 필요한 경우에만 사용합니다.
 
-Compose는 공식 `postgres:16.14-bookworm` 이미지를 사용하고
+Compose는 `pgvector/pgvector:0.8.6-pg16-bookworm` 이미지를 사용하고
 `backend/.env` 전체를 컨테이너에 전달하지 않습니다. DB 이름·사용자·
-비밀번호 3개만 PostgreSQL에 주입합니다. pgvector는 VectorField를
-소유하는 Django Migration과 함께 추가·검증하며 이 초기 연결
-기준선에서는 선행 생성하지 않습니다.
+비밀번호 3개만 PostgreSQL에 주입합니다. 이미지의 PostgreSQL 16과
+pgvector 0.8.6은 실제 연결 검사와 Django Migration에서 함께
+검증합니다.
 
 ### 서버와 Health·Auth Smoke
 

@@ -1,0 +1,653 @@
+# WaterBridge PostgreSQL 전환·Active MVP 범위 검증 및 팀 실행 가이드
+
+> 기준일: 2026-07-31
+> 작성·구현 책임: 최지용(Backend·Database)
+> 적용 범위: 기본 개발 DB 이름 전환, T-005 계약 테이블 32개, Active MVP
+> 데이터 범위, Migration·Seed·격리 Importer·회귀 검증
+> 현재 판정: **로컬 기술 검증 완료 / 비작성자 독립 재현·외부 소비 검증·PM
+> 완료 리뷰 대기**
+> 실행 원칙: `작업 → 즉시 검증 → 다음 작업`
+
+이 문서는 현재 기본 PostgreSQL 데이터베이스와 팀 재현 절차의 단일
+진입점이다. Backend 설치·가상환경 원리는
+[Backend `.venv` 재현 가이드](backend_venv_reproducibility_guide.md),
+일상 서버 실행은 [Backend README](../../../../../backend/README.md),
+T-005의 계약 상태는
+[T-005 Manifest](../../../../database/t-005/manifest.json)와
+[물리 계약 v1.3](../../../../database/t-005/t005_physical_contract_v1.3.json)을
+함께 따른다.
+
+설명 문서와 실제 코드·계약이 다르면 `contracts/**`, Django
+Model·Migration, 실행 검증 결과를 우선한다.
+
+## 1. 최종 결정
+
+| 구분 | 현행 기준 | 해석 |
+| --- | --- | --- |
+| 프로젝트 표시명 | WaterBridge | 새 문서의 현행 서비스 표기 |
+| 기본 PostgreSQL DB | `waterbridge` | `POSTGRES_DB`가 가리키는 현재 개발 DB |
+| PostgreSQL Schema | `public` | `waterbridge`라는 새 Schema를 만든 것이 아님 |
+| T-005 계약 테이블 | 32개 | 모두 Model·App Registry·번호 Migration에 연결 |
+| Active MVP 데이터 테이블 | 13개 | 현재 업무 데이터가 존재하는 계약 테이블 |
+| Target-only 테이블 | 19개 | 물리 테이블은 유지하되 현재 행 수 0 |
+| PostgreSQL Volume | `watercare-postgres-data` | 데이터 보존을 위해 기존 이름 그대로 유지 |
+| Importer 실행 위치 | 새 빈 격리 DB | 기본 `waterbridge`에서는 dry-run도 금지 |
+
+`public`에는 Django·JWT 등 T-005 계약 밖의 테이블도 존재한다. 따라서
+PostgreSQL의 전체 테이블 수를 32라고 표현하지 않고, 항상
+**“T-005 계약 테이블 32개”**라고 구분한다.
+
+Active 13은 다음 의미만 가진다.
+
+- 현재 데이터가 존재하며 MVP 업무에서 우선 사용하는 계약 테이블이다.
+- 나머지 19개를 삭제하거나 별도 Schema로 옮기지 않는다.
+- 나머지 19개에도 이미 적용된 Migration을 되돌리지 않는다.
+- Active 분류만으로 해당 테이블의 모든 API가 구현됐다고 판정하지 않는다.
+- Target-only 테이블은 데이터·기능 준비가 끝난 순서대로 활성화한다.
+
+## 2. 전환 범위와 변경하지 않은 것
+
+기존 기본 DB `watercare`를 백업·실제 복원 검증한 뒤 DB 이름만
+`waterbridge`로 변경했다. 테이블을 다시 만들거나 데이터를 다른 Schema로
+이동하지 않았다.
+
+변경한 현재 연결 기준:
+
+- `backend/.env`의 로컬 `POSTGRES_DB`
+- [공개 환경변수 예시](../../../../../backend/.env.example)의
+  `POSTGRES_DB`
+- Django 기본 DB fallback
+- 환경변수·연결 검사 기대값
+- 현재 Backend·인계 문서의 기본 DB 표기
+
+변경하지 않은 역사·인프라 식별자:
+
+- Docker Compose 프로젝트명 `watercare-local`
+- Docker Volume `watercare-postgres-data`
+- 과거 검증 DB `watercare_t005_*`, `watercare_synthetic_*`
+- `watercare_schema_v3.json`, `watercare_api_specification.md` 같은 기존
+  계약·산출물 파일명
+- 2026-07-29~30에 실제로 `watercare`에서 수행한 Migration·Seed·Smoke
+  기록
+
+과거 증거의 `watercare`를 일괄 치환하면 당시 실제 실행 대상을 왜곡한다.
+현행 실행 절에서만 `waterbridge`를 사용한다.
+
+## 3. 전환 전 백업과 실제 Restore 검증
+
+전환 전 custom-format dump를 생성하고 목록 검사뿐 아니라 임시 DB에 실제
+복원했다.
+
+| 항목 | 검증 결과 |
+| --- | --- |
+| 백업 파일명 | `watercare_before_waterbridge_rename_20260731-160904.dump` |
+| 파일 크기 | `426659` bytes |
+| SHA-256 | `A1217AE0E02247A066B08FE0D0DB0739409F2494CF407E7AD7A537FDD1A11C42` |
+| Archive 목록 | `pg_restore --list` 통과 |
+| 임시 Restore DB | `waterbridge_restore_verify_20260731_160904` |
+| Restore 후 Schema | `public` |
+| Restore 후 PostgreSQL 테이블 | 45개 |
+| Restore 후 pgvector | `0.8.6` |
+| 표본 건수 | User 20, Inquiry 28, Status History 136 |
+| Target-only 표본 | Document Chunk 0 |
+| 정리 | Restore 검증 DB 삭제와 부재 확인 |
+
+백업 파일은 Git 공유 대상이 아니다. 개인 PC 경로나 PostgreSQL 비밀번호를
+문서·Commit·로그에 기록하지 않는다. 팀에 전달할 수 있는 증거는 위
+파일명·크기·SHA-256과 Restore 결과뿐이다.
+
+## 4. 현행 DB·Schema·테이블 범위
+
+### 4.1 Active MVP 13개
+
+| 테이블 | 현재 행 수 |
+| --- | ---: |
+| `common_code_group` | 16 |
+| `common_code` | 72 |
+| `accounts_user` | 20 |
+| `customers_customer_profile` | 13 |
+| `catalog_product_model` | 2 |
+| `subscriptions_customer_subscription` | 13 |
+| `subscriptions_care_record` | 28 |
+| `support_inquiry` | 28 |
+| `support_inquiry_symptom` | 24 |
+| `support_inquiry_status_history` | 136 |
+| `support_consultation` | 12 |
+| `field_service_visit` | 4 |
+| `support_followup_confirmation` | 1 |
+
+### 4.2 Target-only 19개
+
+아래 테이블은 모두 물리적으로 존재하고 현재 행 수는 각각 0이다.
+
+1. `support_questionnaire_session`
+2. `support_inquiry_qa`
+3. `support_symptom_assessment`
+4. `support_guidance`
+5. `support_guidance_item`
+6. `support_customer_action_result`
+7. `support_handoff_report`
+8. `field_service_visit_result`
+9. `knowledge_ingestion_batch`
+10. `knowledge_source_document`
+11. `knowledge_document_model_scope`
+12. `knowledge_document_page`
+13. `knowledge_document_chunk`
+14. `knowledge_chunk_embedding`
+15. `knowledge_data_quality_issue`
+16. `aiops_ai_run`
+17. `aiops_retrieval_run`
+18. `aiops_retrieval_hit`
+19. `knowledge_evidence_link`
+
+Target-only 활성화는 다음 순서로 한 테이블씩 진행한다.
+
+1. 담당 계약·입력 데이터 확정
+2. 기존 Model·Migration과 계약 대조
+3. 격리 DB에서 적재·제약 검증
+4. API·권한·상태 전이 소비 검증
+5. 같은 Commit에서 회귀
+6. 담당자 인계와 PM 병합
+
+## 5. Migration·Schema 검증
+
+DB 이름 전환 뒤 다음 결과를 확인했다.
+
+| Gate | 결과 |
+| --- | --- |
+| `current_database()` | `waterbridge` |
+| `current_schema()` | `public` |
+| PostgreSQL | `16.14` |
+| pgvector | `0.8.6` |
+| Django System Check | 오류 0 |
+| `migrate --check` | 미적용 Migration 0 |
+| `makemigrations --check --dry-run` | `No changes detected` |
+| T-005 Auditor | `READY`, 구현 `32/32`, blocker 0 |
+| T-005 Schema Validator | 연결·Migration·계약 오류 0 |
+
+팀원은 저장소 루트에서 다음을 실행한다.
+
+```powershell
+Set-Location (git rev-parse --show-toplevel)
+
+docker compose --env-file .\backend\.env up -d postgres
+docker compose --env-file .\backend\.env ps postgres
+
+& .\backend\.venv\Scripts\python.exe `
+  .\scripts\database\check_postgresql_connection.py
+if ($LASTEXITCODE -ne 0) {
+    throw 'PostgreSQL DB·Schema 연결 검증 실패'
+}
+
+Set-Location .\backend
+$python = '.\.venv\Scripts\python.exe'
+
+& $python manage.py check --settings=config.settings.local
+if ($LASTEXITCODE -ne 0) {
+    throw 'Django System Check 실패'
+}
+
+& $python manage.py makemigrations --check --dry-run `
+  --settings=config.settings.local
+if ($LASTEXITCODE -ne 0) {
+    throw 'Model·Migration drift 발견'
+}
+
+& $python manage.py migrate --check --settings=config.settings.local
+if ($LASTEXITCODE -ne 0) {
+    throw '미적용 Migration 발견: 자동 적용하지 말고 대상 DB와 백업을 재확인하세요.'
+}
+
+Set-Location ..
+& .\backend\.venv\Scripts\python.exe `
+  .\scripts\database\audit_t005_implementation_readiness.py `
+  --settings config.settings.local `
+  --require-ready
+if ($LASTEXITCODE -ne 0) {
+    throw 'T-005 32/32 Runtime 준비도 검증 실패'
+}
+```
+
+`migrate --check` 실패는 곧바로 `migrate`를 실행하라는 뜻이 아니다.
+대상 DB·Writer·백업·`migrate --plan`을 확인한 뒤 승인된 Migration만
+적용한다.
+
+## 6. 기본 `waterbridge` Seed 2회 검증
+
+기본 DB에서는 공통코드와 Demo Seed만 실행했다. 동일 명령 묶음을 두 번
+실행해 두 번째 실행에서 비의도 신규 생성이 없음을 확인했다.
+
+| Seed | 각 실행 결과 |
+| --- | --- |
+| Common Code Group | Created 0, Updated 16 |
+| Common Code | Created 0, Updated 72 |
+| Demo Account | Created 0, Updated 4 |
+| Demo Product | Updated 1 |
+| Demo Subscription | Updated 1 |
+| Demo Care | Created 0, Updated 3 |
+
+`BLOCKED_CONTRACT_MAPPING` 경고는 미승인 코드를 임의 생성하지 않은 정상
+안전 동작이다. 두 번의 Seed 뒤에도 Active 13과 Target-only 19의 행 수는
+전환 전 기준과 같았다.
+
+다음 명령은 현재 연결 DB가 `waterbridge`인지 확인한 뒤에만 실행한다.
+
+```powershell
+Set-Location (git rev-parse --show-toplevel)
+
+$dbSetting = Get-Content .\backend\.env |
+    Where-Object { $_ -match '^POSTGRES_DB=' } |
+    Select-Object -First 1
+
+$dbName = (($dbSetting -split '=', 2)[1]).Trim()
+if ($dbName -ne 'waterbridge') {
+    throw 'Seed 중단: backend/.env의 POSTGRES_DB가 waterbridge가 아닙니다.'
+}
+
+Set-Location .\backend
+$python = '.\.venv\Scripts\python.exe'
+
+foreach ($round in 1..2) {
+    Write-Host "Seed round $round"
+    & $python manage.py seed_common_codes
+    if ($LASTEXITCODE -ne 0) { throw 'seed_common_codes 실패' }
+
+    & $python manage.py seed_demo_accounts
+    if ($LASTEXITCODE -ne 0) { throw 'seed_demo_accounts 실패' }
+
+    & $python manage.py seed_demo_products
+    if ($LASTEXITCODE -ne 0) { throw 'seed_demo_products 실패' }
+
+    & $python manage.py seed_demo_subscriptions
+    if ($LASTEXITCODE -ne 0) { throw 'seed_demo_subscriptions 실패' }
+
+    & $python manage.py seed_demo_care_records
+    if ($LASTEXITCODE -ne 0) { throw 'seed_demo_care_records 실패' }
+}
+```
+
+## 7. 격리 Importer 검증
+
+기본 `waterbridge`에는 canonical fixture와 다른 공개 UUID를 가진 기존
+행이 있으므로 `import_synthetic_handoff`와 `--dry-run`을 모두 실행하지
+않는다. 과거 기본명 `watercare`도 안전 Guard에 포함한다.
+
+이번 검증은 새 빈 격리 DB에서만 수행했다.
+
+| 단계 | 결과 |
+| --- | --- |
+| 격리 DB | `waterbridge_import_verify_20260731_1625` |
+| 빈 DB Migration | 전체 적용, 미적용 0, drift 0 |
+| T-005 | `READY 32/32`, 오류 0 |
+| Full dry-run | Source 367, Created 예상 355, Projected 12 |
+| Full 1차 | Created 355, Projected 12 |
+| Full Replay | Created 0, Updated 0, Unchanged 355, Projected 12 |
+| Import Ledger | Batch 2, Item 734 |
+| 상태·감사 | Status History 125, Audit Event 125 |
+| 정리 | 격리 DB 삭제와 부재 확인 |
+
+팀에서 독립 재현할 때는 매 실행마다 새 이름을 사용한다.
+
+```powershell
+Set-Location (git rev-parse --show-toplevel)
+
+$isolatedDb = 'waterbridge_import_verify_' + (Get-Date -Format 'yyyyMMdd_HHmmss')
+if ($isolatedDb -in @('waterbridge', 'watercare')) {
+    throw 'Importer 중단: 기본 개발 DB 이름을 사용할 수 없습니다.'
+}
+
+docker compose --env-file .\backend\.env exec -T `
+  -e TARGET_DB=$isolatedDb `
+  postgres `
+  sh -lc 'createdb -U "$POSTGRES_USER" "$TARGET_DB"'
+if ($LASTEXITCODE -ne 0) {
+    throw 'Importer 격리 DB 생성 실패'
+}
+
+$previousDatabase = $env:POSTGRES_DB
+$env:POSTGRES_DB = $isolatedDb
+
+try {
+    Set-Location .\backend
+    $python = '.\.venv\Scripts\python.exe'
+
+    & $python manage.py migrate --noinput --settings=config.settings.local
+    if ($LASTEXITCODE -ne 0) { throw '격리 DB Migration 실패' }
+
+    & $python manage.py migrate --check --settings=config.settings.local
+    if ($LASTEXITCODE -ne 0) { throw '격리 DB 미적용 Migration 존재' }
+
+    & $python manage.py makemigrations --check --dry-run `
+      --settings=config.settings.local
+    if ($LASTEXITCODE -ne 0) { throw '격리 DB 기준 Migration drift 발견' }
+
+    foreach ($round in 1..2) {
+        Write-Host "Isolated Seed round $round"
+        & $python manage.py seed_common_codes
+        if ($LASTEXITCODE -ne 0) { throw '격리 DB seed_common_codes 실패' }
+
+        & $python manage.py seed_demo_accounts
+        if ($LASTEXITCODE -ne 0) { throw '격리 DB seed_demo_accounts 실패' }
+
+        & $python manage.py seed_demo_products
+        if ($LASTEXITCODE -ne 0) { throw '격리 DB seed_demo_products 실패' }
+
+        & $python manage.py seed_demo_subscriptions
+        if ($LASTEXITCODE -ne 0) { throw '격리 DB seed_demo_subscriptions 실패' }
+
+        & $python manage.py seed_demo_care_records
+        if ($LASTEXITCODE -ne 0) { throw '격리 DB seed_demo_care_records 실패' }
+    }
+
+    $dryRunRaw = @(
+        & $python manage.py import_synthetic_handoff --profile full --dry-run
+    )
+    if ($LASTEXITCODE -ne 0) { throw 'Importer dry-run 실패' }
+    $dryRun = $dryRunRaw[-1] | ConvertFrom-Json
+    if (
+        $dryRun.source_count -ne 367 -or
+        $dryRun.created_count -ne 355 -or
+        $dryRun.projected_count -ne 12
+    ) {
+        throw 'Importer dry-run 예상 수치 불일치'
+    }
+
+    $firstRaw = @(
+        & $python manage.py import_synthetic_handoff --profile full
+    )
+    if ($LASTEXITCODE -ne 0) { throw 'Importer 1차 실행 실패' }
+    $first = $firstRaw[-1] | ConvertFrom-Json
+    if (
+        $first.source_count -ne 367 -or
+        $first.created_count -ne 355 -or
+        $first.projected_count -ne 12
+    ) {
+        throw 'Importer 1차 예상 수치 불일치'
+    }
+
+    $replayRaw = @(
+        & $python manage.py import_synthetic_handoff --profile full
+    )
+    if ($LASTEXITCODE -ne 0) { throw 'Importer Replay 실패' }
+    $replay = $replayRaw[-1] | ConvertFrom-Json
+    if (
+        $replay.created_count -ne 0 -or
+        $replay.updated_count -ne 0 -or
+        $replay.unchanged_count -ne 355 -or
+        $replay.projected_count -ne 12
+    ) {
+        throw 'Importer Replay 예상 수치 불일치'
+    }
+} finally {
+    Set-Location (git rev-parse --show-toplevel)
+    if ($null -eq $previousDatabase) {
+        Remove-Item Env:POSTGRES_DB -ErrorAction SilentlyContinue
+    } else {
+        $env:POSTGRES_DB = $previousDatabase
+    }
+}
+
+$ledgerCounts = docker compose --env-file .\backend\.env exec -T `
+  -e TARGET_DB=$isolatedDb `
+  postgres `
+  sh -lc 'psql -U "$POSTGRES_USER" -d "$TARGET_DB" -Atc "SELECT (SELECT count(*) FROM operations_synthetic_import_batch), (SELECT count(*) FROM operations_synthetic_import_item), (SELECT count(*) FROM support_inquiry_status_history), (SELECT count(*) FROM audit_event);"'
+if ($LASTEXITCODE -ne 0 -or $ledgerCounts.Trim() -ne '2|734|125|125') {
+    throw "Importer 원장·상태·감사 수치 불일치: $ledgerCounts"
+}
+
+docker compose --env-file .\backend\.env exec -T `
+  -e TARGET_DB=$isolatedDb `
+  postgres `
+  sh -lc 'dropdb --if-exists -U "$POSTGRES_USER" "$TARGET_DB"'
+if ($LASTEXITCODE -ne 0) {
+    throw '검증 완료 후 격리 DB 삭제 실패'
+}
+
+$databaseExists = docker compose --env-file .\backend\.env exec -T `
+  -e TARGET_DB=$isolatedDb `
+  postgres `
+  sh -lc 'psql -U "$POSTGRES_USER" -d postgres -Atc "SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname=''$TARGET_DB'');"'
+if ($LASTEXITCODE -ne 0 -or $databaseExists.Trim() -ne 'f') {
+    throw "격리 DB 삭제 후 부재 확인 실패: $databaseExists"
+}
+```
+
+Importer 출력 JSON에서 위 Source·Created·Projected·Replay 수치를 확인하지
+못했다면 DB를 삭제하지 말고 실패 증거를 보존해 최지용과 Data/QA
+담당자에게 전달한다.
+
+## 8. 전체 회귀·Smoke 최종 결과
+
+| 검증 | 결과 | 판정 범위 |
+| --- | --- | --- |
+| 환경 전체 검사 | `check_environment.py --service backend --full --postgresql` PASS | Python·패키지·Django·Migration·PostgreSQL |
+| 표적 API | `21 passed` | 문의 생성·취소·OpenAPI Runtime Coverage |
+| Backend SQLite | `740 passed, 11 skipped` | `config.settings.test` |
+| Backend PostgreSQL | `751 passed` | 격리 PostgreSQL 전체 회귀 |
+| Data 단위 | `67 tests, OK` | Data 도구 |
+| Data QA E2E | `17/17 PASS` | Data 계약·QA 흐름 |
+| Health·Auth Smoke | `status=PASSED` | Health·CORS·Login·Me·Refresh·Logout |
+| Git whitespace | 오류 없음 | `git diff --check` |
+
+검증 명령:
+
+```powershell
+Set-Location (git rev-parse --show-toplevel)
+
+& .\backend\.venv\Scripts\python.exe `
+  .\scripts\development\check_environment.py `
+  --service backend `
+  --full `
+  --postgresql
+if ($LASTEXITCODE -ne 0) {
+    throw 'Backend 전체 환경·PostgreSQL Gate 실패'
+}
+
+& .\backend\.venv\Scripts\python.exe -m pytest `
+  .\backend\tests\api\test_t022_create_inquiry.py `
+  .\backend\tests\api\test_t023_cancel_inquiry.py `
+  .\backend\tests\api\test_openapi_runtime_coverage.py `
+  -q `
+  -p no:cacheprovider
+if ($LASTEXITCODE -ne 0) {
+    throw '표적 API Gate 실패'
+}
+
+& .\backend\.venv\Scripts\python.exe -m pytest `
+  .\backend\tests `
+  -q `
+  -p no:cacheprovider
+if ($LASTEXITCODE -ne 0) {
+    throw 'Backend SQLite 전체 Gate 실패'
+}
+
+Push-Location .\backend
+$previousSettings = $env:DJANGO_SETTINGS_MODULE
+$previousDemoLogin = $env:DJANGO_DEMO_LOGIN_ENABLED
+$previousCors = $env:DJANGO_CORS_ALLOWED_ORIGINS
+
+try {
+    $env:DJANGO_SETTINGS_MODULE = 'config.settings.local'
+    $env:DJANGO_DEMO_LOGIN_ENABLED = 'false'
+    $env:DJANGO_CORS_ALLOWED_ORIGINS = 'https://approved.example'
+
+    & .\.venv\Scripts\python.exe -m pytest `
+      --ds=config.settings.local `
+      -q `
+      -p no:cacheprovider
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Backend PostgreSQL 전체 Gate 실패'
+    }
+} finally {
+    if ($null -eq $previousSettings) {
+        Remove-Item Env:DJANGO_SETTINGS_MODULE -ErrorAction SilentlyContinue
+    } else {
+        $env:DJANGO_SETTINGS_MODULE = $previousSettings
+    }
+    if ($null -eq $previousDemoLogin) {
+        Remove-Item Env:DJANGO_DEMO_LOGIN_ENABLED -ErrorAction SilentlyContinue
+    } else {
+        $env:DJANGO_DEMO_LOGIN_ENABLED = $previousDemoLogin
+    }
+    if ($null -eq $previousCors) {
+        Remove-Item Env:DJANGO_CORS_ALLOWED_ORIGINS -ErrorAction SilentlyContinue
+    } else {
+        $env:DJANGO_CORS_ALLOWED_ORIGINS = $previousCors
+    }
+    Pop-Location
+}
+
+& .\backend\.venv\Scripts\python.exe -B -m unittest discover `
+  -s .\data\tools\tests `
+  -v
+if ($LASTEXITCODE -ne 0) {
+    throw 'Data 단위 Gate 실패'
+}
+
+& .\backend\.venv\Scripts\python.exe -B `
+  .\data\tools\pipeline.py qa --verify-rebuild
+if ($LASTEXITCODE -ne 0) {
+    throw 'Data QA·대표 E2E Gate 실패'
+}
+
+git diff --check
+if ($LASTEXITCODE -ne 0) {
+    throw 'Git whitespace Gate 실패'
+}
+```
+
+전체 PostgreSQL Pytest는 `test_waterbridge`처럼 Django가 관리하는 테스트
+DB를 사용하며 기본 `waterbridge`의 업무 데이터를 시험 대상으로
+사용하지 않는다. 환경별 설정과 전체 명령은
+[T-005 최종 검증 보고서](t005_final_32_table_postgresql_seed_importer_validation_report.md)를
+함께 확인한다.
+
+Health·Auth Smoke는 읽기 전용이 아니며 Token 행을 생성·회전·폐기한다.
+의도한 로컬 Demo DB에서만 실행한다. 첫 번째 터미널에서 서버를 시작한다.
+
+```powershell
+Set-Location (git rev-parse --show-toplevel)
+$env:DJANGO_SETTINGS_MODULE = 'config.settings.local'
+$env:DJANGO_DEMO_LOGIN_ENABLED = 'true'
+$env:POSTGRES_DB = 'waterbridge'
+
+Set-Location .\backend
+.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
+```
+
+서버가 시작된 상태에서 두 번째 터미널을 열고 Smoke를 실행한다.
+
+```powershell
+Set-Location (git rev-parse --show-toplevel)
+
+$baseUrl = 'http://127.0.0.1:8000'
+& .\backend\.venv\Scripts\python.exe `
+  .\scripts\smoke\check_backend_auth.py `
+  --base-url $baseUrl
+if ($LASTEXITCODE -ne 0) {
+    throw 'Health·Auth Smoke 실패'
+}
+```
+
+Smoke 통과 후 첫 번째 터미널에서 `Ctrl+C`를 눌러 Django 서버를
+종료한다.
+
+## 9. Rollback
+
+Rollback은 “테스트가 실패했다”는 이유만으로 즉시 실행하지 않는다. 먼저
+실패 계층이 환경·Migration·Seed·Importer·API 중 어디인지 분리한다.
+DB 이름 전환 자체가 원인이라고 확인되고, Writer 중단과 복구 승인을
+받았을 때만 아래 절차를 사용한다.
+
+### 9.1 이름 전환만 되돌리는 경우
+
+1. Django 서버·Importer·Job 등 모든 Writer를 중단한다.
+2. 현재 DB가 `waterbridge`, Schema가 `public`인지 확인한다.
+3. `waterbridge`의 다른 Session이 0인지 확인한다.
+4. 검증된 dump의 파일명·크기·SHA-256을 다시 확인한다.
+5. DB 이름을 `watercare`로 되돌린다.
+6. 로컬 `backend/.env`의 `POSTGRES_DB`를 `watercare`로 복구한다.
+7. PostgreSQL 컨테이너를 Volume 삭제 없이 재생성한다.
+8. 연결·Migration·Seed·전체 회귀를 다시 실행한다.
+
+```powershell
+Set-Location (git rev-parse --show-toplevel)
+
+docker compose --env-file .\backend\.env exec -T postgres `
+  sh -lc 'psql -U "$POSTGRES_USER" -d postgres -Atc "SELECT count(*) FROM pg_stat_activity WHERE datname=''waterbridge'' AND pid<>pg_backend_pid();"'
+
+# 위 결과가 0이고 Rollback 승인을 받은 경우에만 실행
+docker compose --env-file .\backend\.env exec -T postgres `
+  sh -lc 'psql -U "$POSTGRES_USER" -d postgres -v ON_ERROR_STOP=1 -c "ALTER DATABASE waterbridge RENAME TO watercare;"'
+```
+
+추적 파일인 `.env.example`·Django fallback을 되돌려야 하는 팀 변경은
+수동 덮어쓰기가 아니라 별도 Revert Commit과 PM 리뷰로 처리한다.
+
+### 9.2 Dump Restore가 필요한 경우
+
+이름 Rollback으로 복구할 수 없고 실제 Restore가 승인된 경우에만
+SHA-256이 일치하는 dump로 새 빈 DB를 만든 뒤 `pg_restore
+--exit-on-error --no-owner --no-privileges`를 실행한다. 기존
+`waterbridge` 위에 덮어쓰지 않는다. Restore 뒤에는 표본 행 수와 전체
+Gate를 다시 확인하고, Restore DB를 공용 기준으로 승격할지는 PM이
+결정한다.
+
+## 10. 절대 금지
+
+- `docker compose down -v` 실행 금지
+- `watercare-postgres-data` 삭제·이름 변경 금지
+- 기본 `waterbridge`에서 `import_synthetic_handoff` 실행 금지
+- 기본 `waterbridge`에서 Importer `--dry-run` 실행 금지
+- Target-only 19개 테이블 삭제·Migration 역적용 금지
+- Active 13만 사용한다는 이유로 별도 PostgreSQL Schema 생성 금지
+- 과거 증거의 `watercare` 문자열 일괄 치환 금지
+- `.env`, Password, Token, DSN, dump 파일 Git 추가 금지
+- 실패를 피하기 위한 공개 UUID·업무키·fixture 임의 수정 금지
+- 비작성자·PM 증거 없이 T-005 공식 완료 표기 금지
+
+데이터를 보존한 일반 중지는 다음만 사용한다.
+
+```powershell
+Set-Location (git rev-parse --show-toplevel)
+docker compose --env-file .\backend\.env stop postgres
+```
+
+## 11. 팀 인계 순서
+
+| 순서 | 담당 | 해야 할 일 | 반환 증거 |
+| ---: | --- | --- | --- |
+| 1 | 최지용 | WaterBridge 전환·32/13/19·전체 회귀를 같은 후보에서 고정 | Branch·40자리 SHA·명령·Exit code·수치 |
+| 2 | 김은진 또는 지정 비작성자 | 새 worktree·새 PostgreSQL 환경에서 32/32·Seed·격리 Importer 독립 재현 | Seed 2차 신규 0, Importer Replay, 전체 회귀 |
+| 3 | 윤승혁 PM | 물리 계약·비작성자 증거·변경 경계를 검토하고 `main` 병합 여부 결정 | 승인 기록·병합된 `main` 40자리 SHA |
+| 4 | 한예나·양정현 | PM `main`에서 UUID JWT·401/403·지원 API 소비 검증 | Web·Mobile 실행·API 결과 |
+| 5 | 이동윤 | Vector·Evidence·AI Schema 소비 검증 | AI Runtime SHA·Schema·통합 결과 |
+
+T-005는 기술적으로 `READY 32/32`, blocker 0이다. 그러나
+[Manifest](../../../../database/t-005/manifest.json)의 공식 경계에 따라
+비작성자 독립 재현, 외부 소비 검증, PM 완료 리뷰가 기록되기 전에는
+`완료`가 아니라 `TECHNICALLY_COMPLETE_REVIEW_PENDING`으로 유지한다.
+
+팀 공용 인계 상태는 [통합 인계 허브](../../../../handoffs/README.md)에서
+확인한다.
+
+## 12. 최종 체크리스트
+
+- [x] 전환 전 dump 생성·크기·SHA-256 확인
+- [x] 임시 DB 실제 Restore와 표본 행 수 확인
+- [x] 기본 DB `watercare` → `waterbridge` 이름 전환
+- [x] Schema `public` 유지
+- [x] Docker Volume `watercare-postgres-data` 유지
+- [x] T-005 계약 테이블 32/32 확인
+- [x] Active 13 데이터 보존
+- [x] Target-only 19개 모두 0행 유지
+- [x] Migration 적용 누락 0·drift 0
+- [x] 기본 `waterbridge` Seed 2회 멱등 검증
+- [x] 새 빈 격리 DB Importer dry-run·1차·Replay 검증
+- [x] Import Ledger 2/734·History/Audit 125 확인
+- [x] Importer 격리 DB 삭제·부재 확인
+- [x] 표적 API·SQLite·PostgreSQL·Data·QA·환경 전체 회귀 통과
+- [x] Health·Auth Smoke 통과
+- [ ] 비작성자 독립 재현
+- [ ] Web·Mobile·AI 외부 소비 검증
+- [ ] PM 계약 완료 리뷰와 공식 `main` 기준선 고정

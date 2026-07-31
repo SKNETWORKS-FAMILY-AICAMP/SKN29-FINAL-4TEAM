@@ -1,10 +1,58 @@
 # 최지용 개발문서
 
-> 기준일: 2026-07-30
+> 기준일: 2026-07-31
 > 작성·유지 책임: 최지용
 > 산출물 범위: Backend · Database · API 계약
-> 검토 상태: T-005 계약 테이블 32/32·빈 PostgreSQL·Seed·367건 Importer·전체 회귀 로컬 검증 완료 / 비작성자 리뷰·계약 완료 승인·PM 병합 대기
+> 검토 상태: WaterBridge 전환·T-005 계약 테이블 32/32·Active 13·Target-only 19·Seed·격리 Importer·전체 회귀 로컬 검증 완료 / 비작성자 독립 재현·계약 완료 승인·PM 병합 대기
 > 문서 정책: 현재 실행 기준과 검증 근거가 있는 최신본만 유지한다.
+
+## 2026-07-31 WaterBridge 현재 실행 기준
+
+아래 기준이 이 README의 2026-07-29~30 `watercare` 실행 이력보다
+우선한다. 현재 PostgreSQL **database는 `waterbridge`**, 그 안의
+**schema는 `public`**이다. Docker Volume
+`watercare-postgres-data`와 과거 검증 DB·문서의 `watercare` 명칭은
+역사·인프라 식별자이므로 일괄 변경하지 않는다.
+
+| 항목 | 현재 검증 결과 |
+| --- | --- |
+| Python 패키지 기준 | Python 3.13.13·constraints **32개** |
+| PostgreSQL | `waterbridge.public`, PostgreSQL 16.14, pgvector 0.8.6 |
+| T-005 물리 계약 | **32/32**, Auditor `READY`, blocker 0 |
+| Active MVP | 13개 테이블·총 369행 — 현재 데이터 생성·조회 범위 |
+| Target-only | 19개 테이블을 물리적으로 유지, 각 테이블 **0행** |
+| 기본 DB Seed | 5종 2회, 2회차 비의도 신규 생성 0 |
+| 격리 Importer | Source 367, 1차 Created 355·Projected 12, Replay Unchanged 355·Projected 12 |
+| Backend 회귀 | 표적 API 21 passed·SQLite 740 passed/11 skipped·PostgreSQL 751 passed |
+| Data·Smoke | Data 67 tests OK·E2E 17/17 PASS·Health/Auth Smoke PASS |
+| 공식 완료 | **PENDING** — 비작성자 독립 재현·외부 소비 검증·PM 완료 리뷰 필요 |
+
+Active 13은 32개 중 현재 데이터가 있는 테이블을 뜻한다. Target-only
+19개를 삭제하거나 Migration을 되돌리거나 별도 schema로 분리하지
+않는다. 데이터·기능·소비 계약이 준비된 순서대로 하나씩 활성화한다.
+
+전환 범위, 백업·실제 Restore, 32/13/19 행 수, 복구 절차와 팀 실행
+명령은
+[WaterBridge DB 전환·Active 범위 검증서](technical/backend/20260731_waterbridge_database_transition_and_active_scope_validation.md)를
+현재 단일 기준으로 사용한다. T-005는 기술적으로 준비됐지만 위 공식
+승인 증거가 기록되기 전에는 `TECHNICALLY_COMPLETE_REVIEW_PENDING`이다.
+
+## 2026-07-31 다음 Backend P0 기준
+
+WaterBridge 전환 뒤에는 32개 물리 테이블을 다시 변경하지 않고,
+기능별 작은 Slice를 `설계 → 검토 → 구현 → 즉시 검증` 순서로
+진행한다.
+
+| 순서 | 현재 산출물 | 판정 | 다음 담당 |
+| ---: | --- | --- | --- |
+| 1 | [Backend 구조화 로그 민감정보 비노출 감사](technical/backend/20260731_backend_log_security_audit.md) | 현재 Request·Exception 로그 `PASS`; T-024 전체는 미구현 | 최지용 유지·김은진 통합 환경 검토 |
+| 2 | [T-017A 합성 사용자 계정 관리 OWNER 설계](technical/backend/20260731_t017a_account_management_owner_design.md) | `OWNER_DESIGN_READY_REVIEW_PENDING`; T-017B/C는 미구현 | 윤승혁 정책 검토·김은진 Migration/QA 검토 |
+| 3 | `SUBMIT_SYMPTOM` 첫 수직 Slice 설계·구현 | 현재 Runtime 미구현 | PM State 계약과 OpenAPI를 유지해 최지용이 순차 구현 |
+
+T-017A 설계 문서의 `is_synthetic`, `auth_version`, 계정 감사 원장과
+오류 코드는 모두 **제안·후속 구현 대상**이다. 현재 Model·Migration·
+Machine Contract에 이미 존재한다고 간주하지 않는다. T-017B·T-017C
+일정을 앞당겨 한 Commit에 섞지 않는다.
 
 ## 문서 범위
 
@@ -24,16 +72,16 @@
 
 | 판단 항목 | 1순위 | 보조 기준 |
 | --- | --- | --- |
-| 현재 작업 순서·완료 경계 | 2026-07-30 `최지용_업무계획표_v0.8.md` | 같은 버전의 Excel 시트, 3주차 업무 지침서 |
+| 현재 작업 순서·완료 경계 | 2026-07-31 `최지용_업무계획표_v0.9.md` | 같은 버전의 Excel 시트, 3주차 업무 지침서 |
 | 역할·협업자·검토자 | `팀원별 관할 영역 v2.md`의 가장 구체적인 경로 규칙 | v0.6에서 확정한 최지용 산출물 책임 |
 | PR·리뷰·보안·테스트 절차 | `공통 개발 규칙.md` | 저장소의 실제 설정과 자동화 결과 |
 | 디렉터리·계약 원본 위치 | 현재 저장소 구조와 `프로젝트 디렉토리 구조 v2.md` | 가장 가까운 상위 경로의 관할 |
 | Runtime·진행도·테스트 수치 | 최신 실행 결과와 아래 검증 보고서 | 계획 문서의 수치는 목표 또는 당시 스냅샷으로만 사용 |
 
-동일한 v0.8 파일끼리 충돌하면 더 나중에 수정된 Markdown의 실행 방향을
+동일한 v0.9 파일끼리 충돌하면 더 나중에 수정된 Markdown의 실행 방향을
 우선하고, Excel 시트는 역할 및 인계 매트릭스를 보완하는 자료로
 사용한다. `최지용_3주차_업무_지침서.md`의 WBS 목적은 유지하되,
-현재 순서와 상태는 v0.8 및 실제 검증 결과로
+현재 순서와 상태는 v0.9 및 실제 검증 결과로
 갱신한다.
 
 ## 책임·협업·검토 원칙
@@ -166,6 +214,7 @@ T-005 전체 완료를 뜻하지 않는다. 팀원은 현재 로컬 후보가 �
 
 | 구분 | 문서 | 용도 |
 | --- | --- | --- |
+| WaterBridge 현재 실행 기준 | [DB 전환·Active 범위 검증서](<technical/backend/20260731_waterbridge_database_transition_and_active_scope_validation.md>) | `waterbridge.public`, T-005 32/32·Active 13·Target-only 19, 백업·Restore·Seed·격리 Importer·전체 회귀·Rollback |
 | T-005 최종 검증 | [32개 테이블·PostgreSQL·Seed·Importer 최종 보고서](<technical/backend/t005_final_32_table_postgresql_seed_importer_validation_report.md>) | 32/32 Auditor READY, 빈 DB·5종 Seed·367건 Replay·전체 회귀·공식 승인 대기 Gate |
 | 문진 동일 구독 제약 | [T-005 Wave 1B 복합 FK 구현·재현 가이드](<technical/backend/t005_wave_1b_questionnaire_inquiry_composite_fk.md>) | 부모 UNIQUE·문진 복합 FK·PostgreSQL 우회 차단·rollback·Data hash 보정 |
 | 문진 세션 Runtime | [T-005 Wave 1A 문진 세션 구현·재현 가이드](<technical/backend/t005_wave_1a_support_questionnaire_session_implementation.md>) | `support_questionnaire_session` Model·Migration·PostgreSQL CHECK와 Wave 1A 완료 경계 |
@@ -222,7 +271,7 @@ T-005 전체 완료를 뜻하지 않는다. 팀원은 현재 로컬 후보가 �
 3. DB 작업은 DB 스키마 가이드의 한 Wave를 구현하고 현재 Runtime 검증서 기준으로 즉시 검증한다. 2026-07-27 Migration 보고서는 당시 기준선의 역사 증거로만 사용한다.
 4. API 작업은 API 계약 가이드대로 명세·OpenAPI·Route·테스트를 한 변경 단위로 맞춘다.
 5. T-022와 T-023은 각 준비도 문서의 미구현 항목을 한 수직 흐름씩 처리한다.
-6. 합성 Importer는 기본 `watercare`에서 dry-run을 포함해 실행하지 않고 새 빈 격리 PostgreSQL에서만 검증한다.
+6. 합성 Importer는 현행 기본 `waterbridge`와 legacy 기본명 `watercare`에서 dry-run을 포함해 실행하지 않고 새 빈 격리 PostgreSQL에서만 검증한다.
 7. 새 누적 일지나 중복 인계서를 만들지 않고 위 최신 문서에 현재 결과만 갱신한다.
 
 ## 인계 라우팅
@@ -318,4 +367,4 @@ Pull 환경에서도 실제로 열린다.
   검증 스냅샷이다.
 - 후속 로컬 통합에서는 SQLite Backend `397 passed`와 PostgreSQL 16.14 읽기 전용 연결·적용 Migration 누락 0을 확인했다.
 - 기본 `watercare`에 기존 미적용 9개와 `workflow.0003`을 적용하면서 기존 row count를 보존하고 Workflow `changed_at` 11건을 보정했으며, Demo Seed 4종을 2회 실행해 비의도 중복 0을 확인했다.
-- 현재 실행 단일 원본은 v1.3이며, 기본 DB의 예상 UUID mismatch를 우회하지 않고 합성 Importer를 빈 격리 DB 전용으로 분리한다.
+- 당시 실행 단일 원본은 v1.3이었으며, 기본 DB의 예상 UUID mismatch를 우회하지 않고 합성 Importer를 빈 격리 DB 전용으로 분리했다.

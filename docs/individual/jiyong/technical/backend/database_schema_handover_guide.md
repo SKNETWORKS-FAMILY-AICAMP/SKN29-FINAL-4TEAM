@@ -1,9 +1,11 @@
 # Database Schema 개발·인계 가이드
 
-> 기준일: 2026-07-30
+> 기준일: 2026-07-31
 > 담당: 최지용
 > 적용 원칙: ERD와 테이블 명세는 확정 기준선이며, Model·Migration을 Wave별로 구현하고 즉시 검증한다.
-> 현재 상태: 계약 테이블 32/32 로컬 기술 검증 완료, 비작성자·외부 리뷰와 공식 완료 승인 대기
+> 현재 상태: 기본 PostgreSQL `waterbridge/public`, 계약 테이블 32/32,
+> Active 데이터 13·Target-only 19(0행) 로컬 기술 검증 완료 /
+> 비작성자·외부 리뷰와 공식 완료 승인 대기
 
 ## 0. 문서 책임·협업·검토
 
@@ -46,6 +48,7 @@ Model·Migration·Serializer에 순차 반영한다.
 
 | 확인 목적 | 단일 원본 |
 | --- | --- |
+| 현재 DB 전환·32/13/19·복구·회귀 | [WaterBridge DB 전환 및 Active 범위 검증](20260731_waterbridge_database_transition_and_active_scope_validation.md) |
 | 32/32 최종 구현·PostgreSQL·Seed·Importer·회귀 | [T-005 최종 검증 보고서](t005_final_32_table_postgresql_seed_importer_validation_report.md) |
 | 설계 테이블·계약·결정 상태 | [T-005 데이터 설계](../../../../database/t-005/README.md) |
 | 2026-07-27 Model·Migration 역사 기준 | [Migration 검증 보고서](../../manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md) |
@@ -64,7 +67,7 @@ Model·Migration·Serializer에 순차 반영한다.
 ID, 코드, Legacy 변환, 방문 일정, Enum과 Seed의 구체 값은 이 가이드에
 복사하지 않는다. 활성
 [결정 등록부 v0.3](../../../../database/t-005/t005_decision_register_v0.3.json)과
-[물리 계약 v1.2](../../../../database/t-005/t005_physical_contract_v1.2.json)을
+[물리 계약 v1.3](../../../../database/t-005/t005_physical_contract_v1.3.json)을
 구현 입력으로 사용하고, 값이 바뀌면 해당 계약만 갱신한다. v0.1·v1.0은
 역사본이며 신규 구현 입력으로 사용하지 않는다.
 
@@ -136,11 +139,22 @@ Set-Location .\backend
 따른다. 위험도 소문자 계약을 임의 변환하지 않으며, 계약에서 제거된
 관리 Code는 삭제하지 않고 비활성화한다.
 
-2026-07-29 기본 `watercare`에서는 Demo Seed 4종을 2회 실행해 비의도
-중복 0을 확인했다. 이 기본 DB에는 canonical fixture와 공개 UUID가 다른
-기존 레코드가 있으므로 합성 Importer와 `--dry-run`은 실행하지 않는다.
+2026-07-31 현행 기본 DB는 `waterbridge`, Schema는 `public`이다.
+T-005 계약 테이블 32개를 모두 유지하고 현재 데이터가 있는 13개만
+Active 범위로 사용한다. Target-only 19개는 0행 상태로 보존하며
+Migration에서 제외하거나 삭제하지 않는다.
+
+기본 `waterbridge`에서는 Demo Seed 5종을 2회 실행해 2회차 신규 생성
+0을 확인했다. 이 기본 DB에는 canonical fixture와 공개 UUID가 다른 기존
+레코드가 있으므로 합성 Importer와 `--dry-run`은 실행하지 않는다.
 Importer는 새 빈 격리 PostgreSQL 전용이며, dry-run도 Sequence 값을
-변경할 수 있다.
+변경할 수 있다. Legacy `watercare`도 안전상 기본 DB로 취급하여
+Importer 실행 대상에서 제외한다.
+
+2026-07-29 기본 `watercare`에서 Demo Seed 4종을 2회 실행한 기록은
+당시 실행 증거이며 변경하지 않는다. 현재 명령과 결과는
+[WaterBridge DB 전환 및 Active 범위 검증](20260731_waterbridge_database_transition_and_active_scope_validation.md)을
+따른다.
 
 ## 7. 검증 체크리스트
 
@@ -159,7 +173,9 @@ Importer는 새 빈 격리 PostgreSQL 전용이며, dry-run도 Sequence 값을
 - [ ] API Schema·Serializer가 같은 필드와 Enum을 사용한다.
 - [ ] 실제 개인정보·Token·비밀값이 없다.
 - [ ] 현재 구현 개수와 남은 테이블 개수를 분리해 기록했다.
-- [ ] 기본 DB Migration·Demo Seed와 빈 격리 DB Import 검증을 분리했다.
+- [ ] 기본 `waterbridge` Migration·Demo Seed와 빈 격리 DB Import 검증을 분리했다.
+- [ ] 계약 테이블 32개, Active 데이터 13개, Target-only 19개(0행)를
+  서로 다른 의미로 기록했다.
 
 현재 테스트 수, PostgreSQL 적용 범위와 미구현 테이블 수는 이 가이드에
 복제하지 않고
