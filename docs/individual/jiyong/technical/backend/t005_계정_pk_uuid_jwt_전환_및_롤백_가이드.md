@@ -1,4 +1,4 @@
-# T-005 Accounts 정수 PK·UUID-only JWT Gate 개발·검증·인계
+# T-005 계정 PK·UUID·JWT 전환 및 롤백 가이드
 
 > 기준일: 2026-07-30
 > 구현 책임: 최지용
@@ -32,7 +32,7 @@ Seed·Importer 전체 흐름, 최종 PostgreSQL·계약 감사 Gate는 별도 Wa
 | T-005 활성 설계 | [T-005 데이터 설계 패키지](../../../../database/t-005/README.md) |
 | 물리 스키마 정책 | [Physical Contract v1.2](../../../../database/t-005/t005_physical_contract_v1.2.json) |
 | 테이블 설명 | [WaterCare 테이블 명세](../../../../database/watercare_table_dictionary.md) |
-| DB 구현·인계 절차 | [Database Schema 개발·인계 가이드](database_schema_handover_guide.md) |
+| DB 구현·인계 절차 | [T-005 데이터베이스 스키마 변경 실행 가이드](t005_데이터베이스_스키마_변경_실행_가이드.md) |
 | Backend 실행 | [Backend README](../../../../../backend/README.md) |
 | JWT 설정 | [Django 공통 설정](../../../../../backend/config/settings/base.py) |
 

@@ -128,5 +128,5 @@ SHA 공유다. 김은진 검토 전에는 PM이 병합하지 않는다.
 
 Web·Mobile·QA 담당자는 OpenAPI-only 2개를 구현 API로 소비하지 않는다.
 상세 변경·검증·팀별 다음 행동은
-[Backend API 계약 정합화 검증보고서](../individual/jiyong/manuals/20260729_최지용_Backend_API_계약_정합화_검증보고서_v1.0.md)와
+[백엔드 API 계약·런타임 통합 검증 보고서](../individual/jiyong/manuals/20260729_백엔드_api_계약_및_런타임_통합_검증_보고서.md)와
 [팀 인계 진입점](../handoffs/README.md)을 따른다.

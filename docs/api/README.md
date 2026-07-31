@@ -13,8 +13,8 @@ Runtime 구현과 소비 검증 성숙도는 항목별 상태로 별도 관리�
 
 - [WaterCare API 명세](watercare_api_specification.md): Public Endpoint, 공통 요청·응답, 오류, 권한, 상태 전이와 검토 상태
 - [API Runtime 구현 상태](runtime_implementation_status.md): OpenAPI 9개·Django Runtime 7개·OpenAPI-only 2개의 현재 매핑과 검증 명령
-- [Backend API 계약 정합화 검증보고서](../individual/jiyong/manuals/20260729_최지용_Backend_API_계약_정합화_검증보고서_v1.0.md): 오류 Registry·JSON 예시·계약·권한·전체 회귀 실행 증거
-- [API 계약 개발·인계 가이드](../individual/jiyong/technical/backend/api_contract_handover_guide.md): 변경 절차, 검증 기준과 역할별 인계 내용
+- [백엔드 API 계약·런타임 통합 검증 보고서](../individual/jiyong/manuals/20260729_백엔드_api_계약_및_런타임_통합_검증_보고서.md): Auth를 포함한 오류 Registry·JSON 예시·계약·권한·전체 회귀 실행 증거
+- [백엔드 API 계약 개발·인계 가이드](../individual/jiyong/technical/backend/백엔드_api_계약_개발_및_인계_가이드.md): 변경 절차, 검증 기준과 역할별 인계 내용
 - [OpenAPI 계약](../../contracts/api/openapi.yaml): 도구와 테스트에서 사용하는 기계 기준본. 개별 operation의 `x-contract-status`로 구현 성숙도를 구분
 
 ## 계약 우선순위

@@ -1,4 +1,4 @@
-# API 계약 개발·인계 가이드
+# 백엔드 API 계약 개발 및 인계 가이드
 
 > 기준일: 2026-07-31
 > 담당: 최지용
@@ -50,14 +50,13 @@ Model과 테스트로 옮기는 절차를 정의한다. 구현 여부와 실행 
 
 | 확인 목적 | 단일 원본 |
 | --- | --- |
-| Auth 계약·Route·Token 동작·HTTP 검증 | [Auth 계약·Runtime 정합화 보고서](../../manuals/20260727_최지용_Auth_API_계약_Runtime_정합화_보고서_v1.0.md) |
-| PostgreSQL·Migration·Seed 구현 경계 | [Migration 검증 보고서](../../manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md) |
-| 새 환경 실행·재현 순서 | [Django·PostgreSQL 공유 패키지 인계서 v1.3](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md) |
+| Auth 계약·Route·Token 동작과 API 통합 회귀 | [백엔드 API 계약 및 Runtime 통합 검증 보고서](../../manuals/20260729_백엔드_api_계약_및_런타임_통합_검증_보고서.md) |
+| PostgreSQL·Migration·Seed 구현 경계 | [T-005 테이블 구현 및 변경 이력](20260730_t005_테이블_구현_및_변경_이력.md) |
+| 새 환경 실행·재현 순서 | [워터브리지 백엔드 설치·Migration·Seed·복구 가이드](../../manuals/워터브리지_백엔드_설치_마이그레이션_시드_복구_가이드.md) |
 | OpenAPI·Runtime 현재 지원 경계 | [API Runtime 구현 상태](../../../../api/runtime_implementation_status.md) |
-| 오류 Registry·JSON 예시·최종 회귀 증거 | [Backend API 계약 정합화 검증보고서](../../manuals/20260729_최지용_Backend_API_계약_정합화_검증보고서_v1.0.md) |
-| 문의 API 구현 Gap | [T-022 문의 관리 구현 준비도](t-022-inquiry-readiness.md) |
-| `SUBMIT_SYMPTOM` 첫 수직 Slice 설계 | [2026-07-31 T-022 증상 제출 수직 Slice 설계](20260731_t022_submit_symptom_vertical_slice_design.md) |
-| 상태 전이 구현 Gap·PM 입력 경계 | [T-023 Workflow 구현 준비도](t-023-workflow-readiness.md) |
+| 오류 Registry·JSON 예시·2026-07-29 회귀 증거 | [백엔드 API 계약 및 Runtime 통합 검증 보고서](../../manuals/20260729_백엔드_api_계약_및_런타임_통합_검증_보고서.md) |
+| T-022 문의·`SUBMIT_SYMPTOM` 계약 Gap | [T-022 증상 제출 API 설계 및 계약 Gate](t022_증상_제출_api_설계_및_계약_게이트.md) |
+| Workflow 현재 구현·후속 Gate | 이 문서 8.1절과 [API Runtime 구현 상태](../../../../api/runtime_implementation_status.md) |
 
 이 문서는 위 결과를 다시 요약하는 보고서가 아니라, 어떤 API에도 반복
 적용하는 계약 작성·구현·검증 절차의 단일 원본으로 유지한다.
@@ -78,7 +77,7 @@ Model과 테스트로 옮기는 절차를 정의한다. 구현 여부와 실행 
 ## 5. 작업·검증 절차
 
 실제 PostgreSQL·HTTP 검증을 시작하기 전에
-[공유 패키지 인계서 v1.3](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md)의
+[워터브리지 백엔드 설치·Migration·Seed·복구 가이드](../../manuals/워터브리지_백엔드_설치_마이그레이션_시드_복구_가이드.md)의
 5장에 따라 PostgreSQL과 Django를 실행한다. 이 가이드에는 서버
 시작·종료 명령을 중복하지 않는다.
 
@@ -137,21 +136,57 @@ Set-Location .\backend
 | 로그 | Secret·Token·개인정보 비노출 |
 
 인증의 현재 테스트 수와 실행 결과는 이 가이드에 복제하지 않고
-[Auth 계약·Runtime 정합화 보고서](../../manuals/20260727_최지용_Auth_API_계약_Runtime_정합화_보고서_v1.0.md)를
+[백엔드 API 계약 및 Runtime 통합 검증 보고서](../../manuals/20260729_백엔드_api_계약_및_런타임_통합_검증_보고서.md)를
 기준으로 한다. 변경 PR에는 과거 수치를 재사용하지 않고 해당 변경에서
 실제로 다시 실행한 결과만 기록한다.
 
-## 8. 업무별 구현 상태 관리
+## 8. 업무별 구현 상태와 후속 Gate
 
 | 업무 | 현재 상태의 단일 원본 |
 | --- | --- |
-| DB Model·Migration 선행 작업 | [DB Schema 개발·인계 가이드](database_schema_handover_guide.md)와 [Migration 검증 보고서](../../manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md) |
-| T-022 문의 최소 수직 흐름 | [문의 관리 구현 준비도](t-022-inquiry-readiness.md) |
-| T-023 Workflow·이력·멱등성 | [Workflow 구현 준비도](t-023-workflow-readiness.md) |
+| DB Model·Migration 선행 작업 | [T-005 데이터베이스 스키마 변경 실행 가이드](t005_데이터베이스_스키마_변경_실행_가이드.md)와 [T-005 테이블 구현 및 변경 이력](20260730_t005_테이블_구현_및_변경_이력.md) |
+| T-022 문의·증상 제출 수직 흐름 | [T-022 증상 제출 API 설계 및 계약 Gate](t022_증상_제출_api_설계_및_계약_게이트.md) |
+| T-023 Workflow·이력·멱등성 | [API Runtime 구현 상태](../../../../api/runtime_implementation_status.md)와 아래 8.1절 |
 
 구체적인 우선순위와 완료 수치는 위 업무 문서와 승인된 WBS에서 관리한다.
 이 공통 가이드에는 별도의 작업 Queue를 만들어 같은 상태를 이중 관리하지
 않는다.
+
+### 8.1 Workflow 현재 유효 Gap과 후속 구현 Gate
+
+2026-07-27 착수 전 문서에 기록됐던 “Engine·Model·Migration 없음”은
+현행 사실이 아니다. 현재 저장소에는 다음 기반이 존재한다.
+
+- State Machine 계약 `v1.0.0 TEAM_APPROVED`
+- Fail-closed Loader·Validator
+- State Machine·Guard Evaluator·Allowed Action Resolver
+- 상태 이력·멱등성 Model과 번호 Migration
+- Row Lock·Transaction을 사용하는 Repository·Service
+- 문의 생성 `START_INQUIRY`와 취소 `CANCEL_INQUIRY` Runtime
+
+따라서 남은 Workflow 작업은 위 기반을 다시 만드는 것이 아니라, 아직
+Runtime으로 노출되지 않은 행동을 동일 경계로 연결하고 검증하는 것이다.
+
+| 현재 유효 Gap | 구현 Gate | 완료 증거 |
+| --- | --- | --- |
+| Runtime 행동 Endpoint 부족 | 행동별 Method·Path·요청·응답을 OpenAPI에 먼저 확정하고 URL·View·Serializer·Service 연결 | OpenAPI Coverage와 행동별 API 테스트 |
+| OpenAPI-only 문진·자가조치 API | `PATCH /inquiries/{id}/questionnaire`, `POST /inquiries/{id}/action-results`를 Model·Transaction과 함께 구현 | 같은 문의 누적·Rollback·PostgreSQL Smoke |
+| 상태·멱등성의 행동별 적용 | `state_version`, `Idempotency-Key`, 상태 이력, 저장된 Replay 응답을 모든 상태 변경 Service에 적용 | 같은 Key Replay 1회, 다른 Payload 409, stale version 409 |
+| 권한·존재 숨김 | 역할 부족 403과 타 사용자 리소스 404를 구분 | 고객 본인·기사 배정·타 사용자 통합 테스트 |
+| Client 소비 | Web·Mobile이 `allowed_actions`와 최신 409 Snapshot을 소비 | 입력 보존·새 Key 재시도·중복 이력 0 |
+| AI 효과 경계 | AI는 이벤트 후보만 반환하고 Backend Guard를 거쳐 적용 | DB 직접 변경 0, Timeout·stale 결과 안전 차단 |
+| PostgreSQL 동시성 | SQLite 단위 검증과 분리해 실제 Row Lock·Rollback·Unique 충돌 확인 | 빈 DB Migration·동시 요청·전체 회귀 |
+
+후속 구현에서도 다음 금지사항을 유지한다.
+
+- PM State 계약 값을 Backend 코드에 복제하거나 임의 변경하지 않는다.
+- View·Serializer·Model `save()`에서 상태를 직접 변경하지 않는다.
+- 상태 이력 없이 현재 상태만 갱신하지 않는다.
+- stale version과 동일 Key의 다른 Payload를 신규 정상 요청으로 처리하지
+  않는다.
+- SQLite 테스트만으로 PostgreSQL 동시성 완료를 주장하지 않는다.
+- AI 결과가 State Machine Guard 없이 문의 상태를 직접 변경하게 하지
+  않는다.
 
 ## 9. 인계 사항
 

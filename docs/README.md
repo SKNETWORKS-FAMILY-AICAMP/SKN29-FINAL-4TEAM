@@ -14,8 +14,8 @@
 | 데이터베이스 | [WaterCare 테이블 명세](database/watercare_table_dictionary.md) | 32개 설계 테이블의 단일 Markdown 데이터 사전 |
 | ERD | [대화형 ERD](database/erd/watercare_erd.html) | 테이블 검색, 관계 탐색과 전체 필드 조회 |
 | ERD | [ERD 정적 미리보기](database/erd/watercare_erd.png) | GitHub에서 바로 확인하는 관계도 이미지 |
-| 개발·인계 | [API 계약 개발·인계 가이드](individual/jiyong/technical/backend/api_contract_handover_guide.md) | 계약 변경, 검증과 역할별 협업 절차 |
-| 개발·인계 | [DB 스키마 개발·인계 가이드](individual/jiyong/technical/backend/database_schema_handover_guide.md) | Model·Migration·Seed·검증 인계 절차 |
+| 개발·인계 | [백엔드 API 계약 개발·인계 가이드](individual/jiyong/technical/backend/백엔드_api_계약_개발_및_인계_가이드.md) | 계약 변경, 검증과 역할별 협업 절차 |
+| 개발·인계 | [T-005 데이터베이스 스키마 변경 실행 가이드](individual/jiyong/technical/backend/t005_데이터베이스_스키마_변경_실행_가이드.md) | Model·Migration·Seed·검증 인계 절차 |
 
 ## 기준 우선순위
 

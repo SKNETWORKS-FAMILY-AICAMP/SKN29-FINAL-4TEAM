@@ -4,7 +4,7 @@
 > 기본 PostgreSQL 데이터베이스: `waterbridge`
 > PostgreSQL Schema: `public`
 > 상세 전환·복구·검증 근거:
-> [WaterBridge DB 전환 및 Active 범위 검증](../individual/jiyong/technical/backend/20260731_waterbridge_database_transition_and_active_scope_validation.md)
+> [T-005 WaterBridge PostgreSQL 통합 검증 보고서](../individual/jiyong/technical/backend/20260731_t005_워터브리지_postgresql_통합_검증_보고서.md)
 
 ## 저장소 책임
 
