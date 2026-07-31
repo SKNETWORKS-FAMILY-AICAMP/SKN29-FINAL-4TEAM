@@ -132,7 +132,7 @@ def test_analyze_endpoint_rejects_correlation_id_mismatch(client):
     assert response.headers["X-Correlation-ID"] == "corr-body"
 
 
-def test_analyze_endpoint_timeout_contract(client, monkeypatch):
+def test_analyze_endpoint_timeout_contract(client, monkeypatch, caplog):
     from ai.app.interfaces.http.routes import analysis_routes
 
     payload = {
@@ -150,7 +150,8 @@ def test_analyze_endpoint_timeout_contract(client, monkeypatch):
     monkeypatch.setattr(analysis_routes, "get_runtime_policy", lambda: RuntimePolicy(0.01, 0, 1))
     monkeypatch.setattr(analysis_routes.PipelineRouter, "run_pipeline", slow_pipeline)
 
-    response = client.post("/api/v1/ai/analyze?mode=local", json=payload)
+    with caplog.at_level(logging.INFO, logger="watercare.ai.analysis"):
+        response = client.post("/api/v1/ai/analyze?mode=local", json=payload)
     assert response.status_code == 504
     body = response.json()
     assert body["correlation_id"] == "corr-timeout"
@@ -159,6 +160,13 @@ def test_analyze_endpoint_timeout_contract(client, monkeypatch):
     assert body["error"]["code"] == "AI-TIMEOUT-01"
     assert body["error"]["failure_stage"] == "CANCELLED"
     assert body["error"]["retry_count"] == 0
+    payloads = [
+        json.loads(record.message)
+        for record in caplog.records
+        if '"correlation_id": "corr-timeout"' in record.message
+    ]
+    assert [payload["event"] for payload in payloads] == ["analysis_started", "analysis_failed"]
+    assert payloads[-1]["error_code"] == "AI-TIMEOUT-01"
 
 
 def test_runtime_retry_and_timeout_policy_is_contract_value():
@@ -210,3 +218,81 @@ def test_structured_log_excludes_customer_text(client, caplog):
     payloads = [json.loads(record.message) for record in caplog.records]
     assert {payload["event"] for payload in payloads} == {"analysis_started", "analysis_completed"}
     assert all(payload["correlation_id"] == "corr-log" for payload in payloads)
+
+
+def test_default_runtime_logger_emits_info():
+    logger = logging.getLogger("watercare.ai.analysis")
+    assert logger.isEnabledFor(logging.INFO)
+
+
+def test_validation_error_emits_single_safe_failure_log(client, caplog):
+    raw_text = "로그에 남으면 안 되는 검증 실패 고객 원문"
+    with caplog.at_level(logging.INFO, logger="watercare.ai.analysis"):
+        response = client.post("/api/v1/ai/analyze", json={
+            "inquiry_id": INQUIRY_ID,
+            "correlation_id": "corr-validation-log",
+            "raw_symptom": raw_text,
+        })
+    assert response.status_code == 422
+    assert raw_text not in caplog.text
+    payloads = [json.loads(record.message) for record in caplog.records]
+    assert [payload["event"] for payload in payloads] == ["analysis_failed"]
+    assert payloads[0]["correlation_id"] == "corr-validation-log"
+    assert payloads[0]["error_code"] == "AI-VALIDATION-01"
+
+
+def test_header_mismatch_emits_failure_without_started_event(client, caplog):
+    with caplog.at_level(logging.INFO, logger="watercare.ai.analysis"):
+        response = client.post(
+            "/api/v1/ai/analyze?mode=mock",
+            headers={"X-Correlation-ID": "corr-header"},
+            json={
+                "inquiry_id": INQUIRY_ID,
+                "correlation_id": "corr-body-log",
+                "ai_request_id": "ai-req-log-mismatch",
+                "state_version": 1,
+                "raw_symptom": "출수가 안 됩니다.",
+                "model_code": "WPUJAC104DWH",
+            },
+        )
+    assert response.status_code == 400
+    payloads = [json.loads(record.message) for record in caplog.records]
+    assert [payload["event"] for payload in payloads] == ["analysis_failed"]
+    assert payloads[0]["correlation_id"] == "corr-body-log"
+
+
+def test_internal_pipeline_failure_emits_started_then_failed(client, monkeypatch, caplog):
+    from ai.app.interfaces.http.routes import analysis_routes
+
+    def failing_pipeline(*args, **kwargs):
+        raise RuntimeError("고객에게 노출하거나 로그에 남기면 안 되는 내부 예외")
+
+    monkeypatch.setattr(analysis_routes.PipelineRouter, "run_pipeline", failing_pipeline)
+    with caplog.at_level(logging.INFO, logger="watercare.ai.analysis"):
+        response = client.post("/api/v1/ai/analyze?mode=local", json={
+            "inquiry_id": INQUIRY_ID,
+            "correlation_id": "corr-internal-failure",
+            "ai_request_id": "ai-req-internal-failure",
+            "state_version": 1,
+            "raw_symptom": "출수가 안 됩니다.",
+            "model_code": "WPUJAC104DWH",
+        })
+    assert response.status_code == 503
+    assert "내부 예외" not in caplog.text
+    payloads = [
+        json.loads(record.message)
+        for record in caplog.records
+        if '"correlation_id": "corr-internal-failure"' in record.message
+    ]
+    assert [payload["event"] for payload in payloads] == ["analysis_started", "analysis_failed"]
+    assert payloads[-1]["error_code"] == "AI-FAILED-01"
+
+
+def test_worker_limit_configuration(monkeypatch):
+    from ai.app.interfaces.http.routes import analysis_routes
+
+    monkeypatch.setenv("AI_MAX_IN_FLIGHT_WORKERS", "4")
+    assert analysis_routes._worker_limit() == 4
+    monkeypatch.setenv("AI_MAX_IN_FLIGHT_WORKERS", "0")
+    with pytest.raises(RuntimeError, match="1~32"):
+        analysis_routes._worker_limit()

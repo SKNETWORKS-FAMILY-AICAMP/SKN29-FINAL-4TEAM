@@ -1,8 +1,15 @@
 {
   "verification_status": "PASS",
-  "verified_at": "2026-07-30T05:47:46.567122+00:00",
+  "verified_at": "2026-07-30T09:36:47.897918+00:00",
+  "runtime": {
+    "python_version": "3.13.13",
+    "os": "Windows",
+    "machine": "AMD64"
+  },
   "embedding_model": "BAAI/bge-m3",
   "embedding_model_version": "5617a9f61b028005a4858fdac845db406aefb181",
+  "index_version": "1.0.0",
+  "chunk_set_sha256": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
   "dimension": 1024,
   "search_type": "cosine_exact_search",
   "top_k": 5,
@@ -15,8 +22,21 @@
     "distinct_chunk_ids": 7,
     "min_dimension": 1024,
     "max_dimension": 1024,
-    "source_hash_count": 1
+    "source_hash_count": 1,
+    "embedding_model_revisions": [
+      "5617a9f61b028005a4858fdac845db406aefb181"
+    ],
+    "index_versions": [
+      "1.0.0"
+    ],
+    "chunk_set_sha256_values": [
+      "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+    ],
+    "document_source_hashes": {
+      "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C"
+    }
   },
+  "database_provenance_passed": true,
   "database_guard": {
     "mode": "DISPOSABLE_ONLY",
     "database_name": "watercare_ai_verify",
@@ -74,6 +94,48 @@
           37
         ]
       ],
+      "ranked_model_codes": [
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH"
+      ],
+      "ranked_product_generations": [
+        "D",
+        "D",
+        "D",
+        "D",
+        "D"
+      ],
+      "ranked_document_versions": [
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00"
+      ],
+      "ranked_embedding_revisions": [
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181"
+      ],
+      "ranked_index_versions": [
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0"
+      ],
+      "ranked_chunk_set_sha256": [
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+      ],
       "execution_path": "PGVECTOR_QUERY",
       "scores": [
         0.69487,
@@ -88,6 +150,8 @@
       "expected_no_evidence": false,
       "document_metadata_passed": true,
       "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
       "passed": true
     },
     {
@@ -125,6 +189,48 @@
           37
         ]
       ],
+      "ranked_model_codes": [
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH"
+      ],
+      "ranked_product_generations": [
+        "D",
+        "D",
+        "D",
+        "D",
+        "D"
+      ],
+      "ranked_document_versions": [
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00"
+      ],
+      "ranked_embedding_revisions": [
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181"
+      ],
+      "ranked_index_versions": [
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0"
+      ],
+      "ranked_chunk_set_sha256": [
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+      ],
       "execution_path": "PGVECTOR_QUERY",
       "scores": [
         0.707032,
@@ -139,6 +245,8 @@
       "expected_no_evidence": false,
       "document_metadata_passed": true,
       "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
       "passed": true
     },
     {
@@ -176,6 +284,48 @@
           38
         ]
       ],
+      "ranked_model_codes": [
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH"
+      ],
+      "ranked_product_generations": [
+        "D",
+        "D",
+        "D",
+        "D",
+        "D"
+      ],
+      "ranked_document_versions": [
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00"
+      ],
+      "ranked_embedding_revisions": [
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181"
+      ],
+      "ranked_index_versions": [
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0"
+      ],
+      "ranked_chunk_set_sha256": [
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+      ],
       "execution_path": "PGVECTOR_QUERY",
       "scores": [
         0.598631,
@@ -190,6 +340,8 @@
       "expected_no_evidence": false,
       "document_metadata_passed": true,
       "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
       "passed": true
     },
     {
@@ -227,6 +379,48 @@
           38
         ]
       ],
+      "ranked_model_codes": [
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH"
+      ],
+      "ranked_product_generations": [
+        "D",
+        "D",
+        "D",
+        "D",
+        "D"
+      ],
+      "ranked_document_versions": [
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00"
+      ],
+      "ranked_embedding_revisions": [
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181"
+      ],
+      "ranked_index_versions": [
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0"
+      ],
+      "ranked_chunk_set_sha256": [
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+      ],
       "execution_path": "PGVECTOR_QUERY",
       "scores": [
         0.59543,
@@ -241,6 +435,8 @@
       "expected_no_evidence": false,
       "document_metadata_passed": true,
       "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
       "passed": true
     },
     {
@@ -278,6 +474,48 @@
           37
         ]
       ],
+      "ranked_model_codes": [
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH"
+      ],
+      "ranked_product_generations": [
+        "D",
+        "D",
+        "D",
+        "D",
+        "D"
+      ],
+      "ranked_document_versions": [
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00"
+      ],
+      "ranked_embedding_revisions": [
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181"
+      ],
+      "ranked_index_versions": [
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0"
+      ],
+      "ranked_chunk_set_sha256": [
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+      ],
       "execution_path": "PGVECTOR_QUERY",
       "scores": [
         0.632927,
@@ -292,6 +530,8 @@
       "expected_no_evidence": false,
       "document_metadata_passed": true,
       "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
       "passed": true
     },
     {
@@ -329,6 +569,48 @@
           39
         ]
       ],
+      "ranked_model_codes": [
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH"
+      ],
+      "ranked_product_generations": [
+        "D",
+        "D",
+        "D",
+        "D",
+        "D"
+      ],
+      "ranked_document_versions": [
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00"
+      ],
+      "ranked_embedding_revisions": [
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181"
+      ],
+      "ranked_index_versions": [
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0"
+      ],
+      "ranked_chunk_set_sha256": [
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+      ],
       "execution_path": "PGVECTOR_QUERY",
       "scores": [
         0.747171,
@@ -343,6 +625,8 @@
       "expected_no_evidence": false,
       "document_metadata_passed": true,
       "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
       "passed": true
     },
     {
@@ -380,6 +664,48 @@
           38
         ]
       ],
+      "ranked_model_codes": [
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH"
+      ],
+      "ranked_product_generations": [
+        "D",
+        "D",
+        "D",
+        "D",
+        "D"
+      ],
+      "ranked_document_versions": [
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00"
+      ],
+      "ranked_embedding_revisions": [
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181"
+      ],
+      "ranked_index_versions": [
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0"
+      ],
+      "ranked_chunk_set_sha256": [
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+      ],
       "execution_path": "PGVECTOR_QUERY",
       "scores": [
         0.597247,
@@ -394,6 +720,8 @@
       "expected_no_evidence": false,
       "document_metadata_passed": true,
       "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
       "passed": true
     },
     {
@@ -402,6 +730,12 @@
       "ranked_chunk_ids": [],
       "ranked_document_ids": [],
       "ranked_page_refs": [],
+      "ranked_model_codes": [],
+      "ranked_product_generations": [],
+      "ranked_document_versions": [],
+      "ranked_embedding_revisions": [],
+      "ranked_index_versions": [],
+      "ranked_chunk_set_sha256": [],
       "execution_path": "POLICY_BLOCK_UNSUPPORTED_MODEL",
       "scores": [],
       "recall_at_5": 1.0,
@@ -410,6 +744,8 @@
       "expected_no_evidence": true,
       "document_metadata_passed": true,
       "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
       "passed": true
     },
     {
@@ -418,6 +754,12 @@
       "ranked_chunk_ids": [],
       "ranked_document_ids": [],
       "ranked_page_refs": [],
+      "ranked_model_codes": [],
+      "ranked_product_generations": [],
+      "ranked_document_versions": [],
+      "ranked_embedding_revisions": [],
+      "ranked_index_versions": [],
+      "ranked_chunk_set_sha256": [],
       "execution_path": "POLICY_BLOCK_UNSUPPORTED_MODEL",
       "scores": [],
       "recall_at_5": 1.0,
@@ -426,6 +768,8 @@
       "expected_no_evidence": true,
       "document_metadata_passed": true,
       "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
       "passed": true
     },
     {
@@ -434,6 +778,12 @@
       "ranked_chunk_ids": [],
       "ranked_document_ids": [],
       "ranked_page_refs": [],
+      "ranked_model_codes": [],
+      "ranked_product_generations": [],
+      "ranked_document_versions": [],
+      "ranked_embedding_revisions": [],
+      "ranked_index_versions": [],
+      "ranked_chunk_set_sha256": [],
       "execution_path": "POLICY_BLOCK_UNSUPPORTED_MODEL",
       "scores": [],
       "recall_at_5": 1.0,
@@ -442,6 +792,8 @@
       "expected_no_evidence": true,
       "document_metadata_passed": true,
       "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
       "passed": true
     },
     {
@@ -450,6 +802,12 @@
       "ranked_chunk_ids": [],
       "ranked_document_ids": [],
       "ranked_page_refs": [],
+      "ranked_model_codes": [],
+      "ranked_product_generations": [],
+      "ranked_document_versions": [],
+      "ranked_embedding_revisions": [],
+      "ranked_index_versions": [],
+      "ranked_chunk_set_sha256": [],
       "execution_path": "POLICY_BLOCK_UNVERIFIED_SOURCE",
       "scores": [],
       "recall_at_5": 1.0,
@@ -458,6 +816,8 @@
       "expected_no_evidence": true,
       "document_metadata_passed": true,
       "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
       "passed": true
     },
     {
@@ -466,6 +826,12 @@
       "ranked_chunk_ids": [],
       "ranked_document_ids": [],
       "ranked_page_refs": [],
+      "ranked_model_codes": [],
+      "ranked_product_generations": [],
+      "ranked_document_versions": [],
+      "ranked_embedding_revisions": [],
+      "ranked_index_versions": [],
+      "ranked_chunk_set_sha256": [],
       "execution_path": "POLICY_BLOCK_UNSUPPORTED_MODEL",
       "scores": [],
       "recall_at_5": 1.0,
@@ -474,6 +840,8 @@
       "expected_no_evidence": true,
       "document_metadata_passed": true,
       "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
       "passed": true
     }
   ]

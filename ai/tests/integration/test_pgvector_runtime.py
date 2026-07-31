@@ -1,6 +1,7 @@
 """실제 PostgreSQL/pgvector 연결이 제공될 때만 실행하는 통합 검증."""
 
 import os
+from pathlib import Path
 
 import psycopg
 import pytest
@@ -9,6 +10,7 @@ from ai.app.integrations.embedding.embedding_client import BgeM3EmbeddingClient
 from ai.app.integrations.vector_store.vector_store import PgVectorStore
 from ai.app.retrieval.models.retrieval_query import RetrievalQuery
 from ai.app.retrieval.search.vector_search import VectorSearchService
+from ai.app.retrieval.indexing.index_manifest import IndexManifest
 
 
 pytestmark = pytest.mark.skipif(
@@ -31,9 +33,14 @@ def test_actual_pgvector_rows_dimension_and_exact_search():
         )
         assert cursor.fetchone() == (7, 7, 1024, 1024)
 
+    manifest = IndexManifest.load_manifest(str(
+        Path(__file__).resolve().parents[2] / "configs" / "index_manifest.json"
+    ))
+    assert manifest is not None
     service = VectorSearchService(
         BgeM3EmbeddingClient(model_revision=revision),
         PgVectorStore(dsn),
+        index_manifest=manifest,
     )
     results = service.search(RetrievalQuery(
         query_text="정수기에서 물이 나오지 않을 때 무엇을 확인해야 하나요?",
@@ -46,3 +53,6 @@ def test_actual_pgvector_rows_dimension_and_exact_search():
     assert all(result.allowed_use for result in results)
     assert all(result.document_id == "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00" for result in results)
     assert all(result.page_refs for result in results)
+    assert all(result.embedding_model_revision == revision for result in results)
+    assert all(result.index_version == manifest.index_version for result in results)
+    assert all(result.chunk_set_sha256 == manifest.chunk_set_sha256 for result in results)

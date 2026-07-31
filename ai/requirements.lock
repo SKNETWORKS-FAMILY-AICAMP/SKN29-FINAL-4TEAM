@@ -1,4 +1,6 @@
-# Python 3.10.20 / Windows verification lock generated from the isolated .venv.
+# Runtime: CPython 3.13.13 / Windows x86-64.
+# Resolver: pip 26.1.2. Exact versions are pinned without hashes.
+# This is the Windows development/test lock; Linux container builds require a separate verified lock.
 annotated-doc==0.0.5
 annotated-types==0.8.0
 anyio==4.14.2
@@ -61,6 +63,7 @@ safetensors==0.8.0
 scikit-learn==1.7.2
 scipy==1.15.3
 sentence-transformers==5.5.1
+setuptools==83.0.0
 shellingham==1.5.4
 sniffio==1.3.1
 starlette==1.3.1

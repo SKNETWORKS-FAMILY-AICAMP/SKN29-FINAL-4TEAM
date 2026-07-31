@@ -1,4 +1,4 @@
-# Complete direct dependencies verified with Python 3.10.20.
+# Complete direct dependencies verified with Python 3.13.13.
 # Keep versions aligned with pyproject.toml.
 fastapi==0.136.3
 uvicorn[standard]==0.48.0

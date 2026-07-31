@@ -2,20 +2,37 @@
 
 ## 재현 가능한 실행 환경
 
-- 검증 Python: `3.10.20`
+- 검증 Python: `3.13.13`
 - PostgreSQL과 `vector` 확장
 - 의존성 Manifest: `ai/requirements.lock`, `ai/requirements.txt`, `ai/pyproject.toml`
 - AI 계약 버전: `1.1.0`
 
-저장소 Root에서 개인 PC 절대 경로 없이 실행한다.
+Backend와 AI는 Python 버전만 `3.13.13`으로 통일하고 가상환경과 의존성은
+분리한다. Backend는 `backend/.venv`, AI는 `ai/.venv`를 사용한다. 한쪽
+환경에 다른 서비스의 패키지를 설치하지 않는다.
+
+저장소 Root에서 개인 PC 절대 경로 없이 실행한다. 먼저 현재 Python이
+정확히 `3.13.13`인지 확인한 뒤 AI 전용 가상환경을 생성한다.
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -r ai\requirements.lock
-.\.venv\Scripts\python.exe -m pip check
-.\.venv\Scripts\python.exe -m uvicorn ai.app.main:app --host 127.0.0.1 --port 8001
+python --version
+# 기대값: Python 3.13.13
+
+python -m venv ai\.venv
+.\ai\.venv\Scripts\python.exe --version
+.\ai\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\ai\.venv\Scripts\python.exe -m pip install -r ai\requirements.lock
+.\ai\.venv\Scripts\python.exe -m pip check
+.\ai\.venv\Scripts\python.exe -m uvicorn ai.app.main:app --host 127.0.0.1 --port 8001
 ```
+
+기존 `ai/.venv`의 Python 버전이 다르면 그 환경을 그대로 재사용하지 않고
+Python `3.13.13`으로 다시 생성한다. 가상환경 디렉토리는 Git에 포함하지
+않으며 다른 팀원에게 복사하지 않는다.
+
+`ai/requirements.lock`은 Python 3.13.13·Windows x86-64 개발/테스트용이며
+Hash를 포함하지 않는다. Linux Container 배포 시에는 대상 Image에서 별도
+Lock을 생성하고 설치·테스트를 다시 검증한다.
 
 Base URL은 `http://127.0.0.1:8001`, Health Check는 `GET /health`, 분석
 API는 `POST /api/v1/ai/analyze?mode=mock|local`이다. Backend의
@@ -41,10 +58,17 @@ Timeout은 `AI-TIMEOUT-01`/HTTP 504로 반환한다. 취소 신호를 작업 Thr
 `state_version`, Stage, 실제 `retry_count`, latency와 오류 코드만 남기며
 고객 원문·Prompt·Secret·개인정보는 기록하지 않는다.
 
+Local Embedding은 Python Thread 안에서 실행되므로 이미 시작된 Torch 연산을
+강제로 종료하지 않는다. HTTP Timeout 뒤에는 취소 Token으로 다음 Stage와
+DB 진입을 차단하고, 해당 Thread가 실제 종료될 때까지 작업 Slot을 점유한다.
+동시에 실행할 수 있는 Local 분석 Worker는 `AI_MAX_IN_FLIGHT_WORKERS`로
+제한하며 기본값은 `2`, 허용 범위는 `1~32`다. PostgreSQL 연결과 SQL은
+각각 5초 Timeout을 별도로 적용한다.
+
 ## 단위 검증
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest ai\tests\unit
+.\ai\.venv\Scripts\python.exe -m pytest ai\tests\unit
 ```
 
 ## RAG 실행 기준
@@ -68,7 +92,7 @@ Exact Search(`<=>`)를 사용한다. `WPUJAC104DWH`·D세대·공식 검증·고
 ```powershell
 $env:AI_VECTOR_DSN='<PostgreSQL DSN>'
 $env:AI_EMBEDDING_REVISION='5617a9f61b028005a4858fdac845db406aefb181'
-.\.venv\Scripts\python.exe -m ai.scripts.build_vector_index
+.\ai\.venv\Scripts\python.exe -m ai.scripts.build_vector_index
 ```
 
 ## Disposable pgvector 실증
@@ -81,10 +105,10 @@ $env:AI_VECTOR_DSN='<격리 PostgreSQL DSN>'
 $env:AI_EMBEDDING_REVISION='5617a9f61b028005a4858fdac845db406aefb181'
 $env:AI_VECTOR_DISPOSABLE_CONFIRM='DISPOSABLE_ONLY'
 
-.\.venv\Scripts\python.exe -m ai.scripts.initialize_disposable_vector_schema
-.\.venv\Scripts\python.exe -m ai.scripts.build_vector_index
-.\.venv\Scripts\python.exe -m ai.scripts.verify_pgvector_runtime
-.\.venv\Scripts\python.exe -m pytest ai\tests\integration\test_pgvector_runtime.py -v
+.\ai\.venv\Scripts\python.exe -m ai.scripts.initialize_disposable_vector_schema
+.\ai\.venv\Scripts\python.exe -m ai.scripts.build_vector_index
+.\ai\.venv\Scripts\python.exe -m ai.scripts.verify_pgvector_runtime
+.\ai\.venv\Scripts\python.exe -m pytest ai\tests\integration\test_pgvector_runtime.py -v
 ```
 
 검증 보고서는 실제 pgvector Query와 검색 전 정책 차단 Case를 분리한다.

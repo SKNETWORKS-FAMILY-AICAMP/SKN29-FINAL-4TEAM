@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional
+from typing import Annotated, Optional
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -91,10 +91,10 @@ class TraceContext(ContractModel):
 
 class ModelMetadata(ContractModel):
     """AI 모델 실행 메타데이터"""
-    model_name: str = Field(..., description="사용된 LLM/Embedding 모델명")
-    prompt_version: str = Field(..., description="적용된 프롬프트 버전 (예: symptom_structuring/v1)")
-    tokens_used: Optional[int] = Field(None, description="사용한 토큰 수")
-    latency_ms: Optional[float] = Field(None, description="처리 지연 시간 (ms)")
+    model_name: str = Field(..., min_length=1, max_length=200, description="사용된 LLM/Embedding 모델명")
+    prompt_version: str = Field(..., min_length=1, max_length=100, description="적용된 프롬프트 버전 (예: symptom_structuring/v1)")
+    tokens_used: Optional[int] = Field(None, ge=0, description="사용한 토큰 수")
+    latency_ms: Optional[float] = Field(None, ge=0, description="처리 지연 시간 (ms)")
 
 
 class ProcessingTrace(ContractModel):
@@ -103,4 +103,14 @@ class ProcessingTrace(ContractModel):
     status: str = Field(..., pattern="^(SUCCEEDED|FAILED|SKIPPED)$", description="단계 처리 상태")
     latency_ms: float = Field(..., ge=0, description="단계별 소요 시간 (ms)")
     retry_count: int = Field(0, ge=0, le=1, description="해당 단계 내부 재시도 횟수")
-    error_code: Optional[str] = Field(None, description="공통 오류 코드. 예외 원문은 공개하지 않음")
+    error_code: Optional[str] = Field(None, max_length=100, description="공통 오류 코드. 예외 원문은 공개하지 않음")
+
+
+class ValidationResult(ContractModel):
+    """계약·근거·안전 검증 결과."""
+
+    is_valid: bool
+    schema_valid: bool
+    grounding_valid: bool
+    safety_valid: bool
+    violations: list[Annotated[str, Field(min_length=1, max_length=500)]] = Field(default_factory=list)
