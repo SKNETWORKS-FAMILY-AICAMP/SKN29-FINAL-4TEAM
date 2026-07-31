@@ -201,3 +201,49 @@ def test_timeout_during_embedding_prevents_following_db_query():
         assert False, "취소 신호를 예외로 전달해야 합니다."
     except PipelineCancelledError:
         pass
+
+
+def test_store_results_are_revalidated_after_search():
+    class FakeEmbedding:
+        dimension = 1024
+
+        def embed_query(self, text):
+            return [0.0] * 1024
+
+    class UnsafeStore:
+        def search(self, *args, **kwargs):
+            return [RetrievedChunk(
+                chunk_id="unsafe",
+                document_title="미검증 문서",
+                manual_model="WRONG",
+                model_code="WRONG",
+                product_generation="S",
+                content="사용하면 안 되는 근거",
+                similarity_score=1.0,
+                verification_status="unverified",
+                allowed_use=False,
+            )]
+
+    service = VectorSearchService(FakeEmbedding(), UnsafeStore())
+    results = service.search(RetrievalQuery(
+        query_text="출수가 안 됩니다",
+        model_code="WPUJAC104DWH",
+    ))
+    assert results == []
+
+
+def test_manifest_revision_mismatch_is_rejected_before_search():
+    class FakeEmbedding:
+        model_name = "BAAI/bge-m3"
+        model_revision = "b" * 40
+        dimension = 1024
+
+    manifest = IndexManifest(
+        model_revision="a" * 40,
+        chunk_set_sha256="c" * 64,
+    )
+    try:
+        VectorSearchService(FakeEmbedding(), object(), index_manifest=manifest)
+        assert False, "Embedding Revision 불일치를 거부해야 합니다."
+    except RuntimeError as exc:
+        assert "Revision" in str(exc)

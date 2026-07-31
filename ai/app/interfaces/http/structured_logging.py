@@ -2,10 +2,25 @@
 
 import json
 import logging
+import os
 from typing import Any
 
 
 LOGGER = logging.getLogger("watercare.ai.analysis")
+
+
+def configure_structured_logging() -> None:
+    """AI_LOG_LEVEL을 실제 Runtime Logger에 적용한다."""
+    level_name = os.getenv("AI_LOG_LEVEL", "INFO").upper()
+    level = getattr(logging, level_name, None)
+    if not isinstance(level, int):
+        raise RuntimeError(f"지원하지 않는 AI_LOG_LEVEL입니다: {level_name}")
+    LOGGER.setLevel(level)
+    if not any(getattr(handler, "_watercare_ai_handler", False) for handler in LOGGER.handlers):
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("%(message)s"))
+        handler._watercare_ai_handler = True  # type: ignore[attr-defined]
+        LOGGER.addHandler(handler)
 
 
 def log_analysis_event(event: str, **fields: Any) -> None:

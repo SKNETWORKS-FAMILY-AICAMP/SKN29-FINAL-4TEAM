@@ -284,3 +284,45 @@ JAC104D MVP 적재 적합으로 판정했다. Data 측 `ai_execution` 갱신, �
 실제 Query 7건·정책 차단 5건, 평가 12/12 PASS, Integration `1 passed`,
 검증 Fixture 잔존 0건을 확인했다. HTTP Smoke는 `127.0.0.1:8001`의 Health와
 Public UUID 분석 요청이 모두 성공했다.
+
+## 2026-07-30 AI Python 3.13.13 환경 정합화
+
+- Backend와 Python 버전은 `3.13.13`으로 통일하되 가상환경은
+  `backend/.venv`와 `ai/.venv`로 분리하도록 AI 실행 문서를 갱신했다.
+- Python `3.13.13` 격리 환경에서 `ai/requirements.lock` 설치와
+  `pip check`를 통과했다.
+- Torch `2.13.0`, Transformers `5.14.1`, SentenceTransformers `5.5.1`,
+  psycopg import와 BGE-M3 고정 Revision의 1024차원 임베딩 생성을 확인했다.
+- 단위 테스트 결과: `50 passed, 3 warnings`.
+- 같은 Python `3.13.13` 환경에서 PostgreSQL 16.14·pgvector 0.8.6에
+  실제 접속하여 검색 평가 `12/12 PASS`(SQL 검색 7건·정책 차단 5건),
+  pgvector 통합 테스트 `1 passed`를 확인했다. 승인 청크는 7건·1024차원이며
+  Transaction Rollback 후 `VERIFY-%` Fixture 잔존은 0건이다.
+
+## 2026-07-30 최지용 10.1-A 2차 반송 보완
+
+과거 절의 AI `8000`, 개인 Conda 절대경로, 당시 테스트 수치는 이력으로만
+보존한다. 현재 실행 기준은 Python `3.13.13`, `ai/.venv`, AI Port `8001`이며
+`ai/README.md`와 `20260730_이동윤_최지용_10_1_A_2차_보완_회신.md`를
+최신 기준으로 사용한다.
+
+- 16개 AI JSON Schema 전체에 Runtime 모델 매핑·정상 Payload·추가 필드
+  거부 Matrix를 적용하고, 보고된 중첩 경계 반례를 별도 검증했다.
+- `MissingField`, `FollowUpQuestion`, `EvidenceReference.page_refs`,
+  `ModelMetadata`, `ProcessingTrace.error_code` 제약을 계약과 맞췄고
+  `ValidationResult` Runtime 모델을 추가했다.
+- 운영 기본 INFO Logger를 활성화하고 성공·422·Header 불일치·Timeout·내부
+  실패의 구조화 로그와 고객 원문·내부 예외 비노출을 검증했다.
+- Store 반환 후 제품 모델·D세대·공식 검증·고객 안내 허용을 재검증하고,
+  Index Manifest와 DB Row의 Document Hash·Embedding Revision·Index Version·
+  Chunk Set SHA-256을 대조한다.
+- `jac104_retrieval_cases.json`을 검색 평가 기대값 SSOT로 직접 읽도록
+  Evaluation Loader를 정리했다. 적재 청크 SSOT는 검증 JSONL로 분리한다.
+- Local Torch Thread는 강제 종료하지 못하는 한계를 명시하고, Timeout 뒤
+  실제 Thread 종료까지 Slot을 유지하는 동시 실행 상한 기본 2개를 적용했다.
+- Python `3.13.13` 단위 테스트는 `71 passed, 3 warnings`, 실제 pgvector는
+  평가 `12/12 PASS`, 통합 테스트 `1 passed`다.
+- 실제 Uvicorn `127.0.0.1:8001`에서 Health와 Mock 분석 요청이 성공했고,
+  `analysis_started → analysis_completed` INFO 로그 및 고객 원문 비노출을
+  확인했다. 실제 pgvector 기반 종합 평가는 RAG 12건 Recall@5 `1.0`, MRR
+  `0.9333`, 안전 4건 준수율 `100%`다.
