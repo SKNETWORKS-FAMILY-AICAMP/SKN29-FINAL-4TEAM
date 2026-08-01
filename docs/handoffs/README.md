@@ -1,12 +1,14 @@
 # 정수기 딜러 팀 통합 인계 허브
 
-> 기준일: 2026-07-31
+> 기준일: 2026-08-01
 >
 > 문서 책임: 공동 편집(`docs/**`)
 >
-> 현재 상태: `WATERBRIDGE_LOCAL_GATE_PASS_T005_TECHNICALLY_READY_APPROVAL_PENDING`
+> 현재 상태: `SHARED_CANDIDATE_T005_TECHNICALLY_READY_APPROVAL_PENDING`
 >
-> 현재 기본 DB: `waterbridge` / Schema: `public`
+> 현재 `main` 기본 DB: `watercare`
+>
+> `jiyong` 병합 후보 DB: `waterbridge` / Schema: `public`
 >
 > 실행 원칙: `작업 → 즉시 검증 → 다음 작업`
 
@@ -25,6 +27,8 @@
 | T-005 구현 역사 | [T-005 테이블 구현·변경 이력](../individual/jiyong/technical/backend/20260730_t005_테이블_구현_및_변경_이력.md) |
 | 합성 데이터 적재 | [합성 데이터 Schema·Importer·PostgreSQL 검증 가이드](../individual/jiyong/technical/backend/합성_데이터_스키마_적재기_postgresql_검증_가이드.md) |
 | Backend·AI 미해결 계약 | [백엔드·AI 계약·Runtime 통합 미해결 사항](../individual/jiyong/technical/contracts/백엔드_ai_계약_런타임_통합_미해결_사항.md) |
+| T-017A·T-022 검토 요청 | [2026-08-01 검토 입력 패킷](20260801_t017a_t022_검토_입력_패킷.md) |
+| T-018 안전 준비 | [T-018 구독·제품 조회 API 계약 제안서](../individual/jiyong/technical/backend/t018_구독_제품_조회_api_계약_제안서.md) |
 
 ## 2. 판단 기준
 
@@ -32,7 +36,7 @@
 
 1. `contracts/**`의 기계 판독 계약
 2. Django Model·Migration·Route와 실제 Runtime 검증 결과
-3. 담당자 Commit과 PM이 병합한 `main` 40자리 SHA
+3. 담당자 Branch의 Push·PR과 PM이 병합한 최신 `main`
 4. 이 문서를 포함한 설명 문서
 5. 과거 계획표·회의 메모
 
@@ -44,11 +48,15 @@
 | --- | --- |
 | `LOCAL_VERIFIED` | 작성자 환경에서 검증했지만 팀 기준선으로 승인되지 않음 |
 | `SHARED_CANDIDATE` | 담당자 Branch에 Push됐지만 PM `main` 병합 전 |
-| `TEAM_BASELINE` | PM이 검토·병합하고 40자리 `main` SHA를 공유함 |
+| `TEAM_BASELINE` | PM이 검토·병합한 뒤 전 팀원이 최신 `main`을 Pull함 |
 | `BLOCKED_EXTERNAL` | 다른 담당자 입력이나 소비 검증을 기다림 |
 | `FOLLOW_UP` | 기준선 반영 뒤 이어서 수행할 항목 |
 
 ## 3. 현재 WaterBridge·T-005 Gate
+
+2026-08-01 원격 확인 기준 팀 `main`의 기본 DB 값은 `watercare`다.
+아래 WaterBridge 결과는 `jiyong` Branch의 `SHARED_CANDIDATE` 증거이며,
+PM 병합 완료와 팀원들의 최신 `main` Pull 전에는 팀 기준선이 아니다.
 
 | 항목 | 현재 결과 | 판정 |
 | --- | --- | --- |
@@ -78,9 +86,9 @@ Active 13과 Target-only 19는 서로 다른 Schema가 아니다. 32개 물리
 
 | 순서 | 담당 | 해야 할 일 | 완료 증거 |
 | ---: | --- | --- | --- |
-| 1 | 최지용 | 동일 작업 단위의 코드·Migration·계약·문서·검증 결과와 후보 SHA 전달 | 40자리 SHA, 변경 범위, 실행 명령·Exit code |
+| 1 | 최지용 | 코드·Migration·계약·문서·검증 결과를 `jiyong`에 Push하고 PR로 전달 | PR 링크, 변경 범위, 실행 명령·Exit code |
 | 2 | 김은진 또는 지정 비작성자 | 새 worktree·새 PostgreSQL Volume에서 독립 재현 | 32/32, Seed 2회차 신규 0, Importer Replay, 전체 회귀 |
-| 3 | 윤승혁(PM) | 계약·비작성자 증거 검토 후 완료·병합 여부 결정 | 승인 기록과 병합된 `main` SHA |
+| 3 | 윤승혁(PM) | 계약·비작성자 증거 검토 후 완료·병합 여부 결정 | 승인 기록, 병합 PR, 최신 `main` Pull 안내 |
 | 4 | 한예나 | PM `main` 기준 Web UUID·Auth·오류 응답 소비 검증 | Test·Lint·Build·실제 API Smoke |
 | 5 | 양정현 | PM `main` 기준 Mobile DTO·Network·상태·멱등 소비 검증 | Unit·Lint·두 App Build·Emulator Smoke |
 | 6 | 이동윤 | PM `main` 기준 AI Schema·Vector·Evidence 소비 검증 | 계약 Parity·검색 후검증·통합 E2E |
@@ -92,7 +100,7 @@ Gate 4~6이 남았다는 이유로 Gate 1~3을 임의 완료 처리하지 않는
 
 | 담당 | 주관 영역 | 현재 요청 |
 | --- | --- | --- |
-| 최지용 | Backend·DB·Public API 계약 | 후보 SHA·실행 증거 제공, 회신된 계약 차이 반영 |
+| 최지용 | Backend·DB·Public API 계약 | `jiyong` Push·PR와 실행 증거 제공, T-017A·T-022 검토 입력과 T-018 최소 GET 제안 제공 |
 | 김은진 | `data/**`, Data QA·재현 검토 | Fixture·Crosswalk·Hash와 빈 PostgreSQL 독립 재현 |
 | 윤승혁(PM) | State 계약·완료·병합 Gate | 완료 Evidence와 외부 소비 결과 검토 |
 | 한예나 | `web/**` | Runtime 7개와 Mock/Blocked 경계, UUID·401/403 소비 |
@@ -107,13 +115,14 @@ Gate 4~6이 남았다는 이유로 Gate 1~3을 임의 완료 처리하지 않는
 
 | 우선순위 | 항목 | 주담당 | 해제 조건 |
 | ---: | --- | --- | --- |
-| P0 | T-005 비작성자 독립 재현 | 김은진 또는 지정 리뷰어 | 같은 SHA의 새 DB Migration·Seed·Importer·회귀 Evidence |
+| P0 | T-005 비작성자 독립 재현 | 김은진 또는 지정 리뷰어 | 최신 `jiyong` Pull 상태의 새 DB Migration·Seed·Importer·회귀 Evidence |
 | P0 | T-005 공식 완료·`main` 병합 | 윤승혁(PM) | v1.3 계약·비작성자 Evidence·완료 경계 승인 |
 | P1 | T-017A 합성 계정 관리 설계 검토 | 윤승혁·김은진 | 정책·Migration·감사 원장 검토 |
 | P1 | T-022 `SUBMIT_SYMPTOM` Runtime | 최지용 | 계약 게이트 통과 후 첫 수직 Slice 구현·검증 |
-| P1 | Web·Mobile 소비 검증 | 한예나·양정현 | PM `main` SHA와 실제 API 연동 결과 |
+| P1 | T-018 구독·제품 최소 GET | 최지용·김은진 | 제안 계약·최근 관리일 집계·Operation inventory 승인 후 Runtime 착수 |
+| P1 | Web·Mobile 소비 검증 | 한예나·양정현 | PM 병합 완료·최신 `main` Pull과 실제 API 연동 결과 |
 | P1 | Backend·AI 계약·Runtime 통합 | 이동윤·최지용 | AI 계약 Parity·Adapter·Evidence·통합 E2E |
-| P2 | 전 영역 동일 SHA E2E | 각 담당·PM | 위 P0·P1 완료 |
+| P2 | 전 영역 최신 `main` E2E | 각 담당·PM | 위 P0·P1 완료 |
 
 T-005 Runtime은 현재 `READY 32/32`, 구현 blocker 0이다. 공식 WBS
 상태는 비작성자 재현·외부 소비 검토·PM 승인 전까지 진행 중으로 유지한다.
@@ -141,12 +150,20 @@ T-005 Runtime은 현재 `READY 32/32`, 구현 blocker 0이다. 공식 WBS
 
 ## 8. Git 공유와 반환 형식
 
-팀원은 전달받은 후보 SHA와 원격 HEAD를 확인한다.
+팀원은 전달받은 PR의 변경 파일을 확인하고 검토 대상 Branch를 최신화한다.
 
 ```powershell
 git fetch origin
-git rev-parse origin/main
-git rev-parse origin/<담당자-브랜치>
+git switch <담당자-브랜치>
+git pull --ff-only origin <담당자-브랜치>
+git status --short
+```
+
+PM 병합 완료 통지를 받은 뒤에는 `main`으로 전환해 최신 내용을 받는다.
+
+```powershell
+git switch main
+git pull --ff-only origin main
 git status --short
 ```
 
@@ -154,7 +171,8 @@ git status --short
 
 ```text
 branch=<브랜치>
-commit=<40자리 SHA>
+pr=<PR 번호 또는 URL>
+main_pull_status=<UP_TO_DATE 또는 NEEDS_PULL>
 environment=<OS·Runtime·DB 버전>
 commands=<실행 명령>
 exit_codes=<명령별 Exit code>
@@ -175,6 +193,8 @@ remaining_blockers=<남은 차단 요소>
 | Backend 가상환경 | [백엔드 Python 가상환경 재현 가이드](../individual/jiyong/technical/backend/백엔드_파이썬_가상환경_재현_가이드.md) |
 | API 계약·Runtime 증거 | [백엔드 API 통합 검증 보고서](../individual/jiyong/manuals/20260729_백엔드_api_계약_및_런타임_통합_검증_보고서.md) |
 | API 변경 절차 | [백엔드 API 계약 개발·인계 가이드](../individual/jiyong/technical/backend/백엔드_api_계약_개발_및_인계_가이드.md) |
+| T-017A·T-022 검토 회신 | [검토 입력 패킷](20260801_t017a_t022_검토_입력_패킷.md) |
+| T-018 구독·제품 조회 | [T-018 최소 GET 계약 제안서](../individual/jiyong/technical/backend/t018_구독_제품_조회_api_계약_제안서.md) |
 | 합성 고객 로그인 | [합성 고객 데모 로그인 가이드](../individual/jiyong/manuals/합성_고객_데모_로그인_가이드.md) |
 | Data QA Hash·Crosswalk | [합성 데이터 Fixture Hash·Crosswalk 검증 보고서](../individual/jiyong/technical/contracts/합성_데이터_픽스처_해시_교차표_검증_보고서.md) |
 | Web 현재 이슈 | [Web 3주차 Open Issues](../../web/docs/week3-open-issues.md) |
