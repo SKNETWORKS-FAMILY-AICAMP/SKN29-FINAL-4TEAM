@@ -1,19 +1,27 @@
 :root {
-  --simple-blue: #19745f;
-  --simple-blue-dark: #145d4d;
-  --simple-navy: #17312c;
-  --simple-slate: #62726f;
-  --simple-line: #dce6e3;
-  --simple-bg: #f3f6f5;
+  --simple-blue: #178fc2;
+  --simple-blue-dark: #0e709d;
+  --simple-navy: #17324d;
+  --simple-slate: #63778a;
+  --simple-line: #d8e4e8;
+  --simple-bg: #f7f8f6;
   --simple-danger: #dc2626;
   --simple-success: #047857;
+  --sunset-sky: #61c4f2;
+  --sunset-aqua: #9de2f1;
+  --sunset-cream: #fff1d8;
+  --sunset-apricot: #ffc286;
+  --sunset-orange: #f8742f;
 }
 
 .compact-consultant-body {
   min-width: 1080px;
   margin: 0;
   overflow: hidden;
-  background: var(--simple-bg);
+  background:
+    radial-gradient(circle at 88% 8%, rgb(248 116 47 / 16%), transparent 25%),
+    radial-gradient(circle at 10% 4%, rgb(97 196 242 / 18%), transparent 30%),
+    linear-gradient(145deg, #f5fbfe 0%, #f8faf9 52%, #fff8ef 100%);
   color: var(--simple-navy);
   font-family:
     Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif;
@@ -66,8 +74,9 @@
   height: 36px;
   place-items: center;
   border-radius: 11px;
-  background: var(--simple-blue);
+  background: linear-gradient(145deg, #1599ce 10%, #69c9ee 48%, #f8742f 100%);
   color: #fff;
+  box-shadow: 0 6px 15px rgb(23 143 194 / 24%);
   font-size: 16px;
   font-weight: 900;
 }
@@ -107,7 +116,7 @@
   height: 34px;
   place-items: center;
   border-radius: 50%;
-  background: #eaf6f1;
+  background: linear-gradient(145deg, #e1f6fd, #fff0de);
   color: var(--simple-blue);
   font-weight: 900;
 }
@@ -1446,7 +1455,13 @@
   padding: 13px 18px;
   border: 1px solid #dbe4f0;
   border-radius: 14px;
-  background: #fff;
+  background: linear-gradient(
+    100deg,
+    rgb(255 255 255 / 96%) 0%,
+    rgb(237 249 253 / 94%) 45%,
+    rgb(255 244 226 / 94%) 100%
+  );
+  backdrop-filter: blur(14px);
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
 }
 
@@ -1855,6 +1870,7 @@
   }
 }
 
+
 @media (max-width: 760px) {
   .consultant-queue-main {
     height: auto;
@@ -1922,4 +1938,1012 @@
   .consultant-detail-drawer {
     width: 100vw;
   }
+}
+
+
+/* Production workspace layout: persistent work rail + focused queue. */
+.consultant-queue-main {
+  grid-template-columns: 250px minmax(0, 1fr);
+  grid-template-rows: 96px minmax(0, 1fr);
+  gap: 16px;
+  padding: 20px 28px 24px;
+}
+
+.consultant-queue-main .simple-page-head {
+  grid-column: 2;
+  grid-row: 1;
+  min-height: 0;
+  border-radius: 18px;
+}
+
+.consultant-queue-main .simple-page-head h1 {
+  font-size: 27px;
+}
+
+.consultant-work-tabs {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 18px 14px 14px;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 54%);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 12% 0%, rgb(48 160 207 / 36%), transparent 33%),
+    linear-gradient(165deg, #183e55, #102e42 72%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 18%),
+    0 22px 48px rgb(25 53 68 / 19%);
+}
+
+.consultant-work-tabs::before {
+  padding: 2px 7px 8px;
+  color: rgb(216 237 245 / 68%);
+  content: "TODAY / WORK QUEUE";
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.consultant-work-tab {
+  min-height: 0;
+  padding: 18px 16px;
+  border-color: rgb(255 255 255 / 12%);
+  border-radius: 17px;
+  background: rgb(255 255 255 / 5%);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%);
+  backdrop-filter: none;
+}
+
+.consultant-work-tab:hover {
+  border-color: rgb(255 255 255 / 28%);
+  background: rgb(255 255 255 / 9%);
+}
+
+.consultant-work-tab.is-active {
+  border-color: color-mix(in srgb, var(--tab-color) 72%, white);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--tab-color) 90%, #fff 10%),
+    color-mix(in srgb, var(--tab-color) 72%, #183e55)
+  );
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 35%),
+    0 14px 28px color-mix(in srgb, var(--tab-color) 27%, transparent);
+}
+
+.consultant-work-tab::before {
+  top: -32px;
+  right: -20px;
+  opacity: 0.18;
+}
+
+.consultant-work-tab > span {
+  align-self: stretch;
+  gap: 6px;
+}
+
+.consultant-work-tab small,
+.consultant-work-tab.is-active small {
+  color: rgb(255 255 255 / 72%);
+}
+
+.consultant-work-tab strong {
+  color: #fff;
+  font-size: 16px;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.consultant-work-tab em,
+.consultant-work-tab.is-active em {
+  max-width: 145px;
+  color: rgb(230 242 247 / 66%);
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: normal;
+}
+
+.consultant-work-tab.is-active em {
+  color: rgb(255 255 255 / 78%);
+}
+
+.consultant-work-tab > b {
+  width: 46px;
+  height: 46px;
+  margin-left: 10px;
+  border-color: rgb(255 255 255 / 38%);
+  border-radius: 15px;
+  background: rgb(255 255 255 / 14%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 28%),
+    0 8px 18px rgb(3 20 30 / 15%);
+  color: #fff;
+  font-size: 21px;
+}
+
+.consultant-work-tab.is-active > b {
+  background: rgb(255 255 255 / 92%);
+  color: var(--tab-color);
+}
+
+.consultant-queue-panel {
+  grid-column: 2;
+  grid-row: 2;
+  border-radius: 18px;
+}
+
+@media (max-width: 1100px) {
+  .consultant-queue-main {
+    grid-template-columns: 218px minmax(0, 1fr);
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .consultant-work-tab {
+    padding: 14px 12px;
+  }
+}
+
+/* Restored sunlit glass theme (the version before the square editorial redesign). */
+.simple-consultant-app {
+  background:
+    radial-gradient(circle at 5% 16%, rgb(62 181 226 / 17%), transparent 25%),
+    radial-gradient(circle at 94% 7%, rgb(248 116 47 / 14%), transparent 23%),
+    linear-gradient(145deg, #edf6f9 0%, #f7faf9 56%, #fff7ed 100%);
+}
+
+.simple-topbar {
+  border-bottom-color: rgb(207 225 232 / 86%);
+  background: rgb(255 255 255 / 78%);
+  box-shadow: 0 8px 28px rgb(35 68 82 / 7%);
+  backdrop-filter: blur(22px) saturate(125%);
+}
+
+.simple-brand > span {
+  border: 1px solid rgb(255 255 255 / 72%);
+  background: linear-gradient(145deg, #29a9da, #147aa8 62%, #ff7547 142%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 42%),
+    0 8px 20px rgb(26 133 180 / 22%);
+}
+
+.consultant-queue-main .simple-page-head {
+  position: relative;
+  overflow: hidden;
+  padding: 13px 20px;
+  border: 1px solid rgb(255 255 255 / 88%);
+  border-radius: 22px;
+  background: linear-gradient(118deg, rgb(255 255 255 / 88%), rgb(245 250 251 / 72%));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 90%),
+    0 18px 44px rgb(47 79 91 / 9%);
+  backdrop-filter: blur(18px) saturate(120%);
+}
+
+.consultant-queue-main .simple-page-head::before,
+.consultant-queue-main .simple-page-head::after {
+  position: absolute;
+  z-index: 0;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  content: "";
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+.consultant-queue-main .simple-page-head::before {
+  top: -78px;
+  left: 33%;
+  background: rgb(76 190 232 / 24%);
+}
+
+.consultant-queue-main .simple-page-head::after {
+  right: 9%;
+  bottom: -92px;
+  background: rgb(255 134 73 / 25%);
+}
+
+.consultant-queue-main .simple-page-head > * {
+  position: relative;
+  z-index: 1;
+}
+
+.consultant-page-eyebrow,
+.consultant-queue-panel__head > div > small {
+  color: var(--simple-blue);
+}
+
+.consultant-live-summary {
+  border-color: rgb(255 255 255 / 90%);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 66%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 92%),
+    0 10px 24px rgb(46 77 89 / 9%);
+  backdrop-filter: blur(18px) saturate(125%);
+}
+
+.consultant-live-summary > span {
+  background: var(--sunset-orange);
+  box-shadow: 0 0 0 5px rgb(248 116 47 / 15%);
+}
+
+.consultant-queue-panel {
+  border-color: rgb(255 255 255 / 88%);
+  border-radius: 22px;
+  background: rgb(255 255 255 / 88%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 96%),
+    0 22px 52px rgb(38 72 86 / 11%);
+  backdrop-filter: blur(20px) saturate(118%);
+}
+
+.consultant-queue-panel__head,
+.consultant-queue-panel > .common-pagination {
+  border-color: rgb(211 226 232 / 78%);
+  background: rgb(247 252 253 / 74%);
+}
+
+.consultant-queue-tools .simple-search,
+.consultant-queue-tools > button {
+  border-color: rgb(199 218 225 / 88%);
+  border-radius: 13px;
+  background: rgb(255 255 255 / 82%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 92%);
+}
+
+.v6-queue-item.consultant-list-item {
+  border-bottom-color: rgb(218 229 234 / 82%);
+  background: rgb(255 255 255 / 72%);
+}
+
+.v6-queue-item.consultant-list-item:hover {
+  background: rgb(236 248 252 / 88%);
+}
+
+.consultant-list-item__open {
+  color: var(--sunset-orange);
+}
+
+.consultant-detail-backdrop {
+  background: rgb(12 31 44 / 48%);
+  backdrop-filter: blur(5px);
+}
+
+.consultant-detail-drawer {
+  background:
+    radial-gradient(circle at 92% 3%, rgb(248 116 47 / 12%), transparent 20%),
+    linear-gradient(145deg, #edf6f9, #f8faf9 58%, #fff7ed);
+}
+
+.consultant-detail-drawer__head {
+  border-bottom-color: rgb(205 222 229 / 86%);
+  background: rgb(255 255 255 / 84%);
+  backdrop-filter: blur(18px);
+}
+
+.consultant-detail-drawer__head > button {
+  border-radius: 14px;
+  background: rgb(255 255 255 / 84%);
+}
+
+.consultant-detail-drawer__body .simple-desk {
+  border-color: rgb(255 255 255 / 88%);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 88%);
+  box-shadow: 0 18px 46px rgb(42 73 86 / 10%);
+}
+
+.simple-action-buttons button.is-primary {
+  border-color: #e65d27;
+  background: linear-gradient(145deg, #ff864e, #f2662d);
+  box-shadow: 0 9px 20px rgb(232 91 35 / 18%);
+}
+
+/* Clear Care: clean water structure + warm care actions. */
+.simple-consultant-app {
+  --clear-water: #61c7ed;
+  --clear-water-deep: #0f6f9a;
+  --clear-water-ink: #12364b;
+  --clear-water-line: #cfe5ec;
+  --clear-care: #f47735;
+  background:
+    linear-gradient(90deg, rgb(84 190 231 / 8%) 1px, transparent 1px),
+    linear-gradient(rgb(84 190 231 / 6%) 1px, transparent 1px),
+    radial-gradient(circle at 7% 12%, rgb(78 190 232 / 18%), transparent 27%),
+    radial-gradient(circle at 94% 4%, rgb(244 119 53 / 10%), transparent 20%),
+    linear-gradient(145deg, #edf8fb 0%, #f7fbfa 58%, #fff9f2 100%);
+  background-size: 48px 48px, 48px 48px, auto, auto, auto;
+}
+
+.simple-topbar {
+  position: relative;
+}
+
+.simple-topbar::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  content: "";
+  background: linear-gradient(90deg, #42b6df 0 72%, #a9dfec 72% 88%, #f47735 88% 100%);
+  opacity: 0.72;
+}
+
+.simple-brand > span {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(155deg, #4cc1e9 0%, #1580ad 72%);
+}
+
+.simple-brand > span::after {
+  position: absolute;
+  right: -7px;
+  bottom: 6px;
+  left: -7px;
+  height: 7px;
+  border-top: 1px solid rgb(255 255 255 / 64%);
+  border-radius: 50%;
+  content: "";
+}
+
+.simple-topbar__notice i {
+  background: #37b9df;
+  box-shadow: 0 0 0 4px rgb(55 185 223 / 15%);
+}
+
+.consultant-queue-main .simple-page-head {
+  border-color: rgb(255 255 255 / 92%);
+  background:
+    linear-gradient(90deg, rgb(62 181 224 / 10%) 1px, transparent 1px),
+    linear-gradient(118deg, rgb(255 255 255 / 90%), rgb(241 250 252 / 76%));
+  background-size: 42px 100%, auto;
+}
+
+.consultant-queue-main .simple-page-head::before {
+  top: auto;
+  bottom: -88px;
+  left: 38%;
+  background: rgb(70 190 230 / 22%);
+}
+
+.consultant-queue-main .simple-page-head::after {
+  right: -1px;
+  bottom: 0;
+  width: 180px;
+  height: 3px;
+  border-radius: 0;
+  background: linear-gradient(90deg, transparent, var(--clear-care));
+  filter: none;
+}
+
+.consultant-page-eyebrow,
+.consultant-queue-panel__head > div > small {
+  color: var(--clear-water-deep);
+  letter-spacing: 0.13em;
+}
+
+.consultant-live-summary {
+  border-color: rgb(194 222 231 / 82%);
+  background: linear-gradient(135deg, rgb(255 255 255 / 84%), rgb(231 247 251 / 76%));
+}
+
+.consultant-work-tabs {
+  overflow: hidden;
+  border-color: rgb(255 255 255 / 15%);
+  background:
+    repeating-linear-gradient(180deg, transparent 0 52px, rgb(135 211 235 / 6%) 52px 53px),
+    radial-gradient(circle at 8% 0%, rgb(75 190 231 / 34%), transparent 30%),
+    linear-gradient(168deg, #123f57 0%, #0d3147 74%);
+}
+
+.consultant-work-tabs::before {
+  color: rgb(194 231 242 / 64%);
+  content: "CLEAR FLOW / WORK QUEUE";
+}
+
+.consultant-work-tab {
+  border-color: rgb(165 218 235 / 13%);
+  background: rgb(255 255 255 / 5%);
+}
+
+.consultant-work-tab:hover {
+  border-color: rgb(132 213 239 / 30%);
+  background: rgb(113 202 232 / 9%);
+}
+
+.consultant-work-tab.is-active {
+  border-color: rgb(255 174 125 / 54%);
+  background: linear-gradient(145deg, #f78648, #e9682f 78%);
+  box-shadow: 0 16px 34px rgb(4 29 43 / 24%);
+}
+
+.consultant-queue-panel {
+  position: relative;
+}
+
+.consultant-queue-panel::before {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  content: "";
+  background: linear-gradient(90deg, #46b8df 0 64%, #b6e7f0 64% 86%, #f47735 86% 100%);
+}
+
+.consultant-queue-panel__head {
+  background:
+    linear-gradient(90deg, rgb(78 190 229 / 7%) 1px, transparent 1px),
+    rgb(247 252 253 / 80%);
+  background-size: 40px 100%, auto;
+}
+
+.v6-queue-item.consultant-list-item {
+  transition: background 140ms ease, box-shadow 140ms ease;
+}
+
+.v6-queue-item.consultant-list-item:hover {
+  background: linear-gradient(90deg, rgb(226 246 251 / 88%), rgb(255 250 245 / 76%));
+  box-shadow: inset 4px 0 0 var(--clear-water);
+}
+
+.consultant-list-item__open {
+  color: #e66228;
+}
+
+.simple-action-buttons button.is-primary {
+  background: linear-gradient(145deg, #ff8a4e, #ec672e);
+}
+
+/* Requested visual revision: baby-blue rail, square geometry and vertical gradient. */
+.simple-consultant-app {
+  background:
+    linear-gradient(90deg, rgb(39 142 181 / 8%) 1px, transparent 1px),
+    linear-gradient(rgb(39 142 181 / 7%) 1px, transparent 1px),
+    linear-gradient(to top, #c6e7f2 0%, #e2f1f2 54%, #ffdfca 100%);
+  background-size: 48px 48px, 48px 48px, auto;
+}
+
+.consultant-visually-hidden {
+  position: absolute !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+
+.consultant-queue-main .simple-page-head {
+  justify-content: flex-end;
+  background:
+    linear-gradient(90deg, rgb(48 165 205 / 11%) 1px, transparent 1px),
+    linear-gradient(to top, rgb(203 235 244 / 88%), rgb(239 248 249 / 90%));
+  background-size: 42px 100%, auto;
+}
+
+.consultant-queue-main {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.consultant-work-tabs {
+  grid-row: 1;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  border-color: #7cc4dd;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 52px, rgb(22 111 146 / 8%) 52px 53px),
+    linear-gradient(to top, #8fd4e9 0%, #b9e8f3 100%);
+  box-shadow: 0 18px 42px rgb(38 115 143 / 16%);
+}
+
+.consultant-queue-panel {
+  grid-row: 1;
+}
+
+.consultant-work-tabs::before {
+  display: none;
+  content: none;
+}
+
+.consultant-work-tab {
+  border-color: rgb(21 104 137 / 20%);
+  background: rgb(255 255 255 / 30%);
+  color: #123f57;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 35%);
+}
+
+.consultant-work-tab:hover {
+  border-color: rgb(18 104 137 / 36%);
+  background: rgb(255 255 255 / 44%);
+}
+
+.consultant-work-tab small,
+.consultant-work-tab strong,
+.consultant-work-tab em,
+.consultant-work-tab.is-active small,
+.consultant-work-tab.is-active strong,
+.consultant-work-tab.is-active em {
+  color: #123f57;
+}
+
+.consultant-work-tab.is-active {
+  border-color: #e8632b;
+  background: linear-gradient(to top, #ed692f, #fb8549);
+  color: #fff;
+}
+
+.consultant-work-tab.is-active strong,
+.consultant-work-tab.is-active em {
+  color: #fff;
+}
+
+.consultant-work-tab > b {
+  border-color: rgb(15 91 121 / 22%);
+  background: rgb(18 85 113 / 72%);
+  color: #fff;
+}
+
+.consultant-work-tab.is-active > b {
+  background: rgb(255 255 255 / 92%);
+  color: #e85f28;
+}
+
+.simple-consultant-app *,
+.simple-consultant-app *::before,
+.simple-consultant-app *::after {
+  border-radius: 0 !important;
+}
+
+/* Sky + white palette inspired by the supplied clean hydration references. */
+.simple-consultant-app {
+  --simple-blue: #438fc8;
+  --simple-blue-dark: #2b6f9f;
+  --simple-bg: #f6fbfe;
+  --sunset-orange: #438fc8;
+  --clear-care: #438fc8;
+  background:
+    linear-gradient(90deg, rgb(75 154 202 / 6%) 1px, transparent 1px),
+    linear-gradient(rgb(75 154 202 / 5%) 1px, transparent 1px),
+    linear-gradient(to top, #cfeaf5 0%, #eaf6fb 48%, #ffffff 100%);
+  background-size: 48px 48px, 48px 48px, auto;
+}
+
+.simple-topbar {
+  border-bottom-color: #b8ddeb;
+  background: rgb(255 255 255 / 92%);
+}
+
+.simple-topbar::after {
+  background: linear-gradient(90deg, #3c8dc6 0%, #76bce2 55%, #c7e9f5 100%);
+}
+
+.simple-user > span {
+  background: linear-gradient(to top, #d6edf7, #f8fcfe);
+  color: #337eaf;
+}
+
+.consultant-work-tabs {
+  border-color: #91cce2;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 52px, rgb(45 126 170 / 6%) 52px 53px),
+    linear-gradient(to top, #b7e0ef 0%, #e4f4fa 100%);
+  box-shadow: 0 18px 42px rgb(55 128 163 / 14%);
+}
+
+.consultant-work-tab {
+  border-color: rgb(49 123 161 / 18%);
+  background: rgb(255 255 255 / 48%);
+  color: #164963;
+}
+
+.consultant-work-tab:hover {
+  border-color: rgb(49 123 161 / 34%);
+  background: rgb(255 255 255 / 68%);
+}
+
+.consultant-work-tab small,
+.consultant-work-tab strong,
+.consultant-work-tab em,
+.consultant-work-tab.is-active small,
+.consultant-work-tab.is-active strong,
+.consultant-work-tab.is-active em {
+  color: #164963;
+}
+
+.consultant-work-tab.is-active {
+  border-color: #3b89c1;
+  background: linear-gradient(to top, #4a95cb, #82c1e4);
+  color: #fff;
+  box-shadow: 0 14px 30px rgb(45 116 157 / 20%);
+}
+
+.consultant-work-tab.is-active strong,
+.consultant-work-tab.is-active em {
+  color: #fff;
+}
+
+.consultant-work-tab > b {
+  border-color: rgb(37 105 142 / 18%);
+  background: #4e91b8;
+}
+
+.consultant-work-tab.is-active > b {
+  background: rgb(255 255 255 / 94%);
+  color: #357fb3;
+}
+
+.consultant-queue-panel {
+  border-color: #c5e2ed;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 20px 46px rgb(53 116 143 / 11%);
+}
+
+.consultant-queue-panel::before {
+  background: linear-gradient(90deg, #397fb4 0%, #73b7dc 58%, #caeaf5 100%);
+}
+
+.consultant-queue-panel__head,
+.consultant-queue-panel > .common-pagination {
+  background:
+    linear-gradient(90deg, rgb(89 169 210 / 6%) 1px, transparent 1px),
+    rgb(248 252 254 / 96%);
+  background-size: 40px 100%, auto;
+}
+
+.v6-queue-item.consultant-list-item:hover {
+  background: linear-gradient(90deg, #e6f4fa, #f9fcfe);
+  box-shadow: inset 4px 0 0 #5aa9d3;
+}
+
+.consultant-list-item__open {
+  color: #347fb8;
+}
+
+.consultant-detail-drawer {
+  background: linear-gradient(to top, #d9eef6, #f7fbfd 58%, #fff);
+}
+
+.simple-action-buttons button.is-primary {
+  border-color: #347ead;
+  background: linear-gradient(to top, #3f83b7, #69aed6);
+  box-shadow: 0 9px 20px rgb(52 126 173 / 18%);
+}
+
+/* Premium aqua glass system: transparent depth without decorative clutter. */
+.compact-consultant-body {
+  background: #eaf5fa;
+}
+
+.simple-consultant-app {
+  background:
+    radial-gradient(circle at 10% 104%, rgb(83 177 218 / 24%), transparent 34%),
+    radial-gradient(circle at 92% -8%, rgb(155 218 241 / 30%), transparent 30%),
+    linear-gradient(to top, #dbeef6 0%, #f4fafc 56%, #edf7fb 100%);
+}
+
+.simple-topbar {
+  border-bottom: 1px solid rgb(146 200 222 / 48%);
+  background: linear-gradient(180deg, rgb(255 255 255 / 86%), rgb(244 250 253 / 72%));
+  box-shadow:
+    inset 0 -1px 0 rgb(255 255 255 / 88%),
+    0 10px 32px rgb(43 105 132 / 9%);
+  backdrop-filter: blur(28px) saturate(135%);
+}
+
+.simple-topbar::after {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #5aaad0 18% 82%, transparent);
+  opacity: 0.74;
+}
+
+.simple-brand > span {
+  border: 1px solid rgb(255 255 255 / 88%);
+  background: linear-gradient(145deg, rgb(136 210 239 / 92%), rgb(39 126 176 / 92%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 62%),
+    inset -2px -3px 5px rgb(21 91 134 / 22%),
+    0 8px 18px rgb(38 113 153 / 20%);
+}
+
+.simple-user > span {
+  border: 1px solid rgb(255 255 255 / 92%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 92%), rgb(194 229 243 / 72%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 95%),
+    inset -2px -3px 5px rgb(61 139 176 / 13%),
+    0 7px 16px rgb(58 119 148 / 12%);
+}
+
+.consultant-work-tabs {
+  overflow: visible;
+  padding: 14px;
+  border: 1px solid rgb(255 255 255 / 88%);
+  background:
+    linear-gradient(150deg, rgb(255 255 255 / 58%), rgb(130 196 224 / 28%)),
+    rgb(174 221 239 / 46%);
+  box-shadow:
+    inset 2px 2px 2px rgb(255 255 255 / 88%),
+    inset -2px -3px 5px rgb(59 133 166 / 10%),
+    0 22px 50px rgb(45 111 141 / 16%);
+  backdrop-filter: blur(22px) saturate(135%);
+}
+
+.consultant-work-tab {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 74%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 70%), rgb(198 230 242 / 40%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 94%),
+    inset -2px -3px 5px rgb(55 128 161 / 10%),
+    0 11px 26px rgb(55 116 143 / 10%);
+  color: #153d52;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.consultant-work-tab::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 42%;
+  content: "";
+  background: linear-gradient(180deg, rgb(255 255 255 / 42%), transparent);
+  pointer-events: none;
+}
+
+.consultant-work-tab:hover {
+  border-color: rgb(255 255 255 / 96%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 84%), rgb(186 224 240 / 52%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 98%),
+    inset -2px -3px 6px rgb(55 128 161 / 12%),
+    0 14px 30px rgb(47 111 140 / 14%);
+}
+
+.consultant-work-tab.is-active {
+  border: 1px solid rgb(255 255 255 / 92%);
+  background: linear-gradient(145deg, rgb(130 201 232 / 90%), rgb(49 132 183 / 86%));
+  box-shadow:
+    inset 3px 3px 4px rgb(255 255 255 / 42%),
+    inset -3px -4px 7px rgb(15 82 126 / 22%),
+    0 17px 34px rgb(42 112 151 / 22%);
+}
+
+.consultant-work-tab > span,
+.consultant-work-tab > b {
+  position: relative;
+  z-index: 1;
+}
+
+.consultant-work-tab > b {
+  border: 1px solid rgb(255 255 255 / 78%);
+  background: linear-gradient(145deg, rgb(103 174 207 / 82%), rgb(52 126 165 / 88%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 34%),
+    inset -2px -3px 5px rgb(18 75 108 / 18%),
+    0 7px 16px rgb(42 102 133 / 16%);
+}
+
+.consultant-work-tab.is-active > b {
+  border-color: rgb(255 255 255 / 96%);
+  background: linear-gradient(145deg, #fff, #dceff7);
+  box-shadow:
+    inset 2px 2px 3px #fff,
+    inset -2px -3px 5px rgb(45 121 159 / 14%),
+    0 8px 18px rgb(31 94 128 / 20%);
+  color: #2876a8;
+}
+
+.consultant-queue-panel {
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 94%);
+  background: linear-gradient(150deg, rgb(255 255 255 / 88%), rgb(235 247 252 / 76%));
+  box-shadow:
+    inset 2px 2px 2px rgb(255 255 255 / 98%),
+    inset -2px -3px 5px rgb(54 129 164 / 7%),
+    0 24px 54px rgb(46 107 134 / 14%);
+  backdrop-filter: blur(24px) saturate(125%);
+}
+
+.consultant-queue-panel::before {
+  height: 2px;
+  background: linear-gradient(90deg, rgb(43 122 168 / 80%), rgb(130 202 230 / 62%), transparent);
+}
+
+.consultant-queue-panel__head {
+  border-bottom-color: rgb(154 201 219 / 36%);
+  background: linear-gradient(180deg, rgb(255 255 255 / 76%), rgb(236 247 251 / 58%));
+  backdrop-filter: blur(18px);
+}
+
+.consultant-queue-tools .simple-search,
+.consultant-queue-tools > button {
+  border: 1px solid rgb(255 255 255 / 92%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 88%), rgb(220 239 247 / 58%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 98%),
+    inset -2px -3px 5px rgb(62 136 168 / 10%),
+    0 7px 16px rgb(54 115 142 / 8%);
+}
+
+.v6-queue-item.consultant-list-item {
+  border-bottom-color: rgb(161 203 220 / 28%);
+  background: rgb(255 255 255 / 58%);
+}
+
+.v6-queue-item.consultant-list-item:nth-child(even) {
+  background: rgb(233 246 251 / 48%);
+}
+
+.v6-queue-item.consultant-list-item:hover {
+  background: linear-gradient(90deg, rgb(211 237 247 / 74%), rgb(255 255 255 / 82%));
+  box-shadow: inset 3px 0 0 #4e9cca;
+}
+
+.consultant-queue-panel > .common-pagination {
+  border-top-color: rgb(154 201 219 / 34%);
+  background: rgb(244 250 253 / 72%);
+}
+
+.consultant-queue-panel .common-pagination button,
+.consultant-detail-drawer__head > button,
+.simple-action-buttons button {
+  border: 1px solid rgb(255 255 255 / 92%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 88%), rgb(205 233 244 / 66%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 98%),
+    inset -2px -3px 5px rgb(53 128 163 / 12%),
+    0 7px 16px rgb(52 112 138 / 10%);
+}
+
+.consultant-queue-panel .common-pagination button[aria-current="page"],
+.simple-action-buttons button.is-primary {
+  border-color: rgb(255 255 255 / 92%);
+  background: linear-gradient(145deg, rgb(104 183 220 / 94%), rgb(44 121 170 / 92%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 42%),
+    inset -2px -3px 5px rgb(17 79 118 / 22%),
+    0 9px 20px rgb(40 108 146 / 20%);
+  color: #fff;
+}
+
+.consultant-detail-drawer {
+  border-left: 1px solid rgb(255 255 255 / 90%);
+  background:
+    radial-gradient(circle at 100% 0%, rgb(147 214 238 / 25%), transparent 30%),
+    linear-gradient(to top, #dceff7, #f8fcfd 58%, #eef8fb);
+  box-shadow: -24px 0 60px rgb(33 88 115 / 22%);
+}
+
+.consultant-queue-main {
+  grid-template-columns: 236px minmax(0, 1fr);
+  gap: 18px;
+  padding: 20px 26px 24px;
+}
+
+.consultant-work-tabs {
+  grid-template-rows: repeat(3, 116px);
+  align-content: start;
+  gap: 12px;
+}
+
+.consultant-work-tab {
+  min-height: 116px;
+  padding: 18px 16px;
+}
+
+.consultant-work-tab strong {
+  font-size: 17px;
+}
+
+.consultant-work-tab em {
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: normal;
+}
+
+.consultant-work-tab > b {
+  width: 44px;
+  height: 44px;
+  font-size: 19px;
+}
+
+@media (max-width: 1100px) {
+  .consultant-queue-main {
+    grid-template-columns: 218px minmax(0, 1fr);
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+}
+
+.consultant-detail-drawer__head {
+  border-bottom: 1px solid rgb(152 201 220 / 42%);
+  background: linear-gradient(180deg, rgb(255 255 255 / 90%), rgb(233 246 251 / 72%));
+  box-shadow: 0 10px 28px rgb(48 107 133 / 10%);
+}
+
+.consultant-detail-drawer__body .simple-desk {
+  border: 1px solid rgb(255 255 255 / 94%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 88%), rgb(228 243 249 / 68%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 98%),
+    inset -2px -3px 5px rgb(54 128 162 / 7%),
+    0 18px 42px rgb(48 106 132 / 10%);
+  backdrop-filter: blur(20px) saturate(125%);
+}
+
+.simple-case-head > button,
+.simple-next-step,
+.simple-focus-grid article,
+.simple-action-panel,
+.simple-mini-profile > div,
+.simple-visit-context,
+.simple-visit-fields input,
+.simple-visit-fields select,
+.simple-consultation-form textarea,
+.simple-visit-choice label > span,
+.simple-visit-followup,
+.simple-visit-followup input[type="text"] {
+  border: 1px solid rgb(255 255 255 / 92%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 88%), rgb(214 237 246 / 58%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 98%),
+    inset -2px -3px 5px rgb(56 130 163 / 9%),
+    0 7px 17px rgb(54 111 136 / 8%);
+}
+
+.simple-next-step {
+  border-color: rgb(147 205 225 / 62%);
+  background: linear-gradient(90deg, rgb(202 235 246 / 72%), rgb(255 255 255 / 78%));
+}
+
+.simple-next-step span,
+.simple-visit-context span {
+  border: 1px solid rgb(255 255 255 / 84%);
+  background: linear-gradient(145deg, #71b8dc, #367fac);
+  box-shadow:
+    inset 1px 1px 2px rgb(255 255 255 / 42%),
+    inset -1px -2px 3px rgb(22 79 112 / 18%);
+}
+
+.simple-guidance:not(.is-danger) {
+  border-color: rgb(164 213 228 / 66%) !important;
+  background: linear-gradient(145deg, rgb(236 249 252 / 86%), rgb(210 240 238 / 56%)) !important;
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 90%),
+    0 7px 17px rgb(55 117 139 / 7%);
+}
+
+.simple-visit-scheduler > header button,
+.simple-visit-actions button,
+.simple-summary-action {
+  border: 1px solid rgb(255 255 255 / 92%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 90%), rgb(205 233 244 / 64%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 98%),
+    inset -2px -3px 5px rgb(54 128 162 / 11%),
+    0 8px 18px rgb(50 109 136 / 10%);
+}
+
+.simple-visit-actions button.is-primary,
+.simple-summary-action {
+  border-color: rgb(255 255 255 / 90%);
+  background: linear-gradient(145deg, #72b9dc, #347dab);
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 40%),
+    inset -2px -3px 5px rgb(20 77 111 / 20%),
+    0 9px 20px rgb(43 106 143 / 18%);
+  color: #fff;
 }

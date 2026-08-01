@@ -28,6 +28,8 @@ import {
   STATUS_LABELS,
 } from "../../features/consultation/model/consultantWorkspaceModel";
 import type { CounselorInquiry } from "../../features/consultation/model/consultantWorkspaceTypes";
+import ApiIntegrationPanel from "../../features/runtime-status/components/ApiIntegrationPanel";
+import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntimeStatus";
 import "./OperationsDashboardPage.css";
 
 const INQUIRY_COLUMNS: readonly DataTableColumn<CounselorInquiry>[] = [
@@ -159,9 +161,24 @@ export default function OperationsDashboardPage() {
           <span>W</span>
           <div>
             <strong>워터케어 ONE</strong>
-            <small>운영 모니터링</small>
+            <small>정수기 고객 케어 운영</small>
           </div>
         </div>
+        <nav className="operations-navigation" aria-label="운영자 화면 바로가기">
+          <a href="#operations-overview">
+            <span aria-hidden="true">01</span>
+            운영 개요
+          </a>
+          <a href="#operations-filters">
+            <span aria-hidden="true">02</span>
+            조회 조건
+          </a>
+          <a href="#operations-results">
+            <span aria-hidden="true">03</span>
+            문의 현황
+          </a>
+        </nav>
+        <ApiRuntimeStatus className="operations-runtime-status" compact />
         <div className="operations-user">
           <div>
             <strong>{user?.displayName ?? "운영 담당자"}</strong>
@@ -174,7 +191,7 @@ export default function OperationsDashboardPage() {
       </header>
 
       <main className="operations-main">
-        <header className="operations-page-head">
+        <header id="operations-overview" className="operations-page-head">
           <div>
             <small>ADMIN-01 · P1 MOCK</small>
             <h1>운영 대시보드</h1>
@@ -183,15 +200,19 @@ export default function OperationsDashboardPage() {
           <span>기준 데이터 · 공식 합성 문의 {COUNSELOR_INQUIRIES.length}건</span>
         </header>
 
-        <OperationsDashboardFilters
-          filters={filters}
-          hasChangedFilters={hasChangedFilters}
-          options={options}
-          resultCount={summary.inquiries.length}
-          onChange={setFilters}
-          onReset={resetFilters}
-        />
-        {renderContent()}
+        <ApiIntegrationPanel />
+
+        <div id="operations-filters">
+          <OperationsDashboardFilters
+            filters={filters}
+            hasChangedFilters={hasChangedFilters}
+            options={options}
+            resultCount={summary.inquiries.length}
+            onChange={setFilters}
+            onReset={resetFilters}
+          />
+        </div>
+        <div id="operations-results">{renderContent()}</div>
       </main>
     </div>
   );
