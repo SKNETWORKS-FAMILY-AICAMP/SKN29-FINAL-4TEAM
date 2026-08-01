@@ -90,7 +90,7 @@
       ]
     },
     "db-smoke": {
-      "purpose": "PostgreSQL 모델·FK·Importer 반복 안전성을 검증한 대표 6개 문의",
+      "purpose": "PostgreSQL 모델·FK·Importer/Seed 적재와 재실행 멱등성을 검증한 대표 6개 문의",
       "readiness": "DB_SMOKE_VERIFIED",
       "contract_dependency": "NONE",
       "items": [
@@ -185,7 +185,7 @@
       ]
     },
     "db-full": {
-      "purpose": "활성 projection 22개·source 367행의 PostgreSQL 전체 적재와 반복 안전성 검증 완료",
+      "purpose": "차단 2개를 제외한 활성 projection 22개·source 367행의 PostgreSQL 전체 적재·관계·재실행 멱등성 검증 완료",
       "readiness": "DB_FULL_VERIFIED",
       "contract_dependency": "NONE",
       "items": [
@@ -222,19 +222,11 @@
           "role": "LOAD"
         },
         {
-          "path": "synthetic/fixtures/care_histories.json",
+          "path": "synthetic/fixtures/followup_confirmations.json",
           "role": "LOAD"
         },
         {
-          "path": "config/handoff/backend_import_crosswalk.json",
-          "role": "MAPPING_DB_FULL_VERIFIED"
-        },
-        {
-          "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
-          "role": "SCHEMA"
-        },
-        {
-          "path": "synthetic/fixtures/followup_confirmations.json",
+          "path": "synthetic/fixtures/care_histories.json",
           "role": "LOAD"
         },
         {
@@ -244,6 +236,14 @@
         {
           "path": "synthetic/fixtures/audit_events.json",
           "role": "LOAD"
+        },
+        {
+          "path": "config/handoff/backend_import_crosswalk.json",
+          "role": "MAPPING_DB_FULL_VERIFIED"
+        },
+        {
+          "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
+          "role": "SCHEMA"
         },
         {
           "path": "synthetic/expected/evidence_references.json",

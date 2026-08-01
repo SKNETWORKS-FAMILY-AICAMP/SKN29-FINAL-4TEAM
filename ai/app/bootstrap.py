@@ -6,11 +6,13 @@ from .interfaces.http.error_handlers import register_error_handlers
 from .interfaces.http.routes.analysis_routes import router as analysis_router
 from .interfaces.http.routes.health_routes import router as health_router
 from .interfaces.http.runtime_policy import get_runtime_policy
+from .interfaces.http.structured_logging import configure_structured_logging
 
 
 def create_app() -> FastAPI:
     """FastAPI 인스턴스 생성 및 라우터·미들웨어·오류핸들러 설정"""
     get_runtime_policy()
+    configure_structured_logging()
     app = FastAPI(
         title="SK Watercare AI Service",
         description="정수기 구독 고객 케어 및 A/S 업무 지원 시스템 - AI/RAG 분석 서비스",

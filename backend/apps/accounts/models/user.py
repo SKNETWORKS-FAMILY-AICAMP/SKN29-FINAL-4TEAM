@@ -13,7 +13,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from common.identifiers import generate_user_id, validate_domain_id
+from common.identifiers import validate_domain_id
 from common.models.base import TimestampedModel
 
 
@@ -79,10 +79,12 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
         TECHNICIAN = "TECHNICIAN", "방문기사"
         OPERATOR = "OPERATOR", "운영자"
 
-    id = models.CharField(
-        primary_key=True,
+    id = models.BigAutoField(primary_key=True)
+    legacy_id = models.CharField(
         max_length=48,
-        default=generate_user_id,
+        null=True,
+        blank=True,
+        unique=True,
         editable=False,
         validators=[validate_domain_id],
     )

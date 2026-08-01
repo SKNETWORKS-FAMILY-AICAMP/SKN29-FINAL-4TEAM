@@ -1,6 +1,6 @@
 """RAG 근거 참조 Pydantic 데이터 모델."""
 
-from typing import Optional
+from typing import Annotated, Optional
 from pydantic import Field
 from .common import ContractModel, VerificationStatus
 
@@ -10,7 +10,7 @@ class EvidenceReference(ContractModel):
     document_title: str = Field(..., description="공식 매뉴얼/FAQ 문서명")
     document_version: Optional[str] = Field(None, description="문서 버전")
     page: Optional[int] = Field(None, description="대표 인용 페이지 번호")
-    page_refs: list[int] = Field(default_factory=list, description="전체 인용 페이지 번호")
+    page_refs: list[Annotated[int, Field(ge=1)]] = Field(default_factory=list, description="전체 인용 페이지 번호")
     chunk_id: str = Field(..., description="내부 검색 청크 식별자")
     official_url: Optional[str] = Field(None, description="공식 랜딩 페이지 URL")
     summary: str = Field(..., description="검색 구간 요약 내용")

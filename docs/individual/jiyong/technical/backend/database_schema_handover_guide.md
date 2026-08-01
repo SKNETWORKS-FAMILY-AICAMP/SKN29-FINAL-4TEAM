@@ -3,6 +3,7 @@
 > 기준일: 2026-07-30
 > 담당: 최지용
 > 적용 원칙: ERD와 테이블 명세는 확정 기준선이며, Model·Migration을 Wave별로 구현하고 즉시 검증한다.
+> 현재 상태: 계약 테이블 32/32 로컬 기술 검증 완료, 비작성자·외부 리뷰와 공식 완료 승인 대기
 
 ## 0. 문서 책임·협업·검토
 
@@ -45,12 +46,15 @@ Model·Migration·Serializer에 순차 반영한다.
 
 | 확인 목적 | 단일 원본 |
 | --- | --- |
+| 32/32 최종 구현·PostgreSQL·Seed·Importer·회귀 | [T-005 최종 검증 보고서](t005_final_32_table_postgresql_seed_importer_validation_report.md) |
 | 설계 테이블·계약·결정 상태 | [T-005 데이터 설계](../../../../database/t-005/README.md) |
 | 2026-07-27 Model·Migration 역사 기준 | [Migration 검증 보고서](../../manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md) |
 | 현재 합성 Schema·Migration 체인 | [합성 데이터 도메인 Schema·Migration 인계서](20260729_synthetic_domain_schema_migration.md) |
 | 현재 PostgreSQL 적용·Seed·Importer 경계 | [PostgreSQL 합성 Handoff Runtime 검증·인계서](../../manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md) |
 | 환경 구성·Migration·Seed·Smoke 재현 순서 | [Django·PostgreSQL 공유 패키지 인계서 v1.3](../../manuals/20260729_최지용_Django_PostgreSQL_공유패키지_인계서_v1.3.md) |
 | 공통코드 구현·재현 | [T-005 공통코드 Registry 구현 가이드](t005_common_code_registry_implementation.md) |
+| 문진 세션 Model·초기 Migration 구현·재현 | [T-005 Wave 1A 문진 세션 구현 가이드](t005_wave_1a_support_questionnaire_session_implementation.md) |
+| 문진·문의 동일 구독 복합 제약 구현·재현 | [T-005 Wave 1B 복합 FK 구현 가이드](t005_wave_1b_questionnaire_inquiry_composite_fk.md) |
 
 이 문서는 실행 결과 보고서가 아니라, 설계를 Model·Migration·Seed로
 옮기고 검증하는 반복 절차의 단일 원본으로 유지한다.
@@ -66,13 +70,20 @@ ID, 코드, Legacy 변환, 방문 일정, Enum과 Seed의 구체 값은 이 가�
 
 ## 4. Wave별 구현 순서
 
-| Wave | 대상 | 완료 검증 |
-| ---: | --- | --- |
-| 1 | 공통 코드, User, CustomerProfile | Migration·PK·UNIQUE·CHECK·Seed |
-| 2 | ProductModel, CustomerSubscription, CareRecord | FK·삭제 정책·중복 방지 |
-| 3 | Inquiry, Symptom, QA, Assessment, Guidance | 단일 Inquiry 추적·입력 누적 |
-| 4 | Consultation, Handoff, Visit, Follow-up, 상태 이력·감사·Import 원장 | Transaction·상태 전이·멱등성·원장 추적 |
-| 5 | Knowledge, Document, Chunk, Embedding, Evidence, AI Run | pgvector·근거 추적·버전 |
+2026-07-30의 잔여 20개는 활성 물리 계약의 FK 의존성을 기준으로 아래
+순서로 구현했다. 새 스키마 증분도 같은 원칙으로 부모·Bridge·직접
+자식·다중 관계 순서를 따른다.
+
+| Gate·Wave | 대상 | 완료 검증 | 현재 |
+| ---: | --- | --- | --- |
+| Accounts Gate | User·CustomerProfile 내부 정수 PK, 공개 UUID, UUID-only JWT | Migration·Backfill·Auth 회귀 | 완료 |
+| 1 | AI Run, Ingestion Batch, Visit Result, Questionnaire Session | 부모 FK·Bridge·번호 Migration | 완료 |
+| 2 | Retrieval Run, Source Document, Guidance, Handoff, Inquiry QA, Status History, Assessment | 직접 자식 FK·이력 정렬 | 완료 |
+| 3 | Document Model Scope, Document Page, Guidance Item | 상위 문서·안내 관계·순서 UNIQUE | 완료 |
+| 4 | Document Chunk | Page·Chunk 원문·순서 정책 | 완료 |
+| 5 | Retrieval Hit, Data Quality Issue, Chunk Embedding | 검색 Rank·품질 대상·pgvector 1024 | 완료 |
+| 6 | Customer Action Result, Evidence Link | 고객 조치·최종 다중 FK·부분 UNIQUE | 완료 |
+| Final Gate | 빈 PostgreSQL, Seed 2회, 367건 Import 2회, 전체 회귀 | Auditor READY·Data QA | 로컬 완료 |
 
 한 Wave를 구현한 뒤 다음 순서로 검증하고, 통과하기 전에는 다음
 Wave로 이동하지 않는다. 실행 전 PostgreSQL 상태는
@@ -133,9 +144,15 @@ Importer는 새 빈 격리 PostgreSQL 전용이며, dry-run도 Sequence 값을
 
 ## 7. 검증 체크리스트
 
+아래는 매 변경에서 다시 사용하는 체크리스트다. 2026-07-30 현재
+32/32 구현에 대한 실제 통과 항목과 공식 승인 대기 항목은
+[최종 검증 보고서](t005_final_32_table_postgresql_seed_importer_validation_report.md)의
+최종 체크리스트를 사용한다.
+
 - [ ] Model 수와 대상 테이블을 기록했다.
 - [ ] Model과 Migration 사이에 변경 누락이 없다.
-- [ ] `operations.0001`과 `workflow.0003`을 포함한 현재 Migration graph를 적용했다.
+- [ ] `operations.0001`, 불변 복원된 `workflow.0004`, 증분
+  `workflow.0005`를 포함한 현재 Migration graph를 적용했다.
 - [ ] 빈 PostgreSQL에서 Migration이 처음부터 적용된다.
 - [ ] PK·FK·UNIQUE·CHECK·Index가 명세와 일치한다.
 - [ ] Seed 2회 후 비의도 중복이 없다.
@@ -150,6 +167,11 @@ Importer는 새 빈 격리 PostgreSQL 전용이며, dry-run도 Sequence 값을
 참조한다. 이전 [Migration 검증 보고서](../../manuals/20260727_최지용_Django_PostgreSQL_Migration_검증보고서_v1.0.md)의
 수치는 2026-07-27 역사 기록으로 보존한다. 변경 PR에는 해당 Wave에서
 다시 실행한 결과만 기록한다.
+
+상태 이력 Migration의 과거 파일 불변성과 증분 복구 근거는
+[Migration 불변성 복구 보고서](t005_wave_2e_migration_immutability_repair.md)와
+[workflow.0005](../../../../../backend/apps/workflow/migrations/0005_status_history_contract_names_indexes.py)를
+따른다.
 
 ## 8. 인계 사항
 

@@ -12,6 +12,7 @@ sys.path.insert(0, str(TOOLS_ROOT))
 from watercare.config import load_pipeline
 from watercare.io import read_json, sha256_file
 from watercare.operations import _source_commit
+from watercare.validation import run_data_qa
 
 
 class QaReportTests(unittest.TestCase):
@@ -65,6 +66,13 @@ class QaReportTests(unittest.TestCase):
         self.assertEqual(125, integrity["summary"]["status_histories"])
         self.assertEqual(125, integrity["summary"]["audit_events"])
         self.assertEqual(12, integrity["summary"]["customer_profiles"])
+
+    def test_saved_pipeline_validation_matches_current_live_qa(self) -> None:
+        saved = read_json(self.config.path("qa_summary"))["pipeline_validation"]
+        live = run_data_qa(self.config)
+        for key in ("status", "summary", "counts", "errors"):
+            with self.subTest(key=key):
+                self.assertEqual(live[key], saved[key])
 
 
 if __name__ == "__main__":

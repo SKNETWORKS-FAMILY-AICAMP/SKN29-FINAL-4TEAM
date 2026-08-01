@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import sys
-import unittest
 import json
 import re
+import sys
+import unittest
 from pathlib import Path
 
 
@@ -35,7 +35,7 @@ class ServiceContractMappingTests(unittest.TestCase):
                 "representative_e2e_contract",
                 "adr_0010_identifier_bridge",
                 "adr_0011_idempotency_scope",
-                "t005_physical_contract_v1_2",
+                "t005_physical_contract_v1_3",
                 "public_api_idempotency_conflict",
                 "care_results",
             },
@@ -105,6 +105,15 @@ class ServiceContractMappingTests(unittest.TestCase):
                 expected,
                 sha256_bytes(normalize_text_bytes(variant)),
             )
+        self.assertEqual(
+            {
+                "algorithm": "SHA-256",
+                "encoding": "UTF-8",
+                "bom": "IGNORE",
+                "text_line_endings": "LF",
+            },
+            self.mapping["hash_policy"],
+        )
 
     def test_text_source_hash_changes_when_content_changes(self) -> None:
         approved = normalize_text_bytes(b"version: 1\nstate: approved\n")
@@ -115,17 +124,11 @@ class ServiceContractMappingTests(unittest.TestCase):
         with self.assertRaises(UnicodeDecodeError):
             normalize_text_bytes(b"version: 1\nstate: \xff\n")
 
-    def test_backend_crosswalk_v2_matches_runtime_importer(self) -> None:
+    def test_backend_crosswalk_is_db_full_verified(self) -> None:
         self.assertEqual([], validate_backend_import_crosswalk(self.config))
         crosswalk = self.config.config("backend_crosswalk")
         self.assertEqual("2.0.0", crosswalk["mapping_version"])
-        self.assertIn(
-            crosswalk["status"],
-            {
-                "IMPLEMENTED_PENDING_DB_VERIFICATION",
-                "DB_FULL_VERIFIED",
-            },
-        )
+        self.assertEqual("DB_FULL_VERIFIED", crosswalk["status"])
         self.assertTrue(crosswalk["service_contracts_used"])
         self.assertEqual(17, len(crosswalk["backend_sources"]))
         self.assertEqual(
@@ -136,41 +139,164 @@ class ServiceContractMappingTests(unittest.TestCase):
             row["fixture"]: row
             for row in crosswalk["entity_mappings"]
         }
-        self.assertEqual(12, len(mappings))
+        expected_fixtures = {
+            f"synthetic/fixtures/{name}.json"
+            for name in (
+                "users",
+                "customer_profiles",
+                "products",
+                "customer_products",
+                "subscriptions",
+                "inquiries",
+                "consultations",
+                "visits",
+                "followup_confirmations",
+                "care_histories",
+                "inquiry_status_histories",
+                "audit_events",
+            )
+        }
+        self.assertEqual(expected_fixtures, set(mappings))
+        self.assertEqual(12, len(crosswalk["entity_mappings"]))
         self.assertEqual(
             "PROJECTED",
             mappings[
                 "synthetic/fixtures/customer_products.json"
             ]["load_mode"],
         )
+        self.assertTrue(
+            all(
+                row["load_mode"] == "DIRECT"
+                for path, row in mappings.items()
+                if path != "synthetic/fixtures/customer_products.json"
+            )
+        )
         self.assertEqual(
-            "VISIT_SERVICE",
-            crosswalk["code_mappings"]["care_type"]["VISIT_SERVICE"],
+            "PROJECTED_DB_FULL_VERIFIED",
+            mappings[
+                "synthetic/fixtures/customer_products.json"
+            ]["readiness"],
+        )
+        self.assertTrue(
+            all(
+                row["readiness"] == "DB_FULL_VERIFIED"
+                for path, row in mappings.items()
+                if path != "synthetic/fixtures/customer_products.json"
+            )
+        )
+        self.assertEqual(
+            "full_name",
+            mappings["synthetic/fixtures/users.json"][
+                "field_mappings"
+            ]["display_name"],
+        )
+        self.assertEqual(
+            "model_name",
+            mappings["synthetic/fixtures/products.json"][
+                "field_mappings"
+            ]["product_model"],
+        )
+        inquiry_mapping = mappings[
+            "synthetic/fixtures/inquiries.json"
+        ]
+        self.assertEqual(
+            ["inquiries.SymptomEntry"],
+            inquiry_mapping["derived_backend_models"],
+        )
+        care_mapping = mappings[
+            "synthetic/fixtures/care_histories.json"
+        ]["field_mappings"]
+        self.assertEqual("performed_on", care_mapping["performed_on"])
+        self.assertEqual("result_code", care_mapping["result"])
+        self.assertEqual(
+            {
+                "REGULAR_INSPECTION": "PERIODIC_CHECK",
+                "FILTER_REPLACEMENT": "FILTER_REPLACEMENT",
+                "VISIT_SERVICE": "VISIT_SERVICE",
+            },
+            crosswalk["code_mappings"]["care_type"],
         )
         self.assertEqual([], crosswalk["blocked_mappings"])
 
         verification = crosswalk["verification"]
-        if crosswalk["status"] == "IMPLEMENTED_PENDING_DB_VERIFICATION":
-            self.assertEqual("PENDING", verification["status"])
-            self.assertIsNone(verification["actual"])
-            self.assertTrue(
-                all(
-                    row["readiness"]
-                    == "IMPLEMENTED_PENDING_DB_VERIFICATION"
-                    for row in mappings.values()
-                )
+        self.assertEqual("DB_FULL_VERIFIED", verification["status"])
+        self.assertEqual(
+            verification["expected"]["db-smoke"],
+            verification["actual"]["db-smoke"],
+        )
+        self.assertEqual(
+            verification["expected"]["db-full"],
+            verification["actual"]["db-full"],
+        )
+        self.assertTrue(
+            verification["actual"]["database_version"].startswith(
+                "PostgreSQL 16.14"
             )
-        else:
-            self.assertEqual("DB_FULL_VERIFIED", verification["status"])
-            self.assertEqual(
-                verification["expected"]["db-smoke"],
-                verification["actual"]["db-smoke"],
+        )
+        evidence = verification["actual"]["evidence"]
+        self.assertEqual(
+            "7C407CB6F013BE584011E446650BACD4A6A958895F88448B17EE523AA5B9D068",
+            evidence["fixture_set_sha256"],
+        )
+        self.assertEqual(
+            {"db-smoke", "db-full"},
+            set(evidence["profiles"]),
+        )
+        for profile, kind in (
+            ("db-smoke", "smoke"),
+            ("db-full", "full"),
+        ):
+            self.assertRegex(
+                evidence["profiles"][profile]["database_name"],
+                rf"^watercare_synthetic_{kind}_verify_20260729"
+                r"(?:_[a-z0-9]+)?$",
             )
-            self.assertEqual(
-                verification["expected"]["db-full"],
-                verification["actual"]["db-full"],
-            )
-
+        batch_codes = {
+            value[key]
+            for value in evidence["profiles"].values()
+            for key in ("first_batch_code", "replay_batch_code")
+        }
+        self.assertEqual(4, len(batch_codes))
+        self.assertEqual(
+            "UNCOMMITTED_VERIFIED_CHANGES",
+            evidence["worktree_state"],
+        )
+        self.assertEqual(
+            (37, 31, 6, 31),
+            (
+                verification["expected"]["db-smoke"]["source_count"],
+                verification["expected"]["db-smoke"]["first_run"][
+                    "created_count"
+                ],
+                verification["expected"]["db-smoke"]["first_run"][
+                    "projected_count"
+                ],
+                verification["expected"]["db-smoke"]["replay_run"][
+                    "unchanged_count"
+                ],
+            ),
+        )
+        self.assertEqual(
+            (367, 355, 12, 355, 26, 125),
+            (
+                verification["expected"]["db-full"]["source_count"],
+                verification["expected"]["db-full"]["first_run"][
+                    "created_count"
+                ],
+                verification["expected"]["db-full"]["first_run"][
+                    "projected_count"
+                ],
+                verification["expected"]["db-full"]["replay_run"][
+                    "unchanged_count"
+                ],
+                verification["expected"]["db-full"][
+                    "aggregate_checks"
+                ],
+                verification["expected"]["db-full"][
+                    "audit_history_checks"
+                ],
+            ),
+        )
         schema = read_json(
             DATA_ROOT
             / "schemas"
@@ -317,6 +443,14 @@ class ServiceContractMappingTests(unittest.TestCase):
             for row in registry
             if row["contract_alignment_status"] == "BLOCKED_DECISION"
         }
+        aligned = [
+            row
+            for row in registry
+            if row["contract_alignment_status"] == "ALIGNED"
+        ]
+        self.assertEqual(24, len(registry))
+        self.assertEqual(22, len(aligned))
+        self.assertEqual(2, len(blocked))
         self.assertEqual(
             {"SYN-JAC104-012", "SYN-JAC104-016"},
             set(blocked),

@@ -79,6 +79,10 @@ class Visit(TimestampedModel):
     class Meta:
         db_table = "field_service_visit"
         constraints = [
+            models.UniqueConstraint(
+                fields=["id", "technician"],
+                name="ux_visit_id_technician",
+            ),
             models.CheckConstraint(
                 condition=Q(state_version__gt=0),
                 name="ck_visit_state_version",

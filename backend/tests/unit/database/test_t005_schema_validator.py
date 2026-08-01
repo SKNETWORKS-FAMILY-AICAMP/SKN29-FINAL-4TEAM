@@ -75,7 +75,7 @@ def baseline_data() -> dict[str, dict[str, Any]]:
         ),
         "physical_contract": json.loads(
             (
-                ARTIFACT_DIR / "t005_physical_contract_v1.2.json"
+                ARTIFACT_DIR / "t005_physical_contract_v1.3.json"
             ).read_text(encoding="utf-8")
         ),
     }
@@ -95,7 +95,10 @@ def test_current_snapshot_keeps_seven_legacy_gaps_but_owner_baseline_resolves_th
         == "OWNER_BASELINE_CONFIRMED"
     )
     assert result["owner_baseline"]["confirmation_status"] == "CONFIRMED"
-    assert result["owner_baseline"]["completion_review_status"] == "PENDING"
+    assert (
+        result["owner_baseline"]["completion_review_status"]
+        == "NON_AUTHOR_REVIEW_PENDING"
+    )
     assert result["blocker_alignment"]["matches"] is True
     assert {
         gap["id"]
@@ -407,20 +410,27 @@ def test_decision_register_header_mutation_is_detected(
     )
 
 
-def test_implementation_readiness_stays_separate_from_design_completion():
+def test_implementation_readiness_stays_separate_from_design_completion(
+    monkeypatch: pytest.MonkeyPatch,
+):
     readiness_module = load_script(
         READINESS_PATH,
         "t005_implementation_readiness",
     )
+    for key in readiness_module.REQUIRED_POSTGRES_ENV_KEYS:
+        monkeypatch.setenv(key, "readiness-test-value")
 
     result = readiness_module.audit_readiness()
 
-    assert result["status"] == "NOT_READY"
+    assert result["status"] == "READY"
     assert result["evidence"]["app_skeleton_count"] == 13
-    assert result["evidence"]["postgres_env_complete"] is False
+    assert result["evidence"]["postgres_env_complete"] is True
     assert result["evidence"]["docker_compose_configured"] is True
-    assert "DOCKER_COMPOSE_NOT_CONFIGURED" not in result["blockers"]
-    assert "POSTGRES_ENV_INCOMPLETE" in result["blockers"]
+    assert result["blockers"] == []
+    assert (
+        result["evidence"]["contract"]["completion_review_status"]
+        == "NON_AUTHOR_REVIEW_PENDING"
+    )
 
 
 def test_owner_baseline_rejects_code_contract_drift(
@@ -638,11 +648,11 @@ def test_request_ledger_runtime_constraint_matches_contract_scope():
     )
 
 
-def test_owner_baseline_accepts_transitional_and_complete_gate_states(
+def test_owner_baseline_accepts_transitional_review_pending_and_complete_states(
     validator_module: ModuleType,
     baseline_data: dict[str, dict[str, Any]],
 ):
-    transitional = validator_module.audit_snapshot(
+    review_pending = validator_module.audit_snapshot(
         manifest=copy.deepcopy(baseline_data["manifest"]),
         schema=baseline_data["schema"],
         logical_contract=baseline_data["logical_contract"],
@@ -650,8 +660,46 @@ def test_owner_baseline_accepts_transitional_and_complete_gate_states(
         physical_contract=copy.deepcopy(baseline_data["physical_contract"]),
         verify_artifact_hashes=False,
     )
+    assert review_pending["owner_baseline"]["checks"][
+        "implementation_gate_valid"
+    ] is True
+    assert review_pending["owner_baseline"]["checks"][
+        "completion_review_status_valid"
+    ] is True
+    assert review_pending["completion_gates"][
+        "three_layer_identifier_runtime_complete"
+    ] is False
+
+    transitional_manifest = copy.deepcopy(baseline_data["manifest"])
+    transitional_manifest["implementation_gate"].update(
+        {
+            "status": "TRANSITIONAL_BRIDGE",
+            "completion_claim_allowed": False,
+        }
+    )
+    transitional_contract = copy.deepcopy(baseline_data["physical_contract"])
+    transitional_contract["completion_review_status"] = "PENDING"
+    transitional_contract["identifier_policy"]["compatibility_bridge"][
+        "status"
+    ] = "TRANSITIONAL"
+    transitional_contract["implementation_gate"] = {
+        "status": "TRANSITIONAL_BRIDGE",
+        "completion_claim_allowed": False,
+        "incomplete_items": ["legacy bridge remains"],
+    }
+    transitional = validator_module.audit_snapshot(
+        manifest=transitional_manifest,
+        schema=baseline_data["schema"],
+        logical_contract=baseline_data["logical_contract"],
+        decision_register=baseline_data["decision_register"],
+        physical_contract=transitional_contract,
+        verify_artifact_hashes=False,
+    )
     assert transitional["owner_baseline"]["checks"][
         "implementation_gate_valid"
+    ] is True
+    assert transitional["owner_baseline"]["checks"][
+        "completion_review_status_valid"
     ] is True
 
     complete_manifest = copy.deepcopy(baseline_data["manifest"])
@@ -665,10 +713,12 @@ def test_owner_baseline_accepts_transitional_and_complete_gate_states(
     complete_contract["identifier_policy"]["compatibility_bridge"][
         "status"
     ] = "COMPLETE"
+    complete_contract["completion_review_status"] = "CONFIRMED"
     complete_contract["implementation_gate"] = {
         "status": "COMPLETE",
         "completion_claim_allowed": True,
         "incomplete_items": [],
+        "pending_review_gates": [],
     }
     complete = validator_module.audit_snapshot(
         manifest=complete_manifest,
@@ -680,6 +730,9 @@ def test_owner_baseline_accepts_transitional_and_complete_gate_states(
     )
     assert complete["owner_baseline"]["checks"][
         "implementation_gate_valid"
+    ] is True
+    assert complete["owner_baseline"]["checks"][
+        "completion_review_status_valid"
     ] is True
     assert complete["completion_gates"][
         "three_layer_identifier_runtime_complete"
@@ -699,6 +752,9 @@ def test_owner_baseline_accepts_transitional_and_complete_gate_states(
     )
     assert hybrid["owner_baseline"]["checks"][
         "implementation_gate_valid"
+    ] is False
+    assert hybrid["owner_baseline"]["checks"][
+        "completion_review_status_valid"
     ] is False
 
 

@@ -7,8 +7,8 @@
     "status": "TEAM_APPROVED",
     "data_projection_consumes_contract": true,
     "backend_runtime_verified": true,
-    "pipeline_config_sha256": "041E91B6D0D0ED6DE8DBA4A21918293BE9FBE21EBE350617C445B9EABEE2B31D",
-    "contract_mapping_sha256": "7E87A1B0F8B26F6E5AF4DB3E94FFF849EFC5C2C261D7C90BF17ED3CAE783F050",
+    "pipeline_config_sha256": "6474D9F37A74F08AFC13162CBE2470BE21D05963E8BDD4D68D113C2B2DB067CD",
+    "contract_mapping_sha256": "5BE1374922ED7F67C72D4BE8FA8D0AC9F8684FFC9BF9ADFE07F7554C74C71E0F",
     "source_hashes_verified": true
   },
   "error_categories": {

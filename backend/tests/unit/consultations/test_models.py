@@ -20,14 +20,12 @@ pytestmark = pytest.mark.django_db
 
 def create_inquiry(sequence: int = 1) -> Inquiry:
     customer_user = User.objects.create_user(
-        id=f"DEMO-USR-{sequence + 820:03d}",
         username=f"CONSULT-MODEL-CUSTOMER-{sequence:03d}",
         password=None,
         full_name=f"Consultation customer {sequence}",
         role_code=User.Role.CUSTOMER,
     )
     customer = CustomerProfile.objects.create(
-        id=f"DEMO-CUS-{sequence + 820:03d}",
         user=customer_user,
         customer_no=f"CONSULT-MODEL-CUS-{sequence:03d}",
         customer_name=f"Consultation customer {sequence}",
@@ -53,7 +51,6 @@ def create_inquiry(sequence: int = 1) -> Inquiry:
 
 def create_consultant(sequence: int = 1) -> User:
     return User.objects.create_user(
-        id=f"DEMO-USR-{sequence + 860:03d}",
         username=f"CONSULT-MODEL-STAFF-{sequence:03d}",
         password=None,
         full_name=f"Consultant {sequence}",

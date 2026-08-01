@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 TOOLS_ROOT = Path(__file__).resolve().parents[1]
@@ -10,7 +11,7 @@ DATA_ROOT = TOOLS_ROOT.parent
 sys.path.insert(0, str(TOOLS_ROOT))
 
 from watercare.config import load_pipeline
-from watercare.io import data_path, read_json, read_jsonl, sha256_file
+from watercare.io import data_path, read_json, read_jsonl
 from watercare.operations import build_handoff_manifest
 
 
@@ -39,6 +40,29 @@ class HandoffProfileTests(unittest.TestCase):
             for item in profile["items"]:
                 self.assertNotIn("contracts/", item["path"])
                 self.assertTrue(data_path(DATA_ROOT, item["path"]).is_file())
+
+    def test_profile_values_are_limited_by_consumer_schema_enums(self) -> None:
+        schema = read_json(
+            DATA_ROOT / "schemas/config/consumerProfiles.schema.json"
+        )
+        profile_schema = schema["$defs"]["profile"]["properties"]
+        allowed_readiness = set(profile_schema["readiness"]["enum"])
+        allowed_dependencies = set(
+            profile_schema["contract_dependency"]["enum"]
+        )
+        allowed_roles = set(
+            profile_schema["items"]["items"]["properties"]["role"]["enum"]
+        )
+        self.assertTrue(schema["properties"]["service_contracts_used"]["const"])
+        for name, profile in self.definitions["profiles"].items():
+            self.assertIn(profile["readiness"], allowed_readiness, name)
+            self.assertIn(
+                profile["contract_dependency"],
+                allowed_dependencies,
+                name,
+            )
+            for item in profile["items"]:
+                self.assertIn(item["role"], allowed_roles, item["path"])
 
     def test_rag_profile_indexes_only_verified_chunks(self) -> None:
         profile = self.definitions["profiles"]["rag"]
@@ -72,88 +96,89 @@ class HandoffProfileTests(unittest.TestCase):
         self.assertEqual(6, len(selected))
         self.assertEqual(6, len(set(selected)))
         self.assertLessEqual(set(selected), available)
-
-    def test_db_profiles_record_verified_runtime_import(self) -> None:
-        fixture_paths = {
-            f"synthetic/fixtures/{name}.json"
-            for name in (
-                "users",
-                "customer_profiles",
-                "products",
-                "customer_products",
-                "subscriptions",
-                "inquiries",
-                "consultations",
-                "visits",
-                "followup_confirmations",
-                "care_histories",
-                "inquiry_status_histories",
-                "audit_events",
-            )
-        }
-        expected_readiness = {
-            "db-smoke": "DB_SMOKE_VERIFIED",
-            "db-full": "DB_FULL_VERIFIED",
-        }
-        for profile_name in ("db-smoke", "db-full"):
-            profile = self.definitions["profiles"][profile_name]
-            self.assertEqual(
-                expected_readiness[profile_name],
-                profile["readiness"],
-            )
-            self.assertEqual(
-                "NONE",
-                profile["contract_dependency"],
-            )
-            items = {
-                row["path"]: row["role"]
-                for row in profile["items"]
-            }
-            self.assertLessEqual(fixture_paths, set(items))
-            self.assertEqual(
-                "MAPPING_DB_FULL_VERIFIED",
-                items["config/handoff/backend_import_crosswalk.json"],
-            )
-
-        smoke = self.definitions["profiles"]["db-smoke"]
-        smoke_items = {
-            row["path"]: row["role"] for row in smoke["items"]
-        }
-        self.assertEqual(37, smoke["selection"]["source_count"])
         self.assertEqual(
-            "VALIDATE_ONLY_PROFILE_EXCLUDED",
-            smoke_items["synthetic/fixtures/care_histories.json"],
-        )
-        self.assertEqual(
-            "LOAD_FILTERED",
-            smoke_items["synthetic/fixtures/customer_profiles.json"],
+            37,
+            self.definitions["profiles"]["db-smoke"]["selection"][
+                "source_count"
+            ],
         )
 
-        full = self.definitions["profiles"]["db-full"]
-        full_items = {
-            row["path"]: row["role"] for row in full["items"]
+    def test_db_smoke_roles_match_verified_37_item_closure(self) -> None:
+        profile = self.definitions["profiles"]["db-smoke"]
+        self.assertEqual("DB_SMOKE_VERIFIED", profile["readiness"])
+        self.assertEqual("NONE", profile["contract_dependency"])
+        items = {row["path"]: row["role"] for row in profile["items"]}
+        expected_fixture_roles = {
+            "synthetic/fixtures/users.json": "LOAD_FILTERED",
+            "synthetic/fixtures/customer_profiles.json": "LOAD_FILTERED",
+            "synthetic/fixtures/products.json": "LOAD",
+            "synthetic/fixtures/customer_products.json": "PROJECT_FILTERED",
+            "synthetic/fixtures/subscriptions.json": "LOAD_FILTERED",
+            "synthetic/fixtures/inquiries.json": "LOAD_FILTERED",
+            "synthetic/fixtures/consultations.json": "LOAD_FILTERED",
+            "synthetic/fixtures/visits.json": "LOAD_FILTERED",
+            "synthetic/fixtures/followup_confirmations.json": (
+                "VALIDATE_ONLY_PROFILE_EXCLUDED"
+            ),
+            "synthetic/fixtures/care_histories.json": (
+                "VALIDATE_ONLY_PROFILE_EXCLUDED"
+            ),
+            "synthetic/fixtures/inquiry_status_histories.json": (
+                "VALIDATE_ONLY_PROFILE_EXCLUDED"
+            ),
+            "synthetic/fixtures/audit_events.json": (
+                "VALIDATE_ONLY_PROFILE_EXCLUDED"
+            ),
         }
-        self.assertEqual(367, full["selection"]["source_count"])
         self.assertEqual(
-            "LOAD",
-            full_items["synthetic/fixtures/care_histories.json"],
+            expected_fixture_roles,
+            {
+                path: role
+                for path, role in items.items()
+                if path.startswith("synthetic/fixtures/")
+            },
         )
         self.assertEqual(
-            "LOAD",
-            full_items["synthetic/fixtures/customer_profiles.json"],
+            "MAPPING_DB_FULL_VERIFIED",
+            items["config/handoff/backend_import_crosswalk.json"],
         )
+
+    def test_db_full_roles_match_verified_367_item_closure(self) -> None:
+        profile = self.definitions["profiles"]["db-full"]
+        self.assertEqual("DB_FULL_VERIFIED", profile["readiness"])
+        self.assertEqual("NONE", profile["contract_dependency"])
+        self.assertEqual(367, profile["selection"]["source_count"])
+        self.assertEqual(
+            ["SYN-JAC104-012", "SYN-JAC104-016"],
+            profile["selection"]["excluded_scenario_ids"],
+        )
+        items = {row["path"]: row["role"] for row in profile["items"]}
+        fixture_roles = {
+            path: role
+            for path, role in items.items()
+            if path.startswith("synthetic/fixtures/")
+        }
+        self.assertEqual(12, len(fixture_roles))
         self.assertEqual(
             "PROJECT",
-            full_items["synthetic/fixtures/customer_products.json"],
+            fixture_roles.pop("synthetic/fixtures/customer_products.json"),
+        )
+        self.assertEqual({"LOAD"}, set(fixture_roles.values()))
+        self.assertEqual(
+            "MAPPING_DB_FULL_VERIFIED",
+            items["config/handoff/backend_import_crosswalk.json"],
         )
 
     def test_handoff_manifest_is_deterministic(self) -> None:
-        first = build_handoff_manifest(self.config)
-        target = self.config.path("handoff_manifest")
-        first_hash = sha256_file(target)
-        second = build_handoff_manifest(self.config)
+        with patch("watercare.operations.write_json") as write_json_mock:
+            first = build_handoff_manifest(self.config)
+            first_manifest = write_json_mock.call_args.args[2]
+            second = build_handoff_manifest(self.config)
+            second_manifest = write_json_mock.call_args.args[2]
         self.assertEqual(first["summary"], second["summary"])
-        self.assertEqual(first_hash, sha256_file(target))
+        self.assertEqual(first_manifest, second_manifest)
+        self.assertTrue(first_manifest["service_contracts_used"])
+        self.assertEqual(2, write_json_mock.call_count)
 
 
 if __name__ == "__main__":

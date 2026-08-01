@@ -1,0 +1,71 @@
+{
+  "evidence_version": "1.0.0",
+  "recorded_on": "2026-07-31",
+  "status": "AUTHOR_ISOLATED_TECHNICAL_PASS",
+  "scope": "T005_GATE1_PRECONTRACT_CANDIDATE",
+  "candidate_sha": "051c7cc9b45f1b353384ee72e67ac8210a4f3bb1",
+  "author": "최지용",
+  "independent_non_author_review": false,
+  "official_completion_claim_allowed": false,
+  "environment": {
+    "checkout": "detached clean worktree",
+    "python": "3.13.13",
+    "pip": "26.0.1",
+    "requirements_fingerprint": "350a1d4c0a03d91be0a5b95361ae7a32634d1cc99475d9e58bce2e7a87c8fdb5",
+    "database": "new isolated Docker volume and empty PostgreSQL database",
+    "postgresql": "16.14",
+    "pgvector": "0.8.6",
+    "embedding_column_type": "vector(1024)"
+  },
+  "results": {
+    "contract_tables": {
+      "expected": 32,
+      "actual": 32,
+      "missing": 0
+    },
+    "migration": {
+      "full_empty_database_apply": "PASS",
+      "unapplied_migrations": 0,
+      "model_migration_drift": 0
+    },
+    "runtime_auditor": {
+      "status": "READY",
+      "implemented_contract_tables": 32,
+      "blockers": 0
+    },
+    "seed": {
+      "rounds": 2,
+      "round_two_new_rows": 0,
+      "final_counts": {
+        "common_code_groups": 16,
+        "common_codes": 72,
+        "demo_users": 4,
+        "customer_profiles": 1,
+        "products": 1,
+        "subscriptions": 1,
+        "care_records": 3
+      }
+    },
+    "synthetic_importer": {
+      "source_items": 367,
+      "first_created": 355,
+      "projected_items": 12,
+      "replay_unchanged": 355,
+      "import_batches": 2,
+      "import_items": 734,
+      "status_history_rows": 125,
+      "audit_rows": 125
+    },
+    "backend_postgresql_regression": {
+      "passed": 751,
+      "failed": 0,
+      "note": "개인 .env의 demo login 및 CORS 개발값이 테스트 정책과 달라 최초 3건이 실패했다. 테스트 실행에 DJANGO_DEMO_LOGIN_ENABLED=false와 승인 CORS Origin을 명시한 뒤 해당 3건과 전체 회귀가 통과했다."
+    }
+  },
+  "review_boundary": {
+    "non_author_review_confirmed": false,
+    "external_review_verified": false,
+    "pm_contract_approval": false,
+    "required_next_action": "김은진 또는 지정 비작성자가 최종 후보 SHA의 새 worktree·새 PostgreSQL volume에서 같은 절차를 독립 재현하고, PM이 결과와 계약 상태를 승인한다."
+  }
+}

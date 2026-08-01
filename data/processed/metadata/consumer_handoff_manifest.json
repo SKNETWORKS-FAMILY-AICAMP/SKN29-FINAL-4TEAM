@@ -87,14 +87,14 @@
           "role": "EVALUATION_CONTRACT",
           "records": 1,
           "size_bytes": 8840,
-          "sha256": "4DE28B7E62302551273AE13E01FFD7464DFC16ED7269739A89C21EE902FC56D7"
+          "sha256": "6E9F202F902F965B0C6875D8FCDF26333651E680019CC8B34416E8A444A12E4F"
         },
         {
           "path": "schemas/config/ragEvaluationCases.schema.json",
           "role": "SCHEMA",
           "records": 1,
           "size_bytes": 6443,
-          "sha256": "B3532037AED3F984BCA1BC2D176C131F14D4AB0DE2C9D5E1CB2ECFFEFBFF4D24"
+          "sha256": "99AB170BCB26F799CCC0977AFC05D8B59F8E1958099B45C9BD1BA47136A12224"
         },
         {
           "path": "schemas/processed/ragChunk.schema.json",
@@ -135,7 +135,7 @@
       ]
     },
     "db-smoke": {
-      "purpose": "PostgreSQL 모델·FK·Importer 반복 안전성을 검증한 대표 6개 문의",
+      "purpose": "PostgreSQL 모델·FK·Importer/Seed 적재와 재실행 멱등성을 검증한 대표 6개 문의",
       "readiness": "DB_SMOKE_VERIFIED",
       "contract_dependency": "NONE",
       "items": [
@@ -228,7 +228,7 @@
           "role": "MAPPING_DB_FULL_VERIFIED",
           "records": 1,
           "size_bytes": 18600,
-          "sha256": "2091BB0B448BACE5AA8AB31A0DAE613B7D51BBDB11F8AEBF666DFB9571020E87"
+          "sha256": "47A47CE38ACC714FF5DE64AB8F69A234B38675D0F3A6C2B991ECB69CDB0945F9"
         },
         {
           "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
@@ -281,7 +281,7 @@
       ]
     },
     "db-full": {
-      "purpose": "활성 projection 22개·source 367행의 PostgreSQL 전체 적재와 반복 안전성 검증 완료",
+      "purpose": "차단 2개를 제외한 활성 projection 22개·source 367행의 PostgreSQL 전체 적재·관계·재실행 멱등성 검증 완료",
       "readiness": "DB_FULL_VERIFIED",
       "contract_dependency": "NONE",
       "items": [
@@ -342,32 +342,18 @@
           "sha256": "1D4892E06A9CE189DC984516A5894DCC8B93509EE2D07087C61A762BE33E6F00"
         },
         {
-          "path": "synthetic/fixtures/care_histories.json",
-          "role": "LOAD",
-          "records": 25,
-          "size_bytes": 9770,
-          "sha256": "643C0E160E25E07E81C7C1406F90D877EE24080FAC1A597B3D78221F89EB0470"
-        },
-        {
-          "path": "config/handoff/backend_import_crosswalk.json",
-          "role": "MAPPING_DB_FULL_VERIFIED",
-          "records": 1,
-          "size_bytes": 18600,
-          "sha256": "2091BB0B448BACE5AA8AB31A0DAE613B7D51BBDB11F8AEBF666DFB9571020E87"
-        },
-        {
-          "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
-          "role": "SCHEMA",
-          "records": 1,
-          "size_bytes": 820,
-          "sha256": "3DE5409A17F92E2BC02FE09EF0F347EB22171EA10E9F08F9ECE553E9D4C9CC7C"
-        },
-        {
           "path": "synthetic/fixtures/followup_confirmations.json",
           "role": "LOAD",
           "records": 1,
           "size_bytes": 658,
           "sha256": "5172FEF53B6AB4F2DC292F15B96F68DB801C7247C79A3C5D3720475C0594703A"
+        },
+        {
+          "path": "synthetic/fixtures/care_histories.json",
+          "role": "LOAD",
+          "records": 25,
+          "size_bytes": 9770,
+          "sha256": "643C0E160E25E07E81C7C1406F90D877EE24080FAC1A597B3D78221F89EB0470"
         },
         {
           "path": "synthetic/fixtures/inquiry_status_histories.json",
@@ -382,6 +368,20 @@
           "records": 125,
           "size_bytes": 62197,
           "sha256": "2B9A586B14B0F44E9A30A458D6E152B87F6161D3D7367AEEA46BFD3208A90FFD"
+        },
+        {
+          "path": "config/handoff/backend_import_crosswalk.json",
+          "role": "MAPPING_DB_FULL_VERIFIED",
+          "records": 1,
+          "size_bytes": 18600,
+          "sha256": "47A47CE38ACC714FF5DE64AB8F69A234B38675D0F3A6C2B991ECB69CDB0945F9"
+        },
+        {
+          "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 820,
+          "sha256": "3DE5409A17F92E2BC02FE09EF0F347EB22171EA10E9F08F9ECE553E9D4C9CC7C"
         },
         {
           "path": "synthetic/expected/evidence_references.json",
@@ -438,50 +438,50 @@
           "path": "processed/validation/latest_qa_summary.json",
           "role": "SUMMARY",
           "records": 1,
-          "size_bytes": 7006,
-          "sha256": "0C50F231FF6CEBD0B6A77281B02E61FD39BF7805E48044152ABE9601CEBC2C57"
+          "size_bytes": 7046,
+          "sha256": "BAADEA4EF0B1539B4EC2D8F8E33DBC538EB9E9A0C0EFB1199E005CD4369968DF"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 8471,
-          "sha256": "D3123FB6F41F1E4701488E3F2351993E1BEFB82EAAA9E319B7904165A25CFCB3"
+          "sha256": "1F2F9DF61DDCBC2A25BC51AED4A7880590704678B54C527CC29F449081593552"
         },
         {
           "path": "processed/validation/integrity/latest_integrity_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1340,
-          "sha256": "1B8E6C073154928AD2A35C9FFB556923292E8EF9B7B19B1E1B0739C23EAEECDA"
+          "sha256": "F7074F0D74A37429CE8D76D23100CA02D7BA0CE7E825B75C01D7F8149DE8AFFA"
         },
         {
           "path": "processed/validation/quality/latest_quality_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1246,
-          "sha256": "61A45A2ED705ED1D90546D69B9C4ECEC1D07FC595568D0142BFE92DBC6011965"
+          "sha256": "2DBB1F1244266BA2E17106A118E0A8A4E54F2EA6CB1DD6C33E10322CEDAB0C43"
         },
         {
           "path": "processed/validation/business/latest_business_rules_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1544,
-          "sha256": "133C4852E14B07DD6875E9018CC8646AA0BF4408F35C2FF552CC59C0B4C4103C"
+          "sha256": "2396DC9A4DD9DB7EC844C2FCC0C835F1B05DB868ADFA9CA18FE34B6C37A5CF5D"
         },
         {
           "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1151,
-          "sha256": "A1F3287C1663101BC45CC9077FD6D288B9C8BE556ECFA573734F7E074088D79C"
+          "sha256": "7128BA567667194202489DE40A508CDCA6845B4E1A6E1C1D6FF743C1BA39E363"
         },
         {
           "path": "processed/metadata/dataset_manifest.json",
           "role": "MANIFEST",
           "records": 1,
-          "size_bytes": 10039,
-          "sha256": "31775E3EFECA8B7907F58B066E8154520432B9010D54AA80D8912EE74C57E68D"
+          "size_bytes": 10106,
+          "sha256": "DDB2B080DC692687B9A333F9D32E989BB498B4DDAD695B46192597462E860B42"
         },
         {
           "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
