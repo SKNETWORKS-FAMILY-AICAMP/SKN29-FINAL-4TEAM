@@ -50,3 +50,12 @@ Manifest도 위의 루트 `MainActivity`와 `WaterPurifierDealerApplication`을 
 - 백엔드가 없는 상태에서 두 APK의 데이터를 자동 동기화하지 않음
 
 이 항목들은 별도 기능 리팩터링 또는 백엔드 연동 작업입니다.
+
+## 2026-07-31 Week 3 completion
+
+- Removed calls to Backend routes that are not actually registered (`/auth/login`, `/auth/register`, `/customer/profile`).
+- Added actual health and Demo-auth status checks.
+- Added CUST-01 → CUST-02 → CUST-04 navigation and state management.
+- Added safe normal/danger/no-evidence/AI/network fixtures behind `CustomerCareRepository`.
+- Added contract-safe evidence display, unknown-code fallback and action filtering.
+- Added unit/Compose test sources and reproducible Windows verification scripts.

@@ -1,15 +1,5 @@
-# technician-app
+# WaterCare technician app
 
-방문기사 전용 Android 애플리케이션 모듈입니다.
+The technician app performs actual `DEMO-TECHNICIAN-001` authentication and validates the returned `TECHNICIAN` role. Visit-list, report, location and workflow endpoints are shown as explicit pending features because they are not routed in the current Backend API.
 
-기존 `mobile/app` 안의 TECH-01~03 파일들은 실제 화면 구현이 아니라
-6줄짜리 빈 클래스였으므로 그대로 복사하지 않았습니다.
-
-대신 다음을 독립 실행 가능한 Compose 골격으로 구성했습니다.
-
-- TECH-01 방문 업무 목록
-- TECH-02 방문 상세와 사전 점검 정보
-- TECH-03 방문 결과 입력
-- 기사 GPS 수집 및 백엔드 위치 업로드 클래스
-
-실제 백엔드 연동과 권한 요청 UI는 후속 구현 대상입니다.
+No unsupported password-login endpoint is called.

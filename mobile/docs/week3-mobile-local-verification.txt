@@ -1,0 +1,7 @@
+Verified at: 2026-07-31 13:58:20 +09:00
+PASS customer-app:testDebugUnitTest
+PASS customer-app:connectedDebugAndroidTest
+PASS customer-app:assembleDebug
+PASS technician-app:assembleDebug
+PASS customer launcher icon
+PASS technician launcher icon

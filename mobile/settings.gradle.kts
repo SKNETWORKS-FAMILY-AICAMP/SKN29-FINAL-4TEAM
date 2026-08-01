@@ -8,18 +8,14 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-
     repositories {
         google()
         mavenCentral()
-        maven {
-            url = uri("https://devrepo.kakao.com/nexus/repository/kakaomap-releases/")
-        }
+        maven { url = uri("https://devrepo.kakao.com/nexus/repository/kakaomap-releases/") }
     }
 }
 
 rootProject.name = "WaterCareAndroid"
-
+include(":core")
 include(":customer-app")
 include(":technician-app")
-include(":core")

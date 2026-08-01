@@ -1,0 +1,1623 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WaterCare 현재 업무 ERD v1.5</title>
+  <style>
+:root {
+  --navy: #17354b;
+  --ink: #183247;
+  --muted: #667b8e;
+  --line: #d7e1e9;
+  --paper: #ffffff;
+  --surface: #eef3f7;
+  --teal: #1b8b82;
+  --teal-dark: #126f69;
+  --shadow: 0 10px 30px rgba(27, 52, 73, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--surface);
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--surface);
+  font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+.app-header {
+  display: grid;
+  grid-template-columns: 60px minmax(360px, 1fr) auto;
+  gap: 20px;
+  align-items: center;
+  min-height: 132px;
+  padding: 24px 34px;
+  color: #fff;
+  background: linear-gradient(110deg, #163c54 0%, #14645f 58%, #168178 100%);
+}
+
+.brand-mark {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.46);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.11);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.header-copy .eyebrow {
+  margin: 0 0 6px;
+  color: #8fe1d8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.header-copy h1 {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 38px);
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+}
+
+.header-copy > p:last-child {
+  margin: 10px 0 0;
+  color: #d8e8eb;
+  font-size: 14px;
+}
+
+.header-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(88px, 1fr));
+  gap: 10px;
+}
+
+.header-metrics div {
+  min-width: 96px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.27);
+  border-radius: 12px;
+  background: rgba(13, 52, 69, 0.34);
+}
+
+.header-metrics strong,
+.header-metrics span {
+  display: block;
+}
+
+.header-metrics strong {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.header-metrics span {
+  margin-top: 7px;
+  color: #cfe2e6;
+  font-size: 11px;
+}
+
+.control-bar {
+  position: relative;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: minmax(270px, 390px) 1fr auto;
+  gap: 16px;
+  align-items: end;
+  padding: 16px 34px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 5px 18px rgba(26, 54, 76, 0.04);
+}
+
+.search-wrap {
+  position: relative;
+}
+
+.search-wrap label {
+  display: block;
+  margin: 0 0 7px 2px;
+  color: #526b7e;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.search-wrap input {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid #cbd8e2;
+  border-radius: 10px;
+  outline: none;
+  color: var(--ink);
+  background: #fff;
+}
+
+.search-wrap input:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(27, 139, 130, 0.12);
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  left: 0;
+  overflow: hidden;
+  border: 1px solid #cbd8e2;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.search-results button {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 11px 13px;
+  border: 0;
+  border-bottom: 1px solid #edf1f4;
+  text-align: left;
+  background: #fff;
+  cursor: pointer;
+}
+
+.search-results button:last-child {
+  border-bottom: 0;
+}
+
+.search-results button:hover,
+.search-results button:focus-visible {
+  background: #eff8f7;
+  outline: none;
+}
+
+.search-results strong,
+.search-results code,
+.search-results small {
+  display: block;
+}
+
+.search-results code {
+  margin-top: 3px;
+  color: #6a7e90;
+  font-size: 11px;
+}
+
+.search-results small {
+  align-self: center;
+  color: #728597;
+  font-size: 11px;
+}
+
+.layer-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.layer-filter button,
+.relation-toggle,
+.zoom-controls button,
+.drawer-close {
+  border: 1px solid #ced9e2;
+  border-radius: 9px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.layer-filter button {
+  min-height: 42px;
+  padding: 0 13px;
+  color: #536b7e;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.layer-filter button:hover,
+.layer-filter button.is-active {
+  border-color: #72b9b2;
+  color: var(--teal-dark);
+  background: #edf8f6;
+}
+
+.relation-toggle {
+  height: 42px;
+  padding: 0 16px;
+  color: #fff;
+  border-color: var(--teal-dark);
+  background: var(--teal-dark);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.relation-toggle[aria-pressed="true"] {
+  color: var(--teal-dark);
+  background: #eaf7f5;
+}
+
+main {
+  padding: 22px 28px 32px;
+}
+
+.diagram-panel {
+  overflow: hidden;
+  border: 1px solid #cfdae3;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.diagram-head {
+  display: grid;
+  grid-template-columns: minmax(255px, 1fr) auto auto;
+  gap: 22px;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.diagram-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.diagram-head p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  color: #5f7487;
+  font-size: 11px;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.legend .line {
+  display: inline-block;
+  width: 25px;
+  border-top: 2px solid #54738c;
+}
+
+.legend .line.optional {
+  border-top: 1px dashed #748da1;
+}
+
+.legend .line.support {
+  border-top: 1px dotted #9caab6;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.zoom-controls button {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  color: #4d6579;
+  font-weight: 800;
+}
+
+.zoom-controls button:hover {
+  border-color: #83bdb8;
+  color: var(--teal-dark);
+  background: #f0f8f7;
+}
+
+.zoom-controls span {
+  min-width: 45px;
+  color: #526a7d;
+  font-size: 11px;
+  text-align: center;
+}
+
+.diagram-viewport {
+  position: relative;
+  overflow: hidden;
+  min-height: 720px;
+  height: calc(100vh - 330px);
+  background:
+    linear-gradient(rgba(115, 137, 155, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(115, 137, 155, 0.055) 1px, transparent 1px),
+    #eef3f7;
+  background-size: 24px 24px;
+}
+
+.diagram-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.diagram-svg.is-panning {
+  cursor: grabbing;
+}
+
+.diagram-status {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 18px;
+  border-top: 1px solid var(--line);
+  color: #667b8e;
+  background: #fbfcfd;
+  font-size: 11px;
+}
+
+.drawer-backdrop {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: rgba(17, 42, 60, 0.28);
+  transition: opacity 0.2s ease;
+}
+
+.drawer {
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  width: min(760px, 92vw);
+  border-left: 1px solid #cbd7e0;
+  background: #fff;
+  box-shadow: -16px 0 38px rgba(20, 46, 65, 0.16);
+  transform: translateX(102%);
+  transition: transform 0.22s ease;
+}
+
+body.drawer-open {
+  overflow: hidden;
+}
+
+body.drawer-open .drawer {
+  transform: translateX(0);
+}
+
+body.drawer-open .drawer-backdrop {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.drawer-head {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(10px);
+}
+
+.drawer-head .layer-label {
+  margin: 0 0 7px;
+  color: var(--teal-dark);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.drawer-head h2 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.drawer-head code {
+  display: block;
+  margin-top: 7px;
+  color: #62778a;
+  font-size: 12px;
+}
+
+.drawer-close {
+  width: 38px;
+  height: 38px;
+  font-size: 20px;
+}
+
+.drawer-body {
+  padding: 20px 24px 42px;
+}
+
+.table-description {
+  margin: 0;
+  color: #385166;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.detail-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 9px;
+  margin: 18px 0 26px;
+}
+
+.detail-metrics div {
+  padding: 13px;
+  border: 1px solid #d7e1e8;
+  border-radius: 11px;
+  background: #f7f9fb;
+}
+
+.detail-metrics strong,
+.detail-metrics span {
+  display: block;
+}
+
+.detail-metrics strong {
+  font-size: 19px;
+}
+
+.detail-metrics span {
+  margin-top: 5px;
+  color: #6c8092;
+  font-size: 10px;
+}
+
+.detail-section {
+  margin-top: 27px;
+}
+
+.detail-section h3 {
+  margin: 0 0 11px;
+  font-size: 16px;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  border-top: 1px solid #dce4ea;
+  font-size: 12px;
+}
+
+.meta-grid dt,
+.meta-grid dd {
+  margin: 0;
+  padding: 9px 10px;
+  border-bottom: 1px solid #e7edf1;
+}
+
+.meta-grid dt {
+  color: #6d8192;
+  background: #f7f9fb;
+  font-weight: 800;
+}
+
+.meta-grid dd {
+  overflow-wrap: anywhere;
+}
+
+.relation-list {
+  display: grid;
+  gap: 7px;
+}
+
+.relation-item {
+  padding: 10px 12px;
+  border: 1px solid #d8e1e8;
+  border-radius: 9px;
+  background: #fafcfd;
+}
+
+.relation-item strong,
+.relation-item code,
+.relation-item span {
+  display: block;
+}
+
+.relation-item strong {
+  font-size: 12px;
+}
+
+.relation-item code {
+  margin-top: 5px;
+  color: #38566d;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.relation-item span {
+  margin-top: 5px;
+  color: #748798;
+  font-size: 10px;
+}
+
+.empty-state {
+  padding: 13px;
+  border: 1px dashed #cfd9e1;
+  border-radius: 9px;
+  color: #748798;
+  background: #fafbfc;
+  font-size: 11px;
+}
+
+.column-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #d8e1e8;
+  border-radius: 10px;
+}
+
+.column-table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.column-table th,
+.column-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #e6ecf0;
+  vertical-align: top;
+  text-align: left;
+}
+
+.column-table th {
+  color: #50697c;
+  background: #f4f7f9;
+  font-weight: 800;
+}
+
+.column-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.column-table code {
+  color: #284b63;
+  font-size: 10px;
+}
+
+.constraint-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.constraint-list span {
+  padding: 2px 5px;
+  border-radius: 5px;
+  color: #486175;
+  background: #eaf0f4;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+@media (max-width: 1180px) {
+  .app-header {
+    grid-template-columns: 56px 1fr;
+  }
+
+  .header-metrics {
+    grid-column: 1 / -1;
+  }
+
+  .control-bar {
+    grid-template-columns: minmax(260px, 1fr) auto;
+  }
+
+  .layer-filter {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .diagram-head {
+    grid-template-columns: 1fr auto;
+  }
+
+  .legend {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-header {
+    grid-template-columns: 48px 1fr;
+    gap: 13px;
+    padding: 18px;
+  }
+
+  .brand-mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    font-size: 16px;
+  }
+
+  .header-copy h1 {
+    font-size: 24px;
+  }
+
+  .header-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .control-bar {
+    grid-template-columns: 1fr;
+    padding: 14px 18px;
+  }
+
+  .layer-filter,
+  .relation-toggle {
+    grid-column: 1;
+  }
+
+  main {
+    padding: 14px;
+  }
+
+  .diagram-head {
+    grid-template-columns: 1fr;
+  }
+
+  .legend,
+  .zoom-controls {
+    grid-column: 1;
+  }
+
+  .diagram-viewport {
+    min-height: 600px;
+    height: 72vh;
+  }
+
+  .diagram-status {
+    display: grid;
+  }
+
+  .detail-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .drawer {
+    width: 100vw;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand-mark">WC</div>
+    <div class="header-copy">
+      <p class="eyebrow">WATERCARE DATA ARCHITECTURE</p>
+      <h1>WaterCare 현재 업무 ERD</h1>
+      <p>현재 사용 테이블 13개 · 4개 업무 계층 · 물리 FK 30개</p>
+    </div>
+    <div class="header-metrics" aria-label="ERD 주요 수치">
+      <div><strong>13</strong><span>테이블</span></div>
+      <div><strong>200</strong><span>표시 컬럼</span></div>
+      <div><strong>30</strong><span>물리 FK</span></div>
+      <div><strong>4</strong><span>업무 계층</span></div>
+    </div>
+  </header>
+
+  <section class="control-bar" aria-label="ERD 조회 조건">
+    <div class="search-wrap">
+      <label for="table-search">테이블·컬럼 검색</label>
+      <input id="table-search" type="search" autocomplete="off" placeholder="한글명, 테이블명 또는 컬럼명">
+      <div id="search-results" class="search-results" hidden></div>
+    </div>
+    <div class="layer-filter" id="layer-filter" aria-label="업무 계층 선택">
+      <button type="button" class="is-active" data-layer="all">전체</button>
+      <button type="button" data-layer="1">L1 기준정보</button>
+      <button type="button" data-layer="2">L2 고객·구독</button>
+      <button type="button" data-layer="3">L3 문의·상태</button>
+      <button type="button" data-layer="4">L4 상담·방문</button>
+    </div>
+    <button type="button" id="relation-toggle" class="relation-toggle" aria-pressed="false">전체 FK 30개 표시</button>
+  </section>
+
+  <main>
+    <section class="diagram-panel" aria-labelledby="diagram-title">
+      <div class="diagram-head">
+        <div>
+          <h2 id="diagram-title">테이블 참조 관계</h2>
+          <p>부모 키에서 FK 보유 테이블 방향으로 표시한다.</p>
+        </div>
+        <div class="legend" aria-label="관계선 범례">
+          <span><i class="line required"></i>필수 FK</span>
+          <span><i class="line optional"></i>선택 업무 FK</span>
+          <span><i class="line support"></i>담당자·처리이력 FK</span>
+          <span>×N 복수 FK 집계</span>
+        </div>
+        <div class="zoom-controls">
+          <button type="button" id="zoom-out" aria-label="축소">−</button>
+          <span id="zoom-label">100%</span>
+          <button type="button" id="zoom-in" aria-label="확대">＋</button>
+          <button type="button" id="zoom-fit">전체 맞춤</button>
+        </div>
+      </div>
+      <div class="diagram-viewport" id="diagram-viewport"><svg id="erd-svg" class="diagram-svg" xmlns="http://www.w3.org/2000/svg" width="3600" height="1970" viewBox="0 0 3600 1970" role="img" aria-label="WaterCare 현재 업무 ERD 13개 테이블">
+    <defs>
+      <style>
+  .artifact-header { fill: #ffffff; stroke: #d8e2ea; stroke-width: 1.5; }
+  .artifact-title { fill: #20384c; font: 700 24px 'Malgun Gothic', sans-serif; }
+  .artifact-scope { fill: #5d7183; font: 18px 'Malgun Gothic', sans-serif; }
+  .artifact-legend { fill: #4f6476; font: 16px 'Malgun Gothic', sans-serif; }
+  .legend-required { stroke: #54738c; stroke-width: 2.3; }
+  .legend-optional { stroke: #748da1; stroke-width: 1.65; stroke-dasharray: 10 8; }
+  .layer-band { stroke-width: 2; }
+  .layer-title { font: 700 29px 'Malgun Gothic', sans-serif; }
+  .layer-subtitle { fill: #65788a; font: 18px 'Malgun Gothic', sans-serif; }
+  .layer-count { fill: #718296; font: 700 17px 'Malgun Gothic', sans-serif; text-anchor: end; }
+  .node-shadow { fill: #9eafbf; opacity: .17; }
+  .node-card { fill: #fff; stroke: #c6d2dc; stroke-width: 2; }
+  .table-node { cursor: pointer; transition: opacity .16s ease; }
+  .table-node:hover .node-card, .table-node.is-selected .node-card { stroke: #1d8b82; stroke-width: 4; }
+  .table-node.is-dimmed { opacity: .18; }
+  .node-title { fill: #152c40; font: 700 27px 'Malgun Gothic', sans-serif; }
+  .node-name { fill: #63778b; font: 17px Consolas, monospace; }
+  .app-chip { fill: #eef3f6; }
+  .app-chip-text { fill: #52687b; font: 700 14px 'Malgun Gothic', sans-serif; text-anchor: middle; }
+  .node-divider { stroke: #dde5ec; stroke-width: 1.5; }
+  .row-label { fill: #718397; font: 700 16px 'Malgun Gothic', sans-serif; }
+  .row-value { fill: #294156; font: 17px Consolas, 'Malgun Gothic', sans-serif; }
+  .metric-strip { fill: #f4f7f9; }
+  .metric-text { fill: #536a7d; font: 700 15px 'Malgun Gothic', sans-serif; text-anchor: middle; }
+  .relation { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .relation.required { stroke: #54738c; stroke-width: 2.3; opacity: .75; marker-end: url(#arrow-required); }
+  .relation.optional { stroke: #748da1; stroke-width: 1.65; opacity: .55; stroke-dasharray: 10 8; marker-end: url(#arrow-optional); }
+  .relation.support { stroke: #9caab6; stroke-width: 1.25; opacity: .30; stroke-dasharray: 5 8; marker-end: url(#arrow-support); }
+  .relation-wrap { transition: opacity .16s ease; }
+  .relation-wrap.is-dimmed { opacity: .08; }
+  .relation-wrap.is-highlighted .relation { stroke: #16877f; stroke-width: 3.2; opacity: .94; }
+  .relation-count rect { fill: #fff; stroke: #c5d1db; stroke-width: 1.3; }
+  .relation-count text { fill: #4f6679; font: 700 15px 'Malgun Gothic', sans-serif; text-anchor: middle; }
+</style>
+      <marker id="arrow-required" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#54738c" stroke-width="1.5"></path></marker>
+      <marker id="arrow-optional" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#748da1" stroke-width="1.4"></path></marker>
+      <marker id="arrow-support" markerUnits="userSpaceOnUse" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#9caab6" stroke-width="1.3"></path></marker>
+    </defs>
+    <rect width="3600" height="1970" fill="#eef3f7"></rect>
+    <g aria-label="ERD 표시 기준">
+      <rect class="artifact-header" x="24" y="12" width="3552" height="46" rx="14"></rect>
+      <text class="artifact-title" x="48" y="43">WaterCare 현재 업무 ERD</text>
+      <text class="artifact-scope" x="430" y="42">13개 테이블 · 기본 표시 관계 16개 / 전체 FK 30개</text>
+      <line class="legend-required" x1="1470" y1="35" x2="1530" y2="35"></line>
+      <text class="artifact-legend" x="1545" y="41">필수 FK</text>
+      <line class="legend-optional" x1="1680" y1="35" x2="1740" y2="35"></line>
+      <text class="artifact-legend" x="1755" y="41">선택 업무 FK</text>
+      <path d="M 2070 35 H 2140 M 2130 27 L 2140 35 L 2130 43" fill="none" stroke="#748da1" stroke-width="1.65"></path>
+      <text class="artifact-legend" x="2160" y="41">부모에서 FK 보유 테이블 방향</text>
+    </g>
+    
+      <g class="layer-group" data-layer="1">
+        <rect class="layer-band" x="24" y="70" width="3552" height="440" rx="28" fill="#F3F7FB" stroke="#3978A8" stroke-opacity=".25"></rect>
+        <rect x="48" y="96" width="74" height="42" rx="12" fill="#3978A8"></rect>
+        <text x="85" y="125" text-anchor="middle" fill="#fff" font-family="Malgun Gothic, sans-serif" font-size="20" font-weight="700">L1</text>
+        <text class="layer-title" x="145" y="125" fill="#3978A8">공통 기준정보 관리</text>
+        <text class="layer-subtitle" x="145" y="156">코드·계정·제품 모델 기준정보</text>
+        <text class="layer-count" x="3525" y="125">4개 테이블</text>
+      </g>
+
+      <g class="layer-group" data-layer="2">
+        <rect class="layer-band" x="24" y="540" width="3552" height="440" rx="28" fill="#F1F8F7" stroke="#228A7E" stroke-opacity=".25"></rect>
+        <rect x="48" y="566" width="74" height="42" rx="12" fill="#228A7E"></rect>
+        <text x="85" y="595" text-anchor="middle" fill="#fff" font-family="Malgun Gothic, sans-serif" font-size="20" font-weight="700">L2</text>
+        <text class="layer-title" x="145" y="595" fill="#228A7E">고객·구독·케어 관리</text>
+        <text class="layer-subtitle" x="145" y="626">고객 식별·구독 계약·제품 케어 이력</text>
+        <text class="layer-count" x="3525" y="595">3개 테이블</text>
+      </g>
+
+      <g class="layer-group" data-layer="3">
+        <rect class="layer-band" x="24" y="1010" width="3552" height="440" rx="28" fill="#FCF7F0" stroke="#B87524" stroke-opacity=".25"></rect>
+        <rect x="48" y="1036" width="74" height="42" rx="12" fill="#B87524"></rect>
+        <text x="85" y="1065" text-anchor="middle" fill="#fff" font-family="Malgun Gothic, sans-serif" font-size="20" font-weight="700">L3</text>
+        <text class="layer-title" x="145" y="1065" fill="#B87524">문의 접수·상태 관리</text>
+        <text class="layer-subtitle" x="145" y="1096">문의 접수·증상 구조화·처리상태 이력</text>
+        <text class="layer-count" x="3525" y="1065">3개 테이블</text>
+      </g>
+
+      <g class="layer-group" data-layer="4">
+        <rect class="layer-band" x="24" y="1480" width="3552" height="440" rx="28" fill="#F8F4FA" stroke="#8B5AA5" stroke-opacity=".25"></rect>
+        <rect x="48" y="1506" width="74" height="42" rx="12" fill="#8B5AA5"></rect>
+        <text x="85" y="1535" text-anchor="middle" fill="#fff" font-family="Malgun Gothic, sans-serif" font-size="20" font-weight="700">L4</text>
+        <text class="layer-title" x="145" y="1535" fill="#8B5AA5">상담·방문·사후 확인</text>
+        <text class="layer-subtitle" x="145" y="1566">상담 처리·현장 방문·최종 해결 확인</text>
+        <text class="layer-count" x="3525" y="1535">3개 테이블</text>
+      </g>
+    <g class="relations relations-core"><g class="relation-wrap core-path" data-parent="accounts_user" data-child="customers_customer_profile"><path class="relation required" d="M 110 305 H 68 V 634 H 740 V 665"><title>customers_customer_profile.user_id → accounts_user.id · 필수 · 1:1</title></path></g>
+<g class="relation-wrap core-path" data-parent="accounts_user" data-child="support_inquiry"><path class="relation required" d="M 110 305 H 78 V 1112 H 1680 V 1135"><title>support_inquiry.initiated_by_id → accounts_user.id · 필수</title></path></g>
+<g class="relation-wrap core-path" data-parent="catalog_product_model" data-child="subscriptions_customer_subscription"><path class="relation required" d="M 3110 415 V 540 H 1810 V 665"><title>subscriptions_customer_subscription.product_model_id → catalog_product_model.id · 필수</title></path></g>
+<g class="relation-wrap core-path" data-parent="common_code_group" data-child="common_code"><path class="relation required" d="M 1520 305 H 1588.5 V 305 H 1675"><title>common_code.group_code → common_code_group.group_code · 필수</title></path></g>
+<g class="relation-wrap core-path" data-parent="customers_customer_profile" data-child="subscriptions_customer_subscription"><path class="relation required" d="M 1050 775 H 1275 V 775 H 1500"><title>subscriptions_customer_subscription.customer_id → customers_customer_profile.id · 필수</title></path></g>
+<g class="relation-wrap core-path" data-parent="field_service_visit" data-child="support_followup_confirmation"><path class="relation optional" d="M 1950 1715 H 2139 V 1715 H 2310"><title>support_followup_confirmation.visit_id → field_service_visit.id · 선택</title></path></g>
+<g class="relation-wrap core-path" data-parent="field_service_visit" data-child="support_inquiry_status_history"><path class="relation optional" d="M 1640 1605 V 1470 H 3520 V 1245 H 3490"><title>support_inquiry_status_history.visit_id → field_service_visit.id · 선택</title></path></g>
+<g class="relation-wrap core-path" data-parent="subscriptions_customer_subscription" data-child="subscriptions_care_record"><path class="relation required" d="M 2120 775 H 2345 V 775 H 2570"><title>subscriptions_care_record.subscription_id → subscriptions_customer_subscription.id · 필수</title></path></g>
+<g class="relation-wrap core-path" data-parent="subscriptions_customer_subscription" data-child="support_inquiry"><path class="relation required" d="M 1810 885 V 1018 H 1680 V 1135"><title>support_inquiry.subscription_id → subscriptions_customer_subscription.id · 필수</title></path></g>
+<g class="relation-wrap core-path" data-parent="support_consultation" data-child="support_followup_confirmation"><path class="relation optional" d="M 970 1715 H 1631 V 1715 H 2310"><title>support_followup_confirmation.consultation_id → support_consultation.id · 선택</title></path></g>
+<g class="relation-wrap core-path" data-parent="support_consultation" data-child="support_inquiry_status_history"><path class="relation optional" d="M 660 1605 V 1461 H 3520 V 1245 H 3490"><title>support_inquiry_status_history.consultation_id → support_consultation.id · 선택</title></path></g>
+<g class="relation-wrap core-path" data-parent="support_inquiry" data-child="field_service_visit"><path class="relation required" d="M 1680 1355 V 1472 H 1640 V 1605"><title>field_service_visit.inquiry_id → support_inquiry.id · 필수</title></path></g>
+<g class="relation-wrap core-path" data-parent="support_inquiry" data-child="support_consultation"><path class="relation required" d="M 1680 1355 V 1480 H 660 V 1605"><title>support_consultation.inquiry_id → support_inquiry.id · 필수</title></path></g>
+<g class="relation-wrap core-path" data-parent="support_inquiry" data-child="support_followup_confirmation"><path class="relation required" d="M 1680 1355 V 1488 H 2620 V 1605"><title>support_followup_confirmation.inquiry_id → support_inquiry.id · 필수</title></path></g>
+<g class="relation-wrap core-path" data-parent="support_inquiry" data-child="support_inquiry_status_history"><path class="relation optional" d="M 1990 1245 H 2439 V 1245 H 2870"><title>support_inquiry_status_history.inquiry_id → support_inquiry.id · 선택</title></path></g>
+<g class="relation-wrap core-path" data-parent="support_inquiry" data-child="support_inquiry_symptom"><path class="relation required" d="M 1990 1245 H 2061 V 1245 H 2150"><title>support_inquiry_symptom.inquiry_id → support_inquiry.id · 필수 · 1:1</title></path></g></g>
+    <g class="relations relations-full" style="display:none"><g class="relation-wrap full-path" data-parent="accounts_user" data-child="customers_customer_profile"><path class="relation required" d="M 110 305 H 68 V 634 H 740 V 665"><title>customers_customer_profile.user_id → accounts_user.id · 필수 · 1:1</title></path></g>
+<g class="relation-wrap full-path" data-parent="accounts_user" data-child="customers_customer_profile"><path class="relation support" d="M 110 305 H 78 V 642 H 740 V 665"><title>customers_customer_profile.deleted_by_id → accounts_user.id · 선택</title></path></g>
+<g class="relation-wrap full-path" data-parent="accounts_user" data-child="field_service_visit"><path class="relation support" d="M 110 305 H 88 V 1590 H 1640 V 1605"><title>field_service_visit.technician_id → accounts_user.id · 선택
+field_service_visit.deleted_by_id → accounts_user.id · 선택</title></path><g class="relation-count"><rect x="1650" y="1564" width="48" height="28" rx="9"></rect><text x="1674" y="1584">×2</text></g></g>
+<g class="relation-wrap full-path" data-parent="accounts_user" data-child="subscriptions_care_record"><path class="relation support" d="M 110 305 H 98 V 634 H 2880 V 665"><title>subscriptions_care_record.performed_by_id → accounts_user.id · 선택</title></path></g>
+<g class="relation-wrap full-path" data-parent="accounts_user" data-child="support_consultation"><path class="relation support" d="M 110 305 H 68 V 1582 H 660 V 1605"><title>support_consultation.consultant_id → accounts_user.id · 선택
+support_consultation.deleted_by_id → accounts_user.id · 선택</title></path><g class="relation-count"><rect x="670" y="1556" width="48" height="28" rx="9"></rect><text x="694" y="1576">×2</text></g></g>
+<g class="relation-wrap full-path" data-parent="accounts_user" data-child="support_followup_confirmation"><path class="relation support" d="M 110 305 H 78 V 1590 H 2620 V 1605"><title>support_followup_confirmation.response_recorded_by_id → accounts_user.id · 선택
+support_followup_confirmation.confirmed_by_id → accounts_user.id · 선택</title></path><g class="relation-count"><rect x="2630" y="1564" width="48" height="28" rx="9"></rect><text x="2654" y="1584">×2</text></g></g>
+<g class="relation-wrap full-path" data-parent="accounts_user" data-child="support_inquiry_status_history"><path class="relation support" d="M 110 305 H 88 V 1104 H 3180 V 1135"><title>support_inquiry_status_history.changed_by_id → accounts_user.id · 선택</title></path></g>
+<g class="relation-wrap full-path" data-parent="accounts_user" data-child="support_inquiry_symptom"><path class="relation support" d="M 110 305 H 98 V 1112 H 2460 V 1135"><title>support_inquiry_symptom.confirmed_by_id → accounts_user.id · 선택</title></path></g>
+<g class="relation-wrap full-path" data-parent="accounts_user" data-child="support_inquiry"><path class="relation required" d="M 110 305 H 68 V 1120 H 1680 V 1135"><title>support_inquiry.initiated_by_id → accounts_user.id · 필수</title></path></g>
+<g class="relation-wrap full-path" data-parent="accounts_user" data-child="support_inquiry"><path class="relation support" d="M 110 305 H 78 V 1104 H 1680 V 1135"><title>support_inquiry.assigned_consultant_id → accounts_user.id · 선택
+support_inquiry.current_owner_id → accounts_user.id · 선택
+support_inquiry.required_finalizer_user_id → accounts_user.id · 선택
+support_inquiry.deleted_by_id → accounts_user.id · 선택</title></path><g class="relation-count"><rect x="1690" y="1078" width="48" height="28" rx="9"></rect><text x="1714" y="1098">×4</text></g></g>
+<g class="relation-wrap full-path" data-parent="catalog_product_model" data-child="subscriptions_customer_subscription"><path class="relation required" d="M 3110 415 V 524 H 1810 V 665"><title>subscriptions_customer_subscription.product_model_id → catalog_product_model.id · 필수</title></path></g>
+<g class="relation-wrap full-path" data-parent="common_code_group" data-child="common_code"><path class="relation required" d="M 1520 305 H 1606.5 V 305 H 1675"><title>common_code.group_code → common_code_group.group_code · 필수</title></path></g>
+<g class="relation-wrap full-path" data-parent="customers_customer_profile" data-child="subscriptions_customer_subscription"><path class="relation required" d="M 1050 775 H 1266 V 775 H 1500"><title>subscriptions_customer_subscription.customer_id → customers_customer_profile.id · 필수</title></path></g>
+<g class="relation-wrap full-path" data-parent="field_service_visit" data-child="support_followup_confirmation"><path class="relation optional" d="M 1950 1715 H 2130 V 1715 H 2310"><title>support_followup_confirmation.visit_id → field_service_visit.id · 선택</title></path></g>
+<g class="relation-wrap full-path" data-parent="field_service_visit" data-child="support_inquiry_status_history"><path class="relation optional" d="M 1640 1605 V 1452 H 3520 V 1245 H 3490"><title>support_inquiry_status_history.visit_id → field_service_visit.id · 선택</title></path></g>
+<g class="relation-wrap full-path" data-parent="subscriptions_customer_subscription" data-child="subscriptions_care_record"><path class="relation required" d="M 2120 775 H 2336 V 775 H 2570"><title>subscriptions_care_record.subscription_id → subscriptions_customer_subscription.id · 필수</title></path></g>
+<g class="relation-wrap full-path" data-parent="subscriptions_customer_subscription" data-child="support_inquiry"><path class="relation required" d="M 1810 885 V 1002 H 1680 V 1135"><title>support_inquiry.subscription_id → subscriptions_customer_subscription.id · 필수</title></path></g>
+<g class="relation-wrap full-path" data-parent="support_consultation" data-child="support_followup_confirmation"><path class="relation optional" d="M 970 1715 H 1649 V 1715 H 2310"><title>support_followup_confirmation.consultation_id → support_consultation.id · 선택</title></path></g>
+<g class="relation-wrap full-path" data-parent="support_consultation" data-child="support_inquiry_status_history"><path class="relation optional" d="M 660 1605 V 1470 H 3520 V 1245 H 3490"><title>support_inquiry_status_history.consultation_id → support_consultation.id · 선택</title></path></g>
+<g class="relation-wrap full-path" data-parent="support_inquiry" data-child="field_service_visit"><path class="relation required" d="M 1680 1355 V 1496 H 1640 V 1605"><title>field_service_visit.inquiry_id → support_inquiry.id · 필수</title></path></g>
+<g class="relation-wrap full-path" data-parent="support_inquiry" data-child="support_consultation"><path class="relation required" d="M 1680 1355 V 1464 H 660 V 1605"><title>support_consultation.inquiry_id → support_inquiry.id · 필수</title></path></g>
+<g class="relation-wrap full-path" data-parent="support_inquiry" data-child="support_followup_confirmation"><path class="relation required" d="M 1680 1355 V 1472 H 2620 V 1605"><title>support_followup_confirmation.inquiry_id → support_inquiry.id · 필수</title></path></g>
+<g class="relation-wrap full-path" data-parent="support_inquiry" data-child="support_inquiry_status_history"><path class="relation optional" d="M 1990 1245 H 2430 V 1245 H 2870"><title>support_inquiry_status_history.inquiry_id → support_inquiry.id · 선택</title></path></g>
+<g class="relation-wrap full-path" data-parent="support_inquiry" data-child="support_inquiry_symptom"><path class="relation required" d="M 1990 1245 H 2079 V 1245 H 2150"><title>support_inquiry_symptom.inquiry_id → support_inquiry.id · 필수 · 1:1</title></path></g></g>
+    <g class="nodes">
+    <g class="table-node" data-table="accounts_user" data-layer="1" tabindex="0" role="button" aria-label="사용자 계정 테이블 상세">
+      <rect class="node-shadow" x="117" y="204" width="620" height="220" rx="20"></rect>
+      <rect class="node-card" x="110" y="195" width="620" height="220" rx="20"></rect>
+      <rect x="110" y="195" width="10" height="220" rx="5" fill="#3978A8"></rect>
+      <text class="node-title" x="140" y="238">사용자 계정</text>
+      <text class="node-name" x="140" y="265">accounts_user</text>
+      <rect class="app-chip" x="572" y="220" width="132" height="31" rx="9"></rect>
+      <text class="app-chip-text" x="638" y="241">accounts</text>
+      <line class="node-divider" x1="138" y1="282" x2="702" y2="282"></line>
+      <text class="row-label" x="140" y="313">PK</text>
+      <text class="row-value" x="214" y="313">id</text>
+      <text class="row-label" x="140" y="343">주요 FK</text>
+      <text class="row-value" x="214" y="343">없음</text>
+      <text class="row-label" x="140" y="373">업무 필드</text>
+      <text class="row-value" x="214" y="373">role_code · employee_no</text>
+      <rect class="metric-strip" x="130" y="385" width="580" height="24" rx="8"></rect>
+      <text class="metric-text" x="420" y="402">컬럼 15 · FK 0 · 데이터 20건</text>
+    </g>
+
+    <g class="table-node" data-table="common_code_group" data-layer="1" tabindex="0" role="button" aria-label="공통코드 그룹 테이블 상세">
+      <rect class="node-shadow" x="907" y="204" width="620" height="220" rx="20"></rect>
+      <rect class="node-card" x="900" y="195" width="620" height="220" rx="20"></rect>
+      <rect x="900" y="195" width="10" height="220" rx="5" fill="#3978A8"></rect>
+      <text class="node-title" x="930" y="238">공통코드 그룹</text>
+      <text class="node-name" x="930" y="265">common_code_group</text>
+      <rect class="app-chip" x="1362" y="220" width="132" height="31" rx="9"></rect>
+      <text class="app-chip-text" x="1428" y="241">common_codes</text>
+      <line class="node-divider" x1="928" y1="282" x2="1492" y2="282"></line>
+      <text class="row-label" x="930" y="313">PK</text>
+      <text class="row-value" x="1004" y="313">group_code</text>
+      <text class="row-label" x="930" y="343">주요 FK</text>
+      <text class="row-value" x="1004" y="343">없음</text>
+      <text class="row-label" x="930" y="373">업무 필드</text>
+      <text class="row-value" x="1004" y="373">group_name · description</text>
+      <rect class="metric-strip" x="920" y="385" width="580" height="24" rx="8"></rect>
+      <text class="metric-text" x="1210" y="402">컬럼 7 · FK 0 · 데이터 16건</text>
+    </g>
+
+    <g class="table-node" data-table="common_code" data-layer="1" tabindex="0" role="button" aria-label="공통코드 테이블 상세">
+      <rect class="node-shadow" x="1682" y="204" width="620" height="220" rx="20"></rect>
+      <rect class="node-card" x="1675" y="195" width="620" height="220" rx="20"></rect>
+      <rect x="1675" y="195" width="10" height="220" rx="5" fill="#3978A8"></rect>
+      <text class="node-title" x="1705" y="238">공통코드</text>
+      <text class="node-name" x="1705" y="265">common_code</text>
+      <rect class="app-chip" x="2137" y="220" width="132" height="31" rx="9"></rect>
+      <text class="app-chip-text" x="2203" y="241">common_codes</text>
+      <line class="node-divider" x1="1703" y1="282" x2="2267" y2="282"></line>
+      <text class="row-label" x="1705" y="313">PK</text>
+      <text class="row-value" x="1779" y="313">id</text>
+      <text class="row-label" x="1705" y="343">주요 FK</text>
+      <text class="row-value" x="1779" y="343">group_code</text>
+      <text class="row-label" x="1705" y="373">업무 필드</text>
+      <text class="row-value" x="1779" y="373">code_name · code</text>
+      <rect class="metric-strip" x="1695" y="385" width="580" height="24" rx="8"></rect>
+      <text class="metric-text" x="1985" y="402">컬럼 10 · FK 1 · 데이터 72건</text>
+    </g>
+
+    <g class="table-node" data-table="catalog_product_model" data-layer="1" tabindex="0" role="button" aria-label="제품 모델 테이블 상세">
+      <rect class="node-shadow" x="2807" y="204" width="620" height="220" rx="20"></rect>
+      <rect class="node-card" x="2800" y="195" width="620" height="220" rx="20"></rect>
+      <rect x="2800" y="195" width="10" height="220" rx="5" fill="#3978A8"></rect>
+      <text class="node-title" x="2830" y="238">제품 모델</text>
+      <text class="node-name" x="2830" y="265">catalog_product_model</text>
+      <rect class="app-chip" x="3262" y="220" width="132" height="31" rx="9"></rect>
+      <text class="app-chip-text" x="3328" y="241">products</text>
+      <line class="node-divider" x1="2828" y1="282" x2="3392" y2="282"></line>
+      <text class="row-label" x="2830" y="313">PK</text>
+      <text class="row-value" x="2904" y="313">id</text>
+      <text class="row-label" x="2830" y="343">주요 FK</text>
+      <text class="row-value" x="2904" y="343">없음</text>
+      <text class="row-label" x="2830" y="373">업무 필드</text>
+      <text class="row-value" x="2904" y="373">model_code · generation_code</text>
+      <rect class="metric-strip" x="2820" y="385" width="580" height="24" rx="8"></rect>
+      <text class="metric-text" x="3110" y="402">컬럼 12 · FK 0 · 데이터 2건</text>
+    </g>
+
+    <g class="table-node" data-table="customers_customer_profile" data-layer="2" tabindex="0" role="button" aria-label="고객 프로필 테이블 상세">
+      <rect class="node-shadow" x="437" y="674" width="620" height="220" rx="20"></rect>
+      <rect class="node-card" x="430" y="665" width="620" height="220" rx="20"></rect>
+      <rect x="430" y="665" width="10" height="220" rx="5" fill="#228A7E"></rect>
+      <text class="node-title" x="460" y="708">고객 프로필</text>
+      <text class="node-name" x="460" y="735">customers_customer_profile</text>
+      <rect class="app-chip" x="892" y="690" width="132" height="31" rx="9"></rect>
+      <text class="app-chip-text" x="958" y="711">accounts</text>
+      <line class="node-divider" x1="458" y1="752" x2="1022" y2="752"></line>
+      <text class="row-label" x="460" y="783">PK</text>
+      <text class="row-value" x="534" y="783">id</text>
+      <text class="row-label" x="460" y="813">주요 FK</text>
+      <text class="row-value" x="534" y="813">user_id · deleted_by_id</text>
+      <text class="row-label" x="460" y="843">업무 필드</text>
+      <text class="row-value" x="534" y="843">customer_no · postal_code</text>
+      <rect class="metric-strip" x="450" y="855" width="580" height="24" rx="8"></rect>
+      <text class="metric-text" x="740" y="872">컬럼 15 · FK 2 · 데이터 13건</text>
+    </g>
+
+    <g class="table-node" data-table="subscriptions_customer_subscription" data-layer="2" tabindex="0" role="button" aria-label="고객 구독 테이블 상세">
+      <rect class="node-shadow" x="1507" y="674" width="620" height="220" rx="20"></rect>
+      <rect class="node-card" x="1500" y="665" width="620" height="220" rx="20"></rect>
+      <rect x="1500" y="665" width="10" height="220" rx="5" fill="#228A7E"></rect>
+      <text class="node-title" x="1530" y="708">고객 구독</text>
+      <text class="node-name" x="1530" y="735">subscriptions_customer_subscription</text>
+      <rect class="app-chip" x="1962" y="690" width="132" height="31" rx="9"></rect>
+      <text class="app-chip-text" x="2028" y="711">subscriptions</text>
+      <line class="node-divider" x1="1528" y1="752" x2="2092" y2="752"></line>
+      <text class="row-label" x="1530" y="783">PK</text>
+      <text class="row-value" x="1604" y="783">id</text>
+      <text class="row-label" x="1530" y="813">주요 FK</text>
+      <text class="row-value" x="1604" y="813">customer_id · product_model_id</text>
+      <text class="row-label" x="1530" y="843">업무 필드</text>
+      <text class="row-value" x="1604" y="843">status_code · contract_no</text>
+      <rect class="metric-strip" x="1520" y="855" width="580" height="24" rx="8"></rect>
+      <text class="metric-text" x="1810" y="872">컬럼 14 · FK 2 · 데이터 13건</text>
+    </g>
+
+    <g class="table-node" data-table="subscriptions_care_record" data-layer="2" tabindex="0" role="button" aria-label="제품 케어 이력 테이블 상세">
+      <rect class="node-shadow" x="2577" y="674" width="620" height="220" rx="20"></rect>
+      <rect class="node-card" x="2570" y="665" width="620" height="220" rx="20"></rect>
+      <rect x="2570" y="665" width="10" height="220" rx="5" fill="#228A7E"></rect>
+      <text class="node-title" x="2600" y="708">제품 케어 이력</text>
+      <text class="node-name" x="2600" y="735">subscriptions_care_record</text>
+      <rect class="app-chip" x="3032" y="690" width="132" height="31" rx="9"></rect>
+      <text class="app-chip-text" x="3098" y="711">care</text>
+      <line class="node-divider" x1="2598" y1="752" x2="3162" y2="752"></line>
+      <text class="row-label" x="2600" y="783">PK</text>
+      <text class="row-value" x="2674" y="783">id</text>
+      <text class="row-label" x="2600" y="813">주요 FK</text>
+      <text class="row-value" x="2674" y="813">subscription_id · performed_by_id</text>
+      <text class="row-label" x="2600" y="843">업무 필드</text>
+      <text class="row-value" x="2674" y="843">status_code · care_type_code</text>
+      <rect class="metric-strip" x="2590" y="855" width="580" height="24" rx="8"></rect>
+      <text class="metric-text" x="2880" y="872">컬럼 13 · FK 2 · 데이터 28건</text>
+    </g>
+
+    <g class="table-node" data-table="support_inquiry" data-layer="3" tabindex="0" role="button" aria-label="고객 문의 테이블 상세">
+      <rect class="node-shadow" x="1377" y="1144" width="620" height="220" rx="20"></rect>
+      <rect class="node-card" x="1370" y="1135" width="620" height="220" rx="20"></rect>
+      <rect x="1370" y="1135" width="10" height="220" rx="5" fill="#B87524"></rect>
+      <text class="node-title" x="1400" y="1178">고객 문의</text>
+      <text class="node-name" x="1400" y="1205">support_inquiry</text>
+      <rect class="app-chip" x="1832" y="1160" width="132" height="31" rx="9"></rect>
+      <text class="app-chip-text" x="1898" y="1181">inquiries</text>
+      <line class="node-divider" x1="1398" y1="1222" x2="1962" y2="1222"></line>
+      <text class="row-label" x="1400" y="1253">PK</text>
+      <text class="row-value" x="1474" y="1253">id</text>
+      <text class="row-label" x="1400" y="1283">주요 FK</text>
+      <text class="row-value" x="1474" y="1283">subscription_id · initiated_by_id · +4</text>
+      <text class="row-label" x="1400" y="1313">업무 필드</text>
+      <text class="row-value" x="1474" y="1313">status_code · state_version</text>
+      <rect class="metric-strip" x="1390" y="1325" width="580" height="24" rx="8"></rect>
+      <text class="metric-text" x="1680" y="1342">컬럼 28 · FK 6 · 데이터 28건</text>
+    </g>
+
+    <g class="table-node" data-table="support_inquiry_symptom" data-layer="3" tabindex="0" role="button" aria-label="문의 증상 테이블 상세">
+      <rect class="node-shadow" x="2157" y="1144" width="620" height="220" rx="20"></rect>
+      <rect class="node-card" x="2150" y="1135" width="620" height="220" rx="20"></rect>
+      <rect x="2150" y="1135" width="10" height="220" rx="5" fill="#B87524"></rect>
+      <text class="node-title" x="2180" y="1178">문의 증상</text>
+      <text class="node-name" x="2180" y="1205">support_inquiry_symptom</text>
+      <rect class="app-chip" x="2612" y="1160" width="132" height="31" rx="9"></rect>
+      <text class="app-chip-text" x="2678" y="1181">inquiries</text>
+      <line class="node-divider" x1="2178" y1="1222" x2="2742" y2="1222"></line>
+      <text class="row-label" x="2180" y="1253">PK</text>
+      <text class="row-value" x="2254" y="1253">id</text>
+      <text class="row-label" x="2180" y="1283">주요 FK</text>
+      <text class="row-value" x="2254" y="1283">inquiry_id · confirmed_by_id</text>
+      <text class="row-label" x="2180" y="1313">업무 필드</text>
+      <text class="row-value" x="2254" y="1313">symptom_type_code · is_customer_confirmed</text>
+      <rect class="metric-strip" x="2170" y="1325" width="580" height="24" rx="8"></rect>
+      <text class="metric-text" x="2460" y="1342">컬럼 14 · FK 2 · 데이터 24건</text>
+    </g>
+
+    <g class="table-node" data-table="support_inquiry_status_history" data-layer="3" tabindex="0" role="button" aria-label="문의 처리상태 이력 테이블 상세">
+      <rect class="node-shadow" x="2877" y="1144" width="620" height="220" rx="20"></rect>
+      <rect class="node-card" x="2870" y="1135" width="620" height="220" rx="20"></rect>
+      <rect x="2870" y="1135" width="10" height="220" rx="5" fill="#B87524"></rect>
+      <text class="node-title" x="2900" y="1178">문의 처리상태 이력</text>
+      <text class="node-name" x="2900" y="1205">support_inquiry_status_history</text>
+      <rect class="app-chip" x="3332" y="1160" width="132" height="31" rx="9"></rect>
+      <text class="app-chip-text" x="3398" y="1181">workflow</text>
+      <line class="node-divider" x1="2898" y1="1222" x2="3462" y2="1222"></line>
+      <text class="row-label" x="2900" y="1253">PK</text>
+      <text class="row-value" x="2974" y="1253">id</text>
+      <text class="row-label" x="2900" y="1283">주요 FK</text>
+      <text class="row-value" x="2974" y="1283">inquiry_id · consultation_id · +2</text>
+      <text class="row-label" x="2900" y="1313">업무 필드</text>
+      <text class="row-value" x="2974" y="1313">from_status_code · to_status_code</text>
+      <rect class="metric-strip" x="2890" y="1325" width="580" height="24" rx="8"></rect>
+      <text class="metric-text" x="3180" y="1342">컬럼 15 · FK 4 · 데이터 136건</text>
+    </g>
+
+    <g class="table-node" data-table="support_consultation" data-layer="4" tabindex="0" role="button" aria-label="상담 처리 테이블 상세">
+      <rect class="node-shadow" x="357" y="1614" width="620" height="220" rx="20"></rect>
+      <rect class="node-card" x="350" y="1605" width="620" height="220" rx="20"></rect>
+      <rect x="350" y="1605" width="10" height="220" rx="5" fill="#8B5AA5"></rect>
+      <text class="node-title" x="380" y="1648">상담 처리</text>
+      <text class="node-name" x="380" y="1675">support_consultation</text>
+      <rect class="app-chip" x="812" y="1630" width="132" height="31" rx="9"></rect>
+      <text class="app-chip-text" x="878" y="1651">consultations</text>
+      <line class="node-divider" x1="378" y1="1692" x2="942" y2="1692"></line>
+      <text class="row-label" x="380" y="1723">PK</text>
+      <text class="row-value" x="454" y="1723">id</text>
+      <text class="row-label" x="380" y="1753">주요 FK</text>
+      <text class="row-value" x="454" y="1753">inquiry_id · consultant_id · +1</text>
+      <text class="row-label" x="380" y="1783">업무 필드</text>
+      <text class="row-value" x="454" y="1783">status_code · state_version</text>
+      <rect class="metric-strip" x="370" y="1795" width="580" height="24" rx="8"></rect>
+      <text class="metric-text" x="660" y="1812">컬럼 20 · FK 3 · 데이터 12건</text>
+    </g>
+
+    <g class="table-node" data-table="field_service_visit" data-layer="4" tabindex="0" role="button" aria-label="현장 방문 테이블 상세">
+      <rect class="node-shadow" x="1337" y="1614" width="620" height="220" rx="20"></rect>
+      <rect class="node-card" x="1330" y="1605" width="620" height="220" rx="20"></rect>
+      <rect x="1330" y="1605" width="10" height="220" rx="5" fill="#8B5AA5"></rect>
+      <text class="node-title" x="1360" y="1648">현장 방문</text>
+      <text class="node-name" x="1360" y="1675">field_service_visit</text>
+      <rect class="app-chip" x="1792" y="1630" width="132" height="31" rx="9"></rect>
+      <text class="app-chip-text" x="1858" y="1651">visits</text>
+      <line class="node-divider" x1="1358" y1="1692" x2="1922" y2="1692"></line>
+      <text class="row-label" x="1360" y="1723">PK</text>
+      <text class="row-value" x="1434" y="1723">id</text>
+      <text class="row-label" x="1360" y="1753">주요 FK</text>
+      <text class="row-value" x="1434" y="1753">inquiry_id · technician_id · +1</text>
+      <text class="row-label" x="1360" y="1783">업무 필드</text>
+      <text class="row-value" x="1434" y="1783">visit_status_code · state_version</text>
+      <rect class="metric-strip" x="1350" y="1795" width="580" height="24" rx="8"></rect>
+      <text class="metric-text" x="1640" y="1812">컬럼 19 · FK 3 · 데이터 4건</text>
+    </g>
+
+    <g class="table-node" data-table="support_followup_confirmation" data-layer="4" tabindex="0" role="button" aria-label="사후 해결 확인 테이블 상세">
+      <rect class="node-shadow" x="2317" y="1614" width="620" height="220" rx="20"></rect>
+      <rect class="node-card" x="2310" y="1605" width="620" height="220" rx="20"></rect>
+      <rect x="2310" y="1605" width="10" height="220" rx="5" fill="#8B5AA5"></rect>
+      <text class="node-title" x="2340" y="1648">사후 해결 확인</text>
+      <text class="node-name" x="2340" y="1675">support_followup_confirmation</text>
+      <rect class="app-chip" x="2772" y="1630" width="132" height="31" rx="9"></rect>
+      <text class="app-chip-text" x="2838" y="1651">inquiries</text>
+      <line class="node-divider" x1="2338" y1="1692" x2="2902" y2="1692"></line>
+      <text class="row-label" x="2340" y="1723">PK</text>
+      <text class="row-value" x="2414" y="1723">id</text>
+      <text class="row-label" x="2340" y="1753">주요 FK</text>
+      <text class="row-value" x="2414" y="1753">inquiry_id · consultation_id · +3</text>
+      <text class="row-label" x="2340" y="1783">업무 필드</text>
+      <text class="row-value" x="2414" y="1783">resolution_status_code · state_version</text>
+      <rect class="metric-strip" x="2330" y="1795" width="580" height="24" rx="8"></rect>
+      <text class="metric-text" x="2620" y="1812">컬럼 18 · FK 5 · 데이터 1건</text>
+    </g></g>
+  </svg></div>
+      <div class="diagram-status">
+        <span id="relation-status">표시 관계 16개 · 집계 경로 16개</span>
+        <span>테이블을 선택하면 현재 범위의 컬럼과 FK를 확인할 수 있다.</span>
+      </div>
+    </section>
+  </main>
+
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="drawer" id="table-drawer" aria-hidden="true" aria-label="테이블 상세정보">
+    <div id="drawer-content"></div>
+  </aside>
+
+  <script>
+window.WATERCARE_ERD = {"generatedAt":"2026-08-01T08:11:05.076Z","artifactVersion":"1.5","title":"WaterCare 현재 업무 ERD","scope":"현재 데이터가 존재하는 13개 테이블 간 관계","counts":{"tables":13,"columns":200,"physicalFks":30,"requiredFks":11,"optionalFks":19,"logicalCodes":23,"coreDisplayFks":16,"allGroupedPaths":24},"layers":[{"number":1,"id":"foundation","title":"공통 기준정보 관리","subtitle":"코드·계정·제품 모델 기준정보","color":"#3978A8","fill":"#F3F7FB","tables":["accounts_user","common_code_group","common_code","catalog_product_model"]},{"number":2,"id":"customer","title":"고객·구독·케어 관리","subtitle":"고객 식별·구독 계약·제품 케어 이력","color":"#228A7E","fill":"#F1F8F7","tables":["customers_customer_profile","subscriptions_customer_subscription","subscriptions_care_record"]},{"number":3,"id":"inquiry","title":"문의 접수·상태 관리","subtitle":"문의 접수·증상 구조화·처리상태 이력","color":"#B87524","fill":"#FCF7F0","tables":["support_inquiry","support_inquiry_symptom","support_inquiry_status_history"]},{"number":4,"id":"service","title":"상담·방문·사후 확인","subtitle":"상담 처리·현장 방문·최종 해결 확인","color":"#8B5AA5","fill":"#F8F4FA","tables":["support_consultation","field_service_visit","support_followup_confirmation"]}],"tables":{"common_code_group":{"name":"common_code_group","nameKo":"공통코드 그룹","description":"업무 코드의 상위 분류와 사용 상태를 관리한다.","sourceFile":"01_common_code_group.xlsx","columns":[{"name":"group_code","labelKo":"그룹코드","type":"varchar(40)","pk":true,"nn":true,"default":"","reference":"","referenceKind":null,"note":"공통코드 그룹의 영문 대문자 코드 · 예: INQUIRY_STATUS"},{"name":"group_name","labelKo":"그룹명","type":"varchar(100)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"공통코드 그룹의 한글 명칭"},{"name":"description","labelKo":"설명","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"그룹의 사용 목적과 적용 범위"},{"name":"display_order","labelKo":"표시순서","type":"integer","pk":false,"nn":true,"default":"0","reference":"","referenceKind":null,"note":"관리 화면 표시 순서 · CHECK display_order >= 0"},{"name":"is_active","labelKo":"사용여부","type":"boolean","pk":false,"nn":true,"default":"true","reference":"","referenceKind":null,"note":"신규 입력에서 사용할 수 있는지 여부"},{"name":"created_at","labelKo":"생성일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 생성 일시"},{"name":"updated_at","labelKo":"수정일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 최종 수정 일시"}],"domain":"공통","layer":"foundation","djangoApp":"common_codes","rowCount":16,"layerNumber":1,"position":{"x":900,"y":195}},"common_code":{"name":"common_code","nameKo":"공통코드","description":"상태·역할·유형 등 공통 코드 값을 관리한다.","sourceFile":"02_common_code.xlsx","columns":[{"name":"id","labelKo":"식별자","type":"uuid","pk":true,"nn":true,"default":"uuid.uuid4","reference":"","referenceKind":null,"note":"레코드 고유 식별자"},{"name":"group_code","labelKo":"그룹코드","type":"varchar(40)","pk":false,"nn":true,"default":"","reference":"common_code_group.group_code","referenceKind":"physical_fk","note":"소속 공통코드 그룹 · ON DELETE RESTRICT"},{"name":"code","labelKo":"코드","type":"varchar(40)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"그룹 안에서 유일한 코드 값"},{"name":"code_name","labelKo":"코드명","type":"varchar(100)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"사용자에게 표시할 코드 명칭"},{"name":"description","labelKo":"설명","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"코드의 업무 의미와 적용 조건"},{"name":"display_order","labelKo":"표시순서","type":"integer","pk":false,"nn":true,"default":"0","reference":"","referenceKind":null,"note":"그룹 안에서의 표시 순서 · CHECK display_order >= 0"},{"name":"is_active","labelKo":"사용여부","type":"boolean","pk":false,"nn":true,"default":"true","reference":"","referenceKind":null,"note":"신규 입력에서 선택할 수 있는지 여부"},{"name":"metadata","labelKo":"확장속성","type":"jsonb","pk":false,"nn":true,"default":"'{}'::jsonb","reference":"","referenceKind":null,"note":"색상, 아이콘 등 비업무 확장 속성"},{"name":"created_at","labelKo":"생성일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 생성 일시"},{"name":"updated_at","labelKo":"수정일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 최종 수정 일시"}],"domain":"공통","layer":"foundation","djangoApp":"common_codes","rowCount":72,"layerNumber":1,"position":{"x":1675,"y":195}},"accounts_user":{"name":"accounts_user","nameKo":"사용자 계정","description":"고객·상담원·방문기사·운영자의 인증 계정과 역할을 관리한다.","sourceFile":"03_accounts_user.xlsx","columns":[{"name":"id","labelKo":"식별자","type":"uuid","pk":true,"nn":true,"default":"uuid.uuid4","reference":"","referenceKind":null,"note":"레코드 고유 식별자"},{"name":"username","labelKo":"로그인아이디","type":"varchar(150)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"사용자 로그인 식별자 · UNIQUE"},{"name":"password","labelKo":"비밀번호해시","type":"varchar(128)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"비밀번호 해시값 · 평문 저장 금지"},{"name":"email","labelKo":"이메일","type":"varchar(254)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"알림 및 계정 식별 보조 이메일"},{"name":"full_name","labelKo":"표시이름","type":"varchar(100)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"계정 공통 표시명. CUSTOMER의 업무상 고객명 원본은 customers_customer_profile.customer_name"},{"name":"phone","labelKo":"연락처","type":"varchar(30)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"직원 업무 연락처 또는 로그인 보조 연락처"},{"name":"role_code","labelKo":"기본역할코드","type":"varchar(40)","pk":false,"nn":true,"default":"","reference":"common_code(group=USER_ROLE)","referenceKind":"logical_code","note":"계정의 기본 역할"},{"name":"employee_no","labelKo":"사번","type":"varchar(40)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"상담사·기사·운영자 사번 · 조건부 UNIQUE"},{"name":"last_login","labelKo":"최종로그인일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"최종 인증 성공 일시"},{"name":"is_superuser","labelKo":"슈퍼유저여부","type":"boolean","pk":false,"nn":true,"default":"false","reference":"","referenceKind":null,"note":"전체 권한 보유 여부"},{"name":"is_staff","labelKo":"관리자접근여부","type":"boolean","pk":false,"nn":true,"default":"false","reference":"","referenceKind":null,"note":"관리자 화면 접근 가능 여부"},{"name":"is_active","labelKo":"활성여부","type":"boolean","pk":false,"nn":true,"default":"true","reference":"","referenceKind":null,"note":"로그인 가능한 활성 계정인지 여부"},{"name":"date_joined","labelKo":"가입일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"계정 가입 일시"},{"name":"created_at","labelKo":"생성일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 생성 일시"},{"name":"updated_at","labelKo":"수정일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 최종 수정 일시"}],"domain":"계정","layer":"foundation","djangoApp":"accounts","rowCount":20,"layerNumber":1,"position":{"x":110,"y":195}},"customers_customer_profile":{"name":"customers_customer_profile","nameKo":"고객 프로필","description":"고객 식별정보와 연락처·설치 주소를 관리한다.","sourceFile":"05_customers_customer_profile.xlsx","columns":[{"name":"id","labelKo":"식별자","type":"uuid","pk":true,"nn":true,"default":"uuid.uuid4","reference":"","referenceKind":null,"note":"레코드 고유 식별자"},{"name":"user_id","labelKo":"사용자식별자","type":"uuid","pk":false,"nn":true,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"고객 역할의 사용자 계정 · UNIQUE, ON DELETE RESTRICT"},{"name":"customer_no","labelKo":"고객번호","type":"varchar(40)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"화면과 상담 업무에서 사용하는 가명 고객번호 · UNIQUE"},{"name":"customer_name","labelKo":"고객명","type":"varchar(100)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"상담·방문 화면에 표시하는 고객명. 권한별 조회 정책을 적용한다."},{"name":"phone","labelKo":"고객연락처","type":"varchar(30)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"가명·합성 연락처 · 실제 개인정보 사용 금지"},{"name":"postal_code","labelKo":"우편번호","type":"varchar(10)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"설치 주소 우편번호"},{"name":"address_line1","labelKo":"기본주소","type":"varchar(255)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"가명·합성 설치 기본 주소"},{"name":"address_line2","labelKo":"상세주소","type":"varchar(255)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"가명·합성 설치 상세 주소"},{"name":"consent_version","labelKo":"동의버전","type":"varchar(40)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"테스트용 개인정보·서비스 동의 버전"},{"name":"consented_at","labelKo":"동의일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"동의가 기록된 일시"},{"name":"is_synthetic","labelKo":"합성데이터여부","type":"boolean","pk":false,"nn":true,"default":"true","reference":"","referenceKind":null,"note":"가명·합성 데이터 여부"},{"name":"deleted_at","labelKo":"삭제일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"고객 프로필을 화면·일반 조회에서 제외한 논리 삭제 시각 · 물리 삭제 금지; 보존기간 종료 시 별도 익명화 절차"},{"name":"deleted_by_id","labelKo":"삭제처리자식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"논리 삭제를 수행한 사용자 · ON DELETE RESTRICT"},{"name":"created_at","labelKo":"생성일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 생성 일시"},{"name":"updated_at","labelKo":"수정일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 최종 수정 일시"}],"domain":"고객","layer":"customer","djangoApp":"accounts","rowCount":13,"layerNumber":2,"position":{"x":430,"y":665}},"catalog_product_model":{"name":"catalog_product_model","nameKo":"제품 모델","description":"구독 및 케어 대상 제품 모델의 기준정보를 관리한다.","sourceFile":"04_catalog_product_model.xlsx","columns":[{"name":"id","labelKo":"식별자","type":"uuid","pk":true,"nn":true,"default":"uuid.uuid4","reference":"","referenceKind":null,"note":"레코드 고유 식별자"},{"name":"model_code","labelKo":"모델코드","type":"varchar(60)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"제조사 제품 모델 코드 · UNIQUE, 예: WPU-JAC104D"},{"name":"model_name","labelKo":"모델명","type":"varchar(150)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"사용자 화면 표시용 모델명"},{"name":"generation_code","labelKo":"세대코드","type":"varchar(40)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"동일 계열 제품의 세대·리비전 구분"},{"name":"manufacturer","labelKo":"제조사","type":"varchar(100)","pk":false,"nn":true,"default":"'SK매직'","reference":"","referenceKind":null,"note":"제품 제조사 또는 브랜드"},{"name":"launched_on","labelKo":"출시일","type":"date","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"제품 출시일"},{"name":"discontinued_on","labelKo":"단종일","type":"date","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"제품 단종일"},{"name":"features","labelKo":"제품특성","type":"jsonb","pk":false,"nn":true,"default":"'{}'::jsonb","reference":"","referenceKind":null,"note":"냉수·온수·정수 등 검색 필터용 특성"},{"name":"is_supported_mvp","labelKo":"검색안내지원여부","type":"boolean","pk":false,"nn":true,"default":"false","reference":"","referenceKind":null,"note":"검색·안내 지원 대상 여부"},{"name":"is_active","labelKo":"사용여부","type":"boolean","pk":false,"nn":true,"default":"true","reference":"","referenceKind":null,"note":"신규 구독과 문서 연결에 사용할지 여부 · 신규 구독 연결 허용 여부"},{"name":"created_at","labelKo":"생성일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 생성 일시"},{"name":"updated_at","labelKo":"수정일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 최종 수정 일시"}],"domain":"제품","layer":"foundation","djangoApp":"products","rowCount":2,"layerNumber":1,"position":{"x":2800,"y":195}},"subscriptions_customer_subscription":{"name":"subscriptions_customer_subscription","nameKo":"고객 구독","description":"고객과 제품을 연결하고 구독 계약·관리 상태를 관리한다.","sourceFile":"06_subscriptions_customer_subscription.xlsx","columns":[{"name":"id","labelKo":"식별자","type":"uuid","pk":true,"nn":true,"default":"uuid.uuid4","reference":"","referenceKind":null,"note":"레코드 고유 식별자"},{"name":"contract_no","labelKo":"계약번호","type":"varchar(50)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"가명·합성 구독 계약번호 · UNIQUE"},{"name":"customer_id","labelKo":"고객식별자","type":"uuid","pk":false,"nn":true,"default":"","reference":"customers_customer_profile.id","referenceKind":"physical_fk","note":"구독 고객 · ON DELETE RESTRICT"},{"name":"product_model_id","labelKo":"제품모델식별자","type":"uuid","pk":false,"nn":true,"default":"","reference":"catalog_product_model.id","referenceKind":"physical_fk","note":"구독 대상 정수기 모델 · ON DELETE RESTRICT"},{"name":"serial_no","labelKo":"제품일련번호","type":"varchar(80)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"설치 제품의 가명·합성 일련번호 · 조건부 UNIQUE: ux_customer_subscription_serial 참조"},{"name":"management_type_code","labelKo":"관리유형코드","type":"varchar(40)","pk":false,"nn":true,"default":"'VISIT_CARE'","reference":"common_code(group=MANAGEMENT_TYPE)","referenceKind":"logical_code","note":"자가관리 또는 방문관리 유형"},{"name":"status_code","labelKo":"구독상태코드","type":"varchar(40)","pk":false,"nn":true,"default":"'ACTIVE'","reference":"common_code(group=SUBSCRIPTION_STATUS)","referenceKind":"logical_code","note":"구독 진행 상태"},{"name":"started_on","labelKo":"구독시작일","type":"date","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"구독 계약 시작일"},{"name":"ended_on","labelKo":"구독종료일","type":"date","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"구독 계약 종료일"},{"name":"installed_at","labelKo":"설치일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"제품 설치 완료 일시"},{"name":"installation_address","labelKo":"설치주소스냅샷","type":"varchar(500)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"계약 시점 가명·합성 설치 주소"},{"name":"next_care_on","labelKo":"다음케어예정일","type":"date","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"미완료 care_record의 가장 빠른 scheduled_on을 트랜잭션에서 동기화한 조회용 캐시"},{"name":"created_at","labelKo":"생성일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 생성 일시"},{"name":"updated_at","labelKo":"수정일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 최종 수정 일시"}],"domain":"구독","layer":"customer","djangoApp":"subscriptions","rowCount":13,"layerNumber":2,"position":{"x":1500,"y":665}},"subscriptions_care_record":{"name":"subscriptions_care_record","nameKo":"제품 케어 이력","description":"구독 제품의 정기관리·점검 일정과 수행 결과를 기록한다.","sourceFile":"07_subscriptions_care_record.xlsx","columns":[{"name":"id","labelKo":"식별자","type":"uuid","pk":true,"nn":true,"default":"uuid.uuid4","reference":"","referenceKind":null,"note":"레코드 고유 식별자"},{"name":"subscription_id","labelKo":"구독식별자","type":"uuid","pk":false,"nn":true,"default":"","reference":"subscriptions_customer_subscription.id","referenceKind":"physical_fk","note":"관리 대상 고객 구독 · ON DELETE RESTRICT"},{"name":"care_type_code","labelKo":"케어유형코드","type":"varchar(40)","pk":false,"nn":true,"default":"","reference":"common_code(group=CARE_TYPE)","referenceKind":"logical_code","note":"정기관리, 필터교체, 위생점검 등 케어 유형"},{"name":"status_code","labelKo":"케어상태코드","type":"varchar(40)","pk":false,"nn":true,"default":"'SCHEDULED'","reference":"common_code(group=CARE_STATUS)","referenceKind":"logical_code","note":"케어 진행 상태"},{"name":"scheduled_on","labelKo":"예정일","type":"date","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"케어 수행 예정일"},{"name":"completed_at","labelKo":"완료일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"케어 작업이 실제 완료된 일시"},{"name":"cancelled_at","labelKo":"취소일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"케어 일정이 취소된 일시"},{"name":"cancellation_reason","labelKo":"취소사유","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"고객 요청·일정 변경 등 취소 사유"},{"name":"summary","labelKo":"처리요약","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"수행 내용과 고객 특이사항 요약"},{"name":"performed_by_id","labelKo":"수행자식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"케어를 수행한 기사 또는 담당자 · ON DELETE RESTRICT"},{"name":"source_code","labelKo":"데이터출처코드","type":"varchar(40)","pk":false,"nn":true,"default":"'SYSTEM'","reference":"common_code(group=DATA_SOURCE)","referenceKind":"logical_code","note":"데이터 생성 주체"},{"name":"created_at","labelKo":"생성일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 생성 일시"},{"name":"updated_at","labelKo":"수정일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 최종 수정 일시"}],"domain":"구독","layer":"customer","djangoApp":"care","rowCount":28,"layerNumber":2,"position":{"x":2570,"y":665}},"support_inquiry":{"name":"support_inquiry","nameKo":"고객 문의","description":"고객 문의 접수부터 상담·방문·종결까지의 기준 업무 건을 관리한다.","sourceFile":"08_support_inquiry.xlsx","columns":[{"name":"id","labelKo":"식별자","type":"uuid","pk":true,"nn":true,"default":"uuid.uuid4","reference":"","referenceKind":null,"note":"레코드 고유 식별자"},{"name":"inquiry_no","labelKo":"문의번호","type":"varchar(50)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"화면과 업무 인계에 사용하는 문의번호 · UNIQUE"},{"name":"subscription_id","labelKo":"구독식별자","type":"uuid","pk":false,"nn":true,"default":"","reference":"subscriptions_customer_subscription.id","referenceKind":"physical_fk","note":"문의 대상 고객·제품 구독 · ON DELETE RESTRICT"},{"name":"initiated_by_id","labelKo":"접수사용자식별자","type":"uuid","pk":false,"nn":true,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"문의를 최초 접수한 사용자 · ON DELETE RESTRICT"},{"name":"assigned_consultant_id","labelKo":"담당상담사식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"현재 담당 상담사 · ON DELETE RESTRICT"},{"name":"current_owner_id","labelKo":"현재담당자식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"현재 고객 행동·상담·방문 단계를 담당하는 사용자 snapshot · ON DELETE RESTRICT; 시스템 처리 중에는 NULL"},{"name":"current_owner_role_code","labelKo":"현재담당역할코드","type":"varchar(40)","pk":false,"nn":false,"default":"","reference":"common_code(group=USER_ROLE)","referenceKind":"logical_code","note":"CUSTOMER, CONSULTANT, TECHNICIAN · 담당자 ID와 함께 설정"},{"name":"channel_code","labelKo":"접수채널코드","type":"varchar(40)","pk":false,"nn":true,"default":"'WEB'","reference":"common_code(group=INQUIRY_CHANNEL)","referenceKind":"logical_code","note":"문의 접수 채널"},{"name":"raw_text","labelKo":"고객원문","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"고객이 최초 입력한 증상 내용. 선택 증상만 있는 경우 null을 허용한다."},{"name":"status_code","labelKo":"문의상태코드","type":"varchar(40)","pk":false,"nn":true,"default":"'DRAFT'","reference":"common_code(group=INQUIRY_STATUS)","referenceKind":"logical_code","note":"문의 접수부터 해결까지의 처리 상태"},{"name":"state_version","labelKo":"상태버전","type":"integer","pk":false,"nn":true,"default":"1","reference":"","referenceKind":null,"note":"상태 전환 시마다 1 증가하는 낙관적 잠금 버전 · CHECK state_version > 0"},{"name":"priority_code","labelKo":"우선순위코드","type":"varchar(40)","pk":false,"nn":true,"default":"'NORMAL'","reference":"common_code(group=PRIORITY)","referenceKind":"logical_code","note":"상담 처리 우선순위"},{"name":"risk_level_code","labelKo":"현재위험도코드","type":"varchar(40)","pk":false,"nn":true,"default":"","reference":"common_code(group=RISK_LEVEL)","referenceKind":"logical_code","note":"평가 완료 후 저장하는 위험도. 위험 평가 전에는 null을 허용한다."},{"name":"usage_guidance_status","labelKo":"사용안내코드","type":"varchar(40)","pk":false,"nn":false,"default":"","reference":"common_code(group=USAGE_GUIDANCE_STATUS)","referenceKind":"logical_code","note":"고객 사용 안내 상태"},{"name":"usage_guidance_message","labelKo":"사용안내메시지","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"역할별 화면에 표시하는 검증된 사용 안내 문장"},{"name":"restricted_functions","labelKo":"제한기능목록","type":"jsonb","pk":false,"nn":true,"default":"'[]'::jsonb","reference":"","referenceKind":null,"note":"제한 출수·기능 코드, 범위, 사유 배열"},{"name":"next_action","labelKo":"다음행동","type":"jsonb","pk":false,"nn":true,"default":"'{}'::jsonb","reference":"","referenceKind":null,"note":"code, message, owner_role을 포함한 다음 행동 object"},{"name":"requires_consultation","labelKo":"상담필요여부","type":"boolean","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"안전·근거·미해결 조건으로 상담이 필요한지 여부"},{"name":"customer_action_required","labelKo":"고객행동필요여부","type":"boolean","pk":false,"nn":true,"default":"true","reference":"","referenceKind":null,"note":"현재 고객 입력·확인·조치가 필요한지 여부"},{"name":"completion_route_code","labelKo":"완료경로코드","type":"varchar(40)","pk":false,"nn":false,"default":"","reference":"common_code(group=COMPLETION_ROUTE)","referenceKind":"logical_code","note":"SELF_HELP, CONSULTATION, VISIT · 완료 경로 확정 전 NULL"},{"name":"required_finalizer_role_code","labelKo":"최종완료담당역할코드","type":"varchar(40)","pk":false,"nn":false,"default":"","reference":"common_code(group=USER_ROLE)","referenceKind":"logical_code","note":"CONSULTANT 또는 TECHNICIAN · 상담·방문 경로에서만 설정"},{"name":"required_finalizer_user_id","labelKo":"최종완료담당자식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"COMPLETION_PENDING 진입 시 snapshot한 상담사 또는 기사 · ON DELETE RESTRICT"},{"name":"opened_at","labelKo":"접수일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"SUBMIT_SYMPTOM으로 최초 증상이 접수된 일시"},{"name":"closed_at","labelKo":"종결일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"문의가 해결 또는 종결된 일시"},{"name":"deleted_at","labelKo":"삭제일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"사용자 화면에서 숨긴 논리 삭제 시각 · 상태·AI·검색·근거 이력 물리 삭제 금지"},{"name":"deleted_by_id","labelKo":"삭제처리자식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"논리 삭제를 수행한 사용자 · ON DELETE RESTRICT"},{"name":"created_at","labelKo":"생성일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 생성 일시"},{"name":"updated_at","labelKo":"수정일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 최종 수정 일시"}],"domain":"문의","layer":"inquiry","djangoApp":"inquiries","rowCount":28,"layerNumber":3,"position":{"x":1370,"y":1135}},"support_inquiry_symptom":{"name":"support_inquiry_symptom","nameKo":"문의 증상","description":"문의별 증상과 발생 조건을 구조화해 관리한다.","sourceFile":"09_support_inquiry_symptom.xlsx","columns":[{"name":"id","labelKo":"식별자","type":"uuid","pk":true,"nn":true,"default":"uuid.uuid4","reference":"","referenceKind":null,"note":"레코드 고유 식별자"},{"name":"inquiry_id","labelKo":"문의식별자","type":"uuid","pk":false,"nn":true,"default":"","reference":"support_inquiry.id","referenceKind":"physical_fk","note":"구조화 대상 문의 · UNIQUE, ON DELETE RESTRICT"},{"name":"symptom_type_code","labelKo":"증상유형코드","type":"varchar(40)","pk":false,"nn":true,"default":"","reference":"common_code(group=SYMPTOM_TYPE)","referenceKind":"logical_code","note":"누수, 출수 불량, 온도 이상 등 대표 증상 유형"},{"name":"occurrence_condition","labelKo":"발생조건","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"언제·어떤 동작에서 발생하는지 구조화한 설명"},{"name":"accompanying_symptoms","labelKo":"동반증상","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"냄새, 소음, 표시등 등 함께 나타난 현상"},{"name":"duration_text","labelKo":"발생기간","type":"varchar(100)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"발생 시작 시점 또는 지속 기간"},{"name":"location_text","labelKo":"발생위치","type":"varchar(200)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"누수·소음 등 증상이 나타난 위치"},{"name":"structured_payload","labelKo":"구조화원문","type":"jsonb","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"Pydantic 출력 전체를 보존하는 버전형 JSON"},{"name":"schema_version","labelKo":"스키마버전","type":"varchar(30)","pk":false,"nn":true,"default":"'v1'","reference":"","referenceKind":null,"note":"증상 구조화 데이터 형식 버전"},{"name":"is_customer_confirmed","labelKo":"고객확인여부","type":"boolean","pk":false,"nn":true,"default":"false","reference":"","referenceKind":null,"note":"고객이 구조화 결과를 확인했는지 여부"},{"name":"confirmed_by_id","labelKo":"확인자식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"구조화 증상을 확인한 고객 또는 대리 기록자 · ON DELETE RESTRICT"},{"name":"confirmed_at","labelKo":"확인일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"고객 확인이 완료된 일시"},{"name":"created_at","labelKo":"생성일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 생성 일시"},{"name":"updated_at","labelKo":"수정일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 최종 수정 일시"}],"domain":"문의","layer":"inquiry","djangoApp":"inquiries","rowCount":24,"layerNumber":3,"position":{"x":2150,"y":1135}},"support_inquiry_status_history":{"name":"support_inquiry_status_history","nameKo":"문의 처리상태 이력","description":"문의·상담·방문 상태의 변경 이력을 기록한다.","sourceFile":"20_support_inquiry_status_history.xlsx","columns":[{"name":"id","labelKo":"식별자","type":"uuid","pk":true,"nn":true,"default":"uuid.uuid4","reference":"","referenceKind":null,"note":"레코드 고유 식별자"},{"name":"inquiry_id","labelKo":"문의식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"support_inquiry.id","referenceKind":"physical_fk","note":"문의 상태 전이 대상인 경우의 문의 · ON DELETE RESTRICT"},{"name":"consultation_id","labelKo":"상담식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"support_consultation.id","referenceKind":"physical_fk","note":"상담 상태 전이 대상인 경우의 상담 · ON DELETE RESTRICT"},{"name":"visit_id","labelKo":"방문식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"field_service_visit.id","referenceKind":"physical_fk","note":"방문 상태 전이 대상인 경우의 방문 · ON DELETE RESTRICT"},{"name":"target_type_code","labelKo":"대상유형코드","type":"varchar(40)","pk":false,"nn":true,"default":"","reference":"common_code(group=STATUS_TYPE)","referenceKind":"logical_code","note":"상태 변경 대상 유형"},{"name":"event_code","labelKo":"전이이벤트코드","type":"varchar(60)","pk":false,"nn":true,"default":"","reference":"common_code(group=STATE_EVENT)","referenceKind":"logical_code","note":"상태 변경을 유발한 업무 이벤트"},{"name":"from_status_code","labelKo":"이전상태코드","type":"varchar(40)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"변경 전 상태"},{"name":"to_status_code","labelKo":"변경상태코드","type":"varchar(40)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"변경 후 상태"},{"name":"state_version","labelKo":"전이후상태버전","type":"integer","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"전이 완료 후 대상 Aggregate의 상태 버전 · CHECK state_version > 0"},{"name":"change_reason","labelKo":"변경사유","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"상태 전환의 업무 사유 또는 예외 설명"},{"name":"changed_by_id","labelKo":"변경자식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"전환을 수행한 사용자 · 시스템 전환이면 NULL; 사용자 계정은 ON DELETE RESTRICT"},{"name":"changed_by_type_code","labelKo":"변경주체코드","type":"varchar(40)","pk":false,"nn":true,"default":"'USER'","reference":"common_code(group=CHANGE_ORIGIN)","referenceKind":"logical_code","note":"상태 변경 주체 유형"},{"name":"correlation_id","labelKo":"상관관계식별자","type":"uuid","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"요청, 상태 변경 및 로그를 연결하는 추적 식별자"},{"name":"idempotency_key","labelKo":"멱등성키","type":"varchar(128)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"동일 상태 전이 요청의 중복 처리를 방지하는 고유 키"},{"name":"changed_at","labelKo":"변경일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"상태 전환이 확정된 일시"}],"domain":"문의","layer":"inquiry","djangoApp":"workflow","rowCount":136,"layerNumber":3,"position":{"x":2870,"y":1135}},"support_consultation":{"name":"support_consultation","nameKo":"상담 처리","description":"상담 배정·처리 결과와 방문 필요 여부를 기록한다.","sourceFile":"15_support_consultation.xlsx","columns":[{"name":"id","labelKo":"식별자","type":"uuid","pk":true,"nn":true,"default":"uuid.uuid4","reference":"","referenceKind":null,"note":"레코드 고유 식별자"},{"name":"inquiry_id","labelKo":"문의식별자","type":"uuid","pk":false,"nn":true,"default":"","reference":"support_inquiry.id","referenceKind":"physical_fk","note":"상담 대상 문의 · ON DELETE RESTRICT"},{"name":"consultant_id","labelKo":"상담사식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"상담을 담당한 사용자 · ON DELETE RESTRICT"},{"name":"assigned_at","labelKo":"배정일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"상담사가 문의에 배정된 일시"},{"name":"status_code","labelKo":"상담상태코드","type":"varchar(40)","pk":false,"nn":true,"default":"'WAITING'","reference":"common_code(group=CONSULTATION_STATUS)","referenceKind":"logical_code","note":"상담 처리 상태"},{"name":"state_version","labelKo":"상태버전","type":"integer","pk":false,"nn":true,"default":"1","reference":"","referenceKind":null,"note":"상담 상태 전환의 낙관적 잠금 버전 · CHECK state_version > 0"},{"name":"started_at","labelKo":"상담시작일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"상담사가 처리를 시작한 일시"},{"name":"ended_at","labelKo":"상담종료일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"상담 종료 또는 취소 확정 시각"},{"name":"customer_summary","labelKo":"고객요약","type":"text","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"제품·증상·문진·자가조치 구조화 요약"},{"name":"consultant_notes","labelKo":"상담사메모","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"상담 중 확인한 추가 사실과 판단"},{"name":"disposition_code","labelKo":"상담결과코드","type":"varchar(40)","pk":false,"nn":false,"default":"","reference":"common_code(group=CONSULTATION_DISPOSITION)","referenceKind":"logical_code","note":"안내 완료, 방문 전환, 추가 확인 등 상담 처리 결과"},{"name":"visit_required","labelKo":"방문필요여부","type":"boolean","pk":false,"nn":true,"default":"false","reference":"","referenceKind":null,"note":"방문 A/S로 전환할지 여부"},{"name":"ai_summary_draft","labelKo":"AI상담요약초안","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"AI가 생성한 고정 스키마 상담 요약 초안"},{"name":"final_summary","labelKo":"상담최종요약","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"상담사가 검토·수정한 최종 요약"},{"name":"next_action","labelKo":"다음조치","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"고객·기사·운영자가 수행할 다음 행동"},{"name":"cancellation_reason","labelKo":"취소사유","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"상담 취소 사유 · CANCELLED 상태에서 필수"},{"name":"deleted_at","labelKo":"삭제일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"업무 원장 논리 삭제 시각 · 물리 삭제 금지"},{"name":"deleted_by_id","labelKo":"삭제처리자식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"논리 삭제를 수행한 사용자 · ON DELETE RESTRICT"},{"name":"created_at","labelKo":"생성일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 생성 일시"},{"name":"updated_at","labelKo":"수정일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 최종 수정 일시"}],"domain":"상담","layer":"service","djangoApp":"consultations","rowCount":12,"layerNumber":4,"position":{"x":350,"y":1605}},"field_service_visit":{"name":"field_service_visit","nameKo":"현장 방문","description":"현장 방문 배정·일정 및 진행 상태를 관리한다.","sourceFile":"17_field_service_visit.xlsx","columns":[{"name":"id","labelKo":"식별자","type":"uuid","pk":true,"nn":true,"default":"uuid.uuid4","reference":"","referenceKind":null,"note":"레코드 고유 식별자"},{"name":"visit_no","labelKo":"방문번호","type":"varchar(50)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"고객·상담사·기사 화면에 표시하는 방문 업무번호 · 시스템 생성; UNIQUE"},{"name":"inquiry_id","labelKo":"문의식별자","type":"uuid","pk":false,"nn":true,"default":"","reference":"support_inquiry.id","referenceKind":"physical_fk","note":"방문 대상 문의 · ON DELETE RESTRICT"},{"name":"technician_id","labelKo":"방문기사식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"배정된 방문기사 · ON DELETE RESTRICT"},{"name":"visit_status_code","labelKo":"방문상태코드","type":"varchar(40)","pk":false,"nn":true,"default":"'ASSIGNING'","reference":"common_code(group=VISIT_STATUS)","referenceKind":"logical_code","note":"현장 방문 진행 상태"},{"name":"state_version","labelKo":"상태버전","type":"integer","pk":false,"nn":true,"default":"1","reference":"","referenceKind":null,"note":"방문 상태 전환의 낙관적 잠금 버전 · CHECK state_version > 0"},{"name":"scheduled_start_at","labelKo":"방문예정시작일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"고객과 합의한 방문 예정 시작"},{"name":"scheduled_end_at","labelKo":"방문예정종료일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"고객과 합의한 방문 예정 종료"},{"name":"address_snapshot","labelKo":"방문주소스냅샷","type":"varchar(500)","pk":false,"nn":true,"default":"","reference":"","referenceKind":null,"note":"방문 확정 시점의 가명·합성 주소"},{"name":"contact_snapshot","labelKo":"연락처스냅샷","type":"varchar(100)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"방문 확정 시점의 가명·합성 연락 정보"},{"name":"assigned_at","labelKo":"배정일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"기사 배정 일시"},{"name":"started_at","labelKo":"방문시작일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"현장 방문 처리 시작 일시"},{"name":"completed_at","labelKo":"방문완료일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"현장 방문 처리 완료 일시"},{"name":"cancelled_at","labelKo":"취소일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"방문이 취소된 일시"},{"name":"cancellation_reason","labelKo":"취소사유","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"고객 요청·기사 일정 등 방문 취소 사유"},{"name":"deleted_at","labelKo":"삭제일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"방문 업무 원장 논리 삭제 시각 · 물리 삭제 금지"},{"name":"deleted_by_id","labelKo":"삭제처리자식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"논리 삭제를 수행한 사용자 · ON DELETE RESTRICT"},{"name":"created_at","labelKo":"생성일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 생성 일시"},{"name":"updated_at","labelKo":"수정일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 최종 수정 일시"}],"domain":"방문","layer":"service","djangoApp":"visits","rowCount":4,"layerNumber":4,"position":{"x":1330,"y":1605}},"support_followup_confirmation":{"name":"support_followup_confirmation","nameKo":"사후 해결 확인","description":"상담 또는 방문 이후 최종 해결 여부와 후속 조치를 기록한다.","sourceFile":"19_support_followup_confirmation.xlsx","columns":[{"name":"id","labelKo":"식별자","type":"uuid","pk":true,"nn":true,"default":"uuid.uuid4","reference":"","referenceKind":null,"note":"레코드 고유 식별자"},{"name":"inquiry_id","labelKo":"문의식별자","type":"uuid","pk":false,"nn":true,"default":"","reference":"support_inquiry.id","referenceKind":"physical_fk","note":"후속 확인 대상 문의 · ON DELETE RESTRICT"},{"name":"consultation_id","labelKo":"상담식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"support_consultation.id","referenceKind":"physical_fk","note":"상담 후속 확인 대상 · ON DELETE RESTRICT; 대상 중 하나"},{"name":"visit_id","labelKo":"방문식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"field_service_visit.id","referenceKind":"physical_fk","note":"방문 후속 확인 대상 · ON DELETE RESTRICT; 대상 중 하나"},{"name":"channel_code","labelKo":"확인채널코드","type":"varchar(40)","pk":false,"nn":true,"default":"'WEB'","reference":"common_code(group=FOLLOWUP_CHANNEL)","referenceKind":"logical_code","note":"웹, 전화, 문자 등 사후 확인 채널"},{"name":"requested_at","labelKo":"확인요청일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"고객에게 해결 여부 확인을 요청한 일시"},{"name":"responded_at","labelKo":"응답일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"고객이 응답한 일시"},{"name":"resolution_status_code","labelKo":"해결상태코드","type":"varchar(40)","pk":false,"nn":true,"default":"'PENDING'","reference":"common_code(group=RESOLUTION_STATUS)","referenceKind":"logical_code","note":"사후 확인 결과"},{"name":"state_version","labelKo":"상태버전","type":"integer","pk":false,"nn":true,"default":"1","reference":"","referenceKind":null,"note":"후속 확인 갱신의 낙관적 잠금 버전 · CHECK state_version > 0"},{"name":"customer_response","labelKo":"고객응답","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"고객이 입력하거나 상담사가 기록한 응답"},{"name":"response_recorded_by_id","labelKo":"응답기록자식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"고객 직접 응답 또는 상담사 대리 기록 계정 · ON DELETE RESTRICT"},{"name":"response_idempotency_key","labelKo":"응답멱등성키","type":"varchar(128)","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"후속 응답 중복 기록을 방지하는 요청 키 · NULL 제외 UNIQUE"},{"name":"unresolved_reason","labelKo":"미해결사유","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"미해결 또는 부분 해결의 사유"},{"name":"next_action","labelKo":"후속조치","type":"text","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"재상담·재방문 등 다음 행동"},{"name":"confirmed_by_id","labelKo":"확인자식별자","type":"uuid","pk":false,"nn":false,"default":"","reference":"accounts_user.id","referenceKind":"physical_fk","note":"후속 결과를 확인한 상담사·운영자 · ON DELETE RESTRICT"},{"name":"confirmed_at","labelKo":"최종확인일시","type":"timestamptz","pk":false,"nn":false,"default":"","reference":"","referenceKind":null,"note":"담당자가 해결 여부를 최종 확인한 일시"},{"name":"created_at","labelKo":"생성일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"후속 확인 레코드 생성 일시"},{"name":"updated_at","labelKo":"수정일시","type":"timestamptz","pk":false,"nn":true,"default":"CURRENT_TIMESTAMP","reference":"","referenceKind":null,"note":"레코드 최종 수정 일시"}],"domain":"후속","layer":"service","djangoApp":"inquiries","rowCount":1,"layerNumber":4,"position":{"x":2310,"y":1605}}},"physicalEdges":[{"parentTable":"common_code_group","parentColumn":"group_code","childTable":"common_code","childColumn":"group_code","required":true,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"customers_customer_profile","childColumn":"user_id","required":true,"unique":true},{"parentTable":"accounts_user","parentColumn":"id","childTable":"customers_customer_profile","childColumn":"deleted_by_id","required":false,"unique":false},{"parentTable":"customers_customer_profile","parentColumn":"id","childTable":"subscriptions_customer_subscription","childColumn":"customer_id","required":true,"unique":false},{"parentTable":"catalog_product_model","parentColumn":"id","childTable":"subscriptions_customer_subscription","childColumn":"product_model_id","required":true,"unique":false},{"parentTable":"subscriptions_customer_subscription","parentColumn":"id","childTable":"subscriptions_care_record","childColumn":"subscription_id","required":true,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"subscriptions_care_record","childColumn":"performed_by_id","required":false,"unique":false},{"parentTable":"subscriptions_customer_subscription","parentColumn":"id","childTable":"support_inquiry","childColumn":"subscription_id","required":true,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"support_inquiry","childColumn":"initiated_by_id","required":true,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"support_inquiry","childColumn":"assigned_consultant_id","required":false,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"support_inquiry","childColumn":"current_owner_id","required":false,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"support_inquiry","childColumn":"required_finalizer_user_id","required":false,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"support_inquiry","childColumn":"deleted_by_id","required":false,"unique":false},{"parentTable":"support_inquiry","parentColumn":"id","childTable":"support_inquiry_symptom","childColumn":"inquiry_id","required":true,"unique":true},{"parentTable":"accounts_user","parentColumn":"id","childTable":"support_inquiry_symptom","childColumn":"confirmed_by_id","required":false,"unique":false},{"parentTable":"support_inquiry","parentColumn":"id","childTable":"support_consultation","childColumn":"inquiry_id","required":true,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"support_consultation","childColumn":"consultant_id","required":false,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"support_consultation","childColumn":"deleted_by_id","required":false,"unique":false},{"parentTable":"support_inquiry","parentColumn":"id","childTable":"field_service_visit","childColumn":"inquiry_id","required":true,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"field_service_visit","childColumn":"technician_id","required":false,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"field_service_visit","childColumn":"deleted_by_id","required":false,"unique":false},{"parentTable":"support_inquiry","parentColumn":"id","childTable":"support_followup_confirmation","childColumn":"inquiry_id","required":true,"unique":false},{"parentTable":"support_consultation","parentColumn":"id","childTable":"support_followup_confirmation","childColumn":"consultation_id","required":false,"unique":false},{"parentTable":"field_service_visit","parentColumn":"id","childTable":"support_followup_confirmation","childColumn":"visit_id","required":false,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"support_followup_confirmation","childColumn":"response_recorded_by_id","required":false,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"support_followup_confirmation","childColumn":"confirmed_by_id","required":false,"unique":false},{"parentTable":"support_inquiry","parentColumn":"id","childTable":"support_inquiry_status_history","childColumn":"inquiry_id","required":false,"unique":false},{"parentTable":"support_consultation","parentColumn":"id","childTable":"support_inquiry_status_history","childColumn":"consultation_id","required":false,"unique":false},{"parentTable":"field_service_visit","parentColumn":"id","childTable":"support_inquiry_status_history","childColumn":"visit_id","required":false,"unique":false},{"parentTable":"accounts_user","parentColumn":"id","childTable":"support_inquiry_status_history","childColumn":"changed_by_id","required":false,"unique":false}],"display":{"canvas":{"width":3600,"height":1970},"card":{"width":620,"height":220},"relationDirection":"parent_to_child","coreContinuityColumns":["support_followup_confirmation.consultation_id","support_followup_confirmation.visit_id","support_inquiry_status_history.inquiry_id","support_inquiry_status_history.consultation_id","support_inquiry_status_history.visit_id"]}};
+  </script>
+  <script>
+"use strict";
+
+(function () {
+  const schema = window.WATERCARE_ERD;
+  if (!schema) throw new Error("ERD schema data is not available.");
+
+  const svg = document.getElementById("erd-svg");
+  const viewport = document.getElementById("diagram-viewport");
+  const relationToggle = document.getElementById("relation-toggle");
+  const relationStatus = document.getElementById("relation-status");
+  const layerFilter = document.getElementById("layer-filter");
+  const searchInput = document.getElementById("table-search");
+  const searchResults = document.getElementById("search-results");
+  const drawer = document.getElementById("table-drawer");
+  const drawerContent = document.getElementById("drawer-content");
+  const drawerBackdrop = document.getElementById("drawer-backdrop");
+  const zoomLabel = document.getElementById("zoom-label");
+
+  const state = {
+    showAllRelations: false,
+    selectedLayer: null,
+    selectedTable: null,
+    viewBox: {
+      x: 0,
+      y: 0,
+      width: schema.display.canvas.width,
+      height: schema.display.canvas.height,
+    },
+    initialViewBox: {
+      x: 0,
+      y: 0,
+      width: schema.display.canvas.width,
+      height: schema.display.canvas.height,
+    },
+    panning: null,
+  };
+
+  const tableEntries = Object.entries(schema.tables);
+  const tableNames = new Set(tableEntries.map(([name]) => name));
+  const continuitySet = new Set(schema.display.coreContinuityColumns);
+  const coreEdges = schema.physicalEdges.filter(
+    (edge) => edge.required || continuitySet.has(edge.childTable + "." + edge.childColumn),
+  );
+
+  function escapeHtml(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function groupPathCount(edges) {
+    return new Set(
+      edges.map((edge) => {
+        const type = edge.required
+          ? "required"
+          : continuitySet.has(edge.childTable + "." + edge.childColumn)
+            ? "optional"
+            : "support";
+        return edge.parentTable + "|" + edge.childTable + "|" + type;
+      }),
+    ).size;
+  }
+
+  function layerForTable(name) {
+    return schema.layers.find((layer) => layer.tables.includes(name));
+  }
+
+  function setRelationMode(showAll) {
+    state.showAllRelations = showAll;
+    const coreGroup = svg.querySelector(".relations-core");
+    const fullGroup = svg.querySelector(".relations-full");
+    coreGroup.style.display = showAll ? "none" : "block";
+    fullGroup.style.display = showAll ? "block" : "none";
+    relationToggle.setAttribute("aria-pressed", showAll ? "true" : "false");
+    relationToggle.textContent = showAll ? "기본 관계 16개만 표시" : "전체 FK 30개 표시";
+    const edges = showAll ? schema.physicalEdges : coreEdges;
+    relationStatus.textContent =
+      "표시 관계 " + edges.length + "개 · 집계 경로 " + groupPathCount(edges) + "개";
+    applyHighlight();
+  }
+
+  function setLayer(layerNumber) {
+    state.selectedLayer = layerNumber === "all" ? null : Number(layerNumber);
+    state.selectedTable = null;
+    closeDrawer(false);
+    layerFilter.querySelectorAll("button").forEach((button) => {
+      const isActive = state.selectedLayer == null ? button.dataset.layer === "all" : Number(button.dataset.layer) === state.selectedLayer;
+      button.classList.toggle("is-active", isActive);
+    });
+    applyHighlight();
+  }
+
+  function applyHighlight() {
+    const relatedTables = new Set();
+    if (state.selectedTable) {
+      relatedTables.add(state.selectedTable);
+      schema.physicalEdges.forEach((edge) => {
+        if (edge.parentTable === state.selectedTable) relatedTables.add(edge.childTable);
+        if (edge.childTable === state.selectedTable) relatedTables.add(edge.parentTable);
+      });
+    }
+
+    svg.querySelectorAll(".table-node").forEach((node) => {
+      const name = node.dataset.table;
+      const selected = name === state.selectedTable;
+      let dimmed = false;
+      if (state.selectedTable) dimmed = !relatedTables.has(name);
+      else if (state.selectedLayer) dimmed = Number(node.dataset.layer) !== state.selectedLayer;
+      node.classList.toggle("is-selected", selected);
+      node.classList.toggle("is-dimmed", dimmed);
+    });
+
+    svg.querySelectorAll(".relation-wrap").forEach((wrap) => {
+      const parent = wrap.dataset.parent;
+      const child = wrap.dataset.child;
+      let highlighted = false;
+      let dimmed = false;
+      if (state.selectedTable) {
+        highlighted = parent === state.selectedTable || child === state.selectedTable;
+        dimmed = !highlighted;
+      } else if (state.selectedLayer) {
+        const parentLayer = schema.tables[parent].layerNumber;
+        const childLayer = schema.tables[child].layerNumber;
+        highlighted = parentLayer === state.selectedLayer && childLayer === state.selectedLayer;
+        dimmed = !highlighted;
+      }
+      wrap.classList.toggle("is-highlighted", highlighted);
+      wrap.classList.toggle("is-dimmed", dimmed);
+    });
+  }
+
+  function relationshipHtml(edge, direction) {
+    const child = schema.tables[edge.childTable];
+    const parent = schema.tables[edge.parentTable];
+    const title = direction === "out" ? parent.nameKo : child.nameKo;
+    const relation =
+      edge.childTable + "." + edge.childColumn + " → " + edge.parentTable + "." + edge.parentColumn;
+    const cardinality = edge.unique ? (edge.required ? "1:1" : "0..1:1") : edge.required ? "N:1" : "N:0..1";
+    return (
+      '<div class="relation-item"><strong>' +
+      escapeHtml(title) +
+      "</strong><code>" +
+      escapeHtml(relation) +
+      "</code><span>" +
+      (edge.required ? "필수 FK" : "선택 FK") +
+      " · " +
+      cardinality +
+      "</span></div>"
+    );
+  }
+
+  function constraintHtml(column, tableName) {
+    const labels = [];
+    if (column.pk) labels.push("PK");
+    if (column.nn) labels.push("NOT NULL");
+    const internalFk = schema.physicalEdges.some(
+      (edge) => edge.childTable === tableName && edge.childColumn === column.name,
+    );
+    if (internalFk) labels.push("FK");
+    if (column.referenceKind === "logical_code") labels.push("CODE");
+    return labels.length
+      ? '<div class="constraint-list">' + labels.map((label) => "<span>" + label + "</span>").join("") + "</div>"
+      : "—";
+  }
+
+  function visibleReference(column) {
+    if (!column.reference) return "";
+    if (column.referenceKind === "logical_code") return column.reference;
+    const target = String(column.reference).split(".")[0];
+    return tableNames.has(target) ? column.reference : "";
+  }
+
+  function openTable(name) {
+    const table = schema.tables[name];
+    if (!table) return;
+    state.selectedTable = name;
+    const layer = layerForTable(name);
+    const outgoing = schema.physicalEdges.filter((edge) => edge.childTable === name);
+    const incoming = schema.physicalEdges.filter((edge) => edge.parentTable === name);
+    const logicalCodes = table.columns.filter((column) => column.referenceKind === "logical_code");
+    const primaryKeys = table.columns.filter((column) => column.pk).map((column) => column.name).join(" · ") || "—";
+
+    const columnRows = table.columns
+      .map((column) => {
+        const reference = visibleReference(column);
+        const defaultAndReference = [column.default, reference].filter(Boolean).join(" / ") || "—";
+        return (
+          "<tr><td><strong>" +
+          escapeHtml(column.labelKo || column.name) +
+          "</strong><br><code>" +
+          escapeHtml(column.name) +
+          "</code></td><td><code>" +
+          escapeHtml(column.type) +
+          "</code><br>" +
+          constraintHtml(column, name) +
+          "</td><td>" +
+          escapeHtml(defaultAndReference) +
+          "</td><td>" +
+          escapeHtml(column.note || "—") +
+          "</td></tr>"
+        );
+      })
+      .join("");
+
+    drawerContent.innerHTML =
+      '<div class="drawer-head"><div><p class="layer-label">L' +
+      layer.number +
+      " · " +
+      escapeHtml(layer.title) +
+      "</p><h2>" +
+      escapeHtml(table.nameKo) +
+      "</h2><code>" +
+      escapeHtml(name) +
+      '</code></div><button type="button" class="drawer-close" id="drawer-close" aria-label="상세정보 닫기">×</button></div>' +
+      '<div class="drawer-body"><p class="table-description">' +
+      escapeHtml(table.description) +
+      '</p><div class="detail-metrics"><div><strong>' +
+      table.rowCount +
+      "</strong><span>데이터 건수</span></div><div><strong>" +
+      table.columns.length +
+      "</strong><span>컬럼</span></div><div><strong>" +
+      outgoing.length +
+      "</strong><span>참조 FK</span></div><div><strong>" +
+      incoming.length +
+      "</strong><span>피참조 FK</span></div></div>" +
+      '<section class="detail-section"><h3>테이블 개요</h3><dl class="meta-grid"><dt>기본키</dt><dd><code>' +
+      escapeHtml(primaryKeys) +
+      "</code></dd><dt>업무 모듈</dt><dd>" +
+      escapeHtml(table.djangoApp || "—") +
+      "</dd><dt>업무 계층</dt><dd>" +
+      escapeHtml("L" + layer.number + " " + layer.title) +
+      "</dd></dl></section>" +
+      '<section class="detail-section"><h3>참조 관계</h3><div class="relation-list">' +
+      (outgoing.length ? outgoing.map((edge) => relationshipHtml(edge, "out")).join("") : '<div class="empty-state">참조하는 테이블이 없습니다.</div>') +
+      "</div></section>" +
+      '<section class="detail-section"><h3>피참조 관계</h3><div class="relation-list">' +
+      (incoming.length ? incoming.map((edge) => relationshipHtml(edge, "in")).join("") : '<div class="empty-state">이 테이블을 참조하는 테이블이 없습니다.</div>') +
+      "</div></section>" +
+      '<section class="detail-section"><h3>공통코드 연결</h3><div class="relation-list">' +
+      (logicalCodes.length
+        ? logicalCodes
+            .map(
+              (column) =>
+                '<div class="relation-item"><strong>' +
+                escapeHtml(column.labelKo || column.name) +
+                "</strong><code>" +
+                escapeHtml(column.name + " → " + column.reference) +
+                "</code></div>",
+            )
+            .join("")
+        : '<div class="empty-state">공통코드 연결이 없습니다.</div>') +
+      "</div></section>" +
+      '<section class="detail-section"><h3>컬럼 명세</h3><div class="column-table-wrap"><table class="column-table"><thead><tr><th>컬럼명</th><th>데이터 타입·제약</th><th>기본값·참조 대상</th><th>업무 설명</th></tr></thead><tbody>' +
+      columnRows +
+      "</tbody></table></div></section></div>";
+
+    document.body.classList.add("drawer-open");
+    drawer.setAttribute("aria-hidden", "false");
+    document.getElementById("drawer-close").addEventListener("click", () => closeDrawer());
+    applyHighlight();
+  }
+
+  function closeDrawer(clearSelection = true) {
+    document.body.classList.remove("drawer-open");
+    drawer.setAttribute("aria-hidden", "true");
+    if (clearSelection) state.selectedTable = null;
+    applyHighlight();
+  }
+
+  function searchMatches(query) {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return [];
+    const matches = [];
+    for (const [name, table] of tableEntries) {
+      const tableText = [name, table.nameKo, table.description, table.djangoApp].join(" ").toLowerCase();
+      if (tableText.includes(normalized)) {
+        matches.push({ table: name, kind: "테이블", detail: table.nameKo });
+      }
+      for (const column of table.columns) {
+        const columnText = [column.name, column.labelKo, column.note].join(" ").toLowerCase();
+        if (columnText.includes(normalized)) {
+          matches.push({ table: name, kind: "컬럼", detail: column.name + " · " + (column.labelKo || "") });
+        }
+      }
+    }
+    const unique = [];
+    const keys = new Set();
+    for (const match of matches) {
+      const key = match.table + "|" + match.kind + "|" + match.detail;
+      if (!keys.has(key)) {
+        keys.add(key);
+        unique.push(match);
+      }
+      if (unique.length === 9) break;
+    }
+    return unique;
+  }
+
+  function renderSearchResults() {
+    const matches = searchMatches(searchInput.value);
+    if (!matches.length) {
+      searchResults.hidden = true;
+      searchResults.innerHTML = "";
+      return;
+    }
+    searchResults.innerHTML = matches
+      .map((match, index) => {
+        const table = schema.tables[match.table];
+        return (
+          '<button type="button" data-result-index="' +
+          index +
+          '"><span><strong>' +
+          escapeHtml(table.nameKo) +
+          "</strong><code>" +
+          escapeHtml(match.table) +
+          "</code></span><small>" +
+          escapeHtml(match.kind + " · " + match.detail) +
+          "</small></button>"
+        );
+      })
+      .join("");
+    searchResults.hidden = false;
+    searchResults.querySelectorAll("button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const match = matches[Number(button.dataset.resultIndex)];
+        searchResults.hidden = true;
+        openTable(match.table);
+      });
+    });
+  }
+
+  function updateViewBox() {
+    const box = state.viewBox;
+    svg.setAttribute("viewBox", box.x + " " + box.y + " " + box.width + " " + box.height);
+    const percent = Math.round((state.initialViewBox.width / box.width) * 100);
+    zoomLabel.textContent = percent + "%";
+  }
+
+  function zoom(factor) {
+    const current = state.viewBox;
+    const newWidth = Math.max(1500, Math.min(state.initialViewBox.width, current.width * factor));
+    const newHeight = newWidth * (state.initialViewBox.height / state.initialViewBox.width);
+    const centerX = current.x + current.width / 2;
+    const centerY = current.y + current.height / 2;
+    state.viewBox = {
+      x: centerX - newWidth / 2,
+      y: centerY - newHeight / 2,
+      width: newWidth,
+      height: newHeight,
+    };
+    clampViewBox();
+    updateViewBox();
+  }
+
+  function clampViewBox() {
+    const max = state.initialViewBox;
+    state.viewBox.x = Math.max(0, Math.min(max.width - state.viewBox.width, state.viewBox.x));
+    state.viewBox.y = Math.max(0, Math.min(max.height - state.viewBox.height, state.viewBox.y));
+  }
+
+  relationToggle.addEventListener("click", () => setRelationMode(!state.showAllRelations));
+  layerFilter.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-layer]");
+    if (button) setLayer(button.dataset.layer);
+  });
+
+  svg.querySelectorAll(".table-node").forEach((node) => {
+    node.addEventListener("click", () => openTable(node.dataset.table));
+    node.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openTable(node.dataset.table);
+      }
+    });
+  });
+
+  searchInput.addEventListener("input", renderSearchResults);
+  searchInput.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      searchInput.value = "";
+      searchResults.hidden = true;
+    }
+  });
+
+  drawerBackdrop.addEventListener("click", () => closeDrawer());
+  document.getElementById("zoom-in").addEventListener("click", () => zoom(0.84));
+  document.getElementById("zoom-out").addEventListener("click", () => zoom(1.18));
+  document.getElementById("zoom-fit").addEventListener("click", () => {
+    state.viewBox = { ...state.initialViewBox };
+    updateViewBox();
+  });
+
+  svg.addEventListener("pointerdown", (event) => {
+    if (event.target.closest(".table-node")) return;
+    state.panning = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      boxX: state.viewBox.x,
+      boxY: state.viewBox.y,
+    };
+    svg.setPointerCapture(event.pointerId);
+    svg.classList.add("is-panning");
+  });
+
+  svg.addEventListener("pointermove", (event) => {
+    if (!state.panning || state.panning.pointerId !== event.pointerId) return;
+    const rect = viewport.getBoundingClientRect();
+    const scaleX = state.viewBox.width / rect.width;
+    const scaleY = state.viewBox.height / rect.height;
+    state.viewBox.x = state.panning.boxX - (event.clientX - state.panning.startX) * scaleX;
+    state.viewBox.y = state.panning.boxY - (event.clientY - state.panning.startY) * scaleY;
+    clampViewBox();
+    updateViewBox();
+  });
+
+  function stopPanning(event) {
+    if (!state.panning || state.panning.pointerId !== event.pointerId) return;
+    state.panning = null;
+    svg.classList.remove("is-panning");
+  }
+
+  svg.addEventListener("pointerup", stopPanning);
+  svg.addEventListener("pointercancel", stopPanning);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      if (document.body.classList.contains("drawer-open")) closeDrawer();
+      else if (state.selectedLayer) setLayer("all");
+    }
+    if (event.key === "/" && document.activeElement !== searchInput) {
+      event.preventDefault();
+      searchInput.focus();
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".search-wrap")) searchResults.hidden = true;
+  });
+
+  setRelationMode(false);
+  updateViewBox();
+})();
+
+  </script>
+</body>
+</html>
