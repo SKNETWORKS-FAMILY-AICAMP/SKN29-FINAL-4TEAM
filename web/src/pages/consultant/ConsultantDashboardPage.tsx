@@ -27,26 +27,23 @@ import type {
   CounselorStatus,
   CounselorWorkBucket,
 } from "../../features/consultation/model/consultantWorkspaceTypes";
+import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntimeStatus";
 import "./ConsultantDashboardPage.css";
 
 const WORK_BUCKETS: readonly {
   id: CounselorWorkBucket;
   description: string;
-  eyebrow: string;
 }[] = [
   {
     id: "NEW",
-    eyebrow: "바로 확인",
-    description: "새로 배정되거나 다시 열린 문의",
+    description: "",
   },
   {
     id: "IN_PROGRESS",
-    eyebrow: "이어서 처리",
     description: "상담·기사 배정·일정 조율 중인 문의",
   },
   {
     id: "COMPLETED",
-    eyebrow: "처리 이력",
     description: "최종 완료 또는 취소된 문의",
   },
 ];
@@ -168,9 +165,7 @@ export default function ConsultantDashboardPage() {
           <strong>워터케어 ONE</strong>
         </a>
 
-        <span className="simple-topbar__notice">
-          <i aria-hidden="true" /> 실시간 상담 업무 · Mock 데이터
-        </span>
+        <ApiRuntimeStatus className="simple-topbar__notice" compact />
 
         <div className="simple-user">
           <span>{user?.displayName.slice(0, 1) ?? "상"}</span>
@@ -179,18 +174,9 @@ export default function ConsultantDashboardPage() {
       </header>
 
       <main className="simple-consultant-main consultant-queue-main">
-        <section className="simple-page-head" aria-labelledby="simple-page-title">
-          <div>
-            <small className="consultant-page-eyebrow">CONSULTANT DESK</small>
-            <h1 id="simple-page-title">고객 문의</h1>
-            <p>상태를 선택하고, 지금 처리할 문의만 열어보세요.</p>
-          </div>
-          <div className="consultant-live-summary" aria-label="실시간 새 문의 현황">
-            <span aria-hidden="true" />
-            <small>지금 확인할 문의</small>
-            <strong>{bucketCounts.NEW}건</strong>
-          </div>
-        </section>
+        <h1 id="simple-page-title" className="consultant-visually-hidden">
+          고객 문의
+        </h1>
 
         <nav className="consultant-work-tabs" aria-label="문의 처리 상태" role="tablist">
           {WORK_BUCKETS.map((bucket) => (
@@ -206,9 +192,8 @@ export default function ConsultantDashboardPage() {
               onClick={() => changeBucket(bucket.id)}
             >
               <span>
-                <small>{bucket.eyebrow}</small>
                 <strong>{WORK_BUCKET_LABELS[bucket.id]}</strong>
-                <em>{bucket.description}</em>
+                {bucket.description && <em>{bucket.description}</em>}
               </span>
               <b>{bucketCounts[bucket.id]}</b>
             </button>
@@ -223,9 +208,8 @@ export default function ConsultantDashboardPage() {
         >
           <header className="consultant-queue-panel__head">
             <div>
-              <small>{activeBucketCopy?.eyebrow}</small>
               <h2>{WORK_BUCKET_LABELS[activeBucket]}</h2>
-              <p>{activeBucketCopy?.description}</p>
+              {activeBucketCopy?.description && <p>{activeBucketCopy.description}</p>}
             </div>
 
             <div className="consultant-queue-tools">

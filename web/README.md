@@ -36,6 +36,7 @@ npm.cmd run dev -- --host 0.0.0.0 --port 5173
 | 환경변수 | 기본값 | 용도 |
 | --- | --- | --- |
 | `VITE_API_BASE_URL` | `/api/v1` | Backend API 기준 경로 |
+| `VITE_BACKEND_PROXY_TARGET` | `http://127.0.0.1:8000` | Vite 개발 서버가 `/api`, `/health`를 전달할 Backend 주소 |
 | `VITE_USE_MOCK_API` | `true` | 합성 Mock 사용 여부 |
 | `VITE_MOCK_AUTHENTICATED` | `true` | 시작 시 Mock 인증 여부 |
 | `VITE_MOCK_ROLE` | `CONSULTANT` | `CUSTOMER`, `CONSULTANT`, `TECHNICIAN`, `OPERATOR` 중 역할 |

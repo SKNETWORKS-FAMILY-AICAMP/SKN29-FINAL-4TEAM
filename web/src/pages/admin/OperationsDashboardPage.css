@@ -1,11 +1,13 @@
 :root {
-  --operations-green: #19745f;
-  --operations-green-soft: #eaf6f1;
-  --operations-ink: #17312c;
-  --operations-muted: #62726f;
-  --operations-line: #dce6e3;
+  --operations-green: #178fc2;
+  --operations-green-soft: #e7f7fc;
+  --operations-ink: #17324d;
+  --operations-muted: #63778a;
+  --operations-line: #d7e4e8;
   --operations-surface: #ffffff;
-  --operations-bg: #f3f6f5;
+  --operations-bg: #f7f8f6;
+  --operations-orange: #f8742f;
+  --operations-orange-soft: #fff0df;
 }
 
 .operations-page { min-height: 100vh; color: var(--operations-ink); background: var(--operations-bg); }
@@ -88,4 +90,722 @@
   .operations-filters__grid, .operations-metrics { grid-template-columns: 1fr; }
   .operations-filters__footer { align-items: stretch; flex-direction: column; }
   .operations-filters__footer button { width: 100%; }
+}
+
+
+/* Production admin console: persistent navigation + editorial data canvas. */
+.operations-page {
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr);
+  align-items: start;
+}
+
+.operations-topbar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  width: 224px;
+  height: 100vh;
+  min-height: 680px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 26px 18px 20px;
+  border: 0;
+  border-right: 1px solid rgb(255 255 255 / 13%);
+  background:
+    radial-gradient(circle at 14% 0%, rgb(44 160 207 / 42%), transparent 27%),
+    linear-gradient(165deg, #183e55, #102d41 76%);
+  box-shadow: 14px 0 40px rgb(27 54 68 / 12%);
+  color: #fff;
+}
+
+.operations-brand {
+  padding: 0 4px 24px;
+  border-bottom: 1px solid rgb(255 255 255 / 12%);
+}
+
+.operations-brand > span {
+  flex: 0 0 auto;
+  border-color: rgb(255 255 255 / 36%);
+  background: linear-gradient(145deg, #ff794e, #f14e2a);
+  box-shadow:
+    inset 0 2px 2px rgb(255 255 255 / 34%),
+    0 9px 20px rgb(239 79 43 / 24%);
+}
+
+.operations-brand strong,
+.operations-user strong {
+  color: #fff;
+}
+
+.operations-brand small,
+.operations-user small {
+  color: rgb(218 235 242 / 62%);
+}
+
+.operations-navigation {
+  display: grid;
+  gap: 8px;
+  margin-top: 26px;
+}
+
+.operations-navigation::before {
+  padding: 0 10px 6px;
+  color: rgb(214 234 242 / 52%);
+  content: "ADMIN CONSOLE";
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+}
+
+.operations-navigation a {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: rgb(235 245 249 / 76%);
+  font-size: 11px;
+  font-weight: 850;
+  text-decoration: none;
+  transition: 140ms ease;
+}
+
+.operations-navigation a:first-of-type {
+  border-color: rgb(255 255 255 / 17%);
+  background: rgb(255 255 255 / 10%);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+}
+
+.operations-navigation a:hover {
+  border-color: rgb(255 255 255 / 18%);
+  background: rgb(255 255 255 / 9%);
+  color: #fff;
+}
+
+.operations-navigation a span {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 10%);
+  color: #ffd59c;
+  font-size: 8px;
+}
+
+.operations-user {
+  align-items: stretch;
+  flex-direction: column;
+  gap: 13px;
+  margin-top: auto;
+  padding: 15px;
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 15px;
+  background: rgb(255 255 255 / 7%);
+  text-align: left;
+}
+
+.operations-user button {
+  width: 100%;
+  border-color: rgb(255 255 255 / 15%);
+  background: rgb(255 255 255 / 9%);
+  color: #fff;
+  box-shadow: none;
+}
+
+.operations-main {
+  width: 100%;
+  max-width: 1540px;
+  padding: 30px 34px 52px;
+}
+
+.operations-page-head {
+  min-height: 164px;
+  align-items: flex-end;
+  padding: 28px 30px;
+  border-color: rgb(255 255 255 / 44%);
+  background:
+    radial-gradient(circle at 78% 20%, rgb(255 217 148 / 48%), transparent 20%),
+    linear-gradient(118deg, #ff683c, #ff5a31 72%, #ef4828);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 32%),
+    0 20px 42px rgb(215 73 36 / 18%);
+}
+
+.operations-page-head::before {
+  top: -90px;
+  left: auto;
+  right: 24%;
+  width: 240px;
+  height: 200px;
+  border: 1px solid rgb(255 255 255 / 20%);
+  background: transparent;
+  filter: none;
+}
+
+.operations-page-head::after {
+  right: -45px;
+  bottom: -110px;
+  width: 230px;
+  height: 230px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  background: transparent;
+  filter: none;
+}
+
+.operations-page-head small,
+.operations-page-head h1,
+.operations-page-head p {
+  color: #fff;
+}
+
+.operations-page-head h1 {
+  margin-top: 8px;
+  font-size: clamp(31px, 3vw, 43px);
+  line-height: 1;
+}
+
+.operations-page-head p {
+  color: rgb(255 255 255 / 76%);
+  font-size: 11px;
+}
+
+.operations-page-head > span {
+  border-color: rgb(255 255 255 / 42%);
+  background: rgb(255 255 255 / 90%);
+  color: #243d4a;
+}
+
+.operations-panel {
+  border-radius: 18px;
+}
+
+.operations-metrics {
+  gap: 14px;
+}
+
+.operations-metric {
+  min-height: 130px;
+  padding: 19px;
+  border-radius: 18px;
+}
+
+.operations-metric strong {
+  margin-top: 12px;
+  font-size: 30px;
+  line-height: 1;
+}
+
+#operations-overview,
+#operations-filters,
+#operations-results {
+  scroll-margin-top: 24px;
+}
+
+@media (max-width: 1050px) {
+  .operations-page {
+    grid-template-columns: 194px minmax(0, 1fr);
+  }
+
+  .operations-topbar {
+    width: 194px;
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .operations-main {
+    padding-right: 22px;
+    padding-left: 22px;
+  }
+}
+
+@media (max-width: 820px) {
+  .operations-page {
+    display: block;
+  }
+
+  .operations-topbar {
+    position: sticky;
+    width: 100%;
+    height: auto;
+    min-height: 64px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+  }
+
+  .operations-brand {
+    padding: 0;
+    border: 0;
+  }
+
+  .operations-navigation {
+    display: none;
+  }
+
+  .operations-user {
+    width: auto;
+    align-items: center;
+    flex-direction: row;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .operations-user button {
+    width: auto;
+  }
+}
+
+/* Restored production glass theme (the version before the square editorial redesign). */
+.operations-page {
+  background:
+    radial-gradient(circle at 84% 2%, rgb(248 116 47 / 11%), transparent 22%),
+    radial-gradient(circle at 22% 20%, rgb(73 181 224 / 12%), transparent 28%),
+    linear-gradient(145deg, #edf5f7, #f7faf9 56%, #fff7ed);
+}
+
+.operations-page-head {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 42%);
+  border-radius: 24px;
+}
+
+.operations-page-head > * {
+  position: relative;
+  z-index: 1;
+}
+
+.operations-panel,
+.operations-metric {
+  border-color: rgb(255 255 255 / 86%);
+  background: rgb(255 255 255 / 88%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 96%),
+    0 18px 42px rgb(38 71 84 / 9%);
+  backdrop-filter: blur(16px) saturate(116%);
+}
+
+.operations-panel,
+.operations-metric {
+  border-radius: 18px;
+}
+
+.operations-filters input,
+.operations-filters select,
+.operations-filters__footer button {
+  border-color: rgb(199 218 225 / 92%);
+  border-radius: 11px;
+  background: rgb(255 255 255 / 84%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 92%);
+}
+
+.operations-section-head > strong {
+  border-radius: 10px;
+  color: #d95825;
+  background: var(--operations-orange-soft);
+}
+
+.operations-chart__track {
+  background: #e7f0f3;
+}
+
+.operations-chart__track i {
+  background: linear-gradient(90deg, #36a8d7, #6bc9e8 58%, #f8742f);
+}
+
+.operations-table-section .common-data-table-wrap {
+  border-radius: 12px;
+  background: rgb(255 255 255 / 72%);
+}
+
+/* Clear Care: water-tech monitoring with warm action accents. */
+.operations-page {
+  --clear-water: #54bde4;
+  --clear-water-deep: #0f6d96;
+  --clear-water-navy: #10384f;
+  --clear-care: #f47735;
+  background:
+    linear-gradient(90deg, rgb(78 186 225 / 6%) 1px, transparent 1px),
+    linear-gradient(rgb(78 186 225 / 5%) 1px, transparent 1px),
+    radial-gradient(circle at 90% 3%, rgb(244 119 53 / 9%), transparent 20%),
+    linear-gradient(145deg, #edf7fa, #f8fbfa 58%, #fff9f2);
+  background-size: 52px 52px, 52px 52px, auto, auto;
+}
+
+.operations-topbar {
+  background:
+    repeating-linear-gradient(180deg, transparent 0 62px, rgb(135 211 235 / 5%) 62px 63px),
+    radial-gradient(circle at 12% 0%, rgb(74 188 229 / 38%), transparent 28%),
+    linear-gradient(165deg, #123f57, #0c2e43 78%);
+}
+
+.operations-brand > span {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(155deg, #55c5eb, #197fa9);
+  box-shadow: 0 9px 22px rgb(5 27 40 / 25%);
+}
+
+.operations-brand > span::after {
+  position: absolute;
+  right: -6px;
+  bottom: 5px;
+  left: -6px;
+  height: 6px;
+  border-top: 1px solid rgb(255 255 255 / 65%);
+  border-radius: 50%;
+  content: "";
+}
+
+.operations-navigation a:first-of-type {
+  border-color: rgb(141 214 237 / 25%);
+  background: linear-gradient(90deg, rgb(79 184 221 / 18%), rgb(255 255 255 / 7%));
+}
+
+.operations-navigation a span {
+  color: #bce9f4;
+}
+
+.operations-navigation a:first-of-type span {
+  background: var(--clear-care);
+  color: #fff;
+}
+
+.operations-page-head {
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 7%) 1px, transparent 1px),
+    radial-gradient(circle at 82% 22%, rgb(149 222 242 / 30%), transparent 22%),
+    linear-gradient(118deg, #137fa8 0%, #209ac2 58%, #39b5d8 100%);
+  background-size: 54px 100%, auto, auto;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 30%),
+    0 20px 42px rgb(20 111 146 / 18%);
+}
+
+.operations-page-head::before {
+  right: 22%;
+  border-color: rgb(255 255 255 / 18%);
+}
+
+.operations-page-head::after {
+  right: 0;
+  bottom: 0;
+  width: 210px;
+  height: 4px;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(90deg, transparent, var(--clear-care));
+}
+
+.operations-page-head > span {
+  border-color: rgb(255 255 255 / 46%);
+  background: rgb(255 255 255 / 92%);
+  color: #15536d;
+}
+
+.operations-panel,
+.operations-metric {
+  border-color: rgb(255 255 255 / 92%);
+  background: rgb(255 255 255 / 90%);
+}
+
+.operations-panel {
+  position: relative;
+}
+
+.operations-filters::before,
+.operations-table-section::before {
+  position: absolute;
+  top: 0;
+  right: 18px;
+  left: 18px;
+  height: 2px;
+  content: "";
+  background: linear-gradient(90deg, #54bde4, #b9e8f1 76%, #f47735);
+  opacity: 0.75;
+}
+
+.operations-section-head small,
+.operations-page-head small {
+  letter-spacing: 0.14em;
+}
+
+.operations-section-head small {
+  color: var(--clear-water-deep);
+}
+
+.operations-metric {
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.operations-metric:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 42px rgb(30 86 107 / 13%);
+}
+
+.operations-chart__track i {
+  background: linear-gradient(90deg, #2d9fca, #74cee9 74%, #f47735);
+}
+
+/* Requested visual revision: square geometry and stronger bottom-to-top gradient. */
+.operations-page {
+  background:
+    linear-gradient(90deg, rgb(39 142 181 / 7%) 1px, transparent 1px),
+    linear-gradient(rgb(39 142 181 / 6%) 1px, transparent 1px),
+    linear-gradient(to top, #c6e7f2 0%, #e2f1f2 54%, #ffdfca 100%);
+  background-size: 52px 52px, 52px 52px, auto;
+}
+
+.operations-page *,
+.operations-page *::before,
+.operations-page *::after {
+  border-radius: 0 !important;
+}
+
+/* Sky + white palette inspired by the supplied clean hydration references. */
+.operations-page {
+  --operations-green: #438fc8;
+  --operations-green-soft: #e4f3fa;
+  --operations-orange: #438fc8;
+  --operations-orange-soft: #e5f2f9;
+  --clear-care: #438fc8;
+  background:
+    linear-gradient(90deg, rgb(75 154 202 / 5%) 1px, transparent 1px),
+    linear-gradient(rgb(75 154 202 / 4%) 1px, transparent 1px),
+    linear-gradient(to top, #cfeaf5 0%, #eaf6fb 48%, #ffffff 100%);
+  background-size: 52px 52px, 52px 52px, auto;
+}
+
+.operations-topbar {
+  background:
+    repeating-linear-gradient(180deg, transparent 0 62px, rgb(255 255 255 / 5%) 62px 63px),
+    linear-gradient(to top, #2e719a 0%, #5aa7cb 100%);
+  box-shadow: 12px 0 36px rgb(39 105 139 / 14%);
+}
+
+.operations-navigation a:first-of-type {
+  border-color: rgb(255 255 255 / 28%);
+  background: rgb(255 255 255 / 15%);
+}
+
+.operations-navigation a:first-of-type span {
+  background: #d9eff8;
+  color: #2d709c;
+}
+
+.operations-page-head {
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 8%) 1px, transparent 1px),
+    radial-gradient(circle at 82% 20%, rgb(214 243 252 / 30%), transparent 23%),
+    linear-gradient(118deg, #3f88bb 0%, #67acd2 58%, #9bd2e9 100%);
+  background-size: 54px 100%, auto, auto;
+  box-shadow: 0 20px 42px rgb(47 125 166 / 16%);
+}
+
+.operations-page-head::after {
+  background: linear-gradient(90deg, transparent, #d9f0f8);
+}
+
+.operations-panel,
+.operations-metric {
+  border-color: #c9e3ee;
+  background: rgb(255 255 255 / 95%);
+  box-shadow: 0 16px 38px rgb(57 119 146 / 9%);
+}
+
+.operations-filters::before,
+.operations-table-section::before {
+  background: linear-gradient(90deg, #3c84b9, #79bddd 65%, #d0ebf5);
+}
+
+.operations-section-head > strong {
+  color: #347eae;
+  background: #e5f3f9;
+}
+
+.operations-chart__track i {
+  background: linear-gradient(90deg, #397fb4, #71b5da 70%, #bde3f1);
+}
+
+/* Premium aqua glass system: crisp enterprise layout with transparent depth. */
+.operations-page {
+  background:
+    radial-gradient(circle at 100% 0%, rgb(151 214 238 / 28%), transparent 29%),
+    radial-gradient(circle at 20% 104%, rgb(75 165 207 / 18%), transparent 35%),
+    linear-gradient(to top, #dceff7 0%, #f6fbfd 58%, #eef8fb 100%);
+}
+
+.operations-topbar {
+  border-right: 1px solid rgb(255 255 255 / 62%);
+  background:
+    linear-gradient(160deg, rgb(112 190 223 / 86%), rgb(42 121 165 / 88%)),
+    rgb(62 143 181 / 84%);
+  box-shadow:
+    inset -1px 0 0 rgb(255 255 255 / 30%),
+    14px 0 38px rgb(42 105 134 / 17%);
+  backdrop-filter: blur(24px) saturate(130%);
+}
+
+.operations-brand > span {
+  border: 1px solid rgb(255 255 255 / 80%);
+  background: linear-gradient(145deg, rgb(173 225 244 / 88%), rgb(47 130 176 / 92%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 64%),
+    inset -2px -3px 5px rgb(19 81 119 / 20%),
+    0 8px 18px rgb(34 94 127 / 20%);
+}
+
+.operations-navigation a {
+  border: 1px solid transparent;
+  font-size: 12px;
+}
+
+.operations-navigation a:hover,
+.operations-navigation a:first-of-type {
+  border-color: rgb(255 255 255 / 54%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 24%), rgb(183 224 240 / 12%));
+  box-shadow:
+    inset 1px 1px 2px rgb(255 255 255 / 30%),
+    0 9px 20px rgb(22 76 105 / 12%);
+}
+
+.operations-navigation a span,
+.operations-navigation a:first-of-type span {
+  border: 1px solid rgb(255 255 255 / 56%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 70%), rgb(190 226 240 / 40%));
+  box-shadow:
+    inset 1px 1px 2px rgb(255 255 255 / 80%),
+    inset -1px -2px 3px rgb(32 102 139 / 13%);
+  color: #246f9b;
+}
+
+.operations-user {
+  border-color: rgb(255 255 255 / 48%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 18%), rgb(185 225 240 / 8%));
+  box-shadow:
+    inset 1px 1px 2px rgb(255 255 255 / 24%),
+    0 14px 30px rgb(21 76 103 / 14%);
+}
+
+.operations-user button {
+  border-color: rgb(255 255 255 / 52%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 22%), rgb(206 235 246 / 10%));
+  box-shadow: inset 1px 1px 2px rgb(255 255 255 / 24%);
+}
+
+.operations-page-head {
+  min-height: 154px;
+  border: 1px solid rgb(255 255 255 / 86%);
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 10%) 1px, transparent 1px),
+    radial-gradient(circle at 82% 18%, rgb(226 248 255 / 40%), transparent 24%),
+    linear-gradient(125deg, rgb(77 154 198 / 94%), rgb(136 205 231 / 88%));
+  background-size: 58px 100%, auto, auto;
+  box-shadow:
+    inset 3px 3px 4px rgb(255 255 255 / 34%),
+    inset -3px -4px 7px rgb(36 112 152 / 12%),
+    0 22px 48px rgb(47 118 151 / 18%);
+  backdrop-filter: blur(24px) saturate(130%);
+}
+
+.operations-page-head > span {
+  border: 1px solid rgb(255 255 255 / 92%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 92%), rgb(211 237 247 / 70%));
+  box-shadow:
+    inset 2px 2px 3px #fff,
+    inset -2px -3px 5px rgb(51 128 162 / 10%),
+    0 9px 22px rgb(42 110 141 / 12%);
+}
+
+.operations-panel,
+.operations-metric {
+  border: 1px solid rgb(255 255 255 / 92%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 90%), rgb(226 242 249 / 66%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 98%),
+    inset -2px -3px 5px rgb(56 128 158 / 7%),
+    0 18px 42px rgb(51 111 137 / 11%);
+  backdrop-filter: blur(20px) saturate(125%);
+}
+
+.operations-filters::before,
+.operations-table-section::before {
+  height: 2px;
+  background: linear-gradient(90deg, rgb(47 127 177 / 76%), rgb(132 202 229 / 60%), transparent);
+}
+
+.operations-filters input,
+.operations-filters select,
+.operations-filters__footer button {
+  border: 1px solid rgb(255 255 255 / 94%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 94%), rgb(218 239 247 / 62%));
+  box-shadow:
+    inset 2px 2px 3px rgb(255 255 255 / 98%),
+    inset -2px -3px 5px rgb(55 128 159 / 9%),
+    0 6px 15px rgb(53 111 136 / 7%);
+}
+
+.operations-section-head > strong {
+  border: 1px solid rgb(255 255 255 / 94%);
+  background: linear-gradient(145deg, rgb(255 255 255 / 88%), rgb(202 233 245 / 68%));
+  box-shadow:
+    inset 2px 2px 3px #fff,
+    inset -2px -3px 5px rgb(56 131 164 / 10%),
+    0 7px 16px rgb(52 111 136 / 8%);
+}
+
+.operations-metric {
+  min-height: 126px;
+}
+
+.operations-metric::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 58%;
+  height: 54%;
+  content: "";
+  background: linear-gradient(145deg, rgb(255 255 255 / 34%), transparent);
+  pointer-events: none;
+}
+
+.operations-metric > * {
+  position: relative;
+  z-index: 1;
+}
+
+.operations-metric:hover {
+  transform: translateY(-2px);
+  border-color: rgb(255 255 255 / 100%);
+  box-shadow:
+    inset 2px 2px 3px #fff,
+    inset -2px -3px 5px rgb(56 128 158 / 8%),
+    0 22px 48px rgb(48 108 135 / 15%);
+}
+
+.operations-chart__track {
+  border: 1px solid rgb(255 255 255 / 84%);
+  background: rgb(183 218 231 / 36%);
+  box-shadow: inset 1px 1px 3px rgb(51 118 147 / 12%);
+}
+
+.operations-chart__track i {
+  background: linear-gradient(90deg, #367faf, #76bbdc 72%, #c7e8f4);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 46%);
+}
+
+.operations-table-section .common-data-table-wrap {
+  border: 1px solid rgb(255 255 255 / 92%);
+  background: rgb(255 255 255 / 64%);
+  box-shadow: inset 1px 1px 2px rgb(255 255 255 / 96%);
 }
