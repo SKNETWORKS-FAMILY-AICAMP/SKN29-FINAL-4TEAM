@@ -1,13 +1,13 @@
 # 최지용 백엔드·데이터베이스·API 개발문서
 
-> 기준일: 2026-07-31
+> 기준일: 2026-08-01
 >
 > 작성·유지 책임: 최지용
 >
 > 범위: Backend·Database·Public API 계약
 >
-> 현재 상태: WaterBridge 전환·T-005 32/32 로컬 기술 검증 완료,
-> 비작성자 재현·외부 소비 검토·PM 공식 승인 대기
+> 현재 상태: `jiyong` WaterBridge 후보·T-005 32/32 기술 검증 완료,
+> 비작성자 재현·계약 검토·PM `main` 병합 대기
 
 ## 1. 문서 역할
 
@@ -26,7 +26,7 @@
 | 상태·Action·권한 | `contracts/state-machine/**` |
 | AI 입출력 | `contracts/ai/**` |
 | DB 구조 | 활성 T-005 계약·Django Model·Migration·PostgreSQL 검증 |
-| Runtime 완료 | Route·실행 테스트·같은 Commit의 검증 증거 |
+| Runtime 완료 | Route·실행 테스트·같은 PR 변경 묶음의 검증 증거 |
 | 문서 위치·이름 | [프로젝트 디렉토리 구조 v2](<../../architecture/프로젝트 디렉토리 구조 v2.md>) |
 | 개발·검증 절차 | [공통 개발 규칙](<../../planning/md/공통 개발 규칙.md>) |
 | 담당·협업 경계 | [팀원별 관할 영역 v2](<../../planning/md/팀원별 관할 영역 v2.md>) |
@@ -39,7 +39,8 @@
 | 항목 | 현재 결과 |
 | --- | --- |
 | Python | 3.13.13 |
-| PostgreSQL | 16.14, `waterbridge.public` |
+| 현재 `main` 기본 DB | `watercare` |
+| `jiyong` 병합 후보 PostgreSQL | 16.14, `waterbridge.public` |
 | pgvector | 0.8.6, `vector(1024)`, Exact Search |
 | T-005 | 계약 테이블 32/32, Auditor `READY`, blocker 0 |
 | Active 데이터 | 13개 테이블·총 369행 |
@@ -85,6 +86,7 @@ Active 13과 Target-only 19는 동일한 32개 물리 계약 안의 데이터 �
 | [T-005 Migration 불변성 사고·복구 보고서](technical/backend/t005_마이그레이션_불변성_사고_및_복구_보고서.md) | 적용 Migration 변조 원인·복원·후속 증분 Migration |
 | [T-017A 합성 사용자 계정 관리 설계서](technical/backend/t017a_합성_사용자_계정_관리_설계서.md) | 합성 계정 수명주기·권한·감사 설계와 구현 Gate |
 | [T-022 증상 제출 API 설계·계약 Gate](technical/backend/t022_증상_제출_api_설계_및_계약_게이트.md) | `SUBMIT_SYMPTOM` 첫 수직 Slice 구현 전 계약 |
+| [T-018 구독·제품 조회 API 계약 제안서](technical/backend/t018_구독_제품_조회_api_계약_제안서.md) | 승인 전 가능한 최소 GET 계약·권한·테스트 Matrix |
 | [백엔드·AI 계약·Runtime 통합 미해결 사항](technical/contracts/백엔드_ai_계약_런타임_통합_미해결_사항.md) | Schema Parity·Timeout·로그·검색 후검증·Revision·E2E |
 
 ### 4.4 팀 협업
@@ -93,16 +95,18 @@ Active 13과 Target-only 19는 동일한 32개 물리 계약 안의 데이터 �
 | --- | --- |
 | [백엔드 팀 검토·인계 체크리스트](team_handover/백엔드_팀_검토_및_인계_체크리스트.md) | 김은진·윤승혁·한예나·양정현·이동윤의 현재 요청과 반환 증거 |
 | [팀 통합 인계 허브](../../handoffs/README.md) | 공용 기준선·Gate·인계 순서 |
+| [T-017A·T-022 검토 입력 패킷](../../handoffs/20260801_t017a_t022_검토_입력_패킷.md) | PM·Data·AI가 회신할 결정과 반환 형식 |
 
 ## 5. 다음 작업 우선순위
 
 | 순서 | 작업 | 현재 경계 | 협업 |
 | ---: | --- | --- | --- |
 | 1 | T-005 비작성자 독립 재현·공식 완료 검토 | 작성자 로컬 기술 완료 | 김은진 또는 지정 리뷰어·윤승혁 |
-| 2 | T-017A 설계 검토 | 구현 전 OWNER 설계 | 윤승혁 정책·김은진 Migration/QA |
-| 3 | T-022 `SUBMIT_SYMPTOM` 첫 수직 Slice | 계약 Gate와 구현 범위 문서화 | 윤승혁 State 입력 |
-| 4 | Backend·AI Adapter·Evidence E2E | AI 계약·Runtime 잔여 Gap 존재 | 이동윤 |
-| 5 | Web·Mobile 소비 검증 | PM `main` SHA 대기 | 한예나·양정현 |
+| 2 | T-017A·T-022 검토 회신 수집 | 구현 전 OWNER 설계·계약 Gate | 윤승혁·김은진·이동윤 |
+| 3 | T-018 최소 GET 계약·테스트 검토 | Runtime·Migration 변경 없는 안전 준비 | 김은진·윤승혁 |
+| 4 | 승인된 T-022 Slice A 한 개 구현 | OpenAPI·Projection 결정 뒤 | 윤승혁·김은진 |
+| 5 | 승인된 T-017B/C·T-018 Runtime | 한 작업씩 구현·PostgreSQL 검증 | 김은진 비작성자 검토 |
+| 6 | Backend·AI·Web·Mobile 소비 E2E | PM 병합 완료·최신 `main` Pull과 각 계약 필요 | 이동윤·한예나·양정현 |
 
 각 작업은 한 범위만 구현하고 즉시 집중 검증한 뒤 다음 작업으로 이동한다.
 다른 담당자의 계약 입력이 필요한 항목은 Mock·Stub까지만 진행하고 실제
