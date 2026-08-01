@@ -1,0 +1,7 @@
+==== DEVICE ==== 
+List of devices attached
+R3CT8076D7B            device product:b4qksx model:SM_F721N device:b4q transport_id:2
+
+Users:
+	UserInfo{0:주인:4c13} running
+Unable to find package: com.skn29.watercare.customer
