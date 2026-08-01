@@ -36,7 +36,7 @@ SAFE_PUBLIC_DEFAULTS = {
     "JWT_ACCESS_TTL_MINUTES": "60",
     "JWT_REFRESH_TTL_HOURS": "168",
     "AI_SERVICE_BASE_URL": "http://127.0.0.1:8001",
-    "POSTGRES_DB": "watercare",
+    "POSTGRES_DB": "waterbridge",
     "POSTGRES_USER": "watercare_app",
     "POSTGRES_HOST": "127.0.0.1",
     "POSTGRES_PORT": "5432",
