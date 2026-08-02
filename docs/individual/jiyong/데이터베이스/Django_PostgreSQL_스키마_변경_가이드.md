@@ -1,0 +1,381 @@
+# Django·PostgreSQL 데이터베이스 스키마 변경 가이드
+
+> 기준일: 2026-07-31
+> 담당: 최지용
+> 적용 원칙: ERD와 테이블 명세는 확정 기준선이며, Model·Migration을 Wave별로 구현하고 즉시 검증한다.
+> 현재 상태: 기본 PostgreSQL `waterbridge/public`, 계약 테이블 32/32,
+> Active 데이터 13·Target-only 19(0행) 작성자 기술 검증 완료 /
+> 비작성자·외부 리뷰와 공식 완료 승인 대기
+
+## 0. 문서 책임·협업·검토
+
+| 항목 | 내용 |
+| --- | --- |
+| 문서 상태 | 현행 Database Schema 개발·인계 기준 |
+| 관련 WBS | `T-005`, `T-016`, `T-022`, `T-023` |
+| 작성·유지 책임 | 최지용 |
+| 기술 기준 | T-005 ERD·테이블 계약: Model·Migration·Seed·PostgreSQL 반영 기준. PM State 계약: Workflow 업무 규칙. AI 계약: Vector·Evidence·AI Schema |
+| 협업 책임 | 김은진: Migration·Fixture·PostgreSQL Integration QA, 윤승혁(PM): Workflow 관계, 이동윤: Vector·Evidence 관계 |
+| 검토 요청 대상 | 김은진: Migration·Seed·통합 재현, 윤승혁(PM): Workflow 관계 정합성, 이동윤: Vector·Evidence 연결 정합성 |
+| 검토 상태 | 미요청 또는 증거 미확인 |
+| PR 병합 담당 | 윤승혁(PM), 비작성자 1명 이상 리뷰 후 |
+| 인계 대상 | 김은진, 윤승혁(PM), 이동윤 |
+
+검토는 Migration 재현, Workflow 관계와 Vector·Evidence 소비 호환성을
+확인하는 절차다. 구현 기준은 아래 단일 원본에 두며, 검토 의견은 재현
+사례와 계약 차이로 기록한다.
+
+## 1. 단일 원본
+
+| 산출물 | 원본 | 역할 |
+| --- | --- | --- |
+| DB 문서 안내 | [Database 문서](../../../database/README.md) | 데이터 산출물 진입점 |
+| 테이블 명세 | [WaterBridge 테이블 명세](../../../database/waterbridge_table_dictionary.md) | 컬럼·키·제약·Index 기준 |
+| T-005 패키지 | [T-005 데이터 설계](../../../database/t-005/README.md) | Manifest·논리/물리 계약·검증 절차 |
+| 대화형 ERD | [WaterBridge ERD](../../../database/erd/waterbridge_erd.html) | 관계와 전체 컬럼 탐색 |
+| 정적 ERD | [WaterBridge ERD 이미지](../../../database/erd/waterbridge_erd.png) | Git 미리보기 |
+| API 설명 | [Public API 명세](../../../api/waterbridge_api_specification.md) | DB 필드의 Public Projection |
+| 기계 API 계약 | [OpenAPI](../../../../contracts/api/openapi.yaml) | Serializer·응답 계약 |
+
+ERD·테이블 명세·API 명세는 프로젝트 기준 산출물이다. 이 원본을
+Model·Migration·Serializer에 순차 반영한다.
+
+## 2. 현재 구현 상태와 실행 증거의 단일 원본
+
+이 가이드에는 구현 Model 수, 적용 Migration, Seed 건수와 테스트 수를
+복제하지 않는다. 현재 상태는 다음 문서에서 확인한다.
+
+| 확인 목적 | 단일 원본 |
+| --- | --- |
+| 현재 DB 전환·32/13/19·복구·회귀 | [워터브리지 PostgreSQL 통합 검증 보고서](PostgreSQL_통합검증_보고서_20260731.md) |
+| 32개 테이블 구현 과정과 Wave별 결정 | [T-005 테이블 구현 및 변경 이력](Django_PostgreSQL_테이블_구현_변경이력_20260730.md) |
+| 설계 테이블·계약·결정 상태 | [T-005 데이터 설계](../../../database/t-005/README.md) |
+| 2026-07-27 Model·Migration 2/32 역사 기준 | [T-005 테이블 구현 및 변경 이력](Django_PostgreSQL_테이블_구현_변경이력_20260730.md#8-2026-07-27-232-역사-기준) |
+| 합성 Schema·Migration·Seed·Importer 경계 | [합성 데이터 스키마·적재기·PostgreSQL 검증 가이드](PostgreSQL_합성데이터_적재_통합검증_가이드.md) |
+| 환경 구성·Migration·Seed·Smoke 재현 순서 | [워터브리지 백엔드 설치·Migration·Seed·복구 가이드](../개발환경/Django_PostgreSQL_로컬개발환경_설치_실행_복구_가이드.md) |
+| 공통코드·Auditor·Bridge·Wave별 구현 근거 | [T-005 테이블 구현 및 변경 이력](Django_PostgreSQL_테이블_구현_변경이력_20260730.md) |
+
+이 문서는 실행 결과 보고서가 아니라, 설계를 Model·Migration·Seed로
+옮기고 검증하는 반복 절차의 단일 원본으로 유지한다.
+
+## 3. 확정 데이터 기준
+
+ID, 코드, Legacy 변환, 방문 일정, Enum과 Seed의 구체 값은 이 가이드에
+복사하지 않는다. 활성
+[결정 등록부 v0.3](../../../database/t-005/t005_decision_register_v0.3.json)과
+[물리 계약 v1.3](../../../database/t-005/t005_physical_contract_v1.3.json)을
+구현 입력으로 사용하고, 값이 바뀌면 해당 계약만 갱신한다. v0.1·v1.0은
+역사본이며 신규 구현 입력으로 사용하지 않는다.
+
+## 4. Wave별 구현 순서
+
+2026-07-30의 잔여 20개는 활성 물리 계약의 FK 의존성을 기준으로 아래
+순서로 구현했다. 새 스키마 증분도 같은 원칙으로 부모·Bridge·직접
+자식·다중 관계 순서를 따른다.
+
+| Gate·Wave | 대상 | 완료 검증 | 현재 |
+| ---: | --- | --- | --- |
+| Accounts Gate | User·CustomerProfile 내부 정수 PK, 공개 UUID, UUID-only JWT | Migration·Backfill·Auth 회귀 | 완료 |
+| 1 | AI Run, Ingestion Batch, Visit Result, Questionnaire Session | 부모 FK·Bridge·번호 Migration | 완료 |
+| 2 | Retrieval Run, Source Document, Guidance, Handoff, Inquiry QA, Status History, Assessment | 직접 자식 FK·이력 정렬 | 완료 |
+| 3 | Document Model Scope, Document Page, Guidance Item | 상위 문서·안내 관계·순서 UNIQUE | 완료 |
+| 4 | Document Chunk | Page·Chunk 원문·순서 정책 | 완료 |
+| 5 | Retrieval Hit, Data Quality Issue, Chunk Embedding | 검색 Rank·품질 대상·pgvector 1024 | 완료 |
+| 6 | Customer Action Result, Evidence Link | 고객 조치·최종 다중 FK·부분 UNIQUE | 완료 |
+| Final Gate | 빈 PostgreSQL, Seed 2회, 367건 Import 2회, 전체 회귀 | Auditor READY·Data QA | 로컬 완료 |
+
+한 Wave를 구현한 뒤 다음 순서로 검증하고, 통과하기 전에는 다음
+Wave로 이동하지 않는다. 실행 전 PostgreSQL 상태는
+[워터브리지 백엔드 설치·Migration·Seed·복구 가이드](../개발환경/Django_PostgreSQL_로컬개발환경_설치_실행_복구_가이드.md)의
+일상 실행 절차로 확인하며, 이 가이드에는 서버 시작·종료
+명령을 중복하지 않는다.
+
+```powershell
+Set-Location .\backend
+.\.venv\Scripts\python.exe manage.py makemigrations
+.\.venv\Scripts\python.exe manage.py makemigrations --check --dry-run
+.\.venv\Scripts\python.exe manage.py migrate --noinput
+.\.venv\Scripts\python.exe manage.py migrate --check
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+## 5. Model·Migration 규칙
+
+- 테이블·컬럼명과 nullability는 확정 테이블 명세를 따른다.
+- Public ID를 내부 자동 증가 PK로 대체하지 않는다.
+- FK·UNIQUE·CHECK·Index는 문서 설명에만 두지 않고 Migration에 둔다.
+- Enum 값은 [공통 코드 계약](../../../../contracts/codes)과 Django
+  `TextChoices`를 일치시킨다.
+- 상태 변경 Model은 이력과 `state_version`을 함께 고려한다.
+- 개인정보·Token·비밀값을 Seed·Fixture·로그에 넣지 않는다.
+- Django 내부 테이블은 32개 도메인 테이블 구현 개수에 포함하지 않는다.
+
+## 6. Seed 규칙
+
+- 실제 개인정보가 아닌 합성 데이터만 사용한다.
+- 고정 합성 ID와 `update_or_create`로 반복 실행을 보장한다.
+- 1차 실행은 생성 수, 2차 실행은 신규 0개와 갱신 수를 확인한다.
+- Password·Token·DSN을 출력하지 않는다.
+- 입력 계약이 달라지면 변환 규칙을 명시하고 Silent Dual-write를 금지한다.
+
+현재 Demo Seed 결과와 재현 절차는
+[워터브리지 백엔드 설치·Migration·Seed·복구 가이드](../개발환경/Django_PostgreSQL_로컬개발환경_설치_실행_복구_가이드.md)를
+따른다.
+
+Wave 1 공통코드는 Migration 통과 후 다음 명령을 두 번 실행한다.
+
+```powershell
+Set-Location .\backend
+.\.venv\Scripts\python.exe manage.py seed_common_codes
+.\.venv\Scripts\python.exe manage.py seed_common_codes
+```
+
+현재 확정 범위와 정상 경고, 기대 건수는
+[이 문서의 공통코드 Registry 절](#9-공통코드-registry-운영-규칙)을
+따른다. 위험도 소문자 계약을 임의 변환하지 않으며, 계약에서 제거된
+관리 Code는 삭제하지 않고 비활성화한다.
+
+2026-07-31 현행 기본 DB는 `waterbridge`, Schema는 `public`이다.
+T-005 계약 테이블 32개를 모두 유지하고 현재 데이터가 있는 13개만
+Active 범위로 사용한다. Target-only 19개는 0행 상태로 보존하며
+Migration에서 제외하거나 삭제하지 않는다.
+
+기본 `waterbridge`에서는 Demo Seed 5종을 2회 실행해 2회차 신규 생성
+0을 확인했다. 이 기본 DB에는 canonical fixture와 공개 UUID가 다른 기존
+레코드가 있으므로 합성 Importer와 `--dry-run`은 실행하지 않는다.
+Importer는 새 빈 격리 PostgreSQL 전용이며, dry-run도 Sequence 값을
+변경할 수 있다. Legacy `watercare`도 안전상 기본 DB로 취급하여
+Importer 실행 대상에서 제외한다.
+
+2026-07-29 기본 `watercare`에서 Demo Seed 4종을 2회 실행한 기록은
+당시 실행 증거이며 변경하지 않는다. 현재 명령과 결과는
+[워터브리지 PostgreSQL 통합 검증 보고서](PostgreSQL_통합검증_보고서_20260731.md)를
+따른다.
+
+## 7. 검증 체크리스트
+
+아래는 매 변경에서 다시 사용하는 체크리스트다. 2026-07-30 현재
+32/32 구현에 대한 실제 통과 항목과 공식 승인 대기 항목은
+[워터브리지 PostgreSQL 통합 검증 보고서](PostgreSQL_통합검증_보고서_20260731.md)의
+최종 체크리스트를 사용한다.
+
+- [ ] Model 수와 대상 테이블을 기록했다.
+- [ ] Model과 Migration 사이에 변경 누락이 없다.
+- [ ] `operations.0001`, 불변 복원된 `workflow.0004`, 증분
+  `workflow.0005`를 포함한 현재 Migration graph를 적용했다.
+- [ ] 빈 PostgreSQL에서 Migration이 처음부터 적용된다.
+- [ ] PK·FK·UNIQUE·CHECK·Index가 명세와 일치한다.
+- [ ] Seed 2회 후 비의도 중복이 없다.
+- [ ] API Schema·Serializer가 같은 필드와 Enum을 사용한다.
+- [ ] 실제 개인정보·Token·비밀값이 없다.
+- [ ] 현재 구현 개수와 남은 테이블 개수를 분리해 기록했다.
+- [ ] 기본 `waterbridge` Migration·Demo Seed와 빈 격리 DB Import 검증을 분리했다.
+- [ ] 계약 테이블 32개, Active 데이터 13개, Target-only 19개(0행)를
+  서로 다른 의미로 기록했다.
+
+현재 테스트 수, PostgreSQL 적용 범위와 미구현 테이블 수는 이 가이드에
+복제하지 않고
+[합성 데이터 스키마·적재기·PostgreSQL 검증 가이드](PostgreSQL_합성데이터_적재_통합검증_가이드.md)를
+참조한다. 이전 Migration 검증 보고서의 수치는
+[T-005 테이블 구현 및 변경 이력](Django_PostgreSQL_테이블_구현_변경이력_20260730.md#9-2026-07-27-232-역사-기준)에
+2026-07-27 역사 기록으로 보존한다. 변경 PR에는 해당 Wave에서
+다시 실행한 결과만 기록한다.
+
+상태 이력 Migration의 과거 파일 불변성과 증분 복구 근거는
+[Migration 불변성 사고 및 복구 보고서](PostgreSQL_마이그레이션_불변성_사고_복구_보고서.md)와
+[workflow.0005](../../../../backend/apps/workflow/migrations/0005_status_history_contract_names_indexes.py)를
+따른다.
+
+## 8. 인계 사항
+
+| 대상 | 전달 항목 | 다음 행동 | 완료 확인 | 현재 상태 |
+| --- | --- | --- | --- | --- |
+| 김은진 | 영향 테이블·컬럼, Model·Migration, 적용 순서, Seed·Rollback, PostgreSQL 결과 | 빈 PostgreSQL Migration, Seed 2회, 제약·통합 테스트를 재현 | Migration drift 0, 비의도 중복 0, 실행 증거 기록 | Wave별 인계 전 또는 증거 미확인 |
+| 윤승혁(PM) | 문의·상담·방문·상태 이력 관계와 Workflow 영향 | State 업무 규칙이 DB 관계·이력·완료 정책과 충돌하지 않는지 확인 | 관계 불일치 0건 또는 결정 기록 반영 | 검토 미요청 또는 증거 미확인 |
+| 이동윤 | Knowledge·Document·Page·Chunk·Embedding·Evidence·AI Run 연결 키와 Enum | Vector·Evidence·AI Schema에서 동일 키·버전·Enum을 소비 | DB↔AI 필드·Enum·참조 무결성 검사 통과 | 관련 Wave 구현 전 또는 증거 미확인 |
+
+인계 시 확정 명세 링크, 이번 Wave에서 의도적으로 구현하지 않은 범위,
+API·상태·AI 계약 영향을 함께 전달한다. 팀원은 같은 상대경로 원본과
+명령으로 재현하며 개인 PC 절대경로나 비밀값을 문서에 추가하지 않는다.
+
+## 9. 공통코드 Registry 운영 규칙
+
+### 9.1 책임과 구현 경계
+
+공통코드는 [`common_codes` App](../../../../backend/apps/common_codes)에
+구현한다. `backend/common/models/**`는 추상 공통 Model 계층이므로
+구체 테이블을 두지 않는다. Registry는 표시·정렬·확장 속성의 원본이며,
+업무 Model의 `role_code`, `status_code` 같은 `*_code` 필드를 물리 FK로
+바꾸는 작업은 포함하지 않는다.
+
+| 테이블 | PK·공개 식별자 | 업무 무결성 | 삭제·변경 정책 |
+| --- | --- | --- | --- |
+| `common_code_group` | `group_code varchar(40)` 자연키 | `^[A-Z][A-Z0-9_]*$`, 표시 순서 0 이상 | 자연키 변경과 물리 삭제 금지, `is_active=false` 사용 |
+| `common_code` | 내부 `bigint id`, 공개 `uuid public_id` | `(group_code, code)` UNIQUE, 코드 형식·표시 순서·JSON object CHECK | 그룹 FK `PROTECT`, 제거된 코드는 비활성화 |
+
+구현 원본은 다음과 같다.
+
+| 책임 | 저장소 상대경로 |
+| --- | --- |
+| Model | [`common_code_group.py`](../../../../backend/apps/common_codes/models/common_code_group.py), [`common_code.py`](../../../../backend/apps/common_codes/models/common_code.py) |
+| DB별 JSON 표현식 | [`db_expressions.py`](../../../../backend/apps/common_codes/db_expressions.py) |
+| Migration | [`0001_initial.py`](../../../../backend/apps/common_codes/migrations/0001_initial.py), [`0002_common_code.py`](../../../../backend/apps/common_codes/migrations/0002_common_code.py) |
+| Seed | [`seed_common_codes.py`](../../../../backend/apps/common_codes/management/commands/seed_common_codes.py) |
+| 테스트 | [`backend/tests/unit/common_codes`](../../../../backend/tests/unit/common_codes) |
+
+### 9.2 Seed 허용·차단 기준
+
+현행 Seed는 활성 [`contracts/codes`](../../../../contracts/codes)의
+승인 그룹만 `update_or_create`로 적재한다. 2026-07-31 검증 당시
+기본 `waterbridge`에는 Group 16개, Code 72개가 존재한다. 아래 10개는
+Registry 최초 Wave에서 확정해 적재한 기준 그룹이다.
+
+`USER_ROLE`, `MANAGEMENT_TYPE`, `SUBSCRIPTION_STATUS`, `CARE_TYPE`,
+`CARE_STATUS`, `DATA_SOURCE`, `CARE_RESULT`,
+`INQUIRY_CANCELLATION_REASON`, `USAGE_GUIDANCE_STATUS`, `VISIT_STATUS`
+
+다음 항목은 임의 변환하거나 추론하지 않는다.
+
+| 대상 | 차단 이유 | 처리 |
+| --- | --- | --- |
+| `risk-levels.yaml` | 소문자 값과 기존 DB 대문자 CHECK 충돌 | `BLOCKED_CONTRACT_MAPPING` 유지 |
+| `ai-stages.yaml` | Registry Group Mapping 미확정 | 자동 추론 금지 |
+| `data-classifications.yaml`, `product-scopes.yaml` | 소문자 계약과 Registry 형식 충돌 | 자동 대문자 변환 금지 |
+| 빈 `codes: []` 계약 | 실제 코드 집합 없음 | 빈 Group 생성 금지 |
+| deprecated 계약 | canonical 계약과 중복 위험 | canonical만 사용 |
+
+`BLOCKED_CONTRACT_MAPPING`은 알려진 계약 충돌을 숨기지 않는 정상
+경고다. 값·대소문자·Group Mapping은 계약 담당자가 확정한 후 별도
+계약 변경과 Forward Migration으로 반영한다.
+
+### 9.3 반복 실행과 롤백
+
+Migration 적용 후 공통코드 Seed를 두 번 실행하고 두 번째 실행의
+비의도 신규 생성이 0인지 확인한다.
+
+```powershell
+Set-Location .\backend
+$python = '.\.venv\Scripts\python.exe'
+
+& $python manage.py seed_common_codes --settings=config.settings.local
+if ($LASTEXITCODE -ne 0) { throw '공통코드 Seed 1차 실패' }
+
+& $python manage.py seed_common_codes --settings=config.settings.local
+if ($LASTEXITCODE -ne 0) { throw '공통코드 Seed 2차 실패' }
+```
+
+공유된 Migration 파일은 수정·삭제하지 않는다. 계약에서 제거된 코드도
+임의 SQL로 삭제하지 않고 비활성화한다. `docker compose down -v`는
+PostgreSQL Volume을 삭제하므로 롤백 명령으로 사용하지 않는다.
+
+## 10. Runtime 지원 테이블 Auditor 분류
+
+T-005 immutable 계약은 32개 계약 테이블의 Model·Runtime
+등록·Migration 매핑을 판정한다. Audit·합성 Import·HTTP 멱등성 지원
+테이블은 계약 개수에 더하지 않고 정확한 이름의 allowlist로만 분류한다.
+
+| 승인 Runtime 지원 테이블 | 책임 | 32개 포함 여부 |
+| --- | --- | --- |
+| `audit_event` | Workflow 전이와 연결된 append-only 감사 원장 | 미포함 |
+| `operations_synthetic_import_batch` | 합성 Import 실행·출처·집계 원장 | 미포함 |
+| `operations_synthetic_import_item` | Import 항목별 결과·출처 원장 | 미포함 |
+| `workflow_idempotency_record` | HTTP replay·payload 충돌 요청 원장 | 미포함 |
+
+`workflow_transition_history`는 allowlist가 아니다. 실제 계약 테이블
+`support_inquiry_status_history`로 전환되었으므로 과거 이름을 면제하면
+계약 구현을 이중 계산하거나 잘못 통과시킬 수 있다.
+
+Auditor의 분류 순서는 다음과 같다.
+
+```text
+발견 테이블
+  ├─ 32개 계약의 정확한 이름 → 계약 구현 매핑
+  ├─ 승인 지원 테이블 4개의 정확한 이름 → 별도 Runtime evidence
+  └─ 그 밖의 이름 → unknown + outside-contract blocker
+```
+
+접두사·suffix·wildcard·App 전체 허용은 금지한다. Model과 Migration은
+별도로 분류하므로 한쪽만 존재하는 지원 테이블도
+`model_present`, `migration_present`로 드러나야 한다. 임의의 다섯 번째
+테이블은 unknown 목록과 차단 사유를 만들어야 한다.
+
+```powershell
+& .\backend\.venv\Scripts\python.exe `
+  .\scripts\database\audit_t005_implementation_readiness.py
+```
+
+2026-07-30 검증에서는 계약 `32/32`, 승인 지원 4개, unknown 0,
+blocker 0, 준비도 `READY`를 확인했다. `READY`는 구현 매핑 준비도를
+뜻하며 비작성자 리뷰·외부 재현·공식 계약 승인을 대신하지 않는다.
+
+새 지원 테이블이 필요하면 이름·책임·보존 정책과 32개 계약 포함 여부를
+먼저 결정하고, Auditor의 exact allowlist와 다음 자동 경계를 함께
+갱신한다.
+
+1. 승인한 이름은 approved 목록에만 포함한다.
+2. 임의 이름은 Model·Migration unknown 양쪽에 남긴다.
+3. unknown이 있으면 readiness는 `NOT_READY`다.
+4. 승인 지원 테이블은 계약 테이블 완료 개수에 더하지 않는다.
+
+## 11. 잔여 UUID Bridge 전환 규칙
+
+2026-07-30에 Model·Migration·367건 Importer와 격리 PostgreSQL을
+읽기 전용으로 대조했다. Bridge 값이 `NULL`이고 orphan이 0인 것만으로
+전환 준비 완료를 선언하지 않는다. 신규 부모 행을 업무 의미에 맞게
+만들고, dual-read·dual-write와 backfill 불일치 0을 확인해야 한다.
+
+| 대상 | 당시 판정 | 데이터 근거 | 다음 단계 |
+| --- | --- | --- | --- |
+| Inquiry → QuestionnaireSession | 2단계 전환 가능 | Inquiry 22건의 bridge가 모두 `NULL`; 정식 관계는 QuestionnaireSession OneToOne FK | 링크 Service·dual-write·역관계 조회 전환 후 bridge 제거 |
+| CareRecord → VisitResult | 부분 전환 가능 | Care 25건 중 Visit 연결 1건, 완료 Visit 3건 | 결과 의미와 멱등키 승인 후 결과 생성·1건 backfill |
+| Visit → HandoffReport | 계약·원천 데이터 대기 | Visit 4건에 사전 인계 상태·payload·확인 원천 없음 | 상태·payload·확인자·Importer 계약 승인 후 연결 |
+
+### 11.1 QuestionnaireSession
+
+QuestionnaireSession이 이미 Inquiry nullable OneToOne FK를 가진다.
+Inquiry에 반대 방향 FK를 추가해 관계를 중복 저장하지 않는다.
+
+1. 제출 상태·동일 구독·미연결 상태를 검증하는 링크 Service를 만든다.
+2. 하나의 Transaction에서 `QuestionnaireSession.inquiry`를 설정한다.
+3. 한 릴리스 동안 기존 `questionnaire_session_public_id`를 dual-write한다.
+4. 조회를 `inquiry.questionnaire_session` 역관계로 전환한다.
+5. backfill·불일치 0을 확인한 뒤 bridge를 제거한다.
+6. 역Migration은 정식 FK의 공개 UUID로 bridge를 복원한다.
+
+### 11.2 VisitResult
+
+`visit_result_public_id`를 정수 FK로 전환하기 전에 완료 Visit의 결과
+행을 생성할 수 있어야 한다. `inspection_summary`,
+`resolved_on_site`, 재방문 사유, 결과 생성 멱등키와 결정적 공개 UUID
+규칙을 데이터·방문 업무 담당자가 승인한다.
+
+승인 뒤 결과 행 생성 → CareRecord nullable `visit_result_id` 추가 →
+Visit으로 확인되는 행만 backfill → dual-read·dual-write → UUID bridge
+제거 순서로 진행한다. 방문 결과와 무관한 CareRecord의 `NULL`은 정상이다.
+
+### 11.3 HandoffReport
+
+HandoffReport는 방문 전 인계 자료다. 방문 후 `confirmed_cause`나
+`action_taken`으로 과거 payload를 채우면 시간 누수가 발생하므로
+금지한다. 다음 계약이 먼저 필요하다.
+
+- Handoff 상태 코드와 전이
+- 제품·증상·시도 조치·위험·근거·우선순위 payload 원천
+- AI 초안과 AIRun 연결 규칙
+- 상담사 확인자·확인 시각
+- 367건 Importer source·crosswalk 매핑
+
+승인 후 HandoffReport 생성 → Visit nullable FK → 동일 Inquiry와 확정
+상태 검증 → backfill → 필요 시 NOT NULL·복합 무결성 강화 순서로
+진행한다.
+
+## 12. 유지보수 원칙
+
+- ERD·물리 계약·Model·Migration·Seed·Auditor 변경은 같은 변경 묶음에서
+  추적한다.
+- 새 지원 테이블과 코드 Mapping은 승인 계약과 exact allowlist를 함께
+  갱신한다.
+- 적용된 Migration은 수정하지 않고 새 번호 Migration으로 증분한다.
+- SQLite 보조 검증과 PostgreSQL 물리 제약 검증을 구분해 기록한다.
+- 비작성자 재현과 PM 기준선 반영 전에는 작성자 검증을 공식 완료로
+  확대하지 않는다.
