@@ -20,8 +20,8 @@ CHECK_SCRIPT = (
     / "check_postgresql_connection.py"
 )
 VALID_ENV = {
-    "POSTGRES_DB": "watercare",
-    "POSTGRES_USER": "watercare",
+    "POSTGRES_DB": "waterbridge",
+    "POSTGRES_USER": "waterbridge",
     "POSTGRES_PASSWORD": "do-not-print-this",
     "POSTGRES_HOST": "database.internal",
     "POSTGRES_PORT": "5432",
@@ -158,7 +158,7 @@ def test_connection_failure_does_not_expose_secret(
     def connect(**_kwargs):
         raise RuntimeError(
             "do-not-print-this database.internal "
-            "postgresql://watercare:do-not-print-this@database.internal"
+            "postgresql://waterbridge:do-not-print-this@database.internal"
         )
 
     result, exit_code = check_module.run_check(VALID_ENV, connect)

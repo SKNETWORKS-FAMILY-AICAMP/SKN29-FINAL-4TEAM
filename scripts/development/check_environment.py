@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""WaterCare Backend 가상환경의 재현 상태를 읽기 전용으로 점검한다."""
+"""WaterBridge Backend 가상환경의 재현 상태를 읽기 전용으로 점검한다."""
 
 from __future__ import annotations
 
@@ -20,7 +20,9 @@ VERSION_FILE = BACKEND_ROOT / ".python-version"
 BASE_REQUIREMENTS = BACKEND_ROOT / "requirements" / "base.txt"
 LOCAL_REQUIREMENTS = BACKEND_ROOT / "requirements" / "local.txt"
 CONSTRAINTS = BACKEND_ROOT / "requirements" / "constraints-py313.txt"
-STATE_FILE = VENV_ROOT / ".watercare-environment.json"
+STATE_FILE = VENV_ROOT / ".waterbridge-environment.json"
+# bootstrap이 새 정본을 쓸 때까지 기존 상태를 읽는 전환기 fallback이다.
+LEGACY_STATE_FILE = VENV_ROOT / ".watercare-environment.json"
 PIP_VERSION = "26.0.1"
 
 
@@ -194,13 +196,19 @@ def check_packages(reporter: Reporter, python: Path) -> None:
 
 
 def check_state(reporter: Reporter) -> None:
-    if not STATE_FILE.is_file():
+    state_file = STATE_FILE if STATE_FILE.is_file() else LEGACY_STATE_FILE
+    if not state_file.is_file():
         reporter.failed(
             "환경 fingerprint 상태파일 없음. bootstrap.py를 한 번 실행하세요."
         )
         return
+    if state_file == LEGACY_STATE_FILE:
+        reporter.warned(
+            "기존 환경 상태파일을 호환 모드로 읽었습니다. "
+            "bootstrap.py 실행 후 WaterBridge 상태파일로 전환됩니다."
+        )
     try:
-        state = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+        state = json.loads(state_file.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         reporter.failed(f"환경 fingerprint 상태파일 오류: {exc}")
         return
