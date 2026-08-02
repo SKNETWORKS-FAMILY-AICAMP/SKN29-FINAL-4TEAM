@@ -1,71 +1,100 @@
-# ADR 0008: T-005 데이터 계약 OWNER 기준선
+# ADR 0008: T-005 데이터 계약 기준선
 
-> 상태: `OWNER_BASELINE_ACCEPTED`
+> 기계 상태: `OWNER_BASELINE_ACCEPTED`
+>
+> 현재 해석: `PARTIALLY_SUPERSEDED` — 기본키 정책은
+> [ADR 0010](0010-t005-three-layer-identifier-bridge.md)이 대체하며,
+> 나머지 다섯 결정은 활성 계약에 반영돼 있다.
+>
 > 결정일: 2026-07-26
-> 결정자: 최지용(T-005 OWNER)
-> 비작성자 완료 검토: 증거 미기록 — 구현 착수의 선행 조건이 아님
+>
+> 초기 결정 책임: Backend·Database 담당(T-005)
+>
+> 공식 완료 경계: 작성자 기술 검증 완료, 비작성자 독립 재현·외부 소비
+> 검토·PM 계약 승인 대기
+>
 > 대상 WBS: `T-005`
 
-## 1. 결정
+`OWNER_BASELINE_ACCEPTED`는 기존 검증기와 계약 이력을 위한 기계
+상태값이다. 이 값만으로 팀의 공식 WBS 완료나 모든 소비자 검토 완료를
+뜻하지 않는다.
 
-T-005 주담당 산출물을 후속 구현의 기준선으로 먼저 제공하기 위해 다음
-여섯 항목을 OWNER 기준선으로 채택한다. 이 상태는 최지용 담당 구현에
-즉시 사용할 수 있다는 뜻이며, PM의 공식 WBS 완료 판정이나 작성자 외
-리뷰 완료를 뜻하지 않는다.
+## 1. 결정과 현재 상태
 
-| 결정 ID | 채택 기준 |
-| --- | --- |
-| `T005_PRIMARY_KEY_POLICY` | 일반 ID는 `<ENTITY>-<UUID4_HEX_32>`, 합성 Seed는 `DEMO/SYN-<ENTITY>-<순번>`인 최대 48자 도메인 문자열 |
-| `T005_USAGE_GUIDANCE_PHYSICAL_MAPPING` | 신규 물리 필드는 `usage_guidance_status`; legacy `usage_guidance_code` dual-write 금지 |
-| `T005_USAGE_GUIDANCE_CODESET` | `NORMAL`, `PARTIAL_STOP`, `TOTAL_STOP`, `PENDING_CONSULTATION`; `USE_ALLOWED`는 import 별칭 |
-| `T005_VISIT_STORAGE_MAPPING` | `preferred_date`, `confirmed_date`, `schedule_status`, `synthetic_technician_id`를 분리 저장 |
-| `T005_VISIT_STATUS_CODESET` | `FOLLOW_UP_REQUIRED`를 포함한 7개 방문 일정 상태 |
-| `T005_ENUM_SEED_POLICY` | 계약 YAML → Django `TextChoices`; 합성 Seed는 검증된 고정 ID로 Upsert |
+| 결정 ID | 현재 기준 | 상태 |
+| --- | --- | --- |
+| `T005_PRIMARY_KEY_POLICY` | 내부 `BigAutoField` PK·외부 `public_id` UUID·업무 코드를 분리 | **ADR 0010이 대체** |
+| `T005_USAGE_GUIDANCE_PHYSICAL_MAPPING` | 신규 물리 필드는 `usage_guidance_status`, `usage_guidance_code`는 반입 별칭으로만 사용 | 활성 |
+| `T005_USAGE_GUIDANCE_CODESET` | `NORMAL`, `PARTIAL_STOP`, `TOTAL_STOP`, `PENDING_CONSULTATION`; `USE_ALLOWED`는 반입 별칭 | 활성 |
+| `T005_VISIT_STORAGE_MAPPING` | `preferred_date`, `confirmed_date`, `schedule_status`, `synthetic_technician_id`를 분리 저장 | 활성 |
+| `T005_VISIT_STATUS_CODESET` | `FOLLOW_UP_REQUIRED`를 포함한 7개 방문 일정 상태 | 활성 |
+| `T005_ENUM_SEED_POLICY` | 계약 YAML → Django `TextChoices` → 멱등 Upsert Seed | 활성 |
 
-## 2. 이유
+현재 선택값의 기계 판독 원천은
+[Decision Register v0.3](../database/t-005/t005_decision_register_v0.3.json)과
+[Physical Contract v1.3](../database/t-005/t005_physical_contract_v1.3.json)이다.
+이 ADR은 최초 결정의 이유와 대체 관계를 설명한다.
 
-- WBS와 화면 설계에 이미 명시된 canonical 필드와 코드명을 그대로
-  사용하면 Web·Mobile·AI가 같은 이름을 소비할 수 있다.
-- ERD v3는 해시가 고정된 과거 Snapshot이므로 수정하지 않고 새 물리
-  계약으로 차이를 명시하는 편이 추적 가능하다.
-- 일반 ID에는 UUID4의 충돌 내성을 사용하고, 합성 데이터만 고정 순번을
-  허용하면 운영 발급과 재실행 가능한 Demo Seed를 분리할 수 있다.
-- 날짜 필드는 아직 미정인 시간대 정책과 독립적으로 저장할 수 있다.
-- 코드 계약과 Django Enum을 분리하되 자동 일치 검증을 두면 DB Enum
-  변경 비용 없이 서비스 간 값 불일치를 차단할 수 있다.
+## 2. 결정 이유
 
-## 3. 영향
+- WBS·화면·API·AI가 같은 canonical 필드와 코드값을 소비하게 한다.
+- ERD v3는 과거 Snapshot으로 보존하고 현행 물리 계약에서 차이를
+  명시해 변경 이력을 추적한다.
+- 내부 조인 키, 외부 공개 식별자, 사람이 읽는 업무 코드를 분리해
+  데이터베이스 최적화와 API 안전성을 함께 확보한다.
+- 고객 희망일과 확정일을 분리해 아직 확정되지 않은 시간대 정책과
+  독립적으로 저장한다.
+- 코드 계약과 Django Enum의 자동 일치 검증으로 서비스 간 값 불일치를
+  차단한다.
+- 합성 Seed는 업무 코드 기준 Upsert로 반복 실행해도 중복되지 않게 한다.
 
-- 기준 물리 계약:
-  `docs/database/t-005/t005_physical_contract_v1.0.json`
+## 3. 적용 범위
+
+- 활성 데이터베이스 진입점:
+  [T-005 데이터베이스 설계·구현 기준](../database/t-005/README.md)
+- 활성 식별자 결정:
+  [ADR 0010](0010-t005-three-layer-identifier-bridge.md)
+- 활성 상태 이력·멱등성 결정:
+  [ADR 0011](0011-t005-status-history-idempotency-scope.md)
 - 기계 코드 계약:
-  `contracts/codes/usage-guidance-statuses.yaml`,
-  `contracts/codes/visit-statuses.yaml`
-- Django Model·Migration은 이 기준선을 사용한다.
-- `contracts/state-machine/**`의 전이 규칙은 윤승혁(PM) 관할이므로
-  이번 ADR에서 수정하지 않는다.
-- 실제 PostgreSQL 적용과 schema diff는 실행 환경이 제공된 뒤 별도
-  증거로 남긴다.
+  [사용 안내 상태](../../contracts/codes/usage-guidance-statuses.yaml),
+  [방문 일정 상태](../../contracts/codes/visit-statuses.yaml)
+- Django Model·Migration·Seed는 활성 계약의 이름·타입·코드값을
+  사용한다.
+- 상태 전이 이벤트·Guard·다음 상태는 `contracts/state-machine/**`의
+  별도 책임이며 이 ADR이 임의로 변경하지 않는다.
 
 ## 4. 대안과 제외
 
-- v3 UUID PK를 그대로 유지하는 안은 공통 도메인 문자열 ID 원칙과
-  충돌해 제외했다.
-- `usage_guidance_code`와 `usage_guidance_status` dual-write는
-  신규 DB에서 불필요한 두 원장을 만들기 때문에 제외했다.
-- 방문 일정의 날짜와 작업 시간창을 하나의 DateTime 쌍으로 표현하는
-  안은 고객 희망일·확정일 의미를 잃으므로 제외했다.
-- DB Enum과 수동 INSERT Seed는 변경·재실행 비용 때문에 MVP 기준선에서
-  제외했다.
+- 하나의 문자열 PK에 내부 조인·API 노출·업무 코드 책임을 모두
+  부여하는 방식은 ADR 0010에서 폐기했다.
+- `usage_guidance_code`와 `usage_guidance_status`의 dual-write는
+  두 개의 원장을 만들기 때문에 제외했다.
+- 방문 희망일·확정일과 실제 작업 시간창을 하나의 DateTime 쌍으로
+  표현하는 방식은 업무 의미가 달라 제외했다.
+- DB Enum과 수동 INSERT Seed는 변경·재실행 비용 때문에 MVP
+  기준선에서 제외했다.
 
-## 5. 검증 및 인계
+## 5. 구현·검증 상태
+
+Physical Contract v1.3은 32개 계약 테이블, 3계층 식별자,
+상태 이력 무결성, 멱등성 책임 분리와 PostgreSQL 검증 결과를 반영한다.
+현재 구현 Gate는 `TECHNICALLY_COMPLETE_REVIEW_PENDING`이며, 기술
+미구현 항목과 공식 완료 검토 항목을 구분한다.
+
+저장소 루트에서 다음 명령으로 구조와 계약 정합성을 확인한다.
 
 ```powershell
-python .\scripts\database\validate_t005_schema.py
-python .\scripts\database\validate_t005_schema.py --require-wbs-complete
-python -m pytest .\backend\tests\unit\database\test_t005_schema_validator.py -q
+backend\.venv\Scripts\python.exe scripts\database\validate_t005_schema.py
+backend\.venv\Scripts\python.exe -m pytest backend\tests\unit\database\test_t005_schema_validator.py -q -p no:cacheprovider
 ```
 
-세 검증을 통과한 기준선은 T-017 사용자·권한 Model과 T-006 AI 공통
-스키마 정합화의 입력으로 공유한다. 팀 리뷰에서 이상이 확인되면 이 ADR을
-삭제하지 않고 후속 ADR과 Migration으로 변경 이력을 남긴다.
+`--require-wbs-complete` 검사는 비작성자 독립 재현·외부 검토 등 완료
+증거까지 요구한다. 해당 Gate가 남아 있는 동안 exit code `2`는 계약
+오류가 아니라 공식 완료 조건이 충족되지 않았다는 뜻이다.
+
+## 6. 변경 원칙
+
+후속 변경은 기존 ADR이나 적용된 Migration을 삭제·재작성하지 않는다.
+새 ADR에서 대체 범위와 이유를 기록하고, 활성 계약·Model·Migration·Seed·
+계약 테스트를 같은 변경 단위로 갱신한다.
