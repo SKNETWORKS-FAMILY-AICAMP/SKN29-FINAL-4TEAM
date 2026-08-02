@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth, type AppRole } from "../../app/providers/authContext";
+import { appEnv } from "../../app/config/env";
 import { ROUTE_PATHS } from "../../app/router/routePaths";
 import "../system/SystemPage.css";
 
@@ -57,11 +58,12 @@ export default function LoginPage() {
   return (
     <main className="system-page">
       <section className="system-card" aria-labelledby="login-title">
-        <small>DEMO AUTH · MOCK</small>
+        <small>DEMO AUTH · {appEnv.useMockApi ? "MOCK" : "API"}</small>
         <h1 id="login-title">워터케어 ONE 로그인</h1>
         <p>
-          실제 인증 API 연결 전 사용하는 합성 계정 로그인입니다. 실제 비밀번호와
-          개인정보를 입력하지 마세요.
+          {appEnv.useMockApi
+            ? "인증 API 연결 전 사용하는 합성 계정 로그인입니다. 실제 비밀번호와 개인정보를 입력하지 마세요."
+            : "백엔드 데모 인증 API로 로그인합니다. 실제 비밀번호와 개인정보를 입력하지 마세요."}
         </p>
         <form onSubmit={handleSubmit}>
           <label>
@@ -78,7 +80,11 @@ export default function LoginPage() {
             </select>
           </label>
           <button type="submit" disabled={isLoading}>
-            {isLoading ? "로그인 중…" : "Mock 계정으로 로그인"}
+            {isLoading
+              ? "로그인 중…"
+              : appEnv.useMockApi
+                ? "Mock 계정으로 로그인"
+                : "API 데모 계정으로 로그인"}
           </button>
           {loginError && <p role="alert">{loginError}</p>}
         </form>
