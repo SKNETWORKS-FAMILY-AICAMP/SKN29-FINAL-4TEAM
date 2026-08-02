@@ -1,4 +1,8 @@
 {
+  "document_type": "completion_evidence_template",
+  "wbs": "T-023",
+  "status": "PENDING",
+  "usage": "Copy this template to a separate review evidence file; do not mark this example as approved.",
   "team_review": {
     "status": "PENDING",
     "reviewer": "",
