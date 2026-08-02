@@ -306,19 +306,42 @@ def test_owner_scope_hides_other_or_inactive_subscription():
     assert Inquiry.objects.count() == 0
 
 
-def test_non_customer_is_forbidden_before_resource_lookup():
+@pytest.mark.parametrize(
+    "role",
+    [
+        User.Role.CONSULTANT,
+        User.Role.TECHNICIAN,
+        User.Role.OPERATOR,
+    ],
+)
+def test_non_customer_is_forbidden_before_resource_lookup(role):
     owner = create_customer(6)
     subscription = create_subscription(owner, 6)
-    consultant = create_customer(7, role=User.Role.CONSULTANT)
+    non_customer = create_customer(7, role=role)
 
     response = post_create(
-        authenticated_client(consultant),
+        authenticated_client(non_customer),
         request_body(subscription),
-        key="t022-role",
+        key=f"t022-role-{role.lower()}",
     )
 
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "FORBIDDEN"
+    assert Inquiry.objects.count() == 0
+
+
+def test_anonymous_create_is_rejected_without_side_effects():
+    owner = create_customer(71)
+    subscription = create_subscription(owner, 71)
+
+    response = post_create(
+        APIClient(),
+        request_body(subscription),
+        key="t022-anonymous",
+    )
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "AUTH_REQUIRED"
     assert Inquiry.objects.count() == 0
 
 

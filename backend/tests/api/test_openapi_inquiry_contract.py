@@ -28,6 +28,7 @@ def test_inquiry_operations_are_confirmed_without_runtime_claims():
         ("/inquiries", "post"),
         ("/inquiries/{id}/questionnaire", "patch"),
         ("/inquiries/{id}/action-results", "post"),
+        ("/inquiries/{id}/submit", "post"),
     }
     assert {
         operation["x-contract-status"]
@@ -81,4 +82,45 @@ def test_openapi_root_references_confirmed_inquiry_paths():
     )
     assert root["paths"]["/inquiries/{id}/action-results"]["$ref"] == (
         "./paths/inquiries.yaml#/~1inquiries~1{id}~1action-results"
+    )
+    assert root["paths"]["/inquiries/{id}/submit"]["$ref"] == (
+        "./paths/inquiries.yaml#/~1inquiries~1{id}~1submit"
+    )
+
+
+def test_submit_symptom_contract_uses_saved_input_and_state_version_only():
+    contract = load_yaml(INQUIRY_CONTRACT)
+    operation = contract["/inquiries/{id}/submit"]["post"]
+    request_schema = load_yaml(
+        OPENAPI_DIR
+        / "components"
+        / "schemas"
+        / "questionnaire"
+        / "SymptomSubmissionRequest.yaml"
+    )
+    result_schema = load_yaml(
+        INQUIRY_SCHEMA_DIR / "SubmitSymptomResult.yaml"
+    )
+
+    assert operation["operationId"] == "submitSymptom"
+    assert operation["x-state-machine"] == {
+        "event": "SUBMIT_SYMPTOM",
+        "operation_id": "submitSymptom",
+        "transition_rule": "TR-INQ-002",
+        "from_state": "DRAFT",
+        "to_state": "QUESTIONNAIRE_IN_PROGRESS",
+        "actor_role": "CUSTOMER",
+        "symptom_source": "Inquiry.raw_text",
+        "adhoc_questionnaire_projection": "INQUIRY_STATE_AND_HISTORY",
+    }
+    assert operation["x-runtime-preconditions"] == {
+        "subscription_status": "ACTIVE",
+        "product_model_required": True,
+    }
+    assert request_schema["x-contract-status"] == "CONFIRMED"
+    assert request_schema["required"] == ["state_version"]
+    assert set(request_schema["properties"]) == {"state_version"}
+    assert result_schema["x-contract-status"] == "CONFIRMED"
+    assert result_schema["properties"]["state"]["const"] == (
+        "QUESTIONNAIRE_IN_PROGRESS"
     )

@@ -327,11 +327,19 @@ def test_new_key_on_cancelled_inquiry_returns_terminal_snapshot():
     assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 2
 
 
-def test_cancel_owner_scope_and_role_are_enforced():
+@pytest.mark.parametrize(
+    "role",
+    [
+        User.Role.CONSULTANT,
+        User.Role.TECHNICIAN,
+        User.Role.OPERATOR,
+    ],
+)
+def test_cancel_owner_scope_and_role_are_enforced(role):
     owner = create_user(6)
     _owner_client, inquiry = create_inquiry(owner, 6)
     other_customer = create_user(7)
-    consultant = create_user(8, role=User.Role.CONSULTANT)
+    non_customer = create_user(8, role=role)
 
     owner_scope_response = post_cancel(
         authenticated_client(other_customer),
@@ -340,10 +348,10 @@ def test_cancel_owner_scope_and_role_are_enforced():
         key="t023-owner-scope",
     )
     role_response = post_cancel(
-        authenticated_client(consultant),
+        authenticated_client(non_customer),
         inquiry,
         cancel_body(),
-        key="t023-role",
+        key=f"t023-role-{role.lower()}",
     )
 
     assert owner_scope_response.status_code == 404
@@ -354,6 +362,33 @@ def test_cancel_owner_scope_and_role_are_enforced():
     assert role_response.json()["error"]["code"] == "FORBIDDEN"
     inquiry.refresh_from_db()
     assert inquiry.status_code == Inquiry.Status.DRAFT
+    assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 1
+    assert not IdempotencyRecord.objects.filter(
+        resource_public_id=inquiry.public_id,
+        operation_id="cancelInquiry",
+    ).exists()
+
+
+def test_anonymous_cancel_is_rejected_without_side_effects():
+    owner = create_user(81)
+    _owner_client, inquiry = create_inquiry(owner, 81)
+
+    response = post_cancel(
+        APIClient(),
+        inquiry,
+        cancel_body(),
+        key="t023-anonymous",
+    )
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "AUTH_REQUIRED"
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.DRAFT
+    assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 1
+    assert not IdempotencyRecord.objects.filter(
+        resource_public_id=inquiry.public_id,
+        operation_id="cancelInquiry",
+    ).exists()
 
 
 def test_cancel_rejects_missing_header_and_unknown_reason():

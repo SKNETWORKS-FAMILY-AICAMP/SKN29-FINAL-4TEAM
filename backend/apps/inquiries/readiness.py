@@ -54,6 +54,7 @@ RUNTIME_FILES = (
     INQUIRIES_DIR / "models" / "followup_answer.py",
     INQUIRIES_DIR / "repositories" / "inquiry_repository.py",
     INQUIRIES_DIR / "services" / "inquiry_service.py",
+    INQUIRIES_DIR / "services" / "inquiry_transition_service.py",
     INQUIRIES_DIR / "api" / "serializers" / "create_inquiry.py",
     INQUIRIES_DIR / "api" / "serializers" / "symptom_submission.py",
     INQUIRIES_DIR / "api" / "views.py",

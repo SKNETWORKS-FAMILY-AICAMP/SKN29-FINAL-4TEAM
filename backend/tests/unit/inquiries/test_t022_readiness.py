@@ -305,6 +305,9 @@ def test_root_openapi_exposes_all_confirmed_inquiry_paths():
     assert root_contract["paths"]["/inquiries/{id}/action-results"]["$ref"] == (
         "./paths/inquiries.yaml#/~1inquiries~1{id}~1action-results"
     )
+    assert root_contract["paths"]["/inquiries/{id}/submit"]["$ref"] == (
+        "./paths/inquiries.yaml#/~1inquiries~1{id}~1submit"
+    )
 
 
 def test_urlpatterns_assignment_requires_a_meaningful_value():

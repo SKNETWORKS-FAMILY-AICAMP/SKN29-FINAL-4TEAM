@@ -20,6 +20,8 @@ paths:
     $ref: ./paths/inquiries.yaml#/~1inquiries~1{id}~1questionnaire
   /inquiries/{id}/action-results:
     $ref: ./paths/inquiries.yaml#/~1inquiries~1{id}~1action-results
+  /inquiries/{id}/submit:
+    $ref: ./paths/inquiries.yaml#/~1inquiries~1{id}~1submit
   /inquiries/{id}/cancel:
     $ref: ./paths/workflow.yaml#/~1inquiries~1{id}~1cancel
   /health:

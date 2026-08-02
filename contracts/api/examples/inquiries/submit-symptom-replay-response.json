@@ -1,0 +1,31 @@
+{
+  "success": true,
+  "data": {
+    "inquiry_id": "30000000-0000-4000-8000-000000000001",
+    "state": "QUESTIONNAIRE_IN_PROGRESS",
+    "state_version": 2,
+    "idempotent_replay": true,
+    "allowed_actions": [
+      {
+        "code": "SUBMIT_ANSWERS",
+        "label": "추가 답변 제출",
+        "operation_id": "submitFollowUpAnswers",
+        "style": "PRIMARY",
+        "requires_confirmation": false,
+        "confirmation_message": null
+      },
+      {
+        "code": "CANCEL_INQUIRY",
+        "label": "문의 취소",
+        "operation_id": "cancelInquiry",
+        "style": "DESTRUCTIVE",
+        "requires_confirmation": true,
+        "confirmation_message": "문의를 취소하시겠습니까?"
+      }
+    ]
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "4e437c06-5023-4b40-a0d1-ef8fef76d109"
+  }
+}

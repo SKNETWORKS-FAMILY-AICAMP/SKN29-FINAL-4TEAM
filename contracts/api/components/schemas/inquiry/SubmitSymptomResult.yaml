@@ -1,0 +1,61 @@
+title: SubmitSymptomResult
+type: object
+description: SUBMIT_SYMPTOM 성공 또는 멱등 재사용 결과
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - inquiry_id
+  - state
+  - state_version
+  - idempotent_replay
+  - allowed_actions
+properties:
+  inquiry_id:
+    type: string
+    format: uuid
+    description: 제출된 문의의 외부 공개 UUID
+  state:
+    type: string
+    const: QUESTIONNAIRE_IN_PROGRESS
+    description: SUBMIT_SYMPTOM 성공 후 문의 상태
+  state_version:
+    type: integer
+    minimum: 2
+    description: 성공한 상태 전환으로 1 증가한 최신 문의 상태 버전
+  idempotent_replay:
+    type: boolean
+    description: 동일 Idempotency-Key와 동일 요청의 저장 결과 재사용 여부
+  allowed_actions:
+    type: array
+    minItems: 2
+    items:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - label
+        - operation_id
+        - style
+        - requires_confirmation
+        - confirmation_message
+      properties:
+        code:
+          type: string
+          enum:
+            - SUBMIT_ANSWERS
+            - CANCEL_INQUIRY
+        label:
+          type: string
+          minLength: 1
+        operation_id:
+          type: string
+          minLength: 1
+        style:
+          type: string
+          minLength: 1
+        requires_confirmation:
+          type: boolean
+        confirmation_message:
+          type:
+            - string
+            - "null"

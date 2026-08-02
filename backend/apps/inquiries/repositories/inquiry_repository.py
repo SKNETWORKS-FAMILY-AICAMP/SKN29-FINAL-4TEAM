@@ -84,6 +84,7 @@ class InquiryRepository:
                 "subscription",
                 "subscription__customer",
                 "subscription__customer__user",
+                "subscription__product_model",
             )
             .filter(
                 public_id=inquiry_public_id,
@@ -91,6 +92,35 @@ class InquiryRepository:
                 subscription__customer__deleted_at__isnull=True,
             )
             .first()
+        )
+
+    @staticmethod
+    def latest_visit_status(inquiry: Inquiry) -> str | None:
+        """Return the newest visit status for workflow snapshot validation."""
+
+        return (
+            inquiry.visits.order_by("-created_at")
+            .values_list("status", flat=True)
+            .first()
+        )
+
+    @staticmethod
+    def apply_state_transition(
+        inquiry: Inquiry,
+        *,
+        status_code: str,
+        state_version: int,
+    ) -> None:
+        """Persist only workflow state fields and preserve customer input."""
+
+        inquiry.status_code = status_code
+        inquiry.state_version = state_version
+        inquiry.save(
+            update_fields=[
+                "status_code",
+                "state_version",
+                "updated_at",
+            ]
         )
 
     @staticmethod

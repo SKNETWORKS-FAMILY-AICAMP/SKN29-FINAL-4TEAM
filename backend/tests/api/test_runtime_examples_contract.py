@@ -18,6 +18,8 @@ from apps.inquiries.api.serializers import (
     CancelInquirySerializer,
     CreateInquirySerializer,
     InquiryResponseSerializer,
+    SubmitSymptomResponseSerializer,
+    SymptomSubmissionSerializer,
 )
 
 
@@ -43,6 +45,9 @@ EXPECTED_JSON_FILES = {
     "inquiries/start-inquiry-replay-response.json",
     "inquiries/start-inquiry-request.json",
     "inquiries/start-inquiry-success-response.json",
+    "inquiries/submit-symptom-replay-response.json",
+    "inquiries/submit-symptom-request.json",
+    "inquiries/submit-symptom-success-response.json",
     "workflow/cancel-inquiry-replay-response.json",
     "workflow/cancel-inquiry-request.json",
     "workflow/cancel-inquiry-success-response.json",
@@ -118,6 +123,7 @@ def test_request_and_response_examples_match_runtime_serializers():
     logout_request = load_json("auth/logout-request.json")
     start_request = load_json("inquiries/start-inquiry-request.json")
     cancel_request = load_json("workflow/cancel-inquiry-request.json")
+    submit_request = load_json("inquiries/submit-symptom-request.json")
 
     request_serializers = (
         DemoLoginRequestSerializer(data=login_request),
@@ -125,6 +131,7 @@ def test_request_and_response_examples_match_runtime_serializers():
         RefreshTokenRequestSerializer(data=logout_request),
         CreateInquirySerializer(data=start_request),
         CancelInquirySerializer(data=cancel_request),
+        SymptomSubmissionSerializer(data=submit_request),
     )
     for serializer in request_serializers:
         assert serializer.is_valid(), serializer.errors
@@ -137,11 +144,15 @@ def test_request_and_response_examples_match_runtime_serializers():
     cancel_data = load_json(
         "workflow/cancel-inquiry-success-response.json"
     )["data"]
+    submit_data = load_json(
+        "inquiries/submit-symptom-success-response.json"
+    )["data"]
 
     assert AuthenticatedUserSerializer(data=demo_data["user"]).is_valid()
     assert AuthenticatedUserSerializer(data=me_data).is_valid()
     assert InquiryResponseSerializer(data=start_data).is_valid()
     assert CancelInquiryResponseSerializer(data=cancel_data).is_valid()
+    assert SubmitSymptomResponseSerializer(data=submit_data).is_valid()
 
 
 def test_auth_tokens_are_explicit_non_secret_placeholders():
@@ -183,6 +194,10 @@ def test_replay_examples_only_change_replay_flag_in_response_data():
             "workflow/cancel-inquiry-success-response.json",
             "workflow/cancel-inquiry-replay-response.json",
         ),
+        (
+            "inquiries/submit-symptom-success-response.json",
+            "inquiries/submit-symptom-replay-response.json",
+        ),
     )
 
     for success_path, replay_path in pairs:
@@ -218,6 +233,28 @@ def test_start_allowed_actions_match_pm_state_contract():
     )["data"]["allowed_actions"]
 
     assert action_codes == ["SUBMIT_SYMPTOM", "CANCEL_INQUIRY"]
+    assert actual == expected
+
+
+def test_submit_allowed_actions_match_pm_state_contract():
+    contract = load_yaml(
+        REPOSITORY_ROOT / "contracts" / "state-machine"
+        / "allowed-actions.yaml"
+    )
+    catalog = {
+        item["code"]: item for item in contract["action_catalog"]
+    }
+    action_codes = [
+        item["action"]
+        for item in contract["state_role_actions"]
+        ["QUESTIONNAIRE_IN_PROGRESS"]["CUSTOMER"]
+    ]
+    expected = [catalog[code] for code in action_codes]
+    actual = load_json(
+        "inquiries/submit-symptom-success-response.json"
+    )["data"]["allowed_actions"]
+
+    assert action_codes == ["SUBMIT_ANSWERS", "CANCEL_INQUIRY"]
     assert actual == expected
 
 
