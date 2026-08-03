@@ -382,3 +382,18 @@ Public UUID 분석 요청이 모두 성공했다.
   결정과 공동 검증 전까지 완료로 표시하지 않는다.
 - Python `3.13.13` 전체 단위 회귀는 `79 passed, 3 warnings`이며 `pip check`,
   JSON 파싱, Python Compile, `git diff --check`를 통과했다.
+
+---
+
+## 2026-08-03 DEC-WEB-BE-008 공식 근거 공개 계약 제안
+
+- `20260803_이동윤_DEC-WEB-BE-008_공식근거_공개계약_PROPOSED.md`에 상담사
+  화면의 Evidence 공개 필드, 내부 비공개 필드, 링크·근거 없음 Fallback과
+  담당자별 검토 요청을 `PROPOSED` 상태로 작성했다.
+- AI `EvidenceReference`는 근거 후보이고 최종 화면 `EvidenceCardDTO` 조립과
+  권한·저장은 Backend 책임이라는 경계를 유지했다.
+- 현재 계약에 없는 발행일·개정일을 임의 확정하지 않았고, 비어 있는 Backend
+  EvidenceCard Schema, 검색 청크 원문을 전달하는 현재 `summary` 매핑, 다중
+  페이지 저장, 검증 상태 Registry를 계약 공백으로 명시했다.
+- 최지용·한예나·김은진의 검토, 이동윤의 도메인 결정, 윤승혁 PM 최종 승인
+  전에는 Active 계약·Runtime·Web 구현에 반영하지 않는다.
