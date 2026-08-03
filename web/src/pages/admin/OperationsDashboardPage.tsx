@@ -20,18 +20,19 @@ import {
   getOperationsFilterOptions,
 } from "../../features/operations-dashboard/model/operationsDashboardModel";
 import {
-  COUNSELOR_INQUIRIES,
-} from "../../features/consultation/model/consultantWorkspaceMock";
-import {
   formatWorkspaceDateTime,
   getStatusBadgeVariant,
   STATUS_LABELS,
 } from "../../features/consultation/model/consultantWorkspaceModel";
 import type { CounselorInquiry } from "../../features/consultation/model/consultantWorkspaceTypes";
+import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
 import ApiIntegrationPanel from "../../features/runtime-status/components/ApiIntegrationPanel";
 import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntimeStatus";
 import "./OperationsDashboardPage.css";
 import "./OperationsDashboardTheme.css";
+
+const OPERATIONS_INQUIRIES =
+  consultantWorkspaceRepository.listAllInquiries();
 
 const INQUIRY_COLUMNS: readonly DataTableColumn<CounselorInquiry>[] = [
   {
@@ -79,11 +80,11 @@ export default function OperationsDashboardPage() {
     useOperationsDashboardFilters();
   const mockState = searchParams.get("mockState");
   const sourceInquiries = useMemo(
-    () => (mockState === "empty" ? [] : COUNSELOR_INQUIRIES),
+    () => (mockState === "empty" ? [] : OPERATIONS_INQUIRIES),
     [mockState],
   );
   const options = useMemo(
-    () => getOperationsFilterOptions(COUNSELOR_INQUIRIES),
+    () => getOperationsFilterOptions(OPERATIONS_INQUIRIES),
     [],
   );
   const summary = useMemo(
@@ -198,7 +199,7 @@ export default function OperationsDashboardPage() {
             <h1>운영 대시보드</h1>
             <p>문의 현황과 상담·방문 전환, 처리 예외를 공식 합성 데이터로 점검합니다.</p>
           </div>
-          <span>기준 데이터 · 공식 합성 문의 {COUNSELOR_INQUIRIES.length}건</span>
+          <span>기준 데이터 · 공식 합성 문의 {OPERATIONS_INQUIRIES.length}건</span>
         </header>
 
         <ApiIntegrationPanel />

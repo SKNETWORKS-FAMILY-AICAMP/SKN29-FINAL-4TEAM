@@ -11,8 +11,8 @@ import "../../common/styles/legacy/fix-base.css";
 import "../../common/styles/legacy/staff-desktop-v6.css";
 import { toInquiryId } from "../../entities/inquiry/inquiryIdentifiers";
 import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
-import { COUNSELOR_INQUIRIES } from "../../features/consultation/model/consultantWorkspaceMock";
 import { getCounselorMetrics } from "../../features/consultation/model/consultantWorkspaceModel";
+import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
 import VisitTransitionForm from "../../features/visit-transition/components/VisitTransitionForm";
 import type { VisitMockAction } from "../../features/visit-transition/model/visitTransitionTypes";
 import "./VisitTransitionPage.css";
@@ -35,9 +35,7 @@ export default function VisitTransitionPage() {
     locationState?.returnTo,
   );
   const inquiryId = rawInquiryId ? toInquiryId(rawInquiryId) : null;
-  const inquiry = COUNSELOR_INQUIRIES.find(
-    (item) => item.inquiryId === inquiryId,
-  );
+  const inquiry = consultantWorkspaceRepository.findInquiry(inquiryId);
   const [stateVersion, setStateVersion] = useState(
     locationState?.stateVersion ?? inquiry?.stateVersion ?? 1,
   );
@@ -73,7 +71,8 @@ export default function VisitTransitionPage() {
   }, []);
 
   const metrics = useMemo(
-    () => getCounselorMetrics(COUNSELOR_INQUIRIES),
+    () =>
+      getCounselorMetrics(consultantWorkspaceRepository.listAllInquiries()),
     [],
   );
   const queueCount = metrics.consultation + metrics.danger + metrics.finalizable;

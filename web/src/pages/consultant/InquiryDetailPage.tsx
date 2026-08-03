@@ -16,9 +16,9 @@ import ConsultantInquiryDetail, {
   type ConsultantDetailSectionStates,
 } from "../../features/consultation/components/ConsultantInquiryDetail";
 import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
-import { COUNSELOR_INQUIRIES } from "../../features/consultation/model/consultantWorkspaceMock";
 import { getCounselorMetrics } from "../../features/consultation/model/consultantWorkspaceModel";
 import type { DetailTab } from "../../features/consultation/model/consultantWorkspaceTypes";
+import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
 import "./InquiryDetailPage.css";
 
 interface InquiryDetailLocationState {
@@ -52,9 +52,7 @@ export default function InquiryDetailPage() {
   const query = new URLSearchParams(location.search);
   const partialFailure = PARTIAL_FAILURES[query.get("mockFailure") ?? ""];
   const mockState = query.get("mockState");
-  const inquiry = COUNSELOR_INQUIRIES.find(
-    (item) => item.inquiryId === inquiryId,
-  );
+  const inquiry = consultantWorkspaceRepository.findInquiry(inquiryId);
 
   useEffect(() => {
     document.body.classList.add("v6-body", "v6-body--counselor");
@@ -64,7 +62,8 @@ export default function InquiryDetailPage() {
   }, []);
 
   const metrics = useMemo(
-    () => getCounselorMetrics(COUNSELOR_INQUIRIES),
+    () =>
+      getCounselorMetrics(consultantWorkspaceRepository.listAllInquiries()),
     [],
   );
   const queueCount = metrics.consultation + metrics.danger + metrics.finalizable;
