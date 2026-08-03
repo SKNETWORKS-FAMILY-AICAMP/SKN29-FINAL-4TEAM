@@ -10,9 +10,9 @@
 | --- | --- |
 | 검증 날짜 | 2026-08-03 |
 | 브랜치 | `yena` |
-| 기준 Commit | `d4bb32eaf75dc859830238526855362cfa7ad7a6` |
-| Commit 제목 | `2026-08-03 \| 예나 브랜치 병합` |
-| 검증 Source | 기준 Commit + Repository 경계 작업 트리 |
+| 기준 Commit | `600c9a6` |
+| Commit 제목 | `2026-08-03 \| 4주차 Web 기준선 및 연동 준비 정리` |
+| 검증 Source | 기준 Commit에 포함된 최종 Web Source |
 | Node.js | `v26.4.0` |
 | npm | `11.17.0` |
 | Vite | `8.1.5` |
