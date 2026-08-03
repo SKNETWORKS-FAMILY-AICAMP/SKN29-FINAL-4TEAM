@@ -1,11 +1,11 @@
 import { useState } from "react";
 
-import { getConsultantAllowedActions } from "../../consultation/model/consultantWorkspaceMock";
 import type {
   CounselorAllowedAction,
   CounselorInquiry,
   CounselorStatus,
 } from "../../consultation/model/consultantWorkspaceTypes";
+import { consultantWorkspaceRepository } from "../../consultation/repositories/consultantWorkspaceRepository";
 import { MOCK_TECHNICIANS } from "../model/visitTransitionMock";
 
 interface InlineVisitSchedulerProps {
@@ -72,7 +72,7 @@ export default function InlineVisitScheduler({
       stateVersion: nextVersion,
       allowedActions:
         status === "VISIT_SCHEDULING"
-          ? getConsultantAllowedActions(status)
+          ? consultantWorkspaceRepository.getAllowedActions(status)
           : [],
     });
   };

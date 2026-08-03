@@ -7,7 +7,6 @@ import {
   reloadConsultationDetailMock,
   submitConsultationMock,
 } from "../api/consultationMockApi";
-import { getConsultantAllowedActions } from "../model/consultantWorkspaceMock";
 import type {
   CounselorAllowedAction,
   CounselorInquiry,
@@ -19,6 +18,7 @@ import type {
   ConsultationMockScenario,
   ProvisionalConsultationActionRequest,
 } from "../model/consultationTypes";
+import { consultantWorkspaceRepository } from "../repositories/consultantWorkspaceRepository";
 
 interface ExecuteConsultationArgs {
   action: CounselorAllowedAction;
@@ -108,7 +108,7 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
       const nextAllowedActions =
         nextStatus === currentStatus
           ? latestDetail.allowedActions
-          : getConsultantAllowedActions(
+          : consultantWorkspaceRepository.getAllowedActions(
               nextStatus,
               inquiry.feedbackResolved,
             );
