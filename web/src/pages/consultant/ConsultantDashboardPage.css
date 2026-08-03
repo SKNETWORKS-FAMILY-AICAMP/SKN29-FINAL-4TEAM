@@ -2917,33 +2917,3 @@
     inset 1px 1px 2px rgb(255 255 255 / 42%),
     inset -1px -2px 3px rgb(22 79 112 / 18%);
 }
-
-.simple-guidance:not(.is-danger) {
-  border-color: rgb(164 213 228 / 66%) !important;
-  background: linear-gradient(145deg, rgb(236 249 252 / 86%), rgb(210 240 238 / 56%)) !important;
-  box-shadow:
-    inset 2px 2px 3px rgb(255 255 255 / 90%),
-    0 7px 17px rgb(55 117 139 / 7%);
-}
-
-.simple-visit-scheduler > header button,
-.simple-visit-actions button,
-.simple-summary-action {
-  border: 1px solid rgb(255 255 255 / 92%);
-  background: linear-gradient(145deg, rgb(255 255 255 / 90%), rgb(205 233 244 / 64%));
-  box-shadow:
-    inset 2px 2px 3px rgb(255 255 255 / 98%),
-    inset -2px -3px 5px rgb(54 128 162 / 11%),
-    0 8px 18px rgb(50 109 136 / 10%);
-}
-
-.simple-visit-actions button.is-primary,
-.simple-summary-action {
-  border-color: rgb(255 255 255 / 90%);
-  background: linear-gradient(145deg, #72b9dc, #347dab);
-  box-shadow:
-    inset 2px 2px 3px rgb(255 255 255 / 40%),
-    inset -2px -3px 5px rgb(20 77 111 / 20%),
-    0 9px 20px rgb(43 106 143 / 18%);
-  color: #fff;
-}

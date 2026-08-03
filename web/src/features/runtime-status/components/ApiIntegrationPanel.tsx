@@ -1,9 +1,18 @@
 import ApiRuntimeStatus from "./ApiRuntimeStatus";
+import { getBlockedApiCount } from "../model/apiIntegrationReadiness";
 
 const COVERAGE = [
   { label: "OpenAPI Runtime", value: "7 / 9", tone: "partial" },
-  { label: "상담사 화면 필수 API", value: "0 / 5", tone: "blocked" },
-  { label: "운영자 화면 필수 API", value: "0 / 1", tone: "blocked" },
+  {
+    label: "상담사 화면 필수 API",
+    value: `0 / ${getBlockedApiCount("CONSULTANT")}`,
+    tone: "blocked",
+  },
+  {
+    label: "운영자 화면 필수 API",
+    value: `0 / ${getBlockedApiCount("OPERATIONS")}`,
+    tone: "blocked",
+  },
 ] as const;
 
 export default function ApiIntegrationPanel() {
