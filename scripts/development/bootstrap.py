@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""WaterCare Backend 로컬 가상환경을 재현한다.
+"""WaterBridge Backend 로컬 가상환경을 재현한다.
 
 이 스크립트는 Python 표준 라이브러리만 사용한다. 비밀값이나 .env를
 생성·수정하지 않으며 Docker, Migration, Seed도 자동 실행하지 않는다.
@@ -30,7 +30,9 @@ VERSION_FILE = BACKEND_ROOT / ".python-version"
 LOCAL_REQUIREMENTS = BACKEND_ROOT / "requirements" / "local.txt"
 BASE_REQUIREMENTS = BACKEND_ROOT / "requirements" / "base.txt"
 CONSTRAINTS = BACKEND_ROOT / "requirements" / "constraints-py313.txt"
-STATE_FILE_NAME = ".watercare-environment.json"
+STATE_FILE_NAME = ".waterbridge-environment.json"
+# 기존 가상환경을 재설치하지 않고 읽기 위한 전환기 호환 파일명이다.
+LEGACY_STATE_FILE_NAME = ".watercare-environment.json"
 PIP_VERSION = "26.0.1"
 
 
@@ -278,14 +280,16 @@ def write_state(python: Path) -> None:
 
 
 def state_matches() -> bool:
-    state_file = VENV_ROOT / STATE_FILE_NAME
-    if not state_file.is_file():
-        return False
-    try:
-        state = json.loads(state_file.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return False
-    return state.get("fingerprint") == environment_fingerprint()
+    for state_file_name in (STATE_FILE_NAME, LEGACY_STATE_FILE_NAME):
+        state_file = VENV_ROOT / state_file_name
+        if not state_file.is_file():
+            continue
+        try:
+            state = json.loads(state_file.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        return state.get("fingerprint") == environment_fingerprint()
+    return False
 
 
 def backup_existing_environment() -> Path | None:

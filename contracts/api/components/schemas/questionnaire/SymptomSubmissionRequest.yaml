@@ -1,5 +1,12 @@
 title: SymptomSubmissionRequest
 type: object
-description: 증상 제출 요청
+description: 저장된 고객 원문과 대표 증상을 SUBMIT_SYMPTOM으로 확정하는 요청
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required:
+  - state_version
+properties:
+  state_version:
+    type: integer
+    minimum: 1
+    description: 클라이언트가 마지막으로 확인한 문의 상태 버전

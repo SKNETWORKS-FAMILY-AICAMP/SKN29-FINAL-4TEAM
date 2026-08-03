@@ -17,10 +17,10 @@
 | 역할 | 단일 기준 |
 | --- | --- |
 | 기계 판독 계약 | 이 디렉터리의 Logical·Decision·Physical Contract |
-| 현재 스키마 변경 절차 | [T-005 데이터베이스 스키마 변경 실행 가이드](../../individual/jiyong/technical/backend/t005_데이터베이스_스키마_변경_실행_가이드.md) |
-| 2026-07-31 실행 증거 | [T-005 WaterBridge PostgreSQL 통합 검증 보고서](../../individual/jiyong/technical/backend/20260731_t005_워터브리지_postgresql_통합_검증_보고서.md) |
-| 구현 변화와 사고 이력 | [T-005 테이블 구현·변경 이력](../../individual/jiyong/technical/backend/20260730_t005_테이블_구현_및_변경_이력.md) |
-| 사람이 읽는 전체 테이블 설명 | [WaterCare 테이블 명세](../watercare_table_dictionary.md) |
+| 현재 스키마 변경 절차 | [Django·PostgreSQL 스키마 변경 가이드](../../individual/jiyong/데이터베이스/Django_PostgreSQL_스키마_변경_가이드.md) |
+| 2026-07-31 실행 증거 | [WaterBridge PostgreSQL 통합 검증 보고서](../../individual/jiyong/데이터베이스/PostgreSQL_통합검증_보고서_20260731.md) |
+| 구현 변화와 사고 이력 | [Django·PostgreSQL 테이블 구현·변경 이력](../../individual/jiyong/데이터베이스/Django_PostgreSQL_테이블_구현_변경이력_20260730.md) |
+| 사람이 읽는 전체 테이블 설명 | [WaterBridge 테이블 명세](../waterbridge_table_dictionary.md) |
 
 문서와 Runtime이 다르면 ADR·활성 계약·Django Model·Migration·실제
 PostgreSQL 검증 결과를 순서대로 대조한다. 과거 Snapshot의 수치나
@@ -152,7 +152,7 @@ Importer는 새 빈 격리 DB에서 Migration 후 실행·Replay하고 검증 �
 ## 9. 이력 관리
 
 과거 v0.1~v1.6 서술과 Wave별 세부 실행 기록은
-[T-005 테이블 구현·변경 이력](../../individual/jiyong/technical/backend/20260730_t005_테이블_구현_및_변경_이력.md)으로
+[Django·PostgreSQL 테이블 구현·변경 이력](../../individual/jiyong/데이터베이스/Django_PostgreSQL_테이블_구현_변경이력_20260730.md)으로
 통합했다. 이 README에는 현재 계약·검증 방법·완료 경계만 유지한다.
 
 정확한 과거 원문은 Git 이력에서 확인하며, 이전 계약 JSON·ERD·Evidence

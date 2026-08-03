@@ -1,51 +1,66 @@
-# WaterCare API 문서 안내
+# WaterBridge API 문서 안내
 
-> 문서 상태: **OWNER_CONFIRMED DESIGN BASELINE**
+> 기준일: 2026-08-02
 >
-> 이 디렉토리는 외부 개발자와 프로젝트 팀원이 Public API 계약을 빠르게 이해하도록 만든 사람용 설명 문서다.
+> 문서 상태: 팀 공용 API 설계·Runtime 현황
 >
-> 작성·개정 책임: **최지용(Backend·API OWNER)**
+> 유지관리 역할: Backend·API 담당
 
-최지용의 42개 API 작성·설계 기준선은 확정됐다. OpenAPI 정합화,
-Runtime 구현과 소비 검증 성숙도는 항목별 상태로 별도 관리한다.
+이 디렉터리는 WaterBridge Public API의 사람용 설계, 기계 계약과 실제
+Django Runtime 지원 범위를 구분해 제공한다. 문서에 Endpoint가 있다는
+사실만으로 Runtime 구현 또는 팀 검증 완료를 의미하지 않는다.
 
 ## 문서 구성
 
-- [WaterCare API 명세](watercare_api_specification.md): Public Endpoint, 공통 요청·응답, 오류, 권한, 상태 전이와 검토 상태
-- [API Runtime 구현 상태](runtime_implementation_status.md): OpenAPI 9개·Django Runtime 7개·OpenAPI-only 2개의 현재 매핑과 검증 명령
-- [백엔드 API 계약·런타임 통합 검증 보고서](../individual/jiyong/manuals/20260729_백엔드_api_계약_및_런타임_통합_검증_보고서.md): Auth를 포함한 오류 Registry·JSON 예시·계약·권한·전체 회귀 실행 증거
-- [백엔드 API 계약 개발·인계 가이드](../individual/jiyong/technical/backend/백엔드_api_계약_개발_및_인계_가이드.md): 변경 절차, 검증 기준과 역할별 인계 내용
-- [OpenAPI 계약](../../contracts/api/openapi.yaml): 도구와 테스트에서 사용하는 기계 기준본. 개별 operation의 `x-contract-status`로 구현 성숙도를 구분
+- [WaterBridge Public API 명세](waterbridge_api_specification.md): 공통 규칙,
+  현재 기계 계약 10개와 설계 백로그의 상태
+- [API Runtime 구현 상태](runtime_implementation_status.md): OpenAPI 10개,
+  Django Runtime 8개와 OpenAPI-only 2개의 Route·View·검증 경계
+- [OpenAPI 계약](../../contracts/api/openapi.yaml): Method·Path·Schema를
+  도구와 계약 테스트가 읽는 기계 기준본
+- [Django REST API·OpenAPI 계약·구현·보안검증 가이드](../individual/jiyong/API/Django_REST_API_OpenAPI_계약_구현_보안검증_가이드.md):
+  Backend 작성자 검증, 오류·예시와 변경 절차의 상세 기록
 
-## 계약 우선순위
+## 기준 원본과 책임 경계
 
-`contracts/api/**`는 최지용이 작성·갱신하는 기계 기준본이다. 최지용은
-v0.5 기준선과 현재 Runtime을 대조해 Method·Path·Schema를 정합화하고,
-사람용 명세·구현·예시·계약 테스트를 같은 변경에서 갱신한다.
+| 범위 | 기준 원본 | 유지관리·검토 역할 |
+|---|---|---|
+| Public REST Method·Path·Schema | `contracts/api/**` | Backend·API 담당 |
+| 상태·전이·Guard·허용 행동 | `contracts/state-machine/**` | PM·기술 통합 담당 |
+| AI 입출력 Schema | `contracts/ai/**` | AI·RAG 담당 |
+| 실행 Route·View·Serializer | `backend/**` | Backend 담당 |
+| 소비 호환성 | Web·Mobile 구현과 계약 테스트 | Web·Mobile·QA 담당 |
 
-State Machine 업무 규칙은 윤승혁(PM)의 `contracts/state-machine/**`,
-AI 입출력 Schema는 이동윤의 `contracts/ai/**`를 입력으로 소비한다.
-Web·Mobile·QA 검토는 작성 후 소비 호환성·재현·PR 품질을 확인하는
-단계이며 API 작성의 선행 승인이 아니다.
+사람용 명세, OpenAPI, Runtime, 예시와 계약 테스트는 같은 변경 단위에서
+정합화한다. State와 AI 계약은 해당 기준 원본을 입력으로 사용하며,
+소비자 검토는 구현 이후 DTO 호환성과 재현 가능성을 확인한다.
 
-현행 Django 구현은 `backend/**`만을 기준으로 한다. 루트
-`WaterCareBackend/**`는 구형 Android 연동 starter 참고본이며 이
-문서의 Method·Path·DTO·Migration·State 또는 AI 계약을 덮어쓰는
-권위 원본이 아니다.
+현행 Django 구현 기준은 `backend/**`다. 루트의 `WaterCareBackend/**`는
+구형 Android 연동 starter이므로 현재 Method·Path·DTO·Migration 또는
+State 계약의 기준으로 사용하지 않는다.
+
+## 현재 지원 경계
+
+| 구분 | 수량 | 의미 |
+|---|---:|---|
+| 사람용 API 카탈로그 | 42 | 기계 계약·백로그·폐기 설계를 포함한 추적 목록 |
+| OpenAPI Operation | 10 | 현재 기계 계약에 등록 |
+| Django Runtime | 8 | 실제 Route·View 존재 |
+| OpenAPI-only | 2 | 계약은 있으나 실행 Route 없음 |
+| 설계 백로그 | 31 | OpenAPI 미등록, `BLOCKED` 4개 포함 |
+| 폐기 설계 | 1 | generic `/events`; 현재 행동별 Endpoint 원칙과 불일치 |
 
 ## 상태 해석
 
 | 상태 | 의미 |
 |---|---|
-| `RUNTIME_IN_PROGRESS` | Runtime과 OpenAPI 후보가 있으나 구현·테스트·리뷰 인수가 끝나지 않음 |
-| `OPENAPI_CONFIRMED` | OWNER 기계 계약이 확정됐으나 실행 route가 없음 |
-| `DESIGN_BASELINE_ONLY` | OWNER 사람용 설계 기준선에만 있고 OpenAPI·Runtime이 없음 |
-| `BLOCKED` | 선행 데이터 모델이나 정책 결정 없이는 구현할 수 없는 항목 |
-| `VERIFIED` | 구현·자동 테스트·리뷰·검증 결과가 모두 확인된 계약 |
+| `RUNTIME_REVIEW_PENDING` | Route·View와 작성자 검증은 있으나 독립 재현·팀 검토 전 |
+| `OPENAPI_ONLY` | Method·Path·Schema는 등록됐으나 실행 Route가 없음 |
+| `DESIGN_BACKLOG` | 요구사항 추적용 설계이며 OpenAPI·Runtime 계약이 아님 |
+| `BLOCKED` | 저장 모델이나 정책 결정 전에는 구현하면 안 되는 백로그 |
+| `RETIRED` | 현재 계약 방향에서 제외된 역사 설계 |
+| `VERIFIED` | 구현·자동 테스트·독립 재현·팀 검토가 모두 확인됨 |
 
-문서에 Endpoint가 존재하는 것만으로 구현 완료를 의미하지 않는다.
-세부 항목이 미완성인 경우 `OWNER 정합화`, `PM State 입력`,
-`AI 계약 입력`, `소비 호환성 검토`로 원인과 책임을 구분한다. 이는
-API 작성 권한 승인이 아니라 계약 완성도를 나타낸다. `OWNER 정합화`는
-최지용이 계약·Runtime을 직접 맞추는 후속 작업이며 팀 승인 대기가
-아니다.
+세부 구현 여부는 [API Runtime 구현 상태](runtime_implementation_status.md)를
+우선 확인한다. `x-contract-status: CONFIRMED`는 기계 계약의
+Method·Path·Schema가 정해졌다는 뜻이며 Runtime 완료 표시가 아니다.

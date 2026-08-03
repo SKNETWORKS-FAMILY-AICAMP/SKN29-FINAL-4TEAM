@@ -1,4 +1,4 @@
-# WaterCare 데이터베이스 문서 안내
+# WaterBridge 데이터베이스 문서 안내
 
 > 상태: **T-005 OWNER 기준선 확정·Runtime 32/32 로컬 기술 검증 완료·공식 리뷰 대기**
 >
@@ -16,14 +16,14 @@ Gate로 남아 있다. 따라서 로컬 기술 완료와 공식 WBS 완료를 �
 | 문서 | 용도 |
 |---|---|
 | [T-005 현행 기준 패키지](t-005/README.md) | ADR·Physical Contract·검증 명령·현재 구현 경계 |
-| [WaterCare 테이블 명세](watercare_table_dictionary.md) | 32개 테이블과 526개 필드의 역사적 v0.5 공개 스냅샷 |
-| [대화형 ERD](erd/watercare_erd.html) | 역사적 v0.5 테이블·PK·FK 관계 탐색 |
-| [ERD 정적 미리보기](erd/watercare_erd.png) | 역사적 v0.5 관계도 화면 |
-| [T-005 데이터베이스 스키마 변경 실행 가이드](../individual/jiyong/technical/backend/t005_데이터베이스_스키마_변경_실행_가이드.md) | Model·Migration·Seed·Importer·Auditor 검증과 역할별 인계 절차 |
-| [T-005 WaterBridge PostgreSQL 통합 검증 보고서](../individual/jiyong/technical/backend/20260731_t005_워터브리지_postgresql_통합_검증_보고서.md) | 32/32, Backup·Restore, Seed·Importer, SQLite·PostgreSQL 회귀 증거 |
-| [T-005 테이블 구현·변경 이력](../individual/jiyong/technical/backend/20260730_t005_테이블_구현_및_변경_이력.md) | Wave별 Model·Migration·제약·당시 검증과 최종 상태 |
+| [WaterBridge 테이블 명세](waterbridge_table_dictionary.md) | 32개 테이블과 526개 필드의 역사적 v0.5 공개 스냅샷 |
+| [대화형 ERD](erd/waterbridge_erd.html) | 역사적 v0.5 테이블·PK·FK 관계 탐색 |
+| [ERD 정적 미리보기](erd/waterbridge_erd.png) | 역사적 v0.5 관계도 화면 |
+| [Django·PostgreSQL 스키마 변경 가이드](../individual/jiyong/데이터베이스/Django_PostgreSQL_스키마_변경_가이드.md) | Model·Migration·Seed·Importer·Auditor 검증과 역할별 인계 절차 |
+| [WaterBridge PostgreSQL 통합 검증 보고서](../individual/jiyong/데이터베이스/PostgreSQL_통합검증_보고서_20260731.md) | 32/32, Backup·Restore, Seed·Importer, SQLite·PostgreSQL 회귀 증거 |
+| [Django·PostgreSQL 테이블 구현·변경 이력](../individual/jiyong/데이터베이스/Django_PostgreSQL_테이블_구현_변경이력_20260730.md) | Wave별 Model·Migration·제약·당시 검증과 최종 상태 |
 
-[![WaterCare ERD 정적 미리보기](erd/watercare_erd.png)](erd/watercare_erd.html)
+[![WaterBridge ERD 정적 미리보기](erd/waterbridge_erd.png)](erd/waterbridge_erd.html)
 
 ## 설계 범위
 

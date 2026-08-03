@@ -1,0 +1,155 @@
+# PostgreSQL Migration 불변성 사고 및 복구 보고서
+
+> 기준일: 2026-07-30
+> 현재 상태: 로컬 PostgreSQL 복구 검증 완료
+> 내부 상태 코드: `LOCAL_DB_VERIFIED`
+> 대상: `workflow.0004` 적용 이력이 있는 PostgreSQL과 신규 빈 DB
+> 담당: 최지용
+
+## 1. 결론
+
+이미 배포·적용된
+[`workflow.0004`](../../../../backend/apps/workflow/migrations/0004_align_contract_status_history.py)
+파일에 후속 CHECK 이름 변경과 일반 Index 보강을 덧붙인 것이 결함의
+원인이었다. old `0004`가 적용된 DB에서는 새 이름의 CHECK가 아직
+존재하지 않으므로, 수정된 파일을 기준으로 `0003` rollback할 때
+`ck_status_history_version_origin` 제거가 `UndefinedObject`로 실패했다.
+
+`0004`는 최초 적용 상태로 복원했다. 후속 이름 정렬과 일반 Index 두 건은
+새 reversible
+[`workflow.0005`](../../../../backend/apps/workflow/migrations/0005_status_history_contract_names_indexes.py)
+로 분리했다. clean PostgreSQL과 125건 운영 검증 데이터가 있는 DB02에서
+정방향·역방향·재적용을 모두 통과했으며, 상태 이력과 AuditEvent의 전체 행
+해시 및 inbound FK 연결은 변하지 않았다.
+
+## 2. 원인과 영향
+
+| 구분 | 확인 내용 | 영향 |
+| --- | --- | --- |
+| 직접 원인 | 적용 이력이 있는 `0004`를 in-place 수정 | Migration 파일과 DB의 실제 적용 상태 불일치 |
+| 실패 지점 | `migrate workflow 0003` 역방향에서 DB에 없는 새 CHECK 이름 제거 | PostgreSQL `UndefinedObject` |
+| 트랜잭션 결과 | Django migration의 atomic rollback | 중간 DDL이 남지 않았고 125건 데이터도 보존 |
+| 영향 DB | old `0004`를 이미 적용한 DB | clean DB가 아니라 기존 DB에서만 재현 |
+| 비영향 범위 | Model 필드, immutable 32-table 계약 JSON, 업무 데이터 내용 | `workflow.0004` 복구 변경에서 제외 |
+
+Migration은 적용 후 파일 내용을 바꾸면 안 된다. 후속 스키마 변경은 항상
+새 번호 Migration으로 누적해야 DB별 적용 이력이 동일하게 해석된다.
+
+## 3. Migration 경계
+
+### 3.1 복원한 `workflow.0004`
+
+`0004`는 기존 DB02에 실제 적용되어 있던 다음 상태까지만 담당한다.
+
+| 범위 | `0004` 결과 |
+| --- | --- |
+| 테이블 | `workflow_transition_history` → `support_inquiry_status_history` |
+| 컬럼 | Questionnaire UUID bridge → 실제 bigint FK, 계약 컬럼명 적용 |
+| Target CHECK | `ck_status_history_exactly_one_target`, `ck_status_history_target_type_matches_fk` |
+| 기존 CHECK 이름 유지 | `ck_transition_state_version_positive`, `ck_hist_actor_matches_type`, `ck_hist_version_origin` |
+| Partial trace Index | Questionnaire·Inquiry·Consultation·Visit 4종 |
+| Target별 version UNIQUE | Questionnaire·Inquiry·Consultation·Visit 4종 |
+| Correlation Index | `ix_transition_correlation` 유지 |
+| 일반 target-event Index | 없음 |
+
+### 3.2 새 `workflow.0005`
+
+`0005`는 데이터 형태를 바꾸지 않고 이름과 조회 Index만 보강한다.
+
+| 작업 | 이전 | 이후 |
+| --- | --- | --- |
+| version positive CHECK | `ck_transition_state_version_positive` | `ck_status_history_version_positive` |
+| actor/type CHECK | `ck_hist_actor_matches_type` | `ck_status_history_changed_by` |
+| version origin CHECK | `ck_hist_version_origin` | `ck_status_history_version_origin` |
+| correlation Index | `ix_transition_correlation` | `ix_status_hist_correlation` |
+| 일반 조회 Index | 없음 | `ix_status_hist_target_event(target_type_code, event_code, changed_at DESC)` |
+
+각 작업은 Django `RemoveConstraint`, `RenameIndex`, `AddIndex`,
+`AddConstraint`로 표현되어 `0005→0004` 역방향에서 old 이름과 Index
+구성이 자동 복원된다.
+
+## 4. 반복 검증 결과
+
+### 4.1 clean PostgreSQL
+
+격리 DB에서 다음 순서를 실제 실행했다.
+
+```text
+workflow.0004
+  → workflow.0005
+  → workflow.0004
+  → workflow.0003
+```
+
+| 단계 | 결과 |
+| --- | --- |
+| 빈 DB → `0004` | 통과, old CHECK 3개·`ix_transition_correlation` 재현 |
+| `0004→0005` | 통과, 새 CHECK 3개·새 Index 2개 확인 |
+| `0005→0004` | 통과, old 이름과 Index 구성 복원 |
+| `0004→0003` | 통과, 기존 `UndefinedObject` 미발생 |
+
+### 4.2 기존 데이터 DB02
+
+DB02는 수정 전 `workflow.0004` 적용 상태였고
+`support_inquiry_status_history` 125건과 `audit_event` 125건을
+보유하고 있었다.
+
+```text
+old workflow.0004
+  → workflow.0005
+  → workflow.0004
+  → workflow.0005
+```
+
+| 증거 | 변경 전 | 0005 forward | 0005 rollback | 0005 reapply |
+| --- | ---: | ---: | ---: | ---: |
+| 상태 이력 수 | 125 | 125 | 125 | 125 |
+| 상태 이력 전체 행 MD5 | `de9d397dec10d233f4e61602bbcb1c24` | 동일 | 동일 | 동일 |
+| AuditEvent 수 | 125 | 125 | 125 | 125 |
+| AuditEvent 전체 행 MD5 | `2e7f425a7dc1e0bc3b5e4d0788247b73` | 동일 | 동일 | 동일 |
+| 고아 `transition_history_id` | 0 | 0 | 0 | 0 |
+| AuditEvent FK 대상 | `support_inquiry_status_history(id)` | 동일 | 동일 | 동일 |
+
+해시는 각 테이블의 모든 행을 PK 순서로 `row_to_json` 직렬화한 뒤 계산했다.
+DDL 이름 변경만 있었으므로 업무 데이터 바이트 표현도 바뀌지 않았다.
+
+## 5. 자동 회귀 방지
+
+[`상태 이력 계약 테스트`](../../../../backend/tests/unit/workflow/test_status_history_contract.py)에
+`test_status_history_contract_names_are_isolated_in_reversible_0005`를
+추가했다.
+
+이 테스트는 다음 경계를 고정한다.
+
+1. `0004` 상태에는 old CHECK 3개와 `ix_transition_correlation`이 있다.
+2. `0004` 상태에는 새 CHECK 이름과 target-event Index가 없다.
+3. `0005` 상태에는 새 CHECK 3개와 새 Index 2개가 있다.
+4. `0005→0004` rollback은 old 이름을 복원한다.
+5. 마지막에 `0005`를 재적용해 테스트 DB를 최신 상태로 돌려놓는다.
+
+검증 결과:
+
+| 검증 | 결과 |
+| --- | --- |
+| `makemigrations workflow --check --dry-run` | `No changes detected` |
+| 상태 이력 집중 회귀 | `8 passed` |
+| clean PostgreSQL 정·역방향 | 전 단계 통과 |
+| DB02 정·역방향·재적용 | 전 단계 통과, 125:125·해시·FK 보존 |
+
+## 6. 협업 인계
+
+| 담당 | 인계 내용 |
+| --- | --- |
+| Backend | 이미 적용된 `0001~0004`를 다시 수정하지 말고 후속 변경은 `0006+`로 생성 |
+| DBA·운영 | 배포 전 `showmigrations workflow`로 `0004` 적용 DB를 확인한 뒤 새 `0005`만 forward 적용 |
+| QA | clean DB와 기존 데이터 DB를 구분하여 forward와 rollback을 모두 검증 |
+| Audit 담당 | `audit_event.transition_history_id`의 대상과 고아 FK 수 0을 배포 후 확인 |
+| PM | 이번 수정은 Migration 불변성 복구이며 32-table 전체 완료 선언과는 별개 |
+
+현행 Model 계약은
+[`TransitionHistory`](../../../../backend/apps/workflow/models/transition_history.py),
+멱등성 책임 분리는
+[`ADR 0011`](../../../adr/0011-t005-status-history-idempotency-scope.md),
+Wave 2E 상태 이력 구현 결정과 당시 검증은
+[`T-005 테이블 구현 및 변경 이력`](Django_PostgreSQL_테이블_구현_변경이력_20260730.md)의
+Wave 2E 절을 참고한다.

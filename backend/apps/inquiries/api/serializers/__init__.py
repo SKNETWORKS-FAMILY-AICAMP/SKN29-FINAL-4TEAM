@@ -10,6 +10,10 @@ from apps.inquiries.api.serializers.create_inquiry import (
 from apps.inquiries.api.serializers.inquiry_response import (
     InquiryResponseSerializer,
 )
+from apps.inquiries.api.serializers.symptom_submission import (
+    SubmitSymptomResponseSerializer,
+    SymptomSubmissionSerializer,
+)
 
 
 __all__ = [
@@ -17,4 +21,6 @@ __all__ = [
     "CancelInquirySerializer",
     "CreateInquirySerializer",
     "InquiryResponseSerializer",
+    "SubmitSymptomResponseSerializer",
+    "SymptomSubmissionSerializer",
 ]

@@ -20,7 +20,7 @@ class Command(BaseCommand):
         product, created = ProductModel.objects.update_or_create(
             model_code=DEMO_PRODUCT_MODEL_CODE,
             defaults={
-                "model_name": "WaterCare Demo 정수기",
+                "model_name": "WaterBridge Demo 정수기",
                 "generation_code": "DEMO-G1",
                 "manufacturer": "SK매직",
                 "launched_on": date(2026, 1, 1),
