@@ -1,0 +1,798 @@
+# 양정현 4주차 업무 지침서
+
+> 프로젝트: 정수기 구독 고객 케어 및 A/S 업무 지원 시스템
+> 
+> 
+> 대상 기간: **2026년 8월 3일 ~ 8월 7일**
+> 
+> 중간 발표: **2026년 8월 6일**
+> 
+> 발표 담당: 김은진 주도, 윤승혁 피드백
+> 
+> 발표 기준 모바일 기능 동결 목표: **2026년 8월 5일 오후**
+> 
+> 4주차 운영 원칙: 3주차에 구현한 고객용 Compose 화면과 네트워크 기반을 다시 만드는 것이 아니라, **`FakeCustomerCareRepository`에 고정된 고객 흐름을 실제 Backend 계약에 연결하고, 상태·허용 행동·오류 처리·공식 근거 표시를 중간 발표에서 반복 재현 가능한 수준으로 고정하는 것**을 우선한다.
+> 
+> 4주차에는 모바일 화면 수를 넓게 늘리지 않는다. 고객 최소 흐름의 실제 연동과 발표 안정화를 먼저 끝내고, 발표 후인 8월 7일에만 방문기사 화면 `T-042`의 최소 골격을 시작한다.
+> 
+
+---
+
+# 1. 담당자 기본 정보
+
+| 항목 | 내용 |
+| --- | --- |
+| 담당자 | 양정현 |
+| 담당 역할 | 모바일 애플리케이션 개발 담당 |
+| 주관할 영역 | `mobile/**` 전체 |
+| 주요 협업 영역 | `mobile/core/**`의 Backend 계약은 최지용, 고객 AI 안내·공식 근거는 이동윤, 모바일 테스트·Gradle·실행 증빙은 김은진, 상태·`allowed_actions`·완료 정책은 윤승혁과 협업 |
+| 담당 사용자 | 고객·방문기사. 4주차 발표 전에는 고객 최소 흐름을 우선하고, 발표 후 기사 화면을 시작한다. |
+| 주요 협업 대상 | 최지용, 이동윤, 김은진, 윤승혁, 한예나 |
+| 4주차 핵심 WBS | `T-018`, `T-019`, `T-022`, `T-023`, `T-025`, `T-032`, `T-042`, `T-052`의 모바일 연계 |
+| 4주차 핵심 책임 | 모바일 기준선 재검증, 고객 홈·문의·안내 실제 API 연동, 인증·409·`allowed_actions` 정합성, 발표용 APK·시연 경로 제공, 발표 후 기사 목록·사전 점검 리포트 골격 착수 |
+| 발표 지원 책임 | 고객 앱 APK·실행 명령·시연 계정·대표 화면 캡처·Fallback 영상 제공, 김은진 발표자료의 모바일 구현 상태 검수, 발표 당일 에뮬레이터·단말·네트워크 장애 대응 |
+| 핵심 검증 데이터 | `WPUJAC104DWH`, `SYN-JAC104-002`, `DEMO-INQ-002`, 출수량 저하, 공식 매뉴얼 REV.00 38쪽 |
+| 핵심 산출물 | 실제 Backend에 연결된 고객 앱 최소 흐름, 계약 정합성 테스트, 발표용 Debug APK와 시연 자료, 모바일 실행·테스트 결과, 기사 앱 최소 골격 |
+
+3주차 코드 검사 결과 고객용 `CUST-01·02·04`, ViewModel·StateFlow, Retrofit·OkHttp, JWT 처리, 위험·근거 표시와 테스트 코드는 실제로 존재했다. 그러나 다음 문제가 남아 있다.
+
+1. 고객 홈·증상 제출·AI 안내는 `FakeCustomerCareRepository`에 고정되어 있다.
+2. 실제 `RemoteInquiryRepository`는 구현되어 있으나 고객 화면에서 사용하지 않는다.
+3. 상담 요청 버튼은 빈 Callback이며 실제 요청을 보내지 않는다.
+4. Mobile Fake의 `allowed_actions`에 계약에 없는 `CONFIRM_GUIDANCE`, `MARK_RESOLVED`, `CLOSE_INQUIRY`, `RESOLVE` 등이 포함되어 있다.
+5. Mobile이 Backend의 `allowed_actions`를 그대로 사용하지 않고 일부 행동을 자체 판단한다.
+6. 인증 Refresh 핵심 경로와 실제 문의 생성·취소에 대한 통합 테스트가 부족하다.
+7. 3주차 문서가 존재하지 않는 실행 Script와 잘못된 결과 파일명을 참조한다.
+8. 기사 앱은 정적 Demo이며 작성된 `TechnicianViewModel`도 실제 화면에 연결되지 않았다.
+
+따라서 4주차에는 “화면이 보인다”가 아니라 다음 수직 흐름을 완료 기준으로 사용한다.
+
+```
+고객 로그인
+→ 고객 제품·구독 조회
+→ 문의 생성 또는 증상 제출
+→ Backend·AI 처리 상태 수신
+→ 현재 사용 안내·위험도·공식 근거 표시
+→ 허용된 경우에만 상담 요청 또는 다음 행동 수행
+```
+
+4주차 공식 산출물인 ML/DL 적용 결과서와 Vector DB 구축 결과서는 이동윤·김은진의 주관 영역이다. 양정현은 해당 산출물을 직접 작성하거나 직접 학습한 모델로 표현하지 않는다. 모바일 역할은 **검증된 AI·RAG 결과를 고객 화면에 안전하게 표시하고, 발표에서 실제 사용자 흐름을 보여주는 것**이다.
+
+---
+
+# 2. 4주차 역할 목표
+
+1. **8월 3일까지 모바일 기준선과 계약 불일치를 정리한다.**
+    
+    Gradle·APK·단위 테스트·Compose 테스트를 다시 확인하고, Mobile DTO·Enum·`allowed_actions`·오류 코드가 현재 `contracts/**` 및 Backend 응답과 일치하게 수정한다.
+    
+2. **8월 4일까지 고객 홈과 문의 생성·증상 제출을 실제 Backend 흐름에 연결한다.**
+    
+    `FakeCustomerCareRepository`를 발표 기본 경로에서 제거하고, 실제 제품·구독·문의 API를 사용하는 `RemoteCustomerCareRepository` 또는 동등한 구조를 구현한다.
+    
+3. **8월 5일까지 고객 안내 화면과 상태·오류 처리를 발표 기준으로 동결한다.**
+    
+    AI 처리 중, 정상 안내, 위험 안내, 근거 없음, Timeout, 409 충돌, 미지원 제품을 구분하고 Backend의 `allowed_actions`에 따라 버튼을 표시한다.
+    
+4. **8월 5일까지 발표용 APK·시연 계정·Fallback 자료를 준비한다.**
+    
+    김은진이 발표자료를 만들 수 있도록 실제 화면 캡처, 구현 범위 표, 시연 동선, 제한사항을 제공하고 윤승혁의 피드백을 반영한다.
+    
+5. **8월 6일 중간 발표에서 모바일 시연과 장애 대응을 지원한다.**
+    
+    발표 전 실제 Backend 연결과 단말·에뮬레이터를 점검하고, 네트워크 또는 Backend 장애 시 사용할 녹화 영상과 Mock Fallback 경로를 준비한다.
+    
+6. **8월 7일까지 발표 피드백을 반영하고 방문기사 화면 `T-042`의 최소 골격을 시작한다.**
+    
+    배정 방문 목록과 방문기사용 사전 점검 리포트의 읽기 전용 골격을 만들되, Backend 계약이 없는 상태에서 가짜 완료 API나 기사 위치 추적을 임의로 추가하지 않는다.
+    
+
+4주차 완료 기준은 Kotlin 파일이나 화면이 존재하는 것이 아니다. **Debug APK가 빌드되고, 실제 API 요청이 ViewModel·Repository를 거쳐 처리되며, 상태·오류·공식 근거·버튼이 계약에 맞게 표시되고, 발표용 대표 흐름이 반복 재현되어야 한다.**
+
+---
+
+# 3. 4주차 필수 업무
+
+## 3.1 3주차 모바일 기준선 재검증과 계약 정합성 복구
+
+### 작업 목적
+
+4주차 실제 연동 전에 현재 `main`과 전체 소스 ZIP의 모바일 코드가 동일한 절차로 빌드·테스트되는지 확인한다. 3주차 문서와 실제 파일명·Script가 불일치했고, Mobile Fake의 `allowed_actions`가 최신 State Machine 계약과 어긋났으므로, 발표 전에 모바일 기준선과 계약 대응표를 다시 고정한다.
+
+### 작업 위치
+
+```
+mobile/
+├─ settings.gradle.kts
+├─ build.gradle.kts
+├─ gradle/wrapper/**
+├─ README.md
+├─ verify-build.bat
+├─ core/src/main/java/com/skn29/watercare/core/model/**
+├─ core/src/main/java/com/skn29/watercare/core/network/**
+├─ core/src/test/**
+├─ customer-app/src/test/**
+├─ customer-app/src/androidTest/**
+└─ docs/**
+
+contracts/
+├─ api/**
+├─ codes/**
+├─ error-codes/**
+└─ state-machine/**
+```
+
+### 세부 작업 지침
+
+1. 발표 기준 Branch 또는 Commit에서 다음 명령을 다시 실행한다.
+    - `:core:test`
+    - `:customer-app:testDebugUnitTest`
+    - `:customer-app:assembleDebug`
+    - 가능하면 `:customer-app:connectedDebugAndroidTest`
+    - `:technician-app:assembleDebug`
+2. 실행 환경을 기록한다.
+    - JDK Version
+    - Android Gradle Plugin·Gradle Version
+    - Compile SDK·Target SDK·Min SDK
+    - Android SDK와 Emulator 또는 실단말 정보
+    - Backend Base URL
+3. 기존 문서가 참조하는 존재하지 않는 `START_WEEK3_BACKEND.cmd`, `FINALIZE_WEEK3.cmd`, `INSTALL_WEEK3_APPS.cmd`를 그대로 유지하지 않는다.
+4. 실제 필요한 통합 실행 Script는 김은진의 `scripts/development/**`, `scripts/testing/**`와 역할을 중복하지 않게 정한다.
+5. 모바일 전용 검증 Script를 둘 경우 실제 파일명과 README 명령을 일치시킨다.
+6. `week3-local-verification.txt`와 `week3-mobile-local-verification.txt`처럼 파일명이 서로 다른 문서를 정리하고 4주차 공식 결과 파일을 하나로 지정한다.
+7. 다음 계약을 Mobile DTO·Enum·Mapper와 대조한다.
+    - 위험도 코드
+    - 사용 안내 상태
+    - 문의 상태
+    - 오류 코드
+    - `allowed_actions`
+    - `state_version`
+    - EvidenceCard 표시 필드
+8. 계약에 없는 Mobile Action을 제거한다.
+    - `CONFIRM_GUIDANCE`
+    - `MARK_RESOLVED`
+    - `CLOSE_INQUIRY`
+    - `RESOLVE`
+9. 계약된 Action은 문자열 분기 여러 곳에 흩어두지 말고 공통 모델·Mapper에서 관리한다.
+10. Backend의 `List<AllowedAction>`과 고객 Guidance의 `List<String>` 표현을 통일한다. 실제 Backend DTO를 기준으로 Mobile 표시 모델을 만든다.
+11. Mobile이 `allowed_actions`를 자체 추정하거나 다음 상태를 계산하지 않게 한다.
+12. 알 수 없는 Action은 표시하지 않되, 원본 응답을 Log에 남기고 상담 안내나 새로고침으로 안전하게 처리한다.
+13. 모든 계약 변경은 해당 주관할의 PR이 병합된 뒤 반영하고 `contracts/**`를 Mobile 편의를 위해 임의 수정하지 않는다.
+14. 8월 5일 오후 발표 기준 Commit 또는 Tag를 기록한다.
+
+### 완료 기준
+
+- Core·Customer 단위 테스트와 Debug APK 빌드가 성공한다.
+- 가능하면 고객 최소 Compose UI Test가 실단말 또는 Emulator에서 통과한다.
+- README의 실행 명령과 실제 파일명이 일치한다.
+- 존재하지 않는 Script를 문서가 참조하지 않는다.
+- Mobile 위험도·상태·오류·Action 모델이 최신 계약과 일치한다.
+- 계약에 없는 Fake Action이 제거된다.
+- `allowed_actions`를 Mobile이 임의 계산하지 않는다.
+- 발표 기준 Commit과 실행 환경이 문서화되어 있다.
+
+### 산출물
+
+- 4주차 모바일 기준선 검증 결과
+- API·State Machine·AI 필드 대응표
+- 수정된 Mobile 공통 모델·Mapper
+- 실제 실행 가능한 모바일 검증 명령 또는 Script
+- 발표 기준 Commit·환경 정보
+
+---
+
+## 3.2 고객 홈·제품·구독 실제 API 연동 (`T-018`, `T-019` 연계)
+
+### 작업 목적
+
+고객 홈의 제품·구독·최근 케어 정보가 Fake 상수에서 나오지 않고 실제 Backend 응답으로 표시되게 한다. 문의 대상 제품과 구독을 Backend가 검증한 식별자로 선택하고, 미지원 제품이나 다른 고객의 제품을 모바일이 정상 제품처럼 표시하지 않게 한다.
+
+### 작업 위치
+
+```
+mobile/core/src/main/java/com/skn29/watercare/core/
+├─ model/{CareModels,InquiryModels,ApiModels}.kt
+├─ network/WaterCareApi.kt
+├─ network/ApiErrorMapper.kt
+├─ repository/CustomerCareRepository.kt
+└─ repository/Repositories.kt
+
+mobile/customer-app/src/main/java/com/skn29/watercare/customer/feature/customer/home/
+├─ CustomerHomeScreen.kt
+├─ CustomerHomeViewModel.kt
+└─ CustomerHomeUiState.kt
+
+mobile/core/src/test/**
+mobile/customer-app/src/test/**
+```
+
+### 세부 작업 지침
+
+1. 최지용이 제공하는 제품·구독 API 계약과 실제 Runtime URL을 확인한다.
+2. 계약만 있고 Runtime에 없는 Endpoint를 발표 기본 경로로 사용하지 않는다.
+3. 고객 홈에서 최소 다음 정보를 실제 응답으로 표시한다.
+    - 제품명·모델 코드
+    - 고객 제품 Public UUID
+    - 구독 Public UUID
+    - 관리 유형
+    - 사용 시작일
+    - 최근 케어 일자 또는 없음 상태
+    - 현재 진행 문의 또는 없음 상태
+4. MVP 모델 `WPUJAC104DWH`와 표시명 `WPU-JAC104D`를 구분한다.
+5. 다른 제품·세대·미지원 모델은 다음과 같이 처리한다.
+    - 선택 불가 또는 지원 범위 안내
+    - AI 문의 진입 차단
+    - 일반 상담 연결 안내
+6. 고객 제품·구독 Route와 요청에는 외부 공개 UUID만 사용한다. DB 내부 정수 PK를 Mobile에 노출하지 않는다.
+7. `CustomerHomeViewModel`에서 로딩·빈 목록·정상·401·403·404·네트워크 실패를 구분한다.
+8. Token 만료 시 공통 Authenticator가 한 번 재발급하고, 최종 실패하면 로그인 화면으로 이동한다.
+9. 홈 조회 실패 시 Fake 제품을 자동 표시하지 않는다. 발표 Fallback Mode는 별도 설정으로만 활성화한다.
+10. 합성 데이터 배지는 실제 Fixture 계정에서만 표시하며 운영 사용자 데이터로 오해하지 않게 한다.
+11. 케어 이력 API가 8월 5일까지 준비되지 않으면 홈의 케어 영역을 숨기지 말고 `정보 준비 중` 또는 계약된 빈 상태로 표시한다.
+12. Fake와 Remote 전환을 BuildConfig 또는 AppConfig에서 명시적으로 관리한다.
+13. 발표 기본값은 `Remote`, 비상 Fallback은 `Fake`로 분리한다.
+14. Remote 실패 시 자동으로 Fake 결과를 섞어 반환하지 않는다. 데이터 출처가 바뀌면 화면 상단에 시연 Mode를 명확히 표시한다.
+
+### 완료 기준
+
+- Demo 로그인 후 실제 Backend에서 고객 제품·구독을 조회한다.
+- 고객 홈의 제품·구독 식별자가 Backend 응답과 일치한다.
+- MVP 지원 모델과 미지원 모델이 구분된다.
+- 401·403·404·네트워크 실패가 서로 다른 UiState로 처리된다.
+- 실제 API 실패 시 조용히 Fake 데이터로 대체하지 않는다.
+- 발표 기본 Mode와 Fallback Mode가 명시적으로 분리되어 있다.
+- 고객 홈 관련 단위 테스트가 통과한다.
+
+### 산출물
+
+- 실제 제품·구독 API DTO·Repository
+- Remote 기반 고객 홈
+- 미지원 제품·빈 케어 상태 UI
+- 홈 조회 오류 처리 테스트
+- Remote·Fake Mode 전환 문서
+
+---
+
+## 3.3 문의 생성·증상 제출·상태 충돌 실제 연동 (`T-022`, `T-023` 연계)
+
+### 작업 목적
+
+3주차에 구현한 CUST-02 입력 화면을 실제 문의 생성과 증상 제출 API에 연결한다. 동일 요청 중복, `state_version` 충돌, Token 만료, 입력 오류가 발생해도 고객 입력을 잃지 않고 최신 상태와 허용 행동을 반영한다.
+
+### 작업 위치
+
+```
+mobile/core/src/main/java/com/skn29/watercare/core/
+├─ model/InquiryModels.kt
+├─ network/WaterCareApi.kt
+├─ network/ApiErrorMapper.kt
+├─ repository/Repositories.kt
+└─ repository/CustomerCareRepository.kt
+
+mobile/customer-app/src/main/java/com/skn29/watercare/customer/feature/customer/intake/
+├─ SymptomIntakeScreen.kt
+├─ SymptomIntakeViewModel.kt
+├─ SymptomIntakeUiState.kt
+└─ data/{SymptomIntakeMapper,SymptomIntakeValidator}.kt
+
+mobile/core/src/test/**
+mobile/customer-app/src/test/**
+```
+
+### 세부 작업 지침
+
+1. `RemoteInquiryRepository`를 실제 고객 흐름에 연결한다.
+2. 문의 생성과 증상 제출 API가 분리되어 있으면 Backend 계약에 맞춰 두 단계를 순서대로 호출한다.
+3. Backend가 4주차에 하나의 통합 Endpoint만 제공하면 계약된 방식에 맞추고 Mobile에서 임의로 두 상태를 만들지 않는다.
+4. 제출 전에 현재 입력 Snapshot을 확보한다.
+5. 대표 증상·자연어 원문·발생 조건·제품·구독 식별자를 계약대로 직렬화한다.
+6. 쓰기 요청마다 `idempotency_key`를 생성하고 같은 사용자 동작 재전송에는 동일 Key를 유지한다.
+7. 사용자가 내용을 수정한 뒤 재제출하면 새 Key를 생성한다.
+8. 제출 중 버튼을 비활성화하여 이중 Touch를 막는다.
+9. 400 입력 오류는 필드별 오류로 Mapping하고 고객 입력을 유지한다.
+10. 401 최종 실패는 Token 삭제 후 로그인 화면으로 이동한다.
+11. 403은 권한 부족으로, 404는 존재하지 않거나 소유하지 않은 제품·구독·문의로 표시한다.
+12. 409 응답의 최신 상태, `state_version`, `allowed_actions`, 오류 코드를 UiState에 저장한다.
+13. 409 발생 시 고객 입력을 삭제하지 않고 다음 선택지를 제공한다.
+    - 최신 상태로 새로고침
+    - 허용된 Action으로 이동
+    - 필요 시 상담 안내
+14. Mobile에서 State Machine Event 이름이나 다음 상태를 직접 생성하여 보내지 않는다.
+15. 동일 요청 Replay와 다른 Payload Conflict를 테스트한다.
+16. 문의 생성 성공 후 `inquiry_id`, 표시용 `inquiry_code`, 현재 상태, `state_version`, `allowed_actions`를 보관한다.
+17. `InquiryDraftCache` 전역 Object만으로 상태를 유지하지 않는다. 최소한 `SavedStateHandle`을 적용하여 화면 재생성에 대응한다.
+18. Process 종료까지 복원이 필요하지 않은 값과 반드시 복원해야 하는 값을 구분한다.
+19. API 연동이 준비되지 않은 기능은 Fake Callback으로 성공 처리하지 않는다.
+20. 상담 요청 API가 없으면 버튼을 숨기거나 `준비 중`으로 표시하고 빈 Callback을 남기지 않는다.
+
+### 완료 기준
+
+- CUST-02에서 실제 문의 생성 또는 증상 제출 요청이 전송된다.
+- 성공 시 Backend가 반환한 문의 식별자와 상태가 저장된다.
+- 중복 Touch와 동일 `idempotency_key` 재전송이 안전하게 처리된다.
+- 400·401·403·404·409·5xx·네트워크 실패가 구분된다.
+- 409 발생 후 최신 상태와 `allowed_actions`가 화면에 반영된다.
+- 제출 실패와 화면 재생성 후에도 고객 입력이 유지된다.
+- Mobile이 다음 상태를 임의 계산하지 않는다.
+- 상담 요청에 빈 Callback이 남아 있지 않다.
+
+### 산출물
+
+- 실제 문의 생성·증상 제출 연동
+- `idempotency_key`·`state_version` 처리
+- 409 최신 상태 UI
+- 입력 유지·오류 Mapping 테스트
+- CUST-02 실제 API 실행 증빙
+
+---
+
+## 3.4 고객 안내·위험도·공식 근거·상담 Fallback 연동 (`T-025`, `T-032` 연계)
+
+### 작업 목적
+
+Backend와 AI가 반환한 검증된 고객용 필드를 CUST-04에 표시한다. 위험·근거 없음·Timeout·AI 실패 상태에서 일반 자가조치나 완료 버튼이 잘못 노출되지 않게 하고, `allowed_actions`에 따라 상담 요청·새로고침·뒤로 가기만 제공한다.
+
+### 작업 위치
+
+```
+mobile/customer-app/src/main/java/com/skn29/watercare/customer/feature/customer/guidance/
+├─ GuidanceScreen.kt
+├─ GuidanceViewModel.kt
+└─ GuidanceUiState.kt
+
+mobile/core/src/main/java/com/skn29/watercare/core/
+├─ model/{CareModels,InquiryModels,ApiModels}.kt
+├─ repository/CustomerCareRepository.kt
+└─ ui/components/CommonComponents.kt
+
+mobile/customer-app/src/test/java/com/skn29/watercare/customer/feature/customer/guidance/**
+mobile/customer-app/src/androidTest/**
+```
+
+### 세부 작업 지침
+
+1. CUST-04는 다음 순서를 유지한다.
+    1. 지금 해야 할 행동
+    2. 현재 사용 가능 범위·제한 기능
+    3. 위험도
+    4. 안전한 자가조치
+    5. 상담 전환 조건
+    6. 공식 근거
+    7. 구조화된 증상 요약
+    8. 금지 행동
+2. Mobile은 AI 내부 응답을 직접 표시하지 않고 Backend가 검증한 고객용 DTO만 사용한다.
+3. EvidenceCard에는 다음 정보만 표시한다.
+    - 문서명
+    - Revision 또는 Version
+    - 페이지
+    - 구조화 요약
+    - 검증 상태
+    - 공식 URL 또는 출처 표시
+4. 다음 내부 필드는 표시하지 않는다.
+    - `chunk_id`
+    - 내부 파일 경로
+    - 검색 점수
+    - 검색 원문 전체
+    - Prompt
+    - 모델 내부 추론
+5. 위험 상태에는 제품 사용 중지·전원·급수 등 계약된 현재 행동을 최상단에 표시한다.
+6. 위험 상태에서 `해결됨`, `문의 종료`, 일반 자가조치 완료 버튼을 표시하지 않는다.
+7. 근거 없음 상태에는 추정 안내를 생성하지 않고 판단 보류와 상담 필요를 표시한다.
+8. AI·검색 Timeout과 내부 오류는 무응답 화면으로 남기지 않는다.
+9. 오류 상태에는 다음을 구분한다.
+    - 재시도 가능
+    - 상담 전환 가능
+    - 현재 입력 수정 필요
+    - 서비스 준비 중
+10. 버튼은 Backend의 `allowed_actions`와 Mobile Route 지원 여부를 모두 만족할 때만 표시한다.
+11. Mobile Route가 아직 없는 Action은 Button을 임의로 다른 행동에 연결하지 않는다.
+12. `REQUEST_CONSULTATION`이 허용된 경우 실제 Backend Endpoint가 준비되었을 때만 호출한다.
+13. 상담 요청 성공 시 최신 문의 상태와 `allowed_actions`를 반영한다.
+14. 상담 요청 API가 준비되지 않은 경우 발표에서는 해당 버튼을 `준비 중`으로 명확히 표시하거나 숨긴다.
+15. 알 수 없는 위험도·사용 안내·Action 코드는 앱을 종료시키지 않고 안전한 상담 대기 상태로 변환한다.
+16. AI 처리 중에는 진행 상태와 예상 대기 메시지를 표시하되 정확한 완료 시간을 약속하지 않는다.
+17. 대표 Scenario를 최소 다음으로 검증한다.
+    - 정상 출수량 저하
+    - 위험 누수
+    - 근거 없음
+    - 미지원 제품
+    - AI Timeout
+    - Backend 네트워크 실패
+18. 고객용 안내 화면과 발표자료의 문구가 실제 구현 상태와 일치하는지 이동윤·윤승혁에게 검수받는다.
+
+### 완료 기준
+
+- 실제 Backend 응답으로 CUST-04가 렌더링된다.
+- 정상·위험·근거 없음·Timeout·미지원 제품이 서로 다르게 표시된다.
+- 위험·근거 없음 상태에서 잘못된 완료 버튼이 노출되지 않는다.
+- EvidenceCard에 내부 RAG 필드가 노출되지 않는다.
+- 버튼이 Backend `allowed_actions`와 일치한다.
+- 상담 요청은 실제 Endpoint가 있을 때만 수행된다.
+- 알 수 없는 코드에도 앱이 종료되지 않는다.
+- Guidance ViewModel·Compose UI 테스트가 통과한다.
+
+### 산출물
+
+- 실제 고객 안내·Evidence 연동
+- 위험·근거 없음·Timeout UI
+- `allowed_actions` 기반 행동 버튼
+- 상담 요청 연동 또는 명시적 미지원 처리
+- Guidance 단위·UI 테스트 결과
+
+---
+
+## 3.5 8월 6일 중간 발표용 모바일 시연 기준선 준비·지원
+
+### 작업 목적
+
+중간 발표에서 모바일 앱이 실제 구현 범위보다 과장되지 않으면서도 고객 흐름을 이해할 수 있게 한다. 김은진이 주도하는 발표자료에 모바일 구현 상태와 시연 자료를 제공하고, 윤승혁의 피드백을 반영하여 발표 당일 장애에 대비한다.
+
+### 작업 위치
+
+```
+mobile/docs/week4-presentation/**
+mobile/docs/week4-mobile-verification.md
+mobile/docs/week4-mobile-limitations.md
+mobile/customer-app/build/outputs/apk/debug/**
+mobile/technician-app/build/outputs/apk/debug/**
+
+docs/presentation/**
+docs/testing/results/**
+docs/submission/**
+```
+
+### 세부 작업 지침
+
+1. 발표 기본 Scenario를 다음으로 고정한다.
+    - 고객 계정: 합성 Demo 고객
+    - 제품: `WPUJAC104DWH`
+    - Scenario: `SYN-JAC104-002`
+    - 문의: `DEMO-INQ-002` 또는 발표 직전 초기화된 문의
+    - 증상: 출수량 저하
+    - 근거: 공식 매뉴얼 REV.00 38쪽
+2. 발표에서 보여줄 고객 흐름은 다음 범위를 넘기지 않는다.
+    - Demo 로그인
+    - 고객 제품·구독 조회
+    - 증상 입력
+    - 처리 중 상태
+    - 현재 사용 안내·위험도·공식 근거
+    - 지원되는 경우 상담 요청
+3. 실제 연결되지 않은 기사 완료·상담 완료·케어 자동 갱신을 시연 완료 기능처럼 표현하지 않는다.
+4. Mobile 화면 캡처를 제공한다.
+    - 로그인
+    - 고객 홈
+    - 증상 입력
+    - 처리 중
+    - 정상 안내
+    - 위험 안내
+    - 근거 없음 또는 Timeout
+5. 발표자료용 구현 상태 표를 제공한다.
+    - 실제 API 연결
+    - Mock 또는 Fallback
+    - 화면만 구현
+    - 미구현
+6. 발표용 Debug APK를 생성하고 설치 방법을 문서화한다.
+7. 발표 단말과 Emulator 각각에서 실행을 확인한다.
+8. Backend Base URL, 네트워크 보안 설정, Wi-Fi 환경, 서버 접근 가능 여부를 확인한다.
+9. 발표 전날 다음 Smoke Test를 수행한다.
+    - 앱 실행
+    - Demo 로그인
+    - Token 저장·재사용
+    - 고객 홈 조회
+    - 문의 제출
+    - 안내 결과 표시
+    - 앱 재시작 후 주요 상태 확인
+10. 발표 당일에는 실시간 시연 외에 다음 Fallback을 준비한다.
+    - 1~2분 이내 녹화 영상
+    - 화면 캡처 순서
+    - 명시적으로 표시된 Demo Mock Mode
+11. Fallback Mode는 실제 연동 실패를 숨기지 않고 발표자가 설명할 수 있도록 표시한다.
+12. 김은진에게 다음 자료를 전달한다.
+    - 모바일 구현 범위
+    - 실제 API Endpoint 수
+    - 단위·UI 테스트 결과
+    - APK Build 결과
+    - 미해결 제한사항
+13. 윤승혁의 피드백을 반영하여 기술 용어를 사용자 흐름 중심으로 줄인다.
+14. 발표 당일에는 새 기능을 추가하거나 Dependency를 갱신하지 않는다.
+15. 발표 직전 수정은 차단 결함만 허용하고 발표 기준 Commit을 변경하면 전체 Smoke Test를 다시 실행한다.
+
+### 완료 기준
+
+- 고객 앱 Debug APK가 생성되고 발표 단말에 설치된다.
+- 발표 Scenario가 실제 Backend 연결 상태에서 반복 재현된다.
+- 실제 연동과 Fallback Mode가 명확히 구분된다.
+- 화면 캡처·영상·설치 방법·시연 계정이 준비되어 있다.
+- 김은진 발표자료의 모바일 구현 수치가 실제 코드와 일치한다.
+- 발표 당일 네트워크 장애 시 사용할 대체 자료가 있다.
+- 발표 기준 Commit이 고정되어 있다.
+
+### 산출물
+
+- 발표용 고객 앱 Debug APK
+- 시연 실행·설치 문서
+- 모바일 구현 상태표
+- 발표 화면 캡처·Fallback 영상
+- 모바일 Smoke Test 결과
+- 발표자료용 모바일 기술 요약
+
+---
+
+## 3.6 발표 후 회귀 수정과 방문기사 목록·사전 점검 리포트 골격 착수 (`T-042`)
+
+### 작업 목적
+
+8월 6일 발표 피드백과 회귀 결함을 먼저 반영한 뒤, 8월 7일부터 방문기사 화면의 최소 읽기 흐름을 시작한다. 3주차의 정적 Demo를 확장하되, 방문기사의 실제 업무 상태와 권한을 Backend 계약 없이 Mobile에서 임의로 만들지 않는다.
+
+### 작업 위치
+
+```
+mobile/technician-app/src/main/java/com/skn29/watercare/technician/
+├─ TechnicianApp.kt
+├─ TechnicianViewModel.kt
+├─ feature/visitlist/**
+├─ feature/visitdetail/**
+└─ navigation/**
+
+mobile/core/src/main/java/com/skn29/watercare/core/
+├─ model/**
+├─ network/WaterCareApi.kt
+└─ repository/**
+
+mobile/technician-app/src/test/**
+mobile/docs/week4-post-presentation.md
+```
+
+### 세부 작업 지침
+
+1. 발표 후 발견된 고객 앱 차단 결함을 먼저 수정한다.
+2. 수정 후 고객 앱 기준 Smoke Test를 다시 실행한다.
+3. `TechnicianViewModel`을 실제 `TechnicianApp`에 연결한다.
+4. Composable 내부 `remember` 상태와 직접 Coroutine 호출을 ViewModel·StateFlow로 이동한다.
+5. 기사 Demo 로그인과 역할 확인을 유지한다.
+6. 방문 목록은 최소 다음 필드를 표시한다.
+    - 방문 Public UUID 또는 표시용 방문번호
+    - 고객 마스킹 이름
+    - 제품 모델
+    - 방문 희망일·확정일
+    - 일정 상태
+    - 위험도 또는 사용 안내 배지
+7. 상세 화면은 읽기 전용 사전 점검 리포트 골격으로 제한한다.
+    - 고객 증상 요약
+    - 상담 확인 내용
+    - 우선 점검 후보
+    - 위험·사용 제한
+    - 공식 근거
+8. 실제 고객 주소와 전화번호는 합성 데이터만 사용하고 불필요한 개인정보를 표시하지 않는다.
+9. 기사에게 배정된 방문만 조회하도록 Backend 객체 권한과 협의한다.
+10. 다른 기사 방문 접근은 `404` 또는 계약된 안전 응답으로 처리한다.
+11. 방문 수락·출발·도착·완료·기사 위치 업로드는 4주차 필수 범위에서 제외한다.
+12. 지도·OCR·QR·위치 추적을 다시 추가하지 않는다.
+13. AI 사전 점검 리포트 Endpoint가 없으면 계약된 Fixture 또는 명시적 Mock으로만 표시한다.
+14. 기사 앱의 Fake 데이터는 생성 출처와 Scenario ID를 표시한다.
+15. 5주차에 필요한 API·DTO·권한·상태 의존성을 Issue로 정리한다.
+16. 발표 피드백 중 고객 흐름·기사 흐름의 요구 변경은 윤승혁에게 확인한 뒤 반영한다.
+
+### 완료 기준
+
+- 발표 후 고객 앱 회귀 결함이 수정되고 테스트가 다시 통과한다.
+- `TechnicianViewModel`이 실제 화면에서 사용된다.
+- 기사 로그인 후 방문 목록·읽기 전용 사전 점검 화면으로 이동할 수 있다.
+- 방문 목록이 정적 Composable 상수에 직접 박혀 있지 않다.
+- 기사 객체 권한과 개인정보 표시 원칙이 문서화되어 있다.
+- 4주차에 지도·OCR·위치 추적·방문 완료 기능을 무리하게 추가하지 않는다.
+- 5주차 연동 의존성과 미구현 범위가 Issue로 정리되어 있다.
+
+### 산출물
+
+- 실제 ViewModel 기반 기사 앱 골격
+- 방문 목록·사전 점검 리포트 읽기 화면
+- 기사 앱 DTO·Repository 초안
+- 발표 후 회귀 수정 결과
+- 5주차 모바일 인계·의존성 목록
+
+---
+
+# 4. 조기 완료 시 추가 업무
+
+필수 업무, 8월 5일 발표 기준 동결, 8월 6일 발표 지원과 회귀 수정이 끝난 뒤에만 착수한다. 아래 업무는 4주차 필수 범위가 아니며, Backend·AI 계약이 실제로 제공된 경우에만 진행한다.
+
+## 4.1 CUST-03 추가 질문 최소 화면의 실제 계약 연결 준비
+
+### 해당 후속 업무
+
+- `T-026`, `T-035`, FR-010~FR-014
+
+### 착수 조건
+
+- 이동윤이 `missing_fields`, 질문 ID, 질문 유형, 선택지, 답변 DTO를 확정한다.
+- 최지용이 추가 답변 저장 Endpoint와 Runtime 계약을 제공한다.
+- 3.1~3.6 필수 업무와 발표 대응이 완료되어 있다.
+
+### 작업 위치
+
+```
+mobile/customer-app/src/main/java/com/skn29/watercare/customer/feature/customer/followup/**
+mobile/core/src/main/java/com/skn29/watercare/core/model/**
+mobile/core/src/main/java/com/skn29/watercare/core/repository/**
+```
+
+### 작업 내용
+
+- 이미 답한 질문을 다시 표시하지 않는다.
+- 질문 ID와 답변을 계약대로 저장한다.
+- 단일 선택·복수 선택·짧은 텍스트 등 확정된 입력 유형만 구현한다.
+- 제출 실패 후 입력을 유지한다.
+- AI 분석 중·질문 없음·상담 전환 상태를 구분한다.
+- 질문 문구를 Mobile이 임의 생성하지 않는다.
+
+### 완료 기준
+
+- 실제 `missing_fields` 응답으로 CUST-03이 표시된다.
+- 추가 답변이 실제 Backend에 저장된다.
+- 이미 답한 항목이 반복되지 않는다.
+- 답변 후 최신 상태와 다음 화면이 Backend 응답에 따라 결정된다.
+
+---
+
+## 4.2 인증 Token 저장과 Refresh 경로 보강
+
+### 해당 후속 업무
+
+- NFR-009, 공통 인증 안정성
+
+### 착수 조건
+
+- 고객·기사 앱의 실제 인증 흐름이 정상 동작한다.
+- 발표 기준 기능에 영향 없이 별도 Branch에서 검증할 수 있다.
+
+### 작업 위치
+
+```
+mobile/core/src/main/java/com/skn29/watercare/core/auth/TokenStore.kt
+mobile/core/src/main/java/com/skn29/watercare/core/network/**
+mobile/core/src/test/**
+```
+
+### 작업 내용
+
+- 일반 Preferences DataStore에 저장된 Token의 보안 한계를 문서화한다.
+- Android Keystore 기반 암호화 저장 적용 가능성을 검토한다.
+- `runBlocking` 사용 지점을 줄인다.
+- Access Token 만료→Refresh 성공→원요청 재수행을 테스트한다.
+- Refresh 실패→Token 삭제→로그인 이동을 테스트한다.
+- 동시 401 발생 시 Refresh 요청이 중복 실행되지 않는지 검증한다.
+
+### 완료 기준
+
+- 인증 핵심 경로 테스트가 추가된다.
+- Refresh 무한 반복이 차단된다.
+- Token 저장 방식과 운영 적용 여부가 문서화된다.
+- UI Thread와 Network Thread의 불필요한 Block이 줄어든다.
+
+---
+
+## 4.3 공통 UI·접근성·상태 테스트 보강
+
+### 해당 후속 업무
+
+- `T-045`, `T-050`, NFR-001~NFR-004, NFR-011
+
+### 착수 조건
+
+- 실제 Backend 연동 화면이 발표 기준으로 동결되어 있다.
+- 두 개 이상의 화면에서 중복되는 UI가 확인된다.
+
+### 작업 위치
+
+```
+mobile/core/src/main/java/com/skn29/watercare/core/ui/components/**
+mobile/customer-app/src/androidTest/**
+mobile/technician-app/src/test/**
+```
+
+### 작업 내용
+
+- Loading, Error, Empty, StatusBadge, EvidenceCard, WorkflowActionButton을 공통화한다.
+- 위험도는 색상 외에 문구·아이콘·접근성 설명을 함께 제공한다.
+- TalkBack용 Content Description과 Touch Target을 점검한다.
+- 위험·근거 없음·409·미지원 제품에서 허용되지 않은 버튼이 보이지 않는지 UI Test로 검증한다.
+- 고객 앱과 기사 앱의 상태 표현을 일관되게 맞춘다.
+
+### 완료 기준
+
+- 중복 UI가 줄고 기존 화면이 동일하게 동작한다.
+- 위험 상태가 색상만으로 구분되지 않는다.
+- 핵심 상태별 Compose UI Test가 통과한다.
+- 내부 근거 필드 비노출이 테스트로 고정된다.
+
+---
+
+# 5. 완료 기준 및 최종 체크리스트
+
+## 5.1 8월 5일 발표 기준 기능 동결 체크리스트
+
+- [ ]  Core·Customer 단위 테스트와 Customer Debug APK 빌드가 성공한다.
+- [ ]  가능하면 고객 최소 Compose UI Test가 통과한다.
+- [ ]  README와 검증 문서의 명령·파일명이 실제 저장소와 일치한다.
+- [ ]  계약에 없는 Mobile Action이 제거되었다.
+- [ ]  Mobile DTO·상태·오류·`allowed_actions`가 최신 계약과 일치한다.
+- [ ]  Demo 로그인과 Token 재사용이 동작한다.
+- [ ]  고객 홈이 실제 Backend 제품·구독을 조회한다.
+- [ ]  Fake 고객 홈이 발표 기본 경로에서 제거되었다.
+- [ ]  CUST-02가 실제 문의 생성 또는 증상 제출 API를 호출한다.
+- [ ]  `idempotency_key`와 `state_version`이 요청·응답에 반영된다.
+- [ ]  400·401·403·404·409·5xx·네트워크 실패가 구분된다.
+- [ ]  409 충돌 후 고객 입력과 최신 상태가 유지된다.
+- [ ]  CUST-04가 실제 Backend의 고객용 AI 결과와 Evidence를 표시한다.
+- [ ]  위험·근거 없음·Timeout에서 잘못된 해결·종료 버튼이 보이지 않는다.
+- [ ]  EvidenceCard에 내부 경로·`chunk_id`·검색 원문 전체가 노출되지 않는다.
+- [ ]  상담 요청 Button이 빈 Callback으로 남아 있지 않다.
+- [ ]  발표 기본 Mode와 비상 Fake Mode가 명확히 구분된다.
+- [ ]  발표 기준 Commit 또는 Tag가 기록되어 있다.
+
+## 5.2 8월 6일 중간 발표 지원 체크리스트
+
+- [ ]  발표 단말과 Emulator에 고객 앱 APK가 설치되어 있다.
+- [ ]  Backend Base URL과 네트워크 연결을 확인했다.
+- [ ]  대표 Scenario가 초기 상태에서 반복 재현된다.
+- [ ]  로그인→고객 홈→증상 입력→안내 화면의 동선이 확정되어 있다.
+- [ ]  화면 캡처와 짧은 Fallback 영상이 준비되어 있다.
+- [ ]  실제 API와 Mock·Fallback 범위를 발표자가 구분해 설명할 수 있다.
+- [ ]  김은진 발표자료의 모바일 구현 수치·화면·테스트 수가 실제 코드와 일치한다.
+- [ ]  윤승혁의 시연 순서·표현 피드백이 반영되었다.
+- [ ]  발표 당일 새 Dependency·SDK·Base URL 변경을 하지 않는다.
+- [ ]  장애 발생 시 APK·서버·계정·네트워크 원인을 빠르게 구분할 수 있다.
+
+## 5.3 8월 7일 최종 정리 기준
+
+- [ ]  발표 중 발견된 고객 앱 차단 결함이 수정되었다.
+- [ ]  수정 후 고객 앱 Smoke Test를 다시 실행했다.
+- [ ]  발표 피드백과 미해결 항목이 Issue에 기록되어 있다.
+- [ ]  `TechnicianViewModel`이 실제 기사 앱 화면에 연결되었다.
+- [ ]  기사 방문 목록·사전 점검 리포트 최소 화면이 존재한다.
+- [ ]  기사 앱은 지도·OCR·위치 추적·방문 완료 기능을 무리하게 포함하지 않는다.
+- [ ]  Backend·AI에 필요한 기사 API·DTO·권한 의존성이 정리되어 있다.
+- [ ]  5주차에 진행할 고객 추가 질문·기사 상세·실제 통합 범위가 명확하다.
+- [ ]  4주차 모바일 실행·테스트·발표 결과가 문서화되어 있다.
+
+## 5.4 모바일 역할 수행 시 주의사항
+
+- 화면이 보이는 것과 실제 Backend 연동을 동일하게 표현하지 않는다.
+- `Fake`, `Mock`, `Remote`를 이름·설정·문서에서 명확히 구분한다.
+- 실제 API 실패 시 자동으로 Fake 성공 결과를 섞지 않는다.
+- 상태·다음 행동·완료 여부는 Backend의 `allowed_actions`와 최신 상태를 기준으로 한다.
+- Mobile에서 State Machine Event나 다음 상태를 임의 생성하지 않는다.
+- AI 내부 응답·검색 점수·Prompt·`chunk_id`를 고객과 기사에게 노출하지 않는다.
+- 위험·근거 없음·미지원 제품은 낙관적 안내보다 상담·사용 제한을 우선한다.
+- Token·개인정보·운영 비밀값을 Log와 저장소에 남기지 않는다.
+- 합성 데이터와 실제 사용자 데이터를 화면과 발표에서 구분한다.
+- 고객 흐름을 완료하기 전 지도·OCR·위치 추적·FCM·Room·WorkManager를 추가하지 않는다.
+- `contracts/**`, `backend/**`, `ai/**`, `tests/**`, `.github/**` 수정은 해당 주관할과 협의한다.
+- 발표자료에는 APK 빌드 여부, 실제 연결 Endpoint, 테스트 결과, 미연결 기능을 사실대로 기록한다.
+- 8월 6일 발표 직전에는 기능 확대보다 안정적인 재현을 우선한다.
+
+---
+
+# 6. 지침서 작성 시 참고 문서
+
+| 문서명 | 참고한 내용 | 지침서 반영 위치 |
+| --- | --- | --- |
+| `양정현_3주차_업무_지침서(6).md` | 담당 정보, 역할 목표, 필수 업무별 작업 목적·위치·세부 지침·완료 기준·산출물, 조기 완료 업무와 체크리스트 양식 | 문서 전체 형식과 상세 수준 |
+| `WBS(4).md` | 4주차 목표, `T-018`, `T-019`, `T-022`, `T-023`, `T-025`, `T-032`, `T-042`, `T-052` 일정·선후행·완료 조건 | 2장 역할 목표, 3장 필수 업무, 5장 일정 체크리스트 |
+| `팀원별 관할 영역 v2.md` | `mobile/**` 주관할, 공통 모델·상태·테스트·Gradle·AI 안내·기사 상세 협업 관할 | 1장 담당 정보, 3장 협업 경로와 수정 원칙 |
+| `프로젝트 디렉토리 구조 v2.md` | `customer-app`, `technician-app`, `core` 모듈과 Mobile 권장 경로 | 3장 작업 위치 전체 |
+| `요구사항정의서.md` | 고객 제품·증상 입력·위험도·사용 안내·공식 근거·문의 상태·기사 사전 점검 요구사항과 비기능 기준 | 3.2~3.6 기능·상태·안전·권한 기준 |
+| `화면설계서.md` | CUST-01~04, 기사 화면, EvidenceCardDTO, 상태·Action·오류 표시 순서 | 3.2~3.6 화면 필드와 행동 기준 |
+| `공통 개발 규칙(1).md` | 계약 우선, 브랜치·PR, 환경변수, 오류·로그, 테스트, 완료 기준 | 3.1 계약 검수, 3.2~3.4 API·보안·오류 처리, 5장 체크리스트 |
+| `기획서.md` | 고객 안전 우선 흐름, 공식 근거 기반 안내, 상담·방문 연계와 대표 Scenario | 2장 역할 목표, 3.4 고객 안내, 3.5 발표 흐름 |
+| `수집데이터보고서.md` | MVP 모델·매뉴얼 Revision·페이지·제품 세대 분리와 근거 메타데이터 | 3.2 제품 표시, 3.4 EvidenceCard, 3.5 발표 Scenario |
+| `20260801_소스코드.zip` | 3주차 최종 모바일 실제 구조, Fake·Remote Repository, Auth·ViewModel·테스트·기사 앱 상태와 `.gitignore` 포함 파일 | 1장 현재 상태, 3장 실제 수정 대상과 4주차 우선순위 |
+| 3주차 코드 검사 결과 | 고객 Mock 기준선은 존재하지만 실제 고객 흐름이 Fake에 고정, Action 계약 불일치, 빈 상담 Callback, 인증·재현 테스트 부족 | 1장 문제 정의, 2장 목표, 3.1~3.6 필수 업무 |
+| `최지용_4주차_업무_지침서.md` | 제품·구독·문의·State Machine·Backend↔︎AI·케어 API 제공 일정과 모바일 의존성 | 3.2~3.4 연동 순서와 완료 조건 |
+| `이동윤_4주차_업무_지침서.md` | AI 구조화·Timeout·Fallback·Backend 연동·공식 근거 결과 제공 일정 | 3.4 안내 화면과 오류·Fallback 기준 |
+| `김은진_4주차_업무_지침서.md` | 8월 6일 발표자료 주도, 테스트·증빙·발표 기준선과 회귀 검증 계획 | 3.1 검증 결과, 3.5 발표 지원, 5장 체크리스트 |
+
+---
+
+본 지침서의 우선순위는 **고객 앱 실제 연동 → 상태·안전·오류 정합성 → 8월 6일 중간 발표 안정화 → 기사 앱 최소 골격** 순서다. 8월 5일까지 발표 기준 고객 흐름을 동결하고, 8월 6일에는 신규 기능 개발보다 발표와 장애 대응에 집중한다. 8월 7일에는 발표 피드백과 회귀 수정이 끝난 경우에만 방문기사 화면 `T-042`를 시작한다.
