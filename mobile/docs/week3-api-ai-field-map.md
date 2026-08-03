@@ -1,52 +1,52 @@
 # Week 3 API and AI Field Map
 
-- Final local verification: 2026-07-31 15:56:02 +09:00
+- Updated: 2026-08-03 20:32:24 +09:00
 
-## CUST-01
+## CUST-01 Customer home
 
-| UI | Source/model |
+| UI field | Mobile/API source |
 | --- | --- |
-| Customer display name | authenticated Demo user |
-| Product and management type | customer home repository or approved Mock |
-| Questionnaire status | customer home UiState |
-| Active inquiry | public inquiryId plus display inquiryCode |
-| Actions | approved routes and supported repository functions |
+| Customer identity | authenticated demo user |
+| Product/model summary | approved customer home repository response |
+| Subscription/management type | subscription or product summary |
+| Active inquiry code | display-only inquiry code |
+| Active inquiry identifier | public inquiry UUID |
+| Available actions | approved route plus backend workflow state |
 
-## CUST-02
+## CUST-02 Symptom intake
 
-| UI input | Request/state |
+| UI input | Request/model field |
 | --- | --- |
-| Inquiry type | entryMode |
-| Multiple symptom topics | selectedSymptoms |
+| Entry type | entryMode |
+| Multiple symptoms | symptom selections/topic codes |
 | Customer original text | awText |
-| Occurrence conditions | occurrenceCondition |
-| Display text/error code | displayText |
-| Duplicate submission protection | isSubmitting and idempotency handling |
-| State conflict | latest state, stateVersion, llowedActions; user input remains |
+| Occurrence condition | occurrenceCondition |
+| Display or error text | displayText |
+| Duplicate submission prevention | submitting state and request guard |
+| Conflict recovery | current state, state version, and allowed actions |
 
-## CUST-04
+## CUST-04 Guidance
 
-| UI section | Response/display |
+| UI section | Response/display field |
 | --- | --- |
 | Risk | iskLevel |
 | Usage state | usageStatus |
-| Usage message | usageMessage |
+| Usage explanation | usageMessage |
 | Restricted functions | estrictedFunctions |
 | Safe actions | safeActions |
 | Escalation conditions | escalationConditions |
 | Prohibited actions | prohibitedActions |
 | Next action | 
 extAction |
-| Consultation | equiresConsultation |
-| Evidence | document, version, page, structured summary, verification status, classification, approved URL |
-| Buttons | llowedActions with danger/no-evidence safety filtering |
+| Consultation requirement | equiresConsultation |
+| Official evidence | approved public evidence metadata |
+| Workflow buttons | llowedActions plus danger/no-evidence safety filtering |
 
-## Fields hidden from customer UI
+## Non-public fields
 
-- internal integer PK
+- Internal integer primary keys
+- JWT access/refresh tokens
 - chunk_id
-- source_path
-- retrieval score and retrieval text
-- full source document text
-- internal RAG/storage URL
-- access and refresh tokens
+- source storage paths
+- retrieval scores and raw retrieval text
+- internal document URLs
