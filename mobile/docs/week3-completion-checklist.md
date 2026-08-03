@@ -1,4 +1,4 @@
-# Week 3 mobile completion checklist
+﻿# Week 3 mobile completion checklist
 
 ## Source implementation
 
@@ -17,10 +17,10 @@
 - [x] Unit and Compose test sources
 - [x] README, decisions, field map, test result and open-issue documents
 - [x] Consolidated Backend Demo seed command
-- [x] One-command Backend startup and final verification scripts
+- [x] Week 3 helper scripts were superseded by the explicit commands in `mobile/README.md`
 
 ## Workstation execution evidence
 
-Run `START_WEEK3_BACKEND.cmd` in one window and `FINALIZE_WEEK3.cmd` in another. A successful run creates `mobile/docs/week3-local-verification.txt` and both Debug APKs. Then run `INSTALL_WEEK3_APPS.cmd` for a physical device.
+This is an archived Week 3 source checklist.
 
-This separation prevents fabricated success claims: source completion is recorded here, while machine-specific Android SDK, Gradle, Docker and device results are recorded by the generated local verification log.
+Current machine-specific Gradle, APK, Backend and physical-device verification results are recorded in `week4-mobile-verification.md`. Use the explicit commands in `mobile/README.md`; the former Week 3 helper scripts and generated verification filename are no longer used.

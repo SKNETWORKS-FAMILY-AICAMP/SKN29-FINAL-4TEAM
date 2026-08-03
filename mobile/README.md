@@ -1,4 +1,4 @@
-# WaterCare Android — Week 3 complete mobile baseline
+﻿# WaterCare Android — Week 4 mobile baseline
 
 Kotlin, Jetpack Compose, Material 3, Navigation Compose, ViewModel, StateFlow, Kotlinx Serialization, Retrofit and OkHttp are used across three modules.
 
@@ -10,7 +10,7 @@ Kotlin, Jetpack Compose, Material 3, Navigation Compose, ViewModel, StateFlow, K
 
 The fake implementation is deliberately named `FakeCustomerCareRepository`. It is the replacement point for questionnaire and guidance APIs and never contains real personal information.
 
-## Implemented Week 3 customer flow
+## Implemented customer flow
 
 1. Actual `GET /health` status check.
 2. Actual `POST /api/v1/auth/demo-login` with `DEMO-CUSTOMER-001`.
@@ -28,15 +28,10 @@ The fake implementation is deliberately named `FakeCustomerCareRepository`. It i
 
 ## Backend preparation
 
-From the repository root:
+From the repository root, use the verified manual sequence below.
+The old Week 3 helper scripts are no longer used.
 
-```cmd
-START_WEEK3_BACKEND.cmd
-```
-
-The command checks Docker, starts PostgreSQL, applies migrations, runs `seed_week3_demo`, and starts Django at `127.0.0.1:8000`. The `.env` file is never included in source archives.
-
-Manual equivalent:
+Manual sequence:
 
 ```cmd
 cd /d C:\skn29\WaterCare
@@ -79,7 +74,7 @@ DEMO_SUBSCRIPTION_ID=<DEMO-CUSTOMER-001 활성 구독 Public UUID>
 cd /d C:\skn29\WaterCare\mobile
 
 gradlew.bat clean
-gradlew.bat :core:testDebugUnitTest
+gradlew.bat :core:test
 gradlew.bat :customer-app:testDebugUnitTest
 gradlew.bat :customer-app:assembleDebug
 gradlew.bat :technician-app:assembleDebug

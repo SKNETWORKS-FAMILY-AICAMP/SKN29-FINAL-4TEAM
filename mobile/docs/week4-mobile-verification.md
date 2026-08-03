@@ -1,4 +1,4 @@
-# 4주차 모바일 기준선 검증 결과
+﻿# 4주차 모바일 기준선 검증 결과
 
 ## 검증 환경
 
@@ -25,15 +25,16 @@
 | `:technician-app:assembleDebug` | 성공 |
 | Backend `/health` | HTTP 200 |
 | 고객 앱 실기기 설치 | 성공 |
-| `:customer-app:connectedDebugAndroidTest` | 보류 |
+| `:customer-app:connectedDebugAndroidTest` | 성공 · 실기기 2개 테스트 통과 |
 
-## Compose UI Test 보류 사유
+## Compose UI Test 실기기 검증
 
-실기기에서 Instrumentation Test는 실행되지만 Compose Semantics Tree가 생성되지 않아
-`No compose hierarchies found in the app` 오류가 발생한다.
-
-Core 테스트, 단위 테스트, Lint, APK 빌드 및 실제 앱 설치에는 영향을 주지 않는다.
-발표 기능 확대보다 실제 Backend 연동을 우선하기 위해 별도 테스트 인프라 결함으로 기록한다.
+- 실행 기기: Samsung SM-F721N / Android 16
+- 실행 Task: `:customer-app:connectedDebugAndroidTest`
+- 실행 결과: 2개 테스트 실행, 2개 통과
+- Gradle 결과: `BUILD SUCCESSFUL`
+- `createAndroidComposeRule` 사용 중단 예정 경고는 후속 마이그레이션 대상으로 기록
+- 판정: 고객 최소 Compose UI Test 통과
 
 ## 계약 정합성
 
@@ -54,7 +55,7 @@ Core 테스트, 단위 테스트, Lint, APK 빌드 및 실제 앱 설치에는 �
 ### 검증 환경
 
 - 실제 Android 기기: Samsung SM-F721N
-- Backend 연결: db reverse tcp:8000 tcp:8000
+- Backend 연결: adb reverse tcp:8000 tcp:8000
 - 고객 앱 패키지: com.skn29.watercare.customer
 - 테스트 데이터 식별자는 로컬 환경변수에서만 관리
 
@@ -71,7 +72,7 @@ Core 테스트, 단위 테스트, Lint, APK 빌드 및 실제 앱 설치에는 �
 ### 화면·계약 확인
 
 - 문의 생성 직후 Backend 상태 DRAFT, state_version 1 확인
-- Backend llowed_actions로 SUBMIT_SYMPTOM, CANCEL_INQUIRY 확인
+- Backend allowed_actions로 SUBMIT_SYMPTOM, CANCEL_INQUIRY 확인
 - CANCEL_INQUIRY가 제공된 경우에만 실제 문의 취소 버튼 노출
 - 취소 확인 팝업에서 사용자가 취소 진행을 선택한 뒤 실제 취소 Endpoint 호출
 - 임의 상태명이나 지원되지 않는 동작을 Mobile에서 생성하지 않음
