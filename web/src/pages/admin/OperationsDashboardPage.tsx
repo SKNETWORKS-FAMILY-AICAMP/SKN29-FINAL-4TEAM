@@ -31,6 +31,7 @@ import type { CounselorInquiry } from "../../features/consultation/model/consult
 import ApiIntegrationPanel from "../../features/runtime-status/components/ApiIntegrationPanel";
 import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntimeStatus";
 import "./OperationsDashboardPage.css";
+import "./OperationsDashboardTheme.css";
 
 const INQUIRY_COLUMNS: readonly DataTableColumn<CounselorInquiry>[] = [
   {

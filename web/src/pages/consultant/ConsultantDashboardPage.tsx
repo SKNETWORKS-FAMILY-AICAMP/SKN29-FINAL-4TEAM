@@ -29,6 +29,7 @@ import type {
 } from "../../features/consultation/model/consultantWorkspaceTypes";
 import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntimeStatus";
 import "./ConsultantDashboardPage.css";
+import "./ConsultantDashboardTheme.css";
 
 const WORK_BUCKETS: readonly {
   id: CounselorWorkBucket;
