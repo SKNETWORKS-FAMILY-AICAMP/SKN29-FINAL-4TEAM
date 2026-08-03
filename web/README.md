@@ -2,6 +2,23 @@
 
 상담사·운영 담당자가 사용하는 React 19, Vite, TypeScript 기반 웹입니다. 현재 상담사 `CONS-01 → CONS-02 → CONS-03` 흐름은 합성 Mock 데이터로 실행됩니다.
 
+## 처음 보는 사람용 3줄 안내
+
+1. 이 프로그램은 상담사와 관리자가 쓰는 화면입니다.
+2. 지금은 안전한 연습용 데이터(Mock)로 화면과 버튼을 확인할 수 있습니다.
+3. 실제 고객 데이터 저장은 아직 하지 않으며, 서버 계약이 정해진 뒤 연결합니다.
+
+가장 먼저 저장소에서 `web` 폴더로 이동해 아래 명령만 순서대로 실행하세요.
+
+```powershell
+npm.cmd ci
+npm.cmd run dev
+```
+
+- 상담사 화면: `http://localhost:5173/consultant/inquiries`
+- 관리자 화면: `.env.local`의 `VITE_MOCK_ROLE=OPERATOR` 설정 후 `http://localhost:5173/admin`
+- 실제 API 연결 전 확인: [actual-api-readiness-checklist.md](./docs/actual-api-readiness-checklist.md)
+
 ## 실행 환경
 
 - Node.js 20.19 이상 또는 22.12 이상
