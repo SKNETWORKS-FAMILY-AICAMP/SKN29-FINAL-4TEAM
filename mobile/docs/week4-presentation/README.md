@@ -1,4 +1,4 @@
-﻿# 4주차 모바일 중간 발표 자료
+# 4주차 모바일 중간 발표 자료
 
 ## 발표 기준선
 
@@ -16,8 +16,8 @@
 - [x] 저장 Token Cold Start 재사용 확인
 - [x] 단위 테스트·Lint·Compose UI Test 통과
 - [x] 상담 Runtime 미제공 상태 안전 처리
-- [ ] 고객 시연 실행 순서 문서
-- [ ] 모바일 구현 상태표
+- [x] 고객 시연 실행 순서 문서
+- [x] 모바일 구현 상태표
 - [ ] 발표 화면 캡처
 - [ ] 1~2분 Fallback 영상
 
@@ -25,6 +25,9 @@
 
 - 검증 결과: `../week4-mobile-verification.md`
 - 제한사항: `../week4-mobile-limitations.md`
+- 시연 순서: `demo-runbook.md`
+- 구현 상태표: `implementation-status.md`
+- 화면 캡처 계획: `capture-plan.md`
 - 업무 지침: `../week4-work-guideline.md`
 
 ## 발표 원칙
