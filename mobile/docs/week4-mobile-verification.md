@@ -92,3 +92,16 @@
 - GET /api/v1/me 응답 200 OK 확인
 - 판정: Demo 로그인 및 Token 재사용 통과
 - 참고: /me 중복 호출은 후속 최적화 후보로 기록
+
+### 상담 요청 Runtime 미제공 처리 검증
+
+- 검증일: 2026-08-03
+- Backend 상담 요청 Runtime API 미제공 상태 확인
+- 운영 코드의 빈 상담 Callback 제거
+- 실제 상담 요청·상담 전환 버튼 미노출
+- Mock/Blocked 안내 카드만 표시
+- 위험·근거 없음 상태에서 해결·종료 Action 미노출
+- 고객 단위 테스트, Lint, Debug APK 빌드 통과
+- 실기기 Compose UI Test 2개 통과
+- Commit: `7f685c4`
+- 판정: 상담 요청 미연동 상태 안전 처리 통과
