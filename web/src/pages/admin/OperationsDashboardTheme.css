@@ -1,0 +1,302 @@
+/* Reference-matched Water Flow theme. Visual overrides only; layout stays intact. */
+.operations-page {
+  --operations-green: #1688f8;
+  --operations-green-soft: #eaf4ff;
+  --operations-orange: #ff7b32;
+  --operations-orange-soft: #fff1e8;
+  --operations-ink: #18233a;
+  --operations-muted: #78869b;
+  --operations-line: #dce7f4;
+  --operations-surface: #fff;
+  --clear-care: #ff7b32;
+  background:
+    radial-gradient(circle at 92% 6%, rgb(75 169 255 / 12%), transparent 26%),
+    radial-gradient(circle at 8% 94%, rgb(124 202 255 / 12%), transparent 24%),
+    #f3f8fe;
+  color: #18233a;
+}
+
+.operations-topbar {
+  border-right: 0;
+  background:
+    radial-gradient(circle at 18% 100%, rgb(255 255 255 / 12%), transparent 30%),
+    linear-gradient(165deg, #35a7ff 0%, #1688f8 48%, #0874e6 100%);
+  box-shadow: 10px 0 28px rgb(17 98 184 / 14%);
+  backdrop-filter: none;
+}
+
+.operations-brand {
+  border-bottom-color: rgb(255 255 255 / 24%);
+}
+
+.operations-brand > span {
+  border: 1px solid rgb(255 255 255 / 76%);
+  border-radius: 12px !important;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 8px 18px rgb(4 75 151 / 16%);
+  color: #1688f8;
+}
+
+.operations-brand strong,
+.operations-user strong {
+  color: #fff;
+}
+
+.operations-brand small,
+.operations-user small {
+  color: rgb(255 255 255 / 72%);
+}
+
+.operations-navigation::before {
+  color: rgb(255 255 255 / 58%);
+}
+
+.operations-navigation a {
+  border: 1px solid transparent;
+  border-radius: 12px !important;
+  color: rgb(255 255 255 / 82%);
+  box-shadow: none;
+}
+
+.operations-navigation a:hover {
+  border-color: rgb(255 255 255 / 24%);
+  background: rgb(255 255 255 / 12%);
+  box-shadow: none;
+  color: #fff;
+}
+
+.operations-navigation a:first-of-type {
+  border-color: #fff;
+  background: #fff;
+  box-shadow: 0 9px 22px rgb(2 75 154 / 17%);
+  color: #1688f8;
+}
+
+.operations-navigation a span,
+.operations-navigation a:first-of-type span {
+  border: 0;
+  border-radius: 8px !important;
+  background: rgb(255 255 255 / 16%);
+  box-shadow: none;
+  color: #fff;
+}
+
+.operations-navigation a:first-of-type span {
+  background: #eaf4ff;
+  color: #1688f8;
+}
+
+.operations-runtime-status {
+  border: 1px solid rgb(255 255 255 / 34%);
+  border-radius: 9px !important;
+  background: rgb(255 255 255 / 14%);
+  box-shadow: none;
+  color: rgb(255 255 255 / 82%);
+}
+
+.operations-runtime-status small {
+  color: rgb(255 255 255 / 68%);
+}
+
+.operations-user {
+  border: 1px solid rgb(255 255 255 / 25%);
+  border-radius: 14px !important;
+  background: rgb(255 255 255 / 10%);
+  box-shadow: none;
+}
+
+.operations-user button {
+  border: 1px solid rgb(255 255 255 / 34%);
+  border-radius: 9px !important;
+  background: rgb(255 255 255 / 14%);
+  box-shadow: none;
+  color: #fff;
+}
+
+.operations-page-head {
+  border: 1px solid #dce8f5;
+  border-radius: 16px !important;
+  background:
+    radial-gradient(circle at 82% 40%, rgb(42 155 255 / 13%), transparent 24%),
+    linear-gradient(120deg, #fff 0%, #f8fbff 65%, #e5f3ff 100%);
+  box-shadow: 0 10px 30px rgb(43 99 158 / 9%);
+  backdrop-filter: none;
+}
+
+.operations-page-head::before {
+  border: 1px solid rgb(72 166 255 / 15%);
+}
+
+.operations-page-head::after {
+  height: 3px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, #58afff);
+}
+
+.operations-page-head small {
+  color: #1688f8;
+}
+
+.operations-page-head h1 {
+  color: #18233a;
+}
+
+.operations-page-head p {
+  color: #748299;
+}
+
+.operations-page-head > span {
+  border: 1px solid #cfe3fa;
+  border-radius: 10px !important;
+  background: #fff;
+  box-shadow: 0 7px 18px rgb(43 99 158 / 8%);
+  color: #1688f8;
+}
+
+.operations-page .api-integration-panel {
+  border: 1px solid #dce8f5;
+  border-radius: 14px !important;
+  background: #fff;
+  box-shadow: 0 9px 26px rgb(43 99 158 / 8%);
+  backdrop-filter: none;
+}
+
+.operations-page .api-integration-panel__summary > small {
+  color: #1688f8;
+}
+
+.operations-page .api-integration-panel__coverage article {
+  border-left-color: #1688f8;
+  border-radius: 9px !important;
+  background: #f3f8fe;
+}
+
+.operations-page .api-integration-panel__coverage article[data-tone="blocked"] {
+  border-left-color: #ff8a3d;
+  background: #fff8f2;
+}
+
+.operations-page .api-integration-panel__coverage strong {
+  color: #1b3654;
+}
+
+.operations-panel,
+.operations-metric {
+  border: 1px solid #dce8f5;
+  border-radius: 14px !important;
+  background: #fff;
+  box-shadow: 0 9px 26px rgb(43 99 158 / 8%);
+  backdrop-filter: none;
+}
+
+.operations-panel::before,
+.operations-metric::after {
+  display: none;
+}
+
+.operations-metric {
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.operations-metric:hover {
+  border-color: #bcdafb;
+  box-shadow: 0 13px 30px rgb(43 99 158 / 12%);
+}
+
+.operations-metric::before {
+  border-radius: 14px 14px 0 0 !important;
+  background: #91a0b5;
+}
+
+.operations-metric.is-danger::before {
+  background: #ff7b32;
+}
+
+.operations-metric.is-warning::before {
+  background: #ff9a48;
+}
+
+.operations-metric.is-success::before,
+.operations-metric.is-info::before {
+  background: #1688f8;
+}
+
+.operations-metric > span,
+.operations-metric small {
+  color: #7a889e;
+}
+
+.operations-metric strong {
+  color: #18233a;
+}
+
+.operations-section-head small {
+  color: #1688f8;
+}
+
+.operations-section-head > strong {
+  border: 1px solid #d2e6fb;
+  border-radius: 9px !important;
+  background: #eef6ff;
+  box-shadow: none;
+  color: #1688f8;
+}
+
+.operations-filters input,
+.operations-filters select,
+.operations-filters__footer button {
+  border: 1px solid #dce6f2;
+  border-radius: 9px !important;
+  background: #f9fbfe;
+  box-shadow: none;
+}
+
+.operations-filters input:focus,
+.operations-filters select:focus {
+  border-color: #65aff7;
+  outline: 3px solid rgb(22 136 248 / 11%);
+}
+
+.operations-chart__track {
+  border: 0;
+  border-radius: 999px !important;
+  background: #eaf0f7;
+  box-shadow: none;
+}
+
+.operations-chart__track i {
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, #1688f8, #6ab8ff);
+  box-shadow: none;
+}
+
+.operations-chart li:nth-child(even) .operations-chart__track i {
+  background: linear-gradient(90deg, #ff7b32, #ffad72);
+}
+
+.operations-table-section .common-data-table-wrap {
+  overflow: hidden;
+  border: 1px solid #e1eaf4;
+  border-radius: 10px !important;
+  background: #fff;
+  box-shadow: none;
+}
+
+.operations-table-section .common-data-table th {
+  background: #f5f9fe;
+  color: #64748b;
+}
+
+.operations-table-section .common-data-table td {
+  border-color: #e8eef6;
+}
+
+.operations-table-section .common-data-table tbody tr:hover {
+  background: #f2f8ff;
+}
+
+.operations-exception-reasons em {
+  border-radius: 6px !important;
+  background: #fff1e8;
+  color: #e76524;
+}
