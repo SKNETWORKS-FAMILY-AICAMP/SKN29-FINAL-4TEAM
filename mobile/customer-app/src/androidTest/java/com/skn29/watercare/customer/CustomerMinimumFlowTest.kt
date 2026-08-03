@@ -1,14 +1,15 @@
 package com.skn29.watercare.customer
 
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.skn29.watercare.core.model.ActiveInquirySummary
 import com.skn29.watercare.core.model.CustomerHomeData
@@ -29,12 +30,15 @@ import org.junit.Test
 
 class CustomerMinimumFlowTest {
     @get:Rule
-    val composeRule = createAndroidComposeRule<ComponentActivity>()
+    val composeRule =
+        createAndroidComposeRule<ComponentActivity>()
 
     @Test
     fun offlinePreview_opensCust01AndCust02() {
         composeRule.setContent {
-            var showIntake by remember { mutableStateOf(false) }
+            var showIntake by remember {
+                mutableStateOf(false)
+            }
 
             WaterCareTheme {
                 if (showIntake) {
@@ -53,7 +57,9 @@ class CustomerMinimumFlowTest {
                 } else {
                     CustomerHomeContent(
                         state = sampleHomeState(),
-                        onStartIntake = { showIntake = true },
+                        onStartIntake = {
+                            showIntake = true
+                        },
                         onOpenGuidance = { _, _ -> },
                         onRetry = {},
                         onLogout = {},
@@ -62,23 +68,26 @@ class CustomerMinimumFlowTest {
             }
         }
 
-        composeRule.onNodeWithTag("startIntake")
+        composeRule
+            .onNodeWithTag("startIntake")
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()
 
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithTag("submitIntake")
+        composeRule
+            .onNodeWithTag("submitIntake")
             .performScrollTo()
             .assertIsDisplayed()
-
     }
 
     @Test
-    fun dangerGuidance_hidesResolvedAction() {
+    fun dangerGuidance_hidesResolvedActionAndBlocksConsultationRequest() {
         composeRule.setContent {
-            var showDangerGuidance by remember { mutableStateOf(false) }
+            var showDangerGuidance by remember {
+                mutableStateOf(false)
+            }
 
             WaterCareTheme {
                 if (showDangerGuidance) {
@@ -86,8 +95,6 @@ class CustomerMinimumFlowTest {
                         guidance = dangerGuidance(),
                         noEvidence = false,
                         onRetry = {},
-                        onRequestConsultation = {},
-                        onDone = {},
                     )
                 } else {
                     CustomerHomeContent(
@@ -105,73 +112,110 @@ class CustomerMinimumFlowTest {
             }
         }
 
-        composeRule.onNodeWithTag("scenario_DANGER")
+        composeRule
+            .onNodeWithTag("scenario_DANGER")
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()
 
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithTag("requestConsultation")
-            .assertIsDisplayed()
+        val blockedNoticeExists =
+            runCatching {
+                composeRule
+                    .onNodeWithText("상담 요청 준비 중")
+                    .fetchSemanticsNode()
+            }.isSuccess
 
-        val resolvedActionDoesNotExist = runCatching {
-            composeRule.onNodeWithTag("resolvedAction").fetchSemanticsNode()
-        }.isFailure
+        assertTrue(
+            "상담 API가 없을 때 차단 안내가 표시되어야 합니다.",
+            blockedNoticeExists,
+        )
+
+        val requestButtonDoesNotExist =
+            runCatching {
+                composeRule
+                    .onNodeWithText("상담 요청하기")
+                    .fetchSemanticsNode()
+            }.isFailure
+
+        assertTrue(
+            "상담 API가 없을 때 실제 상담 요청 버튼이 표시되면 안 됩니다.",
+            requestButtonDoesNotExist,
+        )
+
+        val resolvedActionDoesNotExist =
+            runCatching {
+                composeRule
+                    .onNodeWithTag("resolvedAction")
+                    .fetchSemanticsNode()
+            }.isFailure
 
         assertTrue(
             "위험 안내 화면에서는 해결 처리 버튼이 표시되면 안 됩니다.",
             resolvedActionDoesNotExist,
         )
-
     }
 
-    private fun sampleHomeState() = CustomerHomeUiState(
-        loading = false,
-        home = CustomerHomeData(
-            subscriptionId = TEST_SUBSCRIPTION_ID,
-            product = ProductSummary(
-                productId = "00000000-0000-4000-8000-000000000201",
-                modelCode = "WPUJAC104DWH",
-                modelName = "WPU-JAC104D",
-                serialNo = "SYN-JAC104-002",
-                managementTypeCode = "VISIT_CARE",
-                managementTypeLabel = "방문 관리",
-                isSynthetic = true,
-            ),
-            questionnaireStatus = "사전 문진 가능",
-            nextCareOn = "2026-08-04",
-            activeInquiry = ActiveInquirySummary(
-                inquiryId = TEST_INQUIRY_ID,
-                inquiryCode = "DEMO-INQ-002",
-                statusCode = "AI_GUIDANCE",
-                statusLabel = "AI 안내 확인",
-            ),
-        ),
-        backendAvailable = false,
-        offlinePreview = true,
-    )
+    private fun sampleHomeState() =
+        CustomerHomeUiState(
+            loading = false,
+            home =
+                CustomerHomeData(
+                    subscriptionId =
+                        TEST_SUBSCRIPTION_ID,
+                    product =
+                        ProductSummary(
+                            productId =
+                                "00000000-0000-4000-8000-000000000201",
+                            modelCode = "WPUJAC104DWH",
+                            modelName = "WPU-JAC104D",
+                            serialNo = "SYN-JAC104-002",
+                            managementTypeCode = "VISIT_CARE",
+                            managementTypeLabel = "방문 관리",
+                            isSynthetic = true,
+                        ),
+                    questionnaireStatus = "사전 문진 가능",
+                    nextCareOn = "2026-08-04",
+                    activeInquiry =
+                        ActiveInquirySummary(
+                            inquiryId = TEST_INQUIRY_ID,
+                            inquiryCode = "DEMO-INQ-002",
+                            statusCode = "AI_GUIDANCE",
+                            statusLabel = "AI 안내 확인",
+                        ),
+                ),
+            backendAvailable = false,
+            offlinePreview = true,
+        )
 
-    private fun dangerGuidance() = GuidanceDisplayModel(
-        inquiryId = TEST_INQUIRY_ID,
-        inquiryCode = "DEMO-DANGER-001",
-        symptomSummary = "제품 하단 누수 위험",
-        riskLevel = RiskLevel.DANGER,
-        usageStatus = UsageGuidanceStatus.TOTAL_STOP,
-        usageMessage = "제품 사용을 즉시 중지하세요.",
-        restrictedFunctions = listOf("제품 전체 사용"),
-        safeActions = listOf("제품과 거리를 유지하세요."),
-        escalationConditions = listOf("상담을 요청하세요."),
-        prohibitedActions = listOf("제품 분해"),
-        nextAction = "즉시 상담 요청",
-        requiresConsultation = true,
-        evidence = emptyList(),
-        allowedActions = listOf(
-            "REQUEST_CONSULTATION",
-            "MARK_RESOLVED",
-            "CLOSE_INQUIRY",
-        ),
-    )
+    private fun dangerGuidance() =
+        GuidanceDisplayModel(
+            inquiryId = TEST_INQUIRY_ID,
+            inquiryCode = "DEMO-DANGER-001",
+            symptomSummary = "제품 하단 누수 위험",
+            riskLevel = RiskLevel.DANGER,
+            usageStatus =
+                UsageGuidanceStatus.TOTAL_STOP,
+            usageMessage =
+                "제품 사용을 즉시 중지하세요.",
+            restrictedFunctions =
+                listOf("제품 전체 사용"),
+            safeActions =
+                listOf("제품과 거리를 유지하세요."),
+            escalationConditions =
+                listOf("상담을 요청하세요."),
+            prohibitedActions = listOf("제품 분해"),
+            nextAction = "즉시 상담 요청",
+            requiresConsultation = true,
+            evidence = emptyList(),
+            allowedActions =
+                listOf(
+                    "REQUEST_CONSULTATION",
+                    "MARK_RESOLVED",
+                    "CLOSE_INQUIRY",
+                ),
+        )
 
     companion object {
         private const val TEST_SUBSCRIPTION_ID =
