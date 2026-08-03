@@ -13,7 +13,6 @@ import LoadingState from "../../common/components/feedback/LoadingState";
 import type { InquiryId } from "../../entities/inquiry/inquiryIdentifiers";
 import CompactConsultationDesk from "../../features/consultation/components/CompactConsultationDesk";
 import useCounselorQueueFilters from "../../features/consultation/hooks/useCounselorQueueFilters";
-import { CONSULTANT_QUEUE_INQUIRIES } from "../../features/consultation/model/consultantWorkspaceMock";
 import {
   formatWaitingTime,
   getCounselorQueuePage,
@@ -27,6 +26,7 @@ import type {
   CounselorStatus,
   CounselorWorkBucket,
 } from "../../features/consultation/model/consultantWorkspaceTypes";
+import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
 import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntimeStatus";
 import "./ConsultantDashboardPage.css";
 import "./ConsultantDashboardTheme.css";
@@ -81,7 +81,7 @@ export default function ConsultantDashboardPage() {
     () =>
       mockState === "empty"
         ? []
-        : CONSULTANT_QUEUE_INQUIRIES.map((inquiry) => ({
+        : consultantWorkspaceRepository.listConsultantQueue().map((inquiry) => ({
             ...inquiry,
             ...inquiryStateUpdates[inquiry.inquiryId],
           })),

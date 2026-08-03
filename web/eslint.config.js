@@ -19,4 +19,27 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/features/consultation/repositories/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '**/inquiry-queue/**',
+                '**/inquiry-detail/**',
+                '**/consultantWorkspaceMock',
+                '**/legacy/styles.css',
+              ],
+              message:
+                '폐기 예정 또는 Mock 원천을 직접 Import하지 말고 공식 Repository 경계를 사용하세요.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 ])
