@@ -5,8 +5,8 @@
 | 항목 | 값 |
 | --- | --- |
 | 실행일 | 2026-08-03 |
-| 기준 Commit | `d4bb32eaf75dc859830238526855362cfa7ad7a6` |
-| 검증 Source | 기준 Commit + Repository 경계·과거 구현 삭제 작업 트리 |
+| 기준 Commit | `600c9a6` |
+| 검증 Source | 기준 Commit에 포함된 Repository 경계·과거 구현 삭제 결과 |
 | Node.js | `v26.4.0` |
 | npm | `11.17.0` |
 | OS | Windows |
