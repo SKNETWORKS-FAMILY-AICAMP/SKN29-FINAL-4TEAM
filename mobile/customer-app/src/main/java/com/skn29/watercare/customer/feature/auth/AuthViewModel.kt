@@ -23,6 +23,7 @@ class AuthViewModel(
     private val authRepository: AuthRepository,
     private val backendStatusRepository: BackendStatusRepository,
 ) : ViewModel() {
+
     private val _state = MutableStateFlow(AuthUiState())
     val state: StateFlow<AuthUiState> = _state.asStateFlow()
 
@@ -32,32 +33,94 @@ class AuthViewModel(
 
     fun checkBackend() {
         viewModelScope.launch {
-            _state.value = _state.value.copy(checkingBackend = true, error = null)
-            val available = backendStatusRepository.health() is ApiResult.Success
-            _state.value = _state.value.copy(checkingBackend = false, backendAvailable = available)
+            _state.value = _state.value.copy(
+                checkingBackend = true,
+                error = null,
+            )
+
+            val backendAvailable =
+                backendStatusRepository.health() is ApiResult.Success
+
+            if (!backendAvailable) {
+                _state.value = _state.value.copy(
+                    checkingBackend = false,
+                    backendAvailable = false,
+                    authenticated = false,
+                )
+                return@launch
+            }
+
+            if (!authRepository.hasSession()) {
+                _state.value = _state.value.copy(
+                    checkingBackend = false,
+                    backendAvailable = true,
+                    authenticated = false,
+                )
+                return@launch
+            }
+
+            _state.value = when (val result = authRepository.me()) {
+                is ApiResult.Success -> {
+                    _state.value.copy(
+                        checkingBackend = false,
+                        backendAvailable = true,
+                        authenticated = true,
+                        offlinePreview = false,
+                        error = null,
+                    )
+                }
+
+                is ApiResult.Failure -> {
+                    _state.value.copy(
+                        checkingBackend = false,
+                        backendAvailable = result.code != "NETWORK_ERROR",
+                        authenticated = false,
+                        offlinePreview = false,
+                        error = result.message,
+                    )
+                }
+            }
         }
     }
 
     fun demoLogin() {
         if (_state.value.submitting) return
+
         viewModelScope.launch {
-            _state.value = _state.value.copy(submitting = true, error = null)
-            _state.value = when (val result = authRepository.demoLogin("DEMO-CUSTOMER-001")) {
-                is ApiResult.Success -> _state.value.copy(
-                    submitting = false,
-                    authenticated = true,
-                    offlinePreview = false,
-                )
-                is ApiResult.Failure -> _state.value.copy(
-                    submitting = false,
-                    error = result.message,
-                    backendAvailable = result.code != "NETWORK_ERROR",
-                )
+            _state.value = _state.value.copy(
+                submitting = true,
+                error = null,
+            )
+
+            _state.value = when (
+                val result = authRepository.demoLogin("DEMO-CUSTOMER-001")
+            ) {
+                is ApiResult.Success -> {
+                    _state.value.copy(
+                        submitting = false,
+                        authenticated = true,
+                        offlinePreview = false,
+                        error = null,
+                    )
+                }
+
+                is ApiResult.Failure -> {
+                    _state.value.copy(
+                        submitting = false,
+                        authenticated = false,
+                        error = result.message,
+                        backendAvailable = result.code != "NETWORK_ERROR",
+                    )
+                }
             }
         }
     }
 
     fun startOfflinePreview() {
-        _state.value = _state.value.copy(authenticated = true, offlinePreview = true, error = null)
+        _state.value = _state.value.copy(
+            authenticated = true,
+            offlinePreview = true,
+            error = null,
+        )
     }
 }

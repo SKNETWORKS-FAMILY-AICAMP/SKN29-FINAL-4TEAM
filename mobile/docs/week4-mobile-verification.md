@@ -81,3 +81,13 @@ Core 테스트, 단위 테스트, Lint, APK 빌드 및 실제 앱 설치에는 �
 - /me/subscriptions Runtime API가 없어 Demo 구독 UUID는 mobile/local.properties에서만 임시 관리
 - 문의 상세·타임라인·Guidance·상담 API는 Backend Runtime 제공 전까지 Mock 또는 Blocked 유지
 - 문의 ID, correlation ID, 액세스 토큰이 포함될 수 있는 원본 캡처는 Git에 포함하지 않음
+
+### Token 재사용 실기기 검증
+
+- 검증일: 2026-08-03
+- 기존 앱 데이터를 유지한 상태에서 APK를 덮어 설치함
+- 앱 프로세스 종료 후 Cold Start로 재실행함
+- Demo 로그인 API를 다시 호출하지 않고 저장된 Token을 사용함
+- GET /api/v1/me 응답 200 OK 확인
+- 판정: Demo 로그인 및 Token 재사용 통과
+- 참고: /me 중복 호출은 후속 최적화 후보로 기록
