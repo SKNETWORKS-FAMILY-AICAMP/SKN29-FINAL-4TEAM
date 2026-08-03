@@ -21,9 +21,9 @@ npm.cmd run dev
 
 ## 실행 환경
 
-- Node.js 20.19 이상 또는 22.12 이상
-- npm
-- 2026-07-29 최신 검증 환경: Node.js `v26.4.0`, npm `11.17.0`
+- 최소 지원 버전: Node.js `20.19` 이상 또는 `22.12` 이상
+- 필수 도구: npm
+- 이번 재검증 환경(2026-08-03): Node.js `v26.4.0`, npm `11.17.0`
 
 ## 설치와 실행
 
@@ -97,6 +97,7 @@ npm.cmd run fixtures:generate
 
 ## 현재 연동 상태
 
+- 상담 업무 Source 경계: `consultantWorkspaceRepository.ts`에서 Mock 데이터 접근을 한곳으로 통합. `VITE_USE_MOCK_API=false`일 때 실제 Endpoint를 추측하지 않고 `BACKEND_BLOCKED`로 분류
 - 문의 목록·상세·상담 처리: 합성 Mock
 - 운영 대시보드: T-101~T-104 프론트 P1 Mock 완료, 실제 집계 API 미연동
 - 공통 API Wrapper·오류·페이지네이션: 계약 타입과 테스트 구현 완료, Authorization·Correlation 공통 적용
@@ -114,3 +115,5 @@ npm.cmd run fixtures:generate
 필드별 확정·미확정 상태는 [week3-screen-api-db-map.md](./docs/week3-screen-api-db-map.md)를 확인합니다.
 기술 선택과 미연동 범위는 [week3-web-decisions.md](./docs/week3-web-decisions.md), [week3-open-issues.md](./docs/week3-open-issues.md)를 확인합니다.
 3주차 완료 기준 대조표는 [week3-completion-checklist.md](./docs/week3-completion-checklist.md)를 확인합니다.
+
+4주차 현재 기준선과 재검증 결과는 [week4-web-baseline.md](./docs/week4-web-baseline.md), [week4-runtime-source-map.md](./docs/week4-runtime-source-map.md), [week4-test-result.md](./docs/week4-test-result.md), [week4-open-issues.md](./docs/week4-open-issues.md)를 확인합니다.
