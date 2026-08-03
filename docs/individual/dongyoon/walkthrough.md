@@ -342,3 +342,43 @@ Public UUID 분석 요청이 모두 성공했다.
   5. `jac104_retrieval_cases.json`: RAG 검색 평가 기대값 SSOT 확정 및 pgvector 12/12 PASS 유지.
 - **오프라인 평가 리포트 투명화**: DB 미연결 오프라인 실행 시 가짜 Mock 100% 수치를 생성하는 대신 `"status": "vector_store_not_configured"`로 표기하여 수치 왜곡을 차단하는 정직한 평가 로직을 확정했다.
 
+---
+
+## 2026-08-03 T-022 Slice B AI 계약 검토 증거 회신
+
+- `20260803_이동윤_T022_SliceB_AI_계약_검토_증거_회신.md`에 계약 Parity,
+  Timeout·취소, 구조화 로그, 안전성, Revision과 미해결 Gate를 제출 형식으로
+  정리했다.
+- 현재 Branch `dongyoon`, 기준 Commit
+  `c4434c57dd56d8ad1d56ea00e28ee154672e8498`에서 `pip check`는 PASS했다.
+- AI 단위 테스트는 `71 passed, 3 warnings`, 계약 집중 검증은 `29 passed,
+  2 warnings`, API Runtime 검증은 `15 passed, 1 warning`, 안전·검색 검증은
+  `20 passed`다.
+- 기존 `ai/.venv`와 `.runtime/ai-py313-test`의 Python `3.13.12` 환경을
+  삭제하고, `ai/.venv`를 Python `3.13.13`으로 재생성했다. Lock 설치와 핵심
+  Import, `pip check`, 전체 단위 테스트 `71 passed, 3 warnings`를 다시
+  확인했다.
+- Python 환경 Gate는 통과했지만 durable dispatch 저장 위치·재처리 State·
+  Backend Adapter E2E가 미확정이므로 T-022 Slice B 결정은 `HOLD`로 유지했다.
+
+---
+
+## 2026-08-03 4주차 선행 작업 P0~P4
+
+- 손상된 안전 평가 Dataset 한글을 복원하고 검색 근거 유무와 규칙 기반 안전
+  평가를 분리해 안전 Case `4/4`, 준수율 `100%`를 재확인했다.
+- `official_mvp_baseline_20260803.json`에 Python·계약·Dataset·Chunk·Model
+  Revision과 격리 pgvector 이력·현재 오프라인 상태를 분리해 기록했다.
+- 발표 취합용 `20260803_AI_RAG_중간발표_기술자료.md`에 구현 범위, 공식 수치,
+  위험·근거 없음 시연과 금지 표현을 정리했다.
+- T-026 규칙 기반 증상 구조화, 누락 필드 검사, 추가 질문 생성, 기존 답변
+  중복 질문 차단을 구현하고 Pipeline 응답에 연결했다. 위험 입력은 질문
+  Stage를 건너뛰고 안전 안내를 우선한다.
+- T-032 단계별 협력적 Timeout을 구조화·안전·검색·생성·검증 경계에 적용하고
+  Stage Timeout을 `AI-TIMEOUT-01`/HTTP 504와 실제 실패 Stage로 반환한다.
+- `AI_사전학습모델_VectorDB_적용결과서.md`에 직접 학습 미수행, bge-m3
+  Revision, pgvector 구성·평가·한계, Graph DB 미사용 사유를 작성했다.
+- 팀 DB Migration·13번째 정책 차단 Case·Backend Adapter E2E는 각 소유자의
+  결정과 공동 검증 전까지 완료로 표시하지 않는다.
+- Python `3.13.13` 전체 단위 회귀는 `79 passed, 3 warnings`이며 `pip check`,
+  JSON 파싱, Python Compile, `git diff --check`를 통과했다.

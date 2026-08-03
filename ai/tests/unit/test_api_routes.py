@@ -177,6 +177,28 @@ def test_runtime_retry_and_timeout_policy_is_contract_value():
     assert policy.backend_retry_count == 0
 
 
+def test_stage_timeout_returns_stage_specific_504(client, monkeypatch):
+    from ai.app.common.timeout import PipelineStageTimeoutError
+    from ai.app.interfaces.http.routes import analysis_routes
+
+    def stage_timeout(*args, **kwargs):
+        raise PipelineStageTimeoutError("RETRIEVING")
+
+    monkeypatch.setattr(analysis_routes.PipelineRouter, "run_pipeline", stage_timeout)
+    response = client.post("/api/v1/ai/analyze?mode=local", json={
+        "inquiry_id": INQUIRY_ID,
+        "correlation_id": "corr-stage-timeout",
+        "ai_request_id": "ai-req-stage-timeout",
+        "state_version": 3,
+        "raw_symptom": "검색 단계 지연 검증",
+        "model_code": "WPUJAC104DWH",
+    })
+
+    assert response.status_code == 504
+    assert response.json()["error"]["code"] == "AI-TIMEOUT-01"
+    assert response.json()["error"]["failure_stage"] == "RETRIEVING"
+
+
 def test_timeout_signals_cooperative_worker_cancellation(client, monkeypatch):
     from ai.app.interfaces.http.routes import analysis_routes
 

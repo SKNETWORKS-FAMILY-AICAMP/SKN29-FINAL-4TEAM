@@ -10,7 +10,7 @@ from ..request_models import SymptomAnalysisApiRequest
 from ..errors import AiServiceError
 from ..runtime_policy import get_runtime_policy
 from ....orchestration.pipeline_router import PipelineRouter
-from ....common.timeout import CancellationToken
+from ....common.timeout import CancellationToken, PipelineStageTimeoutError
 from ....schemas.common import AiStage, RiskLevel, UsageGuidanceStatus
 from ....schemas.guidance import UsageGuidance
 from ....schemas.pipeline import SymptomAnalysisResult
@@ -169,6 +169,24 @@ async def analyze_symptom(
             message="AI 서비스 처리 시간이 초과되었습니다.",
             retryable=True,
             failure_stage=AiStage.CANCELLED,
+            correlation_id=req.correlation_id,
+            inquiry_id=req.inquiry_id,
+            ai_request_id=req.ai_request_id,
+            state_version=req.state_version,
+            retry_count=0,
+        ) from exc
+    except PipelineStageTimeoutError as exc:
+        cancellation_token.cancel()
+        try:
+            failure_stage = AiStage(exc.stage)
+        except ValueError:
+            failure_stage = AiStage.CANCELLED
+        raise AiServiceError(
+            code="AI-TIMEOUT-01",
+            http_status=504,
+            message="AI 서비스 단계 처리 시간이 초과되었습니다.",
+            retryable=True,
+            failure_stage=failure_stage,
             correlation_id=req.correlation_id,
             inquiry_id=req.inquiry_id,
             ai_request_id=req.ai_request_id,

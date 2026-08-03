@@ -4,9 +4,11 @@ from langgraph.graph import END, START, StateGraph
 
 from ..pipeline_context import PipelineContext
 from ..pipeline_result import PipelineResult
-from ...common.timeout import CancellationToken
+from ...common.timeout import CancellationToken, get_stage_timeout_policy
+from ...schemas import AiStage
 from ..stages import (
     execute_generation_stage,
+    execute_missing_fields_stage,
     execute_retrieval_stage,
     execute_safety_check_stage,
     execute_structuring_stage,
@@ -20,9 +22,11 @@ class SingleRAGPipeline:
     def __init__(self, search_service=None) -> None:
         self.search_service = search_service
         self.cancellation_token = CancellationToken()
+        self.timeout_policy = get_stage_timeout_policy()
         graph = StateGraph(dict)
         graph.add_node("structuring", self._structuring)
         graph.add_node("safety", self._safety)
+        graph.add_node("missing_fields", self._missing_fields)
         graph.add_node("retrieval", self._retrieval)
         graph.add_node("generation", self._generation)
         graph.add_node("validation", self._validation)
@@ -31,45 +35,56 @@ class SingleRAGPipeline:
         graph.add_conditional_edges(
             "safety",
             self._route_after_safety,
-            {"danger": "generation", "retrieve": "retrieval"},
+            {"danger": "generation", "questionnaire": "missing_fields"},
         )
+        graph.add_edge("missing_fields", "retrieval")
         graph.add_edge("retrieval", "generation")
         graph.add_edge("generation", "validation")
         graph.add_edge("validation", END)
         self.graph = graph.compile()
 
     def _structuring(self, state):
-        self.cancellation_token.raise_if_cancelled()
-        execute_structuring_stage(state["ctx"])
+        self._run_stage(AiStage.STRUCTURING, execute_structuring_stage, state["ctx"])
         return state
 
     def _safety(self, state):
-        self.cancellation_token.raise_if_cancelled()
-        execute_safety_check_stage(state["ctx"])
+        self._run_stage(AiStage.SAFETY_CHECK, execute_safety_check_stage, state["ctx"])
         return state
 
     @staticmethod
     def _route_after_safety(state):
-        return "danger" if state["ctx"].safety_assessment.risk_level.value == "danger" else "retrieve"
+        return "danger" if state["ctx"].safety_assessment.risk_level.value == "danger" else "questionnaire"
+
+    def _missing_fields(self, state):
+        self._run_stage(AiStage.CHECKING_MISSING_FIELDS, execute_missing_fields_stage, state["ctx"])
+        return state
 
     def _retrieval(self, state):
-        self.cancellation_token.raise_if_cancelled()
-        execute_retrieval_stage(
-            state["ctx"],
-            self.search_service,
-            cancellation_token=self.cancellation_token,
-        )
+        with self.cancellation_token.deadline_scope(
+            self.timeout_policy.for_stage(AiStage.RETRIEVING.value),
+            AiStage.RETRIEVING.value,
+        ):
+            execute_retrieval_stage(
+                state["ctx"],
+                self.search_service,
+                cancellation_token=self.cancellation_token,
+            )
         return state
 
     def _generation(self, state):
-        self.cancellation_token.raise_if_cancelled()
-        execute_generation_stage(state["ctx"])
+        self._run_stage(AiStage.GENERATING, execute_generation_stage, state["ctx"])
         return state
 
     def _validation(self, state):
-        self.cancellation_token.raise_if_cancelled()
-        execute_validation_stage(state["ctx"])
+        self._run_stage(AiStage.VALIDATING, execute_validation_stage, state["ctx"])
         return state
+
+    def _run_stage(self, stage: AiStage, callback, ctx) -> None:
+        with self.cancellation_token.deadline_scope(
+            self.timeout_policy.for_stage(stage.value),
+            stage.value,
+        ):
+            callback(ctx)
 
     def run(
         self,

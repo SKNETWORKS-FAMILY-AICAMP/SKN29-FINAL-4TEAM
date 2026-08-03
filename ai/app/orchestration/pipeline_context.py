@@ -4,6 +4,8 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 from ..schemas import (
     EvidenceReference,
+    FollowUpQuestion,
+    MissingField,
     ModelMetadata,
     ProcessingTrace,
     SafetyAssessment,
@@ -23,6 +25,8 @@ class PipelineContext(BaseModel):
 
     # 중간 실행 결과
     structured_symptom: Optional[StructuredSymptom] = Field(None, description="구조화 증상")
+    missing_fields: List[MissingField] = Field(default_factory=list, description="추가 확인이 필요한 누락 필드")
+    followup_questions: List[FollowUpQuestion] = Field(default_factory=list, description="안전한 추가 질문")
     safety_assessment: Optional[SafetyAssessment] = Field(None, description="안전/위험도 평가 결과")
     evidence_references: List[EvidenceReference] = Field(default_factory=list, description="RAG 근거 참조 목록")
     usage_guidance: Optional[UsageGuidance] = Field(None, description="사용 안내 상태 및 문구")

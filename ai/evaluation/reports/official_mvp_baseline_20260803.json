@@ -1,0 +1,89 @@
+{
+  "status": "CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT",
+  "generated_at": "2026-08-03T12:13:30+09:00",
+  "source_commit": "c4434c57dd56d8ad1d56ea00e28ee154672e8498",
+  "working_tree_committed": false,
+  "runtime": {
+    "python": "3.13.13",
+    "os": "Windows 11 AMD64",
+    "dependency_lock": "ai/requirements.lock",
+    "unit_tests": {
+      "result": "79 passed, 3 warnings",
+      "exit_code": 0
+    }
+  },
+  "contract": {
+    "version": "1.1.0",
+    "schema_draft": "2020-12",
+    "parity_result": "PASS"
+  },
+  "embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "normalization": true
+  },
+  "datasets": {
+    "retrieval": {
+      "path": "data/config/rag/jac104_retrieval_cases.json",
+      "case_count": 12,
+      "file_sha256": "6E9F202F902F965B0C6875D8FCDF26333651E680019CC8B34416E8A444A12E4F"
+    },
+    "safety": {
+      "path": "ai/evaluation/datasets/safety/safety_eval_dataset.json",
+      "case_count": 4,
+      "file_sha256": "EEE250EDED1D47F02CCBC765ED492AEAC4794FD79C3EA421D86206332E158D57"
+    },
+    "approved_chunks": {
+      "path": "data/config/rag/jac104_chunks.json",
+      "chunk_count": 7,
+      "file_sha256": "73C8E9C66B87D0B5A115D75DD1A2A81F4142A5CB581F7F8CC85DF9072E98F0DB",
+      "canonical_chunk_set_sha256": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+    }
+  },
+  "current_offline_evaluation": {
+    "report": "ai/evaluation/reports/latest_eval_report.json",
+    "report_file_sha256": "11C94EAEFABB93219093F169D8524448D303C0799886C0FCB4F3F40FCEB07EB7",
+    "rag": {
+      "status": "vector_store_not_configured",
+      "case_count": 12,
+      "metrics_publishable": false
+    },
+    "safety": {
+      "evaluation_mode": "rule_based_with_evidence_available",
+      "case_count": 4,
+      "passed_count": 4,
+      "compliance_rate_percent": 100.0
+    }
+  },
+  "isolated_pgvector_historical_evidence": {
+    "report": "ai/evaluation/reports/pgvector_verification.json",
+    "report_file_sha256": "3194295D7560F93F05A5567604E09A462FFD17DA74E199AFE229BF0F581E02AE",
+    "verified_at": "2026-07-30T09:36:47.897918+00:00",
+    "postgresql": "16.14",
+    "pgvector": "0.8.6",
+    "case_count": 12,
+    "passed_count": 12,
+    "mean_positive_recall_at_5": 1.0,
+    "mean_positive_mrr": 0.8857142857142858,
+    "forbidden_hit_count": 0,
+    "scope": "isolated disposable database; not team database completion evidence"
+  },
+  "mvp_scope": {
+    "allowed_model": "WPUJAC104DWH",
+    "allowed_generation": "D",
+    "official_document": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+    "blocked_models": [
+      "WPUIAC425SNW",
+      "WPU-IAC506"
+    ],
+    "unverified_faq_as_sole_evidence": false
+  },
+  "publication_limits": [
+    "Do not publish offline RAG zero metrics as retrieval quality metrics.",
+    "Do not represent isolated pgvector evidence as a current team database rerun.",
+    "Do not claim model training or fine-tuning.",
+    "Replace source_commit after committing this candidate baseline.",
+    "Rerun pgvector evaluation against the approved team database before integration approval."
+  ]
+}

@@ -31,7 +31,9 @@ def test_eval_dataset_loader():
 
     assert len(rag_data) == 12
     assert {item["case_id"] for item in rag_data}
-    assert len(safety_data) > 0
+    assert len(safety_data) == 4
+    assert safety_data[0]["raw_symptom"].startswith("정수기 하부")
+    assert all("ì" not in item["raw_symptom"] for item in safety_data)
 
 
 def test_evaluation_runner_execution():
@@ -62,4 +64,5 @@ def test_evaluation_runner_execution():
 
     # Safety compliance rate 100% 준수 확인
     assert results["safety_evaluation"]["safety_compliance_rate"] == 100.0
+    assert results["safety_evaluation"]["evaluation_mode"] == "rule_based_with_evidence_available"
     assert results["rag_evaluation"]["mean_recall_at_5"] == 1.0

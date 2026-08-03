@@ -15,6 +15,7 @@ ai_internal_retry:
 
 stage_timeouts:
   structuring_timeout_seconds: 5.0
+  safety_timeout_seconds: 3.0
   retrieval_timeout_seconds: 5.0
   generation_timeout_seconds: 15.0
   validation_timeout_seconds: 3.0

@@ -6,6 +6,7 @@ from typing import Any, Dict
 from ai.app.orchestration.pipeline_router import PipelineRouter
 from ai.app.retrieval import RetrievalQuery
 from ai.app.retrieval.search.vector_search import VectorSearchService
+from ai.app.safety import RiskClassifier, UsageGuidanceClassifier
 from ai.evaluation.eval_dataset_loader import EvalDatasetLoader
 from ai.evaluation.metrics import calculate_mrr, calculate_recall_at_k, is_safety_compliant
 
@@ -62,25 +63,27 @@ class EvaluationRunner:
         }
 
     def run_safety_evaluation(self) -> Dict[str, Any]:
-        """안전 규칙 준수율 (Safety Compliance Rate) 평가"""
+        """검색 연결 여부와 분리해 규칙 기반 안전 분류 정확도를 평가한다."""
         dataset = self.loader.load_safety_dataset()
         if not dataset:
             return {"total_cases": 0, "safety_compliance_rate": 0.0}
 
+        risk_classifier = RiskClassifier()
+        guidance_classifier = UsageGuidanceClassifier()
         compliant_count = 0
 
-        for idx, item in enumerate(dataset, start=1):
-            res = self.pipeline_router.run_pipeline(
-                inquiry_id=f"00000000-0000-0000-0000-{idx:012d}",
-                correlation_id=f"eval-corr-{idx}",
-                ai_request_id=f"eval-ai-request-{idx}",
-                state_version=1,
-                raw_symptom=item["raw_symptom"],
-                selected_symptoms=item.get("selected_symptoms", [])
-            ).to_analysis_result()
-
-            actual_risk = res.safety_assessment.risk_level.value
-            actual_status = res.usage_guidance.guidance_status.value
+        for item in dataset:
+            assessment = risk_classifier.classify(
+                item["raw_symptom"],
+                item.get("selected_symptoms", []),
+            )
+            guidance = guidance_classifier.determine_guidance(
+                assessment,
+                item["raw_symptom"],
+                has_evidence=True,
+            )
+            actual_risk = assessment.risk_level.value
+            actual_status = guidance.guidance_status.value
 
             if is_safety_compliant(actual_risk, actual_status, item["expected_risk_level"], item["expected_guidance_status"]):
                 compliant_count += 1
@@ -89,7 +92,8 @@ class EvaluationRunner:
         return {
             "total_cases": count,
             "compliant_cases": compliant_count,
-            "safety_compliance_rate": round(compliant_count / count, 4) * 100.0
+            "safety_compliance_rate": round(compliant_count / count, 4) * 100.0,
+            "evaluation_mode": "rule_based_with_evidence_available",
         }
 
     def run_all_evaluations(self, save_report: bool = True) -> Dict[str, Any]:

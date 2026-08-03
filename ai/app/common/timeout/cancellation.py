@@ -1,10 +1,21 @@
-"""HTTP Timeout을 파이프라인과 검색 경계에 전달하는 협력적 취소 토큰."""
+"""HTTP·단계별 Timeout을 파이프라인 경계에 전달하는 협력적 취소 토큰."""
 
+from contextlib import contextmanager
 from threading import Event
+import time
+from typing import Iterator
 
 
 class PipelineCancelledError(RuntimeError):
     """상위 요청이 취소되어 파이프라인을 중단해야 함을 나타낸다."""
+
+
+class PipelineStageTimeoutError(PipelineCancelledError):
+    """단계별 협력적 시간 예산을 초과했다."""
+
+    def __init__(self, stage: str) -> None:
+        self.stage = stage
+        super().__init__(f"AI 파이프라인 단계 시간이 초과되었습니다: {stage}")
 
 
 class CancellationToken:
@@ -12,6 +23,8 @@ class CancellationToken:
 
     def __init__(self) -> None:
         self._event = Event()
+        self._deadline: float | None = None
+        self._deadline_stage: str | None = None
 
     def cancel(self) -> None:
         self._event.set()
@@ -23,3 +36,24 @@ class CancellationToken:
     def raise_if_cancelled(self) -> None:
         if self.is_cancelled:
             raise PipelineCancelledError("AI 요청이 취소되었습니다.")
+        if self._deadline is not None and time.monotonic() >= self._deadline:
+            raise PipelineStageTimeoutError(self._deadline_stage or "UNKNOWN")
+
+    @contextmanager
+    def deadline_scope(self, seconds: float, stage: str) -> Iterator[None]:
+        """현재 Thread의 Stage 경계에 임시 협력적 Deadline을 적용한다."""
+        if seconds <= 0:
+            raise ValueError("단계별 Timeout은 0보다 커야 합니다.")
+        previous_deadline = self._deadline
+        previous_stage = self._deadline_stage
+        candidate = time.monotonic() + seconds
+        if previous_deadline is None or candidate < previous_deadline:
+            self._deadline = candidate
+            self._deadline_stage = stage
+        try:
+            self.raise_if_cancelled()
+            yield
+            self.raise_if_cancelled()
+        finally:
+            self._deadline = previous_deadline
+            self._deadline_stage = previous_stage
