@@ -49,3 +49,35 @@ Core 테스트, 단위 테스트, Lint, APK 빌드 및 실제 앱 설치에는 �
 - Demo 구독 UUID는 `mobile/local.properties`에만 저장
 - `mobile/local.properties`는 Git 제외 확인
 - UUID, Token, 비밀번호는 문서와 Git에 기록하지 않음
+## 2026-08-03 실제 API Smoke Test
+
+### 검증 환경
+
+- 실제 Android 기기: Samsung SM-F721N
+- Backend 연결: db reverse tcp:8000 tcp:8000
+- 고객 앱 패키지: com.skn29.watercare.customer
+- 테스트 데이터 식별자는 로컬 환경변수에서만 관리
+
+### 실제 API 검증 결과
+
+| 흐름 | Endpoint | 결과 |
+| --- | --- | --- |
+| Demo 로그인 | POST /api/v1/auth/demo-login | 200 OK |
+| 사용자 조회 | GET /api/v1/me | 200 OK |
+| Backend 상태 | GET /health | 200 OK |
+| 문의 생성 | POST /api/v1/inquiries | 201 Created |
+| 문의 취소 | POST /api/v1/inquiries/{id}/cancel | 200 OK |
+
+### 화면·계약 확인
+
+- 문의 생성 직후 Backend 상태 DRAFT, state_version 1 확인
+- Backend llowed_actions로 SUBMIT_SYMPTOM, CANCEL_INQUIRY 확인
+- CANCEL_INQUIRY가 제공된 경우에만 실제 문의 취소 버튼 노출
+- 취소 확인 팝업에서 사용자가 취소 진행을 선택한 뒤 실제 취소 Endpoint 호출
+- 임의 상태명이나 지원되지 않는 동작을 Mobile에서 생성하지 않음
+
+### 제한 사항
+
+- /me/subscriptions Runtime API가 없어 Demo 구독 UUID는 mobile/local.properties에서만 임시 관리
+- 문의 상세·타임라인·Guidance·상담 API는 Backend Runtime 제공 전까지 Mock 또는 Blocked 유지
+- 문의 ID, correlation ID, 액세스 토큰이 포함될 수 있는 원본 캡처는 Git에 포함하지 않음

@@ -6,22 +6,6 @@ import kotlinx.serialization.Serializable
 /** Mobile-safe domain values. UNKNOWN is never sent as a normal server value. */
 enum class RiskLevel { GENERAL, CAUTION, DANGER, UNKNOWN }
 enum class UsageGuidanceStatus { NORMAL, PARTIAL_STOP, TOTAL_STOP, PENDING_CONSULTATION, UNKNOWN }
-enum class WorkflowState {
-    DRAFT,
-    QUESTIONNAIRE_IN_PROGRESS,
-    AI_GUIDANCE,
-    CONSULTATION_REQUIRED,
-    CONSULTATION_IN_PROGRESS,
-    VISIT_REVIEW_PENDING,
-    VISIT_SCHEDULING,
-    VISIT_SCHEDULED,
-    COMPLETION_PENDING,
-    REVISIT_REQUIRED,
-    REOPENED,
-    RESOLVED,
-    CANCELLED,
-    UNKNOWN,
-}
 enum class DataClassification { OFFICIAL, TEAM_DESIGNED, SYNTHETIC, UNKNOWN }
 enum class EntryMode { CARE_PRECHECK, ADHOC_INQUIRY }
 enum class MockScenario { NORMAL, CAUTION, DANGER, NO_EVIDENCE, AI_FAILURE, NETWORK_FAILURE }
@@ -62,24 +46,15 @@ data class CustomerHomeData(
     @SerialName("active_inquiry") val activeInquiry: ActiveInquirySummary? = null,
 )
 
-@Serializable
-data class SymptomIntakeRequest(
-    @SerialName("subscription_id") val subscriptionId: String,
-    @SerialName("symptom_codes") val symptomCodes: List<String>,
-    @SerialName("raw_text") val rawText: String,
-    @SerialName("occurrence_condition") val occurrenceCondition: String? = null,
-    @SerialName("display_text") val displayText: String? = null,
-    @SerialName("entry_mode") val entryMode: String,
-    @SerialName("idempotency_key") val idempotencyKey: String,
-    @SerialName("mock_scenario") val mockScenario: String? = null,
-)
-
-@Serializable
 data class IntakeSubmission(
-    @SerialName("inquiry_id") val inquiryId: String,
-    @SerialName("inquiry_code") val inquiryCode: String,
-    @SerialName("questionnaire_session_id") val questionnaireSessionId: String? = null,
-    @SerialName("guidance_scenario") val guidanceScenario: String,
+    val inquiryId: String,
+    val inquiryCode: String,
+    val statusCode: String,
+    val stateVersion: Int,
+    val allowedActionCodes: List<String>,
+    val correlationId: String?,
+    val idempotentReplay: Boolean,
+    val guidanceScenario: String,
 )
 
 @Serializable
@@ -152,7 +127,7 @@ object GuidanceMapper {
             nextAction = if (mustConsult) "상담 요청" else source.nextAction,
             requiresConsultation = mustConsult,
             evidence = source.evidence,
-            allowedActions = sanitizeAllowedActions(source.allowedActions, risk, safeUsage, mustConsult),
+            allowedActions = source.allowedActions,
         )
     }
 
@@ -171,15 +146,4 @@ object GuidanceMapper {
         else -> UsageGuidanceStatus.UNKNOWN
     }
 
-    private fun sanitizeAllowedActions(
-        actions: List<String>,
-        risk: RiskLevel,
-        usage: UsageGuidanceStatus,
-        mustConsult: Boolean,
-    ): List<String> {
-        val blocked = setOf("RESOLVE", "CLOSE_INQUIRY", "MARK_RESOLVED", "END_INQUIRY")
-        return if (risk == RiskLevel.DANGER || usage == UsageGuidanceStatus.TOTAL_STOP || mustConsult) {
-            actions.filterNot { it.uppercase() in blocked }
-        } else actions
-    }
 }

@@ -12,6 +12,7 @@ val localProperties = Properties().apply {
 }
 fun String.asBuildConfigString() = replace("\\", "\\\\").replace("\"", "\\\"")
 
+
 android {
     namespace = "com.skn29.watercare.customer"
     compileSdk = 37
@@ -23,6 +24,7 @@ android {
         versionName = "1.0.0-rebuild"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "BACKEND_BASE_URL", "\"${localProperties.getProperty("BACKEND_BASE_URL", "http://127.0.0.1:8000/").asBuildConfigString()}\"")
+        buildConfigField("String", "DEMO_SUBSCRIPTION_ID", "\"${localProperties.getProperty("DEMO_SUBSCRIPTION_ID", "").asBuildConfigString()}\"")
         buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${localProperties.getProperty("KAKAO_NATIVE_APP_KEY", "").asBuildConfigString()}\"")
     }
     buildFeatures { compose = true; buildConfig = true }
@@ -32,6 +34,8 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation(platform("androidx.compose:compose-bom:2026.06.00"))
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.activity:activity-compose:1.13.0")

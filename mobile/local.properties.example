@@ -4,6 +4,10 @@ sdk.dir=C\:\\Users\\Playdata\\AppData\\Local\\Android\\Sdk
 # Physical device + adb reverse (recommended for this project)
 BACKEND_BASE_URL=http://127.0.0.1:8000/
 
+# Backend seed에서 확인한 DEMO-CUSTOMER-001의 활성 구독 Public UUID.
+# 구독 조회 Runtime이 아직 없으므로 실제 문의 생성 Smoke에만 로컬로 설정합니다.
+DEMO_SUBSCRIPTION_ID=
+
 # Android emulator alternative: http://10.0.2.2:8000/
 # Real keys stay only in local.properties and must never be committed.
 KAKAO_NATIVE_APP_KEY=

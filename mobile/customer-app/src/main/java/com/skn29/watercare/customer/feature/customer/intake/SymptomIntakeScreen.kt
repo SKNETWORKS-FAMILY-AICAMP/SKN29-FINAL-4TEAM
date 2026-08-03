@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.skn29.watercare.core.WaterCareCore
+import com.skn29.watercare.customer.CustomerRuntime
 import com.skn29.watercare.core.model.EntryMode
 import com.skn29.watercare.core.model.IntakeSubmission
 import com.skn29.watercare.core.model.MockScenario
@@ -35,11 +35,12 @@ import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 fun SymptomIntakeScreen(
     subscriptionId: String,
     onBack: () -> Unit,
+    onAuthExpired: () -> Unit,
     onCompleted: (IntakeSubmission) -> Unit,
 ) {
     val viewModel: SymptomIntakeViewModel = viewModel(
         factory = VmFactory {
-            SymptomIntakeViewModel(subscriptionId, WaterCareCore.customerCareRepository)
+            SymptomIntakeViewModel(subscriptionId, CustomerRuntime.inquiryRepository)
         }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -48,6 +49,13 @@ fun SymptomIntakeScreen(
         state.completed?.let {
             onCompleted(it)
             viewModel.consumeCompletion()
+        }
+    }
+
+    LaunchedEffect(state.authExpired) {
+        if (state.authExpired) {
+            viewModel.consumeAuthExpiration()
+            onAuthExpired()
         }
     }
 
@@ -98,6 +106,15 @@ fun SymptomIntakeContent(
                     contentScale = ContentScale.Fit,
                 )
             }
+        }
+
+        SectionCard("API 연동 상태") {
+            Text("문의 생성·취소는 실제 Backend Runtime을 사용합니다.", fontWeight = FontWeight.Bold)
+            Text(
+                "추가 문진·Guidance·상담·문의 상세는 Backend Route 제공 전까지 Mock/Blocked입니다.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
 
         SectionCard("문의 유형") {
@@ -155,8 +172,8 @@ fun SymptomIntakeContent(
             shape = RoundedCornerShape(18.dp),
         )
 
-        SectionCard("개발 검증 시나리오") {
-            Text("선택하지 않으면 입력 내용으로 안전하게 판단합니다.", style = MaterialTheme.typography.bodySmall)
+        SectionCard("Mock/Blocked 화면 설정") {
+            Text("실제 문의 접수 후 표시할 Guidance 미리보기 시나리오입니다. Backend에는 전송하지 않습니다.", style = MaterialTheme.typography.bodySmall)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = state.forcedScenario == null,
@@ -175,6 +192,13 @@ fun SymptomIntakeContent(
 
         state.globalError?.let {
             ErrorCard(message = it, onRetry = if (state.retryable) onRetry else null)
+        }
+
+        state.correlationId?.let { correlationId ->
+            SectionCard("요청 추적 정보") {
+                Text("correlation_id · $correlationId", style = MaterialTheme.typography.bodySmall)
+                Text("오류 문의 시 이 값만 공유하고 Token·개인정보는 공유하지 않습니다.", style = MaterialTheme.typography.bodySmall)
+            }
         }
 
         if (
@@ -199,7 +223,7 @@ fun SymptomIntakeContent(
             enabled = !state.isSubmitting,
             modifier = Modifier.fillMaxWidth().height(54.dp).testTag("submitIntake"),
         ) {
-            Text(if (state.isSubmitting) "제출 중" else "안내 결과 확인", fontWeight = FontWeight.Bold)
+            Text(if (state.isSubmitting) "접수 중" else "실제 문의 접수", fontWeight = FontWeight.Bold)
         }
     }
 }

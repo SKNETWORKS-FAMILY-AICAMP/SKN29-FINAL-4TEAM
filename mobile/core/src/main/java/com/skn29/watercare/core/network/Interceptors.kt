@@ -12,10 +12,18 @@ import okhttp3.Route
 
 class CorrelationIdInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        val request = chain.request().newBuilder()
-            .header("X-Correlation-ID", UUID.randomUUID().toString())
+        val original = chain.request()
+        val correlationId = original.header(CORRELATION_HEADER)
+            ?.takeIf(String::isNotBlank)
+            ?: UUID.randomUUID().toString()
+        val request = original.newBuilder()
+            .header(CORRELATION_HEADER, correlationId)
             .build()
         return chain.proceed(request)
+    }
+
+    companion object {
+        const val CORRELATION_HEADER = "X-Correlation-ID"
     }
 }
 
@@ -35,7 +43,10 @@ class TokenAuthenticator(
     private val lock = Any()
 
     override fun authenticate(route: Route?, response: Response): Request? {
-        if (responseCount(response) >= 2) return null
+        if (responseCount(response) >= 2) {
+            tokenStore.clearBlocking()
+            return null
+        }
         if (response.request.url.encodedPath.endsWith("/auth/refresh")) return null
 
         val failedToken = response.request.header("Authorization")

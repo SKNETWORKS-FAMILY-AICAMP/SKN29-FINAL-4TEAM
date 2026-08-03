@@ -2,6 +2,7 @@ package com.skn29.watercare.core.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class ApiEnvelope<T>(
@@ -15,7 +16,7 @@ data class ApiEnvelope<T>(
 data class ApiErrorPayload(
     val code: String,
     val message: String,
-    val details: Map<String, kotlinx.serialization.json.JsonElement> = emptyMap(),
+    val details: Map<String, JsonElement> = emptyMap(),
 )
 
 @Serializable
@@ -26,11 +27,15 @@ data class ResponseMetadata(
 data class StateConflictSnapshot(
     val currentStatus: String?,
     val currentStateVersion: Int?,
-    val allowedActions: List<String>,
+    val allowedActions: List<RuntimeAllowedAction>,
 )
 
 sealed interface ApiResult<out T> {
-    data class Success<T>(val value: T) : ApiResult<T>
+    data class Success<T>(
+        val value: T,
+        val metadata: ResponseMetadata? = null,
+    ) : ApiResult<T>
+
     data class Failure(
         val code: String,
         val message: String,
@@ -38,5 +43,7 @@ sealed interface ApiResult<out T> {
         val httpStatus: Int? = null,
         val retryable: Boolean = false,
         val conflict: StateConflictSnapshot? = null,
+        val fieldErrors: Map<String, List<String>> = emptyMap(),
+        val correlationId: String? = null,
     ) : ApiResult<Nothing>
 }

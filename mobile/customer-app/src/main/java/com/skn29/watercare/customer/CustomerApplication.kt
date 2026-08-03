@@ -7,5 +7,6 @@ class CustomerApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         WaterCareCore.initialize(this, BuildConfig.BACKEND_BASE_URL, BuildConfig.DEBUG)
+        CustomerRuntime.initialize()
     }
 }

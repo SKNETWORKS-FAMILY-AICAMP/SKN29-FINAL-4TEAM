@@ -4,12 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.runComposeUiTest
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.skn29.watercare.core.model.ActiveInquirySummary
 import com.skn29.watercare.core.model.CustomerHomeData
 import com.skn29.watercare.core.model.GuidanceDisplayModel
@@ -24,13 +24,16 @@ import com.skn29.watercare.customer.feature.customer.home.CustomerHomeUiState
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeContent
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeUiState
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 
-@OptIn(ExperimentalTestApi::class)
 class CustomerMinimumFlowTest {
+    @get:Rule
+    val composeRule = createAndroidComposeRule<ComponentActivity>()
+
     @Test
-    fun offlinePreview_opensCust01AndCust02() = runComposeUiTest {
-        setContent {
+    fun offlinePreview_opensCust01AndCust02() {
+        composeRule.setContent {
             var showIntake by remember { mutableStateOf(false) }
 
             WaterCareTheme {
@@ -59,21 +62,22 @@ class CustomerMinimumFlowTest {
             }
         }
 
-        onNodeWithTag("startIntake")
+        composeRule.onNodeWithTag("startIntake")
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()
 
-        waitForIdle()
+        composeRule.waitForIdle()
 
-        onNodeWithTag("submitIntake")
+        composeRule.onNodeWithTag("submitIntake")
             .performScrollTo()
             .assertIsDisplayed()
+
     }
 
     @Test
-    fun dangerGuidance_hidesResolvedAction() = runComposeUiTest {
-        setContent {
+    fun dangerGuidance_hidesResolvedAction() {
+        composeRule.setContent {
             var showDangerGuidance by remember { mutableStateOf(false) }
 
             WaterCareTheme {
@@ -101,24 +105,25 @@ class CustomerMinimumFlowTest {
             }
         }
 
-        onNodeWithTag("scenario_DANGER")
+        composeRule.onNodeWithTag("scenario_DANGER")
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()
 
-        waitForIdle()
+        composeRule.waitForIdle()
 
-        onNodeWithTag("requestConsultation")
+        composeRule.onNodeWithTag("requestConsultation")
             .assertIsDisplayed()
 
         val resolvedActionDoesNotExist = runCatching {
-            onNodeWithTag("resolvedAction").fetchSemanticsNode()
+            composeRule.onNodeWithTag("resolvedAction").fetchSemanticsNode()
         }.isFailure
 
         assertTrue(
             "위험 안내 화면에서는 해결 처리 버튼이 표시되면 안 됩니다.",
             resolvedActionDoesNotExist,
         )
+
     }
 
     private fun sampleHomeState() = CustomerHomeUiState(

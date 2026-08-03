@@ -29,8 +29,10 @@ class CareModelsTest {
         assertEquals(UsageGuidanceStatus.PENDING_CONSULTATION, mapped.usageStatus)
         assertTrue(mapped.requiresConsultation)
         assertTrue(mapped.safeActions.isEmpty())
-        assertFalse("MARK_RESOLVED" in mapped.allowedActions)
-        assertTrue("REQUEST_CONSULTATION" in mapped.allowedActions)
+        assertEquals(
+            listOf("MARK_RESOLVED", "REQUEST_CONSULTATION"),
+            mapped.allowedActions,
+        )
     }
 
     @Test
@@ -53,10 +55,14 @@ class CareModelsTest {
         assertEquals(RiskLevel.CAUTION, mapped.riskLevel)
         assertEquals(UsageGuidanceStatus.PARTIAL_STOP, mapped.usageStatus)
         assertFalse(mapped.requiresConsultation)
+        assertEquals(
+            listOf("CONFIRM_GUIDANCE"),
+            mapped.allowedActions,
+        )
     }
 
     @Test
-    fun dangerGuidance_removesResolveActions() {
+    fun dangerGuidance_preservesBackendAllowedActions() {
         val mapped = GuidanceMapper.map(
             GuidanceData(
                 inquiryId = "00000000-0000-4000-8000-000000000002",
@@ -73,6 +79,13 @@ class CareModelsTest {
                 allowedActions = listOf("MARK_RESOLVED", "CLOSE_INQUIRY", "REQUEST_CONSULTATION"),
             )
         )
-        assertEquals(listOf("REQUEST_CONSULTATION"), mapped.allowedActions)
+        assertEquals(
+            listOf(
+                "MARK_RESOLVED",
+                "CLOSE_INQUIRY",
+                "REQUEST_CONSULTATION",
+            ),
+            mapped.allowedActions,
+        )
     }
 }

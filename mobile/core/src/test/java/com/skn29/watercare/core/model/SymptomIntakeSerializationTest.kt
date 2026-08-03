@@ -8,21 +8,20 @@ import org.junit.Test
 
 class SymptomIntakeSerializationTest {
     @Test
-    fun request_serializesContractFieldNames_withoutInternalEvidenceFields() {
+    fun createInquiryRequest_serializesOnlyConfirmedBackendFields() {
         val encoded = Json.encodeToString(
-            SymptomIntakeRequest(
-                subscriptionId = "00000000-0000-4000-8000-000000000101",
-                symptomCodes = listOf("LOW_FLOW"),
+            CreateInquiryRequest(
+                subscriptionId = "20000000-0000-4000-8000-000000000001",
+                channelCode = "MOBILE",
                 rawText = "출수량이 줄었습니다.",
-                occurrenceCondition = "냉수 출수 시",
-                displayText = "E01",
-                entryMode = "ADHOC_INQUIRY",
-                idempotencyKey = "idem-1",
+                representativeSymptomCode = "LOW_FLOW",
             )
         )
         assertTrue(encoded.contains("\"subscription_id\""))
-        assertTrue(encoded.contains("\"symptom_codes\""))
-        assertTrue(encoded.contains("\"idempotency_key\""))
+        assertTrue(encoded.contains("\"channel_code\":\"MOBILE\""))
+        assertTrue(encoded.contains("\"raw_text\""))
+        assertTrue(encoded.contains("\"representative_symptom_code\""))
+        assertFalse(encoded.contains("idempotency_key"))
         assertFalse(encoded.contains("chunk_id"))
         assertFalse(encoded.contains("source_path"))
         assertFalse(encoded.contains("retrieval_text"))

@@ -4,7 +4,10 @@ import android.content.Context
 import com.skn29.watercare.core.auth.TokenStore
 import com.skn29.watercare.core.model.ApiEnvelope
 import com.skn29.watercare.core.model.ApiResult
+import com.skn29.watercare.core.model.ResponseMetadata
+import com.skn29.watercare.core.model.RuntimeAllowedAction
 import com.skn29.watercare.core.model.StateConflictSnapshot
+import com.skn29.watercare.core.model.toCodeOnlyRuntimeAction
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.serialization.decodeFromString
@@ -12,6 +15,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
@@ -60,17 +65,21 @@ class NetworkFactory(
                     level = HttpLoggingInterceptor.Level.BASIC
                     redactHeader("Authorization")
                     redactHeader("Cookie")
+                    redactHeader("Idempotency-Key")
                 })
             }
         }
         .build()
 
-    val api: WaterCareApi = Retrofit.Builder()
+    private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(normalizeBaseUrl(baseUrl))
         .client(mainClient)
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
-        .create(WaterCareApi::class.java)
+
+    val api: WaterCareApi = createService(WaterCareApi::class.java)
+
+    fun <T> createService(serviceClass: Class<T>): T = retrofit.create(serviceClass)
 
     private fun normalizeBaseUrl(value: String): String =
         if (value.endsWith('/')) value else "$value/"
@@ -82,21 +91,32 @@ suspend fun <T> safeApiCall(
 ): ApiResult<T> = try {
     val response = call()
     val body = response.body()
-    if (response.isSuccessful && body?.success == true && body.data != null) {
-        ApiResult.Success(body.data!!)
+    val headerCorrelationId = response.headers()[CorrelationIdInterceptor.CORRELATION_HEADER]
+    val successMetadata = body?.metadata
+        ?: headerCorrelationId?.let(::ResponseMetadata)
+    val successData = body?.data
+    if (response.isSuccessful && body?.success == true && successData != null) {
+        ApiResult.Success(successData, successMetadata)
     } else {
         val parsed = response.errorBody()?.string()?.takeIf(String::isNotBlank)?.let { raw ->
-            runCatching { json.decodeFromString<ApiEnvelope<kotlinx.serialization.json.JsonElement>>(raw) }.getOrNull()
+            runCatching {
+                json.decodeFromString<ApiEnvelope<JsonElement>>(raw)
+            }.getOrNull()
         }
         val error = body?.error ?: parsed?.error
+        val metadata = body?.metadata
+            ?: parsed?.metadata
+            ?: headerCorrelationId?.let(::ResponseMetadata)
         val status = response.code()
         ApiResult.Failure(
             code = error?.code ?: "HTTP_$status",
-            message = ApiErrorMapper.userMessage(status, error?.message),
+            message = ApiErrorMapper.userMessage(status, error?.code, error?.message),
             details = error?.details?.toString(),
             httpStatus = status,
             retryable = status == 408 || status == 429 || status >= 500,
             conflict = if (status == 409) extractConflict(error?.details, parsed?.data) else null,
+            fieldErrors = if (status == 422) extractFieldErrors(error?.details) else emptyMap(),
+            correlationId = metadata?.correlationId,
         )
     }
 } catch (exception: IOException) {
@@ -114,7 +134,6 @@ suspend fun <T> safeApiCall(
     )
 }
 
-
 internal fun extractConflict(
     details: Map<String, JsonElement>?,
     data: JsonElement?,
@@ -131,13 +150,54 @@ internal fun extractConflict(
     val version = current["current_state_version"]?.jsonPrimitive?.intOrNull
         ?: current["state_version"]?.jsonPrimitive?.intOrNull
     val actions = (current["allowed_actions"] as? JsonArray)
-        ?.mapNotNull { element ->
-            when (element) {
-                is JsonObject -> element["code"]?.jsonPrimitive?.contentOrNull
-                else -> element.jsonPrimitive.contentOrNull
-            }
-        }
+        ?.mapNotNull(::parseRuntimeAllowedAction)
         .orEmpty()
     if (status == null && version == null && actions.isEmpty()) null
     else StateConflictSnapshot(status, version, actions)
 }.getOrNull()
+
+internal fun parseRuntimeAllowedAction(element: JsonElement): RuntimeAllowedAction? {
+    return when (element) {
+        is JsonObject -> {
+            val code = element["code"]?.jsonPrimitive?.contentOrNull
+            if (code == null) {
+                null
+            } else {
+                val label = element["label"]?.jsonPrimitive?.contentOrNull
+                val operationId = element["operation_id"]?.jsonPrimitive?.contentOrNull
+                val style = element["style"]?.jsonPrimitive?.contentOrNull
+                val requiresConfirmation = element["requires_confirmation"]
+                    ?.jsonPrimitive
+                    ?.booleanOrNull
+                val completeObject =
+                    label != null && operationId != null && style != null && requiresConfirmation != null
+                RuntimeAllowedAction(
+                    code = code,
+                    label = label,
+                    operationId = operationId,
+                    style = style,
+                    requiresConfirmation = requiresConfirmation ?: false,
+                    confirmationMessage = element["confirmation_message"]
+                        ?.jsonPrimitive
+                        ?.contentOrNull,
+                    objectContractAvailable = completeObject,
+                )
+            }
+        }
+        is JsonPrimitive -> element.contentOrNull
+            ?.takeIf(String::isNotBlank)
+            ?.toCodeOnlyRuntimeAction()
+        else -> null
+    }
+}
+
+internal fun extractFieldErrors(details: Map<String, JsonElement>?): Map<String, List<String>> =
+    details.orEmpty().mapValues { (_, element) ->
+        when (element) {
+            is JsonArray -> element.mapNotNull { item ->
+                (item as? JsonPrimitive)?.contentOrNull
+            }
+            is JsonPrimitive -> listOfNotNull(element.contentOrNull)
+            else -> listOf(element.toString())
+        }
+    }

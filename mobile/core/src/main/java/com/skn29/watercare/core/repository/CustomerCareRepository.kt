@@ -5,16 +5,12 @@ import com.skn29.watercare.core.model.CustomerHomeData
 import com.skn29.watercare.core.model.ActiveInquirySummary
 import com.skn29.watercare.core.model.EvidenceCardData
 import com.skn29.watercare.core.model.GuidanceData
-import com.skn29.watercare.core.model.IntakeSubmission
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.ProductSummary
-import com.skn29.watercare.core.model.SymptomIntakeRequest
-import java.util.UUID
 import kotlinx.coroutines.delay
 
 interface CustomerCareRepository {
     suspend fun getHome(): ApiResult<CustomerHomeData>
-    suspend fun submitIntake(request: SymptomIntakeRequest): ApiResult<IntakeSubmission>
     suspend fun getGuidance(inquiryId: String, scenario: MockScenario): ApiResult<GuidanceData>
 }
 
@@ -49,39 +45,6 @@ class FakeCustomerCareRepository : CustomerCareRepository {
         )
     }
 
-    override suspend fun submitIntake(request: SymptomIntakeRequest): ApiResult<IntakeSubmission> {
-        delay(350)
-        val forced = request.mockScenario?.let { runCatching { MockScenario.valueOf(it) }.getOrNull() }
-        val scenario = forced ?: inferScenario(request)
-        return when (scenario) {
-            MockScenario.NETWORK_FAILURE -> ApiResult.Failure(
-                code = "NETWORK_ERROR",
-                message = "테스트용 네트워크 연결 실패입니다. 입력값은 유지됩니다.",
-                retryable = true,
-            )
-            MockScenario.AI_FAILURE -> ApiResult.Success(
-                IntakeSubmission(
-                    inquiryId = UUID.randomUUID().toString(),
-                    inquiryCode = "DEMO-AI-FAIL",
-                    guidanceScenario = MockScenario.AI_FAILURE.name,
-                )
-            )
-            else -> ApiResult.Success(
-                IntakeSubmission(
-                    inquiryId = UUID.randomUUID().toString(),
-                    inquiryCode = when (scenario) {
-                        MockScenario.CAUTION -> "DEMO-CAUTION-001"
-                        MockScenario.DANGER -> "DEMO-DANGER-001"
-                        MockScenario.NO_EVIDENCE -> "DEMO-NO-EVIDENCE-001"
-                        else -> "DEMO-INQ-002"
-                    },
-                    questionnaireSessionId = UUID.randomUUID().toString(),
-                    guidanceScenario = scenario.name,
-                )
-            )
-        }
-    }
-
     override suspend fun getGuidance(inquiryId: String, scenario: MockScenario): ApiResult<GuidanceData> {
         delay(280)
         return when (scenario) {
@@ -99,18 +62,6 @@ class FakeCustomerCareRepository : CustomerCareRepository {
             MockScenario.DANGER -> ApiResult.Success(dangerGuidance(inquiryId))
             MockScenario.NO_EVIDENCE -> ApiResult.Success(noEvidenceGuidance(inquiryId))
             MockScenario.NORMAL -> ApiResult.Success(normalGuidance(inquiryId))
-        }
-    }
-
-    private fun inferScenario(request: SymptomIntakeRequest): MockScenario {
-        val normalized = (request.rawText + " " + request.displayText.orEmpty()).uppercase()
-        return when {
-            "NETWORK_FAIL" in normalized -> MockScenario.NETWORK_FAILURE
-            "AI_FAIL" in normalized -> MockScenario.AI_FAILURE
-            "LEAK" in request.symptomCodes || "누수" in request.rawText -> MockScenario.DANGER
-            "TEMPERATURE" in request.symptomCodes || "온수" in request.rawText -> MockScenario.CAUTION
-            "미지원" in request.rawText || "UNKNOWN" in normalized -> MockScenario.NO_EVIDENCE
-            else -> MockScenario.NORMAL
         }
     }
 

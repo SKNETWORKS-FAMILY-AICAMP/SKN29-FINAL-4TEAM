@@ -5,5 +5,5 @@ import com.skn29.watercare.customer.navigation.CustomerNavigation
 
 @Composable
 fun CustomerApp() {
-    CustomerNavigation()
+    CustomerNavigation(runtimeSubscriptionId = BuildConfig.DEMO_SUBSCRIPTION_ID)
 }

@@ -3,17 +3,12 @@ package com.skn29.watercare.core.repository
 import com.skn29.watercare.core.auth.TokenStore
 import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.AuthTokens
-import com.skn29.watercare.core.model.CancelInquiryRequest
-import com.skn29.watercare.core.model.CancelInquiryResponse
-import com.skn29.watercare.core.model.CreateInquiryRequest
 import com.skn29.watercare.core.model.DemoLoginRequest
-import com.skn29.watercare.core.model.InquiryResponse
 import com.skn29.watercare.core.model.RefreshTokenRequest
 import com.skn29.watercare.core.model.SessionResponse
 import com.skn29.watercare.core.model.UserData
 import com.skn29.watercare.core.network.WaterCareApi
 import com.skn29.watercare.core.network.safeApiCall
-import java.util.UUID
 import kotlinx.serialization.json.Json
 
 interface AuthRepository {
@@ -21,16 +16,6 @@ interface AuthRepository {
     suspend fun demoLogin(code: String): ApiResult<SessionResponse>
     suspend fun logout(): ApiResult<Unit>
     suspend fun me(): ApiResult<UserData>
-}
-
-interface InquiryRepository {
-    suspend fun create(request: CreateInquiryRequest): ApiResult<InquiryResponse>
-    suspend fun cancel(
-        inquiryId: String,
-        stateVersion: Int,
-        reasonCode: String,
-        reasonDetail: String?,
-    ): ApiResult<CancelInquiryResponse>
 }
 
 class RemoteAuthRepository(
@@ -53,7 +38,7 @@ class RemoteAuthRepository(
             safeApiCall(json) { api.logout(RefreshTokenRequest(refresh)) }
         tokenStore.clear()
         return when (result) {
-            is ApiResult.Success -> ApiResult.Success(Unit)
+            is ApiResult.Success -> ApiResult.Success(Unit, result.metadata)
             is ApiResult.Failure -> result
         }
     }
@@ -65,26 +50,5 @@ class RemoteAuthRepository(
             tokenStore.save(AuthTokens(result.value.accessToken, result.value.refreshToken))
         }
         return result
-    }
-}
-
-class RemoteInquiryRepository(
-    private val api: WaterCareApi,
-    private val json: Json,
-) : InquiryRepository {
-    override suspend fun create(request: CreateInquiryRequest): ApiResult<InquiryResponse> =
-        safeApiCall(json) { api.createInquiry(UUID.randomUUID().toString(), request) }
-
-    override suspend fun cancel(
-        inquiryId: String,
-        stateVersion: Int,
-        reasonCode: String,
-        reasonDetail: String?,
-    ): ApiResult<CancelInquiryResponse> = safeApiCall(json) {
-        api.cancelInquiry(
-            inquiryId = inquiryId,
-            idempotencyKey = UUID.randomUUID().toString(),
-            body = CancelInquiryRequest(stateVersion, reasonCode, reasonDetail),
-        )
     }
 }

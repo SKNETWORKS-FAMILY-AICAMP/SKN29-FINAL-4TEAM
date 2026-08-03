@@ -10,10 +10,11 @@ import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.customer.feature.auth.LoginScreen
 import com.skn29.watercare.customer.feature.customer.guidance.GuidanceScreen
 import com.skn29.watercare.customer.feature.customer.home.CustomerHomeScreen
+import com.skn29.watercare.customer.feature.customer.inquirycreated.InquiryCreatedScreen
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeScreen
 
 @Composable
-fun CustomerNavigation() {
+fun CustomerNavigation(runtimeSubscriptionId: String) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = CustomerRoute.LOGIN) {
         composable(CustomerRoute.LOGIN) {
@@ -34,7 +35,10 @@ fun CustomerNavigation() {
         ) { entry ->
             CustomerHomeScreen(
                 offlinePreview = entry.arguments?.getBoolean("offline") ?: false,
-                onStartIntake = { navController.navigate(CustomerRoute.intake(it)) },
+                onStartIntake = { _ ->
+                    val selectedSubscriptionId = runtimeSubscriptionId.ifBlank { "UNCONFIGURED" }
+                    navController.navigate(CustomerRoute.intake(selectedSubscriptionId))
+                },
                 onOpenGuidance = { inquiryId, scenario ->
                     navController.navigate(CustomerRoute.guidance(inquiryId, scenario.name))
                 },
@@ -53,10 +57,46 @@ fun CustomerNavigation() {
             SymptomIntakeScreen(
                 subscriptionId = entry.arguments?.getString("subscriptionId").orEmpty(),
                 onBack = { navController.popBackStack() },
+                onAuthExpired = {
+                    navController.navigate(CustomerRoute.LOGIN) {
+                        popUpTo(CustomerRoute.HOME) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
                 onCompleted = { submission ->
                     navController.navigate(
-                        CustomerRoute.guidance(submission.inquiryId, submission.guidanceScenario)
+                        CustomerRoute.inquiryCreated(
+                            submission.inquiryId,
+                            submission.guidanceScenario,
+                        )
                     )
+                },
+            )
+        }
+        composable(
+            route = CustomerRoute.INQUIRY_CREATED,
+            arguments = listOf(
+                navArgument("inquiryId") { type = NavType.StringType },
+                navArgument("scenario") { type = NavType.StringType },
+            ),
+        ) { entry ->
+            val scenario = runCatching {
+                MockScenario.valueOf(entry.arguments?.getString("scenario").orEmpty())
+            }.getOrDefault(MockScenario.NO_EVIDENCE)
+            InquiryCreatedScreen(
+                inquiryId = entry.arguments?.getString("inquiryId").orEmpty(),
+                previewScenario = scenario,
+                onBack = { navController.popBackStack() },
+                onOpenMockGuidance = { inquiryId, mockScenario ->
+                    navController.navigate(CustomerRoute.guidance(inquiryId, mockScenario.name))
+                },
+                onDone = {
+                    navController.navigate(CustomerRoute.home(false)) {
+                        popUpTo(CustomerRoute.HOME) { inclusive = false }
+                        launchSingleTop = true
+                    }
                 },
             )
         }
@@ -74,7 +114,9 @@ fun CustomerNavigation() {
                 inquiryId = entry.arguments?.getString("inquiryId").orEmpty(),
                 scenario = scenario,
                 onBack = { navController.popBackStack() },
-                onRequestConsultation = { /* API endpoint is not routed yet; UI contract is verified. */ },
+                onRequestConsultation = {
+                    // MOCK_BLOCKED: consultation Runtime route is not available yet.
+                },
                 onDone = {
                     navController.navigate(CustomerRoute.home(false)) {
                         popUpTo(CustomerRoute.HOME) { inclusive = false }

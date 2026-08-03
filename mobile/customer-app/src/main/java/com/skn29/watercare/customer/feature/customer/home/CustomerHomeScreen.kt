@@ -20,6 +20,7 @@ import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LoadingBlock
+import com.skn29.watercare.customer.CustomerRuntime
 import com.skn29.watercare.customer.R
 import com.skn29.watercare.customer.common.VmFactory
 import com.skn29.watercare.customer.feature.shared.ProductInfoCard
@@ -50,7 +51,7 @@ fun CustomerHomeScreen(
         onStartIntake = onStartIntake,
         onOpenGuidance = onOpenGuidance,
         onRetry = viewModel::load,
-        onLogout = { viewModel.logout(onLogout) },
+        onLogout = { viewModel.logout { CustomerRuntime.clear(); onLogout() } },
     )
 }
 
@@ -105,9 +106,9 @@ fun CustomerHomeContent(
                 label = {
                     Text(
                         if (state.backendAvailable == true) {
-                            "Backend 연결됨"
+                            "Backend 인증 연결됨 · 홈 데이터 Mock"
                         } else {
-                            "Backend 미연결 · Mock 사용"
+                            "Backend 미연결 · 전체 Mock"
                         }
                     )
                 },

@@ -16,8 +16,11 @@ data class SymptomIntakeUiState(
     val rawTextError: String? = null,
     val globalError: String? = null,
     val retryable: Boolean = false,
+    val authExpired: Boolean = false,
     val conflictStatus: String? = null,
     val conflictStateVersion: Int? = null,
     val conflictAllowedActions: List<String> = emptyList(),
+    val correlationId: String? = null,
+    val pendingIdempotencyKey: String? = null,
     val completed: IntakeSubmission? = null,
 )

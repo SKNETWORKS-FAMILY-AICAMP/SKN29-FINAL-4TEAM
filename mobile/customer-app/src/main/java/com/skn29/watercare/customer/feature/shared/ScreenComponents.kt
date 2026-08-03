@@ -171,24 +171,22 @@ fun BulletList(items: List<String>, emptyText: String = "해당 항목이 없습
 }
 
 @Composable
-fun WorkflowActionButton(action: String, enabled: Boolean = true, onClick: () -> Unit) {
-    when (action.uppercase()) {
+fun WorkflowActionButton(
+    action: String,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    when (action.trim().uppercase()) {
         "REQUEST_CONSULTATION" -> Button(
             onClick = onClick,
             enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = WaterOrange),
-        ) { Text("상담 요청") }
-        "CONFIRM_GUIDANCE" -> OutlinedButton(
-            onClick = onClick,
-            enabled = enabled,
-            modifier = Modifier.fillMaxWidth(),
-        ) { Text("안내 확인") }
-        "MARK_RESOLVED", "RESOLVE" -> OutlinedButton(
-            onClick = onClick,
-            enabled = enabled,
-            modifier = Modifier.fillMaxWidth().testTag("resolvedAction"),
-        ) { Text("증상 해결됨") }
+        ) {
+            Text("상담 요청")
+        }
+
+        // Unknown or unsupported Backend actions are intentionally hidden.
         else -> Unit
     }
 }

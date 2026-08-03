@@ -48,6 +48,14 @@ fun GuidanceScreen(
     }
 
     WaterCareScreen(title = "안전 안내", onBack = onBack) {
+        SectionCard("Mock/Blocked 화면") {
+            Text("Guidance와 상담 요청 Endpoint는 아직 Backend Runtime에 없습니다.", fontWeight = FontWeight.Bold)
+            Text(
+                "이 화면은 UI·안전 정책 검증용 Mock이며 실제 API 연동 완료로 표시하지 않습니다.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         when (val current = state) {
             GuidanceUiState.Loading -> LoadingBlock("검증된 고객용 안내를 불러오는 중입니다")
             is GuidanceUiState.Content -> GuidanceContent(
