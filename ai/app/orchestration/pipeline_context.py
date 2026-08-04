@@ -34,6 +34,7 @@ class PipelineContext(BaseModel):
         RetrievalOutcome.NOT_RUN,
         description="정상 검색 실행 여부와 근거 발견 결과",
     )
+    retry_count: int = Field(0, ge=0, le=1, description="AI 내부 실제 재시도 횟수")
     usage_guidance: Optional[UsageGuidance] = Field(None, description="사용 안내 상태 및 문구")
 
     # 메타데이터 및 지연 추적

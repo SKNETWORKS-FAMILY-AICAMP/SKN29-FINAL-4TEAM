@@ -18,6 +18,17 @@ class RetrievalConfigurationError(RuntimeError):
 class RetrievalExecutionError(RuntimeError):
     """설정된 검색 Provider가 실행 중 실패했다."""
 
+    def __init__(
+        self,
+        message: str,
+        *,
+        retry_count: int = 0,
+        retryable: bool = False,
+    ) -> None:
+        self.retry_count = retry_count
+        self.retryable = retryable
+        super().__init__(message)
+
 
 __all__ = [
     "RetrievalConfigurationError",

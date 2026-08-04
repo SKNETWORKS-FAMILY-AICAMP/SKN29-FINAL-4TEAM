@@ -1,5 +1,12 @@
 # AI Contract Changelog
 
+## 2026-08-04 — 1.1.0 내부 재시도 Runtime 활성화
+
+- 공개 Schema 변경 없이 기존 `retry_count=0..1` 의미를 Runtime에 연결
+- 검색 Provider의 일시적 연결·Timeout 오류만 최대 1회 재시도
+- 설정·Schema·정책 오류와 위험 우선 분기는 재시도 대상에서 제외
+- 재시도 소진 검색 실패 예시를 `retry_count=1`로 갱신
+
 ## 2026-08-04 — 1.1.0 검색 결과·장애 의미 명확화
 
 - 공개 Schema 필드 변경 없이 정상 검색 0건과 Vector Store 설정 누락을 분리

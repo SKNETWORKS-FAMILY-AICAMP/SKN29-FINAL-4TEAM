@@ -20,8 +20,21 @@ class EmptySearchService:
 
 
 class FailingSearchService:
+    def __init__(self):
+        self.calls = 0
+
     def search(self, *args, **kwargs):
+        self.calls += 1
         raise ConnectionError("test-only vector failure")
+
+
+class NonRetryableFailingSearchService:
+    def __init__(self):
+        self.calls = 0
+
+    def search(self, *args, **kwargs):
+        self.calls += 1
+        raise ValueError("test-only invalid provider result")
 
 
 class EvidenceSearchService:
@@ -43,6 +56,17 @@ class EvidenceSearchService:
                 allowed_use=True,
             )
         ]
+
+
+class FlakySearchService:
+    def __init__(self):
+        self.calls = 0
+
+    def search(self, *args, **kwargs):
+        self.calls += 1
+        if self.calls == 1:
+            raise ConnectionError("test-only transient vector failure")
+        return EvidenceSearchService().search(*args, **kwargs)
 
 
 def test_single_rag_pipeline_execution():
@@ -137,8 +161,9 @@ def test_vector_store_not_configured_is_not_reported_as_no_match():
 
 
 def test_configured_search_failure_is_typed_separately_from_no_match():
-    with pytest.raises(RetrievalExecutionError, match="검색 실행에 실패"):
-        PipelineRouter(search_service=FailingSearchService()).run_pipeline(
+    service = FailingSearchService()
+    with pytest.raises(RetrievalExecutionError, match="검색 실행에 실패") as raised:
+        PipelineRouter(search_service=service).run_pipeline(
             inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b308",
             correlation_id="corr-vector-failed",
             ai_request_id="ai-req-vector-failed",
@@ -146,6 +171,48 @@ def test_configured_search_failure_is_typed_separately_from_no_match():
             raw_symptom="냉수가 미지근합니다.",
             model_code="WPUJAC104DWH",
         )
+    assert service.calls == 2
+    assert raised.value.retry_count == 1
+    assert raised.value.retryable is True
+
+
+def test_transient_search_failure_retries_once_then_succeeds():
+    service = FlakySearchService()
+    result = PipelineRouter(search_service=service).run_pipeline(
+        inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b315",
+        correlation_id="corr-vector-retry-success",
+        ai_request_id="ai-req-vector-retry-success",
+        state_version=1,
+        raw_symptom="냉수가 미지근합니다.",
+        model_code="WPUJAC104DWH",
+    )
+
+    response = result.to_analysis_result()
+    retrieval_trace = next(
+        trace for trace in result.context.processing_traces
+        if trace.stage.value == "RETRIEVING"
+    )
+    assert service.calls == 2
+    assert response.status.value == "SUCCEEDED"
+    assert response.retry_count == 1
+    assert retrieval_trace.retry_count == 1
+
+
+def test_non_transient_search_failure_is_not_retried():
+    service = NonRetryableFailingSearchService()
+    with pytest.raises(RetrievalExecutionError) as raised:
+        PipelineRouter(search_service=service).run_pipeline(
+            inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b316",
+            correlation_id="corr-vector-non-retryable",
+            ai_request_id="ai-req-vector-non-retryable",
+            state_version=1,
+            raw_symptom="냉수가 미지근합니다.",
+            model_code="WPUJAC104DWH",
+        )
+
+    assert service.calls == 1
+    assert raised.value.retry_count == 0
+    assert raised.value.retryable is False
 
 
 def test_configured_search_with_evidence_is_available():

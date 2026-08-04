@@ -174,7 +174,7 @@ async def analyze_symptom(
             inquiry_id=req.inquiry_id,
             ai_request_id=req.ai_request_id,
             state_version=req.state_version,
-            retry_count=0,
+            retry_count=cancellation_token.retry_count,
         ) from exc
     except PipelineStageTimeoutError as exc:
         cancellation_token.cancel()
@@ -192,7 +192,7 @@ async def analyze_symptom(
             inquiry_id=req.inquiry_id,
             ai_request_id=req.ai_request_id,
             state_version=req.state_version,
-            retry_count=0,
+            retry_count=cancellation_token.retry_count,
         ) from exc
     except RetrievalConfigurationError as exc:
         raise AiServiceError(
@@ -212,13 +212,13 @@ async def analyze_symptom(
             code="AI-FAILED-01",
             http_status=503,
             message="AI 근거 검색을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.",
-            retryable=True,
+            retryable=exc.retryable,
             failure_stage=AiStage.RETRIEVING,
             correlation_id=req.correlation_id,
             inquiry_id=req.inquiry_id,
             ai_request_id=req.ai_request_id,
             state_version=req.state_version,
-            retry_count=0,
+            retry_count=exc.retry_count,
         ) from exc
     except Exception as exc:
         if "worker" not in locals():
@@ -241,6 +241,7 @@ async def analyze_symptom(
         raise
 
     result = pipeline_result.to_analysis_result()
+    log_fields["retry_count"] = result.retry_count
     log_analysis_event(
         "analysis_completed",
         stage=AiStage.COMPLETED.value,

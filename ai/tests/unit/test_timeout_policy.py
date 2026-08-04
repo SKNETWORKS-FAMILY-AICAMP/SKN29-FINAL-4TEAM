@@ -9,6 +9,7 @@ from ai.app.common.timeout import (
     PipelineStageTimeoutError,
     get_stage_timeout_policy,
 )
+from ai.app.common.retry import get_retry_policy
 
 
 def test_stage_timeout_policy_matches_configured_budget():
@@ -20,6 +21,18 @@ def test_stage_timeout_policy_matches_configured_budget():
     assert policy.for_stage("RETRIEVING") == 5.0
     assert policy.for_stage("GENERATING") == 15.0
     assert policy.for_stage("VALIDATING") == 3.0
+
+
+def test_retry_policy_is_enabled_for_transient_failures_only():
+    policy = get_retry_policy()
+
+    assert policy.max_retry_count == 1
+    assert policy.backoff_seconds(1) == 0.5
+    assert policy.can_retry(ConnectionError("temporary"), retry_count=0) is True
+    assert policy.can_retry(ConnectionError("temporary"), retry_count=1) is False
+    assert policy.can_retry(ValueError("invalid"), retry_count=0) is False
+    assert policy.is_retryable_exception(ConnectionError("temporary")) is True
+    assert policy.is_retryable_exception(ValueError("invalid")) is False
 
 
 def test_deadline_scope_raises_stage_specific_timeout():

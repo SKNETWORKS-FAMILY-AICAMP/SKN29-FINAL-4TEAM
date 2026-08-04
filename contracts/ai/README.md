@@ -43,7 +43,9 @@ AI는 증상 구조화·안전 평가·사용 안내·근거 참조 또는 요�
 | --- | ---: | --- | --- |
 | `AI-VALIDATION-01` | 400 또는 422 | false | `STRUCTURING` |
 | `AI-FAILED-01` | 503 | false | `RETRIEVING` — Vector Store 필수 설정 누락 |
-| `AI-FAILED-01` | 503 | true | `RETRIEVING` 또는 `FAILED` — 검색·Provider·내부 실행 실패 |
+| `AI-FAILED-01` | 503 | true | `RETRIEVING` — 일시적 검색 Provider 오류가 내부 1회 재시도 후에도 지속 |
+| `AI-FAILED-01` | 503 | false | `RETRIEVING` — 비일시적 검색 결과·검증 오류 |
+| `AI-FAILED-01` | 503 | true | `FAILED` — 분류되지 않은 내부 실행 실패 |
 | `AI-TIMEOUT-01` | 504 | true | `CANCELLED` |
 
 오류 응답에도 사용 가능한 추적 식별자를 보존한다. 입력 원문, Prompt,
@@ -54,6 +56,12 @@ Stack Trace, Secret, 개인정보는 오류 상세에 포함하지 않는다.
 `PENDING_CONSULTATION`을 반환한다. Vector Store 설정이 없어 검색을 시작하지
 못한 경우에는 같은 0건으로 처리하지 않고 HTTP 503과
 `AI-FAILED-01`, `retryable=false`, `failure_stage=RETRIEVING`을 반환한다.
+
+검색 Provider가 `ConnectionError`, `TimeoutError`, PostgreSQL
+`OperationalError`·`InterfaceError` 계열의 일시적 오류를 반환하면 AI가
+검색 Stage 안에서 최대 1회만 재시도한다. 두 번째 시도를 실제 시작한 경우
+성공 응답 또는 최종 오류의 `retry_count=1`로 기록한다. 설정·Schema·정책
+오류와 위험 우선 분기는 재시도하지 않는다. Backend 자동 재시도는 0회다.
 
 ## 디렉토리
 

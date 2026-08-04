@@ -26,7 +26,7 @@ class PipelineResult(BaseModel):
             state_version=ctx.trace_context.state_version,
             status=AiExecutionStatus.FALLBACK if is_no_evidence_fallback else AiExecutionStatus.SUCCEEDED,
             failure_stage=AiStage.RETRIEVING if is_no_evidence_fallback else None,
-            retry_count=0,
+            retry_count=ctx.retry_count,
             structured_symptom=ctx.structured_symptom,
             missing_fields=ctx.missing_fields,
             followup_questions=ctx.followup_questions,
