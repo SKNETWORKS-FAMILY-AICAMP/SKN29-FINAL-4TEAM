@@ -74,7 +74,6 @@ fun CustomerNavigation() {
                 inquiryId = entry.arguments?.getString("inquiryId").orEmpty(),
                 scenario = scenario,
                 onBack = { navController.popBackStack() },
-                onRequestConsultation = { /* API endpoint is not routed yet; UI contract is verified. */ },
                 onDone = {
                     navController.navigate(CustomerRoute.home(false)) {
                         popUpTo(CustomerRoute.HOME) { inclusive = false }

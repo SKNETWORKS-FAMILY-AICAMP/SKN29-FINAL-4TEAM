@@ -24,7 +24,15 @@ enum class WorkflowState {
 }
 enum class DataClassification { OFFICIAL, TEAM_DESIGNED, SYNTHETIC, UNKNOWN }
 enum class EntryMode { CARE_PRECHECK, ADHOC_INQUIRY }
-enum class MockScenario { NORMAL, CAUTION, DANGER, NO_EVIDENCE, AI_FAILURE, NETWORK_FAILURE }
+enum class MockScenario {
+    NORMAL,
+    CAUTION,
+    DANGER,
+    NO_EVIDENCE,
+    BACKEND_PROCESSING,
+    AI_FAILURE,
+    NETWORK_FAILURE,
+}
 
 enum class SymptomTopic(val code: String, val label: String) {
     LOW_FLOW("LOW_FLOW", "출수량 저하"),
@@ -80,6 +88,9 @@ data class IntakeSubmission(
     @SerialName("inquiry_code") val inquiryCode: String,
     @SerialName("questionnaire_session_id") val questionnaireSessionId: String? = null,
     @SerialName("guidance_scenario") val guidanceScenario: String,
+    @SerialName("status_code") val statusCode: String? = null,
+    @SerialName("state_version") val stateVersion: Int? = null,
+    @SerialName("allowed_actions") val allowedActions: List<AllowedAction> = emptyList(),
 )
 
 @Serializable

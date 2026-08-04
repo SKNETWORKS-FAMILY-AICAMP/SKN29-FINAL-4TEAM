@@ -10,6 +10,7 @@ import com.skn29.watercare.core.repository.InquiryRepository
 import com.skn29.watercare.core.repository.RemoteAuthRepository
 import com.skn29.watercare.core.repository.RemoteBackendStatusRepository
 import com.skn29.watercare.core.repository.RemoteInquiryRepository
+import com.skn29.watercare.core.repository.RemoteIntakeCustomerCareRepository
 
 object WaterCareCore {
     lateinit var authRepository: AuthRepository
@@ -23,10 +24,16 @@ object WaterCareCore {
 
     fun initialize(context: Context, baseUrl: String, debug: Boolean) {
         if (::authRepository.isInitialized) return
+
         val network = NetworkFactory(context.applicationContext, baseUrl, debug)
         authRepository = RemoteAuthRepository(network.api, network.tokenStore, network.json)
         inquiryRepository = RemoteInquiryRepository(network.api, network.json)
         backendStatusRepository = RemoteBackendStatusRepository(network.api)
-        customerCareRepository = FakeCustomerCareRepository()
+
+        val fixtureRepository = FakeCustomerCareRepository()
+        customerCareRepository = RemoteIntakeCustomerCareRepository(
+            inquiryRepository = inquiryRepository,
+            fallbackRepository = fixtureRepository,
+        )
     }
 }

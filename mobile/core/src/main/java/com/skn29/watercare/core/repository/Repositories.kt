@@ -24,7 +24,10 @@ interface AuthRepository {
 }
 
 interface InquiryRepository {
-    suspend fun create(request: CreateInquiryRequest): ApiResult<InquiryResponse>
+    suspend fun create(
+        request: CreateInquiryRequest,
+        idempotencyKey: String,
+    ): ApiResult<InquiryResponse>
     suspend fun cancel(
         inquiryId: String,
         stateVersion: Int,
@@ -72,8 +75,11 @@ class RemoteInquiryRepository(
     private val api: WaterCareApi,
     private val json: Json,
 ) : InquiryRepository {
-    override suspend fun create(request: CreateInquiryRequest): ApiResult<InquiryResponse> =
-        safeApiCall(json) { api.createInquiry(UUID.randomUUID().toString(), request) }
+    override suspend fun create(
+        request: CreateInquiryRequest,
+        idempotencyKey: String,
+    ): ApiResult<InquiryResponse> =
+        safeApiCall(json) { api.createInquiry(idempotencyKey, request) }
 
     override suspend fun cancel(
         inquiryId: String,

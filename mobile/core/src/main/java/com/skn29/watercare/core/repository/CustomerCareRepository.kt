@@ -98,6 +98,7 @@ class FakeCustomerCareRepository : CustomerCareRepository {
             MockScenario.CAUTION -> ApiResult.Success(cautionGuidance(inquiryId))
             MockScenario.DANGER -> ApiResult.Success(dangerGuidance(inquiryId))
             MockScenario.NO_EVIDENCE -> ApiResult.Success(noEvidenceGuidance(inquiryId))
+            MockScenario.BACKEND_PROCESSING -> ApiResult.Success(backendProcessingGuidance(inquiryId))
             MockScenario.NORMAL -> ApiResult.Success(normalGuidance(inquiryId))
         }
     }
@@ -113,6 +114,22 @@ class FakeCustomerCareRepository : CustomerCareRepository {
             else -> MockScenario.NORMAL
         }
     }
+
+    private fun backendProcessingGuidance(inquiryId: String) = GuidanceData(
+        inquiryId = inquiryId,
+        inquiryCode = "BACKEND-INQUIRY",
+        symptomSummary = "문의가 실제 Backend에 접수되었습니다. AI 안내 조회 API는 아직 준비 중입니다.",
+        riskLevel = "unknown",
+        usageGuidanceStatus = "PENDING_CONSULTATION",
+        usageGuidanceMessage = "공식 안내 결과가 준비될 때까지 사용 가능 여부를 임의로 판단하지 않습니다.",
+        safeActions = emptyList(),
+        escalationConditions = listOf("누수·전기·화상 위험이 있으면 즉시 사용을 중지하고 고객센터에 연락하세요."),
+        prohibitedActions = listOf("제품을 분해하거나 오류 의미를 임의로 추정하지 마세요."),
+        nextAction = "Backend 처리 상태 확인",
+        requiresConsultation = false,
+        evidence = emptyList(),
+        allowedActions = emptyList(),
+    )
 
     private fun normalGuidance(inquiryId: String) = GuidanceData(
         inquiryId = inquiryId,
@@ -137,7 +154,7 @@ class FakeCustomerCareRepository : CustomerCareRepository {
                 officialUrl = null,
             )
         ),
-        allowedActions = listOf("REQUEST_CONSULTATION", "CONFIRM_GUIDANCE", "MARK_RESOLVED"),
+        allowedActions = listOf("REQUEST_CONSULTATION"),
     )
 
 
@@ -164,7 +181,7 @@ class FakeCustomerCareRepository : CustomerCareRepository {
                 dataClassification = "official",
             )
         ),
-        allowedActions = listOf("REQUEST_CONSULTATION", "CONFIRM_GUIDANCE"),
+        allowedActions = listOf("REQUEST_CONSULTATION"),
     )
 
     private fun dangerGuidance(inquiryId: String) = GuidanceData(
@@ -190,7 +207,7 @@ class FakeCustomerCareRepository : CustomerCareRepository {
                 dataClassification = "official",
             )
         ),
-        allowedActions = listOf("REQUEST_CONSULTATION", "MARK_RESOLVED", "CLOSE_INQUIRY"),
+        allowedActions = listOf("REQUEST_CONSULTATION"),
     )
 
     private fun noEvidenceGuidance(inquiryId: String) = GuidanceData(
@@ -206,6 +223,6 @@ class FakeCustomerCareRepository : CustomerCareRepository {
         nextAction = "상담 확인",
         requiresConsultation = false,
         evidence = emptyList(),
-        allowedActions = listOf("REQUEST_CONSULTATION", "MARK_RESOLVED"),
+        allowedActions = listOf("REQUEST_CONSULTATION"),
     )
 }

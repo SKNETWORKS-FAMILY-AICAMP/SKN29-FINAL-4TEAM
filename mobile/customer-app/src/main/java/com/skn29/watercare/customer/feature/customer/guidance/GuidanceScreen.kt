@@ -32,7 +32,6 @@ fun GuidanceScreen(
     inquiryId: String,
     scenario: MockScenario,
     onBack: () -> Unit,
-    onRequestConsultation: () -> Unit,
     onDone: () -> Unit,
 ) {
     val viewModel: GuidanceViewModel = viewModel(
@@ -44,7 +43,6 @@ fun GuidanceScreen(
     var consultationNotice by remember { mutableStateOf(false) }
     val requestConsultation = {
         consultationNotice = true
-        onRequestConsultation()
     }
 
     WaterCareScreen(title = "안전 안내", onBack = onBack) {
@@ -82,7 +80,7 @@ fun GuidanceScreen(
         }
         if (consultationNotice) {
             SectionCard("상담 요청") {
-                Text("상담 전환 화면이 확인되었습니다. 실제 Endpoint가 제공되기 전에는 중복 요청을 보내지 않습니다.")
+                Text("상담 요청 API가 아직 제공되지 않아 실제 요청을 보내지 않았습니다.")
             }
         }
     }

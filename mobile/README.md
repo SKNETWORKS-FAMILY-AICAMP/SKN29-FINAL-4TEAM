@@ -102,3 +102,15 @@ APK 생성 경로:
 - `POST /api/v1/inquiries/{inquiry_id}/cancel`
 
 문진, AI 안내, 제품·구독 조회, 상담, 방문 관련 경로는 현재 `backend/config/api_urls.py`에 포함되어 있지 않다. 따라서 존재하지 않는 운영 Endpoint를 임의로 만들지 않고 Fake 구현 또는 `API 준비 중` 화면으로 유지한다.
+
+## 4주차 부분 Remote 연결 상태
+
+4주차 1차 연동에서는 현재 Runtime에 공개된 `POST /api/v1/inquiries`만 고객 문진 제출 기본 경로에 연결한다.
+
+- 고객 문진 제출: Remote
+- 인증·Health: Remote
+- 고객 홈 제품·구독 조회: 명시적 Mock — Runtime Endpoint 대기
+- AI 안내·공식 근거 조회: 명시적 Mock — Runtime Endpoint 대기
+- 상담 요청: `API 준비 중` 안내 — 빈 Callback 및 가짜 성공 처리 금지
+
+Remote 요청 실패를 Mock 성공 결과로 자동 대체하지 않는다. 제품·구독 및 AI 안내 Endpoint가 실제 Runtime에 공개되면 각각 별도 Repository로 전환한다.

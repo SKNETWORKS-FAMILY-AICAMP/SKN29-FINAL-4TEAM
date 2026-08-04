@@ -105,9 +105,9 @@ fun CustomerHomeContent(
                 label = {
                     Text(
                         if (state.backendAvailable == true) {
-                            "Backend 연결됨"
+                            "Backend 연결됨 · 문의 생성 Remote · 홈/안내 Mock"
                         } else {
-                            "Backend 미연결 · Mock 사용"
+                            "Backend 미연결 · 명시적 Mock"
                         }
                     )
                 },
@@ -178,6 +178,7 @@ fun CustomerHomeContent(
                                     MockScenario.CAUTION -> "주의 안내"
                                     MockScenario.DANGER -> "위험 누수"
                                     MockScenario.NO_EVIDENCE -> "근거 없음"
+                                    MockScenario.BACKEND_PROCESSING -> "Backend 처리 중"
                                     MockScenario.AI_FAILURE -> "AI 실패"
                                     MockScenario.NETWORK_FAILURE -> "네트워크 실패"
                                 }
