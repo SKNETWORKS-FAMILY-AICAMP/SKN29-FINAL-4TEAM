@@ -25,6 +25,7 @@
 - Customer 실단말 Compose UI 테스트: PASS (`SM-F721N`, `R3CT8076D7B`, 2/2)
 - 실제 재검증 시각: `2026-08-04 10:10:55 +09:00`
 - 실제 재검증 기준 Commit: `1474a36a1b4bc218842ba675c5f4ce7c95c796a6`
+- 최종 검증 결과: 전용 Debug `ComposeTestActivity` Host 적용 후 실단말 2/2 통과
 
 ## 다음 Runtime 검증
 
@@ -41,9 +42,11 @@
 - AI 안내·Evidence Runtime Endpoint 대기
 - 상담 요청 Runtime Endpoint 대기
 - 위 기능은 실제 Endpoint가 제공되기 전까지 가짜 성공으로 처리하지 않음
+
 ## 검증 보정 이력
 
-- 최초 `runComposeUiTest` 실행은 Compose Host가 생성되지 않아 `No compose hierarchies found` 오류로 2건이 실패했다.
-- 이후 테스트 소스를 JUnit `createComposeRule` 구조로 변경했지만, 첫 검증 Script가 저장소 루트에서 Gradle을 실행하여 실제 테스트를 수행하지 못한 채 결과 문서를 잘못 갱신했다.
-- `2026-08-04 10:10:55 +09:00`에 Gradle Project Directory를 `mobile`로 명시하고 실단말 테스트를 강제 재실행했다.
-- `SM-F721N` 실단말에서 Compose UI 테스트 2건이 모두 통과했으며 Core·Customer 단위 테스트와 Customer·Technician Debug APK 빌드도 통과했다.
+- 최초 `runComposeUiTest`와 `createComposeRule` 실행에서는 Compose Activity Host가 생성되지 않아 `No compose hierarchies found` 오류로 2건이 실패했다.
+- 이전 PASS 표기는 Gradle 실패 코드가 Script에서 차단되지 않아 생성된 잘못된 기록이다.
+- 테스트를 v2 `createAndroidComposeRule<ComposeTestActivity>()` 구조로 변경했다.
+- `src/debug`에 전용 `ComposeTestActivity`와 Debug Manifest를 추가했다.
+- `2026-08-04 10:38 +09:00`에 `SM-F721N` 실단말에서 2건 모두 통과하여 PASS로 확정했다.

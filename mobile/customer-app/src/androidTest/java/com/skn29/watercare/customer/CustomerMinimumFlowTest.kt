@@ -5,10 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.skn29.watercare.core.model.ActiveInquirySummary
 import com.skn29.watercare.core.model.CustomerHomeData
 import com.skn29.watercare.core.model.GuidanceDisplayModel
@@ -22,13 +23,16 @@ import com.skn29.watercare.customer.feature.customer.home.CustomerHomeContent
 import com.skn29.watercare.customer.feature.customer.home.CustomerHomeUiState
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeContent
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeUiState
+import com.skn29.watercare.customer.testing.ComposeTestActivity
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 
+@RunWith(AndroidJUnit4::class)
 class CustomerMinimumFlowTest {
     @get:Rule
-    val composeRule = createComposeRule()
+    val composeRule = createAndroidComposeRule<ComposeTestActivity>()
 
     @Test
     fun offlinePreview_opensCust01AndCust02() {
@@ -60,6 +64,8 @@ class CustomerMinimumFlowTest {
                 }
             }
         }
+
+        composeRule.waitForIdle()
 
         composeRule.onNodeWithTag("startIntake")
             .performScrollTo()
@@ -102,6 +108,8 @@ class CustomerMinimumFlowTest {
                 }
             }
         }
+
+        composeRule.waitForIdle()
 
         composeRule.onNodeWithTag("scenario_DANGER")
             .performScrollTo()
