@@ -161,9 +161,9 @@ export default function ConsultantDashboardPage() {
   return (
     <div className="simple-consultant-app consultant-queue-app">
       <header className="simple-topbar">
-        <a className="simple-brand" href="/" aria-label="워터케어 홈으로 이동">
+        <a className="simple-brand" href="/" aria-label="Water Bridge 홈으로 이동">
           <span aria-hidden="true">W</span>
-          <strong>워터케어 ONE</strong>
+          <strong>Water Bridge</strong>
         </a>
 
         <ApiRuntimeStatus className="simple-topbar__notice" compact />

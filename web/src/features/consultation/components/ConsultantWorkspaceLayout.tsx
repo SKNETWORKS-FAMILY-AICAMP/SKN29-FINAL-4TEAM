@@ -29,13 +29,13 @@ export default function ConsultantWorkspaceLayout({
         <a
           className="v6-brand"
           href="/"
-          aria-label="워터케어 ONE 역할 선택 홈으로 이동"
+          aria-label="Water Bridge 역할 선택 홈으로 이동"
         >
           <span className="v6-brand__mark" aria-hidden="true">
             W
           </span>
           <span>
-            <strong>워터케어 ONE</strong>
+            <strong>Water Bridge</strong>
             <small>상담원 워크스페이스</small>
           </span>
         </a>

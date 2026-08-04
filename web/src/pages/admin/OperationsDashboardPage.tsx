@@ -162,7 +162,7 @@ export default function OperationsDashboardPage() {
         <div className="operations-brand">
           <span>W</span>
           <div>
-            <strong>워터케어 ONE</strong>
+            <strong>Water Bridge</strong>
             <small>정수기 고객 케어 운영</small>
           </div>
         </div>

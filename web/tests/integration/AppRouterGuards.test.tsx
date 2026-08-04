@@ -37,7 +37,7 @@ describe("App Router Guard", () => {
     renderRoute("/consultant/inquiries", null);
 
     expect(
-      await screen.findByRole("heading", { name: "워터케어 ONE 로그인" }),
+      await screen.findByRole("heading", { name: "Water Bridge 로그인" }),
     ).toBeInTheDocument();
   });
 
