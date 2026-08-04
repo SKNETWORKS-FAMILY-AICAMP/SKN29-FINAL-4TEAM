@@ -1,14 +1,14 @@
 {
   "status": "CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT",
-  "generated_at": "2026-08-03T12:13:30+09:00",
-  "source_commit": "c4434c57dd56d8ad1d56ea00e28ee154672e8498",
+  "generated_at": "2026-08-04T11:46:04+09:00",
+  "source_commit": "a282b594e7d289b479485983a97cff3f58d5be46",
   "working_tree_committed": false,
   "runtime": {
     "python": "3.13.13",
     "os": "Windows 11 AMD64",
     "dependency_lock": "ai/requirements.lock",
     "unit_tests": {
-      "result": "79 passed, 3 warnings",
+      "result": "91 passed, 3 warnings",
       "exit_code": 0
     }
   },

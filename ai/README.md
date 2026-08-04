@@ -1,4 +1,4 @@
-# WaterCare AI/RAG
+# WaterBridge AI/RAG
 
 ## 재현 가능한 실행 환경
 
