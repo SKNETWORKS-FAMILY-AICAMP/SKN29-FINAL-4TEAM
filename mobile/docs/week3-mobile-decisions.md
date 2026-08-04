@@ -1,37 +1,40 @@
-# Week 3 Mobile Decisions
+# 3주차 모바일 개발 결정사항
 
-- Branch: `jeonghyun`
-- Base branch: `main`
+- 작업 브랜치: `jeonghyun`
+- 기준 브랜치: `main`
 
-## Structure
+## 1. 프로젝트 구조
 
-- The approved Android structure consists of `customer-app`, `technician-app`, and `core`.
-- Shared networking, API models, repositories, session management, and common resources are owned by `core`.
-- The customer and technician applications retain independent entry points, themes, and navigation flows.
+- 승인된 Android 프로젝트 구조는 `customer-app`, `technician-app`, `core` 3개 모듈로 구성한다.
+- 공통 네트워크, API 모델, Repository, 세션 관리, 공통 리소스는 `core`에서 관리한다.
+- 고객 앱과 기사 앱은 각각 독립적인 진입점, 테마, 화면 이동 구조를 유지한다.
 
-## UI and state
+## 2. UI 및 상태 관리
 
-- Kotlin, Jetpack Compose, Material 3, Navigation Compose, ViewModel, Coroutines, and StateFlow are used.
-- Loading, success, empty, error, retry, and submitting states remain explicit.
-- Risk is communicated with text and status labels, not color alone.
-- Duplicate submissions are prevented while a request is in progress.
+- Kotlin, Jetpack Compose, Material 3, Navigation Compose, ViewModel, Coroutines, StateFlow를 사용한다.
+- 고객 앱은 고객용 디자인 체계를 적용하고, 기사 앱은 현장 업무 중심 디자인 체계를 적용한다.
+- 로딩, 성공, 빈 상태, 오류, 재시도, 제출 중 상태를 명확히 구분한다.
+- 위험 상태는 색상만으로 전달하지 않고 문구와 상태 라벨을 함께 사용한다.
+- 요청 처리 중에는 중복 제출을 방지한다.
 
-## Backend connection
+## 3. 백엔드 연결
 
-- Physical-device base URL: `http://127.0.0.1:8000/`
-- USB forwarding: `adb reverse tcp:8000 tcp:8000`
-- PostgreSQL, Django migrations, demo accounts, demo product, demo subscription, and demo care records were prepared successfully.
-- `/health`, customer demo login, and technician demo login returned successful HTTP responses.
+- USB로 연결한 실제 Android 기기의 백엔드 기본 주소는 `http://127.0.0.1:8000/`을 사용한다.
+- 실제 기기 연동에는 `adb reverse tcp:8000 tcp:8000`을 사용한다.
+- PostgreSQL, Django 마이그레이션, 데모 계정, 데모 제품, 데모 구독, 데모 케어 기록 준비를 완료했다.
+- `/health`, 고객 데모 로그인, 기사 데모 로그인 API의 정상 응답을 확인했다.
+- 백엔드, 데이터베이스, 마이그레이션, Docker, API 계약 원본은 이번 모바일 커밋에서 변경하지 않는다.
 
-## Safety
+## 4. 안전 처리 원칙
 
-- Unknown error codes are not treated as confirmed diagnoses.
-- Danger, consultation-required, and no-evidence states must not expose a resolved or close action.
-- Customer UI excludes internal RAG paths, retrieval text, internal database identifiers, JWT values, and private document locations.
+- 알 수 없는 오류 코드는 확정 진단으로 표시하지 않는다.
+- 위험 상태, 상담 필요 상태, 근거 없음 상태에서는 해결 완료 또는 문의 종료 기능을 노출하지 않는다.
+- 사용 제한, 안전 행동, 상담 전환 조건, 금지 행동, 공식 근거를 가능한 범위에서 화면에 표시한다.
+- 고객 화면에는 내부 RAG 경로, 검색 원문, 내부 데이터베이스 식별자, JWT 값, 비공개 문서 경로를 노출하지 않는다.
 
-## Verification
+## 5. 검증 결과
 
-- Customer unit tests passed.
-- Customer connected Compose UI tests passed on `SM_F721N`.
-- Customer and technician Debug APK builds passed.
-- Verification passed again after rebasing onto the latest `origin/main`.
+- 고객 앱 단위 테스트를 통과했다.
+- `SM_F721N` 실제 기기에서 고객 앱 Compose UI 테스트를 통과했다.
+- 고객 앱과 기사 앱의 Debug APK 빌드를 완료했다.
+- 최신 `origin/main` 리베이스 후에도 동일한 검증을 다시 통과했다.
