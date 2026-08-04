@@ -93,9 +93,8 @@
 
 ## 남은 일
 
-1. 현재 Water Bridge 작업 Commit·Push
-2. Backend Active 계약 승인 후 실제 상담·방문 저장 연결
-3. 발표 피드백을 5주차 인계 문서에 추가
+1. Backend Active 계약 승인 후 실제 상담·방문 저장 연결
+2. 발표 피드백을 5주차 인계 문서에 추가
 
 ## 2026-08-04 최종 확인
 
@@ -104,6 +103,7 @@
 - Test 26 files·109 cases, Lint, TypeScript·Production Build 모두 성공
 - 상담사 목록 → 상세 → 공식 근거 → 409 입력 유지 → 방문 전환 흐름을 3회 반복 성공
 - 상담사 역할의 관리자 화면 접근이 `/forbidden`으로 차단됨을 수동 확인
+- 발표 Source Commit: `8509958`
 
 ## 5주차에 이어서 할 내용
 

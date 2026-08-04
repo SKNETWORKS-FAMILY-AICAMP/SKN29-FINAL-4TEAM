@@ -13,12 +13,12 @@ Web 담당: 한예나
 | 항목 | 값 |
 | --- | --- |
 | 브랜치 | `yena` |
-| 마지막 Commit | `c6b604a` |
-| Commit 제목 | `2026-08-04 \| Web API 구현 준비 및 검증 문서 정리` |
-| 추가 작업 | Water Bridge 명칭·브랜드 이미지·캡처·발표 문서 |
-| 현재 상태 | 위 추가 작업은 아직 미커밋이며 발표 전 Commit·Push 필요 |
+| 마지막 Commit | `8509958` |
+| Commit 제목 | `2026-08-04 \| Water Bridge 브랜딩 및 발표 자료 준비` |
+| 추가 작업 | 없음 |
+| 현재 상태 | 발표 Source Commit 확정 |
 
-캡처는 `c6b604a`를 기준으로 Water Bridge 미커밋 작업이 적용된 작업 트리에서 촬영했다. 발표용 최종 Commit이 만들어지면 이 표의 Commit 번호를 갱신한다.
+캡처와 발표 문서, Water Bridge 브랜드 자산은 발표 Source Commit `8509958`에 포함되어 있다.
 
 ## 0. 표지에 넣을 정보
 
@@ -189,7 +189,7 @@ npm.cmd run dev
 
 ## 발표 전 마지막 Gate
 
-- [ ] 현재 Water Bridge 작업을 Commit·Push하고 기준 Commit을 기록한다.
+- [x] 현재 Water Bridge 작업을 Commit하고 기준 Commit을 기록한다.
 - [x] 의존성을 복구한 뒤 Test 109개·Lint·Build를 다시 실행한다.
 - [x] 같은 시연을 3회 반복한다.
 - [x] 발표 캡처 5장을 준비했다.

@@ -2,7 +2,7 @@
 
 - 서비스명: Water Bridge
 - 기준 브랜치: `yena`
-- 기준 Commit: `c6b604a` + Water Bridge 미커밋 작업 트리
+- 기준 Commit: `8509958`
 - 촬영 시각: 2026-08-04 12:29:45~12:35:23 KST
 - 촬영 화면: 합성 Mock 화면
 - 주의: 실제 Backend 저장 결과가 아니라 발표용 Mock 시연 화면입니다.
