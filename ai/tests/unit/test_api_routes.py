@@ -127,22 +127,69 @@ def test_local_mode_missing_vector_config_is_non_retryable_503(client, monkeypat
     assert error["failure_stage"] == "RETRIEVING"
 
 
-def test_local_mode_vector_failure_is_retryable_503(client, monkeypatch):
+def test_local_mode_vector_failure_retries_once_then_returns_503(client, monkeypatch, caplog):
     from ai.app.interfaces.http.routes import analysis_routes
 
     class FailingSearchService:
+        def __init__(self):
+            self.calls = 0
+
         def search(self, *args, **kwargs):
+            self.calls += 1
             raise ConnectionError("test-only vector failure")
 
+    service = FailingSearchService()
     monkeypatch.setattr(
         analysis_routes.PipelineRouter,
         "_configured_search_service",
-        staticmethod(lambda: FailingSearchService()),
+        staticmethod(lambda: service),
+    )
+    with caplog.at_level(logging.INFO, logger="watercare.ai.analysis"):
+        response = client.post("/api/v1/ai/analyze?mode=local", json={
+            "inquiry_id": INQUIRY_ID,
+            "correlation_id": "corr-vector-failed",
+            "ai_request_id": "ai-req-vector-failed",
+            "state_version": 1,
+            "raw_symptom": "냉수 온도가 평소와 다릅니다.",
+            "model_code": "WPUJAC104DWH",
+        })
+
+    assert response.status_code == 503
+    error = response.json()["error"]
+    payloads = [
+        json.loads(record.message)
+        for record in caplog.records
+        if '"correlation_id": "corr-vector-failed"' in record.message
+    ]
+    assert service.calls == 2
+    assert error["code"] == "AI-FAILED-01"
+    assert error["retryable"] is True
+    assert error["failure_stage"] == "RETRIEVING"
+    assert error["retry_count"] == 1
+    assert payloads[-1]["retry_count"] == 1
+
+
+def test_local_mode_non_transient_search_failure_is_non_retryable_503(client, monkeypatch):
+    from ai.app.interfaces.http.routes import analysis_routes
+
+    class InvalidSearchService:
+        def __init__(self):
+            self.calls = 0
+
+        def search(self, *args, **kwargs):
+            self.calls += 1
+            raise ValueError("test-only invalid provider result")
+
+    service = InvalidSearchService()
+    monkeypatch.setattr(
+        analysis_routes.PipelineRouter,
+        "_configured_search_service",
+        staticmethod(lambda: service),
     )
     response = client.post("/api/v1/ai/analyze?mode=local", json={
         "inquiry_id": INQUIRY_ID,
-        "correlation_id": "corr-vector-failed",
-        "ai_request_id": "ai-req-vector-failed",
+        "correlation_id": "corr-vector-invalid",
+        "ai_request_id": "ai-req-vector-invalid",
         "state_version": 1,
         "raw_symptom": "냉수 온도가 평소와 다릅니다.",
         "model_code": "WPUJAC104DWH",
@@ -150,9 +197,10 @@ def test_local_mode_vector_failure_is_retryable_503(client, monkeypatch):
 
     assert response.status_code == 503
     error = response.json()["error"]
-    assert error["code"] == "AI-FAILED-01"
-    assert error["retryable"] is True
+    assert service.calls == 1
+    assert error["retryable"] is False
     assert error["failure_stage"] == "RETRIEVING"
+    assert error["retry_count"] == 0
 
 
 def test_analyze_endpoint_validation_error(client):
@@ -248,7 +296,7 @@ def test_runtime_retry_and_timeout_policy_is_contract_value():
     policy = get_runtime_policy()
     assert policy.overall_timeout_seconds == 30.0
     assert policy.ai_internal_max_retry_count == 1
-    assert policy.ai_internal_retry_enabled is False
+    assert policy.ai_internal_retry_enabled is True
     assert policy.backend_retry_count == 0
 
 

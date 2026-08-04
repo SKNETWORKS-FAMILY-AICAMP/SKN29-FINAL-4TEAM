@@ -51,7 +51,14 @@ def _error_ids(request: Request, supplied: dict[str, Any] | None = None) -> dict
     return values
 
 
-def _log_failure(request: Request, ids: dict[str, Any], *, code: str, stage: AiStage) -> None:
+def _log_failure(
+    request: Request,
+    ids: dict[str, Any],
+    *,
+    code: str,
+    stage: AiStage,
+    retry_count: int = 0,
+) -> None:
     started_at = getattr(request.state, "analysis_started_at", None)
     latency_ms = round((time.perf_counter() - started_at) * 1000, 2) if started_at else 0.0
     log_analysis_event(
@@ -62,7 +69,7 @@ def _log_failure(request: Request, ids: dict[str, Any], *, code: str, stage: AiS
         state_version=ids.get("state_version"),
         stage=stage.value,
         status="FAILED",
-        retry_count=0,
+        retry_count=retry_count,
         latency_ms=latency_ms,
         error_code=code,
     )
@@ -99,7 +106,13 @@ def register_error_handlers(app: FastAPI) -> None:
                 "state_version": exc.state_version,
             }.items() if value is not None
         })
-        _log_failure(request, ids, code=exc.code, stage=exc.failure_stage)
+        _log_failure(
+            request,
+            ids,
+            code=exc.code,
+            stage=exc.failure_stage,
+            retry_count=exc.retry_count,
+        )
         detail = ApiErrorDetail(
             code=exc.code,
             message=exc.message,

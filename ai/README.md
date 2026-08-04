@@ -1,4 +1,4 @@
-# WaterCare AI/RAG
+# WaterBridge AI/RAG
 
 ## 재현 가능한 실행 환경
 
@@ -52,8 +52,13 @@ Runtime은 `ai/configs/retry_policy.yaml`을 시작 시 검증한다.
 
 - 전체 HTTP Timeout: 30초
 - AI 내부 재시도 상한: 1회
-- 현재 Retry Loop: 비활성화, 실제 재시도 0회
+- 현재 Retry Loop: 검색 Provider의 일시적 연결·Timeout 오류에 한해 활성화
+- 재시도 Backoff: 0.5초, 검색 Stage 5초와 전체 30초 예산 안에서만 실행
 - Backend 자동 재시도: 0회
+
+설정 누락, 잘못된 Provider 결과, Schema·정책 오류와 위험 규칙 분기는
+재시도하지 않는다. 첫 검색 실패 후 두 번째 시도를 실제 시작한 경우에만
+성공·오류 응답과 구조화 로그의 `retry_count`를 `1`로 기록한다.
 
 Timeout은 `AI-TIMEOUT-01`/HTTP 504로 반환한다. 취소 신호를 작업 Thread의
 파이프라인 단계 경계에 전달하고, pgvector 연결·SQL에는 별도 하위 Timeout을
@@ -88,7 +93,9 @@ Exact Search(`<=>`)를 사용한다. `WPUJAC104DWH`·D세대·공식 검증·고
 | 정상 검색·근거 있음 | `200`, `SUCCEEDED` | 불필요 |
 | 정상 검색·근거 0건 | `200`, `FALLBACK`, `RETRIEVING` | 불필요, 상담 전환 |
 | Vector Store 필수 설정 누락 | `503`, `AI-FAILED-01`, `RETRIEVING` | `false` |
-| 설정된 검색 Provider 실행 실패 | `503`, `AI-FAILED-01`, `RETRIEVING` | `true` |
+| 설정된 검색 Provider 일시 오류 후 복구 | `200`, 결과 상태 유지, `retry_count=1` | 내부 1회 완료 |
+| 설정된 검색 Provider 일시 오류 2회 | `503`, `AI-FAILED-01`, `RETRIEVING`, `retry_count=1` | 내부 1회 소진, `true` |
+| 비일시적 검색 결과·검증 오류 | `503`, `AI-FAILED-01`, `RETRIEVING`, `retry_count=0` | 내부 재시도 없음 |
 | 검색·Pipeline Timeout | `504`, `AI-TIMEOUT-01`, 실제 실패 Stage | `true` |
 
 위험 입력은 안전 규칙이 검색보다 우선하므로 Vector Store가 없더라도 검색을

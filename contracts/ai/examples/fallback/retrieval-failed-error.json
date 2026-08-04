@@ -21,7 +21,7 @@
       "details": null,
       "retryable": true,
       "failure_stage": "RETRIEVING",
-      "retry_count": 0
+      "retry_count": 1
     }
   }
 }

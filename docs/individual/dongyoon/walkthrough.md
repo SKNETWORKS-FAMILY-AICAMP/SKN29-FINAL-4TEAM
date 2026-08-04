@@ -452,3 +452,23 @@ Public UUID 분석 요청이 모두 성공했다.
   전까지 미완료다.
 - Python `3.13.13`에서 집중 테스트 `63 passed, 3 warnings`, 전체 AI 단위
   테스트 `91 passed, 3 warnings`, `pip check`와 Python Compile을 통과했다.
+
+### 2026-08-04 AI 내부 최대 1회 재시도 Runtime 연결
+
+- `ai/app/common/retry/`에 설정 기반 재시도 정책을 추가하고 검색 Provider의
+  `ConnectionError`, `TimeoutError`, PostgreSQL `OperationalError`·
+  `InterfaceError` 계열만 최대 1회 재시도하도록 제한했다.
+- Backoff는 0.5초이며 검색 Stage 5초와 전체 HTTP 30초 Timeout 안에서만
+  동작한다. Backoff 중 취소 또는 Deadline이 발생하면 두 번째 시도를 시작하지
+  않고 `retry_count=0`을 유지한다.
+- 설정 누락·Schema·정책·비일시적 결과 오류는 재시도하지 않고, 위험 입력은
+  기존처럼 검색을 건너뛰어 안전 안내를 우선한다.
+- 재시도 후 성공한 응답과 재시도 소진 오류, 구조화 로그에 실제
+  `retry_count=1`을 기록한다. 비일시적 검색 오류는 `retryable=false`,
+  `retry_count=0`으로 반환한다.
+- 재시도 성공·소진·비대상 오류·정책 로더·API 응답 및 로그 Test를 추가했다.
+  Python `3.13.13` 집중 검증은 `37 passed, 1 warning`, 전체 AI 단위 회귀는
+  `95 passed, 3 warnings`이며 `pip check`, JSON 파싱, Python Compile과
+  `git diff --check`를 통과했다.
+- 공식 기준선과 중간발표 기술자료의 단위 테스트 수치를 `95 passed,
+  3 warnings`로 동기화했으며 팀 DB·Backend E2E 전 제한은 유지했다.
