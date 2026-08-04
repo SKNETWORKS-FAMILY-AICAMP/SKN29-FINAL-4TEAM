@@ -9,6 +9,7 @@ import com.skn29.watercare.core.model.GuidanceData
 import com.skn29.watercare.core.model.InquiryResponse
 import com.skn29.watercare.core.model.IntakeSubmission
 import com.skn29.watercare.core.model.MockScenario
+import com.skn29.watercare.core.model.SubmitSymptomResponse
 import com.skn29.watercare.core.model.SymptomIntakeRequest
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -18,8 +19,8 @@ import org.junit.Test
 
 class RemoteIntakeCustomerCareRepositoryTest {
     @Test
-    fun retryWithSamePayload_reusesIdempotencyKey_andSuccessKeepsBackendState() = runBlocking {
-        val inquiryRepository = RecordingInquiryRepository()
+    fun createRetry_reusesCreateKey_thenSuccessfulFlowStartsNewOperation() = runBlocking {
+        val inquiryRepository = RecordingInquiryRepository(failCreateCount = 1)
         val repository = RemoteIntakeCustomerCareRepository(
             inquiryRepository = inquiryRepository,
             fallbackRepository = EmptyFallbackRepository(),
@@ -34,18 +35,40 @@ class RemoteIntakeCustomerCareRepositoryTest {
         assertTrue(second is ApiResult.Success<*>)
         assertTrue(third is ApiResult.Success<*>)
 
-        assertEquals(inquiryRepository.keys[0], inquiryRepository.keys[1])
-        assertNotEquals(inquiryRepository.keys[1], inquiryRepository.keys[2])
+        assertEquals(inquiryRepository.createKeys[0], inquiryRepository.createKeys[1])
+        assertNotEquals(inquiryRepository.createKeys[1], inquiryRepository.createKeys[2])
+        assertNotEquals(inquiryRepository.submitKeys[0], inquiryRepository.submitKeys[1])
 
         val success = second as ApiResult.Success<IntakeSubmission>
         assertEquals("INQ-REMOTE-001", success.value.inquiryCode)
         assertEquals("QUESTIONNAIRE_IN_PROGRESS", success.value.statusCode)
-        assertEquals(3, success.value.stateVersion)
-        assertEquals("REQUEST_CONSULTATION", success.value.allowedActions.single().code)
+        assertEquals(2, success.value.stateVersion)
+        assertEquals("SUBMIT_ANSWERS", success.value.allowedActions.first().code)
+        assertEquals(false, success.value.idempotentReplay)
 
-        assertEquals("MOBILE", inquiryRepository.requests[0].channelCode)
-        assertTrue(inquiryRepository.requests[0].rawText.contains("발생 조건:"))
-        assertTrue(inquiryRepository.requests[0].rawText.contains("제품 표시 문구·오류 코드:"))
+        assertEquals("MOBILE", inquiryRepository.createRequests[0].channelCode)
+        assertTrue(inquiryRepository.createRequests[0].rawText.contains("발생 조건:"))
+        assertTrue(inquiryRepository.createRequests[0].rawText.contains("제품 표시 문구·오류 코드:"))
+    }
+
+    @Test
+    fun submitRetry_doesNotCreateSecondInquiry_andReusesSubmitKey() = runBlocking {
+        val inquiryRepository = RecordingInquiryRepository(failSubmitCount = 1)
+        val repository = RemoteIntakeCustomerCareRepository(
+            inquiryRepository = inquiryRepository,
+            fallbackRepository = EmptyFallbackRepository(),
+        )
+        val request = sampleRequest()
+
+        val first = repository.submitIntake(request)
+        val second = repository.submitIntake(request)
+
+        assertTrue(first is ApiResult.Failure)
+        assertTrue(second is ApiResult.Success<*>)
+        assertEquals(1, inquiryRepository.createCalls)
+        assertEquals(2, inquiryRepository.submitCalls)
+        assertEquals(inquiryRepository.submitKeys[0], inquiryRepository.submitKeys[1])
+        assertEquals(listOf(1, 1), inquiryRepository.submittedStateVersions)
     }
 
     private fun sampleRequest() = SymptomIntakeRequest(
@@ -58,23 +81,31 @@ class RemoteIntakeCustomerCareRepositoryTest {
         idempotencyKey = "legacy-ui-key",
     )
 
-    private class RecordingInquiryRepository : InquiryRepository {
-        val keys = mutableListOf<String>()
-        val requests = mutableListOf<CreateInquiryRequest>()
-        private var calls = 0
+    private class RecordingInquiryRepository(
+        private val failCreateCount: Int = 0,
+        private val failSubmitCount: Int = 0,
+    ) : InquiryRepository {
+        val createKeys = mutableListOf<String>()
+        val submitKeys = mutableListOf<String>()
+        val createRequests = mutableListOf<CreateInquiryRequest>()
+        val submittedStateVersions = mutableListOf<Int>()
+        var createCalls = 0
+            private set
+        var submitCalls = 0
+            private set
 
         override suspend fun create(
             request: CreateInquiryRequest,
             idempotencyKey: String,
         ): ApiResult<InquiryResponse> {
-            keys += idempotencyKey
-            requests += request
-            calls += 1
+            createCalls += 1
+            createKeys += idempotencyKey
+            createRequests += request
 
-            if (calls == 1) {
+            if (createCalls <= failCreateCount) {
                 return ApiResult.Failure(
                     code = "NETWORK_ERROR",
-                    message = "재시도 가능한 테스트 오류",
+                    message = "문의 생성 재시도 테스트 오류",
                     retryable = true,
                 )
             }
@@ -83,18 +114,38 @@ class RemoteIntakeCustomerCareRepositoryTest {
                 InquiryResponse(
                     inquiryId = "00000000-0000-4000-8000-000000000301",
                     inquiryCode = "INQ-REMOTE-001",
-                    statusCode = "QUESTIONNAIRE_IN_PROGRESS",
-                    stateVersion = 3,
-                    idempotentReplay = calls > 2,
-                    allowedActions = listOf(
-                        AllowedAction(
-                            code = "REQUEST_CONSULTATION",
-                            label = "상담 요청",
-                            operationId = "request-consultation",
-                            style = "PRIMARY",
-                            requiresConfirmation = false,
-                        )
-                    ),
+                    statusCode = "DRAFT",
+                    stateVersion = 1,
+                    idempotentReplay = createCalls > 1,
+                    allowedActions = listOf(cancelAction()),
+                )
+            )
+        }
+
+        override suspend fun submit(
+            inquiryId: String,
+            stateVersion: Int,
+            idempotencyKey: String,
+        ): ApiResult<SubmitSymptomResponse> {
+            submitCalls += 1
+            submitKeys += idempotencyKey
+            submittedStateVersions += stateVersion
+
+            if (submitCalls <= failSubmitCount) {
+                return ApiResult.Failure(
+                    code = "NETWORK_ERROR",
+                    message = "증상 제출 재시도 테스트 오류",
+                    retryable = true,
+                )
+            }
+
+            return ApiResult.Success(
+                SubmitSymptomResponse(
+                    inquiryId = inquiryId,
+                    state = "QUESTIONNAIRE_IN_PROGRESS",
+                    stateVersion = 2,
+                    idempotentReplay = submitCalls > 1,
+                    allowedActions = listOf(submitAnswersAction(), cancelAction()),
                 )
             )
         }
@@ -106,6 +157,23 @@ class RemoteIntakeCustomerCareRepositoryTest {
             reasonDetail: String?,
         ): ApiResult<CancelInquiryResponse> =
             error("이 테스트에서는 사용하지 않습니다.")
+
+        private fun submitAnswersAction() = AllowedAction(
+            code = "SUBMIT_ANSWERS",
+            label = "추가 답변 제출",
+            operationId = "submitFollowUpAnswers",
+            style = "PRIMARY",
+            requiresConfirmation = false,
+        )
+
+        private fun cancelAction() = AllowedAction(
+            code = "CANCEL_INQUIRY",
+            label = "문의 취소",
+            operationId = "cancelInquiry",
+            style = "DESTRUCTIVE",
+            requiresConfirmation = true,
+            confirmationMessage = "문의를 취소하시겠습니까?",
+        )
     }
 
     private class EmptyFallbackRepository : CustomerCareRepository {

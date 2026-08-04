@@ -8,7 +8,7 @@ WaterCare Android 프로젝트는 `core`, `customer-app`, `technician-app` 3개 
 - `customer-app`: CUST-01 고객 홈 → CUST-02 증상 입력 → CUST-04 AI 안전 안내 흐름을 담당한다.
 - `technician-app`: 실제 기사 데모 인증과 아직 라우팅되지 않은 API의 명시적인 준비 중 화면을 담당한다.
 
-Fake 구현체는 의도적으로 `FakeCustomerCareRepository`라는 이름을 사용한다. 이 구현체는 문진 및 AI 안내 API가 준비되었을 때 교체하는 지점이며 실제 개인정보를 포함하지 않는다.
+Fake 구현체는 의도적으로 `FakeCustomerCareRepository`라는 이름을 사용한다. 이 구현체는 제품·구독 조회 및 AI 안내 API가 준비되었을 때 교체하는 지점이며 실제 개인정보를 포함하지 않는다.
 
 ## 구현된 3주차 고객 흐름
 
@@ -25,13 +25,7 @@ Fake 구현체는 의도적으로 `FakeCustomerCareRepository`라는 이름을 �
 
 ## 백엔드 준비
 
-저장소 루트에서 다음 명령을 실행한다.
-
-```cmd
-START_WEEK3_BACKEND.cmd
-```
-
-이 명령은 Docker를 확인하고 PostgreSQL을 실행한 뒤 마이그레이션, `seed_week3_demo`, Django 서버 실행을 순서대로 처리한다. Django 서버는 `127.0.0.1:8000`에서 실행된다. `.env` 파일은 소스 압축 파일과 Git에 포함하지 않는다.
+현재 저장소에는 `START_WEEK3_BACKEND.cmd`가 없으므로 존재하지 않는 Script를 실행 방법으로 안내하지 않는다.
 
 수동 실행 방법:
 
@@ -44,6 +38,8 @@ cd backend
 .\.venv\Scripts\python.exe manage.py seed_week3_demo
 .\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
 ```
+
+Django 서버는 `127.0.0.1:8000`에서 실행한다. `.env` 파일은 소스 압축 파일과 Git에 포함하지 않는다.
 
 ## 기기 네트워크 설정
 
@@ -99,18 +95,27 @@ APK 생성 경로:
 - `POST /api/v1/auth/logout`
 - `GET /api/v1/me`
 - `POST /api/v1/inquiries`
+- `POST /api/v1/inquiries/{inquiry_id}/submit`
 - `POST /api/v1/inquiries/{inquiry_id}/cancel`
 
-문진, AI 안내, 제품·구독 조회, 상담, 방문 관련 경로는 현재 `backend/config/api_urls.py`에 포함되어 있지 않다. 따라서 존재하지 않는 운영 Endpoint를 임의로 만들지 않고 Fake 구현 또는 `API 준비 중` 화면으로 유지한다.
+제품·구독 조회, AI 안내·공식 근거 조회, 상담, 방문 관련 경로는 현재 모바일에서 사용할 수 있는 확정 Runtime Endpoint가 없다. 존재하지 않는 운영 Endpoint를 임의로 만들지 않고 Fake 구현 또는 `API 준비 중` 화면으로 유지한다.
 
 ## 4주차 부분 Remote 연결 상태
 
-4주차 1차 연동에서는 현재 Runtime에 공개된 `POST /api/v1/inquiries`만 고객 문진 제출 기본 경로에 연결한다.
+4주차 연동에서는 CUST-02 기본 제출 흐름을 다음 두 Runtime Endpoint에 연결한다.
 
-- 고객 문진 제출: Remote
+1. `POST /api/v1/inquiries`로 문의를 `DRAFT` 상태로 생성한다.
+2. 생성 응답의 `inquiry_id`, `state_version`을 사용해 `POST /api/v1/inquiries/{inquiry_id}/submit`을 호출한다.
+3. 증상 제출 성공 후 `QUESTIONNAIRE_IN_PROGRESS`, 새 `state_version`, `allowed_actions`를 보관한다.
+
+- 고객 문의 생성·증상 제출: Remote
 - 인증·Health: Remote
 - 고객 홈 제품·구독 조회: 명시적 Mock — Runtime Endpoint 대기
 - AI 안내·공식 근거 조회: 명시적 Mock — Runtime Endpoint 대기
 - 상담 요청: `API 준비 중` 안내 — 빈 Callback 및 가짜 성공 처리 금지
 
-Remote 요청 실패를 Mock 성공 결과로 자동 대체하지 않는다. 제품·구독 및 AI 안내 Endpoint가 실제 Runtime에 공개되면 각각 별도 Repository로 전환한다.
+문의 생성 성공 후 증상 제출이 실패하면 동일 문의와 동일 제출용 Idempotency Key로 재시도한다. Remote 요청 실패를 Mock 성공 결과로 자동 대체하지 않는다.
+
+현재 고객 홈의 구독 ID는 명시적 Mock이므로 실제 Runtime 검증에서는 Demo 고객의 활성 구독 UUID를 일시 적용하고 검증 직후 복구했다. 운영용 활성 구독 ID 공급 경로는 Backend 계약 확정 전까지 `REVIEW_REQUEST / IMPLEMENTATION_HOLD`로 유지한다.
+
+상세 검증 결과는 `docs/week4-mobile-verification.md`에서 확인한다.

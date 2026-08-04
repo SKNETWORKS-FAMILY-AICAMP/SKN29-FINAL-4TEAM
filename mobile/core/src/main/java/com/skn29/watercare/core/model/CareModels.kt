@@ -91,6 +91,7 @@ data class IntakeSubmission(
     @SerialName("status_code") val statusCode: String? = null,
     @SerialName("state_version") val stateVersion: Int? = null,
     @SerialName("allowed_actions") val allowedActions: List<AllowedAction> = emptyList(),
+    @SerialName("idempotent_replay") val idempotentReplay: Boolean? = null,
 )
 
 @Serializable

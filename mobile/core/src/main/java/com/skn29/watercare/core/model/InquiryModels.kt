@@ -33,6 +33,19 @@ data class InquiryResponse(
 )
 
 @Serializable
+data class SubmitSymptomRequest(
+    @SerialName("state_version") val stateVersion: Int,
+)
+
+@Serializable
+data class SubmitSymptomResponse(
+    @SerialName("inquiry_id") val inquiryId: String,
+    val state: String,
+    @SerialName("state_version") val stateVersion: Int,
+    @SerialName("idempotent_replay") val idempotentReplay: Boolean,
+    @SerialName("allowed_actions") val allowedActions: List<AllowedAction> = emptyList(),
+)
+@Serializable
 data class CancelInquiryRequest(
     @SerialName("state_version") val stateVersion: Int,
     @SerialName("reason_code") val reasonCode: String,
