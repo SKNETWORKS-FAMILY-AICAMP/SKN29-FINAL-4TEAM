@@ -1,5 +1,30 @@
 title: WorkflowSnapshot
 type: object
 description: 현재 업무 상태 스냅샷
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required: [status, state_version, allowed_actions]
+properties:
+  status:
+    type: string
+    enum:
+      - DRAFT
+      - QUESTIONNAIRE_IN_PROGRESS
+      - AI_GUIDANCE
+      - CONSULTATION_REQUIRED
+      - CONSULTATION_IN_PROGRESS
+      - VISIT_REVIEW_PENDING
+      - VISIT_SCHEDULING
+      - VISIT_SCHEDULED
+      - COMPLETION_PENDING
+      - REVISIT_REQUIRED
+      - REOPENED
+      - RESOLVED
+      - CANCELLED
+  state_version:
+    type: integer
+    minimum: 1
+  allowed_actions:
+    type: array
+    items:
+      $ref: ./AllowedAction.yaml

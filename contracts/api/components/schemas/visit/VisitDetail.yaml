@@ -1,27 +1,23 @@
 title: VisitDetail
 type: object
-description: T-005 OWNER 기준 방문 상세
+description: P0 date-only 방문 상세와 합성 기사 Projection
+x-contract-status: CONFIRMED
 additionalProperties: false
 required:
   - visit_id
   - inquiry_id
   - schedule
+  - technician
 properties:
   visit_id:
     type: string
-    maxLength: 48
+    format: uuid
   inquiry_id:
     type: string
-    maxLength: 48
+    format: uuid
   schedule:
     $ref: ./VisitSchedule.yaml
-  scheduled_start_at:
-    type:
-      - string
-      - "null"
-    description: 후속 시간창 확장 필드
-  scheduled_end_at:
-    type:
-      - string
-      - "null"
-    description: 후속 시간창 확장 필드
+  technician:
+    oneOf:
+      - $ref: ./SyntheticTechnicianProjection.yaml
+      - type: "null"

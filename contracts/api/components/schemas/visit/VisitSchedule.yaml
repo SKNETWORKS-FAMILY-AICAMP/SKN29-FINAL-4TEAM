@@ -1,6 +1,7 @@
 title: VisitSchedule
 type: object
 description: T-005 OWNER 기준 방문 일정
+x-contract-status: CONFIRMED
 additionalProperties: false
 required:
   - preferred_date
@@ -29,7 +30,5 @@ properties:
       - FOLLOW_UP_REQUIRED
       - CANCELLED
   synthetic_technician_id:
-    type:
-      - string
-      - "null"
-    maxLength: 48
+    type: [string, "null"]
+    format: uuid

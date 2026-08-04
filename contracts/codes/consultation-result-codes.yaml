@@ -1,0 +1,24 @@
+# G2 상담 결과 Code. 의미 확정은 PM의 검증 Commit 병합 승인으로 완료한다.
+version: 1.0.0
+status: G2_PROPOSED_PM_MERGE_APPROVAL
+owner: BACKEND_DB
+guard_bindings:
+  configured_consultation_result_codes: codes
+  configured_consultation_completion_result_codes: completion_result_codes
+codes:
+  - PENDING
+  - COMPLETED_NO_VISIT
+  - VISIT_REQUIRED
+  - REOPENED_FOLLOWUP
+draft_codes:
+  - PENDING
+completion_result_codes:
+  - COMPLETED_NO_VISIT
+  - REOPENED_FOLLOWUP
+visit_transition_codes:
+  - VISIT_REQUIRED
+descriptions:
+  PENDING: 상담 결과를 아직 확정하지 않은 명시 저장 상태
+  COMPLETED_NO_VISIT: 상담만으로 처리하여 방문 없이 완료 확인 단계로 이동할 수 있는 결과
+  VISIT_REQUIRED: 방문 필요 여부 검토와 방문 인계 흐름으로 이동할 결과
+  REOPENED_FOLLOWUP: 재개된 문의의 후속 상담 처리를 완료한 결과

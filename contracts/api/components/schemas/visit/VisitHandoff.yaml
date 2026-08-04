@@ -1,0 +1,41 @@
+title: VisitHandoff
+type: object
+description: 기사 인계용 최소 합성 정보. DEC-008 Evidence와 내부 AI 필드는 제외한다.
+x-contract-status: G2_PROPOSED_PM_MERGE_APPROVAL
+additionalProperties: false
+required:
+  - product_summary
+  - symptom_summary
+  - action_summary
+  - risk_summary
+  - priority_check_items
+  - consultant_final
+properties:
+  product_summary:
+    type: string
+    minLength: 1
+    maxLength: 2000
+  symptom_summary:
+    type: string
+    minLength: 1
+    maxLength: 4000
+  action_summary:
+    type: string
+    minLength: 1
+    maxLength: 4000
+  risk_summary:
+    type: string
+    minLength: 1
+    maxLength: 2000
+  priority_check_items:
+    type: array
+    minItems: 1
+    maxItems: 50
+    items:
+      type: string
+      minLength: 1
+      maxLength: 500
+  consultant_final:
+    type: string
+    minLength: 1
+    maxLength: 4000
