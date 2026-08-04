@@ -12,10 +12,12 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.model.ActiveInquirySummary
 import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.CustomerHomeData
 import com.skn29.watercare.core.model.GuidanceDisplayModel
+import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.ProductSummary
 import com.skn29.watercare.core.model.RiskLevel
@@ -108,6 +110,7 @@ class CustomerMinimumFlowTest {
                         },
                         onRetry = {},
                         onLogout = {},
+                        showDeveloperTools = true,
                     )
                 }
             }
@@ -217,6 +220,9 @@ class CustomerMinimumFlowTest {
         ),
         backendAvailable = false,
         offlinePreview = true,
+        customerCareMode = CustomerCareMode.FAKE,
+        dataSourceLabel = "Demo Mock 모드 · 홈·문의·안내 합성 데이터",
+        intakeAvailable = true,
     )
 
     private fun dangerGuidance() = GuidanceDisplayModel(

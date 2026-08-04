@@ -1,6 +1,8 @@
 package com.skn29.watercare.core
 
 import android.content.Context
+import com.skn29.watercare.core.config.CustomerCareMode
+import com.skn29.watercare.core.config.CustomerCareRuntimeConfig
 import com.skn29.watercare.core.network.NetworkFactory
 import com.skn29.watercare.core.repository.AuthRepository
 import com.skn29.watercare.core.repository.BackendStatusRepository
@@ -21,19 +23,37 @@ object WaterCareCore {
         private set
     lateinit var customerCareRepository: CustomerCareRepository
         private set
+    lateinit var customerCareRuntimeConfig: CustomerCareRuntimeConfig
+        private set
 
-    fun initialize(context: Context, baseUrl: String, debug: Boolean) {
+    fun initialize(
+        context: Context,
+        baseUrl: String,
+        debug: Boolean,
+        customerCareMode: String = CustomerCareMode.REMOTE.name,
+        demoSubscriptionId: String = "",
+    ) {
         if (::authRepository.isInitialized) return
+
+        customerCareRuntimeConfig = CustomerCareRuntimeConfig.from(
+            rawMode = customerCareMode,
+            rawDemoSubscriptionId = demoSubscriptionId,
+        )
 
         val network = NetworkFactory(context.applicationContext, baseUrl, debug)
         authRepository = RemoteAuthRepository(network.api, network.tokenStore, network.json)
         inquiryRepository = RemoteInquiryRepository(network.api, network.json)
         backendStatusRepository = RemoteBackendStatusRepository(network.api)
 
-        val fixtureRepository = FakeCustomerCareRepository()
-        customerCareRepository = RemoteIntakeCustomerCareRepository(
-            inquiryRepository = inquiryRepository,
-            fallbackRepository = fixtureRepository,
+        val fixtureRepository = FakeCustomerCareRepository(
+            fixtureSubscriptionId = customerCareRuntimeConfig.fixtureSubscriptionId,
         )
+        customerCareRepository = when (customerCareRuntimeConfig.mode) {
+            CustomerCareMode.REMOTE -> RemoteIntakeCustomerCareRepository(
+                inquiryRepository = inquiryRepository,
+                fallbackRepository = fixtureRepository,
+            )
+            CustomerCareMode.FAKE -> fixtureRepository
+        }
     }
 }

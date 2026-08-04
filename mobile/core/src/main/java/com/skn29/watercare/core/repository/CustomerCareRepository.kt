@@ -1,5 +1,6 @@
 package com.skn29.watercare.core.repository
 
+import com.skn29.watercare.core.config.CustomerCareRuntimeConfig
 import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.InquiryActionLabels
@@ -24,12 +25,15 @@ interface CustomerCareRepository {
  * Contract-aligned deterministic fixture used until questionnaire/guidance endpoints are routed.
  * It never contains real customer data and is intentionally named Fake.
  */
-class FakeCustomerCareRepository : CustomerCareRepository {
+class FakeCustomerCareRepository(
+    private val fixtureSubscriptionId: String =
+        CustomerCareRuntimeConfig.DEFAULT_FIXTURE_SUBSCRIPTION_ID,
+) : CustomerCareRepository {
     override suspend fun getHome(): ApiResult<CustomerHomeData> {
         delay(180)
         return ApiResult.Success(
             CustomerHomeData(
-                subscriptionId = "00000000-0000-4000-8000-000000000101",
+                subscriptionId = fixtureSubscriptionId,
                 product = ProductSummary(
                     productId = "00000000-0000-4000-8000-000000000201",
                     modelCode = "WPUJAC104DWH",
