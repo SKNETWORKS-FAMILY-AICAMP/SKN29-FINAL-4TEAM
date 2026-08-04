@@ -1,39 +1,39 @@
-# WaterCare Android — Week 3 complete mobile baseline
+# WaterCare Android — 3주차 모바일 구현 기준선
 
-Kotlin, Jetpack Compose, Material 3, Navigation Compose, ViewModel, StateFlow, Kotlinx Serialization, Retrofit and OkHttp are used across three modules.
+WaterCare Android 프로젝트는 `core`, `customer-app`, `technician-app` 3개 모듈로 구성되며 Kotlin, Jetpack Compose, Material 3, Navigation Compose, ViewModel, StateFlow, Kotlinx Serialization, Retrofit, OkHttp를 사용한다.
 
-## Modules
+## 모듈 구성
 
-- `core`: actual Backend auth/health/inquiry networking, token refresh, common models, error mapping, fake customer-care fixture, theme and shared base UI.
-- `customer-app`: CUST-01 customer home → CUST-02 symptom intake → CUST-04 AI safety guidance.
-- `technician-app`: actual technician Demo authentication and explicit placeholders for APIs not routed yet.
+- `core`: 실제 백엔드 인증·상태 확인·문의 네트워크, 토큰 재발급, 공통 모델, 오류 매핑, 고객 케어 Fake 데이터, 테마 및 공통 기본 UI를 담당한다.
+- `customer-app`: CUST-01 고객 홈 → CUST-02 증상 입력 → CUST-04 AI 안전 안내 흐름을 담당한다.
+- `technician-app`: 실제 기사 데모 인증과 아직 라우팅되지 않은 API의 명시적인 준비 중 화면을 담당한다.
 
-The fake implementation is deliberately named `FakeCustomerCareRepository`. It is the replacement point for questionnaire and guidance APIs and never contains real personal information.
+Fake 구현체는 의도적으로 `FakeCustomerCareRepository`라는 이름을 사용한다. 이 구현체는 문진 및 AI 안내 API가 준비되었을 때 교체하는 지점이며 실제 개인정보를 포함하지 않는다.
 
-## Implemented Week 3 customer flow
+## 구현된 3주차 고객 흐름
 
-1. Actual `GET /health` status check.
-2. Actual `POST /api/v1/auth/demo-login` with `DEMO-CUSTOMER-001`.
-3. CUST-01 product card for synthetic `WPUJAC104DWH` / `WPU-JAC104D`, management type, questionnaire state and active inquiry.
-4. CUST-02 multiple symptom selection, raw text, occurrence condition, display/error text, entry mode, validation, duplicate-submit blocking and input retention after failure.
-5. 409 conflict snapshots preserve the CUST-02 draft and display latest status, `state_version` and `allowed_actions`.
-6. `+09:00` API timestamps are formatted without duplicate timezone conversion.
-7. CUST-04 ordered safety display: current action → risk/usage restriction → safe actions → escalation → evidence → symptom summary → prohibited actions.
-8. Normal, caution, danger, no-evidence, AI-failure and network-failure deterministic scenarios.
-9. Danger/no-evidence/consultation-required states suppress resolved and close actions.
-10. Evidence UI includes only document name, version, page, structured summary, verification status, classification and Backend-provided official URL. It has no `chunk_id`, source path, retrieval text or full source text fields.
+1. 실제 `GET /health` 상태 확인
+2. `DEMO-CUSTOMER-001` 계정을 사용한 실제 `POST /api/v1/auth/demo-login`
+3. CUST-01 테스트 제품 `WPUJAC104DWH` / `WPU-JAC104D`, 관리 유형, 문진 상태, 진행 중 문의 표시
+4. CUST-02 복수 증상 선택, 고객 원문, 발생 조건, 화면·오류 문구, 진입 유형, 필수값 검증, 중복 제출 차단, 실패 후 입력값 유지
+5. 409 상태 충돌이 발생해도 CUST-02 작성 내용을 유지하고 최신 상태, `state_version`, `allowed_actions`를 표시
+6. `+09:00` API 시간을 중복 변환하지 않고 표시
+7. CUST-04 안전 안내 표시 순서: 현재 행동 → 위험도·사용 제한 → 안전 행동 → 상담 전환 조건 → 근거 → 증상 요약 → 금지 행동
+8. 정상, 주의, 위험, 근거 없음, AI 실패, 네트워크 실패 시나리오 제공
+9. 위험·근거 없음·상담 필요 상태에서는 해결 완료 및 문의 종료 기능을 표시하지 않음
+10. 근거 UI에는 문서명, 버전, 페이지, 구조화 요약, 검증 상태, 분류, 백엔드가 제공한 공식 URL만 표시한다. `chunk_id`, 원본 경로, 검색 원문, 전체 문서 원문은 표시하지 않는다.
 
-## Backend preparation
+## 백엔드 준비
 
-From the repository root:
+저장소 루트에서 다음 명령을 실행한다.
 
 ```cmd
 START_WEEK3_BACKEND.cmd
 ```
 
-The command checks Docker, starts PostgreSQL, applies migrations, runs `seed_week3_demo`, and starts Django at `127.0.0.1:8000`. The `.env` file is never included in source archives.
+이 명령은 Docker를 확인하고 PostgreSQL을 실행한 뒤 마이그레이션, `seed_week3_demo`, Django 서버 실행을 순서대로 처리한다. Django 서버는 `127.0.0.1:8000`에서 실행된다. `.env` 파일은 소스 압축 파일과 Git에 포함하지 않는다.
 
-Manual equivalent:
+수동 실행 방법:
 
 ```cmd
 cd /d C:\skn29\WaterCare
@@ -45,11 +45,11 @@ cd backend
 .\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --noreload
 ```
 
-## Device network configuration
+## 기기 네트워크 설정
 
-Copy `local.properties.example` to `local.properties` and keep it untracked.
+`local.properties.example`을 `local.properties`로 복사하고 Git 추적 대상에서 제외한다.
 
-Physical Android device:
+실제 Android 기기:
 
 ```properties
 BACKEND_BASE_URL=http://127.0.0.1:8000/
@@ -60,13 +60,13 @@ BACKEND_BASE_URL=http://127.0.0.1:8000/
 "C:\Users\Playdata\AppData\Local\Android\Sdk\platform-tools\adb.exe" reverse --list
 ```
 
-Android emulator:
+Android 에뮬레이터:
 
 ```properties
 BACKEND_BASE_URL=http://10.0.2.2:8000/
 ```
 
-## Build and tests
+## 빌드 및 테스트
 
 ```cmd
 cd /d C:\skn29\WaterCare\mobile
@@ -78,20 +78,20 @@ gradlew.bat :customer-app:assembleDebug
 gradlew.bat :technician-app:assembleDebug
 ```
 
-Connected-device Compose tests:
+실제 기기 Compose 테스트:
 
 ```cmd
 gradlew.bat :customer-app:connectedDebugAndroidTest
 ```
 
-APK paths:
+APK 생성 경로:
 
 - `customer-app\build\outputs\apk\debug\customer-app-debug.apk`
 - `technician-app\build\outputs\apk\debug\technician-app-debug.apk`
 
-## Actual and fake boundary
+## 실제 연동과 Fake 구현 경계
 
-Actual Backend routes used by mobile:
+모바일에서 사용하는 실제 백엔드 경로:
 
 - `GET /health`
 - `POST /api/v1/auth/demo-login`
@@ -101,4 +101,4 @@ Actual Backend routes used by mobile:
 - `POST /api/v1/inquiries`
 - `POST /api/v1/inquiries/{inquiry_id}/cancel`
 
-Questionnaire, guidance, product/subscription lookup, consultation and visit routes are not currently included in `backend/config/api_urls.py`. They remain Fake or explicit “API 준비 중” functions rather than invented production endpoints.
+문진, AI 안내, 제품·구독 조회, 상담, 방문 관련 경로는 현재 `backend/config/api_urls.py`에 포함되어 있지 않다. 따라서 존재하지 않는 운영 Endpoint를 임의로 만들지 않고 Fake 구현 또는 `API 준비 중` 화면으로 유지한다.

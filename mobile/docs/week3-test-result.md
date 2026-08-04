@@ -1,12 +1,12 @@
 # 3주차 모바일 테스트 결과
 
-## 1. 검증 명령
+## 검증 명령
 
 ```cmd
 gradlew.bat :customer-app:clean :technician-app:clean :customer-app:testDebugUnitTest :customer-app:connectedDebugAndroidTest :customer-app:assembleDebug :technician-app:assembleDebug
 ```
 
-## 2. 테스트 및 빌드 결과
+## 테스트 및 빌드 결과
 
 - 고객 앱 단위 테스트: 통과
 - 고객 앱 Compose UI 연결 테스트: 통과
@@ -14,12 +14,12 @@ gradlew.bat :customer-app:clean :technician-app:clean :customer-app:testDebugUni
 - 기사 앱 Debug APK 빌드: 통과
 - 백엔드 및 API 계약 보호 경로 변경 포함 여부: 없음
 
-## 3. 테스트 기기
+## 테스트 기기
 
 - 모델명: `SM_F721N`
 - ADB 시리얼: `R3CT8076D7B`
 
-## 4. 백엔드 연동 결과
+## 백엔드 연동 결과
 
 - PostgreSQL 컨테이너 실행: 통과
 - Django 시스템 검사: 통과
@@ -31,7 +31,7 @@ gradlew.bat :customer-app:clean :technician-app:clean :customer-app:testDebugUni
 - 실제 기기 포트 연결: `tcp:8000 -> tcp:8000`
 - 모바일 백엔드 주소: `http://127.0.0.1:8000/`
 
-## 5. 실행 환경
+## 실행 환경
 
 - Java: OpenJDK 17.0.19
 - Gradle: 9.5.0
