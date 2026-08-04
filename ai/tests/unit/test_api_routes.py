@@ -80,6 +80,81 @@ def test_analyze_endpoint_local_mode_leak(client):
     assert data["safety_assessment"]["requires_consultation"] is True
 
 
+def test_local_mode_no_match_is_200_fallback(client, monkeypatch):
+    from ai.app.interfaces.http.routes import analysis_routes
+
+    class EmptySearchService:
+        def search(self, *args, **kwargs):
+            return []
+
+    monkeypatch.setattr(
+        analysis_routes.PipelineRouter,
+        "_configured_search_service",
+        staticmethod(lambda: EmptySearchService()),
+    )
+    response = client.post("/api/v1/ai/analyze?mode=local", json={
+        "inquiry_id": INQUIRY_ID,
+        "correlation_id": "corr-no-match",
+        "ai_request_id": "ai-req-no-match",
+        "state_version": 1,
+        "raw_symptom": "냉수 온도가 평소와 다릅니다.",
+        "model_code": "WPUJAC104DWH",
+    })
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "FALLBACK"
+    assert body["failure_stage"] == "RETRIEVING"
+    assert body["evidence_references"] == []
+
+
+def test_local_mode_missing_vector_config_is_non_retryable_503(client, monkeypatch):
+    monkeypatch.delenv("AI_VECTOR_DSN", raising=False)
+    monkeypatch.delenv("AI_EMBEDDING_REVISION", raising=False)
+    response = client.post("/api/v1/ai/analyze?mode=local", json={
+        "inquiry_id": INQUIRY_ID,
+        "correlation_id": "corr-vector-not-configured",
+        "ai_request_id": "ai-req-vector-not-configured",
+        "state_version": 1,
+        "raw_symptom": "냉수 온도가 평소와 다릅니다.",
+        "model_code": "WPUJAC104DWH",
+    })
+
+    assert response.status_code == 503
+    error = response.json()["error"]
+    assert error["code"] == "AI-FAILED-01"
+    assert error["retryable"] is False
+    assert error["failure_stage"] == "RETRIEVING"
+
+
+def test_local_mode_vector_failure_is_retryable_503(client, monkeypatch):
+    from ai.app.interfaces.http.routes import analysis_routes
+
+    class FailingSearchService:
+        def search(self, *args, **kwargs):
+            raise ConnectionError("test-only vector failure")
+
+    monkeypatch.setattr(
+        analysis_routes.PipelineRouter,
+        "_configured_search_service",
+        staticmethod(lambda: FailingSearchService()),
+    )
+    response = client.post("/api/v1/ai/analyze?mode=local", json={
+        "inquiry_id": INQUIRY_ID,
+        "correlation_id": "corr-vector-failed",
+        "ai_request_id": "ai-req-vector-failed",
+        "state_version": 1,
+        "raw_symptom": "냉수 온도가 평소와 다릅니다.",
+        "model_code": "WPUJAC104DWH",
+    })
+
+    assert response.status_code == 503
+    error = response.json()["error"]
+    assert error["code"] == "AI-FAILED-01"
+    assert error["retryable"] is True
+    assert error["failure_stage"] == "RETRIEVING"
+
+
 def test_analyze_endpoint_validation_error(client):
     """필수 필드 누락 시 422 오류 처리 테스트"""
     payload = {

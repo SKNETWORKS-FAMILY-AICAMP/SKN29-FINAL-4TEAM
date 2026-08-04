@@ -42,11 +42,18 @@ AI는 증상 구조화·안전 평가·사용 안내·근거 참조 또는 요�
 | 코드 | HTTP | retryable | 대표 Stage |
 | --- | ---: | --- | --- |
 | `AI-VALIDATION-01` | 400 또는 422 | false | `STRUCTURING` |
-| `AI-FAILED-01` | 503 | true | `FAILED` |
+| `AI-FAILED-01` | 503 | false | `RETRIEVING` — Vector Store 필수 설정 누락 |
+| `AI-FAILED-01` | 503 | true | `RETRIEVING` 또는 `FAILED` — 검색·Provider·내부 실행 실패 |
 | `AI-TIMEOUT-01` | 504 | true | `CANCELLED` |
 
 오류 응답에도 사용 가능한 추적 식별자를 보존한다. 입력 원문, Prompt,
 Stack Trace, Secret, 개인정보는 오류 상세에 포함하지 않는다.
+
+정상적으로 검색을 완료했지만 근거가 0건이면 오류가 아니다. HTTP 200,
+`status=FALLBACK`, `failure_stage=RETRIEVING`, 빈 `evidence_references`와
+`PENDING_CONSULTATION`을 반환한다. Vector Store 설정이 없어 검색을 시작하지
+못한 경우에는 같은 0건으로 처리하지 않고 HTTP 503과
+`AI-FAILED-01`, `retryable=false`, `failure_stage=RETRIEVING`을 반환한다.
 
 ## 디렉토리
 

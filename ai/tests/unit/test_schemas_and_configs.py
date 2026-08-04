@@ -151,6 +151,8 @@ def test_secondary_ai_contract_examples_round_trip(
     "example_path",
     [
         "examples/symptom-analysis/validation-failed.json",
+        "examples/fallback/vector-not-configured-error.json",
+        "examples/fallback/retrieval-failed-error.json",
         "examples/fallback/timeout-error.json",
     ],
 )

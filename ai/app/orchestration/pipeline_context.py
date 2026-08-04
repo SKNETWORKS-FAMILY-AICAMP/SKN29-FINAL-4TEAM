@@ -2,6 +2,7 @@
 
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
+from ..retrieval import RetrievalOutcome
 from ..schemas import (
     EvidenceReference,
     FollowUpQuestion,
@@ -29,6 +30,10 @@ class PipelineContext(BaseModel):
     followup_questions: List[FollowUpQuestion] = Field(default_factory=list, description="안전한 추가 질문")
     safety_assessment: Optional[SafetyAssessment] = Field(None, description="안전/위험도 평가 결과")
     evidence_references: List[EvidenceReference] = Field(default_factory=list, description="RAG 근거 참조 목록")
+    retrieval_outcome: RetrievalOutcome = Field(
+        RetrievalOutcome.NOT_RUN,
+        description="정상 검색 실행 여부와 근거 발견 결과",
+    )
     usage_guidance: Optional[UsageGuidance] = Field(None, description="사용 안내 상태 및 문구")
 
     # 메타데이터 및 지연 추적

@@ -1,5 +1,14 @@
 # AI Contract Changelog
 
+## 2026-08-04 — 1.1.0 검색 결과·장애 의미 명확화
+
+- 공개 Schema 필드 변경 없이 정상 검색 0건과 Vector Store 설정 누락을 분리
+- 정상 0건은 HTTP 200 `FALLBACK`, 설정 누락은 HTTP 503
+  `AI-FAILED-01`·`retryable=false`로 예시 고정
+- 실제 검색 실패는 HTTP 503 `AI-FAILED-01`·`retryable=true`, Timeout은 기존
+  HTTP 504 계약을 유지
+- `vector-not-configured-error.json`, `retrieval-failed-error.json` 예시 추가
+
 ## 2026-07-30 — 1.1.0 Runtime parity correction
 
 - `inquiry_id`를 Backend Public UUID로 강제

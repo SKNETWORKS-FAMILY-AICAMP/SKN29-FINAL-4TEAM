@@ -10,6 +10,11 @@ from ai.app.structuring import (
 )
 
 
+class EmptySearchService:
+    def search(self, *args, **kwargs):
+        return []
+
+
 def test_structures_low_flow_and_only_reports_unconfirmed_fields():
     symptom = SymptomStructurer().structure(
         "어제부터 냉수 버튼을 누르면 물이 졸졸 나옵니다",
@@ -40,7 +45,7 @@ def test_previous_answer_populates_field_and_blocks_duplicate_question():
 
 
 def test_information_poor_input_generates_deterministic_questions():
-    result = PipelineRouter(search_service=None).run_pipeline(
+    result = PipelineRouter(search_service=EmptySearchService()).run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b401",
         correlation_id="corr-structuring-poor",
         ai_request_id="ai-req-structuring-poor",

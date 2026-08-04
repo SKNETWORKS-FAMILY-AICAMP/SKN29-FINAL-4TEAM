@@ -35,7 +35,10 @@ Hash를 포함하지 않는다. Linux Container 배포 시에는 대상 Image에
 Lock을 생성하고 설치·테스트를 다시 검증한다.
 
 Base URL은 `http://127.0.0.1:8001`, Health Check는 `GET /health`, 분석
-API는 `POST /api/v1/ai/analyze?mode=mock|local`이다. Backend의
+API는 `POST /api/v1/ai/analyze?mode=mock|local`이다. `mock`은 계약 연결용
+정적 응답이고 검색을 실행하지 않는다. `local`의 일반·주의 입력은 실제
+Vector Store 검색을 요구한다. `local`에서 Vector Store가 설정되지 않은
+상태를 정상 검색 0건으로 대체하지 않는다. Backend의
 `AI_SERVICE_BASE_URL`도 Port `8001`로 맞춘다. `inquiry_id`는 Backend가
 발급한 Public UUID를 사용하며 내부 정수 PK나 업무 코드를 전달하지 않는다.
 
@@ -77,6 +80,20 @@ Local 검색은 `BAAI/bge-m3`의 1024차원 정규화 임베딩과 pgvector Cosi
 Exact Search(`<=>`)를 사용한다. `WPUJAC104DWH`·D세대·공식 검증·고객 안내
 허용 조건을 유사도 계산 전에 제한한다. 미지원 모델·세대와 미검증 FAQ 단독
 근거 요구는 임베딩과 DB Query 전에 차단한다.
+
+검색 결과와 장애는 다음처럼 분리한다.
+
+| 상황 | HTTP·응답 | 재시도 |
+| --- | --- | --- |
+| 정상 검색·근거 있음 | `200`, `SUCCEEDED` | 불필요 |
+| 정상 검색·근거 0건 | `200`, `FALLBACK`, `RETRIEVING` | 불필요, 상담 전환 |
+| Vector Store 필수 설정 누락 | `503`, `AI-FAILED-01`, `RETRIEVING` | `false` |
+| 설정된 검색 Provider 실행 실패 | `503`, `AI-FAILED-01`, `RETRIEVING` | `true` |
+| 검색·Pipeline Timeout | `504`, `AI-TIMEOUT-01`, 실제 실패 Stage | `true` |
+
+위험 입력은 안전 규칙이 검색보다 우선하므로 Vector Store가 없더라도 검색을
+건너뛰고 `TOTAL_STOP` 등 안전 안내를 반환할 수 있다. 운영 Health·Readiness와
+Backend 공개 `evidence_status`·저장 방식은 별도 통합 계약에서 확정한다.
 
 검증 모델 Revision은
 `5617a9f61b028005a4858fdac845db406aefb181`이다. 실제 연결 문자열은 Git에

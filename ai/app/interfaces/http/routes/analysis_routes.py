@@ -10,6 +10,7 @@ from ..request_models import SymptomAnalysisApiRequest
 from ..errors import AiServiceError
 from ..runtime_policy import get_runtime_policy
 from ....orchestration.pipeline_router import PipelineRouter
+from ....retrieval import RetrievalConfigurationError, RetrievalExecutionError
 from ....common.timeout import CancellationToken, PipelineStageTimeoutError
 from ....schemas.common import AiStage, RiskLevel, UsageGuidanceStatus
 from ....schemas.guidance import UsageGuidance
@@ -187,6 +188,32 @@ async def analyze_symptom(
             message="AI 서비스 단계 처리 시간이 초과되었습니다.",
             retryable=True,
             failure_stage=failure_stage,
+            correlation_id=req.correlation_id,
+            inquiry_id=req.inquiry_id,
+            ai_request_id=req.ai_request_id,
+            state_version=req.state_version,
+            retry_count=0,
+        ) from exc
+    except RetrievalConfigurationError as exc:
+        raise AiServiceError(
+            code="AI-FAILED-01",
+            http_status=503,
+            message="AI 검색 구성이 완료되지 않아 근거 검색을 시작할 수 없습니다.",
+            retryable=False,
+            failure_stage=AiStage.RETRIEVING,
+            correlation_id=req.correlation_id,
+            inquiry_id=req.inquiry_id,
+            ai_request_id=req.ai_request_id,
+            state_version=req.state_version,
+            retry_count=0,
+        ) from exc
+    except RetrievalExecutionError as exc:
+        raise AiServiceError(
+            code="AI-FAILED-01",
+            http_status=503,
+            message="AI 근거 검색을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+            retryable=True,
+            failure_stage=AiStage.RETRIEVING,
             correlation_id=req.correlation_id,
             inquiry_id=req.inquiry_id,
             ai_request_id=req.ai_request_id,
