@@ -1,0 +1,45 @@
+{
+  "document_type": "completion_evidence",
+  "wbs": "T-017",
+  "status": "APPROVED",
+  "candidate": {
+    "sha": "b7cb89828de170a1ee07f9a88d5bcd92621b2c51",
+    "ref": "origin/jiyong",
+    "review_scope": "T017_AUTH_RBAC_COMPLETION"
+  },
+  "team_review": {
+    "status": "APPROVED",
+    "reviewer": "김은진",
+    "recorded_at": "2026-08-03T19:01:18+09:00"
+  },
+  "decisions": {
+    "functional_decision": "PASS",
+    "submission_decision": "APPROVE"
+  },
+  "verification_results": {
+    "matrix": {
+      "passed": 4,
+      "exit_code": 0
+    },
+    "accounts": {
+      "passed": 70,
+      "exit_code": 0
+    },
+    "inquiry_rbac": {
+      "passed": 24,
+      "exit_code": 0
+    },
+    "postgresql": {
+      "owner_status": "OWNER_IMPLEMENTATION_READY",
+      "server_version": "16.14",
+      "connection_status": "CONNECTED",
+      "migration_status": "PASSED",
+      "exit_code": 0
+    }
+  },
+  "remaining_blocker": "없음",
+  "runtime_verification_policy": {
+    "authoritative_candidate_sha": "b7cb89828de170a1ee07f9a88d5bcd92621b2c51",
+    "note": "PostgreSQL과 Model/Migration 기술 Gate는 이 기록의 문자열이 아니라 QA가 후보 SHA에서 실행한 실제 검증 결과를 근거로 한다."
+  }
+}
