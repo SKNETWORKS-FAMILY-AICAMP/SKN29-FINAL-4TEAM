@@ -22,7 +22,7 @@
 - Customer 단위 테스트: PASS
 - Customer Debug APK: PASS
 - Technician Debug APK: PASS
-- Customer 실단말 Compose UI 테스트: PASS
+- Customer 실단말 Compose UI 테스트: PASS (SM-F721N, 2/2)
 
 ## 다음 Runtime 검증
 
@@ -39,3 +39,8 @@
 - AI 안내·Evidence Runtime Endpoint 대기
 - 상담 요청 Runtime Endpoint 대기
 - 위 기능은 실제 Endpoint가 제공되기 전까지 가짜 성공으로 처리하지 않음
+## 검증 보정 이력
+
+- 최초 `runComposeUiTest` 기반 실행에서는 Compose Host가 생성되지 않아 `No compose hierarchies found` 오류로 2건이 실패했다.
+- 테스트를 JUnit `createComposeRule` 기반으로 변경한 뒤 `SM-F721N` 실단말에서 2건 모두 통과했다.
+- Core·Customer 단위 테스트와 Customer·Technician Debug APK 빌드도 다시 통과했다.
