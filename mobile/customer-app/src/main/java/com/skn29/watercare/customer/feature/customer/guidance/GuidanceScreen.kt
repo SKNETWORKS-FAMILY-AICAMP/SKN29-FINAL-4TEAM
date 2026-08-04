@@ -17,12 +17,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.model.GuidanceDisplayModel
+import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.RiskLevel
 import com.skn29.watercare.core.model.UsageGuidanceStatus
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LoadingBlock
-import com.skn29.watercare.core.ui.theme.WaterOrange
 import com.skn29.watercare.customer.R
 import com.skn29.watercare.customer.common.VmFactory
 import com.skn29.watercare.customer.feature.shared.*
@@ -53,28 +53,24 @@ fun GuidanceScreen(
                 noEvidence = false,
                 onRetry = viewModel::load,
                 onRequestConsultation = requestConsultation,
-                onDone = onDone,
             )
             is GuidanceUiState.NoEvidence -> GuidanceContent(
                 guidance = current.guidance,
                 noEvidence = true,
                 onRetry = viewModel::load,
                 onRequestConsultation = requestConsultation,
-                onDone = onDone,
             )
             is GuidanceUiState.AiFailure -> FailureFallback(
                 title = "AI 안내 생성 실패",
                 message = current.message,
                 retryable = current.retryable,
                 onRetry = viewModel::load,
-                onRequestConsultation = requestConsultation,
             )
             is GuidanceUiState.NetworkFailure -> FailureFallback(
                 title = "네트워크 연결 실패",
                 message = current.message,
                 retryable = current.retryable,
                 onRetry = viewModel::load,
-                onRequestConsultation = requestConsultation,
             )
             is GuidanceUiState.Error -> ErrorCard(current.message, if (current.retryable) viewModel::load else null)
         }
@@ -92,7 +88,6 @@ fun GuidanceContent(
     noEvidence: Boolean,
     onRetry: () -> Unit,
     onRequestConsultation: () -> Unit,
-    onDone: () -> Unit,
 ) {
     val dangerous = guidance.requiresConsultation ||
         guidance.riskLevel == RiskLevel.DANGER ||
@@ -165,24 +160,27 @@ fun GuidanceContent(
         BulletList(guidance.prohibitedActions)
     }
 
-    if (dangerous) {
-        Button(
+    val consultationAction = guidance.allowedActions.firstOrNull {
+        it.normalizedCode == InquiryActionLabels.REQUEST_CONSULTATION
+    }
+    if (consultationAction != null) {
+        WorkflowActionButton(
+            action = consultationAction,
             onClick = onRequestConsultation,
-            modifier = Modifier.fillMaxWidth().height(54.dp).testTag("requestConsultation"),
-            colors = ButtonDefaults.buttonColors(containerColor = WaterOrange),
-        ) { Text("상담 요청하기", fontWeight = FontWeight.Bold) }
+        )
+    } else if (dangerous) {
+        OutlinedButton(
+            onClick = {},
+            enabled = false,
+            modifier = Modifier.fillMaxWidth().height(54.dp).testTag("consultationUnavailable"),
+        ) { Text("상담 요청 준비 중", fontWeight = FontWeight.Bold) }
+    }
+    if (dangerous) {
         Text(
             "위험·상담 필수·근거 없음 상태에서는 해결됨 또는 문의 종료 버튼을 표시하지 않습니다.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-    } else {
-        guidance.allowedActions.forEach { action ->
-            WorkflowActionButton(
-                action = action,
-                onClick = if (action == "REQUEST_CONSULTATION") onRequestConsultation else onDone,
-            )
-        }
     }
 }
 
@@ -192,7 +190,6 @@ private fun FailureFallback(
     message: String,
     retryable: Boolean,
     onRetry: () -> Unit,
-    onRequestConsultation: () -> Unit,
 ) {
     Surface(
         shape = RoundedCornerShape(28.dp),
@@ -205,9 +202,9 @@ private fun FailureFallback(
         }
     }
     ErrorCard(message, if (retryable) onRetry else null)
-    Button(
-        onClick = onRequestConsultation,
+    OutlinedButton(
+        onClick = {},
+        enabled = false,
         modifier = Modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(containerColor = WaterOrange),
-    ) { Text("상담으로 전환") }
+    ) { Text("상담 요청 준비 중") }
 }

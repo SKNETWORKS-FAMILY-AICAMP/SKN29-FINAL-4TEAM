@@ -1,6 +1,8 @@
 package com.skn29.watercare.core.repository
 
+import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.ApiResult
+import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.CustomerHomeData
 import com.skn29.watercare.core.model.ActiveInquirySummary
 import com.skn29.watercare.core.model.EvidenceCardData
@@ -154,7 +156,7 @@ class FakeCustomerCareRepository : CustomerCareRepository {
                 officialUrl = null,
             )
         ),
-        allowedActions = listOf("REQUEST_CONSULTATION"),
+        allowedActions = listOf(AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION, label = "상담 요청")),
     )
 
 
@@ -181,7 +183,7 @@ class FakeCustomerCareRepository : CustomerCareRepository {
                 dataClassification = "official",
             )
         ),
-        allowedActions = listOf("REQUEST_CONSULTATION"),
+        allowedActions = listOf(AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION, label = "상담 요청")),
     )
 
     private fun dangerGuidance(inquiryId: String) = GuidanceData(
@@ -207,7 +209,7 @@ class FakeCustomerCareRepository : CustomerCareRepository {
                 dataClassification = "official",
             )
         ),
-        allowedActions = listOf("REQUEST_CONSULTATION"),
+        allowedActions = listOf(AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION, label = "상담 요청")),
     )
 
     private fun noEvidenceGuidance(inquiryId: String) = GuidanceData(
@@ -223,6 +225,6 @@ class FakeCustomerCareRepository : CustomerCareRepository {
         nextAction = "상담 확인",
         requiresConsultation = false,
         evidence = emptyList(),
-        allowedActions = listOf("REQUEST_CONSULTATION"),
+        allowedActions = listOf(AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION, label = "상담 요청")),
     )
 }

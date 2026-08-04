@@ -120,7 +120,7 @@ data class GuidanceData(
     @SerialName("next_action") val nextAction: String,
     @SerialName("requires_consultation") val requiresConsultation: Boolean,
     val evidence: List<EvidenceCardData> = emptyList(),
-    @SerialName("allowed_actions") val allowedActions: List<String> = emptyList(),
+    @SerialName("allowed_actions") val allowedActions: List<AllowedAction> = emptyList(),
 )
 
 data class GuidanceDisplayModel(
@@ -137,7 +137,7 @@ data class GuidanceDisplayModel(
     val nextAction: String,
     val requiresConsultation: Boolean,
     val evidence: List<EvidenceCardData>,
-    val allowedActions: List<String>,
+    val allowedActions: List<AllowedAction>,
 )
 
 object GuidanceMapper {
@@ -184,14 +184,15 @@ object GuidanceMapper {
     }
 
     private fun sanitizeAllowedActions(
-        actions: List<String>,
+        actions: List<AllowedAction>,
         risk: RiskLevel,
         usage: UsageGuidanceStatus,
         mustConsult: Boolean,
-    ): List<String> {
-        val blocked = setOf("RESOLVE", "CLOSE_INQUIRY", "MARK_RESOLVED", "END_INQUIRY")
+    ): List<AllowedAction> {
+        val supportedCodes = setOf(InquiryActionLabels.REQUEST_CONSULTATION)
+        val supported = actions.filter { it.normalizedCode in supportedCodes }
         return if (risk == RiskLevel.DANGER || usage == UsageGuidanceStatus.TOTAL_STOP || mustConsult) {
-            actions.filterNot { it.uppercase() in blocked }
-        } else actions
+            supported.filter { it.normalizedCode == InquiryActionLabels.REQUEST_CONSULTATION }
+        } else supported
     }
 }

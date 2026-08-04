@@ -233,7 +233,7 @@ class CustomerMinimumFlowTest {
         nextAction = "즉시 상담 요청",
         requiresConsultation = true,
         evidence = emptyList(),
-        allowedActions = listOf("REQUEST_CONSULTATION"),
+        allowedActions = listOf(AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION, label = "상담 요청")),
     )
 
     companion object {
