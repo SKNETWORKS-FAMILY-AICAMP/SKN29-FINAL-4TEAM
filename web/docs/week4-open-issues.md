@@ -4,14 +4,24 @@
 
 | 우선순위 | 이슈 | 현재 상태 | 다음 행동·협업 |
 | --- | --- | --- | --- |
-| P0 | 상담사 목록·상세 API 없음 | `BACKEND_BLOCKED` | 최지용과 Endpoint·DTO·오류 계약 확정 |
-| P0 | 상담 저장 계약 비어 있음 | `consultations.yaml = {}` | 최지용·윤승혁과 행동별 Payload, `allowed_actions`, `state_version` 확정 |
-| P0 | 기사 배정·방문 일정 계약 비어 있음 | `visits.yaml = {}` | Endpoint·기사 목록·일정 저장/확정 응답 합의 |
+| P0 | 상담사 목록·상세 Active API 없음 | Web `REVIEWED`, `IMPLEMENTATION_HOLD` | PM 승인 뒤 Active Endpoint·DTO·오류 계약 반영 |
+| P0 | 상담 저장 Active 계약 비어 있음 | `consultations.yaml = {}` | PM 승인 뒤 행동별 Payload, `allowed_actions`, `state_version` 반영 |
+| P0 | 기사 배정·방문 일정 Active 계약 비어 있음 | `visits.yaml = {}` | PM 승인 뒤 방문 공통 Wrapper·기사·일정 계약 반영 |
 | P1 | 실제 Remote Repository 없음 | Mock Repository 경계와 모드 상태 구현 완료 | 계약 확정 후 Remote 구현 추가 |
 | P1 | 운영 집계 계약 비어 있음 | `operations.yaml = {}` | 상담사 P0 완료 뒤 진행 |
 | P1 | npm high 취약점 2건 | 미해결 | 공개 Registry 전송 승인 후 상세 Audit 또는 담당자 환경에서 확인 |
 | P2 | CSS 대형·중복 | 동작 중, 정리 보류 | 발표 이후 시각 회귀 확인과 함께 분리 |
-| P2 | 다른 팀원 재현 확인 | 양정현 README 검토 완료, 실제 명령 실행 여부 미확인 | 양정현 또는 다른 팀원이 README 명령으로 교차 실행 |
+| 완료 | 다른 팀원 재현 확인 | README 기준 교차 실행 성공 확인 | 추가 행동 없음 |
+
+## 2026-08-04 Web 단독 준비 완료
+
+- DEC-WEB-BE-001·004·009 재검토 회신 작성·Push
+- 단계별 화면–API 필드 매핑과 수정 파일 순서 작성
+- 실제·Mock·Contract 테스트 분리 계획 작성
+- 401·403·404·409·422·5xx·Network 오류 UX 기준 작성
+- 승인 전 Endpoint·Payload를 코드에 넣지 않는 구현 Gate 기록
+
+상세 계획은 [실제 API 구현 준비표](./week4-web-implementation-readiness.md)와 [계약 테스트 계획](./week4-web-contract-test-plan.md)을 따른다.
 
 ## API 차단 상세
 

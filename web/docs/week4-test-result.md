@@ -80,4 +80,18 @@ npm.cmd run build
 - `docs/actual-api-readiness-checklist.md` 링크 대상 파일 존재 확인
 - `VITE_BACKEND_PROXY_TARGET`이 README와 `.env.example`에 동일하게 존재함을 확인
 - 최소 지원 버전과 이번 재검증 버전을 구분하도록 README 문구 수정
-- 실제 명령을 다른 환경에서 끝까지 실행했는지는 추가 확인 필요
+- 다른 팀원이 README 명령으로 교차 실행해 같은 성공 결과를 확인함
+
+## 2026-08-04 구현 준비 후 재검증
+
+실제 API 구현 코드는 변경하지 않고 문서·준비 작업 뒤 현재 Mock 기준선을 다시 확인했다.
+
+| 검사 | 결과 |
+| --- | --- |
+| `npm.cmd test -- --run` | 26 files, 109 tests 성공·실패 0 |
+| `npm.cmd run lint` | 성공·오류 0 |
+| `npm.cmd run build` | TypeScript·Production Build 성공, 117 modules |
+| 로컬 Browser | 목록·상세·상담·방문 필요 입력 영역 표시 성공 |
+| Browser Console | Error 0 |
+
+수동 확인 경로는 상담사 목록 → 처리 중인 문의 → `INQ-20260704-0013` 상세 → 방문 필요 선택 → 방문 접수 정보 표시다. 화면 상단의 `화면 업무 데이터는 Mock입니다.` 안내를 확인했으며 실제 API 성공으로 기록하지 않는다.
