@@ -58,6 +58,14 @@ fun CustomerNavigation() {
                         CustomerRoute.guidance(submission.inquiryId, submission.guidanceScenario)
                     )
                 },
+                onAuthExpired = {
+                    navController.navigate(CustomerRoute.LOGIN) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
             )
         }
         composable(

@@ -35,7 +35,7 @@ fun GuidanceScreen(
     onDone: () -> Unit,
 ) {
     val viewModel: GuidanceViewModel = viewModel(
-        factory = VmFactory {
+        factory = VmFactory { _ ->
             GuidanceViewModel(inquiryId, scenario, WaterCareCore.customerCareRepository)
         }
     )

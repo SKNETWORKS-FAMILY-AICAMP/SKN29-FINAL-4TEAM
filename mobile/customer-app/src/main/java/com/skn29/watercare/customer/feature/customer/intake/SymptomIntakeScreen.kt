@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.model.EntryMode
@@ -36,10 +37,15 @@ fun SymptomIntakeScreen(
     subscriptionId: String,
     onBack: () -> Unit,
     onCompleted: (IntakeSubmission) -> Unit,
+    onAuthExpired: () -> Unit,
 ) {
     val viewModel: SymptomIntakeViewModel = viewModel(
-        factory = VmFactory {
-            SymptomIntakeViewModel(subscriptionId, WaterCareCore.customerCareRepository)
+        factory = VmFactory { extras ->
+            SymptomIntakeViewModel(
+                subscriptionId = subscriptionId,
+                repository = WaterCareCore.customerCareRepository,
+                savedStateHandle = extras.createSavedStateHandle(),
+            )
         }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -48,6 +54,13 @@ fun SymptomIntakeScreen(
         state.completed?.let {
             onCompleted(it)
             viewModel.consumeCompletion()
+        }
+    }
+
+    LaunchedEffect(state.errorKind) {
+        if (state.errorKind == IntakeErrorKind.AUTH_EXPIRED) {
+            viewModel.consumeAuthExpired()
+            onAuthExpired()
         }
     }
 
@@ -173,9 +186,20 @@ fun SymptomIntakeContent(
             }
         }
 
-        state.globalError?.let {
-            ErrorCard(message = it, onRetry = if (state.retryable) onRetry else null)
-        }
+        state.globalError
+            ?.takeIf { state.errorKind != IntakeErrorKind.AUTH_EXPIRED }
+            ?.let { message ->
+                Text(
+                    text = state.errorKind?.displayName ?: IntakeErrorKind.UNKNOWN.displayName,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                ErrorCard(
+                    message = message,
+                    onRetry = if (state.retryable) onRetry else null,
+                )
+            }
 
         if (
             state.conflictStatus != null ||

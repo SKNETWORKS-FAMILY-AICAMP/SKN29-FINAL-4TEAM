@@ -34,7 +34,7 @@ fun CustomerHomeScreen(
     onLogout: () -> Unit,
 ) {
     val viewModel: CustomerHomeViewModel = viewModel(
-        factory = VmFactory {
+        factory = VmFactory { _ ->
             CustomerHomeViewModel(
                 WaterCareCore.authRepository,
                 WaterCareCore.customerCareRepository,
