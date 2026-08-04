@@ -3,6 +3,7 @@
 from .filters import DocumentPolicyFilter, ProductFilter
 from .indexing import ChunkLoader, IndexManifest
 from .models import RetrievalQuery, RetrievedChunk
+from .runtime import RetrievalConfigurationError, RetrievalExecutionError, RetrievalOutcome
 
 __all__ = [
     "RetrievalQuery",
@@ -11,4 +12,7 @@ __all__ = [
     "DocumentPolicyFilter",
     "IndexManifest",
     "ChunkLoader",
+    "RetrievalConfigurationError",
+    "RetrievalExecutionError",
+    "RetrievalOutcome",
 ]

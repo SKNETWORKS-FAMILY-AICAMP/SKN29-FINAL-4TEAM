@@ -4,7 +4,45 @@ import os
 import yaml
 import pytest
 from ai.app.orchestration.pipeline_router import PipelineRouter
+from ai.app.retrieval import (
+    IndexManifest,
+    RetrievalConfigurationError,
+    RetrievalExecutionError,
+    RetrievalOutcome,
+    RetrievedChunk,
+)
 from ai.app.schemas.common import RiskLevel, UsageGuidanceStatus
+
+
+class EmptySearchService:
+    def search(self, *args, **kwargs):
+        return []
+
+
+class FailingSearchService:
+    def search(self, *args, **kwargs):
+        raise ConnectionError("test-only vector failure")
+
+
+class EvidenceSearchService:
+    def search(self, *args, **kwargs):
+        return [
+            RetrievedChunk(
+                chunk_id="RAG-WPUJAC104DWH-COLD-TEST",
+                document_title="WPU-JAC104D 사용설명서",
+                document_version="REV.00",
+                page=37,
+                page_refs=[37],
+                manual_model="WPUJAC104DWH",
+                model_code="WPUJAC104DWH",
+                product_generation="D",
+                content="냉수 온도가 높으면 잠시 기다린 뒤 다시 확인합니다.",
+                similarity_score=0.91,
+                official_url="https://example.invalid/official-manual",
+                verification_status="official_verified",
+                allowed_use=True,
+            )
+        ]
 
 
 def test_single_rag_pipeline_execution():
@@ -68,8 +106,8 @@ def test_prompt_registry_and_templates_exist():
 
 
 def test_no_evidence_uses_pending_consultation_branch():
-    """Vector Store 미설정 시 일반 자가조치를 만들지 않고 상담으로 전환한다."""
-    result = PipelineRouter(search_service=None).run_pipeline(
+    """정상 검색 결과 0건이면 자가조치를 만들지 않고 상담으로 전환한다."""
+    result = PipelineRouter(search_service=EmptySearchService()).run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b306",
         correlation_id="corr-no-evidence",
         ai_request_id="ai-req-no-evidence",
@@ -83,10 +121,127 @@ def test_no_evidence_uses_pending_consultation_branch():
     assert response.safety_assessment.risk_level != RiskLevel.DANGER
     assert response.status.value == "FALLBACK"
     assert response.failure_stage.value == "RETRIEVING"
+    assert result.context.retrieval_outcome == RetrievalOutcome.NO_MATCH
+
+
+def test_vector_store_not_configured_is_not_reported_as_no_match():
+    with pytest.raises(RetrievalConfigurationError, match="설정되지 않아"):
+        PipelineRouter(search_service=None).run_pipeline(
+            inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b307",
+            correlation_id="corr-vector-not-configured",
+            ai_request_id="ai-req-vector-not-configured",
+            state_version=1,
+            raw_symptom="냉수가 미지근합니다.",
+            model_code="WPUJAC104DWH",
+        )
+
+
+def test_configured_search_failure_is_typed_separately_from_no_match():
+    with pytest.raises(RetrievalExecutionError, match="검색 실행에 실패"):
+        PipelineRouter(search_service=FailingSearchService()).run_pipeline(
+            inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b308",
+            correlation_id="corr-vector-failed",
+            ai_request_id="ai-req-vector-failed",
+            state_version=1,
+            raw_symptom="냉수가 미지근합니다.",
+            model_code="WPUJAC104DWH",
+        )
+
+
+def test_configured_search_with_evidence_is_available():
+    result = PipelineRouter(search_service=EvidenceSearchService()).run_pipeline(
+        inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b310",
+        correlation_id="corr-vector-available",
+        ai_request_id="ai-req-vector-available",
+        state_version=1,
+        raw_symptom="냉수가 미지근합니다.",
+        model_code="WPUJAC104DWH",
+    )
+
+    response = result.to_analysis_result()
+    assert response.status.value == "SUCCEEDED"
+    assert len(response.evidence_references) == 1
+    assert result.context.retrieval_outcome == RetrievalOutcome.AVAILABLE
+
+
+def test_danger_path_does_not_require_vector_store():
+    result = PipelineRouter(search_service=None).run_pipeline(
+        inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b309",
+        correlation_id="corr-danger-no-vector",
+        ai_request_id="ai-req-danger-no-vector",
+        state_version=1,
+        raw_symptom="정수기 전원선 주변에 심한 누수가 발생했습니다.",
+        model_code="WPUJAC104DWH",
+        selected_symptoms=["누수"],
+    )
+
+    response = result.to_analysis_result()
+    assert response.usage_guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
+    assert result.context.retrieval_outcome == RetrievalOutcome.NOT_RUN
 
 
 def test_vector_dsn_requires_pinned_embedding_revision(monkeypatch):
     monkeypatch.setenv("AI_VECTOR_DSN", "postgresql://configured-but-not-connected")
     monkeypatch.delenv("AI_EMBEDDING_REVISION", raising=False)
-    with pytest.raises(RuntimeError, match="AI_EMBEDDING_REVISION"):
-        PipelineRouter()
+    router = PipelineRouter()
+    with pytest.raises(RetrievalConfigurationError, match="AI_EMBEDDING_REVISION"):
+        router.run_pipeline(
+            inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b311",
+            correlation_id="corr-missing-revision",
+            ai_request_id="ai-req-missing-revision",
+            state_version=1,
+            raw_symptom="냉수가 미지근합니다.",
+        )
+
+
+def test_vector_dsn_requires_index_manifest(monkeypatch):
+    monkeypatch.setenv("AI_VECTOR_DSN", "postgresql://configured-but-not-connected")
+    monkeypatch.setenv("AI_EMBEDDING_REVISION", "a" * 40)
+    monkeypatch.setattr(IndexManifest, "load_manifest", staticmethod(lambda path: None))
+    router = PipelineRouter()
+    with pytest.raises(RetrievalConfigurationError, match="Index Manifest"):
+        router.run_pipeline(
+            inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b312",
+            correlation_id="corr-missing-manifest",
+            ai_request_id="ai-req-missing-manifest",
+            state_version=1,
+            raw_symptom="냉수가 미지근합니다.",
+        )
+
+
+def test_vector_manifest_revision_mismatch_is_configuration_error(monkeypatch):
+    monkeypatch.setenv("AI_VECTOR_DSN", "postgresql://configured-but-not-connected")
+    monkeypatch.setenv("AI_EMBEDDING_REVISION", "a" * 40)
+    monkeypatch.setattr(
+        IndexManifest,
+        "load_manifest",
+        staticmethod(lambda path: IndexManifest(
+            model_revision="b" * 40,
+            chunk_set_sha256="c" * 64,
+        )),
+    )
+    router = PipelineRouter()
+    with pytest.raises(RetrievalConfigurationError, match="Manifest와 일치하지"):
+        router.run_pipeline(
+            inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b313",
+            correlation_id="corr-manifest-mismatch",
+            ai_request_id="ai-req-manifest-mismatch",
+            state_version=1,
+            raw_symptom="냉수가 미지근합니다.",
+        )
+
+
+def test_danger_path_skips_partial_vector_configuration_error(monkeypatch):
+    monkeypatch.setenv("AI_VECTOR_DSN", "postgresql://configured-but-not-connected")
+    monkeypatch.delenv("AI_EMBEDDING_REVISION", raising=False)
+    result = PipelineRouter().run_pipeline(
+        inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b314",
+        correlation_id="corr-danger-partial-config",
+        ai_request_id="ai-req-danger-partial-config",
+        state_version=1,
+        raw_symptom="전원선 주변에 누수가 발생했습니다.",
+        selected_symptoms=["누수"],
+    )
+
+    assert result.to_analysis_result().usage_guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
+    assert result.context.retrieval_outcome == RetrievalOutcome.NOT_RUN

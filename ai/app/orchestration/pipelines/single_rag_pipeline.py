@@ -5,6 +5,7 @@ from langgraph.graph import END, START, StateGraph
 from ..pipeline_context import PipelineContext
 from ..pipeline_result import PipelineResult
 from ...common.timeout import CancellationToken, get_stage_timeout_policy
+from ...retrieval import RetrievalConfigurationError
 from ...schemas import AiStage
 from ..stages import (
     execute_generation_stage,
@@ -19,8 +20,14 @@ from ..stages import (
 class SingleRAGPipeline:
     """위험·근거 검색 경로를 분리한 최소 LangGraph."""
 
-    def __init__(self, search_service=None) -> None:
+    def __init__(
+        self,
+        search_service=None,
+        *,
+        retrieval_configuration_error: RetrievalConfigurationError | None = None,
+    ) -> None:
         self.search_service = search_service
+        self.retrieval_configuration_error = retrieval_configuration_error
         self.cancellation_token = CancellationToken()
         self.timeout_policy = get_stage_timeout_policy()
         graph = StateGraph(dict)
@@ -64,6 +71,8 @@ class SingleRAGPipeline:
             self.timeout_policy.for_stage(AiStage.RETRIEVING.value),
             AiStage.RETRIEVING.value,
         ):
+            if self.retrieval_configuration_error is not None:
+                raise self.retrieval_configuration_error
             execute_retrieval_stage(
                 state["ctx"],
                 self.search_service,

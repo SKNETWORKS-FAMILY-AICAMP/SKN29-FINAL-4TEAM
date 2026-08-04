@@ -397,3 +397,58 @@ Public UUID 분석 요청이 모두 성공했다.
   페이지 저장, 검증 상태 Registry를 계약 공백으로 명시했다.
 - 최지용·한예나·김은진의 검토, 이동윤의 도메인 결정, 윤승혁 PM 최종 승인
   전에는 Active 계약·Runtime·Web 구현에 반영하지 않는다.
+
+### 2026-08-04 Web 1차 CHANGE_REQUEST 반영
+
+- Web이 요청한 Nullable 표현, 숫자 `page_refs`, Backend `link_status`, 공개용
+  `evidence_id`·`display_order`, 필드 길이와 최대 카드 수를 v0.2 제안에
+  반영했다.
+- 문서 버전은 항상 포함하고 값이 없으면 `null`, 카드는 최대 3개, 제목은
+  최대 300자, 검수 요약은 최대 500자로 제안했다.
+- 외부 링크는 API 요청 중 실시간 확인하지 않고 Backend의 허용 도메인 기반
+  사전·비동기 검사 결과를 `AVAILABLE`, `UNAVAILABLE`, `NOT_PROVIDED`로
+  반환하도록 제안했다.
+- Web의 상태 자체 계산 금지 요청은 수용하되 문의 `status_code`·
+  `state_version`·`allowed_actions`는 AI 관할이 아니므로
+  DEC-WEB-BE-002·005와 State 계약의 선행 의존 조건으로 분리했다.
+- 1차 Web 회신은 `CHANGE_REQUEST`, 이동윤의 중간 판정은 `REVISE`, 개정된
+  현재 문서는 2차 검토용 `PROPOSED`로 기록했다.
+
+### 2026-08-04 Backend DEC-008 CR-01~07 통합 수정
+
+- `20260804_이동윤_DEC-WEB-BE-008_수정PROPOSED_v0.2.md`에 Backend
+  `CHANGE_REQUEST` CR-01~07의 `ACCEPT`·`PARTIAL` 판정과 대체 문장을
+  작성했다.
+- P0 공개 경계를 `1 EvidenceCard = 1 EvidenceLink = 1 page`로 수정하고,
+  공식 Landing URL 필수·직접 Download URL 선택 기준을 분리했다.
+- Data 승인 `evidence_summary`에서 Backend Snapshot·화면 공개로 이어지는
+  단일 SSOT, Data→AI→Backend 공개 Gate와 차단 Matrix를 제안했다.
+- 정상 근거 있음·정상 0건·검색 실패·Timeout·운영 설정 오류를
+  `evidence_status`와 HTTP 결과로 분리하고, 현행 Runtime의 미설정·0건
+  미구분을 완료가 아닌 구현 공백으로 명시했다.
+- P0 API는 별도 Evidence Endpoint 대신 DEC-WEB-BE-002 문의 상세 Snapshot에
+  포함하는 안을 제시하고 역할·객체 범위와 401·403·404·5xx를 구분했다.
+- `published_on=null`이면 날짜를 추정하지 않고, `revision_label`을 날짜로
+  해석하지 않는 규칙을 확정 제안했다.
+- 기존 Web 중심 v0.2 작업본은 `SUPERSEDED`, 통합 수정본은 검토용
+  `PROPOSED`, 구현 Gate는 `HOLD`로 유지했다.
+
+### 2026-08-04 AI 검색 0건·설정·실패·Timeout 분리
+
+- AI 내부 `RetrievalOutcome`을 `NOT_RUN`, `AVAILABLE`, `NO_MATCH`로 구분하고,
+  정상적으로 실행된 검색만 `NO_MATCH`가 될 수 있도록 변경했다.
+- 일반·주의 입력에서 Vector Store가 없으면 빈 근거 Fallback으로 위장하지
+  않고 `AI-FAILED-01`/HTTP 503, `retryable=false`, 실패 Stage
+  `RETRIEVING`을 반환한다.
+- 설정된 Vector Provider의 실행 실패는 같은 HTTP 503이라도
+  `retryable=true`와 `RETRIEVING`으로 분리하고, 단계별 Timeout은 기존
+  `AI-TIMEOUT-01`/HTTP 504를 유지했다.
+- 위험 입력은 검색보다 안전 규칙이 우선하므로 Vector Store가 없어도 검색을
+  건너뛰고 `TOTAL_STOP` 안전 안내를 반환한다.
+- Mock은 정적 계약 응답, Local 일반·주의 입력은 실제 Vector Store 필수라는
+  실행 경계를 `ai/README.md`와 AI 계약 README에 명시했다.
+- 설정 누락과 검색 실패 오류 예시를 AI 계약에 추가했으며 공개 Schema 필드는
+  변경하지 않았다. Backend `evidence_status`·저장·Web 전달은 통합 검토
+  전까지 미완료다.
+- Python `3.13.13`에서 집중 테스트 `63 passed, 3 warnings`, 전체 AI 단위
+  테스트 `91 passed, 3 warnings`, `pip check`와 Python Compile을 통과했다.
