@@ -15,12 +15,47 @@ data class CreateInquiryRequest(
 @Serializable
 data class AllowedAction(
     val code: String,
-    val label: String,
-    @SerialName("operation_id") val operationId: String,
-    val style: String,
-    @SerialName("requires_confirmation") val requiresConfirmation: Boolean,
+    val label: String = "",
+    @SerialName("operation_id") val operationId: String = "",
+    val style: String = "UNKNOWN",
+    @SerialName("requires_confirmation") val requiresConfirmation: Boolean = false,
     @SerialName("confirmation_message") val confirmationMessage: String? = null,
-)
+) {
+    val normalizedCode: String
+        get() = code.trim().uppercase()
+
+    val displayLabel: String
+        get() = label.trim().takeIf(String::isNotEmpty)
+            ?: InquiryActionLabels.label(normalizedCode)
+
+    fun isKnownForIntakeConflict(): Boolean =
+        normalizedCode in InquiryActionLabels.intakeConflictCodes
+
+    fun isRetrySubmitAction(): Boolean =
+        normalizedCode == InquiryActionLabels.SUBMIT_SYMPTOM
+}
+
+object InquiryActionLabels {
+    const val SUBMIT_SYMPTOM = "SUBMIT_SYMPTOM"
+    const val SUBMIT_ANSWERS = "SUBMIT_ANSWERS"
+    const val CANCEL_INQUIRY = "CANCEL_INQUIRY"
+    const val REQUEST_CONSULTATION = "REQUEST_CONSULTATION"
+
+    val intakeConflictCodes: Set<String> = setOf(
+        SUBMIT_SYMPTOM,
+        SUBMIT_ANSWERS,
+        CANCEL_INQUIRY,
+        REQUEST_CONSULTATION,
+    )
+
+    fun label(code: String): String = when (code.trim().uppercase()) {
+        SUBMIT_SYMPTOM -> "최신 상태로 증상 다시 제출"
+        SUBMIT_ANSWERS -> "추가 답변 제출"
+        CANCEL_INQUIRY -> "문의 취소"
+        REQUEST_CONSULTATION -> "상담 요청"
+        else -> code.trim()
+    }
+}
 
 @Serializable
 data class InquiryResponse(
@@ -45,6 +80,7 @@ data class SubmitSymptomResponse(
     @SerialName("idempotent_replay") val idempotentReplay: Boolean,
     @SerialName("allowed_actions") val allowedActions: List<AllowedAction> = emptyList(),
 )
+
 @Serializable
 data class CancelInquiryRequest(
     @SerialName("state_version") val stateVersion: Int,

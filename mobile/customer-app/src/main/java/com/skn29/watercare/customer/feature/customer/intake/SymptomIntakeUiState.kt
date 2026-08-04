@@ -1,5 +1,6 @@
 package com.skn29.watercare.customer.feature.customer.intake
 
+import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.EntryMode
 import com.skn29.watercare.core.model.IntakeSubmission
 import com.skn29.watercare.core.model.MockScenario
@@ -30,6 +31,6 @@ data class SymptomIntakeUiState(
     val retryable: Boolean = false,
     val conflictStatus: String? = null,
     val conflictStateVersion: Int? = null,
-    val conflictAllowedActions: List<String> = emptyList(),
+    val conflictAllowedActions: List<AllowedAction> = emptyList(),
     val completed: IntakeSubmission? = null,
 )

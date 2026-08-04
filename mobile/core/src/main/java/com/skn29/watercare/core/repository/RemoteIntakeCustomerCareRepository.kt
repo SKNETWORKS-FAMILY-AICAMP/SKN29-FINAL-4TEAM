@@ -80,7 +80,28 @@ class RemoteIntakeCustomerCareRepository(
                 idempotencyKey = operation.submitIdempotencyKey,
             )
         ) {
-            is ApiResult.Failure -> submitResult
+            is ApiResult.Failure -> {
+                submitResult.conflict
+                    ?.takeIf { conflict ->
+                        conflict.currentStatus == "DRAFT" &&
+                            conflict.currentStateVersion != null &&
+                            conflict.allowedActions.any { it.isRetrySubmitAction() }
+                    }
+                    ?.let { conflict ->
+                        synchronized(operationLock) {
+                            if (pendingOperations[fingerprint] === operation) {
+                                operation.createdInquiry = inquiry.copy(
+                                    statusCode = conflict.currentStatus ?: inquiry.statusCode,
+                                    stateVersion = conflict.currentStateVersion
+                                        ?: inquiry.stateVersion,
+                                    allowedActions = conflict.allowedActions,
+                                )
+                            }
+                        }
+                    }
+                submitResult
+            }
+
             is ApiResult.Success -> {
                 synchronized(operationLock) {
                     if (pendingOperations[fingerprint] === operation) {

@@ -9,6 +9,7 @@ import com.skn29.watercare.core.model.GuidanceData
 import com.skn29.watercare.core.model.InquiryResponse
 import com.skn29.watercare.core.model.IntakeSubmission
 import com.skn29.watercare.core.model.MockScenario
+import com.skn29.watercare.core.model.StateConflictSnapshot
 import com.skn29.watercare.core.model.SubmitSymptomResponse
 import com.skn29.watercare.core.model.SymptomIntakeRequest
 import kotlinx.coroutines.runBlocking
@@ -48,7 +49,10 @@ class RemoteIntakeCustomerCareRepositoryTest {
 
         assertEquals("MOBILE", inquiryRepository.createRequests[0].channelCode)
         assertTrue(inquiryRepository.createRequests[0].rawText.contains("발생 조건:"))
-        assertTrue(inquiryRepository.createRequests[0].rawText.contains("제품 표시 문구·오류 코드:"))
+        assertTrue(
+            inquiryRepository.createRequests[0].rawText
+                .contains("제품 표시 문구·오류 코드:")
+        )
     }
 
     @Test
@@ -71,6 +75,26 @@ class RemoteIntakeCustomerCareRepositoryTest {
         assertEquals(listOf(1, 1), inquiryRepository.submittedStateVersions)
     }
 
+    @Test
+    fun staleConflict_retryUsesLatestVersionWithoutCreatingSecondInquiry() = runBlocking {
+        val inquiryRepository = RecordingInquiryRepository(staleConflictCount = 1)
+        val repository = RemoteIntakeCustomerCareRepository(
+            inquiryRepository = inquiryRepository,
+            fallbackRepository = EmptyFallbackRepository(),
+        )
+        val request = sampleRequest()
+
+        val first = repository.submitIntake(request)
+        val second = repository.submitIntake(request)
+
+        assertTrue(first is ApiResult.Failure)
+        assertTrue(second is ApiResult.Success<*>)
+        assertEquals(1, inquiryRepository.createCalls)
+        assertEquals(2, inquiryRepository.submitCalls)
+        assertEquals(listOf(1, 2), inquiryRepository.submittedStateVersions)
+        assertEquals(inquiryRepository.submitKeys[0], inquiryRepository.submitKeys[1])
+    }
+
     private fun sampleRequest() = SymptomIntakeRequest(
         subscriptionId = "00000000-0000-4000-8000-000000000101",
         symptomCodes = listOf("LOW_FLOW"),
@@ -84,6 +108,7 @@ class RemoteIntakeCustomerCareRepositoryTest {
     private class RecordingInquiryRepository(
         private val failCreateCount: Int = 0,
         private val failSubmitCount: Int = 0,
+        private val staleConflictCount: Int = 0,
     ) : InquiryRepository {
         val createKeys = mutableListOf<String>()
         val submitKeys = mutableListOf<String>()
@@ -139,11 +164,26 @@ class RemoteIntakeCustomerCareRepositoryTest {
                 )
             }
 
+            if (submitCalls <= staleConflictCount) {
+                return ApiResult.Failure(
+                    code = "STATE-CONFLICT-01",
+                    message = "최신 상태를 반영해 다시 시도해 주세요.",
+                    httpStatus = 409,
+                    conflict = StateConflictSnapshot(
+                        currentStatus = "DRAFT",
+                        currentStateVersion = 2,
+                        allowedActions = listOf(
+                            AllowedAction(code = "SUBMIT_SYMPTOM")
+                        ),
+                    ),
+                )
+            }
+
             return ApiResult.Success(
                 SubmitSymptomResponse(
                     inquiryId = inquiryId,
                     state = "QUESTIONNAIRE_IN_PROGRESS",
-                    stateVersion = 2,
+                    stateVersion = stateVersion + 1,
                     idempotentReplay = submitCalls > 1,
                     allowedActions = listOf(submitAnswersAction(), cancelAction()),
                 )

@@ -2,6 +2,7 @@ package com.skn29.watercare.core.network
 
 import android.content.Context
 import com.skn29.watercare.core.auth.TokenStore
+import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.ApiEnvelope
 import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.StateConflictSnapshot
@@ -12,9 +13,10 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -82,12 +84,18 @@ suspend fun <T> safeApiCall(
 ): ApiResult<T> = try {
     val response = call()
     val body = response.body()
-    if (response.isSuccessful && body?.success == true && body.data != null) {
-        ApiResult.Success(body.data!!)
+    val successData = body?.data
+    if (response.isSuccessful && body?.success == true && successData != null) {
+        ApiResult.Success(successData)
     } else {
-        val parsed = response.errorBody()?.string()?.takeIf(String::isNotBlank)?.let { raw ->
-            runCatching { json.decodeFromString<ApiEnvelope<kotlinx.serialization.json.JsonElement>>(raw) }.getOrNull()
-        }
+        val parsed = response.errorBody()
+            ?.string()
+            ?.takeIf(String::isNotBlank)
+            ?.let { raw ->
+                runCatching {
+                    json.decodeFromString<ApiEnvelope<JsonElement>>(raw)
+                }.getOrNull()
+            }
         val error = body?.error ?: parsed?.error
         val status = response.code()
         ApiResult.Failure(
@@ -96,7 +104,11 @@ suspend fun <T> safeApiCall(
             details = error?.details?.toString(),
             httpStatus = status,
             retryable = status == 408 || status == 429 || status >= 500,
-            conflict = if (status == 409) extractConflict(error?.details, parsed?.data) else null,
+            conflict = if (status == 409) {
+                extractConflict(error?.details, parsed?.data)
+            } else {
+                null
+            },
         )
     }
 } catch (exception: IOException) {
@@ -114,7 +126,6 @@ suspend fun <T> safeApiCall(
     )
 }
 
-
 internal fun extractConflict(
     details: Map<String, JsonElement>?,
     data: JsonElement?,
@@ -125,19 +136,60 @@ internal fun extractConflict(
         else -> null
     }
     if (root == null) return@runCatching null
+
     val current = (root["current"] as? JsonObject) ?: root
-    val status = current["current_status"]?.jsonPrimitive?.contentOrNull
-        ?: current["status"]?.jsonPrimitive?.contentOrNull
-    val version = current["current_state_version"]?.jsonPrimitive?.intOrNull
-        ?: current["state_version"]?.jsonPrimitive?.intOrNull
+    val status = current.stringValue("current_status")
+        ?: current.stringValue("status")
+    val version = current.intValue("current_state_version")
+        ?: current.intValue("state_version")
     val actions = (current["allowed_actions"] as? JsonArray)
-        ?.mapNotNull { element ->
-            when (element) {
-                is JsonObject -> element["code"]?.jsonPrimitive?.contentOrNull
-                else -> element.jsonPrimitive.contentOrNull
-            }
-        }
+        ?.mapNotNull(JsonElement::toAllowedActionOrNull)
         .orEmpty()
-    if (status == null && version == null && actions.isEmpty()) null
-    else StateConflictSnapshot(status, version, actions)
+
+    if (status == null && version == null && actions.isEmpty()) {
+        null
+    } else {
+        StateConflictSnapshot(
+            currentStatus = status,
+            currentStateVersion = version,
+            allowedActions = actions,
+        )
+    }
 }.getOrNull()
+
+private fun JsonElement.toAllowedActionOrNull(): AllowedAction? = when (this) {
+    is JsonObject -> {
+        val actionCode = stringValue("code")
+            ?.trim()
+            ?.takeIf(String::isNotEmpty)
+            ?: return null
+
+        AllowedAction(
+            code = actionCode,
+            label = stringValue("label").orEmpty(),
+            operationId = stringValue("operation_id").orEmpty(),
+            style = stringValue("style").orEmpty().ifBlank { "UNKNOWN" },
+            requiresConfirmation = booleanValue("requires_confirmation") ?: false,
+            confirmationMessage = stringValue("confirmation_message"),
+        )
+    }
+
+    is JsonPrimitive -> takeIf { isString }
+        ?.contentOrNull
+        ?.trim()
+        ?.takeIf(String::isNotEmpty)
+        ?.let { code -> AllowedAction(code = code) }
+
+    else -> null
+}
+
+private fun JsonObject.stringValue(name: String): String? =
+    (get(name) as? JsonPrimitive)
+        ?.takeIf { it.isString }
+        ?.contentOrNull
+
+private fun JsonObject.intValue(name: String): Int? =
+    (get(name) as? JsonPrimitive)?.intOrNull
+
+private fun JsonObject.booleanValue(name: String): Boolean? =
+    (get(name) as? JsonPrimitive)?.booleanOrNull

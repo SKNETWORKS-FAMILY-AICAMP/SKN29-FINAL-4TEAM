@@ -1,6 +1,7 @@
 package com.skn29.watercare.customer.feature.customer.intake
 
 import androidx.lifecycle.SavedStateHandle
+import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.CustomerHomeData
 import com.skn29.watercare.core.model.EntryMode
@@ -28,28 +29,32 @@ class SymptomIntakeViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
-    fun failedSubmission_keepsInputAndAllowsRetry() = runTest(mainDispatcherRule.dispatcher) {
-        val viewModel = SymptomIntakeViewModel(
-            subscriptionId = "subscription",
-            repository = failureRepository(
-                ApiResult.Failure(
-                    code = "NETWORK_ERROR",
-                    message = "network",
-                    retryable = true,
-                )
-            ),
-            savedStateHandle = SavedStateHandle(),
-        )
-        viewModel.updateRawText("입력 유지 테스트")
-        viewModel.submit()
-        advanceUntilIdle()
+    fun failedSubmission_keepsInputAndAllowsRetry() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val viewModel = SymptomIntakeViewModel(
+                subscriptionId = "subscription",
+                repository = failureRepository(
+                    ApiResult.Failure(
+                        code = "NETWORK_ERROR",
+                        message = "network",
+                        retryable = true,
+                    )
+                ),
+                savedStateHandle = SavedStateHandle(),
+            )
+            viewModel.updateRawText("입력 유지 테스트")
+            viewModel.submit()
+            advanceUntilIdle()
 
-        assertEquals("입력 유지 테스트", viewModel.state.value.rawText)
-        assertFalse(viewModel.state.value.isSubmitting)
-        assertNotNull(viewModel.state.value.globalError)
-        assertEquals(IntakeErrorKind.NETWORK, viewModel.state.value.errorKind)
-        assertTrue(viewModel.state.value.retryable)
-    }
+            assertEquals("입력 유지 테스트", viewModel.state.value.rawText)
+            assertFalse(viewModel.state.value.isSubmitting)
+            assertNotNull(viewModel.state.value.globalError)
+            assertEquals(
+                IntakeErrorKind.NETWORK,
+                viewModel.state.value.errorKind,
+            )
+            assertTrue(viewModel.state.value.retryable)
+        }
 
     @Test
     fun savedStateHandle_restoresOnlyCustomerDraftInput() {
@@ -86,38 +91,39 @@ class SymptomIntakeViewModelTest {
     }
 
     @Test
-    fun successfulSubmission_clearsPersistedDraft() = runTest(mainDispatcherRule.dispatcher) {
-        val handle = SavedStateHandle()
-        val success = IntakeSubmission(
-            inquiryId = "inquiry",
-            inquiryCode = "INQ-001",
-            guidanceScenario = MockScenario.BACKEND_PROCESSING.name,
-            statusCode = "QUESTIONNAIRE_IN_PROGRESS",
-            stateVersion = 2,
-        )
-        val viewModel = SymptomIntakeViewModel(
-            subscriptionId = "subscription",
-            repository = successRepository(success),
-            savedStateHandle = handle,
-        )
+    fun successfulSubmission_clearsPersistedDraft() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val handle = SavedStateHandle()
+            val success = IntakeSubmission(
+                inquiryId = "inquiry",
+                inquiryCode = "INQ-001",
+                guidanceScenario = MockScenario.BACKEND_PROCESSING.name,
+                statusCode = "QUESTIONNAIRE_IN_PROGRESS",
+                stateVersion = 2,
+            )
+            val viewModel = SymptomIntakeViewModel(
+                subscriptionId = "subscription",
+                repository = successRepository(success),
+                savedStateHandle = handle,
+            )
 
-        viewModel.updateRawText("제출 성공 후 제거")
-        viewModel.submit()
-        advanceUntilIdle()
+            viewModel.updateRawText("제출 성공 후 제거")
+            viewModel.submit()
+            advanceUntilIdle()
 
-        assertEquals(success, viewModel.state.value.completed)
+            assertEquals(success, viewModel.state.value.completed)
 
-        val recreated = SymptomIntakeViewModel(
-            subscriptionId = "subscription",
-            repository = unusedRepository(),
-            savedStateHandle = handle,
-        )
-        assertEquals("", recreated.state.value.rawText)
-        assertTrue(recreated.state.value.selectedSymptoms.isEmpty())
-    }
+            val recreated = SymptomIntakeViewModel(
+                subscriptionId = "subscription",
+                repository = unusedRepository(),
+                savedStateHandle = handle,
+            )
+            assertEquals("", recreated.state.value.rawText)
+            assertTrue(recreated.state.value.selectedSymptoms.isEmpty())
+        }
 
     @Test
-    fun stateConflict_keepsInputAndAppliesLatestStateSnapshot() =
+    fun stateConflict_keepsInputAndAppliesLatestTypedActions() =
         runTest(mainDispatcherRule.dispatcher) {
             val viewModel = SymptomIntakeViewModel(
                 subscriptionId = "subscription",
@@ -129,7 +135,12 @@ class SymptomIntakeViewModelTest {
                         conflict = StateConflictSnapshot(
                             currentStatus = "CONSULTATION_REQUIRED",
                             currentStateVersion = 4,
-                            allowedActions = listOf("REQUEST_CONSULTATION"),
+                            allowedActions = listOf(
+                                AllowedAction(
+                                    code = "REQUEST_CONSULTATION",
+                                    label = "상담 요청",
+                                )
+                            ),
                         ),
                     )
                 ),
@@ -142,11 +153,18 @@ class SymptomIntakeViewModelTest {
             val state = viewModel.state.value
             assertEquals("충돌 뒤에도 유지", state.rawText)
             assertEquals(IntakeErrorKind.CONFLICT, state.errorKind)
-            assertEquals("CONSULTATION_REQUIRED", state.conflictStatus)
+            assertEquals(
+                "CONSULTATION_REQUIRED",
+                state.conflictStatus,
+            )
             assertEquals(4, state.conflictStateVersion)
             assertEquals(
                 listOf("REQUEST_CONSULTATION"),
-                state.conflictAllowedActions,
+                state.conflictAllowedActions.map { it.code },
+            )
+            assertEquals(
+                "상담 요청",
+                state.conflictAllowedActions.single().displayLabel,
             )
         }
 
@@ -169,8 +187,14 @@ class SymptomIntakeViewModelTest {
             viewModel.submit()
             advanceUntilIdle()
 
-            assertEquals(IntakeErrorKind.AUTH_EXPIRED, viewModel.state.value.errorKind)
-            assertEquals("로그인 후에도 다시 입력할 내용", viewModel.state.value.rawText)
+            assertEquals(
+                IntakeErrorKind.AUTH_EXPIRED,
+                viewModel.state.value.errorKind,
+            )
+            assertEquals(
+                "로그인 후에도 다시 입력할 내용",
+                viewModel.state.value.rawText,
+            )
 
             val recreated = SymptomIntakeViewModel(
                 subscriptionId = "subscription",
@@ -200,7 +224,10 @@ class SymptomIntakeViewModelTest {
             forbidden.updateRawText("권한 테스트")
             forbidden.submit()
             advanceUntilIdle()
-            assertEquals(IntakeErrorKind.FORBIDDEN, forbidden.state.value.errorKind)
+            assertEquals(
+                IntakeErrorKind.FORBIDDEN,
+                forbidden.state.value.errorKind,
+            )
 
             val notFound = SymptomIntakeViewModel(
                 "subscription",
@@ -216,13 +243,17 @@ class SymptomIntakeViewModelTest {
             notFound.updateRawText("소유권 테스트")
             notFound.submit()
             advanceUntilIdle()
-            assertEquals(IntakeErrorKind.NOT_FOUND, notFound.state.value.errorKind)
+            assertEquals(
+                IntakeErrorKind.NOT_FOUND,
+                notFound.state.value.errorKind,
+            )
         }
 
     private fun failureRepository(
         failure: ApiResult.Failure,
     ): CustomerCareRepository = object : CustomerCareRepository {
-        override suspend fun getHome(): ApiResult<CustomerHomeData> = error("unused")
+        override suspend fun getHome(): ApiResult<CustomerHomeData> =
+            error("unused")
 
         override suspend fun submitIntake(
             request: SymptomIntakeRequest,
@@ -237,11 +268,13 @@ class SymptomIntakeViewModelTest {
     private fun successRepository(
         submission: IntakeSubmission,
     ): CustomerCareRepository = object : CustomerCareRepository {
-        override suspend fun getHome(): ApiResult<CustomerHomeData> = error("unused")
+        override suspend fun getHome(): ApiResult<CustomerHomeData> =
+            error("unused")
 
         override suspend fun submitIntake(
             request: SymptomIntakeRequest,
-        ): ApiResult<IntakeSubmission> = ApiResult.Success(submission)
+        ): ApiResult<IntakeSubmission> =
+            ApiResult.Success(submission)
 
         override suspend fun getGuidance(
             inquiryId: String,
@@ -251,7 +284,8 @@ class SymptomIntakeViewModelTest {
 
     private fun unusedRepository(): CustomerCareRepository =
         object : CustomerCareRepository {
-            override suspend fun getHome(): ApiResult<CustomerHomeData> = error("unused")
+            override suspend fun getHome(): ApiResult<CustomerHomeData> =
+                error("unused")
 
             override suspend fun submitIntake(
                 request: SymptomIntakeRequest,
