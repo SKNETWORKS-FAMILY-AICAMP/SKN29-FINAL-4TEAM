@@ -42,6 +42,7 @@ class RemoteIntakeCustomerCareRepository(
 
         val createRequest = CreateInquiryRequest(
             subscriptionId = request.subscriptionId,
+            channelCode = "MOBILE",
             rawText = request.toBackendRawText(),
             representativeSymptomCode = request.symptomCodes.firstOrNull(),
             questionnaireSessionId = null,

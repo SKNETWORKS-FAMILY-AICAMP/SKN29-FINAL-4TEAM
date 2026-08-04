@@ -129,7 +129,7 @@ fun SymptomIntakeContent(
             onValueChange = onRawTextChange,
             label = { Text("증상을 자세히 적어 주세요") },
             supportingText = {
-                Text(state.rawTextError ?: "대표 증상을 선택하지 않으면 필수입니다. ${state.rawText.length}/5000")
+                Text(state.rawTextError ?: "증상 설명은 필수입니다. ${state.rawText.length}/5000")
             },
             isError = state.rawTextError != null,
             minLines = 4,

@@ -43,6 +43,7 @@ class RemoteIntakeCustomerCareRepositoryTest {
         assertEquals(3, success.value.stateVersion)
         assertEquals("REQUEST_CONSULTATION", success.value.allowedActions.single().code)
 
+        assertEquals("MOBILE", inquiryRepository.requests[0].channelCode)
         assertTrue(inquiryRepository.requests[0].rawText.contains("발생 조건:"))
         assertTrue(inquiryRepository.requests[0].rawText.contains("제품 표시 문구·오류 코드:"))
     }

@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CreateInquiryRequest(
     @SerialName("subscription_id") val subscriptionId: String,
-    @SerialName("channel_code") val channelCode: String = "MOBILE",
+    @SerialName("channel_code") val channelCode: String,
     @SerialName("raw_text") val rawText: String,
     @SerialName("representative_symptom_code") val representativeSymptomCode: String? = null,
     @SerialName("questionnaire_session_id") val questionnaireSessionId: String? = null,

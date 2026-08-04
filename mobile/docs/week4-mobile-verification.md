@@ -27,15 +27,30 @@
 - 실제 재검증 기준 Commit: `1474a36a1b4bc218842ba675c5f4ce7c95c796a6`
 - 최종 검증 결과: 전용 Debug `ComposeTestActivity` Host 적용 후 실단말 2/2 통과
 
-## 다음 Runtime 검증
+## CUST-02 Runtime 검증
 
-1. PostgreSQL과 Django 실행
-2. `adb reverse tcp:8000 tcp:8000`
-3. Demo 고객 로그인
-4. CUST-02에서 증상 입력 후 실제 문의 생성
-5. Backend 응답의 문의번호·상태·버전·허용 행동 확인
-6. 네트워크 실패 후 같은 입력 재시도로 Idempotency Replay 확인
+- 검증 시각: `2026-08-04 11:27:23 +09:00`
+- `GET /health`: PASS (`200 OK`)
+- `POST /api/v1/auth/demo-login`: PASS (`200 OK`)
+- `GET /api/v1/me`: PASS (`200 OK`)
+- `POST /api/v1/inquiries`: PASS (`201 Created`, 215ms)
+- 요청 Schema 보정:
+  - `channel_code`를 `MOBILE`로 명시
+  - 대표 증상 선택 여부와 관계없이 `raw_text`를 필수 검증
+- 실제 DB 구독 UUID는 Runtime 검증에만 임시 사용했고 검증 후 소스에서 복구
+- 최종 모바일 검증: PASS
+  - Core 단위 테스트
+  - Customer 단위 테스트
+  - Customer Debug APK
+  - Technician Debug APK
+  - Gradle `106 actionable tasks: 11 executed, 95 up-to-date`
+- 응답 본문의 `inquiry_id`, `inquiry_code`, `status_code`, `state_version`, `allowed_actions`, `idempotent_replay` 상세값은 미검증
+- 동일 요청 재시도의 Idempotency Replay Runtime 검증은 미완료
 
+## 남은 Runtime 검증
+
+1. Backend 응답 본문의 문의번호·상태·버전·허용 행동 확인
+2. 동일 Payload 재시도 시 Idempotency Replay 확인
 ## 제한사항
 
 - 제품·구독 조회 Runtime Endpoint 대기
