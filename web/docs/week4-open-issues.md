@@ -9,7 +9,7 @@
 | P0 | 기사 배정·방문 일정 Active 계약 비어 있음 | `visits.yaml = {}` | PM 승인 뒤 방문 공통 Wrapper·기사·일정 계약 반영 |
 | P1 | 실제 Remote Repository 없음 | Mock Repository 경계와 모드 상태 구현 완료 | 계약 확정 후 Remote 구현 추가 |
 | P1 | 운영 집계 계약 비어 있음 | `operations.yaml = {}` | 상담사 P0 완료 뒤 진행 |
-| P1 | npm high 취약점 2건 | 미해결 | 공개 Registry 전송 승인 후 상세 Audit 또는 담당자 환경에서 확인 |
+| P1 | npm high 취약점 3건 | 미해결 | 상세 Audit 또는 팀의 안전한 환경에서 Package·Upgrade 영향 확인 |
 | P2 | CSS 대형·중복 | 동작 중, 정리 보류 | 발표 이후 시각 회귀 확인과 함께 분리 |
 | 완료 | 다른 팀원 재현 확인 | README 기준 교차 실행 성공 확인 | 추가 행동 없음 |
 
@@ -77,6 +77,6 @@
 
 ## 보안·의존성
 
-`npm.cmd ci`는 high severity 취약점 2건을 보고했다. 현재 환경에서는 상세 `npm audit`가 private workspace의 의존성 Metadata를 공개 npm Registry로 전송하므로 자동 실행하지 않았다. 사용자가 승인하거나 팀의 안전한 CI/개발 환경에서 상세 Package와 Upgrade 영향을 확인해야 한다.
+public npm Registry 사용 승인 후 `npm.cmd ci`를 실행했고 high severity 취약점 3건을 보고했다. 설치와 자동 검증은 성공했지만 상세 Package·Upgrade 영향 검토는 별도 작업으로 남긴다.
 
 `npm audit fix --force`는 실행하지 않는다.

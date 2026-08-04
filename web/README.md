@@ -1,4 +1,4 @@
-# Watercare Web
+# Water Bridge Web
 
 상담사·운영 담당자가 사용하는 React 19, Vite, TypeScript 기반 웹입니다. 현재 상담사 `CONS-01 → CONS-02 → CONS-03` 흐름은 합성 Mock 데이터로 실행됩니다.
 

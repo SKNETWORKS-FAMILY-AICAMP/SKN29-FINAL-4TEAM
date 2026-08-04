@@ -9,10 +9,19 @@
 | 3 | 상담사 목록·상세 실제 API | 검토 완료·Backend 차단 | Web 회신 완료, PM 승인·Active 계약 대기 |
 | 4 | 상담 저장·409·allowed_actions | Mock 검증·Backend 차단 | 구현 준비 완료, 실제 저장 계약은 비어 있음 |
 | 5 | 방문 전환·일정 실제 저장 | 검토 완료·Backend 차단 | 수정안 수용, PM 승인·Active 계약 대기 |
-| 6 | 8월 5일 발표 기준 Web 동결 | 준비 중 | 시연 문서 준비, 기준 Commit과 3회 반복 확인 필요 |
+| 6 | 8월 5일 발표 기준 Web 동결 | 자료 완료·최종 확인 필요 | 기준·Fallback·수치 문서와 캡처 완료, Commit과 3회 반복 확인 필요 |
 | 7 | 발표 후 회귀 수정·5주차 인계 | 예정 | 발표 피드백 이후 진행 |
 
 발표에서는 `완료`, `Mock 검증`, `Backend 차단`, `예정`을 구분해서 설명한다.
+
+## 발표 자료
+
+- [발표 기준](./week4-web-presentation-baseline.md)
+- [시연 순서](./week4-web-demo-script.md)
+- [발표 체크리스트](./week4-web-demo-checklist.md)
+- [Fallback 계획](./week4-web-fallback-plan.md)
+- [담당자 전달 수치](./week4-web-presentation-metrics.md)
+- [2026-08-04 작업 기록](./week4-web-work-log-20260804.md)
 
 ## 2026-08-04 구현 준비
 
