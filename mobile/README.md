@@ -119,3 +119,31 @@ APK 생성 경로:
 현재 고객 홈의 구독 ID는 명시적 Mock이므로 실제 Runtime 검증에서는 Demo 고객의 활성 구독 UUID를 일시 적용하고 검증 직후 복구했다. 운영용 활성 구독 ID 공급 경로는 Backend 계약 확정 전까지 `REVIEW_REQUEST / IMPLEMENTATION_HOLD`로 유지한다.
 
 상세 검증 결과는 `docs/week4-mobile-verification.md`에서 확인한다.
+
+
+## 4주차 발표 Smoke Test
+
+발표 전 모바일 검증은 다음 PowerShell Script를 사용한다.
+
+```powershell
+powershell -ExecutionPolicy Bypass `
+  -File .\scripts\week4-mobile-smoke-test.ps1 `
+  -RepoPath C:\skn29\WaterCare `
+  -BuildOnly
+```
+
+실제 Backend와 단말을 함께 검증할 때는 `-Install`을 사용한다.
+
+```powershell
+powershell -ExecutionPolicy Bypass `
+  -File .\scripts\week4-mobile-smoke-test.ps1 `
+  -RepoPath C:\skn29\WaterCare `
+  -Install
+```
+
+관련 문서:
+
+- `docs/week4-presentation/2026-08-04_모바일_Smoke_Test_가이드.md`
+- `docs/week4-presentation/2026-08-04_모바일_구현_상태표.md`
+- `docs/week4-presentation/2026-08-04_모바일_제한사항.md`
+- `docs/week4-presentation/2026-08-04_모바일_Smoke_Test_체크리스트.md`
