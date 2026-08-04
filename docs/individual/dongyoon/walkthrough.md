@@ -486,3 +486,18 @@ Public UUID 분석 요청이 모두 성공했다.
   `ACCEPT`·`CHANGE_REQUEST`·`BLOCKED` 회신 형식을 포함했다.
 - 문서는 `READY_TO_SEND`이며 AI 기준선 Commit과 Backend 회신·팀 DB 공동
   검증 전에는 통합 완료로 표시하지 않는다.
+
+### 2026-08-04 김은진 13번째 정책 차단·팀 DB RAG 검증 협업요청서
+
+- `20260804_이동윤_김은진_13번째정책차단_팀DB_RAG검증_협업요청서_v0.1.md`를
+  작성했다.
+- 기존 미검증 FAQ 질의의 검색 전 차단과, 정상 제품·D세대 후보를 실제 검색한
+  뒤 문서 정책으로 제거하는 13번째 Case의 차이를 명시했다.
+- 김은진이 Case ID·QA Fixture·검증 상태·사용 허용·RAG 정책·차단 사유·
+  기대 실행 경로를 `APPROVE`·`CHANGE_REQUEST`·`BLOCKED`로 결정하도록
+  회신 표를 제공했다.
+- 팀 DB에서 승인 청크 7건·1024차원·Model Revision·Chunk Set Hash·13개
+  평가·금지 Hit 0·UPSERT 멱등·Fixture Rollback을 독립 검증하는 절차와
+  반환 Evidence 형식을 포함했다.
+- 최지용의 Backend Adapter는 병렬 진행할 수 있지만 김은진의 승인과 독립 QA
+  전에는 13건·팀 DB RAG를 공식 완료로 표시하지 않는다.
