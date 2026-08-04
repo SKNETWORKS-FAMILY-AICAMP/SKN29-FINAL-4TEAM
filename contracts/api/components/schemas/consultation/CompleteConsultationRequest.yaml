@@ -1,5 +1,10 @@
 title: CompleteConsultationRequest
 type: object
 description: 상담 완료 요청
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required: [state_version]
+properties:
+  state_version:
+    type: integer
+    minimum: 1

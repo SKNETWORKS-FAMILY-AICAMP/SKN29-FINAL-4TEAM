@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Water Care Support API
-  version: 0.5.0
+  version: 0.6.0
   description: 정수기 구독 고객 케어 및 A/S 업무 지원 시스템 API 계약
 servers:
   - url: /api/v1
@@ -16,6 +16,8 @@ paths:
     $ref: ./paths/auth.yaml#/~1me
   /inquiries:
     $ref: ./paths/inquiries.yaml#/~1inquiries
+  /inquiries/{id}:
+    $ref: ./paths/inquiries.yaml#/~1inquiries~1{id}
   /inquiries/{id}/questionnaire:
     $ref: ./paths/inquiries.yaml#/~1inquiries~1{id}~1questionnaire
   /inquiries/{id}/action-results:
@@ -24,6 +26,24 @@ paths:
     $ref: ./paths/inquiries.yaml#/~1inquiries~1{id}~1submit
   /inquiries/{id}/cancel:
     $ref: ./paths/workflow.yaml#/~1inquiries~1{id}~1cancel
+  /inquiries/{id}/start-consultation:
+    $ref: ./paths/consultations.yaml#/~1inquiries~1{id}~1start-consultation
+  /inquiries/{id}/consultation-summary:
+    $ref: ./paths/consultations.yaml#/~1inquiries~1{id}~1consultation-summary
+  /inquiries/{id}/consultation-summary/confirm:
+    $ref: ./paths/consultations.yaml#/~1inquiries~1{id}~1consultation-summary~1confirm
+  /inquiries/{id}/complete-consultation:
+    $ref: ./paths/consultations.yaml#/~1inquiries~1{id}~1complete-consultation
+  /inquiries/{id}/visit-review:
+    $ref: ./paths/visits.yaml#/~1inquiries~1{id}~1visit-review
+  /inquiries/{id}/visits:
+    $ref: ./paths/visits.yaml#/~1inquiries~1{id}~1visits
+  /inquiries/{id}/visit-not-needed:
+    $ref: ./paths/visits.yaml#/~1inquiries~1{id}~1visit-not-needed
+  /visits/{visit_id}/schedule:
+    $ref: ./paths/visits.yaml#/~1visits~1{visit_id}~1schedule
+  /visits/{visit_id}/confirm:
+    $ref: ./paths/visits.yaml#/~1visits~1{visit_id}~1confirm
   /health:
     get:
       operationId: getProvisionalHealth
@@ -56,6 +76,8 @@ components:
   parameters:
     Idempotency-Key:
       $ref: ./components/parameters/IdempotencyKey.yaml
+    X-Correlation-ID:
+      $ref: ./components/parameters/CorrelationId.yaml
   headers:
     X-Correlation-ID:
       $ref: ./components/headers/CorrelationId.yaml

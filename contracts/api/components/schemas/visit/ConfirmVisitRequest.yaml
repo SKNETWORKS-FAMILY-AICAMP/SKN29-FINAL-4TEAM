@@ -1,6 +1,6 @@
-title: StateTransitionRequest
+title: ConfirmVisitRequest
 type: object
-description: 상태 전환 요청
+description: 서버에 저장된 합성 기사와 확정일을 검증해 방문을 확정하는 요청
 x-contract-status: CONFIRMED
 additionalProperties: false
 required: [state_version]

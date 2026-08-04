@@ -1,0 +1,33 @@
+title: ConsultantInquiryListData
+type: object
+description: 상담사 본인 배정 문의 목록·페이지·상태 집계
+x-contract-status: CONFIRMED
+additionalProperties: false
+required: [items, page_info, status_counts]
+properties:
+  items:
+    type: array
+    items:
+      $ref: ./ConsultantInquiryListItem.yaml
+  page_info:
+    $ref: ../common/PageInfo.yaml
+  status_counts:
+    type: object
+    propertyNames:
+      enum:
+        - DRAFT
+        - QUESTIONNAIRE_IN_PROGRESS
+        - AI_GUIDANCE
+        - CONSULTATION_REQUIRED
+        - CONSULTATION_IN_PROGRESS
+        - VISIT_REVIEW_PENDING
+        - VISIT_SCHEDULING
+        - VISIT_SCHEDULED
+        - COMPLETION_PENDING
+        - REVISIT_REQUIRED
+        - REOPENED
+        - RESOLVED
+        - CANCELLED
+    additionalProperties:
+      type: integer
+      minimum: 0

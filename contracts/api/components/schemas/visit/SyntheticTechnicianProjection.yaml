@@ -1,0 +1,21 @@
+title: SyntheticTechnicianProjection
+type: object
+description: 현재 배정 Visit에서만 제공하는 합성 기사 최소 정보
+x-contract-status: CONFIRMED
+additionalProperties: false
+required: [is_synthetic, technician_id, display_name, phone]
+properties:
+  is_synthetic:
+    type: boolean
+    const: true
+  technician_id:
+    type: string
+    format: uuid
+  display_name:
+    type: string
+    maxLength: 80
+    description: 합성 기사 표시명
+  phone:
+    type: string
+    maxLength: 32
+    description: 합성 시연용 연락처

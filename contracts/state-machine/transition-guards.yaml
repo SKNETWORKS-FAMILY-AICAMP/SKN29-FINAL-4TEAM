@@ -18,6 +18,9 @@ references:
   role_permissions: ./role-permissions.yaml
   completion_policy: ./completion-policy.yaml
   concurrency_policy: ./concurrency-policy.yaml
+  consultation_result_codes: ../codes/consultation-result-codes.yaml
+  visit_review_reason_codes: ../codes/visit-review-reason-codes.yaml
+  visit_not_needed_reason_codes: ../codes/visit-not-needed-reason-codes.yaml
 evaluation_policy:
   default_combiner: ALL
   evaluate_inside_transaction: true
@@ -56,6 +59,15 @@ condition_language:
   - 배열의 모든 조건은 별도 combiner가 없으면 ALL로 평가한다.
   - 함수 형태의 조건은 Backend Service 또는 Repository 조회를 뜻한다.
   - 시스템 이벤트용 Guard 실패는 고객에게 원문을 노출하지 않고 내부 로그와 추적 ID를 남긴다.
+wire_domain_crosswalk:
+  synthetic_technician:
+    request_field: request.synthetic_technician_id
+    public_identity_field: requested_technician.public_id
+    persistence_relation: visit.assigned_technician_id
+    response_field: visit.schedule.synthetic_technician_id
+    required_role: TECHNICIAN
+    require_active: true
+    require_synthetic: true
 guard_categories:
 - AUTHENTICATION
 - ROLE
@@ -149,35 +161,37 @@ guards:
     error_code: PRODUCT_NOT_FOUND
     message: 사용할 수 있는 등록 제품을 찾을 수 없습니다.
 - id: G-ASSIGNED-CONSULTANT
-  category: ASSIGNMENT
-  description: 상담 작업은 현재 문의에 배정된 상담사만 수행한다.
+  category: RESOURCE_ACCESS
+  description: 상담 작업은 현재 문의에 배정된 상담사만 수행하며 비담당 문의의 존재 여부를 숨긴다.
   conditions:
   - inquiry.assigned_consultant_id is not null
   - inquiry.assigned_consultant_id == actor.user_id
   failure:
-    http_status: 403
-    error_code: CONSULTANT_ASSIGNMENT_REQUIRED
-    message: 해당 문의의 담당 상담사만 처리할 수 있습니다.
+    http_status: 404
+    error_code: RESOURCE_NOT_FOUND
+    message: 문의를 찾을 수 없습니다.
 - id: G-ASSIGNED-TECHNICIAN
-  category: ASSIGNMENT
-  description: 방문 작업은 해당 Visit에 배정된 방문기사만 수행한다.
+  category: RESOURCE_ACCESS
+  description: 방문 작업은 해당 Visit에 배정된 합성 방문기사만 수행하며 비담당 방문의 존재 여부를 숨긴다.
   conditions:
   - visit.exists == true
   - visit.assigned_technician_id is not null
   - visit.assigned_technician_id == actor.user_id
+  - actor.is_synthetic == true
   failure:
-    http_status: 403
-    error_code: TECHNICIAN_ASSIGNMENT_REQUIRED
-    message: 해당 방문의 담당 기사만 처리할 수 있습니다.
+    http_status: 404
+    error_code: RESOURCE_NOT_FOUND
+    message: 방문 정보를 찾을 수 없습니다.
 - id: G-ASSIGNED-TECHNICIAN-PRESENT
   category: BUSINESS_RULE
-  description: 방문 확정 전에 활성 방문기사가 배정되어 있어야 한다.
+  description: 방문 확정 전에 활성 합성 방문기사가 배정되어 있어야 한다.
   conditions:
   - visit.exists == true
   - visit.assigned_technician_id is not null
   - assigned_technician.exists == true
   - assigned_technician.role == TECHNICIAN
   - assigned_technician.is_active == true
+  - assigned_technician.is_synthetic == true
   failure:
     http_status: 422
     error_code: ASSIGNED_TECHNICIAN_REQUIRED
@@ -295,7 +309,7 @@ guards:
   description: 상담 완료 전에 필수 상담 결과와 확정 요약이 저장되어 있어야 한다.
   conditions:
   - consultation.exists == true
-  - consultation.result_code in configured_consultation_result_codes
+  - consultation.result_code in configured_consultation_completion_result_codes
   - consultation.confirmed_summary is not null
   - consultation.summary_confirmed_at is not null
   - consultation.completed_at is null
@@ -309,6 +323,7 @@ guards:
   conditions:
   - request.reason_code in configured_visit_review_reason_codes
   - request.reason_detail is null or trim(request.reason_detail).length <= 1000
+  - consultation.result_code == VISIT_REQUIRED
   - consultation.confirmed_summary is not null
   failure:
     http_status: 422
@@ -319,10 +334,13 @@ guards:
   description: 방문 생성 전에 기사가 확인할 인계 정보가 완성되어야 한다.
   conditions:
   - consultation.confirmed_summary is not null
+  - consultation.result_code == VISIT_REQUIRED
   - inquiry.product_id is not null
   - request.visit_reason is not null
-  - request.customer_preferred_date is null or is_valid_local_date(request.customer_preferred_date)
+  - trim(request.visit_reason).length between 1 and 1000
+  - request.preferred_date is null or is_valid_local_date(request.preferred_date)
   - request.usage_guidance_status in [NORMAL, PARTIAL_STOP, TOTAL_STOP, PENDING_CONSULTATION]
+  - request.handoff is valid_against VisitHandoff
   - request.handoff contains no_internal_ai_fields
   failure:
     http_status: 422
@@ -330,27 +348,28 @@ guards:
     message: 방문 인계에 필요한 정보를 모두 입력해 주세요.
 - id: G-VISIT-SCHEDULE-PAYLOAD-VALID
   category: PAYLOAD
-  description: 방문 일정 수정 값은 시간대·기사·일정 정책을 충족해야 한다.
+  description: 방문 일정 수정 값은 P0 date-only 정책과 합성 기사 정책을 충족해야 한다.
   conditions:
   - visit.exists == true
-  - request.scheduled_start is not null
-  - request.scheduled_end is not null
-  - request.scheduled_start < request.scheduled_end
-  - request.scheduled_start is ISO_8601_WITH_OFFSET
-  - request.scheduled_end is ISO_8601_WITH_OFFSET
-  - request.assigned_technician_public_id is null or technician_exists_and_active(request.assigned_technician_public_id)
-  - no_forbidden_schedule_overlap(request.assigned_technician_public_id, request.scheduled_start, request.scheduled_end)
+  - request.synthetic_technician_id is not null
+  - requested_technician.exists == true
+  - requested_technician.public_id == request.synthetic_technician_id
+  - requested_technician.role == TECHNICIAN
+  - requested_technician.is_active == true
+  - requested_technician.is_synthetic == true
+  - request.preferred_date is null or is_valid_local_date(request.preferred_date)
+  - request.confirmed_date is null or is_valid_local_date(request.confirmed_date)
+  - request.preferred_date is null or request.confirmed_date is null or request.preferred_date <= request.confirmed_date
   failure:
     http_status: 422
     error_code: INVALID_VISIT_SCHEDULE
     message: 방문 일정과 담당 기사 정보를 확인해 주세요.
 - id: G-CONFIRMED-VISIT-DATE
   category: BUSINESS_RULE
-  description: 방문 확정 전에 최종 시작·종료 시각이 저장되어 있어야 한다.
+  description: 방문 확정 전에 date-only 최종 방문일이 저장되어 있어야 한다.
   conditions:
-  - visit.scheduled_start is not null
-  - visit.scheduled_end is not null
-  - visit.scheduled_start < visit.scheduled_end
+  - visit.confirmed_date is not null
+  - is_valid_local_date(visit.confirmed_date)
   failure:
     http_status: 422
     error_code: CONFIRMED_VISIT_DATE_REQUIRED
@@ -549,6 +568,7 @@ guards:
   description: 방문 불필요 확정 전에 상담 결과와 방문 불필요 판단 근거가 완성되어 있어야 한다.
   conditions:
   - consultation.exists == true
+  - consultation.result_code == VISIT_REQUIRED
   - consultation.confirmed_summary is not null
   - consultation.summary_confirmed_at is not null
   - request.reason_code in configured_visit_not_needed_reason_codes
