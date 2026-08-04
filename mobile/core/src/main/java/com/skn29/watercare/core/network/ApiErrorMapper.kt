@@ -2,7 +2,7 @@ package com.skn29.watercare.core.network
 
 object ApiErrorMapper {
     fun userMessage(status: Int, serverMessage: String? = null): String = when (status) {
-        400 -> serverMessage ?: "입력 내용을 확인해 주세요."
+        400, 422 -> serverMessage ?: "입력 내용을 확인해 주세요."
         401 -> "로그인이 만료되었습니다. 다시 로그인해 주세요."
         403 -> "현재 계정 역할로는 이 기능을 사용할 수 없습니다."
         404 -> "요청한 정보를 찾을 수 없습니다."

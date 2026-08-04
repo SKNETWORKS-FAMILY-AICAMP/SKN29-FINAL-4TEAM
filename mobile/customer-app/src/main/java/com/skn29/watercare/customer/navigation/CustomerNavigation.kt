@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.customer.feature.auth.LoginScreen
 import com.skn29.watercare.customer.feature.customer.guidance.GuidanceScreen
@@ -36,7 +37,12 @@ fun CustomerNavigation() {
                 offlinePreview = entry.arguments?.getBoolean("offline") ?: false,
                 onStartIntake = { navController.navigate(CustomerRoute.intake(it)) },
                 onOpenGuidance = { inquiryId, scenario ->
-                    navController.navigate(CustomerRoute.guidance(inquiryId, scenario.name))
+                    navController.navigate(
+                        CustomerRoute.guidance(
+                            inquiryId = inquiryId,
+                            scenario = scenario.name,
+                        )
+                    )
                 },
                 onLogout = {
                     navController.navigate(CustomerRoute.LOGIN) {
@@ -55,8 +61,24 @@ fun CustomerNavigation() {
                 onBack = { navController.popBackStack() },
                 onCompleted = { submission ->
                     navController.navigate(
-                        CustomerRoute.guidance(submission.inquiryId, submission.guidanceScenario)
+                        CustomerRoute.guidance(
+                            inquiryId = submission.inquiryId,
+                            scenario = submission.guidanceScenario,
+                            inquiryCode = submission.inquiryCode,
+                            statusCode = submission.statusCode,
+                            stateVersion = submission.stateVersion,
+                            idempotentReplay = submission.idempotentReplay,
+                            allowedActions = submission.allowedActions,
+                        )
                     )
+                },
+                onAuthExpired = {
+                    navController.navigate(CustomerRoute.LOGIN) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 },
             )
         }
@@ -65,16 +87,66 @@ fun CustomerNavigation() {
             arguments = listOf(
                 navArgument("inquiryId") { type = NavType.StringType },
                 navArgument("scenario") { type = NavType.StringType },
+                navArgument("inquiryCode") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
+                navArgument("statusCode") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
+                navArgument("stateVersion") {
+                    type = NavType.IntType
+                    defaultValue = -1
+                },
+                navArgument("idempotentReplay") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                },
+                navArgument("allowedActions") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
             ),
         ) { entry ->
             val scenario = runCatching {
                 MockScenario.valueOf(entry.arguments?.getString("scenario").orEmpty())
             }.getOrDefault(MockScenario.NO_EVIDENCE)
+
+            val submittedInquiryCode =
+                entry.arguments?.getString("inquiryCode").orEmpty().trim()
+            val submittedStatusCode =
+                entry.arguments?.getString("statusCode")
+                    .orEmpty()
+                    .trim()
+                    .takeIf(String::isNotEmpty)
+            val submittedStateVersion =
+                entry.arguments?.getInt("stateVersion")
+                    ?.takeIf { it >= 0 }
+            val submittedAllowedActions =
+                entry.arguments?.getString("allowedActions")
+                    .orEmpty()
+                    .split(",")
+                    .map(String::trim)
+                    .filter(String::isNotEmpty)
+                    .distinct()
+                    .map { code -> AllowedAction(code = code) }
+            val submittedIdempotentReplay =
+                if (submittedInquiryCode.isNotEmpty()) {
+                    entry.arguments?.getBoolean("idempotentReplay") ?: false
+                } else {
+                    null
+                }
+
             GuidanceScreen(
                 inquiryId = entry.arguments?.getString("inquiryId").orEmpty(),
                 scenario = scenario,
+                submittedInquiryCode = submittedInquiryCode,
+                submittedStatusCode = submittedStatusCode,
+                submittedStateVersion = submittedStateVersion,
+                submittedAllowedActions = submittedAllowedActions,
+                submittedIdempotentReplay = submittedIdempotentReplay,
                 onBack = { navController.popBackStack() },
-                onRequestConsultation = { /* API endpoint is not routed yet; UI contract is verified. */ },
                 onDone = {
                     navController.navigate(CustomerRoute.home(false)) {
                         popUpTo(CustomerRoute.HOME) { inclusive = false }

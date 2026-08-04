@@ -9,6 +9,8 @@ import com.skn29.watercare.core.model.InquiryResponse
 import com.skn29.watercare.core.model.LogoutResponse
 import com.skn29.watercare.core.model.RefreshTokenRequest
 import com.skn29.watercare.core.model.SessionResponse
+import com.skn29.watercare.core.model.SubmitSymptomRequest
+import com.skn29.watercare.core.model.SubmitSymptomResponse
 import com.skn29.watercare.core.model.UserData
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -42,6 +44,12 @@ interface WaterCareApi {
         @Body body: CreateInquiryRequest,
     ): Response<ApiEnvelope<InquiryResponse>>
 
+    @POST("api/v1/inquiries/{inquiryId}/submit")
+    suspend fun submitSymptom(
+        @Path("inquiryId") inquiryId: String,
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: SubmitSymptomRequest,
+    ): Response<ApiEnvelope<SubmitSymptomResponse>>
     @POST("api/v1/inquiries/{inquiryId}/cancel")
     suspend fun cancelInquiry(
         @Path("inquiryId") inquiryId: String,

@@ -10,6 +10,8 @@ import com.skn29.watercare.core.model.DemoLoginRequest
 import com.skn29.watercare.core.model.InquiryResponse
 import com.skn29.watercare.core.model.RefreshTokenRequest
 import com.skn29.watercare.core.model.SessionResponse
+import com.skn29.watercare.core.model.SubmitSymptomRequest
+import com.skn29.watercare.core.model.SubmitSymptomResponse
 import com.skn29.watercare.core.model.UserData
 import com.skn29.watercare.core.network.WaterCareApi
 import com.skn29.watercare.core.network.safeApiCall
@@ -24,8 +26,15 @@ interface AuthRepository {
 }
 
 interface InquiryRepository {
-    suspend fun create(request: CreateInquiryRequest): ApiResult<InquiryResponse>
-    suspend fun cancel(
+    suspend fun create(
+        request: CreateInquiryRequest,
+        idempotencyKey: String,
+    ): ApiResult<InquiryResponse>
+    suspend fun submit(
+        inquiryId: String,
+        stateVersion: Int,
+        idempotencyKey: String,
+    ): ApiResult<SubmitSymptomResponse>    suspend fun cancel(
         inquiryId: String,
         stateVersion: Int,
         reasonCode: String,
@@ -72,9 +81,24 @@ class RemoteInquiryRepository(
     private val api: WaterCareApi,
     private val json: Json,
 ) : InquiryRepository {
-    override suspend fun create(request: CreateInquiryRequest): ApiResult<InquiryResponse> =
-        safeApiCall(json) { api.createInquiry(UUID.randomUUID().toString(), request) }
+    override suspend fun create(
+        request: CreateInquiryRequest,
+        idempotencyKey: String,
+    ): ApiResult<InquiryResponse> =
+        safeApiCall(json) { api.createInquiry(idempotencyKey, request) }
 
+    override suspend fun submit(
+        inquiryId: String,
+        stateVersion: Int,
+        idempotencyKey: String,
+    ): ApiResult<SubmitSymptomResponse> =
+        safeApiCall(json) {
+            api.submitSymptom(
+                inquiryId = inquiryId,
+                idempotencyKey = idempotencyKey,
+                body = SubmitSymptomRequest(stateVersion),
+            )
+        }
     override suspend fun cancel(
         inquiryId: String,
         stateVersion: Int,

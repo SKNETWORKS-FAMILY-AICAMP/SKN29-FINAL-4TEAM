@@ -12,6 +12,19 @@ val localProperties = Properties().apply {
 }
 fun String.asBuildConfigString() = replace("\\", "\\\\").replace("\"", "\\\"")
 
+val customerCareMode = localProperties
+    .getProperty("CUSTOMER_CARE_MODE", "REMOTE")
+    .trim()
+    .uppercase()
+val demoSubscriptionId = localProperties
+    .getProperty("DEMO_SUBSCRIPTION_ID", "")
+    .trim()
+val showDeveloperTools = localProperties
+    .getProperty("SHOW_DEVELOPER_TOOLS", "false")
+    .trim()
+    .toBooleanStrictOrNull()
+    ?: false
+
 android {
     namespace = "com.skn29.watercare.customer"
     compileSdk = 37
@@ -23,6 +36,9 @@ android {
         versionName = "1.0.0-rebuild"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "BACKEND_BASE_URL", "\"${localProperties.getProperty("BACKEND_BASE_URL", "http://127.0.0.1:8000/").asBuildConfigString()}\"")
+        buildConfigField("String", "CUSTOMER_CARE_MODE", "\"${customerCareMode.asBuildConfigString()}\"")
+        buildConfigField("String", "DEMO_SUBSCRIPTION_ID", "\"${demoSubscriptionId.asBuildConfigString()}\"")
+        buildConfigField("boolean", "SHOW_DEVELOPER_TOOLS", showDeveloperTools.toString())
         buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${localProperties.getProperty("KAKAO_NATIVE_APP_KEY", "").asBuildConfigString()}\"")
     }
     buildFeatures { compose = true; buildConfig = true }

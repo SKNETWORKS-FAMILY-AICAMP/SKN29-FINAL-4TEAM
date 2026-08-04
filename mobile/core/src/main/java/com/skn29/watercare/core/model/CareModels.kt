@@ -24,7 +24,15 @@ enum class WorkflowState {
 }
 enum class DataClassification { OFFICIAL, TEAM_DESIGNED, SYNTHETIC, UNKNOWN }
 enum class EntryMode { CARE_PRECHECK, ADHOC_INQUIRY }
-enum class MockScenario { NORMAL, CAUTION, DANGER, NO_EVIDENCE, AI_FAILURE, NETWORK_FAILURE }
+enum class MockScenario {
+    NORMAL,
+    CAUTION,
+    DANGER,
+    NO_EVIDENCE,
+    BACKEND_PROCESSING,
+    AI_FAILURE,
+    NETWORK_FAILURE,
+}
 
 enum class SymptomTopic(val code: String, val label: String) {
     LOW_FLOW("LOW_FLOW", "출수량 저하"),
@@ -80,6 +88,10 @@ data class IntakeSubmission(
     @SerialName("inquiry_code") val inquiryCode: String,
     @SerialName("questionnaire_session_id") val questionnaireSessionId: String? = null,
     @SerialName("guidance_scenario") val guidanceScenario: String,
+    @SerialName("status_code") val statusCode: String? = null,
+    @SerialName("state_version") val stateVersion: Int? = null,
+    @SerialName("allowed_actions") val allowedActions: List<AllowedAction> = emptyList(),
+    @SerialName("idempotent_replay") val idempotentReplay: Boolean? = null,
 )
 
 @Serializable
@@ -108,7 +120,7 @@ data class GuidanceData(
     @SerialName("next_action") val nextAction: String,
     @SerialName("requires_consultation") val requiresConsultation: Boolean,
     val evidence: List<EvidenceCardData> = emptyList(),
-    @SerialName("allowed_actions") val allowedActions: List<String> = emptyList(),
+    @SerialName("allowed_actions") val allowedActions: List<AllowedAction> = emptyList(),
 )
 
 data class GuidanceDisplayModel(
@@ -125,7 +137,7 @@ data class GuidanceDisplayModel(
     val nextAction: String,
     val requiresConsultation: Boolean,
     val evidence: List<EvidenceCardData>,
-    val allowedActions: List<String>,
+    val allowedActions: List<AllowedAction>,
 )
 
 object GuidanceMapper {
@@ -172,14 +184,15 @@ object GuidanceMapper {
     }
 
     private fun sanitizeAllowedActions(
-        actions: List<String>,
+        actions: List<AllowedAction>,
         risk: RiskLevel,
         usage: UsageGuidanceStatus,
         mustConsult: Boolean,
-    ): List<String> {
-        val blocked = setOf("RESOLVE", "CLOSE_INQUIRY", "MARK_RESOLVED", "END_INQUIRY")
+    ): List<AllowedAction> {
+        val supportedCodes = setOf(InquiryActionLabels.REQUEST_CONSULTATION)
+        val supported = actions.filter { it.normalizedCode in supportedCodes }
         return if (risk == RiskLevel.DANGER || usage == UsageGuidanceStatus.TOTAL_STOP || mustConsult) {
-            actions.filterNot { it.uppercase() in blocked }
-        } else actions
+            supported.filter { it.normalizedCode == InquiryActionLabels.REQUEST_CONSULTATION }
+        } else supported
     }
 }

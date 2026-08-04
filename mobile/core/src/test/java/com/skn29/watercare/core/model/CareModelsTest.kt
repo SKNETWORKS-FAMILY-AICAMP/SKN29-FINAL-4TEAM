@@ -21,7 +21,10 @@ class CareModelsTest {
                 nextAction = "guess",
                 requiresConsultation = false,
                 evidence = emptyList(),
-                allowedActions = listOf("MARK_RESOLVED", "REQUEST_CONSULTATION"),
+                allowedActions = listOf(
+                    AllowedAction(code = "MARK_RESOLVED"),
+                    AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION),
+                ),
             )
         )
 
@@ -29,8 +32,8 @@ class CareModelsTest {
         assertEquals(UsageGuidanceStatus.PENDING_CONSULTATION, mapped.usageStatus)
         assertTrue(mapped.requiresConsultation)
         assertTrue(mapped.safeActions.isEmpty())
-        assertFalse("MARK_RESOLVED" in mapped.allowedActions)
-        assertTrue("REQUEST_CONSULTATION" in mapped.allowedActions)
+        assertFalse(mapped.allowedActions.any { it.normalizedCode == "MARK_RESOLVED" })
+        assertTrue(mapped.allowedActions.any { it.normalizedCode == InquiryActionLabels.REQUEST_CONSULTATION })
     }
 
     @Test
@@ -47,7 +50,7 @@ class CareModelsTest {
                 nextAction = "confirm",
                 requiresConsultation = false,
                 evidence = listOf(EvidenceCardData("manual", "1", 12, "summary", "VERIFIED", "official")),
-                allowedActions = listOf("CONFIRM_GUIDANCE"),
+                allowedActions = listOf(AllowedAction(code = "CONFIRM_GUIDANCE")),
             )
         )
         assertEquals(RiskLevel.CAUTION, mapped.riskLevel)
@@ -70,9 +73,13 @@ class CareModelsTest {
                 evidence = listOf(
                     EvidenceCardData("manual", "1", 1, "summary", "VERIFIED", "official")
                 ),
-                allowedActions = listOf("MARK_RESOLVED", "CLOSE_INQUIRY", "REQUEST_CONSULTATION"),
+                allowedActions = listOf(
+                    AllowedAction(code = "MARK_RESOLVED"),
+                    AllowedAction(code = "CLOSE_INQUIRY"),
+                    AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION),
+                ),
             )
         )
-        assertEquals(listOf("REQUEST_CONSULTATION"), mapped.allowedActions)
+        assertEquals(listOf(InquiryActionLabels.REQUEST_CONSULTATION), mapped.allowedActions.map { it.normalizedCode })
     }
 }

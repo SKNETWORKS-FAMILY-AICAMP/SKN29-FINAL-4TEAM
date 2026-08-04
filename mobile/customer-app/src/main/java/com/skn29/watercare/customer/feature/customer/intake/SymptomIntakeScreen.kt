@@ -2,7 +2,6 @@
 
 package com.skn29.watercare.customer.feature.customer.intake
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.model.EntryMode
@@ -36,10 +36,15 @@ fun SymptomIntakeScreen(
     subscriptionId: String,
     onBack: () -> Unit,
     onCompleted: (IntakeSubmission) -> Unit,
+    onAuthExpired: () -> Unit,
 ) {
     val viewModel: SymptomIntakeViewModel = viewModel(
-        factory = VmFactory {
-            SymptomIntakeViewModel(subscriptionId, WaterCareCore.customerCareRepository)
+        factory = VmFactory { extras ->
+            SymptomIntakeViewModel(
+                subscriptionId = subscriptionId,
+                repository = WaterCareCore.customerCareRepository,
+                savedStateHandle = extras.createSavedStateHandle(),
+            )
         }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -48,6 +53,13 @@ fun SymptomIntakeScreen(
         state.completed?.let {
             onCompleted(it)
             viewModel.consumeCompletion()
+        }
+    }
+
+    LaunchedEffect(state.errorKind) {
+        if (state.errorKind == IntakeErrorKind.AUTH_EXPIRED) {
+            viewModel.consumeAuthExpired()
+            onAuthExpired()
         }
     }
 
@@ -78,14 +90,33 @@ fun SymptomIntakeContent(
     onRetry: () -> Unit,
     onSubmit: () -> Unit,
 ) {
+    val hasConflict = state.errorKind == IntakeErrorKind.CONFLICT
+    val visibleConflictActions = state.conflictAllowedActions
+        .filter { it.isKnownForIntakeConflict() }
+    val retrySubmitAction = visibleConflictActions
+        .firstOrNull { it.isRetrySubmitAction() }
+
     WaterCareScreen(title = "문진 시작", onBack = onBack) {
-        Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.primaryContainer) {
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.primaryContainer,
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth().heightIn(min = 150.dp).padding(18.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 150.dp)
+                    .padding(18.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                    Text("어떤 문제가 있나요?", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
+                Column(
+                    Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(7.dp),
+                ) {
+                    Text(
+                        "어떤 문제가 있나요?",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                    )
                     Text(
                         "증상은 복수로 선택할 수 있고, 모르는 오류 코드는 그대로 전달합니다.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -106,7 +137,15 @@ fun SymptomIntakeContent(
                     FilterChip(
                         selected = state.entryMode == mode,
                         onClick = { onEntryModeChange(mode) },
-                        label = { Text(if (mode == EntryMode.CARE_PRECHECK) "케어 사전 문진" else "일반 문의") },
+                        label = {
+                            Text(
+                                if (mode == EntryMode.CARE_PRECHECK) {
+                                    "케어 사전 문진"
+                                } else {
+                                    "일반 문의"
+                                }
+                            )
+                        },
                     )
                 }
             }
@@ -129,11 +168,16 @@ fun SymptomIntakeContent(
             onValueChange = onRawTextChange,
             label = { Text("증상을 자세히 적어 주세요") },
             supportingText = {
-                Text(state.rawTextError ?: "대표 증상을 선택하지 않으면 필수입니다. ${state.rawText.length}/5000")
+                Text(
+                    state.rawTextError
+                        ?: "증상 설명은 필수입니다. ${state.rawText.length}/5000"
+                )
             },
             isError = state.rawTextError != null,
             minLines = 4,
-            modifier = Modifier.fillMaxWidth().testTag("rawText"),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("rawText"),
             shape = RoundedCornerShape(18.dp),
         )
 
@@ -150,13 +194,18 @@ fun SymptomIntakeContent(
             value = state.displayText,
             onValueChange = onDisplayTextChange,
             label = { Text("제품 표시 문구·오류 코드") },
-            supportingText = { Text("확인되지 않은 코드는 앱에서 추정하지 않습니다.") },
+            supportingText = {
+                Text("확인되지 않은 코드는 앱에서 추정하지 않습니다.")
+            },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(18.dp),
         )
 
         SectionCard("개발 검증 시나리오") {
-            Text("선택하지 않으면 입력 내용으로 안전하게 판단합니다.", style = MaterialTheme.typography.bodySmall)
+            Text(
+                "선택하지 않으면 입력 내용으로 안전하게 판단합니다.",
+                style = MaterialTheme.typography.bodySmall,
+            )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = state.forcedScenario == null,
@@ -173,9 +222,21 @@ fun SymptomIntakeContent(
             }
         }
 
-        state.globalError?.let {
-            ErrorCard(message = it, onRetry = if (state.retryable) onRetry else null)
-        }
+        state.globalError
+            ?.takeIf { state.errorKind != IntakeErrorKind.AUTH_EXPIRED }
+            ?.let { message ->
+                Text(
+                    text = state.errorKind?.displayName
+                        ?: IntakeErrorKind.UNKNOWN.displayName,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                ErrorCard(
+                    message = message,
+                    onRetry = if (state.retryable) onRetry else null,
+                )
+            }
 
         if (
             state.conflictStatus != null ||
@@ -185,21 +246,62 @@ fun SymptomIntakeContent(
             SectionCard("최신 업무 상태 · 충돌 확인") {
                 state.conflictStatus?.let { Text("현재 상태 · $it") }
                 state.conflictStateVersion?.let { Text("버전 · $it") }
-                if (state.conflictAllowedActions.isNotEmpty()) {
-                    Text("가능한 작업 · ${state.conflictAllowedActions.joinToString()}")
+
+                if (visibleConflictActions.isNotEmpty()) {
+                    Text("Backend가 허용한 작업", fontWeight = FontWeight.Bold)
+                    visibleConflictActions.forEach { action ->
+                        Text("• ${action.displayLabel}")
+                    }
                 }
-                Text("작성한 입력은 유지되었습니다.", style = MaterialTheme.typography.bodySmall)
+
+                if (
+                    visibleConflictActions.any { !it.isRetrySubmitAction() }
+                ) {
+                    Text(
+                        "현재 화면에서 지원하지 않는 작업은 임의로 실행하지 않습니다.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+
+                retrySubmitAction?.let { action ->
+                    OutlinedButton(
+                        onClick = onRetry,
+                        enabled = !state.isSubmitting,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("retrySubmitAfterConflict"),
+                    ) {
+                        Text(action.displayLabel)
+                    }
+                }
+
+                Text(
+                    "작성한 입력은 유지되었습니다.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
         }
 
-        if (state.isSubmitting) LoadingBlock("입력 내용을 안전하게 제출하고 있습니다")
+        if (state.isSubmitting) {
+            LoadingBlock("입력 내용을 안전하게 제출하고 있습니다")
+        }
 
         Button(
             onClick = onSubmit,
-            enabled = !state.isSubmitting,
-            modifier = Modifier.fillMaxWidth().height(54.dp).testTag("submitIntake"),
+            enabled = !state.isSubmitting && !hasConflict,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .testTag("submitIntake"),
         ) {
-            Text(if (state.isSubmitting) "제출 중" else "안내 결과 확인", fontWeight = FontWeight.Bold)
+            Text(
+                when {
+                    state.isSubmitting -> "제출 중"
+                    hasConflict -> "최신 상태 확인 필요"
+                    else -> "안내 결과 확인"
+                },
+                fontWeight = FontWeight.Bold,
+            )
         }
     }
 }
