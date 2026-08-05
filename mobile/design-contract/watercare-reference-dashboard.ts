@@ -38,6 +38,12 @@ export interface DashboardLayout {
   primaryButtonAccentOnly: boolean;
   customerPrimaryButtonColor: string;
   technicianPrimaryButtonColor: string;
+  luminousGlassGlow: boolean;
+  panelGlowElevationStrong: number;
+  panelGlowElevationNormal: number;
+  buttonGlowElevationPrimary: number;
+  buttonGlowElevationSecondary: number;
+  innerHighlightOpacity: number;
 }
 
 export interface DashboardAction {
@@ -82,6 +88,12 @@ const sharedLayout: DashboardLayout = {
   primaryButtonAccentOnly: true,
   customerPrimaryButtonColor: "#248CFF",
   technicianPrimaryButtonColor: "#0FB9AA",
+  luminousGlassGlow: true,
+  panelGlowElevationStrong: 7,
+  panelGlowElevationNormal: 4,
+  buttonGlowElevationPrimary: 8,
+  buttonGlowElevationSecondary: 3,
+  innerHighlightOpacity: 0.44,
 };
 
 export const customerDashboard: DashboardDefinition = {
