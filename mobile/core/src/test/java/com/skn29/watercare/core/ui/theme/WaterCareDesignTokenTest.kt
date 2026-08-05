@@ -39,21 +39,23 @@ class WaterCareDesignTokenTest {
     }
 
     @Test
-    fun liquidGlassAlphaAndRadiusMatchSharedSpecification() {
+    fun liquidGlassRenderedAlphaAndRadiusMatchSharedSpecification() {
+        /*
+         * Compose Color is converted to 8-bit ARGB at render boundaries.
+         * Verify the rendered alpha byte instead of comparing floating-point
+         * alpha values with an unrealistically narrow tolerance.
+         */
         assertEquals(
-            0.55f,
-            WaterTokens.GlassFill.alpha,
-            0.001f,
+            0x8CFFFFFF.toInt(),
+            WaterTokens.GlassFill.toArgb(),
         )
         assertEquals(
-            0.72f,
-            WaterTokens.GlassFillStrong.alpha,
-            0.001f,
+            0xB8FFFFFF.toInt(),
+            WaterTokens.GlassFillStrong.toArgb(),
         )
         assertEquals(
-            0.65f,
-            WaterTokens.GlassBorder.alpha,
-            0.001f,
+            0xA6FFFFFF.toInt(),
+            WaterTokens.GlassBorder.toArgb(),
         )
         assertEquals(
             24.dp,
