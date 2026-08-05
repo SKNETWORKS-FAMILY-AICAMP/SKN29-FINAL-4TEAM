@@ -20,6 +20,7 @@ import { getCounselorMetrics } from "../../features/consultation/model/consultan
 import type { DetailTab } from "../../features/consultation/model/consultantWorkspaceTypes";
 import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
 import "./InquiryDetailPage.css";
+import "../../common/styles/water-glass-theme.css";
 
 interface InquiryDetailLocationState {
   returnTo?: unknown;

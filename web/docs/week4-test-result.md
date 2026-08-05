@@ -111,3 +111,18 @@ public npm Registry 사용 승인 후 의존성을 새로 설치하고 같은 �
 | Route Guard | 상담사 역할의 `/admin` 접근이 `/forbidden`으로 차단됨 |
 
 화면 시연은 합성 Mock 기준이며 실제 상담·방문 Backend 저장 성공을 뜻하지 않는다.
+
+## 2026-08-05 발표 Source 동결 검증
+
+발표 Source Commit `1d1011d`을 기준으로 의존성을 새로 설치하고 전체 검증을 다시 실행했다.
+
+| 검사 | 최종 결과 |
+| --- | --- |
+| `npm.cmd ci` | 성공, 241 packages 설치·242 packages 검사 |
+| npm 보안 요약 | high severity 3건, `npm audit fix --force` 미실행 |
+| `npm.cmd test` | 27 files, 113 tests 성공·실패·Skip 0 |
+| `npm.cmd run lint` | 성공·오류 0 |
+| `npm.cmd run build` | 성공, TypeScript 검사·118 modules 변환 |
+| 대표 문의 | `DEMO-INQ-002` 완료 상세·출수량 저하·공식 매뉴얼 38쪽 근거 직접 조회 Test 성공 |
+
+`DEMO-INQ-002`는 팀 승인 대표 E2E 계약의 최종 `RESOLVED` Snapshot이다. 상담·409·방문 행동은 각 행동이 허용된 별도 합성 문의로 재현하며 실제 Backend 저장 성공으로 기록하지 않는다.

@@ -30,6 +30,7 @@ import { consultantWorkspaceRepository } from "../../features/consultation/repos
 import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntimeStatus";
 import "./ConsultantDashboardPage.css";
 import "./ConsultantDashboardTheme.css";
+import "./ConsultantInquiryPearlTheme.css";
 
 const WORK_BUCKETS: readonly {
   id: CounselorWorkBucket;
