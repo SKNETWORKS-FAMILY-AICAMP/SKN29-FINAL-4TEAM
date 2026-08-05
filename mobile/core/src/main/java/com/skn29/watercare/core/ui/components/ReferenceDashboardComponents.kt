@@ -73,10 +73,10 @@ data class ReferenceDashboardPalette(
 )
 
 val CustomerReferencePalette = ReferenceDashboardPalette(
-    accent = Color(0xFF4E9BFF),
-    accentSecondary = Color(0xFFA678FF),
-    accentSoft = Color(0x334E9BFF),
-    accentSoftSecondary = Color(0x2EA678FF),
+    accent = Color(0xFF248CFF),
+    accentSecondary = Color(0xFF5D6BFF),
+    accentSoft = Color(0x33248CFF),
+    accentSoftSecondary = Color(0x285D6BFF),
     backgroundStart = Color(0xFFF8FCFF),
     backgroundEnd = Color(0xFFF7F4FF),
     textStrong = Color(0xFF12262B),
@@ -87,10 +87,10 @@ val CustomerReferencePalette = ReferenceDashboardPalette(
 )
 
 val TechnicianReferencePalette = ReferenceDashboardPalette(
-    accent = Color(0xFF18B8A8),
-    accentSecondary = Color(0xFF66D6C7),
-    accentSoft = Color(0x3318B8A8),
-    accentSoftSecondary = Color(0x2E66D6C7),
+    accent = Color(0xFF0FB9AA),
+    accentSecondary = Color(0xFF42D7C9),
+    accentSoft = Color(0x330FB9AA),
+    accentSoftSecondary = Color(0x2842D7C9),
     backgroundStart = Color(0xFFF7FFFD),
     backgroundEnd = Color(0xFFF2FAFC),
     textStrong = Color(0xFF123136),
@@ -326,6 +326,7 @@ fun ReferenceCompactBanner(
                     text = actionLabel,
                     palette = palette,
                     onClick = onAction,
+                    accent = true,
                     compact = true,
                 )
             }
@@ -369,6 +370,7 @@ fun ReferenceBackendStatusCard(
                 text = actionLabel,
                 palette = palette,
                 onClick = onAction,
+                accent = true,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -766,9 +768,9 @@ fun ReferenceBottomNavigation(
                             if (item.selected) {
                                 Brush.linearGradient(
                                     listOf(
-                                        Color.White.copy(alpha = 0.16f),
-                                        palette.accentSoft.copy(alpha = 0.10f),
-                                        palette.accentSoftSecondary.copy(alpha = 0.08f),
+                                        palette.accent.copy(alpha = 0.18f),
+                                        palette.accentSoft.copy(alpha = 0.08f),
+                                        Color.Transparent,
                                     )
                                 )
                             } else {
@@ -819,7 +821,8 @@ fun ReferenceGlassPanel(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val shape = RoundedCornerShape(24.dp)
-    val fillAlpha = if (strong) 0.24f else 0.14f
+    val surfaceHighlight = if (strong) 0.045f else 0.018f
+    val accentHighlight = if (strong) 0.030f else 0.012f
     val borderBrush = if (danger) {
         Brush.linearGradient(
             listOf(
@@ -830,10 +833,10 @@ fun ReferenceGlassPanel(
     } else {
         Brush.linearGradient(
             listOf(
-                Color.White.copy(alpha = 0.78f),
-                palette.accent.copy(alpha = 0.52f),
-                palette.accentSecondary.copy(alpha = 0.48f),
-                Color.White.copy(alpha = 0.74f),
+                Color.White.copy(alpha = 0.94f),
+                palette.accent.copy(alpha = 0.64f),
+                palette.accentSecondary.copy(alpha = 0.56f),
+                Color.White.copy(alpha = 0.86f),
             )
         )
     }
@@ -841,7 +844,7 @@ fun ReferenceGlassPanel(
     Column(
         modifier = modifier
             .shadow(
-                elevation = if (danger) 4.dp else 2.dp,
+                elevation = if (danger) 4.dp else 0.dp,
                 shape = shape,
                 clip = false,
             )
@@ -854,16 +857,17 @@ fun ReferenceGlassPanel(
                 } else {
                     Brush.linearGradient(
                         listOf(
-                            Color.White.copy(alpha = fillAlpha),
-                            palette.accentSoft.copy(alpha = 0.08f),
-                            palette.accentSoftSecondary.copy(alpha = 0.06f),
+                            Color.White.copy(alpha = surfaceHighlight),
+                            Color.Transparent,
+                            palette.accentSoft.copy(alpha = accentHighlight),
+                            Color.Transparent,
                         )
                     )
                 }
             )
             .border(
                 BorderStroke(
-                    width = if (danger) 1.5.dp else 1.35.dp,
+                    width = if (danger) 1.5.dp else 1.45.dp,
                     brush = borderBrush,
                 ),
                 shape,
@@ -886,6 +890,9 @@ fun ReferenceGlassButton(
 ) {
     val shape = RoundedCornerShape(if (compact) 15.dp else 18.dp)
     val interactionSource = remember { MutableInteractionSource() }
+    val accentPrimaryAlpha = if (enabled) 0.76f else 0.20f
+    val accentSecondaryAlpha = if (enabled) 0.56f else 0.14f
+    val neutralHighlightAlpha = if (enabled) 0.045f else 0.018f
 
     Row(
         modifier = modifier
@@ -901,25 +908,24 @@ fun ReferenceGlassButton(
                 if (accent) {
                     Brush.linearGradient(
                         listOf(
-                            palette.accent.copy(alpha = 0.34f),
-                            palette.accentSecondary.copy(alpha = 0.28f),
-                            Color.White.copy(alpha = 0.12f),
+                            palette.accent.copy(alpha = accentPrimaryAlpha),
+                            palette.accentSecondary.copy(
+                                alpha = accentSecondaryAlpha
+                            ),
+                            Color.White.copy(
+                                alpha = if (enabled) 0.18f else 0.06f
+                            ),
                         )
                     )
                 } else {
                     Brush.linearGradient(
                         listOf(
                             Color.White.copy(
-                                alpha = if (enabled) 0.18f else 0.08f
+                                alpha = neutralHighlightAlpha
                             ),
-                            if (enabled) {
-                                palette.accentSoft.copy(alpha = 0.08f)
-                            } else {
-                                Color.Transparent
-                            },
-                            Color.White.copy(
-                                alpha = if (enabled) 0.10f else 0.04f
-                            ),
+                            Color.Transparent,
+                            palette.accentSoft.copy(alpha = 0.018f),
+                            Color.Transparent,
                         )
                     )
                 }
@@ -928,10 +934,12 @@ fun ReferenceGlassButton(
                 BorderStroke(
                     1.dp,
                     if (accent) {
-                        Color.White.copy(alpha = 0.82f)
+                        Color.White.copy(
+                            alpha = if (enabled) 0.96f else 0.48f
+                        )
                     } else {
                         Color.White.copy(
-                            alpha = if (enabled) 0.72f else 0.28f
+                            alpha = if (enabled) 0.82f else 0.30f
                         )
                     },
                 ),
@@ -949,7 +957,7 @@ fun ReferenceGlassButton(
             text,
             color = when {
                 !enabled -> palette.textMuted
-                accent -> palette.textStrong
+                accent -> Color.White
                 else -> palette.textStrong
             },
             style = if (compact) {
@@ -978,11 +986,19 @@ private fun ReferenceRoleChip(
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(999.dp))
-            .background(Color.White.copy(alpha = 0.14f))
+            .background(
+                Brush.linearGradient(
+                    listOf(
+                        palette.accentSoft.copy(alpha = 0.08f),
+                        Color.White.copy(alpha = 0.045f),
+                        Color.Transparent,
+                    )
+                )
+            )
             .border(
                 BorderStroke(
                     1.dp,
-                    Color.White.copy(alpha = 0.74f),
+                    palette.accent.copy(alpha = 0.42f),
                 ),
                 RoundedCornerShape(999.dp),
             )
@@ -1084,9 +1100,10 @@ private fun ReferenceSquareIconButton(
             .background(
                 Brush.linearGradient(
                     listOf(
-                        Color.White.copy(alpha = 0.14f),
-                        palette.accentSoft.copy(alpha = 0.08f),
-                        Color.White.copy(alpha = 0.06f),
+                        Color.White.copy(alpha = 0.055f),
+                        Color.Transparent,
+                        palette.accentSoft.copy(alpha = 0.025f),
+                        Color.Transparent,
                     )
                 )
             )
@@ -1326,16 +1343,15 @@ private fun ReferenceActionTile(
                 Brush.linearGradient(
                     listOf(
                         Color.White.copy(
-                            alpha = if (item.enabled) 0.14f else 0.06f
+                            alpha = if (item.enabled) 0.028f else 0.010f
                         ),
+                        Color.Transparent,
                         if (item.enabled) {
-                            palette.accentSoft.copy(alpha = 0.08f)
+                            palette.accentSoft.copy(alpha = 0.016f)
                         } else {
                             Color.Transparent
                         },
-                        Color.White.copy(
-                            alpha = if (item.enabled) 0.07f else 0.03f
-                        ),
+                        Color.Transparent,
                     )
                 )
             )
@@ -1343,7 +1359,7 @@ private fun ReferenceActionTile(
                 BorderStroke(
                     1.dp,
                     Color.White.copy(
-                        alpha = if (item.enabled) 0.70f else 0.26f
+                        alpha = if (item.enabled) 0.82f else 0.30f
                     ),
                 ),
                 RoundedCornerShape(22.dp),
@@ -1400,7 +1416,7 @@ private fun ReferenceProgressBar(
             .fillMaxWidth()
             .height(11.dp)
             .clip(RoundedCornerShape(999.dp))
-            .background(Color.White.copy(alpha = 0.18f))
+            .background(Color.White.copy(alpha = 0.10f))
             .border(
                 BorderStroke(
                     1.dp,
@@ -1435,7 +1451,7 @@ private fun ReferencePill(
         text,
         modifier = Modifier
             .clip(RoundedCornerShape(999.dp))
-            .background(Color.White.copy(alpha = 0.14f))
+            .background(Color.White.copy(alpha = 0.035f))
             .border(
                 BorderStroke(
                     1.dp,
@@ -1465,8 +1481,8 @@ private fun ReferenceGlassImage(
             .background(
                 Brush.linearGradient(
                     listOf(
-                        Color.White.copy(alpha = 0.16f),
-                        palette.accentSoft.copy(alpha = 0.07f),
+                        Color.White.copy(alpha = 0.030f),
+                        palette.accentSoft.copy(alpha = 0.015f),
                     )
                 )
             )
@@ -1525,9 +1541,9 @@ private fun ReferencePearlBackground(
                 .background(
                     Brush.verticalGradient(
                         listOf(
-                            Color.White.copy(alpha = 0.04f),
+                            Color.White.copy(alpha = 0.010f),
                             Color.Transparent,
-                            Color.White.copy(alpha = 0.08f),
+                            Color.White.copy(alpha = 0.018f),
                         )
                     )
                 )

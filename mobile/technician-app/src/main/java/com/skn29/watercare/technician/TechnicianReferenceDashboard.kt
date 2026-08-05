@@ -81,7 +81,7 @@ fun TechnicianReferenceLogin(
             enabled = !state.loginLoading &&
                 !state.restoringSession &&
                 state.backendAvailable == true,
-            accent = state.backendAvailable == true,
+            accent = true,
             modifier = Modifier.fillMaxWidth(),
         )
         ReferenceGlassButton(
@@ -90,7 +90,7 @@ fun TechnicianReferenceLogin(
             onClick = onOfflinePreview,
             enabled = !state.loginLoading &&
                 !state.restoringSession,
-            accent = state.backendAvailable != true,
+            accent = false,
             modifier = Modifier.fillMaxWidth(),
         )
 

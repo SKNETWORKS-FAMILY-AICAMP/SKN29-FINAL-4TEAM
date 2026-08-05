@@ -98,7 +98,7 @@ fun LoginScreen(
                 onClick = viewModel::demoLogin,
                 enabled = !state.submitting &&
                     state.backendAvailable == true,
-                accent = state.backendAvailable == true,
+                accent = true,
                 modifier = Modifier.fillMaxWidth(),
             )
             ReferenceGlassButton(
@@ -106,7 +106,7 @@ fun LoginScreen(
                 palette = palette,
                 onClick = viewModel::startOfflinePreview,
                 enabled = !state.submitting,
-                accent = state.backendAvailable != true,
+                accent = false,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

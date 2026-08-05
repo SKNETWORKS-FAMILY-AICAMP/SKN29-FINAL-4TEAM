@@ -34,6 +34,10 @@ export interface DashboardLayout {
   buttonOpacity: number;
   backgroundImageOpacity: number;
   glassBorderOpacity: number;
+  fullTransparentSurface: boolean;
+  primaryButtonAccentOnly: boolean;
+  customerPrimaryButtonColor: string;
+  technicianPrimaryButtonColor: string;
 }
 
 export interface DashboardAction {
@@ -73,7 +77,11 @@ const sharedLayout: DashboardLayout = {
   panelOpacityNormal: 0.14,
   buttonOpacity: 0.18,
   backgroundImageOpacity: 1.0,
-  glassBorderOpacity: 0.74,
+  glassBorderOpacity: 0.86,
+  fullTransparentSurface: true,
+  primaryButtonAccentOnly: true,
+  customerPrimaryButtonColor: "#248CFF",
+  technicianPrimaryButtonColor: "#0FB9AA",
 };
 
 export const customerDashboard: DashboardDefinition = {
