@@ -25,6 +25,10 @@ export interface DashboardLayout {
   titleWeight: "bold" | "semibold";
   bodyFontFamily: "system-sans";
   useTextGlyphIcons: boolean;
+  backgroundAsset: string;
+  statusLabelMaxLines: 2;
+  actionLabelMaxLines: 2;
+  heroTextMaxLines: 3;
 }
 
 export interface DashboardAction {
@@ -56,6 +60,10 @@ const sharedLayout: DashboardLayout = {
   titleWeight: "semibold",
   bodyFontFamily: "system-sans",
   useTextGlyphIcons: false,
+  backgroundAsset: "water-image",
+  statusLabelMaxLines: 2,
+  actionLabelMaxLines: 2,
+  heroTextMaxLines: 3,
 };
 
 export const customerDashboard: DashboardDefinition = {

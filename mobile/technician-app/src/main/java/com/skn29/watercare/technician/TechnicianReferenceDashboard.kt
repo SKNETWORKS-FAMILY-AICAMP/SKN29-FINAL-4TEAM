@@ -36,6 +36,7 @@ fun TechnicianReferenceLogin(
         title = "정수기 딜러",
         roleLabel = "방문기사용",
         palette = palette,
+        backgroundRes = R.drawable.water_background_technician,
     ) {
         ReferenceWelcomeCard(
             title = "방문 업무를\n시작하세요",
@@ -150,6 +151,7 @@ fun TechnicianReferenceDashboard(
         title = "정수기 딜러",
         roleLabel = "방문기사용",
         palette = palette,
+        backgroundRes = R.drawable.water_background_technician,
         modifier = modifier,
         bottomItems = listOf(
             ReferenceBottomItem(

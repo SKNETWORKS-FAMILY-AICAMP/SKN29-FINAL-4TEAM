@@ -80,6 +80,7 @@ fun CustomerHomeContent(
         title = "정수기 딜러",
         roleLabel = "고객용",
         palette = palette,
+        backgroundRes = R.drawable.water_background_customer,
         bottomItems = listOf(
             ReferenceBottomItem(
                 iconRes = R.drawable.ref_home,
@@ -135,7 +136,7 @@ fun CustomerHomeContent(
                 metricUnit = "L / 20L",
                 progress = 0.62f,
                 footnote = previewLabel,
-                imageRes = R.drawable.dashboard_purifier,
+                imageRes = R.drawable.mascot_customer,
                 palette = palette,
             )
 

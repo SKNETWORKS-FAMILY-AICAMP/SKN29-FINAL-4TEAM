@@ -11,6 +11,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -127,6 +128,7 @@ fun ReferenceDashboardScaffold(
     title: String,
     roleLabel: String,
     palette: ReferenceDashboardPalette,
+    @DrawableRes backgroundRes: Int? = null,
     bottomItems: List<ReferenceBottomItem> = emptyList(),
     modifier: Modifier = Modifier,
     onNotification: () -> Unit = {},
@@ -135,6 +137,7 @@ fun ReferenceDashboardScaffold(
 ) {
     ReferencePearlBackground(
         palette = palette,
+        backgroundRes = backgroundRes,
         modifier = modifier,
     ) {
         Scaffold(
@@ -180,6 +183,8 @@ fun ReferenceDashboardScaffold(
                     lineHeight = 34.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = (-0.3).sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 ReferenceDashboardHeader(
                     roleLabel = roleLabel,
@@ -202,51 +207,59 @@ fun ReferenceWelcomeCard(
     modifier: Modifier = Modifier,
 ) {
     ReferenceGlassPanel(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = 208.dp),
+        modifier = modifier.fillMaxWidth(),
         palette = palette,
         strong = true,
-        contentPadding = PaddingValues(18.dp),
+        contentPadding = PaddingValues(
+            horizontal = 18.dp,
+            vertical = 18.dp,
+        ),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(176.dp),
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Column(
+            val compact = maxWidth < 360.dp
+            val imageSize = if (compact) 118.dp else 150.dp
+            val titleSize = if (compact) 22.sp else 25.sp
+
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth(0.58f)
-                    .align(Alignment.CenterStart),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                    .fillMaxWidth()
+                    .heightIn(min = if (compact) 178.dp else 196.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    title,
-                    color = palette.textStrong,
-                    fontFamily = FontFamily.SansSerif,
-                    fontSize = 24.sp,
-                    lineHeight = 31.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = (-0.2).sp,
-                )
-                Text(
-                    subtitle,
-                    color = palette.textMuted,
-                    style = MaterialTheme.typography.bodyMedium,
-                    lineHeight = 24.sp,
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(
+                        title,
+                        color = palette.textStrong,
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = titleSize,
+                        lineHeight = if (compact) 28.sp else 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.2).sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        subtitle,
+                        color = palette.textMuted,
+                        style = MaterialTheme.typography.bodyMedium,
+                        lineHeight = 22.sp,
+                        maxLines = 4,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                Image(
+                    painter = painterResource(imageRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(imageSize),
+                    contentScale = ContentScale.Fit,
                 )
             }
-            Image(
-                painter = painterResource(imageRes),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(156.dp)
-                    .align(Alignment.CenterEnd)
-                    .graphicsLayer {
-                        translationX = 10.dp.toPx()
-                    },
-                contentScale = ContentScale.Fit,
-            )
         }
     }
 }
@@ -321,6 +334,48 @@ fun ReferenceCompactBanner(
 }
 
 @Composable
+fun ReferenceBackendStatusCard(
+    title: String,
+    message: String,
+    palette: ReferenceDashboardPalette,
+    warning: Boolean = false,
+    actionLabel: String? = null,
+    onAction: () -> Unit = {},
+) {
+    ReferenceGlassPanel(
+        modifier = Modifier.fillMaxWidth(),
+        palette = palette,
+        strong = true,
+        contentPadding = PaddingValues(18.dp),
+    ) {
+        Text(
+            title,
+            color = if (warning) palette.warning else palette.textStrong,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            message,
+            color = palette.textMuted,
+            style = MaterialTheme.typography.bodyMedium,
+            lineHeight = 22.sp,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
+        )
+        if (!actionLabel.isNullOrBlank()) {
+            ReferenceGlassButton(
+                text = actionLabel,
+                palette = palette,
+                onClick = onAction,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}
+
+@Composable
 fun ReferenceDashboardHeader(
     roleLabel: String,
     palette: ReferenceDashboardPalette,
@@ -365,100 +420,118 @@ fun ReferenceHeroCard(
     modifier: Modifier = Modifier,
 ) {
     ReferenceGlassPanel(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = 226.dp),
+        modifier = modifier.fillMaxWidth(),
         palette = palette,
         strong = true,
         contentPadding = PaddingValues(18.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(192.dp),
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Box(
+            val compact = maxWidth < 360.dp
+            val imageSize = if (compact) 118.dp else 148.dp
+            val greetingSize = if (compact) 20.sp else 23.sp
+
+            Row(
                 modifier = Modifier
-                    .size(174.dp)
-                    .align(Alignment.BottomEnd)
-                    .clip(CircleShape)
-                    .background(
-                        Brush.radialGradient(
-                            listOf(
-                                Color.White.copy(alpha = 0.86f),
-                                palette.accentSoft,
-                                Color.Transparent,
-                            )
-                        )
-                    )
-            )
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.64f)
-                    .align(Alignment.CenterStart),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+                    .fillMaxWidth()
+                    .heightIn(min = if (compact) 218.dp else 232.dp),
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    greeting,
-                    color = palette.textStrong,
-                    fontFamily = FontFamily.SansSerif,
-                    fontSize = 22.sp,
-                    lineHeight = 29.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = (-0.2).sp,
-                )
-                Text(
-                    subtitle,
-                    color = palette.textMuted,
-                    style = MaterialTheme.typography.bodySmall,
-                    lineHeight = 20.sp,
-                )
-                Spacer(Modifier.height(7.dp))
-                Text(
-                    metricLabel,
-                    color = palette.textMuted,
-                    style = MaterialTheme.typography.labelMedium,
-                )
-                Row(verticalAlignment = Alignment.Bottom) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
                     Text(
-                        metricValue,
+                        greeting,
                         color = palette.textStrong,
                         fontFamily = FontFamily.SansSerif,
-                        fontSize = 34.sp,
-                        lineHeight = 39.sp,
+                        fontSize = greetingSize,
+                        lineHeight = if (compact) 27.sp else 30.sp,
                         fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.2).sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        metricUnit,
-                        modifier = Modifier.padding(
-                            start = 5.dp,
-                            bottom = 4.dp,
-                        ),
+                        subtitle,
                         color = palette.textMuted,
                         style = MaterialTheme.typography.bodySmall,
+                        lineHeight = 19.sp,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        metricLabel,
+                        color = palette.textMuted,
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Row(
+                        verticalAlignment = Alignment.Bottom,
+                    ) {
+                        Text(
+                            metricValue,
+                            color = palette.accent,
+                            fontFamily = FontFamily.SansSerif,
+                            fontSize = if (compact) 30.sp else 34.sp,
+                            lineHeight = 38.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                        )
+                        Text(
+                            metricUnit,
+                            modifier = Modifier.padding(
+                                start = 5.dp,
+                                bottom = 4.dp,
+                            ),
+                            color = palette.textMuted,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    ReferenceProgressBar(
+                        progress = progress,
+                        palette = palette,
+                    )
+                    ReferencePill(
+                        text = footnote,
+                        palette = palette,
                     )
                 }
-                ReferenceProgressBar(
-                    progress = progress,
-                    palette = palette,
-                )
-                ReferencePill(
-                    text = footnote,
-                    palette = palette,
-                )
+
+                Box(
+                    modifier = Modifier.size(imageSize),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                            .background(
+                                Brush.radialGradient(
+                                    listOf(
+                                        Color.White.copy(alpha = 0.78f),
+                                        palette.accentSoft,
+                                        Color.Transparent,
+                                    )
+                                )
+                            )
+                    )
+                    Image(
+                        painter = painterResource(imageRes),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(3.dp),
+                        contentScale = ContentScale.Fit,
+                    )
+                }
             }
-            Image(
-                painter = painterResource(imageRes),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(158.dp)
-                    .align(Alignment.CenterEnd)
-                    .graphicsLayer {
-                        translationX = 8.dp.toPx()
-                        translationY = 4.dp.toPx()
-                    },
-                contentScale = ContentScale.Fit,
-            )
         }
     }
 }
@@ -482,12 +555,16 @@ fun ReferenceSectionHeader(
             lineHeight = 24.sp,
             fontWeight = FontWeight.SemiBold,
             letterSpacing = (-0.1).sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         if (!trailing.isNullOrBlank()) {
             Text(
                 trailing,
                 color = palette.textMuted,
                 style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
@@ -567,23 +644,18 @@ fun ReferenceDetailCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    Text(
-                        title,
-                        color = palette.textStrong,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    ReferencePill(
-                        text = badge,
-                        palette = palette,
-                    )
-                }
+                Text(
+                    title,
+                    color = palette.textStrong,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                ReferencePill(
+                    text = badge,
+                    palette = palette,
+                )
                 lines.forEach { line ->
                     Text(
                         line,
@@ -748,10 +820,22 @@ fun ReferenceGlassPanel(
 ) {
     val shape = RoundedCornerShape(24.dp)
     val fillAlpha = if (strong) 0.70f else 0.54f
-    val borderColor = if (danger) {
-        palette.danger
+    val borderBrush = if (danger) {
+        Brush.linearGradient(
+            listOf(
+                palette.danger,
+                palette.danger,
+            )
+        )
     } else {
-        Color.White.copy(alpha = 0.88f)
+        Brush.linearGradient(
+            listOf(
+                Color.White.copy(alpha = 0.96f),
+                palette.accent.copy(alpha = 0.30f),
+                palette.accentSecondary.copy(alpha = 0.28f),
+                Color.White.copy(alpha = 0.92f),
+            )
+        )
     }
 
     Column(
@@ -779,8 +863,8 @@ fun ReferenceGlassPanel(
             )
             .border(
                 BorderStroke(
-                    width = if (danger) 1.5.dp else 1.dp,
-                    color = borderColor,
+                    width = if (danger) 1.5.dp else 1.2.dp,
+                    brush = borderBrush,
                 ),
                 shape,
             )
@@ -871,6 +955,8 @@ fun ReferenceGlassButton(
             },
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -1161,7 +1247,7 @@ private fun ReferenceStatusTile(
     modifier: Modifier = Modifier,
 ) {
     ReferenceGlassPanel(
-        modifier = modifier.height(106.dp),
+        modifier = modifier.height(118.dp),
         palette = palette,
         contentPadding = PaddingValues(7.dp),
     ) {
@@ -1173,14 +1259,18 @@ private fun ReferenceStatusTile(
             Image(
                 painter = painterResource(item.iconRes),
                 contentDescription = item.label,
-                modifier = Modifier.size(36.dp),
+                modifier = Modifier.size(34.dp),
             )
             Text(
                 item.label,
                 color = palette.textMuted,
-                style = MaterialTheme.typography.labelSmall,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 10.sp,
+                lineHeight = 13.sp,
+                fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
-                maxLines = 1,
+                minLines = 2,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
@@ -1191,11 +1281,11 @@ private fun ReferenceStatusTile(
                     palette.danger
                 },
                 fontFamily = FontFamily.SansSerif,
-                fontSize = 14.sp,
-                lineHeight = 18.sp,
+                fontSize = 13.sp,
+                lineHeight = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
         }
@@ -1218,7 +1308,7 @@ private fun ReferenceActionTile(
     Column(
         modifier = modifier
             .then(tagModifier)
-            .height(108.dp)
+            .height(118.dp)
             .clip(RoundedCornerShape(22.dp))
             .clickable(
                 enabled = item.enabled,
@@ -1257,7 +1347,7 @@ private fun ReferenceActionTile(
         Image(
             painter = painterResource(item.iconRes),
             contentDescription = item.label,
-            modifier = Modifier.size(40.dp),
+            modifier = Modifier.size(36.dp),
             alpha = if (item.enabled) 1f else 0.45f,
         )
         Text(
@@ -1268,10 +1358,13 @@ private fun ReferenceActionTile(
             } else {
                 palette.textMuted
             },
-            style = MaterialTheme.typography.labelSmall,
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 10.5.sp,
+            lineHeight = 14.sp,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
-            maxLines = 1,
+            minLines = 2,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
         if (item.subtitle.isNotBlank()) {
@@ -1391,6 +1484,7 @@ private fun ReferenceGlassImage(
 @Composable
 private fun ReferencePearlBackground(
     palette: ReferenceDashboardPalette,
+    @DrawableRes backgroundRes: Int? = null,
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -1407,19 +1501,44 @@ private fun ReferencePearlBackground(
                 )
             ),
     ) {
+        backgroundRes?.let { resource ->
+            Image(
+                painter = painterResource(resource),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                alpha = 0.78f,
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.16f),
+                            Color.Transparent,
+                            Color.White.copy(alpha = 0.26f),
+                        )
+                    )
+                )
+        )
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
-                            palette.accentSoft.copy(alpha = 0.62f),
+                            palette.accentSoft.copy(alpha = 0.36f),
                             Color.Transparent,
                         ),
                         radius = 760f,
                     )
                 )
         )
+
         content()
     }
 }
