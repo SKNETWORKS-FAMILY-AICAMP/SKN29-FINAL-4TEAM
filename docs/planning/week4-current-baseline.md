@@ -1,9 +1,9 @@
 # 4주차 현재 기준선
 
-> 기준 시각: **2026-08-05 15:51 KST**  
+> 기준 시각: **2026-08-05 17:45 KST**
 > 기준 브랜치: `main`  
-> 기준 Commit: `e2b21faadea72ae25e29510d775b297c3daf17a7`  
-> Commit 시각: `2026-08-05 15:40:50 +09:00`  
+> 기준 Commit: `6512178aded1eef745dc40ddc8ed480f1e7870fa`
+> Commit 시각: `2026-08-05 17:16:29 +09:00`
 > 발표 기준 Commit 승인: **2026-08-05, 윤승혁**  
 > 검증 범위: 최신 작업 트리의 계약·Data·Backend·AI·Web·Mobile·WBS·발표 준비 상태  
 > 종합 상태: **INTEGRATION_BLOCKED / PRESENTATION_FREEZE_NOT_APPROVED**
@@ -29,18 +29,9 @@
 
 ## 2. Git·작업 트리 기준
 
-사용자는 모든 팀 브랜치를 최신화했다고 확인했다. 현재 체크아웃 상태는 `main@e2b21fa`다.
+사용자는 계약·Data·팀원 진행도 문서를 Commit했고 현재 체크아웃 상태는 `main@6512178`이다. 이 Commit에는 State Machine 생성기·Mermaid·CI Gate와 `Q&A 크롤링.md`, 팀원 6명의 4주차 진행도 문서가 포함된다.
 
-다만 작업 트리는 깨끗하지 않다. 검증 시점에 다음 미커밋 변경이 존재했다.
-
-- `data/raw/faq/source-lists/.gitkeep` 삭제
-- `data/raw/manuals/mvp/.gitkeep` 삭제
-- `data/raw/faq/source-lists/Q&A 크롤링.md` 신규·미추적
-- 팀원 6명의 `docs/individual/**/4주차 작업 진행도` 문서 신규·미추적
-
-발표 기준 Commit은 `e2b21faadea72ae25e29510d775b297c3daf17a7`로 확정한다. 위 미커밋 파일은 발표 기준 Commit에 포함되지 않는다.
-
-초기 직접 실행 결과는 미커밋 변경을 포함한 현재 작업 트리에서 얻었다. Data Gate는 이후 기준 Commit의 깨끗한 Checkout에서 재검증을 완료했으며, 나머지 영역은 각 절에 명시한 실행 환경과 증거 시점을 기준으로 판정한다. 초기 Data Raw 정책 실패는 미추적 `Q&A 크롤링.md`의 영향이었으므로 기준 Commit 자체의 실패와 작업 트리 오염을 구분한다.
+발표 기준 Commit은 현재 `6512178aded1eef745dc40ddc8ed480f1e7870fa`다. 이 Commit의 Raw 구성 회귀를 수정해 별도의 깨끗한 Clone에서 재검증했으며, 수정 내용과 갱신된 QA 산출물은 아직 작업 트리에 있다. 따라서 Data는 검증은 완료됐지만 새 Commit으로 포함되기 전까지 `FIXED_PENDING_COMMIT`으로 판정한다.
 
 ## 3. 영역별 Gate 결과
 
@@ -52,15 +43,15 @@
 | Inquiry 상태 Registry | 상태 13개 등록 | `VERIFIED_DONE` | `contracts/codes/inquiry-statuses.yaml` |
 | Workflow Action Registry | 외부 행동 23개 등록 | `VERIFIED_DONE` | `contracts/codes/workflow-actions.yaml` |
 | State Machine Validator | PASS | `VERIFIED_DONE` | Python 3.13.12·PyYAML 6.0.3 격리 환경에서 직접 실행 |
-| Mermaid 최신성 | `1.0.0` 재생성 | `FIXED_PENDING_COMMIT` | Version·입력 SHA-256·생성 명령 Header 기록 |
-| Diagram Check | PASS | `FIXED_PENDING_COMMIT` | CI에도 `render_state_machine.py --check` Gate 추가 |
+| Mermaid 최신성 | `1.0.0` 재생성 | `VERIFIED_DONE` | Version·입력 SHA-256·생성 명령 Header가 Commit됨 |
+| Diagram Check | PASS | `VERIFIED_DONE` | CI에도 `render_state_machine.py --check` Gate가 Commit됨 |
 | Action–OpenAPI–Runtime Crosswalk | G2 후보 존재 | `CONTRACT_ONLY` | `G2_ACTIVE_CANDIDATE`, 구현·소비 시작 Gate 모두 `false` |
 
 `contracts/api/g2-operation-crosswalk.yaml`에 상담·방문 Operation 11개가 정의되어 있으나 모두 `NOT_IMPLEMENTED`다. 이 파일은 Action 23개 전체에 대한 최종 Runtime 분류표가 아니며 소비자 통합 시작도 승인되지 않았다.
 
 ### 3.2 Data·Fixture·QA
 
-기준 Commit `e2b21faadea72ae25e29510d775b297c3daf17a7`의 깨끗한 임시 Checkout에서 실행한 명령:
+기준 Commit `6512178...`에 Raw 정책 수정안을 적용한 깨끗한 임시 Clone에서 실행한 명령:
 
 ```text
 python -B -m unittest discover -s data/tools/tests -v
@@ -68,28 +59,27 @@ python -B data/tools/pipeline.py qa --verify-rebuild
 python -B data/tools/pipeline.py finalize
 ```
 
-Git 안전 경로를 명령 범위로 적용한 재실행 결과:
+재실행 결과:
 
 - 총 67개
 - 통과 67개
 - 실패 0개
 - 오류 0개
-- 실행 시간: 15.073초
-- QA: PASS, 오류 0개, 경고 0개
-- 대표 E2E: 17/17 PASS
-- Reproducibility: PASS, Canonical Drift 0개
-- Finalize: PASS, Manifest 154개 확인
-- 실행 후 `git status --short` 및 `git diff --name-only -- data`: 변경 없음
+- 실행 시간: 13.971초
+- QA Verify Rebuild: PASS, 오류 0개, 경고 0개, Canonical Drift 0개
+- Finalize: PASS, Dataset 0.9.0, Manifest 154개 확인
+- 원문 백업: `tmp/local-backups/week4-data-raw/Q&A 크롤링.md` 79,555바이트, Git 무시 확인
 
 | 항목 | 현재 결과 | 판정 | 근거·제한 |
 |---|---|---|---|
-| Data 단위 테스트 | 67/67 | `VERIFIED_DONE` | 기준 Commit의 깨끗한 Checkout에서 직접 재실행 |
-| 계약 소스 Hash | 테스트 통과 | `VERIFIED_DONE` | State Machine Hash 불일치 없음 |
+| Data 단위 테스트 | 67/67 | `FIXED_PENDING_COMMIT` | Raw 정책 수정안을 적용한 깨끗한 Clone에서 통과 |
+| Raw 비보존 정책 | PASS | `FIXED_PENDING_COMMIT` | 원문은 Git 무시 백업으로 이동하고 두 `.gitkeep` 복원 |
+| 계약 출처 Commit | `6512178...` | `FIXED_PENDING_COMMIT` | QA Summary 재생성 완료 |
 | 대표 14단계 E2E | 테스트 통과 | `VERIFIED_DONE` | 14단계·최종 `RESOLVED`·Version 14 |
-| QA Verify Rebuild | PASS | `VERIFIED_DONE` | 오류·경고·Canonical Drift 0개 |
-| QA Finalize | PASS | `VERIFIED_DONE` | Dataset 0.9.0, Manifest 154개 확인 |
+| QA Verify Rebuild | PASS | `FIXED_PENDING_COMMIT` | 오류·경고·Canonical Drift 0개 |
+| QA Finalize | PASS | `FIXED_PENDING_COMMIT` | Dataset 0.9.0, Manifest 154개 확인 |
 
-`latest_qa_summary.json`의 `source_commit=fff23ac...`는 실행 HEAD가 아니라 `contracts/state-machine`을 마지막으로 변경한 Commit을 기록하도록 구현된 계약 출처 필드다. 실행 HEAD는 별도로 `e2b21fa...`임을 확인했으며, Data Gate는 현재 발표 기준 Commit에서 전체 통과했다.
+`source_commit`은 `contracts/state-machine`을 마지막으로 변경한 Commit을 기록한다. QA Summary를 재생성해 `6512178...`로 갱신했다. `Q&A 크롤링.md`는 삭제하지 않고 Git이 무시하는 로컬 백업 영역에 보존했다.
 
 ### 3.3 Backend
 
@@ -103,8 +93,8 @@ Git 안전 경로를 명령 범위로 적용한 재실행 결과:
 
 | 항목 | 현재 결과 | 판정 | 근거·제한 |
 |---|---|---|---|
-| Backend 가상환경 | 없음 | `INTEGRATION_BLOCKED` | `backend/.venv/Scripts/python.exe` 없음 |
-| 현재 Backend 전체 Test | 미실행 | `INTEGRATION_BLOCKED` | `check_environment.py`가 가상환경 부재로 종료 |
+| Backend 가상환경 | 생성 실패 | `INTEGRATION_BLOCKED` | 요구 Python 3.13.13, 현재 Python 3.13.12·번들 Python 3.12.13 |
+| 현재 Backend 전체 Test | 미실행 | `INTEGRATION_BLOCKED` | 공식 Bootstrap이 Python Patch Version 불일치로 선행 차단 |
 | 문의 생성·취소·증상 제출 | 구현 존재 | `DONE_WITH_LIMITATION` | 저장된 작성자 증거는 있으나 현재 HEAD 재검증 없음 |
 | State·409·Replay 기반 | 코드·테스트 존재 | `DONE_WITH_LIMITATION` | 현재 환경에서 pytest 미실행 |
 | 상담·방문 Runtime | 없음 | `CONTRACT_ONLY` | G2 Operation은 모두 `NOT_IMPLEMENTED` |
@@ -127,25 +117,25 @@ Git 안전 경로를 명령 범위로 적용한 재실행 결과:
 
 ### 3.5 Web
 
-현재 작업 트리에서 직접 확인한 결과:
+Node 24.14.0과 `package-lock.json` 기준 `npm ci` 환경에서 직접 확인한 결과:
 
 | 검사 | 결과 | 판정 |
 |---|---|---|
 | ESLint | 통과 | `VERIFIED_DONE` |
 | TypeScript `tsc -b` | 통과 | `VERIFIED_DONE` |
-| Vitest | 시작 전 실패 | 환경 차단 |
-| Vite Production Build | 시작 전 실패 | 환경 차단 |
+| Vitest | 27개 파일·113개 Test 통과 | `VERIFIED_DONE` |
+| Vite Production Build | 통과 | `VERIFIED_DONE` |
 
 환경 분리 결과:
 
-- 기본 Node `20.11.0`은 README 최소 `20.19`보다 낮아 `node:util.styleText`를 제공하지 않는다.
-- 번들 Node `24.14.0`에서는 현재 `node_modules`에 Windows Rolldown 선택 의존성 `@rolldown/binding-win32-x64-msvc`가 없어 Test와 Vite Build가 시작되지 않는다.
-- 저장된 `1d1011d` 기준 결과는 113개 Test·Lint·Build 통과다.
-- 현재 HEAD는 해당 Web 동결 Commit 이후 Web 파일 16개가 변경되어 과거 결과를 그대로 현재 성공으로 사용할 수 없다.
+- 기본 Node `20.11.0`은 지원 범위보다 낮으므로 번들 Node `24.14.0`을 사용했다.
+- `npm ci`로 Windows Rolldown 선택 의존성을 Lockfile 기준 복구했다.
+- 단일 Worker 전체 실행은 240초 제한에서 21개 파일·92개 Test까지 통과 후 종료됐고, 남은 6개 파일·21개 Test를 별도 실행해 전체 113개 통과를 확인했다.
+- `npm ci`는 High Severity 취약점 3개와 `jsdom`의 Node 24.15 이상 권장 경고를 출력했지만 현재 Lint·TypeScript·Test·Build에는 실패가 없었다.
 
 상담·방문 화면은 Repository 경계를 두었지만 실제 Remote Adapter가 없으며 기본 업무 흐름은 `MOCK_ONLY` 또는 `BACKEND_BLOCKED`로 표시된다.
 
-종합 판정: **`MOCK_ONLY / DONE_WITH_LIMITATION`**
+종합 판정: **코드 Gate `VERIFIED_DONE`, 상담·방문 Runtime은 `MOCK_ONLY / BACKEND_BLOCKED`**
 
 ### 3.6 Mobile
 
@@ -155,7 +145,7 @@ Git 안전 경로를 명령 범위로 적용한 재실행 결과:
 gradlew.bat :core:test :customer-app:testDebugUnitTest :customer-app:assembleDebug --no-daemon
 ```
 
-현재 환경에서는 Gradle 9.5.0 배포본이 캐시에 없어 다운로드를 시도했고 네트워크 권한으로 차단됐다. 따라서 최신 작업 트리의 Build·Test 결과를 얻지 못했다.
+Gradle 9.5.0과 Android SDK를 인식시킨 뒤 Core·Customer·Technician Test·Build를 실행했다. Gradle 실행 환경은 복구됐지만 `:core:compileDebugJavaWithJavac` 의존성 계산에서 값이 없는 Provider 오류로 Build가 중단됐다. 설치 SDK에는 `android-37.0`이 있으나 Build의 `compileSdk=37`이 기대하는 정확한 Platform Provider를 얻지 못한 것으로 보이며, 이는 실행 결과와 설치 목록을 바탕으로 한 추론이다.
 
 | 항목 | 현재 결과 | 판정 | 근거·제한 |
 |---|---|---|---|
@@ -163,8 +153,9 @@ gradlew.bat :core:test :customer-app:testDebugUnitTest :customer-app:assembleDeb
 | `state_version`·`allowed_actions` 모델 | 구현 존재 | `DONE_WITH_LIMITATION` | 현재 Gradle Test 미실행 |
 | 고객 홈·AI 안내·Evidence | Fixture | `MOCK_ONLY` | 실제 Runtime Endpoint 대기 |
 | 상담 요청 | 미연동 | `INTEGRATION_BLOCKED` | Runtime Endpoint 없음 |
-| 최신 Core·Customer Build | 미확인 | `INTEGRATION_BLOCKED` | Gradle 배포본 다운로드 차단 |
-| 기사 앱 신규 변경 | 미확인 | `INTEGRATION_BLOCKED` | `d905262` 이후 Technician Source·Test 변경 11개 |
+| Gradle·Android SDK | 인식 성공 | `DONE_WITH_LIMITATION` | Gradle 9.5.0, Android SDK·JDK 21 확인 |
+| 최신 Core·Customer Build | 실패 | `INTEGRATION_BLOCKED` | `compileDebugJavaWithJavac` Provider 값 없음 |
+| 기사 앱 신규 변경 | 실패 전 미실행 | `INTEGRATION_BLOCKED` | 공통 Core Task Graph 구성 단계에서 선행 중단 |
 
 발표에서는 인증·문의 생성·증상 제출의 **저장된 실제 연동 증거**와 홈·안내 Fixture를 분리해야 한다.
 
@@ -216,15 +207,15 @@ WBS는 이 문서의 상태 분류를 사용해 현행화해야 한다. 특히 T
 ### 확인된 강점
 
 - State Machine 계약 1.0.0과 상태 13개·행동 23개 Registry가 존재한다.
-- Data 단위 테스트 67/67, QA Verify Rebuild, Finalize와 대표 14단계 E2E가 기준 Commit에서 통과한다.
+- State Machine Validator·Diagram Check와 대표 14단계 E2E가 기준 Commit에서 통과한다.
 - Backend 문의 생성·취소·증상 제출 Slice와 Mobile 실제 연동의 저장된 증거가 있다.
-- Web Lint와 TypeScript 검사는 현재 작업 트리에서 통과했다.
+- Web 27개 파일·113개 Test, Lint, TypeScript와 Production Build가 Lockfile 환경에서 통과했다.
 - 각 영역이 Mock과 실제 Runtime의 경계를 문서화하기 시작했다.
 
 ### 발표 동결 전 필수 해제 조건
 
-1. State Machine 생성기·Mermaid·CI Gate 변경을 Commit하고 발표 기준 Commit 갱신
-2. Backend·AI·Web·Mobile의 최신 Gate 결과 또는 명시적 환경 차단 승인
+1. Data Raw 정책 수정·QA 산출물을 Commit하고 발표 기준 Commit 갱신
+2. Backend·AI·Mobile의 최신 Gate 결과 또는 명시적 환경 차단·발표 제외 승인
 3. WBS 상태 현행화
 4. 중앙 시연 단계표·Fallback·기능 상태표 작성 및 김은진 전달
 

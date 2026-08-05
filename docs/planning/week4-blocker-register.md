@@ -1,7 +1,7 @@
 # 4주차 차단 요소 Register
 
-> 기준 시각: **2026-08-05 15:51 KST**  
-> 기준 브랜치·Commit: `main@e2b21faadea72ae25e29510d775b297c3daf17a7`  
+> 기준 시각: **2026-08-05 17:45 KST**
+> 기준 브랜치·Commit: `main@6512178aded1eef745dc40ddc8ed480f1e7870fa`
 > 연계 문서: `docs/planning/week4-current-baseline.md`  
 > 운영 원칙: 차단 전달만으로 완료 처리하지 않고 재현 명령·해제 조건·증거를 확인한다.
 
@@ -18,12 +18,12 @@
 | ID | 우선순위 | 영역 | 증상 | 책임자 | 현재 상태 | 목표 시점 |
 |---|---|---|---|---|---|---|
 | `W4-BLK-001` | P0 | Git·Release | 발표 기준 Commit 확정 | 윤승혁 | RESOLVED | 2026-08-05 |
-| `W4-BLK-002` | P0 | Data | 기준 Commit Data Gate 재검증 | 김은진 | RESOLVED | 2026-08-05 |
+| `W4-BLK-002` | P0 | Data | Raw 정책·QA Summary 회귀 수정 | 김은진 | FIXED_PENDING_COMMIT | 변경 Commit 전 |
 | `W4-BLK-003` | P0 | Contract Env | 계약 검증 환경 확보 및 실행 | 윤승혁·김은진 | RESOLVED | 2026-08-05 |
-| `W4-BLK-004` | P0 | State Machine | Mermaid 1.0.0 재생성 및 CI Gate 추가 | 윤승혁 | FIXED_PENDING_COMMIT | 변경 Commit 전 |
-| `W4-BLK-005` | P0 | Backend | 현재 HEAD의 Backend Test·Migration 증거 없음 | 최지용 | ENVIRONMENT_BLOCKED | 8월 5일 동결 전 |
-| `W4-BLK-006` | P0 | Web | 현재 Source의 Test·Build가 선택 의존성 문제로 미검증 | 한예나·김은진 | ENVIRONMENT_BLOCKED | 8월 5일 동결 전 |
-| `W4-BLK-007` | P0 | Mobile | Gradle 미캐시·네트워크 차단으로 최신 Build·Test 없음 | 양정현·김은진 | ENVIRONMENT_BLOCKED | 8월 5일 동결 전 |
+| `W4-BLK-004` | P0 | State Machine | Mermaid 1.0.0 재생성 및 CI Gate 추가 | 윤승혁 | RESOLVED | 2026-08-05 |
+| `W4-BLK-005` | P0 | Backend | 요구 Python 3.13.13 부재로 전체 Gate 미실행 | 최지용 | ENVIRONMENT_BLOCKED | 환경 확보 시 |
+| `W4-BLK-006` | P0 | Web | Lockfile 기준 Test·Lint·Build 재검증 | 한예나·김은진 | RESOLVED | 2026-08-05 |
+| `W4-BLK-007` | P0 | Mobile | Core Compile Task의 SDK Platform Provider 값 없음 | 양정현·김은진 | SDK_PLATFORM_BLOCKED | 환경 정합화 시 |
 | `W4-BLK-008` | P0 | PM·WBS | WBS 상태가 실제 Runtime·Mock·계약 수준과 불일치 | 윤승혁 | OPEN | 8월 5일 동결 전 |
 | `W4-BLK-009` | P0 | T-052 | 중앙 시연 패키지·Fallback·3회 리허설·승인 기록 없음 | 윤승혁·김은진 | OPEN | 8월 5일 동결 전 |
 | `W4-BLK-010` | P1 | Backend↔AI | 실제 HTTP 호출·Schema 검증·DB 저장 E2E 없음 | 최지용·이동윤 | INTEGRATION_BLOCKED | 5주차 진입 전 |
@@ -37,7 +37,7 @@
 
 | 항목 | 내용 |
 |---|---|
-| 증상 | `main@e2b21fa`이지만 Data Raw 변경과 팀원 진행도 문서가 미커밋 상태 |
+| 증상 | `main@e2b21fa` 이후 계약·Data Raw·팀원 진행도 문서가 미커밋 상태였음 |
 | 직접 원인 | 병합 후 작업 트리 포함 범위와 발표 Source 동결 Commit이 아직 확정되지 않음 |
 | 영향 | 같은 Commit·같은 파일로 Test·발표·Fallback을 재현할 수 없음 |
 | 책임 | 윤승혁, 변경 파일별 주관 담당자 |
@@ -45,27 +45,30 @@
 | 증거 | `git status --short`, 발표 승인 문서 |
 | 주의 | 사용자 변경을 PM이 임의 삭제·이동하지 않음 |
 | 해제 시각 | 2026-08-05 KST |
-| 해제 Commit | `e2b21faadea72ae25e29510d775b297c3daf17a7` |
-| 해제 결정 | 현재 최신 Commit을 발표 기준으로 사용하며 미커밋 파일은 발표 기준에서 제외 |
-| 잔여 제한 | 직접 Gate 결과는 미커밋 작업 트리에서 실행됐으므로 깨끗한 Checkout 재검증 필요 |
+| 해제 Commit | `6512178aded1eef745dc40ddc8ed480f1e7870fa` |
+| 해제 결정 | 사용자가 관련 변경을 Commit했으므로 발표 검증 기준을 새 Commit으로 갱신 |
+| 잔여 제한 | 새 Commit의 Data Gate 회귀는 `W4-BLK-002`로 별도 관리 |
 
 ### W4-BLK-002 — Data Raw 비보존 정책 실패
 
 | 항목 | 내용 |
 |---|---|
-| 증상 | Data 단위 테스트 67개 중 1개 실패, 기대 Raw 정책 파일 7개 대비 실제 8개 |
+| 증상 | 깨끗한 `6512178` Clone에서 Data 단위 테스트 67개 중 2개 실패 |
 | 재현 | `python -B -m unittest discover -s data/tools/tests -v` |
-| 직접 원인 | 미추적 `data/raw/faq/source-lists/Q&A 크롤링.md`가 Raw 정책 검사 대상에 추가됨 |
+| 직접 원인 | Commit된 Raw 정책 파일 구성이 기대 7개에서 6개로 변경됐고, QA Summary의 계약 출처 Commit이 `fff23ac...`에 머묾 |
 | 영향 | Data QA Gate와 발표 기준선의 67/67 선언 차단 |
 | 책임 | 김은진 |
 | 협업 | 이동윤, 윤승혁 |
 | 해제 조건 | 파일의 정식 위치·보존 정책을 결정하고 67/67 통과, QA·Finalize를 같은 작업 트리에서 재실행 |
 | 목표 | 2026-08-05 발표 동결 전 |
 | 주의 | 원본·수집 자료일 수 있으므로 확인 없이 삭제하지 않음 |
-| 해제 시각 | 2026-08-05 KST |
-| 해제 Commit | `e2b21faadea72ae25e29510d775b297c3daf17a7` |
-| 해제 증거 | 깨끗한 임시 Checkout에서 Data 67/67, QA Verify Rebuild PASS, Finalize PASS, 오류·경고·Canonical Drift 0개 |
-| 해제 판정 | 미추적 `Q&A 크롤링.md`는 기준 Commit에 포함되지 않으며 원본 작업 트리에서 보존한다. 기준 Commit 자체의 Data Gate는 정상이다. |
+| 과거 해제 증거 | `e2b21fa...`의 깨끗한 Checkout에서 Data 67/67, QA Verify Rebuild·Finalize PASS |
+| 재개방 시각 | 2026-08-05 KST |
+| 재개방 Commit | `6512178aded1eef745dc40ddc8ed480f1e7870fa` |
+| 현재 해제 조건 | `Q&A 크롤링.md`의 정식 보존 위치·Raw 정책을 결정하고 QA Summary를 재생성한 뒤 67/67·QA·Finalize 통과 |
+| 수정 결과 | 원문 79,555바이트를 Git 무시 로컬 백업으로 보존하고 두 `.gitkeep` 복원 |
+| 검증 증거 | 깨끗한 수정 Clone에서 Data 67/67, QA Verify Rebuild PASS, Finalize PASS, 오류·경고·Canonical Drift 0개 |
+| 잔여 조건 | Raw 삭제·`.gitkeep`·갱신 QA 산출물을 Commit하고 발표 기준 Commit을 갱신하면 `RESOLVED` |
 
 ### W4-BLK-003 — 계약 검증 Python 환경 부재
 
@@ -97,45 +100,54 @@
 | 목표 | 2026-08-05 발표 동결 전 |
 | 수정 결과 | 1.0.0 YAML에서 재생성, 입력 SHA-256·생성 명령 Header 추가, Diagram Check PASS |
 | 재발 방지 | `.github/workflows/data-ci.yml`에 `render_state_machine.py --check` 추가 |
-| 잔여 조건 | 생성기·Mermaid·CI 변경을 Commit하고 발표 기준 Commit을 해당 Commit으로 갱신해야 최종 `RESOLVED` |
+| 해제 Commit | `6512178aded1eef745dc40ddc8ed480f1e7870fa` |
+| 해제 판정 | 생성기·Mermaid·CI Gate가 Commit되고 Validator·Diagram Check가 모두 통과하여 `RESOLVED` |
 
 ### W4-BLK-005 — Backend 현재 Gate 미검증
 
 | 항목 | 내용 |
 |---|---|
 | 증상 | `backend/.venv`가 없어 `check_environment.py`와 현재 pytest·Migration 검증을 실행하지 못함 |
-| 직접 원인 | Backend 재현 환경 미구성 |
+| 직접 원인 | Bootstrap 요구 Python은 3.13.13이나 현재 Python은 3.13.12, 번들 Python은 3.12.13 |
 | 영향 | 과거 778/791 통과 기록을 현재 HEAD 성공으로 사용할 수 없음 |
 | 책임 | 최지용 |
 | 협업 | 김은진, 윤승혁 |
 | 해제 조건 | Backend 가상환경 재현 후 전체 Test, Migration drift, 필요 시 PostgreSQL Gate 결과 기록 |
 | 목표 | 2026-08-05 동결 전 또는 발표에서 `RECORDED_RUNTIME`으로 강등 승인 |
+| 실행 증거 | `python scripts/development/bootstrap.py --service backend`가 Patch Version 불일치로 중단 |
+| 현재 판정 | 코드 실패가 아니라 공식 재현 환경 선행 차단; Python 3.13.13 확보 전 Gate 성공 선언 금지 |
 
 ### W4-BLK-006 — Web 현재 Test·Build 미검증
 
 | 항목 | 내용 |
 |---|---|
-| 증상 | Lint·TypeScript는 통과하지만 Vitest·Vite Build가 시작 전 실패 |
-| 직접 원인 | 기본 Node가 최소 버전 미달이고 현재 `node_modules`에 Windows Rolldown 선택 의존성이 없음 |
+| 증상 | 초기에는 Windows Rolldown 선택 의존성 누락으로 Vitest·Vite Build가 시작 전 실패 |
+| 직접 원인 | 기존 `node_modules`가 현재 Windows Lockfile 설치 결과와 불일치 |
 | 영향 | Web 동결 Commit 이후 변경 16개의 현재 회귀 결과 없음 |
 | 책임 | 한예나 |
 | 협업 | 김은진 |
 | 해제 조건 | README 지원 Node에서 깨끗한 `npm ci` 후 Test·Lint·Build 통과, 현재 Commit 기록 |
 | 대안 | 해결하지 못하면 저장된 이전 Web 성공 Commit을 `RECORDED_RUNTIME/MOCK_UI` 기준으로 사용 |
 | 목표 | 2026-08-05 발표 동결 전 |
+| 해제 시각 | 2026-08-05 KST |
+| 해제 환경 | Node 24.14.0, `npm ci`, Vite 8.1.5, Vitest 4.1.10 |
+| 해제 증거 | ESLint PASS, TypeScript PASS, 27개 파일·113개 Test PASS, Production Build PASS |
+| 실행 참고 | 단일 Worker 전체 실행의 240초 제한 후 남은 6개 파일·21개 Test를 분할 실행하여 전체 Case 통과 확인 |
 
 ### W4-BLK-007 — Mobile 최신 Build·Test 미검증
 
 | 항목 | 내용 |
 |---|---|
-| 증상 | Gradle 9.5.0 배포본 다운로드가 네트워크 권한으로 실패 |
-| 직접 원인 | Gradle 배포본 미캐시 및 현재 실행 환경 네트워크 차단 |
+| 증상 | Gradle·SDK 인식 후 `:core:compileDebugJavaWithJavac` 의존성 계산에서 Provider 값 없음으로 중단 |
+| 직접 원인 | 설치 SDK Platform은 `android-37.0`이고 Build는 `compileSdk=37`; 정확한 Platform Provider를 얻지 못한 것으로 추정 |
 | 영향 | 최신 Customer·Core 및 새 Technician 변경의 Build·Test 증거 없음 |
 | 책임 | 양정현 |
 | 협업 | 김은진 |
 | 해제 조건 | Gradle 사용 가능 환경에서 Core·Customer·Technician Test와 APK Build를 현재 Commit으로 실행 |
 | 대안 | 이전 `5692124` 모바일 증거만 `RECORDED_RUNTIME`으로 사용하고 신규 기사 기능은 발표 제외 |
 | 목표 | 2026-08-05 발표 동결 전 |
+| 실행 환경 | Gradle 9.5.0, Android SDK, Android Studio JBR 21.0.10 인식 확인 |
+| 현재 해제 조건 | `compileSdk=37`과 설치 SDK Platform을 정합화한 뒤 Core·Customer·Technician Test와 APK Build 통과 |
 
 ### W4-BLK-008 — WBS 상태 불일치
 
@@ -208,11 +220,12 @@
 
 ## 4. 발표 동결 전 실행 순서
 
-1. `W4-BLK-004` 생성기·Mermaid·CI 변경 Commit 및 발표 기준 Commit 갱신
-2. `W4-BLK-005`·`006`·`007` 영역별 현재 Gate 확보 또는 Recorded·Mock 강등 결정
-3. `W4-BLK-008` WBS 상태 현행화
-4. `W4-BLK-009` 중앙 시연 패키지와 Fallback 작성·리허설
-5. 김은진 발표자료의 주장–증거와 기능 상태를 최종 검수
+1. `W4-BLK-002` Raw 정책 수정·QA 산출물 Commit 및 발표 기준 Commit 갱신
+2. `W4-BLK-005` Python 3.13.13 환경 확보 또는 Backend를 `RECORDED_RUNTIME`으로 강등 승인
+3. `W4-BLK-007` Android SDK Platform 정합화 또는 Mobile 신규 범위를 발표 제외
+4. `W4-BLK-008` WBS 상태 현행화
+5. `W4-BLK-009` 중앙 시연 패키지와 Fallback 작성·리허설
+6. 김은진 발표자료의 주장–증거와 기능 상태를 최종 검수
 
 ## 5. 해제 기록 양식
 
