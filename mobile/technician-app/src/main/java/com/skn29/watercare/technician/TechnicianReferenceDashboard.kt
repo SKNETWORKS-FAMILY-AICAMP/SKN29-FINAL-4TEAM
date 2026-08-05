@@ -1,25 +1,18 @@
 package com.skn29.watercare.technician
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.core.ui.components.ReferenceActionItem
 import com.skn29.watercare.core.ui.components.ReferenceActionRow
 import com.skn29.watercare.core.ui.components.ReferenceBottomItem
-import com.skn29.watercare.core.ui.components.ReferenceBottomNavigation
-import com.skn29.watercare.core.ui.components.ReferenceDashboardHeader
+import com.skn29.watercare.core.ui.components.ReferenceCompactBanner
+import com.skn29.watercare.core.ui.components.ReferenceDashboardScaffold
 import com.skn29.watercare.core.ui.components.ReferenceDetailCard
 import com.skn29.watercare.core.ui.components.ReferenceGlassButton
 import com.skn29.watercare.core.ui.components.ReferenceGlassPanel
@@ -27,7 +20,100 @@ import com.skn29.watercare.core.ui.components.ReferenceHeroCard
 import com.skn29.watercare.core.ui.components.ReferenceSectionHeader
 import com.skn29.watercare.core.ui.components.ReferenceStatusItem
 import com.skn29.watercare.core.ui.components.ReferenceStatusRow
+import com.skn29.watercare.core.ui.components.ReferenceWelcomeCard
 import com.skn29.watercare.core.ui.components.TechnicianReferencePalette
+
+@Composable
+fun TechnicianReferenceLogin(
+    state: TechnicianUiState,
+    onLogin: () -> Unit,
+    onOfflinePreview: () -> Unit,
+    onRetryBackend: () -> Unit,
+) {
+    val palette = TechnicianReferencePalette
+
+    ReferenceDashboardScaffold(
+        title = "정수기 딜러",
+        roleLabel = "방문기사용",
+        palette = palette,
+    ) {
+        ReferenceWelcomeCard(
+            title = "방문 업무를\n시작하세요",
+            subtitle = "배정 방문과 읽기 전용 사전 점검 내용을 확인합니다.",
+            imageRes = R.drawable.dashboard_toolkit,
+            palette = palette,
+        )
+
+        when {
+            state.checkingBackend -> {
+                ReferenceCompactBanner(
+                    title = "Backend 확인 중",
+                    message = "Demo 로그인 가능 여부를 확인하고 있습니다.",
+                    palette = palette,
+                )
+            }
+
+            state.backendAvailable == true -> {
+                ReferenceCompactBanner(
+                    title = "Backend 연결됨",
+                    message = "실제 Demo 인증으로 로그인할 수 있습니다.",
+                    palette = palette,
+                )
+            }
+
+            else -> {
+                ReferenceCompactBanner(
+                    title = "Backend 연결 확인 필요",
+                    message = "방문 대시보드는 합성 Fixture 미리보기로 확인할 수 있습니다.",
+                    palette = palette,
+                    warning = true,
+                    actionLabel = "다시 확인",
+                    onAction = onRetryBackend,
+                )
+            }
+        }
+
+        ReferenceGlassButton(
+            text = "방문기사 Demo 로그인",
+            palette = palette,
+            onClick = onLogin,
+            enabled = !state.loginLoading &&
+                !state.restoringSession &&
+                state.backendAvailable == true,
+            accent = state.backendAvailable == true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        ReferenceGlassButton(
+            text = "합성 방문 대시보드 미리보기",
+            palette = palette,
+            onClick = onOfflinePreview,
+            enabled = !state.loginLoading &&
+                !state.restoringSession,
+            accent = state.backendAvailable != true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        if (state.restoringSession) {
+            LoadingBlock(
+                "저장된 방문기사 세션을 확인하는 중입니다"
+            )
+        }
+        if (state.loginLoading) {
+            LoadingBlock(
+                "방문기사 계정을 확인하는 중입니다"
+            )
+        }
+        state.error?.let {
+            ErrorCard(it, onRetry = onLogin)
+        }
+
+        Text(
+            "방문 목록과 사전 점검은 방문 API가 제공되기 전까지 합성 Fixture입니다.",
+            style = MaterialTheme.typography.bodySmall,
+            color = palette.textMuted,
+        )
+    }
+}
 
 @Composable
 fun TechnicianReferenceDashboard(
@@ -46,6 +132,9 @@ fun TechnicianReferenceDashboard(
         it.risk == TechnicianVisitRisk.CAUTION ||
             it.risk == TechnicianVisitRisk.DANGER
     }
+    val dangerCount = state.visits.count {
+        it.risk == TechnicianVisitRisk.DANGER
+    }
     val progress = if (total == 0) {
         0f
     } else {
@@ -53,20 +142,37 @@ fun TechnicianReferenceDashboard(
     }
     val primaryVisit = state.visits.firstOrNull()
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(18.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ReferenceDashboardScaffold(
+        title = "정수기 딜러",
+        roleLabel = "방문기사용",
+        palette = palette,
+        modifier = modifier,
+        bottomItems = listOf(
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_home,
+                label = "홈",
+                selected = true,
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_schedule,
+                label = "방문",
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_work,
+                label = "작업",
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_notice,
+                label = "알림",
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_profile,
+                label = "마이",
+            ),
+        ),
     ) {
-        ReferenceDashboardHeader(
-            roleLabel = "방문기사용",
-            palette = palette,
-        )
-
         ReferenceHeroCard(
-            greeting = "${state.user?.displayName.orEmpty()} 기사님, 안녕하세요!",
+            greeting = "${state.user?.displayName.orEmpty()} 기사님,\n안녕하세요!",
             subtitle = "안전하고 정확한 방문 서비스를 응원합니다.",
             metricLabel = "오늘 방문",
             metricValue = "$total",
@@ -77,24 +183,15 @@ fun TechnicianReferenceDashboard(
             palette = palette,
         )
 
-        ReferenceGlassPanel(
+        ReferenceCompactBanner(
+            title = if (state.offlinePreview) {
+                "오프라인 합성 Fixture"
+            } else {
+                "Demo 인증 + 합성 방문 Fixture"
+            },
+            message = "방문 API가 제공되기 전까지 합성 방문 데이터를 표시합니다.",
             palette = palette,
-        ) {
-            Text(
-                if (state.offlinePreview) {
-                    "오프라인 합성 Fixture"
-                } else {
-                    "Demo 인증 + 합성 방문 Fixture"
-                },
-                color = palette.accent,
-                fontWeight = FontWeight.ExtraBold,
-            )
-            Text(
-                "방문 API가 제공되기 전까지 합성 방문 데이터를 표시합니다.",
-                color = palette.textMuted,
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
+        )
 
         ReferenceSectionHeader(
             title = "방문 상태",
@@ -104,30 +201,26 @@ fun TechnicianReferenceDashboard(
         ReferenceStatusRow(
             items = listOf(
                 ReferenceStatusItem(
-                    icon = "▦",
+                    iconRes = R.drawable.ref_schedule,
                     label = "오늘 일정",
                     value = "${total}건",
                 ),
                 ReferenceStatusItem(
-                    icon = "✓",
+                    iconRes = R.drawable.ref_complete,
                     label = "확정",
                     value = "${confirmed}건",
                 ),
                 ReferenceStatusItem(
-                    icon = "⌖",
+                    iconRes = R.drawable.ref_inspection,
                     label = "점검 필요",
                     value = "${risky}건",
                     healthy = risky == 0,
                 ),
                 ReferenceStatusItem(
-                    icon = "!",
+                    iconRes = R.drawable.ref_urgent,
                     label = "긴급",
-                    value = state.visits.count {
-                        it.risk == TechnicianVisitRisk.DANGER
-                    }.let { "${it}건" },
-                    healthy = state.visits.none {
-                        it.risk == TechnicianVisitRisk.DANGER
-                    },
+                    value = "${dangerCount}건",
+                    healthy = dangerCount == 0,
                 ),
             ),
             palette = palette,
@@ -141,13 +234,13 @@ fun TechnicianReferenceDashboard(
         ReferenceActionRow(
             items = listOf(
                 ReferenceActionItem(
-                    icon = "▤",
+                    iconRes = R.drawable.ref_visits,
                     label = "방문 목록",
                     subtitle = "${total}건",
                     onClick = onRefresh,
                 ),
                 ReferenceActionItem(
-                    icon = "🔧",
+                    iconRes = R.drawable.ref_precheck,
                     label = "사전 점검",
                     subtitle = "읽기 전용",
                     onClick = {
@@ -157,14 +250,14 @@ fun TechnicianReferenceDashboard(
                     },
                 ),
                 ReferenceActionItem(
-                    icon = "⌖",
+                    iconRes = R.drawable.ref_route,
                     label = "경로 확인",
                     subtitle = "개인 확장",
                     enabled = false,
                     onClick = {},
                 ),
                 ReferenceActionItem(
-                    icon = "▧",
+                    iconRes = R.drawable.ref_report,
                     label = "작업 기록",
                     subtitle = "API 준비 중",
                     enabled = false,
@@ -238,20 +331,20 @@ fun TechnicianReferenceDashboard(
         ReferenceActionRow(
             items = listOf(
                 ReferenceActionItem(
-                    icon = "⌕",
+                    iconRes = R.drawable.ref_support,
                     label = "고객센터",
                     subtitle = "1:1 문의",
                     onClick = {},
                 ),
                 ReferenceActionItem(
-                    icon = "□",
+                    iconRes = R.drawable.ref_parts,
                     label = "부품 확인",
                     subtitle = "API 준비 중",
                     enabled = false,
                     onClick = {},
                 ),
                 ReferenceActionItem(
-                    icon = "♢",
+                    iconRes = R.drawable.ref_safety,
                     label = "안전 체크",
                     subtitle = "점검 항목",
                     onClick = {
@@ -261,7 +354,7 @@ fun TechnicianReferenceDashboard(
                     },
                 ),
                 ReferenceActionItem(
-                    icon = "▥",
+                    iconRes = R.drawable.ref_report,
                     label = "리포트",
                     subtitle = "읽기 전용",
                     onClick = {
@@ -270,17 +363,6 @@ fun TechnicianReferenceDashboard(
                         }
                     },
                 ),
-            ),
-            palette = palette,
-        )
-
-        ReferenceBottomNavigation(
-            items = listOf(
-                ReferenceBottomItem("⌂", "홈", selected = true),
-                ReferenceBottomItem("▦", "방문"),
-                ReferenceBottomItem("🔧", "작업"),
-                ReferenceBottomItem("♢", "알림"),
-                ReferenceBottomItem("♙", "마이"),
             ),
             palette = palette,
         )

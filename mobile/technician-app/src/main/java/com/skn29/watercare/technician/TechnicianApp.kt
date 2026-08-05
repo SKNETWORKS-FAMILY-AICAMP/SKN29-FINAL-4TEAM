@@ -64,53 +64,63 @@ fun TechnicianApp() {
     val state by technicianViewModel.state
         .collectAsStateWithLifecycle()
 
-    WaterGradientBackground {
-        Scaffold(
-            containerColor = Color.Transparent,
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            if (state.selectedVisitId == null) {
-                                "정수기 딜러"
-                            } else {
-                                "방문 사전 점검"
-                            },
-                            fontWeight = FontWeight.ExtraBold,
-                        )
-                    },
-                    navigationIcon = {
-                        if (state.selectedVisitId != null) {
+    when {
+        state.user == null -> TechnicianReferenceLogin(
+            state = state,
+            onLogin = technicianViewModel::demoLogin,
+            onOfflinePreview =
+                technicianViewModel::startOfflinePreview,
+            onRetryBackend =
+                technicianViewModel::checkBackend,
+        )
+
+        state.selectedVisitId == null ->
+            TechnicianReferenceDashboard(
+                state = state,
+                onVisitClick =
+                    technicianViewModel::openVisit,
+                onRefresh =
+                    technicianViewModel::loadVisits,
+                onLogout = technicianViewModel::logout,
+            )
+
+        else -> WaterGradientBackground {
+            Scaffold(
+                containerColor = Color.Transparent,
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                "방문 사전 점검",
+                                fontWeight =
+                                    FontWeight.ExtraBold,
+                            )
+                        },
+                        navigationIcon = {
                             TextButton(
                                 onClick =
                                     technicianViewModel::closeVisit,
                             ) {
                                 Text("목록")
                             }
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent,
-                        scrolledContainerColor =
-                            Color.White.copy(alpha = 0.72f),
-                    ),
-                )
-            },
-        ) { padding ->
-            when {
-                state.user == null -> LoginContent(
+                        },
+                        colors =
+                            TopAppBarDefaults
+                                .topAppBarColors(
+                                    containerColor =
+                                        Color.Transparent,
+                                    scrolledContainerColor =
+                                        Color.White.copy(
+                                            alpha = 0.72f
+                                        ),
+                                ),
+                    )
+                },
+            ) { padding ->
+                ReportContent(
                     state = state,
-                    onLogin = technicianViewModel::demoLogin,
-                    onOfflinePreview =
-                        technicianViewModel::startOfflinePreview,
-                    onRetryBackend =
-                        technicianViewModel::checkBackend,
-                    modifier = Modifier.padding(padding),
-                )
-
-                state.selectedVisitId != null -> ReportContent(
-                    state = state,
-                    onBack = technicianViewModel::closeVisit,
+                    onBack =
+                        technicianViewModel::closeVisit,
                     onRetry = {
                         state.selectedVisitId?.let(
                             technicianViewModel::openVisit
@@ -118,21 +128,10 @@ fun TechnicianApp() {
                     },
                     modifier = Modifier.padding(padding),
                 )
-
-                else -> TechnicianReferenceDashboard(
-                    state = state,
-                    onVisitClick =
-                        technicianViewModel::openVisit,
-                    onRefresh =
-                        technicianViewModel::loadVisits,
-                    onLogout = technicianViewModel::logout,
-                    modifier = Modifier.padding(padding),
-                )
             }
         }
     }
 }
-
 @Composable
 private fun LoginContent(
     state: TechnicianUiState,

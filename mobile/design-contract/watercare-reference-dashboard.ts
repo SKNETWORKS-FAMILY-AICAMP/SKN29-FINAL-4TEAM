@@ -13,6 +13,17 @@ export interface DashboardPalette {
   danger: string;
 }
 
+export interface DashboardLayout {
+  horizontalPaddingDp: number;
+  sectionGapDp: number;
+  heroHeightDp: number;
+  statusTileHeightDp: number;
+  actionTileHeightDp: number;
+  cardRadiusDp: number;
+  bottomNavigationFixed: boolean;
+  bottomNavigationHeightDp: number;
+}
+
 export interface DashboardAction {
   icon: string;
   label: string;
@@ -23,25 +34,33 @@ export interface DashboardAction {
 export interface DashboardDefinition {
   role: WaterCareRole;
   roleLabel: string;
-  heroTitle: string;
-  heroSubtitle: string;
   statusSection: string;
   quickActions: readonly DashboardAction[];
   bottomNavigation: readonly string[];
   palette: DashboardPalette;
+  layout: DashboardLayout;
 }
+
+const sharedLayout: DashboardLayout = {
+  horizontalPaddingDp: 16,
+  sectionGapDp: 14,
+  heroHeightDp: 246,
+  statusTileHeightDp: 112,
+  actionTileHeightDp: 112,
+  cardRadiusDp: 26,
+  bottomNavigationFixed: true,
+  bottomNavigationHeightDp: 70,
+};
 
 export const customerDashboard: DashboardDefinition = {
   role: "customer",
   roleLabel: "고객용",
-  heroTitle: "안녕하세요!",
-  heroSubtitle: "깨끗한 물로 건강한 하루 되세요.",
   statusSection: "홈 상태",
   quickActions: [
-    { icon: "clipboard", label: "문진 시작", subtitle: "증상 입력", enabled: true },
-    { icon: "heart", label: "안심 케어", subtitle: "안전 안내", enabled: true },
-    { icon: "calendar", label: "방문 일정", subtitle: "API 준비 중", enabled: false },
-    { icon: "info", label: "제품 정보", subtitle: "제품 확인", enabled: true },
+    { icon: "intake", label: "문진 시작", subtitle: "증상 입력", enabled: true },
+    { icon: "care", label: "안심 케어", subtitle: "안전 안내", enabled: true },
+    { icon: "schedule", label: "방문 일정", subtitle: "API 준비 중", enabled: false },
+    { icon: "product", label: "제품 정보", subtitle: "제품 확인", enabled: true },
   ],
   bottomNavigation: ["홈", "제품", "관리", "알림", "마이"],
   palette: {
@@ -56,18 +75,17 @@ export const customerDashboard: DashboardDefinition = {
     warning: "#E2A141",
     danger: "#E95570",
   },
+  layout: sharedLayout,
 };
 
 export const technicianDashboard: DashboardDefinition = {
   role: "technician",
   roleLabel: "방문기사용",
-  heroTitle: "오늘 방문을 확인하세요.",
-  heroSubtitle: "안전하고 정확한 방문 서비스를 응원합니다.",
   statusSection: "방문 상태",
   quickActions: [
-    { icon: "clipboard", label: "방문 목록", subtitle: "일정 확인", enabled: true },
-    { icon: "wrench", label: "사전 점검", subtitle: "읽기 전용", enabled: true },
-    { icon: "map", label: "경로 확인", subtitle: "개인 확장", enabled: false },
+    { icon: "visits", label: "방문 목록", subtitle: "일정 확인", enabled: true },
+    { icon: "precheck", label: "사전 점검", subtitle: "읽기 전용", enabled: true },
+    { icon: "route", label: "경로 확인", subtitle: "개인 확장", enabled: false },
     { icon: "report", label: "작업 기록", subtitle: "API 준비 중", enabled: false },
   ],
   bottomNavigation: ["홈", "방문", "작업", "알림", "마이"],
@@ -83,6 +101,7 @@ export const technicianDashboard: DashboardDefinition = {
     warning: "#E5A146",
     danger: "#EA5B70",
   },
+  layout: sharedLayout,
 };
 
 export const dashboardByRole: Record<WaterCareRole, DashboardDefinition> = {

@@ -22,8 +22,8 @@ import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.core.ui.components.ReferenceActionItem
 import com.skn29.watercare.core.ui.components.ReferenceActionRow
 import com.skn29.watercare.core.ui.components.ReferenceBottomItem
-import com.skn29.watercare.core.ui.components.ReferenceBottomNavigation
-import com.skn29.watercare.core.ui.components.ReferenceDashboardHeader
+import com.skn29.watercare.core.ui.components.ReferenceCompactBanner
+import com.skn29.watercare.core.ui.components.ReferenceDashboardScaffold
 import com.skn29.watercare.core.ui.components.ReferenceDetailCard
 import com.skn29.watercare.core.ui.components.ReferenceGlassButton
 import com.skn29.watercare.core.ui.components.ReferenceGlassPanel
@@ -34,7 +34,6 @@ import com.skn29.watercare.core.ui.components.ReferenceStatusRow
 import com.skn29.watercare.customer.BuildConfig
 import com.skn29.watercare.customer.R
 import com.skn29.watercare.customer.common.VmFactory
-import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 
 @Composable
 fun CustomerHomeScreen(
@@ -77,12 +76,34 @@ fun CustomerHomeContent(
 ) {
     val palette = CustomerReferencePalette
 
-    WaterCareScreen(title = "정수기 딜러") {
-        ReferenceDashboardHeader(
-            roleLabel = "고객용",
-            palette = palette,
-        )
-
+    ReferenceDashboardScaffold(
+        title = "정수기 딜러",
+        roleLabel = "고객용",
+        palette = palette,
+        bottomItems = listOf(
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_home,
+                label = "홈",
+                selected = true,
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_product,
+                label = "제품",
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_manage,
+                label = "관리",
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_notice,
+                label = "알림",
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_profile,
+                label = "마이",
+            ),
+        ),
+    ) {
         if (state.loading) {
             LoadingBlock()
         }
@@ -97,14 +118,16 @@ fun CustomerHomeContent(
                 ?: "합성 고객 001"
             val activeInquiry = home.activeInquiry
             val previewLabel = when {
-                state.offlinePreview -> "오프라인 미리보기"
+                state.offlinePreview ->
+                    "오프라인 UI 미리보기"
                 state.customerCareMode == CustomerCareMode.FAKE ->
                     "Demo Mock"
-                else -> "계측 API 연결 전 UI 예시"
+                else ->
+                    "계측 API 연결 전 UI 예시"
             }
 
             ReferenceHeroCard(
-                greeting = "${displayName}님, 안녕하세요!",
+                greeting = "${displayName}님,\n안녕하세요!",
                 subtitle = "깨끗한 물로 건강한 하루 되세요.",
                 metricLabel = "오늘의 사용량",
                 metricValue = "12.5",
@@ -123,22 +146,22 @@ fun CustomerHomeContent(
             ReferenceStatusRow(
                 items = listOf(
                     ReferenceStatusItem(
-                        icon = "💧",
+                        iconRes = R.drawable.ref_filter,
                         label = "문진 상태",
                         value = home.questionnaireStatus,
                     ),
                     ReferenceStatusItem(
-                        icon = "◷",
+                        iconRes = R.drawable.ref_temperature,
                         label = "다음 관리",
                         value = home.nextCareOn,
                     ),
                     ReferenceStatusItem(
-                        icon = "▣",
+                        iconRes = R.drawable.ref_dispense,
                         label = "제품 상태",
-                        value = "정보 확인",
+                        value = "확인 완료",
                     ),
                     ReferenceStatusItem(
-                        icon = "⚡",
+                        iconRes = R.drawable.ref_power,
                         label = "진행 문의",
                         value = activeInquiry?.statusLabel ?: "없음",
                     ),
@@ -147,20 +170,12 @@ fun CustomerHomeContent(
             )
 
             state.intakeUnavailableReason?.let { reason ->
-                ReferenceGlassPanel(
+                ReferenceCompactBanner(
+                    title = "문의 접수 준비",
+                    message = reason,
                     palette = palette,
-                    danger = false,
-                ) {
-                    Text(
-                        "문의 접수 준비",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Black,
-                    )
-                    Text(
-                        reason,
-                        color = palette.textMuted,
-                    )
-                }
+                    warning = true,
+                )
             }
 
             ReferenceSectionHeader(
@@ -171,7 +186,7 @@ fun CustomerHomeContent(
             ReferenceActionRow(
                 items = listOf(
                     ReferenceActionItem(
-                        icon = "▤",
+                        iconRes = R.drawable.ref_intake,
                         label = "문진 시작",
                         subtitle = if (state.intakeAvailable) {
                             "증상 입력"
@@ -185,7 +200,7 @@ fun CustomerHomeContent(
                         },
                     ),
                     ReferenceActionItem(
-                        icon = "♡",
+                        iconRes = R.drawable.ref_care,
                         label = "안심 케어",
                         subtitle = "안전 안내",
                         onClick = {
@@ -197,14 +212,14 @@ fun CustomerHomeContent(
                         },
                     ),
                     ReferenceActionItem(
-                        icon = "▦",
+                        iconRes = R.drawable.ref_schedule,
                         label = "방문 일정",
                         subtitle = "API 준비 중",
                         enabled = false,
                         onClick = {},
                     ),
                     ReferenceActionItem(
-                        icon = "ⓘ",
+                        iconRes = R.drawable.ref_product,
                         label = "제품 정보",
                         subtitle = home.product.modelCode,
                         onClick = {},
@@ -242,25 +257,25 @@ fun CustomerHomeContent(
             ReferenceActionRow(
                 items = listOf(
                     ReferenceActionItem(
-                        icon = "⌕",
+                        iconRes = R.drawable.ref_support,
                         label = "고객센터",
                         subtitle = "1:1 문의",
                         onClick = {},
                     ),
                     ReferenceActionItem(
-                        icon = "🔧",
+                        iconRes = R.drawable.ref_selfcheck,
                         label = "자가 점검",
                         subtitle = "정수기 체크",
                         onClick = {},
                     ),
                     ReferenceActionItem(
-                        icon = "♢",
+                        iconRes = R.drawable.ref_benefit,
                         label = "보증/혜택",
-                        subtitle = "내 혜택 확인",
+                        subtitle = "내 혜택",
                         onClick = {},
                     ),
                     ReferenceActionItem(
-                        icon = "□",
+                        iconRes = R.drawable.ref_event,
                         label = "이벤트",
                         subtitle = "진행 중",
                         onClick = {},
@@ -314,17 +329,7 @@ fun CustomerHomeContent(
                     ) {
                         MockScenario.entries.forEach { scenario ->
                             ReferenceGlassButton(
-                                text = when (scenario) {
-                                    MockScenario.NORMAL -> "일반 안내"
-                                    MockScenario.CAUTION -> "주의 안내"
-                                    MockScenario.DANGER -> "위험 누수"
-                                    MockScenario.NO_EVIDENCE -> "근거 없음"
-                                    MockScenario.BACKEND_PROCESSING ->
-                                        "Backend 처리 중"
-                                    MockScenario.AI_FAILURE -> "AI 실패"
-                                    MockScenario.NETWORK_FAILURE ->
-                                        "네트워크 실패"
-                                },
+                                text = scenarioLabel(scenario),
                                 palette = palette,
                                 onClick = {
                                     onOpenGuidance(
@@ -344,17 +349,6 @@ fun CustomerHomeContent(
                 }
             }
 
-            ReferenceBottomNavigation(
-                items = listOf(
-                    ReferenceBottomItem("⌂", "홈", selected = true),
-                    ReferenceBottomItem("□", "제품"),
-                    ReferenceBottomItem("💧", "관리"),
-                    ReferenceBottomItem("♢", "알림"),
-                    ReferenceBottomItem("♙", "마이"),
-                ),
-                palette = palette,
-            )
-
             ReferenceGlassButton(
                 text = "로그아웃",
                 palette = palette,
@@ -364,4 +358,16 @@ fun CustomerHomeContent(
             )
         }
     }
+}
+
+private fun scenarioLabel(
+    scenario: MockScenario,
+): String = when (scenario) {
+    MockScenario.NORMAL -> "일반 안내"
+    MockScenario.CAUTION -> "주의 안내"
+    MockScenario.DANGER -> "위험 누수"
+    MockScenario.NO_EVIDENCE -> "근거 없음"
+    MockScenario.BACKEND_PROCESSING -> "Backend 처리 중"
+    MockScenario.AI_FAILURE -> "AI 실패"
+    MockScenario.NETWORK_FAILURE -> "네트워크 실패"
 }
