@@ -44,6 +44,14 @@ export interface DashboardLayout {
   buttonGlowElevationPrimary: number;
   buttonGlowElevationSecondary: number;
   innerHighlightOpacity: number;
+  waterDropGlassShape: boolean;
+  panelCornerTopStartDp: number;
+  panelCornerTopEndDp: number;
+  panelCornerBottomEndDp: number;
+  panelCornerBottomStartDp: number;
+  primaryButtonFillOpacity: number;
+  secondaryButtonGlowDp: number;
+  quickActionAccentTint: boolean;
 }
 
 export interface DashboardAction {
@@ -93,7 +101,15 @@ const sharedLayout: DashboardLayout = {
   panelGlowElevationNormal: 4,
   buttonGlowElevationPrimary: 8,
   buttonGlowElevationSecondary: 3,
-  innerHighlightOpacity: 0.44,
+  innerHighlightOpacity: 0.52,
+  waterDropGlassShape: true,
+  panelCornerTopStartDp: 34,
+  panelCornerTopEndDp: 46,
+  panelCornerBottomEndDp: 32,
+  panelCornerBottomStartDp: 42,
+  primaryButtonFillOpacity: 0.92,
+  secondaryButtonGlowDp: 5,
+  quickActionAccentTint: true,
 };
 
 export const customerDashboard: DashboardDefinition = {
