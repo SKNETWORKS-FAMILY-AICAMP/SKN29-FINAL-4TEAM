@@ -39,6 +39,8 @@ import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.core.ui.components.LiquidGlassMetricTile
 import com.skn29.watercare.core.ui.components.LiquidGlassPanel
 import com.skn29.watercare.core.ui.components.LiquidGlassPill
+import com.skn29.watercare.core.ui.components.LiquidGlassTone
+import com.skn29.watercare.core.ui.components.LiquidGlassToneProvider
 import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.core.ui.components.PendingFeatureCard
 import com.skn29.watercare.core.ui.theme.WaterCaution
@@ -48,6 +50,15 @@ import com.skn29.watercare.core.ui.theme.WaterGradientBackground
 
 @Composable
 fun TechnicianApp() {
+    LiquidGlassToneProvider(
+        tone = LiquidGlassTone.TECHNICIAN,
+    ) {
+        TechnicianAppContent()
+    }
+}
+
+@Composable
+private fun TechnicianAppContent() {
     val visitRepository = remember {
         FakeTechnicianVisitRepository()
     }
@@ -97,12 +108,13 @@ fun TechnicianApp() {
                             )
                         },
                         navigationIcon = {
-                            TextButton(
+                            LiquidGlassButton(
+                                text = "목록",
+                                leadingIcon = "‹",
                                 onClick =
                                     technicianViewModel::closeVisit,
-                            ) {
-                                Text("목록")
-                            }
+                                compact = true,
+                            )
                         },
                         colors =
                             TopAppBarDefaults
@@ -175,6 +187,7 @@ private fun LoginContent(
                 LiquidGlassButton(
                     text = "다시 확인",
                     onClick = onRetryBackend,
+                    accent = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -281,9 +294,12 @@ private fun VisitListContent(
                 fontWeight = FontWeight.ExtraBold,
                 modifier = Modifier.weight(1f),
             )
-            TextButton(onClick = onRefresh) {
-                Text("새로고침")
-            }
+            LiquidGlassButton(
+                text = "새로고침",
+                leadingIcon = "↻",
+                onClick = onRefresh,
+                compact = true,
+            )
         }
 
         if (state.visitsLoading) {
@@ -435,6 +451,7 @@ private fun ReportContent(
             LiquidGlassButton(
                 text = "방문 목록으로",
                 onClick = onBack,
+                accent = true,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -506,6 +523,7 @@ private fun ReportContent(
             LiquidGlassButton(
                 text = "방문 목록으로",
                 onClick = onBack,
+                accent = true,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

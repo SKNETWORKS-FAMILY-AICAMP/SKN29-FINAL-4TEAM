@@ -17,22 +17,97 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.skn29.watercare.core.ui.theme.Ink400
 import com.skn29.watercare.core.ui.theme.Ink600
 import com.skn29.watercare.core.ui.theme.Ink900
 import com.skn29.watercare.core.ui.theme.Water500
-import com.skn29.watercare.core.ui.theme.Water700
 import com.skn29.watercare.core.ui.theme.WaterTokens
+
+enum class LiquidGlassTone {
+    CUSTOMER,
+    TECHNICIAN,
+}
+
+private data class LiquidGlassRolePalette(
+    val accent: Color,
+    val accentSecondary: Color,
+    val accentSoft: Color,
+    val textStrong: Color,
+    val textMuted: Color,
+)
+
+private val CustomerLiquidPalette = LiquidGlassRolePalette(
+    accent = Color(0xFF248CFF),
+    accentSecondary = Color(0xFF64C9FF),
+    accentSoft = Color(0xFFBFEAFF),
+    textStrong = Color(0xFF123C61),
+    textMuted = Color(0xFF597A94),
+)
+
+private val TechnicianLiquidPalette = LiquidGlassRolePalette(
+    accent = Color(0xFF0FB9AA),
+    accentSecondary = Color(0xFF55E5D5),
+    accentSoft = Color(0xFFB9F4EC),
+    textStrong = Color(0xFF123F3A),
+    textMuted = Color(0xFF577D78),
+)
+
+private val LocalLiquidGlassTone = compositionLocalOf {
+    LiquidGlassTone.CUSTOMER
+}
+
+@Composable
+fun LiquidGlassToneProvider(
+    tone: LiquidGlassTone,
+    content: @Composable () -> Unit,
+) {
+    CompositionLocalProvider(
+        LocalLiquidGlassTone provides tone,
+        content = content,
+    )
+}
+
+@Composable
+private fun liquidPalette(): LiquidGlassRolePalette =
+    when (LocalLiquidGlassTone.current) {
+        LiquidGlassTone.CUSTOMER -> CustomerLiquidPalette
+        LiquidGlassTone.TECHNICIAN -> TechnicianLiquidPalette
+    }
+
+private val LiquidWaterDropPanelShape = RoundedCornerShape(
+    topStart = 34.dp,
+    topEnd = 48.dp,
+    bottomEnd = 28.dp,
+    bottomStart = 42.dp,
+)
+
+private val LiquidWaterDropControlShape = RoundedCornerShape(999.dp)
+
+private val LiquidWaterDropTileShape = RoundedCornerShape(
+    topStart = 24.dp,
+    topEnd = 34.dp,
+    bottomEnd = 20.dp,
+    bottomStart = 30.dp,
+)
 
 @Composable
 fun LiquidGlassPanel(
@@ -42,40 +117,135 @@ fun LiquidGlassPanel(
     contentPadding: PaddingValues = PaddingValues(18.dp),
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val shape = RoundedCornerShape(WaterTokens.RadiusCard)
-    val baseFill = when {
-        danger -> Color.White
-        strong -> WaterTokens.GlassFillStrong
-        else -> WaterTokens.GlassFill
-    }
-    val borderColor = if (danger) {
-        WaterTokens.Danger
+    val palette = liquidPalette()
+    val shape = if (danger) {
+        RoundedCornerShape(24.dp)
     } else {
-        WaterTokens.GlassBorder
+        LiquidWaterDropPanelShape
+    }
+
+    val surfaceAlpha = if (strong) 0.22f else 0.14f
+    val accentAlpha = if (strong) 0.17f else 0.10f
+    val glowAlpha = if (strong) 0.34f else 0.22f
+
+    val fillBrush = if (danger) {
+        Brush.verticalGradient(
+            listOf(
+                Color.White.copy(alpha = 0.96f),
+                Color.White.copy(alpha = 0.90f),
+            )
+        )
+    } else {
+        Brush.verticalGradient(
+            listOf(
+                Color.White.copy(alpha = surfaceAlpha),
+                palette.accentSoft.copy(alpha = accentAlpha),
+                Color.White.copy(alpha = 0.055f),
+                Color.Transparent,
+                palette.accentSecondary.copy(
+                    alpha = accentAlpha * 0.62f
+                ),
+                Color.White.copy(alpha = surfaceAlpha * 0.58f),
+            )
+        )
+    }
+
+    val borderBrush = if (danger) {
+        Brush.linearGradient(
+            listOf(
+                WaterTokens.Danger,
+                WaterTokens.Danger,
+            )
+        )
+    } else {
+        Brush.linearGradient(
+            listOf(
+                Color.White.copy(alpha = 0.99f),
+                palette.accent.copy(alpha = 0.90f),
+                palette.accentSecondary.copy(alpha = 0.80f),
+                Color.White.copy(alpha = 0.92f),
+            )
+        )
     }
 
     Column(
         modifier = modifier
             .shadow(
-                elevation = if (danger) 4.dp else 10.dp,
+                elevation = if (danger) {
+                    5.dp
+                } else if (strong) {
+                    13.dp
+                } else {
+                    8.dp
+                },
                 shape = shape,
+                ambientColor = if (danger) {
+                    WaterTokens.Danger.copy(alpha = 0.16f)
+                } else {
+                    palette.accent.copy(alpha = glowAlpha)
+                },
+                spotColor = if (danger) {
+                    WaterTokens.Danger.copy(alpha = 0.18f)
+                } else {
+                    palette.accentSecondary.copy(
+                        alpha = glowAlpha * 0.90f
+                    )
+                },
                 clip = false,
             )
             .clip(shape)
-            .background(baseFill)
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        WaterTokens.GlassHighlight.copy(alpha = if (strong) 0.52f else 0.38f),
-                        Color.Transparent,
-                        WaterTokens.PearlLavender.copy(alpha = if (danger) 0f else 0.10f),
-                    ),
-                )
-            )
+            .background(fillBrush)
+            .drawBehind {
+                if (!danger) {
+                    drawOval(
+                        color = Color.White.copy(
+                            alpha = if (strong) 0.40f else 0.28f
+                        ),
+                        topLeft = Offset(
+                            x = size.width * 0.07f,
+                            y = size.height * 0.045f,
+                        ),
+                        size = Size(
+                            width = size.width * 0.36f,
+                            height = size.height * 0.16f,
+                        ),
+                    )
+
+                    drawOval(
+                        color = palette.accent.copy(
+                            alpha = if (strong) 0.14f else 0.09f
+                        ),
+                        topLeft = Offset(
+                            x = size.width * 0.63f,
+                            y = size.height * 0.64f,
+                        ),
+                        size = Size(
+                            width = size.width * 0.44f,
+                            height = size.height * 0.43f,
+                        ),
+                    )
+
+                    drawLine(
+                        color = Color.White.copy(
+                            alpha = if (strong) 0.68f else 0.48f
+                        ),
+                        start = Offset(
+                            x = size.width * 0.12f,
+                            y = 2.dp.toPx(),
+                        ),
+                        end = Offset(
+                            x = size.width * 0.76f,
+                            y = 2.dp.toPx(),
+                        ),
+                        strokeWidth = 1.4.dp.toPx(),
+                        cap = StrokeCap.Round,
+                    )
+                }
+            }
             .border(
                 BorderStroke(
-                    width = if (danger) 1.5.dp else 1.dp,
-                    color = borderColor,
+                    width = if (danger) 1.5.dp else 2.dp,
+                    brush = borderBrush,
                 ),
                 shape,
             )
@@ -93,28 +263,28 @@ fun LiquidGlassButton(
     enabled: Boolean = true,
     accent: Boolean = false,
     leadingIcon: String? = null,
+    compact: Boolean = false,
 ) {
-    val shape = RoundedCornerShape(WaterTokens.RadiusControl)
+    val palette = liquidPalette()
+    val shape = LiquidWaterDropControlShape
     val interactionSource = remember { MutableInteractionSource() }
-    val fill = when {
-        !enabled -> WaterTokens.GlassDisabled
-        accent -> WaterTokens.GlassButtonStrong
-        else -> WaterTokens.GlassButton
-    }
-    val borderColor = when {
-        !enabled -> WaterTokens.GlassBorder.copy(alpha = 0.34f)
-        accent -> WaterTokens.Water300.copy(alpha = 0.92f)
-        else -> WaterTokens.GlassBorder
-    }
-    val textColor = when {
-        !enabled -> Ink400
-        accent -> Water700
-        else -> Ink900
-    }
+
+    val primaryAlpha = if (enabled) 0.98f else 0.30f
+    val secondaryAlpha = if (enabled) 0.88f else 0.22f
+    val neutralAlpha = if (enabled) 0.24f else 0.07f
+    val glowAlpha = if (accent) 0.46f else 0.28f
 
     Row(
         modifier = modifier
-            .shadow(6.dp, shape, clip = false)
+            .shadow(
+                elevation = if (accent) 15.dp else 8.dp,
+                shape = shape,
+                ambientColor = palette.accent.copy(alpha = glowAlpha),
+                spotColor = palette.accentSecondary.copy(
+                    alpha = glowAlpha * 0.92f
+                ),
+                clip = false,
+            )
             .clip(shape)
             .clickable(
                 enabled = enabled,
@@ -123,19 +293,89 @@ fun LiquidGlassButton(
                 indication = null,
                 onClick = onClick,
             )
-            .background(fill)
             .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.58f),
-                        WaterTokens.PearlBlue.copy(alpha = if (accent) 0.22f else 0.10f),
-                        WaterTokens.PearlPink.copy(alpha = if (accent) 0.15f else 0.07f),
+                if (accent) {
+                    Brush.linearGradient(
+                        listOf(
+                            palette.accent.copy(alpha = primaryAlpha),
+                            palette.accentSecondary.copy(
+                                alpha = secondaryAlpha
+                            ),
+                            palette.accent.copy(
+                                alpha = primaryAlpha * 0.80f
+                            ),
+                        )
+                    )
+                } else {
+                    Brush.linearGradient(
+                        listOf(
+                            Color.White.copy(alpha = neutralAlpha),
+                            palette.accentSoft.copy(alpha = 0.20f),
+                            palette.accentSecondary.copy(alpha = 0.13f),
+                            Color.Transparent,
+                            Color.White.copy(alpha = neutralAlpha * 0.55f),
+                        )
+                    )
+                }
+            )
+            .drawBehind {
+                drawOval(
+                    color = Color.White.copy(
+                        alpha = if (accent) 0.40f else 0.30f
+                    ),
+                    topLeft = Offset(
+                        x = size.width * 0.08f,
+                        y = size.height * 0.05f,
+                    ),
+                    size = Size(
+                        width = size.width * 0.38f,
+                        height = size.height * 0.34f,
                     ),
                 )
+
+                drawLine(
+                    color = Color.White.copy(
+                        alpha = if (accent) 0.90f else 0.68f
+                    ),
+                    start = Offset(
+                        x = size.width * 0.12f,
+                        y = 1.5.dp.toPx(),
+                    ),
+                    end = Offset(
+                        x = size.width * 0.72f,
+                        y = 1.5.dp.toPx(),
+                    ),
+                    strokeWidth = 1.25.dp.toPx(),
+                    cap = StrokeCap.Round,
+                )
+            }
+            .border(
+                BorderStroke(
+                    width = if (accent) 1.7.dp else 1.5.dp,
+                    brush = Brush.linearGradient(
+                        listOf(
+                            Color.White.copy(
+                                alpha = if (enabled) 0.99f else 0.42f
+                            ),
+                            palette.accent.copy(
+                                alpha = if (accent) 0.99f else 0.88f
+                            ),
+                            palette.accentSecondary.copy(
+                                alpha = if (accent) 0.94f else 0.76f
+                            ),
+                            Color.White.copy(
+                                alpha = if (enabled) 0.90f else 0.34f
+                            ),
+                        )
+                    ),
+                ),
+                shape,
             )
-            .border(BorderStroke(1.dp, borderColor), shape)
-            .heightIn(min = 54.dp)
-            .padding(horizontal = 18.dp, vertical = 14.dp),
+            .heightIn(min = if (compact) 40.dp else 54.dp)
+            .padding(
+                horizontal = if (compact) 14.dp else 18.dp,
+                vertical = if (compact) 8.dp else 14.dp,
+            ),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -143,14 +383,31 @@ fun LiquidGlassButton(
             Text(
                 leadingIcon,
                 modifier = Modifier.padding(end = 8.dp),
-                style = MaterialTheme.typography.titleMedium,
+                color = if (accent) Color.White else palette.accent,
+                style = if (compact) {
+                    MaterialTheme.typography.titleSmall
+                } else {
+                    MaterialTheme.typography.titleMedium
+                },
             )
         }
+
         Text(
             text,
-            color = textColor,
-            fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.labelLarge,
+            color = when {
+                !enabled -> Ink400
+                accent -> Color.White
+                else -> palette.accent
+            },
+            fontWeight = FontWeight.ExtraBold,
+            style = if (compact) {
+                MaterialTheme.typography.labelMedium
+            } else {
+                MaterialTheme.typography.labelLarge
+            },
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -164,12 +421,23 @@ fun LiquidGlassActionCard(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
-    val shape = RoundedCornerShape(WaterTokens.RadiusCard)
+    val palette = liquidPalette()
+    val shape = LiquidWaterDropTileShape
     val interactionSource = remember { MutableInteractionSource() }
 
     Column(
         modifier = modifier
-            .shadow(8.dp, shape, clip = false)
+            .shadow(
+                elevation = if (enabled) 10.dp else 2.dp,
+                shape = shape,
+                ambientColor = palette.accent.copy(
+                    alpha = if (enabled) 0.30f else 0.06f
+                ),
+                spotColor = palette.accentSecondary.copy(
+                    alpha = if (enabled) 0.26f else 0.05f
+                ),
+                clip = false,
+            )
             .clip(shape)
             .clickable(
                 enabled = enabled,
@@ -179,25 +447,52 @@ fun LiquidGlassActionCard(
                 onClick = onClick,
             )
             .background(
-                if (enabled) {
-                    WaterTokens.GlassButtonStrong
-                } else {
-                    WaterTokens.GlassDisabled
-                }
-            )
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.64f),
-                        WaterTokens.PearlLavender.copy(alpha = if (enabled) 0.18f else 0.06f),
-                        WaterTokens.PearlBlue.copy(alpha = if (enabled) 0.14f else 0.05f),
-                    ),
+                Brush.verticalGradient(
+                    listOf(
+                        Color.White.copy(
+                            alpha = if (enabled) 0.26f else 0.07f
+                        ),
+                        palette.accentSoft.copy(
+                            alpha = if (enabled) 0.20f else 0.04f
+                        ),
+                        palette.accentSecondary.copy(
+                            alpha = if (enabled) 0.11f else 0.025f
+                        ),
+                        Color.Transparent,
+                    )
                 )
             )
+            .drawBehind {
+                drawOval(
+                    color = Color.White.copy(
+                        alpha = if (enabled) 0.36f else 0.08f
+                    ),
+                    topLeft = Offset(
+                        x = size.width * 0.12f,
+                        y = size.height * 0.06f,
+                    ),
+                    size = Size(
+                        width = size.width * 0.48f,
+                        height = size.height * 0.20f,
+                    ),
+                )
+            }
             .border(
                 BorderStroke(
-                    1.dp,
-                    if (enabled) WaterTokens.GlassBorder else WaterTokens.GlassBorder.copy(alpha = 0.35f),
+                    1.7.dp,
+                    Brush.linearGradient(
+                        listOf(
+                            Color.White.copy(
+                                alpha = if (enabled) 0.98f else 0.30f
+                            ),
+                            palette.accent.copy(
+                                alpha = if (enabled) 0.92f else 0.26f
+                            ),
+                            palette.accentSecondary.copy(
+                                alpha = if (enabled) 0.82f else 0.22f
+                            ),
+                        )
+                    ),
                 ),
                 shape,
             )
@@ -211,14 +506,20 @@ fun LiquidGlassActionCard(
         )
         Text(
             title,
-            color = if (enabled) Ink900 else Ink400,
+            color = if (enabled) palette.accent else Ink400,
             fontWeight = FontWeight.ExtraBold,
             style = MaterialTheme.typography.titleSmall,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
         Text(
             subtitle,
-            color = if (enabled) Ink600 else Ink400,
+            color = if (enabled) palette.textMuted else Ink400,
             style = MaterialTheme.typography.bodySmall,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -230,34 +531,58 @@ fun LiquidGlassMetricTile(
     modifier: Modifier = Modifier,
     tint: Color = Water500,
 ) {
-    val shape = RoundedCornerShape(WaterTokens.RadiusControl)
+    val palette = liquidPalette()
+    val shape = LiquidWaterDropTileShape
 
     Column(
         modifier = modifier
+            .shadow(
+                elevation = 5.dp,
+                shape = shape,
+                ambientColor = tint.copy(alpha = 0.18f),
+                spotColor = palette.accent.copy(alpha = 0.12f),
+                clip = false,
+            )
             .clip(shape)
-            .background(WaterTokens.GlassButton)
             .background(
-                Brush.linearGradient(
+                Brush.verticalGradient(
                     listOf(
-                        Color.White.copy(alpha = 0.52f),
-                        tint.copy(alpha = 0.10f),
+                        Color.White.copy(alpha = 0.24f),
+                        tint.copy(alpha = 0.14f),
+                        Color.Transparent,
                     )
                 )
             )
-            .border(BorderStroke(1.dp, WaterTokens.GlassBorder), shape)
+            .border(
+                BorderStroke(
+                    1.4.dp,
+                    Brush.linearGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.96f),
+                            tint.copy(alpha = 0.72f),
+                            palette.accentSecondary.copy(alpha = 0.48f),
+                        )
+                    ),
+                ),
+                shape,
+            )
             .padding(13.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
             value,
             color = tint,
-            fontWeight = FontWeight.ExtraBold,
+            fontWeight = FontWeight.Black,
             style = MaterialTheme.typography.titleMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         Text(
             label,
-            color = Ink600,
+            color = palette.textMuted,
             style = MaterialTheme.typography.bodySmall,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -268,21 +593,38 @@ fun LiquidGlassPill(
     modifier: Modifier = Modifier,
     tint: Color = Water500,
 ) {
-    val shape = RoundedCornerShape(WaterTokens.RadiusPill)
+    val shape = LiquidWaterDropControlShape
 
     Text(
         text = text,
         modifier = modifier
             .clip(shape)
-            .background(Color.White.copy(alpha = 0.48f))
-            .background(tint.copy(alpha = 0.10f))
+            .background(
+                Brush.linearGradient(
+                    listOf(
+                        Color.White.copy(alpha = 0.30f),
+                        tint.copy(alpha = 0.18f),
+                        Color.Transparent,
+                    )
+                )
+            )
             .border(
-                BorderStroke(1.dp, tint.copy(alpha = 0.30f)),
+                BorderStroke(
+                    1.2.dp,
+                    Brush.linearGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.94f),
+                            tint.copy(alpha = 0.68f),
+                        )
+                    ),
+                ),
                 shape,
             )
-            .padding(horizontal = 11.dp, vertical = 6.dp),
+            .padding(horizontal = 12.dp, vertical = 7.dp),
         color = tint,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.ExtraBold,
         style = MaterialTheme.typography.bodySmall,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
     )
 }

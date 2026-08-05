@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -45,6 +46,7 @@ import com.skn29.watercare.core.ui.theme.GlassFillStrong
 import com.skn29.watercare.core.ui.theme.Water100
 import com.skn29.watercare.core.ui.theme.Water300
 import com.skn29.watercare.core.ui.theme.Water700
+import com.skn29.watercare.customer.BuildConfig
 import com.skn29.watercare.customer.R
 import com.skn29.watercare.customer.common.VmFactory
 import com.skn29.watercare.customer.feature.shared.SectionCard
@@ -215,6 +217,8 @@ fun SymptomIntakeContent(
             colors = liquidTextFieldColors(),
         )
 
+        if (BuildConfig.SHOW_DEVELOPER_TOOLS) {
+
         SectionCard("개발 검증 시나리오") {
             Text(
                 "선택하지 않으면 입력 내용으로 안전하게 판단합니다.",
@@ -234,6 +238,7 @@ fun SymptomIntakeContent(
                     )
                 }
             }
+        }
         }
 
         state.globalError
@@ -291,6 +296,7 @@ fun SymptomIntakeContent(
                         text = action.displayLabel,
                         onClick = onRetry,
                         enabled = !state.isSubmitting,
+                        accent = true,
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag("retrySubmitAfterConflict"),
@@ -335,10 +341,10 @@ private fun LiquidFilterChip(
         onClick = onClick,
         label = { Text(label) },
         colors = FilterChipDefaults.filterChipColors(
-            containerColor = GlassFill,
-            selectedContainerColor = Water100.copy(alpha = 0.78f),
-            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            selectedLabelColor = Water700,
+            containerColor = GlassFillStrong.copy(alpha = 0.72f),
+            selectedContainerColor = Water700.copy(alpha = 0.94f),
+            labelColor = Water700,
+            selectedLabelColor = Color.White,
         ),
     )
 }
@@ -346,9 +352,12 @@ private fun LiquidFilterChip(
 @Composable
 private fun liquidTextFieldColors() =
     OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = GlassFillStrong,
-        unfocusedContainerColor = GlassFill,
+        focusedContainerColor = GlassFillStrong.copy(alpha = 0.94f),
+        unfocusedContainerColor = GlassFillStrong.copy(alpha = 0.72f),
         disabledContainerColor = GlassFill,
-        focusedBorderColor = Water300,
-        unfocusedBorderColor = GlassBorder,
+        focusedBorderColor = Water700,
+        unfocusedBorderColor = Water300.copy(alpha = 0.82f),
+        cursorColor = Water700,
+        focusedLabelColor = Water700,
+        unfocusedLabelColor = Water700.copy(alpha = 0.78f),
     )

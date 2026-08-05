@@ -323,6 +323,7 @@ fun GuidanceContent(
             LiquidGlassButton(
                 text = "근거 다시 확인",
                 onClick = onRetry,
+                accent = true,
                 modifier = Modifier.fillMaxWidth(),
             )
         } else {

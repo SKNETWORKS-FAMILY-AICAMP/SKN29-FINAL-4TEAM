@@ -36,6 +36,8 @@ import com.skn29.watercare.core.model.UsageGuidanceStatus
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.core.ui.components.LiquidGlassPanel
 import com.skn29.watercare.core.ui.components.LiquidGlassPill
+import com.skn29.watercare.core.ui.components.LiquidGlassTone
+import com.skn29.watercare.core.ui.components.LiquidGlassToneProvider
 import com.skn29.watercare.core.ui.theme.WaterCaution
 import com.skn29.watercare.core.ui.theme.WaterDanger
 import com.skn29.watercare.core.ui.theme.WaterGeneral
@@ -45,6 +47,23 @@ import com.skn29.watercare.core.ui.theme.WaterTokens
 
 @Composable
 fun WaterCareScreen(
+    title: String,
+    onBack: (() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    LiquidGlassToneProvider(
+        tone = LiquidGlassTone.CUSTOMER,
+    ) {
+        WaterCareScreenBody(
+            title = title,
+            onBack = onBack,
+            content = content,
+        )
+    }
+}
+
+@Composable
+private fun WaterCareScreenBody(
     title: String,
     onBack: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
@@ -63,9 +82,12 @@ fun WaterCareScreen(
                     },
                     navigationIcon = {
                         if (onBack != null) {
-                            TextButton(onClick = onBack) {
-                                Text("뒤로")
-                            }
+                            LiquidGlassButton(
+                                text = "뒤로",
+                                leadingIcon = "‹",
+                                onClick = onBack,
+                                compact = true,
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -230,6 +252,7 @@ fun EvidenceCard(evidence: EvidenceCardData) {
             LiquidGlassButton(
                 text = "공식 문서 열기",
                 onClick = { uriHandler.openUri(officialUrl) },
+                accent = true,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
