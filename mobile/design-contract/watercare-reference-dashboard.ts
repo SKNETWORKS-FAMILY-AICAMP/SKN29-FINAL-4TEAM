@@ -29,6 +29,11 @@ export interface DashboardLayout {
   statusLabelMaxLines: 2;
   actionLabelMaxLines: 2;
   heroTextMaxLines: 3;
+  panelOpacityStrong: number;
+  panelOpacityNormal: number;
+  buttonOpacity: number;
+  backgroundImageOpacity: number;
+  glassBorderOpacity: number;
 }
 
 export interface DashboardAction {
@@ -64,6 +69,11 @@ const sharedLayout: DashboardLayout = {
   statusLabelMaxLines: 2,
   actionLabelMaxLines: 2,
   heroTextMaxLines: 3,
+  panelOpacityStrong: 0.24,
+  panelOpacityNormal: 0.14,
+  buttonOpacity: 0.18,
+  backgroundImageOpacity: 1.0,
+  glassBorderOpacity: 0.74,
 };
 
 export const customerDashboard: DashboardDefinition = {
