@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
+      allowedHosts: [".trycloudflare.com"],
       fs: {
         allow: [".."],
       },

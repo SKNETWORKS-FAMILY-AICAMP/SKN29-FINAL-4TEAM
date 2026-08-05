@@ -1,0 +1,1190 @@
+/*
+ * Consultant inquiry workspace — pearl frost presentation layer.
+ * Functional state, API contracts and component markup stay in the page modules.
+ */
+.compact-consultant-body {
+  min-width: 0;
+  margin: 0;
+  overflow: auto;
+  background:
+    radial-gradient(circle at 9% 12%, rgba(134, 217, 239, 0.24), transparent 30%),
+    radial-gradient(circle at 92% 4%, rgba(200, 175, 245, 0.2), transparent 28%),
+    radial-gradient(circle at 82% 94%, rgba(239, 179, 213, 0.16), transparent 27%),
+    #f5f7fb;
+}
+
+.simple-consultant-app.consultant-queue-app {
+  --app-background: #f5f7fb;
+  --surface-glass: rgba(255, 255, 255, 0.66);
+  --surface-strong: rgba(255, 255, 255, 0.84);
+  --surface-border: rgba(255, 255, 255, 0.78);
+  --text-primary: #283044;
+  --text-secondary: #778096;
+  --text-disabled: #a7adbb;
+  --accent-primary: #6877e8;
+  --accent-cyan: #86d9ef;
+  --accent-lilac: #c8aff5;
+  --accent-pink: #efb3d5;
+  --status-danger: #d94e5d;
+  --status-warning: #ba7d2d;
+  --status-success: #318a70;
+  --glass-shadow:
+    0 18px 45px rgba(91, 106, 145, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  position: relative;
+  isolation: isolate;
+  width: calc(100% - 48px);
+  max-width: 1360px;
+  height: calc(100dvh - 48px);
+  min-height: calc(100dvh - 48px);
+  margin: 24px auto;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  border-radius: 24px;
+  background:
+    linear-gradient(140deg, rgba(255, 255, 255, 0.62), rgba(240, 246, 252, 0.78)),
+    var(--app-background);
+  box-shadow:
+    0 28px 70px rgba(76, 91, 128, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  color: var(--text-primary);
+}
+
+.simple-consultant-app.consultant-queue-app::before,
+.simple-consultant-app.consultant-queue-app::after {
+  position: absolute;
+  z-index: -1;
+  width: 440px;
+  height: 440px;
+  border-radius: 50%;
+  content: "";
+  filter: blur(72px);
+  pointer-events: none;
+}
+
+.simple-consultant-app.consultant-queue-app::before {
+  top: -260px;
+  right: 7%;
+  background: rgba(134, 217, 239, 0.23);
+}
+
+.simple-consultant-app.consultant-queue-app::after {
+  right: -250px;
+  bottom: -300px;
+  background: rgba(200, 175, 245, 0.18);
+}
+
+.consultant-queue-app .simple-topbar {
+  position: relative;
+  z-index: 3;
+  height: 76px;
+  padding: 0 28px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  backdrop-filter: blur(20px) saturate(130%);
+}
+
+.consultant-queue-app .simple-brand {
+  gap: 11px;
+  color: var(--text-primary);
+}
+
+.consultant-queue-app .simple-brand > span {
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.94);
+  border-radius: 12px !important;
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.96), transparent 31%),
+    linear-gradient(145deg, rgba(134, 217, 239, 0.92), rgba(104, 119, 232, 0.92));
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.9),
+    inset -2px -3px 7px rgba(74, 93, 181, 0.2),
+    0 8px 18px rgba(85, 114, 184, 0.2);
+  color: #fff;
+}
+
+.consultant-queue-app .simple-brand strong {
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 850;
+}
+
+.consultant-queue-app .simple-topbar__notice {
+  min-height: 36px;
+  padding: 8px 13px;
+  border: 1px solid var(--surface-border);
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.56);
+  box-shadow:
+    0 7px 18px rgba(83, 105, 148, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  color: var(--text-secondary);
+}
+
+.consultant-queue-app .simple-user > span {
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(218, 231, 249, 0.82));
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 6px 15px rgba(88, 105, 143, 0.12);
+  color: var(--accent-primary);
+}
+
+.consultant-queue-app .simple-user strong {
+  color: var(--text-primary);
+}
+
+.consultant-queue-app .consultant-queue-main {
+  display: grid;
+  width: 100%;
+  height: calc(100% - 76px);
+  min-height: 0;
+  grid-template-columns: 236px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 24px;
+  padding: 24px;
+  overflow: hidden;
+}
+
+.consultant-queue-app .consultant-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.consultant-queue-app .consultant-work-tabs,
+.consultant-queue-app .consultant-queue-panel {
+  border: 1px solid var(--surface-border);
+  background: var(--surface-glass);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  backdrop-filter: blur(20px) saturate(130%);
+}
+
+.consultant-queue-app .consultant-work-tabs {
+  display: grid;
+  grid-column: 1;
+  grid-row: 1;
+  align-content: start;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(3, auto);
+  gap: 8px;
+  height: fit-content;
+  padding: 14px;
+  overflow: visible;
+  border-radius: 20px !important;
+}
+
+.consultant-queue-app .consultant-work-tab,
+.consultant-queue-app .consultant-work-tab.is-active {
+  position: relative;
+  min-height: 76px;
+  padding: 14px 14px 14px 16px;
+  overflow: hidden;
+  border: 1px solid transparent !important;
+  border-radius: 14px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-primary) !important;
+  transform: none;
+}
+
+.consultant-queue-app .consultant-work-tab::before,
+.consultant-queue-app .consultant-work-tab::after {
+  display: none !important;
+  content: none !important;
+}
+
+.consultant-queue-app .consultant-work-tab:hover {
+  border-color: rgba(255, 255, 255, 0.92) !important;
+  background: rgba(255, 255, 255, 0.48) !important;
+}
+
+.consultant-queue-app .consultant-work-tab:focus-visible {
+  outline: 3px solid rgba(104, 119, 232, 0.3);
+  outline-offset: 2px;
+}
+
+.consultant-queue-app .consultant-work-tab.is-active {
+  border-color: rgba(255, 255, 255, 0.96) !important;
+  background:
+    radial-gradient(circle at 92% 8%, rgba(239, 179, 213, 0.26), transparent 42%),
+    radial-gradient(circle at 8% 92%, rgba(134, 217, 239, 0.28), transparent 44%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(238, 235, 255, 0.72)) !important;
+  box-shadow:
+    0 11px 24px rgba(91, 106, 145, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 0 18px rgba(134, 217, 239, 0.1) !important;
+}
+
+.consultant-queue-app .consultant-work-tab > span {
+  gap: 5px;
+}
+
+.consultant-queue-app .consultant-work-tab strong,
+.consultant-queue-app .consultant-work-tab.is-active strong {
+  color: var(--text-primary) !important;
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.consultant-queue-app .consultant-work-tab em,
+.consultant-queue-app .consultant-work-tab.is-active em {
+  color: var(--text-secondary) !important;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.consultant-queue-app .consultant-work-tabs .consultant-work-tab > b,
+.consultant-queue-app .consultant-work-tabs .consultant-work-tab.is-active > b {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  margin-left: 10px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.96) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 5px 13px rgba(85, 102, 142, 0.11) !important;
+  color: var(--accent-primary) !important;
+  font-size: 16px;
+}
+
+.consultant-queue-app .consultant-queue-panel {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  border-radius: 20px !important;
+}
+
+.consultant-queue-app .consultant-queue-panel::before {
+  display: none !important;
+  content: none !important;
+}
+
+.consultant-queue-app .consultant-queue-panel__head {
+  min-height: 84px;
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(134, 148, 174, 0.14);
+  background: rgba(255, 255, 255, 0.28) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.consultant-queue-app .consultant-queue-panel__head h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 850;
+  letter-spacing: -0.025em;
+}
+
+.consultant-queue-app .consultant-queue-panel__head p {
+  max-width: 430px;
+  margin-top: 5px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.consultant-queue-app .consultant-queue-tools {
+  width: min(470px, 52%);
+}
+
+.consultant-queue-app .consultant-queue-tools .simple-search,
+.consultant-queue-app .consultant-queue-tools > button {
+  min-height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.64) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 7px 18px rgba(83, 105, 148, 0.08) !important;
+  color: var(--text-primary);
+}
+
+.consultant-queue-app .consultant-queue-tools .simple-search:focus-within {
+  border-color: rgba(104, 119, 232, 0.52) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  box-shadow:
+    0 0 0 3px rgba(104, 119, 232, 0.13),
+    inset 0 1px 0 #fff !important;
+}
+
+.consultant-queue-app .simple-search > span {
+  color: var(--accent-primary);
+}
+
+.consultant-queue-app .simple-search input,
+.consultant-queue-app .simple-search input::placeholder {
+  color: var(--text-secondary);
+}
+
+.consultant-queue-app .simple-search input {
+  color: var(--text-primary);
+}
+
+.consultant-queue-app .consultant-list {
+  scrollbar-color: rgba(118, 130, 161, 0.34) transparent;
+}
+
+.consultant-queue-app .v6-queue-item.consultant-list-item,
+.consultant-queue-app .v6-queue-item.consultant-list-item:nth-child(even) {
+  grid-template-columns: 128px minmax(210px, 1.7fr) minmax(120px, 0.7fr) 136px 82px;
+  min-height: 72px;
+  padding: 10px 22px;
+  border-bottom: 1px solid rgba(134, 148, 174, 0.13);
+  background: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
+}
+
+.consultant-queue-app .v6-queue-item.consultant-list-item:hover {
+  background: rgba(239, 246, 255, 0.74) !important;
+  box-shadow: inset 3px 0 0 rgba(104, 119, 232, 0.56) !important;
+  transform: none;
+}
+
+.consultant-queue-app .v6-queue-item.consultant-list-item:focus-visible {
+  outline: 3px solid rgba(104, 119, 232, 0.28);
+  outline-offset: -3px;
+}
+
+.consultant-queue-app .consultant-list-item__subject strong,
+.consultant-queue-app .consultant-list-item__customer strong {
+  color: var(--text-primary);
+}
+
+.consultant-queue-app .consultant-list-item__risk em,
+.consultant-queue-app .consultant-list-item__subject small,
+.consultant-queue-app .consultant-list-item__customer small,
+.consultant-queue-app .consultant-list-item__status small {
+  color: var(--text-secondary);
+}
+
+.consultant-queue-app .consultant-list-item__open {
+  color: var(--accent-primary) !important;
+}
+
+.consultant-queue-app .common-risk-badge,
+.consultant-queue-app .common-status-badge {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.consultant-queue-app .consultant-queue-panel > .common-pagination {
+  min-height: 58px;
+  padding: 10px 20px;
+  border-top: 1px solid rgba(134, 148, 174, 0.14);
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.consultant-queue-app .common-pagination__summary {
+  color: var(--text-secondary);
+}
+
+.consultant-queue-app .common-pagination__actions button,
+.consultant-queue-app .common-pagination__actions span {
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 5px 12px rgba(83, 105, 148, 0.08);
+  color: var(--text-primary);
+}
+
+.consultant-queue-app .common-pagination__actions span[aria-current="page"] {
+  background: linear-gradient(145deg, rgba(134, 217, 239, 0.64), rgba(200, 175, 245, 0.58));
+  color: #34406c;
+}
+
+.consultant-queue-app .common-pagination__actions button:hover:not(:disabled) {
+  border-color: rgba(104, 119, 232, 0.35);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.consultant-queue-app .consultant-detail-backdrop {
+  background: rgba(40, 48, 68, 0.34);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.consultant-queue-app .consultant-detail-drawer {
+  border-left: 1px solid rgba(255, 255, 255, 0.9);
+  background:
+    radial-gradient(circle at 80% 6%, rgba(200, 175, 245, 0.18), transparent 28%),
+    rgba(245, 247, 251, 0.94);
+  box-shadow: -24px 0 60px rgba(62, 73, 103, 0.2);
+}
+
+.consultant-queue-app .consultant-detail-drawer__head {
+  border-bottom-color: rgba(134, 148, 174, 0.16);
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  backdrop-filter: blur(20px) saturate(130%);
+}
+
+.consultant-queue-app .consultant-detail-drawer__head > button {
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 7px 18px rgba(83, 105, 148, 0.1);
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .consultant-queue-app .consultant-work-tabs,
+  .consultant-queue-app .consultant-queue-panel,
+  .consultant-queue-app .simple-topbar,
+  .consultant-queue-app .consultant-detail-drawer__head {
+    background: rgba(255, 255, 255, 0.94);
+  }
+}
+
+@media (max-width: 1100px) {
+  .simple-consultant-app.consultant-queue-app {
+    width: calc(100% - 32px);
+    height: calc(100dvh - 32px);
+    margin: 16px auto;
+  }
+
+  .consultant-queue-app .consultant-queue-main {
+    grid-template-columns: 204px minmax(0, 1fr);
+    gap: 16px;
+    padding: 18px;
+  }
+
+  .consultant-queue-app .v6-queue-item.consultant-list-item {
+    grid-template-columns: 118px minmax(230px, 1fr) 125px 88px;
+    gap: 12px;
+    padding-inline: 18px;
+  }
+
+  .consultant-queue-app .consultant-list-item__customer {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .simple-consultant-app.consultant-queue-app {
+    height: auto;
+    min-height: calc(100dvh - 24px);
+    margin: 12px auto;
+    overflow: hidden;
+  }
+
+  .consultant-queue-app .simple-topbar {
+    height: 68px;
+    padding: 0 20px;
+  }
+
+  .consultant-queue-app .consultant-queue-main {
+    height: auto;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(520px, auto);
+    gap: 14px;
+    padding: 16px;
+    overflow: visible;
+  }
+
+  .consultant-queue-app .consultant-work-tabs {
+    grid-column: 1;
+    grid-row: 1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: 1fr;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .consultant-queue-app .consultant-work-tab,
+  .consultant-queue-app .consultant-work-tab.is-active {
+    min-height: 74px;
+  }
+
+  .consultant-queue-app .consultant-work-tab em {
+    display: none;
+  }
+
+  .consultant-queue-app .consultant-queue-panel {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .consultant-queue-app .consultant-list {
+    min-height: 360px;
+  }
+}
+
+@media (max-width: 768px) {
+  .simple-consultant-app.consultant-queue-app {
+    width: calc(100% - 20px);
+    margin: 10px auto;
+    border-radius: 20px;
+  }
+
+  .consultant-queue-app .simple-topbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .consultant-queue-app .simple-topbar__notice {
+    display: none;
+  }
+
+  .consultant-queue-app .consultant-queue-panel__head {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .consultant-queue-app .consultant-queue-panel__head > div:first-child {
+    min-width: 0;
+  }
+
+  .consultant-queue-app .consultant-queue-tools {
+    width: 100%;
+  }
+
+  .consultant-queue-app .v6-queue-item.consultant-list-item {
+    grid-template-columns: 106px minmax(180px, 1fr) 118px;
+    min-height: 78px;
+  }
+
+  .consultant-queue-app .consultant-list-item__open {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .compact-consultant-body {
+    background:
+      radial-gradient(circle at 4% 8%, rgba(134, 217, 239, 0.2), transparent 32%),
+      radial-gradient(circle at 96% 92%, rgba(200, 175, 245, 0.16), transparent 30%),
+      var(--app-background, #f5f7fb);
+  }
+
+  .simple-consultant-app.consultant-queue-app {
+    width: 100%;
+    min-height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .consultant-queue-app .simple-topbar {
+    height: 64px;
+    padding: 0 14px;
+  }
+
+  .consultant-queue-app .simple-brand strong {
+    font-size: 15px;
+  }
+
+  .consultant-queue-app .simple-user {
+    gap: 7px;
+  }
+
+  .consultant-queue-app .simple-user strong {
+    display: none;
+  }
+
+  .consultant-queue-app .consultant-queue-main {
+    grid-template-rows: auto auto;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .consultant-queue-app .consultant-work-tabs {
+    gap: 6px;
+    padding: 7px;
+    border-radius: 16px !important;
+  }
+
+  .consultant-queue-app .consultant-work-tab,
+  .consultant-queue-app .consultant-work-tab.is-active {
+    min-height: 66px;
+    padding: 9px 8px;
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+  }
+
+  .consultant-queue-app .consultant-work-tab > span {
+    gap: 0;
+  }
+
+  .consultant-queue-app .consultant-work-tab strong,
+  .consultant-queue-app .consultant-work-tab.is-active strong {
+    font-size: 13px;
+  }
+
+  .consultant-queue-app .consultant-work-tabs .consultant-work-tab > b,
+  .consultant-queue-app .consultant-work-tabs .consultant-work-tab.is-active > b {
+    width: 25px;
+    height: 25px;
+    margin: 0;
+    border-radius: 8px !important;
+    font-size: 12px;
+  }
+
+  .consultant-queue-app .consultant-queue-panel {
+    border-radius: 16px !important;
+  }
+
+  .consultant-queue-app .consultant-queue-panel__head {
+    min-height: 0;
+    padding: 15px;
+  }
+
+  .consultant-queue-app .consultant-queue-panel__head h2 {
+    font-size: 18px;
+  }
+
+  .consultant-queue-app .consultant-queue-tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .consultant-queue-app .consultant-queue-tools > button {
+    width: 100%;
+  }
+
+  .consultant-queue-app .consultant-list {
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .consultant-queue-app .v6-queue-item.consultant-list-item,
+  .consultant-queue-app .v6-queue-item.consultant-list-item:nth-child(even) {
+    grid-template-columns: 82px minmax(0, 1fr) 86px;
+    gap: 9px;
+    min-height: 86px;
+    padding: 11px 12px;
+  }
+
+  .consultant-queue-app .consultant-list-item__risk em,
+  .consultant-queue-app .consultant-list-item__subject small,
+  .consultant-queue-app .consultant-list-item__status small {
+    font-size: 10px;
+  }
+
+  .consultant-queue-app .consultant-list-item__subject strong {
+    font-size: 13px;
+  }
+
+  .consultant-queue-app .common-pagination {
+    align-items: center;
+    padding: 12px;
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .consultant-queue-app .common-pagination__summary {
+    font-size: 11px;
+  }
+
+  .consultant-queue-app .common-pagination__actions {
+    gap: 5px;
+  }
+
+  .consultant-queue-app .common-pagination__actions button,
+  .consultant-queue-app .common-pagination__actions span {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 7px;
+    font-size: 11px;
+  }
+
+  .consultant-queue-app .consultant-detail-drawer {
+    width: 100vw;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .consultant-queue-app *,
+  .consultant-queue-app *::before,
+  .consultant-queue-app *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
+
+/*
+ * Final visual correction.
+ * This page is bundled with legacy global themes, so these route-scoped rules
+ * deliberately outrank them without changing shared component behavior.
+ */
+body.compact-consultant-body {
+  background:
+    radial-gradient(circle at 8% 10%, rgba(134, 217, 239, 0.18), transparent 28%),
+    radial-gradient(circle at 91% 7%, rgba(200, 175, 245, 0.15), transparent 26%),
+    radial-gradient(circle at 78% 92%, rgba(239, 179, 213, 0.11), transparent 25%),
+    linear-gradient(145deg, #f6f8fb, #edf3f8 56%, #f7f4f7) !important;
+}
+
+.simple-consultant-app.consultant-queue-app {
+  --text-primary: #273044;
+  --text-secondary: #667085;
+  border-color: rgba(255, 255, 255, 0.9) !important;
+  background:
+    radial-gradient(circle at 84% 2%, rgba(200, 175, 245, 0.11), transparent 25%),
+    radial-gradient(circle at 4% 88%, rgba(134, 217, 239, 0.1), transparent 27%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.54), rgba(239, 246, 251, 0.66)) !important;
+  box-shadow:
+    0 26px 66px rgba(75, 89, 123, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.98) !important;
+}
+
+.simple-consultant-app.consultant-queue-app::before {
+  background: rgba(134, 217, 239, 0.14) !important;
+}
+
+.simple-consultant-app.consultant-queue-app::after {
+  background: rgba(239, 179, 213, 0.1) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .simple-topbar {
+  border-color: rgba(126, 139, 166, 0.12) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(248, 251, 255, 0.48)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    0 8px 24px rgba(76, 91, 128, 0.06) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(125%) !important;
+  backdrop-filter: blur(20px) saturate(125%) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .simple-topbar__notice {
+  border-color: rgba(255, 255, 255, 0.86) !important;
+  background: rgba(255, 255, 255, 0.46) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    0 5px 14px rgba(76, 91, 128, 0.06) !important;
+  color: var(--text-secondary) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .simple-user > span {
+  border-radius: 50% !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tabs,
+.simple-consultant-app.consultant-queue-app .consultant-queue-panel {
+  border: 1px solid rgba(255, 255, 255, 0.84) !important;
+  background:
+    radial-gradient(circle at 92% 4%, rgba(200, 175, 245, 0.11), transparent 29%),
+    radial-gradient(circle at 5% 96%, rgba(134, 217, 239, 0.1), transparent 27%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(244, 249, 253, 0.43)) !important;
+  box-shadow:
+    0 18px 45px rgba(91, 106, 145, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(125%) !important;
+  backdrop-filter: blur(20px) saturate(125%) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tabs {
+  background:
+    radial-gradient(circle at 88% 8%, rgba(200, 175, 245, 0.1), transparent 28%),
+    radial-gradient(circle at 8% 92%, rgba(134, 217, 239, 0.09), transparent 27%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(246, 249, 252, 0.43)) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-panel {
+  background:
+    radial-gradient(circle at 91% 8%, rgba(239, 179, 213, 0.12), transparent 25%),
+    radial-gradient(circle at 14% 88%, rgba(134, 217, 239, 0.13), transparent 30%),
+    radial-gradient(circle at 82% 92%, rgba(200, 175, 245, 0.1), transparent 27%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.6), rgba(244, 249, 253, 0.44)) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab,
+.simple-consultant-app.consultant-queue-app .consultant-work-tab:hover {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-primary) !important;
+  text-shadow: none !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab:hover {
+  border-color: rgba(255, 255, 255, 0.68) !important;
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active {
+  border-color: rgba(255, 255, 255, 0.9) !important;
+  background:
+    radial-gradient(circle at 88% 10%, rgba(239, 179, 213, 0.19), transparent 37%),
+    radial-gradient(circle at 8% 92%, rgba(134, 217, 239, 0.2), transparent 39%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(239, 237, 252, 0.52)) !important;
+  box-shadow:
+    0 9px 22px rgba(89, 101, 139, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    inset 0 0 16px rgba(200, 175, 245, 0.07) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab :is(strong, em, small),
+.simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active :is(strong, em, small) {
+  color: var(--text-primary) !important;
+  text-shadow: none !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab em,
+.simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active em {
+  color: var(--text-secondary) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tabs .consultant-work-tab > b,
+.simple-consultant-app.consultant-queue-app .consultant-work-tabs .consultant-work-tab.is-active > b {
+  border: 1px solid rgba(255, 255, 255, 0.86) !important;
+  background: rgba(255, 255, 255, 0.5) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    0 4px 11px rgba(75, 89, 123, 0.08) !important;
+  color: #5868c7 !important;
+  text-shadow: none !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-panel__head,
+.simple-consultant-app.consultant-queue-app .consultant-queue-panel > .common-pagination {
+  border-color: rgba(126, 139, 166, 0.12) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-tools .simple-search,
+.simple-consultant-app.consultant-queue-app .consultant-queue-tools > button {
+  border: 1px solid transparent !important;
+  background:
+    radial-gradient(circle at 92% 16%, rgba(200, 175, 245, 0.1), transparent 32%) padding-box,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(238, 244, 252, 0.5)) padding-box,
+    linear-gradient(
+      115deg,
+      rgba(134, 217, 239, 0.4),
+      rgba(255, 255, 255, 0.92) 34%,
+      rgba(200, 175, 245, 0.34) 68%,
+      rgba(239, 179, 213, 0.28)
+    ) border-box !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 0 14px rgba(134, 217, 239, 0.05),
+    0 6px 16px rgba(76, 91, 128, 0.07) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+  backdrop-filter: blur(16px) saturate(120%) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-tools .simple-search:focus-within {
+  border-color: rgba(104, 119, 232, 0.42) !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  box-shadow:
+    0 0 0 3px rgba(104, 119, 232, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item,
+.simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item:nth-child(even) {
+  border-bottom-color: rgba(105, 119, 148, 0.11) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: none !important;
+}
+
+.simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item:hover {
+  background: rgba(239, 246, 253, 0.68) !important;
+  box-shadow: inset 3px 0 0 rgba(104, 119, 232, 0.44) !important;
+}
+
+.simple-consultant-app.consultant-queue-app :is(
+  .consultant-list-item__subject strong,
+  .consultant-list-item__customer strong,
+  .consultant-queue-panel__head h2,
+  .common-pagination__actions span
+) {
+  color: var(--text-primary) !important;
+}
+
+.simple-consultant-app.consultant-queue-app :is(
+  .consultant-list-item__risk em,
+  .consultant-list-item__subject small,
+  .consultant-list-item__customer small,
+  .consultant-list-item__status small,
+  .consultant-queue-panel__head p,
+  .common-pagination__summary
+) {
+  color: var(--text-secondary) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .common-pagination__actions :is(button, span) {
+  border-color: rgba(255, 255, 255, 0.84) !important;
+  background: rgba(255, 255, 255, 0.46) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 4px 11px rgba(76, 91, 128, 0.06) !important;
+  color: var(--text-primary) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .common-pagination__actions span[aria-current="page"] {
+  background:
+    linear-gradient(145deg, rgba(134, 217, 239, 0.48), rgba(200, 175, 245, 0.45)) !important;
+  color: #37446e !important;
+}
+
+.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab.is-active
+  > b {
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.92), transparent 35%),
+    linear-gradient(145deg, rgba(134, 217, 239, 0.38), rgba(200, 175, 245, 0.33) 64%, rgba(239, 179, 213, 0.26)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    inset 0 0 12px rgba(255, 255, 255, 0.24),
+    0 5px 13px rgba(75, 89, 123, 0.09) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .simple-consultant-app.consultant-queue-app .consultant-work-tab:hover {
+    transform: translateY(-1px) !important;
+  }
+
+  .simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active:hover {
+    box-shadow:
+      0 12px 26px rgba(89, 101, 139, 0.13),
+      inset 0 1px 0 rgba(255, 255, 255, 0.98),
+      inset 0 0 17px rgba(200, 175, 245, 0.08) !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * WaterCare mobile family visual alignment
+ * Keep the desktop information architecture while sharing the customer app's
+ * pale-blue surfaces, navy typography, restrained borders, and blue actions.
+ * ----------------------------------------------------------------------- */
+
+.simple-consultant-app.consultant-queue-app {
+  --app-background: #f5f9fc;
+  --surface-glass: #ffffff;
+  --surface-strong: #ffffff;
+  --surface-border: #dbe7ee;
+  --text-primary: #15344f;
+  --text-secondary: #71869a;
+  --text-disabled: #9caebb;
+  --accent-primary: #167fb9;
+  --accent-cyan: #dff4fc;
+  --accent-lilac: #eee9f4;
+  --accent-pink: #f8e8ee;
+  --glass-shadow: 0 10px 28px rgba(37, 79, 108, 0.07);
+
+  background: linear-gradient(180deg, #f8fbfd 0%, #f1f7fa 100%) !important;
+  border-color: #dce8ee !important;
+  box-shadow: 0 18px 54px rgba(31, 73, 101, 0.1) !important;
+}
+
+.simple-consultant-app.consultant-queue-app::before,
+.simple-consultant-app.consultant-queue-app::after {
+  display: none !important;
+}
+
+.simple-consultant-app.consultant-queue-app .simple-topbar {
+  border-color: #dce8ee !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: 0 3px 14px rgba(37, 79, 108, 0.045) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.simple-consultant-app.consultant-queue-app .simple-brand__mark {
+  border-color: #0f76ae !important;
+  background: linear-gradient(145deg, #2497cf, #1177b2) !important;
+  box-shadow: 0 5px 12px rgba(22, 127, 185, 0.18) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .simple-brand__copy strong,
+.simple-consultant-app.consultant-queue-app .simple-user strong {
+  color: #15344f !important;
+}
+
+.simple-consultant-app.consultant-queue-app .simple-brand__copy small,
+.simple-consultant-app.consultant-queue-app .simple-user small {
+  color: #71869a !important;
+}
+
+.simple-consultant-app.consultant-queue-app .simple-topbar__notice {
+  border-color: #d8e8ef !important;
+  background: #eef7fb !important;
+  box-shadow: none !important;
+  color: #557287 !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tabs,
+.simple-consultant-app.consultant-queue-app .consultant-queue-panel {
+  border: 1px solid #dbe7ee !important;
+  background: #ffffff !important;
+  box-shadow: 0 5px 18px rgba(37, 79, 108, 0.045) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab,
+.simple-consultant-app.consultant-queue-app .consultant-work-tab:hover {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #15344f !important;
+  transform: none !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab:hover {
+  background: #f3f8fb !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active,
+.simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active:hover {
+  border-color: #c9e7f2 !important;
+  background: #e2f5fc !important;
+  box-shadow: none !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab :is(strong, em, small),
+.simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active :is(strong, em, small) {
+  color: #15344f !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab em,
+.simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active em {
+  color: #71869a !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tabs .consultant-work-tab > b,
+.simple-consultant-app.consultant-queue-app .consultant-work-tabs .consultant-work-tab.is-active > b {
+  border: 1px solid #cbe5ef !important;
+  background: #f0f9fc !important;
+  box-shadow: none !important;
+  color: #167fb9 !important;
+}
+
+.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab.is-active
+  > b {
+  border-color: #167fb9 !important;
+  background: #167fb9 !important;
+  color: #ffffff !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-panel__head,
+.simple-consultant-app.consultant-queue-app .consultant-queue-panel > .common-pagination {
+  border-color: #e2ebf0 !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-tools .simple-search,
+.simple-consultant-app.consultant-queue-app .consultant-queue-tools > button {
+  border: 1px solid #d8e5ec !important;
+  background: #f4f9fb !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-tools .simple-search:focus-within {
+  border-color: #1685bd !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(22, 133, 189, 0.11) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-tools .simple-search input {
+  color: #15344f !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-tools .simple-search input::placeholder {
+  color: #8ca0af !important;
+}
+
+.simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item,
+.simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item:nth-child(even) {
+  border-bottom-color: #e5edf2 !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item:hover {
+  background: #f1f8fc !important;
+  box-shadow: inset 3px 0 0 #67b9dd !important;
+}
+
+.simple-consultant-app.consultant-queue-app :is(
+  .consultant-list-item__subject strong,
+  .consultant-list-item__customer strong,
+  .consultant-queue-panel__head h2,
+  .common-pagination__actions span
+) {
+  color: #15344f !important;
+}
+
+.simple-consultant-app.consultant-queue-app :is(
+  .consultant-list-item__risk em,
+  .consultant-list-item__subject small,
+  .consultant-list-item__customer small,
+  .consultant-list-item__status small,
+  .consultant-queue-panel__head p,
+  .common-pagination__summary
+) {
+  color: #71869a !important;
+}
+
+.simple-consultant-app.consultant-queue-app .common-pagination__actions :is(button, span) {
+  border-color: #d8e5ec !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  color: #28465f !important;
+}
+
+.simple-consultant-app.consultant-queue-app .common-pagination__actions button:hover:not(:disabled) {
+  border-color: #b9dce9 !important;
+  background: #eef8fc !important;
+}
+
+.simple-consultant-app.consultant-queue-app .common-pagination__actions span[aria-current="page"] {
+  border-color: #167fb9 !important;
+  background: #167fb9 !important;
+  color: #ffffff !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-detail-drawer {
+  border-color: #d8e5ec !important;
+  background: #f5f9fc !important;
+  box-shadow: -16px 0 42px rgba(27, 66, 94, 0.14) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-detail-drawer__head,
+.simple-consultant-app.consultant-queue-app .consultant-detail-drawer__body .simple-desk {
+  border-color: #dbe7ee !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+@media (max-width: 767px) {
+  .simple-consultant-app.consultant-queue-app {
+    background: #f5f9fc !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .simple-consultant-app.consultant-queue-app .consultant-work-tabs,
+  .simple-consultant-app.consultant-queue-app .consultant-queue-panel {
+    box-shadow: 0 4px 14px rgba(37, 79, 108, 0.04) !important;
+  }
+}

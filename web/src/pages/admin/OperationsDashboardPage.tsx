@@ -30,6 +30,7 @@ import ApiIntegrationPanel from "../../features/runtime-status/components/ApiInt
 import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntimeStatus";
 import "./OperationsDashboardPage.css";
 import "./OperationsDashboardTheme.css";
+import "../../common/styles/water-glass-theme.css";
 
 const OPERATIONS_INQUIRIES =
   consultantWorkspaceRepository.listAllInquiries();
