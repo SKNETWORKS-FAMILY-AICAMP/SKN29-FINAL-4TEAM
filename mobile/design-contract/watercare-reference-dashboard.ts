@@ -52,6 +52,13 @@ export interface DashboardLayout {
   primaryButtonFillOpacity: number;
   secondaryButtonGlowDp: number;
   quickActionAccentTint: boolean;
+  highContrastWaterDropGlass: boolean;
+  panelSurfaceStrongOpacity: number;
+  panelSurfaceNormalOpacity: number;
+  panelBorderWidthDp: number;
+  primaryButtonGlowDp: number;
+  secondaryButtonTintOpacity: number;
+  actionTileGlowDp: number;
 }
 
 export interface DashboardAction {
@@ -110,6 +117,13 @@ const sharedLayout: DashboardLayout = {
   primaryButtonFillOpacity: 0.92,
   secondaryButtonGlowDp: 5,
   quickActionAccentTint: true,
+  highContrastWaterDropGlass: true,
+  panelSurfaceStrongOpacity: 0.18,
+  panelSurfaceNormalOpacity: 0.11,
+  panelBorderWidthDp: 2,
+  primaryButtonGlowDp: 15,
+  secondaryButtonTintOpacity: 0.22,
+  actionTileGlowDp: 10,
 };
 
 export const customerDashboard: DashboardDefinition = {
