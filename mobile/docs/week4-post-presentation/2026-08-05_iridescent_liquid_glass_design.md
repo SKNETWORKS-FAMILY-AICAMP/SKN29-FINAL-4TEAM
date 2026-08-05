@@ -40,7 +40,20 @@
 - `LiquidGlassMetricTile`
 - `LiquidGlassPill`
 
-## 검증
+## 2026-08-05 컴파일 보정
+
+초기 T-045 Commit `88f50c5`에서 현재 Compose 버전이 제공하지 않는
+`Modifier.matchParentSize()` import를 사용해 `:core:compileDebugKotlin`이
+실패했다.
+
+배경 Layer는 부모 `Box`를 채우기만 하면 되므로 신규 의존성이나 레이아웃
+변경 없이 `Modifier.fillMaxSize()`로 교체한다.
+
+초기 적용 스크립트는 Gradle 실패 뒤에도 성공으로 판단했다. 보정 이후에는
+`Start-Process -Wait -PassThru`가 반환하는 실제 Exit Code를 검사한다.
+Exit Code가 0이 아니면 Stage, Commit, Push 이전에 즉시 중단한다.
+
+## 엄격 검증
 
 ```text
 :core:test
@@ -48,4 +61,10 @@
 :customer-app:assembleDebug
 :technician-app:testDebugUnitTest
 :technician-app:assembleDebug
+```
+
+반복 검증 스크립트:
+
+```text
+mobile/scripts/verify-t045-iridescent-liquid-glass.ps1
 ```
