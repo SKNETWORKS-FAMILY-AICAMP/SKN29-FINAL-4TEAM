@@ -35,9 +35,121 @@ class TechnicianViewModelTest {
     }
 
     @Test
-    fun demoLoginLoadsSyntheticVisitListForTechnician() = runTest(dispatcher) {
+    fun storedTechnicianSessionIsRestoredOnInitialization() = runTest(dispatcher) {
+        val authRepository = FakeAuthRepository(
+            loginResult = technicianSession(),
+            storedSession = true,
+            meResult = technicianUserResult(),
+        )
+
         val viewModel = TechnicianViewModel(
-            authRepository = FakeAuthRepository(technicianSession()),
+            authRepository = authRepository,
+            backendStatusRepository = FakeBackendStatusRepository(),
+            visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
+        )
+
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals("TECHNICIAN", viewModel.state.value.user?.roleCode)
+        assertEquals(3, viewModel.state.value.visits.size)
+        assertFalse(viewModel.state.value.restoringSession)
+        assertEquals(1, authRepository.meCalls)
+        assertEquals(0, authRepository.demoLoginCalls)
+    }
+
+    @Test
+    fun storedCustomerSessionIsRejectedAndCleared() = runTest(dispatcher) {
+        val authRepository = FakeAuthRepository(
+            loginResult = customerSession(),
+            storedSession = true,
+            meResult = customerUserResult(),
+        )
+
+        val viewModel = TechnicianViewModel(
+            authRepository = authRepository,
+            backendStatusRepository = FakeBackendStatusRepository(),
+            visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
+        )
+
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertNull(viewModel.state.value.user)
+        assertTrue(viewModel.state.value.visits.isEmpty())
+        assertFalse(viewModel.state.value.restoringSession)
+        assertEquals(1, authRepository.logoutCalls)
+        assertEquals(
+            "저장된 계정에 방문기사 권한이 없습니다. 다시 로그인해 주세요.",
+            viewModel.state.value.error,
+        )
+    }
+
+    @Test
+    fun expiredStoredSessionIsCleared() = runTest(dispatcher) {
+        val authRepository = FakeAuthRepository(
+            loginResult = technicianSession(),
+            storedSession = true,
+            meResult = ApiResult.Failure(
+                code = "AUTHENTICATION_REQUIRED",
+                message = "인증이 필요합니다.",
+                httpStatus = 401,
+            ),
+        )
+
+        val viewModel = TechnicianViewModel(
+            authRepository = authRepository,
+            backendStatusRepository = FakeBackendStatusRepository(),
+            visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
+        )
+
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertNull(viewModel.state.value.user)
+        assertFalse(viewModel.state.value.restoringSession)
+        assertEquals(1, authRepository.logoutCalls)
+        assertEquals(
+            "로그인 세션이 만료되었습니다. 다시 로그인해 주세요.",
+            viewModel.state.value.error,
+        )
+    }
+
+    @Test
+    fun storedSessionIsRestoredAfterBackendReconnects() = runTest(dispatcher) {
+        val authRepository = FakeAuthRepository(
+            loginResult = technicianSession(),
+            storedSession = true,
+            meResult = technicianUserResult(),
+        )
+        val backendRepository = FakeBackendStatusRepository(available = false)
+
+        val viewModel = TechnicianViewModel(
+            authRepository = authRepository,
+            backendStatusRepository = backendRepository,
+            visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
+        )
+
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(false, viewModel.state.value.backendAvailable)
+        assertNull(viewModel.state.value.user)
+        assertEquals(0, authRepository.meCalls)
+
+        backendRepository.available = true
+        viewModel.checkBackend()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(true, viewModel.state.value.backendAvailable)
+        assertEquals("TECHNICIAN", viewModel.state.value.user?.roleCode)
+        assertEquals(3, viewModel.state.value.visits.size)
+        assertEquals(1, authRepository.meCalls)
+    }
+
+    @Test
+    fun demoLoginLoadsSyntheticVisitListForTechnician() = runTest(dispatcher) {
+        val authRepository = FakeAuthRepository(
+            loginResult = technicianSession(),
+        )
+        val viewModel = TechnicianViewModel(
+            authRepository = authRepository,
             backendStatusRepository = FakeBackendStatusRepository(),
             visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
         )
@@ -50,12 +162,16 @@ class TechnicianViewModelTest {
         assertEquals(3, viewModel.state.value.visits.size)
         assertFalse(viewModel.state.value.offlinePreview)
         assertNull(viewModel.state.value.error)
+        assertEquals(1, authRepository.demoLoginCalls)
     }
 
     @Test
-    fun nonTechnicianLoginIsRejectedWithoutLoadingVisits() = runTest(dispatcher) {
+    fun nonTechnicianLoginIsRejectedAndSessionIsCleared() = runTest(dispatcher) {
+        val authRepository = FakeAuthRepository(
+            loginResult = customerSession(),
+        )
         val viewModel = TechnicianViewModel(
-            authRepository = FakeAuthRepository(customerSession()),
+            authRepository = authRepository,
             backendStatusRepository = FakeBackendStatusRepository(),
             visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
         )
@@ -67,6 +183,7 @@ class TechnicianViewModelTest {
         assertNull(viewModel.state.value.user)
         assertTrue(viewModel.state.value.visits.isEmpty())
         assertFalse(viewModel.state.value.loginLoading)
+        assertEquals(1, authRepository.logoutCalls)
         assertEquals(
             "방문기사 권한이 없는 계정입니다.",
             viewModel.state.value.error,
@@ -169,16 +286,16 @@ class TechnicianViewModelTest {
     }
 
     private fun technicianSession(): ApiResult<SessionResponse> =
-        sessionForRole(
-            roleCode = "TECHNICIAN",
-            displayName = "합성 기사",
-        )
+        sessionForRole("TECHNICIAN", "합성 기사")
 
     private fun customerSession(): ApiResult<SessionResponse> =
-        sessionForRole(
-            roleCode = "CUSTOMER",
-            displayName = "합성 고객",
-        )
+        sessionForRole("CUSTOMER", "합성 고객")
+
+    private fun technicianUserResult(): ApiResult<UserData> =
+        ApiResult.Success(userForRole("TECHNICIAN", "합성 기사"))
+
+    private fun customerUserResult(): ApiResult<UserData> =
+        ApiResult.Success(userForRole("CUSTOMER", "합성 고객"))
 
     private fun sessionForRole(
         roleCode: String,
@@ -190,29 +307,56 @@ class TechnicianViewModelTest {
             tokenType = "Bearer",
             accessExpiresIn = 900L,
             refreshExpiresIn = 3600L,
-            user = UserData(
-                id = "$roleCode-id",
-                displayName = displayName,
-                roleCode = roleCode,
-                isActive = true,
-            ),
+            user = userForRole(roleCode, displayName),
         )
+    )
+
+    private fun userForRole(
+        roleCode: String,
+        displayName: String,
+    ) = UserData(
+        id = "$roleCode-id",
+        displayName = displayName,
+        roleCode = roleCode,
+        isActive = true,
     )
 
     private class FakeAuthRepository(
         private val loginResult: ApiResult<SessionResponse>,
+        private var storedSession: Boolean = false,
+        private val meResult: ApiResult<UserData> = when (loginResult) {
+            is ApiResult.Success -> ApiResult.Success(loginResult.value.user)
+            is ApiResult.Failure -> loginResult
+        },
     ) : AuthRepository {
-        override fun hasSession(): Boolean = false
+        var meCalls: Int = 0
+            private set
+        var demoLoginCalls: Int = 0
+            private set
+        var logoutCalls: Int = 0
+            private set
+
+        override fun hasSession(): Boolean = storedSession
 
         override suspend fun demoLogin(
             code: String,
-        ): ApiResult<SessionResponse> = loginResult
+        ): ApiResult<SessionResponse> {
+            demoLoginCalls += 1
+            if (loginResult is ApiResult.Success) {
+                storedSession = true
+            }
+            return loginResult
+        }
 
-        override suspend fun logout(): ApiResult<Unit> = ApiResult.Success(Unit)
+        override suspend fun logout(): ApiResult<Unit> {
+            logoutCalls += 1
+            storedSession = false
+            return ApiResult.Success(Unit)
+        }
 
-        override suspend fun me(): ApiResult<UserData> = when (loginResult) {
-            is ApiResult.Success -> ApiResult.Success(loginResult.value.user)
-            is ApiResult.Failure -> loginResult
+        override suspend fun me(): ApiResult<UserData> {
+            meCalls += 1
+            return meResult
         }
     }
 

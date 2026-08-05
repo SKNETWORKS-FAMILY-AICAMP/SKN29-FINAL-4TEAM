@@ -164,7 +164,7 @@ private fun LoginContent(
 
         Button(
             onClick = onLogin,
-            enabled = !state.loginLoading && state.backendAvailable == true,
+            enabled = !state.loginLoading && !state.restoringSession && state.backendAvailable == true,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp),
@@ -175,7 +175,7 @@ private fun LoginContent(
 
         OutlinedButton(
             onClick = onOfflinePreview,
-            enabled = !state.loginLoading,
+            enabled = !state.loginLoading && !state.restoringSession,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp),
@@ -183,13 +183,16 @@ private fun LoginContent(
             Text("합성 방문 Fixture 미리보기")
         }
 
+        if (state.restoringSession) {
+            LoadingBlock("저장된 방문기사 세션을 확인하는 중입니다")
+        }
         if (state.loginLoading) {
             LoadingBlock("방문기사 계정을 확인하는 중입니다")
         }
         state.error?.let { ErrorCard(it, onRetry = onLogin) }
 
         Text(
-            "Demo 로그인만 실제 Backend 인증을 사용합니다. 방문 목록과 사전 점검은 방문 API가 제공되기 전까지 합성 Fixture입니다.",
+            "Demo 로그인과 저장 세션 확인은 실제 Backend 인증을 사용합니다. 앱 재실행 시 저장된 방문기사 세션을 자동 확인하며, 방문 목록과 사전 점검은 방문 API가 제공되기 전까지 합성 Fixture입니다.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

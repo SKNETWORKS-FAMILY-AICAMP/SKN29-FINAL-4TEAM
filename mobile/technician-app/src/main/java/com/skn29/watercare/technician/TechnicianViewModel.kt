@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 data class TechnicianUiState(
     val checkingBackend: Boolean = true,
     val backendAvailable: Boolean? = null,
+    val restoringSession: Boolean = false,
     val loginLoading: Boolean = false,
     val user: UserData? = null,
     val offlinePreview: Boolean = false,
@@ -37,12 +38,20 @@ class TechnicianViewModel(
     val state: StateFlow<TechnicianUiState> = _state.asStateFlow()
 
     init {
-        checkBackend()
+        initialize()
     }
 
-    fun checkBackend() {
+    private fun initialize() {
         viewModelScope.launch {
-            _state.update { it.copy(checkingBackend = true) }
+            val hasStoredSession = authRepository.hasSession()
+            _state.update {
+                it.copy(
+                    checkingBackend = true,
+                    restoringSession = hasStoredSession,
+                    error = null,
+                )
+            }
+
             val available = backendStatusRepository.health() is ApiResult.Success
             _state.update {
                 it.copy(
@@ -50,11 +59,107 @@ class TechnicianViewModel(
                     backendAvailable = available,
                 )
             }
+
+            if (available && hasStoredSession) {
+                restoreSession()
+            } else {
+                _state.update { it.copy(restoringSession = false) }
+            }
+        }
+    }
+
+    fun checkBackend() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    checkingBackend = true,
+                    error = null,
+                )
+            }
+
+            val available = backendStatusRepository.health() is ApiResult.Success
+            _state.update {
+                it.copy(
+                    checkingBackend = false,
+                    backendAvailable = available,
+                )
+            }
+
+            val shouldRestoreSession =
+                available &&
+                    _state.value.user == null &&
+                    !_state.value.offlinePreview &&
+                    authRepository.hasSession()
+
+            if (shouldRestoreSession) {
+                restoreSession()
+            }
+        }
+    }
+
+    private suspend fun restoreSession() {
+        _state.update {
+            it.copy(
+                restoringSession = true,
+                loginLoading = false,
+                error = null,
+            )
+        }
+
+        when (val result = authRepository.me()) {
+            is ApiResult.Success -> {
+                val user = result.value
+                if (user.roleCode != "TECHNICIAN") {
+                    authRepository.logout()
+                    _state.update {
+                        it.copy(
+                            restoringSession = false,
+                            user = null,
+                            visits = emptyList(),
+                            error = "저장된 계정에 방문기사 권한이 없습니다. 다시 로그인해 주세요.",
+                        )
+                    }
+                } else {
+                    _state.update {
+                        it.copy(
+                            restoringSession = false,
+                            user = user,
+                            offlinePreview = false,
+                            error = null,
+                        )
+                    }
+                    loadVisits()
+                }
+            }
+
+            is ApiResult.Failure -> {
+                val sessionExpired =
+                    result.httpStatus == 401 ||
+                        result.httpStatus == 403
+
+                if (sessionExpired) {
+                    authRepository.logout()
+                }
+
+                _state.update {
+                    it.copy(
+                        restoringSession = false,
+                        user = null,
+                        visits = emptyList(),
+                        error = if (sessionExpired) {
+                            "로그인 세션이 만료되었습니다. 다시 로그인해 주세요."
+                        } else {
+                            result.message
+                        },
+                    )
+                }
+            }
         }
     }
 
     fun demoLogin() {
-        if (_state.value.loginLoading) return
+        if (_state.value.loginLoading || _state.value.restoringSession) return
+
         viewModelScope.launch {
             _state.update {
                 it.copy(
@@ -68,9 +173,11 @@ class TechnicianViewModel(
                 is ApiResult.Success -> {
                     val user = result.value.user
                     if (user.roleCode != "TECHNICIAN") {
+                        authRepository.logout()
                         _state.update {
                             it.copy(
                                 loginLoading = false,
+                                user = null,
                                 error = "방문기사 권한이 없는 계정입니다.",
                             )
                         }
@@ -98,8 +205,11 @@ class TechnicianViewModel(
     }
 
     fun startOfflinePreview() {
+        if (_state.value.restoringSession) return
+
         _state.update {
             it.copy(
+                restoringSession = false,
                 offlinePreview = true,
                 user = UserData(
                     id = "00000000-0000-4000-8000-000000000901",
@@ -115,6 +225,7 @@ class TechnicianViewModel(
 
     fun loadVisits() {
         if (_state.value.user?.roleCode != "TECHNICIAN") return
+
         viewModelScope.launch {
             _state.update {
                 it.copy(
@@ -122,6 +233,7 @@ class TechnicianViewModel(
                     error = null,
                 )
             }
+
             when (val result = visitRepository.getAssignedVisits()) {
                 is ApiResult.Success -> {
                     _state.update {
@@ -146,6 +258,7 @@ class TechnicianViewModel(
 
     fun openVisit(visitId: String) {
         if (_state.value.reportLoading) return
+
         viewModelScope.launch {
             _state.update {
                 it.copy(
@@ -194,6 +307,7 @@ class TechnicianViewModel(
             if (!_state.value.offlinePreview) {
                 authRepository.logout()
             }
+
             _state.value = TechnicianUiState(
                 checkingBackend = false,
                 backendAvailable = _state.value.backendAvailable,
@@ -212,6 +326,7 @@ class TechnicianViewModelFactory(
         require(modelClass.isAssignableFrom(TechnicianViewModel::class.java)) {
             "Unsupported ViewModel: ${modelClass.name}"
         }
+
         return TechnicianViewModel(
             authRepository = authRepository,
             backendStatusRepository = backendStatusRepository,
