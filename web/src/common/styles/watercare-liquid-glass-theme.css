@@ -1,0 +1,1252 @@
+/* WaterCare shared design tokens v0.1 — Web liquid-glass implementation. */
+
+:root {
+  --water-50: #fafcfd;
+  --water-100: #e8f0f3;
+  --water-300: #b9dce4;
+  --water-500: #0e7490;
+  --water-700: #0a5265;
+  --ink-900: #12262b;
+  --ink-600: #4a6169;
+  --ink-400: #7d9199;
+
+  --glass-fill: rgba(255, 255, 255, 0.64);
+  --glass-fill-strong: rgba(255, 255, 255, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.82);
+  --glass-surface-iridescent:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.8) 0%,
+      rgba(241, 248, 250, 0.68) 52%,
+      rgba(246, 243, 250, 0.48) 76%,
+      rgba(237, 249, 246, 0.56) 100%
+    );
+  --glass-blur: 20px;
+  --glass-shadow:
+    0 8px 24px rgba(14, 116, 144, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+
+  --radius-card: 16px;
+  --radius-control: 12px;
+  --radius-pill: 999px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  --type-screen-title: 24px;
+  --type-card-title: 18px;
+  --type-body: 15px;
+  --type-secondary: 13px;
+  --type-caption: 11px;
+
+  --risk-general: #0e7490;
+  --risk-caution: #c08a2e;
+  --risk-danger: #c0392b;
+}
+
+body:has(.consultant-queue-app),
+body:has(.operations-page) {
+  background: linear-gradient(160deg, var(--water-50) 0%, var(--water-100) 100%);
+  background-attachment: fixed;
+  color: var(--ink-900);
+}
+
+body .simple-consultant-app.consultant-queue-app,
+body .operations-page {
+  color: var(--ink-900) !important;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(143, 201, 216, 0.28), transparent 30%),
+    radial-gradient(circle at 8% 94%, rgba(255, 255, 255, 0.58), transparent 29%),
+    linear-gradient(160deg, var(--water-50) 0%, var(--water-100) 100%) !important;
+  background-attachment: fixed !important;
+}
+
+/* Shared glass surfaces. */
+body .simple-consultant-app.consultant-queue-app :is(
+  .simple-topbar,
+  .consultant-work-tabs,
+  .consultant-queue-panel,
+  .consultant-detail-drawer,
+  .consultant-detail-drawer__head,
+  .consultant-detail-drawer__body .simple-desk
+),
+body .operations-page :is(
+  .operations-page-head,
+  .api-integration-panel,
+  .operations-panel,
+  .operations-metric
+) {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-card) !important;
+  background: var(--glass-fill) !important;
+  box-shadow: var(--glass-shadow) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+}
+
+/* Consultant queue. */
+body .simple-consultant-app.consultant-queue-app {
+  --text-primary: var(--ink-900);
+  --text-secondary: var(--ink-600);
+  --text-disabled: var(--ink-400);
+  --accent-primary: var(--water-500);
+  border-color: var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app::before,
+body .simple-consultant-app.consultant-queue-app::after {
+  display: block !important;
+  opacity: 0.18 !important;
+  filter: blur(48px) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app::before {
+  background: var(--water-300) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app::after {
+  background: #ffffff !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .simple-topbar {
+  border-radius: var(--radius-card) var(--radius-card) 0 0 !important;
+  background: var(--glass-fill) !important;
+  box-shadow: 0 6px 24px rgba(27, 90, 107, 0.08) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .simple-brand__mark {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: var(--water-500) !important;
+  box-shadow: 0 7px 18px rgba(46, 139, 163, 0.2) !important;
+  color: #ffffff !important;
+}
+
+body .simple-consultant-app.consultant-queue-app :is(
+  .simple-brand__copy strong,
+  .simple-user strong,
+  .consultant-queue-panel__head h2,
+  .consultant-list-item__subject strong,
+  .consultant-list-item__customer strong
+) {
+  color: var(--ink-900) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app :is(
+  .simple-brand__copy small,
+  .simple-user small,
+  .consultant-queue-panel__head p,
+  .consultant-list-item__subject small,
+  .consultant-list-item__customer small,
+  .consultant-list-item__status small,
+  .common-pagination__summary
+) {
+  color: var(--ink-600) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .simple-topbar__notice {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: var(--glass-fill-strong) !important;
+  box-shadow: none !important;
+  color: var(--water-700) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-work-tabs,
+body .simple-consultant-app.consultant-queue-app .consultant-queue-panel {
+  background: var(--glass-fill) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-work-tab,
+body .simple-consultant-app.consultant-queue-app .consultant-work-tab:hover {
+  border: 1px solid transparent !important;
+  border-radius: var(--radius-control) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--ink-900) !important;
+  transform: none !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-work-tab:hover {
+  border-color: var(--glass-border) !important;
+  background: rgba(255, 255, 255, 0.38) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active,
+body .simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active:hover {
+  border-color: rgba(46, 139, 163, 0.34) !important;
+  background: var(--water-500) !important;
+  box-shadow: 0 8px 20px rgba(46, 139, 163, 0.18) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active :is(strong, em, small) {
+  color: #ffffff !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-work-tabs .consultant-work-tab > b {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-pill) !important;
+  background: var(--glass-fill-strong) !important;
+  box-shadow: none !important;
+  color: var(--water-700) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab.is-active
+  > b {
+  border-color: rgba(255, 255, 255, 0.38) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-queue-panel__head,
+body .simple-consultant-app.consultant-queue-app .consultant-queue-panel > .common-pagination,
+body .simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item,
+body .simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item:nth-child(even) {
+  border-color: rgba(255, 255, 255, 0.52) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: none !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item:hover {
+  background: rgba(255, 255, 255, 0.38) !important;
+  box-shadow: inset 3px 0 0 var(--water-500) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-queue-tools .simple-search,
+body .simple-consultant-app.consultant-queue-app .consultant-queue-tools > button,
+body .simple-consultant-app.consultant-queue-app .common-pagination__actions :is(button, span) {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: var(--glass-fill-strong) !important;
+  box-shadow: none !important;
+  color: var(--ink-900) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-queue-tools .simple-search:focus-within {
+  border-color: var(--water-500) !important;
+  box-shadow: 0 0 0 3px rgba(46, 139, 163, 0.12) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-queue-tools .simple-search input {
+  color: var(--ink-900) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-queue-tools .simple-search input::placeholder {
+  color: var(--ink-400) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .common-pagination__actions span[aria-current="page"] {
+  border-color: var(--water-500) !important;
+  background: var(--water-500) !important;
+  color: #ffffff !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-detail-drawer {
+  background: rgba(220, 238, 243, 0.82) !important;
+  box-shadow: -18px 0 48px rgba(27, 90, 107, 0.18) !important;
+}
+
+/* Risk badges are opaque: safety recognition takes priority over glass. */
+body .simple-consultant-app.consultant-queue-app .common-risk-badge {
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .common-risk-badge--general {
+  background: var(--risk-general) !important;
+  color: #ffffff !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .common-risk-badge--caution {
+  background: var(--risk-caution) !important;
+  color: #ffffff !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .common-risk-badge--danger {
+  background: var(--risk-danger) !important;
+  color: #ffffff !important;
+}
+
+body .simple-consultant-app.consultant-queue-app :is(
+  .simple-guidance.is-danger,
+  .v6-usage-card.is-danger,
+  .inquiry-dashboard__card--guidance.is-danger
+) {
+  border: 1px solid var(--risk-danger) !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Operations workspace. */
+body .operations-page {
+  --operations-ink: var(--ink-900);
+  --operations-muted: var(--ink-600);
+  --operations-line: var(--glass-border);
+  --operations-surface: var(--glass-fill);
+  --operations-green: var(--water-500);
+  --operations-green-soft: rgba(143, 201, 216, 0.24);
+}
+
+body .operations-page .operations-topbar {
+  border-color: var(--glass-border) !important;
+  background:
+    linear-gradient(170deg, rgba(27, 90, 107, 0.94), rgba(46, 139, 163, 0.82)) !important;
+  box-shadow: 10px 0 32px rgba(27, 90, 107, 0.14) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%) !important;
+}
+
+html body .operations-page .operations-topbar :is(
+  .operations-brand strong,
+  .operations-user strong
+) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+html body .operations-page .operations-topbar :is(
+  .operations-brand small,
+  .operations-user small,
+  .operations-navigation::before,
+  .operations-runtime-status small
+) {
+  color: rgba(255, 255, 255, 0.68) !important;
+}
+
+body .operations-page .operations-brand > span {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+}
+
+body .operations-page .operations-navigation a,
+body .operations-page .operations-navigation a:hover {
+  border: 1px solid transparent !important;
+  border-radius: var(--radius-control) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+body .operations-page .operations-navigation a:hover {
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+body .operations-page .operations-navigation a:first-of-type {
+  border-color: rgba(255, 255, 255, 0.58) !important;
+  background: var(--glass-fill-strong) !important;
+  box-shadow: 0 8px 22px rgba(18, 38, 43, 0.16) !important;
+  color: var(--water-700) !important;
+}
+
+body .operations-page .operations-navigation a span,
+body .operations-page .operations-navigation a:first-of-type span {
+  border-radius: var(--radius-control) !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #ffffff !important;
+}
+
+body .operations-page .operations-navigation a:first-of-type span {
+  background: rgba(46, 139, 163, 0.12) !important;
+  color: var(--water-700) !important;
+}
+
+body .operations-page :is(.operations-runtime-status, .operations-user, .operations-user button) {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  border-radius: var(--radius-control) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+}
+
+body .operations-page :is(
+  .operations-page-head h1,
+  .operations-metric strong,
+  .operations-section-head h2
+) {
+  color: var(--ink-900) !important;
+}
+
+body .operations-page :is(
+  .operations-page-head p,
+  .operations-metric > span,
+  .operations-metric small,
+  .operations-section-head > p
+) {
+  color: var(--ink-600) !important;
+}
+
+body .operations-page :is(.operations-page-head small, .operations-section-head small) {
+  color: var(--water-700) !important;
+}
+
+body .operations-page :is(
+  .operations-page-head > span,
+  .operations-section-head > strong,
+  .operations-filters input,
+  .operations-filters select,
+  .operations-filters__footer button
+) {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: var(--glass-fill-strong) !important;
+  box-shadow: none !important;
+  color: var(--ink-900) !important;
+}
+
+body .operations-page .operations-filters input:focus,
+body .operations-page .operations-filters select:focus {
+  border-color: var(--water-500) !important;
+  outline: 3px solid rgba(46, 139, 163, 0.12) !important;
+}
+
+body .operations-page .operations-metric::before {
+  height: 2px !important;
+  background: var(--water-300) !important;
+}
+
+body .operations-page .operations-metric.is-danger::before {
+  background: var(--risk-danger) !important;
+}
+
+body .operations-page .operations-metric.is-warning::before {
+  background: var(--risk-caution) !important;
+}
+
+body .operations-page .operations-metric.is-success::before,
+body .operations-page .operations-metric.is-info::before {
+  background: var(--water-500) !important;
+}
+
+body .operations-page .operations-chart__track {
+  background: rgba(46, 139, 163, 0.1) !important;
+}
+
+body .operations-page .operations-chart__track i,
+body .operations-page .operations-chart li:nth-child(even) .operations-chart__track i {
+  background: linear-gradient(90deg, var(--water-500), var(--water-300)) !important;
+}
+
+body .operations-page .operations-table-section .common-data-table-wrap {
+  border-color: var(--glass-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: rgba(255, 255, 255, 0.28) !important;
+}
+
+body .operations-page .operations-table-section .common-data-table th {
+  background: rgba(143, 201, 216, 0.14) !important;
+  color: var(--ink-600) !important;
+}
+
+body .operations-page .operations-table-section .common-data-table td {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+body .operations-page .operations-table-section .common-data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.34) !important;
+}
+
+/* Shared typography tokens without changing the page structure. */
+body .simple-consultant-app.consultant-queue-app .consultant-queue-panel__head h2,
+body .operations-page .operations-section-head h2 {
+  font-size: var(--type-card-title) !important;
+  font-weight: 600 !important;
+}
+
+body .operations-page .operations-page-head h1 {
+  font-size: var(--type-screen-title) !important;
+  font-weight: 600 !important;
+}
+
+body .simple-consultant-app.consultant-queue-app :is(
+  .consultant-list-item__subject strong,
+  .consultant-list-item__customer strong
+) {
+  font-size: var(--type-body) !important;
+  font-weight: 600 !important;
+  line-height: 1.6 !important;
+}
+
+body .simple-consultant-app.consultant-queue-app :is(
+  .consultant-list-item__subject small,
+  .consultant-list-item__customer small,
+  .consultant-list-item__status small
+) {
+  font-size: var(--type-secondary) !important;
+  font-weight: 400 !important;
+  line-height: 1.6 !important;
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  body .simple-consultant-app.consultant-queue-app :is(
+    .simple-topbar,
+    .consultant-work-tabs,
+    .consultant-queue-panel,
+    .consultant-detail-drawer
+  ),
+  body .operations-page :is(
+    .operations-topbar,
+    .operations-page-head,
+    .api-integration-panel,
+    .operations-panel,
+    .operations-metric
+  ) {
+    background: rgba(255, 255, 255, 0.88) !important;
+  }
+
+  body .operations-page .operations-topbar {
+    background: var(--water-700) !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * WaterCare design-prompt alignment
+ * - one deep-teal accent, calm pearlescent surfaces, thin borders
+ * - visual overrides only; page structure and behavior stay untouched
+ * ----------------------------------------------------------------------- */
+
+body .simple-consultant-app.consultant-queue-app,
+body .operations-page,
+body .v6-workspace {
+  background:
+    radial-gradient(circle at 92% 6%, rgba(185, 220, 228, 0.24), transparent 27%),
+    radial-gradient(circle at 8% 92%, rgba(228, 238, 243, 0.42), transparent 30%),
+    linear-gradient(160deg, #fafcfd 0%, #e8f0f3 100%) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app :is(
+  .simple-topbar,
+  .consultant-work-tabs,
+  .consultant-queue-panel,
+  .consultant-detail-drawer__head,
+  .consultant-detail-drawer__body .simple-desk
+),
+body .operations-page :is(
+  .operations-page-head,
+  .api-integration-panel,
+  .operations-panel,
+  .operations-metric
+),
+body .v6-workspace :is(
+  .v6-topbar,
+  .v6-page-head,
+  .inquiry-v13-toolbar,
+  .v6-panel
+) {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-card) !important;
+  background: var(--glass-surface-iridescent) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app :is(
+  h1,
+  h2,
+  h3,
+  h4,
+  strong,
+  b
+),
+body .operations-page :is(h1, h2, h3, h4, strong, b),
+body .v6-workspace :is(h1, h2, h3, h4, strong, b) {
+  font-weight: 600 !important;
+}
+
+body .simple-consultant-app.consultant-queue-app :is(
+  button,
+  input,
+  select,
+  textarea,
+  .simple-search,
+  .consultant-work-tab,
+  .common-pagination__actions span
+),
+body .operations-page :is(button, input, select, textarea, .operations-navigation a),
+body .v6-workspace :is(button, input, select, textarea, .v6-button, .v6-nav-item) {
+  border-radius: var(--radius-control) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app :is(
+  .consultant-work-tab.is-active,
+  .common-pagination__actions span[aria-current="page"],
+  .simple-action-buttons button.is-primary
+),
+body .v6-workspace :is(.v6-button--primary, .v6-tabs button.is-active) {
+  border-color: #0e7490 !important;
+  background: #0e7490 !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item:hover,
+body .operations-page .operations-table-section .common-data-table tbody tr:hover {
+  background: rgba(14, 116, 144, 0.055) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item:hover {
+  box-shadow: inset 2px 0 0 #0e7490 !important;
+}
+
+/* Side rails stay light and glassy; only the selected destination uses teal. */
+body .operations-page .operations-topbar,
+html body .v6-workspace .v6-sidebar {
+  border-color: var(--glass-border) !important;
+  background: rgba(250, 252, 253, 0.72) !important;
+  box-shadow: 6px 0 20px rgba(14, 116, 144, 0.06) !important;
+  color: var(--ink-900) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%) !important;
+}
+
+html body .operations-page .operations-topbar :is(
+  .operations-brand strong,
+  .operations-user strong,
+  .operations-brand small,
+  .operations-user small,
+  .operations-navigation::before,
+  .operations-runtime-status small
+),
+html body .v6-workspace .v6-sidebar :is(
+  .v6-sidebar__section > p,
+  .v6-sidebar__legend > p,
+  .v6-sidebar__legend li
+) {
+  color: var(--ink-600) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+body .operations-page .operations-brand > span,
+body .operations-page :is(.operations-runtime-status, .operations-user, .operations-user button) {
+  border-color: var(--glass-border) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: var(--water-700) !important;
+}
+
+body .operations-page .operations-navigation a,
+body .operations-page .operations-navigation a:hover,
+html body .v6-workspace .v6-sidebar .v6-nav-item,
+html body .v6-workspace .v6-sidebar .v6-nav-item:hover {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--ink-900) !important;
+}
+
+body .operations-page .operations-navigation a:hover,
+html body .v6-workspace .v6-sidebar .v6-nav-item:hover {
+  border-color: rgba(14, 116, 144, 0.12) !important;
+  background: rgba(14, 116, 144, 0.055) !important;
+}
+
+body .operations-page .operations-navigation a:first-of-type,
+body .operations-page .operations-navigation a:first-of-type:hover,
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active,
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active:hover {
+  border-color: rgba(14, 116, 144, 0.28) !important;
+  background: #0e7490 !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+}
+
+body .operations-page .operations-navigation a:first-of-type :is(span, strong, small),
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active :is(span, strong, small, b) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+body .operations-page .operations-navigation a span,
+html body .v6-workspace .v6-sidebar .v6-nav-item > b {
+  border-color: rgba(14, 116, 144, 0.14) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: var(--water-700) !important;
+}
+
+body .operations-page .operations-navigation a:first-of-type span,
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active > b {
+  border-color: rgba(255, 255, 255, 0.34) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+}
+
+body .operations-page .operations-chart__track i,
+body .operations-page .operations-chart li:nth-child(even) .operations-chart__track i {
+  background: linear-gradient(90deg, #0e7490, #b9dce4) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-detail-drawer {
+  box-shadow: -12px 0 32px rgba(14, 116, 144, 0.1) !important;
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  body .operations-page .operations-topbar,
+  html body .v6-workspace .v6-sidebar {
+    background: #fafcfd !important;
+  }
+}
+
+/* Full-record sidebar: same calm rail used by the consultant queue. */
+html body .v6-workspace .v6-sidebar {
+  border-right: 1px solid var(--glass-border) !important;
+  background:
+    linear-gradient(160deg, rgba(242, 249, 251, 0.82), rgba(220, 238, 243, 0.74)) !important;
+  box-shadow: 8px 0 28px rgba(27, 90, 107, 0.08) !important;
+  color: var(--ink-900) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+}
+
+html body .v6-workspace .v6-sidebar :is(
+  .v6-sidebar__section > p,
+  .v6-sidebar__legend > p
+) {
+  color: var(--water-700) !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-sidebar__legend {
+  border-color: rgba(46, 139, 163, 0.12) !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-sidebar__legend li {
+  color: var(--ink-600) !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item,
+html body .v6-workspace .v6-sidebar .v6-nav-item:hover {
+  min-height: 52px;
+  margin-bottom: var(--space-sm);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: var(--glass-fill-strong) !important;
+  box-shadow: none !important;
+  color: var(--ink-900) !important;
+  text-shadow: none !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item:hover {
+  border-color: rgba(46, 139, 163, 0.28) !important;
+  background: rgba(255, 255, 255, 0.84) !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active,
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active:hover {
+  border-color: rgba(46, 139, 163, 0.38) !important;
+  background: var(--water-500) !important;
+  box-shadow: 0 8px 20px rgba(46, 139, 163, 0.16) !important;
+  color: #ffffff !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active::before {
+  display: none !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item:not(.is-active) :is(span, strong, small) {
+  color: var(--ink-900) !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active :is(span, strong, small) {
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item > b {
+  border: 1px solid rgba(46, 139, 163, 0.14) !important;
+  border-radius: var(--radius-pill) !important;
+  background: rgba(255, 255, 255, 0.76) !important;
+  box-shadow: none !important;
+  color: var(--water-700) !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active > b {
+  border-color: rgba(255, 255, 255, 0.36) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-home-link {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: var(--glass-fill-strong) !important;
+  box-shadow: none !important;
+  color: var(--water-700) !important;
+  text-shadow: none !important;
+}
+
+/* Keep the larger token typography inside the full-record heading card. */
+html body .v6-workspace .inquiry-v13-page-head.v6-page-head {
+  box-sizing: border-box;
+  min-height: 132px !important;
+  height: auto !important;
+  align-items: flex-start !important;
+  flex-wrap: wrap;
+  gap: var(--space-md) var(--space-lg) !important;
+  padding: var(--space-lg) !important;
+  overflow: hidden;
+}
+
+html body .v6-workspace .inquiry-v13-page-head .v6-page-head__copy {
+  min-width: 0;
+  flex: 1 1 520px;
+  padding-bottom: var(--space-xs);
+}
+
+html body .v6-workspace .inquiry-v13-page-head .v6-page-head__copy > small {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+html body .v6-workspace .inquiry-v13-page-head .v6-page-head__copy h1 {
+  margin: var(--space-sm) 0 var(--space-sm) !important;
+  line-height: 1.25 !important;
+  overflow-wrap: anywhere;
+}
+
+html body .v6-workspace .inquiry-v13-page-head .v6-page-head__copy p {
+  max-width: 100%;
+  margin: 0 !important;
+  line-height: 1.6 !important;
+  overflow-wrap: anywhere;
+}
+
+html body .v6-workspace .inquiry-v13-page-head .v6-page-head__meta {
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 auto;
+  align-self: flex-start;
+}
+
+html body .v6-workspace .inquiry-v13-page-head .v6-page-head__meta span {
+  max-width: 100%;
+  border-radius: var(--radius-pill) !important;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1024px) {
+  html body .v6-workspace .v6-sidebar .v6-nav-item,
+  html body .v6-workspace .v6-sidebar .v6-nav-item:hover {
+    min-height: 42px;
+    margin-bottom: 0;
+  }
+
+  html body .v6-workspace .inquiry-v13-page-head.v6-page-head {
+    min-height: 0 !important;
+  }
+}
+
+@media (max-width: 767px) {
+  body .simple-consultant-app.consultant-queue-app {
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Consultant detail drawer
+ * ----------------------------------------------------------------------- */
+
+body .simple-consultant-app.consultant-queue-app .consultant-detail-drawer,
+body .simple-consultant-app.consultant-queue-app .consultant-detail-drawer__head {
+  border-color: var(--glass-border) !important;
+  background:
+    linear-gradient(160deg, rgba(242, 249, 251, 0.86), rgba(220, 238, 243, 0.8)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-detail-drawer__head {
+  border-radius: var(--radius-card) var(--radius-card) 0 0 !important;
+  box-shadow: 0 6px 22px rgba(27, 90, 107, 0.08) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-detail-drawer__body {
+  background:
+    radial-gradient(circle at 92% 4%, rgba(143, 201, 216, 0.24), transparent 27%),
+    linear-gradient(160deg, var(--water-50), var(--water-100)) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-detail-drawer__body .simple-desk {
+  border-color: var(--glass-border) !important;
+  border-radius: var(--radius-card) !important;
+  background: var(--glass-fill) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-detail-drawer__body :is(
+  .simple-mini-profile > div,
+  .simple-next-step,
+  .simple-focus-grid article,
+  .simple-customer-voice,
+  .simple-guidance:not(.is-danger),
+  .simple-action-panel,
+  .simple-ai-assist,
+  .simple-visit-followup
+) {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: var(--glass-fill) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-detail-drawer__body :is(
+  .simple-case-head > button,
+  .simple-consultation-form textarea,
+  .simple-ai-assist textarea,
+  .simple-visit-choice label,
+  .simple-action-buttons button,
+  select,
+  input
+) {
+  border-color: var(--glass-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: var(--glass-fill-strong) !important;
+  box-shadow: none !important;
+  color: var(--ink-900) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-detail-drawer__body :is(
+  .simple-action-buttons button.is-primary,
+  .simple-case-head > button:hover
+) {
+  border-color: var(--water-500) !important;
+  background: var(--water-500) !important;
+  color: #ffffff !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-detail-drawer__body :is(
+  .simple-case-head h2,
+  .simple-action-panel h3,
+  .simple-customer-voice blockquote,
+  .simple-guidance strong
+) {
+  color: var(--ink-900) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .consultant-detail-drawer__body :is(
+  .simple-case-head p,
+  .simple-customer-voice p,
+  .simple-guidance p,
+  .simple-mini-profile dt,
+  .simple-action-note
+) {
+  color: var(--ink-600) !important;
+}
+
+/* --------------------------------------------------------------------------
+ * Full consultant record and visit-transition workspaces
+ * ----------------------------------------------------------------------- */
+
+body:has(.v6-workspace) {
+  background: linear-gradient(160deg, var(--water-50), var(--water-100));
+  background-attachment: fixed;
+  color: var(--ink-900);
+}
+
+body .v6-workspace {
+  --v6-green: var(--water-500);
+  --v6-green-100: rgba(143, 201, 216, 0.24);
+  --v6-ink-900: var(--ink-900);
+  --v6-ink-800: #213b42;
+  --v6-ink-600: var(--ink-600);
+  --v6-ink-500: var(--ink-400);
+  --v6-ink-100: rgba(255, 255, 255, 0.65);
+  --v6-ink-50: rgba(255, 255, 255, 0.36);
+  --v6-radius: var(--radius-card);
+  --v6-shadow-sm: var(--glass-shadow);
+  color: var(--ink-900) !important;
+  background:
+    radial-gradient(circle at 90% 5%, rgba(143, 201, 216, 0.24), transparent 28%),
+    linear-gradient(160deg, var(--water-50), var(--water-100)) !important;
+  background-attachment: fixed !important;
+}
+
+body .v6-workspace .v6-topbar {
+  border-color: var(--glass-border) !important;
+  background: var(--glass-fill-strong) !important;
+  box-shadow: 0 6px 24px rgba(27, 90, 107, 0.08) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+}
+
+body .v6-workspace .v6-sidebar {
+  border-color: rgba(255, 255, 255, 0.36) !important;
+  background:
+    linear-gradient(170deg, rgba(27, 90, 107, 0.94), rgba(46, 139, 163, 0.84)) !important;
+  box-shadow: 10px 0 32px rgba(27, 90, 107, 0.14) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%) !important;
+}
+
+html body .v6-workspace .v6-topbar :is(
+  .v6-brand,
+  .v6-topbar__context,
+  .v6-topbar__actions,
+  strong,
+  small
+) {
+  color: var(--ink-900) !important;
+}
+
+body .v6-workspace .v6-brand__mark {
+  border-color: var(--glass-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: var(--water-500) !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+}
+
+body .v6-workspace .v6-nav-item,
+body .v6-workspace .v6-nav-item:hover {
+  border: 1px solid transparent !important;
+  border-radius: var(--radius-control) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+body .v6-workspace .v6-nav-item:hover {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+body .v6-workspace .v6-nav-item.is-active {
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  background: var(--glass-fill-strong) !important;
+  box-shadow: 0 8px 22px rgba(18, 38, 43, 0.16) !important;
+  color: var(--water-700) !important;
+}
+
+body .v6-workspace :is(.v6-page-head, .inquiry-v13-toolbar, .v6-panel) {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-card) !important;
+  background: var(--glass-fill) !important;
+  box-shadow: var(--glass-shadow) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+}
+
+body .v6-workspace .v6-page-head h1 {
+  color: var(--ink-900) !important;
+  font-size: var(--type-screen-title) !important;
+  font-weight: 600 !important;
+}
+
+body .v6-workspace :is(.v6-page-head p, .inquiry-v13-toolbar > span) {
+  color: var(--ink-600) !important;
+}
+
+body .v6-workspace :is(
+  .v6-page-head__meta span,
+  .v6-button,
+  .v6-tabs button,
+  .v6-action-panel select,
+  .v6-action-panel input,
+  .v6-action-panel textarea
+) {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: var(--glass-fill-strong) !important;
+  box-shadow: none !important;
+  color: var(--ink-900) !important;
+}
+
+body .v6-workspace :is(.v6-button--primary, .v6-tabs button.is-active) {
+  border-color: var(--water-500) !important;
+  background: var(--water-500) !important;
+  color: #ffffff !important;
+}
+
+body .v6-workspace :is(.v6-detail, .v6-detail-head, .v6-detail-body) {
+  border-color: rgba(255, 255, 255, 0.52) !important;
+  background: transparent !important;
+}
+
+body .v6-workspace :is(
+  .inquiry-dashboard__metrics article,
+  .inquiry-dashboard__card,
+  .inquiry-dashboard__timeline,
+  .v6-section,
+  .v6-action-panel,
+  .v6-answer-grid > div,
+  .v6-summary-grid > div,
+  .v6-customer-card,
+  .v6-ai-summary,
+  .v6-readonly-card
+) {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-control) !important;
+  background: var(--glass-fill) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%) !important;
+}
+
+body .v6-workspace :is(
+  .inquiry-dashboard__title h3,
+  .inquiry-dashboard__card h4,
+  .inquiry-dashboard__timeline h4,
+  .v6-section__head h3,
+  .v6-action-panel h3
+) {
+  color: var(--ink-900) !important;
+  font-weight: 600 !important;
+}
+
+body .v6-workspace :is(
+  .inquiry-dashboard__title small,
+  .inquiry-dashboard__card header small,
+  .inquiry-dashboard__timeline header small,
+  .v6-kicker,
+  .v6-action-panel__head small
+) {
+  color: var(--water-700) !important;
+}
+
+body .v6-workspace :is(
+  .inquiry-dashboard__card p,
+  .inquiry-dashboard__card dt,
+  .inquiry-dashboard__timeline p,
+  .inquiry-dashboard__timeline time,
+  .v6-action-note
+) {
+  color: var(--ink-600) !important;
+  line-height: 1.6 !important;
+}
+
+body .v6-workspace :is(
+  .inquiry-dashboard__card--guidance.is-danger,
+  .v6-danger-alert,
+  .v6-usage-card.is-danger
+) {
+  border: 1px solid var(--risk-danger) !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  body .v6-workspace :is(
+    .v6-topbar,
+    .v6-page-head,
+    .inquiry-v13-toolbar,
+    .v6-panel,
+    .v6-section,
+    .v6-action-panel,
+    .inquiry-dashboard__card,
+    .inquiry-dashboard__timeline
+  ) {
+    background: rgba(255, 255, 255, 0.88) !important;
+  }
+
+  body .v6-workspace .v6-sidebar {
+    background: var(--water-700) !important;
+  }
+}
+
+/* Final cascade for the full-record and visit workspaces. */
+html body .v6-workspace .v6-sidebar {
+  border-color: var(--glass-border) !important;
+  background: rgba(250, 252, 253, 0.72) !important;
+  box-shadow: 6px 0 20px rgba(14, 116, 144, 0.06) !important;
+  color: var(--ink-900) !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item,
+html body .v6-workspace .v6-sidebar .v6-nav-item:hover {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--ink-900) !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item:hover {
+  border-color: rgba(14, 116, 144, 0.12) !important;
+  background: rgba(14, 116, 144, 0.055) !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active,
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active:hover {
+  border-color: rgba(14, 116, 144, 0.28) !important;
+  background: #0e7490 !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item:not(.is-active) :is(span, strong, small) {
+  color: var(--ink-900) !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active :is(span, strong, small, b) {
+  color: #ffffff !important;
+}
+
+body .v6-workspace :is(.v6-page-head, .inquiry-v13-toolbar, .v6-panel) {
+  border-radius: var(--radius-card) !important;
+  background: var(--glass-surface-iridescent) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+body .v6-workspace :is(
+  .inquiry-dashboard__metrics article,
+  .inquiry-dashboard__card,
+  .inquiry-dashboard__timeline,
+  .v6-section,
+  .v6-action-panel,
+  .v6-answer-grid > div,
+  .v6-summary-grid > div,
+  .v6-customer-card,
+  .v6-ai-summary,
+  .v6-readonly-card
+) {
+  border-radius: var(--radius-card) !important;
+  background: var(--glass-surface-iridescent) !important;
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  html body .v6-workspace .v6-sidebar {
+    background: #fafcfd !important;
+  }
+}
+
+/* Status uses the single product accent; only safety risk keeps amber/red. */
+body .simple-consultant-app.consultant-queue-app .common-status-badge,
+body .operations-page .common-status-badge,
+body .v6-workspace .common-status-badge {
+  background: rgba(14, 116, 144, 0.1) !important;
+  color: #0a5265 !important;
+  font-weight: 600 !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .common-status-badge--success,
+body .operations-page .common-status-badge--success,
+body .v6-workspace .common-status-badge--success {
+  background: rgba(14, 116, 144, 0.16) !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .common-status-badge--danger,
+body .operations-page .common-status-badge--danger,
+body .v6-workspace .common-status-badge--danger {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+}
+
+body .simple-consultant-app.consultant-queue-app .common-risk-badge,
+body .operations-page .common-risk-badge,
+body .v6-workspace .common-risk-badge {
+  font-weight: 600 !important;
+}

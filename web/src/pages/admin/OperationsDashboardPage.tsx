@@ -31,6 +31,8 @@ import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntim
 import "./OperationsDashboardPage.css";
 import "./OperationsDashboardTheme.css";
 import "../../common/styles/water-glass-theme.css";
+import "../../common/styles/watercare-liquid-glass-theme.css";
+import "../../common/styles/pearl-workspace-v2.css";
 
 const OPERATIONS_INQUIRIES =
   consultantWorkspaceRepository.listAllInquiries();
