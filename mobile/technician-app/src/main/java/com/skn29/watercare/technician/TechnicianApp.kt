@@ -72,7 +72,7 @@ fun TechnicianApp() {
                     title = {
                         Text(
                             if (state.selectedVisitId == null) {
-                                "정수기 딜러 · 방문기사"
+                                "정수기 딜러"
                             } else {
                                 "방문 사전 점검"
                             },
@@ -119,7 +119,7 @@ fun TechnicianApp() {
                     modifier = Modifier.padding(padding),
                 )
 
-                else -> VisitListContent(
+                else -> TechnicianReferenceDashboard(
                     state = state,
                     onVisitClick =
                         technicianViewModel::openVisit,
