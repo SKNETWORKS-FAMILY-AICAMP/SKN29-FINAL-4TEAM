@@ -2,8 +2,8 @@
 
 > 기준 시각: **2026-08-05 17:45 KST**
 > 기준 브랜치: `main`  
-> 기준 Commit: `6512178aded1eef745dc40ddc8ed480f1e7870fa`
-> Commit 시각: `2026-08-05 17:16:29 +09:00`
+> 기준 Commit: `24b6b3371b50679a3b2c449a651606e6cbdc581b`
+> Commit 시각: `2026-08-05 17:53:18 +09:00`
 > 발표 기준 Commit 승인: **2026-08-05, 윤승혁**  
 > 검증 범위: 최신 작업 트리의 계약·Data·Backend·AI·Web·Mobile·WBS·발표 준비 상태  
 > 종합 상태: **INTEGRATION_BLOCKED / PRESENTATION_FREEZE_NOT_APPROVED**
@@ -29,9 +29,9 @@
 
 ## 2. Git·작업 트리 기준
 
-사용자는 계약·Data·팀원 진행도 문서를 Commit했고 현재 체크아웃 상태는 `main@6512178`이다. 이 Commit에는 State Machine 생성기·Mermaid·CI Gate와 `Q&A 크롤링.md`, 팀원 6명의 4주차 진행도 문서가 포함된다.
+현재 체크아웃 상태는 `main@24b6b33`이다. 이 Commit에는 State Machine 생성기·Mermaid·CI Gate, Data Raw 비보존 정책 복구, 갱신 QA 산출물과 팀원 6명의 4주차 진행도 문서가 포함된다.
 
-발표 기준 Commit은 현재 `6512178aded1eef745dc40ddc8ed480f1e7870fa`다. 이 Commit의 Raw 구성 회귀를 수정해 별도의 깨끗한 Clone에서 재검증했으며, 수정 내용과 갱신된 QA 산출물은 아직 작업 트리에 있다. 따라서 Data는 검증은 완료됐지만 새 Commit으로 포함되기 전까지 `FIXED_PENDING_COMMIT`으로 판정한다.
+발표 기준 Commit을 `24b6b3371b50679a3b2c449a651606e6cbdc581b`로 갱신한다. Data Raw 구성 회귀는 별도의 깨끗한 Clone에서 재검증한 수정안과 QA 산출물이 이 Commit에 포함됐으므로 `VERIFIED_DONE`으로 판정한다. 현재 작업 트리에는 WBS 현행화 문서 변경만 남아 있다.
 
 ## 3. 영역별 Gate 결과
 
@@ -72,12 +72,12 @@ python -B data/tools/pipeline.py finalize
 
 | 항목 | 현재 결과 | 판정 | 근거·제한 |
 |---|---|---|---|
-| Data 단위 테스트 | 67/67 | `FIXED_PENDING_COMMIT` | Raw 정책 수정안을 적용한 깨끗한 Clone에서 통과 |
-| Raw 비보존 정책 | PASS | `FIXED_PENDING_COMMIT` | 원문은 Git 무시 백업으로 이동하고 두 `.gitkeep` 복원 |
-| 계약 출처 Commit | `6512178...` | `FIXED_PENDING_COMMIT` | QA Summary 재생성 완료 |
+| Data 단위 테스트 | 67/67 | `VERIFIED_DONE` | Raw 정책 수정안을 적용한 깨끗한 Clone에서 통과 후 Commit |
+| Raw 비보존 정책 | PASS | `VERIFIED_DONE` | 원문은 Git 무시 백업으로 이동하고 두 `.gitkeep` 복원 |
+| 계약 출처 Commit | `6512178...` | `VERIFIED_DONE` | QA Summary 재생성 및 Commit 완료 |
 | 대표 14단계 E2E | 테스트 통과 | `VERIFIED_DONE` | 14단계·최종 `RESOLVED`·Version 14 |
-| QA Verify Rebuild | PASS | `FIXED_PENDING_COMMIT` | 오류·경고·Canonical Drift 0개 |
-| QA Finalize | PASS | `FIXED_PENDING_COMMIT` | Dataset 0.9.0, Manifest 154개 확인 |
+| QA Verify Rebuild | PASS | `VERIFIED_DONE` | 오류·경고·Canonical Drift 0개 |
+| QA Finalize | PASS | `VERIFIED_DONE` | Dataset 0.9.0, Manifest 154개 확인 |
 
 `source_commit`은 `contracts/state-machine`을 마지막으로 변경한 Commit을 기록한다. QA Summary를 재생성해 `6512178...`로 갱신했다. `Q&A 크롤링.md`는 삭제하지 않고 Git이 무시하는 로컬 백업 영역에 보존했다.
 
@@ -161,13 +161,14 @@ Gradle 9.5.0과 Android SDK를 인식시킨 뒤 Core·Customer·Technician Test�
 
 ## 4. WBS 현행성
 
-현재 WBS는 실제 코드·Mock·계약 상태와 맞지 않는다.
+현재 작업 트리의 WBS를 실제 코드·Mock·계약 상태에 맞춰 현행화했다.
 
-- `T-011`, `T-022`, `T-023`, `T-026`, `T-032`, `T-038`, `T-040`, `T-041`, `T-052`가 `미착수`로 남아 있다.
-- 실제로는 일부 Runtime, 계약, Mock 또는 테스트가 존재한다.
-- 반대로 파일이나 Mock이 존재한다고 `완료`로 올릴 수는 없다.
+- `T-011`, `T-022`, `T-023`, `T-026`, `T-032`, `T-038`~`T-041`, `T-052`를 `미착수`에서 `진행 중`으로 변경했다.
+- 각 비고에 Runtime·Mock·후보 증거와 남은 Gate를 기록해 `완료`로 과대 표시하지 않았다.
+- 작업표 실제 집계는 완료 9개·진행 중 19개·미착수 43개·차단 2개, 총 73개·94.5인일이다.
+- Gantt에도 동일한 10개 작업을 `active`로 반영했다.
 
-WBS는 이 문서의 상태 분류를 사용해 현행화해야 한다. 특히 T-022·T-023은 `DONE_WITH_LIMITATION`, T-040·T-041은 `MOCK_ONLY / BACKEND_BLOCKED`, T-052는 `INTEGRATION_BLOCKED`로 보는 것이 현재 증거에 맞다.
+T-022·T-023은 부분 Runtime, T-038·T-039는 Mock·Repository 경계, T-040·T-041은 `MOCK_ONLY / BACKEND_BLOCKED`, T-052는 중간 발표용 제한 시연과 최종 E2E를 비고에서 분리했다. 변경은 아직 Commit 전이므로 WBS Gate는 `FIXED_PENDING_COMMIT`이다.
 
 ## 5. 중간 발표 기준선
 
@@ -214,9 +215,8 @@ WBS는 이 문서의 상태 분류를 사용해 현행화해야 한다. 특히 T
 
 ### 발표 동결 전 필수 해제 조건
 
-1. Data Raw 정책 수정·QA 산출물을 Commit하고 발표 기준 Commit 갱신
-2. Backend·AI·Mobile의 최신 Gate 결과 또는 명시적 환경 차단·발표 제외 승인
-3. WBS 상태 현행화
-4. 중앙 시연 단계표·Fallback·기능 상태표 작성 및 김은진 전달
+1. Backend·AI·Mobile의 최신 Gate 결과 또는 명시적 환경 차단·발표 제외 승인
+2. WBS 현행화 변경을 Commit하고 GitHub Issue 상태와 일치 여부 확인
+3. 중앙 시연 단계표·Fallback·기능 상태표 작성 및 김은진 전달
 
 위 조건이 충족되기 전 종합 상태는 **`INTEGRATION_BLOCKED / PRESENTATION_FREEZE_NOT_APPROVED`**로 유지한다.
