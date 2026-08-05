@@ -2,6 +2,7 @@
 
 package com.skn29.watercare.customer.feature.customer.intake
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -98,8 +99,9 @@ fun SymptomIntakeContent(
 
     WaterCareScreen(title = "문진 시작", onBack = onBack) {
         Surface(
-            shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.primaryContainer,
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         ) {
             Row(
                 modifier = Modifier
@@ -178,7 +180,7 @@ fun SymptomIntakeContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("rawText"),
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(16.dp),
         )
 
         OutlinedTextField(
@@ -187,7 +189,7 @@ fun SymptomIntakeContent(
             label = { Text("언제, 어떤 상황에서 발생했나요?") },
             placeholder = { Text("예: 냉수 출수 시, 설치 후 3일째부터") },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(16.dp),
         )
 
         OutlinedTextField(
@@ -198,7 +200,7 @@ fun SymptomIntakeContent(
                 Text("확인되지 않은 코드는 앱에서 추정하지 않습니다.")
             },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(16.dp),
         )
 
         SectionCard("개발 검증 시나리오") {

@@ -73,8 +73,9 @@ fun CustomerHomeContent(
 
         state.home?.let { home ->
             Surface(
-                shape = RoundedCornerShape(30.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 170.dp).padding(18.dp),
@@ -224,7 +225,7 @@ private fun QuickAction(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier.height(140.dp),
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
@@ -249,7 +250,7 @@ private fun UnavailableAction(
 ) {
     Card(
         modifier = modifier.height(140.dp),
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {

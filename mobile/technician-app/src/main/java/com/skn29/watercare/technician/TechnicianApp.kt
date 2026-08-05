@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -45,6 +46,10 @@ import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.core.ui.components.PendingFeatureCard
+import com.skn29.watercare.core.ui.theme.WaterCaution
+import com.skn29.watercare.core.ui.theme.WaterDanger
+import com.skn29.watercare.core.ui.theme.WaterGeneral
+import com.skn29.watercare.core.ui.theme.WaterGradientBackground
 import com.skn29.watercare.core.ui.theme.WaterOrange
 
 @Composable
@@ -60,8 +65,9 @@ fun TechnicianApp() {
     val technicianViewModel: TechnicianViewModel = viewModel(factory = factory)
     val state by technicianViewModel.state.collectAsStateWithLifecycle()
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+    WaterGradientBackground {
+        Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             TopAppBar(
                 title = {
@@ -82,7 +88,7 @@ fun TechnicianApp() {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
+                    containerColor = Color.Transparent,
                 ),
             )
         },
@@ -113,6 +119,7 @@ fun TechnicianApp() {
                 modifier = Modifier.padding(padding),
             )
         }
+        }
     }
 }
 
@@ -137,8 +144,11 @@ private fun LoginContent(
         )
 
         Card(
-            shape = RoundedCornerShape(22.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         ) {
             Column(
                 modifier = Modifier
@@ -375,7 +385,21 @@ private fun VisitSummaryCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(24.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        colors = CardDefaults.cardColors(
+            containerColor = if (visit.risk == TechnicianVisitRisk.DANGER) {
+                MaterialTheme.colorScheme.errorContainer
+            } else {
+                MaterialTheme.colorScheme.surface
+            },
+        ),
+        border = BorderStroke(
+            1.dp,
+            if (visit.risk == TechnicianVisitRisk.DANGER) {
+                MaterialTheme.colorScheme.error
+            } else {
+                MaterialTheme.colorScheme.outline
+            },
+        ),
     ) {
         Column(
             modifier = Modifier
@@ -444,8 +468,12 @@ private fun ReportContent(
 
         state.selectedReport?.let { report ->
             Surface(
-                shape = RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.tertiaryContainer,
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                border = BorderStroke(
+                    1.dp,
+                    MaterialTheme.colorScheme.outline,
+                ),
             ) {
                 Column(
                     modifier = Modifier
@@ -529,8 +557,11 @@ private fun ReportSection(
     content: @Composable () -> Unit,
 ) {
     Card(
-        shape = RoundedCornerShape(22.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Column(
             modifier = Modifier
@@ -581,19 +612,26 @@ private fun StatusPill(
 private fun RiskPill(
     risk: TechnicianVisitRisk,
 ) {
+    val color = when (risk) {
+        TechnicianVisitRisk.DANGER -> WaterDanger
+        TechnicianVisitRisk.CAUTION -> WaterCaution
+        TechnicianVisitRisk.GENERAL -> WaterGeneral
+        TechnicianVisitRisk.UNKNOWN -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
     Surface(
         shape = RoundedCornerShape(999.dp),
-        color = when (risk) {
-            TechnicianVisitRisk.DANGER -> MaterialTheme.colorScheme.errorContainer
-            TechnicianVisitRisk.CAUTION -> MaterialTheme.colorScheme.tertiaryContainer
-            TechnicianVisitRisk.GENERAL -> MaterialTheme.colorScheme.primaryContainer
-            TechnicianVisitRisk.UNKNOWN -> MaterialTheme.colorScheme.surfaceVariant
-        },
+        color = color.copy(alpha = 0.13f),
+        border = BorderStroke(
+            1.dp,
+            color.copy(alpha = 0.36f),
+        ),
     ) {
         Text(
             "위험도 · ${risk.label}",
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
             style = MaterialTheme.typography.bodySmall,
+            color = color,
             fontWeight = FontWeight.Bold,
         )
     }
@@ -605,8 +643,9 @@ private fun TechnicianHero(
     subtitle: String,
 ) {
     Surface(
-        shape = RoundedCornerShape(30.dp),
-        color = MaterialTheme.colorScheme.tertiaryContainer,
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Row(
             modifier = Modifier

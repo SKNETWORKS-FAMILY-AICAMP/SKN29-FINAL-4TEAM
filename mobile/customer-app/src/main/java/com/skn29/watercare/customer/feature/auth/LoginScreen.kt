@@ -38,8 +38,9 @@ fun LoginScreen(onAuthenticated: (offlinePreview: Boolean) -> Unit) {
 
     WaterCareScreen(title = "정수기 딜러") {
         Surface(
-            shape = RoundedCornerShape(30.dp),
-            color = MaterialTheme.colorScheme.primaryContainer,
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().heightIn(min = 190.dp).padding(18.dp),
@@ -70,7 +71,7 @@ fun LoginScreen(onAuthenticated: (offlinePreview: Boolean) -> Unit) {
         }
 
         Card(
-            shape = RoundedCornerShape(22.dp),
+            shape = RoundedCornerShape(24.dp),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         ) {
             Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {

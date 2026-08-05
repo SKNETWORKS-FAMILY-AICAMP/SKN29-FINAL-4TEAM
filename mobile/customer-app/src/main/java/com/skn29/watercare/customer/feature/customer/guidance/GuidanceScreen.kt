@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -127,9 +128,9 @@ private fun SubmissionReceiptCard(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("submissionReceipt"),
-        shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.primaryContainer,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Column(
             modifier = Modifier
@@ -203,12 +204,20 @@ fun GuidanceContent(
         noEvidence
 
     Surface(
-        shape = RoundedCornerShape(30.dp),
+        shape = RoundedCornerShape(24.dp),
         color = if (dangerous) {
-            MaterialTheme.colorScheme.tertiaryContainer
+            Color.White
         } else {
-            MaterialTheme.colorScheme.primaryContainer
+            MaterialTheme.colorScheme.surfaceVariant
         },
+        border = BorderStroke(
+            1.dp,
+            if (dangerous) {
+                MaterialTheme.colorScheme.error
+            } else {
+                MaterialTheme.colorScheme.outline
+            },
+        ),
     ) {
         Row(
             modifier = Modifier
@@ -245,7 +254,7 @@ fun GuidanceContent(
         }
     }
 
-    SectionCard("1. 지금 해야 할 행동") {
+    SectionCard("1. 지금 해야 할 행동", isDanger = dangerous) {
         Text(
             guidance.nextAction,
             style = MaterialTheme.typography.titleLarge,
@@ -253,7 +262,7 @@ fun GuidanceContent(
         )
     }
 
-    SectionCard("2. 사용 가능 여부") {
+    SectionCard("2. 사용 가능 여부", isDanger = dangerous) {
         StatusBadge(guidance.riskLevel, guidance.usageStatus)
         Text(guidance.usageMessage)
         if (guidance.restrictedFunctions.isNotEmpty()) {
@@ -262,7 +271,7 @@ fun GuidanceContent(
         }
     }
 
-    SectionCard("3. 안전 행동") {
+    SectionCard("3. 안전 행동", isDanger = dangerous) {
         BulletList(
             guidance.safeActions,
             emptyText = if (noEvidence) {
@@ -273,7 +282,7 @@ fun GuidanceContent(
         )
     }
 
-    SectionCard("4. 상담이 필요한 경우") {
+    SectionCard("4. 상담이 필요한 경우", isDanger = dangerous) {
         BulletList(guidance.escalationConditions)
     }
 
@@ -295,7 +304,7 @@ fun GuidanceContent(
         Text(guidance.symptomSummary)
     }
 
-    SectionCard("7. 하지 말아야 할 행동") {
+    SectionCard("7. 하지 말아야 할 행동", isDanger = dangerous) {
         BulletList(guidance.prohibitedActions)
     }
 
@@ -337,8 +346,8 @@ private fun FailureFallback(
     onRetry: () -> Unit,
 ) {
     Surface(
-        shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.primaryContainer,
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Column(
