@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
@@ -11,6 +12,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -32,6 +34,16 @@ object WaterTokens {
     val GlassFill = Color.White.copy(alpha = 0.55f)
     val GlassFillStrong = Color.White.copy(alpha = 0.72f)
     val GlassBorder = Color.White.copy(alpha = 0.65f)
+
+    val GlassButton = Color.White.copy(alpha = 0.34f)
+    val GlassButtonStrong = Color.White.copy(alpha = 0.54f)
+    val GlassDisabled = Color.White.copy(alpha = 0.20f)
+    val GlassHighlight = Color.White.copy(alpha = 0.90f)
+
+    val PearlBlue = Color(0xFFB8DFFF)
+    val PearlLavender = Color(0xFFD9C8FF)
+    val PearlPink = Color(0xFFFFD8EE)
+    val PearlMint = Color(0xFFBDEFE2)
 
     val General = Color(0xFF2E8BA3)
     val Caution = Color(0xFFC08A2E)
@@ -66,10 +78,6 @@ val WaterGeneral = WaterTokens.General
 val WaterCaution = WaterTokens.Caution
 val WaterDanger = WaterTokens.Danger
 
-/*
- * Legacy aliases are intentionally retained so existing feature code keeps
- * compiling while every screen resolves to the shared Liquid Glass tokens.
- */
 val WaterSky = Water300
 val WaterSkyDark = Water500
 val WaterAqua = Water300
@@ -116,28 +124,28 @@ private val WaterColorScheme = lightColorScheme(
 
 private val WaterTypography = Typography(
     headlineMedium = TextStyle(
-        fontSize = 24.sp,
+        fontSize = 25.sp,
         lineHeight = 34.sp,
         fontWeight = FontWeight.SemiBold,
     ),
     headlineSmall = TextStyle(
-        fontSize = 24.sp,
-        lineHeight = 34.sp,
+        fontSize = 23.sp,
+        lineHeight = 32.sp,
         fontWeight = FontWeight.SemiBold,
     ),
     titleLarge = TextStyle(
-        fontSize = 18.sp,
+        fontSize = 19.sp,
         lineHeight = 27.sp,
         fontWeight = FontWeight.SemiBold,
     ),
     titleMedium = TextStyle(
-        fontSize = 18.sp,
-        lineHeight = 27.sp,
+        fontSize = 17.sp,
+        lineHeight = 25.sp,
         fontWeight = FontWeight.SemiBold,
     ),
     titleSmall = TextStyle(
         fontSize = 15.sp,
-        lineHeight = 24.sp,
+        lineHeight = 23.sp,
         fontWeight = FontWeight.SemiBold,
     ),
     bodyLarge = TextStyle(
@@ -147,27 +155,27 @@ private val WaterTypography = Typography(
     ),
     bodyMedium = TextStyle(
         fontSize = 15.sp,
-        lineHeight = 24.sp,
+        lineHeight = 23.sp,
         fontWeight = FontWeight.Normal,
     ),
     bodySmall = TextStyle(
         fontSize = 13.sp,
-        lineHeight = 21.sp,
+        lineHeight = 20.sp,
         fontWeight = FontWeight.Normal,
     ),
     labelLarge = TextStyle(
-        fontSize = 13.sp,
+        fontSize = 14.sp,
         lineHeight = 20.sp,
         fontWeight = FontWeight.SemiBold,
     ),
     labelMedium = TextStyle(
-        fontSize = 11.sp,
+        fontSize = 12.sp,
         lineHeight = 18.sp,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Medium,
     ),
     labelSmall = TextStyle(
         fontSize = 11.sp,
-        lineHeight = 18.sp,
+        lineHeight = 17.sp,
         fontWeight = FontWeight.Normal,
     ),
 )
@@ -191,13 +199,57 @@ fun WaterGradientBackground(
             .background(
                 Brush.linearGradient(
                     colors = listOf(
+                        Color(0xFFF8FBFF),
                         WaterTokens.Water50,
-                        WaterTokens.Water100,
+                        Color(0xFFF7F4FF),
                     ),
                 )
             ),
-        content = content,
-    )
+    ) {
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            WaterTokens.PearlBlue.copy(alpha = 0.32f),
+                            Color.Transparent,
+                        ),
+                        center = Offset(120f, 120f),
+                        radius = 780f,
+                    )
+                )
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            WaterTokens.PearlPink.copy(alpha = 0.24f),
+                            Color.Transparent,
+                        ),
+                        center = Offset(900f, 420f),
+                        radius = 720f,
+                    )
+                )
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            WaterTokens.PearlLavender.copy(alpha = 0.20f),
+                            Color.Transparent,
+                        ),
+                        center = Offset(320f, 1500f),
+                        radius = 900f,
+                    )
+                )
+        )
+        content()
+    }
 }
 
 @Composable

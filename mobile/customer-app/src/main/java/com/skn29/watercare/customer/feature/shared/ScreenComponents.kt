@@ -2,27 +2,19 @@
 
 package com.skn29.watercare.customer.feature.shared
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -41,6 +33,9 @@ import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.ProductSummary
 import com.skn29.watercare.core.model.RiskLevel
 import com.skn29.watercare.core.model.UsageGuidanceStatus
+import com.skn29.watercare.core.ui.components.LiquidGlassButton
+import com.skn29.watercare.core.ui.components.LiquidGlassPanel
+import com.skn29.watercare.core.ui.components.LiquidGlassPill
 import com.skn29.watercare.core.ui.theme.WaterCaution
 import com.skn29.watercare.core.ui.theme.WaterDanger
 import com.skn29.watercare.core.ui.theme.WaterGeneral
@@ -63,7 +58,7 @@ fun WaterCareScreen(
                         Text(
                             title,
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold,
+                            fontWeight = FontWeight.ExtraBold,
                         )
                     },
                     navigationIcon = {
@@ -75,7 +70,7 @@ fun WaterCareScreen(
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color.Transparent,
-                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        scrolledContainerColor = Color.White.copy(alpha = 0.72f),
                     ),
                 )
             },
@@ -101,42 +96,18 @@ fun SectionCard(
     isDanger: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Card(
-        shape = RoundedCornerShape(WaterTokens.RadiusCard),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isDanger) {
-                Color.White
-            } else {
-                MaterialTheme.colorScheme.surface
-            },
-        ),
-        border = BorderStroke(
-            1.dp,
-            if (isDanger) {
+    LiquidGlassPanel(danger = isDanger) {
+        Text(
+            title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.ExtraBold,
+            color = if (isDanger) {
                 MaterialTheme.colorScheme.error
             } else {
-                MaterialTheme.colorScheme.outline
+                MaterialTheme.colorScheme.onSurface
             },
-        ),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Text(
-                title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = if (isDanger) {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
-            )
-            content()
-        }
+        )
+        content()
     }
 }
 
@@ -146,73 +117,40 @@ fun ProductInfoCard(
     questionnaireStatus: String,
     nextCareOn: String,
 ) {
-    Card(
-        shape = RoundedCornerShape(WaterTokens.RadiusCard),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
-        border = BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outline,
-        ),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+    LiquidGlassPanel(strong = true) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            androidx.compose.foundation.layout.Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                if (product.isSynthetic) {
-                    AssistChip(
-                        onClick = {},
-                        label = { Text("합성 데이터") },
-                    )
-                }
-                AssistChip(
-                    onClick = {},
-                    label = { Text(product.managementTypeLabel) },
-                )
+            if (product.isSynthetic) {
+                LiquidGlassPill("합성 데이터")
             }
+            LiquidGlassPill(product.managementTypeLabel)
+        }
 
+        Text(
+            product.modelCode,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.ExtraBold,
+        )
+        Text(
+            product.modelName,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        LiquidGlassPanel(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(14.dp),
+        ) {
             Text(
-                product.modelCode,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
+                "현재 정수기 정보",
+                fontWeight = FontWeight.ExtraBold,
             )
             Text(
-                product.modelName,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                "식별번호 ${product.serialNo}",
+                color = WaterSubText,
             )
-
-            Surface(
-                shape = RoundedCornerShape(WaterTokens.RadiusControl),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                border = BorderStroke(
-                    1.dp,
-                    MaterialTheme.colorScheme.outline,
-                ),
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                    verticalArrangement = Arrangement.spacedBy(5.dp),
-                ) {
-                    Text(
-                        "현재 정수기 정보",
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        "식별번호 ${product.serialNo}",
-                        color = WaterSubText,
-                    )
-                    Text("문진 상태 · $questionnaireStatus")
-                    Text("다음 관리 · $nextCareOn")
-                }
-            }
+            Text("문진 상태 · $questionnaireStatus")
+            Text("다음 관리 · $nextCareOn")
         }
     }
 }
@@ -244,90 +182,56 @@ fun StatusBadge(
         RiskLevel.UNKNOWN -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
-    Surface(
-        shape = RoundedCornerShape(WaterTokens.RadiusPill),
-        color = color.copy(alpha = 0.13f),
-        border = BorderStroke(
-            1.dp,
-            color.copy(alpha = 0.36f),
-        ),
-    ) {
-        Text(
-            "$riskText · $usageText",
-            modifier = Modifier.padding(
-                horizontal = 12.dp,
-                vertical = 7.dp,
-            ),
-            color = color,
-            fontWeight = FontWeight.SemiBold,
-        )
-    }
+    LiquidGlassPill(
+        text = "$riskText · $usageText",
+        tint = color,
+    )
 }
 
 @Composable
 fun EvidenceCard(evidence: EvidenceCardData) {
-    Card(
-        shape = RoundedCornerShape(WaterTokens.RadiusCard),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-        ),
-        border = BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outline,
-        ),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(7.dp),
+    LiquidGlassPanel(strong = true) {
+        val classification = when (
+            evidence.dataClassification.lowercase()
         ) {
-            val classification = when (
-                evidence.dataClassification.lowercase()
-            ) {
-                "official" -> DataClassification.OFFICIAL
-                "team_designed" -> DataClassification.TEAM_DESIGNED
-                "synthetic" -> DataClassification.SYNTHETIC
-                else -> DataClassification.UNKNOWN
-            }
+            "official" -> DataClassification.OFFICIAL
+            "team_designed" -> DataClassification.TEAM_DESIGNED
+            "synthetic" -> DataClassification.SYNTHETIC
+            else -> DataClassification.UNKNOWN
+        }
 
-            Text(
-                when (classification) {
-                    DataClassification.OFFICIAL -> "공식 근거"
-                    DataClassification.TEAM_DESIGNED -> "팀 설계 자료"
-                    DataClassification.SYNTHETIC -> "합성 검증 자료"
-                    DataClassification.UNKNOWN -> "분류 확인 필요"
-                },
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                evidence.documentName,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                "버전 ${evidence.version}${
-                    evidence.page?.let { " · ${it}쪽" }.orEmpty()
-                }"
-            )
-            Text(evidence.structuredSummary)
-            Text(
-                "검증 상태 · ${evidence.verificationStatus}",
-                style = MaterialTheme.typography.bodySmall,
-            )
-
-            val officialUrl = evidence.officialUrl
-            if (!officialUrl.isNullOrBlank()) {
-                val uriHandler = LocalUriHandler.current
-                OutlinedButton(
-                    onClick = {
-                        uriHandler.openUri(officialUrl)
-                    },
-                ) {
-                    Text("공식 문서 열기")
-                }
+        LiquidGlassPill(
+            when (classification) {
+                DataClassification.OFFICIAL -> "공식 근거"
+                DataClassification.TEAM_DESIGNED -> "팀 설계 자료"
+                DataClassification.SYNTHETIC -> "합성 검증 자료"
+                DataClassification.UNKNOWN -> "분류 확인 필요"
             }
+        )
+        Text(
+            evidence.documentName,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.ExtraBold,
+        )
+        Text(
+            "버전 ${evidence.version}${
+                evidence.page?.let { " · ${it}쪽" }.orEmpty()
+            }"
+        )
+        Text(evidence.structuredSummary)
+        Text(
+            "검증 상태 · ${evidence.verificationStatus}",
+            style = MaterialTheme.typography.bodySmall,
+        )
+
+        val officialUrl = evidence.officialUrl
+        if (!officialUrl.isNullOrBlank()) {
+            val uriHandler = LocalUriHandler.current
+            LiquidGlassButton(
+                text = "공식 문서 열기",
+                onClick = { uriHandler.openUri(officialUrl) },
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }
@@ -356,18 +260,15 @@ fun WorkflowActionButton(
     onClick: () -> Unit,
 ) {
     when (action.normalizedCode) {
-        InquiryActionLabels.REQUEST_CONSULTATION -> Button(
+        InquiryActionLabels.REQUEST_CONSULTATION -> LiquidGlassButton(
+            text = action.displayLabel,
             onClick = onClick,
             enabled = enabled,
+            accent = true,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("requestConsultation"),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-            ),
-        ) {
-            Text(action.displayLabel)
-        }
+        )
 
         else -> Unit
     }
