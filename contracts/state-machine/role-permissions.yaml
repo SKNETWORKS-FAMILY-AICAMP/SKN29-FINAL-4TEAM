@@ -112,6 +112,111 @@ roles:
   - EXPOSE_INTERNAL_EVENT_AS_PUBLIC_API
   - BYPASS_STATE_VERSION
   - WRITE_STATE_WITHOUT_GUARDS
+g2_projection_contract:
+  decision_id: DEC-007
+  decision_status: FINAL_APPROVED
+  scope: G2_CONSULTANT_VISIT_MACHINE_CONTRACT
+  projection_authority: BACKEND
+  data_policy:
+    development_test_presentation_data: SYNTHETIC_ONLY
+    actual_personal_data: DENY
+    inaccessible_field_behavior: OMIT
+    null_placeholder_for_denied_field: DENY
+    pii_in_url_error_log_cache_analytics: DENY
+  object_access:
+    consultant_inquiry:
+      required_role: CONSULTANT
+      required_assignment: inquiry.assigned_consultant_id == actor.user_id
+      assignment_failure:
+        http_status: 404
+        error_code: RESOURCE_NOT_FOUND
+    technician_visit:
+      required_role: TECHNICIAN
+      required_assignment: visit.assigned_technician_id == actor.user_id
+      require_synthetic_actor: true
+      assignment_failure:
+        http_status: 404
+        error_code: RESOURCE_NOT_FOUND
+  projections:
+    consultant_inquiry_list:
+      schema_ref: ../api/components/schemas/inquiry/ConsultantInquiryListItem.yaml
+      required_scope: ASSIGNED_INQUIRIES
+      data_source: SYNTHETIC_FIXTURE
+      allow_fields:
+      - inquiry_id
+      - inquiry_code
+      - status
+      - state_version
+      - risk_level
+      - priority
+      - symptom_summary
+      - customer_display_name_masked
+      - product_model
+      - current_assignee_type
+      - received_at
+      - updated_at
+      - waiting_seconds
+      - allowed_actions
+      deny_fields:
+      - customer_phone
+      - customer_address
+      - evidence
+    consultant_inquiry_detail:
+      schema_ref: ../api/components/schemas/inquiry/ConsultantInquiryDetail.yaml
+      required_scope: ASSIGNED_INQUIRIES
+      data_source: SYNTHETIC_FIXTURE
+      customer_projection:
+        required_constant:
+          is_synthetic: true
+        allow_fields:
+        - display_name
+        - phone
+        deny_fields:
+        - address
+        - service_address
+        - email
+      synthetic_technician_projection:
+        schema_ref: ../api/components/schemas/visit/SyntheticTechnicianProjection.yaml
+        visibility_condition: visit.assigned_technician_id is not null
+        required_constant:
+          is_synthetic: true
+        allow_fields:
+        - technician_id
+        - display_name
+        - phone
+    assigned_technician_visit:
+      required_scope: ASSIGNED_VISITS
+      data_source: SYNTHETIC_FIXTURE
+      visibility_condition: visit.assigned_technician_id == actor.user_id
+      customer_projection:
+        required_constant:
+          is_synthetic: true
+        allow_fields:
+        - display_name
+        - phone
+        - service_address
+      allow_fields:
+      - visit_id
+      - inquiry_id
+      - visit_handoff
+      - visit_schedule
+      - allowed_actions
+      - state_version
+      deny_fields:
+      - unrelated_customer_consultations
+      - evidence
+  global_deny_fields:
+  - actual_customer_name
+  - actual_customer_phone
+  - actual_customer_address
+  - actual_customer_email
+  - resident_registration_number
+  - payment_information
+  - raw_source_storage_path
+  - vector_chunk_id
+  - vector_embedding
+  - model_internal_reasoning
+  - internal_guard_failure_detail
 field_visibility:
   customer:
     allow:
@@ -132,27 +237,32 @@ field_visibility:
     - internal_guard_failure_detail
   consultant:
     allow:
-    - customer_service_profile
-    - inquiry_details
-    - validated_ai_draft
-    - official_evidence_display
-    - consultation_history
+    - assigned_inquiry_projection
+    - synthetic_customer_projection
+    - synthetic_technician_projection
+    - approved_consultation_projection
+    - date_only_visit_projection
     - allowed_actions
     - state_version
     deny:
+    - actual_personal_data
+    - unassigned_inquiries
+    - evidence
     - raw_source_storage_path
     - vector_embedding
     - model_internal_reasoning
   technician:
     allow:
     - visit_handoff
-    - confirmed_previsit_report
-    - product_service_history
-    - visit_schedule
+    - date_only_visit_schedule
+    - synthetic_customer_projection
     - allowed_actions
     - state_version
     deny:
+    - actual_personal_data
+    - unassigned_visits
     - unrelated_customer_consultations
+    - evidence
     - raw_source_storage_path
     - vector_chunk_id
     - model_internal_reasoning
@@ -162,3 +272,5 @@ validation_expectations:
 - SYSTEM_EVENT는 SYSTEM 역할 외에 허용할 수 없다.
 - FINALIZE_INQUIRY는 CONSULTANT와 TECHNICIAN에게만 허용하되 마지막 처리 담당자 Guard를 통과해야 한다.
 - 명시되지 않은 역할·이벤트 조합은 거부한다.
+- G2 Projection은 실제 개인정보 대신 합성 데이터만 사용하고, 허용 목록에 없는 필드는 null이 아니라 생략한다.
+- 비담당 문의·방문은 RESOURCE_NOT_FOUND 404로 은닉한다.

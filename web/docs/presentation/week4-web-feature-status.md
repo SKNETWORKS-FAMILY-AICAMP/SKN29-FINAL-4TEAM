@@ -1,22 +1,55 @@
 # 4주차 Web 기능 상태표
 
-기준일: 2026-08-03
+기준일: 2026-08-05
 
 | 순서 | 작업 | 상태 | 쉬운 설명 |
 | --- | --- | --- | --- |
-| 1 | 최종 소스 실행·테스트 기준선 | 완료 | 26개 파일, 109개 테스트와 Lint·Build 통과 |
+| 1 | 최종 소스 실행·테스트 기준선 | 완료 | 27개 파일, 113개 테스트와 Lint·Build 통과 |
 | 2 | 공식 Runtime·폐기 경로 구분 | 완료 | 현재 경로를 하나로 정하고 과거 파일 20개 삭제 |
-| 3 | 상담사 목록·상세 실제 API | Backend 차단 | 상담사용 URL과 응답 모양이 아직 없음 |
-| 4 | 상담 저장·409·allowed_actions | 부분 완료 | Mock 검증 완료, 실제 저장 계약은 비어 있음 |
-| 5 | 방문 전환·일정 실제 저장 | Backend 차단 | 방문 계약 파일이 비어 있음 |
-| 6 | 8월 5일 발표 기준 Web 동결 | 준비 중 | 시연 문서 준비, 기준 Commit과 3회 반복 확인 필요 |
+| 3 | 상담사 목록·상세 실제 API | 검토 완료·Backend 차단 | Web 회신 완료, PM 승인·Active 계약 대기 |
+| 4 | 상담 저장·409·allowed_actions | Mock 검증·Backend 차단 | 구현 준비 완료, 실제 저장 계약은 비어 있음 |
+| 5 | 방문 전환·일정 실제 저장 | 검토 완료·Backend 차단 | 수정안 수용, PM 승인·Active 계약 대기 |
+| 6 | 8월 5일 발표 기준 Web 동결 | 완료 | Source Commit `1d1011d`, 기준·Fallback·수치 문서와 3회 반복 확인 완료 |
 | 7 | 발표 후 회귀 수정·5주차 인계 | 예정 | 발표 피드백 이후 진행 |
 
 발표에서는 `완료`, `Mock 검증`, `Backend 차단`, `예정`을 구분해서 설명한다.
 
+## 발표 자료
+
+- [발표 기준](./week4-web-presentation-baseline.md)
+- [시연 순서](./week4-web-demo-script.md)
+- [발표 체크리스트](./week4-web-demo-checklist.md)
+- [Fallback 계획](./week4-web-fallback-plan.md)
+- [담당자 전달 수치](./week4-web-presentation-metrics.md)
+- [2026-08-04 작업 기록](./week4-web-work-log-20260804.md)
+
+## 2026-08-04 구현 준비
+
+- DEC-WEB-BE-001·004·009 Web 재검토 회신 완료
+- 목록 → 상세 → 상담 → 방문의 단계별 구현·증거 계획 완료
+- 방문 `visit: null`, 날짜·기사 상태, 409 복구 매핑 완료
+- 재로그인·15분 메모리 Draft 복구 테스트 계획 완료
+- PM `FINAL_APPROVED`와 Active OpenAPI 전까지 실제 코드 변경 보류
+
+## 2026-08-04 회귀 확인
+
+- Test 26 files·109 cases, Lint, Production Build 통과
+- 상담사 목록 → 처리 중 문의 → `INQ-20260704-0013` 상세 표시 확인
+- 방문 필요 선택 뒤 방문 희망 일시·기사 전달 메모·주소 확인 영역 표시 확인
+- 화면의 Mock 안내 확인, Browser Console Error 0
+- 실제 API·DB 저장 성공은 아님
+
+## 2026-08-05 발표 동결 확인
+
+- `npm.cmd ci` 성공, 241 packages 설치·242 packages 검사
+- Test 27 files·113 cases, Lint, Production Build 118 modules 통과
+- 공식 대표 문의 `DEMO-INQ-002` 완료 상세·출수량 저하·매뉴얼 38쪽 근거 직접 조회 Test 통과
+- 대표 문의는 최종 `RESOLVED` 상태를 유지하고 409·방문 행동은 전용 합성 문의로 구분
+- 발표 Source Commit `1d1011d` 고정
+
 ## 2026-08-03 화면 확인
 
 - 로컬 Web 실행 성공
-- 상담사 목록에서 `처리 중인 문의` 탭과 대표 문의 `INQ-20260704-0013` 확인
+- 상담사 목록에서 `처리 중인 문의` 탭과 행동 시연용 문의 `INQ-20260704-0013` 확인
 - 문의 상세·상담·공식 근거·방문 영역 표시 확인
 - 이 확인은 Mock 화면 점검이며 실제 Backend API 연동 완료를 뜻하지 않음

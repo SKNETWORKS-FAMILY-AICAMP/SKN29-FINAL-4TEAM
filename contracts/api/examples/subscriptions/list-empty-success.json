@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": {
+    "items": [],
+    "page": 1,
+    "size": 20,
+    "total": 0
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "30000000-0000-4000-8000-000000000002"
+  }
+}

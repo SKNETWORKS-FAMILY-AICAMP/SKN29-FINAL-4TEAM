@@ -30,6 +30,7 @@ import ApiIntegrationPanel from "../../features/runtime-status/components/ApiInt
 import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntimeStatus";
 import "./OperationsDashboardPage.css";
 import "./OperationsDashboardTheme.css";
+import "../../common/styles/water-glass-theme.css";
 
 const OPERATIONS_INQUIRIES =
   consultantWorkspaceRepository.listAllInquiries();
@@ -162,7 +163,7 @@ export default function OperationsDashboardPage() {
         <div className="operations-brand">
           <span>W</span>
           <div>
-            <strong>워터케어 ONE</strong>
+            <strong>Water Bridge</strong>
             <small>정수기 고객 케어 운영</small>
           </div>
         </div>

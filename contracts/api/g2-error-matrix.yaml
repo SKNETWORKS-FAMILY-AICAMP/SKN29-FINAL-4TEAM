@@ -1,0 +1,62 @@
+contract:
+  name: g2-error-matrix
+  version: 1.0.0
+  status: G2_ACTIVE_CANDIDATE
+  owner: BACKEND_DB
+  correlation_header: X-Correlation-ID
+  response_wrapper: ApiResponse
+
+errors:
+  - http_status: 400
+    code: INVALID_REQUEST
+    applies_to: [READ, WRITE]
+    condition: JSON 또는 Query 형식이 잘못됨
+    retry_policy: 입력 수정 후 새 요청
+  - http_status: 401
+    code: AUTH_REQUIRED
+    applies_to: [READ, WRITE]
+    condition: 인증이 없거나 만료됨
+    retry_policy: 로그인 또는 Token 갱신 후 재요청
+  - http_status: 403
+    code: FORBIDDEN
+    applies_to: [READ, WRITE]
+    condition: 역할 자체가 Operation을 실행할 수 없음
+    retry_policy: 역할·권한 확인
+  - http_status: 404
+    code: RESOURCE_NOT_FOUND
+    applies_to: [READ, WRITE]
+    condition: 객체가 없거나 현재 사용자에게 배정되지 않아 존재를 숨겨야 함
+    retry_policy: 목록으로 복귀
+  - http_status: 409
+    code: STATE-CONFLICT-01
+    applies_to: [WRITE]
+    condition: 요청 state_version과 현재 Version 불일치
+    details_shape: [current_status, current_state_version, allowed_actions]
+    retry_policy: 최신 상태 조회 후 사용자 확인을 거쳐 새 Key로 재요청
+  - http_status: 409
+    code: DUPLICATE-EVENT-01
+    applies_to: [WRITE]
+    condition: 동일 Idempotency-Key를 다른 Payload에 재사용
+    details_shape: []
+    retry_policy: 새 Idempotency-Key 사용
+  - http_status: 422
+    code: VALIDATION_ERROR
+    applies_to: [READ, WRITE]
+    condition: Field, date-only 또는 업무 Guard 검증 실패
+    retry_policy: 입력값 또는 선행 업무 상태 수정
+  - http_status: 500
+    code: INTERNAL_ERROR
+    applies_to: [READ, WRITE]
+    condition: 처리되지 않은 내부 오류
+    retry_policy: correlation_id와 함께 장애 보고
+
+object_concealment:
+  wrong_role: 403
+  missing_object: 404
+  unassigned_object: 404
+  inactive_assignment: 404
+
+workflow_conflict_wire:
+  schema: WorkflowConflictResponse
+  state_conflict_allowed_actions_shape: array_of_string_codes
+  normal_success_allowed_actions_shape: array_of_AllowedAction_objects

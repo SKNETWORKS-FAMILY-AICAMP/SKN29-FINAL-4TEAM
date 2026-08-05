@@ -1,66 +1,39 @@
-# Week 3 Mobile Test Result
+# 3주차 모바일 테스트 결과
 
-- Verified: 2026-07-31 15:56:02 +09:00
-- Local branch: jeonghyun
-- GitHub connection/push: not performed
+## 검증 명령
 
-## Automated verification
+```cmd
+gradlew.bat :customer-app:clean :technician-app:clean :customer-app:testDebugUnitTest :customer-app:connectedDebugAndroidTest :customer-app:assembleDebug :technician-app:assembleDebug
+```
 
-`cmd
-gradlew.bat :core:test :customer-app:clean :technician-app:clean :customer-app:testDebugUnitTest :customer-app:connectedDebugAndroidTest :customer-app:assembleDebug :technician-app:assembleDebug
-`
+## 테스트 및 빌드 결과
 
-- Build/test verification: PASS: reused the successful V3 build/test outputs.
-- Core tests: PASS
-- Customer unit tests: PASS
-- Customer connected Compose UI tests: PASS
-- Customer Debug APK: PASS
-- Technician Debug APK: PASS
-- Backend: SKIPPED
-- Device installation: SKIPPED
-- Backend source diff: PASS, no changes
-- Contracts diff: PASS, no changes
-- Sensitive/generated file check: PASS
+- 고객 앱 단위 테스트: 통과
+- 고객 앱 Compose UI 연결 테스트: 통과
+- 고객 앱 Debug APK 빌드: 통과
+- 기사 앱 Debug APK 빌드: 통과
+- 백엔드 및 API 계약 보호 경로 변경 포함 여부: 없음
 
-## Environment
+## 테스트 기기
 
-### Java
+- 모델명: `SM_F721N`
+- ADB 시리얼: `R3CT8076D7B`
 
-`	ext
-openjdk version "17.0.19" 2026-04-21 LTS
-OpenJDK Runtime Environment Microsoft-13877129 (build 17.0.19+10-LTS)
-OpenJDK 64-Bit Server VM Microsoft-13877129 (build 17.0.19+10-LTS, mixed mode, sharing)
-`
+## 백엔드 연동 결과
 
-### Gradle
+- PostgreSQL 컨테이너 실행: 통과
+- Django 시스템 검사: 통과
+- Django 마이그레이션: 통과
+- 데모 데이터 준비: 통과
+- Health API 확인: 통과
+- 고객 데모 로그인: 통과
+- 기사 데모 로그인: 통과
+- 실제 기기 포트 연결: `tcp:8000 -> tcp:8000`
+- 모바일 백엔드 주소: `http://127.0.0.1:8000/`
 
-`	ext
-------------------------------------------------------------
-Gradle 9.5.0
-------------------------------------------------------------
+## 실행 환경
 
-Build time:    2026-04-28 12:05:30 UTC
-Revision:      3fe117d68f3907790f3809f121aa36303a9151f8
-
-Kotlin:        2.3.20
-Groovy:        4.0.29
-Ant:           Apache Ant(TM) version 1.10.15 compiled on August 25 2024
-Launcher JVM:  17.0.19 (Microsoft 17.0.19+10-LTS)
-Daemon JVM:    Compatible with Java 21, any vendor, nativeImageCapable=false (from gradle/gradle-daemon-jvm.properties)
-OS:            Windows 11 10.0 amd64
-`
-
-### Android device
-
-`	ext
-Device verification skipped.
-`
-
-## Verified customer flow
-
-- CUST-01 customer home
-- CUST-02 multiple symptom input and submit action
-- CUST-04 guidance rendering
-- Danger consultation action visible
-- Danger resolved action hidden
-- General, caution, danger, no-evidence, AI-failure, and network-failure scenarios
+- Java: OpenJDK 17.0.19
+- Gradle: 9.5.0
+- Kotlin: 2.3.20
+- 운영체제: Windows 11

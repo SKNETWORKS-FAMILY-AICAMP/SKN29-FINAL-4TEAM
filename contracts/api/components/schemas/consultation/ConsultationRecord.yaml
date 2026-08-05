@@ -1,5 +1,34 @@
 title: ConsultationRecord
 type: object
 description: 상담 기록
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required:
+  - consultation_id
+  - result_code
+  - summary
+  - consultation_note
+  - additional_check
+  - customer_guidance
+  - usage_guidance_status
+properties:
+  consultation_id:
+    type: string
+    format: uuid
+  result_code:
+    type: string
+    enum: [PENDING, COMPLETED_NO_VISIT, VISIT_REQUIRED, REOPENED_FOLLOWUP]
+  summary:
+    $ref: ./ConsultationSummary.yaml
+  consultation_note:
+    type: [string, "null"]
+    maxLength: 8000
+  additional_check:
+    type: [string, "null"]
+    maxLength: 4000
+  customer_guidance:
+    type: [string, "null"]
+    maxLength: 2000
+  usage_guidance_status:
+    type: [string, "null"]
+    enum: [NORMAL, PARTIAL_STOP, TOTAL_STOP, PENDING_CONSULTATION, null]

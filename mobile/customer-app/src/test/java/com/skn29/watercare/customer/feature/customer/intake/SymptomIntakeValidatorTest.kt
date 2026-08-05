@@ -13,7 +13,17 @@ class SymptomIntakeValidatorTest {
     }
 
     @Test
-    fun selectedTopicWithoutRawText_isAccepted() {
-        assertTrue(SymptomIntakeValidator.validate(setOf(SymptomTopic.LOW_FLOW), "").isValid)
+    fun selectedTopicWithoutRawText_isRejected() {
+        assertFalse(SymptomIntakeValidator.validate(setOf(SymptomTopic.LOW_FLOW), "").isValid)
+    }
+
+    @Test
+    fun selectedTopicWithRawText_isAccepted() {
+        assertTrue(
+            SymptomIntakeValidator.validate(
+                setOf(SymptomTopic.LOW_FLOW),
+                "냉수 출수량이 평소보다 줄었습니다.",
+            ).isValid
+        )
     }
 }

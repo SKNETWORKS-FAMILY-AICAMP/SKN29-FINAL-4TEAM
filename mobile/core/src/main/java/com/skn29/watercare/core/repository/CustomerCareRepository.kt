@@ -1,6 +1,9 @@
 package com.skn29.watercare.core.repository
 
+import com.skn29.watercare.core.config.CustomerCareRuntimeConfig
+import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.ApiResult
+import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.CustomerHomeData
 import com.skn29.watercare.core.model.ActiveInquirySummary
 import com.skn29.watercare.core.model.EvidenceCardData
@@ -22,12 +25,15 @@ interface CustomerCareRepository {
  * Contract-aligned deterministic fixture used until questionnaire/guidance endpoints are routed.
  * It never contains real customer data and is intentionally named Fake.
  */
-class FakeCustomerCareRepository : CustomerCareRepository {
+class FakeCustomerCareRepository(
+    private val fixtureSubscriptionId: String =
+        CustomerCareRuntimeConfig.DEFAULT_FIXTURE_SUBSCRIPTION_ID,
+) : CustomerCareRepository {
     override suspend fun getHome(): ApiResult<CustomerHomeData> {
         delay(180)
         return ApiResult.Success(
             CustomerHomeData(
-                subscriptionId = "00000000-0000-4000-8000-000000000101",
+                subscriptionId = fixtureSubscriptionId,
                 product = ProductSummary(
                     productId = "00000000-0000-4000-8000-000000000201",
                     modelCode = "WPUJAC104DWH",
@@ -98,6 +104,7 @@ class FakeCustomerCareRepository : CustomerCareRepository {
             MockScenario.CAUTION -> ApiResult.Success(cautionGuidance(inquiryId))
             MockScenario.DANGER -> ApiResult.Success(dangerGuidance(inquiryId))
             MockScenario.NO_EVIDENCE -> ApiResult.Success(noEvidenceGuidance(inquiryId))
+            MockScenario.BACKEND_PROCESSING -> ApiResult.Success(backendProcessingGuidance(inquiryId))
             MockScenario.NORMAL -> ApiResult.Success(normalGuidance(inquiryId))
         }
     }
@@ -113,6 +120,22 @@ class FakeCustomerCareRepository : CustomerCareRepository {
             else -> MockScenario.NORMAL
         }
     }
+
+    private fun backendProcessingGuidance(inquiryId: String) = GuidanceData(
+        inquiryId = inquiryId,
+        inquiryCode = "BACKEND-INQUIRY",
+        symptomSummary = "문의가 실제 Backend에 접수되었습니다. AI 안내 조회 API는 아직 준비 중입니다.",
+        riskLevel = "unknown",
+        usageGuidanceStatus = "PENDING_CONSULTATION",
+        usageGuidanceMessage = "공식 안내 결과가 준비될 때까지 사용 가능 여부를 임의로 판단하지 않습니다.",
+        safeActions = emptyList(),
+        escalationConditions = listOf("누수·전기·화상 위험이 있으면 즉시 사용을 중지하고 고객센터에 연락하세요."),
+        prohibitedActions = listOf("제품을 분해하거나 오류 의미를 임의로 추정하지 마세요."),
+        nextAction = "Backend 처리 상태 확인",
+        requiresConsultation = false,
+        evidence = emptyList(),
+        allowedActions = emptyList(),
+    )
 
     private fun normalGuidance(inquiryId: String) = GuidanceData(
         inquiryId = inquiryId,
@@ -137,7 +160,7 @@ class FakeCustomerCareRepository : CustomerCareRepository {
                 officialUrl = null,
             )
         ),
-        allowedActions = listOf("REQUEST_CONSULTATION", "CONFIRM_GUIDANCE", "MARK_RESOLVED"),
+        allowedActions = listOf(AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION, label = "상담 요청")),
     )
 
 
@@ -164,7 +187,7 @@ class FakeCustomerCareRepository : CustomerCareRepository {
                 dataClassification = "official",
             )
         ),
-        allowedActions = listOf("REQUEST_CONSULTATION", "CONFIRM_GUIDANCE"),
+        allowedActions = listOf(AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION, label = "상담 요청")),
     )
 
     private fun dangerGuidance(inquiryId: String) = GuidanceData(
@@ -190,7 +213,7 @@ class FakeCustomerCareRepository : CustomerCareRepository {
                 dataClassification = "official",
             )
         ),
-        allowedActions = listOf("REQUEST_CONSULTATION", "MARK_RESOLVED", "CLOSE_INQUIRY"),
+        allowedActions = listOf(AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION, label = "상담 요청")),
     )
 
     private fun noEvidenceGuidance(inquiryId: String) = GuidanceData(
@@ -206,6 +229,6 @@ class FakeCustomerCareRepository : CustomerCareRepository {
         nextAction = "상담 확인",
         requiresConsultation = false,
         evidence = emptyList(),
-        allowedActions = listOf("REQUEST_CONSULTATION", "MARK_RESOLVED"),
+        allowedActions = listOf(AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION, label = "상담 요청")),
     )
 }

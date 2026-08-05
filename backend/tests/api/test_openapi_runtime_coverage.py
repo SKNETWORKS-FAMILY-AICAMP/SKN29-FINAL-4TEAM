@@ -11,6 +11,8 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 OPENAPI_PATH = REPOSITORY_ROOT / "contracts" / "api" / "openapi.yaml"
 HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
 INQUIRY_ID = "00000000-0000-4000-8000-000000000001"
+VISIT_ID = "00000000-0000-4000-8000-000000000002"
+SUBSCRIPTION_ID = "00000000-0000-4000-8000-000000000003"
 
 EXPECTED_OPERATIONS = {
     ("/health", "get"): {
@@ -48,12 +50,43 @@ EXPECTED_OPERATIONS = {
         "url_name": "me",
         "view_name": "MeView",
     },
+    ("/me/subscriptions", "get"): {
+        "operation_id": "listMySubscriptions",
+        "contract_status": "CONFIRMED",
+        "runtime_path": "/api/v1/me/subscriptions",
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/me/subscriptions/{subscription_id}", "get"): {
+        "operation_id": "getMySubscription",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/me/subscriptions/{SUBSCRIPTION_ID}"
+        ),
+        "url_name": None,
+        "view_name": None,
+    },
     ("/inquiries", "post"): {
         "operation_id": "startInquiry",
         "contract_status": "CONFIRMED",
         "runtime_path": "/api/v1/inquiries",
         "url_name": "inquiry-create",
         "view_name": "CreateInquiryView",
+    },
+    ("/inquiries", "get"): {
+        "operation_id": "listConsultantInquiries",
+        "contract_status": "CONFIRMED",
+        "runtime_path": "/api/v1/inquiries",
+        "url_name": "inquiry-create",
+        "view_name": "CreateInquiryView",
+        "runtime_method": False,
+    },
+    ("/inquiries/{id}", "get"): {
+        "operation_id": "getConsultantInquiryDetail",
+        "contract_status": "CONFIRMED",
+        "runtime_path": f"/api/v1/inquiries/{INQUIRY_ID}",
+        "url_name": None,
+        "view_name": None,
     },
     ("/inquiries/{id}/cancel", "post"): {
         "operation_id": "cancelInquiry",
@@ -84,6 +117,81 @@ EXPECTED_OPERATIONS = {
         "runtime_path": (
             f"/api/v1/inquiries/{INQUIRY_ID}/action-results"
         ),
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/inquiries/{id}/start-consultation", "post"): {
+        "operation_id": "startConsultation",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/inquiries/{INQUIRY_ID}/start-consultation"
+        ),
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/inquiries/{id}/consultation-summary", "patch"): {
+        "operation_id": "updateConsultationSummary",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/inquiries/{INQUIRY_ID}/consultation-summary"
+        ),
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/inquiries/{id}/consultation-summary/confirm", "post"): {
+        "operation_id": "confirmConsultationSummary",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/inquiries/{INQUIRY_ID}/consultation-summary/confirm"
+        ),
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/inquiries/{id}/complete-consultation", "post"): {
+        "operation_id": "completeConsultation",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/inquiries/{INQUIRY_ID}/complete-consultation"
+        ),
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/inquiries/{id}/visit-review", "post"): {
+        "operation_id": "requestVisitReview",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/inquiries/{INQUIRY_ID}/visit-review"
+        ),
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/inquiries/{id}/visits", "post"): {
+        "operation_id": "createVisitRequest",
+        "contract_status": "CONFIRMED",
+        "runtime_path": f"/api/v1/inquiries/{INQUIRY_ID}/visits",
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/inquiries/{id}/visit-not-needed", "post"): {
+        "operation_id": "markVisitNotNeeded",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/inquiries/{INQUIRY_ID}/visit-not-needed"
+        ),
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/visits/{visit_id}/schedule", "patch"): {
+        "operation_id": "updateVisitSchedule",
+        "contract_status": "CONFIRMED",
+        "runtime_path": f"/api/v1/visits/{VISIT_ID}/schedule",
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/visits/{visit_id}/confirm", "post"): {
+        "operation_id": "confirmVisit",
+        "contract_status": "CONFIRMED",
+        "runtime_path": f"/api/v1/visits/{VISIT_ID}/confirm",
         "url_name": None,
         "view_name": None,
     },
@@ -134,11 +242,11 @@ def runtime_view_name(match) -> str:
     return match.func.__name__
 
 
-def test_openapi_operation_inventory_is_exactly_ten():
+def test_openapi_operation_inventory_is_exactly_twenty_three():
     operations = collect_operations()
 
     assert set(operations) == set(EXPECTED_OPERATIONS)
-    assert len(operations) == 10
+    assert len(operations) == 23
     assert {
         operation["operationId"] for operation in operations.values()
     } == {
@@ -158,7 +266,9 @@ def test_eight_operations_resolve_to_expected_runtime_views():
     implemented = [
         expected
         for expected in EXPECTED_OPERATIONS.values()
-        if expected["url_name"] is not None
+        if expected.get(
+            "runtime_method", expected["url_name"] is not None
+        )
     ]
 
     assert len(implemented) == 8
@@ -168,15 +278,25 @@ def test_eight_operations_resolve_to_expected_runtime_views():
         assert runtime_view_name(match) == expected["view_name"]
 
 
-def test_two_openapi_only_operations_resolve_to_api_not_found():
+def test_fifteen_openapi_only_operations_have_no_runtime_method():
     openapi_only = [
-        expected
-        for expected in EXPECTED_OPERATIONS.values()
-        if expected["url_name"] is None
+        (key, expected)
+        for key, expected in EXPECTED_OPERATIONS.items()
+        if not expected.get(
+            "runtime_method", expected["url_name"] is not None
+        )
     ]
 
-    assert len(openapi_only) == 2
-    for expected in openapi_only:
+    assert len(openapi_only) == 15
+    for (_, method), expected in openapi_only:
         match = resolve(expected["runtime_path"])
-        assert match.url_name == "api-not-found"
-        assert runtime_view_name(match) == "api_not_found"
+        if expected["url_name"] is None:
+            assert match.url_name == "api-not-found"
+            assert runtime_view_name(match) == "api_not_found"
+            continue
+
+        assert match.url_name == expected["url_name"]
+        assert runtime_view_name(match) == expected["view_name"]
+        view_class = getattr(match.func, "view_class", None)
+        assert view_class is not None
+        assert getattr(view_class, method, None) is None

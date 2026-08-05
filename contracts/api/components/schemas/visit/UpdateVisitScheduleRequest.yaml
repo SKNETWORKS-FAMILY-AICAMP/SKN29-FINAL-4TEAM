@@ -1,32 +1,23 @@
 title: UpdateVisitScheduleRequest
 type: object
-description: T-005 OWNER 기준 방문 일정 변경 요청
+description: 담당 상담사가 합성 기사와 date-only 일정을 저장하는 요청
+x-contract-status: CONFIRMED
 additionalProperties: false
 required:
-  - schedule_status
+  - state_version
+  - synthetic_technician_id
+  - preferred_date
+  - confirmed_date
 properties:
+  state_version:
+    type: integer
+    minimum: 1
   preferred_date:
-    type:
-      - string
-      - "null"
+    type: [string, "null"]
     format: date
   confirmed_date:
-    type:
-      - string
-      - "null"
+    type: [string, "null"]
     format: date
-  schedule_status:
-    type: string
-    enum:
-      - ASSIGNING
-      - SCHEDULING
-      - CONFIRMED
-      - IN_PROGRESS
-      - COMPLETED
-      - FOLLOW_UP_REQUIRED
-      - CANCELLED
   synthetic_technician_id:
-    type:
-      - string
-      - "null"
-    maxLength: 48
+    type: string
+    format: uuid

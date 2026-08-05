@@ -14,7 +14,9 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.DataClassification
+import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.EvidenceCardData
 import com.skn29.watercare.core.model.ProductSummary
 import com.skn29.watercare.core.model.RiskLevel
@@ -171,24 +173,14 @@ fun BulletList(items: List<String>, emptyText: String = "해당 항목이 없습
 }
 
 @Composable
-fun WorkflowActionButton(action: String, enabled: Boolean = true, onClick: () -> Unit) {
-    when (action.uppercase()) {
-        "REQUEST_CONSULTATION" -> Button(
+fun WorkflowActionButton(action: AllowedAction, enabled: Boolean = true, onClick: () -> Unit) {
+    when (action.normalizedCode) {
+        InquiryActionLabels.REQUEST_CONSULTATION -> Button(
             onClick = onClick,
             enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = WaterOrange),
-        ) { Text("상담 요청") }
-        "CONFIRM_GUIDANCE" -> OutlinedButton(
-            onClick = onClick,
-            enabled = enabled,
-            modifier = Modifier.fillMaxWidth(),
-        ) { Text("안내 확인") }
-        "MARK_RESOLVED", "RESOLVE" -> OutlinedButton(
-            onClick = onClick,
-            enabled = enabled,
-            modifier = Modifier.fillMaxWidth().testTag("resolvedAction"),
-        ) { Text("증상 해결됨") }
+        ) { Text(action.displayLabel) }
         else -> Unit
     }
 }

@@ -1,12 +1,55 @@
 package com.skn29.watercare.customer.navigation
 
+import android.net.Uri
+import com.skn29.watercare.core.model.AllowedAction
+
 object CustomerRoute {
     const val LOGIN = "login"
     const val HOME = "home?offline={offline}"
     const val INTAKE = "intake/{subscriptionId}"
-    const val GUIDANCE = "guidance/{inquiryId}/{scenario}"
+    const val GUIDANCE =
+        "guidance/{inquiryId}/{scenario}" +
+            "?inquiryCode={inquiryCode}" +
+            "&statusCode={statusCode}" +
+            "&stateVersion={stateVersion}" +
+            "&idempotentReplay={idempotentReplay}" +
+            "&allowedActions={allowedActions}"
 
     fun home(offline: Boolean) = "home?offline=$offline"
-    fun intake(subscriptionId: String) = "intake/$subscriptionId"
-    fun guidance(inquiryId: String, scenario: String) = "guidance/$inquiryId/$scenario"
+
+    fun intake(subscriptionId: String) =
+        "intake/${Uri.encode(subscriptionId)}"
+
+    fun guidance(
+        inquiryId: String,
+        scenario: String,
+        inquiryCode: String = "",
+        statusCode: String? = null,
+        stateVersion: Int? = null,
+        idempotentReplay: Boolean? = null,
+        allowedActions: List<AllowedAction> = emptyList(),
+    ): String {
+        val actionCodes = allowedActions
+            .map(AllowedAction::normalizedCode)
+            .filter(String::isNotEmpty)
+            .distinct()
+            .joinToString(",")
+
+        return buildString {
+            append("guidance/")
+            append(Uri.encode(inquiryId))
+            append("/")
+            append(Uri.encode(scenario))
+            append("?inquiryCode=")
+            append(Uri.encode(inquiryCode))
+            append("&statusCode=")
+            append(Uri.encode(statusCode.orEmpty()))
+            append("&stateVersion=")
+            append(stateVersion ?: -1)
+            append("&idempotentReplay=")
+            append(idempotentReplay ?: false)
+            append("&allowedActions=")
+            append(Uri.encode(actionCodes))
+        }
+    }
 }

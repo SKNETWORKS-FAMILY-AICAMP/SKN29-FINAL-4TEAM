@@ -1,5 +1,33 @@
 title: AllowedAction
 type: object
 description: 허용 행동
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required:
+  - code
+  - label
+  - operation_id
+  - style
+  - requires_confirmation
+  - confirmation_message
+properties:
+  code:
+    type: string
+    pattern: ^[A-Z][A-Z0-9_]*$
+    maxLength: 80
+  label:
+    type: string
+    minLength: 1
+    maxLength: 80
+  operation_id:
+    type: string
+    pattern: ^[a-z][A-Za-z0-9]*$
+    maxLength: 80
+  style:
+    type: string
+    enum: [PRIMARY, SECONDARY, DESTRUCTIVE]
+  requires_confirmation:
+    type: boolean
+  confirmation_message:
+    type: [string, "null"]
+    maxLength: 200

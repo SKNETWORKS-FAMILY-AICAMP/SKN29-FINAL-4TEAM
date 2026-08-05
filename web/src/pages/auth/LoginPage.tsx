@@ -59,7 +59,7 @@ export default function LoginPage() {
     <main className="system-page">
       <section className="system-card" aria-labelledby="login-title">
         <small>DEMO AUTH · {appEnv.useMockApi ? "MOCK" : "API"}</small>
-        <h1 id="login-title">워터케어 ONE 로그인</h1>
+        <h1 id="login-title">Water Bridge 로그인</h1>
         <p>
           {appEnv.useMockApi
             ? "인증 API 연결 전 사용하는 합성 계정 로그인입니다. 실제 비밀번호와 개인정보를 입력하지 마세요."

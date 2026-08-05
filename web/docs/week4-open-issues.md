@@ -4,14 +4,24 @@
 
 | 우선순위 | 이슈 | 현재 상태 | 다음 행동·협업 |
 | --- | --- | --- | --- |
-| P0 | 상담사 목록·상세 API 없음 | `BACKEND_BLOCKED` | 최지용과 Endpoint·DTO·오류 계약 확정 |
-| P0 | 상담 저장 계약 비어 있음 | `consultations.yaml = {}` | 최지용·윤승혁과 행동별 Payload, `allowed_actions`, `state_version` 확정 |
-| P0 | 기사 배정·방문 일정 계약 비어 있음 | `visits.yaml = {}` | Endpoint·기사 목록·일정 저장/확정 응답 합의 |
+| P0 | 상담사 목록·상세 Active API 없음 | Web `REVIEWED`, `IMPLEMENTATION_HOLD` | PM 승인 뒤 Active Endpoint·DTO·오류 계약 반영 |
+| P0 | 상담 저장 Active 계약 비어 있음 | `consultations.yaml = {}` | PM 승인 뒤 행동별 Payload, `allowed_actions`, `state_version` 반영 |
+| P0 | 기사 배정·방문 일정 Active 계약 비어 있음 | `visits.yaml = {}` | PM 승인 뒤 방문 공통 Wrapper·기사·일정 계약 반영 |
 | P1 | 실제 Remote Repository 없음 | Mock Repository 경계와 모드 상태 구현 완료 | 계약 확정 후 Remote 구현 추가 |
 | P1 | 운영 집계 계약 비어 있음 | `operations.yaml = {}` | 상담사 P0 완료 뒤 진행 |
-| P1 | npm high 취약점 2건 | 미해결 | 공개 Registry 전송 승인 후 상세 Audit 또는 담당자 환경에서 확인 |
+| P1 | npm high 취약점 3건 | 미해결 | 상세 Audit 또는 팀의 안전한 환경에서 Package·Upgrade 영향 확인 |
 | P2 | CSS 대형·중복 | 동작 중, 정리 보류 | 발표 이후 시각 회귀 확인과 함께 분리 |
-| P2 | 다른 팀원 재현 확인 | 양정현 README 검토 완료, 실제 명령 실행 여부 미확인 | 양정현 또는 다른 팀원이 README 명령으로 교차 실행 |
+| 완료 | 다른 팀원 재현 확인 | README 기준 교차 실행 성공 확인 | 추가 행동 없음 |
+
+## 2026-08-04 Web 단독 준비 완료
+
+- DEC-WEB-BE-001·004·009 재검토 회신 작성·Push
+- 단계별 화면–API 필드 매핑과 수정 파일 순서 작성
+- 실제·Mock·Contract 테스트 분리 계획 작성
+- 401·403·404·409·422·5xx·Network 오류 UX 기준 작성
+- 승인 전 Endpoint·Payload를 코드에 넣지 않는 구현 Gate 기록
+
+상세 계획은 [실제 API 구현 준비표](./week4-web-implementation-readiness.md)와 [계약 테스트 계획](./week4-web-contract-test-plan.md)을 따른다.
 
 ## API 차단 상세
 
@@ -21,8 +31,10 @@
 - `consultantWorkspaceRepository.ts`에서 Mock Source와 연동 상태를 한곳에서 관리
 - `VITE_USE_MOCK_API=true`: `MOCK_ONLY`
 - `VITE_USE_MOCK_API=false`: 실제 Endpoint를 추측하지 않고 `BACKEND_BLOCKED`
+- 초기 Mock 목록·상세의 상태·위험도·우선순위·담당자·허용 행동을 명시적인 Mock Backend Projection으로 분리
+- 화면 View Model은 위 Projection 값을 그대로 사용하며 업무 상태를 다시 계산하지 않음
 - ESLint로 삭제한 과거 Feature 경로와 Mock 원천의 신규 직접 Import 차단
-- Repository 단위 테스트 3개 추가
+- Repository와 Mock Backend Projection 단위 테스트 추가
 
 ### 상담사 목록·상세
 
@@ -67,6 +79,6 @@
 
 ## 보안·의존성
 
-`npm.cmd ci`는 high severity 취약점 2건을 보고했다. 현재 환경에서는 상세 `npm audit`가 private workspace의 의존성 Metadata를 공개 npm Registry로 전송하므로 자동 실행하지 않았다. 사용자가 승인하거나 팀의 안전한 CI/개발 환경에서 상세 Package와 Upgrade 영향을 확인해야 한다.
+public npm Registry 사용 승인 후 `npm.cmd ci`를 실행했고 high severity 취약점 3건을 보고했다. 설치와 자동 검증은 성공했지만 상세 Package·Upgrade 영향 검토는 별도 작업으로 남긴다.
 
 `npm audit fix --force`는 실행하지 않는다.
