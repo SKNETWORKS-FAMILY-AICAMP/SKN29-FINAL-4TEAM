@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Water Care Support API
-  version: 0.6.0
+  version: 0.7.0
   description: 정수기 구독 고객 케어 및 A/S 업무 지원 시스템 API 계약
 servers:
   - url: /api/v1
@@ -14,6 +14,10 @@ paths:
     $ref: ./paths/auth.yaml#/~1auth~1logout
   /me:
     $ref: ./paths/auth.yaml#/~1me
+  /me/subscriptions:
+    $ref: ./paths/products.yaml#/~1me~1subscriptions
+  /me/subscriptions/{subscription_id}:
+    $ref: ./paths/products.yaml#/~1me~1subscriptions~1{subscription_id}
   /inquiries:
     $ref: ./paths/inquiries.yaml#/~1inquiries
   /inquiries/{id}:

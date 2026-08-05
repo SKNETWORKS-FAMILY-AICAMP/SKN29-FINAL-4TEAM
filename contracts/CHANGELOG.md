@@ -1,5 +1,22 @@
 # Contracts Changelog
 
+## 2026-08-05 — T-018 R1 고객 본인 구독 목록·상세 계약
+
+### Added
+
+- 고객 본인 구독 목록 `GET /me/subscriptions`와 상세 `GET /me/subscriptions/{subscription_id}`
+- `WPUJAC104DWH` 활성 제품 모델·ACTIVE 구독만 반환하는 서버 Scope
+- Product·Subscription 공개 DTO, 목록·상세 Wrapper와 정상·빈 목록·검증 오류 예시
+- 완료 CareRecord의 `performed_on` 우선, `completed_at`의 `Asia/Seoul` 업무일 Fallback 계약
+- T-018 전용 정적 Contract Test와 OpenAPI Operation Inventory 23개 기준
+
+### Boundary
+
+- 문의 가능 여부는 T-022 Guard, `allowed_actions`는 T-023 State Machine으로 분리한다.
+- 내부 PK·계약번호·시리얼·설치 주소·고객 개인정보·원본 제품 Features는 공개하지 않는다.
+- 이번 변경은 기계 계약과 Contract Test만 포함한다. Backend Runtime·Migration·DB·Seed·Web·Mobile 구현은 시작하지 않는다.
+- 두 T-018 Operation은 `x-runtime-status: NOT_IMPLEMENTED`이며 별도 PM Runtime Gate 전까지 이 상태를 유지한다.
+
 ## 2026-08-04 — G2 상담·방문 기계 계약 QA 보완
 
 ### Added

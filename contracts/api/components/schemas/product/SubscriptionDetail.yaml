@@ -1,6 +1,6 @@
-title: SubscriptionSummary
+title: SubscriptionDetail
 type: object
-description: T-018 R1 고객 본인 ACTIVE 구독 목록·상세 공통 Projection
+description: T-018 R1 고객 본인 ACTIVE 구독 상세 Projection
 x-contract-status: CONFIRMED
 additionalProperties: false
 required:
@@ -8,6 +8,7 @@ required:
   - status_code
   - management_type_code
   - started_on
+  - ended_on
   - last_care_on
   - next_care_on
   - product
@@ -19,13 +20,16 @@ properties:
   status_code:
     type: string
     const: ACTIVE
-    description: R1은 ACTIVE 구독만 반환
   management_type_code:
     type: string
     enum: [SELF_MANAGED, VISIT_CARE]
   started_on:
     type: string
     format: date
+  ended_on:
+    type: [string, "null"]
+    format: date
+    description: ACTIVE 구독에서는 일반적으로 null이며 상세에서만 Key를 유지
   last_care_on:
     type: [string, "null"]
     format: date

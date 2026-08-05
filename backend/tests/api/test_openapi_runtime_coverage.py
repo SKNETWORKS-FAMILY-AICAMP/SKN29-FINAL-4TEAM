@@ -12,6 +12,7 @@ OPENAPI_PATH = REPOSITORY_ROOT / "contracts" / "api" / "openapi.yaml"
 HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
 INQUIRY_ID = "00000000-0000-4000-8000-000000000001"
 VISIT_ID = "00000000-0000-4000-8000-000000000002"
+SUBSCRIPTION_ID = "00000000-0000-4000-8000-000000000003"
 
 EXPECTED_OPERATIONS = {
     ("/health", "get"): {
@@ -48,6 +49,22 @@ EXPECTED_OPERATIONS = {
         "runtime_path": "/api/v1/me",
         "url_name": "me",
         "view_name": "MeView",
+    },
+    ("/me/subscriptions", "get"): {
+        "operation_id": "listMySubscriptions",
+        "contract_status": "CONFIRMED",
+        "runtime_path": "/api/v1/me/subscriptions",
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/me/subscriptions/{subscription_id}", "get"): {
+        "operation_id": "getMySubscription",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/me/subscriptions/{SUBSCRIPTION_ID}"
+        ),
+        "url_name": None,
+        "view_name": None,
     },
     ("/inquiries", "post"): {
         "operation_id": "startInquiry",
@@ -225,11 +242,11 @@ def runtime_view_name(match) -> str:
     return match.func.__name__
 
 
-def test_openapi_operation_inventory_is_exactly_twenty_one():
+def test_openapi_operation_inventory_is_exactly_twenty_three():
     operations = collect_operations()
 
     assert set(operations) == set(EXPECTED_OPERATIONS)
-    assert len(operations) == 21
+    assert len(operations) == 23
     assert {
         operation["operationId"] for operation in operations.values()
     } == {
@@ -261,7 +278,7 @@ def test_eight_operations_resolve_to_expected_runtime_views():
         assert runtime_view_name(match) == expected["view_name"]
 
 
-def test_thirteen_openapi_only_operations_have_no_runtime_method():
+def test_fifteen_openapi_only_operations_have_no_runtime_method():
     openapi_only = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -270,7 +287,7 @@ def test_thirteen_openapi_only_operations_have_no_runtime_method():
         )
     ]
 
-    assert len(openapi_only) == 13
+    assert len(openapi_only) == 15
     for (_, method), expected in openapi_only:
         match = resolve(expected["runtime_path"])
         if expected["url_name"] is None:
