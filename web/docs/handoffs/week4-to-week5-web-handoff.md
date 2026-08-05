@@ -8,6 +8,9 @@
 - 공식 Runtime 경로와 Repository 경계 정리
 - 사용하지 않는 과거 구현 20개 파일 삭제
 - Node.js·npm·Mock 실행 안내 정리
+- 발표 Source Commit `1d1011d` 고정
+- `DEMO-INQ-002` 완료 상세·공식 매뉴얼 38쪽 근거 직접 조회 검증
+- 27 Test files·113 Test cases, Lint, Production Build 118 modules 성공
 
 ## Mock 검증
 
@@ -27,7 +30,6 @@
 
 ## 발표 후 채울 내용
 
-- 발표 기준 Commit
 - 실제 API 연결 완료 Endpoint
 - 발표 피드백과 회귀 오류
 - 최종 Test·Lint·Build 결과

@@ -50,10 +50,10 @@
 
 ### 수치 대체 자료
 
-- Test: 26 files, 109 tests 성공
+- Test: 27 files, 113 tests 성공
 - 실패·Skip: 0
 - Lint 오류: 0
-- Production Build: 117 modules
+- Production Build: 118 modules
 - 발표 캡처: 5장
 - 짧은 Fallback 애니메이션: 1개
 
