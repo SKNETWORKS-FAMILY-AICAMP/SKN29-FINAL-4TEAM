@@ -2,6 +2,7 @@ package com.skn29.watercare.core.ui.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -36,13 +37,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -167,10 +175,11 @@ fun ReferenceDashboardScaffold(
                 Text(
                     title,
                     color = palette.textStrong,
-                    fontSize = 32.sp,
-                    lineHeight = 38.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = (-1.3).sp,
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 28.sp,
+                    lineHeight = 34.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = (-0.3).sp,
                 )
                 ReferenceDashboardHeader(
                     roleLabel = roleLabel,
@@ -195,7 +204,7 @@ fun ReferenceWelcomeCard(
     ReferenceGlassPanel(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 224.dp),
+            .heightIn(min = 208.dp),
         palette = palette,
         strong = true,
         contentPadding = PaddingValues(18.dp),
@@ -203,7 +212,7 @@ fun ReferenceWelcomeCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(190.dp),
+                .height(176.dp),
         ) {
             Column(
                 modifier = Modifier
@@ -214,10 +223,11 @@ fun ReferenceWelcomeCard(
                 Text(
                     title,
                     color = palette.textStrong,
-                    fontSize = 29.sp,
-                    lineHeight = 35.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = (-0.8).sp,
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 24.sp,
+                    lineHeight = 31.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = (-0.2).sp,
                 )
                 Text(
                     subtitle,
@@ -230,10 +240,10 @@ fun ReferenceWelcomeCard(
                 painter = painterResource(imageRes),
                 contentDescription = null,
                 modifier = Modifier
-                    .size(176.dp)
+                    .size(156.dp)
                     .align(Alignment.CenterEnd)
                     .graphicsLayer {
-                        translationX = 16.dp.toPx()
+                        translationX = 10.dp.toPx()
                     },
                 contentScale = ContentScale.Fit,
             )
@@ -289,7 +299,7 @@ fun ReferenceCompactBanner(
                         palette.accent
                     },
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.ExtraBold,
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Text(
                     message,
@@ -322,18 +332,18 @@ fun ReferenceDashboardHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ReferencePill(
-            text = "♙  $roleLabel ⌄",
+        ReferenceRoleChip(
+            roleLabel = roleLabel,
             palette = palette,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
             ReferenceSquareIconButton(
-                symbol = "♢",
+                icon = ReferenceHeaderIcon.Notification,
                 palette = palette,
                 onClick = onNotification,
             )
             ReferenceSquareIconButton(
-                symbol = "⌕",
+                icon = ReferenceHeaderIcon.Support,
                 palette = palette,
                 onClick = onSupport,
             )
@@ -357,7 +367,7 @@ fun ReferenceHeroCard(
     ReferenceGlassPanel(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 246.dp),
+            .heightIn(min = 226.dp),
         palette = palette,
         strong = true,
         contentPadding = PaddingValues(18.dp),
@@ -365,11 +375,11 @@ fun ReferenceHeroCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(210.dp),
+                .height(192.dp),
         ) {
             Box(
                 modifier = Modifier
-                    .size(190.dp)
+                    .size(174.dp)
                     .align(Alignment.BottomEnd)
                     .clip(CircleShape)
                     .background(
@@ -384,17 +394,18 @@ fun ReferenceHeroCard(
             )
             Column(
                 modifier = Modifier
-                    .fillMaxWidth(0.61f)
+                    .fillMaxWidth(0.64f)
                     .align(Alignment.CenterStart),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
                     greeting,
                     color = palette.textStrong,
-                    fontSize = 25.sp,
-                    lineHeight = 31.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = (-0.6).sp,
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 22.sp,
+                    lineHeight = 29.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = (-0.2).sp,
                 )
                 Text(
                     subtitle,
@@ -412,9 +423,10 @@ fun ReferenceHeroCard(
                     Text(
                         metricValue,
                         color = palette.textStrong,
-                        fontSize = 38.sp,
-                        lineHeight = 42.sp,
-                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 34.sp,
+                        lineHeight = 39.sp,
+                        fontWeight = FontWeight.Bold,
                     )
                     Text(
                         metricUnit,
@@ -439,11 +451,11 @@ fun ReferenceHeroCard(
                 painter = painterResource(imageRes),
                 contentDescription = null,
                 modifier = Modifier
-                    .size(176.dp)
+                    .size(158.dp)
                     .align(Alignment.CenterEnd)
                     .graphicsLayer {
-                        translationX = 12.dp.toPx()
-                        translationY = 7.dp.toPx()
+                        translationX = 8.dp.toPx()
+                        translationY = 4.dp.toPx()
                     },
                 contentScale = ContentScale.Fit,
             )
@@ -465,10 +477,11 @@ fun ReferenceSectionHeader(
         Text(
             title,
             color = palette.textStrong,
-            fontSize = 21.sp,
-            lineHeight = 26.sp,
-            fontWeight = FontWeight.Black,
-            letterSpacing = (-0.4).sp,
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 19.sp,
+            lineHeight = 24.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = (-0.1).sp,
         )
         if (!trailing.isNullOrBlank()) {
             Text(
@@ -562,7 +575,7 @@ fun ReferenceDetailCard(
                         title,
                         color = palette.textStrong,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Black,
+                        fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -669,7 +682,7 @@ fun ReferenceBottomNavigation(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .height(58.dp)
+                        .height(56.dp)
                         .clip(RoundedCornerShape(17.dp))
                         .clickable(
                             role = Role.Button,
@@ -713,7 +726,7 @@ fun ReferenceBottomNavigation(
                         },
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = if (item.selected) {
-                            FontWeight.ExtraBold
+                            FontWeight.SemiBold
                         } else {
                             FontWeight.Medium
                         },
@@ -733,8 +746,8 @@ fun ReferenceGlassPanel(
     contentPadding: PaddingValues = PaddingValues(16.dp),
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val shape = RoundedCornerShape(26.dp)
-    val fillAlpha = if (strong) 0.76f else 0.58f
+    val shape = RoundedCornerShape(24.dp)
+    val fillAlpha = if (strong) 0.70f else 0.54f
     val borderColor = if (danger) {
         palette.danger
     } else {
@@ -744,7 +757,7 @@ fun ReferenceGlassPanel(
     Column(
         modifier = modifier
             .shadow(
-                elevation = if (danger) 5.dp else 9.dp,
+                elevation = if (danger) 4.dp else 6.dp,
                 shape = shape,
                 clip = false,
             )
@@ -759,7 +772,7 @@ fun ReferenceGlassPanel(
                         listOf(
                             Color.White.copy(alpha = fillAlpha),
                             Color.White.copy(alpha = fillAlpha - 0.12f),
-                            palette.accentSoftSecondary.copy(alpha = 0.14f),
+                            palette.accentSoftSecondary.copy(alpha = 0.10f),
                         )
                     )
                 }
@@ -856,23 +869,121 @@ fun ReferenceGlassButton(
             } else {
                 MaterialTheme.typography.labelLarge
             },
-            fontWeight = FontWeight.ExtraBold,
+            fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
         )
     }
 }
 
+private enum class ReferenceHeaderIcon {
+    Notification,
+    Support,
+}
+
+@Composable
+private fun ReferenceRoleChip(
+    roleLabel: String,
+    palette: ReferenceDashboardPalette,
+) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(Color.White.copy(alpha = 0.72f))
+            .border(
+                BorderStroke(
+                    1.dp,
+                    Color.White.copy(alpha = 0.92f),
+                ),
+                RoundedCornerShape(999.dp),
+            )
+            .padding(
+                horizontal = 12.dp,
+                vertical = 8.dp,
+            ),
+        horizontalArrangement = Arrangement.spacedBy(7.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Canvas(modifier = Modifier.size(16.dp)) {
+            val strokeWidth = 1.7.dp.toPx()
+            drawCircle(
+                color = palette.accent,
+                radius = size.minDimension * 0.17f,
+                center = Offset(
+                    x = size.width * 0.50f,
+                    y = size.height * 0.30f,
+                ),
+                style = Stroke(width = strokeWidth),
+            )
+            drawArc(
+                color = palette.accent,
+                startAngle = 205f,
+                sweepAngle = 130f,
+                useCenter = false,
+                topLeft = Offset(
+                    x = size.width * 0.20f,
+                    y = size.height * 0.48f,
+                ),
+                size = Size(
+                    width = size.width * 0.60f,
+                    height = size.height * 0.45f,
+                ),
+                style = Stroke(
+                    width = strokeWidth,
+                    cap = StrokeCap.Round,
+                ),
+            )
+        }
+        Text(
+            roleLabel,
+            color = palette.accent,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+        )
+        Canvas(modifier = Modifier.size(10.dp)) {
+            val strokeWidth = 1.5.dp.toPx()
+            drawLine(
+                color = palette.accent,
+                start = Offset(
+                    x = size.width * 0.20f,
+                    y = size.height * 0.36f,
+                ),
+                end = Offset(
+                    x = size.width * 0.50f,
+                    y = size.height * 0.66f,
+                ),
+                strokeWidth = strokeWidth,
+                cap = StrokeCap.Round,
+            )
+            drawLine(
+                color = palette.accent,
+                start = Offset(
+                    x = size.width * 0.50f,
+                    y = size.height * 0.66f,
+                ),
+                end = Offset(
+                    x = size.width * 0.80f,
+                    y = size.height * 0.36f,
+                ),
+                strokeWidth = strokeWidth,
+                cap = StrokeCap.Round,
+            )
+        }
+    }
+}
+
 @Composable
 private fun ReferenceSquareIconButton(
-    symbol: String,
+    icon: ReferenceHeaderIcon,
     palette: ReferenceDashboardPalette,
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(17.dp)
     val interactionSource = remember { MutableInteractionSource() }
+
     Box(
         modifier = Modifier
-            .size(46.dp)
+            .size(44.dp)
             .clip(shape)
             .clickable(
                 role = Role.Button,
@@ -883,8 +994,8 @@ private fun ReferenceSquareIconButton(
             .background(
                 Brush.linearGradient(
                     listOf(
-                        Color.White.copy(alpha = 0.82f),
-                        palette.accentSoft.copy(alpha = 0.18f),
+                        Color.White.copy(alpha = 0.80f),
+                        palette.accentSoft.copy(alpha = 0.14f),
                     )
                 )
             )
@@ -897,12 +1008,149 @@ private fun ReferenceSquareIconButton(
             ),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            symbol,
-            color = palette.textStrong,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-        )
+        Canvas(modifier = Modifier.size(21.dp)) {
+            val strokeWidth = 1.8.dp.toPx()
+            val stroke = Stroke(
+                width = strokeWidth,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round,
+            )
+
+            when (icon) {
+                ReferenceHeaderIcon.Notification -> {
+                    val bell = Path().apply {
+                        moveTo(
+                            x = size.width * 0.28f,
+                            y = size.height * 0.68f,
+                        )
+                        cubicTo(
+                            x1 = size.width * 0.34f,
+                            y1 = size.height * 0.58f,
+                            x2 = size.width * 0.34f,
+                            y2 = size.height * 0.48f,
+                            x3 = size.width * 0.34f,
+                            y3 = size.height * 0.39f,
+                        )
+                        cubicTo(
+                            x1 = size.width * 0.34f,
+                            y1 = size.height * 0.18f,
+                            x2 = size.width * 0.66f,
+                            y2 = size.height * 0.18f,
+                            x3 = size.width * 0.66f,
+                            y3 = size.height * 0.39f,
+                        )
+                        cubicTo(
+                            x1 = size.width * 0.66f,
+                            y1 = size.height * 0.48f,
+                            x2 = size.width * 0.66f,
+                            y2 = size.height * 0.58f,
+                            x3 = size.width * 0.72f,
+                            y3 = size.height * 0.68f,
+                        )
+                    }
+                    drawPath(
+                        path = bell,
+                        color = palette.textStrong,
+                        style = stroke,
+                    )
+                    drawLine(
+                        color = palette.textStrong,
+                        start = Offset(
+                            x = size.width * 0.24f,
+                            y = size.height * 0.70f,
+                        ),
+                        end = Offset(
+                            x = size.width * 0.76f,
+                            y = size.height * 0.70f,
+                        ),
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Round,
+                    )
+                    drawArc(
+                        color = palette.textStrong,
+                        startAngle = 15f,
+                        sweepAngle = 150f,
+                        useCenter = false,
+                        topLeft = Offset(
+                            x = size.width * 0.42f,
+                            y = size.height * 0.69f,
+                        ),
+                        size = Size(
+                            width = size.width * 0.16f,
+                            height = size.height * 0.14f,
+                        ),
+                        style = stroke,
+                    )
+                }
+
+                ReferenceHeaderIcon.Support -> {
+                    drawArc(
+                        color = palette.textStrong,
+                        startAngle = 180f,
+                        sweepAngle = 180f,
+                        useCenter = false,
+                        topLeft = Offset(
+                            x = size.width * 0.18f,
+                            y = size.height * 0.18f,
+                        ),
+                        size = Size(
+                            width = size.width * 0.64f,
+                            height = size.height * 0.64f,
+                        ),
+                        style = stroke,
+                    )
+                    drawLine(
+                        color = palette.textStrong,
+                        start = Offset(
+                            x = size.width * 0.20f,
+                            y = size.height * 0.50f,
+                        ),
+                        end = Offset(
+                            x = size.width * 0.20f,
+                            y = size.height * 0.72f,
+                        ),
+                        strokeWidth = strokeWidth * 1.8f,
+                        cap = StrokeCap.Round,
+                    )
+                    drawLine(
+                        color = palette.textStrong,
+                        start = Offset(
+                            x = size.width * 0.80f,
+                            y = size.height * 0.50f,
+                        ),
+                        end = Offset(
+                            x = size.width * 0.80f,
+                            y = size.height * 0.72f,
+                        ),
+                        strokeWidth = strokeWidth * 1.8f,
+                        cap = StrokeCap.Round,
+                    )
+                    drawArc(
+                        color = palette.textStrong,
+                        startAngle = 0f,
+                        sweepAngle = 95f,
+                        useCenter = false,
+                        topLeft = Offset(
+                            x = size.width * 0.50f,
+                            y = size.height * 0.55f,
+                        ),
+                        size = Size(
+                            width = size.width * 0.31f,
+                            height = size.height * 0.28f,
+                        ),
+                        style = stroke,
+                    )
+                    drawCircle(
+                        color = palette.textStrong,
+                        radius = strokeWidth,
+                        center = Offset(
+                            x = size.width * 0.51f,
+                            y = size.height * 0.82f,
+                        ),
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -913,7 +1161,7 @@ private fun ReferenceStatusTile(
     modifier: Modifier = Modifier,
 ) {
     ReferenceGlassPanel(
-        modifier = modifier.height(112.dp),
+        modifier = modifier.height(106.dp),
         palette = palette,
         contentPadding = PaddingValues(7.dp),
     ) {
@@ -925,7 +1173,7 @@ private fun ReferenceStatusTile(
             Image(
                 painter = painterResource(item.iconRes),
                 contentDescription = item.label,
-                modifier = Modifier.size(38.dp),
+                modifier = Modifier.size(36.dp),
             )
             Text(
                 item.label,
@@ -942,9 +1190,10 @@ private fun ReferenceStatusTile(
                 } else {
                     palette.danger
                 },
-                fontSize = 15.sp,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 14.sp,
                 lineHeight = 18.sp,
-                fontWeight = FontWeight.Black,
+                fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -969,7 +1218,7 @@ private fun ReferenceActionTile(
     Column(
         modifier = modifier
             .then(tagModifier)
-            .height(112.dp)
+            .height(108.dp)
             .clip(RoundedCornerShape(22.dp))
             .clickable(
                 enabled = item.enabled,
@@ -1008,7 +1257,7 @@ private fun ReferenceActionTile(
         Image(
             painter = painterResource(item.iconRes),
             contentDescription = item.label,
-            modifier = Modifier.size(43.dp),
+            modifier = Modifier.size(40.dp),
             alpha = if (item.enabled) 1f else 0.45f,
         )
         Text(
@@ -1020,7 +1269,7 @@ private fun ReferenceActionTile(
                 palette.textMuted
             },
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.ExtraBold,
+            fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -1029,8 +1278,8 @@ private fun ReferenceActionTile(
             Text(
                 item.subtitle,
                 color = palette.textMuted,
-                fontSize = 9.sp,
-                lineHeight = 11.sp,
+                fontSize = 10.sp,
+                lineHeight = 13.sp,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -1099,7 +1348,7 @@ private fun ReferencePill(
             ),
         color = palette.accent,
         style = MaterialTheme.typography.labelSmall,
-        fontWeight = FontWeight.ExtraBold,
+        fontWeight = FontWeight.Medium,
     )
 }
 

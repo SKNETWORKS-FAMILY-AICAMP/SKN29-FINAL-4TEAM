@@ -15,6 +15,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -123,59 +124,73 @@ private val WaterColorScheme = lightColorScheme(
 
 private val WaterTypography = Typography(
     headlineMedium = TextStyle(
-        fontSize = 25.sp,
-        lineHeight = 34.sp,
-        fontWeight = FontWeight.SemiBold,
-    ),
-    headlineSmall = TextStyle(
-        fontSize = 23.sp,
+        fontFamily = FontFamily.SansSerif,
+        fontSize = 24.sp,
         lineHeight = 32.sp,
         fontWeight = FontWeight.SemiBold,
+        letterSpacing = (-0.2).sp,
+    ),
+    headlineSmall = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontSize = 21.sp,
+        lineHeight = 29.sp,
+        fontWeight = FontWeight.SemiBold,
+        letterSpacing = (-0.1).sp,
     ),
     titleLarge = TextStyle(
-        fontSize = 19.sp,
-        lineHeight = 27.sp,
+        fontFamily = FontFamily.SansSerif,
+        fontSize = 18.sp,
+        lineHeight = 25.sp,
         fontWeight = FontWeight.SemiBold,
+        letterSpacing = (-0.1).sp,
     ),
     titleMedium = TextStyle(
-        fontSize = 17.sp,
-        lineHeight = 25.sp,
+        fontFamily = FontFamily.SansSerif,
+        fontSize = 16.sp,
+        lineHeight = 23.sp,
         fontWeight = FontWeight.SemiBold,
     ),
     titleSmall = TextStyle(
-        fontSize = 15.sp,
-        lineHeight = 23.sp,
-        fontWeight = FontWeight.SemiBold,
+        fontFamily = FontFamily.SansSerif,
+        fontSize = 14.sp,
+        lineHeight = 21.sp,
+        fontWeight = FontWeight.Medium,
     ),
     bodyLarge = TextStyle(
+        fontFamily = FontFamily.SansSerif,
         fontSize = 15.sp,
-        lineHeight = 24.sp,
+        lineHeight = 23.sp,
         fontWeight = FontWeight.Normal,
     ),
     bodyMedium = TextStyle(
-        fontSize = 15.sp,
-        lineHeight = 23.sp,
+        fontFamily = FontFamily.SansSerif,
+        fontSize = 14.sp,
+        lineHeight = 22.sp,
         fontWeight = FontWeight.Normal,
     ),
     bodySmall = TextStyle(
-        fontSize = 13.sp,
-        lineHeight = 20.sp,
+        fontFamily = FontFamily.SansSerif,
+        fontSize = 12.sp,
+        lineHeight = 19.sp,
         fontWeight = FontWeight.Normal,
     ),
     labelLarge = TextStyle(
+        fontFamily = FontFamily.SansSerif,
         fontSize = 14.sp,
-        lineHeight = 20.sp,
+        lineHeight = 19.sp,
         fontWeight = FontWeight.SemiBold,
     ),
     labelMedium = TextStyle(
+        fontFamily = FontFamily.SansSerif,
         fontSize = 12.sp,
-        lineHeight = 18.sp,
+        lineHeight = 17.sp,
         fontWeight = FontWeight.Medium,
     ),
     labelSmall = TextStyle(
+        fontFamily = FontFamily.SansSerif,
         fontSize = 11.sp,
-        lineHeight = 17.sp,
-        fontWeight = FontWeight.Normal,
+        lineHeight = 16.sp,
+        fontWeight = FontWeight.Medium,
     ),
 )
 

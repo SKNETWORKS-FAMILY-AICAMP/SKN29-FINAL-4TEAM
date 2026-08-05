@@ -22,6 +22,9 @@ export interface DashboardLayout {
   cardRadiusDp: number;
   bottomNavigationFixed: boolean;
   bottomNavigationHeightDp: number;
+  titleWeight: "bold" | "semibold";
+  bodyFontFamily: "system-sans";
+  useTextGlyphIcons: boolean;
 }
 
 export interface DashboardAction {
@@ -44,12 +47,15 @@ export interface DashboardDefinition {
 const sharedLayout: DashboardLayout = {
   horizontalPaddingDp: 16,
   sectionGapDp: 14,
-  heroHeightDp: 246,
-  statusTileHeightDp: 112,
-  actionTileHeightDp: 112,
-  cardRadiusDp: 26,
+  heroHeightDp: 226,
+  statusTileHeightDp: 106,
+  actionTileHeightDp: 108,
+  cardRadiusDp: 24,
   bottomNavigationFixed: true,
-  bottomNavigationHeightDp: 70,
+  bottomNavigationHeightDp: 68,
+  titleWeight: "semibold",
+  bodyFontFamily: "system-sans",
+  useTextGlyphIcons: false,
 };
 
 export const customerDashboard: DashboardDefinition = {

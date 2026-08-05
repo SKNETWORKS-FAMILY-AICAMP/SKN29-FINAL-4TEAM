@@ -141,6 +141,10 @@ fun TechnicianReferenceDashboard(
         confirmed.toFloat() / total.toFloat()
     }
     val primaryVisit = state.visits.firstOrNull()
+    val displayName = state.user?.displayName
+        ?.takeIf(String::isNotBlank)
+        ?.removeSuffix("님")
+        ?: "방문기사"
 
     ReferenceDashboardScaffold(
         title = "정수기 딜러",
@@ -172,7 +176,7 @@ fun TechnicianReferenceDashboard(
         ),
     ) {
         ReferenceHeroCard(
-            greeting = "${state.user?.displayName.orEmpty()} 기사님,\n안녕하세요!",
+            greeting = "${displayName}님,\n안녕하세요",
             subtitle = "안전하고 정확한 방문 서비스를 응원합니다.",
             metricLabel = "오늘 방문",
             metricValue = "$total",

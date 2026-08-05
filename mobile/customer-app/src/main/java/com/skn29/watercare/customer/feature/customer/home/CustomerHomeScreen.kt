@@ -115,6 +115,7 @@ fun CustomerHomeContent(
         state.home?.let { home ->
             val displayName = state.user?.displayName
                 ?.takeIf(String::isNotBlank)
+                ?.removeSuffix("님")
                 ?: "합성 고객 001"
             val activeInquiry = home.activeInquiry
             val previewLabel = when {
@@ -127,7 +128,7 @@ fun CustomerHomeContent(
             }
 
             ReferenceHeroCard(
-                greeting = "${displayName}님,\n안녕하세요!",
+                greeting = "${displayName}님,\n안녕하세요",
                 subtitle = "깨끗한 물로 건강한 하루 되세요.",
                 metricLabel = "오늘의 사용량",
                 metricValue = "12.5",
