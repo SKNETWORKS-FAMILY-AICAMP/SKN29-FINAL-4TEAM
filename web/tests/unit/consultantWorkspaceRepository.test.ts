@@ -23,7 +23,7 @@ describe("상담 업무 Repository 경계", () => {
     expect(repository.dataSource).toBe("MOCK");
   });
 
-  it("상세 조회와 Mock 허용 행동 계산을 화면 대신 Repository가 담당한다", () => {
+  it("상세 조회와 Mock 상태 전환 응답을 화면 밖 Repository 경계가 담당한다", () => {
     const repository = createConsultantWorkspaceRepository(true);
     const inquiry = COUNSELOR_INQUIRIES[0];
 

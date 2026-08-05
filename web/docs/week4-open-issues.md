@@ -31,8 +31,10 @@
 - `consultantWorkspaceRepository.ts`에서 Mock Source와 연동 상태를 한곳에서 관리
 - `VITE_USE_MOCK_API=true`: `MOCK_ONLY`
 - `VITE_USE_MOCK_API=false`: 실제 Endpoint를 추측하지 않고 `BACKEND_BLOCKED`
+- 초기 Mock 목록·상세의 상태·위험도·우선순위·담당자·허용 행동을 명시적인 Mock Backend Projection으로 분리
+- 화면 View Model은 위 Projection 값을 그대로 사용하며 업무 상태를 다시 계산하지 않음
 - ESLint로 삭제한 과거 Feature 경로와 Mock 원천의 신규 직접 Import 차단
-- Repository 단위 테스트 3개 추가
+- Repository와 Mock Backend Projection 단위 테스트 추가
 
 ### 상담사 목록·상세
 
