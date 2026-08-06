@@ -305,7 +305,7 @@ export default function ConsultantDashboardPage() {
                   key={inquiry.inquiryId}
                   className="v6-queue-item consultant-list-item"
                   type="button"
-                  aria-label={`${inquiry.inquiryCode} ${inquiry.customerDisplayName} ${inquiry.symptomLabel} 상세 열기`}
+                  aria-label={`${inquiry.inquiryCode} ${inquiry.customerName} ${inquiry.symptomLabel} 상세 열기`}
                   onClick={() => setSelectedInquiryId(inquiry.inquiryId)}
                 >
                   <span className="consultant-list-item__risk">
@@ -326,7 +326,7 @@ export default function ConsultantDashboardPage() {
                   </span>
 
                   <span className="consultant-list-item__customer">
-                    <strong>{inquiry.customerDisplayName}</strong>
+                    <strong>{inquiry.customerName}</strong>
                     <small>{inquiry.productCode}</small>
                   </span>
 
@@ -376,7 +376,7 @@ export default function ConsultantDashboardPage() {
               <div>
                 <small>{selectedInquiry.inquiryCode}</small>
                 <h2 id="consultant-detail-title">
-                  {selectedInquiry.customerDisplayName} · {selectedInquiry.symptomLabel}
+                  {selectedInquiry.customerName} · {selectedInquiry.symptomLabel}
                 </h2>
                 <p>선택한 문의의 상담과 기사 일정을 여기에서 처리합니다.</p>
               </div>

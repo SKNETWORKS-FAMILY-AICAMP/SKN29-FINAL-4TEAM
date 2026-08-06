@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import RiskBadge from "../../../common/components/badge/RiskBadge";
 import StatusBadge from "../../../common/components/badge/StatusBadge";
+import { maskCustomerPhone } from "../../../common/privacy/customerPrivacy";
 import InlineVisitScheduler from "../../visit-transition/components/InlineVisitScheduler";
 import { useConsultationForm } from "../hooks/useConsultationForm";
 import { useSaveConsultation } from "../hooks/useSaveConsultation";
@@ -223,7 +224,7 @@ function CompactConsultationDeskContent({
       <dl className="simple-mini-profile" aria-label="고객 및 제품 빠른 정보">
         <div>
           <dt>연락처</dt>
-          <dd>{inquiry.customerPhone}</dd>
+          <dd>{maskCustomerPhone(inquiry.customerPhone)}</dd>
         </div>
         <div className="is-address">
           <dt>방문 주소</dt>

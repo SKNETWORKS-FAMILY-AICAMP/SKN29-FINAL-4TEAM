@@ -964,6 +964,7 @@ body.compact-consultant-body {
   }
 }
 
+@media not all {
 /* --------------------------------------------------------------------------
  * WaterCare mobile family visual alignment
  * Keep the desktop information architecture while sharing the customer app's
@@ -1187,4 +1188,186 @@ body.compact-consultant-body {
   .simple-consultant-app.consultant-queue-app .consultant-queue-panel {
     box-shadow: 0 4px 14px rgba(37, 79, 108, 0.04) !important;
   }
+}
+
+}
+
+/* Approved front-end review: clearer controls, flatter content cards, larger type. */
+.simple-consultant-app.consultant-queue-app {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.simple-consultant-app.consultant-queue-app .simple-brand strong {
+  font-size: 19px;
+}
+
+.simple-consultant-app.consultant-queue-app .simple-user strong,
+.simple-consultant-app.consultant-queue-app .simple-topbar__notice {
+  font-size: 14px;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tabs {
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(119, 177, 205, 0.48);
+  border-radius: 20px !important;
+  background: rgba(224, 242, 249, 0.82);
+  box-shadow: none;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab {
+  min-height: 108px;
+  padding: 16px;
+  border: 1px solid rgba(94, 151, 181, 0.38);
+  border-radius: 14px !important;
+  background: #f7fbfd;
+  box-shadow: none;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab::after {
+  display: none;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab:hover {
+  border-color: #4c92b8;
+  background: #edf7fb;
+  box-shadow: 0 0 0 3px rgba(76, 146, 184, 0.1);
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active {
+  border-color: #327da7;
+  background: #3f87b0;
+  box-shadow: none;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab strong {
+  font-size: 18px;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab em {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-panel {
+  border: 1px solid #c8dde7;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 18px 42px rgba(47, 102, 128, 0.1);
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-panel__head h2 {
+  font-size: 23px;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-panel__head p,
+.simple-consultant-app.consultant-queue-app .simple-search input {
+  font-size: 14px;
+}
+
+.simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item {
+  border: 0;
+  border-bottom: 1px solid #dce8ed;
+  border-radius: 0 !important;
+  background: #fff;
+  box-shadow: none;
+}
+
+.simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item:hover {
+  background: #f2f8fb;
+  box-shadow: inset 4px 0 #4d94ba;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-list-item__subject strong,
+.simple-consultant-app.consultant-queue-app .consultant-list-item__customer strong {
+  font-size: 15px;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-list-item :is(small, em),
+.simple-consultant-app.consultant-queue-app .consultant-list-item__open {
+  font-size: 12px;
+}
+
+.simple-consultant-app.consultant-queue-app :is(
+  .simple-mini-profile > div,
+  .simple-focus-grid article,
+  .simple-action-panel,
+  .simple-visit-context
+) {
+  border-color: #d5e4ea;
+  border-radius: 12px !important;
+  background: #fff;
+  box-shadow: none;
+}
+
+.simple-consultant-app.consultant-queue-app :is(
+  .simple-case-head > button,
+  .simple-action-buttons button,
+  .simple-visit-actions button,
+  .simple-visit-scheduler header > button
+) {
+  min-height: 42px;
+  padding-right: 16px;
+  padding-left: 16px;
+  border: 1px solid #8cb7cc;
+  border-radius: 11px !important;
+  background: #f2f8fb;
+  box-shadow: none;
+  color: #245d7d;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.simple-consultant-app.consultant-queue-app :is(
+  .simple-action-buttons button.is-primary,
+  .simple-visit-actions button.is-primary
+) {
+  border-color: #347ea8;
+  background: #347ea8;
+  color: #fff;
+}
+
+.simple-consultant-app.consultant-queue-app :is(
+  .simple-mini-profile dt,
+  .simple-focus-grid small,
+  .simple-action-panel small,
+  .simple-consultation-form label > span,
+  .simple-visit-fields label > span
+) {
+  font-size: 12px;
+}
+
+.simple-consultant-app.consultant-queue-app :is(
+  .simple-mini-profile dd,
+  .simple-focus-grid p,
+  .simple-consultation-form textarea,
+  .simple-visit-fields input,
+  .simple-visit-fields select
+) {
+  font-size: 14px;
+}
+
+.simple-consultant-app.consultant-queue-app :is(select, input[type="date"], input[type="datetime-local"]) {
+  min-height: 44px;
+  border: 1px solid #b8d1dc;
+  border-radius: 10px !important;
+  background-color: #f8fcfd;
+  color: #173f55;
+}
+
+.simple-consultant-app.consultant-queue-app select {
+  appearance: none;
+  padding-right: 40px;
+  background-image: linear-gradient(45deg, transparent 50%, #397b9e 50%), linear-gradient(135deg, #397b9e 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 12px) 50%;
+  background-repeat: no-repeat;
+  background-size: 6px 6px, 6px 6px;
+}
+
+.simple-consultant-app.consultant-queue-app :is(input[type="date"], input[type="datetime-local"])::-webkit-calendar-picker-indicator {
+  padding: 6px;
+  border-radius: 7px;
+  background-color: #e4f2f8;
+  cursor: pointer;
 }

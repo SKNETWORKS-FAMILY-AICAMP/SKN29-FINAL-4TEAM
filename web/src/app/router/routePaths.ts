@@ -4,6 +4,7 @@ export const ROUTE_PATHS = {
   forbidden: "/forbidden",
   error: "/error",
   adminDashboard: "/admin",
+  adminInsights: "/admin/insights",
   consultantInquiryList: "/consultant/inquiries",
   consultantInquiryDetail: "/consultant/inquiries/:inquiryId",
   consultantVisitTransition:
