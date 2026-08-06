@@ -593,3 +593,34 @@ Public UUID 분석 요청이 모두 성공했다.
   `격리 단일 사용자 기준선 완료`로 갱신했다.
 - 전체 AI 단위 테스트는 `96 passed, 3 warnings`이며, 공식 후보 기준 JSON에
   현재 테스트 수와 간이 응답속도 보고서 Hash를 반영했다.
+
+### 2026-08-06 공식 양식 기반 Vector DB·Graph DB 제출본
+
+- 제공된 `[모델링 및 평가] 벡터DB_GraphDB 구축 결과서_양식.docx`의 표지,
+  6쪽 구성, 헤더·푸터, 페이지 번호, 색상과 표 구조를 유지한 별도 제출본
+  `docs/submission/AI_RAG_VectorDB_GraphDB_구축_결과서_제출양식_v1.0.docx`를
+  생성했다.
+- PostgreSQL·pgvector 실제 구축 내용, BAAI/bge-m3 1024차원 적용, Cosine
+  Exact Search, 적재·검색·갱신·삭제 흐름과 Fallback·1회 재시도 경계를
+  양식 항목에 맞춰 재배치했다.
+- 개인 격리 DB의 12/12 PASS, Recall@5 1.0, MRR 0.8857, 금지 Hit 0과 Warm
+  total p95 270.4 ms를 범위 제한과 함께 반영했다.
+- Graph DB는 구축 완료로 표시하지 않고 논리 노드·엣지 설계와 미도입 사유,
+  팀 DB·Backend E2E 및 13번째 정책 차단 Case의 미완료 Gate를 명시했다.
+- 원본 양식 SHA-256을 보존하고 헤더·푸터·이미지·스타일·번호 정의 등 19개
+  패키지 파트를 바이트 단위로 유지했다. Microsoft Word로 최종 6쪽을 다시
+  렌더링해 모든 페이지의 한글, 표, 줄바꿈, 페이지 분할과 잘림 여부를 확인했다.
+
+### 2026-08-06 최지용 Backend↔AI 수직 연동 협업요청서 v0.2
+
+- v0.1을 이력으로 보존하고
+  `20260806_이동윤_최지용_Backend_AI_수직연동_협업요청서_v0.2.md`를 별도
+  작성했다.
+- AI 단위 테스트 기준을 `96 passed, 3 warnings`로 갱신하고 개인 격리
+  pgvector Warm 전체 p95 `270.4 ms`를 팀 DB·HTTP SLA가 아닌 참고 기준선으로
+  추가했다.
+- 공식 기준선 상태를 `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`으로
+  명시하고, 작성 시점 HEAD와 Dirty 상태를 최종 연동 기준 SHA로 사용하지
+  않도록 수정했다.
+- 최지용 전달 파일에 공식 기준선 JSON과 간이 지연시간 보고서를 추가하고,
+  발송 메시지의 테스트 수와 개인 DB·팀 DB 구분을 최신화했다.
