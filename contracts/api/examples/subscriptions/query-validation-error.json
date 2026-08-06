@@ -1,0 +1,16 @@
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "입력값을 확인해 주세요.",
+    "details": {
+      "status_code": [
+        "T-018 R1에서는 ACTIVE 구독만 조회할 수 있습니다."
+      ]
+    }
+  },
+  "metadata": {
+    "correlation_id": "30000000-0000-4000-8000-000000000004"
+  }
+}

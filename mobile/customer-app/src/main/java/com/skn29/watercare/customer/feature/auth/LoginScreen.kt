@@ -26,7 +26,7 @@ import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 @Composable
 fun LoginScreen(onAuthenticated: (offlinePreview: Boolean) -> Unit) {
     val viewModel: AuthViewModel = viewModel(
-        factory = VmFactory {
+        factory = VmFactory { _ ->
             AuthViewModel(WaterCareCore.authRepository, WaterCareCore.backendStatusRepository)
         }
     )

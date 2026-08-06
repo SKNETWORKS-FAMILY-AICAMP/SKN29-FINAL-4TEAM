@@ -1,76 +1,40 @@
-# Week 3 Mobile Decisions
+# 3주차 모바일 개발 결정사항
 
-- Final local verification: 2026-07-31 15:56:02 +09:00
-- Local branch: jeonghyun
-- GitHub connection/push: intentionally not performed
+- 작업 브랜치: `jeonghyun`
+- 기준 브랜치: `main`
 
-## Approved structure
+## 프로젝트 구조
 
-- customer-app, 	echnician-app, and core three-module structure is retained.
-- Customer and technician apps share common models, networking, repositories, and design components through core.
-- The older single-app-module wording is treated as superseded by the current approved three-module structure.
+- 승인된 Android 프로젝트 구조는 `customer-app`, `technician-app`, `core` 3개 모듈로 구성한다.
+- 공통 네트워크, API 모델, Repository, 세션 관리, 공통 리소스는 `core`에서 관리한다.
+- 고객 앱과 기사 앱은 각각 독립적인 진입점, 테마, 화면 이동 구조를 유지한다.
 
-## UI and UX
+## UI 및 상태 관리
 
-- Customer app: sky-blue primary visual language.
-- Technician app: orange operational accent.
-- Supplied customer and technician mascot assets are restored in the app and launcher icons.
-- Material 3 rounded cards, large actions, plain-language labels, loading, error, and unavailable states are used.
-- Risk states are communicated with labels and messages in addition to color.
+- Kotlin, Jetpack Compose, Material 3, Navigation Compose, ViewModel, Coroutines, StateFlow를 사용한다.
+- 고객 앱은 고객용 디자인 체계를 적용하고 기사 앱은 현장 업무 중심 디자인 체계를 적용한다.
+- 로딩, 성공, 빈 상태, 오류, 재시도, 제출 중 상태를 명확히 구분한다.
+- 위험 상태는 색상만으로 전달하지 않고 문구와 상태 라벨을 함께 사용한다.
+- 요청 처리 중에는 중복 제출을 방지한다.
 
-## Data and API
+## 백엔드 연결
 
-- The mobile app uses the existing Backend contract and Demo login first.
-- Missing production endpoints remain explicit Mock or unavailable states.
-- The mobile app does not invent production endpoints or modify Backend source.
-- Physical-device local development uses 127.0.0.1:8000 with db reverse tcp:8000 tcp:8000.
+- USB로 연결한 실제 Android 기기의 백엔드 기본 주소는 `http://127.0.0.1:8000/`이다.
+- 실제 기기 연동에는 `adb reverse tcp:8000 tcp:8000`을 사용한다.
+- PostgreSQL, Django 마이그레이션, 데모 계정, 데모 제품, 데모 구독, 데모 케어 기록 준비를 완료했다.
+- `/health`, 고객 데모 로그인, 기사 데모 로그인 API의 정상 응답을 확인했다.
+- 백엔드, 데이터베이스, 마이그레이션, Docker, API 계약 원본은 이번 모바일 커밋에서 변경하지 않는다.
 
-## Safety
+## 안전 처리 원칙
 
-- Unknown codes do not become confirmed failures.
-- Danger, consultation-required, and no-evidence states hide resolved/close actions.
-- Evidence UI excludes internal chunk_id, source paths, retrieval text, and internal storage URLs.
+- 알 수 없는 오류 코드는 확정 진단으로 표시하지 않는다.
+- 위험 상태, 상담 필요 상태, 근거 없음 상태에서는 해결 완료 또는 문의 종료 기능을 노출하지 않는다.
+- 사용 제한, 안전 행동, 상담 전환 조건, 금지 행동, 공식 근거를 가능한 범위에서 표시한다.
+- 고객 화면에는 내부 RAG 경로, 검색 원문, 내부 데이터베이스 식별자, JWT 값, 비공개 문서 경로를 노출하지 않는다.
 
-## 2026-07-31 재설계 결정 — 백엔드 계약 연동 중심 전환
+## 검증 결과
 
-### 배경
-
-초기 모바일은 로컬 상태(`MutableStateFlow`) 기반 시연 데모로 구성되어 있었다.
-카카오맵 실시간 추적, QR 스캔, 오류코드 OCR, 서비스콜 화면이 포함되어 있었으나,
-모두 서버 계약과 무관하게 앱 내부에서만 동작하는 구조였다.
-
-3주차 목표가 백엔드 계약(`contracts/state-machine/inquiry-states.yaml`) 기반 연동으로
-확정되면서, 계약과 무관한 로컬 데모 기능은 유지 비용 대비 이점이 없다고 판단했다.
-
-### 결정
-
-계약 연동에 필요한 최소 흐름만 남기고 재작성한다.
-
-**제거한 기능**
-
-| 기능 | 제거 사유 |
-| --- | --- |
-| 카카오맵 실시간 기사 추적 | 계약에 추적 상태 축이 없고, 좌표 스크립트 재생 방식이라 서버 데이터와 무관 |
-| QR 스캔 · 오류코드 OCR (ML Kit) | 계약의 `raw_text`·`representative_symptom_code` 입력으로 대체 가능 |
-| 서비스콜 화면 | 계약에 대응 Endpoint 없음 |
-| 방문 상태 하위 코드(`EN_ROUTE`·`NEARBY`·`ARRIVED`) | 계약 `visit_status_codes` 외 값이라 서버 전송 불가 |
-
-**남긴 흐름**
-
-로그인 → 고객 홈 → 증상 입력 → AI 안내 → 문의 상태 확인.
-계약의 문의 13개 상태와 `allowed_actions` 기반 액션 표시까지 포함한다.
-
-### 상태 표현 방식 변경
-
-문의 상태를 `enum class` 에서 `String` + 라벨 매핑(`InquiryLabels.status`)으로 변경했다.
-
-- enum 은 서버가 신규 상태를 추가하면 역직렬화 단계에서 예외가 발생한다.
-- String 은 미지의 코드가 와도 `"확인 중 ($code)"` 로 표시되며 앱이 중단되지 않는다.
-- 계약 13개 상태의 한국어 라벨은 `InquiryLabels` 한 곳에서만 관리한다.
-
-### 저장소 정리
-
-- 재작성 과정에서 생성한 백업 디렉터리 11개(`mobile_*_backup_*`)와 `.bak` 파일 11개를 삭제했다.
-- 버전 관리는 git 이력으로 수행하며, 저장소에 백업 사본을 두지 않는다.
-- `.gitignore` 에 `*.bak`, `*_backup_*/`, `mobile/**/build/` 규칙을 추가하고,
-  구 경로(`WaterCareAndroid/`)를 `mobile/` 로 정정했으며 중복 규칙을 제거했다.
+- 고객 앱 단위 테스트를 통과했다.
+- `SM_F721N` 실제 기기에서 고객 앱 Compose UI 테스트를 통과했다.
+- 고객 앱과 기사 앱의 Debug APK 빌드를 완료했다.
+- 최신 `origin/main` 리베이스 후에도 동일한 검증을 다시 통과했다.

@@ -1,2 +1,11 @@
-# priority-levels 공통 코드 목록
-codes: []
+# 상담 처리 우선순위 공통 코드 목록
+version: 1.0.0
+status: OWNER_BASELINE
+owner: BACKEND_DB
+source_documents:
+  - docs/database/waterbridge_table_dictionary.md
+codes:
+  - LOW
+  - NORMAL
+  - HIGH
+  - URGENT

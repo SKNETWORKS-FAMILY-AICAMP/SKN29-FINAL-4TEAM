@@ -4,15 +4,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.runComposeUiTest
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.model.ActiveInquirySummary
+import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.CustomerHomeData
 import com.skn29.watercare.core.model.GuidanceDisplayModel
+import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.ProductSummary
 import com.skn29.watercare.core.model.RiskLevel
@@ -21,16 +26,23 @@ import com.skn29.watercare.core.ui.theme.WaterCareTheme
 import com.skn29.watercare.customer.feature.customer.guidance.GuidanceContent
 import com.skn29.watercare.customer.feature.customer.home.CustomerHomeContent
 import com.skn29.watercare.customer.feature.customer.home.CustomerHomeUiState
+import com.skn29.watercare.customer.feature.customer.intake.IntakeErrorKind
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeContent
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeUiState
+import com.skn29.watercare.customer.testing.ComposeTestActivity
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 
-@OptIn(ExperimentalTestApi::class)
+@RunWith(AndroidJUnit4::class)
 class CustomerMinimumFlowTest {
+    @get:Rule
+    val composeRule = createAndroidComposeRule<ComposeTestActivity>()
+
     @Test
-    fun offlinePreview_opensCust01AndCust02() = runComposeUiTest {
-        setContent {
+    fun offlinePreview_opensCust01AndCust02() {
+        composeRule.setContent {
             var showIntake by remember { mutableStateOf(false) }
 
             WaterCareTheme {
@@ -59,21 +71,23 @@ class CustomerMinimumFlowTest {
             }
         }
 
-        onNodeWithTag("startIntake")
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag("startIntake")
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()
 
-        waitForIdle()
+        composeRule.waitForIdle()
 
-        onNodeWithTag("submitIntake")
+        composeRule.onNodeWithTag("submitIntake")
             .performScrollTo()
             .assertIsDisplayed()
     }
 
     @Test
-    fun dangerGuidance_hidesResolvedAction() = runComposeUiTest {
-        setContent {
+    fun dangerGuidance_hidesResolvedAction() {
+        composeRule.setContent {
             var showDangerGuidance by remember { mutableStateOf(false) }
 
             WaterCareTheme {
@@ -96,28 +110,89 @@ class CustomerMinimumFlowTest {
                         },
                         onRetry = {},
                         onLogout = {},
+                        showDeveloperTools = true,
                     )
                 }
             }
         }
 
-        onNodeWithTag("scenario_DANGER")
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag("scenario_DANGER")
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()
 
-        waitForIdle()
+        composeRule.waitForIdle()
 
-        onNodeWithTag("requestConsultation")
+        composeRule.onNodeWithTag("requestConsultation")
             .assertIsDisplayed()
 
         val resolvedActionDoesNotExist = runCatching {
-            onNodeWithTag("resolvedAction").fetchSemanticsNode()
+            composeRule.onNodeWithTag("resolvedAction").fetchSemanticsNode()
         }.isFailure
 
         assertTrue(
             "위험 안내 화면에서는 해결 처리 버튼이 표시되면 안 됩니다.",
             resolvedActionDoesNotExist,
+        )
+    }
+
+    @Test
+    fun conflict_showsOnlySupportedSubmitRetryAction() {
+        var retried = false
+
+        composeRule.setContent {
+            WaterCareTheme {
+                SymptomIntakeContent(
+                    state = SymptomIntakeUiState(
+                        rawText = "충돌 테스트 입력",
+                        globalError = "최신 상태를 확인해 주세요.",
+                        errorKind = IntakeErrorKind.CONFLICT,
+                        conflictStatus = "DRAFT",
+                        conflictStateVersion = 2,
+                        conflictAllowedActions = listOf(
+                            AllowedAction(code = "SUBMIT_SYMPTOM"),
+                            AllowedAction(code = "INTERNAL_ONLY_ACTION"),
+                        ),
+                    ),
+                    onBack = {},
+                    onEntryModeChange = {},
+                    onToggleSymptom = {},
+                    onRawTextChange = {},
+                    onOccurrenceConditionChange = {},
+                    onDisplayTextChange = {},
+                    onScenarioChange = {},
+                    onRetry = { retried = true },
+                    onSubmit = {},
+                )
+            }
+        }
+
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag("retrySubmitAfterConflict")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+
+        val unsupportedActionDoesNotExist = runCatching {
+            composeRule.onNodeWithText("INTERNAL_ONLY_ACTION")
+                .fetchSemanticsNode()
+        }.isFailure
+
+        assertTrue(
+            "지원하지 않는 Backend Action은 고객 화면에 표시되면 안 됩니다.",
+            unsupportedActionDoesNotExist,
+        )
+
+        composeRule.onNodeWithTag("submitIntake")
+            .performScrollTo()
+            .assertIsNotEnabled()
+
+        assertTrue(
+            "SUBMIT_SYMPTOM이 허용된 충돌에서는 명시적 재시도만 실행되어야 합니다.",
+            retried,
         )
     }
 
@@ -145,6 +220,9 @@ class CustomerMinimumFlowTest {
         ),
         backendAvailable = false,
         offlinePreview = true,
+        customerCareMode = CustomerCareMode.FAKE,
+        dataSourceLabel = "Demo Mock 모드 · 홈·문의·안내 합성 데이터",
+        intakeAvailable = true,
     )
 
     private fun dangerGuidance() = GuidanceDisplayModel(
@@ -161,11 +239,7 @@ class CustomerMinimumFlowTest {
         nextAction = "즉시 상담 요청",
         requiresConsultation = true,
         evidence = emptyList(),
-        allowedActions = listOf(
-            "REQUEST_CONSULTATION",
-            "MARK_RESOLVED",
-            "CLOSE_INQUIRY",
-        ),
+        allowedActions = listOf(AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION, label = "상담 요청")),
     )
 
     companion object {

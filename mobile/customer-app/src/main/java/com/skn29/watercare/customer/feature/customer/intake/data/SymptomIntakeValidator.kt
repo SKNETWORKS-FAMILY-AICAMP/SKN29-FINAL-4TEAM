@@ -11,10 +11,10 @@ data class IntakeValidationResult(
 
 object SymptomIntakeValidator {
     fun validate(selected: Set<SymptomTopic>, rawText: String): IntakeValidationResult {
-        if (selected.isEmpty() && rawText.isBlank()) {
+        if (rawText.isBlank()) {
             return IntakeValidationResult(
-                rawTextError = "대표 증상을 선택하지 않은 경우 증상 설명은 필수입니다.",
-                globalError = "증상 하나 이상을 선택하거나 증상 설명을 입력해 주세요.",
+                rawTextError = "증상 설명은 필수입니다.",
+                globalError = "증상을 자세히 입력해 주세요.",
             )
         }
         if (rawText.length > 5000) {

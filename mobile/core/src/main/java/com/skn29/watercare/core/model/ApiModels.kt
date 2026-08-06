@@ -26,11 +26,12 @@ data class ResponseMetadata(
 data class StateConflictSnapshot(
     val currentStatus: String?,
     val currentStateVersion: Int?,
-    val allowedActions: List<String>,
+    val allowedActions: List<AllowedAction>,
 )
 
 sealed interface ApiResult<out T> {
     data class Success<T>(val value: T) : ApiResult<T>
+
     data class Failure(
         val code: String,
         val message: String,

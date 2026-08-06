@@ -1,3 +1,121 @@
-# consultations API 경로 계약
-# Endpoint와 request/response 참조는 백엔드 API 설계 확정 후 작성한다.
-{}
+# DEC-003 상담 4 Action G2 기계 계약. Runtime 구현 상태와 별개로 관리한다.
+/inquiries/{id}/start-consultation:
+  parameters: &inquiry_path_parameters
+    - name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+  post:
+    operationId: startConsultation
+    summary: 담당 상담사 상담 시작
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: START_CONSULTATION
+      transition_rule: TR-INQ-014
+      from_state: CONSULTATION_REQUIRED
+      to_state: CONSULTATION_IN_PROGRESS
+    x-permission-scope: ASSIGNED_INQUIRIES
+    security: [{BearerAuth: []}]
+    parameters: &write_headers
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+      - $ref: ../components/parameters/CorrelationId.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/workflow/StateTransitionRequest.yaml}
+    responses: &workflow_responses
+      "200":
+        description: 상태 전환 성공 또는 동일 요청 Replay
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data: {$ref: ../components/schemas/workflow/StateTransitionResult.yaml}
+      "400": {$ref: ../components/responses/BadRequest.yaml}
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "409": {$ref: ../components/responses/WorkflowConflict.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}
+
+/inquiries/{id}/consultation-summary:
+  parameters: *inquiry_path_parameters
+  patch:
+    operationId: updateConsultationSummary
+    summary: 담당 상담사 상담 내용 명시 저장
+    description: |
+      사용자가 저장 행동을 실행할 때만 호출하는 DEC-003 API다. 타이머 기반
+      자동저장, 서버 Draft 복구와 DEC-009 같은 탭 메모리 보관을 제공하지 않는다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-dec009-boundary: USER_TRIGGERED_SAVE_ONLY
+    x-dec009-web-status: DEFERRED_TO_WEB
+    x-state-machine:
+      event: UPDATE_CONSULTATION_SUMMARY
+      transition_rule: TR-INQ-015
+      from_state: CONSULTATION_IN_PROGRESS
+      to_state: CONSULTATION_IN_PROGRESS
+    x-permission-scope: ASSIGNED_INQUIRIES
+    security: [{BearerAuth: []}]
+    parameters: *write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/consultation/SaveConsultationRequest.yaml}
+          examples:
+            explicitSave:
+              externalValue: ../examples/consultations/save-consultation-request.json
+    responses: *workflow_responses
+
+/inquiries/{id}/consultation-summary/confirm:
+  parameters: *inquiry_path_parameters
+  post:
+    operationId: confirmConsultationSummary
+    summary: 상담사 수정 요약 확정
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: CONFIRM_CONSULTATION_SUMMARY
+      transition_rule: TR-INQ-016
+      from_state: CONSULTATION_IN_PROGRESS
+      to_state: CONSULTATION_IN_PROGRESS
+    x-permission-scope: ASSIGNED_INQUIRIES
+    security: [{BearerAuth: []}]
+    parameters: *write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/workflow/StateTransitionRequest.yaml}
+    responses: *workflow_responses
+
+/inquiries/{id}/complete-consultation:
+  parameters: *inquiry_path_parameters
+  post:
+    operationId: completeConsultation
+    summary: 상담 처리 완료
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: CONSULTATION_COMPLETED
+      transition_rule: TR-INQ-017
+      from_state: CONSULTATION_IN_PROGRESS
+      to_state: COMPLETION_PENDING
+    x-permission-scope: ASSIGNED_INQUIRIES
+    security: [{BearerAuth: []}]
+    parameters: *write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/consultation/CompleteConsultationRequest.yaml}
+    responses: *workflow_responses

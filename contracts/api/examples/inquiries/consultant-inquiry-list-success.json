@@ -1,0 +1,36 @@
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "inquiry_id": "10000000-0000-4000-8000-000000000101",
+        "inquiry_code": "SYN-INQ-0101",
+        "status": "CONSULTATION_REQUIRED",
+        "state_version": 4,
+        "risk_level": "caution",
+        "priority": "HIGH",
+        "symptom_summary": "합성 시나리오: 출수량이 평소보다 감소함",
+        "customer_display_name_masked": "합성고객 0*",
+        "product_model": "SYN-WP-01",
+        "current_assignee_type": "CONSULTANT",
+        "received_at": "2026-08-04T04:10:00Z",
+        "updated_at": "2026-08-04T04:20:00Z",
+        "waiting_seconds": 600,
+        "allowed_actions": [
+          {
+            "code": "START_CONSULTATION",
+            "label": "상담 시작",
+            "operation_id": "startConsultation",
+            "style": "PRIMARY",
+            "requires_confirmation": false,
+            "confirmation_message": null
+          }
+        ]
+      }
+    ],
+    "page_info": {"page": 1, "size": 20, "total": 1},
+    "status_counts": {"CONSULTATION_REQUIRED": 1}
+  },
+  "error": null,
+  "metadata": {"correlation_id": "20000000-0000-4000-8000-000000000201"}
+}

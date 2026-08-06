@@ -1,0 +1,16 @@
+title: VisitNotNeededRequest
+type: object
+description: 방문 검토 결과 방문이 불필요함을 확정하는 요청
+x-contract-status: G2_PROPOSED_PM_MERGE_APPROVAL
+additionalProperties: false
+required: [state_version, reason_code]
+properties:
+  state_version:
+    type: integer
+    minimum: 1
+  reason_code:
+    type: string
+    enum: [RESOLVED_BY_CONSULTATION, MONITORING_AGREED, CUSTOMER_DECLINED_VISIT, DUPLICATE_VISIT_AVOIDED]
+  reason_detail:
+    type: [string, "null"]
+    maxLength: 1000

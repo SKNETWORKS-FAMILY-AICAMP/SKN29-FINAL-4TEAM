@@ -1,0 +1,16 @@
+title: SectionError
+type: object
+description: 핵심 조회는 성공했지만 선택 Section 조립에 실패한 공개 오류
+x-contract-status: CONFIRMED
+additionalProperties: false
+required: [section, code, message]
+properties:
+  section:
+    type: string
+    enum: [product_and_care, consultation, visit]
+  code:
+    type: string
+    maxLength: 80
+  message:
+    type: string
+    maxLength: 300

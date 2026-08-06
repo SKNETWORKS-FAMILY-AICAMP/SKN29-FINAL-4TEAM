@@ -1,0 +1,16 @@
+# G2 방문 필요 여부 검토 요청 사유 Code
+version: 1.0.0
+status: G2_PROPOSED_PM_MERGE_APPROVAL
+owner: BACKEND_DB
+guard_bindings:
+  configured_visit_review_reason_codes: codes
+codes:
+  - REMOTE_RESOLUTION_LIMITED
+  - SAFETY_CHECK_REQUIRED
+  - REPEATED_SYMPTOM
+  - PHYSICAL_INSPECTION_REQUIRED
+descriptions:
+  REMOTE_RESOLUTION_LIMITED: 비대면 상담만으로 원인 또는 해결 여부를 확정하기 어려움
+  SAFETY_CHECK_REQUIRED: 제품 안전 상태를 현장에서 확인할 필요가 있음
+  REPEATED_SYMPTOM: 동일하거나 유사한 증상이 반복되어 현장 진단 검토가 필요함
+  PHYSICAL_INSPECTION_REQUIRED: 부품·설치·배관 등 물리적 점검이 필요함

@@ -1,0 +1,150 @@
+title: ConsultantInquiryDetail
+type: object
+description: 담당 상담사 전용 상세 Projection. DEC-008 Evidence와 실제 개인정보를 포함하지 않는다.
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - inquiry
+  - customer
+  - product_and_care
+  - symptom_and_questionnaire
+  - guidance_and_actions
+  - consultation
+  - visit
+  - state_history
+  - workflow
+  - section_errors
+properties:
+  inquiry:
+    type: object
+    additionalProperties: false
+    required: [inquiry_id, inquiry_code, status, state_version, risk_level, priority, received_at, updated_at]
+    properties:
+      inquiry_id:
+        type: string
+        format: uuid
+      inquiry_code:
+        type: string
+        maxLength: 48
+      status:
+        type: string
+        enum:
+          - DRAFT
+          - QUESTIONNAIRE_IN_PROGRESS
+          - AI_GUIDANCE
+          - CONSULTATION_REQUIRED
+          - CONSULTATION_IN_PROGRESS
+          - VISIT_REVIEW_PENDING
+          - VISIT_SCHEDULING
+          - VISIT_SCHEDULED
+          - COMPLETION_PENDING
+          - REVISIT_REQUIRED
+          - REOPENED
+          - RESOLVED
+          - CANCELLED
+      state_version:
+        type: integer
+        minimum: 1
+      risk_level:
+        type: string
+        enum: [general, caution, danger]
+      priority:
+        type: string
+        enum: [LOW, NORMAL, HIGH, URGENT]
+      received_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+  customer:
+    $ref: ./ConsultantCustomerProjection.yaml
+  product_and_care:
+    oneOf:
+      - type: object
+        additionalProperties: false
+        required: [product_model, subscription_status, management_type, recent_care_date]
+        properties:
+          product_model:
+            type: string
+            maxLength: 120
+          subscription_status:
+            type: string
+            maxLength: 40
+          management_type:
+            type: string
+            maxLength: 40
+          recent_care_date:
+            type: [string, "null"]
+            format: date
+      - type: "null"
+  symptom_and_questionnaire:
+    type: object
+    additionalProperties: false
+    required: [symptom_summary, answers]
+    properties:
+      symptom_summary:
+        type: string
+        maxLength: 2000
+      answers:
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [question_code, answer]
+          properties:
+            question_code:
+              type: string
+              maxLength: 80
+            answer:
+              type: string
+              maxLength: 2000
+  guidance_and_actions:
+    type: object
+    additionalProperties: false
+    required: [usage_guidance_status, usage_guidance_message, restricted_functions]
+    properties:
+      usage_guidance_status:
+        type: [string, "null"]
+        enum: [NORMAL, PARTIAL_STOP, TOTAL_STOP, PENDING_CONSULTATION, null]
+      usage_guidance_message:
+        type: [string, "null"]
+        maxLength: 2000
+      restricted_functions:
+        type: array
+        items:
+          type: string
+          maxLength: 120
+  consultation:
+    oneOf:
+      - $ref: ../consultation/ConsultationRecord.yaml
+      - type: "null"
+  visit:
+    oneOf:
+      - $ref: ../visit/VisitDetail.yaml
+      - type: "null"
+  state_history:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      required: [from_status, to_status, changed_at, actor_role]
+      properties:
+        from_status:
+          type: [string, "null"]
+          maxLength: 64
+        to_status:
+          type: string
+          maxLength: 64
+        changed_at:
+          type: string
+          format: date-time
+        actor_role:
+          type: string
+          enum: [CUSTOMER, CONSULTANT, TECHNICIAN, OPERATOR, SYSTEM]
+  workflow:
+    $ref: ../workflow/WorkflowSnapshot.yaml
+  section_errors:
+    type: array
+    items:
+      $ref: ./SectionError.yaml

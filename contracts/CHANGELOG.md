@@ -1,5 +1,45 @@
 # Contracts Changelog
 
+## 2026-08-05 — T-018 R1 고객 본인 구독 목록·상세 계약
+
+### Added
+
+- 고객 본인 구독 목록 `GET /me/subscriptions`와 상세 `GET /me/subscriptions/{subscription_id}`
+- `WPUJAC104DWH` 활성 제품 모델·ACTIVE 구독만 반환하는 서버 Scope
+- Product·Subscription 공개 DTO, 목록·상세 Wrapper와 정상·빈 목록·검증 오류 예시
+- 완료 CareRecord의 `performed_on` 우선, `completed_at`의 `Asia/Seoul` 업무일 Fallback 계약
+- T-018 전용 정적 Contract Test와 OpenAPI Operation Inventory 23개 기준
+
+### Boundary
+
+- 문의 가능 여부는 T-022 Guard, `allowed_actions`는 T-023 State Machine으로 분리한다.
+- 내부 PK·계약번호·시리얼·설치 주소·고객 개인정보·원본 제품 Features는 공개하지 않는다.
+- 이번 변경은 기계 계약과 Contract Test만 포함한다. Backend Runtime·Migration·DB·Seed·Web·Mobile 구현은 시작하지 않는다.
+- 두 T-018 Operation은 `x-runtime-status: NOT_IMPLEMENTED`이며 별도 PM Runtime Gate 전까지 이 상태를 유지한다.
+
+## 2026-08-04 — G2 상담·방문 기계 계약 QA 보완
+
+### Added
+
+- 상담사 문의 목록·상세, 상담 4개 Action, 방문 5개 Action을 포함한 G2 신규 Operation 11개
+- DEC→OpenAPI→DTO→State Rule→권한 범위를 고정한 `g2-operation-crosswalk.yaml`
+- 400·401·403·404·409·422·500 의미와 객체 은닉 기준을 고정한 `g2-error-matrix.yaml`
+- 합성 고객·기사 최소 Projection, date-only 방문 일정, 상담·방문 Request와 공식 JSON 예시
+- 같은 탭 15분 Draft·이탈 경고와 서버 Draft·자동저장 제외 경계를 분리한 DEC-009 정책
+- G2 전용 정적 Contract Test와 전달물 Manifest
+
+### Changed
+
+- 방문 일정·확정 Rule에 담당 상담사 Guard를 추가하고 기사 식별자를 `synthetic_technician_id`로 통일
+- 비담당 상담 객체는 역할 실패 403과 구분해 404로 존재를 숨기도록 변경
+- 방문 일정 Guard의 datetime 입력을 `preferred_date`·`confirmed_date` date-only 계약으로 교체
+- Inquiry 상태·우선순위·Workflow Action 빈 공통 Code Registry를 승인 원천과 정렬
+
+### Gate
+
+- 이 변경은 G2 기계 계약과 정적 검증만 포함하며 Backend Runtime·DB Migration·Web·Mobile 구현 완료를 의미하지 않는다.
+- DEC-006은 P1, DEC-008은 HOLD, DEC-009 서버 Draft·자동저장은 P1 또는 별도 DEC로 유지한다.
+
 ## 2026-07-29 — AI 공개 응답 계약 정합화
 
 ### Changed

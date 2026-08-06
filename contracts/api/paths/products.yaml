@@ -1,3 +1,159 @@
-# products API 경로 계약
-# Endpoint와 request/response 참조는 백엔드 API 설계 확정 후 작성한다.
-{}
+# T-018 R1 고객 본인 제품·구독 목록·상세 조회 계약
+x-t018-r1-policy:
+  decision_id: T018-D07
+  decision_status: FINAL_APPROVED
+  customer_scope: OWNER_ONLY
+  product_model_code: WPUJAC104DWH
+  product_model_active_required: true
+  subscription_status_scope: ACTIVE_ONLY
+  business_timezone: Asia/Seoul
+  last_care_on:
+    eligible_status: COMPLETED
+    primary_date: performed_on
+    fallback_date: completed_at_ASIA_SEOUL_DATE
+    aggregate: MAX_PER_SUBSCRIPTION
+    empty_result: null
+  inquiry_eligibility_owner: T022_GUARD
+  allowed_actions_owner: T023_STATE_MACHINE
+  allowed_actions_in_t018: false
+  hidden_fields:
+    - internal_database_ids
+    - contract_no
+    - serial_no
+    - installation_address
+    - source_customer_product_public_id
+    - product_features
+    - customer_personal_information
+  runtime_implementation_start_allowed: false
+  migration_change_allowed: false
+  database_change_allowed: false
+
+/me/subscriptions:
+  get:
+    operationId: listMySubscriptions
+    summary: 고객 본인 ACTIVE 구독 목록 조회
+    description: |
+      인증된 CUSTOMER가 본인에게 연결된 WPUJAC104DWH 활성 제품 모델의
+      ACTIVE 구독만 조회한다. 문의 가능 여부는 T-022 Guard가 검증하며
+      allowed_actions는 T-023 State Machine 후속 계약에서 제공한다.
+      정렬은 started_on DESC, public_id ASC이며 상태 변경을 수행하지 않는다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-requirements: [FR-002, DR-003]
+    x-owner-filter: customer.user=request.user AND customer.deleted_at IS NULL
+    x-product-filter: model_code=WPUJAC104DWH AND product_model.is_active=true
+    x-subscription-filter: status_code=ACTIVE
+    x-sort: [started_on DESC, public_id ASC]
+    x-unknown-query-policy: REJECT_422
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        description: 요청·응답·구조화 로그를 연결하는 선택적 UUID. 없으면 서버가 생성한다.
+        schema:
+          type: string
+          format: uuid
+      - $ref: ../components/parameters/Page.yaml
+      - $ref: ../components/parameters/Size.yaml
+    responses:
+      "200":
+        description: 고객 본인 ACTIVE 구독 목록 또는 빈 목록
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/product/SubscriptionListResponse.yaml
+            examples:
+              activeSubscriptions:
+                externalValue: ../examples/subscriptions/list-active-success.json
+              emptySubscriptions:
+                externalValue: ../examples/subscriptions/list-empty-success.json
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "422":
+        description: 정의되지 않은 Query 또는 Pagination 검증 오류
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/common/ApiResponse.yaml
+            examples:
+              activeOnly:
+                externalValue: ../examples/subscriptions/query-validation-error.json
+      "500":
+        $ref: ../components/responses/InternalServerError.yaml
+
+/me/subscriptions/{subscription_id}:
+  parameters:
+    - name: subscription_id
+      in: path
+      required: true
+      description: CustomerSubscription.public_id 공개 UUID
+      schema:
+        type: string
+        format: uuid
+  get:
+    operationId: getMySubscription
+    summary: 고객 본인 ACTIVE 구독 상세 조회
+    description: |
+      인증된 CUSTOMER 본인의 WPUJAC104DWH 활성 제품 모델·ACTIVE 구독만
+      조회한다. 잘못된 UUID, 미존재, 타 고객, 삭제 고객, 비활성 구독과
+      비지원 모델은 존재를 숨기고 동일한 404를 반환한다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-requirements: [FR-002, DR-003]
+    x-owner-filter: customer.user=request.user AND customer.deleted_at IS NULL
+    x-product-filter: model_code=WPUJAC104DWH AND product_model.is_active=true
+    x-subscription-filter: status_code=ACTIVE
+    x-unknown-query-policy: REJECT_422
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        description: 요청·응답·구조화 로그를 연결하는 선택적 UUID. 없으면 서버가 생성한다.
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: 고객 본인 ACTIVE 구독 상세
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/product/SubscriptionDetailResponse.yaml
+            examples:
+              activeSubscription:
+                externalValue: ../examples/subscriptions/detail-active-success.json
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "404":
+        $ref: ../components/responses/NotFound.yaml
+      "422":
+        description: 정의되지 않은 Query 검증 오류
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/common/ApiResponse.yaml
+            examples:
+              activeOnly:
+                externalValue: ../examples/subscriptions/query-validation-error.json
+      "500":
+        $ref: ../components/responses/InternalServerError.yaml

@@ -1,0 +1,9 @@
+title: SubscriptionDetailResponse
+description: T-018 R1 구독 상세 성공 Wrapper
+x-contract-status: CONFIRMED
+allOf:
+  - $ref: ../common/ApiResponse.yaml
+  - type: object
+    properties:
+      data:
+        $ref: ./SubscriptionDetail.yaml

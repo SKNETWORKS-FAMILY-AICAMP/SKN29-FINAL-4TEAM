@@ -1,0 +1,41 @@
+title: SubscriptionDetail
+type: object
+description: T-018 R1 고객 본인 ACTIVE 구독 상세 Projection
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - subscription_id
+  - status_code
+  - management_type_code
+  - started_on
+  - ended_on
+  - last_care_on
+  - next_care_on
+  - product
+properties:
+  subscription_id:
+    type: string
+    format: uuid
+    description: CustomerSubscription.public_id 공개 UUID
+  status_code:
+    type: string
+    const: ACTIVE
+  management_type_code:
+    type: string
+    enum: [SELF_MANAGED, VISIT_CARE]
+  started_on:
+    type: string
+    format: date
+  ended_on:
+    type: [string, "null"]
+    format: date
+    description: ACTIVE 구독에서는 일반적으로 null이며 상세에서만 Key를 유지
+  last_care_on:
+    type: [string, "null"]
+    format: date
+    description: 완료 CareRecord의 Asia/Seoul 업무일 기준 최근 관리일
+  next_care_on:
+    type: [string, "null"]
+    format: date
+  product:
+    $ref: ./ProductSummary.yaml

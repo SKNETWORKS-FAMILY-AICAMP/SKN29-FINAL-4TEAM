@@ -472,3 +472,32 @@ Public UUID 분석 요청이 모두 성공했다.
   `git diff --check`를 통과했다.
 - 공식 기준선과 중간발표 기술자료의 단위 테스트 수치를 `95 passed,
   3 warnings`로 동기화했으며 팀 DB·Backend E2E 전 제한은 유지했다.
+
+### 2026-08-04 최지용 Backend↔AI 수직 연동 P0 협업요청서
+
+- `20260804_이동윤_최지용_Backend_AI_수직연동_협업요청서_v0.1.md`를 작성했다.
+- AI 계약 1.1.0, 요청 필드, 200·400/422·503·504 결과, 내부 최대 1회
+  재시도와 Backend 자동 재시도 0회 경계를 Backend 구현 입력으로 정리했다.
+- `AIRun`, `AIRetrievalRun`, `SymptomAssessment`, 안내·Evidence 후보 저장
+  위치는 확정값이 아닌 Backend 확인 요청으로 표시하고, AI가 상태·권한·최종
+  EvidenceCard를 직접 변경하지 않는 책임 경계를 유지했다.
+- 정상 근거·0건·위험·설정 오류·재시도 복구·재시도 소진·비일시 오류·
+  Timeout·Correlation 불일치·stale 응답의 공동 E2E 10개 Case와 수락 기준,
+  `ACCEPT`·`CHANGE_REQUEST`·`BLOCKED` 회신 형식을 포함했다.
+- 문서는 `READY_TO_SEND`이며 AI 기준선 Commit과 Backend 회신·팀 DB 공동
+  검증 전에는 통합 완료로 표시하지 않는다.
+
+### 2026-08-04 김은진 13번째 정책 차단·팀 DB RAG 검증 협업요청서
+
+- `20260804_이동윤_김은진_13번째정책차단_팀DB_RAG검증_협업요청서_v0.1.md`를
+  작성했다.
+- 기존 미검증 FAQ 질의의 검색 전 차단과, 정상 제품·D세대 후보를 실제 검색한
+  뒤 문서 정책으로 제거하는 13번째 Case의 차이를 명시했다.
+- 김은진이 Case ID·QA Fixture·검증 상태·사용 허용·RAG 정책·차단 사유·
+  기대 실행 경로를 `APPROVE`·`CHANGE_REQUEST`·`BLOCKED`로 결정하도록
+  회신 표를 제공했다.
+- 팀 DB에서 승인 청크 7건·1024차원·Model Revision·Chunk Set Hash·13개
+  평가·금지 Hit 0·UPSERT 멱등·Fixture Rollback을 독립 검증하는 절차와
+  반환 Evidence 형식을 포함했다.
+- 최지용의 Backend Adapter는 병렬 진행할 수 있지만 김은진의 승인과 독립 QA
+  전에는 13건·팀 DB RAG를 공식 완료로 표시하지 않는다.

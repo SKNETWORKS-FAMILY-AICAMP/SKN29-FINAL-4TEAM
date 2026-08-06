@@ -33,7 +33,7 @@
     },
     "transition_rules": {
       "path": "contracts/state-machine/transition-rules.yaml",
-      "sha256": "FBAF11B15B3193351AE94B5A8A300DF741E1B099906B6D0F2B6EC4A5CA2B86D6"
+      "sha256": "90F392DC3E4635F52342B2F0F85B80CD000DB6F716389CC3D8D4CB760594758D"
     },
     "allowed_actions": {
       "path": "contracts/state-machine/allowed-actions.yaml",

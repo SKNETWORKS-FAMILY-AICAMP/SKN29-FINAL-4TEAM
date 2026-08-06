@@ -1,5 +1,10 @@
 title: StateTransitionRequest
 type: object
 description: 상태 전환 요청
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required: [state_version]
+properties:
+  state_version:
+    type: integer
+    minimum: 1

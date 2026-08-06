@@ -1,0 +1,16 @@
+title: VisitReviewRequest
+type: object
+description: 상담사가 방문 필요 여부 검토 단계로 전환하는 요청
+x-contract-status: G2_PROPOSED_PM_MERGE_APPROVAL
+additionalProperties: false
+required: [state_version, reason_code]
+properties:
+  state_version:
+    type: integer
+    minimum: 1
+  reason_code:
+    type: string
+    enum: [REMOTE_RESOLUTION_LIMITED, SAFETY_CHECK_REQUIRED, REPEATED_SYMPTOM, PHYSICAL_INSPECTION_REQUIRED]
+  reason_detail:
+    type: [string, "null"]
+    maxLength: 1000

@@ -1,0 +1,9 @@
+{
+  "state_version": 5,
+  "summary": "합성 고객의 출수량 감소 증상을 확인함",
+  "consultation_note": "합성 시나리오 기준으로 필터 상태와 급수 밸브를 확인함",
+  "additional_check": "방문 전 필터 장착 상태 재확인",
+  "customer_guidance": "제품 분해 없이 사용을 잠시 중단하고 방문 안내를 기다려 주세요.",
+  "result_code": "VISIT_REQUIRED",
+  "usage_guidance_status": "PARTIAL_STOP"
+}

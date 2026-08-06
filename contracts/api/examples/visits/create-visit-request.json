@@ -1,0 +1,14 @@
+{
+  "state_version": 7,
+  "visit_reason": "합성 시나리오에서 현장 확인이 필요함",
+  "preferred_date": "2026-08-06",
+  "usage_guidance_status": "PARTIAL_STOP",
+  "handoff": {
+    "product_summary": "합성 제품 SYN-WP-01",
+    "symptom_summary": "출수량 감소",
+    "action_summary": "필터 장착 상태와 급수 밸브 확인",
+    "risk_summary": "제품 분해 금지, 사용 일부 중단 안내",
+    "priority_check_items": ["필터 장착 상태", "급수 밸브 상태"],
+    "consultant_final": "방문 점검 필요"
+  }
+}

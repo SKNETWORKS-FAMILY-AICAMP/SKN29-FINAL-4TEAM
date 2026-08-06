@@ -1,21 +1,26 @@
 title: CreateVisitRequest
 type: object
-description: T-005 OWNER 기준 방문 생성 요청
+description: 방문 검토 완료 후 미배정 ASSIGNING Visit을 생성하는 요청
+x-contract-status: CONFIRMED
 additionalProperties: false
 required:
-  - inquiry_id
-  - preferred_date
+  - state_version
+  - visit_reason
+  - usage_guidance_status
+  - handoff
 properties:
-  inquiry_id:
+  state_version:
+    type: integer
+    minimum: 1
+  visit_reason:
     type: string
-    maxLength: 48
+    minLength: 1
+    maxLength: 1000
   preferred_date:
-    type:
-      - string
-      - "null"
+    type: [string, "null"]
     format: date
-  synthetic_technician_id:
-    type:
-      - string
-      - "null"
-    maxLength: 48
+  usage_guidance_status:
+    type: string
+    enum: [NORMAL, PARTIAL_STOP, TOTAL_STOP, PENDING_CONSULTATION]
+  handoff:
+    $ref: ./VisitHandoff.yaml

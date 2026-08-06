@@ -1,24 +1,17 @@
-# Week 3 Mobile Open Issues
+# 3주차 모바일 미해결 및 추가 확인 항목
 
-- Final local verification: 2026-07-31 15:56:02 +09:00
+## 팀 공동 확인 필요 항목
 
-## Submission-only items
+1. 운영 환경의 문의, 상담, 방문, 기사 일정, 위치 관련 Endpoint를 최신 승인 API 계약과 대조한다.
+2. 공유 연동 환경에서 Token Refresh, 로그아웃 폐기, 403/404 구분, 409 상태 충돌 시나리오를 다시 확인한다.
+3. `allowed_actions`, 업무 상태, 근거 필드, 고객 안전 안내 문구를 백엔드·AI·PM 담당자와 최종 확인한다.
+4. CUST-01, CUST-02, CUST-04, 상담 요청, 기사 대시보드 화면을 서로 다른 실제 화면으로 다시 캡처한다.
+5. 다른 팀원이 저장소 README만 보고 동일하게 빌드할 수 있는지 재현한다.
+6. `jeonghyun` 브랜치에서 `main` 브랜치로 PR을 생성하고 코드 및 문서 검토 후 병합한다.
 
-1. The user will perform the Git commit and push manually.
-2. Create or update a PR after push and request Backend, AI/safety, and test review.
-3. Capture final presentation screenshots if the team requires visual evidence.
+## 이후 개발 범위
 
-## Integration items for later contracts
-
-1. Replace remaining unavailable/Mock customer functions only after approved production endpoints are provided.
-2. Replace the technician dashboard Mock with approved schedule, visit-detail, route, memo, parts, completion, and signature endpoints.
-3. Reconfirm token refresh, logout revocation, 403/404 distinction, and 409 conflict behavior in the shared integration environment.
-4. CUST-03 and CUST-06 remain next-scope features unless separately approved.
-
-## Not modified
-
-- Backend source
-- Database schema and migrations
-- Docker configuration
-- contracts/**
-- GitHub remote branch
+- CUST-03 추가 AI 질문 기능
+- CUST-06 전체 문의 상세 및 처리 완료 이후 흐름
+- 기사 앱 운영용 전체 업무 흐름
+- FCM, Room, WorkManager 등 비필수 인프라
