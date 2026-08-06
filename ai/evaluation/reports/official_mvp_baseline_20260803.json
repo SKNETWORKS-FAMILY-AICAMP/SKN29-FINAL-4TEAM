@@ -1,6 +1,6 @@
 {
   "status": "CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT",
-  "generated_at": "2026-08-04T15:18:29+09:00",
+  "generated_at": "2026-08-06T12:55:34+09:00",
   "source_commit": "a282b594e7d289b479485983a97cff3f58d5be46",
   "working_tree_committed": false,
   "runtime": {
@@ -8,7 +8,7 @@
     "os": "Windows 11 AMD64",
     "dependency_lock": "ai/requirements.lock",
     "unit_tests": {
-      "result": "95 passed, 3 warnings",
+      "result": "96 passed, 3 warnings",
       "exit_code": 0
     },
     "retry_policy": {
@@ -75,6 +75,18 @@
     "mean_positive_mrr": 0.8857142857142858,
     "forbidden_hit_count": 0,
     "scope": "isolated disposable database; not team database completion evidence"
+  },
+  "isolated_pgvector_latency_baseline": {
+    "report": "ai/evaluation/reports/pgvector_latency_baseline_20260806.json",
+    "report_file_sha256": "39DAE4FE085FEF905562A65004133BC20B4348C34937BC8A09E6D10C0B9C251D",
+    "measured_at": "2026-08-06T03:47:43.595704+00:00",
+    "scope": "personal isolated single-user baseline; not team DB or HTTP/Backend E2E evidence",
+    "cold_runs": 3,
+    "warm_runs": 30,
+    "warm_retrieval_total_mean_ms": 236.708,
+    "warm_retrieval_total_p50_ms": 237.797,
+    "warm_retrieval_total_p95_ms": 270.373,
+    "failed_request_count": 0
   },
   "mvp_scope": {
     "allowed_model": "WPUJAC104DWH",

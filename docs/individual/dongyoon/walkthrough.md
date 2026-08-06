@@ -512,3 +512,84 @@ Public UUID 분석 요청이 모두 성공했다.
   미완료 상태를 반드시 함께 말하도록 고정했다.
 - 외부 LLM 생성·직접 학습·전체 제품 정확도·팀 DB E2E를 완료한 것으로
   과장하지 않도록 발표 금지 표현을 명시했다.
+
+### 2026-08-05 AI·RAG AGENTS 지침 현행화
+
+- Root `AGENTS.md`를 현재 실제 Runtime과 협업 경계에 맞게 개정했다.
+- 현재 구현을 Agent가 아닌 `SingleRAGPipeline` 기반 단일 RAG Workflow로
+  규정하고, 최종 다중 에이전트 전환의 최소 인정 조건과 선행 Gate를 추가했다.
+- Mock·Local·pgvector, 검색 0건·구성 실패, 격리 DB·팀 DB·Backend E2E의
+  구분과 발표 금지 표현을 명시했다.
+- 실제 인덱싱 경로, bge-m3 Revision·1024차원, 승인 데이터·Manifest·Secret·
+  Backend Migration 경계를 추가했다.
+- 12개 평가의 실제 Query 7건·정책 차단 5건 구성과 소규모 Recall@5 해석 제한,
+  13번째 정책 Case·팀 DB 완료 조건을 검증 지침에 반영했다.
+
+### 2026-08-06 중간발표 지정 심사 질문 방어 답변
+
+- `RAG예상질문.md`를 v0.2로 갱신하고 지정된 11개 심사 질문의 AI·RAG 담당
+  답변과 Backend·Data·PM 담당 경계를 추가했다.
+- 마지막 생성 단계는 `GPT-5.4 mini` 사용 가정으로 설명하되 현재 미연결·
+  미실측이며, bge-m3와 후보 모델 비교를 완료했다고 주장하지 않도록 했다.
+- 현재 Output Validator가 금지 표현·행동과 안전 일관성만 검사하고 Grounding·
+  Citation·재생성 정책은 미구현이라는 경계를 명시했다.
+- 공식 문서 1종·승인 청크 7개와 합성 Fixture Source 레코드 367개를 분리하고,
+  RAG 12/12·DB FK 정합성이 전체 업무 정확도를 의미하지 않음을 설명했다.
+- PostgreSQL과 pgvector는 물리적으로 하나의 DB·Extension 관계이며, 그림의
+  분리는 논리적 역할 표현이라는 답변을 추가했다.
+
+### 2026-08-06 RAG 검색 품질 발표 답변 보강
+
+- `RAG예상질문_v0.2.md`에 평균 MRR뿐 아니라 누수 질의의 기대 청크 `5위`,
+  Case MRR `0.2`를 명시했다.
+- 승인 청크 7개에서 Top-K 5를 반환하는 Recall@5 `1.0`은 검색 정확도 100%의
+  근거가 아니라 제한 범위의 통과 Gate임을 명시했다.
+- 아직 측정하지 않은 질의 임베딩·pgvector 검색·E2E p50/p95, 처리량,
+  CPU·RAM, 팀 DB 성능, 모델별 비용·지연시간을 발표 답변에 구분했다.
+
+### 2026-08-06 기술스택 발표 슬라이드 흐름 수정
+
+- `RAG_기술스택_선택안_흐름수정_v2.png`를 생성해 하단 RAG 실행 순서를
+  `사용자 입력 → 규칙 기반 안전 사전 판정 → bge-m3·pgvector 검색 →
+  GPT-5.4 mini 생성 예정 → 출력 Validator 검증 → 안전 안내 또는 상담 전환`으로
+  수정했다.
+- 현재 LangGraph를 다중 Agent가 아닌 결정론적 단일 Workflow로 표시하고,
+  재생성이 아닌 일시적 검색 오류 최대 1회 재시도로 구현 경계를 바로잡았다.
+- GPT-5.4 mini는 생성 성능 비교가 끝난 모델이 아니라 적용·검증 예정 후보임을
+  슬라이드에 명시했다.
+
+### 2026-08-06 RAG Vector DB·Graph DB 제출용 결과서
+
+- `docs/submission/AI_RAG_VectorDB_GraphDB_구축_결과서_v1.0.docx`를 4주차
+  제출용 Word 문서로 작성했다.
+- 직접 학습·파인튜닝 미수행과 사전학습 `BAAI/bge-m3` 적용을 구분하고,
+  Revision·1024차원·L2 정규화·Python 3.13.13·CPU 실행 환경을 기록했다.
+- PostgreSQL 16.14·pgvector 0.8.6·Cosine Exact Search·승인 청크 7개와
+  Vector Schema, 사전 인덱싱·검색·갱신·삭제 운영 절차를 정리했다.
+- 격리 DB `12/12`, Recall@5 `1.0`, MRR `0.8857`, 금지 Hit `0`을 제품 1종·
+  D세대·공식 문서 1개 범위의 이력으로 제한하고 응답 속도 미측정을 명시했다.
+- Graph DB는 미구축으로 표시하고, 도입 검토용 노드·엣지 논리 구조와 현재
+  PostgreSQL FK·상태 이력·JSONB Metadata로 충분한 사유를 기록했다.
+- 13번째 문서 정책 차단 Case, 팀 DB·Backend E2E, 응답속도 Benchmark와
+  `evaluated_contract_sha256` Canonical 규칙 불일치를 후속 Gate로 표시했다.
+- Microsoft Word 렌더링 PDF 13쪽을 PNG로 변환해 전 페이지의 한글, 표,
+  머리글·바닥글, 페이지 분할과 잘림 여부를 시각 검수했다.
+
+### 2026-08-06 개인 격리 pgvector 간이 응답속도 기준선
+
+- `ai/scripts/benchmark_pgvector_latency.py`를 추가해 Cold·Warm 검색 지연시간을
+  동일 Dataset에서 재현할 수 있도록 했다.
+- 개인 `127.0.0.1:55432` 격리 DB, 승인 청크 7개, CPU, 동시성 1 조건에서
+  Cold 독립 프로세스 3회와 모델 예열 후 Warm 30회를 측정했다.
+- Warm 검색 전체는 평균 `236.7 ms`, p50 `237.8 ms`, p95 `270.4 ms`였고,
+  질의 임베딩 p95는 `234.0 ms`, pgvector Exact Search p95는 `41.3 ms`였다.
+- Cold 검색 전체는 p50 `13,024.1 ms`, p95 `14,625.0 ms`로, CPU에서 독립
+  프로세스마다 BGE-M3를 다시 적재하는 영향을 포함한다.
+- 총 33회 모두 근거를 반환했고 실패는 0회였다. 결과는
+  `ai/evaluation/reports/pgvector_latency_baseline_20260806.json`에 기록했다.
+- 이 수치는 개인 격리 단일 사용자 기준선이며 FastAPI HTTP, Backend E2E,
+  팀 DB 네트워크, 동시 부하와 운영 데이터 규모 성능을 포함하지 않는다.
+- 제출용 Word와 Markdown 결과서의 응답속도 항목을 `미측정`에서
+  `격리 단일 사용자 기준선 완료`로 갱신했다.
+- 전체 AI 단위 테스트는 `96 passed, 3 warnings`이며, 공식 후보 기준 JSON에
+  현재 테스트 수와 간이 응답속도 보고서 Hash를 반영했다.

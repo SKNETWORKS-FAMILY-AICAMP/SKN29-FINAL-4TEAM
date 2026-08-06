@@ -4,6 +4,7 @@ import pytest
 from ai.evaluation.eval_dataset_loader import EvalDatasetLoader
 from ai.evaluation.evaluation_runner import EvaluationRunner
 from ai.evaluation.metrics import calculate_mrr, calculate_recall_at_k, is_safety_compliant
+from ai.scripts.benchmark_pgvector_latency import _percentile, _summary
 
 
 def test_metrics_calculation():
@@ -66,3 +67,21 @@ def test_evaluation_runner_execution():
     assert results["safety_evaluation"]["safety_compliance_rate"] == 100.0
     assert results["safety_evaluation"]["evaluation_mode"] == "rule_based_with_evidence_available"
     assert results["rag_evaluation"]["mean_recall_at_5"] == 1.0
+
+
+def test_latency_percentile_and_summary():
+    values = [1.0, 2.0, 3.0, 4.0]
+
+    assert _percentile(values, 50) == pytest.approx(2.5)
+    assert _percentile(values, 95) == pytest.approx(3.85)
+    assert _summary(values) == {
+        "sample_count": 4,
+        "mean_ms": 2.5,
+        "p50_ms": 2.5,
+        "p95_ms": 3.85,
+        "min_ms": 1.0,
+        "max_ms": 4.0,
+    }
+
+    with pytest.raises(ValueError):
+        _percentile([], 50)
