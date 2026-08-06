@@ -40,6 +40,9 @@ jobs:
       - name: Validate approved state machine
         run: python scripts/contracts/validate_state_machine.py
 
+      - name: Reject state machine diagram drift
+        run: python scripts/contracts/render_state_machine.py --check
+
       - name: Run Data unit tests
         run: python -B -m unittest discover -s data/tools/tests -v
 
