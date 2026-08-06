@@ -1,7 +1,7 @@
 # 4주차 차단 요소 Register
 
-> 기준 시각: **2026-08-05 17:45 KST**
-> 기준 브랜치·Commit: `main@24b6b3371b50679a3b2c449a651606e6cbdc581b`
+> 기준 시각: **2026-08-05 18:19 KST**
+> 기준 브랜치·Commit: `main@e95e633d58324579a28bf7858fa8be1555ca1a09`
 > 연계 문서: `docs/planning/week4-current-baseline.md`  
 > 운영 원칙: 차단 전달만으로 완료 처리하지 않고 재현 명령·해제 조건·증거를 확인한다.
 
@@ -24,7 +24,7 @@
 | `W4-BLK-005` | P0 | Backend | 요구 Python 3.13.13 부재로 전체 Gate 미실행 | 최지용 | ENVIRONMENT_BLOCKED | 환경 확보 시 |
 | `W4-BLK-006` | P0 | Web | Lockfile 기준 Test·Lint·Build 재검증 | 한예나·김은진 | RESOLVED | 2026-08-05 |
 | `W4-BLK-007` | P0 | Mobile | Core Compile Task의 SDK Platform Provider 값 없음 | 양정현·김은진 | SDK_PLATFORM_BLOCKED | 환경 정합화 시 |
-| `W4-BLK-008` | P0 | PM·WBS | Runtime·Mock·계약 기준 WBS 현행화 | 윤승혁 | FIXED_PENDING_COMMIT | 변경 Commit 전 |
+| `W4-BLK-008` | P0 | PM·WBS | Runtime·Mock·계약 기준 WBS 현행화 | 윤승혁 | RESOLVED | 2026-08-05 |
 | `W4-BLK-009` | P0 | T-052 | 중앙 시연 패키지·Fallback·3회 리허설·승인 기록 없음 | 윤승혁·김은진 | OPEN | 8월 5일 동결 전 |
 | `W4-BLK-010` | P1 | Backend↔AI | 실제 HTTP 호출·Schema 검증·DB 저장 E2E 없음 | 최지용·이동윤 | INTEGRATION_BLOCKED | 5주차 진입 전 |
 | `W4-BLK-011` | P1 | 상담·방문 | G2 11개 Operation이 후보·NOT_IMPLEMENTED 상태 | 최지용 | CONTRACT_ONLY | 5주차 우선순위 확정 시 |
@@ -162,7 +162,9 @@
 | 목표 | 2026-08-05 발표 동결 전 |
 | 수정 결과 | 10개 작업을 `진행 중`으로 변경하고 제한 상태·근거를 비고에 기록, Gantt `active` 동기화 |
 | 검산 결과 | 완료 9·진행 중 19·미착수 43·차단 2 = 73개, 총 94.5인일 |
-| 잔여 조건 | WBS·기준선·Blocker 변경 Commit 후 GitHub Issue 상태와 일치 여부를 확인하면 `RESOLVED` |
+| 해제 Commit | `e95e633d58324579a28bf7858fa8be1555ca1a09` |
+| 해제 판정 | WBS·기준선·Blocker 변경이 Commit되어 `RESOLVED` |
+| 후속 확인 | 외부 GitHub Issue 상태는 로컬 저장소에서 검증할 수 없으므로 별도 확인 필요 |
 
 ### W4-BLK-009 — 중앙 T-052 시연 패키지 부재
 
@@ -226,7 +228,7 @@
 
 1. `W4-BLK-005` Python 3.13.13 환경 확보 또는 Backend를 `RECORDED_RUNTIME`으로 강등 승인
 2. `W4-BLK-007` Android SDK Platform 정합화 또는 Mobile 신규 범위를 발표 제외
-3. `W4-BLK-008` WBS 현행화 변경 Commit 및 GitHub Issue 상태 확인
+3. 외부 GitHub Issue 상태와 WBS 일치 여부 확인
 4. `W4-BLK-009` 중앙 시연 패키지와 Fallback 작성·리허설
 5. 김은진 발표자료의 주장–증거와 기능 상태를 최종 검수
 

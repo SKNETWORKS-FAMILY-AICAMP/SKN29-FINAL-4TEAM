@@ -1,9 +1,9 @@
 # 4주차 현재 기준선
 
-> 기준 시각: **2026-08-05 17:45 KST**
+> 기준 시각: **2026-08-05 18:19 KST**
 > 기준 브랜치: `main`  
-> 기준 Commit: `24b6b3371b50679a3b2c449a651606e6cbdc581b`
-> Commit 시각: `2026-08-05 17:53:18 +09:00`
+> 기준 Commit: `e95e633d58324579a28bf7858fa8be1555ca1a09`
+> Commit 시각: `2026-08-05 18:19:04 +09:00`
 > 발표 기준 Commit 승인: **2026-08-05, 윤승혁**  
 > 검증 범위: 최신 작업 트리의 계약·Data·Backend·AI·Web·Mobile·WBS·발표 준비 상태  
 > 종합 상태: **INTEGRATION_BLOCKED / PRESENTATION_FREEZE_NOT_APPROVED**
@@ -29,9 +29,9 @@
 
 ## 2. Git·작업 트리 기준
 
-현재 체크아웃 상태는 `main@24b6b33`이다. 이 Commit에는 State Machine 생성기·Mermaid·CI Gate, Data Raw 비보존 정책 복구, 갱신 QA 산출물과 팀원 6명의 4주차 진행도 문서가 포함된다.
+현재 체크아웃 상태는 `main@e95e633`이다. 이 Commit에는 State Machine 생성기·Mermaid·CI Gate, Data Raw 비보존 정책 복구, 갱신 QA 산출물, WBS 현행화와 팀원 6명의 4주차 진행도 문서가 포함된다.
 
-발표 기준 Commit을 `24b6b3371b50679a3b2c449a651606e6cbdc581b`로 갱신한다. Data Raw 구성 회귀는 별도의 깨끗한 Clone에서 재검증한 수정안과 QA 산출물이 이 Commit에 포함됐으므로 `VERIFIED_DONE`으로 판정한다. 현재 작업 트리에는 WBS 현행화 문서 변경만 남아 있다.
+발표 기준 Commit을 `e95e633d58324579a28bf7858fa8be1555ca1a09`로 갱신한다. Data Raw 구성 회귀와 WBS 상태 불일치 수정이 모두 이 Commit에 포함됐으므로 두 Gate를 `RESOLVED`로 판정한다. 외부 GitHub Issue 상태는 로컬 저장소에서 확인할 수 없어 후속 확인으로 남긴다.
 
 ## 3. 영역별 Gate 결과
 
@@ -168,7 +168,7 @@ Gradle 9.5.0과 Android SDK를 인식시킨 뒤 Core·Customer·Technician Test�
 - 작업표 실제 집계는 완료 9개·진행 중 19개·미착수 43개·차단 2개, 총 73개·94.5인일이다.
 - Gantt에도 동일한 10개 작업을 `active`로 반영했다.
 
-T-022·T-023은 부분 Runtime, T-038·T-039는 Mock·Repository 경계, T-040·T-041은 `MOCK_ONLY / BACKEND_BLOCKED`, T-052는 중간 발표용 제한 시연과 최종 E2E를 비고에서 분리했다. 변경은 아직 Commit 전이므로 WBS Gate는 `FIXED_PENDING_COMMIT`이다.
+T-022·T-023은 부분 Runtime, T-038·T-039는 Mock·Repository 경계, T-040·T-041은 `MOCK_ONLY / BACKEND_BLOCKED`, T-052는 중간 발표용 제한 시연과 최종 E2E를 비고에서 분리했다. 변경이 `e95e633...`에 포함됐으므로 WBS Gate는 `RESOLVED`다.
 
 ## 5. 중간 발표 기준선
 
@@ -216,7 +216,7 @@ T-022·T-023은 부분 Runtime, T-038·T-039는 Mock·Repository 경계, T-040·
 ### 발표 동결 전 필수 해제 조건
 
 1. Backend·AI·Mobile의 최신 Gate 결과 또는 명시적 환경 차단·발표 제외 승인
-2. WBS 현행화 변경을 Commit하고 GitHub Issue 상태와 일치 여부 확인
+2. 외부 GitHub Issue 상태와 WBS 일치 여부 확인
 3. 중앙 시연 단계표·Fallback·기능 상태표 작성 및 김은진 전달
 
 위 조건이 충족되기 전 종합 상태는 **`INTEGRATION_BLOCKED / PRESENTATION_FREEZE_NOT_APPROVED`**로 유지한다.
