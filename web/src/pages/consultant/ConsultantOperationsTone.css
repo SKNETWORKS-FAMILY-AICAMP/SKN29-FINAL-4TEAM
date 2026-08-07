@@ -1,0 +1,217 @@
+/*
+ * Counselor queue aligned with the operator dashboard's clear-sky glass tone.
+ * Layout and behavior stay in the existing queue styles; this file only changes
+ * surface, color, border, and depth.
+ */
+
+.compact-consultant-body {
+  background:
+    radial-gradient(circle at 12% 5%, rgb(255 255 255 / 88%), transparent 24%),
+    radial-gradient(circle at 88% 8%, rgb(246 218 255 / 30%), transparent 28%),
+    radial-gradient(circle at 10% 90%, rgb(173 229 255 / 38%), transparent 30%),
+    linear-gradient(145deg, #f8fcff 0%, #eef9ff 48%, #e6f6ff 100%);
+}
+
+.simple-consultant-app.consultant-queue-app {
+  --consultant-glass-border: rgb(255 255 255 / 86%);
+  --consultant-glass-line: rgb(76 151 204 / 16%);
+  --consultant-glass-copy: #17384f;
+  --consultant-glass-muted: #678399;
+  width: calc(100% - 44px);
+  max-width: none;
+  margin: 22px;
+  border: 2px solid var(--consultant-glass-border) !important;
+  background:
+    radial-gradient(circle at 9% 8%, rgb(255 255 255 / 48%), transparent 28%),
+    radial-gradient(circle at 91% 12%, rgb(241 210 255 / 17%), transparent 33%),
+    radial-gradient(circle at 12% 92%, rgb(102 211 255 / 18%), transparent 36%),
+    linear-gradient(145deg, rgb(255 255 255 / 27%), rgb(184 225 250 / 13%)) !important;
+  box-shadow:
+    inset 3px 3px 5px rgb(255 255 255 / 86%),
+    inset -4px -5px 8px rgb(47 133 196 / 12%),
+    0 22px 52px rgb(55 105 143 / 16%) !important;
+  color: var(--consultant-glass-copy);
+  -webkit-backdrop-filter: blur(6px) saturate(145%);
+  backdrop-filter: blur(6px) saturate(145%);
+}
+
+.simple-consultant-app.consultant-queue-app::before {
+  background: rgb(99 212 255 / 25%);
+}
+
+.simple-consultant-app.consultant-queue-app::after {
+  background: rgb(203 181 255 / 22%);
+}
+
+.simple-consultant-app.consultant-queue-app .simple-topbar {
+  border-bottom: 1px solid var(--consultant-glass-line) !important;
+  background: rgb(238 249 255 / 24%) !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 96%),
+    inset 0 -1px 0 rgb(74 147 199 / 11%),
+    0 9px 24px rgb(72 119 150 / 8%) !important;
+  -webkit-backdrop-filter: blur(6px) saturate(150%) !important;
+  backdrop-filter: blur(6px) saturate(150%) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .simple-brand {
+  color: var(--consultant-glass-copy) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .simple-brand > span,
+.simple-consultant-app.consultant-queue-app .simple-user > span {
+  border: 2px solid rgb(255 255 255 / 88%) !important;
+  background:
+    radial-gradient(circle at 30% 24%, rgb(255 255 255 / 92%), transparent 33%),
+    linear-gradient(145deg, rgb(220 244 255 / 90%), rgb(183 222 244 / 68%)) !important;
+  box-shadow:
+    inset 2px 2px 4px rgb(255 255 255 / 92%),
+    inset -3px -4px 7px rgb(47 123 178 / 15%),
+    0 8px 18px rgb(63 113 148 / 15%) !important;
+  color: #24506b !important;
+}
+
+.simple-consultant-app.consultant-queue-app .simple-topbar__notice {
+  border: 2px solid rgb(255 255 255 / 84%) !important;
+  background:
+    radial-gradient(circle at 10% 10%, rgb(255 255 255 / 58%), transparent 34%),
+    linear-gradient(145deg, rgb(255 255 255 / 28%), rgb(177 221 248 / 15%)) !important;
+  box-shadow:
+    inset 2px 2px 4px rgb(255 255 255 / 88%),
+    inset -3px -4px 7px rgb(36 120 181 / 13%),
+    0 7px 15px rgb(63 113 148 / 12%) !important;
+  color: #315f7c !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tabs,
+.simple-consultant-app.consultant-queue-app .consultant-queue-panel {
+  border: 2px solid var(--consultant-glass-border) !important;
+  background:
+    radial-gradient(circle at 8% 8%, rgb(255 255 255 / 45%), transparent 28%),
+    radial-gradient(circle at 90% 18%, rgb(241 183 231 / 10%), transparent 32%),
+    radial-gradient(circle at 12% 92%, rgb(87 208 255 / 12%), transparent 34%),
+    linear-gradient(145deg, rgb(255 255 255 / 23%), rgb(187 226 249 / 11%)) !important;
+  box-shadow:
+    inset 3px 3px 5px rgb(255 255 255 / 80%),
+    inset -4px -5px 8px rgb(47 133 196 / 13%),
+    inset 0 0 0 1px rgb(255 255 255 / 42%),
+    0 14px 32px rgb(61 111 147 / 13%) !important;
+  -webkit-backdrop-filter: blur(5px) saturate(145%) !important;
+  backdrop-filter: blur(5px) saturate(145%) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab {
+  border: 2px solid rgb(255 255 255 / 83%) !important;
+  background:
+    radial-gradient(circle at 12% 12%, rgb(255 255 255 / 58%), transparent 31%),
+    radial-gradient(circle at 88% 82%, rgb(103 209 255 / 13%), transparent 38%),
+    linear-gradient(145deg, rgb(255 255 255 / 27%), rgb(176 220 248 / 12%)) !important;
+  box-shadow:
+    inset 3px 3px 5px rgb(255 255 255 / 88%),
+    inset -4px -5px 8px rgb(35 120 184 / 16%),
+    0 8px 16px rgb(63 113 148 / 13%) !important;
+  color: var(--consultant-glass-copy) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active {
+  border-color: rgb(245 251 255 / 94%) !important;
+  background:
+    radial-gradient(circle at 12% 12%, rgb(255 255 255 / 67%), transparent 30%),
+    radial-gradient(circle at 86% 18%, rgb(255 173 222 / 24%), transparent 37%),
+    radial-gradient(circle at 14% 88%, rgb(75 210 255 / 28%), transparent 39%),
+    radial-gradient(circle at 88% 88%, rgb(151 134 255 / 23%), transparent 40%),
+    linear-gradient(145deg, rgb(255 255 255 / 24%), rgb(129 202 248 / 14%)) !important;
+  box-shadow:
+    inset 3px 3px 5px rgb(255 255 255 / 80%),
+    inset -4px -5px 9px rgb(77 99 186 / 15%),
+    0 10px 21px rgb(88 117 174 / 17%) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab :is(strong, em),
+.simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active :is(strong, em) {
+  color: var(--consultant-glass-copy) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab em {
+  color: var(--consultant-glass-muted) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-work-tab > b {
+  border: 1px solid rgb(255 255 255 / 94%) !important;
+  background: rgb(247 252 255 / 72%) !important;
+  box-shadow:
+    inset 2px 2px 4px rgb(255 255 255 / 96%),
+    inset -3px -4px 6px rgb(49 126 183 / 14%),
+    0 5px 11px rgb(67 110 143 / 13%) !important;
+  color: #1f719f !important;
+}
+
+.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab.is-active
+  > b {
+  border-color: rgb(255 255 255 / 94%) !important;
+  background: rgb(247 252 255 / 76%) !important;
+  color: #1f719f !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-panel__head,
+.simple-consultant-app.consultant-queue-app .consultant-queue-panel > .common-pagination {
+  border-color: var(--consultant-glass-line) !important;
+  background: rgb(255 255 255 / 22%) !important;
+  -webkit-backdrop-filter: blur(5px) saturate(140%) !important;
+  backdrop-filter: blur(5px) saturate(140%) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-queue-tools .simple-search,
+.simple-consultant-app.consultant-queue-app .consultant-queue-tools > button,
+.simple-consultant-app.consultant-queue-app .common-pagination__actions :is(button, span) {
+  border: 2px solid rgb(255 255 255 / 84%) !important;
+  background: rgb(255 255 255 / 30%) !important;
+  box-shadow:
+    inset 2px 2px 4px rgb(255 255 255 / 90%),
+    inset -3px -4px 7px rgb(47 129 185 / 11%),
+    0 6px 14px rgb(63 113 148 / 10%) !important;
+  color: var(--consultant-glass-copy) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item,
+.simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item:nth-child(even) {
+  border-bottom-color: rgb(83 151 198 / 13%) !important;
+  background: rgb(255 255 255 / 12%) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item:hover {
+  background: rgb(230 247 255 / 58%) !important;
+  box-shadow: inset 4px 0 0 rgb(94 177 226 / 58%) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-detail-drawer {
+  border-left: 2px solid rgb(255 255 255 / 84%) !important;
+  background:
+    radial-gradient(circle at 88% 8%, rgb(240 210 255 / 20%), transparent 31%),
+    linear-gradient(145deg, rgb(248 253 255 / 94%), rgb(226 244 255 / 92%)) !important;
+  box-shadow: -20px 0 50px rgb(43 88 121 / 20%) !important;
+}
+
+.simple-consultant-app.consultant-queue-app .consultant-detail-drawer__head,
+.simple-consultant-app.consultant-queue-app .consultant-detail-drawer__body .simple-desk {
+  border-color: rgb(255 255 255 / 86%) !important;
+  background: rgb(255 255 255 / 38%) !important;
+  box-shadow:
+    inset 2px 2px 4px rgb(255 255 255 / 90%),
+    inset -3px -4px 8px rgb(47 133 196 / 10%),
+    0 10px 24px rgb(61 111 147 / 10%) !important;
+  -webkit-backdrop-filter: blur(6px) saturate(140%) !important;
+  backdrop-filter: blur(6px) saturate(140%) !important;
+}
+
+@media (max-width: 767px) {
+  .simple-consultant-app.consultant-queue-app {
+    width: 100%;
+    margin: 0;
+    border: 0 !important;
+    border-radius: 0;
+    box-shadow: none !important;
+  }
+}

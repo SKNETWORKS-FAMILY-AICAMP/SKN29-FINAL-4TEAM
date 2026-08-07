@@ -33,6 +33,8 @@ import "./ConsultantDashboardTheme.css";
 import "./ConsultantInquiryPearlTheme.css";
 import "../../common/styles/watercare-liquid-glass-theme.css";
 import "../../common/styles/pearl-workspace-v2.css";
+import "../../common/styles/water-glass-theme.css";
+import "./ConsultantOperationsTone.css";
 
 const WORK_BUCKETS: readonly {
   id: CounselorWorkBucket;
