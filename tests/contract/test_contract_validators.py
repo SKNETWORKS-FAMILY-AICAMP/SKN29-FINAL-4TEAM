@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
 
@@ -14,6 +15,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 import validate_codes  # noqa: E402
 import validate_examples  # noqa: E402
 import validate_openapi  # noqa: E402
+import render_state_machine  # noqa: E402
 
 
 class ContractValidatorsTest(unittest.TestCase):
@@ -40,6 +42,18 @@ class ContractValidatorsTest(unittest.TestCase):
         self.assertEqual(result.api_examples, result.referenced_examples)
         self.assertEqual(5, result.integration_examples)
         self.assertEqual(25, result.wrapped_responses)
+
+    def test_state_machine_digest_input_is_line_ending_independent(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            lf_path = Path(temp_dir) / "lf.yaml"
+            crlf_path = Path(temp_dir) / "crlf.yaml"
+            lf_path.write_bytes(b"contract:\n  version: 1.0.0\n")
+            crlf_path.write_bytes(b"contract:\r\n  version: 1.0.0\r\n")
+
+            self.assertEqual(
+                render_state_machine.normalized_source_bytes(lf_path),
+                render_state_machine.normalized_source_bytes(crlf_path),
+            )
 
 
 if __name__ == "__main__":
