@@ -1,5 +1,25 @@
 # Contracts Changelog
 
+## 2026-08-07 — State Machine Action–OpenAPI–Runtime Crosswalk 기준선
+
+### Added
+
+- 외부 Action 23개 전체를 누락 없이 분류한 `api/action-operation-crosswalk.yaml`
+- Action별 State Machine Event·Operation ID·HTTP Method·Path·Runtime 증거 연결
+- `RUNTIME_IMPLEMENTED`, `OPENAPI_CONFIRMED`, `CONTRACT_ONLY`, `DEFERRED` 판정 기준과 집계
+
+### Classification
+
+- Backend Runtime과 Test 증거가 있는 Action 2개를 `RUNTIME_IMPLEMENTED`로 분류
+- 정확히 일치하는 OpenAPI Operation만 존재하는 Action 9개를 `OPENAPI_CONFIRMED`로 분류
+- 4주차 우선 범위이나 정확한 OpenAPI Operation이 없는 Action 2개를 `CONTRACT_ONLY`로 분류
+- 후속 구현 범위 Action 10개를 `DEFERRED`로 분류
+
+### Boundary
+
+- 유사한 범용 Operation, Web·Mobile Mock 또는 과거 실행 기록만으로 Runtime 완료를 선언하지 않는다.
+- 이번 변경은 분류 기준선이며 Backend·Web·Mobile·AI 소비자 승인 완료를 의미하지 않는다.
+
 ## 2026-08-05 — T-018 R1 고객 본인 구독 목록·상세 계약
 
 ### Added

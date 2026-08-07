@@ -11,6 +11,11 @@
 - `error-codes/`: 업무 오류 코드 레지스트리
 - `examples/`: 여러 계약을 연결한 대표 흐름 예시
 
+## 공통 기준선
+
+- `api/action-operation-crosswalk.yaml`: 외부 Action 23개의 State Machine Event·OpenAPI·Runtime 분류
+- `api/g2-operation-crosswalk.yaml`: 상담·방문 G2 결정과 Operation 11개의 상세 연결
+
 ## 변경 원칙
 
 1. 계약 파일을 먼저 수정한다.
