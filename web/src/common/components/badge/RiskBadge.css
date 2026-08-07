@@ -5,6 +5,7 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
+  border: 1px solid transparent;
   border-radius: 999px;
   font-size: 13px;
   font-weight: 700;
@@ -17,16 +18,19 @@
 }
 
 .common-risk-badge--general {
-  background: #dcfce7;
-  color: #166534;
+  border-color: #cbd5df;
+  background: #f1f5f8;
+  color: #526473;
 }
 
 .common-risk-badge--caution {
+  border-color: #ecd082;
   background: #fef3c7;
   color: #92400e;
 }
 
 .common-risk-badge--danger {
+  border-color: #efb5b5;
   background: #fee2e2;
   color: #b91c1c;
 }
@@ -40,7 +44,7 @@
   min-height: 24px;
   padding: 0 8px;
   gap: 4px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 900;
 }
 

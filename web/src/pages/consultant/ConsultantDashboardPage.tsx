@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { createInquiryDetailPath } from "../../app/router/routePaths";
@@ -31,6 +31,8 @@ import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntim
 import "./ConsultantDashboardPage.css";
 import "./ConsultantDashboardTheme.css";
 import "./ConsultantInquiryPearlTheme.css";
+import "../../common/styles/watercare-liquid-glass-theme.css";
+import "../../common/styles/pearl-workspace-v2.css";
 
 const WORK_BUCKETS: readonly {
   id: CounselorWorkBucket;
@@ -56,6 +58,8 @@ export default function ConsultantDashboardPage() {
   const { user } = useAuth();
   const { filters, hasChangedConditions, resetFilters, setFilters } =
     useCounselorQueueFilters();
+  const isQueryComposingRef = useRef(false);
+  const [queryInput, setQueryInput] = useState(filters.query);
   const [activeBucket, setActiveBucket] =
     useState<CounselorWorkBucket>("NEW");
   const [selectedInquiryId, setSelectedInquiryId] =
@@ -88,6 +92,12 @@ export default function ConsultantDashboardPage() {
           })),
     [inquiryStateUpdates, mockState],
   );
+
+  useEffect(() => {
+    if (!isQueryComposingRef.current) {
+      setQueryInput(filters.query);
+    }
+  }, [filters.query]);
 
   useEffect(() => {
     document.body.classList.add("compact-consultant-body");
@@ -163,15 +173,21 @@ export default function ConsultantDashboardPage() {
     <div className="simple-consultant-app consultant-queue-app">
       <header className="simple-topbar">
         <a className="simple-brand" href="/" aria-label="Water Bridge 홈으로 이동">
-          <span aria-hidden="true">W</span>
-          <strong>Water Bridge</strong>
+          <span className="simple-brand__mark" aria-hidden="true">W</span>
+          <div className="simple-brand__copy">
+            <strong>Water Bridge</strong>
+            <small>상담 워크스페이스</small>
+          </div>
         </a>
 
         <ApiRuntimeStatus className="simple-topbar__notice" compact />
 
         <div className="simple-user">
-          <span>{user?.displayName.slice(0, 1) ?? "상"}</span>
-          <strong>{user?.displayName ?? "상담사"}</strong>
+          <span className="simple-user__avatar">{user?.displayName.slice(0, 1) ?? "상"}</span>
+          <div className="simple-user__copy">
+            <strong>{user?.displayName ?? "상담사"}</strong>
+            <small>상담사 · 업무 중</small>
+          </div>
         </div>
       </header>
 
@@ -210,6 +226,7 @@ export default function ConsultantDashboardPage() {
         >
           <header className="consultant-queue-panel__head">
             <div>
+              <small className="consultant-queue-panel__eyebrow">COUNSEL QUEUE</small>
               <h2>{WORK_BUCKET_LABELS[activeBucket]}</h2>
               {activeBucketCopy?.description && <p>{activeBucketCopy.description}</p>}
             </div>
@@ -220,10 +237,23 @@ export default function ConsultantDashboardPage() {
                 <input
                   type="search"
                   aria-label="문의 검색"
-                  value={filters.query}
-                  onChange={(event) =>
-                    setFilters({ ...filters, query: event.target.value, page: 1 })
-                  }
+                  value={queryInput}
+                  onCompositionStart={() => {
+                    isQueryComposingRef.current = true;
+                  }}
+                  onCompositionEnd={(event) => {
+                    isQueryComposingRef.current = false;
+                    const query = event.currentTarget.value;
+                    setQueryInput(query);
+                    setFilters({ ...filters, query, page: 1 });
+                  }}
+                  onChange={(event) => {
+                    const query = event.target.value;
+                    setQueryInput(query);
+                    if (!isQueryComposingRef.current) {
+                      setFilters({ ...filters, query, page: 1 });
+                    }
+                  }}
                   placeholder="고객명, 증상, 문의번호 검색"
                 />
               </label>
@@ -275,7 +305,7 @@ export default function ConsultantDashboardPage() {
                   key={inquiry.inquiryId}
                   className="v6-queue-item consultant-list-item"
                   type="button"
-                  aria-label={`${inquiry.inquiryCode} ${inquiry.customerDisplayName} ${inquiry.symptomLabel} 상세 열기`}
+                  aria-label={`${inquiry.inquiryCode} ${inquiry.customerName} ${inquiry.symptomLabel} 상세 열기`}
                   onClick={() => setSelectedInquiryId(inquiry.inquiryId)}
                 >
                   <span className="consultant-list-item__risk">
@@ -296,7 +326,7 @@ export default function ConsultantDashboardPage() {
                   </span>
 
                   <span className="consultant-list-item__customer">
-                    <strong>{inquiry.customerDisplayName}</strong>
+                    <strong>{inquiry.customerName}</strong>
                     <small>{inquiry.productCode}</small>
                   </span>
 
@@ -346,7 +376,7 @@ export default function ConsultantDashboardPage() {
               <div>
                 <small>{selectedInquiry.inquiryCode}</small>
                 <h2 id="consultant-detail-title">
-                  {selectedInquiry.customerDisplayName} · {selectedInquiry.symptomLabel}
+                  {selectedInquiry.customerName} · {selectedInquiry.symptomLabel}
                 </h2>
                 <p>선택한 문의의 상담과 기사 일정을 여기에서 처리합니다.</p>
               </div>

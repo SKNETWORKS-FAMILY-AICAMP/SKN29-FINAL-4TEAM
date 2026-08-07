@@ -71,4 +71,19 @@ describe("ADMIN-01 운영 현황 대시보드", () => {
     renderDashboard("/admin?mockState=error");
     expect(await screen.findByText("운영 현황을 불러오지 못했습니다.")).toBeInTheDocument();
   });
+
+  it("목록 없이 운영 지표만 보는 인포그래픽 전용 화면을 제공한다", async () => {
+    renderDashboard("/admin/insights");
+
+    expect(
+      await screen.findByRole("heading", { name: "운영 인포그래픽" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "주요 증상 유형" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "문의 처리 상태" })).toBeInTheDocument();
+    expect(screen.queryByText("조건별 문의 현황")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /인포그래픽/ })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  });
 });

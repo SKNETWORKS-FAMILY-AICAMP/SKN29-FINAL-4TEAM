@@ -394,6 +394,90 @@
   color: #7894a6 !important;
 }
 
+/* Approved form controls and larger workspace type scale. */
+.v6-workspace {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.v6-workspace :is(.v6-page-head p, .v6-detail-head p, .visit-v13-form-head p) {
+  font-size: 14px;
+}
+
+.v6-workspace :is(.v6-form-field, .visit-v13-field) > span,
+.v6-workspace :is(.v6-form-field, .visit-v13-field) > label {
+  font-size: 13px;
+}
+
+.v6-workspace :is(input, select, textarea) {
+  border: 1px solid #b9d1dc !important;
+  border-radius: 10px !important;
+  background-color: #f8fbfd !important;
+  color: #183e54 !important;
+  font-size: 14px !important;
+}
+
+.v6-workspace select {
+  appearance: none;
+  padding-right: 40px !important;
+  background-image: linear-gradient(45deg, transparent 50%, #397b9e 50%), linear-gradient(135deg, #397b9e 50%, transparent 50%) !important;
+  background-position: calc(100% - 18px) 50%, calc(100% - 12px) 50% !important;
+  background-repeat: no-repeat !important;
+  background-size: 6px 6px, 6px 6px !important;
+}
+
+.v6-workspace :is(input[type="date"], input[type="datetime-local"])::-webkit-calendar-picker-indicator {
+  padding: 6px;
+  border-radius: 7px;
+  background-color: #e4f2f8;
+  cursor: pointer;
+}
+
+.v6-workspace .v6-sidebar__legend {
+  border-color: rgb(91 151 190 / 16%) !important;
+}
+
+.v6-workspace .v6-sidebar__legend li {
+  color: #5f7d91 !important;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.v6-workspace .v6-action-panel {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.v6-workspace .v6-action-panel :is(.v6-action-panel__head, form, .v6-form-field, .v6-action-buttons) {
+  min-width: 0;
+}
+
+.v6-workspace .v6-action-panel__head :is(p, small),
+.v6-workspace .v6-action-panel :is(.v6-form-field, .v6-check-field, .v6-action-note, .v6-action-message) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.v6-workspace .v6-action-panel__head > small:last-child {
+  display: block;
+  margin-top: 8px;
+}
+
+.v6-workspace .v6-action-panel .v6-form-field {
+  padding: 10px 12px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.v6-workspace .v6-action-panel .v6-form-field :is(input, select, textarea) {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 .operations-page .operations-navigation a span,
 .operations-page .operations-brand > span,
 .v6-workspace :is(

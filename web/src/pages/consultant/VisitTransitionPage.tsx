@@ -17,6 +17,8 @@ import VisitTransitionForm from "../../features/visit-transition/components/Visi
 import type { VisitMockAction } from "../../features/visit-transition/model/visitTransitionTypes";
 import "./VisitTransitionPage.css";
 import "../../common/styles/water-glass-theme.css";
+import "../../common/styles/watercare-liquid-glass-theme.css";
+import "../../common/styles/pearl-workspace-v2.css";
 
 interface VisitTransitionLocationState {
   entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED";

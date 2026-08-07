@@ -14,6 +14,20 @@ const CONSULTANT_USER = {
   isActive: true,
 };
 
+function createLocalStorageMock(): Storage {
+  const values = new Map<string, string>();
+  return {
+    get length() {
+      return values.size;
+    },
+    clear: () => values.clear(),
+    getItem: (key) => values.get(key) ?? null,
+    key: (index) => [...values.keys()][index] ?? null,
+    removeItem: (key) => void values.delete(key),
+    setItem: (key, value) => values.set(key, String(value)),
+  };
+}
+
 function AuthHarness() {
   const auth = useAuth();
 
@@ -35,7 +49,13 @@ function AuthHarness() {
 }
 
 describe("AuthProvider 통합", () => {
-  beforeEach(() => authSessionStore.clear());
+  beforeEach(() => {
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      value: createLocalStorageMock(),
+    });
+    authSessionStore.clear();
+  });
   afterEach(() => {
     authSessionStore.clear();
     vi.restoreAllMocks();
@@ -54,6 +74,20 @@ describe("AuthProvider 통합", () => {
 
     expect(await screen.findByText("로그인 필요")).toBeInTheDocument();
     expect(authSessionStore.getSession()).toBeNull();
+    expect(window.localStorage.getItem("waterbridge.auth.session.v1")).toBeNull();
+  });
+
+  it("로그인 세션을 새로고침 복원용 저장소에 유지한다", async () => {
+    render(
+      <AuthProvider initialUser={CONSULTANT_USER}>
+        <AuthHarness />
+      </AuthProvider>,
+    );
+
+    await screen.findByText("테스트 상담원");
+    expect(window.localStorage.getItem("waterbridge.auth.session.v1")).toContain(
+      CONSULTANT_USER.id,
+    );
   });
 
   it("401 갱신 후 재시도도 실패하면 로그인 상태를 제거한다", async () => {

@@ -216,6 +216,23 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.getAllByRole("button", { name: "검색 초기화" })).toHaveLength(2);
   });
 
+  it("한글 조합 중에는 검색 URL을 갱신하지 않고 조합 완료 후 검색한다", () => {
+    renderPage();
+    const searchInput = screen.getByRole("searchbox", { name: "문의 검색" });
+
+    fireEvent.compositionStart(searchInput);
+    fireEvent.change(searchInput, { target: { value: "존재하지 않는 문의" } });
+
+    expect(searchInput).toHaveValue("존재하지 않는 문의");
+    expect(
+      screen.queryByText("검색 조건에 맞는 문의가 없습니다."),
+    ).not.toBeInTheDocument();
+
+    fireEvent.compositionEnd(searchInput, { data: "의" });
+
+    expect(screen.getByText("검색 조건에 맞는 문의가 없습니다.")).toBeInTheDocument();
+  });
+
   it("URL의 검색어를 복원하고 해당 상태 탭에서 결과를 찾을 수 있다", async () => {
     const user = userEvent.setup();
     renderPage("/consultant/inquiries?q=INQ-20260704-0013&page=1");

@@ -333,7 +333,7 @@ function createInquiry(
     scenarioId: row.scenario_id,
     customerId: CUSTOMER_PUBLIC_IDS.get(row.customer_id) ?? "공개 고객 ID 확인 필요",
     customerName: `합성 고객 ${customerSequence}`,
-    customerDisplayName: `합성 고객 ${customerSequence.slice(0, 1)}**`,
+    customerDisplayName: `합성 고객 ${customerSequence}`,
     customerPhone: `010-****-${String(1200 + index).slice(-4)} (합성)`,
     serviceAddress: "서울특별시 마포구 월드컵북로 ** (합성)",
     warrantyLabel: "무상보증 · 2027.02까지",

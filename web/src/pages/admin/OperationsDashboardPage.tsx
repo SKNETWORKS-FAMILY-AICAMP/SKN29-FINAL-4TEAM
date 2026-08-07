@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { ROUTE_PATHS } from "../../app/router/routePaths";
-import { useAuth } from "../../app/providers/authContext";
 import RiskBadge from "../../common/components/badge/RiskBadge";
 import StatusBadge from "../../common/components/badge/StatusBadge";
 import DataTable, {
@@ -27,10 +26,11 @@ import {
 import type { CounselorInquiry } from "../../features/consultation/model/consultantWorkspaceTypes";
 import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
 import ApiIntegrationPanel from "../../features/runtime-status/components/ApiIntegrationPanel";
-import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntimeStatus";
 import "./OperationsDashboardPage.css";
 import "./OperationsDashboardTheme.css";
 import "../../common/styles/water-glass-theme.css";
+import "../../common/styles/watercare-liquid-glass-theme.css";
+import "../../common/styles/pearl-workspace-v2.css";
 
 const OPERATIONS_INQUIRIES =
   consultantWorkspaceRepository.listAllInquiries();
@@ -76,7 +76,6 @@ const INQUIRY_COLUMNS: readonly DataTableColumn<CounselorInquiry>[] = [
 export default function OperationsDashboardPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, signOut } = useAuth();
   const { filters, hasChangedFilters, resetFilters, setFilters } =
     useOperationsDashboardFilters();
   const mockState = searchParams.get("mockState");
@@ -92,11 +91,6 @@ export default function OperationsDashboardPage() {
     () => createOperationsDashboardSummary(sourceInquiries, filters),
     [filters, sourceInquiries],
   );
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate(ROUTE_PATHS.login, { replace: true });
-  };
 
   const renderContent = () => {
     if (mockState === "loading") {
@@ -158,42 +152,7 @@ export default function OperationsDashboardPage() {
   };
 
   return (
-    <div className="operations-page">
-      <header className="operations-topbar">
-        <div className="operations-brand">
-          <span>W</span>
-          <div>
-            <strong>Water Bridge</strong>
-            <small>정수기 고객 케어 운영</small>
-          </div>
-        </div>
-        <nav className="operations-navigation" aria-label="운영자 화면 바로가기">
-          <a href="#operations-overview">
-            <span aria-hidden="true">01</span>
-            운영 개요
-          </a>
-          <a href="#operations-filters">
-            <span aria-hidden="true">02</span>
-            조회 조건
-          </a>
-          <a href="#operations-results">
-            <span aria-hidden="true">03</span>
-            문의 현황
-          </a>
-        </nav>
-        <ApiRuntimeStatus className="operations-runtime-status" compact />
-        <div className="operations-user">
-          <div>
-            <strong>{user?.displayName ?? "운영 담당자"}</strong>
-            <small>OPERATOR · 합성 Mock</small>
-          </div>
-          <button type="button" onClick={() => void handleSignOut()}>
-            로그아웃
-          </button>
-        </div>
-      </header>
-
-      <main className="operations-main">
+    <main className="operations-main">
         <header id="operations-overview" className="operations-page-head">
           <div>
             <small>ADMIN-01 · P1 MOCK</small>
@@ -216,7 +175,6 @@ export default function OperationsDashboardPage() {
           />
         </div>
         <div id="operations-results">{renderContent()}</div>
-      </main>
-    </div>
+    </main>
   );
 }

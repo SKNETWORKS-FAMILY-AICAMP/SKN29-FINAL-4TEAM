@@ -123,9 +123,7 @@ export function getPriorityVariant(
 export function getStatusBadgeVariant(
   status: CounselorStatus,
 ): StatusBadgeVariant {
-  if (status === "COMPLETION_PENDING" || status === "RESOLVED") {
-    return "success";
-  }
+  if (status === "RESOLVED") return "success";
   if (status === "CONSULTATION_IN_PROGRESS") return "progress";
   if (
     status === "VISIT_REVIEW_PENDING" ||
@@ -146,22 +144,8 @@ export function getRiskTone(risk: CounselorRisk): string {
 }
 
 export function getStatusTone(status: CounselorStatus): string {
-  if (
-    status === "COMPLETION_PENDING" ||
-    status === "CONSULTATION_REQUIRED"
-  ) {
-    return "warning";
-  }
-
-  if (
-    status === "VISIT_REVIEW_PENDING" ||
-    status === "VISIT_SCHEDULING" ||
-    status === "VISIT_SCHEDULED" ||
-    status === "REVISIT_REQUIRED" ||
-    status === "REOPENED"
-  ) {
-    return "purple";
-  }
+  if (status === "RESOLVED") return "success";
+  if (status === "CANCELLED" || status === "UNKNOWN") return "default";
   return "info";
 }
 
