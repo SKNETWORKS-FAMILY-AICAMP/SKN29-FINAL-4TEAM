@@ -1,17 +1,17 @@
 # 4주차 차단 요소 Register
 
-> 기준 시각: **2026-08-05 18:19 KST**
-> 기준 브랜치·Commit: `main@e95e633d58324579a28bf7858fa8be1555ca1a09`
-> 연계 문서: `docs/planning/week4-current-baseline.md`  
+> 기준일: **2026-08-07 KST**
+> 기준 브랜치·Commit: `main@dad0e7a2c0e6c184ac8811bce6c6974bd7cb3fe0`
+> 연계 문서: `docs/planning/week4-current-baseline.md`
 > 운영 원칙: 차단 전달만으로 완료 처리하지 않고 재현 명령·해제 조건·증거를 확인한다.
 
 ## 1. 우선순위 기준
 
 | 우선순위 | 의미 |
 |---|---|
-| `P0` | 8월 5일 발표 기준 동결 또는 8월 6일 시연·발표를 직접 차단 |
-| `P1` | 발표에서 제한 사항으로 분리할 수 있으나 5주차 진입 전에 해결 필요 |
-| `P2` | 발표 후 개선 가능한 비차단 품질·운영 항목 |
+| `P0` | 5주차 진입 또는 최종 통합의 핵심 경로를 직접 차단 |
+| `P1` | 제한된 병행 작업은 가능하지만 대상 Runtime 착수 전에 해결 필요 |
+| `P2` | 최종 발표·운영 전 개선 가능한 비차단 품질 항목 |
 
 ## 2. 차단 요소 요약
 
@@ -25,11 +25,12 @@
 | `W4-BLK-006` | P0 | Web | Lockfile 기준 Test·Lint·Build 재검증 | 한예나·김은진 | RESOLVED | 2026-08-05 |
 | `W4-BLK-007` | P0 | Mobile | Core Compile Task의 SDK Platform Provider 값 없음 | 양정현·김은진 | SDK_PLATFORM_BLOCKED | 환경 정합화 시 |
 | `W4-BLK-008` | P0 | PM·WBS | Runtime·Mock·계약 기준 WBS 현행화 | 윤승혁 | RESOLVED | 2026-08-05 |
-| `W4-BLK-009` | P0 | T-052 | 중앙 시연 패키지·Fallback·3회 리허설·승인 기록 없음 | 윤승혁·김은진 | OPEN | 8월 5일 동결 전 |
-| `W4-BLK-010` | P1 | Backend↔AI | 실제 HTTP 호출·Schema 검증·DB 저장 E2E 없음 | 최지용·이동윤 | INTEGRATION_BLOCKED | 5주차 진입 전 |
-| `W4-BLK-011` | P1 | 상담·방문 | G2 11개 Operation이 후보·NOT_IMPLEMENTED 상태 | 최지용 | CONTRACT_ONLY | 5주차 우선순위 확정 시 |
-| `W4-BLK-012` | P1 | AI | 현재 AI Test·팀 DB pgvector 재검증 없음 | 이동윤·김은진 | ENVIRONMENT_BLOCKED | 5주차 진입 전 |
+| `W4-BLK-009` | P2 | T-052 | 중간 발표 전 중앙 시연 패키지·리허설·승인 기록 미확보 | 윤승혁·김은진 | CLOSED_WITH_GAP | 2026-08-07 |
+| `W4-BLK-010` | P1 | Backend↔AI | 실제 HTTP 호출·Schema 검증·DB 저장 E2E 없음 | 최지용·이동윤 | WEEK5_HANDOFF_READY | 5주차 시작 Gate |
+| `W4-BLK-011` | P1 | 상담·방문 | G2 11개 Operation이 후보·NOT_IMPLEMENTED 상태 | 최지용 | WEEK5_HANDOFF_READY | 5주차 Backlog 확정 시 |
+| `W4-BLK-012` | P1 | AI | 현재 AI Test·팀 DB pgvector 재검증 없음 | 이동윤·김은진 | WEEK5_ENTRY_BLOCKED | 5주차 시작 Gate |
 | `W4-BLK-013` | P1 | Contract Crosswalk | 행동 23개 전체의 OpenAPI·Runtime·후속 분류가 없음 | 윤승혁·최지용 | RESOLVED | 2026-08-07 |
+| `W4-BLK-014` | P1 | PM·Governance | 3.3 Matrix의 외부 Issue 대조와 담당자 회신 없음 | 윤승혁·전 팀원 | EXTERNAL_CONFIRMATION_PENDING | 5주차 Backlog 확정 전 |
 
 ## 3. 상세 차단 기록
 
@@ -177,6 +178,9 @@
 | 협업 | 김은진, 전 팀원 |
 | 해제 조건 | 각 단계를 `LIVE_RUNTIME/RECORDED_RUNTIME/MOCK_UI/CONTRACT_ONLY/NOT_INCLUDED`로 분류하고 Fallback 및 최소 3회 리허설 기록 확보 |
 | 목표 | 2026-08-05 발표 동결 전 |
+| 종료 시각 | 2026-08-07 KST |
+| 종료 결정 | 중간 발표가 종료되어 사전 리허설·승인을 소급 작성하지 않고 `CLOSED_WITH_GAP` 처리 |
+| 후속 처리 | 실제 발표 피드백은 `week4-midterm-feedback.md`, 최종 시연 패키지는 `T-046` 이후 `T-052` 잔여 범위로 관리 |
 
 ### W4-BLK-010 — Backend↔AI 실제 수직 연결 부재
 
@@ -228,13 +232,26 @@
 | 검증 증거 | Crosswalk·Code·OpenAPI·Example Validator PASS, Contract Test 7개 PASS, Data CI Gate 연결 |
 | 잔여 제한 | 담당자별 Runtime Test·PR 회신은 `week4-contract-consumer-review.md`에서 별도 추적 |
 
-## 4. 발표 동결 전 실행 순서
+### W4-BLK-014 — 3.3 외부 Issue·담당자 확인 대기
 
-1. `W4-BLK-005` Python 3.13.13 환경 확보 또는 Backend를 `RECORDED_RUNTIME`으로 강등 승인
-2. `W4-BLK-007` Android SDK Platform 정합화 또는 Mobile 신규 범위를 발표 제외
-3. 외부 GitHub Issue 상태와 WBS 일치 여부 확인
-4. `W4-BLK-009` 중앙 시연 패키지와 Fallback 작성·리허설
-5. 김은진 발표자료의 주장–증거와 기능 상태를 최종 검수
+| 항목 | 내용 |
+|---|---|
+| 증상 | 10개 P0 과제의 로컬 담당자·증거 Matrix는 작성됐으나 GitHub Issue 링크와 담당자 회신이 없음 |
+| 영향 | 관할 승인, 5주차 목표일과 실제 담당자 수락 여부를 최종 확정할 수 없음 |
+| 책임 | 윤승혁 |
+| 협업 | 최지용, 이동윤, 한예나, 양정현, 김은진 |
+| 해제 조건 | 각 Issue에 담당자·선행 산출물·완료 증거·제외 범위·5주차 목표일을 대조하고 담당자 회신 기록 |
+| 로컬 증거 | `week4-scope-and-dod.md`, `week4-dependency-map.md`, `week4-owner-matrix.md`, `week4-integration-handoff.md` |
+| 현재 판정 | 로컬 3.3 산출물 완료, 외부 운영 확인 대기 |
+
+## 4. 5주차 진입 실행 순서
+
+1. 3.3·3.6 문서를 Commit하고 `W4-BLK-014` Issue·담당자 대조를 수행한다.
+2. `W4-BLK-005`, `W4-BLK-012`, `W4-BLK-007`의 Backend·AI/Vector·Mobile 환경 Gate를 병렬 복구한다.
+3. AI 요청·응답과 State Event Mapping을 확정한다.
+4. `W4-BLK-010` Backend↔AI 최소 수직 E2E를 통과시킨다.
+5. `W4-BLK-011` 상담·방문 Runtime과 소비자 연결의 목표일을 확정한다.
+6. Gate와 독립적인 `T-025` 비교 Fixture와 `T-027` 안전 규칙 Test를 병행한다.
 
 ## 5. 해제 기록 양식
 
