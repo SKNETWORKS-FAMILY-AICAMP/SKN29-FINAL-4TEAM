@@ -13,7 +13,6 @@
 | `W4-BLK-010` | Backend-AI | 실제 HTTP 호출·Schema 검증·DB 저장 E2E 없음 | 통합 차단 | 최지용·이동윤 | 요청부터 결과·근거 저장과 이벤트까지 추적 가능한 E2E 통과 |
 | `W4-BLK-011` | 상담·방문 | G2 Operation 11개가 모두 `NOT_IMPLEMENTED` | 계약 전용 | 최지용 / 한예나·양정현·윤승혁 | Operation별 Runtime·Test 구현 또는 5주차 이관 확정; 발표에서는 `NOT_INCLUDED` |
 | `W4-BLK-012` | AI | 현재 단위 테스트·팀 DB pgvector 재실행 증거 없음 | 환경 차단 | 이동윤 / 김은진 | 현재 Commit에서 AI Test 및 팀 DB pgvector 평가 실행 |
-| `W4-BLK-013` | Action Crosswalk | Action 23개의 OpenAPI·Runtime·클라이언트 전체 분류 없음 | 문서·검증 미완료 | 윤승혁 / 전 팀원 | 모든 Action을 구현·OpenAPI 확인·계약 전용·이관 중 하나로 분류하고 근거 연결 |
 | 외부 Issue 정합성 | PM | GitHub Issue 상태를 로컬 문서와 직접 대조하지 못함 | 외부 확인 대기 | 윤승혁 / 각 담당자 | WBS·Blocker와 Issue 상태·담당자·목표일 의미 일치 확인 |
 
 ## 2. 해제된 항목
@@ -25,6 +24,7 @@
 | `W4-BLK-004` | RESOLVED | Mermaid 1.0.0 재생성 및 CI Diagram Check 추가 |
 | `W4-BLK-006` | RESOLVED | Web 113 Test, Lint, TypeScript, Production Build PASS |
 | `W4-BLK-008` | RESOLVED | `e95e633`에서 WBS 상태·집계·Gantt 현행화 |
+| `W4-BLK-013` | RESOLVED | `852f877`에서 Action 23개 전체 분류, Validator 4개, Contract Test 7개와 CI Gate 연결 |
 
 ## 3. 발표 시 금지되는 주장
 

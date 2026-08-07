@@ -29,7 +29,7 @@
 | `W4-BLK-010` | P1 | Backend↔AI | 실제 HTTP 호출·Schema 검증·DB 저장 E2E 없음 | 최지용·이동윤 | INTEGRATION_BLOCKED | 5주차 진입 전 |
 | `W4-BLK-011` | P1 | 상담·방문 | G2 11개 Operation이 후보·NOT_IMPLEMENTED 상태 | 최지용 | CONTRACT_ONLY | 5주차 우선순위 확정 시 |
 | `W4-BLK-012` | P1 | AI | 현재 AI Test·팀 DB pgvector 재검증 없음 | 이동윤·김은진 | ENVIRONMENT_BLOCKED | 5주차 진입 전 |
-| `W4-BLK-013` | P1 | Contract Crosswalk | 행동 23개 전체의 OpenAPI·Runtime·후속 분류가 없음 | 윤승혁·최지용 | OPEN | 8월 7일 Exit Gate 전 |
+| `W4-BLK-013` | P1 | Contract Crosswalk | 행동 23개 전체의 OpenAPI·Runtime·후속 분류가 없음 | 윤승혁·최지용 | RESOLVED | 2026-08-07 |
 
 ## 3. 상세 차단 기록
 
@@ -223,6 +223,10 @@
 | 협업 | 최지용, 한예나, 양정현, 이동윤, 김은진 |
 | 해제 조건 | 23개 모두를 `RUNTIME_IMPLEMENTED/OPENAPI_CONFIRMED/CONTRACT_ONLY/DEFERRED` 중 하나로 분류하고 검증 Test 추가 |
 | 목표 | 2026-08-07 Exit Gate 전 |
+| 해제 Commit | `852f877ec06bf48711497cc8f57744097e7871db` |
+| 해제 결과 | Runtime 2개, OpenAPI 확인 9개, 계약 전용 2개, 후속 10개로 전체 23개 분류 |
+| 검증 증거 | Crosswalk·Code·OpenAPI·Example Validator PASS, Contract Test 7개 PASS, Data CI Gate 연결 |
+| 잔여 제한 | 담당자별 Runtime Test·PR 회신은 `week4-contract-consumer-review.md`에서 별도 추적 |
 
 ## 4. 발표 동결 전 실행 순서
 
