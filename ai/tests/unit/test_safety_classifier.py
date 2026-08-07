@@ -71,6 +71,13 @@ def test_general_normal_classification(risk_classifier, guidance_classifier):
     assert guidance.guidance_status == UsageGuidanceStatus.NORMAL
 
 
+def test_explicitly_negated_leak_does_not_override_detected_temperature_caution(risk_classifier):
+    assessment = risk_classifier.classify("누수는 아니고 어제부터 냉수가 미지근합니다.")
+
+    assert assessment.risk_level == RiskLevel.CAUTION
+    assert "제품 하부 및 전원부 주변 누수" not in assessment.detected_risks
+
+
 def test_no_evidence_fallback(risk_classifier, guidance_classifier):
     """공식 매뉴얼 근거 부족 시 PENDING_CONSULTATION 판정 테스트"""
     raw_text = "특이한 사용법을 알려주세요."

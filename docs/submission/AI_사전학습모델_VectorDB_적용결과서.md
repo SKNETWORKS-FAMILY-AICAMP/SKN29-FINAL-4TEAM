@@ -113,6 +113,28 @@ rag_metrics_publishable=false
 차단 사유, 예상 실행 경로를 합의한 뒤 추가한다. 합의 전에는 현재 12개
 Dataset을 임의 변경하거나 13개 완료로 보고하지 않는다.
 
+### 5.4 개인 격리 DB 간이 응답속도 기준선
+
+2026-08-06에 개인 PC의 `127.0.0.1:55432` 격리 PostgreSQL/pgvector에서
+Cold 3회와 Warm 30회를 측정했다. BGE-M3는 CPU로 실행했고, 승인 청크
+7개·Cosine Exact Search·동시성 1 조건을 사용했다. Warm 측정 전에는 모델을
+1회 예열했으며, 현재 `PgVectorStore` 구현처럼 검색마다 새 psycopg 연결을
+여는 시간까지 포함했다.
+
+| 구간 | 평균 | p50 | p95 |
+| --- | ---: | ---: | ---: |
+| Cold 검색 전체 | `13,585.6 ms` | `13,024.1 ms` | `14,625.0 ms` |
+| Warm 질의 임베딩 | `202.6 ms` | `204.5 ms` | `234.0 ms` |
+| Warm pgvector 검색 | `34.1 ms` | `32.9 ms` | `41.3 ms` |
+| Warm 검색 전체 | `236.7 ms` | `237.8 ms` | `270.4 ms` |
+
+전체 33회에서 33회 모두 근거를 반환했고 실패는 0회였다. Cold 지연시간은
+독립 Python 프로세스마다 CPU에서 모델을 다시 적재한 영향이 대부분이다.
+이 결과는 개인 격리 단일 사용자 기준선이며 FastAPI HTTP, Backend E2E,
+팀 DB 네트워크, 동시 요청과 운영 데이터 규모 성능으로 확대하지 않는다.
+근거 파일은
+[`pgvector_latency_baseline_20260806.json`](../../ai/evaluation/reports/pgvector_latency_baseline_20260806.json)이다.
+
 ## 6. Revision·Hash Assertion
 
 | 대상 | 경로·값 |
@@ -149,6 +171,7 @@ $env:AI_VECTOR_DISPOSABLE_CONFIRM='DISPOSABLE_ONLY'
 .\ai\.venv\Scripts\python.exe -m ai.scripts.initialize_disposable_vector_schema
 .\ai\.venv\Scripts\python.exe -m ai.scripts.build_vector_index
 .\ai\.venv\Scripts\python.exe -m ai.scripts.verify_pgvector_runtime
+.\ai\.venv\Scripts\python.exe -m ai.scripts.benchmark_pgvector_latency --cold-runs 3 --warm-runs 30
 .\ai\.venv\Scripts\python.exe -m pytest ai\tests\integration\test_pgvector_runtime.py -v
 ```
 
@@ -181,6 +204,7 @@ Graph DB를 추가하면 다음 운영 부담이 생긴다.
 - 팀 DB 승인 청크 UPSERT와 12개 평가 재실행
 - 13번째 정책 차단 Case의 Data Owner 승인
 - Backend AI Adapter·Evidence 저장 E2E
+- 팀 DB·FastAPI HTTP·동시 부하 응답속도 검증
 - 최신 `main`의 공식 Commit/Tag와 결과 Hash 갱신
 
 위 항목 전에는 상태를 `TEAM_DB_COMPLETE`로 변경하지 않는다.

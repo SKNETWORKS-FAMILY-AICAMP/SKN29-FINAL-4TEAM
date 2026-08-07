@@ -501,3 +501,163 @@ Public UUID 분석 요청이 모두 성공했다.
   반환 Evidence 형식을 포함했다.
 - 최지용의 Backend Adapter는 병렬 진행할 수 있지만 김은진의 승인과 독립 QA
   전에는 13건·팀 DB RAG를 공식 완료로 표시하지 않는다.
+
+### 2026-08-05 AI·RAG 중간발표 예상 질문·답변
+
+- `20260805_AI_RAG_중간발표_예상질문_답변_v0.1.md`를 작성했다.
+- 심사위원 예상 질문 33개를 개념·구현·안전·평가·팀 DB 협업·시연 실패 대응으로
+  분류하고, 짧은 답변과 추가 설명·피해야 할 표현을 함께 정리했다.
+- `95 passed`, 격리 pgvector `12/12`, Recall@5 `1.0`, MRR `0.8857`, 금지
+  Hit `0`을 현재 발표 기준으로 사용하되 제품 1종·승인 청크 7개 범위와 팀 DB
+  미완료 상태를 반드시 함께 말하도록 고정했다.
+- 외부 LLM 생성·직접 학습·전체 제품 정확도·팀 DB E2E를 완료한 것으로
+  과장하지 않도록 발표 금지 표현을 명시했다.
+
+### 2026-08-05 AI·RAG AGENTS 지침 현행화
+
+- Root `AGENTS.md`를 현재 실제 Runtime과 협업 경계에 맞게 개정했다.
+- 현재 구현을 Agent가 아닌 `SingleRAGPipeline` 기반 단일 RAG Workflow로
+  규정하고, 최종 다중 에이전트 전환의 최소 인정 조건과 선행 Gate를 추가했다.
+- Mock·Local·pgvector, 검색 0건·구성 실패, 격리 DB·팀 DB·Backend E2E의
+  구분과 발표 금지 표현을 명시했다.
+- 실제 인덱싱 경로, bge-m3 Revision·1024차원, 승인 데이터·Manifest·Secret·
+  Backend Migration 경계를 추가했다.
+- 12개 평가의 실제 Query 7건·정책 차단 5건 구성과 소규모 Recall@5 해석 제한,
+  13번째 정책 Case·팀 DB 완료 조건을 검증 지침에 반영했다.
+
+### 2026-08-06 중간발표 지정 심사 질문 방어 답변
+
+- `RAG예상질문.md`를 v0.2로 갱신하고 지정된 11개 심사 질문의 AI·RAG 담당
+  답변과 Backend·Data·PM 담당 경계를 추가했다.
+- 마지막 생성 단계는 `GPT-5.4 mini` 사용 가정으로 설명하되 현재 미연결·
+  미실측이며, bge-m3와 후보 모델 비교를 완료했다고 주장하지 않도록 했다.
+- 현재 Output Validator가 금지 표현·행동과 안전 일관성만 검사하고 Grounding·
+  Citation·재생성 정책은 미구현이라는 경계를 명시했다.
+- 공식 문서 1종·승인 청크 7개와 합성 Fixture Source 레코드 367개를 분리하고,
+  RAG 12/12·DB FK 정합성이 전체 업무 정확도를 의미하지 않음을 설명했다.
+- PostgreSQL과 pgvector는 물리적으로 하나의 DB·Extension 관계이며, 그림의
+  분리는 논리적 역할 표현이라는 답변을 추가했다.
+
+### 2026-08-06 RAG 검색 품질 발표 답변 보강
+
+- `RAG예상질문_v0.2.md`에 평균 MRR뿐 아니라 누수 질의의 기대 청크 `5위`,
+  Case MRR `0.2`를 명시했다.
+- 승인 청크 7개에서 Top-K 5를 반환하는 Recall@5 `1.0`은 검색 정확도 100%의
+  근거가 아니라 제한 범위의 통과 Gate임을 명시했다.
+- 아직 측정하지 않은 질의 임베딩·pgvector 검색·E2E p50/p95, 처리량,
+  CPU·RAM, 팀 DB 성능, 모델별 비용·지연시간을 발표 답변에 구분했다.
+
+
+
+### 2026-08-06 RAG Vector DB·Graph DB 제출용 결과서
+
+- `docs/submission/AI_RAG_VectorDB_GraphDB_구축_결과서_v1.0.docx`를 4주차
+  제출용 Word 문서로 작성했다.
+- 직접 학습·파인튜닝 미수행과 사전학습 `BAAI/bge-m3` 적용을 구분하고,
+  Revision·1024차원·L2 정규화·Python 3.13.13·CPU 실행 환경을 기록했다.
+- PostgreSQL 16.14·pgvector 0.8.6·Cosine Exact Search·승인 청크 7개와
+  Vector Schema, 사전 인덱싱·검색·갱신·삭제 운영 절차를 정리했다.
+- 격리 DB `12/12`, Recall@5 `1.0`, MRR `0.8857`, 금지 Hit `0`을 제품 1종·
+  D세대·공식 문서 1개 범위의 이력으로 제한하고 응답 속도 미측정을 명시했다.
+- Graph DB는 미구축으로 표시하고, 도입 검토용 노드·엣지 논리 구조와 현재
+  PostgreSQL FK·상태 이력·JSONB Metadata로 충분한 사유를 기록했다.
+- 13번째 문서 정책 차단 Case, 팀 DB·Backend E2E, 응답속도 Benchmark와
+  `evaluated_contract_sha256` Canonical 규칙 불일치를 후속 Gate로 표시했다.
+- Microsoft Word 렌더링 PDF 13쪽을 PNG로 변환해 전 페이지의 한글, 표,
+  머리글·바닥글, 페이지 분할과 잘림 여부를 시각 검수했다.
+
+### 2026-08-06 개인 격리 pgvector 간이 응답속도 기준선
+
+- `ai/scripts/benchmark_pgvector_latency.py`를 추가해 Cold·Warm 검색 지연시간을
+  동일 Dataset에서 재현할 수 있도록 했다.
+- 개인 `127.0.0.1:55432` 격리 DB, 승인 청크 7개, CPU, 동시성 1 조건에서
+  Cold 독립 프로세스 3회와 모델 예열 후 Warm 30회를 측정했다.
+- Warm 검색 전체는 평균 `236.7 ms`, p50 `237.8 ms`, p95 `270.4 ms`였고,
+  질의 임베딩 p95는 `234.0 ms`, pgvector Exact Search p95는 `41.3 ms`였다.
+- Cold 검색 전체는 p50 `13,024.1 ms`, p95 `14,625.0 ms`로, CPU에서 독립
+  프로세스마다 BGE-M3를 다시 적재하는 영향을 포함한다.
+- 총 33회 모두 근거를 반환했고 실패는 0회였다. 결과는
+  `ai/evaluation/reports/pgvector_latency_baseline_20260806.json`에 기록했다.
+- 이 수치는 개인 격리 단일 사용자 기준선이며 FastAPI HTTP, Backend E2E,
+  팀 DB 네트워크, 동시 부하와 운영 데이터 규모 성능을 포함하지 않는다.
+- 제출용 Word와 Markdown 결과서의 응답속도 항목을 `미측정`에서
+  `격리 단일 사용자 기준선 완료`로 갱신했다.
+- 전체 AI 단위 테스트는 `96 passed, 3 warnings`이며, 공식 후보 기준 JSON에
+  현재 테스트 수와 간이 응답속도 보고서 Hash를 반영했다.
+
+### 2026-08-06 공식 양식 기반 Vector DB·Graph DB 제출본
+
+- 제공된 `[모델링 및 평가] 벡터DB_GraphDB 구축 결과서_양식.docx`의 표지,
+  6쪽 구성, 헤더·푸터, 페이지 번호, 색상과 표 구조를 유지한 별도 제출본
+  `docs/submission/AI_RAG_VectorDB_GraphDB_구축_결과서_제출양식_v1.0.docx`를
+  생성했다.
+- PostgreSQL·pgvector 실제 구축 내용, BAAI/bge-m3 1024차원 적용, Cosine
+  Exact Search, 적재·검색·갱신·삭제 흐름과 Fallback·1회 재시도 경계를
+  양식 항목에 맞춰 재배치했다.
+- 개인 격리 DB의 12/12 PASS, Recall@5 1.0, MRR 0.8857, 금지 Hit 0과 Warm
+  total p95 270.4 ms를 범위 제한과 함께 반영했다.
+- Graph DB는 구축 완료로 표시하지 않고 논리 노드·엣지 설계와 미도입 사유,
+  팀 DB·Backend E2E 및 13번째 정책 차단 Case의 미완료 Gate를 명시했다.
+- 원본 양식 SHA-256을 보존하고 헤더·푸터·이미지·스타일·번호 정의 등 19개
+  패키지 파트를 바이트 단위로 유지했다. Microsoft Word로 최종 6쪽을 다시
+  렌더링해 모든 페이지의 한글, 표, 줄바꿈, 페이지 분할과 잘림 여부를 확인했다.
+
+### 2026-08-06 최지용 Backend↔AI 수직 연동 협업요청서 v0.2
+
+- v0.1을 이력으로 보존하고
+  `20260806_이동윤_최지용_Backend_AI_수직연동_협업요청서_v0.2.md`를 별도
+  작성했다.
+- AI 단위 테스트 기준을 `96 passed, 3 warnings`로 갱신하고 개인 격리
+  pgvector Warm 전체 p95 `270.4 ms`를 팀 DB·HTTP SLA가 아닌 참고 기준선으로
+  추가했다.
+- 공식 기준선 상태를 `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`으로
+  명시하고, 작성 시점 HEAD와 Dirty 상태를 최종 연동 기준 SHA로 사용하지
+  않도록 수정했다.
+- 최지용 전달 파일에 공식 기준선 JSON과 간이 지연시간 보고서를 추가하고,
+  발송 메시지의 테스트 수와 개인 DB·팀 DB 구분을 최신화했다.
+
+### 2026-08-07 Backend E2E 전 AI 기준선 보강
+
+- T-026 구조화 평가 Dataset을 1건에서 12건으로 확장하고 대표 증상 4종,
+  복수·짧은 입력, 오타, 부정문, 기존 답변, 답변 거절, 위험 우선, 오류 코드와
+  수행 조치를 평가하도록 고정했다.
+- `StructuringEvaluationRunner`를 실제 실행 경로로 구현하고 구조화 필드 정확도,
+  누락 필드·추가 질문 Exact Match와 위험 우선 결과를 Case별 JSON으로 남겼다.
+  현재 후보 결과는 12/12 PASS지만 전체 자유 입력 정확도로 일반화하지 않는다.
+- 규칙 평가에서 확인된 `출수양`·`쫄쫄` 표현, 부정된 누수 표현, 한글 조사와
+  붙은 `E-12가` 오류 코드, 답변 거절을 실제 구조화 값으로 저장하는 문제를
+  최소 결정 규칙으로 보완했다.
+- 현재 Git HEAD, Dirty 여부, Python·단위 테스트, 계약 16개 Canonical Hash,
+  Retrieval·Safety·Structuring Dataset Hash와 실제 승인 JSONL·Chunk Set Hash를
+  계산하는 `generate_candidate_baseline.py`를 추가했다.
+- 후보 기준선의 승인 청크 경로를 실제 Runtime 입력인
+  `data/processed/structured/rag/mvp/rag_verified_sample.jsonl`로 바로잡고 상태는
+  `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`으로 유지했다.
+- `docs/testing/ai/week4-ai-baseline.md`,
+  `docs/testing/rag/week4-rag-baseline.md`와 `scripts/demo/**` Runbook을 추가했다.
+  임시 FastAPI `127.0.0.1:8012`에서 Health, Mock 계약, Vector DB에 의존하지 않는
+  Local 위험 입력의 `danger`·`TOTAL_STOP` Smoke를 모두 통과했다.
+- 팀 DB Migration·승인 청크 UPSERT·13번째 정책 Case·Backend 저장 E2E와
+  Selective Pipeline Runtime 전환은 이번 완료 범위에 포함하지 않았다.
+
+### 2026-08-07 최지용 Backend↔AI 수직 연동 협업요청서 v0.3
+
+- v0.2를 이력으로 보존하고
+  `20260807_이동윤_최지용_Backend_AI_수직연동_협업요청서_v0.3.md`를 별도
+  작성했다.
+- AI 계약·예시의 일반 문자열 `correlation_id`와 Backend Middleware·DB의
+  UUID 계약이 맞지 않는 문제를 P0 선결 사항으로 올렸다. UUID Canonical
+  제안과 AI 계약·Pydantic·예시·CHANGELOG 수정 책임, 계약 버전·Hash 재고정
+  조건을 명시했다.
+- `AI_RESULT`를 Event 이름으로 사용하던 표현을 제거하고 State 계약의
+  `SAFE_GUIDANCE_READY`, `DANGER_DETECTED`, `NO_EVIDENCE`와 실제 전이·Guard
+  책임을 반영했다.
+- 현재 증거를 `101 passed, 3 warnings`, 구조화 결정 규칙 12/12 PASS, 후보
+  Source Commit `1590279b7c7aea66334b3436024a83b150e28610`으로 갱신했다.
+- 추가 문진 답변·거절과 질문 비반복 왕복, 비UUID 외부 Header 정규화를 포함해
+  공동 E2E를 12개 Case로 확장했다.
+- 이번 연동 대상을 `SingleRAGPipeline` 기준선으로 고정하고 T-025 Selective
+  Pipeline과 다중 에이전트 Runtime은 후속 범위로 분리했다.
+- 전달 대상 19개 파일·디렉토리의 존재 여부와 문서의 기준선 SHA·계약 Hash·
+  State Event·E2E ID를 로컬에서 대조했다. 문서만 변경했으므로 단위 테스트는
+  다시 실행하지 않았다.

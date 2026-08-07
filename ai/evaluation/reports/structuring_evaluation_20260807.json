@@ -1,0 +1,343 @@
+{
+  "status": "PASS",
+  "generated_at": "2026-08-07T05:37:26.868790+00:00",
+  "evaluation_scope": "deterministic_structuring_rules_without_backend_or_vector_db",
+  "dataset": {
+    "dataset_id": "T026-STRUCTURING-MVP",
+    "version": "1.0.0",
+    "path": "ai/evaluation/datasets/structuring/symptom_eval_dataset.json",
+    "file_sha256": "EBDB585CB08B6B2465121DD3CB2C288793F05A46870E41D9F16540B21EB1CBAA"
+  },
+  "summary": {
+    "case_count": 12,
+    "passed_count": 12,
+    "failed_count": 0,
+    "mean_field_accuracy": 1.0,
+    "missing_fields_exact_match_rate": 1.0,
+    "followup_questions_exact_match_rate": 1.0,
+    "safety_routing_case_count": 12,
+    "safety_routing_passed_count": 12
+  },
+  "cases": [
+    {
+      "case_id": "STRUCT-REP-LOW-FLOW",
+      "category": "representative_symptom",
+      "field_accuracy": 1.0,
+      "missing_fields_match": true,
+      "followup_questions_match": true,
+      "safety_priority_match": true,
+      "passed": true,
+      "actual": {
+        "structured_symptom": {
+          "symptom_type": "출수량 저하",
+          "occurrence_time": "어제부터",
+          "target_water_type": "냉수",
+          "occurrence_condition": "어제부터 냉수 버튼을 누르면 물이 졸졸 나옵니다. 전원을 껐다 켰어요.",
+          "error_code": null,
+          "accompanying_symptoms": [],
+          "actions_taken": [
+            "전원 재부팅"
+          ]
+        },
+        "missing_fields": [],
+        "followup_question_fields": []
+      }
+    },
+    {
+      "case_id": "STRUCT-REP-TASTE-ODOR",
+      "category": "representative_symptom",
+      "field_accuracy": 1.0,
+      "missing_fields_match": true,
+      "followup_questions_match": true,
+      "safety_priority_match": true,
+      "passed": true,
+      "actual": {
+        "structured_symptom": {
+          "symptom_type": "물맛/냄새 이상",
+          "occurrence_time": "오늘부터",
+          "target_water_type": "정수",
+          "occurrence_condition": "오늘부터 정수에서 비린 냄새가 나고 사용할 때마다 그래요.",
+          "error_code": null,
+          "accompanying_symptoms": [],
+          "actions_taken": []
+        },
+        "missing_fields": [
+          "actions_taken"
+        ],
+        "followup_question_fields": [
+          "actions_taken"
+        ]
+      }
+    },
+    {
+      "case_id": "STRUCT-REP-LEAK-DANGER",
+      "category": "danger_priority",
+      "field_accuracy": 1.0,
+      "missing_fields_match": true,
+      "followup_questions_match": true,
+      "safety_priority_match": true,
+      "passed": true,
+      "actual": {
+        "structured_symptom": {
+          "symptom_type": "제품 누수",
+          "occurrence_time": "방금부터",
+          "target_water_type": "정수",
+          "occurrence_condition": null,
+          "error_code": null,
+          "accompanying_symptoms": [
+            "제품 누수"
+          ],
+          "actions_taken": []
+        },
+        "missing_fields": [],
+        "followup_question_fields": []
+      }
+    },
+    {
+      "case_id": "STRUCT-REP-TEMPERATURE",
+      "category": "representative_symptom",
+      "field_accuracy": 1.0,
+      "missing_fields_match": true,
+      "followup_questions_match": true,
+      "safety_priority_match": true,
+      "passed": true,
+      "actual": {
+        "structured_symptom": {
+          "symptom_type": "온도 이상",
+          "occurrence_time": "3일 전부터",
+          "target_water_type": "온수",
+          "occurrence_condition": "3일 전부터 온수를 눌러도 뜨겁지 않고 작동할 때 미지근합니다. 재부팅했어요.",
+          "error_code": null,
+          "accompanying_symptoms": [],
+          "actions_taken": [
+            "전원 재부팅"
+          ]
+        },
+        "missing_fields": [],
+        "followup_question_fields": []
+      }
+    },
+    {
+      "case_id": "STRUCT-MULTIPLE-SYMPTOMS",
+      "category": "multiple_symptoms",
+      "field_accuracy": 1.0,
+      "missing_fields_match": true,
+      "followup_questions_match": true,
+      "safety_priority_match": true,
+      "passed": true,
+      "actual": {
+        "structured_symptom": {
+          "symptom_type": "출수량 저하",
+          "occurrence_time": "오늘부터",
+          "target_water_type": "냉수",
+          "occurrence_condition": "오늘부터 냉수 버튼을 누르면 물이 졸졸 나오고 냄새도 납니다.",
+          "error_code": null,
+          "accompanying_symptoms": [
+            "출수량 저하",
+            "물맛/냄새 이상"
+          ],
+          "actions_taken": []
+        },
+        "missing_fields": [
+          "actions_taken"
+        ],
+        "followup_question_fields": [
+          "actions_taken"
+        ]
+      }
+    },
+    {
+      "case_id": "STRUCT-SHORT-FREE-TEXT",
+      "category": "short_free_text",
+      "field_accuracy": 1.0,
+      "missing_fields_match": true,
+      "followup_questions_match": true,
+      "safety_priority_match": true,
+      "passed": true,
+      "actual": {
+        "structured_symptom": {
+          "symptom_type": "기타 증상",
+          "occurrence_time": null,
+          "target_water_type": null,
+          "occurrence_condition": null,
+          "error_code": null,
+          "accompanying_symptoms": [],
+          "actions_taken": []
+        },
+        "missing_fields": [
+          "occurrence_time",
+          "target_water_type",
+          "occurrence_condition",
+          "actions_taken"
+        ],
+        "followup_question_fields": [
+          "occurrence_time",
+          "target_water_type",
+          "occurrence_condition",
+          "actions_taken"
+        ]
+      }
+    },
+    {
+      "case_id": "STRUCT-TYPO-LOW-FLOW",
+      "category": "typo_variation",
+      "field_accuracy": 1.0,
+      "missing_fields_match": true,
+      "followup_questions_match": true,
+      "safety_priority_match": true,
+      "passed": true,
+      "actual": {
+        "structured_symptom": {
+          "symptom_type": "출수량 저하",
+          "occurrence_time": "어제부터",
+          "target_water_type": "냉수",
+          "occurrence_condition": null,
+          "error_code": null,
+          "accompanying_symptoms": [],
+          "actions_taken": []
+        },
+        "missing_fields": [
+          "occurrence_condition",
+          "actions_taken"
+        ],
+        "followup_question_fields": [
+          "occurrence_condition",
+          "actions_taken"
+        ]
+      }
+    },
+    {
+      "case_id": "STRUCT-NEGATED-LEAK",
+      "category": "negation",
+      "field_accuracy": 1.0,
+      "missing_fields_match": true,
+      "followup_questions_match": true,
+      "safety_priority_match": true,
+      "passed": true,
+      "actual": {
+        "structured_symptom": {
+          "symptom_type": "온도 이상",
+          "occurrence_time": "어제부터",
+          "target_water_type": "냉수",
+          "occurrence_condition": null,
+          "error_code": null,
+          "accompanying_symptoms": [],
+          "actions_taken": []
+        },
+        "missing_fields": [
+          "occurrence_condition",
+          "actions_taken"
+        ],
+        "followup_question_fields": [
+          "occurrence_condition",
+          "actions_taken"
+        ]
+      }
+    },
+    {
+      "case_id": "STRUCT-PREVIOUS-ANSWERS",
+      "category": "previous_answer",
+      "field_accuracy": 1.0,
+      "missing_fields_match": true,
+      "followup_questions_match": true,
+      "safety_priority_match": true,
+      "passed": true,
+      "actual": {
+        "structured_symptom": {
+          "symptom_type": "출수량 저하",
+          "occurrence_time": "3일 전부터",
+          "target_water_type": "냉수",
+          "occurrence_condition": null,
+          "error_code": null,
+          "accompanying_symptoms": [],
+          "actions_taken": [
+            "전원 재부팅"
+          ]
+        },
+        "missing_fields": [
+          "occurrence_condition"
+        ],
+        "followup_question_fields": [
+          "occurrence_condition"
+        ]
+      }
+    },
+    {
+      "case_id": "STRUCT-DECLINED-ANSWER",
+      "category": "declined_answer",
+      "field_accuracy": 1.0,
+      "missing_fields_match": true,
+      "followup_questions_match": true,
+      "safety_priority_match": true,
+      "passed": true,
+      "actual": {
+        "structured_symptom": {
+          "symptom_type": "온도 이상",
+          "occurrence_time": null,
+          "target_water_type": "냉수",
+          "occurrence_condition": null,
+          "error_code": null,
+          "accompanying_symptoms": [],
+          "actions_taken": []
+        },
+        "missing_fields": [
+          "occurrence_time",
+          "occurrence_condition",
+          "actions_taken"
+        ],
+        "followup_question_fields": [
+          "occurrence_condition",
+          "actions_taken"
+        ]
+      }
+    },
+    {
+      "case_id": "STRUCT-ERROR-CODE-ACTION",
+      "category": "representative_symptom",
+      "field_accuracy": 1.0,
+      "missing_fields_match": true,
+      "followup_questions_match": true,
+      "safety_priority_match": true,
+      "passed": true,
+      "actual": {
+        "structured_symptom": {
+          "symptom_type": "출수량 저하",
+          "occurrence_time": "오늘부터",
+          "target_water_type": "정수",
+          "occurrence_condition": "오늘부터 정수 버튼을 누르면 E-12가 뜨고 물이 안 나와서 원수 밸브를 확인했습니다.",
+          "error_code": "E-12",
+          "accompanying_symptoms": [],
+          "actions_taken": [
+            "원수 밸브 확인"
+          ]
+        },
+        "missing_fields": [],
+        "followup_question_fields": []
+      }
+    },
+    {
+      "case_id": "STRUCT-MULTIPLE-WATER-TYPES",
+      "category": "representative_symptom",
+      "field_accuracy": 1.0,
+      "missing_fields_match": true,
+      "followup_questions_match": true,
+      "safety_priority_match": true,
+      "passed": true,
+      "actual": {
+        "structured_symptom": {
+          "symptom_type": "출수량 저하",
+          "occurrence_time": "최근부터",
+          "target_water_type": "전체",
+          "occurrence_condition": "최근부터 냉수와 온수를 사용할 때 모두 출수량이 약해졌고 필터를 교체했습니다.",
+          "error_code": null,
+          "accompanying_symptoms": [],
+          "actions_taken": [
+            "필터 교체"
+          ]
+        },
+        "missing_fields": [],
+        "followup_question_fields": []
+      }
+    }
+  ]
+}

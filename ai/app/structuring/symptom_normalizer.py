@@ -12,7 +12,10 @@ class SymptomNormalizer:
         ("제품 누수", ("누수", "물이 새", "물 새", "바닥에 물", "젖어")),
         ("전기 이상", ("스파크", "탄 냄새", "타는 냄새", "연기", "전원선")),
         ("온도 이상", ("미지근", "안 차갑", "뜨겁지", "온도")),
-        ("출수량 저하", ("졸졸", "출수량", "물이 안 나", "물 안 나", "수압")),
+        (
+            "출수량 저하",
+            ("졸졸", "쫄쫄", "출수량", "출수양", "물이 안 나", "물 안 나", "수압"),
+        ),
         ("물맛/냄새 이상", ("물맛", "이상한 맛", "냄새", "비린", "역한")),
         ("소음 이상", ("소음", "진동", "웅웅", "덜컹")),
         ("필터/관리 문의", ("필터", "교체 주기", "관리 주기")),
@@ -30,10 +33,19 @@ class SymptomNormalizer:
         r"(?:계속|항상|간헐적으로|가끔|때때로)",
     )
 
+    _NEGATED_SYMPTOM_PATTERNS = (
+        r"누수(?:는|가)?\s*(?:아니(?:에요|예요|고|라|며)?|없(?:어요|습니다|고)?)",
+        r"물(?:이)?\s*(?:안\s*새|새지\s*않)",
+        r"냄새(?:는|가)?\s*(?:안\s*나|없)",
+    )
+
     def normalize_symptom_type(self, raw_text: str, selected_symptoms: list[str]) -> str:
         if selected_symptoms:
             return selected_symptoms[0]
-        combined = f"{' '.join(selected_symptoms)} {raw_text}".strip()
+        normalized_text = raw_text
+        for pattern in self._NEGATED_SYMPTOM_PATTERNS:
+            normalized_text = re.sub(pattern, " ", normalized_text)
+        combined = f"{' '.join(selected_symptoms)} {normalized_text}".strip()
         for normalized, keywords in self._SYMPTOM_RULES:
             if any(keyword in combined for keyword in keywords):
                 return normalized
@@ -59,7 +71,11 @@ class SymptomNormalizer:
 
     @staticmethod
     def extract_error_code(text: str) -> str | None:
-        match = re.search(r"\b(?:E|ER|ERR)[-_ ]?\d{1,4}\b", text, flags=re.IGNORECASE)
+        match = re.search(
+            r"(?<![A-Za-z0-9])(?:ERR|ER|E)[-_ ]?\d{1,4}(?!\d)",
+            text,
+            flags=re.IGNORECASE,
+        )
         return match.group(0).upper().replace(" ", "") if match else None
 
     @staticmethod

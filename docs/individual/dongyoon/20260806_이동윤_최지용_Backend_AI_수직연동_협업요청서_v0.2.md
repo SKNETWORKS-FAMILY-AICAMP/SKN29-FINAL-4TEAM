@@ -1,4 +1,4 @@
-# 이동윤 → 최지용 Backend↔AI 수직 연동 협업요청서 v0.1
+# 이동윤 → 최지용 Backend↔AI 수직 연동 협업요청서 v0.2
 
 > 요청 ID: `AI-BE-HANDOFF-20260804-P0`
 >
@@ -8,7 +8,7 @@
 >
 > 관련 작업: `T-022 Slice B`, `T-025`, `T-032`
 >
-> 작성일: 2026-08-04
+> 작성일: 2026-08-06
 >
 > 우선순위: `P0`
 >
@@ -48,20 +48,22 @@ AI는 Inquiry 상태·객체 권한·최종 EvidenceCard·DB Transaction을 직�
 | AI Base URL | 기본 `http://127.0.0.1:8001` | 환경변수화 필요 |
 | 계약 | `contracts/ai/**`, Version `1.1.0` | 준비 |
 | Python | `3.13.13`, `ai/.venv` | 검증 |
-| 단위 테스트 | `95 passed, 3 warnings` | PASS |
+| 단위 테스트 | `96 passed, 3 warnings` | PASS |
 | 전체 AI Timeout | 30초 | Runtime 적용 |
 | AI 내부 재시도 | 일시적 검색 오류 최대 1회, Backoff 0.5초 | Runtime 적용 |
 | Backend 자동 재시도 | 0회 | 협업 정책 |
 | 검색 결과 구분 | 근거 있음·정상 0건·설정 오류·실행 실패·Timeout | 적용 |
 | 위험 우선 | 위험 입력은 Vector 검색 없이도 안전 안내 가능 | 적용 |
 | 실제 pgvector | 개인 격리 DB 12/12 PASS | 팀 DB 완료 증거 아님 |
+| 개인 격리 응답속도 | Warm 전체 p95 `270.4 ms` | 팀 DB·HTTP SLA 아님 |
+| 공식 기준선 | `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT` | 확정본 아님 |
 | 팀 DB·Backend E2E | 미수행 | 공동 작업 필요 |
 
-AI 재시도 구현 Commit은 `090ca03`, 현재 `dongyoon` Branch HEAD와 원격
-동기화 기준은 `5aebb7c39306a9567faeed482cab1a528d555544`다. 다만 이
-협업요청서와 Walkthrough 갱신은 아직 미커밋이므로 문서를 저장소로 전달할 때는
-최종 Commit SHA·Dirty 여부를 다시 기록해야 한다. 이 문서 작성만으로 소비
-가능한 팀 기준선이 됐다고 판단하지 않는다.
+AI 재시도 구현 Commit은 `090ca03`이다. 이 문서 작성 시점의 `dongyoon`
+Branch HEAD는 `0baac6911ffd373bcdece8d2b6a88caf1dc0900a`이지만 작업 트리가
+Dirty이므로 최종 연동 기준 SHA로 고정하지 않는다. 저장소 기준으로 실행할
+때는 Commit 후 40자리 SHA와 Dirty 여부를 공동 E2E 증거에 다시 기록해야 한다.
+공식 기준선도 팀 DB 재실행과 Commit 반영 전까지 `CANDIDATE`다.
 
 ## 3. Backend 구현·확인 요청
 
@@ -211,7 +213,7 @@ Mock 성공과 실제 연동 성공을 구분한다.
 
 | 담당자 | 작업 | 반환 증거 |
 | --- | --- | --- |
-| 이동윤 | AI 실행 기준선 Commit 고정, FastAPI 실행, 계약·오류 설명, E2E AI 로그 제공 | AI Branch·SHA, 95개 단위 테스트, HTTP·로그 결과 |
+| 이동윤 | AI 실행 기준선 Commit 고정, FastAPI 실행, 계약·오류 설명, E2E AI 로그 제공 | AI Branch·SHA, 96개 단위 테스트, HTTP·로그 결과 |
 | 최지용 | Client·Mapper·Validator·저장·멱등·stale Guard 구현 | Backend Branch·SHA, 통합 테스트, DB 저장 결과 |
 | 이동윤·최지용 | 실제 HTTP·팀 DB E2E 공동 수행 | 10개 Case 결과, Correlation 추적, 제한사항 |
 | 김은진 | 팀 DB Data·13번째 차단 Case·독립 QA | Data 결정, 검색·금지 Hit 검증 |
@@ -256,6 +258,8 @@ AI 재검토 필요 여부:
 - `ai/README.md`
 - `ai/configs/retry_policy.yaml`
 - `ai/app/interfaces/http/routes/analysis_routes.py`
+- `ai/evaluation/reports/official_mvp_baseline_20260803.json`
+- `ai/evaluation/reports/pgvector_latency_baseline_20260806.json`
 - `docs/submission/20260803_AI_RAG_중간발표_기술자료.md`
 - `docs/individual/dongyoon/20260804_이동윤_DEC-WEB-BE-008_수정PROPOSED_v0.2.md`
 
@@ -266,7 +270,10 @@ AI 재검토 필요 여부:
 
 AI 측은 계약 1.1.0, FastAPI /api/v1/ai/analyze, 정상 근거·0건·설정 오류·
 검색 실패·Timeout 구분과 검색 일시 오류 내부 최대 1회 재시도까지 구현했고
-Python 3.13.13 전체 단위 테스트 95개가 통과했습니다.
+Python 3.13.13 전체 단위 테스트 96개가 통과했습니다.
+
+개인 격리 pgvector에서는 12/12 PASS와 Warm 검색 전체 p95 270.4 ms를
+확인했지만, 이는 팀 DB·HTTP·Backend E2E 완료 증거가 아닙니다.
 
 현재 backend/integrations/ai의 Client·Mapper·Validator·Retry Policy가 빈
 골격이라 Django 증상 제출→FastAPI 호출→Schema 검증→AIRun·검색·안내 저장의
@@ -282,3 +289,4 @@ Python 3.13.13 전체 단위 테스트 95개가 통과했습니다.
 | 버전 | 날짜 | 변경 내용 | 상태 |
 | --- | --- | --- | --- |
 | v0.1 | 2026-08-04 | Backend↔AI Client·저장·팀 DB·E2E P0 협업 요청 작성 | `READY_TO_SEND` |
+| v0.2 | 2026-08-06 | 96개 테스트·현재 기준선 상태·격리 DB 응답속도·최종 SHA 고정 조건 반영 | `READY_TO_SEND` |
