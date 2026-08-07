@@ -1,14 +1,16 @@
 {
   "status": "CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT",
-  "generated_at": "2026-08-06T12:55:34+09:00",
-  "source_commit": "a282b594e7d289b479485983a97cff3f58d5be46",
+  "generated_at": "2026-08-07T14:37:28.353069+09:00",
+  "source_commit": "1590279b7c7aea66334b3436024a83b150e28610",
   "working_tree_committed": false,
+  "working_tree_changed_path_count": 19,
   "runtime": {
     "python": "3.13.13",
     "os": "Windows 11 AMD64",
     "dependency_lock": "ai/requirements.lock",
     "unit_tests": {
-      "result": "96 passed, 3 warnings",
+      "command": ".\\ai\\.venv\\Scripts\\python.exe -m pytest ai\\tests\\unit -q",
+      "result": "101 passed, 3 warnings",
       "exit_code": 0
     },
     "retry_policy": {
@@ -16,12 +18,16 @@
       "max_retry_count": 1,
       "backoff_factor_seconds": 0.5,
       "backend_retry_count": 0,
+      "overall_timeout_seconds": 30.0,
       "retry_scope": "transient retrieval provider errors only"
     }
   },
   "contract": {
     "version": "1.1.0",
     "schema_draft": "2020-12",
+    "schema_file_count": 16,
+    "canonical_rule": "sorted relative schema path + recursively key-sorted JSON; UTF-8; compact separators",
+    "evaluated_contract_sha256": "8377137CE95AD52EB8D3023810B5F1A2CEB073711C121CA6D44ADF95901315DA",
     "parity_result": "PASS"
   },
   "embedding": {
@@ -41,16 +47,23 @@
       "case_count": 4,
       "file_sha256": "EEE250EDED1D47F02CCBC765ED492AEAC4794FD79C3EA421D86206332E158D57"
     },
+    "structuring": {
+      "path": "ai/evaluation/datasets/structuring/symptom_eval_dataset.json",
+      "case_count": 12,
+      "file_sha256": "EBDB585CB08B6B2465121DD3CB2C288793F05A46870E41D9F16540B21EB1CBAA",
+      "dataset_id": "T026-STRUCTURING-MVP",
+      "version": "1.0.0"
+    },
     "approved_chunks": {
-      "path": "data/config/rag/jac104_chunks.json",
+      "path": "data/processed/structured/rag/mvp/rag_verified_sample.jsonl",
       "chunk_count": 7,
-      "file_sha256": "73C8E9C66B87D0B5A115D75DD1A2A81F4142A5CB581F7F8CC85DF9072E98F0DB",
+      "file_sha256": "2BF3582E42A309D846BC383BE9C3E08874512318DD4046082498DBFBC8584DD0",
       "canonical_chunk_set_sha256": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
     }
   },
   "current_offline_evaluation": {
     "report": "ai/evaluation/reports/latest_eval_report.json",
-    "report_file_sha256": "11C94EAEFABB93219093F169D8524448D303C0799886C0FCB4F3F40FCEB07EB7",
+    "report_file_sha256": "D98206C7E60D1C0665AA7F6686FB5683CFB76FAC5E6B2D87731D9FFB65F161F9",
     "rag": {
       "status": "vector_store_not_configured",
       "case_count": 12,
@@ -61,6 +74,18 @@
       "case_count": 4,
       "passed_count": 4,
       "compliance_rate_percent": 100.0
+    },
+    "structuring": {
+      "report": "ai/evaluation/reports/structuring_evaluation_20260807.json",
+      "report_file_sha256": "B47362BDAA95741A93A589F7E54C8BA1863A530114BAA71308B0366A6988626C",
+      "case_count": 12,
+      "passed_count": 12,
+      "failed_count": 0,
+      "mean_field_accuracy": 1.0,
+      "missing_fields_exact_match_rate": 1.0,
+      "followup_questions_exact_match_rate": 1.0,
+      "safety_routing_case_count": 12,
+      "safety_routing_passed_count": 12
     }
   },
   "isolated_pgvector_historical_evidence": {
@@ -98,11 +123,17 @@
     ],
     "unverified_faq_as_sole_evidence": false
   },
+  "pending_gates": {
+    "team_db_migration_and_rerun": true,
+    "backend_storage_e2e": true,
+    "data_owner_approved_post_retrieval_policy_case_13": true,
+    "candidate_commit": true
+  },
   "publication_limits": [
     "Do not publish offline RAG zero metrics as retrieval quality metrics.",
     "Do not represent isolated pgvector evidence as a current team database rerun.",
-    "Do not claim model training or fine-tuning.",
-    "Replace source_commit after committing this candidate baseline.",
-    "Rerun pgvector evaluation against the approved team database before integration approval."
+    "Do not generalize the 12-case structuring baseline beyond the covered deterministic rules.",
+    "Do not claim model training, fine-tuning, external LLM generation, or multi-agent completion.",
+    "Commit this candidate and rerun pgvector evaluation against the approved team database before integration approval."
   ]
 }

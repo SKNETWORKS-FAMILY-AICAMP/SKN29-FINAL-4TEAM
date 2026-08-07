@@ -547,16 +547,7 @@ Public UUID 분석 요청이 모두 성공했다.
 - 아직 측정하지 않은 질의 임베딩·pgvector 검색·E2E p50/p95, 처리량,
   CPU·RAM, 팀 DB 성능, 모델별 비용·지연시간을 발표 답변에 구분했다.
 
-### 2026-08-06 기술스택 발표 슬라이드 흐름 수정
 
-- `RAG_기술스택_선택안_흐름수정_v2.png`를 생성해 하단 RAG 실행 순서를
-  `사용자 입력 → 규칙 기반 안전 사전 판정 → bge-m3·pgvector 검색 →
-  GPT-5.4 mini 생성 예정 → 출력 Validator 검증 → 안전 안내 또는 상담 전환`으로
-  수정했다.
-- 현재 LangGraph를 다중 Agent가 아닌 결정론적 단일 Workflow로 표시하고,
-  재생성이 아닌 일시적 검색 오류 최대 1회 재시도로 구현 경계를 바로잡았다.
-- GPT-5.4 mini는 생성 성능 비교가 끝난 모델이 아니라 적용·검증 예정 후보임을
-  슬라이드에 명시했다.
 
 ### 2026-08-06 RAG Vector DB·Graph DB 제출용 결과서
 
@@ -624,3 +615,49 @@ Public UUID 분석 요청이 모두 성공했다.
   않도록 수정했다.
 - 최지용 전달 파일에 공식 기준선 JSON과 간이 지연시간 보고서를 추가하고,
   발송 메시지의 테스트 수와 개인 DB·팀 DB 구분을 최신화했다.
+
+### 2026-08-07 Backend E2E 전 AI 기준선 보강
+
+- T-026 구조화 평가 Dataset을 1건에서 12건으로 확장하고 대표 증상 4종,
+  복수·짧은 입력, 오타, 부정문, 기존 답변, 답변 거절, 위험 우선, 오류 코드와
+  수행 조치를 평가하도록 고정했다.
+- `StructuringEvaluationRunner`를 실제 실행 경로로 구현하고 구조화 필드 정확도,
+  누락 필드·추가 질문 Exact Match와 위험 우선 결과를 Case별 JSON으로 남겼다.
+  현재 후보 결과는 12/12 PASS지만 전체 자유 입력 정확도로 일반화하지 않는다.
+- 규칙 평가에서 확인된 `출수양`·`쫄쫄` 표현, 부정된 누수 표현, 한글 조사와
+  붙은 `E-12가` 오류 코드, 답변 거절을 실제 구조화 값으로 저장하는 문제를
+  최소 결정 규칙으로 보완했다.
+- 현재 Git HEAD, Dirty 여부, Python·단위 테스트, 계약 16개 Canonical Hash,
+  Retrieval·Safety·Structuring Dataset Hash와 실제 승인 JSONL·Chunk Set Hash를
+  계산하는 `generate_candidate_baseline.py`를 추가했다.
+- 후보 기준선의 승인 청크 경로를 실제 Runtime 입력인
+  `data/processed/structured/rag/mvp/rag_verified_sample.jsonl`로 바로잡고 상태는
+  `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`으로 유지했다.
+- `docs/testing/ai/week4-ai-baseline.md`,
+  `docs/testing/rag/week4-rag-baseline.md`와 `scripts/demo/**` Runbook을 추가했다.
+  임시 FastAPI `127.0.0.1:8012`에서 Health, Mock 계약, Vector DB에 의존하지 않는
+  Local 위험 입력의 `danger`·`TOTAL_STOP` Smoke를 모두 통과했다.
+- 팀 DB Migration·승인 청크 UPSERT·13번째 정책 Case·Backend 저장 E2E와
+  Selective Pipeline Runtime 전환은 이번 완료 범위에 포함하지 않았다.
+
+### 2026-08-07 최지용 Backend↔AI 수직 연동 협업요청서 v0.3
+
+- v0.2를 이력으로 보존하고
+  `20260807_이동윤_최지용_Backend_AI_수직연동_협업요청서_v0.3.md`를 별도
+  작성했다.
+- AI 계약·예시의 일반 문자열 `correlation_id`와 Backend Middleware·DB의
+  UUID 계약이 맞지 않는 문제를 P0 선결 사항으로 올렸다. UUID Canonical
+  제안과 AI 계약·Pydantic·예시·CHANGELOG 수정 책임, 계약 버전·Hash 재고정
+  조건을 명시했다.
+- `AI_RESULT`를 Event 이름으로 사용하던 표현을 제거하고 State 계약의
+  `SAFE_GUIDANCE_READY`, `DANGER_DETECTED`, `NO_EVIDENCE`와 실제 전이·Guard
+  책임을 반영했다.
+- 현재 증거를 `101 passed, 3 warnings`, 구조화 결정 규칙 12/12 PASS, 후보
+  Source Commit `1590279b7c7aea66334b3436024a83b150e28610`으로 갱신했다.
+- 추가 문진 답변·거절과 질문 비반복 왕복, 비UUID 외부 Header 정규화를 포함해
+  공동 E2E를 12개 Case로 확장했다.
+- 이번 연동 대상을 `SingleRAGPipeline` 기준선으로 고정하고 T-025 Selective
+  Pipeline과 다중 에이전트 Runtime은 후속 범위로 분리했다.
+- 전달 대상 19개 파일·디렉토리의 존재 여부와 문서의 기준선 SHA·계약 Hash·
+  State Event·E2E ID를 로컬에서 대조했다. 문서만 변경했으므로 단위 테스트는
+  다시 실행하지 않았다.

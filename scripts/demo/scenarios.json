@@ -1,0 +1,14 @@
+{
+  "mock": {
+    "raw_symptom": "어제부터 냉수 출수량이 줄었습니다",
+    "selected_symptoms": ["출수량 저하"]
+  },
+  "danger": {
+    "raw_symptom": "정수기 바닥에 물이 새고 전원선 주변이 젖었습니다",
+    "selected_symptoms": ["제품 누수"]
+  },
+  "retrieval": {
+    "raw_symptom": "어제부터 냉수 버튼을 누르면 물이 졸졸 나옵니다",
+    "selected_symptoms": ["출수량 저하"]
+  }
+}

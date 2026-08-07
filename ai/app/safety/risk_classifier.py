@@ -1,5 +1,6 @@
 """위험도 및 안전 규칙 분류기 모듈."""
 
+import re
 from typing import List, Optional
 from ..schemas import RiskLevel, SafetyAssessment
 from .rule_loader import SafetyRuleLoader
@@ -8,13 +9,23 @@ from .rule_loader import SafetyRuleLoader
 class RiskClassifier:
     """명시적 키워드 기반 안전 분기 및 위험도 분류기"""
 
+    _NEGATED_DANGER_PATTERNS = (
+        r"누수(?:는|가)?\s*(?:아니(?:에요|예요|고|라|며)?|없(?:어요|습니다|고)?)",
+        r"물(?:이)?\s*(?:안\s*새|새지\s*않)",
+        r"연기(?:는|가)?\s*(?:안\s*나|없)",
+        r"스파크(?:는|가)?\s*(?:안\s*튀|없)",
+    )
+
     def __init__(self, rule_loader: Optional[SafetyRuleLoader] = None):
         self.loader = rule_loader or SafetyRuleLoader()
         self.rules_config = self.loader.get_safety_rules().get("rules", {})
 
     def classify(self, raw_text: str, selected_symptoms: Optional[List[str]] = None) -> SafetyAssessment:
         """자연어 증상 및 대표 선택 증상을 분석하여 위험도 판정"""
-        text_to_search = (raw_text + " " + " ".join(selected_symptoms or [])).strip()
+        normalized_text = raw_text
+        for pattern in self._NEGATED_DANGER_PATTERNS:
+            normalized_text = re.sub(pattern, " ", normalized_text)
+        text_to_search = (normalized_text + " " + " ".join(selected_symptoms or [])).strip()
 
         detected_rule_keys = []
         detected_risks = []
