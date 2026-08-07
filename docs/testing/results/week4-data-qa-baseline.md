@@ -3,7 +3,7 @@
 > 실행일: 2026-08-07 KST
 > 실행 기준: `eunjin@71754053868233d6913538f70e6e78ecaa8584c9`
 > 비교 기준: `origin/main@71754053868233d6913538f70e6e78ecaa8584c9`
-> 판정: `LOCAL_PASS_REMOTE_CI_NOT_RUN`
+> 판정: `LOCAL_PASS_REMOTE_CI_BLOCKED_BY_PREEXISTING_CONTRACT_DRIFT`
 
 ## 1. 검증 범위
 
@@ -73,9 +73,26 @@ Dataset에서 의존 경로를 직접 읽어 두 Trigger의 누락을 검사한�
 `backend/**`, `ai/**`, `docs/**`를 감시하지 않아 무관한 변경으로 Data CI가
 과도하게 실행되지 않도록 한다.
 
-## 5. 제한 사항
+## 5. 원격 Data CI 교차 검증
 
-- GitHub Actions 원격 Run은 Commit·Push를 수행하지 않아 `REMOTE_NOT_RUN`이다.
+`5553dd6`을 `origin/eunjin`에 Push해 생성된
+[Data CI Run 31189311449](https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/31189311449)은
+`Reject state machine diagram drift` 단계에서 Exit 1로 실패했다. 이 단계가
+Data 단위 테스트보다 앞에 있어 원격 Data 테스트·결정적 재빌드·생성물 Drift
+검사는 모두 `SKIPPED`됐다.
+
+직전 기준 SHA `7175405`의
+[Run 31146633538](https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/31146633538)도
+같은 단계와 메시지로 실패했다. 로컬에서도
+`python -B scripts/contracts/render_state_machine.py --check`가 동일한 Exit 1을
+재현했다. 따라서 이번 Data CI 의존 경로 변경이 만든 회귀가 아니라,
+`contracts/state-machine/diagrams/inquiry-state-machine.mmd`와 YAML 계약 간
+선행 Drift다.
+
+## 6. 제한 사항
+
+- GitHub Actions 원격 Run은 실행했지만 선행 상태 머신 Drift로 `FAIL`이며,
+  Data 관련 단계는 원격에서 실행되지 않았다.
 - 현재 PASS는 Data Pipeline의 로컬 재현 결과이며 팀 DB RAG 완료 증거가 아니다.
 - 13번째 RAG Case, 팀 DB 적재·검색, T-017B Migration QA는 별도 선행 구현
   부재로 각각 `BLOCKED` 또는 `NOT_RUN`이다.
