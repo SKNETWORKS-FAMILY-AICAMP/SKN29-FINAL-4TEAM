@@ -350,9 +350,13 @@ fun GuidanceContent(
     }
 
     if (consultationAction != null) {
-        WorkflowActionButton(
-            action = consultationAction,
-            onClick = onRequestConsultation,
+        LiquidGlassButton(
+            text = "상담 요청 · API 준비 중",
+            onClick = {},
+            enabled = false,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("consultationUnavailable"),
         )
     } else if (dangerous) {
         LiquidGlassButton(

@@ -223,11 +223,11 @@ class FakeCustomerCareRepository(
         riskLevel = "unknown-code",
         usageGuidanceStatus = "UNKNOWN",
         usageGuidanceMessage = "판단 보류",
-        safeActions = listOf("임의 추정 안내"),
+        safeActions = emptyList(),
         prohibitedActions = listOf("제품을 분해하거나 오류 의미를 추정하지 마세요."),
         escalationConditions = listOf("누수·전기·화상 위험이 있으면 즉시 사용을 중지하세요."),
         nextAction = "상담 확인",
-        requiresConsultation = false,
+        requiresConsultation = true,
         evidence = emptyList(),
         allowedActions = listOf(AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION, label = "상담 요청")),
     )

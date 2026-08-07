@@ -90,18 +90,22 @@ fun CustomerHomeContent(
             ReferenceBottomItem(
                 iconRes = R.drawable.ref_product,
                 label = "제품",
+                enabled = false,
             ),
             ReferenceBottomItem(
                 iconRes = R.drawable.ref_manage,
                 label = "관리",
+                enabled = false,
             ),
             ReferenceBottomItem(
                 iconRes = R.drawable.ref_notice,
                 label = "알림",
+                enabled = false,
             ),
             ReferenceBottomItem(
                 iconRes = R.drawable.ref_profile,
                 label = "마이",
+                enabled = false,
             ),
         ),
     ) {
@@ -203,8 +207,8 @@ fun CustomerHomeContent(
                     ),
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_care,
-                        label = "안심 케어",
-                        subtitle = "안전 안내",
+                        label = "안내 미리보기",
+                        subtitle = "Fixture 안내",
                         onClick = {
                             onOpenGuidance(
                                 activeInquiry?.inquiryId
@@ -223,7 +227,8 @@ fun CustomerHomeContent(
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_product,
                         label = "제품 정보",
-                        subtitle = home.product.modelCode,
+                        subtitle = "준비 중",
+                        enabled = false,
                         onClick = {},
                     ),
                 ),
@@ -245,10 +250,12 @@ fun CustomerHomeContent(
                 ),
                 status = "현재 정보 확인 완료",
                 palette = palette,
-                primaryActionLabel = "제품 상세",
-                secondaryActionLabel = "관리 가이드",
+                primaryActionLabel = "제품 상세 · 준비 중",
+                secondaryActionLabel = "관리 가이드 · 준비 중",
                 onPrimaryAction = {},
                 onSecondaryAction = {},
+                primaryActionEnabled = false,
+                secondaryActionEnabled = false,
             )
 
             ReferenceSectionHeader(
@@ -261,25 +268,29 @@ fun CustomerHomeContent(
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_support,
                         label = "고객센터",
-                        subtitle = "1:1 문의",
+                        subtitle = "준비 중",
+                        enabled = false,
                         onClick = {},
                     ),
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_selfcheck,
                         label = "자가 점검",
-                        subtitle = "정수기 체크",
+                        subtitle = "준비 중",
+                        enabled = false,
                         onClick = {},
                     ),
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_benefit,
                         label = "보증/혜택",
-                        subtitle = "내 혜택",
+                        subtitle = "준비 중",
+                        enabled = false,
                         onClick = {},
                     ),
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_event,
                         label = "이벤트",
-                        subtitle = "진행 중",
+                        subtitle = "준비 중",
+                        enabled = false,
                         onClick = {},
                     ),
                 ),
@@ -306,8 +317,9 @@ fun CustomerHomeContent(
                         color = palette.accent,
                     )
                     ReferenceGlassButton(
-                        text = "안내 다시 보기",
+                        text = "안내 미리보기",
                         palette = palette,
+                        accent = true,
                         onClick = {
                             onOpenGuidance(
                                 active.inquiryId,

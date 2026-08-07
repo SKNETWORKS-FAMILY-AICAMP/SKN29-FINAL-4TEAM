@@ -388,9 +388,7 @@ private fun VisitSummaryCard(
     onClick: () -> Unit,
 ) {
     LiquidGlassPanel(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth(),
         danger = visit.risk ==
             TechnicianVisitRisk.DANGER,
     ) {
@@ -422,6 +420,12 @@ private fun VisitSummaryCard(
             "${visit.visitCode} · ${visit.scenarioId} · 합성 Fixture",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        LiquidGlassButton(
+            text = "방문 상세 보기",
+            onClick = onClick,
+            accent = true,
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

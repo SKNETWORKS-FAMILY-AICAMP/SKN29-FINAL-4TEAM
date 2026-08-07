@@ -1,6 +1,7 @@
 package com.skn29.watercare.core.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -290,7 +291,7 @@ fun LiquidGlassButton(
                 enabled = enabled,
                 role = Role.Button,
                 interactionSource = interactionSource,
-                indication = null,
+                indication = LocalIndication.current,
                 onClick = onClick,
             )
             .background(
@@ -371,7 +372,7 @@ fun LiquidGlassButton(
                 ),
                 shape,
             )
-            .heightIn(min = if (compact) 40.dp else 54.dp)
+            .heightIn(min = if (compact) 44.dp else 56.dp)
             .padding(
                 horizontal = if (compact) 14.dp else 18.dp,
                 vertical = if (compact) 8.dp else 14.dp,
@@ -393,7 +394,7 @@ fun LiquidGlassButton(
         }
 
         Text(
-            text,
+            text = if (enabled) "$text  ›" else text,
             color = when {
                 !enabled -> Ink400
                 accent -> Color.White
@@ -443,7 +444,7 @@ fun LiquidGlassActionCard(
                 enabled = enabled,
                 role = Role.Button,
                 interactionSource = interactionSource,
-                indication = null,
+                indication = LocalIndication.current,
                 onClick = onClick,
             )
             .background(
@@ -505,7 +506,7 @@ fun LiquidGlassActionCard(
             style = MaterialTheme.typography.headlineSmall,
         )
         Text(
-            title,
+            text = if (enabled) "$title  ›" else title,
             color = if (enabled) palette.accent else Ink400,
             fontWeight = FontWeight.ExtraBold,
             style = MaterialTheme.typography.titleSmall,

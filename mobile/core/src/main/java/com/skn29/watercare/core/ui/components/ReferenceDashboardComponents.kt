@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -136,6 +137,7 @@ data class ReferenceBottomItem(
     @DrawableRes val iconRes: Int,
     val label: String,
     val selected: Boolean = false,
+    val enabled: Boolean = true,
     val onClick: () -> Unit = {},
 )
 
@@ -149,6 +151,8 @@ fun ReferenceDashboardScaffold(
     modifier: Modifier = Modifier,
     onNotification: () -> Unit = {},
     onSupport: () -> Unit = {},
+    notificationEnabled: Boolean = false,
+    supportEnabled: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     ReferencePearlBackground(
@@ -207,6 +211,8 @@ fun ReferenceDashboardScaffold(
                     palette = palette,
                     onNotification = onNotification,
                     onSupport = onSupport,
+                    notificationEnabled = notificationEnabled,
+                    supportEnabled = supportEnabled,
                 )
                 content()
             }
@@ -399,6 +405,8 @@ fun ReferenceDashboardHeader(
     palette: ReferenceDashboardPalette,
     onNotification: () -> Unit = {},
     onSupport: () -> Unit = {},
+    notificationEnabled: Boolean = false,
+    supportEnabled: Boolean = false,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -414,11 +422,13 @@ fun ReferenceDashboardHeader(
                 icon = ReferenceHeaderIcon.Notification,
                 palette = palette,
                 onClick = onNotification,
+                enabled = notificationEnabled,
             )
             ReferenceSquareIconButton(
                 icon = ReferenceHeaderIcon.Support,
                 palette = palette,
                 onClick = onSupport,
+                enabled = supportEnabled,
             )
         }
     }
@@ -639,6 +649,8 @@ fun ReferenceDetailCard(
     secondaryActionLabel: String,
     onPrimaryAction: () -> Unit,
     onSecondaryAction: () -> Unit,
+    primaryActionEnabled: Boolean = true,
+    secondaryActionEnabled: Boolean = true,
     timeline: List<String> = emptyList(),
     selectedTimelineIndex: Int = 0,
 ) {
@@ -738,12 +750,14 @@ fun ReferenceDetailCard(
                 palette = palette,
                 accent = true,
                 onClick = onPrimaryAction,
+                enabled = primaryActionEnabled,
                 modifier = Modifier.weight(1f),
             )
             ReferenceGlassButton(
                 text = secondaryActionLabel,
                 palette = palette,
                 onClick = onSecondaryAction,
+                enabled = secondaryActionEnabled,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -774,10 +788,14 @@ fun ReferenceBottomNavigation(
                         .weight(1f)
                         .height(56.dp)
                         .clip(RoundedCornerShape(17.dp))
+                        .graphicsLayer {
+                            alpha = if (item.enabled) 1f else 0.38f
+                        }
                         .clickable(
+                            enabled = item.enabled,
                             role = Role.Button,
                             interactionSource = interactionSource,
-                            indication = null,
+                            indication = LocalIndication.current,
                             onClick = item.onClick,
                         )
                         .background(
@@ -1032,7 +1050,7 @@ fun ReferenceGlassButton(
                 enabled = enabled,
                 role = Role.Button,
                 interactionSource = interactionSource,
-                indication = null,
+                indication = LocalIndication.current,
                 onClick = onClick,
             )
             .background(
@@ -1115,7 +1133,7 @@ fun ReferenceGlassButton(
                 ),
                 shape,
             )
-            .heightIn(min = if (compact) 40.dp else 50.dp)
+            .heightIn(min = if (compact) 44.dp else 56.dp)
             .padding(
                 horizontal = if (compact) 13.dp else 17.dp,
                 vertical = if (compact) 8.dp else 12.dp,
@@ -1124,7 +1142,7 @@ fun ReferenceGlassButton(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text,
+            text = if (enabled) "$text  ›" else text,
             color = when {
                 !enabled -> palette.textMuted
                 accent -> Color.White
@@ -1261,6 +1279,7 @@ private fun ReferenceSquareIconButton(
     icon: ReferenceHeaderIcon,
     palette: ReferenceDashboardPalette,
     onClick: () -> Unit,
+enabled: Boolean = true,
 ) {
     val shape = CircleShape
     val interactionSource = remember { MutableInteractionSource() }
@@ -1276,10 +1295,14 @@ private fun ReferenceSquareIconButton(
                 clip = false,
             )
             .clip(shape)
+            .graphicsLayer {
+                alpha = if (enabled) 1f else 0.38f
+            }
             .clickable(
+                enabled = enabled,
                 role = Role.Button,
                 interactionSource = interactionSource,
-                indication = null,
+                indication = LocalIndication.current,
                 onClick = onClick,
             )
             .background(
@@ -1535,7 +1558,7 @@ private fun ReferenceActionTile(
     Column(
         modifier = modifier
             .then(tagModifier)
-            .height(118.dp)
+            .height(132.dp)
             .shadow(
                 elevation = if (item.enabled) 10.dp else 2.dp,
                 shape = shape,
@@ -1552,7 +1575,7 @@ private fun ReferenceActionTile(
                 enabled = item.enabled,
                 role = Role.Button,
                 interactionSource = interactionSource,
-                indication = null,
+                indication = LocalIndication.current,
                 onClick = item.onClick,
             )
             .background(
@@ -1622,7 +1645,11 @@ private fun ReferenceActionTile(
             alpha = if (item.enabled) 1f else 0.45f,
         )
         Text(
-            item.label,
+            text = if (item.enabled) {
+                "${item.label}  ›"
+            } else {
+                item.label
+            },
             modifier = Modifier.padding(top = 3.dp),
             color = if (item.enabled) {
                 palette.accent
@@ -1640,7 +1667,11 @@ private fun ReferenceActionTile(
         )
         if (item.subtitle.isNotBlank()) {
             Text(
-                item.subtitle,
+                text = if (item.enabled) {
+                    item.subtitle
+                } else {
+                    "준비 중"
+                },
                 color = palette.textMuted,
                 style = MaterialTheme.typography.labelSmall,
                 textAlign = TextAlign.Center,
