@@ -1,7 +1,8 @@
 # T-005 Wave 1 AI 실행 작업 유형 코드
-version: 1.0.0
+version: 1.1.0
 status: OWNER_BASELINE
 codes:
+  - ANALYZE_SYMPTOM
   - STRUCTURE_SYMPTOM
   - GENERATE_QUESTIONS
   - ASSESS_RISK

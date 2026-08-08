@@ -149,14 +149,16 @@ class Guidance(TimestampedModel):
             )
 
         if (
-            ai_run.task_type_code != "GENERATE_GUIDANCE"
+            ai_run.task_type_code
+            not in {"GENERATE_GUIDANCE", "ANALYZE_SYMPTOM"}
             or ai_run.schema_validation_status_code != "PASSED"
         ):
             raise ValidationError(
                 {
                     "generated_by_ai_run": (
                         "AI-generated guidance can use only a "
-                        "schema-validated GENERATE_GUIDANCE AI run."
+                        "schema-validated guidance or integrated analysis "
+                        "AI run."
                     )
                 }
             )
