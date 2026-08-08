@@ -228,7 +228,7 @@
           "role": "MAPPING_DB_FULL_VERIFIED",
           "records": 1,
           "size_bytes": 18600,
-          "sha256": "47A47CE38ACC714FF5DE64AB8F69A234B38675D0F3A6C2B991ECB69CDB0945F9"
+          "sha256": "38DA881739F4BCA0DC773E577F2AC7C81DA44F17E95C7CD29A15CF108E719E5A"
         },
         {
           "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
@@ -374,7 +374,7 @@
           "role": "MAPPING_DB_FULL_VERIFIED",
           "records": 1,
           "size_bytes": 18600,
-          "sha256": "47A47CE38ACC714FF5DE64AB8F69A234B38675D0F3A6C2B991ECB69CDB0945F9"
+          "sha256": "38DA881739F4BCA0DC773E577F2AC7C81DA44F17E95C7CD29A15CF108E719E5A"
         },
         {
           "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
