@@ -54,8 +54,8 @@ EXPECTED_OPERATIONS = {
         "operation_id": "listMySubscriptions",
         "contract_status": "CONFIRMED",
         "runtime_path": "/api/v1/me/subscriptions",
-        "url_name": None,
-        "view_name": None,
+        "url_name": "my-subscription-list",
+        "view_name": "MySubscriptionListView",
     },
     ("/me/subscriptions/{subscription_id}", "get"): {
         "operation_id": "getMySubscription",
@@ -63,8 +63,8 @@ EXPECTED_OPERATIONS = {
         "runtime_path": (
             f"/api/v1/me/subscriptions/{SUBSCRIPTION_ID}"
         ),
-        "url_name": None,
-        "view_name": None,
+        "url_name": "my-subscription-detail",
+        "view_name": "MySubscriptionDetailView",
     },
     ("/inquiries", "post"): {
         "operation_id": "startInquiry",
@@ -262,7 +262,7 @@ def test_openapi_operation_inventory_is_exactly_twenty_three():
         )
 
 
-def test_eight_operations_resolve_to_expected_runtime_views():
+def test_ten_operations_resolve_to_expected_runtime_views():
     implemented = [
         expected
         for expected in EXPECTED_OPERATIONS.values()
@@ -271,14 +271,14 @@ def test_eight_operations_resolve_to_expected_runtime_views():
         )
     ]
 
-    assert len(implemented) == 8
+    assert len(implemented) == 10
     for expected in implemented:
         match = resolve(expected["runtime_path"])
         assert match.url_name == expected["url_name"]
         assert runtime_view_name(match) == expected["view_name"]
 
 
-def test_fifteen_openapi_only_operations_have_no_runtime_method():
+def test_thirteen_openapi_only_operations_have_no_runtime_method():
     openapi_only = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -287,7 +287,7 @@ def test_fifteen_openapi_only_operations_have_no_runtime_method():
         )
     ]
 
-    assert len(openapi_only) == 15
+    assert len(openapi_only) == 13
     for (_, method), expected in openapi_only:
         match = resolve(expected["runtime_path"])
         if expected["url_name"] is None:

@@ -1,5 +1,6 @@
 """Health와 API 최상위 URL 연결."""
 
+from django.contrib import admin
 from django.urls import include, path
 
 from common.api.health import health
@@ -8,6 +9,7 @@ from common.api.not_found import api_not_found
 
 urlpatterns = [
     path("health", health, name="health"),
+    path("internal/admin/", admin.site.urls),
     path("api/v1/", include("config.api_urls")),
     path("api/v1/", api_not_found, name="api-root-not-found"),
     path(

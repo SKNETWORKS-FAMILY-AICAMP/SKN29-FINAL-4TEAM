@@ -41,7 +41,7 @@ def test_current_t017_owner_implementation_is_ready_for_team_review():
     assert result["evidence"]["runtime_implemented_file_count"] == 11
     assert result["evidence"]["accounts_app_registered"] is True
     assert result["evidence"]["account_model_class_count"] == 2
-    assert result["evidence"]["account_migration_count"] == 3
+    assert result["evidence"]["account_migration_count"] == 4
     assert result["evidence"]["authentication_class_configured"] is True
     assert result["evidence"]["auth_routes_registered"] is True
     assert result["owner_blockers"] == []
