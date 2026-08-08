@@ -570,6 +570,11 @@
       "sha256": "83B5141DF19742303C8FA8B1777E07E0A5C6B7C415AE25D06D6E9952D7180456"
     },
     {
+      "path": "tools/tests/test_data_ci_dependency_paths.py",
+      "size_bytes": 2582,
+      "sha256": "F8D8A259831A07AB0C7D6F834F45E57BFBBDD58679601BBA0CFE449E6C03AF9F"
+    },
+    {
       "path": "tools/tests/test_data_vocabulary.py",
       "size_bytes": 4918,
       "sha256": "2C44C12D0A6D4CAE1FD845C564FDEB434ED2ED3FA3EDF0B7DE6E6E1C8178AF4D"
@@ -899,8 +904,8 @@
     "canonical_drift_files": 0
   },
   "toolchain": {
-    "python_files": 26,
-    "python_lines": 5611,
+    "python_files": 27,
+    "python_lines": 5683,
     "max_wrapper_lines": 10,
     "max_module_lines": 1226
   },

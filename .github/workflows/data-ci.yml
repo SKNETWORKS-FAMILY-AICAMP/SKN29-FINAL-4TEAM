@@ -8,7 +8,31 @@ on:
       - "scripts/data/**"
       - "tests/contract/**"
       - ".github/workflows/data-ci.yml"
+<<<<<<< HEAD
       - "contracts/**"
+=======
+      - "contracts/state-machine/**"
+      - "backend/apps/accounts/models/customer_profile.py"
+      - "backend/apps/accounts/models/user.py"
+      - "backend/apps/accounts/repositories/account_repository.py"
+      - "backend/apps/audit/models/audit_event.py"
+      - "backend/apps/care/models/care_history.py"
+      - "backend/apps/consultations/models/consultation.py"
+      - "backend/apps/inquiries/models/followup_confirmation.py"
+      - "backend/apps/inquiries/models/inquiry.py"
+      - "backend/apps/inquiries/models/symptom_entry.py"
+      - "backend/apps/operations/management/commands/import_synthetic_handoff.py"
+      - "backend/apps/operations/models/synthetic_import_ledger.py"
+      - "backend/apps/operations/repositories/operations_repository.py"
+      - "backend/apps/operations/services/operations_service.py"
+      - "backend/apps/products/models/product_model_registry.py"
+      - "backend/apps/subscriptions/models/subscription.py"
+      - "backend/apps/visits/models/visit.py"
+      - "backend/apps/workflow/models/transition_history.py"
+      - "docs/individual/jiyong/manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md"
+      - "ai/evaluation/reports/pgvector_verification.json"
+      - "ai/configs/index_manifest.json"
+>>>>>>> ef63b8694cbe88657ff15e50aeacb7f68c00ac2f
   push:
     paths:
       - "data/**"
@@ -16,7 +40,31 @@ on:
       - "scripts/data/**"
       - "tests/contract/**"
       - ".github/workflows/data-ci.yml"
+<<<<<<< HEAD
       - "contracts/**"
+=======
+      - "contracts/state-machine/**"
+      - "backend/apps/accounts/models/customer_profile.py"
+      - "backend/apps/accounts/models/user.py"
+      - "backend/apps/accounts/repositories/account_repository.py"
+      - "backend/apps/audit/models/audit_event.py"
+      - "backend/apps/care/models/care_history.py"
+      - "backend/apps/consultations/models/consultation.py"
+      - "backend/apps/inquiries/models/followup_confirmation.py"
+      - "backend/apps/inquiries/models/inquiry.py"
+      - "backend/apps/inquiries/models/symptom_entry.py"
+      - "backend/apps/operations/management/commands/import_synthetic_handoff.py"
+      - "backend/apps/operations/models/synthetic_import_ledger.py"
+      - "backend/apps/operations/repositories/operations_repository.py"
+      - "backend/apps/operations/services/operations_service.py"
+      - "backend/apps/products/models/product_model_registry.py"
+      - "backend/apps/subscriptions/models/subscription.py"
+      - "backend/apps/visits/models/visit.py"
+      - "backend/apps/workflow/models/transition_history.py"
+      - "docs/individual/jiyong/manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md"
+      - "ai/evaluation/reports/pgvector_verification.json"
+      - "ai/configs/index_manifest.json"
+>>>>>>> ef63b8694cbe88657ff15e50aeacb7f68c00ac2f
 
 permissions:
   contents: read
