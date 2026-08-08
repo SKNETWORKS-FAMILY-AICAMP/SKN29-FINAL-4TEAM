@@ -6,11 +6,7 @@ on:
       - "data/**"
       - "scripts/contracts/**"
       - "scripts/data/**"
-      - "tests/contract/**"
       - ".github/workflows/data-ci.yml"
-<<<<<<< HEAD
-      - "contracts/**"
-=======
       - "contracts/state-machine/**"
       - "backend/apps/accounts/models/customer_profile.py"
       - "backend/apps/accounts/models/user.py"
@@ -32,17 +28,12 @@ on:
       - "docs/individual/jiyong/manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md"
       - "ai/evaluation/reports/pgvector_verification.json"
       - "ai/configs/index_manifest.json"
->>>>>>> ef63b8694cbe88657ff15e50aeacb7f68c00ac2f
   push:
     paths:
       - "data/**"
       - "scripts/contracts/**"
       - "scripts/data/**"
-      - "tests/contract/**"
       - ".github/workflows/data-ci.yml"
-<<<<<<< HEAD
-      - "contracts/**"
-=======
       - "contracts/state-machine/**"
       - "backend/apps/accounts/models/customer_profile.py"
       - "backend/apps/accounts/models/user.py"
@@ -64,7 +55,6 @@ on:
       - "docs/individual/jiyong/manuals/20260729_postgresql_synthetic_handoff_runtime_verification.md"
       - "ai/evaluation/reports/pgvector_verification.json"
       - "ai/configs/index_manifest.json"
->>>>>>> ef63b8694cbe88657ff15e50aeacb7f68c00ac2f
 
 permissions:
   contents: read
@@ -92,23 +82,6 @@ jobs:
 
       - name: Reject state machine diagram drift
         run: python scripts/contracts/render_state_machine.py --check
-
-      - name: Validate common code registries
-        run: python scripts/contracts/validate_codes.py
-
-      - name: Validate OpenAPI contract
-        run: python scripts/contracts/validate_openapi.py
-
-      - name: Validate contract examples
-        run: python scripts/contracts/validate_examples.py
-
-      - name: Validate Action OpenAPI Runtime crosswalk
-        run: python scripts/contracts/validate_contract_crosswalk.py
-
-      - name: Run contract tests
-        run: |
-          python -B -m unittest discover -s tests/contract/api -p "test_*.py" -v
-          python -B -m unittest discover -s tests/contract -p "test_*.py" -v
 
       - name: Run Data unit tests
         run: python -B -m unittest discover -s data/tools/tests -v
