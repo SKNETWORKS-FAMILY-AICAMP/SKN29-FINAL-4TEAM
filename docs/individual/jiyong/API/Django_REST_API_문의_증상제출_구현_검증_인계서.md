@@ -618,3 +618,38 @@ Seed·Importer는 DB 스키마·Seed 기준선(T-005)이므로 문의·증상 �
 Slice A(T-022)에서 변경하지 않는다.
 이 문서는 로컬 구현·검증 결과를 전달하는 기준서이며, 외부 Gate 전에는
 팀 공용 기준선의 완료 근거로 인용하지 않는다.
+
+## 12. 2026-08-08 최신 main 재검증과 추가 누적 Runtime Gate
+
+최신 `main` clean worktree에서 기존 문의 Runtime과 PostgreSQL을 다시
+검증했다. Readiness Runtime Test와 PostgreSQL 연결·Migration·Drift는
+PASS했지만, `followup_answer.py`와 OpenAPI-only 두 쓰기 Operation이 남아
+T-022 전체 판정은 `PARTIAL`이다.
+
+공개 Runtime을 추측 구현하지 않도록
+`backend/apps/inquiries/readiness.py`에 다음 별도 사전 Gate를 추가했다.
+
+| Operation | 현재 계약 공백 |
+| --- | --- |
+| `accumulateInquiryQuestionnaire` | Path UUID, `Idempotency-Key`, typed `answers` |
+| `createInquiryActionResult` | Path UUID, `Idempotency-Key` |
+
+```powershell
+$python = ".\backend\.venv\Scripts\python.exe"
+
+& $python -m pytest `
+  backend/tests/unit/inquiries/test_t022_readiness.py `
+  -q -p no:cacheprovider
+
+& $python .\backend\apps\inquiries\readiness.py `
+  --require-deferred-runtime-contracts
+```
+
+단위 Test는 `35 passed`이고, 현재 사전 Gate는 계약 공백 5개를 탐지해
+의도한 종료코드 `3`을 반환한다. 종료코드 3은 기존 Runtime 장애가 아니라
+추가 누적 Runtime 착수 차단을 뜻한다. 계약이 해소되기 전에는 Route·View,
+Model·Migration을 추가하지 않는다.
+
+전체 실행 증거와 다른 작업의 차단 경계는
+[2026-08-08 Backend 작성자 회귀검증 보고서](../개발환경/Django_PostgreSQL_Backend_작성자_회귀검증_보고서_20260808.md)를
+따른다.
