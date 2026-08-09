@@ -7,7 +7,8 @@ from django.core.asgi import get_asgi_application
 from config.env import load_backend_env
 
 
-load_backend_env()
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
+PRODUCTION_SETTINGS_MODULE = "config.settings.production"
+os.environ["DJANGO_SETTINGS_MODULE"] = PRODUCTION_SETTINGS_MODULE
+load_backend_env(settings_module=PRODUCTION_SETTINGS_MODULE)
 
 application = get_asgi_application()

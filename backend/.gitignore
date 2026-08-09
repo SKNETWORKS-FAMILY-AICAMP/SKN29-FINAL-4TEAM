@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+!.env.team-integration.example
 .venv/
 
 # 실행 중 생성 파일

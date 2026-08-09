@@ -7,6 +7,11 @@ import os
 
 from django.core.exceptions import ImproperlyConfigured
 
+from config.env import (
+    PostgresConnectionConfigurationError,
+    build_postgres_connection_options,
+)
+
 from .base import *  # noqa: F403
 
 
@@ -23,7 +28,25 @@ require_environment_variables(  # noqa: F405
     "POSTGRES_PASSWORD",
     "POSTGRES_HOST",
     "POSTGRES_PORT",
+    "POSTGRES_SSLMODE",
+    "POSTGRES_SSLROOTCERT",
 )
+
+try:
+    POSTGRES_PRODUCTION_OPTIONS = build_postgres_connection_options(
+        os.environ,
+        base_dir=BASE_DIR,  # noqa: F405
+        require_verify_full=True,
+    )
+except PostgresConnectionConfigurationError as exc:
+    missing = ", ".join(exc.missing_keys)
+    suffix = f", missing={missing}" if missing else ""
+    raise ImproperlyConfigured(
+        "배포 PostgreSQL TLS 설정이 올바르지 않습니다: "
+        f"reason={exc.reason}{suffix}"
+    ) from None
+
+DATABASES["default"]["OPTIONS"] = POSTGRES_PRODUCTION_OPTIONS  # noqa: F405
 
 if SECRET_KEY == DEVELOPMENT_SECRET_KEY:  # noqa: F405
     raise ImproperlyConfigured("배포 환경에는 DJANGO_SECRET_KEY가 필요합니다.")

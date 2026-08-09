@@ -22,6 +22,9 @@ REQUIRED_KEYS = {
     "POSTGRES_PASSWORD",
     "POSTGRES_HOST",
     "POSTGRES_PORT",
+    "POSTGRES_CONNECT_TIMEOUT",
+    "POSTGRES_SSLMODE",
+    "POSTGRES_SSLROOTCERT",
     "DJANGO_CORS_ALLOWED_ORIGINS",
     "AI_SERVICE_BASE_URL",
 }
@@ -40,6 +43,8 @@ SAFE_PUBLIC_DEFAULTS = {
     "POSTGRES_USER": "watercare_app",
     "POSTGRES_HOST": "127.0.0.1",
     "POSTGRES_PORT": "5432",
+    "POSTGRES_CONNECT_TIMEOUT": "5",
+    "POSTGRES_SSLMODE": "disable",
 }
 
 
@@ -79,3 +84,4 @@ def test_env_example_uses_non_secret_replacement_markers():
 
     assert entries["DJANGO_SECRET_KEY"].startswith("replace-with-")
     assert entries["POSTGRES_PASSWORD"].startswith("replace-with-")
+    assert entries["POSTGRES_SSLROOTCERT"] == ""

@@ -6,7 +6,11 @@ from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 
-from config.env import load_backend_env
+from config.env import (
+    PostgresConnectionConfigurationError,
+    build_postgres_connection_options,
+    load_backend_env,
+)
 
 
 BASE_DIR = Path(__file__).resolve().parents[2]
@@ -96,6 +100,25 @@ TEMPLATES = [
 
 STATIC_URL = "static/"
 
+POSTGRES_OPTIONS: dict[str, str | int] = {}
+if os.getenv("DJANGO_SETTINGS_MODULE") != "config.settings.test":
+    try:
+        POSTGRES_OPTIONS = build_postgres_connection_options(
+            os.environ,
+            base_dir=BASE_DIR,
+            require_verify_full=(
+                os.getenv("DJANGO_SETTINGS_MODULE")
+                == "config.settings.production"
+            ),
+        )
+    except PostgresConnectionConfigurationError as exc:
+        missing = ", ".join(exc.missing_keys)
+        suffix = f", missing={missing}" if missing else ""
+        raise ImproperlyConfigured(
+            "PostgreSQL 연결 환경 설정이 올바르지 않습니다: "
+            f"reason={exc.reason}{suffix}"
+        ) from None
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -105,6 +128,7 @@ DATABASES = {
         "HOST": os.getenv("POSTGRES_HOST", "127.0.0.1"),
         "PORT": os.getenv("POSTGRES_PORT", "5432"),
         "CONN_MAX_AGE": 0,
+        **({"OPTIONS": POSTGRES_OPTIONS} if POSTGRES_OPTIONS else {}),
     }
 }
 
