@@ -1,0 +1,101 @@
+{
+  "artifact_type": "EXPERIMENT_MANIFEST",
+  "schema_version": "1.0.0",
+  "run_id": "a3_runner_contract_smoke_v1",
+  "run_status": "VALIDATION_ONLY_COMPLETE",
+  "execution_mode": "VALIDATE_ONLY",
+  "started_at": "2026-08-10T12:25:05.962427+00:00",
+  "completed_at": "2026-08-10T12:25:05.973231+00:00",
+  "execution_seconds": 0.010794,
+  "profile": {
+    "profile_id": "experiment_runner_contract_v1",
+    "profile_version": "1.0.0",
+    "path": "ai/configs/experiments/experiment_runner_contract_v1.yaml",
+    "sha256": "017554A0B8675EFBF3C4F0BA35A8751D318D6584EE3AA6A80FC53DB542228CCB"
+  },
+  "dataset": {
+    "dataset_id": "RAG-GOLD-V1",
+    "dataset_version": "1.0.0-draft.1",
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "sha256": "DDB20527D452E1C246CA821CFA7D4EC159B13E24597FDEF685C19136065E50FD",
+    "manifest_path": "ai/evaluation/datasets/gold/rag_gold_v1_manifest.json",
+    "manifest_sha256": "001BE8BFF494D7FE64B935185D032168F102D5A67833F7B0EF8320B6FE407B9A",
+    "split": "DEV",
+    "total_case_count": 60,
+    "selected_case_count": 35,
+    "review_status_counts": {
+      "UNREVIEWED_DRAFT": 35
+    },
+    "gold_approved_for_official_metrics": false
+  },
+  "corpus": {
+    "version": "a1-20260810",
+    "sha256": "B6C7D3FE54049DFB8C0970F20128FB988756377EBF81B7E1E20047BBFFB234F9",
+    "files": [
+      {
+        "role": "JAC104_MVP_MANUAL",
+        "path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+        "sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F"
+      },
+      {
+        "role": "IAC425_EXPERIMENT_MANUAL",
+        "path": "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
+        "sha256": "D9708B3877E4126DA7388906BC637EEB0BF69BEEF9B1B8E91454FF70A74ADF05"
+      },
+      {
+        "role": "FAQ_CONDITIONAL_CORPUS",
+        "path": "data/processed/documents/faq/faq_snapshot_normalized.jsonl",
+        "sha256": "E2040220C22F26042F1662029FA45776A7261336956DF6D8C7102485A27F41F4"
+      }
+    ]
+  },
+  "chunking": {
+    "profile": "NOT_CONFIGURED_UNTIL_A3_1",
+    "parameters": {}
+  },
+  "embedding": {
+    "model": null,
+    "revision": null,
+    "dimension": null
+  },
+  "retrieval": {
+    "profile": "NOT_CONFIGURED_UNTIL_A3_1",
+    "top_k": 5,
+    "threshold": null,
+    "reranker": null
+  },
+  "generation": {
+    "generator": null,
+    "prompt_version": null,
+    "temperature": null
+  },
+  "runtime": {
+    "python_version": "3.13.12",
+    "os": "Windows 11",
+    "machine": "AMD64",
+    "cpu": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+    "gpu": null,
+    "ram_mb": 16183,
+    "vram_mb": null,
+    "hardware_detection_note": "GPU/VRAM은 VALIDATE_ONLY에서 탐지하지 않음"
+  },
+  "git": {
+    "commit_sha": "4d955116c00f715e1ba9e465104a381b858996b9",
+    "branch": "main",
+    "working_tree_clean": false,
+    "changed_path_count": 28
+  },
+  "outputs": {
+    "manifest": "ai/evaluation/reports/experiments/a3_runner_contract_smoke_v1/manifest.json",
+    "case_results": "ai/evaluation/reports/experiments/a3_runner_contract_smoke_v1/case_results.jsonl",
+    "retrieval_summary": "ai/evaluation/reports/experiments/a3_runner_contract_smoke_v1/retrieval_summary.json",
+    "generation_summary": "ai/evaluation/reports/experiments/a3_runner_contract_smoke_v1/generation_summary.json",
+    "safety_summary": "ai/evaluation/reports/experiments/a3_runner_contract_smoke_v1/safety_summary.json",
+    "performance_summary": "ai/evaluation/reports/experiments/a3_runner_contract_smoke_v1/performance_summary.json"
+  },
+  "publication_limits": [
+    "VALIDATE_ONLY 결과를 검색·생성 성능으로 발표하지 않는다.",
+    "2인 미승인 Gold Draft 결과를 공식 성능 수치로 사용하지 않는다.",
+    "Embedding·Vector DB·Generator 미실행 상태를 Baseline으로 표현하지 않는다."
+  ]
+}

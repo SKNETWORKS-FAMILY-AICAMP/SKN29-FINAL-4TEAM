@@ -24,6 +24,7 @@
 | ERD | [대화형 ERD](database/erd/waterbridge_erd.html) | 테이블 검색, 관계 탐색과 전체 필드 조회 |
 | ERD | [ERD 정적 미리보기](database/erd/waterbridge_erd.png) | GitHub에서 바로 확인하는 관계도 이미지 |
 | 인계 | [팀 통합 인계 허브](handoffs/README.md) | 현재 검토 Gate, 역할별 반환 증거와 경로 안내 |
+| 기획 | [AI·RAG 실험 페이지 구현 실행계획](planning/20260810_AI_RAG_실험_구현_실행계획.md) | 기존 데이터 정비부터 청킹·검색·모델 비교·실험 UI·조건부 데이터 수집까지의 실행 순서 |
 | 제출 | [데이터베이스·저장소 설계](submission/database-storage-design.md) | DB·pgvector·합성 데이터 저장 경계 |
 | 제출 | [데이터 전처리 결과](submission/data-preprocessing-result.md) | 데이터 버전·검증·DB/RAG 실행 스냅샷 |
 | 개발 기록 | [Backend·Database 개발 문서](individual/jiyong/README.md) | 구현·검증·복구·연동 인계의 주요 문서 인덱스 |

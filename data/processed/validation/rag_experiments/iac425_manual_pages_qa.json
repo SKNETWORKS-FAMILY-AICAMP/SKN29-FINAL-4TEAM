@@ -1,0 +1,145 @@
+{
+  "qa_id": "A1-2-IAC425-FULL-PAGE-QA",
+  "status": "STRUCTURAL_PASS_VISUAL_REVIEW_PENDING",
+  "generated_at": "2026-08-10T11:49:19.133385+00:00",
+  "scope": {
+    "included": "WPU-IAC425 REV.02 실험용 52페이지 JSONL",
+    "excluded": [
+      "MVP 검색",
+      "Chunking",
+      "Embedding",
+      "Vector DB",
+      "Production 승인"
+    ]
+  },
+  "dataset": {
+    "path": "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
+    "sha256": "D9708B3877E4126DA7388906BC637EEB0BF69BEEF9B1B8E91454FF70A74ADF05",
+    "record_count": 52
+  },
+  "schema": {
+    "path": "data/schemas/processed/experimentalManualPage.schema.json",
+    "sha256": "9BBB1E7914EE2D27C1343CBA953A94F0D0665D59323B2E492B5FD6EEAF1F3A3D"
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 1,
+    "pages_expected": 52,
+    "pages_found": 52,
+    "unique_pages": 52,
+    "missing_pages": [],
+    "duplicate_pages": [],
+    "duplicate_text_groups": [],
+    "blank_text_pages": [],
+    "text_hash_mismatch_pages": [],
+    "mojibake_pages": [],
+    "visual_review_pending_count": 47
+  },
+  "verification_coverage": {
+    "status_counts": {
+      "TEXT_EXTRACTED": 47,
+      "VISUALLY_REVIEWED": 1,
+      "VISUAL_SPOT_CHECKED": 4
+    },
+    "visual_review_pending_pages": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      41,
+      42,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51
+    ],
+    "manual_correction_pages": [
+      1,
+      40,
+      52
+    ]
+  },
+  "metadata_invariants": {
+    "document_id": [
+      "MAN-SKMAGIC-WPU-IAC425-REV02"
+    ],
+    "source_inventory_id": [
+      "SRC-IAC425-MANUAL"
+    ],
+    "exact_sales_code": [
+      "WPUIAC425SNW"
+    ],
+    "product_model": [
+      "WPU-IAC425"
+    ],
+    "scope_role": [
+      "expansion"
+    ],
+    "mvp_use": [
+      false
+    ],
+    "allowed_use": [
+      "EXPERIMENT_ONLY"
+    ],
+    "version": [
+      "REV.02"
+    ],
+    "page_count": [
+      52
+    ],
+    "source_file_sha256": [
+      "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8"
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "VISUAL_REVIEW_PENDING",
+      "count": 47,
+      "message": "실험용 텍스트 사용은 가능하나 Gold·Production 승인을 의미하지 않음"
+    }
+  ],
+  "decision": {
+    "experimental_corpus_text_use": "READY",
+    "mvp_search_use": "BLOCKED",
+    "gold_evidence_use": "REVIEW_REQUIRED",
+    "production_corpus_expansion": "NOT_AUTHORIZED"
+  }
+}
