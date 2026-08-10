@@ -1,7 +1,7 @@
 {
   "request": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b207",
-    "correlation_id": "corr-retrieval-failed-001",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88d002",
     "ai_request_id": "ai-req-retrieval-failed-001",
     "state_version": 3,
     "raw_symptom": "냉수 온도가 평소와 다릅니다.",
@@ -12,7 +12,7 @@
   "error_response": {
     "success": false,
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b207",
-    "correlation_id": "corr-retrieval-failed-001",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88d002",
     "ai_request_id": "ai-req-retrieval-failed-001",
     "state_version": 3,
     "error": {

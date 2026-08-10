@@ -4,6 +4,7 @@ import asyncio
 import os
 import time
 from threading import BoundedSemaphore
+from uuid import UUID
 
 from fastapi import APIRouter, Header, Query, Request, Response
 from ..request_models import SymptomAnalysisApiRequest
@@ -51,7 +52,7 @@ async def analyze_symptom(
     request: Request,
     response: Response,
     mode: str = Query("local", pattern="^(mock|local)$", description="실행 모드"),
-    x_correlation_id: str | None = Header(None, alias="X-Correlation-ID"),
+    x_correlation_id: UUID | None = Header(None, alias="X-Correlation-ID"),
 ):
     """백엔드에서 호출하는 증상 분석·안전평가·RAG근거·사용안내 API"""
 
@@ -71,7 +72,7 @@ async def analyze_symptom(
             ai_request_id=req.ai_request_id,
             state_version=req.state_version,
         )
-    response.headers["X-Correlation-ID"] = req.correlation_id
+    response.headers["X-Correlation-ID"] = str(req.correlation_id)
     started_at = time.perf_counter()
     request.state.analysis_started_at = started_at
     log_fields = {

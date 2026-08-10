@@ -1,7 +1,7 @@
 {
   "request": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b201",
-    "correlation_id": "corr-trace-20260729-101",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88e001",
     "ai_request_id": "ai-req-20260729-101",
     "state_version": 5,
     "customer_raw_text": "냉수가 미지근하게 나와요. 2일 전부터 그랬어요.",
@@ -9,7 +9,7 @@
   },
   "response": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b201",
-    "correlation_id": "corr-trace-20260729-101",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88e001",
     "ai_request_id": "ai-req-20260729-101",
     "state_version": 5,
     "status": "SUCCEEDED",

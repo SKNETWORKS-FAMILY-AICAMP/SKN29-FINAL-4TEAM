@@ -18,7 +18,7 @@ class PreviousAnswerItem(ContractModel):
 class SymptomAnalysisApiRequest(ContractModel):
     """증상 분석 요청 HTTP DTO (Backend -> AI)"""
     inquiry_id: UUID = Field(..., description="Backend가 발급한 Public UUID")
-    correlation_id: str = Field(..., min_length=1, max_length=100, description="전체 요청 추적 식별자")
+    correlation_id: UUID = Field(..., description="Backend가 발급한 전체 요청 추적 UUID")
     ai_request_id: str = Field(..., min_length=1, max_length=100, description="AI 호출 멱등 식별자")
     state_version: int = Field(..., ge=1, description="AI 호출 시작 시점 문의 상태 버전")
     raw_symptom: str = Field(..., min_length=1, max_length=4000, description="고객 최초 자연어 입력 증상")

@@ -76,7 +76,7 @@ def test_single_rag_pipeline_execution():
     # 1. 누수 위험 시나리오 실행
     result = router.run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b305",
-        correlation_id="corr-pipeline-test",
+        correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
         ai_request_id="ai-req-pipeline-test",
         state_version=1,
         raw_symptom="정수기 밑 바닥에 물이 새서 누수가 심합니다.",
@@ -133,7 +133,7 @@ def test_no_evidence_uses_pending_consultation_branch():
     """정상 검색 결과 0건이면 자가조치를 만들지 않고 상담으로 전환한다."""
     result = PipelineRouter(search_service=EmptySearchService()).run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b306",
-        correlation_id="corr-no-evidence",
+        correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
         ai_request_id="ai-req-no-evidence",
         state_version=2,
         raw_symptom="처음 보는 알 수 없는 표시가 나타났습니다.",
@@ -152,7 +152,7 @@ def test_vector_store_not_configured_is_not_reported_as_no_match():
     with pytest.raises(RetrievalConfigurationError, match="설정되지 않아"):
         PipelineRouter(search_service=None).run_pipeline(
             inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b307",
-            correlation_id="corr-vector-not-configured",
+            correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
             ai_request_id="ai-req-vector-not-configured",
             state_version=1,
             raw_symptom="냉수가 미지근합니다.",
@@ -165,7 +165,7 @@ def test_configured_search_failure_is_typed_separately_from_no_match():
     with pytest.raises(RetrievalExecutionError, match="검색 실행에 실패") as raised:
         PipelineRouter(search_service=service).run_pipeline(
             inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b308",
-            correlation_id="corr-vector-failed",
+            correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
             ai_request_id="ai-req-vector-failed",
             state_version=1,
             raw_symptom="냉수가 미지근합니다.",
@@ -180,7 +180,7 @@ def test_transient_search_failure_retries_once_then_succeeds():
     service = FlakySearchService()
     result = PipelineRouter(search_service=service).run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b315",
-        correlation_id="corr-vector-retry-success",
+        correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
         ai_request_id="ai-req-vector-retry-success",
         state_version=1,
         raw_symptom="냉수가 미지근합니다.",
@@ -203,7 +203,7 @@ def test_non_transient_search_failure_is_not_retried():
     with pytest.raises(RetrievalExecutionError) as raised:
         PipelineRouter(search_service=service).run_pipeline(
             inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b316",
-            correlation_id="corr-vector-non-retryable",
+            correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
             ai_request_id="ai-req-vector-non-retryable",
             state_version=1,
             raw_symptom="냉수가 미지근합니다.",
@@ -218,7 +218,7 @@ def test_non_transient_search_failure_is_not_retried():
 def test_configured_search_with_evidence_is_available():
     result = PipelineRouter(search_service=EvidenceSearchService()).run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b310",
-        correlation_id="corr-vector-available",
+        correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
         ai_request_id="ai-req-vector-available",
         state_version=1,
         raw_symptom="냉수가 미지근합니다.",
@@ -234,7 +234,7 @@ def test_configured_search_with_evidence_is_available():
 def test_danger_path_does_not_require_vector_store():
     result = PipelineRouter(search_service=None).run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b309",
-        correlation_id="corr-danger-no-vector",
+        correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
         ai_request_id="ai-req-danger-no-vector",
         state_version=1,
         raw_symptom="정수기 전원선 주변에 심한 누수가 발생했습니다.",
@@ -254,7 +254,7 @@ def test_vector_dsn_requires_pinned_embedding_revision(monkeypatch):
     with pytest.raises(RetrievalConfigurationError, match="AI_EMBEDDING_REVISION"):
         router.run_pipeline(
             inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b311",
-            correlation_id="corr-missing-revision",
+            correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
             ai_request_id="ai-req-missing-revision",
             state_version=1,
             raw_symptom="냉수가 미지근합니다.",
@@ -269,7 +269,7 @@ def test_vector_dsn_requires_index_manifest(monkeypatch):
     with pytest.raises(RetrievalConfigurationError, match="Index Manifest"):
         router.run_pipeline(
             inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b312",
-            correlation_id="corr-missing-manifest",
+            correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
             ai_request_id="ai-req-missing-manifest",
             state_version=1,
             raw_symptom="냉수가 미지근합니다.",
@@ -291,7 +291,7 @@ def test_vector_manifest_revision_mismatch_is_configuration_error(monkeypatch):
     with pytest.raises(RetrievalConfigurationError, match="Manifest와 일치하지"):
         router.run_pipeline(
             inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b313",
-            correlation_id="corr-manifest-mismatch",
+            correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
             ai_request_id="ai-req-manifest-mismatch",
             state_version=1,
             raw_symptom="냉수가 미지근합니다.",
@@ -303,7 +303,7 @@ def test_danger_path_skips_partial_vector_configuration_error(monkeypatch):
     monkeypatch.delenv("AI_EMBEDDING_REVISION", raising=False)
     result = PipelineRouter().run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b314",
-        correlation_id="corr-danger-partial-config",
+        correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
         ai_request_id="ai-req-danger-partial-config",
         state_version=1,
         raw_symptom="전원선 주변에 누수가 발생했습니다.",

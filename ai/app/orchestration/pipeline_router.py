@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 from typing import Dict, List, Optional
+from uuid import UUID
 
 from ..integrations.embedding.embedding_client import BgeM3EmbeddingClient
 from ..integrations.vector_store.vector_store import PgVectorStore
@@ -67,8 +68,8 @@ class PipelineRouter:
 
     def run_pipeline(
         self,
-        inquiry_id: str,
-        correlation_id: str,
+        inquiry_id: UUID,
+        correlation_id: UUID,
         ai_request_id: str,
         state_version: int,
         raw_symptom: str,

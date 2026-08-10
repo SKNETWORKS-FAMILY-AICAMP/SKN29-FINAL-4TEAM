@@ -1,7 +1,7 @@
 {
   "request": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b201",
-    "correlation_id": "corr-trace-20260729-001",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c001",
     "ai_request_id": "ai-req-20260729-001",
     "state_version": 1,
     "raw_symptom": "정수기 냉수가 예전만큼 차갑지 않고 미지근하게 나옵니다.",
@@ -11,7 +11,7 @@
   },
   "response": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b201",
-    "correlation_id": "corr-trace-20260729-001",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c001",
     "ai_request_id": "ai-req-20260729-001",
     "state_version": 1,
     "status": "SUCCEEDED",

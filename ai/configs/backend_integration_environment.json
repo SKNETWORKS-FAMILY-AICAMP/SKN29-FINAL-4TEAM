@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "python_version": "3.13.13",
+  "dependency_manifest": "ai/requirements.lock",
+  "install_command": ".\\ai\\.venv\\Scripts\\python.exe -m pip install -r ai\\requirements.lock",
+  "ai_modes": [
+    "mock",
+    "local"
+  ],
+  "contract_version": "2.0.0",
+  "config_paths": [
+    "ai/configs/retry_policy.yaml",
+    "ai/configs/retrieval_policy.yaml",
+    "ai/configs/safety_rules.yaml",
+    "ai/configs/index_manifest.json"
+  ],
+  "required_environment_variable_names": {
+    "mock": [],
+    "local_general_or_caution": [
+      "AI_VECTOR_DSN",
+      "AI_EMBEDDING_REVISION"
+    ],
+    "local_danger_rule_only": []
+  },
+  "optional_environment_variable_names": [
+    "AI_MAX_IN_FLIGHT_WORKERS",
+    "AI_LOG_LEVEL"
+  ],
+  "start_command": ".\\ai\\.venv\\Scripts\\python.exe -m uvicorn ai.app.main:app --host 127.0.0.1 --port 8001",
+  "health_url": "http://127.0.0.1:8001/health",
+  "analysis_endpoint": "POST http://127.0.0.1:8001/api/v1/ai/analyze?mode={mock|local}",
+  "smoke_command": ".\\ai\\.venv\\Scripts\\python.exe -m ai.scripts.smoke_test --base-url http://127.0.0.1:8001 --mode mock",
+  "db_seed_or_reset_command": {
+    "mock": "NOT_REQUIRED",
+    "local_disposable": [
+      ".\\ai\\.venv\\Scripts\\python.exe -m ai.scripts.initialize_disposable_vector_schema",
+      ".\\ai\\.venv\\Scripts\\python.exe -m ai.scripts.build_vector_index"
+    ]
+  },
+  "missing_configuration_contract": [
+    {
+      "condition": "local 일반·주의 요청에서 AI_VECTOR_DSN 미설정",
+      "http_status": 503,
+      "error_code": "AI-FAILED-01",
+      "failure_stage": "RETRIEVING",
+      "retryable": false,
+      "retry_count": 0
+    },
+    {
+      "condition": "AI_VECTOR_DSN 설정 후 AI_EMBEDDING_REVISION 미설정",
+      "http_status": 503,
+      "error_code": "AI-FAILED-01",
+      "failure_stage": "RETRIEVING",
+      "retryable": false,
+      "retry_count": 0
+    }
+  ],
+  "notes": [
+    "health는 Liveness이며 Local RAG Readiness 성공을 의미하지 않는다.",
+    "Local 위험 입력은 결정론적 안전 규칙이 검색보다 우선하므로 Vector 환경변수 없이도 실행될 수 있다.",
+    "실제 DSN과 Secret 값은 Manifest, 명령 출력, 구조화 로그에 기록하지 않는다."
+  ]
+}

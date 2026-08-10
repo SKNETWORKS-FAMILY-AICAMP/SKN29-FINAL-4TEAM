@@ -1,0 +1,19 @@
+{
+  "request": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c890012",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c891012",
+    "ai_request_id": "ai-e2e-f12",
+    "state_version": 2,
+    "raw_symptom": "냉수 출수량이 줄었습니다.",
+    "model_code": "WPUJAC104DWH",
+    "selected_symptoms": [
+      "출수량 저하"
+    ],
+    "previous_answers": [
+      {
+        "question_id": "followup-occurrence-time",
+        "answer_text": "답변 거절"
+      }
+    ]
+  }
+}

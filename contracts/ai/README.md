@@ -4,7 +4,7 @@ Backend와 AI 서비스 사이의 요청·응답 JSON Schema 단일 진실원칙
 
 ## 현재 버전
 
-- 계약 버전: `1.1.0`
+- 계약 버전: `2.0.0`
 - JSON Schema: Draft 2020-12
 - 분석 Endpoint: `POST /api/v1/ai/analyze`
 - 추가 속성: 모든 공개 요청·응답에서 금지
@@ -19,7 +19,8 @@ Commit에서 갱신한다.
 공개 요청·응답에 중복 노출하지 않는다.
 
 - `inquiry_id`: Backend가 발급한 Public UUID. 내부 정수 PK와 업무 코드는 금지
-- `correlation_id`: Backend → AI → 응답·오류·`X-Correlation-ID` Header 추적값
+- `correlation_id`: Backend가 발급한 UUID. AI 요청 Body와 선택적
+  `X-Correlation-ID` Header가 일치해야 하며 응답·오류·로그까지 보존
 - `ai_request_id`: Backend가 발급하는 AI 호출 멱등 키. 같은 논리 요청 재전송 시 재사용
 - `state_version`: 호출 시작 시점 버전. AI가 변경하지 않고 응답에 Echo
 
@@ -50,6 +51,8 @@ AI는 증상 구조화·안전 평가·사용 안내·근거 참조 또는 요�
 
 오류 응답에도 사용 가능한 추적 식별자를 보존한다. 입력 원문, Prompt,
 Stack Trace, Secret, 개인정보는 오류 상세에 포함하지 않는다.
+비UUID `correlation_id`로 요청 검증에 실패한 경우 유효하지 않은 값을 오류
+응답이나 Header에 Echo하지 않고 `correlation_id=null`로 반환한다.
 
 정상적으로 검색을 완료했지만 근거가 0건이면 오류가 아니다. HTTP 200,
 `status=FALLBACK`, `failure_stage=RETRIEVING`, 빈 `evidence_references`와

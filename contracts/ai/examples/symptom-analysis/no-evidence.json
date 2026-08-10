@@ -1,7 +1,7 @@
 {
   "request": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b203",
-    "correlation_id": "corr-trace-20260729-003",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c003",
     "ai_request_id": "ai-req-20260729-003",
     "state_version": 2,
     "raw_symptom": "특정 시간에 정수기 내부 디스플레이 숫자가 점멸하는데 의미를 모르겠습니다.",
@@ -11,7 +11,7 @@
   },
   "response": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b203",
-    "correlation_id": "corr-trace-20260729-003",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c003",
     "ai_request_id": "ai-req-20260729-003",
     "state_version": 2,
     "status": "FALLBACK",

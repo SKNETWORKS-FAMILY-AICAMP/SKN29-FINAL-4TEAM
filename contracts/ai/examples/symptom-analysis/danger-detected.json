@@ -1,7 +1,7 @@
 {
   "request": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b202",
-    "correlation_id": "corr-trace-20260729-002",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c002",
     "ai_request_id": "ai-req-20260729-002",
     "state_version": 3,
     "raw_symptom": "정수기 밑 바닥으로 물이 줄줄 새고 전선 근처에서 타는 냄새가 나요.",
@@ -11,7 +11,7 @@
   },
   "response": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b202",
-    "correlation_id": "corr-trace-20260729-002",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c002",
     "ai_request_id": "ai-req-20260729-002",
     "state_version": 3,
     "status": "SUCCEEDED",
