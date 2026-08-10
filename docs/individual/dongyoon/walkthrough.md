@@ -708,3 +708,38 @@ Public UUID 분석 요청이 모두 성공했다.
 - 최지용 요청 문서의 AI 선행 제공물 필드 순서를 그대로 따른 전송용
   `sender=이동윤` 회신 블록을 협업 문서 0절에 추가했다. 공동 검증 후
   `reviewer=최지용`이 작성해야 하는 Backend 완료 회신은 대신 작성하지 않았다.
+
+### 2026-08-10 Backend↔AI 추가확인 03·04·05 우선순위 구현
+
+- 위험 자연어를 Backend가 임의 해석하지 않도록 안전 규칙에 안정적인
+  `SAFETY-...-NNN` ID를 부여하고 `SafetyAssessment.matched_safety_rule_ids`를
+  Pydantic·JSON Schema·예시·F03 Fixture에 필수로 추가했다. 필수 응답 필드가
+  늘어난 호환성 파괴 변경이므로 AI 계약을 `3.0.0`으로 올렸다.
+- 승인 RAG JSONL 7건의 `chunk_id`, 문서·페이지·모델·세대·검증 상태, Source
+  Hash와 청크 본문 SHA-256을 `ai/configs/canonical_evidence_identity.json`에
+  고정했다. AI는 Backend `DocumentChunk.public_id`를 생성하지 않으며 실제
+  Crosswalk는 Backend·Database 책임으로 남겼다.
+- 결정론적 단일 Workflow와 pgvector의 실제 실행 식별값을
+  `ai/configs/runtime_identity.json`에 기록했다. 외부 LLM을 사용한다고 주장하지
+  않으며, 값은 고객 응답이 아니라 Backend 환경 설정과 `AIRun` 감사 레코드로
+  전달한다.
+- 일반 안내 계약 예시의 구형 비공식 청크 ID를 승인 canonical ID로 교체했고,
+  검색을 건너뛰는 위험 분기의 계약 예시는 근거 배열을 비워 실제 Runtime
+  경계와 맞췄다.
+- 03·04·05 전용 별도 회신
+  `인계/20260810_이동윤_최지용_Backend_AI_수직연동_추가확인_회신_v0.1.md`를
+  최지용의 원문 회신 필드 순서로 작성했다. Backend Crosswalk·계약 3.0.0 호환·
+  실제 저장 E2E가 남아 있으므로 전체 `ready_for_joint_e2e`는 `NO`로 판정했다.
+- Python `3.13.13`, `pip check` PASS, 전체 AI 단위 테스트 `121 passed,
+  3 warnings`, Fixture Gate `12 passed`, 실제 Uvicorn Mock Health·Analyze·추적 ID
+  Smoke PASS와 Local 위험 입력의 규칙 ID 2개·`TOTAL_STOP`·근거 0건을 확인했다.
+  `backend/.venv`가 없어 Backend 단위 테스트 재실행은 수행하지 못했다.
+- 후보 기준선 생성기의 계약 고정값을 `3.0.0`으로 맞추고 공식 후보 보고서를
+  다시 생성했다. 상태는 팀 DB 재검증과 Commit이 남은
+  `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`이며 Source HEAD는
+  `421e5590414a3addec62158b0b58ed37bbf97e41`, Dirty 상태다.
+- 03·04·05 별도 회신 마지막에 최지용이 추가 요청한 실행값 블록을 넣었다.
+  `103`은 Fixture 추가 전 중간값, `115`는 계약 2.0.0과 Fixture 12개를 포함한
+  당시 최종값, `121`은 계약 3.0.0 안전 ID·근거 Identity·Runtime Identity
+  검증까지 포함한 현재값으로 구분했다. 거절·모름 Payload 처리, Disposable DB
+  확인값, 공동 Mock 준비 여부와 가용 시점도 함께 명시했다.

@@ -32,6 +32,7 @@
       "risk_level": "general",
       "priority": "general_guidance",
       "requires_consultation": false,
+      "matched_safety_rule_ids": [],
       "detected_risks": [],
       "safety_reason": "전기, 누수, 화상 등 직간접적 위험 요소가 감지되지 않은 일반 문의건입니다."
     },
@@ -47,11 +48,11 @@
     "evidence_references": [
       {
         "document_title": "WPU-JAC104D 사용설명서",
-        "document_version": "v1.0",
-        "page": 38,
-        "chunk_id": "WPUJAC104DWH_MANUAL_P38_C01",
-        "official_url": "https://www.skmagic.com/manual/WPUJAC104DWH",
-        "summary": "냉수 기능 안내: 대량 사용 시 냉수가 연속 출수되면 일시적으로 냉수 온도가 상승할 수 있습니다.",
+        "document_version": "REV.00",
+        "page": 37,
+        "chunk_id": "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001",
+        "official_url": "https://www.skintellixservice.com/web/easy/easyMain.do?inputBasicKeyword=WPUJAC104DWH&tabIndex=3",
+        "summary": "다량 출수, 냉수 기능 꺼짐, 방열팬 먼지와 냉각부 고장을 순서대로 구분합니다.",
         "similarity_score": 0.92,
         "verification_status": "official_verified"
       }

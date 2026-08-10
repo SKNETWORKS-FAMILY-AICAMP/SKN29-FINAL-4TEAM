@@ -123,6 +123,10 @@ def _assert_expected(case: dict, response, request_body: dict) -> None:
             assert len(body["evidence_references"]) == expected["evidence_count"]
         if "risk_level" in expected:
             assert body["safety_assessment"]["risk_level"] == expected["risk_level"]
+        if "matched_safety_rule_ids" in expected:
+            assert body["safety_assessment"]["matched_safety_rule_ids"] == expected[
+                "matched_safety_rule_ids"
+            ]
         if "guidance_status" in expected:
             assert body["usage_guidance"]["guidance_status"] == expected["guidance_status"]
         if "repeated_question_id" in expected:
@@ -139,7 +143,7 @@ def _assert_expected(case: dict, response, request_body: dict) -> None:
 
 def test_fixture_manifest_has_all_cases_and_explicit_ownership():
     manifest = _manifest()
-    assert manifest["contract_version"] == "2.0.0"
+    assert manifest["contract_version"] == "3.0.0"
     assert [case["id"] for case in manifest["cases"]] == [f"F{index:02d}" for index in range(1, 13)]
     assert _case("F11")["owner"] == "BACKEND"
     assert _case("F12")["owner"] == "AI_AND_BACKEND"

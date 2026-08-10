@@ -18,6 +18,7 @@ from ai.scripts.build_vector_index import _chunk_set_sha256
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+CURRENT_CONTRACT_VERSION = "3.0.0"
 
 
 def file_sha256(path: Path) -> str:
@@ -103,7 +104,7 @@ def build_candidate_baseline(unit_test_result: str, unit_test_exit_code: int) ->
         for path in schema_paths
     }
     contract_versions.discard(None)
-    if contract_versions != {"1.1.0"}:
+    if contract_versions != {CURRENT_CONTRACT_VERSION}:
         raise RuntimeError(f"AI 계약 Version이 단일하지 않습니다: {sorted(contract_versions)}")
 
     dirty_lines = [line for line in _git("status", "--porcelain").splitlines() if line]
@@ -132,7 +133,7 @@ def build_candidate_baseline(unit_test_result: str, unit_test_exit_code: int) ->
             },
         },
         "contract": {
-            "version": "1.1.0",
+            "version": CURRENT_CONTRACT_VERSION,
             "schema_draft": "2020-12",
             "schema_file_count": len(schema_paths),
             "canonical_rule": "sorted relative schema path + recursively key-sorted JSON; UTF-8; compact separators",

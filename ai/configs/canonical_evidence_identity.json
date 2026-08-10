@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0.0",
+  "status": "AI_SOURCE_IDENTITY_FIXED_BACKEND_MAPPING_PENDING",
+  "source_dataset": "data/processed/structured/rag/mvp/rag_verified_sample.jsonl",
+  "evidence_registry": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+  "index_manifest": "ai/configs/index_manifest.json",
+  "index_version": "1.0.0",
+  "chunk_set_sha256": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+  "identity_policy": {
+    "ai_canonical_key": "chunk_id",
+    "backend_target_key": "knowledge_document_chunk.public_id",
+    "backend_mapping_owner": "Backend·Database",
+    "ai_does_not_generate_backend_id": true,
+    "required_match_fields": [
+      "chunk_id",
+      "document_id",
+      "page_refs",
+      "model_code",
+      "product_generation",
+      "verification_status",
+      "source_file_sha256",
+      "chunk_text_sha256"
+    ]
+  },
+  "chunks": [
+    {
+      "chunk_id": "RAG-WPUJAC104DWH-NO-WATER-001",
+      "evidence_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [37],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "b02d26766304525658ffbb388e0b60c99c256719a8a730ac5ea87d9d8d0e8927"
+    },
+    {
+      "chunk_id": "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001",
+      "evidence_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [37],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "974aa279847e6c6d662683581a0763172ec8ace7e60ff57221f7c8fa892fbbdb"
+    },
+    {
+      "chunk_id": "RAG-WPUJAC104DWH-NOISE-001",
+      "evidence_id": "EVD-WPUJAC104DWH-NOISE-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [37],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "843b00524a730b43968247bbe4de0b0e802d04cb3afce551873125e2c312078c"
+    },
+    {
+      "chunk_id": "RAG-WPUJAC104DWH-LEAK-001",
+      "evidence_id": "EVD-WPUJAC104DWH-LEAK-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [38],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "0ce7e1e7bdaed8eadb3011f84d0cd33f8462797a0357047f3d816b1e6187b602"
+    },
+    {
+      "chunk_id": "RAG-WPUJAC104DWH-TASTE-ODOR-001",
+      "evidence_id": "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [38],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "73e5f015b56f9143fbfe46190a4cb1e35b67b41f7db74b80daec2916531f48b3"
+    },
+    {
+      "chunk_id": "RAG-WPUJAC104DWH-LOW-FLOW-001",
+      "evidence_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [38],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "6b063e0d66605bdf3c7b9da65111653ea48b76d7bbf0ee3f108c24261e5c3ca0"
+    },
+    {
+      "chunk_id": "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+      "evidence_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [38, 39],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "219bfbb732f5b63ebc5467f2f2a36affd77318ac64d93b9ba353711be0a9775e"
+    }
+  ]
+}

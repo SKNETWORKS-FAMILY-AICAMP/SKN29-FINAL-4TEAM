@@ -105,6 +105,7 @@ async def analyze_symptom(
                 risk_level=RiskLevel.CAUTION,
                 priority="consultation_recommended",
                 requires_consultation=False,
+                matched_safety_rule_ids=[],
                 detected_risks=["출수량 저하 소음"],
                 safety_reason="일반 출수 미흡 감지"
             ),

@@ -5,7 +5,7 @@
 - 검증 Python: `3.13.13`
 - PostgreSQL과 `vector` 확장
 - 의존성 Manifest: `ai/requirements.lock`, `ai/requirements.txt`, `ai/pyproject.toml`
-- AI 계약 버전: `2.0.0`
+- AI 계약 버전: `3.0.0`
 
 Backend와 AI는 Python 버전만 `3.13.13`으로 통일하고 가상환경과 의존성은
 분리한다. Backend는 `backend/.venv`, AI는 `ai/.venv`를 사용한다. 한쪽
@@ -98,6 +98,23 @@ AI 소유 구간의 in-process HTTP Adapter 검증:
 pgvector, Backend 저장을 모두 통과한 공동 E2E 증거로 사용하지 않는다. F11
 stale `state_version` 차단은 Backend 소유이며, F12의 답변·거절 저장과 버전
 증가는 Backend와 공동 검증한다.
+
+위험 응답은 자연어 `detected_risks`와 별개로 계약 `3.0.0`의 필수 필드
+`safety_assessment.matched_safety_rule_ids`에 안정적인 규칙 ID를 반환한다.
+Backend는 이 ID를 자연어에서 재추론하지 않고 State Event Guard에 직접 사용한다.
+
+공식 근거의 AI 원천 식별자와 실행 재현 값은 다음 Manifest를 사용한다.
+
+```text
+ai/configs/canonical_evidence_identity.json
+ai/configs/runtime_identity.json
+```
+
+첫 번째 Manifest는 승인 청크 7개의 `chunk_id`와 원문·페이지·Source Hash를
+고정한다. Backend `DocumentChunk.public_id`는 Backend·Database 소유이므로 AI가
+생성하지 않으며, Backend가 이 Manifest를 기준으로 Crosswalk를 완성해야 한다.
+두 번째 Manifest의 실행 식별값은 고객 공개 응답에 추가하지 않고 Backend 환경
+설정과 `AIRun` 감사 레코드로 전달·저장한다.
 
 ## RAG 실행 기준
 

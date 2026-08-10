@@ -4,7 +4,9 @@ Backend와 AI 서비스 사이의 요청·응답 JSON Schema 단일 진실원칙
 
 ## 현재 버전
 
-- 계약 버전: `2.0.0`
+- 계약 버전: `3.0.0`
+- `SafetyAssessment.matched_safety_rule_ids`는 위험 규칙의 안정적인 ID 배열이며
+  필수 필드다. 자연어 `detected_risks`를 규칙 ID로 재해석하지 않는다.
 - JSON Schema: Draft 2020-12
 - 분석 Endpoint: `POST /api/v1/ai/analyze`
 - 추가 속성: 모든 공개 요청·응답에서 금지

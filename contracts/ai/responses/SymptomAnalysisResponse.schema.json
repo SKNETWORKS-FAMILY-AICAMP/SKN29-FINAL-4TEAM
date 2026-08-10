@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "SymptomAnalysisResponse.schema.json",
-  "x-contract-version": "2.0.0",
+  "x-contract-version": "3.0.0",
   "title": "SymptomAnalysisResponse",
   "description": "구조화 증상, 위험도, RAG 근거 및 사용 안내 통합 응답. 업무 상태를 직접 변경하지 않는 제안 결과",
   "type": "object",

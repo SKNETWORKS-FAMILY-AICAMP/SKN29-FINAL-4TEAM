@@ -21,6 +21,7 @@
     "risk_level": "caution",
     "priority": "consultation_recommended",
     "requires_consultation": true,
+    "matched_safety_rule_ids": [],
     "detected_risks": [],
     "safety_reason": "AI 파이프라인 처리 중 타임아웃 또는 안전 가드레일 작동으로 기본 상담 안내 Fallback으로 전환되었습니다."
   },

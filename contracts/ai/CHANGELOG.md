@@ -1,5 +1,13 @@
 # AI Contract Changelog
 
+## 3.0.0 - 2026-08-10
+
+- `SafetyAssessment.matched_safety_rule_ids`를 필수 배열로 추가
+- 안전 설정의 내부 키와 Backend Guard가 소비할 안정 Rule ID를 분리
+- 위험·주의 규칙의 안정 ID 형식과 중복을 Runtime 시작 시 검증
+- 엄격한 응답 Schema에 필수 필드를 추가하는 호환성 파괴 변경이므로 계약
+  Major Version을 갱신
+
 ## 2.0.0 - 2026-08-10
 
 - 시스템 Canonical `correlation_id`를 일반 문자열에서 UUID로 제한

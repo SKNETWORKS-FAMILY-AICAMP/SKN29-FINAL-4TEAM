@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "TechnicianReportRequest.schema.json",
-  "x-contract-version": "2.0.0",
+  "x-contract-version": "3.0.0",
   "title": "TechnicianReportRequest",
   "description": "기사 작업 결과 요약 초안 요청",
   "type": "object",

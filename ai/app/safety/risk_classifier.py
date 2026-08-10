@@ -27,7 +27,7 @@ class RiskClassifier:
             normalized_text = re.sub(pattern, " ", normalized_text)
         text_to_search = (normalized_text + " " + " ".join(selected_symptoms or [])).strip()
 
-        detected_rule_keys = []
+        matched_rule_ids = []
         detected_risks = []
         highest_risk = RiskLevel.GENERAL
         highest_priority = "general_guidance"
@@ -39,7 +39,7 @@ class RiskClassifier:
             keywords = rule_def.get("keywords", [])
             for kw in keywords:
                 if kw in text_to_search:
-                    detected_rule_keys.append(rule_key)
+                    matched_rule_ids.append(rule_def["rule_id"])
                     detected_risks.append(rule_def.get("name", rule_key))
                     reasons.append(f"[{rule_def.get('name')}] 키워드('{kw}') 감지")
 
@@ -64,6 +64,7 @@ class RiskClassifier:
             risk_level=highest_risk,
             priority=highest_priority,
             requires_consultation=requires_consultation,
-            detected_risks=list(set(detected_risks)),
+            matched_safety_rule_ids=list(dict.fromkeys(matched_rule_ids)),
+            detected_risks=list(dict.fromkeys(detected_risks)),
             safety_reason=safety_reason
         )

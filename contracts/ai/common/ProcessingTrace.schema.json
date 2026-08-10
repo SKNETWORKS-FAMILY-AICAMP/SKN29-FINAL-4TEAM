@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://watercare.local/contracts/ai/2.0.0/common/ProcessingTrace.schema.json",
-  "x-contract-version": "2.0.0",
+  "$id": "https://watercare.local/contracts/ai/3.0.0/common/ProcessingTrace.schema.json",
+  "x-contract-version": "3.0.0",
   "title": "ProcessingTrace",
   "description": "내부 감사용 AI 단계별 처리 추적. Prompt와 원문은 기록하지 않는다.",
   "type": "object",

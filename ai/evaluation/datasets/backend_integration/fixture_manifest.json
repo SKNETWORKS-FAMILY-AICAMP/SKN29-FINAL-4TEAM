@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "contract_version": "2.0.0",
+  "contract_version": "3.0.0",
   "runner_command": ".\\ai\\.venv\\Scripts\\python.exe -m pytest ai\\tests\\unit\\test_backend_integration_fixtures.py -q",
   "cases": [
     {
@@ -31,7 +31,7 @@
       "input_file": "contracts/ai/examples/symptom-analysis/danger-detected.json",
       "input_key": "request",
       "mode": "local",
-      "expected": {"http_status": 200, "risk_level": "danger", "guidance_status": "TOTAL_STOP", "evidence_count": 0, "retry_count": 0}
+      "expected": {"http_status": 200, "risk_level": "danger", "matched_safety_rule_ids": ["SAFETY-LEAK-001", "SAFETY-ELECTRICAL-001"], "guidance_status": "TOTAL_STOP", "evidence_count": 0, "retry_count": 0}
     },
     {
       "id": "F04",

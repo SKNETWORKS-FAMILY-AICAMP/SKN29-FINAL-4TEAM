@@ -1,5 +1,6 @@
 """Pydantic 스키마 및 안전 규칙 YAML 로딩 단위 테스트."""
 
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -20,6 +21,7 @@ from ai.app.schemas.consultation_summary import ConsultationSummaryRequest, Cons
 from ai.app.schemas.technician_report import TechnicianReportRequest, TechnicianReportResult
 from ai.app.schemas.common import ModelMetadata, ProcessingTrace, ValidationResult, AiStage
 from ai.app.schemas.symptom import MissingField, FollowUpQuestion
+from ai.app.orchestration.pipeline_context import PipelineContext
 
 
 def test_pydantic_common_schemas():
@@ -55,6 +57,7 @@ def test_symptom_analysis_result_schema():
             risk_level=RiskLevel.DANGER,
             priority="priority_consultation",
             requires_consultation=True,
+            matched_safety_rule_ids=["SAFETY-LEAK-001"],
             detected_risks=["제품 하부 누수"],
             safety_reason="전원 주변 누수 감지"
         ),
@@ -169,7 +172,7 @@ def test_symptom_runtime_and_contract_top_level_fields_match():
     response_contract = json.loads((contract_root / "responses/SymptomAnalysisResponse.schema.json").read_text(encoding="utf-8"))
     assert set(SymptomAnalysisApiRequest.model_json_schema()["properties"]) == set(request_contract["properties"])
     assert set(SymptomAnalysisResult.model_json_schema()["properties"]) == set(response_contract["properties"])
-    assert request_contract["x-contract-version"] == response_contract["x-contract-version"] == "2.0.0"
+    assert request_contract["x-contract-version"] == response_contract["x-contract-version"] == "3.0.0"
 
 
 def test_symptom_request_contract_and_runtime_reject_same_boundaries():
@@ -242,7 +245,7 @@ def test_all_ai_contract_schemas_are_versioned_and_well_formed():
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
         Draft202012Validator.check_schema(schema)
         assert schema["$id"]
-        assert schema["x-contract-version"] == "2.0.0"
+        assert schema["x-contract-version"] == "3.0.0"
 
 
 @pytest.mark.parametrize(
@@ -268,6 +271,19 @@ def test_all_ai_contract_schemas_are_versioned_and_well_formed():
          {"stage": "FAILED", "status": "FAILED", "latency_ms": 0, "retry_count": 0, "error_code": "AI-FAILED-01"}, True),
         ("common/ProcessingTrace.schema.json", ProcessingTrace,
          {"stage": "FAILED", "status": "FAILED", "latency_ms": 0, "retry_count": 0, "error_code": "x" * 101}, False),
+        ("common/SafetyAssessment.schema.json", SafetyAssessment,
+         {"risk_level": "danger", "priority": "priority_consultation", "requires_consultation": True,
+          "matched_safety_rule_ids": ["SAFETY-LEAK-001"], "detected_risks": ["누수"], "safety_reason": "누수 감지"}, True),
+        ("common/SafetyAssessment.schema.json", SafetyAssessment,
+         {"risk_level": "danger", "priority": "priority_consultation", "requires_consultation": True,
+          "detected_risks": ["누수"], "safety_reason": "누수 감지"}, False),
+        ("common/SafetyAssessment.schema.json", SafetyAssessment,
+         {"risk_level": "danger", "priority": "priority_consultation", "requires_consultation": True,
+          "matched_safety_rule_ids": ["leak_danger"], "detected_risks": ["누수"], "safety_reason": "누수 감지"}, False),
+        ("common/SafetyAssessment.schema.json", SafetyAssessment,
+         {"risk_level": "danger", "priority": "priority_consultation", "requires_consultation": True,
+          "matched_safety_rule_ids": ["SAFETY-LEAK-001", "SAFETY-LEAK-001"],
+          "detected_risks": ["누수"], "safety_reason": "누수 감지"}, False),
         ("common/ValidationResult.schema.json", ValidationResult,
          {"is_valid": True, "schema_valid": True, "grounding_valid": True, "safety_valid": True, "violations": []}, True),
         ("common/ValidationResult.schema.json", ValidationResult,
@@ -375,7 +391,7 @@ def test_backend_integration_environment_manifest_is_reproducible():
     )
     assert manifest["python_version"] == "3.13.13"
     assert manifest["dependency_manifest"] == "ai/requirements.lock"
-    assert manifest["contract_version"] == "2.0.0"
+    assert manifest["contract_version"] == "3.0.0"
     assert manifest["ai_modes"] == ["mock", "local"]
     assert manifest["required_environment_variable_names"]["mock"] == []
     assert manifest["required_environment_variable_names"]["local_general_or_caution"] == [
@@ -386,3 +402,68 @@ def test_backend_integration_environment_manifest_is_reproducible():
     assert "POST http://127.0.0.1:8001/api/v1/ai/analyze" in manifest["analysis_endpoint"]
     assert manifest["db_seed_or_reset_command"]["mock"] == "NOT_REQUIRED"
     assert {item["http_status"] for item in manifest["missing_configuration_contract"]} == {503}
+
+
+def test_canonical_evidence_identity_matches_approved_source_and_index_manifest():
+    identity = json.loads(
+        Path("ai/configs/canonical_evidence_identity.json").read_text(encoding="utf-8")
+    )
+    index_manifest = json.loads(
+        Path(identity["index_manifest"]).read_text(encoding="utf-8")
+    )
+    source_rows = {
+        row["chunk_id"]: row
+        for line in Path(identity["source_dataset"]).read_text(encoding="utf-8").splitlines()
+        if line.strip()
+        for row in [json.loads(line)]
+    }
+
+    assert identity["status"] == "AI_SOURCE_IDENTITY_FIXED_BACKEND_MAPPING_PENDING"
+    assert identity["index_version"] == index_manifest["index_version"]
+    assert identity["chunk_set_sha256"] == index_manifest["chunk_set_sha256"]
+    assert len(identity["chunks"]) == index_manifest["chunk_count"] == len(source_rows) == 7
+    assert identity["identity_policy"]["ai_does_not_generate_backend_id"] is True
+
+    canonical_ids = [chunk["chunk_id"] for chunk in identity["chunks"]]
+    assert len(canonical_ids) == len(set(canonical_ids))
+    assert set(canonical_ids) == set(source_rows)
+    for chunk in identity["chunks"]:
+        source = source_rows[chunk["chunk_id"]]
+        assert chunk["evidence_id"] == source["evidence_id"]
+        assert chunk["document_id"] == source["document_id"]
+        assert chunk["page_refs"] == source["page_refs"]
+        assert chunk["model_code"] == source["exact_sales_code"]
+        assert chunk["product_generation"] == source["product_generation"]
+        assert chunk["verification_status"] == source["verification_status"]
+        assert chunk["source_file_sha256"] == source["source_file_sha256"]
+        assert chunk["chunk_text_sha256"] == hashlib.sha256(
+            source["chunk_text"].encode("utf-8")
+        ).hexdigest()
+
+
+def test_runtime_identity_matches_pipeline_and_retrieval_manifests():
+    runtime = json.loads(Path("ai/configs/runtime_identity.json").read_text(encoding="utf-8"))
+    retrieval = yaml.safe_load(Path("ai/configs/retrieval_policy.yaml").read_text(encoding="utf-8"))
+    index_manifest = json.loads(Path("ai/configs/index_manifest.json").read_text(encoding="utf-8"))
+
+    assert runtime["contract_version"] == "3.0.0"
+    assert runtime["public_response_policy"] == "NOT_EXPOSED"
+    assert runtime["backend_delivery"]["method"] == "BACKEND_ENV_AND_SHARED_MANIFEST"
+    assert runtime["local"]["model_provider"] == "waterbridge-local"
+    assert runtime["local"]["model_name"] == "single-rag-pipeline-v1"
+    assert runtime["local"]["model_version"] == "v1"
+    assert runtime["local"]["prompt_version"] == "v1"
+    assert runtime["local"]["external_llm_used"] is False
+    context_metadata = PipelineContext.model_fields["model_metadata"].default_factory()
+    assert runtime["local"]["model_name"] == context_metadata.model_name
+    assert runtime["local"]["prompt_version"] == context_metadata.prompt_version
+    assert runtime["local"]["retrieval"]["top_k"] == retrieval["retrieval_params"]["top_k"]
+    assert runtime["local"]["retrieval"]["score_threshold"] == retrieval["retrieval_params"]["score_threshold"]
+    assert runtime["local"]["retrieval"]["embedding_model"] == index_manifest["model_name"]
+    assert runtime["local"]["retrieval"]["embedding_revision"] == index_manifest["model_revision"]
+    assert runtime["local"]["retrieval"]["index_version"] == index_manifest["index_version"]
+    assert runtime["local"]["retrieval"]["chunk_set_sha256"] == index_manifest["chunk_set_sha256"]
+    for config_name, expected_sha256 in runtime["configuration_sha256"].items():
+        config_path = Path("ai/configs") / f"{config_name}.yaml"
+        normalized = config_path.read_text(encoding="utf-8").replace("\r\n", "\n").encode("utf-8")
+        assert hashlib.sha256(normalized).hexdigest().upper() == expected_sha256

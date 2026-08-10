@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://watercare.local/contracts/ai/2.0.0/common/ValidationResult.schema.json",
-  "x-contract-version": "2.0.0",
+  "$id": "https://watercare.local/contracts/ai/3.0.0/common/ValidationResult.schema.json",
+  "x-contract-version": "3.0.0",
   "title": "ValidationResult",
   "description": "스키마·근거·안전 검증 결과",
   "type": "object",
