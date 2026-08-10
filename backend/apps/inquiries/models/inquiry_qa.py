@@ -12,8 +12,32 @@ from django.db.models import Q
 from common.models.base import TimestampedModel
 
 
+def public_question_options(raw_options) -> list[str]:
+    """Return the single normalized option set used by GET and POST."""
+
+    if not isinstance(raw_options, list):
+        return []
+    return [
+        option.strip()[:200]
+        for option in raw_options[:10]
+        if isinstance(option, str) and option.strip()
+    ]
+
+
+def question_metadata(raw_payload) -> dict:
+    """Read only the legacy JSON keys owned by question metadata."""
+
+    if not isinstance(raw_payload, dict):
+        return {}
+    return {
+        key: raw_payload[key]
+        for key in ("question_options", "target_field")
+        if key in raw_payload
+    }
+
+
 class InquiryQA(TimestampedModel):
-    """Persist one follow-up question and its optional answer."""
+    """Persist one follow-up question and its contract-compatible fields."""
 
     id = models.BigAutoField(primary_key=True)
     public_id = models.UUIDField(
@@ -39,6 +63,9 @@ class InquiryQA(TimestampedModel):
         max_length=40,
         default="FREE_TEXT",
     )
+    # These four legacy columns remain part of the immutable T-005 table
+    # contract. New Runtime writes use FollowUpAnswer, but the columns are
+    # retained for schema compatibility and reversible data migration.
     answer_text = models.TextField(null=True, blank=True)
     answer_payload = models.JSONField(null=True, blank=True)
     asked_by_type_code = models.CharField(
@@ -155,8 +182,49 @@ class InquiryQA(TimestampedModel):
                 "A non-AI question cannot reference an AI run."
             )
 
+        options = self.question_options
+        if not isinstance(options, list):
+            errors["question_options"] = "질문 선택지는 배열이어야 합니다."
+        elif len(options) > 10:
+            errors["question_options"] = "질문 선택지는 10개 이하여야 합니다."
+        elif any(
+            not isinstance(option, str)
+            or not option.strip()
+            or len(option) > 200
+            for option in options
+        ):
+            errors["question_options"] = (
+                "각 질문 선택지는 1~200자 문자열이어야 합니다."
+            )
+        else:
+            payload = (
+                dict(self.answer_payload)
+                if isinstance(self.answer_payload, dict)
+                else {}
+            )
+            payload["question_options"] = public_question_options(options)
+            if self.target_field:
+                payload["target_field"] = self.target_field
+            self.answer_payload = payload or None
+
         if errors:
             raise ValidationError(errors)
+
+    @property
+    def question_options(self) -> list:
+        """Compatibility view over the immutable T-005 JSON column."""
+
+        value = question_metadata(self.answer_payload).get(
+            "question_options", []
+        )
+        return value if isinstance(value, list) else []
+
+    @property
+    def target_field(self) -> str | None:
+        """Return the internal AI target without adding a contract column."""
+
+        value = question_metadata(self.answer_payload).get("target_field")
+        return value if isinstance(value, str) else None
 
     def __str__(self) -> str:
         return (

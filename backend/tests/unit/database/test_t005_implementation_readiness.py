@@ -182,7 +182,7 @@ def test_mapping_distinguishes_each_implementation_layer(
     ]
 
 
-def test_runtime_support_allowlist_is_exact_and_unknown_fifth_table_blocks(
+def test_runtime_support_allowlist_is_exact_and_unknown_extra_table_blocks(
     readiness_module: ModuleType,
     monkeypatch: pytest.MonkeyPatch,
 ):

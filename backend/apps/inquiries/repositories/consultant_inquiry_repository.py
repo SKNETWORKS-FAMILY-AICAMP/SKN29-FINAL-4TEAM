@@ -249,8 +249,11 @@ class ConsultantInquiryRepository:
             .order_by()
         )
         answered_qa = InquiryQA.objects.filter(
-            answered_at__isnull=False,
-        ).order_by("sequence_no", "public_id")
+            customer_answer__isnull=False,
+        ).select_related("customer_answer").order_by(
+            "sequence_no",
+            "public_id",
+        )
         guidance_versions = Guidance.objects.filter(
             review_status_code__in=("APPROVED", "CONFIRMED"),
         ).order_by("-guidance_version", "-created_at", "-public_id")

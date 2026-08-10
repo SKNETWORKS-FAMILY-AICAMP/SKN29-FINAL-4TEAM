@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.audit.models import AIRun
-from apps.inquiries.models import Inquiry, InquiryQA
+from apps.inquiries.models import FollowUpAnswer, Inquiry, InquiryQA
 from tests.unit.inquiries.test_t022_models import create_inquiry
 
 
@@ -71,8 +71,11 @@ def test_inquiry_qa_uses_contract_identifiers_fields_and_defaults():
     assert entry.sequence_no == 1
     assert entry.answer_type_code == "FREE_TEXT"
     assert entry.asked_by_type_code == "RULE"
+    assert entry.question_options == []
+    assert entry.target_field is None
     assert entry.answer_text is None
     assert entry.answer_payload is None
+    assert entry.answered_by is None
     assert entry.answered_at is None
     assert entry.created_at is not None
     assert entry.updated_at is not None
@@ -142,25 +145,22 @@ def test_database_rejects_nonpositive_sequence():
 
 def test_database_rejects_incomplete_answer_metadata():
     inquiry = create_inquiry(11)
+    question = InquiryQA.objects.create(
+        **qa_values(11, inquiry=inquiry)
+    )
 
     with pytest.raises(IntegrityError), transaction.atomic():
-        InquiryQA.objects.create(
-            **qa_values(
-                11,
-                inquiry=inquiry,
-                answered_at=timezone.now(),
-                answer_text="Yesterday.",
-            )
+        FollowUpAnswer.objects.create(
+            question=question,
+            answered_by=inquiry.initiated_by,
         )
 
     with pytest.raises(IntegrityError), transaction.atomic():
-        InquiryQA.objects.create(
-            **qa_values(
-                12,
-                inquiry=inquiry,
-                answered_at=timezone.now(),
-                answered_by=inquiry.initiated_by,
-            )
+        FollowUpAnswer.objects.create(
+            question=question,
+            answered_by=inquiry.initiated_by,
+            answer_text="Yesterday.",
+            answer_payload={"selected_option": "Yesterday."},
         )
 
 
@@ -240,33 +240,69 @@ def test_question_code_is_conditionally_unique_and_null_is_repeatable():
     assert inquiry.qa_entries.filter(question_code__isnull=True).count() == 2
 
 
-def test_valid_answer_accepts_text_or_original_json_payload():
+def test_valid_answer_uses_separate_text_or_structured_answer_rows():
     inquiry = create_inquiry(30)
     answered_at = timezone.now()
     answerer = inquiry.initiated_by
 
-    text_entry = InquiryQA.objects.create(
+    text_question = InquiryQA.objects.create(
         **qa_values(
             30,
             inquiry=inquiry,
-            answer_text="Two days ago.",
-            answered_by=answerer,
-            answered_at=answered_at,
         )
     )
-    payload_entry = InquiryQA.objects.create(
+    payload_question = InquiryQA.objects.create(
         **qa_values(
             31,
             inquiry=inquiry,
             sequence_no=2,
-            answer_payload=["cold", "ambient"],
-            answered_by=answerer,
-            answered_at=answered_at,
+            answer_type_code="SINGLE_CHOICE",
+            answer_payload={"question_options": ["cold", "ambient"]},
         )
+    )
+    text_entry = FollowUpAnswer.objects.create(
+        question=text_question,
+        answer_text="Two days ago.",
+        answered_by=answerer,
+        answered_at=answered_at,
+    )
+    payload_entry = FollowUpAnswer.objects.create(
+        question=payload_question,
+        answer_payload={"selected_option": "cold"},
+        answered_by=answerer,
+        answered_at=answered_at,
     )
 
     assert text_entry.answer_text == "Two days ago."
-    assert payload_entry.answer_payload == ["cold", "ambient"]
+    assert payload_entry.answer_payload == {"selected_option": "cold"}
+    assert text_question.customer_answer == text_entry
+    assert payload_question.customer_answer == payload_entry
+
+
+def test_full_clean_preserves_legacy_non_metadata_payload_keys():
+    inquiry = create_inquiry(32)
+    entry = InquiryQA(
+        **qa_values(
+            32,
+            inquiry=inquiry,
+            answer_type_code="SINGLE_CHOICE",
+            answer_payload={
+                "question_options": [" YES "],
+                "target_field": "legacy_target",
+                "selected_option": "YES",
+                "legacy_raw": {"source": "v3"},
+            },
+        )
+    )
+
+    entry.full_clean()
+
+    assert entry.answer_payload == {
+        "question_options": ["YES"],
+        "target_field": "legacy_target",
+        "selected_option": "YES",
+        "legacy_raw": {"source": "v3"},
+    }
 
 
 def test_ai_question_accepts_validated_generation_run():
@@ -393,16 +429,19 @@ def test_parent_deletions_are_protected():
         full_name="Inquiry QA answerer 70",
         role_code=User.Role.CUSTOMER,
     )
-    InquiryQA.objects.create(
+    question = InquiryQA.objects.create(
         **qa_values(
             70,
             inquiry=inquiry,
             asked_by_type_code="AI",
             source_ai_run=run,
-            answer_text="Today.",
-            answered_by=answerer,
-            answered_at=timezone.now(),
         )
+    )
+    FollowUpAnswer.objects.create(
+        question=question,
+        answer_text="Today.",
+        answered_by=answerer,
+        answered_at=timezone.now(),
     )
 
     with pytest.raises(ProtectedError):

@@ -46,6 +46,11 @@ APPROVED_RUNTIME_SUPPORT_TABLES = {
         "0011; runtime idempotency support outside the immutable 32-table "
         "domain contract."
     ),
+    "support_followup_answer": (
+        "Customer follow-up answer ledger separated from AI question "
+        "metadata for SUBMIT_ANSWERS runtime; support storage outside the "
+        "immutable 32-table domain contract."
+    ),
 }
 
 
