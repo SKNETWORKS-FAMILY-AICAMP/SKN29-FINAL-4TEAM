@@ -58,3 +58,22 @@ Backend/AI Runtime이 아직 없는 기능은 실제 성공처럼 구현하지 �
 
 - scaffold base `jeonghyun`: `59436a9076c087af3d893b50c39b7067d61fb3f1`
 - included `main`: `2198e9e90fe894fb848d551ef638fb3ae0a2b433`
+
+## Week5 Autonomous Completion Gate
+
+5주차 업무지침서에서 Mobile 담당자가 독자적으로 수행 가능한 회귀·실단말·보안·Runtime 판정을 자동화한다.
+
+반복 실행:
+
+```powershell
+python personal/mobile-extension/scripts/run_week5_autonomous_gate.py --repo-source <repo> --config-source <config-worktree> --bundle-dir <bundle>
+```
+
+판정 원칙:
+
+- 고객 Subscription / Inquiry create / symptom submit: 실제 Runtime 사용
+- 상담사 Consultation / Visit scheduling: Backend Runtime 존재 여부와 회귀 검증
+- 고객 Follow-up / request-consultation: Runtime 미구현이면 Blocked
+- 기사 assigned Visit list/detail / start / complete: Runtime 미구현이면 Blocked
+- Guidance/Evidence: 고객 Runtime 미구현이면 Remote fail-closed
+- 미구현 Runtime을 Mobile Fake 성공으로 대체하지 않음

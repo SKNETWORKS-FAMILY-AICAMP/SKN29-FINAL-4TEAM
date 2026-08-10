@@ -4,14 +4,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.activity.ComponentActivity
-import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.v2.runAndroidComposeUiTest
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.model.ActiveInquirySummary
@@ -31,18 +31,16 @@ import com.skn29.watercare.customer.feature.customer.intake.IntakeErrorKind
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeContent
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeUiState
 import org.junit.Assert.assertTrue
-import org.junit.Rule
+import com.skn29.watercare.customer.testing.ComposeTestActivity
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class CustomerMinimumFlowTest {
-    @get:Rule
-    val composeRule = createAndroidComposeRule<ComponentActivity>()
-
     @Test
-    fun offlinePreview_opensCust01AndCust02() {
-        composeRule.setContent {
+    @OptIn(ExperimentalTestApi::class)
+    fun offlinePreview_opensCust01AndCust02() = runAndroidComposeUiTest<ComposeTestActivity> {
+        setContent {
             var showIntake by remember { mutableStateOf(false) }
 
             WaterCareTheme {
@@ -71,23 +69,24 @@ class CustomerMinimumFlowTest {
             }
         }
 
-        composeRule.waitForIdle()
+        waitForIdle()
 
-        composeRule.onNodeWithTag("startIntake")
+        onNodeWithTag("startIntake")
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()
 
-        composeRule.waitForIdle()
+        waitForIdle()
 
-        composeRule.onNodeWithTag("submitIntake")
+        onNodeWithTag("submitIntake")
             .performScrollTo()
             .assertIsDisplayed()
     }
 
     @Test
-    fun dangerGuidance_hidesResolvedAction() {
-        composeRule.setContent {
+    @OptIn(ExperimentalTestApi::class)
+    fun dangerGuidance_hidesResolvedAction() = runAndroidComposeUiTest<ComposeTestActivity> {
+        setContent {
             var showDangerGuidance by remember { mutableStateOf(false) }
 
             WaterCareTheme {
@@ -115,21 +114,21 @@ class CustomerMinimumFlowTest {
             }
         }
 
-        composeRule.waitForIdle()
+        waitForIdle()
 
-        composeRule.onNodeWithTag("scenario_DANGER")
+        onNodeWithTag("scenario_DANGER")
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()
 
-        composeRule.waitForIdle()
+        waitForIdle()
 
-        composeRule.onNodeWithTag("consultationUnavailable")
+        onNodeWithTag("consultationUnavailable")
             .assertIsDisplayed()
             .assertIsNotEnabled()
 
         val resolvedActionDoesNotExist = runCatching {
-            composeRule.onNodeWithTag("resolvedAction").fetchSemanticsNode()
+            onNodeWithTag("resolvedAction").fetchSemanticsNode()
         }.isFailure
 
         assertTrue(
@@ -139,10 +138,11 @@ class CustomerMinimumFlowTest {
     }
 
     @Test
-    fun conflict_showsOnlySupportedSubmitRetryAction() {
+    @OptIn(ExperimentalTestApi::class)
+    fun conflict_showsOnlySupportedSubmitRetryAction() = runAndroidComposeUiTest<ComposeTestActivity> {
         var retried = false
 
-        composeRule.setContent {
+        setContent {
             WaterCareTheme {
                 SymptomIntakeContent(
                     state = SymptomIntakeUiState(
@@ -169,15 +169,15 @@ class CustomerMinimumFlowTest {
             }
         }
 
-        composeRule.waitForIdle()
+        waitForIdle()
 
-        composeRule.onNodeWithTag("retrySubmitAfterConflict")
+        onNodeWithTag("retrySubmitAfterConflict")
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()
 
         val unsupportedActionDoesNotExist = runCatching {
-            composeRule.onNodeWithText("INTERNAL_ONLY_ACTION")
+            onNodeWithText("INTERNAL_ONLY_ACTION")
                 .fetchSemanticsNode()
         }.isFailure
 
@@ -186,7 +186,7 @@ class CustomerMinimumFlowTest {
             unsupportedActionDoesNotExist,
         )
 
-        composeRule.onNodeWithTag("submitIntake")
+        onNodeWithTag("submitIntake")
             .performScrollTo()
             .assertIsNotEnabled()
 

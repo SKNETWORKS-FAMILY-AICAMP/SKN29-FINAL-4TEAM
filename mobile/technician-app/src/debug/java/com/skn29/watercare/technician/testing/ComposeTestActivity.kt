@@ -1,4 +1,4 @@
-package com.skn29.watercare.customer.testing
+package com.skn29.watercare.technician.testing
 
 import androidx.activity.ComponentActivity
 
