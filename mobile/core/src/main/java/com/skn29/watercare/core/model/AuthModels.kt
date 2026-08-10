@@ -3,6 +3,8 @@ package com.skn29.watercare.core.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+const val P0_SYNTHETIC_CUSTOMER_LOGIN_CODE = "SYN-CUSTOMER-001"
+
 @Serializable
 data class DemoLoginRequest(
     @SerialName("demo_user_code") val demoUserCode: String,

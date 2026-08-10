@@ -6,6 +6,7 @@ import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.IntakeSubmission
 import com.skn29.watercare.core.model.P0_SUPPORTED_MODEL_CODE
+import com.skn29.watercare.core.model.P0_SYNTHETIC_CUSTOMER_LOGIN_CODE
 import com.skn29.watercare.core.model.SessionResponse
 import com.skn29.watercare.core.model.SubscriptionListDataDto
 import com.skn29.watercare.core.model.SymptomIntakeRequest
@@ -32,7 +33,7 @@ class CustomerRemoteBackendSmokeTest {
             demoSubscriptionId = "",
         )
 
-        val login = WaterCareCore.authRepository.demoLogin("DEMO-CUSTOMER-001")
+        val login = WaterCareCore.authRepository.demoLogin(P0_SYNTHETIC_CUSTOMER_LOGIN_CODE)
         assertTrue(login is ApiResult.Success<*>)
         val session = (login as ApiResult.Success<SessionResponse>).value
         assertEquals("CUSTOMER", session.user.roleCode)
