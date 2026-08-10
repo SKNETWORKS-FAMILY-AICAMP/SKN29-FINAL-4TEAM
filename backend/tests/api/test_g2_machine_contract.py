@@ -47,6 +47,11 @@ WRITE_G2_OPERATIONS = {
     if key[1] != "get"
 }
 
+IMPLEMENTED_G2_READ_OPERATIONS = {
+    ("/inquiries", "get"),
+    ("/inquiries/{id}", "get"),
+}
+
 EXAMPLE_PATHS = {
     "inquiry_list": (
         API_DIR
@@ -243,11 +248,16 @@ def test_g2_operation_inventory_crosswalk_and_runtime_boundary():
     for key, operation_id in G2_OPERATIONS.items():
         operation = operations[key]
         crosswalk_item = crosswalk_operations[key]
+        expected_runtime_status = (
+            "IMPLEMENTED"
+            if key in IMPLEMENTED_G2_READ_OPERATIONS
+            else "NOT_IMPLEMENTED"
+        )
         assert operation["operationId"] == operation_id
         assert operation["x-contract-status"] == "CONFIRMED"
-        assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
+        assert operation["x-runtime-status"] == expected_runtime_status
         assert crosswalk_item["operation_id"] == operation_id
-        assert crosswalk_item["runtime_status"] == "NOT_IMPLEMENTED"
+        assert crosswalk_item["runtime_status"] == expected_runtime_status
         assert crosswalk_item["permission_scope"] == (
             operation["x-permission-scope"]
         )

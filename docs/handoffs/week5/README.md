@@ -1,7 +1,8 @@
 # 5주차 Data·QA 인계 Hub
 
-> 작성일: 2026-08-07 KST
-> 기준 Commit: `71754053868233d6913538f70e6e78ecaa8584c9`
+> 작성일: 2026-08-10 KST
+> Data 기준 Commit: `71754053868233d6913538f70e6e78ecaa8584c9`
+> TEAM_INTEGRATION QA 기준 Commit: `62e0d8b58ef0e6ac771f5ac62d725b2292857a99`
 > 작성자: 김은진 — Data·QA·DevOps
 > 수신 상태: 전 담당자 `PENDING`
 
@@ -71,3 +72,25 @@
 | 한예나 | — | — | — | `PENDING` |
 | 양정현 | — | — | — | `PENDING` |
 | 윤승혁 | — | — | — | `PENDING` |
+
+## 6. 2026-08-10 실제 연결 QA 후 개별 인계
+
+- [최지용 — Backend·DB 실연동](20260810_김은진_to_최지용_Backend_DB_실연동_인계.md)
+- [이동윤 — AI·Evidence·오류 처리](20260810_김은진_to_이동윤_AI_Evidence_오류처리_인계.md)
+- [윤승혁 — PM·계약·일정 승인](20260810_김은진_to_윤승혁_PM_계약_일정승인_인계.md)
+- [한예나 — Web 실제 API 전환](20260810_김은진_to_한예나_Web_실제API_전환_인계.md)
+
+네 문서는 기준 Commit `8854ca7`의 실제 Django·PostgreSQL QA 결과를
+반영한다. 전달 문서 작성은 수신 확인·구현 완료·PM 승인을 의미하지 않는다.
+
+## 7. 2026-08-10 TEAM_INTEGRATION DB 패키지 QA 추가
+
+- 독립 QA 판정: `PACKAGE_QA_APPROVE`
+- 격리 DB: `waterbridge_team_integration`, PostgreSQL 16.14, Schema `public`
+- 결과: 패키지 56 passed, Role Matrix 1 passed, Backend 882 passed/14 skipped
+- Seed Replay: 2회차 비의도 신규 생성 0
+- 원격 상태: Endpoint·DNS·CA·Credential 미제공, TLS·API Smoke `NOT_RUN`
+- 공식 증거:
+  [TEAM_INTEGRATION DB 패키지 독립 QA](../../testing/results/team-integration-db-package-qa-20260810.md)
+
+기존 네 담당자 인계에는 위 판정에 따른 역할별 후속 Gate를 추가했다.
