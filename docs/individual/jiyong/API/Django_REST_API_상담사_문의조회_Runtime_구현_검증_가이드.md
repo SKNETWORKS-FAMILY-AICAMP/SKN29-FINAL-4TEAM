@@ -2,7 +2,7 @@
 
 - 작성일: 2026-08-10
 - 담당: 최지용 — Backend·DB
-- 상태: `SHARED_COMMIT_AVAILABLE / WEB_INTEGRATION_PENDING`
+- 상태: `BACKEND_POSTGRESQL_HTTP_PASS / WEB_UI_SHARED_SMOKE_PENDING`
 - 구현 Commit: `b996cf21311b0cc880514940eebbb392d722dc09` (`jiyong`)
 - 대상: Web 상담사 화면의 배정 문의 목록·상세 읽기
 
@@ -17,7 +17,9 @@
 CUSTOMER 전용 `/api/v1/me/subscriptions`를 상담사 Web에서 재사용하지 않는다.
 
 두 GET 계약은 `CONFIRMED + IMPLEMENTED`로 갱신했다.
-Backend 전체 회귀는 `889 passed, 14 skipped`이다.
+구현 당시 Backend 전체 회귀는 `889 passed, 14 skipped`였다.
+2026-08-10 PostgreSQL QA 보정은 16절, 공동 Smoke용 QA Seed·실제 HTTP·Web
+Gate는 17~19절에서 구분해 기록한다.
 Web Adapter·Mock·화면 코드는 수정하지 않았으므로 실제 Web 연동 완료는 선언하지 않는다.
 
 ## 2. 요청 배경과 채널 분리
@@ -47,8 +49,7 @@ Web 담당자는 다음을 확인 요청했다.
 제외:
 
 - Web/Mobile 코드 변경
-- 상담 시작·요약 저장·확정·완료 Runtime
-- 방문 검토·생성·일정·확정 Runtime
+- 상담·방문 Write Runtime 변경
 - AI·Evidence 내부 로직 변경
 
 ## 4. 인증·권한·객체 범위
@@ -257,17 +258,20 @@ backend\.venv\Scripts\python.exe -m pytest -q backend/tests
 
 - `listConsultantInquiries`: `CONFIRMED + IMPLEMENTED`
 - `getConsultantInquiryDetail`: `CONFIRMED + IMPLEMENTED`
-- 상담·방문 쓰기 9개: `NOT_IMPLEMENTED` 유지
+- 상담·방문 쓰기 9개: 현재 `main`에 별도 Runtime 구현이 있으나 Web UI 연결은
+  별도 Gate로 유지
 - G2 전역 Runtime Gate: 변경하지 않음
 - Consumer Integration Gate: 변경하지 않음
 
-전역 Boolean을 열면 미구현 쓰기 API까지 개방된 것으로 오해될 수 있어 변경하지 않았다.
-Web에는 두 읽기 Operation의 구현 완료를 개별 전달해야 한다.
+전역 Boolean을 열면 Web UI 미연결 Write와 기사 조회·시작·완료까지 전체 연동된
+것으로 오해될 수 있어 변경하지 않았다. Web에는 두 읽기 Operation의 구현
+완료를 개별 전달해야 한다.
 
 ## 13. Web 인계 기준
 
-현재 결과는 두 GET의 Backend 인계 후보이다.
-전역 Consumer Gate를 유지하므로 Web 실제 Adapter·Mock 제거는 아직 `HOLD`다.
+현재 결과는 두 GET의 Backend Runtime 인계 후보이다.
+Web Remote Adapter는 `main`에 병합됐지만 실제 공동 UI Smoke 전이므로 Mock 제거와
+전체 연동 완료 선언은 아직 `HOLD`다.
 두 GET만 선택적으로 소비하도록 별도 회신한 뒤 다음 기준으로 연동한다.
 
 - 상담사 Access Token 사용
@@ -289,8 +293,10 @@ Web Mock 제거·화면 연결은 Web 담당 범위이며 이 문서에서 완�
 
 ## 15. 변경 경계와 Rollback
 
-신규 조회 Runtime, 두 Operation 상태, 관련 테스트와 이 문서만 제거하면 원복할 수 있다.
-Model·Migration·Seed·Web·Mobile·다른 담당자 문서는 변경하지 않았다.
+기존 조회 Runtime Rollback과 이번 QA Seed 관리 명령·테스트 Rollback은 분리한다.
+이번 보강은 canonical Fixture·Model·Migration·Web·Mobile 코드를 변경하지 않는다.
+방문 Row Lock 수정은 별도 Commit·검증 보고서 범위이며 이 조회 가이드의
+Rollback 대상으로 묶지 않는다.
 
 ## 16. 2026-08-10 PostgreSQL QA 후속 보정
 
@@ -312,3 +318,99 @@ aware DateTime으로 파싱해 DB 값과 동일 시점을 비교하도록 변경
 방문 Row Lock 수정과 전체 결과는
 [방문 Runtime PostgreSQL Row Lock 수정·검증 보고서](Django_REST_API_방문_Runtime_PostgreSQL_Row_Lock_수정_검증_보고서_20260810.md)를
 기준으로 한다. 독립 QA 전에는 Web·Mobile 소비 완료로 확대 판정하지 않는다.
+
+## 17. 2026-08-10 공동 Smoke용 QA Seed 보강
+
+기존 canonical Fixture에는 로그인 가능한 `DEMO-CONSULTANT-001`과 그 계정에
+배정된 문의가 한 쌍으로 존재하지 않았다. 인증 Allowlist를 완화하거나
+`CNS-001`을 Demo Login에 추가하지 않고, canonical `data/synthetic` 파일도
+수정하지 않았다.
+
+대신 로컬·QA Runtime 전용 관리 명령을 추가했다.
+
+```powershell
+backend\.venv\Scripts\python.exe backend\manage.py seed_demo_accounts `
+  --settings=config.settings.local
+backend\.venv\Scripts\python.exe backend\manage.py `
+  seed_demo_consultant_inquiry --settings=config.settings.local
+```
+
+명령은 다음 합성 전용 Projection을 준비한다.
+
+| 항목 | 값 |
+|---|---|
+| 상담사 Login Code | `DEMO-CONSULTANT-001` |
+| 배정 Inquiry Public UUID | `4f829120-ecbb-5b30-9365-bf02f9044c3b` |
+| Scenario Code | `DEMO-CONSULTANT-READ-001` |
+| 신규 생성 기본 상태 | `CONSULTATION_REQUIRED`, `state_version=1` |
+| 개인정보 | 전부 합성, 전화번호 `010-0000-0000` |
+
+첫 실행은 `created=1`, 두 번째 실행은 `updated=1`이었고 PK·공개 UUID·문의
+코드는 유지됐다. 기존 문의가 있으면 Workflow 상태·버전은 무조건 초기화하지
+않고 배정과 안전 Projection만 정렬한다.
+
+## 18. QA Seed 기반 PostgreSQL·실제 HTTP 재검증
+
+로컬 PostgreSQL에 QA Seed를 적용하고 임시 `127.0.0.1:8011` Runtime에서
+Demo Login부터 실제 소켓 요청을 실행했다. 검증 후 임시 서버는 종료했다.
+
+| 검사 | 결과 |
+|---|---|
+| `/health` | `200` |
+| Demo Login | `200` |
+| 문의 목록 | `200`, Seed UUID 1건 확인 |
+| 문의 상세 | `200`, 합성 전화번호 확인 |
+| 미존재·비가시 객체 | 동일 `404` |
+| 허용하지 않은 Query | `422` |
+| 목록 Correlation | `20260810-0000-4000-8000-000000001101` |
+| 상세 Correlation | `20260810-0000-4000-8000-000000001102` |
+
+응답 Header·Wrapper ID를 검증했고 `backend/.runtime/logs/backend.jsonl`에서
+목록 `200`, 상세 `200`, 은닉 `404`, Query `422`의 같은 Correlation ID를
+모두 확인했다.
+
+위 Correlation ID는 작성자 검증 증거이며, 한예나와의 공동 Smoke에서는 새
+요청으로 생성된 ID를 사용한다.
+
+자동 검증 결과:
+
+```text
+QA Seed Unit: 3 passed
+Actual Socket HTTP on SQLite: 1 passed
+Actual Socket HTTP on isolated PostgreSQL: 1 passed
+Backend publish candidate target set: 21 passed, 1 skipped
+Web read/write contract target set: 24 passed
+Backend full regression: 905 passed, 15 skipped
+Web full unit: 32 files, 137 tests passed
+Web ESLint: PASS
+Web Production Build: PASS
+Django check: PASS
+makemigrations --check --dry-run: No changes detected
+```
+
+16절의 `18/17/901/915`와 이 절의 `21/905/137` 결과는 실행환경·대상·시점이
+다른 별도 스냅샷이며 서로를 대체하지 않는다. 최종 `jiyong` 후보에서 실행한
+결과는 Commit 전에 다시 대조한다.
+
+## 19. 한예나 전달값과 남은 Gate
+
+문서·Git에는 Access Token·비밀번호·DSN·`.env` 값을 기록하지 않는다.
+
+```text
+backend_base_url=http://127.0.0.1:8000
+seed_candidate_baseline=이 문서를 포함한 jiyong Commit
+runtime_baseline=PM 병합 후 공동 Smoke 대상 main Commit
+consultant_login=DEMO-CONSULTANT-001
+assigned_inquiry_id=4f829120-ecbb-5b30-9365-bf02f9044c3b
+seed_replay=PASS(created=1, updated=1)
+postgresql_verification=PASS
+correlation_log=backend/.runtime/logs/backend.jsonl
+web_remote_unit=24_PASS
+web_lint_build=PASS
+shared_web_ui_smoke=WAITING_YENA
+```
+
+`backend_base_url`은 표준 로컬 실행값이며 상시 실행 중인 공용 배포 URL이 아니다.
+한예나가 최신 `main`에서 `VITE_USE_MOCK_API=false`로 실행할 때 같은 PC 또는
+접근 가능한 Backend 주소로 바꾼다. 실제 화면 목록·상세와 오류 표시를 함께
+확인한 뒤에만 `WEB_UI_SHARED_SMOKE=PASS`로 닫는다.
