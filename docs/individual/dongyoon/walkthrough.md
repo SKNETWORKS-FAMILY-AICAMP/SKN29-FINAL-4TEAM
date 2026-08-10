@@ -743,3 +743,33 @@ Public UUID 분석 요청이 모두 성공했다.
   당시 최종값, `121`은 계약 3.0.0 안전 ID·근거 Identity·Runtime Identity
   검증까지 포함한 현재값으로 구분했다. 거절·모름 Payload 처리, Disposable DB
   확인값, 공동 Mock 준비 여부와 가용 시점도 함께 명시했다.
+
+### 2026-08-10 5주차 AI 단독 선행 작업
+
+- 현재 `dongyoon` Source HEAD
+  `3485e0f1717f4afc6a5f76e469b4bb2d6bd0ecc1` 기준 환경·회귀·외부 차단을
+  `docs/testing/ai/week5-ai-entry-gate.md`에 기록했다. 단일 RAG 기준선과 실제
+  Multi-Agent·LLM·팀 DB·Backend HTTP 미완료를 분리하고 담당자·필요 입력·해제
+  조건을 붙였다.
+- `docs/testing/ai/week5-multi-agent-contract-draft.md`에 Supervisor와 6개 역할
+  Agent의 책임, 입출력·State 쓰기 소유권, Routing Matrix, Handoff Log 최소
+  필드, 최대 Hop 8, Timeout·Retry·Fallback과 활성화 Gate를 정의했다. 이 문서는
+  목표 계약이며 현재 Runtime 구현 완료 증거가 아님을 명시했다.
+- 설명 한 줄뿐이던 상담 요약 Generator·Formatter를 외부 LLM 없이 실행 가능한
+  결정론적 Fallback으로 구현했다. 고객 진술·전달된 상담 기록·기존 안전 판정만
+  사용하고 확정 진단, 방문 자동 확정, Backend 상태 변경은 수행하지 않는다.
+- 상담 요약 정상·위험·위험 부정문·계약 길이 경계 Test 4건을 추가했다. 생성
+  결과는 `ConsultationSummaryResponse` JSON Schema로도 검증한다.
+- 상담 요약 위험 Test에서 자연스러운 표현 `물이 새고`가 구조화에는 누수로
+  잡히지만 안전 키워드에는 일치하지 않는 공백을 발견했다. 안전 SSOT에 해당
+  표현을 추가하고 `SAFETY-LEAK-001` 회귀 Test를 추가했으며 Runtime Identity의
+  Safety 설정 Hash를 갱신했다.
+- Python `3.13.13`, `pip check` PASS, 전체 AI 단위 Test `126 passed,
+  3 warnings`, 실제 Uvicorn Mock Smoke PASS를 확인했다. Local 실제 HTTP에서
+  `물이 새고` 입력이 `danger`, `SAFETY-LEAK-001`, `TOTAL_STOP`, 근거 0건으로
+  반환되는 것도 확인했다.
+- 공식 후보 보고서를 `126 passed`와 Source HEAD `3485e0f...`로 다시 생성했다.
+  변경분은 아직 Commit되지 않았고 팀 DB 재검증도 남아 있어 상태는
+  `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`이다.
+- 최지용 추가확인 회신의 최신 단위 Test 값을 `126 passed`로 갱신하고
+  `103→115→121→126`의 각 증가 범위를 분리해 적었다.

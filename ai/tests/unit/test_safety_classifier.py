@@ -37,6 +37,13 @@ def test_leak_danger_classification(risk_classifier, guidance_classifier):
     assert "전체 출수 기능 중지" in guidance.restricted_functions
 
 
+def test_natural_leak_particle_expression_is_classified_as_danger(risk_classifier):
+    assessment = risk_classifier.classify("제품 아래로 물이 새고 있습니다.")
+
+    assert assessment.risk_level == RiskLevel.DANGER
+    assert assessment.matched_safety_rule_ids == ["SAFETY-LEAK-001"]
+
+
 def test_electrical_danger_classification(risk_classifier, guidance_classifier):
     """전기 타는 냄새/스파크 위험 감지 테스트"""
     raw_text = "정수기 뒤에서 타는 냄새가 나고 스파크가 튑니다."

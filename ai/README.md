@@ -116,6 +116,22 @@ ai/configs/runtime_identity.json
 두 번째 Manifest의 실행 식별값은 고객 공개 응답에 추가하지 않고 Backend 환경
 설정과 `AIRun` 감사 레코드로 전달·저장한다.
 
+## 상담 요약 결정론적 기준선
+
+`ai/app/generation/consultation_summary/`는 외부 LLM 없이 실행 가능한 상담사
+검토용 요약 Fallback 기준선이다. 고객 진술과 전달된 상담 기록만 요약하고,
+명시적 위험 신호는 기존 `SafetyRuleLoader`의 규칙으로 우선 표시한다. 확정 진단,
+Backend 상태 변경, 방문 필요 여부의 자동 확정은 수행하지 않는다.
+
+```powershell
+.\ai\.venv\Scripts\python.exe -m pytest `
+  ai\tests\unit\test_consultation_summary.py -q
+```
+
+이 Generator가 존재한다는 이유로 `Consultation Summary Agent`나 실제 LLM
+연동 완료로 표시하지 않는다. Agent Runtime Routing·Handoff와 실제 Provider는
+별도 Gate다.
+
 ## RAG 실행 기준
 
 Local 검색은 `BAAI/bge-m3`의 1024차원 정규화 임베딩과 pgvector Cosine

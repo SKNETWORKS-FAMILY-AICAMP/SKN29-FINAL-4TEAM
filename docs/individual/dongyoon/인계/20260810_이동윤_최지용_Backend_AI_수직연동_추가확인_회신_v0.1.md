@@ -25,7 +25,7 @@ scope=AI_RUNTIME_FOR_BACKEND_VERTICAL_E2E
 ai_environment=PASS
 python_version=3.13.13
 pip_check=PASS
-ai_unit_tests=121 passed, 0 failed, 0 skipped, 3 warnings
+ai_unit_tests=126 passed, 0 failed, 0 skipped, 3 warnings
 start_command=.\ai\.venv\Scripts\python.exe -m uvicorn ai.app.main:app --host 127.0.0.1 --port 8001
 health_url=http://127.0.0.1:8001/health
 analysis_url=http://127.0.0.1:8001/api/v1/ai/analyze?mode={mock|local}
@@ -60,7 +60,7 @@ ready_for_joint_e2e=NO
 
 | 요청 | 결과 | 검증 근거 |
 |---|---|---|
-| AI 환경 재현 | 완료 | Python 3.13.13, pip check PASS, 121 passed |
+| AI 환경 재현 | 완료 | Python 3.13.13, pip check PASS, 126 passed |
 | UUID 직접 강제 | 완료 | 비UUID 422, Header·Body 불일치 400 |
 | 위험 규칙 ID | 완료 | `matched_safety_rule_ids`, 계약 3.0.0 |
 | AI canonical 청크 원천 | AI 범위 완료 | 승인 JSONL·Index Manifest·청크 텍스트 SHA parity |
@@ -83,7 +83,7 @@ ready_for_joint_e2e=NO
 ```text
 Python: 3.13.13
 pip check: No broken requirements found
-AI unit: 121 passed, 3 warnings
+AI unit: 126 passed, 3 warnings
 AI fixture: 12 passed
 Uvicorn mock smoke: PASS (health, analyze 200, correlation trace)
 Uvicorn local danger: PASS (danger, 규칙 ID 2개, TOTAL_STOP, 근거 0건)
@@ -99,8 +99,8 @@ API 경고이며 테스트 실패는 아니다. 실제 Local RAG·Backend 저장
 03~05문서 해결하고 밑에 내용 회신주세요.
 
 ```text
-ai_unit_tests=121 passed, 3 warnings
-ai_unit_tests_history=103은 F01~F12 Fixture 12개 추가 전 중간 실행값; 115는 Fixture 12개를 포함한 2026-08-10 계약 2.0.0 최종 실행값; 현재 121은 matched_safety_rule_ids·canonical evidence·runtime identity 검증 6개를 추가한 계약 3.0.0 최신값
+ai_unit_tests=126 passed, 3 warnings
+ai_unit_tests_history=103은 F01~F12 Fixture 추가 전 중간값; 115는 Fixture 12개 포함 계약 2.0.0 당시 최종값; 121은 계약 3.0.0 안전 ID·canonical evidence·runtime identity 검증 추가값; 현재 126은 상담 요약 기준선 4건과 자연어 누수 안전 회귀 1건을 추가한 최신값
 pip_check=PASS
 danger_rule_id_method=safety_assessment.matched_safety_rule_ids 필수 배열; Backend는 detected_risks 자연어를 규칙 ID로 변환하지 않음
 backend_chunk_crosswalk=PENDING_BACKEND_ACTION: ai/configs/canonical_evidence_identity.json의 canonical chunk_id 7개를 knowledge_document_chunk.public_id에 매핑하고 AI는 Backend ID를 생성하지 않음
