@@ -139,7 +139,7 @@ $python = ".\backend\.venv\Scripts\python.exe"
 | 검증 | 결과 |
 | --- | --- |
 | AI `pip check` | `No broken requirements found` |
-| AI 전체 Unit | `121 passed, 3 warnings` |
+| AI 전체 Unit | `127 passed, 3 warnings` |
 | 실제 Django→Uvicorn Mock HTTP | `1 passed` |
 | 관련 Backend 표적 | `58 passed, 3 skipped` |
 | Root 계약 Test | `12 passed` |
