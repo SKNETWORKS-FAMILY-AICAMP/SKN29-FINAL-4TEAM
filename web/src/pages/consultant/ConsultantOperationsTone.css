@@ -384,3 +384,106 @@ html body .simple-consultant-app.simple-consultant-app.consultant-queue-app
   ) {
   border-radius: 6px !important;
 }
+
+html body .simple-consultant-app.consultant-queue-app .simple-brand__logo {
+  display: block;
+  width: clamp(150px, 16vw, 210px);
+  height: 52px;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Detached work rail: navigation and main workspace read as separate surfaces. */
+html body .simple-consultant-app.simple-consultant-app.consultant-queue-app {
+  height: calc(100dvh - 44px);
+  min-height: 650px;
+  background: #f1f2f5 !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app .consultant-queue-main {
+  height: 100%;
+  min-height: 0;
+  grid-template-columns: 228px minmax(0, 1fr) !important;
+  grid-template-rows: 76px minmax(0, 1fr) !important;
+  gap: 20px 28px !important;
+  padding: 22px 24px 24px !important;
+  background: #f1f2f5 !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app .consultant-main-header {
+  grid-column: 2;
+  grid-row: 1;
+  height: 76px;
+  padding: 0 18px !important;
+  border: 1px solid #e1e3e7 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: 0 8px 24px rgb(24 28 36 / 7%) !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app .consultant-work-tabs {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  height: 100%;
+  grid-template-rows: repeat(3, 82px) !important;
+  align-content: start;
+  gap: 10px !important;
+  padding: 18px 14px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 16px 34px rgb(20 23 30 / 18%) !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab {
+  min-height: 82px;
+  padding: 14px 13px !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app .consultant-queue-panel {
+  grid-column: 2;
+  grid-row: 2;
+  border: 1px solid #e1e3e7 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 12px 30px rgb(24 28 36 / 8%) !important;
+}
+
+@media (max-width: 900px) {
+  html body .simple-consultant-app.simple-consultant-app.consultant-queue-app {
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  html body .simple-consultant-app.consultant-queue-app .consultant-queue-main {
+    height: auto;
+    min-height: 100dvh;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 70px auto minmax(560px, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  html body .simple-consultant-app.consultant-queue-app .consultant-main-header {
+    grid-column: 1;
+    grid-row: 1;
+    height: 70px;
+  }
+
+  html body .simple-consultant-app.consultant-queue-app .consultant-work-tabs {
+    grid-column: 1;
+    grid-row: 2;
+    height: auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-rows: 76px !important;
+  }
+
+  html body .simple-consultant-app.consultant-queue-app
+    .consultant-work-tabs
+    .consultant-work-tab {
+    min-height: 76px;
+  }
+
+  html body .simple-consultant-app.consultant-queue-app .consultant-queue-panel {
+    grid-column: 1;
+    grid-row: 3;
+  }
+}

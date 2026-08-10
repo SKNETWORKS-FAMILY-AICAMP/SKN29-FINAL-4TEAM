@@ -22,6 +22,12 @@ const TAB_LABELS: Record<CounselorWorkBucket, RegExp> = {
   COMPLETED: /처리 완료된 문의/,
 };
 
+const EXPECTED_BUCKET_COUNTS: Record<CounselorWorkBucket, number> = {
+  NEW: 15,
+  IN_PROGRESS: 23,
+  COMPLETED: 12,
+};
+
 function renderPage(path = "/consultant/inquiries") {
   return render(
     <AuthProvider initialUser={CONSULTANT_USER}>
@@ -66,6 +72,7 @@ describe("ConsultantDashboardPage", () => {
       const count = CONSULTANT_QUEUE_INQUIRIES.filter(
         (inquiry) => getCounselorWorkBucket(inquiry.status) === bucket,
       ).length;
+      expect(count).toBe(EXPECTED_BUCKET_COUNTS[bucket]);
       expect(screen.getByRole("tab", { name: TAB_LABELS[bucket] })).toHaveTextContent(
         String(count),
       );

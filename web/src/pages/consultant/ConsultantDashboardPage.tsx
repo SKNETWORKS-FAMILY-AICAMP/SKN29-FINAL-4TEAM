@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { createInquiryDetailPath } from "../../app/router/routePaths";
 import { useAuth } from "../../app/providers/authContext";
+import waterBridgeLogo from "../../assets/images/water-bridge-logo.png";
 import RiskBadge from "../../common/components/badge/RiskBadge";
 import StatusBadge from "../../common/components/badge/StatusBadge";
 import Pagination from "../../common/components/data-display/Pagination";
@@ -58,11 +59,11 @@ const WORK_BUCKETS: readonly {
   },
   {
     id: "IN_PROGRESS",
-    description: "상담·기사 배정·일정 조율 중인 문의",
+    description: "",
   },
   {
     id: "COMPLETED",
-    description: "최종 완료 또는 취소된 문의",
+    description: "",
   },
 ];
 
@@ -270,30 +271,30 @@ export default function ConsultantDashboardPage() {
 
   return (
     <div className="simple-consultant-app consultant-queue-app">
-      <header className="simple-topbar">
-        <a className="simple-brand" href="/" aria-label="Water Bridge 홈으로 이동">
-          <span className="simple-brand__mark" aria-hidden="true">W</span>
-          <div className="simple-brand__copy">
-            <strong>Water Bridge</strong>
-            <small>상담 워크스페이스</small>
-          </div>
-        </a>
-
-        <ApiRuntimeStatus className="simple-topbar__notice" compact />
-
-        <div className="simple-user">
-          <span className="simple-user__avatar">{user?.displayName.slice(0, 1) ?? "상"}</span>
-          <div className="simple-user__copy">
-            <strong>{user?.displayName ?? "상담사"}</strong>
-            <small>상담사 · 업무 중</small>
-          </div>
-        </div>
-      </header>
-
       <main className="simple-consultant-main consultant-queue-main">
         <h1 id="simple-page-title" className="consultant-visually-hidden">
           고객 문의
         </h1>
+
+        <header className="simple-topbar consultant-main-header">
+          <a className="simple-brand" href="/" aria-label="Water Bridge 홈으로 이동">
+            <img
+              className="simple-brand__logo"
+              src={waterBridgeLogo}
+              alt="Water Bridge"
+            />
+          </a>
+
+          <ApiRuntimeStatus className="simple-topbar__notice" compact />
+
+          <div className="simple-user">
+            <span className="simple-user__avatar">{user?.displayName.slice(0, 1) ?? "상"}</span>
+            <div className="simple-user__copy">
+              <strong>{user?.displayName ?? "상담사"}</strong>
+              <small>상담사 · 업무 중</small>
+            </div>
+          </div>
+        </header>
 
         <nav className="consultant-work-tabs" aria-label="문의 처리 상태" role="tablist">
           {WORK_BUCKETS.map((bucket) => (
@@ -310,7 +311,6 @@ export default function ConsultantDashboardPage() {
             >
               <span>
                 <strong>{WORK_BUCKET_LABELS[bucket.id]}</strong>
-                {bucket.description && <em>{bucket.description}</em>}
               </span>
               <b>{bucketCounts[bucket.id]}</b>
             </button>
