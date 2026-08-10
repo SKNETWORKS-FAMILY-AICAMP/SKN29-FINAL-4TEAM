@@ -7,7 +7,7 @@
       인증 상담사에게 현재 배정된 문의만 반환한다. 전화번호 검색, 임의
       담당자 확대와 Web Mock 전용 Query는 허용하지 않는다.
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-requirements: [FR-023, NFR-011, NFR-012]
     x-permission-scope: ASSIGNED_INQUIRIES
     security:
@@ -186,7 +186,7 @@
       담당 상담사에게 승인된 합성 Section만 반환한다. 타인·비배정 문의는
       존재 여부를 숨기기 위해 404를 반환하며 DEC-008 Evidence는 제외한다.
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-requirements: [FR-023, NFR-011, NFR-012]
     x-permission-scope: ASSIGNED_INQUIRIES
     x-excluded-decisions: [DEC-008]
