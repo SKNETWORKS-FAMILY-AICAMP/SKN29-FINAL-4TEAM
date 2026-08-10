@@ -1,15 +1,40 @@
 # Week 5 Mobile E2E Result
 
-- Latest main included: 2198e9e90fe894fb848d551ef638fb3ae0a2b433
-- Migration gate: PASS
-- Canonical fixture: PASS (db-full, 367 rows)
-- Customer login identity: SYN-CUSTOMER-001
-- Customer P0 direct REST: PASS
-- Customer Mobile instrumentation: PASS
-- Technician auth Mobile instrumentation: PASS
-- Device target: Samsung SM-F721N / Android 16
-- Guidance / Follow-up / Consultation / Visit Runtime: BLOCKED_BY_BACKEND
+## Real-device verified
+
+- Galaxy: Samsung SM-F721N / Android 16
+- Customer login: PASS
+- Active subscription list/detail: PASS
+- Inquiry create: PASS
+- Symptom submit: PASS
+- REMOTE Guidance unavailable fail-closed: PASS
+- Technician login + `/me`: PASS
+
+## Mobile safety boundaries
+
+- Customer Guidance Fixture in REMOTE: **BLOCKED**
+- Guidance Fixture in Offline/FAKE preview: **ALLOWED + LABELED**
+- Technician Visit Fixture in REMOTE: **BLOCKED**
+- Technician Visit Fixture in Offline Preview: **ALLOWED + LABELED**
+
+## Runtime pending
+
+- Customer Guidance actual API
+- Follow-up actual API
+- Consultation actual API
+- Technician Visit actual API
 
 ## Verdict
-login → actual subscription → inquiry create → symptom submit
-is PASS on a real Galaxy device.
+
+현재 Mobile이 실제 Backend로 검증한 범위는:
+
+`Customer login → subscription → inquiry create → symptom submit`
+
+및:
+
+`Technician login → role verification`
+
+이다.
+
+Guidance와 Visit은 실제 Runtime이 게시될 때까지
+합성 Fixture를 실제 결과로 자동 대체하지 않는 **fail-closed** 상태다.
