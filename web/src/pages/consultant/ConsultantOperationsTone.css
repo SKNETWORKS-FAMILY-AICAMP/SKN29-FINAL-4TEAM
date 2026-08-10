@@ -6,26 +6,26 @@
 
 .compact-consultant-body {
   background:
-    radial-gradient(circle at 12% 5%, rgb(255 255 255 / 88%), transparent 24%),
-    radial-gradient(circle at 88% 8%, rgb(246 218 255 / 30%), transparent 28%),
-    radial-gradient(circle at 10% 90%, rgb(173 229 255 / 38%), transparent 30%),
-    linear-gradient(145deg, #f8fcff 0%, #eef9ff 48%, #e6f6ff 100%);
+    radial-gradient(circle at 12% 5%, rgb(255 255 255 / 94%), transparent 24%),
+    radial-gradient(circle at 88% 8%, rgb(227 216 255 / 35%), transparent 28%),
+    radial-gradient(circle at 10% 90%, rgb(130 224 255 / 42%), transparent 30%),
+    linear-gradient(145deg, #f9fdff 0%, #ecf9ff 48%, #def4ff 100%);
 }
 
 .simple-consultant-app.consultant-queue-app {
-  --consultant-glass-border: rgb(255 255 255 / 86%);
-  --consultant-glass-line: rgb(76 151 204 / 16%);
-  --consultant-glass-copy: #17384f;
-  --consultant-glass-muted: #678399;
+  --consultant-glass-border: rgb(255 255 255 / 92%);
+  --consultant-glass-line: rgb(56 152 211 / 18%);
+  --consultant-glass-copy: #123a53;
+  --consultant-glass-muted: #5e8299;
   width: calc(100% - 44px);
   max-width: none;
   margin: 22px;
   border: 2px solid var(--consultant-glass-border) !important;
   background:
-    radial-gradient(circle at 9% 8%, rgb(255 255 255 / 48%), transparent 28%),
-    radial-gradient(circle at 91% 12%, rgb(241 210 255 / 17%), transparent 33%),
-    radial-gradient(circle at 12% 92%, rgb(102 211 255 / 18%), transparent 36%),
-    linear-gradient(145deg, rgb(255 255 255 / 27%), rgb(184 225 250 / 13%)) !important;
+    radial-gradient(circle at 9% 8%, rgb(255 255 255 / 58%), transparent 28%),
+    radial-gradient(circle at 91% 12%, rgb(222 210 255 / 22%), transparent 33%),
+    radial-gradient(circle at 12% 92%, rgb(72 205 255 / 24%), transparent 36%),
+    linear-gradient(145deg, rgb(255 255 255 / 34%), rgb(157 219 250 / 17%)) !important;
   box-shadow:
     inset 3px 3px 5px rgb(255 255 255 / 86%),
     inset -4px -5px 8px rgb(47 133 196 / 12%),
@@ -36,16 +36,16 @@
 }
 
 .simple-consultant-app.consultant-queue-app::before {
-  background: rgb(99 212 255 / 25%);
+  background: rgb(66 208 255 / 30%);
 }
 
 .simple-consultant-app.consultant-queue-app::after {
-  background: rgb(203 181 255 / 22%);
+  background: rgb(188 169 255 / 27%);
 }
 
 .simple-consultant-app.consultant-queue-app .simple-topbar {
   border-bottom: 1px solid var(--consultant-glass-line) !important;
-  background: rgb(238 249 255 / 24%) !important;
+  background: rgb(241 251 255 / 34%) !important;
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 96%),
     inset 0 -1px 0 rgb(74 147 199 / 11%),
@@ -87,10 +87,10 @@
 .simple-consultant-app.consultant-queue-app .consultant-queue-panel {
   border: 2px solid var(--consultant-glass-border) !important;
   background:
-    radial-gradient(circle at 8% 8%, rgb(255 255 255 / 45%), transparent 28%),
-    radial-gradient(circle at 90% 18%, rgb(241 183 231 / 10%), transparent 32%),
-    radial-gradient(circle at 12% 92%, rgb(87 208 255 / 12%), transparent 34%),
-    linear-gradient(145deg, rgb(255 255 255 / 23%), rgb(187 226 249 / 11%)) !important;
+    radial-gradient(circle at 8% 8%, rgb(255 255 255 / 56%), transparent 28%),
+    radial-gradient(circle at 90% 18%, rgb(231 183 255 / 15%), transparent 32%),
+    radial-gradient(circle at 12% 92%, rgb(55 202 255 / 18%), transparent 34%),
+    linear-gradient(145deg, rgb(255 255 255 / 30%), rgb(158 220 250 / 15%)) !important;
   box-shadow:
     inset 3px 3px 5px rgb(255 255 255 / 80%),
     inset -4px -5px 8px rgb(47 133 196 / 13%),
@@ -116,11 +116,11 @@
 .simple-consultant-app.consultant-queue-app .consultant-work-tab.is-active {
   border-color: rgb(245 251 255 / 94%) !important;
   background:
-    radial-gradient(circle at 12% 12%, rgb(255 255 255 / 67%), transparent 30%),
-    radial-gradient(circle at 86% 18%, rgb(255 173 222 / 24%), transparent 37%),
-    radial-gradient(circle at 14% 88%, rgb(75 210 255 / 28%), transparent 39%),
-    radial-gradient(circle at 88% 88%, rgb(151 134 255 / 23%), transparent 40%),
-    linear-gradient(145deg, rgb(255 255 255 / 24%), rgb(129 202 248 / 14%)) !important;
+    radial-gradient(circle at 12% 12%, rgb(255 255 255 / 76%), transparent 30%),
+    radial-gradient(circle at 86% 18%, rgb(239 165 255 / 26%), transparent 37%),
+    radial-gradient(circle at 14% 88%, rgb(51 202 255 / 34%), transparent 39%),
+    radial-gradient(circle at 88% 88%, rgb(132 119 255 / 26%), transparent 40%),
+    linear-gradient(145deg, rgb(255 255 255 / 30%), rgb(105 197 246 / 19%)) !important;
   box-shadow:
     inset 3px 3px 5px rgb(255 255 255 / 80%),
     inset -4px -5px 9px rgb(77 99 186 / 15%),
@@ -158,7 +158,7 @@
 .simple-consultant-app.consultant-queue-app .consultant-queue-panel__head,
 .simple-consultant-app.consultant-queue-app .consultant-queue-panel > .common-pagination {
   border-color: var(--consultant-glass-line) !important;
-  background: rgb(255 255 255 / 22%) !important;
+  background: rgb(255 255 255 / 32%) !important;
   -webkit-backdrop-filter: blur(5px) saturate(140%) !important;
   backdrop-filter: blur(5px) saturate(140%) !important;
 }
@@ -167,7 +167,7 @@
 .simple-consultant-app.consultant-queue-app .consultant-queue-tools > button,
 .simple-consultant-app.consultant-queue-app .common-pagination__actions :is(button, span) {
   border: 2px solid rgb(255 255 255 / 84%) !important;
-  background: rgb(255 255 255 / 30%) !important;
+  background: rgb(255 255 255 / 42%) !important;
   box-shadow:
     inset 2px 2px 4px rgb(255 255 255 / 90%),
     inset -3px -4px 7px rgb(47 129 185 / 11%),
@@ -178,11 +178,11 @@
 .simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item,
 .simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item:nth-child(even) {
   border-bottom-color: rgb(83 151 198 / 13%) !important;
-  background: rgb(255 255 255 / 12%) !important;
+  background: rgb(255 255 255 / 20%) !important;
 }
 
 .simple-consultant-app.consultant-queue-app .v6-queue-item.consultant-list-item:hover {
-  background: rgb(230 247 255 / 58%) !important;
+  background: rgb(220 244 255 / 70%) !important;
   box-shadow: inset 4px 0 0 rgb(94 177 226 / 58%) !important;
 }
 

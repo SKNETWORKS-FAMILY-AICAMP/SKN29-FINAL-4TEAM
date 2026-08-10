@@ -4,6 +4,7 @@ import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntim
 import "../../pages/admin/OperationsDashboardPage.css";
 import "../../pages/admin/OperationsDashboardTheme.css";
 import "../../common/styles/water-glass-theme.css";
+import "../../common/styles/waterdrop-workspaces.css";
 import { useAuth } from "../providers/authContext";
 import { ROUTE_PATHS } from "../router/routePaths";
 
@@ -17,7 +18,7 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="operations-page">
+    <div className="operations-page waterdrop-workspace waterdrop-workspace--operator">
       <header className="operations-topbar">
         <div className="operations-brand">
           <span>W</span>

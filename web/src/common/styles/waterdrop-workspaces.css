@@ -1,0 +1,826 @@
+/* WaterCare desktop design system: shared by consultant and operator workspaces. */
+.waterdrop-workspace {
+  --wd-primary: #1597ff;
+  --wd-secondary: #62cfff;
+  --wd-soft: #ddf3ff;
+  --wd-soft-secondary: #eaf9ff;
+  --wd-ink: #082552;
+  --wd-muted: #60758f;
+  --wd-line: rgb(21 151 255 / 20%);
+  --wd-panel: linear-gradient(155deg, rgb(255 255 255 / 98%), rgb(221 243 255 / 72%), rgb(255 255 255 / 94%));
+  --wd-panel-strong: linear-gradient(145deg, rgb(255 255 255 / 99%), rgb(234 249 255 / 91%) 55%, rgb(221 243 255 / 80%));
+  --wd-shadow: 0 20px 55px rgb(43 137 196 / 12%), inset 0 1px 0 rgb(255 255 255 / 96%);
+  min-height: 100vh;
+  color: var(--wd-ink);
+  background:
+    radial-gradient(circle at 8% 12%, rgb(98 207 255 / 19%), transparent 25rem),
+    radial-gradient(circle at 91% 8%, rgb(21 151 255 / 11%), transparent 28rem),
+    radial-gradient(circle at 72% 82%, rgb(82 221 233 / 12%), transparent 26rem),
+    linear-gradient(180deg, #fff 0%, #f9fcff 46%, #f3faff 100%) !important;
+  font-family: Pretendard, SUIT, "Noto Sans KR", system-ui, sans-serif;
+  isolation: isolate;
+}
+
+.waterdrop-workspace--operator {
+  --wd-primary: #12b8b4;
+  --wd-secondary: #52dde9;
+  --wd-soft: #dcf8f7;
+  --wd-soft-secondary: #e8fbff;
+  --wd-ink: #082e46;
+  --wd-muted: #607a86;
+  --wd-line: rgb(18 184 180 / 20%);
+}
+
+.waterdrop-workspace :is(button, a, input, select, textarea) {
+  font: inherit;
+}
+
+.waterdrop-workspace :is(button, a):focus-visible,
+.waterdrop-workspace :is(input, select, textarea):focus-visible {
+  outline: 3px solid rgb(21 151 255 / 35%) !important;
+  outline-offset: 3px;
+}
+
+.waterdrop-workspace--operator :is(button, a):focus-visible,
+.waterdrop-workspace--operator :is(input, select, textarea):focus-visible {
+  outline-color: rgb(18 184 180 / 38%) !important;
+}
+
+.waterdrop-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--wd-line) !important;
+  border-radius: 34px 46px 30px 40px !important;
+  background: var(--wd-panel-strong) !important;
+  box-shadow: var(--wd-shadow) !important;
+  isolation: isolate;
+}
+
+.waterdrop-hero::before {
+  position: absolute;
+  top: 3%;
+  left: 7%;
+  width: 46%;
+  height: 22%;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 76%);
+  content: "";
+  filter: blur(16px);
+  pointer-events: none;
+}
+
+.waterdrop-hero::after {
+  position: absolute;
+  right: -8%;
+  bottom: -35%;
+  width: 48%;
+  aspect-ratio: 1;
+  border: 1px solid rgb(255 255 255 / 74%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 28%, rgb(255 255 255 / 92%), rgb(98 207 255 / 24%) 38%, rgb(21 151 255 / 8%) 70%);
+  box-shadow: inset 12px 12px 35px rgb(255 255 255 / 70%);
+  content: "";
+  pointer-events: none;
+}
+
+.waterdrop-bubbles {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.waterdrop-bubbles__item {
+  position: absolute;
+  display: block;
+  border: 1px solid rgb(255 255 255 / 86%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, #fff 0 10%, rgb(98 207 255 / 32%) 35%, rgb(21 151 255 / 6%) 70%);
+  box-shadow: inset 4px 5px 12px rgb(255 255 255 / 70%), 0 8px 24px rgb(54 155 210 / 10%);
+}
+
+.waterdrop-bubbles__item--large {
+  top: 15%;
+  right: 6%;
+  width: 64px;
+  height: 64px;
+  animation: waterdrop-float 8s ease-in-out infinite;
+}
+
+.waterdrop-bubbles__item--medium {
+  top: 9%;
+  right: 23%;
+  width: 28px;
+  height: 28px;
+  animation: waterdrop-float 9s 1s ease-in-out infinite reverse;
+}
+
+.waterdrop-bubbles__item--small {
+  right: 4%;
+  bottom: 16%;
+  width: 18px;
+  height: 18px;
+  animation: waterdrop-float 7s 2s ease-in-out infinite;
+}
+
+.waterdrop-role-chip,
+.waterdrop-fixture-chip {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid rgb(21 151 255 / 18%);
+  border-radius: 999px;
+  color: #246d9b;
+  background: rgb(255 255 255 / 72%);
+  box-shadow: inset 0 1px 0 #fff, 0 7px 18px rgb(48 139 194 / 10%);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+
+.waterdrop-workspace--operator :is(.waterdrop-role-chip, .waterdrop-fixture-chip) {
+  border-color: rgb(18 184 180 / 18%);
+  color: #197b7b;
+}
+
+.waterdrop-role-chip::before {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--wd-primary), var(--wd-secondary));
+  box-shadow: 0 0 0 5px rgb(98 207 255 / 15%);
+  content: "";
+}
+
+.waterdrop-primary-button,
+.waterdrop-secondary-button {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 22px;
+  border-radius: 999px !important;
+  font-size: 14px;
+  font-weight: 850;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease !important;
+}
+
+.waterdrop-primary-button {
+  border: 1px solid rgb(255 255 255 / 78%) !important;
+  color: #fff !important;
+  background: linear-gradient(135deg, var(--wd-primary), var(--wd-secondary)) !important;
+  box-shadow: 0 13px 28px rgb(21 151 255 / 26%), inset 0 1px 0 rgb(255 255 255 / 76%) !important;
+}
+
+.waterdrop-workspace--operator .waterdrop-primary-button {
+  box-shadow: 0 13px 28px rgb(18 184 180 / 24%), inset 0 1px 0 rgb(255 255 255 / 76%) !important;
+}
+
+.waterdrop-secondary-button {
+  border: 1px solid var(--wd-line) !important;
+  color: var(--wd-ink) !important;
+  background: rgb(255 255 255 / 72%) !important;
+  box-shadow: 0 10px 24px rgb(36 119 170 / 10%), inset 0 1px 0 #fff !important;
+}
+
+.waterdrop-primary-button:hover,
+.waterdrop-secondary-button:hover {
+  transform: translateY(-2px) !important;
+}
+
+.waterdrop-primary-button:active,
+.waterdrop-secondary-button:active {
+  transform: scale(.98) !important;
+}
+
+/* Consultant workspace --------------------------------------------------- */
+.waterdrop-workspace--consultant.simple-consultant-app {
+  padding: 18px;
+}
+
+.waterdrop-workspace--consultant .simple-topbar {
+  position: relative !important;
+  top: auto !important;
+  width: min(1440px, 100%);
+  min-height: 78px;
+  margin: 0 auto 20px;
+  padding: 0 24px;
+  border: 1px solid rgb(21 151 255 / 15%) !important;
+  border-radius: 26px 34px 24px 30px !important;
+  background: rgb(255 255 255 / 82%) !important;
+  box-shadow: 0 14px 40px rgb(55 134 183 / 10%), inset 0 1px 0 #fff !important;
+  backdrop-filter: blur(20px) saturate(130%) !important;
+}
+
+.waterdrop-workspace--consultant .simple-brand__mark,
+.waterdrop-workspace--operator .operations-brand > span {
+  border: 1px solid rgb(255 255 255 / 86%) !important;
+  color: #157ab9 !important;
+  background: linear-gradient(145deg, #fff, var(--wd-soft)) !important;
+  box-shadow: 0 10px 24px rgb(28 135 202 / 14%), inset 0 1px 0 #fff !important;
+}
+
+.waterdrop-workspace--consultant .simple-topbar__notice,
+.waterdrop-workspace--consultant .simple-user {
+  border: 1px solid rgb(21 151 255 / 14%) !important;
+  border-radius: 999px !important;
+  background: rgb(255 255 255 / 74%) !important;
+  box-shadow: 0 8px 20px rgb(48 124 170 / 9%), inset 0 1px 0 #fff !important;
+}
+
+.waterdrop-workspace--consultant .consultant-queue-main {
+  display: grid !important;
+  width: min(1440px, 100%) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 auto !important;
+  padding: 0 0 44px !important;
+  overflow: visible !important;
+  grid-template-areas:
+    "hero hero"
+    "tabs queue";
+  grid-template-columns: 230px minmax(0, 1fr);
+  grid-template-rows: auto auto !important;
+  gap: 22px;
+}
+
+.consultant-waterdrop-hero {
+  z-index: 0;
+  display: grid;
+  min-height: 280px;
+  padding: 38px 42px;
+  grid-area: hero;
+  grid-template-columns: minmax(0, 1.2fr) minmax(340px, .8fr);
+  gap: 28px;
+}
+
+.consultant-waterdrop-hero__copy,
+.consultant-waterdrop-hero__visual {
+  position: relative;
+  z-index: 2;
+}
+
+.consultant-waterdrop-hero__eyebrow {
+  margin: 26px 0 8px;
+  color: #2289c8;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+
+.consultant-waterdrop-hero h2 {
+  margin: 0;
+  color: var(--wd-ink) !important;
+  font-size: clamp(32px, 3.2vw, 46px);
+  line-height: 1.16;
+  letter-spacing: -.055em;
+}
+
+.consultant-waterdrop-hero h2 strong {
+  color: #117fca !important;
+}
+
+.consultant-waterdrop-hero__description {
+  max-width: 610px;
+  margin: 16px 0 0;
+  color: var(--wd-muted) !important;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.consultant-waterdrop-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.consultant-waterdrop-hero__visual {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.consultant-waterdrop-orb {
+  position: relative;
+  display: grid;
+  width: min(100%, 370px);
+  min-height: 205px;
+  align-content: center;
+  padding: 24px;
+  border: 1px solid rgb(255 255 255 / 88%);
+  border-radius: 46% 54% 44% 56% / 58% 44% 56% 42%;
+  background: radial-gradient(circle at 32% 24%, #fff 0 9%, rgb(218 245 255 / 94%) 32%, rgb(98 207 255 / 34%) 70%, rgb(21 151 255 / 16%));
+  box-shadow: inset 14px 16px 35px rgb(255 255 255 / 74%), 0 22px 46px rgb(45 145 204 / 18%);
+}
+
+.consultant-waterdrop-orb__mark {
+  display: grid;
+  width: 58px;
+  height: 66px;
+  margin: 0 auto 16px;
+  place-items: center;
+  border-radius: 55% 55% 60% 60% / 45% 45% 70% 70%;
+  color: #fff;
+  background: linear-gradient(155deg, var(--wd-secondary), var(--wd-primary));
+  box-shadow: 0 13px 28px rgb(21 151 255 / 24%), inset 0 1px 0 rgb(255 255 255 / 70%);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.consultant-waterdrop-orb dl {
+  display: grid;
+  margin: 0;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.consultant-waterdrop-orb dl div {
+  padding: 10px 8px;
+  border: 1px solid rgb(255 255 255 / 78%);
+  border-radius: 16px 20px 15px 18px;
+  background: rgb(255 255 255 / 58%);
+  text-align: center;
+}
+
+.consultant-waterdrop-orb dt {
+  color: var(--wd-muted);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.consultant-waterdrop-orb dd {
+  margin: 4px 0 0;
+  color: var(--wd-ink);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.waterdrop-workspace--consultant .consultant-work-tabs {
+  display: flex !important;
+  min-width: 0;
+  padding: 12px !important;
+  border: 1px solid var(--wd-line) !important;
+  border-radius: 28px 34px 26px 31px !important;
+  background: rgb(255 255 255 / 68%) !important;
+  box-shadow: var(--wd-shadow) !important;
+  grid-area: tabs;
+  align-self: start;
+  flex-direction: column;
+  gap: 10px !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+.waterdrop-workspace--consultant .consultant-work-tab {
+  min-height: 100px;
+  padding: 18px 16px !important;
+  border: 1px solid transparent !important;
+  border-radius: 22px 28px 20px 25px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-align: left;
+}
+
+.waterdrop-workspace--consultant .consultant-work-tab:hover {
+  border-color: rgb(21 151 255 / 14%) !important;
+  background: rgb(234 249 255 / 72%) !important;
+  transform: translateY(-2px);
+}
+
+.waterdrop-workspace--consultant .consultant-work-tab.is-active {
+  border-color: rgb(21 151 255 / 22%) !important;
+  background: linear-gradient(140deg, rgb(255 255 255 / 92%), rgb(221 243 255 / 88%)) !important;
+  box-shadow: 0 12px 26px rgb(37 142 203 / 13%), inset 0 1px 0 #fff !important;
+}
+
+.waterdrop-workspace--consultant .consultant-queue-panel {
+  min-width: 0;
+  height: auto !important;
+  min-height: 580px;
+  overflow: hidden;
+  border: 1px solid var(--wd-line) !important;
+  border-radius: 30px 40px 28px 35px !important;
+  background: var(--wd-panel) !important;
+  box-shadow: var(--wd-shadow) !important;
+  grid-area: queue;
+}
+
+.waterdrop-workspace--consultant .consultant-queue-panel__head {
+  min-height: 112px;
+  padding: 24px 28px !important;
+  background: rgb(255 255 255 / 62%) !important;
+}
+
+.waterdrop-workspace--consultant .consultant-list-item {
+  min-height: 92px;
+  margin: 0 14px;
+  padding-right: 18px !important;
+  padding-left: 18px !important;
+  border: 1px solid transparent !important;
+  border-radius: 20px 26px 18px 23px !important;
+  background: rgb(255 255 255 / 50%) !important;
+}
+
+.waterdrop-workspace--consultant .consultant-list-item + .consultant-list-item {
+  margin-top: 8px;
+}
+
+.waterdrop-workspace--consultant .consultant-list-item:hover {
+  border-color: rgb(21 151 255 / 16%) !important;
+  background: rgb(255 255 255 / 86%) !important;
+  box-shadow: 0 12px 28px rgb(42 132 187 / 10%) !important;
+  transform: translateY(-1px);
+}
+
+.waterdrop-workspace--consultant .consultant-detail-drawer {
+  border-left: 1px solid var(--wd-line) !important;
+  background: linear-gradient(180deg, #fafdff, #eef9ff) !important;
+  box-shadow: -24px 0 60px rgb(25 102 148 / 18%) !important;
+}
+
+/* Operator workspace ----------------------------------------------------- */
+.waterdrop-workspace--operator.operations-page {
+  display: grid !important;
+  padding: 16px 18px 0;
+  grid-template-columns: 224px minmax(0, 1fr) !important;
+  gap: 18px;
+}
+
+.waterdrop-workspace--operator .operations-topbar {
+  position: sticky !important;
+  top: 16px !important;
+  width: 100%;
+  height: calc(100vh - 32px);
+  min-height: 640px;
+  margin: 0;
+  padding: 18px 14px !important;
+  border: 1px solid rgb(18 184 180 / 16%) !important;
+  border-radius: 26px 34px 24px 30px !important;
+  background: rgb(255 255 255 / 84%) !important;
+  box-shadow: 0 14px 40px rgb(39 135 146 / 10%), inset 0 1px 0 #fff !important;
+  backdrop-filter: blur(20px) saturate(130%) !important;
+  align-self: start;
+  flex-direction: column;
+}
+
+.waterdrop-workspace--operator .operations-brand > span {
+  color: #157d82 !important;
+}
+
+.waterdrop-workspace--operator .operations-navigation {
+  padding: 5px;
+  border: 1px solid rgb(18 184 180 / 12%);
+  border-radius: 999px;
+  background: rgb(238 253 255 / 68%);
+}
+
+.waterdrop-workspace--operator .operations-navigation a {
+  min-height: 44px;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  color: var(--wd-muted) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.waterdrop-workspace--operator .operations-navigation a.is-active,
+.waterdrop-workspace--operator .operations-navigation a[aria-current="page"] {
+  border-color: rgb(18 184 180 / 18%) !important;
+  color: #0f7275 !important;
+  background: rgb(255 255 255 / 88%) !important;
+  box-shadow: 0 8px 20px rgb(18 126 136 / 10%), inset 0 1px 0 #fff !important;
+}
+
+.waterdrop-workspace--operator.operations-page > .operations-main {
+  width: min(1440px, 100%) !important;
+  margin: 0 auto !important;
+  padding: 16px 12px 52px 0 !important;
+}
+
+.waterdrop-workspace--operator .operations-page-head.waterdrop-hero {
+  display: grid !important;
+  min-height: 280px;
+  margin-bottom: 22px !important;
+  padding: 38px 42px !important;
+  grid-template-areas: "copy visual";
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr);
+  grid-template-rows: auto !important;
+  align-items: center !important;
+  gap: 30px;
+}
+
+.waterdrop-workspace--operator .operations-page-head > .waterdrop-bubbles {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.operations-waterdrop-hero__copy,
+.operations-waterdrop-hero__visual {
+  position: relative;
+  z-index: 2;
+}
+
+.operations-waterdrop-hero__copy {
+  grid-area: copy;
+}
+
+.operations-waterdrop-hero__visual {
+  grid-area: visual;
+}
+
+.waterdrop-workspace--operator .operations-page-head small {
+  display: block;
+  margin: 22px 0 8px;
+  color: #15908f !important;
+  font-size: 11px !important;
+  letter-spacing: .16em;
+}
+
+.waterdrop-workspace--operator .operations-page-head h1 {
+  margin: 0 0 12px !important;
+  color: var(--wd-ink) !important;
+  font-size: clamp(34px, 3.2vw, 46px) !important;
+  line-height: 1.12;
+}
+
+.waterdrop-workspace--operator .operations-page-head p {
+  max-width: 650px;
+  color: var(--wd-muted) !important;
+  font-size: 15px !important;
+  line-height: 1.7 !important;
+}
+
+.operations-waterdrop-hero__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.operations-waterdrop-hero__facts span {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  padding: 7px 12px;
+  border: 1px solid rgb(18 184 180 / 14%);
+  border-radius: 999px;
+  color: #316f78;
+  background: rgb(255 255 255 / 65%);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.operations-waterdrop-hero__visual {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.operations-waterdrop-orb {
+  display: grid;
+  width: 220px;
+  height: 220px;
+  place-content: center;
+  border: 1px solid rgb(255 255 255 / 90%);
+  border-radius: 48% 52% 57% 43% / 48% 42% 58% 52%;
+  background: radial-gradient(circle at 32% 25%, #fff 0 8%, rgb(220 248 247 / 96%) 30%, rgb(82 221 233 / 38%) 68%, rgb(18 184 180 / 18%));
+  box-shadow: inset 16px 16px 36px rgb(255 255 255 / 72%), 0 24px 50px rgb(21 144 147 / 18%);
+  text-align: center;
+}
+
+.operations-waterdrop-orb span {
+  color: #27858b;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .08em;
+}
+
+.operations-waterdrop-orb strong {
+  margin: 4px 0;
+  color: var(--wd-ink) !important;
+  font-size: 48px;
+  line-height: 1;
+}
+
+.operations-waterdrop-orb small {
+  margin: 0 !important;
+  color: var(--wd-muted) !important;
+  font-size: 12px !important;
+  letter-spacing: 0 !important;
+}
+
+.waterdrop-workspace--operator :is(.api-integration-panel, .operations-panel, .operations-metric) {
+  border: 1px solid var(--wd-line) !important;
+  background: var(--wd-panel) !important;
+  box-shadow: var(--wd-shadow) !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+.waterdrop-workspace--operator .api-integration-panel {
+  border-radius: 28px 36px 26px 32px !important;
+}
+
+.waterdrop-workspace--operator .operations-panel {
+  border-radius: 26px 34px 24px 30px !important;
+}
+
+.waterdrop-workspace--operator .operations-metric {
+  min-height: 138px;
+  padding: 22px !important;
+  border-radius: 22px 29px 21px 26px !important;
+}
+
+.waterdrop-workspace--operator .operations-metric:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 23px 48px rgb(32 131 142 / 15%), inset 0 1px 0 #fff !important;
+}
+
+.waterdrop-workspace--operator .operations-metric strong {
+  font-size: 34px !important;
+}
+
+.waterdrop-workspace--operator :is(.operations-filters input, .operations-filters select) {
+  min-height: 46px;
+  border: 1px solid rgb(18 184 180 / 16%) !important;
+  border-radius: 14px !important;
+  background: rgb(255 255 255 / 78%) !important;
+  box-shadow: inset 0 1px 0 #fff !important;
+}
+
+.waterdrop-workspace--operator .operations-filters__footer button {
+  min-height: 44px;
+  padding: 0 17px;
+  border: 1px solid rgb(18 184 180 / 17%) !important;
+  border-radius: 999px !important;
+  color: #187d80 !important;
+  background: rgb(255 255 255 / 76%) !important;
+}
+
+@keyframes waterdrop-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -8px, 0); }
+}
+
+@media (max-width: 1100px) {
+  .waterdrop-workspace--consultant .consultant-queue-main {
+    grid-template-areas:
+      "hero"
+      "tabs"
+      "queue";
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .waterdrop-workspace--consultant .consultant-work-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .waterdrop-workspace--consultant .consultant-work-tab {
+    min-height: 86px;
+  }
+
+  .waterdrop-workspace--operator.operations-page {
+    display: block !important;
+  }
+
+  .waterdrop-workspace--operator .operations-topbar {
+    position: relative !important;
+    top: auto !important;
+    height: auto;
+    min-height: 78px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    padding: 12px 18px !important;
+    flex-direction: row;
+  }
+
+  .waterdrop-workspace--operator.operations-page > .operations-main {
+    padding: 0 0 52px !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .waterdrop-workspace--consultant.simple-consultant-app,
+  .waterdrop-workspace--operator.operations-page {
+    padding: 10px 10px 0;
+  }
+
+  .waterdrop-workspace--consultant .simple-topbar,
+  .waterdrop-workspace--operator .operations-topbar {
+    min-height: 68px;
+    margin-bottom: 12px;
+    border-radius: 22px 28px 20px 25px !important;
+  }
+
+  .consultant-waterdrop-hero,
+  .waterdrop-workspace--operator .operations-page-head.waterdrop-hero {
+    min-height: auto;
+    padding: 28px 24px !important;
+    grid-template-columns: 1fr;
+  }
+
+  .consultant-waterdrop-hero__visual,
+  .operations-waterdrop-hero__visual {
+    justify-content: center;
+  }
+
+  .consultant-waterdrop-orb {
+    width: 100%;
+  }
+
+  .operations-waterdrop-orb {
+    width: 190px;
+    height: 190px;
+  }
+
+  .waterdrop-workspace--operator .operations-navigation {
+    order: 4;
+    width: 100%;
+  }
+
+  .waterdrop-workspace--operator .operations-navigation a {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 620px) {
+  .waterdrop-workspace--consultant .simple-topbar {
+    padding: 0 14px;
+  }
+
+  .waterdrop-workspace--consultant .simple-brand__copy small,
+  .waterdrop-workspace--consultant .simple-user__copy small,
+  .waterdrop-workspace--operator .operations-runtime-status {
+    display: none;
+  }
+
+  .consultant-waterdrop-hero h2,
+  .waterdrop-workspace--operator .operations-page-head h1 {
+    font-size: 31px !important;
+  }
+
+  .consultant-waterdrop-hero__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .waterdrop-primary-button,
+  .waterdrop-secondary-button {
+    width: 100%;
+  }
+
+  .waterdrop-workspace--consultant .consultant-work-tabs {
+    display: flex !important;
+    overflow-x: auto;
+    flex-direction: row;
+    scroll-snap-type: x proximity;
+  }
+
+  .waterdrop-workspace--consultant .consultant-work-tab {
+    min-width: 190px;
+    scroll-snap-align: start;
+  }
+
+  .waterdrop-workspace--consultant .consultant-queue-panel__head {
+    padding: 20px 16px !important;
+  }
+
+  .waterdrop-workspace--consultant .consultant-list-item {
+    margin-right: 8px;
+    margin-left: 8px;
+  }
+
+  .waterdrop-workspace--operator .operations-user small,
+  .waterdrop-workspace--operator .operations-brand small {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waterdrop-workspace *,
+  .waterdrop-workspace *::before,
+  .waterdrop-workspace *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition-duration: .01ms !important;
+  }
+}
