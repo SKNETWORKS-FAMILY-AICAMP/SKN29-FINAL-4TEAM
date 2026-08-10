@@ -75,6 +75,50 @@ class TransitionHistoryService:
         )
 
     @staticmethod
+    def record_inquiry_action(
+        *,
+        inquiry: Inquiry,
+        transition: Transition,
+        actor: Any,
+        correlation_id: UUID,
+        idempotency_key: str,
+    ) -> TransitionHistory:
+        """Record one consultant-owned workflow business event."""
+
+        return WorkflowRepository.create_transition_history(
+            inquiry=inquiry,
+            actor=actor,
+            event_code=transition.event_code,
+            from_state=transition.inquiry_state_before,
+            to_state=transition.inquiry_state_after,
+            state_version=transition.state_version_after,
+            correlation_id=correlation_id,
+            idempotency_key=idempotency_key,
+        )
+
+    @staticmethod
+    def record_visit_action(
+        *,
+        visit: Any,
+        transition: Transition,
+        actor: Any,
+        correlation_id: UUID,
+        idempotency_key: str,
+    ) -> TransitionHistory:
+        """Record a visit status change without duplicating inquiry history."""
+
+        return WorkflowRepository.create_visit_transition_history(
+            visit=visit,
+            actor=actor,
+            event_code=transition.event_code,
+            from_state=transition.visit_status_before,
+            to_state=transition.visit_status_after,
+            state_version=visit.state_version,
+            correlation_id=correlation_id,
+            idempotency_key=idempotency_key,
+        )
+
+    @staticmethod
     def record_ai_result(
         *,
         inquiry: Inquiry,

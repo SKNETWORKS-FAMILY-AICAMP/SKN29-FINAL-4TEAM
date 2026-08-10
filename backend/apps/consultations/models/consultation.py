@@ -72,7 +72,34 @@ class Consultation(TimestampedModel):
         choices=Outcome.choices,
         default=Outcome.PENDING,
     )
-    summary = models.TextField()
+    summary = models.TextField(blank=True, default="")
+    ai_draft_summary = models.TextField(null=True, blank=True)
+    confirmed_summary = models.TextField(null=True, blank=True)
+    summary_confirmed_at = models.DateTimeField(null=True, blank=True)
+    consultation_note = models.TextField(null=True, blank=True)
+    additional_check = models.TextField(null=True, blank=True)
+    customer_guidance = models.TextField(null=True, blank=True)
+    usage_guidance_status = models.CharField(
+        max_length=40,
+        choices=Inquiry.UsageGuidanceStatus.choices,
+        null=True,
+        blank=True,
+    )
+    visit_review_reason_code = models.CharField(
+        max_length=80,
+        null=True,
+        blank=True,
+    )
+    visit_review_reason_detail = models.TextField(null=True, blank=True)
+    visit_not_needed_reason_code = models.CharField(
+        max_length=80,
+        null=True,
+        blank=True,
+    )
+    visit_not_needed_reason_detail = models.TextField(
+        null=True,
+        blank=True,
+    )
     state_version = models.PositiveIntegerField(default=1)
     idempotency_key = models.CharField(max_length=128)
     correlation_id = models.UUIDField()
@@ -134,10 +161,6 @@ class Consultation(TimestampedModel):
                 name="ck_consult_data_class",
             ),
             models.CheckConstraint(
-                condition=~Q(summary=""),
-                name="ck_consult_summary_nonempty",
-            ),
-            models.CheckConstraint(
                 condition=~Q(idempotency_key=""),
                 name="ck_consult_idempotency_nonempty",
             ),
@@ -184,9 +207,18 @@ class Consultation(TimestampedModel):
                             "REOPENED_FOLLOWUP",
                         ],
                     )
-                    | (
-                        ~Q(status="COMPLETED")
-                        & Q(outcome="PENDING")
+                    | Q(
+                        status="IN_PROGRESS",
+                        outcome__in=[
+                            "PENDING",
+                            "COMPLETED_NO_VISIT",
+                            "VISIT_REQUIRED",
+                            "REOPENED_FOLLOWUP",
+                        ],
+                    )
+                    | Q(
+                        status__in=["WAITING", "ASSIGNED", "CANCELLED"],
+                        outcome="PENDING",
                     )
                 ),
                 name="ck_consult_outcome_lifecycle",

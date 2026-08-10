@@ -9,7 +9,7 @@
     operationId: requestVisitReview
     summary: 방문 필요 여부 검토 요청
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: VISIT_REVIEW_REQUIRED
       transition_rule: TR-INQ-018
@@ -54,7 +54,7 @@
     summary: 방문 필요 확정 및 미배정 Visit 생성
     description: Client는 기사나 다음 상태를 보내지 않으며 서버가 ASSIGNING Visit을 생성한다.
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: VISIT_NEEDED
       transition_rule: TR-INQ-019
@@ -81,7 +81,7 @@
     operationId: markVisitNotNeeded
     summary: 방문 불필요 확정
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: VISIT_NOT_NEEDED
       transition_rule: TR-INQ-034
@@ -108,7 +108,7 @@
     operationId: updateVisitSchedule
     summary: 담당 상담사 합성 기사·date-only 일정 저장
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: UPDATE_VISIT_SCHEDULE
       transition_rules: [TR-INQ-020, TR-INQ-021]
@@ -134,7 +134,7 @@
     operationId: confirmVisit
     summary: 담당 상담사 방문일 확정
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: CONFIRM_VISIT
       transition_rule: TR-INQ-022

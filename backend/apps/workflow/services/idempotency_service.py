@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from datetime import date, datetime
 import hashlib
 import json
 from collections.abc import Mapping
@@ -39,6 +40,8 @@ class IdempotencyService:
             return [cls._json_value(item) for item in value]
         if isinstance(value, UUID):
             return str(value)
+        if isinstance(value, (date, datetime)):
+            return value.isoformat()
         return value
 
     @staticmethod

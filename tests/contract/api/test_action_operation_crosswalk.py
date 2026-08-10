@@ -44,8 +44,8 @@ class ActionOperationCrosswalkTest(unittest.TestCase):
         self.assertEqual(23, result.total_actions)
         self.assertEqual(
             {
-                "RUNTIME_IMPLEMENTED": 2,
-                "OPENAPI_CONFIRMED": 9,
+                "RUNTIME_IMPLEMENTED": 11,
+                "OPENAPI_CONFIRMED": 0,
                 "CONTRACT_ONLY": 2,
                 "DEFERRED": 10,
             },
@@ -79,7 +79,7 @@ class ActionOperationCrosswalkTest(unittest.TestCase):
 
     def test_rejects_summary_drift(self) -> None:
         crosswalk = deepcopy(self.crosswalk)
-        crosswalk["summary"]["RUNTIME_IMPLEMENTED"] = 3
+        crosswalk["summary"]["RUNTIME_IMPLEMENTED"] = 12
 
         with self.assertRaisesRegex(
             validator.ContractError, "summary.RUNTIME_IMPLEMENTED"
