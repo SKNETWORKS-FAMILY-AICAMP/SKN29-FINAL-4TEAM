@@ -226,7 +226,36 @@ class InquiryTransitionService:
             response_body=data,
             resource_public_id=inquiry.public_id,
         )
+        cls._request_ai_structuring_after_commit(
+            inquiry_public_id=inquiry.public_id,
+            correlation_id=correlation_id,
+            ai_request_id=idempotency_record.public_id,
+        )
         return SubmitSymptomOutcome(status_code=200, data=data)
+
+    @staticmethod
+    def _request_ai_structuring_after_commit(
+        *,
+        inquiry_public_id: UUID,
+        correlation_id: UUID,
+        ai_request_id: UUID,
+    ) -> None:
+        """Apply TR-INQ-002's AI effect only after durable symptom commit."""
+
+        def request_ai_structuring() -> None:
+            # Keep the transactional transition module independent from AI
+            # client construction until the durable callback actually runs.
+            from apps.inquiries.services.inquiry_ai_service import (
+                InquiryAIService,
+            )
+
+            InquiryAIService.analyze_inquiry(
+                inquiry_public_id=inquiry_public_id,
+                correlation_id=correlation_id,
+                ai_request_id=ai_request_id,
+            )
+
+        transaction.on_commit(request_ai_structuring, robust=True)
 
     @staticmethod
     def _symptom_payload_is_valid(inquiry: Inquiry) -> bool:

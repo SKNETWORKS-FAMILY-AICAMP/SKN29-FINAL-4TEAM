@@ -206,6 +206,63 @@ def test_submit_transitions_once_and_preserves_saved_customer_input():
     assert record.completed_at is not None
 
 
+def test_success_requests_ai_structuring_once_after_durable_commit(
+    django_capture_on_commit_callbacks,
+):
+    owner = create_user(101)
+    client, inquiry, _subscription = create_inquiry(owner, 101)
+
+    with patch(
+        "apps.inquiries.services.inquiry_ai_service."
+        "InquiryAIService.analyze_inquiry"
+    ) as analyze:
+        with django_capture_on_commit_callbacks(execute=True):
+            response = post_submit(
+                client,
+                inquiry,
+                {"state_version": 1},
+                key="t022s-ai-structuring",
+            )
+            analyze.assert_not_called()
+
+    assert response.status_code == 200
+    analyze.assert_called_once()
+    history = submit_history(inquiry).get()
+    idempotency = submit_idempotency(owner).get()
+    kwargs = analyze.call_args.kwargs
+    assert kwargs["inquiry_public_id"] == inquiry.public_id
+    assert kwargs["correlation_id"] == history.correlation_id
+    assert kwargs["ai_request_id"] == idempotency.public_id
+
+
+def test_ai_structuring_failure_preserves_committed_symptom_transition(
+    django_capture_on_commit_callbacks,
+):
+    owner = create_user(102)
+    client, inquiry, _subscription = create_inquiry(owner, 102)
+
+    with patch(
+        "apps.inquiries.services.inquiry_ai_service."
+        "InquiryAIService.analyze_inquiry",
+        side_effect=RuntimeError("forced post-commit AI failure"),
+    ) as analyze:
+        with django_capture_on_commit_callbacks(execute=True):
+            response = post_submit(
+                client,
+                inquiry,
+                {"state_version": 1},
+                key="t022s-ai-failure",
+            )
+
+    assert response.status_code == 200
+    analyze.assert_called_once()
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
+    assert inquiry.state_version == 2
+    assert submit_history(inquiry).count() == 1
+    assert submit_idempotency(owner).count() == 1
+
+
 def test_natural_language_only_inquiry_submits_without_symptom_overwrite():
     owner = create_user(12)
     client, inquiry, _subscription = create_inquiry(
@@ -264,6 +321,40 @@ def test_same_key_and_body_replays_without_duplicate_writes():
     assert submit_idempotency(owner).count() == 1
     inquiry.refresh_from_db()
     assert inquiry.state_version == 2
+
+
+def test_same_key_replay_does_not_request_duplicate_ai_structuring(
+    django_capture_on_commit_callbacks,
+):
+    owner = create_user(103)
+    client, inquiry, _subscription = create_inquiry(owner, 103)
+    body = {"state_version": 1}
+
+    with patch(
+        "apps.inquiries.services.inquiry_ai_service."
+        "InquiryAIService.analyze_inquiry"
+    ) as analyze:
+        with django_capture_on_commit_callbacks(execute=True):
+            first = post_submit(
+                client,
+                inquiry,
+                body,
+                key="t022s-ai-replay",
+            )
+            second = post_submit(
+                client,
+                inquiry,
+                body,
+                key="t022s-ai-replay",
+            )
+            analyze.assert_not_called()
+
+    assert first.status_code == second.status_code == 200
+    assert first.json()["data"]["idempotent_replay"] is False
+    assert second.json()["data"]["idempotent_replay"] is True
+    analyze.assert_called_once()
+    assert submit_history(inquiry).count() == 1
+    assert submit_idempotency(owner).count() == 1
 
 
 def test_same_key_different_body_conflicts_before_changed_state():
@@ -495,21 +586,30 @@ def test_late_failure_rolls_back_state_history_and_idempotency():
     assert submit_idempotency(owner).count() == 0
 
 
-def test_response_contract_failure_rolls_back_all_transition_writes():
+def test_response_contract_failure_rolls_back_all_transition_writes(
+    django_capture_on_commit_callbacks,
+):
     owner = create_user(10)
     client, inquiry, _subscription = create_inquiry(owner, 10)
     original_raw_text = inquiry.raw_text
 
-    with patch(
-        "apps.inquiries.api.views.SubmitSymptomResponseSerializer",
-        side_effect=RuntimeError("forced response contract failure"),
+    with (
+        patch(
+            "apps.inquiries.api.views.SubmitSymptomResponseSerializer",
+            side_effect=RuntimeError("forced response contract failure"),
+        ),
+        patch(
+            "apps.inquiries.services.inquiry_ai_service."
+            "InquiryAIService.analyze_inquiry"
+        ) as analyze,
     ):
-        response = post_submit(
-            client,
-            inquiry,
-            {"state_version": 1},
-            key="t022s-response-contract-failure",
-        )
+        with django_capture_on_commit_callbacks(execute=True):
+            response = post_submit(
+                client,
+                inquiry,
+                {"state_version": 1},
+                key="t022s-response-contract-failure",
+            )
 
     assert response.status_code == 500
     assert response.json()["error"]["code"] == "INTERNAL_ERROR"
@@ -519,6 +619,7 @@ def test_response_contract_failure_rolls_back_all_transition_writes():
     assert inquiry.raw_text == original_raw_text
     assert submit_history(inquiry).count() == 0
     assert submit_idempotency(owner).count() == 0
+    analyze.assert_not_called()
 
 
 def test_state_contract_integrity_failure_is_not_exposed_as_retryable_409():
