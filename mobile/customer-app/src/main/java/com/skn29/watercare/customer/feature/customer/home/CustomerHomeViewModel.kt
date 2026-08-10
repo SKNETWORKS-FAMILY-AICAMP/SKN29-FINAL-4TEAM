@@ -297,7 +297,7 @@ class CustomerHomeViewModel(
         )
 
         else -> RuntimeState(
-            dataSourceLabel = "Remote 모드 · 구독 목록·상세·문의 실제 API · 안내 Fixture 격리",
+            dataSourceLabel = "Remote 모드 · 구독 목록·상세·문의 실제 API · 안내 API 미제공 시 차단",
             intakeAvailable = true,
             intakeUnavailableReason = null,
         )

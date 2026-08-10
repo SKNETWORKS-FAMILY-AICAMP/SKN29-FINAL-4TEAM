@@ -5,6 +5,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.IntakeSubmission
+import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.P0_SUPPORTED_MODEL_CODE
 import com.skn29.watercare.core.model.P0_SYNTHETIC_CUSTOMER_LOGIN_CODE
 import com.skn29.watercare.core.model.SessionResponse
@@ -69,5 +70,30 @@ class CustomerRemoteBackendSmokeTest {
         assertTrue(submission.inquiryCode.isNotBlank())
         assertTrue(submission.stateVersion != null)
         assertTrue(submission.statusCode?.isNotBlank() == true)
+    }
+
+    @Test
+    fun guidanceWithoutCustomerRoute_remoteModeFailsClosed() = runBlocking {
+        val args = InstrumentationRegistry.getArguments()
+        assumeTrue(args.getString("runRemoteSmoke") == "true")
+
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        WaterCareCore.initialize(
+            context = context,
+            baseUrl = BuildConfig.BACKEND_BASE_URL,
+            debug = true,
+            customerCareMode = "REMOTE",
+            demoSubscriptionId = "",
+        )
+
+        val guidance = WaterCareCore.customerCareRepository.getGuidance(
+            inquiryId = "00000000-0000-4000-8000-000000000301",
+            scenario = MockScenario.NORMAL,
+        )
+
+        assertTrue(guidance is ApiResult.Failure)
+        val failure = guidance as ApiResult.Failure
+        assertEquals("GUIDANCE_ROUTE_UNAVAILABLE", failure.code)
+        assertEquals(false, failure.retryable)
     }
 }

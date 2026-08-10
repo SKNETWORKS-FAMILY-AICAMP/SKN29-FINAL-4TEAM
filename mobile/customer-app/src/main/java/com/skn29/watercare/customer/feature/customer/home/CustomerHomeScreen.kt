@@ -16,6 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.model.MockScenario
+import com.skn29.watercare.core.repository.FakeCustomerCareRepository
 import com.skn29.watercare.core.ui.components.CustomerReferencePalette
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LoadingBlock
@@ -42,11 +43,20 @@ fun CustomerHomeScreen(
     onOpenGuidance: (inquiryId: String, scenario: MockScenario) -> Unit,
     onLogout: () -> Unit,
 ) {
+    val careRepository = if (offlinePreview) {
+        FakeCustomerCareRepository(
+            fixtureSubscriptionId =
+                WaterCareCore.customerCareRuntimeConfig.fixtureSubscriptionId,
+        )
+    } else {
+        WaterCareCore.customerCareRepository
+    }
+
     val viewModel: CustomerHomeViewModel = viewModel(
         factory = VmFactory { _ ->
             CustomerHomeViewModel(
                 authRepository = WaterCareCore.authRepository,
-                careRepository = WaterCareCore.customerCareRepository,
+                careRepository = careRepository,
                 subscriptionRepository = WaterCareCore.subscriptionRepository,
                 backendStatusRepository = WaterCareCore.backendStatusRepository,
                 runtimeConfig = WaterCareCore.customerCareRuntimeConfig,
@@ -131,6 +141,9 @@ fun CustomerHomeContent(
                 ?.removeSuffix("님")
                 ?: "합성 고객 001"
             val activeInquiry = home.activeInquiry
+            val fixtureGuidanceAvailable =
+                state.offlinePreview ||
+                    state.customerCareMode == CustomerCareMode.FAKE
             val previewLabel = when {
                 state.offlinePreview ->
                     "오프라인 UI 미리보기"
@@ -216,7 +229,12 @@ fun CustomerHomeContent(
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_care,
                         label = "안내 미리보기",
-                        subtitle = "Fixture 안내",
+                        subtitle = if (fixtureGuidanceAvailable) {
+                            "Fixture 안내"
+                        } else {
+                            "API 준비 중"
+                        },
+                        enabled = fixtureGuidanceAvailable,
                         onClick = {
                             onOpenGuidance(
                                 activeInquiry?.inquiryId
@@ -325,9 +343,14 @@ fun CustomerHomeContent(
                         color = palette.accent,
                     )
                     ReferenceGlassButton(
-                        text = "안내 미리보기",
+                        text = if (fixtureGuidanceAvailable) {
+                            "안내 미리보기"
+                        } else {
+                            "안내 API 준비 중"
+                        },
                         palette = palette,
                         accent = true,
+                        enabled = fixtureGuidanceAvailable,
                         onClick = {
                             onOpenGuidance(
                                 active.inquiryId,
@@ -339,7 +362,7 @@ fun CustomerHomeContent(
                 }
             }
 
-            if (showDeveloperTools) {
+            if (showDeveloperTools && fixtureGuidanceAvailable) {
                 ReferenceGlassPanel(palette = palette) {
                     Text(
                         "개발 검증 도구",
