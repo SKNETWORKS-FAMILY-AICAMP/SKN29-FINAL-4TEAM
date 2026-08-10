@@ -76,7 +76,7 @@ def parameter_refs(operation):
     }
 
 
-def test_eight_pm_actions_are_confirmed_but_not_runtime_claimed():
+def test_eight_pm_actions_are_confirmed_with_selective_runtime_status():
     root = load_yaml(API_DIR / "openapi.yaml")
     assert root["info"]["version"] == "0.8.0"
 
@@ -84,7 +84,12 @@ def test_eight_pm_actions_are_confirmed_but_not_runtime_claimed():
         operation = operation_for(path)
         assert operation["operationId"] == operation_id
         assert operation["x-contract-status"] == "CONFIRMED"
-        assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
+        expected_runtime = (
+            "IMPLEMENTED"
+            if path == "/inquiries/{id}/answers"
+            else "NOT_IMPLEMENTED"
+        )
+        assert operation["x-runtime-status"] == expected_runtime
         assert operation["x-state-machine"]["event"] == event
         assert parameter_refs(operation) == {
             "IdempotencyKey.yaml",
@@ -133,6 +138,13 @@ def test_submit_answers_uses_text_or_payload_exclusively():
         },
         {"question_id": question_id, "answer_text": "   "},
         {"question_id": question_id, "answer_payload": {}},
+        {
+            "question_id": question_id,
+            "answer_payload": {
+                "selected_option": "FILTER_REPLACEMENT",
+                "target_field": "internal-only",
+            },
+        },
     )
     for payload in valid:
         assert list(validator.iter_errors(payload)) == []

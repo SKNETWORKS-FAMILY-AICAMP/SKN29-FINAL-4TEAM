@@ -28,8 +28,8 @@ classification_policy:
 
 summary:
   total_actions: 23
-  RUNTIME_IMPLEMENTED: 11
-  OPENAPI_CONFIRMED: 8
+  RUNTIME_IMPLEMENTED: 12
+  OPENAPI_CONFIRMED: 7
   CONTRACT_ONLY: 0
   DEFERRED: 4
 
@@ -73,17 +73,22 @@ actions:
   - action: SUBMIT_ANSWERS
     event: SUBMIT_ANSWERS
     operation_id: submitFollowUpAnswers
-    classification: OPENAPI_CONFIRMED
+    classification: RUNTIME_IMPLEMENTED
     openapi:
       confirmed: true
       method: POST
       path: /inquiries/{id}/answers
       contract_status: CONFIRMED
     runtime:
-      implemented: false
-      source_evidence: []
-      test_evidence: []
-    note: PM 승인 Payload와 InquiryQA 질문 메타데이터의 물리 분리 전까지 Runtime을 공개하지 않는다.
+      implemented: true
+      source_evidence:
+        - ../../backend/apps/inquiries/api/views.py
+        - ../../backend/apps/inquiries/services/followup_answer_service.py
+        - ../../backend/apps/inquiries/models/followup_answer.py
+      test_evidence:
+        - ../../backend/tests/api/test_t022_submit_followup_answers.py
+        - ../../backend/tests/unit/inquiries/test_inquiry_qa_model.py
+    note: 질문 메타데이터와 고객 답변 원장을 물리 분리하고 선택지 공개 Shape를 고정했다.
 
   - action: CUSTOMER_REPORTED_SELF_RESOLVED
     event: CUSTOMER_REPORTED_SELF_RESOLVED

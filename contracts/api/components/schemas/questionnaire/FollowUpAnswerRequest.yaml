@@ -1,6 +1,6 @@
 title: FollowUpAnswerRequest
 type: object
-description: 공개 질문 UUID에 대한 텍스트 또는 구조화 답변 요청
+description: 공개 질문 UUID에 대한 텍스트 또는 단일 선택 답변
 x-contract-status: CONFIRMED
 additionalProperties: false
 required:
@@ -15,12 +15,19 @@ properties:
     minLength: 1
     maxLength: 1000
     pattern: ".*\\S.*"
-    description: 텍스트 답변. answer_payload와 동시에 제공할 수 없음
+    description: FREE_TEXT 질문 답변. answer_payload와 함께 보낼 수 없다.
   answer_payload:
     type: object
-    minProperties: 1
-    additionalProperties: true
-    description: 질문 유형별 구조화 JSON 답변. 상세 Shape는 Runtime Gate에서 검증
+    additionalProperties: false
+    required:
+      - selected_option
+    properties:
+      selected_option:
+        type: string
+        minLength: 1
+        maxLength: 200
+        pattern: ".*\\S.*"
+    description: SINGLE_CHOICE 질문에 Backend가 공개한 선택지 값
 oneOf:
   - title: TextFollowUpAnswer
     required:

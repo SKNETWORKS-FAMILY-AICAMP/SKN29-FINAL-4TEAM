@@ -84,10 +84,10 @@
     summary: 고객 추가 질문 답변 제출
     description: |
       본인 문의의 열린 질문에 텍스트 또는 구조화 답변을 제출한다.
-      질문 메타데이터와 실제 answer_payload의 물리 분리 Gate가 남아 있어
-      현재 Operation은 계약만 확정하고 Runtime은 공개하지 않는다.
+      질문 메타데이터와 고객 답변 원장을 물리 분리하고 동일 요청은
+      Idempotency-Key 기준으로 한 번만 저장한다.
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: SUBMIT_ANSWERS
       transition_rule: TR-INQ-003

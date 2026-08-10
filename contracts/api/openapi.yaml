@@ -18,6 +18,10 @@ paths:
     $ref: ./paths/products.yaml#/~1me~1subscriptions
   /me/subscriptions/{subscription_id}:
     $ref: ./paths/products.yaml#/~1me~1subscriptions~1{subscription_id}
+  /me/inquiries/{inquiry_id}:
+    $ref: ./paths/customer-inquiries.yaml#/~1me~1inquiries~1{inquiry_id}
+  /me/inquiries/{inquiry_id}/questions:
+    $ref: ./paths/customer-inquiries.yaml#/~1me~1inquiries~1{inquiry_id}~1questions
   /inquiries:
     $ref: ./paths/inquiries.yaml#/~1inquiries
   /inquiries/{id}:
