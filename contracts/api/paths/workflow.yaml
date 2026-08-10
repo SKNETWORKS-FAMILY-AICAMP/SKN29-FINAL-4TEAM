@@ -69,3 +69,314 @@
         $ref: ../components/responses/WorkflowConflict.yaml
       "422":
         $ref: ../components/responses/UnprocessableEntity.yaml
+
+/inquiries/{id}/answers:
+  parameters: &week5_inquiry_path_parameters
+    - name: id
+      in: path
+      required: true
+      description: 대상 문의의 공개 UUID
+      schema:
+        type: string
+        format: uuid
+  post:
+    operationId: submitFollowUpAnswers
+    summary: 고객 추가 질문 답변 제출
+    description: |
+      본인 문의의 열린 질문에 텍스트 또는 구조화 답변을 제출한다.
+      질문 메타데이터와 실제 answer_payload의 물리 분리 Gate가 남아 있어
+      현재 Operation은 계약만 확정하고 Runtime은 공개하지 않는다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: SUBMIT_ANSWERS
+      transition_rule: TR-INQ-003
+      from_state: QUESTIONNAIRE_IN_PROGRESS
+      to_state: QUESTIONNAIRE_IN_PROGRESS
+      actor_role: CUSTOMER
+    x-permission-scope: OWN_INQUIRY
+    security: [{BearerAuth: []}]
+    parameters: &week5_write_headers
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+      - $ref: ../components/parameters/CorrelationId.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/questionnaire/SubmitFollowUpAnswersRequest.yaml
+          examples:
+            textAnswer:
+              externalValue: ../examples/workflow/submit-followup-answers-request.json
+            structuredAnswer:
+              value:
+                state_version: 2
+                answers:
+                  - question_id: 31b58743-d099-4e9b-99d8-73017c7fb129
+                    answer_payload:
+                      selected_option: FILTER_REPLACEMENT
+    responses:
+      "200":
+        description: 추가 답변 상태 전환 결과 또는 동일 요청 Replay
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data: {$ref: ../components/schemas/workflow/StateTransitionResult.yaml}
+            examples:
+              accepted:
+                externalValue: ../examples/workflow/submit-followup-answers-success-response.json
+      "400": {$ref: ../components/responses/BadRequest.yaml}
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "409": {$ref: ../components/responses/WorkflowConflict.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}
+
+/inquiries/{id}/request-consultation:
+  parameters: *week5_inquiry_path_parameters
+  post:
+    operationId: requestConsultation
+    summary: 고객 상담 요청
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: REQUEST_CONSULTATION
+      transition_rules: [TR-INQ-012, TR-INQ-013]
+      from_states: [AI_GUIDANCE, CONSULTATION_REQUIRED]
+      to_state: CONSULTATION_REQUIRED
+      actor_role: CUSTOMER
+    x-permission-scope: OWN_INQUIRY
+    security: [{BearerAuth: []}]
+    parameters: *week5_write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/workflow/StateTransitionRequest.yaml}
+          examples:
+            requestConsultation:
+              externalValue: ../examples/workflow/request-consultation-request.json
+    responses:
+      "200":
+        description: 상담 요청 상태 전환 결과 또는 동일 요청 Replay
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data: {$ref: ../components/schemas/workflow/StateTransitionResult.yaml}
+            examples:
+              accepted:
+                externalValue: ../examples/workflow/request-consultation-success-response.json
+      "400": {$ref: ../components/responses/BadRequest.yaml}
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "409": {$ref: ../components/responses/WorkflowConflict.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}
+
+/inquiries/{id}/resolution-feedback:
+  parameters: *week5_inquiry_path_parameters
+  post:
+    operationId: submitResolutionFeedback
+    summary: 고객 해결 피드백 제출
+    description: 해결 피드백만으로 문의를 RESOLVED 처리하지 않는다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: SUBMIT_RESOLUTION_FEEDBACK
+      transition_rule: TR-INQ-029
+      from_state: COMPLETION_PENDING
+      to_state: COMPLETION_PENDING
+      actor_role: CUSTOMER
+    x-permission-scope: OWN_INQUIRY
+    security: [{BearerAuth: []}]
+    parameters: *week5_write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/inquiry/ResolutionFeedbackRequest.yaml}
+          examples:
+            resolved:
+              externalValue: ../examples/workflow/resolution-feedback-request.json
+    responses:
+      "200":
+        description: 해결 피드백 저장 결과 또는 동일 요청 Replay
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data: {$ref: ../components/schemas/workflow/StateTransitionResult.yaml}
+            examples:
+              accepted:
+                externalValue: ../examples/workflow/resolution-feedback-success-response.json
+      "400": {$ref: ../components/responses/BadRequest.yaml}
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "409": {$ref: ../components/responses/WorkflowConflict.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}
+
+/inquiries/{id}/finalize:
+  parameters: *week5_inquiry_path_parameters
+  post:
+    operationId: finalizeInquiry
+    summary: 마지막 처리 담당자의 문의 최종 완료
+    description: 최신 해결됨 피드백과 마지막 처리 담당자 Guard를 모두 통과해야 한다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: FINALIZE_INQUIRY
+      transition_rule: TR-INQ-033
+      from_state: COMPLETION_PENDING
+      to_state: RESOLVED
+      actor_roles: [CONSULTANT, TECHNICIAN]
+    x-permission-scope: LAST_HANDLER
+    security: [{BearerAuth: []}]
+    parameters: *week5_write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/inquiry/FinalizeInquiryRequest.yaml}
+          examples:
+            finalize:
+              externalValue: ../examples/workflow/finalize-inquiry-request.json
+    responses:
+      "200":
+        description: 문의 최종 완료 결과 또는 동일 요청 Replay
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data: {$ref: ../components/schemas/workflow/StateTransitionResult.yaml}
+            examples:
+              accepted:
+                externalValue: ../examples/workflow/finalize-inquiry-success-response.json
+      "400": {$ref: ../components/responses/BadRequest.yaml}
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "409": {$ref: ../components/responses/WorkflowConflict.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}
+
+/inquiries/{id}/report-unresolved:
+  parameters: *week5_inquiry_path_parameters
+  post:
+    operationId: reportUnresolved
+    summary: 고객 미해결 보고
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: CUSTOMER_REPORTED_UNRESOLVED
+      transition_rule: TR-INQ-030
+      from_state: COMPLETION_PENDING
+      to_state: REOPENED
+      actor_role: CUSTOMER
+    x-permission-scope: OWN_INQUIRY
+    security: [{BearerAuth: []}]
+    parameters: *week5_write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/inquiry/ReportUnresolvedRequest.yaml}
+          examples:
+            unresolved:
+              externalValue: ../examples/workflow/report-unresolved-request.json
+    responses:
+      "200":
+        description: 문의 재개 결과 또는 동일 요청 Replay
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data: {$ref: ../components/schemas/workflow/StateTransitionResult.yaml}
+            examples:
+              accepted:
+                externalValue: ../examples/workflow/report-unresolved-success-response.json
+      "400": {$ref: ../components/responses/BadRequest.yaml}
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "409": {$ref: ../components/responses/WorkflowConflict.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}
+
+/inquiries/{id}/resume-consultation:
+  parameters: *week5_inquiry_path_parameters
+  post:
+    operationId: resumeConsultation
+    summary: 재개 문의를 상담 대기열로 복귀
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: RESUME_CONSULTATION
+      transition_rule: TR-INQ-032
+      from_state: REOPENED
+      to_state: CONSULTATION_REQUIRED
+      actor_role: CONSULTANT
+    x-permission-scope: ASSIGNED_INQUIRIES
+    security: [{BearerAuth: []}]
+    parameters: *week5_write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/workflow/StateTransitionRequest.yaml}
+          examples:
+            resume:
+              externalValue: ../examples/workflow/resume-consultation-request.json
+    responses:
+      "200":
+        description: 상담 대기열 복귀 결과 또는 동일 요청 Replay
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data: {$ref: ../components/schemas/workflow/StateTransitionResult.yaml}
+            examples:
+              accepted:
+                externalValue: ../examples/workflow/resume-consultation-success-response.json
+      "400": {$ref: ../components/responses/BadRequest.yaml}
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "409": {$ref: ../components/responses/WorkflowConflict.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}

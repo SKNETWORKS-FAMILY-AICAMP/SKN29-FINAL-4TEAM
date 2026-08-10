@@ -47,10 +47,7 @@ WRITE_G2_OPERATIONS = {
     if key[1] != "get"
 }
 
-IMPLEMENTED_G2_READ_OPERATIONS = {
-    ("/inquiries", "get"),
-    ("/inquiries/{id}", "get"),
-}
+IMPLEMENTED_G2_OPERATIONS = set(G2_OPERATIONS)
 
 EXAMPLE_PATHS = {
     "inquiry_list": (
@@ -224,9 +221,9 @@ def test_g2_operation_inventory_crosswalk_and_runtime_boundary():
         for item in crosswalk["operations"]
     }
 
-    assert root["info"]["version"] == "0.7.0"
-    assert len(operations) == 23
-    assert len({item["operationId"] for item in operations.values()}) == 23
+    assert root["info"]["version"] == "0.8.0"
+    assert len(operations) == 31
+    assert len({item["operationId"] for item in operations.values()}) == 31
     assert set(crosswalk_operations) == set(G2_OPERATIONS)
     assert crosswalk["contract"]["included_decisions"] == [
         "DEC-001",
@@ -250,7 +247,7 @@ def test_g2_operation_inventory_crosswalk_and_runtime_boundary():
         crosswalk_item = crosswalk_operations[key]
         expected_runtime_status = (
             "IMPLEMENTED"
-            if key in IMPLEMENTED_G2_READ_OPERATIONS
+            if key in IMPLEMENTED_G2_OPERATIONS
             else "NOT_IMPLEMENTED"
         )
         assert operation["operationId"] == operation_id

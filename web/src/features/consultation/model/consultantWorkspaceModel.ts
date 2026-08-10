@@ -85,6 +85,7 @@ export function getCounselorRoutingDecision(
 }
 
 export const PRIORITY_LABELS: Record<CounselorPriority, string> = {
+  LOW: "낮음",
   NORMAL: "보통",
   HIGH: "높음",
   URGENT: "긴급",

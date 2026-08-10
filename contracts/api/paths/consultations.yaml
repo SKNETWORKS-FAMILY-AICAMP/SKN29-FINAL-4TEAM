@@ -9,7 +9,7 @@
     operationId: startConsultation
     summary: 담당 상담사 상담 시작
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: START_CONSULTATION
       transition_rule: TR-INQ-014
@@ -55,7 +55,7 @@
       사용자가 저장 행동을 실행할 때만 호출하는 DEC-003 API다. 타이머 기반
       자동저장, 서버 Draft 복구와 DEC-009 같은 탭 메모리 보관을 제공하지 않는다.
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-dec009-boundary: USER_TRIGGERED_SAVE_ONLY
     x-dec009-web-status: DEFERRED_TO_WEB
     x-state-machine:
@@ -82,7 +82,7 @@
     operationId: confirmConsultationSummary
     summary: 상담사 수정 요약 확정
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: CONFIRM_CONSULTATION_SUMMARY
       transition_rule: TR-INQ-016
@@ -104,7 +104,7 @@
     operationId: completeConsultation
     summary: 상담 처리 완료
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: CONSULTATION_COMPLETED
       transition_rule: TR-INQ-017

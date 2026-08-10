@@ -1,0 +1,14 @@
+title: FinalizeInquiryRequest
+type: object
+description: 마지막 처리 담당자의 문의 최종 완료 요청
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - state_version
+properties:
+  state_version:
+    type: integer
+    minimum: 1
+  final_note:
+    type: string
+    maxLength: 1000

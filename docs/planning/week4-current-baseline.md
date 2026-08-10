@@ -1,12 +1,12 @@
 # 4주차 현재 기준선
 
-> 기준 시각: **2026-08-05 18:19 KST**
+> 기준 시각: **2026-08-06 12:42 KST**
 > 기준 브랜치: `main`  
-> 기준 Commit: `e95e633d58324579a28bf7858fa8be1555ca1a09`
-> Commit 시각: `2026-08-05 18:19:04 +09:00`
-> 발표 기준 Commit 승인: **2026-08-05, 윤승혁**  
+> 기준 Commit: `24b6b3371b50679a3b2c449a651606e6cbdc581b`
+> Commit 시각: `2026-08-05 17:53:18 +09:00`
+> 발표 준비 상태: **완료(2026-08-06 사용자 확인)**
 > 검증 범위: 최신 작업 트리의 계약·Data·Backend·AI·Web·Mobile·WBS·발표 준비 상태  
-> 종합 상태: **INTEGRATION_BLOCKED / PRESENTATION_FREEZE_NOT_APPROVED**
+> 종합 상태: **INTEGRATION_BLOCKED / PRESENTATION_READY**
 
 ## 1. 기준선 원칙
 
@@ -26,12 +26,13 @@
 | `MOCK_ONLY` | 합성 Mock으로만 동작하며 실제 Backend 저장을 의미하지 않음 |
 | `CONTRACT_ONLY` | 계약·예시·테스트 골격만 존재하고 Runtime이 없음 |
 | `NOT_STARTED` | 검증 가능한 구현 또는 산출물이 없음 |
+| `PRESENTATION_READY` | 발표 자료와 시연 준비가 완료됐다고 사용자 확인됨 |
 
 ## 2. Git·작업 트리 기준
 
-현재 체크아웃 상태는 `main@e95e633`이다. 이 Commit에는 State Machine 생성기·Mermaid·CI Gate, Data Raw 비보존 정책 복구, 갱신 QA 산출물, WBS 현행화와 팀원 6명의 4주차 진행도 문서가 포함된다.
+현재 체크아웃 상태는 `main@24b6b33`이다. 이 Commit에는 Data Raw 비보존 정책 복구, 갱신된 QA 산출물과 4주차 기준선 문서가 포함된다.
 
-발표 기준 Commit을 `e95e633d58324579a28bf7858fa8be1555ca1a09`로 갱신한다. Data Raw 구성 회귀와 WBS 상태 불일치 수정이 모두 이 Commit에 포함됐으므로 두 Gate를 `RESOLVED`로 판정한다. 외부 GitHub Issue 상태는 로컬 저장소에서 확인할 수 없어 후속 확인으로 남긴다.
+작업 트리에는 발표 영상이 있는 `artifacts/`와 T-018 Web 검토 회신 문서가 미추적 상태로 남아 있다. 두 항목은 사용자 작업으로 보존하며 현재 기준 Commit의 포함 파일로 보지 않는다.
 
 ## 3. 영역별 Gate 결과
 
@@ -51,7 +52,7 @@
 
 ### 3.2 Data·Fixture·QA
 
-기준 Commit `6512178...`에 Raw 정책 수정안을 적용한 깨끗한 임시 Clone에서 실행한 명령:
+기준 Commit `24b6b33...`의 현재 작업 트리에서 2026-08-06 다시 실행한 명령:
 
 ```text
 python -B -m unittest discover -s data/tools/tests -v
@@ -65,21 +66,21 @@ python -B data/tools/pipeline.py finalize
 - 통과 67개
 - 실패 0개
 - 오류 0개
-- 실행 시간: 13.971초
+- 실행 시간: 8.778초
 - QA Verify Rebuild: PASS, 오류 0개, 경고 0개, Canonical Drift 0개
 - Finalize: PASS, Dataset 0.9.0, Manifest 154개 확인
 - 원문 백업: `tmp/local-backups/week4-data-raw/Q&A 크롤링.md` 79,555바이트, Git 무시 확인
 
 | 항목 | 현재 결과 | 판정 | 근거·제한 |
 |---|---|---|---|
-| Data 단위 테스트 | 67/67 | `VERIFIED_DONE` | Raw 정책 수정안을 적용한 깨끗한 Clone에서 통과 후 Commit |
-| Raw 비보존 정책 | PASS | `VERIFIED_DONE` | 원문은 Git 무시 백업으로 이동하고 두 `.gitkeep` 복원 |
-| 계약 출처 Commit | `6512178...` | `VERIFIED_DONE` | QA Summary 재생성 및 Commit 완료 |
+| Data 단위 테스트 | 67/67 | `VERIFIED_DONE` | 현재 기준 Commit에서 2026-08-06 재실행 통과 |
+| Raw 비보존 정책 | PASS | `VERIFIED_DONE` | 복구 내용과 갱신 산출물이 `24b6b33`에 반영됨 |
+| 계약 출처 Commit | `6512178...` | `VERIFIED_DONE` | State Machine 계약을 마지막으로 바꾼 Commit을 기록 |
 | 대표 14단계 E2E | 테스트 통과 | `VERIFIED_DONE` | 14단계·최종 `RESOLVED`·Version 14 |
 | QA Verify Rebuild | PASS | `VERIFIED_DONE` | 오류·경고·Canonical Drift 0개 |
 | QA Finalize | PASS | `VERIFIED_DONE` | Dataset 0.9.0, Manifest 154개 확인 |
 
-`source_commit`은 `contracts/state-machine`을 마지막으로 변경한 Commit을 기록한다. QA Summary를 재생성해 `6512178...`로 갱신했다. `Q&A 크롤링.md`는 삭제하지 않고 Git이 무시하는 로컬 백업 영역에 보존했다.
+`source_commit`은 현재 HEAD가 아니라 `contracts/state-machine`을 마지막으로 변경한 Commit을 기록하므로 `6512178...`이 정상이다. `Q&A 크롤링.md` 원문은 Git이 무시하는 로컬 백업 영역에 보존했다.
 
 ### 3.3 Backend
 
@@ -99,6 +100,8 @@ python -B data/tools/pipeline.py finalize
 | State·409·Replay 기반 | 코드·테스트 존재 | `DONE_WITH_LIMITATION` | 현재 환경에서 pytest 미실행 |
 | 상담·방문 Runtime | 없음 | `CONTRACT_ONLY` | G2 Operation은 모두 `NOT_IMPLEMENTED` |
 | Backend↔AI 수직 연결 | 없음 | `INTEGRATION_BLOCKED` | 실제 HTTP 호출·결과 저장 E2E 없음 |
+
+T-018 제품·구독 조회 계약은 2026-08-06 Web 검토에서 변경 요청 없이 수용됐다. 다만 Runtime은 `NOT_IMPLEMENTED`, 소비 시작 Gate는 `false`이므로 실제 Web 연결은 보류한다.
 
 팀원 진행 문서가 기준으로 삼은 `d905262` 이후 Backend Runtime Source는 바뀌지 않았고 계약 테스트 파일 5개가 추가됐다. 과거 SQLite·PostgreSQL 성공 기록은 보존하되 현재 기준선의 직접 성공으로 승격하지 않는다.
 
@@ -137,6 +140,15 @@ Node 24.14.0과 `package-lock.json` 기준 `npm ci` 환경에서 직접 확인�
 
 종합 판정: **코드 Gate `VERIFIED_DONE`, 상담·방문 Runtime은 `MOCK_ONLY / BACKEND_BLOCKED`**
 
+2026-08-07 상담사 화면 색상 변경 후 현재 작업 트리에서 추가 확인했다.
+
+- 운영자 화면과 같은 밝은 하늘색·연보라색 계열 적용
+- `yena` 브랜치 Vitest 28개 파일·117개 Test 통과
+- ESLint·TypeScript·Production Build 통과, 125개 Module 변환
+- 목록·상세·상담 입력·방문 선택 화면 정상
+- 브라우저 경고·오류 0건
+- 실제 상담·방문 서버 호출과 DB 저장은 여전히 미연결
+
 ### 3.6 Mobile
 
 현재 검증 명령:
@@ -161,14 +173,12 @@ Gradle 9.5.0과 Android SDK를 인식시킨 뒤 Core·Customer·Technician Test�
 
 ## 4. WBS 현행성
 
-현재 작업 트리의 WBS를 실제 코드·Mock·계약 상태에 맞춰 현행화했다.
+WBS는 2026-08-06 현재 구현 수준에 맞게 갱신했다.
 
-- `T-011`, `T-022`, `T-023`, `T-026`, `T-032`, `T-038`~`T-041`, `T-052`를 `미착수`에서 `진행 중`으로 변경했다.
-- 각 비고에 Runtime·Mock·후보 증거와 남은 Gate를 기록해 `완료`로 과대 표시하지 않았다.
-- 작업표 실제 집계는 완료 9개·진행 중 19개·미착수 43개·차단 2개, 총 73개·94.5인일이다.
-- Gantt에도 동일한 10개 작업을 `active`로 반영했다.
-
-T-022·T-023은 부분 Runtime, T-038·T-039는 Mock·Repository 경계, T-040·T-041은 `MOCK_ONLY / BACKEND_BLOCKED`, T-052는 중간 발표용 제한 시연과 최종 E2E를 비고에서 분리했다. 변경이 `e95e633...`에 포함됐으므로 WBS Gate는 `RESOLVED`다.
+- `T-011`, `T-018`, `T-019`, `T-022`, `T-023`, `T-025`, `T-026`, `T-032`, `T-038`~`T-042`는 작업 흔적이 있으므로 `진행 중`으로 변경했다.
+- 실제 서버 기능이 없는 Web 상담·방문과 Mobile 기사 화면은 비고에 Mock·Fixture·차단 범위를 함께 적었다.
+- 발표 준비 완료 확인에 따라 `T-052`는 `완료`로 변경했다.
+- 화면·계약·테스트만 있는 항목을 실제 서버 연결 완료로 올리지 않았다.
 
 ## 5. 중간 발표 기준선
 
@@ -180,15 +190,7 @@ T-022·T-023은 부분 Runtime, T-038·T-039는 Mock·Repository 경계, T-040·
 - 증상: 출수량 저하
 - 근거: WPU-JAC104D·WPU-JCC104D REV.00 38쪽
 
-현재 중앙 발표 패키지는 없다. 영역별 Web·Mobile·AI 자료는 존재하지만 다음 통합 산출물이 확인되지 않는다.
-
-- 중앙 대표 시연 단계표
-- 동일 Commit 기준 실행·초기화 명령
-- Live·Recorded·Mock·Contract-only 구분표
-- 전체 Fallback 계획
-- 전체 리허설 3회 기록
-- 김은진 전달용 최종 기능 상태표
-- 윤승혁 최종 승인 기록
+발표 준비는 2026-08-06 사용자 확인으로 완료 처리한다. 이번 현황 정리에서는 발표자료 통합과 추가 시연 확인을 작업 범위에서 제외한다.
 
 현 시점의 안전한 발표 분류는 다음과 같다.
 
@@ -201,7 +203,7 @@ T-022·T-023은 부분 Runtime, T-038·T-039는 Mock·Repository 경계, T-040·
 | Backend 상담·방문 | `NOT_INCLUDED` | Runtime 없음 |
 | Backend↔AI 수직 흐름 | `NOT_INCLUDED` | 실제 HTTP·DB 저장 E2E 없음 |
 
-현재 전체 흐름을 `LIVE_RUNTIME`으로 승인하지 않는다.
+발표 준비 완료와 실제 전체 연결 완료는 구분한다. 현재 전체 흐름을 `LIVE_RUNTIME`으로 승인하지 않는다.
 
 ## 6. PM 기준선 판정
 
@@ -213,10 +215,11 @@ T-022·T-023은 부분 Runtime, T-038·T-039는 Mock·Repository 경계, T-040·
 - Web 27개 파일·113개 Test, Lint, TypeScript와 Production Build가 Lockfile 환경에서 통과했다.
 - 각 영역이 Mock과 실제 Runtime의 경계를 문서화하기 시작했다.
 
-### 발표 동결 전 필수 해제 조건
+### 현재 판정
 
-1. Backend·AI·Mobile의 최신 Gate 결과 또는 명시적 환경 차단·발표 제외 승인
-2. 외부 GitHub Issue 상태와 WBS 일치 여부 확인
-3. 중앙 시연 단계표·Fallback·기능 상태표 작성 및 김은진 전달
+- Data Raw 정책 수정·QA 산출물 반영: 완료
+- WBS 현행화: 완료
+- 발표 준비: 완료(사용자 확인)
+- Backend·AI·Mobile 최신 전체 검사와 실제 서비스 연결: 미완료
 
-위 조건이 충족되기 전 종합 상태는 **`INTEGRATION_BLOCKED / PRESENTATION_FREEZE_NOT_APPROVED`**로 유지한다.
+따라서 발표 준비 상태는 **`PRESENTATION_READY`**, 서비스 통합 상태는 **`INTEGRATION_BLOCKED`**로 유지한다.

@@ -97,12 +97,12 @@ function CompactConsultationDeskContent({
   onOpenFullDetail,
 }: CompactConsultationDeskProps & { inquiry: CounselorInquiry }) {
   const [isVisitSchedulerOpen, setVisitSchedulerOpen] = useState(false);
-  const [visitDesiredAt, setVisitDesiredAt] = useState("");
+  const [visitPreferredDate, setVisitPreferredDate] = useState("");
   const [visitNotes, setVisitNotes] = useState("");
   const [addressConfirmed, setAddressConfirmed] = useState(false);
   const [visitFieldErrors, setVisitFieldErrors] = useState<{
     addressConfirmed?: string;
-    visitDesiredAt?: string;
+    visitPreferredDate?: string;
   }>({});
   const [visitSnapshot, setVisitSnapshot] = useState<{
     status: CounselorStatus;
@@ -144,8 +144,9 @@ function CompactConsultationDeskContent({
   const handleAction = async (action: CounselorAllowedAction) => {
     if (action.code === "VISIT_REVIEW_REQUIRED") {
       const nextVisitErrors: typeof visitFieldErrors = {};
-      if (!visitDesiredAt) {
-        nextVisitErrors.visitDesiredAt = "고객의 방문 희망 일시를 선택해 주세요.";
+      if (!visitPreferredDate) {
+        nextVisitErrors.visitPreferredDate =
+          "고객의 방문 희망일을 선택해 주세요.";
       }
       if (!addressConfirmed) {
         nextVisitErrors.addressConfirmed = "방문 주소를 고객과 확인해 주세요.";
@@ -285,7 +286,7 @@ function CompactConsultationDeskContent({
           <InlineVisitScheduler
             inquiry={inquiry}
             stateVersion={displayStateVersion}
-            initialDesiredAt={visitDesiredAt}
+            initialPreferredDate={visitPreferredDate}
             onBack={() => setVisitSchedulerOpen(false)}
             onStateChange={(update) => {
               setVisitSnapshot(update);
@@ -399,19 +400,23 @@ function CompactConsultationDeskContent({
                   <label>
                     <span>방문 희망 일시 <b>필수</b></span>
                     <input
-                      type="datetime-local"
+                      type="date"
                       aria-label="방문 희망 일시"
-                      value={visitDesiredAt}
-                      aria-invalid={Boolean(visitFieldErrors.visitDesiredAt)}
+                      value={visitPreferredDate}
+                      aria-invalid={Boolean(
+                        visitFieldErrors.visitPreferredDate
+                      )}
                       onChange={(event) => {
-                        setVisitDesiredAt(event.target.value);
+                        setVisitPreferredDate(event.target.value);
                         setVisitFieldErrors((current) => ({
                           ...current,
-                          visitDesiredAt: undefined,
+                          visitPreferredDate: undefined,
                         }));
                       }}
                     />
-                    <FieldError message={visitFieldErrors.visitDesiredAt} />
+                    <FieldError
+                      message={visitFieldErrors.visitPreferredDate}
+                    />
                   </label>
                   <label>
                     <span>기사 전달 메모</span>
@@ -471,7 +476,7 @@ function CompactConsultationDeskContent({
                 {draftAction && (
                   <button
                     type="button"
-                    disabled={save.isSaving}
+                    disabled={save.isSaving || !save.isWriteEnabled}
                     onClick={() => handleAction(draftAction)}
                   >
                     임시 저장
@@ -480,7 +485,9 @@ function CompactConsultationDeskContent({
                 <button
                   className="is-primary"
                   type="button"
-                  disabled={save.isSaving || !completionAction}
+                  disabled={
+                    save.isSaving || !save.isWriteEnabled || !completionAction
+                  }
                   onClick={() => completionAction && handleAction(completionAction)}
                 >
                   {save.isSaving ? "처리 중…" : "상담 처리 완료"}
@@ -494,7 +501,7 @@ function CompactConsultationDeskContent({
                   key={action.code}
                   className={action.style === "PRIMARY" ? "is-primary" : ""}
                   type="button"
-                  disabled={save.isSaving}
+                  disabled={save.isSaving || !save.isWriteEnabled}
                   onClick={() => handleAction(action)}
                 >
                   {save.isSaving ? "처리 중…" : action.label}
@@ -502,6 +509,12 @@ function CompactConsultationDeskContent({
               ))
             )}
           </div>
+        )}
+
+        {!save.isWriteEnabled && (
+          <p className="simple-action-message" role="status">
+            상담 저장 API 연결 대기 중입니다. 조회만 가능합니다.
+          </p>
         )}
 
         {save.success && (

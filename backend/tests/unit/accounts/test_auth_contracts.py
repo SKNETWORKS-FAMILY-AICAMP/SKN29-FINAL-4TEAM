@@ -81,7 +81,7 @@ def test_auth_path_contract_contains_four_implemented_operations():
 def test_openapi_registers_auth_paths_and_bearer_scheme():
     openapi = load_yaml("contracts/api/openapi.yaml")
 
-    assert openapi["info"]["version"] == "0.7.0"
+    assert openapi["info"]["version"] == "0.8.0"
     for path in (
         "/auth/demo-login",
         "/auth/refresh",

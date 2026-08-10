@@ -148,7 +148,7 @@ export default function VisitTransitionForm({
           </div>
           <div>
             <small>고객 희망일</small>
-            <strong>{values.desiredAt ? values.desiredAt.replace("T", " ") : "미입력"}</strong>
+            <strong>{values.preferredDate || "미입력"}</strong>
           </div>
         </div>
 
@@ -171,13 +171,15 @@ export default function VisitTransitionForm({
           <label className="visit-v13-field">
             <span>고객 희망일 <b>필수</b></span>
             <input
-              type="datetime-local"
+              type="date"
               aria-label="고객 희망일"
-              value={values.desiredAt}
-              aria-invalid={Boolean(errors.desiredAt)}
-              onChange={(event) => updateField("desiredAt", event.target.value)}
+              value={values.preferredDate}
+              aria-invalid={Boolean(errors.preferredDate)}
+              onChange={(event) =>
+                updateField("preferredDate", event.target.value)
+              }
             />
-            <FieldError message={errors.desiredAt} />
+            <FieldError message={errors.preferredDate} />
           </label>
 
           <label className="visit-v13-field">
@@ -240,16 +242,18 @@ export default function VisitTransitionForm({
           <label className="visit-v13-field is-wide">
             <span>가상 방문 확정일 <em>방문 확정 시 필수</em></span>
             <input
-              type="datetime-local"
+              type="date"
               aria-label="가상 방문 확정일"
-              value={values.confirmedAt}
-              aria-invalid={Boolean(errors.confirmedAt)}
-              onChange={(event) => updateField("confirmedAt", event.target.value)}
+              value={values.confirmedDate}
+              aria-invalid={Boolean(errors.confirmedDate)}
+              onChange={(event) =>
+                updateField("confirmedDate", event.target.value)
+              }
             />
             <small className="visit-v13-field-hint">
               고객 희망일과 실제 확정일을 구분해 입력합니다.
             </small>
-            <FieldError message={errors.confirmedAt} />
+            <FieldError message={errors.confirmedDate} />
           </label>
         </form>
 

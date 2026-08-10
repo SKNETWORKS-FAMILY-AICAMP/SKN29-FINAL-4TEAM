@@ -1,5 +1,32 @@
 title: SubmitVisitResultRequest
 type: object
 description: 방문 결과 등록 요청
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required:
+  - state_version
+  - visit_state_version
+  - result_code
+  - work_summary
+  - completed_at
+properties:
+  state_version:
+    type: integer
+    minimum: 1
+  visit_state_version:
+    type: integer
+    minimum: 1
+  result_code:
+    type: string
+    enum: [NORMAL, FILTER_REPLACED, ISSUE_RESOLVED]
+    x-code-source: contracts/codes/care-results.yaml
+  work_summary:
+    type: string
+    minLength: 1
+    maxLength: 4000
+    pattern: ".*\\S.*"
+  completed_at:
+    type: string
+    format: date-time
+    pattern: "(?:Z|[+-][0-9]{2}:[0-9]{2})$"
+    description: UTC Z 또는 명시적 offset을 포함한 완료 시각

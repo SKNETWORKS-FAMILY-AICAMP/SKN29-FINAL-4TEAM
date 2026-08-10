@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "data": {
+    "message": "재개 문의가 상담 대기열로 복귀했습니다.",
+    "inquiry_id": "a40c8360-5de5-44a3-8970-8aaea12cbe79",
+    "status": "CONSULTATION_REQUIRED",
+    "state_version": 9,
+    "allowed_actions": [],
+    "idempotent_replay": false,
+    "resource": null
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "4d1bf828-81f7-4c48-a685-692c097597ac"
+  }
+}

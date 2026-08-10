@@ -1,5 +1,36 @@
 title: FollowUpAnswerRequest
 type: object
-description: 추가 질문 답변 요청
+description: 공개 질문 UUID에 대한 텍스트 또는 구조화 답변 요청
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required:
+  - question_id
+properties:
+  question_id:
+    type: string
+    format: uuid
+    description: Backend가 발급한 InquiryQA 공개 UUID
+  answer_text:
+    type: string
+    minLength: 1
+    maxLength: 1000
+    pattern: ".*\\S.*"
+    description: 텍스트 답변. answer_payload와 동시에 제공할 수 없음
+  answer_payload:
+    type: object
+    minProperties: 1
+    additionalProperties: true
+    description: 질문 유형별 구조화 JSON 답변. 상세 Shape는 Runtime Gate에서 검증
+oneOf:
+  - title: TextFollowUpAnswer
+    required:
+      - answer_text
+    not:
+      required:
+        - answer_payload
+  - title: StructuredFollowUpAnswer
+    required:
+      - answer_payload
+    not:
+      required:
+        - answer_text

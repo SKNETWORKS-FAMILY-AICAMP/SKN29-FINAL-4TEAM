@@ -110,6 +110,56 @@ EXPECTED_OPERATIONS = {
         "url_name": None,
         "view_name": None,
     },
+    ("/inquiries/{id}/answers", "post"): {
+        "operation_id": "submitFollowUpAnswers",
+        "contract_status": "CONFIRMED",
+        "runtime_path": f"/api/v1/inquiries/{INQUIRY_ID}/answers",
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/inquiries/{id}/request-consultation", "post"): {
+        "operation_id": "requestConsultation",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/inquiries/{INQUIRY_ID}/request-consultation"
+        ),
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/inquiries/{id}/resolution-feedback", "post"): {
+        "operation_id": "submitResolutionFeedback",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/inquiries/{INQUIRY_ID}/resolution-feedback"
+        ),
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/inquiries/{id}/finalize", "post"): {
+        "operation_id": "finalizeInquiry",
+        "contract_status": "CONFIRMED",
+        "runtime_path": f"/api/v1/inquiries/{INQUIRY_ID}/finalize",
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/inquiries/{id}/report-unresolved", "post"): {
+        "operation_id": "reportUnresolved",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/inquiries/{INQUIRY_ID}/report-unresolved"
+        ),
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/inquiries/{id}/resume-consultation", "post"): {
+        "operation_id": "resumeConsultation",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/inquiries/{INQUIRY_ID}/resume-consultation"
+        ),
+        "url_name": None,
+        "view_name": None,
+    },
     ("/inquiries/{id}/action-results", "post"): {
         "operation_id": "createInquiryActionResult",
         "contract_status": "CONFIRMED",
@@ -125,8 +175,8 @@ EXPECTED_OPERATIONS = {
         "runtime_path": (
             f"/api/v1/inquiries/{INQUIRY_ID}/start-consultation"
         ),
-        "url_name": None,
-        "view_name": None,
+        "url_name": "consultation-start",
+        "view_name": "StartConsultationView",
     },
     ("/inquiries/{id}/consultation-summary", "patch"): {
         "operation_id": "updateConsultationSummary",
@@ -134,8 +184,8 @@ EXPECTED_OPERATIONS = {
         "runtime_path": (
             f"/api/v1/inquiries/{INQUIRY_ID}/consultation-summary"
         ),
-        "url_name": None,
-        "view_name": None,
+        "url_name": "consultation-summary-update",
+        "view_name": "UpdateConsultationSummaryView",
     },
     ("/inquiries/{id}/consultation-summary/confirm", "post"): {
         "operation_id": "confirmConsultationSummary",
@@ -143,8 +193,8 @@ EXPECTED_OPERATIONS = {
         "runtime_path": (
             f"/api/v1/inquiries/{INQUIRY_ID}/consultation-summary/confirm"
         ),
-        "url_name": None,
-        "view_name": None,
+        "url_name": "consultation-summary-confirm",
+        "view_name": "ConfirmConsultationSummaryView",
     },
     ("/inquiries/{id}/complete-consultation", "post"): {
         "operation_id": "completeConsultation",
@@ -152,8 +202,8 @@ EXPECTED_OPERATIONS = {
         "runtime_path": (
             f"/api/v1/inquiries/{INQUIRY_ID}/complete-consultation"
         ),
-        "url_name": None,
-        "view_name": None,
+        "url_name": "consultation-complete",
+        "view_name": "CompleteConsultationView",
     },
     ("/inquiries/{id}/visit-review", "post"): {
         "operation_id": "requestVisitReview",
@@ -161,15 +211,15 @@ EXPECTED_OPERATIONS = {
         "runtime_path": (
             f"/api/v1/inquiries/{INQUIRY_ID}/visit-review"
         ),
-        "url_name": None,
-        "view_name": None,
+        "url_name": "visit-review",
+        "view_name": "RequestVisitReviewView",
     },
     ("/inquiries/{id}/visits", "post"): {
         "operation_id": "createVisitRequest",
         "contract_status": "CONFIRMED",
         "runtime_path": f"/api/v1/inquiries/{INQUIRY_ID}/visits",
-        "url_name": None,
-        "view_name": None,
+        "url_name": "visit-create",
+        "view_name": "CreateVisitRequestView",
     },
     ("/inquiries/{id}/visit-not-needed", "post"): {
         "operation_id": "markVisitNotNeeded",
@@ -177,20 +227,34 @@ EXPECTED_OPERATIONS = {
         "runtime_path": (
             f"/api/v1/inquiries/{INQUIRY_ID}/visit-not-needed"
         ),
-        "url_name": None,
-        "view_name": None,
+        "url_name": "visit-not-needed",
+        "view_name": "MarkVisitNotNeededView",
     },
     ("/visits/{visit_id}/schedule", "patch"): {
         "operation_id": "updateVisitSchedule",
         "contract_status": "CONFIRMED",
         "runtime_path": f"/api/v1/visits/{VISIT_ID}/schedule",
-        "url_name": None,
-        "view_name": None,
+        "url_name": "visit-schedule-update",
+        "view_name": "UpdateVisitScheduleView",
     },
     ("/visits/{visit_id}/confirm", "post"): {
         "operation_id": "confirmVisit",
         "contract_status": "CONFIRMED",
         "runtime_path": f"/api/v1/visits/{VISIT_ID}/confirm",
+        "url_name": "visit-confirm",
+        "view_name": "ConfirmVisitView",
+    },
+    ("/visits/{visit_id}/start", "post"): {
+        "operation_id": "startVisit",
+        "contract_status": "CONFIRMED",
+        "runtime_path": f"/api/v1/visits/{VISIT_ID}/start",
+        "url_name": None,
+        "view_name": None,
+    },
+    ("/visits/{visit_id}/complete", "post"): {
+        "operation_id": "completeVisit",
+        "contract_status": "CONFIRMED",
+        "runtime_path": f"/api/v1/visits/{VISIT_ID}/complete",
         "url_name": None,
         "view_name": None,
     },
@@ -241,11 +305,11 @@ def runtime_view_name(match) -> str:
     return match.func.__name__
 
 
-def test_openapi_operation_inventory_is_exactly_twenty_three():
+def test_openapi_operation_inventory_is_exactly_thirty_one():
     operations = collect_operations()
 
     assert set(operations) == set(EXPECTED_OPERATIONS)
-    assert len(operations) == 23
+    assert len(operations) == 31
     assert {
         operation["operationId"] for operation in operations.values()
     } == {
@@ -261,7 +325,7 @@ def test_openapi_operation_inventory_is_exactly_twenty_three():
         )
 
 
-def test_twelve_operations_resolve_to_expected_runtime_views():
+def test_twenty_one_operations_resolve_to_expected_runtime_views():
     implemented = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -270,7 +334,7 @@ def test_twelve_operations_resolve_to_expected_runtime_views():
         )
     ]
 
-    assert len(implemented) == 12
+    assert len(implemented) == 21
     for (_, method), expected in implemented:
         match = resolve(expected["runtime_path"])
         assert match.url_name == expected["url_name"]
@@ -280,7 +344,7 @@ def test_twelve_operations_resolve_to_expected_runtime_views():
             assert callable(getattr(view_class, method, None))
 
 
-def test_eleven_openapi_only_operations_have_no_runtime_method():
+def test_ten_openapi_only_operations_have_no_runtime_method():
     openapi_only = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -289,7 +353,7 @@ def test_eleven_openapi_only_operations_have_no_runtime_method():
         )
     ]
 
-    assert len(openapi_only) == 11
+    assert len(openapi_only) == 10
     for (_, method), expected in openapi_only:
         match = resolve(expected["runtime_path"])
         if expected["url_name"] is None:

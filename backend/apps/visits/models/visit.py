@@ -63,6 +63,16 @@ class Visit(TimestampedModel):
     )
     requested_at = models.DateTimeField()
     scheduled_at = models.DateTimeField(null=True, blank=True)
+    preferred_date = models.DateField(null=True, blank=True)
+    confirmed_date = models.DateField(null=True, blank=True)
+    visit_reason = models.TextField(null=True, blank=True)
+    usage_guidance_status = models.CharField(
+        max_length=40,
+        choices=Inquiry.UsageGuidanceStatus.choices,
+        null=True,
+        blank=True,
+    )
+    handoff_payload = models.JSONField(default=dict, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     confirmed_cause = models.TextField(null=True, blank=True)

@@ -2,7 +2,9 @@
 
 ## 한 줄 결론
 
-2026-08-04 현재 상담사 업무 화면은 `MOCK_ONLY`다. Web 재검토 회신은 완료했지만 PM `FINAL_APPROVED`와 Active OpenAPI가 없어 실제 API 연결은 `BACKEND_BLOCKED / IMPLEMENTATION_HOLD`다.
+2026-08-07 현재 상담사 업무 화면은 `MOCK_ONLY`다. Web 화면·검사·연결 준비는 완료했지만 PM `FINAL_APPROVED`와 Active OpenAPI가 없어 실제 API 연결은 `BACKEND_BLOCKED / IMPLEMENTATION_HOLD`다.
+
+팀 전달용 상세 요청은 [2026-08-07 Web 실제 서버 연결 요청표](./handoffs/20260807_한예나_Web_서버연결_요청표.md)를 따른다.
 
 ## 2026-08-04 검토 상태
 

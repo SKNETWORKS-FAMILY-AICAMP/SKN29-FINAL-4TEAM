@@ -7,7 +7,7 @@ import {
 import { createConsultantWorkspaceRepository } from "../../src/features/consultation/repositories/consultantWorkspaceRepository";
 
 describe("상담 업무 Repository 경계", () => {
-  it("Mock 모드에서 합성 목록과 상담사 큐를 한 경계로 제공한다", () => {
+  it("Mock 모드에서는 합성 문의 목록을 제공한다", () => {
     const repository = createConsultantWorkspaceRepository(true);
 
     expect(repository.integrationStatus).toBe("MOCK_ONLY");
@@ -16,14 +16,18 @@ describe("상담 업무 Repository 경계", () => {
     expect(repository.listConsultantQueue()).toBe(CONSULTANT_QUEUE_INQUIRIES);
   });
 
-  it("실제 모드 요청 시 Endpoint를 추측하지 않고 차단 상태를 표시한다", () => {
+  it("Remote 모드에서는 Mock으로 자동 대체하지 않는다", () => {
     const repository = createConsultantWorkspaceRepository(false);
 
     expect(repository.integrationStatus).toBe("BACKEND_BLOCKED");
-    expect(repository.dataSource).toBe("MOCK");
+    expect(repository.dataSource).toBe("REMOTE");
+    expect(repository.listAllInquiries()).toEqual([]);
+    expect(repository.listConsultantQueue()).toEqual([]);
+    expect(repository.findInquiry(null)).toBeUndefined();
+    expect(repository.getAllowedActions("CONSULTATION_REQUIRED")).toEqual([]);
   });
 
-  it("상세 조회와 Mock 상태 전환 응답을 화면 밖 Repository 경계가 담당한다", () => {
+  it("Mock 상세 조회와 허용 행동은 Repository 경계가 담당한다", () => {
     const repository = createConsultantWorkspaceRepository(true);
     const inquiry = COUNSELOR_INQUIRIES[0];
 

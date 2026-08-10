@@ -6,6 +6,7 @@ import {
   getSafeInquiryListReturnPath,
   ROUTE_PATHS,
 } from "../../app/router/routePaths";
+import { ApiClientError } from "../../common/api/apiError";
 import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import LoadingState from "../../common/components/feedback/LoadingState";
@@ -15,9 +16,12 @@ import { toInquiryId } from "../../entities/inquiry/inquiryIdentifiers";
 import ConsultantInquiryDetail, {
   type ConsultantDetailSectionStates,
 } from "../../features/consultation/components/ConsultantInquiryDetail";
+import RemoteConsultantInquiryDetail from "../../features/consultation/components/RemoteConsultantInquiryDetail";
 import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
+import { useConsultantInquiryDetailQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
 import { getCounselorMetrics } from "../../features/consultation/model/consultantWorkspaceModel";
 import type { DetailTab } from "../../features/consultation/model/consultantWorkspaceTypes";
+import { consultantWorkspaceDataRepository } from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
 import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
 import "./InquiryDetailPage.css";
 import "../../common/styles/water-glass-theme.css";
@@ -55,7 +59,28 @@ export default function InquiryDetailPage() {
   const query = new URLSearchParams(location.search);
   const partialFailure = PARTIAL_FAILURES[query.get("mockFailure") ?? ""];
   const mockState = query.get("mockState");
-  const inquiry = consultantWorkspaceRepository.findInquiry(inquiryId);
+  const detailQuery = useConsultantInquiryDetailQuery(inquiryId);
+  const inquiry =
+    consultantWorkspaceDataRepository.dataSource === "MOCK"
+      ? consultantWorkspaceRepository.findInquiry(inquiryId)
+      : undefined;
+  const remoteDetail =
+    consultantWorkspaceDataRepository.dataSource === "REMOTE"
+      ? detailQuery.data
+      : null;
+  const loadState = mockState
+    ? mockState
+    : consultantWorkspaceDataRepository.dataSource === "MOCK"
+      ? "ready"
+      : detailQuery.isForbidden
+        ? "forbidden"
+        : detailQuery.isNotFound
+          ? "not_found"
+          : detailQuery.status;
+  const correlationId =
+    detailQuery.error instanceof ApiClientError
+      ? detailQuery.error.correlationId
+      : undefined;
 
   useEffect(() => {
     document.body.classList.add("v6-body", "v6-body--counselor");
@@ -108,7 +133,7 @@ export default function InquiryDetailPage() {
   };
 
   const renderDetail = () => {
-    if (mockState === "loading") {
+    if (loadState === "loading") {
       return (
         <LoadingState
           title="문의 정보를 불러오고 있습니다."
@@ -116,17 +141,25 @@ export default function InquiryDetailPage() {
         />
       );
     }
-    if (mockState === "error") {
+    if (loadState === "error") {
       return (
         <ErrorState
           title="문의 정보를 불러오지 못했습니다."
-          description="Mock 조회 오류입니다. 작성 중인 상담 내용은 전송되지 않았습니다."
+          description={
+            correlationId
+              ? `잠시 후 다시 시도해 주세요. 확인 번호: ${correlationId}`
+              : "잠시 후 다시 시도해 주세요."
+          }
           retryLabel="문의 목록으로 돌아가기"
-          onRetry={() => navigate(inquiryListReturnPath)}
+          onRetry={
+            mockState === "error"
+              ? () => navigate(inquiryListReturnPath)
+              : detailQuery.retry
+          }
         />
       );
     }
-    if (mockState === "forbidden") {
+    if (loadState === "forbidden") {
       return (
         <ForbiddenState
           title="이 문의에 접근할 권한이 없습니다."
@@ -136,7 +169,7 @@ export default function InquiryDetailPage() {
         />
       );
     }
-    if (mockState === "unsupported") {
+    if (loadState === "unsupported") {
       return (
         <ErrorState
           title="지원하지 않는 제품 모델입니다."
@@ -144,6 +177,55 @@ export default function InquiryDetailPage() {
           retryLabel="문의 목록으로 돌아가기"
           onRetry={() => navigate(inquiryListReturnPath)}
         />
+      );
+    }
+    if (loadState === "not_found") {
+      return (
+        <section className="v6-panel inquiry-v13-not-found">
+          <span aria-hidden="true">▤</span>
+          <h1>문의 정보를 찾을 수 없습니다.</h1>
+          <p>문의가 없거나 현재 상담사에게 배정되지 않은 경우 동일하게 안내됩니다.</p>
+          <button
+            className="v6-button v6-button--primary"
+            type="button"
+            onClick={() => navigate(inquiryListReturnPath)}
+          >
+            상담 큐로 돌아가기
+          </button>
+        </section>
+      );
+    }
+    if (remoteDetail) {
+      return (
+        <>
+          <header className="v6-page-head inquiry-v13-page-head">
+            <div className="v6-page-head__copy">
+              <small>CONS-02 · REMOTE</small>
+              <h1>문의 상세·상담 처리</h1>
+              <p>Backend가 제공한 상담사 전용 상세 정보를 표시합니다.</p>
+            </div>
+            <div className="v6-page-head__meta">
+              <span>문의 · {remoteDetail.inquiryCode}</span>
+              <span>상태 버전 · {remoteDetail.stateVersion}</span>
+              <span>실제 API 상세</span>
+            </div>
+          </header>
+
+          <div className="inquiry-v13-toolbar">
+            <button
+              className="v6-button v6-button--secondary"
+              type="button"
+              onClick={() => navigate(inquiryListReturnPath)}
+            >
+              검색 조건을 유지하고 상담 큐로
+            </button>
+            <span>상태와 허용 행동은 Backend 응답을 기준으로 표시합니다.</span>
+          </div>
+
+          <section className="v6-panel inquiry-v13-detail-shell">
+            <RemoteConsultantInquiryDetail inquiry={remoteDetail} />
+          </section>
+        </>
       );
     }
     if (!inquiry) {

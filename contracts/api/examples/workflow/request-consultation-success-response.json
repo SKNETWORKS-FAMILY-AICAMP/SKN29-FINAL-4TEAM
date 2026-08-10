@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "data": {
+    "message": "상담 요청이 접수되었습니다.",
+    "inquiry_id": "a40c8360-5de5-44a3-8970-8aaea12cbe79",
+    "status": "CONSULTATION_REQUIRED",
+    "state_version": 4,
+    "allowed_actions": [],
+    "idempotent_replay": false,
+    "resource": null
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "0b17b966-00dc-4dda-86ab-ac538e9037c3"
+  }
+}

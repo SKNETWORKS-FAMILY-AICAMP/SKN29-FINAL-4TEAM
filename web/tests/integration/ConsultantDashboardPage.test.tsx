@@ -22,6 +22,12 @@ const TAB_LABELS: Record<CounselorWorkBucket, RegExp> = {
   COMPLETED: /처리 완료된 문의/,
 };
 
+const EXPECTED_BUCKET_COUNTS: Record<CounselorWorkBucket, number> = {
+  NEW: 15,
+  IN_PROGRESS: 23,
+  COMPLETED: 12,
+};
+
 function renderPage(path = "/consultant/inquiries") {
   return render(
     <AuthProvider initialUser={CONSULTANT_USER}>
@@ -66,6 +72,7 @@ describe("ConsultantDashboardPage", () => {
       const count = CONSULTANT_QUEUE_INQUIRIES.filter(
         (inquiry) => getCounselorWorkBucket(inquiry.status) === bucket,
       ).length;
+      expect(count).toBe(EXPECTED_BUCKET_COUNTS[bucket]);
       expect(screen.getByRole("tab", { name: TAB_LABELS[bucket] })).toHaveTextContent(
         String(count),
       );
@@ -123,7 +130,7 @@ describe("ConsultantDashboardPage", () => {
     );
     await user.click(screen.getByRole("radio", { name: "방문 필요" }));
     fireEvent.change(screen.getByLabelText("방문 희망 일시"), {
-      target: { value: "2026-08-01T10:00" },
+      target: { value: "2026-08-01" },
     });
     await user.type(
       screen.getByRole("textbox", { name: "기사 전달 메모" }),
@@ -137,13 +144,13 @@ describe("ConsultantDashboardPage", () => {
     });
     await user.selectOptions(
       within(scheduler).getByRole("combobox", { name: "방문기사" }),
-      "STAFF-TECH-01",
+      "00000000-0000-4000-8000-000000000101",
     );
     fireEvent.change(within(scheduler).getByLabelText("고객 희망일"), {
-      target: { value: "2026-08-01T10:00" },
+      target: { value: "2026-08-01" },
     });
     fireEvent.change(within(scheduler).getByLabelText("확정 방문일"), {
-      target: { value: "2026-08-01T11:00" },
+      target: { value: "2026-08-02" },
     });
     await user.click(
       within(scheduler).getByRole("button", { name: "기사 배정·방문 확정" }),

@@ -1,0 +1,876 @@
+/*
+ * Readable dashboard theme
+ * Visual-only overrides shared by counselor and operator workspaces.
+ * Existing layout, content order, state, and interactions stay unchanged.
+ */
+
+:where(.simple-consultant-app, .operations-page, .v6-workspace) {
+  --readable-bg: #f3f4f6;
+  --readable-surface: #ffffff;
+  --readable-surface-soft: #f8f9fb;
+  --readable-ink: #15171a;
+  --readable-muted: #666b73;
+  --readable-line: #e3e5e8;
+  --readable-dark: #0b0c0e;
+  --readable-dark-soft: #1c1e22;
+  --readable-accent: #6866c9;
+  color: var(--readable-ink) !important;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+html body :is(.simple-consultant-app, .operations-page, .v6-workspace) {
+  background: var(--readable-bg) !important;
+  background-image: none !important;
+}
+
+html body :is(.simple-consultant-app, .operations-page, .v6-workspace) *,
+html body :is(.simple-consultant-app, .operations-page, .v6-workspace) *::before,
+html body :is(.simple-consultant-app, .operations-page, .v6-workspace) *::after {
+  text-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Shared flat surfaces */
+html body .simple-consultant-app :is(
+  .simple-topbar,
+  .consultant-queue-panel,
+  .simple-desk,
+  .simple-case-section,
+  .simple-visit-scheduler,
+  .simple-visit-context,
+  .consultant-detail-drawer__head
+),
+html body .operations-page :is(
+  .operations-page-head,
+  .api-integration-panel,
+  .operations-panel,
+  .operations-metric,
+  .api-integration-panel__coverage article,
+  .common-data-table-wrap
+),
+html body .v6-workspace :is(
+  .v6-topbar,
+  .v6-page-head,
+  .v6-panel,
+  .v6-action-panel,
+  .v6-section,
+  .inquiry-v13-toolbar,
+  .inquiry-dashboard__metrics article,
+  .inquiry-dashboard__card,
+  .inquiry-dashboard__timeline,
+  .visit-v13-toolbar,
+  .visit-v13-context,
+  .visit-v13-form-panel,
+  .visit-v13-status-card
+) {
+  border: 1px solid var(--readable-line) !important;
+  border-radius: 12px !important;
+  outline: 0 !important;
+  background: var(--readable-surface) !important;
+  background-image: none !important;
+  box-shadow: 0 4px 14px rgb(20 24 32 / 5%) !important;
+}
+
+html body :is(.simple-consultant-app, .operations-page, .v6-workspace)
+  :is(input, select, textarea) {
+  border: 1px solid #d7d9de !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--readable-ink) !important;
+  font-size: 14px !important;
+}
+
+html body :is(.simple-consultant-app, .operations-page, .v6-workspace)
+  :is(input, select, textarea):focus {
+  border-color: #7074bb !important;
+  outline: 3px solid rgb(104 102 201 / 14%) !important;
+}
+
+html body :is(.simple-consultant-app, .operations-page, .v6-workspace)
+  :is(input, textarea)::placeholder {
+  color: #8a8f97 !important;
+  opacity: 1;
+}
+
+/* Counselor queue */
+html body.compact-consultant-body {
+  background: var(--readable-bg) !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app {
+  width: calc(100% - 32px) !important;
+  margin: 16px !important;
+  border: 1px solid var(--readable-line) !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-shadow: 0 12px 32px rgb(18 22 30 / 8%) !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app::before,
+html body .simple-consultant-app.consultant-queue-app::after,
+html body .operations-page .operations-page-head::before,
+html body .operations-page .operations-page-head::after,
+html body .operations-page .operations-metric::after {
+  display: none !important;
+  content: none !important;
+}
+
+html body .simple-consultant-app .simple-topbar {
+  border: 0 !important;
+  border-bottom: 1px solid var(--readable-line) !important;
+  border-radius: 14px 14px 0 0 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+html body .simple-consultant-app :is(.simple-brand, .simple-user) {
+  color: var(--readable-ink) !important;
+}
+
+html body .simple-consultant-app :is(.simple-brand strong, .simple-user strong) {
+  color: var(--readable-ink) !important;
+  font-size: 15px !important;
+}
+
+html body .simple-consultant-app :is(.simple-brand small, .simple-user small) {
+  color: var(--readable-muted) !important;
+  font-size: 11px !important;
+}
+
+html body .simple-consultant-app :is(.simple-brand > span, .simple-user > span) {
+  border: 1px solid #dfe2e6 !important;
+  background: #f2f3f5 !important;
+  box-shadow: none !important;
+  color: #25282d !important;
+}
+
+html body .simple-consultant-app .simple-topbar__notice {
+  border: 1px solid #e1e3e6 !important;
+  border-radius: 8px !important;
+  background: #f7f7f8 !important;
+  box-shadow: none !important;
+  color: #51565e !important;
+  font-size: 12px !important;
+}
+
+html body .simple-consultant-app .consultant-work-tabs {
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: var(--readable-dark) !important;
+  box-shadow: none !important;
+}
+
+html body .simple-consultant-app .consultant-work-tab,
+html body .simple-consultant-app .consultant-work-tab:hover {
+  border: 1px solid transparent !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  transform: none !important;
+}
+
+html body .simple-consultant-app .consultant-work-tab :is(strong, em, small) {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body .simple-consultant-app .consultant-work-tab em {
+  color: #aeb2ba !important;
+  -webkit-text-fill-color: #aeb2ba !important;
+}
+
+html body .simple-consultant-app .consultant-work-tab:hover {
+  background: var(--readable-dark-soft) !important;
+}
+
+html body .simple-consultant-app .consultant-work-tab.is-active,
+html body .simple-consultant-app .consultant-work-tab.is-active:hover {
+  border-color: #fff !important;
+  background: #fff !important;
+  color: var(--readable-ink) !important;
+}
+
+html body .simple-consultant-app .consultant-work-tab.is-active :is(strong, em, small) {
+  color: var(--readable-ink) !important;
+  -webkit-text-fill-color: var(--readable-ink) !important;
+}
+
+html body .simple-consultant-app .consultant-work-tab.is-active em {
+  color: var(--readable-muted) !important;
+  -webkit-text-fill-color: var(--readable-muted) !important;
+}
+
+html body .simple-consultant-app .consultant-work-tab > b,
+html body .simple-consultant-app .consultant-work-tab.is-active > b {
+  border: 0 !important;
+  background: #2a2d32 !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body .simple-consultant-app .consultant-work-tab.is-active > b {
+  background: #ececf5 !important;
+  color: #4f4e9a !important;
+  -webkit-text-fill-color: #4f4e9a !important;
+}
+
+html body .simple-consultant-app .consultant-queue-panel {
+  overflow: hidden !important;
+  border-color: var(--readable-line) !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+html body .simple-consultant-app :is(
+  .consultant-queue-panel__head,
+  .consultant-queue-panel > .common-pagination,
+  .consultant-detail-drawer__head
+) {
+  border-color: var(--readable-line) !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+html body .simple-consultant-app .consultant-queue-panel__eyebrow {
+  color: #6664b2 !important;
+}
+
+html body .simple-consultant-app .consultant-queue-panel__head h2 {
+  color: var(--readable-ink) !important;
+  font-size: 21px !important;
+}
+
+html body .simple-consultant-app .simple-search {
+  border-color: #dfe1e5 !important;
+  background: #f8f8f9 !important;
+  box-shadow: none !important;
+}
+
+html body .simple-consultant-app .consultant-list {
+  gap: 0 !important;
+  padding: 0 12px !important;
+}
+
+html body .simple-consultant-app .v6-queue-item.consultant-list-item,
+html body .simple-consultant-app .v6-queue-item.consultant-list-item:nth-child(even),
+html body .simple-consultant-app .v6-queue-item.consultant-list-item:hover {
+  min-height: 88px !important;
+  border: 0 !important;
+  border-bottom: 1px solid #eceef0 !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: var(--readable-ink) !important;
+  transform: none !important;
+}
+
+html body .simple-consultant-app .v6-queue-item.consultant-list-item:hover {
+  background: #f7f7fa !important;
+  box-shadow: inset 3px 0 0 var(--readable-accent) !important;
+}
+
+html body .simple-consultant-app .consultant-list-item__main strong {
+  color: var(--readable-ink) !important;
+  font-size: 15px !important;
+  line-height: 1.45 !important;
+}
+
+html body .simple-consultant-app .consultant-list-item__main > span,
+html body .simple-consultant-app .consultant-list-item__meta,
+html body .simple-consultant-app .consultant-list-item__open {
+  color: var(--readable-muted) !important;
+  font-size: 12px !important;
+}
+
+html body .simple-consultant-app .consultant-list-item__open {
+  color: #4f4e9a !important;
+  font-weight: 800 !important;
+}
+
+html body .simple-consultant-app .consultant-detail-backdrop {
+  background: rgb(20 22 27 / 28%) !important;
+}
+
+html body .simple-consultant-app .consultant-detail-drawer {
+  border-left: 1px solid #dfe1e5 !important;
+  background: #f5f6f8 !important;
+  box-shadow: -14px 0 34px rgb(15 18 24 / 14%) !important;
+}
+
+/* Operator workspace */
+html body .operations-page {
+  background: var(--readable-bg) !important;
+}
+
+html body .operations-page .operations-topbar {
+  border: 0 !important;
+  border-right: 1px solid #24262b !important;
+  border-radius: 0 !important;
+  background: var(--readable-dark) !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+html body .operations-page :is(.operations-brand strong, .operations-user strong) {
+  color: #fff !important;
+  font-size: 15px !important;
+}
+
+html body .operations-page :is(.operations-brand small, .operations-user small) {
+  color: #aeb2ba !important;
+  font-size: 11px !important;
+}
+
+html body .operations-page .operations-brand > span {
+  border: 1px solid #3a3d43 !important;
+  border-radius: 9px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: #111318 !important;
+}
+
+html body .operations-page .operations-navigation::before {
+  color: #777c85 !important;
+  font-size: 10px !important;
+}
+
+html body .operations-page .operations-navigation a,
+html body .operations-page .operations-navigation a:hover,
+html body .operations-page .operations-navigation a:first-of-type,
+html body .operations-page .operations-navigation a:first-of-type:hover {
+  border: 1px solid transparent !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #d9dce1 !important;
+  font-size: 13px !important;
+}
+
+html body .operations-page .operations-navigation a:hover {
+  background: #1b1d21 !important;
+  color: #fff !important;
+}
+
+html body .operations-page .operations-navigation a:first-of-type {
+  border-color: #33363c !important;
+  background: #202227 !important;
+  box-shadow: inset 3px 0 0 #a9a7ef !important;
+  color: #fff !important;
+}
+
+html body .operations-page .operations-navigation a :is(span, strong, small),
+html body .operations-page .operations-navigation a:first-of-type :is(span, strong, small) {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html body .operations-page .operations-navigation a span,
+html body .operations-page .operations-navigation a:first-of-type span {
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: #2b2e34 !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+html body .operations-page .operations-user {
+  border: 1px solid #2f3238 !important;
+  border-radius: 10px !important;
+  background: #16181c !important;
+  box-shadow: none !important;
+}
+
+html body .operations-page .operations-user button {
+  border: 1px solid #393c43 !important;
+  border-radius: 7px !important;
+  background: #24272c !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  font-size: 12px !important;
+}
+
+html body .operations-page .operations-main {
+  background: var(--readable-bg) !important;
+}
+
+html body .operations-page .operations-page-head {
+  min-height: 142px !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+html body .operations-page .operations-page-head :is(small, h1, p) {
+  color: var(--readable-ink) !important;
+}
+
+html body .operations-page .operations-page-head small,
+html body .operations-page .operations-section-head small {
+  color: #6664b2 !important;
+  font-size: 10px !important;
+}
+
+html body .operations-page .operations-page-head h1 {
+  color: var(--readable-ink) !important;
+  font-size: clamp(30px, 3vw, 40px) !important;
+}
+
+html body .operations-page .operations-page-head p {
+  color: var(--readable-muted) !important;
+  font-size: 13px !important;
+}
+
+html body .operations-page .operations-page-head > span {
+  border: 1px solid #dedfe4 !important;
+  border-radius: 8px !important;
+  background: #f5f5f7 !important;
+  box-shadow: none !important;
+  color: #42464d !important;
+  font-size: 12px !important;
+}
+
+html body .operations-page :is(.api-integration-panel, .operations-panel) {
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+html body .operations-page .operations-section-head h2 {
+  color: var(--readable-ink) !important;
+  font-size: 19px !important;
+}
+
+html body .operations-page .operations-section-head > p,
+html body .operations-page .operations-filters__footer p {
+  color: var(--readable-muted) !important;
+  font-size: 11px !important;
+}
+
+html body .operations-page .operations-section-head > strong {
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: #eeeefa !important;
+  box-shadow: none !important;
+  color: #5553a4 !important;
+  font-size: 12px !important;
+}
+
+html body .operations-page .api-integration-panel__coverage article {
+  border-radius: 9px !important;
+  background: #f7f7f8 !important;
+  box-shadow: none !important;
+}
+
+html body .operations-page .operations-filters::before,
+html body .operations-page .operations-table-section::before {
+  display: none !important;
+}
+
+html body .operations-page .operations-filters label {
+  color: #4c5057 !important;
+  font-size: 12px !important;
+}
+
+html body .operations-page :is(
+  .operations-filters input,
+  .operations-filters select,
+  .operations-filters__footer button
+) {
+  min-height: 42px !important;
+  border-color: #d9dbe0 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: var(--readable-ink) !important;
+  font-size: 13px !important;
+}
+
+html body .operations-page .operations-metric {
+  min-height: 124px !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  transition: border-color 140ms ease, transform 140ms ease !important;
+}
+
+html body .operations-page .operations-metric:hover {
+  border-color: #c8cbd1 !important;
+  box-shadow: none !important;
+  transform: translateY(-1px) !important;
+}
+
+html body .operations-page .operations-metric:first-child {
+  border-color: #111318 !important;
+  background: #111318 !important;
+  color: #fff !important;
+}
+
+html body .operations-page .operations-metric:first-child :is(span, strong, small) {
+  color: #fff !important;
+}
+
+html body .operations-page .operations-metric::before {
+  height: 3px !important;
+  background: #cfd2d8 !important;
+}
+
+html body .operations-page .operations-metric.is-danger::before {
+  background: #d55b53 !important;
+}
+
+html body .operations-page .operations-metric.is-warning::before {
+  background: #d29b3e !important;
+}
+
+html body .operations-page .operations-metric.is-success::before {
+  background: #59a97a !important;
+}
+
+html body .operations-page .operations-metric.is-info::before {
+  background: #6d76c9 !important;
+}
+
+html body .operations-page .operations-metric > span {
+  color: #5f646c !important;
+  font-size: 12px !important;
+}
+
+html body .operations-page .operations-metric strong {
+  color: var(--readable-ink) !important;
+  font-size: 30px !important;
+}
+
+html body .operations-page .operations-metric small {
+  color: #757a82 !important;
+  font-size: 10px !important;
+}
+
+html body .operations-page .operations-chart__track {
+  border: 0 !important;
+  background: #eceef1 !important;
+  box-shadow: none !important;
+}
+
+html body .operations-page .operations-chart__track i {
+  background: #7472c4 !important;
+  box-shadow: none !important;
+}
+
+html body .operations-page .common-data-table {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  color: var(--readable-ink) !important;
+  font-size: 12px !important;
+}
+
+html body .operations-page .common-data-table thead th {
+  border-color: #e5e7ea !important;
+  background: #f7f7f8 !important;
+  color: #5f646c !important;
+  font-size: 11px !important;
+}
+
+html body .operations-page .common-data-table tbody tr,
+html body .operations-page .common-data-table tbody tr:hover {
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+html body .operations-page .common-data-table tbody tr:hover {
+  background: #f8f8fa !important;
+}
+
+html body .operations-page .common-data-table :is(th, td) {
+  border-color: #eceef0 !important;
+}
+
+/* Full counselor detail and visit pages */
+html body .v6-workspace .v6-topbar {
+  border: 0 !important;
+  border-bottom: 1px solid var(--readable-line) !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+html body .v6-workspace .v6-sidebar {
+  border: 0 !important;
+  border-right: 1px solid #24262b !important;
+  border-radius: 0 !important;
+  background: var(--readable-dark) !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+html body .v6-workspace .v6-sidebar :is(.v6-brand, strong) {
+  color: #fff !important;
+}
+
+html body .v6-workspace .v6-sidebar :is(small, p) {
+  color: #9da2aa !important;
+}
+
+html body .v6-workspace .v6-nav-item,
+html body .v6-workspace .v6-home-link {
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #d9dce1 !important;
+}
+
+html body .v6-workspace .v6-nav-item:hover {
+  background: #1b1d21 !important;
+  color: #fff !important;
+}
+
+html body .v6-workspace .v6-nav-item.is-active,
+html body .v6-workspace .v6-nav-item.is-active:hover {
+  border-color: #33363c !important;
+  background: #202227 !important;
+  box-shadow: inset 3px 0 0 #a9a7ef !important;
+  color: #fff !important;
+}
+
+html body .v6-workspace .v6-nav-item.is-active :is(span, strong, small),
+html body .v6-workspace .v6-nav-item.is-active > b {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body .v6-workspace :is(.v6-button--primary, .visit-v13-actions button.is-primary) {
+  border-color: #111318 !important;
+  background: #111318 !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+html body .v6-workspace :is(.v6-button, .visit-v13-actions button) {
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 820px) {
+  html body .simple-consultant-app.consultant-queue-app {
+    width: 100% !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  html body .simple-consultant-app .consultant-work-tabs {
+    background: #111318 !important;
+  }
+
+  html body .operations-page .operations-topbar {
+    border-right: 0 !important;
+    border-bottom: 1px solid #24262b !important;
+  }
+}
+
+/* Final specificity lock against the earlier glass themes. */
+html body .simple-consultant-app.consultant-queue-app .simple-topbar,
+html body .simple-consultant-app.consultant-queue-app .consultant-queue-panel,
+html body .simple-consultant-app.consultant-queue-app .consultant-queue-panel__head,
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-queue-panel
+  > .common-pagination {
+  border-color: var(--readable-line) !important;
+  background: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app .consultant-work-tabs {
+  border: 0 !important;
+  background: var(--readable-dark) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app .consultant-work-tab,
+html body .simple-consultant-app.consultant-queue-app .consultant-work-tab:hover {
+  border-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tab:hover {
+  background: var(--readable-dark-soft) !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tab.is-active,
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tab.is-active:hover {
+  border-color: #fff !important;
+  background: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--readable-ink) !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tab.is-active::before,
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tab.is-active::after {
+  display: none !important;
+  content: none !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tab.is-active
+  :is(strong, em, small) {
+  color: var(--readable-ink) !important;
+  -webkit-text-fill-color: var(--readable-ink) !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .v6-queue-item.consultant-list-item,
+html body .simple-consultant-app.consultant-queue-app
+  .v6-queue-item.consultant-list-item:nth-child(even),
+html body .simple-consultant-app.consultant-queue-app
+  .v6-queue-item.consultant-list-item:hover {
+  border: 0 !important;
+  border-bottom: 1px solid #eceef0 !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .v6-queue-item.consultant-list-item:hover {
+  background: #f7f7fa !important;
+  box-shadow: inset 3px 0 0 var(--readable-accent) !important;
+}
+
+html body .operations-page.waterdrop-workspace--operator .operations-topbar {
+  background: var(--readable-dark) !important;
+  background-image: none !important;
+}
+
+html body .operations-page.waterdrop-workspace--operator
+  :is(.operations-brand strong, .operations-user strong) {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body .operations-page.waterdrop-workspace--operator
+  :is(.operations-brand small, .operations-user small) {
+  color: #aeb2ba !important;
+  -webkit-text-fill-color: #aeb2ba !important;
+}
+
+html body .operations-page.waterdrop-workspace--operator
+  .operations-navigation {
+  border: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html body .operations-page.waterdrop-workspace--operator
+  .operations-runtime-status {
+  border-color: #33363c !important;
+  background: #202227 !important;
+  color: #e3e5e8 !important;
+  box-shadow: none !important;
+}
+
+html body .operations-page.waterdrop-workspace--operator
+  .operations-waterdrop-hero__visual,
+html body .operations-page.waterdrop-workspace--operator
+  .operations-waterdrop-orb {
+  border-color: #e1e3e6 !important;
+  background: #f7f7f8 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--readable-ink) !important;
+}
+
+html body .operations-page.waterdrop-workspace--operator
+  .operations-waterdrop-orb
+  :is(span, strong, small) {
+  color: var(--readable-ink) !important;
+}
+
+@media (min-width: 821px) and (max-width: 1050px) {
+  html body .operations-page.waterdrop-workspace--operator {
+    display: grid !important;
+    grid-template-columns: 194px minmax(0, 1fr) !important;
+    padding: 0 !important;
+  }
+
+  html body .operations-page.waterdrop-workspace--operator
+    .operations-topbar {
+    position: sticky !important;
+    top: 0 !important;
+    width: 194px !important;
+    height: 100vh !important;
+    min-height: 680px !important;
+    margin: 0 !important;
+  }
+
+  html body .operations-page.waterdrop-workspace--operator
+    .operations-main {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 22px !important;
+  }
+}
+
+/* Compact corners: close to the supplied dashboard card reference. */
+html body .operations-page.waterdrop-workspace--operator :is(
+  .operations-page-head,
+  .api-integration-panel,
+  .operations-panel,
+  .operations-metric,
+  .common-data-table-wrap
+),
+html body .v6-workspace :is(
+  .v6-page-head,
+  .v6-panel,
+  .v6-action-panel,
+  .v6-section,
+  .inquiry-v13-toolbar,
+  .inquiry-dashboard__metrics article,
+  .inquiry-dashboard__card,
+  .inquiry-dashboard__timeline,
+  .visit-v13-toolbar,
+  .visit-v13-context,
+  .visit-v13-form-panel,
+  .visit-v13-status-card
+) {
+  border-radius: 7px !important;
+}
+
+html body .operations-page.waterdrop-workspace--operator :is(
+  .api-integration-panel__coverage article,
+  .operations-section-head > strong,
+  .operations-filters input,
+  .operations-filters select,
+  .operations-filters__footer button,
+  .operations-user,
+  .operations-user button
+),
+html body .v6-workspace :is(
+  input,
+  select,
+  textarea,
+  .v6-button,
+  .v6-form-field,
+  .visit-v13-field,
+  .visit-v13-actions button
+) {
+  border-radius: 6px !important;
+}

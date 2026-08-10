@@ -97,3 +97,30 @@ class WorkflowRepository:
             idempotency_key=idempotency_key,
             changed_by_type_code=changed_by_type,
         )
+
+    @staticmethod
+    def create_visit_transition_history(
+        *,
+        visit: Any,
+        actor: Any,
+        event_code: str,
+        from_state: str | None,
+        to_state: str,
+        state_version: int,
+        correlation_id: UUID,
+        idempotency_key: str,
+    ) -> TransitionHistory:
+        """Persist one visit-target history row for a workflow action."""
+
+        return TransitionHistory.objects.create(
+            target_type_code=TransitionHistory.TargetType.VISIT,
+            visit=visit,
+            actor=actor,
+            changed_by_type_code=TransitionHistory.ChangedByType.USER,
+            event_code=event_code,
+            from_state=from_state,
+            to_state=to_state,
+            state_version=state_version,
+            correlation_id=correlation_id,
+            idempotency_key=idempotency_key,
+        )

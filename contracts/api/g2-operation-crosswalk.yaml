@@ -39,7 +39,7 @@ operations:
     event: START_CONSULTATION
     transition_rule: TR-INQ-014
     permission_scope: ASSIGNED_INQUIRIES
-    runtime_status: NOT_IMPLEMENTED
+    runtime_status: IMPLEMENTED
   - dec: DEC-003
     method: PATCH
     path: /inquiries/{id}/consultation-summary
@@ -49,7 +49,7 @@ operations:
     event: UPDATE_CONSULTATION_SUMMARY
     transition_rule: TR-INQ-015
     permission_scope: ASSIGNED_INQUIRIES
-    runtime_status: NOT_IMPLEMENTED
+    runtime_status: IMPLEMENTED
     dec009_boundary: USER_TRIGGERED_SAVE_ONLY
   - dec: DEC-003
     method: POST
@@ -60,7 +60,7 @@ operations:
     event: CONFIRM_CONSULTATION_SUMMARY
     transition_rule: TR-INQ-016
     permission_scope: ASSIGNED_INQUIRIES
-    runtime_status: NOT_IMPLEMENTED
+    runtime_status: IMPLEMENTED
   - dec: DEC-003
     method: POST
     path: /inquiries/{id}/complete-consultation
@@ -70,7 +70,7 @@ operations:
     event: CONSULTATION_COMPLETED
     transition_rule: TR-INQ-017
     permission_scope: ASSIGNED_INQUIRIES
-    runtime_status: NOT_IMPLEMENTED
+    runtime_status: IMPLEMENTED
   - dec: DEC-004
     method: POST
     path: /inquiries/{id}/visit-review
@@ -80,7 +80,7 @@ operations:
     event: VISIT_REVIEW_REQUIRED
     transition_rule: TR-INQ-018
     permission_scope: ASSIGNED_INQUIRIES
-    runtime_status: NOT_IMPLEMENTED
+    runtime_status: IMPLEMENTED
   - dec: DEC-004
     method: POST
     path: /inquiries/{id}/visits
@@ -90,7 +90,7 @@ operations:
     event: VISIT_NEEDED
     transition_rule: TR-INQ-019
     permission_scope: ASSIGNED_INQUIRIES
-    runtime_status: NOT_IMPLEMENTED
+    runtime_status: IMPLEMENTED
   - dec: DEC-004
     method: POST
     path: /inquiries/{id}/visit-not-needed
@@ -100,7 +100,7 @@ operations:
     event: VISIT_NOT_NEEDED
     transition_rule: TR-INQ-034
     permission_scope: ASSIGNED_INQUIRIES
-    runtime_status: NOT_IMPLEMENTED
+    runtime_status: IMPLEMENTED
   - dec: DEC-004
     method: PATCH
     path: /visits/{visit_id}/schedule
@@ -110,7 +110,7 @@ operations:
     event: UPDATE_VISIT_SCHEDULE
     transition_rule: [TR-INQ-020, TR-INQ-021]
     permission_scope: ASSIGNED_INQUIRIES
-    runtime_status: NOT_IMPLEMENTED
+    runtime_status: IMPLEMENTED
   - dec: DEC-004
     method: POST
     path: /visits/{visit_id}/confirm
@@ -120,7 +120,7 @@ operations:
     event: CONFIRM_VISIT
     transition_rule: TR-INQ-022
     permission_scope: ASSIGNED_INQUIRIES
-    runtime_status: NOT_IMPLEMENTED
+    runtime_status: IMPLEMENTED
 
 cross_cutting:
   DEC-001: P0 순서는 목록, 상세, 상담, 방문이며 각 Operation은 독립 Gate를 유지한다.

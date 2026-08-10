@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "data": {
+    "message": "문의가 최종 완료되었습니다.",
+    "inquiry_id": "a40c8360-5de5-44a3-8970-8aaea12cbe79",
+    "status": "RESOLVED",
+    "state_version": 9,
+    "allowed_actions": [],
+    "idempotent_replay": false,
+    "resource": null
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "6a064d63-c06a-44e8-bf40-c820368e80c7"
+  }
+}

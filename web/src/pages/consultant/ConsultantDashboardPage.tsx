@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { createInquiryDetailPath } from "../../app/router/routePaths";
 import { useAuth } from "../../app/providers/authContext";
+import waterBridgeLogo from "../../assets/images/water-bridge-logo.png";
 import RiskBadge from "../../common/components/badge/RiskBadge";
 import StatusBadge from "../../common/components/badge/StatusBadge";
 import Pagination from "../../common/components/data-display/Pagination";
@@ -10,12 +11,20 @@ import EmptyState from "../../common/components/feedback/EmptyState";
 import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import LoadingState from "../../common/components/feedback/LoadingState";
-import type { InquiryId } from "../../entities/inquiry/inquiryIdentifiers";
+import {
+  toInquiryId,
+  type InquiryId,
+} from "../../entities/inquiry/inquiryIdentifiers";
 import CompactConsultationDesk from "../../features/consultation/components/CompactConsultationDesk";
 import useCounselorQueueFilters from "../../features/consultation/hooks/useCounselorQueueFilters";
+import { useConsultantInquiryListQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
+import type {
+  ConsultantInquiryListQuery,
+  ConsultantInquiryStatusDto,
+} from "../../features/consultation/api/consultantWorkspaceRemoteTypes";
 import {
+  COUNSELOR_QUEUE_PAGE_SIZE,
   formatWaitingTime,
-  getCounselorQueuePage,
   getCounselorWorkBucket,
   getStatusBadgeVariant,
   STATUS_LABELS,
@@ -27,12 +36,18 @@ import type {
   CounselorWorkBucket,
 } from "../../features/consultation/model/consultantWorkspaceTypes";
 import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
+import {
+  consultantWorkspaceDataRepository,
+  createMockConsultantInquiryListViewModel,
+} from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
 import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntimeStatus";
 import "./ConsultantDashboardPage.css";
 import "./ConsultantDashboardTheme.css";
 import "./ConsultantInquiryPearlTheme.css";
 import "../../common/styles/watercare-liquid-glass-theme.css";
 import "../../common/styles/pearl-workspace-v2.css";
+import "../../common/styles/water-glass-theme.css";
+import "./ConsultantOperationsTone.css";
 
 const WORK_BUCKETS: readonly {
   id: CounselorWorkBucket;
@@ -44,13 +59,32 @@ const WORK_BUCKETS: readonly {
   },
   {
     id: "IN_PROGRESS",
-    description: "상담·기사 배정·일정 조율 중인 문의",
+    description: "",
   },
   {
     id: "COMPLETED",
-    description: "최종 완료 또는 취소된 문의",
+    description: "",
   },
 ];
+
+const BUCKET_STATUSES: Record<
+  CounselorWorkBucket,
+  readonly ConsultantInquiryStatusDto[]
+> = {
+  NEW: ["CONSULTATION_REQUIRED", "REOPENED"],
+  IN_PROGRESS: [
+    "DRAFT",
+    "QUESTIONNAIRE_IN_PROGRESS",
+    "AI_GUIDANCE",
+    "CONSULTATION_IN_PROGRESS",
+    "VISIT_REVIEW_PENDING",
+    "VISIT_SCHEDULING",
+    "VISIT_SCHEDULED",
+    "COMPLETION_PENDING",
+    "REVISIT_REQUIRED",
+  ],
+  COMPLETED: ["RESOLVED", "CANCELLED"],
+};
 
 export default function ConsultantDashboardPage() {
   const navigate = useNavigate();
@@ -77,20 +111,65 @@ export default function ConsultantDashboardPage() {
   >({});
 
   const mockState = new URLSearchParams(location.search).get("mockState");
+  const repositoryQuery = useMemo<ConsultantInquiryListQuery>(
+    () => ({
+      q: filters.query || undefined,
+      status: BUCKET_STATUSES[activeBucket],
+      riskLevel:
+        filters.risk !== "ALL" && filters.risk !== "UNKNOWN"
+          ? [filters.risk.toLowerCase() as "general" | "caution" | "danger"]
+          : undefined,
+      priority:
+        filters.priority !== "ALL" && filters.priority !== "UNKNOWN"
+          ? [filters.priority]
+          : undefined,
+      from: filters.receivedFrom || undefined,
+      to: filters.receivedTo || undefined,
+      sort: filters.sort,
+      page: filters.page,
+      size: COUNSELOR_QUEUE_PAGE_SIZE,
+    }),
+    [
+      activeBucket,
+      filters.page,
+      filters.priority,
+      filters.query,
+      filters.receivedFrom,
+      filters.receivedTo,
+      filters.risk,
+      filters.sort,
+    ],
+  );
+  const listQuery = useConsultantInquiryListQuery(repositoryQuery);
+  const queryData = useMemo(
+    () =>
+      consultantWorkspaceDataRepository.dataSource === "MOCK"
+        ? createMockConsultantInquiryListViewModel(repositoryQuery)
+        : listQuery.data,
+    [listQuery.data, repositoryQuery],
+  );
   const loadState = ["loading", "error", "forbidden"].includes(
     mockState ?? "",
   )
     ? (mockState as "loading" | "error" | "forbidden")
-    : "ready";
+    : consultantWorkspaceDataRepository.dataSource === "MOCK"
+      ? "ready"
+      : listQuery.isForbidden
+        ? "forbidden"
+        : listQuery.status === "loading"
+          ? "loading"
+          : listQuery.status === "error"
+            ? "error"
+            : "ready";
   const sourceInquiries = useMemo(
     () =>
       mockState === "empty"
         ? []
-        : consultantWorkspaceRepository.listConsultantQueue().map((inquiry) => ({
+        : (queryData?.items ?? []).map((inquiry) => ({
             ...inquiry,
             ...inquiryStateUpdates[inquiry.inquiryId],
           })),
-    [inquiryStateUpdates, mockState],
+    [inquiryStateUpdates, mockState, queryData?.items],
   );
 
   useEffect(() => {
@@ -121,28 +200,36 @@ export default function ConsultantDashboardPage() {
 
   const bucketCounts = useMemo(
     () =>
-      sourceInquiries.reduce<Record<CounselorWorkBucket, number>>(
-        (counts, inquiry) => {
-          counts[getCounselorWorkBucket(inquiry.status)] += 1;
-          return counts;
-        },
-        { NEW: 0, IN_PROGRESS: 0, COMPLETED: 0 },
+      Object.fromEntries(
+        Object.entries(BUCKET_STATUSES).map(([bucket, statuses]) => [
+          bucket,
+          statuses.reduce(
+            (total, status) => total + (queryData?.statusCounts[status] ?? 0),
+            0,
+          ),
+        ]),
+      ) as Record<CounselorWorkBucket, number>,
+    [queryData?.statusCounts],
+  );
+  const queuePage = {
+    currentPage: queryData?.pageInfo.page ?? filters.page,
+    items: sourceInquiries,
+    totalItems: mockState === "empty" ? 0 : (queryData?.pageInfo.total ?? 0),
+    totalPages: Math.max(
+      1,
+      Math.ceil(
+        (mockState === "empty" ? 0 : (queryData?.pageInfo.total ?? 0)) /
+          (queryData?.pageInfo.size ?? COUNSELOR_QUEUE_PAGE_SIZE),
       ),
-    [sourceInquiries],
-  );
-  const bucketInquiries = useMemo(
-    () =>
-      sourceInquiries.filter(
-        (inquiry) => getCounselorWorkBucket(inquiry.status) === activeBucket,
-      ),
-    [activeBucket, sourceInquiries],
-  );
-  const queuePage = useMemo(
-    () => getCounselorQueuePage(bucketInquiries, filters),
-    [bucketInquiries, filters],
-  );
-  const selectedInquiry =
-    sourceInquiries.find((item) => item.inquiryId === selectedInquiryId) ?? null;
+    ),
+  };
+  const selectedBase = consultantWorkspaceRepository.findInquiry(selectedInquiryId);
+  const selectedInquiry = selectedBase
+    ? {
+        ...selectedBase,
+        ...inquiryStateUpdates[selectedBase.inquiryId],
+      }
+    : null;
   const activeBucketCopy = WORK_BUCKETS.find(
     (bucket) => bucket.id === activeBucket,
   );
@@ -166,35 +253,48 @@ export default function ConsultantDashboardPage() {
       currentIndex < 0
         ? queuePage.items[0]
         : queuePage.items[currentIndex + 1] ?? queuePage.items[0];
-    setSelectedInquiryId(nextInquiry.inquiryId);
+    setSelectedInquiryId(toInquiryId(nextInquiry.inquiryId));
+  };
+
+  const openInquiry = (rawInquiryId: string) => {
+    const inquiryId = toInquiryId(rawInquiryId);
+    if (!inquiryId) return;
+
+    if (consultantWorkspaceDataRepository.dataSource === "MOCK") {
+      setSelectedInquiryId(inquiryId);
+      return;
+    }
+    navigate(createInquiryDetailPath(inquiryId), {
+      state: { returnTo: `/consultant/inquiries${location.search}` },
+    });
   };
 
   return (
     <div className="simple-consultant-app consultant-queue-app">
-      <header className="simple-topbar">
-        <a className="simple-brand" href="/" aria-label="Water Bridge 홈으로 이동">
-          <span className="simple-brand__mark" aria-hidden="true">W</span>
-          <div className="simple-brand__copy">
-            <strong>Water Bridge</strong>
-            <small>상담 워크스페이스</small>
-          </div>
-        </a>
-
-        <ApiRuntimeStatus className="simple-topbar__notice" compact />
-
-        <div className="simple-user">
-          <span className="simple-user__avatar">{user?.displayName.slice(0, 1) ?? "상"}</span>
-          <div className="simple-user__copy">
-            <strong>{user?.displayName ?? "상담사"}</strong>
-            <small>상담사 · 업무 중</small>
-          </div>
-        </div>
-      </header>
-
       <main className="simple-consultant-main consultant-queue-main">
         <h1 id="simple-page-title" className="consultant-visually-hidden">
           고객 문의
         </h1>
+
+        <header className="simple-topbar consultant-main-header">
+          <a className="simple-brand" href="/" aria-label="Water Bridge 홈으로 이동">
+            <img
+              className="simple-brand__logo"
+              src={waterBridgeLogo}
+              alt="Water Bridge"
+            />
+          </a>
+
+          <ApiRuntimeStatus className="simple-topbar__notice" compact />
+
+          <div className="simple-user">
+            <span className="simple-user__avatar">{user?.displayName.slice(0, 1) ?? "상"}</span>
+            <div className="simple-user__copy">
+              <strong>{user?.displayName ?? "상담사"}</strong>
+              <small>상담사 · 업무 중</small>
+            </div>
+          </div>
+        </header>
 
         <nav className="consultant-work-tabs" aria-label="문의 처리 상태" role="tablist">
           {WORK_BUCKETS.map((bucket) => (
@@ -211,7 +311,6 @@ export default function ConsultantDashboardPage() {
             >
               <span>
                 <strong>{WORK_BUCKET_LABELS[bucket.id]}</strong>
-                {bucket.description && <em>{bucket.description}</em>}
               </span>
               <b>{bucketCounts[bucket.id]}</b>
             </button>
@@ -275,7 +374,11 @@ export default function ConsultantDashboardPage() {
               <ErrorState
                 title="상담 문의 목록을 불러오지 못했습니다."
                 description="잠시 후 다시 시도해 주세요."
-                onRetry={() => navigate("/consultant/inquiries", { replace: true })}
+                onRetry={
+                  mockState === "error"
+                    ? () => navigate("/consultant/inquiries", { replace: true })
+                    : listQuery.retry
+                }
               />
             ) : loadState === "forbidden" ? (
               <ForbiddenState
@@ -305,29 +408,31 @@ export default function ConsultantDashboardPage() {
                   key={inquiry.inquiryId}
                   className="v6-queue-item consultant-list-item"
                   type="button"
-                  aria-label={`${inquiry.inquiryCode} ${inquiry.customerName} ${inquiry.symptomLabel} 상세 열기`}
-                  onClick={() => setSelectedInquiryId(inquiry.inquiryId)}
+                  aria-label={`${inquiry.inquiryCode} ${inquiry.customerDisplayNameMasked} ${inquiry.symptomSummary} 상세 열기`}
+                  onClick={() => openInquiry(inquiry.inquiryId)}
                 >
                   <span className="consultant-list-item__risk">
                     <RiskBadge
-                      level={inquiry.riskLevel.toLowerCase()}
+                      level={inquiry.riskLevel}
                       size="compact"
                     />
                     <em>
                       {activeBucket === "COMPLETED"
                         ? "처리 기록"
-                        : `대기 ${formatWaitingTime(inquiry.waitingMinutes)}`}
+                        : `대기 ${formatWaitingTime(
+                            Math.floor(inquiry.waitingSeconds / 60),
+                          )}`}
                     </em>
                   </span>
 
                   <span className="consultant-list-item__subject">
-                    <strong>{inquiry.symptomLabel}</strong>
-                    <small>{inquiry.customerMessage}</small>
+                    <strong>{inquiry.symptomSummary}</strong>
+                    <small>{inquiry.symptomSummary}</small>
                   </span>
 
                   <span className="consultant-list-item__customer">
-                    <strong>{inquiry.customerName}</strong>
-                    <small>{inquiry.productCode}</small>
+                    <strong>{inquiry.customerDisplayNameMasked}</strong>
+                    <small>{inquiry.productModel}</small>
                   </span>
 
                   <span className="consultant-list-item__status">

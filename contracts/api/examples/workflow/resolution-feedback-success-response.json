@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "data": {
+    "message": "해결 피드백이 저장되었습니다.",
+    "inquiry_id": "a40c8360-5de5-44a3-8970-8aaea12cbe79",
+    "status": "COMPLETION_PENDING",
+    "state_version": 8,
+    "allowed_actions": [],
+    "idempotent_replay": false,
+    "resource": null
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "d6a559d3-e663-437d-a179-0e17c81a0a38"
+  }
+}

@@ -11,7 +11,7 @@ import { MOCK_TECHNICIANS } from "../model/visitTransitionMock";
 interface InlineVisitSchedulerProps {
   inquiry: CounselorInquiry;
   stateVersion: number;
-  initialDesiredAt?: string;
+  initialPreferredDate?: string;
   onBack: () => void;
   onStateChange: (update: {
     status: CounselorStatus;
@@ -21,21 +21,21 @@ interface InlineVisitSchedulerProps {
 }
 
 interface ScheduleErrors {
-  confirmedAt?: string;
-  desiredAt?: string;
+  confirmedDate?: string;
+  preferredDate?: string;
   technicianId?: string;
 }
 
 export default function InlineVisitScheduler({
   inquiry,
   stateVersion,
-  initialDesiredAt = "",
+  initialPreferredDate = "",
   onBack,
   onStateChange,
 }: InlineVisitSchedulerProps) {
   const [technicianId, setTechnicianId] = useState("");
-  const [desiredAt, setDesiredAt] = useState(initialDesiredAt);
-  const [confirmedAt, setConfirmedAt] = useState("");
+  const [preferredDate, setPreferredDate] = useState(initialPreferredDate);
+  const [confirmedDate, setConfirmedDate] = useState("");
   const [errors, setErrors] = useState<ScheduleErrors>({});
   const [currentVersion, setCurrentVersion] = useState(stateVersion);
   const [result, setResult] = useState<"SAVED" | "CONFIRMED" | null>(null);
@@ -46,17 +46,20 @@ export default function InlineVisitScheduler({
   const submit = (mode: "SAVE" | "CONFIRM") => {
     const nextErrors: ScheduleErrors = {};
     if (!technicianId) nextErrors.technicianId = "방문기사를 선택해 주세요.";
-    if (!desiredAt) nextErrors.desiredAt = "고객 희망일을 선택해 주세요.";
-    if (mode === "CONFIRM" && !confirmedAt) {
-      nextErrors.confirmedAt = "확정 방문일을 선택해 주세요.";
+    if (!preferredDate) {
+      nextErrors.preferredDate = "고객 희망일을 선택해 주세요.";
+    }
+    if (mode === "CONFIRM" && !confirmedDate) {
+      nextErrors.confirmedDate = "확정 방문일을 선택해 주세요.";
     }
     if (
       mode === "CONFIRM" &&
-      desiredAt &&
-      confirmedAt &&
-      confirmedAt < desiredAt
+      preferredDate &&
+      confirmedDate &&
+      confirmedDate < preferredDate
     ) {
-      nextErrors.confirmedAt = "확정 방문일은 고객 희망일보다 빠를 수 없습니다.";
+      nextErrors.confirmedDate =
+        "확정 방문일은 고객 희망일보다 빠를 수 없습니다.";
     }
 
     setErrors(nextErrors);
@@ -120,33 +123,39 @@ export default function InlineVisitScheduler({
         <label>
           <span>고객 희망일 <b>필수</b></span>
           <input
-            type="datetime-local"
+            type="date"
             aria-label="고객 희망일"
-            value={desiredAt}
-            aria-invalid={Boolean(errors.desiredAt)}
+            value={preferredDate}
+            aria-invalid={Boolean(errors.preferredDate)}
             onChange={(event) => {
-              setDesiredAt(event.target.value);
-              setErrors((current) => ({ ...current, desiredAt: undefined }));
+              setPreferredDate(event.target.value);
+              setErrors((current) => ({
+                ...current,
+                preferredDate: undefined,
+              }));
               setResult(null);
             }}
           />
-          <small>{errors.desiredAt}</small>
+          <small>{errors.preferredDate}</small>
         </label>
 
         <label>
           <span>확정 방문일 <b>확정 시 필수</b></span>
           <input
-            type="datetime-local"
+            type="date"
             aria-label="확정 방문일"
-            value={confirmedAt}
-            aria-invalid={Boolean(errors.confirmedAt)}
+            value={confirmedDate}
+            aria-invalid={Boolean(errors.confirmedDate)}
             onChange={(event) => {
-              setConfirmedAt(event.target.value);
-              setErrors((current) => ({ ...current, confirmedAt: undefined }));
+              setConfirmedDate(event.target.value);
+              setErrors((current) => ({
+                ...current,
+                confirmedDate: undefined,
+              }));
               setResult(null);
             }}
           />
-          <small>{errors.confirmedAt}</small>
+          <small>{errors.confirmedDate}</small>
         </label>
       </div>
 

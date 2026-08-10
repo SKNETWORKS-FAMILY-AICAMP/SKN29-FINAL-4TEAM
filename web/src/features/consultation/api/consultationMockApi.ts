@@ -12,6 +12,7 @@ import type {
   CounselorActionCode,
   CounselorStatus,
 } from "../model/consultantWorkspaceTypes";
+import { consultantWorkspaceRepository } from "../repositories/consultantWorkspaceRepository";
 import type {
   ConsultationActionErrorDetails,
   ConsultationActionSuccess,
@@ -38,6 +39,7 @@ function waitForMockResponse() {
 export async function submitConsultationMock(
   request: ProvisionalConsultationActionRequest,
   scenario: ConsultationMockScenario,
+  currentStatus: CounselorStatus,
   currentAllowedActions: readonly CounselorAllowedAction[],
 ): Promise<ConsultationActionSuccess> {
   await waitForMockResponse();
@@ -105,8 +107,13 @@ export async function submitConsultationMock(
     });
   }
 
+  const status = getNextStatus(request.action_code, currentStatus);
+  const nextAllowedActions =
+    status === currentStatus
+      ? currentAllowedActions
+      : consultantWorkspaceRepository.getAllowedActions(status, false);
   const allowedActionDtos: readonly WorkflowAllowedActionDto<CounselorActionCode>[] =
-    currentAllowedActions.map((action) => ({
+    nextAllowedActions.map((action) => ({
       code: action.code,
       label: action.label,
       operation_id: action.operationId,
@@ -125,7 +132,26 @@ export async function submitConsultationMock(
     allowed_actions: allowedActionDtos,
   };
 
-  return mapWorkflowActionSuccess(successDto, request.correlation_id);
+  return {
+    ...mapWorkflowActionSuccess(successDto, request.correlation_id),
+    status,
+  };
+}
+
+function getNextStatus(
+  actionCode: CounselorActionCode,
+  currentStatus: CounselorStatus,
+): CounselorStatus {
+  if (actionCode === "START_CONSULTATION") {
+    return "CONSULTATION_IN_PROGRESS";
+  }
+  if (actionCode === "VISIT_REVIEW_REQUIRED") {
+    return "VISIT_REVIEW_PENDING";
+  }
+  if (actionCode === "CONSULTATION_COMPLETED") {
+    return "COMPLETION_PENDING";
+  }
+  return currentStatus;
 }
 
 export interface ConsultationDetailSnapshot {

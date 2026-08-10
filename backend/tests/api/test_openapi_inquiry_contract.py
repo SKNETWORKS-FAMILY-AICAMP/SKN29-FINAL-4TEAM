@@ -2,12 +2,14 @@
 
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
 import yaml
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 OPENAPI_DIR = REPOSITORY_ROOT / "contracts" / "api"
 INQUIRY_CONTRACT = OPENAPI_DIR / "paths" / "inquiries.yaml"
+WORKFLOW_CONTRACT = OPENAPI_DIR / "paths" / "workflow.yaml"
 INQUIRY_SCHEMA_DIR = OPENAPI_DIR / "components" / "schemas" / "inquiry"
 
 
@@ -79,6 +81,93 @@ def test_confirmed_inquiry_schema_preserves_v05_fields():
     )
 
 
+def test_submit_answers_contract_matches_state_machine_operation():
+    contract = load_yaml(WORKFLOW_CONTRACT)
+    operation = contract["/inquiries/{id}/answers"]["post"]
+    path_parameter = contract["/inquiries/{id}/answers"][
+        "parameters"
+    ][0]
+    answer_schema = load_yaml(
+        OPENAPI_DIR
+        / "components"
+        / "schemas"
+        / "questionnaire"
+        / "FollowUpAnswerRequest.yaml"
+    )
+
+    assert path_parameter["schema"] == {
+        "type": "string",
+        "format": "uuid",
+    }
+    assert operation["operationId"] == "submitFollowUpAnswers"
+    assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
+    assert operation["x-state-machine"] == {
+        "event": "SUBMIT_ANSWERS",
+        "transition_rule": "TR-INQ-003",
+        "from_state": "QUESTIONNAIRE_IN_PROGRESS",
+        "to_state": "QUESTIONNAIRE_IN_PROGRESS",
+        "actor_role": "CUSTOMER",
+    }
+    assert operation["parameters"] == [
+        {"$ref": "../components/parameters/IdempotencyKey.yaml"},
+        {"$ref": "../components/parameters/CorrelationId.yaml"},
+    ]
+    assert answer_schema["required"] == ["question_id"]
+    assert answer_schema["properties"]["question_id"]["format"] == (
+        "uuid"
+    )
+    assert set(answer_schema["properties"]) == {
+        "question_id",
+        "answer_text",
+        "answer_payload",
+    }
+    assert "500" in operation["responses"]
+
+
+def test_submit_answers_openapi_enforces_typed_answer_meaning():
+    schema = load_yaml(
+        OPENAPI_DIR
+        / "components"
+        / "schemas"
+        / "questionnaire"
+        / "FollowUpAnswerRequest.yaml"
+    )
+    validator = Draft202012Validator(schema)
+    question_id = "31b58743-d099-4e9b-99d8-73017c7fb129"
+
+    valid_payloads = (
+        {
+            "question_id": question_id,
+            "answer_text": "필터 교체 직후입니다.",
+        },
+        {
+            "question_id": question_id,
+            "answer_payload": {"selected_option": "FILTER_REPLACEMENT"},
+        },
+    )
+    invalid_payloads = (
+        {"question_id": question_id},
+        {
+            "question_id": question_id,
+            "answer_text": "   ",
+        },
+        {
+            "question_id": question_id,
+            "answer_payload": {},
+        },
+        {
+            "question_id": question_id,
+            "answer_text": "답변",
+            "answer_payload": {"selected_option": "FILTER_REPLACEMENT"},
+        },
+    )
+
+    for payload in valid_payloads:
+        assert list(validator.iter_errors(payload)) == []
+    for payload in invalid_payloads:
+        assert list(validator.iter_errors(payload))
+
+
 def test_openapi_root_references_confirmed_inquiry_paths():
     root = load_yaml(OPENAPI_DIR / "openapi.yaml")
 
@@ -90,6 +179,9 @@ def test_openapi_root_references_confirmed_inquiry_paths():
     )
     assert root["paths"]["/inquiries/{id}/questionnaire"]["$ref"] == (
         "./paths/inquiries.yaml#/~1inquiries~1{id}~1questionnaire"
+    )
+    assert root["paths"]["/inquiries/{id}/answers"]["$ref"] == (
+        "./paths/workflow.yaml#/~1inquiries~1{id}~1answers"
     )
     assert root["paths"]["/inquiries/{id}/action-results"]["$ref"] == (
         "./paths/inquiries.yaml#/~1inquiries~1{id}~1action-results"

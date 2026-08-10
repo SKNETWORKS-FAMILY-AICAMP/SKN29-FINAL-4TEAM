@@ -18,14 +18,14 @@
 | ID | 우선순위 | 영역 | 증상 | 책임자 | 현재 상태 | 목표 시점 |
 |---|---|---|---|---|---|---|
 | `W4-BLK-001` | P0 | Git·Release | 발표 기준 Commit 확정 | 윤승혁 | RESOLVED | 2026-08-05 |
-| `W4-BLK-002` | P0 | Data | Raw 정책·QA Summary 회귀 수정 | 김은진 | RESOLVED | 2026-08-05 |
+| `W4-BLK-002` | P0 | Data | Raw 정책·QA Summary 회귀 수정 | 김은진 | RESOLVED | 2026-08-06 재검증 |
 | `W4-BLK-003` | P0 | Contract Env | 계약 검증 환경 확보 및 실행 | 윤승혁·김은진 | RESOLVED | 2026-08-05 |
 | `W4-BLK-004` | P0 | State Machine | Mermaid 1.0.0 재생성 및 CI Gate 추가 | 윤승혁 | RESOLVED | 2026-08-05 |
 | `W4-BLK-005` | P0 | Backend | 요구 Python 3.13.13 부재로 전체 Gate 미실행 | 최지용 | ENVIRONMENT_BLOCKED | 환경 확보 시 |
 | `W4-BLK-006` | P0 | Web | Lockfile 기준 Test·Lint·Build 재검증 | 한예나·김은진 | RESOLVED | 2026-08-05 |
 | `W4-BLK-007` | P0 | Mobile | Core Compile Task의 SDK Platform Provider 값 없음 | 양정현·김은진 | SDK_PLATFORM_BLOCKED | 환경 정합화 시 |
-| `W4-BLK-008` | P0 | PM·WBS | Runtime·Mock·계약 기준 WBS 현행화 | 윤승혁 | RESOLVED | 2026-08-05 |
-| `W4-BLK-009` | P2 | T-052 | 중간 발표 전 중앙 시연 패키지·리허설·승인 기록 미확보 | 윤승혁·김은진 | CLOSED_WITH_GAP | 2026-08-07 |
+| `W4-BLK-008` | P0 | PM·WBS | WBS 상태가 실제 Runtime·Mock·계약 수준과 불일치 | 윤승혁 | RESOLVED | 2026-08-06 현행화 |
+| `W4-BLK-009` | P0 | T-052 | 발표 준비 상태 확인 | 윤승혁·김은진 | RESOLVED | 2026-08-06 사용자 확인 |
 | `W4-BLK-010` | P1 | Backend↔AI | 실제 HTTP 호출·Schema 검증·DB 저장 E2E 없음 | 최지용·이동윤 | WEEK5_HANDOFF_READY | 5주차 시작 Gate |
 | `W4-BLK-011` | P1 | 상담·방문 | G2 11개 Operation이 후보·NOT_IMPLEMENTED 상태 | 최지용 | WEEK5_HANDOFF_READY | 5주차 Backlog 확정 시 |
 | `W4-BLK-012` | P1 | AI | 현재 AI Test·팀 DB pgvector 재검증 없음 | 이동윤·김은진 | WEEK5_ENTRY_BLOCKED | 5주차 시작 Gate |
@@ -46,9 +46,9 @@
 | 증거 | `git status --short`, 발표 승인 문서 |
 | 주의 | 사용자 변경을 PM이 임의 삭제·이동하지 않음 |
 | 해제 시각 | 2026-08-05 KST |
-| 해제 Commit | `24b6b3371b50679a3b2c449a651606e6cbdc581b` |
-| 해제 결정 | Data Raw 정책 복구와 QA 산출물까지 Commit했으므로 발표 검증 기준을 새 Commit으로 갱신 |
-| 잔여 제한 | WBS 현행화 변경은 후속 Commit 대기 |
+| 해제 Commit | 최초 `6512178...`, 최신 기준선 `24b6b33...` |
+| 해제 결정 | 사용자가 관련 변경을 Commit했으므로 발표 검증 기준을 새 Commit으로 갱신 |
+| 잔여 제한 | Data Gate 회귀는 `W4-BLK-002`에서 `24b6b33` 반영·재검증 후 해제됨 |
 
 ### W4-BLK-002 — Data Raw 비보존 정책 실패
 
@@ -69,8 +69,11 @@
 | 현재 해제 조건 | `Q&A 크롤링.md`의 정식 보존 위치·Raw 정책을 결정하고 QA Summary를 재생성한 뒤 67/67·QA·Finalize 통과 |
 | 수정 결과 | 원문 79,555바이트를 Git 무시 로컬 백업으로 보존하고 두 `.gitkeep` 복원 |
 | 검증 증거 | 깨끗한 수정 Clone에서 Data 67/67, QA Verify Rebuild PASS, Finalize PASS, 오류·경고·Canonical Drift 0개 |
-| 최종 해제 Commit | `24b6b3371b50679a3b2c449a651606e6cbdc581b` |
-| 최종 판정 | Raw 삭제·`.gitkeep`·갱신 QA 산출물이 Commit되어 `RESOLVED` |
+| 잔여 조건 | 없음. 후속 Data 변경 시 같은 검사로 다시 확인 |
+| 해제 시각 | 2026-08-06 12:42 KST |
+| 해제 Commit | `24b6b3371b50679a3b2c449a651606e6cbdc581b` |
+| 현재 재검증 | Data 67/67, QA Verify Rebuild, Finalize 모두 PASS |
+| 해제 판정 | 수정·산출물 Commit과 현재 기준선 재검증이 모두 끝나 `RESOLVED` |
 
 ### W4-BLK-003 — 계약 검증 Python 환경 부재
 
@@ -161,26 +164,28 @@
 | 책임 | 윤승혁 |
 | 해제 조건 | `week4-current-baseline.md` 상태 분류와 WBS·Issue 상태를 일치시킴 |
 | 목표 | 2026-08-05 발표 동결 전 |
-| 수정 결과 | 10개 작업을 `진행 중`으로 변경하고 제한 상태·근거를 비고에 기록, Gantt `active` 동기화 |
-| 검산 결과 | 완료 9·진행 중 19·미착수 43·차단 2 = 73개, 총 94.5인일 |
+| 해제 시각 | 2026-08-06 12:42 KST |
+| 해제 내용 | 실제 구현·계약·Mock이 있는 작업을 `진행 중`으로, 사용자 확인이 끝난 T-052를 `완료`로 변경 |
+| 잔여 제한 | `진행 중`은 실제 서버 연결 완료가 아니며 비고의 Mock·차단 범위를 함께 확인해야 함 |
 | 해제 Commit | `e95e633d58324579a28bf7858fa8be1555ca1a09` |
-| 해제 판정 | WBS·기준선·Blocker 변경이 Commit되어 `RESOLVED` |
+| 해제 판정 | WBS·기준선·Blocker 변경과 후속 현행화가 반영되어 `RESOLVED` |
 | 후속 확인 | 외부 GitHub Issue 상태는 로컬 저장소에서 검증할 수 없으므로 별도 확인 필요 |
 
-### W4-BLK-009 — 중앙 T-052 시연 패키지 부재
+### W4-BLK-009 — T-052 발표 준비 상태
 
 | 항목 | 내용 |
 |---|---|
-| 증상 | 영역별 자료는 있으나 중앙 단계표·초기화·Fallback·리허설·승인 문서 없음 |
-| 직접 원인 | 팀별 산출물을 같은 Commit·대표 ID·시연 순서로 통합하지 않음 |
-| 영향 | Mock을 실제 연동으로 설명하거나 시연 실패 시 복구하지 못할 위험 |
+| 이전 증상 | 영역별 자료는 있으나 중앙 단계표·초기화·Fallback·리허설·승인 문서를 저장소에서 확인하지 못함 |
+| 이전 직접 원인 | 팀별 산출물을 같은 Commit·대표 ID·시연 순서로 통합한 기록이 없었음 |
+| 이전 영향 | Mock을 실제 연동으로 설명하거나 시연 실패 시 복구하지 못할 위험이 있었음 |
 | 책임 | 윤승혁 |
 | 협업 | 김은진, 전 팀원 |
-| 해제 조건 | 각 단계를 `LIVE_RUNTIME/RECORDED_RUNTIME/MOCK_UI/CONTRACT_ONLY/NOT_INCLUDED`로 분류하고 Fallback 및 최소 3회 리허설 기록 확보 |
+| 이전 해제 조건 | 발표 준비 상태와 실제·녹화·Mock 범위를 확인 |
 | 목표 | 2026-08-05 발표 동결 전 |
-| 종료 시각 | 2026-08-07 KST |
-| 종료 결정 | 중간 발표가 종료되어 사전 리허설·승인을 소급 작성하지 않고 `CLOSED_WITH_GAP` 처리 |
-| 후속 처리 | 실제 발표 피드백은 `week4-midterm-feedback.md`, 최종 시연 패키지는 `T-046` 이후 `T-052` 잔여 범위로 관리 |
+| 해제 시각 | 2026-08-06 KST |
+| 해제 근거 | 사용자가 발표 준비가 모두 완료됐다고 확인 |
+| 해제 판정 | 이번 문서·WBS 현행화 범위에서는 `RESOLVED`, T-052는 `완료` 처리 |
+| 범위 | 발표자료 통합과 추가 시연 확인은 사용자 요청에 따라 이번 작업에서 제외 |
 
 ### W4-BLK-010 — Backend↔AI 실제 수직 연결 부재
 
