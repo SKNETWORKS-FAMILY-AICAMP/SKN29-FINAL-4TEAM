@@ -68,6 +68,9 @@ data class CustomerHomeData(
     @SerialName("questionnaire_status") val questionnaireStatus: String,
     @SerialName("next_care_on") val nextCareOn: String,
     @SerialName("active_inquiry") val activeInquiry: ActiveInquirySummary? = null,
+    @SerialName("status_code") val statusCode: String? = null,
+    @SerialName("started_on") val startedOn: String? = null,
+    @SerialName("last_care_on") val lastCareOn: String? = null,
 )
 
 @Serializable

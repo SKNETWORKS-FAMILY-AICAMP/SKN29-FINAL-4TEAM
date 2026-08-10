@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -29,7 +30,6 @@ import com.skn29.watercare.customer.feature.customer.home.CustomerHomeUiState
 import com.skn29.watercare.customer.feature.customer.intake.IntakeErrorKind
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeContent
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeUiState
-import com.skn29.watercare.customer.testing.ComposeTestActivity
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -38,7 +38,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class CustomerMinimumFlowTest {
     @get:Rule
-    val composeRule = createAndroidComposeRule<ComposeTestActivity>()
+    val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     @Test
     fun offlinePreview_opensCust01AndCust02() {
@@ -97,7 +97,6 @@ class CustomerMinimumFlowTest {
                         noEvidence = false,
                         onRetry = {},
                         onRequestConsultation = {},
-                        onDone = {},
                     )
                 } else {
                     CustomerHomeContent(
@@ -125,8 +124,9 @@ class CustomerMinimumFlowTest {
 
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithTag("requestConsultation")
+        composeRule.onNodeWithTag("consultationUnavailable")
             .assertIsDisplayed()
+            .assertIsNotEnabled()
 
         val resolvedActionDoesNotExist = runCatching {
             composeRule.onNodeWithTag("resolvedAction").fetchSemanticsNode()

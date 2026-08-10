@@ -45,11 +45,12 @@ fun CustomerHomeScreen(
     val viewModel: CustomerHomeViewModel = viewModel(
         factory = VmFactory { _ ->
             CustomerHomeViewModel(
-                WaterCareCore.authRepository,
-                WaterCareCore.customerCareRepository,
-                WaterCareCore.backendStatusRepository,
-                WaterCareCore.customerCareRuntimeConfig,
-                offlinePreview,
+                authRepository = WaterCareCore.authRepository,
+                careRepository = WaterCareCore.customerCareRepository,
+                subscriptionRepository = WaterCareCore.subscriptionRepository,
+                backendStatusRepository = WaterCareCore.backendStatusRepository,
+                runtimeConfig = WaterCareCore.customerCareRuntimeConfig,
+                offlinePreview = offlinePreview,
             )
         }
     )
@@ -61,6 +62,7 @@ fun CustomerHomeScreen(
         onOpenGuidance = onOpenGuidance,
         onRetry = viewModel::load,
         onLogout = { viewModel.logout(onLogout) },
+        onSelectSubscription = viewModel::selectSubscription,
         showDeveloperTools = BuildConfig.SHOW_DEVELOPER_TOOLS,
     )
 }
@@ -72,6 +74,7 @@ fun CustomerHomeContent(
     onOpenGuidance: (inquiryId: String, scenario: MockScenario) -> Unit,
     onRetry: () -> Unit,
     onLogout: () -> Unit,
+    onSelectSubscription: (String) -> Unit = {},
     showDeveloperTools: Boolean = false,
 ) {
     val palette = CustomerReferencePalette
@@ -117,6 +120,11 @@ fun CustomerHomeContent(
             ErrorCard(it, onRetry = onRetry)
         }
 
+        SubscriptionSelector(
+            state = state,
+            onSelect = onSelectSubscription,
+        )
+
         state.home?.let { home ->
             val displayName = state.user?.displayName
                 ?.takeIf(String::isNotBlank)
@@ -129,7 +137,7 @@ fun CustomerHomeContent(
                 state.customerCareMode == CustomerCareMode.FAKE ->
                     "Demo Mock"
                 else ->
-                    "계측 API 연결 전 UI 예시"
+                    "실제 구독·문의 API"
             }
 
             ReferenceHeroCard(

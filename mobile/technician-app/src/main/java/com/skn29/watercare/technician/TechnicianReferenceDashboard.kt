@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LoadingBlock
@@ -91,7 +92,9 @@ fun TechnicianReferenceLogin(
             enabled = !state.loginLoading &&
                 !state.restoringSession,
             accent = false,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("technicianOfflinePreview"),
         )
 
         if (state.restoringSession) {
@@ -193,10 +196,15 @@ fun TechnicianReferenceDashboard(
             title = if (state.offlinePreview) {
                 "오프라인 합성 Fixture"
             } else {
-                "Demo 인증 + 합성 방문 Fixture"
+                "실제 방문 API · BLOCKED_BY_BACKEND"
             },
-            message = "방문 API가 제공되기 전까지 합성 방문 데이터를 표시합니다.",
+            message = if (state.offlinePreview) {
+                "사용자가 명시적으로 선택한 합성 방문 미리보기입니다."
+            } else {
+                "Backend Visit Runtime이 없어 실제 로그인 상태에서는 합성 방문을 자동 표시하지 않습니다."
+            },
             palette = palette,
+            warning = !state.offlinePreview,
         )
 
         ReferenceSectionHeader(
