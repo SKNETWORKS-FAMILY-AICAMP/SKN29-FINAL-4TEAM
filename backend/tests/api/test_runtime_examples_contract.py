@@ -320,7 +320,7 @@ def test_every_json_is_referenced_by_a_resolvable_external_value():
     assert referenced_files == EXPECTED_JSON_FILES
 
 
-def test_action_results_stays_without_examples_and_week5_actions_are_pending():
+def test_action_results_and_week5_runtime_statuses_are_explicit():
     inquiry_paths = load_yaml(API_DIR / "paths" / "inquiries.yaml")
     workflow_paths = load_yaml(API_DIR / "paths" / "workflow.yaml")
     visit_paths = load_yaml(API_DIR / "paths" / "visits.yaml")
@@ -329,7 +329,6 @@ def test_action_results_stays_without_examples_and_week5_actions_are_pending():
     for path in ("/inquiries/{id}/action-results",):
         assert list(collect_external_values(inquiry_paths[path])) == []
     pending = {
-        "/inquiries/{id}/answers": workflow_paths,
         "/inquiries/{id}/request-consultation": workflow_paths,
         "/inquiries/{id}/resolution-feedback": workflow_paths,
         "/inquiries/{id}/finalize": workflow_paths,
@@ -342,4 +341,7 @@ def test_action_results_stays_without_examples_and_week5_actions_are_pending():
         assert document[path]["post"]["x-runtime-status"] == (
             "NOT_IMPLEMENTED"
         )
+    assert workflow_paths["/inquiries/{id}/answers"]["post"][
+        "x-runtime-status"
+    ] == "IMPLEMENTED"
     assert list(collect_external_values(openapi["paths"]["/health"])) == []

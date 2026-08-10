@@ -12,7 +12,7 @@ from uuid import UUID
 
 from django.conf import settings
 from django.db import IntegrityError, transaction
-from django.db.models import Max
+from django.db.models import Max, Prefetch
 from django.utils import timezone
 
 from apps.audit.models import AIRun
@@ -85,7 +85,15 @@ class InquiryAIService:
         contract_validator = validator or AIContractValidator()
         inquiry = (
             Inquiry.objects.select_related("subscription__product_model")
-            .prefetch_related("qa_entries")
+            .prefetch_related(
+                Prefetch(
+                    "qa_entries",
+                    queryset=InquiryQA.objects.select_related(
+                        "customer_answer"
+                    ).order_by("sequence_no", "public_id"),
+                    to_attr="ai_qa_entries",
+                )
+            )
             .get(public_id=inquiry_public_id)
         )
         request_payload = build_request_from_inquiry(

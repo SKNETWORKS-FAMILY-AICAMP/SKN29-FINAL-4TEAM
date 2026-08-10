@@ -1,6 +1,28 @@
 # Contracts Changelog
 
-## 2026-08-10 — 대표 E2E Action OpenAPI 0.8.0 적용 후보
+## 2026-08-10 — Mobile 고객 문의 읽기·추가답변 Runtime
+
+### Added
+
+- 고객 본인 문의 Snapshot `GET /me/inquiries/{inquiry_id}` Runtime
+- 고객 본인 미답변 질문 `GET /me/inquiries/{inquiry_id}/questions` Runtime
+- 고객 추가답변 `POST /inquiries/{id}/answers` Runtime
+- 질문 메타데이터와 고객 답변 원장을 분리하는 Forward Migration
+
+### Classification
+
+- `SUBMIT_ANSWERS`는 `RUNTIME_IMPLEMENTED`로 승격한다.
+- Action Crosswalk는 `RUNTIME_IMPLEMENTED=12`, `OPENAPI_CONFIRMED=7`, `CONTRACT_ONLY=0`, `DEFERRED=4`다.
+- OpenAPI는 32개 Path·33개 Operation이며 State Machine 1.0.0은 변경하지 않는다.
+
+### Boundary
+
+- CUSTOMER 본인 문의만 허용하고 타 고객·미존재는 동일 404로 닫는다.
+- 질문 조회는 답변값·AI 원천·내부 target field를 공개하지 않는다.
+- 구조화 답변은 공개 선택지 `selected_option` 한 필드만 허용한다.
+- 나머지 7개 5주차 Action은 계속 `NOT_IMPLEMENTED`다.
+
+## 2026-08-10 — 대표 E2E Action OpenAPI 0.8.0 초기 적용 후보 (역사)
 
 ### Added
 
@@ -18,7 +40,7 @@
 
 ### Boundary
 
-- `SUBMIT_ANSWERS`의 질문 메타데이터와 실제 `answer_payload` 저장 경계가 분리되기 전까지 Runtime은 `NOT_IMPLEMENTED`다.
+- 당시 `SUBMIT_ANSWERS`는 저장 경계 분리 전이라 `NOT_IMPLEMENTED`였으며, 위 최신 항목에서 Runtime 구현으로 대체됐다.
 - 고객 해결 피드백만으로 종료하지 않으며 `FINALIZE_INQUIRY`에 최신 긍정 피드백과 마지막 처리 담당자 Guard가 필요하다.
 - 본 적용 후보는 계약·예시·정적 검증 범위이며 독립 QA와 각 Runtime WBS 완료를 대신하지 않는다.
 

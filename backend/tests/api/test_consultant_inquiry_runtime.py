@@ -7,11 +7,13 @@ from uuid import UUID, uuid4
 
 import pytest
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
 from apps.care.models import CareRecord
 from apps.inquiries.models import (
+    FollowUpAnswer,
     Guidance,
     Inquiry,
     InquiryQA,
@@ -400,26 +402,32 @@ def test_consultant_detail_returns_closed_assigned_projection(
         risk="caution",
         priority="consultation_recommended",
     )
-    InquiryQA.objects.create(
+    free_text_question = InquiryQA.objects.create(
         inquiry=inquiry,
         sequence_no=1,
         question_code="FILTER_FLOW",
         question_text="Did the flow decrease after replacement?",
+    )
+    FollowUpAnswer.objects.create(
+        question=free_text_question,
         answer_text="Yes, the flow decreased.",
         answered_by=owner,
-        answered_at=timezone.now(),
     )
-    InquiryQA.objects.create(
+    selected_question = InquiryQA.objects.create(
         inquiry=inquiry,
         sequence_no=2,
         question_code="INTERNAL_OPTIONS",
         question_text="Internal choice metadata must not be projected.",
+        answer_type_code="SINGLE_CHOICE",
         answer_payload={
             "question_options": ["internal-a", "internal-b"],
             "target_field": "internal_target",
         },
+    )
+    FollowUpAnswer.objects.create(
+        question=selected_question,
+        answer_payload={"selected_option": "internal-a"},
         answered_by=owner,
-        answered_at=timezone.now(),
     )
     Guidance.objects.create(
         inquiry=inquiry,
@@ -497,16 +505,35 @@ def test_consultant_detail_returns_closed_assigned_projection(
         "workflow",
         "section_errors",
     }
-    assert data["inquiry"] == {
+    inquiry_projection = data["inquiry"]
+    assert set(inquiry_projection) == {
+        "inquiry_id",
+        "inquiry_code",
+        "status",
+        "state_version",
+        "risk_level",
+        "priority",
+        "received_at",
+        "updated_at",
+    }
+    assert {
+        key: value
+        for key, value in inquiry_projection.items()
+        if key not in {"received_at", "updated_at"}
+    } == {
         "inquiry_id": str(inquiry.public_id),
         "inquiry_code": inquiry.inquiry_code,
         "status": Inquiry.Status.CONSULTATION_REQUIRED,
         "state_version": 2,
         "risk_level": "caution",
         "priority": "HIGH",
-        "received_at": inquiry.created_at.isoformat().replace("+00:00", "Z"),
-        "updated_at": inquiry.updated_at.isoformat().replace("+00:00", "Z"),
     }
+    assert parse_datetime(inquiry_projection["received_at"]) == (
+        inquiry.created_at
+    )
+    assert parse_datetime(inquiry_projection["updated_at"]) == (
+        inquiry.updated_at
+    )
     assert data["customer"] == {
         "is_synthetic": True,
         "display_name": "A" * 80,
@@ -524,7 +551,11 @@ def test_consultant_detail_returns_closed_assigned_projection(
             {
                 "question_code": "FILTER_FLOW",
                 "answer": "Yes, the flow decreased.",
-            }
+            },
+            {
+                "question_code": "INTERNAL_OPTIONS",
+                "answer": "internal-a",
+            },
         ],
     }
     assert data["guidance_and_actions"] == {
@@ -558,6 +589,8 @@ def test_consultant_detail_returns_closed_assigned_projection(
         "evidence_ids",
         "source_correlation_id",
         "idempotency_key",
+        "internal-b",
+        "internal_target",
     ):
         assert forbidden not in serialized
 

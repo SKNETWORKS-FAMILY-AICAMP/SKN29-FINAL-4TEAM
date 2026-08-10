@@ -9,11 +9,11 @@ from uuid import uuid4
 import httpx
 import pytest
 from django.db import IntegrityError
-from django.utils import timezone
 
 from apps.accounts.models import CustomerProfile, User
 from apps.audit.models import AIRun
 from apps.inquiries.models import (
+    FollowUpAnswer,
     Guidance,
     Inquiry,
     InquiryQA,
@@ -243,7 +243,7 @@ def test_followup_questions_are_saved_without_advancing_state():
                 "question_id": "Q_OCCURRENCE_TIME",
                 "question_text": "When did the symptom begin?",
                 "target_field": "occurrence_time",
-                "options": [],
+                "options": ["TODAY", "EARLIER"],
             }
         ]
         return response
@@ -257,6 +257,9 @@ def test_followup_questions_are_saved_without_advancing_state():
     assert outcome.saved_questions == 1
     question = InquiryQA.objects.get(inquiry=inquiry)
     assert question.question_code == "Q_OCCURRENCE_TIME"
+    assert question.answer_type_code == "SINGLE_CHOICE"
+    assert question.question_options == ["TODAY", "EARLIER"]
+    assert question.target_field == "occurrence_time"
     assert question.asked_by_type_code == "AI"
     assert question.source_ai_run.task_type_code == AIRun.TaskType.ANALYZE_SYMPTOM
     inquiry.refresh_from_db()
@@ -302,17 +305,37 @@ def test_danger_result_is_held_until_matched_safety_rule_ids_exist():
     http_client.close()
 
 
-def test_refused_answer_is_forwarded_and_same_question_is_not_recreated():
+def test_selected_answer_is_forwarded_and_same_question_is_not_recreated():
     inquiry = create_inquiry(12)
-    InquiryQA.objects.create(
+    question = InquiryQA.objects.create(
         inquiry=inquiry,
         sequence_no=1,
         question_code="Q_LEAK_LOCATION",
         question_text="Where is the leak located?",
-        answer_payload={"refused": True},
+        answer_type_code="SINGLE_CHOICE",
+        answer_payload={
+            "question_options": ["FILTER_HOUSING", "FLOOR"],
+            "target_field": "occurrence_condition",
+        },
         asked_by_type_code="RULE",
+    )
+    FollowUpAnswer.objects.create(
+        question=question,
+        answer_payload={"selected_option": "FILTER_HOUSING"},
         answered_by=inquiry.initiated_by,
-        answered_at=timezone.now(),
+    )
+    text_question = InquiryQA.objects.create(
+        inquiry=inquiry,
+        sequence_no=2,
+        question_code="Q_OBSERVED_TIME",
+        question_text="When was the symptom first observed?",
+        answer_payload={"target_field": "occurrence_time"},
+        asked_by_type_code="RULE",
+    )
+    FollowUpAnswer.objects.create(
+        question=text_question,
+        answer_text="This morning",
+        answered_by=inquiry.initiated_by,
     )
     received_previous_answers = []
 
@@ -347,11 +370,15 @@ def test_refused_answer_is_forwarded_and_same_question_is_not_recreated():
     assert received_previous_answers == [
         {
             "question_id": "Q_LEAK_LOCATION",
-            "answer_text": "명시적 답변 거절",
-        }
+            "answer_text": "FILTER_HOUSING",
+        },
+        {
+            "question_id": "Q_OBSERVED_TIME",
+            "answer_text": "This morning",
+        },
     ]
     assert outcome.saved_questions == 1
-    assert InquiryQA.objects.filter(inquiry=inquiry).count() == 2
+    assert InquiryQA.objects.filter(inquiry=inquiry).count() == 3
     assert (
         InquiryQA.objects.filter(
             inquiry=inquiry,

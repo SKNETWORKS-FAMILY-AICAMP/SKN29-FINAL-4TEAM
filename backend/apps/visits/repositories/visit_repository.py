@@ -27,7 +27,7 @@ class VisitRepository:
     @staticmethod
     def lock_latest(inquiry: Inquiry) -> Visit | None:
         return (
-            Visit.objects.select_for_update()
+            Visit.objects.select_for_update(of=("self",))
             .select_related("technician")
             .filter(inquiry=inquiry)
             .order_by("-created_at", "-id")
@@ -41,7 +41,7 @@ class VisitRepository:
         visit_public_id: UUID,
     ) -> Visit | None:
         return (
-            Visit.objects.select_for_update()
+            Visit.objects.select_for_update(of=("self",))
             .select_related("technician")
             .filter(inquiry=inquiry, public_id=visit_public_id)
             .first()

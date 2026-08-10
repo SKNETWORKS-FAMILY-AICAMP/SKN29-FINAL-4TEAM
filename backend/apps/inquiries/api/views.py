@@ -14,7 +14,11 @@ from apps.inquiries.api.serializers import (
     ConsultantInquiryListDataSerializer,
     ConsultantInquiryListQuerySerializer,
     CreateInquirySerializer,
+    CustomerInquiryQuestionsSerializer,
+    CustomerInquirySnapshotSerializer,
     InquiryResponseSerializer,
+    SubmitFollowUpAnswersResponseSerializer,
+    SubmitFollowUpAnswersSerializer,
     SubmitSymptomResponseSerializer,
     SymptomSubmissionSerializer,
 )
@@ -22,7 +26,13 @@ from apps.inquiries.permissions import IsConsultant, IsCustomer
 from apps.inquiries.services.consultant_inquiry_service import (
     ConsultantInquiryService,
 )
+from apps.inquiries.services.customer_inquiry_service import (
+    CustomerInquiryService,
+)
 from apps.inquiries.services.inquiry_service import InquiryService
+from apps.inquiries.services.followup_answer_service import (
+    FollowUpAnswerService,
+)
 from apps.inquiries.services.inquiry_transition_service import (
     InquiryTransitionService,
 )
@@ -60,6 +70,31 @@ def require_idempotency_key(request) -> str:
             }
         )
     return value
+
+
+def require_correlation_id(request) -> UUID:
+    """Require the caller-provided trace UUID for external write actions."""
+
+    raw_value = request.headers.get("X-Correlation-ID")
+    value = raw_value.strip() if isinstance(raw_value, str) else ""
+    if not isinstance(raw_value, str) or raw_value != value:
+        raise ValidationError(
+            {
+                "X-Correlation-ID": [
+                    "공백 없는 UUID 형식의 필수 헤더입니다."
+                ]
+            }
+        )
+    try:
+        return UUID(value)
+    except (TypeError, ValueError, AttributeError):
+        raise ValidationError(
+            {
+                "X-Correlation-ID": [
+                    "유효한 UUID 형식의 필수 헤더입니다."
+                ]
+            }
+        ) from None
 
 
 class CreateInquiryView(APIView):
@@ -150,6 +185,34 @@ class ConsultantInquiryDetailView(APIView):
         )
 
 
+class CustomerInquirySnapshotView(APIView):
+    """Return the authenticated CUSTOMER's minimal inquiry Snapshot."""
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get(self, request, inquiry_id: UUID):
+        reject_unknown_query_parameters(request, set())
+        data = CustomerInquiryService.snapshot_for_customer(
+            actor=request.user,
+            inquiry_public_id=inquiry_id,
+        )
+        return success_response(CustomerInquirySnapshotSerializer(data).data)
+
+
+class CustomerInquiryQuestionsView(APIView):
+    """Return question metadata for one CUSTOMER-owned inquiry."""
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get(self, request, inquiry_id: UUID):
+        reject_unknown_query_parameters(request, set())
+        data = CustomerInquiryService.questions_for_customer(
+            actor=request.user,
+            inquiry_public_id=inquiry_id,
+        )
+        return success_response(CustomerInquiryQuestionsSerializer(data).data)
+
+
 class CancelInquiryView(APIView):
     """Execute CANCEL_INQUIRY for the authenticated inquiry owner."""
 
@@ -197,6 +260,34 @@ class SubmitSymptomView(APIView):
                 correlation_id=UUID(request.correlation_id),
             )
             response_data = SubmitSymptomResponseSerializer(
+                outcome.data
+            ).data
+        return success_response(
+            response_data,
+            status_code=outcome.status_code,
+        )
+
+
+class SubmitFollowUpAnswersView(APIView):
+    """Execute SUBMIT_ANSWERS for the authenticated inquiry owner."""
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def post(self, request, inquiry_id: UUID):
+        idempotency_key = require_idempotency_key(request)
+        correlation_id = require_correlation_id(request)
+        serializer = SubmitFollowUpAnswersSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            outcome = FollowUpAnswerService.submit(
+                actor=request.user,
+                inquiry_public_id=inquiry_id,
+                validated_data=serializer.validated_data,
+                idempotency_key=idempotency_key,
+                correlation_id=correlation_id,
+            )
+            response_data = SubmitFollowUpAnswersResponseSerializer(
                 outcome.data
             ).data
         return success_response(

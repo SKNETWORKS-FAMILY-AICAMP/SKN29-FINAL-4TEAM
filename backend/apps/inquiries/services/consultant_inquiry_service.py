@@ -7,6 +7,7 @@ from typing import Any
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from rest_framework.exceptions import NotFound
 
@@ -215,9 +216,19 @@ class ConsultantInquiryService:
         for entry in inquiry.consultant_answered_qa_entries:
             if entry.question_code is None:
                 continue
-            if entry.answer_text is None:
+            try:
+                customer_answer = entry.customer_answer
+            except ObjectDoesNotExist:
                 continue
-            answer = entry.answer_text.strip()
+            answer = (customer_answer.answer_text or "").strip()
+            if not answer and isinstance(customer_answer.answer_payload, dict):
+                selected_option = customer_answer.answer_payload.get(
+                    "selected_option"
+                )
+                if isinstance(selected_option, str):
+                    answer = selected_option.strip()
+            if not answer:
+                continue
             answers.append(
                 {
                     "question_code": entry.question_code,

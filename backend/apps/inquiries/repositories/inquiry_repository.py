@@ -7,7 +7,12 @@ from uuid import UUID
 
 from django.utils import timezone
 
-from apps.inquiries.models import Inquiry, SymptomEntry
+from apps.inquiries.models import (
+    FollowUpAnswer,
+    Inquiry,
+    InquiryQA,
+    SymptomEntry,
+)
 from apps.subscriptions.models import CustomerSubscription
 
 
@@ -103,6 +108,47 @@ class InquiryRepository:
             .values_list("status", flat=True)
             .first()
         )
+
+    @staticmethod
+    def lock_unanswered_questions(
+        *,
+        inquiry: Inquiry,
+        question_public_ids: list[UUID],
+    ) -> list[InquiryQA]:
+        """Lock only unanswered questions owned by the aggregate."""
+
+        return list(
+            InquiryQA.objects.select_for_update(of=("self",))
+            .select_related(
+                "inquiry__subscription__customer__user",
+            )
+            .filter(
+                inquiry=inquiry,
+                public_id__in=question_public_ids,
+                customer_answer__isnull=True,
+            )
+            .order_by("sequence_no")
+        )
+
+    @staticmethod
+    def create_followup_answer(
+        *,
+        question: InquiryQA,
+        actor: Any,
+        answer_text: str | None,
+        answer_payload: dict | None,
+        accepted_state_version: int,
+    ) -> FollowUpAnswer:
+        answer = FollowUpAnswer(
+            question=question,
+            answered_by=actor,
+            answer_text=answer_text,
+            answer_payload=answer_payload,
+            accepted_state_version=accepted_state_version,
+        )
+        answer.full_clean()
+        answer.save()
+        return answer
 
     @staticmethod
     def apply_state_transition(
