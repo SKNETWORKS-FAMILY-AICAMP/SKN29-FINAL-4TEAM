@@ -10,17 +10,34 @@ from rest_framework.views import APIView
 from apps.inquiries.api.serializers import (
     CancelInquiryResponseSerializer,
     CancelInquirySerializer,
+    ConsultantInquiryDetailDataSerializer,
+    ConsultantInquiryListDataSerializer,
+    ConsultantInquiryListQuerySerializer,
     CreateInquirySerializer,
     InquiryResponseSerializer,
     SubmitSymptomResponseSerializer,
     SymptomSubmissionSerializer,
 )
-from apps.inquiries.permissions import IsCustomer
+from apps.inquiries.permissions import IsConsultant, IsCustomer
+from apps.inquiries.services.consultant_inquiry_service import (
+    ConsultantInquiryService,
+)
 from apps.inquiries.services.inquiry_service import InquiryService
 from apps.inquiries.services.inquiry_transition_service import (
     InquiryTransitionService,
 )
 from common.api.response import success_response
+
+
+def reject_unknown_query_parameters(request, allowed: set[str]) -> None:
+    unknown = sorted(set(request.query_params) - allowed)
+    if unknown:
+        raise ValidationError(
+            {
+                name: ["This query parameter is not allowed."]
+                for name in unknown
+            }
+        )
 
 
 def require_idempotency_key(request) -> str:
@@ -46,9 +63,59 @@ def require_idempotency_key(request) -> str:
 
 
 class CreateInquiryView(APIView):
-    """Execute START_INQUIRY for the authenticated subscription owner."""
+    """List assigned work or execute customer START_INQUIRY."""
 
-    permission_classes = [IsAuthenticated, IsCustomer]
+    def get_permissions(self):
+        permission_classes = (
+            [IsAuthenticated, IsConsultant]
+            if self.request.method in {"GET", "HEAD"}
+            else [IsAuthenticated, IsCustomer]
+        )
+        return [permission() for permission in permission_classes]
+
+    def get(self, request):
+        reject_unknown_query_parameters(
+            request,
+            {
+                "q",
+                "status",
+                "risk_level",
+                "priority",
+                "from",
+                "to",
+                "sort",
+                "page",
+                "size",
+            },
+        )
+        raw_query = {}
+        for name in ("q", "sort", "page", "size"):
+            if name in request.query_params:
+                raw_query[name] = request.query_params.get(name)
+        for name in ("status", "risk_level", "priority"):
+            if name in request.query_params:
+                raw_query[name] = request.query_params.getlist(name)
+        if "from" in request.query_params:
+            raw_query["from_date"] = request.query_params.get("from")
+        if "to" in request.query_params:
+            raw_query["to_date"] = request.query_params.get("to")
+
+        query = ConsultantInquiryListQuerySerializer(data=raw_query)
+        query.is_valid(raise_exception=True)
+        values = query.validated_data
+        data = ConsultantInquiryService.list_for_consultant(
+            actor=request.user,
+            q=values.get("q") or None,
+            statuses=values.get("status", []),
+            risk_levels=values.get("risk_level", []),
+            priorities=values.get("priority", []),
+            from_date=values.get("from_date"),
+            to_date=values.get("to_date"),
+            sort=values["sort"],
+            page=values["page"],
+            size=values["size"],
+        )
+        return success_response(ConsultantInquiryListDataSerializer(data).data)
 
     def post(self, request):
         idempotency_key = require_idempotency_key(request)
@@ -65,6 +132,21 @@ class CreateInquiryView(APIView):
         return success_response(
             response_data,
             status_code=outcome.status_code,
+        )
+
+
+class ConsultantInquiryDetailView(APIView):
+    """Return one assigned synthetic inquiry without existence leaks."""
+
+    permission_classes = [IsAuthenticated, IsConsultant]
+
+    def get(self, request, inquiry_id: UUID):
+        data = ConsultantInquiryService.detail_for_consultant(
+            actor=request.user,
+            inquiry_public_id=inquiry_id,
+        )
+        return success_response(
+            ConsultantInquiryDetailDataSerializer(data).data
         )
 
 

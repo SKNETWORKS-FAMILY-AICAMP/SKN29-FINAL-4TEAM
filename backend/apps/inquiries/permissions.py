@@ -15,3 +15,17 @@ class IsCustomer(BasePermission):
             and getattr(user, "is_active", False)
             and getattr(user, "role_code", None) == "CUSTOMER"
         )
+
+
+class IsConsultant(BasePermission):
+    """Allow only an active authenticated CONSULTANT account."""
+
+    def has_permission(self, request, view) -> bool:
+        del view
+        user = getattr(request, "user", None)
+        return bool(
+            user is not None
+            and getattr(user, "is_authenticated", False)
+            and getattr(user, "is_active", False)
+            and getattr(user, "role_code", None) == "CONSULTANT"
+        )

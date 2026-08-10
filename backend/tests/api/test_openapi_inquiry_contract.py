@@ -15,7 +15,7 @@ def load_yaml(path: Path):
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
-def test_inquiry_operations_are_confirmed_without_runtime_claims():
+def test_inquiry_operations_track_confirmed_runtime_status():
     contract = load_yaml(INQUIRY_CONTRACT)
     operations = {
         (path, method): operation
@@ -39,10 +39,10 @@ def test_inquiry_operations_are_confirmed_without_runtime_claims():
     assert all(operation.get("responses") for operation in operations.values())
     assert operations[("/inquiries", "get")][
         "x-runtime-status"
-    ] == "NOT_IMPLEMENTED"
+    ] == "IMPLEMENTED"
     assert operations[("/inquiries/{id}", "get")][
         "x-runtime-status"
-    ] == "NOT_IMPLEMENTED"
+    ] == "IMPLEMENTED"
 
 
 def test_inquiry_request_and_result_schemas_are_confirmed():

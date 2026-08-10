@@ -19,7 +19,7 @@ operations:
     event: null
     transition_rule: null
     permission_scope: ASSIGNED_INQUIRIES
-    runtime_status: NOT_IMPLEMENTED
+    runtime_status: IMPLEMENTED
   - dec: DEC-002
     method: GET
     path: /inquiries/{id}
@@ -29,7 +29,7 @@ operations:
     event: null
     transition_rule: null
     permission_scope: ASSIGNED_INQUIRIES
-    runtime_status: NOT_IMPLEMENTED
+    runtime_status: IMPLEMENTED
   - dec: DEC-003
     method: POST
     path: /inquiries/{id}/start-consultation
