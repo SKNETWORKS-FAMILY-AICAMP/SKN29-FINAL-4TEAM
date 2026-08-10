@@ -833,3 +833,19 @@ Public UUID 분석 요청이 모두 성공했다.
   확인하고 김은진 회신
   `인계/20260810_이동윤_to_김은진_AI_venv_설치방식_SSOT_확인회신_v0.1.md`에
   재현 결과와 공식 명령을 기록했다.
+
+### 2026-08-10 Backend·AI P0-2 공동 Mock 착수
+
+- AI 변경 `b65a8bd...`와 최지용 회신 기준 Backend `57326cf...`가 Merge Commit
+  `4d955116c00f715e1ba9e465104a381b858996b9`으로 통합된 것을 확인했다.
+- 통합 Commit의 Clean 작업 트리에서 Python `3.13.13`, `pip check=PASS`, AI
+  Unit `127 passed, 3 warnings`, Backend Integration Fixture `12 passed,
+  1 warning`을 재검증했다.
+- 실제 Uvicorn을 기동해 `/health`, Mock Analyze HTTP 200과 Body·Header
+  `correlation_id` 추적을 검증한 뒤 Process를 종료했다.
+- 원격 `main`, `jiyong`을 갱신해 확인했지만 Initial Symptom Wiring 후보는 아직
+  없었다. 현재 Runtime에는 Follow-up 답변의 `transaction.on_commit` 재분석만
+  있고 `SUBMIT_SYMPTOM`의 최초 AI 호출점은 없다.
+- 최지용에게 전달할
+  `인계/20260810_이동윤_to_최지용_Backend_AI_P0_2_공동Mock_착수회신_v0.1.md`를
+  작성하고 후보 검토·공동 Mock 판정값을 고정했다.

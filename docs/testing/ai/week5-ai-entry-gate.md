@@ -1,9 +1,9 @@
 # 5주차 AI Entry Gate
 
-> 검증일: 2026-08-10T17:07:24+09:00
+> 검증일: 2026-08-10T20:07:04+09:00
 > 담당: 이동윤 / AI·RAG  
 > 기준 Branch: `dongyoon`  
-> Source HEAD: `9f28c1ca9c0f3dba8e29c2fb99de31bac6618b02`
+> Source HEAD: `4d955116c00f715e1ba9e465104a381b858996b9`
 > 판정: `PARTIAL_PASS_EXTERNAL_GATES_OPEN`
 
 ## 1. 현재 결론
@@ -13,10 +13,10 @@ Multi-Agent, 외부 LLM, 팀 DB pgvector, Django→FastAPI 실제 HTTP는 아직
 증거가 없다. 이 문서는 과거 개인 DB 결과나 Mock 결과를 팀 통합 완료로
 대체하지 않는다.
 
-현재 Source HEAD에서 AI 단위 Test와 실제 Uvicorn HTTP Smoke를 다시 실행했다.
-작업 트리는 개인 Walkthrough와 후보 기준선 갱신 변경으로 Dirty 상태다. Source
-HEAD는 Runtime 소스 기준 Commit이고, 최종 통합 기준선은 관련 변경을 Commit한 뒤
-팀 DB·Backend E2E까지 같은 Commit에서 재실행해야 한다.
+AI 변경과 Backend 기준선이 병합된 Source HEAD에서 AI 단위 Test와 실제 Uvicorn
+Mock HTTP Smoke를 다시 실행했다. 실행 직전 작업 트리는 Clean이었고 이후 이
+증거 문서와 후보 기준선 갱신으로 Dirty 상태가 된다. Initial Symptom Wiring
+후보 Commit은 아직 전달되지 않아 Backend→AI 실제 HTTP는 시작하지 않았다.
 
 ## 2. 실행 환경
 
@@ -52,9 +52,10 @@ Secret과 실제 DSN 값은 기록하지 않는다.
 | Local 일반·주의 구성 실패 | HTTP 503·추적 ID PASS | `AI_VECTOR_DSN` 미설정은 검색 0건이 아닌 비재시도 구성 실패 |
 | Local 위험 분기 | 누수·전기 위험 → `SAFETY-LEAK-001`, `SAFETY-ELECTRICAL-001`·`TOTAL_STOP`·근거 0건 PASS | Vector Store 미사용 실제 HTTP 안전 경로 |
 | Backend Integration Fixture | F01~F12 `12 passed, 1 warning` | F11의 stale State 적용 차단은 Backend 공동 E2E 대상 |
+| 동일 통합 기준선 | `4d955116c00f715e1ba9e465104a381b858996b9` | AI 변경과 Backend `57326cf...` 기준선 Merge |
 | 팀 DB Local 검색 | `1 skipped` | `AI_VECTOR_DSN`, `AI_EMBEDDING_REVISION` 없음 |
 | 팀 DB DDL Preflight | PASS | 일반 적재·검색 경로는 DDL 미실행, 별도 초기화는 Disposable 이중 Guard 필수 |
-| Backend 실제 HTTP | 미실행 | `backend/.venv` 없음 |
+| Backend 실제 HTTP | 미실행 | Initial Symptom Wiring 후보·Backend 실행환경 없음 |
 
 경고 3건은 `jsonschema.RefResolver` 2건과 Starlette TestClient 1건의 폐기 예정
 API 경고다. 실패는 아니지만 후속 의존성 정리 대상으로 유지한다.
@@ -89,23 +90,28 @@ backend_automatic_retry=0
 | W5-AI-B01 | 환경 | 팀 DB pgvector 미접속 | 제공·Migration: 최지용 / AI 실행: 이동윤 / QA 판정: 김은진 | 최소 권한 DSN Secret 전달, Migration·Extension 상태 | 팀 DB 적재·검색·평가 재실행 PASS |
 | W5-AI-B02 | 계약 | AI `chunk_id`→Backend `DocumentChunk.public_id` 미매핑 | 최지용·Database | canonical 7건 Crosswalk | Backend 공식 근거 검증·저장 PASS |
 | W5-AI-B03 | 환경 | Backend 실행환경 없음 | 최지용 | Python 3.13.13 `backend/.venv` 재현 절차 | Backend 단위·실제 HTTP Test 실행 가능 |
+| W5-AI-B04 | Runtime | `SUBMIT_SYMPTOM` 이후 Initial AI 호출점 미구현 | 최지용 | Transaction Commit 이후 정확히 1회 호출하는 후보 Commit | 신규 요청 1회·Replay 0회·AI 실패 시 저장 보존 검증 PASS |
 | W5-AI-B05 | Runtime | EvidenceCard API가 준비 단계 | 최지용·한예나 | 공개 DTO·Endpoint·권한 계약 | Backend→Web 공식 근거 실제 전달 PASS |
 
 ## 6. 코드 차단과 환경 차단 구분
 
-P0 외부 차단은 팀 DB, Backend 실행환경, Backend Crosswalk와 EvidenceCard
-Runtime이다. 현재 단일 Workflow의 AI 계약·안전·Fixture·Mock HTTP에는 확인된
-코드 차단이 없다. 실제 외부 LLM과 Multi-Agent Runtime은 팀 DB·Backend E2E
-기준선 이후 비교 평가할 P1 후속이며, 현재 완료로 계산하지 않는다.
+P0 외부 차단은 Initial Symptom Wiring 후보, Backend 실행환경, 팀 DB, Backend
+Crosswalk와 EvidenceCard Runtime이다. 현재 단일 Workflow의 AI 계약·안전·
+Fixture·Mock HTTP에는 확인된 코드 차단이 없다. 실제 외부 LLM과 Multi-Agent
+Runtime은 팀 DB·Backend E2E 기준선 이후 비교 평가할 P1 후속이며, 현재 완료로
+계산하지 않는다.
 
 ## 7. 다음 Gate
 
-1. 최지용이 AI 계약 `3.0.0`, canonical 7건 Crosswalk, Migration과 최소 권한
-   DSN Secret 전달 방식을 확정한다.
-2. 팀 DB와 독립적인 Backend Mock 실제 HTTP를 먼저 통과시킨다.
-3. 팀 DB Retrieval을 동일 Commit에서 재검증한다.
-4. Backend 저장·State Event·EvidenceCard 전달 E2E를 검증한다.
-5. 김은진이 같은 Commit·Fixture로 팀 DB와 통합 결과를 재현·판정한다.
+1. 최지용이 `SUBMIT_SYMPTOM` 저장 Commit 이후 Transaction 밖에서 AI를 1회
+   호출하는 후보 Commit과 Backend 재현 명령을 전달한다.
+2. 후보의 신규 호출 1회, Idempotency Replay 추가 호출 0회, AI 실패 시 기존
+   증상·State 저장 보존 경계를 검토한다.
+3. 팀 DB와 독립적인 Backend Mock 실제 HTTP를 통과시킨다.
+4. 최지용이 canonical 7건 Crosswalk, Migration과 최소 권한 DSN Secret 전달
+   방식을 확정하고 팀 DB Retrieval을 같은 통합 Commit에서 재검증한다.
+5. Backend 저장·State Event·EvidenceCard 전달 E2E를 검증하고 김은진이 같은
+   Commit·Fixture로 재현·판정한다.
 6. 단일 Workflow 기준선을 고정한 뒤 실제 LLM·Multi-Agent를 동일 평가셋으로
    비교한다. 실제 호출 경로 전에는 완료로 표시하지 않는다.
 
