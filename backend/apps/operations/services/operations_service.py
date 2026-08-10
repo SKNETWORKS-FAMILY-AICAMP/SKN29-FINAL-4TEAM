@@ -264,6 +264,9 @@ class SyntheticHandoffImportService:
                 values={
                     "full_name": row["display_name"],
                     "is_active": bool(row["active"]),
+                    "is_synthetic": (
+                        row.get("data_classification") == "synthetic"
+                    ),
                     "date_joined": self._datetime(row["created_at"]),
                 },
                 prepare_new=prepare_new,

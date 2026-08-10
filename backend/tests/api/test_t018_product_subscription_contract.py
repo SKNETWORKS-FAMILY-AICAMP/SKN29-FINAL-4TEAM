@@ -181,20 +181,20 @@ def test_t018_pm_decision_and_contract_runtime_gates_are_exact():
             "product_features",
             "customer_personal_information",
         ],
-        "runtime_implementation_start_allowed": False,
+        "runtime_implementation_start_allowed": True,
         "migration_change_allowed": False,
         "database_change_allowed": False,
     }
 
 
-def test_t018_openapi_operations_are_confirmed_but_not_implemented():
+def test_t018_openapi_operations_are_confirmed_and_implemented():
     operations = collect_operations()
 
     for key, operation_id in T018_OPERATIONS.items():
         operation = operations[key]
         assert operation["operationId"] == operation_id
         assert operation["x-contract-status"] == "CONFIRMED"
-        assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
+        assert operation["x-runtime-status"] == "IMPLEMENTED"
         assert operation["security"] == [{"BearerAuth": []}]
         assert "requestBody" not in operation
         assert "409" not in operation["responses"]
@@ -371,39 +371,52 @@ def test_t018_examples_match_wrapper_scope_privacy_and_date_contract():
     assert example_keys.isdisjoint(SENSITIVE_KEYS)
 
 
-def test_t018_routes_remain_api_not_found_until_runtime_gate_opens():
-    runtime_paths = (
-        "/api/v1/me/subscriptions",
-        f"/api/v1/me/subscriptions/{SUBSCRIPTION_ID}",
-    )
-    for runtime_path in runtime_paths:
+def test_t018_routes_resolve_to_owner_only_runtime_views():
+    runtime_paths = {
+        "/api/v1/me/subscriptions": "my-subscription-list",
+        (
+            f"/api/v1/me/subscriptions/{SUBSCRIPTION_ID}"
+        ): "my-subscription-detail",
+    }
+    for runtime_path, expected_name in runtime_paths.items():
         match = resolve(runtime_path)
-        assert match.url_name == "api-not-found"
-        assert match.func.__name__ == "api_not_found"
+        assert match.url_name == expected_name
+        assert match.func.view_class.__module__ == (
+            "apps.subscriptions.api.views"
+        )
 
     api_urls = (
         REPOSITORY_ROOT / "backend" / "config" / "api_urls.py"
     ).read_text(encoding="utf-8")
-    assert "apps.subscriptions.api.urls" not in api_urls
+    assert "apps.subscriptions.api.urls" in api_urls
 
 
-def test_t018_contract_has_no_runtime_migration_or_database_side_effects():
+def test_t018_runtime_has_no_migration_or_database_contract_side_effects():
     contract = load_yaml(PRODUCT_PATHS)
     policy = contract["x-t018-r1-policy"]
-    assert policy["runtime_implementation_start_allowed"] is False
+    assert policy["runtime_implementation_start_allowed"] is True
     assert policy["migration_change_allowed"] is False
     assert policy["database_change_allowed"] is False
 
-    runtime_stubs = (
-        "backend/apps/subscriptions/repositories/subscription_repository.py",
-        "backend/apps/subscriptions/services/subscription_service.py",
-        "backend/apps/subscriptions/permissions.py",
-        "backend/apps/subscriptions/api/serializers.py",
-        "backend/apps/subscriptions/api/views.py",
-        "backend/apps/subscriptions/api/urls.py",
-    )
-    for relative_path in runtime_stubs:
+    runtime_sources = {
+        "backend/apps/subscriptions/repositories/subscription_repository.py": (
+            "class SubscriptionRepository"
+        ),
+        "backend/apps/subscriptions/services/subscription_service.py": (
+            "class SubscriptionService"
+        ),
+        "backend/apps/subscriptions/permissions.py": "class IsCustomer",
+        "backend/apps/subscriptions/api/serializers.py": (
+            "class SubscriptionListQuerySerializer"
+        ),
+        "backend/apps/subscriptions/api/views.py": (
+            "class MySubscriptionListView"
+        ),
+        "backend/apps/subscriptions/api/urls.py": "urlpatterns =",
+    }
+    for relative_path, required_fragment in runtime_sources.items():
         source = (REPOSITORY_ROOT / relative_path).read_text(
             encoding="utf-8"
         )
-        assert source.count("\n") <= 2
+        assert source.count("\n") > 10
+        assert required_fragment in source

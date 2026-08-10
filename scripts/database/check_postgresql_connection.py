@@ -17,7 +17,12 @@ BACKEND_DIR = REPOSITORY_ROOT / "backend"
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from config.env import load_backend_env
+from config.env import (
+    BACKEND_DIR as CONFIG_BACKEND_DIR,
+    PostgresConnectionConfigurationError,
+    build_postgres_connection_options,
+    load_backend_env,
+)
 
 
 REQUIRED_ENV_KEYS = (
@@ -38,15 +43,26 @@ READ_ONLY_QUERIES = (
         "default_transaction_read_only",
         "SHOW default_transaction_read_only",
     ),
+    (
+        "connection_ssl",
+        "SELECT COALESCE((SELECT ssl FROM pg_stat_ssl "
+        "WHERE pid = pg_backend_pid()), false)",
+    ),
 )
 
 
 class ConfigurationError(ValueError):
     """연결 시도 전에 발견한 환경 설정 오류."""
 
-    def __init__(self, missing_keys: list[str] | None = None):
+    def __init__(
+        self,
+        missing_keys: list[str] | None = None,
+        *,
+        reason: str = "missing_required_environment",
+    ):
         super().__init__("PostgreSQL environment is not configured")
         self.missing_keys = missing_keys or []
+        self.reason = reason
 
 
 def load_connection_options(
@@ -67,14 +83,25 @@ def load_connection_options(
     if not 1 <= port <= 65535:
         raise ConfigurationError()
 
+    try:
+        connection_options = build_postgres_connection_options(
+            environ,
+            base_dir=CONFIG_BACKEND_DIR,
+        )
+    except PostgresConnectionConfigurationError as exc:
+        raise ConfigurationError(
+            list(exc.missing_keys),
+            reason=exc.reason,
+        ) from None
+
     return {
         "dbname": environ["POSTGRES_DB"],
         "user": environ["POSTGRES_USER"],
         "password": environ["POSTGRES_PASSWORD"],
         "host": environ["POSTGRES_HOST"],
         "port": port,
-        "connect_timeout": 5,
         "options": "-c default_transaction_read_only=on",
+        **connection_options,
     }
 
 
@@ -107,6 +134,7 @@ def run_check(
             {
                 "status": "NOT_CONFIGURED",
                 "missing_keys": exc.missing_keys,
+                "configuration_issue": exc.reason,
                 "message": (
                     "필수 PostgreSQL 환경변수를 확인하세요. "
                     "비밀값은 출력하지 않습니다."

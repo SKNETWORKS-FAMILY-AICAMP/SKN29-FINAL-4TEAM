@@ -24,7 +24,7 @@ x-t018-r1-policy:
     - source_customer_product_public_id
     - product_features
     - customer_personal_information
-  runtime_implementation_start_allowed: false
+  runtime_implementation_start_allowed: true
   migration_change_allowed: false
   database_change_allowed: false
 
@@ -38,7 +38,7 @@ x-t018-r1-policy:
       allowed_actions는 T-023 State Machine 후속 계약에서 제공한다.
       정렬은 started_on DESC, public_id ASC이며 상태 변경을 수행하지 않는다.
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-requirements: [FR-002, DR-003]
     x-owner-filter: customer.user=request.user AND customer.deleted_at IS NULL
     x-product-filter: model_code=WPUJAC104DWH AND product_model.is_active=true
@@ -108,7 +108,7 @@ x-t018-r1-policy:
       조회한다. 잘못된 UUID, 미존재, 타 고객, 삭제 고객, 비활성 구독과
       비지원 모델은 존재를 숨기고 동일한 404를 반환한다.
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-requirements: [FR-002, DR-003]
     x-owner-filter: customer.user=request.user AND customer.deleted_at IS NULL
     x-product-filter: model_code=WPUJAC104DWH AND product_model.is_active=true

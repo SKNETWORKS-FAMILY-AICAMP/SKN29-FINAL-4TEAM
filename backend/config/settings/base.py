@@ -6,7 +6,11 @@ from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 
-from config.env import load_backend_env
+from config.env import (
+    PostgresConnectionConfigurationError,
+    build_postgres_connection_options,
+    load_backend_env,
+)
 
 
 BASE_DIR = Path(__file__).resolve().parents[2]
@@ -31,10 +35,19 @@ CORS_ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 AI_SERVICE_BASE_URL = os.getenv("AI_SERVICE_BASE_URL", "")
+AI_SERVICE_MODE = os.getenv("AI_SERVICE_MODE", "local")
+AI_SERVICE_TIMEOUT_SECONDS = 30.0
+AI_MODEL_PROVIDER = os.getenv("AI_MODEL_PROVIDER", "waterbridge-local")
+AI_MODEL_NAME = os.getenv("AI_MODEL_NAME", "single-rag-pipeline")
+AI_PROMPT_VERSION = os.getenv("AI_PROMPT_VERSION", "unknown")
 
 INSTALLED_APPS = [
+    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
@@ -55,6 +68,12 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "common.middleware.correlation_id.CorrelationIdMiddleware",
     "common.middleware.cors.CorsAllowlistMiddleware",
     "common.middleware.request_logging.RequestLoggingMiddleware",
@@ -63,6 +82,42 @@ MIDDLEWARE = [
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    }
+]
+
+STATIC_URL = "static/"
+
+POSTGRES_OPTIONS: dict[str, str | int] = {}
+if os.getenv("DJANGO_SETTINGS_MODULE") != "config.settings.test":
+    try:
+        POSTGRES_OPTIONS = build_postgres_connection_options(
+            os.environ,
+            base_dir=BASE_DIR,
+            require_verify_full=(
+                os.getenv("DJANGO_SETTINGS_MODULE")
+                == "config.settings.production"
+            ),
+        )
+    except PostgresConnectionConfigurationError as exc:
+        missing = ", ".join(exc.missing_keys)
+        suffix = f", missing={missing}" if missing else ""
+        raise ImproperlyConfigured(
+            "PostgreSQL 연결 환경 설정이 올바르지 않습니다: "
+            f"reason={exc.reason}{suffix}"
+        ) from None
 
 DATABASES = {
     "default": {
@@ -73,6 +128,7 @@ DATABASES = {
         "HOST": os.getenv("POSTGRES_HOST", "127.0.0.1"),
         "PORT": os.getenv("POSTGRES_PORT", "5432"),
         "CONN_MAX_AGE": 0,
+        **({"OPTIONS": POSTGRES_OPTIONS} if POSTGRES_OPTIONS else {}),
     }
 }
 

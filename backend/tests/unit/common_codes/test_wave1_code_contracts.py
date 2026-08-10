@@ -106,8 +106,12 @@ def test_wave1_seed_twice_preserves_rows_and_identifiers():
     second_output = StringIO()
     call_command("seed_common_codes", stdout=second_output)
 
-    assert len(first_groups) == 6
-    assert len(first_codes) == 29
+    expected_code_count = sum(
+        len(load_contract(filename)["codes"])
+        for filename, _, _ in WAVE1_CODE_CONTRACTS
+    )
+    assert len(first_groups) == len(WAVE1_CODE_CONTRACTS)
+    assert len(first_codes) == expected_code_count
     assert {
         group.group_code: group.pk
         for group in CommonCodeGroup.objects.filter(

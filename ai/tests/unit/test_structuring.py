@@ -80,3 +80,29 @@ def test_danger_input_prioritizes_safety_and_skips_question_generation():
     assert result.safety_assessment.risk_level == RiskLevel.DANGER
     assert result.missing_fields == []
     assert result.followup_questions == []
+
+
+def test_typo_and_negated_symptom_are_structured_without_false_leak_label():
+    typo = SymptomStructurer().structure("어제부터 냉수 출수양이 줄고 물이 쫄쫄 나와요")
+    negated = SymptomStructurer().structure("누수는 아니고 어제부터 냉수가 미지근합니다")
+    error_code = SymptomStructurer().structure("정수 버튼을 누르면 E-12가 표시됩니다")
+
+    assert typo.symptom_type == "출수량 저하"
+    assert negated.symptom_type == "온도 이상"
+    assert error_code.error_code == "E-12"
+
+
+def test_declined_answer_is_not_stored_as_symptom_value_and_is_not_reasked():
+    previous_answers = [
+        {"question_id": "followup-occurrence-time", "answer_text": "답변하지 않음"},
+    ]
+    symptom = SymptomStructurer().structure("냉수가 미지근합니다", previous_answers=previous_answers)
+    missing = MissingFieldChecker().check(symptom)
+    questions = DuplicateQuestionGuard().filter(
+        FollowUpQuestionGenerator().generate(missing),
+        previous_answers,
+    )
+
+    assert symptom.occurrence_time is None
+    assert "occurrence_time" in {item.field_name for item in missing}
+    assert "occurrence_time" not in {question.target_field for question in questions}

@@ -17,10 +17,12 @@ class AccountRepository:
             filters = {
                 "username": code,
                 "is_active": True,
+                "is_synthetic": True,
             }
         elif code.startswith("SYN-"):
             filters = {
                 "is_active": True,
+                "is_synthetic": True,
                 "role_code": User.Role.CUSTOMER,
                 "customer_profile__customer_no": code,
                 "customer_profile__is_synthetic": True,

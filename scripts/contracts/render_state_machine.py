@@ -214,6 +214,13 @@ def contract_version(document: dict[str, Any]) -> str:
     return "unknown"
 
 
+def normalized_source_bytes(path: Path) -> bytes:
+    """Return source bytes with platform line endings normalized to LF."""
+
+    raw = path.read_bytes()
+    return raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
 def state_declarations(
     state_by_code: dict[str, dict[str, Any]], label_mode: str
 ) -> list[str]:
@@ -297,7 +304,7 @@ def generate_mermaid(
     for path in source_paths:
         input_digest.update(display_path(path).encode("utf-8"))
         input_digest.update(b"\0")
-        input_digest.update(path.read_bytes())
+        input_digest.update(normalized_source_bytes(path))
         input_digest.update(b"\0")
 
     states_path, events_path, transitions_path, guards_path = source_paths

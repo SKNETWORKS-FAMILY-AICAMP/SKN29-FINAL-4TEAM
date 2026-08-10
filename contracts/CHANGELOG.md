@@ -1,5 +1,44 @@
 # Contracts Changelog
 
+## 2026-08-07 — State Machine Action–OpenAPI–Runtime Crosswalk 기준선
+
+### Added
+
+- 외부 Action 23개 전체를 누락 없이 분류한 `api/action-operation-crosswalk.yaml`
+- Action별 State Machine Event·Operation ID·HTTP Method·Path·Runtime 증거 연결
+- `RUNTIME_IMPLEMENTED`, `OPENAPI_CONFIRMED`, `CONTRACT_ONLY`, `DEFERRED` 판정 기준과 집계
+- Registry·Event·OpenAPI·Runtime 증거를 검증하는 `scripts/contracts/validate_contract_crosswalk.py`
+- 정상 기준선과 HTTP Drift·Runtime 증거·집계 Drift 실패를 검증하는 Contract Test
+- 공통 Code Registry와 State Machine 투영을 검증하는 `scripts/contracts/validate_codes.py`
+- Local `$ref`·Operation ID·Path Parameter를 검증하는 `scripts/contracts/validate_openapi.py`
+- JSON·`externalValue`·공통 응답 Wrapper를 검증하는 `scripts/contracts/validate_examples.py`
+- 세 Validator의 현재 기준 수량과 참조 완전성을 고정하는 Repository Contract Test
+- `contracts/**`, `scripts/contracts/**`, `tests/contract/**` 변경 시 전체 계약 Gate를 실행하는 Data CI 연동
+
+### Classification
+
+- Backend Runtime과 Test 증거가 있는 Action 2개를 `RUNTIME_IMPLEMENTED`로 분류
+- 정확히 일치하는 OpenAPI Operation만 존재하는 Action 9개를 `OPENAPI_CONFIRMED`로 분류
+- 4주차 우선 범위이나 정확한 OpenAPI Operation이 없는 Action 2개를 `CONTRACT_ONLY`로 분류
+- 후속 구현 범위 Action 10개를 `DEFERRED`로 분류
+
+### Boundary
+
+- 유사한 범용 Operation, Web·Mobile Mock 또는 과거 실행 기록만으로 Runtime 완료를 선언하지 않는다.
+- 이번 변경은 분류 기준선이며 Backend·Web·Mobile·AI 소비자 승인 완료를 의미하지 않는다.
+- CI는 State Machine·Diagram·Code·OpenAPI·Example·Crosswalk·Contract Test를 순서대로 검증한다.
+
+### Verification
+
+```text
+python scripts/contracts/validate_contract_crosswalk.py
+python scripts/contracts/validate_codes.py
+python scripts/contracts/validate_openapi.py
+python scripts/contracts/validate_examples.py
+python -m unittest discover -s tests/contract/api -p "test_*.py" -v
+python -m unittest discover -s tests/contract -p "test_*.py" -v
+```
+
 ## 2026-08-05 — T-018 R1 고객 본인 구독 목록·상세 계약
 
 ### Added

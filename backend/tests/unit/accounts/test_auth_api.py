@@ -26,6 +26,7 @@ def demo_customer():
         username=DEMO_CODE,
         full_name="합성 고객 001",
         role_code=User.Role.CUSTOMER,
+        is_synthetic=True,
     )
     CustomerProfile.objects.create(
         user=user,
@@ -42,6 +43,7 @@ def imported_customer():
         username=IMPORTED_USERNAME,
         full_name="합성 적재 고객 001",
         role_code=User.Role.CUSTOMER,
+        is_synthetic=True,
     )
     CustomerProfile.objects.create(
         user=user,
@@ -213,10 +215,26 @@ def test_synthetic_alias_repository_requires_synthetic_profile():
 
     filter_mock.assert_called_once_with(
         is_active=True,
+        is_synthetic=True,
         role_code=User.Role.CUSTOMER,
         customer_profile__customer_no=SYNTHETIC_CUSTOMER_CODE,
         customer_profile__is_synthetic=True,
         customer_profile__deleted_at__isnull=True,
+    )
+
+
+def test_demo_repository_requires_synthetic_user_boundary():
+    with patch(
+        "apps.accounts.repositories.account_repository.User.objects.filter"
+    ) as filter_mock:
+        related = filter_mock.return_value.select_related.return_value
+        related.first.return_value = None
+        AccountRepository.find_active_by_demo_code(DEMO_CODE)
+
+    filter_mock.assert_called_once_with(
+        username=DEMO_CODE,
+        is_active=True,
+        is_synthetic=True,
     )
 
 

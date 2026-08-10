@@ -73,3 +73,27 @@ class TransitionHistoryService:
             correlation_id=correlation_id,
             idempotency_key=idempotency_key,
         )
+
+    @staticmethod
+    def record_ai_result(
+        *,
+        inquiry: Inquiry,
+        transition: Transition,
+        correlation_id: UUID,
+        ai_request_id: str,
+    ) -> TransitionHistory:
+        """내부 AI 결과 Event를 SYSTEM 이력으로 기록한다."""
+
+        return WorkflowRepository.create_transition_history(
+            inquiry=inquiry,
+            actor=None,
+            event_code=transition.event_code,
+            from_state=transition.inquiry_state_before,
+            to_state=transition.inquiry_state_after,
+            state_version=transition.state_version_after,
+            correlation_id=correlation_id,
+            idempotency_key=ai_request_id,
+            changed_by_type_code=(
+                TransitionHistory.ChangedByType.SYSTEM
+            ),
+        )

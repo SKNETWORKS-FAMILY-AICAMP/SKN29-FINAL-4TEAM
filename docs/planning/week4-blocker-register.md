@@ -1,17 +1,17 @@
 # 4주차 차단 요소 Register
 
-> 기준 시각: **2026-08-06 12:42 KST**
-> 기준 브랜치·Commit: `main@24b6b3371b50679a3b2c449a651606e6cbdc581b`
-> 연계 문서: `docs/planning/week4-current-baseline.md`  
+> 기준일: **2026-08-07 KST**
+> 기준 브랜치·Commit: `main@dad0e7a2c0e6c184ac8811bce6c6974bd7cb3fe0`
+> 연계 문서: `docs/planning/week4-current-baseline.md`
 > 운영 원칙: 차단 전달만으로 완료 처리하지 않고 재현 명령·해제 조건·증거를 확인한다.
 
 ## 1. 우선순위 기준
 
 | 우선순위 | 의미 |
 |---|---|
-| `P0` | 8월 5일 발표 기준 동결 또는 8월 6일 시연·발표를 직접 차단 |
-| `P1` | 발표에서 제한 사항으로 분리할 수 있으나 5주차 진입 전에 해결 필요 |
-| `P2` | 발표 후 개선 가능한 비차단 품질·운영 항목 |
+| `P0` | 5주차 진입 또는 최종 통합의 핵심 경로를 직접 차단 |
+| `P1` | 제한된 병행 작업은 가능하지만 대상 Runtime 착수 전에 해결 필요 |
+| `P2` | 최종 발표·운영 전 개선 가능한 비차단 품질 항목 |
 
 ## 2. 차단 요소 요약
 
@@ -26,10 +26,11 @@
 | `W4-BLK-007` | P0 | Mobile | Core Compile Task의 SDK Platform Provider 값 없음 | 양정현·김은진 | SDK_PLATFORM_BLOCKED | 환경 정합화 시 |
 | `W4-BLK-008` | P0 | PM·WBS | WBS 상태가 실제 Runtime·Mock·계약 수준과 불일치 | 윤승혁 | RESOLVED | 2026-08-06 현행화 |
 | `W4-BLK-009` | P0 | T-052 | 발표 준비 상태 확인 | 윤승혁·김은진 | RESOLVED | 2026-08-06 사용자 확인 |
-| `W4-BLK-010` | P1 | Backend↔AI | 실제 HTTP 호출·Schema 검증·DB 저장 E2E 없음 | 최지용·이동윤 | INTEGRATION_BLOCKED | 5주차 진입 전 |
-| `W4-BLK-011` | P1 | 상담·방문 | G2 11개 Operation이 후보·NOT_IMPLEMENTED 상태 | 최지용 | CONTRACT_ONLY | 5주차 우선순위 확정 시 |
-| `W4-BLK-012` | P1 | AI | 현재 AI Test·팀 DB pgvector 재검증 없음 | 이동윤·김은진 | ENVIRONMENT_BLOCKED | 5주차 진입 전 |
-| `W4-BLK-013` | P1 | Contract Crosswalk | 행동 23개 전체의 OpenAPI·Runtime·후속 분류가 없음 | 윤승혁·최지용 | OPEN | 8월 7일 Exit Gate 전 |
+| `W4-BLK-010` | P1 | Backend↔AI | 실제 HTTP 호출·Schema 검증·DB 저장 E2E 없음 | 최지용·이동윤 | WEEK5_HANDOFF_READY | 5주차 시작 Gate |
+| `W4-BLK-011` | P1 | 상담·방문 | G2 11개 Operation이 후보·NOT_IMPLEMENTED 상태 | 최지용 | WEEK5_HANDOFF_READY | 5주차 Backlog 확정 시 |
+| `W4-BLK-012` | P1 | AI | 현재 AI Test·팀 DB pgvector 재검증 없음 | 이동윤·김은진 | WEEK5_ENTRY_BLOCKED | 5주차 시작 Gate |
+| `W4-BLK-013` | P1 | Contract Crosswalk | 행동 23개 전체의 OpenAPI·Runtime·후속 분류가 없음 | 윤승혁·최지용 | RESOLVED | 2026-08-07 |
+| `W4-BLK-014` | P1 | PM·Governance | 3.3 Matrix의 외부 Issue 대조와 담당자 회신 없음 | 윤승혁·전 팀원 | EXTERNAL_CONFIRMATION_PENDING | 5주차 Backlog 확정 전 |
 
 ## 3. 상세 차단 기록
 
@@ -157,7 +158,7 @@
 
 | 항목 | 내용 |
 |---|---|
-| 이전 증상 | 작업 흔적이 있는 주요 Task와 발표 준비 Task의 상태 갱신이 필요했음 |
+| 증상 | 구현·Mock·계약이 있는 T-011·T-022·T-023·T-026·T-032·T-038~T-041·T-052가 `미착수`로 남았음 |
 | 직접 원인 | WBS가 파일·Runtime·Mock·Gate 상태를 구분해 갱신되지 않음 |
 | 영향 | 팀 우선순위와 발표 구현 범위를 잘못 설명할 위험 |
 | 책임 | 윤승혁 |
@@ -166,6 +167,9 @@
 | 해제 시각 | 2026-08-06 12:42 KST |
 | 해제 내용 | 실제 구현·계약·Mock이 있는 작업을 `진행 중`으로, 사용자 확인이 끝난 T-052를 `완료`로 변경 |
 | 잔여 제한 | `진행 중`은 실제 서버 연결 완료가 아니며 비고의 Mock·차단 범위를 함께 확인해야 함 |
+| 해제 Commit | `e95e633d58324579a28bf7858fa8be1555ca1a09` |
+| 해제 판정 | WBS·기준선·Blocker 변경과 후속 현행화가 반영되어 `RESOLVED` |
+| 후속 확인 | 외부 GitHub Issue 상태는 로컬 저장소에서 검증할 수 없으므로 별도 확인 필요 |
 
 ### W4-BLK-009 — T-052 발표 준비 상태
 
@@ -228,15 +232,31 @@
 | 협업 | 최지용, 한예나, 양정현, 이동윤, 김은진 |
 | 해제 조건 | 23개 모두를 `RUNTIME_IMPLEMENTED/OPENAPI_CONFIRMED/CONTRACT_ONLY/DEFERRED` 중 하나로 분류하고 검증 Test 추가 |
 | 목표 | 2026-08-07 Exit Gate 전 |
+| 해제 Commit | `852f877ec06bf48711497cc8f57744097e7871db` |
+| 해제 결과 | Runtime 2개, OpenAPI 확인 9개, 계약 전용 2개, 후속 10개로 전체 23개 분류 |
+| 검증 증거 | Crosswalk·Code·OpenAPI·Example Validator PASS, Contract Test 7개 PASS, Data CI Gate 연결 |
+| 잔여 제한 | 담당자별 Runtime Test·PR 회신은 `week4-contract-consumer-review.md`에서 별도 추적 |
 
-## 4. 남은 작업 순서
+### W4-BLK-014 — 3.3 외부 Issue·담당자 확인 대기
 
-1. `W4-BLK-005` Python 3.13.13 환경 확보 후 Backend 최신 Gate 재검증
-2. `W4-BLK-007` Android SDK Platform 정합화 후 Mobile 최신 Build·Test 재검증
-3. `W4-BLK-010` Backend↔AI 실제 호출·저장 연결
-4. `W4-BLK-011` 상담·방문 Runtime 구현 또는 5주차 이관 확정
-5. `W4-BLK-012` AI 현재 Test와 팀 DB 검색 재검증
-6. `W4-BLK-013` 행동 23개 전체 Crosswalk 폐쇄
+| 항목 | 내용 |
+|---|---|
+| 증상 | 10개 P0 과제의 로컬 담당자·증거 Matrix는 작성됐으나 GitHub Issue 링크와 담당자 회신이 없음 |
+| 영향 | 관할 승인, 5주차 목표일과 실제 담당자 수락 여부를 최종 확정할 수 없음 |
+| 책임 | 윤승혁 |
+| 협업 | 최지용, 이동윤, 한예나, 양정현, 김은진 |
+| 해제 조건 | 각 Issue에 담당자·선행 산출물·완료 증거·제외 범위·5주차 목표일을 대조하고 담당자 회신 기록 |
+| 로컬 증거 | `week4-scope-and-dod.md`, `week4-dependency-map.md`, `week4-owner-matrix.md`, `week4-integration-handoff.md` |
+| 현재 판정 | 로컬 3.3 산출물 완료, 외부 운영 확인 대기 |
+
+## 4. 5주차 진입 실행 순서
+
+1. 3.3·3.6 문서를 Commit하고 `W4-BLK-014` Issue·담당자 대조를 수행한다.
+2. `W4-BLK-005`, `W4-BLK-012`, `W4-BLK-007`의 Backend·AI/Vector·Mobile 환경 Gate를 병렬 복구한다.
+3. AI 요청·응답과 State Event Mapping을 확정한다.
+4. `W4-BLK-010` Backend↔AI 최소 수직 E2E를 통과시킨다.
+5. `W4-BLK-011` 상담·방문 Runtime과 소비자 연결의 목표일을 확정한다.
+6. Gate와 독립적인 `T-025` 비교 Fixture와 `T-027` 안전 규칙 Test를 병행한다.
 
 ## 5. 해제 기록 양식
 

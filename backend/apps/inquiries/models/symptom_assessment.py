@@ -226,7 +226,8 @@ class SymptomAssessment(TimestampedModel):
                     "inquiry."
                 )
             elif (
-                ai_run.task_type_code != "ASSESS_RISK"
+                ai_run.task_type_code
+                not in {"ASSESS_RISK", "ANALYZE_SYMPTOM"}
                 or ai_run.schema_validation_status_code != "PASSED"
             ):
                 errors["ai_run"] = (

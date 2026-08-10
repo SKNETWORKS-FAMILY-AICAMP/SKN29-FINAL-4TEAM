@@ -13,6 +13,9 @@ import pytest
 
 BACKEND_DIR = Path(__file__).resolve().parents[3]
 REPOSITORY_ROOT = BACKEND_DIR.parent
+TEST_CA_PATH = (
+    BACKEND_DIR / "tests" / "fixtures" / "team_integration" / "test-ca.pem"
+)
 CHECK_SCRIPT = (
     REPOSITORY_ROOT
     / "scripts"
@@ -117,6 +120,10 @@ def test_success_uses_read_only_option_and_read_only_queries(
         "SHOW server_version_num": "170005",
         "SHOW TimeZone": "Asia/Seoul",
         "SHOW default_transaction_read_only": "on",
+        (
+            "SELECT COALESCE((SELECT ssl FROM pg_stat_ssl "
+            "WHERE pid = pg_backend_pid()), false)"
+        ): True,
     }
     cursor = FakeCursor(query_values)
     received_options: dict[str, Any] = {}
@@ -138,6 +145,7 @@ def test_success_uses_read_only_option_and_read_only_queries(
         "server_version_num": "170005",
         "database_timezone": "Asia/Seoul",
         "default_transaction_read_only": "on",
+        "connection_ssl": True,
     }
     assert received_options["options"] == (
         "-c default_transaction_read_only=on"
@@ -169,3 +177,54 @@ def test_connection_failure_does_not_expose_secret(
     assert "do-not-print-this" not in serialized
     assert "database.internal" not in serialized
     assert "postgresql://" not in serialized
+
+
+def test_verify_full_passes_ca_without_exposing_path(
+    check_module: ModuleType,
+):
+    received_options: dict[str, Any] = {}
+
+    def connect(**kwargs):
+        received_options.update(kwargs)
+        raise RuntimeError(str(TEST_CA_PATH))
+
+    result, exit_code = check_module.run_check(
+        {
+            **VALID_ENV,
+            "POSTGRES_SSLMODE": "verify-full",
+            "POSTGRES_SSLROOTCERT": str(TEST_CA_PATH),
+        },
+        connect,
+    )
+
+    assert exit_code == 1
+    assert received_options["sslmode"] == "verify-full"
+    assert received_options["sslrootcert"] == str(TEST_CA_PATH.resolve())
+    assert str(TEST_CA_PATH) not in json.dumps(result, ensure_ascii=False)
+
+
+@pytest.mark.parametrize(
+    "extra_env",
+    [
+        {"POSTGRES_SSLMODE": "prefer"},
+        {"POSTGRES_SSLMODE": "verify-full"},
+        {
+            "POSTGRES_SSLMODE": "verify-full",
+            "POSTGRES_SSLROOTCERT": "must-not-appear.pem",
+        },
+    ],
+)
+def test_invalid_tls_stops_before_connection(
+    check_module: ModuleType,
+    extra_env: dict[str, str],
+):
+    result, exit_code = check_module.run_check(
+        {**VALID_ENV, **extra_env},
+        lambda **_kwargs: pytest.fail("connection must not be attempted"),
+    )
+    serialized = json.dumps(result, ensure_ascii=False)
+
+    assert exit_code == 2
+    assert result["status"] == "NOT_CONFIGURED"
+    assert "must-not-appear" not in serialized
+    assert "database.internal" not in serialized

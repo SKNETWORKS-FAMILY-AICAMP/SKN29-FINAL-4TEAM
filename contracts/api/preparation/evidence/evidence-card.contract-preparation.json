@@ -1,0 +1,105 @@
+{
+  "artifact_scope": "NON_RUNTIME_CONTRACT_PREPARATION",
+  "contract_status": "PREPARATION_ONLY",
+  "runtime_implemented": false,
+  "role_examples": {
+    "CUSTOMER": {
+      "evidence_id": "EVD-JAC104D-MAN-P38-LEAK",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "document_title": "WPU-JAC104D/JCC104D user manual",
+      "document_version": "REV.00",
+      "page_refs": [38],
+      "section_title": "Product leakage",
+      "evidence_summary": "Stop using the product and request consultation when leakage is detected.",
+      "source_type": "official_manual",
+      "provider": "SK magic",
+      "risk_level": "danger",
+      "requires_consultation": true,
+      "safe_actions": [
+        "Stop using the product",
+        "Close the source-water valve",
+        "Disconnect power"
+      ],
+      "escalation_conditions": ["Request consultation immediately"],
+      "prohibited_actions": [
+        "Disassemble the product",
+        "Inspect internal parts directly"
+      ],
+      "verification_status": "text_and_visual_verified",
+      "source_landing_url": "https://www.skmagic.com/customer/manual",
+      "source_direct_download_url": null,
+      "product_code": "WPUJAC104DWH",
+      "manual_model": "WPU-JAC104D",
+      "product_generation": "D",
+      "model_family": "JAC",
+      "scope_role": "mvp_primary",
+      "data_classification": "official"
+    },
+    "CONSULTANT": {
+      "evidence_id": "EVD-JAC104D-MAN-P38-LEAK",
+      "chunk_id": "MAN-WPU-JAC104D-P38-LEAK",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "document_title": "WPU-JAC104D/JCC104D user manual",
+      "document_version": "REV.00",
+      "page_refs": [38],
+      "section_title": "Product leakage",
+      "evidence_summary": "Stop using the product and request consultation when leakage is detected.",
+      "source_type": "official_manual",
+      "provider": "SK magic",
+      "risk_level": "danger",
+      "requires_consultation": true,
+      "safe_actions": [
+        "Stop using the product",
+        "Close the source-water valve",
+        "Disconnect power"
+      ],
+      "escalation_conditions": ["Request consultation immediately"],
+      "prohibited_actions": [
+        "Disassemble the product",
+        "Inspect internal parts directly"
+      ],
+      "verification_status": "text_and_visual_verified",
+      "source_landing_url": "https://www.skmagic.com/customer/manual",
+      "source_direct_download_url": null,
+      "product_code": "WPUJAC104DWH",
+      "manual_model": "WPU-JAC104D",
+      "product_generation": "D",
+      "model_family": "JAC",
+      "scope_role": "mvp_primary",
+      "data_classification": "official"
+    },
+    "TECHNICIAN": {
+      "evidence_id": "EVD-JAC104D-MAN-P38-LEAK",
+      "chunk_id": "MAN-WPU-JAC104D-P38-LEAK",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "document_title": "WPU-JAC104D/JCC104D user manual",
+      "document_version": "REV.00",
+      "page_refs": [38],
+      "section_title": "Product leakage",
+      "evidence_summary": "Stop using the product and request consultation when leakage is detected.",
+      "source_type": "official_manual",
+      "provider": "SK magic",
+      "risk_level": "danger",
+      "requires_consultation": true,
+      "safe_actions": [
+        "Stop using the product",
+        "Close the source-water valve",
+        "Disconnect power"
+      ],
+      "escalation_conditions": ["Request consultation immediately"],
+      "prohibited_actions": [
+        "Disassemble the product",
+        "Inspect internal parts directly"
+      ],
+      "verification_status": "text_and_visual_verified",
+      "source_landing_url": "https://www.skmagic.com/customer/manual",
+      "source_direct_download_url": null,
+      "product_code": "WPUJAC104DWH",
+      "manual_model": "WPU-JAC104D",
+      "product_generation": "D",
+      "model_family": "JAC",
+      "scope_role": "mvp_primary",
+      "data_classification": "official"
+    }
+  }
+}

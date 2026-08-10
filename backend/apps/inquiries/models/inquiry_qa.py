@@ -141,12 +141,14 @@ class InquiryQA(TimestampedModel):
                         "inquiry."
                     )
                 elif (
-                    ai_run.task_type_code != "GENERATE_QUESTIONS"
+                    ai_run.task_type_code
+                    not in {"GENERATE_QUESTIONS", "ANALYZE_SYMPTOM"}
                     or ai_run.schema_validation_status_code != "PASSED"
                 ):
                     errors["source_ai_run"] = (
                         "An AI-generated question can use only a "
-                        "schema-validated GENERATE_QUESTIONS AI run."
+                        "schema-validated question or integrated analysis "
+                        "AI run."
                     )
         elif self.source_ai_run_id is not None:
             errors["source_ai_run"] = (

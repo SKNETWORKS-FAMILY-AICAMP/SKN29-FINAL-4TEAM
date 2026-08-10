@@ -15,7 +15,6 @@ import com.skn29.watercare.core.model.SubmitSymptomResponse
 import com.skn29.watercare.core.model.UserData
 import com.skn29.watercare.core.network.WaterCareApi
 import com.skn29.watercare.core.network.safeApiCall
-import java.util.UUID
 import kotlinx.serialization.json.Json
 
 interface AuthRepository {
@@ -80,6 +79,8 @@ class RemoteAuthRepository(
 class RemoteInquiryRepository(
     private val api: WaterCareApi,
     private val json: Json,
+    private val cancelIdempotencyKeys: CancelIdempotencyKeyStore =
+        CancelIdempotencyKeyStore(),
 ) : InquiryRepository {
     override suspend fun create(
         request: CreateInquiryRequest,
@@ -104,11 +105,31 @@ class RemoteInquiryRepository(
         stateVersion: Int,
         reasonCode: String,
         reasonDetail: String?,
-    ): ApiResult<CancelInquiryResponse> = safeApiCall(json) {
-        api.cancelInquiry(
+    ): ApiResult<CancelInquiryResponse> {
+        val operation = CancelOperationIdentity(
             inquiryId = inquiryId,
-            idempotencyKey = UUID.randomUUID().toString(),
-            body = CancelInquiryRequest(stateVersion, reasonCode, reasonDetail),
+            stateVersion = stateVersion,
+            reasonCode = reasonCode,
+            reasonDetail = reasonDetail,
         )
+        val idempotencyKey = cancelIdempotencyKeys.keyFor(operation)
+
+        val result = safeApiCall(json) {
+            api.cancelInquiry(
+                inquiryId = inquiryId,
+                idempotencyKey = idempotencyKey,
+                body = CancelInquiryRequest(
+                    stateVersion,
+                    reasonCode,
+                    reasonDetail,
+                ),
+            )
+        }
+
+        if (result is ApiResult.Success) {
+            cancelIdempotencyKeys.complete(operation)
+        }
+
+        return result
     }
 }

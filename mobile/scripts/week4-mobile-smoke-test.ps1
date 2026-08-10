@@ -1,10 +1,12 @@
-﻿param(
+param(
     [string]$RepoPath = "",
     [switch]$BuildOnly,
     [switch]$Install,
     [switch]$ResetAppData,
     [switch]$RunConnectedTest,
-    [string]$DeviceSerial = ""
+    [string]$DeviceSerial = "",
+    [string]$ExpectedBranch = "jeonghyun",
+    [string]$ExpectedCommit = ""
 )
 
 Set-StrictMode -Version Latest
@@ -121,6 +123,7 @@ $MobilePath = Join-Path $RepoPath "mobile"
 $LocalPropertiesPath = Join-Path $MobilePath "local.properties"
 $GradlePath = Join-Path $MobilePath "gradlew.bat"
 $ApkPath = Join-Path $MobilePath "customer-app\build\outputs\apk\debug\customer-app-debug.apk"
+$TechnicianApkPath = Join-Path $MobilePath "technician-app\build\outputs\apk\debug\technician-app-debug.apk"
 $ReportPath = Join-Path $MobilePath "build\reports\week4-mobile-smoke-test.txt"
 $PackageName = "com.skn29.watercare.customer"
 $LaunchActivity = "$PackageName/.MainActivity"
@@ -137,10 +140,27 @@ $branch = (& git -C $RepoPath branch --show-current).Trim()
 if ($LASTEXITCODE -ne 0) {
     Stop-WithError "현재 브랜치를 확인하지 못했습니다."
 }
-if ($branch -ne "jeonghyun") {
-    Stop-WithError "현재 브랜치가 jeonghyun이 아닙니다: $branch"
+if (
+    -not [string]::IsNullOrWhiteSpace($ExpectedBranch) -and
+    $branch -ne $ExpectedBranch
+) {
+    Stop-WithError "현재 브랜치가 예상 브랜치와 다릅니다. expected=$ExpectedBranch actual=$branch"
 }
-Write-Ok "jeonghyun 브랜치 확인"
+
+$fullCommit = (& git -C $RepoPath rev-parse HEAD).Trim()
+if ($LASTEXITCODE -ne 0) {
+    Stop-WithError "현재 Commit을 확인하지 못했습니다."
+}
+
+if (
+    -not [string]::IsNullOrWhiteSpace($ExpectedCommit) -and
+    -not $fullCommit.StartsWith($ExpectedCommit)
+) {
+    Stop-WithError "현재 Commit이 예상 Commit과 다릅니다. expected=$ExpectedCommit actual=$fullCommit"
+}
+
+Write-Ok "브랜치 확인: $branch"
+Write-Ok "Commit 확인: $fullCommit"
 
 Write-Step "Runtime 설정 확인"
 if (-not (Test-Path $LocalPropertiesPath)) {
@@ -185,7 +205,9 @@ try {
     $tasks = @(
         ":core:test",
         ":customer-app:testDebugUnitTest",
-        ":customer-app:assembleDebug"
+        ":technician-app:testDebugUnitTest",
+        ":customer-app:assembleDebug",
+        ":technician-app:assembleDebug"
     )
     if ($RunConnectedTest) {
         $tasks += ":customer-app:connectedDebugAndroidTest"
@@ -200,11 +222,21 @@ try {
 }
 
 if (-not (Test-Path $ApkPath)) {
-    Stop-WithError "Debug APK가 생성되지 않았습니다: $ApkPath"
+    Stop-WithError "고객 Debug APK가 생성되지 않았습니다: $ApkPath"
 }
+if (-not (Test-Path $TechnicianApkPath)) {
+    Stop-WithError "방문기사 Debug APK가 생성되지 않았습니다: $TechnicianApkPath"
+}
+
 $apkHash = (Get-FileHash -LiteralPath $ApkPath -Algorithm SHA256).Hash
-Write-Ok "Debug APK 생성: $ApkPath"
-Write-Ok "APK SHA-256: $apkHash"
+$technicianApkHash = (
+    Get-FileHash -LiteralPath $TechnicianApkPath -Algorithm SHA256
+).Hash
+
+Write-Ok "고객 Debug APK 생성: $ApkPath"
+Write-Ok "고객 APK SHA-256: $apkHash"
+Write-Ok "방문기사 Debug APK 생성: $TechnicianApkPath"
+Write-Ok "방문기사 APK SHA-256: $technicianApkHash"
 
 $healthResult = "미실행"
 if (-not $BuildOnly) {
@@ -294,8 +326,11 @@ $report = @(
     "Demo 구독 ID: $(Mask-Value $demoSubscriptionId)",
     "Core 단위 테스트: PASS",
     "고객 앱 단위 테스트: PASS",
+    "방문기사 앱 단위 테스트: PASS",
     "고객 Debug APK: PASS",
-    "APK SHA-256: $apkHash",
+    "고객 APK SHA-256: $apkHash",
+    "방문기사 Debug APK: PASS",
+    "방문기사 APK SHA-256: $technicianApkHash",
     "Backend Health: $healthResult",
     "ADB 설치·실행: $adbResult",
     "결과: PASS"

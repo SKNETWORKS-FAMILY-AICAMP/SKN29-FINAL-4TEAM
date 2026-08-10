@@ -1,7 +1,7 @@
 {
   "dataset_version": "0.9.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
-  "source_commit": "6512178aded1eef745dc40ddc8ed480f1e7870fa",
+  "source_commit": "13e56ddfb0b52d984ed1193ac716ed44cc692a56",
   "contract_alignment": {
     "version": "1.0.0",
     "status": "TEAM_APPROVED",

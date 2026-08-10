@@ -10,5 +10,24 @@
     "compliant_cases": 4,
     "safety_compliance_rate": 100.0,
     "evaluation_mode": "rule_based_with_evidence_available"
+  },
+  "structuring_evaluation": {
+    "status": "PASS",
+    "dataset": {
+      "dataset_id": "T026-STRUCTURING-MVP",
+      "version": "1.0.0",
+      "path": "ai/evaluation/datasets/structuring/symptom_eval_dataset.json",
+      "file_sha256": "EBDB585CB08B6B2465121DD3CB2C288793F05A46870E41D9F16540B21EB1CBAA"
+    },
+    "summary": {
+      "case_count": 12,
+      "passed_count": 12,
+      "failed_count": 0,
+      "mean_field_accuracy": 1.0,
+      "missing_fields_exact_match_rate": 1.0,
+      "followup_questions_exact_match_rate": 1.0,
+      "safety_routing_case_count": 12,
+      "safety_routing_passed_count": 12
+    }
   }
 }

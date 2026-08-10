@@ -11,7 +11,7 @@
   "backend_sources": {
     "user_model": {
       "path": "backend/apps/accounts/models/user.py",
-      "sha256": "1D952ABF2AD30F5D18097F4354C83D212E80A61525ECC4903625E7049505D17D"
+      "sha256": "A378E8F1B6A3539F0F9F39001691EA01EE7523705A7A40D6FBD5C0E147E2A55E"
     },
     "customer_profile_model": {
       "path": "backend/apps/accounts/models/customer_profile.py",
@@ -67,7 +67,7 @@
     },
     "import_service": {
       "path": "backend/apps/operations/services/operations_service.py",
-      "sha256": "3443E083D5DF69C0783DB74279C9EA04F9BBFAD6F0D582C06CDA2674F0FF37A0"
+      "sha256": "57646834CC18BEFDFAC114F6CA3F1DBD9EAC235AB3169D38141E313AA6B712A9"
     },
     "import_command": {
       "path": "backend/apps/operations/management/commands/import_synthetic_handoff.py",
@@ -75,7 +75,7 @@
     },
     "demo_auth_repository": {
       "path": "backend/apps/accounts/repositories/account_repository.py",
-      "sha256": "1E958690D4049075652D935B0AE2050B70F2C245D81F68D9BA99802E90E3FC52"
+      "sha256": "3A9424B7C54B827AAB6E5FD651E1E2AF933FC595CC1BC0E0CC08F1AFCAAFA974"
     }
   },
   "identifier_resolution": {

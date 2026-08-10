@@ -12,6 +12,105 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_ENV_PATH = BACKEND_DIR / ".env"
 ENV_KEY_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 TEST_SETTINGS_MODULE = "config.settings.test"
+POSTGRES_SSL_MODES = frozenset(
+    {"disable", "require", "verify-ca", "verify-full"}
+)
+POSTGRES_VERIFY_SSL_MODES = frozenset({"verify-ca", "verify-full"})
+DEFAULT_POSTGRES_CONNECT_TIMEOUT = 5
+
+
+class PostgresConnectionConfigurationError(ValueError):
+    """값을 노출하지 않는 PostgreSQL 연결 옵션 오류."""
+
+    def __init__(
+        self,
+        reason: str,
+        *,
+        missing_keys: Iterable[str] = (),
+    ):
+        super().__init__(
+            "PostgreSQL connection configuration error: "
+            f"reason={reason}"
+        )
+        self.reason = reason
+        self.missing_keys = tuple(sorted(set(missing_keys)))
+
+
+def build_postgres_connection_options(
+    environ: Mapping[str, str],
+    *,
+    base_dir: Path = BACKEND_DIR,
+    require_verify_full: bool = False,
+) -> dict[str, str | int]:
+    """Django와 psycopg가 공유하는 Timeout·TLS 옵션을 검증한다.
+
+    로컬 환경은 SSL 키가 없어도 기존 동작을 유지한다. 원격 배포에서
+    ``require_verify_full``을 사용하면 DNS·CA 검증 없는 연결을
+    설정 단계에서 차단한다. 오류에는 입력값이나 인증서 경로를 넣지
+    않는다.
+    """
+
+    raw_timeout = environ.get("POSTGRES_CONNECT_TIMEOUT", "").strip()
+    if raw_timeout:
+        try:
+            connect_timeout = int(raw_timeout)
+        except ValueError as exc:
+            raise PostgresConnectionConfigurationError(
+                "invalid_connect_timeout"
+            ) from exc
+        if connect_timeout <= 0:
+            raise PostgresConnectionConfigurationError(
+                "invalid_connect_timeout"
+            )
+    else:
+        connect_timeout = DEFAULT_POSTGRES_CONNECT_TIMEOUT
+
+    raw_sslmode = environ.get("POSTGRES_SSLMODE", "").strip()
+    sslmode = raw_sslmode.lower()
+    raw_rootcert = environ.get("POSTGRES_SSLROOTCERT", "").strip()
+
+    if require_verify_full and sslmode != "verify-full":
+        missing_keys = ()
+        if not raw_sslmode:
+            missing_keys = ("POSTGRES_SSLMODE",)
+        raise PostgresConnectionConfigurationError(
+            "verify_full_required",
+            missing_keys=missing_keys,
+        )
+
+    if sslmode and sslmode not in POSTGRES_SSL_MODES:
+        raise PostgresConnectionConfigurationError(
+            "unsupported_sslmode"
+        )
+
+    if sslmode in POSTGRES_VERIFY_SSL_MODES and not raw_rootcert:
+        raise PostgresConnectionConfigurationError(
+            "sslrootcert_required",
+            missing_keys=("POSTGRES_SSLROOTCERT",),
+        )
+
+    if raw_rootcert and sslmode not in POSTGRES_VERIFY_SSL_MODES:
+        raise PostgresConnectionConfigurationError(
+            "sslrootcert_unexpected"
+        )
+
+    options: dict[str, str | int] = {
+        "connect_timeout": connect_timeout,
+    }
+    if sslmode:
+        options["sslmode"] = sslmode
+    if raw_rootcert:
+        rootcert_path = Path(raw_rootcert)
+        if not rootcert_path.is_absolute():
+            rootcert_path = base_dir / rootcert_path
+        rootcert_path = rootcert_path.resolve()
+        if not rootcert_path.is_file():
+            raise PostgresConnectionConfigurationError(
+                "sslrootcert_not_found"
+            )
+        options["sslrootcert"] = str(rootcert_path)
+
+    return options
 
 
 def _parse_value(raw_value: str) -> str:
