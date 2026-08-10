@@ -1,9 +1,9 @@
 # 5주차 AI Entry Gate
 
-> 검증일: 2026-08-10 KST  
+> 검증일: 2026-08-10T17:07:24+09:00
 > 담당: 이동윤 / AI·RAG  
 > 기준 Branch: `dongyoon`  
-> Source HEAD: `3485e0f1717f4afc6a5f76e469b4bb2d6bd0ecc1`  
+> Source HEAD: `9f28c1ca9c0f3dba8e29c2fb99de31bac6618b02`
 > 판정: `PARTIAL_PASS_EXTERNAL_GATES_OPEN`
 
 ## 1. 현재 결론
@@ -13,9 +13,10 @@ Multi-Agent, 외부 LLM, 팀 DB pgvector, Django→FastAPI 실제 HTTP는 아직
 증거가 없다. 이 문서는 과거 개인 DB 결과나 Mock 결과를 팀 통합 완료로
 대체하지 않는다.
 
-현재 작업 트리는 이 Entry Gate와 상담 요약 결정론적 기준선을 추가하는 변경으로
-Dirty 상태다. 아래 Source HEAD는 변경 전 기준 Commit이며, 최종 기준선은 변경을
-Commit한 뒤 같은 검증을 재실행해야 한다.
+현재 Source HEAD에서 AI 단위 Test와 실제 Uvicorn HTTP Smoke를 다시 실행했다.
+작업 트리는 개인 Walkthrough와 후보 기준선 갱신 변경으로 Dirty 상태다. Source
+HEAD는 Runtime 소스 기준 Commit이고, 최종 통합 기준선은 관련 변경을 Commit한 뒤
+팀 DB·Backend E2E까지 같은 Commit에서 재실행해야 한다.
 
 ## 2. 실행 환경
 
@@ -33,7 +34,7 @@ Commit한 뒤 같은 검증을 재실행해야 한다.
 | Python `pgvector` package | 미설치 | INFO: 현재 Adapter는 psycopg SQL을 사용 |
 | PostgreSQL `vector` Extension | 팀 DB 접속정보 없음 | BLOCKED |
 | Backend 가상환경 | `backend/.venv` 없음 | BLOCKED |
-| 외부 LLM Key | 미설정 | BLOCKED |
+| 외부 LLM Key | 미설정 | P1 후속·현재 P0 차단 아님 |
 
 Secret과 실제 DSN 값은 기록하지 않는다.
 
@@ -41,15 +42,18 @@ Secret과 실제 DSN 값은 기록하지 않는다.
 
 | Gate | 결과 | 범위 제한 |
 |---|---|---|
-| AI 전체 단위 테스트 | `126 passed, 3 warnings` | 현재 Dirty 작업 트리 |
+| AI 전체 단위 테스트 | `127 passed, 3 warnings` | 현재 Dirty 작업 트리 |
 | JSON Schema·Pydantic | 전체 AI Schema `3.0.0` parity PASS | 단위 검증 |
 | Safety | 위험 규칙 ID·부정문·금지 행동 PASS | 결정론적 규칙 |
 | 새 안전 회귀 | `물이 새고` → `SAFETY-LEAK-001` PASS | 자연스러운 조사 표현 보강 |
 | Consultation Summary | 정상·위험·부정문·길이 경계 4건 PASS | 외부 LLM 미사용 Fallback 기준선 |
 | FastAPI | 실제 Uvicorn 기동 PASS | Local Process |
 | Mock Analyze | HTTP 200·추적 ID PASS | 검색·LLM 미실행 |
-| Local 위험 분기 | `물이 새고` → 위험·`SAFETY-LEAK-001`·`TOTAL_STOP`·근거 0건 PASS | Vector Store 미사용 실제 HTTP 안전 경로 |
-| 팀 DB Local 검색 | 미실행 | `AI_VECTOR_DSN` 없음 |
+| Local 일반·주의 구성 실패 | HTTP 503·추적 ID PASS | `AI_VECTOR_DSN` 미설정은 검색 0건이 아닌 비재시도 구성 실패 |
+| Local 위험 분기 | 누수·전기 위험 → `SAFETY-LEAK-001`, `SAFETY-ELECTRICAL-001`·`TOTAL_STOP`·근거 0건 PASS | Vector Store 미사용 실제 HTTP 안전 경로 |
+| Backend Integration Fixture | F01~F12 `12 passed, 1 warning` | F11의 stale State 적용 차단은 Backend 공동 E2E 대상 |
+| 팀 DB Local 검색 | `1 skipped` | `AI_VECTOR_DSN`, `AI_EMBEDDING_REVISION` 없음 |
+| 팀 DB DDL Preflight | PASS | 일반 적재·검색 경로는 DDL 미실행, 별도 초기화는 Disposable 이중 Guard 필수 |
 | Backend 실제 HTTP | 미실행 | `backend/.venv` 없음 |
 
 경고 3건은 `jsonschema.RefResolver` 2건과 Starlette TestClient 1건의 폐기 예정
@@ -82,28 +86,28 @@ backend_automatic_retry=0
 
 | ID | 구분 | 차단 내용 | 담당·협업 | 필요한 입력 | 해제 조건 |
 |---|---|---|---|---|---|
-| W5-AI-B01 | 환경 | 팀 DB pgvector 미접속 | 김은진·최지용 | 최소 권한 DSN, Migration·Extension 상태 | 팀 DB 적재·검색·평가 재실행 PASS |
+| W5-AI-B01 | 환경 | 팀 DB pgvector 미접속 | 제공·Migration: 최지용 / AI 실행: 이동윤 / QA 판정: 김은진 | 최소 권한 DSN Secret 전달, Migration·Extension 상태 | 팀 DB 적재·검색·평가 재실행 PASS |
 | W5-AI-B02 | 계약 | AI `chunk_id`→Backend `DocumentChunk.public_id` 미매핑 | 최지용·Database | canonical 7건 Crosswalk | Backend 공식 근거 검증·저장 PASS |
 | W5-AI-B03 | 환경 | Backend 실행환경 없음 | 최지용 | Python 3.13.13 `backend/.venv` 재현 절차 | Backend 단위·실제 HTTP Test 실행 가능 |
-| W5-AI-B04 | 결정 | 실제 LLM Provider·Model·Key 미확정 | PM·이동윤 | Provider, Model ID, Secret 전달 방식 | 실제 Structured Output Integration PASS |
 | W5-AI-B05 | Runtime | EvidenceCard API가 준비 단계 | 최지용·한예나 | 공개 DTO·Endpoint·권한 계약 | Backend→Web 공식 근거 실제 전달 PASS |
 
 ## 6. 코드 차단과 환경 차단 구분
 
-환경 차단은 팀 DB, Backend 가상환경, LLM Secret이다. 코드 차단은 실제
-Multi-Agent Runtime·LLM Adapter·Agent Routing/Handoff·Backend 실제 HTTP Test가
-아직 없다는 점이다. `selective_pipeline.py`와 LLM 통합 파일의 설명 한 줄은 구현
-완료로 계산하지 않는다.
+P0 외부 차단은 팀 DB, Backend 실행환경, Backend Crosswalk와 EvidenceCard
+Runtime이다. 현재 단일 Workflow의 AI 계약·안전·Fixture·Mock HTTP에는 확인된
+코드 차단이 없다. 실제 외부 LLM과 Multi-Agent Runtime은 팀 DB·Backend E2E
+기준선 이후 비교 평가할 P1 후속이며, 현재 완료로 계산하지 않는다.
 
 ## 7. 다음 Gate
 
-1. 외부 입력을 기다리는 동안 Agent 책임·입출력·Routing 계약을 확정한다.
-2. 상담 요약은 결정론적 Fallback 기준선을 먼저 유지한다.
-3. Backend Mock 실제 HTTP를 먼저 통과시킨다.
-4. 팀 DB Retrieval을 동일 Commit에서 재검증한다.
-5. 단일 Workflow의 팀 DB·Backend E2E 기준선을 고정한 뒤 Multi-Agent Runtime을
-   활성화하고 동일 평가셋으로 비교한다.
-6. 실제 Provider가 정해지기 전에는 외부 LLM 사용 완료로 표시하지 않는다.
+1. 최지용이 AI 계약 `3.0.0`, canonical 7건 Crosswalk, Migration과 최소 권한
+   DSN Secret 전달 방식을 확정한다.
+2. 팀 DB와 독립적인 Backend Mock 실제 HTTP를 먼저 통과시킨다.
+3. 팀 DB Retrieval을 동일 Commit에서 재검증한다.
+4. Backend 저장·State Event·EvidenceCard 전달 E2E를 검증한다.
+5. 김은진이 같은 Commit·Fixture로 팀 DB와 통합 결과를 재현·판정한다.
+6. 단일 Workflow 기준선을 고정한 뒤 실제 LLM·Multi-Agent를 동일 평가셋으로
+   비교한다. 실제 호출 경로 전에는 완료로 표시하지 않는다.
 
 ## 8. 재현 명령
 
@@ -111,6 +115,9 @@ Multi-Agent Runtime·LLM Adapter·Agent Routing/Handoff·Backend 실제 HTTP Tes
 .\ai\.venv\Scripts\python.exe --version
 .\ai\.venv\Scripts\python.exe -m pip check
 .\ai\.venv\Scripts\python.exe -m pytest ai\tests\unit -q
+.\ai\.venv\Scripts\python.exe -m pytest ai\tests\unit\test_backend_integration_fixtures.py -q
+.\ai\.venv\Scripts\python.exe -m pytest ai\tests\integration\test_pgvector_runtime.py -q -rs
 .\ai\.venv\Scripts\python.exe -m uvicorn ai.app.main:app --host 127.0.0.1 --port 8001
 .\ai\.venv\Scripts\python.exe -m ai.scripts.smoke_test --base-url http://127.0.0.1:8001 --mode mock
+.\ai\.venv\Scripts\python.exe -m ai.scripts.smoke_test --base-url http://127.0.0.1:8001 --mode local --expected-analysis-status 503
 ```

@@ -4,7 +4,8 @@
 
 - 검증 Python: `3.13.13`
 - PostgreSQL과 `vector` 확장
-- 의존성 Manifest: `ai/requirements.lock`, `ai/requirements.txt`, `ai/pyproject.toml`
+- 환경 설치 SSOT: `ai/requirements.lock`
+- 직접 의존성 선언·정합성 대상: `ai/requirements.txt`, `ai/pyproject.toml`
 - AI 계약 버전: `3.0.0`
 
 Backend와 AI는 Python 버전만 `3.13.13`으로 통일하고 가상환경과 의존성은
@@ -25,6 +26,23 @@ python -m venv ai\.venv
 .\ai\.venv\Scripts\python.exe -m pip check
 .\ai\.venv\Scripts\python.exe -m uvicorn ai.app.main:app --host 127.0.0.1 --port 8001
 ```
+
+위 `ai/requirements.lock` 설치가 AI 개발·테스트 실행 환경의 공식 SSOT다. AI는
+저장소 Root에서 `ai.app`을 소스로 직접 Import하는 Monorepo Source Runtime이며,
+현재 배포 가능한 Python Package나 Wheel로 제공하지 않는다. 따라서 다음 명령은
+공식 설치·실행 방식이 아니며 지원하지 않는다.
+
+```powershell
+pip install ai
+pip install .\ai
+pip install -e .\ai
+```
+
+`ai/pyproject.toml`은 프로젝트 Metadata, 직접 의존성 정합성, Pytest 설정을
+관리하지만 setuptools Package 배포 계약은 아니다. 실행·Import·Test 명령은
+반드시 저장소 Root에서 수행한다. 저장소 밖 작업 경로에서 `import ai.app.main`을
+지원하려면 별도의 Package Layout 전환과 Wheel·Editable 설치 검증을 선행해야
+한다.
 
 기존 `ai/.venv`의 Python 버전이 다르면 그 환경을 그대로 재사용하지 않고
 Python `3.13.13`으로 다시 생성한다. 가상환경 디렉토리는 Git에 포함하지

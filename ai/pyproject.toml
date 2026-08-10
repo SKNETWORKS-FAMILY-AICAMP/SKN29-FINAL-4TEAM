@@ -1,3 +1,5 @@
+# 공식 환경 설치 SSOT는 requirements.lock이다. 이 파일은 Metadata·직접 의존성·
+# Pytest 설정용이며 현재 `pip install ./ai` 또는 Wheel 배포를 지원하지 않는다.
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"

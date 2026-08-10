@@ -1,16 +1,16 @@
 {
   "status": "CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT",
-  "generated_at": "2026-08-10T12:21:39.811293+09:00",
-  "source_commit": "3485e0f1717f4afc6a5f76e469b4bb2d6bd0ecc1",
+  "generated_at": "2026-08-10T19:14:27.716826+09:00",
+  "source_commit": "9f28c1ca9c0f3dba8e29c2fb99de31bac6618b02",
   "working_tree_committed": false,
-  "working_tree_changed_path_count": 13,
+  "working_tree_changed_path_count": 9,
   "runtime": {
     "python": "3.13.13",
     "os": "Windows 11 AMD64",
     "dependency_lock": "ai/requirements.lock",
     "unit_tests": {
       "command": ".\\ai\\.venv\\Scripts\\python.exe -m pytest ai\\tests\\unit -q",
-      "result": "126 passed, 3 warnings",
+      "result": "127 passed, 3 warnings",
       "exit_code": 0
     },
     "retry_policy": {

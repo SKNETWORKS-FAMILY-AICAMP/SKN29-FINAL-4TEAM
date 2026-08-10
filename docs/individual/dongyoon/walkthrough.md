@@ -773,3 +773,63 @@ Public UUID 분석 요청이 모두 성공했다.
   `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`이다.
 - 최지용 추가확인 회신의 최신 단위 Test 값을 `126 passed`로 갱신하고
   `103→115→121→126`의 각 증가 범위를 분리해 적었다.
+
+### 2026-08-10 한예나 EvidenceCard 추가확인 회신
+
+- 한예나의 공개 EvidenceCard JSON·필수/NULL·`page_refs`·Enum·Fallback·미지원
+  제품·Crosswalk·일정 질문 순서를 유지한 별도 회신
+  `인계/20260810_이동윤_to_한예나_AI_RAG_EvidenceCard_추가확인_회신_v0.1.md`를
+  작성했다.
+- 현재 승인 청크의 실제 값만 사용해 MVP 공개 Enum을
+  `text_and_visual_verified`, `official_manual`, `official`로 닫고, 확장 값은
+  계약 Version 변경 전까지 Web이 임의 수용하지 않도록 했다.
+- `page_refs`는 1 이상의 정수 배열·오름차순·중복 없음으로 정의하고 단일
+  `[37]`, 다중 `[38, 39]` 예시를 제공했다. Web 대표 페이지는 첫 항목을 쓰되
+  전체 배열을 DTO에서 보존하도록 명시했다.
+- AI `chunk_id`→Evidence Registry `source_id`→`evidence_id`까지는 AI 원천
+  Mapping으로 확정하고, Backend `DocumentChunk.public_id` 연결·검증·최종 DTO
+  조립은 최지용 책임으로 분리했다.
+- 미지원 제품·세대는 현재 검색 전 정책 차단되지만 별도 공개 AI 오류 계약이
+  없어 근거 0건 Fallback과 같은 외형이라는 공백을 기록했다. Backend 선차단
+  HTTP Status·Error Code는 최지용 확정 전까지 임의 생성하지 않았다.
+- Mock Projection·Mapper는 진행 가능하지만 실제 Backend Remote API와 Web E2E는
+  Runtime Evidence 계약 확정 전까지 완료로 표시하지 않는다.
+
+### 2026-08-10 P0 AI 독립 선행 Gate 재검증
+
+- `dongyoon@9f28c1ca9c0f3dba8e29c2fb99de31bac6618b02`에서 Python
+  `3.13.13`, `pip check=PASS`, AI Unit `126 passed, 3 warnings`를 다시
+  확인했다. 작업 트리는 이 기록과 후보 기준선 갱신을 포함해 Dirty이므로 최종
+  통합 PASS로 승격하지 않았다.
+- 실제 Uvicorn에서 Health, Mock Analyze HTTP 200, Local 일반·주의의 Vector
+  미설정 HTTP 503, Local 누수·전기 위험 HTTP 200을 검증했다. 위험 응답은
+  `SAFETY-LEAK-001`, `SAFETY-ELECTRICAL-001`, `TOTAL_STOP`, Evidence 0건과
+  `correlation_id` Header·Body 추적을 만족했다.
+- Backend Integration Fixture F01~F12는 `12 passed, 1 warning`이다. 팀 DB
+  pgvector Test는 Secret이 없어 `1 skipped`이며 개인 격리 DB 이력을 현재 팀 DB
+  PASS로 대체하지 않았다.
+- 일반 적재·검색 경로는 DDL을 실행하지 않고, Schema 초기화는 별도 Disposable
+  명령과 `DISPOSABLE_ONLY`·DB 이름 Guard를 모두 통과해야만 실행되는 것을
+  확인했다.
+- `docs/testing/ai/week5-ai-entry-gate.md`의 Source HEAD와 증거를 갱신하고 팀 DB
+  책임을 `최지용 제공·Migration / 이동윤 AI 실행 / 김은진 QA 판정`으로
+  분리했다. 외부 LLM·Multi-Agent는 팀 DB·Backend E2E 기준선 이후 P1 비교
+  대상으로 유지했다.
+- `ai/evaluation/reports/official_mvp_baseline_20260803.json`은 현재 HEAD로 다시
+  생성했으며 상태는 `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`이다.
+
+### 2026-08-10 AI venv·설치 방식 SSOT 확정
+
+- 김은진의 `pip install .\ai` 실패 보고를 `--dry-run --no-deps
+  --no-build-isolation`로 재현했다. Editable 설치도 `app`, `configs`, `prompts`,
+  `evaluation` 복수 최상위 Package 자동 탐색으로 동일하게 실패했다.
+- 저장소 Root의 `import ai.app.main`은 PASS하고 저장소 밖에서는 Import되지 않는
+  것을 확인해 현재 실행 구조를 `MONOREPO_SOURCE_RUNTIME`으로 확정했다.
+- 공식 설치 SSOT를 `ai/requirements.lock`으로 유지하고 Package·Editable·Wheel
+  설치는 지원하지 않는다고 Root·AI README와 `ai/pyproject.toml`에 명시했다.
+- pyproject·requirements.txt 직접 의존성 10건의 이름·Extra·Version과 Lock의
+  직접·Extra 전이 Package를 비교하는 회귀 Test를 추가했다.
+- Python `3.13.13`, `pip check=PASS`, 전체 AI Unit `127 passed, 3 warnings`를
+  확인하고 김은진 회신
+  `인계/20260810_이동윤_to_김은진_AI_venv_설치방식_SSOT_확인회신_v0.1.md`에
+  재현 결과와 공식 명령을 기록했다.

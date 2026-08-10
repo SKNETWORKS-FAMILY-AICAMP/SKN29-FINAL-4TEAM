@@ -3,9 +3,12 @@
 import hashlib
 import json
 import os
+import tomllib
 from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker, RefResolver
+from packaging.requirements import Requirement
+from packaging.utils import canonicalize_name
 import yaml
 import pytest
 from ai.app.schemas.common import RiskLevel, UsageGuidanceStatus, TraceContext
@@ -383,6 +386,53 @@ def test_every_ai_contract_has_runtime_valid_and_extra_field_parity():
         assert list(validator.iter_errors(invalid))
         with pytest.raises(ValidationError):
             model.model_validate(invalid)
+
+
+def _load_requirements(path: str) -> dict[str, Requirement]:
+    requirements = {}
+    for line in Path(path).read_text(encoding="utf-8").splitlines():
+        normalized = line.strip()
+        if not normalized or normalized.startswith("#"):
+            continue
+        requirement = Requirement(normalized)
+        requirements[canonicalize_name(requirement.name)] = requirement
+    return requirements
+
+
+def _exact_pin(requirement: Requirement) -> str:
+    specifiers = list(requirement.specifier)
+    assert len(specifiers) == 1
+    assert specifiers[0].operator == "=="
+    return specifiers[0].version
+
+
+def test_dependency_manifests_keep_direct_dependencies_aligned():
+    pyproject = tomllib.loads(Path("ai/pyproject.toml").read_text(encoding="utf-8"))
+    pyproject_requirements = {
+        canonicalize_name(requirement.name): requirement
+        for raw in pyproject["project"]["dependencies"]
+        for requirement in [Requirement(raw)]
+    }
+    direct_requirements = _load_requirements("ai/requirements.txt")
+    locked_requirements = _load_requirements("ai/requirements.lock")
+
+    assert pyproject_requirements.keys() == direct_requirements.keys()
+    for name, pyproject_requirement in pyproject_requirements.items():
+        direct_requirement = direct_requirements[name]
+        assert pyproject_requirement.extras == direct_requirement.extras
+        assert _exact_pin(pyproject_requirement) == _exact_pin(direct_requirement)
+        assert name in locked_requirements
+        assert _exact_pin(pyproject_requirement) == _exact_pin(locked_requirements[name])
+
+    # requirements.lock은 Extra 표기 대신 실제 설치 Package를 고정한다.
+    assert {
+        "psycopg-binary",
+        "colorama",
+        "httptools",
+        "python-dotenv",
+        "watchfiles",
+        "websockets",
+    }.issubset(locked_requirements)
 
 
 def test_backend_integration_environment_manifest_is_reproducible():
