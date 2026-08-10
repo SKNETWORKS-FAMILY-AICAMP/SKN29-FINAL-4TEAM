@@ -35,11 +35,11 @@
     },
     "consultation_model": {
       "path": "backend/apps/consultations/models/consultation.py",
-      "sha256": "4BC4298AF906AD6ADEBF3A9C40E29946BECC61BF9A61E04C04CD534A82515BE8"
+      "sha256": "9A742ADFE118882447C53B98648AFA078FB7E748FC3E53AE5F37064B5DC98149"
     },
     "visit_model": {
       "path": "backend/apps/visits/models/visit.py",
-      "sha256": "C22C1E640EABFF1A173D51EE2DFABDB2C825A72FB03D8880342BFFC15DAD152A"
+      "sha256": "8A64FF0601501102440A728B7356F059BEB6FF5E206461A347A87369C5B1AC8F"
     },
     "followup_confirmation_model": {
       "path": "backend/apps/inquiries/models/followup_confirmation.py",
