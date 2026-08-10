@@ -3,6 +3,7 @@
 rules:
   # 1. 누수 위험 (Danger)
   leak_danger:
+    rule_id: "SAFETY-LEAK-001"
     name: "제품 하부 및 전원부 주변 누수"
     risk_level: "danger"
     usage_guidance_status: "TOTAL_STOP"
@@ -25,6 +26,7 @@ rules:
 
   # 2. 전기/감전/화재 위험 (Danger)
   electrical_danger:
+    rule_id: "SAFETY-ELECTRICAL-001"
     name: "전기 냄새·연기·스파크·감전 위험"
     risk_level: "danger"
     usage_guidance_status: "TOTAL_STOP"
@@ -46,6 +48,7 @@ rules:
 
   # 3. 뜨거운 물 / 화상 위험 (Danger or Caution)
   hot_water_danger:
+    rule_id: "SAFETY-HOT-WATER-001"
     name: "온수 연속 뿜어져 나옴 / 조절 불가"
     risk_level: "danger"
     usage_guidance_status: "PARTIAL_STOP"
@@ -64,6 +67,7 @@ rules:
 
   # 4. 일반 기능 이상 (Caution)
   temp_abnormal_caution:
+    rule_id: "SAFETY-TEMP-ABNORMAL-001"
     name: "냉/온수 미흡 및 출수량 저하"
     risk_level: "caution"
     usage_guidance_status: "PARTIAL_STOP"

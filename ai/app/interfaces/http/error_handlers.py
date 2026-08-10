@@ -2,7 +2,7 @@
 
 import time
 from typing import Any
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -28,10 +28,14 @@ def _request_ids(body: Any) -> dict[str, Any]:
             values["inquiry_id"] = UUID(str(values["inquiry_id"]))
         except (TypeError, ValueError):
             values.pop("inquiry_id")
-    for key in ("correlation_id", "ai_request_id"):
-        value = values.get(key)
-        if not isinstance(value, str) or not 1 <= len(value) <= 100:
-            values.pop(key, None)
+    if "correlation_id" in values:
+        try:
+            values["correlation_id"] = UUID(str(values["correlation_id"]))
+        except (TypeError, ValueError):
+            values.pop("correlation_id")
+    ai_request_id = values.get("ai_request_id")
+    if not isinstance(ai_request_id, str) or not 1 <= len(ai_request_id) <= 100:
+        values.pop("ai_request_id", None)
     state_version = values.get("state_version")
     if not isinstance(state_version, int) or isinstance(state_version, bool) or state_version < 1:
         values.pop("state_version", None)
@@ -47,7 +51,11 @@ def _error_ids(request: Request, supplied: dict[str, Any] | None = None) -> dict
                 values[key] = value
     if "correlation_id" not in values:
         header_id = request.headers.get("X-Correlation-ID")
-        values["correlation_id"] = header_id if header_id and len(header_id) <= 100 else f"srv-{uuid4()}"
+        if header_id:
+            try:
+                values["correlation_id"] = UUID(header_id)
+            except ValueError:
+                pass
     return values
 
 
@@ -89,7 +97,7 @@ def _error_response(ids: dict[str, Any], detail: ApiErrorDetail) -> ApiErrorResp
 def _response(payload: ApiErrorResponse, http_status: int) -> JSONResponse:
     response = JSONResponse(status_code=http_status, content=payload.model_dump(mode="json"))
     if payload.correlation_id:
-        response.headers["X-Correlation-ID"] = payload.correlation_id
+        response.headers["X-Correlation-ID"] = str(payload.correlation_id)
     return response
 
 

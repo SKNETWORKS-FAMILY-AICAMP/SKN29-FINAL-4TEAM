@@ -5,6 +5,7 @@
 > 작성일: 2026-08-10 KST
 > 검증 기준 Commit: `8854ca7b5226df9766b24ba616067ab27d5add99`
 > 현재 상태: `ACTION_REQUIRED / CONSULTATION_VISIT_RUNTIME_BLOCKED`
+> TEAM_INTEGRATION 추가 판정: `PACKAGE_QA_APPROVE / REMOTE_NOT_PROVISIONED`
 
 ## 1. 인계 목적
 
@@ -112,3 +113,24 @@ target_date=<YYYY-MM-DD>
 
 Route·Model·Migration·실행 테스트 증거가 모두 준비되기 전에는 상담·방문
 Runtime을 `VERIFIED`로 회신하지 않는다.
+
+## 7. TEAM_INTEGRATION DB 패키지 QA 인계
+
+[독립 QA 결과](../../testing/results/team-integration-db-package-qa-20260810.md)에서
+후보 파일 17/17, 패키지 56 passed, 격리 DB 전체 Forward Migration,
+Seed Replay, T-005 `READY`, 실제 4-Role Matrix와 Backend 882 passed/14 skipped를
+확인했다. 후보 구현 Commit `94ad7b9`도 현재 원격 브랜치들에 포함돼 있다.
+
+최지용 담당 후속 조치는 다음과 같다.
+
+- 원격 Migrator 실행 창구와 단일 실행자를 지정한다.
+- 원격 Migration 후 Admin 권한 재조정 순서를 유지한다.
+- Backend 실행에는 Runtime Role만 주입하고 Migrator Credential을 상시
+  Runtime에 제공하지 않는다.
+- 원격 Endpoint·DNS·CA·Secret 준비 뒤 김은진에게 Migration·Role·API
+  Smoke 재검증 입력을 전달한다.
+- 현재 로컬 QA 임시 비밀번호는 폐기됐으므로 이 DB를 팀 공유 대상으로
+  전환하지 말고, 재사용 필요 시 승인된 보안 경로에서 명시 회전한다.
+
+원격 `verify-full`, `connection_ssl=true`와 Backend API Smoke 전에는
+`TEAM_INTEGRATION_APPROVE`로 회신하지 않는다.

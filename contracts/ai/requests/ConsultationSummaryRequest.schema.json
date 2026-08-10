@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "ConsultationSummaryRequest.schema.json",
-  "x-contract-version": "1.1.0",
+  "x-contract-version": "3.0.0",
   "title": "ConsultationSummaryRequest",
   "description": "상담 요약 초안 요청",
   "type": "object",
@@ -9,7 +9,7 @@
   "additionalProperties": false,
   "properties": {
     "inquiry_id": { "type": "string", "format": "uuid" },
-    "correlation_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "correlation_id": { "type": "string", "format": "uuid" },
     "ai_request_id": { "type": "string", "minLength": 1, "maxLength": 100 },
     "state_version": { "type": "integer", "minimum": 1 },
     "customer_raw_text": { "type": "string", "minLength": 1, "maxLength": 8000 },

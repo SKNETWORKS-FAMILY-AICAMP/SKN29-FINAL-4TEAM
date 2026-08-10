@@ -1,5 +1,21 @@
 # Contracts Changelog
 
+## 2026-08-10 — 대표 E2E Action PM 결정 및 State Example 연결
+
+### Added
+
+- 대표 정상 Example 14단계에 기존 Event Registry의 `operation_id` 연결
+- 미해결→재상담 Example에 `reportUnresolved`, `resumeConsultation` 연결
+- 8개 Action의 Actor·Guard·HTTP 경계를 정리한 PM 결정·담당자 인계 문서
+
+### Boundary
+
+- State 13개, Event 30개, Transition 34개, Guard 39개와 완료 정책의 의미는 변경하지 않는다.
+- 고객 해결 피드백만으로 종료하지 않으며 마지막 처리 담당자의 `FINALIZE_INQUIRY`가 필요하다.
+- `contracts/api/**`, `contracts/codes/**`, `backend/tests/**`, `tests/**`는 각 주관 담당자 적용·검토 대기다.
+- OpenAPI `0.7.0`과 기존 Crosswalk 분류는 담당자 적용 전까지 변경하지 않는다.
+- 이번 결정은 OpenAPI·Runtime 구현 완료나 소비자 승인 완료를 의미하지 않는다.
+
 ## 2026-08-07 — State Machine Action–OpenAPI–Runtime Crosswalk 기준선
 
 ### Added

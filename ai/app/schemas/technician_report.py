@@ -19,7 +19,7 @@ PartName = Annotated[str, Field(min_length=1, max_length=500)]
 
 class TechnicianReportRequest(ContractModel):
     inquiry_id: UUID
-    correlation_id: str = Field(..., min_length=1, max_length=100)
+    correlation_id: UUID
     ai_request_id: str = Field(..., min_length=1, max_length=100)
     state_version: int = Field(..., ge=1)
     visit_id: str = Field(..., min_length=1, max_length=100)
@@ -29,7 +29,7 @@ class TechnicianReportRequest(ContractModel):
 
 class TechnicianReportResult(ContractModel):
     inquiry_id: UUID
-    correlation_id: str = Field(..., min_length=1, max_length=100)
+    correlation_id: UUID
     ai_request_id: str = Field(..., min_length=1, max_length=100)
     state_version: int = Field(..., ge=1)
     status: AiExecutionStatus = AiExecutionStatus.SUCCEEDED

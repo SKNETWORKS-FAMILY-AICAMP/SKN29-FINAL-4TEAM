@@ -47,7 +47,7 @@ def test_previous_answer_populates_field_and_blocks_duplicate_question():
 def test_information_poor_input_generates_deterministic_questions():
     result = PipelineRouter(search_service=EmptySearchService()).run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b401",
-        correlation_id="corr-structuring-poor",
+        correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
         ai_request_id="ai-req-structuring-poor",
         state_version=1,
         raw_symptom="이상해요",
@@ -70,7 +70,7 @@ def test_information_poor_input_generates_deterministic_questions():
 def test_danger_input_prioritizes_safety_and_skips_question_generation():
     result = PipelineRouter(search_service=None).run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b402",
-        correlation_id="corr-structuring-danger",
+        correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
         ai_request_id="ai-req-structuring-danger",
         state_version=1,
         raw_symptom="정수기 아래로 물이 새고 전원선 주변이 젖었습니다",

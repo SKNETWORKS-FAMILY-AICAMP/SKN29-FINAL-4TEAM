@@ -19,7 +19,7 @@ KeyIssue = Annotated[str, Field(min_length=1, max_length=500)]
 
 class ConsultationSummaryRequest(ContractModel):
     inquiry_id: UUID
-    correlation_id: str = Field(..., min_length=1, max_length=100)
+    correlation_id: UUID
     ai_request_id: str = Field(..., min_length=1, max_length=100)
     state_version: int = Field(..., ge=1)
     customer_raw_text: str = Field(..., min_length=1, max_length=8000)
@@ -28,7 +28,7 @@ class ConsultationSummaryRequest(ContractModel):
 
 class ConsultationSummaryResult(ContractModel):
     inquiry_id: UUID
-    correlation_id: str = Field(..., min_length=1, max_length=100)
+    correlation_id: UUID
     ai_request_id: str = Field(..., min_length=1, max_length=100)
     state_version: int = Field(..., ge=1)
     status: AiExecutionStatus = AiExecutionStatus.SUCCEEDED

@@ -661,3 +661,85 @@ Public UUID 분석 요청이 모두 성공했다.
 - 전달 대상 19개 파일·디렉토리의 존재 여부와 문서의 기준선 SHA·계약 Hash·
   State Event·E2E ID를 로컬에서 대조했다. 문서만 변경했으므로 단위 테스트는
   다시 실행하지 않았다.
+
+### 2026-08-10 Backend↔AI 수직 연동 P0·P1·AI Fixture Gate
+
+- 최지용의 2026-08-08 수직 연동 회신 기준을 반영하여 모든 AI 공개 계약의
+  `correlation_id`를 일반 문자열에서 UUID로 제한했다. 요청 범위를 좁히는
+  호환성 파괴 변경이므로 계약 버전을 `2.0.0`으로 갱신했다.
+- Request·Response·Error JSON Schema, Pydantic 모델, 상담 요약·기사 보고를
+  포함한 모든 공개 예시를 같은 UUID 규칙으로 맞췄다.
+- Header와 Body의 서로 다른 유효 UUID는 HTTP 400으로 거부하고, 비UUID Body
+  입력은 HTTP 422로 거부하되 잘못된 값을 오류 Body·Header에 Echo하지 않고
+  `correlation_id=null`로 반환하도록 오류 경계를 고정했다.
+- Backend 동일 환경 제공물
+  `ai/configs/backend_integration_environment.json`과 실행 가능한
+  `ai/scripts/smoke_test.py`를 추가했다. 실제 Uvicorn Mock 실행에서 Health,
+  Analyze HTTP 200, Header·Body 추적 ID Echo를 PASS했다.
+- `ai/evaluation/datasets/backend_integration/fixture_manifest.json`에 F01~F12의
+  입력 파일·실행 Driver·기대 HTTP·핵심 응답·책임자를 기록했다. 장애와
+  Timeout은 운영 경로의 공개 스위치가 아니라 교체 가능한 테스트 Adapter로
+  결정적으로 검증한다.
+- Fixture 전용 검증은 `12 passed`다. 이는 Manifest 1개와 F01~F10·F12 AI 구간
+  11개이며, F11 Backend stale 차단이나 실제 pgvector·Backend 저장 E2E 완료를
+  의미하지 않는다.
+- Metadata는 현재 응답 제공 필드와 미제공 필드를 분리한
+  `20260810_이동윤_최지용_Backend_AI_선행제공물_및_Metadata_결정요청_v0.1.md`를
+  작성했다. `execution_metadata` 추가는 Backend의 추가 계약 승인 전까지
+  구현하지 않았다.
+- Python `3.13.13`에서 전체 AI 단위 테스트 `115 passed, 3 warnings`, Prompt
+  Registry 검증 Exit Code 0, `git diff --check` Exit Code 0을 확인했다.
+- 검증 시점 Source HEAD는
+  `f3c66b3cbfd41852440bf0726722438612d6885f`, Branch는 `dongyoon`, 변경분은
+  아직 Commit되지 않아 Dirty 상태다.
+- 주요 SHA-256은 Symptom Request
+  `008D2066DD7CE6B84BAA633F4B913ED642ADD90CA0B11591378D2987D1F54FCA`,
+  Symptom Response
+  `E0BC73AAF1D0747F63E1229F351165D2BEB8563CF0386D31959D10BCF70AD5AE`,
+  AI Error
+  `127C9D7D14D7121E1965D5D78B29AD5831210C49E6362586D92F098DD9CB9A0E`,
+  Fixture Manifest
+  `36D0DDF12BD06CFC3A58FCBAF1E97F496B494EBA2C16E132C13F00B52F2A9F4E`,
+  실행환경 Manifest
+  `BD185D2ACC6ABFD95C8D0F64356BA6C178ACB9C497EBD3D196BC0B460EE3C88D`다.
+- 잔여 Gate는 실제 pgvector F01·F02 Local HTTP, Backend Mock·Local 소비,
+  F11 stale 저장 차단, F12 답변·거절 저장·버전 증가, Metadata 추가 계약 승인,
+  팀 DB Migration·권한·canonical evidence 연결이다.
+- 최지용 요청 문서의 AI 선행 제공물 필드 순서를 그대로 따른 전송용
+  `sender=이동윤` 회신 블록을 협업 문서 0절에 추가했다. 공동 검증 후
+  `reviewer=최지용`이 작성해야 하는 Backend 완료 회신은 대신 작성하지 않았다.
+
+### 2026-08-10 Backend↔AI 추가확인 03·04·05 우선순위 구현
+
+- 위험 자연어를 Backend가 임의 해석하지 않도록 안전 규칙에 안정적인
+  `SAFETY-...-NNN` ID를 부여하고 `SafetyAssessment.matched_safety_rule_ids`를
+  Pydantic·JSON Schema·예시·F03 Fixture에 필수로 추가했다. 필수 응답 필드가
+  늘어난 호환성 파괴 변경이므로 AI 계약을 `3.0.0`으로 올렸다.
+- 승인 RAG JSONL 7건의 `chunk_id`, 문서·페이지·모델·세대·검증 상태, Source
+  Hash와 청크 본문 SHA-256을 `ai/configs/canonical_evidence_identity.json`에
+  고정했다. AI는 Backend `DocumentChunk.public_id`를 생성하지 않으며 실제
+  Crosswalk는 Backend·Database 책임으로 남겼다.
+- 결정론적 단일 Workflow와 pgvector의 실제 실행 식별값을
+  `ai/configs/runtime_identity.json`에 기록했다. 외부 LLM을 사용한다고 주장하지
+  않으며, 값은 고객 응답이 아니라 Backend 환경 설정과 `AIRun` 감사 레코드로
+  전달한다.
+- 일반 안내 계약 예시의 구형 비공식 청크 ID를 승인 canonical ID로 교체했고,
+  검색을 건너뛰는 위험 분기의 계약 예시는 근거 배열을 비워 실제 Runtime
+  경계와 맞췄다.
+- 03·04·05 전용 별도 회신
+  `인계/20260810_이동윤_최지용_Backend_AI_수직연동_추가확인_회신_v0.1.md`를
+  최지용의 원문 회신 필드 순서로 작성했다. Backend Crosswalk·계약 3.0.0 호환·
+  실제 저장 E2E가 남아 있으므로 전체 `ready_for_joint_e2e`는 `NO`로 판정했다.
+- Python `3.13.13`, `pip check` PASS, 전체 AI 단위 테스트 `121 passed,
+  3 warnings`, Fixture Gate `12 passed`, 실제 Uvicorn Mock Health·Analyze·추적 ID
+  Smoke PASS와 Local 위험 입력의 규칙 ID 2개·`TOTAL_STOP`·근거 0건을 확인했다.
+  `backend/.venv`가 없어 Backend 단위 테스트 재실행은 수행하지 못했다.
+- 후보 기준선 생성기의 계약 고정값을 `3.0.0`으로 맞추고 공식 후보 보고서를
+  다시 생성했다. 상태는 팀 DB 재검증과 Commit이 남은
+  `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`이며 Source HEAD는
+  `421e5590414a3addec62158b0b58ed37bbf97e41`, Dirty 상태다.
+- 03·04·05 별도 회신 마지막에 최지용이 추가 요청한 실행값 블록을 넣었다.
+  `103`은 Fixture 추가 전 중간값, `115`는 계약 2.0.0과 Fixture 12개를 포함한
+  당시 최종값, `121`은 계약 3.0.0 안전 ID·근거 Identity·Runtime Identity
+  검증까지 포함한 현재값으로 구분했다. 거절·모름 Payload 처리, Disposable DB
+  확인값, 공동 Mock 준비 여부와 가용 시점도 함께 명시했다.

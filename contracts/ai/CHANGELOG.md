@@ -1,5 +1,22 @@
 # AI Contract Changelog
 
+## 3.0.0 - 2026-08-10
+
+- `SafetyAssessment.matched_safety_rule_ids`를 필수 배열로 추가
+- 안전 설정의 내부 키와 Backend Guard가 소비할 안정 Rule ID를 분리
+- 위험·주의 규칙의 안정 ID 형식과 중복을 Runtime 시작 시 검증
+- 엄격한 응답 Schema에 필수 필드를 추가하는 호환성 파괴 변경이므로 계약
+  Major Version을 갱신
+
+## 2.0.0 - 2026-08-10
+
+- 시스템 Canonical `correlation_id`를 일반 문자열에서 UUID로 제한
+- 요청·응답·오류 JSON Schema, Pydantic 모델과 모든 공개 예시를 함께 정합화
+- Body와 `X-Correlation-ID` Header에는 같은 UUID만 허용
+- 비UUID 입력 검증 오류는 잘못된 값을 Echo하지 않고
+  `correlation_id=null`로 반환
+- 입력 범위를 좁히는 호환성 파괴 변경이므로 계약 Major Version을 갱신
+
 ## 2026-08-04 — 1.1.0 내부 재시도 Runtime 활성화
 
 - 공개 Schema 변경 없이 기존 `retry_count=0..1` 의미를 Runtime에 연결

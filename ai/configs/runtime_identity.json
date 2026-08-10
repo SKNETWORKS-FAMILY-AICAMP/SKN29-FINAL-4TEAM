@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "contract_version": "3.0.0",
+  "public_response_policy": "NOT_EXPOSED",
+  "public_response_reason": "실행 식별자는 고객 공개 응답이 아니라 Backend AIRun 감사 레코드에 저장한다.",
+  "backend_delivery": {
+    "method": "BACKEND_ENV_AND_SHARED_MANIFEST",
+    "manifest_path": "ai/configs/runtime_identity.json",
+    "environment_mapping": {
+      "AI_MODEL_PROVIDER": "local.model_provider",
+      "AI_MODEL_NAME": "local.model_name",
+      "AI_PROMPT_VERSION": "local.prompt_version"
+    },
+    "required_persistence_target": "backend.apps.audit.models.AIRun"
+  },
+  "mock": {
+    "model_provider": "waterbridge-mock",
+    "model_name": "mock-contract-response-v1",
+    "model_version": "v1",
+    "prompt_version": "not-applicable",
+    "external_llm_used": false,
+    "retrieval_executed": false
+  },
+  "local": {
+    "model_provider": "waterbridge-local",
+    "model_name": "single-rag-pipeline-v1",
+    "model_version": "v1",
+    "prompt_version": "v1",
+    "pipeline_version": "single-rag-pipeline-v1",
+    "generation_method": "deterministic-rules-and-templates",
+    "external_llm_used": false,
+    "retrieval": {
+      "provider": "pgvector",
+      "search_type": "exact_search",
+      "top_k": 5,
+      "score_threshold": 0.4,
+      "embedding_model": "BAAI/bge-m3",
+      "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "embedding_dimension": 1024,
+      "index_version": "1.0.0",
+      "chunk_set_sha256": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+    }
+  },
+  "configuration_sha256": {
+    "retrieval_policy": "5D399A937287585A8776F3730F03AD25478A274EF749FABB9365CEC321BACB19",
+    "safety_rules": "57CCAB86A5FAC3384AA04A5C08433586E027349A7FE1DF85C58AC7BB8EEAF46F",
+    "retry_policy": "76AC62B550426B1DCD2DDF61D28E539085AFBDF9C94F02BE256110DDCD22393D"
+  }
+}

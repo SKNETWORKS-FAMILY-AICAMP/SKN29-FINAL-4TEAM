@@ -1,16 +1,16 @@
 {
   "status": "CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT",
-  "generated_at": "2026-08-07T14:37:28.353069+09:00",
-  "source_commit": "1590279b7c7aea66334b3436024a83b150e28610",
+  "generated_at": "2026-08-10T10:49:41.705661+09:00",
+  "source_commit": "421e5590414a3addec62158b0b58ed37bbf97e41",
   "working_tree_committed": false,
-  "working_tree_changed_path_count": 19,
+  "working_tree_changed_path_count": 43,
   "runtime": {
     "python": "3.13.13",
     "os": "Windows 11 AMD64",
     "dependency_lock": "ai/requirements.lock",
     "unit_tests": {
       "command": ".\\ai\\.venv\\Scripts\\python.exe -m pytest ai\\tests\\unit -q",
-      "result": "101 passed, 3 warnings",
+      "result": "121 passed, 3 warnings",
       "exit_code": 0
     },
     "retry_policy": {
@@ -23,11 +23,11 @@
     }
   },
   "contract": {
-    "version": "1.1.0",
+    "version": "3.0.0",
     "schema_draft": "2020-12",
     "schema_file_count": 16,
     "canonical_rule": "sorted relative schema path + recursively key-sorted JSON; UTF-8; compact separators",
-    "evaluated_contract_sha256": "8377137CE95AD52EB8D3023810B5F1A2CEB073711C121CA6D44ADF95901315DA",
+    "evaluated_contract_sha256": "AB5C100E984D8E7D86D0255407E93CA665826F3B6962B1D46110E860BAD7824B",
     "parity_result": "PASS"
   },
   "embedding": {

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "AIErrorResponse.schema.json",
-  "x-contract-version": "1.1.0",
+  "x-contract-version": "3.0.0",
   "title": "AIErrorResponse",
   "description": "AI HTTP 오류 응답. 원문 입력·Prompt·Stack Trace를 포함하지 않는다.",
   "type": "object",
@@ -10,7 +10,11 @@
   "properties": {
     "success": { "const": false },
     "inquiry_id": { "type": ["string", "null"], "format": "uuid" },
-    "correlation_id": { "type": ["string", "null"] },
+    "correlation_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "검증 가능한 Backend 추적 UUID. 비UUID 입력이면 null"
+    },
     "ai_request_id": { "type": ["string", "null"] },
     "state_version": { "type": ["integer", "null"], "minimum": 1 },
     "error": {

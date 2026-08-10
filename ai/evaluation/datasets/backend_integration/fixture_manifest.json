@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0.0",
+  "contract_version": "3.0.0",
+  "runner_command": ".\\ai\\.venv\\Scripts\\python.exe -m pytest ai\\tests\\unit\\test_backend_integration_fixtures.py -q",
+  "cases": [
+    {
+      "id": "F01",
+      "scenario": "정상 근거 있음",
+      "owner": "AI",
+      "execution_driver": "IN_PROCESS_HTTP_EVIDENCE_ADAPTER",
+      "input_file": "contracts/ai/examples/symptom-analysis/general-guidance.json",
+      "input_key": "request",
+      "mode": "local",
+      "expected": {"http_status": 200, "status": "SUCCEEDED", "minimum_evidence_count": 1, "retry_count": 0}
+    },
+    {
+      "id": "F02",
+      "scenario": "정상 검색 0건",
+      "owner": "AI",
+      "execution_driver": "IN_PROCESS_HTTP_EMPTY_ADAPTER",
+      "input_file": "contracts/ai/examples/symptom-analysis/no-evidence.json",
+      "input_key": "request",
+      "mode": "local",
+      "expected": {"http_status": 200, "status": "FALLBACK", "failure_stage": "RETRIEVING", "evidence_count": 0, "retry_count": 0}
+    },
+    {
+      "id": "F03",
+      "scenario": "명시적 위험 입력",
+      "owner": "AI",
+      "execution_driver": "IN_PROCESS_HTTP_NO_VECTOR",
+      "input_file": "contracts/ai/examples/symptom-analysis/danger-detected.json",
+      "input_key": "request",
+      "mode": "local",
+      "expected": {"http_status": 200, "risk_level": "danger", "matched_safety_rule_ids": ["SAFETY-LEAK-001", "SAFETY-ELECTRICAL-001"], "guidance_status": "TOTAL_STOP", "evidence_count": 0, "retry_count": 0}
+    },
+    {
+      "id": "F04",
+      "scenario": "Vector 설정 누락",
+      "owner": "AI",
+      "execution_driver": "IN_PROCESS_HTTP_NO_VECTOR",
+      "input_file": "contracts/ai/examples/fallback/vector-not-configured-error.json",
+      "input_key": "request",
+      "mode": "local",
+      "expected": {"http_status": 503, "error_code": "AI-FAILED-01", "failure_stage": "RETRIEVING", "retryable": false, "retry_count": 0}
+    },
+    {
+      "id": "F05",
+      "scenario": "일시 오류 1회 후 성공",
+      "owner": "AI",
+      "execution_driver": "IN_PROCESS_HTTP_FLAKY_ADAPTER",
+      "input_file": "ai/evaluation/datasets/backend_integration/f05-transient-retry-success.json",
+      "input_key": "request",
+      "mode": "local",
+      "expected": {"http_status": 200, "status": "SUCCEEDED", "minimum_evidence_count": 1, "retry_count": 1}
+    },
+    {
+      "id": "F06",
+      "scenario": "일시 오류 재시도 소진",
+      "owner": "AI",
+      "execution_driver": "IN_PROCESS_HTTP_TRANSIENT_FAILURE_ADAPTER",
+      "input_file": "contracts/ai/examples/fallback/retrieval-failed-error.json",
+      "input_key": "request",
+      "mode": "local",
+      "expected": {"http_status": 503, "error_code": "AI-FAILED-01", "failure_stage": "RETRIEVING", "retryable": true, "retry_count": 1}
+    },
+    {
+      "id": "F07",
+      "scenario": "비일시적 검색 오류",
+      "owner": "AI",
+      "execution_driver": "IN_PROCESS_HTTP_NON_TRANSIENT_FAILURE_ADAPTER",
+      "input_file": "contracts/ai/examples/fallback/retrieval-failed-error.json",
+      "input_key": "request",
+      "mode": "local",
+      "expected": {"http_status": 503, "error_code": "AI-FAILED-01", "failure_stage": "RETRIEVING", "retryable": false, "retry_count": 0}
+    },
+    {
+      "id": "F08",
+      "scenario": "Pipeline Timeout",
+      "owner": "AI",
+      "execution_driver": "IN_PROCESS_HTTP_STAGE_TIMEOUT_ADAPTER",
+      "input_file": "contracts/ai/examples/fallback/timeout-error.json",
+      "input_key": "request",
+      "mode": "local",
+      "expected": {"http_status": 504, "error_code": "AI-TIMEOUT-01", "failure_stage": "RETRIEVING", "retryable": true, "retry_count": 0}
+    },
+    {
+      "id": "F09",
+      "scenario": "Header·Body correlation 불일치",
+      "owner": "AI",
+      "execution_driver": "IN_PROCESS_HTTP",
+      "input_file": "ai/evaluation/datasets/backend_integration/f09-correlation-mismatch.json",
+      "input_key": "request",
+      "headers_key": "headers",
+      "mode": "mock",
+      "expected": {"http_status": 400, "error_code": "AI-VALIDATION-01", "failure_stage": "STRUCTURING", "retryable": false, "retry_count": 0}
+    },
+    {
+      "id": "F10",
+      "scenario": "비UUID correlation",
+      "owner": "AI",
+      "execution_driver": "IN_PROCESS_HTTP",
+      "input_file": "ai/evaluation/datasets/backend_integration/f10-invalid-correlation.json",
+      "input_key": "request",
+      "mode": "mock",
+      "expected": {"http_status": 422, "error_code": "AI-VALIDATION-01", "failure_stage": "STRUCTURING", "correlation_id": null, "retryable": false, "retry_count": 0}
+    },
+    {
+      "id": "F11",
+      "scenario": "지연 응답 중 Inquiry 버전 변경",
+      "owner": "BACKEND",
+      "execution_driver": "BACKEND_JOINT_E2E",
+      "input_file": "NOT_APPLICABLE",
+      "mode": "local",
+      "expected": {"ai_http_status": 200, "backend_result_applied": false, "reason": "STALE_STATE_VERSION"}
+    },
+    {
+      "id": "F12",
+      "scenario": "추가 문진 답변·명시적 거절",
+      "owner": "AI_AND_BACKEND",
+      "execution_driver": "IN_PROCESS_HTTP_EMPTY_ADAPTER",
+      "input_file": "ai/evaluation/datasets/backend_integration/f12-followup-refusal.json",
+      "input_key": "request",
+      "mode": "local",
+      "expected": {"http_status": 200, "repeated_question_id": "followup-occurrence-time", "repeated": false, "state_version": 2}
+    }
+  ]
+}

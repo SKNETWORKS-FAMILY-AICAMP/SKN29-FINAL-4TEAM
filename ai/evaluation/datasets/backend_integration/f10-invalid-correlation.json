@@ -1,0 +1,12 @@
+{
+  "request": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c890010",
+    "correlation_id": "not-a-uuid",
+    "ai_request_id": "ai-e2e-f10",
+    "state_version": 1,
+    "raw_symptom": "냉수가 미지근합니다.",
+    "model_code": "WPUJAC104DWH",
+    "selected_symptoms": [],
+    "previous_answers": []
+  }
+}

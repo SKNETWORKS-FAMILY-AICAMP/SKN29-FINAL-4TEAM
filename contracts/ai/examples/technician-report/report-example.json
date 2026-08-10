@@ -1,7 +1,7 @@
 {
   "request": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b202",
-    "correlation_id": "corr-trace-20260729-102",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88e002",
     "ai_request_id": "ai-req-20260729-102",
     "state_version": 7,
     "visit_id": "visit-uuid-20260729-001",
@@ -10,7 +10,7 @@
   },
   "response": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b202",
-    "correlation_id": "corr-trace-20260729-102",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88e002",
     "ai_request_id": "ai-req-20260729-102",
     "state_version": 7,
     "status": "SUCCEEDED",

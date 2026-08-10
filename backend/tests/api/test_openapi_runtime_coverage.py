@@ -79,14 +79,13 @@ EXPECTED_OPERATIONS = {
         "runtime_path": "/api/v1/inquiries",
         "url_name": "inquiry-create",
         "view_name": "CreateInquiryView",
-        "runtime_method": False,
     },
     ("/inquiries/{id}", "get"): {
         "operation_id": "getConsultantInquiryDetail",
         "contract_status": "CONFIRMED",
         "runtime_path": f"/api/v1/inquiries/{INQUIRY_ID}",
-        "url_name": None,
-        "view_name": None,
+        "url_name": "consultant-inquiry-detail",
+        "view_name": "ConsultantInquiryDetailView",
     },
     ("/inquiries/{id}/cancel", "post"): {
         "operation_id": "cancelInquiry",
@@ -262,23 +261,26 @@ def test_openapi_operation_inventory_is_exactly_twenty_three():
         )
 
 
-def test_ten_operations_resolve_to_expected_runtime_views():
+def test_twelve_operations_resolve_to_expected_runtime_views():
     implemented = [
-        expected
-        for expected in EXPECTED_OPERATIONS.values()
+        (key, expected)
+        for key, expected in EXPECTED_OPERATIONS.items()
         if expected.get(
             "runtime_method", expected["url_name"] is not None
         )
     ]
 
-    assert len(implemented) == 10
-    for expected in implemented:
+    assert len(implemented) == 12
+    for (_, method), expected in implemented:
         match = resolve(expected["runtime_path"])
         assert match.url_name == expected["url_name"]
         assert runtime_view_name(match) == expected["view_name"]
+        view_class = getattr(match.func, "view_class", None)
+        if view_class is not None:
+            assert callable(getattr(view_class, method, None))
 
 
-def test_thirteen_openapi_only_operations_have_no_runtime_method():
+def test_eleven_openapi_only_operations_have_no_runtime_method():
     openapi_only = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -287,7 +289,7 @@ def test_thirteen_openapi_only_operations_have_no_runtime_method():
         )
     ]
 
-    assert len(openapi_only) == 13
+    assert len(openapi_only) == 11
     for (_, method), expected in openapi_only:
         match = resolve(expected["runtime_path"])
         if expected["url_name"] is None:

@@ -5,6 +5,7 @@
 > 작성일: 2026-08-10 KST
 > 검증 기준 Commit: `8854ca7b5226df9766b24ba616067ab27d5add99`
 > 현재 상태: `ACTION_REQUIRED / PUBLIC_EVIDENCE_AND_LIVE_AI_BLOCKED`
+> TEAM_INTEGRATION 추가 판정: `PACKAGE_QA_APPROVE / AI_DIRECT_DB_DISABLED`
 
 ## 1. 인계 목적
 
@@ -119,3 +120,23 @@ target_date=<YYYY-MM-DD>
 
 과거 평가 수치나 Data Schema 통과만으로 Live AI·pgvector를 `VERIFIED`로
 회신하지 않는다.
+
+## 7. TEAM_INTEGRATION DB 패키지 QA 인계
+
+[독립 QA 결과](../../testing/results/team-integration-db-package-qa-20260810.md)에서
+AI Readonly Role이 기본 Read-only이고 `accounts_user` SELECT 권한이 없음을
+실제 PostgreSQL Matrix로 확인했다. 이는 AI DB Allowlist가 확정되기 전의
+의도된 최소권한 상태다.
+
+이동윤 담당 후속 조치는 다음과 같다.
+
+- AI가 필요한 `knowledge_*` 대상과 Column을 내부/공개 경계와 함께 제안한다.
+- Allowlist 계약과 Backend 소비 경계가 승인되기 전 DB 직접 조회를 시작하지
+  않는다.
+- Web·Mobile에 AI Readonly Credential이나 내부 Vector 식별자를 전달하지
+  않는다.
+- 원격 DB가 준비되면 승인된 합성 데이터만으로 검색 Filter·금지 Hit와
+  pgvector 결과를 재현해 김은진에게 전달한다.
+
+현재 원격 Endpoint·CA·Credential이 없으므로 로컬 Role Matrix 통과를 실제
+원격 AI 검색 또는 Live Evidence 연결 완료로 확대하지 않는다.

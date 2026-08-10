@@ -5,7 +5,7 @@
 - 검증 Python: `3.13.13`
 - PostgreSQL과 `vector` 확장
 - 의존성 Manifest: `ai/requirements.lock`, `ai/requirements.txt`, `ai/pyproject.toml`
-- AI 계약 버전: `1.1.0`
+- AI 계약 버전: `3.0.0`
 
 Backend와 AI는 Python 버전만 `3.13.13`으로 통일하고 가상환경과 의존성은
 분리한다. Backend는 `backend/.venv`, AI는 `ai/.venv`를 사용한다. 한쪽
@@ -42,7 +42,7 @@ Vector Store 검색을 요구한다. `local`에서 Vector Store가 설정되지 
 `AI_SERVICE_BASE_URL`도 Port `8001`로 맞춘다. `inquiry_id`는 Backend가
 발급한 Public UUID를 사용하며 내부 정수 PK나 업무 코드를 전달하지 않는다.
 
-요청 Body의 `correlation_id`는 선택적 `X-Correlation-ID` Header와 같아야
+요청 Body의 `correlation_id`는 UUID이며 선택적 `X-Correlation-ID` Header와 같아야
 하며 모든 성공·오류 응답 Header에 반환된다. `ai_request_id`와
 `state_version`도 요청·응답에서 보존한다.
 
@@ -78,6 +78,43 @@ DB 진입을 차단하고, 해당 Thread가 실제 종료될 때까지 작업 Sl
 ```powershell
 .\ai\.venv\Scripts\python.exe -m pytest ai\tests\unit
 ```
+
+## Backend↔AI 결정적 Fixture
+
+F01~F12 입력·기대값·책임 경계는 다음 Manifest를 사용한다.
+
+```text
+ai/evaluation/datasets/backend_integration/fixture_manifest.json
+```
+
+AI 소유 구간의 in-process HTTP Adapter 검증:
+
+```powershell
+.\ai\.venv\Scripts\python.exe -m pytest `
+  ai\tests\unit\test_backend_integration_fixtures.py -q
+```
+
+이 검증은 장애·Timeout을 결정적으로 재현하는 단위 HTTP Gate다. 실제 Uvicorn,
+pgvector, Backend 저장을 모두 통과한 공동 E2E 증거로 사용하지 않는다. F11
+stale `state_version` 차단은 Backend 소유이며, F12의 답변·거절 저장과 버전
+증가는 Backend와 공동 검증한다.
+
+위험 응답은 자연어 `detected_risks`와 별개로 계약 `3.0.0`의 필수 필드
+`safety_assessment.matched_safety_rule_ids`에 안정적인 규칙 ID를 반환한다.
+Backend는 이 ID를 자연어에서 재추론하지 않고 State Event Guard에 직접 사용한다.
+
+공식 근거의 AI 원천 식별자와 실행 재현 값은 다음 Manifest를 사용한다.
+
+```text
+ai/configs/canonical_evidence_identity.json
+ai/configs/runtime_identity.json
+```
+
+첫 번째 Manifest는 승인 청크 7개의 `chunk_id`와 원문·페이지·Source Hash를
+고정한다. Backend `DocumentChunk.public_id`는 Backend·Database 소유이므로 AI가
+생성하지 않으며, Backend가 이 Manifest를 기준으로 Crosswalk를 완성해야 한다.
+두 번째 Manifest의 실행 식별값은 고객 공개 응답에 추가하지 않고 Backend 환경
+설정과 `AIRun` 감사 레코드로 전달·저장한다.
 
 ## RAG 실행 기준
 

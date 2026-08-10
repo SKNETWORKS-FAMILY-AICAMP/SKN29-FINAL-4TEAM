@@ -43,7 +43,7 @@ class ApiErrorResponse(ContractModel):
     """FastAPI 공통 오류 응답 Wrapper"""
     success: Literal[False] = Field(..., description="성공 여부 (항상 False)")
     inquiry_id: Optional[UUID] = Field(..., description="Backend Public UUID")
-    correlation_id: Optional[str] = Field(..., description="요청·응답·로그 추적 식별자")
+    correlation_id: Optional[UUID] = Field(..., description="요청·응답·로그 추적 UUID")
     ai_request_id: Optional[str] = Field(..., description="AI 호출 멱등 식별자")
     state_version: Optional[int] = Field(..., ge=1, description="호출 시작 시점 상태 버전")
     error: ApiErrorDetail = Field(..., description="오류 상세")

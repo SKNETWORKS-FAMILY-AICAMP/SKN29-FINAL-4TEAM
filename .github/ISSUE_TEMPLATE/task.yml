@@ -46,6 +46,19 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: schedule_scope
+    attributes:
+      label: "일정 범위"
+      description: "현행 WBS 기준으로 이 작업의 필수·조건부·후속 범위를 선택해 주세요."
+      options:
+        - "5주차 필수 — 현행 WBS 5주차"
+        - "조기 완료 조건부 — 3장 Gate PASS 시"
+        - "6~7주차 — 현행 WBS 후속 일정"
+        - "P1 — 후속 로드맵"
+    validations:
+      required: true
+
   - type: textarea
     id: task_summary
     attributes:
@@ -153,4 +166,6 @@ body:
         - label: "작업 범위, 완료 기준, 결과물 경로를 구체적으로 작성했습니다."
           required: true
         - label: "관련 계약과 선행 의존성을 확인했습니다."
+          required: true
+        - label: "현행 WBS의 일정 범위와 조기 완료 조건부 여부를 확인했습니다."
           required: true
