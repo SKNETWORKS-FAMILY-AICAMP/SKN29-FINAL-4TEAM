@@ -291,3 +291,24 @@ Web Mock 제거·화면 연결은 Web 담당 범위이며 이 문서에서 완�
 
 신규 조회 Runtime, 두 Operation 상태, 관련 테스트와 이 문서만 제거하면 원복할 수 있다.
 Model·Migration·Seed·Web·Mobile·다른 담당자 문서는 변경하지 않았다.
+
+## 16. 2026-08-10 PostgreSQL QA 후속 보정
+
+김은진의 PostgreSQL 독립 QA에서 상담사 상세의 `received_at`, `updated_at`이
+UTC `Z` 대신 KST `+09:00`으로 직렬화되어 문자열 Assertion 1건이 실패했다.
+두 값은 같은 시점이므로 Runtime 데이터 오류가 아니다.
+
+OpenAPI의 `format: date-time` 계약을 유지하고 테스트가 응답 문자열을
+aware DateTime으로 파싱해 DB 값과 동일 시점을 비교하도록 변경했다. 글로벌
+시간대, Serializer, DB 저장 방식과 date-only 방문 계약은 바꾸지 않았다.
+
+같은 수정 후보에서 다음 결과를 확인했다.
+
+- PostgreSQL 상담사 조회+상담·방문: `18 passed`
+- SQLite 상담사 조회+상담·방문: `17 passed, 1 skipped`
+- SQLite Backend 전체: `901 passed, 15 skipped`
+- PostgreSQL Backend 전체: `915 passed, 1 skipped`
+
+방문 Row Lock 수정과 전체 결과는
+[방문 Runtime PostgreSQL Row Lock 수정·검증 보고서](Django_REST_API_방문_Runtime_PostgreSQL_Row_Lock_수정_검증_보고서_20260810.md)를
+기준으로 한다. 독립 QA 전에는 Web·Mobile 소비 완료로 확대 판정하지 않는다.
