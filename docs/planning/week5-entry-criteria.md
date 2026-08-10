@@ -1,68 +1,70 @@
 # 5주차 진입 조건
 
-> 기준일: **2026-08-07 KST**
-> 기준 Commit: `dad0e7a2c0e6c184ac8811bce6c6974bd7cb3fe0`
-> 4주차 Exit: [CONDITIONAL_EXIT / WEEK5_BLOCKERS_OPEN](../testing/week4-exit-gate.md)
-> 진입 판정: **CONDITIONAL_ENTRY / UNBLOCK_FIRST**
+> 기준일: **2026-08-10 KST**  
+> 계획 기준 Commit: `f3c66b3cbfd41852440bf0726722438612d6885f`  
+> 운영 판정: **FEATURE_COMPLETE_ENTRY / GATED_EXECUTION**  
+> 목표: **8월 13일 대표 E2E 1차 PASS · 8월 14일 P0 Feature Complete 재검증**
 
 ## 1. 진입 원칙
 
-1. 4주차 잔여 환경·통합 결함을 신규 Agent 구현보다 먼저 처리한다.
-2. 담당자 완료가 아니라 계약·API·DB·Test·로그 산출물로 Gate를 해제한다.
-3. Gate가 막힌 소비자 작업은 Mock을 늘리지 않고 계약 Fixture·Adapter 경계까지만 진행한다.
-4. 발표 피드백은 검증 가능한 기존 WBS에 연결하고 즉시 신규 범위로 추가하지 않는다.
+1. `UNBLOCK_FIRST`는 8월 10일 오전의 선행 단계이며 5주차 전체 목표가 아니다.
+2. 5주차 종료 기준은 최소 연결이 아니라 실제 Client·Backend·Multi-Agent·PostgreSQL을 통과한 P0 대표 E2E다.
+3. 담당자 완료 선언 대신 같은 Commit의 Runtime·Test·DB·로그 산출물로 Gate를 판정한다.
+4. 선행 Runtime이 열리는 날 Web·Mobile이 Remote 소비를 시작한다.
+5. 8월 13일 오후 이후 신규 P0 기능·계약·핵심 Agent·DB Schema를 추가하지 않는다.
+6. Gate가 실패하면 상태를 `BLOCKED`로 유지하고 Mock·과거 증거를 PASS로 승격하지 않는다.
 
-## 2. Gate 판정
+## 2. Feature Complete 진입 Gate
 
-| Gate | 진입 조건 | 현재 상태 | 해제 증거 | 책임 |
+| Gate | 8월 10일 확인 조건 | 현재 계획 상태 | PASS 증거 | 책임 |
 |---|---|---|---|---|
-| `W5-G01` 기준선·Issue | 3.3·3.6 문서 Commit, WBS·Issue·담당자 일치 | `PENDING_COMMIT_AND_ISSUE` | 깨끗한 HEAD, Issue 링크·회신 | 윤승혁·김은진 |
-| `W5-G02` 계약 기준선 | State Machine·Crosswalk·Code·OpenAPI·Example Gate 통과 | `PASS_WITH_TEST_CARRY` | Validator 6종 PASS, Contract Test 7/7 승계 | 윤승혁·김은진 |
-| `W5-G03` 대표 Data·Seed | 대표 제품·구독·문의·근거를 같은 Version으로 재현 | `PASS_CARRIED` | Data 67/67, QA·Finalize, Seed·Manifest | 김은진 |
-| `W5-G04` Vector 검색 | 팀 DB에서 제품·세대 Filter와 대표 근거 검색 재현 | `BLOCKED` | pgvector Index 로그, 12건 평가, 문서·페이지 | 이동윤·김은진 |
-| `W5-G05` AI Schema | 구조화·위험·근거·Fallback 요청·응답과 Event 매핑 확정 | `CONTRACT_READY_RUNTIME_MAPPING_PENDING` | Schema Test, Backend Mapper·Event 표 | 이동윤·최지용 |
-| `W5-G06` Backend Gate | 공식 환경에서 Test·Migration 통과 | `ENVIRONMENT_BLOCKED` | Python 3.13.13, pytest 집계, Migration Drift | 최지용·김은진 |
-| `W5-G07` Backend–AI 최소 연결 | 증상 제출→AI 호출→검증→Event→DB 저장 1건 통과 | `NOT_READY` | HTTP·Schema·DB·추적 ID E2E | 최지용·이동윤 |
-| `W5-G08` Web Gate | 기존 Test·Lint·Build 유지, Mock·Remote 경계 명시 | `PASS_CARRIED` | Test 113, Lint·TypeScript·Build | 한예나·김은진 |
-| `W5-G09` Mobile Gate | Core·Customer·Technician Test와 APK Build 통과 | `SDK_PLATFORM_BLOCKED` | SDK·JDK·Gradle, Test 집계, APK | 양정현·김은진 |
+| `W5-G01` 기준선 | WBS·Scope·Backlog·Dependency·Owner·Exit가 같은 일정 | `IN_PROGRESS` | 문서 Diff, 깨끗한 기준 Commit | 윤승혁 |
+| `W5-G02` 계약 | State·Code·OpenAPI·Example·Action Crosswalk 검사 | `REVALIDATION_REQUIRED` | Validator·Contract Test Exit 0 | 윤승혁·최지용 |
+| `W5-G03` Data·Seed | 대표 제품·구독·문의·근거와 Backend Crosswalk 일치 | `REVALIDATION_REQUIRED` | Data Test·QA·Seed·Hash | 김은진·최지용 |
+| `W5-G04` Backend·DB | Python·Django·PostgreSQL·Migration·Seed·회귀 | `REVALIDATION_REQUIRED` | Version, Migration Drift 0, pytest | 최지용·김은진 |
+| `W5-G05` AI·Vector·LLM | 실제 LLM, 팀 DB pgvector, 제품·세대 Filter 검색 | `REVALIDATION_REQUIRED` | AI Test, Index·검색 로그, 평가 결과 | 이동윤·김은진 |
+| `W5-G06` Web | Test·Lint·TypeScript·Build와 Remote 경계 | `REVALIDATION_REQUIRED` | 명령·Exit Code·Build | 한예나·김은진 |
+| `W5-G07` Mobile | SDK·JDK·Gradle, Core·Customer·Technician Test·APK | `REVALIDATION_REQUIRED` | Version, Test, APK | 양정현·김은진 |
+| `W5-G08` Backend↔AI | 실제 HTTP→Schema→Event→DB→추적 ID | `TARGET_8_11` | 통합 Test와 DB·로그 | 최지용·이동윤 |
+| `W5-G09` 상담·방문 | 상담·방문 P0 Operation과 권한·409·멱등성 | `TARGET_8_12` | API Test, OpenAPI, DB State | 최지용 |
+| `W5-G10` 소비자 Remote | Web·Mobile이 실제 Backend DTO·State를 소비 | `TARGET_8_13` | Remote Test·화면 증거 | 한예나·양정현 |
+| `W5-G11` 대표 E2E | 고객→AI→상담→방문→후속 확인 1차 PASS | `TARGET_8_13` | 단계별 HTTP·DB·State·UI 증거 | 전 팀원·김은진 |
+| `W5-G12` 최종 회귀 | 동결 Commit에서 전체 회귀·E2E 재실행 | `TARGET_8_14` | Feature Complete QA Summary | 김은진·윤승혁 |
 
-## 3. 준비된 입력
+## 3. 준비된 고정 입력
 
-- State Machine `1.0.0 / TEAM_APPROVED`
-- Action 23개 Crosswalk와 공통 Code Registry
-- OpenAPI 23개 Operation과 연결 Example
-- 대표 제품 `WPUJAC104DWH`, 구독 `SYN-JAC104-002`, 문의 `DEMO-INQ-002`
-- 출수량 저하와 공식 매뉴얼 REV.00 38쪽 근거
-- Data 단위 Test·QA·Finalize 증거
-- Web 공통 상태·Action·오류 표현과 Mock Repository 경계
-- 발표 피드백의 구현·기술 부채·최종 발표 분류
+- 대표 제품 `WPUJAC104DWH`
+- 대표 구독 `SYN-JAC104-002`
+- 대표 문의 `DEMO-INQ-002`
+- 대표 증상 `출수량 저하`
+- 공식 근거 `WPU-JAC104D·WPU-JCC104D REV.00 38쪽`
+- State Machine `1.0.0 / TEAM_APPROVED`와 Action 23개 Crosswalk
 
-## 4. 신규 구현 착수 규칙
+입력은 8월 10일 현재 Commit에서 다시 검증한 뒤 사용한다. 과거 PASS만으로 현재 PASS를 기록하지 않는다.
 
-| 작업 | 필수 선행 Gate | Gate 미충족 시 허용 범위 |
+## 4. 일자별 진입 경계
+
+| 날짜 | 열려야 하는 산출물 | 후속 소비 |
 |---|---|---|
-| `T-025` 기준선·책임 분리 비교 | `W5-G02`, `W5-G05` | 동일 Fixture 기반 인터페이스·비교 계획 작성 |
-| `T-026` 소비자 연동 | `W5-G05`, `W5-G06`, `W5-G07` | AI 단독 Schema·Fixture Test 유지 |
-| `T-027` 위험·사용 안내 분류 | `W5-G02`, `W5-G05` | 규칙 단위 Test와 금지 출력 Test |
-| `T-028A` 제품·이력·근거 검색 | `W5-G03`, `W5-G04` | 저장된 평가 결과 분석만 허용 |
-| `T-028B` `EvidenceCardDTO` 조립 | `W5-G02`, `W5-G04`, `T-028A` | 계약 Example·비노출 Test 작성 |
-| `T-031` 근거 없음 Guard | `W5-G02`, `T-027`, `T-028A` | 규칙·계약 Test 우선 작성 |
-| `T-032` 전체 Fallback | `W5-G05`, `W5-G06`, `W5-G07` | AI 내부 Timeout·1회 재시도까지만 인정 |
-| Mobile 소비자 작업 | `W5-G09`와 대상 Backend Operation | DTO·UiState 단위 Test까지만 허용 |
+| 8/10 | `W5-G01`~`G07`, 상담사 조회·고객 문진 Runtime, Agent 책임 계약 | Web Remote·Mobile 구독·문의·AI 구현 |
+| 8/11 | 실제 LLM·Vector, `W5-G08`, 상담 조회 Runtime | 상담 Agent·Web 상담·AI 결과 소비 |
+| 8/12 | `W5-G09`, 역할별 AI 결과, 후반 Action 승인 | Visit Remote·전체 E2E 조립 |
+| 8/13 오전 | `W5-G10`·`G11` | Feature Complete 후보 Commit |
+| 8/13 오후 | P0 기능 동결 | 회귀 수정만 허용 |
+| 8/14 | `W5-G12` | 6주차 Release Gate 인계 |
 
 ## 5. Gate 완료 정의
 
-Gate는 다음 여섯 항목이 함께 있을 때만 `PASS`로 바꾼다.
+Gate는 다음 항목이 모두 있을 때만 `PASS`다.
 
 1. 검증 Commit 전체 SHA
 2. Runtime·DB·도구 Version
-3. 재현 명령
-4. PASS·FAIL 집계와 Exit Code
+3. 재현 명령과 Exit Code
+4. PASS·FAIL·SKIP 집계
 5. 결과 파일·로그·Test 경로
-6. Mock·미연동·후속 제외 범위
+6. Mock·미연동·제외 범위
+7. 해당 산출물을 소비한 후속 단계의 결과
 
 ## 6. 진입 결정
 
-계약·대표 Data·Web은 5주차 입력으로 사용할 수 있으나 Vector DB, Backend, Backend–AI, Mobile Gate가 열려 있다. 따라서 5주차는 **조건부 진입**하며 첫 작업은 `W5-G01`, `W5-G04`~`W5-G07`, `W5-G09` 해제다.
-
-Gate와 독립적인 계약 Test·비교 계획·안전 규칙 Test는 병행할 수 있지만, 전체 Runtime 또는 E2E 완료로 승격하지 않는다.
+5주차는 **Feature Complete 목표로 진입**한다. 8월 10일 Gate 복구가 지연되면 후속 일정과 담당 Blocker를 즉시 갱신하며, 목표를 자동으로 “최소 연결”로 낮추지 않는다. 8월 14일 `W5-G12`가 실패하면 `FEATURE_COMPLETE`가 아니라 `INTEGRATION_BLOCKED` 또는 `DONE_WITH_LIMITATION`으로 판정한다.

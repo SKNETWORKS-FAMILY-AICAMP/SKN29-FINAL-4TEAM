@@ -1,50 +1,55 @@
 # 5주차 우선순위 Backlog
 
-> 기준일: **2026-08-07 KST**
-> 기간: **2026-08-10 ~ 2026-08-14**
-> 진입 기준: [5주차 진입 조건](week5-entry-criteria.md)
-> 운영 원칙: **Gate 복구 → 최소 수직 연결 → AI·RAG 안전 기능 → 소비자 연결**
+> 기준일: **2026-08-10 KST**  
+> 기간: **2026-08-10 ~ 2026-08-14**  
+> 기준 Commit: `f3c66b3cbfd41852440bf0726722438612d6885f`  
+> 운영 순서: **Gate → Runtime 생산 → 실제 소비 → 대표 E2E → 전체 회귀**
 
-## 1. P0 — 진입 Gate와 이관 결함
+## 1. P0 실행 순서
 
-| 순서 | Backlog | 담당 | 선행 | 결과물·완료 증거 | 목표 | 상태 |
+| 순서 | 마감 | 산출물 | 주관 | 선행 산출물 | 완료 증거 | 상태 |
 |---:|---|---|---|---|---|---|
-| 1 | `W5-G01` 3.3·3.6 기준선 Commit과 Issue 대조 | 윤승혁·김은진 | - | Commit, WBS·Issue 링크, 담당자 회신 | 8/10 | 준비 중 |
-| 2 | `W5-G06` Backend Python·Test·Migration Gate 복구 | 최지용·김은진 | 기준 Commit | Python 3.13.13, pytest 집계, Migration Drift | 8/10 | 차단 |
-| 3 | `W5-G04` AI Test·팀 DB pgvector 재현 | 이동윤·김은진 | 대표 Data·DB 접속 | AI Test, Index 로그, 제품·증상 Filter 평가 | 8/10 | 차단 |
-| 4 | `W5-G09` Mobile SDK Platform Gate 복구 | 양정현·김은진 | 기준 Commit | Core·Customer·Technician Test, APK | 8/10 | 차단 |
-| 5 | `W5-G05` AI Schema–State Event Mapping 확정 | 이동윤·최지용 | 계약 1.0.0 | 요청·응답 Schema, Event·오류·Fallback Mapping Test | 8/10 | 검토 대기 |
-| 6 | `W5-G07` Backend–AI 최소 수직 연결 | 최지용·이동윤 | `W5-G05`, `W5-G06` | 증상 제출→HTTP→검증→Event→DB 저장·추적 ID E2E | 8/11 | 미착수 |
-| 7 | `T-019`·`T-022`·`T-023` 잔여 Runtime 재계획 | 최지용 | `W5-G06`, 계약 Gate | Care·Inquiry·Action별 구현 범위, Test와 5주차 목표일 | 8/11 | 인계 준비 |
-| 8 | `T-040`·`T-041` 상담·방문 Operation 인계 확정 | 최지용·한예나 | `T-023` 대상 Action Runtime | OpenAPI·DB·409·멱등 Test와 Web Remote 연결 순서 | 8/14 | 계약 전용 |
+| 1 | 8/10 오전 | 계획·WBS·Scope·Dependency 기준본 | 윤승혁 | 팀원별 5주차 지침 | 문서 정합성 검사·변경 이력 | 진행 중 |
+| 2 | 8/10 오전 | 계약·Data·Backend·AI·Web·Mobile 동일 Commit Gate | 김은진·영역 담당 | 계획 기준 Commit | 명령·Exit Code·결과 경로 | 재검증 필요 |
+| 3 | 8/10 | 상담사 Inquiry 조회·고객 문진 Runtime | 최지용 | Backend·계약 Gate | API·권한·DB Test | 미판정 |
+| 4 | 8/10 | Multi-Agent 책임·Schema·Event 계약 | 이동윤·윤승혁·최지용 | 계약 Gate | Architecture·Mapping Test | 미판정 |
+| 5 | 8/10 | Web 비동기 Remote 기반·Mobile 제품/구독 Remote | 한예나·양정현 | 대상 Operation | Test·Build·Remote 증거 | 미판정 |
+| 6 | 8/11 | 실제 LLM·팀 DB pgvector Retrieval | 이동윤·김은진 | Data·AI Gate | 검색·평가·LLM Schema Test | 미판정 |
+| 7 | 8/11 | Backend↔AI 실제 HTTP 수직 연결 | 최지용·이동윤 | Agent 계약·Backend Gate | HTTP·Event·DB·`correlation_id` | 미판정 |
+| 8 | 8/11 | Web 상담 목록·상세 Remote | 한예나 | 상담 조회 Runtime | Pagination·Filter·409 Test | 미판정 |
+| 9 | 8/12 | 추가 질문·위험·근거·Fallback Runtime | 이동윤·최지용 | HTTP 수직 연결·Vector | 정상·위험·근거 없음 Test | 미판정 |
+| 10 | 8/12 | 상담 Start·Summary·Confirm·Complete Runtime | 최지용·한예나 | 상담 Operation | API·DB·State·Web Test | 미판정 |
+| 11 | 8/12 | 방문 Review·Create·Schedule·Confirm Runtime | 최지용 | 상담 완료·후반 Action 승인 | API·권한·상태 Test | 미판정 |
+| 12 | 8/12 | Web·Mobile AI/Evidence·Fallback 소비 | 한예나·양정현 | 공개 DTO·Backend Runtime | DTO·UiState·비노출 Test | 미판정 |
+| 13 | 8/13 오전 | Visit Remote·E2E 후반 Operation | 최지용·한예나·양정현 | 방문 Runtime | 실제 Remote·기사 권한 Test | 미판정 |
+| 14 | 8/13 오전 | 대표 고객→AI→상담→방문→후속 E2E 1차 PASS | 전 팀원·김은진 | 1~13 산출물 | 단계별 HTTP·DB·State·UI 증거 | 미판정 |
+| 15 | 8/13 오후 | P0 동결 Commit | 윤승혁 | E2E 1차 결과 | SHA·예외 승인 기록 | 미판정 |
+| 16 | 8/14 | 전체 회귀·대표 E2E 재실행·Feature Complete 판정 | 김은진·윤승혁 | 동결 Commit | QA Summary·Exit Gate | 미판정 |
 
-## 2. P0 — 5주차 AI·RAG·안전 구현
+## 2. P0 완료 경계
 
-| 순서 | WBS | 담당 | 선행 산출물 | 완료 증거 | 목표 | 상태 |
-|---:|---|---|---|---|---|---|
-| 9 | `T-025` 단일 RAG·선택형 책임 분리 비교 | 이동윤 | `W5-G02`, `W5-G05` | 동일 입력·출력 Fixture, 비교 결과, 선택 결정 | 8/10~8/11 | 미착수 |
-| 10 | `T-027` 위험·사용 안내 분류 | 이동윤 | 안전 규칙·구조화 Schema | 위험 조합·표현 변형·금지 출력 Test | 8/11~8/12 | 미착수 |
-| 11 | `T-026` 추가 질문 소비자 연동 | 이동윤·최지용 | `W5-G07`, 질문 Schema | Backend Event·DB, Web·Mobile DTO Test | 8/12 | 부분 구현 |
-| 12 | `T-028A` 제품·세대 기반 검색 | 이동윤 | `W5-G03`, `W5-G04`, `T-027` | 공식 근거·페이지·관리 이력 구조화 출력 | 8/12~8/13 | 미착수 |
-| 13 | `T-028B` `EvidenceCardDTO` Backend 조립 | 최지용 | `T-028A`, 계약 Example | 응답 DTO, 내부 경로·원문 비노출 Test | 8/13~8/14 | 미착수 |
-| 14 | `T-031` 근거 없음 Guard | 이동윤 | `T-027`, `T-028A` | 임의 자가조치 차단·상담 필요 상태 Test | 8/13~8/14 | 미착수 |
-| 15 | `T-032` Timeout·Retry·Fallback E2E | 이동윤·최지용 | `W5-G07`, `T-031` | Timeout·1회 재시도·안전 Template·상담 Event·DB Test | 8/14 | 부분 구현 |
+- P0 완료는 파일 존재가 아니라 실제 URL·권한·Service·DB·State·AI·소비자 실행 증거로 판정한다.
+- Web·Mobile은 Mock 자동 대체 없이 Remote 경로로 대표 E2E에 참여한다.
+- AI는 실제 LLM·팀 DB Vector와 연결하되, Provider 장애는 별도 Fallback E2E로 기록한다.
+- 대표 E2E 1차 PASS는 8월 13일, 최종 판정은 8월 14일 최신 Commit 재실행 결과다.
+- 실패한 P0는 담당자·해제 조건·목표 시간을 기록하고 완료로 표시하지 않는다.
 
-## 3. P1 — 발표 피드백 대응
+## 3. P1 — 5주차 필수 범위 밖
 
-| Backlog | 담당 | 결과물 | 범위 통제 |
-|---|---|---|---|
-| 역할별 기대효과와 KPI 산식 | 윤승혁·김은진 | 고객·상담사·기사·기업 KPI 정의 | 실측 전 절감률 주장 금지 |
-| 임베딩 후보 비교 계획 | 이동윤·김은진 | Recall·MRR/nDCG·지연·메모리·Hard Negative 표 | 비교 전 `bge-m3` 최적 주장 금지 |
-| 생성 모델 성능·비용 비교 계획 | 이동윤 | Schema 성공률·안전·지연·비용 평가안 | 실제 연결 전 후보 모델로 표현 |
-| 대표 문의 1건과 사용자 Label | 윤승혁·한예나·양정현 | 역할·상태 Label이 있는 최종 발표 흐름 | 미구현 화면은 설계안 표시 |
-| Migration 범위 설명 | 최지용·김은진 | 계약·적용·활성·제외 Table 수와 이유 | 코드 검산 전 숫자 사용 금지 |
-| 경쟁·배포 방식 검토 | 윤승혁·이동윤 | 공개 근거 Benchmark, 외부·로컬·Hybrid 비교 | 경쟁사 내부 시스템 단정 금지 |
+| P1 항목 | 5주차 허용 범위 | 착수 조건 |
+|---|---|---|
+| 운영 Dashboard | 요구·지표 메모 | P0 E2E·회귀 PASS 후 |
+| Graph DB | 도입 판단 기록 | pgvector P0 완료 후 |
+| Kubernetes | 배포 설계 검토 | 6주차 Release Gate |
+| 제품 모델 대규모 확대 | 후보 목록 | 대표 제품 E2E PASS 후 |
+| 추가 Agent 확대 | 필요성 기록 | 현재 Agent Routing·Fallback PASS 후 |
+| 대규모 UI 재설계 | 결함 메모 | Remote 전환·E2E PASS 후 |
 
 ## 4. 주간 Exit 조건
 
-- `W5-G04`~`W5-G07`의 실행 증거가 확보됐다.
-- `T-025` 비교 결정과 `T-027` 안전 분류 Test가 있다.
-- `T-028A` 검색 결과가 `T-028B` DTO로 전달되는 계약·Runtime 경계가 확인된다.
-- Timeout·근거 없음 실패가 안전 Template 또는 상담 전환으로 종료된다.
-- WBS·Issue·인계 문서가 같은 담당자·상태·목표일을 나타낸다.
+1. P0 Runtime이 실제 URL과 DB에서 동작한다.
+2. 실제 LLM·Vector·Backend HTTP 경계가 통과한다.
+3. Web·Mobile이 확정 DTO와 서버 State를 Remote로 소비한다.
+4. 정상 대표 E2E가 8월 13일 최소 1회 PASS한다.
+5. 8월 13일 오후 동결 후 8월 14일 전체 회귀와 E2E가 재실행된다.
+6. WBS·Scope·Dependency·Owner·Exit 문서가 같은 담당자·날짜·증거를 가리킨다.
