@@ -106,6 +106,7 @@ def test_smoke_import_is_idempotent_and_only_repairs_dirty_fields():
     assert len(first.fixture_set_sha256) == 64
 
     assert User.objects.count() == 8
+    assert User.objects.filter(is_synthetic=True).count() == 8
     assert CustomerProfile.objects.count() == 6
     assert ProductModel.objects.count() == 1
     assert CustomerSubscription.objects.count() == 6
@@ -178,6 +179,7 @@ def test_full_import_preserves_provenance_and_history_invariants():
     }
 
     assert User.objects.count() == 16
+    assert User.objects.filter(is_synthetic=True).count() == 16
     assert CustomerProfile.objects.count() == 12
     assert ProductModel.objects.count() == 1
     assert CustomerSubscription.objects.count() == 12

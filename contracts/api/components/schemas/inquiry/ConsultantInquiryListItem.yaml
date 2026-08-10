@@ -1,0 +1,81 @@
+title: ConsultantInquiryListItem
+type: object
+description: 본인 배정 문의 목록에서 상담사에게 허용하는 최소 합성 Projection
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - inquiry_id
+  - inquiry_code
+  - status
+  - state_version
+  - risk_level
+  - priority
+  - symptom_summary
+  - customer_display_name_masked
+  - product_model
+  - current_assignee_type
+  - received_at
+  - updated_at
+  - waiting_seconds
+  - allowed_actions
+properties:
+  inquiry_id:
+    type: string
+    format: uuid
+  inquiry_code:
+    type: string
+    maxLength: 48
+  status:
+    type: string
+    enum:
+      - DRAFT
+      - QUESTIONNAIRE_IN_PROGRESS
+      - AI_GUIDANCE
+      - CONSULTATION_REQUIRED
+      - CONSULTATION_IN_PROGRESS
+      - VISIT_REVIEW_PENDING
+      - VISIT_SCHEDULING
+      - VISIT_SCHEDULED
+      - COMPLETION_PENDING
+      - REVISIT_REQUIRED
+      - REOPENED
+      - RESOLVED
+      - CANCELLED
+  state_version:
+    type: integer
+    minimum: 1
+  risk_level:
+    type: string
+    enum: [general, caution, danger]
+  priority:
+    type: string
+    enum:
+      - LOW
+      - NORMAL
+      - HIGH
+      - URGENT
+  symptom_summary:
+    type: string
+    maxLength: 1000
+  customer_display_name_masked:
+    type: string
+    maxLength: 80
+  product_model:
+    type: string
+    maxLength: 120
+  current_assignee_type:
+    type: string
+    enum: [CONSULTANT]
+  received_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time
+  waiting_seconds:
+    type: integer
+    minimum: 0
+  allowed_actions:
+    type: array
+    items:
+      $ref: ../workflow/AllowedAction.yaml

@@ -1,5 +1,51 @@
 title: StateTransitionResult
 type: object
 description: 상태 전환 결과
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required:
+  - message
+  - inquiry_id
+  - status
+  - state_version
+  - allowed_actions
+  - idempotent_replay
+  - resource
+properties:
+  message:
+    type: string
+    minLength: 1
+    maxLength: 300
+  inquiry_id:
+    type: string
+    format: uuid
+  status:
+    type: string
+    enum:
+      - DRAFT
+      - QUESTIONNAIRE_IN_PROGRESS
+      - AI_GUIDANCE
+      - CONSULTATION_REQUIRED
+      - CONSULTATION_IN_PROGRESS
+      - VISIT_REVIEW_PENDING
+      - VISIT_SCHEDULING
+      - VISIT_SCHEDULED
+      - COMPLETION_PENDING
+      - REVISIT_REQUIRED
+      - REOPENED
+      - RESOLVED
+      - CANCELLED
+  state_version:
+    type: integer
+    minimum: 1
+  allowed_actions:
+    type: array
+    items:
+      $ref: ./AllowedAction.yaml
+  idempotent_replay:
+    type: boolean
+  resource:
+    oneOf:
+      - $ref: ../consultation/ConsultationRecord.yaml
+      - $ref: ../visit/VisitDetail.yaml
+      - type: "null"

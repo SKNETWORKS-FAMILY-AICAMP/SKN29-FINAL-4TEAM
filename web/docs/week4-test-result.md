@@ -80,4 +80,49 @@ npm.cmd run build
 - `docs/actual-api-readiness-checklist.md` 링크 대상 파일 존재 확인
 - `VITE_BACKEND_PROXY_TARGET`이 README와 `.env.example`에 동일하게 존재함을 확인
 - 최소 지원 버전과 이번 재검증 버전을 구분하도록 README 문구 수정
-- 실제 명령을 다른 환경에서 끝까지 실행했는지는 추가 확인 필요
+- 다른 팀원이 README 명령으로 교차 실행해 같은 성공 결과를 확인함
+
+## 2026-08-04 구현 준비 후 재검증
+
+실제 API 구현 코드는 변경하지 않고 문서·준비 작업 뒤 현재 Mock 기준선을 다시 확인했다.
+
+| 검사 | 결과 |
+| --- | --- |
+| `npm.cmd test -- --run` | 26 files, 109 tests 성공·실패 0 |
+| `npm.cmd run lint` | 성공·오류 0 |
+| `npm.cmd run build` | TypeScript·Production Build 성공, 117 modules |
+| 로컬 Browser | 목록·상세·상담·방문 필요 입력 영역 표시 성공 |
+| Browser Console | Error 0 |
+
+수동 확인 경로는 상담사 목록 → 처리 중인 문의 → `INQ-20260704-0013` 상세 → 방문 필요 선택 → 방문 접수 정보 표시다. 화면 상단의 `화면 업무 데이터는 Mock입니다.` 안내를 확인했으며 실제 API 성공으로 기록하지 않는다.
+
+## 2026-08-04 발표 전 최종 검증
+
+public npm Registry 사용 승인 후 의존성을 새로 설치하고 같은 기준을 다시 검증했다.
+
+| 검사 | 최종 결과 |
+| --- | --- |
+| `npm.cmd ci` | 성공, 241 packages 설치·242 packages 검사 |
+| npm 보안 요약 | high severity 3건, `npm audit fix --force` 미실행 |
+| `npm.cmd test -- --run` | 26 files, 109 tests 성공·실패 0 |
+| `npm.cmd run lint` | 성공·오류 0 |
+| `npm.cmd run build` | 성공, 117 modules·CSS 136.79 kB·JS 398.42 kB |
+| 화면 시연 | 목록 → 상세 → 공식 근거 → 409 입력 유지 → 방문 전환 3회 성공 |
+| Route Guard | 상담사 역할의 `/admin` 접근이 `/forbidden`으로 차단됨 |
+
+화면 시연은 합성 Mock 기준이며 실제 상담·방문 Backend 저장 성공을 뜻하지 않는다.
+
+## 2026-08-05 발표 Source 동결 검증
+
+발표 Source Commit `1d1011d`을 기준으로 의존성을 새로 설치하고 전체 검증을 다시 실행했다.
+
+| 검사 | 최종 결과 |
+| --- | --- |
+| `npm.cmd ci` | 성공, 241 packages 설치·242 packages 검사 |
+| npm 보안 요약 | high severity 3건, `npm audit fix --force` 미실행 |
+| `npm.cmd test` | 27 files, 113 tests 성공·실패·Skip 0 |
+| `npm.cmd run lint` | 성공·오류 0 |
+| `npm.cmd run build` | 성공, TypeScript 검사·118 modules 변환 |
+| 대표 문의 | `DEMO-INQ-002` 완료 상세·출수량 저하·공식 매뉴얼 38쪽 근거 직접 조회 Test 성공 |
+
+`DEMO-INQ-002`는 팀 승인 대표 E2E 계약의 최종 `RESOLVED` Snapshot이다. 상담·409·방문 행동은 각 행동이 허용된 별도 합성 문의로 재현하며 실제 Backend 저장 성공으로 기록하지 않는다.

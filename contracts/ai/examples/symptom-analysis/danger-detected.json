@@ -1,7 +1,7 @@
 {
   "request": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b202",
-    "correlation_id": "corr-trace-20260729-002",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c002",
     "ai_request_id": "ai-req-20260729-002",
     "state_version": 3,
     "raw_symptom": "정수기 밑 바닥으로 물이 줄줄 새고 전선 근처에서 타는 냄새가 나요.",
@@ -11,7 +11,7 @@
   },
   "response": {
     "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b202",
-    "correlation_id": "corr-trace-20260729-002",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c002",
     "ai_request_id": "ai-req-20260729-002",
     "state_version": 3,
     "status": "SUCCEEDED",
@@ -32,6 +32,7 @@
       "risk_level": "danger",
       "priority": "priority_consultation",
       "requires_consultation": true,
+      "matched_safety_rule_ids": ["SAFETY-LEAK-001", "SAFETY-ELECTRICAL-001"],
       "detected_risks": ["누수", "전기 냄새/연기"],
       "safety_reason": "제품 하부 누수 및 전선 주위 탄냄새로 심각한 감전/화재 위험이 감지되었습니다."
     },
@@ -45,17 +46,6 @@
         "직접 수리를 시도하지 마시고 전문 A/S 기사 방문을 요청하세요."
       ]
     },
-    "evidence_references": [
-      {
-        "document_title": "WPU-JAC104D 사용설명서",
-        "document_version": "v1.0",
-        "page": 5,
-        "chunk_id": "WPUJAC104DWH_MANUAL_P05_C02",
-        "official_url": "https://www.skmagic.com/manual/WPUJAC104DWH",
-        "summary": "안전을 위한 주의사항: 제품 누수 및 타는 냄새 발생 시 전원을 끄고 원수 밸브를 잠근 후 고객센터로 연락하십시오.",
-        "similarity_score": 0.95,
-        "verification_status": "official_verified"
-      }
-    ]
+    "evidence_references": []
   }
 }

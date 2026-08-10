@@ -1,5 +1,31 @@
 title: ProductSummary
 type: object
-description: 제품 요약
+description: T-018 R1 고객 본인 구독에 포함되는 제품 최소 Projection
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required:
+  - product_model_id
+  - model_code
+  - model_name
+  - generation_code
+  - manufacturer
+properties:
+  product_model_id:
+    type: string
+    format: uuid
+    description: ProductModel.public_id 공개 UUID
+  model_code:
+    type: string
+    const: WPUJAC104DWH
+    description: R1에서 허용하는 단일 정수기 모델 코드
+  model_name:
+    type: string
+    minLength: 1
+    maxLength: 150
+  generation_code:
+    type: [string, "null"]
+    maxLength: 40
+  manufacturer:
+    type: string
+    minLength: 1
+    maxLength: 100

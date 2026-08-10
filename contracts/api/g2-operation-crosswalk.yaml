@@ -1,0 +1,129 @@
+contract:
+  name: g2-operation-crosswalk
+  version: 1.0.0
+  status: G2_ACTIVE_CANDIDATE
+  owner: BACKEND_DB
+  policy_baseline: 윤승혁 PM 2026-08-04 14:43 KST 회신
+  included_decisions: [DEC-001, DEC-002, DEC-003, DEC-004, DEC-005, DEC-007, DEC-009]
+  excluded_decisions: [DEC-006, DEC-008]
+  runtime_implementation_start_allowed: false
+  consumer_integration_start_allowed: false
+
+operations:
+  - dec: DEC-002
+    method: GET
+    path: /inquiries
+    operation_id: listConsultantInquiries
+    request_schema: null
+    response_schema: ConsultantInquiryListData
+    event: null
+    transition_rule: null
+    permission_scope: ASSIGNED_INQUIRIES
+    runtime_status: IMPLEMENTED
+  - dec: DEC-002
+    method: GET
+    path: /inquiries/{id}
+    operation_id: getConsultantInquiryDetail
+    request_schema: null
+    response_schema: ConsultantInquiryDetail
+    event: null
+    transition_rule: null
+    permission_scope: ASSIGNED_INQUIRIES
+    runtime_status: IMPLEMENTED
+  - dec: DEC-003
+    method: POST
+    path: /inquiries/{id}/start-consultation
+    operation_id: startConsultation
+    request_schema: StateTransitionRequest
+    response_schema: StateTransitionResult
+    event: START_CONSULTATION
+    transition_rule: TR-INQ-014
+    permission_scope: ASSIGNED_INQUIRIES
+    runtime_status: NOT_IMPLEMENTED
+  - dec: DEC-003
+    method: PATCH
+    path: /inquiries/{id}/consultation-summary
+    operation_id: updateConsultationSummary
+    request_schema: SaveConsultationRequest
+    response_schema: StateTransitionResult
+    event: UPDATE_CONSULTATION_SUMMARY
+    transition_rule: TR-INQ-015
+    permission_scope: ASSIGNED_INQUIRIES
+    runtime_status: NOT_IMPLEMENTED
+    dec009_boundary: USER_TRIGGERED_SAVE_ONLY
+  - dec: DEC-003
+    method: POST
+    path: /inquiries/{id}/consultation-summary/confirm
+    operation_id: confirmConsultationSummary
+    request_schema: StateTransitionRequest
+    response_schema: StateTransitionResult
+    event: CONFIRM_CONSULTATION_SUMMARY
+    transition_rule: TR-INQ-016
+    permission_scope: ASSIGNED_INQUIRIES
+    runtime_status: NOT_IMPLEMENTED
+  - dec: DEC-003
+    method: POST
+    path: /inquiries/{id}/complete-consultation
+    operation_id: completeConsultation
+    request_schema: CompleteConsultationRequest
+    response_schema: StateTransitionResult
+    event: CONSULTATION_COMPLETED
+    transition_rule: TR-INQ-017
+    permission_scope: ASSIGNED_INQUIRIES
+    runtime_status: NOT_IMPLEMENTED
+  - dec: DEC-004
+    method: POST
+    path: /inquiries/{id}/visit-review
+    operation_id: requestVisitReview
+    request_schema: VisitReviewRequest
+    response_schema: StateTransitionResult
+    event: VISIT_REVIEW_REQUIRED
+    transition_rule: TR-INQ-018
+    permission_scope: ASSIGNED_INQUIRIES
+    runtime_status: NOT_IMPLEMENTED
+  - dec: DEC-004
+    method: POST
+    path: /inquiries/{id}/visits
+    operation_id: createVisitRequest
+    request_schema: CreateVisitRequest
+    response_schema: StateTransitionResult
+    event: VISIT_NEEDED
+    transition_rule: TR-INQ-019
+    permission_scope: ASSIGNED_INQUIRIES
+    runtime_status: NOT_IMPLEMENTED
+  - dec: DEC-004
+    method: POST
+    path: /inquiries/{id}/visit-not-needed
+    operation_id: markVisitNotNeeded
+    request_schema: VisitNotNeededRequest
+    response_schema: StateTransitionResult
+    event: VISIT_NOT_NEEDED
+    transition_rule: TR-INQ-034
+    permission_scope: ASSIGNED_INQUIRIES
+    runtime_status: NOT_IMPLEMENTED
+  - dec: DEC-004
+    method: PATCH
+    path: /visits/{visit_id}/schedule
+    operation_id: updateVisitSchedule
+    request_schema: UpdateVisitScheduleRequest
+    response_schema: StateTransitionResult
+    event: UPDATE_VISIT_SCHEDULE
+    transition_rule: [TR-INQ-020, TR-INQ-021]
+    permission_scope: ASSIGNED_INQUIRIES
+    runtime_status: NOT_IMPLEMENTED
+  - dec: DEC-004
+    method: POST
+    path: /visits/{visit_id}/confirm
+    operation_id: confirmVisit
+    request_schema: ConfirmVisitRequest
+    response_schema: StateTransitionResult
+    event: CONFIRM_VISIT
+    transition_rule: TR-INQ-022
+    permission_scope: ASSIGNED_INQUIRIES
+    runtime_status: NOT_IMPLEMENTED
+
+cross_cutting:
+  DEC-001: P0 순서는 목록, 상세, 상담, 방문이며 각 Operation은 독립 Gate를 유지한다.
+  DEC-005: 쓰기 Operation은 state_version, Idempotency-Key, X-Correlation-ID와 409 계약을 사용한다.
+  DEC-007: 역할과 현재 배정을 모두 검증하고 is_synthetic=true인 최소 Projection만 반환한다.
+  DEC-009: 명시적 상담 저장만 API에 포함하며 서버 Draft·자동저장은 포함하지 않는다.

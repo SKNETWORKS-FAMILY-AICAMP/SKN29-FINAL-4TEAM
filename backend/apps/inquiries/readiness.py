@@ -20,6 +20,15 @@ INQUIRIES_DIR = BACKEND_DIR / "apps" / "inquiries"
 INQUIRY_CONTRACT = (
     REPOSITORY_ROOT / "contracts" / "api" / "paths" / "inquiries.yaml"
 )
+QUESTIONNAIRE_REQUEST_SCHEMA = (
+    REPOSITORY_ROOT
+    / "contracts"
+    / "api"
+    / "components"
+    / "schemas"
+    / "inquiry"
+    / "InquiryQuestionnaireRequest.yaml"
+)
 SETTINGS_PATH = BACKEND_DIR / "config" / "settings" / "base.py"
 API_URLS_PATH = BACKEND_DIR / "config" / "api_urls.py"
 MANAGE_PATH = BACKEND_DIR / "manage.py"
@@ -227,6 +236,153 @@ def inspect_api_contract(path: Path) -> dict[str, Any]:
         ),
         "operation_statuses": statuses,
         "operations": operations,
+    }
+
+
+def load_yaml_mapping(path: Path) -> dict[str, Any]:
+    if not path.is_file():
+        return {}
+    try:
+        document = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, yaml.YAMLError):
+        return {}
+    return document if isinstance(document, dict) else {}
+
+
+def path_parameter_schema(
+    path_item: dict[str, Any],
+    parameter_name: str,
+) -> dict[str, Any]:
+    parameters = path_item.get("parameters", [])
+    if not isinstance(parameters, list):
+        return {}
+    for parameter in parameters:
+        if (
+            isinstance(parameter, dict)
+            and parameter.get("name") == parameter_name
+            and parameter.get("in") == "path"
+            and isinstance(parameter.get("schema"), dict)
+        ):
+            return parameter["schema"]
+    return {}
+
+
+def operation_declares_idempotency_key(
+    path_item: dict[str, Any],
+    method: str,
+) -> bool:
+    operation = path_item.get(method, {})
+    if not isinstance(operation, dict):
+        return False
+    parameters = [
+        *(path_item.get("parameters", []) or []),
+        *(operation.get("parameters", []) or []),
+    ]
+    return any(
+        isinstance(parameter, dict)
+        and isinstance(parameter.get("$ref"), str)
+        and parameter["$ref"].endswith("/IdempotencyKey.yaml")
+        for parameter in parameters
+    )
+
+
+def schema_branch_is_typed(branch: Any) -> bool:
+    if not isinstance(branch, dict) or not branch:
+        return False
+    if isinstance(branch.get("$ref"), str):
+        return True
+    if branch.get("type") == "array":
+        return schema_branch_is_typed(branch.get("items"))
+    if branch.get("type") == "object":
+        properties = branch.get("properties")
+        return (
+            branch.get("additionalProperties") is False
+            and isinstance(properties, dict)
+            and bool(properties)
+        )
+    alternatives = branch.get("oneOf") or branch.get("anyOf")
+    return (
+        isinstance(alternatives, list)
+        and bool(alternatives)
+        and all(schema_branch_is_typed(item) for item in alternatives)
+    )
+
+
+def inspect_deferred_runtime_contracts() -> dict[str, Any]:
+    """T-022 공개 쓰기 Runtime 착수 전 미확정 계약을 fail-closed로 감사한다."""
+
+    paths = load_yaml_mapping(INQUIRY_CONTRACT)
+    questionnaire_schema = load_yaml_mapping(QUESTIONNAIRE_REQUEST_SCHEMA)
+    questionnaire_path = paths.get("/inquiries/{id}/questionnaire", {})
+    action_results_path = paths.get("/inquiries/{id}/action-results", {})
+    if not isinstance(questionnaire_path, dict):
+        questionnaire_path = {}
+    if not isinstance(action_results_path, dict):
+        action_results_path = {}
+
+    questionnaire_id_schema = path_parameter_schema(
+        questionnaire_path,
+        "id",
+    )
+    action_results_id_schema = path_parameter_schema(
+        action_results_path,
+        "id",
+    )
+    questionnaire_properties = questionnaire_schema.get("properties", {})
+    answers_schema = (
+        questionnaire_properties.get("answers", {})
+        if isinstance(questionnaire_properties, dict)
+        else {}
+    )
+
+    operations = {
+        "accumulateInquiryQuestionnaire": {
+            "path_id_uuid": (
+                questionnaire_id_schema.get("type") == "string"
+                and questionnaire_id_schema.get("format") == "uuid"
+            ),
+            "idempotency_key_declared": (
+                operation_declares_idempotency_key(
+                    questionnaire_path,
+                    "patch",
+                )
+            ),
+            "answers_typed": schema_branch_is_typed(answers_schema),
+        },
+        "createInquiryActionResult": {
+            "path_id_uuid": (
+                action_results_id_schema.get("type") == "string"
+                and action_results_id_schema.get("format") == "uuid"
+            ),
+            "idempotency_key_declared": (
+                operation_declares_idempotency_key(
+                    action_results_path,
+                    "post",
+                )
+            ),
+        },
+    }
+    blockers = []
+    if not operations["accumulateInquiryQuestionnaire"]["path_id_uuid"]:
+        blockers.append("QUESTIONNAIRE_PATH_ID_NOT_UUID")
+    if not operations["accumulateInquiryQuestionnaire"][
+        "idempotency_key_declared"
+    ]:
+        blockers.append("QUESTIONNAIRE_IDEMPOTENCY_KEY_UNDECLARED")
+    if not operations["accumulateInquiryQuestionnaire"]["answers_typed"]:
+        blockers.append("QUESTIONNAIRE_ANSWERS_UNTYPED")
+    if not operations["createInquiryActionResult"]["path_id_uuid"]:
+        blockers.append("ACTION_RESULTS_PATH_ID_NOT_UUID")
+    if not operations["createInquiryActionResult"][
+        "idempotency_key_declared"
+    ]:
+        blockers.append("ACTION_RESULTS_IDEMPOTENCY_KEY_UNDECLARED")
+
+    return {
+        "ready": not blockers,
+        "operations": operations,
+        "blockers": blockers,
+        "scope": "OPENAPI_ONLY_RUNTIME_START",
     }
 
 
@@ -464,6 +620,7 @@ def audit_readiness(
     tests = runtime_test_files()
     test_count = sum(test_function_count(path) for path in tests)
     api_contract = inspect_api_contract(INQUIRY_CONTRACT)
+    deferred_runtime_contracts = inspect_deferred_runtime_contracts()
     evidence = {
         "runtime_statements": runtime_statements,
         "runtime_implemented_file_count": sum(
@@ -491,6 +648,7 @@ def audit_readiness(
             if api_contract["defined"]
             else "CONTRACT_NOT_DEFINED"
         ),
+        "deferred_runtime_contracts": deferred_runtime_contracts,
         "runtime_test_function_count": test_count,
         "runtime_test_execution_status": (
             "NOT_RUN"
@@ -574,6 +732,14 @@ def main() -> int:
     parser.add_argument("--run-runtime-tests", action="store_true")
     parser.add_argument("--verify-postgresql", action="store_true")
     parser.add_argument(
+        "--require-deferred-runtime-contracts",
+        action="store_true",
+        help=(
+            "OPENAPI_ONLY T-022 쓰기 Runtime의 계약 공백이 모두 해소된 "
+            "경우에만 성공"
+        ),
+    )
+    parser.add_argument(
         "--completion-evidence",
         type=Path,
         help="팀 검토 완료 증거 JSON 경로",
@@ -623,6 +789,11 @@ def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     print(json.dumps(result, ensure_ascii=False, indent=2))
+    if (
+        arguments.require_deferred_runtime_contracts
+        and not result["evidence"]["deferred_runtime_contracts"]["ready"]
+    ):
+        return 3
     if arguments.require_ready and result["status"] != "READY":
         return 2
     return 0

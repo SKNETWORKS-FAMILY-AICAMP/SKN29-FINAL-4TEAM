@@ -29,6 +29,7 @@ def test_leak_danger_classification(risk_classifier, guidance_classifier):
 
     assert assessment.risk_level == RiskLevel.DANGER
     assert assessment.requires_consultation is True
+    assert assessment.matched_safety_rule_ids == ["SAFETY-LEAK-001"]
     assert "제품 하부 및 전원부 주변 누수" in assessment.detected_risks
 
     guidance = guidance_classifier.determine_guidance(assessment, raw_text, has_evidence=True)
@@ -43,6 +44,7 @@ def test_electrical_danger_classification(risk_classifier, guidance_classifier):
 
     assert assessment.risk_level == RiskLevel.DANGER
     assert assessment.requires_consultation is True
+    assert assessment.matched_safety_rule_ids == ["SAFETY-ELECTRICAL-001"]
 
     guidance = guidance_classifier.determine_guidance(assessment, raw_text, has_evidence=True)
     assert guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
@@ -54,6 +56,7 @@ def test_caution_classification(risk_classifier, guidance_classifier):
     assessment = risk_classifier.classify(raw_text)
 
     assert assessment.risk_level == RiskLevel.CAUTION
+    assert assessment.matched_safety_rule_ids == ["SAFETY-TEMP-ABNORMAL-001"]
 
     guidance = guidance_classifier.determine_guidance(assessment, raw_text, has_evidence=True)
     assert guidance.guidance_status == UsageGuidanceStatus.PARTIAL_STOP
@@ -66,9 +69,17 @@ def test_general_normal_classification(risk_classifier, guidance_classifier):
 
     assert assessment.risk_level == RiskLevel.GENERAL
     assert assessment.requires_consultation is False
+    assert assessment.matched_safety_rule_ids == []
 
     guidance = guidance_classifier.determine_guidance(assessment, raw_text, has_evidence=True)
     assert guidance.guidance_status == UsageGuidanceStatus.NORMAL
+
+
+def test_explicitly_negated_leak_does_not_override_detected_temperature_caution(risk_classifier):
+    assessment = risk_classifier.classify("누수는 아니고 어제부터 냉수가 미지근합니다.")
+
+    assert assessment.risk_level == RiskLevel.CAUTION
+    assert "제품 하부 및 전원부 주변 누수" not in assessment.detected_risks
 
 
 def test_no_evidence_fallback(risk_classifier, guidance_classifier):
@@ -107,6 +118,7 @@ def test_hot_water_burn_risk_never_returns_normal(risk_classifier, guidance_clas
     assessment = risk_classifier.classify(raw_text)
     guidance = guidance_classifier.determine_guidance(assessment, raw_text, has_evidence=True)
     assert assessment.risk_level == RiskLevel.DANGER
+    assert assessment.matched_safety_rule_ids == ["SAFETY-HOT-WATER-001"]
     assert guidance.guidance_status in {UsageGuidanceStatus.PARTIAL_STOP, UsageGuidanceStatus.TOTAL_STOP}
 
 

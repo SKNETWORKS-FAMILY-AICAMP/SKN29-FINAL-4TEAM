@@ -1,0 +1,367 @@
+contract:
+  name: action-operation-crosswalk
+  version: 1.0.0
+  status: PM_BASELINE_CANDIDATE
+  owner: PM_TECHNICAL_INTEGRATION
+  updated_at: 2026-08-07
+  sources:
+    action_registry: ../codes/workflow-actions.yaml
+    allowed_actions: ../state-machine/allowed-actions.yaml
+    inquiry_events: ../state-machine/inquiry-events.yaml
+    openapi: ./openapi.yaml
+  allowed_classifications:
+    - RUNTIME_IMPLEMENTED
+    - OPENAPI_CONFIRMED
+    - CONTRACT_ONLY
+    - DEFERRED
+
+classification_policy:
+  RUNTIME_IMPLEMENTED: 정확히 일치하는 OpenAPI Operation과 Backend Runtime 및 Test 증거가 모두 존재한다.
+  OPENAPI_CONFIRMED: 정확히 일치하는 OpenAPI Operation은 존재하지만 Runtime은 NOT_IMPLEMENTED이다.
+  CONTRACT_ONLY: 4주차 우선 Action이지만 정확히 일치하는 OpenAPI Operation 또는 Runtime이 없다.
+  DEFERRED: 승인된 State Machine Action이지만 4주차 Runtime 범위 밖이며 후속 구현 대상으로 유지한다.
+  rules:
+    - Action Code와 operation_id는 allowed-actions.yaml 값을 단일 원천으로 사용한다.
+    - 유사한 범용 Operation이 있어도 operation_id와 State Machine Event가 정확히 일치하지 않으면 연결하지 않는다.
+    - Web·Mobile Mock만 존재하는 경우 Runtime 구현으로 판정하지 않는다.
+    - RUNTIME_IMPLEMENTED는 Backend Source와 Test 경로를 모두 증거로 기록한다.
+
+summary:
+  total_actions: 23
+  RUNTIME_IMPLEMENTED: 2
+  OPENAPI_CONFIRMED: 9
+  CONTRACT_ONLY: 2
+  DEFERRED: 10
+
+actions:
+  - action: SUBMIT_SYMPTOM
+    event: SUBMIT_SYMPTOM
+    operation_id: submitSymptom
+    classification: RUNTIME_IMPLEMENTED
+    openapi:
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/submit
+      contract_status: CONFIRMED
+    runtime:
+      implemented: true
+      source_evidence:
+        - ../../backend/apps/inquiries/api/views.py
+        - ../../backend/apps/inquiries/services/inquiry_transition_service.py
+      test_evidence:
+        - ../../backend/tests/api/test_t022_submit_symptom.py
+        - ../../backend/tests/unit/inquiries/test_t022_submit_symptom_serializer.py
+
+  - action: CANCEL_INQUIRY
+    event: CANCEL_INQUIRY
+    operation_id: cancelInquiry
+    classification: RUNTIME_IMPLEMENTED
+    openapi:
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/cancel
+      contract_status: CONFIRMED
+    runtime:
+      implemented: true
+      source_evidence:
+        - ../../backend/apps/inquiries/api/views.py
+        - ../../backend/apps/inquiries/services/inquiry_service.py
+      test_evidence:
+        - ../../backend/tests/api/test_t023_cancel_inquiry.py
+        - ../../backend/tests/api/test_cancel_inquiry_contract.py
+
+  - action: SUBMIT_ANSWERS
+    event: SUBMIT_ANSWERS
+    operation_id: submitFollowUpAnswers
+    classification: CONTRACT_ONLY
+    openapi:
+      confirmed: false
+      method: null
+      path: null
+      contract_status: MISSING_EXACT_OPERATION
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+    note: accumulateInquiryQuestionnaire는 operation_id와 Event 연결이 다르므로 동일 Operation으로 간주하지 않는다.
+
+  - action: CUSTOMER_REPORTED_SELF_RESOLVED
+    event: CUSTOMER_REPORTED_SELF_RESOLVED
+    operation_id: reportSelfResolution
+    classification: DEFERRED
+    openapi:
+      confirmed: false
+      method: null
+      path: null
+      contract_status: MISSING_EXACT_OPERATION
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+    note: createInquiryActionResult는 자가조치 결과 누적 API이며 상태 전이 Operation과 정확히 일치하지 않는다.
+
+  - action: REQUEST_CONSULTATION
+    event: REQUEST_CONSULTATION
+    operation_id: requestConsultation
+    classification: CONTRACT_ONLY
+    openapi:
+      confirmed: false
+      method: null
+      path: null
+      contract_status: MISSING_EXACT_OPERATION
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: START_CONSULTATION
+    event: START_CONSULTATION
+    operation_id: startConsultation
+    classification: OPENAPI_CONFIRMED
+    openapi:
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/start-consultation
+      contract_status: CONFIRMED
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: UPDATE_CONSULTATION_SUMMARY
+    event: UPDATE_CONSULTATION_SUMMARY
+    operation_id: updateConsultationSummary
+    classification: OPENAPI_CONFIRMED
+    openapi:
+      confirmed: true
+      method: PATCH
+      path: /inquiries/{id}/consultation-summary
+      contract_status: CONFIRMED
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: CONFIRM_CONSULTATION_SUMMARY
+    event: CONFIRM_CONSULTATION_SUMMARY
+    operation_id: confirmConsultationSummary
+    classification: OPENAPI_CONFIRMED
+    openapi:
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/consultation-summary/confirm
+      contract_status: CONFIRMED
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: CONSULTATION_COMPLETED
+    event: CONSULTATION_COMPLETED
+    operation_id: completeConsultation
+    classification: OPENAPI_CONFIRMED
+    openapi:
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/complete-consultation
+      contract_status: CONFIRMED
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: VISIT_REVIEW_REQUIRED
+    event: VISIT_REVIEW_REQUIRED
+    operation_id: requestVisitReview
+    classification: OPENAPI_CONFIRMED
+    openapi:
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/visit-review
+      contract_status: CONFIRMED
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: VISIT_NEEDED
+    event: VISIT_NEEDED
+    operation_id: createVisitRequest
+    classification: OPENAPI_CONFIRMED
+    openapi:
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/visits
+      contract_status: CONFIRMED
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: UPDATE_VISIT_SCHEDULE
+    event: UPDATE_VISIT_SCHEDULE
+    operation_id: updateVisitSchedule
+    classification: OPENAPI_CONFIRMED
+    openapi:
+      confirmed: true
+      method: PATCH
+      path: /visits/{visit_id}/schedule
+      contract_status: CONFIRMED
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: CONFIRM_VISIT
+    event: CONFIRM_VISIT
+    operation_id: confirmVisit
+    classification: OPENAPI_CONFIRMED
+    openapi:
+      confirmed: true
+      method: POST
+      path: /visits/{visit_id}/confirm
+      contract_status: CONFIRMED
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: UPDATE_PREVISIT_REPORT
+    event: UPDATE_PREVISIT_REPORT
+    operation_id: updatePrevisitReport
+    classification: DEFERRED
+    openapi:
+      confirmed: false
+      method: null
+      path: null
+      contract_status: MISSING_EXACT_OPERATION
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: CONFIRM_PREVISIT_REPORT
+    event: CONFIRM_PREVISIT_REPORT
+    operation_id: confirmPrevisitReport
+    classification: DEFERRED
+    openapi:
+      confirmed: false
+      method: null
+      path: null
+      contract_status: MISSING_EXACT_OPERATION
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: START_VISIT
+    event: START_VISIT
+    operation_id: startVisit
+    classification: DEFERRED
+    openapi:
+      confirmed: false
+      method: null
+      path: null
+      contract_status: MISSING_EXACT_OPERATION
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: VISIT_COMPLETED
+    event: VISIT_COMPLETED
+    operation_id: completeVisit
+    classification: DEFERRED
+    openapi:
+      confirmed: false
+      method: null
+      path: null
+      contract_status: MISSING_EXACT_OPERATION
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: REVISIT_NEEDED
+    event: REVISIT_NEEDED
+    operation_id: requestRevisit
+    classification: DEFERRED
+    openapi:
+      confirmed: false
+      method: null
+      path: null
+      contract_status: MISSING_EXACT_OPERATION
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: SUBMIT_RESOLUTION_FEEDBACK
+    event: SUBMIT_RESOLUTION_FEEDBACK
+    operation_id: submitResolutionFeedback
+    classification: DEFERRED
+    openapi:
+      confirmed: false
+      method: null
+      path: null
+      contract_status: MISSING_EXACT_OPERATION
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: CUSTOMER_REPORTED_UNRESOLVED
+    event: CUSTOMER_REPORTED_UNRESOLVED
+    operation_id: reportUnresolved
+    classification: DEFERRED
+    openapi:
+      confirmed: false
+      method: null
+      path: null
+      contract_status: MISSING_EXACT_OPERATION
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: RESUME_CONSULTATION
+    event: RESUME_CONSULTATION
+    operation_id: resumeConsultation
+    classification: DEFERRED
+    openapi:
+      confirmed: false
+      method: null
+      path: null
+      contract_status: MISSING_EXACT_OPERATION
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: FINALIZE_INQUIRY
+    event: FINALIZE_INQUIRY
+    operation_id: finalizeInquiry
+    classification: DEFERRED
+    openapi:
+      confirmed: false
+      method: null
+      path: null
+      contract_status: MISSING_EXACT_OPERATION
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []
+
+  - action: VISIT_NOT_NEEDED
+    event: VISIT_NOT_NEEDED
+    operation_id: markVisitNotNeeded
+    classification: OPENAPI_CONFIRMED
+    openapi:
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/visit-not-needed
+      contract_status: CONFIRMED
+    runtime:
+      implemented: false
+      source_evidence: []
+      test_evidence: []

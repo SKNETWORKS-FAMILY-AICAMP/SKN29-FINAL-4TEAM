@@ -25,6 +25,7 @@ class CancellationToken:
         self._event = Event()
         self._deadline: float | None = None
         self._deadline_stage: str | None = None
+        self._retry_count = 0
 
     def cancel(self) -> None:
         self._event.set()
@@ -32,6 +33,26 @@ class CancellationToken:
     @property
     def is_cancelled(self) -> bool:
         return self._event.is_set()
+
+    @property
+    def retry_count(self) -> int:
+        return self._retry_count
+
+    def record_retry(self, retry_count: int) -> None:
+        if not 0 <= retry_count <= 1:
+            raise ValueError("AI 내부 재시도 횟수는 0~1 범위여야 합니다.")
+        self._retry_count = max(self._retry_count, retry_count)
+
+    def wait(self, seconds: float) -> None:
+        """취소와 현재 단계 Deadline을 존중하며 Backoff를 대기한다."""
+        if seconds < 0:
+            raise ValueError("대기 시간은 0 이상이어야 합니다.")
+        timeout = seconds
+        if self._deadline is not None:
+            timeout = min(timeout, max(0.0, self._deadline - time.monotonic()))
+        if self._event.wait(timeout=timeout):
+            raise PipelineCancelledError("AI 요청이 취소되었습니다.")
+        self.raise_if_cancelled()
 
     def raise_if_cancelled(self) -> None:
         if self.is_cancelled:

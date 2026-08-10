@@ -4,12 +4,14 @@ import asyncio
 import os
 import time
 from threading import BoundedSemaphore
+from uuid import UUID
 
 from fastapi import APIRouter, Header, Query, Request, Response
 from ..request_models import SymptomAnalysisApiRequest
 from ..errors import AiServiceError
 from ..runtime_policy import get_runtime_policy
 from ....orchestration.pipeline_router import PipelineRouter
+from ....retrieval import RetrievalConfigurationError, RetrievalExecutionError
 from ....common.timeout import CancellationToken, PipelineStageTimeoutError
 from ....schemas.common import AiStage, RiskLevel, UsageGuidanceStatus
 from ....schemas.guidance import UsageGuidance
@@ -50,7 +52,7 @@ async def analyze_symptom(
     request: Request,
     response: Response,
     mode: str = Query("local", pattern="^(mock|local)$", description="실행 모드"),
-    x_correlation_id: str | None = Header(None, alias="X-Correlation-ID"),
+    x_correlation_id: UUID | None = Header(None, alias="X-Correlation-ID"),
 ):
     """백엔드에서 호출하는 증상 분석·안전평가·RAG근거·사용안내 API"""
 
@@ -70,7 +72,7 @@ async def analyze_symptom(
             ai_request_id=req.ai_request_id,
             state_version=req.state_version,
         )
-    response.headers["X-Correlation-ID"] = req.correlation_id
+    response.headers["X-Correlation-ID"] = str(req.correlation_id)
     started_at = time.perf_counter()
     request.state.analysis_started_at = started_at
     log_fields = {
@@ -103,6 +105,7 @@ async def analyze_symptom(
                 risk_level=RiskLevel.CAUTION,
                 priority="consultation_recommended",
                 requires_consultation=False,
+                matched_safety_rule_ids=[],
                 detected_risks=["출수량 저하 소음"],
                 safety_reason="일반 출수 미흡 감지"
             ),
@@ -173,7 +176,7 @@ async def analyze_symptom(
             inquiry_id=req.inquiry_id,
             ai_request_id=req.ai_request_id,
             state_version=req.state_version,
-            retry_count=0,
+            retry_count=cancellation_token.retry_count,
         ) from exc
     except PipelineStageTimeoutError as exc:
         cancellation_token.cancel()
@@ -191,7 +194,33 @@ async def analyze_symptom(
             inquiry_id=req.inquiry_id,
             ai_request_id=req.ai_request_id,
             state_version=req.state_version,
+            retry_count=cancellation_token.retry_count,
+        ) from exc
+    except RetrievalConfigurationError as exc:
+        raise AiServiceError(
+            code="AI-FAILED-01",
+            http_status=503,
+            message="AI 검색 구성이 완료되지 않아 근거 검색을 시작할 수 없습니다.",
+            retryable=False,
+            failure_stage=AiStage.RETRIEVING,
+            correlation_id=req.correlation_id,
+            inquiry_id=req.inquiry_id,
+            ai_request_id=req.ai_request_id,
+            state_version=req.state_version,
             retry_count=0,
+        ) from exc
+    except RetrievalExecutionError as exc:
+        raise AiServiceError(
+            code="AI-FAILED-01",
+            http_status=503,
+            message="AI 근거 검색을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+            retryable=exc.retryable,
+            failure_stage=AiStage.RETRIEVING,
+            correlation_id=req.correlation_id,
+            inquiry_id=req.inquiry_id,
+            ai_request_id=req.ai_request_id,
+            state_version=req.state_version,
+            retry_count=exc.retry_count,
         ) from exc
     except Exception as exc:
         if "worker" not in locals():
@@ -214,6 +243,7 @@ async def analyze_symptom(
         raise
 
     result = pipeline_result.to_analysis_result()
+    log_fields["retry_count"] = result.retry_count
     log_analysis_event(
         "analysis_completed",
         stage=AiStage.COMPLETED.value,

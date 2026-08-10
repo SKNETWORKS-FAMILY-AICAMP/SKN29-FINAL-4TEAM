@@ -1,0 +1,27 @@
+{
+  "request": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b206",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88d004",
+    "ai_request_id": "ai-req-vector-not-configured-001",
+    "state_version": 2,
+    "raw_symptom": "냉수 온도가 평소와 다릅니다.",
+    "model_code": "WPUJAC104DWH",
+    "selected_symptoms": [],
+    "previous_answers": []
+  },
+  "error_response": {
+    "success": false,
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b206",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88d004",
+    "ai_request_id": "ai-req-vector-not-configured-001",
+    "state_version": 2,
+    "error": {
+      "code": "AI-FAILED-01",
+      "message": "AI 검색 구성이 완료되지 않아 근거 검색을 시작할 수 없습니다.",
+      "details": null,
+      "retryable": false,
+      "failure_stage": "RETRIEVING",
+      "retry_count": 0
+    }
+  }
+}

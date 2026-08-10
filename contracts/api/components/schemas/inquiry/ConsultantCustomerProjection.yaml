@@ -1,0 +1,18 @@
+title: ConsultantCustomerProjection
+type: object
+description: 담당 상담사에게만 제공하는 합성 고객 최소 정보이며 주소는 제공하지 않는다.
+x-contract-status: CONFIRMED
+additionalProperties: false
+required: [is_synthetic, display_name, phone]
+properties:
+  is_synthetic:
+    type: boolean
+    const: true
+  display_name:
+    type: string
+    maxLength: 80
+    description: 합성 고객 표시명
+  phone:
+    type: string
+    maxLength: 32
+    description: 합성 시연용 연락처

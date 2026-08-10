@@ -55,6 +55,7 @@ class Command(BaseCommand):
                     "employee_no": user_data["employee_no"],
                     "is_active": True,
                     "is_staff": False,
+                    "is_synthetic": True,
                 },
             )
             user.set_unusable_password()

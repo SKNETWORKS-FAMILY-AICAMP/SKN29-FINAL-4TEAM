@@ -283,7 +283,7 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 18457,
-      "sha256": "FE1E19273C728CA55574C60F5BCA6343CE139A8E7D040EF49D2C53AE5DAC2B89"
+      "sha256": "3EC492CA564A3AD61B8A305055C610CD8CE3F81BFE40AAB4B43ED6227D0486EF"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -570,6 +570,11 @@
       "sha256": "83B5141DF19742303C8FA8B1777E07E0A5C6B7C415AE25D06D6E9952D7180456"
     },
     {
+      "path": "tools/tests/test_data_ci_dependency_paths.py",
+      "size_bytes": 2582,
+      "sha256": "F8D8A259831A07AB0C7D6F834F45E57BFBBDD58679601BBA0CFE449E6C03AF9F"
+    },
+    {
       "path": "tools/tests/test_data_vocabulary.py",
       "size_bytes": 4918,
       "sha256": "2C44C12D0A6D4CAE1FD845C564FDEB434ED2ED3FA3EDF0B7DE6E6E1C8178AF4D"
@@ -664,7 +669,7 @@
     {
       "path": "config/handoff/backend_import_crosswalk.json",
       "size_bytes": 18600,
-      "sha256": "47A47CE38ACC714FF5DE64AB8F69A234B38675D0F3A6C2B991ECB69CDB0945F9"
+      "sha256": "38DA881739F4BCA0DC773E577F2AC7C81DA44F17E95C7CD29A15CF108E719E5A"
     },
     {
       "path": "config/handoff/consumer_profiles.json",
@@ -699,7 +704,7 @@
     {
       "path": "config/workflow/service_contract_mapping.json",
       "size_bytes": 5473,
-      "sha256": "5BE1374922ED7F67C72D4BE8FA8D0AC9F8684FFC9BF9ADFE07F7554C74C71E0F"
+      "sha256": "E0F773A1A31D231F051C9543691FF8F4A065AFDA44C72F94A30C10A372159D52"
     }
   ],
   "template_files": [
@@ -738,7 +743,7 @@
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
       "size_bytes": 1544,
-      "sha256": "2396DC9A4DD9DB7EC844C2FCC0C835F1B05DB868ADFA9CA18FE34B6C37A5CF5D"
+      "sha256": "7F23DB0C47F22F225A08456C7F4B3B6CADEC1C2854CA2C76187B2199E93B67C6"
     },
     {
       "path": "processed/validation/business/latest_representative_e2e_report.json",
@@ -763,12 +768,12 @@
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
       "size_bytes": 1340,
-      "sha256": "F7074F0D74A37429CE8D76D23100CA02D7BA0CE7E825B75C01D7F8149DE8AFFA"
+      "sha256": "C6165DA09A599FF167BB852A67E79239307BD0F565445C09C6BBF86454ED11CF"
     },
     {
       "path": "processed/validation/latest_qa_summary.json",
       "size_bytes": 7046,
-      "sha256": "BAADEA4EF0B1539B4EC2D8F8E33DBC538EB9E9A0C0EFB1199E005CD4369968DF"
+      "sha256": "6ABA1C3094C6AB9B750C91663B6B72C2FCDEE96A5934DAED77FBB59272054038"
     },
     {
       "path": "processed/validation/ocr_evidence/image_manifest.csv",
@@ -788,7 +793,7 @@
     {
       "path": "processed/validation/quality/latest_quality_report.json",
       "size_bytes": 1246,
-      "sha256": "2DBB1F1244266BA2E17106A118E0A8A4E54F2EA6CB1DD6C33E10322CEDAB0C43"
+      "sha256": "39657F2A5D0F27E58399E96384605CC42B90AFD321EF87C40EA5E8BBF75AAD80"
     },
     {
       "path": "processed/validation/refactor/latest_equivalence_report.json",
@@ -798,12 +803,12 @@
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
       "size_bytes": 1151,
-      "sha256": "7128BA567667194202489DE40A508CDCA6845B4E1A6E1C1D6FF743C1BA39E363"
+      "sha256": "10E748EABB8F00F9D3BE9EB1306432E58C8EFD2BDB91C463969247DC5464F6BE"
     },
     {
       "path": "processed/validation/schema/latest_schema_report.json",
       "size_bytes": 8471,
-      "sha256": "1F2F9DF61DDCBC2A25BC51AED4A7880590704678B54C527CC29F449081593552"
+      "sha256": "FBF6F0B43FF70151658CFBF2DFFCF49D87A0B4EAD27E1FAF64D2DB740F663394"
     },
     {
       "path": "processed/validation/step3/latest_step3_report.json",
@@ -849,8 +854,8 @@
     },
     {
       "path": "raw/faq/source-lists/.gitkeep",
-      "size_bytes": 0,
-      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      "size_bytes": 1,
+      "sha256": "01BA4719C80B6FE911B091A7C05124B64EEECE964E09C058EF8F9805DACA546B"
     },
     {
       "path": "raw/manuals/expansion/.gitkeep",
@@ -859,8 +864,8 @@
     },
     {
       "path": "raw/manuals/mvp/.gitkeep",
-      "size_bytes": 0,
-      "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      "size_bytes": 1,
+      "sha256": "01BA4719C80B6FE911B091A7C05124B64EEECE964E09C058EF8F9805DACA546B"
     }
   ],
   "counts": {
@@ -899,8 +904,8 @@
     "canonical_drift_files": 0
   },
   "toolchain": {
-    "python_files": 26,
-    "python_lines": 5611,
+    "python_files": 27,
+    "python_lines": 5683,
     "max_wrapper_lines": 10,
     "max_module_lines": 1226
   },

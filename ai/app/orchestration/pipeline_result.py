@@ -1,6 +1,7 @@
 """파이프라인 실행 결과 Wrapper 모듈."""
 
 from pydantic import BaseModel, Field
+from ..retrieval import RetrievalOutcome
 from ..schemas import AiExecutionStatus, AiStage, SymptomAnalysisResult, UsageGuidanceStatus
 from .pipeline_context import PipelineContext
 
@@ -14,7 +15,8 @@ class PipelineResult(BaseModel):
         """SymptomAnalysisResult DTO 변환"""
         ctx = self.context
         is_no_evidence_fallback = (
-            not ctx.evidence_references
+            ctx.retrieval_outcome == RetrievalOutcome.NO_MATCH
+            and not ctx.evidence_references
             and ctx.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
         )
         return SymptomAnalysisResult(
@@ -24,7 +26,7 @@ class PipelineResult(BaseModel):
             state_version=ctx.trace_context.state_version,
             status=AiExecutionStatus.FALLBACK if is_no_evidence_fallback else AiExecutionStatus.SUCCEEDED,
             failure_stage=AiStage.RETRIEVING if is_no_evidence_fallback else None,
-            retry_count=0,
+            retry_count=ctx.retry_count,
             structured_symptom=ctx.structured_symptom,
             missing_fields=ctx.missing_fields,
             followup_questions=ctx.followup_questions,

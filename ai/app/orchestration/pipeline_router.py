@@ -3,11 +3,13 @@
 import os
 from pathlib import Path
 from typing import Dict, List, Optional
+from uuid import UUID
 
 from ..integrations.embedding.embedding_client import BgeM3EmbeddingClient
 from ..integrations.vector_store.vector_store import PgVectorStore
 from ..retrieval.search.vector_search import VectorSearchService
 from ..retrieval.indexing.index_manifest import IndexManifest
+from ..retrieval import RetrievalConfigurationError
 from .pipeline_context import PipelineContext
 from .pipeline_result import PipelineResult
 from .pipelines.single_rag_pipeline import SingleRAGPipeline
@@ -15,10 +17,24 @@ from ..common.timeout import CancellationToken
 from ..schemas import TraceContext
 
 
+_AUTO_SEARCH_SERVICE = object()
+
+
 class PipelineRouter:
     """파이프라인 실행 라우터 싱글톤"""
-    def __init__(self, search_service: VectorSearchService | None = None):
-        self.search_service = search_service if search_service is not None else self._configured_search_service()
+    def __init__(
+        self,
+        search_service: VectorSearchService | None | object = _AUTO_SEARCH_SERVICE,
+    ):
+        self.retrieval_configuration_error: RetrievalConfigurationError | None = None
+        if search_service is _AUTO_SEARCH_SERVICE:
+            try:
+                self.search_service = self._configured_search_service()
+            except RetrievalConfigurationError as exc:
+                self.search_service = None
+                self.retrieval_configuration_error = exc
+        else:
+            self.search_service = search_service
 
     @staticmethod
     def _configured_search_service() -> VectorSearchService | None:
@@ -27,24 +43,33 @@ class PipelineRouter:
             return None
         model_revision = os.getenv("AI_EMBEDDING_REVISION")
         if not model_revision:
-            raise RuntimeError(
+            raise RetrievalConfigurationError(
                 "AI_VECTOR_DSN 사용 시 재현 가능한 AI_EMBEDDING_REVISION이 필요합니다."
             )
         repository_root = Path(__file__).resolve().parents[3]
         manifest_path = repository_root / "ai" / "configs" / "index_manifest.json"
-        manifest = IndexManifest.load_manifest(str(manifest_path))
-        if manifest is None:
-            raise RuntimeError("AI_VECTOR_DSN 사용 시 Index Manifest가 필요합니다.")
-        return VectorSearchService(
-            BgeM3EmbeddingClient(model_revision=model_revision),
-            PgVectorStore(dsn),
-            index_manifest=manifest,
-        )
+        try:
+            manifest = IndexManifest.load_manifest(str(manifest_path))
+            if manifest is None:
+                raise RetrievalConfigurationError(
+                    "AI_VECTOR_DSN 사용 시 Index Manifest가 필요합니다."
+                )
+            return VectorSearchService(
+                BgeM3EmbeddingClient(model_revision=model_revision),
+                PgVectorStore(dsn),
+                index_manifest=manifest,
+            )
+        except RetrievalConfigurationError:
+            raise
+        except Exception as exc:
+            raise RetrievalConfigurationError(
+                "Vector Store 검색 설정이 Index Manifest와 일치하지 않습니다."
+            ) from exc
 
     def run_pipeline(
         self,
-        inquiry_id: str,
-        correlation_id: str,
+        inquiry_id: UUID,
+        correlation_id: UUID,
         ai_request_id: str,
         state_version: int,
         raw_symptom: str,
@@ -69,5 +94,8 @@ class PipelineRouter:
             previous_answers=previous_answers or []
         )
 
-        pipeline = SingleRAGPipeline(self.search_service)
+        pipeline = SingleRAGPipeline(
+            self.search_service,
+            retrieval_configuration_error=self.retrieval_configuration_error,
+        )
         return pipeline.run(ctx, cancellation_token=token)

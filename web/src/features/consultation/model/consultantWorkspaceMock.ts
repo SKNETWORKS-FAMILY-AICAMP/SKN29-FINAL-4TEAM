@@ -3,6 +3,8 @@ import officialCustomerFixtures from "../../../../../data/synthetic/fixtures/cus
 import officialSubscriptionFixtures from "../../../../../data/synthetic/fixtures/subscriptions.json";
 import evidenceRegistrySource from "../../../../../data/processed/structured/evidence/jac104_evidence_registry.jsonl?raw";
 
+import { getMockBackendInquiryProjection } from "../api/consultantWorkspaceMockProjection";
+
 import {
   parseInquiryCode,
   parseInquiryId,
@@ -13,15 +15,9 @@ import type {
   CounselorAllowedAction,
   CounselorEvidence,
   CounselorInquiry,
-  CounselorPriority,
-  CounselorRisk,
   CounselorStatus,
 } from "./consultantWorkspaceTypes";
-import {
-  getCounselorRoutingDecision,
-  normalizeCounselorRisk,
-  normalizeCounselorStatus,
-} from "./consultantWorkspaceModel";
+import { normalizeCounselorStatus } from "./consultantWorkspaceModel";
 
 interface OfficialInquiryFixture {
   id: number;
@@ -243,52 +239,6 @@ export function getConsultantAllowedActions(
   return getAllowedActions(status, "CONSULTANT", feedbackResolved);
 }
 
-function getPriority(riskLevel: CounselorRisk): CounselorPriority {
-  if (riskLevel === "DANGER") return "URGENT";
-  if (riskLevel === "CAUTION") return "HIGH";
-  if (riskLevel === "GENERAL") return "NORMAL";
-  return "UNKNOWN";
-}
-
-const AI_ROUTING_STATUSES = new Set<CounselorStatus>([
-  "AI_GUIDANCE",
-]);
-
-const GENERAL_AUTO_HANDOFF_STATUSES = new Set<CounselorStatus>([
-  ...AI_ROUTING_STATUSES,
-  "CONSULTATION_REQUIRED",
-  "CONSULTATION_IN_PROGRESS",
-  "VISIT_REVIEW_PENDING",
-  "REOPENED",
-]);
-
-const FIELD_TECHNICIAN_STATUSES = new Set<CounselorStatus>([
-  "VISIT_SCHEDULING",
-  "VISIT_SCHEDULED",
-  "REVISIT_REQUIRED",
-]);
-
-function getRoutedStatus(
-  status: CounselorStatus,
-  riskLevel: CounselorRisk,
-): CounselorStatus {
-  if (
-    riskLevel === "GENERAL" &&
-    GENERAL_AUTO_HANDOFF_STATUSES.has(status)
-  ) {
-    return "VISIT_SCHEDULING";
-  }
-
-  if (
-    (riskLevel === "CAUTION" || riskLevel === "DANGER") &&
-    AI_ROUTING_STATUSES.has(status)
-  ) {
-    return "CONSULTATION_REQUIRED";
-  }
-
-  return status;
-}
-
 const CUSTOMER_PUBLIC_IDS = new Map(
   (officialCustomerFixtures as readonly OfficialPublicIdFixture[]).map(
     (row) => [row.id, row.public_id],
@@ -360,17 +310,13 @@ function createInquiry(
   index: number,
 ): CounselorInquiry {
   const originalStatus = normalizeCounselorStatus(row.status);
-  const riskLevel = normalizeCounselorRisk(row.risk_level);
-  const routing = getCounselorRoutingDecision(riskLevel);
-  const status = getRoutedStatus(originalStatus, riskLevel);
+  const projection = getMockBackendInquiryProjection(row.scenario_id);
+  const allowedActions = projection.allowedActionCodes.map(
+    (code) => ACTIONS[code],
+  );
   const isRoutingPending = ["DRAFT", "QUESTIONNAIRE_IN_PROGRESS"].includes(
     originalStatus,
   );
-  const actionRole =
-    routing.target === "FIELD_TECHNICIAN" ||
-    FIELD_TECHNICIAN_STATUSES.has(status)
-      ? "TECHNICIAN"
-      : "CONSULTANT";
   const usageStatus =
     row.usage_guidance_status as CounselorInquiry["usageStatus"];
   const presentation = TOPIC_PRESENTATION[row.topic_code] ?? {
@@ -378,11 +324,8 @@ function createInquiry(
     displayCode: "상세 확인 필요",
   };
   const customerSequence = String(index + 1).padStart(3, "0");
-  const feedbackResolved =
-    status === "COMPLETION_PENDING" && actionRole === "CONSULTANT";
   const evidence = getPublicEvidence(row.evidence_ids);
   const hasEvidence = evidence.length > 0;
-  const requiresConsultation = routing.target === "CONSULTANT";
 
   return {
     inquiryId: parseInquiryId(row.public_id),
@@ -390,7 +333,7 @@ function createInquiry(
     scenarioId: row.scenario_id,
     customerId: CUSTOMER_PUBLIC_IDS.get(row.customer_id) ?? "공개 고객 ID 확인 필요",
     customerName: `합성 고객 ${customerSequence}`,
-    customerDisplayName: `합성 고객 ${customerSequence.slice(0, 1)}**`,
+    customerDisplayName: `합성 고객 ${customerSequence}`,
     customerPhone: `010-****-${String(1200 + index).slice(-4)} (합성)`,
     serviceAddress: "서울특별시 마포구 월드컵북로 ** (합성)",
     warrantyLabel: "무상보증 · 2027.02까지",
@@ -408,35 +351,20 @@ function createInquiry(
     displayCode: presentation.displayCode,
     performedAction: "고객 입력과 현재 제품 상태를 확인했습니다.",
     actionResult: "현재 상태와 허용 행동을 기준으로 다음 처리를 진행합니다.",
-    status,
-    riskLevel,
-    priority: getPriority(riskLevel),
-    routingTarget: routing.target,
-    routingReason: routing.reason,
-    requiresConsultation,
-    feedbackResolved,
-    feedbackComment: feedbackResolved
+    status: projection.status,
+    riskLevel: projection.riskLevel,
+    priority: projection.priority,
+    routingTarget: projection.routingTarget,
+    routingReason: projection.routingReason,
+    requiresConsultation: projection.requiresConsultation,
+    feedbackResolved: projection.feedbackResolved,
+    feedbackComment: projection.feedbackResolved
       ? "상담 안내 후 증상이 해결되었다고 확인했습니다."
       : undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    waitingMinutes: Math.max(
-      0,
-      Math.round(
-        (new Date(row.updated_at).getTime() -
-          new Date(row.created_at).getTime()) /
-          60_000,
-      ),
-    ),
-    assignedCounselor:
-      routing.target === "FIELD_TECHNICIAN" &&
-      FIELD_TECHNICIAN_STATUSES.has(status)
-        ? "방문기사 자동 인계"
-        : actionRole === "TECHNICIAN"
-          ? "방문기사 담당"
-          : row.assigned_role === "CONSULTANT"
-            ? "한유진"
-            : "미배정",
+    waitingMinutes: projection.waitingMinutes,
+    assignedCounselor: projection.assignedCounselor,
     managementType: "방문관리",
     serviceStartDate: "2026-02-15T09:00:00+09:00",
     lastCareDate: "2026-05-27T09:00:00+09:00",
@@ -454,18 +382,14 @@ function createInquiry(
       : row.requires_fallback
         ? "일부 공식 근거만 확인되어 상담원이 적용 범위를 추가 확인해야 합니다."
         : "공식 설명서와 고객 입력을 함께 확인했습니다.",
-    nextAction: routing.reason,
+    nextAction: projection.routingReason,
     aiStatus: hasEvidence ? "COMPLETED" : "FAILED",
     aiOutcome: hasEvidence ? "공식 근거 확인 완료" : "근거 부족·상담 필요",
     aiSummaryOriginal: hasEvidence
       ? `${presentation.label} 문의입니다. 고객 원문과 공식 근거를 상담 전에 확인해야 합니다.`
       : "사용 가능한 근거가 없어 AI가 임의 안내를 생성하지 않았습니다.",
     stateVersion: row.state_version,
-    allowedActions: getAllowedActions(
-      status,
-      actionRole,
-      feedbackResolved,
-    ),
+    allowedActions,
     evidence,
     timeline: [
       {
@@ -478,12 +402,12 @@ function createInquiry(
         title:
           isRoutingPending
             ? "AI 담당 분류 대기"
-            : routing.target === "FIELD_TECHNICIAN"
+            : projection.routingTarget === "FIELD_TECHNICIAN"
             ? "AI 방문기사 자동 인계"
             : "상담사 확인 필요 분류",
         description: isRoutingPending
           ? "문진 완료 후 위험도 기준으로 담당자를 결정합니다."
-          : routing.reason,
+          : projection.routingReason,
         actor: "AI",
         occurredAt: row.updated_at,
       },
@@ -499,8 +423,8 @@ function createInquiry(
   };
 }
 
-// data/synthetic/fixtures/inquiries.json을 화면용 View Model로 변환한다.
-// 프론트 Mock이 별도 시나리오 상태를 임의로 만들지 않도록 공식 fixture를 단일 원천으로 사용한다.
+// 공식 fixture의 문의 내용과 Mock Backend Projection의 업무 상태를 화면용 View Model로 변환한다.
+// 화면에서는 상태·위험도·우선순위·담당자·허용 행동을 다시 계산하지 않는다.
 export const COUNSELOR_INQUIRIES: readonly CounselorInquiry[] = (
   officialInquiryFixtures as unknown as readonly OfficialInquiryFixture[]
 ).map(createInquiry);

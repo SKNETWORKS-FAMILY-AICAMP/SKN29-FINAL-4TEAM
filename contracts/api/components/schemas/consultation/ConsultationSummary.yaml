@@ -1,5 +1,22 @@
 title: ConsultationSummary
 type: object
 description: 상담 요약
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required: [ai_draft_summary, edited_summary, confirmed_summary, confirmed_at]
+properties:
+  ai_draft_summary:
+    type: [string, "null"]
+    maxLength: 4000
+    readOnly: true
+  edited_summary:
+    type: [string, "null"]
+    maxLength: 4000
+  confirmed_summary:
+    type: [string, "null"]
+    maxLength: 4000
+    readOnly: true
+  confirmed_at:
+    type: [string, "null"]
+    format: date-time
+    readOnly: true

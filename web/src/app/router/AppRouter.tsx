@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import OperationsDashboardPage from "../../pages/admin/OperationsDashboardPage";
+import OperationsInfographicPage from "../../pages/admin/OperationsInfographicPage";
 import LoginPage from "../../pages/auth/LoginPage";
 import ConsultantDashboardPage from "../../pages/consultant/ConsultantDashboardPage";
 import InquiryDetailPage from "../../pages/consultant/InquiryDetailPage";
@@ -68,6 +69,10 @@ export function AppRoutes() {
               <Route
                 path={ROUTE_PATHS.adminDashboard}
                 element={<OperationsDashboardPage />}
+              />
+              <Route
+                path={ROUTE_PATHS.adminInsights}
+                element={<OperationsInfographicPage />}
               />
             </Route>
           </Route>

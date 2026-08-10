@@ -73,9 +73,16 @@ function createMockSession(user: AuthenticatedUser): AuthSession {
   };
 }
 
+function getInitialUser(
+  initialUser: AuthenticatedUser | null | undefined,
+): AuthenticatedUser | null {
+  if (initialUser !== undefined) return initialUser;
+  return authSessionStore.getSession()?.user ?? getDefaultMockUser();
+}
+
 export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const [user, setUser] = useState<AuthenticatedUser | null>(() =>
-    initialUser === undefined ? getDefaultMockUser() : initialUser,
+    getInitialUser(initialUser),
   );
   const [isLoading, setIsLoading] = useState(false);
 

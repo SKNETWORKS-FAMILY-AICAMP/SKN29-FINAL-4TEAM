@@ -1,5 +1,7 @@
 # 4주차 Web 기준선
 
+> 이 문서는 2026-08-03 Source 기준선 기록이다. 8월 5일 Water Bridge 발표 기준은 [presentation/week4-web-presentation-baseline.md](./presentation/week4-web-presentation-baseline.md)를 사용한다.
+
 ## 한 줄 결론
 
 2026-08-03 현재 Web은 **Mock 기준 화면·테스트·빌드는 정상**이지만, 상담사 목록·상세·상담 저장·방문 전환의 실제 Backend API는 아직 연결되지 않았다.

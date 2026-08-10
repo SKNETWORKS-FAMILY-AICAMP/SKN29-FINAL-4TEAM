@@ -9,6 +9,7 @@ from ai.app.retrieval.search.vector_search import VectorSearchService
 from ai.app.safety import RiskClassifier, UsageGuidanceClassifier
 from ai.evaluation.eval_dataset_loader import EvalDatasetLoader
 from ai.evaluation.metrics import calculate_mrr, calculate_recall_at_k, is_safety_compliant
+from ai.evaluation.runners.structuring_runner import StructuringEvaluationRunner
 
 
 class EvaluationRunner:
@@ -100,10 +101,16 @@ class EvaluationRunner:
         """전체 RAG 및 안전 준수율 평가 일괄 수행 및 리포트 저장"""
         rag_metrics = self.run_rag_evaluation()
         safety_metrics = self.run_safety_evaluation()
+        structuring_metrics = StructuringEvaluationRunner(self.loader).run()
 
         report = {
             "rag_evaluation": rag_metrics,
-            "safety_evaluation": safety_metrics
+            "safety_evaluation": safety_metrics,
+            "structuring_evaluation": {
+                "status": structuring_metrics["status"],
+                "dataset": structuring_metrics["dataset"],
+                "summary": structuring_metrics["summary"],
+            },
         }
 
         if save_report:

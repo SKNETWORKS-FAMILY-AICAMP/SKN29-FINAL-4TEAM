@@ -1,0 +1,102 @@
+contract:
+  name: consultation-draft-policy
+  version: 1.0.0
+  status: POLICY_CONFIRMED_RUNTIME_DEFERRED
+  owner: WEB_FRONTEND
+  decision_id: DEC-009
+  decision_status: FINAL_APPROVED
+  approved_by: PM_TECHNICAL_INTEGRATION
+  description: 상담 입력의 같은 탭 15분 복구와 이탈 경고를 정의한다. 서버 Draft와 자동저장은 P0에서 제외한다.
+scope:
+  priority: P0
+  client: WEB
+  form: CONSULTATION_FORM
+  backend_api_change_required: false
+  server_persistence_required: false
+storage:
+  authority: SAME_BROWSER_TAB_MEMORY
+  allowed:
+  - IN_MEMORY_COMPONENT_STATE
+  - IN_MEMORY_STORE
+  forbidden:
+  - LOCAL_STORAGE
+  - SESSION_STORAGE
+  - INDEXED_DB
+  - COOKIE
+  - WINDOW_NAME
+  - URL_QUERY
+  - ROUTER_STATE
+  - SERVER_DRAFT
+  - BACKGROUND_AUTOSAVE
+ttl:
+  duration_minutes: 15
+  anchor: LAST_EDITED_AT
+  refresh_on_edit: true
+  expiry_behavior: DISCARD
+dirty_state:
+  set_when: FORM_VALUE_DIFFERS_FROM_LAST_SERVER_CONFIRMED_VALUE
+  clear_on:
+  - EXPLICIT_SAVE_SUCCESS
+  - CONSULTATION_ACTION_SUCCESS
+  - USER_CANCEL
+  - LOGOUT
+  - PERMISSION_LOSS
+  - TTL_EXPIRED
+navigation_guard:
+  enabled_when: DIRTY_STATE
+  triggers:
+  - PAGE_RELOAD
+  - TAB_CLOSE
+  - BROWSER_CLOSE
+  - EXTERNAL_NAVIGATION
+  mechanism: BROWSER_BEFOREUNLOAD_NATIVE_WARNING
+  custom_message_guaranteed: false
+restore_policy:
+  required_conditions:
+  - draft.is_expired == false
+  - current_user.id == draft.user_id
+  - current_user.role == draft.user_role
+  - latest_detail.permission_granted == true
+  required_precheck:
+  - FETCH_LATEST_INQUIRY_DETAIL
+  - COMPARE_STATE_VERSION
+  version_match_behavior: OFFER_LOCAL_RESTORE
+  version_mismatch_behavior: KEEP_FOR_MANUAL_REVIEW_WITHOUT_AUTO_MERGE
+  forbidden_behaviors:
+  - AUTO_MERGE
+  - AUTO_RETRY
+  - AUTO_SUBMIT
+  - SILENT_OVERWRITE
+failure_policy:
+  permission_403: DISCARD
+  resource_404: DISCARD
+  network_error: RETAIN_UNTIL_TTL
+  server_5xx: RETAIN_UNTIL_TTL
+explicit_save_boundary:
+  decision_id: DEC-003
+  action: UPDATE_CONSULTATION_SUMMARY
+  server_write_allowed: true
+  user_initiated_only: true
+  background_invocation: DENY
+excluded_scope:
+  server_draft_endpoint: true
+  periodic_server_autosave: true
+  cross_tab_restore: true
+  cross_device_restore: true
+  offline_persistent_draft: true
+implementation_gate:
+  policy_contract_status: ACTIVE
+  runtime_implementation_start_allowed: false
+  consumer_integration_start_allowed: false
+  web_runtime_status: DEFERRED_UNTIL_CONSUMER_INTEGRATION_GATE
+  backend_runtime_status: NOT_REQUIRED
+  g2_contract_test_scope:
+  - POLICY_FILE_SCHEMA
+  - SAME_TAB_MEMORY_ONLY
+  - TTL_15_MINUTES
+  - BEFOREUNLOAD_REQUIRED
+  - SERVER_DRAFT_AUTOSAVE_ABSENT
+  deferred_web_acceptance_scope:
+  - ACTUAL_TTL_TIMER_BEHAVIOR
+  - ACTUAL_BEFOREUNLOAD_BEHAVIOR
+  - ACTUAL_RESTORE_AND_DISCARD_BEHAVIOR

@@ -27,7 +27,7 @@ AnalysisFailureStage = Literal[
 class SymptomAnalysisResult(ContractModel):
     """증상 분석 통합 파이프라인 결과 모델"""
     inquiry_id: UUID = Field(..., description="Backend가 발급한 Public UUID")
-    correlation_id: str = Field(..., min_length=1, max_length=100, description="요청 추적 식별자")
+    correlation_id: UUID = Field(..., description="Backend가 발급한 요청 추적 UUID")
     ai_request_id: str = Field(..., min_length=1, max_length=100, description="요청에서 받은 AI 호출 멱등 식별자")
     state_version: int = Field(..., ge=1, description="요청에서 받은 호출 시작 시점 상태 버전")
     status: AiExecutionStatus = Field(AiExecutionStatus.SUCCEEDED, description="AI 실행 결과 상태")

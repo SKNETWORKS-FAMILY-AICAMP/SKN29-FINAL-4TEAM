@@ -1,5 +1,109 @@
 # T-022 최지용 확정 API 기준선이다. Runtime 구현 상태와 별개로 관리한다.
 /inquiries:
+  get:
+    operationId: listConsultantInquiries
+    summary: 담당 상담사 문의 목록 조회
+    description: |
+      인증 상담사에게 현재 배정된 문의만 반환한다. 전화번호 검색, 임의
+      담당자 확대와 Web Mock 전용 Query는 허용하지 않는다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-requirements: [FR-023, NFR-011, NFR-012]
+    x-permission-scope: ASSIGNED_INQUIRIES
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: q
+        in: query
+        schema:
+          type: string
+          maxLength: 200
+      - name: status
+        in: query
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+              - DRAFT
+              - QUESTIONNAIRE_IN_PROGRESS
+              - AI_GUIDANCE
+              - CONSULTATION_REQUIRED
+              - CONSULTATION_IN_PROGRESS
+              - VISIT_REVIEW_PENDING
+              - VISIT_SCHEDULING
+              - VISIT_SCHEDULED
+              - COMPLETION_PENDING
+              - REVISIT_REQUIRED
+              - REOPENED
+              - RESOLVED
+              - CANCELLED
+      - name: risk_level
+        in: query
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum: [general, caution, danger]
+      - name: priority
+        in: query
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum: [LOW, NORMAL, HIGH, URGENT]
+      - name: from
+        in: query
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        schema:
+          type: string
+          format: date
+      - name: sort
+        in: query
+        schema:
+          type: string
+          default: UPDATED_DESC
+          enum: [UPDATED_DESC, UPDATED_ASC, WAITING_DESC, RISK_DESC]
+      - $ref: ../components/parameters/Page.yaml
+      - $ref: ../components/parameters/Size.yaml
+    responses:
+      "200":
+        description: 본인 배정 문의 목록
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/inquiry/ConsultantInquiryListData.yaml
+            examples:
+              assignedSyntheticList:
+                externalValue: ../examples/inquiries/consultant-inquiry-list-success.json
+      "400":
+        $ref: ../components/responses/BadRequest.yaml
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "500":
+        $ref: ../components/responses/InternalServerError.yaml
   post:
     operationId: startInquiry
     summary: 고객 문의 생성
@@ -65,6 +169,55 @@
         $ref: ../components/responses/WorkflowConflict.yaml
       "422":
         $ref: ../components/responses/UnprocessableEntity.yaml
+
+/inquiries/{id}:
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: 조회할 문의의 공개 UUID
+      schema:
+        type: string
+        format: uuid
+  get:
+    operationId: getConsultantInquiryDetail
+    summary: 담당 상담사 문의 상세 조회
+    description: |
+      담당 상담사에게 승인된 합성 Section만 반환한다. 타인·비배정 문의는
+      존재 여부를 숨기기 위해 404를 반환하며 DEC-008 Evidence는 제외한다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-requirements: [FR-023, NFR-011, NFR-012]
+    x-permission-scope: ASSIGNED_INQUIRIES
+    x-excluded-decisions: [DEC-008]
+    security:
+      - BearerAuth: []
+    responses:
+      "200":
+        description: 담당 상담사용 문의 상세
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/inquiry/ConsultantInquiryDetail.yaml
+            examples:
+              assignedSyntheticDetail:
+                externalValue: ../examples/inquiries/consultant-inquiry-detail-success.json
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "404":
+        $ref: ../components/responses/NotFound.yaml
+      "500":
+        $ref: ../components/responses/InternalServerError.yaml
 
 /inquiries/{id}/questionnaire:
   parameters:

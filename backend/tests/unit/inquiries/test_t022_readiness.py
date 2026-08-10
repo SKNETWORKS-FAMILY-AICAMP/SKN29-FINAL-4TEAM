@@ -550,3 +550,60 @@ def test_cli_accepts_completion_evidence_path():
     assert completed.returncode == 0
     assert result["completion_evidence_supplied"] is True
     assert result["completion_blockers"] == ["TEAM_REVIEWED"]
+
+
+def test_deferred_t022_runtime_contract_gaps_fail_closed():
+    result = load_module().inspect_deferred_runtime_contracts()
+
+    assert result["ready"] is False
+    assert result["blockers"] == [
+        "QUESTIONNAIRE_PATH_ID_NOT_UUID",
+        "QUESTIONNAIRE_IDEMPOTENCY_KEY_UNDECLARED",
+        "QUESTIONNAIRE_ANSWERS_UNTYPED",
+        "ACTION_RESULTS_PATH_ID_NOT_UUID",
+        "ACTION_RESULTS_IDEMPOTENCY_KEY_UNDECLARED",
+    ]
+    assert result["operations"] == {
+        "accumulateInquiryQuestionnaire": {
+            "path_id_uuid": False,
+            "idempotency_key_declared": False,
+            "answers_typed": False,
+        },
+        "createInquiryActionResult": {
+            "path_id_uuid": False,
+            "idempotency_key_declared": False,
+        },
+    }
+
+
+def test_deferred_t022_runtime_contract_gate_is_reported_separately():
+    result = load_module().audit_readiness(environ={})
+
+    gate = result["evidence"]["deferred_runtime_contracts"]
+    assert gate["ready"] is False
+    assert gate["blockers"]
+    assert not any(
+        blocker in result["owner_blockers"]
+        for blocker in gate["blockers"]
+    )
+
+
+def test_cli_can_require_deferred_t022_runtime_contracts():
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--require-deferred-runtime-contracts",
+        ],
+        cwd=REPOSITORY_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+
+    result = json.loads(completed.stdout)
+    assert completed.returncode == 3
+    assert result["evidence"]["deferred_runtime_contracts"][
+        "ready"
+    ] is False

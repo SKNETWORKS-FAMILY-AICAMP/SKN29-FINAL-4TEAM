@@ -11,6 +11,25 @@
 - `error-codes/`: 업무 오류 코드 레지스트리
 - `examples/`: 여러 계약을 연결한 대표 흐름 예시
 
+## 공통 기준선
+
+- `api/action-operation-crosswalk.yaml`: 외부 Action 23개의 State Machine Event·OpenAPI·Runtime 분류
+- `api/g2-operation-crosswalk.yaml`: 상담·방문 G2 결정과 Operation 11개의 상세 연결
+
+검증 명령:
+
+```text
+python scripts/contracts/validate_contract_crosswalk.py
+python scripts/contracts/validate_codes.py
+python scripts/contracts/validate_openapi.py
+python scripts/contracts/validate_examples.py
+python -m unittest discover -s tests/contract/api -p "test_*.py" -v
+python -m unittest discover -s tests/contract -p "test_*.py" -v
+```
+
+위 명령은 `contracts/**`, `scripts/contracts/**`, `tests/contract/**` 변경 시
+`.github/workflows/data-ci.yml`에서도 동일한 계약 Gate로 실행된다.
+
 ## 변경 원칙
 
 1. 계약 파일을 먼저 수정한다.

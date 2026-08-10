@@ -21,7 +21,8 @@
 
 - `VITE_USE_MOCK_API=true`, `VITE_MOCK_AUTHENTICATED=true`, `VITE_MOCK_ROLE=CONSULTANT`를 기본으로 한다.
 - 따라서 환경변수를 만들지 않아도 `/`에서 상담 큐로 진입한다.
-- Access·Refresh Token은 `localStorage`·`sessionStorage`에 저장하지 않고 메모리 세션에서만 관리한다.
+- 팀 협의에 따라 새로고침 후에도 로그인을 유지하며 현재 데모 세션은 `localStorage`에서 복원한다.
+- 실제 운영 인증은 XSS 노출을 줄이기 위해 Backend의 HttpOnly Cookie 전환을 우선 검토한다.
 - 공통 HTTP Client가 Access Token과 Correlation ID를 Header에 적용한다.
 - 동시 401은 Refresh 요청 하나를 공유하고, 성공 시 각 원요청을 최대 한 번만 재시도한다. Refresh 실패 또는 재시도 401에서는 세션과 사용자를 제거한다.
 
@@ -66,7 +67,7 @@
 - `ApiResponse`, `ApiError`, `PageInfo`, `TraceContext`는 `contracts/api/components/schemas/common/**` 구조를 따른다.
 - `httpClient`는 JSON, Bearer Header 연결 지점, Timeout, 400·401·403·404·409·422·5xx·네트워크·파싱 오류를 구분한다.
 - Backend Runtime이 없으므로 상담 화면에서 실제 Endpoint를 호출하지 않는다.
-- Demo Login·Refresh·Logout·`/me` 계약 Client와 메모리 세션을 사용하며 실제 Backend Runtime E2E는 별도 검증한다.
+- Demo Login·Refresh·Logout·`/me` 계약 Client와 새로고침 복원 세션을 사용하며 실제 Backend Runtime E2E는 별도 검증한다.
 
 ## 결정 10. CONS-01 조건은 URL에, CONS-02 식별자는 경로에 둔다
 

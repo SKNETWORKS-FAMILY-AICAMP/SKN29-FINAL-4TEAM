@@ -1,6 +1,7 @@
 """안전 규칙 및 금지 표현 YAML 로더 모듈."""
 
 import os
+import re
 from typing import Any, Dict
 import yaml
 
@@ -41,15 +42,31 @@ class SafetyRuleLoader:
         no_evidence = self._safety_rules.get("no_evidence_policy")
         if not isinstance(rules, dict) or not rules or not isinstance(no_evidence, dict):
             raise ValueError("safety_rules.yaml에는 rules와 no_evidence_policy가 필요합니다.")
-        for rule_id, rule in rules.items():
-            required = {"risk_level", "usage_guidance_status", "keywords", "requires_consultation"}
+        stable_rule_ids: set[str] = set()
+        for rule_key, rule in rules.items():
+            required = {
+                "rule_id",
+                "risk_level",
+                "usage_guidance_status",
+                "keywords",
+                "requires_consultation",
+            }
             missing = required.difference(rule)
             if missing:
-                raise ValueError(f"안전 규칙 {rule_id} 필수 키 누락: {sorted(missing)}")
+                raise ValueError(f"안전 규칙 {rule_key} 필수 키 누락: {sorted(missing)}")
+            stable_rule_id = rule["rule_id"]
+            if not isinstance(stable_rule_id, str) or re.fullmatch(
+                r"SAFETY-[A-Z0-9]+(?:-[A-Z0-9]+)*-\d{3}",
+                stable_rule_id,
+            ) is None:
+                raise ValueError(f"안전 규칙 {rule_key}의 rule_id 형식이 잘못되었습니다.")
+            if stable_rule_id in stable_rule_ids:
+                raise ValueError(f"중복 안전 rule_id입니다: {stable_rule_id}")
+            stable_rule_ids.add(stable_rule_id)
             RiskLevel(rule["risk_level"])
             status = UsageGuidanceStatus(rule["usage_guidance_status"])
             if rule["risk_level"] == RiskLevel.DANGER.value and status == UsageGuidanceStatus.NORMAL:
-                raise ValueError(f"안전 규칙 {rule_id}: danger와 NORMAL을 함께 사용할 수 없습니다.")
+                raise ValueError(f"안전 규칙 {rule_key}: danger와 NORMAL을 함께 사용할 수 없습니다.")
 
     def get_safety_rules(self) -> Dict[str, Any]:
         """안전 규칙 딕셔너리 반환"""

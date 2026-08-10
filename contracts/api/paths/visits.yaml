@@ -1,3 +1,153 @@
-# visits API 경로 계약
-# Endpoint와 request/response 참조는 백엔드 API 설계 확정 후 작성한다.
-{}
+# DEC-004 방문 전환·date-only 일정 G2 기계 계약. Runtime과 실제 예약 연동은 제외한다.
+/inquiries/{id}/visit-review:
+  parameters: &inquiry_path_parameters
+    - name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+  post:
+    operationId: requestVisitReview
+    summary: 방문 필요 여부 검토 요청
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: VISIT_REVIEW_REQUIRED
+      transition_rule: TR-INQ-018
+      from_state: CONSULTATION_IN_PROGRESS
+      to_state: VISIT_REVIEW_PENDING
+      visit_mode: REQUIRE_ABSENT
+    x-permission-scope: ASSIGNED_INQUIRIES
+    security: [{BearerAuth: []}]
+    parameters: &write_headers
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+      - $ref: ../components/parameters/CorrelationId.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/visit/VisitReviewRequest.yaml}
+    responses: &workflow_responses
+      "200":
+        description: 방문 상태 전환 성공 또는 동일 요청 Replay
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data: {$ref: ../components/schemas/workflow/StateTransitionResult.yaml}
+      "400": {$ref: ../components/responses/BadRequest.yaml}
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "409": {$ref: ../components/responses/WorkflowConflict.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}
+
+/inquiries/{id}/visits:
+  parameters: *inquiry_path_parameters
+  post:
+    operationId: createVisitRequest
+    summary: 방문 필요 확정 및 미배정 Visit 생성
+    description: Client는 기사나 다음 상태를 보내지 않으며 서버가 ASSIGNING Visit을 생성한다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: VISIT_NEEDED
+      transition_rule: TR-INQ-019
+      from_state: VISIT_REVIEW_PENDING
+      to_state: VISIT_SCHEDULING
+      visit_to_status: ASSIGNING
+      synthetic_technician_id: null
+    x-permission-scope: ASSIGNED_INQUIRIES
+    security: [{BearerAuth: []}]
+    parameters: *write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/visit/CreateVisitRequest.yaml}
+          examples:
+            syntheticVisitHandoff:
+              externalValue: ../examples/visits/create-visit-request.json
+    responses: *workflow_responses
+
+/inquiries/{id}/visit-not-needed:
+  parameters: *inquiry_path_parameters
+  post:
+    operationId: markVisitNotNeeded
+    summary: 방문 불필요 확정
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: VISIT_NOT_NEEDED
+      transition_rule: TR-INQ-034
+      from_state: VISIT_REVIEW_PENDING
+      to_state: COMPLETION_PENDING
+      visit_mode: REQUIRE_ABSENT
+    x-permission-scope: ASSIGNED_INQUIRIES
+    security: [{BearerAuth: []}]
+    parameters: *write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/visit/VisitNotNeededRequest.yaml}
+    responses: *workflow_responses
+
+/visits/{visit_id}/schedule:
+  parameters: &visit_path_parameters
+    - name: visit_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+  patch:
+    operationId: updateVisitSchedule
+    summary: 담당 상담사 합성 기사·date-only 일정 저장
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: UPDATE_VISIT_SCHEDULE
+      transition_rules: [TR-INQ-020, TR-INQ-021]
+      inquiry_state: VISIT_SCHEDULING
+      visit_from_statuses: [ASSIGNING, SCHEDULING]
+      visit_to_status: SCHEDULING
+    x-permission-scope: ASSIGNED_INQUIRIES
+    security: [{BearerAuth: []}]
+    parameters: *write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/visit/UpdateVisitScheduleRequest.yaml}
+          examples:
+            dateOnlySchedule:
+              externalValue: ../examples/visits/update-visit-schedule-request.json
+    responses: *workflow_responses
+
+/visits/{visit_id}/confirm:
+  parameters: *visit_path_parameters
+  post:
+    operationId: confirmVisit
+    summary: 담당 상담사 방문일 확정
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: CONFIRM_VISIT
+      transition_rule: TR-INQ-022
+      from_state: VISIT_SCHEDULING
+      to_state: VISIT_SCHEDULED
+      visit_from_status: SCHEDULING
+      visit_to_status: CONFIRMED
+    x-permission-scope: ASSIGNED_INQUIRIES
+    security: [{BearerAuth: []}]
+    parameters: *write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/visit/ConfirmVisitRequest.yaml}
+    responses: *workflow_responses

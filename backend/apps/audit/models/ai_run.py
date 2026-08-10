@@ -80,6 +80,10 @@ class AIRun(TimestampedModel):
     """Persist one reproducible, contract-validated AI execution."""
 
     class TaskType(models.TextChoices):
+        ANALYZE_SYMPTOM = (
+            "ANALYZE_SYMPTOM",
+            "Analyze symptom pipeline",
+        )
         STRUCTURE_SYMPTOM = (
             "STRUCTURE_SYMPTOM",
             "Structure symptom",
@@ -379,6 +383,7 @@ class AIRun(TimestampedModel):
             models.CheckConstraint(
                 condition=Q(
                     task_type_code__in=[
+                        "ANALYZE_SYMPTOM",
                         "STRUCTURE_SYMPTOM",
                         "GENERATE_QUESTIONS",
                         "ASSESS_RISK",

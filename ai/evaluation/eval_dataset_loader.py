@@ -41,3 +41,21 @@ class EvalDatasetLoader:
                 with open(path, "r", encoding="utf-8") as f:
                     return json.load(f)
         return []
+
+    def load_structuring_dataset(self) -> Dict[str, Any]:
+        """T-026 구조화·누락 필드·추가 질문 평가 기준본을 로딩한다."""
+        path = Path(self.dataset_dir) / "structuring" / "symptom_eval_dataset.json"
+        if not path.is_file():
+            raise FileNotFoundError(f"구조화 평가 기준본이 없습니다: {path}")
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError("구조화 평가 기준본은 Metadata와 cases를 가진 객체여야 합니다.")
+        cases = payload.get("cases")
+        if not isinstance(cases, list) or not cases:
+            raise ValueError("구조화 평가 기준본의 cases는 비어 있지 않은 배열이어야 합니다.")
+        case_ids = [case.get("case_id") for case in cases if isinstance(case, dict)]
+        if len(case_ids) != len(cases) or any(not case_id for case_id in case_ids):
+            raise ValueError("모든 구조화 평가 Case에는 case_id가 필요합니다.")
+        if len(case_ids) != len(set(case_ids)):
+            raise ValueError("구조화 평가 case_id는 중복될 수 없습니다.")
+        return payload

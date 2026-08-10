@@ -1,5 +1,36 @@
 title: SaveConsultationRequest
 type: object
 description: 상담 저장 요청
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required: [state_version]
+anyOf:
+  - required: [summary]
+  - required: [consultation_note]
+  - required: [additional_check]
+  - required: [customer_guidance]
+  - required: [result_code]
+  - required: [usage_guidance_status]
+properties:
+  state_version:
+    type: integer
+    minimum: 1
+  summary:
+    type: string
+    minLength: 1
+    maxLength: 4000
+  consultation_note:
+    type: string
+    maxLength: 8000
+  additional_check:
+    type: string
+    maxLength: 4000
+  customer_guidance:
+    type: string
+    maxLength: 2000
+  result_code:
+    type: string
+    enum: [PENDING, COMPLETED_NO_VISIT, VISIT_REQUIRED, REOPENED_FOLLOWUP]
+  usage_guidance_status:
+    type: string
+    enum: [NORMAL, PARTIAL_STOP, TOTAL_STOP, PENDING_CONSULTATION]

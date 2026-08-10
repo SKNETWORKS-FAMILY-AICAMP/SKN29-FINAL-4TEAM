@@ -12,7 +12,7 @@ class RuntimePolicy:
     overall_timeout_seconds: float
     backend_retry_count: int
     ai_internal_max_retry_count: int
-    ai_internal_retry_enabled: bool = False
+    ai_internal_retry_enabled: bool = True
 
 
 @lru_cache(maxsize=1)
@@ -31,6 +31,6 @@ def get_runtime_policy() -> RuntimePolicy:
         raise ValueError("Backend 자동 재시도는 계약값 0회여야 합니다.")
     if policy.ai_internal_max_retry_count != 1:
         raise ValueError("AI 내부 최대 재시도는 계약값 1회여야 합니다.")
-    if policy.ai_internal_retry_enabled:
-        raise ValueError("현재 Runtime에는 Retry Loop가 없으므로 enabled는 false여야 합니다.")
+    if not policy.ai_internal_retry_enabled:
+        raise ValueError("AI 내부 최대 1회 재시도는 Runtime에서 활성화되어야 합니다.")
     return policy

@@ -397,3 +397,349 @@ Public UUID 분석 요청이 모두 성공했다.
   페이지 저장, 검증 상태 Registry를 계약 공백으로 명시했다.
 - 최지용·한예나·김은진의 검토, 이동윤의 도메인 결정, 윤승혁 PM 최종 승인
   전에는 Active 계약·Runtime·Web 구현에 반영하지 않는다.
+
+### 2026-08-04 Web 1차 CHANGE_REQUEST 반영
+
+- Web이 요청한 Nullable 표현, 숫자 `page_refs`, Backend `link_status`, 공개용
+  `evidence_id`·`display_order`, 필드 길이와 최대 카드 수를 v0.2 제안에
+  반영했다.
+- 문서 버전은 항상 포함하고 값이 없으면 `null`, 카드는 최대 3개, 제목은
+  최대 300자, 검수 요약은 최대 500자로 제안했다.
+- 외부 링크는 API 요청 중 실시간 확인하지 않고 Backend의 허용 도메인 기반
+  사전·비동기 검사 결과를 `AVAILABLE`, `UNAVAILABLE`, `NOT_PROVIDED`로
+  반환하도록 제안했다.
+- Web의 상태 자체 계산 금지 요청은 수용하되 문의 `status_code`·
+  `state_version`·`allowed_actions`는 AI 관할이 아니므로
+  DEC-WEB-BE-002·005와 State 계약의 선행 의존 조건으로 분리했다.
+- 1차 Web 회신은 `CHANGE_REQUEST`, 이동윤의 중간 판정은 `REVISE`, 개정된
+  현재 문서는 2차 검토용 `PROPOSED`로 기록했다.
+
+### 2026-08-04 Backend DEC-008 CR-01~07 통합 수정
+
+- `20260804_이동윤_DEC-WEB-BE-008_수정PROPOSED_v0.2.md`에 Backend
+  `CHANGE_REQUEST` CR-01~07의 `ACCEPT`·`PARTIAL` 판정과 대체 문장을
+  작성했다.
+- P0 공개 경계를 `1 EvidenceCard = 1 EvidenceLink = 1 page`로 수정하고,
+  공식 Landing URL 필수·직접 Download URL 선택 기준을 분리했다.
+- Data 승인 `evidence_summary`에서 Backend Snapshot·화면 공개로 이어지는
+  단일 SSOT, Data→AI→Backend 공개 Gate와 차단 Matrix를 제안했다.
+- 정상 근거 있음·정상 0건·검색 실패·Timeout·운영 설정 오류를
+  `evidence_status`와 HTTP 결과로 분리하고, 현행 Runtime의 미설정·0건
+  미구분을 완료가 아닌 구현 공백으로 명시했다.
+- P0 API는 별도 Evidence Endpoint 대신 DEC-WEB-BE-002 문의 상세 Snapshot에
+  포함하는 안을 제시하고 역할·객체 범위와 401·403·404·5xx를 구분했다.
+- `published_on=null`이면 날짜를 추정하지 않고, `revision_label`을 날짜로
+  해석하지 않는 규칙을 확정 제안했다.
+- 기존 Web 중심 v0.2 작업본은 `SUPERSEDED`, 통합 수정본은 검토용
+  `PROPOSED`, 구현 Gate는 `HOLD`로 유지했다.
+
+### 2026-08-04 AI 검색 0건·설정·실패·Timeout 분리
+
+- AI 내부 `RetrievalOutcome`을 `NOT_RUN`, `AVAILABLE`, `NO_MATCH`로 구분하고,
+  정상적으로 실행된 검색만 `NO_MATCH`가 될 수 있도록 변경했다.
+- 일반·주의 입력에서 Vector Store가 없으면 빈 근거 Fallback으로 위장하지
+  않고 `AI-FAILED-01`/HTTP 503, `retryable=false`, 실패 Stage
+  `RETRIEVING`을 반환한다.
+- 설정된 Vector Provider의 실행 실패는 같은 HTTP 503이라도
+  `retryable=true`와 `RETRIEVING`으로 분리하고, 단계별 Timeout은 기존
+  `AI-TIMEOUT-01`/HTTP 504를 유지했다.
+- 위험 입력은 검색보다 안전 규칙이 우선하므로 Vector Store가 없어도 검색을
+  건너뛰고 `TOTAL_STOP` 안전 안내를 반환한다.
+- Mock은 정적 계약 응답, Local 일반·주의 입력은 실제 Vector Store 필수라는
+  실행 경계를 `ai/README.md`와 AI 계약 README에 명시했다.
+- 설정 누락과 검색 실패 오류 예시를 AI 계약에 추가했으며 공개 Schema 필드는
+  변경하지 않았다. Backend `evidence_status`·저장·Web 전달은 통합 검토
+  전까지 미완료다.
+- Python `3.13.13`에서 집중 테스트 `63 passed, 3 warnings`, 전체 AI 단위
+  테스트 `91 passed, 3 warnings`, `pip check`와 Python Compile을 통과했다.
+
+### 2026-08-04 AI 내부 최대 1회 재시도 Runtime 연결
+
+- `ai/app/common/retry/`에 설정 기반 재시도 정책을 추가하고 검색 Provider의
+  `ConnectionError`, `TimeoutError`, PostgreSQL `OperationalError`·
+  `InterfaceError` 계열만 최대 1회 재시도하도록 제한했다.
+- Backoff는 0.5초이며 검색 Stage 5초와 전체 HTTP 30초 Timeout 안에서만
+  동작한다. Backoff 중 취소 또는 Deadline이 발생하면 두 번째 시도를 시작하지
+  않고 `retry_count=0`을 유지한다.
+- 설정 누락·Schema·정책·비일시적 결과 오류는 재시도하지 않고, 위험 입력은
+  기존처럼 검색을 건너뛰어 안전 안내를 우선한다.
+- 재시도 후 성공한 응답과 재시도 소진 오류, 구조화 로그에 실제
+  `retry_count=1`을 기록한다. 비일시적 검색 오류는 `retryable=false`,
+  `retry_count=0`으로 반환한다.
+- 재시도 성공·소진·비대상 오류·정책 로더·API 응답 및 로그 Test를 추가했다.
+  Python `3.13.13` 집중 검증은 `37 passed, 1 warning`, 전체 AI 단위 회귀는
+  `95 passed, 3 warnings`이며 `pip check`, JSON 파싱, Python Compile과
+  `git diff --check`를 통과했다.
+- 공식 기준선과 중간발표 기술자료의 단위 테스트 수치를 `95 passed,
+  3 warnings`로 동기화했으며 팀 DB·Backend E2E 전 제한은 유지했다.
+
+### 2026-08-04 최지용 Backend↔AI 수직 연동 P0 협업요청서
+
+- `20260804_이동윤_최지용_Backend_AI_수직연동_협업요청서_v0.1.md`를 작성했다.
+- AI 계약 1.1.0, 요청 필드, 200·400/422·503·504 결과, 내부 최대 1회
+  재시도와 Backend 자동 재시도 0회 경계를 Backend 구현 입력으로 정리했다.
+- `AIRun`, `AIRetrievalRun`, `SymptomAssessment`, 안내·Evidence 후보 저장
+  위치는 확정값이 아닌 Backend 확인 요청으로 표시하고, AI가 상태·권한·최종
+  EvidenceCard를 직접 변경하지 않는 책임 경계를 유지했다.
+- 정상 근거·0건·위험·설정 오류·재시도 복구·재시도 소진·비일시 오류·
+  Timeout·Correlation 불일치·stale 응답의 공동 E2E 10개 Case와 수락 기준,
+  `ACCEPT`·`CHANGE_REQUEST`·`BLOCKED` 회신 형식을 포함했다.
+- 문서는 `READY_TO_SEND`이며 AI 기준선 Commit과 Backend 회신·팀 DB 공동
+  검증 전에는 통합 완료로 표시하지 않는다.
+
+### 2026-08-04 김은진 13번째 정책 차단·팀 DB RAG 검증 협업요청서
+
+- `20260804_이동윤_김은진_13번째정책차단_팀DB_RAG검증_협업요청서_v0.1.md`를
+  작성했다.
+- 기존 미검증 FAQ 질의의 검색 전 차단과, 정상 제품·D세대 후보를 실제 검색한
+  뒤 문서 정책으로 제거하는 13번째 Case의 차이를 명시했다.
+- 김은진이 Case ID·QA Fixture·검증 상태·사용 허용·RAG 정책·차단 사유·
+  기대 실행 경로를 `APPROVE`·`CHANGE_REQUEST`·`BLOCKED`로 결정하도록
+  회신 표를 제공했다.
+- 팀 DB에서 승인 청크 7건·1024차원·Model Revision·Chunk Set Hash·13개
+  평가·금지 Hit 0·UPSERT 멱등·Fixture Rollback을 독립 검증하는 절차와
+  반환 Evidence 형식을 포함했다.
+- 최지용의 Backend Adapter는 병렬 진행할 수 있지만 김은진의 승인과 독립 QA
+  전에는 13건·팀 DB RAG를 공식 완료로 표시하지 않는다.
+
+### 2026-08-05 AI·RAG 중간발표 예상 질문·답변
+
+- `20260805_AI_RAG_중간발표_예상질문_답변_v0.1.md`를 작성했다.
+- 심사위원 예상 질문 33개를 개념·구현·안전·평가·팀 DB 협업·시연 실패 대응으로
+  분류하고, 짧은 답변과 추가 설명·피해야 할 표현을 함께 정리했다.
+- `95 passed`, 격리 pgvector `12/12`, Recall@5 `1.0`, MRR `0.8857`, 금지
+  Hit `0`을 현재 발표 기준으로 사용하되 제품 1종·승인 청크 7개 범위와 팀 DB
+  미완료 상태를 반드시 함께 말하도록 고정했다.
+- 외부 LLM 생성·직접 학습·전체 제품 정확도·팀 DB E2E를 완료한 것으로
+  과장하지 않도록 발표 금지 표현을 명시했다.
+
+### 2026-08-05 AI·RAG AGENTS 지침 현행화
+
+- Root `AGENTS.md`를 현재 실제 Runtime과 협업 경계에 맞게 개정했다.
+- 현재 구현을 Agent가 아닌 `SingleRAGPipeline` 기반 단일 RAG Workflow로
+  규정하고, 최종 다중 에이전트 전환의 최소 인정 조건과 선행 Gate를 추가했다.
+- Mock·Local·pgvector, 검색 0건·구성 실패, 격리 DB·팀 DB·Backend E2E의
+  구분과 발표 금지 표현을 명시했다.
+- 실제 인덱싱 경로, bge-m3 Revision·1024차원, 승인 데이터·Manifest·Secret·
+  Backend Migration 경계를 추가했다.
+- 12개 평가의 실제 Query 7건·정책 차단 5건 구성과 소규모 Recall@5 해석 제한,
+  13번째 정책 Case·팀 DB 완료 조건을 검증 지침에 반영했다.
+
+### 2026-08-06 중간발표 지정 심사 질문 방어 답변
+
+- `RAG예상질문.md`를 v0.2로 갱신하고 지정된 11개 심사 질문의 AI·RAG 담당
+  답변과 Backend·Data·PM 담당 경계를 추가했다.
+- 마지막 생성 단계는 `GPT-5.4 mini` 사용 가정으로 설명하되 현재 미연결·
+  미실측이며, bge-m3와 후보 모델 비교를 완료했다고 주장하지 않도록 했다.
+- 현재 Output Validator가 금지 표현·행동과 안전 일관성만 검사하고 Grounding·
+  Citation·재생성 정책은 미구현이라는 경계를 명시했다.
+- 공식 문서 1종·승인 청크 7개와 합성 Fixture Source 레코드 367개를 분리하고,
+  RAG 12/12·DB FK 정합성이 전체 업무 정확도를 의미하지 않음을 설명했다.
+- PostgreSQL과 pgvector는 물리적으로 하나의 DB·Extension 관계이며, 그림의
+  분리는 논리적 역할 표현이라는 답변을 추가했다.
+
+### 2026-08-06 RAG 검색 품질 발표 답변 보강
+
+- `RAG예상질문_v0.2.md`에 평균 MRR뿐 아니라 누수 질의의 기대 청크 `5위`,
+  Case MRR `0.2`를 명시했다.
+- 승인 청크 7개에서 Top-K 5를 반환하는 Recall@5 `1.0`은 검색 정확도 100%의
+  근거가 아니라 제한 범위의 통과 Gate임을 명시했다.
+- 아직 측정하지 않은 질의 임베딩·pgvector 검색·E2E p50/p95, 처리량,
+  CPU·RAM, 팀 DB 성능, 모델별 비용·지연시간을 발표 답변에 구분했다.
+
+
+
+### 2026-08-06 RAG Vector DB·Graph DB 제출용 결과서
+
+- `docs/submission/AI_RAG_VectorDB_GraphDB_구축_결과서_v1.0.docx`를 4주차
+  제출용 Word 문서로 작성했다.
+- 직접 학습·파인튜닝 미수행과 사전학습 `BAAI/bge-m3` 적용을 구분하고,
+  Revision·1024차원·L2 정규화·Python 3.13.13·CPU 실행 환경을 기록했다.
+- PostgreSQL 16.14·pgvector 0.8.6·Cosine Exact Search·승인 청크 7개와
+  Vector Schema, 사전 인덱싱·검색·갱신·삭제 운영 절차를 정리했다.
+- 격리 DB `12/12`, Recall@5 `1.0`, MRR `0.8857`, 금지 Hit `0`을 제품 1종·
+  D세대·공식 문서 1개 범위의 이력으로 제한하고 응답 속도 미측정을 명시했다.
+- Graph DB는 미구축으로 표시하고, 도입 검토용 노드·엣지 논리 구조와 현재
+  PostgreSQL FK·상태 이력·JSONB Metadata로 충분한 사유를 기록했다.
+- 13번째 문서 정책 차단 Case, 팀 DB·Backend E2E, 응답속도 Benchmark와
+  `evaluated_contract_sha256` Canonical 규칙 불일치를 후속 Gate로 표시했다.
+- Microsoft Word 렌더링 PDF 13쪽을 PNG로 변환해 전 페이지의 한글, 표,
+  머리글·바닥글, 페이지 분할과 잘림 여부를 시각 검수했다.
+
+### 2026-08-06 개인 격리 pgvector 간이 응답속도 기준선
+
+- `ai/scripts/benchmark_pgvector_latency.py`를 추가해 Cold·Warm 검색 지연시간을
+  동일 Dataset에서 재현할 수 있도록 했다.
+- 개인 `127.0.0.1:55432` 격리 DB, 승인 청크 7개, CPU, 동시성 1 조건에서
+  Cold 독립 프로세스 3회와 모델 예열 후 Warm 30회를 측정했다.
+- Warm 검색 전체는 평균 `236.7 ms`, p50 `237.8 ms`, p95 `270.4 ms`였고,
+  질의 임베딩 p95는 `234.0 ms`, pgvector Exact Search p95는 `41.3 ms`였다.
+- Cold 검색 전체는 p50 `13,024.1 ms`, p95 `14,625.0 ms`로, CPU에서 독립
+  프로세스마다 BGE-M3를 다시 적재하는 영향을 포함한다.
+- 총 33회 모두 근거를 반환했고 실패는 0회였다. 결과는
+  `ai/evaluation/reports/pgvector_latency_baseline_20260806.json`에 기록했다.
+- 이 수치는 개인 격리 단일 사용자 기준선이며 FastAPI HTTP, Backend E2E,
+  팀 DB 네트워크, 동시 부하와 운영 데이터 규모 성능을 포함하지 않는다.
+- 제출용 Word와 Markdown 결과서의 응답속도 항목을 `미측정`에서
+  `격리 단일 사용자 기준선 완료`로 갱신했다.
+- 전체 AI 단위 테스트는 `96 passed, 3 warnings`이며, 공식 후보 기준 JSON에
+  현재 테스트 수와 간이 응답속도 보고서 Hash를 반영했다.
+
+### 2026-08-06 공식 양식 기반 Vector DB·Graph DB 제출본
+
+- 제공된 `[모델링 및 평가] 벡터DB_GraphDB 구축 결과서_양식.docx`의 표지,
+  6쪽 구성, 헤더·푸터, 페이지 번호, 색상과 표 구조를 유지한 별도 제출본
+  `docs/submission/AI_RAG_VectorDB_GraphDB_구축_결과서_제출양식_v1.0.docx`를
+  생성했다.
+- PostgreSQL·pgvector 실제 구축 내용, BAAI/bge-m3 1024차원 적용, Cosine
+  Exact Search, 적재·검색·갱신·삭제 흐름과 Fallback·1회 재시도 경계를
+  양식 항목에 맞춰 재배치했다.
+- 개인 격리 DB의 12/12 PASS, Recall@5 1.0, MRR 0.8857, 금지 Hit 0과 Warm
+  total p95 270.4 ms를 범위 제한과 함께 반영했다.
+- Graph DB는 구축 완료로 표시하지 않고 논리 노드·엣지 설계와 미도입 사유,
+  팀 DB·Backend E2E 및 13번째 정책 차단 Case의 미완료 Gate를 명시했다.
+- 원본 양식 SHA-256을 보존하고 헤더·푸터·이미지·스타일·번호 정의 등 19개
+  패키지 파트를 바이트 단위로 유지했다. Microsoft Word로 최종 6쪽을 다시
+  렌더링해 모든 페이지의 한글, 표, 줄바꿈, 페이지 분할과 잘림 여부를 확인했다.
+
+### 2026-08-06 최지용 Backend↔AI 수직 연동 협업요청서 v0.2
+
+- v0.1을 이력으로 보존하고
+  `20260806_이동윤_최지용_Backend_AI_수직연동_협업요청서_v0.2.md`를 별도
+  작성했다.
+- AI 단위 테스트 기준을 `96 passed, 3 warnings`로 갱신하고 개인 격리
+  pgvector Warm 전체 p95 `270.4 ms`를 팀 DB·HTTP SLA가 아닌 참고 기준선으로
+  추가했다.
+- 공식 기준선 상태를 `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`으로
+  명시하고, 작성 시점 HEAD와 Dirty 상태를 최종 연동 기준 SHA로 사용하지
+  않도록 수정했다.
+- 최지용 전달 파일에 공식 기준선 JSON과 간이 지연시간 보고서를 추가하고,
+  발송 메시지의 테스트 수와 개인 DB·팀 DB 구분을 최신화했다.
+
+### 2026-08-07 Backend E2E 전 AI 기준선 보강
+
+- T-026 구조화 평가 Dataset을 1건에서 12건으로 확장하고 대표 증상 4종,
+  복수·짧은 입력, 오타, 부정문, 기존 답변, 답변 거절, 위험 우선, 오류 코드와
+  수행 조치를 평가하도록 고정했다.
+- `StructuringEvaluationRunner`를 실제 실행 경로로 구현하고 구조화 필드 정확도,
+  누락 필드·추가 질문 Exact Match와 위험 우선 결과를 Case별 JSON으로 남겼다.
+  현재 후보 결과는 12/12 PASS지만 전체 자유 입력 정확도로 일반화하지 않는다.
+- 규칙 평가에서 확인된 `출수양`·`쫄쫄` 표현, 부정된 누수 표현, 한글 조사와
+  붙은 `E-12가` 오류 코드, 답변 거절을 실제 구조화 값으로 저장하는 문제를
+  최소 결정 규칙으로 보완했다.
+- 현재 Git HEAD, Dirty 여부, Python·단위 테스트, 계약 16개 Canonical Hash,
+  Retrieval·Safety·Structuring Dataset Hash와 실제 승인 JSONL·Chunk Set Hash를
+  계산하는 `generate_candidate_baseline.py`를 추가했다.
+- 후보 기준선의 승인 청크 경로를 실제 Runtime 입력인
+  `data/processed/structured/rag/mvp/rag_verified_sample.jsonl`로 바로잡고 상태는
+  `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`으로 유지했다.
+- `docs/testing/ai/week4-ai-baseline.md`,
+  `docs/testing/rag/week4-rag-baseline.md`와 `scripts/demo/**` Runbook을 추가했다.
+  임시 FastAPI `127.0.0.1:8012`에서 Health, Mock 계약, Vector DB에 의존하지 않는
+  Local 위험 입력의 `danger`·`TOTAL_STOP` Smoke를 모두 통과했다.
+- 팀 DB Migration·승인 청크 UPSERT·13번째 정책 Case·Backend 저장 E2E와
+  Selective Pipeline Runtime 전환은 이번 완료 범위에 포함하지 않았다.
+
+### 2026-08-07 최지용 Backend↔AI 수직 연동 협업요청서 v0.3
+
+- v0.2를 이력으로 보존하고
+  `20260807_이동윤_최지용_Backend_AI_수직연동_협업요청서_v0.3.md`를 별도
+  작성했다.
+- AI 계약·예시의 일반 문자열 `correlation_id`와 Backend Middleware·DB의
+  UUID 계약이 맞지 않는 문제를 P0 선결 사항으로 올렸다. UUID Canonical
+  제안과 AI 계약·Pydantic·예시·CHANGELOG 수정 책임, 계약 버전·Hash 재고정
+  조건을 명시했다.
+- `AI_RESULT`를 Event 이름으로 사용하던 표현을 제거하고 State 계약의
+  `SAFE_GUIDANCE_READY`, `DANGER_DETECTED`, `NO_EVIDENCE`와 실제 전이·Guard
+  책임을 반영했다.
+- 현재 증거를 `101 passed, 3 warnings`, 구조화 결정 규칙 12/12 PASS, 후보
+  Source Commit `1590279b7c7aea66334b3436024a83b150e28610`으로 갱신했다.
+- 추가 문진 답변·거절과 질문 비반복 왕복, 비UUID 외부 Header 정규화를 포함해
+  공동 E2E를 12개 Case로 확장했다.
+- 이번 연동 대상을 `SingleRAGPipeline` 기준선으로 고정하고 T-025 Selective
+  Pipeline과 다중 에이전트 Runtime은 후속 범위로 분리했다.
+- 전달 대상 19개 파일·디렉토리의 존재 여부와 문서의 기준선 SHA·계약 Hash·
+  State Event·E2E ID를 로컬에서 대조했다. 문서만 변경했으므로 단위 테스트는
+  다시 실행하지 않았다.
+
+### 2026-08-10 Backend↔AI 수직 연동 P0·P1·AI Fixture Gate
+
+- 최지용의 2026-08-08 수직 연동 회신 기준을 반영하여 모든 AI 공개 계약의
+  `correlation_id`를 일반 문자열에서 UUID로 제한했다. 요청 범위를 좁히는
+  호환성 파괴 변경이므로 계약 버전을 `2.0.0`으로 갱신했다.
+- Request·Response·Error JSON Schema, Pydantic 모델, 상담 요약·기사 보고를
+  포함한 모든 공개 예시를 같은 UUID 규칙으로 맞췄다.
+- Header와 Body의 서로 다른 유효 UUID는 HTTP 400으로 거부하고, 비UUID Body
+  입력은 HTTP 422로 거부하되 잘못된 값을 오류 Body·Header에 Echo하지 않고
+  `correlation_id=null`로 반환하도록 오류 경계를 고정했다.
+- Backend 동일 환경 제공물
+  `ai/configs/backend_integration_environment.json`과 실행 가능한
+  `ai/scripts/smoke_test.py`를 추가했다. 실제 Uvicorn Mock 실행에서 Health,
+  Analyze HTTP 200, Header·Body 추적 ID Echo를 PASS했다.
+- `ai/evaluation/datasets/backend_integration/fixture_manifest.json`에 F01~F12의
+  입력 파일·실행 Driver·기대 HTTP·핵심 응답·책임자를 기록했다. 장애와
+  Timeout은 운영 경로의 공개 스위치가 아니라 교체 가능한 테스트 Adapter로
+  결정적으로 검증한다.
+- Fixture 전용 검증은 `12 passed`다. 이는 Manifest 1개와 F01~F10·F12 AI 구간
+  11개이며, F11 Backend stale 차단이나 실제 pgvector·Backend 저장 E2E 완료를
+  의미하지 않는다.
+- Metadata는 현재 응답 제공 필드와 미제공 필드를 분리한
+  `20260810_이동윤_최지용_Backend_AI_선행제공물_및_Metadata_결정요청_v0.1.md`를
+  작성했다. `execution_metadata` 추가는 Backend의 추가 계약 승인 전까지
+  구현하지 않았다.
+- Python `3.13.13`에서 전체 AI 단위 테스트 `115 passed, 3 warnings`, Prompt
+  Registry 검증 Exit Code 0, `git diff --check` Exit Code 0을 확인했다.
+- 검증 시점 Source HEAD는
+  `f3c66b3cbfd41852440bf0726722438612d6885f`, Branch는 `dongyoon`, 변경분은
+  아직 Commit되지 않아 Dirty 상태다.
+- 주요 SHA-256은 Symptom Request
+  `008D2066DD7CE6B84BAA633F4B913ED642ADD90CA0B11591378D2987D1F54FCA`,
+  Symptom Response
+  `E0BC73AAF1D0747F63E1229F351165D2BEB8563CF0386D31959D10BCF70AD5AE`,
+  AI Error
+  `127C9D7D14D7121E1965D5D78B29AD5831210C49E6362586D92F098DD9CB9A0E`,
+  Fixture Manifest
+  `36D0DDF12BD06CFC3A58FCBAF1E97F496B494EBA2C16E132C13F00B52F2A9F4E`,
+  실행환경 Manifest
+  `BD185D2ACC6ABFD95C8D0F64356BA6C178ACB9C497EBD3D196BC0B460EE3C88D`다.
+- 잔여 Gate는 실제 pgvector F01·F02 Local HTTP, Backend Mock·Local 소비,
+  F11 stale 저장 차단, F12 답변·거절 저장·버전 증가, Metadata 추가 계약 승인,
+  팀 DB Migration·권한·canonical evidence 연결이다.
+- 최지용 요청 문서의 AI 선행 제공물 필드 순서를 그대로 따른 전송용
+  `sender=이동윤` 회신 블록을 협업 문서 0절에 추가했다. 공동 검증 후
+  `reviewer=최지용`이 작성해야 하는 Backend 완료 회신은 대신 작성하지 않았다.
+
+### 2026-08-10 Backend↔AI 추가확인 03·04·05 우선순위 구현
+
+- 위험 자연어를 Backend가 임의 해석하지 않도록 안전 규칙에 안정적인
+  `SAFETY-...-NNN` ID를 부여하고 `SafetyAssessment.matched_safety_rule_ids`를
+  Pydantic·JSON Schema·예시·F03 Fixture에 필수로 추가했다. 필수 응답 필드가
+  늘어난 호환성 파괴 변경이므로 AI 계약을 `3.0.0`으로 올렸다.
+- 승인 RAG JSONL 7건의 `chunk_id`, 문서·페이지·모델·세대·검증 상태, Source
+  Hash와 청크 본문 SHA-256을 `ai/configs/canonical_evidence_identity.json`에
+  고정했다. AI는 Backend `DocumentChunk.public_id`를 생성하지 않으며 실제
+  Crosswalk는 Backend·Database 책임으로 남겼다.
+- 결정론적 단일 Workflow와 pgvector의 실제 실행 식별값을
+  `ai/configs/runtime_identity.json`에 기록했다. 외부 LLM을 사용한다고 주장하지
+  않으며, 값은 고객 응답이 아니라 Backend 환경 설정과 `AIRun` 감사 레코드로
+  전달한다.
+- 일반 안내 계약 예시의 구형 비공식 청크 ID를 승인 canonical ID로 교체했고,
+  검색을 건너뛰는 위험 분기의 계약 예시는 근거 배열을 비워 실제 Runtime
+  경계와 맞췄다.
+- 03·04·05 전용 별도 회신
+  `인계/20260810_이동윤_최지용_Backend_AI_수직연동_추가확인_회신_v0.1.md`를
+  최지용의 원문 회신 필드 순서로 작성했다. Backend Crosswalk·계약 3.0.0 호환·
+  실제 저장 E2E가 남아 있으므로 전체 `ready_for_joint_e2e`는 `NO`로 판정했다.
+- Python `3.13.13`, `pip check` PASS, 전체 AI 단위 테스트 `121 passed,
+  3 warnings`, Fixture Gate `12 passed`, 실제 Uvicorn Mock Health·Analyze·추적 ID
+  Smoke PASS와 Local 위험 입력의 규칙 ID 2개·`TOTAL_STOP`·근거 0건을 확인했다.
+  `backend/.venv`가 없어 Backend 단위 테스트 재실행은 수행하지 못했다.
+- 후보 기준선 생성기의 계약 고정값을 `3.0.0`으로 맞추고 공식 후보 보고서를
+  다시 생성했다. 상태는 팀 DB 재검증과 Commit이 남은
+  `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`이며 Source HEAD는
+  `421e5590414a3addec62158b0b58ed37bbf97e41`, Dirty 상태다.
+- 03·04·05 별도 회신 마지막에 최지용이 추가 요청한 실행값 블록을 넣었다.
+  `103`은 Fixture 추가 전 중간값, `115`는 계약 2.0.0과 Fixture 12개를 포함한
+  당시 최종값, `121`은 계약 3.0.0 안전 ID·근거 Identity·Runtime Identity
+  검증까지 포함한 현재값으로 구분했다. 거절·모름 Payload 처리, Disposable DB
+  확인값, 공동 Mock 준비 여부와 가용 시점도 함께 명시했다.

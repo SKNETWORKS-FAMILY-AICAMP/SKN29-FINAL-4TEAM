@@ -1,6 +1,7 @@
 """AI HTTP 계약 오류 정의."""
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from ...schemas import AiStage
 
@@ -14,8 +15,8 @@ class AiServiceError(Exception):
     message: str
     retryable: bool
     failure_stage: AiStage
-    correlation_id: str | None = None
-    inquiry_id: str | None = None
+    correlation_id: UUID | None = None
+    inquiry_id: UUID | None = None
     ai_request_id: str | None = None
     state_version: int | None = None
     retry_count: int = 0

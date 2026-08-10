@@ -20,11 +20,13 @@ steps:
 - order: 1
   actor: CUSTOMER
   event: CUSTOMER_REPORTED_UNRESOLVED
+  operation_id: reportUnresolved
   from_inquiry_state: COMPLETION_PENDING
   to_inquiry_state: REOPENED
 - order: 2
   actor: CONSULTANT
   event: RESUME_CONSULTATION
+  operation_id: resumeConsultation
   from_inquiry_state: REOPENED
   to_inquiry_state: CONSULTATION_REQUIRED
 expected_result:

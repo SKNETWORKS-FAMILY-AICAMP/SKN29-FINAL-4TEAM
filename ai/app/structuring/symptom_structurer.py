@@ -15,6 +15,13 @@ class SymptomStructurer:
         "followup-occurrence-condition": "occurrence_condition",
         "followup-actions-taken": "actions_taken",
     }
+    _INTENTIONAL_NON_ANSWERS = {
+        "답변하지 않음",
+        "답변 거절",
+        "모름",
+        "모르겠음",
+        "확인 불가",
+    }
 
     def __init__(self, normalizer: SymptomNormalizer | None = None) -> None:
         self.normalizer = normalizer or SymptomNormalizer()
@@ -36,6 +43,9 @@ class SymptomStructurer:
             answer_text = answer.get("answer_text", "").strip()
             target_field = self._QUESTION_FIELD_MAP.get(question_id)
             if not target_field or not answer_text:
+                continue
+            if answer_text in self._INTENTIONAL_NON_ANSWERS:
+                # 거절·확인 불가를 실제 증상 값으로 저장하지 않되 같은 질문은 반복하지 않는다.
                 continue
             if target_field == "actions_taken":
                 if answer_text not in actions:

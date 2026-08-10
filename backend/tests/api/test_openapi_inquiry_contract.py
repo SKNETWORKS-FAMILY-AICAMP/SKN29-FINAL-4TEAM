@@ -15,7 +15,7 @@ def load_yaml(path: Path):
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
-def test_inquiry_operations_are_confirmed_without_runtime_claims():
+def test_inquiry_operations_track_confirmed_runtime_status():
     contract = load_yaml(INQUIRY_CONTRACT)
     operations = {
         (path, method): operation
@@ -25,7 +25,9 @@ def test_inquiry_operations_are_confirmed_without_runtime_claims():
     }
 
     assert set(operations) == {
+        ("/inquiries", "get"),
         ("/inquiries", "post"),
+        ("/inquiries/{id}", "get"),
         ("/inquiries/{id}/questionnaire", "patch"),
         ("/inquiries/{id}/action-results", "post"),
         ("/inquiries/{id}/submit", "post"),
@@ -35,6 +37,12 @@ def test_inquiry_operations_are_confirmed_without_runtime_claims():
         for operation in operations.values()
     } == {"CONFIRMED"}
     assert all(operation.get("responses") for operation in operations.values())
+    assert operations[("/inquiries", "get")][
+        "x-runtime-status"
+    ] == "IMPLEMENTED"
+    assert operations[("/inquiries/{id}", "get")][
+        "x-runtime-status"
+    ] == "IMPLEMENTED"
 
 
 def test_inquiry_request_and_result_schemas_are_confirmed():
@@ -51,7 +59,7 @@ def test_inquiry_request_and_result_schemas_are_confirmed():
         assert "x-open-decisions" not in schema
 
 
-def test_confirmed_inquiry_schema_matches_v05_fields():
+def test_confirmed_inquiry_schema_preserves_v05_fields():
     create = load_yaml(INQUIRY_SCHEMA_DIR / "CreateInquiryRequest.yaml")
     questionnaire = load_yaml(
         INQUIRY_SCHEMA_DIR / "InquiryQuestionnaireRequest.yaml"
@@ -76,6 +84,9 @@ def test_openapi_root_references_confirmed_inquiry_paths():
 
     assert root["paths"]["/inquiries"]["$ref"] == (
         "./paths/inquiries.yaml#/~1inquiries"
+    )
+    assert root["paths"]["/inquiries/{id}"]["$ref"] == (
+        "./paths/inquiries.yaml#/~1inquiries~1{id}"
     )
     assert root["paths"]["/inquiries/{id}/questionnaire"]["$ref"] == (
         "./paths/inquiries.yaml#/~1inquiries~1{id}~1questionnaire"

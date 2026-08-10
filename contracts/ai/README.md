@@ -4,7 +4,9 @@ Backend와 AI 서비스 사이의 요청·응답 JSON Schema 단일 진실원칙
 
 ## 현재 버전
 
-- 계약 버전: `1.1.0`
+- 계약 버전: `3.0.0`
+- `SafetyAssessment.matched_safety_rule_ids`는 위험 규칙의 안정적인 ID 배열이며
+  필수 필드다. 자연어 `detected_risks`를 규칙 ID로 재해석하지 않는다.
 - JSON Schema: Draft 2020-12
 - 분석 Endpoint: `POST /api/v1/ai/analyze`
 - 추가 속성: 모든 공개 요청·응답에서 금지
@@ -19,7 +21,8 @@ Commit에서 갱신한다.
 공개 요청·응답에 중복 노출하지 않는다.
 
 - `inquiry_id`: Backend가 발급한 Public UUID. 내부 정수 PK와 업무 코드는 금지
-- `correlation_id`: Backend → AI → 응답·오류·`X-Correlation-ID` Header 추적값
+- `correlation_id`: Backend가 발급한 UUID. AI 요청 Body와 선택적
+  `X-Correlation-ID` Header가 일치해야 하며 응답·오류·로그까지 보존
 - `ai_request_id`: Backend가 발급하는 AI 호출 멱등 키. 같은 논리 요청 재전송 시 재사용
 - `state_version`: 호출 시작 시점 버전. AI가 변경하지 않고 응답에 Echo
 
@@ -42,11 +45,28 @@ AI는 증상 구조화·안전 평가·사용 안내·근거 참조 또는 요�
 | 코드 | HTTP | retryable | 대표 Stage |
 | --- | ---: | --- | --- |
 | `AI-VALIDATION-01` | 400 또는 422 | false | `STRUCTURING` |
-| `AI-FAILED-01` | 503 | true | `FAILED` |
+| `AI-FAILED-01` | 503 | false | `RETRIEVING` — Vector Store 필수 설정 누락 |
+| `AI-FAILED-01` | 503 | true | `RETRIEVING` — 일시적 검색 Provider 오류가 내부 1회 재시도 후에도 지속 |
+| `AI-FAILED-01` | 503 | false | `RETRIEVING` — 비일시적 검색 결과·검증 오류 |
+| `AI-FAILED-01` | 503 | true | `FAILED` — 분류되지 않은 내부 실행 실패 |
 | `AI-TIMEOUT-01` | 504 | true | `CANCELLED` |
 
 오류 응답에도 사용 가능한 추적 식별자를 보존한다. 입력 원문, Prompt,
 Stack Trace, Secret, 개인정보는 오류 상세에 포함하지 않는다.
+비UUID `correlation_id`로 요청 검증에 실패한 경우 유효하지 않은 값을 오류
+응답이나 Header에 Echo하지 않고 `correlation_id=null`로 반환한다.
+
+정상적으로 검색을 완료했지만 근거가 0건이면 오류가 아니다. HTTP 200,
+`status=FALLBACK`, `failure_stage=RETRIEVING`, 빈 `evidence_references`와
+`PENDING_CONSULTATION`을 반환한다. Vector Store 설정이 없어 검색을 시작하지
+못한 경우에는 같은 0건으로 처리하지 않고 HTTP 503과
+`AI-FAILED-01`, `retryable=false`, `failure_stage=RETRIEVING`을 반환한다.
+
+검색 Provider가 `ConnectionError`, `TimeoutError`, PostgreSQL
+`OperationalError`·`InterfaceError` 계열의 일시적 오류를 반환하면 AI가
+검색 Stage 안에서 최대 1회만 재시도한다. 두 번째 시도를 실제 시작한 경우
+성공 응답 또는 최종 오류의 `retry_count=1`로 기록한다. 설정·Schema·정책
+오류와 위험 우선 분기는 재시도하지 않는다. Backend 자동 재시도는 0회다.
 
 ## 디렉토리
 

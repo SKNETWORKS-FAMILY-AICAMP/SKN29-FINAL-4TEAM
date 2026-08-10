@@ -83,7 +83,7 @@ class DataClassification(str, Enum):
 class TraceContext(ContractModel):
     """요청 추적 Context 모델"""
     inquiry_id: UUID = Field(..., description="Backend가 발급한 Public UUID")
-    correlation_id: str = Field(..., min_length=1, max_length=100, description="시스템 전반 공통 추적 ID")
+    correlation_id: UUID = Field(..., description="Backend가 발급한 시스템 전반 공통 추적 UUID")
     ai_request_id: str = Field(..., min_length=1, max_length=100, description="Backend가 발급한 AI 호출 멱등 식별자")
     state_version: int = Field(..., ge=1, description="AI 호출 시작 시점 문의 상태 버전")
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="요청 시각 (ISO 8601 UTC)")

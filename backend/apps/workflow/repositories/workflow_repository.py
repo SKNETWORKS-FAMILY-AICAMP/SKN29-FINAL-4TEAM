@@ -79,7 +79,13 @@ class WorkflowRepository:
         state_version: int,
         correlation_id: UUID,
         idempotency_key: str,
+        changed_by_type_code: str | None = None,
     ) -> TransitionHistory:
+        changed_by_type = changed_by_type_code or (
+            TransitionHistory.ChangedByType.SYSTEM
+            if actor is None
+            else TransitionHistory.ChangedByType.USER
+        )
         return TransitionHistory.objects.create(
             inquiry=inquiry,
             actor=actor,
@@ -89,4 +95,5 @@ class WorkflowRepository:
             state_version=state_version,
             correlation_id=correlation_id,
             idempotency_key=idempotency_key,
+            changed_by_type_code=changed_by_type,
         )

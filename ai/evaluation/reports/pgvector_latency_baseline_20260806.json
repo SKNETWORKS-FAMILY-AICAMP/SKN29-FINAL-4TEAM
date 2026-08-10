@@ -1,0 +1,115 @@
+{
+  "benchmark_status": "PASS",
+  "measured_at": "2026-08-06T03:47:43.595704+00:00",
+  "scope": "PERSONAL_ISOLATED_SINGLE_USER_BASELINE",
+  "limitations": [
+    "개인 PC의 127.0.0.1:55432 격리 PostgreSQL/pgvector 측정이다.",
+    "동시 사용자, 네트워크 구간, FastAPI HTTP와 Backend E2E는 포함하지 않는다.",
+    "승인 청크 7개 Exact Search 기준이므로 운영 데이터 규모 성능으로 일반화하지 않는다."
+  ],
+  "methodology": {
+    "cold_runs": 3,
+    "cold_definition": "매회 독립 Python 프로세스에서 bge-m3 로드·질의 임베딩·pgvector 검색 수행",
+    "warmup_runs": 1,
+    "warm_runs": 30,
+    "warm_definition": "모델 1회 예열 후 단일 프로세스에서 양성 7 Case를 순환 측정",
+    "concurrency": 1,
+    "database_connection": "현재 PgVectorStore 구현처럼 검색마다 새 psycopg 연결 포함",
+    "percentile_method": "정렬 표본의 (n-1)*p 위치 선형 보간"
+  },
+  "runtime": {
+    "python_version": "3.13.13",
+    "os": "Windows-11-10.0.26200-SP0",
+    "machine": "AMD64",
+    "cpu": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+    "logical_cpu_count": 16,
+    "total_memory_bytes": 33974161408,
+    "cuda_used": false
+  },
+  "embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "device": "cpu"
+  },
+  "database": {
+    "database_name": "watercare_ai_verify",
+    "postgres_version": "16.14 (Debian 16.14-1.pgdg12+1)",
+    "pgvector_version": "0.8.6",
+    "row_count": 7,
+    "minimum_dimension": 1024,
+    "maximum_dimension": 1024,
+    "host_port": 55432
+  },
+  "dataset": {
+    "config_path": "data/config/rag/jac104_retrieval_cases.json",
+    "config_sha256": "6E9F202F902F965B0C6875D8FCDF26333651E680019CC8B34416E8A444A12E4F",
+    "positive_case_count": 7
+  },
+  "cold": {
+    "embedding_ms": {
+      "sample_count": 3,
+      "mean_ms": 13551.72,
+      "p50_ms": 12991.239,
+      "p95_ms": 14586.938,
+      "min_ms": 12899.684,
+      "max_ms": 14764.237
+    },
+    "pgvector_search_ms": {
+      "sample_count": 3,
+      "mean_ms": 33.895,
+      "p50_ms": 32.859,
+      "p95_ms": 38.082,
+      "min_ms": 30.163,
+      "max_ms": 38.663
+    },
+    "retrieval_total_ms": {
+      "sample_count": 3,
+      "mean_ms": 13585.62,
+      "p50_ms": 13024.104,
+      "p95_ms": 14625.025,
+      "min_ms": 12929.852,
+      "max_ms": 14802.905
+    },
+    "process_total_ms": {
+      "sample_count": 3,
+      "mean_ms": 15336.623,
+      "p50_ms": 14721.167,
+      "p95_ms": 16394.177,
+      "min_ms": 14708.634,
+      "max_ms": 16580.068
+    }
+  },
+  "warm": {
+    "embedding_ms": {
+      "sample_count": 30,
+      "mean_ms": 202.588,
+      "p50_ms": 204.487,
+      "p95_ms": 233.957,
+      "min_ms": 160.644,
+      "max_ms": 320.061
+    },
+    "pgvector_search_ms": {
+      "sample_count": 30,
+      "mean_ms": 34.112,
+      "p50_ms": 32.866,
+      "p95_ms": 41.292,
+      "min_ms": 28.334,
+      "max_ms": 51.833
+    },
+    "retrieval_total_ms": {
+      "sample_count": 30,
+      "mean_ms": 236.708,
+      "p50_ms": 237.797,
+      "p95_ms": 270.373,
+      "min_ms": 193.325,
+      "max_ms": 371.9
+    }
+  },
+  "validation": {
+    "measured_request_count": 33,
+    "nonempty_result_count": 33,
+    "failed_request_count": 0,
+    "failed_case_ids": []
+  }
+}

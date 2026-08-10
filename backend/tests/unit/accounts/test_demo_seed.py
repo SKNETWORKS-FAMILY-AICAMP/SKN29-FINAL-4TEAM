@@ -30,6 +30,11 @@ def test_demo_seed_is_idempotent_and_contains_no_real_profile_data():
     assert customer.public_id is not None
     assert customer.user.public_id is not None
     assert customer.is_synthetic is True
+    assert customer.user.is_synthetic is True
+    assert not User.objects.filter(
+        username__startswith="DEMO-",
+        is_synthetic=False,
+    ).exists()
     assert customer.phone == ""
     assert customer.address_line1 == ""
     assert "created=4" in first_output.getvalue()

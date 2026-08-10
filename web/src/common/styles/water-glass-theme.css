@@ -1,0 +1,937 @@
+/*
+ * Water Bridge — clear sky glass theme
+ * Visual-only overrides shared by counselor and administrator workspaces.
+ * Layout, sizing, state, and interaction rules stay in each page stylesheet.
+ */
+
+:where(.simple-consultant-app, .operations-page, .v6-workspace) {
+  --wb-sky-0: #f8fcff;
+  --wb-sky-1: #eef9ff;
+  --wb-sky-2: #e5f5ff;
+  --wb-ink: #17384f;
+  --wb-ink-soft: #5f7b8f;
+  --wb-blue: #278fdc;
+  --wb-line: rgb(255 255 255 / 78%);
+  --wb-line-blue: rgb(66 147 207 / 19%);
+  --wb-glass:
+    radial-gradient(circle at 8% 8%, rgb(255 255 255 / 38%), transparent 28%),
+    radial-gradient(circle at 92% 16%, rgb(255 194 228 / 9%), transparent 31%),
+    radial-gradient(circle at 12% 92%, rgb(81 207 255 / 10%), transparent 34%),
+    linear-gradient(145deg, rgb(255 255 255 / 19%), rgb(186 226 250 / 9%));
+  --wb-glass-strong:
+    radial-gradient(circle at 8% 8%, rgb(255 255 255 / 46%), transparent 28%),
+    radial-gradient(circle at 90% 18%, rgb(241 183 231 / 11%), transparent 31%),
+    radial-gradient(circle at 12% 92%, rgb(87 208 255 / 12%), transparent 34%),
+    linear-gradient(145deg, rgb(255 255 255 / 25%), rgb(187 226 249 / 12%));
+  --wb-control:
+    radial-gradient(circle at 12% 12%, rgb(255 255 255 / 56%), transparent 30%),
+    radial-gradient(circle at 88% 82%, rgb(103 209 255 / 14%), transparent 37%),
+    radial-gradient(circle at 86% 14%, rgb(246 184 229 / 10%), transparent 34%),
+    linear-gradient(145deg, rgb(255 255 255 / 27%), rgb(176 220 248 / 13%));
+  --wb-selected:
+    radial-gradient(circle at 12% 12%, rgb(255 255 255 / 62%), transparent 29%),
+    radial-gradient(circle at 86% 18%, rgb(255 173 222 / 24%), transparent 36%),
+    radial-gradient(circle at 14% 88%, rgb(75 210 255 / 25%), transparent 38%),
+    radial-gradient(circle at 88% 88%, rgb(151 134 255 / 22%), transparent 39%),
+    linear-gradient(145deg, rgb(255 255 255 / 22%), rgb(129 202 248 / 14%));
+  --wb-panel-shadow:
+    inset 3px 3px 5px rgb(255 255 255 / 78%),
+    inset -4px -5px 8px rgb(47 133 196 / 15%),
+    inset 3px 0 5px rgb(255 188 225 / 8%),
+    inset -3px 0 5px rgb(76 207 255 / 10%),
+    inset 0 -3px 6px rgb(151 133 255 / 7%),
+    inset 0 0 0 1px rgb(255 255 255 / 38%),
+    inset 7px -7px 18px rgb(255 184 226 / 5%),
+    0 14px 32px rgb(61 111 147 / 14%),
+    0 2px 3px rgb(255 255 255 / 72%);
+  --wb-control-shadow:
+    inset 3px 3px 5px rgb(255 255 255 / 88%),
+    inset -4px -5px 8px rgb(35 120 184 / 18%),
+    inset 3px 0 5px rgb(255 180 224 / 10%),
+    inset -3px 0 5px rgb(73 208 255 / 12%),
+    inset 0 -3px 6px rgb(151 132 255 / 9%),
+    inset 0 0 0 1px rgb(255 255 255 / 42%),
+    inset 5px -5px 12px rgb(245 181 228 / 7%),
+    0 8px 16px rgb(63 113 148 / 16%),
+    0 2px 3px rgb(255 255 255 / 76%);
+  color: var(--wb-ink) !important;
+}
+
+/* One calm, very pale sky-blue canvas. */
+.simple-consultant-app,
+.operations-page,
+.v6-workspace {
+  background:
+    radial-gradient(circle at 12% 5%, rgb(255 255 255 / 82%), transparent 22%),
+    radial-gradient(circle at 88% 9%, rgb(255 218 235 / 24%), transparent 25%),
+    radial-gradient(circle at 10% 86%, rgb(178 229 255 / 34%), transparent 27%),
+    radial-gradient(circle at 84% 88%, rgb(220 211 255 / 20%), transparent 28%),
+    linear-gradient(145deg, var(--wb-sky-0) 0%, var(--wb-sky-1) 46%, var(--wb-sky-2) 100%) !important;
+  background-attachment: fixed !important;
+}
+
+/* Clean translucent bars and side rails. */
+.simple-consultant-app .simple-topbar,
+.operations-page .operations-topbar,
+.operations-page .operations-sidebar,
+.v6-workspace .v6-topbar,
+.v6-workspace .v6-sidebar {
+  border-color: var(--wb-line) !important;
+  background: rgb(239 249 255 / 24%) !important;
+  box-shadow:
+    inset -1px -1px 0 rgb(73 145 199 / 12%),
+    inset 1px 1px 0 rgb(255 255 255 / 94%),
+    10px 0 30px rgb(72 119 150 / 9%) !important;
+  -webkit-backdrop-filter: blur(5px) saturate(145%) !important;
+  backdrop-filter: blur(5px) saturate(145%) !important;
+}
+
+.v6-workspace .v6-topbar {
+  box-shadow:
+    inset 0 -1px 0 rgb(65 143 201 / 13%),
+    inset 0 1px 0 rgb(255 255 255 / 94%),
+    0 8px 26px rgb(72 119 150 / 9%) !important;
+}
+
+.v6-workspace .v6-topbar :is(.v6-brand, .v6-topbar__context, .v6-topbar__actions, strong, small) {
+  color: var(--wb-ink) !important;
+}
+
+.operations-page .operations-topbar {
+  box-shadow:
+    inset -1px 0 0 rgb(65 143 201 / 13%),
+    inset 1px 0 0 rgb(255 255 255 / 94%),
+    10px 0 30px rgb(72 119 150 / 9%) !important;
+}
+
+.operations-page .operations-topbar :is(.operations-brand, .operations-user, strong, small) {
+  color: var(--wb-ink) !important;
+}
+
+.simple-consultant-app .simple-topbar {
+  box-shadow:
+    inset 0 -1px 0 rgb(77 147 199 / 11%),
+    inset 0 1px 0 rgb(255 255 255 / 96%),
+    0 8px 25px rgb(72 119 150 / 8%) !important;
+}
+
+/* Main glass panels: light lives inside the material, never over the text. */
+.simple-consultant-app :is(
+  .consultant-work-tabs,
+  .consultant-queue-panel,
+  .consultant-detail-drawer__body .simple-desk,
+  .simple-case-card,
+  .simple-summary-card,
+  .simple-visit-scheduler,
+  .simple-visit-context
+),
+.operations-page :is(
+  .operations-page-head,
+  .api-integration-panel,
+  .operations-panel,
+  .operations-metric
+),
+.v6-workspace :is(
+  .v6-page-head,
+  .v6-panel,
+  .v6-action-panel,
+  .v6-section,
+  .inquiry-v13-toolbar,
+  .inquiry-dashboard__metrics article,
+  .inquiry-dashboard__card,
+  .inquiry-dashboard__timeline,
+  .visit-v13-toolbar,
+  .visit-v13-context,
+  .visit-v13-form-panel,
+  .visit-v13-status-card,
+  .visit-v13-danger-card,
+  .visit-v13-success
+) {
+  border: 2px solid var(--wb-line) !important;
+  border-radius: 22px !important;
+  outline: 1px solid var(--wb-line-blue);
+  outline-offset: -4px;
+  background: var(--wb-glass) !important;
+  box-shadow: var(--wb-panel-shadow) !important;
+  -webkit-backdrop-filter: blur(3px) saturate(150%) !important;
+  backdrop-filter: blur(3px) saturate(150%) !important;
+}
+
+/* Smaller inner cards retain the same clear material at a gentler depth. */
+.simple-consultant-app :is(
+  .simple-topbar__notice,
+  .simple-user,
+  .simple-case-section,
+  .simple-visit-choice label > span,
+  .simple-visit-followup,
+  .simple-next-step
+),
+.operations-page :is(
+  .api-integration-panel__coverage article,
+  .operations-chart__track,
+  .common-data-table-wrap,
+  .operations-sidebar__footer
+),
+.v6-workspace :is(
+  .v6-customer-card,
+  .v6-evidence-card,
+  .v6-notification-panel,
+  .v6-form-field,
+  .visit-v13-field,
+  .visit-v13-steps li
+) {
+  border: 1px solid rgb(255 255 255 / 72%) !important;
+  background: var(--wb-glass-strong) !important;
+  box-shadow:
+    inset 2px 2px 4px rgb(255 255 255 / 82%),
+    inset -3px -4px 7px rgb(44 132 194 / 12%),
+    inset 0 0 0 1px rgb(255 255 255 / 34%),
+    0 8px 20px rgb(63 113 148 / 10%) !important;
+  -webkit-backdrop-filter: blur(3px) saturate(148%) !important;
+  backdrop-filter: blur(3px) saturate(148%) !important;
+}
+
+/* Standard clear controls. */
+.simple-consultant-app :is(
+  .consultant-work-tab,
+  .consultant-work-tab > b,
+  .consultant-queue-tools > button,
+  .common-pagination button,
+  .consultant-detail-drawer__head > button,
+  .simple-action-buttons button,
+  .simple-case-head > button,
+  .simple-visit-scheduler > header button,
+  .simple-visit-actions button,
+  .simple-summary-action,
+  .simple-brand > span,
+  .simple-user > span
+),
+.operations-page :is(
+  .operations-navigation a,
+  .operations-navigation a span,
+  .operations-user button,
+  .operations-page-head > span,
+  .operations-section-head > strong,
+  .operations-filters__footer button,
+  .operations-brand > span
+),
+.v6-workspace :is(
+  .v6-brand__mark,
+  .v6-icon-button,
+  .v6-user-chip > span,
+  .v6-nav-item,
+  .v6-nav-item > b,
+  .v6-home-link,
+  .v6-page-head__meta span,
+  .v6-button,
+  .v6-customer-card > span,
+  .v6-evidence-card__icon,
+  .v6-evidence-actions a,
+  .v6-notification-panel > header button,
+  .inquiry-dashboard__icon,
+  .visit-v13-toolbar > div span,
+  .visit-v13-form-head > span,
+  .visit-v13-steps b,
+  .visit-v13-actions button
+) {
+  border: 2px solid rgb(255 255 255 / 82%) !important;
+  background: var(--wb-control) !important;
+  box-shadow: var(--wb-control-shadow) !important;
+  color: #24506b !important;
+  text-shadow: 0 1px rgb(255 255 255 / 82%);
+  -webkit-backdrop-filter: blur(2px) saturate(150%) !important;
+  backdrop-filter: blur(2px) saturate(150%) !important;
+}
+
+/* Selected controls: subtle internal blue/lilac light, no reflective flare. */
+.simple-consultant-app :is(
+  .consultant-work-tab.is-active,
+  .common-pagination button[aria-current="page"],
+  .simple-action-buttons button.is-primary,
+  .simple-visit-actions button.is-primary,
+  .simple-summary-action
+),
+.operations-page .operations-navigation a:first-of-type,
+.v6-workspace :is(
+  .v6-nav-item.is-active,
+  .v6-button--primary,
+  .visit-v13-actions button.is-primary
+) {
+  border-color: rgb(243 250 255 / 91%) !important;
+  background: var(--wb-selected) !important;
+  box-shadow:
+    inset 2px 2px 4px rgb(255 255 255 / 76%),
+    inset 0 0 16px rgb(107 210 255 / 13%),
+    inset -3px -4px 8px rgb(89 98 186 / 16%),
+    inset 6px -5px 14px rgb(255 178 225 / 8%),
+    0 9px 18px rgb(88 117 174 / 16%) !important;
+  color: var(--wb-ink) !important;
+  text-shadow: 0 1px rgb(255 255 255 / 72%);
+}
+
+/* Inputs stay nearly white so all copy remains readable. */
+.simple-consultant-app :is(
+  .consultant-queue-tools .simple-search,
+  input,
+  select,
+  textarea
+),
+.operations-page .operations-filters :is(input, select),
+.v6-workspace :is(
+  .v6-filter input,
+  .v6-filter select,
+  .v6-form-field input,
+  .v6-form-field select,
+  .v6-form-field textarea,
+  .visit-v13-field input,
+  .visit-v13-field select,
+  .visit-v13-field textarea
+) {
+  border-color: rgb(255 255 255 / 84%) !important;
+  background: rgb(255 255 255 / 34%) !important;
+  box-shadow:
+    inset 1px 1px 3px rgb(255 255 255 / 92%),
+    inset 0 0 12px rgb(135 211 250 / 10%),
+    0 5px 13px rgb(63 113 148 / 8%) !important;
+  color: var(--wb-ink) !important;
+  -webkit-backdrop-filter: blur(2px) saturate(140%) !important;
+  backdrop-filter: blur(2px) saturate(140%) !important;
+}
+
+.simple-consultant-app :is(input, textarea)::placeholder,
+.v6-workspace :is(input, textarea)::placeholder {
+  color: #7d98aa !important;
+}
+
+/* Counselor queue: a single glass body per button, never nested rectangles. */
+.simple-consultant-app .consultant-work-tabs {
+  overflow: hidden;
+  border-radius: 24px !important;
+}
+
+.simple-consultant-app .consultant-work-tab {
+  isolation: isolate;
+  overflow: hidden;
+  border: 2px solid rgb(255 255 255 / 84%) !important;
+  border-radius: 20px !important;
+  background: var(--wb-control) !important;
+  box-shadow: var(--wb-control-shadow) !important;
+}
+
+.simple-consultant-app .consultant-work-tab.is-active {
+  background: var(--wb-selected) !important;
+}
+
+.simple-consultant-app .consultant-work-tab::before,
+.simple-consultant-app .consultant-work-tab::after,
+.simple-consultant-app .consultant-queue-panel::before,
+.operations-page .operations-page-head::after,
+.operations-page .operations-metric::before {
+  display: none !important;
+  content: none !important;
+}
+
+.simple-consultant-app .consultant-work-tabs .consultant-work-tab > b {
+  border: 1px solid rgb(255 255 255 / 90%) !important;
+  border-radius: 999px !important;
+  background: rgb(246 252 255 / 70%) !important;
+  box-shadow:
+    inset 2px 2px 4px rgb(255 255 255 / 94%),
+    inset 0 0 12px rgb(117 203 248 / 17%),
+    inset -3px -4px 6px rgb(49 126 183 / 15%),
+    0 5px 11px rgb(67 110 143 / 14%) !important;
+  color: #236f9f !important;
+}
+
+.simple-consultant-app .consultant-work-tab > span,
+.simple-consultant-app .consultant-work-tab > b {
+  position: relative;
+  z-index: 1;
+}
+
+.simple-consultant-app .v6-queue-item.consultant-list-item {
+  border-bottom-color: rgb(85 155 203 / 12%) !important;
+  background: rgb(255 255 255 / 10%) !important;
+}
+
+.simple-consultant-app .v6-queue-item.consultant-list-item:hover {
+  background: rgb(230 247 255 / 62%) !important;
+  box-shadow: inset 3px 0 0 rgb(112 183 230 / 55%) !important;
+}
+
+.v6-workspace .v6-detail {
+  background: transparent !important;
+}
+
+.simple-consultant-app .consultant-queue-panel__head,
+.simple-consultant-app .consultant-detail-drawer__head,
+.simple-consultant-app .consultant-queue-panel > .common-pagination {
+  border-color: rgb(92 157 201 / 13%) !important;
+  background: rgb(255 255 255 / 27%) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+/* Administrator and v6 navigation become pale instead of solid blue. */
+.operations-page :is(.operations-brand, .operations-navigation a, .operations-sidebar__footer),
+.v6-workspace :is(.v6-brand, .v6-nav-item, .v6-home-link) {
+  color: var(--wb-ink) !important;
+}
+
+.operations-page .operations-navigation a,
+.v6-workspace :is(.v6-nav-item, .v6-home-link) {
+  border-radius: 16px !important;
+}
+
+.operations-page .operations-navigation a:first-of-type :is(span, strong),
+.v6-workspace .v6-nav-item.is-active :is(span, strong) {
+  color: var(--wb-ink) !important;
+}
+
+.v6-workspace .v6-sidebar__section > p,
+.v6-workspace .v6-sidebar__legend > p,
+.v6-workspace .v6-nav-item:not(.is-active) > span:first-child {
+  color: #7894a6 !important;
+}
+
+/* Approved form controls and larger workspace type scale. */
+.v6-workspace {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.v6-workspace :is(.v6-page-head p, .v6-detail-head p, .visit-v13-form-head p) {
+  font-size: 14px;
+}
+
+.v6-workspace :is(.v6-form-field, .visit-v13-field) > span,
+.v6-workspace :is(.v6-form-field, .visit-v13-field) > label {
+  font-size: 13px;
+}
+
+.v6-workspace :is(input, select, textarea) {
+  border: 1px solid #b9d1dc !important;
+  border-radius: 10px !important;
+  background-color: #f8fbfd !important;
+  color: #183e54 !important;
+  font-size: 14px !important;
+}
+
+.v6-workspace select {
+  appearance: none;
+  padding-right: 40px !important;
+  background-image: linear-gradient(45deg, transparent 50%, #397b9e 50%), linear-gradient(135deg, #397b9e 50%, transparent 50%) !important;
+  background-position: calc(100% - 18px) 50%, calc(100% - 12px) 50% !important;
+  background-repeat: no-repeat !important;
+  background-size: 6px 6px, 6px 6px !important;
+}
+
+.v6-workspace :is(input[type="date"], input[type="datetime-local"])::-webkit-calendar-picker-indicator {
+  padding: 6px;
+  border-radius: 7px;
+  background-color: #e4f2f8;
+  cursor: pointer;
+}
+
+.v6-workspace .v6-sidebar__legend {
+  border-color: rgb(91 151 190 / 16%) !important;
+}
+
+.v6-workspace .v6-sidebar__legend li {
+  color: #5f7d91 !important;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.v6-workspace .v6-action-panel {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.v6-workspace .v6-action-panel :is(.v6-action-panel__head, form, .v6-form-field, .v6-action-buttons) {
+  min-width: 0;
+}
+
+.v6-workspace .v6-action-panel__head :is(p, small),
+.v6-workspace .v6-action-panel :is(.v6-form-field, .v6-check-field, .v6-action-note, .v6-action-message) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.v6-workspace .v6-action-panel__head > small:last-child {
+  display: block;
+  margin-top: 8px;
+}
+
+.v6-workspace .v6-action-panel .v6-form-field {
+  padding: 10px 12px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.v6-workspace .v6-action-panel .v6-form-field :is(input, select, textarea) {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.operations-page .operations-navigation a span,
+.operations-page .operations-brand > span,
+.v6-workspace :is(
+  .v6-brand__mark,
+  .v6-icon-button,
+  .v6-user-chip > span,
+  .v6-nav-item > b,
+  .v6-customer-card > span,
+  .v6-evidence-card__icon,
+  .inquiry-dashboard__icon,
+  .visit-v13-danger-card > span,
+  .visit-v13-success > span
+) {
+  border-radius: 50% !important;
+}
+
+/* Tables and charts sit quietly inside the glass. */
+.operations-page :is(.operations-table-section thead th, .operations-table-section tbody td),
+.v6-workspace :is(table thead th, table tbody td) {
+  border-color: rgb(83 151 198 / 12%) !important;
+}
+
+.operations-page :is(.operations-table-section tbody tr:hover, .common-data-table tbody tr:hover),
+.v6-workspace table tbody tr:hover {
+  background: rgb(231 247 255 / 48%) !important;
+}
+
+.operations-page .operations-chart__grid-line {
+  border-color: rgb(77 149 200 / 13%) !important;
+}
+
+/* Typography remains dark and crisp on translucent surfaces. */
+:where(.simple-consultant-app, .operations-page, .v6-workspace) :is(h1, h2, h3, h4, strong) {
+  color: var(--wb-ink) !important;
+}
+
+.simple-consultant-app .consultant-work-tab.is-active :is(strong, small, em),
+.operations-page .operations-navigation a:first-of-type :is(strong, small),
+.v6-workspace .v6-nav-item.is-active :is(strong, small) {
+  color: var(--wb-ink) !important;
+}
+
+:where(.simple-consultant-app, .operations-page, .v6-workspace) :is(p, small, em) {
+  text-shadow: none;
+}
+
+/* Restrained motion: depth changes, but no glare sweeps across copy. */
+:where(.simple-consultant-app, .operations-page, .v6-workspace) :is(button, a) {
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease,
+    background-color 150ms ease;
+}
+
+:where(.simple-consultant-app, .operations-page, .v6-workspace) :is(button, a):hover {
+  border-color: rgb(255 255 255 / 96%) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.simple-consultant-app, .operations-page, .v6-workspace) * {
+    transition: none !important;
+  }
+}
+
+@media not all {
+/* --------------------------------------------------------------------------
+ * Team review palette: monochrome workspaces with color reserved for meaning.
+ * ----------------------------------------------------------------------- */
+
+:where(.simple-consultant-app, .operations-page, .v6-workspace) {
+  --bw-ink: #171717;
+  --bw-muted: #6b6b6b;
+  --bw-line: #dddddd;
+  --bw-soft: #f5f5f5;
+  --bw-shadow: 0 8px 22px rgb(0 0 0 / 7%);
+  color: var(--bw-ink) !important;
+}
+
+.simple-consultant-app,
+.operations-page,
+.v6-workspace {
+  background: var(--bw-soft) !important;
+}
+
+.simple-consultant-app .simple-topbar,
+.operations-page .operations-topbar,
+.operations-page .operations-sidebar,
+.v6-workspace .v6-topbar,
+.v6-workspace .v6-sidebar {
+  border-color: var(--bw-line) !important;
+  background: #fff !important;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 5%) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.simple-consultant-app :is(
+  .consultant-work-tabs,
+  .consultant-queue-panel,
+  .consultant-detail-drawer__body .simple-desk,
+  .simple-case-card,
+  .simple-summary-card,
+  .simple-visit-scheduler,
+  .simple-visit-context
+),
+.operations-page :is(
+  .operations-page-head,
+  .api-integration-panel,
+  .operations-panel,
+  .operations-metric
+),
+.v6-workspace :is(
+  .v6-page-head,
+  .v6-panel,
+  .v6-detail,
+  .v6-action-panel,
+  .v6-section,
+  .inquiry-v13-toolbar,
+  .inquiry-dashboard__metrics article,
+  .inquiry-dashboard__card,
+  .inquiry-dashboard__timeline,
+  .visit-v13-toolbar,
+  .visit-v13-context,
+  .visit-v13-form-panel,
+  .visit-v13-status-card,
+  .visit-v13-danger-card,
+  .visit-v13-success
+) {
+  border: 1px solid var(--bw-line) !important;
+  outline: 0 !important;
+  background: #fff !important;
+  box-shadow: var(--bw-shadow) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.simple-consultant-app :is(
+  .simple-topbar__notice,
+  .simple-user,
+  .simple-case-section,
+  .simple-visit-choice label > span,
+  .simple-visit-followup,
+  .simple-next-step
+),
+.operations-page :is(
+  .api-integration-panel__coverage article,
+  .operations-chart__track,
+  .common-data-table-wrap,
+  .operations-sidebar__footer
+),
+.v6-workspace :is(
+  .v6-customer-card,
+  .v6-evidence-card,
+  .v6-notification-panel,
+  .v6-form-field,
+  .visit-v13-field,
+  .visit-v13-steps li
+) {
+  border-color: var(--bw-line) !important;
+  background: #fff !important;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 5%) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Black and white controls. */
+.simple-consultant-app :is(
+  .consultant-work-tab,
+  .consultant-work-tab > b,
+  .consultant-queue-tools > button,
+  .common-pagination button,
+  .consultant-detail-drawer__head > button,
+  .simple-action-buttons button,
+  .simple-case-head > button,
+  .simple-visit-scheduler > header button,
+  .simple-visit-actions button,
+  .simple-summary-action,
+  .simple-brand > span,
+  .simple-user > span
+),
+.operations-page :is(
+  .operations-navigation a,
+  .operations-navigation a span,
+  .operations-user button,
+  .operations-page-head > span,
+  .operations-section-head > strong,
+  .operations-filters__footer button,
+  .operations-brand > span
+),
+.v6-workspace :is(
+  .v6-brand__mark,
+  .v6-icon-button,
+  .v6-user-chip > span,
+  .v6-nav-item,
+  .v6-nav-item > b,
+  .v6-home-link,
+  .v6-page-head__meta span,
+  .v6-button,
+  .v6-customer-card > span,
+  .v6-evidence-card__icon,
+  .v6-evidence-actions a,
+  .v6-notification-panel > header button,
+  .inquiry-dashboard__icon,
+  .visit-v13-toolbar > div span,
+  .visit-v13-form-head > span,
+  .visit-v13-steps b,
+  .visit-v13-actions button
+) {
+  border: 1px solid #d4d4d4 !important;
+  background: #fff !important;
+  box-shadow: 0 3px 9px rgb(0 0 0 / 6%) !important;
+  color: var(--bw-ink) !important;
+  text-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.simple-consultant-app :is(
+  .consultant-work-tab.is-active,
+  .common-pagination button[aria-current="page"],
+  .simple-action-buttons button.is-primary,
+  .simple-visit-actions button.is-primary,
+  .simple-summary-action
+),
+.operations-page .operations-navigation a:first-of-type,
+.v6-workspace :is(
+  .v6-nav-item.is-active,
+  .v6-button--primary,
+  .visit-v13-actions button.is-primary
+) {
+  border-color: #171717 !important;
+  background: #171717 !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  text-shadow: none !important;
+}
+
+.simple-consultant-app .consultant-work-tab.is-active :is(strong, small, em),
+.operations-page .operations-navigation a:first-of-type :is(span, strong, small),
+.v6-workspace .v6-nav-item.is-active :is(span, strong, small) {
+  color: #fff !important;
+}
+
+.simple-consultant-app .consultant-work-tabs .consultant-work-tab > b {
+  border-color: #d4d4d4 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: var(--bw-ink) !important;
+}
+
+/* Forms and inquiry content stay white. */
+.simple-consultant-app :is(
+  .consultant-queue-tools .simple-search,
+  input,
+  select,
+  textarea
+),
+.operations-page .operations-filters :is(input, select),
+.v6-workspace :is(
+  .v6-filter input,
+  .v6-filter select,
+  .v6-form-field input,
+  .v6-form-field select,
+  .v6-form-field textarea,
+  .visit-v13-field input,
+  .visit-v13-field select,
+  .visit-v13-field textarea
+) {
+  border-color: #d4d4d4 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: var(--bw-ink) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.simple-consultant-app .v6-queue-item.consultant-list-item,
+.simple-consultant-app .v6-queue-item.consultant-list-item:hover,
+.simple-consultant-app .consultant-queue-panel__head,
+.simple-consultant-app .consultant-detail-drawer__head,
+.simple-consultant-app .consultant-queue-panel > .common-pagination,
+.operations-page :is(.operations-table-section tbody tr:hover, .common-data-table tbody tr:hover),
+.v6-workspace table tbody tr:hover {
+  border-color: var(--bw-line) !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+/* Pagination keeps a fixed black-and-white appearance. */
+.simple-consultant-app .common-pagination button {
+  border: 1px solid #cfcfcf !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: var(--bw-ink) !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+.simple-consultant-app .common-pagination button[aria-current="page"] {
+  border-color: #171717 !important;
+  background: #171717 !important;
+  color: #fff !important;
+}
+
+.simple-consultant-app .common-pagination button:hover:not(:disabled) {
+  border-color: #171717 !important;
+  background: #fff !important;
+  color: var(--bw-ink) !important;
+  transform: none !important;
+}
+
+/* Counselor views use no semantic color fills. */
+.simple-consultant-app :is(.common-risk-badge, .common-status-badge),
+.v6-workspace :is(.common-risk-badge, .common-status-badge),
+.v6-workspace :is(.inquiry-dashboard__alert, .visit-v13-danger-card, .visit-v13-success) {
+  border-color: #cfcfcf !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: var(--bw-ink) !important;
+}
+
+/* Administrator risk: exactly green / yellow / red. */
+.operations-page .common-risk-badge {
+  box-shadow: none !important;
+}
+
+.operations-page .common-risk-badge--general {
+  border-color: #afd3ba !important;
+  background: #e8f4ec !important;
+  color: #23663a !important;
+}
+
+.operations-page .common-risk-badge--caution {
+  border-color: #e2cc7b !important;
+  background: #fff6cf !important;
+  color: #725900 !important;
+}
+
+.operations-page .common-risk-badge--danger {
+  border-color: #e2abab !important;
+  background: #fde8e8 !important;
+  color: #9b2525 !important;
+}
+
+/* Administrator status: three stable groups only. */
+.operations-page :is(.common-status-badge--default, .common-status-badge--progress) {
+  border-color: #b8cce6 !important;
+  background: #eaf2fc !important;
+  color: #285d91 !important;
+}
+
+.operations-page .common-status-badge--reopened {
+  border-color: #e0c590 !important;
+  background: #fff3dc !important;
+  color: #875600 !important;
+}
+
+.operations-page .common-status-badge--success {
+  border-color: #b4d6bf !important;
+  background: #eaf5ed !important;
+  color: #286d3e !important;
+}
+
+:where(.simple-consultant-app, .operations-page, .v6-workspace) :is(button, a):hover {
+  transform: none !important;
+}
+
+/* Remove the remaining decorative blue from labels, links, and brands. */
+.simple-consultant-app .simple-brand,
+.operations-page .operations-brand,
+.v6-workspace .v6-brand,
+.simple-consultant-app .consultant-list-item__open {
+  color: var(--bw-ink) !important;
+}
+
+.operations-page .operations-page-head small,
+.operations-page .api-integration-panel__summary > small,
+.operations-page .operations-section-head small {
+  color: #555 !important;
+}
+
+.simple-consultant-app .consultant-queue-panel > .common-pagination button[aria-current="page"] {
+  border-color: #171717 !important;
+  background: #171717 !important;
+  color: #fff !important;
+}
+
+.simple-consultant-app .common-pagination__actions span[aria-current="page"] {
+  border: 1px solid #171717 !important;
+  background: #171717 !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  transition: none !important;
+}
+
+.operations-page .api-runtime-status__signal {
+  background: #777 !important;
+  box-shadow: none !important;
+}
+
+.operations-page .operations-exception-reasons > * {
+  border-color: #d7d7d7 !important;
+  background: #f4f4f4 !important;
+  color: #555 !important;
+}
+
+/* Inquiry detail and visit pages remain fully monochrome. */
+.v6-workspace :is(
+  .v6-chip,
+  .common-priority-badge,
+  .v6-danger-alert,
+  .inquiry-dashboard__alert,
+  .visit-v13-danger-card,
+  .visit-v13-success
+) {
+  border-color: #cfcfcf !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: var(--bw-ink) !important;
+}
+
+.v6-workspace :is(
+  .v6-chip,
+  .common-priority-badge,
+  .v6-danger-alert,
+  .inquiry-dashboard__alert,
+  .visit-v13-danger-card,
+  .visit-v13-success
+) * {
+  color: var(--bw-ink) !important;
+}
+
+.v6-workspace :is(
+  .v6-tabs button.is-active,
+  .inquiry-dashboard__ai-status,
+  .visit-v13-steps .is-complete
+) {
+  color: var(--bw-ink) !important;
+}
+
+.v6-workspace .v6-tabs button.is-active::after {
+  background: #171717 !important;
+  box-shadow: none !important;
+}
+
+.v6-workspace .v6-sidebar__legend :is(.is-danger, .is-warning, .is-safe),
+.v6-workspace .v6-live-dot::before {
+  background: #777 !important;
+  box-shadow: none !important;
+}
+
+.v6-workspace .v6-skip-link {
+  background: #171717 !important;
+  color: #fff !important;
+}
+}

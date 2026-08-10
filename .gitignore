@@ -36,6 +36,9 @@ WaterCareBackend/.venv/
 AGENTS.md
 **/.venv/
 
+# 승혁 개인 설정
+docs/individual/seunghyuk/review-note/
+
 # Android
 mobile/.gradle/
 mobile/build/

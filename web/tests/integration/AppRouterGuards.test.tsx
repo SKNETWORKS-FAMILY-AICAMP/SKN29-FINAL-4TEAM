@@ -37,7 +37,7 @@ describe("App Router Guard", () => {
     renderRoute("/consultant/inquiries", null);
 
     expect(
-      await screen.findByRole("heading", { name: "워터케어 ONE 로그인" }),
+      await screen.findByRole("heading", { name: "Water Bridge 로그인" }),
     ).toBeInTheDocument();
   });
 
@@ -82,6 +82,25 @@ describe("App Router Guard", () => {
     expect(
       screen.getByRole("heading", { name: "제품 누수" }),
     ).toBeInTheDocument();
+  });
+
+  it("발표 대표 문의 DEMO-INQ-002의 완료 상세와 공식 근거를 직접 확인할 수 있다", async () => {
+    const user = userEvent.setup();
+    renderRoute(
+      "/consultant/inquiries/bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
+      createUser("CONSULTANT"),
+    );
+
+    expect(
+      await screen.findByText("문의 · DEMO-INQ-002"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "출수량 저하" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: "공식 근거·사용 상태" }));
+    expect(
+      screen.getByRole("heading", { name: "EvidenceCardDTO · 공식 근거" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/38쪽/)).toBeInTheDocument();
   });
 
   it("CONS-02 근거 부분 실패가 상세 전체를 가리지 않는다", async () => {
