@@ -6,6 +6,10 @@
 > 판정: `LOCAL_AUTHOR_VERIFIED / PUBLIC_DISPATCH_NOT_CONNECTED`
 > 게시 범위: `origin/jiyong` 검토 후보
 
+> 후속 현행화: 2026-08-10 `SUBMIT_SYMPTOM` Commit 후 실제 AI Mock HTTP
+> Wiring이 추가됐다. 현재 실행 기준은
+> [문의 AI Runtime Wiring·실제 Mock HTTP 가이드](Django_REST_API_문의_AI_Runtime_Wiring_실제Mock_HTTP_구현_검증_가이드.md)를 따른다.
+
 ## 1. 결론
 
 기존 T-022·T-023 문서는 최초 증상 제출과 기본 상태 Engine을 설명하지만,
@@ -152,6 +156,7 @@ $python = ".\backend\.venv\Scripts\python.exe"
 
 ## 10. 관련 문서
 
+- [문의 AI Runtime Wiring·실제 Mock HTTP 구현·검증 가이드](Django_REST_API_문의_AI_Runtime_Wiring_실제Mock_HTTP_구현_검증_가이드.md)
 - [문의·증상제출 구현·검증·인계서](Django_REST_API_문의_증상제출_구현_검증_인계서.md)
 - [State Machine API 구현·검증·인계서](Django_State_Machine_API_구현_검증_인계서.md)
 - [Backend·AI API 계약·구현 미해결 사항](../연동_인계/Backend_AI_API_계약_구현_미해결_사항.md)
