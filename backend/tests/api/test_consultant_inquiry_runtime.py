@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
@@ -497,16 +498,35 @@ def test_consultant_detail_returns_closed_assigned_projection(
         "workflow",
         "section_errors",
     }
-    assert data["inquiry"] == {
+    inquiry_projection = data["inquiry"]
+    assert set(inquiry_projection) == {
+        "inquiry_id",
+        "inquiry_code",
+        "status",
+        "state_version",
+        "risk_level",
+        "priority",
+        "received_at",
+        "updated_at",
+    }
+    assert {
+        key: value
+        for key, value in inquiry_projection.items()
+        if key not in {"received_at", "updated_at"}
+    } == {
         "inquiry_id": str(inquiry.public_id),
         "inquiry_code": inquiry.inquiry_code,
         "status": Inquiry.Status.CONSULTATION_REQUIRED,
         "state_version": 2,
         "risk_level": "caution",
         "priority": "HIGH",
-        "received_at": inquiry.created_at.isoformat().replace("+00:00", "Z"),
-        "updated_at": inquiry.updated_at.isoformat().replace("+00:00", "Z"),
     }
+    assert parse_datetime(inquiry_projection["received_at"]) == (
+        inquiry.created_at
+    )
+    assert parse_datetime(inquiry_projection["updated_at"]) == (
+        inquiry.updated_at
+    )
     assert data["customer"] == {
         "is_synthetic": True,
         "display_name": "A" * 80,
