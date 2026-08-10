@@ -24,48 +24,56 @@ steps:
   - order: 1
     actor: CUSTOMER
     event: START_INQUIRY
+    operation_id: startInquiry
     from_inquiry_state: null
     to_inquiry_state: DRAFT
     state_version_after: 1
   - order: 2
     actor: CUSTOMER
     event: SUBMIT_SYMPTOM
+    operation_id: submitSymptom
     from_inquiry_state: DRAFT
     to_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
     state_version_after: 2
   - order: 3
     actor: CUSTOMER
     event: SUBMIT_ANSWERS
+    operation_id: submitFollowUpAnswers
     from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
     to_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
     state_version_after: 3
   - order: 4
     actor: SYSTEM
     event: SAFE_GUIDANCE_READY
+    operation_id: null
     from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
     to_inquiry_state: AI_GUIDANCE
     state_version_after: 4
   - order: 5
     actor: CUSTOMER
     event: REQUEST_CONSULTATION
+    operation_id: requestConsultation
     from_inquiry_state: AI_GUIDANCE
     to_inquiry_state: CONSULTATION_REQUIRED
     state_version_after: 5
   - order: 6
     actor: CONSULTANT
     event: START_CONSULTATION
+    operation_id: startConsultation
     from_inquiry_state: CONSULTATION_REQUIRED
     to_inquiry_state: CONSULTATION_IN_PROGRESS
     state_version_after: 6
   - order: 7
     actor: CONSULTANT
     event: VISIT_REVIEW_REQUIRED
+    operation_id: requestVisitReview
     from_inquiry_state: CONSULTATION_IN_PROGRESS
     to_inquiry_state: VISIT_REVIEW_PENDING
     state_version_after: 7
   - order: 8
     actor: CONSULTANT
     event: VISIT_NEEDED
+    operation_id: createVisitRequest
     from_inquiry_state: VISIT_REVIEW_PENDING
     to_inquiry_state: VISIT_SCHEDULING
     state_version_after: 8
@@ -76,6 +84,7 @@ steps:
   - order: 9
     actor: CONSULTANT
     event: UPDATE_VISIT_SCHEDULE
+    operation_id: updateVisitSchedule
     from_inquiry_state: VISIT_SCHEDULING
     to_inquiry_state: VISIT_SCHEDULING
     state_version_after: 9
@@ -86,6 +95,7 @@ steps:
   - order: 10
     actor: CONSULTANT
     event: CONFIRM_VISIT
+    operation_id: confirmVisit
     from_inquiry_state: VISIT_SCHEDULING
     to_inquiry_state: VISIT_SCHEDULED
     state_version_after: 10
@@ -96,6 +106,7 @@ steps:
   - order: 11
     actor: TECHNICIAN
     event: START_VISIT
+    operation_id: startVisit
     from_inquiry_state: VISIT_SCHEDULED
     to_inquiry_state: VISIT_SCHEDULED
     state_version_after: 11
@@ -106,6 +117,7 @@ steps:
   - order: 12
     actor: TECHNICIAN
     event: VISIT_COMPLETED
+    operation_id: completeVisit
     from_inquiry_state: VISIT_SCHEDULED
     to_inquiry_state: COMPLETION_PENDING
     state_version_after: 12
@@ -116,6 +128,7 @@ steps:
   - order: 13
     actor: CUSTOMER
     event: SUBMIT_RESOLUTION_FEEDBACK
+    operation_id: submitResolutionFeedback
     from_inquiry_state: COMPLETION_PENDING
     to_inquiry_state: COMPLETION_PENDING
     state_version_after: 13
@@ -123,6 +136,7 @@ steps:
   - order: 14
     actor: TECHNICIAN
     event: FINALIZE_INQUIRY
+    operation_id: finalizeInquiry
     from_inquiry_state: COMPLETION_PENDING
     to_inquiry_state: RESOLVED
     state_version_after: 14

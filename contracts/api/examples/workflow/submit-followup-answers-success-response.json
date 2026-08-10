@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "data": {
+    "message": "추가 답변 계약이 처리되었습니다.",
+    "inquiry_id": "a40c8360-5de5-44a3-8970-8aaea12cbe79",
+    "status": "QUESTIONNAIRE_IN_PROGRESS",
+    "state_version": 3,
+    "allowed_actions": [],
+    "idempotent_replay": false,
+    "resource": null
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "f65d6b82-8dbc-40ed-8a65-2a91314ac44d"
+  }
+}

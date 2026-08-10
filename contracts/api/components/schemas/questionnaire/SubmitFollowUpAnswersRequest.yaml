@@ -1,0 +1,20 @@
+title: SubmitFollowUpAnswersRequest
+type: object
+description: 현재 열린 추가 질문에 대한 고객 답변 묶음
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - state_version
+  - answers
+properties:
+  state_version:
+    type: integer
+    minimum: 1
+  answers:
+    type: array
+    minItems: 1
+    maxItems: 50
+    uniqueItems: true
+    description: 동일 question_id 중복은 Runtime에서 422로 거부한다.
+    items:
+      $ref: ./FollowUpAnswerRequest.yaml

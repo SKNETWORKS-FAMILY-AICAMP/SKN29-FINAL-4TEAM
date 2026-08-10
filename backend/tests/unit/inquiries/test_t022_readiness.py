@@ -557,17 +557,14 @@ def test_deferred_t022_runtime_contract_gaps_fail_closed():
 
     assert result["ready"] is False
     assert result["blockers"] == [
-        "QUESTIONNAIRE_PATH_ID_NOT_UUID",
-        "QUESTIONNAIRE_IDEMPOTENCY_KEY_UNDECLARED",
-        "QUESTIONNAIRE_ANSWERS_UNTYPED",
         "ACTION_RESULTS_PATH_ID_NOT_UUID",
         "ACTION_RESULTS_IDEMPOTENCY_KEY_UNDECLARED",
     ]
     assert result["operations"] == {
-        "accumulateInquiryQuestionnaire": {
-            "path_id_uuid": False,
-            "idempotency_key_declared": False,
-            "answers_typed": False,
+        "submitFollowUpAnswers": {
+            "path_id_uuid": True,
+            "idempotency_key_declared": True,
+            "answers_typed": True,
         },
         "createInquiryActionResult": {
             "path_id_uuid": False,

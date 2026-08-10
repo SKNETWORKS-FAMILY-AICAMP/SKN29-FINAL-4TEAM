@@ -9,7 +9,7 @@
     operationId: requestVisitReview
     summary: 방문 필요 여부 검토 요청
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: VISIT_REVIEW_REQUIRED
       transition_rule: TR-INQ-018
@@ -54,7 +54,7 @@
     summary: 방문 필요 확정 및 미배정 Visit 생성
     description: Client는 기사나 다음 상태를 보내지 않으며 서버가 ASSIGNING Visit을 생성한다.
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: VISIT_NEEDED
       transition_rule: TR-INQ-019
@@ -81,7 +81,7 @@
     operationId: markVisitNotNeeded
     summary: 방문 불필요 확정
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: VISIT_NOT_NEEDED
       transition_rule: TR-INQ-034
@@ -108,7 +108,7 @@
     operationId: updateVisitSchedule
     summary: 담당 상담사 합성 기사·date-only 일정 저장
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: UPDATE_VISIT_SCHEDULE
       transition_rules: [TR-INQ-020, TR-INQ-021]
@@ -134,7 +134,7 @@
     operationId: confirmVisit
     summary: 담당 상담사 방문일 확정
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: CONFIRM_VISIT
       transition_rule: TR-INQ-022
@@ -151,3 +151,103 @@
         application/json:
           schema: {$ref: ../components/schemas/visit/ConfirmVisitRequest.yaml}
     responses: *workflow_responses
+
+/visits/{visit_id}/start:
+  parameters: *visit_path_parameters
+  post:
+    operationId: startVisit
+    summary: 배정 기사 방문 작업 시작
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: START_VISIT
+      transition_rule: TR-INQ-025
+      inquiry_from_state: VISIT_SCHEDULED
+      inquiry_to_state: VISIT_SCHEDULED
+      visit_from_status: CONFIRMED
+      visit_to_status: IN_PROGRESS
+      actor_role: TECHNICIAN
+    x-permission-scope: ASSIGNED_VISITS
+    security: [{BearerAuth: []}]
+    parameters: *write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/visit/StartVisitRequest.yaml}
+          examples:
+            start:
+              externalValue: ../examples/visits/start-visit-request.json
+    responses:
+      "200":
+        description: 방문 시작 결과 또는 동일 요청 Replay
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data: {$ref: ../components/schemas/workflow/StateTransitionResult.yaml}
+            examples:
+              accepted:
+                externalValue: ../examples/visits/start-visit-success-response.json
+      "400": {$ref: ../components/responses/BadRequest.yaml}
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "409": {$ref: ../components/responses/WorkflowConflict.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}
+
+/visits/{visit_id}/complete:
+  parameters: *visit_path_parameters
+  post:
+    operationId: completeVisit
+    summary: 배정 기사 방문 결과 완료
+    x-contract-status: CONFIRMED
+    x-runtime-status: NOT_IMPLEMENTED
+    x-state-machine:
+      event: VISIT_COMPLETED
+      transition_rule: TR-INQ-026
+      inquiry_from_state: VISIT_SCHEDULED
+      inquiry_to_state: COMPLETION_PENDING
+      visit_from_status: IN_PROGRESS
+      visit_to_status: COMPLETED
+      actor_role: TECHNICIAN
+    x-permission-scope: ASSIGNED_VISITS
+    security: [{BearerAuth: []}]
+    parameters: *write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/visit/SubmitVisitResultRequest.yaml}
+          examples:
+            complete:
+              externalValue: ../examples/visits/complete-visit-request.json
+    responses:
+      "200":
+        description: 방문 완료 결과 또는 동일 요청 Replay
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data: {$ref: ../components/schemas/workflow/StateTransitionResult.yaml}
+            examples:
+              accepted:
+                externalValue: ../examples/visits/complete-visit-success-response.json
+      "400": {$ref: ../components/responses/BadRequest.yaml}
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "409": {$ref: ../components/responses/WorkflowConflict.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}

@@ -20,14 +20,17 @@ INQUIRIES_DIR = BACKEND_DIR / "apps" / "inquiries"
 INQUIRY_CONTRACT = (
     REPOSITORY_ROOT / "contracts" / "api" / "paths" / "inquiries.yaml"
 )
-QUESTIONNAIRE_REQUEST_SCHEMA = (
+WORKFLOW_CONTRACT = (
+    REPOSITORY_ROOT / "contracts" / "api" / "paths" / "workflow.yaml"
+)
+FOLLOWUP_ANSWERS_REQUEST_SCHEMA = (
     REPOSITORY_ROOT
     / "contracts"
     / "api"
     / "components"
     / "schemas"
-    / "inquiry"
-    / "InquiryQuestionnaireRequest.yaml"
+    / "questionnaire"
+    / "SubmitFollowUpAnswersRequest.yaml"
 )
 SETTINGS_PATH = BACKEND_DIR / "config" / "settings" / "base.py"
 API_URLS_PATH = BACKEND_DIR / "config" / "api_urls.py"
@@ -311,24 +314,27 @@ def schema_branch_is_typed(branch: Any) -> bool:
 def inspect_deferred_runtime_contracts() -> dict[str, Any]:
     """T-022 공개 쓰기 Runtime 착수 전 미확정 계약을 fail-closed로 감사한다."""
 
-    paths = load_yaml_mapping(INQUIRY_CONTRACT)
-    questionnaire_schema = load_yaml_mapping(QUESTIONNAIRE_REQUEST_SCHEMA)
-    questionnaire_path = paths.get("/inquiries/{id}/questionnaire", {})
-    action_results_path = paths.get("/inquiries/{id}/action-results", {})
-    if not isinstance(questionnaire_path, dict):
-        questionnaire_path = {}
+    inquiry_paths = load_yaml_mapping(INQUIRY_CONTRACT)
+    workflow_paths = load_yaml_mapping(WORKFLOW_CONTRACT)
+    followup_schema = load_yaml_mapping(FOLLOWUP_ANSWERS_REQUEST_SCHEMA)
+    followup_path = workflow_paths.get("/inquiries/{id}/answers", {})
+    action_results_path = inquiry_paths.get(
+        "/inquiries/{id}/action-results", {}
+    )
+    if not isinstance(followup_path, dict):
+        followup_path = {}
     if not isinstance(action_results_path, dict):
         action_results_path = {}
 
-    questionnaire_id_schema = path_parameter_schema(
-        questionnaire_path,
+    followup_id_schema = path_parameter_schema(
+        followup_path,
         "id",
     )
     action_results_id_schema = path_parameter_schema(
         action_results_path,
         "id",
     )
-    questionnaire_properties = questionnaire_schema.get("properties", {})
+    questionnaire_properties = followup_schema.get("properties", {})
     answers_schema = (
         questionnaire_properties.get("answers", {})
         if isinstance(questionnaire_properties, dict)
@@ -336,15 +342,15 @@ def inspect_deferred_runtime_contracts() -> dict[str, Any]:
     )
 
     operations = {
-        "accumulateInquiryQuestionnaire": {
+        "submitFollowUpAnswers": {
             "path_id_uuid": (
-                questionnaire_id_schema.get("type") == "string"
-                and questionnaire_id_schema.get("format") == "uuid"
+                followup_id_schema.get("type") == "string"
+                and followup_id_schema.get("format") == "uuid"
             ),
             "idempotency_key_declared": (
                 operation_declares_idempotency_key(
-                    questionnaire_path,
-                    "patch",
+                    followup_path,
+                    "post",
                 )
             ),
             "answers_typed": schema_branch_is_typed(answers_schema),
@@ -363,14 +369,14 @@ def inspect_deferred_runtime_contracts() -> dict[str, Any]:
         },
     }
     blockers = []
-    if not operations["accumulateInquiryQuestionnaire"]["path_id_uuid"]:
-        blockers.append("QUESTIONNAIRE_PATH_ID_NOT_UUID")
-    if not operations["accumulateInquiryQuestionnaire"][
+    if not operations["submitFollowUpAnswers"]["path_id_uuid"]:
+        blockers.append("FOLLOWUP_ANSWERS_PATH_ID_NOT_UUID")
+    if not operations["submitFollowUpAnswers"][
         "idempotency_key_declared"
     ]:
-        blockers.append("QUESTIONNAIRE_IDEMPOTENCY_KEY_UNDECLARED")
-    if not operations["accumulateInquiryQuestionnaire"]["answers_typed"]:
-        blockers.append("QUESTIONNAIRE_ANSWERS_UNTYPED")
+        blockers.append("FOLLOWUP_ANSWERS_IDEMPOTENCY_KEY_UNDECLARED")
+    if not operations["submitFollowUpAnswers"]["answers_typed"]:
+        blockers.append("FOLLOWUP_ANSWERS_UNTYPED")
     if not operations["createInquiryActionResult"]["path_id_uuid"]:
         blockers.append("ACTION_RESULTS_PATH_ID_NOT_UUID")
     if not operations["createInquiryActionResult"][

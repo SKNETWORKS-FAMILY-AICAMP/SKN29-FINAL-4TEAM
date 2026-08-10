@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "data": {
+    "message": "미해결 보고로 문의가 다시 열렸습니다.",
+    "inquiry_id": "a40c8360-5de5-44a3-8970-8aaea12cbe79",
+    "status": "REOPENED",
+    "state_version": 8,
+    "allowed_actions": [],
+    "idempotent_replay": false,
+    "resource": null
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "4d413ad5-82ee-4e71-bb21-60d271f8c63d"
+  }
+}

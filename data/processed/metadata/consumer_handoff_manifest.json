@@ -2,7 +2,7 @@
   "status": "PASS",
   "dataset_version": "0.9.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
-  "source_commit": "13e56ddfb0b52d984ed1193ac716ed44cc692a56",
+  "source_commit": "2198e9e90fe894fb848d551ef638fb3ae0a2b433",
   "service_contracts_used": true,
   "contract_alignment": {
     "state_machine_version": "1.0.0",
@@ -228,7 +228,7 @@
           "role": "MAPPING_DB_FULL_VERIFIED",
           "records": 1,
           "size_bytes": 18600,
-          "sha256": "38DA881739F4BCA0DC773E577F2AC7C81DA44F17E95C7CD29A15CF108E719E5A"
+          "sha256": "030FEC3052145FF51F411F886090256C2751D2208F6B24D0FB51C4ADA2D1A0D0"
         },
         {
           "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
@@ -374,7 +374,7 @@
           "role": "MAPPING_DB_FULL_VERIFIED",
           "records": 1,
           "size_bytes": 18600,
-          "sha256": "38DA881739F4BCA0DC773E577F2AC7C81DA44F17E95C7CD29A15CF108E719E5A"
+          "sha256": "030FEC3052145FF51F411F886090256C2751D2208F6B24D0FB51C4ADA2D1A0D0"
         },
         {
           "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
@@ -439,42 +439,42 @@
           "role": "SUMMARY",
           "records": 1,
           "size_bytes": 7046,
-          "sha256": "6ABA1C3094C6AB9B750C91663B6B72C2FCDEE96A5934DAED77FBB59272054038"
+          "sha256": "B976AA93832109D9A2C9073621BC19E10FE9D9E70F654838F4C2A74683C54704"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 8471,
-          "sha256": "FBF6F0B43FF70151658CFBF2DFFCF49D87A0B4EAD27E1FAF64D2DB740F663394"
+          "sha256": "5A84E1AA44EFF1BE97FA454FA39182AAC6C3273C75507F668D63EFD79C47C74D"
         },
         {
           "path": "processed/validation/integrity/latest_integrity_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1340,
-          "sha256": "C6165DA09A599FF167BB852A67E79239307BD0F565445C09C6BBF86454ED11CF"
+          "sha256": "8C4D13F9BFB1A3DF70D2B797FE86491251D2C4F6F568BC3B3091A4C822BC9D09"
         },
         {
           "path": "processed/validation/quality/latest_quality_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1246,
-          "sha256": "39657F2A5D0F27E58399E96384605CC42B90AFD321EF87C40EA5E8BBF75AAD80"
+          "sha256": "582F906E2470DC64512A4778C45044A21D76D469ACCF641BA5DAD9D1163B0692"
         },
         {
           "path": "processed/validation/business/latest_business_rules_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1544,
-          "sha256": "7F23DB0C47F22F225A08456C7F4B3B6CADEC1C2854CA2C76187B2199E93B67C6"
+          "sha256": "C447EDA6EACF380352A081D3F41D7087400A2ED57C0E0F27893C3DD5BF37BBD4"
         },
         {
           "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1151,
-          "sha256": "10E748EABB8F00F9D3BE9EB1306432E58C8EFD2BDB91C463969247DC5464F6BE"
+          "sha256": "FBCB50463678C856AEC1E0CD7E1A4615D8E6634FE65BF1A2726DA3F819D4FDFB"
         },
         {
           "path": "processed/metadata/dataset_manifest.json",

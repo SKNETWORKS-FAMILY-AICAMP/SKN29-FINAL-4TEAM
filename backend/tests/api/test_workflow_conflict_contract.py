@@ -105,6 +105,8 @@ def test_workflow_409_schema_and_examples_use_public_codes():
     assert set(details["properties"]) == {
         "current_status",
         "current_state_version",
+        "current_visit_status",
+        "current_visit_state_version",
         "allowed_actions",
     }
     assert state_example["error"]["code"] == "STATE-CONFLICT-01"

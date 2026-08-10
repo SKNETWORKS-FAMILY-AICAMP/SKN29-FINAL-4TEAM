@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "data": {
+    "message": "방문 작업이 시작되었습니다.",
+    "inquiry_id": "a40c8360-5de5-44a3-8970-8aaea12cbe79",
+    "status": "VISIT_SCHEDULED",
+    "state_version": 7,
+    "allowed_actions": [],
+    "idempotent_replay": false,
+    "resource": null
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "65e38872-a876-4206-9cc5-9d42969e0e5f"
+  }
+}

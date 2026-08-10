@@ -1,5 +1,18 @@
 title: ResolutionFeedbackRequest
 type: object
 description: 해결 피드백 요청
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required:
+  - state_version
+  - resolved
+properties:
+  state_version:
+    type: integer
+    minimum: 1
+  resolved:
+    type: boolean
+    const: true
+  comment:
+    type: string
+    maxLength: 1000

@@ -17,7 +17,10 @@ import type {
   CounselorInquiry,
   CounselorStatus,
 } from "./consultantWorkspaceTypes";
-import { normalizeCounselorStatus } from "./consultantWorkspaceModel";
+import {
+  getCounselorWorkBucket,
+  normalizeCounselorStatus,
+} from "./consultantWorkspaceModel";
 
 interface OfficialInquiryFixture {
   id: number;
@@ -423,9 +426,7 @@ function createInquiry(
   };
 }
 
-// 공식 fixture의 문의 내용과 Mock Backend Projection의 업무 상태를 화면용 View Model로 변환한다.
-// 화면에서는 상태·위험도·우선순위·담당자·허용 행동을 다시 계산하지 않는다.
-export const COUNSELOR_INQUIRIES: readonly CounselorInquiry[] = (
+const BASE_COUNSELOR_INQUIRIES: readonly CounselorInquiry[] = (
   officialInquiryFixtures as unknown as readonly OfficialInquiryFixture[]
 ).map(createInquiry);
 
@@ -442,11 +443,101 @@ const CONSULTANT_VISIBLE_STATUSES = new Set<CounselorStatus>([
   "CANCELLED",
 ]);
 
+const CONSULTANT_BUCKET_TARGETS = {
+  NEW: 15,
+  IN_PROGRESS: 23,
+  COMPLETED: 12,
+} as const;
+
+const SUPPLEMENTAL_CUSTOMER_MESSAGES = [
+  "출수 버튼을 눌러도 물이 바로 나오지 않고 잠시 뒤에 조금씩 나옵니다.",
+  "제품 아래쪽에 물기가 보여 안전하게 사용할 수 있는지 확인하고 싶습니다.",
+  "평소보다 큰 소음과 진동이 반복되어 점검이 필요한지 문의드립니다.",
+  "냉수 온도가 평소보다 높고 표시창의 온도도 자주 바뀝니다.",
+  "필터 교체 후 물맛이 달라져 추가 확인을 요청드립니다.",
+  "온수 기능을 사용한 뒤 점검 안내가 표시되어 사용을 멈췄습니다.",
+] as const;
+
+function isConsultantQueueInquiry(inquiry: CounselorInquiry): boolean {
+  return (
+    inquiry.routingTarget === "CONSULTANT" &&
+    CONSULTANT_VISIBLE_STATUSES.has(inquiry.status)
+  );
+}
+
+function createSupplementalConsultantInquiries(
+  baseQueue: readonly CounselorInquiry[],
+): readonly CounselorInquiry[] {
+  let sequence = 1;
+
+  return (Object.keys(CONSULTANT_BUCKET_TARGETS) as Array<
+    keyof typeof CONSULTANT_BUCKET_TARGETS
+  >).flatMap((bucket) => {
+    const templates = baseQueue.filter(
+      (inquiry) => getCounselorWorkBucket(inquiry.status) === bucket,
+    );
+    const requiredCount = Math.max(
+      0,
+      CONSULTANT_BUCKET_TARGETS[bucket] - templates.length,
+    );
+
+    return Array.from({ length: requiredCount }, (_, bucketIndex) => {
+      const template = templates[bucketIndex % templates.length];
+      const mockSequence = sequence++;
+      const customerSequence = String(100 + mockSequence).padStart(3, "0");
+      const idSuffix = String(mockSequence).padStart(12, "0");
+      const receivedDay = String(10 - (mockSequence % 7)).padStart(2, "0");
+      const receivedHour = String(8 + (mockSequence % 10)).padStart(2, "0");
+      const receivedAt = `2026-08-${receivedDay}T${receivedHour}:00:00+09:00`;
+
+      return {
+        ...template,
+        inquiryId: parseInquiryId(
+          `20000000-0000-4000-8000-${idSuffix}`,
+        ),
+        inquiryCode: parseInquiryCode(
+          `INQ-20260810-${String(100 + mockSequence).padStart(4, "0")}`,
+        ),
+        scenarioId: `${template.scenarioId}-web-mock-${mockSequence}`,
+        customerId: `SYN-CUSTOMER-${customerSequence}`,
+        customerName: `합성 고객 ${customerSequence}`,
+        customerDisplayName: `합성 고객 ${customerSequence}`,
+        customerPhone: `010-****-${String(3200 + mockSequence).slice(-4)} (합성)`,
+        subscriptionId: `SYN-SUBSCRIPTION-${customerSequence}`,
+        customerMessage:
+          SUPPLEMENTAL_CUSTOMER_MESSAGES[
+            (mockSequence - 1) % SUPPLEMENTAL_CUSTOMER_MESSAGES.length
+          ],
+        conditions: `${bucket} 업무함 확인을 위한 확장 Mock 시나리오입니다.`,
+        createdAt: receivedAt,
+        updatedAt: receivedAt,
+        waitingMinutes: 8 + mockSequence * 3,
+        previousVisitCount: mockSequence % 3,
+        stateVersion: 1 + (mockSequence % 4),
+        timeline: template.timeline.map((item) => ({
+          ...item,
+          occurredAt: receivedAt,
+        })),
+      };
+    });
+  });
+}
+
+const BASE_CONSULTANT_QUEUE_INQUIRIES = BASE_COUNSELOR_INQUIRIES.filter(
+  isConsultantQueueInquiry,
+);
+
+const SUPPLEMENTAL_CONSULTANT_INQUIRIES =
+  createSupplementalConsultantInquiries(BASE_CONSULTANT_QUEUE_INQUIRIES);
+
+// 공식 fixture를 유지하고 상담사 화면의 업무량 확인용 합성 문의를 추가한다.
+// 화면에서는 상태·위험도·우선순위·담당자·허용 행동을 다시 계산하지 않는다.
+export const COUNSELOR_INQUIRIES: readonly CounselorInquiry[] = [
+  ...BASE_COUNSELOR_INQUIRIES,
+  ...SUPPLEMENTAL_CONSULTANT_INQUIRIES,
+];
+
 // 상담사 화면에는 상담사에게 배정된 주의·긴급 문의의 현재 업무와 완료 이력을 노출한다.
 // 일반 문의는 AI가 방문기사에게 자동 인계하며, 문진 중 문의는 상담 큐에 진입하기 전이므로 제외한다.
 export const CONSULTANT_QUEUE_INQUIRIES: readonly CounselorInquiry[] =
-  COUNSELOR_INQUIRIES.filter(
-    (inquiry) =>
-      inquiry.routingTarget === "CONSULTANT" &&
-      CONSULTANT_VISIBLE_STATUSES.has(inquiry.status),
-  );
+  COUNSELOR_INQUIRIES.filter(isConsultantQueueInquiry);

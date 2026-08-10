@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 import sys
-import tempfile
 import unittest
+from unittest.mock import patch
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -31,28 +31,30 @@ class ContractValidatorsTest(unittest.TestCase):
     def test_openapi_refs_paths_and_operations_are_resolvable(self) -> None:
         result = validate_openapi.validate_repository(REPO_ROOT)
 
-        self.assertEqual(22, result.paths)
-        self.assertEqual(23, result.operations)
+        self.assertEqual(30, result.paths)
+        self.assertEqual(31, result.operations)
         self.assertGreater(result.references, 0)
 
     def test_json_examples_are_parseable_and_referenced(self) -> None:
         result = validate_examples.validate_repository(REPO_ROOT)
 
-        self.assertEqual(34, result.api_examples)
+        self.assertEqual(50, result.api_examples)
         self.assertEqual(result.api_examples, result.referenced_examples)
         self.assertEqual(5, result.integration_examples)
-        self.assertEqual(25, result.wrapped_responses)
+        self.assertEqual(33, result.wrapped_responses)
 
     def test_state_machine_digest_input_is_line_ending_independent(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            lf_path = Path(temp_dir) / "lf.yaml"
-            crlf_path = Path(temp_dir) / "crlf.yaml"
-            lf_path.write_bytes(b"contract:\n  version: 1.0.0\n")
-            crlf_path.write_bytes(b"contract:\r\n  version: 1.0.0\r\n")
-
+        with patch.object(
+            Path,
+            "read_bytes",
+            side_effect=[
+                b"contract:\n  version: 1.0.0\n",
+                b"contract:\r\n  version: 1.0.0\r\n",
+            ],
+        ):
             self.assertEqual(
-                render_state_machine.normalized_source_bytes(lf_path),
-                render_state_machine.normalized_source_bytes(crlf_path),
+                render_state_machine.normalized_source_bytes(Path("lf.yaml")),
+                render_state_machine.normalized_source_bytes(Path("crlf.yaml")),
             )
 
 

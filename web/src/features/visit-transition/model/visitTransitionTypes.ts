@@ -5,12 +5,12 @@ export type VisitMockAction =
 
 export interface VisitTransitionValues {
   visitReason: string;
-  desiredAt: string;
+  preferredDate: string;
   technicianId: string;
   inspectionPriority: string;
   notes: string;
   safetyNotes: string;
-  confirmedAt: string;
+  confirmedDate: string;
 }
 
 export type VisitTransitionField = keyof VisitTransitionValues;

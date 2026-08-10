@@ -9,6 +9,7 @@ import DataTable, {
 } from "../../common/components/data-display/DataTable";
 import ErrorState from "../../common/components/feedback/ErrorState";
 import LoadingState from "../../common/components/feedback/LoadingState";
+import WaterDropBubbles from "../../common/components/water/WaterDropBubbles";
 import OperationsDashboardFilters from "../../features/operations-dashboard/components/OperationsDashboardFilters";
 import OperationsDistributionChart from "../../features/operations-dashboard/components/OperationsDistributionChart";
 import OperationsExceptionTable from "../../features/operations-dashboard/components/OperationsExceptionTable";
@@ -153,13 +154,27 @@ export default function OperationsDashboardPage() {
 
   return (
     <main className="operations-main">
-        <header id="operations-overview" className="operations-page-head">
-          <div>
+        <header id="operations-overview" className="operations-page-head waterdrop-hero">
+          <WaterDropBubbles />
+          <div className="operations-waterdrop-hero__copy">
+            <span className="waterdrop-role-chip">운영 워크스페이스 · 공식 합성 데이터</span>
             <small>ADMIN-01 · P1 MOCK</small>
             <h1>운영 대시보드</h1>
             <p>문의 현황과 상담·방문 전환, 처리 예외를 공식 합성 데이터로 점검합니다.</p>
+            <div className="operations-waterdrop-hero__facts" aria-label="운영 화면 안내">
+              <span>실제 API 연결 대기</span>
+              <span>상태·위험도 구분</span>
+              <span>예외 문의 우선 확인</span>
+            </div>
           </div>
-          <span>기준 데이터 · 공식 합성 문의 {OPERATIONS_INQUIRIES.length}건</span>
+          <div className="operations-waterdrop-hero__visual" aria-label="조회 문의 요약">
+            <span className="waterdrop-fixture-chip">기준 데이터 {OPERATIONS_INQUIRIES.length}건</span>
+            <div className="operations-waterdrop-orb">
+              <span>FILTERED CASES</span>
+              <strong>{summary.inquiries.length}</strong>
+              <small>현재 조회 문의</small>
+            </div>
+          </div>
         </header>
 
         <ApiIntegrationPanel />

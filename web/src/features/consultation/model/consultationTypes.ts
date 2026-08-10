@@ -1,6 +1,7 @@
 import type {
   CounselorActionCode,
   CounselorInquiry,
+  CounselorStatus,
 } from "./consultantWorkspaceTypes";
 import type {
   WorkflowActionSuccess,
@@ -52,10 +53,13 @@ export interface ProvisionalConsultationActionRequest {
 }
 
 export type ConsultationActionSuccess =
-  WorkflowActionSuccess<CounselorActionCode>;
+  WorkflowActionSuccess<CounselorActionCode> & {
+    status: CounselorStatus;
+  };
 
 export type ConsultationActionErrorKind =
   | "FORBIDDEN"
+  | "RUNTIME_BLOCKED"
   | "VALIDATION_ERROR"
   | "NETWORK_ERROR";
 

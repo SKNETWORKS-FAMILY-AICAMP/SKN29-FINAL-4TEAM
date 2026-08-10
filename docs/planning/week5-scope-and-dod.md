@@ -66,3 +66,13 @@ target_at=<YYYY-MM-DD HH:mm KST>
 ```
 
 설명 없는 `SKIP`, Mock 결과, 과거 Commit 결과는 PASS 증거로 사용하지 않는다.
+
+## 6. 3.2 E2E Action 결정 기록
+
+- 정상 14단계의 계약 미정 6개 Action을 P0 PM 승인안으로 결정했다.
+- 미해결→재상담 2개 Action은 정상 14단계에서 제외하고 `T-055` 보조 시나리오 승인안으로 결정했다.
+- 현행 WBS 일정은 변경하지 않는다.
+- OpenAPI·Crosswalk·Code는 최지용, Contract Test는 김은진의 주관할 적용 대기이며 3.2 전체 상태는 `OWNER_APPLY_PENDING`이다.
+- 결정 원본: `docs/decisions/week5-e2e-action-decision.md`
+- Event–Operation 연결: `docs/decisions/week5-e2e-event-operation-matrix.md`
+- 구현 인계: `docs/handoffs/week5-e2e-action-implementation-handoff.md`

@@ -10,6 +10,16 @@ export interface PublicEvidenceSource {
   verificationLabel: string;
 }
 
+export const PUBLIC_EVIDENCE_FIELDS = [
+  "dataClassification",
+  "documentTitle",
+  "documentVersion",
+  "page",
+  "sourceLandingUrl",
+  "summary",
+  "verificationLabel",
+] as const;
+
 function getPublicUrl(value?: string): string | undefined {
   if (!value) return undefined;
 

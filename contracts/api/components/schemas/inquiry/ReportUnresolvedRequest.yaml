@@ -1,0 +1,24 @@
+title: ReportUnresolvedRequest
+type: object
+description: 고객 미해결 보고 요청
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - state_version
+  - resolved
+properties:
+  state_version:
+    type: integer
+    minimum: 1
+  resolved:
+    type: boolean
+    const: false
+  reason_code:
+    type: string
+    minLength: 1
+    maxLength: 80
+    pattern: "^[A-Z][A-Z0-9_]*$"
+    description: 코드 Registry 확정 전 형식만 제한한다.
+  comment:
+    type: string
+    maxLength: 1000

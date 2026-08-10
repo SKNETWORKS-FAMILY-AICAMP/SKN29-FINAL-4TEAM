@@ -45,7 +45,7 @@
     },
     "representative_e2e_contract": {
       "path": "contracts/state-machine/examples/representative-e2e.yaml",
-      "sha256": "5E4F92772AEB71D34CA1B9C46E61B82090B404226B6437713BDF8769ED07A58F"
+      "sha256": "3D45CAB38800AD8C48080456C5B2CF061A0E73C1B8B1CCEB0EA7FD782C1CADF0"
     },
     "adr_0010_identifier_bridge": {
       "path": "docs/adr/0010-t005-three-layer-identifier-bridge.md",

@@ -42,6 +42,7 @@ describe("useSaveConsultation", () => {
       )
       .mockResolvedValue({
         message: "저장 완료",
+        status: inquiry.status,
         stateVersion: inquiry.stateVersion,
         allowedActions: inquiry.allowedActions,
         correlationId: "server-correlation-id",
@@ -100,6 +101,7 @@ describe("useSaveConsultation", () => {
     });
     resolveRequest({
       message: "저장 완료",
+      status: inquiry.status,
       stateVersion: inquiry.stateVersion + 1,
       allowedActions: inquiry.allowedActions,
       correlationId: "server-correlation-id",

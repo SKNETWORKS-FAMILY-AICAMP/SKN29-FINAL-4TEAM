@@ -27,4 +27,34 @@ describe("EvidenceCard", () => {
     expect(screen.queryByText(/근거 항목|제공기관|위험도|안전 조치|금지 행동/)).not.toBeInTheDocument();
     expect(screen.queryByText(/chunk_id|검색 점수|내부 경로|직접 다운로드/)).not.toBeInTheDocument();
   });
+
+  it("내부 AI 정보는 화면용 데이터에서 제거한다", () => {
+    const internalSource = {
+      dataClassification: "official" as const,
+      documentTitle: "공식 사용설명서",
+      documentVersion: "REV.00",
+      page: 39,
+      summary: "제품 사용을 중지하고 상담합니다.",
+      verificationLabel: "검증 완료",
+      chunk_id: "chunk-secret",
+      similarity_score: 0.97,
+      file_path: "C:/internal/manual.pdf",
+      prompt: "internal system prompt",
+    };
+
+    const evidence = mapEvidenceToCard(internalSource);
+
+    expect(evidence).toEqual({
+      dataClassification: "official",
+      documentTitle: "공식 사용설명서",
+      documentVersion: "REV.00",
+      page: 39,
+      sourceLandingUrl: undefined,
+      summary: "제품 사용을 중지하고 상담합니다.",
+      verificationLabel: "검증 완료",
+    });
+    expect(JSON.stringify(evidence)).not.toMatch(
+      /chunk_id|similarity_score|file_path|prompt|chunk-secret|internal system/i,
+    );
+  });
 });

@@ -1,0 +1,15 @@
+title: StartVisitRequest
+type: object
+description: 배정 기사의 방문 시작 요청
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - state_version
+  - visit_state_version
+properties:
+  state_version:
+    type: integer
+    minimum: 1
+  visit_state_version:
+    type: integer
+    minimum: 1

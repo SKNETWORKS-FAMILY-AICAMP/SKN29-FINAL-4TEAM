@@ -318,9 +318,15 @@ export default function ConsultationActionPanel({
       {inquiry.status !== "QUESTIONNAIRE_IN_PROGRESS" && (
         <ActionButtons
           actions={save.allowedActions}
-          disabled={save.isSaving}
+          disabled={save.isSaving || !save.isWriteEnabled}
           onAction={handleAction}
         />
+      )}
+
+      {!save.isWriteEnabled && (
+        <p className="v6-action-message" role="status">
+          상담 저장 API 연결 대기 중입니다. 조회만 가능합니다.
+        </p>
       )}
 
       {save.success && (
