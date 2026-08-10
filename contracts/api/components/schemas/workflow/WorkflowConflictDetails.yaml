@@ -10,6 +10,15 @@ properties:
   current_state_version:
     type: integer
     minimum: 1
+  current_visit_status:
+    type:
+      - string
+      - "null"
+  current_visit_state_version:
+    type:
+      - integer
+      - "null"
+    minimum: 1
   allowed_actions:
     type: array
     items:

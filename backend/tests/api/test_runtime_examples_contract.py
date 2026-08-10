@@ -56,12 +56,28 @@ EXPECTED_JSON_FILES = {
     "subscriptions/list-empty-success.json",
     "subscriptions/query-validation-error.json",
     "visits/create-visit-request.json",
+    "visits/complete-visit-request.json",
+    "visits/complete-visit-success-response.json",
+    "visits/start-visit-request.json",
+    "visits/start-visit-success-response.json",
     "visits/update-visit-schedule-request.json",
     "workflow/cancel-inquiry-replay-response.json",
     "workflow/cancel-inquiry-request.json",
     "workflow/cancel-inquiry-success-response.json",
     "workflow/idempotency-key-reuse-conflict.json",
+    "workflow/finalize-inquiry-request.json",
+    "workflow/finalize-inquiry-success-response.json",
+    "workflow/report-unresolved-request.json",
+    "workflow/report-unresolved-success-response.json",
+    "workflow/request-consultation-request.json",
+    "workflow/request-consultation-success-response.json",
+    "workflow/resolution-feedback-request.json",
+    "workflow/resolution-feedback-success-response.json",
+    "workflow/resume-consultation-request.json",
+    "workflow/resume-consultation-success-response.json",
     "workflow/state-version-conflict.json",
+    "workflow/submit-followup-answers-request.json",
+    "workflow/submit-followup-answers-success-response.json",
 }
 
 
@@ -304,13 +320,26 @@ def test_every_json_is_referenced_by_a_resolvable_external_value():
     assert referenced_files == EXPECTED_JSON_FILES
 
 
-def test_unimplemented_and_no_body_operations_have_no_examples():
+def test_action_results_stays_without_examples_and_week5_actions_are_pending():
     inquiry_paths = load_yaml(API_DIR / "paths" / "inquiries.yaml")
+    workflow_paths = load_yaml(API_DIR / "paths" / "workflow.yaml")
+    visit_paths = load_yaml(API_DIR / "paths" / "visits.yaml")
     openapi = load_yaml(API_DIR / "openapi.yaml")
 
-    for path in (
-        "/inquiries/{id}/questionnaire",
-        "/inquiries/{id}/action-results",
-    ):
+    for path in ("/inquiries/{id}/action-results",):
         assert list(collect_external_values(inquiry_paths[path])) == []
+    pending = {
+        "/inquiries/{id}/answers": workflow_paths,
+        "/inquiries/{id}/request-consultation": workflow_paths,
+        "/inquiries/{id}/resolution-feedback": workflow_paths,
+        "/inquiries/{id}/finalize": workflow_paths,
+        "/inquiries/{id}/report-unresolved": workflow_paths,
+        "/inquiries/{id}/resume-consultation": workflow_paths,
+        "/visits/{visit_id}/start": visit_paths,
+        "/visits/{visit_id}/complete": visit_paths,
+    }
+    for path, document in pending.items():
+        assert document[path]["post"]["x-runtime-status"] == (
+            "NOT_IMPLEMENTED"
+        )
     assert list(collect_external_values(openapi["paths"]["/health"])) == []

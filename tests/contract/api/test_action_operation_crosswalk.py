@@ -45,13 +45,13 @@ class ActionOperationCrosswalkTest(unittest.TestCase):
         self.assertEqual(
             {
                 "RUNTIME_IMPLEMENTED": 11,
-                "OPENAPI_CONFIRMED": 0,
-                "CONTRACT_ONLY": 2,
-                "DEFERRED": 10,
+                "OPENAPI_CONFIRMED": 8,
+                "CONTRACT_ONLY": 0,
+                "DEFERRED": 4,
             },
             result.classifications,
         )
-        self.assertEqual(11, result.confirmed_operations)
+        self.assertEqual(19, result.confirmed_operations)
 
     def test_rejects_http_path_drift(self) -> None:
         crosswalk = deepcopy(self.crosswalk)

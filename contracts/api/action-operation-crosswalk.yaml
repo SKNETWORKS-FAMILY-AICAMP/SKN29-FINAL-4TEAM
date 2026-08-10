@@ -3,7 +3,7 @@ contract:
   version: 1.0.0
   status: PM_BASELINE_CANDIDATE
   owner: PM_TECHNICAL_INTEGRATION
-  updated_at: 2026-08-07
+  updated_at: 2026-08-10
   sources:
     action_registry: ../codes/workflow-actions.yaml
     allowed_actions: ../state-machine/allowed-actions.yaml
@@ -29,9 +29,9 @@ classification_policy:
 summary:
   total_actions: 23
   RUNTIME_IMPLEMENTED: 11
-  OPENAPI_CONFIRMED: 0
-  CONTRACT_ONLY: 2
-  DEFERRED: 10
+  OPENAPI_CONFIRMED: 8
+  CONTRACT_ONLY: 0
+  DEFERRED: 4
 
 actions:
   - action: SUBMIT_SYMPTOM
@@ -73,17 +73,17 @@ actions:
   - action: SUBMIT_ANSWERS
     event: SUBMIT_ANSWERS
     operation_id: submitFollowUpAnswers
-    classification: CONTRACT_ONLY
+    classification: OPENAPI_CONFIRMED
     openapi:
-      confirmed: false
-      method: null
-      path: null
-      contract_status: MISSING_EXACT_OPERATION
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/answers
+      contract_status: CONFIRMED
     runtime:
       implemented: false
       source_evidence: []
       test_evidence: []
-    note: accumulateInquiryQuestionnaire는 operation_id와 Event 연결이 다르므로 동일 Operation으로 간주하지 않는다.
+    note: PM 승인 Payload와 InquiryQA 질문 메타데이터의 물리 분리 전까지 Runtime을 공개하지 않는다.
 
   - action: CUSTOMER_REPORTED_SELF_RESOLVED
     event: CUSTOMER_REPORTED_SELF_RESOLVED
@@ -103,12 +103,12 @@ actions:
   - action: REQUEST_CONSULTATION
     event: REQUEST_CONSULTATION
     operation_id: requestConsultation
-    classification: CONTRACT_ONLY
+    classification: OPENAPI_CONFIRMED
     openapi:
-      confirmed: false
-      method: null
-      path: null
-      contract_status: MISSING_EXACT_OPERATION
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/request-consultation
+      contract_status: CONFIRMED
     runtime:
       implemented: false
       source_evidence: []
@@ -281,12 +281,12 @@ actions:
   - action: START_VISIT
     event: START_VISIT
     operation_id: startVisit
-    classification: DEFERRED
+    classification: OPENAPI_CONFIRMED
     openapi:
-      confirmed: false
-      method: null
-      path: null
-      contract_status: MISSING_EXACT_OPERATION
+      confirmed: true
+      method: POST
+      path: /visits/{visit_id}/start
+      contract_status: CONFIRMED
     runtime:
       implemented: false
       source_evidence: []
@@ -295,12 +295,12 @@ actions:
   - action: VISIT_COMPLETED
     event: VISIT_COMPLETED
     operation_id: completeVisit
-    classification: DEFERRED
+    classification: OPENAPI_CONFIRMED
     openapi:
-      confirmed: false
-      method: null
-      path: null
-      contract_status: MISSING_EXACT_OPERATION
+      confirmed: true
+      method: POST
+      path: /visits/{visit_id}/complete
+      contract_status: CONFIRMED
     runtime:
       implemented: false
       source_evidence: []
@@ -323,12 +323,12 @@ actions:
   - action: SUBMIT_RESOLUTION_FEEDBACK
     event: SUBMIT_RESOLUTION_FEEDBACK
     operation_id: submitResolutionFeedback
-    classification: DEFERRED
+    classification: OPENAPI_CONFIRMED
     openapi:
-      confirmed: false
-      method: null
-      path: null
-      contract_status: MISSING_EXACT_OPERATION
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/resolution-feedback
+      contract_status: CONFIRMED
     runtime:
       implemented: false
       source_evidence: []
@@ -337,12 +337,12 @@ actions:
   - action: CUSTOMER_REPORTED_UNRESOLVED
     event: CUSTOMER_REPORTED_UNRESOLVED
     operation_id: reportUnresolved
-    classification: DEFERRED
+    classification: OPENAPI_CONFIRMED
     openapi:
-      confirmed: false
-      method: null
-      path: null
-      contract_status: MISSING_EXACT_OPERATION
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/report-unresolved
+      contract_status: CONFIRMED
     runtime:
       implemented: false
       source_evidence: []
@@ -351,12 +351,12 @@ actions:
   - action: RESUME_CONSULTATION
     event: RESUME_CONSULTATION
     operation_id: resumeConsultation
-    classification: DEFERRED
+    classification: OPENAPI_CONFIRMED
     openapi:
-      confirmed: false
-      method: null
-      path: null
-      contract_status: MISSING_EXACT_OPERATION
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/resume-consultation
+      contract_status: CONFIRMED
     runtime:
       implemented: false
       source_evidence: []
@@ -365,12 +365,12 @@ actions:
   - action: FINALIZE_INQUIRY
     event: FINALIZE_INQUIRY
     operation_id: finalizeInquiry
-    classification: DEFERRED
+    classification: OPENAPI_CONFIRMED
     openapi:
-      confirmed: false
-      method: null
-      path: null
-      contract_status: MISSING_EXACT_OPERATION
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/finalize
+      contract_status: CONFIRMED
     runtime:
       implemented: false
       source_evidence: []

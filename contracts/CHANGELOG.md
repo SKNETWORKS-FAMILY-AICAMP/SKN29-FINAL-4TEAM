@@ -1,5 +1,27 @@
 # Contracts Changelog
 
+## 2026-08-10 — 대표 E2E Action OpenAPI 0.8.0 적용 후보
+
+### Added
+
+- PM이 승인한 8개 Action의 정확한 POST Method·Path·Actor·State Rule 연결
+- 모든 신규 쓰기의 `state_version`, `Idempotency-Key`, `X-Correlation-ID`, 409 계약
+- 방문 시작·완료의 Inquiry·Visit Version 동시 검사와 케어 결과 코드 계약
+- 추가 답변의 `answer_text` 또는 `answer_payload` 배타 입력 Schema
+- 해결 피드백·미해결 보고·마지막 처리 담당자 최종 완료 계약
+
+### Classification
+
+- 최신 main의 기존 Runtime 증거를 보존하고 8개 신규 경계는 `OPENAPI_CONFIRMED`로 분리한다.
+- 집계는 `RUNTIME_IMPLEMENTED=2`, `OPENAPI_CONFIRMED=17`, `CONTRACT_ONLY=0`, `DEFERRED=4`다.
+- OpenAPI는 30개 Path·31개 Operation이며 State Machine 1.0.0과 `contracts/VERSION`은 변경하지 않는다.
+
+### Boundary
+
+- `SUBMIT_ANSWERS`의 질문 메타데이터와 실제 `answer_payload` 저장 경계가 분리되기 전까지 Runtime은 `NOT_IMPLEMENTED`다.
+- 고객 해결 피드백만으로 종료하지 않으며 `FINALIZE_INQUIRY`에 최신 긍정 피드백과 마지막 처리 담당자 Guard가 필요하다.
+- 본 적용 후보는 계약·예시·정적 검증 범위이며 독립 QA와 각 Runtime WBS 완료를 대신하지 않는다.
+
 ## 2026-08-10 — 대표 E2E Action PM 결정 및 State Example 연결
 
 ### Added
