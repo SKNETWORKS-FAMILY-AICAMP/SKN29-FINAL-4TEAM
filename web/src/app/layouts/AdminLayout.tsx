@@ -5,6 +5,7 @@ import "../../pages/admin/OperationsDashboardPage.css";
 import "../../pages/admin/OperationsDashboardTheme.css";
 import "../../common/styles/water-glass-theme.css";
 import "../../common/styles/waterdrop-workspaces.css";
+import "../../common/styles/readable-dashboard-theme.css";
 import { useAuth } from "../providers/authContext";
 import { ROUTE_PATHS } from "../router/routePaths";
 

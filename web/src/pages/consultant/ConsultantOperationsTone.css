@@ -215,3 +215,172 @@
     box-shadow: none !important;
   }
 }
+
+/* Readability-first monochrome finish. Layout remains unchanged. */
+html body .simple-consultant-app.consultant-queue-app .simple-topbar,
+html body .simple-consultant-app.consultant-queue-app .consultant-queue-panel,
+html body .simple-consultant-app.consultant-queue-app .consultant-queue-panel__head,
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-queue-panel
+  > .common-pagination {
+  border-color: #e3e5e8 !important;
+  background: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app .consultant-work-tabs {
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: #0b0c0e !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs::before,
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs::after {
+  display: none !important;
+  content: none !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab,
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab:hover {
+  border-color: transparent !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  transform: none !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab:hover {
+  background: #1c1e22 !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab
+  :is(strong, em, small) {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab
+  em {
+  color: #aeb2ba !important;
+  -webkit-text-fill-color: #aeb2ba !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab.is-active,
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab.is-active:hover {
+  border-color: #fff !important;
+  background: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #15171a !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab.is-active
+  :is(strong, em, small) {
+  color: #15171a !important;
+  -webkit-text-fill-color: #15171a !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab.is-active::before,
+html body .simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab.is-active::after {
+  display: none !important;
+  content: none !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .v6-queue-item.consultant-list-item,
+html body .simple-consultant-app.consultant-queue-app
+  .v6-queue-item.consultant-list-item:nth-child(even),
+html body .simple-consultant-app.consultant-queue-app
+  .v6-queue-item.consultant-list-item:hover {
+  border: 0 !important;
+  border-bottom: 1px solid #eceef0 !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html body .simple-consultant-app.consultant-queue-app
+  .v6-queue-item.consultant-list-item:hover {
+  background: #f7f7fa !important;
+  box-shadow: inset 3px 0 0 #6866c9 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs {
+  border-color: #0b0c0e !important;
+  background: #0b0c0e !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  :is(
+    .simple-topbar,
+    .consultant-queue-panel,
+    .consultant-queue-panel__head,
+    .consultant-queue-panel > .common-pagination
+  ) {
+  border-color: #e3e5e8 !important;
+  background: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* Compact corners: keep cards readable without the pill-like silhouette. */
+html body .simple-consultant-app.simple-consultant-app.consultant-queue-app {
+  border-radius: 8px !important;
+}
+
+html body .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .simple-topbar {
+  border-radius: 8px 8px 0 0 !important;
+}
+
+html body .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  :is(.consultant-work-tabs, .consultant-queue-panel) {
+  border-radius: 7px !important;
+}
+
+html body .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  :is(
+    .consultant-work-tab,
+    .simple-topbar__notice,
+    .simple-search,
+    .consultant-queue-tools > button,
+    .consultant-detail-drawer__head > button
+  ) {
+  border-radius: 6px !important;
+}

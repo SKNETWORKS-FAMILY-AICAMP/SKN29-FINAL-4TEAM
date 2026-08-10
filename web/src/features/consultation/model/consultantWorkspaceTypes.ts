@@ -21,7 +21,7 @@ export type CounselorStatus =
   | "CANCELLED"
   | "UNKNOWN";
 
-export type CounselorPriority = "NORMAL" | "HIGH" | "URGENT" | "UNKNOWN";
+export type CounselorPriority = "LOW" | "NORMAL" | "HIGH" | "URGENT" | "UNKNOWN";
 export type CounselorRoutingTarget = "CONSULTANT" | "FIELD_TECHNICIAN";
 
 export type CounselorWorkBucket = "NEW" | "IN_PROGRESS" | "COMPLETED";

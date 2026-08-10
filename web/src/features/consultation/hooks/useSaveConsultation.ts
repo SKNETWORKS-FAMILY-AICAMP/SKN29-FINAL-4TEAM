@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 
+import { appEnv } from "../../../app/config/env";
 import { IdempotencyOperationTracker } from "../../../common/api/idempotencyOperation";
 import { createRequestContext } from "../../../common/api/requestContext";
 import {
@@ -18,7 +19,6 @@ import type {
   ConsultationMockScenario,
   ProvisionalConsultationActionRequest,
 } from "../model/consultationTypes";
-import { consultantWorkspaceRepository } from "../repositories/consultantWorkspaceRepository";
 
 interface ExecuteConsultationArgs {
   action: CounselorAllowedAction;
@@ -44,6 +44,16 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
     values,
     scenario,
   }: ExecuteConsultationArgs) => {
+    if (!appEnv.useMockApi) {
+      const blockedError: ConsultationActionErrorDetails = {
+        kind: "RUNTIME_BLOCKED",
+        message:
+          "상담 저장 API가 아직 연결되지 않아 원격 모드에서는 저장할 수 없습니다.",
+      };
+      setError(blockedError);
+      return { ok: false as const, error: blockedError };
+    }
+
     if (savingRef.current) {
       return { ok: false as const, duplicateClick: true as const };
     }
@@ -91,39 +101,25 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
       const result = await submitConsultationMock(
         request,
         scenario,
+        currentStatus,
         allowedActions,
       );
       const latestDetail = await reloadConsultationDetailMock(
         inquiry.inquiryId,
         result,
       );
-      const nextStatus =
-        action.code === "START_CONSULTATION"
-          ? "CONSULTATION_IN_PROGRESS"
-          : action.code === "VISIT_REVIEW_REQUIRED"
-            ? "VISIT_REVIEW_PENDING"
-            : action.code === "CONSULTATION_COMPLETED"
-              ? "COMPLETION_PENDING"
-          : currentStatus;
-      const nextAllowedActions =
-        nextStatus === currentStatus
-          ? latestDetail.allowedActions
-          : consultantWorkspaceRepository.getAllowedActions(
-              nextStatus,
-              inquiry.feedbackResolved,
-            );
       operationTracker.finish();
       setSuccess(result);
-      setCurrentStatus(nextStatus);
+      setCurrentStatus(result.status);
       setStateVersion(latestDetail.stateVersion);
-      setAllowedActions(nextAllowedActions);
+      setAllowedActions(latestDetail.allowedActions);
       setLastRefreshedAt(latestDetail.refreshedAt);
       return {
         ok: true as const,
         result,
-        currentStatus: nextStatus,
+        currentStatus: result.status,
         stateVersion: latestDetail.stateVersion,
-        allowedActions: nextAllowedActions,
+        allowedActions: latestDetail.allowedActions,
       };
     } catch (caught) {
       const nextError =
@@ -155,6 +151,7 @@ export function useSaveConsultation(inquiry: CounselorInquiry) {
 
   return {
     isSaving,
+    isWriteEnabled: appEnv.useMockApi,
     success,
     error,
     currentStatus,

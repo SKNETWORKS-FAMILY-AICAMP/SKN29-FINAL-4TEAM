@@ -27,6 +27,7 @@ const RISK_VALUES: readonly ("ALL" | CounselorRisk)[] = [
 ];
 const PRIORITY_VALUES: readonly ("ALL" | CounselorPriority)[] = [
   "ALL",
+  "LOW",
   "NORMAL",
   "HIGH",
   "URGENT",

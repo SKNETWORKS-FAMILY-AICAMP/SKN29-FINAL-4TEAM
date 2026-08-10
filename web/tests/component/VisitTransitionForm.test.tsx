@@ -14,6 +14,26 @@ function getVisitInquiry() {
 }
 
 describe("VisitTransitionForm", () => {
+  it("방문 생성은 기사와 일정 선택 전에 완료할 수 있다", async () => {
+    const user = userEvent.setup();
+    const onMockSaved = vi.fn();
+    render(
+      <VisitTransitionForm
+        availableActions={["CREATE_VISIT_REQUEST"]}
+        inquiry={getVisitInquiry()}
+        stateVersion={4}
+        symptomSummary="누수 의심"
+        onMockSaved={onMockSaved}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: /방문 필요 확정.*요청 생성/ }),
+    );
+
+    expect(onMockSaved).toHaveBeenCalledWith(5, "CREATE_VISIT_REQUEST");
+  });
+
   it("기존 임시 화면의 방문 전환 입력 항목을 모두 표시한다", () => {
     render(
       <VisitTransitionForm
@@ -70,11 +90,11 @@ describe("VisitTransitionForm", () => {
     );
 
     fireEvent.change(screen.getByLabelText("고객 희망일"), {
-      target: { value: "2026-07-29T10:00" },
+      target: { value: "2026-07-29" },
     });
     await user.selectOptions(
       screen.getByRole("combobox", { name: /가상 방문기사/ }),
-      "STAFF-TECH-01",
+      "00000000-0000-4000-8000-000000000101",
     );
     await user.click(screen.getByRole("button", { name: "일정 조율 저장" }));
 
@@ -97,14 +117,14 @@ describe("VisitTransitionForm", () => {
     );
 
     fireEvent.change(screen.getByLabelText("고객 희망일"), {
-      target: { value: "2026-07-29T10:00" },
+      target: { value: "2026-07-29" },
     });
     await user.selectOptions(
       screen.getByRole("combobox", { name: /가상 방문기사/ }),
-      "STAFF-TECH-02",
+      "00000000-0000-4000-8000-000000000102",
     );
     fireEvent.change(screen.getByLabelText("가상 방문 확정일"), {
-      target: { value: "2026-07-29T11:00" },
+      target: { value: "2026-07-30" },
     });
     await user.click(screen.getByRole("button", { name: "방문 확정" }));
 

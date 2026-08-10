@@ -16,7 +16,7 @@ export type ConsultantWorkspaceIntegrationStatus =
   | "BACKEND_BLOCKED";
 
 export interface ConsultantWorkspaceRepository {
-  readonly dataSource: "MOCK";
+  readonly dataSource: "MOCK" | "REMOTE";
   readonly integrationStatus: ConsultantWorkspaceIntegrationStatus;
   findInquiry(inquiryId: InquiryId | null): CounselorInquiry | undefined;
   getAllowedActions(
@@ -28,16 +28,27 @@ export interface ConsultantWorkspaceRepository {
 }
 
 /**
- * 실제 상담사 조회·저장 Endpoint가 확정될 때까지 화면의 데이터 접근을 한곳에 모은다.
- * VITE_USE_MOCK_API=false여도 Endpoint를 추측하지 않으며, Mock 미리보기와
- * BACKEND_BLOCKED 상태를 명시적으로 유지한다.
+ * 기존 동기 화면을 위한 임시 경계다.
+ * Remote 모드에서는 Mock 데이터로 자동 대체하지 않고 빈 결과를 반환한다.
+ * 실제 API 조회는 consultantWorkspaceDataRepository의 비동기 경계를 사용한다.
  */
 export function createConsultantWorkspaceRepository(
   useMockApi: boolean,
 ): ConsultantWorkspaceRepository {
+  if (!useMockApi) {
+    return {
+      dataSource: "REMOTE",
+      integrationStatus: "BACKEND_BLOCKED",
+      findInquiry: () => undefined,
+      getAllowedActions: () => [],
+      listAllInquiries: () => [],
+      listConsultantQueue: () => [],
+    };
+  }
+
   return {
     dataSource: "MOCK",
-    integrationStatus: useMockApi ? "MOCK_ONLY" : "BACKEND_BLOCKED",
+    integrationStatus: "MOCK_ONLY",
     findInquiry: (inquiryId) =>
       COUNSELOR_INQUIRIES.find((item) => item.inquiryId === inquiryId),
     getAllowedActions: getConsultantAllowedActions,
