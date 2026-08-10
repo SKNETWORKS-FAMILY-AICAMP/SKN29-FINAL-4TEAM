@@ -147,11 +147,11 @@ describe("App Router Guard", () => {
     ).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("고객 희망일"), {
-      target: { value: "2026-07-29T10:00" },
+      target: { value: "2026-07-29" },
     });
     await user.selectOptions(
       screen.getByRole("combobox", { name: /가상 방문기사/ }),
-      "STAFF-TECH-01",
+      "00000000-0000-4000-8000-000000000101",
     );
     await user.click(
       screen.getByRole("button", { name: "방문 필요 확정·요청 생성" }),
@@ -160,6 +160,14 @@ describe("App Router Guard", () => {
     expect(
       screen.getByRole("button", { name: "일정 조율 저장" }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "방문 확정" }),
+    ).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: "일정 조율 저장" }),
+    );
+
     expect(
       screen.getByRole("button", { name: "방문 확정" }),
     ).toBeInTheDocument();

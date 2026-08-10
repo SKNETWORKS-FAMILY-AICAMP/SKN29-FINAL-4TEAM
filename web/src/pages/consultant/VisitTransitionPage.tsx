@@ -60,8 +60,7 @@ export default function VisitTransitionPage() {
   }
   if (
     allowedActionCodes.includes("CONFIRM_VISIT") ||
-    locationState?.entryAction === "VISIT_NEEDED" ||
-    lastAction === "CREATE_VISIT_REQUEST"
+    lastAction === "SAVE_SCHEDULE"
   ) {
     availableMockActions.push("CONFIRM_VISIT");
   }
