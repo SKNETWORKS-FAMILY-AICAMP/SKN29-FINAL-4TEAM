@@ -17,15 +17,15 @@ const CONSULTANT_USER = {
 };
 
 const TAB_LABELS: Record<CounselorWorkBucket, RegExp> = {
-  NEW: /새로 들어온 문의/,
+  NEW: /새 문의/,
   IN_PROGRESS: /처리 중인 문의/,
   COMPLETED: /처리 완료된 문의/,
 };
 
 const EXPECTED_BUCKET_COUNTS: Record<CounselorWorkBucket, number> = {
-  NEW: 15,
-  IN_PROGRESS: 23,
-  COMPLETED: 12,
+  NEW: 30,
+  IN_PROGRESS: 30,
+  COMPLETED: 30,
 };
 
 function renderPage(path = "/consultant/inquiries") {
@@ -54,7 +54,7 @@ describe("ConsultantDashboardPage", () => {
   it("첫 화면은 세 가지 업무 탭과 문의 목록만 보여준다", () => {
     renderPage();
 
-    expect(screen.getByRole("tab", { name: /새로 들어온 문의/ })).toHaveAttribute(
+    expect(screen.getByRole("tab", { name: /새 문의/ })).toHaveAttribute(
       "aria-selected",
       "true",
     );
@@ -85,7 +85,7 @@ describe("ConsultantDashboardPage", () => {
 
     await openInquiry(user, "INQ-20260707-0024", "NEW");
 
-    expect(screen.getByRole("dialog", { name: /합성 고객.*IoT 기능 지원 문의/ })).toBeVisible();
+    expect(screen.getByRole("dialog", { name: /IoT 기능 지원 문의/ })).toBeVisible();
     expect(screen.getByRole("button", { name: "상담 시작" })).toBeInTheDocument();
 
     await user.click(screen.getAllByRole("button", { name: "문의 상세 닫기" })[1]);
@@ -188,22 +188,34 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.getByRole("heading", { name: "최근 처리 이력" })).toBeInTheDocument();
   });
 
-  it("일반 문의는 방문기사에게 자동 인계되어 상담사 탭에 포함되지 않는다", () => {
+  it("각 업무 탭의 Mock은 긴급·주의·일반 문의를 10건씩 제공한다", () => {
     renderPage();
 
-    expect(
-      CONSULTANT_QUEUE_INQUIRIES.every(
-        (item) => item.riskLevel === "CAUTION" || item.riskLevel === "DANGER",
-      ),
-    ).toBe(true);
-    expect(screen.queryByLabelText("위험도: 일반")).not.toBeInTheDocument();
+    (["NEW", "IN_PROGRESS", "COMPLETED"] as const).forEach((bucket) => {
+      const bucketItems = CONSULTANT_QUEUE_INQUIRIES.filter(
+        (item) => getCounselorWorkBucket(item.status) === bucket,
+      );
+      expect(
+        bucketItems.filter((item) => item.riskLevel === "DANGER"),
+      ).toHaveLength(10);
+      expect(
+        bucketItems.filter((item) => item.riskLevel === "CAUTION"),
+      ).toHaveLength(10);
+      expect(
+        bucketItems.filter((item) => item.riskLevel === "GENERAL"),
+      ).toHaveLength(10);
+    });
+
+    expect(screen.getAllByLabelText("위험도: 긴급")).toHaveLength(10);
+    expect(screen.getAllByLabelText("위험도: 주의")).toHaveLength(10);
+    expect(screen.getAllByLabelText("위험도: 일반")).toHaveLength(10);
   });
 
   it.each([
     ["loading", "상담 문의 목록을 불러오고 있습니다."],
     ["error", "상담 문의 목록을 불러오지 못했습니다."],
     ["forbidden", "상담 문의 목록을 볼 권한이 없습니다."],
-    ["empty", "새로 들어온 문의가 없습니다."],
+    ["empty", "새 문의가 없습니다."],
   ])("목록 %s 상태를 구분해 안내한다", async (state, message) => {
     renderPage(`/consultant/inquiries?mockState=${state}`);
 
