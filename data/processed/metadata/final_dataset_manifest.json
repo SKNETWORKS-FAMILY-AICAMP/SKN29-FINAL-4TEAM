@@ -283,7 +283,7 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 18457,
-      "sha256": "78B422B3230B5EE7A725C1219974571214B96E4DB2431BCE5ED65A12FDB8DFFC"
+      "sha256": "95D4D1144A0FE06D8AD16DAF86CE1EB0063A49BD50456D40375DE6D1ED0CE39E"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -817,8 +817,8 @@
     },
     {
       "path": "processed/validation/latest_qa_summary.json",
-      "size_bytes": 7047,
-      "sha256": "84182FA7D2ABDF4827A455874E74812D9EBA6B112E85C60D8F7FEB97E1953306"
+      "size_bytes": 7046,
+      "sha256": "1375D251573E45D238D2F890F25632390514E0B381A52F43C2F5E2BB22E7B3BB"
     },
     {
       "path": "processed/validation/ocr_evidence/image_manifest.csv",
@@ -862,8 +862,8 @@
     },
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
-      "size_bytes": 1152,
-      "sha256": "ABBCCB8E14D0D2D3764617A82CB5888E45A6D1A094EE85FBADED8F8B0AB1F6E5"
+      "size_bytes": 1151,
+      "sha256": "FAA56C8783A03D855854F2AED69892B3E261648FD40E5D7AD909C705E3F57D9C"
     },
     {
       "path": "processed/validation/schema/latest_schema_report.json",
