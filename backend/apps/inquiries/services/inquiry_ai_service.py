@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
@@ -47,6 +48,7 @@ from integrations.ai.schema_validator import AIContractValidator
 
 
 EvidenceVerifier = Callable[[list[dict[str, Any]], Inquiry], list[str]]
+ai_trace_logger = logging.getLogger("watercare.ai")
 
 
 @dataclass(frozen=True, slots=True)
@@ -102,17 +104,30 @@ class InquiryAIService:
             ai_request_id=ai_request_id,
             validator=contract_validator,
         )
+        trace = {
+            # These identifiers have passed the outbound contract validator;
+            # arbitrary caller-provided strings never enter structured logs.
+            "correlation_id": request_payload["correlation_id"],
+            "inquiry_id": request_payload["inquiry_id"],
+            "ai_request_id": request_payload["ai_request_id"],
+        }
+        ai_trace_logger.info(
+            "ai_analysis_started",
+            extra={**trace, "trace_stage": "ANALYSIS_STARTED"},
+        )
         input_digest = cls._input_digest(request_payload)
         existing = AIRun.objects.filter(
             idempotency_key=str(ai_request_id)
         ).first()
         if existing is not None:
-            return cls._replay_or_conflict(
+            outcome = cls._replay_or_conflict(
                 existing,
                 input_digest=input_digest,
                 request_payload=request_payload,
                 validator=contract_validator,
             )
+            cls._log_outcome(outcome, trace=trace)
+            return outcome
 
         mode = client.mode if client is not None else settings.AI_SERVICE_MODE
         try:
@@ -129,12 +144,14 @@ class InquiryAIService:
             ).first()
             if winner is None:
                 raise
-            return cls._replay_or_conflict(
+            outcome = cls._replay_or_conflict(
                 winner,
                 input_digest=input_digest,
                 request_payload=request_payload,
                 validator=contract_validator,
             )
+            cls._log_outcome(outcome, trace=trace)
+            return outcome
         cls._mark_running(run)
         started = time.perf_counter()
         try:
@@ -148,7 +165,7 @@ class InquiryAIService:
         except AIIntegrationError as exc:
             latency_ms = round((time.perf_counter() - started) * 1000)
             cls._mark_failed(run, exc=exc, latency_ms=latency_ms)
-            return InquiryAIOutcome(
+            outcome = InquiryAIOutcome(
                 ai_run_id=str(run.public_id),
                 status=run.status_code,
                 idempotent_replay=False,
@@ -157,14 +174,53 @@ class InquiryAIService:
                 event_applied=None,
                 pending_reason=exc.code,
             )
+            cls._log_outcome(
+                outcome,
+                trace=trace,
+                latency_ms=latency_ms,
+                failure_code=exc.code,
+            )
+            return outcome
 
         latency_ms = round((time.perf_counter() - started) * 1000)
         cls._mark_succeeded(run, result=result, latency_ms=latency_ms)
-        return cls._persist_validated_result(
+        outcome = cls._persist_validated_result(
             run=run,
             result=result,
             evidence_verifier=evidence_verifier,
         )
+        cls._log_outcome(outcome, trace=trace, latency_ms=latency_ms)
+        return outcome
+
+    @staticmethod
+    def _log_outcome(
+        outcome: InquiryAIOutcome,
+        *,
+        trace: dict[str, str],
+        latency_ms: int | None = None,
+        failure_code: str | None = None,
+    ) -> None:
+        extra: dict[str, Any] = {
+            **trace,
+            "trace_stage": "ANALYSIS_TERMINAL",
+            "ai_run_id": outcome.ai_run_id,
+            "ai_status": outcome.status,
+            "event_candidate": outcome.event_candidate,
+            "event_applied": outcome.event_applied,
+            "pending_reason": outcome.pending_reason,
+            "idempotent_replay": outcome.idempotent_replay,
+            "stale": outcome.stale,
+        }
+        if latency_ms is not None:
+            extra["latency_ms"] = max(latency_ms, 0)
+        if failure_code is not None:
+            extra["failure_code"] = failure_code
+        log_method = (
+            ai_trace_logger.warning
+            if outcome.status in {AIRun.Status.FAILED, AIRun.Status.TIMED_OUT}
+            else ai_trace_logger.info
+        )
+        log_method("ai_analysis_terminal", extra=extra)
 
     @classmethod
     def _create_run(

@@ -12,6 +12,7 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
 from apps.inquiries.models import Inquiry, SymptomEntry
+from apps.inquiries.services.inquiry_ai_service import InquiryAIOutcome
 from apps.products.models import ProductModel
 from apps.questionnaires.models import QuestionnaireSession
 from apps.subscriptions.models import CustomerSubscription
@@ -212,10 +213,25 @@ def test_success_requests_ai_structuring_once_after_durable_commit(
     owner = create_user(101)
     client, inquiry, _subscription = create_inquiry(owner, 101)
 
-    with patch(
-        "apps.inquiries.services.inquiry_ai_service."
-        "InquiryAIService.analyze_inquiry"
-    ) as analyze:
+    with (
+        patch(
+            "apps.inquiries.services.inquiry_ai_service."
+            "InquiryAIService.analyze_inquiry"
+        ) as analyze,
+        patch(
+            "apps.inquiries.services.inquiry_transition_service."
+            "ai_trace_logger.info"
+        ) as trace_info,
+    ):
+        analyze.return_value = InquiryAIOutcome(
+            ai_run_id="00000000-0000-0000-0000-000000000101",
+            status="SUCCEEDED",
+            idempotent_replay=False,
+            stale=False,
+            event_candidate="SAFE_GUIDANCE_READY",
+            event_applied=None,
+            pending_reason="CANONICAL_EVIDENCE_VERIFICATION_REQUIRED",
+        )
         with django_capture_on_commit_callbacks(execute=True):
             response = post_submit(
                 client,
@@ -233,6 +249,17 @@ def test_success_requests_ai_structuring_once_after_durable_commit(
     assert kwargs["inquiry_public_id"] == inquiry.public_id
     assert kwargs["correlation_id"] == history.correlation_id
     assert kwargs["ai_request_id"] == idempotency.public_id
+    messages = [call.args[0] for call in trace_info.call_args_list]
+    assert messages == ["ai_callback_started", "ai_callback_completed"]
+    completion = trace_info.call_args_list[-1].kwargs["extra"]
+    assert completion["correlation_id"] == str(history.correlation_id)
+    assert completion["inquiry_id"] == str(inquiry.public_id)
+    assert completion["ai_request_id"] == str(idempotency.public_id)
+    assert completion["trace_stage"] == "CALLBACK_COMPLETED"
+    assert completion["ai_status"] == "SUCCEEDED"
+    assert not {"raw_text", "input_payload", "validated_output_payload"} & set(
+        completion
+    )
 
 
 def test_ai_structuring_failure_preserves_committed_symptom_transition(
@@ -241,11 +268,17 @@ def test_ai_structuring_failure_preserves_committed_symptom_transition(
     owner = create_user(102)
     client, inquiry, _subscription = create_inquiry(owner, 102)
 
-    with patch(
-        "apps.inquiries.services.inquiry_ai_service."
-        "InquiryAIService.analyze_inquiry",
-        side_effect=RuntimeError("forced post-commit AI failure"),
-    ) as analyze:
+    with (
+        patch(
+            "apps.inquiries.services.inquiry_ai_service."
+            "InquiryAIService.analyze_inquiry",
+            side_effect=RuntimeError("forced post-commit AI failure"),
+        ) as analyze,
+        patch(
+            "apps.inquiries.services.inquiry_transition_service."
+            "ai_trace_logger.error"
+        ) as trace_error,
+    ):
         with django_capture_on_commit_callbacks(execute=True):
             response = post_submit(
                 client,
@@ -261,6 +294,14 @@ def test_ai_structuring_failure_preserves_committed_symptom_transition(
     assert inquiry.state_version == 2
     assert submit_history(inquiry).count() == 1
     assert submit_idempotency(owner).count() == 1
+    trace_error.assert_called_once()
+    message, = trace_error.call_args.args
+    extra = trace_error.call_args.kwargs["extra"]
+    assert message == "ai_callback_failed_unexpected"
+    assert extra["trace_stage"] == "CALLBACK_FAILED_UNEXPECTED"
+    assert extra["failure_code"] == "UNEXPECTED_CALLBACK_ERROR"
+    assert extra["inquiry_id"] == str(inquiry.public_id)
+    assert "forced post-commit AI failure" not in str(extra)
 
 
 def test_natural_language_only_inquiry_submits_without_symptom_overwrite():

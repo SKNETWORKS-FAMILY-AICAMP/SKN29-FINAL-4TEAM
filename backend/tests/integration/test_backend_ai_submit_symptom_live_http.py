@@ -23,6 +23,7 @@ from apps.audit.models import AIRun
 from apps.inquiries.models import Guidance, Inquiry, SymptomAssessment
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
+from apps.workflow.models import IdempotencyRecord, TransitionHistory
 
 
 pytestmark = [
@@ -183,6 +184,14 @@ def test_submit_symptom_calls_real_ai_mock_once_and_persists_result(
 
     inquiry = Inquiry.objects.get(public_id=inquiry_id)
     run = AIRun.objects.get(inquiry=inquiry)
+    history = TransitionHistory.objects.get(
+        inquiry=inquiry,
+        event_code="SUBMIT_SYMPTOM",
+    )
+    idempotency = IdempotencyRecord.objects.get(
+        actor=customer,
+        operation_id="submitSymptom",
+    )
     assert run.status_code == AIRun.Status.SUCCEEDED
     assert run.schema_validation_status_code == (
         AIRun.SchemaValidationStatus.PASSED
@@ -190,6 +199,9 @@ def test_submit_symptom_calls_real_ai_mock_once_and_persists_result(
     assert run.request_schema_version == "3.0.0"
     assert run.response_schema_version == "3.0.0"
     assert str(run.correlation_id) == submit_correlation_id
+    assert run.inquiry_id == history.inquiry_id == inquiry.id
+    assert run.correlation_id == history.correlation_id
+    assert run.idempotency_key == str(idempotency.public_id)
     assert run.input_payload["inquiry_id"] == inquiry_id
     assert run.input_payload["state_version"] == 2
     assert run.input_payload["correlation_id"] == submit_correlation_id

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
@@ -34,6 +35,7 @@ from common.exceptions.error_codes import (
 
 SUBMIT_SYMPTOM_EVENT_CODE = "SUBMIT_SYMPTOM"
 SUBMIT_SYMPTOM_OPERATION_ID = "submitSymptom"
+ai_trace_logger = logging.getLogger("watercare.ai")
 
 
 @dataclass(frozen=True)
@@ -246,13 +248,55 @@ class InquiryTransitionService:
             # Keep the transactional transition module independent from AI
             # client construction until the durable callback actually runs.
             from apps.inquiries.services.inquiry_ai_service import (
+                InquiryAIOutcome,
                 InquiryAIService,
             )
 
-            InquiryAIService.analyze_inquiry(
-                inquiry_public_id=inquiry_public_id,
-                correlation_id=correlation_id,
-                ai_request_id=ai_request_id,
+            trace = {
+                "correlation_id": str(correlation_id),
+                "inquiry_id": str(inquiry_public_id),
+                "ai_request_id": str(ai_request_id),
+            }
+            ai_trace_logger.info(
+                "ai_callback_started",
+                extra={**trace, "trace_stage": "CALLBACK_STARTED"},
+            )
+            try:
+                outcome = InquiryAIService.analyze_inquiry(
+                    inquiry_public_id=inquiry_public_id,
+                    correlation_id=correlation_id,
+                    ai_request_id=ai_request_id,
+                )
+            except Exception:
+                # The durable business commit has already completed.  Do not
+                # re-raise into Django's on_commit logger because an exception
+                # message may contain customer input or an upstream payload.
+                ai_trace_logger.error(
+                    "ai_callback_failed_unexpected",
+                    extra={
+                        **trace,
+                        "trace_stage": "CALLBACK_FAILED_UNEXPECTED",
+                        "failure_code": "UNEXPECTED_CALLBACK_ERROR",
+                    },
+                )
+                return
+
+            completion = {**trace, "trace_stage": "CALLBACK_COMPLETED"}
+            if isinstance(outcome, InquiryAIOutcome):
+                completion.update(
+                    {
+                        "ai_run_id": outcome.ai_run_id,
+                        "ai_status": outcome.status,
+                        "event_candidate": outcome.event_candidate,
+                        "event_applied": outcome.event_applied,
+                        "pending_reason": outcome.pending_reason,
+                        "idempotent_replay": outcome.idempotent_replay,
+                        "stale": outcome.stale,
+                    }
+                )
+            ai_trace_logger.info(
+                "ai_callback_completed",
+                extra=completion,
             )
 
         transaction.on_commit(request_ai_structuring, robust=True)
