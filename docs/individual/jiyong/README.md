@@ -121,6 +121,7 @@ docs/individual/jiyong/
 | [Django REST API 방문 Runtime PostgreSQL Row Lock 수정·검증 보고서](API/Django_REST_API_방문_Runtime_PostgreSQL_Row_Lock_수정_검증_보고서_20260810.md) | Nullable 기사 Join Lock 결함, 최소 수정, PostgreSQL 16.14 회귀 증거 |
 | [Django REST API 문의·증상제출 구현·검증·인계서](API/Django_REST_API_문의_증상제출_구현_검증_인계서.md) | T-022 Slice A 계약·Transaction·409·멱등·독립 재현·Slice B 중단선 |
 | [Django REST API 문의 AI Runtime Wiring·실제 Mock HTTP 가이드](API/Django_REST_API_문의_AI_Runtime_Wiring_실제Mock_HTTP_구현_검증_가이드.md) | `SUBMIT_SYMPTOM` Commit 후 AI 1회 호출, Replay·실패보존·실제 Uvicorn Mock 검증 |
+| [Django REST API T-024 Backend AI 추적·구조화 로그 구현·검증 가이드](API/Django_REST_API_T024_Backend_AI_추적_구조화로그_구현_검증_가이드.md) | Callback·AI Lifecycle·Correlation·DB 원장 연결과 로그 비노출 검증 |
 | [Django State Machine API 구현·검증·인계서](API/Django_State_Machine_API_구현_검증_인계서.md) | T-023 Engine·Guard·`allowed_actions`·SYSTEM 이벤트·상담 Action Gate |
 | [Django REST API 구독·제품조회 계약 제안서](API/Django_REST_API_구독_제품조회_계약_제안서.md) | T-018 승인 전 최소 GET 계약·권한·테스트 Matrix |
 
@@ -168,6 +169,7 @@ docs/individual/jiyong/
 | Seed | 기본 Seed 5종 2회, 2회차 비의도 신규 생성 0 |
 | 격리 Importer | Source 367, 최초 355 created·12 projected, Replay 355 unchanged·12 projected |
 | Backend 회귀 — 8/10 AI Wiring 후보 | SQLite `936 passed, 16 skipped`; 실제 Uvicorn Mock HTTP `1 passed` |
+| Backend 회귀 — 8/11 T-017C·T-024 통합 후보 | SQLite `966 passed, 17 skipped`; 실제 Uvicorn Mock HTTP `1 passed` |
 | 공식 완료 | 비작성자 독립 재현·외부 소비 검토·PM 승인 대기 |
 
 수치는 작성자 로컬 검증 증거이며 PM의 WBS 완료 판정과 같지 않다.

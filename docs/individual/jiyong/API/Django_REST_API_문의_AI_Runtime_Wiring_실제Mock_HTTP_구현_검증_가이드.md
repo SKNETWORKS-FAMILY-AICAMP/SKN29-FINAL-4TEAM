@@ -1,12 +1,12 @@
 # Django REST API 문의 AI Runtime Wiring·실제 Mock HTTP 구현·검증 가이드
 
-> 기준일: 2026-08-10 KST
+> 기준일: 2026-08-11 KST
 >
 > 범위: `SUBMIT_SYMPTOM` 저장 완료 후 Backend→AI 분석 1회 호출
 >
-> 작성자 판정: `AUTHOR_ACTUAL_MOCK_HTTP_PASS`
+> 작성자 판정: `BACKEND_TARGET_AND_ACTUAL_MOCK_HTTP_PASS`
 >
-> 전체 판정: `POST_COMMIT_SYNC_DISPATCH / LOCAL_RAG_PENDING / QA_PENDING / T022_PARTIAL`
+> 전체 판정: `POST_COMMIT_SYNC_DISPATCH / AI_FULL_UNIT_UPSTREAM_HOLD / LOCAL_RAG_PENDING / QA_PENDING / T022_PARTIAL`
 
 ## 1. 결론
 
@@ -134,27 +134,44 @@ $python = ".\backend\.venv\Scripts\python.exe"
 6. Assessment·Guidance 각 1건과 문의 Projection
 7. 같은 제출 Replay 뒤 모든 AI 저장 수량 불변
 
-## 7. 2026-08-10 검증 결과
+## 7. 2026-08-11 최신 `main` 로컬 통합 후보 검증 결과
 
 | 검증 | 결과 |
 | --- | --- |
 | AI `pip check` | `No broken requirements found` |
-| AI 전체 Unit | `127 passed, 3 warnings` |
+| AI 전체 Unit | `140 passed, 2 failed, 3 warnings` — 아래 선행 결함 참조 |
 | 실제 Django→Uvicorn Mock HTTP | `1 passed` |
-| 관련 Backend 표적 | `58 passed, 3 skipped` |
+| 관련 Backend 표적 | `44 passed, 2 skipped` |
 | Root 계약 Test | `12 passed` |
-| OpenAPI | PASS, 108 YAML·32 Path·33 Operation |
-| State Machine | PASS, 13 State·30 Event·34 Transition |
-| Action Crosswalk | PASS, Runtime 12·OpenAPI 7·Deferred 4 |
-| Code·Example | PASS, Code 144·Example 50/50 |
-| Django Check·Migration Drift | `0 issue`, `No changes detected` |
-| 빈 SQLite Migration→`migrate --check` | PASS |
-| Backend 전체 | `936 passed, 16 skipped, 0 failed` |
+| OpenAPI·State·Crosswalk·Code·Example | Root 계약 Test에 포함, `12 passed` |
+| Django System Check | `System check identified no issues` |
+| Migration 코드 Drift | `No changes detected` |
+| 현재 환경 DB `migrate --check` | FAIL — 기존 미적용 Migration 4개, 무승인 적용하지 않음 |
+| AI Wiring 최초 통합 시 Backend 전체 | `936 passed, 16 skipped, 0 failed` |
+| T-017C·T-024 포함 최신 Backend 전체 | `966 passed, 17 skipped, 0 failed` |
+
+AI 전체 Unit의 실패 2건은 이번 Backend 변경 파일 3개와 무관하다. 최신
+`main`의 `full_corpus_baseline_v1` Preflight가 테스트용 Embedding Provider를
+주입한 경우에도 로컬 BGE-M3 Snapshot을 필수 Blocker로 유지하지만, 같은
+테스트는 Provider 주입 시 `READY`를 기대한다. AI 담당 영역의 정책·테스트
+기대값 불일치이므로 Backend가 임의 수정하지 않고 이동윤 확인 대상으로
+분리한다.
+
+현재 Backend 환경 DB에는 다음 기존 Migration이 미적용 상태다.
+
+- `audit.0005_airun_analyze_symptom_task`
+- `consultations.0002_consultation_runtime_fields`
+- `inquiries.0011_split_followup_question_metadata_and_answers`
+- `visits.0004_visit_runtime_fields`
+
+이는 `makemigrations --check --dry-run`의 코드 Drift가 아니다. DB 소유·용도와
+단일 적용자를 확인하기 전에는 자동 적용하지 않는다.
 
 Backend 전체의 16 Skip에는 PostgreSQL 전용 Catalog·Row Lock·Composite FK,
 명시적 TEAM_INTEGRATION Role Test와 기본 비활성 실제 HTTP Test가 포함된다.
 실제 HTTP Test는 별도 opt-in 실행에서 PASS했다. PostgreSQL 전용 결과는
-이번 SQLite·Mock 증거로 대체하지 않는다.
+이번 기본 Test DB·Mock 증거로 대체하지 않는다. 따라서 Backend AI Wiring
+작성자 Slice는 PASS지만 AI 전체 Unit과 팀 DB Gate까지 완료됐다는 뜻은 아니다.
 
 ## 8. 다음 작업과 인계
 
