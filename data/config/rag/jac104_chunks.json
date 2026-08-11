@@ -471,9 +471,11 @@
       "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
       "version": "REV.00",
       "topic_code": "symptom_leak",
-      "page_start": 38,
+      "page_start": 5,
       "page_end": 38,
       "page_refs": [
+        5,
+        7,
         38
       ],
       "risk_level": "danger",
@@ -500,7 +502,7 @@
       "verification_status": "TEXT_AND_VISUAL_VERIFIED",
       "allowed_use": "MVP",
       "rag_policy": "INCLUDE",
-      "policy_reason": "정확 판매 코드 WPUJAC104DWH와 D세대 REV.00 매뉴얼의 해당 페이지를 텍스트·시각 검증했습니다.",
+      "policy_reason": "정확 판매 코드 WPUJAC104DWH와 D세대 REV.00 매뉴얼 5·7·38페이지의 누수 안전조치를 원본 PDF로 시각 검증했습니다.",
       "classification": "official",
       "generated_at": "${generated_at}"
     },

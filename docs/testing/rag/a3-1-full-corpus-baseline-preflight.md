@@ -1,8 +1,9 @@
 # A3-1 Full Corpus Baseline 구현·실행 결과
 
-> 실행일: 2026-08-10 KST  
+> 실행일: 2026-08-11 KST
 > Profile: `full_corpus_baseline_v1`  
-> 상태: `DRAFT_BASELINE_COMPLETE`
+> 상태: `DRAFT_BASELINE_COMPLETE_D01_D02_APPLIED`
+> 적용 입력: Gold `1.0.0-draft.2`, Corpus `1.0.1`, 평가 계약 `d01_evidence_policy_v1`
 
 ## 결론
 
@@ -36,7 +37,7 @@ current_source_page_v1
 Full Corpus SHA-256:
 
 ```text
-6947CDE3543BB080394D4C953BE22A43A76ED80F4686ED5360B30628109AB240
+FE62AF6030045C532BC8E68D11C5461E8C65BD16DCD6758E0C2412C8C37C472C
 ```
 
 FAQ는 A3-1 수행 목록에 명시된 `JAC104/JCC104 + IAC425` 매뉴얼 비교 범위에서
@@ -60,9 +61,9 @@ Runner는 다음 조합을 실행하도록 구현했다.
 
 - Hit@1·3·5
 - MRR
-- nDCG@5
+- nDCG@5 (`ALL` 3건은 정의 확정 전까지 제외)
 - Wrong Product Hit
-- No-evidence Accuracy
+- No-evidence 빈 검색 결과율 (D-03 전까지 검색 진단값)
 - 문서·질의 Embedding 및 검색 시간
 
 정상 실행 시 `3 Corpus × 2 Filter × 35 Case = 210`개의 Case Result를 만든다.
@@ -76,19 +77,19 @@ Runner는 다음 조합을 실행하도록 구현했다.
 | 문서 Chunk | 96 |
 | DEV Query | 35 |
 | Case Result | 210 |
-| 문서 Embedding | 342.26초 |
-| 질의 Embedding | 9.09초 |
-| 검색 | 0.35초 |
-| 전체 | 351.70초 |
+| 문서 Embedding | 447.59초 |
+| 질의 Embedding | 6.06초 |
+| 검색 | 0.31초 |
+| 전체 | 453.96초 |
 
 주요 Draft 지표:
 
-| Corpus / Filter | Hit@1 | Hit@3 | Hit@5 | MRR | nDCG@5 | No-evidence Accuracy |
+| Corpus / Filter | Hit@1 | Hit@3 | Hit@5 | MRR | nDCG@5 | No-evidence 빈 결과율 |
 |---|---:|---:|---:|---:|---:|---:|
-| JAC104 / Filter | 0.6296 | 0.8889 | 0.8889 | 0.7531 | 0.7896 | 0.250 |
-| JAC104 / No Filter | 0.6296 | 0.8889 | 0.8889 | 0.7531 | 0.7896 | 0.125 |
-| 통합 / Filter | 0.6296 | 0.8889 | 0.8889 | 0.7531 | 0.7896 | 0.250 |
-| 통합 / No Filter | 0.4444 | 0.8519 | 0.8519 | 0.6173 | 0.6724 | 0.000 |
+| JAC104 / Filter | 0.5926 | 0.9259 | 0.9259 | 0.7469 | 0.8036 | 0.250 |
+| JAC104 / No Filter | 0.5926 | 0.9259 | 0.9259 | 0.7469 | 0.8036 | 0.125 |
+| 통합 / Filter | 0.5926 | 0.9259 | 0.9259 | 0.7469 | 0.8036 | 0.250 |
+| 통합 / No Filter | 0.4444 | 0.8148 | 0.8519 | 0.6142 | 0.7148 | 0.000 |
 | IAC425 / Filter | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 1.000 |
 | IAC425 / No Filter | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.000 |
 
@@ -96,6 +97,9 @@ IAC425 0점은 실패가 아니라 해당 Corpus에 정답이 존재하는 DEV P
 0건이기 때문이다. 반대로 통합 Corpus에서 제품 Filter를 제거하면 다른 제품 Chunk가
 상위 결과에 섞여 JAC104 대비 Hit@1과 MRR이 하락했다. 이 수치는 평가 문항 검수 전
 방향성 확인용이며 공식 성능으로 발표하지 않는다.
+
+`nDCG@5` 평균은 `ANY` Positive 24건만 대상으로 하며 `ALL` 3건은 제외했다.
+No-evidence 값은 D-03 Answerability Gate 정확도가 아니라 검색 결과가 비어 있는 비율이다.
 
 ## 테스트
 
@@ -108,7 +112,7 @@ IAC425 0점은 실패가 아니라 해당 Corpus에 정답이 존재하는 DEV P
 | Chunk Dataset 결정적 재생성 | PASS |
 | 3 Corpus × 2 Filter Dense 계산 | PASS |
 | 210개 Case Result·Summary 생성 | PASS |
-| 합계 | 4 통과 |
+| D-01·D-02 포함 AI 영향 범위 회귀 | 26 PASS |
 
 테스트용 수치는 저장소의 Baseline 보고서에 기록하지 않았다.
 
@@ -129,7 +133,7 @@ A3-1의 구현·Draft 실행은 완료다. 공식 Phase B 비교 기준으로 �
 
 1. Gold 60건을 2인이 검수한다.
 2. IAC425 문서를 정답 근거로 갖는 Positive 평가 문항을 DEV/TEST에 보강한다.
-3. 동일 Profile을 다시 실행하고 공식 사용 가능 상태를 확인한다.
+3. 승인된 Gold와 IAC425 Positive 문항으로 동일 Profile을 다시 실행하고 공식 사용 가능 상태를 확인한다.
 
 ## 산출물
 

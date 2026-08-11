@@ -51,10 +51,8 @@ DEFAULT_OUTPUT = "ai/evaluation/reports/experiments/retrieval_method_comparison_
 
 
 def _mean(rows: list[dict[str, Any]], metric: str) -> float | None:
-    return (
-        round(sum(row["metrics"][metric] for row in rows) / len(rows), 6)
-        if rows else None
-    )
+    values = [row["metrics"][metric] for row in rows if row["metrics"][metric] is not None]
+    return round(sum(values) / len(values), 6) if values else None
 
 
 def _summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -271,6 +269,7 @@ def run_retrieval_method_comparison(
                     case["expected_evidence"],
                     case["expected_no_evidence"],
                     case["product_model_code"],
+                    case["evidence_match_policy"],
                 )
                 results.append({
                     "chunking_profile_id": chunking_profile["profile_id"],

@@ -1,16 +1,16 @@
 {
   "dataset_id": "RAG-GOLD-V1",
-  "dataset_version": "1.0.0-draft.1",
+  "dataset_version": "1.0.0-draft.2",
   "status": "DRAFT_REVIEW_REQUIRED",
-  "generated_at": "2026-08-10T00:00:00+09:00",
+  "generated_at": "2026-08-11T00:00:00+09:00",
   "dataset": {
     "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
     "records": 60,
-    "sha256": "DDB20527D452E1C246CA821CFA7D4EC159B13E24597FDEF685C19136065E50FD"
+    "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A"
   },
   "schema": {
     "path": "ai/evaluation/schemas/gold_evaluation_case_v1.schema.json",
-    "sha256": "04FC1D06AF58AB7A093521DD5F836CD1C44B925374256DCD89489290E34489BC"
+    "sha256": "623B04ECFA202875660E64A3624E82960DA83316BAED35F0A7E2D5E5C3A48DFB"
   },
   "distribution": {
     "query_variant_type": {
@@ -34,11 +34,11 @@
   "source_files": [
     {
       "path": "data/config/rag/jac104_retrieval_cases.json",
-      "sha256": "6E9F202F902F965B0C6875D8FCDF26333651E680019CC8B34416E8A444A12E4F"
+      "sha256": "FCF2B7A391A13216B41DF983061F4672AC266EC9C14BA3274AB7AD377B9B2235"
     },
     {
       "path": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
-      "sha256": "483D82DC9F199C9EEAC373508461288F3558C9AC9D8D1AB433D26540CA680145"
+      "sha256": "40A1B328F86FF6E57A3EFD1F5EBD63051DCDE06AB32E0A08CC6C6D5BE638F61F"
     },
     {
       "path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
