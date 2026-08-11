@@ -1,5 +1,6 @@
 # 최지용 — E2E Action 계약 적용 요청
 
+> 처리 결과: **APPLIED** — 최초 적용 `264dfdf951f9a1853594cf36fab142a6929475d6`, 현행 기준 `main@801f58e1512dfc9e12299465b6551fff2a276e3a`
 > 기준: `main@ed989926b8a4e5fa2ec08593f18f5f5101e84a11`  
 > 범위: `contracts/api/**`, `contracts/codes/**`, 필요한 `backend/tests/**`
 
@@ -49,6 +50,8 @@ CONTRACT_ONLY=0
 DEFERRED=4
 OpenAPI Operations=31
 ```
+
+후속 Runtime 반영으로 현행 값은 `12 / 7 / 0 / 4`, OpenAPI 33 Operations다.
 
 ## 검증
 

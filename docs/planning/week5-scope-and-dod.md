@@ -2,8 +2,8 @@
 
 > 기준일: **2026-08-10 KST**
 > WBS 기준: `docs/planning/md/WBS.md` v2.1
-> 기준 Commit: `main@dd172c796bfeede07a9f72094b5d044b67855381`
-> 상태: **PM_BASELINE_CANDIDATE**
+> 기준 Commit: `main@801f58e1512dfc9e12299465b6551fff2a276e3a`
+> 상태: **CONTRACT_BASELINE_REVIEW**
 
 ## 1. 범위 원칙
 
@@ -72,7 +72,17 @@ target_at=<YYYY-MM-DD HH:mm KST>
 - 정상 14단계의 계약 미정 6개 Action을 P0 PM 승인안으로 결정했다.
 - 미해결→재상담 2개 Action은 정상 14단계에서 제외하고 `T-055` 보조 시나리오 승인안으로 결정했다.
 - 현행 WBS 일정은 변경하지 않는다.
-- OpenAPI·Crosswalk·Code는 최지용, Contract Test는 김은진의 주관할 적용 대기이며 3.2 전체 상태는 `OWNER_APPLY_PENDING`이다.
+- OpenAPI·Crosswalk 적용과 Contract QA가 완료돼 3.2는 완료다.
+- 현재 계약 수량은 OpenAPI 32개 Path·33개 Operation, Crosswalk `12/7/0/4`, Root Contract Test 12개다.
+- 3.3에서는 현재 Commit의 Validator 결과와 Backend·AI·Web·Mobile·QA 소비 증거를 모아 `TEAM_BASELINE` 전환 여부를 판정한다.
 - 결정 원본: `docs/decisions/week5-e2e-action-decision.md`
 - Event–Operation 연결: `docs/decisions/week5-e2e-event-operation-matrix.md`
 - 구현 인계: `docs/handoffs/week5-e2e-action-implementation-handoff.md`
+
+## 7. 3.3 Contract Baseline 진행 기록
+
+- Validator와 Root Contract Test는 `main@801f58e1512dfc9e12299465b6551fff2a276e3a`에서 모두 PASS했다.
+- 실행 결과: `docs/testing/week5-contract-baseline-result.md`
+- 소비자 검토표: `docs/testing/week5-contract-consumer-review.md`
+- 팀원 회신 요청: `docs/handoffs/week5-contract-consumer-review-request.md`
+- 현재 판정은 `VALIDATOR_PASS · CONSUMER_ACK_PENDING`이며 최종 `TEAM_BASELINE`은 아직 아니다.

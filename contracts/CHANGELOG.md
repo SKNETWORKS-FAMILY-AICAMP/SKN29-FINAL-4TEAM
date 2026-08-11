@@ -56,9 +56,9 @@
 
 - State 13개, Event 30개, Transition 34개, Guard 39개와 완료 정책의 의미는 변경하지 않는다.
 - 고객 해결 피드백만으로 종료하지 않으며 마지막 처리 담당자의 `FINALIZE_INQUIRY`가 필요하다.
-- `contracts/api/**`, `contracts/codes/**`, `backend/tests/**`, `tests/**`는 각 주관 담당자 적용·검토 대기다.
-- OpenAPI `0.7.0`과 기존 Crosswalk 분류는 담당자 적용 전까지 변경하지 않는다.
-- 이번 결정은 OpenAPI·Runtime 구현 완료나 소비자 승인 완료를 의미하지 않는다.
+- 이 항목 작성 당시 각 주관 담당자 적용 대기였으며, 후속 OpenAPI `0.8.0` 적용과 Contract QA로 해당 대기는 해소됐다.
+- 후속 Runtime 반영을 포함한 현행 수량은 위 최신 항목의 OpenAPI 33개 Operation과 Crosswalk `12/7/0/4`를 따른다.
+- 이번 결정 자체는 소비자 승인 완료를 의미하지 않으며, 소비자 증거는 3.3 Contract Baseline Gate에서 별도로 확인한다.
 
 ## 2026-08-07 — State Machine Action–OpenAPI–Runtime Crosswalk 기준선
 
