@@ -220,6 +220,19 @@ fun TechnicianReferenceDashboard(
             ),
         )
 
+        ReferenceCompactBanner(
+            title = "오늘 업무 브리핑",
+            message = if (total == 0) {
+                "오늘 배정된 방문은 없습니다. 새 일정이 등록되면 바로 표시됩니다."
+            } else if (risky > 0) {
+                "총 ${total}건 · 주의/위험 ${risky}건을 먼저 확인하세요."
+            } else {
+                "총 ${total}건 · 현재 주의/위험 방문은 없습니다."
+            },
+            palette = palette,
+            warning = risky > 0,
+        )
+
         ReferenceSectionHeader(
             title = "오늘 일정",
             trailing = if (total > 2) {
@@ -272,7 +285,7 @@ fun TechnicianReferenceDashboard(
 
         ReferenceSectionHeader(
             title = "빠른 업무",
-            trailing = "전체보기  ›",
+            trailing = "업무 메뉴  ›",
             palette = palette,
         )
         ReferenceActionRow(

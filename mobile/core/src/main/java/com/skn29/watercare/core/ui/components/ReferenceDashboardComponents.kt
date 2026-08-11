@@ -182,12 +182,12 @@ fun ReferenceDashboardScaffold(
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
                     .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 12.dp,
-                        bottom = 112.dp,
+                        start = 18.dp,
+                        end = 18.dp,
+                        top = 14.dp,
+                        bottom = 116.dp,
                     ),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
                 ReferenceDashboardHeader(
                     roleLabel = roleLabel,
@@ -566,6 +566,20 @@ fun ReferenceHeroCard(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    Text(
+                        text = if (palette.darkSurface) {
+                            "FIELD SERVICE"
+                        } else {
+                            "SMART WATER CARE"
+                        },
+                        color = palette.accent.copy(alpha = 0.88f),
+                        fontSize = 10.sp,
+                        lineHeight = 12.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.15.sp,
+                        maxLines = 1,
+                    )
+
                     if (!roleLabel.isNullOrBlank()) {
                         ReferenceRoleChip(
                             roleLabel = roleLabel,
@@ -618,6 +632,17 @@ fun ReferenceHeroCard(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape)
+                            .border(
+                                BorderStroke(
+                                    1.dp,
+                                    Color.White.copy(
+                                        alpha = if (
+                                            palette.darkSurface
+                                        ) 0.20f else 0.78f
+                                    ),
+                                ),
+                                CircleShape,
+                            )
                             .background(
                                 Brush.radialGradient(
                                     listOf(
@@ -781,15 +806,42 @@ fun ReferenceSectionHeader(
         )
 
         if (!trailing.isNullOrBlank()) {
-            Text(
-                trailing,
-                color = palette.accent,
-                fontSize = 12.sp,
-                lineHeight = 16.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(
+                        if (palette.darkSurface) {
+                            Color.White.copy(alpha = 0.08f)
+                        } else {
+                            Color.White.copy(alpha = 0.64f)
+                        }
+                    )
+                    .border(
+                        BorderStroke(
+                            1.dp,
+                            if (palette.darkSurface) {
+                                Color.White.copy(alpha = 0.16f)
+                            } else {
+                                palette.accent.copy(alpha = 0.14f)
+                            },
+                        ),
+                        RoundedCornerShape(999.dp),
+                    )
+                    .padding(
+                        horizontal = 10.dp,
+                        vertical = 6.dp,
+                    ),
+            ) {
+                Text(
+                    trailing,
+                    color = palette.accent,
+                    fontSize = 11.sp,
+                    lineHeight = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
 }
@@ -1215,11 +1267,21 @@ fun ReferenceBottomNavigation(
                         modifier = Modifier
                             .padding(top = 3.dp)
                             .size(
-                                width = 28.dp,
+                                width = 34.dp,
                                 height = 3.dp,
                             )
                             .clip(RoundedCornerShape(999.dp))
-                            .background(palette.accent)
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(
+                                        palette.accent.copy(alpha = 0.42f),
+                                        palette.accent,
+                                        palette.accentSecondary.copy(
+                                            alpha = 0.56f
+                                        ),
+                                    )
+                                )
+                            )
                     )
                 }
             }
@@ -1969,6 +2031,24 @@ private fun ReferenceStatusTile(
     ) {
         Box(
             modifier = Modifier
+                .size(
+                    width = 30.dp,
+                    height = 3.dp,
+                )
+                .clip(RoundedCornerShape(999.dp))
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(
+                            palette.accent.copy(alpha = 0.28f),
+                            palette.accent.copy(alpha = 0.92f),
+                            palette.accentSecondary.copy(alpha = 0.52f),
+                        )
+                    )
+                )
+        )
+
+        Box(
+            modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
                 .background(
@@ -2132,6 +2212,33 @@ private fun ReferenceActionTile(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        Box(
+            modifier = Modifier
+                .size(
+                    width = 34.dp,
+                    height = 3.dp,
+                )
+                .clip(RoundedCornerShape(999.dp))
+                .background(
+                    if (item.enabled) {
+                        Brush.horizontalGradient(
+                            listOf(
+                                palette.accent.copy(alpha = 0.30f),
+                                palette.accent.copy(alpha = 0.92f),
+                                palette.accentSecondary.copy(alpha = 0.52f),
+                            )
+                        )
+                    } else {
+                        Brush.horizontalGradient(
+                            listOf(
+                                palette.textMuted.copy(alpha = 0.10f),
+                                palette.textMuted.copy(alpha = 0.22f),
+                            )
+                        )
+                    }
+                )
+        )
+
         Box(
             modifier = Modifier
                 .size(49.dp)

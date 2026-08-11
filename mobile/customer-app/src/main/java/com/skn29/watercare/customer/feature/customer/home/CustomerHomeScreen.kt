@@ -170,8 +170,15 @@ fun CustomerHomeContent(
                 imageEmphasis = 1.12f,
             )
 
+            ReferenceCompactBanner(
+                title = "서비스 연결 상태",
+                message = previewLabel,
+                palette = palette,
+                warning = false,
+            )
+
             ReferenceSectionHeader(
-                title = "내 정수기 상태",
+                title = "내 정수기 컨디션",
                 trailing = "한눈에 확인  ›",
                 palette = palette,
             )
@@ -276,7 +283,7 @@ fun CustomerHomeContent(
             )
 
             ReferenceSectionHeader(
-                title = "케어 & 지원",
+                title = "케어 & 지원 서비스",
                 trailing = "더보기 ›",
                 palette = palette,
             )
