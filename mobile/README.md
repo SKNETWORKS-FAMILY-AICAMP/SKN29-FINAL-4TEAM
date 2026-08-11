@@ -147,3 +147,14 @@ powershell -ExecutionPolicy Bypass `
 - `docs/week4-presentation/2026-08-04_모바일_구현_상태표.md`
 - `docs/week4-presentation/2026-08-04_모바일_제한사항.md`
 - `docs/week4-presentation/2026-08-04_모바일_Smoke_Test_체크리스트.md`
+
+<!-- WEEK5_MOBILE_STATUS_BEGIN -->
+## Week 5 Mobile Remote status
+
+- Customer: actual auth + subscription list/detail/select + inquiry create/submit
+- Technician: actual auth; Visit Runtime absent → Remote fails closed
+- Fake/Fixture: explicit offline/demo mode only, never automatic Remote success
+- Current Runtime matrix: mobile/docs/week5/week5-mobile-api-runtime-matrix.md
+- Regression: mobile/docs/week5/week5-mobile-regression.md
+- Full E2E: $fullE2E
+<!-- WEEK5_MOBILE_STATUS_END -->

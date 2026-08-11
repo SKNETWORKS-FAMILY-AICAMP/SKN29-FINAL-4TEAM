@@ -31,6 +31,7 @@ import com.skn29.watercare.core.model.InquiryLabels
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.RiskLevel
 import com.skn29.watercare.core.model.UsageGuidanceStatus
+import com.skn29.watercare.core.repository.FakeCustomerCareRepository
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.core.ui.components.LiquidGlassPanel
@@ -54,15 +55,25 @@ fun GuidanceScreen(
     submittedStateVersion: Int? = null,
     submittedAllowedActions: List<AllowedAction> = emptyList(),
     submittedIdempotentReplay: Boolean? = null,
+    fixturePreview: Boolean = false,
     onBack: () -> Unit,
     onDone: () -> Unit,
 ) {
+    val guidanceRepository = if (fixturePreview) {
+        FakeCustomerCareRepository(
+            fixtureSubscriptionId =
+                WaterCareCore.customerCareRuntimeConfig.fixtureSubscriptionId,
+        )
+    } else {
+        WaterCareCore.customerCareRepository
+    }
+
     val viewModel: GuidanceViewModel = viewModel(
         factory = VmFactory { _ ->
             GuidanceViewModel(
                 inquiryId,
                 scenario,
-                WaterCareCore.customerCareRepository,
+                guidanceRepository,
             )
         }
     )
@@ -74,6 +85,14 @@ fun GuidanceScreen(
     val actualInquiryCode = submittedInquiryCode.trim()
 
     WaterCareScreen(title = "안전 안내", onBack = onBack) {
+        if (fixturePreview) {
+            SectionCard("합성 Fixture 미리보기") {
+                Text(
+                    "이 화면의 안내는 UI 검증용 합성 데이터이며 실제 Backend·AI 결과가 아닙니다."
+                )
+            }
+        }
+
         if (actualInquiryCode.isNotEmpty()) {
             SubmissionReceiptCard(
                 inquiryCode = actualInquiryCode,

@@ -1,0 +1,13 @@
+[양정현 Mobile Week5]
+- Build/Unit: PASS
+- Customer Connected: PASS
+- Technician Connected: PASS
+- Customer subscription list/detail/select: INTEGRATED
+- Customer inquiry create/submit: INTEGRATED
+- Customer P0 actual REST smoke: NOT_RUN
+- Idempotency/error runtime regression: NOT_RUN
+- Technician auth: NOT_RUN
+- Technician Visit: BLOCKED_BY_BACKEND, Fake is explicit offline only
+- Follow-up/Guidance/Consultation: BLOCKED_BY_BACKEND unless latest main later opens exact Runtime
+- Full representative E2E: BLOCKED_BY_BACKEND
+- Feature Complete candidate: NO

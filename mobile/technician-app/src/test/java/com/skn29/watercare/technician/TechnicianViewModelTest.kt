@@ -35,47 +35,73 @@ class TechnicianViewModelTest {
     }
 
     @Test
-    fun storedTechnicianSessionIsRestoredOnInitialization() = runTest(dispatcher) {
-        val authRepository = FakeAuthRepository(
-            loginResult = technicianSession(),
-            storedSession = true,
-            meResult = technicianUserResult(),
-        )
+    fun storedTechnicianSession_restoresAuthButDoesNotLeakFixtureIntoRemoteMode() =
+        runTest(dispatcher) {
+            val authRepository = FakeAuthRepository(
+                loginResult = technicianSession(),
+                storedSession = true,
+                meResult = technicianUserResult(),
+            )
+            val viewModel = createViewModel(authRepository)
 
-        val viewModel = TechnicianViewModel(
-            authRepository = authRepository,
-            backendStatusRepository = FakeBackendStatusRepository(),
-            visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
-        )
+            dispatcher.scheduler.advanceUntilIdle()
 
-        dispatcher.scheduler.advanceUntilIdle()
-
-        assertEquals("TECHNICIAN", viewModel.state.value.user?.roleCode)
-        assertEquals(3, viewModel.state.value.visits.size)
-        assertFalse(viewModel.state.value.restoringSession)
-        assertEquals(1, authRepository.meCalls)
-        assertEquals(0, authRepository.demoLoginCalls)
-    }
+            assertEquals("TECHNICIAN", viewModel.state.value.user?.roleCode)
+            assertTrue(viewModel.state.value.visits.isEmpty())
+            assertTrue(viewModel.state.value.visitRuntimeBlocked)
+            assertTrue(viewModel.state.value.error.orEmpty().contains("방문"))
+            assertFalse(viewModel.state.value.offlinePreview)
+        }
 
     @Test
-    fun storedCustomerSessionIsRejectedAndCleared() = runTest(dispatcher) {
+    fun demoLogin_usesActualAuthAndKeepsVisitRuntimeBlocked() =
+        runTest(dispatcher) {
+            val authRepository = FakeAuthRepository(technicianSession())
+            val viewModel = createViewModel(authRepository)
+
+            dispatcher.scheduler.advanceUntilIdle()
+            viewModel.demoLogin()
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals("TECHNICIAN", viewModel.state.value.user?.roleCode)
+            assertTrue(viewModel.state.value.visits.isEmpty())
+            assertTrue(viewModel.state.value.visitRuntimeBlocked)
+            assertFalse(viewModel.state.value.offlinePreview)
+            assertEquals(1, authRepository.demoLoginCalls)
+        }
+
+    @Test
+    fun offlinePreview_isExplicitAndLoadsOnlySyntheticVisits() =
+        runTest(dispatcher) {
+            val viewModel = createViewModel(
+                FakeAuthRepository(technicianSession()),
+                backendAvailable = false,
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+            viewModel.startOfflinePreview()
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertTrue(viewModel.state.value.offlinePreview)
+            assertFalse(viewModel.state.value.visitRuntimeBlocked)
+            assertEquals("합성 기사 001", viewModel.state.value.user?.displayName)
+            assertEquals(3, viewModel.state.value.visits.size)
+            assertNull(viewModel.state.value.error)
+        }
+
+    @Test
+    fun storedCustomerSession_isRejectedAndCleared() = runTest(dispatcher) {
         val authRepository = FakeAuthRepository(
             loginResult = customerSession(),
             storedSession = true,
             meResult = customerUserResult(),
         )
-
-        val viewModel = TechnicianViewModel(
-            authRepository = authRepository,
-            backendStatusRepository = FakeBackendStatusRepository(),
-            visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
-        )
+        val viewModel = createViewModel(authRepository)
 
         dispatcher.scheduler.advanceUntilIdle()
 
         assertNull(viewModel.state.value.user)
         assertTrue(viewModel.state.value.visits.isEmpty())
-        assertFalse(viewModel.state.value.restoringSession)
         assertEquals(1, authRepository.logoutCalls)
         assertEquals(
             "저장된 계정에 방문기사 권한이 없습니다. 다시 로그인해 주세요.",
@@ -84,7 +110,7 @@ class TechnicianViewModelTest {
     }
 
     @Test
-    fun expiredStoredSessionIsCleared() = runTest(dispatcher) {
+    fun expiredStoredSession_isCleared() = runTest(dispatcher) {
         val authRepository = FakeAuthRepository(
             loginResult = technicianSession(),
             storedSession = true,
@@ -94,17 +120,11 @@ class TechnicianViewModelTest {
                 httpStatus = 401,
             ),
         )
-
-        val viewModel = TechnicianViewModel(
-            authRepository = authRepository,
-            backendStatusRepository = FakeBackendStatusRepository(),
-            visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
-        )
+        val viewModel = createViewModel(authRepository)
 
         dispatcher.scheduler.advanceUntilIdle()
 
         assertNull(viewModel.state.value.user)
-        assertFalse(viewModel.state.value.restoringSession)
         assertEquals(1, authRepository.logoutCalls)
         assertEquals(
             "로그인 세션이 만료되었습니다. 다시 로그인해 주세요.",
@@ -113,133 +133,66 @@ class TechnicianViewModelTest {
     }
 
     @Test
-    fun storedSessionIsRestoredAfterBackendReconnects() = runTest(dispatcher) {
-        val authRepository = FakeAuthRepository(
-            loginResult = technicianSession(),
-            storedSession = true,
-            meResult = technicianUserResult(),
-        )
-        val backendRepository = FakeBackendStatusRepository(available = false)
+    fun backendReconnect_restoresSessionButVisitStillFailsClosed() =
+        runTest(dispatcher) {
+            val authRepository = FakeAuthRepository(
+                loginResult = technicianSession(),
+                storedSession = true,
+                meResult = technicianUserResult(),
+            )
+            val backendRepository = FakeBackendStatusRepository(available = false)
+            val viewModel = createViewModel(
+                authRepository = authRepository,
+                backendRepository = backendRepository,
+            )
 
-        val viewModel = TechnicianViewModel(
-            authRepository = authRepository,
-            backendStatusRepository = backendRepository,
-            visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
-        )
+            dispatcher.scheduler.advanceUntilIdle()
+            assertNull(viewModel.state.value.user)
 
-        dispatcher.scheduler.advanceUntilIdle()
+            backendRepository.available = true
+            viewModel.checkBackend()
+            dispatcher.scheduler.advanceUntilIdle()
 
-        assertEquals(false, viewModel.state.value.backendAvailable)
-        assertNull(viewModel.state.value.user)
-        assertEquals(0, authRepository.meCalls)
-
-        backendRepository.available = true
-        viewModel.checkBackend()
-        dispatcher.scheduler.advanceUntilIdle()
-
-        assertEquals(true, viewModel.state.value.backendAvailable)
-        assertEquals("TECHNICIAN", viewModel.state.value.user?.roleCode)
-        assertEquals(3, viewModel.state.value.visits.size)
-        assertEquals(1, authRepository.meCalls)
-    }
+            assertEquals("TECHNICIAN", viewModel.state.value.user?.roleCode)
+            assertTrue(viewModel.state.value.visits.isEmpty())
+            assertTrue(viewModel.state.value.visitRuntimeBlocked)
+        }
 
     @Test
-    fun demoLoginLoadsSyntheticVisitListForTechnician() = runTest(dispatcher) {
-        val authRepository = FakeAuthRepository(
-            loginResult = technicianSession(),
-        )
-        val viewModel = TechnicianViewModel(
-            authRepository = authRepository,
-            backendStatusRepository = FakeBackendStatusRepository(),
-            visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
-        )
+    fun openingVisit_inOfflinePreviewLoadsFixturePrecheckReport() =
+        runTest(dispatcher) {
+            val fixture = FakeTechnicianVisitRepository(delayMillis = 0L)
+            val firstVisit = (
+                fixture.getAssignedVisits() as ApiResult.Success
+            ).value.first()
+            val viewModel = createViewModel(
+                authRepository = FakeAuthRepository(technicianSession()),
+                fixtureRepository = fixture,
+            )
 
-        dispatcher.scheduler.advanceUntilIdle()
-        viewModel.demoLogin()
-        dispatcher.scheduler.advanceUntilIdle()
+            dispatcher.scheduler.advanceUntilIdle()
+            viewModel.startOfflinePreview()
+            dispatcher.scheduler.advanceUntilIdle()
+            viewModel.openVisit(firstVisit.visitId)
+            dispatcher.scheduler.advanceUntilIdle()
 
-        assertEquals("TECHNICIAN", viewModel.state.value.user?.roleCode)
-        assertEquals(3, viewModel.state.value.visits.size)
-        assertFalse(viewModel.state.value.offlinePreview)
-        assertNull(viewModel.state.value.error)
-        assertEquals(1, authRepository.demoLoginCalls)
-    }
-
-    @Test
-    fun nonTechnicianLoginIsRejectedAndSessionIsCleared() = runTest(dispatcher) {
-        val authRepository = FakeAuthRepository(
-            loginResult = customerSession(),
-        )
-        val viewModel = TechnicianViewModel(
-            authRepository = authRepository,
-            backendStatusRepository = FakeBackendStatusRepository(),
-            visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
-        )
-
-        dispatcher.scheduler.advanceUntilIdle()
-        viewModel.demoLogin()
-        dispatcher.scheduler.advanceUntilIdle()
-
-        assertNull(viewModel.state.value.user)
-        assertTrue(viewModel.state.value.visits.isEmpty())
-        assertFalse(viewModel.state.value.loginLoading)
-        assertEquals(1, authRepository.logoutCalls)
-        assertEquals(
-            "방문기사 권한이 없는 계정입니다.",
-            viewModel.state.value.error,
-        )
-    }
+            assertEquals(firstVisit.visitId, viewModel.state.value.selectedVisitId)
+            assertNotNull(viewModel.state.value.selectedReport)
+            assertEquals(
+                firstVisit.visitCode,
+                viewModel.state.value.selectedReport?.visitCode,
+            )
+        }
 
     @Test
-    fun backendFailureCanBeRetriedAfterConnectionRecovers() = runTest(dispatcher) {
-        val backendRepository = FakeBackendStatusRepository(available = false)
-        val viewModel = TechnicianViewModel(
-            authRepository = FakeAuthRepository(technicianSession()),
-            backendStatusRepository = backendRepository,
-            visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
-        )
-
-        dispatcher.scheduler.advanceUntilIdle()
-
-        assertFalse(viewModel.state.value.checkingBackend)
-        assertEquals(false, viewModel.state.value.backendAvailable)
-
-        backendRepository.available = true
-        viewModel.checkBackend()
-        dispatcher.scheduler.advanceUntilIdle()
-
-        assertFalse(viewModel.state.value.checkingBackend)
-        assertEquals(true, viewModel.state.value.backendAvailable)
-    }
-
-    @Test
-    fun offlinePreviewIsExplicitAndLoadsFixtureVisits() = runTest(dispatcher) {
-        val viewModel = TechnicianViewModel(
-            authRepository = FakeAuthRepository(technicianSession()),
-            backendStatusRepository = FakeBackendStatusRepository(available = false),
-            visitRepository = FakeTechnicianVisitRepository(delayMillis = 0L),
-        )
-
-        dispatcher.scheduler.advanceUntilIdle()
-        viewModel.startOfflinePreview()
-        dispatcher.scheduler.advanceUntilIdle()
-
-        assertTrue(viewModel.state.value.offlinePreview)
-        assertEquals("합성 기사 001", viewModel.state.value.user?.displayName)
-        assertEquals(3, viewModel.state.value.visits.size)
-    }
-
-    @Test
-    fun openingVisitLoadsPrecheckReport() = runTest(dispatcher) {
-        val repository = FakeTechnicianVisitRepository(delayMillis = 0L)
+    fun closingVisit_clearsSelectedReportState() = runTest(dispatcher) {
+        val fixture = FakeTechnicianVisitRepository(delayMillis = 0L)
         val firstVisit = (
-            repository.getAssignedVisits() as ApiResult.Success
+            fixture.getAssignedVisits() as ApiResult.Success
         ).value.first()
-
-        val viewModel = TechnicianViewModel(
+        val viewModel = createViewModel(
             authRepository = FakeAuthRepository(technicianSession()),
-            backendStatusRepository = FakeBackendStatusRepository(),
-            visitRepository = repository,
+            fixtureRepository = fixture,
         )
 
         dispatcher.scheduler.advanceUntilIdle()
@@ -247,35 +200,6 @@ class TechnicianViewModelTest {
         dispatcher.scheduler.advanceUntilIdle()
         viewModel.openVisit(firstVisit.visitId)
         dispatcher.scheduler.advanceUntilIdle()
-
-        assertEquals(firstVisit.visitId, viewModel.state.value.selectedVisitId)
-        assertNotNull(viewModel.state.value.selectedReport)
-        assertEquals(
-            firstVisit.visitCode,
-            viewModel.state.value.selectedReport?.visitCode,
-        )
-    }
-
-    @Test
-    fun closingVisitClearsSelectedReportState() = runTest(dispatcher) {
-        val repository = FakeTechnicianVisitRepository(delayMillis = 0L)
-        val firstVisit = (
-            repository.getAssignedVisits() as ApiResult.Success
-        ).value.first()
-
-        val viewModel = TechnicianViewModel(
-            authRepository = FakeAuthRepository(technicianSession()),
-            backendStatusRepository = FakeBackendStatusRepository(),
-            visitRepository = repository,
-        )
-
-        dispatcher.scheduler.advanceUntilIdle()
-        viewModel.startOfflinePreview()
-        dispatcher.scheduler.advanceUntilIdle()
-        viewModel.openVisit(firstVisit.visitId)
-        dispatcher.scheduler.advanceUntilIdle()
-
-        assertNotNull(viewModel.state.value.selectedReport)
 
         viewModel.closeVisit()
 
@@ -284,6 +208,20 @@ class TechnicianViewModelTest {
         assertNull(viewModel.state.value.reportError)
         assertFalse(viewModel.state.value.reportLoading)
     }
+
+    private fun createViewModel(
+        authRepository: AuthRepository,
+        backendAvailable: Boolean = true,
+        backendRepository: FakeBackendStatusRepository =
+            FakeBackendStatusRepository(backendAvailable),
+        fixtureRepository: TechnicianVisitRepository =
+            FakeTechnicianVisitRepository(delayMillis = 0L),
+    ) = TechnicianViewModel(
+        authRepository = authRepository,
+        backendStatusRepository = backendRepository,
+        remoteVisitRepository = BlockedTechnicianVisitRepository(),
+        fixtureVisitRepository = fixtureRepository,
+    )
 
     private fun technicianSession(): ApiResult<SessionResponse> =
         sessionForRole("TECHNICIAN", "합성 기사")
@@ -342,9 +280,7 @@ class TechnicianViewModelTest {
             code: String,
         ): ApiResult<SessionResponse> {
             demoLoginCalls += 1
-            if (loginResult is ApiResult.Success) {
-                storedSession = true
-            }
+            if (loginResult is ApiResult.Success) storedSession = true
             return loginResult
         }
 

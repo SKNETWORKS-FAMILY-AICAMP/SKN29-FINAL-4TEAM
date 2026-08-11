@@ -20,6 +20,7 @@ data class TechnicianUiState(
     val loginLoading: Boolean = false,
     val user: UserData? = null,
     val offlinePreview: Boolean = false,
+    val visitRuntimeBlocked: Boolean = false,
     val visitsLoading: Boolean = false,
     val visits: List<TechnicianVisitSummary> = emptyList(),
     val selectedVisitId: String? = null,
@@ -32,8 +33,20 @@ data class TechnicianUiState(
 class TechnicianViewModel(
     private val authRepository: AuthRepository,
     private val backendStatusRepository: BackendStatusRepository,
-    private val visitRepository: TechnicianVisitRepository,
+    private val remoteVisitRepository: TechnicianVisitRepository,
+    private val fixtureVisitRepository: TechnicianVisitRepository,
 ) : ViewModel() {
+    constructor(
+        authRepository: AuthRepository,
+        backendStatusRepository: BackendStatusRepository,
+        visitRepository: TechnicianVisitRepository,
+    ) : this(
+        authRepository = authRepository,
+        backendStatusRepository = backendStatusRepository,
+        remoteVisitRepository = BlockedTechnicianVisitRepository(),
+        fixtureVisitRepository = visitRepository,
+    )
+
     private val _state = MutableStateFlow(TechnicianUiState())
     val state: StateFlow<TechnicianUiState> = _state.asStateFlow()
 
@@ -125,6 +138,7 @@ class TechnicianViewModel(
                             restoringSession = false,
                             user = user,
                             offlinePreview = false,
+                            visitRuntimeBlocked = false,
                             error = null,
                         )
                     }
@@ -166,6 +180,7 @@ class TechnicianViewModel(
                     loginLoading = true,
                     error = null,
                     offlinePreview = false,
+                    visitRuntimeBlocked = false,
                 )
             }
 
@@ -211,6 +226,7 @@ class TechnicianViewModel(
             it.copy(
                 restoringSession = false,
                 offlinePreview = true,
+                visitRuntimeBlocked = false,
                 user = UserData(
                     id = "00000000-0000-4000-8000-000000000901",
                     displayName = "합성 기사 001",
@@ -234,12 +250,13 @@ class TechnicianViewModel(
                 )
             }
 
-            when (val result = visitRepository.getAssignedVisits()) {
+            when (val result = activeVisitRepository().getAssignedVisits()) {
                 is ApiResult.Success -> {
                     _state.update {
                         it.copy(
                             visitsLoading = false,
                             visits = result.value,
+                            visitRuntimeBlocked = false,
                         )
                     }
                 }
@@ -248,6 +265,10 @@ class TechnicianViewModel(
                     _state.update {
                         it.copy(
                             visitsLoading = false,
+                            visits = if (it.offlinePreview) it.visits else emptyList(),
+                            visitRuntimeBlocked =
+                                !it.offlinePreview &&
+                                    result.code == VISIT_RUNTIME_UNAVAILABLE_CODE,
                             error = result.message,
                         )
                     }
@@ -269,7 +290,7 @@ class TechnicianViewModel(
                 )
             }
 
-            when (val result = visitRepository.getPrecheckReport(visitId)) {
+            when (val result = activeVisitRepository().getPrecheckReport(visitId)) {
                 is ApiResult.Success -> {
                     _state.update {
                         it.copy(
@@ -314,13 +335,31 @@ class TechnicianViewModel(
             )
         }
     }
+
+    private fun activeVisitRepository(): TechnicianVisitRepository =
+        if (_state.value.offlinePreview) {
+            fixtureVisitRepository
+        } else {
+            remoteVisitRepository
+        }
 }
 
 class TechnicianViewModelFactory(
     private val authRepository: AuthRepository,
     private val backendStatusRepository: BackendStatusRepository,
-    private val visitRepository: TechnicianVisitRepository,
+    private val remoteVisitRepository: TechnicianVisitRepository,
+    private val fixtureVisitRepository: TechnicianVisitRepository,
 ) : ViewModelProvider.Factory {
+    constructor(
+        authRepository: AuthRepository,
+        backendStatusRepository: BackendStatusRepository,
+        visitRepository: TechnicianVisitRepository,
+    ) : this(
+        authRepository = authRepository,
+        backendStatusRepository = backendStatusRepository,
+        remoteVisitRepository = BlockedTechnicianVisitRepository(),
+        fixtureVisitRepository = visitRepository,
+    )
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         require(modelClass.isAssignableFrom(TechnicianViewModel::class.java)) {
@@ -330,7 +369,8 @@ class TechnicianViewModelFactory(
         return TechnicianViewModel(
             authRepository = authRepository,
             backendStatusRepository = backendStatusRepository,
-            visitRepository = visitRepository,
+            remoteVisitRepository = remoteVisitRepository,
+            fixtureVisitRepository = fixtureVisitRepository,
         ) as T
     }
 }

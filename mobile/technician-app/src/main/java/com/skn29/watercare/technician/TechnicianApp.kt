@@ -59,15 +59,22 @@ fun TechnicianApp() {
 
 @Composable
 private fun TechnicianAppContent() {
-    val visitRepository = remember {
+    val remoteVisitRepository = remember {
+        BlockedTechnicianVisitRepository()
+    }
+    val fixtureVisitRepository = remember {
         FakeTechnicianVisitRepository()
     }
-    val factory = remember(visitRepository) {
+    val factory = remember(
+        remoteVisitRepository,
+        fixtureVisitRepository,
+    ) {
         TechnicianViewModelFactory(
             authRepository = WaterCareCore.authRepository,
             backendStatusRepository =
                 WaterCareCore.backendStatusRepository,
-            visitRepository = visitRepository,
+            remoteVisitRepository = remoteVisitRepository,
+            fixtureVisitRepository = fixtureVisitRepository,
         )
     }
     val technicianViewModel: TechnicianViewModel =
