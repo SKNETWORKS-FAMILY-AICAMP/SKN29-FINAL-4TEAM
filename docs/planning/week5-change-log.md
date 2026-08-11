@@ -14,6 +14,7 @@
 | `W5-PLAN-004` | 2026-08-10 KST | 윤승혁 | 4→5주차 인계 | 필수 출력과 6~7주차 인계를 WBS 일정으로 재정렬 | WBS 변경 없음 | 완료 |
 | `W5-PLAN-005` | 2026-08-10 KST | 윤승혁 | Issue Template | 필수·조건부·후속·P1 일정 범위 분류 추가 | WBS 변경 없음 | 완료 |
 | `W5-PLAN-006` | 2026-08-11 KST | 윤승혁 | 3.6·3.7 Gate | Web·Mobile 사전 Gate, 일일 Integration 기록과 Blocker Register 착수 | WBS 변경 없음 | 진행 중 |
+| `W5-PLAN-007` | 2026-08-11 KST | 윤승혁 | 3.3·3.4 Gate | Backend Runtime12 수정 회신, 후속 계약 결정, 소비자 재검증과 Contract CI 원격 PASS 반영 | WBS 변경 없음 | 승인 |
 
 ## 2. 기준본 확정 조건
 

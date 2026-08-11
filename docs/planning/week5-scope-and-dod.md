@@ -2,7 +2,7 @@
 
 > 기준일: **2026-08-10 KST**
 > WBS 기준: `docs/planning/md/WBS.md` v2.1
-> 기준 Commit: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
+> 기준 Commit: `main@4ac79e6227ce271252054b1e986d6ee24eefce4a`
 > 상태: **CONTRACT_BASELINE_REVIEW**
 
 ## 1. 범위 원칙
@@ -85,15 +85,17 @@ target_at=<YYYY-MM-DD HH:mm KST>
 - 실행 결과: `docs/testing/week5-contract-baseline-result.md`
 - 소비자 검토표: `docs/testing/week5-contract-consumer-review.md`
 - 팀원 회신 요청: `docs/handoffs/week5-contract-consumer-review-request.md`
-- 현재 판정은 `VALIDATOR_PASS · CONSUMER_ACK 2/5 · BACKEND_CHANGE_REQUEST`이며 최종 `TEAM_BASELINE`은 아직 아니다.
+- 현재 후보는 `main@4ac79e6`이며 Backend 원래 불일치 두 건은 작성자 수정됐다.
+- 계약 후속 적용·독립 QA와 AI·Web 회신이 남아 현재 판정은 `REMOTE_CONTRACT_PASS · CONSUMER_ACK 1/5 · REVALIDATION_REQUIRED`다.
+- 최종 `TEAM_BASELINE`은 아직 아니다.
 
 ## 8. 3.4 Contract CI 강화 진행 기록
 
-- 현행 Data CI는 필수 7개 Gate 중 State Machine·Mermaid 2개만 자동 실행한다.
-- 계약 Trigger는 `contracts/state-machine/**`, `scripts/contracts/**`만 포함하고 API·Code·Example·Error·Root Contract Test 경로가 빠져 있다.
+- 별도 Contract CI가 State·Mermaid·Code·OpenAPI·Example·Crosswalk·Root Contract Test 7개를 자동 실행한다.
+- `contracts/**`, `scripts/contracts/**`, `tests/contract/**`, Workflow 자체 변경이 Trigger 대상이다.
 - 감사·운영안: `docs/testing/contracts-ci.md`
 - Workflow 적용 요청: `docs/handoffs/week5-contract-ci-apply-request.md`
-- `.github/workflows/**` 주관 담당자의 적용과 실제 Branch/PR Run 전까지 상태는 `OWNER_APPLY_PENDING`이다.
+- 작성자 후보 `83f7373`의 원격 Contract CI·Data CI가 PASS했고 현재 main까지 계약·Workflow Diff가 없어 3.4는 완료다.
 
 ## 9. 3.5 Backend↔AI Integration Gate 진행 기록
 

@@ -1,6 +1,7 @@
 # 2026-08-11 Web·Mobile 계약 소비 회신 접수
 
 > PM 기준 Commit: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
+> 현재 재검증 후보: `main@4ac79e6227ce271252054b1e986d6ee24eefce4a`
 > 접수자: 윤승혁
 > 목적: 외부 전달 회신을 3.3 소비자 검토 증거로 정규화
 
@@ -72,10 +73,24 @@ PM은 승인 계약 유지와 `DYNAMIC_GUARD_AND_RUNTIME_FILTER`를 결정했다
 ## 5. 현재 취합 결과
 
 ```text
-mobile=APPROVE
+mobile=APPROVE_NO_AREA_DIFF
 web=CONTENT_APPROVED_CURRENT_BASELINE_ACK_PENDING
-qa=APPROVE
-backend=CHANGE_REQUEST
-consumer_ack=2/5
-remaining_reviewers=최지용-fix, 이동윤, 한예나-current-baseline
+qa=REVALIDATION_REQUIRED_AFTER_CONTRACT_RUNTIME_CHANGE
+backend=FIX_APPLIED_CONTRACT_FOLLOWUP_AND_QA_PENDING
+consumer_ack=1/5
+remaining_reviewers=최지용-followup,김은진-revalidation,이동윤,한예나-current-baseline
 ```
+
+## 6. Backend 수정·검증 회신 v0.4
+
+| 항목 | 접수 내용 |
+|---|---|
+| Runtime 수정 | `e290fe3d43ae5adf2a6ab758cbf2e19922046cd1` |
+| 작성자 후보 | `83f737326de75a6015a606c0050eaa81d1f67a4f` |
+| 현재 main 포함 | YES — 현재 `main@4ac79e6`의 조상 |
+| 원래 불일치 | 취소 역할·상태 확대, 동적 Guard·Runtime Filter Resolver 적용 |
+| 작성자 검증 | 표적 128/5 Skip, 전체 993/19 Skip, PostgreSQL Row Lock 5·취소 25 PASS |
+| 원격 검증 | Contract CI·Data CI PASS |
+| PM 판정 | **AUTHOR_FIX_ACCEPTED · CONTRACT_FOLLOWUP_AND_INDEPENDENT_QA_PENDING** |
+
+계약 Owner는 `submitSymptom`의 Commit 이후 AI 경계 명시, `updateVisitSchedule`의 `TR-INQ-028` 포함, 고객 Snapshot 동적 `allowed_actions` 포함을 결정했다. API 계약·Backend 후속 적용과 김은진 독립 QA 전까지 Backend ACK로 계산하지 않는다.

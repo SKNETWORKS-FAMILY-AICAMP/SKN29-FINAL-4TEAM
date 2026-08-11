@@ -3,7 +3,8 @@
 > 감사일: 2026-08-11 KST
 > PM 감사 기준: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
 > 적용·로컬 검증 기준: `eunjin@88148c97ba727c62fc520104aa20a796d089d10b`
-> 현재 판정: **WORKFLOW_LOCAL_PASS · REMOTE_NOT_RUN**
+> 원격 검증 후보: `83f737326de75a6015a606c0050eaa81d1f67a4f`
+> 현재 판정: **REMOTE_PASS · 3.4 COMPLETE**
 > Workflow 주관: 김은진 / 계약 정책·Validator 주관: 윤승혁
 
 ## 1. 결론
@@ -12,9 +13,9 @@
 자동 실행한다. 이를 약화하지 않고 별도 `.github/workflows/contracts-ci.yml`을
 추가해 전체 계약 변경을 검증하도록 구성했다.
 
-신규 Workflow와 자체 Contract Test는 Local Gate를 통과했다. Commit·Push가 없어
-GitHub Actions 원격 결과는 아직 없으며, Data CI의 State·Mermaid 중복은 원격
-PASS 전까지 유지한다.
+신규 Workflow와 자체 Contract Test는 Local Gate를 통과했고 `main`에 포함됐다.
+작성자 후보에서 Contract CI와 Data CI가 모두 원격 PASS했으며, 후보 이후 현재
+`main@4ac79e6`까지 계약·Validator·Workflow 변경이 없다.
 
 ## 2. 현재 Workflow 감사
 
@@ -118,8 +119,8 @@ jobs:
 
 1. 김은진 Branch에 별도 Contract CI와 자체 검증 Test를 적용한다. **완료**
 2. 로컬에서 7개 Gate를 같은 HEAD로 실행한다. **완료**
-3. Workflow 파일 자체가 Trigger 경로에 포함된 Branch 또는 PR에서 최초 실행을 확인한다. **미실행**
-4. 7개 Step이 모두 실제 실행되고 Exit Code `0`인지 확인한다.
+3. Workflow 파일 자체가 Trigger 경로에 포함된 Branch 또는 PR에서 최초 실행을 확인한다. **완료**
+4. 7개 Step이 모두 실제 실행되고 Exit Code `0`인지 확인한다. **완료**
 5. 실패 로그가 State·Mermaid·Code·OpenAPI·Example·Crosswalk·Test별로 구분되는지 확인한다.
 6. Data CI의 State·Mermaid 중복은 Contract CI 원격 PASS와 병합 Gate 전환을 확인한 뒤 제거 여부를 결정한다.
 7. CI를 삭제하거나 `continue-on-error`를 사용해 Gate를 약화하지 않는다.
@@ -137,12 +138,11 @@ Contract CI가 실패하면 Step 이름, 대상 SHA, 재현 명령과 Exit Code�
 
 ## 6. 완료 경계
 
-현재 로컬 7개 Gate와 Workflow 자체 Test는 PASS했지만 Workflow는 아직
-Commit·Push되지 않았다. 다음 조건이 모두 충족될 때 3.4를 완료한다.
+로컬 7개 Gate, Workflow 적용과 원격 실행 조건을 모두 충족했으므로 3.4를 완료한다.
 
 - 주요 계약 경로가 모두 Trigger 대상이다.
 - 7개 Gate가 별도 Step으로 자동 실행된다.
-- 실제 Branch 또는 PR Run이 전체 PASS한다. **현재 `REMOTE_NOT_RUN`**
+- 실제 Branch 또는 PR Run이 전체 PASS한다. **완료**
 - Data CI와의 중복·장애 대응 책임이 확정된다.
 - Run URL과 대상 SHA가 기록된다.
 
@@ -158,4 +158,13 @@ Commit·Push되지 않았다. 다음 조건이 모두 충족될 때 3.4를 완�
 | Crosswalk | PASS — Runtime 12, OpenAPI-only 7, Deferred 4 |
 | Root Contract | `38 passed` |
 
-현재 상태는 `LOCAL_PASS_REMOTE_NOT_RUN`이며 원격 Run URL은 없다.
+### 2026-08-11 원격 결과
+
+| Gate | 결과 |
+|---|---|
+| Contract CI | PASS — `https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/31481299035` |
+| Data CI | PASS — `https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/31481299053` |
+| 대상 후보 | `83f737326de75a6015a606c0050eaa81d1f67a4f` |
+| 현재 main까지 계약 Diff | NONE |
+
+현재 상태는 `REMOTE_PASS`이며 3.4 완료 조건을 충족한다.
