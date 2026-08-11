@@ -1,68 +1,34 @@
-# Week 5 Mobile Regression
+# Week 5 Mobile Regression — Independent Closeout
 
-## Build / Unit / APK
+Generated: 2026-08-11T11:23:50+09:00
 
-- `verify-build.bat`: **PASS**
-- Core tests: **PASS**
-- Customer unit tests: **PASS**
-- Technician unit tests: **PASS**
-- Customer Debug APK: **PASS**
-- Technician Debug APK: **PASS**
-- Customer androidTest APK: **PASS**
-- Device install: **PASS**
+- Remote Customer boundary unit test: **PASS**
+- Core / Customer / Technician Unit: **PASS**
+- Customer Connected Test: **PASS**
+- Technician Connected Test: **PASS**
+- Technician Status Mapping Test: **PASS**
+- Customer / Technician Debug APK: **PASS**
+- Customer / Technician AndroidTest APK: **PASS**
+- verify-build.bat: **PASS**
+- Device: R3CT8076D7B
+- Customer APK install: **PASS**
+- Technician APK install: **PASS**
+- Customer SHA-256: c687c7f20b1d4148e3776acd3a859d409c35b446c2024aba5c638006c6f98467
+- Technician SHA-256: 7d9a513d40a0e8e49c7c5d04fbdddcd211ba3822335b400233fa2d721c15515d
+- Remote Customer subscription failure → Fixture fallback: **NO**
+- Remote Guidance → Fixture fallback: **NO**
+- Technician Remote Visit → Fixture fallback: **NO**
+- tracked mobile/local.properties: **NO**
+- static secret/private-address scan: **PASS**
 
-## Real Backend / Galaxy
+External blockers:
+- CUSTOMER_FOLLOWUP_RUNTIME
+- CUSTOMER_GUIDANCE_EVIDENCE_RUNTIME
+- CUSTOMER_REQUEST_CONSULTATION_RUNTIME
+- TECHNICIAN_ASSIGNED_VISIT_LIST_DETAIL_RUNTIME
+- TECHNICIAN_VISIT_START_COMPLETE_RUNTIME
+- FULL_CUSTOMER_AI_CONSULTATION_VISIT_TECHNICIAN_E2E
 
-Device:
-
-```text
-Samsung SM-F721N
-Android 16
-```
-
-Customer:
-
-- Synthetic customer login: **PASS**
-- `/me` CUSTOMER: **PASS**
-- ACTIVE `WPUJAC104DWH` subscription found: **PASS**
-- Subscription detail: **PASS**
-- Inquiry create: **PASS**
-- Symptom submit: **PASS**
-- P0 Backend REST smoke: **PASS**
-- Customer Galaxy Remote instrumentation: **PASS**
-- REMOTE Guidance unavailable fail-closed: **PASS**
-- Customer instrumentation final run: `OK (2 tests)`
-
-Technician:
-
-- Demo technician login: **PASS**
-- `/me` TECHNICIAN: **PASS**
-- Technician Galaxy auth instrumentation: **PASS**
-- Visit REMOTE list/detail Unit fail-closed: **PASS**
-- Visit Runtime actual list/detail/result: **NOT_RUN / BACKEND_ROUTE_PENDING**
-
-## Contract / error gates
-
-- Guidance Fixture silently mixed into REMOTE: **NO**
-- Technician Visit Fixture silently mixed into REMOTE: **NO**
-- Hard-coded personal Backend address committed: **NO**
-- Tokens/secrets committed: **NO**
-
-The following full actual-Runtime regressions are **not claimed as PASS** because the
-required downstream Runtime is not yet published or a dedicated final proof was not
-captured in Week5 closeout:
-
-- 401 refresh end-to-end regression
-- Customer inquiry read/recovery 404 regression
-- Guidance/Follow-up 409 state-version regression
-- Technician Visit 409 dual-version regression
-- downstream idempotency replay regression
-
-## Final status
-
-```text
-Customer P0 actual flow: PASS
-Guidance Mobile safety boundary: PASS
-Technician Visit Mobile safety boundary: PASS
-Full Customer → AI → Consultation → Visit E2E: BLOCKED_BY_BACKEND
-```
+MOBILE_INDEPENDENT_ACTIONABLE_ITEMS = COMPLETE
+INDEPENDENT_MOBILE_WEEK5 = PASS
+FULL_P0_FEATURE_COMPLETE = BLOCKED_BY_BACKEND
