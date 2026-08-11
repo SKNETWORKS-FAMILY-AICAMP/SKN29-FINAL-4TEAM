@@ -167,12 +167,12 @@ fun CustomerHomeContent(
                 imageRes = R.drawable.dashboard_purifier,
                 palette = palette,
                 roleLabel = "고객용",
-                imageEmphasis = 1.10f,
+                imageEmphasis = 1.12f,
             )
 
             ReferenceSectionHeader(
                 title = "내 정수기 상태",
-                trailing = "한눈에 확인",
+                trailing = "한눈에 확인  ›",
                 palette = palette,
             )
             ReferenceStatusRow(
@@ -198,7 +198,7 @@ fun CustomerHomeContent(
 
             ReferenceSectionHeader(
                 title = "빠른 서비스",
-                trailing = "전체보기 ›",
+                trailing = "전체보기  ›",
                 palette = palette,
             )
             ReferenceActionRow(
@@ -267,8 +267,8 @@ fun CustomerHomeContent(
                 ),
                 status = "현재 정보 확인 완료",
                 palette = palette,
-                primaryActionLabel = "제품 상세 · 준비 중",
-                secondaryActionLabel = "관리 가이드 · 준비 중",
+                primaryActionLabel = "",
+                secondaryActionLabel = "",
                 onPrimaryAction = {},
                 onSecondaryAction = {},
                 primaryActionEnabled = false,

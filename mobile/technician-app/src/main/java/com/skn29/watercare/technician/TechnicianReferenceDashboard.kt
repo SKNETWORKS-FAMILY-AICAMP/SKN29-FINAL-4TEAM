@@ -14,13 +14,13 @@ import com.skn29.watercare.core.ui.components.ReferenceActionRow
 import com.skn29.watercare.core.ui.components.ReferenceBottomItem
 import com.skn29.watercare.core.ui.components.ReferenceCompactBanner
 import com.skn29.watercare.core.ui.components.ReferenceDashboardScaffold
-import com.skn29.watercare.core.ui.components.ReferenceDetailCard
 import com.skn29.watercare.core.ui.components.ReferenceGlassButton
 import com.skn29.watercare.core.ui.components.ReferenceGlassPanel
 import com.skn29.watercare.core.ui.components.ReferenceHeroCard
 import com.skn29.watercare.core.ui.components.ReferenceSectionHeader
+import com.skn29.watercare.core.ui.components.ReferenceScheduleCard
+import com.skn29.watercare.core.ui.components.ReferenceBackendStatusCard
 import com.skn29.watercare.core.ui.components.ReferenceStatusItem
-import com.skn29.watercare.core.ui.components.ReferenceStatusRow
 import com.skn29.watercare.core.ui.components.ReferenceWelcomeCard
 import com.skn29.watercare.core.ui.components.TechnicianReferencePalette
 
@@ -140,11 +140,7 @@ fun TechnicianReferenceDashboard(
     val dangerCount = state.visits.count {
         it.risk == TechnicianVisitRisk.DANGER
     }
-    val progress = if (total == 0) {
-        0f
-    } else {
-        confirmed.toFloat() / total.toFloat()
-    }
+    val pending = (total - confirmed).coerceAtLeast(0)
     val primaryVisit = state.visits.firstOrNull()
     val displayName = state.user?.displayName
         ?.takeIf(String::isNotBlank)
@@ -159,24 +155,24 @@ fun TechnicianReferenceDashboard(
         backgroundImageAlpha = 0.50f,
         modifier = modifier,
         bottomItems = listOf(
-    ReferenceBottomItem(
-        iconRes = R.drawable.ref_home,
-        label = "홈",
-        selected = true,
-    ),
-    ReferenceBottomItem(
-        iconRes = R.drawable.ref_schedule,
-        label = "방문",
-    ),
-    ReferenceBottomItem(
-        iconRes = R.drawable.ref_work,
-        label = "작업",
-    ),
-    ReferenceBottomItem(
-        iconRes = R.drawable.ref_profile,
-        label = "마이",
-    ),
-),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_home,
+                label = "대시보드",
+                selected = true,
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_schedule,
+                label = "일정",
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_work,
+                label = "기록",
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_profile,
+                label = "더보기",
+            ),
+        ),
     ) {
         ReferenceHeroCard(
             greeting = if (
@@ -187,7 +183,8 @@ fun TechnicianReferenceDashboard(
             } else {
                 "${displayName}님,\n안녕하세요"
             },
-            subtitle = "오늘 방문 일정을 빠르게 확인해보세요.",
+            subtitle =
+                "오늘 방문 일정과 안전 점검 항목을 한눈에 확인하세요.",
             metricLabel = "",
             metricValue = "",
             metricUnit = "",
@@ -196,16 +193,8 @@ fun TechnicianReferenceDashboard(
             imageRes = R.drawable.dashboard_toolkit,
             palette = palette,
             roleLabel = "방문기사용",
-            imageEmphasis = 1.04f,
-        )
-
-        ReferenceSectionHeader(
-            title = "오늘 일정",
-            trailing = "방문 현황",
-            palette = palette,
-        )
-        ReferenceStatusRow(
-            items = listOf(
+            imageEmphasis = 1.06f,
+            summaryItems = listOf(
                 ReferenceStatusItem(
                     iconRes = R.drawable.ref_schedule,
                     label = "오늘 방문",
@@ -213,36 +202,97 @@ fun TechnicianReferenceDashboard(
                 ),
                 ReferenceStatusItem(
                     iconRes = R.drawable.ref_complete,
-                    label = "확정 일정",
+                    label = "확정",
                     value = "${confirmed}건",
                 ),
                 ReferenceStatusItem(
                     iconRes = R.drawable.ref_urgent,
-                    label = "긴급 요청",
-                    value = "${dangerCount}건",
+                    label = "주의·위험",
+                    value = "${risky}건",
+                    healthy = risky == 0,
+                ),
+                ReferenceStatusItem(
+                    iconRes = R.drawable.ref_visits,
+                    label = "대기",
+                    value = "${pending}건",
                     healthy = dangerCount == 0,
                 ),
             ),
-            palette = palette,
         )
 
         ReferenceSectionHeader(
-            title = "빠른 실행",
-            trailing = "전체보기 ›",
+            title = "오늘 일정",
+            trailing = if (total > 2) {
+                "전체 ${total}건  ›"
+            } else {
+                "방문 현황"
+            },
+            palette = palette,
+        )
+
+        if (state.visitsLoading) {
+            LoadingBlock(
+                "배정 방문 목록을 불러오는 중입니다"
+            )
+        }
+
+        state.error?.let {
+            ErrorCard(it, onRetry = onRefresh)
+        }
+
+        if (
+            !state.visitsLoading &&
+            state.visits.isEmpty() &&
+            state.error == null
+        ) {
+            ReferenceGlassPanel(palette = palette) {
+                Text(
+                    "현재 배정된 방문이 없습니다.",
+                    color = palette.textMuted,
+                )
+            }
+        } else {
+            state.visits.take(2).forEach { visit ->
+                ReferenceScheduleCard(
+                    time = visit.scheduledAt,
+                    customerName = visit.customerMaskedName,
+                    badge = visit.scheduleStatusLabel,
+                    lines = listOf(
+                        "${visit.productModel} · " +
+                            visit.usageRestrictionLabel,
+                        visit.maskedAddress,
+                    ),
+                    palette = palette,
+                    onClick = {
+                        onVisitClick(visit.visitId)
+                    },
+                )
+            }
+        }
+
+        ReferenceSectionHeader(
+            title = "빠른 업무",
+            trailing = "전체보기  ›",
             palette = palette,
         )
         ReferenceActionRow(
             items = listOf(
                 ReferenceActionItem(
                     iconRes = R.drawable.ref_visits,
-                    label = "방문 목록",
-                    subtitle = "${total}건",
-                    onClick = onRefresh,
+                    label = "방문 상세",
+                    subtitle = "일정 및 고객 정보",
+                    enabled = primaryVisit != null,
+                    onClick = {
+                        primaryVisit?.let {
+                            onVisitClick(it.visitId)
+                        }
+                    },
                 ),
                 ReferenceActionItem(
                     iconRes = R.drawable.ref_precheck,
                     label = "사전 점검",
                     subtitle = "읽기 전용",
+                    enabled = primaryVisit != null,
                     onClick = {
                         primaryVisit?.let {
                             onVisitClick(it.visitId)
@@ -267,61 +317,33 @@ fun TechnicianReferenceDashboard(
             palette = palette,
         )
 
-        if (state.visitsLoading) {
-            LoadingBlock(
-                "배정 방문 목록을 불러오는 중입니다"
-            )
-        }
-
-        state.error?.let {
-            ErrorCard(it, onRetry = onRefresh)
-        }
-
         ReferenceSectionHeader(
-            title = "오늘의 작업",
+            title = "사전 점검",
             palette = palette,
         )
-
-        if (primaryVisit == null) {
-            ReferenceGlassPanel(palette = palette) {
-                Text(
-                    "현재 배정된 방문이 없습니다.",
-                    color = palette.textMuted,
-                )
-            }
-        } else {
-            ReferenceDetailCard(
-                imageRes = R.drawable.dashboard_toolkit,
-                title = primaryVisit.customerMaskedName,
-                badge = primaryVisit.scheduleStatusLabel,
-                lines = listOf(
-                    "제품  ${primaryVisit.productModel}",
-                    "주소  ${primaryVisit.maskedAddress}",
-                    "시간  ${primaryVisit.scheduledAt}",
-                ),
-                status = primaryVisit.usageRestrictionLabel,
-                palette = palette,
-                primaryActionLabel = "방문 상세",
-                secondaryActionLabel = "새로고침",
-                onPrimaryAction = {
-                    onVisitClick(primaryVisit.visitId)
-                },
-                onSecondaryAction = onRefresh,
-                timeline = listOf(
-                    "배정",
-                    "방문 예정",
-                    "점검",
-                    "완료",
-                ),
-                selectedTimelineIndex = if (
-                    primaryVisit.scheduleStatusCode == "CONFIRMED"
-                ) {
-                    1
-                } else {
-                    0
-                },
-            )
-        }
+        ReferenceBackendStatusCard(
+            title = if (primaryVisit == null) {
+                "점검 가능한 방문이 없습니다"
+            } else {
+                "준비물 및 안전 항목을 확인하세요"
+            },
+            message = if (primaryVisit == null) {
+                "배정 방문이 생기면 사전 점검 내용을 확인할 수 있습니다."
+            } else {
+                "고객 증상, 사용 제한, 금지 행동과 공식 근거를 방문 전에 확인합니다."
+            },
+            palette = palette,
+            actionLabel = if (primaryVisit != null) {
+                "확인하기"
+            } else {
+                null
+            },
+            onAction = {
+                primaryVisit?.let {
+                    onVisitClick(it.visitId)
+                }
+            },
+        )
 
         ReferenceCompactBanner(
             title = if (state.offlinePreview) {
@@ -340,7 +362,7 @@ fun TechnicianReferenceDashboard(
 
         ReferenceSectionHeader(
             title = "업무 도구",
-            trailing = "더보기 ›",
+            trailing = "더보기  ›",
             palette = palette,
         )
         ReferenceActionRow(
@@ -362,6 +384,7 @@ fun TechnicianReferenceDashboard(
                     iconRes = R.drawable.ref_safety,
                     label = "안전 체크",
                     subtitle = "점검 항목",
+                    enabled = primaryVisit != null,
                     onClick = {
                         primaryVisit?.let {
                             onVisitClick(it.visitId)
@@ -372,6 +395,7 @@ fun TechnicianReferenceDashboard(
                     iconRes = R.drawable.ref_report,
                     label = "리포트",
                     subtitle = "읽기 전용",
+                    enabled = primaryVisit != null,
                     onClick = {
                         primaryVisit?.let {
                             onVisitClick(it.visitId)
