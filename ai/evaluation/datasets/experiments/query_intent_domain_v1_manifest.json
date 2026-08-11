@@ -1,0 +1,38 @@
+{
+  "dataset_id": "QUERY-INTENT-DOMAIN-V1",
+  "dataset_version": "1.0.0-draft.1",
+  "status": "DRAFT_EXPERIMENT_ONLY_HUMAN_REVIEW_PENDING",
+  "dataset": {
+    "path": "ai/evaluation/datasets/experiments/query_intent_domain_v1.jsonl",
+    "records": 18,
+    "sha256": "CBDC5C22E93F4327B14755BA987C6B92EDF0BABB4B5A4991765392A9ABC41032"
+  },
+  "schema": {
+    "path": "ai/evaluation/schemas/query_intent_domain_case_v1.schema.json",
+    "sha256": "0D9331CFC8D4A35FC3C69B4FB3686E3B2992A9AE75697EDA27CD428B9879231F"
+  },
+  "distribution": {
+    "expected_decision": {
+      "ALLOW": 9,
+      "BLOCK": 9
+    },
+    "intent_family": {
+      "COMMERCIAL_CONTRACT": 3,
+      "MANUAL_SUPPORT": 9,
+      "PART_PURCHASE": 3,
+      "PRODUCT_OPTION": 3
+    },
+    "challenge_type": {
+      "OVERLAP_HARD_NEGATIVE": 9,
+      "UNSUPPORTED_PARAPHRASE": 9
+    },
+    "review_status": {
+      "UNREVIEWED_DRAFT": 18
+    }
+  },
+  "approval_policy": {
+    "required_reviewer_count": 2,
+    "current_approved_records": 0,
+    "automatic_label_approval": false
+  }
+}

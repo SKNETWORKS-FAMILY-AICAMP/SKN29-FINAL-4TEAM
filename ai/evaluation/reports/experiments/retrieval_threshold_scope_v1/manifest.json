@@ -1,0 +1,88 @@
+{
+  "experiment_id": "B2-1-THRESHOLD-SCOPE-POLICY-V1",
+  "experiment_version": "1.0.0-draft.1",
+  "run_status": "DRAFT_THRESHOLD_SCOPE_EXPERIMENT_COMPLETE",
+  "started_at": "2026-08-11T02:15:35.670586+00:00",
+  "completed_at": "2026-08-11T02:15:37.628093+00:00",
+  "metrics_publishable_as_official": false,
+  "selection_status": "PENDING_GOLD_REVIEW_AND_PM_GATE",
+  "dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "sha256": "DDB20527D452E1C246CA821CFA7D4EC159B13E24597FDEF685C19136065E50FD",
+    "split": "DEV",
+    "selected_cases": 35
+  },
+  "source_corpus": {
+    "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+    "sha256": "6947CDE3543BB080394D4C953BE22A43A76ED80F4686ED5360B30628109AB240",
+    "source_chunks": 96
+  },
+  "profiles": {
+    "path": "ai/configs/experiments/retrieval_threshold_scope_profiles.yaml",
+    "sha256": "B166547A4490BCF67CA68BFD275C26B7E26DCF85F05627F4ACB54A6203FE3CF3",
+    "chunking_profile_path": "ai/configs/experiments/chunking_profiles.yaml",
+    "provisional_chunking_profiles": [
+      "fixed_512_v1",
+      "parent_child_v1"
+    ],
+    "chunking_selection_status": "PROVISIONAL_NOT_SELECTED",
+    "scope_policy_ids": [
+      "NO_QUERY_SCOPE_POLICY",
+      "MODEL_CAPABILITY_SCOPE_V1"
+    ],
+    "thresholds": [
+      0.4,
+      0.45,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7
+    ]
+  },
+  "fixed_embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "device": "cpu",
+    "normalize_embeddings": true,
+    "local_files_only": true
+  },
+  "fixed_retrieval": {
+    "method": "dense_cosine_exact_v1",
+    "top_k": 5,
+    "product_filter": "EXACT_PRODUCT_FILTER",
+    "score_thresholds": [
+      0.4,
+      0.45,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7
+    ]
+  },
+  "performance": {
+    "query_embedding_seconds": 1.889918,
+    "total_seconds": 1.957489,
+    "case_result_count": 980
+  },
+  "runtime": {
+    "python": "3.13.13",
+    "os": "Windows 11",
+    "provider_class": "LocalBgeM3Provider"
+  },
+  "git": {
+    "commit_sha": "df96616d7010a2f61bddc91f8974235ba5ec92d3",
+    "branch": "codex/dongyoon-reconcile",
+    "working_tree_clean": false,
+    "changed_path_count": 4
+  },
+  "publication_limits": [
+    "Gold 60건 2인 검수 전 Draft 비교로만 사용",
+    "청킹 2종은 B1 Draft의 임시 후보이며 PM이 선정한 운영 Profile이 아님",
+    "Scope Policy는 Experiment Lab 전용이며 운영 ai/configs/retrieval_policy.yaml을 변경하지 않음",
+    "DEV Positive가 JAC104에 편중되어 IAC425 검색 품질을 판정하지 않음",
+    "Threshold는 DEV 탐색값이며 TEST 최초 실행 전 고정·승인이 필요함"
+  ]
+}

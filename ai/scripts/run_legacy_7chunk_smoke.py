@@ -15,6 +15,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from ai.evaluation.file_integrity import file_sha256
+
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PROFILE = "ai/configs/experiments/legacy_7chunk_smoke_v1.yaml"
@@ -25,7 +27,7 @@ def _utc_now() -> datetime:
 
 
 def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest().upper()
+    return file_sha256(path)
 
 
 def _load_json(path: Path) -> Any:

@@ -1,0 +1,59 @@
+{
+  "experiment_id": "B1-CHUNKING-COMPARISON-V1",
+  "experiment_version": "1.0.0-draft.1",
+  "dataset_split": "DEV",
+  "fixed_retrieval_profile": {
+    "method": "dense_cosine_exact_v1",
+    "top_k": 5,
+    "score_threshold": 0.4,
+    "filter_modes": ["NO_PRODUCT_FILTER", "EXACT_PRODUCT_FILTER"]
+  },
+  "profiles": [
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "strategy": "source_page",
+      "status": "RUNNABLE",
+      "note": "현재 A3-1 저장 단위 기준선"
+    },
+    {
+      "profile_id": "page_v1",
+      "strategy": "source_page",
+      "status": "RUNNABLE",
+      "note": "페이지 단위 대조군; 현재 기준선과 동일 결과가 나와야 함"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "strategy": "fixed_tokens_per_page",
+      "status": "RUNNABLE",
+      "token_unit": "whitespace_token",
+      "window_tokens": 512,
+      "overlap_tokens": 64
+    },
+    {
+      "profile_id": "section_v1",
+      "strategy": "consecutive_section",
+      "status": "RUNNABLE"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "strategy": "parent_section_child_tokens_per_page",
+      "status": "RUNNABLE",
+      "token_unit": "whitespace_token",
+      "child_window_tokens": 256,
+      "child_overlap_tokens": 32,
+      "context_unit": "parent_section"
+    },
+    {
+      "profile_id": "table_row_v1",
+      "strategy": "structured_table_row",
+      "status": "BLOCKED_SOURCE_STRUCTURE_UNAVAILABLE",
+      "reason": "현재 96쪽 추출 Corpus에 증상·확인사항·조치 행 경계 Metadata가 없음"
+    }
+  ],
+  "publication_limits": [
+    "Gold 60건 2인 검수 전 Draft 비교로만 사용",
+    "DEV Positive가 JAC104에 편중되어 IAC425 검색 품질을 판정하지 않음",
+    "whitespace_token은 모델 Tokenizer 기준 512 Token과 동일하지 않음",
+    "PM 승인 전 상위 2개 Profile을 운영 설정으로 채택하지 않음"
+  ]
+}

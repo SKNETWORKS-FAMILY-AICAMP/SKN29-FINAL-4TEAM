@@ -96,7 +96,7 @@ class ExperimentPlaygroundV0Tests(unittest.TestCase):
                     "retrieval": {"results": [], "result_count": 0},
                 }
 
-        with patch(
+        with patch.dict("os.environ", {"AI_ENABLE_EXPERIMENT_PLAYGROUND": "true"}), patch(
             "ai.app.interfaces.http.routes.experiment_playground_routes.get_playground_engine",
             return_value=FakeEngine(),
         ):
@@ -115,6 +115,16 @@ class ExperimentPlaygroundV0Tests(unittest.TestCase):
         self.assertIn("Experiment Playground", page.text)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["request"]["top_k"], 5)
+
+    def test_playground_routes_are_closed_by_default(self) -> None:
+        with patch.dict("os.environ", {}, clear=True):
+            client = TestClient(create_app())
+
+        self.assertEqual(client.get("/experiments/playground").status_code, 404)
+        self.assertEqual(
+            client.get("/api/v1/ai/experiments/playground/options").status_code,
+            404,
+        )
 
 
 if __name__ == "__main__":

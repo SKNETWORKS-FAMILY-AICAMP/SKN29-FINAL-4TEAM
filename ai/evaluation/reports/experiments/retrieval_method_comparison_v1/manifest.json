@@ -1,0 +1,71 @@
+{
+  "experiment_id": "B2-3-RETRIEVAL-METHOD-COMPARISON-V1",
+  "experiment_version": "1.0.0-draft.1",
+  "run_status": "DRAFT_RETRIEVAL_METHOD_COMPARISON_COMPLETE",
+  "started_at": "2026-08-11T03:22:56.604466+00:00",
+  "completed_at": "2026-08-11T03:23:05.363573+00:00",
+  "metrics_publishable_as_official": false,
+  "selection_status": "PENDING_GOLD_REVIEW_AND_PM_GATE",
+  "dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "sha256": "DDB20527D452E1C246CA821CFA7D4EC159B13E24597FDEF685C19136065E50FD",
+    "split": "DEV",
+    "selected_cases": 35
+  },
+  "source_corpus": {
+    "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+    "sha256": "6947CDE3543BB080394D4C953BE22A43A76ED80F4686ED5360B30628109AB240",
+    "source_chunks": 96
+  },
+  "profiles": {
+    "method_profile_path": "ai/configs/experiments/retrieval_method_profiles.yaml",
+    "method_profile_sha256": "B874B2CE8E97622C1F2444DB8C183A4C4109B994526F77E99689E80C4AA8584F",
+    "scope_profile_sha256": "B166547A4490BCF67CA68BFD275C26B7E26DCF85F05627F4ACB54A6203FE3CF3",
+    "intent_profile_sha256": "E51229DE84F36CA74DCF8DF5D7869DE1B390FEF2C6FB9A75E2C1B06D9227ED7A",
+    "chunking_profile_ids": [
+      "fixed_512_v1",
+      "parent_child_v1"
+    ],
+    "retrieval_method_ids": [
+      "DENSE_COSINE_EXACT_V1",
+      "BM25_KO_MIXED_V1"
+    ],
+    "fixed_controls": {
+      "top_k": 5,
+      "product_filter": "EXACT_PRODUCT_FILTER",
+      "scope_policy_id": "MODEL_CAPABILITY_SCOPE_V1",
+      "intent_policy_id": "MANUAL_DOMAIN_INTENT_V1"
+    }
+  },
+  "fixed_embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "device": "cpu",
+    "normalize_embeddings": true,
+    "local_files_only": true
+  },
+  "performance": {
+    "query_embedding_seconds": 1.892146,
+    "total_seconds": 8.760143,
+    "case_result_count": 140
+  },
+  "runtime": {
+    "python": "3.13.13",
+    "os": "Windows 11",
+    "provider_class": "LocalBgeM3Provider"
+  },
+  "git": {
+    "commit_sha": "f052b6eb6800fd419569fe2d1946dfae24653c17",
+    "branch": "codex/dongyoon-reconcile",
+    "working_tree_clean": false,
+    "changed_path_count": 5
+  },
+  "publication_limits": [
+    "Gold 60건 2인 검수 전 Draft 비교로만 사용한다.",
+    "BM25 Analyzer와 k1·b는 DEV용 초기값이며 통계적으로 최적화된 운영값이 아니다.",
+    "Dense 0.5와 BM25 0점 초과는 점수 척도가 달라 절대 Score를 직접 비교하지 않는다.",
+    "Hybrid는 BM25가 Dense 실패 Case를 보완하는지 확인한 뒤 별도 B2-4에서 비교한다.",
+    "운영 Search·Scope Filter·FastAPI Pipeline은 변경하지 않는다."
+  ]
+}

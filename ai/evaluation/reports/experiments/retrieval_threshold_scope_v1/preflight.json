@@ -1,0 +1,72 @@
+{
+  "preflight_id": "A3-1-FULL-CORPUS-BASELINE-PREFLIGHT",
+  "status": "READY",
+  "generated_at": "2026-08-11T02:15:26.500746+00:00",
+  "profile": {
+    "path": "ai/configs/experiments/full_corpus_baseline_v1.yaml",
+    "sha256": "E1B38207CD291B67CBF64155F11BCDF7DE308650C8E742CA4D332A2F6FA255EA"
+  },
+  "checks": [
+    {
+      "name": "dataset_hash",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "records": 60,
+        "sha256": "DDB20527D452E1C246CA821CFA7D4EC159B13E24597FDEF685C19136065E50FD"
+      }
+    },
+    {
+      "name": "corpus_hash",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "records": 96,
+        "sha256": "6947CDE3543BB080394D4C953BE22A43A76ED80F4686ED5360B30628109AB240"
+      }
+    },
+    {
+      "name": "corpus_count",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "JAC104_ONLY": 44,
+        "IAC425_ONLY": 52
+      }
+    },
+    {
+      "name": "gold_two_person_review",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "pending_records": 60,
+        "allow_draft_gold": true,
+        "official_metrics_allowed": false
+      }
+    },
+    {
+      "name": "embedding_runtime_dependencies",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "missing_modules": []
+      }
+    },
+    {
+      "name": "embedding_model_snapshot",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "model": "BAAI/bge-m3",
+        "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+      }
+    }
+  ],
+  "blockers": [],
+  "decision": {
+    "draft_baseline_execution": "READY",
+    "official_phase_b_baseline": "BLOCKED",
+    "dependency_install_performed": false,
+    "docker_used": false
+  }
+}

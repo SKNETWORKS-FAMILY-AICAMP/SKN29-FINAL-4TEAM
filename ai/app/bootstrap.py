@@ -1,5 +1,9 @@
 """FastAPI 애플리케이션 팩토리 모듈."""
 
+import asyncio
+import os
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .interfaces.http.error_handlers import register_error_handlers
@@ -8,6 +12,27 @@ from .interfaces.http.routes.experiment_playground_routes import router as exper
 from .interfaces.http.routes.health_routes import router as health_router
 from .interfaces.http.runtime_policy import get_runtime_policy
 from .interfaces.http.structured_logging import configure_structured_logging
+from .orchestration.pipeline_router import warmup_configured_search_service
+
+
+EXPERIMENT_PLAYGROUND_ENV = "AI_ENABLE_EXPERIMENT_PLAYGROUND"
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    """Local RAG 모델을 요청 Timeout 밖인 애플리케이션 시작 단계에서 준비한다."""
+
+    if os.getenv("AI_VECTOR_DSN"):
+        await asyncio.to_thread(warmup_configured_search_service)
+    yield
+
+
+def experiment_playground_enabled() -> bool:
+    """Keep LAB-only routes closed unless the process explicitly opts in."""
+
+    return os.getenv(EXPERIMENT_PLAYGROUND_ENV, "false").strip().lower() in {
+        "1", "true", "yes", "on",
+    }
 
 
 def create_app() -> FastAPI:
@@ -19,7 +44,8 @@ def create_app() -> FastAPI:
         description="정수기 구독 고객 케어 및 A/S 업무 지원 시스템 - AI/RAG 분석 서비스",
         version="1.0.0",
         docs_url="/docs",
-        redoc_url="/redoc"
+        redoc_url="/redoc",
+        lifespan=_lifespan,
     )
 
     # 1. CORS 설정
@@ -37,6 +63,7 @@ def create_app() -> FastAPI:
     # 3. 라우터 등록
     app.include_router(health_router)
     app.include_router(analysis_router)
-    app.include_router(experiment_playground_router)
+    if experiment_playground_enabled():
+        app.include_router(experiment_playground_router)
 
     return app
