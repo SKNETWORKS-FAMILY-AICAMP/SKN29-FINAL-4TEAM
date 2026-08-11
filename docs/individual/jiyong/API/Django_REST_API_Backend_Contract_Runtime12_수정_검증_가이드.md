@@ -4,6 +4,8 @@
 >
 > 코드 커밋: [`e290fe3d43ae5adf2a6ab758cbf2e19922046cd1`](https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/commit/e290fe3d43ae5adf2a6ab758cbf2e19922046cd1)
 >
+> Data 정합 커밋: [`5b60fd18ba72ff7272be8621e72710b8cbdaa391`](https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/commit/5b60fd18ba72ff7272be8621e72710b8cbdaa391)
+>
 > 기준 `jiyong`: `5669960200207f134af8ac2e2a6b1c4e267e478e`
 > 상태: `AUTHOR_VERIFIED / INDEPENDENT_QA_PENDING / PM_ACK_PENDING`
 
@@ -80,6 +82,7 @@ PM이 발견한 Backend 소비 불일치 두 건을 승인 계약에 맞췄다.
 | Migration 왕복 | 전체 적용 → 0011 역방향 → 0012 재적용 → 미적용 0 |
 | Backend 전체 | `993 passed / 19 skipped / 0 failed` |
 | 격리 PostgreSQL 16.14 | Row Lock `5 passed`; Cancel Runtime·Contract `25 passed`; mandatory skip 0 |
+| Data CI 동등 Gate | Unit `76 passed`; deterministic rebuild PASS; Data Drift 0 |
 | Git whitespace | `git diff --check` PASS |
 
 PostgreSQL은 `pgvector/pgvector:0.8.6-pg16-bookworm` 일회성 컨테이너와
@@ -100,6 +103,10 @@ $py = (Resolve-Path "$repo/backend/.venv/Scripts/python.exe").Path
 & $py -B scripts/contracts/validate_examples.py
 & $py -B scripts/contracts/validate_codes.py
 & $py -B -m pytest -q -p no:cacheprovider tests/contract tests/safety/test_week5_ai_safety_crosswalk.py
+& $py -B -m unittest discover -s data/tools/tests -v
+& $py -B data/tools/pipeline.py qa --verify-rebuild
+& $py -B scripts/data/refresh_source_hashes.py --check
+git diff --exit-code -- data
 
 Set-Location "$repo/backend"
 & $py -B -m pytest -q -rs -p no:cacheprovider tests/unit/workflow/test_allowed_action_resolver.py tests/api/test_cancel_inquiry_contract.py tests/api/test_t023_cancel_inquiry.py tests/api/test_t022_submit_symptom.py tests/api/test_t022_submit_followup_answers.py tests/api/test_consultation_visit_runtime.py tests/unit/ai_integration/test_inquiry_ai_service.py

@@ -17,6 +17,7 @@
 - State Machine, Crosswalk, OpenAPI, Example, Code Registry Validator PASS
 - Backend 표적 `128 passed / 5 skipped`, 전체 `993 passed / 19 skipped`
 - 격리 PostgreSQL 16.14 Row Lock 5건과 취소 Runtime·계약 25건 PASS
+- Data CI Unit 76건·결정적 Rebuild·Source Hash·생성물 Drift Gate PASS
 
 ### Boundary
 
@@ -24,6 +25,8 @@
   확인 전 `PASS_WITH_CONTRACT_OWNER_CONFIRMATION`으로 유지한다.
 - 코드 커밋 `e290fe3d43ae5adf2a6ab758cbf2e19922046cd1`은 작성자 검증
   후보이며 독립 QA와 PM 소비 ACK를 대신하지 않는다.
+- Inquiry Model Source Hash와 파생 Manifest는
+  `5b60fd18ba72ff7272be8621e72710b8cbdaa391`에서 정합화했다.
 
 ## 2026-08-11 — Backend 소비 의미 불일치 확인
 
