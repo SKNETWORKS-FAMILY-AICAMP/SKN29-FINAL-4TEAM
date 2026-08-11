@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -71,14 +73,18 @@ fun GuidanceScreen(
     val viewModel: GuidanceViewModel = viewModel(
         factory = VmFactory { _ ->
             GuidanceViewModel(
-                inquiryId,
-                scenario,
-                guidanceRepository,
+                inquiryId = inquiryId,
+                scenario = scenario,
+                repository = guidanceRepository,
+                inquiryRepository = WaterCareCore.inquiryRepository,
             )
         }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val cancelState by
+        viewModel.cancelState.collectAsStateWithLifecycle()
     var consultationNotice by remember { mutableStateOf(false) }
+    var showCancelDialog by remember { mutableStateOf(false) }
     val requestConsultation = {
         consultationNotice = true
     }
@@ -101,6 +107,118 @@ fun GuidanceScreen(
                 allowedActions = submittedAllowedActions,
                 idempotentReplay = submittedIdempotentReplay,
             )
+        }
+
+        val cancelAction = submittedAllowedActions.firstOrNull {
+            it.normalizedCode ==
+                InquiryActionLabels.CANCEL_INQUIRY
+        }
+
+        if (
+            cancelAction != null &&
+            cancelState !is CancelInquiryUiState.Success
+        ) {
+            SectionCard("문의 관리") {
+                WorkflowActionButton(
+                    action = cancelAction,
+                    enabled =
+                        submittedStateVersion != null &&
+                            cancelState !is
+                                CancelInquiryUiState.Cancelling,
+                    onClick = { showCancelDialog = true },
+                )
+                Text(
+                    "Backend가 허용한 문의에서만 취소할 수 있습니다.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color =
+                        MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        when (val currentCancel = cancelState) {
+            CancelInquiryUiState.Idle -> Unit
+
+            CancelInquiryUiState.Cancelling ->
+                LoadingBlock("문의를 취소하는 중입니다")
+
+            is CancelInquiryUiState.Success ->
+                SectionCard("문의 취소 완료") {
+                    LiquidGlassPill("취소됨")
+                    Text(
+                        "현재 상태 · " +
+                            InquiryLabels.status(
+                                currentCancel.state
+                            ) +
+                            " (" + currentCancel.state + ")"
+                    )
+                    Text(
+                        "상태 버전 · " +
+                            currentCancel.stateVersion
+                    )
+                    if (currentCancel.idempotentReplay) {
+                        Text(
+                            "동일 요청의 기존 취소 결과를 안전하게 재사용했습니다.",
+                            style =
+                                MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    LiquidGlassButton(
+                        text = "홈으로",
+                        onClick = onDone,
+                        accent = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
+            is CancelInquiryUiState.Conflict ->
+                SectionCard("문의 상태가 변경되었습니다") {
+                    Text(currentCancel.message)
+                    currentCancel.currentStatus?.let { status ->
+                        Text(
+                            "현재 상태 · " +
+                                InquiryLabels.status(status) +
+                                " (" + status + ")"
+                        )
+                    }
+                    currentCancel.currentStateVersion?.let { version ->
+                        Text("최신 상태 버전 · $version")
+                    }
+                    if (currentCancel.canRetry) {
+                        LiquidGlassButton(
+                            text = "최신 상태로 문의 취소 다시 시도",
+                            onClick =
+                                viewModel::retryCancelAfterConflict,
+                            accent = false,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(
+                                    "retryCancelAfterConflict"
+                                ),
+                        )
+                    } else {
+                        Text(
+                            "현재 Backend 허용 행동에는 문의 취소가 없습니다.",
+                            style =
+                                MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+
+            is CancelInquiryUiState.Error ->
+                ErrorCard(
+                    currentCancel.message,
+                    if (currentCancel.retryable) {
+                        {
+                            viewModel.cancelInquiry(
+                                stateVersion =
+                                    submittedStateVersion,
+                            )
+                        }
+                    } else {
+                        null
+                    },
+                )
         }
 
         when (val current = state) {
@@ -152,6 +270,56 @@ fun GuidanceScreen(
                     "상담 요청 API가 아직 제공되지 않아 실제 요청을 보내지 않았습니다."
                 )
             }
+        }
+
+        if (showCancelDialog) {
+            val action = submittedAllowedActions.firstOrNull {
+                it.normalizedCode ==
+                    InquiryActionLabels.CANCEL_INQUIRY
+            }
+            AlertDialog(
+                onDismissRequest = {
+                    showCancelDialog = false
+                },
+                title = {
+                    Text("문의를 취소할까요?")
+                },
+                text = {
+                    Text(
+                        action?.confirmationMessage
+                            ?.takeIf(String::isNotBlank)
+                            ?: "취소 후에는 현재 문의 흐름을 계속 진행할 수 없습니다."
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showCancelDialog = false
+                            viewModel.cancelInquiry(
+                                stateVersion =
+                                    submittedStateVersion,
+                                reasonCode =
+                                    "CUSTOMER_REQUEST",
+                            )
+                        },
+                        modifier =
+                            Modifier.testTag(
+                                "confirmCancelInquiry"
+                            ),
+                    ) {
+                        Text("문의 취소")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showCancelDialog = false
+                        }
+                    ) {
+                        Text("돌아가기")
+                    }
+                },
+            )
         }
     }
 }

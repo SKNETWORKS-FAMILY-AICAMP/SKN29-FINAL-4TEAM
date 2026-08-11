@@ -293,6 +293,16 @@ fun WorkflowActionButton(
                 .testTag("requestConsultation"),
         )
 
+        InquiryActionLabels.CANCEL_INQUIRY -> LiquidGlassButton(
+            text = action.displayLabel,
+            onClick = onClick,
+            enabled = enabled,
+            accent = false,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("cancelInquiry"),
+        )
+
         else -> Unit
     }
 }
