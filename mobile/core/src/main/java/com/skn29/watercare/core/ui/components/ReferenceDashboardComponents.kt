@@ -76,46 +76,36 @@ data class ReferenceDashboardPalette(
 )
 
 val CustomerReferencePalette = ReferenceDashboardPalette(
-    accent = Color(0xFF248CFF),
-    accentSecondary = Color(0xFF5D6BFF),
-    accentSoft = Color(0x33248CFF),
-    accentSoftSecondary = Color(0x285D6BFF),
+    accent = Color(0xFF0D7CFF),
+    accentSecondary = Color(0xFF28C5F5),
+    accentSoft = Color(0x331677FF),
+    accentSoftSecondary = Color(0x2819C7D9),
     backgroundStart = Color(0xFFF8FCFF),
-    backgroundEnd = Color(0xFFF7F4FF),
-    textStrong = Color(0xFF12262B),
-    textMuted = Color(0xFF61747C),
-    success = Color(0xFF32BE9B),
+    backgroundEnd = Color(0xFFF4FBFF),
+    textStrong = Color(0xFF0A2148),
+    textMuted = Color(0xFF55738A),
+    success = Color(0xFF22B998),
     warning = Color(0xFFE2A141),
     danger = Color(0xFFE95570),
 )
 
 val TechnicianReferencePalette = ReferenceDashboardPalette(
-    accent = Color(0xFF0FB9AA),
-    accentSecondary = Color(0xFF42D7C9),
-    accentSoft = Color(0x330FB9AA),
-    accentSoftSecondary = Color(0x2842D7C9),
+    accent = Color(0xFF00AFA9),
+    accentSecondary = Color(0xFF268DDB),
+    accentSoft = Color(0x330AB7B9),
+    accentSoftSecondary = Color(0x282C95FF),
     backgroundStart = Color(0xFFF7FFFD),
-    backgroundEnd = Color(0xFFF2FAFC),
-    textStrong = Color(0xFF123136),
-    textMuted = Color(0xFF5F777A),
+    backgroundEnd = Color(0xFFF3FAFF),
+    textStrong = Color(0xFF0B3040),
+    textMuted = Color(0xFF56757B),
     success = Color(0xFF18B8A8),
     warning = Color(0xFFE5A146),
     danger = Color(0xFFEA5B70),
 )
 
-private val ReferenceWaterDropPanelShape = RoundedCornerShape(
-    topStart = 38.dp,
-    topEnd = 58.dp,
-    bottomEnd = 30.dp,
-    bottomStart = 48.dp,
-)
+private val ReferenceWaterDropPanelShape = RoundedCornerShape(30.dp)
 
-private val ReferenceWaterDropTileShape = RoundedCornerShape(
-    topStart = 26.dp,
-    topEnd = 38.dp,
-    bottomEnd = 20.dp,
-    bottomStart = 32.dp,
-)
+private val ReferenceWaterDropTileShape = RoundedCornerShape(26.dp)
 
 data class ReferenceStatusItem(
     @DrawableRes val iconRes: Int,
@@ -169,9 +159,9 @@ fun ReferenceDashboardScaffold(
                             .fillMaxWidth()
                             .navigationBarsPadding()
                             .padding(
-                                start = 14.dp,
-                                end = 14.dp,
-                                bottom = 8.dp,
+                                start = 12.dp,
+                                end = 12.dp,
+                                bottom = 7.dp,
                             ),
                     ) {
                         ReferenceBottomNavigation(
@@ -190,25 +180,15 @@ fun ReferenceDashboardScaffold(
                     .padding(
                         start = 16.dp,
                         end = 16.dp,
-                        top = 14.dp,
-                        bottom = 18.dp,
+                        top = 12.dp,
+                        bottom = 112.dp,
                     ),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Text(
-                    title,
-                    color = palette.textStrong,
-                    fontFamily = FontFamily.SansSerif,
-                    fontSize = 28.sp,
-                    lineHeight = 34.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = (-0.3).sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
                 ReferenceDashboardHeader(
                     roleLabel = roleLabel,
                     palette = palette,
+                    title = title,
                     onNotification = onNotification,
                     onSupport = onSupport,
                     notificationEnabled = notificationEnabled,
@@ -400,24 +380,103 @@ fun ReferenceBackendStatusCard(
 }
 
 @Composable
+private fun ReferenceBrandMark(
+    palette: ReferenceDashboardPalette,
+) {
+    Canvas(modifier = Modifier.size(44.dp)) {
+        val droplet = Path().apply {
+            moveTo(size.width * 0.50f, size.height * 0.05f)
+            cubicTo(
+                size.width * 0.30f,
+                size.height * 0.30f,
+                size.width * 0.12f,
+                size.height * 0.50f,
+                size.width * 0.12f,
+                size.height * 0.68f,
+            )
+            cubicTo(
+                size.width * 0.12f,
+                size.height * 0.88f,
+                size.width * 0.29f,
+                size.height * 0.98f,
+                size.width * 0.50f,
+                size.height * 0.98f,
+            )
+            cubicTo(
+                size.width * 0.71f,
+                size.height * 0.98f,
+                size.width * 0.88f,
+                size.height * 0.88f,
+                size.width * 0.88f,
+                size.height * 0.68f,
+            )
+            cubicTo(
+                size.width * 0.88f,
+                size.height * 0.50f,
+                size.width * 0.70f,
+                size.height * 0.30f,
+                size.width * 0.50f,
+                size.height * 0.05f,
+            )
+            close()
+        }
+
+        drawPath(
+            path = droplet,
+            brush = Brush.linearGradient(
+                listOf(
+                    palette.accent,
+                    palette.accentSecondary,
+                )
+            ),
+        )
+        drawCircle(
+            color = Color.White.copy(alpha = 0.82f),
+            radius = size.minDimension * 0.17f,
+            center = Offset(
+                size.width * 0.43f,
+                size.height * 0.59f,
+            ),
+        )
+    }
+}
+
+@Composable
 fun ReferenceDashboardHeader(
     roleLabel: String,
     palette: ReferenceDashboardPalette,
+    title: String = "정수기 딜러",
     onNotification: () -> Unit = {},
     onSupport: () -> Unit = {},
     notificationEnabled: Boolean = false,
     supportEnabled: Boolean = false,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 2.dp, vertical = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ReferenceRoleChip(
-            roleLabel = roleLabel,
-            palette = palette,
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            ReferenceBrandMark(palette)
+            Text(
+                title,
+                color = palette.textStrong,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 26.sp,
+                lineHeight = 32.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = (-0.4).sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ReferenceSquareIconButton(
                 icon = ReferenceHeaderIcon.Notification,
                 palette = palette,
@@ -446,89 +505,81 @@ fun ReferenceHeroCard(
     @DrawableRes imageRes: Int,
     palette: ReferenceDashboardPalette,
     modifier: Modifier = Modifier,
+    roleLabel: String? = null,
+    imageEmphasis: Float = 1f,
 ) {
     ReferenceGlassPanel(
         modifier = modifier.fillMaxWidth(),
         palette = palette,
         strong = true,
-        contentPadding = PaddingValues(18.dp),
+        contentPadding = PaddingValues(
+            horizontal = 18.dp,
+            vertical = 18.dp,
+        ),
     ) {
         BoxWithConstraints(
             modifier = Modifier.fillMaxWidth(),
         ) {
             val compact = maxWidth < 360.dp
-            val imageSize = if (compact) 118.dp else 148.dp
-            val greetingSize = if (compact) 20.sp else 23.sp
+            val imageSize = (
+                if (compact) 148.dp else 180.dp
+            ) * imageEmphasis.coerceIn(0.94f, 1.12f)
+            val heroHeight = if (compact) 214.dp else 242.dp
+            val firstLine = greeting.substringBefore("\n")
+            val secondLine = greeting.substringAfter("\n", "")
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = if (compact) 218.dp else 232.dp),
-                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                    .heightIn(min = heroHeight),
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
+                    if (!roleLabel.isNullOrBlank()) {
+                        ReferenceRoleChip(
+                            roleLabel = roleLabel,
+                            palette = palette,
+                        )
+                    }
+
                     Text(
-                        greeting,
+                        firstLine,
                         color = palette.textStrong,
                         fontFamily = FontFamily.SansSerif,
-                        fontSize = greetingSize,
+                        fontSize = if (compact) 21.sp else 24.sp,
                         lineHeight = if (compact) 27.sp else 30.sp,
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.2).sp,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
-                        subtitle,
-                        color = palette.textMuted,
-                        style = MaterialTheme.typography.bodySmall,
-                        lineHeight = 19.sp,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        metricLabel,
-                        color = palette.textMuted,
-                        style = MaterialTheme.typography.labelMedium,
+                        letterSpacing = (-0.35).sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Row(
-                        verticalAlignment = Alignment.Bottom,
-                    ) {
+
+                    if (secondLine.isNotBlank()) {
                         Text(
-                            metricValue,
+                            secondLine,
                             color = palette.accent,
                             fontFamily = FontFamily.SansSerif,
-                            fontSize = if (compact) 30.sp else 34.sp,
-                            lineHeight = 38.sp,
+                            fontSize = if (compact) 28.sp else 32.sp,
+                            lineHeight = if (compact) 33.sp else 38.sp,
                             fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                        )
-                        Text(
-                            metricUnit,
-                            modifier = Modifier.padding(
-                                start = 5.dp,
-                                bottom = 4.dp,
-                            ),
-                            color = palette.textMuted,
-                            style = MaterialTheme.typography.bodySmall,
+                            letterSpacing = (-0.55).sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
-                    ReferenceProgressBar(
-                        progress = progress,
-                        palette = palette,
-                    )
-                    ReferencePill(
-                        text = footnote,
-                        palette = palette,
+
+                    Text(
+                        subtitle,
+                        color = palette.textMuted,
+                        fontSize = if (compact) 13.5.sp else 15.sp,
+                        lineHeight = if (compact) 20.5.sp else 23.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
 
@@ -543,19 +594,20 @@ fun ReferenceHeroCard(
                             .background(
                                 Brush.radialGradient(
                                     listOf(
-                                        Color.White.copy(alpha = 0.18f),
-                                        palette.accentSoft,
+                                        Color.White.copy(alpha = 0.46f),
+                                        palette.accentSoft.copy(alpha = 0.20f),
                                         Color.Transparent,
                                     )
                                 )
-                            )
+                            ),
                     )
+
                     Image(
                         painter = painterResource(imageRes),
                         contentDescription = null,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(3.dp),
+                            .padding(1.dp),
                         contentScale = ContentScale.Fit,
                     )
                 }
@@ -571,26 +623,31 @@ fun ReferenceSectionHeader(
     palette: ReferenceDashboardPalette,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Bottom,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             title,
             color = palette.textStrong,
             fontFamily = FontFamily.SansSerif,
-            fontSize = 19.sp,
+            fontSize = 20.sp,
             lineHeight = 24.sp,
-            fontWeight = FontWeight.SemiBold,
-            letterSpacing = (-0.1).sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = (-0.35).sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
+
         if (!trailing.isNullOrBlank()) {
             Text(
                 trailing,
-                color = palette.textMuted,
-                style = MaterialTheme.typography.bodySmall,
+                color = palette.accent.copy(alpha = 0.90f),
+                fontSize = 11.5.sp,
+                lineHeight = 15.sp,
+                fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -773,7 +830,7 @@ fun ReferenceBottomNavigation(
         modifier = Modifier.fillMaxWidth(),
         palette = palette,
         strong = true,
-        contentPadding = PaddingValues(6.dp),
+        contentPadding = PaddingValues(5.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -783,13 +840,14 @@ fun ReferenceBottomNavigation(
                 val interactionSource = remember {
                     MutableInteractionSource()
                 }
+
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp)
-                        .clip(RoundedCornerShape(17.dp))
+                        .height(60.dp)
+                        .clip(RoundedCornerShape(20.dp))
                         .graphicsLayer {
-                            alpha = if (item.enabled) 1f else 0.38f
+                            alpha = if (item.enabled) 1f else 0.62f
                         }
                         .clickable(
                             enabled = item.enabled,
@@ -800,15 +858,15 @@ fun ReferenceBottomNavigation(
                         )
                         .background(
                             if (item.selected) {
-                                Brush.linearGradient(
+                                Brush.verticalGradient(
                                     listOf(
-                                        palette.accent.copy(alpha = 0.18f),
-                                        palette.accentSoft.copy(alpha = 0.08f),
-                                        Color.Transparent,
+                                        Color.White.copy(alpha = 0.96f),
+                                        palette.accentSoft.copy(alpha = 0.20f),
+                                        Color.White.copy(alpha = 0.88f),
                                     )
                                 )
                             } else {
-                                Brush.linearGradient(
+                                Brush.verticalGradient(
                                     listOf(
                                         Color.Transparent,
                                         Color.Transparent,
@@ -816,29 +874,46 @@ fun ReferenceBottomNavigation(
                                 )
                             }
                         )
-                        .padding(vertical = 6.dp),
+                        .padding(vertical = 5.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
                     Image(
                         painter = painterResource(item.iconRes),
                         contentDescription = item.label,
-                        modifier = Modifier.size(25.dp),
+                        modifier = Modifier.size(24.dp),
                     )
+
                     Text(
                         item.label,
+                        modifier = Modifier.padding(top = 2.dp),
                         color = if (item.selected) {
                             palette.accent
                         } else {
                             palette.textMuted
                         },
-                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 11.sp,
+                        lineHeight = 12.sp,
                         fontWeight = if (item.selected) {
-                            FontWeight.SemiBold
+                            FontWeight.Bold
                         } else {
                             FontWeight.Medium
                         },
+                        maxLines = 1,
                     )
+
+                    if (item.selected) {
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 2.dp)
+                                .size(
+                                    width = 22.dp,
+                                    height = 2.5.dp,
+                                )
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(palette.accent)
+                        )
+                    }
                 }
             }
         }
@@ -860,9 +935,9 @@ fun ReferenceGlassPanel(
         ReferenceWaterDropPanelShape
     }
 
-    val surfaceHighlight = if (strong) 0.180f else 0.110f
-    val accentHighlight = if (strong) 0.140f else 0.085f
-    val glowAlpha = if (strong) 0.36f else 0.24f
+    val surfaceAlpha = if (strong) 0.945f else 0.885f
+    val accentAlpha = if (strong) 0.032f else 0.018f
+    val shadowAlpha = if (strong) 0.085f else 0.055f
 
     val borderBrush = if (danger) {
         Brush.linearGradient(
@@ -874,9 +949,9 @@ fun ReferenceGlassPanel(
     } else {
         Brush.linearGradient(
             listOf(
-                Color.White.copy(alpha = 0.99f),
-                palette.accent.copy(alpha = 0.96f),
-                palette.accentSecondary.copy(alpha = 0.88f),
+                Color.White.copy(alpha = 0.98f),
+                palette.accent.copy(alpha = 0.28f),
+                palette.accentSecondary.copy(alpha = 0.18f),
                 Color.White.copy(alpha = 0.94f),
             )
         )
@@ -888,21 +963,21 @@ fun ReferenceGlassPanel(
                 elevation = if (danger) {
                     4.dp
                 } else if (strong) {
-                    13.dp
-                } else {
                     8.dp
+                } else {
+                    5.dp
                 },
                 shape = shape,
                 ambientColor = if (danger) {
-                    palette.danger.copy(alpha = 0.16f)
+                    palette.danger.copy(alpha = 0.12f)
                 } else {
-                    palette.accent.copy(alpha = glowAlpha)
+                    palette.accent.copy(alpha = shadowAlpha)
                 },
                 spotColor = if (danger) {
-                    palette.danger.copy(alpha = 0.18f)
+                    palette.danger.copy(alpha = 0.14f)
                 } else {
                     palette.accentSecondary.copy(
-                        alpha = glowAlpha * 0.92f
+                        alpha = shadowAlpha * 0.80f
                     )
                 },
                 clip = false,
@@ -910,23 +985,19 @@ fun ReferenceGlassPanel(
             .clip(shape)
             .background(
                 if (danger) {
-                    Brush.linearGradient(
-                        listOf(Color.White, Color.White)
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.98f),
+                            Color.White.copy(alpha = 0.94f),
+                        )
                     )
                 } else {
                     Brush.verticalGradient(
                         listOf(
-                            Color.White.copy(alpha = surfaceHighlight),
-                            palette.accentSoft.copy(
-                                alpha = accentHighlight
-                            ),
-                            Color.White.copy(alpha = 0.045f),
-                            palette.accentSoftSecondary.copy(
-                                alpha = accentHighlight * 0.78f
-                            ),
-                            Color.Transparent,
+                            Color.White.copy(alpha = surfaceAlpha),
+                            palette.accentSoft.copy(alpha = accentAlpha),
                             Color.White.copy(
-                                alpha = surfaceHighlight * 0.58f
+                                alpha = surfaceAlpha * 0.96f
                             ),
                         )
                     )
@@ -934,76 +1005,40 @@ fun ReferenceGlassPanel(
             )
             .drawBehind {
                 if (!danger) {
-                    val radius = 38.dp.toPx()
-
-                    drawOval(
+                    drawLine(
                         color = Color.White.copy(
-                            alpha = if (strong) 0.38f else 0.26f
+                            alpha = if (strong) 0.88f else 0.72f
                         ),
-                        topLeft = Offset(
-                            x = size.width * 0.07f,
-                            y = size.height * 0.045f,
+                        start = Offset(
+                            x = size.width * 0.10f,
+                            y = 1.5.dp.toPx(),
                         ),
-                        size = Size(
-                            width = size.width * 0.36f,
-                            height = size.height * 0.16f,
+                        end = Offset(
+                            x = size.width * 0.76f,
+                            y = 1.5.dp.toPx(),
                         ),
+                        strokeWidth = 1.1.dp.toPx(),
+                        cap = StrokeCap.Round,
                     )
 
                     drawOval(
                         color = palette.accent.copy(
-                            alpha = if (strong) 0.140f else 0.090f
+                            alpha = if (strong) 0.028f else 0.016f
                         ),
                         topLeft = Offset(
-                            x = size.width * 0.62f,
-                            y = size.height * 0.62f,
+                            x = size.width * 0.72f,
+                            y = size.height * 0.68f,
                         ),
                         size = Size(
-                            width = size.width * 0.46f,
-                            height = size.height * 0.46f,
+                            width = size.width * 0.34f,
+                            height = size.height * 0.30f,
                         ),
-                    )
-
-                    drawRoundRect(
-                        brush = Brush.verticalGradient(
-                            listOf(
-                                Color.White.copy(alpha = 0.72f),
-                                Color.Transparent,
-                            ),
-                            endY = size.height * 0.40f,
-                        ),
-                        topLeft = Offset(
-                            x = 1.dp.toPx(),
-                            y = 1.dp.toPx(),
-                        ),
-                        size = Size(
-                            width = size.width - 2.dp.toPx(),
-                            height = size.height * 0.46f,
-                        ),
-                        cornerRadius = CornerRadius(radius, radius),
-                        style = Stroke(width = 1.dp.toPx()),
-                    )
-
-                    drawLine(
-                        color = Color.White.copy(
-                            alpha = if (strong) 0.62f else 0.44f
-                        ),
-                        start = Offset(
-                            x = size.width * 0.12f,
-                            y = 2.dp.toPx(),
-                        ),
-                        end = Offset(
-                            x = size.width * 0.78f,
-                            y = 2.dp.toPx(),
-                        ),
-                        strokeWidth = 1.35.dp.toPx(),
-                        cap = StrokeCap.Round,
                     )
                 }
             }
             .border(
                 BorderStroke(
-                    width = if (danger) 1.5.dp else 2.0.dp,
+                    width = if (danger) 1.5.dp else 1.05.dp,
                     brush = borderBrush,
                 ),
                 shape,
@@ -1288,15 +1323,15 @@ enabled: Boolean = true,
         modifier = Modifier
             .size(44.dp)
             .shadow(
-                elevation = 9.dp,
+                elevation = 6.dp,
                 shape = shape,
-                ambientColor = palette.accent.copy(alpha = 0.30f),
-                spotColor = palette.accentSecondary.copy(alpha = 0.28f),
+                ambientColor = palette.accent.copy(alpha = 0.18f),
+                spotColor = palette.accentSecondary.copy(alpha = 0.16f),
                 clip = false,
             )
             .clip(shape)
             .graphicsLayer {
-                alpha = if (enabled) 1f else 0.38f
+                alpha = if (enabled) 1f else 0.58f
             }
             .clickable(
                 enabled = enabled,
@@ -1308,7 +1343,7 @@ enabled: Boolean = true,
             .background(
                 Brush.radialGradient(
                     listOf(
-                        Color.White.copy(alpha = 0.34f),
+                        Color.White.copy(alpha = 0.72f),
                         palette.accentSoft.copy(alpha = 0.20f),
                         palette.accentSecondary.copy(alpha = 0.10f),
                         Color.Transparent,
@@ -1496,32 +1531,60 @@ private fun ReferenceStatusTile(
     modifier: Modifier = Modifier,
 ) {
     ReferenceGlassPanel(
-        modifier = modifier.height(118.dp),
+        modifier = modifier.height(108.dp),
         palette = palette,
-        contentPadding = PaddingValues(7.dp),
+        danger = !item.healthy &&
+            item.label.contains("긴급"),
+        contentPadding = PaddingValues(
+            horizontal = 6.dp,
+            vertical = 8.dp,
+        ),
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(1.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Image(
-                painter = painterResource(item.iconRes),
-                contentDescription = item.label,
-                modifier = Modifier.size(34.dp),
-            )
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.radialGradient(
+                            listOf(
+                                Color.White.copy(alpha = 0.94f),
+                                palette.accentSoft.copy(alpha = 0.16f),
+                            )
+                        )
+                    )
+                    .border(
+                        BorderStroke(
+                            1.dp,
+                            Color.White.copy(alpha = 0.96f),
+                        ),
+                        CircleShape,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Image(
+                    painter = painterResource(item.iconRes),
+                    contentDescription = item.label,
+                    modifier = Modifier.size(28.dp),
+                )
+            }
+
             Text(
                 item.label,
                 color = palette.textMuted,
                 fontFamily = FontFamily.SansSerif,
-                fontSize = 10.sp,
+                fontSize = 10.5.sp,
                 lineHeight = 13.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
-                minLines = 2,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+
             Text(
                 item.value,
                 color = if (item.healthy) {
@@ -1530,9 +1593,9 @@ private fun ReferenceStatusTile(
                     palette.danger
                 },
                 fontFamily = FontFamily.SansSerif,
-                fontSize = 13.sp,
+                fontSize = 14.sp,
                 lineHeight = 16.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.ExtraBold,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
@@ -1558,15 +1621,15 @@ private fun ReferenceActionTile(
     Column(
         modifier = modifier
             .then(tagModifier)
-            .height(132.dp)
+            .height(118.dp)
             .shadow(
-                elevation = if (item.enabled) 10.dp else 2.dp,
+                elevation = if (item.enabled) 5.dp else 1.dp,
                 shape = shape,
                 ambientColor = palette.accent.copy(
-                    alpha = if (item.enabled) 0.32f else 0.07f
+                    alpha = if (item.enabled) 0.10f else 0.03f
                 ),
                 spotColor = palette.accentSecondary.copy(
-                    alpha = if (item.enabled) 0.28f else 0.06f
+                    alpha = if (item.enabled) 0.08f else 0.02f
                 ),
                 clip = false,
             )
@@ -1582,89 +1645,87 @@ private fun ReferenceActionTile(
                 Brush.verticalGradient(
                     listOf(
                         Color.White.copy(
-                            alpha = if (item.enabled) 0.24f else 0.060f
+                            alpha = if (item.enabled) 0.95f else 0.78f
                         ),
                         palette.accentSoft.copy(
-                            alpha = if (item.enabled) 0.180f else 0.040f
+                            alpha = if (item.enabled) 0.075f else 0.035f
                         ),
-                        palette.accentSecondary.copy(
-                            alpha = if (item.enabled) 0.100f else 0.025f
-                        ),
-                        Color.Transparent,
-                        palette.accentSoftSecondary.copy(
-                            alpha = if (item.enabled) 0.120f else 0.030f
+                        Color.White.copy(
+                            alpha = if (item.enabled) 0.82f else 0.58f
                         ),
                     )
                 )
             )
-            .drawBehind {
-                drawOval(
-                    color = Color.White.copy(
-                        alpha = if (item.enabled) 0.34f else 0.08f
-                    ),
-                    topLeft = Offset(
-                        x = size.width * 0.12f,
-                        y = size.height * 0.06f,
-                    ),
-                    size = Size(
-                        width = size.width * 0.48f,
-                        height = size.height * 0.20f,
-                    ),
-                )
-            }
             .border(
                 BorderStroke(
-                    width = 1.70.dp,
+                    width = 1.15.dp,
                     brush = Brush.linearGradient(
                         listOf(
-                            Color.White.copy(
-                                alpha = if (item.enabled) 0.94f else 0.28f
-                            ),
+                            Color.White.copy(alpha = 0.98f),
                             palette.accent.copy(
-                                alpha = if (item.enabled) 0.92f else 0.28f
+                                alpha = if (item.enabled) 0.28f else 0.10f
                             ),
-                            palette.accentSecondary.copy(
-                                alpha = if (item.enabled) 0.82f else 0.24f
-                            ),
-                            Color.White.copy(
-                                alpha = if (item.enabled) 0.78f else 0.24f
-                            ),
+                            Color.White.copy(alpha = 0.92f),
                         )
                     ),
                 ),
                 shape,
             )
-            .padding(7.dp),
+            .padding(
+                horizontal = 5.dp,
+                vertical = 7.dp,
+            ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Image(
-            painter = painterResource(item.iconRes),
-            contentDescription = item.label,
-            modifier = Modifier.size(36.dp),
-            alpha = if (item.enabled) 1f else 0.45f,
-        )
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.98f),
+                            palette.accentSoft.copy(
+                                alpha = if (item.enabled) 0.18f else 0.06f
+                            ),
+                        )
+                    )
+                )
+                .border(
+                    BorderStroke(
+                        1.dp,
+                        Color.White.copy(alpha = 0.96f),
+                    ),
+                    CircleShape,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = painterResource(item.iconRes),
+                contentDescription = item.label,
+                modifier = Modifier.size(32.dp),
+                alpha = if (item.enabled) 1f else 0.68f,
+            )
+        }
+
         Text(
-            text = if (item.enabled) {
-                "${item.label}  ›"
-            } else {
-                item.label
-            },
-            modifier = Modifier.padding(top = 3.dp),
+            text = item.label,
+            modifier = Modifier.padding(top = 5.dp),
             color = if (item.enabled) {
-                palette.accent
+                palette.textStrong
             } else {
                 palette.textMuted
             },
             fontFamily = FontFamily.SansSerif,
-            fontSize = 10.5.sp,
-            lineHeight = 14.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontSize = 11.5.sp,
+            lineHeight = 15.sp,
+            fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            minLines = 2,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
+
         if (item.subtitle.isNotBlank()) {
             Text(
                 text = if (item.enabled) {
@@ -1672,8 +1733,10 @@ private fun ReferenceActionTile(
                 } else {
                     "준비 중"
                 },
-                color = palette.textMuted,
-                style = MaterialTheme.typography.labelSmall,
+                color = palette.textMuted.copy(alpha = 0.78f),
+                fontSize = 9.5.sp,
+                lineHeight = 12.sp,
+                fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -1767,7 +1830,7 @@ private fun ReferenceGlassImage(
                 Brush.linearGradient(
                     listOf(
                         Color.White.copy(alpha = 0.13f),
-                        palette.accentSoft.copy(alpha = 0.08f),
+                        palette.accentSoft.copy(alpha = 0.025f),
                         palette.accentSecondary.copy(alpha = 0.04f),
                     )
                 )
@@ -1817,7 +1880,7 @@ private fun ReferencePearlBackground(
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
-                alpha = 1.00f,
+                alpha = 0.40f,
             )
         }
 
@@ -1841,7 +1904,7 @@ private fun ReferencePearlBackground(
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
-                            palette.accentSoft.copy(alpha = 0.16f),
+                            palette.accentSoft.copy(alpha = 0.025f),
                             Color.Transparent,
                         ),
                         radius = 760f,

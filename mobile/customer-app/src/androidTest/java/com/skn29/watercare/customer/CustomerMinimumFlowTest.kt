@@ -11,7 +11,12 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.v2.runAndroidComposeUiTest
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
+import androidx.lifecycle.Lifecycle
+import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.model.ActiveInquirySummary
@@ -32,14 +37,56 @@ import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeContent
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeUiState
 import org.junit.Assert.assertTrue
 import com.skn29.watercare.customer.testing.ComposeTestActivity
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+
+private class ManualComposeTestScope(
+    private val delegate: ComposeTestRule,
+    private val scenario: ActivityScenario<ComposeTestActivity>,
+) : ComposeTestRule by delegate {
+    fun setContent(
+        content: @Composable () -> Unit,
+    ) {
+        if (scenario.state != Lifecycle.State.RESUMED) {
+            scenario.moveToState(Lifecycle.State.RESUMED)
+        }
+
+        scenario.onActivity { activity ->
+            activity.setContent {
+                content()
+            }
+        }
+
+        delegate.waitForIdle()
+    }
+}
 @RunWith(AndroidJUnit4::class)
 class CustomerMinimumFlowTest {
+    @get:Rule
+    val composeTestRule = createEmptyComposeRule()
+
+    private fun runManualComposeUiTest(
+        block: ManualComposeTestScope.() -> Unit,
+    ) {
+        val scenario = ActivityScenario.launch(ComposeTestActivity::class.java)
+        try {
+            if (scenario.state != Lifecycle.State.RESUMED) {
+                scenario.moveToState(Lifecycle.State.RESUMED)
+            }
+
+            ManualComposeTestScope(
+                delegate = composeTestRule,
+                scenario = scenario,
+            ).block()
+        } finally {
+            scenario.close()
+        }
+    }
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun offlinePreview_opensCust01AndCust02() = runAndroidComposeUiTest<ComposeTestActivity> {
+    fun offlinePreview_opensCust01AndCust02() = runManualComposeUiTest {
         setContent {
             var showIntake by remember { mutableStateOf(false) }
 
@@ -85,7 +132,7 @@ class CustomerMinimumFlowTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun dangerGuidance_hidesResolvedAction() = runAndroidComposeUiTest<ComposeTestActivity> {
+    fun dangerGuidance_hidesResolvedAction() = runManualComposeUiTest {
         setContent {
             var showDangerGuidance by remember { mutableStateOf(false) }
 
@@ -139,7 +186,7 @@ class CustomerMinimumFlowTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun conflict_showsOnlySupportedSubmitRetryAction() = runAndroidComposeUiTest<ComposeTestActivity> {
+    fun conflict_showsOnlySupportedSubmitRetryAction() = runManualComposeUiTest {
         var retried = false
 
         setContent {
