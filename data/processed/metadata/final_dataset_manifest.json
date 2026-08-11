@@ -283,7 +283,7 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 18457,
-      "sha256": "C5D1107E3032CBB958F1172CD88E07149C74F23891B67FC5699ADD5CBBEDAECB"
+      "sha256": "97981C323F6D0DF169E40F69D5D1514449B90C0A22C85F3AB0E179AA6AFCAB9B"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -360,7 +360,7 @@
     {
       "path": "schemas/config/ragEvaluationCases.schema.json",
       "size_bytes": 6443,
-      "sha256": "99AB170BCB26F799CCC0977AFC05D8B59F8E1958099B45C9BD1BA47136A12224"
+      "sha256": "E2523FDE92DDC84D37B397D87032460BA27DC90F551591830804FCAD2893996B"
     },
     {
       "path": "schemas/config/representativeCase.schema.json",
@@ -734,7 +734,7 @@
     {
       "path": "config/rag/jac104_retrieval_cases.json",
       "size_bytes": 8840,
-      "sha256": "6E9F202F902F965B0C6875D8FCDF26333651E680019CC8B34416E8A444A12E4F"
+      "sha256": "FCF2B7A391A13216B41DF983061F4672AC266EC9C14BA3274AB7AD377B9B2235"
     },
     {
       "path": "config/synthetic/scenarios.json",
