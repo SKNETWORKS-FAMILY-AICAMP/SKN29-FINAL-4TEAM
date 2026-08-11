@@ -1,7 +1,7 @@
 # A2 Gold Evaluation Dataset v1 구축·QA 결과
 
-> 실행일: 2026-08-10 KST  
-> Dataset: `RAG-GOLD-V1` / `1.0.0-draft.1`  
+> 실행일: 2026-08-11 KST
+> Dataset: `RAG-GOLD-V1` / `1.0.0-draft.2`
 > 판정: `STRUCTURAL_PASS_HUMAN_REVIEW_PENDING`
 
 ## 범위
@@ -78,13 +78,22 @@ Evidence 단위로 검색 성공 여부를 판정하기 위해서다.
 | 근거 없음·Evidence 정책 불일치 | 0 |
 | Safety 위험도·중단 정책 오류 | 0 |
 | Manifest Dataset·Schema Hash 불일치 | 0 |
-| 전용 회귀 테스트 | 4 통과 |
+| 전용 회귀 테스트 | 5 통과 |
 
 Dataset SHA-256:
 
 ```text
-DDB20527D452E1C246CA821CFA7D4EC159B13E24597FDEF685C19136065E50FD
+9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A
 ```
+
+## D-02 누수 근거 보정
+
+원본 PDF 5·7·38페이지를 표적 시각 검수한 결과, 세 페이지 모두 제품 누수 시
+원수 밸브 차단·전원 플러그 분리·상담센터 연락을 직접 안내하는 완전 근거로
+확인했다. `EVD-WPUJAC104DWH-LEAK-001`의 `page_refs`를 `[5,7,38]`로
+보정했으며, 같은 Evidence Unit을 사용하는 8개 Case에 일관되게 반영했다.
+
+이 보정은 Draft Label 오류 수정이며 사람 2인 Gold 승인을 의미하지 않는다.
 
 ## 검수 상태
 
@@ -109,11 +118,10 @@ Gold Approved Use: BLOCKED
 Automatic Label Approval: PROHIBITED
 ```
 
-## 테스트 환경 제한
+## 테스트 환경
 
-A2 전용 테스트 4건은 기본 Python에서 통과했다. 전체 AI 단위 테스트는 현재 기본
-Python에 프로젝트 개발 의존성인 `pytest`와 `yaml`이 없어 실행할 수 없었다. 이
-작업에서는 새 가상환경 생성이나 패키지 설치를 수행하지 않았다.
+A2 전용 테스트 5건과 D-01·D-02 영향 범위 회귀 테스트를 기존 `test_env`에서
+실행했다. 새 가상환경 생성이나 패키지 설치는 수행하지 않았다.
 
 ## 산출물
 

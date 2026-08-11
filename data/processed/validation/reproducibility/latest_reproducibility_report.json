@@ -29,7 +29,7 @@
   "report_type": "REPRODUCIBILITY",
   "records": 0,
   "summary": {
-    "enabled": true,
+    "enabled": false,
     "changed_files": [],
     "canonical_drift_files": [],
     "regenerated_files": [],

@@ -1,19 +1,19 @@
 {
   "qa_id": "A2-GOLD-EVALUATION-V1-QA",
   "status": "STRUCTURAL_PASS_HUMAN_REVIEW_PENDING",
-  "generated_at": "2026-08-11T00:27:56.646748+00:00",
+  "generated_at": "2026-08-11T09:42:39.348261+00:00",
   "dataset": {
     "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
-    "sha256": "DDB20527D452E1C246CA821CFA7D4EC159B13E24597FDEF685C19136065E50FD",
+    "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A",
     "record_count": 60
   },
   "manifest": {
     "path": "ai/evaluation/datasets/gold/rag_gold_v1_manifest.json",
-    "sha256": "0F8AF6124EAB7BE07AA8343257ECE3B19B60F0E750D51190BB8A9E473CD29A6B"
+    "sha256": "5FCE0A3C7848E63025C282FABA3F749DE08A40A3F1E419D136830E95C4A6A5CA"
   },
   "schema": {
     "path": "ai/evaluation/schemas/gold_evaluation_case_v1.schema.json",
-    "sha256": "04FC1D06AF58AB7A093521DD5F836CD1C44B925374256DCD89489290E34489BC"
+    "sha256": "623B04ECFA202875660E64A3624E82960DA83316BAED35F0A7E2D5E5C3A48DFB"
   },
   "summary": {
     "errors": 0,

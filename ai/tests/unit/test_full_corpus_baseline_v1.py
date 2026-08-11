@@ -166,26 +166,29 @@ class FullCorpusBaselineV1Tests(unittest.TestCase):
         self.assertEqual(len(metrics["covered_evidence_unit_ids"]), 2)
         self.assertIsNone(metrics["ndcg_at_5"])
 
-    def test_any_policy_requires_explicit_evidence_unit_identity(self) -> None:
-        case = self.gold_rows["RAGV2-GOLD-0004"]
-        wrong_unit = _metrics(
-            [{"chunk": self.page_chunks[5], "score": 0.9}],
-            case["expected_evidence"],
-            case["expected_no_evidence"],
-            case["product_model_code"],
-            case["evidence_match_policy"],
-        )
-        correct_unit = _metrics(
-            [{"chunk": self.page_chunks[38], "score": 0.9}],
-            case["expected_evidence"],
-            case["expected_no_evidence"],
-            case["product_model_code"],
-            case["evidence_match_policy"],
-        )
+    def test_d02_leak_evidence_accepts_pages_5_7_and_38_only(self) -> None:
+        for case_id in ("RAGV2-GOLD-0004", "RAGV2-GOLD-0027"):
+            case = self.gold_rows[case_id]
+            self.assertEqual(case["expected_evidence"][0]["page_refs"], [5, 7, 38])
+            for page in (5, 7, 38):
+                metrics = _metrics(
+                    [{"chunk": self.page_chunks[page], "score": 0.9}],
+                    case["expected_evidence"],
+                    case["expected_no_evidence"],
+                    case["product_model_code"],
+                    case["evidence_match_policy"],
+                )
+                self.assertEqual(metrics["hit_at_1"], 1.0, (case_id, page))
+                self.assertEqual(metrics["mrr"], 1.0, (case_id, page))
 
-        self.assertEqual(wrong_unit["hit_at_1"], 0.0)
-        self.assertEqual(correct_unit["hit_at_1"], 1.0)
-        self.assertEqual(correct_unit["mrr"], 1.0)
+            unrelated = _metrics(
+                [{"chunk": self.page_chunks[6], "score": 0.9}],
+                case["expected_evidence"],
+                case["expected_no_evidence"],
+                case["product_model_code"],
+                case["evidence_match_policy"],
+            )
+            self.assertEqual(unrelated["hit_at_1"], 0.0, case_id)
 
     def test_none_policy_keeps_retrieval_empty_as_diagnostic_only(self) -> None:
         case = self.gold_rows["RAGV2-GOLD-0051"]

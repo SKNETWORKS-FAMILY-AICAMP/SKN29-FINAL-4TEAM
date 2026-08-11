@@ -1,14 +1,14 @@
 {
   "corpus_id": "FULL-MANUAL-CORPUS-V1",
-  "corpus_version": "1.0.0",
+  "corpus_version": "1.0.1",
   "status": "READY_FOR_EMBEDDING",
-  "generated_at": "2026-08-10T00:00:00+09:00",
+  "generated_at": "2026-08-11T00:00:00+09:00",
   "chunking_profile": "current_source_page_v1",
   "chunking_interpretation": "A1에서 확정한 페이지 레코드 1개를 검색 Chunk 1개로 사용하는 현재 저장 단위 기준선",
   "dataset": {
     "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
     "records": 96,
-    "sha256": "6947CDE3543BB080394D4C953BE22A43A76ED80F4686ED5360B30628109AB240"
+    "sha256": "FE62AF6030045C532BC8E68D11C5461E8C65BD16DCD6758E0C2412C8C37C472C"
   },
   "schema": {
     "path": "ai/evaluation/schemas/full_corpus_chunk_v1.schema.json",
