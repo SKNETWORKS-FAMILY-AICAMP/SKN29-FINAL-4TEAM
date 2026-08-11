@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WaterBridge Experiment Playground v0</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, Pretendard, "Noto Sans KR", sans-serif; color: #163047; background: #eef6f8; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { width: min(1180px, calc(100% - 32px)); margin: 32px auto 64px; }
+    header { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+    h1 { margin: 0 0 8px; font-size: clamp(26px, 4vw, 42px); letter-spacing: -0.04em; }
+    p { margin: 0; color: #547084; }
+    .badge { border: 1px solid #e1a33a; background: #fff8e8; color: #855807; padding: 7px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 20px; }
+    .card { background: rgba(255,255,255,.94); border: 1px solid #d8e7eb; border-radius: 18px; box-shadow: 0 14px 38px rgba(32,80,99,.08); }
+    form { padding: 22px; display: grid; gap: 15px; position: sticky; top: 20px; }
+    label { display: grid; gap: 7px; color: #345165; font-size: 13px; font-weight: 700; }
+    select, textarea, input[type="number"] { width: 100%; border: 1px solid #cbdde3; border-radius: 10px; background: #fbfdfe; color: #163047; padding: 10px 11px; font: inherit; }
+    textarea { min-height: 112px; resize: vertical; line-height: 1.5; }
+    .switch { display: flex; align-items: center; gap: 9px; }
+    button { border: 0; border-radius: 11px; padding: 12px 16px; background: #087f8c; color: white; font: inherit; font-weight: 800; cursor: pointer; }
+    button:disabled { cursor: wait; opacity: .6; }
+    .note { background: #f1f8fa; border-radius: 10px; padding: 11px; font-size: 12px; line-height: 1.5; color: #587586; }
+    .results { padding: 22px; min-height: 600px; }
+    .placeholder { display: grid; place-items: center; min-height: 520px; text-align: center; color: #6f8795; }
+    .summary { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 20px; }
+    .metric { background: #eef7f8; border-radius: 10px; padding: 9px 11px; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 11px 8px; border-bottom: 1px solid #e4edef; text-align: left; vertical-align: top; }
+    th { color: #587586; font-size: 11px; text-transform: uppercase; }
+    .preview { max-width: 480px; line-height: 1.48; white-space: pre-wrap; }
+    .pass { color: #06764d; font-weight: 800; }
+    .fail { color: #b44336; font-weight: 800; }
+    .muted { color: #718795; }
+    .error { background: #fff1ef; color: #9d332a; padding: 14px; border-radius: 10px; white-space: pre-wrap; }
+    @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } form { position: static; } header { align-items: start; flex-direction: column; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div><h1>Experiment Playground <small>v0</small></h1><p>BGE-M3 · Page Chunk · Dense Cosine 단일 Query 실험</p></div>
+    <span class="badge">DRAFT · 공식 성능 발표 불가</span>
+  </header>
+  <div class="layout">
+    <form id="playground-form" class="card">
+      <label>Product<select id="product"><option>WPUJAC104DWH</option><option>WPUIAC425SNW</option></select></label>
+      <label>Query<textarea id="query">정수기 밑이 축축하고 물이 새는 것 같아요.</textarea></label>
+      <label>Corpus<select id="corpus"><option value="JAC104_IAC425_COMBINED">JAC104 + IAC425</option><option value="JAC104_ONLY">JAC104 ONLY</option><option value="IAC425_ONLY">IAC425 ONLY</option></select></label>
+      <label>Chunking<select disabled><option>current_source_page_v1</option></select></label>
+      <label>Embedding<select disabled><option>bge_m3</option></select></label>
+      <label>Retrieval<select disabled><option>dense_cosine_exact_v1</option></select></label>
+      <label>Top-K<input id="top-k" type="number" value="5" min="1" max="10"></label>
+      <label class="switch"><input id="product-filter" type="checkbox" checked> Exact Product Filter</label>
+      <label>Generator<select disabled><option>NOT_IMPLEMENTED_V0</option></select></label>
+      <button id="run-button" type="submit">검색 실행</button>
+      <div class="note">첫 검색에서는 BGE-M3 모델을 메모리에 올리느라 시간이 더 걸릴 수 있습니다. 문서 Embedding Index는 재사용합니다.</div>
+    </form>
+    <section id="results" class="card results"><div class="placeholder"><div><strong>설정을 선택하고 검색을 실행하세요.</strong><br><br>Gold 문장과 정확히 일치하면 Retrieval PASS도 함께 계산합니다.</div></div></section>
+  </div>
+</main>
+<script>
+  const form = document.querySelector('#playground-form');
+  const button = document.querySelector('#run-button');
+  const results = document.querySelector('#results');
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault(); button.disabled = true; button.textContent = '실행 중…';
+    results.innerHTML = '<div class="placeholder"><div><strong>BGE-M3 검색 중입니다.</strong><br><br>첫 실행은 모델 로딩 시간이 포함됩니다.</div></div>';
+    const payload = { product_model_code: document.querySelector('#product').value, query: document.querySelector('#query').value, corpus_variant: document.querySelector('#corpus').value, chunking_profile: 'current_source_page_v1', embedding_profile: 'bge_m3', retrieval_profile: 'dense_cosine_exact_v1', top_k: Number(document.querySelector('#top-k').value), product_filter: document.querySelector('#product-filter').checked };
+    try {
+      const response = await fetch('/api/v1/ai/experiments/playground/retrieval', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error?.message || data?.detail || JSON.stringify(data));
+      const goldLabel = !data.gold.matched ? '<span class="muted">일치하는 Draft Gold 없음</span>' : data.gold.retrieval_pass ? '<span class="pass">PASS</span>' : '<span class="fail">FAIL</span>';
+      const goldEvidence = data.gold.expected_evidence.length ? data.gold.expected_evidence.map((item) => `${escapeHtml(item.document_id)} · p.${item.page_refs.join(', ')}`).join('<br>') : '<span class="muted">없음 또는 일치 Gold 없음</span>';
+      const rows = data.retrieval.results.map((item) => `<tr><td>${item.rank}</td><td>${escapeHtml(item.exact_sales_code)}<br><span class="muted">p.${item.page_refs.join(', ')}</span></td><td>${item.score.toFixed(4)}</td><td class="preview"><strong>${escapeHtml(item.section_title)}</strong><br>${escapeHtml(item.text_preview)}</td></tr>`).join('');
+      results.innerHTML = `<h2>Retrieval Result</h2><div class="summary"><span class="metric">Gold: ${goldLabel}</span><span class="metric">Wrong Product Hit: ${data.retrieval.wrong_product_hit_count}</span><span class="metric">Query Embedding: ${data.latency_ms.query_embedding} ms</span><span class="metric">Retrieval: ${data.latency_ms.retrieval} ms</span><span class="metric">Total: ${data.latency_ms.total} ms</span></div><table><thead><tr><th>Rank</th><th>Evidence</th><th>Score</th><th>Preview</th></tr></thead><tbody>${rows || '<tr><td colspan="4">Threshold를 통과한 결과가 없습니다.</td></tr>'}</tbody></table><h3>Gold Evidence</h3><p>${goldEvidence}</p><h3>Validation</h3><p>Schema: <span class="pass">${data.validation.schema}</span> · Grounding: ${data.validation.grounding} · Safety: ${data.validation.safety}</p><h3>Generation</h3><p class="muted">${escapeHtml(data.generation.message)}</p>`;
+    } catch (error) { results.innerHTML = `<div class="error"><strong>실행 실패</strong><br><br>${escapeHtml(error.message)}</div>`; }
+    finally { button.disabled = false; button.textContent = '검색 실행'; }
+  });
+</script>
+</body>
+</html>

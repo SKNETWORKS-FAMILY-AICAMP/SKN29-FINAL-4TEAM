@@ -1,0 +1,96 @@
+{
+  "profile_id": "full_corpus_baseline_v1",
+  "run_status": "DRAFT_BASELINE_COMPLETE",
+  "metrics_publishable_as_official": false,
+  "groups": [
+    {
+      "corpus_variant": "IAC425_ONLY",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_count": 35,
+      "positive_case_count": 27,
+      "no_evidence_case_count": 8,
+      "mean_hit_at_1": 0.0,
+      "mean_hit_at_3": 0.0,
+      "mean_hit_at_5": 0.0,
+      "mean_mrr": 0.0,
+      "mean_ndcg_at_5": 0.0,
+      "wrong_product_hit_count": 0,
+      "no_evidence_accuracy": 1.0
+    },
+    {
+      "corpus_variant": "IAC425_ONLY",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_count": 35,
+      "positive_case_count": 27,
+      "no_evidence_case_count": 8,
+      "mean_hit_at_1": 0.0,
+      "mean_hit_at_3": 0.0,
+      "mean_hit_at_5": 0.0,
+      "mean_mrr": 0.0,
+      "mean_ndcg_at_5": 0.0,
+      "wrong_product_hit_count": 173,
+      "no_evidence_accuracy": 0.0
+    },
+    {
+      "corpus_variant": "JAC104_IAC425_COMBINED",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_count": 35,
+      "positive_case_count": 27,
+      "no_evidence_case_count": 8,
+      "mean_hit_at_1": 0.62963,
+      "mean_hit_at_3": 0.888889,
+      "mean_hit_at_5": 0.888889,
+      "mean_mrr": 0.753086,
+      "mean_ndcg_at_5": 0.789572,
+      "wrong_product_hit_count": 0,
+      "no_evidence_accuracy": 0.25
+    },
+    {
+      "corpus_variant": "JAC104_IAC425_COMBINED",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_count": 35,
+      "positive_case_count": 27,
+      "no_evidence_case_count": 8,
+      "mean_hit_at_1": 0.444444,
+      "mean_hit_at_3": 0.851852,
+      "mean_hit_at_5": 0.851852,
+      "mean_mrr": 0.617284,
+      "mean_ndcg_at_5": 0.672443,
+      "wrong_product_hit_count": 89,
+      "no_evidence_accuracy": 0.0
+    },
+    {
+      "corpus_variant": "JAC104_ONLY",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_count": 35,
+      "positive_case_count": 27,
+      "no_evidence_case_count": 8,
+      "mean_hit_at_1": 0.62963,
+      "mean_hit_at_3": 0.888889,
+      "mean_hit_at_5": 0.888889,
+      "mean_mrr": 0.753086,
+      "mean_ndcg_at_5": 0.789572,
+      "wrong_product_hit_count": 0,
+      "no_evidence_accuracy": 0.25
+    },
+    {
+      "corpus_variant": "JAC104_ONLY",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_count": 35,
+      "positive_case_count": 27,
+      "no_evidence_case_count": 8,
+      "mean_hit_at_1": 0.62963,
+      "mean_hit_at_3": 0.888889,
+      "mean_hit_at_5": 0.888889,
+      "mean_mrr": 0.753086,
+      "mean_ndcg_at_5": 0.789572,
+      "wrong_product_hit_count": 5,
+      "no_evidence_accuracy": 0.125
+    }
+  ],
+  "publication_limits": [
+    "Gold 60건의 2인 검수가 끝나기 전에는 공식 Phase B 비교 기준으로 발표하지 않는다.",
+    "페이지 저장 단위 기준선은 최종 청킹 전략 승인을 의미하지 않는다.",
+    "BGE-M3 실제 실행이 완료되지 않은 Preflight 결과에 성능 수치를 부여하지 않는다."
+  ]
+}

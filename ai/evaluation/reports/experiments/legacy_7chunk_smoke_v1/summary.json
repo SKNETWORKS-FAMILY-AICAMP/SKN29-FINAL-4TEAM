@@ -1,0 +1,46 @@
+{
+  "profile_id": "legacy_7chunk_smoke_v1",
+  "run_status": "SNAPSHOT_COMPLETE",
+  "evidence_mode": "HISTORICAL_SNAPSHOT",
+  "fresh_reproduction": false,
+  "metrics_publishable_as_current_run": false,
+  "smoke_contract_passed": true,
+  "case_counts": {
+    "total": 12,
+    "retrieval_positive": 7,
+    "policy_block": 5
+  },
+  "retrieval_positive_metrics": {
+    "mean_recall_at_1": 0.857143,
+    "mean_recall_at_3": 0.857143,
+    "mean_recall_at_5": 1.0,
+    "mean_mrr": 0.885714
+  },
+  "policy_metrics": {
+    "blocked_case_count": 5,
+    "no_evidence_passed_count": 5,
+    "forbidden_hit_count": 0
+  },
+  "known_weakness": {
+    "case_id": "RAG-POS-LEAK",
+    "first_relevant_rank": 5,
+    "reciprocal_rank": 0.2
+  },
+  "interpretation_guard": {
+    "candidate_chunk_count": 7,
+    "top_k": 5,
+    "random_single_relevant_recall_at_5_reference": 0.714286,
+    "official_comparison_baseline": false
+  },
+  "source_verification": {
+    "path": "ai/evaluation/reports/pgvector_verification.json",
+    "verified_at": "2026-07-30T09:36:47.897918+00:00",
+    "verification_status": "PASS"
+  },
+  "publication_limits": [
+    "7개 청크 결과는 회귀 및 Smoke 확인에만 사용한다.",
+    "Recall@5 1.0을 전체 제품 검색 정확도로 표현하지 않는다.",
+    "정책 차단 5건을 Vector Retrieval 성능에 포함하지 않는다.",
+    "fresh pgvector 재실행이 아니면 측정값을 현재 실행 결과로 표현하지 않는다."
+  ]
+}

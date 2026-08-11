@@ -1,0 +1,32 @@
+{
+  "index_id": "playground_bge_m3_page_v1",
+  "status": "READY",
+  "generated_at": "2026-08-10T14:30:02.531730+00:00",
+  "profile": {
+    "path": "ai/configs/experiments/full_corpus_baseline_v1.yaml",
+    "sha256": "E1B38207CD291B67CBF64155F11BCDF7DE308650C8E742CA4D332A2F6FA255EA"
+  },
+  "corpus": {
+    "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+    "sha256": "6947CDE3543BB080394D4C953BE22A43A76ED80F4686ED5360B30628109AB240",
+    "chunks": 96
+  },
+  "embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "device": "cpu",
+    "normalize_embeddings": true,
+    "local_files_only": true
+  },
+  "index": {
+    "path": "ai/evaluation/indexes/playground_bge_m3_page_v1.npz",
+    "shape": [
+      96,
+      1024
+    ],
+    "dtype": "float32"
+  },
+  "build_seconds": 434.300687,
+  "official_metrics_allowed": false
+}

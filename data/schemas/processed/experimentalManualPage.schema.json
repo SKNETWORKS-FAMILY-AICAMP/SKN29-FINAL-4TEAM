@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExperimentalManualPage",
+  "description": "MVP와 분리된 확장 매뉴얼의 실험용 페이지 데이터",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "page_id",
+    "document_id",
+    "source_inventory_id",
+    "source_type",
+    "provider",
+    "exact_sales_code",
+    "product_model",
+    "model_family",
+    "product_generation",
+    "scope_role",
+    "mvp_use",
+    "allowed_use",
+    "version",
+    "page",
+    "page_count",
+    "section_id",
+    "section_title",
+    "text",
+    "text_sha256",
+    "source_file_sha256",
+    "extraction_method",
+    "content_status",
+    "verification_status",
+    "manual_correction_ids",
+    "source_url",
+    "generated_at"
+  ],
+  "properties": {
+    "page_id": {
+      "type": "string",
+      "pattern": "^MAN-SKMAGIC-WPU-IAC425-REV02-P\\d{3}$"
+    },
+    "document_id": {
+      "type": "string",
+      "const": "MAN-SKMAGIC-WPU-IAC425-REV02"
+    },
+    "source_inventory_id": {
+      "type": "string",
+      "const": "SRC-IAC425-MANUAL"
+    },
+    "source_type": {
+      "type": "string",
+      "const": "official_manual"
+    },
+    "provider": {
+      "type": "string",
+      "const": "SK매직"
+    },
+    "exact_sales_code": {
+      "type": "string",
+      "const": "WPUIAC425SNW"
+    },
+    "product_model": {
+      "type": "string",
+      "const": "WPU-IAC425"
+    },
+    "model_family": {
+      "type": "string",
+      "const": "WPU-IAC425"
+    },
+    "product_generation": {
+      "type": ["string", "null"]
+    },
+    "scope_role": {
+      "type": "string",
+      "const": "expansion"
+    },
+    "mvp_use": {
+      "type": "boolean",
+      "const": false
+    },
+    "allowed_use": {
+      "type": "string",
+      "const": "EXPERIMENT_ONLY"
+    },
+    "version": {
+      "type": "string",
+      "const": "REV.02"
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "page_count": {
+      "type": "integer",
+      "const": 52
+    },
+    "section_id": {
+      "type": "string",
+      "pattern": "^IAC425-SECTION-[A-Z0-9-]+$"
+    },
+    "section_title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "text_sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "source_file_sha256": {
+      "type": "string",
+      "const": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8"
+    },
+    "extraction_method": {
+      "type": "string",
+      "enum": [
+        "pypdf_text",
+        "pypdf_text_with_manual_corrections",
+        "manual_visual_transcription"
+      ]
+    },
+    "content_status": {
+      "type": "string",
+      "enum": [
+        "EXTRACTED_TEXT",
+        "EXTRACTED_TEXT_CORRECTED",
+        "VISUAL_TEXT_TRANSCRIBED"
+      ]
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "TEXT_EXTRACTED",
+        "VISUAL_SPOT_CHECKED",
+        "VISUALLY_REVIEWED"
+      ]
+    },
+    "manual_correction_ids": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "source_url": {
+      "type": ["string", "null"],
+      "format": "uri"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

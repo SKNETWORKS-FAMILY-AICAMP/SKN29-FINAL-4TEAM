@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExperimentResultBundleV1",
+  "description": "A3 Experiment Runner의 Manifest·Case Result·Summary 공통 Schema",
+  "oneOf": [
+    {"$ref": "#/$defs/manifest"},
+    {"$ref": "#/$defs/caseResult"},
+    {"$ref": "#/$defs/summary"}
+  ],
+  "$defs": {
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "schema_version",
+        "run_id",
+        "run_status",
+        "execution_mode",
+        "started_at",
+        "completed_at",
+        "execution_seconds",
+        "profile",
+        "dataset",
+        "corpus",
+        "chunking",
+        "embedding",
+        "retrieval",
+        "generation",
+        "runtime",
+        "git",
+        "outputs",
+        "publication_limits"
+      ],
+      "properties": {
+        "artifact_type": {"const": "EXPERIMENT_MANIFEST"},
+        "schema_version": {"const": "1.0.0"},
+        "run_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$"},
+        "run_status": {"enum": ["VALIDATION_ONLY_COMPLETE", "FAILED"]},
+        "execution_mode": {"const": "VALIDATE_ONLY"},
+        "started_at": {"type": "string", "format": "date-time"},
+        "completed_at": {"type": "string", "format": "date-time"},
+        "execution_seconds": {"type": "number", "minimum": 0},
+        "profile": {"type": "object"},
+        "dataset": {"type": "object"},
+        "corpus": {"type": "object"},
+        "chunking": {"type": "object"},
+        "embedding": {"type": "object"},
+        "retrieval": {"type": "object"},
+        "generation": {"type": "object"},
+        "runtime": {"type": "object"},
+        "git": {"type": "object"},
+        "outputs": {"type": "object"},
+        "publication_limits": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1
+        }
+      }
+    },
+    "caseResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "schema_version",
+        "run_id",
+        "case_id",
+        "split",
+        "query_variant_type",
+        "query",
+        "execution_status",
+        "expected",
+        "actual",
+        "metrics",
+        "error"
+      ],
+      "properties": {
+        "artifact_type": {"const": "EXPERIMENT_CASE_RESULT"},
+        "schema_version": {"const": "1.0.0"},
+        "run_id": {"type": "string", "minLength": 1},
+        "case_id": {"type": "string", "pattern": "^RAGV2-GOLD-[0-9]{4}$"},
+        "split": {"enum": ["DEV", "TEST", "SAFETY"]},
+        "query_variant_type": {"type": "string", "minLength": 1},
+        "query": {"type": "string", "minLength": 2},
+        "execution_status": {"const": "NOT_EXECUTED_VALIDATION_ONLY"},
+        "expected": {"type": "object"},
+        "actual": {"type": "null"},
+        "metrics": {"type": "null"},
+        "error": {"type": "null"}
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "schema_version",
+        "run_id",
+        "summary_type",
+        "status",
+        "selected_case_count",
+        "executed_case_count",
+        "metrics",
+        "limitations"
+      ],
+      "properties": {
+        "artifact_type": {"const": "EXPERIMENT_SUMMARY"},
+        "schema_version": {"const": "1.0.0"},
+        "run_id": {"type": "string", "minLength": 1},
+        "summary_type": {
+          "enum": ["RETRIEVAL", "GENERATION", "SAFETY", "PERFORMANCE"]
+        },
+        "status": {"const": "NOT_EXECUTED_VALIDATION_ONLY"},
+        "selected_case_count": {"type": "integer", "minimum": 0},
+        "executed_case_count": {"const": 0},
+        "metrics": {"type": "object", "maxProperties": 0},
+        "limitations": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GoldEvaluationCaseV1",
+  "description": "청킹 전략과 독립적인 Evidence 단위 RAG 평가 Case 초안",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "case_id",
+    "dataset_version",
+    "split",
+    "query_variant_type",
+    "query",
+    "product_model_code",
+    "expected_evidence",
+    "evidence_match_policy",
+    "expected_no_evidence",
+    "expected_risk_level",
+    "expected_guidance_policy",
+    "forbidden_document_ids",
+    "forbidden_model_codes",
+    "source_query_origin",
+    "source_case_ids",
+    "label_generation",
+    "review_status",
+    "reviewer_ids",
+    "review_notes"
+  ],
+  "properties": {
+    "case_id": {
+      "type": "string",
+      "pattern": "^RAGV2-GOLD-[0-9]{4}$"
+    },
+    "dataset_version": {
+      "type": "string",
+      "const": "1.0.0-draft.1"
+    },
+    "split": {
+      "type": "string",
+      "enum": ["DEV", "TEST", "SAFETY"]
+    },
+    "query_variant_type": {
+      "type": "string",
+      "enum": [
+        "DIRECT",
+        "COLLOQUIAL",
+        "TYPO_ABBREVIATION",
+        "COMPOUND",
+        "SAFETY",
+        "NO_EVIDENCE",
+        "CROSS_PRODUCT"
+      ]
+    },
+    "query": {
+      "type": "string",
+      "minLength": 2
+    },
+    "product_model_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "document_id",
+          "page_refs",
+          "section_id",
+          "evidence_unit_id"
+        ],
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "page_refs": {
+            "type": "array",
+            "items": {"type": "integer", "minimum": 1},
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "section_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_unit_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "uniqueItems": true
+    },
+    "evidence_match_policy": {
+      "type": "string",
+      "enum": ["ANY", "ALL", "NONE"]
+    },
+    "expected_no_evidence": {"type": "boolean"},
+    "expected_risk_level": {
+      "type": "string",
+      "enum": ["general", "caution", "danger"]
+    },
+    "expected_guidance_policy": {
+      "type": "string",
+      "enum": [
+        "NORMAL",
+        "PARTIAL_STOP",
+        "TOTAL_STOP",
+        "PENDING_CONSULTATION",
+        "CONSULTATION_ONLY"
+      ]
+    },
+    "forbidden_document_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "forbidden_model_codes": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "source_query_origin": {
+      "type": "string",
+      "enum": [
+        "EXISTING_RETRIEVAL_CASE",
+        "EXISTING_RAG_EVAL",
+        "EXISTING_SAFETY_CASE",
+        "EXISTING_STRUCTURING_CASE",
+        "EXISTING_FAQ",
+        "CURATED_VARIANT",
+        "CURATED_NEGATIVE"
+      ]
+    },
+    "source_case_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "label_generation": {
+      "type": "string",
+      "const": "ASSISTED_DRAFT_NOT_APPROVED"
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "UNREVIEWED_DRAFT",
+        "ONE_PERSON_REVIEWED",
+        "TWO_PERSON_APPROVED",
+        "REJECTED"
+      ]
+    },
+    "reviewer_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "maxItems": 2,
+      "uniqueItems": true
+    },
+    "review_notes": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
