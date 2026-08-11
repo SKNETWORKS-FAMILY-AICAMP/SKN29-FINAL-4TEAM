@@ -1,6 +1,6 @@
 # 5주차 E2E Event–Operation Matrix
 
-> 기준: `main@801f58e1512dfc9e12299465b6551fff2a276e3a`, State Machine `1.0.0`, OpenAPI `0.8.0`
+> 기준: `main@92b0674cd1a3376a2c058715cd5ef32222125755`, State Machine `1.0.0`, OpenAPI `0.8.0`
 > 신규 8개 HTTP 경계는 API 주관 담당자 적용과 Contract QA가 완료됐다. Runtime 상태는 행별로 구분한다.
 > 정상 시나리오: `SYN-JAC104-002` / `DEMO-INQ-002`
 

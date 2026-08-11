@@ -2,7 +2,7 @@
 
 > 기준일: **2026-08-10 KST**
 > WBS 기준: `docs/planning/md/WBS.md` v2.1
-> 기준 Commit: `main@801f58e1512dfc9e12299465b6551fff2a276e3a`
+> 기준 Commit: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
 > 상태: **CONTRACT_BASELINE_REVIEW**
 
 ## 1. 범위 원칙
@@ -81,8 +81,24 @@ target_at=<YYYY-MM-DD HH:mm KST>
 
 ## 7. 3.3 Contract Baseline 진행 기록
 
-- Validator와 Root Contract Test는 `main@801f58e1512dfc9e12299465b6551fff2a276e3a`에서 모두 PASS했다.
+- Validator와 Root Contract Test는 `main@92b0674cd1a3376a2c058715cd5ef32222125755`에서 모두 PASS했다.
 - 실행 결과: `docs/testing/week5-contract-baseline-result.md`
 - 소비자 검토표: `docs/testing/week5-contract-consumer-review.md`
 - 팀원 회신 요청: `docs/handoffs/week5-contract-consumer-review-request.md`
-- 현재 판정은 `VALIDATOR_PASS · CONSUMER_ACK_PENDING`이며 최종 `TEAM_BASELINE`은 아직 아니다.
+- 현재 판정은 `VALIDATOR_PASS · CONSUMER_ACK 2/5`이며 최종 `TEAM_BASELINE`은 아직 아니다.
+
+## 8. 3.4 Contract CI 강화 진행 기록
+
+- 현행 Data CI는 필수 7개 Gate 중 State Machine·Mermaid 2개만 자동 실행한다.
+- 계약 Trigger는 `contracts/state-machine/**`, `scripts/contracts/**`만 포함하고 API·Code·Example·Error·Root Contract Test 경로가 빠져 있다.
+- 감사·운영안: `docs/testing/contracts-ci.md`
+- Workflow 적용 요청: `docs/handoffs/week5-contract-ci-apply-request.md`
+- `.github/workflows/**` 주관 담당자의 적용과 실제 Branch/PR Run 전까지 상태는 `OWNER_APPLY_PENDING`이다.
+
+## 9. 3.5 Backend↔AI Integration Gate 진행 기록
+
+- Backend HTTP Client·Commit 이후 호출·결과 저장·Backend State Event 적용 코드는 확인했다.
+- 현행 실제 소켓 Test는 FastAPI `mock` 모드이며 실제 Multi-Agent·LLM·팀 pgvector를 실행하지 않는다.
+- 실제 LLM·Multi-Agent가 미구현이고 팀 pgvector 환경과 Evidence Verifier Runtime 연결이 차단돼 현재 판정은 `HOLD`다.
+- Gate 결과: `docs/testing/week5/backend-ai-integration-gate.md`
+- 담당자 실행 요청: `docs/handoffs/week5-backend-ai-integration-gate-request.md`

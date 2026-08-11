@@ -1,5 +1,19 @@
 # Contracts Changelog
 
+## 2026-08-11 — Contract CI 현행 감사
+
+### Audit
+
+- 로컬 State·Mermaid·Code·OpenAPI·Example·Crosswalk·Root Contract Test 7개 Gate는 현재 기준선에서 모두 통과한다.
+- 현행 Data CI는 State Machine Validator와 Mermaid Drift만 자동 실행한다.
+- `contracts/api/**`, `contracts/codes/**`, `contracts/examples/**`, `contracts/error-codes/**`, `tests/contract/**` 변경은 현행 Data CI Trigger에서 누락돼 있다.
+
+### Decision boundary
+
+- 별도 Contract CI 분리를 PM 권고안으로 기록하고 `.github/workflows/**` 주관 담당자 적용·원격 검증을 요청한다.
+- 실제 Branch 또는 PR Run이 확인되기 전에는 Contract CI 강화 완료로 판정하지 않는다.
+- 과거 Changelog의 “전체 계약 Gate Data CI 연동” 설명은 목표 상태였으며, 현행 Workflow 기준으로는 부분 연동이다.
+
 ## 2026-08-10 — Mobile 고객 문의 읽기·추가답변 Runtime
 
 ### Added

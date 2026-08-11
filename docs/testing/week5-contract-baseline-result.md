@@ -1,7 +1,7 @@
 # 5주차 Contract Baseline 실행 결과
 
-> 실행일: 2026-08-11 12:36 KST
-> 계약 검증 기준: `main@801f58e1512dfc9e12299465b6551fff2a276e3a`
+> 실행일: 2026-08-11 14:21 KST
+> 계약 검증 기준: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
 > 판정: **VALIDATOR_PASS · CONSUMER_ACK_PENDING**
 
 ## 1. 결론
@@ -41,7 +41,7 @@ python -B -m pytest tests/contract -q -p no:cacheprovider
 | 8개 Action 계약 적용 | `264dfdf951f9a1853594cf36fab142a6929475d6` | OpenAPI 0.8 경계 적용 |
 | 상담·방문 Runtime | `a9bac6be5aff3494313bfe0d31b83b0f4ddec05b` | 상담·방문 P0 Runtime과 회귀검증 |
 | 추가답변 Runtime | `52a141e3ec5fef9c71eb59df8c0847a73138f4b2` | `SUBMIT_ANSWERS` Runtime과 API 계약 |
-| 현행 검증 기준 | `801f58e1512dfc9e12299465b6551fff2a276e3a` | 위 변경이 포함된 현재 `main` |
+| 현행 검증 기준 | `92b0674cd1a3376a2c058715cd5ef32222125755` | 위 변경과 Mobile 병합이 포함된 현재 `main` |
 
 현재 Crosswalk는 23개 Action 중 Runtime 12개, OpenAPI-only 7개, Deferred 4개다. 대표 8개 Action은 모두 OpenAPI에 연결됐으며 `SUBMIT_ANSWERS`만 Runtime 구현, 나머지 7개는 OpenAPI-only다.
 

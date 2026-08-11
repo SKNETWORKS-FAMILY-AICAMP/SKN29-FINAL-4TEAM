@@ -2,8 +2,8 @@
 
 > 기준일: **2026-08-10 KST**
 > WBS 기준: `docs/planning/md/WBS.md` v2.1
-> 계획 기준 Commit: `main@dd172c796bfeede07a9f72094b5d044b67855381`
-> 현재 판정: **NOT_ASSESSED**
+> 현행 감사 Commit: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
+> 현재 판정: **WBS_WEEK5_HOLD · INTERIM**
 
 ## 1. 판정 원칙
 
@@ -14,12 +14,12 @@
 | Gate | 판정 기준 | 상태 | 증거 | 담당 |
 |---|---|---|---|---|
 | `W5-G01` 계획 기준선 | Scope·Backlog·Dependency·Owner·Exit 정합성 | `PM_BASELINE_CANDIDATE` | 본 Planning 문서 세트 | 윤승혁 |
-| `W5-G02` 계약 | Validator·Contract Test Exit 0 | `NOT_RUN` | 실행 명령·결과 경로 | 윤승혁·최지용 |
+| `W5-G02` 계약 | Validator·Contract Test Exit 0 | `PASS` | `docs/testing/week5-contract-baseline-result.md` | 윤승혁·최지용 |
 | `W5-G03` Data·Seed | 대표 입력·Hash·Seed·Crosswalk 검증 | `NOT_RUN` | Data QA 결과 | 김은진 |
-| `W5-G04` AI·Vector 검색 | 실제 LLM·팀 DB 검색·제품·세대 Filter | `NOT_RUN` | AI·RAG 결과 | 이동윤·김은진 |
-| `W5-G05` AI Runtime·Mapping | 핵심 Agent·상담 요약 최소 Runtime·Schema–State Mapping | `NOT_RUN` | Agent·Mapping 결과 | 이동윤·최지용·김은진 |
+| `W5-G04` AI·Vector 검색 | 실제 LLM·팀 DB 검색·제품·세대 Filter | `HOLD` | 실제 LLM 미구현·팀 pgvector 환경 차단 | 이동윤·김은진 |
+| `W5-G05` AI Runtime·Mapping | 핵심 Agent·상담 요약 최소 Runtime·Schema–State Mapping | `HOLD` | Single RAG·규칙 기반, 실제 Multi-Agent 미구현 | 이동윤·최지용·김은진 |
 | `W5-G06` Backend·DB | WBS 대상 Test·PostgreSQL·Migration·Seed | `NOT_RUN` | Backend QA 결과 | 최지용·김은진 |
-| `W5-G07` Backend↔AI | 실제 HTTP·Schema·Event·DB·Trace | `NOT_RUN` | 최소 수직 Integration 결과 | 최지용·이동윤·김은진 |
+| `W5-G07` Backend↔AI | 실제 HTTP·Schema·Event·DB·Trace | `HOLD` | `docs/testing/week5/backend-ai-integration-gate.md` | 최지용·이동윤·김은진 |
 | `W5-G08` Web 소비 준비 | WBS 대상 Remote·Test·Build | `NOT_RUN` | Web 결과 | 한예나·김은진 |
 | `W5-G09` Mobile 소비 준비 | WBS 대상 Remote·Test·APK | `NOT_RUN` | Mobile 결과 | 양정현·김은진 |
 | `W5-G10` 잔여 Runtime | WBS 대상 Runtime별 PASS·BLOCKED 구분 | `NOT_RUN` | Owner Matrix·영역별 결과 | 영역 담당자 |
