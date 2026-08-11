@@ -25,6 +25,18 @@ class JsonFormatter(logging.Formatter):
             "request_route",
             "status_code",
             "duration_ms",
+            "trace_stage",
+            "inquiry_id",
+            "ai_request_id",
+            "ai_run_id",
+            "ai_status",
+            "event_candidate",
+            "event_applied",
+            "pending_reason",
+            "idempotent_replay",
+            "stale",
+            "failure_code",
+            "latency_ms",
         ):
             value = getattr(record, field, None)
             if value is not None:

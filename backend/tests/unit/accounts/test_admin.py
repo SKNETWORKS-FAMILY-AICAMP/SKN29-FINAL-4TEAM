@@ -39,15 +39,37 @@ def create_operator(
 
 
 def grant_account_admin(user: User) -> None:
-    call_command("bootstrap_account_admin", grant=user.username, stdout=StringIO())
+    actor, _ = User.objects.get_or_create(
+        username="SYN-ACCOUNT-ADMIN-BOOTSTRAP-SUPERUSER",
+        defaults={
+            "full_name": "Synthetic bootstrap superuser",
+            "role_code": User.Role.OPERATOR,
+            "employee_no": "SYN-BOOTSTRAP-SUPER-001",
+            "is_staff": True,
+            "is_superuser": True,
+            "is_synthetic": True,
+        },
+    )
+    if not actor.check_password(PASSWORD):
+        actor.set_password(PASSWORD)
+        actor.save(update_fields=["password", "updated_at"])
+    call_command(
+        "bootstrap_account_admin",
+        grant=user.username,
+        actor=actor.username,
+        reason="Synthetic unit-test administrator grant",
+        stdout=StringIO(),
+    )
     user.refresh_from_db()
 
 
 def test_bootstrap_group_is_idempotent_and_grants_only_fixed_permissions():
     operator = create_operator("SYN-OPERATOR-BOOTSTRAP")
+    backup = create_operator("SYN-OPERATOR-BOOTSTRAP-BACKUP")
 
     grant_account_admin(operator)
-    call_command("bootstrap_account_admin", grant=operator.username, stdout=StringIO())
+    grant_account_admin(backup)
+    call_command("bootstrap_account_admin", stdout=StringIO())
 
     group = Group.objects.get(name=ACCOUNT_ADMIN_GROUP)
     assert set(group.permissions.values_list("codename", flat=True)) == (
@@ -59,6 +81,8 @@ def test_bootstrap_group_is_idempotent_and_grants_only_fixed_permissions():
     call_command(
         "bootstrap_account_admin",
         revoke=operator.username,
+        actor="SYN-ACCOUNT-ADMIN-BOOTSTRAP-SUPERUSER",
+        reason="Synthetic unit-test administrator revoke",
         stdout=StringIO(),
     )
     operator.refresh_from_db()
@@ -146,6 +170,7 @@ def test_admin_add_forces_synthetic_and_blocks_privilege_escalation(client):
             "full_name": "Synthetic created",
             "email": "synthetic@example.invalid",
             "phone": "",
+            "change_reason": "Create synthetic QA customer",
             "is_synthetic": "0",
             "is_staff": "1",
             "is_superuser": "1",
@@ -178,6 +203,7 @@ def test_admin_change_preserves_identity_role_and_access_fields(client):
             "full_name": "Synthetic after",
             "email": "after@example.invalid",
             "phone": "000-0000-0000",
+            "change_reason": "Update synthetic QA profile",
             "username": "SYN-TAMPERED",
             "role_code": User.Role.OPERATOR,
             "employee_no": "EMP-TAMPERED",
@@ -218,6 +244,7 @@ def test_admin_rejects_values_that_could_be_real_personal_information(client):
             "full_name": "Real Person",
             "email": "real.person@example.com",
             "phone": "010-1234-5678",
+            "change_reason": "Reject unsafe synthetic profile",
             "_save": "Save",
         },
     )
@@ -255,6 +282,7 @@ def test_physical_delete_and_superuser_change_are_denied(client):
             "full_name": "Tampered superuser",
             "email": "",
             "phone": "",
+            "change_reason": "Attempt protected superuser update",
             "_save": "Save",
         },
     )
@@ -290,6 +318,7 @@ def test_deactivate_action_skips_self_and_superuser(client):
             "action": "deactivate_accounts",
             "_selected_action": [operator.pk, target.pk, superuser.pk],
             "index": "0",
+            "lifecycle_reason": "Deactivate selected synthetic QA account",
         },
     )
 

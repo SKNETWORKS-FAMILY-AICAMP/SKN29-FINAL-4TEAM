@@ -11,7 +11,12 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.v2.runAndroidComposeUiTest
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
+import androidx.lifecycle.Lifecycle
+import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.model.ActiveInquirySummary
@@ -30,16 +35,59 @@ import com.skn29.watercare.customer.feature.customer.home.CustomerHomeUiState
 import com.skn29.watercare.customer.feature.customer.intake.IntakeErrorKind
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeContent
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeUiState
+import com.skn29.watercare.customer.feature.shared.WorkflowActionButton
 import org.junit.Assert.assertTrue
 import com.skn29.watercare.customer.testing.ComposeTestActivity
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+
+private class ManualComposeTestScope(
+    private val delegate: ComposeTestRule,
+    private val scenario: ActivityScenario<ComposeTestActivity>,
+) : ComposeTestRule by delegate {
+    fun setContent(
+        content: @Composable () -> Unit,
+    ) {
+        if (scenario.state != Lifecycle.State.RESUMED) {
+            scenario.moveToState(Lifecycle.State.RESUMED)
+        }
+
+        scenario.onActivity { activity ->
+            activity.setContent {
+                content()
+            }
+        }
+
+        delegate.waitForIdle()
+    }
+}
 @RunWith(AndroidJUnit4::class)
 class CustomerMinimumFlowTest {
+    @get:Rule
+    val composeTestRule = createEmptyComposeRule()
+
+    private fun runManualComposeUiTest(
+        block: ManualComposeTestScope.() -> Unit,
+    ) {
+        val scenario = ActivityScenario.launch(ComposeTestActivity::class.java)
+        try {
+            if (scenario.state != Lifecycle.State.RESUMED) {
+                scenario.moveToState(Lifecycle.State.RESUMED)
+            }
+
+            ManualComposeTestScope(
+                delegate = composeTestRule,
+                scenario = scenario,
+            ).block()
+        } finally {
+            scenario.close()
+        }
+    }
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun offlinePreview_opensCust01AndCust02() = runAndroidComposeUiTest<ComposeTestActivity> {
+    fun offlinePreview_opensCust01AndCust02() = runManualComposeUiTest {
         setContent {
             var showIntake by remember { mutableStateOf(false) }
 
@@ -85,7 +133,7 @@ class CustomerMinimumFlowTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun dangerGuidance_hidesResolvedAction() = runAndroidComposeUiTest<ComposeTestActivity> {
+    fun dangerGuidance_hidesResolvedAction() = runManualComposeUiTest {
         setContent {
             var showDangerGuidance by remember { mutableStateOf(false) }
 
@@ -139,7 +187,68 @@ class CustomerMinimumFlowTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun conflict_showsOnlySupportedSubmitRetryAction() = runAndroidComposeUiTest<ComposeTestActivity> {
+    fun cancelInquiryAction_isVisibleAndClickable() =
+        runManualComposeUiTest {
+            var clicked = false
+
+            setContent {
+                WaterCareTheme {
+                    WorkflowActionButton(
+                        action = AllowedAction(
+                            code =
+                                InquiryActionLabels
+                                    .CANCEL_INQUIRY,
+                            label = "문의 취소",
+                            requiresConfirmation = true,
+                        ),
+                        onClick = { clicked = true },
+                    )
+                }
+            }
+
+            waitForIdle()
+
+            onNodeWithTag("cancelInquiry")
+                .assertIsDisplayed()
+                .performClick()
+
+            assertTrue(
+                "CANCEL_INQUIRY가 허용되면 취소 버튼이 동작해야 합니다.",
+                clicked,
+            )
+        }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun unsupportedWorkflowAction_isNotRendered() =
+        runManualComposeUiTest {
+            setContent {
+                WaterCareTheme {
+                    WorkflowActionButton(
+                        action = AllowedAction(
+                            code = "INTERNAL_ONLY_ACTION",
+                        ),
+                        onClick = {},
+                    )
+                }
+            }
+
+            waitForIdle()
+
+            val unsupportedDoesNotExist = runCatching {
+                onNodeWithText("INTERNAL_ONLY_ACTION")
+                    .fetchSemanticsNode()
+            }.isFailure
+
+            assertTrue(
+                "지원하지 않는 Workflow Action은 UI에 노출되면 안 됩니다.",
+                unsupportedDoesNotExist,
+            )
+        }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun conflict_showsOnlySupportedSubmitRetryAction() = runManualComposeUiTest {
         var retried = false
 
         setContent {

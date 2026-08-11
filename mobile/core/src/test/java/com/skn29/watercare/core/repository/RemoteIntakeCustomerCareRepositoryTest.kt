@@ -4,13 +4,13 @@ import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.CancelInquiryResponse
 import com.skn29.watercare.core.model.CreateInquiryRequest
-import com.skn29.watercare.core.model.CustomerHomeData
-import com.skn29.watercare.core.model.GuidanceData
 import com.skn29.watercare.core.model.InquiryResponse
 import com.skn29.watercare.core.model.IntakeSubmission
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.StateConflictSnapshot
 import com.skn29.watercare.core.model.SubmitSymptomResponse
+import com.skn29.watercare.core.model.SubscriptionDetailDto
+import com.skn29.watercare.core.model.SubscriptionListDataDto
 import com.skn29.watercare.core.model.SymptomIntakeRequest
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -24,7 +24,7 @@ class RemoteIntakeCustomerCareRepositoryTest {
         val inquiryRepository = RecordingInquiryRepository(failCreateCount = 1)
         val repository = RemoteIntakeCustomerCareRepository(
             inquiryRepository = inquiryRepository,
-            fallbackRepository = EmptyFallbackRepository(),
+            subscriptionRepository = FailingSubscriptionRepository(),
         )
         val request = sampleRequest()
 
@@ -60,7 +60,7 @@ class RemoteIntakeCustomerCareRepositoryTest {
         val inquiryRepository = RecordingInquiryRepository(failSubmitCount = 1)
         val repository = RemoteIntakeCustomerCareRepository(
             inquiryRepository = inquiryRepository,
-            fallbackRepository = EmptyFallbackRepository(),
+            subscriptionRepository = FailingSubscriptionRepository(),
         )
         val request = sampleRequest()
 
@@ -80,7 +80,7 @@ class RemoteIntakeCustomerCareRepositoryTest {
         val inquiryRepository = RecordingInquiryRepository(staleConflictCount = 1)
         val repository = RemoteIntakeCustomerCareRepository(
             inquiryRepository = inquiryRepository,
-            fallbackRepository = EmptyFallbackRepository(),
+            subscriptionRepository = FailingSubscriptionRepository(),
         )
         val request = sampleRequest()
 
@@ -99,7 +99,7 @@ class RemoteIntakeCustomerCareRepositoryTest {
     fun guidanceWithoutBackendRoute_failsClosed() = runBlocking {
         val repository = RemoteIntakeCustomerCareRepository(
             inquiryRepository = RecordingInquiryRepository(),
-            fallbackRepository = EmptyFallbackRepository(),
+            subscriptionRepository = FailingSubscriptionRepository(),
         )
 
         val result = repository.getGuidance(
@@ -111,6 +111,21 @@ class RemoteIntakeCustomerCareRepositoryTest {
         val failure = result as ApiResult.Failure
         assertEquals("GUIDANCE_ROUTE_UNAVAILABLE", failure.code)
         assertEquals(false, failure.retryable)
+    }
+
+    @Test
+    fun remoteHome_subscriptionFailureIsReturned_withoutFixtureFallback() = runBlocking {
+        val repository = RemoteIntakeCustomerCareRepository(
+            inquiryRepository = RecordingInquiryRepository(),
+            subscriptionRepository = FailingSubscriptionRepository(),
+        )
+
+        val result = repository.getHome()
+
+        assertTrue(result is ApiResult.Failure)
+        val failure = result as ApiResult.Failure
+        assertEquals("SUBSCRIPTION_REMOTE_FAILURE", failure.code)
+        assertEquals(true, failure.retryable)
     }
 
     private fun sampleRequest() = SymptomIntakeRequest(
@@ -234,19 +249,20 @@ class RemoteIntakeCustomerCareRepositoryTest {
         )
     }
 
-    private class EmptyFallbackRepository : CustomerCareRepository {
-        override suspend fun getHome(): ApiResult<CustomerHomeData> =
-            error("이 테스트에서는 사용하지 않습니다.")
+    private class FailingSubscriptionRepository : SubscriptionRepository {
+        override suspend fun list(
+            page: Int,
+            size: Int,
+        ): ApiResult<SubscriptionListDataDto> =
+            ApiResult.Failure(
+                code = "SUBSCRIPTION_REMOTE_FAILURE",
+                message = "테스트용 구독 Remote 실패",
+                retryable = true,
+            )
 
-        override suspend fun submitIntake(
-            request: SymptomIntakeRequest,
-        ): ApiResult<IntakeSubmission> =
-            error("이 테스트에서는 사용하지 않습니다.")
-
-        override suspend fun getGuidance(
-            inquiryId: String,
-            scenario: MockScenario,
-        ): ApiResult<GuidanceData> =
+        override suspend fun detail(
+            subscriptionId: String,
+        ): ApiResult<SubscriptionDetailDto> =
             error("이 테스트에서는 사용하지 않습니다.")
     }
 }

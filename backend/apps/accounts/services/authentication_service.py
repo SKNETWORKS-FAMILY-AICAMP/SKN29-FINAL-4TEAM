@@ -26,9 +26,11 @@ from apps.accounts.repositories.account_repository import (
     AccountRepository,
 )
 from common.authentication.claims import (
+    AUTH_VERSION_CLAIM,
     ROLE_CLAIM,
     SUBJECT_CLAIM,
     required_claim,
+    required_positive_int_claim,
 )
 
 
@@ -67,19 +69,23 @@ class AuthenticationService:
             )
         return user, cls.issue_pair(user)
 
-    @staticmethod
+    @classmethod
+    @transaction.atomic
     def issue_pair(
+        cls,
         user: User,
         *,
         refresh_absolute_exp: int | None = None,
     ) -> TokenPair:
-        if not user.is_active:
+        user = cls.repository.lock_active_by_pk(user.pk)
+        if user is None:
             raise AuthenticationFailed(
                 "비활성 사용자는 토큰을 발급받을 수 없습니다.",
                 code="user_inactive",
             )
         refresh = RefreshToken.for_user(user)
         refresh[ROLE_CLAIM] = user.role_code
+        refresh[AUTH_VERSION_CLAIM] = user.auth_version
         if refresh_absolute_exp is not None:
             current_epoch = datetime_to_epoch(refresh.current_time)
             if refresh_absolute_exp <= current_epoch:
@@ -94,6 +100,10 @@ class AuthenticationService:
                 token=str(refresh),
                 expires_at=datetime_from_epoch(refresh_absolute_exp),
             )
+        else:
+            OutstandingToken.objects.filter(
+                jti=str(refresh["jti"])
+            ).update(token=str(refresh))
         access = refresh.access_token
         # SimpleJWT anchors the access expiry to the refresh creation time,
         # while its default access iat can cross into the next second.
@@ -148,14 +158,22 @@ class AuthenticationService:
         try:
             user_id = required_claim(refresh, SUBJECT_CLAIM)
             token_role = required_claim(refresh, ROLE_CLAIM)
+            token_auth_version = required_positive_int_claim(
+                refresh,
+                AUTH_VERSION_CLAIM,
+            )
         except ValueError as exc:
             raise AuthenticationFailed(
                 "refresh token 필수 정보가 없습니다.",
                 code="refresh_claim_missing",
             ) from exc
 
-        user = cls.repository.find_active_by_subject(user_id)
-        if user is None or user.role_code != token_role:
+        user = cls.repository.lock_active_by_subject(user_id)
+        if (
+            user is None
+            or user.role_code != token_role
+            or user.auth_version != token_auth_version
+        ):
             raise AuthenticationFailed(
                 "사용자 상태 또는 역할이 변경되었습니다.",
                 code="user_state_changed",

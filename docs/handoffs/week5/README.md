@@ -29,7 +29,7 @@
 | 수신자 | 제공 가능한 입력 | 현재 요청·차단 | 수신 |
 | --- | --- | --- | --- |
 | 이동윤 | Retrieval Dataset, 승인 Chunk, Index·평가 Hash, 금지 모델 정책 | 승인 가능한 13번째 원천 후보 제시 후 Dataset·Runner 반영 | `PENDING` |
-| 최지용 | Synthetic Fixture 367건, Backend Crosswalk, Data QA 기준선 | T-017B 후보 Commit·Migration·기대 건수·Rollback 목표와 정식 RAG Mapping·최소 권한 경계 제공 | `PENDING` |
+| 최지용 | Synthetic Fixture 367건, Backend Crosswalk, Data QA 기준선 | T-017B 완료 근거를 유지하고 T-017C Token 세대·Lifecycle·감사 후보와 정식 RAG Mapping·최소 권한 경계를 분리 제공 | `T017B_DONE / T017C_IN_PROGRESS` |
 | 한예나 | 대표 상태·문의·근거 Fixture, 공개 Evidence 경계 | 실제 Runtime Operation만 소비하고 Contract-only·Mock을 구분 | `PENDING` |
 | 양정현 | 대표 상태·문의·방문 Fixture, 역할·공개 필드 | 실제 Runtime Operation과 Mobile Demo·Fake Repository를 구분 | `PENDING` |
 | 윤승혁 | 최종 QA 요약, Action Crosswalk 23개, T-017A PM 결정 반영 상태 | Crosswalk와 WBS·가이드 상태 동기화 및 5주차 기준선 승인 | `PENDING` |
@@ -60,7 +60,7 @@
 - 13번째 RAG Case 원천·정책 승인과 AI Runner 반영
 - 정식 `knowledge_*` Adapter·최소 권한 AI Role
 - 공식 팀 DB 식별 후 승인 Chunk 7건 UPSERT·Replay·검색
-- T-017B 후보 Migration·Admin 구현 후 독립 QA
+- T-017C Token 세대·Lifecycle·감사 구현 후 독립 QA
 - 담당자별 수신 확인과 PM 기준선 승인
 
 ## 5. 수신 기록

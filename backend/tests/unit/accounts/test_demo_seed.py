@@ -6,6 +6,7 @@ import pytest
 from django.core.management import call_command
 
 from apps.accounts.models import CustomerProfile, User
+from apps.accounts.account_admin_policy import ACCOUNT_ADMIN_GROUP
 
 
 pytestmark = pytest.mark.django_db
@@ -55,3 +56,34 @@ def test_demo_seed_upgrades_existing_customer_profile_business_key():
     assert CustomerProfile.objects.filter(user=customer).count() == 1
     assert profile.customer_no == "DEMO-CUSTOMER-001"
     assert "updated=4" in output.getvalue()
+
+
+def test_demo_seed_preserves_existing_operator_credentials_and_admin_access():
+    call_command("seed_demo_accounts", stdout=StringIO())
+    operator = User.objects.get(username="DEMO-OPERATOR-001")
+    operator.set_password("Demo-Operator-Synthetic-Password-2026!")
+    operator.save(update_fields=["password", "updated_at"])
+    actor = User.objects.create_superuser(
+        username="SYN-DEMO-SEED-SUPERUSER",
+        password="Demo-Seed-Superuser-Password-2026!",
+        full_name="Synthetic demo seed superuser",
+        employee_no="SYN-DEMO-SEED-SUPER-001",
+        is_synthetic=True,
+    )
+    call_command(
+        "bootstrap_account_admin",
+        grant=operator.username,
+        actor=actor.username,
+        reason="Preserve demo operator administrator access",
+        stdout=StringIO(),
+    )
+    operator.refresh_from_db()
+    granted_version = operator.auth_version
+
+    call_command("seed_demo_accounts", stdout=StringIO())
+
+    operator.refresh_from_db()
+    assert operator.is_staff is True
+    assert operator.groups.filter(name=ACCOUNT_ADMIN_GROUP).exists()
+    assert operator.check_password("Demo-Operator-Synthetic-Password-2026!")
+    assert operator.auth_version == granted_version

@@ -3,10 +3,21 @@
 from __future__ import annotations
 
 from django import forms
+from django.contrib.admin.helpers import ActionForm
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
 
 from apps.accounts.models import User
+
+
+class AccountLifecycleActionForm(ActionForm):
+    """Require an explicit business reason for lifecycle Admin actions."""
+
+    lifecycle_reason = forms.CharField(
+        label="Change reason",
+        max_length=500,
+        required=True,
+    )
 
 
 SYNTHETIC_USERNAME_PREFIXES = ("DEMO-", "SYN-")
@@ -58,6 +69,11 @@ class SyntheticUserAddForm(
         label="Password confirmation",
         strip=False,
         widget=forms.PasswordInput,
+    )
+    change_reason = forms.CharField(
+        label="Change reason",
+        max_length=500,
+        required=True,
     )
 
     class Meta:
@@ -137,6 +153,12 @@ class SyntheticUserChangeForm(
     forms.ModelForm,
 ):
     """Allow only non-identity profile fields to change in T-017B."""
+
+    change_reason = forms.CharField(
+        label="Change reason",
+        max_length=500,
+        required=True,
+    )
 
     class Meta:
         model = User
