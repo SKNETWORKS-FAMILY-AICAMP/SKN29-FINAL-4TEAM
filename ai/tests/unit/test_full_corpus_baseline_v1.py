@@ -21,6 +21,7 @@ from ai.scripts.build_full_corpus_chunks_v1 import (
 )
 from ai.scripts.run_full_corpus_baseline_v1 import (
     DEFAULT_PROFILE,
+    _metrics,
     build_preflight_report,
     run_baseline,
 )
@@ -60,6 +61,21 @@ class FullCorpusBaselineV1Tests(unittest.TestCase):
             for line in cls.dataset_path.read_text(encoding="utf-8").splitlines()
             if line.strip()
         ]
+        profile = json.loads(cls.profile_path.read_text(encoding="utf-8"))
+        gold_path = REPOSITORY_ROOT / profile["dataset"]["path"]
+        cls.gold_rows = {
+            row["case_id"]: row
+            for row in (
+                json.loads(line)
+                for line in gold_path.read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            )
+        }
+        cls.page_chunks = {
+            row["page_refs"][0]: row
+            for row in cls.rows
+            if row["corpus_scope"] == "JAC104_ONLY"
+        }
 
     def test_full_manual_corpus_has_44_plus_52_page_chunks(self) -> None:
         self.assertEqual(len(self.rows), 96)
@@ -102,6 +118,89 @@ class FullCorpusBaselineV1Tests(unittest.TestCase):
         self.assertEqual(review["detail"]["pending_records"], 60)
         self.assertFalse(review["detail"]["official_metrics_allowed"])
 
+    def test_all_policy_requires_every_evidence_unit_for_0036_and_0037(self) -> None:
+        for case_id, pages in (
+            ("RAGV2-GOLD-0036", [37, 38]),
+            ("RAGV2-GOLD-0037", [38, 37]),
+        ):
+            case = self.gold_rows[case_id]
+            first_only = _metrics(
+                [{"chunk": self.page_chunks[pages[0]], "score": 0.9}],
+                case["expected_evidence"],
+                case["expected_no_evidence"],
+                case["product_model_code"],
+                case["evidence_match_policy"],
+            )
+            completed = _metrics(
+                [
+                    {"chunk": self.page_chunks[pages[0]], "score": 0.9},
+                    {"chunk": self.page_chunks[pages[1]], "score": 0.8},
+                ],
+                case["expected_evidence"],
+                case["expected_no_evidence"],
+                case["product_model_code"],
+                case["evidence_match_policy"],
+            )
+
+            self.assertEqual(first_only["hit_at_1"], 0.0, case_id)
+            self.assertEqual(first_only["mrr"], 0.0, case_id)
+            self.assertEqual(completed["hit_at_1"], 0.0, case_id)
+            self.assertEqual(completed["hit_at_3"], 1.0, case_id)
+            self.assertEqual(completed["evidence_completion_rank"], 2, case_id)
+            self.assertEqual(completed["mrr"], 0.5, case_id)
+            self.assertIsNone(completed["ndcg_at_5"], case_id)
+
+    def test_all_policy_allows_one_chunk_to_cover_two_units_for_0038(self) -> None:
+        case = self.gold_rows["RAGV2-GOLD-0038"]
+        metrics = _metrics(
+            [{"chunk": self.page_chunks[38], "score": 0.9}],
+            case["expected_evidence"],
+            case["expected_no_evidence"],
+            case["product_model_code"],
+            case["evidence_match_policy"],
+        )
+
+        self.assertEqual(metrics["hit_at_1"], 1.0)
+        self.assertEqual(metrics["evidence_completion_rank"], 1)
+        self.assertEqual(metrics["mrr"], 1.0)
+        self.assertEqual(len(metrics["covered_evidence_unit_ids"]), 2)
+        self.assertIsNone(metrics["ndcg_at_5"])
+
+    def test_any_policy_requires_explicit_evidence_unit_identity(self) -> None:
+        case = self.gold_rows["RAGV2-GOLD-0004"]
+        wrong_unit = _metrics(
+            [{"chunk": self.page_chunks[5], "score": 0.9}],
+            case["expected_evidence"],
+            case["expected_no_evidence"],
+            case["product_model_code"],
+            case["evidence_match_policy"],
+        )
+        correct_unit = _metrics(
+            [{"chunk": self.page_chunks[38], "score": 0.9}],
+            case["expected_evidence"],
+            case["expected_no_evidence"],
+            case["product_model_code"],
+            case["evidence_match_policy"],
+        )
+
+        self.assertEqual(wrong_unit["hit_at_1"], 0.0)
+        self.assertEqual(correct_unit["hit_at_1"], 1.0)
+        self.assertEqual(correct_unit["mrr"], 1.0)
+
+    def test_none_policy_keeps_retrieval_empty_as_diagnostic_only(self) -> None:
+        case = self.gold_rows["RAGV2-GOLD-0051"]
+        metrics = _metrics(
+            [],
+            case["expected_evidence"],
+            case["expected_no_evidence"],
+            case["product_model_code"],
+            case["evidence_match_policy"],
+        )
+
+        self.assertTrue(metrics["no_evidence_retrieval_empty"])
+        self.assertTrue(metrics["no_evidence_passed"])
+        self.assertIsNone(metrics["answerability_gate_passed"])
+
     def test_dense_runner_produces_three_corpora_by_two_filter_modes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory)
@@ -131,6 +230,14 @@ class FullCorpusBaselineV1Tests(unittest.TestCase):
             ))
             self.assertEqual(len(summary["groups"]), 6)
             self.assertFalse(summary["metrics_publishable_as_official"])
+            self.assertEqual(
+                summary["evaluation_contract"]["version"],
+                "d01_evidence_policy_v1",
+            )
+            self.assertTrue(all(
+                group["ndcg_at_5_excluded_all_case_count"] == 3
+                for group in summary["groups"]
+            ))
             performance = json.loads((output / "performance_summary.json").read_text(
                 encoding="utf-8"
             ))

@@ -2,7 +2,8 @@
 
 > 실행일: 2026-08-10 KST  
 > Profile: `full_corpus_baseline_v1`  
-> 상태: `DRAFT_BASELINE_COMPLETE`
+> 상태: `DRAFT_BASELINE_REEVALUATION_REQUIRED`
+> D-01 주의: 아래 수치는 D-01 Evidence Match Policy 반영 전 결과이므로 성능 비교에 사용하지 않는다. D-02 Gold 시각 검수·버전 갱신 후 재실행한다.
 
 ## 결론
 

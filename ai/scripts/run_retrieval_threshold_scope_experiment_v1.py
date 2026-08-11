@@ -166,6 +166,7 @@ def run_retrieval_threshold_scope_experiment(
                         case["expected_evidence"],
                         case["expected_no_evidence"],
                         case["product_model_code"],
+                        case["evidence_match_policy"],
                     )
                     results.append({
                         "chunking_profile_id": chunking_profile["profile_id"],
@@ -206,10 +207,12 @@ def run_retrieval_threshold_scope_experiment(
         negatives = [row for row in rows if row["expected_no_evidence"]]
 
         def mean(metric: str) -> float | None:
-            return round(
-                sum(row["metrics"][metric] for row in positives) / len(positives),
-                6,
-            ) if positives else None
+            values = [
+                row["metrics"][metric]
+                for row in positives
+                if row["metrics"][metric] is not None
+            ]
+            return round(sum(values) / len(values), 6) if values else None
 
         latencies = [row["retrieval_latency_ms"] for row in rows]
         comparisons.append({
