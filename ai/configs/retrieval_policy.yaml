@@ -25,3 +25,48 @@ metadata_filters:
     - "WPUIAC425SNW"  # 후속 확장 모델 제외
     - "WPU-IAC506"     # 제거 대상 제외
   require_official_verification: true
+
+# 검색 점수와 무관하게 정적 매뉴얼로 답할 수 없는 질의를 검색 전에 차단한다.
+answerability_capability_gate:
+  policy_id: "ANSWERABILITY_CAPABILITY_GATE_V1"
+  supported_model_codes:
+    - "WPUJAC104DWH"
+  supported_generations:
+    - "D"
+  unsupported_model_rule_id: "GATE-MODEL-001"
+  unsupported_generation_rule_id: "GATE-GENERATION-001"
+
+  unsupported_feature_rules:
+    - rule_id: "GATE-JAC104-ICE-001"
+      category: "UNSUPPORTED_PRODUCT_CAPABILITY"
+      model_codes:
+        - "WPUJAC104DWH"
+      terms:
+        - "얼음"
+        - "제빙"
+      reason: "JAC104 매뉴얼 범위에 제빙·얼음 기능이 없음"
+
+  out_of_manual_rules:
+    - rule_id: "GATE-COMMERCIAL-001"
+      category: "DYNAMIC_COMMERCIAL_INFORMATION"
+      any_term_groups:
+        - ["제휴카드", "카드 할인", "렌탈료", "월 요금", "계약 요금", "납부 금액", "할인 금액", "할인 혜택"]
+      excluded_terms: []
+      reason: "정적 사용설명서 범위를 벗어난 계약·결제·할인 정보"
+
+    - rule_id: "GATE-PART-PRICE-001"
+      category: "DYNAMIC_COMMERCIAL_INFORMATION"
+      any_term_groups:
+        - ["필터", "부품", "소모품"]
+        - ["가격", "비용", "구매", "구입", "판매", "구매처", "파는 곳"]
+      excluded_terms: ["가격이 아니라", "비용이 아니라", "교체 주기", "얼마마다"]
+      reason: "정적 사용설명서 범위를 벗어난 부품 가격·구매 정보"
+
+    - rule_id: "GATE-PRODUCT-CATALOG-001"
+      category: "FULL_PRODUCT_CATALOG"
+      any_term_groups:
+        - ["색상", "컬러"]
+        - ["선택", "옵션", "주문", "종류", "판매", "모두", "전체"]
+        - ["외관", "제품", "모델"]
+      excluded_terms: ["청소", "닦", "얼룩", "변색", "표시등", "표시창", "버튼"]
+      reason: "사용설명서만으로 판매 색상·옵션의 전체 목록을 보장할 수 없음"
