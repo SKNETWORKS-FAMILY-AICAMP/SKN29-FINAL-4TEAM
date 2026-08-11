@@ -84,7 +84,7 @@ fun GuidanceScreen(
     }
     val actualInquiryCode = submittedInquiryCode.trim()
 
-    WaterCareScreen(title = "안전 안내", onBack = onBack) {
+    WaterCareScreen(title = "AI 자가진단", onBack = onBack) {
         if (fixturePreview) {
             SectionCard("합성 Fixture 미리보기") {
                 Text(
@@ -105,7 +105,7 @@ fun GuidanceScreen(
 
         when (val current = state) {
             GuidanceUiState.Loading ->
-                LoadingBlock("검증된 고객용 안내를 불러오는 중입니다")
+                LoadingBlock("AI 안내 결과를 불러오는 중입니다")
 
             is GuidanceUiState.Content -> GuidanceContent(
                 guidance = current.guidance.withInquiryCode(

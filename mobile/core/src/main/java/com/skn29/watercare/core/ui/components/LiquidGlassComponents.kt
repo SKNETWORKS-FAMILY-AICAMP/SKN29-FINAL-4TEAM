@@ -57,19 +57,19 @@ private data class LiquidGlassRolePalette(
 )
 
 private val CustomerLiquidPalette = LiquidGlassRolePalette(
-    accent = Color(0xFF248CFF),
-    accentSecondary = Color(0xFF64C9FF),
+    accent = Color(0xFF1677FF),
+    accentSecondary = Color(0xFF19C7D9),
     accentSoft = Color(0xFFBFEAFF),
-    textStrong = Color(0xFF123C61),
-    textMuted = Color(0xFF597A94),
+    textStrong = Color(0xFF0A2148),
+    textMuted = Color(0xFF55738A),
 )
 
 private val TechnicianLiquidPalette = LiquidGlassRolePalette(
-    accent = Color(0xFF0FB9AA),
-    accentSecondary = Color(0xFF55E5D5),
+    accent = Color(0xFF0AB7B9),
+    accentSecondary = Color(0xFF2C95FF),
     accentSoft = Color(0xFFB9F4EC),
-    textStrong = Color(0xFF123F3A),
-    textMuted = Color(0xFF577D78),
+    textStrong = Color(0xFF0B3040),
+    textMuted = Color(0xFF56757B),
 )
 
 private val LocalLiquidGlassTone = compositionLocalOf {
@@ -94,21 +94,11 @@ private fun liquidPalette(): LiquidGlassRolePalette =
         LiquidGlassTone.TECHNICIAN -> TechnicianLiquidPalette
     }
 
-private val LiquidWaterDropPanelShape = RoundedCornerShape(
-    topStart = 34.dp,
-    topEnd = 48.dp,
-    bottomEnd = 28.dp,
-    bottomStart = 42.dp,
-)
+private val LiquidWaterDropPanelShape = RoundedCornerShape(28.dp)
 
 private val LiquidWaterDropControlShape = RoundedCornerShape(999.dp)
 
-private val LiquidWaterDropTileShape = RoundedCornerShape(
-    topStart = 24.dp,
-    topEnd = 34.dp,
-    bottomEnd = 20.dp,
-    bottomStart = 30.dp,
-)
+private val LiquidWaterDropTileShape = RoundedCornerShape(24.dp)
 
 @Composable
 fun LiquidGlassPanel(
@@ -125,9 +115,9 @@ fun LiquidGlassPanel(
         LiquidWaterDropPanelShape
     }
 
-    val surfaceAlpha = if (strong) 0.22f else 0.14f
-    val accentAlpha = if (strong) 0.17f else 0.10f
-    val glowAlpha = if (strong) 0.34f else 0.22f
+    val surfaceAlpha = if (strong) 0.97f else 0.91f
+    val accentAlpha = if (strong) 0.028f else 0.016f
+    val glowAlpha = if (strong) 0.14f else 0.09f
 
     val fillBrush = if (danger) {
         Brush.verticalGradient(
@@ -214,7 +204,7 @@ fun LiquidGlassPanel(
 
                     drawOval(
                         color = palette.accent.copy(
-                            alpha = if (strong) 0.14f else 0.09f
+                            alpha = if (strong) 0.035f else 0.020f
                         ),
                         topLeft = Offset(
                             x = size.width * 0.63f,
@@ -245,7 +235,7 @@ fun LiquidGlassPanel(
             }
             .border(
                 BorderStroke(
-                    width = if (danger) 1.5.dp else 2.dp,
+                    width = if (danger) 1.5.dp else 1.10.dp,
                     brush = borderBrush,
                 ),
                 shape,
