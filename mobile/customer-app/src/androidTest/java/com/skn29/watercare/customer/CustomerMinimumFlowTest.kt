@@ -35,6 +35,7 @@ import com.skn29.watercare.customer.feature.customer.home.CustomerHomeUiState
 import com.skn29.watercare.customer.feature.customer.intake.IntakeErrorKind
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeContent
 import com.skn29.watercare.customer.feature.customer.intake.SymptomIntakeUiState
+import com.skn29.watercare.customer.feature.shared.WorkflowActionButton
 import org.junit.Assert.assertTrue
 import com.skn29.watercare.customer.testing.ComposeTestActivity
 import org.junit.Rule
@@ -183,6 +184,67 @@ class CustomerMinimumFlowTest {
             resolvedActionDoesNotExist,
         )
     }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun cancelInquiryAction_isVisibleAndClickable() =
+        runManualComposeUiTest {
+            var clicked = false
+
+            setContent {
+                WaterCareTheme {
+                    WorkflowActionButton(
+                        action = AllowedAction(
+                            code =
+                                InquiryActionLabels
+                                    .CANCEL_INQUIRY,
+                            label = "문의 취소",
+                            requiresConfirmation = true,
+                        ),
+                        onClick = { clicked = true },
+                    )
+                }
+            }
+
+            waitForIdle()
+
+            onNodeWithTag("cancelInquiry")
+                .assertIsDisplayed()
+                .performClick()
+
+            assertTrue(
+                "CANCEL_INQUIRY가 허용되면 취소 버튼이 동작해야 합니다.",
+                clicked,
+            )
+        }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun unsupportedWorkflowAction_isNotRendered() =
+        runManualComposeUiTest {
+            setContent {
+                WaterCareTheme {
+                    WorkflowActionButton(
+                        action = AllowedAction(
+                            code = "INTERNAL_ONLY_ACTION",
+                        ),
+                        onClick = {},
+                    )
+                }
+            }
+
+            waitForIdle()
+
+            val unsupportedDoesNotExist = runCatching {
+                onNodeWithText("INTERNAL_ONLY_ACTION")
+                    .fetchSemanticsNode()
+            }.isFailure
+
+            assertTrue(
+                "지원하지 않는 Workflow Action은 UI에 노출되면 안 됩니다.",
+                unsupportedDoesNotExist,
+            )
+        }
 
     @Test
     @OptIn(ExperimentalTestApi::class)
