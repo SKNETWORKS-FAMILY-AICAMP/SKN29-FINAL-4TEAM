@@ -13,6 +13,7 @@
 | `W5-PLAN-003` | 2026-08-10 KST | 윤승혁 | Scope·Owner·Exit | 필수 산출물·담당자·목표일·DoD·증거와 조건부 Gate 신설 | WBS 변경 없음 | 완료 |
 | `W5-PLAN-004` | 2026-08-10 KST | 윤승혁 | 4→5주차 인계 | 필수 출력과 6~7주차 인계를 WBS 일정으로 재정렬 | WBS 변경 없음 | 완료 |
 | `W5-PLAN-005` | 2026-08-10 KST | 윤승혁 | Issue Template | 필수·조건부·후속·P1 일정 범위 분류 추가 | WBS 변경 없음 | 완료 |
+| `W5-PLAN-006` | 2026-08-11 KST | 윤승혁 | 3.6·3.7 Gate | Web·Mobile 사전 Gate, 일일 Integration 기록과 Blocker Register 착수 | WBS 변경 없음 | 진행 중 |
 
 ## 2. 기준본 확정 조건
 

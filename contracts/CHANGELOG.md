@@ -1,5 +1,33 @@
 # Contracts Changelog
 
+## 2026-08-11 — Backend 소비 의미 불일치 확인
+
+### Audit
+
+- `CANCEL_INQUIRY` Runtime이 승인된 고객·상담사·운영자와 DRAFT·QUESTIONNAIRE_IN_PROGRESS 범위보다 좁은 것을 확인했다.
+- Backend `allowed_actions`가 State·Role 후보만 반환하고 Visit·Transition·Domain Guard와 Runtime availability를 평가하지 않는 것을 확인했다.
+- Validator·Crosswalk `12/7/0/4`·Contract Test PASS는 정적 증거이며 Runtime 의미 승인과 분리한다.
+
+### Decision boundary
+
+- 승인된 취소 역할·상태 계약은 유지하고 Backend Runtime을 계약에 맞춘다.
+- `allowed_actions`는 동적 Guard와 Runtime availability를 모두 통과한 행동만 반환한다.
+- 수정·표적 회귀·PostgreSQL 독립 QA 전까지 `TEAM_BASELINE` 전환과 Backend 소비 ACK를 보류한다.
+
+## 2026-08-11 — Contract CI 현행 감사
+
+### Audit
+
+- 로컬 State·Mermaid·Code·OpenAPI·Example·Crosswalk·Root Contract Test 7개 Gate는 현재 기준선에서 모두 통과한다.
+- 현행 Data CI는 State Machine Validator와 Mermaid Drift만 자동 실행한다.
+- `contracts/api/**`, `contracts/codes/**`, `contracts/examples/**`, `contracts/error-codes/**`, `tests/contract/**` 변경은 현행 Data CI Trigger에서 누락돼 있다.
+
+### Decision boundary
+
+- 별도 Contract CI 분리를 PM 권고안으로 기록하고 `.github/workflows/**` 주관 담당자 적용·원격 검증을 요청한다.
+- 실제 Branch 또는 PR Run이 확인되기 전에는 Contract CI 강화 완료로 판정하지 않는다.
+- 과거 Changelog의 “전체 계약 Gate Data CI 연동” 설명은 목표 상태였으며, 현행 Workflow 기준으로는 부분 연동이다.
+
 ## 2026-08-10 — Mobile 고객 문의 읽기·추가답변 Runtime
 
 ### Added
