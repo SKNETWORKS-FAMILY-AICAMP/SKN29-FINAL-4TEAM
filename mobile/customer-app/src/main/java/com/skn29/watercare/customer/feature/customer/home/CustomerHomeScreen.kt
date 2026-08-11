@@ -94,7 +94,7 @@ fun CustomerHomeContent(
         roleLabel = "고객용",
         palette = palette,
         backgroundRes = R.drawable.water_splash_customer_r19,
-        backgroundImageAlpha = 0.58f,
+        backgroundImageAlpha = 0.72f,
         bottomItems = listOf(
     ReferenceBottomItem(
         iconRes = R.drawable.ref_home,
@@ -170,15 +170,8 @@ fun CustomerHomeContent(
                 imageEmphasis = 1.12f,
             )
 
-            ReferenceCompactBanner(
-                title = "서비스 연결 상태",
-                message = previewLabel,
-                palette = palette,
-                warning = false,
-            )
-
             ReferenceSectionHeader(
-                title = "내 정수기 컨디션",
+                title = "내 정수기 상태",
                 trailing = "한눈에 확인  ›",
                 palette = palette,
             )
@@ -196,8 +189,8 @@ fun CustomerHomeContent(
                     ),
                     ReferenceStatusItem(
                         iconRes = R.drawable.ref_power,
-                        label = "진행 문의",
-                        value = activeInquiry?.statusLabel ?: "없음",
+                        label = "최근 진단",
+                        value = activeInquiry?.statusLabel ?: "확인 완료",
                     ),
                 ),
                 palette = palette,
@@ -214,7 +207,7 @@ fun CustomerHomeContent(
                         iconRes = R.drawable.ref_intake,
                         label = "증상 접수",
                         subtitle = if (state.intakeAvailable) {
-                            "바로 접수"
+                            "신청하기"
                         } else {
                             "설정 필요"
                         },
@@ -228,7 +221,7 @@ fun CustomerHomeContent(
                         iconRes = R.drawable.ref_care,
                         label = "AI 자가진단",
                         subtitle = if (fixtureGuidanceAvailable) {
-                            "Fixture 안내"
+                            "문제 확인하기"
                         } else {
                             "API 준비 중"
                         },
@@ -243,15 +236,15 @@ fun CustomerHomeContent(
                     ),
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_schedule,
-                        label = "방문 예약",
-                        subtitle = "API 준비 중",
+                        label = "방문 예약 조회",
+                        subtitle = "예약 확인",
                         enabled = false,
                         onClick = {},
                     ),
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_product,
                         label = "제품 정보",
-                        subtitle = "준비 중",
+                        subtitle = "제품 안내",
                         enabled = false,
                         onClick = {},
                     ),

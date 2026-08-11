@@ -105,9 +105,9 @@ val TechnicianReferencePalette = ReferenceDashboardPalette(
     darkSurface = true,
 )
 
-private val ReferenceWaterDropPanelShape = RoundedCornerShape(30.dp)
+private val ReferenceWaterDropPanelShape = RoundedCornerShape(32.dp)
 
-private val ReferenceWaterDropTileShape = RoundedCornerShape(26.dp)
+private val ReferenceWaterDropTileShape = RoundedCornerShape(28.dp)
 
 data class ReferenceStatusItem(
     @DrawableRes val iconRes: Int,
@@ -453,14 +453,25 @@ private fun ReferenceBrandMark(
         drawPath(
             path = droplet,
             brush = Brush.linearGradient(
-                listOf(
-                    palette.accent,
-                    palette.accentSecondary,
-                )
+                if (palette.darkSurface) {
+                    listOf(
+                        palette.accent,
+                        palette.accentSecondary,
+                    )
+                } else {
+                    listOf(
+                        Color.White,
+                        Color(0xFFBDEBFF),
+                    )
+                }
             ),
         )
         drawCircle(
-            color = Color.White.copy(alpha = 0.82f),
+            color = if (palette.darkSurface) {
+                Color.White.copy(alpha = 0.86f)
+            } else {
+                palette.accent.copy(alpha = 0.94f)
+            },
             radius = size.minDimension * 0.17f,
             center = Offset(
                 size.width * 0.43f,
@@ -502,7 +513,11 @@ fun ReferenceDashboardHeader(
             ) {
                 Text(
                     title,
-                    color = palette.textStrong,
+                    color = if (palette.darkSurface) {
+                        palette.textStrong
+                    } else {
+                        Color.White
+                    },
                     fontFamily = FontFamily.SansSerif,
                     fontSize = 27.sp,
                     lineHeight = 31.sp,
@@ -517,7 +532,11 @@ fun ReferenceDashboardHeader(
                     } else {
                         "WaterCare Home Service"
                     },
-                    color = palette.textMuted.copy(alpha = 0.78f),
+                    color = if (palette.darkSurface) {
+                        palette.textMuted.copy(alpha = 0.82f)
+                    } else {
+                        Color.White.copy(alpha = 0.84f)
+                    },
                     fontSize = 10.sp,
                     lineHeight = 12.sp,
                     fontWeight = FontWeight.Medium,
@@ -574,9 +593,9 @@ fun ReferenceHeroCard(
         ) {
             val compact = maxWidth < 360.dp
             val imageSize = (
-                if (compact) 154.dp else 188.dp
+                if (compact) 160.dp else 198.dp
             ) * imageEmphasis.coerceIn(0.94f, 1.12f)
-            val heroHeight = if (compact) 220.dp else 250.dp
+            val heroHeight = if (compact) 228.dp else 262.dp
             val firstLine = greeting.substringBefore("\n")
             val secondLine = greeting.substringAfter("\n", "")
 
@@ -853,42 +872,15 @@ fun ReferenceSectionHeader(
         }
 
         if (!trailing.isNullOrBlank()) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(
-                        if (palette.darkSurface) {
-                            Color.White.copy(alpha = 0.08f)
-                        } else {
-                            Color.White.copy(alpha = 0.64f)
-                        }
-                    )
-                    .border(
-                        BorderStroke(
-                            1.dp,
-                            if (palette.darkSurface) {
-                                Color.White.copy(alpha = 0.16f)
-                            } else {
-                                palette.accent.copy(alpha = 0.14f)
-                            },
-                        ),
-                        RoundedCornerShape(999.dp),
-                    )
-                    .padding(
-                        horizontal = 10.dp,
-                        vertical = 6.dp,
-                    ),
-            ) {
-                Text(
-                    trailing,
-                    color = palette.accent,
-                    fontSize = 11.sp,
-                    lineHeight = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+            Text(
+                trailing,
+                color = palette.accent,
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
@@ -1225,7 +1217,7 @@ fun ReferenceBottomNavigation(
     items: List<ReferenceBottomItem>,
     palette: ReferenceDashboardPalette,
 ) {
-    val shape = RoundedCornerShape(30.dp)
+    val shape = RoundedCornerShape(34.dp)
 
     Row(
         modifier = Modifier
@@ -1254,9 +1246,9 @@ fun ReferenceBottomNavigation(
                 } else {
                     Brush.verticalGradient(
                         listOf(
-                            Color.White.copy(alpha = 0.92f),
-                            Color.White.copy(alpha = 0.78f),
-                            palette.accentSoft.copy(alpha = 0.08f),
+                            Color.White.copy(alpha = 0.88f),
+                            Color.White.copy(alpha = 0.70f),
+                            palette.accentSoft.copy(alpha = 0.13f),
                         )
                     )
                 }
@@ -1451,13 +1443,13 @@ fun ReferenceGlassPanel(
         else -> Brush.verticalGradient(
             listOf(
                 Color.White.copy(
-                    alpha = if (strong) 0.90f else 0.82f
+                    alpha = if (strong) 0.82f else 0.74f
                 ),
                 Color.White.copy(
-                    alpha = if (strong) 0.74f else 0.66f
+                    alpha = if (strong) 0.64f else 0.56f
                 ),
                 palette.accentSoft.copy(
-                    alpha = if (strong) 0.075f else 0.045f
+                    alpha = if (strong) 0.10f else 0.065f
                 ),
             )
         )
@@ -2535,14 +2527,16 @@ fun ReferencePearlBackground(
                 Brush.verticalGradient(
                     if (palette.darkSurface) {
                         listOf(
-                            Color(0xFF073E58),
+                            Color(0xFF043A55),
+                            Color(0xFF05324A),
                             palette.backgroundStart,
-                            palette.backgroundEnd,
+                            Color(0xFF031F32),
                         )
                     } else {
                         listOf(
+                            Color(0xFF4FAFE8),
+                            Color(0xFF9FDCF5),
                             Color(0xFFEAF8FF),
-                            palette.backgroundStart,
                             palette.backgroundEnd,
                         )
                     }
@@ -2574,9 +2568,10 @@ fun ReferencePearlBackground(
                     } else {
                         Brush.verticalGradient(
                             listOf(
-                                Color.White.copy(alpha = 0.14f),
-                                Color.White.copy(alpha = 0.06f),
-                                Color(0xFFEAF8FF).copy(alpha = 0.30f),
+                                Color(0xFF1689D1).copy(alpha = 0.10f),
+                                Color.White.copy(alpha = 0.05f),
+                                Color.White.copy(alpha = 0.12f),
+                                Color(0xFFEAF8FF).copy(alpha = 0.24f),
                             )
                         )
                     }

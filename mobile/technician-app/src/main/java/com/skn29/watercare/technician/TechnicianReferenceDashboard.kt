@@ -152,7 +152,7 @@ fun TechnicianReferenceDashboard(
         roleLabel = "방문기사용",
         palette = palette,
         backgroundRes = R.drawable.water_splash_technician_r19,
-        backgroundImageAlpha = 0.50f,
+        backgroundImageAlpha = 0.66f,
         modifier = modifier,
         bottomItems = listOf(
             ReferenceBottomItem(
@@ -184,7 +184,7 @@ fun TechnicianReferenceDashboard(
                 "${displayName}님,\n안녕하세요"
             },
             subtitle =
-                "오늘 방문 일정과 안전 점검 항목을 한눈에 확인하세요.",
+                "오늘도 안전하게 방문 일정을 확인하고 고객 서비스를 준비하세요.",
             metricLabel = "",
             metricValue = "",
             metricUnit = "",
@@ -218,19 +218,6 @@ fun TechnicianReferenceDashboard(
                     healthy = dangerCount == 0,
                 ),
             ),
-        )
-
-        ReferenceCompactBanner(
-            title = "오늘 업무 브리핑",
-            message = if (total == 0) {
-                "오늘 배정된 방문은 없습니다. 새 일정이 등록되면 바로 표시됩니다."
-            } else if (risky > 0) {
-                "총 ${total}건 · 주의/위험 ${risky}건을 먼저 확인하세요."
-            } else {
-                "총 ${total}건 · 현재 주의/위험 방문은 없습니다."
-            },
-            palette = palette,
-            warning = risky > 0,
         )
 
         ReferenceSectionHeader(
@@ -285,7 +272,7 @@ fun TechnicianReferenceDashboard(
 
         ReferenceSectionHeader(
             title = "빠른 업무",
-            trailing = "업무 메뉴  ›",
+            trailing = "전체보기  ›",
             palette = palette,
         )
         ReferenceActionRow(
