@@ -1,7 +1,7 @@
 # 5주차 E2E Action 구현 인계
 
 > 결정 원본: `docs/decisions/week5-e2e-action-decision.md`  
-> 상태: **OWNER_APPLY_REQUEST**  
+> 상태: **OWNER_APPLIED · CONTRACT_QA_VERIFIED**
 > 원칙: 현행 WBS 날짜를 유지하며 PM 결정, 주관 담당자 계약 적용, Runtime 완료를 구분한다.
 > 용도: **PM 내부 진행 관리용 — 팀원 전달 불필요**
 
@@ -16,11 +16,11 @@
 
 | 순서 | 문서 | 수신자 | 현재 상태 |
 |---:|---|---|---|
-| 1 | `docs/handoffs/week5-e2e-action-backend-contract-apply-request.md` | 최지용 | 적용 요청 |
-| 2 | `docs/handoffs/week5-e2e-action-contract-qa-request.md` | 김은진 | 최지용 Commit 대기 |
-| 3 | 이 Index와 PM 결정서 | 윤승혁 | 회신 취합 대기 |
+| 1 | `docs/handoffs/week5-e2e-action-backend-contract-apply-request.md` | 최지용 | 적용 완료 |
+| 2 | `docs/handoffs/week5-e2e-action-contract-qa-request.md` | 김은진 | Contract Gate 검증 완료 |
+| 3 | 이 Index와 PM 결정서 | 윤승혁 | 3.2 완료 판정 |
 
-한예나·양정현·이동윤에게는 1~2단계가 끝난 뒤 확정 Commit을 기준으로 소비자 검토를 요청한다.
+한예나·양정현·이동윤을 포함한 실제 소비자 검토는 3.3에서 현재 기준 Commit으로 요청한다.
 
 ## 2. 전체 담당자 Matrix
 
@@ -35,7 +35,7 @@
 
 ## 3. 구현 공통 조건
 
-1. 최지용의 API·Code 적용과 김은진의 Test 적용이 완료되기 전에는 3.2 전체를 완료 처리하지 않는다.
+1. 최지용의 API·Code 적용과 김은진의 Contract QA가 완료돼 3.2를 완료 처리했다.
 2. `x-runtime-status: NOT_IMPLEMENTED`는 Source와 Test 증거가 모두 확보된 뒤에만 갱신한다.
 3. Client가 다음 State를 보내거나 자체 계산하지 않는다.
 4. 모든 쓰기는 `Idempotency-Key`, `X-Correlation-ID`, `state_version`을 사용한다.

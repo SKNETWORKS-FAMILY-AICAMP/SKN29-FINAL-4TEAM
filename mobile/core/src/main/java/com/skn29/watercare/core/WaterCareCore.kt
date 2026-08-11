@@ -56,7 +56,6 @@ object WaterCareCore {
         customerCareRepository = when (customerCareRuntimeConfig.mode) {
             CustomerCareMode.REMOTE -> RemoteIntakeCustomerCareRepository(
                 inquiryRepository = inquiryRepository,
-                fallbackRepository = fixtureRepository,
                 subscriptionRepository = subscriptionRepository,
             )
             CustomerCareMode.FAKE -> fixtureRepository

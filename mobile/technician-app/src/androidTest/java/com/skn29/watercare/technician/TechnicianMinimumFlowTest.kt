@@ -5,16 +5,66 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.v2.runAndroidComposeUiTest
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
+import androidx.lifecycle.Lifecycle
+import androidx.test.core.app.ActivityScenario
 import com.skn29.watercare.core.model.UserData
 import com.skn29.watercare.core.ui.theme.WaterCareTheme
 import com.skn29.watercare.technician.testing.ComposeTestActivity
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 
+
+private class ManualComposeTestScope(
+    private val delegate: ComposeTestRule,
+    private val scenario: ActivityScenario<ComposeTestActivity>,
+) : ComposeTestRule by delegate {
+    fun setContent(
+        content: @Composable () -> Unit,
+    ) {
+        if (scenario.state != Lifecycle.State.RESUMED) {
+            scenario.moveToState(Lifecycle.State.RESUMED)
+        }
+
+        scenario.onActivity { activity ->
+            activity.setContent {
+                content()
+            }
+        }
+
+        delegate.waitForIdle()
+    }
+}
+@RunWith(AndroidJUnit4::class)
 class TechnicianMinimumFlowTest {
+    @get:Rule
+    val composeTestRule = createEmptyComposeRule()
+
+    private fun runManualComposeUiTest(
+        block: ManualComposeTestScope.() -> Unit,
+    ) {
+        val scenario = ActivityScenario.launch(ComposeTestActivity::class.java)
+        try {
+            if (scenario.state != Lifecycle.State.RESUMED) {
+                scenario.moveToState(Lifecycle.State.RESUMED)
+            }
+
+            ManualComposeTestScope(
+                delegate = composeTestRule,
+                scenario = scenario,
+            ).block()
+        } finally {
+            scenario.close()
+        }
+    }
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun backendUnavailable_loginScreenShowsExplicitFixturePreview() = runAndroidComposeUiTest<ComposeTestActivity> {
+    fun backendUnavailable_loginScreenShowsExplicitFixturePreview() = runManualComposeUiTest {
         setContent {
             WaterCareTheme {
                 TechnicianReferenceLogin(
@@ -39,7 +89,7 @@ class TechnicianMinimumFlowTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun offlineDashboard_isExplicitlyMarkedAsSyntheticFixture() = runAndroidComposeUiTest<ComposeTestActivity> {
+    fun offlineDashboard_isExplicitlyMarkedAsSyntheticFixture() = runManualComposeUiTest {
         setContent {
             WaterCareTheme {
                 TechnicianReferenceDashboard(
@@ -57,7 +107,7 @@ class TechnicianMinimumFlowTest {
             }
         }
 
-        onNodeWithText("오프라인 합성 Fixture")
+        onNodeWithText("오프라인 합성 데이터")
             .performScrollTo()
             .assertIsDisplayed()
         onNodeWithText("현재 배정된 방문이 없습니다.")
@@ -67,7 +117,7 @@ class TechnicianMinimumFlowTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun remoteDashboard_neverLabelsFixtureAsRealVisitData() = runAndroidComposeUiTest<ComposeTestActivity> {
+    fun remoteDashboard_neverLabelsFixtureAsRealVisitData() = runManualComposeUiTest {
         setContent {
             WaterCareTheme {
                 TechnicianReferenceDashboard(
@@ -87,7 +137,7 @@ class TechnicianMinimumFlowTest {
             }
         }
 
-        onNodeWithText("실제 방문 API · BLOCKED_BY_BACKEND")
+        onNodeWithText("방문 API 연결 대기")
             .performScrollTo()
             .assertIsDisplayed()
     }

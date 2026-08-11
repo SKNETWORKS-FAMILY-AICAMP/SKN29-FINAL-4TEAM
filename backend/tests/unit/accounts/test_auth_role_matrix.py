@@ -26,6 +26,7 @@ def assert_token_claims(raw_token, token_class, user, role, token_type):
     assert token["sub"] == str(user.public_id)
     assert token["role_code"] == role
     assert token["token_type"] == token_type
+    assert token["auth_version"] == user.auth_version
 
 
 @override_settings(

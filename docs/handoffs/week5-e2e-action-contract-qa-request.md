@@ -1,5 +1,6 @@
 # 김은진 — E2E Action Contract QA 요청
 
+> 처리 결과: **APPROVE** — `docs/testing/results/week5-entry-gate-result.md`의 Contract Gate PASS 확인
 > 선행 조건: 최지용의 `APPLIED` 회신과 적용 Commit SHA  
 > 범위: `tests/**` 검토·적용 및 같은 Commit 독립 검증
 
@@ -26,7 +27,8 @@ resumeConsultation
 - 담당 기사·마지막 처리 담당자 권한 유지
 - Inquiry/Visit Version·멱등키·409 정책 유지
 - 신규 8개는 Runtime 증거가 없으면 `OPENAPI_CONFIRMED / NOT_IMPLEMENTED`
-- Crosswalk 예상값: `2 / 17 / 0 / 4`, OpenAPI 31 Operations
+- 최초 적용 Crosswalk 예상값: `2 / 17 / 0 / 4`, OpenAPI 31 Operations
+- 후속 Runtime 반영 현행값: `12 / 7 / 0 / 4`, OpenAPI 33 Operations
 
 주요 Test 위치:
 

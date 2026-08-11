@@ -110,6 +110,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_synthetic = models.BooleanField(default=False)
+    auth_version = models.PositiveIntegerField(default=1)
     date_joined = models.DateTimeField(default=timezone.now)
 
     objects = UserManager()
@@ -147,6 +148,10 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
                     )
                 ),
                 name="accounts_user_employee_by_role",
+            ),
+            models.CheckConstraint(
+                condition=Q(auth_version__gte=1),
+                name="accounts_user_auth_version_gte_1",
             ),
         ]
 

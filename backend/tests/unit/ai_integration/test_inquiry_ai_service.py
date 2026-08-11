@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import date
+from unittest.mock import patch
 from uuid import uuid4
 
 import httpx
@@ -535,3 +536,63 @@ def test_error_contract_and_timeout_are_audited_without_backend_retry():
     assert timeout_run.retry_count == 0
     assert len(timeout_calls) == 1
     timeout_http_client.close()
+
+
+def test_ai_lifecycle_trace_contains_only_safe_identifiers_and_outcome_fields():
+    inquiry = create_inquiry(20)
+    client, http_client, _calls = make_client()
+    correlation_id = uuid4()
+    ai_request_id = uuid4()
+
+    with patch(
+        "apps.inquiries.services.inquiry_ai_service.ai_trace_logger.info"
+    ) as trace_info:
+        outcome = analyze(
+            inquiry,
+            client,
+            correlation_id=correlation_id,
+            ai_request_id=ai_request_id,
+        )
+
+    assert outcome.status == AIRun.Status.SUCCEEDED
+    assert [call.args[0] for call in trace_info.call_args_list] == [
+        "ai_analysis_started",
+        "ai_analysis_terminal",
+    ]
+    terminal = trace_info.call_args_list[-1].kwargs["extra"]
+    assert terminal["correlation_id"] == str(correlation_id)
+    assert terminal["inquiry_id"] == str(inquiry.public_id)
+    assert terminal["ai_request_id"] == str(ai_request_id)
+    assert terminal["ai_run_id"] == outcome.ai_run_id
+    assert terminal["trace_stage"] == "ANALYSIS_TERMINAL"
+    assert not {
+        "raw_text",
+        "input_payload",
+        "validated_output_payload",
+        "error_message",
+    } & set(terminal)
+    http_client.close()
+
+
+def test_expected_ai_failure_trace_uses_safe_warning_code():
+    inquiry = create_inquiry(21)
+
+    def service_error(_response: dict, request: dict) -> dict:
+        return error_payload(request)
+
+    client, http_client, _calls = make_client(
+        transform=service_error,
+        status_code=503,
+    )
+    with patch(
+        "apps.inquiries.services.inquiry_ai_service.ai_trace_logger.warning"
+    ) as trace_warning:
+        outcome = analyze(inquiry, client)
+
+    assert outcome.status == AIRun.Status.FAILED
+    trace_warning.assert_called_once()
+    extra = trace_warning.call_args.kwargs["extra"]
+    assert extra["failure_code"] == "AI-FAILED-01"
+    assert extra["pending_reason"] == "AI-FAILED-01"
+    assert "The AI service could not complete the request" not in str(extra)
+    http_client.close()

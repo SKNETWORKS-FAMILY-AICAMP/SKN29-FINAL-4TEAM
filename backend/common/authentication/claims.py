@@ -8,6 +8,7 @@ from typing import Any
 SUBJECT_CLAIM = "sub"
 ROLE_CLAIM = "role_code"
 TOKEN_TYPE_CLAIM = "token_type"
+AUTH_VERSION_CLAIM = "auth_version"
 
 
 def required_claim(token: Any, claim_name: str) -> str:
@@ -16,3 +17,12 @@ def required_claim(token: Any, claim_name: str) -> str:
     if not normalized:
         raise ValueError(f"{claim_name} claim이 없습니다.")
     return normalized
+
+
+def required_positive_int_claim(token: Any, claim_name: str) -> int:
+    """Return a positive integer claim while explicitly rejecting booleans."""
+
+    value = token.get(claim_name)
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        raise ValueError(f"{claim_name} claim must be a positive integer.")
+    return value

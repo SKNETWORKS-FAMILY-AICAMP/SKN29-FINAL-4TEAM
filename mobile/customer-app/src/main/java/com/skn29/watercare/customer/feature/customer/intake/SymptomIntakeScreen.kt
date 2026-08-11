@@ -117,7 +117,7 @@ fun SymptomIntakeContent(
     val retrySubmitAction = visibleConflictActions
         .firstOrNull { it.isRetrySubmitAction() }
 
-    WaterCareScreen(title = "문진 시작", onBack = onBack) {
+    WaterCareScreen(title = "증상 접수", onBack = onBack) {
         LiquidGlassPanel(strong = true) {
             Row(
                 modifier = Modifier
@@ -130,12 +130,12 @@ fun SymptomIntakeContent(
                     verticalArrangement = Arrangement.spacedBy(7.dp),
                 ) {
                     Text(
-                        "어떤 문제가 있나요?",
+                        "어떤 증상이 있나요?",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Black,
                     )
                     Text(
-                        "증상은 복수로 선택할 수 있고, 모르는 오류 코드는 그대로 전달합니다.",
+                        "증상을 선택하고 현재 상태를 자세히 알려주세요.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -148,7 +148,7 @@ fun SymptomIntakeContent(
             }
         }
 
-        SectionCard("문의 유형") {
+        SectionCard("접수 유형") {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 EntryMode.entries.forEach { mode ->
                     LiquidFilterChip(
@@ -164,7 +164,7 @@ fun SymptomIntakeContent(
             }
         }
 
-        SectionCard("대표 증상 · 복수 선택") {
+        SectionCard("증상 선택 · 복수 선택") {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 SymptomTopic.entries.forEach { topic ->
                     LiquidFilterChip(
@@ -179,7 +179,7 @@ fun SymptomIntakeContent(
         OutlinedTextField(
             value = state.rawText,
             onValueChange = onRawTextChange,
-            label = { Text("증상을 자세히 적어 주세요") },
+            label = { Text("상세 설명") },
             supportingText = {
                 Text(
                     state.rawTextError
@@ -318,7 +318,7 @@ fun SymptomIntakeContent(
             text = when {
                 state.isSubmitting -> "제출 중"
                 hasConflict -> "최신 상태 확인 필요"
-                else -> "안내 결과 확인"
+                else -> "증상 제출"
             },
             onClick = onSubmit,
             enabled = !state.isSubmitting && !hasConflict,

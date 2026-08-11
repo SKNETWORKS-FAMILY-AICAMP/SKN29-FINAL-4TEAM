@@ -1,11 +1,9 @@
 # Django JWT·RBAC 로그인·계정관리 구현 및 검증 가이드
 
-> 기준일: 2026-08-03
+> 기준일: 2026-08-11
 > 작성·설계 책임: Backend·Database 담당
 > 협업·검토: 윤승혁(PM), 김은진(Data·QA)
-> 상태: T-017 진행 중(`OWNER_IMPLEMENTATION_READY`) /
-> T-017A 정책 방향 승인·Migration QA 보완 중(`POLICY_APPROVED_QA_CHANGE_REQUEST`) /
-> T-017B 착수 불가
+> 상태: T-017·T-017A·T-017B 완료 / T-017C 작성자 구현·회귀 PASS, PostgreSQL·독립 QA 대기
 > 대상: `T-017` 인증·RBAC와 `T-017A~C` 계정관리 경계
 > 데이터 범위: 합성 사용자와 내부 시연 관리자만
 > 실행 원칙: `설계 결정 → 검토 → 한 작업 구현 → 즉시 검증`
@@ -20,6 +18,13 @@
 `T-017B`·`T-017C`의 Model, Migration, Admin, Service, 오류 코드가
 구현된 것은 아니다.
 
+> **2026-08-11 현행화:** 아래의 2026-08-03 후보 SHA·차단 문구는 당시
+> 의사결정 이력으로만 보존한다. 현재 T-017A는 PM 설계 완료 결정,
+> T-017B는 Runtime과 독립 QA가 완료됐다. T-017C는 `auth_version`,
+> Lifecycle Service, 감사, 마지막 관리자 보호를 구현했고 작성자 Backend
+> 전체 회귀까지 통과했다. 쓰기 가능한 PostgreSQL 동시성 재현과 독립 QA는
+> 아직 남아 있다.
+
 ## 0. 2026-08-03 현재 구현·검증 요약
 
 | 범위 | 현재 상태 | 현재 근거 | 남은 Gate |
@@ -28,8 +33,9 @@
 | UUID JWT·활성/역할 재검증 | 구현됨 | UUID `sub`, Refresh 회전·폐기, 사용자 활성·역할 재검사 | T-017C 계정 세대·전체 Token 폐기 |
 | 4역할 Demo Seed | 구현됨·PostgreSQL 2회 멱등 PASS | CUSTOMER·CONSULTANT·TECHNICIAN·OPERATOR Seed와 역할 집합 확인 | 고정 후보 SHA의 QA 재현 |
 | Inquiry START·SUBMIT·CANCEL 권한 | 작성자 검증 완료, 고정 후보 QA 전 | 4역할, 미인증 401, 비고객 403, 타 고객 404, 실패 부수효과 0 | 후보 SHA의 QA 재현. 상담·방문은 T-042/T-047 |
-| T-017A 설계 | PM 정책 방향 승인·QA 변경 요청 | 단일 User 원장·권한 분리·`is_synthetic`·`auth_version` 방향 승인, WBS v2.1 반영 | Migration·Backfill·Rollback·Seed QA 승인 |
-| T-017B/C | 미구현·착수 불가 | Admin·Lifecycle·Account Audit Runtime 없음 | T-017A 완료 후 B, B PASS 후 C |
+| T-017A 설계 | 완료 | 단일 User 원장·권한 분리·`is_synthetic`·T-017B/C 경계와 PM 완료 결정 | 없음 |
+| T-017B | 완료 | 합성계정 Migration·Admin Runtime, 독립 QA 42건·Forward·Rollback·Backfill·보호 PASS | QA 원문 저장소 링크 보강 |
+| T-017C | 작성자 구현·회귀 PASS | Token 세대·Lifecycle·감사·마지막 관리자 보호, 최신 통합 후보 Backend `966 passed, 17 skipped` | PostgreSQL 동시성·Migration 재현과 독립 QA |
 
 2026-08-03 17:10 KST 작성자 재검증은 4역할 Auth Matrix `4 passed`,
 Accounts 전체 `70 passed`, 고객 문의 RBAC·IDOR `24 passed`다. 실제 로컬
@@ -702,10 +708,9 @@ $backendPython = ".\.venv\Scripts\python.exe"
 | T-017A Data·QA | 김은진 | `CHANGE_REQUEST` | Backfill·`auth_version`·관리자 보호·Migration QA | 2026-08-03 KST |
 | `/me` 경로 | 김은진 | 정합 확인 | `GET /api/v1/me`, 추가 변경 없음 | 2026-08-03 KST |
 
-WBS v2.1은 `T-042`에서 기사 배정·미배정 Runtime과 화면을 구현하고,
-`T-047`에서 역할별 최종 권한 인수 테스트를 수행하도록 원격 main에
-반영됐다. T-017A Data·QA 승인 전에는 T-017A를 팀 완료로 표시하지 않으며,
-`t017b_start_allowed=false`를 유지한다. 공통 회신
+WBS는 `T-042`에서 기사 배정·미배정 Runtime과 화면을 구현하고,
+`T-047`에서 역할별 최종 권한 인수 테스트를 수행한다. 2026-08-11 기준
+T-017A/B는 완료됐으므로 `t017c_start_allowed=true`다. 공통 회신
 필드는 [Backend 팀 검토 및 인계 체크리스트](../연동_인계/Backend_팀_검토_인계_체크리스트.md)의
 반환 형식을 사용한다.
 
@@ -714,14 +719,12 @@ WBS v2.1은 `T-042`에서 기사 배정·미배정 Runtime과 화면을 구현�
 | 순서 | 담당 | 작업 | 반환 증거 |
 | ---: | --- | --- | --- |
 | 1 | Backend·Database | 4역할 Matrix·Accounts·문의 RBAC·PostgreSQL·Seed 로컬 검증 | 이 문서의 7.1~7.2와 테스트 파일 — 완료 |
-| 2 | 윤승혁(PM) | WBS를 T-017/A 진행 중, B/C 차단으로 수정하고 T-042/T-047 범위 반영 | 원격 main WBS v2.1 — 완료 |
-| 3 | Backend·Database | 비고객 4건의 Ledger 판정 근거와 `auth_version` rollback·실무 관리자 보호 요구 보완 | 3.4·3.7 갱신 — 작성자 보완 완료, PM·QA 세부 확정 대기 |
-| 4 | Backend·Database | 최신 main 기반 후보 3파일 Commit·SHA 고정·`origin/jiyong` Push | 이 문서가 포함된 후보 Commit |
-| 5 | 김은진(Data·QA) | Accounts 70·문의 24·PostgreSQL·Seed·4역할 Matrix 독립 재현 | Exit code·환경·관찰 결과 |
-| 6 | 윤승혁(PM)·김은진(Data·QA) | T-017A 완료와 T-017B 착수 여부 최종 결정 | WBS·Migration QA 양쪽 결과 |
-| 7 | Backend·Database | 허용된 경우에만 T-017B 구현·검증 | Admin 표적·PostgreSQL·전체 회귀 |
-| 8 | Data·QA | T-017B 비작성자 재현 | 빈 DB·기존 DB·Admin 보안 결과 |
-| 9 | Backend·Database | T-017B PASS 뒤 T-017C 구현·검증 | Token·동시성·감사·rollback 증거 |
+| 2 | 윤승혁(PM) | T-017A 설계 완료·T-017B 착수 결정 | 완료 |
+| 3 | Backend·Database | T-017B Migration·Admin 구현·작성자 검증 | 완료 |
+| 4 | 김은진(Data·QA) | T-017B 빈 DB·기존 DB·Admin 보안 독립 재현 | 42 passed·Migration·Backfill·보호 PASS |
+| 5 | Backend·Database | T-017B 근거와 WBS 상태 정합화 | 완료 |
+| 6 | Backend·Database | T-017C 테스트 우선 구현·검증 | Token·동시성·감사·rollback 증거 — 진행 대상 |
+| 7 | Data·QA | T-017C 독립 재현 | 작성자 후보 이후 |
 | 10 | Data·QA·윤승혁(PM) | T-017C/T-047A QA와 최종 병합 판정 | 잔여 위험·병합된 main SHA |
 
 한 단계가 실패하면 다음 단계로 넘어가지 않는다. 팀원은 개인 작업
@@ -766,8 +769,8 @@ Branch를 임의 기준선으로 사용하지 않고 PM이 병합한 `main` SHA�
 - [x] Accounts 70건과 문의 RBAC·IDOR 24건을 통과했다.
 - [x] 작성자 로컬 PostgreSQL·Migration parity·Seed 2회·Readiness를 통과했다.
 - [x] 최신 main 기반 검토 후보 범위를 Matrix·가이드·간결 인계서로 고정
-- [ ] 고정 후보 SHA의 김은진 비작성자 재현
-- [x] 원격 main WBS v2.1의 T-017/A `진행 중`, B/C `차단`, T-042/T-047 범위 변경 확인
+- [x] 김은진 비작성자 T-017B 재현 — 42 passed, Migration·Backfill·Admin 보호 PASS
+- [x] WBS의 T-017·T-017A·T-017B 완료와 T-017C 착수 가능 경계를 분리했다.
 - [x] 현재 T-017 Auth 구현과 T-017A/B/C 경계를 분리했다.
 - [x] `accounts.User` 단일 원장을 결정했다.
 - [x] `role_code`와 `is_staff`·Group·Permission을 분리했다.
@@ -782,14 +785,13 @@ Branch를 임의 기준선으로 사용하지 않고 PM이 병합한 `main` SHA�
 - [x] 윤승혁(PM)의 T-017A 정책 방향 승인 기록
 - [ ] 마지막 활성 실무 계정 관리자 Group·Permission·비상 계정 범위 확정
 - [x] 비고객 User 4건의 Canonical Import ledger·Dataset·Mapping·Fixture Hash 연결을 작성자 로컬에서 확인
-- [ ] Data·QA의 승인 Batch·Hash 고정과 비작성자 Backfill 건수 재현
-- [ ] Data·QA Migration·QA 검토 증거
-- [ ] WBS의 T-017A 완료 승인
+- [x] Data·QA의 비작성자 Backfill·Migration 재현
+- [x] T-017B 독립 QA 검토 증거 요약
+- [x] WBS의 T-017A·T-017B 완료 반영
 
-따라서 현재 최종 판정은 T-017 진행 중·작성자 구현 Gate PASS,
-T-017A 정책 방향 승인·Migration QA 변경 요청
-(`POLICY_APPROVED_QA_CHANGE_REQUEST`)이다. T-017A를 공식 완료로 표시하지
-않고 `t017b_start_allowed=false`를 유지한다.
+따라서 현재 최종 판정은 T-017·T-017A·T-017B 완료,
+T-017C `OWNER_IMPLEMENTATION_READY_QA_PENDING`이다. T-017C의 작성자
+검증을 PostgreSQL 동시성·비작성자 재현·공식 완료로 확대하지 않는다.
 
 ## 12. 유지보수 원칙과 완료 조건
 
@@ -800,11 +802,9 @@ T-017A 정책 방향 승인·Migration QA 변경 요청
   Payload가 바뀌면 관련 기계 계약과 테스트를 같은 변경 묶음에서 갱신한다.
 - 커밋·Push 전 PASS는 로컬 작성자 증거다. 고정 후보 SHA의 김은진 재현과
   윤승혁(PM)의 WBS 확인을 팀 승인으로 별도 기록한다.
-- 윤승혁(PM)의 `APPROVE`는 T-017A 정책 방향 승인이지 T-017A 완료 승인이
-  아니다. Data·QA Migration 승인 전에는 T-017B Runtime·Migration을 만들지
-  않는다.
-- main WBS v2.1의 T-017/A `진행 중`, T-017B/C `차단`을 기준으로 사용한다.
-  검토 후보는 최신 main 기반 clean 작업공간에서 분리하며 원래 Dirty 경로를 포함하지 않는다.
+- T-017A PM 결정과 T-017B 구현·독립 QA는 완료 증거로 사용한다.
+- T-017C는 별도 Model·Migration·Service·감사·동시성 변경 단위로 구현하며,
+  검토 후보는 최신 main 기반 clean 작업공간에서 분리한다.
 - T-017A는 정책·데이터 불변식·Migration·QA 검토와 WBS 상태 갱신 증거가
   있어야 팀 완료로 표시한다.
 - T-017B/C는 실제 Model·Migration·Admin·Service·오류 계약 구현과 표적
@@ -815,19 +815,9 @@ T-017A 정책 방향 승인·Migration QA 변경 요청
 
 ## 13. 작성자 검증 후 다음 작업 Gate
 
-1. 후보는 Matrix·이 가이드·간결 QA 인계서 3경로만 포함한다.
-2. Cached 경로·Numstat·`git diff --cached --check`를 확인한 뒤 생성된
-   `origin/jiyong` 후보 SHA를 김은진에게 전달한다.
-3. 김은진은 그 SHA에서 이 문서 7장의 Matrix·Accounts·문의 RBAC·
-   PostgreSQL·Migration·Seed·Readiness 명령을 독립 재현한다.
-4. T-017은 김은진 재현 PASS와 윤승혁(PM) 완료 판정 뒤에만 완료로 바꾼다.
-5. T-017A는 승인 Batch·Hash, Backfill 건수, `auth_version` 배포·rollback,
-   고정 관리자 Group·Permission·비상 계정 범위를 PM·QA가 결정한 뒤에만
-   완료 처리한다. 그전에는 T-017B/C Model·Migration·Admin·Lifecycle을
-   구현하지 않는다.
-6. QA 대기 중에는 Public Runtime을 늘리지 않고 T-018 첫 GET 계약·테스트
-   Matrix 검토와 현재 T-023 CANCEL·이력·`allowed_actions`의 동작 보존형
-   Characterization만 별도 변경 후보로 준비할 수 있다. T-017 후보와 같은
-   Commit에 섞지 않는다.
-7. 공식 T-017 Gate 뒤 기능 순서는 T-018 읽기 Slice → T-022 잔여 입력
-   Slice와 T-019 읽기 Slice → 승인된 T-023 Event → Backend↔AI다.
+1. [완료] 재활성화 후 과거 Access·Refresh 차단 실패 테스트를 고정했다.
+2. [완료] `auth_version`·Lifecycle·감사·마지막 관리자 보호를 구현했다.
+3. [대기] 폐기 가능한 PostgreSQL QA DB에서 Migration과 동시성·rollback을 검증한다.
+4. [완료] Accounts·T-005 Readiness와 최신 통합 후보 전체 Backend `966 passed, 17 skipped`를 확인했다.
+5. 작성자 증거와 변경 파일·명령·잔여 위험을 김은진에게 전달해 독립 QA를 받는다.
+6. T-017C 독립 QA 전에는 T-047A 완료나 계정 보안 전체 완료로 표시하지 않는다.

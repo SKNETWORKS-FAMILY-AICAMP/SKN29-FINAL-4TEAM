@@ -37,7 +37,7 @@ fun TechnicianReferenceLogin(
         title = "정수기 딜러",
         roleLabel = "방문기사용",
         palette = palette,
-        backgroundRes = R.drawable.water_background_technician,
+        backgroundRes = R.drawable.water_splash_technician_r19,
     ) {
         ReferenceWelcomeCard(
             title = "방문 업무를\n시작하세요",
@@ -154,85 +154,69 @@ fun TechnicianReferenceDashboard(
         title = "정수기 딜러",
         roleLabel = "방문기사용",
         palette = palette,
-        backgroundRes = R.drawable.water_background_technician,
+        backgroundRes = R.drawable.water_splash_technician_r19,
         modifier = modifier,
         bottomItems = listOf(
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_home,
-                label = "홈",
-                selected = true,
-            ),
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_schedule,
-                label = "방문",
-            ),
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_work,
-                label = "작업",
-            ),
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_notice,
-                label = "알림",
-            ),
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_profile,
-                label = "마이",
-            ),
-        ),
+    ReferenceBottomItem(
+        iconRes = R.drawable.ref_home,
+        label = "홈",
+        selected = true,
+    ),
+    ReferenceBottomItem(
+        iconRes = R.drawable.ref_schedule,
+        label = "방문",
+    ),
+    ReferenceBottomItem(
+        iconRes = R.drawable.ref_work,
+        label = "작업",
+    ),
+    ReferenceBottomItem(
+        iconRes = R.drawable.ref_profile,
+        label = "마이",
+    ),
+),
     ) {
         ReferenceHeroCard(
-            greeting = "${displayName}님,\n안녕하세요",
-            subtitle = "안전하고 정확한 방문 서비스를 응원합니다.",
-            metricLabel = "오늘 방문",
-            metricValue = "$total",
-            metricUnit = "건",
-            progress = progress,
-            footnote = "진행 $confirmed 건 · ${(progress * 100).toInt()}%",
+            greeting = if (
+                displayName.contains("합성", ignoreCase = true) ||
+                displayName.contains("SYN", ignoreCase = true)
+            ) {
+                "기사님,\n안녕하세요"
+            } else {
+                "${displayName}님,\n안녕하세요"
+            },
+            subtitle = "오늘 방문 일정을 빠르게 확인해보세요.",
+            metricLabel = "",
+            metricValue = "",
+            metricUnit = "",
+            progress = 0f,
+            footnote = "",
             imageRes = R.drawable.dashboard_toolkit,
             palette = palette,
-        )
-
-        ReferenceCompactBanner(
-            title = if (state.offlinePreview) {
-                "오프라인 합성 Fixture"
-            } else {
-                "실제 방문 API · BLOCKED_BY_BACKEND"
-            },
-            message = if (state.offlinePreview) {
-                "사용자가 명시적으로 선택한 합성 방문 미리보기입니다."
-            } else {
-                "Backend Visit Runtime이 없어 실제 로그인 상태에서는 합성 방문을 자동 표시하지 않습니다."
-            },
-            palette = palette,
-            warning = !state.offlinePreview,
+            roleLabel = "방문기사용",
+            imageEmphasis = 1.04f,
         )
 
         ReferenceSectionHeader(
-            title = "방문 상태",
-            trailing = "현재 목록 기준",
+            title = "오늘 일정",
+            trailing = "방문 현황",
             palette = palette,
         )
         ReferenceStatusRow(
             items = listOf(
                 ReferenceStatusItem(
                     iconRes = R.drawable.ref_schedule,
-                    label = "오늘 일정",
+                    label = "오늘 방문",
                     value = "${total}건",
                 ),
                 ReferenceStatusItem(
                     iconRes = R.drawable.ref_complete,
-                    label = "확정",
+                    label = "확정 일정",
                     value = "${confirmed}건",
                 ),
                 ReferenceStatusItem(
-                    iconRes = R.drawable.ref_inspection,
-                    label = "점검 필요",
-                    value = "${risky}건",
-                    healthy = risky == 0,
-                ),
-                ReferenceStatusItem(
                     iconRes = R.drawable.ref_urgent,
-                    label = "긴급",
+                    label = "긴급 요청",
                     value = "${dangerCount}건",
                     healthy = dangerCount == 0,
                 ),
@@ -242,7 +226,7 @@ fun TechnicianReferenceDashboard(
 
         ReferenceSectionHeader(
             title = "빠른 실행",
-            trailing = "자주 사용하는 기능",
+            trailing = "전체보기 ›",
             palette = palette,
         )
         ReferenceActionRow(
@@ -292,7 +276,7 @@ fun TechnicianReferenceDashboard(
         }
 
         ReferenceSectionHeader(
-            title = "오늘의 주요 방문",
+            title = "오늘의 작업",
             palette = palette,
         )
 
@@ -315,7 +299,7 @@ fun TechnicianReferenceDashboard(
                 ),
                 status = primaryVisit.usageRestrictionLabel,
                 palette = palette,
-                primaryActionLabel = "상세 보기",
+                primaryActionLabel = "방문 상세",
                 secondaryActionLabel = "새로고침",
                 onPrimaryAction = {
                     onVisitClick(primaryVisit.visitId)
@@ -337,8 +321,23 @@ fun TechnicianReferenceDashboard(
             )
         }
 
+        ReferenceCompactBanner(
+            title = if (state.offlinePreview) {
+                "오프라인 합성 데이터"
+            } else {
+                "방문 API 연결 대기"
+            },
+            message = if (state.offlinePreview) {
+                "방문 API 연결 전까지 사용자가 선택한 샘플 데이터를 표시합니다."
+            } else {
+                "실제 Visit Runtime이 제공되면 Remote 데이터로 전환합니다."
+            },
+            palette = palette,
+            warning = !state.offlinePreview,
+        )
+
         ReferenceSectionHeader(
-            title = "지원 & 도구",
+            title = "업무 도구",
             trailing = "더보기 ›",
             palette = palette,
         )

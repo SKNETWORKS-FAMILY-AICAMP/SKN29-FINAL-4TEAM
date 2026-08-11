@@ -20,8 +20,7 @@ import java.util.UUID
  */
 class RemoteIntakeCustomerCareRepository(
     private val inquiryRepository: InquiryRepository,
-    private val fallbackRepository: CustomerCareRepository,
-    private val subscriptionRepository: SubscriptionRepository? = null,
+    private val subscriptionRepository: SubscriptionRepository,
 ) : CustomerCareRepository {
     private data class PendingIntakeOperation(
         val createIdempotencyKey: String,
@@ -32,11 +31,8 @@ class RemoteIntakeCustomerCareRepository(
     private val operationLock = Any()
     private val pendingOperations = mutableMapOf<String, PendingIntakeOperation>()
 
-    override suspend fun getHome(): ApiResult<CustomerHomeData> {
-        val subscriptions = subscriptionRepository
-            ?: return fallbackRepository.getHome()
-
-        return when (val result = subscriptions.list()) {
+    override suspend fun getHome(): ApiResult<CustomerHomeData> =
+        when (val result = subscriptionRepository.list()) {
             is ApiResult.Failure -> result
             is ApiResult.Success -> {
                 val selected = result.value.items.firstOrNull()
@@ -47,7 +43,6 @@ class RemoteIntakeCustomerCareRepository(
                 ApiResult.Success(selected.toCustomerHomeData())
             }
         }
-    }
 
     override suspend fun getGuidance(
         inquiryId: String,

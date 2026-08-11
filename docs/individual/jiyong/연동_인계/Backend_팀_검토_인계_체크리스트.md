@@ -3,7 +3,11 @@
 - 작성·유지 책임: Backend·Database·API 계약 담당
 - 검토 역할: Data·QA, PM·State 계약, Web, Mobile, AI·RAG 담당
 - 목적: 담당자별 우선순위·요청·반환 증거·금지사항을 한 곳에서 추적
-- 현재 상태: T-022 Slice A 작성자 검증 완료, 독립 검토·팀 기준선 반영 대기 (`T022_SLICE_A_OWNER_IMPLEMENTATION_READY_REVIEW_PENDING`)
+- 현재 상태: T-017A/B 완료, T-017C 작성자 구현 착수 / T-022 Slice A 작성자 검증 완료
+
+> 2026-08-11 현행화: 이 문서의 과거 `T-017A 검토 대기`, `T-017B 미착수`
+> 문구는 당시 인계 이력이다. 현재 실행 기준은 `T-017A/B 완료`,
+> `T-017C 착수 가능·독립 QA 전`이다.
 
 이 문서는 역할별 요청·반환 증거와 완료 Gate를 추적하는 실행 체크리스트다.
 T-005와 T-016은 후속 개발에서 재사용하는 구현·기술 검증 기준선이다.
@@ -42,8 +46,9 @@ T-005 manifest에 남은 비작성자·PM 검토 및 공식 완료 판정은 계
 | 후보 DB | `waterbridge.public`, 물리 32·Active 13·Target-only 19 | PM 승인 전 팀 공용 기준으로 확대하지 않음 |
 | 실행 검증 기준 | 검증 명령·환경·Exit code가 함께 기록된 변경 묶음 | 과거 테스트 수치를 현재 코드의 자동 완료 증거로 사용하지 않음 |
 | T-005·T-016 | 구현·기술 검증 기준선 확보, 공식 WBS·비작성자 검토 대기 (`IMPLEMENTATION_BASELINE_REVIEW_PENDING`) | 회귀가 없으면 새 구현은 추가하지 않되 공식 검토·WBS 상태 갱신은 남은 Gate로 관리 |
-| T-017 | Auth 기반 준비, 후속 구현 분리 (`OWNER_IMPLEMENTATION_READY`) | T-017A 리뷰와 B/C 구현은 별도 |
-| T-017A | 담당 설계 완료, 검토 대기 (`OWNER_DESIGN_READY_REVIEW_PENDING`) | PM 정책·Data·QA Migration 결정 필요 |
+| T-017 | Auth·RBAC 완료, 계정관리 후속 구현 분리 | T-017A/B 완료, T-017C는 별도 변경 단위 |
+| T-017A/B | 설계·Django Admin·독립 QA 완료 | T-017C 완료로 확대 금지 |
+| T-017C | 착수 가능·작성자 구현 대상 | Token 세대·Lifecycle·감사·동시성·rollback 검증 필요 |
 | T-022 Submit | 증상 제출 DB 전이 준비 (`SUBMIT_SYMPTOM_DB_TRANSITION_READY`) | Slice A 계약·Runtime·작성자 검증 완료. 독립 검토·팀 기준선 반영과 Slice B AI 효과는 별도 |
 | T-018 | 계약·테스트 제안만 존재 (`SAFE_CONTRACT_TEST_PROPOSAL_ONLY`) | 최소 GET 제안만 완료, 계약·Runtime·최근 관리일 규칙 미확정 |
 
@@ -52,7 +57,7 @@ T-005 manifest에 남은 비작성자·PM 검토 및 공식 완료 판정은 계
 | 우선 | 검토·협업 요청 | 요청 역할 | Backend·Database 담당이 제공할 입력 | 반환받을 증거 | 현재 상태 |
 |---:|---|---|---|---|---|
 | P0 | T-022 Slice A 구현 증거 리뷰·Slice B 경계 | PM·State 계약, Data·QA, AI·RAG | [T-022 설계서](../API/Django_REST_API_문의_증상제출_구현_검증_인계서.md), OpenAPI·Runtime Diff, 집중·전체 회귀 결과 | Slice A 계약·DB 불변식·동시성 재현, 팀 기준선 반영 결정, Slice B AI dispatch 경계 | 작성자 구현 완료, 독립 검토 대기 (`OWNER_IMPLEMENTATION_READY_REVIEW_PENDING`) |
-| P1 | T-017A 담당 설계 리뷰 | PM·State 계약, Data·QA | [T-017A 구현·검증 가이드](../인증_권한/Django_JWT_RBAC_로그인_계정관리_구현_검증_가이드.md)의 설계 기준안·결정 기록표 | 정책 결정, Migration·backfill·감사·QA 변경 요청 | 주요 문서 통합 완료·검토 대기 (`OWNER_DESIGN_READY_REVIEW_PENDING`) |
+| P1 | T-017C 작성자 구현 후 독립 QA | Data·QA, PM·State 계약 | [계정관리 구현·검증 가이드](../인증_권한/Django_JWT_RBAC_로그인_계정관리_구현_검증_가이드.md), Migration·표적·PostgreSQL·rollback 결과 | Token 세대·Lifecycle·감사·마지막 관리자 보호 독립 재현 | 작성자 구현 대상 (`START_ALLOWED_NOT_IMPLEMENTED`) |
 | P2 | T-018 최소 GET 계약·테스트 검토 | Data·QA, PM·State 계약 | [T-018 제안서](../API/Django_REST_API_구독_제품조회_계약_제안서.md) | 본인 범위·MVP 필터·최근 관리일 집계·공개 필드·부분 완료 결정 | 제안 게시 후 검토 대기 (`PROPOSAL_PUBLISHED_REVIEW_PENDING`) |
 | P3 | Web·Mobile 소비 준비 | Web, Mobile | 확정 OpenAPI와 팀 기준선의 Runtime 상태 | T-045 공통 기반 증거, 이후 UUID·Auth·오류·DTO·실제 API Smoke | 공통 기반 우선 (`COMMON_FOUNDATION_FIRST`) |
 | P4 | AI Runtime·Evidence 소비 | AI·RAG | Slice A 기준선 반영 상태와 별도로 확정할 T-022 Slice B 계약 | Schema Parity·Timeout·재처리·Evidence E2E | Slice B 계약 대기 (`SLICE_B_CONTRACT_PENDING`) |
@@ -107,11 +112,11 @@ T-022 Slice A는 `계약 → 계약 검증 → Runtime → 집중 검증 → 전
 |---|---|---|---|---|---|---|---|
 | `T-017` 사용자·권한 | 2026-07-24 | 2026-07-27 | 최지용<br>백엔드·데이터베이스 | 김은진 | T-005, T-016 | 미착수 | 공식 기간 경과·현재 Auth 증거와 공식 상태 분리 |
 | `T-022` 문의·증상 제출 | 2026-07-28 | 2026-07-29 | 최지용<br>백엔드·데이터베이스 | 김은진 | T-005, T-016, T-017 | Slice A 작성자 구현 완료 | 독립 검토·팀 기준선 반영 대기. 입력 누적·AI Slice B가 남아 T-022 전체 완료는 아님 |
-| `T-017A` 계정 관리 설계 | 2026-07-30 | 2026-07-30 | 최지용<br>백엔드·데이터베이스 | 윤승혁·김은진 | T-005, T-017 | 미착수 | 공식 기간 경과·정책·Migration 검토 대기 |
+| `T-017A` 계정 관리 설계 | 2026-07-30 | 2026-07-30 | 최지용<br>백엔드·데이터베이스 | 윤승혁·김은진 | T-005, T-017 | 완료 | PM 설계 완료 결정 반영 |
 | `T-023` State Machine API | 2026-07-30 | 2026-07-31 | 최지용<br>백엔드·데이터베이스 | 김은진 | T-002, T-005, T-016, T-022 | 미착수 | T-022 Slice A 독립 리뷰·팀 기준선 반영 전 추가 Action 확대 금지 |
 | `T-018` 제품·구독 관리 | 2026-07-31 | 2026-08-03 | 최지용<br>백엔드·데이터베이스 | 김은진 | T-005, T-016, T-017 | 미착수 | 최소 GET 제안은 전체 T-018 완료가 아님 |
-| `T-017B` Django Admin | 2026-08-03 | 2026-08-03 | 최지용<br>백엔드·데이터베이스 | 김은진 | T-017A | 미착수 | T-017A 승인 뒤 착수 가능 |
-| `T-017C` Lifecycle·Audit | 2026-08-04 | 2026-08-05 | 최지용<br>백엔드·데이터베이스 | 김은진·윤승혁 | T-017A, T-017B | 미착수 | T-017B PASS 뒤 순차 착수 |
+| `T-017B` Django Admin | 2026-08-03 | 2026-08-03 | 최지용<br>백엔드·데이터베이스 | 김은진 | T-017A | 완료 | Runtime·Migration·독립 QA 42건과 보호 경계 PASS |
+| `T-017C` Lifecycle·Audit | 2026-08-04 | 2026-08-05 | 최지용<br>백엔드·데이터베이스 | 김은진·윤승혁 | T-017A, T-017B | 착수 | T-017A/B 완료, 작성자 구현·검증 후 독립 QA 필요 |
 | `T-019` 케어 관리 | 2026-08-05 | 2026-08-06 | 최지용<br>백엔드·데이터베이스 | 김은진 | T-018 | 미착수 | T-018 저장·조회 계약 완료 뒤 착수 |
 | `T-020` 다음 케어 예정일 | 2026-08-10 | 2026-08-10 | 최지용<br>백엔드·데이터베이스 | 김은진 | T-009, T-019 | 미착수 | 공식 주기·최근 케어 이력과 근거 부재 정책 검증 |
 | `T-021` 사전 문진 | 2026-08-11 | 2026-08-12 | 최지용<br>백엔드·데이터베이스 | 김은진 | T-005, T-016, T-020 | 미착수 | Inquiry 없는 사전 문진과 후속 Inquiry 연결 검증 |

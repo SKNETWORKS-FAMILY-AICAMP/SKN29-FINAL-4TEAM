@@ -93,34 +93,29 @@ fun CustomerHomeContent(
         title = "정수기 딜러",
         roleLabel = "고객용",
         palette = palette,
-        backgroundRes = R.drawable.water_background_customer,
+        backgroundRes = R.drawable.water_splash_customer_r19,
         bottomItems = listOf(
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_home,
-                label = "홈",
-                selected = true,
-            ),
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_product,
-                label = "제품",
-                enabled = false,
-            ),
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_manage,
-                label = "관리",
-                enabled = false,
-            ),
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_notice,
-                label = "알림",
-                enabled = false,
-            ),
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_profile,
-                label = "마이",
-                enabled = false,
-            ),
-        ),
+    ReferenceBottomItem(
+        iconRes = R.drawable.ref_home,
+        label = "홈",
+        selected = true,
+    ),
+    ReferenceBottomItem(
+        iconRes = R.drawable.ref_care,
+        label = "케어",
+        enabled = false,
+    ),
+    ReferenceBottomItem(
+        iconRes = R.drawable.ref_notice,
+        label = "문의",
+        enabled = false,
+    ),
+    ReferenceBottomItem(
+        iconRes = R.drawable.ref_profile,
+        label = "마이",
+        enabled = false,
+    ),
+),
     ) {
         if (state.loading) {
             LoadingBlock()
@@ -154,38 +149,42 @@ fun CustomerHomeContent(
             }
 
             ReferenceHeroCard(
-                greeting = "${displayName}님,\n안녕하세요",
-                subtitle = "깨끗한 물로 건강한 하루 되세요.",
-                metricLabel = "오늘의 사용량",
-                metricValue = "12.5",
-                metricUnit = "L / 20L",
-                progress = 0.62f,
-                footnote = previewLabel,
-                imageRes = R.drawable.mascot_customer,
+                greeting = if (
+                    displayName.contains("합성", ignoreCase = true) ||
+                    displayName.contains("SYN", ignoreCase = true)
+                ) {
+                    "고객님,\n안녕하세요"
+                } else {
+                    "${displayName}님,\n안녕하세요"
+                },
+                subtitle = "오늘도 깨끗한 물 관리를 도와드릴게요.",
+                metricLabel = "",
+                metricValue = "",
+                metricUnit = "",
+                progress = 0f,
+                footnote = "",
+                imageRes = R.drawable.dashboard_purifier,
                 palette = palette,
+                roleLabel = "고객용",
+                imageEmphasis = 1.10f,
             )
 
             ReferenceSectionHeader(
-                title = "홈 상태",
-                trailing = "현재 제공 데이터 기준",
+                title = "내 정수기 상태",
+                trailing = "한눈에 확인",
                 palette = palette,
             )
             ReferenceStatusRow(
                 items = listOf(
                     ReferenceStatusItem(
                         iconRes = R.drawable.ref_filter,
-                        label = "문진 상태",
-                        value = home.questionnaireStatus,
+                        label = "정수 상태",
+                        value = "확인 완료",
                     ),
                     ReferenceStatusItem(
                         iconRes = R.drawable.ref_temperature,
                         label = "다음 관리",
                         value = home.nextCareOn,
-                    ),
-                    ReferenceStatusItem(
-                        iconRes = R.drawable.ref_dispense,
-                        label = "제품 상태",
-                        value = "확인 완료",
                     ),
                     ReferenceStatusItem(
                         iconRes = R.drawable.ref_power,
@@ -196,27 +195,18 @@ fun CustomerHomeContent(
                 palette = palette,
             )
 
-            state.intakeUnavailableReason?.let { reason ->
-                ReferenceCompactBanner(
-                    title = "문의 접수 준비",
-                    message = reason,
-                    palette = palette,
-                    warning = true,
-                )
-            }
-
             ReferenceSectionHeader(
-                title = "빠른 실행",
-                trailing = "자주 사용하는 기능",
+                title = "빠른 서비스",
+                trailing = "전체보기 ›",
                 palette = palette,
             )
             ReferenceActionRow(
                 items = listOf(
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_intake,
-                        label = "문진 시작",
+                        label = "증상 접수",
                         subtitle = if (state.intakeAvailable) {
-                            "증상 입력"
+                            "바로 접수"
                         } else {
                             "설정 필요"
                         },
@@ -228,7 +218,7 @@ fun CustomerHomeContent(
                     ),
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_care,
-                        label = "안내 미리보기",
+                        label = "AI 자가진단",
                         subtitle = if (fixtureGuidanceAvailable) {
                             "Fixture 안내"
                         } else {
@@ -245,7 +235,7 @@ fun CustomerHomeContent(
                     ),
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_schedule,
-                        label = "방문 일정",
+                        label = "방문 예약",
                         subtitle = "API 준비 중",
                         enabled = false,
                         onClick = {},
@@ -262,7 +252,7 @@ fun CustomerHomeContent(
             )
 
             ReferenceSectionHeader(
-                title = "사용 중인 제품",
+                title = "내 제품",
                 palette = palette,
             )
             ReferenceDetailCard(
@@ -285,7 +275,7 @@ fun CustomerHomeContent(
             )
 
             ReferenceSectionHeader(
-                title = "서비스 & 지원",
+                title = "케어 & 지원",
                 trailing = "더보기 ›",
                 palette = palette,
             )
@@ -329,7 +319,7 @@ fun CustomerHomeContent(
                     strong = true,
                 ) {
                     Text(
-                        "진행 중 문의",
+                        "진행 중인 문의",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Black,
                     )
@@ -360,6 +350,15 @@ fun CustomerHomeContent(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
+            }
+
+            state.intakeUnavailableReason?.let { reason ->
+                ReferenceCompactBanner(
+                    title = "연결 상태 안내",
+                    message = reason,
+                    palette = palette,
+                    warning = true,
+                )
             }
 
             if (showDeveloperTools && fixtureGuidanceAvailable) {
