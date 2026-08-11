@@ -75,7 +75,7 @@
     },
     "demo_auth_repository": {
       "path": "backend/apps/accounts/repositories/account_repository.py",
-      "sha256": "8CAA82DF1D7C681235988CC5490BF1F5A9C10EE75DA5951228877218E9086248"
+      "sha256": "6A38D313DD68A7D41455BEDC591598C4D4573DD7015866562AADD1B5AB423987"
     }
   },
   "identifier_resolution": {
