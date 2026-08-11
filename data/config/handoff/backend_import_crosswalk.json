@@ -27,7 +27,7 @@
     },
     "inquiry_model": {
       "path": "backend/apps/inquiries/models/inquiry.py",
-      "sha256": "D00816D974E72118F67137549CE38DC7F5BCACA7B86A9D79B8D8A0824310C05D"
+      "sha256": "4F12E739F19D1FC5BDD71E97CA4689C8159B9355BDCD2E2A9088156F5D411D12"
     },
     "symptom_entry_model": {
       "path": "backend/apps/inquiries/models/symptom_entry.py",
