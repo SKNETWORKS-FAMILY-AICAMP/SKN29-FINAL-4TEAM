@@ -2,6 +2,7 @@
 
 > 착수일: **2026-08-11 KST**
 > 기준 Commit: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
+> 김은진 QA 후보: `eunjin@88148c97ba727c62fc520104aa20a796d089d10b`
 > 관련 업무: `윤승혁_5주차_업무_지침서.md` 3.7
 > 현재 상태: **IN_PROGRESS**
 
@@ -10,7 +11,7 @@
 | 날짜 | Gate | 판정 | 확인된 증거 | 다음 해제 조건 |
 |---|---|---|---|---|
 | 8/10 | Contract / Scope Freeze | `CONDITIONAL_PASS` | 3.1 Scope·Dependency 정렬과 3.2 Action 결정 완료, 정적 Contract Gate PASS | 소비자 5/5 ACK와 최종 후보 Commit 재검증 |
-| 8/11 | Backend↔AI | `HOLD` | Django→AI Client·저장·State Event 코드 확인, mock FastAPI 소켓 Test 확인 | 실제 Multi-Agent·LLM·팀 pgvector·HTTP·DB·Trace와 정상·위험·근거 없음·Timeout 재현 |
+| 8/11 | Backend↔AI | `HOLD` | Contract `38`, Root Safety `4`, Backend `966/17 skip`, AI Unit `142`, Web 단일 worker `137` Local PASS. pgvector 1건·Live HTTP 1건 Skip | 실제 Multi-Agent·LLM·팀 pgvector·HTTP·DB·Trace와 정상·위험·근거 없음·Timeout 재현 |
 | 8/12 | Web·Mobile Consumer | `PRECHECK_HOLD` | 계약 소비 회신과 작성자 Test 접수 | 같은 후보 Commit의 실제 Backend Remote Smoke·Mock 비대체·QA 재현 |
 | 8/13 | Mandatory Scope Close / Optional E2E | `NOT_STARTED` | 선행 Gate 대기 | 3.3~3.6 필수 Gate 판정 |
 | 8/14 | Week5 Exit / Optional Feature Complete | `NOT_STARTED` | 주간 종료 전 | 필수 Gate·Blocker·6~7주차 인계 확정 |
@@ -21,10 +22,17 @@
 
 | 항목 | 결과 |
 |---|---|
-| Commit | `92b0674cd1a3376a2c058715cd5ef32222125755` |
-| Contract Test | PASS |
+| PM Commit | `92b0674cd1a3376a2c058715cd5ef32222125755` |
+| QA 후보 Commit | `88148c97ba727c62fc520104aa20a796d089d10b` — PM 승인 아님 |
+| Contract Test | Validator 6종 PASS, Root `38 passed` |
+| Contract CI | Workflow·자체 Test Local PASS, `REMOTE_NOT_RUN` |
+| Data | Unit `76 passed`, QA 오류·경고 0, Drift 0 |
+| Backend | `966 passed, 17 skipped`, Migration Drift 0 |
+| AI | Unit `142 passed, 3 warnings`, pgvector `1 skipped` |
+| Web | Lint·단일 worker `137 passed`·Build PASS, Remote 미실행 |
+| Root Safety | `4 passed` — Runtime E2E가 아닌 교차 계약 Test |
 | Contract Consumer | 2/5 ACK, Backend `CHANGE_REQUEST` |
-| Runtime | Backend↔AI 실제 Runtime 미완료 |
+| Runtime | 단일 Workflow·Mock 기준선 PASS, 실제 Multi-Agent·LLM·팀 DB·Backend Live 미완료 |
 | Consumer | Web 기준선 ACK 대기, Mobile 계약 ACK, 실제 Remote Gate 미완료 |
 | Blocker | Backend 계약 의미 불일치, 실제 AI·pgvector·HTTP 증거 없음, Web·Mobile Remote 증거 없음 |
 | Evidence | Contract Baseline, Consumer Matrix, Backend↔AI Gate, Web·Mobile Gate |
