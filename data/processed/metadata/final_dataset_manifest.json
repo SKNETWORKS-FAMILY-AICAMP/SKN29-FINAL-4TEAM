@@ -283,11 +283,7 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 18457,
-<<<<<<< HEAD
-      "sha256": "97981C323F6D0DF169E40F69D5D1514449B90C0A22C85F3AB0E179AA6AFCAB9B"
-=======
       "sha256": "0C180A1C3931A7EA2406A5C2D39ECD1A366DB318D3E31360ED4A69107947D012"
->>>>>>> 9d4442e6c04e60ee56e1ed6e2e272c361be49dc1
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
