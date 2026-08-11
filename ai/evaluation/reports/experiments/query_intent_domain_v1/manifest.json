@@ -1,0 +1,93 @@
+{
+  "experiment_id": "B2-2-QUERY-INTENT-DOMAIN-V1",
+  "experiment_version": "1.0.0-draft.1",
+  "run_status": "DRAFT_QUERY_INTENT_DOMAIN_EXPERIMENT_COMPLETE",
+  "started_at": "2026-08-11T02:44:34.820420+00:00",
+  "completed_at": "2026-08-11T02:44:43.757146+00:00",
+  "metrics_publishable_as_official": false,
+  "selection_status": "PENDING_HUMAN_REVIEW_AND_PM_GATE",
+  "datasets": {
+    "supplemental": {
+      "path": "ai/evaluation/datasets/experiments/query_intent_domain_v1.jsonl",
+      "sha256": "CBDC5C22E93F4327B14755BA987C6B92EDF0BABB4B5A4991765392A9ABC41032",
+      "schema_sha256": "0D9331CFC8D4A35FC3C69B4FB3686E3B2992A9AE75697EDA27CD428B9879231F",
+      "selected_cases": 18
+    },
+    "gold_dev": {
+      "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+      "sha256": "DDB20527D452E1C246CA821CFA7D4EC159B13E24597FDEF685C19136065E50FD",
+      "selected_cases": 35
+    }
+  },
+  "source_corpus": {
+    "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+    "sha256": "6947CDE3543BB080394D4C953BE22A43A76ED80F4686ED5360B30628109AB240",
+    "source_chunks": 96
+  },
+  "profiles": {
+    "intent_profile_path": "ai/configs/experiments/query_intent_domain_profiles.yaml",
+    "intent_profile_sha256": "E51229DE84F36CA74DCF8DF5D7869DE1B390FEF2C6FB9A75E2C1B06D9227ED7A",
+    "scope_profile_path": "ai/configs/experiments/retrieval_threshold_scope_profiles.yaml",
+    "scope_profile_sha256": "B166547A4490BCF67CA68BFD275C26B7E26DCF85F05627F4ACB54A6203FE3CF3",
+    "intent_policy_ids": [
+      "NO_QUERY_INTENT_POLICY",
+      "MANUAL_DOMAIN_INTENT_V1"
+    ],
+    "fixed_retrieval": {
+      "chunking_profile_id": "parent_child_v1",
+      "score_threshold": 0.5,
+      "top_k": 5,
+      "product_filter": "EXACT_PRODUCT_FILTER",
+      "scope_policy_id": "MODEL_CAPABILITY_SCOPE_V1",
+      "selection_status": "PROVISIONAL_B2_1_DRAFT_NOT_OPERATIONAL"
+    },
+    "chunk_structure": {
+      "chunk_count": 108,
+      "chunk_count_by_product": {
+        "WPUIAC425SNW": 60,
+        "WPUJAC104DWH": 48
+      },
+      "average_chunk_tokens": 118.213,
+      "minimum_chunk_tokens": 1,
+      "maximum_chunk_tokens": 256,
+      "source_tokens": 12383,
+      "indexed_tokens": 12767,
+      "structural_overlap_ratio": 0.030078,
+      "context_payload_tokens": 54913,
+      "lineage_restore_rate": 1.0
+    }
+  },
+  "fixed_embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "device": "cpu",
+    "normalize_embeddings": true,
+    "local_files_only": true
+  },
+  "performance": {
+    "document_embedding_seconds": 88.000593,
+    "document_embedding_cache_hit": true,
+    "document_embedding_cache_key": "3321AAD4FB15125D86EA0E63C45CC46B8D6617089A9ACC85951B0B5B49ED1C47",
+    "query_embedding_seconds": 2.374729,
+    "total_seconds": 8.936702,
+    "case_result_count": 106
+  },
+  "runtime": {
+    "python": "3.13.13",
+    "os": "Windows 11",
+    "provider_class": "LocalBgeM3Provider"
+  },
+  "git": {
+    "commit_sha": "df96616d7010a2f61bddc91f8974235ba5ec92d3",
+    "branch": "codex/dongyoon-reconcile",
+    "working_tree_clean": false,
+    "changed_path_count": 17
+  },
+  "publication_limits": [
+    "18건 표현 변형 Dataset은 사람 2인 검수 전 Draft 실험 자료다.",
+    "정책은 Gold 정답 Label을 입력으로 읽지 않으며 Query 문자열과 제품 코드만 사용한다.",
+    "B2-1의 parent_child_v1·0.5 조합은 임시 비교 기준일 뿐 운영 Profile 선정이 아니다.",
+    "Experiment Lab 결과로 운영 Scope Filter나 Backend 정책이 변경되지 않는다."
+  ]
+}

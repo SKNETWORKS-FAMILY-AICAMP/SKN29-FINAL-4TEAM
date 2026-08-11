@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 from collections import Counter
 from datetime import datetime, timezone
@@ -12,6 +11,8 @@ from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator
+
+from ai.evaluation.file_integrity import file_sha256
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -32,7 +33,7 @@ EXPECTED_SPLIT_COUNTS = {"DEV": 35, "TEST": 15, "SAFETY": 10}
 
 
 def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest().upper()
+    return file_sha256(path)
 
 
 def _load_jsonl(path: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:

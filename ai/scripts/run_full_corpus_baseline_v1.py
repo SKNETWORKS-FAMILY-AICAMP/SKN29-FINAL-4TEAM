@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import importlib.util
 import json
 import math
@@ -18,6 +17,8 @@ from pathlib import Path
 from typing import Any, Protocol
 
 import numpy as np
+
+from ai.evaluation.file_integrity import file_sha256
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -85,7 +86,7 @@ def _resolve(path_value: str) -> Path:
 
 
 def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest().upper()
+    return file_sha256(path)
 
 
 def _load_json(path: Path) -> Any:
@@ -232,21 +233,30 @@ def _normalize(matrix: np.ndarray) -> np.ndarray:
     return matrix / norms
 
 
-def _is_relevant(chunk: dict[str, Any], expected: list[dict[str, Any]]) -> bool:
-    return any(
-        chunk["document_id"] == unit["document_id"]
-        and bool(set(chunk["page_refs"]).intersection(unit["page_refs"]))
-        for unit in expected
-    )
-
-
 def _metrics(
     ranked: list[dict[str, Any]],
     expected: list[dict[str, Any]],
     expected_no_evidence: bool,
     product_model_code: str,
 ) -> dict[str, Any]:
-    relevances = [1 if _is_relevant(item["chunk"], expected) else 0 for item in ranked]
+    matched_expected: set[int] = set()
+    relevances: list[int] = []
+    for item in ranked:
+        matching_units = [
+            index
+            for index, unit in enumerate(expected)
+            if index not in matched_expected
+            and item["chunk"]["document_id"] == unit["document_id"]
+            and bool(set(item["chunk"]["page_refs"]).intersection(unit["page_refs"]))
+        ]
+        if matching_units:
+            # One ranked item earns one relevance gain. This prevents a
+            # parent/child profile from counting duplicate children from the
+            # same Gold Evidence as independent correct answers.
+            matched_expected.add(matching_units[0])
+            relevances.append(1)
+        else:
+            relevances.append(0)
     first_rank = next((i + 1 for i, value in enumerate(relevances) if value), None)
 
     def hit(k: int) -> float:

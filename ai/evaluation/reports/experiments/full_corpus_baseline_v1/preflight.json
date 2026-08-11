@@ -1,7 +1,7 @@
 {
   "preflight_id": "A3-1-FULL-CORPUS-BASELINE-PREFLIGHT",
   "status": "READY",
-  "generated_at": "2026-08-10T13:58:51.259096+00:00",
+  "generated_at": "2026-08-11T00:31:03.360201+00:00",
   "profile": {
     "path": "ai/configs/experiments/full_corpus_baseline_v1.yaml",
     "sha256": "E1B38207CD291B67CBF64155F11BCDF7DE308650C8E742CA4D332A2F6FA255EA"

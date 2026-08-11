@@ -177,6 +177,12 @@ Backend 공개 `evidence_status`·저장 방식은 별도 통합 계약에서 �
 `5617a9f61b028005a4858fdac845db406aefb181`이다. 실제 연결 문자열은 Git에
 남기지 않고 `AI_VECTOR_DSN`으로 전달한다.
 
+`AI_VECTOR_DSN`이 설정된 Process는 Uvicorn 시작 단계에서 고정 Revision의
+Embedding 모델을 한 번 초기화하고 이후 요청이 같은 검색 서비스를 공유한다.
+따라서 최초 시작은 모델 초기화만큼 늦어질 수 있지만 이 시간은 요청별 30초
+Timeout에 포함되지 않는다. `/health` 성공은 모델 Warmup 완료를 뜻하지만 실제
+pgvector Query와 팀 DB 준비 완료까지 보장하는 Readiness 판정은 아니다.
+
 ## 기존 Schema에 청크 UPSERT
 
 `build_vector_index`는 `CREATE EXTENSION`이나 `CREATE TABLE`을 실행하지

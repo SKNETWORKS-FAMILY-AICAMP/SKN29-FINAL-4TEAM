@@ -1,7 +1,7 @@
 # 5주차 대표 E2E Action 결정
 
 > 결정일: 2026-08-10 KST  
-> 현행화 기준: `main@801f58e1512dfc9e12299465b6551fff2a276e3a`
+> 현행화 기준: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
 > 상태: **PM_DECISION_APPLIED · CONTRACT_QA_VERIFIED**
 > 범위: PM 결정과 계약 적용 완료를 기록하며 각 Action의 Runtime 완료는 Crosswalk와 WBS에서 별도로 판정한다.
 

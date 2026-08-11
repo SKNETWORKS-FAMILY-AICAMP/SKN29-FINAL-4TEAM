@@ -1,0 +1,447 @@
+{
+  "experiment_id": "B2-3-RETRIEVAL-METHOD-COMPARISON-V1",
+  "status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED",
+  "items": [
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0001",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0005",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0005",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0008",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0008",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0011",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0012",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0012",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0013",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0014",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0021",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0021",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0023",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0023",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0024",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 4,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0031",
+      "query_variant_type": "TYPO_ABBREVIATION",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0037",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "fixed_512_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0053",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0001",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0005",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0008",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0011",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0012",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0012",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0013",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0014",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0021",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0021",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0023",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0024",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 4,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0031",
+      "query_variant_type": "TYPO_ABBREVIATION",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0037",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "chunking_profile_id": "parent_child_v1",
+      "method_id": "BM25_KO_MIXED_V1",
+      "case_id": "RAGV2-GOLD-0053",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    }
+  ]
+}

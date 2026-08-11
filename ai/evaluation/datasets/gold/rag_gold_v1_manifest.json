@@ -50,15 +50,15 @@
     },
     {
       "path": "ai/evaluation/datasets/rag_eval_dataset.json",
-      "sha256": "9B0074CE40320A289017DD24B32472345A2089EB6D57A8E0A7CF7A9D2BA84058"
+      "sha256": "B23412F7B0B3ABAC884AA4B85BCA2F6A148B6578BFD3FDF934F72AFF4D70AF4E"
     },
     {
       "path": "ai/evaluation/datasets/safety/safety_eval_dataset.json",
-      "sha256": "AF0C8BC15AEE4298BEF0673971593E570FC4F0BFD60FC100162A4E3D4FCE8741"
+      "sha256": "EEE250EDED1D47F02CCBC765ED492AEAC4794FD79C3EA421D86206332E158D57"
     },
     {
       "path": "ai/evaluation/datasets/structuring/symptom_eval_dataset.json",
-      "sha256": "A2B02A4160BD25E080A4BB2E9754BAD412C7DC3658873BC75BA0E1CB8339AB7B"
+      "sha256": "EBDB585CB08B6B2465121DD3CB2C288793F05A46870E41D9F16540B21EB1CBAA"
     }
   ],
   "approval_policy": {

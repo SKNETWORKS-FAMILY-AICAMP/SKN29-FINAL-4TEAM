@@ -7,8 +7,10 @@
 ## 결론
 
 A3-1의 BGE-M3·페이지 Chunk·Dense Cosine 구성을 단일 Query로 실행할 수 있는
-실험 전용 페이지를 구현했다. 운영용 관리자 화면에는 연결하지 않았고, AI FastAPI의
-별도 `/experiments/playground` 경로에서만 제공한다.
+실험 전용 페이지를 구현했다. 운영용 관리자 화면에는 연결하지 않았고,
+`AI_ENABLE_EXPERIMENT_PLAYGROUND=true`를 명시한 LAB 프로세스에서만
+`/experiments/playground` 경로를 제공한다. 기본값은 비활성화이며 Mock·Local 운영
+프로세스에서는 Experiment API가 404를 반환한다.
 
 A4 v0는 Retrieval 실험 시작에 필요한 최소 범위다. Generator 선택 영역은 화면에
 표시하지만 실제 Generation·Grounding·Safety 실행은 아직 연결하지 않았으며 결과에도
@@ -19,7 +21,8 @@ A4 v0는 Retrieval 실험 시작에 필요한 최소 범위다. Generator 선택
 기존 `test_env`에서 다음 명령을 실행한다.
 
 ```powershell
-python -B -m uvicorn ai.app.main:app --host 127.0.0.1 --port 8001
+$env:AI_ENABLE_EXPERIMENT_PLAYGROUND='true'
+.\ai\.venv\Scripts\python.exe -B -m uvicorn ai.app.main:app --host 127.0.0.1 --port 8001
 ```
 
 브라우저에서 다음 주소를 연다.
