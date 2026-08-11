@@ -11,6 +11,10 @@ from apps.inquiries.models.inquiry_qa import public_question_options
 from apps.inquiries.repositories.customer_inquiry_repository import (
     CustomerInquiryRepository,
 )
+from apps.workflow.engine.allowed_action_resolver import (
+    AllowedActionContext,
+    AllowedActionResolver,
+)
 
 
 class CustomerInquiryService:
@@ -29,6 +33,19 @@ class CustomerInquiryService:
         )
         if inquiry is None:
             raise NotFound()
+        open_followup_questions = any(
+            cls._question(question) is not None
+            for question in inquiry.allowed_action_open_questions
+        )
+        allowed_actions = AllowedActionResolver.resolve(
+            context=AllowedActionContext.from_models(
+                inquiry=inquiry,
+                actor=actor,
+                consultation=None,
+                visit=None,
+                open_followup_questions=open_followup_questions,
+            )
+        )
         return {
             "inquiry_id": inquiry.public_id,
             "status_code": inquiry.status_code,
@@ -37,6 +54,7 @@ class CustomerInquiryService:
             "product": {
                 "model_code": inquiry.subscription.product_model.model_code,
             },
+            "allowed_actions": allowed_actions,
             "updated_at": inquiry.updated_at,
         }
 

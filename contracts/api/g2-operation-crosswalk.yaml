@@ -108,7 +108,7 @@ operations:
     request_schema: UpdateVisitScheduleRequest
     response_schema: StateTransitionResult
     event: UPDATE_VISIT_SCHEDULE
-    transition_rule: [TR-INQ-020, TR-INQ-021]
+    transition_rule: [TR-INQ-020, TR-INQ-021, TR-INQ-028]
     permission_scope: ASSIGNED_INQUIRIES
     runtime_status: IMPLEMENTED
   - dec: DEC-004

@@ -1,138 +1,148 @@
-# Backend Contract Runtime 12 수정·검증 가이드
+# Backend Contract Runtime 12 후속 수정·검증 가이드
 
 > 작성일: 2026-08-11 KST
 >
-> 코드 커밋: [`e290fe3d43ae5adf2a6ab758cbf2e19922046cd1`](https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/commit/e290fe3d43ae5adf2a6ab758cbf2e19922046cd1)
+> 기준선: `origin/main@4dbf7c0e225757f193b8f326bd97b73edaed959e`
 >
-> Data 정합 커밋: [`5b60fd18ba72ff7272be8621e72710b8cbdaa391`](https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/commit/5b60fd18ba72ff7272be8621e72710b8cbdaa391)
->
-> 기준 `jiyong`: `5669960200207f134af8ac2e2a6b1c4e267e478e`
-> 상태: `AUTHOR_VERIFIED / INDEPENDENT_QA_PENDING / PM_ACK_PENDING`
+> 상태: `AUTHOR_VERIFIED / POSTGRESQL_AUTHOR_PASS / INDEPENDENT_QA_PENDING`
 
-## 1. 목적과 판정
+## 1. 결론
 
-PM이 발견한 Backend 소비 불일치 두 건을 승인 계약에 맞췄다.
+PM이 확정한 Runtime12 후속 4건을 계약·Runtime·Test에 함께 반영했다.
 
-1. `CANCEL_INQUIRY`를 고객 본인·담당 상담사·명시 권한 운영자가
-   `DRAFT`와 `QUESTIONNAIRE_IN_PROGRESS`에서 실행한다.
-2. `allowed_actions`는 State·Role 정적 목록이 아니라 State Machine,
-   저장된 Domain Guard, Crosswalk Runtime 가용성을 평가한다.
-3. 성공 응답과 stale 409는 같은 Snapshot Builder와 Resolver를 사용한다.
+1. `CANCEL_INQUIRY` 이력에 취소 사유를 `reason_code | reason_detail`로 저장한다.
+2. `submitSymptom`의 AI 실행 경계를 성공 Commit 이후 `transaction.on_commit`으로 명시한다.
+3. `updateVisitSchedule`에 `TR-INQ-028` 재방문 일정을 포함한다.
+4. 고객 Inquiry Snapshot에 서버가 계산한 동적 `allowed_actions`를 포함한다.
 
-작성자 검증은 PASS다. 독립 PostgreSQL QA와 PM 소비 ACK 전에는
-`TEAM_BASELINE` 또는 전체 완료로 확대하지 않는다.
+작성자 표적·전체 회귀, 계약 Validator, 격리 PostgreSQL Row Lock은 모두 통과했다.
+팀 승인과 최종 기준선 반영은 김은진 독립 QA 후 판단한다.
 
-## 2. 핵심 구현
+## 2. 구현 결과
 
-- [Cancel 권한](../../../../backend/apps/inquiries/permissions.py):
-  CUSTOMER·CONSULTANT·OPERATOR 진입과 운영자
-  `inquiries.cancel_inquiry` 명시 권한을 분리했다.
-- [Inquiry Model](../../../../backend/apps/inquiries/models/inquiry.py),
-  [0012 Migration](../../../../backend/apps/inquiries/migrations/0012_alter_inquiry_options.py):
-  운영자 취소 Permission을 생성한다.
-- [Inquiry Repository](../../../../backend/apps/inquiries/repositories/inquiry_repository.py):
-  현재 owner·assignment·operator scope를 확인한 뒤 Inquiry 본행만 잠근다.
-- [Inquiry Service](../../../../backend/apps/inquiries/services/inquiry_service.py):
-  TR-INQ-004/005, Guard, Version, 멱등성, 실제 이전 상태 이력,
-  활성 AIRun 논리 취소를 하나의 Transaction으로 처리한다.
-- [History](../../../../backend/apps/workflow/services/transition_history_service.py):
-  DRAFT 하드코딩을 제거하고 실제 전이 전·후 상태와 Version을 기록한다.
-- [AllowedActionResolver](../../../../backend/apps/workflow/engine/allowed_action_resolver.py):
-  State·Role → Runtime Crosswalk → Transition → 저장 Guard 순으로 평가한다.
-- [Assigned Action Service](../../../../backend/apps/workflow/services/assigned_consultant_action_service.py):
-  현재 배정 Scope 확인 후 Replay하고 성공·409 Snapshot을 통일한다.
-- [AI Service](../../../../backend/apps/inquiries/services/inquiry_ai_service.py):
-  취소 전·HTTP 중 취소·늦은 응답이 고객 상태와 Projection을 덮지 않는다.
-- [Crosswalk](../../../../contracts/api/action-operation-crosswalk.yaml),
-  [Cancel OpenAPI](../../../../contracts/api/paths/workflow.yaml),
-  [Cancel Result](../../../../contracts/api/components/schemas/workflow/CancelInquiryResult.yaml):
-  Runtime Source·Test와 성공 응답을 현행화했다.
+| 항목 | 적용 내용 | 판정 |
+|---|---|---|
+| Cancel 사유 이력 | Inquiry 본체의 code/detail 분리 저장은 유지하고 History에는 `CODE | DETAIL`, 상세가 없으면 `CODE` 저장 | PASS |
+| Submit AI 경계 | 저장 Transaction 성공 Commit 뒤 `on_commit`으로 1회 실행, Replay는 추가 실행 없음 | PASS |
+| 재방문 일정 | `REVISIT_REQUIRED + FOLLOW_UP_REQUIRED`에서 `TR-INQ-028`로 일정 갱신 | PASS |
+| 고객 Snapshot | 최신 공개 질문·State·Role·Runtime Guard로 계산한 `allowed_actions` 반환 | PASS |
 
-## 3. Runtime 12 증거 Matrix
+## 3. 주요 변경 파일
 
-| Event / operationId | Method·Path | Runtime Source | 실행 Test | 판정 |
-|---|---|---|---|---|
-| `SUBMIT_SYMPTOM` / `submitSymptom` | POST `/inquiries/{id}/submit` | [View](../../../../backend/apps/inquiries/api/views.py), [Service](../../../../backend/apps/inquiries/services/inquiry_transition_service.py) | [T-022 Submit](../../../../backend/tests/api/test_t022_submit_symptom.py) | PASS |
-| `CANCEL_INQUIRY` / `cancelInquiry` | POST `/inquiries/{id}/cancel` | [View](../../../../backend/apps/inquiries/api/views.py), [Service](../../../../backend/apps/inquiries/services/inquiry_service.py) | [T-023 Cancel](../../../../backend/tests/api/test_t023_cancel_inquiry.py), [Contract](../../../../backend/tests/api/test_cancel_inquiry_contract.py) | PASS |
-| `SUBMIT_ANSWERS` / `submitFollowUpAnswers` | POST `/inquiries/{id}/answers` | [View](../../../../backend/apps/inquiries/api/views.py), [Service](../../../../backend/apps/inquiries/services/followup_answer_service.py) | [T-022 Answers](../../../../backend/tests/api/test_t022_submit_followup_answers.py) | PASS |
-| `START_CONSULTATION` / `startConsultation` | POST `/inquiries/{id}/start-consultation` | [Consultation Service](../../../../backend/apps/consultations/services/consultation_service.py) | [Consultation·Visit](../../../../backend/tests/api/test_consultation_visit_runtime.py) | PASS |
-| `UPDATE_CONSULTATION_SUMMARY` / `updateConsultationSummary` | PATCH `/inquiries/{id}/consultation-summary` | Consultation Service | Consultation·Visit | PASS |
-| `CONFIRM_CONSULTATION_SUMMARY` / `confirmConsultationSummary` | POST `/inquiries/{id}/consultation-summary/confirm` | Consultation Service | Consultation·Visit | PASS |
-| `CONSULTATION_COMPLETED` / `completeConsultation` | POST `/inquiries/{id}/complete-consultation` | Consultation Service | Consultation·Visit | PASS |
-| `VISIT_REVIEW_REQUIRED` / `requestVisitReview` | POST `/inquiries/{id}/visit-review` | [Visit Service](../../../../backend/apps/visits/services/visit_service.py) | Consultation·Visit | PASS |
-| `VISIT_NEEDED` / `createVisitRequest` | POST `/inquiries/{id}/visits` | Visit Service | Consultation·Visit | PASS |
-| `UPDATE_VISIT_SCHEDULE` / `updateVisitSchedule` | PATCH `/visits/{id}/schedule` | Visit Service | Consultation·Visit | `PASS_WITH_CONTRACT_OWNER_CONFIRMATION` |
-| `CONFIRM_VISIT` / `confirmVisit` | POST `/visits/{id}/confirm` | Visit Service | Consultation·Visit | PASS |
-| `VISIT_NOT_NEEDED` / `markVisitNotNeeded` | POST `/inquiries/{id}/visit-not-needed` | Visit Service | Consultation·Visit | PASS |
+### 3.1 Cancel 사유
 
-상담 4개와 방문 5개는 [공통 Action Service](../../../../backend/apps/workflow/services/assigned_consultant_action_service.py)에서 담당자 Scope, `state_version`, Idempotency-Key, Replay와 409를 공통 처리한다.
+- [InquiryService](../../../../backend/apps/inquiries/services/inquiry_service.py): code/detail을 History 계층으로 전달한다.
+- [TransitionHistoryService](../../../../backend/apps/workflow/services/transition_history_service.py): PM 형식으로 `change_reason`을 만든다.
+- [WorkflowRepository](../../../../backend/apps/workflow/repositories/workflow_repository.py): 기존 `change_reason` 컬럼에 값을 저장한다.
+- [Cancel API Test](../../../../backend/tests/api/test_t023_cancel_inquiry.py): 상세 있음·없음·공백·Replay·중복 Payload·메타데이터를 검증한다.
 
-## 4. 작성자 검증 결과
+### 3.2 Submit AI 경계
+
+- [Inquiry OpenAPI](../../../../contracts/api/paths/inquiries.yaml): Commit-time Snapshot과 post-commit AI 실행을 명시한다.
+- [InquiryTransitionService](../../../../backend/apps/inquiries/services/inquiry_transition_service.py): 기존 `transaction.on_commit(..., robust=True)` 구현을 유지한다.
+- [OpenAPI Inquiry Test](../../../../backend/tests/api/test_openapi_inquiry_contract.py): 구조화된 `x-ai-dispatch` 경계를 검증한다.
+
+`on_commit`은 별도 Queue나 비동기 Worker를 뜻하지 않는다. AI 결과는 저장 응답 Snapshot에 포함되거나 완료가 보장되지 않는다.
+
+### 3.3 TR-INQ-028
+
+- [Visit OpenAPI](../../../../contracts/api/paths/visits.yaml), [G2 Crosswalk](../../../../contracts/api/g2-operation-crosswalk.yaml): `TR-INQ-028`과 재방문 상태를 추가한다.
+- [Transition Rules](../../../../contracts/state-machine/transition-rules.yaml): 담당 상담사 Guard를 추가한다.
+- [VisitRepository](../../../../backend/apps/visits/repositories/visit_repository.py): 완료 결과는 보존하고 재일정에 맞춰 mutable lifecycle 필드를 초기화한다.
+- [Consultation·Visit Test](../../../../backend/tests/api/test_consultation_visit_runtime.py): 성공·Replay·stale 409·History·Version을 검증한다.
+- [G2 Contract Test](../../../../backend/tests/api/test_g2_machine_contract.py), [Resolver Test](../../../../backend/tests/unit/workflow/test_allowed_action_resolver.py): 계약과 노출 조건을 검증한다.
+
+이번 Slice는 재방문 일정 재조율까지 검증한다. 동일 Visit의 2차 완료 결과 저장 모델은 후속 방문 완료 Runtime 범위다.
+
+### 3.4 Customer Snapshot
+
+- [Snapshot Schema](../../../../contracts/api/components/schemas/inquiry/CustomerInquirySnapshot.yaml): `allowed_actions`를 필수 응답 필드로 추가한다.
+- [Customer Inquiry Path](../../../../contracts/api/paths/customer-inquiries.yaml): 서버 계산값 사용과 재조회 경계를 명시한다.
+- [Repository](../../../../backend/apps/inquiries/repositories/customer_inquiry_repository.py): 공개 미답변 질문을 Prefetch한다.
+- [Service](../../../../backend/apps/inquiries/services/customer_inquiry_service.py): 공통 Resolver로 동적 Action을 계산한다.
+- [Serializer](../../../../backend/apps/inquiries/api/serializers/customer_inquiry.py): 기존 AllowedAction DTO를 재사용한다.
+- [Customer Read Test](../../../../backend/tests/api/test_customer_inquiry_read_runtime.py): 질문 전·후·답변 후·미지원 질문을 검증한다.
+
+Snapshot 조회는 공개 미답변 질문 Prefetch를 포함하며 현재 Query Budget은 2회로 고정한다.
+
+## 4. 계약·API·DB 영향
+
+| 구분 | 영향 |
+|---|---|
+| 신규 Endpoint | 없음 |
+| Cancel Request/Response | 변경 없음 |
+| Customer Snapshot Response | `allowed_actions` 필수 필드 추가 |
+| State Machine | 기존 `TR-INQ-028`에 담당 상담사 Guard 보강 |
+| DB Schema/Migration | 변경 없음, 신규 Migration 없음 |
+| 기존 Cancel 컬럼 | `cancellation_reason_code`, `cancellation_reason_detail` 분리 저장 유지 |
+| History | 기존 nullable `change_reason` 컬럼 사용, 과거 NULL 행 Backfill 없음 |
+
+Cancel API Shape는 불변이지만 이후 생성되는 CANCEL History에서는 `change_reason`이 NULL이 아닌 PM 형식 문자열로 조회된다.
+
+## 5. 작성자 검증 결과
 
 | 검증 | 결과 |
 |---|---|
-| Runtime12 핵심 표적 | `100 passed / 5 skipped / 0 failed`; Skip은 PostgreSQL 전용 |
-| 소비·Example 보강 | `28 passed / 0 failed` |
-| 표적 합계 | `128 passed / 5 skipped / 0 failed` |
-| State Machine | PASS: State 13, Event 30, Transition 34, Guard 39, Action 23 |
-| Crosswalk | PASS: Runtime 12, OpenAPI 7, Contract 0, Deferred 4 |
-| OpenAPI·Example·Code | PASS: Operation 33, API Example 50, Code 144 |
-| 최신 Root Contract·Safety | `42 passed / 0 failed` |
-| Django Check·Migration Drift | PASS / `No changes detected` |
-| Migration 왕복 | 전체 적용 → 0011 역방향 → 0012 재적용 → 미적용 0 |
-| Backend 전체 | `993 passed / 19 skipped / 0 failed` |
-| 격리 PostgreSQL 16.14 | Row Lock `5 passed`; Cancel Runtime·Contract `25 passed`; mandatory skip 0 |
-| Data CI 동등 Gate | Unit `76 passed`; deterministic rebuild PASS; Data Drift 0 |
-| Git whitespace | `git diff --check` PASS |
+| 후속 4건 표적 묶음 | `98 passed / 5 skipped / 0 failed` |
+| Backend 전체 회귀 | `1004 passed / 19 skipped / 0 failed` |
+| 격리 PostgreSQL Row Lock | `5 passed / 0 skipped / 0 failed` |
+| Root Contract | `38 passed / 0 failed` |
+| State Machine Validator | PASS: State 13, Event 30, Transition 34, Guard 39 |
+| Crosswalk Validator | PASS: Runtime 12, OpenAPI 7, Contract 0, Deferred 4 |
+| OpenAPI Validator | PASS: 32 Paths, 33 Operations |
+| Example·Code Validator | PASS: Examples 50/50, Code 144 |
+| Mermaid Drift | PASS |
+| Django Check | PASS |
+| Migration Drift | PASS: `No changes detected` |
+| Git whitespace | PASS |
 
-PostgreSQL은 `pgvector/pgvector:0.8.6-pg16-bookworm` 일회성 컨테이너와
-별도 DB·Port를 사용했다. 공유 DB·영구 Volume은 사용하지 않았고 검증 후
-컨테이너를 자동 삭제했다.
+기본 전체 회귀의 19개 Skip은 PostgreSQL 구조·동시성 전용, 실제 Socket Mock opt-in, 팀 통합 Role opt-in이다.
+필수 Row Lock 5건은 격리 PostgreSQL 16/pgvector 환경에서 Skip 없이 별도 통과했다.
 
-## 5. 정확한 재현 명령
+## 6. 재현 명령
 
-저장소 Root에서 실행한다. `.venv`는 팀 고정 의존성을 설치한 환경이다.
+Repository Root:
 
 ```powershell
-$repo = (Resolve-Path '.').Path
-$py = (Resolve-Path "$repo/backend/.venv/Scripts/python.exe").Path
-
+$py = '.\backend\.venv\Scripts\python.exe'
 & $py -B scripts/contracts/validate_state_machine.py
+& $py -B scripts/contracts/render_state_machine.py --check
 & $py -B scripts/contracts/validate_contract_crosswalk.py
 & $py -B scripts/contracts/validate_openapi.py
 & $py -B scripts/contracts/validate_examples.py
 & $py -B scripts/contracts/validate_codes.py
-& $py -B -m pytest -q -p no:cacheprovider tests/contract tests/safety/test_week5_ai_safety_crosswalk.py
-& $py -B -m unittest discover -s data/tools/tests -v
-& $py -B data/tools/pipeline.py qa --verify-rebuild
-& $py -B scripts/data/refresh_source_hashes.py --check
-git diff --exit-code -- data
-
-Set-Location "$repo/backend"
-& $py -B -m pytest -q -rs -p no:cacheprovider tests/unit/workflow/test_allowed_action_resolver.py tests/api/test_cancel_inquiry_contract.py tests/api/test_t023_cancel_inquiry.py tests/api/test_t022_submit_symptom.py tests/api/test_t022_submit_followup_answers.py tests/api/test_consultation_visit_runtime.py tests/unit/ai_integration/test_inquiry_ai_service.py
-& $py -B -m pytest -q -p no:cacheprovider tests/api/test_consultant_inquiry_runtime.py tests/api/test_customer_inquiry_read_runtime.py tests/api/test_openapi_runtime_coverage.py tests/api/test_runtime_examples_contract.py tests/api/test_workflow_conflict_contract.py
-& $py -B manage.py check --settings=config.settings.test
-& $py -B manage.py makemigrations --check --dry-run --settings=config.settings.test
-& $py -B -m pytest -q -rs -p no:cacheprovider
+& $py -B -m pytest -q -p no:cacheprovider tests/contract
 ```
 
-PostgreSQL 전용 검증은 `--ds=config.settings.local`과 폐기 가능한 별도 DB를
-사용한다. DSN·비밀번호는 문서나 로그에 기록하지 않는다.
+Backend Root:
 
-## 6. 남은 승인 경계
+```powershell
+$py = '.\.venv\Scripts\python.exe'
+& $py -B -m pytest -q -p no:cacheprovider `
+  tests/api/test_t023_cancel_inquiry.py `
+  tests/api/test_t022_submit_symptom.py `
+  tests/api/test_consultation_visit_runtime.py `
+  tests/api/test_customer_inquiry_read_runtime.py `
+  tests/api/test_g2_machine_contract.py `
+  tests/api/test_openapi_inquiry_contract.py `
+  tests/unit/workflow/test_allowed_action_resolver.py
+& $py -B manage.py check --settings=config.settings.test
+& $py -B manage.py makemigrations --check --dry-run --settings=config.settings.test
+& $py -B -m pytest -q -p no:cacheprovider
+```
 
-1. 김은진이 동일 고정 SHA에서 PostgreSQL Row Lock·IDOR·Replay·409를
-   독립 재현해야 한다.
-2. `submitSymptom` OpenAPI의 “AI 호출 제외” 설명과 실제 on_commit
-   Wiring의 문구 정합을 계약 Owner가 확인해야 한다.
-3. `updateVisitSchedule` OpenAPI의 TR-INQ-020/021에 State Machine
-   TR-INQ-028을 포함할지 계약 Owner가 결정해야 한다.
-4. 고객 Snapshot은 최신 상태·Version을 제공하지만 비동기 질문 생성 후
-   동적 `allowed_actions`까지 재조회하는 공개 응답은 소비자 계약 후속이다.
+PostgreSQL은 폐기 가능한 별도 QA DB에서 `--ds=config.settings.local`로 5개 `postgresql` 표적을 실행한다.
+공유·운영 DB, 실제 비밀번호, DSN은 문서와 로그에 기록하지 않는다.
 
-## 7. 인계 판정
+## 7. 독립 QA Gate
 
-`CODE_AND_AUTHOR_TESTS_PASS / JIYONG_PUSH_READY / INDEPENDENT_QA_PENDING /
-BACKEND_ACK_FALSE / TEAM_BASELINE_HOLD`
+김은진 QA는 동일 후보 Commit에서 다음을 재현한다.
 
-민감정보·DSN·실계정·고객 원문은 코드·문서·검증 로그에 기록하지 않았다.
+- Cancel History의 actor·correlation·idempotency·정확한 `change_reason`.
+- 상세가 없을 때 code-only, Replay 때 추가 History 0건, Inquiry 분리 컬럼 유지.
+- Submit Callback이 Commit 전 0회/후 1회이며 Replay 추가 AI 호출 0회.
+- `TR-INQ-028` 성공·Replay·stale 409·Version·Inquiry/Visit History.
+- Customer Snapshot의 동적 `allowed_actions`와 미지원 질문 Fail-closed.
+- 전체 회귀, Migration Drift, PostgreSQL Row Lock 5건 Skip 0.
+
+최종 상태: `AUTHOR_PASS / POSTGRESQL_AUTHOR_PASS / INDEPENDENT_QA_PENDING / TEAM_BASELINE_HOLD`.
