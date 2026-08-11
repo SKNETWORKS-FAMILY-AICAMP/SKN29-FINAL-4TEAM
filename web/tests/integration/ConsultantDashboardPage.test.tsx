@@ -189,7 +189,8 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.getByRole("heading", { name: "최근 처리 이력" })).toBeInTheDocument();
   });
 
-  it("각 업무 탭의 Mock은 긴급·주의·일반 문의를 10건씩 제공한다", () => {
+  it("긴급·주의·일반 탭을 전환하면 해당 문의 10건만 보여준다", async () => {
+    const user = userEvent.setup();
     renderPage();
 
     (["NEW", "IN_PROGRESS", "COMPLETED"] as const).forEach((bucket) => {
@@ -207,47 +208,51 @@ describe("ConsultantDashboardPage", () => {
       ).toHaveLength(10);
     });
 
+    const dangerTab = screen.getByRole("tab", { name: /긴급 문의/ });
+    const cautionTab = screen.getByRole("tab", { name: /주의 문의/ });
+    const generalTab = screen.getByRole("tab", { name: /일반 문의/ });
+
+    expect(dangerTab).toHaveAttribute("aria-selected", "true");
     expect(
-      within(screen.getByRole("region", { name: "긴급 문의" })).getAllByRole(
+      within(screen.getByRole("tabpanel", { name: /긴급 문의/ })).getAllByRole(
         "button",
         { name: /상세 열기/ },
       ),
     ).toHaveLength(10);
+
+    dangerTab.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(cautionTab).toHaveAttribute("aria-selected", "true");
     expect(
-      within(screen.getByRole("region", { name: "주의 문의" })).getAllByRole(
+      within(screen.getByRole("tabpanel", { name: /주의 문의/ })).getAllByRole(
         "button",
         { name: /상세 열기/ },
       ),
     ).toHaveLength(10);
+
+    await user.click(generalTab);
+    expect(generalTab).toHaveAttribute("aria-selected", "true");
     expect(
-      within(screen.getByRole("region", { name: "일반 문의" })).getAllByRole(
+      within(screen.getByRole("tabpanel", { name: /일반 문의/ })).getAllByRole(
         "button",
         { name: /상세 열기/ },
       ),
     ).toHaveLength(10);
   });
 
-  it("긴급·주의·일반 문의 영역에서 상태를 각각 필터링한다", async () => {
+  it("각 문의 탭의 상태 필터를 독립적으로 유지한다", async () => {
     const user = userEvent.setup();
     renderPage();
 
     await user.click(screen.getByRole("tab", { name: /처리 중인 문의/ }));
 
-    const dangerFilter = screen.getByRole("button", {
+    let dangerFilter = screen.getByRole("button", {
       name: "긴급 문의 상태 필터",
-    });
-    const cautionFilter = screen.getByRole("button", {
-      name: "주의 문의 상태 필터",
-    });
-    const generalFilter = screen.getByRole("button", {
-      name: "일반 문의 상태 필터",
     });
 
     expect(dangerFilter).toHaveTextContent("전체 상태");
-    expect(cautionFilter).toHaveTextContent("전체 상태");
-    expect(generalFilter).toHaveTextContent("전체 상태");
 
-    const dangerSection = screen.getByRole("region", { name: "긴급 문의" });
+    let dangerSection = screen.getByRole("tabpanel", { name: /긴급 문의/ });
     expect(
       within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
     ).toHaveLength(10);
@@ -256,8 +261,6 @@ describe("ConsultantDashboardPage", () => {
     await user.click(screen.getByRole("option", { name: "방문 예정" }));
 
     expect(dangerFilter).toHaveTextContent("방문 예정");
-    expect(cautionFilter).toHaveTextContent("전체 상태");
-    expect(generalFilter).toHaveTextContent("전체 상태");
     expect(
       within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
     ).toHaveLength(2);
@@ -265,6 +268,21 @@ describe("ConsultantDashboardPage", () => {
     expect(within(dangerSection).queryByText(/^INQ-/)).not.toBeInTheDocument();
     expect(within(dangerSection).queryByText(/^WPU-/)).not.toBeInTheDocument();
     expect(within(dangerSection).queryByText(/^대기 /)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /주의 문의/ }));
+    expect(
+      screen.getByRole("button", { name: "주의 문의 상태 필터" }),
+    ).toHaveTextContent("전체 상태");
+
+    await user.click(screen.getByRole("tab", { name: /긴급 문의/ }));
+    dangerFilter = screen.getByRole("button", {
+      name: "긴급 문의 상태 필터",
+    });
+    dangerSection = screen.getByRole("tabpanel", { name: /긴급 문의/ });
+    expect(dangerFilter).toHaveTextContent("방문 예정");
+    expect(
+      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
+    ).toHaveLength(2);
   });
 
   it.each([

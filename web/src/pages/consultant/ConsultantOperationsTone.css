@@ -1767,3 +1767,475 @@ html body
   text-align: right;
   white-space: nowrap;
 }
+
+
+/* Focused inquiry board: dashboard tone without changing the surrounding shell. */
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-columns {
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgb(94 179 214 / 46%);
+  border-radius: 16px !important;
+  background:
+    radial-gradient(circle at 5% 0%, rgb(47 193 238 / 12%), transparent 24%),
+    radial-gradient(circle at 96% 100%, rgb(139 92 246 / 10%), transparent 25%),
+    linear-gradient(145deg, rgb(249 252 255 / 96%), rgb(235 243 249 / 94%)) !important;
+  background-size: auto !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 96%),
+    inset 0 -2px 0 rgb(56 189 248 / 12%),
+    0 10px 26px rgb(34 75 105 / 9%),
+    0 0 0 1px rgb(139 92 246 / 6%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section {
+  position: relative;
+  overflow: visible;
+  border: 0 !important;
+  border-top-width: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--danger {
+  border-color: #df6268 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--caution {
+  border-color: #d69a32 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--general {
+  border-color: #6e9db2 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__head {
+  position: relative;
+  z-index: 3;
+  min-height: 58px;
+  padding: 0 28px 0 14px;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  isolation: isolate;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__head::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0 8px 0 0;
+  border-radius: 12px 14px 0 0;
+  background: linear-gradient(180deg, #edf2f8 0%, #dfe7f1 100%);
+  clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 100%, 0 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 92%),
+    3px 3px 8px rgb(45 66 84 / 8%);
+  content: "";
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__head
+  h2 {
+  position: relative;
+  z-index: 1;
+  color: #17334b !important;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__tools {
+  position: relative;
+  z-index: 2;
+  gap: 8px;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__count {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 7px;
+  border: 1px solid #cbd8e2 !important;
+  border-radius: 8px !important;
+  background: rgb(255 255 255 / 72%) !important;
+  color: #35536a !important;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 #fff !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--danger
+  .consultant-risk-section__count {
+  border-color: #efc2c5 !important;
+  background: #fff4f4 !important;
+  color: #c63e45 !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--caution
+  .consultant-risk-section__count {
+  border-color: #ead19d !important;
+  background: #fff9ed !important;
+  color: #a66a08 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-trigger {
+  height: 34px;
+  border: 1px solid #8fa7b9 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  color: #27475f !important;
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 65%) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--danger
+  .consultant-risk-section__filter-trigger {
+  border-color: #df777c !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--caution
+  .consultant-risk-section__filter-trigger {
+  border-color: #d6a03e !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-menu {
+  border: 1px solid #c5d3de !important;
+  border-radius: 11px !important;
+  background: #fff !important;
+  box-shadow: 0 16px 34px rgb(7 25 43 / 20%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__list {
+  position: relative;
+  z-index: 1;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 0 12px 12px 12px;
+  background: #f3f6f9 !important;
+  box-shadow:
+    4px 5px 10px rgb(35 61 80 / 9%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item:nth-child(even) {
+  position: relative;
+  min-height: 58px !important;
+  padding: 0 12px 0 14px !important;
+  border: 1px solid rgb(142 185 211 / 54%) !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  box-shadow:
+    3px 4px 8px rgb(35 61 80 / 10%) !important;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item:hover,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item.is-selected {
+  border-color: #62b8d5 !important;
+  background: #fff !important;
+  box-shadow:
+    4px 5px 10px rgb(28 65 89 / 14%) !important;
+  transform: translateY(-1px);
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .consultant-list-item__subject {
+  color: #263b4a !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.012em;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .consultant-list-item__customer {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  padding: 0 0 0 12px;
+  border: 0;
+  border-left: 1px solid #cbd7df;
+  border-radius: 0;
+  background: transparent;
+  color: #526b7b !important;
+  font-size: 11px;
+  font-weight: 400 !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__list {
+  scrollbar-color: #8aa7bc transparent;
+  scrollbar-width: thin;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__list::-webkit-scrollbar {
+  width: 7px;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__list::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: #8aa7bc;
+  background-clip: padding-box;
+}
+
+@media (max-width: 900px) {
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app
+    .consultant-risk-columns {
+    gap: 10px;
+    padding: 10px;
+  }
+}
+
+/* Risk index tabs: one inquiry file is visible at a time. */
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: 44px minmax(0, 1fr) !important;
+  align-items: stretch;
+  gap: 0 !important;
+  padding: 12px !important;
+  overflow: hidden !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-tabs {
+  z-index: 4;
+  display: flex;
+  min-width: 0;
+  align-items: flex-end;
+  padding-left: 2px;
+  overflow: visible;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab {
+  position: relative;
+  display: flex;
+  width: 178px;
+  min-width: 142px;
+  max-width: 31%;
+  height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-right: -12px;
+  padding: 0 28px 0 18px;
+  border: 0;
+  border-radius: 12px 12px 0 0;
+  background: #dce4ef;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 66%);
+  color: #64748b;
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 100%, 0 100%);
+  font: inherit;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab:nth-child(1) {
+  z-index: 3;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab:nth-child(2) {
+  z-index: 2;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab:nth-child(3) {
+  z-index: 1;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab:hover {
+  background: #e8edf4;
+  color: #34495b;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab.is-active {
+  z-index: 5;
+  height: 44px;
+  background: #fff;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 -3px 9px rgb(43 67 86 / 8%);
+  color: #1e3a50;
+  font-weight: 700;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab:focus-visible {
+  outline: 2px solid #2f91bd;
+  outline-offset: -3px;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab
+  > span {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab
+  > b {
+  display: grid;
+  min-width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0 6px;
+  border-radius: 7px;
+  background: rgb(255 255 255 / 62%);
+  color: #62758a;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section[role="tabpanel"] {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  grid-column: 1;
+  grid-row: 2;
+  overflow: hidden;
+  flex-direction: column;
+  border: 0 !important;
+  border-radius: 0 14px 14px 14px !important;
+  background: #fff !important;
+  box-shadow:
+    4px 5px 12px rgb(35 61 80 / 10%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section[role="tabpanel"]
+  .consultant-risk-section__head {
+  min-height: 56px;
+  padding: 0 16px;
+  border-bottom: 1px solid #dde5eb !important;
+  background: #fff !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section[role="tabpanel"]
+  .consultant-risk-section__head::before {
+  display: none;
+  content: none;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section[role="tabpanel"]
+  .consultant-risk-section__head
+  h2 {
+  color: #31485a !important;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section[role="tabpanel"]
+  .consultant-risk-section__list {
+  min-height: 0;
+  flex: 1;
+  border-radius: 0 0 14px 14px;
+  background: #f7f9fb !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 700px) {
+  html body
+    .simple-consultant-app.consultant-queue-app
+    .consultant-risk-tab {
+    width: 34%;
+    min-width: 0;
+    padding-right: 22px;
+    padding-left: 12px;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app
+    .consultant-risk-tab
+    > b {
+    display: none;
+  }
+}

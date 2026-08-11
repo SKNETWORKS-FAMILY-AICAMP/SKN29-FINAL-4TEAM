@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  type KeyboardEvent as ReactKeyboardEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { createInquiryDetailPath } from "../../app/router/routePaths";
@@ -105,6 +111,8 @@ export default function ConsultantDashboardPage() {
   );
   const [openRiskStatusFilter, setOpenRiskStatusFilter] =
     useState<ConsultantRiskLevelDto | null>(null);
+  const [activeRiskSection, setActiveRiskSection] =
+    useState<ConsultantRiskLevelDto>("danger");
   const [selectedInquiryId, setSelectedInquiryId] =
     useState<InquiryId | null>(null);
   const [autoAdvance, setAutoAdvance] = useState(true);
@@ -180,6 +188,14 @@ export default function ConsultantDashboardPage() {
           })),
     [inquiryStateUpdates, mockState, queryData?.items],
   );
+
+  const displayedRiskSection =
+    sourceInquiries.length === 0 ||
+    sourceInquiries.some((inquiry) => inquiry.riskLevel === activeRiskSection)
+      ? activeRiskSection
+      : (RISK_SECTIONS.find((section) =>
+          sourceInquiries.some((inquiry) => inquiry.riskLevel === section.id),
+        )?.id ?? activeRiskSection);
 
   useEffect(() => {
     if (!isQueryComposingRef.current) {
@@ -269,6 +285,38 @@ export default function ConsultantDashboardPage() {
     setOpenRiskStatusFilter(null);
     setSelectedInquiryId(null);
     if (filters.page !== 1) setFilters({ ...filters, page: 1 });
+  };
+
+  const changeRiskSection = (riskLevel: ConsultantRiskLevelDto) => {
+    setActiveRiskSection(riskLevel);
+    setOpenRiskStatusFilter(null);
+    setSelectedInquiryId(null);
+  };
+
+  const handleRiskTabKeyDown = (
+    event: ReactKeyboardEvent<HTMLButtonElement>,
+    currentIndex: number,
+  ) => {
+    let nextIndex: number;
+    if (event.key === "ArrowRight") {
+      nextIndex = (currentIndex + 1) % RISK_SECTIONS.length;
+    } else if (event.key === "ArrowLeft") {
+      nextIndex =
+        (currentIndex - 1 + RISK_SECTIONS.length) % RISK_SECTIONS.length;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = RISK_SECTIONS.length - 1;
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    const nextSection = RISK_SECTIONS[nextIndex];
+    changeRiskSection(nextSection.id);
+    window.requestAnimationFrame(() => {
+      document.getElementById(`consultant-risk-tab-${nextSection.id}`)?.focus();
+    });
   };
 
   const advanceToNextInquiry = () => {
@@ -417,7 +465,45 @@ export default function ConsultantDashboardPage() {
                 onAction={hasChangedConditions ? resetFilters : undefined}
               />
             ) : (
-              RISK_SECTIONS.map((section) => {
+              <>
+                <div
+                  className="consultant-risk-tabs"
+                  role="tablist"
+                  aria-label="문의 유형"
+                >
+                  {RISK_SECTIONS.map((section, index) => {
+                    const isActive = displayedRiskSection === section.id;
+                    const count = queuePage.items.filter(
+                      (inquiry) => inquiry.riskLevel === section.id,
+                    ).length;
+
+                    return (
+                      <button
+                        key={section.id}
+                        id={`consultant-risk-tab-${section.id}`}
+                        className={`consultant-risk-tab${
+                          isActive ? " is-active" : ""
+                        }`}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        aria-controls={`consultant-risk-panel-${section.id}`}
+                        tabIndex={isActive ? 0 : -1}
+                        onClick={() => changeRiskSection(section.id)}
+                        onKeyDown={(event) =>
+                          handleRiskTabKeyDown(event, index)
+                        }
+                      >
+                        <span>{section.label}</span>
+                        <b>{count}</b>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {RISK_SECTIONS.filter(
+                  (section) => section.id === displayedRiskSection,
+                ).map((section) => {
                 const sectionInquiries = queuePage.items.filter(
                   (inquiry) => inquiry.riskLevel === section.id,
                 );
@@ -436,12 +522,15 @@ export default function ConsultantDashboardPage() {
                 return (
                   <section
                     key={section.id}
+                    id={`consultant-risk-panel-${section.id}`}
                     className={`consultant-risk-section consultant-risk-section--${section.id}`}
-                    aria-labelledby={`consultant-risk-section-${section.id}`}
+                    role="tabpanel"
+                    aria-labelledby={`consultant-risk-tab-${section.id}`}
+                    tabIndex={0}
                   >
                     <header className="consultant-risk-section__head">
                       <h2 id={`consultant-risk-section-${section.id}`}>
-                        {section.label}
+                        {section.label} 목록
                       </h2>
                       <div className="consultant-risk-section__tools">
                         <span className="consultant-risk-section__count">
@@ -559,7 +648,8 @@ export default function ConsultantDashboardPage() {
                     </div>
                   </section>
                 );
-              })
+                })}
+              </>
             )}
           </div>
 
