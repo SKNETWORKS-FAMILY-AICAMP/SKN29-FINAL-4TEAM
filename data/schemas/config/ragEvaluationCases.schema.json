@@ -171,7 +171,7 @@
           "properties": {
             "path": {"const": "ai/configs/index_manifest.json"},
             "sha256": {
-              "const": "76672253A536DFD253CA15770C08F781BC72BE6D2C6EE0AC1C15CA24971564A2"
+              "const": "91027E88DEC6C3BFF1E590AAF4479CA021AC284EB0BDC8E1EEC6C76473DA667E"
             },
             "received_sha256": {
               "const": "928AB09B4357C699C90463F321A4E39C678137FEA8A98C3D4AC9471C26E7ADBF"
