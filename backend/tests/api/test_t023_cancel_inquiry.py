@@ -194,12 +194,28 @@ def test_cancel_draft_inquiry_updates_state_reason_and_history():
             "from_state",
             "to_state",
             "state_version",
+            "change_reason",
         )
     )
     assert history == [
-        ("START_INQUIRY", None, "DRAFT", 1),
-        ("CANCEL_INQUIRY", "DRAFT", "CANCELLED", 2),
+        ("START_INQUIRY", None, "DRAFT", 1, None),
+        (
+            "CANCEL_INQUIRY",
+            "DRAFT",
+            "CANCELLED",
+            2,
+            "CUSTOMER_REQUEST | Customer changed plans.",
+        ),
     ]
+    cancel_history = TransitionHistory.objects.get(
+        inquiry=inquiry,
+        event_code="CANCEL_INQUIRY",
+    )
+    assert cancel_history.actor == owner
+    assert str(cancel_history.correlation_id) == payload["metadata"][
+        "correlation_id"
+    ]
+    assert cancel_history.idempotency_key == "t023-cancel-success"
     cancel_record = IdempotencyRecord.objects.get(
         actor=owner,
         operation_id="cancelInquiry",
@@ -208,6 +224,34 @@ def test_cancel_draft_inquiry_updates_state_reason_and_history():
     assert cancel_record.response_status == 200
     assert cancel_record.resource_public_id == inquiry.public_id
     assert "id" not in cancel_record.response_body
+
+
+@pytest.mark.parametrize(
+    "reason_detail",
+    [None, "", "   ", "__OMITTED__"],
+)
+def test_cancel_history_uses_reason_code_without_separator_when_detail_empty(
+    reason_detail,
+):
+    owner = create_user(101)
+    client, inquiry = create_inquiry(owner, 101)
+
+    body = cancel_body(reason_detail=reason_detail)
+    if reason_detail == "__OMITTED__":
+        body.pop("reason_detail")
+    response = post_cancel(
+        client,
+        inquiry,
+        body,
+        key=f"t023-empty-reason-{reason_detail!r}",
+    )
+
+    assert response.status_code == 200
+    history = TransitionHistory.objects.get(
+        inquiry=inquiry,
+        event_code="CANCEL_INQUIRY",
+    )
+    assert history.change_reason == "CUSTOMER_REQUEST"
 
 
 def test_same_key_same_stale_body_replays_before_version_check():
@@ -237,6 +281,14 @@ def test_same_key_same_stale_body_replays_before_version_check():
     inquiry.refresh_from_db()
     assert inquiry.state_version == 2
     assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 2
+    assert TransitionHistory.objects.get(
+        inquiry=inquiry,
+        event_code="CANCEL_INQUIRY",
+    ).change_reason == "CUSTOMER_REQUEST | No longer needed"
+    assert TransitionHistory.objects.get(
+        inquiry=inquiry,
+        event_code="CANCEL_INQUIRY",
+    ).change_reason == "CUSTOMER_REQUEST | No longer needed"
     assert IdempotencyRecord.objects.filter(
         actor=owner,
         operation_id="cancelInquiry",
@@ -541,6 +593,7 @@ def test_cancel_rolls_back_state_history_and_idempotency_on_late_failure(
     assert inquiry.state_version == 1
     assert inquiry.cancelled_at is None
     assert inquiry.cancellation_reason_code is None
+    assert inquiry.cancellation_reason_detail is None
     assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 1
     assert IdempotencyRecord.objects.filter(
         actor=owner,
@@ -578,6 +631,8 @@ def test_cancel_rolls_back_when_response_serialization_fails(monkeypatch):
     assert inquiry.status_code == Inquiry.Status.DRAFT
     assert inquiry.state_version == 1
     assert inquiry.cancelled_at is None
+    assert inquiry.cancellation_reason_code is None
+    assert inquiry.cancellation_reason_detail is None
     assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 1
     assert not IdempotencyRecord.objects.filter(
         actor=owner,

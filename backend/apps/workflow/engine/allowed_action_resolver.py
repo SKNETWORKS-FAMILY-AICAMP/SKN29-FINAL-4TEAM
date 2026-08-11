@@ -100,6 +100,7 @@ class AllowedActionContext:
         actor: Any,
         consultation: Any = _UNSET,
         visit: Any = _UNSET,
+        open_followup_questions: Any = _UNSET,
     ) -> "AllowedActionContext":
         """Build a stable projection from locked or preloaded aggregate rows."""
 
@@ -140,11 +141,17 @@ class AllowedActionContext:
         )
         raw_text = getattr(inquiry, "raw_text", None)
         normalized_text = raw_text.strip() if isinstance(raw_text, str) else ""
-        open_followup_questions = False
-        if actor_role == "CUSTOMER" and inquiry.status_code == "QUESTIONNAIRE_IN_PROGRESS":
-            open_followup_questions = inquiry.qa_entries.filter(
-                customer_answer__isnull=True
-            ).exists()
+        if open_followup_questions is _UNSET:
+            open_followup_questions = False
+            if (
+                actor_role == "CUSTOMER"
+                and inquiry.status_code == "QUESTIONNAIRE_IN_PROGRESS"
+            ):
+                open_followup_questions = inquiry.qa_entries.filter(
+                    customer_answer__isnull=True
+                ).exists()
+        else:
+            open_followup_questions = bool(open_followup_questions)
         return cls(
             inquiry_state=inquiry.status_code,
             state_version=inquiry.state_version,

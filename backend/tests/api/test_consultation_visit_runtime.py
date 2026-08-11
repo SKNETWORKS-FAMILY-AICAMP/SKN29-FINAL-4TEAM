@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from uuid import uuid4
 
 import pytest
@@ -15,7 +15,7 @@ from apps.consultations.models import Consultation
 from apps.inquiries.models import Inquiry
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
-from apps.visits.models import HandoffReport, Visit
+from apps.visits.models import HandoffReport, Visit, VisitResult
 from apps.visits.repositories.visit_repository import VisitRepository
 from apps.workflow.models import IdempotencyRecord, TransitionHistory
 from apps.workflow.repositories.workflow_repository import WorkflowRepository
@@ -476,6 +476,168 @@ def test_visit_review_create_schedule_confirm_date_only_flow():
         ("ASSIGNING", "SCHEDULING", 2),
         ("SCHEDULING", "CONFIRMED", 3),
     ]
+
+
+def test_update_visit_schedule_supports_revisit_transition_tr_inq_028():
+    consultant = create_user(612, role=User.Role.CONSULTANT)
+    original_technician = create_user(613, role=User.Role.TECHNICIAN)
+    replacement_technician = create_user(614, role=User.Role.TECHNICIAN)
+    inquiry = create_inquiry(
+        12,
+        consultant=consultant,
+        status=Inquiry.Status.REVISIT_REQUIRED,
+        state_version=9,
+    )
+    now = timezone.now()
+    visit = Visit.objects.create(
+        visit_code="VIS-REVISIT-TR-INQ-028",
+        inquiry=inquiry,
+        technician=original_technician,
+        status=Visit.Status.FOLLOW_UP_REQUIRED,
+        requested_at=now - timedelta(days=3),
+        scheduled_at=now - timedelta(days=2),
+        preferred_date=date(2026, 8, 9),
+        confirmed_date=date(2026, 8, 9),
+        visit_reason="첫 방문 이후 추가 점검이 필요합니다.",
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
+        handoff_payload=visit_handoff(),
+        started_at=now - timedelta(days=1, hours=2),
+        completed_at=now - timedelta(days=1),
+        confirmed_cause="필터 체결 불량",
+        action_taken="필터 재체결 및 추가 방문 권고",
+        state_version=4,
+        idempotency_key="revisit-original-visit",
+        correlation_id=uuid4(),
+        data_classification=Visit.DataClassification.SYNTHETIC,
+    )
+    result = VisitResult.objects.create(
+        visit=visit,
+        cause_category_code="FILTER",
+        inspection_summary="필터 체결 상태를 점검했습니다.",
+        action_summary="재체결 후 추가 확인이 필요합니다.",
+        resolved_on_site=False,
+        revisit_required=True,
+        revisit_reason="유량 재확인이 필요합니다.",
+        submitted_by=original_technician,
+        idempotency_key="revisit-original-result",
+        completed_at=now - timedelta(days=1),
+    )
+    unassigned_consultant = create_user(
+        615,
+        role=User.Role.CONSULTANT,
+    )
+    denied = request(
+        client_for(unassigned_consultant),
+        "patch",
+        f"/api/v1/visits/{visit.public_id}/schedule",
+        {
+            "state_version": inquiry.state_version,
+            "synthetic_technician_id": str(
+                replacement_technician.public_id
+            ),
+            "preferred_date": "2026-08-15",
+            "confirmed_date": "2026-08-16",
+        },
+        key="revisit-schedule-unassigned",
+    )
+
+    assert denied.status_code == 404
+    assert denied.json()["error"]["code"] == "RESOURCE_NOT_FOUND"
+    inquiry.refresh_from_db()
+    visit.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.REVISIT_REQUIRED
+    assert inquiry.state_version == 9
+    assert visit.status == Visit.Status.FOLLOW_UP_REQUIRED
+    assert not IdempotencyRecord.objects.filter(
+        actor=unassigned_consultant,
+        operation_id="updateVisitSchedule",
+    ).exists()
+
+    response = request(
+        client_for(consultant),
+        "patch",
+        f"/api/v1/visits/{visit.public_id}/schedule",
+        {
+            "state_version": inquiry.state_version,
+            "synthetic_technician_id": str(
+                replacement_technician.public_id
+            ),
+            "preferred_date": "2026-08-15",
+            "confirmed_date": "2026-08-16",
+        },
+        key="revisit-schedule-tr-inq-028",
+    )
+
+    assert response.status_code == 200, response.json()
+    inquiry.refresh_from_db()
+    visit.refresh_from_db()
+    result.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.VISIT_SCHEDULING
+    assert inquiry.state_version == 10
+    assert visit.status == Visit.Status.SCHEDULING
+    assert visit.technician == replacement_technician
+    assert visit.preferred_date == date(2026, 8, 15)
+    assert visit.confirmed_date == date(2026, 8, 16)
+    assert visit.scheduled_at is None
+    assert visit.started_at is None
+    assert visit.completed_at is None
+    assert visit.confirmed_cause is None
+    assert visit.action_taken is None
+    assert result.revisit_required is True
+    assert result.revisit_reason == "유량 재확인이 필요합니다."
+    assert TransitionHistory.objects.filter(
+        inquiry=inquiry,
+        event_code="UPDATE_VISIT_SCHEDULE",
+        from_state=Inquiry.Status.REVISIT_REQUIRED,
+        to_state=Inquiry.Status.VISIT_SCHEDULING,
+        state_version=10,
+    ).exists()
+    assert TransitionHistory.objects.filter(
+        visit=visit,
+        event_code="UPDATE_VISIT_SCHEDULE",
+        from_state=Visit.Status.FOLLOW_UP_REQUIRED,
+        to_state=Visit.Status.SCHEDULING,
+        state_version=5,
+    ).exists()
+    history_count = TransitionHistory.objects.filter(
+        event_code="UPDATE_VISIT_SCHEDULE",
+        inquiry=inquiry,
+    ).count()
+    replay_body = {
+        "state_version": 9,
+        "synthetic_technician_id": str(
+            replacement_technician.public_id
+        ),
+        "preferred_date": "2026-08-15",
+        "confirmed_date": "2026-08-16",
+    }
+    replay = request(
+        client_for(consultant),
+        "patch",
+        f"/api/v1/visits/{visit.public_id}/schedule",
+        replay_body,
+        key="revisit-schedule-tr-inq-028",
+    )
+    stale = request(
+        client_for(consultant),
+        "patch",
+        f"/api/v1/visits/{visit.public_id}/schedule",
+        replay_body,
+        key="revisit-schedule-stale-version",
+    )
+
+    assert replay.status_code == 200
+    assert replay.json()["data"]["idempotent_replay"] is True
+    assert stale.status_code == 409
+    assert stale.json()["error"]["code"] == "STATE-CONFLICT-01"
+    inquiry.refresh_from_db()
+    visit.refresh_from_db()
+    assert inquiry.state_version == 10
+    assert visit.state_version == 5
+    assert TransitionHistory.objects.filter(
+        event_code="UPDATE_VISIT_SCHEDULE",
+        inquiry=inquiry,
+    ).count() == history_count
 
 
 def test_visit_not_needed_completes_without_creating_visit():

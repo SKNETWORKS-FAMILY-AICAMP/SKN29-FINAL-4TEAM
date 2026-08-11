@@ -251,6 +251,18 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
     questions_schema = load_yaml(
         INQUIRY_SCHEMA_DIR / "CustomerInquiryQuestions.yaml"
     )
+    snapshot_schema = load_yaml(
+        INQUIRY_SCHEMA_DIR / "CustomerInquirySnapshot.yaml"
+    )
+    assert "allowed_actions" in snapshot_schema["required"]
+    assert snapshot_schema["properties"]["allowed_actions"] == {
+        "type": "array",
+        "description": (
+            "최신 문의·질문 Snapshot에 대해 Backend 동적 Resolver가 "
+            "계산한 현재 호출 가능 Action"
+        ),
+        "items": {"$ref": "../workflow/AllowedAction.yaml"},
+    }
     question_item = questions_schema["properties"]["questions"]["items"]
     assert "required" in question_item["required"]
     assert question_item["properties"]["required"] == {
@@ -289,6 +301,16 @@ def test_submit_symptom_contract_uses_saved_input_and_state_version_only():
         "subscription_status": "ACTIVE",
         "product_model_required": True,
     }
+    assert operation["x-ai-dispatch"] == {
+        "boundary": "AFTER_SUCCESSFUL_COMMIT",
+        "mechanism": "DJANGO_TRANSACTION_ON_COMMIT",
+        "response_snapshot": "COMMIT_TIME_ONLY",
+        "response_includes_ai_result": False,
+        "idempotency_replay_dispatches": False,
+    }
+    description = operation["description"]
+    assert "on_commit" in description
+    assert "AI 결과나 추가 질문 생성 완료를 보장하지 않는다" in description
     assert request_schema["x-contract-status"] == "CONFIRMED"
     assert request_schema["required"] == ["state_version"]
     assert set(request_schema["properties"]) == {"state_version"}

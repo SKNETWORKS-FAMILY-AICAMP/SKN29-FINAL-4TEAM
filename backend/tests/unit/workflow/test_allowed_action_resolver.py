@@ -155,6 +155,31 @@ def test_visit_actions_follow_latest_visit_date_and_technician_guards():
     assert confirmable == ["UPDATE_VISIT_SCHEDULE", "CONFIRM_VISIT"]
 
 
+def test_revisit_schedule_requires_latest_followup_visit_and_assignment():
+    base = {
+        "inquiry_state": "REVISIT_REQUIRED",
+        "state_version": 10,
+        "actor_role": "CONSULTANT",
+        "actor_id": 20,
+        "owner_id": 10,
+        "assigned_user_id": 20,
+        "visit_exists": True,
+        "visit_is_latest": True,
+        "visit_status": "FOLLOW_UP_REQUIRED",
+    }
+    _actions, callable_codes = resolve_codes(**base)
+    _actions, unassigned_codes = resolve_codes(
+        **{**base, "actor_id": 21}
+    )
+    _actions, wrong_visit_status = resolve_codes(
+        **{**base, "visit_status": "COMPLETED"}
+    )
+
+    assert callable_codes == ["UPDATE_VISIT_SCHEDULE"]
+    assert unassigned_codes == []
+    assert wrong_visit_status == []
+
+
 def test_response_shape_and_contract_order_remain_stable():
     actions, _codes = resolve_codes()
 

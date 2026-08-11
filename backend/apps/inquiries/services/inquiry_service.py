@@ -328,6 +328,8 @@ class InquiryService:
             actor=actor,
             correlation_id=correlation_id,
             idempotency_key=idempotency_key,
+            reason_code=validated_data["reason_code"],
+            reason_detail=validated_data.get("reason_detail"),
         )
         data = {
             "inquiry_id": str(inquiry.public_id),

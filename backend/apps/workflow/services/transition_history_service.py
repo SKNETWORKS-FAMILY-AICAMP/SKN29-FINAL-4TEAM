@@ -43,7 +43,13 @@ class TransitionHistoryService:
         actor: Any,
         correlation_id: UUID,
         idempotency_key: str,
+        reason_code: str,
+        reason_detail: str | None,
     ) -> TransitionHistory:
+        normalized_detail = (reason_detail or "").strip()
+        change_reason = reason_code
+        if normalized_detail:
+            change_reason = f"{reason_code} | {normalized_detail}"
         return WorkflowRepository.create_transition_history(
             inquiry=inquiry,
             actor=actor,
@@ -53,6 +59,7 @@ class TransitionHistoryService:
             state_version=transition.state_version_after,
             correlation_id=correlation_id,
             idempotency_key=idempotency_key,
+            change_reason=change_reason,
         )
 
     @staticmethod
