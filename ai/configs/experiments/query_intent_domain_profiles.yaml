@@ -1,0 +1,67 @@
+{
+  "experiment_id": "B2-2-QUERY-INTENT-DOMAIN-V1",
+  "experiment_version": "1.0.0-draft.1",
+  "dataset": {
+    "path": "ai/evaluation/datasets/experiments/query_intent_domain_v1.jsonl",
+    "manifest_path": "ai/evaluation/datasets/experiments/query_intent_domain_v1_manifest.json",
+    "schema_path": "ai/evaluation/schemas/query_intent_domain_case_v1.schema.json",
+    "split": "DEV"
+  },
+  "fixed_retrieval": {
+    "chunking_profile_id": "parent_child_v1",
+    "score_threshold": 0.5,
+    "top_k": 5,
+    "product_filter": "EXACT_PRODUCT_FILTER",
+    "scope_policy_id": "MODEL_CAPABILITY_SCOPE_V1",
+    "selection_status": "PROVISIONAL_B2_1_DRAFT_NOT_OPERATIONAL"
+  },
+  "intent_policies": [
+    {
+      "policy_id": "NO_QUERY_INTENT_POLICY",
+      "enabled": false,
+      "rules": []
+    },
+    {
+      "policy_id": "MANUAL_DOMAIN_INTENT_V1",
+      "enabled": true,
+      "rules": [
+        {
+          "rule_id": "EXP-INTENT-COMMERCIAL-001",
+          "intent_family": "COMMERCIAL_CONTRACT",
+          "any_term_groups": [
+            ["제휴카드", "카드 할인", "렌탈료", "월 요금", "계약 요금", "납부 금액", "할인 금액", "할인 혜택"]
+          ],
+          "excluded_terms": [],
+          "reason": "공식 매뉴얼 근거 범위를 벗어난 계약·결제·할인 문의"
+        },
+        {
+          "rule_id": "EXP-INTENT-PART-PURCHASE-001",
+          "intent_family": "PART_PURCHASE",
+          "any_term_groups": [
+            ["필터", "부품", "소모품"],
+            ["가격", "비용", "구매", "구입", "판매", "구매처", "파는 곳"]
+          ],
+          "excluded_terms": ["가격이 아니라", "비용이 아니라", "교체 주기", "얼마마다"],
+          "reason": "공식 매뉴얼 근거 범위를 벗어난 부품 가격·구매 문의"
+        },
+        {
+          "rule_id": "EXP-INTENT-PRODUCT-OPTION-001",
+          "intent_family": "PRODUCT_OPTION",
+          "any_term_groups": [
+            ["색상", "컬러"],
+            ["선택", "옵션", "주문", "종류", "판매"],
+            ["외관", "제품", "모델"]
+          ],
+          "excluded_terms": ["청소", "닦", "얼룩", "변색", "표시등", "표시창", "버튼"],
+          "reason": "공식 매뉴얼 근거 범위를 벗어난 판매 색상·옵션 문의"
+        }
+      ]
+    }
+  ],
+  "publication_limits": [
+    "18건 표현 변형 Dataset은 사람 2인 검수 전 Draft 실험 자료다.",
+    "정책은 Gold 정답 Label을 입력으로 읽지 않으며 Query 문자열과 제품 코드만 사용한다.",
+    "B2-1의 parent_child_v1·0.5 조합은 임시 비교 기준일 뿐 운영 Profile 선정이 아니다.",
+    "Experiment Lab 결과로 운영 Scope Filter나 Backend 정책이 변경되지 않는다."
+  ]
+}

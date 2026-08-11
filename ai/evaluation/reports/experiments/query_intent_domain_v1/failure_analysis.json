@@ -1,0 +1,259 @@
+{
+  "experiment_id": "B2-2-QUERY-INTENT-DOMAIN-V1",
+  "status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED",
+  "policy": "Query·제품 코드만 정책 입력으로 사용하며 기대 Label은 평가에만 사용",
+  "items": [
+    {
+      "dataset_kind": "SUPPLEMENTAL_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "QIDOM-V1-0001",
+      "failure_type": "QUERY_INTENT_POLICY_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "SUPPLEMENTAL_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "QIDOM-V1-0002",
+      "failure_type": "QUERY_INTENT_POLICY_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "SUPPLEMENTAL_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "QIDOM-V1-0003",
+      "failure_type": "QUERY_INTENT_POLICY_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "SUPPLEMENTAL_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "QIDOM-V1-0004",
+      "failure_type": "QUERY_INTENT_POLICY_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "SUPPLEMENTAL_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "QIDOM-V1-0005",
+      "failure_type": "QUERY_INTENT_POLICY_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "SUPPLEMENTAL_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "QIDOM-V1-0006",
+      "failure_type": "QUERY_INTENT_POLICY_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "SUPPLEMENTAL_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "QIDOM-V1-0007",
+      "failure_type": "QUERY_INTENT_POLICY_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "SUPPLEMENTAL_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "QIDOM-V1-0008",
+      "failure_type": "QUERY_INTENT_POLICY_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "SUPPLEMENTAL_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "QIDOM-V1-0009",
+      "failure_type": "QUERY_INTENT_POLICY_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "RAGV2-GOLD-0004",
+      "failure_type": "RETRIEVAL_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "RAGV2-GOLD-0007",
+      "failure_type": "RERANK_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "RAGV2-GOLD-0012",
+      "failure_type": "RERANK_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "RAGV2-GOLD-0013",
+      "failure_type": "RERANK_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "RAGV2-GOLD-0014",
+      "failure_type": "RERANK_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "RAGV2-GOLD-0021",
+      "failure_type": "RERANK_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "RAGV2-GOLD-0025",
+      "failure_type": "RETRIEVAL_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "RAGV2-GOLD-0027",
+      "failure_type": "RETRIEVAL_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "RAGV2-GOLD-0051",
+      "failure_type": "RETRIEVAL_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "RAGV2-GOLD-0052",
+      "failure_type": "RETRIEVAL_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "case_id": "RAGV2-GOLD-0054",
+      "failure_type": "RETRIEVAL_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "MANUAL_DOMAIN_INTENT_V1",
+      "case_id": "RAGV2-GOLD-0004",
+      "failure_type": "RETRIEVAL_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "MANUAL_DOMAIN_INTENT_V1",
+      "case_id": "RAGV2-GOLD-0007",
+      "failure_type": "RERANK_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "MANUAL_DOMAIN_INTENT_V1",
+      "case_id": "RAGV2-GOLD-0012",
+      "failure_type": "RERANK_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "MANUAL_DOMAIN_INTENT_V1",
+      "case_id": "RAGV2-GOLD-0013",
+      "failure_type": "RERANK_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "MANUAL_DOMAIN_INTENT_V1",
+      "case_id": "RAGV2-GOLD-0014",
+      "failure_type": "RERANK_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "MANUAL_DOMAIN_INTENT_V1",
+      "case_id": "RAGV2-GOLD-0021",
+      "failure_type": "RERANK_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "MANUAL_DOMAIN_INTENT_V1",
+      "case_id": "RAGV2-GOLD-0025",
+      "failure_type": "RETRIEVAL_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "dataset_kind": "GOLD_DEV",
+      "intent_policy_id": "MANUAL_DOMAIN_INTENT_V1",
+      "case_id": "RAGV2-GOLD-0027",
+      "failure_type": "RETRIEVAL_ERROR",
+      "scope_rule_id": null,
+      "intent_rule_id": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    }
+  ]
+}

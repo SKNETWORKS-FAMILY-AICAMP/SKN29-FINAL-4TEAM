@@ -3,11 +3,12 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 from collections import Counter
 from pathlib import Path
 from typing import Any
+
+from ai.evaluation.file_integrity import file_sha256
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -195,7 +196,7 @@ CROSS_PRODUCT = [
 
 
 def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest().upper()
+    return file_sha256(path)
 
 
 def _expected_evidence(keys: list[str]) -> list[dict[str, Any]]:

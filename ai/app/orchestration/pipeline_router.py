@@ -1,7 +1,9 @@
 """파이프라인 라우터 모듈."""
 
 import os
+from hashlib import sha256
 from pathlib import Path
+from threading import Lock
 from typing import Dict, List, Optional
 from uuid import UUID
 
@@ -18,6 +20,78 @@ from ..schemas import TraceContext
 
 
 _AUTO_SEARCH_SERVICE = object()
+_SEARCH_SERVICE_LOCK = Lock()
+_SEARCH_SERVICE_CACHE_KEY: tuple[str, str, str] | None = None
+_SEARCH_SERVICE_CACHE: VectorSearchService | None = None
+
+
+def _configured_search_service() -> VectorSearchService | None:
+    """프로세스에서 공유할 Local RAG 검색 서비스를 구성한다."""
+
+    global _SEARCH_SERVICE_CACHE_KEY, _SEARCH_SERVICE_CACHE
+
+    dsn = os.getenv("AI_VECTOR_DSN")
+    if not dsn:
+        return None
+    model_revision = os.getenv("AI_EMBEDDING_REVISION")
+    if not model_revision:
+        raise RetrievalConfigurationError(
+            "AI_VECTOR_DSN 사용 시 재현 가능한 AI_EMBEDDING_REVISION이 필요합니다."
+        )
+
+    repository_root = Path(__file__).resolve().parents[3]
+    manifest_path = repository_root / "ai" / "configs" / "index_manifest.json"
+    try:
+        manifest_bytes = manifest_path.read_bytes()
+    except OSError as exc:
+        raise RetrievalConfigurationError(
+            "AI_VECTOR_DSN 사용 시 Index Manifest가 필요합니다."
+        ) from exc
+
+    cache_key = (
+        sha256(dsn.encode("utf-8")).hexdigest(),
+        model_revision,
+        sha256(manifest_bytes).hexdigest(),
+    )
+    with _SEARCH_SERVICE_LOCK:
+        if _SEARCH_SERVICE_CACHE_KEY == cache_key and _SEARCH_SERVICE_CACHE is not None:
+            return _SEARCH_SERVICE_CACHE
+        try:
+            manifest = IndexManifest.load_manifest(str(manifest_path))
+            if manifest is None:
+                raise RetrievalConfigurationError(
+                    "AI_VECTOR_DSN 사용 시 Index Manifest가 필요합니다."
+                )
+            service = VectorSearchService(
+                BgeM3EmbeddingClient(model_revision=model_revision),
+                PgVectorStore(dsn),
+                index_manifest=manifest,
+            )
+        except RetrievalConfigurationError:
+            raise
+        except Exception as exc:
+            raise RetrievalConfigurationError(
+                "Vector Store 검색 설정이 Index Manifest와 일치하지 않습니다."
+            ) from exc
+        _SEARCH_SERVICE_CACHE_KEY = cache_key
+        _SEARCH_SERVICE_CACHE = service
+        return service
+
+
+def warmup_configured_search_service() -> bool:
+    """Local RAG 모델을 HTTP 요청 처리 전에 초기화한다."""
+
+    service = _configured_search_service()
+    if service is None:
+        return False
+    embedding_client = service.embedding_client
+    warmup = getattr(embedding_client, "warmup", None)
+    if not callable(warmup):
+        raise RetrievalConfigurationError(
+            "설정된 Embedding Provider가 Runtime Warmup을 지원하지 않습니다."
+        )
+    warmup()
+    return True
 
 
 class PipelineRouter:
@@ -38,33 +112,7 @@ class PipelineRouter:
 
     @staticmethod
     def _configured_search_service() -> VectorSearchService | None:
-        dsn = os.getenv("AI_VECTOR_DSN")
-        if not dsn:
-            return None
-        model_revision = os.getenv("AI_EMBEDDING_REVISION")
-        if not model_revision:
-            raise RetrievalConfigurationError(
-                "AI_VECTOR_DSN 사용 시 재현 가능한 AI_EMBEDDING_REVISION이 필요합니다."
-            )
-        repository_root = Path(__file__).resolve().parents[3]
-        manifest_path = repository_root / "ai" / "configs" / "index_manifest.json"
-        try:
-            manifest = IndexManifest.load_manifest(str(manifest_path))
-            if manifest is None:
-                raise RetrievalConfigurationError(
-                    "AI_VECTOR_DSN 사용 시 Index Manifest가 필요합니다."
-                )
-            return VectorSearchService(
-                BgeM3EmbeddingClient(model_revision=model_revision),
-                PgVectorStore(dsn),
-                index_manifest=manifest,
-            )
-        except RetrievalConfigurationError:
-            raise
-        except Exception as exc:
-            raise RetrievalConfigurationError(
-                "Vector Store 검색 설정이 Index Manifest와 일치하지 않습니다."
-            ) from exc
+        return _configured_search_service()
 
     def run_pipeline(
         self,

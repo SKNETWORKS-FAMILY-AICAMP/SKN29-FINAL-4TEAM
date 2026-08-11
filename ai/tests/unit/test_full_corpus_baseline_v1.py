@@ -9,6 +9,8 @@ from pathlib import Path
 import numpy as np
 from jsonschema import Draft202012Validator
 
+from ai.evaluation.file_integrity import canonical_file_bytes, file_sha256
+
 from ai.scripts.build_full_corpus_chunks_v1 import (
     OUTPUT_DATASET,
     OUTPUT_MANIFEST,
@@ -79,9 +81,9 @@ class FullCorpusBaselineV1Tests(unittest.TestCase):
         )
 
     def test_chunk_builder_is_byte_deterministic(self) -> None:
-        self.assertEqual(self.dataset_path.read_bytes(), _jsonl_bytes(build_chunks()))
+        self.assertEqual(canonical_file_bytes(self.dataset_path), _jsonl_bytes(build_chunks()))
         manifest = json.loads(self.manifest_path.read_text(encoding="utf-8"))
-        actual_hash = hashlib.sha256(self.dataset_path.read_bytes()).hexdigest().upper()
+        actual_hash = file_sha256(self.dataset_path)
         self.assertEqual(manifest["dataset"]["sha256"], actual_hash)
         self.assertEqual(manifest["status"], "READY_FOR_EMBEDDING")
 

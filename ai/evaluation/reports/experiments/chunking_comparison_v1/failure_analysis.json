@@ -1,0 +1,1789 @@
+{
+  "experiment_id": "B1-CHUNKING-COMPARISON-V1",
+  "status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED",
+  "policy": "실패 Case를 데이터 추가 전에 분류하며 CHUNKING_ERROR와 KNOWLEDGE_GAP은 원문·근거 수동 검토 없이 자동 확정하지 않음",
+  "items": [
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0005",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0008",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0012",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0013",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0014",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0021",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0051",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0052",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0054",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0056",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0057",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0058",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0005",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0008",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0010",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0012",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0013",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0014",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0021",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0022",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0023",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0037",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0038",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0051",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0052",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0053",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0054",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0056",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0057",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0058",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "current_chunking_full_corpus_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0059",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0005",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0008",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0012",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0013",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0014",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0021",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0051",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0052",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0054",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0056",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0057",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0058",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0005",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0008",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0010",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0012",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0013",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0014",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0021",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0022",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0023",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0037",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0038",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0051",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0052",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0053",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0054",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0056",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0057",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0058",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "fixed_512_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0059",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0005",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0008",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0012",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0013",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0014",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0021",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0051",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0052",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0054",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0056",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0057",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0058",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0005",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0008",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0010",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0012",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0013",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0014",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0021",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0022",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0023",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0037",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0038",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0051",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0052",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0053",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0054",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0056",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0057",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0058",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "page_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0059",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0012",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0013",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0014",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0021",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0051",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0052",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0054",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0056",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0057",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0058",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0010",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0012",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0013",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0014",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0021",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0022",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0037",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0038",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0051",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0052",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0053",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0054",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0056",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0057",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0058",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "parent_child_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0059",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 4,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 4,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0008",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0010",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0011",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0013",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0014",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0022",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0023",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 4,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0024",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 4,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0032",
+      "query_variant_type": "TYPO_ABBREVIATION",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0038",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0051",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0052",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0054",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0056",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0057",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "EXACT_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0058",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0004",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0007",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0008",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0009",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0010",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0011",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 5,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0012",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0013",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0014",
+      "query_variant_type": "DIRECT",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 4,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0021",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0022",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0023",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 4,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0024",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 5,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0025",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0026",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0027",
+      "query_variant_type": "COLLOQUIAL",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0032",
+      "query_variant_type": "TYPO_ABBREVIATION",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0036",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0037",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 2,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0038",
+      "query_variant_type": "COMPOUND",
+      "failure_type": "RERANK_ERROR",
+      "first_relevant_rank": 3,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0051",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0052",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0054",
+      "query_variant_type": "NO_EVIDENCE",
+      "failure_type": "RETRIEVAL_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0056",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0057",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0058",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "profile_id": "section_v1",
+      "filter_mode": "NO_PRODUCT_FILTER",
+      "case_id": "RAGV2-GOLD-0059",
+      "query_variant_type": "CROSS_PRODUCT",
+      "failure_type": "SCOPE_FILTER_ERROR",
+      "first_relevant_rank": null,
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    }
+  ]
+}

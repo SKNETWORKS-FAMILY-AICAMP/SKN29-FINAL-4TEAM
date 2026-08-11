@@ -19,6 +19,8 @@ from typing import Any
 
 from jsonschema import Draft202012Validator, FormatChecker
 
+from ai.evaluation.file_integrity import file_sha256
+
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PROFILE = "experiment_runner_contract_v1"
@@ -41,7 +43,7 @@ def _resolve_repo_path(path_value: str) -> Path:
 
 
 def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest().upper()
+    return file_sha256(path)
 
 
 def _load_json(path: Path) -> Any:
