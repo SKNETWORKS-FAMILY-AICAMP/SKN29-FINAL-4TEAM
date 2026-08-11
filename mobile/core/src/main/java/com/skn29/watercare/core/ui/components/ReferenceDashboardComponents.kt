@@ -296,16 +296,41 @@ fun ReferenceCompactBanner(
         ) {
             Box(
                 modifier = Modifier
-                    .size(11.dp)
+                    .size(24.dp)
                     .clip(CircleShape)
                     .background(
                         if (warning) {
-                            palette.warning
+                            palette.warning.copy(alpha = 0.14f)
                         } else {
-                            palette.success
+                            palette.success.copy(alpha = 0.14f)
                         }
                     )
-            )
+                    .border(
+                        BorderStroke(
+                            1.dp,
+                            if (warning) {
+                                palette.warning.copy(alpha = 0.30f)
+                            } else {
+                                palette.success.copy(alpha = 0.30f)
+                            },
+                        ),
+                        CircleShape,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(9.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (warning) {
+                                palette.warning
+                            } else {
+                                palette.success
+                            }
+                        )
+                )
+            }
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(3.dp),
@@ -793,17 +818,39 @@ fun ReferenceSectionHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            title,
-            color = palette.textStrong,
-            fontFamily = FontFamily.SansSerif,
-            fontSize = 21.sp,
-            lineHeight = 26.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.45).sp,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(9.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(
+                        width = 4.dp,
+                        height = 22.dp,
+                    )
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                palette.accent,
+                                palette.accentSecondary,
+                            )
+                        )
+                    )
+            )
+
+            Text(
+                title,
+                color = palette.textStrong,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 21.sp,
+                lineHeight = 26.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.45).sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
 
         if (!trailing.isNullOrBlank()) {
             Box(
@@ -1041,6 +1088,23 @@ fun ReferenceScheduleCard(
             vertical = 14.dp,
         ),
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(3.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(
+                            palette.accent.copy(alpha = 0.24f),
+                            palette.accent,
+                            palette.accentSecondary.copy(alpha = 0.54f),
+                            Color.Transparent,
+                        )
+                    )
+                )
+        )
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -1048,22 +1112,45 @@ fun ReferenceScheduleCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(52.dp)
+                    .size(54.dp)
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = CircleShape,
+                        ambientColor = palette.accent.copy(alpha = 0.16f),
+                        spotColor = palette.accentSecondary.copy(alpha = 0.14f),
+                        clip = false,
+                    )
                     .clip(CircleShape)
                     .background(
-                        if (palette.darkSurface) {
-                            Color.White.copy(alpha = 0.10f)
-                        } else {
-                            Color.White.copy(alpha = 0.78f)
-                        }
+                        Brush.linearGradient(
+                            if (palette.darkSurface) {
+                                listOf(
+                                    palette.accent.copy(alpha = 0.18f),
+                                    Color.White.copy(alpha = 0.08f),
+                                    palette.accentSecondary.copy(alpha = 0.12f),
+                                )
+                            } else {
+                                listOf(
+                                    Color.White.copy(alpha = 0.92f),
+                                    palette.accentSoft.copy(alpha = 0.20f),
+                                    Color.White.copy(alpha = 0.72f),
+                                )
+                            }
+                        )
                     )
                     .border(
                         BorderStroke(
-                            1.dp,
-                            Color.White.copy(
-                                alpha = if (
-                                    palette.darkSurface
-                                ) 0.24f else 0.92f
+                            1.2.dp,
+                            Brush.linearGradient(
+                                listOf(
+                                    Color.White.copy(
+                                        alpha = if (
+                                            palette.darkSurface
+                                        ) 0.34f else 0.96f
+                                    ),
+                                    palette.accent.copy(alpha = 0.42f),
+                                    palette.accentSecondary.copy(alpha = 0.30f),
+                                )
                             ),
                         ),
                         CircleShape,
@@ -1439,6 +1526,24 @@ fun ReferenceGlassPanel(
                             width = size.width * 0.36f,
                             height = size.height * 0.32f,
                         ),
+                    )
+
+                    drawLine(
+                        color = palette.accentSecondary.copy(
+                            alpha = if (
+                                palette.darkSurface
+                            ) 0.10f else 0.055f
+                        ),
+                        start = Offset(
+                            x = size.width * 0.68f,
+                            y = size.height - 1.6.dp.toPx(),
+                        ),
+                        end = Offset(
+                            x = size.width * 0.94f,
+                            y = size.height - 1.6.dp.toPx(),
+                        ),
+                        strokeWidth = 1.dp.toPx(),
+                        cap = StrokeCap.Round,
                     )
                 }
             }
@@ -2515,6 +2620,85 @@ fun ReferencePearlBackground(
                     )
                 )
         )
+
+        Canvas(
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            val lineColor = if (palette.darkSurface) {
+                Color.White.copy(alpha = 0.045f)
+            } else {
+                Color.White.copy(alpha = 0.18f)
+            }
+            val accentLine = palette.accent.copy(
+                alpha = if (palette.darkSurface) 0.055f else 0.07f
+            )
+
+            drawArc(
+                color = lineColor,
+                startAngle = 195f,
+                sweepAngle = 115f,
+                useCenter = false,
+                topLeft = Offset(
+                    x = -size.width * 0.18f,
+                    y = size.height * 0.12f,
+                ),
+                size = Size(
+                    width = size.width * 0.86f,
+                    height = size.width * 0.48f,
+                ),
+                style = Stroke(
+                    width = 1.4.dp.toPx(),
+                    cap = StrokeCap.Round,
+                ),
+            )
+
+            drawArc(
+                color = accentLine,
+                startAngle = 20f,
+                sweepAngle = 125f,
+                useCenter = false,
+                topLeft = Offset(
+                    x = size.width * 0.50f,
+                    y = size.height * 0.42f,
+                ),
+                size = Size(
+                    width = size.width * 0.72f,
+                    height = size.width * 0.54f,
+                ),
+                style = Stroke(
+                    width = 1.2.dp.toPx(),
+                    cap = StrokeCap.Round,
+                ),
+            )
+
+            drawCircle(
+                color = Color.White.copy(
+                    alpha = if (
+                        palette.darkSurface
+                    ) 0.035f else 0.12f
+                ),
+                radius = size.minDimension * 0.075f,
+                center = Offset(
+                    x = size.width * 0.88f,
+                    y = size.height * 0.18f,
+                ),
+                style = Stroke(width = 1.dp.toPx()),
+            )
+
+            drawCircle(
+                color = palette.accentSecondary.copy(
+                    alpha = if (
+                        palette.darkSurface
+                    ) 0.045f else 0.055f
+                ),
+                radius = size.minDimension * 0.055f,
+                center = Offset(
+                    x = size.width * 0.12f,
+                    y = size.height * 0.72f,
+                ),
+                style = Stroke(width = 1.dp.toPx()),
+            )
+        }
 
         content()
     }
