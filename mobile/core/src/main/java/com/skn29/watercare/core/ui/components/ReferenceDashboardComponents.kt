@@ -137,6 +137,7 @@ fun ReferenceDashboardScaffold(
     roleLabel: String,
     palette: ReferenceDashboardPalette,
     @DrawableRes backgroundRes: Int? = null,
+    backgroundImageAlpha: Float = 0.54f,
     bottomItems: List<ReferenceBottomItem> = emptyList(),
     modifier: Modifier = Modifier,
     onNotification: () -> Unit = {},
@@ -148,6 +149,7 @@ fun ReferenceDashboardScaffold(
     ReferencePearlBackground(
         palette = palette,
         backgroundRes = backgroundRes,
+        imageAlpha = backgroundImageAlpha,
         modifier = modifier,
     ) {
         Scaffold(
@@ -1855,9 +1857,10 @@ private fun ReferenceGlassImage(
 }
 
 @Composable
-private fun ReferencePearlBackground(
+fun ReferencePearlBackground(
     palette: ReferenceDashboardPalette,
     @DrawableRes backgroundRes: Int? = null,
+    imageAlpha: Float = 0.54f,
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -1880,7 +1883,7 @@ private fun ReferencePearlBackground(
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
-                alpha = 0.40f,
+                alpha = imageAlpha.coerceIn(0.0f, 1.0f),
             )
         }
 

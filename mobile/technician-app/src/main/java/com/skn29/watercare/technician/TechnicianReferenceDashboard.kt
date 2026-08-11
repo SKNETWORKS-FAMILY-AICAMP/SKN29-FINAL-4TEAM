@@ -38,6 +38,7 @@ fun TechnicianReferenceLogin(
         roleLabel = "방문기사용",
         palette = palette,
         backgroundRes = R.drawable.water_splash_technician_r19,
+        backgroundImageAlpha = 0.50f,
     ) {
         ReferenceWelcomeCard(
             title = "방문 업무를\n시작하세요",
@@ -155,6 +156,7 @@ fun TechnicianReferenceDashboard(
         roleLabel = "방문기사용",
         palette = palette,
         backgroundRes = R.drawable.water_splash_technician_r19,
+        backgroundImageAlpha = 0.50f,
         modifier = modifier,
         bottomItems = listOf(
     ReferenceBottomItem(

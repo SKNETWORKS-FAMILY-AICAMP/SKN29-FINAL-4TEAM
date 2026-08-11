@@ -94,6 +94,7 @@ fun CustomerHomeContent(
         roleLabel = "고객용",
         palette = palette,
         backgroundRes = R.drawable.water_splash_customer_r19,
+        backgroundImageAlpha = 0.58f,
         bottomItems = listOf(
     ReferenceBottomItem(
         iconRes = R.drawable.ref_home,
