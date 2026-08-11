@@ -1,5 +1,30 @@
 # Contracts Changelog
 
+## 2026-08-11 — Backend Runtime 12 소비 정합 수정
+
+### Changed
+
+- `CANCEL_INQUIRY` Runtime을 고객 본인·담당 상담사·명시 권한 운영자와
+  `DRAFT`·`QUESTIONNAIRE_IN_PROGRESS`의 `TR-INQ-004/005`로 확장했다.
+- 취소 성공 응답에 동적 `allowed_actions`를 포함하고 실제 직전 상태와
+  증가된 `state_version`을 전이 이력에 기록한다.
+- `allowed_actions`는 State·Role 후보에서 Crosswalk
+  `RUNTIME_IMPLEMENTED`, Transition Rule, 저장된 Domain Guard를 통과한
+  Action만 반환하며 성공과 stale 409가 같은 Resolver를 사용한다.
+
+### Validation
+
+- State Machine, Crosswalk, OpenAPI, Example, Code Registry Validator PASS
+- Backend 표적 `128 passed / 5 skipped`, 전체 `993 passed / 19 skipped`
+- 격리 PostgreSQL 16.14 Row Lock 5건과 취소 Runtime·계약 25건 PASS
+
+### Boundary
+
+- `UPDATE_VISIT_SCHEDULE`의 `TR-INQ-028` OpenAPI 포함 여부는 계약 Owner
+  확인 전 `PASS_WITH_CONTRACT_OWNER_CONFIRMATION`으로 유지한다.
+- 코드 커밋 `e290fe3d43ae5adf2a6ab758cbf2e19922046cd1`은 작성자 검증
+  후보이며 독립 QA와 PM 소비 ACK를 대신하지 않는다.
+
 ## 2026-08-11 — Backend 소비 의미 불일치 확인
 
 ### Audit

@@ -1,5 +1,9 @@
 # Django State Machine API 구현·검증·인계서
 
+> 2026-08-11 현행화: `CANCEL_INQUIRY`와 동적 `allowed_actions`의 최신
+> Runtime·검증 판정은 [Backend Contract Runtime 12 수정·검증 가이드](Django_REST_API_Backend_Contract_Runtime12_수정_검증_가이드.md)를
+> 우선한다. 아래 취소·정적 Action 내용은 2026-08-02 역사 스냅샷이다.
+
 > 기준일: 2026-08-02 KST
 > 구현·검증 책임: Backend·Database 담당
 > 계약 책임: State Machine 계약 담당(PM)
