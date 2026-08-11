@@ -7,14 +7,6 @@
     "idempotent_replay": false,
     "allowed_actions": [
       {
-        "code": "SUBMIT_ANSWERS",
-        "label": "추가 답변 제출",
-        "operation_id": "submitFollowUpAnswers",
-        "style": "PRIMARY",
-        "requires_confirmation": false,
-        "confirmation_message": null
-      },
-      {
         "code": "CANCEL_INQUIRY",
         "label": "문의 취소",
         "operation_id": "cancelInquiry",

@@ -8,10 +8,12 @@ from unittest.mock import patch
 
 import pytest
 from django.db import connection, connections
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
 from apps.inquiries.models import Inquiry, SymptomEntry
+from apps.inquiries.repositories.inquiry_repository import InquiryRepository
 from apps.inquiries.services.inquiry_ai_service import InquiryAIOutcome
 from apps.products.models import ProductModel
 from apps.questionnaires.models import QuestionnaireSession
@@ -163,16 +165,8 @@ def test_submit_transitions_once_and_preserves_saved_customer_input():
         "state": "QUESTIONNAIRE_IN_PROGRESS",
         "state_version": 2,
         "idempotent_replay": False,
-        "allowed_actions": [
-            {
-                "code": "SUBMIT_ANSWERS",
-                "label": "추가 답변 제출",
-                "operation_id": "submitFollowUpAnswers",
-                "style": "PRIMARY",
-                "requires_confirmation": False,
-                "confirmation_message": None,
-            },
-            {
+            "allowed_actions": [
+                {
                 "code": "CANCEL_INQUIRY",
                 "label": "문의 취소",
                 "operation_id": "cancelInquiry",
@@ -398,6 +392,33 @@ def test_same_key_replay_does_not_request_duplicate_ai_structuring(
     assert submit_idempotency(owner).count() == 1
 
 
+def test_replay_requires_current_customer_object_scope():
+    owner = create_user(35)
+    client, inquiry, _subscription = create_inquiry(owner, 35)
+    key = "t022s-owner-scope-replay"
+
+    first = post_submit(
+        client,
+        inquiry,
+        {"state_version": 1},
+        key=key,
+    )
+    assert first.status_code == 200
+
+    CustomerProfile.objects.filter(user=owner).update(deleted_at=timezone.now())
+    replay = post_submit(
+        client,
+        inquiry,
+        {"state_version": 1},
+        key=key,
+    )
+
+    assert replay.status_code == 404
+    assert replay.json()["error"]["code"] == "RESOURCE_NOT_FOUND"
+    assert submit_history(inquiry).count() == 1
+    assert submit_idempotency(owner).count() == 1
+
+
 def test_same_key_different_body_conflicts_before_changed_state():
     owner = create_user(3)
     client, inquiry, _subscription = create_inquiry(owner, 3)
@@ -462,10 +483,14 @@ def test_stale_version_and_wrong_current_state_return_latest_snapshot():
 
     assert succeeded.status_code == 200
     assert wrong_state.status_code == 409
+    succeeded_codes = [
+        action["code"]
+        for action in succeeded.json()["data"]["allowed_actions"]
+    ]
     assert wrong_state.json()["error"]["details"] == {
         "current_status": "QUESTIONNAIRE_IN_PROGRESS",
         "current_state_version": 2,
-        "allowed_actions": ["SUBMIT_ANSWERS", "CANCEL_INQUIRY"],
+        "allowed_actions": succeeded_codes,
     }
     assert submit_history(inquiry).count() == 1
     assert submit_idempotency(owner).count() == 1
@@ -719,24 +744,22 @@ def concurrent_submit(
         connections.close_all()
 
 
-def first_idempotency_lookup_barrier(barrier: Barrier):
-    """Force both PostgreSQL requests past the first empty key lookup."""
+def owner_lock_barrier(barrier: Barrier):
+    """Force both PostgreSQL requests to contend for the owner-scoped row."""
 
-    original = WorkflowRepository.lock_idempotency_scope
+    original = InquiryRepository.lock_owned_inquiry
     thread_state = local()
 
-    def synchronized_lookup(*args, **kwargs):
-        result = original(*args, **kwargs)
-        if not getattr(thread_state, "first_lookup_done", False):
-            thread_state.first_lookup_done = True
-            assert result is None
+    def synchronized_lock(*args, **kwargs):
+        if not getattr(thread_state, "lock_attempted", False):
+            thread_state.lock_attempted = True
             barrier.wait(timeout=10)
-        return result
+        return original(*args, **kwargs)
 
     return patch.object(
-        WorkflowRepository,
-        "lock_idempotency_scope",
-        side_effect=synchronized_lookup,
+        InquiryRepository,
+        "lock_owned_inquiry",
+        side_effect=synchronized_lock,
     )
 
 
@@ -748,10 +771,15 @@ def test_postgresql_concurrent_same_key_is_one_write_and_one_replay():
     owner = create_user(70)
     _client, inquiry, _subscription = create_inquiry(owner, 70)
     barrier = Barrier(2)
-    lookup_barrier = Barrier(2)
-    with first_idempotency_lookup_barrier(lookup_barrier), ThreadPoolExecutor(
-        max_workers=2
-    ) as executor:
+    lock_barrier = Barrier(2)
+    with (
+        patch(
+            "apps.inquiries.services.inquiry_ai_service."
+            "InquiryAIService.analyze_inquiry"
+        ),
+        owner_lock_barrier(lock_barrier),
+        ThreadPoolExecutor(max_workers=2) as executor,
+    ):
         futures = [
             executor.submit(
                 concurrent_submit,
@@ -784,14 +812,19 @@ def test_postgresql_concurrent_new_keys_allow_only_one_version_winner():
     owner = create_user(71)
     _client, inquiry, _subscription = create_inquiry(owner, 71)
     barrier = Barrier(2)
-    lookup_barrier = Barrier(2)
+    lock_barrier = Barrier(2)
     keys = (
         "t022s-concurrent-key-a",
         "t022s-concurrent-key-b",
     )
-    with first_idempotency_lookup_barrier(lookup_barrier), ThreadPoolExecutor(
-        max_workers=2
-    ) as executor:
+    with (
+        patch(
+            "apps.inquiries.services.inquiry_ai_service."
+            "InquiryAIService.analyze_inquiry"
+        ),
+        owner_lock_barrier(lock_barrier),
+        ThreadPoolExecutor(max_workers=2) as executor,
+    ):
         futures = [
             executor.submit(
                 concurrent_submit,
@@ -818,7 +851,7 @@ def test_postgresql_concurrent_new_keys_allow_only_one_version_winner():
             "details": {
                 "current_status": "QUESTIONNAIRE_IN_PROGRESS",
                 "current_state_version": 2,
-                "allowed_actions": ["SUBMIT_ANSWERS", "CANCEL_INQUIRY"],
+                "allowed_actions": ["CANCEL_INQUIRY"],
             },
         }
     ]

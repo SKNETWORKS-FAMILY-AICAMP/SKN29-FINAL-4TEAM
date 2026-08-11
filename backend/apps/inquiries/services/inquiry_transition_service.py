@@ -14,7 +14,10 @@ from apps.inquiries.models import Inquiry
 from apps.inquiries.repositories.inquiry_repository import InquiryRepository
 from apps.subscriptions.models import CustomerSubscription
 from apps.workflow.domain.workflow_snapshot import WorkflowSnapshot
-from apps.workflow.engine.allowed_action_resolver import AllowedActionResolver
+from apps.workflow.engine.allowed_action_resolver import (
+    AllowedActionContext,
+    AllowedActionResolver,
+)
 from apps.workflow.engine.guard_evaluator import GuardContext, GuardEvaluator
 from apps.workflow.engine.state_machine import (
     InvalidStateTransition,
@@ -72,18 +75,6 @@ class InquiryTransitionService:
         request_hash = IdempotencyService.canonical_request_hash(
             normalized_request
         )
-
-        existing = WorkflowRepository.lock_idempotency_scope(
-            actor=actor,
-            operation_id=SUBMIT_SYMPTOM_OPERATION_ID,
-            idempotency_key=idempotency_key,
-        )
-        if existing is not None:
-            status_code, data = IdempotencyService.replay_or_conflict(
-                existing,
-                request_hash=request_hash,
-            )
-            return SubmitSymptomOutcome(status_code=status_code, data=data)
 
         inquiry = InquiryRepository.lock_owned_inquiry(
             inquiry_public_id=inquiry_public_id,
@@ -218,8 +209,10 @@ class InquiryTransitionService:
             "state_version": inquiry.state_version,
             "idempotent_replay": False,
             "allowed_actions": AllowedActionResolver.resolve(
-                state_code=inquiry.status_code,
-                role_code=actor.role_code,
+                context=AllowedActionContext.from_models(
+                    inquiry=inquiry,
+                    actor=actor,
+                ),
             ),
         }
         WorkflowRepository.complete_idempotency_record(
@@ -318,8 +311,10 @@ class InquiryTransitionService:
     @staticmethod
     def _raise_state_conflict(inquiry: Inquiry, *, actor: Any) -> None:
         allowed_actions = AllowedActionResolver.resolve(
-            state_code=inquiry.status_code,
-            role_code=actor.role_code,
+            context=AllowedActionContext.from_models(
+                inquiry=inquiry,
+                actor=actor,
+            ),
         )
         raise BusinessError(
             STATE_CONFLICT,

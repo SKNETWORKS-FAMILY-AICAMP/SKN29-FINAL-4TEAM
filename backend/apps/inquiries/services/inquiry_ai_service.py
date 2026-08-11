@@ -152,7 +152,10 @@ class InquiryAIService:
             )
             cls._log_outcome(outcome, trace=trace)
             return outcome
-        cls._mark_running(run)
+        if run.status_code == AIRun.Status.CANCELLED or not cls._mark_running(run):
+            outcome = cls._cancelled_outcome(run)
+            cls._log_outcome(outcome, trace=trace)
+            return outcome
         started = time.perf_counter()
         try:
             ai_client = client or AIClient(
@@ -164,7 +167,10 @@ class InquiryAIService:
             result = ai_client.analyze(request_payload)
         except AIIntegrationError as exc:
             latency_ms = round((time.perf_counter() - started) * 1000)
-            cls._mark_failed(run, exc=exc, latency_ms=latency_ms)
+            if not cls._mark_failed(run, exc=exc, latency_ms=latency_ms):
+                outcome = cls._cancelled_outcome(run)
+                cls._log_outcome(outcome, trace=trace, latency_ms=latency_ms)
+                return outcome
             outcome = InquiryAIOutcome(
                 ai_run_id=str(run.public_id),
                 status=run.status_code,
@@ -183,7 +189,10 @@ class InquiryAIService:
             return outcome
 
         latency_ms = round((time.perf_counter() - started) * 1000)
-        cls._mark_succeeded(run, result=result, latency_ms=latency_ms)
+        if not cls._mark_succeeded(run, result=result, latency_ms=latency_ms):
+            outcome = cls._cancelled_outcome(run)
+            cls._log_outcome(outcome, trace=trace, latency_ms=latency_ms)
+            return outcome
         outcome = cls._persist_validated_result(
             run=run,
             result=result,
@@ -232,8 +241,10 @@ class InquiryAIService:
         validator: AIContractValidator,
         mode: str,
     ) -> AIRun:
-        return AIRun.objects.create(
-            inquiry=inquiry,
+        with transaction.atomic():
+            locked_inquiry = Inquiry.objects.select_for_update().get(pk=inquiry.pk)
+            run = AIRun.objects.create(
+            inquiry=locked_inquiry,
             task_type_code=AIRun.TaskType.ANALYZE_SYMPTOM,
             request_schema_version=validator.contract_version("request"),
             response_schema_version=validator.contract_version("success"),
@@ -250,36 +261,68 @@ class InquiryAIService:
             input_sha256=input_digest,
             idempotency_key=request_payload["ai_request_id"],
             correlation_id=UUID(request_payload["correlation_id"]),
-        )
+            )
+            if (
+                locked_inquiry.status_code == Inquiry.Status.CANCELLED
+                or locked_inquiry.state_version != request_payload["state_version"]
+            ):
+                completed_at = timezone.now()
+                run.status_code = AIRun.Status.CANCELLED
+                run.completed_at = completed_at
+                run.error_code = "CANCELLED_OR_STALE_INQUIRY"
+                run.save(
+                    update_fields=[
+                        "status_code",
+                        "completed_at",
+                        "error_code",
+                        "updated_at",
+                    ]
+                )
+            return run
 
     @staticmethod
-    def _mark_running(run: AIRun) -> None:
-        run.status_code = AIRun.Status.RUNNING
-        run.started_at = timezone.now()
-        run.save(update_fields=["status_code", "started_at", "updated_at"])
+    @transaction.atomic
+    def _mark_running(run: AIRun) -> bool:
+        locked = AIRun.objects.select_for_update().get(pk=run.pk)
+        if locked.status_code != AIRun.Status.QUEUED:
+            run.refresh_from_db()
+            return False
+        locked.status_code = AIRun.Status.RUNNING
+        locked.started_at = timezone.now()
+        locked.save(update_fields=["status_code", "started_at", "updated_at"])
+        run.refresh_from_db()
+        return True
 
     @staticmethod
+    @transaction.atomic
     def _mark_succeeded(
         run: AIRun,
         *,
         result: AIAnalysisResult,
         latency_ms: int,
-    ) -> None:
-        run.status_code = (
+    ) -> bool:
+        locked = AIRun.objects.select_for_update().get(pk=run.pk)
+        if locked.status_code not in {
+            AIRun.Status.RUNNING,
+            AIRun.Status.RETRYING,
+        }:
+            run.refresh_from_db()
+            return False
+        locked.status_code = (
             AIRun.Status.NO_EVIDENCE
             if result.is_no_evidence
             else AIRun.Status.SUCCEEDED
         )
-        run.validated_output_payload = result.payload
-        run.schema_validation_status_code = (
+        locked.validated_output_payload = result.payload
+        locked.schema_validation_status_code = (
             AIRun.SchemaValidationStatus.PASSED
         )
-        run.schema_validation_errors = []
-        run.completed_at = timezone.now()
-        run.latency_ms = max(latency_ms, 0)
-        run.retry_count = result.retry_count
-        run.full_clean()
-        run.save(
+        locked.schema_validation_errors = []
+        locked.completed_at = timezone.now()
+        locked.latency_ms = max(latency_ms, 0)
+        locked.retry_count = result.retry_count
+        locked.full_clean()
+        locked.save(
             update_fields=[
                 "status_code",
                 "validated_output_payload",
@@ -291,45 +334,55 @@ class InquiryAIService:
                 "updated_at",
             ]
         )
+        run.refresh_from_db()
+        return True
 
     @staticmethod
+    @transaction.atomic
     def _mark_failed(
         run: AIRun,
         *,
         exc: AIIntegrationError,
         latency_ms: int,
-    ) -> None:
+    ) -> bool:
+        locked = AIRun.objects.select_for_update().get(pk=run.pk)
+        if locked.status_code not in {
+            AIRun.Status.RUNNING,
+            AIRun.Status.RETRYING,
+        }:
+            run.refresh_from_db()
+            return False
         timed_out = (
             isinstance(exc, AITimeoutError) or exc.code == "AI-TIMEOUT-01"
         )
         schema_failed = isinstance(exc, AIResponseValidationError)
         error_contract_passed = isinstance(exc, AIServiceResponseError)
-        run.status_code = (
+        locked.status_code = (
             AIRun.Status.TIMED_OUT if timed_out else AIRun.Status.FAILED
         )
-        run.error_code = exc.code
-        run.error_message = str(exc)
-        run.retry_count = exc.retry_count
-        run.latency_ms = max(latency_ms, 0)
-        run.completed_at = timezone.now()
+        locked.error_code = exc.code
+        locked.error_message = str(exc)
+        locked.retry_count = exc.retry_count
+        locked.latency_ms = max(latency_ms, 0)
+        locked.completed_at = timezone.now()
         if schema_failed:
             errors = exc.validation_errors or ["invalid AI response"]
-            run.schema_validation_status_code = (
+            locked.schema_validation_status_code = (
                 AIRun.SchemaValidationStatus.FAILED
             )
-            run.schema_validation_errors = errors
-            run.raw_output_text = json.dumps(
+            locked.schema_validation_errors = errors
+            locked.raw_output_text = json.dumps(
                 exc.payload or {},
                 ensure_ascii=False,
                 sort_keys=True,
             )
         elif error_contract_passed:
-            run.schema_validation_status_code = (
+            locked.schema_validation_status_code = (
                 AIRun.SchemaValidationStatus.PASSED
             )
-            run.validated_output_payload = exc.payload
-        run.full_clean()
-        run.save(
+            locked.validated_output_payload = exc.payload
+        locked.full_clean()
+        locked.save(
             update_fields=[
                 "status_code",
                 "error_code",
@@ -343,6 +396,21 @@ class InquiryAIService:
                 "validated_output_payload",
                 "updated_at",
             ]
+        )
+        run.refresh_from_db()
+        return True
+
+    @staticmethod
+    def _cancelled_outcome(run: AIRun) -> InquiryAIOutcome:
+        run.refresh_from_db()
+        return InquiryAIOutcome(
+            ai_run_id=str(run.public_id),
+            status=run.status_code,
+            idempotent_replay=False,
+            stale=run.status_code == AIRun.Status.CANCELLED,
+            event_candidate=None,
+            event_applied=None,
+            pending_reason=run.error_code or "RUN_NOT_ACTIVE",
         )
 
     @classmethod
@@ -632,17 +700,29 @@ class InquiryAIService:
                 validator=validator,
             )
             event_candidate = result.event_candidate
+        current_inquiry = Inquiry.objects.only(
+            "status_code",
+            "state_version",
+        ).get(pk=run.inquiry_id)
+        stale = (
+            current_inquiry.status_code == Inquiry.Status.CANCELLED
+            or current_inquiry.state_version != request_payload["state_version"]
+        )
         return InquiryAIOutcome(
             ai_run_id=str(run.public_id),
             status=run.status_code,
             idempotent_replay=True,
-            stale=False,
+            stale=stale,
             event_candidate=event_candidate,
             event_applied=None,
             pending_reason=(
-                "REPLAYED_EXISTING_RESULT"
-                if run.completed_at is not None
-                else "RUN_ALREADY_IN_PROGRESS"
+                "STALE_STATE_VERSION"
+                if stale
+                else (
+                    "REPLAYED_EXISTING_RESULT"
+                    if run.completed_at is not None
+                    else "RUN_ALREADY_IN_PROGRESS"
+                )
             ),
         )
 

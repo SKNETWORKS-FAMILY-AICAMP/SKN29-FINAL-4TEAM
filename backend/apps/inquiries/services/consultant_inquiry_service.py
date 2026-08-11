@@ -15,7 +15,10 @@ from apps.inquiries.models import Inquiry
 from apps.inquiries.repositories.consultant_inquiry_repository import (
     ConsultantInquiryRepository,
 )
-from apps.workflow.engine.allowed_action_resolver import AllowedActionResolver
+from apps.workflow.engine.allowed_action_resolver import (
+    AllowedActionContext,
+    AllowedActionResolver,
+)
 
 
 BUSINESS_TIMEZONE = ZoneInfo("Asia/Seoul")
@@ -59,7 +62,10 @@ class ConsultantInquiryService:
         )
         now = timezone.now()
         return {
-            "items": [cls._list_item(inquiry, now=now) for inquiry in inquiries],
+            "items": [
+                cls._list_item(inquiry, actor=actor, now=now)
+                for inquiry in inquiries
+            ],
             "page_info": {"page": page, "size": size, "total": total},
             "status_counts": status_counts,
         }
@@ -85,8 +91,10 @@ class ConsultantInquiryService:
             None,
         )
         allowed_actions = AllowedActionResolver.resolve(
-            state_code=inquiry.status_code,
-            role_code="CONSULTANT",
+            context=AllowedActionContext.from_models(
+                inquiry=inquiry,
+                actor=actor,
+            ),
         )
         return {
             "inquiry": {
@@ -151,7 +159,7 @@ class ConsultantInquiryService:
         }
 
     @staticmethod
-    def _list_item(inquiry: Inquiry, *, now) -> dict[str, Any]:
+    def _list_item(inquiry: Inquiry, *, actor: Any, now) -> dict[str, Any]:
         customer = inquiry.subscription.customer
         product = inquiry.subscription.product_model
         waiting_seconds = max(
@@ -175,8 +183,10 @@ class ConsultantInquiryService:
             "updated_at": inquiry.updated_at,
             "waiting_seconds": waiting_seconds,
             "allowed_actions": AllowedActionResolver.resolve(
-                state_code=inquiry.status_code,
-                role_code="CONSULTANT",
+                context=AllowedActionContext.from_models(
+                    inquiry=inquiry,
+                    actor=actor,
+                ),
             ),
         }
 

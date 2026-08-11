@@ -100,6 +100,40 @@ class InquiryRepository:
         )
 
     @staticmethod
+    def lock_cancellable_inquiry(
+        *,
+        inquiry_public_id: UUID,
+        actor: Any,
+    ) -> Inquiry | None:
+        """Lock only the CANCEL_INQUIRY object scope visible to the actor."""
+
+        queryset = Inquiry.objects.select_for_update(of=("self",)).select_related(
+            "subscription",
+            "subscription__customer",
+            "subscription__customer__user",
+            "subscription__product_model",
+            "assigned_user",
+        )
+        role = getattr(actor, "role_code", None)
+        if role == "CUSTOMER":
+            queryset = queryset.filter(
+                subscription__customer__user=actor,
+                subscription__customer__deleted_at__isnull=True,
+            )
+        elif role == "CONSULTANT":
+            queryset = queryset.filter(
+                assigned_user=actor,
+                assigned_role_code=Inquiry.AssignedRole.CONSULTANT,
+            )
+        elif role == "OPERATOR" and actor.has_perm(
+            "inquiries.cancel_inquiry"
+        ):
+            pass
+        else:
+            return None
+        return queryset.filter(public_id=inquiry_public_id).first()
+
+    @staticmethod
     def latest_visit_status(inquiry: Inquiry) -> str | None:
         """Return the newest visit status for workflow snapshot validation."""
 
@@ -173,11 +207,13 @@ class InquiryRepository:
     def mark_cancelled(
         inquiry: Inquiry,
         *,
+        status_code: str,
+        state_version: int,
         reason_code: str,
         reason_detail: str | None,
     ) -> None:
-        inquiry.status_code = Inquiry.Status.CANCELLED
-        inquiry.state_version += 1
+        inquiry.status_code = status_code
+        inquiry.state_version = state_version
         inquiry.cancelled_at = timezone.now()
         inquiry.cancellation_reason_code = reason_code
         inquiry.cancellation_reason_detail = reason_detail

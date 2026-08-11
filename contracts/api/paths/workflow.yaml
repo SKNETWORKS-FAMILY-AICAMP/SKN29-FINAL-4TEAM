@@ -11,19 +11,25 @@
         format: uuid
   post:
     operationId: cancelInquiry
-    summary: 고객 문의 취소
+    summary: 문의 취소
     description: |
-      인증 고객이 본인 소유의 DRAFT 문의를 CANCEL_INQUIRY 이벤트로
-      취소한다. 성공 시 DRAFT에서 CANCELLED로 전환하고 state_version을
-      1 증가시킨다. 동일 Idempotency-Key와 동일 요청은 저장된 결과를
-      재사용하며 상태 변경과 이력을 중복 생성하지 않는다.
+      본인 고객, 현재 담당 상담사, INQUIRY_CANCEL 권한 운영자가
+      DRAFT 또는 QUESTIONNAIRE_IN_PROGRESS 문의를 취소한다.
+      성공 시 state_version은 1 증가하고 동일 멱등 요청은 저장 결과를 재생한다.
     x-contract-status: CONFIRMED
     x-state-machine:
       event: CANCEL_INQUIRY
-      transition_rule: TR-INQ-004
-      from_state: DRAFT
+      transition_rules:
+        - TR-INQ-004
+        - TR-INQ-005
+      from_states:
+        - DRAFT
+        - QUESTIONNAIRE_IN_PROGRESS
       to_state: CANCELLED
-      actor_role: CUSTOMER
+      actor_roles:
+        - CUSTOMER
+        - CONSULTANT
+        - OPERATOR
     security:
       - BearerAuth: []
     parameters:

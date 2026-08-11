@@ -187,6 +187,9 @@ class Inquiry(TimestampedModel):
 
     class Meta:
         db_table = "support_inquiry"
+        permissions = [
+            ("cancel_inquiry", "Can cancel inquiry"),
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=["id", "subscription"],

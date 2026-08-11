@@ -23,6 +23,7 @@ from django.db.models import (
 from django.db.models.functions import Coalesce
 
 from apps.care.models import CareRecord
+from apps.consultations.models import Consultation
 from apps.inquiries.models import (
     Guidance,
     Inquiry,
@@ -30,6 +31,7 @@ from apps.inquiries.models import (
     SymptomAssessment,
 )
 from apps.workflow.models import TransitionHistory
+from apps.visits.models import Visit
 
 
 BUSINESS_TIMEZONE = ZoneInfo("Asia/Seoul")
@@ -56,6 +58,20 @@ class ConsultantInquiryRepository:
                 "subscription",
                 "subscription__customer",
                 "subscription__product_model",
+            )
+            .prefetch_related(
+                Prefetch(
+                    "consultations",
+                    queryset=Consultation.objects.order_by("-sequence", "-id"),
+                    to_attr="allowed_action_consultations",
+                ),
+                Prefetch(
+                    "visits",
+                    queryset=Visit.objects.select_related("technician").order_by(
+                        "-created_at", "-id"
+                    ),
+                    to_attr="allowed_action_visits",
+                ),
             )
             .annotate(
                 latest_assessment_risk=Subquery(
