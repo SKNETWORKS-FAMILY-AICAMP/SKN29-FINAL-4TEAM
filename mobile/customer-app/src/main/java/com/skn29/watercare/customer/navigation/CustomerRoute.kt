@@ -13,7 +13,8 @@ object CustomerRoute {
             "&statusCode={statusCode}" +
             "&stateVersion={stateVersion}" +
             "&idempotentReplay={idempotentReplay}" +
-            "&allowedActions={allowedActions}"
+            "&allowedActions={allowedActions}" +
+            "&fixturePreview={fixturePreview}"
 
     fun home(offline: Boolean) = "home?offline=$offline"
 
@@ -28,6 +29,7 @@ object CustomerRoute {
         stateVersion: Int? = null,
         idempotentReplay: Boolean? = null,
         allowedActions: List<AllowedAction> = emptyList(),
+        fixturePreview: Boolean = false,
     ): String {
         val actionCodes = allowedActions
             .map(AllowedAction::normalizedCode)
@@ -50,6 +52,8 @@ object CustomerRoute {
             append(idempotentReplay ?: false)
             append("&allowedActions=")
             append(Uri.encode(actionCodes))
+            append("&fixturePreview=")
+            append(fixturePreview)
         }
     }
 }

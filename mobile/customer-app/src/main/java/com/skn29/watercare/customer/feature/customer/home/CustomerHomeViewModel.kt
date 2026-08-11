@@ -5,10 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.config.CustomerCareRuntimeConfig
 import com.skn29.watercare.core.model.ApiResult
+import com.skn29.watercare.core.model.CustomerHomeData
+import com.skn29.watercare.core.model.UserData
+import com.skn29.watercare.core.model.isP0SupportedActiveSubscription
+import com.skn29.watercare.core.model.toCustomerHomeData
 import com.skn29.watercare.core.repository.AuthRepository
 import com.skn29.watercare.core.repository.BackendStatusRepository
 import com.skn29.watercare.core.repository.CustomerCareRepository
-import kotlinx.coroutines.async
+import com.skn29.watercare.core.repository.SubscriptionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,6 +21,7 @@ import kotlinx.coroutines.launch
 class CustomerHomeViewModel(
     private val authRepository: AuthRepository,
     private val careRepository: CustomerCareRepository,
+    private val subscriptionRepository: SubscriptionRepository? = null,
     private val backendStatusRepository: BackendStatusRepository,
     private val runtimeConfig: CustomerCareRuntimeConfig,
     offlinePreview: Boolean,
@@ -39,47 +44,230 @@ class CustomerHomeViewModel(
 
     fun load() {
         viewModelScope.launch {
-            _state.value = _state.value.copy(loading = true, error = null)
+            _state.value = _state.value.copy(
+                loading = true,
+                error = null,
+                errorCode = null,
+                errorHttpStatus = null,
+            )
 
             val offlinePreview = _state.value.offlinePreview
             val runtimeState = resolveRuntimeState(offlinePreview)
-            val homeDeferred = async { careRepository.getHome() }
-            val healthDeferred =
-                if (offlinePreview) null else async { backendStatusRepository.health() }
-            val userDeferred =
-                if (offlinePreview) null else async { authRepository.me() }
+            val health = if (offlinePreview) null else backendStatusRepository.health()
+            val user = if (offlinePreview) null else authRepository.me()
 
-            val home = homeDeferred.await()
-            val health = healthDeferred?.await()
-            val user = userDeferred?.await()
+            if (
+                runtimeConfig.mode == CustomerCareMode.REMOTE &&
+                !offlinePreview &&
+                subscriptionRepository != null
+            ) {
+                loadRemoteSubscriptions(
+                    runtimeState = runtimeState,
+                    health = health,
+                    user = user,
+                )
+            } else {
+                loadFixtureOrPreview(
+                    runtimeState = runtimeState,
+                    health = health,
+                    user = user,
+                )
+            }
+        }
+    }
 
-            val error = when {
-                home is ApiResult.Failure -> home.message
-                user is ApiResult.Failure -> user.message
-                else -> null
+    private suspend fun loadRemoteSubscriptions(
+        runtimeState: RuntimeState,
+        health: ApiResult<Unit>?,
+        user: ApiResult<UserData>?,
+    ) {
+        val repository = subscriptionRepository
+            ?: return publishFailure(
+                failure = ApiResult.Failure(
+                    code = "SUBSCRIPTION_REPOSITORY_MISSING",
+                    message = "구독 조회 구성이 준비되지 않았습니다.",
+                ),
+                runtimeState = runtimeState,
+                health = health,
+                user = user,
+            )
+
+        when (val listResult = repository.list()) {
+            is ApiResult.Failure -> publishFailure(
+                failure = listResult,
+                runtimeState = runtimeState,
+                health = health,
+                user = user,
+            )
+
+            is ApiResult.Success -> {
+                val subscriptions = listResult.value.items.map { it.toCustomerHomeData() }
+
+                if (subscriptions.isEmpty()) {
+                    _state.value = _state.value.copy(
+                        loading = false,
+                        user = user.successValue(),
+                        home = null,
+                        subscriptions = emptyList(),
+                        selectedSubscriptionId = null,
+                        backendAvailable = health is ApiResult.Success<*>,
+                        dataSourceLabel = runtimeState.dataSourceLabel,
+                        intakeAvailable = false,
+                        intakeUnavailableReason = "현재 문의를 시작할 수 있는 구독이 없습니다.",
+                        error = null,
+                        errorCode = "SUBSCRIPTION_EMPTY",
+                        errorHttpStatus = null,
+                    )
+                    return
+                }
+
+                val previousSelection = _state.value.selectedSubscriptionId
+                val selectedSummary = subscriptions.firstOrNull {
+                    it.subscriptionId == previousSelection
+                } ?: subscriptions.firstOrNull {
+                    it.isP0SupportedActiveSubscription()
+                } ?: subscriptions.first()
+
+                loadSelectedDetail(
+                    selectedId = selectedSummary.subscriptionId,
+                    subscriptions = subscriptions,
+                    runtimeState = runtimeState,
+                    health = health,
+                    user = user,
+                    initialLoad = true,
+                )
             }
-            val homeData = when (home) {
-                is ApiResult.Success -> home.value
-                is ApiResult.Failure -> null
-            }
-            val userData = when (user) {
-                is ApiResult.Success -> user.value
-                else -> null
+        }
+    }
+
+    private suspend fun loadSelectedDetail(
+        selectedId: String,
+        subscriptions: List<CustomerHomeData>,
+        runtimeState: RuntimeState,
+        health: ApiResult<Unit>?,
+        user: ApiResult<UserData>?,
+        initialLoad: Boolean,
+    ) {
+        val repository = subscriptionRepository ?: return
+        val summary = subscriptions.firstOrNull { it.subscriptionId == selectedId }
+
+        when (val detailResult = repository.detail(selectedId)) {
+            is ApiResult.Failure -> {
+                val userFailure = user as? ApiResult.Failure
+                val effectiveFailure = userFailure ?: detailResult
+                _state.value = _state.value.copy(
+                    loading = false,
+                    selectingSubscription = false,
+                    user = user.successValue(),
+                    home = if (initialLoad) summary else _state.value.home,
+                    subscriptions = subscriptions,
+                    selectedSubscriptionId = if (initialLoad) {
+                        summary?.subscriptionId
+                    } else {
+                        _state.value.selectedSubscriptionId
+                    },
+                    backendAvailable = health is ApiResult.Success<*>,
+                    dataSourceLabel = runtimeState.dataSourceLabel,
+                    intakeAvailable = false,
+                    intakeUnavailableReason = "구독 상세 정보를 확인한 뒤 문의를 시작할 수 있습니다.",
+                    error = effectiveFailure.message,
+                    errorCode = effectiveFailure.code,
+                    errorHttpStatus = effectiveFailure.httpStatus,
+                )
             }
 
+            is ApiResult.Success -> {
+                val selectedHome = detailResult.value.toCustomerHomeData()
+                val userFailure = user as? ApiResult.Failure
+                val supportReason = supportReason(selectedHome)
+                _state.value = _state.value.copy(
+                    loading = false,
+                    selectingSubscription = false,
+                    user = user.successValue(),
+                    home = selectedHome,
+                    subscriptions = subscriptions,
+                    selectedSubscriptionId = selectedHome.subscriptionId,
+                    backendAvailable = health is ApiResult.Success<*>,
+                    dataSourceLabel = runtimeState.dataSourceLabel,
+                    intakeAvailable =
+                        runtimeState.intakeAvailable &&
+                            supportReason == null &&
+                            userFailure == null,
+                    intakeUnavailableReason = userFailure?.message ?: supportReason,
+                    error = userFailure?.message,
+                    errorCode = userFailure?.code,
+                    errorHttpStatus = userFailure?.httpStatus,
+                )
+            }
+        }
+    }
+
+    private suspend fun loadFixtureOrPreview(
+        runtimeState: RuntimeState,
+        health: ApiResult<Unit>?,
+        user: ApiResult<UserData>?,
+    ) {
+        val home = careRepository.getHome()
+        val homeData = (home as? ApiResult.Success)?.value
+        val homeFailure = home as? ApiResult.Failure
+        val userFailure = user as? ApiResult.Failure
+        val effectiveFailure = homeFailure ?: userFailure
+
+        _state.value = _state.value.copy(
+            loading = false,
+            home = homeData,
+            subscriptions = listOfNotNull(homeData),
+            selectedSubscriptionId = homeData?.subscriptionId,
+            user = user.successValue(),
+            backendAvailable =
+                if (_state.value.offlinePreview) false
+                else health is ApiResult.Success<*>,
+            dataSourceLabel = runtimeState.dataSourceLabel,
+            intakeAvailable =
+                runtimeState.intakeAvailable &&
+                    homeData != null &&
+                    effectiveFailure == null,
+            intakeUnavailableReason = when {
+                effectiveFailure != null -> effectiveFailure.message
+                homeData == null -> "고객 홈 정보를 불러온 뒤 문의를 시작할 수 있습니다."
+                else -> runtimeState.intakeUnavailableReason
+            },
+            error = effectiveFailure?.message,
+            errorCode = effectiveFailure?.code,
+            errorHttpStatus = effectiveFailure?.httpStatus,
+        )
+    }
+
+    fun selectSubscription(subscriptionId: String) {
+        if (
+            runtimeConfig.mode != CustomerCareMode.REMOTE ||
+            _state.value.offlinePreview ||
+            _state.value.selectingSubscription ||
+            subscriptionId == _state.value.selectedSubscriptionId
+        ) {
+            return
+        }
+
+        val subscriptions = _state.value.subscriptions
+        if (subscriptions.none { it.subscriptionId == subscriptionId }) return
+
+        viewModelScope.launch {
             _state.value = _state.value.copy(
-                loading = false,
-                home = homeData,
-                user = userData,
-                backendAvailable =
-                    if (offlinePreview) false else health is ApiResult.Success<*>,
-                dataSourceLabel = runtimeState.dataSourceLabel,
-                intakeAvailable = runtimeState.intakeAvailable && homeData != null,
-                intakeUnavailableReason = when {
-                    homeData == null -> "고객 홈 정보를 불러온 뒤 문의를 시작할 수 있습니다."
-                    else -> runtimeState.intakeUnavailableReason
-                },
-                error = error,
+                selectingSubscription = true,
+                error = null,
+                errorCode = null,
+                errorHttpStatus = null,
+            )
+            val runtimeState = resolveRuntimeState(offlinePreview = false)
+            val health = backendStatusRepository.health()
+            val user = authRepository.me()
+            loadSelectedDetail(
+                selectedId = subscriptionId,
+                subscriptions = subscriptions,
+                runtimeState = runtimeState,
+                health = health,
+                user = user,
+                initialLoad = false,
             )
         }
     }
@@ -108,18 +296,47 @@ class CustomerHomeViewModel(
                     "전체 Mock 흐름은 CUSTOMER_CARE_MODE=FAKE로 실행하세요.",
         )
 
-        runtimeConfig.hasValidDemoSubscriptionId -> RuntimeState(
-            dataSourceLabel = "Remote 모드 · 문의 생성·제출 실제 API · 홈·안내 합성 Fixture",
+        else -> RuntimeState(
+            dataSourceLabel = "Remote 모드 · 구독 목록·상세·문의 실제 API · 안내 API 미제공 시 차단",
             intakeAvailable = true,
             intakeUnavailableReason = null,
         )
+    }
 
-        else -> RuntimeState(
-            dataSourceLabel = "Remote 모드 · Demo 구독 UUID 미설정 · 홈·안내 합성 Fixture",
+    private fun supportReason(home: CustomerHomeData): String? = when {
+        home.statusCode != "ACTIVE" ->
+            "활성 구독에서만 문의를 시작할 수 있습니다."
+
+        home.product.modelCode != com.skn29.watercare.core.model.P0_SUPPORTED_MODEL_CODE ->
+            "현재 P0에서는 WPUJAC104DWH 모델만 문의를 지원합니다."
+
+        else -> null
+    }
+
+    private fun ApiResult<UserData>?.successValue(): UserData? =
+        (this as? ApiResult.Success)?.value
+
+    private fun publishFailure(
+        failure: ApiResult.Failure,
+        runtimeState: RuntimeState,
+        health: ApiResult<Unit>?,
+        user: ApiResult<UserData>?,
+    ) {
+        val userFailure = user as? ApiResult.Failure
+        val effectiveFailure = userFailure ?: failure
+        _state.value = _state.value.copy(
+            loading = false,
+            user = user.successValue(),
+            home = null,
+            subscriptions = emptyList(),
+            selectedSubscriptionId = null,
+            backendAvailable = health is ApiResult.Success<*>,
+            dataSourceLabel = runtimeState.dataSourceLabel,
             intakeAvailable = false,
-            intakeUnavailableReason =
-                "mobile/local.properties의 DEMO_SUBSCRIPTION_ID에 " +
-                    "Demo 고객의 실제 활성 구독 Public UUID를 입력하세요.",
+            intakeUnavailableReason = effectiveFailure.message,
+            error = effectiveFailure.message,
+            errorCode = effectiveFailure.code,
+            errorHttpStatus = effectiveFailure.httpStatus,
         )
     }
 

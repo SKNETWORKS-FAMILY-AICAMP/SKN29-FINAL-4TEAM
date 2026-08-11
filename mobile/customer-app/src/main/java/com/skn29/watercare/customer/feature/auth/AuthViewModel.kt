@@ -3,6 +3,7 @@ package com.skn29.watercare.customer.feature.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.skn29.watercare.core.model.ApiResult
+import com.skn29.watercare.core.model.P0_SYNTHETIC_CUSTOMER_LOGIN_CODE
 import com.skn29.watercare.core.repository.AuthRepository
 import com.skn29.watercare.core.repository.BackendStatusRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +43,7 @@ class AuthViewModel(
         if (_state.value.submitting) return
         viewModelScope.launch {
             _state.value = _state.value.copy(submitting = true, error = null)
-            _state.value = when (val result = authRepository.demoLogin("DEMO-CUSTOMER-001")) {
+            _state.value = when (val result = authRepository.demoLogin(P0_SYNTHETIC_CUSTOMER_LOGIN_CODE)) {
                 is ApiResult.Success -> _state.value.copy(
                     submitting = false,
                     authenticated = true,

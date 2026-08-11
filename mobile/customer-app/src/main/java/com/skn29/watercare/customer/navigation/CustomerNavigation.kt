@@ -33,14 +33,17 @@ fun CustomerNavigation() {
                 defaultValue = false
             }),
         ) { entry ->
+            val offlinePreview =
+                entry.arguments?.getBoolean("offline") ?: false
             CustomerHomeScreen(
-                offlinePreview = entry.arguments?.getBoolean("offline") ?: false,
+                offlinePreview = offlinePreview,
                 onStartIntake = { navController.navigate(CustomerRoute.intake(it)) },
                 onOpenGuidance = { inquiryId, scenario ->
                     navController.navigate(
                         CustomerRoute.guidance(
                             inquiryId = inquiryId,
                             scenario = scenario.name,
+                            fixturePreview = offlinePreview,
                         )
                     )
                 },
@@ -107,6 +110,10 @@ fun CustomerNavigation() {
                     type = NavType.StringType
                     defaultValue = ""
                 },
+                navArgument("fixturePreview") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                },
             ),
         ) { entry ->
             val scenario = runCatching {
@@ -146,6 +153,8 @@ fun CustomerNavigation() {
                 submittedStateVersion = submittedStateVersion,
                 submittedAllowedActions = submittedAllowedActions,
                 submittedIdempotentReplay = submittedIdempotentReplay,
+                fixturePreview =
+                    entry.arguments?.getBoolean("fixturePreview") ?: false,
                 onBack = { navController.popBackStack() },
                 onDone = {
                     navController.navigate(CustomerRoute.home(false)) {

@@ -8,18 +8,20 @@ import com.skn29.watercare.core.model.InquiryResponse
 import com.skn29.watercare.core.model.IntakeSubmission
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.SymptomIntakeRequest
+import com.skn29.watercare.core.model.toCustomerHomeData
 import java.util.UUID
 
 /**
  * 4주차 부분 Remote 구현.
  *
- * 현재 Runtime에 공개된 문의 생성·증상 제출 API를 실제 Backend에 연결하고,
- * 제품·구독 홈과 AI 안내는 계약된 Endpoint가 제공될 때까지 명시적 Fixture에 위임한다.
- * Remote 실패를 Fixture 성공으로 자동 변환하지 않는다.
+ * 현재 Runtime에 공개된 구독 조회·문의 생성·증상 제출 API를 실제 Backend에 연결한다.
+ * Guidance customer route가 공개되기 전에는 REMOTE에서 명시적으로 실패한다.
+ * 합성 Guidance는 FAKE 또는 Offline Preview에서만 사용한다.
  */
 class RemoteIntakeCustomerCareRepository(
     private val inquiryRepository: InquiryRepository,
     private val fallbackRepository: CustomerCareRepository,
+    private val subscriptionRepository: SubscriptionRepository? = null,
 ) : CustomerCareRepository {
     private data class PendingIntakeOperation(
         val createIdempotencyKey: String,
@@ -30,14 +32,34 @@ class RemoteIntakeCustomerCareRepository(
     private val operationLock = Any()
     private val pendingOperations = mutableMapOf<String, PendingIntakeOperation>()
 
-    override suspend fun getHome(): ApiResult<CustomerHomeData> =
-        fallbackRepository.getHome()
+    override suspend fun getHome(): ApiResult<CustomerHomeData> {
+        val subscriptions = subscriptionRepository
+            ?: return fallbackRepository.getHome()
+
+        return when (val result = subscriptions.list()) {
+            is ApiResult.Failure -> result
+            is ApiResult.Success -> {
+                val selected = result.value.items.firstOrNull()
+                    ?: return ApiResult.Failure(
+                        code = "SUBSCRIPTION_EMPTY",
+                        message = "현재 문의를 시작할 수 있는 구독이 없습니다.",
+                    )
+                ApiResult.Success(selected.toCustomerHomeData())
+            }
+        }
+    }
 
     override suspend fun getGuidance(
         inquiryId: String,
         scenario: MockScenario,
     ): ApiResult<GuidanceData> =
-        fallbackRepository.getGuidance(inquiryId, scenario)
+        ApiResult.Failure(
+            code = "GUIDANCE_ROUTE_UNAVAILABLE",
+            message =
+                "문의 접수는 완료되었지만 안전 안내 API가 아직 제공되지 않습니다. " +
+                    "상담 확인 전 사용 가능 여부나 자가조치를 판단하지 않습니다.",
+            retryable = false,
+        )
 
     override suspend fun submitIntake(
         request: SymptomIntakeRequest,

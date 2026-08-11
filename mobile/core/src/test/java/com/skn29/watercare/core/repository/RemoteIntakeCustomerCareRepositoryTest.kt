@@ -95,6 +95,24 @@ class RemoteIntakeCustomerCareRepositoryTest {
         assertEquals(inquiryRepository.submitKeys[0], inquiryRepository.submitKeys[1])
     }
 
+    @Test
+    fun guidanceWithoutBackendRoute_failsClosed() = runBlocking {
+        val repository = RemoteIntakeCustomerCareRepository(
+            inquiryRepository = RecordingInquiryRepository(),
+            fallbackRepository = EmptyFallbackRepository(),
+        )
+
+        val result = repository.getGuidance(
+            inquiryId = "00000000-0000-4000-8000-000000000301",
+            scenario = MockScenario.NORMAL,
+        )
+
+        assertTrue(result is ApiResult.Failure)
+        val failure = result as ApiResult.Failure
+        assertEquals("GUIDANCE_ROUTE_UNAVAILABLE", failure.code)
+        assertEquals(false, failure.retryable)
+    }
+
     private fun sampleRequest() = SymptomIntakeRequest(
         subscriptionId = "00000000-0000-4000-8000-000000000101",
         symptomCodes = listOf("LOW_FLOW"),

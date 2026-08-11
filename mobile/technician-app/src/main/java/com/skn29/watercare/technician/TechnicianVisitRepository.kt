@@ -11,6 +11,23 @@ interface TechnicianVisitRepository {
     ): ApiResult<TechnicianPrecheckReport>
 }
 
+const val VISIT_RUNTIME_UNAVAILABLE_CODE = "VISIT_RUNTIME_UNAVAILABLE"
+
+class BlockedTechnicianVisitRepository : TechnicianVisitRepository {
+    private fun blocked(): ApiResult.Failure = ApiResult.Failure(
+        code = VISIT_RUNTIME_UNAVAILABLE_CODE,
+        message = "실제 방문 API · BLOCKED_BY_BACKEND",
+        retryable = false,
+    )
+
+    override suspend fun getAssignedVisits(): ApiResult<List<TechnicianVisitSummary>> =
+        blocked()
+
+    override suspend fun getPrecheckReport(
+        visitId: String,
+    ): ApiResult<TechnicianPrecheckReport> = blocked()
+}
+
 /**
  * Backend 방문 API가 제공되기 전까지 사용하는 명시적 합성 Fixture입니다.
  * 실제 고객 개인정보나 실제 방문 완료 기능을 포함하지 않습니다.

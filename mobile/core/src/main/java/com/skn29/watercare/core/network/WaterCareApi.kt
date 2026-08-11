@@ -11,6 +11,8 @@ import com.skn29.watercare.core.model.RefreshTokenRequest
 import com.skn29.watercare.core.model.SessionResponse
 import com.skn29.watercare.core.model.SubmitSymptomRequest
 import com.skn29.watercare.core.model.SubmitSymptomResponse
+import com.skn29.watercare.core.model.SubscriptionDetailDto
+import com.skn29.watercare.core.model.SubscriptionListDataDto
 import com.skn29.watercare.core.model.UserData
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -20,6 +22,7 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 /** Only endpoints currently routed by backend/config/api_urls.py are declared here. */
 interface WaterCareApi {
@@ -37,6 +40,17 @@ interface WaterCareApi {
 
     @GET("api/v1/me")
     suspend fun me(): Response<ApiEnvelope<UserData>>
+
+    @GET("api/v1/me/subscriptions")
+    suspend fun mySubscriptions(
+        @Query("page") page: Int = 1,
+        @Query("size") size: Int = 20,
+    ): Response<ApiEnvelope<SubscriptionListDataDto>>
+
+    @GET("api/v1/me/subscriptions/{subscriptionId}")
+    suspend fun mySubscription(
+        @Path("subscriptionId") subscriptionId: String,
+    ): Response<ApiEnvelope<SubscriptionDetailDto>>
 
     @POST("api/v1/inquiries")
     suspend fun createInquiry(

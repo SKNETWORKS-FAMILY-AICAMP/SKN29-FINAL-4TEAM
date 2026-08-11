@@ -8,6 +8,9 @@ data class CustomerHomeUiState(
     val loading: Boolean = true,
     val user: UserData? = null,
     val home: CustomerHomeData? = null,
+    val subscriptions: List<CustomerHomeData> = emptyList(),
+    val selectedSubscriptionId: String? = null,
+    val selectingSubscription: Boolean = false,
     val backendAvailable: Boolean? = null,
     val offlinePreview: Boolean = false,
     val customerCareMode: CustomerCareMode = CustomerCareMode.REMOTE,
@@ -15,5 +18,7 @@ data class CustomerHomeUiState(
     val intakeAvailable: Boolean = false,
     val intakeUnavailableReason: String? = null,
     val error: String? = null,
+    val errorCode: String? = null,
+    val errorHttpStatus: Int? = null,
     val loggingOut: Boolean = false,
 )
