@@ -519,8 +519,8 @@ fun ReferenceDashboardHeader(
                         Color.White
                     },
                     fontFamily = FontFamily.SansSerif,
-                    fontSize = 27.sp,
-                    lineHeight = 31.sp,
+                    fontSize = 25.sp,
+                    lineHeight = 29.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = (-0.55).sp,
                     maxLines = 1,
@@ -537,8 +537,8 @@ fun ReferenceDashboardHeader(
                     } else {
                         Color.White.copy(alpha = 0.84f)
                     },
-                    fontSize = 10.sp,
-                    lineHeight = 12.sp,
+                    fontSize = 10.5.sp,
+                    lineHeight = 13.sp,
                     fontWeight = FontWeight.Medium,
                     letterSpacing = 0.3.sp,
                     maxLines = 1,
@@ -595,7 +595,7 @@ fun ReferenceHeroCard(
             val imageSize = (
                 if (compact) 160.dp else 198.dp
             ) * imageEmphasis.coerceIn(0.94f, 1.12f)
-            val heroHeight = if (compact) 228.dp else 262.dp
+            val heroHeight = if (compact) 236.dp else 272.dp
             val firstLine = greeting.substringBefore("\n")
             val secondLine = greeting.substringAfter("\n", "")
 
@@ -635,8 +635,8 @@ fun ReferenceHeroCard(
                         firstLine,
                         color = palette.textStrong,
                         fontFamily = FontFamily.SansSerif,
-                        fontSize = if (compact) 23.sp else 27.sp,
-                        lineHeight = if (compact) 29.sp else 34.sp,
+                        fontSize = if (compact) 24.sp else 29.sp,
+                        lineHeight = if (compact) 30.sp else 36.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = (-0.45).sp,
                         maxLines = 1,
@@ -648,8 +648,8 @@ fun ReferenceHeroCard(
                             secondLine,
                             color = palette.accent,
                             fontFamily = FontFamily.SansSerif,
-                            fontSize = if (compact) 31.sp else 36.sp,
-                            lineHeight = if (compact) 36.sp else 42.sp,
+                            fontSize = if (compact) 33.sp else 40.sp,
+                            lineHeight = if (compact) 39.sp else 46.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = (-0.75).sp,
                             maxLines = 1,
@@ -660,8 +660,8 @@ fun ReferenceHeroCard(
                     Text(
                         subtitle,
                         color = palette.textMuted,
-                        fontSize = if (compact) 13.5.sp else 15.sp,
-                        lineHeight = if (compact) 20.5.sp else 23.sp,
+                        fontSize = if (compact) 14.sp else 16.sp,
+                        lineHeight = if (compact) 21.sp else 24.sp,
                         fontWeight = FontWeight.Medium,
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
@@ -789,13 +789,13 @@ private fun ReferenceHeroSummaryStrip(
                 Image(
                     painter = painterResource(item.iconRes),
                     contentDescription = null,
-                    modifier = Modifier.size(22.dp),
+                    modifier = Modifier.size(24.dp),
                 )
                 Text(
                     item.label,
                     color = palette.textMuted,
-                    fontSize = 10.5.sp,
-                    lineHeight = 13.sp,
+                    fontSize = 11.sp,
+                    lineHeight = 14.sp,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
@@ -808,8 +808,8 @@ private fun ReferenceHeroSummaryStrip(
                     } else {
                         palette.danger
                     },
-                    fontSize = 18.sp,
-                    lineHeight = 21.sp,
+                    fontSize = 19.sp,
+                    lineHeight = 23.sp,
                     fontWeight = FontWeight.ExtraBold,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
@@ -862,8 +862,8 @@ fun ReferenceSectionHeader(
                 title,
                 color = palette.textStrong,
                 fontFamily = FontFamily.SansSerif,
-                fontSize = 21.sp,
-                lineHeight = 26.sp,
+                fontSize = 22.sp,
+                lineHeight = 28.sp,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = (-0.45).sp,
                 maxLines = 1,
@@ -875,8 +875,8 @@ fun ReferenceSectionHeader(
             Text(
                 trailing,
                 color = palette.accent,
-                fontSize = 12.sp,
-                lineHeight = 16.sp,
+                fontSize = 12.5.sp,
+                lineHeight = 17.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -909,16 +909,51 @@ fun ReferenceActionRow(
     items: List<ReferenceActionItem>,
     palette: ReferenceDashboardPalette,
 ) {
-    Row(
+    BoxWithConstraints(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(7.dp),
     ) {
-        items.take(4).forEach { item ->
-            ReferenceActionTile(
-                item = item,
-                palette = palette,
-                modifier = Modifier.weight(1f),
-            )
+        val visibleItems = items.take(4)
+        val useTwoColumnGrid = maxWidth < 390.dp &&
+            visibleItems.size > 2
+
+        if (useTwoColumnGrid) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(9.dp),
+            ) {
+                visibleItems.chunked(2).forEach { rowItems ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(9.dp),
+                    ) {
+                        rowItems.forEach { item ->
+                            ReferenceActionTile(
+                                item = item,
+                                palette = palette,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+
+                        if (rowItems.size == 1) {
+                            Spacer(
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                visibleItems.forEach { item ->
+                    ReferenceActionTile(
+                        item = item,
+                        palette = palette,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
         }
     }
 }
@@ -955,7 +990,7 @@ fun ReferenceDetailCard(
             ReferenceGlassImage(
                 imageRes = imageRes,
                 palette = palette,
-                modifier = Modifier.size(86.dp),
+                modifier = Modifier.size(92.dp),
             )
             Column(
                 modifier = Modifier.weight(1f),
@@ -964,8 +999,9 @@ fun ReferenceDetailCard(
                 Text(
                     title,
                     color = palette.textStrong,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                    lineHeight = 22.sp,
+                    fontWeight = FontWeight.ExtraBold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -977,7 +1013,9 @@ fun ReferenceDetailCard(
                     Text(
                         line,
                         color = palette.textMuted,
-                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 11.5.sp,
+                        lineHeight = 15.sp,
+                        fontWeight = FontWeight.Medium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -1169,8 +1207,8 @@ fun ReferenceScheduleCard(
                     Text(
                         time,
                         color = palette.textStrong,
-                        fontSize = 20.sp,
-                        lineHeight = 23.sp,
+                        fontSize = 22.sp,
+                        lineHeight = 26.sp,
                         fontWeight = FontWeight.ExtraBold,
                         maxLines = 1,
                     )
@@ -1183,8 +1221,9 @@ fun ReferenceScheduleCard(
                 Text(
                     customerName,
                     color = palette.textStrong,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    lineHeight = 19.sp,
+                    fontWeight = FontWeight.ExtraBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -1193,7 +1232,9 @@ fun ReferenceScheduleCard(
                     Text(
                         line,
                         color = palette.textMuted,
-                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 12.5.sp,
+                        lineHeight = 16.sp,
+                        fontWeight = FontWeight.Medium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -1275,7 +1316,7 @@ fun ReferenceBottomNavigation(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .height(62.dp)
+                    .height(66.dp)
                     .clip(RoundedCornerShape(21.dp))
                     .graphicsLayer {
                         alpha = if (item.enabled) 1f else 0.58f
@@ -1320,7 +1361,7 @@ fun ReferenceBottomNavigation(
                 Image(
                     painter = painterResource(item.iconRes),
                     contentDescription = item.label,
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(25.dp),
                 )
 
                 Text(
@@ -1331,8 +1372,8 @@ fun ReferenceBottomNavigation(
                     } else {
                         palette.textMuted
                     },
-                    fontSize = 11.sp,
-                    lineHeight = 13.sp,
+                    fontSize = 12.sp,
+                    lineHeight = 15.sp,
                     fontWeight = if (item.selected) {
                         FontWeight.Bold
                     } else {
@@ -1686,12 +1727,9 @@ fun ReferenceGlassButton(
                 accent -> Color.White
                 else -> palette.accent
             },
-            style = if (compact) {
-                MaterialTheme.typography.labelMedium
-            } else {
-                MaterialTheme.typography.labelLarge
-            },
-            fontWeight = FontWeight.SemiBold,
+            fontSize = if (compact) 13.sp else 14.sp,
+            lineHeight = if (compact) 16.sp else 18.sp,
+            fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -2076,7 +2114,7 @@ private fun ReferenceStatusTile(
 
     Column(
         modifier = modifier
-            .height(116.dp)
+            .height(124.dp)
             .shadow(
                 elevation = if (palette.darkSurface) 9.dp else 7.dp,
                 shape = tileShape,
@@ -2146,7 +2184,7 @@ private fun ReferenceStatusTile(
 
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(43.dp)
                 .clip(CircleShape)
                 .background(
                     if (palette.darkSurface) {
@@ -2171,15 +2209,15 @@ private fun ReferenceStatusTile(
             Image(
                 painter = painterResource(item.iconRes),
                 contentDescription = item.label,
-                modifier = Modifier.size(27.dp),
+                modifier = Modifier.size(29.dp),
             )
         }
 
         Text(
             item.label,
             color = palette.textMuted,
-            fontSize = 10.5.sp,
-            lineHeight = 13.sp,
+            fontSize = 11.5.sp,
+            lineHeight = 14.5.sp,
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
             maxLines = 1,
@@ -2193,8 +2231,8 @@ private fun ReferenceStatusTile(
             } else {
                 palette.danger
             },
-            fontSize = 14.sp,
-            lineHeight = 17.sp,
+            fontSize = 15.5.sp,
+            lineHeight = 19.sp,
             fontWeight = FontWeight.ExtraBold,
             textAlign = TextAlign.Center,
             maxLines = 2,
@@ -2220,7 +2258,7 @@ private fun ReferenceActionTile(
     Column(
         modifier = modifier
             .then(tagModifier)
-            .height(124.dp)
+            .height(134.dp)
             .shadow(
                 elevation = if (item.enabled) 8.dp else 2.dp,
                 shape = shape,
@@ -2338,7 +2376,7 @@ private fun ReferenceActionTile(
 
         Box(
             modifier = Modifier
-                .size(49.dp)
+                .size(52.dp)
                 .clip(CircleShape)
                 .background(
                     if (palette.darkSurface) {
@@ -2363,7 +2401,7 @@ private fun ReferenceActionTile(
             Image(
                 painter = painterResource(item.iconRes),
                 contentDescription = item.label,
-                modifier = Modifier.size(31.dp),
+                modifier = Modifier.size(32.dp),
                 alpha = if (item.enabled) 1f else 0.58f,
             )
         }
@@ -2376,8 +2414,8 @@ private fun ReferenceActionTile(
             } else {
                 palette.textMuted
             },
-            fontSize = 11.5.sp,
-            lineHeight = 15.sp,
+            fontSize = 12.5.sp,
+            lineHeight = 16.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             maxLines = 2,
@@ -2392,8 +2430,8 @@ private fun ReferenceActionTile(
                     "준비 중"
                 },
                 color = palette.textMuted.copy(alpha = 0.78f),
-                fontSize = 9.5.sp,
-                lineHeight = 12.sp,
+                fontSize = 10.5.sp,
+                lineHeight = 13.5.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
