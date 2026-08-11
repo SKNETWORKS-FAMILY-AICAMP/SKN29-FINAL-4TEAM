@@ -13,7 +13,7 @@ import type {
 
 export type ConsultantWorkspaceIntegrationStatus =
   | "MOCK_ONLY"
-  | "BACKEND_BLOCKED";
+  | "READY_FOR_WEB_INTEGRATION";
 
 export interface ConsultantWorkspaceRepository {
   readonly dataSource: "MOCK" | "REMOTE";
@@ -38,7 +38,7 @@ export function createConsultantWorkspaceRepository(
   if (!useMockApi) {
     return {
       dataSource: "REMOTE",
-      integrationStatus: "BACKEND_BLOCKED",
+      integrationStatus: "READY_FOR_WEB_INTEGRATION",
       findInquiry: () => undefined,
       getAllowedActions: () => [],
       listAllInquiries: () => [],

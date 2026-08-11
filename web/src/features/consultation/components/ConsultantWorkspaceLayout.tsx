@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { appEnv } from "../../../app/config/env";
 
 interface ConsultantWorkspaceLayoutProps {
   activeSection?: "queue" | "detail" | "visit";
@@ -19,6 +20,7 @@ export default function ConsultantWorkspaceLayout({
   onNavigate,
   onToggleNotifications,
 }: ConsultantWorkspaceLayoutProps) {
+  const workspaceSource = appEnv.useMockApi ? "합성 Mock 화면" : "Backend API 연결 화면";
   return (
     <div className="v6-workspace">
       <a className="v6-skip-link" href="#v6-main">
@@ -42,7 +44,7 @@ export default function ConsultantWorkspaceLayout({
 
         <div className="v6-topbar__context" aria-label="현재 업무 컨텍스트">
           <span className="v6-live-dot">
-            <i /> 합성 Mock 화면
+            <i /> {workspaceSource}
           </span>
           <span>
             기준 모델 <b>WPUJAC104DWH</b>

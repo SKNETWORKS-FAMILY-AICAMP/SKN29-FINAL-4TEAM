@@ -5,6 +5,7 @@ import OperationsInfographicPage from "../../pages/admin/OperationsInfographicPa
 import LoginPage from "../../pages/auth/LoginPage";
 import ConsultantDashboardPage from "../../pages/consultant/ConsultantDashboardPage";
 import InquiryDetailPage from "../../pages/consultant/InquiryDetailPage";
+import PhoneInquiryCreatePage from "../../pages/consultant/PhoneInquiryCreatePage";
 import VisitTransitionPage from "../../pages/consultant/VisitTransitionPage";
 import ErrorPage from "../../pages/system/ErrorPage";
 import ForbiddenPage from "../../pages/system/ForbiddenPage";
@@ -52,6 +53,10 @@ export function AppRoutes() {
               <Route
                 path={ROUTE_PATHS.consultantInquiryList}
                 element={<ConsultantDashboardPage />}
+              />
+              <Route
+                path={ROUTE_PATHS.consultantPhoneInquiryCreate}
+                element={<PhoneInquiryCreatePage />}
               />
               <Route
                 path={ROUTE_PATHS.consultantInquiryDetail}

@@ -1,4 +1,5 @@
 import useApiRuntimeStatus from "../hooks/useApiRuntimeStatus";
+import { appEnv } from "../../../app/config/env";
 import "./ApiRuntimeStatus.css";
 
 type ApiRuntimeStatusProps = {
@@ -17,6 +18,7 @@ export default function ApiRuntimeStatus({
   compact = false,
 }: ApiRuntimeStatusProps) {
   const runtime = useApiRuntimeStatus();
+  const dataSourceLabel = appEnv.useMockApi ? "Mock" : "Backend API";
   const checkedTime =
     runtime.status === "connected"
       ? new Intl.DateTimeFormat("ko-KR", {
@@ -34,14 +36,14 @@ export default function ApiRuntimeStatus({
       aria-live="polite"
       title={
         runtime.status === "connected"
-          ? `마지막 확인 ${checkedTime} · ${runtime.probe.latencyMs}ms · 화면 업무 데이터는 Mock`
-          : "백엔드 /health 응답을 기다리고 있습니다. 화면 업무 데이터는 Mock입니다."
+          ? `마지막 확인 ${checkedTime} · ${runtime.probe.latencyMs}ms · 화면 업무 데이터는 ${dataSourceLabel}`
+          : `백엔드 /health 응답을 기다리고 있습니다. 화면 업무 데이터는 ${dataSourceLabel}입니다.`
       }
     >
       <span className="api-runtime-status__signal" aria-hidden="true" />
       <span>
         <strong>{STATUS_LABELS[runtime.status]}</strong>
-        {!compact && <small>화면 업무 데이터 Mock</small>}
+        {!compact && <small>화면 업무 데이터 {dataSourceLabel}</small>}
       </span>
     </div>
   );

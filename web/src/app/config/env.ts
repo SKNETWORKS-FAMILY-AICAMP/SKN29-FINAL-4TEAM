@@ -42,10 +42,12 @@ export function readApiBaseUrl(value: string | undefined): string {
 
 export const appEnv = {
   apiBaseUrl: readApiBaseUrl(import.meta.env.VITE_API_BASE_URL),
-  useMockApi: readBoolean(import.meta.env.VITE_USE_MOCK_API, true),
+  // 로컬 개발·Test에서는 명시값이 없을 때만 Mock을 허용한다.
+  // Production Build는 환경변수 누락을 Mock 전환으로 해석하지 않는다.
+  useMockApi: readBoolean(import.meta.env.VITE_USE_MOCK_API, import.meta.env.DEV),
   mockAuthenticated: readBoolean(
     import.meta.env.VITE_MOCK_AUTHENTICATED,
-    true,
+    import.meta.env.DEV,
   ),
   mockRole: readRole(import.meta.env.VITE_MOCK_ROLE),
 } as const;

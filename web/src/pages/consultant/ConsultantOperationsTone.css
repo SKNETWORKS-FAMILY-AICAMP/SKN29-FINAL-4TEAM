@@ -427,7 +427,7 @@ html body .simple-consultant-app.consultant-queue-app .consultant-work-tabs {
   grid-column: 1;
   grid-row: 1 / 3;
   height: 100%;
-  grid-template-rows: repeat(3, 82px) !important;
+  grid-template-rows: repeat(4, 82px) !important;
   align-content: start;
   gap: 10px !important;
   padding: 18px 14px !important;
@@ -474,7 +474,7 @@ html body .simple-consultant-app.consultant-queue-app .consultant-queue-panel {
     grid-column: 1;
     grid-row: 2;
     height: auto;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     grid-template-rows: 76px !important;
   }
 
@@ -825,7 +825,7 @@ html body
   grid-column: 1;
   grid-row: 2;
   height: 100%;
-  grid-template-rows: repeat(3, 64px) !important;
+  grid-template-rows: repeat(4, 64px) !important;
   gap: 0 !important;
   padding: 0 !important;
   border: 0 !important;
@@ -882,6 +882,7 @@ html body .simple-consultant-app.consultant-queue-app
   padding: 0 20px !important;
   border: 0 !important;
   border-radius: 0 !important;
+  text-decoration: none;
   font-family:
     Pretendard, "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif !important;
 }
@@ -1048,7 +1049,7 @@ html body
   display: flex;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   flex-direction: column;
   border: 1px solid #e0e5ec;
   border-radius: 6px;
@@ -1058,10 +1059,13 @@ html body
 html body
   .simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-risk-section__head {
+  position: relative;
+  z-index: 3;
   display: flex;
   min-height: 48px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 8px;
   padding: 0 14px;
   border-bottom: 1px solid #e6eaf0;
 }
@@ -1080,8 +1084,219 @@ html body
 
 html body
   .simple-consultant-app.simple-consultant-app.consultant-queue-app
-  .consultant-risk-section__head
+  .consultant-risk-section__tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter {
+  position: relative;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-trigger {
+  display: flex;
+  width: 116px;
+  height: 30px;
+  min-height: 30px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 9px 0 11px;
+  border: 1px solid #d7dde5 !important;
+  border-radius: 6px !important;
+  outline: none;
+  background: transparent !important;
+  box-shadow: 0 2px 6px rgb(44 54 75 / 5%) !important;
+  color: #3f4a5a !important;
+  font-family:
+    Pretendard, "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--danger
+  .consultant-risk-section__filter-trigger,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--danger
+  .consultant-risk-section__filter-trigger:hover,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--danger
+  .consultant-risk-section__filter-trigger:focus-visible,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--danger
+  .consultant-risk-section__filter-trigger[aria-expanded="true"] {
+  border-color: #ce3f32 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--caution
+  .consultant-risk-section__filter-trigger,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--caution
+  .consultant-risk-section__filter-trigger:hover,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--caution
+  .consultant-risk-section__filter-trigger:focus-visible,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--caution
+  .consultant-risk-section__filter-trigger[aria-expanded="true"] {
+  border-color: #cf8b1e !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--general
+  .consultant-risk-section__filter-trigger,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--general
+  .consultant-risk-section__filter-trigger:hover,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--general
+  .consultant-risk-section__filter-trigger:focus-visible,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section--general
+  .consultant-risk-section__filter-trigger[aria-expanded="true"] {
+  border-color: #627083 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-trigger:hover,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-trigger:focus-visible,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-trigger[aria-expanded="true"] {
+  border-color: #9ba9d8 !important;
+  box-shadow: 0 0 0 2px rgb(99 119 217 / 10%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-trigger
   > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-trigger
+  svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 140ms ease;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-trigger[aria-expanded="true"]
+  svg {
+  transform: rotate(180deg);
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  width: 164px;
+  max-height: 230px;
+  gap: 2px;
+  padding: 7px;
+  overflow-y: auto;
+  border: 1px solid #e0e4ec !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  box-shadow: 0 12px 30px rgb(35 44 68 / 16%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-menu
+  > button {
+  display: flex;
+  width: 100%;
+  min-height: 32px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 7px;
+  border: 0 !important;
+  border-radius: 4px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: #485366 !important;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: left;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-menu
+  > button:hover {
+  background: #f3f5fc !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-check {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  place-items: center;
+  border: 1px solid #d8dde7 !important;
+  border-radius: 3px !important;
+  background: #fff !important;
+  color: #fff !important;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-menu
+  > button[aria-selected="true"]
+  .consultant-risk-section__filter-check {
+  border-color: #6377d9 !important;
+  background: #6377d9 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__count {
   display: grid;
   min-width: 24px;
   height: 24px;
@@ -1102,8 +1317,7 @@ html body
 html body
   .simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-risk-section--danger
-  .consultant-risk-section__head
-  > span {
+  .consultant-risk-section__count {
   color: #fff;
   background: #ce3f32;
 }
@@ -1119,8 +1333,7 @@ html body
 html body
   .simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-risk-section--caution
-  .consultant-risk-section__head
-  > span {
+  .consultant-risk-section__count {
   color: #fff;
   background: #cf8b1e;
 }
@@ -1136,8 +1349,7 @@ html body
 html body
   .simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-risk-section--general
-  .consultant-risk-section__head
-  > span {
+  .consultant-risk-section__count {
   color: #fff;
   background: #627083;
 }
@@ -1166,15 +1378,14 @@ html body
   .v6-queue-item.consultant-list-item {
   display: grid !important;
   width: 100%;
-  min-height: 148px !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
+  min-height: 104px !important;
+  grid-template-columns: minmax(0, 1fr) !important;
   grid-template-areas:
-    "risk status"
-    "subject subject"
-    "customer open";
-  align-content: start;
-  gap: 9px 10px !important;
-  padding: 12px !important;
+    "subject"
+    "customer";
+  align-content: center;
+  gap: 12px 10px !important;
+  padding: 14px 12px !important;
   border: 0 !important;
   border-bottom: 1px solid #e8ebf0 !important;
   border-radius: 0 !important;
@@ -1197,25 +1408,13 @@ html body
 html body
   .simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-risk-section
-  .consultant-list-item__risk {
-  grid-area: risk;
-}
-
-html body
-  .simple-consultant-app.simple-consultant-app.consultant-queue-app
-  .consultant-risk-section
   .consultant-list-item__subject {
-  grid-area: subject;
-}
-
-html body
-  .simple-consultant-app.simple-consultant-app.consultant-queue-app
-  .consultant-risk-section
-  .consultant-list-item__subject
-  strong {
   display: -webkit-box;
   overflow: hidden;
+  grid-area: subject;
+  color: #414852 !important;
   font-size: 14px;
+  font-weight: 400 !important;
   line-height: 1.45;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -1224,33 +1423,12 @@ html body
 html body
   .simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-risk-section
-  .consultant-list-item__subject
-  small {
-  display: none;
-}
-
-html body
-  .simple-consultant-app.simple-consultant-app.consultant-queue-app
-  .consultant-risk-section
   .consultant-list-item__customer {
   grid-area: customer;
-}
-
-html body
-  .simple-consultant-app.simple-consultant-app.consultant-queue-app
-  .consultant-risk-section
-  .consultant-list-item__status {
-  grid-area: status;
-  align-items: flex-end;
-}
-
-html body
-  .simple-consultant-app.simple-consultant-app.consultant-queue-app
-  .consultant-risk-section
-  .consultant-list-item__open {
-  grid-area: open;
-  align-self: end;
-  white-space: nowrap;
+  color: #414852 !important;
+  font-size: 13px;
+  font-weight: 400 !important;
+  line-height: 1.4;
 }
 
 @media (max-width: 900px) {
@@ -1266,7 +1444,7 @@ html body
     .consultant-work-tabs {
     grid-row: 2;
     height: auto;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     grid-template-rows: 64px !important;
   }
 
@@ -1378,7 +1556,7 @@ html body
     .consultant-work-tabs {
     width: 240px;
     height: 100%;
-    grid-template-rows: repeat(3, 64px) !important;
+    grid-template-rows: repeat(4, 64px) !important;
     align-content: start;
     gap: 0 !important;
     padding: 0 !important;
@@ -1432,6 +1610,14 @@ html body
   html body .simple-consultant-app.consultant-queue-app
     .consultant-work-tabs
     .consultant-work-tab.is-active:hover {
+    width: calc(100% - 16px) !important;
+    min-width: 0 !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    max-height: 52px !important;
+    margin: 6px 8px !important;
+    padding: 0 12px !important;
+    border-radius: 999px !important;
     background: rgb(255 255 255 / 10%) !important;
     background-image: none !important;
   }
@@ -1499,12 +1685,85 @@ html body
     .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
     .consultant-main-header {
     overflow: hidden;
-    border-radius: 48px 0 0 !important;
+    border-radius: 24px 0 0 !important;
   }
 
   html body
     .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
     .consultant-queue-panel {
-    border-radius: 0 0 0 48px !important;
+    border-radius: 0 0 0 24px !important;
   }
+}
+
+/* Compact inquiry cards: subject left, customer right, both on one line. */
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: #f6f7fa;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item:nth-child(even) {
+  display: flex !important;
+  width: 100%;
+  min-height: 56px !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px !important;
+  padding: 12px 14px !important;
+  border: 1px solid #e4e7ec !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  box-shadow: 0 2px 8px rgb(26 35 52 / 6%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item:hover,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item.is-selected {
+  border-color: #d7dce5 !important;
+  background: #f8f9fb !important;
+  box-shadow:
+    inset 3px 0 0 #5d6fb1,
+    0 3px 10px rgb(26 35 52 / 8%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .consultant-list-item__subject {
+  display: block;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  line-height: 1.4;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  -webkit-line-clamp: unset;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .consultant-list-item__customer {
+  flex: 0 0 auto;
+  margin-left: auto;
+  line-height: 1.4;
+  text-align: right;
+  white-space: nowrap;
 }

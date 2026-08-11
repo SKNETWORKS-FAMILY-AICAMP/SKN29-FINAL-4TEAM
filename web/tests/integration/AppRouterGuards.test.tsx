@@ -70,6 +70,20 @@ describe("App Router Guard", () => {
     ).toBeInTheDocument();
   });
 
+  it("상담사는 전화 문의 등록 화면에 접근할 수 있다", async () => {
+    renderRoute(
+      "/consultant/phone-inquiries/new",
+      createUser("CONSULTANT"),
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "전화 문의 등록" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "전화 문의 저장" }),
+    ).toBeInTheDocument();
+  });
+
   it("상담사는 CONS-02 v13 상세 경로에 직접 접근할 수 있다", async () => {
     renderRoute(
       "/consultant/inquiries/205850d3-763c-5256-9d39-82da21be0c31",

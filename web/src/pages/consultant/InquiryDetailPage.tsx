@@ -120,13 +120,18 @@ export default function InquiryDetailPage() {
   const handleOpenVisit = (
     entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED",
   ) => {
-    if (!inquiry) return;
+    const target = inquiry ?? remoteDetail;
+    if (!target) return;
+    const targetInquiryId = toInquiryId(target.inquiryId);
+    if (!targetInquiryId) return;
 
-    navigate(createVisitTransitionPath(inquiry.inquiryId), {
+    navigate(createVisitTransitionPath(targetInquiryId), {
       state: {
         returnTo: inquiryListReturnPath,
-        stateVersion: inquiry.stateVersion,
-        symptomSummary: inquiry.symptomLabel,
+        stateVersion: target.stateVersion,
+        symptomSummary: inquiry
+          ? inquiry.symptomLabel
+          : remoteDetail?.symptomAndQuestionnaire.symptomSummary,
         entryAction,
       },
     });
@@ -223,7 +228,11 @@ export default function InquiryDetailPage() {
           </div>
 
           <section className="v6-panel inquiry-v13-detail-shell">
-            <RemoteConsultantInquiryDetail inquiry={remoteDetail} />
+            <RemoteConsultantInquiryDetail
+              inquiry={remoteDetail}
+              onOpenVisit={handleOpenVisit}
+              onRefresh={detailQuery.retry}
+            />
           </section>
         </>
       );

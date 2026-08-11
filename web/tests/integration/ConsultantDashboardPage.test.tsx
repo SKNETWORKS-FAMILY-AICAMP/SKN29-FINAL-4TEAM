@@ -60,6 +60,7 @@ describe("ConsultantDashboardPage", () => {
     );
     expect(screen.getByRole("tab", { name: /처리 중인 문의/ })).toBeVisible();
     expect(screen.getByRole("tab", { name: /처리 완료된 문의/ })).toBeVisible();
+    expect(screen.getByRole("tab", { name: "전화 문의 등록" })).toBeVisible();
     expect(screen.getByLabelText("상담 문의 목록")).toBeVisible();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: /상담 기록/ })).not.toBeInTheDocument();
@@ -206,9 +207,64 @@ describe("ConsultantDashboardPage", () => {
       ).toHaveLength(10);
     });
 
-    expect(screen.getAllByLabelText("위험도: 긴급")).toHaveLength(10);
-    expect(screen.getAllByLabelText("위험도: 주의")).toHaveLength(10);
-    expect(screen.getAllByLabelText("위험도: 일반")).toHaveLength(10);
+    expect(
+      within(screen.getByRole("region", { name: "긴급 문의" })).getAllByRole(
+        "button",
+        { name: /상세 열기/ },
+      ),
+    ).toHaveLength(10);
+    expect(
+      within(screen.getByRole("region", { name: "주의 문의" })).getAllByRole(
+        "button",
+        { name: /상세 열기/ },
+      ),
+    ).toHaveLength(10);
+    expect(
+      within(screen.getByRole("region", { name: "일반 문의" })).getAllByRole(
+        "button",
+        { name: /상세 열기/ },
+      ),
+    ).toHaveLength(10);
+  });
+
+  it("긴급·주의·일반 문의 영역에서 상태를 각각 필터링한다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole("tab", { name: /처리 중인 문의/ }));
+
+    const dangerFilter = screen.getByRole("button", {
+      name: "긴급 문의 상태 필터",
+    });
+    const cautionFilter = screen.getByRole("button", {
+      name: "주의 문의 상태 필터",
+    });
+    const generalFilter = screen.getByRole("button", {
+      name: "일반 문의 상태 필터",
+    });
+
+    expect(dangerFilter).toHaveTextContent("전체 상태");
+    expect(cautionFilter).toHaveTextContent("전체 상태");
+    expect(generalFilter).toHaveTextContent("전체 상태");
+
+    const dangerSection = screen.getByRole("region", { name: "긴급 문의" });
+    expect(
+      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
+    ).toHaveLength(10);
+
+    await user.click(dangerFilter);
+    await user.click(screen.getByRole("option", { name: "방문 예정" }));
+
+    expect(dangerFilter).toHaveTextContent("방문 예정");
+    expect(cautionFilter).toHaveTextContent("전체 상태");
+    expect(generalFilter).toHaveTextContent("전체 상태");
+    expect(
+      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
+    ).toHaveLength(2);
+    expect(within(dangerSection).queryByLabelText(/^상태:/)).not.toBeInTheDocument();
+    expect(within(dangerSection).queryByText(/^INQ-/)).not.toBeInTheDocument();
+    expect(within(dangerSection).queryByText(/^WPU-/)).not.toBeInTheDocument();
+    expect(within(dangerSection).queryByText(/^대기 /)).not.toBeInTheDocument();
   });
 
   it.each([

@@ -28,6 +28,16 @@ export interface VisitReviewRequestDto {
   reason_detail?: string | null;
 }
 
+export interface VisitNotNeededRequestDto {
+  state_version: number;
+  reason_code:
+    | "RESOLVED_BY_CONSULTATION"
+    | "MONITORING_AGREED"
+    | "CUSTOMER_DECLINED_VISIT"
+    | "DUPLICATE_VISIT_AVOIDED";
+  reason_detail?: string | null;
+}
+
 export interface CreateVisitRequestDto {
   state_version: number;
   visit_reason: string;
@@ -75,6 +85,11 @@ export interface VisitWriteRepository {
   create(
     inquiryId: string,
     body: CreateVisitRequestDto,
+    context: RequestContext,
+  ): Promise<ApiResponse<VisitTransitionResultDto>>;
+  markNotNeeded(
+    inquiryId: string,
+    body: VisitNotNeededRequestDto,
     context: RequestContext,
   ): Promise<ApiResponse<VisitTransitionResultDto>>;
   saveSchedule(
@@ -140,6 +155,11 @@ export function createRemoteVisitWriteRepository(
         `${inquiryPath(inquiryId)}/visits`,
         writeOptions("POST", body, context),
       ),
+    markNotNeeded: (inquiryId, body, context) =>
+      requester<VisitTransitionResultDto>(
+        `${inquiryPath(inquiryId)}/visit-not-needed`,
+        writeOptions("POST", body, context),
+      ),
     saveSchedule: (visitId, body, context) =>
       requester<VisitTransitionResultDto>(
         `${visitPath(visitId)}/schedule`,
@@ -152,4 +172,3 @@ export function createRemoteVisitWriteRepository(
       ),
   };
 }
-
