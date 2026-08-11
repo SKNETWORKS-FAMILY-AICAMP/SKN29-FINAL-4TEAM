@@ -927,3 +927,26 @@ Public UUID 분석 요청이 모두 성공했다.
   FastAPI Pipeline에 연결하지 않는다.
 - Python `3.13.13`, AI Unit `153 passed, 3 warnings`, `pip check=PASS`, Backend
   Integration Fixture `12 passed, 1 warning`, `git diff --check=PASS`를 확인했다.
+
+### 2026-08-11 Experiment Lab B2-3 BM25·Dense 비교
+
+- B1의 상위 Draft 청킹 후보 `fixed_512_v1`, `parent_child_v1`에서 Gold DEV 35건,
+  Dense·BM25 2방식을 비교해 총 140개 Case 결과를 만들었다. Exact Product Filter,
+  B2-1 Scope, B2-2 Intent Policy와 Top-K 5를 동일하게 고정했다.
+- BM25는 외부 형태소 사전 없이 재현 가능한 단어·한글 문자 bigram Analyzer와
+  `k1=1.5`, `b=0.75`를 사용하는 Experiment 전용 구현이다. 운영
+  `keyword_search.py`와 `hybrid_search.py` Placeholder는 구현 완료로 바꾸거나
+  Runtime에 연결하지 않았다.
+- Parent/Child에서 Dense는 Hit@1 `0.703704`, Hit@5 `0.888889`, MRR `0.790123`,
+  무근거 중단 `1.0`이었다. BM25는 Hit@1 `0.481481`, Hit@5 `0.666667`, MRR
+  `0.540123`, 무근거 중단 `0.875`로 낮았다.
+- BM25가 Dense 누락을 복구한 Case는 0건이었다. Dense만 성공한 Case는 6건이고
+  양쪽이 함께 놓친 Case는 누수·무출수 간접 표현 3건이다. 따라서 현재 DEV에서
+  Hybrid Oracle Union Hit@5도 Dense 단독과 같은 `0.888889`다.
+- 단순 Hybrid·Reranker 착수는 보류했다. 양쪽 누락은 후보에 정답이 없으므로
+  `물이 새다→누수`, `안 나오다→출수되지 않음`, `바닥이 흥건하다→누수` 같은
+  검수 가능한 Alias Query Expansion을 B2-4 Draft로 먼저 비교한다.
+- 실행 결과는 `DRAFT_RETRIEVAL_METHOD_COMPARISON_COMPLETE`이며 Gold 2인 검수,
+  Alias 승인, IAC425 양성 문항, PM Gate 전에는 운영 검색 설정을 변경하지 않는다.
+- Python `3.13.13`, AI Unit `156 passed, 3 warnings`, `pip check=PASS`, Backend
+  Integration Fixture `12 passed, 1 warning`, `git diff --check=PASS`를 확인했다.
