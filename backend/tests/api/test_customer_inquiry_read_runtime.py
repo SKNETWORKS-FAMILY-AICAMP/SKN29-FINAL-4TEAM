@@ -6,6 +6,7 @@ from datetime import date
 from uuid import UUID, uuid4
 
 import pytest
+from django.utils.dateparse import parse_datetime
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
@@ -104,7 +105,9 @@ def test_customer_snapshot_returns_exact_owned_projection(
         "X-Correlation-ID"
     ]
     data = payload["data"]
-    assert data == {
+    projection = dict(data)
+    updated_at = projection.pop("updated_at")
+    assert projection == {
         "inquiry_id": str(inquiry.public_id),
         "status_code": Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS,
         "state_version": 2,
@@ -112,8 +115,8 @@ def test_customer_snapshot_returns_exact_owned_projection(
         "product": {
             "model_code": inquiry.subscription.product_model.model_code,
         },
-        "updated_at": inquiry.updated_at.isoformat().replace("+00:00", "Z"),
     }
+    assert parse_datetime(updated_at) == inquiry.updated_at
 
     serialized = str(data)
     for forbidden in (
