@@ -144,7 +144,7 @@
               "const": "ai/evaluation/reports/pgvector_verification.json"
             },
             "sha256": {
-              "const": "70CFE70A01E7624754C1B506683D02A05DF6A0662CFFCD6551F54C3DCB70C8C9"
+              "const": "449F8D1A3298FFD5BF945E405F51A4FED5767E6502D1B390BD70FCC06AF27DD1"
             },
             "received_sha256": {
               "const": "0C5EC8431B9DA2689CBEA5218B21AB75E9572FEC8CE308764CC952D41ADBAD13"
