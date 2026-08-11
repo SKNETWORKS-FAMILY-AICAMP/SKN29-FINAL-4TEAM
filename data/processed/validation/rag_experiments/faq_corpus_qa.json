@@ -1,0 +1,122 @@
+{
+  "qa_id": "A1-3-FAQ-CORPUS-QA",
+  "status": "STRUCTURAL_PASS_SCOPE_REVIEW_REQUIRED",
+  "generated_at": "2026-08-10T11:59:37.015586+00:00",
+  "scope": {
+    "included": "정수기 FAQ 119건 원문 등록 상태와 조건부 실험 사용 범위",
+    "excluded": [
+      "Chunking",
+      "Embedding",
+      "Vector DB",
+      "MVP 검색 편입",
+      "미전사 이미지 OCR",
+      "Gold Evidence 승인"
+    ]
+  },
+  "dataset": {
+    "path": "data/processed/documents/faq/faq_snapshot_normalized.jsonl",
+    "sha256": "E2040220C22F26042F1662029FA45776A7261336956DF6D8C7102485A27F41F4",
+    "record_count": 119
+  },
+  "schema": {
+    "path": "data/schemas/processed/faqNormalized.schema.json",
+    "sha256": "1515844AFE653580E42D1B75E868CF07B4F0C7F68ABCF9847E814F89DBFC006F"
+  },
+  "source_verification": {
+    "status": "PASS",
+    "source_label": "external_backup/메뉴얼 원본, 크롤링 원본/Q&A 크롤링.md",
+    "sha256": "670C739A69B3ACF811D763FF17F21C53EB661F7BAE1F7D505275B571FF4D3FF8",
+    "expected_sha256": "670C739A69B3ACF811D763FF17F21C53EB661F7BAE1F7D505275B571FF4D3FF8",
+    "records_found": 119,
+    "title_mismatch_ids": [],
+    "image_url_mismatch_ids": [],
+    "publisher_text_mismatch_ids": []
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 2,
+    "records_expected": 119,
+    "records_found": 119,
+    "unique_ordinals": 119,
+    "missing_ordinals": [],
+    "duplicate_ordinals": [],
+    "duplicate_faq_ids": [],
+    "duplicate_title_groups": [],
+    "duplicate_answer_groups": [],
+    "answer_hash_mismatch_ids": [],
+    "mojibake_ids": [],
+    "publisher_text_count": 111,
+    "ocr_verified_count": 5,
+    "conditional_text_count": 116,
+    "image_only_excluded_count": 3,
+    "model_unspecified_count": 107
+  },
+  "classification": {
+    "content_status_counts": {
+      "IMAGE_ONLY": 3,
+      "OCR_TEXT_AND_IMAGE": 5,
+      "TEXT_AND_IMAGE": 3,
+      "TEXT_ONLY": 108
+    },
+    "text_status_counts": {
+      "NOT_TRANSCRIBED": 3,
+      "OCR_VERIFIED": 5,
+      "PUBLISHER_TEXT": 111
+    },
+    "ocr_verified_ids": [
+      "FAQ-SKMAGIC-0004",
+      "FAQ-SKMAGIC-0005",
+      "FAQ-SKMAGIC-0006",
+      "FAQ-SKMAGIC-0008",
+      "FAQ-SKMAGIC-0011"
+    ],
+    "image_only_excluded_ids": [
+      "FAQ-SKMAGIC-0007",
+      "FAQ-SKMAGIC-0009",
+      "FAQ-SKMAGIC-0010"
+    ]
+  },
+  "metadata_invariants": {
+    "snapshot_id": [
+      "SRC-WATER-FAQ-20260715"
+    ],
+    "source_type": [
+      "official_faq_snapshot"
+    ],
+    "provider": [
+      "SK매직"
+    ],
+    "source_file_sha256": [
+      "670C739A69B3ACF811D763FF17F21C53EB661F7BAE1F7D505275B571FF4D3FF8"
+    ],
+    "mvp_rag_eligible": [
+      false
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "IMAGE_ONLY_EXCLUDED",
+      "count": 3,
+      "faq_ids": [
+        "FAQ-SKMAGIC-0007",
+        "FAQ-SKMAGIC-0009",
+        "FAQ-SKMAGIC-0010"
+      ],
+      "message": "전사되지 않은 이미지 전용 FAQ는 실험 검색에서도 제외"
+    },
+    {
+      "code": "MODEL_SCOPE_UNVERIFIED",
+      "count": 107,
+      "message": "게시자 모델 코드가 없는 FAQ는 조건부 참고만 허용"
+    }
+  ],
+  "decision": {
+    "conditional_experimental_text_use": "READY",
+    "conditional_experimental_record_count": 116,
+    "image_only_use": "BLOCKED",
+    "mvp_search_use": "BLOCKED",
+    "exact_model_evidence_use": "REVIEW_REQUIRED",
+    "gold_evidence_use": "REVIEW_REQUIRED"
+  }
+}

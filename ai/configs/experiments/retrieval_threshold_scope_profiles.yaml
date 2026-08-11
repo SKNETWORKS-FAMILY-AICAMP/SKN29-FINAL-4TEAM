@@ -1,0 +1,43 @@
+{
+  "experiment_id": "B2-1-THRESHOLD-SCOPE-POLICY-V1",
+  "experiment_version": "1.0.0-draft.1",
+  "dataset_split": "DEV",
+  "provisional_chunking_profiles": [
+    "fixed_512_v1",
+    "parent_child_v1"
+  ],
+  "chunking_selection_status": "PROVISIONAL_NOT_SELECTED",
+  "fixed_retrieval": {
+    "method": "dense_cosine_exact_v1",
+    "top_k": 5,
+    "product_filter": "EXACT_PRODUCT_FILTER",
+    "score_thresholds": [0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
+  },
+  "scope_policies": [
+    {
+      "policy_id": "NO_QUERY_SCOPE_POLICY",
+      "enabled": false
+    },
+    {
+      "policy_id": "MODEL_CAPABILITY_SCOPE_V1",
+      "enabled": true,
+      "supported_model_codes": ["WPUJAC104DWH"],
+      "unsupported_model_rule_id": "EXP-SCOPE-MODEL-001",
+      "unsupported_feature_rules": [
+        {
+          "rule_id": "EXP-SCOPE-JAC104-ICE-001",
+          "model_codes": ["WPUJAC104DWH"],
+          "terms": ["얼음", "제빙"],
+          "reason": "JAC104 MVP 지원 범위에 제빙·얼음 기능이 없음"
+        }
+      ]
+    }
+  ],
+  "publication_limits": [
+    "Gold 60건 2인 검수 전 Draft 비교로만 사용",
+    "청킹 2종은 B1 Draft의 임시 후보이며 PM이 선정한 운영 Profile이 아님",
+    "Scope Policy는 Experiment Lab 전용이며 운영 ai/configs/retrieval_policy.yaml을 변경하지 않음",
+    "DEV Positive가 JAC104에 편중되어 IAC425 검색 품질을 판정하지 않음",
+    "Threshold는 DEV 탐색값이며 TEST 최초 실행 전 고정·승인이 필요함"
+  ]
+}

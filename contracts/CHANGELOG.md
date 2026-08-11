@@ -1,6 +1,56 @@
 # Contracts Changelog
 
-## 2026-08-10 — 대표 E2E Action OpenAPI 0.8.0 적용 후보
+## 2026-08-11 — Backend 소비 의미 불일치 확인
+
+### Audit
+
+- `CANCEL_INQUIRY` Runtime이 승인된 고객·상담사·운영자와 DRAFT·QUESTIONNAIRE_IN_PROGRESS 범위보다 좁은 것을 확인했다.
+- Backend `allowed_actions`가 State·Role 후보만 반환하고 Visit·Transition·Domain Guard와 Runtime availability를 평가하지 않는 것을 확인했다.
+- Validator·Crosswalk `12/7/0/4`·Contract Test PASS는 정적 증거이며 Runtime 의미 승인과 분리한다.
+
+### Decision boundary
+
+- 승인된 취소 역할·상태 계약은 유지하고 Backend Runtime을 계약에 맞춘다.
+- `allowed_actions`는 동적 Guard와 Runtime availability를 모두 통과한 행동만 반환한다.
+- 수정·표적 회귀·PostgreSQL 독립 QA 전까지 `TEAM_BASELINE` 전환과 Backend 소비 ACK를 보류한다.
+
+## 2026-08-11 — Contract CI 현행 감사
+
+### Audit
+
+- 로컬 State·Mermaid·Code·OpenAPI·Example·Crosswalk·Root Contract Test 7개 Gate는 현재 기준선에서 모두 통과한다.
+- 현행 Data CI는 State Machine Validator와 Mermaid Drift만 자동 실행한다.
+- `contracts/api/**`, `contracts/codes/**`, `contracts/examples/**`, `contracts/error-codes/**`, `tests/contract/**` 변경은 현행 Data CI Trigger에서 누락돼 있다.
+
+### Decision boundary
+
+- 별도 Contract CI 분리를 PM 권고안으로 기록하고 `.github/workflows/**` 주관 담당자 적용·원격 검증을 요청한다.
+- 실제 Branch 또는 PR Run이 확인되기 전에는 Contract CI 강화 완료로 판정하지 않는다.
+- 과거 Changelog의 “전체 계약 Gate Data CI 연동” 설명은 목표 상태였으며, 현행 Workflow 기준으로는 부분 연동이다.
+
+## 2026-08-10 — Mobile 고객 문의 읽기·추가답변 Runtime
+
+### Added
+
+- 고객 본인 문의 Snapshot `GET /me/inquiries/{inquiry_id}` Runtime
+- 고객 본인 미답변 질문 `GET /me/inquiries/{inquiry_id}/questions` Runtime
+- 고객 추가답변 `POST /inquiries/{id}/answers` Runtime
+- 질문 메타데이터와 고객 답변 원장을 분리하는 Forward Migration
+
+### Classification
+
+- `SUBMIT_ANSWERS`는 `RUNTIME_IMPLEMENTED`로 승격한다.
+- Action Crosswalk는 `RUNTIME_IMPLEMENTED=12`, `OPENAPI_CONFIRMED=7`, `CONTRACT_ONLY=0`, `DEFERRED=4`다.
+- OpenAPI는 32개 Path·33개 Operation이며 State Machine 1.0.0은 변경하지 않는다.
+
+### Boundary
+
+- CUSTOMER 본인 문의만 허용하고 타 고객·미존재는 동일 404로 닫는다.
+- 질문 조회는 답변값·AI 원천·내부 target field를 공개하지 않는다.
+- 구조화 답변은 공개 선택지 `selected_option` 한 필드만 허용한다.
+- 나머지 7개 5주차 Action은 계속 `NOT_IMPLEMENTED`다.
+
+## 2026-08-10 — 대표 E2E Action OpenAPI 0.8.0 초기 적용 후보 (역사)
 
 ### Added
 
@@ -18,7 +68,7 @@
 
 ### Boundary
 
-- `SUBMIT_ANSWERS`의 질문 메타데이터와 실제 `answer_payload` 저장 경계가 분리되기 전까지 Runtime은 `NOT_IMPLEMENTED`다.
+- 당시 `SUBMIT_ANSWERS`는 저장 경계 분리 전이라 `NOT_IMPLEMENTED`였으며, 위 최신 항목에서 Runtime 구현으로 대체됐다.
 - 고객 해결 피드백만으로 종료하지 않으며 `FINALIZE_INQUIRY`에 최신 긍정 피드백과 마지막 처리 담당자 Guard가 필요하다.
 - 본 적용 후보는 계약·예시·정적 검증 범위이며 독립 QA와 각 Runtime WBS 완료를 대신하지 않는다.
 
@@ -34,9 +84,9 @@
 
 - State 13개, Event 30개, Transition 34개, Guard 39개와 완료 정책의 의미는 변경하지 않는다.
 - 고객 해결 피드백만으로 종료하지 않으며 마지막 처리 담당자의 `FINALIZE_INQUIRY`가 필요하다.
-- `contracts/api/**`, `contracts/codes/**`, `backend/tests/**`, `tests/**`는 각 주관 담당자 적용·검토 대기다.
-- OpenAPI `0.7.0`과 기존 Crosswalk 분류는 담당자 적용 전까지 변경하지 않는다.
-- 이번 결정은 OpenAPI·Runtime 구현 완료나 소비자 승인 완료를 의미하지 않는다.
+- 이 항목 작성 당시 각 주관 담당자 적용 대기였으며, 후속 OpenAPI `0.8.0` 적용과 Contract QA로 해당 대기는 해소됐다.
+- 후속 Runtime 반영을 포함한 현행 수량은 위 최신 항목의 OpenAPI 33개 Operation과 Crosswalk `12/7/0/4`를 따른다.
+- 이번 결정 자체는 소비자 승인 완료를 의미하지 않으며, 소비자 증거는 3.3 Contract Baseline Gate에서 별도로 확인한다.
 
 ## 2026-08-07 — State Machine Action–OpenAPI–Runtime Crosswalk 기준선
 

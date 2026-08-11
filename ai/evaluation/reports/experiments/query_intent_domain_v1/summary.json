@@ -1,0 +1,120 @@
+{
+  "experiment_id": "B2-2-QUERY-INTENT-DOMAIN-V1",
+  "run_status": "DRAFT_QUERY_INTENT_DOMAIN_EXPERIMENT_COMPLETE",
+  "metrics_publishable_as_official": false,
+  "selection_status": "PENDING_HUMAN_REVIEW_AND_PM_GATE",
+  "comparisons": [
+    {
+      "intent_policy_id": "NO_QUERY_INTENT_POLICY",
+      "supplemental_policy": {
+        "case_count": 18,
+        "decision_accuracy": 0.5,
+        "block_precision": null,
+        "block_recall": 0.0,
+        "allow_accuracy": 1.0,
+        "exact_rule_match_rate": 0.0,
+        "false_block_case_ids": [],
+        "missed_block_case_ids": [
+          "QIDOM-V1-0001",
+          "QIDOM-V1-0002",
+          "QIDOM-V1-0003",
+          "QIDOM-V1-0004",
+          "QIDOM-V1-0005",
+          "QIDOM-V1-0006",
+          "QIDOM-V1-0007",
+          "QIDOM-V1-0008",
+          "QIDOM-V1-0009"
+        ],
+        "rule_counts": {}
+      },
+      "supplemental_retrieval": {
+        "case_count": 18,
+        "positive_case_count": 9,
+        "negative_case_count": 9,
+        "mean_hit_at_1": 1.0,
+        "mean_hit_at_5": 1.0,
+        "mean_mrr": 1.0,
+        "mean_ndcg_at_5": 1.0,
+        "no_evidence_accuracy": 0.333333,
+        "scope_block_count": 0,
+        "intent_block_count": 0,
+        "positive_block_count": 0,
+        "wrong_product_hit_count": 0,
+        "retrieval_latency_p50_ms": 0.0462,
+        "retrieval_latency_p95_ms": 0.07607
+      },
+      "gold_dev_retrieval": {
+        "case_count": 35,
+        "positive_case_count": 27,
+        "negative_case_count": 8,
+        "mean_hit_at_1": 0.703704,
+        "mean_hit_at_5": 0.888889,
+        "mean_mrr": 0.790123,
+        "mean_ndcg_at_5": 0.798392,
+        "no_evidence_accuracy": 0.625,
+        "scope_block_count": 4,
+        "intent_block_count": 0,
+        "positive_block_count": 0,
+        "wrong_product_hit_count": 0,
+        "retrieval_latency_p50_ms": 0.0418,
+        "retrieval_latency_p95_ms": 0.05223
+      }
+    },
+    {
+      "intent_policy_id": "MANUAL_DOMAIN_INTENT_V1",
+      "supplemental_policy": {
+        "case_count": 18,
+        "decision_accuracy": 1.0,
+        "block_precision": 1.0,
+        "block_recall": 1.0,
+        "allow_accuracy": 1.0,
+        "exact_rule_match_rate": 1.0,
+        "false_block_case_ids": [],
+        "missed_block_case_ids": [],
+        "rule_counts": {
+          "EXP-INTENT-COMMERCIAL-001": 3,
+          "EXP-INTENT-PART-PURCHASE-001": 3,
+          "EXP-INTENT-PRODUCT-OPTION-001": 3
+        }
+      },
+      "supplemental_retrieval": {
+        "case_count": 18,
+        "positive_case_count": 9,
+        "negative_case_count": 9,
+        "mean_hit_at_1": 1.0,
+        "mean_hit_at_5": 1.0,
+        "mean_mrr": 1.0,
+        "mean_ndcg_at_5": 1.0,
+        "no_evidence_accuracy": 1.0,
+        "scope_block_count": 0,
+        "intent_block_count": 9,
+        "positive_block_count": 0,
+        "wrong_product_hit_count": 0,
+        "retrieval_latency_p50_ms": 0.02125,
+        "retrieval_latency_p95_ms": 0.052715
+      },
+      "gold_dev_retrieval": {
+        "case_count": 35,
+        "positive_case_count": 27,
+        "negative_case_count": 8,
+        "mean_hit_at_1": 0.703704,
+        "mean_hit_at_5": 0.888889,
+        "mean_mrr": 0.790123,
+        "mean_ndcg_at_5": 0.798392,
+        "no_evidence_accuracy": 1.0,
+        "scope_block_count": 4,
+        "intent_block_count": 3,
+        "positive_block_count": 0,
+        "wrong_product_hit_count": 0,
+        "retrieval_latency_p50_ms": 0.0416,
+        "retrieval_latency_p95_ms": 0.05115
+      }
+    }
+  ],
+  "publication_limits": [
+    "18건 표현 변형 Dataset은 사람 2인 검수 전 Draft 실험 자료다.",
+    "정책은 Gold 정답 Label을 입력으로 읽지 않으며 Query 문자열과 제품 코드만 사용한다.",
+    "B2-1의 parent_child_v1·0.5 조합은 임시 비교 기준일 뿐 운영 Profile 선정이 아니다.",
+    "Experiment Lab 결과로 운영 Scope Filter나 Backend 정책이 변경되지 않는다."
+  ]
+}

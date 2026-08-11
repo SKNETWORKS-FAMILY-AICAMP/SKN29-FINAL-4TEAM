@@ -1,0 +1,70 @@
+{
+  "profile_id": "full_corpus_baseline_v1",
+  "profile_version": "1.0.0-draft.1",
+  "run_status": "DRAFT_BASELINE_COMPLETE",
+  "started_at": "2026-08-10T13:59:47.534934+00:00",
+  "completed_at": "2026-08-10T14:05:39.236003+00:00",
+  "execution_seconds": 351.701293,
+  "metrics_publishable_as_official": false,
+  "dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "sha256": "DDB20527D452E1C246CA821CFA7D4EC159B13E24597FDEF685C19136065E50FD",
+    "split": "DEV",
+    "selected_cases": 35
+  },
+  "corpus": {
+    "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+    "sha256": "6947CDE3543BB080394D4C953BE22A43A76ED80F4686ED5360B30628109AB240",
+    "chunks": 96,
+    "variants": {
+      "JAC104_ONLY": [
+        "JAC104_ONLY"
+      ],
+      "IAC425_ONLY": [
+        "IAC425_ONLY"
+      ],
+      "JAC104_IAC425_COMBINED": [
+        "JAC104_ONLY",
+        "IAC425_ONLY"
+      ]
+    }
+  },
+  "chunking": {
+    "profile": "current_source_page_v1",
+    "description": "A1 페이지 레코드 1개를 검색 Chunk 1개로 사용하는 현재 저장 단위 기준선"
+  },
+  "embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "device": "cpu",
+    "normalize_embeddings": true,
+    "local_files_only": true
+  },
+  "retrieval": {
+    "profile": "dense_cosine_exact_v1",
+    "top_k": 5,
+    "score_threshold": 0.4,
+    "filter_modes": [
+      "NO_PRODUCT_FILTER",
+      "EXACT_PRODUCT_FILTER"
+    ]
+  },
+  "runtime": {
+    "python": "3.10.20",
+    "os": "Windows 10",
+    "machine": "AMD64",
+    "provider_class": "LocalBgeM3Provider"
+  },
+  "git": {
+    "commit_sha": "4d955116c00f715e1ba9e465104a381b858996b9",
+    "branch": "main",
+    "working_tree_clean": false,
+    "changed_path_count": 34
+  },
+  "publication_limits": [
+    "Gold 60건의 2인 검수가 끝나기 전에는 공식 Phase B 비교 기준으로 발표하지 않는다.",
+    "페이지 저장 단위 기준선은 최종 청킹 전략 승인을 의미하지 않는다.",
+    "BGE-M3 실제 실행이 완료되지 않은 Preflight 결과에 성능 수치를 부여하지 않는다."
+  ]
+}

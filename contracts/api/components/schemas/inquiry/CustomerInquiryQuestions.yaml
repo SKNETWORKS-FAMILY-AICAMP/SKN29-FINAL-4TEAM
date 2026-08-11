@@ -1,0 +1,49 @@
+title: CustomerInquiryQuestions
+type: object
+description: 고객 본인 문의에 저장된 미답변 추가 질문 메타데이터 목록
+x-contract-status: CONFIRMED
+additionalProperties: false
+required: [inquiry_id, state_version, questions]
+properties:
+  inquiry_id:
+    type: string
+    format: uuid
+  state_version:
+    type: integer
+    minimum: 1
+  questions:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      required: [question_id, question_type, prompt, required, options]
+      properties:
+        question_id:
+          type: string
+          format: uuid
+        question_type:
+          type: string
+          enum: [FREE_TEXT, SINGLE_CHOICE]
+        prompt:
+          type: string
+          maxLength: 500
+        required:
+          type: boolean
+          enum: [true]
+          description: 현재 공개되는 추가 질문은 모두 답변 필수 항목이다.
+        options:
+          type: array
+          maxItems: 10
+          items:
+            type: object
+            additionalProperties: false
+            required: [value, label]
+            properties:
+              value:
+                type: string
+                minLength: 1
+                maxLength: 200
+              label:
+                type: string
+                minLength: 1
+                maxLength: 200

@@ -4,7 +4,8 @@
 
 - 검증 Python: `3.13.13`
 - PostgreSQL과 `vector` 확장
-- 의존성 Manifest: `ai/requirements.lock`, `ai/requirements.txt`, `ai/pyproject.toml`
+- 환경 설치 SSOT: `ai/requirements.lock`
+- 직접 의존성 선언·정합성 대상: `ai/requirements.txt`, `ai/pyproject.toml`
 - AI 계약 버전: `3.0.0`
 
 Backend와 AI는 Python 버전만 `3.13.13`으로 통일하고 가상환경과 의존성은
@@ -25,6 +26,23 @@ python -m venv ai\.venv
 .\ai\.venv\Scripts\python.exe -m pip check
 .\ai\.venv\Scripts\python.exe -m uvicorn ai.app.main:app --host 127.0.0.1 --port 8001
 ```
+
+위 `ai/requirements.lock` 설치가 AI 개발·테스트 실행 환경의 공식 SSOT다. AI는
+저장소 Root에서 `ai.app`을 소스로 직접 Import하는 Monorepo Source Runtime이며,
+현재 배포 가능한 Python Package나 Wheel로 제공하지 않는다. 따라서 다음 명령은
+공식 설치·실행 방식이 아니며 지원하지 않는다.
+
+```powershell
+pip install ai
+pip install .\ai
+pip install -e .\ai
+```
+
+`ai/pyproject.toml`은 프로젝트 Metadata, 직접 의존성 정합성, Pytest 설정을
+관리하지만 setuptools Package 배포 계약은 아니다. 실행·Import·Test 명령은
+반드시 저장소 Root에서 수행한다. 저장소 밖 작업 경로에서 `import ai.app.main`을
+지원하려면 별도의 Package Layout 전환과 Wheel·Editable 설치 검증을 선행해야
+한다.
 
 기존 `ai/.venv`의 Python 버전이 다르면 그 환경을 그대로 재사용하지 않고
 Python `3.13.13`으로 다시 생성한다. 가상환경 디렉토리는 Git에 포함하지
@@ -116,6 +134,22 @@ ai/configs/runtime_identity.json
 두 번째 Manifest의 실행 식별값은 고객 공개 응답에 추가하지 않고 Backend 환경
 설정과 `AIRun` 감사 레코드로 전달·저장한다.
 
+## 상담 요약 결정론적 기준선
+
+`ai/app/generation/consultation_summary/`는 외부 LLM 없이 실행 가능한 상담사
+검토용 요약 Fallback 기준선이다. 고객 진술과 전달된 상담 기록만 요약하고,
+명시적 위험 신호는 기존 `SafetyRuleLoader`의 규칙으로 우선 표시한다. 확정 진단,
+Backend 상태 변경, 방문 필요 여부의 자동 확정은 수행하지 않는다.
+
+```powershell
+.\ai\.venv\Scripts\python.exe -m pytest `
+  ai\tests\unit\test_consultation_summary.py -q
+```
+
+이 Generator가 존재한다는 이유로 `Consultation Summary Agent`나 실제 LLM
+연동 완료로 표시하지 않는다. Agent Runtime Routing·Handoff와 실제 Provider는
+별도 Gate다.
+
 ## RAG 실행 기준
 
 Local 검색은 `BAAI/bge-m3`의 1024차원 정규화 임베딩과 pgvector Cosine
@@ -142,6 +176,12 @@ Backend 공개 `evidence_status`·저장 방식은 별도 통합 계약에서 �
 검증 모델 Revision은
 `5617a9f61b028005a4858fdac845db406aefb181`이다. 실제 연결 문자열은 Git에
 남기지 않고 `AI_VECTOR_DSN`으로 전달한다.
+
+`AI_VECTOR_DSN`이 설정된 Process는 Uvicorn 시작 단계에서 고정 Revision의
+Embedding 모델을 한 번 초기화하고 이후 요청이 같은 검색 서비스를 공유한다.
+따라서 최초 시작은 모델 초기화만큼 늦어질 수 있지만 이 시간은 요청별 30초
+Timeout에 포함되지 않는다. `/health` 성공은 모델 Warmup 완료를 뜻하지만 실제
+pgvector Query와 팀 DB 준비 완료까지 보장하는 Readiness 판정은 아니다.
 
 ## 기존 Schema에 청크 UPSERT
 

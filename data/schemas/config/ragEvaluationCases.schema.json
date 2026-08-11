@@ -144,7 +144,7 @@
               "const": "ai/evaluation/reports/pgvector_verification.json"
             },
             "sha256": {
-              "const": "70CFE70A01E7624754C1B506683D02A05DF6A0662CFFCD6551F54C3DCB70C8C9"
+              "const": "449F8D1A3298FFD5BF945E405F51A4FED5767E6502D1B390BD70FCC06AF27DD1"
             },
             "received_sha256": {
               "const": "0C5EC8431B9DA2689CBEA5218B21AB75E9572FEC8CE308764CC952D41ADBAD13"
@@ -171,7 +171,7 @@
           "properties": {
             "path": {"const": "ai/configs/index_manifest.json"},
             "sha256": {
-              "const": "76672253A536DFD253CA15770C08F781BC72BE6D2C6EE0AC1C15CA24971564A2"
+              "const": "91027E88DEC6C3BFF1E590AAF4479CA021AC284EB0BDC8E1EEC6C76473DA667E"
             },
             "received_sha256": {
               "const": "928AB09B4357C699C90463F321A4E39C678137FEA8A98C3D4AC9471C26E7ADBF"

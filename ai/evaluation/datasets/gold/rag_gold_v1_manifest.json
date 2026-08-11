@@ -1,0 +1,70 @@
+{
+  "dataset_id": "RAG-GOLD-V1",
+  "dataset_version": "1.0.0-draft.1",
+  "status": "DRAFT_REVIEW_REQUIRED",
+  "generated_at": "2026-08-10T00:00:00+09:00",
+  "dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "records": 60,
+    "sha256": "DDB20527D452E1C246CA821CFA7D4EC159B13E24597FDEF685C19136065E50FD"
+  },
+  "schema": {
+    "path": "ai/evaluation/schemas/gold_evaluation_case_v1.schema.json",
+    "sha256": "04FC1D06AF58AB7A093521DD5F836CD1C44B925374256DCD89489290E34489BC"
+  },
+  "distribution": {
+    "query_variant_type": {
+      "COLLOQUIAL": 10,
+      "COMPOUND": 5,
+      "CROSS_PRODUCT": 5,
+      "DIRECT": 20,
+      "NO_EVIDENCE": 5,
+      "SAFETY": 10,
+      "TYPO_ABBREVIATION": 5
+    },
+    "split": {
+      "DEV": 35,
+      "SAFETY": 10,
+      "TEST": 15
+    },
+    "review_status": {
+      "UNREVIEWED_DRAFT": 60
+    }
+  },
+  "source_files": [
+    {
+      "path": "data/config/rag/jac104_retrieval_cases.json",
+      "sha256": "6E9F202F902F965B0C6875D8FCDF26333651E680019CC8B34416E8A444A12E4F"
+    },
+    {
+      "path": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+      "sha256": "483D82DC9F199C9EEAC373508461288F3558C9AC9D8D1AB433D26540CA680145"
+    },
+    {
+      "path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+      "sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F"
+    },
+    {
+      "path": "data/processed/documents/faq/faq_snapshot_normalized.jsonl",
+      "sha256": "E2040220C22F26042F1662029FA45776A7261336956DF6D8C7102485A27F41F4"
+    },
+    {
+      "path": "ai/evaluation/datasets/rag_eval_dataset.json",
+      "sha256": "B23412F7B0B3ABAC884AA4B85BCA2F6A148B6578BFD3FDF934F72AFF4D70AF4E"
+    },
+    {
+      "path": "ai/evaluation/datasets/safety/safety_eval_dataset.json",
+      "sha256": "EEE250EDED1D47F02CCBC765ED492AEAC4794FD79C3EA421D86206332E158D57"
+    },
+    {
+      "path": "ai/evaluation/datasets/structuring/symptom_eval_dataset.json",
+      "sha256": "EBDB585CB08B6B2465121DD3CB2C288793F05A46870E41D9F16540B21EB1CBAA"
+    }
+  ],
+  "approval_policy": {
+    "required_reviewer_count": 2,
+    "current_approved_records": 0,
+    "automatic_label_approval": false,
+    "note": "60건 구성 완료는 Gold 승인 완료를 의미하지 않음"
+  }
+}

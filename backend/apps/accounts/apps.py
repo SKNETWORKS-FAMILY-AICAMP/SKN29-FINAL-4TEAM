@@ -8,4 +8,9 @@ class AccountsConfig(AppConfig):
 
     name = "apps.accounts"
     label = "accounts"
+
+    def ready(self) -> None:
+        # Register fixed-group M2M guards after Django's app registry is ready.
+        from apps.accounts import account_admin_guards  # noqa: F401
+
     verbose_name = "사용자 및 권한"

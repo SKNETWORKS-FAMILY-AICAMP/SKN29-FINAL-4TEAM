@@ -6,6 +6,8 @@ from datetime import date
 from uuid import uuid4
 
 import pytest
+from django.db import connection, transaction
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
@@ -14,6 +16,7 @@ from apps.inquiries.models import Inquiry
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
 from apps.visits.models import HandoffReport, Visit
+from apps.visits.repositories.visit_repository import VisitRepository
 from apps.workflow.models import IdempotencyRecord, TransitionHistory
 from apps.workflow.repositories.workflow_repository import WorkflowRepository
 
@@ -750,3 +753,46 @@ def test_all_nine_routes_are_registered_and_reject_unknown_ids():
     assert {
         response.json()["error"]["code"] for response in responses
     } == {"RESOURCE_NOT_FOUND"}
+
+
+@pytest.mark.django_db(transaction=True)
+def test_postgresql_visit_lock_targets_visit_row_only_for_null_technician():
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL row-lock verification only")
+
+    _consultant, _client, inquiry, _consultation = (
+        prepare_confirmed_consultation(
+            sequence=90,
+            result_code=Consultation.Outcome.VISIT_REQUIRED,
+        )
+    )
+    visit = Visit.objects.create(
+        visit_code="VIS-POSTGRES-LOCK-090",
+        inquiry=inquiry,
+        technician=None,
+        status=Visit.Status.ASSIGNING,
+        requested_at=timezone.now(),
+        preferred_date=date(2026, 8, 12),
+        confirmed_date=None,
+        visit_reason="기사 미배정 방문 Lock 회귀 검증",
+        usage_guidance_status="PARTIAL_STOP",
+        handoff_payload=visit_handoff(),
+        state_version=1,
+        idempotency_key="visit-postgresql-lock-090",
+        correlation_id=uuid4(),
+        data_classification=Visit.DataClassification.SYNTHETIC,
+    )
+
+    with transaction.atomic():
+        latest = VisitRepository.lock_latest(inquiry)
+        by_public_id = VisitRepository.lock_by_public_id(
+            inquiry=inquiry,
+            visit_public_id=visit.public_id,
+        )
+
+    assert latest is not None
+    assert latest.pk == visit.pk
+    assert latest.technician is None
+    assert by_public_id is not None
+    assert by_public_id.pk == visit.pk
+    assert by_public_id.technician is None

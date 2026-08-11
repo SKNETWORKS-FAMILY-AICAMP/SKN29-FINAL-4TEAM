@@ -12,9 +12,6 @@ from integrations.ai.exceptions import AIRequestValidationError
 from integrations.ai.schema_validator import AIContractValidator
 
 
-DECLINED_ANSWER_TEXT = "명시적 답변 거절"
-
-
 def build_symptom_analysis_request(
     *,
     inquiry_id: UUID | str,
@@ -77,13 +74,23 @@ def build_request_from_inquiry(
         selected_symptoms.append(representative.symptom_type_code)
 
     previous_answers = []
-    for qa in inquiry.qa_entries.filter(
-        answered_at__isnull=False,
-    ).order_by("sequence_no"):
-        answer_text = (qa.answer_text or "").strip()
-        if not answer_text and isinstance(qa.answer_payload, dict):
-            if qa.answer_payload.get("refused") is True:
-                answer_text = DECLINED_ANSWER_TEXT
+    qa_entries = getattr(inquiry, "ai_qa_entries", None)
+    if qa_entries is None:
+        qa_entries = inquiry.qa_entries.select_related(
+            "customer_answer"
+        ).order_by("sequence_no", "public_id")
+    for qa in qa_entries:
+        try:
+            customer_answer = qa.customer_answer
+        except ObjectDoesNotExist:
+            continue
+        answer_text = (customer_answer.answer_text or "").strip()
+        if not answer_text and isinstance(customer_answer.answer_payload, dict):
+            selected_option = customer_answer.answer_payload.get(
+                "selected_option"
+            )
+            if isinstance(selected_option, str):
+                answer_text = selected_option.strip()
         if not answer_text:
             continue
         previous_answers.append(

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QueryIntentDomainCaseV1",
+  "description": "B2-2 Query Intent·Domain Policy 표현 변형 실험 Case 초안",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "case_id",
+    "dataset_version",
+    "split",
+    "query",
+    "product_model_code",
+    "expected_decision",
+    "expected_rule_id",
+    "intent_family",
+    "challenge_type",
+    "expected_evidence",
+    "label_generation",
+    "review_status",
+    "reviewer_ids",
+    "review_notes"
+  ],
+  "properties": {
+    "case_id": {"type": "string", "pattern": "^QIDOM-V1-[0-9]{4}$"},
+    "dataset_version": {"type": "string", "const": "1.0.0-draft.1"},
+    "split": {"type": "string", "const": "DEV"},
+    "query": {"type": "string", "minLength": 2},
+    "product_model_code": {"type": "string", "const": "WPUJAC104DWH"},
+    "expected_decision": {"type": "string", "enum": ["BLOCK", "ALLOW"]},
+    "expected_rule_id": {
+      "oneOf": [
+        {"type": "string", "pattern": "^EXP-INTENT-[A-Z-]+-[0-9]{3}$"},
+        {"type": "null"}
+      ]
+    },
+    "intent_family": {
+      "type": "string",
+      "enum": [
+        "COMMERCIAL_CONTRACT",
+        "PART_PURCHASE",
+        "PRODUCT_OPTION",
+        "MANUAL_SUPPORT"
+      ]
+    },
+    "challenge_type": {
+      "type": "string",
+      "enum": ["UNSUPPORTED_PARAPHRASE", "OVERLAP_HARD_NEGATIVE"]
+    },
+    "expected_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["document_id", "page_refs", "section_id", "evidence_unit_id"],
+        "properties": {
+          "document_id": {"type": "string", "minLength": 1},
+          "page_refs": {
+            "type": "array",
+            "items": {"type": "integer", "minimum": 1},
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "section_id": {"type": "string", "minLength": 1},
+          "evidence_unit_id": {"type": "string", "minLength": 1}
+        }
+      },
+      "uniqueItems": true
+    },
+    "label_generation": {"type": "string", "const": "ASSISTED_DRAFT_NOT_APPROVED"},
+    "review_status": {"type": "string", "const": "UNREVIEWED_DRAFT"},
+    "reviewer_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "maxItems": 2,
+      "uniqueItems": true
+    },
+    "review_notes": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"expected_decision": {"const": "BLOCK"}}},
+      "then": {
+        "properties": {
+          "expected_rule_id": {"type": "string"},
+          "expected_evidence": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"expected_decision": {"const": "ALLOW"}}},
+      "then": {
+        "properties": {
+          "expected_rule_id": {"type": "null"},
+          "expected_evidence": {"minItems": 1}
+        }
+      }
+    }
+  ]
+}

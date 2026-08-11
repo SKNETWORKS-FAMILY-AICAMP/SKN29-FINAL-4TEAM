@@ -1,0 +1,111 @@
+{
+  "status": "DRAFT_RETRIEVAL_COMPLETE",
+  "request": {
+    "product_model_code": "WPUJAC104DWH",
+    "query": "정수기 밑이 축축하고 물이 새는 것 같아요.",
+    "corpus_variant": "JAC104_IAC425_COMBINED",
+    "chunking_profile": "current_source_page_v1",
+    "embedding_profile": "bge_m3",
+    "retrieval_profile": "dense_cosine_exact_v1",
+    "top_k": 5,
+    "product_filter": true
+  },
+  "retrieval": {
+    "results": [
+      {
+        "rank": 1,
+        "chunk_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P037",
+        "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "page_refs": [
+          37
+        ],
+        "section_title": "고장 신고 전 확인하기",
+        "exact_sales_code": "WPUJAC104DWH",
+        "score": 0.5926379,
+        "text_preview": "고장 신고 전 확인하기\n고장수리로 의뢰하시기 전에 아래사항을 확인해 보시고 그래도 이상이 있을 때는 고객상담센터로\n연락해 주세요.\n증 상 예 상 원 인 / 조 치 방 법\n● 공급 전원 낮음\n- 공급 전원이 AC 220V인지 확인하세요.\n공급 전원이 낮을 경우 전원을 AC 220V로 맞춰주세요.\n● 출수량 많음\n냉수가 차갑지 않음\n- 연속적으로 많은 양을 출수할 경우 냉수 온도가 높아집니다.\n(제품 고장이 아닌 경우)\n잠시 후 다시 출수해 보세요.\n● 냉수 기능 꺼짐\n- 냉수 잠금 기능을 해제해 주세요.\n- 방열팬 먼지 필터 내 먼지가 쌓여 있는지 확인하시고, 청소해 주세요.\n● 냉각부의 고장\n냉수가 차갑지 않음\n- 전원이 정상적으로 공급되고 있는 상태에서 2시간 뒤에 냉수를\n(제품 고장인 경우)\n출수해도 차갑지 않으면 고객상담센터로 연락해 주세요.\n● 필터 수명 종료\n- 필터 교체 주기를 확인 후 고객상담센터에 연락해 주세요.\n- 필터 교체 후에도 출수가 안될 시 원수 밸브를 잠그고"
+      },
+      {
+        "rank": 2,
+        "chunk_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P038",
+        "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "page_refs": [
+          38
+        ],
+        "section_title": "고장 신고 전 확인하기",
+        "exact_sales_code": "WPUJAC104DWH",
+        "score": 0.57679218,
+        "text_preview": "증 상 예 상 원 인 / 조 치 방 법\n● 조립(연결) 부위 불량\n제품 누수 발생 - 원수 밸브를 잠그고, 전원 플러그를 뽑은 후 고객상담센터로 연락해\n주세요.\n● 장기적 부재\n- 단기(10일 이내) : 냉수, 정수, 온수를 1L씩 각각 1회 이상 출수하여\n버린 후 사용해 주세요.\n불쾌한 맛과 냄새 발생\n- 장기(10일 이상) : 필요 시 고객상담센터에 점검을 요구해 주세요.\n● 부적합한 장소 및 제품을 장시간 사용하지 않음\n- 필터를 모두 교체 후 사용해 주세요.\n● 급수 시 발생하는 기포임\n- 물컵에 물을 받은 후 5분이 지나도 미세입자가 있을 경우,\n정수된 물에\n물컵을 5~6회 좌우로 흔들어 미세입자가 있는지 확인해 주세요.\n미세한 입자 발생\n미세입자가 계속 있을 경우 고객상담센터에 문의해 필터를\n교체해 주세요.\n● 조리수 또는 그외 수전 동시 사용\n- 다른 제품과 동시에 사용할 경우 출수량이 줄 수 있습니다.\n조리수의 사용을 멈추고 출수해 보세요.\n● 필터 수명 종료\n출수량이"
+      },
+      {
+        "rank": 3,
+        "chunk_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P006",
+        "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "page_refs": [
+          6
+        ],
+        "section_title": "안전을 위한 주의사항",
+        "exact_sales_code": "WPUJAC104DWH",
+        "score": 0.54395545,
+        "text_preview": "주 의\n수돗물 단수 및 장기간 사용하지 않을 때는 원수 밸브를 잠그고 전원 코드를 빼세요.\n● 수질 이상 및 누수의 원인이 됩니다.\n바닥이 기울어 있거나 불안정한 곳에 설치하지 마세요.\n● 이상 진동 및 소음, 고장의 원인이 됩니다.\n테이블 위에 설치 시 제품이 돌출되지 않게 설치하세요.\n● 제품 파손의 위험이 있습니다.\n원수 호스는 제품 뒷면에 연결하세요.\n제품 위에 무거운 물건을 올려놓지 마세요.\n● 고장, 상해의 위험이 있습니다.\n제품을 사용하지 않을 시 물받이에 물컵 등을 올려놓지 마세요.\n● 물컵 등이 넘어져 파손, 상해의 원인이 됩니다.\n제품의 물받이를 물받이 외에 다른 용도로 사용하지 마세요.\n제품을 옮길 때 전원 코드 및 연결 호스를 당기지 마세요.\n● 제품 파손의 원인이 됩니다.\n영하의 기온에 제품을 방치하지 마세요.\n● 제품이 오작동하거나 고장의 원인이 됩니다.\n제품 사용 중에 제품 뒷면의 호스를 뽑지 마세요.\n● 누수로 인한 제품 고장의 원인이 됩니다.\n오랫동안 "
+      },
+      {
+        "rank": 4,
+        "chunk_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P034",
+        "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "page_refs": [
+          34
+        ],
+        "section_title": "청소하기",
+        "exact_sales_code": "WPUJAC104DWH",
+        "score": 0.54138827,
+        "text_preview": "4. 서늘한 그늘에 건조 후 다시 제품에\nWPU-JAC104 (D)\n조립해 사용하세요.\n큰 홀\n주 의\n● 물받이에 물이 오랫동안 고여 있으면 오염의\n작작은은 홀홀 원인이 될 수 있습니다.\n- 물받이 통을 자주 확인해 물이 고여있지 않게\n해주세요.\n● WPU-JAC104 (D)\n출수 코크는 좌/우 방향을 확인하여 끝까지 밀어\n넣어주세요. 누수 또는 물줄기가 휘어져 나올 수\n있습니다.\n● WPU-JCC104 (D)\n출수 코크는 홈이 전면으로 오도록 하여 끝까지\nWPU-JCC104 (D)\n밀어 넣어주세요. 누수 또는 물줄기가 휘어져\n나올 수 있습니다.\n출수 홀\n● 출수 코크가 정확히 조립되지 않은 상태로 사용\n시 부품이 떨어지면서 출수 코크가 파손될 수\n홈홈 있습니다.\n34"
+      },
+      {
+        "rank": 5,
+        "chunk_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P033",
+        "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "page_refs": [
+          33
+        ],
+        "section_title": "청소하기",
+        "exact_sales_code": "WPUJAC104DWH",
+        "score": 0.54102945,
+        "text_preview": "출수구/물받이\n1. 물받이를 제품 앞으로 당겨 분리해 주세요.\n● 물이 고여 있을 경우 물이 넘칠 수 있습니다.\n2. 출수 코크를 잡고 아래 방향으로 당겨 분리해\n주세요.\n3. 물받이 덮개와 물받이를 분리한 후 출수 코크와\n함께 부드러운 솔, 면봉 등을 사용하여 세척해\n주세요.\n주 의\n● 물받이와 출수 코크를 날카로운 물건이나\n수세미로 세척하면 파손될 수 있습니다.\n● 출수 코크 세척 시 세제 등을 사용하지 마세요.\n세제로 인해 물이 변질되고, 변질된 물을\n음용함에 따라 물 맛과 건강에 영향을 끼칠 수\n있습니다.\n33"
+      }
+    ],
+    "result_count": 5,
+    "score_threshold": 0.4,
+    "wrong_product_hit_count": 0
+  },
+  "gold": {
+    "matched": true,
+    "case_id": "RAGV2-GOLD-0021",
+    "review_status": "UNREVIEWED_DRAFT",
+    "expected_evidence": [
+      {
+        "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "page_refs": [
+          38
+        ],
+        "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+        "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001"
+      }
+    ],
+    "retrieval_pass": true
+  },
+  "generation": {
+    "status": "NOT_IMPLEMENTED_V0",
+    "message": "A4 v0는 Retrieval 단일 Query 실행만 지원합니다."
+  },
+  "validation": {
+    "schema": "PASS",
+    "grounding": "NOT_EXECUTED",
+    "safety": "NOT_EXECUTED"
+  },
+  "latency_ms": {
+    "query_embedding": 22669.05,
+    "retrieval": 37.28,
+    "total": 22706.37
+  },
+  "official_metrics_allowed": false
+}

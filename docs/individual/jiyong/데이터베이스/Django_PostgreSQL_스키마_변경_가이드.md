@@ -280,6 +280,14 @@ T-005 immutable 계약은 32개 계약 테이블의 Model·Runtime
 | `operations_synthetic_import_batch` | 합성 Import 실행·출처·집계 원장 | 미포함 |
 | `operations_synthetic_import_item` | Import 항목별 결과·출처 원장 | 미포함 |
 | `workflow_idempotency_record` | HTTP replay·payload 충돌 요청 원장 | 미포함 |
+| `support_followup_answer` | 고객 추가답변 값·작성자·수락 State Version 원장 | 미포함 |
+
+`support_followup_answer`는 `SUBMIT_ANSWERS`에서 AI 질문 Metadata와
+고객 답변을 분리하기 위한 Runtime 원장이다. 연결된 Inquiry·질문의
+보존기간을 따르며 FK `PROTECT`를 사용한다. Runtime에서 직접 Hard
+Delete하지 않고, 삭제가 필요하면 승인된 보존정책·Migration 또는
+Data Lifecycle 작업으로만 처리한다. 0011 이전 답변은 원본
+`support_inquiry_qa` 컬럼을 그대로 보존하면서 새 원장으로 복사한다.
 
 `workflow_transition_history`는 allowlist가 아니다. 실제 계약 테이블
 `support_inquiry_status_history`로 전환되었으므로 과거 이름을 면제하면
@@ -290,13 +298,13 @@ Auditor의 분류 순서는 다음과 같다.
 ```text
 발견 테이블
   ├─ 32개 계약의 정확한 이름 → 계약 구현 매핑
-  ├─ 승인 지원 테이블 4개의 정확한 이름 → 별도 Runtime evidence
+  ├─ 승인 지원 테이블 5개의 정확한 이름 → 별도 Runtime evidence
   └─ 그 밖의 이름 → unknown + outside-contract blocker
 ```
 
 접두사·suffix·wildcard·App 전체 허용은 금지한다. Model과 Migration은
 별도로 분류하므로 한쪽만 존재하는 지원 테이블도
-`model_present`, `migration_present`로 드러나야 한다. 임의의 다섯 번째
+`model_present`, `migration_present`로 드러나야 한다. 임의의 여섯 번째
 테이블은 unknown 목록과 차단 사유를 만들어야 한다.
 
 ```powershell
@@ -304,7 +312,7 @@ Auditor의 분류 순서는 다음과 같다.
   .\scripts\database\audit_t005_implementation_readiness.py
 ```
 
-2026-07-30 검증에서는 계약 `32/32`, 승인 지원 4개, unknown 0,
+2026-08-10 검증에서는 계약 `32/32`, 승인 지원 5개, unknown 0,
 blocker 0, 준비도 `READY`를 확인했다. `READY`는 구현 매핑 준비도를
 뜻하며 비작성자 리뷰·외부 재현·공식 계약 승인을 대신하지 않는다.
 

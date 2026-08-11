@@ -28,6 +28,15 @@ REQUIRED_POSTGRES_ENV_KEYS = {
     "POSTGRES_PORT",
 }
 APPROVED_RUNTIME_SUPPORT_TABLES = {
+    "accounts_account_audit_event": (
+        "Append-only synthetic-account lifecycle audit ledger for T-017C; "
+        "runtime security support outside the immutable 32-table domain contract."
+    ),
+    "accounts_account_lifecycle_lock": (
+        "Singleton lock serializing last-account-administrator checks for "
+        "T-017C; runtime security support outside the immutable 32-table "
+        "domain contract."
+    ),
     "audit_event": (
         "Append-only workflow audit ledger; runtime audit support outside "
         "the immutable 32-table domain contract."
@@ -45,6 +54,11 @@ APPROVED_RUNTIME_SUPPORT_TABLES = {
         "HTTP replay and payload-conflict request ledger defined by ADR "
         "0011; runtime idempotency support outside the immutable 32-table "
         "domain contract."
+    ),
+    "support_followup_answer": (
+        "Customer follow-up answer ledger separated from AI question "
+        "metadata for SUBMIT_ANSWERS runtime; support storage outside the "
+        "immutable 32-table domain contract."
     ),
 }
 

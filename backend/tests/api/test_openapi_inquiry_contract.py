@@ -100,7 +100,7 @@ def test_submit_answers_contract_matches_state_machine_operation():
         "format": "uuid",
     }
     assert operation["operationId"] == "submitFollowUpAnswers"
-    assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
+    assert operation["x-runtime-status"] == "IMPLEMENTED"
     assert operation["x-state-machine"] == {
         "event": "SUBMIT_ANSWERS",
         "transition_rule": "TR-INQ-003",
@@ -120,6 +120,20 @@ def test_submit_answers_contract_matches_state_machine_operation():
         "question_id",
         "answer_text",
         "answer_payload",
+    }
+    assert answer_schema["properties"]["answer_payload"] == {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["selected_option"],
+        "properties": {
+            "selected_option": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": ".*\\S.*",
+            }
+        },
+        "description": "SINGLE_CHOICE 질문에 Backend가 공개한 선택지 값",
     }
     assert "500" in operation["responses"]
 
@@ -189,6 +203,61 @@ def test_openapi_root_references_confirmed_inquiry_paths():
     assert root["paths"]["/inquiries/{id}/submit"]["$ref"] == (
         "./paths/inquiries.yaml#/~1inquiries~1{id}~1submit"
     )
+
+
+def test_customer_read_contracts_are_owner_scoped_and_implemented():
+    root = load_yaml(OPENAPI_DIR / "openapi.yaml")
+    contract = load_yaml(
+        OPENAPI_DIR / "paths" / "customer-inquiries.yaml"
+    )
+    expected = {
+        "/me/inquiries/{inquiry_id}": (
+            "getMyInquiry",
+            "CustomerInquirySnapshot.yaml",
+        ),
+        "/me/inquiries/{inquiry_id}/questions": (
+            "listMyInquiryQuestions",
+            "CustomerInquiryQuestions.yaml",
+        ),
+    }
+
+    for path, (operation_id, schema_name) in expected.items():
+        operation = contract[path]["get"]
+        assert operation["operationId"] == operation_id
+        assert operation["x-contract-status"] == "CONFIRMED"
+        assert operation["x-runtime-status"] == "IMPLEMENTED"
+        assert operation["x-permission-scope"] == "OWN_INQUIRY"
+        assert set(operation["responses"]) == {
+            "200",
+            "401",
+            "403",
+            "404",
+            "422",
+            "500",
+        }
+        assert load_yaml(INQUIRY_SCHEMA_DIR / schema_name)[
+            "x-contract-status"
+        ] == "CONFIRMED"
+
+    assert root["paths"]["/me/inquiries/{inquiry_id}"]["$ref"] == (
+        "./paths/customer-inquiries.yaml#/~1me~1inquiries~1{inquiry_id}"
+    )
+    assert root["paths"][
+        "/me/inquiries/{inquiry_id}/questions"
+    ]["$ref"] == (
+        "./paths/customer-inquiries.yaml"
+        "#/~1me~1inquiries~1{inquiry_id}~1questions"
+    )
+    questions_schema = load_yaml(
+        INQUIRY_SCHEMA_DIR / "CustomerInquiryQuestions.yaml"
+    )
+    question_item = questions_schema["properties"]["questions"]["items"]
+    assert "required" in question_item["required"]
+    assert question_item["properties"]["required"] == {
+        "type": "boolean",
+        "enum": [True],
+        "description": "현재 공개되는 추가 질문은 모두 답변 필수 항목이다.",
+    }
 
 
 def test_submit_symptom_contract_uses_saved_input_and_state_version_only():

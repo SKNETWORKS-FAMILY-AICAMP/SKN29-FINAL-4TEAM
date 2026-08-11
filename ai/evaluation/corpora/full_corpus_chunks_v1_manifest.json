@@ -1,0 +1,36 @@
+{
+  "corpus_id": "FULL-MANUAL-CORPUS-V1",
+  "corpus_version": "1.0.0",
+  "status": "READY_FOR_EMBEDDING",
+  "generated_at": "2026-08-10T00:00:00+09:00",
+  "chunking_profile": "current_source_page_v1",
+  "chunking_interpretation": "A1에서 확정한 페이지 레코드 1개를 검색 Chunk 1개로 사용하는 현재 저장 단위 기준선",
+  "dataset": {
+    "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+    "records": 96,
+    "sha256": "6947CDE3543BB080394D4C953BE22A43A76ED80F4686ED5360B30628109AB240"
+  },
+  "schema": {
+    "path": "ai/evaluation/schemas/full_corpus_chunk_v1.schema.json",
+    "sha256": "60897F27EE84D103BC70E2662B5DC7E2AE03C0F1F552E584B9E72259D5F9A629"
+  },
+  "scope_counts": {
+    "IAC425_ONLY": 52,
+    "JAC104_ONLY": 44
+  },
+  "source_files": [
+    {
+      "path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+      "sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F"
+    },
+    {
+      "path": "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
+      "sha256": "FF1540D19AB500D2DCFE30A9F1C45F2AF1650FA70363ECA6CA560CEF175887E0"
+    }
+  ],
+  "limitations": [
+    "FAQ 119건은 A3-1의 명시된 JAC104+IAC425 매뉴얼 범위에서 제외",
+    "페이지 단위는 Phase B 청킹 비교의 최종 우승 전략을 의미하지 않음",
+    "전체 시각 검수 및 Gold 2인 승인 전 공식 운영 Corpus로 사용하지 않음"
+  ]
+}

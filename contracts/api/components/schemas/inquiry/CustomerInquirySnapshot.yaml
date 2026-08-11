@@ -1,0 +1,49 @@
+title: CustomerInquirySnapshot
+type: object
+description: 고객 본인 문의의 앱 복구용 최소 읽기 Projection
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - inquiry_id
+  - status_code
+  - state_version
+  - subscription_id
+  - product
+  - updated_at
+properties:
+  inquiry_id:
+    type: string
+    format: uuid
+  status_code:
+    type: string
+    enum:
+      - DRAFT
+      - QUESTIONNAIRE_IN_PROGRESS
+      - AI_GUIDANCE
+      - CONSULTATION_REQUIRED
+      - CONSULTATION_IN_PROGRESS
+      - VISIT_REVIEW_PENDING
+      - VISIT_SCHEDULING
+      - VISIT_SCHEDULED
+      - COMPLETION_PENDING
+      - REVISIT_REQUIRED
+      - REOPENED
+      - RESOLVED
+      - CANCELLED
+  state_version:
+    type: integer
+    minimum: 1
+  subscription_id:
+    type: string
+    format: uuid
+  product:
+    type: object
+    additionalProperties: false
+    required: [model_code]
+    properties:
+      model_code:
+        type: string
+        maxLength: 60
+  updated_at:
+    type: string
+    format: date-time

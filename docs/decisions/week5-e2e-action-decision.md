@@ -1,9 +1,9 @@
 # 5주차 대표 E2E Action 결정
 
 > 결정일: 2026-08-10 KST  
-> 검토 기준: `main@ed989926b8a4e5fa2ec08593f18f5f5101e84a11`  
-> 상태: **PM_DECISION_APPROVED · OWNER_APPLY_PENDING**  
-> 범위: PM 결정과 구현 인계이며 OpenAPI·Crosswalk·Test·Runtime 적용 완료 선언이 아니다.
+> 현행화 기준: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
+> 상태: **PM_DECISION_APPLIED · CONTRACT_QA_VERIFIED**
+> 범위: PM 결정과 계약 적용 완료를 기록하며 각 Action의 Runtime 완료는 Crosswalk와 WBS에서 별도로 판정한다.
 
 ## 1. 결정
 
@@ -20,7 +20,7 @@
 | `CUSTOMER_REPORTED_UNRESOLVED` | `reportUnresolved` | P0 보조 흐름 승인 | 제외 | `T-055` 비정상 시나리오 |
 | `RESUME_CONSULTATION` | `resumeConsultation` | P0 보조 흐름 승인 | 제외 | `T-055` 비정상 시나리오 |
 
-현행 WBS의 구현 날짜는 변경하지 않는다. 아래 HTTP 경계는 PM 승인안이며 `contracts/api/**` 주관 담당자인 최지용의 적용·검토 후 기계 계약으로 확정된다.
+현행 WBS의 구현 날짜는 변경하지 않는다. 아래 HTTP 경계는 `contracts/api/**` 주관 담당자의 적용과 독립 Contract QA를 거쳐 OpenAPI `0.8.0`에 반영됐다.
 
 ## 2. 승인된 HTTP 경계
 
@@ -52,10 +52,11 @@
 - State, Event, Transition, Guard, 완료 정책은 변경하지 않는다.
 - 이번 PM 결정은 기존 Event에 정확한 OpenAPI Operation을 연결하는 비파괴 추가안이다.
 - `contracts/VERSION`과 State Machine `1.0.0`은 유지한다.
-- 현재 OpenAPI `0.7.0`과 Crosswalk 분류는 유지한다.
-- 최지용 적용 시 OpenAPI `0.8.0` 후보와 신규 Operation의 `x-runtime-status: NOT_IMPLEMENTED`를 검토한다.
-- 김은진·최지용의 Contract/Backend Test 변경은 각 주관 담당자 검토 후 반영한다.
+- 현재 OpenAPI는 `0.8.0`, 32개 Path·33개 Operation이다.
+- 현재 Crosswalk는 `RUNTIME_IMPLEMENTED=12`, `OPENAPI_CONFIRMED=7`, `CONTRACT_ONLY=0`, `DEFERRED=4`다.
+- 승인한 8개 중 `SUBMIT_ANSWERS`는 Runtime 구현이 확인됐고, 나머지 7개는 `OPENAPI_CONFIRMED`로 유지한다.
+- 계약 적용과 Runtime 완료를 동일시하지 않으며, Runtime 승격은 Source·Test 증거가 모두 있을 때만 허용한다.
 
 ## 5. 완료 판정
 
-PM Action 결정은 완료다. 다만 3.2 전체 산출물 중 갱신된 OpenAPI·Crosswalk·Contract Test는 담당자 적용 대기이므로 3.2 전체 상태는 `OWNER_APPLY_PENDING`이다. Runtime 이행 여부와 소비자 검토는 WBS 구현 Task 및 3.3 Contract Baseline Gate에서 별도로 판정한다.
+PM Action 결정, OpenAPI·Crosswalk 적용, Contract QA가 완료돼 3.2는 **완료**다. Runtime 이행 여부와 실제 소비자 검토는 WBS 구현 Task 및 3.3 Contract Baseline Gate에서 별도로 판정한다.

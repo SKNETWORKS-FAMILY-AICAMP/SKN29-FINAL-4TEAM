@@ -2,7 +2,7 @@
 
 > 프로젝트: SKN29 Final Project — WaterBridge
 >
-> 기준일: 2026-08-02
+> 기준일: 2026-08-10
 >
 > 작성·유지 책임: 최지용 — Backend·Database·API
 >
@@ -73,6 +73,8 @@ docs/individual/jiyong/
 ├─ API/
 │  ├─ Django_REST_API_OpenAPI_계약_구현_보안검증_가이드.md
 │  ├─ Django_REST_API_구독_제품조회_계약_제안서.md
+│  ├─ Django_REST_API_상담사_문의조회_Runtime_구현_검증_가이드.md
+│  ├─ Django_REST_API_방문_Runtime_PostgreSQL_Row_Lock_수정_검증_보고서_20260810.md
 │  ├─ Django_REST_API_문의_증상제출_구현_검증_인계서.md
 │  └─ Django_State_Machine_API_구현_검증_인계서.md
 ├─ 연동_인계/
@@ -115,7 +117,11 @@ docs/individual/jiyong/
 | 문서 | 용도 |
 | --- | --- |
 | [Django REST API·OpenAPI 계약·구현·보안검증 가이드](API/Django_REST_API_OpenAPI_계약_구현_보안검증_가이드.md) | 공통 API 계약 변경, 오류·예시·권한·로그 보안 검증 절차 |
+| [Django REST API 상담사 문의 조회 Runtime 구현·검증 가이드](API/Django_REST_API_상담사_문의조회_Runtime_구현_검증_가이드.md) | 상담사 배정 문의 목록·상세, PII Projection, 시간대 동일 시점 검증 |
+| [Django REST API 방문 Runtime PostgreSQL Row Lock 수정·검증 보고서](API/Django_REST_API_방문_Runtime_PostgreSQL_Row_Lock_수정_검증_보고서_20260810.md) | Nullable 기사 Join Lock 결함, 최소 수정, PostgreSQL 16.14 회귀 증거 |
 | [Django REST API 문의·증상제출 구현·검증·인계서](API/Django_REST_API_문의_증상제출_구현_검증_인계서.md) | T-022 Slice A 계약·Transaction·409·멱등·독립 재현·Slice B 중단선 |
+| [Django REST API 문의 AI Runtime Wiring·실제 Mock HTTP 가이드](API/Django_REST_API_문의_AI_Runtime_Wiring_실제Mock_HTTP_구현_검증_가이드.md) | `SUBMIT_SYMPTOM` Commit 후 AI 1회 호출, Replay·실패보존·실제 Uvicorn Mock 검증 |
+| [Django REST API T-024 Backend AI 추적·구조화 로그 구현·검증 가이드](API/Django_REST_API_T024_Backend_AI_추적_구조화로그_구현_검증_가이드.md) | Callback·AI Lifecycle·Correlation·DB 원장 연결과 로그 비노출 검증 |
 | [Django State Machine API 구현·검증·인계서](API/Django_State_Machine_API_구현_검증_인계서.md) | T-023 Engine·Guard·`allowed_actions`·SYSTEM 이벤트·상담 Action Gate |
 | [Django REST API 구독·제품조회 계약 제안서](API/Django_REST_API_구독_제품조회_계약_제안서.md) | T-018 승인 전 최소 GET 계약·권한·테스트 Matrix |
 
@@ -125,6 +131,7 @@ docs/individual/jiyong/
 | --- | --- |
 | [Backend·AI API 계약·구현 미해결 사항](연동_인계/Backend_AI_API_계약_구현_미해결_사항.md) | Schema Parity·Timeout·Retry·stale·검색 후검증·공동 E2E |
 | [Backend·Mobile API 연동 가이드](연동_인계/Backend_Mobile_API_연동_가이드.md) | Runtime·OpenAPI-only·Mock·Blocked와 DTO·오류 소비 경계 |
+| [Django 방문 Runtime PostgreSQL Row Lock QA 재검증 요청서](연동_인계/Django_방문_Runtime_PostgreSQL_Row_Lock_QA_재검증_요청서.md) | 김은진 영향 Case 재현, Operation별 PASS, 소비자 연결 Gate |
 | [Backend 팀 검토·인계 체크리스트](연동_인계/Backend_팀_검토_인계_체크리스트.md) | 담당자별 검토 요청·반환 증거·금지사항 |
 
 ### 4.6 역사 자료
@@ -161,7 +168,8 @@ docs/individual/jiyong/
 | Target-only | 19개 테이블·각 0행으로 보존 |
 | Seed | 기본 Seed 5종 2회, 2회차 비의도 신규 생성 0 |
 | 격리 Importer | Source 367, 최초 355 created·12 projected, Replay 355 unchanged·12 projected |
-| Backend 회귀 | SQLite `778 passed, 13 skipped`, PostgreSQL `791 passed` |
+| Backend 회귀 — 8/10 AI Wiring 후보 | SQLite `936 passed, 16 skipped`; 실제 Uvicorn Mock HTTP `1 passed` |
+| Backend 회귀 — 8/11 T-017C·T-024 통합 후보 | SQLite `966 passed, 17 skipped`; 실제 Uvicorn Mock HTTP `1 passed` |
 | 공식 완료 | 비작성자 독립 재현·외부 소비 검토·PM 승인 대기 |
 
 수치는 작성자 로컬 검증 증거이며 PM의 WBS 완료 판정과 같지 않다.
@@ -170,13 +178,14 @@ docs/individual/jiyong/
 
 | 순서 | 작업 | 현재 경계 | 협업 |
 | ---: | --- | --- | --- |
-| 1 | T-022 Slice A 독립 검토·PM 병합 | 계약·Runtime·PostgreSQL·전체 회귀 완료 | 김은진 또는 지정 리뷰어·윤승혁 |
-| 2 | T-023 Backend 독립 보강 | SYSTEM actor 이력·`change_reason`·전 상태 `allowed_actions` 회귀 | 김은진 검토 |
-| 3 | T-017A 검토 결과 수집 | OWNER 설계 완료·정책/Migration 검토 대기 | 윤승혁·김은진 |
-| 4 | T-018 최소 GET 계약 검토 | Runtime·Migration 변경 없는 제안 단계 | 김은진·윤승혁 |
-| 5 | 승인된 T-017B/C·T-018 Runtime | 서로 섞지 않고 한 작업씩 구현·PostgreSQL 검증 | 김은진 비작성자 검토 |
-| 6 | T-022 Slice B·T-023 SYSTEM 이벤트 | AI 요청·재처리·stale·dispatch 계약 확정 뒤 별도 구현 | 이동윤·윤승혁 |
-| 7 | Backend·AI·Web·Mobile 소비 E2E | PM 병합·최신 `main`·각 소비 계약 필요 | 이동윤·한예나·양정현 |
+| 1 | 방문 Runtime PostgreSQL Lock 독립 재검증 | 작성자 PostgreSQL PASS·소비자 연결 HOLD | 김은진·윤승혁 |
+| 2 | T-022 Slice A 독립 검토·PM 병합 | 계약·Runtime·PostgreSQL·전체 회귀 완료 | 김은진 또는 지정 리뷰어·윤승혁 |
+| 3 | T-023 Backend 독립 보강 | SYSTEM actor 이력·`change_reason`·전 상태 `allowed_actions` 회귀 | 김은진 검토 |
+| 4 | T-017A 검토 결과 수집 | OWNER 설계 완료·정책/Migration 검토 대기 | 윤승혁·김은진 |
+| 5 | T-018 최소 GET 계약 검토 | Runtime·Migration 변경 없는 제안 단계 | 김은진·윤승혁 |
+| 6 | 승인된 T-017B/C·T-018 Runtime | 서로 섞지 않고 한 작업씩 구현·PostgreSQL 검증 | 김은진 비작성자 검토 |
+| 7 | T-022 Slice B·T-023 SYSTEM 이벤트 | AI 요청·재처리·stale·dispatch 계약 확정 뒤 별도 구현 | 이동윤·윤승혁 |
+| 8 | Backend·AI·Web·Mobile 소비 E2E | PM 병합·최신 `main`·각 소비 계약 필요 | 이동윤·한예나·양정현 |
 
 ## 8. 파일명·경로 규칙
 

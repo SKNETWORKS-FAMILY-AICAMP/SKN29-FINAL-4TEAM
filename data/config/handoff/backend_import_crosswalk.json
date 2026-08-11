@@ -11,7 +11,7 @@
   "backend_sources": {
     "user_model": {
       "path": "backend/apps/accounts/models/user.py",
-      "sha256": "A378E8F1B6A3539F0F9F39001691EA01EE7523705A7A40D6FBD5C0E147E2A55E"
+      "sha256": "F6A8A7CDA2C412B5059A5B910D9283E0660E319F2167C73AF46CEC0CE0A10061"
     },
     "customer_profile_model": {
       "path": "backend/apps/accounts/models/customer_profile.py",
@@ -75,7 +75,7 @@
     },
     "demo_auth_repository": {
       "path": "backend/apps/accounts/repositories/account_repository.py",
-      "sha256": "3A9424B7C54B827AAB6E5FD651E1E2AF933FC595CC1BC0E0CC08F1AFCAAFA974"
+      "sha256": "6A38D313DD68A7D41455BEDC591598C4D4573DD7015866562AADD1B5AB423987"
     }
   },
   "identifier_resolution": {

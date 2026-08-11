@@ -283,7 +283,11 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 18457,
-      "sha256": "105209DAFA2FD84582FB5792E4F1362A976C42CBA996F4F6AF0730724F67B83E"
+<<<<<<< HEAD
+      "sha256": "97981C323F6D0DF169E40F69D5D1514449B90C0A22C85F3AB0E179AA6AFCAB9B"
+=======
+      "sha256": "0C180A1C3931A7EA2406A5C2D39ECD1A366DB318D3E31360ED4A69107947D012"
+>>>>>>> 9d4442e6c04e60ee56e1ed6e2e272c361be49dc1
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -307,8 +311,8 @@
     },
     {
       "path": "schemas/README.md",
-      "size_bytes": 1606,
-      "sha256": "9C16B474A5B3884EC22829A2D239DE2F668F2A2893BF97A1BC10E0BFE881AB20"
+      "size_bytes": 1720,
+      "sha256": "B77E288EB494FF94BCADD45897CAA7907FC8549FCDB925F30375E8F1D8EB8308"
     },
     {
       "path": "synthetic/README.md",
@@ -360,7 +364,7 @@
     {
       "path": "schemas/config/ragEvaluationCases.schema.json",
       "size_bytes": 6443,
-      "sha256": "99AB170BCB26F799CCC0977AFC05D8B59F8E1958099B45C9BD1BA47136A12224"
+      "sha256": "E2523FDE92DDC84D37B397D87032460BA27DC90F551591830804FCAD2893996B"
     },
     {
       "path": "schemas/config/representativeCase.schema.json",
@@ -381,6 +385,11 @@
       "path": "schemas/processed/evidenceRegistry.schema.json",
       "size_bytes": 4269,
       "sha256": "B1334C4AAF769F47E3EBE20927F05D44905E0C109474FBD7723F8F92D746DFA6"
+    },
+    {
+      "path": "schemas/processed/experimentalManualPage.schema.json",
+      "size_bytes": 3278,
+      "sha256": "9BBB1E7914EE2D27C1343CBA953A94F0D0665D59323B2E492B5FD6EEAF1F3A3D"
     },
     {
       "path": "schemas/processed/faqCandidate.schema.json",
@@ -560,6 +569,31 @@
       "sha256": "E9DD88F04D376A666274B0E2D798CD4393F5AAED96499A2D0C1AB5D28AE108E9"
     },
     {
+      "path": "tools/rag_experiments/__init__.py",
+      "size_bytes": 53,
+      "sha256": "82277187F184772D268ACA47E7987740B878EF49747E4C75975BB06800CEB5A2"
+    },
+    {
+      "path": "tools/rag_experiments/build_iac425_pages.py",
+      "size_bytes": 8883,
+      "sha256": "BBEDD961E41F0AAF0A92BF0D07FD59F6042E8E88CFFA4CF2AC6F7050E618DF58"
+    },
+    {
+      "path": "tools/rag_experiments/qa_faq_corpus.py",
+      "size_bytes": 14094,
+      "sha256": "6866FE5E5D1AABBC53F430860C491583CC4F184A256D610FBBEDF26367834205"
+    },
+    {
+      "path": "tools/rag_experiments/qa_iac425_pages.py",
+      "size_bytes": 7954,
+      "sha256": "E86CBEDBD9039315FA9E5EC82E3350CFB857B4EB66BD1A789827FD0E5DB0CBDF"
+    },
+    {
+      "path": "tools/rag_experiments/qa_manual_pages.py",
+      "size_bytes": 16682,
+      "sha256": "40BEFE57E8219A283DECFC9A33DE06EB92F54B59E05955940B15DDCA9CC43045"
+    },
+    {
       "path": "tools/tests/__init__.py",
       "size_bytes": 37,
       "sha256": "B2C17FD9DFEE0CB0CC0BEFD21408BBEB16E66E7269D06CCC21F16DA7EF04EF70"
@@ -580,9 +614,24 @@
       "sha256": "2C44C12D0A6D4CAE1FD845C564FDEB434ED2ED3FA3EDF0B7DE6E6E1C8178AF4D"
     },
     {
+      "path": "tools/tests/test_faq_corpus_qa.py",
+      "size_bytes": 2580,
+      "sha256": "F5D012D0D8AE79A8F0F1B4F2D006798CD3918E111824B201ED13A8A1E06C4BCA"
+    },
+    {
       "path": "tools/tests/test_handoff_profiles.py",
       "size_bytes": 7689,
       "sha256": "23921C1E142D723EF009376701B7F91FBB8D0E6726078B94D2070DC16658769F"
+    },
+    {
+      "path": "tools/tests/test_iac425_manual_corpus.py",
+      "size_bytes": 2682,
+      "sha256": "52F094664B1855A7F955FD17C6977978BFF0DC06EA04927F8DC20D6760A4E98B"
+    },
+    {
+      "path": "tools/tests/test_manual_corpus_qa.py",
+      "size_bytes": 1581,
+      "sha256": "A76BFEA91F1792034F65B9E61FD7D36BC0E11505580DCE11CA423E7C911F6730"
     },
     {
       "path": "tools/tests/test_pipeline_safety.py",
@@ -669,7 +718,7 @@
     {
       "path": "config/handoff/backend_import_crosswalk.json",
       "size_bytes": 18600,
-      "sha256": "030FEC3052145FF51F411F886090256C2751D2208F6B24D0FB51C4ADA2D1A0D0"
+      "sha256": "99A1198282807A928A83D162591B4197AC35BAA1AEE20C88C96AE9D8CB787EA4"
     },
     {
       "path": "config/handoff/consumer_profiles.json",
@@ -689,7 +738,7 @@
     {
       "path": "config/rag/jac104_retrieval_cases.json",
       "size_bytes": 8840,
-      "sha256": "6E9F202F902F965B0C6875D8FCDF26333651E680019CC8B34416E8A444A12E4F"
+      "sha256": "FCF2B7A391A13216B41DF983061F4672AC266EC9C14BA3274AB7AD377B9B2235"
     },
     {
       "path": "config/synthetic/scenarios.json",
@@ -743,7 +792,7 @@
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
       "size_bytes": 1544,
-      "sha256": "C447EDA6EACF380352A081D3F41D7087400A2ED57C0E0F27893C3DD5BF37BBD4"
+      "sha256": "15435EF62BE8333463902AE4AEAC3E85B2A4B3A1D9F5C9BB1C067C38E440B52F"
     },
     {
       "path": "processed/validation/business/latest_representative_e2e_report.json",
@@ -768,12 +817,12 @@
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
       "size_bytes": 1340,
-      "sha256": "8C4D13F9BFB1A3DF70D2B797FE86491251D2C4F6F568BC3B3091A4C822BC9D09"
+      "sha256": "4DEBC16EC199AFF8F75941445E105B794BD8543BB5BF106D609DAEBEF56A27EB"
     },
     {
       "path": "processed/validation/latest_qa_summary.json",
       "size_bytes": 7046,
-      "sha256": "B976AA93832109D9A2C9073621BC19E10FE9D9E70F654838F4C2A74683C54704"
+      "sha256": "1375D251573E45D238D2F890F25632390514E0B381A52F43C2F5E2BB22E7B3BB"
     },
     {
       "path": "processed/validation/ocr_evidence/image_manifest.csv",
@@ -793,7 +842,22 @@
     {
       "path": "processed/validation/quality/latest_quality_report.json",
       "size_bytes": 1246,
-      "sha256": "582F906E2470DC64512A4778C45044A21D76D469ACCF641BA5DAD9D1163B0692"
+      "sha256": "E09518E22A4BCB64439E74F01ED8D61335C950C67B18FC0B832342E37E619B3E"
+    },
+    {
+      "path": "processed/validation/rag_experiments/faq_corpus_qa.json",
+      "size_bytes": 3413,
+      "sha256": "51D4423D3FFD382FC59E2A7E640B28380B0EBDCB5999CA5FF4DCA908EC94A016"
+    },
+    {
+      "path": "processed/validation/rag_experiments/iac425_manual_pages_qa.json",
+      "size_bytes": 2795,
+      "sha256": "61DC9536EF744691172F0A512243C8B2ECFE5042881FB43C264105A95E985F7E"
+    },
+    {
+      "path": "processed/validation/rag_experiments/jac104_manual_pages_qa.json",
+      "size_bytes": 3462,
+      "sha256": "516210E9E068BFB9744E80DA6D3D6E1E75B754A37EE9036AB56E832980707393"
     },
     {
       "path": "processed/validation/refactor/latest_equivalence_report.json",
@@ -803,12 +867,12 @@
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
       "size_bytes": 1151,
-      "sha256": "FBCB50463678C856AEC1E0CD7E1A4615D8E6634FE65BF1A2726DA3F819D4FDFB"
+      "sha256": "FAA56C8783A03D855854F2AED69892B3E261648FD40E5D7AD909C705E3F57D9C"
     },
     {
       "path": "processed/validation/schema/latest_schema_report.json",
       "size_bytes": 8471,
-      "sha256": "5A84E1AA44EFF1BE97FA454FA39182AAC6C3273C75507F668D63EFD79C47C74D"
+      "sha256": "F055FCEBD31C1422A8671512A07E99A69C5D3B567D8D7BB580F32B2AC84C571A"
     },
     {
       "path": "processed/validation/step3/latest_step3_report.json",
@@ -904,8 +968,8 @@
     "canonical_drift_files": 0
   },
   "toolchain": {
-    "python_files": 27,
-    "python_lines": 5683,
+    "python_files": 35,
+    "python_lines": 7043,
     "max_wrapper_lines": 10,
     "max_module_lines": 1226
   },

@@ -743,3 +743,237 @@ Public UUID 분석 요청이 모두 성공했다.
   당시 최종값, `121`은 계약 3.0.0 안전 ID·근거 Identity·Runtime Identity
   검증까지 포함한 현재값으로 구분했다. 거절·모름 Payload 처리, Disposable DB
   확인값, 공동 Mock 준비 여부와 가용 시점도 함께 명시했다.
+
+### 2026-08-10 5주차 AI 단독 선행 작업
+
+- 현재 `dongyoon` Source HEAD
+  `3485e0f1717f4afc6a5f76e469b4bb2d6bd0ecc1` 기준 환경·회귀·외부 차단을
+  `docs/testing/ai/week5-ai-entry-gate.md`에 기록했다. 단일 RAG 기준선과 실제
+  Multi-Agent·LLM·팀 DB·Backend HTTP 미완료를 분리하고 담당자·필요 입력·해제
+  조건을 붙였다.
+- `docs/testing/ai/week5-multi-agent-contract-draft.md`에 Supervisor와 6개 역할
+  Agent의 책임, 입출력·State 쓰기 소유권, Routing Matrix, Handoff Log 최소
+  필드, 최대 Hop 8, Timeout·Retry·Fallback과 활성화 Gate를 정의했다. 이 문서는
+  목표 계약이며 현재 Runtime 구현 완료 증거가 아님을 명시했다.
+- 설명 한 줄뿐이던 상담 요약 Generator·Formatter를 외부 LLM 없이 실행 가능한
+  결정론적 Fallback으로 구현했다. 고객 진술·전달된 상담 기록·기존 안전 판정만
+  사용하고 확정 진단, 방문 자동 확정, Backend 상태 변경은 수행하지 않는다.
+- 상담 요약 정상·위험·위험 부정문·계약 길이 경계 Test 4건을 추가했다. 생성
+  결과는 `ConsultationSummaryResponse` JSON Schema로도 검증한다.
+- 상담 요약 위험 Test에서 자연스러운 표현 `물이 새고`가 구조화에는 누수로
+  잡히지만 안전 키워드에는 일치하지 않는 공백을 발견했다. 안전 SSOT에 해당
+  표현을 추가하고 `SAFETY-LEAK-001` 회귀 Test를 추가했으며 Runtime Identity의
+  Safety 설정 Hash를 갱신했다.
+- Python `3.13.13`, `pip check` PASS, 전체 AI 단위 Test `126 passed,
+  3 warnings`, 실제 Uvicorn Mock Smoke PASS를 확인했다. Local 실제 HTTP에서
+  `물이 새고` 입력이 `danger`, `SAFETY-LEAK-001`, `TOTAL_STOP`, 근거 0건으로
+  반환되는 것도 확인했다.
+- 공식 후보 보고서를 `126 passed`와 Source HEAD `3485e0f...`로 다시 생성했다.
+  변경분은 아직 Commit되지 않았고 팀 DB 재검증도 남아 있어 상태는
+  `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`이다.
+- 최지용 추가확인 회신의 최신 단위 Test 값을 `126 passed`로 갱신하고
+  `103→115→121→126`의 각 증가 범위를 분리해 적었다.
+
+### 2026-08-10 한예나 EvidenceCard 추가확인 회신
+
+- 한예나의 공개 EvidenceCard JSON·필수/NULL·`page_refs`·Enum·Fallback·미지원
+  제품·Crosswalk·일정 질문 순서를 유지한 별도 회신
+  `인계/20260810_이동윤_to_한예나_AI_RAG_EvidenceCard_추가확인_회신_v0.1.md`를
+  작성했다.
+- 현재 승인 청크의 실제 값만 사용해 MVP 공개 Enum을
+  `text_and_visual_verified`, `official_manual`, `official`로 닫고, 확장 값은
+  계약 Version 변경 전까지 Web이 임의 수용하지 않도록 했다.
+- `page_refs`는 1 이상의 정수 배열·오름차순·중복 없음으로 정의하고 단일
+  `[37]`, 다중 `[38, 39]` 예시를 제공했다. Web 대표 페이지는 첫 항목을 쓰되
+  전체 배열을 DTO에서 보존하도록 명시했다.
+- AI `chunk_id`→Evidence Registry `source_id`→`evidence_id`까지는 AI 원천
+  Mapping으로 확정하고, Backend `DocumentChunk.public_id` 연결·검증·최종 DTO
+  조립은 최지용 책임으로 분리했다.
+- 미지원 제품·세대는 현재 검색 전 정책 차단되지만 별도 공개 AI 오류 계약이
+  없어 근거 0건 Fallback과 같은 외형이라는 공백을 기록했다. Backend 선차단
+  HTTP Status·Error Code는 최지용 확정 전까지 임의 생성하지 않았다.
+- Mock Projection·Mapper는 진행 가능하지만 실제 Backend Remote API와 Web E2E는
+  Runtime Evidence 계약 확정 전까지 완료로 표시하지 않는다.
+
+### 2026-08-10 P0 AI 독립 선행 Gate 재검증
+
+- `dongyoon@9f28c1ca9c0f3dba8e29c2fb99de31bac6618b02`에서 Python
+  `3.13.13`, `pip check=PASS`, AI Unit `126 passed, 3 warnings`를 다시
+  확인했다. 작업 트리는 이 기록과 후보 기준선 갱신을 포함해 Dirty이므로 최종
+  통합 PASS로 승격하지 않았다.
+- 실제 Uvicorn에서 Health, Mock Analyze HTTP 200, Local 일반·주의의 Vector
+  미설정 HTTP 503, Local 누수·전기 위험 HTTP 200을 검증했다. 위험 응답은
+  `SAFETY-LEAK-001`, `SAFETY-ELECTRICAL-001`, `TOTAL_STOP`, Evidence 0건과
+  `correlation_id` Header·Body 추적을 만족했다.
+- Backend Integration Fixture F01~F12는 `12 passed, 1 warning`이다. 팀 DB
+  pgvector Test는 Secret이 없어 `1 skipped`이며 개인 격리 DB 이력을 현재 팀 DB
+  PASS로 대체하지 않았다.
+- 일반 적재·검색 경로는 DDL을 실행하지 않고, Schema 초기화는 별도 Disposable
+  명령과 `DISPOSABLE_ONLY`·DB 이름 Guard를 모두 통과해야만 실행되는 것을
+  확인했다.
+- `docs/testing/ai/week5-ai-entry-gate.md`의 Source HEAD와 증거를 갱신하고 팀 DB
+  책임을 `최지용 제공·Migration / 이동윤 AI 실행 / 김은진 QA 판정`으로
+  분리했다. 외부 LLM·Multi-Agent는 팀 DB·Backend E2E 기준선 이후 P1 비교
+  대상으로 유지했다.
+- `ai/evaluation/reports/official_mvp_baseline_20260803.json`은 현재 HEAD로 다시
+  생성했으며 상태는 `CANDIDATE_REQUIRES_TEAM_DB_RERUN_AND_COMMIT`이다.
+
+### 2026-08-10 AI venv·설치 방식 SSOT 확정
+
+- 김은진의 `pip install .\ai` 실패 보고를 `--dry-run --no-deps
+  --no-build-isolation`로 재현했다. Editable 설치도 `app`, `configs`, `prompts`,
+  `evaluation` 복수 최상위 Package 자동 탐색으로 동일하게 실패했다.
+- 저장소 Root의 `import ai.app.main`은 PASS하고 저장소 밖에서는 Import되지 않는
+  것을 확인해 현재 실행 구조를 `MONOREPO_SOURCE_RUNTIME`으로 확정했다.
+- 공식 설치 SSOT를 `ai/requirements.lock`으로 유지하고 Package·Editable·Wheel
+  설치는 지원하지 않는다고 Root·AI README와 `ai/pyproject.toml`에 명시했다.
+- pyproject·requirements.txt 직접 의존성 10건의 이름·Extra·Version과 Lock의
+  직접·Extra 전이 Package를 비교하는 회귀 Test를 추가했다.
+- Python `3.13.13`, `pip check=PASS`, 전체 AI Unit `127 passed, 3 warnings`를
+  확인하고 김은진 회신
+  `인계/20260810_이동윤_to_김은진_AI_venv_설치방식_SSOT_확인회신_v0.1.md`에
+  재현 결과와 공식 명령을 기록했다.
+
+### 2026-08-10 Backend·AI P0-2 공동 Mock 착수
+
+- AI 변경 `b65a8bd...`와 최지용 회신 기준 Backend `57326cf...`가 Merge Commit
+  `4d955116c00f715e1ba9e465104a381b858996b9`으로 통합된 것을 확인했다.
+- 통합 Commit의 Clean 작업 트리에서 Python `3.13.13`, `pip check=PASS`, AI
+  Unit `127 passed, 3 warnings`, Backend Integration Fixture `12 passed,
+  1 warning`을 재검증했다.
+- 실제 Uvicorn을 기동해 `/health`, Mock Analyze HTTP 200과 Body·Header
+  `correlation_id` 추적을 검증한 뒤 Process를 종료했다.
+- 원격 `main`, `jiyong`을 갱신해 확인했지만 Initial Symptom Wiring 후보는 아직
+  없었다. 현재 Runtime에는 Follow-up 답변의 `transaction.on_commit` 재분석만
+  있고 `SUBMIT_SYMPTOM`의 최초 AI 호출점은 없다.
+- 최지용에게 전달할
+  `인계/20260810_이동윤_to_최지용_Backend_AI_P0_2_공동Mock_착수회신_v0.1.md`를
+  작성하고 후보 검토·공동 Mock 판정값을 고정했다.
+
+### 2026-08-11 Experiment Lab B1 청킹 비교
+
+- 실험 계획 v2.1의 A1·A2 재현 Gate를 다시 실행했다. Windows CRLF 체크아웃에서
+  Canonical JSONL Hash가 달라지던 문제를 LF 정규화 SHA-256과 Git Attribute로
+  고쳤다. Full Corpus 96건 Hash는 `6947CDE...`, Gold 60건 Hash는
+  `DDB20527...`이며 Dataset QA는 `STRUCTURAL_PASS_HUMAN_REVIEW_PENDING`이다.
+- Experiment Playground Router를 기본 AI Runtime에서 닫고
+  `AI_ENABLE_EXPERIMENT_PLAYGROUND=true`를 명시한 LAB Process에서만 등록하도록
+  바꿨다. 기본 Mock·Local App에서 Experiment 경로는 HTTP 404다.
+- B1 청킹 Profile 6종을 정의했다. 현재·Page·Fixed 512·Section·Parent/Child
+  5종은 실행 가능하고, `table_row_v1`은 원문에 표 행 경계 Metadata가 없어
+  `BLOCKED_SOURCE_STRUCTURE_UNAVAILABLE`로 남겼다.
+- BGE-M3 CPU에서 DEV 35건 × Profile 5종 × Product Filter 2모드, 총 350건을
+  실행했다. Exact Filter Draft 결과에서 Parent/Child는 Hit@1 `0.703704`, MRR
+  `0.790123`으로 가장 높았고, Section은 Hit@5 `0.925926`이지만 Hit@1
+  `0.481481`, 최대 1,112 token, Cold Embed `256.835s`로 상위 근거가 약했다.
+- 모든 Profile의 무근거 중단 정확도가 `0.25`였다. 가격·렌탈료·색상 3건은
+  Retrieval 오탐, JAC104 제빙 3건은 Scope Filter 공백으로 자동 1차 분류했다.
+  청킹을 운영 변경하지 않고 Retrieval·Policy·Reranker 실험을 다음 순서로 뒀다.
+- 동일 Evidence의 중복 Child가 nDCG를 부풀리지 않도록 최초 적중 1회만 Gain으로
+  계산한다. 콘텐츠 해시 기반 임베딩 Cache를 Git 제외 `tmp/`에 두어 Cold 실행
+  약 `608.879s`, 동일 입력 Warm 재실행 약 `1.841s`를 구분했다.
+- Source HEAD는 `b5c324b8299866b465aceed06c322a872dc2353a`, 변경분은 Dirty다.
+  Python `3.13.13`, AI Unit `147 passed, 3 warnings`, `pip check=PASS`,
+  Backend Integration Fixture `12 passed, 1 warning`을 확인했다. Gold 2인 검수,
+  IAC425 양성 문항, PM 상위 후보 Gate와 Initial Symptom Backend 후보 Commit은
+  여전히 미완료다.
+
+### 2026-08-11 Experiment Lab B2-1 Threshold·Scope Policy 비교
+
+- B1 Draft 후보 `fixed_512_v1`, `parent_child_v1`에 Exact Product Filter를 고정하고
+  Threshold 7개와 Scope Policy 적용/미적용을 조합해 DEV 35건, 총 980개 결과를
+  실제 BGE-M3로 실행했다.
+- 운영 `scope_filter.py`가 Placeholder인 상태를 구현 완료로 취급하지 않았다.
+  제품 코드와 명시적 기능어만 사용하는 Experiment 전용
+  `ExperimentalQueryScopePolicy`를 별도로 만들고 Gold Label을 정책 입력에서
+  배제했다.
+- Parent/Child 기준 Scope 미적용은 Threshold `0.4~0.5`에서 Hit@1 `0.703704`,
+  Hit@5 `0.888889`, MRR `0.790123`, 무근거 중단 `0.25`였다. Scope 적용 후 양성
+  수치는 유지되고 무근거 중단은 `0.625`로 개선됐으며 양성 오차단은 0건이었다.
+- Threshold `0.55`는 무근거 1건을 더 중단하지만 정상적인 맛·냄새·출수량 질의
+  3건의 Top-5 근거를 잃었다. `0.6`은 무근거 중단 `1.0` 대신 양성 Hit@5가
+  `0.518519`로 떨어져 Threshold 단독 상향은 부적합하다고 판정했다.
+- 남은 오탐은 렌탈료·필터 판매 가격·외관 색상 3건이다. 단어를 운영 규칙에 바로
+  Hard-code하지 않고 Knowledge Domain·Query Intent 표현 변형 Dataset과 담당자
+  승인을 다음 Gate로 남겼다.
+- Source HEAD는 `df96616d7010a2f61bddc91f8974235ba5ec92d3`, Dirty 상태이며 결과는
+  `DRAFT_THRESHOLD_SCOPE_EXPERIMENT_COMPLETE`다. Gold 2인 검수·IAC425 양성
+  문항·PM Gate 전에는 운영 Threshold나 Scope Policy를 변경하지 않는다.
+- Python `3.13.13`, AI Unit `150 passed, 3 warnings`, `pip check=PASS`, Backend
+  Integration Fixture `12 passed, 1 warning`을 확인했다. 실험용 Scope Policy는
+  운영 FastAPI Pipeline과 Mock Fixture 호출 경로에 연결하지 않았다.
+
+### 2026-08-11 Experiment Lab B2-2 Query Intent·Domain Policy 비교
+
+- B2-1에서 남은 렌탈료·필터 판매 가격·외관 판매 색상 3종을 대상으로 계약·결제,
+  부품 가격·구매, 상품 옵션 Intent Rule을 Experiment Lab에만 구현했다. 단일
+  Keyword가 아니라 용어 Group의 결합과 명시적 예외를 사용하고 Gold Label은
+  정책 입력에서 배제했다.
+- 운영 Gold와 분리된 표현 변형 DEV 18건을 만들었다. 차단 9건과 렌탈 제품 고장,
+  필터 교체, 외관 청소 같은 허용 Hard Negative 9건을 균형 구성했으며 전부
+  `UNREVIEWED_DRAFT`, 승인자 0명이다.
+- BGE-M3에서 `parent_child_v1`, Threshold `0.5`, Exact Product Filter,
+  `MODEL_CAPABILITY_SCOPE_V1`을 임시 고정했다. 표현 변형 정책 판정은 18/18이었고
+  오차단·누락은 0건이었다. 이는 정책과 함께 만든 미검수 DEV 결과이므로 독립
+  일반화 성능으로 사용하지 않는다.
+- Gold DEV 35건의 무근거 중단은 `0.625`에서 `1.0`으로 개선됐고 양성 오차단은
+  0건이었다. Hit@1 `0.703704`, Hit@5 `0.888889`, MRR `0.790123`은 변하지 않아
+  Intent Policy가 Retrieval 품질 자체를 개선한 것은 아니다.
+- 남은 양성 실패는 Top-5 누락 3건과 순위 오류 5건이다. 다음 B2-3에서는
+  Keyword/BM25와 Dense를 Case 단위로 비교해 누락 복구 가능성을 확인한 뒤
+  Hybrid, Reranker 순서로 진행한다.
+- 실행 결과는 `DRAFT_QUERY_INTENT_DOMAIN_EXPERIMENT_COMPLETE`이며 Gold·표현
+  변형 2인 검수, IAC425 양성 문항, PM Gate 전에는 운영 `scope_filter.py`나
+  FastAPI Pipeline에 연결하지 않는다.
+- Python `3.13.13`, AI Unit `153 passed, 3 warnings`, `pip check=PASS`, Backend
+  Integration Fixture `12 passed, 1 warning`, `git diff --check=PASS`를 확인했다.
+
+### 2026-08-11 Experiment Lab B2-3 BM25·Dense 비교
+
+- B1의 상위 Draft 청킹 후보 `fixed_512_v1`, `parent_child_v1`에서 Gold DEV 35건,
+  Dense·BM25 2방식을 비교해 총 140개 Case 결과를 만들었다. Exact Product Filter,
+  B2-1 Scope, B2-2 Intent Policy와 Top-K 5를 동일하게 고정했다.
+- BM25는 외부 형태소 사전 없이 재현 가능한 단어·한글 문자 bigram Analyzer와
+  `k1=1.5`, `b=0.75`를 사용하는 Experiment 전용 구현이다. 운영
+  `keyword_search.py`와 `hybrid_search.py` Placeholder는 구현 완료로 바꾸거나
+  Runtime에 연결하지 않았다.
+- Parent/Child에서 Dense는 Hit@1 `0.703704`, Hit@5 `0.888889`, MRR `0.790123`,
+  무근거 중단 `1.0`이었다. BM25는 Hit@1 `0.481481`, Hit@5 `0.666667`, MRR
+  `0.540123`, 무근거 중단 `0.875`로 낮았다.
+- BM25가 Dense 누락을 복구한 Case는 0건이었다. Dense만 성공한 Case는 6건이고
+  양쪽이 함께 놓친 Case는 누수·무출수 간접 표현 3건이다. 따라서 현재 DEV에서
+  Hybrid Oracle Union Hit@5도 Dense 단독과 같은 `0.888889`다.
+- 단순 Hybrid·Reranker 착수는 보류했다. 양쪽 누락은 후보에 정답이 없으므로
+  `물이 새다→누수`, `안 나오다→출수되지 않음`, `바닥이 흥건하다→누수` 같은
+  검수 가능한 Alias Query Expansion을 B2-4 Draft로 먼저 비교한다.
+- 실행 결과는 `DRAFT_RETRIEVAL_METHOD_COMPARISON_COMPLETE`이며 Gold 2인 검수,
+  Alias 승인, IAC425 양성 문항, PM Gate 전에는 운영 검색 설정을 변경하지 않는다.
+- Python `3.13.13`, AI Unit `156 passed, 3 warnings`, `pip check=PASS`, Backend
+  Integration Fixture `12 passed, 1 warning`, `git diff --check=PASS`를 확인했다.
+
+### 2026-08-11 Local RAG 격리 pgvector 및 HTTP Runtime 검증
+
+- Docker의 격리 `pgvector/pgvector:pg16` 환경에서 Disposable Guard를 통과한 뒤
+  Schema를 초기화하고 승인 청크 7건을 두 번 UPSERT했다. 두 실행 모두 저장 행은
+  7건으로 유지되어 동일 청크 ID의 멱등성을 확인했다.
+- PostgreSQL `16.14`, pgvector `0.8.6`, Embedding 1024차원, Chunk Set Hash
+  `175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958`을
+  확인했다. 격리 평가 12/12는 실제 `PGVECTOR_QUERY` 7건과 검색 전 정책 차단
+  5건이며, Recall@5 `1.0`, MRR `0.885714`, 금지 Hit 0이다. 이 수치는 팀 DB
+  완료나 전체 제품 성능으로 확대하지 않는다.
+- 최초 실제 `mode=local` HTTP 요청은 BGE-M3가 요청 안에서 초기화되어 약 30초
+  후 HTTP 504 `AI-TIMEOUT-01`로 종료됐다. DB 검색 0건으로 처리하지 않고 Runtime
+  객체 수명 문제로 분리했다.
+- 동일 설정의 `VectorSearchService`와 Embedding Client를 Process에서 공유하고,
+  `AI_VECTOR_DSN`이 설정된 경우 FastAPI 시작 단계에서 모델을 Warmup하도록
+  수정했다. 모델 초기화와 Encode에 Lock을 적용해 동시 요청의 중복 초기화도
+  차단했다. 계약의 전체 요청 Timeout 30초와 Backend 자동 재시도 0회는 변경하지
+  않았다.
+- 수정 후 실제 HTTP 2회는 각각 약 `479ms`, `158ms`에 HTTP 200 `SUCCEEDED`,
+  `retry_count=0`, Evidence 5건으로 완료됐다. 첫 Evidence는
+  `RAG-WPUJAC104DWH-COLD-TEMPERATURE-001`이고 Header·Body Correlation도
+  일치했다.
+- Python `3.13.13`, AI Unit `159 passed, 3 warnings`, 실제 pgvector Integration
+  `1 passed`, 격리 평가 `12/12 PASS`를 확인했다. Canonical AI 청크 ID 7건은
+  고정됐지만 Backend `knowledge_document_chunk.public_id` Crosswalk와 팀 DB
+  Migration·최소권한 DSN 검증은 Backend/DB 담당 입력 전까지 미완료다.

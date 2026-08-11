@@ -1,0 +1,38 @@
+{
+  "experiment_id": "B2-3-RETRIEVAL-METHOD-COMPARISON-V1",
+  "experiment_version": "1.0.0-draft.1",
+  "dataset_split": "DEV",
+  "provisional_chunking_profiles": [
+    "fixed_512_v1",
+    "parent_child_v1"
+  ],
+  "chunking_selection_status": "PROVISIONAL_NOT_SELECTED",
+  "fixed_controls": {
+    "top_k": 5,
+    "product_filter": "EXACT_PRODUCT_FILTER",
+    "scope_policy_id": "MODEL_CAPABILITY_SCOPE_V1",
+    "intent_policy_id": "MANUAL_DOMAIN_INTENT_V1"
+  },
+  "retrieval_methods": [
+    {
+      "method_id": "DENSE_COSINE_EXACT_V1",
+      "method": "dense_cosine_exact",
+      "score_threshold": 0.5
+    },
+    {
+      "method_id": "BM25_KO_MIXED_V1",
+      "method": "bm25",
+      "analyzer": "korean_mixed_word_char_bigram_v1",
+      "k1": 1.5,
+      "b": 0.75,
+      "minimum_score_exclusive": 0.0
+    }
+  ],
+  "publication_limits": [
+    "Gold 60건 2인 검수 전 Draft 비교로만 사용한다.",
+    "BM25 Analyzer와 k1·b는 DEV용 초기값이며 통계적으로 최적화된 운영값이 아니다.",
+    "Dense 0.5와 BM25 0점 초과는 점수 척도가 달라 절대 Score를 직접 비교하지 않는다.",
+    "Hybrid는 BM25가 Dense 실패 Case를 보완하는지 확인한 뒤 별도 B2-4에서 비교한다.",
+    "운영 Search·Scope Filter·FastAPI Pipeline은 변경하지 않는다."
+  ]
+}

@@ -1,6 +1,6 @@
 # T-005 데이터베이스 설계·구현 기준
 
-> 기준일: 2026-07-31
+> 기준일: 2026-08-10
 >
 > 담당: 최지용
 >
@@ -33,7 +33,7 @@ PostgreSQL 검증 결과를 순서대로 대조한다. 과거 Snapshot의 수치
 | 계약 테이블 | 32개 |
 | Model·App Registry·Migration | **32/32** |
 | T-005 Auditor | `READY`, blocker 0 |
-| 승인된 계약 외 지원 Runtime | 4개 |
+| 승인된 계약 외 지원 Runtime | 5개 (`support_followup_answer` 포함) |
 | Accounts 식별자 | 내부 BigInt PK·공개 UUID·업무 코드 분리 |
 | JWT subject | 공개 UUID만 허용, Legacy 문자열 fallback 제거 |
 | PostgreSQL | `waterbridge.public`, PostgreSQL 16.14 |

@@ -252,6 +252,11 @@ python -m venv .\ai\.venv
 .\ai\.venv\Scripts\python.exe -m uvicorn ai.app.main:app --host 127.0.0.1 --port 8001
 ```
 
+AI의 공식 설치 SSOT는 `ai/requirements.lock`이며 위 명령은 저장소 Root에서
+실행합니다. 현재 AI는 Monorepo Source Runtime이므로 `pip install ai`,
+`pip install .\ai`, `pip install -e .\ai`와 Wheel 배포를 지원하지 않습니다.
+`ai/pyproject.toml`은 설치 가능한 배포 Package 계약이 아닙니다.
+
 실행 모드, pgvector 연결과 평가 절차는 [AI README](ai/README.md), 입출력 기계 계약은 [`contracts/ai`](contracts/ai/)를 확인합니다.
 
 ## 개발과 검증 원칙

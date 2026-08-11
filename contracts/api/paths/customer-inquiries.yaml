@@ -1,0 +1,70 @@
+/me/inquiries/{inquiry_id}:
+  parameters: &customer_inquiry_path_parameters
+    - name: inquiry_id
+      in: path
+      required: true
+      description: 고객 본인이 생성한 문의의 공개 UUID
+      schema:
+        type: string
+        format: uuid
+  get:
+    operationId: getMyInquiry
+    summary: 고객 본인 문의 Snapshot 조회
+    description: |
+      앱 재시작과 화면 복구를 위해 인증 고객이 본인 문의의 최소 상태만
+      조회한다. 타 고객 문의와 없는 문의는 동일한 404로 응답한다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-permission-scope: OWN_INQUIRY
+    security: [{BearerAuth: []}]
+    responses:
+      "200":
+        description: 고객 본인 문의의 최소 Snapshot
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/inquiry/CustomerInquirySnapshot.yaml
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}
+
+/me/inquiries/{inquiry_id}/questions:
+  parameters: *customer_inquiry_path_parameters
+  get:
+    operationId: listMyInquiryQuestions
+    summary: 고객 본인 문의 추가 질문 조회
+    description: |
+      인증 고객의 본인 문의에 저장된 미답변 질문 메타데이터만 순서대로 반환한다.
+      답변·AI 원천·내부 target field는 이 읽기 Projection에 포함하지 않는다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-permission-scope: OWN_INQUIRY
+    security: [{BearerAuth: []}]
+    responses:
+      "200":
+        description: 고객 본인 문의의 추가 질문 목록
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/inquiry/CustomerInquiryQuestions.yaml
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}

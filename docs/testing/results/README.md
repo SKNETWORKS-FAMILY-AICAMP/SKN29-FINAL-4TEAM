@@ -7,4 +7,7 @@
 
 ## 최신 실행 결과
 
+- [2026-08-10 5주차 현재 HEAD 통합 QA 보고서](week5-entry-gate-result.md)
+- [2026-08-10 5주차 Gate Matrix](../matrices/week5-gate-matrix.md)
+- [2026-08-10 TEAM_INTEGRATION DB 패키지 독립 QA](team-integration-db-package-qa-20260810.md)
 - [2026-08-10 4주차 Web–Backend 실제 연결 QA 보고서](week4-web-backend-live-verification-20260810.md)

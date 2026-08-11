@@ -1,0 +1,42 @@
+{
+  "profile_id": "legacy_7chunk_smoke_v1",
+  "profile_version": "1.0.0",
+  "status": "LAB_ONLY",
+  "purpose": "regression_smoke_only",
+  "official_comparison_baseline": false,
+  "inputs": {
+    "retrieval_dataset": "data/config/rag/jac104_retrieval_cases.json",
+    "approved_chunks": "data/processed/structured/rag/mvp/rag_verified_sample.jsonl",
+    "retrieval_policy": "ai/configs/retrieval_policy.yaml",
+    "index_manifest": "ai/configs/index_manifest.json",
+    "verification_report": "ai/evaluation/reports/pgvector_verification.json"
+  },
+  "expected": {
+    "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+    "model_code": "WPUJAC104DWH",
+    "product_generation": "D",
+    "chunk_count": 7,
+    "case_count": 12,
+    "positive_case_count": 7,
+    "policy_block_case_count": 5,
+    "embedding_model": "BAAI/bge-m3",
+    "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "embedding_dimension": 1024,
+    "index_type": "exact_search",
+    "top_k": 5,
+    "score_threshold": 0.4
+  },
+  "gates": {
+    "require_all_case_pass": true,
+    "require_no_forbidden_hits": true,
+    "require_database_provenance": true,
+    "fresh_pgvector_rerun_required_for_a0": false
+  },
+  "output_directory": "ai/evaluation/reports/experiments/legacy_7chunk_smoke_v1",
+  "publication_limits": [
+    "7개 청크 결과는 회귀 및 Smoke 확인에만 사용한다.",
+    "Recall@5 1.0을 전체 제품 검색 정확도로 표현하지 않는다.",
+    "정책 차단 5건을 Vector Retrieval 성능에 포함하지 않는다.",
+    "fresh pgvector 재실행이 아니면 측정값을 현재 실행 결과로 표현하지 않는다."
+  ]
+}

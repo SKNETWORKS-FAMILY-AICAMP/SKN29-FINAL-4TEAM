@@ -1,0 +1,53 @@
+{
+  "profile_id": "full_corpus_baseline_v1",
+  "profile_version": "1.0.0-draft.1",
+  "status": "DRAFT_BASELINE_GOLD_REVIEW_PENDING",
+  "official_comparison_baseline": false,
+  "dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "manifest_path": "ai/evaluation/datasets/gold/rag_gold_v1_manifest.json",
+    "split": "DEV"
+  },
+  "corpus": {
+    "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+    "manifest_path": "ai/evaluation/corpora/full_corpus_chunks_v1_manifest.json",
+    "variants": {
+      "JAC104_ONLY": ["JAC104_ONLY"],
+      "IAC425_ONLY": ["IAC425_ONLY"],
+      "JAC104_IAC425_COMBINED": ["JAC104_ONLY", "IAC425_ONLY"]
+    }
+  },
+  "chunking": {
+    "profile": "current_source_page_v1",
+    "description": "A1 페이지 레코드 1개를 검색 Chunk 1개로 사용하는 현재 저장 단위 기준선"
+  },
+  "embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "device": "cpu",
+    "normalize_embeddings": true,
+    "local_files_only": true
+  },
+  "retrieval": {
+    "profile": "dense_cosine_exact_v1",
+    "top_k": 5,
+    "score_threshold": 0.4,
+    "filter_modes": ["NO_PRODUCT_FILTER", "EXACT_PRODUCT_FILTER"]
+  },
+  "metrics": [
+    "hit_at_1",
+    "hit_at_3",
+    "hit_at_5",
+    "mrr",
+    "ndcg_at_5",
+    "wrong_product_hit_count",
+    "no_evidence_accuracy"
+  ],
+  "output_directory": "ai/evaluation/reports/experiments/full_corpus_baseline_v1",
+  "publication_limits": [
+    "Gold 60건의 2인 검수가 끝나기 전에는 공식 Phase B 비교 기준으로 발표하지 않는다.",
+    "페이지 저장 단위 기준선은 최종 청킹 전략 승인을 의미하지 않는다.",
+    "BGE-M3 실제 실행이 완료되지 않은 Preflight 결과에 성능 수치를 부여하지 않는다."
+  ]
+}

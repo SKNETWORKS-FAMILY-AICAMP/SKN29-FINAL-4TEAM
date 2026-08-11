@@ -29,6 +29,7 @@
 - `syntheticScenarios.schema.json`: 합성 이름·시나리오·materialization
 - `datasetVocabulary.schema.json`: 데이터셋 상태·위험도·사용 안내 분류값
 - `consumerProfiles.schema.json`: RAG·DB·QA 전달 프로필
+- `processed/experimentalManualPage.schema.json`: MVP와 분리된 확장 매뉴얼의 실험용 페이지 계약
 - `representativeCase.schema.json`: 대표 문서·ID·근거·상태·수량 데이터 불변식
 
 설정 Schema도 데이터 QA와 단위 테스트에서 검증합니다.
