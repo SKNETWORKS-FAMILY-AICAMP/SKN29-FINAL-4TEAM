@@ -23,29 +23,29 @@ import androidx.compose.ui.unit.sp
 object WaterTokens {
     val Water50 = Color(0xFFF2F9FB)
     val Water100 = Color(0xFFDCEEF3)
-    val Water300 = Color(0xFF8FC9D8)
+    val Water300 = Color(0xFF6FD9EE)
     val Water500 = Color(0xFF2E8BA3)
     val Water700 = Color(0xFF1B5A6B)
 
     val Ink900 = Color(0xFF12262B)
-    val Ink600 = Color(0xFF4A6169)
-    val Ink400 = Color(0xFF7D9199)
+    val Ink600 = Color(0xFF526A86)
+    val Ink400 = Color(0xFF8294AA)
 
     val GlassFill = Color.White.copy(alpha = 0.55f)
     val GlassFillStrong = Color.White.copy(alpha = 0.72f)
     val GlassBorder = Color.White.copy(alpha = 0.65f)
 
-    val GlassButton = Color.White.copy(alpha = 0.34f)
-    val GlassButtonStrong = Color.White.copy(alpha = 0.54f)
+    val GlassButton = Color.White.copy(alpha = 0.58f)
+    val GlassButtonStrong = Color.White.copy(alpha = 0.76f)
     val GlassDisabled = Color.White.copy(alpha = 0.20f)
     val GlassHighlight = Color.White.copy(alpha = 0.90f)
 
-    val PearlBlue = Color(0xFFB8DFFF)
-    val PearlLavender = Color(0xFFD9C8FF)
-    val PearlPink = Color(0xFFFFD8EE)
-    val PearlMint = Color(0xFFBDEFE2)
+    val PearlBlue = Color(0xFFB8E8FF)
+    val PearlLavender = Color(0xFFDDE4FF)
+    val PearlPink = Color(0xFFEAF4FF)
+    val PearlMint = Color(0xFFB9F5F0)
 
-    val General = Color(0xFF2E8BA3)
+    val General = Color(0xFF149FE0)
     val Caution = Color(0xFFC08A2E)
     val Danger = Color(0xFFC0392B)
 
@@ -213,9 +213,9 @@ fun WaterGradientBackground(
             .background(
                 Brush.linearGradient(
                     colors = listOf(
-                        Color(0xFFF8FBFF),
+                        Color(0xFFFFFFFF),
                         WaterTokens.Water50,
-                        Color(0xFFF7F4FF),
+                        Color(0xFFF7FBFF),
                     ),
                 )
             ),
