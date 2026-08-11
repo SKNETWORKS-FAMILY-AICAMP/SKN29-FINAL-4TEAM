@@ -13,7 +13,10 @@ from apps.inquiries.models import Inquiry, InquiryQA
 from apps.inquiries.models.inquiry_qa import public_question_options
 from apps.inquiries.repositories.inquiry_repository import InquiryRepository
 from apps.workflow.domain.workflow_snapshot import WorkflowSnapshot
-from apps.workflow.engine.allowed_action_resolver import AllowedActionResolver
+from apps.workflow.engine.allowed_action_resolver import (
+    AllowedActionContext,
+    AllowedActionResolver,
+)
 from apps.workflow.engine.guard_evaluator import GuardContext, GuardEvaluator
 from apps.workflow.engine.state_machine import (
     InvalidStateTransition,
@@ -61,14 +64,6 @@ class FollowUpAnswerService:
                 "target_public_id": inquiry_public_id,
             }
         )
-        replay = cls._replay(
-            actor=actor,
-            idempotency_key=idempotency_key,
-            request_hash=request_hash,
-        )
-        if replay is not None:
-            return replay
-
         inquiry = InquiryRepository.lock_owned_inquiry(
             inquiry_public_id=inquiry_public_id,
             actor=actor,
@@ -196,8 +191,10 @@ class FollowUpAnswerService:
             "status": inquiry.status_code,
             "state_version": inquiry.state_version,
             "allowed_actions": AllowedActionResolver.resolve(
-                state_code=inquiry.status_code,
-                role_code=actor.role_code,
+                context=AllowedActionContext.from_models(
+                    inquiry=inquiry,
+                    actor=actor,
+                ),
             ),
             "idempotent_replay": False,
             "resource": None,
@@ -318,8 +315,10 @@ class FollowUpAnswerService:
     @staticmethod
     def _raise_state_conflict(inquiry: Inquiry, *, actor: Any) -> None:
         allowed_actions = AllowedActionResolver.resolve(
-            state_code=inquiry.status_code,
-            role_code=actor.role_code,
+            context=AllowedActionContext.from_models(
+                inquiry=inquiry,
+                actor=actor,
+            ),
         )
         raise BusinessError(
             STATE_CONFLICT,

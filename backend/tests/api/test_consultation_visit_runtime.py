@@ -328,6 +328,72 @@ def test_consultation_start_save_confirm_complete_and_replay():
     assert IdempotencyRecord.objects.filter(actor=consultant).count() == 4
 
 
+def test_reassigned_consultant_cannot_replay_previous_assignee_response():
+    original_consultant = create_user(91, role=User.Role.CONSULTANT)
+    replacement_consultant = create_user(92, role=User.Role.CONSULTANT)
+    inquiry = create_inquiry(91, consultant=original_consultant)
+    original_client = client_for(original_consultant)
+    key = "consult-reassigned-replay"
+
+    first = request(
+        original_client,
+        "post",
+        f"/api/v1/inquiries/{inquiry.public_id}/start-consultation",
+        {"state_version": 2},
+        key=key,
+    )
+    assert first.status_code == 200, first.json()
+
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        assigned_user=replacement_consultant,
+        assigned_role_code=Inquiry.AssignedRole.CONSULTANT,
+    )
+    replay = request(
+        original_client,
+        "post",
+        f"/api/v1/inquiries/{inquiry.public_id}/start-consultation",
+        {"state_version": 2},
+        key=key,
+    )
+
+    assert replay.status_code == 404
+    assert replay.json()["error"]["code"] == "RESOURCE_NOT_FOUND"
+    assert Consultation.objects.filter(inquiry=inquiry).count() == 1
+    assert IdempotencyRecord.objects.filter(
+        actor=original_consultant,
+        operation_id="startConsultation",
+        idempotency_key=key,
+    ).count() == 1
+
+
+def test_consultation_success_and_stale_409_share_allowed_action_snapshot():
+    consultant = create_user(93, role=User.Role.CONSULTANT)
+    inquiry = create_inquiry(93, consultant=consultant)
+    client = client_for(consultant)
+
+    success = request(
+        client,
+        "post",
+        f"/api/v1/inquiries/{inquiry.public_id}/start-consultation",
+        {"state_version": 2},
+        key="consult-parity-success",
+    )
+    stale = request(
+        client,
+        "post",
+        f"/api/v1/inquiries/{inquiry.public_id}/start-consultation",
+        {"state_version": 2},
+        key="consult-parity-stale",
+    )
+
+    assert success.status_code == 200, success.json()
+    assert stale.status_code == 409, stale.json()
+    success_codes = [
+        action["code"] for action in success.json()["data"]["allowed_actions"]
+    ]
+    assert stale.json()["error"]["details"]["allowed_actions"] == success_codes
+
+
 def test_visit_review_create_schedule_confirm_date_only_flow():
     consultant, client, inquiry, _consultation = prepare_visit_review(10)
 

@@ -283,7 +283,11 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 18457,
+<<<<<<< HEAD
       "sha256": "95D4D1144A0FE06D8AD16DAF86CE1EB0063A49BD50456D40375DE6D1ED0CE39E"
+=======
+      "sha256": "4735AD13B52A933179018E3745F4F62102F4DACA96B631E754394BB011E57274"
+>>>>>>> 83f737326de75a6015a606c0050eaa81d1f67a4f
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -714,7 +718,7 @@
     {
       "path": "config/handoff/backend_import_crosswalk.json",
       "size_bytes": 18600,
-      "sha256": "99A1198282807A928A83D162591B4197AC35BAA1AEE20C88C96AE9D8CB787EA4"
+      "sha256": "B236BF88525FE5519B8D10E2F70D492C68C4AB8F14324507840C6078F6EA511E"
     },
     {
       "path": "config/handoff/consumer_profiles.json",

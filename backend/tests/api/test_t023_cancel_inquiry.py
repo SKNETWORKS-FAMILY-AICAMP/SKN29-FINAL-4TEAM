@@ -1,16 +1,25 @@
 """Runtime and contract parity tests for representative CANCEL_INQUIRY."""
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 from pathlib import Path
+from threading import Barrier, local
+from unittest.mock import patch
 from uuid import UUID
 
 import pytest
 import yaml
+from django.contrib.auth.models import Permission
+from django.db import connection, connections
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
-from apps.inquiries.api.serializers import CancelInquirySerializer
+from apps.inquiries.api.serializers import (
+    CancelInquiryResponseSerializer,
+    CancelInquirySerializer,
+)
 from apps.inquiries.models import Inquiry
+from apps.inquiries.repositories.inquiry_repository import InquiryRepository
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
 from apps.workflow.models import IdempotencyRecord, TransitionHistory
@@ -166,6 +175,7 @@ def test_cancel_draft_inquiry_updates_state_reason_and_history():
         "state": "CANCELLED",
         "state_version": 2,
         "idempotent_replay": False,
+        "allowed_actions": [],
     }
     assert UUID(payload["data"]["inquiry_id"])
 
@@ -327,19 +337,11 @@ def test_new_key_on_cancelled_inquiry_returns_terminal_snapshot():
     assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 2
 
 
-@pytest.mark.parametrize(
-    "role",
-    [
-        User.Role.CONSULTANT,
-        User.Role.TECHNICIAN,
-        User.Role.OPERATOR,
-    ],
-)
-def test_cancel_owner_scope_and_role_are_enforced(role):
+def test_cancel_owner_scope_and_unsupported_role_are_enforced():
     owner = create_user(6)
     _owner_client, inquiry = create_inquiry(owner, 6)
     other_customer = create_user(7)
-    non_customer = create_user(8, role=role)
+    non_customer = create_user(8, role=User.Role.TECHNICIAN)
 
     owner_scope_response = post_cancel(
         authenticated_client(other_customer),
@@ -351,7 +353,7 @@ def test_cancel_owner_scope_and_role_are_enforced(role):
         authenticated_client(non_customer),
         inquiry,
         cancel_body(),
-        key=f"t023-role-{role.lower()}",
+        key="t023-role-technician",
     )
 
     assert owner_scope_response.status_code == 404
@@ -367,6 +369,95 @@ def test_cancel_owner_scope_and_role_are_enforced(role):
         resource_public_id=inquiry.public_id,
         operation_id="cancelInquiry",
     ).exists()
+
+
+@pytest.mark.parametrize(
+    "initial_state,initial_version",
+    [
+        (Inquiry.Status.DRAFT, 1),
+        (Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS, 2),
+    ],
+)
+@pytest.mark.parametrize("actor_kind", ["OWNER", "CONSULTANT", "OPERATOR"])
+def test_cancel_supports_all_approved_roles_and_states(
+    initial_state,
+    initial_version,
+    actor_kind,
+):
+    owner = create_user(90 + initial_version)
+    _owner_client, inquiry = create_inquiry(owner, 90 + initial_version)
+    actor = owner
+    if actor_kind == "CONSULTANT":
+        actor = create_user(100 + initial_version, role=User.Role.CONSULTANT)
+        inquiry.assigned_user = actor
+        inquiry.assigned_role_code = Inquiry.AssignedRole.CONSULTANT
+    elif actor_kind == "OPERATOR":
+        actor = create_user(110 + initial_version, role=User.Role.OPERATOR)
+        actor.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label="inquiries",
+                codename="cancel_inquiry",
+            )
+        )
+
+    inquiry.status_code = initial_state
+    inquiry.state_version = initial_version
+    inquiry.save(
+        update_fields=[
+            "assigned_user",
+            "assigned_role_code",
+            "status_code",
+            "state_version",
+            "updated_at",
+        ]
+    )
+
+    response = post_cancel(
+        authenticated_client(actor),
+        inquiry,
+        cancel_body(state_version=initial_version),
+        key=f"t023-approved-{actor_kind.lower()}-{initial_version}",
+    )
+
+    assert response.status_code == 200, response.json()
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CANCELLED
+    assert inquiry.state_version == initial_version + 1
+    cancel_history = TransitionHistory.objects.get(
+        inquiry=inquiry,
+        event_code="CANCEL_INQUIRY",
+    )
+    assert cancel_history.from_state == initial_state
+    assert cancel_history.to_state == Inquiry.Status.CANCELLED
+    assert cancel_history.state_version == initial_version + 1
+
+
+def test_cancel_rejects_unassigned_consultant_and_unprivileged_operator():
+    owner = create_user(120)
+    _owner_client, inquiry = create_inquiry(owner, 120)
+    consultant = create_user(121, role=User.Role.CONSULTANT)
+    operator = create_user(122, role=User.Role.OPERATOR)
+
+    unassigned = post_cancel(
+        authenticated_client(consultant),
+        inquiry,
+        cancel_body(),
+        key="t023-unassigned-consultant",
+    )
+    unprivileged = post_cancel(
+        authenticated_client(operator),
+        inquiry,
+        cancel_body(),
+        key="t023-unprivileged-operator",
+    )
+
+    assert unassigned.status_code == 404
+    assert unassigned.json()["error"]["code"] == "RESOURCE_NOT_FOUND"
+    assert unprivileged.status_code == 403
+    assert unprivileged.json()["error"]["code"] == "FORBIDDEN"
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.DRAFT
+    assert inquiry.state_version == 1
 
 
 def test_anonymous_cancel_is_rejected_without_side_effects():
@@ -455,6 +546,176 @@ def test_cancel_rolls_back_state_history_and_idempotency_on_late_failure(
         actor=owner,
         operation_id="cancelInquiry",
     ).count() == 0
+
+
+def test_cancel_rolls_back_when_response_serialization_fails(monkeypatch):
+    owner = create_user(11)
+    client, inquiry = create_inquiry(owner, 11)
+
+    def fail_serialization(*args, **kwargs):
+        del args, kwargs
+        raise RuntimeError("private-response-serialization-error")
+
+    monkeypatch.setattr(
+        CancelInquiryResponseSerializer,
+        "to_representation",
+        fail_serialization,
+    )
+
+    response = post_cancel(
+        client,
+        inquiry,
+        cancel_body(),
+        key="t023-response-rollback",
+    )
+
+    assert response.status_code == 500
+    assert response.json()["error"]["code"] == "INTERNAL_ERROR"
+    assert "private-response-serialization-error" not in response.content.decode(
+        "utf-8"
+    )
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.DRAFT
+    assert inquiry.state_version == 1
+    assert inquiry.cancelled_at is None
+    assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 1
+    assert not IdempotencyRecord.objects.filter(
+        actor=owner,
+        operation_id="cancelInquiry",
+        idempotency_key="t023-response-rollback",
+    ).exists()
+
+
+def concurrent_cancel(
+    *,
+    actor_id: int,
+    inquiry_id: UUID,
+    state_version: int,
+    key: str,
+    barrier: Barrier,
+) -> tuple[int, dict]:
+    connections.close_all()
+    try:
+        actor = User.objects.get(pk=actor_id)
+        client = authenticated_client(actor)
+        barrier.wait(timeout=10)
+        response = client.post(
+            f"/api/v1/inquiries/{inquiry_id}/cancel",
+            cancel_body(state_version=state_version),
+            format="json",
+            HTTP_IDEMPOTENCY_KEY=key,
+        )
+        return response.status_code, response.json()
+    finally:
+        connections.close_all()
+
+
+def cancellable_lock_barrier(barrier: Barrier):
+    """Force both PostgreSQL requests to contend for the inquiry row lock."""
+
+    original = InquiryRepository.lock_cancellable_inquiry
+    thread_state = local()
+
+    def synchronized_lock(*args, **kwargs):
+        if not getattr(thread_state, "lock_attempted", False):
+            thread_state.lock_attempted = True
+            barrier.wait(timeout=10)
+        return original(*args, **kwargs)
+
+    return patch.object(
+        InquiryRepository,
+        "lock_cancellable_inquiry",
+        side_effect=synchronized_lock,
+    )
+
+
+@pytest.mark.django_db(transaction=True)
+def test_postgresql_concurrent_cancel_same_key_is_one_write_and_one_replay():
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL row-lock verification only")
+
+    owner = create_user(130)
+    _client, inquiry = create_inquiry(owner, 130)
+    barrier = Barrier(2)
+    lock_barrier = Barrier(2)
+    with cancellable_lock_barrier(lock_barrier), ThreadPoolExecutor(
+        max_workers=2
+    ) as executor:
+        futures = [
+            executor.submit(
+                concurrent_cancel,
+                actor_id=owner.pk,
+                inquiry_id=inquiry.public_id,
+                state_version=1,
+                key="t023-concurrent-same-key",
+                barrier=barrier,
+            )
+            for _ in range(2)
+        ]
+        results = [future.result(timeout=30) for future in futures]
+
+    assert sorted(status for status, _payload in results) == [200, 200]
+    assert sorted(
+        payload["data"]["idempotent_replay"] for _status, payload in results
+    ) == [False, True]
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CANCELLED
+    assert inquiry.state_version == 2
+    assert TransitionHistory.objects.filter(
+        inquiry=inquiry,
+        event_code="CANCEL_INQUIRY",
+    ).count() == 1
+    assert IdempotencyRecord.objects.filter(
+        actor=owner,
+        operation_id="cancelInquiry",
+    ).count() == 1
+
+
+@pytest.mark.django_db(transaction=True)
+def test_postgresql_concurrent_cancel_new_keys_have_one_version_winner():
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL row-lock verification only")
+
+    owner = create_user(131)
+    _client, inquiry = create_inquiry(owner, 131)
+    barrier = Barrier(2)
+    lock_barrier = Barrier(2)
+    keys = ("t023-concurrent-key-a", "t023-concurrent-key-b")
+    with cancellable_lock_barrier(lock_barrier), ThreadPoolExecutor(
+        max_workers=2
+    ) as executor:
+        futures = [
+            executor.submit(
+                concurrent_cancel,
+                actor_id=owner.pk,
+                inquiry_id=inquiry.public_id,
+                state_version=1,
+                key=key,
+                barrier=barrier,
+            )
+            for key in keys
+        ]
+        results = [future.result(timeout=30) for future in futures]
+
+    assert sorted(status for status, _payload in results) == [200, 409]
+    conflict = next(payload for status, payload in results if status == 409)
+    assert conflict["error"]["code"] == "STATE-CONFLICT-01"
+    assert conflict["error"]["details"] == {
+        "current_status": Inquiry.Status.CANCELLED,
+        "current_state_version": 2,
+        "allowed_actions": [],
+    }
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CANCELLED
+    assert inquiry.state_version == 2
+    assert TransitionHistory.objects.filter(
+        inquiry=inquiry,
+        event_code="CANCEL_INQUIRY",
+    ).count() == 1
+    assert IdempotencyRecord.objects.filter(
+        actor=owner,
+        operation_id="cancelInquiry",
+    ).count() == 1
 
 
 def test_cancellation_code_contract_serializer_and_openapi_are_identical():

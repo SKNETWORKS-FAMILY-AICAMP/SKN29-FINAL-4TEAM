@@ -21,12 +21,16 @@ from apps.inquiries.models import (
     SymptomAssessment,
 )
 from apps.inquiries.services.inquiry_ai_service import InquiryAIService
+from apps.inquiries.services.inquiry_service import InquiryService
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
 from apps.workflow.models import TransitionHistory
 from integrations.ai.client import AIClient
 from integrations.ai.exceptions import AIIdempotencyConflictError
-from integrations.ai.schema_validator import DEFAULT_CONTRACT_ROOT
+from integrations.ai.schema_validator import (
+    DEFAULT_CONTRACT_ROOT,
+    AIContractValidator,
+)
 
 
 pytestmark = pytest.mark.django_db
@@ -139,6 +143,20 @@ def analyze(inquiry: Inquiry, client: AIClient, **kwargs):
     )
 
 
+def cancel_inquiry(inquiry: Inquiry, *, key: str) -> None:
+    InquiryService.cancel(
+        actor=inquiry.initiated_by,
+        inquiry_public_id=inquiry.public_id,
+        validated_data={
+            "state_version": inquiry.state_version,
+            "reason_code": Inquiry.CancellationReason.CUSTOMER_REQUEST,
+            "reason_detail": None,
+        },
+        idempotency_key=key,
+        correlation_id=uuid4(),
+    )
+
+
 def test_safe_result_is_persisted_but_held_without_verified_evidence():
     inquiry = create_inquiry(1)
     client, http_client, calls = make_client()
@@ -163,6 +181,56 @@ def test_safe_result_is_persisted_but_held_without_verified_evidence():
     assert inquiry.risk_level_code == Inquiry.RiskLevel.GENERAL
     assert inquiry.evidence_ids == []
     assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
+    http_client.close()
+
+
+def test_cancelled_before_run_creation_records_cancelled_audit_without_http():
+    inquiry = create_inquiry(90)
+    cancel_inquiry(inquiry, key="cancel-before-ai-run")
+    inquiry.refresh_from_db()
+    client, http_client, calls = make_client()
+
+    outcome = analyze(inquiry, client)
+
+    run = AIRun.objects.get(inquiry=inquiry)
+    assert calls == []
+    assert outcome.status == AIRun.Status.CANCELLED
+    assert outcome.stale is True
+    assert run.status_code == AIRun.Status.CANCELLED
+    assert run.started_at is None
+    assert not SymptomAssessment.objects.filter(inquiry=inquiry).exists()
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
+    http_client.close()
+
+
+@pytest.mark.parametrize("upstream_status", [200, 503])
+def test_cancel_during_http_prevents_late_ai_terminal_overwrite(upstream_status):
+    inquiry = create_inquiry(91 + upstream_status)
+
+    def transform(response_payload, request_payload):
+        cancel_inquiry(inquiry, key=f"cancel-during-ai-{upstream_status}")
+        if upstream_status == 503:
+            return error_payload(request_payload)
+        return response_payload
+
+    client, http_client, calls = make_client(
+        transform=transform,
+        status_code=upstream_status,
+    )
+
+    outcome = analyze(inquiry, client)
+
+    inquiry.refresh_from_db()
+    run = AIRun.objects.get(inquiry=inquiry)
+    assert len(calls) == 1
+    assert inquiry.status_code == Inquiry.Status.CANCELLED
+    assert outcome.status == AIRun.Status.CANCELLED
+    assert outcome.stale is True
+    assert run.status_code == AIRun.Status.CANCELLED
+    assert run.error_code == "CANCELLED_BY_INQUIRY"
+    assert not SymptomAssessment.objects.filter(inquiry=inquiry).exists()
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
+    assert not InquiryQA.objects.filter(inquiry=inquiry).exists()
     http_client.close()
 
 
@@ -417,6 +485,34 @@ def test_duplicate_request_replays_without_second_http_call_or_rows():
     assert AIRun.objects.filter(inquiry=inquiry).count() == 1
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
     assert Guidance.objects.filter(inquiry=inquiry).count() == 1
+    http_client.close()
+
+
+def test_replay_reports_stale_after_inquiry_is_cancelled_post_success():
+    inquiry = create_inquiry(95)
+    client, http_client, _calls = make_client()
+    ai_request_id = uuid4()
+
+    first = analyze(inquiry, client, ai_request_id=ai_request_id)
+    run = AIRun.objects.get(public_id=first.ai_run_id)
+    cancel_inquiry(inquiry, key="cancel-after-ai-success")
+
+    replay = InquiryAIService._replay_or_conflict(
+        run,
+        input_digest=run.input_sha256,
+        request_payload=run.input_payload,
+        validator=AIContractValidator(),
+    )
+
+    assert run.status_code == AIRun.Status.SUCCEEDED
+    assert replay.idempotent_replay is True
+    assert replay.stale is True
+    assert replay.event_applied is None
+    assert replay.pending_reason == "STALE_STATE_VERSION"
+    assert SymptomAssessment.objects.filter(
+        inquiry=inquiry,
+        ai_run=run,
+    ).exists()
     http_client.close()
 
 
