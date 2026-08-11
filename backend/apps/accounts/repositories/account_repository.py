@@ -54,6 +54,33 @@ class AccountRepository:
             .first()
         )
 
+    @staticmethod
+    def lock_active_by_subject(subject: str) -> User | None:
+        """Lock the active UUID subject for refresh-token validation."""
+
+        normalized = str(subject).strip()
+        try:
+            public_id = UUID(normalized)
+        except (ValueError, AttributeError, TypeError):
+            return None
+        return (
+            User.objects.select_for_update()
+            .filter(is_active=True, public_id=public_id)
+            .select_related("customer_profile")
+            .first()
+        )
+
+    @staticmethod
+    def lock_active_by_pk(user_pk: int) -> User | None:
+        """Lock a saved active user before issuing a token pair."""
+
+        return (
+            User.objects.select_for_update()
+            .filter(pk=user_pk, is_active=True)
+            .select_related("customer_profile")
+            .first()
+        )
+
     @classmethod
     def find_active_by_id(cls, user_id: str) -> User | None:
         """공개 사용자 UUID를 받는 기존 호출명 호환 alias."""

@@ -9,9 +9,11 @@ from rest_framework_simplejwt.exceptions import AuthenticationFailed
 
 from apps.accounts.repositories.account_repository import AccountRepository
 from common.authentication.claims import (
+    AUTH_VERSION_CLAIM,
     ROLE_CLAIM,
     SUBJECT_CLAIM,
     required_claim,
+    required_positive_int_claim,
 )
 
 
@@ -22,6 +24,10 @@ class JWTAuthentication(SimpleJWTAuthentication):
         try:
             subject = required_claim(validated_token, SUBJECT_CLAIM)
             token_role = required_claim(validated_token, ROLE_CLAIM)
+            token_auth_version = required_positive_int_claim(
+                validated_token,
+                AUTH_VERSION_CLAIM,
+            )
         except ValueError as exc:
             raise AuthenticationFailed(
                 "토큰 사용자 또는 역할 정보가 없습니다.",
@@ -34,7 +40,11 @@ class JWTAuthentication(SimpleJWTAuthentication):
                 "활성 사용자를 찾을 수 없습니다.",
                 code="user_not_found",
             )
-        if not user.is_active or token_role != user.role_code:
+        if (
+            not user.is_active
+            or token_role != user.role_code
+            or token_auth_version != user.auth_version
+        ):
             raise AuthenticationFailed(
                 "사용자 상태 또는 역할이 변경되었습니다.",
                 code="user_state_changed",

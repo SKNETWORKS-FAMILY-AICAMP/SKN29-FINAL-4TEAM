@@ -1,6 +1,6 @@
 """가명·합성 Demo 계정을 반복 실행에 안전하게 생성한다."""
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from apps.accounts.models import CustomerProfile, User
@@ -45,7 +45,7 @@ class Command(BaseCommand):
         updated_count = 0
 
         for user_data in DEMO_USERS:
-            user, created = User.objects.update_or_create(
+            user, created = User.objects.get_or_create(
                 username=user_data["username"],
                 defaults={
                     "full_name": user_data["full_name"],
@@ -58,8 +58,17 @@ class Command(BaseCommand):
                     "is_synthetic": True,
                 },
             )
-            user.set_unusable_password()
-            user.save(update_fields=["password", "updated_at"])
+            if created:
+                user.set_unusable_password()
+                user.save(update_fields=["password", "updated_at"])
+            elif (
+                not user.is_synthetic
+                or user.role_code != user_data["role_code"]
+                or user.employee_no != user_data["employee_no"]
+            ):
+                raise CommandError(
+                    f"Existing demo identity conflicts with the fixture: {user.username}"
+                )
             created_count += int(created)
             updated_count += int(not created)
 
