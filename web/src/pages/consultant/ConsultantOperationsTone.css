@@ -2152,18 +2152,40 @@ html body
 
 html body
   .simple-consultant-app.consultant-queue-app
-  .consultant-risk-tab
-  > b {
+  .consultant-risk-tab__count {
   display: grid;
+  width: 24px;
   min-width: 24px;
   height: 24px;
+  flex: 0 0 24px;
   place-items: center;
-  padding: 0 6px;
-  border-radius: 7px;
-  background: rgb(255 255 255 / 62%);
-  color: #62758a;
-  font-size: 10px;
+  padding: 0;
+  border-radius: 50% !important;
+  color: #fff;
+  font-size: 11px;
   font-weight: 700;
+  line-height: 1;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab--danger
+  .consultant-risk-tab__count {
+  background: #e5484d;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab--caution
+  .consultant-risk-tab__count {
+  background: #df9126;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab--general
+  .consultant-risk-tab__count {
+  background: #7a8794;
 }
 
 html body
@@ -2234,8 +2256,10 @@ html body
 
   html body
     .simple-consultant-app.consultant-queue-app
-    .consultant-risk-tab
-    > b {
-    display: none;
+    .consultant-risk-tab__count {
+    width: 22px;
+    min-width: 22px;
+    height: 22px;
+    flex-basis: 22px;
   }
 }

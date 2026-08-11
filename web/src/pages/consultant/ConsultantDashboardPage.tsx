@@ -481,7 +481,7 @@ export default function ConsultantDashboardPage() {
                       <button
                         key={section.id}
                         id={`consultant-risk-tab-${section.id}`}
-                        className={`consultant-risk-tab${
+                        className={`consultant-risk-tab consultant-risk-tab--${section.id}${
                           isActive ? " is-active" : ""
                         }`}
                         type="button"
@@ -495,7 +495,7 @@ export default function ConsultantDashboardPage() {
                         }
                       >
                         <span>{section.label}</span>
-                        <b>{count}</b>
+                        <b className="consultant-risk-tab__count">{count}</b>
                       </button>
                     );
                   })}
@@ -532,84 +532,86 @@ export default function ConsultantDashboardPage() {
                       <h2 id={`consultant-risk-section-${section.id}`}>
                         {section.label} 목록
                       </h2>
-                      <div className="consultant-risk-section__tools">
-                        <span className="consultant-risk-section__count">
-                          {inquiries.length}
-                        </span>
-                        <div className="consultant-risk-section__filter">
-                          <button
-                            type="button"
-                            className="consultant-risk-section__filter-trigger"
-                            aria-label={`${section.label} 상태 필터`}
-                            aria-haspopup="listbox"
-                            aria-expanded={openRiskStatusFilter === section.id}
-                            aria-controls={`consultant-risk-filter-${section.id}`}
-                            onClick={() =>
-                              setOpenRiskStatusFilter((current) =>
-                                current === section.id ? null : section.id,
-                              )
-                            }
-                          >
-                            <span>
-                              {statusFilter === "ALL"
-                                ? "전체 상태"
-                                : STATUS_LABELS[statusFilter]}
-                            </span>
-                            <svg
-                              viewBox="0 0 16 16"
-                              aria-hidden="true"
-                              focusable="false"
+                      {activeBucket !== "NEW" && (
+                        <div className="consultant-risk-section__tools">
+                          <span className="consultant-risk-section__count">
+                            {inquiries.length}
+                          </span>
+                          <div className="consultant-risk-section__filter">
+                            <button
+                              type="button"
+                              className="consultant-risk-section__filter-trigger"
+                              aria-label={`${section.label} 상태 필터`}
+                              aria-haspopup="listbox"
+                              aria-expanded={openRiskStatusFilter === section.id}
+                              aria-controls={`consultant-risk-filter-${section.id}`}
+                              onClick={() =>
+                                setOpenRiskStatusFilter((current) =>
+                                  current === section.id ? null : section.id,
+                                )
+                              }
                             >
-                              <path d="m4 6 4 4 4-4" />
-                            </svg>
-                          </button>
+                              <span>
+                                {statusFilter === "ALL"
+                                  ? "전체 상태"
+                                  : STATUS_LABELS[statusFilter]}
+                              </span>
+                              <svg
+                                viewBox="0 0 16 16"
+                                aria-hidden="true"
+                                focusable="false"
+                              >
+                                <path d="m4 6 4 4 4-4" />
+                              </svg>
+                            </button>
 
-                          {openRiskStatusFilter === section.id && (
-                            <div
-                              id={`consultant-risk-filter-${section.id}`}
-                              className="consultant-risk-section__filter-menu"
-                              role="listbox"
-                              aria-label={`${section.label} 상태 선택`}
-                            >
-                              {(["ALL", ...availableStatuses] as const).map(
-                                (status) => {
-                                  const isSelected = statusFilter === status;
-                                  return (
-                                    <button
-                                      key={status}
-                                      type="button"
-                                      role="option"
-                                      aria-selected={isSelected}
-                                      onClick={() => {
-                                        setRiskSectionStatusFilters(
-                                          (current) => ({
-                                            ...current,
-                                            [section.id]: status,
-                                          }),
-                                        );
-                                        setOpenRiskStatusFilter(null);
-                                        setSelectedInquiryId(null);
-                                      }}
-                                    >
-                                      <span
-                                        className="consultant-risk-section__filter-check"
-                                        aria-hidden="true"
+                            {openRiskStatusFilter === section.id && (
+                              <div
+                                id={`consultant-risk-filter-${section.id}`}
+                                className="consultant-risk-section__filter-menu"
+                                role="listbox"
+                                aria-label={`${section.label} 상태 선택`}
+                              >
+                                {(["ALL", ...availableStatuses] as const).map(
+                                  (status) => {
+                                    const isSelected = statusFilter === status;
+                                    return (
+                                      <button
+                                        key={status}
+                                        type="button"
+                                        role="option"
+                                        aria-selected={isSelected}
+                                        onClick={() => {
+                                          setRiskSectionStatusFilters(
+                                            (current) => ({
+                                              ...current,
+                                              [section.id]: status,
+                                            }),
+                                          );
+                                          setOpenRiskStatusFilter(null);
+                                          setSelectedInquiryId(null);
+                                        }}
                                       >
-                                        {isSelected ? "✓" : ""}
-                                      </span>
-                                      <span>
-                                        {status === "ALL"
-                                          ? "전체 상태"
-                                          : STATUS_LABELS[status]}
-                                      </span>
-                                    </button>
-                                  );
-                                },
-                              )}
-                            </div>
-                          )}
+                                        <span
+                                          className="consultant-risk-section__filter-check"
+                                          aria-hidden="true"
+                                        >
+                                          {isSelected ? "✓" : ""}
+                                        </span>
+                                        <span>
+                                          {status === "ALL"
+                                            ? "전체 상태"
+                                            : STATUS_LABELS[status]}
+                                        </span>
+                                      </button>
+                                    );
+                                  },
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </header>
 
                     <div className="consultant-risk-section__list">

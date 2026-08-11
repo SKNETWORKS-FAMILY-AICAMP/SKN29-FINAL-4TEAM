@@ -213,12 +213,32 @@ describe("ConsultantDashboardPage", () => {
     const generalTab = screen.getByRole("tab", { name: /일반 문의/ });
 
     expect(dangerTab).toHaveAttribute("aria-selected", "true");
+    expect(dangerTab).toHaveClass("consultant-risk-tab--danger");
+    expect(cautionTab).toHaveClass("consultant-risk-tab--caution");
+    expect(generalTab).toHaveClass("consultant-risk-tab--general");
+    expect(within(dangerTab).getByText("10")).toHaveClass(
+      "consultant-risk-tab__count",
+    );
+    expect(within(cautionTab).getByText("10")).toHaveClass(
+      "consultant-risk-tab__count",
+    );
+    expect(within(generalTab).getByText("10")).toHaveClass(
+      "consultant-risk-tab__count",
+    );
     expect(
       within(screen.getByRole("tabpanel", { name: /긴급 문의/ })).getAllByRole(
         "button",
         { name: /상세 열기/ },
       ),
     ).toHaveLength(10);
+    expect(
+      screen.queryByRole("button", { name: "긴급 문의 상태 필터" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen
+        .getByRole("tabpanel", { name: /긴급 문의/ })
+        .querySelector(".consultant-risk-section__count"),
+    ).toBeNull();
 
     dangerTab.focus();
     await user.keyboard("{ArrowRight}");
