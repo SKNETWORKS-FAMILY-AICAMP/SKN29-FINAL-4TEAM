@@ -142,7 +142,8 @@ def test_no_evidence_uses_pending_consultation_branch():
     response = result.to_analysis_result()
     assert response.evidence_references == []
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
-    assert response.safety_assessment.risk_level != RiskLevel.DANGER
+    assert response.safety_assessment.risk_level == RiskLevel.CAUTION
+    assert response.safety_assessment.requires_consultation is True
     assert response.status.value == "FALLBACK"
     assert response.failure_stage.value == "RETRIEVING"
     assert result.context.retrieval_outcome == RetrievalOutcome.NO_MATCH

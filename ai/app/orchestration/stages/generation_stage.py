@@ -13,10 +13,12 @@ def execute_generation_stage(ctx: PipelineContext) -> None:
     classifier = UsageGuidanceClassifier()
     has_evidence = bool(ctx.evidence_references)
 
-    ctx.usage_guidance = classifier.determine_guidance(
-        safety_assessment=ctx.safety_assessment,
-        raw_text=ctx.raw_symptom,
-        has_evidence=has_evidence
+    ctx.safety_assessment, ctx.usage_guidance = (
+        classifier.determine_assessment_and_guidance(
+            safety_assessment=ctx.safety_assessment,
+            raw_text=ctx.raw_symptom,
+            has_evidence=has_evidence,
+        )
     )
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000.0

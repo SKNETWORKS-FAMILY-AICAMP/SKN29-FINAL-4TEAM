@@ -5,7 +5,7 @@ import re
 from typing import Any, Dict
 import yaml
 
-from ..schemas import RiskLevel, UsageGuidanceStatus
+from ..schemas import RiskLevel, SafetyPriority, UsageGuidanceStatus
 
 
 class SafetyRuleLoader:
@@ -67,6 +67,38 @@ class SafetyRuleLoader:
             status = UsageGuidanceStatus(rule["usage_guidance_status"])
             if rule["risk_level"] == RiskLevel.DANGER.value and status == UsageGuidanceStatus.NORMAL:
                 raise ValueError(f"안전 규칙 {rule_key}: danger와 NORMAL을 함께 사용할 수 없습니다.")
+
+        required_no_evidence = {
+            "default_risk_level",
+            "default_priority",
+            "default_usage_guidance_status",
+            "requires_consultation",
+            "safety_reason",
+            "message",
+        }
+        missing_no_evidence = required_no_evidence.difference(no_evidence)
+        if missing_no_evidence:
+            raise ValueError(
+                "근거 없음 정책 필수 키 누락: "
+                f"{sorted(missing_no_evidence)}"
+            )
+        no_evidence_risk = RiskLevel(no_evidence["default_risk_level"])
+        no_evidence_priority = SafetyPriority(no_evidence["default_priority"])
+        no_evidence_status = UsageGuidanceStatus(
+            no_evidence["default_usage_guidance_status"]
+        )
+        if no_evidence_risk != RiskLevel.CAUTION:
+            raise ValueError("근거 없음 정책 위험도는 caution이어야 합니다.")
+        if no_evidence_priority != SafetyPriority.CONSULTATION_RECOMMENDED:
+            raise ValueError(
+                "근거 없음 정책 우선순위는 consultation_recommended여야 합니다."
+            )
+        if no_evidence_status != UsageGuidanceStatus.PENDING_CONSULTATION:
+            raise ValueError(
+                "근거 없음 정책은 PENDING_CONSULTATION이어야 합니다."
+            )
+        if no_evidence["requires_consultation"] is not True:
+            raise ValueError("근거 없음 정책은 상담 필요 상태여야 합니다.")
 
     def get_safety_rules(self) -> Dict[str, Any]:
         """안전 규칙 딕셔너리 반환"""

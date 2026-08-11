@@ -977,3 +977,22 @@ Public UUID 분석 요청이 모두 성공했다.
   `1 passed`, 격리 평가 `12/12 PASS`를 확인했다. Canonical AI 청크 ID 7건은
   고정됐지만 Backend `knowledge_document_chunk.public_id` Crosswalk와 팀 DB
   Migration·최소권한 DSN 검증은 Backend/DB 담당 입력 전까지 미완료다.
+
+### 2026-08-11 No Evidence Fallback 계약 정합성 수정
+
+- 실제 AI 근거 없음 Runtime이 `FALLBACK`, `RETRIEVING`, 빈 Evidence와
+  `PENDING_CONSULTATION`은 반환하지만 `SafetyAssessment.requires_consultation`을
+  `false`로 유지해 Backend `NO_EVIDENCE` 불변식에서 거부되는 간극을 확인했다.
+- `safety_rules.yaml`의 근거 없음 정책에 `caution`,
+  `consultation_recommended`, `requires_consultation=true`와 안전 사유를 명시하고
+  `SafetyRuleLoader`가 해당 고정값을 시작 시 검증하도록 했다. 설정 변경에 맞춰
+  `runtime_identity.json`의 안전 규칙 SHA-256도 갱신했다.
+- Generation Stage는 근거 없음이면서 danger가 아닌 경우 SafetyAssessment와
+  UsageGuidance를 함께 정규화한다. Danger 우선 분기와 Vector 구성 실패의 HTTP
+  503 경계는 변경하지 않았다.
+- 실제 `PipelineRouter`의 근거 없음 출력을 Backend `map_success_response`에
+  전달해 `NO_EVIDENCE`, `requires_consultation=true`,
+  `PENDING_CONSULTATION` 통과를 확인했다.
+- AI Unit `159 passed, 3 warnings`, Backend AI Integration `23 passed`,
+  `pip check=PASS`, `git diff --check=PASS`다. Backend의 `DANGER_DETECTED` 무조건
+  보류 문제는 Backend 담당 수정 항목으로 남아 있다.
