@@ -877,3 +877,53 @@ Public UUID 분석 요청이 모두 성공했다.
   Backend Integration Fixture `12 passed, 1 warning`을 확인했다. Gold 2인 검수,
   IAC425 양성 문항, PM 상위 후보 Gate와 Initial Symptom Backend 후보 Commit은
   여전히 미완료다.
+
+### 2026-08-11 Experiment Lab B2-1 Threshold·Scope Policy 비교
+
+- B1 Draft 후보 `fixed_512_v1`, `parent_child_v1`에 Exact Product Filter를 고정하고
+  Threshold 7개와 Scope Policy 적용/미적용을 조합해 DEV 35건, 총 980개 결과를
+  실제 BGE-M3로 실행했다.
+- 운영 `scope_filter.py`가 Placeholder인 상태를 구현 완료로 취급하지 않았다.
+  제품 코드와 명시적 기능어만 사용하는 Experiment 전용
+  `ExperimentalQueryScopePolicy`를 별도로 만들고 Gold Label을 정책 입력에서
+  배제했다.
+- Parent/Child 기준 Scope 미적용은 Threshold `0.4~0.5`에서 Hit@1 `0.703704`,
+  Hit@5 `0.888889`, MRR `0.790123`, 무근거 중단 `0.25`였다. Scope 적용 후 양성
+  수치는 유지되고 무근거 중단은 `0.625`로 개선됐으며 양성 오차단은 0건이었다.
+- Threshold `0.55`는 무근거 1건을 더 중단하지만 정상적인 맛·냄새·출수량 질의
+  3건의 Top-5 근거를 잃었다. `0.6`은 무근거 중단 `1.0` 대신 양성 Hit@5가
+  `0.518519`로 떨어져 Threshold 단독 상향은 부적합하다고 판정했다.
+- 남은 오탐은 렌탈료·필터 판매 가격·외관 색상 3건이다. 단어를 운영 규칙에 바로
+  Hard-code하지 않고 Knowledge Domain·Query Intent 표현 변형 Dataset과 담당자
+  승인을 다음 Gate로 남겼다.
+- Source HEAD는 `df96616d7010a2f61bddc91f8974235ba5ec92d3`, Dirty 상태이며 결과는
+  `DRAFT_THRESHOLD_SCOPE_EXPERIMENT_COMPLETE`다. Gold 2인 검수·IAC425 양성
+  문항·PM Gate 전에는 운영 Threshold나 Scope Policy를 변경하지 않는다.
+- Python `3.13.13`, AI Unit `150 passed, 3 warnings`, `pip check=PASS`, Backend
+  Integration Fixture `12 passed, 1 warning`을 확인했다. 실험용 Scope Policy는
+  운영 FastAPI Pipeline과 Mock Fixture 호출 경로에 연결하지 않았다.
+
+### 2026-08-11 Experiment Lab B2-2 Query Intent·Domain Policy 비교
+
+- B2-1에서 남은 렌탈료·필터 판매 가격·외관 판매 색상 3종을 대상으로 계약·결제,
+  부품 가격·구매, 상품 옵션 Intent Rule을 Experiment Lab에만 구현했다. 단일
+  Keyword가 아니라 용어 Group의 결합과 명시적 예외를 사용하고 Gold Label은
+  정책 입력에서 배제했다.
+- 운영 Gold와 분리된 표현 변형 DEV 18건을 만들었다. 차단 9건과 렌탈 제품 고장,
+  필터 교체, 외관 청소 같은 허용 Hard Negative 9건을 균형 구성했으며 전부
+  `UNREVIEWED_DRAFT`, 승인자 0명이다.
+- BGE-M3에서 `parent_child_v1`, Threshold `0.5`, Exact Product Filter,
+  `MODEL_CAPABILITY_SCOPE_V1`을 임시 고정했다. 표현 변형 정책 판정은 18/18이었고
+  오차단·누락은 0건이었다. 이는 정책과 함께 만든 미검수 DEV 결과이므로 독립
+  일반화 성능으로 사용하지 않는다.
+- Gold DEV 35건의 무근거 중단은 `0.625`에서 `1.0`으로 개선됐고 양성 오차단은
+  0건이었다. Hit@1 `0.703704`, Hit@5 `0.888889`, MRR `0.790123`은 변하지 않아
+  Intent Policy가 Retrieval 품질 자체를 개선한 것은 아니다.
+- 남은 양성 실패는 Top-5 누락 3건과 순위 오류 5건이다. 다음 B2-3에서는
+  Keyword/BM25와 Dense를 Case 단위로 비교해 누락 복구 가능성을 확인한 뒤
+  Hybrid, Reranker 순서로 진행한다.
+- 실행 결과는 `DRAFT_QUERY_INTENT_DOMAIN_EXPERIMENT_COMPLETE`이며 Gold·표현
+  변형 2인 검수, IAC425 양성 문항, PM Gate 전에는 운영 `scope_filter.py`나
+  FastAPI Pipeline에 연결하지 않는다.
+- Python `3.13.13`, AI Unit `153 passed, 3 warnings`, `pip check=PASS`, Backend
+  Integration Fixture `12 passed, 1 warning`, `git diff --check=PASS`를 확인했다.
