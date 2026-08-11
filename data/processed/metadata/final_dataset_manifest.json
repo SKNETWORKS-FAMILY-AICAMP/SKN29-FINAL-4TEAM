@@ -283,7 +283,7 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 18457,
-      "sha256": "105209DAFA2FD84582FB5792E4F1362A976C42CBA996F4F6AF0730724F67B83E"
+      "sha256": "6CA73D0129CCDF7CE9ED5A62D417524F4B3A1029281A7EF2533FB926DB515A00"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -307,8 +307,8 @@
     },
     {
       "path": "schemas/README.md",
-      "size_bytes": 1606,
-      "sha256": "9C16B474A5B3884EC22829A2D239DE2F668F2A2893BF97A1BC10E0BFE881AB20"
+      "size_bytes": 1720,
+      "sha256": "B77E288EB494FF94BCADD45897CAA7907FC8549FCDB925F30375E8F1D8EB8308"
     },
     {
       "path": "synthetic/README.md",
@@ -381,6 +381,11 @@
       "path": "schemas/processed/evidenceRegistry.schema.json",
       "size_bytes": 4269,
       "sha256": "B1334C4AAF769F47E3EBE20927F05D44905E0C109474FBD7723F8F92D746DFA6"
+    },
+    {
+      "path": "schemas/processed/experimentalManualPage.schema.json",
+      "size_bytes": 3278,
+      "sha256": "9BBB1E7914EE2D27C1343CBA953A94F0D0665D59323B2E492B5FD6EEAF1F3A3D"
     },
     {
       "path": "schemas/processed/faqCandidate.schema.json",
@@ -560,6 +565,31 @@
       "sha256": "E9DD88F04D376A666274B0E2D798CD4393F5AAED96499A2D0C1AB5D28AE108E9"
     },
     {
+      "path": "tools/rag_experiments/__init__.py",
+      "size_bytes": 53,
+      "sha256": "82277187F184772D268ACA47E7987740B878EF49747E4C75975BB06800CEB5A2"
+    },
+    {
+      "path": "tools/rag_experiments/build_iac425_pages.py",
+      "size_bytes": 8883,
+      "sha256": "BBEDD961E41F0AAF0A92BF0D07FD59F6042E8E88CFFA4CF2AC6F7050E618DF58"
+    },
+    {
+      "path": "tools/rag_experiments/qa_faq_corpus.py",
+      "size_bytes": 14094,
+      "sha256": "6866FE5E5D1AABBC53F430860C491583CC4F184A256D610FBBEDF26367834205"
+    },
+    {
+      "path": "tools/rag_experiments/qa_iac425_pages.py",
+      "size_bytes": 7954,
+      "sha256": "E86CBEDBD9039315FA9E5EC82E3350CFB857B4EB66BD1A789827FD0E5DB0CBDF"
+    },
+    {
+      "path": "tools/rag_experiments/qa_manual_pages.py",
+      "size_bytes": 16682,
+      "sha256": "40BEFE57E8219A283DECFC9A33DE06EB92F54B59E05955940B15DDCA9CC43045"
+    },
+    {
       "path": "tools/tests/__init__.py",
       "size_bytes": 37,
       "sha256": "B2C17FD9DFEE0CB0CC0BEFD21408BBEB16E66E7269D06CCC21F16DA7EF04EF70"
@@ -580,9 +610,24 @@
       "sha256": "2C44C12D0A6D4CAE1FD845C564FDEB434ED2ED3FA3EDF0B7DE6E6E1C8178AF4D"
     },
     {
+      "path": "tools/tests/test_faq_corpus_qa.py",
+      "size_bytes": 2580,
+      "sha256": "F5D012D0D8AE79A8F0F1B4F2D006798CD3918E111824B201ED13A8A1E06C4BCA"
+    },
+    {
       "path": "tools/tests/test_handoff_profiles.py",
       "size_bytes": 7689,
       "sha256": "23921C1E142D723EF009376701B7F91FBB8D0E6726078B94D2070DC16658769F"
+    },
+    {
+      "path": "tools/tests/test_iac425_manual_corpus.py",
+      "size_bytes": 2682,
+      "sha256": "52F094664B1855A7F955FD17C6977978BFF0DC06EA04927F8DC20D6760A4E98B"
+    },
+    {
+      "path": "tools/tests/test_manual_corpus_qa.py",
+      "size_bytes": 1581,
+      "sha256": "A76BFEA91F1792034F65B9E61FD7D36BC0E11505580DCE11CA423E7C911F6730"
     },
     {
       "path": "tools/tests/test_pipeline_safety.py",
@@ -743,7 +788,7 @@
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
       "size_bytes": 1544,
-      "sha256": "C447EDA6EACF380352A081D3F41D7087400A2ED57C0E0F27893C3DD5BF37BBD4"
+      "sha256": "FC879301D3D83B4ECF3C62763DDC2BC0D60BA1D98154B9DF23666EA99BF84EF9"
     },
     {
       "path": "processed/validation/business/latest_representative_e2e_report.json",
@@ -768,12 +813,12 @@
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
       "size_bytes": 1340,
-      "sha256": "8C4D13F9BFB1A3DF70D2B797FE86491251D2C4F6F568BC3B3091A4C822BC9D09"
+      "sha256": "B62CD8A7365EF5CDD5554899F5EC9913B432E6461AE0AA420DC384FB63391D94"
     },
     {
       "path": "processed/validation/latest_qa_summary.json",
       "size_bytes": 7046,
-      "sha256": "B976AA93832109D9A2C9073621BC19E10FE9D9E70F654838F4C2A74683C54704"
+      "sha256": "7A1BD402271221AF78B855E42F1347500E5CBC07B587DA7DFB0FB3613D25A3A3"
     },
     {
       "path": "processed/validation/ocr_evidence/image_manifest.csv",
@@ -793,7 +838,22 @@
     {
       "path": "processed/validation/quality/latest_quality_report.json",
       "size_bytes": 1246,
-      "sha256": "582F906E2470DC64512A4778C45044A21D76D469ACCF641BA5DAD9D1163B0692"
+      "sha256": "FF7A29F52EA8B94A4C19CD2A0DCE10F948CB548E0105C3622A046480B565EDB9"
+    },
+    {
+      "path": "processed/validation/rag_experiments/faq_corpus_qa.json",
+      "size_bytes": 3413,
+      "sha256": "51D4423D3FFD382FC59E2A7E640B28380B0EBDCB5999CA5FF4DCA908EC94A016"
+    },
+    {
+      "path": "processed/validation/rag_experiments/iac425_manual_pages_qa.json",
+      "size_bytes": 2795,
+      "sha256": "61DC9536EF744691172F0A512243C8B2ECFE5042881FB43C264105A95E985F7E"
+    },
+    {
+      "path": "processed/validation/rag_experiments/jac104_manual_pages_qa.json",
+      "size_bytes": 3462,
+      "sha256": "516210E9E068BFB9744E80DA6D3D6E1E75B754A37EE9036AB56E832980707393"
     },
     {
       "path": "processed/validation/refactor/latest_equivalence_report.json",
@@ -803,12 +863,12 @@
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
       "size_bytes": 1151,
-      "sha256": "FBCB50463678C856AEC1E0CD7E1A4615D8E6634FE65BF1A2726DA3F819D4FDFB"
+      "sha256": "057DE87C97302376A7F70A324EC4F1A26B0AB5E22D4F05F7743D45F832A1DB1E"
     },
     {
       "path": "processed/validation/schema/latest_schema_report.json",
       "size_bytes": 8471,
-      "sha256": "5A84E1AA44EFF1BE97FA454FA39182AAC6C3273C75507F668D63EFD79C47C74D"
+      "sha256": "85DDF1EE4AE04141F444EBFB776DCCED458D6E8CE9A1CEE4162AD6DAAF4C02F7"
     },
     {
       "path": "processed/validation/step3/latest_step3_report.json",
@@ -904,8 +964,8 @@
     "canonical_drift_files": 0
   },
   "toolchain": {
-    "python_files": 27,
-    "python_lines": 5683,
+    "python_files": 35,
+    "python_lines": 7043,
     "max_wrapper_lines": 10,
     "max_module_lines": 1226
   },
