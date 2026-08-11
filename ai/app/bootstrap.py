@@ -1,5 +1,7 @@
 """FastAPI 애플리케이션 팩토리 모듈."""
 
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .interfaces.http.error_handlers import register_error_handlers
@@ -8,6 +10,17 @@ from .interfaces.http.routes.experiment_playground_routes import router as exper
 from .interfaces.http.routes.health_routes import router as health_router
 from .interfaces.http.runtime_policy import get_runtime_policy
 from .interfaces.http.structured_logging import configure_structured_logging
+
+
+EXPERIMENT_PLAYGROUND_ENV = "AI_ENABLE_EXPERIMENT_PLAYGROUND"
+
+
+def experiment_playground_enabled() -> bool:
+    """Keep LAB-only routes closed unless the process explicitly opts in."""
+
+    return os.getenv(EXPERIMENT_PLAYGROUND_ENV, "false").strip().lower() in {
+        "1", "true", "yes", "on",
+    }
 
 
 def create_app() -> FastAPI:
@@ -37,6 +50,7 @@ def create_app() -> FastAPI:
     # 3. 라우터 등록
     app.include_router(health_router)
     app.include_router(analysis_router)
-    app.include_router(experiment_playground_router)
+    if experiment_playground_enabled():
+        app.include_router(experiment_playground_router)
 
     return app

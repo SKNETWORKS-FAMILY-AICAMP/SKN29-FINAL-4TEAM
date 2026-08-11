@@ -849,3 +849,31 @@ Public UUID 분석 요청이 모두 성공했다.
 - 최지용에게 전달할
   `인계/20260810_이동윤_to_최지용_Backend_AI_P0_2_공동Mock_착수회신_v0.1.md`를
   작성하고 후보 검토·공동 Mock 판정값을 고정했다.
+
+### 2026-08-11 Experiment Lab B1 청킹 비교
+
+- 실험 계획 v2.1의 A1·A2 재현 Gate를 다시 실행했다. Windows CRLF 체크아웃에서
+  Canonical JSONL Hash가 달라지던 문제를 LF 정규화 SHA-256과 Git Attribute로
+  고쳤다. Full Corpus 96건 Hash는 `6947CDE...`, Gold 60건 Hash는
+  `DDB20527...`이며 Dataset QA는 `STRUCTURAL_PASS_HUMAN_REVIEW_PENDING`이다.
+- Experiment Playground Router를 기본 AI Runtime에서 닫고
+  `AI_ENABLE_EXPERIMENT_PLAYGROUND=true`를 명시한 LAB Process에서만 등록하도록
+  바꿨다. 기본 Mock·Local App에서 Experiment 경로는 HTTP 404다.
+- B1 청킹 Profile 6종을 정의했다. 현재·Page·Fixed 512·Section·Parent/Child
+  5종은 실행 가능하고, `table_row_v1`은 원문에 표 행 경계 Metadata가 없어
+  `BLOCKED_SOURCE_STRUCTURE_UNAVAILABLE`로 남겼다.
+- BGE-M3 CPU에서 DEV 35건 × Profile 5종 × Product Filter 2모드, 총 350건을
+  실행했다. Exact Filter Draft 결과에서 Parent/Child는 Hit@1 `0.703704`, MRR
+  `0.790123`으로 가장 높았고, Section은 Hit@5 `0.925926`이지만 Hit@1
+  `0.481481`, 최대 1,112 token, Cold Embed `256.835s`로 상위 근거가 약했다.
+- 모든 Profile의 무근거 중단 정확도가 `0.25`였다. 가격·렌탈료·색상 3건은
+  Retrieval 오탐, JAC104 제빙 3건은 Scope Filter 공백으로 자동 1차 분류했다.
+  청킹을 운영 변경하지 않고 Retrieval·Policy·Reranker 실험을 다음 순서로 뒀다.
+- 동일 Evidence의 중복 Child가 nDCG를 부풀리지 않도록 최초 적중 1회만 Gain으로
+  계산한다. 콘텐츠 해시 기반 임베딩 Cache를 Git 제외 `tmp/`에 두어 Cold 실행
+  약 `608.879s`, 동일 입력 Warm 재실행 약 `1.841s`를 구분했다.
+- Source HEAD는 `b5c324b8299866b465aceed06c322a872dc2353a`, 변경분은 Dirty다.
+  Python `3.13.13`, AI Unit `147 passed, 3 warnings`, `pip check=PASS`,
+  Backend Integration Fixture `12 passed, 1 warning`을 확인했다. Gold 2인 검수,
+  IAC425 양성 문항, PM 상위 후보 Gate와 Initial Symptom Backend 후보 Commit은
+  여전히 미완료다.
