@@ -2,11 +2,11 @@
 
 > 실행일: 2026-08-11 14:21 KST
 > 계약 검증 기준: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
-> 판정: **VALIDATOR_PASS · CONSUMER_ACK_PENDING**
+> 판정: **VALIDATOR_PASS · BACKEND_SEMANTIC_CHANGE_REQUEST**
 
 ## 1. 결론
 
-계약 자체와 Root Contract Test는 모두 통과했다. 다만 Backend·AI·Web·Mobile·QA의 현재 Commit 소비 증거가 아직 모이지 않았으므로 `TEAM_BASELINE`으로 최종 폐쇄하지 않는다.
+정적 계약과 Root Contract Test는 모두 통과했다. 그러나 Backend 소비 검토에서 `CANCEL_INQUIRY`와 `allowed_actions`의 Runtime 의미 불일치가 확인됐고 소비자 ACK도 모두 모이지 않았으므로 `TEAM_BASELINE`으로 최종 폐쇄하지 않는다.
 
 ## 2. 실행 결과
 
@@ -54,3 +54,10 @@ python -B -m pytest tests/contract -q -p no:cacheprovider
 - QA는 현재 기준 Commit의 Contract Test·Fixture·Gate 재현성을 확인해야 한다.
 
 다섯 소비자 검토가 모두 승인되고 증거가 기록된 뒤 최종 문서 Commit을 새 기준 Commit으로 기록한다. 그전까지 기계 계약의 `PM_BASELINE_CANDIDATE`를 임의로 `TEAM_BASELINE`으로 변경하지 않는다.
+
+## 5. Backend 의미 불일치
+
+- 정적 Crosswalk 수치 `12/7/0/4`와 Test PASS는 유지되지만, `CANCEL_INQUIRY`의 승인 역할·상태 전체가 Runtime에 구현되지 않았다.
+- `allowed_actions`가 계약의 Visit·Transition·Domain Guard와 Runtime availability를 평가하지 않는다.
+- 이 불일치는 Validator 수치로 발견되지 않는 Runtime 소비 결함이므로 Backend 수정·독립 QA 전까지 Baseline을 `HOLD`한다.
+- PM 결정: `docs/decisions/20260811-backend-contract-consumer-change-request-decision.md`

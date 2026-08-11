@@ -55,12 +55,27 @@ Mock 전체 회귀와 Remote 계약 표적 Test의 CI 분리는 3.4 CI 운영 �
 
 Runtime Owner 확인 대기는 Backend·AI·Web·Mobile의 실제 소비 판정 경계이며, 김은진의 Contract·Data·Fixture·Drift 검토 완료를 무효화하지 않는다. 따라서 3.3 QA 소비자 ACK로 인정한다.
 
-## 4. 현재 취합 결과
+## 4. Backend — 최지용
+
+| 항목 | 접수 내용 |
+|---|---|
+| 기준 Commit | `92b0674cd1a3376a2c058715cd5ef32222125755` |
+| 정적 Gate | Crosswalk `12/7/0/4`, Contract 12 PASS |
+| Backend 표적 | 133 PASS, PostgreSQL 전용 3 Skip |
+| 불일치 1 | `CANCEL_INQUIRY`가 고객 DRAFT만 구현돼 승인 역할·상태보다 좁음 |
+| 불일치 2 | `allowed_actions`가 Visit·Transition·Domain Guard와 Runtime availability를 평가하지 않음 |
+| 담당자 판정 | `CHANGE_REQUEST` |
+| PM 판정 | **CHANGE_REQUEST** |
+
+PM은 승인 계약 유지와 `DYNAMIC_GUARD_AND_RUNTIME_FILTER`를 결정했다. 수정·표적 회귀·PostgreSQL 독립 QA 전까지 Backend ACK로 계산하지 않는다.
+
+## 5. 현재 취합 결과
 
 ```text
 mobile=APPROVE
 web=CONTENT_APPROVED_CURRENT_BASELINE_ACK_PENDING
 qa=APPROVE
+backend=CHANGE_REQUEST
 consumer_ack=2/5
-remaining_reviewers=최지용, 이동윤, 한예나-current-baseline
+remaining_reviewers=최지용-fix, 이동윤, 한예나-current-baseline
 ```

@@ -8,7 +8,7 @@
 
 | 검토자 | 소비 영역 | 반드시 확인할 내용 | 요구 증거 | 상태 |
 |---|---|---|---|---|
-| 최지용 | Backend Runtime | Event·권한·`state_version`·멱등성·409와 Crosswalk Runtime 12개가 Source/Test와 일치 | 파일 또는 PR, 표적 Test 명령·결과 | REQUESTED |
+| 최지용 | Backend Runtime | Event·권한·`state_version`·멱등성·409와 Crosswalk Runtime 12개가 Source/Test와 일치 | 파일 또는 PR, 표적 Test 명령·결과 | CHANGE_REQUEST |
 | 이동윤 | AI | AI 결과의 Event·Schema·위험·근거 없음·Fallback 정합성, AI의 직접 상태 변경 금지 | 파일 또는 PR, Schema·Safety·Fallback Test | REQUESTED |
 | 한예나 | Web | `allowed_actions`, 서버 상태, Date, 403/404/409/422 소비와 Mock 자동 성공 금지 | 파일 또는 PR, Test·Lint·Build 결과 | CONTENT_APPROVED · CURRENT_BASELINE_ACK_PENDING |
 | 양정현 | Mobile | DTO·UiState·Action·Date·Error와 Remote/Mock 경계 정합성 | 파일 또는 PR, Unit/UI·Build 결과 | APPROVE |
@@ -32,7 +32,7 @@ contract_gate=PASS
 crosswalk=12/7/0/4
 final_baseline_commit=PENDING
 baseline_status=PM_BASELINE_CANDIDATE
-overall_decision=HOLD_FOR_CONSUMER_ACK
+overall_decision=CHANGE_REQUEST_BACKEND_AND_HOLD_FOR_CONSUMER_ACK
 ```
 
 회신이 들어올 때마다 해당 행의 상태와 증거 경로를 갱신한다. 5명 모두 승인한 최종 후보 Commit에서 Contract Gate를 다시 실행한 뒤 `TEAM_BASELINE` 전환 여부를 결정한다.
@@ -43,3 +43,5 @@ overall_decision=HOLD_FOR_CONSUMER_ACK
 - Mobile은 구현 Commit이 현재 main에 포함돼 ACK로 인정한다.
 - Web은 내용상 승인했으나 기재 Commit을 현재 저장소에서 확인할 수 없어 ACK 수치에는 아직 포함하지 않는다.
 - QA는 현재 기준 Commit에서 Contract 12개, Action Contract 4개, 대표 Fixture 4개, 대표 E2E 17/17, Crosswalk 23개와 생성물 Drift 없음이 확인돼 ACK로 인정한다.
+- Backend는 `CANCEL_INQUIRY` 역할·상태 축소와 정적 `allowed_actions` 계산 불일치가 확인돼 `CHANGE_REQUEST`다.
+- PM 결정은 `docs/decisions/20260811-backend-contract-consumer-change-request-decision.md`를 따른다.

@@ -1,5 +1,19 @@
 # Contracts Changelog
 
+## 2026-08-11 — Backend 소비 의미 불일치 확인
+
+### Audit
+
+- `CANCEL_INQUIRY` Runtime이 승인된 고객·상담사·운영자와 DRAFT·QUESTIONNAIRE_IN_PROGRESS 범위보다 좁은 것을 확인했다.
+- Backend `allowed_actions`가 State·Role 후보만 반환하고 Visit·Transition·Domain Guard와 Runtime availability를 평가하지 않는 것을 확인했다.
+- Validator·Crosswalk `12/7/0/4`·Contract Test PASS는 정적 증거이며 Runtime 의미 승인과 분리한다.
+
+### Decision boundary
+
+- 승인된 취소 역할·상태 계약은 유지하고 Backend Runtime을 계약에 맞춘다.
+- `allowed_actions`는 동적 Guard와 Runtime availability를 모두 통과한 행동만 반환한다.
+- 수정·표적 회귀·PostgreSQL 독립 QA 전까지 `TEAM_BASELINE` 전환과 Backend 소비 ACK를 보류한다.
+
 ## 2026-08-11 — Contract CI 현행 감사
 
 ### Audit

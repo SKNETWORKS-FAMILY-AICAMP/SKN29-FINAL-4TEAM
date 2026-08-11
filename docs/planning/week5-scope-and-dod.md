@@ -85,7 +85,7 @@ target_at=<YYYY-MM-DD HH:mm KST>
 - 실행 결과: `docs/testing/week5-contract-baseline-result.md`
 - 소비자 검토표: `docs/testing/week5-contract-consumer-review.md`
 - 팀원 회신 요청: `docs/handoffs/week5-contract-consumer-review-request.md`
-- 현재 판정은 `VALIDATOR_PASS · CONSUMER_ACK 2/5`이며 최종 `TEAM_BASELINE`은 아직 아니다.
+- 현재 판정은 `VALIDATOR_PASS · CONSUMER_ACK 2/5 · BACKEND_CHANGE_REQUEST`이며 최종 `TEAM_BASELINE`은 아직 아니다.
 
 ## 8. 3.4 Contract CI 강화 진행 기록
 
@@ -102,3 +102,19 @@ target_at=<YYYY-MM-DD HH:mm KST>
 - 실제 LLM·Multi-Agent가 미구현이고 팀 pgvector 환경과 Evidence Verifier Runtime 연결이 차단돼 현재 판정은 `HOLD`다.
 - Gate 결과: `docs/testing/week5/backend-ai-integration-gate.md`
 - 담당자 실행 요청: `docs/handoffs/week5-backend-ai-integration-gate-request.md`
+
+## 10. 3.6 Web·Mobile Consumer Integration Gate 진행 기록
+
+- 계약 소비 회신과 영역별 작성자 Test를 사전 증거로 접수했다.
+- Web은 보고 Commit의 현재 기준선 포함 여부와 실제 Backend Remote Smoke가 필요하다.
+- Mobile은 구현 Commit이 현재 main에 포함됐지만 Guidance·Follow-up·기사 Visit Route와 같은 후보 Commit의 Remote Smoke가 필요하다.
+- 현재 판정은 `IN_PROGRESS · PRECHECK_HOLD`이며 실제 Remote 소비와 Mock 비대체를 확인하기 전까지 PASS로 닫지 않는다.
+- Gate 결과: `docs/testing/week5/web-mobile-consumer-integration-gate.md`
+
+## 11. 3.7 일일 Integration Gate 진행 기록
+
+- 8월 10일 Scope·Action 결정은 후속 입력 사용이 가능한 `CONDITIONAL_PASS`로 기록했다.
+- 8월 11일 Backend↔AI Gate는 실제 Runtime 증거 부족으로 `HOLD`다.
+- 8월 12일 Web·Mobile Gate는 사전 검토를 시작했으며 `PRECHECK_HOLD`다.
+- 일일 기록: `docs/testing/week5/daily-integration-gates.md`
+- 최신 Blocker: `docs/planning/week5-blocker-register.md`

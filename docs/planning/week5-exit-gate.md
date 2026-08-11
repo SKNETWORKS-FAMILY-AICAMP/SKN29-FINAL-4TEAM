@@ -20,10 +20,10 @@
 | `W5-G05` AI Runtime·Mapping | 핵심 Agent·상담 요약 최소 Runtime·Schema–State Mapping | `HOLD` | Single RAG·규칙 기반, 실제 Multi-Agent 미구현 | 이동윤·최지용·김은진 |
 | `W5-G06` Backend·DB | WBS 대상 Test·PostgreSQL·Migration·Seed | `NOT_RUN` | Backend QA 결과 | 최지용·김은진 |
 | `W5-G07` Backend↔AI | 실제 HTTP·Schema·Event·DB·Trace | `HOLD` | `docs/testing/week5/backend-ai-integration-gate.md` | 최지용·이동윤·김은진 |
-| `W5-G08` Web 소비 준비 | WBS 대상 Remote·Test·Build | `NOT_RUN` | Web 결과 | 한예나·김은진 |
-| `W5-G09` Mobile 소비 준비 | WBS 대상 Remote·Test·APK | `NOT_RUN` | Mobile 결과 | 양정현·김은진 |
+| `W5-G08` Web 소비 준비 | WBS 대상 Remote·Test·Build | `HOLD` | 작성자 Test 접수, 기준선 ACK·실제 Remote Smoke 대기 | 한예나·김은진 |
+| `W5-G09` Mobile 소비 준비 | WBS 대상 Remote·Test·APK | `HOLD` | 계약 ACK·작성자 Build 접수, Backend Route·실제 Remote Smoke 대기 | 양정현·최지용·김은진 |
 | `W5-G10` 잔여 Runtime | WBS 대상 Runtime별 PASS·BLOCKED 구분 | `NOT_RUN` | Owner Matrix·영역별 결과 | 영역 담당자 |
-| `W5-G11` 인계 | 미완료 담당자·목표일·해제 조건 확정 | `NOT_RUN` | Blocker·6~7주차 인계 | 윤승혁·김은진 |
+| `W5-G11` 인계 | 미완료 담당자·목표일·해제 조건 확정 | `IN_PROGRESS` | `docs/planning/week5-blocker-register.md` | 윤승혁·김은진 |
 
 ## 3. WBS 5주차 최종 판정
 
