@@ -950,3 +950,30 @@ Public UUID 분석 요청이 모두 성공했다.
   Alias 승인, IAC425 양성 문항, PM Gate 전에는 운영 검색 설정을 변경하지 않는다.
 - Python `3.13.13`, AI Unit `156 passed, 3 warnings`, `pip check=PASS`, Backend
   Integration Fixture `12 passed, 1 warning`, `git diff --check=PASS`를 확인했다.
+
+### 2026-08-11 Local RAG 격리 pgvector 및 HTTP Runtime 검증
+
+- Docker의 격리 `pgvector/pgvector:pg16` 환경에서 Disposable Guard를 통과한 뒤
+  Schema를 초기화하고 승인 청크 7건을 두 번 UPSERT했다. 두 실행 모두 저장 행은
+  7건으로 유지되어 동일 청크 ID의 멱등성을 확인했다.
+- PostgreSQL `16.14`, pgvector `0.8.6`, Embedding 1024차원, Chunk Set Hash
+  `175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958`을
+  확인했다. 격리 평가 12/12는 실제 `PGVECTOR_QUERY` 7건과 검색 전 정책 차단
+  5건이며, Recall@5 `1.0`, MRR `0.885714`, 금지 Hit 0이다. 이 수치는 팀 DB
+  완료나 전체 제품 성능으로 확대하지 않는다.
+- 최초 실제 `mode=local` HTTP 요청은 BGE-M3가 요청 안에서 초기화되어 약 30초
+  후 HTTP 504 `AI-TIMEOUT-01`로 종료됐다. DB 검색 0건으로 처리하지 않고 Runtime
+  객체 수명 문제로 분리했다.
+- 동일 설정의 `VectorSearchService`와 Embedding Client를 Process에서 공유하고,
+  `AI_VECTOR_DSN`이 설정된 경우 FastAPI 시작 단계에서 모델을 Warmup하도록
+  수정했다. 모델 초기화와 Encode에 Lock을 적용해 동시 요청의 중복 초기화도
+  차단했다. 계약의 전체 요청 Timeout 30초와 Backend 자동 재시도 0회는 변경하지
+  않았다.
+- 수정 후 실제 HTTP 2회는 각각 약 `479ms`, `158ms`에 HTTP 200 `SUCCEEDED`,
+  `retry_count=0`, Evidence 5건으로 완료됐다. 첫 Evidence는
+  `RAG-WPUJAC104DWH-COLD-TEMPERATURE-001`이고 Header·Body Correlation도
+  일치했다.
+- Python `3.13.13`, AI Unit `159 passed, 3 warnings`, 실제 pgvector Integration
+  `1 passed`, 격리 평가 `12/12 PASS`를 확인했다. Canonical AI 청크 ID 7건은
+  고정됐지만 Backend `knowledge_document_chunk.public_id` Crosswalk와 팀 DB
+  Migration·최소권한 DSN 검증은 Backend/DB 담당 입력 전까지 미완료다.

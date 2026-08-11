@@ -1,5 +1,6 @@
 """BAAI/bge-m3 문서·질의 임베딩 어댑터."""
 
+from threading import Lock
 from typing import Iterable, List, Protocol
 
 
@@ -20,21 +21,32 @@ class BgeM3EmbeddingClient:
         self.device = device
         self.model_revision = model_revision
         self._model = None
+        self._model_lock = Lock()
+        self._encode_lock = Lock()
 
     def _load_model(self):
         if self._model is None:
-            from sentence_transformers import SentenceTransformer
-            self._model = SentenceTransformer(
-                self.model_name,
-                device=self.device,
-                revision=self.model_revision,
-            )
+            with self._model_lock:
+                if self._model is None:
+                    from sentence_transformers import SentenceTransformer
+                    self._model = SentenceTransformer(
+                        self.model_name,
+                        device=self.device,
+                        revision=self.model_revision,
+                    )
         return self._model
 
+    def warmup(self) -> None:
+        """요청 Timeout 밖에서 고정 Revision 모델을 한 번 초기화한다."""
+
+        self._load_model()
+
     def embed_documents(self, texts: Iterable[str]) -> List[List[float]]:
-        vectors = self._load_model().encode(
-            list(texts), normalize_embeddings=True, show_progress_bar=False
-        )
+        model = self._load_model()
+        with self._encode_lock:
+            vectors = model.encode(
+                list(texts), normalize_embeddings=True, show_progress_bar=False
+            )
         return [vector.tolist() for vector in vectors]
 
     def embed_query(self, text: str) -> List[float]:
