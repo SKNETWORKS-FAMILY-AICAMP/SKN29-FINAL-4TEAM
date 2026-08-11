@@ -14,7 +14,7 @@ Worktree에서 Backend 작성자 Gate를 검증했다.
 | 범위 | 작성자 결과 | 공식 완료 경계 |
 | --- | --- | --- |
 | T-005·T-016 기반 | Schema·Migration·Seed·HTTP·전체 회귀 PASS | 비작성자 QA·PM 판정 필요 |
-| T-017B | Migration·Admin·Rollback·PostgreSQL PASS | 김은진 독립 QA와 WBS 판정 필요 |
+| T-017B | Migration·Admin·Rollback·PostgreSQL PASS | 김은진 독립 QA 42건·WBS 완료 반영 |
 | T-018 R1 조회 | 계약·Runtime·PostgreSQL PASS | 목록·상세만 해당, 쓰기 기능 미포함 |
 | T-022 기존 Runtime | 생성·제출·취소와 Readiness PASS | 추가 누적 API 계약 공백 5개 |
 | T-023 기존 Runtime | 기존 Action·Replay·409·이력 회귀 PASS | 신규 상담·방문·완료 Event 미구현 |
@@ -96,7 +96,7 @@ $python = ".\backend\.venv\Scripts\python.exe"
 
 | 차단 범위 | 해제 조건 |
 | --- | --- |
-| T-017C | T-017B 독립 QA·완료 판정 |
+| T-017C | 선행 T-017A/B 완료, 별도 구현·PostgreSQL·독립 QA 필요 |
 | T-018 등록·수정·기본 선택 | 쓰기 계약·권한·멱등 정책 확정 |
 | T-019~T-021 Runtime | 직전 선행 WBS 완료와 공개 계약 확정 |
 | T-022 후속 쓰기 | 본 문서 5장의 계약 공백 해소 |

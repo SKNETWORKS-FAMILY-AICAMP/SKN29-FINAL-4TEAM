@@ -1,9 +1,9 @@
 # Django Admin 합성계정 구현·검증 가이드
 
-> 기준일: 2026-08-08
+> 기준일: 2026-08-11
 > WBS 범위: T-017B
-> 구현 상태: 작성자 구현·SQLite·PostgreSQL 검증 완료
-> 공식 상태: 독립 QA와 WBS 완료 확인 전
+> 구현 상태: 작성자 구현·SQLite·PostgreSQL·독립 QA 검증 완료
+> 공식 상태: `T-017B 완료 / T-017C 착수 가능`
 
 ## 1. 목적과 완료 경계
 
@@ -169,7 +169,7 @@ python manage.py migrate accounts 0004 --noinput --settings=config.settings.loca
 Admin/Session Migration을 `zero`로 내리는 작업은 이 가이드의 자동
 Rollback 범위가 아니다.
 
-## 9. 2026-08-08 검증 결과
+## 9. 검증 결과와 완료 판정
 
 | 검증 | 결과 |
 | --- | --- |
@@ -178,8 +178,16 @@ Rollback 범위가 아니다.
 | PostgreSQL 기존 DB 복제 | 사용자 20/20 분류, 미판정 0 |
 | 원본 로컬 `waterbridge` | 사용자 20/20, `accounts.0004` 적용 |
 | 해당 Slice 검증 시점 전체 Backend 회귀 | `817 passed, 13 skipped` |
+| 김은진 독립 T-017B 표적 | `42 passed` |
+| 독립 빈 DB Migration | Forward·Rollback·재적용 PASS |
+| 독립 기존 Fixture Backfill·Admin 보호 | PASS |
+| 2026-08-11 최신 통합 후보 Backend 전체 회귀 | `966 passed, 17 skipped, 0 failed` |
 
-13개 Skip은 기존 PostgreSQL·pgvector 전용 표식이며 이번 계정 기능 실패가
-아니다. 독립 QA는 구현 방향이 아니라 위 명령과 보호 경계를 재현해 결과를
-확인한다. 작업 식별은 기준일·Branch·Migration 이름·변경 파일·실행
-결과를 사용한다.
+독립 QA 결과는 2026-08-10 PM 상태 현행화 요청서에 기록된 회신 요약을
+근거로 한다. QA 원문 파일은 저장소에서 확인되지 않으므로, 해당 원문이
+추가되면 이 가이드에 직접 연결한다. 이 증거 공백은 T-017B 구현·검증 결과를
+뒤집지는 않지만 감사 추적상 남겨 둔다.
+
+16개 Skip은 PostgreSQL 전용 Catalog·Row Lock·Composite FK, 명시적
+TEAM_INTEGRATION Role과 기본 비활성 실제 HTTP Test다. T-017B 완료는
+T-017C의 Token 세대·감사·마지막 관리자 보호 완료를 의미하지 않는다.
