@@ -1,0 +1,72 @@
+{
+  "profile_id": "legacy_7chunk_smoke_v1",
+  "profile_version": "1.0.0",
+  "run_status": "SNAPSHOT_COMPLETE",
+  "generated_at": "2026-08-10T11:27:54.476390+00:00",
+  "evidence_mode": "HISTORICAL_SNAPSHOT",
+  "fresh_reproduction": false,
+  "runtime": {
+    "python": "3.13.12",
+    "os": "Windows 11",
+    "machine": "AMD64"
+  },
+  "git": {
+    "commit_sha": "4d955116c00f715e1ba9e465104a381b858996b9",
+    "branch": "main",
+    "working_tree_status_available": true,
+    "working_tree_clean": false,
+    "changed_path_count": 7,
+    "changed_paths": [
+      "ocs/README.md",
+      "\"docs/planning/md/\\354\\210\\230\\354\\247\\221\\353\\215\\260\\354\\235\\264\\355\\204\\260\\353\\263\\264\\352\\263\\240\\354\\204\\234.md\"",
+      "ai/configs/experiments/",
+      "ai/evaluation/reports/experiments/",
+      "ai/scripts/run_legacy_7chunk_smoke.py",
+      "ai/tests/unit/test_legacy_7chunk_smoke.py",
+      "\"docs/planning/md/20260810_AI_RAG_\\354\\213\\244\\355\\227\\230_\\352\\265\\254\\355\\230\\204_\\354\\213\\244\\355\\226\\211\\352\\263\\204\\355\\232\\215_v2.md\""
+    ]
+  },
+  "inputs": {
+    "retrieval_dataset": {
+      "path": "data/config/rag/jac104_retrieval_cases.json",
+      "sha256": "6E9F202F902F965B0C6875D8FCDF26333651E680019CC8B34416E8A444A12E4F"
+    },
+    "approved_chunks": {
+      "path": "data/processed/structured/rag/mvp/rag_verified_sample.jsonl",
+      "sha256": "2BF3582E42A309D846BC383BE9C3E08874512318DD4046082498DBFBC8584DD0"
+    },
+    "retrieval_policy": {
+      "path": "ai/configs/retrieval_policy.yaml",
+      "sha256": "7E647683D849F07DC0E7659C6B5AEE5686244AEB6543E5DFD275C5B0C6576AF8"
+    },
+    "index_manifest": {
+      "path": "ai/configs/index_manifest.json",
+      "sha256": "18F99B5479E4D1EB57487990DB73E6113C2E06BD283F82D778944569BD97BB2A"
+    },
+    "verification_report": {
+      "path": "ai/evaluation/reports/pgvector_verification.json",
+      "sha256": "3194295D7560F93F05A5567604E09A462FFD17DA74E199AFE229BF0F581E02AE"
+    }
+  },
+  "canonical_chunk_set_sha256": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+  "embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024
+  },
+  "vector_store": {
+    "provider": "pgvector",
+    "search_type": "cosine_exact_search",
+    "index_version": "1.0.0",
+    "top_k": 5,
+    "score_threshold": 0.4,
+    "database": null,
+    "database_provenance_passed": true
+  },
+  "limitations": [
+    "7개 청크 결과는 회귀 및 Smoke 확인에만 사용한다.",
+    "Recall@5 1.0을 전체 제품 검색 정확도로 표현하지 않는다.",
+    "정책 차단 5건을 Vector Retrieval 성능에 포함하지 않는다.",
+    "fresh pgvector 재실행이 아니면 측정값을 현재 실행 결과로 표현하지 않는다."
+  ]
+}

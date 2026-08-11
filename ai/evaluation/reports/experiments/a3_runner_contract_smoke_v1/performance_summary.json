@@ -1,0 +1,13 @@
+{
+  "artifact_type": "EXPERIMENT_SUMMARY",
+  "schema_version": "1.0.0",
+  "run_id": "a3_runner_contract_smoke_v1",
+  "summary_type": "PERFORMANCE",
+  "status": "NOT_EXECUTED_VALIDATION_ONLY",
+  "selected_case_count": 35,
+  "executed_case_count": 0,
+  "metrics": {},
+  "limitations": [
+    "VALIDATE_ONLY: 모델·검색·생성 미실행, 성능 지표 없음"
+  ]
+}

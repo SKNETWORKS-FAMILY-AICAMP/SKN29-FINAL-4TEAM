@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .interfaces.http.error_handlers import register_error_handlers
 from .interfaces.http.routes.analysis_routes import router as analysis_router
+from .interfaces.http.routes.experiment_playground_routes import router as experiment_playground_router
 from .interfaces.http.routes.health_routes import router as health_router
 from .interfaces.http.runtime_policy import get_runtime_policy
 from .interfaces.http.structured_logging import configure_structured_logging
@@ -36,5 +37,6 @@ def create_app() -> FastAPI:
     # 3. 라우터 등록
     app.include_router(health_router)
     app.include_router(analysis_router)
+    app.include_router(experiment_playground_router)
 
     return app

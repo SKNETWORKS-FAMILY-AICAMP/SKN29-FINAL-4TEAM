@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FullCorpusChunkV1",
+  "description": "A3-1 현재 저장 단위 기반 Full Manual Corpus Chunk",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "chunk_id",
+    "chunk_index",
+    "chunking_profile",
+    "document_id",
+    "source_record_id",
+    "source_type",
+    "exact_sales_code",
+    "product_model",
+    "product_generation",
+    "corpus_scope",
+    "allowed_use",
+    "page_refs",
+    "section_id",
+    "section_title",
+    "evidence_unit_ids",
+    "text",
+    "text_sha256",
+    "source_file_sha256",
+    "source_verification_status"
+  ],
+  "properties": {
+    "chunk_id": {"type": "string", "minLength": 1},
+    "chunk_index": {"type": "integer", "minimum": 1},
+    "chunking_profile": {"const": "current_source_page_v1"},
+    "document_id": {"type": "string", "minLength": 1},
+    "source_record_id": {"type": "string", "minLength": 1},
+    "source_type": {"const": "official_manual"},
+    "exact_sales_code": {"type": "string", "minLength": 1},
+    "product_model": {"type": "string", "minLength": 1},
+    "product_generation": {"type": ["string", "null"]},
+    "corpus_scope": {"enum": ["JAC104_ONLY", "IAC425_ONLY"]},
+    "allowed_use": {"const": "EXPERIMENT_ONLY"},
+    "page_refs": {
+      "type": "array",
+      "items": {"type": "integer", "minimum": 1},
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true
+    },
+    "section_id": {"type": "string", "minLength": 1},
+    "section_title": {"type": "string", "minLength": 1},
+    "evidence_unit_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "text": {"type": "string", "minLength": 1},
+    "text_sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+    "source_file_sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+    "source_verification_status": {"type": "string", "minLength": 1}
+  }
+}

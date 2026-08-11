@@ -1,0 +1,11 @@
+{
+  "profile_id": "full_corpus_baseline_v1",
+  "device": "cpu",
+  "document_embedding_seconds": 342.262707,
+  "query_embedding_seconds": 9.085495,
+  "retrieval_seconds": 0.352361,
+  "total_seconds": 351.701293,
+  "document_count": 96,
+  "query_count": 35,
+  "case_result_count": 210
+}

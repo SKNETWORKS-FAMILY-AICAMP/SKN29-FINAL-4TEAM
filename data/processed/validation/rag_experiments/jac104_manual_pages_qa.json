@@ -1,0 +1,190 @@
+{
+  "qa_id": "A1-1-JAC104-FULL-PAGE-QA",
+  "status": "STRUCTURAL_PASS_VISUAL_REVIEW_PENDING",
+  "generated_at": "2026-08-10T11:37:17.132588+00:00",
+  "scope": {
+    "included": "JAC104/JCC104 기존 44페이지 JSONL",
+    "excluded": [
+      "IAC425",
+      "FAQ",
+      "Chunking",
+      "Embedding",
+      "Vector DB"
+    ]
+  },
+  "dataset": {
+    "path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+    "sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F",
+    "record_count": 44
+  },
+  "schema": {
+    "path": "data/schemas/processed/manualPage.schema.json",
+    "sha256": "82581B69E3F01C0C07D56AB58A4CFF20FEE7629C083F23B278D40BA40D32A608"
+  },
+  "source_binary_verification": {
+    "status": "VERIFIED",
+    "archive_name": "raw_data.zip",
+    "entry_name": "메뉴얼 원본, 크롤링 원본/WPU-JAC104,WPU-JCC104-냉온정수기메뉴얼.pdf",
+    "entry_bytes": 5131906,
+    "sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+    "recorded_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+    "matched": true
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 1,
+    "pages_expected": 44,
+    "pages_found": 44,
+    "unique_pages": 44,
+    "unique_page_ids": 44,
+    "missing_pages": [],
+    "duplicate_pages": [],
+    "duplicate_text_groups": [],
+    "blank_text_pages": [],
+    "text_hash_mismatch_pages": [],
+    "mojibake_pages": [],
+    "visual_review_pending_count": 42
+  },
+  "verification_coverage": {
+    "status_counts": {
+      "TEXT_AND_VISUAL_VERIFIED": 1,
+      "TEXT_EXTRACTED": 42,
+      "VISUALLY_REVIEWED": 1
+    },
+    "visual_review_pending_pages": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43
+    ],
+    "experiment_text_ready_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44
+    ],
+    "production_or_gold_approval_not_inferred": true
+  },
+  "metadata_invariants": {
+    "document_id": [
+      "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+    ],
+    "source_type": [
+      "official_manual"
+    ],
+    "provider": [
+      "SK매직"
+    ],
+    "exact_sales_code": [
+      "WPUJAC104DWH"
+    ],
+    "product_model": [
+      "WPU-JAC104 (D) / WPU-JCC104 (D)"
+    ],
+    "model_family": [
+      "WPU-JAC104"
+    ],
+    "product_generation": [
+      "D"
+    ],
+    "scope_role": [
+      "mvp"
+    ],
+    "version": [
+      "REV.00"
+    ],
+    "page_count": [
+      44
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "VISUAL_REVIEW_PENDING",
+      "message": "시각 검수 대기 42쪽"
+    }
+  ],
+  "decision": {
+    "experimental_corpus_text_use": "READY",
+    "gold_evidence_use": "REVIEW_REQUIRED",
+    "production_corpus_expansion": "NOT_AUTHORIZED"
+  }
+}

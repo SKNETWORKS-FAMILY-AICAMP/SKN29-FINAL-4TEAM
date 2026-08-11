@@ -1,0 +1,59 @@
+{
+  "qa_id": "A2-GOLD-EVALUATION-V1-QA",
+  "status": "STRUCTURAL_PASS_HUMAN_REVIEW_PENDING",
+  "generated_at": "2026-08-10T12:14:58.205678+00:00",
+  "dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "sha256": "DDB20527D452E1C246CA821CFA7D4EC159B13E24597FDEF685C19136065E50FD",
+    "record_count": 60
+  },
+  "manifest": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1_manifest.json",
+    "sha256": "001BE8BFF494D7FE64B935185D032168F102D5A67833F7B0EF8320B6FE407B9A"
+  },
+  "schema": {
+    "path": "ai/evaluation/schemas/gold_evaluation_case_v1.schema.json",
+    "sha256": "04FC1D06AF58AB7A093521DD5F836CD1C44B925374256DCD89489290E34489BC"
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 1,
+    "records_expected": 60,
+    "records_found": 60,
+    "query_variant_type_counts": {
+      "COLLOQUIAL": 10,
+      "COMPOUND": 5,
+      "CROSS_PRODUCT": 5,
+      "DIRECT": 20,
+      "NO_EVIDENCE": 5,
+      "SAFETY": 10,
+      "TYPO_ABBREVIATION": 5
+    },
+    "split_counts": {
+      "DEV": 35,
+      "SAFETY": 10,
+      "TEST": 15
+    },
+    "review_status_counts": {
+      "UNREVIEWED_DRAFT": 60
+    },
+    "duplicate_queries": [],
+    "approved_records": 0,
+    "review_pending_records": 60
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "HUMAN_REVIEW_PENDING",
+      "pending_records": 60,
+      "approved_records": 0,
+      "message": "2인 검수 완료 전에는 Draft Dataset으로만 사용"
+    }
+  ],
+  "decision": {
+    "schema_and_lineage": "READY",
+    "experiment_draft_use": "READY",
+    "gold_approved_use": "BLOCKED",
+    "automatic_label_approval": "PROHIBITED"
+  }
+}

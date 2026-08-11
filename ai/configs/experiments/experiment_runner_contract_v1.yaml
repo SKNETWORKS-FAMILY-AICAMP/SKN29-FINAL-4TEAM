@@ -1,0 +1,56 @@
+{
+  "profile_id": "experiment_runner_contract_v1",
+  "profile_version": "1.0.0",
+  "status": "LAB_CONTRACT_ONLY",
+  "execution_mode": "VALIDATE_ONLY",
+  "dataset": {
+    "dataset_id": "RAG-GOLD-V1",
+    "alias": "rag_gold_v1",
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "manifest_path": "ai/evaluation/datasets/gold/rag_gold_v1_manifest.json"
+  },
+  "corpus": {
+    "version": "a1-20260810",
+    "files": [
+      {
+        "role": "JAC104_MVP_MANUAL",
+        "path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl"
+      },
+      {
+        "role": "IAC425_EXPERIMENT_MANUAL",
+        "path": "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl"
+      },
+      {
+        "role": "FAQ_CONDITIONAL_CORPUS",
+        "path": "data/processed/documents/faq/faq_snapshot_normalized.jsonl"
+      }
+    ]
+  },
+  "chunking": {
+    "profile": "NOT_CONFIGURED_UNTIL_A3_1",
+    "parameters": {}
+  },
+  "embedding": {
+    "model": null,
+    "revision": null,
+    "dimension": null
+  },
+  "retrieval": {
+    "profile": "NOT_CONFIGURED_UNTIL_A3_1",
+    "top_k": 5,
+    "threshold": null,
+    "reranker": null
+  },
+  "generation": {
+    "generator": null,
+    "prompt_version": null,
+    "temperature": null
+  },
+  "result_schema": "ai/evaluation/schemas/experiment_result_bundle_v1.schema.json",
+  "output_root": "ai/evaluation/reports/experiments",
+  "publication_limits": [
+    "VALIDATE_ONLY 결과를 검색·생성 성능으로 발표하지 않는다.",
+    "2인 미승인 Gold Draft 결과를 공식 성능 수치로 사용하지 않는다.",
+    "Embedding·Vector DB·Generator 미실행 상태를 Baseline으로 표현하지 않는다."
+  ]
+}
