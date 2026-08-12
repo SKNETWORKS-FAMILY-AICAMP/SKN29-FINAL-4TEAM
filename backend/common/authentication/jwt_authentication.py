@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from drf_spectacular.extensions import OpenApiAuthenticationExtension
 from rest_framework_simplejwt.authentication import (
     JWTAuthentication as SimpleJWTAuthentication,
 )
@@ -50,3 +51,21 @@ class JWTAuthentication(SimpleJWTAuthentication):
                 code="user_state_changed",
             )
         return user
+
+
+class JWTAuthenticationScheme(OpenApiAuthenticationExtension):
+    """Swagger UI에서 Water Bridge JWT를 Bearer 인증으로 노출한다."""
+
+    target_class = JWTAuthentication
+    name = "BearerAuth"
+
+    def get_security_definition(self, auto_schema):
+        return {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": (
+                "Demo Login 응답의 access_token 값만 입력하세요. "
+                "Bearer 접두어는 Swagger가 자동으로 추가합니다."
+            ),
+        }
