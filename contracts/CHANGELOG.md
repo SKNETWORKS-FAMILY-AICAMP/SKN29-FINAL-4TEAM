@@ -1,5 +1,24 @@
 # Contracts Changelog
 
+## 2026-08-11 — CR-001 상담사 전화 문의 등록 계약
+
+### Added
+
+- 합성 고객의 ACTIVE 구독을 마스킹 검색하는
+  `POST /consultant/customer-subscriptions/search`
+- 선택한 구독으로 전화 문의를 생성하는
+  `POST /consultant/phone-inquiries`
+- `REGISTER_PHONE_INQUIRY`의 `null → CONSULTATION_REQUIRED` 초기 전이와
+  상담사 역할·합성 활성 구독 Guard
+
+### Boundary
+
+- 기존 CUSTOMER `POST /inquiries`의 Path·DTO·권한은 변경하지 않는다.
+- 전화 접수는 상담 대기열 생성까지만 수행하고 AI·RAG를 자동 실행하지
+  않는다.
+- 실제 개인정보·신규 고객 생성·수동 제목·콜백 예약·상담 메모 동시
+  저장은 이번 계약에서 제외한다.
+
 ## 2026-08-11 — Backend Runtime 12 후속 계약 결정 적용
 
 ### Changed

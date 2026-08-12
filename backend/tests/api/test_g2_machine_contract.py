@@ -221,9 +221,9 @@ def test_g2_operation_inventory_crosswalk_and_runtime_boundary():
         for item in crosswalk["operations"]
     }
 
-    assert root["info"]["version"] == "0.8.0"
-    assert len(operations) == 33
-    assert len({item["operationId"] for item in operations.values()}) == 33
+    assert root["info"]["version"] == "0.9.0"
+    assert len(operations) == 35
+    assert len({item["operationId"] for item in operations.values()}) == 35
     assert set(crosswalk_operations) == set(G2_OPERATIONS)
     assert crosswalk["contract"]["included_decisions"] == [
         "DEC-001",

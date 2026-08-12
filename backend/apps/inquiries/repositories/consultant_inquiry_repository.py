@@ -101,6 +101,10 @@ class ConsultantInquiryRepository:
                         then=Value("URGENT"),
                     ),
                     When(
+                        priority_code=Inquiry.Priority.URGENT,
+                        then=Value("URGENT"),
+                    ),
+                    When(
                         latest_assessment_priority__in=(
                             "URGENT",
                             "priority_consultation",
@@ -112,6 +116,10 @@ class ConsultantInquiryRepository:
                         then=Value("HIGH"),
                     ),
                     When(
+                        priority_code=Inquiry.Priority.HIGH,
+                        then=Value("HIGH"),
+                    ),
+                    When(
                         latest_assessment_priority__in=(
                             "HIGH",
                             "consultation_recommended",
@@ -119,7 +127,15 @@ class ConsultantInquiryRepository:
                         then=Value("HIGH"),
                     ),
                     When(
+                        priority_code=Inquiry.Priority.NORMAL,
+                        then=Value("NORMAL"),
+                    ),
+                    When(
                         latest_assessment_priority="LOW",
+                        then=Value("LOW"),
+                    ),
+                    When(
+                        priority_code=Inquiry.Priority.LOW,
                         then=Value("LOW"),
                     ),
                     When(

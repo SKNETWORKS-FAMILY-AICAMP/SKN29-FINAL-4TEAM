@@ -18,6 +18,15 @@ from apps.workflow.models import TransitionHistory
 
 
 pytestmark = pytest.mark.django_db
+INQUIRY_LATEST = ("inquiries", "0013_inquiry_priority_code")
+LATEST_SCHEMA = [
+    ("workflow", "0005_status_history_contract_names_indexes"),
+    INQUIRY_LATEST,
+]
+
+
+def restore_latest_schema() -> None:
+    MigrationExecutor(connection).migrate(LATEST_SCHEMA)
 
 
 def create_inquiry(sequence: int) -> Inquiry:
@@ -116,12 +125,24 @@ def test_backfill_corrects_only_changed_at_after_created_at():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_migration_executor_applies_0002_to_0003_transition():
+def test_migration_executor_applies_0002_to_0003_transition(request):
     """Exercise the registered Migration operation, not only its function."""
 
-    target_0002 = [("workflow", "0002_expand_transition_targets")]
-    target_0003 = [("workflow", "0003_backfill_legacy_changed_at")]
-    target_0004 = [("workflow", "0004_align_contract_status_history")]
+    restore_latest_schema()
+    request.addfinalizer(restore_latest_schema)
+
+    target_0002 = [
+        ("workflow", "0002_expand_transition_targets"),
+        INQUIRY_LATEST,
+    ]
+    target_0003 = [
+        ("workflow", "0003_backfill_legacy_changed_at"),
+        INQUIRY_LATEST,
+    ]
+    target_0004 = [
+        ("workflow", "0004_align_contract_status_history"),
+        INQUIRY_LATEST,
+    ]
     executor = MigrationExecutor(connection)
     executor.migrate(target_0002)
     history_0002 = executor.loader.project_state(
