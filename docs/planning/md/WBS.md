@@ -4,7 +4,7 @@
 
 > 기획서, 화면설계서 통합본 v10, 요구사항정의서 v2.0 92건 및 수집데이터보고서의 정합성을 반영한 WBS이다.
 > 작성 기준일: 2026-08-07
-> 최종 현행화: 2026-08-11
+> 최종 현행화: 2026-08-12 (`main@f781e92` 5주차 Gate 재판정)
 
 ## 목차
 
@@ -109,18 +109,18 @@
 
 | 순서 | 작업 | 담당 | 5주차 목표 | 진입 상태 |
 |---:|---|---|---|---|
-| 1 | 기준선 Commit·Issue 대조 | 윤승혁·김은진 | 8/10 | 준비 중 |
-| 2 | Backend·AI/Vector·Mobile 환경 Gate | 최지용·이동윤·양정현·김은진 | 8/10 | 차단 |
-| 3 | AI Schema–State Event Mapping | 이동윤·최지용 | 8/10 | 검토 대기 |
-| 4 | Backend–AI 최소 수직 연결 | 최지용·이동윤 | 8/11 | 미착수 |
-| 5 | `T-025` 기준선·책임 분리 비교 | 이동윤 | 8/10~8/11 | 미착수 |
-| 6 | `T-027` 위험·사용 안내 분류 | 이동윤 | 8/11~8/12 | 미착수 |
-| 7 | `T-026` 추가 질문 소비자 연동 | 이동윤·최지용 | 8/12 | 부분 구현 |
-| 8 | `T-028A` 제품·세대 기반 검색 | 이동윤 | 8/12~8/13 | 미착수 |
+| 1 | 기준선 Commit·Issue 대조 | 윤승혁·김은진 | 8/10 | 완료 — Planning·Exit·Blocker `f781e92` 정렬 |
+| 2 | Backend·AI/Vector·Mobile 환경 Gate | 최지용·이동윤·양정현·김은진 | 8/10 | 부분 통과 — Backend·Mobile 증거 확보, 실제 AI·팀 Vector HOLD |
+| 3 | AI Schema–State Event Mapping | 이동윤·최지용 | 8/10 | 코드 main 포함·AI 최종 ACK 대기 |
+| 4 | Backend–AI 최소 수직 연결 | 최지용·이동윤 | 8/11 | Mock Gate PASS·실제 Local/LLM/pgvector HOLD |
+| 5 | `T-025` 기준선·책임 분리 비교 | 이동윤 | 8/10~8/11 | Single RAG 기준선 확인·실제 Multi-Agent HOLD |
+| 6 | `T-027` 위험·사용 안내 분류 | 이동윤 | 8/11~8/12 | 안전 분류 코드·단위 회귀 병합, 실제 Runtime Gate 대기 |
+| 7 | `T-026` 추가 질문 소비자 연동 | 이동윤·최지용 | 8/12 | Follow-up 실단말 PASS·상담요청 Runtime 제공, AI 전체 소비 부분 완료 |
+| 8 | `T-028A` 제품·세대 기반 검색 | 이동윤 | 8/12~8/13 | 검색 실험 코드 병합·팀 pgvector 실행 HOLD |
 | 9 | `T-028B` `EvidenceCardDTO` 조립 | 최지용 | 8/13~8/14 | 미착수 |
-| 10 | `T-031` 근거 없음 Guard·`T-032` 전체 Fallback | 이동윤·최지용 | 8/13~8/14 | 부분 구현 |
-| 11 | `T-019`·`T-022`·`T-023` 잔여 Runtime | 최지용 | 8/10~8/14 재계획 | T-019 착수 승인 · 잔여 Runtime 진행 |
-| 12 | `T-040`·`T-041` 상담·방문 Runtime 연결 | 최지용·한예나 | 선행 Operation 통과 후 | 계약·Mock 경계 |
+| 10 | `T-031` 근거 없음 Guard·`T-032` 전체 Fallback | 이동윤·최지용 | 8/13~8/14 | No-Evidence 코드 병합·실제 Evidence/오류 주입 HOLD |
+| 11 | `T-019`·`T-022`·`T-023` 잔여 Runtime | 최지용 | 8/10~8/14 재계획 | Runtime12 QA 승인·상담요청 Runtime 추가, 잔여 Runtime 진행 |
+| 12 | `T-040`·`T-041` 상담·방문 Runtime 연결 | 최지용·한예나 | 선행 Operation 통과 후 | Web 소비 코드 main 포함·실제 Remote Smoke HOLD |
 
 # 6. WBS 운영 기준
 

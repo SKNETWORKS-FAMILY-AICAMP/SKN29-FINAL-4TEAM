@@ -1,6 +1,6 @@
 # 5주차 E2E Event–Operation Matrix
 
-> 기준: `main@92b0674cd1a3376a2c058715cd5ef32222125755`, State Machine `1.0.0`, OpenAPI `0.8.0`
+> 기준: `main@f781e92be75d09a1f5bf0464f9ae1fdf90e97bdc`, State Machine `1.0.0`, OpenAPI `0.8.0`
 > 신규 8개 HTTP 경계는 API 주관 담당자 적용과 Contract QA가 완료됐다. Runtime 상태는 행별로 구분한다.
 > 정상 시나리오: `SYN-JAC104-002` / `DEMO-INQ-002`
 
@@ -10,7 +10,7 @@
 | 2 | `SUBMIT_SYMPTOM` | CUSTOMER | `submitSymptom` · `POST /inquiries/{id}/submit` | `TR-INQ-002` | 소유권·Version·증상 Payload | Runtime 구현 |
 | 3 | `SUBMIT_ANSWERS` | CUSTOMER | `submitFollowUpAnswers` · `POST /inquiries/{id}/answers` | `TR-INQ-003` | 열린 질문·중복 금지·Version | Runtime 구현 |
 | 4 | `SAFE_GUIDANCE_READY` | SYSTEM | 외부 Operation 없음 | `TR-INQ-008` | 안전 검증·공식 근거·위험 충돌 없음 | 내부 Event |
-| 5 | `REQUEST_CONSULTATION` | CUSTOMER | `requestConsultation` · `POST /inquiries/{id}/request-consultation` | `TR-INQ-012` | 소유권·Version·멱등키 | OpenAPI 확정 |
+| 5 | `REQUEST_CONSULTATION` | CUSTOMER | `requestConsultation` · `POST /inquiries/{id}/request-consultation` | `TR-INQ-012` | 소유권·Version·멱등키 | Runtime 구현 |
 | 6 | `START_CONSULTATION` | CONSULTANT | `startConsultation` · `POST /inquiries/{id}/start-consultation` | `TR-INQ-014` | 담당 상담사·Version | Runtime 구현 |
 | 7 | `VISIT_REVIEW_REQUIRED` | CONSULTANT | `requestVisitReview` · `POST /inquiries/{id}/visit-review` | `TR-INQ-018` | 담당 상담사·검토 Payload | Runtime 구현 |
 | 8 | `VISIT_NEEDED` | CONSULTANT | `createVisitRequest` · `POST /inquiries/{id}/visits` | `TR-INQ-019` | 방문 인계 완전성 | Runtime 구현 |
