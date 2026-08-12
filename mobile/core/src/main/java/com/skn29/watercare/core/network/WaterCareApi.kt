@@ -4,12 +4,16 @@ import com.skn29.watercare.core.model.ApiEnvelope
 import com.skn29.watercare.core.model.CancelInquiryRequest
 import com.skn29.watercare.core.model.CancelInquiryResponse
 import com.skn29.watercare.core.model.CreateInquiryRequest
+import com.skn29.watercare.core.model.CustomerInquiryQuestionsDto
+import com.skn29.watercare.core.model.CustomerInquirySnapshotDto
 import com.skn29.watercare.core.model.DemoLoginRequest
 import com.skn29.watercare.core.model.InquiryResponse
 import com.skn29.watercare.core.model.LogoutResponse
 import com.skn29.watercare.core.model.RefreshTokenRequest
 import com.skn29.watercare.core.model.SessionResponse
 import com.skn29.watercare.core.model.SubmitSymptomRequest
+import com.skn29.watercare.core.model.SubmitFollowUpAnswersRequestDto
+import com.skn29.watercare.core.model.SubmitFollowUpAnswersResponseDto
 import com.skn29.watercare.core.model.SubmitSymptomResponse
 import com.skn29.watercare.core.model.SubscriptionDetailDto
 import com.skn29.watercare.core.model.SubscriptionListDataDto
@@ -70,6 +74,23 @@ interface WaterCareApi {
         @Header("Idempotency-Key") idempotencyKey: String,
         @Body body: CancelInquiryRequest,
     ): Response<ApiEnvelope<CancelInquiryResponse>>
+
+    @GET("api/v1/me/inquiries/{inquiryId}")
+    suspend fun customerInquirySnapshot(
+        @Path("inquiryId") inquiryId: String,
+    ): Response<ApiEnvelope<CustomerInquirySnapshotDto>>
+
+    @GET("api/v1/me/inquiries/{inquiryId}/questions")
+    suspend fun customerInquiryQuestions(
+        @Path("inquiryId") inquiryId: String,
+    ): Response<ApiEnvelope<CustomerInquiryQuestionsDto>>
+
+    @POST("api/v1/inquiries/{inquiryId}/answers")
+    suspend fun submitFollowUpAnswers(
+        @Path("inquiryId") inquiryId: String,
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: SubmitFollowUpAnswersRequestDto,
+    ): Response<ApiEnvelope<SubmitFollowUpAnswersResponseDto>>
 }
 
 interface RefreshApi {
