@@ -2,7 +2,7 @@
 
 > 실행일: 2026-08-11 14:21 KST
 > 계약 검증 기준: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
-> 현재 재검증 후보: `main@4ac79e6227ce271252054b1e986d6ee24eefce4a`
+> 현재 작업 기준: `main@2a1b308ed5eae8bdbaec57ee6026f14529b10794`
 > 판정: **REMOTE_CONTRACT_PASS · CONSUMER_REVALIDATION_REQUIRED**
 
 ## 1. 결론
@@ -72,3 +72,11 @@ python -B -m pytest tests/contract -q -p no:cacheprovider
 - `submitSymptom` AI 경계, 재방문 일정 전이, 고객 Snapshot 동적 `allowed_actions` 후속 적용이 필요하다.
 - 기존 QA ACK는 변경 전 `92b0674` 기준이므로 현재 최종 후보에서 재검증한다.
 - PM 후속 결정: `docs/decisions/Backend Runtime12 후속 계약 PM 결정.md`
+
+## 7. 2026-08-12 소비자 재판정
+
+- Backend Runtime12는 `e146d23` 독립 QA `APPROVE`로 Backend ACK를 승인했다.
+- QA는 Runtime12 표적 98건, Backend 전체 1004건, PostgreSQL Row Lock 5건과 Migration Drift 없음으로 승인됐다.
+- Mobile·Backend·QA의 소비자 ACK를 인정해 현재 `3/5`다.
+- AI No-Evidence Runtime 병합은 `origin/dongyoon@692ccd5`를 승인했으며 main 반영 전까지 AI ACK에는 포함하지 않는다.
+- Web 현재 기준선 ACK와 최종 후보 전체 Contract Gate가 남아 `TEAM_BASELINE`은 계속 `HOLD`다.

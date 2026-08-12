@@ -1,7 +1,8 @@
 # 5주차 Backend↔AI Integration Gate
 
 > 감사일: 2026-08-11 14:33 KST
-> 기준 Commit: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
+> 최초 기준 Commit: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
+> 현재 main: `2a1b308ed5eae8bdbaec57ee6026f14529b10794`
 > 판정: **HOLD**
 > 범위: 코드 존재, 실제 실행 증거, Mock·환경 차단을 분리해 판정
 
@@ -93,3 +94,19 @@ overall_decision=HOLD
 ```
 
 최지용·이동윤·김은진의 실행 결과를 같은 Commit으로 받은 뒤 `PASS / CONDITIONAL_PASS / HOLD`를 다시 판정한다.
+
+## 7. 2026-08-12 P0-2 부분 Gate 재판정
+
+| 항목 | 결과 |
+|---|---|
+| 정상 제출·Replay 공동 Mock | `PASS · CLOSED` |
+| AI 단위 회귀 | 167 PASS, 3 Warning |
+| 실제 Backend→AI Mock HTTP Smoke | 1 PASS |
+| No-Evidence Runtime 정합화 | 코드·단위 Test 검토 완료 |
+| AI 병합 후보 | `origin/dongyoon@692ccd5` |
+| main 동기화 | 현재 `main@2a1b308` 포함 |
+| Merge 충돌 | 확인되지 않음 |
+| PM 병합 판정 | `APPROVE` |
+| 실제 503·Timeout | `NOT_RUN` |
+
+P0-2 정상·Replay 공동 Mock Gate는 종료한다. 다만 이 결과는 실제 Local RAG·팀 pgvector·LLM·Evidence Verifier와 실제 오류 주입을 포함하지 않으므로 전체 3.5 판정은 계속 `HOLD`다.
