@@ -881,6 +881,11 @@
       "sha256": "516210E9E068BFB9744E80DA6D3D6E1E75B754A37EE9036AB56E832980707393"
     },
     {
+      "path": "processed/validation/rag_experiments/rag_child_chunks_v2_qa.json",
+      "size_bytes": 3275,
+      "sha256": "AE013B1FB4A25CA2C5EF51D2A38590B99696B711B39CAB3834541AB39D4D4162"
+    },
+    {
       "path": "processed/validation/refactor/latest_equivalence_report.json",
       "size_bytes": 15077,
       "sha256": "CE8455D5B080C29772BB70C8F68730AF6E7D083010447D7FF0D0B6B6665559A4"
