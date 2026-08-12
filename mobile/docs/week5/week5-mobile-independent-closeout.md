@@ -7,6 +7,8 @@
 - Mobile 기준선 / Runtime 분류 / Remote-Fake 경계 문서화
 - 실제 Subscription list/detail 및 실제 `subscription_id` 문의 진입
 - 실제 Inquiry create / symptom submit
+- 실제 Customer inquiry Snapshot / unanswered Questions / Follow-up Answers
+- Customer Follow-up 3API 실단말 Remote Smoke PASS (skipped=0)
 - Create/Submit Idempotency 및 409 허용 재시도 단위 회귀
 - Remote Subscription 실패 → Fixture 성공 자동 fallback 제거
 - Guidance Runtime 없음 → fail-closed
@@ -22,7 +24,6 @@
 
 ## Backend 없이는 완료할 수 없는 항목
 
-- CUSTOMER_FOLLOWUP_RUNTIME
 - CUSTOMER_GUIDANCE_EVIDENCE_RUNTIME
 - CUSTOMER_REQUEST_CONSULTATION_RUNTIME
 - TECHNICIAN_ASSIGNED_VISIT_LIST_DETAIL_RUNTIME

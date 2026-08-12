@@ -977,3 +977,70 @@ Public UUID 분석 요청이 모두 성공했다.
   `1 passed`, 격리 평가 `12/12 PASS`를 확인했다. Canonical AI 청크 ID 7건은
   고정됐지만 Backend `knowledge_document_chunk.public_id` Crosswalk와 팀 DB
   Migration·최소권한 DSN 검증은 Backend/DB 담당 입력 전까지 미완료다.
+
+### 2026-08-11 No Evidence Fallback 계약 정합성 수정
+
+- 실제 AI 근거 없음 Runtime이 `FALLBACK`, `RETRIEVING`, 빈 Evidence와
+  `PENDING_CONSULTATION`은 반환하지만 `SafetyAssessment.requires_consultation`을
+  `false`로 유지해 Backend `NO_EVIDENCE` 불변식에서 거부되는 간극을 확인했다.
+- `safety_rules.yaml`의 근거 없음 정책에 `caution`,
+  `consultation_recommended`, `requires_consultation=true`와 안전 사유를 명시하고
+  `SafetyRuleLoader`가 해당 고정값을 시작 시 검증하도록 했다. 설정 변경에 맞춰
+  `runtime_identity.json`의 안전 규칙 SHA-256도 갱신했다.
+- Generation Stage는 근거 없음이면서 danger가 아닌 경우 SafetyAssessment와
+  UsageGuidance를 함께 정규화한다. Danger 우선 분기와 Vector 구성 실패의 HTTP
+  503 경계는 변경하지 않았다.
+- 실제 `PipelineRouter`의 근거 없음 출력을 Backend `map_success_response`에
+  전달해 `NO_EVIDENCE`, `requires_consultation=true`,
+  `PENDING_CONSULTATION` 통과를 확인했다.
+- AI Unit `159 passed, 3 warnings`, Backend AI Integration `23 passed`,
+  `pip check=PASS`, `git diff --check=PASS`다. Backend의 `DANGER_DETECTED` 무조건
+  보류 문제는 Backend 담당 수정 항목으로 남아 있다.
+
+### 2026-08-12 Retrieval Policy Identity Hash 정합성 수정
+
+- D-03 Answerability·Capability Gate 추가 이후 `retrieval_policy.yaml`의 내용은
+  변경됐지만 `runtime_identity.json`의 `configuration_sha256.retrieval_policy`가
+  이전 값으로 남아 있던 불일치를 수정했다.
+- 프로젝트 검증 규칙과 동일하게 CRLF를 LF로 정규화한 SHA-256
+  `1AD4C4DB9E63233DE4694D77F078436095D83F2F41309DE382E9E48D128797D8`을
+  기록했다. 파일 원본 바이트의 줄바꿈 차이는 Runtime Identity 변경으로
+  취급하지 않는다.
+- 설정·Schema 단위 테스트 `39 passed, 2 warnings`, AI 전체 단위 테스트
+  `167 passed, 3 warnings`를 Python `3.13.13`에서 확인했다.
+
+### 2026-08-12 P0-2 공동 Mock 후속 확인·회신
+
+- 원격 `main@382ddc5933d0ec63a38778a0c78d037c351b7128`을 Fetch한 뒤 AI 작업
+  Branch에 병합했다. AI 고유 No-Evidence Runtime 정합화와 Runtime Identity Hash
+  수정은 제품 Runtime에 필요하므로 `MAIN_MERGE_REQUIRED`로 판정했다. 병합 Commit
+  `c70e9f79c87db0b88c029e3fdcfa3018c6593d89`가 `origin/dongyoon`에 Push된 상태도
+  원격 Fetch로 재확인했다.
+- Python `3.13.13`, `pip check=PASS`, AI 전체 단위 테스트
+  `167 passed, 3 warnings`를 최신 main 병합 상태에서 확인했다.
+- 실제 Uvicorn Mock과 Backend Live HTTP Test를 재실행해 `/health` 200과 정상
+  제출·Replay `1 passed`를 확인했다. 신규 AI 호출 1회, Replay 추가 호출 0회,
+  계약 `3.0.0`, Correlation과 AIRun·Assessment·Guidance 저장을 함께 검증했다.
+- 실제 공동 HTTP 503·Timeout은 실행하지 않아 `NOT_RUN`으로 유지하고, 기존
+  결정적 오류 경계·독립 QA 증거를 사용하는 `KEEP_NOT_RUN`으로 회신했다.
+- `docs/individual/dongyoon/인계/20260812_이동윤_to_최지용_P0-2_공동Mock_후속정보_회신_v0.1.md`에
+  Branch·병합 상태, 명령·Exit, P0-2 완료 경계와 PM 결정 요청을 기록했다.
+
+### 2026-08-12 Experiment Lab B2-4 Alias Query Expansion 비교
+
+- B2-3의 양쪽 누락 가설을 이어 받아 Parent/Child Dense 원문 Query와 Draft Alias
+  확장 Query를 동일 Gold DEV 35건에서 비교했다. B2-3 이후 Gold Dataset Hash가
+  변경돼 B2-4 안에서 원문 Dense 대조군을 다시 실행했다.
+- 누수 Alias는 `RAGV2-GOLD-0027`을 Top-5 밖에서 3위로 복구하고 `0021`을
+  2위에서 1위로 개선했다. 무출수 Alias는 `0025`를 복구하지 못해 Rule별 판정을
+  각각 `SUPPORTED_ON_DRAFT_DEV_PENDING_REVIEW`,
+  `NOT_SUPPORTED_ON_CURRENT_DRAFT_DEV`로 분리했다.
+- DEV Positive Hit@5는 `0.925926`에서 `0.962963`, MRR은 `0.783951`에서
+  `0.814815`로 변했다. Positive 회귀 0, 무근거 8건 회귀 0, 잘못된 제품 Hit 0을
+  확인했다.
+- 부정형과 비제품·다른 원인의 문맥을 포함한 Hard Negative 7건을 추가했다. 초기
+  과활성화 3건을 확인해 명시적 제외 조건을 보강했고 최종 예상 밖 활성화 0을
+  확인했다.
+- 결과는 `DRAFT_ALIAS_CANDIDATE_PARTIALLY_SUPPORTED_PENDING_REVIEW`이며 운영
+  Pipeline·검색 정책·Corpus·Evidence·Backend 계약은 변경하지 않았다. 누수 Alias는
+  Data Owner 검수와 Gold 승인 뒤 TEST·SAFETY 독립 검증이 필요하다.

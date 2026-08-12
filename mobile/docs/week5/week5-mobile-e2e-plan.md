@@ -7,7 +7,7 @@ Scenario: W5-MOBILE-P0-001
 3. GET subscription detail
 4. Create Inquiry with "출수량이 줄었어요"
 5. Submit symptom using returned state_version
-6. If Backend exposes follow-up, answer only contract-provided questions
+6. Read actual Snapshot/Questions and submit only contract-provided Follow-up answers through the actual API
 7. If Backend exposes Guidance, show only customer-safe DTO/Evidence
 8. If Backend exposes consultation, request through actual API
 9. If Backend creates/assigns Visit, DEMO-TECHNICIAN-001 reads same Visit

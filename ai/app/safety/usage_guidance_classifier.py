@@ -64,3 +64,20 @@ class UsageGuidanceClassifier:
             restricted_functions=[],
             next_actions=["기본 필터 및 사용 환경 유지", "정기 관리 일정 확인"]
         )
+
+    def determine_assessment_and_guidance(
+        self,
+        safety_assessment: SafetyAssessment,
+        raw_text: str,
+        has_evidence: bool = True,
+    ) -> tuple[SafetyAssessment, UsageGuidance]:
+        """근거 유무를 반영한 안전 평가와 사용 안내를 함께 확정한다."""
+
+        if not has_evidence and safety_assessment.risk_level != RiskLevel.DANGER:
+            policy = NoEvidencePolicy(self.loader)
+            return policy.apply_to_assessment(safety_assessment), policy.apply()
+        return safety_assessment, self.determine_guidance(
+            safety_assessment,
+            raw_text,
+            has_evidence=has_evidence,
+        )

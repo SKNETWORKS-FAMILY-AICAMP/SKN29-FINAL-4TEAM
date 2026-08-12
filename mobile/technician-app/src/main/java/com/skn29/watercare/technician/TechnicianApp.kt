@@ -43,10 +43,11 @@ import com.skn29.watercare.core.ui.components.LiquidGlassTone
 import com.skn29.watercare.core.ui.components.LiquidGlassToneProvider
 import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.core.ui.components.PendingFeatureCard
+import com.skn29.watercare.core.ui.components.ReferencePearlBackground
+import com.skn29.watercare.core.ui.components.TechnicianReferencePalette
 import com.skn29.watercare.core.ui.theme.WaterCaution
 import com.skn29.watercare.core.ui.theme.WaterDanger
 import com.skn29.watercare.core.ui.theme.WaterGeneral
-import com.skn29.watercare.core.ui.theme.WaterGradientBackground
 
 @Composable
 fun TechnicianApp() {
@@ -102,7 +103,11 @@ private fun TechnicianAppContent() {
                 onLogout = technicianViewModel::logout,
             )
 
-        else -> WaterGradientBackground {
+        else -> ReferencePearlBackground(
+            palette = TechnicianReferencePalette,
+            backgroundRes = R.drawable.water_splash_technician_r19,
+            imageAlpha = 0.50f,
+        ) {
             Scaffold(
                 containerColor = Color.Transparent,
                 topBar = {
@@ -130,7 +135,7 @@ private fun TechnicianAppContent() {
                                         Color.Transparent,
                                     scrolledContainerColor =
                                         Color.White.copy(
-                                            alpha = 0.72f
+                                            alpha = 0.84f
                                         ),
                                 ),
                     )

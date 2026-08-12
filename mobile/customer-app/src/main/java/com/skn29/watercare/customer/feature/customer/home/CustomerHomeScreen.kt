@@ -94,6 +94,7 @@ fun CustomerHomeContent(
         roleLabel = "고객용",
         palette = palette,
         backgroundRes = R.drawable.water_splash_customer_r19,
+        backgroundImageAlpha = 0.72f,
         bottomItems = listOf(
     ReferenceBottomItem(
         iconRes = R.drawable.ref_home,
@@ -166,12 +167,12 @@ fun CustomerHomeContent(
                 imageRes = R.drawable.dashboard_purifier,
                 palette = palette,
                 roleLabel = "고객용",
-                imageEmphasis = 1.10f,
+                imageEmphasis = 1.12f,
             )
 
             ReferenceSectionHeader(
                 title = "내 정수기 상태",
-                trailing = "한눈에 확인",
+                trailing = "한눈에 확인  ›",
                 palette = palette,
             )
             ReferenceStatusRow(
@@ -188,8 +189,8 @@ fun CustomerHomeContent(
                     ),
                     ReferenceStatusItem(
                         iconRes = R.drawable.ref_power,
-                        label = "진행 문의",
-                        value = activeInquiry?.statusLabel ?: "없음",
+                        label = "최근 진단",
+                        value = activeInquiry?.statusLabel ?: "확인 완료",
                     ),
                 ),
                 palette = palette,
@@ -197,7 +198,7 @@ fun CustomerHomeContent(
 
             ReferenceSectionHeader(
                 title = "빠른 서비스",
-                trailing = "전체보기 ›",
+                trailing = "전체보기  ›",
                 palette = palette,
             )
             ReferenceActionRow(
@@ -206,7 +207,7 @@ fun CustomerHomeContent(
                         iconRes = R.drawable.ref_intake,
                         label = "증상 접수",
                         subtitle = if (state.intakeAvailable) {
-                            "바로 접수"
+                            "신청하기"
                         } else {
                             "설정 필요"
                         },
@@ -220,7 +221,7 @@ fun CustomerHomeContent(
                         iconRes = R.drawable.ref_care,
                         label = "AI 자가진단",
                         subtitle = if (fixtureGuidanceAvailable) {
-                            "Fixture 안내"
+                            "문제 확인하기"
                         } else {
                             "API 준비 중"
                         },
@@ -235,15 +236,15 @@ fun CustomerHomeContent(
                     ),
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_schedule,
-                        label = "방문 예약",
-                        subtitle = "API 준비 중",
+                        label = "방문 예약 조회",
+                        subtitle = "예약 확인",
                         enabled = false,
                         onClick = {},
                     ),
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_product,
                         label = "제품 정보",
-                        subtitle = "준비 중",
+                        subtitle = "제품 안내",
                         enabled = false,
                         onClick = {},
                     ),
@@ -266,8 +267,8 @@ fun CustomerHomeContent(
                 ),
                 status = "현재 정보 확인 완료",
                 palette = palette,
-                primaryActionLabel = "제품 상세 · 준비 중",
-                secondaryActionLabel = "관리 가이드 · 준비 중",
+                primaryActionLabel = "",
+                secondaryActionLabel = "",
                 onPrimaryAction = {},
                 onSecondaryAction = {},
                 primaryActionEnabled = false,
@@ -275,7 +276,7 @@ fun CustomerHomeContent(
             )
 
             ReferenceSectionHeader(
-                title = "케어 & 지원",
+                title = "케어 & 지원 서비스",
                 trailing = "더보기 ›",
                 palette = palette,
             )

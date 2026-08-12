@@ -73,6 +73,7 @@ data class ReferenceDashboardPalette(
     val success: Color,
     val warning: Color,
     val danger: Color,
+    val darkSurface: Boolean = false,
 )
 
 val CustomerReferencePalette = ReferenceDashboardPalette(
@@ -90,22 +91,23 @@ val CustomerReferencePalette = ReferenceDashboardPalette(
 )
 
 val TechnicianReferencePalette = ReferenceDashboardPalette(
-    accent = Color(0xFF00AFA9),
-    accentSecondary = Color(0xFF268DDB),
-    accentSoft = Color(0x330AB7B9),
-    accentSoftSecondary = Color(0x282C95FF),
-    backgroundStart = Color(0xFFF7FFFD),
-    backgroundEnd = Color(0xFFF3FAFF),
-    textStrong = Color(0xFF0B3040),
-    textMuted = Color(0xFF56757B),
-    success = Color(0xFF18B8A8),
-    warning = Color(0xFFE5A146),
-    danger = Color(0xFFEA5B70),
+    accent = Color(0xFF43E2DE),
+    accentSecondary = Color(0xFF49A8FF),
+    accentSoft = Color(0x3343E2DE),
+    accentSoftSecondary = Color(0x2849A8FF),
+    backgroundStart = Color(0xFF063B55),
+    backgroundEnd = Color(0xFF052A40),
+    textStrong = Color(0xFFF2FCFF),
+    textMuted = Color(0xFFB9D8E3),
+    success = Color(0xFF55E0C9),
+    warning = Color(0xFFFFC66A),
+    danger = Color(0xFFFF7A8E),
+    darkSurface = true,
 )
 
-private val ReferenceWaterDropPanelShape = RoundedCornerShape(30.dp)
+private val ReferenceWaterDropPanelShape = RoundedCornerShape(32.dp)
 
-private val ReferenceWaterDropTileShape = RoundedCornerShape(26.dp)
+private val ReferenceWaterDropTileShape = RoundedCornerShape(28.dp)
 
 data class ReferenceStatusItem(
     @DrawableRes val iconRes: Int,
@@ -137,6 +139,7 @@ fun ReferenceDashboardScaffold(
     roleLabel: String,
     palette: ReferenceDashboardPalette,
     @DrawableRes backgroundRes: Int? = null,
+    backgroundImageAlpha: Float = 0.54f,
     bottomItems: List<ReferenceBottomItem> = emptyList(),
     modifier: Modifier = Modifier,
     onNotification: () -> Unit = {},
@@ -148,6 +151,7 @@ fun ReferenceDashboardScaffold(
     ReferencePearlBackground(
         palette = palette,
         backgroundRes = backgroundRes,
+        imageAlpha = backgroundImageAlpha,
         modifier = modifier,
     ) {
         Scaffold(
@@ -178,12 +182,12 @@ fun ReferenceDashboardScaffold(
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
                     .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 12.dp,
-                        bottom = 112.dp,
+                        start = 18.dp,
+                        end = 18.dp,
+                        top = 14.dp,
+                        bottom = 116.dp,
                     ),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
                 ReferenceDashboardHeader(
                     roleLabel = roleLabel,
@@ -292,16 +296,41 @@ fun ReferenceCompactBanner(
         ) {
             Box(
                 modifier = Modifier
-                    .size(11.dp)
+                    .size(24.dp)
                     .clip(CircleShape)
                     .background(
                         if (warning) {
-                            palette.warning
+                            palette.warning.copy(alpha = 0.14f)
                         } else {
-                            palette.success
+                            palette.success.copy(alpha = 0.14f)
                         }
                     )
-            )
+                    .border(
+                        BorderStroke(
+                            1.dp,
+                            if (warning) {
+                                palette.warning.copy(alpha = 0.30f)
+                            } else {
+                                palette.success.copy(alpha = 0.30f)
+                            },
+                        ),
+                        CircleShape,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(9.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (warning) {
+                                palette.warning
+                            } else {
+                                palette.success
+                            }
+                        )
+                )
+            }
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(3.dp),
@@ -424,14 +453,25 @@ private fun ReferenceBrandMark(
         drawPath(
             path = droplet,
             brush = Brush.linearGradient(
-                listOf(
-                    palette.accent,
-                    palette.accentSecondary,
-                )
+                if (palette.darkSurface) {
+                    listOf(
+                        palette.accent,
+                        palette.accentSecondary,
+                    )
+                } else {
+                    listOf(
+                        Color.White,
+                        Color(0xFFBDEBFF),
+                    )
+                }
             ),
         )
         drawCircle(
-            color = Color.White.copy(alpha = 0.82f),
+            color = if (palette.darkSurface) {
+                Color.White.copy(alpha = 0.86f)
+            } else {
+                palette.accent.copy(alpha = 0.94f)
+            },
             radius = size.minDimension * 0.17f,
             center = Offset(
                 size.width * 0.43f,
@@ -454,29 +494,59 @@ fun ReferenceDashboardHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 2.dp, vertical = 2.dp),
+            .padding(
+                start = 2.dp,
+                end = 2.dp,
+                top = 4.dp,
+                bottom = 6.dp,
+            ),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             ReferenceBrandMark(palette)
-            Text(
-                title,
-                color = palette.textStrong,
-                fontFamily = FontFamily.SansSerif,
-                fontSize = 26.sp,
-                lineHeight = 32.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.4).sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(1.dp),
+            ) {
+                Text(
+                    title,
+                    color = if (palette.darkSurface) {
+                        palette.textStrong
+                    } else {
+                        Color.White
+                    },
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 25.sp,
+                    lineHeight = 29.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-0.55).sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    if (roleLabel.contains("기사")) {
+                        "WaterCare Field Service"
+                    } else {
+                        "WaterCare Home Service"
+                    },
+                    color = if (palette.darkSurface) {
+                        palette.textMuted.copy(alpha = 0.82f)
+                    } else {
+                        Color.White.copy(alpha = 0.84f)
+                    },
+                    fontSize = 10.5.sp,
+                    lineHeight = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    letterSpacing = 0.3.sp,
+                    maxLines = 1,
+                )
+            }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
             ReferenceSquareIconButton(
                 icon = ReferenceHeaderIcon.Notification,
                 palette = palette,
@@ -507,14 +577,15 @@ fun ReferenceHeroCard(
     modifier: Modifier = Modifier,
     roleLabel: String? = null,
     imageEmphasis: Float = 1f,
+    summaryItems: List<ReferenceStatusItem> = emptyList(),
 ) {
     ReferenceGlassPanel(
         modifier = modifier.fillMaxWidth(),
         palette = palette,
         strong = true,
         contentPadding = PaddingValues(
-            horizontal = 18.dp,
-            vertical = 18.dp,
+            horizontal = 20.dp,
+            vertical = 20.dp,
         ),
     ) {
         BoxWithConstraints(
@@ -522,9 +593,9 @@ fun ReferenceHeroCard(
         ) {
             val compact = maxWidth < 360.dp
             val imageSize = (
-                if (compact) 148.dp else 180.dp
+                if (compact) 160.dp else 198.dp
             ) * imageEmphasis.coerceIn(0.94f, 1.12f)
-            val heroHeight = if (compact) 214.dp else 242.dp
+            val heroHeight = if (compact) 236.dp else 272.dp
             val firstLine = greeting.substringBefore("\n")
             val secondLine = greeting.substringAfter("\n", "")
 
@@ -532,13 +603,27 @@ fun ReferenceHeroCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = heroHeight),
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    Text(
+                        text = if (palette.darkSurface) {
+                            "FIELD SERVICE"
+                        } else {
+                            "SMART WATER CARE"
+                        },
+                        color = palette.accent.copy(alpha = 0.88f),
+                        fontSize = 10.sp,
+                        lineHeight = 12.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.15.sp,
+                        maxLines = 1,
+                    )
+
                     if (!roleLabel.isNullOrBlank()) {
                         ReferenceRoleChip(
                             roleLabel = roleLabel,
@@ -550,10 +635,10 @@ fun ReferenceHeroCard(
                         firstLine,
                         color = palette.textStrong,
                         fontFamily = FontFamily.SansSerif,
-                        fontSize = if (compact) 21.sp else 24.sp,
-                        lineHeight = if (compact) 27.sp else 30.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.35).sp,
+                        fontSize = if (compact) 24.sp else 29.sp,
+                        lineHeight = if (compact) 30.sp else 36.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.45).sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -563,10 +648,10 @@ fun ReferenceHeroCard(
                             secondLine,
                             color = palette.accent,
                             fontFamily = FontFamily.SansSerif,
-                            fontSize = if (compact) 28.sp else 32.sp,
-                            lineHeight = if (compact) 33.sp else 38.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = (-0.55).sp,
+                            fontSize = if (compact) 33.sp else 40.sp,
+                            lineHeight = if (compact) 39.sp else 46.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = (-0.75).sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -575,8 +660,8 @@ fun ReferenceHeroCard(
                     Text(
                         subtitle,
                         color = palette.textMuted,
-                        fontSize = if (compact) 13.5.sp else 15.sp,
-                        lineHeight = if (compact) 20.5.sp else 23.sp,
+                        fontSize = if (compact) 14.sp else 16.sp,
+                        lineHeight = if (compact) 21.sp else 24.sp,
                         fontWeight = FontWeight.Medium,
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
@@ -591,11 +676,38 @@ fun ReferenceHeroCard(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape)
+                            .border(
+                                BorderStroke(
+                                    1.dp,
+                                    Color.White.copy(
+                                        alpha = if (
+                                            palette.darkSurface
+                                        ) 0.20f else 0.78f
+                                    ),
+                                ),
+                                CircleShape,
+                            )
                             .background(
                                 Brush.radialGradient(
                                     listOf(
-                                        Color.White.copy(alpha = 0.46f),
-                                        palette.accentSoft.copy(alpha = 0.20f),
+                                        Color.White.copy(
+                                            alpha = if (
+                                                palette.darkSurface
+                                            ) {
+                                                0.16f
+                                            } else {
+                                                0.62f
+                                            }
+                                        ),
+                                        palette.accentSoft.copy(
+                                            alpha = if (
+                                                palette.darkSurface
+                                            ) {
+                                                0.38f
+                                            } else {
+                                                0.24f
+                                            }
+                                        ),
                                         Color.Transparent,
                                     )
                                 )
@@ -607,10 +719,102 @@ fun ReferenceHeroCard(
                         contentDescription = null,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(1.dp),
+                            .padding(2.dp),
                         contentScale = ContentScale.Fit,
                     )
                 }
+            }
+        }
+
+        if (summaryItems.isNotEmpty()) {
+            ReferenceHeroSummaryStrip(
+                items = summaryItems,
+                palette = palette,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ReferenceHeroSummaryStrip(
+    items: List<ReferenceStatusItem>,
+    palette: ReferenceDashboardPalette,
+) {
+    val shape = RoundedCornerShape(22.dp)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(
+                if (palette.darkSurface) {
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.105f),
+                            Color(0xFF073B55).copy(alpha = 0.46f),
+                        )
+                    )
+                } else {
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.78f),
+                            Color.White.copy(alpha = 0.52f),
+                        )
+                    )
+                }
+            )
+            .border(
+                BorderStroke(
+                    1.dp,
+                    Color.White.copy(
+                        alpha = if (
+                            palette.darkSurface
+                        ) 0.24f else 0.82f
+                    ),
+                ),
+                shape,
+            )
+            .padding(
+                horizontal = 8.dp,
+                vertical = 12.dp,
+            ),
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
+    ) {
+        items.take(4).forEach { item ->
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Image(
+                    painter = painterResource(item.iconRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                )
+                Text(
+                    item.label,
+                    color = palette.textMuted,
+                    fontSize = 11.sp,
+                    lineHeight = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    item.value,
+                    color = if (item.healthy) {
+                        palette.textStrong
+                    } else {
+                        palette.danger
+                    },
+                    fontSize = 19.sp,
+                    lineHeight = 23.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
     }
@@ -625,28 +829,54 @@ fun ReferenceSectionHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 2.dp),
+            .padding(
+                start = 3.dp,
+                end = 3.dp,
+                top = 2.dp,
+            ),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            title,
-            color = palette.textStrong,
-            fontFamily = FontFamily.SansSerif,
-            fontSize = 20.sp,
-            lineHeight = 24.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = (-0.35).sp,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(9.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(
+                        width = 4.dp,
+                        height = 22.dp,
+                    )
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                palette.accent,
+                                palette.accentSecondary,
+                            )
+                        )
+                    )
+            )
+
+            Text(
+                title,
+                color = palette.textStrong,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 22.sp,
+                lineHeight = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.45).sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
 
         if (!trailing.isNullOrBlank()) {
             Text(
                 trailing,
-                color = palette.accent.copy(alpha = 0.90f),
-                fontSize = 11.5.sp,
-                lineHeight = 15.sp,
+                color = palette.accent,
+                fontSize = 12.5.sp,
+                lineHeight = 17.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -679,16 +909,51 @@ fun ReferenceActionRow(
     items: List<ReferenceActionItem>,
     palette: ReferenceDashboardPalette,
 ) {
-    Row(
+    BoxWithConstraints(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(7.dp),
     ) {
-        items.take(4).forEach { item ->
-            ReferenceActionTile(
-                item = item,
-                palette = palette,
-                modifier = Modifier.weight(1f),
-            )
+        val visibleItems = items.take(4)
+        val useTwoColumnGrid = maxWidth < 390.dp &&
+            visibleItems.size > 2
+
+        if (useTwoColumnGrid) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(9.dp),
+            ) {
+                visibleItems.chunked(2).forEach { rowItems ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(9.dp),
+                    ) {
+                        rowItems.forEach { item ->
+                            ReferenceActionTile(
+                                item = item,
+                                palette = palette,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+
+                        if (rowItems.size == 1) {
+                            Spacer(
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                visibleItems.forEach { item ->
+                    ReferenceActionTile(
+                        item = item,
+                        palette = palette,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
         }
     }
 }
@@ -725,7 +990,7 @@ fun ReferenceDetailCard(
             ReferenceGlassImage(
                 imageRes = imageRes,
                 palette = palette,
-                modifier = Modifier.size(86.dp),
+                modifier = Modifier.size(92.dp),
             )
             Column(
                 modifier = Modifier.weight(1f),
@@ -734,8 +999,9 @@ fun ReferenceDetailCard(
                 Text(
                     title,
                     color = palette.textStrong,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                    lineHeight = 22.sp,
+                    fontWeight = FontWeight.ExtraBold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -747,7 +1013,9 @@ fun ReferenceDetailCard(
                     Text(
                         line,
                         color = palette.textMuted,
-                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 11.5.sp,
+                        lineHeight = 15.sp,
+                        fontWeight = FontWeight.Medium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -798,24 +1066,188 @@ fun ReferenceDetailCard(
             }
         }
 
+        if (
+            primaryActionLabel.isNotBlank() ||
+            secondaryActionLabel.isNotBlank()
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(9.dp),
+            ) {
+                if (primaryActionLabel.isNotBlank()) {
+                    ReferenceGlassButton(
+                        text = primaryActionLabel,
+                        palette = palette,
+                        accent = true,
+                        onClick = onPrimaryAction,
+                        enabled = primaryActionEnabled,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                if (secondaryActionLabel.isNotBlank()) {
+                    ReferenceGlassButton(
+                        text = secondaryActionLabel,
+                        palette = palette,
+                        onClick = onSecondaryAction,
+                        enabled = secondaryActionEnabled,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ReferenceScheduleCard(
+    time: String,
+    customerName: String,
+    badge: String,
+    lines: List<String>,
+    palette: ReferenceDashboardPalette,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    ReferenceGlassPanel(
+        modifier = modifier.fillMaxWidth(),
+        palette = palette,
+        strong = false,
+        contentPadding = PaddingValues(
+            horizontal = 14.dp,
+            vertical = 14.dp,
+        ),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(3.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(
+                            palette.accent.copy(alpha = 0.24f),
+                            palette.accent,
+                            palette.accentSecondary.copy(alpha = 0.54f),
+                            Color.Transparent,
+                        )
+                    )
+                )
+        )
+
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(9.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
+            Box(
+                modifier = Modifier
+                    .size(54.dp)
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = CircleShape,
+                        ambientColor = palette.accent.copy(alpha = 0.16f),
+                        spotColor = palette.accentSecondary.copy(alpha = 0.14f),
+                        clip = false,
+                    )
+                    .clip(CircleShape)
+                    .background(
+                        Brush.linearGradient(
+                            if (palette.darkSurface) {
+                                listOf(
+                                    palette.accent.copy(alpha = 0.18f),
+                                    Color.White.copy(alpha = 0.08f),
+                                    palette.accentSecondary.copy(alpha = 0.12f),
+                                )
+                            } else {
+                                listOf(
+                                    Color.White.copy(alpha = 0.92f),
+                                    palette.accentSoft.copy(alpha = 0.20f),
+                                    Color.White.copy(alpha = 0.72f),
+                                )
+                            }
+                        )
+                    )
+                    .border(
+                        BorderStroke(
+                            1.2.dp,
+                            Brush.linearGradient(
+                                listOf(
+                                    Color.White.copy(
+                                        alpha = if (
+                                            palette.darkSurface
+                                        ) 0.34f else 0.96f
+                                    ),
+                                    palette.accent.copy(alpha = 0.42f),
+                                    palette.accentSecondary.copy(alpha = 0.30f),
+                                )
+                            ),
+                        ),
+                        CircleShape,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    customerName.take(2),
+                    color = palette.textStrong,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 14.sp,
+                    maxLines = 1,
+                )
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        time,
+                        color = palette.textStrong,
+                        fontSize = 22.sp,
+                        lineHeight = 26.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        maxLines = 1,
+                    )
+                    ReferencePill(
+                        text = badge,
+                        palette = palette,
+                    )
+                }
+
+                Text(
+                    customerName,
+                    color = palette.textStrong,
+                    fontSize = 15.sp,
+                    lineHeight = 19.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                lines.take(2).forEach { line ->
+                    Text(
+                        line,
+                        color = palette.textMuted,
+                        fontSize = 12.5.sp,
+                        lineHeight = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+
             ReferenceGlassButton(
-                text = primaryActionLabel,
+                text = "상세",
                 palette = palette,
+                onClick = onClick,
+                enabled = enabled,
                 accent = true,
-                onClick = onPrimaryAction,
-                enabled = primaryActionEnabled,
-                modifier = Modifier.weight(1f),
-            )
-            ReferenceGlassButton(
-                text = secondaryActionLabel,
-                palette = palette,
-                onClick = onSecondaryAction,
-                enabled = secondaryActionEnabled,
-                modifier = Modifier.weight(1f),
+                compact = true,
             )
         }
     }
@@ -826,94 +1258,151 @@ fun ReferenceBottomNavigation(
     items: List<ReferenceBottomItem>,
     palette: ReferenceDashboardPalette,
 ) {
-    ReferenceGlassPanel(
-        modifier = Modifier.fillMaxWidth(),
-        palette = palette,
-        strong = true,
-        contentPadding = PaddingValues(5.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(3.dp),
-        ) {
-            items.take(5).forEach { item ->
-                val interactionSource = remember {
-                    MutableInteractionSource()
-                }
+    val shape = RoundedCornerShape(34.dp)
 
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(60.dp)
-                        .clip(RoundedCornerShape(20.dp))
-                        .graphicsLayer {
-                            alpha = if (item.enabled) 1f else 0.62f
-                        }
-                        .clickable(
-                            enabled = item.enabled,
-                            role = Role.Button,
-                            interactionSource = interactionSource,
-                            indication = LocalIndication.current,
-                            onClick = item.onClick,
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 14.dp,
+                shape = shape,
+                ambientColor = palette.accent.copy(
+                    alpha = if (palette.darkSurface) 0.24f else 0.12f
+                ),
+                spotColor = palette.accentSecondary.copy(
+                    alpha = if (palette.darkSurface) 0.22f else 0.10f
+                ),
+                clip = false,
+            )
+            .clip(shape)
+            .background(
+                if (palette.darkSurface) {
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.12f),
+                            Color(0xFF0A4D68).copy(alpha = 0.82f),
+                            Color(0xFF06364E).copy(alpha = 0.76f),
                         )
-                        .background(
-                            if (item.selected) {
+                    )
+                } else {
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.88f),
+                            Color.White.copy(alpha = 0.70f),
+                            palette.accentSoft.copy(alpha = 0.13f),
+                        )
+                    )
+                }
+            )
+            .border(
+                BorderStroke(
+                    1.1.dp,
+                    Color.White.copy(
+                        alpha = if (
+                            palette.darkSurface
+                        ) 0.26f else 0.88f
+                    ),
+                ),
+                shape,
+            )
+            .padding(5.dp),
+        horizontalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        items.take(5).forEach { item ->
+            val interactionSource = remember {
+                MutableInteractionSource()
+            }
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(66.dp)
+                    .clip(RoundedCornerShape(21.dp))
+                    .graphicsLayer {
+                        alpha = if (item.enabled) 1f else 0.58f
+                    }
+                    .clickable(
+                        enabled = item.enabled,
+                        role = Role.Button,
+                        interactionSource = interactionSource,
+                        indication = LocalIndication.current,
+                        onClick = item.onClick,
+                    )
+                    .background(
+                        if (item.selected) {
+                            if (palette.darkSurface) {
                                 Brush.verticalGradient(
                                     listOf(
-                                        Color.White.copy(alpha = 0.96f),
-                                        palette.accentSoft.copy(alpha = 0.20f),
-                                        Color.White.copy(alpha = 0.88f),
+                                        palette.accent.copy(alpha = 0.24f),
+                                        Color.White.copy(alpha = 0.07f),
                                     )
                                 )
                             } else {
                                 Brush.verticalGradient(
                                     listOf(
-                                        Color.Transparent,
-                                        Color.Transparent,
+                                        Color.White.copy(alpha = 0.96f),
+                                        palette.accentSoft.copy(alpha = 0.18f),
                                     )
                                 )
                             }
-                        )
-                        .padding(vertical = 5.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Image(
-                        painter = painterResource(item.iconRes),
-                        contentDescription = item.label,
-                        modifier = Modifier.size(24.dp),
-                    )
-
-                    Text(
-                        item.label,
-                        modifier = Modifier.padding(top = 2.dp),
-                        color = if (item.selected) {
-                            palette.accent
                         } else {
-                            palette.textMuted
-                        },
-                        fontSize = 11.sp,
-                        lineHeight = 12.sp,
-                        fontWeight = if (item.selected) {
-                            FontWeight.Bold
-                        } else {
-                            FontWeight.Medium
-                        },
-                        maxLines = 1,
-                    )
-
-                    if (item.selected) {
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 2.dp)
-                                .size(
-                                    width = 22.dp,
-                                    height = 2.5.dp,
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color.Transparent,
+                                    Color.Transparent,
                                 )
-                                .clip(RoundedCornerShape(999.dp))
-                                .background(palette.accent)
-                        )
-                    }
+                            )
+                        }
+                    )
+                    .padding(vertical = 5.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Image(
+                    painter = painterResource(item.iconRes),
+                    contentDescription = item.label,
+                    modifier = Modifier.size(25.dp),
+                )
+
+                Text(
+                    item.label,
+                    modifier = Modifier.padding(top = 2.dp),
+                    color = if (item.selected) {
+                        palette.accent
+                    } else {
+                        palette.textMuted
+                    },
+                    fontSize = 12.sp,
+                    lineHeight = 15.sp,
+                    fontWeight = if (item.selected) {
+                        FontWeight.Bold
+                    } else {
+                        FontWeight.Medium
+                    },
+                    maxLines = 1,
+                )
+
+                if (item.selected) {
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 3.dp)
+                            .size(
+                                width = 34.dp,
+                                height = 3.dp,
+                            )
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(
+                                        palette.accent.copy(alpha = 0.42f),
+                                        palette.accent,
+                                        palette.accentSecondary.copy(
+                                            alpha = 0.56f
+                                        ),
+                                    )
+                                )
+                            )
+                    )
                 }
             }
         }
@@ -935,24 +1424,74 @@ fun ReferenceGlassPanel(
         ReferenceWaterDropPanelShape
     }
 
-    val surfaceAlpha = if (strong) 0.945f else 0.885f
-    val accentAlpha = if (strong) 0.032f else 0.018f
-    val shadowAlpha = if (strong) 0.085f else 0.055f
+    val shadowAlpha = when {
+        danger -> 0.15f
+        palette.darkSurface && strong -> 0.24f
+        palette.darkSurface -> 0.18f
+        strong -> 0.10f
+        else -> 0.07f
+    }
 
     val borderBrush = if (danger) {
         Brush.linearGradient(
             listOf(
                 palette.danger,
-                palette.danger,
+                palette.danger.copy(alpha = 0.74f),
+            )
+        )
+    } else if (palette.darkSurface) {
+        Brush.linearGradient(
+            listOf(
+                Color.White.copy(alpha = 0.34f),
+                palette.accent.copy(alpha = 0.30f),
+                palette.accentSecondary.copy(alpha = 0.22f),
+                Color.White.copy(alpha = 0.14f),
             )
         )
     } else {
         Brush.linearGradient(
             listOf(
                 Color.White.copy(alpha = 0.98f),
-                palette.accent.copy(alpha = 0.28f),
-                palette.accentSecondary.copy(alpha = 0.18f),
-                Color.White.copy(alpha = 0.94f),
+                palette.accent.copy(alpha = 0.24f),
+                palette.accentSecondary.copy(alpha = 0.16f),
+                Color.White.copy(alpha = 0.90f),
+            )
+        )
+    }
+
+    val surfaceBrush = when {
+        danger -> Brush.verticalGradient(
+            listOf(
+                Color.White.copy(alpha = 0.97f),
+                Color.White.copy(alpha = 0.93f),
+            )
+        )
+
+        palette.darkSurface -> Brush.verticalGradient(
+            listOf(
+                Color.White.copy(
+                    alpha = if (strong) 0.12f else 0.08f
+                ),
+                Color(0xFF0A536F).copy(
+                    alpha = if (strong) 0.78f else 0.66f
+                ),
+                Color(0xFF063A54).copy(
+                    alpha = if (strong) 0.74f else 0.62f
+                ),
+            )
+        )
+
+        else -> Brush.verticalGradient(
+            listOf(
+                Color.White.copy(
+                    alpha = if (strong) 0.82f else 0.74f
+                ),
+                Color.White.copy(
+                    alpha = if (strong) 0.64f else 0.56f
+                ),
+                palette.accentSoft.copy(
+                    alpha = if (strong) 0.10f else 0.065f
+                ),
             )
         )
     }
@@ -960,61 +1499,46 @@ fun ReferenceGlassPanel(
     Column(
         modifier = modifier
             .shadow(
-                elevation = if (danger) {
-                    4.dp
-                } else if (strong) {
-                    8.dp
-                } else {
-                    5.dp
+                elevation = when {
+                    danger -> 5.dp
+                    strong -> 12.dp
+                    else -> 7.dp
                 },
                 shape = shape,
                 ambientColor = if (danger) {
-                    palette.danger.copy(alpha = 0.12f)
+                    palette.danger.copy(alpha = 0.16f)
                 } else {
                     palette.accent.copy(alpha = shadowAlpha)
                 },
                 spotColor = if (danger) {
-                    palette.danger.copy(alpha = 0.14f)
+                    palette.danger.copy(alpha = 0.18f)
                 } else {
                     palette.accentSecondary.copy(
-                        alpha = shadowAlpha * 0.80f
+                        alpha = shadowAlpha * 0.90f
                     )
                 },
                 clip = false,
             )
             .clip(shape)
-            .background(
-                if (danger) {
-                    Brush.verticalGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.98f),
-                            Color.White.copy(alpha = 0.94f),
-                        )
-                    )
-                } else {
-                    Brush.verticalGradient(
-                        listOf(
-                            Color.White.copy(alpha = surfaceAlpha),
-                            palette.accentSoft.copy(alpha = accentAlpha),
-                            Color.White.copy(
-                                alpha = surfaceAlpha * 0.96f
-                            ),
-                        )
-                    )
-                }
-            )
+            .background(surfaceBrush)
             .drawBehind {
                 if (!danger) {
                     drawLine(
                         color = Color.White.copy(
-                            alpha = if (strong) 0.88f else 0.72f
+                            alpha = if (
+                                palette.darkSurface
+                            ) {
+                                if (strong) 0.46f else 0.30f
+                            } else {
+                                if (strong) 0.86f else 0.70f
+                            }
                         ),
                         start = Offset(
                             x = size.width * 0.10f,
                             y = 1.5.dp.toPx(),
                         ),
                         end = Offset(
-                            x = size.width * 0.76f,
+                            x = size.width * 0.78f,
                             y = 1.5.dp.toPx(),
                         ),
                         strokeWidth = 1.1.dp.toPx(),
@@ -1023,16 +1547,36 @@ fun ReferenceGlassPanel(
 
                     drawOval(
                         color = palette.accent.copy(
-                            alpha = if (strong) 0.028f else 0.016f
+                            alpha = if (
+                                palette.darkSurface
+                            ) 0.06f else 0.025f
                         ),
                         topLeft = Offset(
-                            x = size.width * 0.72f,
-                            y = size.height * 0.68f,
+                            x = size.width * 0.70f,
+                            y = size.height * 0.67f,
                         ),
                         size = Size(
-                            width = size.width * 0.34f,
-                            height = size.height * 0.30f,
+                            width = size.width * 0.36f,
+                            height = size.height * 0.32f,
                         ),
+                    )
+
+                    drawLine(
+                        color = palette.accentSecondary.copy(
+                            alpha = if (
+                                palette.darkSurface
+                            ) 0.10f else 0.055f
+                        ),
+                        start = Offset(
+                            x = size.width * 0.68f,
+                            y = size.height - 1.6.dp.toPx(),
+                        ),
+                        end = Offset(
+                            x = size.width * 0.94f,
+                            y = size.height - 1.6.dp.toPx(),
+                        ),
+                        strokeWidth = 1.dp.toPx(),
+                        cap = StrokeCap.Round,
                     )
                 }
             }
@@ -1168,7 +1712,7 @@ fun ReferenceGlassButton(
                 ),
                 shape,
             )
-            .heightIn(min = if (compact) 44.dp else 56.dp)
+            .heightIn(min = if (compact) 48.dp else 56.dp)
             .padding(
                 horizontal = if (compact) 13.dp else 17.dp,
                 vertical = if (compact) 8.dp else 12.dp,
@@ -1183,12 +1727,9 @@ fun ReferenceGlassButton(
                 accent -> Color.White
                 else -> palette.accent
             },
-            style = if (compact) {
-                MaterialTheme.typography.labelMedium
-            } else {
-                MaterialTheme.typography.labelLarge
-            },
-            fontWeight = FontWeight.SemiBold,
+            fontSize = if (compact) 13.sp else 14.sp,
+            lineHeight = if (compact) 16.sp else 18.sp,
+            fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -1206,32 +1747,47 @@ private fun ReferenceRoleChip(
     roleLabel: String,
     palette: ReferenceDashboardPalette,
 ) {
+    val shape = RoundedCornerShape(999.dp)
+
     Row(
         modifier = Modifier
             .shadow(
-                elevation = 6.dp,
-                shape = RoundedCornerShape(999.dp),
-                ambientColor = palette.accent.copy(alpha = 0.24f),
-                spotColor = palette.accentSecondary.copy(alpha = 0.20f),
+                elevation = 5.dp,
+                shape = shape,
+                ambientColor = palette.accent.copy(alpha = 0.20f),
+                spotColor = palette.accentSecondary.copy(alpha = 0.16f),
                 clip = false,
             )
-            .clip(RoundedCornerShape(999.dp))
+            .clip(shape)
             .background(
-                Brush.linearGradient(
-                    listOf(
-                        Color.White.copy(alpha = 0.20f),
-                        palette.accentSoft.copy(alpha = 0.28f),
-                        palette.accentSecondary.copy(alpha = 0.10f),
-                        Color.Transparent,
+                if (palette.darkSurface) {
+                    Brush.linearGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.10f),
+                            palette.accent.copy(alpha = 0.12f),
+                            Color.White.copy(alpha = 0.05f),
+                        )
                     )
-                )
+                } else {
+                    Brush.linearGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.82f),
+                            Color.White.copy(alpha = 0.58f),
+                            palette.accentSoft.copy(alpha = 0.12f),
+                        )
+                    )
+                }
             )
             .border(
                 BorderStroke(
-                    1.3.dp,
-                    palette.accent.copy(alpha = 0.78f),
+                    1.15.dp,
+                    if (palette.darkSurface) {
+                        Color.White.copy(alpha = 0.30f)
+                    } else {
+                        palette.accent.copy(alpha = 0.50f)
+                    },
                 ),
-                RoundedCornerShape(999.dp),
+                shape,
             )
             .padding(
                 horizontal = 12.dp,
@@ -1270,42 +1826,30 @@ private fun ReferenceRoleChip(
                 ),
             )
         }
+
         Text(
             roleLabel,
-            color = palette.accent,
+            color = if (palette.darkSurface) {
+                palette.textStrong
+            } else {
+                palette.accent
+            },
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,
         )
-        Canvas(modifier = Modifier.size(10.dp)) {
-            val strokeWidth = 1.5.dp.toPx()
-            drawLine(
-                color = palette.accent,
-                start = Offset(
-                    x = size.width * 0.20f,
-                    y = size.height * 0.36f,
-                ),
-                end = Offset(
-                    x = size.width * 0.50f,
-                    y = size.height * 0.66f,
-                ),
-                strokeWidth = strokeWidth,
-                cap = StrokeCap.Round,
-            )
-            drawLine(
-                color = palette.accent,
-                start = Offset(
-                    x = size.width * 0.50f,
-                    y = size.height * 0.66f,
-                ),
-                end = Offset(
-                    x = size.width * 0.80f,
-                    y = size.height * 0.36f,
-                ),
-                strokeWidth = strokeWidth,
-                cap = StrokeCap.Round,
-            )
-        }
+
+        Text(
+            "⌄",
+            color = if (palette.darkSurface) {
+                palette.textStrong.copy(alpha = 0.80f)
+            } else {
+                palette.accent.copy(alpha = 0.82f)
+            },
+            fontSize = 13.sp,
+            lineHeight = 13.sp,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
 
@@ -1321,7 +1865,7 @@ enabled: Boolean = true,
 
     Box(
         modifier = Modifier
-            .size(44.dp)
+            .size(48.dp)
             .shadow(
                 elevation = 6.dp,
                 shape = shape,
@@ -1343,7 +1887,11 @@ enabled: Boolean = true,
             .background(
                 Brush.radialGradient(
                     listOf(
-                        Color.White.copy(alpha = 0.72f),
+                        Color.White.copy(
+                            alpha = if (
+                                palette.darkSurface
+                            ) 0.12f else 0.72f
+                        ),
                         palette.accentSoft.copy(alpha = 0.20f),
                         palette.accentSecondary.copy(alpha = 0.10f),
                         Color.Transparent,
@@ -1420,11 +1968,19 @@ enabled: Boolean = true,
                     }
                     drawPath(
                         path = bell,
-                        color = palette.textStrong,
+                        color = if (palette.darkSurface) {
+                            Color.White
+                        } else {
+                            palette.textStrong
+                        },
                         style = stroke,
                     )
                     drawLine(
-                        color = palette.textStrong,
+                        color = if (palette.darkSurface) {
+                            Color.White
+                        } else {
+                            palette.textStrong
+                        },
                         start = Offset(
                             x = size.width * 0.24f,
                             y = size.height * 0.70f,
@@ -1437,7 +1993,11 @@ enabled: Boolean = true,
                         cap = StrokeCap.Round,
                     )
                     drawArc(
-                        color = palette.textStrong,
+                        color = if (palette.darkSurface) {
+                            Color.White
+                        } else {
+                            palette.textStrong
+                        },
                         startAngle = 15f,
                         sweepAngle = 150f,
                         useCenter = false,
@@ -1455,7 +2015,11 @@ enabled: Boolean = true,
 
                 ReferenceHeaderIcon.Support -> {
                     drawArc(
-                        color = palette.textStrong,
+                        color = if (palette.darkSurface) {
+                            Color.White
+                        } else {
+                            palette.textStrong
+                        },
                         startAngle = 180f,
                         sweepAngle = 180f,
                         useCenter = false,
@@ -1470,7 +2034,11 @@ enabled: Boolean = true,
                         style = stroke,
                     )
                     drawLine(
-                        color = palette.textStrong,
+                        color = if (palette.darkSurface) {
+                            Color.White
+                        } else {
+                            palette.textStrong
+                        },
                         start = Offset(
                             x = size.width * 0.20f,
                             y = size.height * 0.50f,
@@ -1483,7 +2051,11 @@ enabled: Boolean = true,
                         cap = StrokeCap.Round,
                     )
                     drawLine(
-                        color = palette.textStrong,
+                        color = if (palette.darkSurface) {
+                            Color.White
+                        } else {
+                            palette.textStrong
+                        },
                         start = Offset(
                             x = size.width * 0.80f,
                             y = size.height * 0.50f,
@@ -1496,7 +2068,11 @@ enabled: Boolean = true,
                         cap = StrokeCap.Round,
                     )
                     drawArc(
-                        color = palette.textStrong,
+                        color = if (palette.darkSurface) {
+                            Color.White
+                        } else {
+                            palette.textStrong
+                        },
                         startAngle = 0f,
                         sweepAngle = 95f,
                         useCenter = false,
@@ -1511,7 +2087,11 @@ enabled: Boolean = true,
                         style = stroke,
                     )
                     drawCircle(
-                        color = palette.textStrong,
+                        color = if (palette.darkSurface) {
+                            Color.White
+                        } else {
+                            palette.textStrong
+                        },
                         radius = strokeWidth,
                         center = Offset(
                             x = size.width * 0.51f,
@@ -1530,77 +2110,134 @@ private fun ReferenceStatusTile(
     palette: ReferenceDashboardPalette,
     modifier: Modifier = Modifier,
 ) {
-    ReferenceGlassPanel(
-        modifier = modifier.height(108.dp),
-        palette = palette,
-        danger = !item.healthy &&
-            item.label.contains("긴급"),
-        contentPadding = PaddingValues(
-            horizontal = 6.dp,
-            vertical = 8.dp,
-        ),
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-                    .background(
-                        Brush.radialGradient(
-                            listOf(
-                                Color.White.copy(alpha = 0.94f),
-                                palette.accentSoft.copy(alpha = 0.16f),
-                            )
+    val tileShape = RoundedCornerShape(25.dp)
+
+    Column(
+        modifier = modifier
+            .height(124.dp)
+            .shadow(
+                elevation = if (palette.darkSurface) 9.dp else 7.dp,
+                shape = tileShape,
+                ambientColor = palette.accent.copy(
+                    alpha = if (palette.darkSurface) 0.18f else 0.10f
+                ),
+                spotColor = palette.accentSecondary.copy(
+                    alpha = if (palette.darkSurface) 0.16f else 0.08f
+                ),
+                clip = false,
+            )
+            .clip(tileShape)
+            .background(
+                if (palette.darkSurface) {
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.105f),
+                            Color(0xFF0A4B66).copy(alpha = 0.72f),
+                            Color(0xFF073A55).copy(alpha = 0.66f),
                         )
                     )
-                    .border(
-                        BorderStroke(
-                            1.dp,
-                            Color.White.copy(alpha = 0.96f),
-                        ),
-                        CircleShape,
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                Image(
-                    painter = painterResource(item.iconRes),
-                    contentDescription = item.label,
-                    modifier = Modifier.size(28.dp),
-                )
-            }
-
-            Text(
-                item.label,
-                color = palette.textMuted,
-                fontFamily = FontFamily.SansSerif,
-                fontSize = 10.5.sp,
-                lineHeight = 13.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-
-            Text(
-                item.value,
-                color = if (item.healthy) {
-                    palette.accent
                 } else {
-                    palette.danger
-                },
-                fontFamily = FontFamily.SansSerif,
-                fontSize = 14.sp,
-                lineHeight = 16.sp,
-                fontWeight = FontWeight.ExtraBold,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.91f),
+                            Color.White.copy(alpha = 0.72f),
+                            palette.accentSoft.copy(alpha = 0.11f),
+                        )
+                    )
+                }
+            )
+            .border(
+                BorderStroke(
+                    1.1.dp,
+                    if (palette.darkSurface) {
+                        Color.White.copy(alpha = 0.24f)
+                    } else {
+                        Color.White.copy(alpha = 0.88f)
+                    },
+                ),
+                tileShape,
+            )
+            .padding(
+                horizontal = 6.dp,
+                vertical = 10.dp,
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(
+                    width = 30.dp,
+                    height = 3.dp,
+                )
+                .clip(RoundedCornerShape(999.dp))
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(
+                            palette.accent.copy(alpha = 0.28f),
+                            palette.accent.copy(alpha = 0.92f),
+                            palette.accentSecondary.copy(alpha = 0.52f),
+                        )
+                    )
+                )
+        )
+
+        Box(
+            modifier = Modifier
+                .size(43.dp)
+                .clip(CircleShape)
+                .background(
+                    if (palette.darkSurface) {
+                        Color.White.copy(alpha = 0.10f)
+                    } else {
+                        Color.White.copy(alpha = 0.76f)
+                    }
+                )
+                .border(
+                    BorderStroke(
+                        1.dp,
+                        Color.White.copy(
+                            alpha = if (
+                                palette.darkSurface
+                            ) 0.22f else 0.94f
+                        ),
+                    ),
+                    CircleShape,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = painterResource(item.iconRes),
+                contentDescription = item.label,
+                modifier = Modifier.size(29.dp),
             )
         }
+
+        Text(
+            item.label,
+            color = palette.textMuted,
+            fontSize = 11.5.sp,
+            lineHeight = 14.5.sp,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+
+        Text(
+            item.value,
+            color = if (item.healthy) {
+                palette.accent
+            } else {
+                palette.danger
+            },
+            fontSize = 15.5.sp,
+            lineHeight = 19.sp,
+            fontWeight = FontWeight.ExtraBold,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -1611,7 +2248,7 @@ private fun ReferenceActionTile(
     modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val shape = ReferenceWaterDropTileShape
+    val shape = RoundedCornerShape(25.dp)
     val tagModifier = if (item.testTag.isNullOrBlank()) {
         Modifier
     } else {
@@ -1621,15 +2258,23 @@ private fun ReferenceActionTile(
     Column(
         modifier = modifier
             .then(tagModifier)
-            .height(118.dp)
+            .height(134.dp)
             .shadow(
-                elevation = if (item.enabled) 5.dp else 1.dp,
+                elevation = if (item.enabled) 8.dp else 2.dp,
                 shape = shape,
                 ambientColor = palette.accent.copy(
-                    alpha = if (item.enabled) 0.10f else 0.03f
+                    alpha = if (item.enabled) {
+                        if (palette.darkSurface) 0.18f else 0.10f
+                    } else {
+                        0.03f
+                    }
                 ),
                 spotColor = palette.accentSecondary.copy(
-                    alpha = if (item.enabled) 0.08f else 0.02f
+                    alpha = if (item.enabled) {
+                        if (palette.darkSurface) 0.16f else 0.08f
+                    } else {
+                        0.02f
+                    }
                 ),
                 clip = false,
             )
@@ -1642,60 +2287,112 @@ private fun ReferenceActionTile(
                 onClick = item.onClick,
             )
             .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color.White.copy(
-                            alpha = if (item.enabled) 0.95f else 0.78f
-                        ),
-                        palette.accentSoft.copy(
-                            alpha = if (item.enabled) 0.075f else 0.035f
-                        ),
-                        Color.White.copy(
-                            alpha = if (item.enabled) 0.82f else 0.58f
-                        ),
+                if (palette.darkSurface) {
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.White.copy(
+                                alpha = if (item.enabled) 0.11f else 0.06f
+                            ),
+                            Color(0xFF0A506B).copy(
+                                alpha = if (item.enabled) 0.70f else 0.42f
+                            ),
+                            Color(0xFF063850).copy(
+                                alpha = if (item.enabled) 0.66f else 0.36f
+                            ),
+                        )
                     )
-                )
+                } else {
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.White.copy(
+                                alpha = if (item.enabled) 0.92f else 0.76f
+                            ),
+                            Color.White.copy(
+                                alpha = if (item.enabled) 0.72f else 0.58f
+                            ),
+                            palette.accentSoft.copy(
+                                alpha = if (item.enabled) 0.10f else 0.04f
+                            ),
+                        )
+                    )
+                }
             )
             .border(
                 BorderStroke(
-                    width = 1.15.dp,
+                    width = 1.1.dp,
                     brush = Brush.linearGradient(
                         listOf(
-                            Color.White.copy(alpha = 0.98f),
-                            palette.accent.copy(
-                                alpha = if (item.enabled) 0.28f else 0.10f
+                            Color.White.copy(
+                                alpha = if (
+                                    palette.darkSurface
+                                ) 0.26f else 0.94f
                             ),
-                            Color.White.copy(alpha = 0.92f),
+                            palette.accent.copy(
+                                alpha = if (item.enabled) 0.30f else 0.12f
+                            ),
+                            Color.White.copy(
+                                alpha = if (
+                                    palette.darkSurface
+                                ) 0.14f else 0.82f
+                            ),
                         )
                     ),
                 ),
                 shape,
             )
             .padding(
-                horizontal = 5.dp,
-                vertical = 7.dp,
+                horizontal = 6.dp,
+                vertical = 9.dp,
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Box(
             modifier = Modifier
-                .size(48.dp)
+                .size(
+                    width = 34.dp,
+                    height = 3.dp,
+                )
+                .clip(RoundedCornerShape(999.dp))
+                .background(
+                    if (item.enabled) {
+                        Brush.horizontalGradient(
+                            listOf(
+                                palette.accent.copy(alpha = 0.30f),
+                                palette.accent.copy(alpha = 0.92f),
+                                palette.accentSecondary.copy(alpha = 0.52f),
+                            )
+                        )
+                    } else {
+                        Brush.horizontalGradient(
+                            listOf(
+                                palette.textMuted.copy(alpha = 0.10f),
+                                palette.textMuted.copy(alpha = 0.22f),
+                            )
+                        )
+                    }
+                )
+        )
+
+        Box(
+            modifier = Modifier
+                .size(52.dp)
                 .clip(CircleShape)
                 .background(
-                    Brush.radialGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.98f),
-                            palette.accentSoft.copy(
-                                alpha = if (item.enabled) 0.18f else 0.06f
-                            ),
-                        )
-                    )
+                    if (palette.darkSurface) {
+                        Color.White.copy(alpha = 0.10f)
+                    } else {
+                        Color.White.copy(alpha = 0.76f)
+                    }
                 )
                 .border(
                     BorderStroke(
                         1.dp,
-                        Color.White.copy(alpha = 0.96f),
+                        Color.White.copy(
+                            alpha = if (
+                                palette.darkSurface
+                            ) 0.24f else 0.94f
+                        ),
                     ),
                     CircleShape,
                 ),
@@ -1705,21 +2402,20 @@ private fun ReferenceActionTile(
                 painter = painterResource(item.iconRes),
                 contentDescription = item.label,
                 modifier = Modifier.size(32.dp),
-                alpha = if (item.enabled) 1f else 0.68f,
+                alpha = if (item.enabled) 1f else 0.58f,
             )
         }
 
         Text(
             text = item.label,
-            modifier = Modifier.padding(top = 5.dp),
+            modifier = Modifier.padding(top = 6.dp),
             color = if (item.enabled) {
                 palette.textStrong
             } else {
                 palette.textMuted
             },
-            fontFamily = FontFamily.SansSerif,
-            fontSize = 11.5.sp,
-            lineHeight = 15.sp,
+            fontSize = 12.5.sp,
+            lineHeight = 16.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             maxLines = 2,
@@ -1734,8 +2430,8 @@ private fun ReferenceActionTile(
                     "준비 중"
                 },
                 color = palette.textMuted.copy(alpha = 0.78f),
-                fontSize = 9.5.sp,
-                lineHeight = 12.sp,
+                fontSize = 10.5.sp,
+                lineHeight = 13.5.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
@@ -1855,9 +2551,10 @@ private fun ReferenceGlassImage(
 }
 
 @Composable
-private fun ReferencePearlBackground(
+fun ReferencePearlBackground(
     palette: ReferenceDashboardPalette,
     @DrawableRes backgroundRes: Int? = null,
+    imageAlpha: Float = 0.54f,
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -1865,12 +2562,22 @@ private fun ReferencePearlBackground(
         modifier = modifier
             .fillMaxSize()
             .background(
-                Brush.linearGradient(
-                    listOf(
-                        palette.backgroundStart,
-                        Color(0xFFF4FAFD),
-                        palette.backgroundEnd,
-                    )
+                Brush.verticalGradient(
+                    if (palette.darkSurface) {
+                        listOf(
+                            Color(0xFF043A55),
+                            Color(0xFF05324A),
+                            palette.backgroundStart,
+                            Color(0xFF031F32),
+                        )
+                    } else {
+                        listOf(
+                            Color(0xFF4FAFE8),
+                            Color(0xFF9FDCF5),
+                            Color(0xFFEAF8FF),
+                            palette.backgroundEnd,
+                        )
+                    }
                 )
             ),
     ) {
@@ -1880,7 +2587,7 @@ private fun ReferencePearlBackground(
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
-                alpha = 0.40f,
+                alpha = imageAlpha.coerceIn(0.0f, 1.0f),
             )
         }
 
@@ -1888,12 +2595,42 @@ private fun ReferencePearlBackground(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.010f),
-                            Color.Transparent,
-                            Color.White.copy(alpha = 0.018f),
+                    if (palette.darkSurface) {
+                        Brush.verticalGradient(
+                            listOf(
+                                Color(0xFF03283D).copy(alpha = 0.36f),
+                                Color(0xFF04334A).copy(alpha = 0.20f),
+                                Color(0xFF021F32).copy(alpha = 0.56f),
+                            )
                         )
+                    } else {
+                        Brush.verticalGradient(
+                            listOf(
+                                Color(0xFF1689D1).copy(alpha = 0.10f),
+                                Color.White.copy(alpha = 0.05f),
+                                Color.White.copy(alpha = 0.12f),
+                                Color(0xFFEAF8FF).copy(alpha = 0.24f),
+                            )
+                        )
+                    }
+                )
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            if (palette.darkSurface) {
+                                palette.accent.copy(alpha = 0.12f)
+                            } else {
+                                Color.White.copy(alpha = 0.36f)
+                            },
+                            Color.Transparent,
+                        ),
+                        center = Offset(180f, 140f),
+                        radius = 820f,
                     )
                 )
         )
@@ -1904,13 +2641,97 @@ private fun ReferencePearlBackground(
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
-                            palette.accentSoft.copy(alpha = 0.025f),
+                            palette.accentSecondary.copy(
+                                alpha = if (
+                                    palette.darkSurface
+                                ) 0.09f else 0.06f
+                            ),
                             Color.Transparent,
                         ),
-                        radius = 760f,
+                        center = Offset(880f, 1380f),
+                        radius = 920f,
                     )
                 )
         )
+
+        Canvas(
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            val lineColor = if (palette.darkSurface) {
+                Color.White.copy(alpha = 0.045f)
+            } else {
+                Color.White.copy(alpha = 0.18f)
+            }
+            val accentLine = palette.accent.copy(
+                alpha = if (palette.darkSurface) 0.055f else 0.07f
+            )
+
+            drawArc(
+                color = lineColor,
+                startAngle = 195f,
+                sweepAngle = 115f,
+                useCenter = false,
+                topLeft = Offset(
+                    x = -size.width * 0.18f,
+                    y = size.height * 0.12f,
+                ),
+                size = Size(
+                    width = size.width * 0.86f,
+                    height = size.width * 0.48f,
+                ),
+                style = Stroke(
+                    width = 1.4.dp.toPx(),
+                    cap = StrokeCap.Round,
+                ),
+            )
+
+            drawArc(
+                color = accentLine,
+                startAngle = 20f,
+                sweepAngle = 125f,
+                useCenter = false,
+                topLeft = Offset(
+                    x = size.width * 0.50f,
+                    y = size.height * 0.42f,
+                ),
+                size = Size(
+                    width = size.width * 0.72f,
+                    height = size.width * 0.54f,
+                ),
+                style = Stroke(
+                    width = 1.2.dp.toPx(),
+                    cap = StrokeCap.Round,
+                ),
+            )
+
+            drawCircle(
+                color = Color.White.copy(
+                    alpha = if (
+                        palette.darkSurface
+                    ) 0.035f else 0.12f
+                ),
+                radius = size.minDimension * 0.075f,
+                center = Offset(
+                    x = size.width * 0.88f,
+                    y = size.height * 0.18f,
+                ),
+                style = Stroke(width = 1.dp.toPx()),
+            )
+
+            drawCircle(
+                color = palette.accentSecondary.copy(
+                    alpha = if (
+                        palette.darkSurface
+                    ) 0.045f else 0.055f
+                ),
+                radius = size.minDimension * 0.055f,
+                center = Offset(
+                    x = size.width * 0.12f,
+                    y = size.height * 0.72f,
+                ),
+                style = Stroke(width = 1.dp.toPx()),
+            )
+        }
 
         content()
     }

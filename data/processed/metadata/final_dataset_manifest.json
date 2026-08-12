@@ -841,6 +841,31 @@
       "sha256": "E463D2D5E1C9A8374CD8CD08598A533F1B0A91C7B1A8225ECCE79D3A5D612293"
     },
     {
+      "path": "processed/validation/rag_experiments/b1_chunking_240d0a1_20260812_01/case_results.jsonl",
+      "size_bytes": 666717,
+      "sha256": "D9F56716C4FAED47B8F69F76C9068571A4D8C17F163269BD2339921DD1BDACFE"
+    },
+    {
+      "path": "processed/validation/rag_experiments/b1_chunking_240d0a1_20260812_01/failure_analysis.json",
+      "size_bytes": 60482,
+      "sha256": "0CF706B740C615314C3C527C5373FCC08208E988D4259DBD2F191857FFFDFD4E"
+    },
+    {
+      "path": "processed/validation/rag_experiments/b1_chunking_240d0a1_20260812_01/manifest.json",
+      "size_bytes": 2523,
+      "sha256": "065D81949FAC98FE48A2F6C611CE47D22CC4D6DBF69533E4E367ADEAF025E1AA"
+    },
+    {
+      "path": "processed/validation/rag_experiments/b1_chunking_240d0a1_20260812_01/preflight.json",
+      "size_bytes": 1743,
+      "sha256": "61A6DABF69AB6D69818A1092EE1BB0AC080D66AEC7A9F9E731DF330605987F69"
+    },
+    {
+      "path": "processed/validation/rag_experiments/b1_chunking_240d0a1_20260812_01/summary.json",
+      "size_bytes": 11990,
+      "sha256": "A5055582ADA00BE9BEC026505DE487633B5CA4CB507372C12F40109829D0207E"
+    },
+    {
       "path": "processed/validation/rag_experiments/faq_corpus_qa.json",
       "size_bytes": 3413,
       "sha256": "51D4423D3FFD382FC59E2A7E640B28380B0EBDCB5999CA5FF4DCA908EC94A016"

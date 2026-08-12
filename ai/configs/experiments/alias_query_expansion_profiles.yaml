@@ -1,0 +1,143 @@
+{
+  "experiment_id": "B2-4-ALIAS-QUERY-EXPANSION-V1",
+  "experiment_version": "1.0.0-draft.1",
+  "dataset_split": "DEV",
+  "chunking_profile_id": "parent_child_v1",
+  "fixed_controls": {
+    "method": "dense_cosine_exact",
+    "top_k": 5,
+    "score_threshold": 0.5,
+    "product_filter": "EXACT_PRODUCT_FILTER",
+    "scope_policy_id": "MODEL_CAPABILITY_SCOPE_V1",
+    "intent_policy_id": "MANUAL_DOMAIN_INTENT_V1"
+  },
+  "variants": [
+    {
+      "variant_id": "DENSE_ORIGINAL_QUERY_V1",
+      "query_expansion": false
+    },
+    {
+      "variant_id": "DENSE_DRAFT_ALIAS_EXPANSION_V1",
+      "query_expansion": true
+    }
+  ],
+  "alias_policy": {
+    "policy_id": "DRAFT_JAC104_TROUBLESHOOTING_ALIAS_V1",
+    "review_status": "DRAFT_REVIEW_REQUIRED",
+    "application_boundary": "QUERY_ONLY_EXPERIMENT_LAB",
+    "rules": [
+      {
+        "rule_id": "ALIAS-JAC104-LEAK-001",
+        "target_case_ids": [
+          "RAGV2-GOLD-0004",
+          "RAGV2-GOLD-0027"
+        ],
+        "expected_activation_case_ids": [
+          "RAGV2-GOLD-0004",
+          "RAGV2-GOLD-0021",
+          "RAGV2-GOLD-0027"
+        ],
+        "trigger_phrases": [
+          "물이 새는 것 같",
+          "바닥에 물이 흥건"
+        ],
+        "excluded_phrases": [
+          "물이 새는 것 같지 않",
+          "물이 새는 게 아니",
+          "바닥에 물이 흥건하지 않",
+          "누수가 아니",
+          "누수도 없",
+          "정수기가 아니라",
+          "정수기는 정상",
+          "청소 중 쏟"
+        ],
+        "expansion_terms": [
+          "누수",
+          "제품 누수 발생"
+        ]
+      },
+      {
+        "rule_id": "ALIAS-JAC104-NO-WATER-001",
+        "target_case_ids": [
+          "RAGV2-GOLD-0025"
+        ],
+        "expected_activation_case_ids": [
+          "RAGV2-GOLD-0025"
+        ],
+        "trigger_phrases": [
+          "물이 한 방울도 안 나"
+        ],
+        "excluded_phrases": [
+          "물이 한 방울도 안 나오는 게 아니라",
+          "물이 한 방울도 안 나오는 것이 아니라",
+          "수도꼭지",
+          "정수기는 정상"
+        ],
+        "expansion_terms": [
+          "출수되지 않음",
+          "물 출수"
+        ]
+      }
+    ]
+  },
+  "hard_negative_cases": [
+    {
+      "case_id": "B2-4-HARD-NEG-001",
+      "query": "물이 새는 것 같지 않고 제품은 정상입니다.",
+      "product_model_code": "WPUJAC104DWH",
+      "expected_alias_rule_ids": []
+    },
+    {
+      "case_id": "B2-4-HARD-NEG-002",
+      "query": "바닥에 물이 흥건하지 않고 누수도 없습니다.",
+      "product_model_code": "WPUJAC104DWH",
+      "expected_alias_rule_ids": []
+    },
+    {
+      "case_id": "B2-4-HARD-NEG-003",
+      "query": "물이 한 방울도 안 나오는 게 아니라 기사님 도착 시간을 묻는 것입니다.",
+      "product_model_code": "WPUJAC104DWH",
+      "expected_alias_rule_ids": []
+    },
+    {
+      "case_id": "B2-4-HARD-NEG-004",
+      "query": "생수병을 한 방울도 안 남기고 비우는 방법을 알려주세요.",
+      "product_model_code": "WPUJAC104DWH",
+      "expected_alias_rule_ids": []
+    },
+    {
+      "case_id": "B2-4-HARD-NEG-005",
+      "query": "정수기가 아니라 옆 생수병에서 물이 새는 것 같아요. 정수기는 정상입니다.",
+      "product_model_code": "WPUJAC104DWH",
+      "expected_alias_rule_ids": []
+    },
+    {
+      "case_id": "B2-4-HARD-NEG-006",
+      "query": "바닥에 물이 흥건하지만 청소 중 쏟은 물이고 정수기는 정상입니다.",
+      "product_model_code": "WPUJAC104DWH",
+      "expected_alias_rule_ids": []
+    },
+    {
+      "case_id": "B2-4-HARD-NEG-007",
+      "query": "수도꼭지에서 물이 한 방울도 안 나와요. 정수기는 정상입니다.",
+      "product_model_code": "WPUJAC104DWH",
+      "expected_alias_rule_ids": []
+    }
+  ],
+  "success_gate": {
+    "minimum_target_recovery_count": 1,
+    "maximum_positive_regression_count": 0,
+    "maximum_negative_regression_count": 0,
+    "maximum_unexpected_alias_activation_count": 0,
+    "maximum_missing_expected_alias_activation_count": 0,
+    "maximum_hard_negative_unexpected_activation_count": 0,
+    "maximum_hard_negative_new_result_count": 0
+  },
+  "publication_limits": [
+    "Alias Rule은 Data Owner 2인 검수 전 Draft이며 승인 사전으로 표현하지 않는다.",
+    "Gold DEV 35건 비교는 운영 성능이나 Gold 60건 공식 결과가 아니다.",
+    "Alias는 Query에만 보조 추가하며 Corpus, Chunk, Evidence 원문을 변경하지 않는다.",
+    "운영 retrieval_policy.yaml, FastAPI Pipeline, Backend 계약을 변경하지 않는다.",
+    "동일 DEV에서 발견·평가한 후보이므로 TEST와 SAFETY 검증 전 일반화하지 않는다."
+  ]
+}
