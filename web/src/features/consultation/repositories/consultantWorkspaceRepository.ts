@@ -3,6 +3,7 @@ import type { InquiryId } from "../../../entities/inquiry/inquiryIdentifiers";
 import {
   CONSULTANT_QUEUE_INQUIRIES,
   COUNSELOR_INQUIRIES,
+  REMOTE_PARITY_CONSULTANT_INQUIRIES,
   getConsultantAllowedActions,
 } from "../model/consultantWorkspaceMock";
 import type {
@@ -46,14 +47,20 @@ export function createConsultantWorkspaceRepository(
     };
   }
 
+  const mockQueue =
+    appEnv.mockDataset === "DESIGN_SCENARIOS"
+      ? CONSULTANT_QUEUE_INQUIRIES
+      : REMOTE_PARITY_CONSULTANT_INQUIRIES;
+
   return {
     dataSource: "MOCK",
     integrationStatus: "MOCK_ONLY",
     findInquiry: (inquiryId) =>
+      mockQueue.find((item) => item.inquiryId === inquiryId) ??
       COUNSELOR_INQUIRIES.find((item) => item.inquiryId === inquiryId),
     getAllowedActions: getConsultantAllowedActions,
     listAllInquiries: () => COUNSELOR_INQUIRIES,
-    listConsultantQueue: () => CONSULTANT_QUEUE_INQUIRIES,
+    listConsultantQueue: () => mockQueue,
   };
 }
 
