@@ -1,7 +1,7 @@
 # Week 5 Mobile API Runtime Matrix
 
 기준일: 2026-08-12 KST
-Backend 기준: `origin/main@e146d2349d82c964ca57baa4c77b501f8e84c1ab`
+Backend 기준: `origin/main@41ef3d4f7a6699821c6d65398438071a06d23c92`
 
 | Area | Backend Runtime | Mobile state |
 | --- | --- | --- |
@@ -15,9 +15,9 @@ Backend 기준: `origin/main@e146d2349d82c964ca57baa4c77b501f8e84c1ab`
 | Customer inquiry Snapshot | READY | INTEGRATED |
 | Customer unanswered Questions | READY | INTEGRATED |
 | Customer follow-up Answers | READY | INTEGRATED |
-| Official Mobile follow-up Fixture | READY | CONSUMABLE |
+| Official Mobile follow-up Fixture | READY | CONSUMED_BY_DEVICE_SMOKE |
 | Backend actual-socket 3API smoke | AUTHOR_VERIFIED | PASS |
-| Mobile device 3API remote smoke | RUNTIME URL/seed 필요 | NOT_RUN |
+| Mobile device 3API remote smoke | READY / REAL_DEVICE | PASS (SM-F721N, skipped=0) |
 | Guidance / Evidence | CUSTOMER_ROUTE_NOT_PUBLISHED | MOBILE_FAIL_CLOSED / BLOCKED_BY_BACKEND |
 | Customer consultation request | CUSTOMER_ROUTE_NOT_PUBLISHED | BLOCKED_BY_BACKEND |
 | Consultant consultation workflow | READY / CONSULTANT_ONLY | NOT_CUSTOMER_MOBILE_API |

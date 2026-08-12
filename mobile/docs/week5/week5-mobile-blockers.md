@@ -1,6 +1,6 @@
 # Week 5 Mobile Blockers — 2026-08-12
 
-Backend 기준: `origin/main@e146d2349d82c964ca57baa4c77b501f8e84c1ab`
+Backend 기준: `origin/main@41ef3d4f7a6699821c6d65398438071a06d23c92`
 
 ## 즉시 해제된 항목
 
@@ -14,7 +14,8 @@ Backend 기준: `origin/main@e146d2349d82c964ca57baa4c77b501f8e84c1ab`
 | 고객 문의 Snapshot | READY | 실제 Remote 연결 |
 | 미답변 Questions | READY | 실제 Remote 연결 |
 | Follow-up Answers | READY | 실제 Remote 연결 |
-| 공식 Mobile follow-up Fixture | READY | 공동 Smoke에 사용 가능 |
+| 공식 Mobile follow-up Fixture | READY | 실단말 Smoke 소비 완료 (현재 로컬 DB) |
+| Customer Follow-up 3API 실단말 Smoke | PASS | SM-F721N / skipped=0 |
 
 ## 현재 Backend 차단
 

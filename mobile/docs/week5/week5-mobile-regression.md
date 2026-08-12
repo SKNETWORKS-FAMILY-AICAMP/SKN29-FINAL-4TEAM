@@ -1,11 +1,14 @@
 # Week 5 Mobile Regression — Independent Closeout
 
-Generated: 2026-08-11T11:23:50+09:00
+Generated: 2026-08-12 12:02:25 +09:00
 
 - Remote Customer boundary unit test: **PASS**
 - Core / Customer / Technician Unit: **PASS**
 - Customer Connected Test: **PASS**
 - Technician Connected Test: **PASS**
+- Customer Remote Backend Smoke: **PASS (2/2, skipped=0)**
+- Customer Follow-up Remote Device Smoke: **PASS (1/1, skipped=0)**
+- Technician Remote Auth Smoke: **PASS (1/1, skipped=0)**
 - Technician Status Mapping Test: **PASS**
 - Customer / Technician Debug APK: **PASS**
 - Customer / Technician AndroidTest APK: **PASS**
@@ -13,8 +16,8 @@ Generated: 2026-08-11T11:23:50+09:00
 - Device: R3CT8076D7B
 - Customer APK install: **PASS**
 - Technician APK install: **PASS**
-- Customer SHA-256: c687c7f20b1d4148e3776acd3a859d409c35b446c2024aba5c638006c6f98467
-- Technician SHA-256: 7d9a513d40a0e8e49c7c5d04fbdddcd211ba3822335b400233fa2d721c15515d
+- Customer SHA-256: 57FAC528B9ED464CE3BEF78A73378C0B9BB7D6B19CBFDF07F2C75410BE5A131A
+- Technician SHA-256: 1FB4F7227426CFDFF51DD236653D6306F06BD9AF911DC0B00D38A21EF2B5E354
 - Remote Customer subscription failure → Fixture fallback: **NO**
 - Remote Guidance → Fixture fallback: **NO**
 - Technician Remote Visit → Fixture fallback: **NO**
@@ -22,7 +25,6 @@ Generated: 2026-08-11T11:23:50+09:00
 - static secret/private-address scan: **PASS**
 
 External blockers:
-- CUSTOMER_FOLLOWUP_RUNTIME
 - CUSTOMER_GUIDANCE_EVIDENCE_RUNTIME
 - CUSTOMER_REQUEST_CONSULTATION_RUNTIME
 - TECHNICIAN_ASSIGNED_VISIT_LIST_DETAIL_RUNTIME

@@ -14,15 +14,16 @@
 - `POST /api/v1/inquiries`
 - `POST /api/v1/inquiries/{inquiry_id}/submit`
 - `POST /api/v1/inquiries/{inquiry_id}/cancel`
+- `GET /api/v1/me/inquiries/{inquiry_id}`
+- `GET /api/v1/me/inquiries/{inquiry_id}/questions`
+- `POST /api/v1/inquiries/{inquiry_id}/answers`
 
-고객 기본 흐름은 실제 구독 목록/상세 → 실제 `subscription_id` 선택 → 문의 생성 → 증상 제출을 사용한다.
+고객 기본 흐름은 실제 구독 목록/상세 → 실제 `subscription_id` 선택 → 문의 생성 → 증상 제출 → 문의 Snapshot/Questions 조회 → Follow-up Answers 제출을 사용한다.
 
 `RemoteIntakeCustomerCareRepository`는 `SubscriptionRepository`를 필수 의존성으로 사용한다. Remote 구독 실패를 `FakeCustomerCareRepository` 성공으로 자동 대체하지 않는다.
 
 ## Customer Blocked by Backend
 
-- Inquiry 최신 조회 / 상태 복구 Runtime
-- Follow-up answers Runtime
 - Guidance / Evidence 고객 Runtime
 - Request Consultation Runtime
 
