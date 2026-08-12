@@ -21,6 +21,8 @@ from apps.inquiries.api.serializers import (
     InquiryResponseSerializer,
     RegisterConsultantPhoneInquiryResultSerializer,
     RegisterConsultantPhoneInquirySerializer,
+    RequestConsultationResponseSerializer,
+    RequestConsultationSerializer,
     SubmitFollowUpAnswersResponseSerializer,
     SubmitFollowUpAnswersSerializer,
     SubmitSymptomResponseSerializer,
@@ -39,6 +41,9 @@ from apps.inquiries.services.consultant_phone_inquiry_service import (
 )
 from apps.inquiries.services.customer_inquiry_service import (
     CustomerInquiryService,
+)
+from apps.inquiries.services.consultation_request_service import (
+    ConsultationRequestService,
 )
 from apps.inquiries.services.inquiry_service import InquiryService
 from apps.inquiries.services.followup_answer_service import (
@@ -351,6 +356,35 @@ class SubmitFollowUpAnswersView(APIView):
                 correlation_id=correlation_id,
             )
             response_data = SubmitFollowUpAnswersResponseSerializer(
+                outcome.data
+            ).data
+        return success_response(
+            response_data,
+            status_code=outcome.status_code,
+        )
+
+
+class RequestConsultationView(APIView):
+    """Execute REQUEST_CONSULTATION for the authenticated owner."""
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def post(self, request, inquiry_id: UUID):
+        reject_unknown_query_parameters(request, set())
+        idempotency_key = require_idempotency_key(request)
+        correlation_id = require_correlation_id(request)
+        serializer = RequestConsultationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            outcome = ConsultationRequestService.request(
+                actor=request.user,
+                inquiry_public_id=inquiry_id,
+                validated_data=serializer.validated_data,
+                idempotency_key=idempotency_key,
+                correlation_id=correlation_id,
+            )
+            response_data = RequestConsultationResponseSerializer(
                 outcome.data
             ).data
         return success_response(

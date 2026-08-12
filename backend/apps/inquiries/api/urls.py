@@ -10,6 +10,7 @@ from apps.inquiries.api.views import (
     CustomerInquiryQuestionsView,
     CustomerInquirySnapshotView,
     RegisterConsultantPhoneInquiryView,
+    RequestConsultationView,
     SubmitSymptomView,
     SubmitFollowUpAnswersView,
 )
@@ -60,5 +61,10 @@ urlpatterns = [
         "inquiries/<uuid:inquiry_id>/answers",
         SubmitFollowUpAnswersView.as_view(),
         name="inquiry-submit-followup-answers",
+    ),
+    path(
+        "inquiries/<uuid:inquiry_id>/request-consultation",
+        RequestConsultationView.as_view(),
+        name="inquiry-request-consultation",
     ),
 ]

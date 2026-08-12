@@ -28,8 +28,8 @@ classification_policy:
 
 summary:
   total_actions: 23
-  RUNTIME_IMPLEMENTED: 12
-  OPENAPI_CONFIRMED: 7
+  RUNTIME_IMPLEMENTED: 13
+  OPENAPI_CONFIRMED: 6
   CONTRACT_ONLY: 0
   DEFERRED: 4
 
@@ -113,16 +113,21 @@ actions:
   - action: REQUEST_CONSULTATION
     event: REQUEST_CONSULTATION
     operation_id: requestConsultation
-    classification: OPENAPI_CONFIRMED
+    classification: RUNTIME_IMPLEMENTED
     openapi:
       confirmed: true
       method: POST
       path: /inquiries/{id}/request-consultation
       contract_status: CONFIRMED
     runtime:
-      implemented: false
-      source_evidence: []
-      test_evidence: []
+      implemented: true
+      source_evidence:
+        - ../../backend/apps/inquiries/api/views.py
+        - ../../backend/apps/inquiries/services/consultation_request_service.py
+        - ../../backend/apps/consultations/repositories/consultation_repository.py
+      test_evidence:
+        - ../../backend/tests/api/test_request_consultation_runtime.py
+        - ../../backend/tests/api/test_openapi_runtime_coverage.py
 
   - action: START_CONSULTATION
     event: START_CONSULTATION

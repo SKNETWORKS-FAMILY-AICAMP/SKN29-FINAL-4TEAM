@@ -29,8 +29,24 @@ def resolve_codes(**overrides):
 def test_runtime_filter_keeps_only_callable_backend_actions():
     actions, codes = resolve_codes(inquiry_state="AI_GUIDANCE")
 
-    assert actions == []
-    assert codes == []
+    assert len(actions) == 1
+    assert codes == ["REQUEST_CONSULTATION"]
+
+
+def test_request_consultation_is_available_in_all_confirmed_states():
+    _actions, guidance = resolve_codes(inquiry_state="AI_GUIDANCE")
+    _actions, required = resolve_codes(
+        inquiry_state="CONSULTATION_REQUIRED",
+        state_version=4,
+    )
+    _actions, completion_pending = resolve_codes(
+        inquiry_state="COMPLETION_PENDING",
+        state_version=8,
+    )
+
+    assert guidance == ["REQUEST_CONSULTATION"]
+    assert required == ["REQUEST_CONSULTATION"]
+    assert "REQUEST_CONSULTATION" in completion_pending
 
 
 def test_cancel_availability_uses_owner_assignment_and_operator_capability():

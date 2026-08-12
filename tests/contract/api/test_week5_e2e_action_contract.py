@@ -44,6 +44,11 @@ EXPECTED = {
     ),
 }
 
+IMPLEMENTED_PATHS = {
+    "/inquiries/{id}/answers",
+    "/inquiries/{id}/request-consultation",
+}
+
 
 def load_yaml(path: Path):
     return yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -86,7 +91,7 @@ def test_eight_pm_actions_are_confirmed_with_selective_runtime_status():
         assert operation["x-contract-status"] == "CONFIRMED"
         expected_runtime = (
             "IMPLEMENTED"
-            if path == "/inquiries/{id}/answers"
+            if path in IMPLEMENTED_PATHS
             else "NOT_IMPLEMENTED"
         )
         assert operation["x-runtime-status"] == expected_runtime
