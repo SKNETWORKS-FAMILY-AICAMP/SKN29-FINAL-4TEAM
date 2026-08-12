@@ -1,0 +1,28 @@
+title: CareCycleRule
+type: object
+description: T-020 계산 호출자가 출처와 함께 제공하는 승인 주기
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - care_type_code
+  - interval_months
+  - basis
+  - source_reference
+  - source_version
+properties:
+  care_type_code:
+    type: string
+    enum: [FILTER_REPLACEMENT, PERIODIC_CHECK, CLEANING, VISIT_SERVICE, OTHER]
+  interval_months:
+    type: integer
+    minimum: 1
+    maximum: 120
+  basis:
+    type: string
+    enum: [OFFICIAL, TEAM_RULE]
+  source_reference:
+    type: string
+    minLength: 1
+  source_version:
+    type: string
+    minLength: 1

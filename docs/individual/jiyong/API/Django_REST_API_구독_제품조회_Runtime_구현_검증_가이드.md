@@ -1,166 +1,119 @@
-# Django REST API 구독·제품조회 Runtime 구현·검증 가이드
+# T-018 구독·제품 조회·등록·수정 Runtime 구현·검증 가이드
 
-> 기준일: 2026-08-08
-> WBS 범위: T-018 R1 조회 Slice
-> 구현 상태: 목록·상세 Runtime과 작성자 검증 완료
-> 전체 T-018 상태: 등록·수정 기능은 미구현
+## 1. 결과
 
-## 1. 구현 범위
+- 기준: `main@8b5bb6292e087fd15558f53c530b06653edc4d29`
+- 작성일: 2026-08-12
+- 상태: `AUTHOR_VERIFIED / POSTGRESQL_QA_PENDING`
+- 공식 WBS: `진행 중` 유지
 
-구현한 Endpoint는 두 개다.
+기존 본인 구독 목록·상세에 합성 고객 제품 등록과 허용 필드 수정을 추가했다.
+제품 Catalog는 고객이 생성하지 않으며 MVP 지원 모델 `WPUJAC104DWH`만 선택한다.
 
-| Method | Path | 기능 |
-| --- | --- | --- |
-| GET | `/api/v1/me/subscriptions` | 본인 ACTIVE 구독 목록 |
-| GET | `/api/v1/me/subscriptions/{subscription_id}` | 본인 ACTIVE 구독 상세 |
+## 2. Endpoint
 
-다음 기능은 이번 Slice에 포함하지 않는다.
+| Method | Path | Runtime |
+|---|---|---|
+| `GET` | `/api/v1/me/subscriptions` | 본인 ACTIVE 구독 목록 |
+| `POST` | `/api/v1/me/subscriptions` | 합성 고객 지원 제품 등록 |
+| `GET` | `/api/v1/me/subscriptions/{subscription_id}` | 본인 ACTIVE 구독 상세 |
+| `PATCH` | `/api/v1/me/subscriptions/{subscription_id}` | 시작일·관리 유형·최근 관리일 수정 |
 
-- 제품·구독 등록
-- 관리 유형 수정
-- 기본 제품 선택
-- 문의 가능 여부와 `allowed_actions`
-- T-019 케어 이력 API
+POST 입력:
 
-따라서 “T-018 R1 조회 완료”는 맞지만 “T-018 전체 완료”로 확대하지 않는다.
-
-## 2. 조회 경계
-
-두 Endpoint는 같은 Repository 필터를 사용한다.
-
-```text
-customer.user = request.user
-customer.deleted_at IS NULL
-subscription.status_code = ACTIVE
-product_model.model_code = WPUJAC104DWH
-product_model.is_active = true
+```json
+{
+  "model_code": "WPUJAC104DWH",
+  "started_on": "2026-08-01",
+  "management_type_code": "SELF_MANAGED",
+  "last_care_on": "2026-08-05"
+}
 ```
 
-타 고객·삭제 고객·비활성 구독·미지원 모델·비활성 제품은 존재 여부를
-노출하지 않고 상세 조회에서 모두 404로 처리한다.
+PATCH는 `started_on`, `management_type_code`, `last_care_on` 중 하나 이상만
+허용한다. 알 수 없는 필드는 422로 거부한다.
 
-접근 결과:
+## 3. 권한·제품·날짜 경계
 
-- 미인증: 401
-- CUSTOMER가 아닌 역할: 403
-- 잘못된 UUID·미존재·비소유·필터 제외: 404
-- 알 수 없는 Query·Pagination 오류: 422
+- 미인증은 401, CUSTOMER가 아닌 역할과 비합성 고객 Write는 403이다.
+- 타 고객, 삭제 고객, 비ACTIVE 구독, 미지원·비활성 제품 상세·수정은 동일 404다.
+- POST의 미지원·차단 모델은 `422 PRODUCT_NOT_SUPPORTED`다.
+- 동일 고객·제품의 ACTIVE/SUSPENDED 구독 중복은
+  `409 SUBSCRIPTION_ALREADY_ACTIVE`다.
+- 미래 시작일·관리일과 시작일보다 빠른 관리일은 422다.
+- 기존 완료 관리일보다 뒤로 시작일을 늦추는 수정은 422다.
 
-## 3. 응답 허용 필드
+## 4. 멱등성과 저장
 
-목록 Item:
+- Write는 `Idempotency-Key`를 필수로 사용한다.
+- Scope는 `actor + operation_id + key`다.
+- 같은 Key·같은 Body는 저장 결과를 Replay하고
+  `idempotent_replay=true`를 반환한다.
+- 같은 Key·다른 Body/대상은 `409 DUPLICATE-EVENT-01`이다.
+- 고객 Profile Row Lock으로 같은 고객의 등록·수정을 직렬화한다.
+- `contract_no`, `serial_no`와 공개 `subscription_id`는 서버가 합성 생성한다.
+- `last_care_on`은 기존 `CareRecord`에 IMPORT·COMPLETED·FILTER_REPLACEMENT
+  기준 이력으로 저장하고 목록·상세의 최근 관리일 계산에 포함한다.
+- 신규 Model·Migration 없이 기존 Subscription·Care·Idempotency 테이블을 사용한다.
 
-- `subscription_id`
-- `status_code`
-- `management_type_code`
-- `started_on`
-- `last_care_on`
-- `next_care_on`
-- `product`
+## 5. 공개 응답과 비노출
 
-상세는 위 필드에 `ended_on`만 추가한다.
+공개 필드:
 
-Product:
+- `subscription_id`, `status_code`, `management_type_code`, `started_on`
+- `ended_on`, `last_care_on`, `next_care_on`, `idempotent_replay`(Write)
+- Product의 공개 UUID, 모델 코드·이름·세대·제조사
 
-- `product_model_id`
-- `model_code`
-- `model_name`
-- `generation_code`
-- `manufacturer`
+비노출:
 
-다음 값은 반환하지 않는다.
+- 내부 정수 PK, customer 내부/공개 ID
+- 계약번호, Serial, 설치 주소
+- 원본 fixture ID, Product features, 고객 개인정보
 
-- 내부 정수 PK·customer_id
-- contract_no·serial_no·설치 주소
-- source_customer_product_public_id
-- product.features·활성/지원 내부 Flag
-- 고객 이름·전화·주소
+## 6. 구현·계약 증거
 
-## 4. `last_care_on` 계산
+- [Route·View](../../../../backend/apps/subscriptions/api/views.py)
+- [Serializer](../../../../backend/apps/subscriptions/api/serializers.py)
+- [Service](../../../../backend/apps/subscriptions/services/subscription_service.py)
+- [Repository](../../../../backend/apps/subscriptions/repositories/subscription_repository.py)
+- [OpenAPI Path](../../../../contracts/api/paths/products.yaml)
+- [Create Schema](../../../../contracts/api/components/schemas/product/SubscriptionCreateRequest.yaml)
+- [Update Schema](../../../../contracts/api/components/schemas/product/SubscriptionUpdateRequest.yaml)
+- [Read Runtime Test](../../../../backend/tests/api/test_t018_subscription_runtime.py)
+- [Write Runtime Test](../../../../backend/tests/api/test_t018_subscription_write_runtime.py)
+- [Write Contract Test](../../../../backend/tests/api/test_t018_subscription_write_contract.py)
 
-대상은 `CareRecord.status_code=COMPLETED`만이다.
+## 7. 작성자 검증
 
-1. `performed_on`이 있으면 우선 사용
-2. 없으면 `completed_at`을 Asia/Seoul 날짜로 변환
-3. 구독별 최대 날짜 반환
-4. 완료 이력이 없으면 `null`
+| 검증 | 결과 |
+|---|---:|
+| T-018 Read·Write Contract/Runtime + OpenAPI Inventory | `33 passed` |
+| OpenAPI Validator | PASS, `124 YAML / 513 refs / 36 paths / 40 operations` |
+| Example Validator | PASS, `61/61 referenced` |
+| Code Registry Validator | PASS, `28 files / 144 codes` |
+| 전체 Backend 회귀 | `1076 passed / 19 skipped / 0 failed` |
 
-Repository에서 완료 이력을 Prefetch하므로 목록 크기에 따라 N+1 Query가
-발생하지 않는다. 목록은 Count·Subscription+Product·Care Prefetch의
-3 Query로 검증했다.
-
-## 5. 정렬·Pagination·Query
-
-- 정렬: `started_on DESC`, `public_id ASC`
-- 기본값: `page=1`, `size=20`
-- page 최소값: 1
-- size 범위: 1~100
-- 목록 허용 Query: `page`, `size`
-- 상세 허용 Query: 없음
-
-`status_code=ACTIVE`처럼 서버가 고정한 필터를 Query로 다시 보내도 알 수
-없는 Query로 보고 422를 반환한다.
-
-## 6. 구현 파일
-
-| 계층 | 파일 |
-| --- | --- |
-| Route | `backend/apps/subscriptions/api/urls.py` |
-| View | `backend/apps/subscriptions/api/views.py` |
-| Serializer | `backend/apps/subscriptions/api/serializers.py` |
-| Permission | `backend/apps/subscriptions/permissions.py` |
-| Service | `backend/apps/subscriptions/services/subscription_service.py` |
-| Repository | `backend/apps/subscriptions/repositories/subscription_repository.py` |
-| API Mount | `backend/config/api_urls.py` |
-| 계약 상태 | `contracts/api/paths/products.yaml` |
-| Runtime Test | `backend/tests/api/test_t018_subscription_runtime.py` |
-
-T-018 조회 구현은 Model이나 Migration을 변경하지 않는다. 계약의
-`migration_change_allowed=false`, `database_change_allowed=false`를 유지했다.
-
-## 7. 실행 방법
+재현:
 
 ```powershell
-cd backend
-python manage.py check --settings=config.settings.local
-python manage.py makemigrations --check --dry-run --settings=config.settings.local
-python -m pytest -q `
+Set-Location backend
+$python = ".\.venv\Scripts\python.exe"
+& $python -B -m pytest -q -p no:cacheprovider `
+  tests/api/test_t018_subscription_write_contract.py `
+  tests/api/test_t018_subscription_write_runtime.py `
   tests/api/test_t018_product_subscription_contract.py `
-  tests/api/test_t018_subscription_runtime.py
+  tests/api/test_t018_subscription_runtime.py `
+  tests/api/test_openapi_runtime_coverage.py
+Pop-Location
+& $python -B scripts/contracts/validate_openapi.py
+& $python -B scripts/contracts/validate_examples.py
+& $python -B scripts/contracts/validate_codes.py
 ```
 
-PostgreSQL 검증 시 비밀값을 출력하지 않고 검증 DB 이름만 Process 환경으로
-지정한다.
+## 8. 남은 Gate
 
-```powershell
-$env:POSTGRES_DB='검증용_DB명'
-python -m pytest -q --ds=config.settings.local `
-  tests/api/test_t018_subscription_runtime.py
-```
-
-## 8. Test Matrix
-
-| 영역 | 검증 |
-| --- | --- |
-| 목록 | 소유권·ACTIVE·제품 코드·제품 활성·삭제 Profile 필터 |
-| 정렬 | started_on 동률에서 public_id 오름차순 |
-| Pagination | 기본값·경계·2페이지·total |
-| 상세 | 정상 Projection과 동일 404 경계 |
-| 날짜 | performed_on 우선·Seoul fallback·MAX·null |
-| 권한 | 401·비CUSTOMER 403·비활성 사용자 403 |
-| 입력 | unknown Query·page·size 오류 422 |
-| 보안 | 계약·일련번호·주소·features·개인정보 미노출 |
-| 회귀 | OpenAPI Runtime 인벤토리 10 구현/13 미구현 |
-
-## 9. 2026-08-08 결과
-
-| 실행 | 결과 |
-| --- | --- |
-| T-018 계약+Runtime | `12 passed` |
-| OpenAPI 인벤토리 포함 표적 회귀 | `15 passed` |
-| PostgreSQL T-017B Admin+T-018 Runtime | `16 passed` |
-| 관련 도메인 묶음 회귀 | `145 passed, 2 skipped` |
-| 해당 Slice 검증 시점 전체 Backend 회귀 | `817 passed, 13 skipped` |
-
-독립 QA는 두 Route의 실제 응답, 동일 404 경계, 422 Query 정책과 민감 필드
-제외를 확인한다. 등록·수정 기능을 이 결과에 포함하면 안 된다.
+- 격리 PostgreSQL에서 Create/PATCH 동시 동일 Key·다른 Key를 재현한다.
+- 김은진이 동일 후보 SHA에서 401·403·404·409·422와 비노출을 독립 QA한다.
+- Web·Mobile은 QA와 main 병합 뒤에만 Write Remote를 소비한다.
+- `last_care_on` 외 일반 케어 이력 등록은 T-019 계약을 사용한다.
+- 다음 관리 예정일 계산·변경 이력은 T-020에서만 처리한다.

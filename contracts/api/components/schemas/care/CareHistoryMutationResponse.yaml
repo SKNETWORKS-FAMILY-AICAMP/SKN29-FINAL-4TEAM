@@ -1,0 +1,9 @@
+title: CareHistoryMutationResponse
+description: T-019 케어 이력 등록 성공 Wrapper
+x-contract-status: CONFIRMED
+allOf:
+  - $ref: ../common/ApiResponse.yaml
+  - type: object
+    properties:
+      data:
+        $ref: ./CareHistoryMutationResult.yaml

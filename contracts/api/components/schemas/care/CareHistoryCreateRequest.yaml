@@ -1,0 +1,13 @@
+title: CareHistoryCreateRequest
+type: object
+description: T-019 고객 셀프 케어 등록 허용 필드
+x-contract-status: CONFIRMED
+additionalProperties: false
+required: [care_type_code, performed_on]
+properties:
+  care_type_code:
+    type: string
+    enum: [FILTER_REPLACEMENT, CLEANING]
+  performed_on:
+    type: string
+    format: date

@@ -1,152 +1,96 @@
-# Django REST API 케어 이력 Gap 감사·착수 Gate
+# T-019 케어 이력 Runtime 구현·검증 가이드
 
-- 작성일: 2026-08-10 KST
-- 담당: 최지용 — Backend·DB
-- 대상: `T-019` 케어 관리
-- 감사 기준: 최신 `origin/main 57326cf`
-- 판정: `GAP_AUDIT_ONLY / PM_DECISION_REQUIRED / RUNTIME_BLOCKED`
+## 1. 최신 판정
 
-> 이 문서는 `57326cf` 기준의 정적 감사 결과다. 이후 main이 바뀌면
-> WBS·계약·Runtime을 다시 대조해야 하며, 이 문서 자체는 WBS 상태
-> 변경·Runtime 구현·Migration 승인을 의미하지 않는다.
+- 작성일: 2026-08-12 KST
+- 기준: origin/main@8b5bb6292e087fd15558f53c530b06653edc4d29
+- 상태: AUTHOR_SQLITE_VERIFIED / POSTGRESQL_QA_PENDING
+- 소비자 연결: HOLD
+- 공식 WBS: 독립 QA·PM 판정 전 진행 중 유지
 
-## 1. 결론
+기존 Gap 문서를 PM 결정 이후의 구현 문서로 최신화했다. 고객 본인 ACTIVE
+지원 구독의 완료 케어 이력 목록·상세·승인 셀프 케어 등록을 구현했고,
+다음 케어일 계산은 T-020으로 분리했다.
 
-T-019는 **데이터 계층은 준비됐고 공개 API 계층은 비어 있는 상태**다.
+## 2. 계약과 Runtime
 
-- `CareRecord` Model, Migration 2개, Code, Demo Seed와 단위 Test 파일은 있다.
-- Care API Path와 DTO는 빈 placeholder다.
-- URL·Serializer·View·Repository·Service는 실행 Runtime이 아니다.
-- T-018 고객 본인 구독 GET 2개는 구현됐지만, 구독 등록·수정 write는
-  계약되지 않았다.
-- PM이 아래 9개 결정을 회신하기 전에는 공개 Care Runtime과 새
-  Migration을 구현하지 않는다.
+| Method | Path | 동작 |
+|---|---|---|
+| GET | /api/v1/me/subscriptions/{subscription_id}/care-records | COMPLETED 목록·페이지 |
+| POST | 같은 Path | 승인 셀프 케어 등록·Replay |
+| GET | .../care-records/{care_record_id} | COMPLETED 상세 |
 
-## 2. 범위
+공개 V1 등록 유형은 기존 CARE_TYPE 중 고객이 직접 수행 가능한
+FILTER_REPLACEMENT, CLEANING으로 제한한다. 카트리지·살균을 새 코드나
+다른 코드에 임의 매핑하지 않았다.
 
-이번 감사에 포함:
+## 3. 권한·객체·날짜 경계
 
-- 고객 제품·구독 기준 케어 이력 목록·상세·등록 후보
-- Care Type·Status·Result Code
-- 고객 본인 범위와 역할별 접근
-- 날짜·구독 상태·중복·멱등 Gap
-- AI가 최근 케어 이력을 읽는 Service 경계
+- 미인증 401, CUSTOMER가 아닌 역할 403
+- 본인 ACTIVE WPUJAC104DWH 지원 구독만 허용
+- 타인·비활성·미지원·미존재 구독과 비공개 이력은 동일 404
+- 공개 이력은 COMPLETED만, 최신 관리일 순
+- 날짜는 Date-only이며 미래·구독 시작일 전 등록은 422
+- 알 수 없는 Body·Query와 미지원 유형은 422
+- 내부 ID, 계약번호, Serial, 주소, 자유 Summary·PII는 비노출
 
-포함하지 않음:
+## 4. 저장·멱등성
 
-- `T-020` 다음 케어 예정일 계산·갱신
-- 방문기사 배정·방문 완료 Runtime
-- 운영·공유 DB Migration 적용
-- PM 승인 전 Endpoint·DTO·RBAC 구현
+- Scope: actor + createMyCareRecord + Idempotency-Key
+- 같은 Key·같은 요청은 최초 저장 결과 Replay
+- 같은 Key·다른 날짜·유형·대상은 409 DUPLICATE-EVENT-01
+- Customer Profile과 Subscription Row Lock 뒤 이력을 1건 저장
+- 결과·수행자·출처는 서버가 정규화
+  - FILTER_REPLACEMENT → FILTER_REPLACED
+  - CLEANING → NORMAL
+- 신규 Model·Migration 없이 기존 CareRecord·IdempotencyRecord 사용
 
-기준 문서:
+## 5. 안전 Projection
 
-- [WBS](../../../planning/md/WBS.md)
-- [요구사항정의서](../../../planning/md/요구사항정의서.md)
-- [T-018 Runtime 가이드](Django_REST_API_구독_제품조회_Runtime_구현_검증_가이드.md)
-- [T-019 Fail-closed Auditor](../../../../scripts/contracts/audit_overdue_backend_runtime_gates.py)
+- 고객 목록·상세는 최소 안전 DTO만 반환
+- 담당 상담사는 배정된 Inquiry를 통해서만 같은 안전 Projection 조회
+- AI 내부 Context는 최근 COMPLETED 최대 5건만 사용
+- AI 필드: care_type_code, performed_on, result_code
+- 자유 Summary와 고객정보는 AI Projection에 포함하지 않음
+- Operator 공개 Endpoint는 열지 않았으며 역할 전체 허용도 하지 않음
 
-## 3. 현재 상태
+## 6. 구현·계약 증거
 
-| 영역 | 상태 | 근거·판정 |
-| --- | --- | --- |
-| Care Model | 구현 | [CareRecord](../../../../backend/apps/care/models/care_history.py) |
-| Migration | 구현 | [0001](../../../../backend/apps/care/migrations/0001_initial.py), [0002](../../../../backend/apps/care/migrations/0002_add_imported_care_fields.py) |
-| Code | 구현 | [Type](../../../../contracts/codes/care-types.yaml), [Status](../../../../contracts/codes/care-statuses.yaml), [Result](../../../../contracts/codes/care-results.yaml) |
-| Demo Seed | 구현 | [Seed](../../../../backend/apps/care/management/commands/seed_demo_care_records.py), API 증거는 아님 |
-| Care Path | placeholder | [care.yaml](../../../../contracts/api/paths/care.yaml)은 비어 있음 |
-| 응답 DTO | placeholder | [CareHistoryItem](../../../../contracts/api/components/schemas/care/CareHistoryItem.yaml)은 비어 있음 |
-| URL·View·Serializer | placeholder | [URL](../../../../backend/apps/care/api/urls.py), [View](../../../../backend/apps/care/api/views.py), [Serializer](../../../../backend/apps/care/api/serializers.py) |
-| Repository·Service | placeholder | [Repository](../../../../backend/apps/care/repositories/care_history_repository.py), [Service](../../../../backend/apps/care/services/care_history_service.py) |
-| OpenAPI·Django 등록 | 미구현 | Care Route 참조·include 없음 |
-| RBAC·Example·API Test | 미구현 | 전용 파일·폴더 없음 |
+- [Route](../../../../backend/apps/care/api/urls.py)
+- [View](../../../../backend/apps/care/api/views.py)
+- [Serializer](../../../../backend/apps/care/api/serializers.py)
+- [Service](../../../../backend/apps/care/services/care_history_service.py)
+- [Repository](../../../../backend/apps/care/repositories/care_history_repository.py)
+- [OpenAPI Path](../../../../contracts/api/paths/care.yaml)
+- [공개 Item](../../../../contracts/api/components/schemas/care/CareHistoryItem.yaml)
+- [등록 Schema](../../../../contracts/api/components/schemas/care/CareHistoryCreateRequest.yaml)
+- [Runtime Test](../../../../backend/tests/api/test_t019_care_history_runtime.py)
+- [Contract Test](../../../../backend/tests/api/test_t019_care_history_contract.py)
 
-Model·Code·Seed Test 파일이 있다는 사실은 공개 API Runtime 완료 증거가 아니다.
+## 7. 작성자 검증
 
-## 4. T-018 선행조건
+| 검증 | 결과 |
+|---|---:|
+| T-019 Runtime·Contract | 16 passed / 0 failed |
+| T-005~T-020 통합 표적 | 177 passed / 0 failed |
+| OpenAPI | 124 YAML / 513 refs / 36 paths / 40 operations |
+| Example | 61/61 referenced |
+| Code Registry | 28 files / 144 codes |
+| Django Check | 0 issue |
+| Migration drift | No changes detected |
+| 전체 Backend 회귀 | 1076 passed / 19 skipped / 0 failed |
 
-현재 구현된 읽기 Slice:
+재현 위치는 backend다.
 
-- `GET /api/v1/me/subscriptions`
-- `GET /api/v1/me/subscriptions/{subscription_id}`
+    .\.venv\Scripts\python.exe -B -m pytest -q -p no:cacheprovider tests/api/test_t019_care_history_runtime.py tests/api/test_t019_care_history_contract.py tests/api/test_openapi_runtime_coverage.py
+    .\.venv\Scripts\python.exe -B ..\scripts\contracts\validate_openapi.py
+    .\.venv\Scripts\python.exe -B ..\scripts\contracts\validate_examples.py
+    .\.venv\Scripts\python.exe -B ..\scripts\contracts\validate_codes.py
 
-[T-018 계약](../../../../contracts/api/paths/products.yaml)과
-Subscription Route·Permission·Repository·Service·Test가 이 두 GET에
-대응한다. 그러나 상품 선택, 구독 등록·수정 POST/PUT/PATCH는 없다.
+## 8. 남은 Gate
 
-PM 결정이 필요한 지점:
-
-- T-018 write 완료 뒤에만 T-019를 시작할지
-- 이미 존재하는 ACTIVE 구독의 케어 이력만 예외적으로 허용할지
-
-결정 전에는 T-018 read 완료를 T-018 전체 완료로 확대하지 않는다.
-
-## 5. 구현 Gap
-
-| Gap | 현재 문제 | 승인 후 필요한 결과 |
-| --- | --- | --- |
-| Endpoint | 목록·상세·등록 Path·Method 미정 | OpenAPI Operation 확정 |
-| DTO | 요청·응답·Query·Error Schema 없음 | 공개 Allowlist와 Example |
-| RBAC | 전용 Permission·Object Filter 없음 | 역할·소유권·Hidden 404 |
-| Write 정책 | Lifecycle·날짜·Source·Performer 규칙 없음 | Service Guard |
-| 중복·멱등 | 업무 Key와 Replay 규칙 없음 | 제약 또는 Idempotency 계약 |
-| Test | API·IDOR·write·PG 동시성 증거 없음 | Contract/API/PG Test |
-| AI 소비 | 최근 이력 공용 Interface 없음 | 입력·출력·오류 계약 |
-
-추가 관찰:
-
-- `inquiry + visit` 중복 방지 제약은 확인되지 않았다.
-- 카트리지 교체·살균을 현재 Code에 어떻게 대응할지 미정이다.
-- Demo Product `DEMO-PMD-001`과 T-018 공개 대상
-  `WPUJAC104DWH`가 달라 기존 Seed를 공개 E2E 증거로 볼 수 없다.
-- `next_care_on` 계산·변경은 T-020이므로 이번 구현에 섞지 않는다.
-
-## 6. Fail-closed Gate
-
-현재 차단 사유:
-
-- `T018_WRITE_SCOPE_NOT_CONTRACTED`
-- `CARE_API_CONTRACT_EMPTY`
-- `CARE_RUNTIME_STUBS_ONLY`
-
-PM 회신 전 허용:
-
-- `CONTRACT_GAP_INVENTORY`
-- `FAIL_CLOSED_READINESS_TESTS`
-- `IMPLEMENTED_ROUTE_REGRESSION`
-- `EVIDENCE_DOCUMENTATION`
-
-차단 중 금지:
-
-- `PUBLIC_CARE_ENDPOINT_IMPLEMENTATION`
-- `NEXT_CARE_DATE_CALCULATION`
-- `PUBLIC_QUESTIONNAIRE_ENDPOINT_IMPLEMENTATION`
-- `DATABASE_MIGRATION_FOR_BLOCKED_RUNTIME`
-
-## 7. PM 결정 요청 9개
-
-| 번호 | 결정할 내용 |
-| ---: | --- |
-| 1 | T-018 write 필수 선행 여부 또는 기존 ACTIVE 구독 예외 |
-| 2 | 목록·상세·등록의 Path·Method와 구독 하위 중첩 여부 |
-| 3 | CUSTOMER·CONSULTANT·OPERATOR·TECHNICIAN read/write 범위 |
-| 4 | Request·Response Allowlist, UUID, Query·정렬·페이지·오류 |
-| 5 | 생성 Lifecycle, 날짜 조합, Source·Performer 규칙 |
-| 6 | 카트리지·살균의 기존 Code 매핑 또는 새 Code |
-| 7 | Dedupe·Idempotency Key와 FR-030 중복방지 담당 Task |
-| 8 | T-019/T-020 경계와 `next_care_on` 비계산 원칙 |
-| 9 | `WPUJAC104DWH` Fixture와 AI 최근이력 Interface |
-
-## 8. 승인 후 작업 순서
-
-1. PM 결정과 담당자를 문서·이슈에 고정한다.
-2. Code와 OpenAPI Path·Schema·Error·Example을 확정한다.
-3. 빈 계약과 잘못된 권한을 실패시키는 Contract Test를 먼저 작성한다.
-4. Permission→Repository→Service→Serializer→View→Route 순으로 구현한다.
-5. 계약상 필요할 때만 새 Forward Migration을 작성한다.
-6. 목록·상세·등록, 날짜, 구독 상태, IDOR, 중복·재전송을 검증한다.
-7. AI 최근이력 Service를 검증하고 김은진 독립 QA를 요청한다.
-
-완료 판정에는 OpenAPI와 Django Route, 실제 Service·Repository,
-PostgreSQL 검증, 독립 QA가 모두 필요하다. 이 문서는 테스트·Migration·Seed를
-실행하지 않은 정적 감사 문서다.
+- 셀프 케어 2종 allowlist를 계약 Owner가 최종 후보에서 확인한다.
+- 격리 PostgreSQL에서 동시 Create Replay·Conflict를 재현한다.
+- 김은진 독립 QA 뒤 PM이 소비자 연결과 WBS 상태를 판정한다.
+- 다음 예정일은 T-020, 방문 결과 중복 반영은 T-044에서 처리한다.
+- 현재 결과를 Web·Mobile·T-019 전체 완료로 확대하지 않는다.

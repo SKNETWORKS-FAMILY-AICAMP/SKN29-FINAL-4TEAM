@@ -1,0 +1,14 @@
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "SUBSCRIPTION_ALREADY_ACTIVE",
+    "message": "동일 제품의 활성 구독이 이미 등록되어 있습니다.",
+    "details": {
+      "subscription_id": "20000000-0000-4000-8000-000000000001"
+    }
+  },
+  "metadata": {
+    "correlation_id": "30000000-0000-4000-8000-000000000014"
+  }
+}

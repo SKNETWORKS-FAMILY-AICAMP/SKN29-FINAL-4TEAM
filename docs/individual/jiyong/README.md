@@ -2,7 +2,7 @@
 
 > 프로젝트: SKN29 Final Project — WaterBridge
 >
-> 기준일: 2026-08-10
+> 기준일: 2026-08-12
 >
 > 작성·유지 책임: 최지용 — Backend·Database·API
 >
@@ -123,6 +123,9 @@ docs/individual/jiyong/
 | [Django REST API 문의 AI Runtime Wiring·실제 Mock HTTP 가이드](API/Django_REST_API_문의_AI_Runtime_Wiring_실제Mock_HTTP_구현_검증_가이드.md) | `SUBMIT_SYMPTOM` Commit 후 AI 1회 호출, Replay·실패보존·실제 Uvicorn Mock 검증 |
 | [Django REST API T-024 Backend AI 추적·구조화 로그 구현·검증 가이드](API/Django_REST_API_T024_Backend_AI_추적_구조화로그_구현_검증_가이드.md) | Callback·AI Lifecycle·Correlation·DB 원장 연결과 로그 비노출 검증 |
 | [Backend Contract Runtime 12 수정·검증 가이드](API/Django_REST_API_Backend_Contract_Runtime12_수정_검증_가이드.md) | 취소 3역할·2상태, 동적 Guard·Runtime `allowed_actions`, 성공·409 Parity와 PostgreSQL 증거 |
+| [구독·제품 조회·등록·수정 Runtime 가이드](API/Django_REST_API_구독_제품조회_Runtime_구현_검증_가이드.md) | T-018 고객 본인 조회와 합성 제품 등록·수정, 권한·멱등·날짜 검증 |
+| [케어 이력 Runtime 구현·검증 가이드](API/Django_REST_API_케어이력_Gap_감사_착수게이트.md) | T-019 완료 이력 목록·상세·셀프 케어 등록과 AI 안전 Projection |
+| [다음 케어일 계산·재산정 가이드](API/Django_REST_API_다음케어일_계산_재산정_구현_검증_가이드.md) | T-020 출처 기반 월 단위 계산, 확인 필요, 일정 변경 이력 |
 | [Django State Machine API 구현·검증·인계서](API/Django_State_Machine_API_구현_검증_인계서.md) | T-023 Engine·Guard·`allowed_actions`·SYSTEM 이벤트·상담 Action Gate |
 | [Django REST API 구독·제품조회 계약 제안서](API/Django_REST_API_구독_제품조회_계약_제안서.md) | T-018 승인 전 최소 GET 계약·권한·테스트 Matrix |
 

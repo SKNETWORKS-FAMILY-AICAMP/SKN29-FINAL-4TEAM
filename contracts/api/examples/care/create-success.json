@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "data": {
+    "care_record_id": "60000000-0000-4000-8000-000000000002",
+    "subscription_id": "20000000-0000-4000-8000-000000000001",
+    "care_type_code": "CLEANING",
+    "status_code": "COMPLETED",
+    "performed_on": "2026-08-11",
+    "result_code": "NORMAL",
+    "source_code": "CUSTOMER",
+    "idempotent_replay": false
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "30000000-0000-4000-8000-000000000023"
+  }
+}

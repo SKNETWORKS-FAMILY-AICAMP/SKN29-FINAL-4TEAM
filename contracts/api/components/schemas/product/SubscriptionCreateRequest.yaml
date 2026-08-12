@@ -1,0 +1,23 @@
+title: SubscriptionCreateRequest
+type: object
+description: T-018 합성 고객의 지원 제품 구독 등록 입력
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - model_code
+  - started_on
+  - management_type_code
+properties:
+  model_code:
+    type: string
+    const: WPUJAC104DWH
+  started_on:
+    type: string
+    format: date
+  management_type_code:
+    type: string
+    enum: [SELF_MANAGED, VISIT_CARE]
+  last_care_on:
+    type: [string, "null"]
+    format: date
+    description: 선택적인 최근 필터 교체 기준일. 사용 시작일 이후·오늘 이하만 허용한다.
