@@ -2,7 +2,7 @@
 
 > 기준일: **2026-08-10 KST**
 > WBS 기준: `docs/planning/md/WBS.md` v2.1
-> 기준 Commit: `main@4ac79e6227ce271252054b1e986d6ee24eefce4a`
+> 기준 Commit: `main@2a1b308ed5eae8bdbaec57ee6026f14529b10794`
 > 상태: **CONTRACT_BASELINE_REVIEW**
 
 ## 1. 범위 원칙
@@ -85,8 +85,10 @@ target_at=<YYYY-MM-DD HH:mm KST>
 - 실행 결과: `docs/testing/week5-contract-baseline-result.md`
 - 소비자 검토표: `docs/testing/week5-contract-consumer-review.md`
 - 팀원 회신 요청: `docs/handoffs/week5-contract-consumer-review-request.md`
-- 현재 후보는 `main@4ac79e6`이며 Backend 원래 불일치 두 건은 작성자 수정됐다.
-- 계약 후속 적용·독립 QA와 AI·Web 회신이 남아 현재 판정은 `REMOTE_CONTRACT_PASS · CONSUMER_ACK 1/5 · REVALIDATION_REQUIRED`다.
+- Backend Runtime12 후속 4건은 `e146d23` 독립 QA `APPROVE`로 Backend ACK를 승인했다.
+- Mobile·QA와 함께 현재 소비자 ACK는 `3/5`다.
+- AI No-Evidence Runtime은 최신 `origin/dongyoon@692ccd5` 병합을 승인했으며 실제 main 반영 후 AI ACK를 계산한다.
+- 현재 판정은 `CONSUMER_ACK 3/5 · AI_MAIN_PENDING · WEB_ACK_PENDING`이다.
 - 최종 `TEAM_BASELINE`은 아직 아니다.
 
 ## 8. 3.4 Contract CI 강화 진행 기록
@@ -104,6 +106,9 @@ target_at=<YYYY-MM-DD HH:mm KST>
 - 실제 LLM·Multi-Agent가 미구현이고 팀 pgvector 환경과 Evidence Verifier Runtime 연결이 차단돼 현재 판정은 `HOLD`다.
 - Gate 결과: `docs/testing/week5/backend-ai-integration-gate.md`
 - 담당자 실행 요청: `docs/handoffs/week5-backend-ai-integration-gate-request.md`
+- P0-2 정상 제출·Replay 공동 Mock은 8월 12일 `PASS`로 종료했다.
+- AI Runtime 병합은 최신 `origin/dongyoon@692ccd5`를 승인했다.
+- 실제 Local RAG·팀 pgvector·Evidence·오류 시나리오가 남아 전체 3.5 판정은 `HOLD`를 유지한다.
 
 ## 10. 3.6 Web·Mobile Consumer Integration Gate 진행 기록
 

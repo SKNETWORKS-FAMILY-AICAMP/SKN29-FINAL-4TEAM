@@ -1,7 +1,7 @@
 # 5주차 Contract 소비자 검토 Matrix
 
 > 최초 검토 기준: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
-> 현재 재검증 후보: `main@4ac79e6227ce271252054b1e986d6ee24eefce4a`
+> 현재 재검증 후보: `main@2a1b308ed5eae8bdbaec57ee6026f14529b10794`
 > 현재 상태: **IN_PROGRESS**
 > 요청 원본: `docs/handoffs/week5-contract-consumer-review-request.md`
 
@@ -9,11 +9,11 @@
 
 | 검토자 | 소비 영역 | 반드시 확인할 내용 | 요구 증거 | 상태 |
 |---|---|---|---|---|
-| 최지용 | Backend Runtime | Event·권한·`state_version`·멱등성·409와 Crosswalk Runtime 12개가 Source/Test와 일치 | 파일 또는 PR, 표적 Test 명령·결과 | FIX_APPLIED · CONTRACT_FOLLOWUP_AND_QA_PENDING |
-| 이동윤 | AI | AI 결과의 Event·Schema·위험·근거 없음·Fallback 정합성, AI의 직접 상태 변경 금지 | 파일 또는 PR, Schema·Safety·Fallback Test | REQUESTED |
+| 최지용 | Backend Runtime | Event·권한·`state_version`·멱등성·409와 Crosswalk Runtime 12개가 Source/Test와 일치 | 파일 또는 PR, 표적 Test 명령·결과 | APPROVE |
+| 이동윤 | AI | AI 결과의 Event·Schema·위험·근거 없음·Fallback 정합성, AI의 직접 상태 변경 금지 | 파일 또는 PR, Schema·Safety·Fallback Test | MERGE_APPROVED · ACK_AFTER_MAIN |
 | 한예나 | Web | `allowed_actions`, 서버 상태, Date, 403/404/409/422 소비와 Mock 자동 성공 금지 | 파일 또는 PR, Test·Lint·Build 결과 | CONTENT_APPROVED · CURRENT_BASELINE_ACK_PENDING |
 | 양정현 | Mobile | DTO·UiState·Action·Date·Error와 Remote/Mock 경계 정합성 | 파일 또는 PR, Unit/UI·Build 결과 | APPROVE |
-| 김은진 | QA | 현재 Commit의 Contract Test·대표 Fixture·Crosswalk·생성물 Drift | QA 문서, 실행 명령·Exit Code·결과 | REVALIDATION_REQUIRED |
+| 김은진 | QA | 현재 Commit의 Contract Test·대표 Fixture·Crosswalk·생성물 Drift | QA 문서, 실행 명령·Exit Code·결과 | APPROVE · EVIDENCE_PATH_FOLLOWUP |
 
 기존 `docs/testing/results/week5-entry-gate-result.md`에는 이전 기준 Commit의 Contract Gate PASS가 있다. 이번 최종 폐쇄에는 위 현재 기준 Commit 또는 이후 최종 후보 Commit의 명시적 ACK가 필요하다.
 
@@ -28,12 +28,12 @@
 ## 3. 최종 PM 판정
 
 ```text
-consumer_ack=1/5
-contract_gate=REMOTE_PASS_ON_83F7373_NO_CONTRACT_DIFF_TO_4AC79E6
+consumer_ack=3/5
+contract_gate=PASS
 crosswalk=12/7/0/4
 final_baseline_commit=PENDING
 baseline_status=PM_BASELINE_CANDIDATE
-overall_decision=HOLD_FOR_BACKEND_FOLLOWUP_AND_CONSUMER_REVALIDATION
+overall_decision=HOLD_FOR_AI_MAIN_AND_WEB_ACK
 ```
 
 회신이 들어올 때마다 해당 행의 상태와 증거 경로를 갱신한다. 5명 모두 승인한 최종 후보 Commit에서 Contract Gate를 다시 실행한 뒤 `TEAM_BASELINE` 전환 여부를 결정한다.
@@ -48,3 +48,12 @@ overall_decision=HOLD_FOR_BACKEND_FOLLOWUP_AND_CONSUMER_REVALIDATION
 - PM은 작성자 수정을 수용했지만 고객 Snapshot 동적 `allowed_actions` 등 계약 후속 3건과 독립 QA 전까지 Backend ACK를 보류한다.
 - 최초 결정: `docs/decisions/Backend Contract 소비 불일치 PM 결정.md`
 - 후속 결정: `docs/decisions/Backend Runtime12 후속 계약 PM 결정.md`
+
+## 5. 2026-08-12 Backend QA·AI 공동 Mock 판정
+
+- Backend Runtime12 후속 4건은 `e146d23`에서 독립 QA `APPROVE`를 받아 Backend ACK를 최종 승인한다.
+- QA 결과는 표적 `98 passed/5 skipped`, Backend 전체 `1004 passed/19 skipped`, PostgreSQL Row Lock `5 passed/0 skipped`, Migration Drift `NONE`이다.
+- QA 증거 파일 경로는 아직 정확한 파일명·Commit이 없어 감사 추적 보완으로 남긴다.
+- P0-2 정상 제출·Replay 공동 Mock은 PASS로 종료한다.
+- AI No-Evidence 정합화는 최신 `origin/dongyoon@692ccd5` 병합을 승인하며 AI ACK는 실제 main 반영 뒤 계산한다.
+- PM 결정: `docs/decisions/20260812-backend-ai-gate-pm-decision.md`
