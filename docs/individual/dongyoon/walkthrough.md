@@ -1008,3 +1008,20 @@ Public UUID 분석 요청이 모두 성공했다.
   취급하지 않는다.
 - 설정·Schema 단위 테스트 `39 passed, 2 warnings`, AI 전체 단위 테스트
   `167 passed, 3 warnings`를 Python `3.13.13`에서 확인했다.
+
+### 2026-08-12 P0-2 공동 Mock 후속 확인·회신
+
+- 원격 `main@382ddc5933d0ec63a38778a0c78d037c351b7128`을 Fetch한 뒤 AI 작업
+  Branch에 병합했다. AI 고유 No-Evidence Runtime 정합화와 Runtime Identity Hash
+  수정은 제품 Runtime에 필요하므로 `MAIN_MERGE_REQUIRED`로 판정했다. 병합 Commit
+  `c70e9f79c87db0b88c029e3fdcfa3018c6593d89`가 `origin/dongyoon`에 Push된 상태도
+  원격 Fetch로 재확인했다.
+- Python `3.13.13`, `pip check=PASS`, AI 전체 단위 테스트
+  `167 passed, 3 warnings`를 최신 main 병합 상태에서 확인했다.
+- 실제 Uvicorn Mock과 Backend Live HTTP Test를 재실행해 `/health` 200과 정상
+  제출·Replay `1 passed`를 확인했다. 신규 AI 호출 1회, Replay 추가 호출 0회,
+  계약 `3.0.0`, Correlation과 AIRun·Assessment·Guidance 저장을 함께 검증했다.
+- 실제 공동 HTTP 503·Timeout은 실행하지 않아 `NOT_RUN`으로 유지하고, 기존
+  결정적 오류 경계·독립 QA 증거를 사용하는 `KEEP_NOT_RUN`으로 회신했다.
+- `docs/individual/dongyoon/인계/20260812_이동윤_to_최지용_P0-2_공동Mock_후속정보_회신_v0.1.md`에
+  Branch·병합 상태, 명령·Exit, P0-2 완료 경계와 PM 결정 요청을 기록했다.
