@@ -329,7 +329,6 @@ def test_action_results_and_week5_runtime_statuses_are_explicit():
     for path in ("/inquiries/{id}/action-results",):
         assert list(collect_external_values(inquiry_paths[path])) == []
     pending = {
-        "/inquiries/{id}/request-consultation": workflow_paths,
         "/inquiries/{id}/resolution-feedback": workflow_paths,
         "/inquiries/{id}/finalize": workflow_paths,
         "/inquiries/{id}/report-unresolved": workflow_paths,
@@ -344,4 +343,7 @@ def test_action_results_and_week5_runtime_statuses_are_explicit():
     assert workflow_paths["/inquiries/{id}/answers"]["post"][
         "x-runtime-status"
     ] == "IMPLEMENTED"
+    assert workflow_paths["/inquiries/{id}/request-consultation"][
+        "post"
+    ]["x-runtime-status"] == "IMPLEMENTED"
     assert list(collect_external_values(openapi["paths"]["/health"])) == []

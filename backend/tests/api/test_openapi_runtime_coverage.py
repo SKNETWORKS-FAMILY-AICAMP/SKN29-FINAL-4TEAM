@@ -155,8 +155,8 @@ EXPECTED_OPERATIONS = {
         "runtime_path": (
             f"/api/v1/inquiries/{INQUIRY_ID}/request-consultation"
         ),
-        "url_name": None,
-        "view_name": None,
+        "url_name": "inquiry-request-consultation",
+        "view_name": "RequestConsultationView",
     },
     ("/inquiries/{id}/resolution-feedback", "post"): {
         "operation_id": "submitResolutionFeedback",
@@ -357,7 +357,7 @@ def test_openapi_operation_inventory_is_exactly_thirty_five():
         )
 
 
-def test_twenty_six_operations_resolve_to_expected_runtime_views():
+def test_twenty_seven_operations_resolve_to_expected_runtime_views():
     implemented = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -366,7 +366,7 @@ def test_twenty_six_operations_resolve_to_expected_runtime_views():
         )
     ]
 
-    assert len(implemented) == 26
+    assert len(implemented) == 27
     for (_, method), expected in implemented:
         match = resolve(expected["runtime_path"])
         assert match.url_name == expected["url_name"]
@@ -376,7 +376,7 @@ def test_twenty_six_operations_resolve_to_expected_runtime_views():
             assert callable(getattr(view_class, method, None))
 
 
-def test_nine_openapi_only_operations_have_no_runtime_method():
+def test_eight_openapi_only_operations_have_no_runtime_method():
     openapi_only = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -385,7 +385,7 @@ def test_nine_openapi_only_operations_have_no_runtime_method():
         )
     ]
 
-    assert len(openapi_only) == 9
+    assert len(openapi_only) == 8
     for (_, method), expected in openapi_only:
         match = resolve(expected["runtime_path"])
         if expected["url_name"] is None:

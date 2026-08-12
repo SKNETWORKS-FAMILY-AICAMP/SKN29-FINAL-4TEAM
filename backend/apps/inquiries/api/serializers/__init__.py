@@ -25,6 +25,10 @@ from apps.inquiries.api.serializers.customer_inquiry import (
 from apps.inquiries.api.serializers.inquiry_response import (
     InquiryResponseSerializer,
 )
+from apps.inquiries.api.serializers.request_consultation import (
+    RequestConsultationResponseSerializer,
+    RequestConsultationSerializer,
+)
 from apps.inquiries.api.serializers.followup_answers import (
     SubmitFollowUpAnswersResponseSerializer,
     SubmitFollowUpAnswersSerializer,
@@ -49,6 +53,8 @@ __all__ = [
     "InquiryResponseSerializer",
     "RegisterConsultantPhoneInquiryResultSerializer",
     "RegisterConsultantPhoneInquirySerializer",
+    "RequestConsultationResponseSerializer",
+    "RequestConsultationSerializer",
     "SubmitFollowUpAnswersResponseSerializer",
     "SubmitFollowUpAnswersSerializer",
     "SubmitSymptomResponseSerializer",

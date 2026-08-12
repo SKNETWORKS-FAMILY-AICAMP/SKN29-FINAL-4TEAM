@@ -151,11 +151,11 @@
     operationId: requestConsultation
     summary: 고객 상담 요청
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: REQUEST_CONSULTATION
-      transition_rules: [TR-INQ-012, TR-INQ-013]
-      from_states: [AI_GUIDANCE, CONSULTATION_REQUIRED]
+      transition_rules: [TR-INQ-012, TR-INQ-013, TR-INQ-031]
+      from_states: [AI_GUIDANCE, CONSULTATION_REQUIRED, COMPLETION_PENDING]
       to_state: CONSULTATION_REQUIRED
       actor_role: CUSTOMER
     x-permission-scope: OWN_INQUIRY
