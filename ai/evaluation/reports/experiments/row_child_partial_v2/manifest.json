@@ -1,0 +1,108 @@
+{
+  "experiment_id": "D04-ROW-CHILD-PARTIAL-V2",
+  "experiment_version": "2.0.0-draft.1",
+  "run_status": "PARTIAL_SCOPE_DIAGNOSTIC_COMPLETE",
+  "started_at": "2026-08-12T06:55:52.684536+00:00",
+  "completed_at": "2026-08-12T06:56:00.489931+00:00",
+  "metrics_publishable_as_official": false,
+  "production_adoption": "NOT_APPROVED",
+  "inputs": {
+    "experiment": {
+      "path": "ai/configs/experiments/row_child_partial_v2.yaml",
+      "sha256": "EEA2ECAF90F9B1EA36657B4FDDEB07BF5C8F2E9B4E49CF277518B9B3E9FB60F1"
+    },
+    "baseline": {
+      "path": "ai/configs/experiments/full_corpus_baseline_v1.yaml",
+      "sha256": "E1B38207CD291B67CBF64155F11BCDF7DE308650C8E742CA4D332A2F6FA255EA"
+    },
+    "gold": {
+      "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+      "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A"
+    },
+    "source_corpus": {
+      "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+      "sha256": "FE62AF6030045C532BC8E68D11C5461E8C65BD16DCD6758E0C2412C8C37C472C",
+      "record_count": 96
+    },
+    "children": {
+      "path": "data/processed/structured/rag/experimental/rag_child_chunks_v2.jsonl",
+      "sha256": "8949C6DD03EE57C87F73E8740F82BD26DAE17259DAF0E85D80D62C4B8FC97ACA",
+      "record_count": 15
+    },
+    "parents": {
+      "path": "data/processed/structured/rag/experimental/rag_parent_pages_v2.jsonl",
+      "sha256": "FDE0EFE1275114F8BE3DE190055251D411C1A38A705E8E929F08998675DDC05D",
+      "record_count": 5
+    }
+  },
+  "candidate_corpus": {
+    "mode": "PARTIAL_PAGE_REPLACEMENT",
+    "removed_page_chunks": 5,
+    "added_child_chunks": 15,
+    "record_count": 106
+  },
+  "selected_cases": {
+    "impact": [
+      "RAGV2-GOLD-0004",
+      "RAGV2-GOLD-0005",
+      "RAGV2-GOLD-0007",
+      "RAGV2-GOLD-0008",
+      "RAGV2-GOLD-0021",
+      "RAGV2-GOLD-0024",
+      "RAGV2-GOLD-0025",
+      "RAGV2-GOLD-0027",
+      "RAGV2-GOLD-0036",
+      "RAGV2-GOLD-0037",
+      "RAGV2-GOLD-0038"
+    ],
+    "normal_control": [
+      "RAGV2-GOLD-0001",
+      "RAGV2-GOLD-0002",
+      "RAGV2-GOLD-0003",
+      "RAGV2-GOLD-0006",
+      "RAGV2-GOLD-0009"
+    ],
+    "total": 16
+  },
+  "embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "device": "cpu",
+    "normalize_embeddings": true,
+    "local_files_only": true
+  },
+  "retrieval": {
+    "method": "dense_cosine_exact_v1",
+    "top_k": 5,
+    "score_threshold": 0.4,
+    "filter_mode": "EXACT_PRODUCT_FILTER"
+  },
+  "performance": {
+    "query_embedding_seconds": 0.85429,
+    "baseline_document_embedding_seconds": 138.502561,
+    "partial_document_embedding_seconds": 141.74499,
+    "baseline_embedding_cache_hit": true,
+    "partial_embedding_cache_hit": true,
+    "baseline_embedding_cache_key": "1B9BB2F18972730325B7D7D80BE41E06614CF61B5BD7A1C392113336FDA901C0",
+    "partial_embedding_cache_key": "88A55BB480AD4A34AF8D37D0F3D681D89F96CF3A6EB09FCB6479EE866D4107EA",
+    "case_result_count": 48,
+    "total_seconds": 7.807145
+  },
+  "runtime": {
+    "python": "3.13.13",
+    "os": "Windows 11"
+  },
+  "git": {
+    "commit_sha": "8b5bb6292e087fd15558f53c530b06653edc4d29",
+    "branch": "codex/dongyoon-reconcile",
+    "working_tree_clean": false,
+    "changed_path_count": 9
+  },
+  "publication_limits": [
+    "Gold DEV Draft 16건의 부분 진단이며 전체 B1 또는 운영 성능으로 발표하지 않는다.",
+    "지정 5개 페이지의 검색 가능 원문을 완전 보존한 Full Corpus v2가 아니다.",
+    "Parent Context 관련성은 자동 검색 지표가 아니라 사람 검수 대상이다.",
+    "운영 Pipeline, Corpus, retrieval_policy와 Backend 계약을 변경하지 않는다."
+  ]
+}
