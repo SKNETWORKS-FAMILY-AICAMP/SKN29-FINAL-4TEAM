@@ -7,6 +7,11 @@
 - Active subscription list/detail: PASS
 - Inquiry create: PASS
 - Symptom submit: PASS
+- Customer inquiry Snapshot: PASS
+- Customer unanswered Questions: PASS
+- Customer follow-up Answers POST: PASS
+- Follow-up state_version advancement: PASS
+- Follow-up post-submit Snapshot/Questions refresh: PASS
 - REMOTE Guidance unavailable fail-closed: PASS
 - Technician login + `/me`: PASS
 
@@ -20,7 +25,6 @@
 ## Runtime pending
 
 - Customer Guidance actual API
-- Follow-up actual API
 - Consultation actual API
 - Technician Visit actual API
 
@@ -28,7 +32,7 @@
 
 현재 Mobile이 실제 Backend로 검증한 범위는:
 
-`Customer login → subscription → inquiry create → symptom submit`
+`Customer login → subscription → inquiry create → symptom submit → Snapshot → Questions → Follow-up Answers → Snapshot/Questions refresh`
 
 및:
 

@@ -4,10 +4,10 @@
 - Technician Connected: PASS
 - Customer subscription list/detail/select: INTEGRATED
 - Customer inquiry create/submit: INTEGRATED
-- Customer P0 actual REST smoke: NOT_RUN
-- Idempotency/error runtime regression: NOT_RUN
-- Technician auth: NOT_RUN
+- Customer P0 actual REST smoke: PASS (real device, skipped=0)
+- Backend follow-up actual-socket/error regression: PASS
+- Technician auth: PASS (real device, skipped=0)
 - Technician Visit: BLOCKED_BY_BACKEND, Fake is explicit offline only
-- Follow-up/Guidance/Consultation: BLOCKED_BY_BACKEND unless latest main later opens exact Runtime
+- Follow-up 3API: PASS (real device, skipped=0); Guidance/Consultation: BLOCKED_BY_BACKEND
 - Full representative E2E: BLOCKED_BY_BACKEND
 - Feature Complete candidate: NO
