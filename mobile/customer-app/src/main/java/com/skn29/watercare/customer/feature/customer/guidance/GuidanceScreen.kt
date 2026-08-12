@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
+import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.GuidanceDisplayModel
 import com.skn29.watercare.core.model.InquiryActionLabels
@@ -77,18 +78,31 @@ fun GuidanceScreen(
                 scenario = scenario,
                 repository = guidanceRepository,
                 inquiryRepository = WaterCareCore.inquiryRepository,
+                customerInquiryRepository =
+                    WaterCareCore.customerInquiryRepository,
+                followUpEnabled =
+                    !fixturePreview &&
+                        WaterCareCore.customerCareRuntimeConfig.mode ==
+                            CustomerCareMode.REMOTE,
             )
         }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
     val cancelState by
         viewModel.cancelState.collectAsStateWithLifecycle()
+    val followUpState by
+        viewModel.followUpState.collectAsStateWithLifecycle()
     var consultationNotice by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
     val requestConsultation = {
         consultationNotice = true
     }
     val actualInquiryCode = submittedInquiryCode.trim()
+    val latestInquirySnapshot = followUpState.snapshotOrNull()
+    val effectiveStateVersion =
+        latestInquirySnapshot?.stateVersion ?: submittedStateVersion
+    val effectiveAllowedActions =
+        latestInquirySnapshot?.allowedActions ?: submittedAllowedActions
 
     WaterCareScreen(title = "AI 자가진단", onBack = onBack) {
         if (fixturePreview) {
@@ -102,14 +116,26 @@ fun GuidanceScreen(
         if (actualInquiryCode.isNotEmpty()) {
             SubmissionReceiptCard(
                 inquiryCode = actualInquiryCode,
-                statusCode = submittedStatusCode,
-                stateVersion = submittedStateVersion,
-                allowedActions = submittedAllowedActions,
+                statusCode =
+                    latestInquirySnapshot?.statusCode
+                        ?: submittedStatusCode,
+                stateVersion = effectiveStateVersion,
+                allowedActions = effectiveAllowedActions,
                 idempotentReplay = submittedIdempotentReplay,
             )
         }
 
-        val cancelAction = submittedAllowedActions.firstOrNull {
+        FollowUpQuestionsSection(
+            state = followUpState,
+            onTextChange = viewModel::updateFollowUpText,
+            onSelectOption = viewModel::selectFollowUpOption,
+            onSubmit = viewModel::submitFollowUpAnswers,
+            onRetryConflict =
+                viewModel::retryFollowUpAfterConflict,
+            onReload = viewModel::retryFollowUpLoad,
+        )
+
+        val cancelAction = effectiveAllowedActions.firstOrNull {
             it.normalizedCode ==
                 InquiryActionLabels.CANCEL_INQUIRY
         }
@@ -122,7 +148,7 @@ fun GuidanceScreen(
                 WorkflowActionButton(
                     action = cancelAction,
                     enabled =
-                        submittedStateVersion != null &&
+                        effectiveStateVersion != null &&
                             cancelState !is
                                 CancelInquiryUiState.Cancelling,
                     onClick = { showCancelDialog = true },
@@ -212,7 +238,7 @@ fun GuidanceScreen(
                         {
                             viewModel.cancelInquiry(
                                 stateVersion =
-                                    submittedStateVersion,
+                                    effectiveStateVersion,
                             )
                         }
                     } else {
@@ -273,7 +299,7 @@ fun GuidanceScreen(
         }
 
         if (showCancelDialog) {
-            val action = submittedAllowedActions.firstOrNull {
+            val action = effectiveAllowedActions.firstOrNull {
                 it.normalizedCode ==
                     InquiryActionLabels.CANCEL_INQUIRY
             }
@@ -297,7 +323,7 @@ fun GuidanceScreen(
                             showCancelDialog = false
                             viewModel.cancelInquiry(
                                 stateVersion =
-                                    submittedStateVersion,
+                                    effectiveStateVersion,
                                 reasonCode =
                                     "CUSTOMER_REQUEST",
                             )
