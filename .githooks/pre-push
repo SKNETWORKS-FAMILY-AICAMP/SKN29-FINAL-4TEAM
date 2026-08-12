@@ -1,0 +1,31 @@
+#!/bin/sh
+
+echo "[pre-push] Data QA 및 생성물 동기화 확인..."
+
+python -B data/tools/pipeline.py qa --verify-rebuild
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "[ERROR] Data QA가 실패했습니다."
+    echo "push를 중단합니다."
+    exit 1
+fi
+
+git diff --quiet -- data
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "[ERROR] Data 생성물이 갱신되었습니다."
+    echo "아래 변경 파일을 커밋한 뒤 다시 push 해주세요."
+    echo ""
+    git diff --name-only -- data
+    echo ""
+    echo "예:"
+    echo "  git add data"
+    echo "  git commit -m \"chore(data): refresh generated artifacts\""
+    echo "  git push"
+    exit 1
+fi
+
+echo "[pre-push] Data 검증 완료."
+exit 0

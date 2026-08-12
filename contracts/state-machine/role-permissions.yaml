@@ -42,12 +42,14 @@ roles:
   - EXECUTE_SYSTEM_EVENT
   - VIEW_INTERNAL_AI_FIELDS
 - code: CONSULTANT
-  description: 배정된 문의의 상담 처리, 방문 판단·일정 조율과 상담 건 최종 완료를 수행한다.
+  description: 합성 고객의 전화 문의 등록과 배정된 문의의 상담 처리, 방문 판단·일정 조율 및 상담 건 최종 완료를 수행한다.
   resource_scope:
+  - SYNTHETIC_ACTIVE_CUSTOMER_SUBSCRIPTIONS
   - ASSIGNED_INQUIRIES
   - ASSIGNED_CONSULTATIONS
   - RELATED_VISITS_FOR_SCHEDULING
   allowed_events:
+  - REGISTER_PHONE_INQUIRY
   - CANCEL_INQUIRY
   - RESUME_CONSULTATION
   - START_CONSULTATION

@@ -1,0 +1,37 @@
+title: RegisterConsultantPhoneInquiryRequest
+type: object
+description: 상담사가 선택한 활성 구독에 등록하는 전화 문의 입력
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - subscription_id
+  - raw_text
+  - representative_symptom_code
+  - priority_code
+properties:
+  subscription_id:
+    type: string
+    format: uuid
+    description: 검색 결과에서 선택한 합성 고객의 ACTIVE 구독 공개 UUID
+  raw_text:
+    type: string
+    minLength: 1
+    maxLength: 5000
+    pattern: .*\S.*
+    description: 상담사가 기록한 전화 문의 원문
+  representative_symptom_code:
+    type: string
+    enum:
+      - NO_WATER
+      - LOW_FLOW
+      - LEAK
+      - ODOR
+      - TASTE
+      - TEMPERATURE_ABNORMAL
+      - NOISE
+      - DISPLAY_ERROR
+      - OTHER
+  priority_code:
+    type: string
+    enum: [LOW, NORMAL, HIGH, URGENT]
+    description: 상담 대기열 우선순위

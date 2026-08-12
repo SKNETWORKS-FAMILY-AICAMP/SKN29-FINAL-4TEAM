@@ -67,6 +67,27 @@ transitions:
   - CREATE_INQUIRY
   - LINK_OPTIONAL_QUESTIONNAIRE_SESSION
   description: 새 문의를 생성하고 초기 상태 DRAFT로 진입한다.
+- id: TR-INQ-035
+  event: REGISTER_PHONE_INQUIRY
+  from_inquiry_state: null
+  to_inquiry_state: CONSULTATION_REQUIRED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  version_action: INITIALIZE_1
+  guard_refs:
+  - G-ACTOR-CONSULTANT
+  - G-CONSULTANT-PHONE-SUBSCRIPTION
+  - G-IDEMPOTENCY-KEY
+  effects:
+  - CREATE_INQUIRY
+  - ASSIGN_CURRENT_CONSULTANT
+  - STORE_PHONE_INTAKE
+  - SET_REQUIRES_CONSULTATION
+  description: 합성 고객의 활성 구독에 전화 문의를 생성하고 현재 상담사에게 배정한 상담 대기 상태로 진입한다.
 - id: TR-INQ-002
   event: SUBMIT_SYMPTOM
   from_inquiry_state: DRAFT
