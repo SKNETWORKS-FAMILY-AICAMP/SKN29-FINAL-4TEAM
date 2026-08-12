@@ -1,0 +1,19 @@
+#!/bin/sh
+
+echo "[pre-commit] Data 산출물 자동 갱신..."
+
+python -B data/tools/pipeline.py qa --verify-rebuild
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "[ERROR] Data QA 실패"
+    echo "commit을 중단합니다."
+    exit 1
+fi
+
+# pipeline 실행으로 갱신되는 생성 산출물을 현재 커밋에 자동 포함
+git add data/processed/metadata
+git add data/processed/validation
+
+echo "[pre-commit] Data 생성물 자동 반영 완료."
+exit 0
