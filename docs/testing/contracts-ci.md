@@ -1,47 +1,54 @@
 # Contract CI 감사 및 운영안
 
 > 감사일: 2026-08-11 KST
-> 감사 기준: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
-> 현재 판정: **LOCAL_GATE_PASS · WORKFLOW_OWNER_APPLY_PENDING**
+> PM 감사 기준: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
+> 적용·로컬 검증 기준: `eunjin@88148c97ba727c62fc520104aa20a796d089d10b`
+> 원격 검증 후보: `83f737326de75a6015a606c0050eaa81d1f67a4f`
+> 현재 판정: **REMOTE_PASS · 3.4 COMPLETE**
 > Workflow 주관: 김은진 / 계약 정책·Validator 주관: 윤승혁
 
 ## 1. 결론
 
-현재 `.github/workflows/data-ci.yml`은 State Machine Validator와 Mermaid Drift만 자동 실행한다. Code·OpenAPI·Example·Crosswalk·Root Contract Test가 빠져 있고, 계약 Trigger도 `contracts/state-machine/**`에만 걸려 있어 전체 Contract Gate라고 볼 수 없다.
+기존 `.github/workflows/data-ci.yml`은 State Machine Validator와 Mermaid Drift만
+자동 실행한다. 이를 약화하지 않고 별도 `.github/workflows/contracts-ci.yml`을
+추가해 전체 계약 변경을 검증하도록 구성했다.
 
-계약 검증은 별도 `.github/workflows/contracts-ci.yml`로 분리하는 안을 권고한다. 실제 Workflow 생성과 Data CI 중복 제거는 `.github/workflows/**` 주관 담당자인 김은진의 적용·실행 결과로 확정한다.
+신규 Workflow와 자체 Contract Test는 Local Gate를 통과했고 `main`에 포함됐다.
+작성자 후보에서 Contract CI와 Data CI가 모두 원격 PASS했으며, 후보 이후 현재
+`main@4ac79e6`까지 계약·Validator·Workflow 변경이 없다.
 
 ## 2. 현재 Workflow 감사
 
 ### 자동 검증 범위
 
-| 필수 Gate | 현재 Data CI | 판정 |
+| 필수 Gate | 현재 자동화 | 판정 |
 |---|---|---|
-| `validate_state_machine.py` | 실행 | PASS |
-| `render_state_machine.py --check` | 실행 | PASS |
-| `validate_codes.py` | 없음 | MISSING |
-| `validate_openapi.py` | 없음 | MISSING |
-| `validate_examples.py` | 없음 | MISSING |
-| `validate_contract_crosswalk.py` | 없음 | MISSING |
-| `pytest tests/contract -q` | 없음 | MISSING |
+| `validate_state_machine.py` | Data CI·Contract CI | LOCAL PASS |
+| `render_state_machine.py --check` | Data CI·Contract CI | LOCAL PASS |
+| `validate_codes.py` | Contract CI에 추가 | LOCAL PASS |
+| `validate_openapi.py` | Contract CI에 추가 | LOCAL PASS |
+| `validate_examples.py` | Contract CI에 추가 | LOCAL PASS |
+| `validate_contract_crosswalk.py` | Contract CI에 추가 | LOCAL PASS |
+| `pytest tests/contract -q` | Contract CI에 추가 | `38 passed` |
 
 ### Trigger 범위
 
 | 변경 경로 | 현재 Trigger | 요구 상태 |
 |---|---|---|
-| `contracts/state-machine/**` | 있음 | 유지 |
-| `contracts/api/**` | 없음 | 추가 |
-| `contracts/codes/**` | 없음 | 추가 |
-| `contracts/examples/**` | 없음 | 추가 |
-| `contracts/error-codes/**` | 없음 | 추가 |
-| `scripts/contracts/**` | 있음 | 유지 |
-| `tests/contract/**` | 없음 | 추가 |
+| `contracts/**` | Contract CI에 추가 | API·AI·State·Code·Example·Error·Changelog 전체 포함 |
+| `scripts/contracts/**` | Contract CI에 추가 | Validator·Renderer 변경 포함 |
+| `tests/contract/**` | Contract CI에 추가 | Root 계약 회귀 포함 |
+| `.github/workflows/contracts-ci.yml` | Contract CI에 추가 | Workflow 자체 변경 시 실행 |
 
-`contracts/CHANGELOG.md`에는 `contracts/**`, `scripts/contracts/**`, `tests/contract/**` 변경 시 전체 계약 Gate가 실행된다고 적혀 있었으나 실제 Workflow와 일치하지 않았다. 현행 Changelog에는 이 감사 결과와 담당자 적용 대기를 명시한다.
+`contracts/CHANGELOG.md`에는 `contracts/**`, `scripts/contracts/**`, `tests/contract/**`
+변경 시 전체 계약 Gate가 실행된다고 적혀 있었으나 기존 Workflow와 일치하지
+않았다. 신규 Workflow로 Trigger를 정렬했으며 원격 실행 확인만 남았다.
 
-## 3. 권장 Workflow 초안
+## 3. 적용 Workflow
 
-김은진은 아래 안을 검토해 `.github/workflows/contracts-ci.yml`에 적용한다. 각 검사를 별도 Step으로 두어 실패 원인이 로그 이름에서 바로 드러나게 한다.
+각 검사를 별도 Step으로 두어 실패 원인이 로그 이름에서 바로 드러나게 했다.
+Root Contract Test가 실제로 import하는 `jsonschema`를 깨끗한 Runner에도 명시하고,
+Backend Python Constraints로 최소 의존성을 고정한다.
 
 ```yaml
 name: Contract CI
@@ -50,21 +57,13 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - "contracts/state-machine/**"
-      - "contracts/api/**"
-      - "contracts/codes/**"
-      - "contracts/examples/**"
-      - "contracts/error-codes/**"
+      - "contracts/**"
       - "scripts/contracts/**"
       - "tests/contract/**"
       - ".github/workflows/contracts-ci.yml"
   push:
     paths:
-      - "contracts/state-machine/**"
-      - "contracts/api/**"
-      - "contracts/codes/**"
-      - "contracts/examples/**"
-      - "contracts/error-codes/**"
+      - "contracts/**"
       - "scripts/contracts/**"
       - "tests/contract/**"
       - ".github/workflows/contracts-ci.yml"
@@ -81,14 +80,18 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.13.13"
           cache: "pip"
           cache-dependency-path: |
             backend/requirements/base.txt
             backend/requirements/local.txt
+            backend/requirements/constraints-py313.txt
 
       - name: Install contract gate dependencies
-        run: python -m pip install PyYAML==6.0.3 pytest==9.1.1
+        run: >-
+          python -m pip install
+          --constraint backend/requirements/constraints-py313.txt
+          PyYAML==6.0.3 jsonschema==4.26.0 pytest==9.1.1
 
       - name: Validate state machine
         run: python -B scripts/contracts/validate_state_machine.py
@@ -114,10 +117,10 @@ jobs:
 
 ## 4. 적용·검증 순서
 
-1. 김은진이 별도 Contract CI 분리 여부를 `APPROVE` 또는 `CHANGE_REQUEST`로 결정한다.
-2. 승인 시 위 Workflow를 담당자 Branch에 적용한다.
-3. Workflow 파일 자체가 Trigger 경로에 포함된 PR에서 최초 실행을 확인한다.
-4. 7개 Step이 모두 실제 실행되고 Exit Code `0`인지 확인한다.
+1. 김은진 Branch에 별도 Contract CI와 자체 검증 Test를 적용한다. **완료**
+2. 로컬에서 7개 Gate를 같은 HEAD로 실행한다. **완료**
+3. Workflow 파일 자체가 Trigger 경로에 포함된 Branch 또는 PR에서 최초 실행을 확인한다. **완료**
+4. 7개 Step이 모두 실제 실행되고 Exit Code `0`인지 확인한다. **완료**
 5. 실패 로그가 State·Mermaid·Code·OpenAPI·Example·Crosswalk·Test별로 구분되는지 확인한다.
 6. Data CI의 State·Mermaid 중복은 Contract CI 원격 PASS와 병합 Gate 전환을 확인한 뒤 제거 여부를 결정한다.
 7. CI를 삭제하거나 `continue-on-error`를 사용해 Gate를 약화하지 않는다.
@@ -135,10 +138,33 @@ Contract CI가 실패하면 Step 이름, 대상 SHA, 재현 명령과 Exit Code�
 
 ## 6. 완료 경계
 
-현재 로컬 7개 Gate는 모두 PASS했지만, 원격 Workflow는 아직 적용되지 않았다. 다음 조건이 모두 충족될 때 3.4를 완료한다.
+로컬 7개 Gate, Workflow 적용과 원격 실행 조건을 모두 충족했으므로 3.4를 완료한다.
 
 - 주요 계약 경로가 모두 Trigger 대상이다.
 - 7개 Gate가 별도 Step으로 자동 실행된다.
-- 실제 Branch 또는 PR Run이 전체 PASS한다.
+- 실제 Branch 또는 PR Run이 전체 PASS한다. **완료**
 - Data CI와의 중복·장애 대응 책임이 확정된다.
 - Run URL과 대상 SHA가 기록된다.
+
+### 2026-08-11 로컬 결과
+
+| Gate | 결과 |
+|---|---|
+| State Machine | PASS — State 13, Event 30, Transition 34, Guard 39 |
+| Mermaid Drift | PASS |
+| Code Registry | PASS — Registry 28, Code 144, Action 23 |
+| OpenAPI | PASS — Path 32, Operation 33 |
+| Example | PASS — API 50/50, Integration 5, Wrapper 33 |
+| Crosswalk | PASS — Runtime 12, OpenAPI-only 7, Deferred 4 |
+| Root Contract | `38 passed` |
+
+### 2026-08-11 원격 결과
+
+| Gate | 결과 |
+|---|---|
+| Contract CI | PASS — `https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/31481299035` |
+| Data CI | PASS — `https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/31481299053` |
+| 대상 후보 | `83f737326de75a6015a606c0050eaa81d1f67a4f` |
+| 현재 main까지 계약 Diff | NONE |
+
+현재 상태는 `REMOTE_PASS`이며 3.4 완료 조건을 충족한다.

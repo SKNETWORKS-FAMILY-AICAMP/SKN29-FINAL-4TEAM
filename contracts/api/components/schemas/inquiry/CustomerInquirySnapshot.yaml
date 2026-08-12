@@ -9,6 +9,7 @@ required:
   - state_version
   - subscription_id
   - product
+  - allowed_actions
   - updated_at
 properties:
   inquiry_id:
@@ -44,6 +45,11 @@ properties:
       model_code:
         type: string
         maxLength: 60
+  allowed_actions:
+    type: array
+    description: 최신 문의·질문 Snapshot에 대해 Backend 동적 Resolver가 계산한 현재 호출 가능 Action
+    items:
+      $ref: ../workflow/AllowedAction.yaml
   updated_at:
     type: string
     format: date-time

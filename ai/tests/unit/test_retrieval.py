@@ -1,6 +1,9 @@
 """RAG Retrieval 및 메타데이터 필터 단위 테스트."""
 
+import json
 from pathlib import Path
+
+from ai.app.common.timeout import CancellationToken, PipelineCancelledError
 from ai.app.retrieval.filters.document_policy_filter import DocumentPolicyFilter
 from ai.app.retrieval.filters.product_filter import ProductFilter
 from ai.app.retrieval.indexing.chunk_loader import ChunkLoader
@@ -8,7 +11,9 @@ from ai.app.retrieval.indexing.index_manifest import IndexManifest
 from ai.app.retrieval.models.retrieval_query import RetrievalQuery
 from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk
 from ai.app.retrieval.search.vector_search import VectorSearchService
-from ai.app.common.timeout import CancellationToken, PipelineCancelledError
+from ai.app.retrieval.verification.answerability_capability_gate import (
+    AnswerabilityCapabilityGate,
+)
 
 
 def test_product_filter_s_generation_exclusion():
@@ -160,6 +165,87 @@ def test_unsupported_model_is_blocked_at_real_search_entry_before_embedding():
     service = VectorSearchService(FailingEmbedding(), FailingStore())
     query = RetrievalQuery(query_text="누수 조치", model_code="WPU-IAC506")
     assert service.execution_path(query) == "POLICY_BLOCK_UNSUPPORTED_MODEL"
+    assert service.search(query) == []
+
+
+def test_answerability_gate_blocks_target_gold_cases():
+    expected_decisions = [
+        ("0051", "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE", "GATE-COMMERCIAL-001"),
+        ("0052", "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE", "GATE-PART-PRICE-001"),
+        ("0054", "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE", "GATE-PRODUCT-CATALOG-001"),
+        ("0056", "POLICY_BLOCK_UNSUPPORTED_CAPABILITY", "GATE-JAC104-ICE-001"),
+        ("0057", "POLICY_BLOCK_UNSUPPORTED_CAPABILITY", "GATE-JAC104-ICE-001"),
+        ("0058", "POLICY_BLOCK_UNSUPPORTED_CAPABILITY", "GATE-JAC104-ICE-001"),
+        ("0059", "POLICY_BLOCK_UNSUPPORTED_MODEL", "GATE-MODEL-001"),
+    ]
+    cases = {
+        row["case_id"]: row
+        for row in (
+            json.loads(line)
+            for line in Path("ai/evaluation/datasets/gold/rag_gold_v1.jsonl")
+            .read_text(encoding="utf-8")
+            .splitlines()
+        )
+    }
+    gate = AnswerabilityCapabilityGate()
+    for case_suffix, expected_path, expected_rule_id in expected_decisions:
+        case = cases[f"RAGV2-GOLD-{case_suffix}"]
+        query = RetrievalQuery(
+            query_text=case["query"],
+            model_code=case["product_model_code"],
+        )
+        decision = gate.evaluate(
+            query_text=query.query_text,
+            model_code=query.model_code,
+            product_generation=query.product_generation,
+        )
+
+        assert decision.blocked is True
+        assert decision.execution_path == expected_path
+        assert decision.rule_id == expected_rule_id
+
+
+def test_answerability_gate_keeps_positive_and_empty_result_controls_searchable():
+    cases = {
+        row["case_id"]: row
+        for row in (
+            json.loads(line)
+            for line in Path("ai/evaluation/datasets/gold/rag_gold_v1.jsonl")
+            .read_text(encoding="utf-8")
+            .splitlines()
+        )
+    }
+    gate = AnswerabilityCapabilityGate()
+    for case_suffix in ["0001", "0013", "0023", "0031", "0053"]:
+        case = cases[f"RAGV2-GOLD-{case_suffix}"]
+        decision = gate.evaluate(
+            query_text=case["query"],
+            model_code=case["product_model_code"],
+            product_generation="D",
+        )
+
+        assert decision.blocked is False
+        assert decision.execution_path == "PGVECTOR_QUERY"
+
+
+def test_answerability_gate_blocks_before_embedding_and_vector_query():
+    class FailingEmbedding:
+        dimension = 1024
+
+        def embed_query(self, text):
+            raise AssertionError("Gate 차단 질의는 임베딩하지 않아야 합니다.")
+
+    class FailingStore:
+        def search(self, *args, **kwargs):
+            raise AssertionError("Gate 차단 질의는 DB를 조회하지 않아야 합니다.")
+
+    service = VectorSearchService(FailingEmbedding(), FailingStore())
+    query = RetrievalQuery(
+        query_text="교체용 필터의 현재 판매 가격이 얼마인가요?",
+        model_code="WPUJAC104DWH",
+    )
+
+    assert service.execution_path(query) == "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE"
     assert service.search(query) == []
 
 

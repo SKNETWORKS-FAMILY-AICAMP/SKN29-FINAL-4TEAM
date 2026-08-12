@@ -7,6 +7,7 @@ required:
   - state
   - state_version
   - idempotent_replay
+  - allowed_actions
 properties:
   inquiry_id:
     type: string
@@ -23,3 +24,8 @@ properties:
   idempotent_replay:
     type: boolean
     description: 동일 Idempotency-Key와 동일 요청의 저장 결과 재사용 여부
+  allowed_actions:
+    type: array
+    description: 취소 후 동일 동적 Resolver가 계산한 호출 가능한 Action 목록
+    items:
+      $ref: ./AllowedAction.yaml

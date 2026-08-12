@@ -118,10 +118,21 @@ class VisitRepository:
         idempotency_key: str,
         correlation_id,
     ) -> Visit:
+        is_revisit_schedule = (
+            visit.status == Visit.Status.FOLLOW_UP_REQUIRED
+        )
         visit.technician = technician
         visit.preferred_date = preferred_date
         visit.confirmed_date = confirmed_date
         visit.status = status
+        if is_revisit_schedule:
+            # The immutable VisitResult retains the completed visit outcome.
+            # Re-open only the mutable Visit lifecycle for the next schedule.
+            visit.scheduled_at = None
+            visit.started_at = None
+            visit.completed_at = None
+            visit.confirmed_cause = None
+            visit.action_taken = None
         visit.state_version += 1
         visit.idempotency_key = idempotency_key
         visit.correlation_id = correlation_id
@@ -131,6 +142,11 @@ class VisitRepository:
                 "preferred_date",
                 "confirmed_date",
                 "status",
+                "scheduled_at",
+                "started_at",
+                "completed_at",
+                "confirmed_cause",
+                "action_taken",
                 "state_version",
                 "idempotency_key",
                 "correlation_id",

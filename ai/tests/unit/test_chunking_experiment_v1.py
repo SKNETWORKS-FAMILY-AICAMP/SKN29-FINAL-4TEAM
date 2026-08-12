@@ -72,6 +72,7 @@ class ChunkingExperimentV1Tests(unittest.TestCase):
             "document_id": "DOC-1",
             "page_refs": [3],
             "exact_sales_code": "MODEL-1",
+            "evidence_unit_ids": ["EVD-1"],
         }
         metrics = _metrics(
             [{"chunk": chunk, "score": 0.9}, {"chunk": chunk, "score": 0.8}],
@@ -82,6 +83,7 @@ class ChunkingExperimentV1Tests(unittest.TestCase):
             }],
             False,
             "MODEL-1",
+            "ANY",
         )
 
         self.assertEqual(metrics["hit_at_1"], 1.0)

@@ -22,6 +22,14 @@ SCHEMA_PATH = "ai/evaluation/schemas/full_corpus_chunk_v1.schema.json"
 CHUNKING_PROFILE = "current_source_page_v1"
 
 JAC_PAGE_EVIDENCE = {
+    5: [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+        "EVD-WPUJAC104DWH-LEAK-001",
+    ],
+    7: [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P007",
+        "EVD-WPUJAC104DWH-LEAK-001",
+    ],
     37: [
         "EVD-WPUJAC104DWH-NO-WATER-001",
         "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
@@ -145,9 +153,9 @@ def main() -> None:
     scope_counts = Counter(row["corpus_scope"] for row in chunks)
     manifest = {
         "corpus_id": "FULL-MANUAL-CORPUS-V1",
-        "corpus_version": "1.0.0",
+        "corpus_version": "1.0.1",
         "status": "READY_FOR_EMBEDDING",
-        "generated_at": "2026-08-10T00:00:00+09:00",
+        "generated_at": "2026-08-11T00:00:00+09:00",
         "chunking_profile": CHUNKING_PROFILE,
         "chunking_interpretation": (
             "A1에서 확정한 페이지 레코드 1개를 검색 Chunk 1개로 사용하는 현재 저장 단위 기준선"

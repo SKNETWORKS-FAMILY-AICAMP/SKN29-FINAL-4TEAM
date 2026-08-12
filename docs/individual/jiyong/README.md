@@ -122,6 +122,7 @@ docs/individual/jiyong/
 | [Django REST API 문의·증상제출 구현·검증·인계서](API/Django_REST_API_문의_증상제출_구현_검증_인계서.md) | T-022 Slice A 계약·Transaction·409·멱등·독립 재현·Slice B 중단선 |
 | [Django REST API 문의 AI Runtime Wiring·실제 Mock HTTP 가이드](API/Django_REST_API_문의_AI_Runtime_Wiring_실제Mock_HTTP_구현_검증_가이드.md) | `SUBMIT_SYMPTOM` Commit 후 AI 1회 호출, Replay·실패보존·실제 Uvicorn Mock 검증 |
 | [Django REST API T-024 Backend AI 추적·구조화 로그 구현·검증 가이드](API/Django_REST_API_T024_Backend_AI_추적_구조화로그_구현_검증_가이드.md) | Callback·AI Lifecycle·Correlation·DB 원장 연결과 로그 비노출 검증 |
+| [Backend Contract Runtime 12 수정·검증 가이드](API/Django_REST_API_Backend_Contract_Runtime12_수정_검증_가이드.md) | 취소 3역할·2상태, 동적 Guard·Runtime `allowed_actions`, 성공·409 Parity와 PostgreSQL 증거 |
 | [Django State Machine API 구현·검증·인계서](API/Django_State_Machine_API_구현_검증_인계서.md) | T-023 Engine·Guard·`allowed_actions`·SYSTEM 이벤트·상담 Action Gate |
 | [Django REST API 구독·제품조회 계약 제안서](API/Django_REST_API_구독_제품조회_계약_제안서.md) | T-018 승인 전 최소 GET 계약·권한·테스트 Matrix |
 

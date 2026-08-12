@@ -6,6 +6,8 @@ from datetime import date
 from uuid import UUID, uuid4
 
 import pytest
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
@@ -91,7 +93,7 @@ def test_customer_snapshot_returns_exact_owned_projection(
     owner = create_user(1)
     inquiry = create_inquiry(owner, 1)
 
-    with django_assert_num_queries(1):
+    with django_assert_num_queries(2):
         response = authenticated_client(owner).get(
             f"/api/v1/me/inquiries/{inquiry.public_id}"
         )
@@ -104,7 +106,9 @@ def test_customer_snapshot_returns_exact_owned_projection(
         "X-Correlation-ID"
     ]
     data = payload["data"]
-    assert data == {
+    projection = dict(data)
+    updated_at = projection.pop("updated_at")
+    assert projection == {
         "inquiry_id": str(inquiry.public_id),
         "status_code": Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS,
         "state_version": 2,
@@ -112,8 +116,18 @@ def test_customer_snapshot_returns_exact_owned_projection(
         "product": {
             "model_code": inquiry.subscription.product_model.model_code,
         },
-        "updated_at": inquiry.updated_at.isoformat().replace("+00:00", "Z"),
+        "allowed_actions": [
+            {
+                "code": "CANCEL_INQUIRY",
+                "label": "문의 취소",
+                "operation_id": "cancelInquiry",
+                "style": "DESTRUCTIVE",
+                "requires_confirmation": True,
+                "confirmation_message": "문의를 취소하시겠습니까?",
+            }
+        ],
     }
+    assert parse_datetime(updated_at) == inquiry.updated_at
 
     serialized = str(data)
     for forbidden in (
@@ -130,6 +144,104 @@ def test_customer_snapshot_returns_exact_owned_projection(
         "assigned_user",
     ):
         assert forbidden not in serialized
+
+
+def test_customer_snapshot_recalculates_actions_before_after_and_answered():
+    owner = create_user(2)
+    inquiry = create_inquiry(owner, 2)
+    client = authenticated_client(owner)
+    path = f"/api/v1/me/inquiries/{inquiry.public_id}"
+
+    before = client.get(path)
+    assert before.status_code == 200
+    assert [
+        action["code"]
+        for action in before.json()["data"]["allowed_actions"]
+    ] == ["CANCEL_INQUIRY"]
+
+    question = InquiryQA.objects.create(
+        inquiry=inquiry,
+        sequence_no=1,
+        question_code="DYNAMIC_SNAPSHOT_QUESTION",
+        question_text="언제부터 증상이 시작되었나요?",
+        answer_type_code="FREE_TEXT",
+        asked_by_type_code="RULE",
+    )
+    after_question = client.get(path)
+    assert after_question.status_code == 200
+    assert [
+        action["code"]
+        for action in after_question.json()["data"]["allowed_actions"]
+    ] == ["SUBMIT_ANSWERS", "CANCEL_INQUIRY"]
+
+    FollowUpAnswer.objects.create(
+        question=question,
+        answered_by=owner,
+        answer_text="어제부터 시작되었습니다.",
+    )
+    after_answer = client.get(path)
+    assert after_answer.status_code == 200
+    assert [
+        action["code"]
+        for action in after_answer.json()["data"]["allowed_actions"]
+    ] == ["CANCEL_INQUIRY"]
+
+
+def test_customer_snapshot_hides_submit_answers_for_unsupported_questions():
+    owner = create_user(3)
+    inquiry = create_inquiry(owner, 3)
+    InquiryQA.objects.create(
+        inquiry=inquiry,
+        sequence_no=1,
+        question_code="UNSUPPORTED_SNAPSHOT_MULTI",
+        question_text="지원하지 않는 복수 선택 질문",
+        answer_type_code="MULTI_CHOICE",
+        answer_payload={"question_options": ["A", "B"]},
+        asked_by_type_code="RULE",
+    )
+
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}"
+    )
+
+    assert response.status_code == 200
+    assert [
+        action["code"]
+        for action in response.json()["data"]["allowed_actions"]
+    ] == ["CANCEL_INQUIRY"]
+
+
+@pytest.mark.parametrize(
+    "terminal_status",
+    [Inquiry.Status.CANCELLED, Inquiry.Status.RESOLVED],
+)
+def test_customer_snapshot_hides_all_actions_for_terminal_inquiries(
+    terminal_status,
+    django_assert_num_queries,
+):
+    owner = create_user(4)
+    inquiry = create_inquiry(owner, 4)
+    terminal_fields = {
+        "status_code": terminal_status,
+        "state_version": 3,
+    }
+    if terminal_status == Inquiry.Status.CANCELLED:
+        terminal_fields.update(
+            cancelled_at=timezone.now(),
+            cancellation_reason_code=Inquiry.CancellationReason.CUSTOMER_REQUEST,
+        )
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        **terminal_fields,
+    )
+
+    with django_assert_num_queries(2):
+        response = authenticated_client(owner).get(
+            f"/api/v1/me/inquiries/{inquiry.public_id}"
+        )
+
+    assert response.status_code == 200
+    assert response.json()["data"]["status_code"] == terminal_status
+    assert response.json()["data"]["allowed_actions"] == []
 
 
 def test_customer_questions_return_only_unanswered_public_metadata(

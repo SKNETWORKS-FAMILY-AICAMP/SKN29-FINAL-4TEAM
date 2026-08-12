@@ -21,7 +21,26 @@ class CustomerInquiryRepository:
                 subscription__customer__user=actor,
                 subscription__customer__deleted_at__isnull=True,
             )
-            .select_related("subscription", "subscription__product_model")
+            .select_related(
+                "subscription",
+                "subscription__customer",
+                "subscription__product_model",
+            )
+        )
+
+    @staticmethod
+    def unanswered_question_rows() -> QuerySet[InquiryQA]:
+        return (
+            InquiryQA.objects.only(
+                "inquiry_id",
+                "public_id",
+                "sequence_no",
+                "question_text",
+                "answer_type_code",
+                "answer_payload",
+            )
+            .filter(customer_answer__isnull=True)
+            .order_by("sequence_no", "public_id")
         )
 
     @classmethod
@@ -31,9 +50,18 @@ class CustomerInquiryRepository:
         actor: Any,
         inquiry_public_id: UUID,
     ) -> Inquiry | None:
-        return cls.visible_for_customer(actor).filter(
-            public_id=inquiry_public_id
-        ).first()
+        return (
+            cls.visible_for_customer(actor)
+            .prefetch_related(
+                Prefetch(
+                    "qa_entries",
+                    queryset=cls.unanswered_question_rows(),
+                    to_attr="allowed_action_open_questions",
+                )
+            )
+            .filter(public_id=inquiry_public_id)
+            .first()
+        )
 
     @classmethod
     def find_with_questions(
@@ -42,23 +70,12 @@ class CustomerInquiryRepository:
         actor: Any,
         inquiry_public_id: UUID,
     ) -> Inquiry | None:
-        question_rows = InquiryQA.objects.only(
-            "inquiry_id",
-            "public_id",
-            "sequence_no",
-            "question_text",
-            "answer_type_code",
-            "answer_payload",
-        ).filter(customer_answer__isnull=True).order_by(
-            "sequence_no",
-            "public_id",
-        )
         return (
             cls.visible_for_customer(actor)
             .prefetch_related(
                 Prefetch(
                     "qa_entries",
-                    queryset=question_rows,
+                    queryset=cls.unanswered_question_rows(),
                     to_attr="customer_read_questions",
                 )
             )

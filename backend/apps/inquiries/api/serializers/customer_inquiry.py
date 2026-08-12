@@ -2,6 +2,9 @@
 
 from rest_framework import serializers
 
+from apps.inquiries.api.serializers.inquiry_response import (
+    AllowedActionSerializer,
+)
 from apps.inquiries.models import Inquiry
 
 
@@ -15,6 +18,7 @@ class CustomerInquirySnapshotSerializer(serializers.Serializer):
     state_version = serializers.IntegerField(min_value=1)
     subscription_id = serializers.UUIDField()
     product = CustomerInquiryProductSerializer()
+    allowed_actions = AllowedActionSerializer(many=True)
     updated_at = serializers.DateTimeField()
 
 

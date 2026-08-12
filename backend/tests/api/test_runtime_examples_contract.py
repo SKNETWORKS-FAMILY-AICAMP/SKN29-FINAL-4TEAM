@@ -261,7 +261,7 @@ def test_start_allowed_actions_match_pm_state_contract():
     assert actual == expected
 
 
-def test_submit_allowed_actions_match_pm_state_contract():
+def test_submit_example_applies_dynamic_open_question_guard():
     contract = load_yaml(
         REPOSITORY_ROOT / "contracts" / "state-machine"
         / "allowed-actions.yaml"
@@ -274,7 +274,7 @@ def test_submit_allowed_actions_match_pm_state_contract():
         for item in contract["state_role_actions"]
         ["QUESTIONNAIRE_IN_PROGRESS"]["CUSTOMER"]
     ]
-    expected = [catalog[code] for code in action_codes]
+    expected = [catalog["CANCEL_INQUIRY"]]
     actual = load_json(
         "inquiries/submit-symptom-success-response.json"
     )["data"]["allowed_actions"]

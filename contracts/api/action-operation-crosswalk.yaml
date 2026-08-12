@@ -3,7 +3,7 @@ contract:
   version: 1.0.0
   status: PM_BASELINE_CANDIDATE
   owner: PM_TECHNICAL_INTEGRATION
-  updated_at: 2026-08-10
+  updated_at: 2026-08-11
   sources:
     action_registry: ../codes/workflow-actions.yaml
     allowed_actions: ../state-machine/allowed-actions.yaml
@@ -65,10 +65,15 @@ actions:
       implemented: true
       source_evidence:
         - ../../backend/apps/inquiries/api/views.py
+        - ../../backend/apps/inquiries/permissions.py
+        - ../../backend/apps/inquiries/repositories/inquiry_repository.py
         - ../../backend/apps/inquiries/services/inquiry_service.py
+        - ../../backend/apps/workflow/engine/allowed_action_resolver.py
+        - ../../backend/apps/workflow/services/transition_history_service.py
       test_evidence:
         - ../../backend/tests/api/test_t023_cancel_inquiry.py
         - ../../backend/tests/api/test_cancel_inquiry_contract.py
+        - ../../backend/tests/unit/workflow/test_allowed_action_resolver.py
 
   - action: SUBMIT_ANSWERS
     event: SUBMIT_ANSWERS

@@ -14,7 +14,10 @@ from apps.inquiries.models import Inquiry
 from apps.inquiries.repositories.inquiry_repository import InquiryRepository
 from apps.workflow.domain.transition import Transition
 from apps.workflow.domain.workflow_snapshot import WorkflowSnapshot
-from apps.workflow.engine.allowed_action_resolver import AllowedActionResolver
+from apps.workflow.engine.allowed_action_resolver import (
+    AllowedActionContext,
+    AllowedActionResolver,
+)
 from apps.workflow.engine.guard_evaluator import GuardContext, GuardEvaluator
 from apps.workflow.engine.state_machine import (
     InvalidStateTransition,
@@ -79,18 +82,6 @@ class AssignedConsultantActionService:
             }
         )
 
-        existing = WorkflowRepository.lock_idempotency_scope(
-            actor=actor,
-            operation_id=operation_id,
-            idempotency_key=idempotency_key,
-        )
-        if existing is not None:
-            status_code, data = IdempotencyService.replay_or_conflict(
-                existing,
-                request_hash=request_hash,
-            )
-            return WorkflowActionOutcome(status_code, data)
-
         inquiry = cls._lock_assigned_inquiry(
             actor=actor,
             inquiry_public_id=inquiry_public_id,
@@ -129,7 +120,11 @@ class AssignedConsultantActionService:
                 "UNLISTED_TRANSITION",
                 "VISIT_STATE_MISMATCH",
             }:
-                cls._raise_state_conflict(inquiry, actor=actor)
+                cls._raise_state_conflict(
+                    inquiry,
+                    actor=actor,
+                    action_context=context,
+                )
             raise BusinessError(
                 INTERNAL_ERROR,
                 "요청 처리 중 오류가 발생했습니다.",
@@ -157,6 +152,7 @@ class AssignedConsultantActionService:
             inquiry=inquiry,
             actor=actor,
             guard_result=guard_result,
+            action_context=context,
         )
 
         try:
@@ -217,9 +213,11 @@ class AssignedConsultantActionService:
             "inquiry_id": str(inquiry.public_id),
             "status": inquiry.status_code,
             "state_version": inquiry.state_version,
-            "allowed_actions": AllowedActionResolver.resolve(
-                state_code=inquiry.status_code,
-                role_code=actor.role_code,
+            "allowed_actions": cls._resolve_allowed_actions(
+                inquiry=inquiry,
+                actor=actor,
+                action_context=context,
+                resource=resource,
             ),
             "idempotent_replay": False,
             "resource": resource_builder(resource, context),
@@ -263,6 +261,7 @@ class AssignedConsultantActionService:
         inquiry: Inquiry,
         actor: Any,
         guard_result: Any,
+        action_context: Mapping[str, Any],
     ) -> None:
         if guard_result.allowed:
             return
@@ -275,7 +274,11 @@ class AssignedConsultantActionService:
                 status_code=500,
             )
         if failure.guard_id == "G-STATE-VERSION":
-            cls._raise_state_conflict(inquiry, actor=actor)
+            cls._raise_state_conflict(
+                inquiry,
+                actor=actor,
+                action_context=action_context,
+            )
         if failure.http_status == 404:
             raise NotFound()
         if failure.http_status == 403:
@@ -294,11 +297,18 @@ class AssignedConsultantActionService:
             status_code=500,
         )
 
-    @staticmethod
-    def _raise_state_conflict(inquiry: Inquiry, *, actor: Any) -> None:
-        allowed_actions = AllowedActionResolver.resolve(
-            state_code=inquiry.status_code,
-            role_code=actor.role_code,
+    @classmethod
+    def _raise_state_conflict(
+        cls,
+        inquiry: Inquiry,
+        *,
+        actor: Any,
+        action_context: Mapping[str, Any],
+    ) -> None:
+        allowed_actions = cls._resolve_allowed_actions(
+            inquiry=inquiry,
+            actor=actor,
+            action_context=action_context,
         )
         raise BusinessError(
             STATE_CONFLICT,
@@ -311,4 +321,34 @@ class AssignedConsultantActionService:
                 ],
             },
             status_code=409,
+        )
+
+    @staticmethod
+    def _resolve_allowed_actions(
+        *,
+        inquiry: Inquiry,
+        actor: Any,
+        action_context: Mapping[str, Any],
+        resource: Any = None,
+    ) -> list[dict[str, Any]]:
+        """Build the same persisted Snapshot for success and stale 409."""
+
+        model_name = getattr(getattr(resource, "_meta", None), "model_name", None)
+        model_kwargs: dict[str, Any] = {}
+        if "consultation" in action_context:
+            model_kwargs["consultation"] = action_context["consultation"]
+        if "latest_visit" in action_context:
+            model_kwargs["visit"] = action_context["latest_visit"]
+        elif "visit" in action_context:
+            model_kwargs["visit"] = action_context["visit"]
+        if model_name == "consultation":
+            model_kwargs["consultation"] = resource
+        if model_name == "visit":
+            model_kwargs["visit"] = resource
+        return AllowedActionResolver.resolve(
+            context=AllowedActionContext.from_models(
+                inquiry=inquiry,
+                actor=actor,
+                **model_kwargs,
+            )
         )

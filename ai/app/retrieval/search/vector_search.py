@@ -10,6 +10,10 @@ from ..filters.document_policy_filter import DocumentPolicyFilter
 from ..filters.product_filter import ProductFilter
 from ..indexing.index_manifest import IndexManifest
 from ..verification.faq_usage_validator import FaqUsageValidator
+from ..verification.answerability_capability_gate import (
+    AnswerabilityCapabilityGate,
+    AnswerabilityDecision,
+)
 from ...common.timeout import CancellationToken
 
 
@@ -21,10 +25,12 @@ class VectorSearchService:
         embedding_client: EmbeddingProvider,
         vector_store: VectorStore,
         index_manifest: IndexManifest | None = None,
+        answerability_gate: AnswerabilityCapabilityGate | None = None,
     ):
         self.embedding_client = embedding_client
         self.vector_store = vector_store
         self.index_manifest = index_manifest
+        self.answerability_gate = answerability_gate or AnswerabilityCapabilityGate()
         if index_manifest is not None:
             if getattr(embedding_client, "model_name", None) != index_manifest.model_name:
                 raise RuntimeError("Embedding 모델과 Index Manifest 모델이 일치하지 않습니다.")
@@ -61,9 +67,8 @@ class VectorSearchService:
         token.raise_if_cancelled()
         if not query.model_code:
             raise ValueError("검색에는 공개 제품 모델 코드가 필요합니다.")
-        if query.model_code not in self.SUPPORTED_MODEL_CODES:
-            return []
-        if (query.product_generation or "D") not in self.SUPPORTED_GENERATIONS:
+        decision = self.evaluate_answerability(query)
+        if decision.blocked:
             return []
         if not FaqUsageValidator().allows_query(query.query_text):
             return []
@@ -82,15 +87,21 @@ class VectorSearchService:
             if self._is_valid_result(chunk, requested_model=query.model_code)
         ]
 
-    @classmethod
-    def execution_path(cls, query: RetrievalQuery) -> str:
+    def evaluate_answerability(self, query: RetrievalQuery) -> AnswerabilityDecision:
+        """검색 전에 적용한 Gate 결정을 평가·진단 코드와 공유한다."""
+        return self.answerability_gate.evaluate(
+            query_text=query.query_text,
+            model_code=query.model_code or "",
+            product_generation=query.product_generation or "D",
+        )
+
+    def execution_path(self, query: RetrievalQuery) -> str:
         """평가 보고서에서 DB Query와 검색 전 정책 차단을 구분한다."""
-        if query.model_code not in cls.SUPPORTED_MODEL_CODES:
-            return "POLICY_BLOCK_UNSUPPORTED_MODEL"
-        if (query.product_generation or "D") not in cls.SUPPORTED_GENERATIONS:
-            return "POLICY_BLOCK_UNSUPPORTED_GENERATION"
+        if not query.model_code:
+            return "POLICY_BLOCK_MISSING_MODEL"
+        decision = self.evaluate_answerability(query)
+        if decision.blocked:
+            return decision.execution_path
         if not FaqUsageValidator().allows_query(query.query_text):
             return "POLICY_BLOCK_UNVERIFIED_SOURCE"
         return "PGVECTOR_QUERY"
-    SUPPORTED_MODEL_CODES = frozenset({"WPUJAC104DWH"})
-    SUPPORTED_GENERATIONS = frozenset({"D"})

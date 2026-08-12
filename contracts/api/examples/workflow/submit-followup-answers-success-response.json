@@ -5,7 +5,16 @@
     "inquiry_id": "a40c8360-5de5-44a3-8970-8aaea12cbe79",
     "status": "QUESTIONNAIRE_IN_PROGRESS",
     "state_version": 3,
-    "allowed_actions": [],
+    "allowed_actions": [
+      {
+        "code": "CANCEL_INQUIRY",
+        "label": "臾몄쓽 痍⑥냼",
+        "operation_id": "cancelInquiry",
+        "style": "DESTRUCTIVE",
+        "requires_confirmation": true,
+        "confirmation_message": "臾몄쓽瑜?痍⑥냼?섏떆寃좎뒿?덇퉴?"
+      }
+    ],
     "idempotent_replay": false,
     "resource": null
   },

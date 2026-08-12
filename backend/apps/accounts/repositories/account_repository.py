@@ -64,7 +64,7 @@ class AccountRepository:
         except (ValueError, AttributeError, TypeError):
             return None
         return (
-            User.objects.select_for_update()
+            User.objects.select_for_update(of=("self",))
             .filter(is_active=True, public_id=public_id)
             .select_related("customer_profile")
             .first()
@@ -75,7 +75,7 @@ class AccountRepository:
         """Lock a saved active user before issuing a token pair."""
 
         return (
-            User.objects.select_for_update()
+            User.objects.select_for_update(of=("self",))
             .filter(pk=user_pk, is_active=True)
             .select_related("customer_profile")
             .first()
