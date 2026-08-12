@@ -1044,3 +1044,64 @@ Public UUID 분석 요청이 모두 성공했다.
 - 결과는 `DRAFT_ALIAS_CANDIDATE_PARTIALLY_SUPPORTED_PENDING_REVIEW`이며 운영
   Pipeline·검색 정책·Corpus·Evidence·Backend 계약은 변경하지 않았다. 누수 Alias는
   Data Owner 검수와 Gold 승인 뒤 TEST·SAFETY 독립 검증이 필요하다.
+
+### 2026-08-12 P0-2 AI main 병합 후 최종 ACK
+
+- 원격 `main@78b4c45f47b58ce10f0415c804ae959aeeaaf0d7`에 승인된 No-Evidence
+  Runtime Commit `50a135bb839ebaa753d11e891220cf793bd32bae`와 Runtime Identity Hash
+  Commit `f001e7065c9c0af8604dc1295ffcbc690c883047`이 포함됐음을 확인했다.
+- 과거 Branch 검증을 복사하지 않고 정확한 `origin/main` SHA를 Detached Checkout해
+  Python `3.13.13`, `pip check=PASS`, AI 전체 `172 passed, 3 warnings,
+  7 subtests passed`를 다시 실행했다.
+- 같은 SHA에서 Uvicorn `/health` HTTP 200과 Backend→AI 정상 제출·Replay Live
+  Smoke `1 passed`를 확인했다. 신규 AI 호출 1회와 Replay 추가 호출 0회,
+  계약 `3.0.0`, Correlation, AIRun·Assessment·Guidance 저장을 함께 검증했다.
+- 실제 공동 HTTP 503·Timeout은 합의대로 `NOT_RUN`을 유지하고 P0-2 최종 AI
+  ACK를 `APPROVE`, 잔여 P0-2 Blocker를 `NONE`으로 회신했다.
+- `docs/individual/dongyoon/인계/20260812_이동윤_to_최지용_P0-2_AI_main병합후_최종ACK_v0.1.md`에
+  최종 main SHA, 명령·Exit, 완료·비완료 경계를 기록했다.
+
+### 2026-08-12 B1 행 단위 Parent·Child 구조 결정 회신
+
+- B1 데이터 전처리 보완안의 검색 후보, Evidence 판정과 Runner 연결 방식을 AI
+  관점에서 검토하고 `Child 검색 → 선택 Child의 Parent Context 중복 제거 확장`을
+  목표 구조로 결정했다. Top-K·Hit·MRR·`ANY`·`ALL`은 Child의 실제 Evidence만으로
+  계산하고 Parent를 검색 정답으로 중복 계산하지 않는다.
+- Parent와 Child 동시 검색은 동일 근거의 Top-K 중복 점유, Parent 다중 Evidence에
+  의한 `ALL` 과대평가와 실패 원인 혼합 때문에 제외했다. Child-only는 검색 대조군으로
+  유지하되 최종 Runtime 구조로 고정하지 않는다.
+- 누수 5·7·38쪽은 대표 Evidence Group 하나와 페이지별 Source Variant로 분리하고,
+  Group ID만 정답 판정에 사용하며 Variant ID는 출처 역추적에 사용하도록 결정했다.
+- 기존 B1 v1을 즉시 변경하지 않고 experimental v2 Adapter로 검증한 뒤 행 경계,
+  Child 단일 Evidence, Child→Parent 연결, 영향 11건과 정상 통제 표본을 검수한 경우에만
+  정식 v2 승격을 검토한다.
+- `docs/individual/dongyoon/인계/20260812_이동윤_to_김은진_B1_행단위ParentChild_구조결정_회신_v0.1.md`에
+  대안별 제외 근거, Dataset 필수 필드, 평가 출력 계약과 실행 Gate를 기록했다.
+
+### 2026-08-12 D04 행 단위 Parent·Child 부분 진단 실행
+
+- D04 Parent 5건·Child 15건을 기존 Full Corpus v1의 대상 페이지 5건과 부분 교체한
+  106개 후보에서 영향 11건과 정상 통제 5건을 BGE-M3 고정 Revision, Exact Product
+  Filter, Top-K 5, Threshold 0.4로 실행했다. 결과 상태는 전체 B1이 아닌
+  `PARTIAL_SCOPE_DIAGNOSTIC_COMPLETE`로 제한했다.
+- 행 단위 Child는 기존 Top-5 밖이었던 무출수 `0025`를 2위, 바닥 누수 `0027`을
+  4위로 복구했다. 선택 16건 Hit@5는 `0.875`에서 `1.0`, MRR은 `0.677083`에서
+  `0.767708`로 변했고 정상 통제 Hit@5·순위 회귀는 0건이었다.
+- 영향 Case 중 `0021`은 2위에서 5위, 복합 `0038`의 Completion Rank는 1에서 2로
+  회귀했다. 평균 개선만으로 전체 성공을 판정하지 않고 Full Corpus v2 재검증
+  대상으로 남겼다.
+- Child와 동일 순위를 공유하는 페이지 Parent Context 확장은 평균 Context를
+  342.2에서 825.9 whitespace token으로 늘렸다. 16건 중 15건에 다른 Evidence
+  Group이, 12건에 제외된 미세입자 행이 포함돼 전체 페이지 Parent를 기본 Context로
+  쓰는 안은 `NOT_SUPPORTED_AS_DEFAULT_PENDING_REDESIGN`으로 판정했다.
+- 평가 계약, experimental Profile, Adapter, 단위 테스트와 실행 결과를 추가했다.
+  운영 Pipeline·Corpus·`retrieval_policy.yaml`·Backend 계약은 변경하지 않았다.
+- Python `3.13.13`에서 AI 전체 단위 테스트 `174 passed, 3 warnings,
+  7 subtests passed`, `pip check=PASS`, `git diff --check=PASS`를 확인했다.
+- `docs/testing/rag/d04-row-child-partial-diagnostic-result_20260812.md`에 Case별 결과,
+  Context 비용, 제한과 다음 bounded Context 설계 Gate를 기록했다.
+- 공유 시 부분 Corpus 106건을 Full Corpus v2로 오해하지 않도록 결과서에 Corpus
+  경계를 보완했다. Full Corpus v1은 JAC104 44쪽과 IAC425 52쪽의 페이지 Chunk
+  96건이며, 이번 후보는 그중 지정 5쪽을 선택 Child 15건으로 교체한 부분 진단
+  Corpus다. 전체 검색 가능 원문 보존, 제품 범위 유지와 전체 Gold·NO_EVIDENCE
+  재실행을 Full Corpus v2의 선행 조건으로 명시했다.
