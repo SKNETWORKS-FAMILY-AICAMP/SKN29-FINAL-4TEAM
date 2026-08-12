@@ -208,6 +208,43 @@ const TOPIC_PRESENTATION: Record<
   },
 };
 
+const KOREAN_SURNAMES = [
+  "김",
+  "이",
+  "박",
+  "최",
+  "정",
+  "강",
+  "조",
+  "윤",
+  "장",
+  "임",
+] as const;
+
+const KOREAN_GIVEN_NAMES = [
+  "민준",
+  "서연",
+  "도윤",
+  "지우",
+  "현우",
+  "하윤",
+  "준서",
+  "수아",
+  "지훈",
+  "채원",
+  "건우",
+  "예은",
+] as const;
+
+function getPreviewCustomerName(index: number): string {
+  const surname = KOREAN_SURNAMES[index % KOREAN_SURNAMES.length];
+  const givenName =
+    KOREAN_GIVEN_NAMES[
+      Math.floor(index / KOREAN_SURNAMES.length) % KOREAN_GIVEN_NAMES.length
+    ];
+  return `${surname}${givenName}`;
+}
+
 function getAllowedActions(
   status: CounselorStatus,
   assignedRole: string,
@@ -326,7 +363,7 @@ function createInquiry(
     label: "기타 문의",
     displayCode: "상세 확인 필요",
   };
-  const customerSequence = String(index + 1).padStart(3, "0");
+  const customerName = getPreviewCustomerName(index);
   const evidence = getPublicEvidence(row.evidence_ids);
   const hasEvidence = evidence.length > 0;
 
@@ -335,8 +372,8 @@ function createInquiry(
     inquiryCode: parseInquiryCode(row.inquiry_number),
     scenarioId: row.scenario_id,
     customerId: CUSTOMER_PUBLIC_IDS.get(row.customer_id) ?? "공개 고객 ID 확인 필요",
-    customerName: `합성 고객 ${customerSequence}`,
-    customerDisplayName: `합성 고객 ${customerSequence}`,
+    customerName,
+    customerDisplayName: customerName,
     customerPhone: `010-****-${String(1200 + index).slice(-4)} (합성)`,
     serviceAddress: "서울특별시 마포구 월드컵북로 ** (합성)",
     warrantyLabel: "무상보증 · 2027.02까지",
@@ -444,10 +481,34 @@ const CONSULTANT_VISIBLE_STATUSES = new Set<CounselorStatus>([
 ]);
 
 const CONSULTANT_BUCKET_TARGETS = {
-  NEW: 15,
-  IN_PROGRESS: 23,
-  COMPLETED: 12,
+  NEW: 30,
+  IN_PROGRESS: 30,
+  COMPLETED: 30,
 } as const;
+
+const RISK_SECTION_TARGETS = [
+  {
+    riskLevel: "DANGER",
+    priority: "URGENT",
+    routingReason: "긴급 문의는 상담사가 안전 안내를 먼저 확인합니다.",
+  },
+  {
+    riskLevel: "CAUTION",
+    priority: "HIGH",
+    routingReason: "주의 문의는 상담사가 안내 내용을 먼저 확인합니다.",
+  },
+  {
+    riskLevel: "GENERAL",
+    priority: "NORMAL",
+    routingReason: "일반 문의의 상담 현황을 확인합니다.",
+  },
+] as const satisfies readonly {
+  riskLevel: Exclude<CounselorInquiry["riskLevel"], "UNKNOWN">;
+  priority: Exclude<CounselorInquiry["priority"], "UNKNOWN">;
+  routingReason: string;
+}[];
+
+const RISK_SECTION_TARGET_COUNT = 10;
 
 const SUPPLEMENTAL_CUSTOMER_MESSAGES = [
   "출수 버튼을 눌러도 물이 바로 나오지 않고 잠시 뒤에 조금씩 나옵니다.",
@@ -476,49 +537,64 @@ function createSupplementalConsultantInquiries(
     const templates = baseQueue.filter(
       (inquiry) => getCounselorWorkBucket(inquiry.status) === bucket,
     );
-    const requiredCount = Math.max(
-      0,
-      CONSULTANT_BUCKET_TARGETS[bucket] - templates.length,
-    );
 
-    return Array.from({ length: requiredCount }, (_, bucketIndex) => {
-      const template = templates[bucketIndex % templates.length];
-      const mockSequence = sequence++;
-      const customerSequence = String(100 + mockSequence).padStart(3, "0");
-      const idSuffix = String(mockSequence).padStart(12, "0");
-      const receivedDay = String(10 - (mockSequence % 7)).padStart(2, "0");
-      const receivedHour = String(8 + (mockSequence % 10)).padStart(2, "0");
-      const receivedAt = `2026-08-${receivedDay}T${receivedHour}:00:00+09:00`;
+    return RISK_SECTION_TARGETS.flatMap((riskTarget, riskIndex) => {
+      const currentCount = templates.filter(
+        (inquiry) => inquiry.riskLevel === riskTarget.riskLevel,
+      ).length;
+      const requiredCount = Math.max(
+        0,
+        RISK_SECTION_TARGET_COUNT - currentCount,
+      );
 
-      return {
-        ...template,
-        inquiryId: parseInquiryId(
-          `20000000-0000-4000-8000-${idSuffix}`,
-        ),
-        inquiryCode: parseInquiryCode(
-          `INQ-20260810-${String(100 + mockSequence).padStart(4, "0")}`,
-        ),
-        scenarioId: `${template.scenarioId}-web-mock-${mockSequence}`,
-        customerId: `SYN-CUSTOMER-${customerSequence}`,
-        customerName: `합성 고객 ${customerSequence}`,
-        customerDisplayName: `합성 고객 ${customerSequence}`,
-        customerPhone: `010-****-${String(3200 + mockSequence).slice(-4)} (합성)`,
-        subscriptionId: `SYN-SUBSCRIPTION-${customerSequence}`,
-        customerMessage:
-          SUPPLEMENTAL_CUSTOMER_MESSAGES[
-            (mockSequence - 1) % SUPPLEMENTAL_CUSTOMER_MESSAGES.length
-          ],
-        conditions: `${bucket} 업무함 확인을 위한 확장 Mock 시나리오입니다.`,
-        createdAt: receivedAt,
-        updatedAt: receivedAt,
-        waitingMinutes: 8 + mockSequence * 3,
-        previousVisitCount: mockSequence % 3,
-        stateVersion: 1 + (mockSequence % 4),
-        timeline: template.timeline.map((item) => ({
-          ...item,
-          occurredAt: receivedAt,
-        })),
-      };
+      return Array.from({ length: requiredCount }, (_, riskItemIndex) => {
+        const template =
+          templates[(riskIndex + riskItemIndex) % templates.length];
+        const mockSequence = sequence++;
+        const customerSequence = String(100 + mockSequence).padStart(3, "0");
+        const customerName = getPreviewCustomerName(
+          BASE_COUNSELOR_INQUIRIES.length + mockSequence - 1,
+        );
+        const idSuffix = String(mockSequence).padStart(12, "0");
+        const receivedDay = String(10 - (mockSequence % 7)).padStart(2, "0");
+        const receivedHour = String(8 + (mockSequence % 10)).padStart(2, "0");
+        const receivedAt = `2026-08-${receivedDay}T${receivedHour}:00:00+09:00`;
+
+        return {
+          ...template,
+          inquiryId: parseInquiryId(
+            `20000000-0000-4000-8000-${idSuffix}`,
+          ),
+          inquiryCode: parseInquiryCode(
+            `INQ-20260810-${String(100 + mockSequence).padStart(4, "0")}`,
+          ),
+          scenarioId: `${template.scenarioId}-web-mock-${mockSequence}`,
+          customerId: `SYN-CUSTOMER-${customerSequence}`,
+          customerName,
+          customerDisplayName: customerName,
+          customerPhone: `010-****-${String(3200 + mockSequence).slice(-4)} (합성)`,
+          subscriptionId: `SYN-SUBSCRIPTION-${customerSequence}`,
+          customerMessage:
+            SUPPLEMENTAL_CUSTOMER_MESSAGES[
+              (mockSequence - 1) % SUPPLEMENTAL_CUSTOMER_MESSAGES.length
+            ],
+          conditions: `${bucket} 업무함 확인을 위한 확장 Mock 시나리오입니다.`,
+          riskLevel: riskTarget.riskLevel,
+          priority: riskTarget.priority,
+          routingTarget: "CONSULTANT",
+          routingReason: riskTarget.routingReason,
+          requiresConsultation: true,
+          createdAt: receivedAt,
+          updatedAt: receivedAt,
+          waitingMinutes: 8 + mockSequence * 3,
+          previousVisitCount: mockSequence % 3,
+          stateVersion: 1 + (mockSequence % 4),
+          timeline: template.timeline.map((item) => ({
+            ...item,
+            occurredAt: receivedAt,
+          })),
+        };
+      });
     });
   });
 }
@@ -537,7 +613,7 @@ export const COUNSELOR_INQUIRIES: readonly CounselorInquiry[] = [
   ...SUPPLEMENTAL_CONSULTANT_INQUIRIES,
 ];
 
-// 상담사 화면에는 상담사에게 배정된 주의·긴급 문의의 현재 업무와 완료 이력을 노출한다.
-// 일반 문의는 AI가 방문기사에게 자동 인계하며, 문진 중 문의는 상담 큐에 진입하기 전이므로 제외한다.
+// 상담사 화면 디자인 검증용 Mock에서는 각 업무함의 일반·주의·긴급 문의를 10건씩 노출한다.
+// 실제 Remote 연동에서는 Backend가 전달한 배정·위험도 결과를 그대로 사용한다.
 export const CONSULTANT_QUEUE_INQUIRIES: readonly CounselorInquiry[] =
   COUNSELOR_INQUIRIES.filter(isConsultantQueueInquiry);

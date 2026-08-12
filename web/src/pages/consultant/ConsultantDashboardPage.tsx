@@ -1,11 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  type KeyboardEvent as ReactKeyboardEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { createInquiryDetailPath } from "../../app/router/routePaths";
 import { useAuth } from "../../app/providers/authContext";
-import waterBridgeLogo from "../../assets/images/water-bridge-logo.png";
-import RiskBadge from "../../common/components/badge/RiskBadge";
-import StatusBadge from "../../common/components/badge/StatusBadge";
+import consultantAvatar from "../../assets/images/water-bridge-consultant.png";
 import Pagination from "../../common/components/data-display/Pagination";
 import EmptyState from "../../common/components/feedback/EmptyState";
 import ErrorState from "../../common/components/feedback/ErrorState";
@@ -16,17 +20,17 @@ import {
   type InquiryId,
 } from "../../entities/inquiry/inquiryIdentifiers";
 import CompactConsultationDesk from "../../features/consultation/components/CompactConsultationDesk";
+import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
 import useCounselorQueueFilters from "../../features/consultation/hooks/useCounselorQueueFilters";
 import { useConsultantInquiryListQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
 import type {
   ConsultantInquiryListQuery,
+  ConsultantRiskLevelDto,
   ConsultantInquiryStatusDto,
 } from "../../features/consultation/api/consultantWorkspaceRemoteTypes";
 import {
   COUNSELOR_QUEUE_PAGE_SIZE,
-  formatWaitingTime,
   getCounselorWorkBucket,
-  getStatusBadgeVariant,
   STATUS_LABELS,
   WORK_BUCKET_LABELS,
 } from "../../features/consultation/model/consultantWorkspaceModel";
@@ -40,7 +44,6 @@ import {
   consultantWorkspaceDataRepository,
   createMockConsultantInquiryListViewModel,
 } from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
-import ApiRuntimeStatus from "../../features/runtime-status/components/ApiRuntimeStatus";
 import "./ConsultantDashboardPage.css";
 import "./ConsultantDashboardTheme.css";
 import "./ConsultantInquiryPearlTheme.css";
@@ -48,24 +51,6 @@ import "../../common/styles/watercare-liquid-glass-theme.css";
 import "../../common/styles/pearl-workspace-v2.css";
 import "../../common/styles/water-glass-theme.css";
 import "./ConsultantOperationsTone.css";
-
-const WORK_BUCKETS: readonly {
-  id: CounselorWorkBucket;
-  description: string;
-}[] = [
-  {
-    id: "NEW",
-    description: "",
-  },
-  {
-    id: "IN_PROGRESS",
-    description: "",
-  },
-  {
-    id: "COMPLETED",
-    description: "",
-  },
-];
 
 const BUCKET_STATUSES: Record<
   CounselorWorkBucket,
@@ -86,6 +71,31 @@ const BUCKET_STATUSES: Record<
   COMPLETED: ["RESOLVED", "CANCELLED"],
 };
 
+const RISK_SECTIONS: readonly {
+  id: ConsultantRiskLevelDto;
+  label: string;
+}[] = [
+  { id: "danger", label: "긴급 문의" },
+  { id: "caution", label: "주의 문의" },
+  { id: "general", label: "일반 문의" },
+];
+
+type RiskSectionStatusFilter = "ALL" | ConsultantInquiryStatusDto;
+
+const INITIAL_RISK_SECTION_STATUS_FILTERS: Record<
+  ConsultantRiskLevelDto,
+  RiskSectionStatusFilter
+> = {
+  danger: "ALL",
+  caution: "ALL",
+  general: "ALL",
+};
+
+function getInitialBucket(search: string): CounselorWorkBucket {
+  const bucket = new URLSearchParams(search).get("bucket");
+  return bucket === "IN_PROGRESS" || bucket === "COMPLETED" ? bucket : "NEW";
+}
+
 export default function ConsultantDashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -95,7 +105,14 @@ export default function ConsultantDashboardPage() {
   const isQueryComposingRef = useRef(false);
   const [queryInput, setQueryInput] = useState(filters.query);
   const [activeBucket, setActiveBucket] =
-    useState<CounselorWorkBucket>("NEW");
+    useState<CounselorWorkBucket>(() => getInitialBucket(location.search));
+  const [riskSectionStatusFilters, setRiskSectionStatusFilters] = useState(
+    INITIAL_RISK_SECTION_STATUS_FILTERS,
+  );
+  const [openRiskStatusFilter, setOpenRiskStatusFilter] =
+    useState<ConsultantRiskLevelDto | null>(null);
+  const [activeRiskSection, setActiveRiskSection] =
+    useState<ConsultantRiskLevelDto>("danger");
   const [selectedInquiryId, setSelectedInquiryId] =
     useState<InquiryId | null>(null);
   const [autoAdvance, setAutoAdvance] = useState(true);
@@ -172,6 +189,14 @@ export default function ConsultantDashboardPage() {
     [inquiryStateUpdates, mockState, queryData?.items],
   );
 
+  const displayedRiskSection =
+    sourceInquiries.length === 0 ||
+    sourceInquiries.some((inquiry) => inquiry.riskLevel === activeRiskSection)
+      ? activeRiskSection
+      : (RISK_SECTIONS.find((section) =>
+          sourceInquiries.some((inquiry) => inquiry.riskLevel === section.id),
+        )?.id ?? activeRiskSection);
+
   useEffect(() => {
     if (!isQueryComposingRef.current) {
       setQueryInput(filters.query);
@@ -182,6 +207,30 @@ export default function ConsultantDashboardPage() {
     document.body.classList.add("compact-consultant-body");
     return () => document.body.classList.remove("compact-consultant-body");
   }, []);
+
+  useEffect(() => {
+    if (!openRiskStatusFilter) return;
+
+    const closeFilter = (event: PointerEvent) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest(".consultant-risk-section__filter")
+      ) {
+        return;
+      }
+      setOpenRiskStatusFilter(null);
+    };
+    const closeFilterOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpenRiskStatusFilter(null);
+    };
+
+    document.addEventListener("pointerdown", closeFilter);
+    window.addEventListener("keydown", closeFilterOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeFilter);
+      window.removeEventListener("keydown", closeFilterOnEscape);
+    };
+  }, [openRiskStatusFilter]);
 
   useEffect(() => {
     if (!selectedInquiryId) return;
@@ -230,14 +279,44 @@ export default function ConsultantDashboardPage() {
         ...inquiryStateUpdates[selectedBase.inquiryId],
       }
     : null;
-  const activeBucketCopy = WORK_BUCKETS.find(
-    (bucket) => bucket.id === activeBucket,
-  );
-
   const changeBucket = (bucket: CounselorWorkBucket) => {
     setActiveBucket(bucket);
+    setRiskSectionStatusFilters(INITIAL_RISK_SECTION_STATUS_FILTERS);
+    setOpenRiskStatusFilter(null);
     setSelectedInquiryId(null);
     if (filters.page !== 1) setFilters({ ...filters, page: 1 });
+  };
+
+  const changeRiskSection = (riskLevel: ConsultantRiskLevelDto) => {
+    setActiveRiskSection(riskLevel);
+    setOpenRiskStatusFilter(null);
+    setSelectedInquiryId(null);
+  };
+
+  const handleRiskTabKeyDown = (
+    event: ReactKeyboardEvent<HTMLButtonElement>,
+    currentIndex: number,
+  ) => {
+    let nextIndex: number;
+    if (event.key === "ArrowRight") {
+      nextIndex = (currentIndex + 1) % RISK_SECTIONS.length;
+    } else if (event.key === "ArrowLeft") {
+      nextIndex =
+        (currentIndex - 1 + RISK_SECTIONS.length) % RISK_SECTIONS.length;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = RISK_SECTIONS.length - 1;
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    const nextSection = RISK_SECTIONS[nextIndex];
+    changeRiskSection(nextSection.id);
+    window.requestAnimationFrame(() => {
+      document.getElementById(`consultant-risk-tab-${nextSection.id}`)?.focus();
+    });
   };
 
   const advanceToNextInquiry = () => {
@@ -277,45 +356,66 @@ export default function ConsultantDashboardPage() {
         </h1>
 
         <header className="simple-topbar consultant-main-header">
-          <a className="simple-brand" href="/" aria-label="Water Bridge 홈으로 이동">
-            <img
-              className="simple-brand__logo"
-              src={waterBridgeLogo}
-              alt="Water Bridge"
-            />
-          </a>
-
-          <ApiRuntimeStatus className="simple-topbar__notice" compact />
+          <div className="consultant-queue-tools consultant-header-search">
+            <label className="simple-search">
+              <span aria-hidden="true">⌕</span>
+              <input
+                type="search"
+                aria-label="문의 검색"
+                value={queryInput}
+                onCompositionStart={() => {
+                  isQueryComposingRef.current = true;
+                }}
+                onCompositionEnd={(event) => {
+                  isQueryComposingRef.current = false;
+                  const query = event.currentTarget.value;
+                  setQueryInput(query);
+                  setFilters({ ...filters, query, page: 1 });
+                }}
+                onChange={(event) => {
+                  const query = event.target.value;
+                  setQueryInput(query);
+                  if (!isQueryComposingRef.current) {
+                    setFilters({ ...filters, query, page: 1 });
+                  }
+                }}
+                placeholder="고객명, 증상, 문의번호 검색"
+              />
+            </label>
+            {hasChangedConditions && (
+              <button type="button" onClick={resetFilters}>
+                검색 초기화
+              </button>
+            )}
+          </div>
 
           <div className="simple-user">
-            <span className="simple-user__avatar">{user?.displayName.slice(0, 1) ?? "상"}</span>
-            <div className="simple-user__copy">
-              <strong>{user?.displayName ?? "상담사"}</strong>
-              <small>상담사 · 업무 중</small>
-            </div>
+            <span className="simple-user__avatar-frame" aria-hidden="true">
+              <img
+                className="simple-user__avatar-image"
+                src={consultantAvatar}
+                alt=""
+              />
+            </span>
+            <strong className="simple-user__name">
+              {user?.displayName ?? "상담사"}
+            </strong>
+            <svg
+              className="simple-user__chevron"
+              viewBox="0 0 16 16"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="m4.5 6 3.5 3.5L11.5 6" />
+            </svg>
           </div>
         </header>
 
-        <nav className="consultant-work-tabs" aria-label="문의 처리 상태" role="tablist">
-          {WORK_BUCKETS.map((bucket) => (
-            <button
-              key={bucket.id}
-              type="button"
-              role="tab"
-              aria-selected={activeBucket === bucket.id}
-              aria-controls="consultant-queue-panel"
-              className={`consultant-work-tab consultant-work-tab--${bucket.id.toLowerCase()}${
-                activeBucket === bucket.id ? " is-active" : ""
-              }`}
-              onClick={() => changeBucket(bucket.id)}
-            >
-              <span>
-                <strong>{WORK_BUCKET_LABELS[bucket.id]}</strong>
-              </span>
-              <b>{bucketCounts[bucket.id]}</b>
-            </button>
-          ))}
-        </nav>
+        <ConsultantQueueSidebar
+          activeBucket={activeBucket}
+          bucketCounts={bucketCounts}
+          onBucketChange={changeBucket}
+        />
 
         <section
           id="consultant-queue-panel"
@@ -323,48 +423,10 @@ export default function ConsultantDashboardPage() {
           role="tabpanel"
           aria-label={WORK_BUCKET_LABELS[activeBucket]}
         >
-          <header className="consultant-queue-panel__head">
-            <div>
-              <small className="consultant-queue-panel__eyebrow">COUNSEL QUEUE</small>
-              <h2>{WORK_BUCKET_LABELS[activeBucket]}</h2>
-              {activeBucketCopy?.description && <p>{activeBucketCopy.description}</p>}
-            </div>
-
-            <div className="consultant-queue-tools">
-              <label className="simple-search">
-                <span aria-hidden="true">⌕</span>
-                <input
-                  type="search"
-                  aria-label="문의 검색"
-                  value={queryInput}
-                  onCompositionStart={() => {
-                    isQueryComposingRef.current = true;
-                  }}
-                  onCompositionEnd={(event) => {
-                    isQueryComposingRef.current = false;
-                    const query = event.currentTarget.value;
-                    setQueryInput(query);
-                    setFilters({ ...filters, query, page: 1 });
-                  }}
-                  onChange={(event) => {
-                    const query = event.target.value;
-                    setQueryInput(query);
-                    if (!isQueryComposingRef.current) {
-                      setFilters({ ...filters, query, page: 1 });
-                    }
-                  }}
-                  placeholder="고객명, 증상, 문의번호 검색"
-                />
-              </label>
-              {hasChangedConditions && (
-                <button type="button" onClick={resetFilters}>
-                  검색 초기화
-                </button>
-              )}
-            </div>
-          </header>
-
-          <div className="consultant-list" aria-label="상담 문의 목록">
+          <div
+            className="consultant-list consultant-risk-columns"
+            aria-label="상담 문의 목록"
+          >
             {loadState === "loading" ? (
               <LoadingState
                 title="상담 문의 목록을 불러오고 있습니다."
@@ -403,52 +465,193 @@ export default function ConsultantDashboardPage() {
                 onAction={hasChangedConditions ? resetFilters : undefined}
               />
             ) : (
-              queuePage.items.map((inquiry) => (
-                <button
-                  key={inquiry.inquiryId}
-                  className="v6-queue-item consultant-list-item"
-                  type="button"
-                  aria-label={`${inquiry.inquiryCode} ${inquiry.customerDisplayNameMasked} ${inquiry.symptomSummary} 상세 열기`}
-                  onClick={() => openInquiry(inquiry.inquiryId)}
+              <>
+                <div
+                  className="consultant-risk-tabs"
+                  role="tablist"
+                  aria-label="문의 유형"
                 >
-                  <span className="consultant-list-item__risk">
-                    <RiskBadge
-                      level={inquiry.riskLevel}
-                      size="compact"
-                    />
-                    <em>
-                      {activeBucket === "COMPLETED"
-                        ? "처리 기록"
-                        : `대기 ${formatWaitingTime(
-                            Math.floor(inquiry.waitingSeconds / 60),
-                          )}`}
-                    </em>
-                  </span>
+                  {RISK_SECTIONS.map((section, index) => {
+                    const isActive = displayedRiskSection === section.id;
+                    const count = queuePage.items.filter(
+                      (inquiry) => inquiry.riskLevel === section.id,
+                    ).length;
 
-                  <span className="consultant-list-item__subject">
-                    <strong>{inquiry.symptomSummary}</strong>
-                    <small>{inquiry.symptomSummary}</small>
-                  </span>
+                    return (
+                      <button
+                        key={section.id}
+                        id={`consultant-risk-tab-${section.id}`}
+                        className={`consultant-risk-tab consultant-risk-tab--${section.id}${
+                          isActive ? " is-active" : ""
+                        }`}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        aria-controls={`consultant-risk-panel-${section.id}`}
+                        tabIndex={isActive ? 0 : -1}
+                        onClick={() => changeRiskSection(section.id)}
+                        onKeyDown={(event) =>
+                          handleRiskTabKeyDown(event, index)
+                        }
+                      >
+                        <span>{section.label}</span>
+                        <b className="consultant-risk-tab__count">{count}</b>
+                      </button>
+                    );
+                  })}
+                </div>
 
-                  <span className="consultant-list-item__customer">
-                    <strong>{inquiry.customerDisplayNameMasked}</strong>
-                    <small>{inquiry.productModel}</small>
-                  </span>
+                {RISK_SECTIONS.filter(
+                  (section) => section.id === displayedRiskSection,
+                ).map((section) => {
+                const sectionInquiries = queuePage.items.filter(
+                  (inquiry) => inquiry.riskLevel === section.id,
+                );
+                const statusFilter = riskSectionStatusFilters[section.id];
+                const availableStatuses = BUCKET_STATUSES[activeBucket].filter(
+                  (status) =>
+                    sectionInquiries.some(
+                      (inquiry) => inquiry.status === status,
+                    ),
+                );
+                const inquiries = sectionInquiries.filter(
+                  (inquiry) =>
+                    statusFilter === "ALL" || inquiry.status === statusFilter,
+                );
 
-                  <span className="consultant-list-item__status">
-                    <StatusBadge
-                      label={STATUS_LABELS[inquiry.status]}
-                      size="compact"
-                      variant={getStatusBadgeVariant(inquiry.status)}
-                    />
-                    <small>{inquiry.inquiryCode}</small>
-                  </span>
+                return (
+                  <section
+                    key={section.id}
+                    id={`consultant-risk-panel-${section.id}`}
+                    className={`consultant-risk-section consultant-risk-section--${section.id}`}
+                    role="tabpanel"
+                    aria-labelledby={`consultant-risk-tab-${section.id}`}
+                    tabIndex={0}
+                  >
+                    <header className="consultant-risk-section__head">
+                      <h2 id={`consultant-risk-section-${section.id}`}>
+                        {section.label} 목록
+                      </h2>
+                      {activeBucket !== "NEW" && (
+                        <div className="consultant-risk-section__tools">
+                          <span className="consultant-risk-section__count">
+                            {inquiries.length}
+                          </span>
+                          <div className="consultant-risk-section__filter">
+                            <button
+                              type="button"
+                              className="consultant-risk-section__filter-trigger"
+                              aria-label={`${section.label} 상태 필터`}
+                              aria-haspopup="listbox"
+                              aria-expanded={openRiskStatusFilter === section.id}
+                              aria-controls={`consultant-risk-filter-${section.id}`}
+                              onClick={() =>
+                                setOpenRiskStatusFilter((current) =>
+                                  current === section.id ? null : section.id,
+                                )
+                              }
+                            >
+                              <span>
+                                {statusFilter === "ALL"
+                                  ? "전체 상태"
+                                  : STATUS_LABELS[statusFilter]}
+                              </span>
+                              <svg
+                                viewBox="0 0 16 16"
+                                aria-hidden="true"
+                                focusable="false"
+                              >
+                                <path d="m4 6 4 4 4-4" />
+                              </svg>
+                            </button>
 
-                  <span className="consultant-list-item__open" aria-hidden="true">
-                    상세 보기 <b>›</b>
-                  </span>
-                </button>
-              ))
+                            {openRiskStatusFilter === section.id && (
+                              <div
+                                id={`consultant-risk-filter-${section.id}`}
+                                className="consultant-risk-section__filter-menu"
+                                role="listbox"
+                                aria-label={`${section.label} 상태 선택`}
+                              >
+                                {(["ALL", ...availableStatuses] as const).map(
+                                  (status) => {
+                                    const isSelected = statusFilter === status;
+                                    return (
+                                      <button
+                                        key={status}
+                                        type="button"
+                                        role="option"
+                                        aria-selected={isSelected}
+                                        onClick={() => {
+                                          setRiskSectionStatusFilters(
+                                            (current) => ({
+                                              ...current,
+                                              [section.id]: status,
+                                            }),
+                                          );
+                                          setOpenRiskStatusFilter(null);
+                                          setSelectedInquiryId(null);
+                                        }}
+                                      >
+                                        <span
+                                          className="consultant-risk-section__filter-check"
+                                          aria-hidden="true"
+                                        >
+                                          {isSelected ? "✓" : ""}
+                                        </span>
+                                        <span>
+                                          {status === "ALL"
+                                            ? "전체 상태"
+                                            : STATUS_LABELS[status]}
+                                        </span>
+                                      </button>
+                                    );
+                                  },
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </header>
+
+                    <div className="consultant-risk-section__list">
+                      {inquiries.length === 0 ? (
+                        <p className="consultant-risk-section__empty">
+                          {statusFilter === "ALL"
+                            ? "해당 문의가 없습니다."
+                            : "선택한 상태의 문의가 없습니다."}
+                        </p>
+                      ) : (
+                        inquiries.map((inquiry) => (
+                          <button
+                            key={inquiry.inquiryId}
+                            className={`v6-queue-item consultant-list-item${
+                              selectedInquiryId === inquiry.inquiryId
+                                ? " is-selected"
+                                : ""
+                            }`}
+                            type="button"
+                            aria-pressed={
+                              selectedInquiryId === inquiry.inquiryId
+                            }
+                            aria-label={`${inquiry.inquiryCode} ${inquiry.customerDisplayNameMasked} ${inquiry.symptomSummary} 상세 열기`}
+                            onClick={() => openInquiry(inquiry.inquiryId)}
+                          >
+                            <span className="consultant-list-item__subject">
+                              {inquiry.symptomSummary}
+                            </span>
+
+                            <span className="consultant-list-item__customer">
+                              {inquiry.customerDisplayNameMasked}
+                            </span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </section>
+                );
+                })}
+              </>
             )}
           </div>
 

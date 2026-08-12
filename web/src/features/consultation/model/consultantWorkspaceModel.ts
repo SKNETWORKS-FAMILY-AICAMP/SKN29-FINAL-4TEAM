@@ -12,7 +12,7 @@ import type { PriorityBadgeVariant } from "../../../common/components/badge/Prio
 import type { StatusBadgeVariant } from "../../../common/components/badge/StatusBadge";
 import { formatContractDateTimeLong } from "../../../common/date-time/contractDateTime";
 
-export const COUNSELOR_QUEUE_PAGE_SIZE = 10;
+export const COUNSELOR_QUEUE_PAGE_SIZE = 30;
 
 export const STATUS_LABELS: Record<CounselorStatus, string> = {
   DRAFT: "작성 중",
@@ -39,7 +39,7 @@ export const RISK_LABELS: Record<CounselorRisk, string> = {
 };
 
 export const WORK_BUCKET_LABELS: Record<CounselorWorkBucket, string> = {
-  NEW: "새로 들어온 문의",
+  NEW: "새 문의",
   IN_PROGRESS: "처리 중인 문의",
   COMPLETED: "처리 완료된 문의",
 };

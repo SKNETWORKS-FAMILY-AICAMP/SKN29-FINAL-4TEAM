@@ -1,62 +1,84 @@
 export type ApiIntegrationGroup = "CONSULTANT" | "OPERATIONS";
 
-export type ApiIntegrationReadinessItem = {
+export type ApiIntegrationStatus =
+  | "RUNTIME_DONE"
+  | "READY_FOR_WEB_INTEGRATION"
+  | "BLOCKED_BY_BACKEND"
+  | "CONTRACT_ONLY"
+  | "MOCK_ONLY"
+  | "NOT_P0";
+
+export interface ApiIntegrationReadinessItem {
   key: string;
   group: ApiIntegrationGroup;
   label: string;
+  method?: "GET" | "POST" | "PATCH";
+  endpoint?: string;
+  status: ApiIntegrationStatus;
   contractPath: string;
-  mockSource: string;
-};
+  blocker?: string;
+}
 
-/**
- * 실제 API가 확정되면 Mock에서 교체해야 하는 화면 연결 지점입니다.
- * Endpoint를 추측해서 넣지 않고, 팀이 합의해야 할 계약 파일만 가리킵니다.
- */
-export const BLOCKED_API_INTEGRATIONS: readonly ApiIntegrationReadinessItem[] = [
+const P0_RUNTIME_ENDPOINTS = [
+  ["consultant-list", "상담사 문의 목록", "GET", "/api/v1/inquiries", "contracts/api/paths/inquiries.yaml"],
+  ["consultant-detail", "상담사 문의 상세", "GET", "/api/v1/inquiries/{id}", "contracts/api/paths/inquiries.yaml"],
+  ["consultation-start", "상담 시작", "POST", "/api/v1/inquiries/{id}/start-consultation", "contracts/api/paths/consultations.yaml"],
+  ["consultation-save", "상담 기록 저장", "PATCH", "/api/v1/inquiries/{id}/consultation-summary", "contracts/api/paths/consultations.yaml"],
+  ["consultation-confirm", "상담 요약 확정", "POST", "/api/v1/inquiries/{id}/consultation-summary/confirm", "contracts/api/paths/consultations.yaml"],
+  ["consultation-complete", "상담 완료", "POST", "/api/v1/inquiries/{id}/complete-consultation", "contracts/api/paths/consultations.yaml"],
+  ["visit-review", "방문 필요 검토", "POST", "/api/v1/inquiries/{id}/visit-review", "contracts/api/paths/visits.yaml"],
+  ["visit-create", "방문 생성", "POST", "/api/v1/inquiries/{id}/visits", "contracts/api/paths/visits.yaml"],
+  ["visit-not-needed", "방문 불필요 확정", "POST", "/api/v1/inquiries/{id}/visit-not-needed", "contracts/api/paths/visits.yaml"],
+  ["visit-schedule", "기사·방문 일정 저장", "PATCH", "/api/v1/visits/{visit_id}/schedule", "contracts/api/paths/visits.yaml"],
+  ["visit-confirm", "방문 확정", "POST", "/api/v1/visits/{visit_id}/confirm", "contracts/api/paths/visits.yaml"],
+] as const;
+
+export const API_INTEGRATION_READINESS: readonly ApiIntegrationReadinessItem[] = [
+  ...P0_RUNTIME_ENDPOINTS.map(([key, label, method, endpoint, contractPath]) => ({
+    key,
+    group: "CONSULTANT" as const,
+    label,
+    method,
+    endpoint,
+    status: "RUNTIME_DONE" as const,
+    contractPath,
+  })),
   {
-    key: "consultant-inquiry-list",
+    key: "technician-selection-source",
     group: "CONSULTANT",
-    label: "상담사 문의 목록",
-    contractPath: "contracts/api/paths/inquiries.yaml",
-    mockSource: "features/consultation/model/consultantWorkspaceMock.ts",
-  },
-  {
-    key: "consultant-inquiry-detail",
-    group: "CONSULTANT",
-    label: "상담사 문의 상세",
-    contractPath: "contracts/api/paths/inquiries.yaml",
-    mockSource: "features/consultation/model/consultantWorkspaceMock.ts",
-  },
-  {
-    key: "consultation-save",
-    group: "CONSULTANT",
-    label: "상담 기록 저장·완료",
-    contractPath: "contracts/api/paths/consultations.yaml",
-    mockSource: "features/consultation/api/consultationMockApi.ts",
-  },
-  {
-    key: "technician-assignment",
-    group: "CONSULTANT",
-    label: "방문기사 배정",
+    label: "합성 기사 선택 Source",
+    status: "BLOCKED_BY_BACKEND",
     contractPath: "contracts/api/paths/visits.yaml",
-    mockSource: "features/visit-transition/model/visitTransitionMock.ts",
+    blocker: "기사 목록 Endpoint 또는 승인된 공용 Fixture가 필요합니다.",
   },
   {
-    key: "visit-schedule",
+    key: "consultant-ai-evidence",
     group: "CONSULTANT",
-    label: "방문 일정 저장·확정",
-    contractPath: "contracts/api/paths/visits.yaml",
-    mockSource: "features/visit-transition/model/visitTransitionMock.ts",
+    label: "상담사 AI·Evidence 공개 DTO",
+    status: "CONTRACT_ONLY",
+    contractPath: "contracts/api/paths/inquiries.yaml",
+    blocker: "DEC-008 공개 DTO와 Backend 조립 Runtime이 필요합니다.",
   },
   {
     key: "operations-summary",
     group: "OPERATIONS",
     label: "운영 대시보드 집계",
+    status: "MOCK_ONLY",
     contractPath: "contracts/api/paths/operations.yaml",
-    mockSource: "features/consultation/model/consultantWorkspaceMock.ts",
+    blocker: "상담사 P0 범위가 아니며 운영 Runtime이 아직 없습니다.",
   },
 ];
 
+export const BLOCKED_API_INTEGRATIONS = API_INTEGRATION_READINESS.filter(
+  (item) => item.status === "BLOCKED_BY_BACKEND",
+);
+
+export function getApiIntegrationCount(group: ApiIntegrationGroup, status?: ApiIntegrationStatus): number {
+  return API_INTEGRATION_READINESS.filter(
+    (item) => item.group === group && (!status || item.status === status),
+  ).length;
+}
+
 export function getBlockedApiCount(group: ApiIntegrationGroup): number {
-  return BLOCKED_API_INTEGRATIONS.filter((item) => item.group === group).length;
+  return getApiIntegrationCount(group, "BLOCKED_BY_BACKEND");
 }

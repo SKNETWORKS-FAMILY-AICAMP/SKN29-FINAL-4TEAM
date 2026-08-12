@@ -11,8 +11,11 @@ import "../../common/styles/legacy/fix-base.css";
 import "../../common/styles/legacy/staff-desktop-v6.css";
 import { toInquiryId } from "../../entities/inquiry/inquiryIdentifiers";
 import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
+import { useConsultantInquiryDetailQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
 import { getCounselorMetrics } from "../../features/consultation/model/consultantWorkspaceModel";
+import { consultantWorkspaceDataRepository } from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
 import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
+import RemoteVisitTransitionPanel from "../../features/visit-transition/components/RemoteVisitTransitionPanel";
 import VisitTransitionForm from "../../features/visit-transition/components/VisitTransitionForm";
 import type { VisitMockAction } from "../../features/visit-transition/model/visitTransitionTypes";
 import "./VisitTransitionPage.css";
@@ -38,7 +41,10 @@ export default function VisitTransitionPage() {
     locationState?.returnTo,
   );
   const inquiryId = rawInquiryId ? toInquiryId(rawInquiryId) : null;
-  const inquiry = consultantWorkspaceRepository.findInquiry(inquiryId);
+  const isRemote = consultantWorkspaceDataRepository.dataSource === "REMOTE";
+  const detailQuery = useConsultantInquiryDetailQuery(inquiryId);
+  const remoteInquiry = isRemote ? detailQuery.data : null;
+  const inquiry = isRemote ? undefined : consultantWorkspaceRepository.findInquiry(inquiryId);
   const [stateVersion, setStateVersion] = useState(
     locationState?.stateVersion ?? inquiry?.stateVersion ?? 1,
   );
@@ -84,8 +90,9 @@ export default function VisitTransitionPage() {
       navigate(inquiryListReturnPath);
       return;
     }
-    if (target === "detail" && inquiry) {
-      navigate(createInquiryDetailPath(inquiry.inquiryId), {
+    const targetInquiryId = inquiry?.inquiryId ?? (remoteInquiry ? toInquiryId(remoteInquiry.inquiryId) : null);
+    if (target === "detail" && targetInquiryId) {
+      navigate(createInquiryDetailPath(targetInquiryId), {
         state: { returnTo: inquiryListReturnPath },
       });
       return;
@@ -105,7 +112,37 @@ export default function VisitTransitionPage() {
       onNavigate={handleNavigate}
       onToggleNotifications={() => setNotificationOpen((open) => !open)}
     >
-      {!inquiry ? (
+      {isRemote ? (
+        remoteInquiry ? (
+          <div id="visit-transition-form" className="visit-v13-page">
+            <header className="v6-page-head visit-v13-page-head">
+              <div className="v6-page-head__copy">
+                <small>CONS-03 · REMOTE</small>
+                <h1>방문 전환·일정 등록</h1>
+                <p>Backend allowed_actions와 state_version을 기준으로 방문 흐름을 진행합니다.</p>
+              </div>
+              <div className="v6-page-head__meta">
+                <span>문의 · {remoteInquiry.inquiryCode}</span>
+                <span>상태 · {remoteInquiry.status}</span>
+                <span>실제 API 연결</span>
+              </div>
+            </header>
+            <div className="visit-v13-toolbar">
+              <button className="v6-button v6-button--secondary" type="button" onClick={() => navigate(inquiryListReturnPath)}>상담 큐</button>
+              <button className="v6-button v6-button--secondary" type="button" onClick={() => inquiryId && navigate(createInquiryDetailPath(inquiryId), { state: { returnTo: inquiryListReturnPath } })}>문의 상세 보기</button>
+            </div>
+            <RemoteVisitTransitionPanel
+              inquiry={remoteInquiry}
+              onRefresh={detailQuery.retry}
+            />
+          </div>
+        ) : (
+          <section className="v6-panel visit-v13-not-found">
+            <h1>{detailQuery.status === "loading" ? "문의 정보를 불러오는 중입니다." : "방문 전환 문의를 불러오지 못했습니다."}</h1>
+            <button className="v6-button v6-button--primary" type="button" onClick={detailQuery.retry}>다시 시도</button>
+          </section>
+        )
+      ) : !inquiry ? (
         <section className="v6-panel visit-v13-not-found">
           <span aria-hidden="true">□</span>
           <h1>방문 전환 문의를 찾을 수 없습니다.</h1>

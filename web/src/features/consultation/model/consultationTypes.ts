@@ -58,10 +58,16 @@ export type ConsultationActionSuccess =
   };
 
 export type ConsultationActionErrorKind =
+  | "BAD_REQUEST"
+  | "UNAUTHORIZED"
   | "FORBIDDEN"
+  | "NOT_FOUND"
   | "RUNTIME_BLOCKED"
   | "VALIDATION_ERROR"
-  | "NETWORK_ERROR";
+  | "SERVER_ERROR"
+  | "NETWORK_ERROR"
+  | "TIMEOUT"
+  | "UNKNOWN_ERROR";
 
 interface ConsultationNonConflictErrorDetails {
   kind: ConsultationActionErrorKind;

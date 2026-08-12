@@ -19,7 +19,7 @@ describe("상담 업무 Repository 경계", () => {
   it("Remote 모드에서는 Mock으로 자동 대체하지 않는다", () => {
     const repository = createConsultantWorkspaceRepository(false);
 
-    expect(repository.integrationStatus).toBe("BACKEND_BLOCKED");
+    expect(repository.integrationStatus).toBe("READY_FOR_WEB_INTEGRATION");
     expect(repository.dataSource).toBe("REMOTE");
     expect(repository.listAllInquiries()).toEqual([]);
     expect(repository.listConsultantQueue()).toEqual([]);

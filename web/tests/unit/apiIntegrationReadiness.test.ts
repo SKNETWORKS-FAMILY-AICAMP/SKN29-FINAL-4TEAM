@@ -1,27 +1,30 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  API_INTEGRATION_READINESS,
   BLOCKED_API_INTEGRATIONS,
+  getApiIntegrationCount,
   getBlockedApiCount,
 } from "../../src/features/runtime-status/model/apiIntegrationReadiness";
 
-describe("실제 API 전환 준비 목록", () => {
-  it("상담사 5개와 운영자 1개의 교체 지점을 관리한다", () => {
-    expect(getBlockedApiCount("CONSULTANT")).toBe(5);
-    expect(getBlockedApiCount("OPERATIONS")).toBe(1);
+describe("Web Entry Gate Runtime 분류", () => {
+  it("상담사 P0 11개 Endpoint를 실제 Runtime 완료로 분류한다", () => {
+    expect(getApiIntegrationCount("CONSULTANT", "RUNTIME_DONE")).toBe(11);
   });
 
-  it("모든 교체 지점은 계약 파일과 현재 Mock 위치를 함께 알려준다", () => {
-    expect(BLOCKED_API_INTEGRATIONS).toHaveLength(6);
-
-    BLOCKED_API_INTEGRATIONS.forEach((item) => {
-      expect(item.contractPath).toMatch(/^contracts\/api\/paths\/.+\.yaml$/);
-      expect(item.mockSource).toMatch(/\.ts$/);
+  it("기사 선택 Source만 Backend blocker로 남긴다", () => {
+    expect(getBlockedApiCount("CONSULTANT")).toBe(1);
+    expect(BLOCKED_API_INTEGRATIONS[0]).toMatchObject({
+      key: "technician-selection-source",
+      status: "BLOCKED_BY_BACKEND",
     });
   });
 
-  it("같은 교체 지점이 중복 등록되지 않는다", () => {
-    const keys = BLOCKED_API_INTEGRATIONS.map((item) => item.key);
+  it("모든 항목은 계약 경로와 중복되지 않은 key를 가진다", () => {
+    const keys = API_INTEGRATION_READINESS.map((item) => item.key);
     expect(new Set(keys).size).toBe(keys.length);
+    API_INTEGRATION_READINESS.forEach((item) => {
+      expect(item.contractPath).toMatch(/^contracts\/api\/paths\/.+\.yaml$/);
+    });
   });
 });

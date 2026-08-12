@@ -46,7 +46,7 @@ describe("상담 Write Repository 경계", () => {
     await repository.confirmSummary("inquiry/1", { state_version: 5 }, context);
     await repository.complete(
       "inquiry/1",
-      { state_version: 6, result_code: "COMPLETED_NO_VISIT" },
+      { state_version: 6 },
       context,
     );
 
@@ -80,6 +80,14 @@ describe("방문 Write Repository 경계", () => {
     };
 
     await repository.create("inq-1", createBody, context);
+    await repository.markNotNeeded(
+      "inq-1",
+      {
+        state_version: 5,
+        reason_code: "RESOLVED_BY_CONSULTATION",
+      },
+      context,
+    );
     await repository.saveSchedule(
       "visit-1",
       buildVisitScheduleRequest({
@@ -94,19 +102,20 @@ describe("방문 Write Repository 경계", () => {
 
     expect(requester.mock.calls.map(([path, options]) => [path, options.method])).toEqual([
       ["/inquiries/inq-1/visits", "POST"],
+      ["/inquiries/inq-1/visit-not-needed", "POST"],
       ["/visits/visit-1/schedule", "PATCH"],
       ["/visits/visit-1/confirm", "POST"],
     ]);
     expect(requester.mock.calls[0][1].body).not.toHaveProperty(
       "synthetic_technician_id",
     );
-    expect(requester.mock.calls[1][1].body).toEqual({
+    expect(requester.mock.calls[2][1].body).toEqual({
       state_version: 5,
       synthetic_technician_id: "00000000-0000-4000-8000-000000000101",
       preferred_date: "2026-08-13",
       confirmed_date: "2026-08-14",
     });
-    expect(requester.mock.calls[2][1].body).toEqual({ state_version: 6 });
+    expect(requester.mock.calls[3][1].body).toEqual({ state_version: 6 });
   });
 
   it("날짜만 허용하고 시간 값은 거부한다", () => {
@@ -117,4 +126,3 @@ describe("방문 Write Repository 경계", () => {
     );
   });
 });
-

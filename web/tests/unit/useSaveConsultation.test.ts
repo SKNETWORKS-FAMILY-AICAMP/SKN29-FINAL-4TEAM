@@ -2,15 +2,103 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import * as consultationApi from "../../src/features/consultation/api/consultationMockApi";
+import { ApiClientError } from "../../src/common/api/apiError";
 import { useSaveConsultation } from "../../src/features/consultation/hooks/useSaveConsultation";
 import { COUNSELOR_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
 import type { ConsultationFormValues } from "../../src/features/consultation/model/consultationTypes";
+import type { ConsultationWriteRepository } from "../../src/features/consultation/repositories/consultationWriteRepository";
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
 describe("useSaveConsultation", () => {
+  it("Remote 상담 요약 저장은 공개 DTO 필드와 현재 state_version만 전송한다", async () => {
+    const inquiry = COUNSELOR_INQUIRIES.find((item) =>
+      item.allowedActions.some((action) => action.code === "UPDATE_CONSULTATION_SUMMARY"),
+    );
+    if (!inquiry) throw new Error("상담 저장 fixture가 없습니다.");
+    const action = inquiry.allowedActions.find((item) => item.code === "UPDATE_CONSULTATION_SUMMARY");
+    if (!action) throw new Error("상담 저장 action이 없습니다.");
+    const saveSummary = vi.fn().mockResolvedValue({
+      success: true,
+      data: {
+        message: "저장 완료",
+        inquiry_id: inquiry.inquiryId,
+        status: "CONSULTATION_IN_PROGRESS",
+        state_version: inquiry.stateVersion + 1,
+        allowed_actions: [],
+        idempotent_replay: false,
+      },
+      error: null,
+      metadata: { correlation_id: "corr-remote" },
+    });
+    const repository = {
+      start: vi.fn(), saveSummary, confirmSummary: vi.fn(), complete: vi.fn(),
+    } as ConsultationWriteRepository;
+    const values: ConsultationFormValues = {
+      consultationNote: " 상담 기록 ", additionalCheck: " 추가 확인 ",
+      customerGuidance: " 고객 안내 ", consultationResult: "처리 중",
+      summaryRevision: " 확정 요약 ", summaryConfirmed: false,
+      visitRequired: "NOT_REQUIRED", usageStatus: "NORMAL",
+    };
+    const { result } = renderHook(() => useSaveConsultation(inquiry, {
+      dataSource: "REMOTE", remoteRepository: repository,
+    }));
+
+    await act(async () => { await result.current.execute({ action, values, scenario: "SUCCESS" }); });
+
+    expect(saveSummary).toHaveBeenCalledWith(
+      inquiry.inquiryId,
+      {
+        state_version: inquiry.stateVersion,
+        summary: "확정 요약",
+        consultation_note: "상담 기록",
+        additional_check: "추가 확인",
+        customer_guidance: "고객 안내",
+        result_code: "COMPLETED_NO_VISIT",
+        usage_guidance_status: "NORMAL",
+      },
+      expect.objectContaining({ idempotencyKey: expect.any(String) }),
+    );
+    expect(result.current.stateVersion).toBe(inquiry.stateVersion + 1);
+  });
+
+  it("Remote 409 충돌 시 최신 버전을 반영하고 성공으로 오인하지 않는다", async () => {
+    const inquiry = COUNSELOR_INQUIRIES.find((item) =>
+      item.allowedActions.some((action) => action.code === "START_CONSULTATION"),
+    );
+    if (!inquiry) throw new Error("상담 시작 fixture가 없습니다.");
+    const action = inquiry.allowedActions.find((item) => item.code === "START_CONSULTATION");
+    if (!action) throw new Error("상담 시작 action이 없습니다.");
+    const start = vi.fn().mockRejectedValue(new ApiClientError({
+      kind: "CONFLICT", status: 409, code: "STATE-CONFLICT-01",
+      message: "상태가 변경되었습니다.", correlationId: "corr-conflict",
+      details: {
+        current_status: "CONSULTATION_IN_PROGRESS",
+        current_state_version: inquiry.stateVersion + 2,
+        allowed_actions: [],
+      },
+    }));
+    const repository = {
+      start, saveSummary: vi.fn(), confirmSummary: vi.fn(), complete: vi.fn(),
+    } as ConsultationWriteRepository;
+    const values: ConsultationFormValues = {
+      consultationNote: "", additionalCheck: "", customerGuidance: "",
+      consultationResult: "", summaryRevision: "", summaryConfirmed: false,
+      visitRequired: "UNDECIDED", usageStatus: inquiry.usageStatus,
+    };
+    const { result } = renderHook(() => useSaveConsultation(inquiry, {
+      dataSource: "REMOTE", remoteRepository: repository,
+    }));
+
+    await act(async () => { await result.current.execute({ action, values, scenario: "SUCCESS" }); });
+
+    expect(result.current.success).toBeNull();
+    expect(result.current.error).toMatchObject({ kind: "CONFLICT", conflictCode: "STATE-CONFLICT-01" });
+    expect(result.current.stateVersion).toBe(inquiry.stateVersion + 2);
+  });
+
   it("네트워크 재시도에는 같은 멱등 키와 새로운 추적 ID를 사용한다", async () => {
     const inquiry = COUNSELOR_INQUIRIES.find(
       (item) => item.inquiryCode === "INQ-20260704-0013",

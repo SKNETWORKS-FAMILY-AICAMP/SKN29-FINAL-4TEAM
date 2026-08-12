@@ -1,0 +1,374 @@
+html body .phone-inquiry-entry-app .phone-inquiry-main-header {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px 0 32px !important;
+}
+
+.phone-inquiry-main-header__copy {
+  min-width: 0;
+}
+
+.phone-inquiry-main-header__copy small,
+.phone-inquiry-card-head span,
+.phone-inquiry-recent-card > header span {
+  color: #728096;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.phone-inquiry-main-header__copy h1 {
+  margin: 2px 0 0;
+  color: #202a39;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.phone-inquiry-main-header__copy p {
+  margin: 3px 0 0;
+  color: #718093;
+  font-size: 11px;
+}
+
+html body .phone-inquiry-entry-app .phone-inquiry-entry-panel {
+  overflow: auto !important;
+  background: #f3f5f9 !important;
+}
+
+.phone-inquiry-entry-layout {
+  display: grid;
+  min-height: 100%;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.8fr);
+  align-items: start;
+  gap: 18px;
+  padding: 20px;
+}
+
+.phone-inquiry-form-card,
+.phone-inquiry-recent-card {
+  border: 1px solid #e0e5ec;
+  border-radius: 14px !important;
+  background: #fff;
+  box-shadow: 0 10px 28px rgb(45 57 78 / 7%);
+}
+
+.phone-inquiry-form-card {
+  padding: 22px;
+}
+
+.phone-inquiry-card-head,
+.phone-inquiry-recent-card > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.phone-inquiry-card-head h2,
+.phone-inquiry-recent-card > header h2 {
+  margin: 4px 0 0;
+  color: #263142;
+  font-size: 17px;
+}
+
+.phone-inquiry-card-head > small {
+  color: #9b5f66;
+  font-size: 11px;
+}
+
+.phone-inquiry-save-notice {
+  margin-top: 16px;
+  padding: 11px 13px;
+  border: 1px solid #b9dfd1;
+  border-radius: 8px !important;
+  background: #f0faf6;
+  color: #2e6753;
+  font-size: 12px;
+}
+
+.phone-inquiry-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding-top: 18px;
+}
+
+.phone-inquiry-form-grid > label,
+.phone-inquiry-urgency {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.phone-inquiry-form-grid > label > span,
+.phone-inquiry-urgency legend {
+  color: #3e4857;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+html body .phone-inquiry-entry-app :is(input, select, textarea) {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #d9dfe7 !important;
+  border-radius: 8px !important;
+  outline: none;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: #303947 !important;
+  font: inherit;
+}
+
+html body .phone-inquiry-entry-app :is(input, select) {
+  height: 40px;
+  padding: 0 11px;
+}
+
+html body .phone-inquiry-entry-app textarea {
+  min-height: 88px;
+  padding: 10px 11px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+html body .phone-inquiry-entry-app :is(input, select, textarea):focus {
+  border-color: #6377d9 !important;
+  box-shadow: 0 0 0 3px rgb(99 119 217 / 11%) !important;
+}
+
+.phone-inquiry-field--wide,
+.phone-inquiry-urgency,
+.phone-inquiry-checks {
+  grid-column: 1 / -1;
+}
+
+.phone-inquiry-urgency {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.phone-inquiry-urgency legend {
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.phone-inquiry-urgency label {
+  display: block;
+  cursor: pointer;
+}
+
+.phone-inquiry-urgency input {
+  position: absolute;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0;
+}
+
+.phone-inquiry-urgency label span {
+  display: grid;
+  min-width: 76px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #d9dfe7;
+  border-radius: 999px !important;
+  color: #596577;
+  font-size: 12px;
+}
+
+.phone-inquiry-urgency input:checked + span {
+  border-color: #6377d9;
+  background: #f0f2ff;
+  color: #4054b5;
+  font-weight: 700;
+}
+
+.phone-inquiry-checks {
+  display: grid;
+  gap: 9px;
+}
+
+.phone-inquiry-checks label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #566274;
+  font-size: 12px;
+}
+
+html body .phone-inquiry-entry-app .phone-inquiry-checks input {
+  width: 16px !important;
+  height: 16px !important;
+  flex: 0 0 16px;
+}
+
+.phone-inquiry-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #edf0f4;
+}
+
+.phone-inquiry-button {
+  min-width: 112px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 8px !important;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.phone-inquiry-button--secondary {
+  border: 1px solid #d9dfe7 !important;
+  background: #fff !important;
+  color: #536073 !important;
+}
+
+.phone-inquiry-button--primary {
+  border: 1px solid #5368cc !important;
+  background: #6377d9 !important;
+  color: #fff !important;
+  box-shadow: 0 7px 16px rgb(71 91 185 / 20%) !important;
+}
+
+.phone-inquiry-recent-card {
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+}
+
+.phone-inquiry-recent-card > header {
+  align-items: center;
+  padding: 18px;
+}
+
+.phone-inquiry-recent-card > header b {
+  display: grid;
+  min-width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50% !important;
+  background: #263142;
+  color: #fff;
+  font-size: 11px;
+}
+
+.phone-inquiry-local-note {
+  margin: 0;
+  padding: 11px 18px;
+  border-bottom: 1px solid #edf0f4;
+  background: #f8f9fb;
+  color: #758195;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.phone-inquiry-recent-list {
+  max-height: calc(100vh - 260px);
+  overflow-y: auto;
+}
+
+.phone-inquiry-recent-list article {
+  display: grid;
+  gap: 5px;
+  padding: 15px 18px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.phone-inquiry-recent-list article > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.phone-inquiry-recent-list time,
+.phone-inquiry-recent-list small {
+  color: #8490a1;
+  font-size: 10px;
+}
+
+.phone-inquiry-recent-list h3 {
+  margin: 0;
+  color: #303947;
+  font-size: 13px;
+}
+
+.phone-inquiry-recent-list strong {
+  color: #536073;
+  font-size: 11px;
+}
+
+.phone-inquiry-recent-list article p {
+  display: -webkit-box;
+  margin: 1px 0 0;
+  overflow: hidden;
+  color: #657184;
+  font-size: 11px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.phone-inquiry-urgency-badge {
+  display: inline-grid;
+  min-width: 38px;
+  height: 20px;
+  place-items: center;
+  border-radius: 999px !important;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.phone-inquiry-urgency-badge--general {
+  background: #eef2f6;
+  color: #526071;
+}
+
+.phone-inquiry-urgency-badge--caution {
+  background: #fff4da;
+  color: #9b6716;
+}
+
+.phone-inquiry-urgency-badge--urgent {
+  background: #ffebe9;
+  color: #b64237;
+}
+
+.phone-inquiry-recent-empty {
+  margin: 0;
+  padding: 44px 18px;
+  color: #8792a2;
+  font-size: 12px;
+  text-align: center;
+}
+
+@media (max-width: 1050px) {
+  .phone-inquiry-entry-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .phone-inquiry-recent-card {
+    position: static;
+  }
+}
+
+@media (max-width: 700px) {
+  .phone-inquiry-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .phone-inquiry-field--wide,
+  .phone-inquiry-urgency,
+  .phone-inquiry-checks {
+    grid-column: 1;
+  }
+}

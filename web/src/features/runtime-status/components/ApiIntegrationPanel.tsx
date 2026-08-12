@@ -1,17 +1,24 @@
 import ApiRuntimeStatus from "./ApiRuntimeStatus";
-import { getBlockedApiCount } from "../model/apiIntegrationReadiness";
+import {
+  getApiIntegrationCount,
+  getBlockedApiCount,
+} from "../model/apiIntegrationReadiness";
 
 const COVERAGE = [
-  { label: "OpenAPI Runtime", value: "7 / 9", tone: "partial" },
   {
-    label: "상담사 화면 필수 API",
-    value: `0 / ${getBlockedApiCount("CONSULTANT")}`,
-    tone: "blocked",
+    label: "상담사 P0 Runtime",
+    value: `${getApiIntegrationCount("CONSULTANT", "RUNTIME_DONE")} / 11`,
+    tone: "ready",
   },
   {
-    label: "운영자 화면 필수 API",
-    value: `0 / ${getBlockedApiCount("OPERATIONS")}`,
-    tone: "blocked",
+    label: "상담사 Backend Blocker",
+    value: String(getBlockedApiCount("CONSULTANT")),
+    tone: "partial",
+  },
+  {
+    label: "운영 Mock-only",
+    value: String(getApiIntegrationCount("OPERATIONS", "MOCK_ONLY")),
+    tone: "partial",
   },
 ] as const;
 
@@ -32,7 +39,8 @@ export default function ApiIntegrationPanel() {
         ))}
       </div>
       <p>
-        인증·문의 생성/취소는 Runtime이 있고, 현재 대시보드의 목록·상세·상담 저장·기사 일정·운영 집계 API는 미구현입니다.
+        상담사 P0 Endpoint Runtime은 구현되었습니다. 신규 방문의 기사 선택
+        Source와 AI·Evidence 공개 DTO는 별도 계약 해제가 필요합니다.
       </p>
     </section>
   );
