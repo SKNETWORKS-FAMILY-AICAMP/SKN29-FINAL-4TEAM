@@ -1,10 +1,11 @@
-# API 명세서 v2.0 — 사용자 계정 관리 최소 개정분
+# API 명세서 v2.1 — 계정 관리 및 CR-001 상담사 전화 문의 등록 개정분
 
-> 작성 기준일: 2026-07-30  
+> 작성 기준일: 2026-08-11
 > 연계 문서: 요구사항정의서 v2.0, WBS v2.0, 화면설계서 v11  
-> 적용 범위: `FR-039`, `FR-042`, `NFR-019~020`, `DR-016`, `CR-013~014`  
+> 적용 범위: `FR-039`, `FR-042`, `NFR-011~012`, `NFR-019~020`, `DR-016`, `CR-001`, `CR-013~014`
 > 문서 성격: 기존 API명세서에 병합할 최소 개정분  
-> 주의: 기존 문의·상담·방문·AI API 정의는 변경하지 않는다.
+> 주의: 기존 CUSTOMER 문의 생성은 변경하지 않고 CONSULTANT 전용 CR-001
+> Operation 2개만 추가한다.
 
 ---
 
@@ -150,3 +151,60 @@ Django Admin 비활성화 Action
 3. 공통 오류 코드에 계정 비활성·권한 상승·마지막 관리자 보호 오류 추가
 4. 내부 관리 인터페이스는 Public OpenAPI에 포함하지 않는다는 경계 명시
 5. `API-AUTH-005~007`은 P1 제안 상태로 별도 표기
+
+---
+
+## 9. CR-001 상담사 전화 문의 등록
+
+### 9.1 역할·경로
+
+| ID | Actor | Method | Path | operationId |
+| --- | --- | --- | --- | --- |
+| `API-CNS-005` | `CONSULTANT` | `POST` | `/api/v1/consultant/customer-subscriptions/search` | `searchConsultantCustomerSubscriptions` |
+| `API-CNS-006` | `CONSULTANT` | `POST` | `/api/v1/consultant/phone-inquiries` | `registerConsultantPhoneInquiry` |
+
+고객 검색은 이름·연락처가 URL에 남지 않도록 JSON Body를 사용한다.
+합성·비삭제 고객의 ACTIVE 구독만 검색하며 전화번호는 마스킹한다.
+
+### 9.2 검색 DTO
+
+요청:
+
+| 필드 | 필수 | 규칙 |
+| --- | :---: | --- |
+| `query` | Y | 고객명 2자 이상 또는 연락처 정규화 숫자 4자리 이상 |
+| `limit` | N | 1~20, 기본 10 |
+
+후보 응답은 `customer_id`, `customer_display_name`, `phone_masked`,
+`subscription_id`, `subscription_status`, `management_type_code`,
+`product_id`, `product_model_code`, `product_name`만 허용한다.
+
+### 9.3 등록 DTO·상태
+
+요청은 `subscription_id`, `raw_text`, `representative_symptom_code`,
+`priority_code`를 모두 포함한다. `X-Correlation-ID`와 `Idempotency-Key`가
+필수다.
+
+```text
+REGISTER_PHONE_INQUIRY
+null → CONSULTATION_REQUIRED
+channel_code=PHONE
+initiated_by/assigned_user=현재 상담사
+assigned_role_code=CONSULTANT
+state_version=1
+```
+
+서버가 `subscription_id`로 고객·제품을 다시 조회한다. 신규 고객 생성,
+수동 문의 제목, 상담 메모, 콜백 예약, AI·RAG 자동 실행은 포함하지 않는다.
+
+### 9.4 저장·오류·소비 경계
+
+- 신규 테이블 없이 기존 `support_inquiry`와 `support_inquiry_symptom`을
+  사용한다.
+- `priority_code`는 기존 Inquiry에 Forward Migration으로 추가한다.
+- 타 역할은 403, 사용할 수 없는 구독은 404, 멱등 충돌은 409, 입력
+  오류는 422다.
+- Web은 성공한 `inquiry_id`로 CONS-02를 열고 실패 시 Mock 또는 임시
+  LocalStorage 성공으로 전환하지 않는다.
+- 상세 사람용 계약은 `docs/api/consultant_phone_inquiry_api.md`, 기계
+  계약은 `contracts/api/paths/consultant-phone-inquiries.yaml`을 따른다.
