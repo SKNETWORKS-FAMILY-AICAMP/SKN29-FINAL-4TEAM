@@ -996,3 +996,15 @@ Public UUID 분석 요청이 모두 성공했다.
 - AI Unit `159 passed, 3 warnings`, Backend AI Integration `23 passed`,
   `pip check=PASS`, `git diff --check=PASS`다. Backend의 `DANGER_DETECTED` 무조건
   보류 문제는 Backend 담당 수정 항목으로 남아 있다.
+
+### 2026-08-12 Retrieval Policy Identity Hash 정합성 수정
+
+- D-03 Answerability·Capability Gate 추가 이후 `retrieval_policy.yaml`의 내용은
+  변경됐지만 `runtime_identity.json`의 `configuration_sha256.retrieval_policy`가
+  이전 값으로 남아 있던 불일치를 수정했다.
+- 프로젝트 검증 규칙과 동일하게 CRLF를 LF로 정규화한 SHA-256
+  `1AD4C4DB9E63233DE4694D77F078436095D83F2F41309DE382E9E48D128797D8`을
+  기록했다. 파일 원본 바이트의 줄바꿈 차이는 Runtime Identity 변경으로
+  취급하지 않는다.
+- 설정·Schema 단위 테스트 `39 passed, 2 warnings`, AI 전체 단위 테스트
+  `167 passed, 3 warnings`를 Python `3.13.13`에서 확인했다.
