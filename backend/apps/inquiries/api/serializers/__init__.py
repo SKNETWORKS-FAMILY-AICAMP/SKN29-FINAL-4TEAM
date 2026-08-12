@@ -12,6 +12,12 @@ from apps.inquiries.api.serializers.consultant_inquiry import (
     ConsultantInquiryListDataSerializer,
     ConsultantInquiryListQuerySerializer,
 )
+from apps.inquiries.api.serializers.consultant_phone_inquiry import (
+    ConsultantCustomerSubscriptionSearchResultSerializer,
+    ConsultantCustomerSubscriptionSearchSerializer,
+    RegisterConsultantPhoneInquiryResultSerializer,
+    RegisterConsultantPhoneInquirySerializer,
+)
 from apps.inquiries.api.serializers.customer_inquiry import (
     CustomerInquiryQuestionsSerializer,
     CustomerInquirySnapshotSerializer,
@@ -35,10 +41,14 @@ __all__ = [
     "ConsultantInquiryDetailDataSerializer",
     "ConsultantInquiryListDataSerializer",
     "ConsultantInquiryListQuerySerializer",
+    "ConsultantCustomerSubscriptionSearchResultSerializer",
+    "ConsultantCustomerSubscriptionSearchSerializer",
     "CreateInquirySerializer",
     "CustomerInquiryQuestionsSerializer",
     "CustomerInquirySnapshotSerializer",
     "InquiryResponseSerializer",
+    "RegisterConsultantPhoneInquiryResultSerializer",
+    "RegisterConsultantPhoneInquirySerializer",
     "SubmitFollowUpAnswersResponseSerializer",
     "SubmitFollowUpAnswersSerializer",
     "SubmitSymptomResponseSerializer",

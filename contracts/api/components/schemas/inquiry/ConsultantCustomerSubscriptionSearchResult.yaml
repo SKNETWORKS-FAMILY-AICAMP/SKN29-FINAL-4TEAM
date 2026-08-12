@@ -1,0 +1,62 @@
+title: ConsultantCustomerSubscriptionSearchResult
+type: object
+description: 상담사가 선택할 수 있는 합성 고객의 활성 구독 후보
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - items
+  - returned_count
+properties:
+  items:
+    type: array
+    maxItems: 20
+    items:
+      type: object
+      additionalProperties: false
+      required:
+        - customer_id
+        - customer_display_name
+        - phone_masked
+        - subscription_id
+        - subscription_status
+        - management_type_code
+        - product_id
+        - product_model_code
+        - product_name
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+        customer_display_name:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: 합성 고객 표시명
+        phone_masked:
+          type: string
+          maxLength: 30
+          description: 원문이 아닌 화면 표시용 마스킹 연락처
+        subscription_id:
+          type: string
+          format: uuid
+        subscription_status:
+          type: string
+          const: ACTIVE
+        management_type_code:
+          type: string
+          enum: [SELF_MANAGED, VISIT_CARE]
+        product_id:
+          type: string
+          format: uuid
+        product_model_code:
+          type: string
+          minLength: 1
+          maxLength: 60
+        product_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+  returned_count:
+    type: integer
+    minimum: 0
+    maximum: 20

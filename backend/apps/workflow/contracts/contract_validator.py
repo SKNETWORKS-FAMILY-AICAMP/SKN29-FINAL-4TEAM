@@ -633,15 +633,16 @@ def _validate_transitions(
             errors=errors,
         )
 
-        if event == "START_INQUIRY":
+        initializes_inquiry = entry.get("version_action") == "INITIALIZE_1"
+        if initializes_inquiry:
             if from_state is not None:
                 errors.append(
-                    f"{path}.from_inquiry_state: START_INQUIRY는 "
+                    f"{path}.from_inquiry_state: INITIALIZE_1 전이는 "
                     "null이어야 합니다."
                 )
         elif from_state is None:
             errors.append(
-                f"{path}.from_inquiry_state: START_INQUIRY 외 전이에는 "
+                f"{path}.from_inquiry_state: INITIALIZE_1 외 전이에는 "
                 "기존 상태가 필요합니다."
             )
         if from_state in terminal_states:
@@ -709,12 +710,15 @@ def _validate_transitions(
                 registry_name="guard",
                 errors=errors,
             )
-        if event != "START_INQUIRY" and "G-STATE-VERSION" not in guard_refs:
-            errors.append(
-                f"{path}.guard_refs: START_INQUIRY 외 전이는 "
-                "G-STATE-VERSION을 포함해야 합니다."
-            )
         event_contract = event_by_code.get(event, {})
+        if (
+            event_contract.get("requires_state_version") is True
+            and "G-STATE-VERSION" not in guard_refs
+        ):
+            errors.append(
+                f"{path}.guard_refs: requires_state_version=true인 "
+                "이벤트는 G-STATE-VERSION을 포함해야 합니다."
+            )
         if (
             event_contract.get("requires_idempotency_key") is True
             and "G-IDEMPOTENCY-KEY" not in guard_refs

@@ -59,6 +59,21 @@ events:
   description: '새 Inquiry를 생성하고 초기 상태 DRAFT로 진입한다. 기존 사전 문진이 있으면 새 inquiry_id에 연결할 수 있다.
 
     '
+- code: REGISTER_PHONE_INQUIRY
+  category: STAFF_COMMAND
+  scope: INQUIRY
+  actor_roles:
+  - CONSULTANT
+  changes_inquiry_state: true
+  changes_visit_state: false
+  requires_idempotency_key: true
+  requires_state_version: false
+  external_action:
+    exposed: true
+    operation_id: registerConsultantPhoneInquiry
+  description: '상담사가 합성 고객의 활성 구독을 선택해 PHONE 문의를 등록하고 현재 상담사에게 배정된 CONSULTATION_REQUIRED 상태로 초기화한다. AI·RAG는 자동 실행하지 않는다.
+
+    '
 - code: PRODUCT_UPDATED
   category: DATA_UPDATE
   scope: PRODUCT

@@ -67,6 +67,7 @@ def test_inquiry_uses_three_layer_identifiers_and_pm_initial_state():
     assert inquiry.inquiry_code.startswith("INQ-")
     assert inquiry.status_code == Inquiry.Status.DRAFT
     assert inquiry.state_version == 1
+    assert inquiry.priority_code == Inquiry.Priority.NORMAL
     assert inquiry._meta.db_table == "support_inquiry"
     assert set(Inquiry.Status.values) == {
         "DRAFT",
@@ -82,6 +83,12 @@ def test_inquiry_uses_three_layer_identifiers_and_pm_initial_state():
         "REOPENED",
         "RESOLVED",
         "CANCELLED",
+    }
+    assert set(Inquiry.Priority.values) == {
+        "LOW",
+        "NORMAL",
+        "HIGH",
+        "URGENT",
     }
 
 
@@ -161,6 +168,13 @@ def test_inquiry_database_checks_reject_invalid_codes_and_version():
             **base_values,
             channel_code=Inquiry.Channel.WEB,
             state_version=0,
+        )
+
+    with pytest.raises(IntegrityError), transaction.atomic():
+        Inquiry.objects.create(
+            **base_values,
+            channel_code=Inquiry.Channel.WEB,
+            priority_code="P0",
         )
 
 

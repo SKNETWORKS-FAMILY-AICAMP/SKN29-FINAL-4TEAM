@@ -43,7 +43,7 @@
 
 | ID       | 제목              | 분류           | 영향도 | 권장 시점          | 상태         |
 | -------- | --------------- | ------------ | --- | -------------- | ---------- |
-| `CR-001` | 상담사 전화 문의 수동 등록 | `HIGH_VALUE` | 중간  | 대표 E2E PASS 이후 | `PROPOSED` |
+| `CR-001` | 상담사 전화 문의 수동 등록 | `HIGH_VALUE` | 중간  | 2026-08-11 승인 Change Window | `IMPLEMENTING` |
 
 ---
 
@@ -55,7 +55,18 @@
 
 하지만 앱을 사용하지 않고 고객센터로 바로 전화하는 고객도 있을 수 있으므로, 상담사가 고객의 문의를 대신 등록할 수 있는 경로가 필요할 수 있다.
 
-### 제안
+### 승인 결정
+
+- 승인일: `2026-08-11`
+- 승인 주체: PM
+- 결정: `APPROVED → IMPLEMENTING`
+- 구현 Owner: 최지용(Backend·DB·Public API), 한예나(Web 소비)
+- 원칙: 기존 CUSTOMER `POST /api/v1/inquiries`는 변경하지 않고
+  CONSULTANT 전용 Operation 2개로 분리한다.
+- Backend 진행 상태: `AUTHOR_VERIFIED` (2026-08-11)
+- Web 진행 상태: `REMOTE_ADAPTER_AND_SHARED_SMOKE_PENDING`
+
+### 구현안
 
 전화 문의 전용 Workflow를 새로 만들지 않고, **문의 생성 경로만 추가한 뒤 기존 Workflow에 합류**시킨다.
 
@@ -76,39 +87,90 @@
 
 이후 흐름은 기존 Inquiry Workflow를 재사용한다.
 
-추가 Metadata 후보:
+서버 저장 기준:
 
 ```text
-intake_channel = PHONE
-created_by_role = CONSULTANT
-created_by_user_id = <상담사 ID>
+channel_code = PHONE
+initiated_by = <인증 상담사>
+assigned_role_code = CONSULTANT
+assigned_user = <인증 상담사>
+status_code = CONSULTATION_REQUIRED
+state_version = 1
 ```
+
+### 확정 Public API
+
+| Actor | Method | Path | 목적 |
+| --- | --- | --- | --- |
+| `CONSULTANT` | `POST` | `/api/v1/consultant/customer-subscriptions/search` | 합성 고객의 활성 구독 후보 검색 |
+| `CONSULTANT` | `POST` | `/api/v1/consultant/phone-inquiries` | 선택한 활성 구독에 전화 문의 등록 |
+
+- 검색어는 URL·접근 로그 노출을 줄이기 위해 Query String이 아니라 JSON
+  Body로 전달한다.
+- 검색 결과는 합성·비삭제 고객의 `ACTIVE` 구독만 반환하며 전화번호는
+  마스킹한다.
+- 등록 요청은 `subscription_id`만 신뢰하고 고객·제품 관계는 Backend가
+  다시 조회한다.
+- 기존 고객용 문의 생성 Path·DTO·권한은 유지한다.
+
+### Backend·DB 작업
+
+1. `Inquiry.priority_code`를 기존 `support_inquiry` 테이블에 Forward
+   Migration으로 추가한다. 신규 테이블은 만들지 않는다.
+2. 상담사 권한, 합성 데이터, 활성 구독, Idempotency·Correlation 경계를
+   Route→Serializer→Service→Repository에서 검증한다.
+3. `REGISTER_PHONE_INQUIRY`를 `null → CONSULTATION_REQUIRED` 전이로 기록하고
+   기존 상담 Workflow에 합류시킨다.
+4. 전화 접수 시 AI·RAG 자동 실행은 하지 않는다. 상담사가 기존
+   `START_CONSULTATION` 흐름을 이어간다.
+
+### Web 작업
+
+1. CONS-04의 임시 LocalStorage·가짜 `PHONE-*` 성공 경로를 실제 Remote
+   Adapter로 교체한다.
+2. 검색 Debounce, 결과 없음·오류·선택 상태와 복수 활성 구독 선택을
+   구현한다.
+3. 고객·구독 후보를 선택하기 전 등록을 차단하고 성공한 `inquiry_id`로
+   CONS-02 상세에 이동한다.
+4. 전화번호 원문, 문의 원문, Token을 LocalStorage·Analytics·오류 로그에
+   저장하지 않는다.
 
 ### 영향 예상
 
 | 영역            | 영향        |
 | ------------- | --------- |
 | 기획·요구사항       | 수정        |
-| State Machine | 확인        |
-| API Contract  | 수정 가능성 높음 |
-| Database      | 확인        |
-| Backend       | 수정        |
-| Web           | 수정        |
-| Mobile        | 없음 예상     |
-| AI            | 기존 흐름 재사용 |
-| Test          | 회귀 검증 필요  |
+| State Machine | `REGISTER_PHONE_INQUIRY` 초기 전이 추가 |
+| API Contract  | 상담사 전용 Operation 2개 추가 |
+| Database      | 기존 Inquiry에 `priority_code` 추가, 신규 테이블 없음 |
+| Backend       | 검색·등록 수직 Slice 추가 |
+| Web           | CONS-04 Remote Adapter·상태 처리 추가 |
+| Mobile        | API·화면 변경 없음, 새 문의 조회 호환 회귀만 확인 |
+| AI·RAG        | 자동 호출 없음, 기존 분석 정책·Schema 변경 없음 |
+| Test          | 계약·권한·멱등·PostgreSQL·전체 회귀 필요 |
 
-### 현재 판단
+### 제외·후속 결정
 
-* 현재 대표 E2E는 이 기능 없이도 성립함
-* 실제 고객센터 업무 현실성은 높아짐
-* 기존 Inquiry Workflow 재사용 가능
-* 여러 영역 수정과 회귀 검증이 필요함
+| 항목 | 이번 Slice 판정 | 이유 |
+| --- | --- | --- |
+| 수동 문의 제목 컬럼 | 제외 | 기존 원장 필드가 없고 문의 코드·증상·원문으로 표시 가능 |
+| 신규 고객 즉시 생성 | 제외 | 기존 구독 고객 검색 범위만 승인 |
+| 상담 메모 동시 저장 | 제외 | 기존 `Consultation` 생성 이후의 별도 책임 |
+| 콜백 예약·동의 확인 | 후속 | 별도 정책·보존 계약 필요 |
+| 실제 개인정보 | 금지 | 개발·테스트·발표는 합성 데이터만 허용 |
+| AI·RAG 자동 분석 | 제외 | 전화 접수는 상담 대기열 진입이 목적 |
 
-**분류: `HIGH_VALUE`**
+### 완료 기준
 
-현재 P0를 중단하고 즉시 구현하지 않는다.
-대표 E2E PASS 이후 Change Window에서 반영 여부를 다시 결정한다.
+- 두 Operation의 OpenAPI·Route·Serializer·권한·Service·Repository가
+  일치한다.
+- 타 역할은 403, 비합성·비활성·삭제·미존재 구독은 존재를 숨긴다.
+- 같은 Idempotency-Key와 같은 요청은 결과를 재생하고 다른 요청은
+  409로 거부한다.
+- 상태 이력에 `REGISTER_PHONE_INQUIRY`, 상담사, Correlation ID가 남는다.
+- PostgreSQL Migration·표적 API·기존 CUSTOMER 생성·상담 조회 회귀가
+  통과한다.
+- Web 실제 연동과 공동 Smoke는 Backend 작성자 검증과 별도로 기록한다.
 
 ---
 
