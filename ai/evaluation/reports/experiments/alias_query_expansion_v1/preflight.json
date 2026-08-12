@@ -1,0 +1,121 @@
+{
+  "preflight_id": "B2-4-ALIAS-QUERY-EXPANSION-PREFLIGHT",
+  "status": "READY",
+  "generated_at": "2026-08-12T01:56:38.855898+00:00",
+  "base_preflight": {
+    "preflight_id": "A3-1-FULL-CORPUS-BASELINE-PREFLIGHT",
+    "status": "READY",
+    "generated_at": "2026-08-12T01:56:38.854593+00:00",
+    "profile": {
+      "path": "ai/configs/experiments/full_corpus_baseline_v1.yaml",
+      "sha256": "E1B38207CD291B67CBF64155F11BCDF7DE308650C8E742CA4D332A2F6FA255EA"
+    },
+    "checks": [
+      {
+        "name": "dataset_hash",
+        "passed": true,
+        "blocking": true,
+        "detail": {
+          "records": 60,
+          "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A"
+        }
+      },
+      {
+        "name": "corpus_hash",
+        "passed": true,
+        "blocking": true,
+        "detail": {
+          "records": 96,
+          "sha256": "FE62AF6030045C532BC8E68D11C5461E8C65BD16DCD6758E0C2412C8C37C472C"
+        }
+      },
+      {
+        "name": "corpus_count",
+        "passed": true,
+        "blocking": true,
+        "detail": {
+          "JAC104_ONLY": 44,
+          "IAC425_ONLY": 52
+        }
+      },
+      {
+        "name": "gold_two_person_review",
+        "passed": true,
+        "blocking": true,
+        "detail": {
+          "pending_records": 60,
+          "allow_draft_gold": true,
+          "official_metrics_allowed": false
+        }
+      },
+      {
+        "name": "embedding_runtime_dependencies",
+        "passed": true,
+        "blocking": true,
+        "detail": {
+          "missing_modules": []
+        }
+      },
+      {
+        "name": "embedding_model_snapshot",
+        "passed": true,
+        "blocking": true,
+        "detail": {
+          "model": "BAAI/bge-m3",
+          "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+        }
+      }
+    ],
+    "blockers": [],
+    "decision": {
+      "draft_baseline_execution": "READY",
+      "official_phase_b_baseline": "BLOCKED",
+      "dependency_install_performed": false,
+      "docker_used": false
+    }
+  },
+  "checks": [
+    {
+      "name": "base_experiment_preflight",
+      "passed": true,
+      "detail": {
+        "base_status": "READY",
+        "base_blockers": []
+      }
+    },
+    {
+      "name": "draft_alias_explicit_opt_in",
+      "passed": true,
+      "detail": {
+        "review_status": "DRAFT_REVIEW_REQUIRED",
+        "allow_draft_aliases": true
+      }
+    },
+    {
+      "name": "target_cases_exist_in_selected_split",
+      "passed": true,
+      "detail": {
+        "target_case_ids": [
+          "RAGV2-GOLD-0004",
+          "RAGV2-GOLD-0025",
+          "RAGV2-GOLD-0027"
+        ],
+        "expected_activation_case_ids": [
+          "RAGV2-GOLD-0004",
+          "RAGV2-GOLD-0021",
+          "RAGV2-GOLD-0025",
+          "RAGV2-GOLD-0027"
+        ],
+        "missing_case_ids": []
+      }
+    },
+    {
+      "name": "hard_negative_case_ids_unique",
+      "passed": true,
+      "detail": {
+        "case_count": 7
+      }
+    }
+  ],
+  "blockers": []
+}

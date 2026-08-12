@@ -1025,3 +1025,22 @@ Public UUID 분석 요청이 모두 성공했다.
   결정적 오류 경계·독립 QA 증거를 사용하는 `KEEP_NOT_RUN`으로 회신했다.
 - `docs/individual/dongyoon/인계/20260812_이동윤_to_최지용_P0-2_공동Mock_후속정보_회신_v0.1.md`에
   Branch·병합 상태, 명령·Exit, P0-2 완료 경계와 PM 결정 요청을 기록했다.
+
+### 2026-08-12 Experiment Lab B2-4 Alias Query Expansion 비교
+
+- B2-3의 양쪽 누락 가설을 이어 받아 Parent/Child Dense 원문 Query와 Draft Alias
+  확장 Query를 동일 Gold DEV 35건에서 비교했다. B2-3 이후 Gold Dataset Hash가
+  변경돼 B2-4 안에서 원문 Dense 대조군을 다시 실행했다.
+- 누수 Alias는 `RAGV2-GOLD-0027`을 Top-5 밖에서 3위로 복구하고 `0021`을
+  2위에서 1위로 개선했다. 무출수 Alias는 `0025`를 복구하지 못해 Rule별 판정을
+  각각 `SUPPORTED_ON_DRAFT_DEV_PENDING_REVIEW`,
+  `NOT_SUPPORTED_ON_CURRENT_DRAFT_DEV`로 분리했다.
+- DEV Positive Hit@5는 `0.925926`에서 `0.962963`, MRR은 `0.783951`에서
+  `0.814815`로 변했다. Positive 회귀 0, 무근거 8건 회귀 0, 잘못된 제품 Hit 0을
+  확인했다.
+- 부정형과 비제품·다른 원인의 문맥을 포함한 Hard Negative 7건을 추가했다. 초기
+  과활성화 3건을 확인해 명시적 제외 조건을 보강했고 최종 예상 밖 활성화 0을
+  확인했다.
+- 결과는 `DRAFT_ALIAS_CANDIDATE_PARTIALLY_SUPPORTED_PENDING_REVIEW`이며 운영
+  Pipeline·검색 정책·Corpus·Evidence·Backend 계약은 변경하지 않았다. 누수 Alias는
+  Data Owner 검수와 Gold 승인 뒤 TEST·SAFETY 독립 검증이 필요하다.

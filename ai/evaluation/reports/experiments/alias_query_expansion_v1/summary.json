@@ -1,0 +1,158 @@
+{
+  "experiment_id": "B2-4-ALIAS-QUERY-EXPANSION-V1",
+  "run_status": "DRAFT_ALIAS_QUERY_EXPANSION_COMPARISON_COMPLETE",
+  "selection_status": "DRAFT_ALIAS_CANDIDATE_PARTIALLY_SUPPORTED_PENDING_REVIEW",
+  "metrics_publishable_as_official": false,
+  "variant_summaries": [
+    {
+      "variant_id": "DENSE_DRAFT_ALIAS_EXPANSION_V1",
+      "case_count": 35,
+      "positive_case_count": 27,
+      "negative_case_count": 8,
+      "mean_hit_at_1": 0.703704,
+      "mean_hit_at_3": 0.962963,
+      "mean_hit_at_5": 0.962963,
+      "mean_mrr": 0.814815,
+      "mean_ndcg_at_5": 0.870533,
+      "no_evidence_accuracy": 1.0,
+      "wrong_product_hit_count": 0,
+      "retrieval_latency_p50_ms": 0.0545,
+      "retrieval_latency_p95_ms": 0.06499
+    },
+    {
+      "variant_id": "DENSE_ORIGINAL_QUERY_V1",
+      "case_count": 35,
+      "positive_case_count": 27,
+      "negative_case_count": 8,
+      "mean_hit_at_1": 0.666667,
+      "mean_hit_at_3": 0.925926,
+      "mean_hit_at_5": 0.925926,
+      "mean_mrr": 0.783951,
+      "mean_ndcg_at_5": 0.834322,
+      "no_evidence_accuracy": 1.0,
+      "wrong_product_hit_count": 0,
+      "retrieval_latency_p50_ms": 0.0535,
+      "retrieval_latency_p95_ms": 0.06335
+    }
+  ],
+  "comparison": {
+    "target_case_ids": [
+      "RAGV2-GOLD-0004",
+      "RAGV2-GOLD-0025",
+      "RAGV2-GOLD-0027"
+    ],
+    "expected_activation_case_ids": [
+      "RAGV2-GOLD-0004",
+      "RAGV2-GOLD-0021",
+      "RAGV2-GOLD-0025",
+      "RAGV2-GOLD-0027"
+    ],
+    "alias_activated_case_ids": [
+      "RAGV2-GOLD-0004",
+      "RAGV2-GOLD-0021",
+      "RAGV2-GOLD-0025",
+      "RAGV2-GOLD-0027"
+    ],
+    "unexpected_alias_activation_case_ids": [],
+    "missing_expected_alias_activation_case_ids": [],
+    "recovered_positive_case_ids": [
+      "RAGV2-GOLD-0027"
+    ],
+    "target_recovery_case_ids": [
+      "RAGV2-GOLD-0027"
+    ],
+    "positive_regression_case_ids": [],
+    "negative_regression_case_ids": [],
+    "metric_delta": {
+      "mean_hit_at_1": 0.037037,
+      "mean_hit_at_3": 0.037037,
+      "mean_hit_at_5": 0.037037,
+      "mean_mrr": 0.030864,
+      "mean_ndcg_at_5": 0.036211,
+      "no_evidence_accuracy": 0.0
+    }
+  },
+  "rule_outcomes": [
+    {
+      "rule_id": "ALIAS-JAC104-LEAK-001",
+      "status": "SUPPORTED_ON_DRAFT_DEV_PENDING_REVIEW",
+      "target_case_ids": [
+        "RAGV2-GOLD-0004",
+        "RAGV2-GOLD-0027"
+      ],
+      "expected_activation_case_ids": [
+        "RAGV2-GOLD-0004",
+        "RAGV2-GOLD-0021",
+        "RAGV2-GOLD-0027"
+      ],
+      "activated_case_ids": [
+        "RAGV2-GOLD-0004",
+        "RAGV2-GOLD-0021",
+        "RAGV2-GOLD-0027"
+      ],
+      "recovered_target_case_ids": [
+        "RAGV2-GOLD-0027"
+      ],
+      "ranking_improvement_case_ids": [
+        "RAGV2-GOLD-0021",
+        "RAGV2-GOLD-0027"
+      ],
+      "unexpected_activation_case_ids": [],
+      "missing_expected_activation_case_ids": [],
+      "hard_negative_activation_case_ids": [],
+      "positive_regression_case_ids": []
+    },
+    {
+      "rule_id": "ALIAS-JAC104-NO-WATER-001",
+      "status": "NOT_SUPPORTED_ON_CURRENT_DRAFT_DEV",
+      "target_case_ids": [
+        "RAGV2-GOLD-0025"
+      ],
+      "expected_activation_case_ids": [
+        "RAGV2-GOLD-0025"
+      ],
+      "activated_case_ids": [
+        "RAGV2-GOLD-0025"
+      ],
+      "recovered_target_case_ids": [],
+      "ranking_improvement_case_ids": [],
+      "unexpected_activation_case_ids": [],
+      "missing_expected_activation_case_ids": [],
+      "hard_negative_activation_case_ids": [],
+      "positive_regression_case_ids": []
+    }
+  ],
+  "hard_negative_summary": {
+    "case_count": 7,
+    "unexpected_alias_activation_case_ids": [],
+    "new_retrieval_result_case_ids": []
+  },
+  "success_gate": {
+    "requirements": {
+      "minimum_target_recovery_count": 1,
+      "maximum_positive_regression_count": 0,
+      "maximum_negative_regression_count": 0,
+      "maximum_unexpected_alias_activation_count": 0,
+      "maximum_missing_expected_alias_activation_count": 0,
+      "maximum_hard_negative_unexpected_activation_count": 0,
+      "maximum_hard_negative_new_result_count": 0
+    },
+    "results": {
+      "minimum_target_recovery_count": true,
+      "maximum_positive_regression_count": true,
+      "maximum_negative_regression_count": true,
+      "maximum_unexpected_alias_activation_count": true,
+      "maximum_missing_expected_alias_activation_count": true,
+      "maximum_hard_negative_unexpected_activation_count": true,
+      "maximum_hard_negative_new_result_count": true
+    },
+    "passed": true
+  },
+  "publication_limits": [
+    "Alias Rule은 Data Owner 2인 검수 전 Draft이며 승인 사전으로 표현하지 않는다.",
+    "Gold DEV 35건 비교는 운영 성능이나 Gold 60건 공식 결과가 아니다.",
+    "Alias는 Query에만 보조 추가하며 Corpus, Chunk, Evidence 원문을 변경하지 않는다.",
+    "운영 retrieval_policy.yaml, FastAPI Pipeline, Backend 계약을 변경하지 않는다.",
+    "동일 DEV에서 발견·평가한 후보이므로 TEST와 SAFETY 검증 전 일반화하지 않는다."
+  ]
+}

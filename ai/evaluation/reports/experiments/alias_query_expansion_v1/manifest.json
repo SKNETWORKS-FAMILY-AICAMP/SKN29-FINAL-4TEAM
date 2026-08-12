@@ -1,0 +1,95 @@
+{
+  "experiment_id": "B2-4-ALIAS-QUERY-EXPANSION-V1",
+  "experiment_version": "1.0.0-draft.1",
+  "run_status": "DRAFT_ALIAS_QUERY_EXPANSION_COMPARISON_COMPLETE",
+  "selection_status": "DRAFT_ALIAS_CANDIDATE_PARTIALLY_SUPPORTED_PENDING_REVIEW",
+  "started_at": "2026-08-12T01:56:38.849807+00:00",
+  "completed_at": "2026-08-12T01:56:51.313249+00:00",
+  "metrics_publishable_as_official": false,
+  "dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A",
+    "split": "DEV",
+    "selected_cases": 35
+  },
+  "source_corpus": {
+    "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+    "sha256": "FE62AF6030045C532BC8E68D11C5461E8C65BD16DCD6758E0C2412C8C37C472C",
+    "source_chunks": 96
+  },
+  "profiles": {
+    "alias_profile_path": "ai/configs/experiments/alias_query_expansion_profiles.yaml",
+    "alias_profile_sha256": "1699505BC67AAE4F6EFDA0555B75EE98F48F454DAD7D8A9AB9D60E144582EF70",
+    "scope_profile_sha256": "B166547A4490BCF67CA68BFD275C26B7E26DCF85F05627F4ACB54A6203FE3CF3",
+    "intent_profile_sha256": "E51229DE84F36CA74DCF8DF5D7869DE1B390FEF2C6FB9A75E2C1B06D9227ED7A",
+    "chunking_profile_id": "parent_child_v1",
+    "variants": [
+      {
+        "variant_id": "DENSE_ORIGINAL_QUERY_V1",
+        "query_expansion": false
+      },
+      {
+        "variant_id": "DENSE_DRAFT_ALIAS_EXPANSION_V1",
+        "query_expansion": true
+      }
+    ],
+    "fixed_controls": {
+      "method": "dense_cosine_exact",
+      "top_k": 5,
+      "score_threshold": 0.5,
+      "product_filter": "EXACT_PRODUCT_FILTER",
+      "scope_policy_id": "MODEL_CAPABILITY_SCOPE_V1",
+      "intent_policy_id": "MANUAL_DOMAIN_INTENT_V1"
+    }
+  },
+  "fixed_embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "device": "cpu",
+    "normalize_embeddings": true,
+    "local_files_only": true
+  },
+  "structure": {
+    "chunk_count": 108,
+    "chunk_count_by_product": {
+      "WPUIAC425SNW": 60,
+      "WPUJAC104DWH": 48
+    },
+    "average_chunk_tokens": 118.213,
+    "minimum_chunk_tokens": 1,
+    "maximum_chunk_tokens": 256,
+    "source_tokens": 12383,
+    "indexed_tokens": 12767,
+    "structural_overlap_ratio": 0.030078,
+    "context_payload_tokens": 54913,
+    "lineage_restore_rate": 1.0,
+    "document_embedding_seconds": 88.000593,
+    "embedding_cache_hit": true,
+    "embedding_cache_key": "3321AAD4FB15125D86EA0E63C45CC46B8D6617089A9ACC85951B0B5B49ED1C47"
+  },
+  "performance": {
+    "query_embedding_seconds": 3.815888,
+    "total_seconds": 12.472546,
+    "case_result_count": 70,
+    "hard_negative_result_count": 14
+  },
+  "runtime": {
+    "python": "3.13.13",
+    "os": "Windows 11",
+    "provider_class": "LocalBgeM3Provider"
+  },
+  "git": {
+    "commit_sha": "692ccd5b430ad6caf6f220a26ca8957f1d8716b8",
+    "branch": "codex/dongyoon-reconcile",
+    "working_tree_clean": false,
+    "changed_path_count": 7
+  },
+  "publication_limits": [
+    "Alias Rule은 Data Owner 2인 검수 전 Draft이며 승인 사전으로 표현하지 않는다.",
+    "Gold DEV 35건 비교는 운영 성능이나 Gold 60건 공식 결과가 아니다.",
+    "Alias는 Query에만 보조 추가하며 Corpus, Chunk, Evidence 원문을 변경하지 않는다.",
+    "운영 retrieval_policy.yaml, FastAPI Pipeline, Backend 계약을 변경하지 않는다.",
+    "동일 DEV에서 발견·평가한 후보이므로 TEST와 SAFETY 검증 전 일반화하지 않는다."
+  ]
+}
