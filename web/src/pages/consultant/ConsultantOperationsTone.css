@@ -2063,8 +2063,10 @@ html body
   display: flex;
   min-width: 0;
   align-items: flex-end;
-  padding-left: 2px;
+  gap: 0;
+  padding: 0;
   overflow: visible;
+  isolation: isolate;
 }
 
 html body
@@ -2075,16 +2077,16 @@ html body
   width: 178px;
   min-width: 142px;
   max-width: 31%;
-  height: 42px;
+  height: 44px;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-right: -12px;
+  margin-right: 0;
   padding: 0 28px 0 18px;
   border: 0;
-  border-radius: 12px 12px 0 0;
-  background: #dce4ef;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 66%);
+  border-radius: 0 !important;
+  background: #fff;
+  box-shadow: none;
   color: #64748b;
   cursor: pointer;
   clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 100%, 0 100%);
@@ -2116,7 +2118,7 @@ html body
 html body
   .simple-consultant-app.consultant-queue-app
   .consultant-risk-tab:hover {
-  background: #e8edf4;
+  background: #f7f9fc;
   color: #34495b;
 }
 
@@ -2125,12 +2127,21 @@ html body
   .consultant-risk-tab.is-active {
   z-index: 5;
   height: 44px;
+  margin-bottom: 0;
   background: #fff;
-  box-shadow:
-    inset 0 1px 0 #fff,
-    0 -3px 9px rgb(43 67 86 / 8%);
+  box-shadow: inset 0 3px 0 #69b8d8;
   color: #1e3a50;
   font-weight: 700;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab::before,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab::after {
+  display: none !important;
+  content: none !important;
 }
 
 html body
@@ -2262,4 +2273,276 @@ html body
     height: 22px;
     flex-basis: 22px;
   }
+}
+
+/* Risk index accents: match each file tab and its count badge. */
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab--danger {
+  box-shadow: inset 0 3px 0 #e5484d !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab--caution {
+  box-shadow: inset 0 3px 0 #df9126 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab--general {
+  box-shadow: inset 0 3px 0 #7a8794 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab--danger
+  .consultant-risk-tab__count {
+  border-color: #d53a40 !important;
+  background: #e5484d !important;
+  color: #fff !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab--caution
+  .consultant-risk-tab__count {
+  border-color: #cc7f18 !important;
+  background: #df9126 !important;
+  color: #fff !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab--general
+  .consultant-risk-tab__count {
+  border-color: #697581 !important;
+  background: #7a8794 !important;
+  color: #fff !important;
+}
+
+/* Counselor queue readability pass: matte cards over the liquid-glass canvas. */
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section[role="tabpanel"]
+  .consultant-risk-section__list {
+  gap: 14px !important;
+  padding: 16px !important;
+  background: rgb(239 244 248 / 94%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item:nth-child(even) {
+  position: relative;
+  min-height: 68px !important;
+  padding: 15px 18px !important;
+  overflow: hidden;
+  border: 2px solid #bccbd6 !important;
+  border-radius: 12px !important;
+  background: rgb(255 255 255 / 96%) !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 100%),
+    inset 0 -1px 0 rgb(131 155 173 / 12%),
+    0 8px 20px rgb(18 42 61 / 9%) !important;
+  backdrop-filter: blur(18px) saturate(110%);
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item::before {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 12px;
+  left: 12px;
+  height: 2px;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(90deg, #ff7fbd 0%, #b388ff 48%, #52dbea 100%);
+  box-shadow: 0 1px 6px rgb(111 207 232 / 22%);
+  content: "";
+  pointer-events: none;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item:hover,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item.is-selected {
+  border-color: #7faabd !important;
+  background: #fff !important;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 11px 24px rgb(17 52 76 / 14%) !important;
+  transform: translateY(-1px);
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .consultant-list-item__subject {
+  color: #0b2035 !important;
+  font-size: 15px;
+  font-weight: 650 !important;
+  letter-spacing: -0.018em;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .consultant-list-item__customer {
+  min-height: 24px;
+  padding-left: 18px;
+  border-left-color: #aebfcb;
+  color: #142a3e !important;
+  font-size: 13px;
+  font-weight: 700 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__head h2,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__filter-trigger {
+  color: #10283d !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab__count,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section__count {
+  border: 1px solid #8fa7b6 !important;
+  background: #fff !important;
+  color: #10283d !important;
+  font-weight: 800;
+  box-shadow: 0 2px 7px rgb(17 46 67 / 10%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-queue-panel
+  > .common-pagination {
+  padding: 13px 18px;
+  border-top: 1px solid #c5d3dd !important;
+  background: rgb(247 250 252 / 96%) !important;
+  color: #132a3e;
+  backdrop-filter: blur(16px);
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .common-pagination__summary {
+  color: #30485d !important;
+  font-weight: 650;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .common-pagination__actions
+  button,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .common-pagination__actions
+  span[aria-current="page"] {
+  min-width: 42px;
+  height: 36px;
+  border: 1px solid #9eb2c0 !important;
+  border-radius: 9px !important;
+  background: rgb(255 255 255 / 96%) !important;
+  color: #10283d !important;
+  font-weight: 750;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 4px 10px rgb(17 46 67 / 9%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .common-pagination__actions
+  span[aria-current="page"] {
+  border-color: #397e9d !important;
+  background: #173b54 !important;
+  color: #fff !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .common-pagination__actions
+  button:disabled {
+  color: #718391 !important;
+  opacity: 0.72;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tab
+  > b {
+  border: 1px solid rgb(255 255 255 / 45%) !important;
+  font-weight: 850;
+}
+
+@media (max-width: 700px) {
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app
+    .consultant-risk-section[role="tabpanel"]
+    .consultant-risk-section__list {
+    gap: 10px !important;
+    padding: 10px !important;
+  }
+
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app
+    .consultant-risk-section
+    .v6-queue-item.consultant-list-item,
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app
+    .consultant-risk-section
+    .v6-queue-item.consultant-list-item:nth-child(even) {
+    min-height: 62px !important;
+    padding: 12px 14px !important;
+  }
+}
+
+/* Selected risk index stays solid; inactive indexes recede into the canvas. */
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab.is-active {
+  background: #fff !important;
+  color: #152c40 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab:not(.is-active) {
+  background: rgb(255 255 255 / 38%) !important;
+  color: rgb(33 55 73 / 68%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab:not(.is-active):hover {
+  background: rgb(255 255 255 / 62%) !important;
+  color: rgb(33 55 73 / 88%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab:not(.is-active)
+  .consultant-risk-tab__count {
+  opacity: 0.68;
 }
