@@ -78,7 +78,7 @@ def parameter_refs(operation):
 
 def test_eight_pm_actions_are_confirmed_with_selective_runtime_status():
     root = load_yaml(API_DIR / "openapi.yaml")
-    assert root["info"]["version"] == "0.8.0"
+    assert root["info"]["version"] == "0.9.0"
 
     for path, (operation_id, event) in EXPECTED.items():
         operation = operation_for(path)

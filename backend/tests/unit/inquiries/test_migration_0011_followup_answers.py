@@ -12,10 +12,17 @@ OLD_TARGET = [("inquiries", "0010_customeractionresult")]
 NEW_TARGET = [
     ("inquiries", "0011_split_followup_question_metadata_and_answers")
 ]
+LATEST_TARGET = [("inquiries", "0013_inquiry_priority_code")]
 
 
 @pytest.mark.django_db(transaction=True)
-def test_0010_to_0011_preserves_metadata_text_and_structured_answers():
+def test_0010_to_0011_preserves_metadata_text_and_structured_answers(
+    request,
+):
+    MigrationExecutor(connection).migrate(LATEST_TARGET)
+    request.addfinalizer(
+        lambda: MigrationExecutor(connection).migrate(LATEST_TARGET)
+    )
     owner = create_user(901)
     _client, inquiry, _subscription = create_inquiry(owner, 901)
     answered_at = timezone.now()
@@ -158,4 +165,4 @@ def test_0010_to_0011_preserves_metadata_text_and_structured_answers():
         }
         assert reversed_new.answered_by_id == owner.pk
     finally:
-        MigrationExecutor(connection).migrate(NEW_TARGET)
+        MigrationExecutor(connection).migrate(LATEST_TARGET)

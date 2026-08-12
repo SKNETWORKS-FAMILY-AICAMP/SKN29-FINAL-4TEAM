@@ -311,9 +311,14 @@ def test_database_catalog_contains_action_result_contract_objects():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_action_result_empty_migration_rolls_back_and_reapplies():
+def test_action_result_empty_migration_rolls_back_and_reapplies(request):
     target_0009 = [("inquiries", "0009_guidanceitem")]
     target_0010 = [("inquiries", "0010_customeractionresult")]
+    latest_target = [("inquiries", "0013_inquiry_priority_code")]
+
+    request.addfinalizer(
+        lambda: MigrationExecutor(connection).migrate(latest_target)
+    )
 
     executor = MigrationExecutor(connection)
     executor.migrate(target_0009)
@@ -347,3 +352,4 @@ def test_action_result_empty_migration_rolls_back_and_reapplies():
 
     executor = MigrationExecutor(connection)
     executor.migrate(target_0010)
+    MigrationExecutor(connection).migrate(latest_target)

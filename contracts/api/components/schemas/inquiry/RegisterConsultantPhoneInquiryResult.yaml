@@ -1,0 +1,32 @@
+title: RegisterConsultantPhoneInquiryResult
+type: object
+description: 상담 대기열에 생성되거나 안전하게 재생된 전화 문의
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - inquiry_id
+  - inquiry_code
+  - status_code
+  - state_version
+  - idempotent_replay
+  - allowed_actions
+properties:
+  inquiry_id:
+    type: string
+    format: uuid
+  inquiry_code:
+    type: string
+    minLength: 1
+    maxLength: 50
+  status_code:
+    type: string
+    const: CONSULTATION_REQUIRED
+  state_version:
+    type: integer
+    const: 1
+  idempotent_replay:
+    type: boolean
+  allowed_actions:
+    type: array
+    items:
+      $ref: ../workflow/AllowedAction.yaml

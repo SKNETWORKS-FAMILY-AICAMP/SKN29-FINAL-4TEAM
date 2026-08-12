@@ -1,0 +1,21 @@
+title: ConsultantCustomerSubscriptionSearchRequest
+type: object
+description: 상담사 전화 접수용 합성 고객·활성 구독 검색 조건
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - query
+properties:
+  query:
+    type: string
+    minLength: 2
+    maxLength: 100
+    pattern: .*\S.*
+    description: |
+      고객명은 trim 후 2자 이상. 숫자·하이픈·공백·괄호·+만 입력한
+      연락처 검색은 숫자 정규화 후 4자리 이상이어야 한다.
+  limit:
+    type: integer
+    minimum: 1
+    maximum: 20
+    default: 10

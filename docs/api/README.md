@@ -1,6 +1,6 @@
 # WaterBridge API 문서 안내
 
-> 기준일: 2026-08-02
+> 기준일: 2026-08-11
 >
 > 문서 상태: 팀 공용 API 설계·Runtime 현황
 >
@@ -12,10 +12,12 @@ Django Runtime 지원 범위를 구분해 제공한다. 문서에 Endpoint가 �
 
 ## 문서 구성
 
-- [WaterBridge Public API 명세](waterbridge_api_specification.md): 공통 규칙,
-  현재 기계 계약 10개와 설계 백로그의 상태
-- [API Runtime 구현 상태](runtime_implementation_status.md): OpenAPI 10개,
-  Django Runtime 8개와 OpenAPI-only 2개의 Route·View·검증 경계
+- [WaterBridge Public API 명세](waterbridge_api_specification.md): 공통 규칙과
+  현행 OpenAPI 35개 Operation의 기준
+- [API Runtime 구현 상태](runtime_implementation_status.md): OpenAPI 35개,
+  Django Runtime 26개와 OpenAPI-only 9개의 Route·View·검증 경계
+- [CR-001 상담사 전화 문의 등록 API](consultant_phone_inquiry_api.md):
+  CONS-04 고객·구독 검색과 전화 문의 등록의 사람용 계약
 - [OpenAPI 계약](../../contracts/api/openapi.yaml): Method·Path·Schema를
   도구와 계약 테스트가 읽는 기계 기준본
 - [Django REST API·OpenAPI 계약·구현·보안검증 가이드](../individual/jiyong/API/Django_REST_API_OpenAPI_계약_구현_보안검증_가이드.md):
@@ -43,12 +45,12 @@ State 계약의 기준으로 사용하지 않는다.
 
 | 구분 | 수량 | 의미 |
 |---|---:|---|
-| 사람용 API 카탈로그 | 42 | 기계 계약·백로그·폐기 설계를 포함한 추적 목록 |
-| OpenAPI Operation | 10 | 현재 기계 계약에 등록 |
-| Django Runtime | 8 | 실제 Route·View 존재 |
-| OpenAPI-only | 2 | 계약은 있으나 실행 Route 없음 |
-| 설계 백로그 | 31 | OpenAPI 미등록, `BLOCKED` 4개 포함 |
-| 폐기 설계 | 1 | generic `/events`; 현재 행동별 Endpoint 원칙과 불일치 |
+| OpenAPI Path | 34 | 현재 기계 계약에 등록 |
+| OpenAPI Operation | 35 | 현재 기계 계약에 등록 |
+| Django Runtime | 26 | 실제 Route·HTTP Method 존재 |
+| OpenAPI-only | 9 | 계약은 있으나 실행 Method 없음 |
+| JSON Example | 50 | 외부 참조로 검증되는 요청·응답 예시 |
+| 변경 백로그 | 별도 관리 | `docs/planning/CHANGE_BACKLOG.md` 기준 |
 
 ## 상태 해석
 
