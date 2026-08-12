@@ -1,0 +1,78 @@
+{
+  "experiment_id": "B1-CHUNKING-COMPARISON-V1",
+  "experiment_version": "1.0.0-draft.1",
+  "run_status": "DRAFT_CHUNKING_EXPERIMENT_COMPLETE",
+  "started_at": "2026-08-12T02:46:08.849353+00:00",
+  "completed_at": "2026-08-12T02:46:14.315160+00:00",
+  "metrics_publishable_as_official": false,
+  "selection_status": "PENDING_GOLD_REVIEW_AND_PM_GATE",
+  "dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A",
+    "split": "DEV",
+    "selected_cases": 35
+  },
+  "source_corpus": {
+    "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+    "sha256": "FE62AF6030045C532BC8E68D11C5461E8C65BD16DCD6758E0C2412C8C37C472C",
+    "source_chunks": 96
+  },
+  "profiles": {
+    "path": "ai/configs/experiments/chunking_profiles.yaml",
+    "sha256": "BADA1E1E22B52479C5ADD973641062E4F54FD2E2E7C15E842608AA267D4890F3",
+    "runnable": [
+      "current_chunking_full_corpus_v1",
+      "page_v1",
+      "fixed_512_v1",
+      "section_v1",
+      "parent_child_v1"
+    ],
+    "blocked": [
+      {
+        "profile_id": "table_row_v1",
+        "strategy": "structured_table_row",
+        "status": "BLOCKED_SOURCE_STRUCTURE_UNAVAILABLE",
+        "reason": "현재 96쪽 추출 Corpus에 증상·확인사항·조치 행 경계 Metadata가 없음"
+      }
+    ]
+  },
+  "fixed_embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "device": "cpu",
+    "normalize_embeddings": true,
+    "local_files_only": true
+  },
+  "fixed_retrieval": {
+    "method": "dense_cosine_exact_v1",
+    "top_k": 5,
+    "score_threshold": 0.4,
+    "filter_modes": [
+      "NO_PRODUCT_FILTER",
+      "EXACT_PRODUCT_FILTER"
+    ]
+  },
+  "performance": {
+    "query_embedding_seconds": 5.29274,
+    "total_seconds": 5.465784,
+    "case_result_count": 350
+  },
+  "runtime": {
+    "python": "3.13.13",
+    "os": "Windows 11",
+    "provider_class": "LocalBgeM3Provider"
+  },
+  "git": {
+    "commit_sha": "240d0a1b88c09bb5cd1150f4b38568ff38a6e3ce",
+    "branch": "eunjin",
+    "working_tree_clean": true,
+    "changed_path_count": 0
+  },
+  "publication_limits": [
+    "Gold 60건 2인 검수 전 Draft 비교로만 사용",
+    "DEV Positive가 JAC104에 편중되어 IAC425 검색 품질을 판정하지 않음",
+    "whitespace_token은 모델 Tokenizer 기준 512 Token과 동일하지 않음",
+    "PM 승인 전 상위 2개 Profile을 운영 설정으로 채택하지 않음"
+  ]
+}
