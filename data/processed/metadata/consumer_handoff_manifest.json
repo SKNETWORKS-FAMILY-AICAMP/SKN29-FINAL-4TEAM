@@ -24,7 +24,7 @@
           "role": "INGEST",
           "records": 7,
           "size_bytes": 14296,
-          "sha256": "6BF3582E42A309D846BC383BE9C3E08874512318DD4046082498DBFBC8584DD0"
+          "sha256": "6BF3582E42A309D846BC383BE9C3E08874512318DD4076082498DBFBC8584DD0"
         },
         {
           "path": "processed/structured/evidence/jac104_evidence_registry.jsonl",
