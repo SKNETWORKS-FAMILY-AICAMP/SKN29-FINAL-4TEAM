@@ -180,6 +180,13 @@ codex_cons04_20260811_r2
 Data 설정·Manifest·검증 보고서의 연쇄 SHA만 재계산됐고, 합성 데이터 값,
 RAG Chunk, AI 정책은 변경하지 않았다. 재빌드 결과 `changed_files=[]`다.
 
+첫 게시 직후 Data CI에서 기능 Commit 생성 전 값인 `d2cd69a5...`가
+`latest_qa_summary.json`의 `source_commit`에 남아 1개 Assertion이 실패했다.
+정식 Pipeline으로 기능 Commit `1362bc9c...`를 기준 삼아 검증 보고서와
+Manifest 8개를 재생성했다. 이후 Data 도구 `76 tests OK`, 결정적 재빌드
+`740 records / 0 errors / 0 warnings / changed_files=[]`를 다시 통과했다.
+이는 파생 메타데이터 정합화이며 합성 데이터·RAG 내용 변경이 아니다.
+
 ## 9. Web 인계 시 필수 확인
 
 1. 게시된 Backend SHA와 실행 SHA를 동일하게 기록한다.

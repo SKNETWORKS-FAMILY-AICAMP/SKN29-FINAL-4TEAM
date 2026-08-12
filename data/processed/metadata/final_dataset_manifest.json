@@ -283,7 +283,7 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 18457,
-      "sha256": "60542B5769693CC54D5BFB1DF0E025D031F15359F03D70157CE8798A7531274C"
+      "sha256": "F9E02175A1BC20EE72558F610EE4CD174E7FA93B1BEAA16E0C134C1F92E7965D"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -788,7 +788,7 @@
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
       "size_bytes": 1544,
-      "sha256": "DBD244D54B0B98F80146093685BE63698031AF4046173DE66504388F1A260256"
+      "sha256": "069C088BA561D66D1409137A3942067065A67B16056539065F42BB90F87DA833"
     },
     {
       "path": "processed/validation/business/latest_representative_e2e_report.json",
@@ -813,12 +813,12 @@
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
       "size_bytes": 1340,
-      "sha256": "52B14C1A3ABF92FCB942BCCA23B40142928837BFEB1F71A89CD23F1EE421C24F"
+      "sha256": "A19673144F68B9F3FD1551AEBA404553A2164753F0C9F8459E1276C41FB077F1"
     },
     {
       "path": "processed/validation/latest_qa_summary.json",
       "size_bytes": 7046,
-      "sha256": "127AC1B6AD8B219269B9F280942C4099D41C907BD39E983A90532023E530AD08"
+      "sha256": "D23783E4B1949411E15FE452248E17CAB25CCEE789476DD8AC85E5AB5E0F590C"
     },
     {
       "path": "processed/validation/ocr_evidence/image_manifest.csv",
@@ -838,7 +838,7 @@
     {
       "path": "processed/validation/quality/latest_quality_report.json",
       "size_bytes": 1246,
-      "sha256": "5656C431330597511470905A10A6F61D295F988F31FE55131EEB783BD2AA04FF"
+      "sha256": "E463D2D5E1C9A8374CD8CD08598A533F1B0A91C7B1A8225ECCE79D3A5D612293"
     },
     {
       "path": "processed/validation/rag_experiments/faq_corpus_qa.json",
@@ -863,12 +863,12 @@
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
       "size_bytes": 1151,
-      "sha256": "23C4454AA906BBBDEF15D30D39FEE1C4AABF3DFC3926D10AEDDF1A416E10E60B"
+      "sha256": "0589C73990E7080B192B93F8AC982734EDB80720D5DE43D0330D68D57D450C12"
     },
     {
       "path": "processed/validation/schema/latest_schema_report.json",
       "size_bytes": 8471,
-      "sha256": "8B3AC3C9684F1F9A41499985B445383472ABD63034DD3CA99B2E33B6988B941F"
+      "sha256": "E6884E9A309FB504723BEC548106363C9E7E9242DA078F1487732BE77778CE8F"
     },
     {
       "path": "processed/validation/step3/latest_step3_report.json",
