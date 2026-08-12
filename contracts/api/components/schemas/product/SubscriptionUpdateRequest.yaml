@@ -1,0 +1,16 @@
+title: SubscriptionUpdateRequest
+type: object
+description: T-018 고객 본인 ACTIVE 구독 허용 필드 수정 입력
+x-contract-status: CONFIRMED
+additionalProperties: false
+minProperties: 1
+properties:
+  started_on:
+    type: string
+    format: date
+  management_type_code:
+    type: string
+    enum: [SELF_MANAGED, VISIT_CARE]
+  last_care_on:
+    type: string
+    format: date

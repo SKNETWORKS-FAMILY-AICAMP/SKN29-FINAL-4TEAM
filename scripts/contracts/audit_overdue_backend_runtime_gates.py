@@ -136,6 +136,22 @@ def audit_runtime_gates() -> dict[str, Any]:
         for task_id, blockers in task_blockers.items()
     }
 
+    forbidden_while_blocked = []
+    if t019_blockers:
+        forbidden_while_blocked.append(
+            "PUBLIC_CARE_ENDPOINT_IMPLEMENTATION"
+        )
+    if t020_blockers:
+        forbidden_while_blocked.append("NEXT_CARE_DATE_CALCULATION")
+    if t021_blockers:
+        forbidden_while_blocked.append(
+            "PUBLIC_QUESTIONNAIRE_ENDPOINT_IMPLEMENTATION"
+        )
+    if any(task["blockers"] for task in tasks.values()):
+        forbidden_while_blocked.append(
+            "DATABASE_MIGRATION_FOR_BLOCKED_RUNTIME"
+        )
+
     return {
         "schema_version": "1.0",
         "overall_status": (
@@ -150,12 +166,7 @@ def audit_runtime_gates() -> dict[str, Any]:
             "IMPLEMENTED_ROUTE_REGRESSION",
             "EVIDENCE_DOCUMENTATION",
         ],
-        "forbidden_while_blocked": [
-            "PUBLIC_CARE_ENDPOINT_IMPLEMENTATION",
-            "NEXT_CARE_DATE_CALCULATION",
-            "PUBLIC_QUESTIONNAIRE_ENDPOINT_IMPLEMENTATION",
-            "DATABASE_MIGRATION_FOR_BLOCKED_RUNTIME",
-        ],
+        "forbidden_while_blocked": forbidden_while_blocked,
     }
 
 

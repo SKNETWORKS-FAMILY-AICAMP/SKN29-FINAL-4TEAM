@@ -28,6 +28,17 @@ x-t018-r1-policy:
   migration_change_allowed: false
   database_change_allowed: false
 
+x-t018-r2-write-policy:
+  status: CONFIRMED_IMPLEMENTED
+  customer_scope: SYNTHETIC_OWNER_ONLY
+  product_catalog_creation_allowed: false
+  supported_model_code: WPUJAC104DWH
+  create_fields: [model_code, started_on, management_type_code, last_care_on]
+  update_fields: [started_on, management_type_code, last_care_on]
+  active_duplicate_policy: REJECT_409
+  idempotency_scope: ACTOR_OPERATION_KEY
+  database_migration_required: false
+
 /me/subscriptions:
   get:
     operationId: listMySubscriptions
@@ -88,6 +99,68 @@ x-t018-r1-policy:
             examples:
               activeOnly:
                 externalValue: ../examples/subscriptions/query-validation-error.json
+      "500":
+        $ref: ../components/responses/InternalServerError.yaml
+  post:
+    operationId: createMySubscription
+    summary: 합성 고객 본인 구독 제품 등록
+    description: |
+      인증된 합성 CUSTOMER가 기존 Catalog의 WPUJAC104DWH를 선택해 ACTIVE
+      구독을 등록한다. Catalog Row, 계약번호와 Serial은 고객 입력으로 만들지
+      않으며 서버가 합성 식별자를 생성한다. 동일 Key·동일 요청은 저장 결과를
+      Replay하고 같은 Key의 다른 요청 또는 동일 활성 제품 중복은 409로 거부한다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-requirements: [FR-002, FR-003, DR-003]
+    x-owner-scope: SYNTHETIC_CUSTOMER_SELF
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema: {type: string, format: uuid}
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/product/SubscriptionCreateRequest.yaml
+    responses:
+      "201":
+        description: 구독 등록 또는 멱등 Replay 성공
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/product/SubscriptionMutationResponse.yaml
+            examples:
+              created:
+                externalValue: ../examples/subscriptions/create-success.json
+              replay:
+                externalValue: ../examples/subscriptions/create-replay.json
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "409":
+        description: 활성 제품 중복 또는 Idempotency-Key 충돌
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/common/ApiResponse.yaml
+            examples:
+              duplicateActive:
+                externalValue: ../examples/subscriptions/duplicate-active-error.json
+      "422":
+        description: 미지원 제품 또는 입력 검증 오류
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/common/ApiResponse.yaml
+            examples:
+              unsupportedProduct:
+                externalValue: ../examples/subscriptions/unsupported-product-error.json
       "500":
         $ref: ../components/responses/InternalServerError.yaml
 
@@ -155,5 +228,52 @@ x-t018-r1-policy:
             examples:
               activeOnly:
                 externalValue: ../examples/subscriptions/query-validation-error.json
+      "500":
+        $ref: ../components/responses/InternalServerError.yaml
+  patch:
+    operationId: updateMySubscription
+    summary: 고객 본인 ACTIVE 구독 허용 필드 수정
+    description: |
+      인증된 합성 CUSTOMER가 본인 ACTIVE WPUJAC104DWH 구독의 사용 시작일,
+      관리 유형과 최근 필터 교체 기준일만 수정한다. 타인·비활성·미지원 제품은
+      동일 404로 숨기고, 기존 완료 관리일 뒤로 사용 시작일을 늦추지 않는다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-requirements: [FR-002, FR-003, DR-003]
+    x-owner-scope: SYNTHETIC_CUSTOMER_SELF_ACTIVE
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema: {type: string, format: uuid}
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/product/SubscriptionUpdateRequest.yaml
+    responses:
+      "200":
+        description: 수정 또는 멱등 Replay 성공
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/product/SubscriptionMutationResponse.yaml
+            examples:
+              updated:
+                externalValue: ../examples/subscriptions/update-success.json
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "404":
+        $ref: ../components/responses/NotFound.yaml
+      "409":
+        $ref: ../components/responses/Conflict.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
       "500":
         $ref: ../components/responses/InternalServerError.yaml
