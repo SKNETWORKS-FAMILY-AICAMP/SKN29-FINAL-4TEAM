@@ -80,7 +80,7 @@ describe("App Router Guard", () => {
       await screen.findByRole("heading", { name: "전화 문의 등록" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "전화 문의 저장" }),
+      screen.getByRole("button", { name: "전화 문의 등록" }),
     ).toBeInTheDocument();
   });
 

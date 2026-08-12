@@ -49,7 +49,7 @@ class RepresentativeE2EInvariantTests(unittest.TestCase):
 
     def test_retired_representative_placeholders_are_absent_from_screen_spec(self) -> None:
         screen = (
-            REPO_ROOT / "docs" / "planning" / "md" / "화면설계서.md"
+            REPO_ROOT / "docs" / "planning" / "md" / "화면설계서_260812.md"
         ).read_text(encoding="utf-8")
         self.assertNotIn("MAN-WPU-JAC104D-P38-LOW-FLOW", screen)
         self.assertNotIn("EVD-JAC104D-MAN-P38-LOW-FLOW", screen)

@@ -11,7 +11,7 @@ html body .phone-inquiry-entry-app .phone-inquiry-main-header {
 
 .phone-inquiry-main-header__copy small,
 .phone-inquiry-card-head span,
-.phone-inquiry-recent-card > header span {
+.phone-inquiry-guide-card header span {
   color: #728096;
   font-size: 10px;
   font-weight: 700;
@@ -39,14 +39,14 @@ html body .phone-inquiry-entry-app .phone-inquiry-entry-panel {
 .phone-inquiry-entry-layout {
   display: grid;
   min-height: 100%;
-  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.8fr);
+  grid-template-columns: minmax(0, 1.7fr) minmax(270px, 0.72fr);
   align-items: start;
   gap: 18px;
   padding: 20px;
 }
 
 .phone-inquiry-form-card,
-.phone-inquiry-recent-card {
+.phone-inquiry-guide-card {
   border: 1px solid #e0e5ec;
   border-radius: 14px !important;
   background: #fff;
@@ -57,8 +57,7 @@ html body .phone-inquiry-entry-app .phone-inquiry-entry-panel {
   padding: 22px;
 }
 
-.phone-inquiry-card-head,
-.phone-inquiry-recent-card > header {
+.phone-inquiry-card-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -68,7 +67,7 @@ html body .phone-inquiry-entry-app .phone-inquiry-entry-panel {
 }
 
 .phone-inquiry-card-head h2,
-.phone-inquiry-recent-card > header h2 {
+.phone-inquiry-guide-card h2 {
   margin: 4px 0 0;
   color: #263142;
   font-size: 17px;
@@ -79,38 +78,24 @@ html body .phone-inquiry-entry-app .phone-inquiry-entry-panel {
   font-size: 11px;
 }
 
-.phone-inquiry-save-notice {
-  margin-top: 16px;
-  padding: 11px 13px;
-  border: 1px solid #b9dfd1;
-  border-radius: 8px !important;
-  background: #f0faf6;
-  color: #2e6753;
-  font-size: 12px;
-}
-
-.phone-inquiry-form-grid {
+.phone-inquiry-customer-search {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  padding-top: 18px;
-}
-
-.phone-inquiry-form-grid > label,
-.phone-inquiry-urgency {
-  display: grid;
-  min-width: 0;
   gap: 7px;
-  margin: 0;
-  padding: 0;
-  border: 0;
+  padding: 18px 0;
+  border-bottom: 1px solid #edf0f4;
 }
 
-.phone-inquiry-form-grid > label > span,
-.phone-inquiry-urgency legend {
+.phone-inquiry-customer-search > label,
+.phone-inquiry-details > label > span,
+.phone-inquiry-details > legend,
+.phone-inquiry-priority legend {
   color: #3e4857;
   font-size: 12px;
   font-weight: 650;
+}
+
+.phone-inquiry-combobox {
+  position: relative;
 }
 
 html body .phone-inquiry-entry-app :is(input, select, textarea) {
@@ -131,7 +116,7 @@ html body .phone-inquiry-entry-app :is(input, select) {
 }
 
 html body .phone-inquiry-entry-app textarea {
-  min-height: 88px;
+  min-height: 112px;
   padding: 10px 11px;
   resize: vertical;
   line-height: 1.55;
@@ -142,37 +127,226 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):focus {
   box-shadow: 0 0 0 3px rgb(99 119 217 / 11%) !important;
 }
 
+html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
+  cursor: not-allowed;
+  background: #f5f6f8 !important;
+  color: #8a94a3 !important;
+}
+
+.phone-inquiry-search-hint,
+.phone-inquiry-details > label > small {
+  color: #7c8798;
+  font-size: 10px;
+}
+
+.phone-inquiry-details > label > small {
+  justify-self: end;
+}
+
+.phone-inquiry-candidate-panel {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #d9dfe7;
+  border-radius: 10px !important;
+  background: #fff;
+  box-shadow: 0 12px 28px rgb(45 57 78 / 14%);
+}
+
+.phone-inquiry-candidate-panel > p,
+.phone-inquiry-search-error {
+  margin: 0;
+  padding: 20px 16px;
+  color: #677386;
+  font-size: 12px;
+  text-align: center;
+}
+
+.phone-inquiry-candidate-panel > button[role="option"] {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(140px, 0.75fr) minmax(180px, 1fr);
+  gap: 16px;
+  padding: 12px 14px;
+  border: 0 !important;
+  border-bottom: 1px solid #edf0f4 !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  color: #303947 !important;
+  text-align: left;
+}
+
+.phone-inquiry-candidate-panel > button[role="option"]:last-child {
+  border-bottom: 0 !important;
+}
+
+.phone-inquiry-candidate-panel > button[role="option"]:hover,
+.phone-inquiry-candidate-panel > button[role="option"].is-active {
+  background: #f1f4ff !important;
+}
+
+.phone-inquiry-candidate-panel button span {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.phone-inquiry-candidate-panel strong,
+.phone-inquiry-candidate-panel b {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-inquiry-candidate-panel small {
+  color: #7c8798;
+  font-size: 10px;
+}
+
+.phone-inquiry-search-error {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.phone-inquiry-search-error p {
+  margin: 0;
+}
+
+.phone-inquiry-search-error button {
+  padding: 6px 10px;
+  border: 1px solid #d9dfe7 !important;
+  border-radius: 7px !important;
+  background: #fff !important;
+  color: #536073 !important;
+  font-size: 11px;
+}
+
+.phone-inquiry-selected-card {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.7fr) minmax(260px, 1.3fr) auto;
+  align-items: center;
+  gap: 18px;
+  margin-top: 18px;
+  padding: 15px;
+  border: 1px solid #b9dfd1;
+  border-radius: 10px !important;
+  background: #f3faf7;
+}
+
+.phone-inquiry-selected-card > div {
+  display: grid;
+  gap: 3px;
+}
+
+.phone-inquiry-selected-card > div span {
+  color: #3c8067;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.phone-inquiry-selected-card > div strong {
+  color: #294b40;
+  font-size: 14px;
+}
+
+.phone-inquiry-selected-card small,
+.phone-inquiry-selected-card dt {
+  color: #748379;
+  font-size: 10px;
+}
+
+.phone-inquiry-selected-card dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.phone-inquiry-selected-card dl div {
+  min-width: 0;
+}
+
+.phone-inquiry-selected-card dd {
+  margin: 3px 0 0;
+  overflow: hidden;
+  color: #3e514a;
+  font-size: 11px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-inquiry-selected-card > button {
+  padding: 7px 10px;
+  border: 1px solid #9fcbbd !important;
+  border-radius: 7px !important;
+  background: #fff !important;
+  color: #376c5a !important;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.phone-inquiry-details {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.7fr) minmax(260px, 1.3fr);
+  gap: 16px;
+  margin: 18px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.phone-inquiry-details > legend {
+  width: 100%;
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  padding: 0;
+}
+
+.phone-inquiry-details > label {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
 .phone-inquiry-field--wide,
-.phone-inquiry-urgency,
-.phone-inquiry-checks {
+.phone-inquiry-priority {
   grid-column: 1 / -1;
 }
 
-.phone-inquiry-urgency {
+.phone-inquiry-priority {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
-.phone-inquiry-urgency legend {
+.phone-inquiry-priority legend {
   width: 100%;
   margin-bottom: 2px;
 }
 
-.phone-inquiry-urgency label {
+.phone-inquiry-priority label {
   display: block;
   cursor: pointer;
 }
 
-.phone-inquiry-urgency input {
+.phone-inquiry-priority input {
   position: absolute;
   width: 1px !important;
   height: 1px !important;
   opacity: 0;
 }
 
-.phone-inquiry-urgency label span {
+.phone-inquiry-priority label span {
   display: grid;
   min-width: 76px;
   height: 34px;
@@ -183,30 +357,45 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):focus {
   font-size: 12px;
 }
 
-.phone-inquiry-urgency input:checked + span {
+.phone-inquiry-priority input:checked + span {
   border-color: #6377d9;
   background: #f0f2ff;
   color: #4054b5;
   font-weight: 700;
 }
 
-.phone-inquiry-checks {
-  display: grid;
-  gap: 9px;
+.phone-inquiry-details:disabled .phone-inquiry-priority label {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
-.phone-inquiry-checks label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #566274;
+.phone-inquiry-save-notice,
+.phone-inquiry-submit-error {
+  margin-top: 16px;
+  padding: 11px 13px;
+  border-radius: 8px !important;
   font-size: 12px;
 }
 
-html body .phone-inquiry-entry-app .phone-inquiry-checks input {
-  width: 16px !important;
-  height: 16px !important;
-  flex: 0 0 16px;
+.phone-inquiry-save-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #b9dfd1;
+  background: #f0faf6;
+  color: #2e6753;
+}
+
+.phone-inquiry-save-notice a {
+  color: #315dc5;
+  font-weight: 700;
+}
+
+.phone-inquiry-submit-error {
+  border: 1px solid #ecc6c2;
+  background: #fff4f2;
+  color: #9f4038;
 }
 
 .phone-inquiry-form-actions {
@@ -240,115 +429,43 @@ html body .phone-inquiry-entry-app .phone-inquiry-checks input {
   box-shadow: 0 7px 16px rgb(71 91 185 / 20%) !important;
 }
 
-.phone-inquiry-recent-card {
+.phone-inquiry-button--primary:disabled {
+  cursor: not-allowed;
+  border-color: #aeb7c8 !important;
+  background: #aeb7c8 !important;
+  box-shadow: none !important;
+}
+
+.phone-inquiry-guide-card {
   position: sticky;
   top: 0;
   overflow: hidden;
-}
-
-.phone-inquiry-recent-card > header {
-  align-items: center;
   padding: 18px;
 }
 
-.phone-inquiry-recent-card > header b {
-  display: grid;
-  min-width: 28px;
-  height: 28px;
-  place-items: center;
-  border-radius: 50% !important;
-  background: #263142;
-  color: #fff;
-  font-size: 11px;
-}
-
-.phone-inquiry-local-note {
-  margin: 0;
-  padding: 11px 18px;
-  border-bottom: 1px solid #edf0f4;
-  background: #f8f9fb;
-  color: #758195;
-  font-size: 10px;
-  line-height: 1.45;
-}
-
-.phone-inquiry-recent-list {
-  max-height: calc(100vh - 260px);
-  overflow-y: auto;
-}
-
-.phone-inquiry-recent-list article {
-  display: grid;
-  gap: 5px;
-  padding: 15px 18px;
+.phone-inquiry-guide-card header {
+  padding-bottom: 14px;
   border-bottom: 1px solid #edf0f4;
 }
 
-.phone-inquiry-recent-list article > div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.phone-inquiry-recent-list time,
-.phone-inquiry-recent-list small {
-  color: #8490a1;
-  font-size: 10px;
-}
-
-.phone-inquiry-recent-list h3 {
-  margin: 0;
-  color: #303947;
-  font-size: 13px;
-}
-
-.phone-inquiry-recent-list strong {
-  color: #536073;
-  font-size: 11px;
-}
-
-.phone-inquiry-recent-list article p {
-  display: -webkit-box;
-  margin: 1px 0 0;
-  overflow: hidden;
-  color: #657184;
-  font-size: 11px;
-  line-height: 1.45;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.phone-inquiry-urgency-badge {
-  display: inline-grid;
-  min-width: 38px;
-  height: 20px;
-  place-items: center;
-  border-radius: 999px !important;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.phone-inquiry-urgency-badge--general {
-  background: #eef2f6;
-  color: #526071;
-}
-
-.phone-inquiry-urgency-badge--caution {
-  background: #fff4da;
-  color: #9b6716;
-}
-
-.phone-inquiry-urgency-badge--urgent {
-  background: #ffebe9;
-  color: #b64237;
-}
-
-.phone-inquiry-recent-empty {
-  margin: 0;
-  padding: 44px 18px;
-  color: #8792a2;
+.phone-inquiry-guide-card ol {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0;
+  padding-left: 20px;
+  color: #596577;
   font-size: 12px;
-  text-align: center;
+  line-height: 1.55;
+}
+
+.phone-inquiry-guide-card p {
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px !important;
+  background: #f5f7fa;
+  color: #6e7a8c;
+  font-size: 10px;
+  line-height: 1.55;
 }
 
 @media (max-width: 1050px) {
@@ -356,19 +473,22 @@ html body .phone-inquiry-entry-app .phone-inquiry-checks input {
     grid-template-columns: 1fr;
   }
 
-  .phone-inquiry-recent-card {
+  .phone-inquiry-guide-card {
     position: static;
   }
 }
 
 @media (max-width: 700px) {
-  .phone-inquiry-form-grid {
+  .phone-inquiry-selected-card,
+  .phone-inquiry-selected-card dl,
+  .phone-inquiry-details,
+  .phone-inquiry-candidate-panel > button[role="option"] {
     grid-template-columns: 1fr;
   }
 
   .phone-inquiry-field--wide,
-  .phone-inquiry-urgency,
-  .phone-inquiry-checks {
+  .phone-inquiry-priority,
+  .phone-inquiry-details > legend {
     grid-column: 1;
   }
 }

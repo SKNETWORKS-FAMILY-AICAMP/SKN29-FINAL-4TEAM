@@ -1,17 +1,76 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "../../src/app/providers/AuthProvider";
 import { AppRoutes } from "../../src/app/router/AppRouter";
 
 const CONSULTANT_USER = {
-  id: "STAFF-PHONE-TEST",
+  id: "00000000-0000-4000-8000-000000000102",
   displayName: "전화 상담원",
   roleCode: "CONSULTANT" as const,
   isActive: true,
 };
+
+const CANDIDATE = {
+  customer_id: "00000000-0000-4000-8000-000000000001",
+  customer_display_name: "합성 전화 고객 1",
+  phone_masked: "010-****-0001",
+  subscription_id: "00000000-0000-4000-8000-000000000002",
+  subscription_status: "ACTIVE",
+  management_type_code: "VISIT_CARE",
+  product_id: "00000000-0000-4000-8000-000000000003",
+  product_model_code: "WPUJAC104DWH",
+  product_name: "초소형 직수 정수기",
+} as const;
+
+const CREATED_INQUIRY_ID = "00000000-0000-4000-8000-000000000010";
+
+function apiResponse(data: unknown, status = 200) {
+  return new Response(
+    JSON.stringify({
+      success: status < 400,
+      data: status < 400 ? data : null,
+      error:
+        status < 400
+          ? null
+          : {
+              code: status === 404 ? "NOT_FOUND" : "API_ERROR",
+              message: status === 404 ? "구독을 찾을 수 없습니다." : "요청 실패",
+              details: {},
+            },
+      metadata: { correlation_id: `corr-${status}` },
+    }),
+    {
+      status,
+      headers: { "Content-Type": "application/json" },
+    },
+  );
+}
+
+function createSuccessfulFetchMock() {
+  return vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.endsWith("/consultant/customer-subscriptions/search")) {
+      return apiResponse({ items: [CANDIDATE], returned_count: 1 });
+    }
+    if (url.endsWith("/consultant/phone-inquiries")) {
+      return apiResponse(
+        {
+          inquiry_id: CREATED_INQUIRY_ID,
+          inquiry_code: "INQ-20260812-0001",
+          status_code: "CONSULTATION_REQUIRED",
+          state_version: 1,
+          idempotent_replay: false,
+          allowed_actions: [],
+        },
+        201,
+      );
+    }
+    throw new Error(`예상하지 못한 요청: ${url}`);
+  });
+}
 
 function renderPage() {
   return render(
@@ -23,8 +82,40 @@ function renderPage() {
   );
 }
 
+async function searchAndSelectCandidate(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByRole("combobox", { name: "고객명 또는 연락처 *" }), "0001");
+  const option = await screen.findByRole("option", { name: /합성 전화 고객 1/ });
+  expect(option).toHaveTextContent("010-****-0001");
+  expect(option).not.toHaveTextContent("010-1234-0001");
+  await user.click(option);
+}
+
+beforeEach(() => {
+  const values = new Map<string, string>();
+  const storage: Storage = {
+    get length() {
+      return values.size;
+    },
+    clear: () => values.clear(),
+    getItem: (key) => values.get(key) ?? null,
+    key: (index) => Array.from(values.keys())[index] ?? null,
+    removeItem: (key) => values.delete(key),
+    setItem: (key, value) => values.set(key, value),
+  };
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: storage,
+  });
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 describe("PhoneInquiryCreatePage", () => {
-  it("전화 문의 내용을 직접 입력해 최근 기록에 추가한다", async () => {
+  it("이름·연락처 검색을 JSON Body로 보내고 활성 구독 후보를 선택한다", async () => {
+    const fetchMock = createSuccessfulFetchMock();
+    vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();
     renderPage();
 
@@ -32,32 +123,81 @@ describe("PhoneInquiryCreatePage", () => {
       "aria-selected",
       "true",
     );
+    expect(screen.getByRole("button", { name: "전화 문의 등록" })).toBeDisabled();
 
-    await user.type(screen.getByLabelText("고객명 *"), "김전화");
-    await user.type(screen.getByLabelText("연락처 *"), "010-1234-5678");
-    await user.selectOptions(
-      screen.getByLabelText("문의 유형 *"),
-      "누수·안전 문의",
+    await searchAndSelectCandidate(user);
+
+    const selected = screen.getByRole("region", { name: "선택한 고객과 구독" });
+    expect(within(selected).getByText("합성 전화 고객 1")).toBeInTheDocument();
+    expect(within(selected).getByText("초소형 직수 정수기")).toBeInTheDocument();
+
+    const [searchUrl, searchOptions] = fetchMock.mock.calls[0];
+    expect(String(searchUrl)).toBe(
+      "/api/v1/consultant/customer-subscriptions/search",
     );
+    expect(searchOptions?.method).toBe("POST");
+    expect(JSON.parse(String(searchOptions?.body))).toEqual({ query: "0001", limit: 10 });
+    expect(new Headers(searchOptions?.headers).get("X-Correlation-ID")).toBeTruthy();
+  });
+
+  it("선택한 subscription_id와 계약 필드만 전송하고 생성 문의로 연결한다", async () => {
+    const fetchMock = createSuccessfulFetchMock();
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+    renderPage();
+    await searchAndSelectCandidate(user);
+
+    await user.selectOptions(screen.getByLabelText("대표 증상 *"), "LEAK");
+    await user.click(screen.getByLabelText("높음"));
     await user.type(
-      screen.getByLabelText("문의 내용 *"),
-      "정수기 아래에서 물이 새어 안전 확인을 요청했습니다.",
+      screen.getByLabelText(/문의 내용/),
+      "전화로 접수한 누수 문의입니다.",
     );
-    await user.click(
-      screen.getByLabelText("고객에게 개인정보 수집·이용 안내를 완료했습니다. *"),
-    );
-    await user.click(screen.getByRole("button", { name: "전화 문의 저장" }));
+    await user.click(screen.getByRole("button", { name: "전화 문의 등록" }));
 
-    expect(await screen.findByRole("status")).toHaveTextContent(
-      "김전화 고객의 전화 문의가 임시 저장되었습니다.",
+    const status = await screen.findByRole("status");
+    expect(status).toHaveTextContent("INQ-20260812-0001");
+    expect(screen.getByRole("link", { name: "상담 기록 계속" })).toHaveAttribute(
+      "href",
+      `/consultant/inquiries/${CREATED_INQUIRY_ID}`,
     );
-    const recentRecords = screen.getByRole("complementary", {
-      name: "최근 전화 문의 접수 내역",
+
+    const [, registerOptions] = fetchMock.mock.calls[1];
+    expect(JSON.parse(String(registerOptions?.body))).toEqual({
+      subscription_id: CANDIDATE.subscription_id,
+      raw_text: "전화로 접수한 누수 문의입니다.",
+      representative_symptom_code: "LEAK",
+      priority_code: "HIGH",
     });
-    expect(
-      within(recentRecords).getByRole("heading", { name: "김전화" }),
-    ).toBeInTheDocument();
-    expect(within(recentRecords).getByText("010-1234-5678")).toBeInTheDocument();
-    expect(within(recentRecords).getByText("누수·안전 문의")).toBeInTheDocument();
+    const headers = new Headers(registerOptions?.headers);
+    expect(headers.get("X-Correlation-ID")).toBeTruthy();
+    expect(headers.get("Idempotency-Key")).toBeTruthy();
+    expect(window.localStorage.getItem("waterbridge.phone-inquiry-records.v1")).toBeNull();
+  });
+
+  it("등록 404에서는 입력을 유지하고 무효가 된 고객 선택만 초기화한다", async () => {
+    const fetchMock = createSuccessfulFetchMock();
+    fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("/consultant/customer-subscriptions/search")) {
+        return apiResponse({ items: [CANDIDATE], returned_count: 1 });
+      }
+      return apiResponse(null, 404);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+    renderPage();
+    await searchAndSelectCandidate(user);
+
+    await user.selectOptions(screen.getByLabelText("대표 증상 *"), "LEAK");
+    await user.type(screen.getByLabelText(/문의 내용/), "선택 무효 확인용 문의");
+    await user.click(screen.getByRole("button", { name: "전화 문의 등록" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "선택한 구독이 더 이상 유효하지 않습니다",
+    );
+    expect(screen.queryByRole("region", { name: "선택한 고객과 구독" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/문의 내용/)).toHaveValue("선택 무효 확인용 문의");
+    expect(screen.getByRole("button", { name: "전화 문의 등록" })).toBeDisabled();
   });
 });

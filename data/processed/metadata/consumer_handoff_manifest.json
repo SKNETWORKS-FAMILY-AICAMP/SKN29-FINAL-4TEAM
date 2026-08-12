@@ -438,8 +438,8 @@
           "path": "processed/validation/latest_qa_summary.json",
           "role": "SUMMARY",
           "records": 1,
-          "size_bytes": 7046,
-          "sha256": "D23783E4B1949411E15FE452248E17CAB25CCEE789476DD8AC85E5AB5E0F590C"
+          "size_bytes": 7060,
+          "sha256": "33DAFB422040A03731849E6097A533F77F35037A1424E8A37A8A5E81A3937B08"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",

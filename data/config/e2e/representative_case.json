@@ -76,7 +76,7 @@
       ]
     },
     {
-      "path": "docs/planning/md/화면설계서.md",
+      "path": "docs/planning/md/화면설계서_260812.md",
       "heading": "# 3. 시연 시나리오와 근거 매핑",
       "required_tokens": [
         "SYN-JAC104-002",
@@ -87,7 +87,7 @@
       ]
     },
     {
-      "path": "docs/planning/md/화면설계서.md",
+      "path": "docs/planning/md/화면설계서_260812.md",
       "heading": "## 3-7. 대표 E2E 시연 시나리오",
       "required_tokens": [
         "SYN-JAC104-002",
