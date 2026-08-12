@@ -2,6 +2,12 @@
   "profile_id": "full_corpus_baseline_v1",
   "run_status": "DRAFT_BASELINE_COMPLETE",
   "metrics_publishable_as_official": false,
+  "evaluation_contract": {
+    "version": "d01_evidence_policy_v1",
+    "all_hit_and_mrr": "ALL_UNIQUE_EVIDENCE_UNIT_IDS_REQUIRED",
+    "all_ndcg_at_5": "EXCLUDED_PENDING_DEFINITION",
+    "none_metric": "RETRIEVAL_EMPTY_RESULT_DIAGNOSTIC_D03_GATE_PENDING"
+  },
   "groups": [
     {
       "corpus_variant": "IAC425_ONLY",
@@ -14,8 +20,12 @@
       "mean_hit_at_5": 0.0,
       "mean_mrr": 0.0,
       "mean_ndcg_at_5": 0.0,
+      "ndcg_at_5_evaluated_case_count": 24,
+      "ndcg_at_5_excluded_all_case_count": 3,
       "wrong_product_hit_count": 0,
-      "no_evidence_accuracy": 1.0
+      "no_evidence_empty_result_rate": 1.0,
+      "no_evidence_accuracy": 1.0,
+      "no_evidence_metric_status": "RETRIEVAL_DIAGNOSTIC_D03_GATE_PENDING"
     },
     {
       "corpus_variant": "IAC425_ONLY",
@@ -28,8 +38,12 @@
       "mean_hit_at_5": 0.0,
       "mean_mrr": 0.0,
       "mean_ndcg_at_5": 0.0,
+      "ndcg_at_5_evaluated_case_count": 24,
+      "ndcg_at_5_excluded_all_case_count": 3,
       "wrong_product_hit_count": 173,
-      "no_evidence_accuracy": 0.0
+      "no_evidence_empty_result_rate": 0.0,
+      "no_evidence_accuracy": 0.0,
+      "no_evidence_metric_status": "RETRIEVAL_DIAGNOSTIC_D03_GATE_PENDING"
     },
     {
       "corpus_variant": "JAC104_IAC425_COMBINED",
@@ -37,13 +51,17 @@
       "case_count": 35,
       "positive_case_count": 27,
       "no_evidence_case_count": 8,
-      "mean_hit_at_1": 0.62963,
-      "mean_hit_at_3": 0.888889,
-      "mean_hit_at_5": 0.888889,
-      "mean_mrr": 0.753086,
-      "mean_ndcg_at_5": 0.789572,
+      "mean_hit_at_1": 0.592593,
+      "mean_hit_at_3": 0.925926,
+      "mean_hit_at_5": 0.925926,
+      "mean_mrr": 0.746914,
+      "mean_ndcg_at_5": 0.803566,
+      "ndcg_at_5_evaluated_case_count": 24,
+      "ndcg_at_5_excluded_all_case_count": 3,
       "wrong_product_hit_count": 0,
-      "no_evidence_accuracy": 0.25
+      "no_evidence_empty_result_rate": 0.25,
+      "no_evidence_accuracy": 0.25,
+      "no_evidence_metric_status": "RETRIEVAL_DIAGNOSTIC_D03_GATE_PENDING"
     },
     {
       "corpus_variant": "JAC104_IAC425_COMBINED",
@@ -52,12 +70,16 @@
       "positive_case_count": 27,
       "no_evidence_case_count": 8,
       "mean_hit_at_1": 0.444444,
-      "mean_hit_at_3": 0.851852,
+      "mean_hit_at_3": 0.814815,
       "mean_hit_at_5": 0.851852,
-      "mean_mrr": 0.617284,
-      "mean_ndcg_at_5": 0.672443,
+      "mean_mrr": 0.614198,
+      "mean_ndcg_at_5": 0.714777,
+      "ndcg_at_5_evaluated_case_count": 24,
+      "ndcg_at_5_excluded_all_case_count": 3,
       "wrong_product_hit_count": 89,
-      "no_evidence_accuracy": 0.0
+      "no_evidence_empty_result_rate": 0.0,
+      "no_evidence_accuracy": 0.0,
+      "no_evidence_metric_status": "RETRIEVAL_DIAGNOSTIC_D03_GATE_PENDING"
     },
     {
       "corpus_variant": "JAC104_ONLY",
@@ -65,13 +87,17 @@
       "case_count": 35,
       "positive_case_count": 27,
       "no_evidence_case_count": 8,
-      "mean_hit_at_1": 0.62963,
-      "mean_hit_at_3": 0.888889,
-      "mean_hit_at_5": 0.888889,
-      "mean_mrr": 0.753086,
-      "mean_ndcg_at_5": 0.789572,
+      "mean_hit_at_1": 0.592593,
+      "mean_hit_at_3": 0.925926,
+      "mean_hit_at_5": 0.925926,
+      "mean_mrr": 0.746914,
+      "mean_ndcg_at_5": 0.803566,
+      "ndcg_at_5_evaluated_case_count": 24,
+      "ndcg_at_5_excluded_all_case_count": 3,
       "wrong_product_hit_count": 0,
-      "no_evidence_accuracy": 0.25
+      "no_evidence_empty_result_rate": 0.25,
+      "no_evidence_accuracy": 0.25,
+      "no_evidence_metric_status": "RETRIEVAL_DIAGNOSTIC_D03_GATE_PENDING"
     },
     {
       "corpus_variant": "JAC104_ONLY",
@@ -79,13 +105,17 @@
       "case_count": 35,
       "positive_case_count": 27,
       "no_evidence_case_count": 8,
-      "mean_hit_at_1": 0.62963,
-      "mean_hit_at_3": 0.888889,
-      "mean_hit_at_5": 0.888889,
-      "mean_mrr": 0.753086,
-      "mean_ndcg_at_5": 0.789572,
+      "mean_hit_at_1": 0.592593,
+      "mean_hit_at_3": 0.925926,
+      "mean_hit_at_5": 0.925926,
+      "mean_mrr": 0.746914,
+      "mean_ndcg_at_5": 0.803566,
+      "ndcg_at_5_evaluated_case_count": 24,
+      "ndcg_at_5_excluded_all_case_count": 3,
       "wrong_product_hit_count": 5,
-      "no_evidence_accuracy": 0.125
+      "no_evidence_empty_result_rate": 0.125,
+      "no_evidence_accuracy": 0.125,
+      "no_evidence_metric_status": "RETRIEVAL_DIAGNOSTIC_D03_GATE_PENDING"
     }
   ],
   "publication_limits": [

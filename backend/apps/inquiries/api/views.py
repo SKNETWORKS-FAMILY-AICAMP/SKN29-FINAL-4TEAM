@@ -22,7 +22,11 @@ from apps.inquiries.api.serializers import (
     SubmitSymptomResponseSerializer,
     SymptomSubmissionSerializer,
 )
-from apps.inquiries.permissions import IsConsultant, IsCustomer
+from apps.inquiries.permissions import (
+    CanAttemptInquiryCancel,
+    IsConsultant,
+    IsCustomer,
+)
 from apps.inquiries.services.consultant_inquiry_service import (
     ConsultantInquiryService,
 )
@@ -214,25 +218,26 @@ class CustomerInquiryQuestionsView(APIView):
 
 
 class CancelInquiryView(APIView):
-    """Execute CANCEL_INQUIRY for the authenticated inquiry owner."""
+    """Execute CANCEL_INQUIRY within the approved actor object scope."""
 
-    permission_classes = [IsAuthenticated, IsCustomer]
+    permission_classes = [IsAuthenticated, CanAttemptInquiryCancel]
 
     def post(self, request, inquiry_id: UUID):
         idempotency_key = require_idempotency_key(request)
         serializer = CancelInquirySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        outcome = InquiryService.cancel(
-            actor=request.user,
-            inquiry_public_id=inquiry_id,
-            validated_data=serializer.validated_data,
-            idempotency_key=idempotency_key,
-            correlation_id=UUID(request.correlation_id),
-        )
-        response_data = CancelInquiryResponseSerializer(
-            outcome.data
-        ).data
+        with transaction.atomic():
+            outcome = InquiryService.cancel(
+                actor=request.user,
+                inquiry_public_id=inquiry_id,
+                validated_data=serializer.validated_data,
+                idempotency_key=idempotency_key,
+                correlation_id=UUID(request.correlation_id),
+            )
+            response_data = CancelInquiryResponseSerializer(
+                outcome.data
+            ).data
         return success_response(
             response_data,
             status_code=outcome.status_code,

@@ -3,6 +3,7 @@
 from rest_framework import serializers
 
 from apps.inquiries.models import Inquiry
+from apps.inquiries.api.serializers.inquiry_response import AllowedActionSerializer
 
 
 class CancelInquirySerializer(serializers.Serializer):
@@ -26,3 +27,4 @@ class CancelInquiryResponseSerializer(serializers.Serializer):
     )
     state_version = serializers.IntegerField(min_value=2)
     idempotent_replay = serializers.BooleanField()
+    allowed_actions = AllowedActionSerializer(many=True)

@@ -7,11 +7,22 @@ from typing import Any
 from uuid import UUID
 
 from django.db import IntegrityError, transaction
-from rest_framework.exceptions import NotFound
+from django.utils import timezone
+from rest_framework.exceptions import NotFound, PermissionDenied
 
+from apps.audit.models import AIRun
 from apps.inquiries.models import Inquiry
 from apps.inquiries.repositories.inquiry_repository import InquiryRepository
-from apps.workflow.engine.allowed_action_resolver import AllowedActionResolver
+from apps.workflow.domain.workflow_snapshot import WorkflowSnapshot
+from apps.workflow.engine.allowed_action_resolver import (
+    AllowedActionContext,
+    AllowedActionResolver,
+)
+from apps.workflow.engine.guard_evaluator import GuardContext, GuardEvaluator
+from apps.workflow.engine.state_machine import (
+    InvalidStateTransition,
+    StateMachine,
+)
 from apps.workflow.repositories.workflow_repository import (
     WorkflowRepository,
 )
@@ -20,11 +31,12 @@ from apps.workflow.services.transition_history_service import (
     TransitionHistoryService,
 )
 from common.exceptions.business import BusinessError
-from common.exceptions.error_codes import STATE_CONFLICT
+from common.exceptions.error_codes import INTERNAL_ERROR, STATE_CONFLICT
 
 
 START_INQUIRY_OPERATION_ID = "startInquiry"
 CANCEL_INQUIRY_OPERATION_ID = "cancelInquiry"
+CANCEL_INQUIRY_EVENT_CODE = "CANCEL_INQUIRY"
 
 
 @dataclass(frozen=True)
@@ -148,8 +160,12 @@ class InquiryService:
             )
 
         allowed_actions = AllowedActionResolver.resolve(
-            state_code=Inquiry.Status.DRAFT,
-            role_code="CUSTOMER",
+            context=AllowedActionContext.from_models(
+                inquiry=inquiry,
+                actor=actor,
+                consultation=None,
+                visit=None,
+            ),
         )
         data = {
             "inquiry_id": str(inquiry.public_id),
@@ -200,23 +216,7 @@ class InquiryService:
             normalized_request
         )
 
-        existing = WorkflowRepository.lock_idempotency_scope(
-            actor=actor,
-            operation_id=CANCEL_INQUIRY_OPERATION_ID,
-            idempotency_key=idempotency_key,
-        )
-        if existing is not None:
-            status_code, data = IdempotencyService.replay_or_conflict(
-                existing,
-                request_hash=request_hash,
-                replay_field="idempotent_replay",
-            )
-            return CancelInquiryOutcome(
-                status_code=status_code,
-                data=data,
-            )
-
-        inquiry = InquiryRepository.lock_owned_inquiry(
+        inquiry = InquiryRepository.lock_cancellable_inquiry(
             inquiry_public_id=inquiry_public_id,
             actor=actor,
         )
@@ -241,11 +241,50 @@ class InquiryService:
                 data=data,
             )
 
-        if (
-            inquiry.status_code != Inquiry.Status.DRAFT
-            or inquiry.state_version != validated_data["state_version"]
-        ):
-            cls._raise_state_conflict(inquiry, actor=actor)
+        snapshot = WorkflowSnapshot(
+            inquiry_state=inquiry.status_code,
+            state_version=inquiry.state_version,
+            visit_status=InquiryRepository.latest_visit_status(inquiry),
+        )
+        try:
+            transition = StateMachine().resolve(
+                snapshot=snapshot,
+                event_code=CANCEL_INQUIRY_EVENT_CODE,
+            )
+        except InvalidStateTransition as exc:
+            if exc.reason in {
+                "TERMINAL_STATE",
+                "UNLISTED_TRANSITION",
+                "VISIT_STATE_MISMATCH",
+            }:
+                cls._raise_state_conflict(inquiry, actor=actor)
+            raise BusinessError(
+                INTERNAL_ERROR,
+                "The cancellation contract could not be evaluated.",
+                details={},
+                status_code=500,
+            ) from exc
+
+        guard_result = GuardEvaluator().evaluate(
+            transition=transition,
+            snapshot=snapshot,
+            context=GuardContext(
+                actor_role=actor.role_code,
+                is_authenticated=bool(actor.is_authenticated),
+                correlation_id=str(correlation_id),
+                idempotency_key=idempotency_key,
+                requested_state_version=validated_data["state_version"],
+                domain_results={
+                    "G-CANCEL-ACTOR-AUTHORIZED": True,
+                    "G-CANCELLATION-REASON": True,
+                },
+            ),
+        )
+        cls._raise_cancel_guard_failure(
+            inquiry=inquiry,
+            actor=actor,
+            guard_result=guard_result,
+        )
 
         try:
             with transaction.atomic():
@@ -277,20 +316,27 @@ class InquiryService:
 
         InquiryRepository.mark_cancelled(
             inquiry,
+            status_code=transition.inquiry_state_after,
+            state_version=transition.state_version_after,
             reason_code=validated_data["reason_code"],
             reason_detail=validated_data.get("reason_detail"),
         )
+        cls._cancel_active_ai_runs(inquiry)
         TransitionHistoryService.record_cancel_inquiry(
             inquiry=inquiry,
+            transition=transition,
             actor=actor,
             correlation_id=correlation_id,
             idempotency_key=idempotency_key,
+            reason_code=validated_data["reason_code"],
+            reason_detail=validated_data.get("reason_detail"),
         )
         data = {
             "inquiry_id": str(inquiry.public_id),
             "state": inquiry.status_code,
             "state_version": inquiry.state_version,
             "idempotent_replay": False,
+            "allowed_actions": cls._allowed_actions(inquiry, actor=actor),
         }
         WorkflowRepository.complete_idempotency_record(
             idempotency_record,
@@ -302,10 +348,7 @@ class InquiryService:
 
     @staticmethod
     def _raise_state_conflict(inquiry: Inquiry, *, actor: Any) -> None:
-        allowed_actions = AllowedActionResolver.resolve(
-            state_code=inquiry.status_code,
-            role_code=actor.role_code,
-        )
+        allowed_actions = InquiryService._allowed_actions(inquiry, actor=actor)
         raise BusinessError(
             STATE_CONFLICT,
             "다른 사용자가 문의 상태를 먼저 변경했습니다.",
@@ -317,4 +360,72 @@ class InquiryService:
                 ],
             },
             status_code=409,
+        )
+
+    @staticmethod
+    def _allowed_actions(inquiry: Inquiry, *, actor: Any) -> list[dict]:
+        return AllowedActionResolver.resolve(
+            context=AllowedActionContext.from_models(
+                inquiry=inquiry,
+                actor=actor,
+            )
+        )
+
+    @classmethod
+    def _raise_cancel_guard_failure(
+        cls,
+        *,
+        inquiry: Inquiry,
+        actor: Any,
+        guard_result: Any,
+    ) -> None:
+        if guard_result.allowed:
+            return
+        failure = guard_result.failure
+        if failure is None:
+            raise BusinessError(
+                INTERNAL_ERROR,
+                "The cancellation contract could not be evaluated.",
+                details={},
+                status_code=500,
+            )
+        if failure.guard_id == "G-STATE-VERSION":
+            cls._raise_state_conflict(inquiry, actor=actor)
+        if failure.http_status == 404:
+            raise NotFound()
+        if failure.http_status == 403:
+            raise PermissionDenied()
+        if failure.http_status == 422:
+            raise BusinessError(
+                failure.error_code,
+                failure.message,
+                details={"reason_code": [failure.message]},
+                status_code=422,
+            )
+        raise BusinessError(
+            INTERNAL_ERROR,
+            "The cancellation contract could not be evaluated.",
+            details={},
+            status_code=500,
+        )
+
+    @staticmethod
+    def _cancel_active_ai_runs(inquiry: Inquiry) -> int:
+        """Logically cancel active Backend AI runs inside the inquiry tx."""
+
+        runs = AIRun.objects.select_for_update().filter(
+            inquiry=inquiry,
+            status_code__in={
+                AIRun.Status.QUEUED,
+                AIRun.Status.RUNNING,
+                AIRun.Status.RETRYING,
+            },
+        )
+        completed_at = timezone.now()
+        return runs.update(
+            status_code=AIRun.Status.CANCELLED,
+            completed_at=completed_at,
+            error_code="CANCELLED_BY_INQUIRY",
+            error_message=None,
+            updated_at=completed_at,
         )

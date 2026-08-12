@@ -4,6 +4,7 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
@@ -139,7 +140,6 @@ def test_text_and_choice_answers_are_appended_and_versioned_once():
     assert data["idempotent_replay"] is False
     assert data["resource"] is None
     assert [item["code"] for item in data["allowed_actions"]] == [
-        "SUBMIT_ANSWERS",
         "CANCEL_INQUIRY",
     ]
 
@@ -234,6 +234,34 @@ def test_same_key_replays_without_duplicate_answers_or_history(
     assert answer_history(inquiry).count() == 1
     assert answer_idempotency(owner).count() == 1
     analyze.assert_called_once()
+
+
+def test_answer_replay_requires_current_customer_object_scope():
+    owner, client, inquiry = prepare_questionnaire(112)
+    question = create_question(inquiry, 1)
+    body = {
+        "state_version": 2,
+        "answers": [
+            {
+                "question_id": str(question.public_id),
+                "answer_text": "Today.",
+            }
+        ],
+    }
+    key = "t022a-owner-scope-replay"
+
+    first = post_answers(client, inquiry, body, key=key)
+    assert first.status_code == 200
+
+    owner.customer_profile.deleted_at = timezone.now()
+    owner.customer_profile.save(update_fields=["deleted_at", "updated_at"])
+    replay = post_answers(client, inquiry, body, key=key)
+
+    assert replay.status_code == 404
+    assert replay.json()["error"]["code"] == "RESOURCE_NOT_FOUND"
+    assert FollowUpAnswer.objects.filter(question=question).count() == 1
+    assert answer_history(inquiry).count() == 1
+    assert answer_idempotency(owner).count() == 1
 
 
 @pytest.mark.parametrize(

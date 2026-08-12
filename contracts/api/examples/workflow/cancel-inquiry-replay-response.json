@@ -4,7 +4,8 @@
     "inquiry_id": "30000000-0000-4000-8000-000000000001",
     "state": "CANCELLED",
     "state_version": 2,
-    "idempotent_replay": true
+    "idempotent_replay": true,
+    "allowed_actions": []
   },
   "error": null,
   "metadata": {

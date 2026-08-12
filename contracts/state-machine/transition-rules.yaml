@@ -605,6 +605,7 @@ transitions:
     record_business_event: true
   guard_refs:
   - G-ACTOR-CONSULTANT
+  - G-ASSIGNED-CONSULTANT
   - G-STATE-VERSION
   - G-IDEMPOTENCY-KEY
   - G-VISIT-SCHEDULE-PAYLOAD-VALID

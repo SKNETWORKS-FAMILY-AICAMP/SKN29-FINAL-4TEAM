@@ -76,6 +76,18 @@ class GoldEvaluationDatasetTests(unittest.TestCase):
             if row["expected_no_evidence"]
         ))
 
+    def test_d02_leak_cases_use_visually_verified_page_lineage(self) -> None:
+        rows_by_id = {row["case_id"]: row for row in self.rows}
+        for case_id in ("RAGV2-GOLD-0004", "RAGV2-GOLD-0027"):
+            case = rows_by_id[case_id]
+            self.assertEqual(case["dataset_version"], "1.0.0-draft.2")
+            self.assertEqual(case["evidence_match_policy"], "ANY")
+            self.assertEqual(case["expected_evidence"][0]["page_refs"], [5, 7, 38])
+            self.assertEqual(
+                case["expected_evidence"][0]["evidence_unit_id"],
+                "EVD-WPUJAC104DWH-LEAK-001",
+            )
+
     def test_builder_is_byte_deterministic_and_manifest_hash_matches(self) -> None:
         self.assertEqual(canonical_file_bytes(self.dataset_path), _jsonl_bytes(build_cases()))
         manifest = json.loads(self.manifest_path.read_text(encoding="utf-8"))

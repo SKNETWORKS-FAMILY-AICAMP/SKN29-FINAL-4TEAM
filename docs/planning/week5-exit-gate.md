@@ -2,7 +2,7 @@
 
 > 기준일: **2026-08-10 KST**
 > WBS 기준: `docs/planning/md/WBS.md` v2.1
-> 현행 감사 Commit: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
+> 현행 감사 Commit: `main@4ac79e6227ce271252054b1e986d6ee24eefce4a`
 > 현재 판정: **WBS_WEEK5_HOLD · INTERIM**
 
 ## 1. 판정 원칙
@@ -14,7 +14,7 @@
 | Gate | 판정 기준 | 상태 | 증거 | 담당 |
 |---|---|---|---|---|
 | `W5-G01` 계획 기준선 | Scope·Backlog·Dependency·Owner·Exit 정합성 | `PM_BASELINE_CANDIDATE` | 본 Planning 문서 세트 | 윤승혁 |
-| `W5-G02` 계약 | Validator·Contract Test Exit 0 | `PASS` | `docs/testing/week5-contract-baseline-result.md` | 윤승혁·최지용 |
+| `W5-G02` 계약 | Validator·Contract Test Exit 0 | `PASS` | 후보 `83f7373` 원격 Contract CI PASS, 현재 main까지 계약 Diff 없음 | 윤승혁·최지용 |
 | `W5-G03` Data·Seed | 대표 입력·Hash·Seed·Crosswalk 검증 | `NOT_RUN` | Data QA 결과 | 김은진 |
 | `W5-G04` AI·Vector 검색 | 실제 LLM·팀 DB 검색·제품·세대 Filter | `HOLD` | 실제 LLM 미구현·팀 pgvector 환경 차단 | 이동윤·김은진 |
 | `W5-G05` AI Runtime·Mapping | 핵심 Agent·상담 요약 최소 Runtime·Schema–State Mapping | `HOLD` | Single RAG·규칙 기반, 실제 Multi-Agent 미구현 | 이동윤·최지용·김은진 |

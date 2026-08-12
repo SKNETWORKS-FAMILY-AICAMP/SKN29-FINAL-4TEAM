@@ -1,5 +1,55 @@
 # Contracts Changelog
 
+## 2026-08-11 — Backend Runtime 12 후속 계약 결정 적용
+
+### Changed
+
+- `submitSymptom` 저장 Transaction은 AI 결과를 포함하지 않으며 성공
+  Commit 이후 `transaction.on_commit` Callback으로 분석을 후속 실행하는
+  경계와 Commit 시점 응답 Snapshot을 OpenAPI에 명시했다.
+- `updateVisitSchedule`에 `TR-INQ-028`, `REVISIT_REQUIRED`,
+  `FOLLOW_UP_REQUIRED`를 포함하고 담당 상담사 Guard를 정합화했다.
+- 고객 본인 Inquiry Snapshot에 Backend 동적 Resolver가 계산한
+  `allowed_actions`를 추가했다. 질문 생성 전·후·답변 후마다 최신 Guard
+  결과를 반환하며 클라이언트 자체 계산은 허용하지 않는다.
+- `CANCEL_INQUIRY`의 `reason_code`와 선택 `reason_detail` 분리 저장은
+  유지하고, 상태 변경 이력의 `change_reason`에는 `CODE | DETAIL` 또는
+  상세가 없을 때 `CODE`를 저장한다.
+
+### Boundary
+
+- 공개 API 경로와 취소 요청·응답 Shape는 변경하지 않는다.
+- 신규 DB Migration과 기존 NULL 취소 이력 Backfill은 수행하지 않는다.
+- 작성자 검증은 독립 PostgreSQL QA와 PM Backend ACK를 대신하지 않는다.
+
+## 2026-08-11 — Backend Runtime 12 소비 정합 수정
+
+### Changed
+
+- `CANCEL_INQUIRY` Runtime을 고객 본인·담당 상담사·명시 권한 운영자와
+  `DRAFT`·`QUESTIONNAIRE_IN_PROGRESS`의 `TR-INQ-004/005`로 확장했다.
+- 취소 성공 응답에 동적 `allowed_actions`를 포함하고 실제 직전 상태와
+  증가된 `state_version`을 전이 이력에 기록한다.
+- `allowed_actions`는 State·Role 후보에서 Crosswalk
+  `RUNTIME_IMPLEMENTED`, Transition Rule, 저장된 Domain Guard를 통과한
+  Action만 반환하며 성공과 stale 409가 같은 Resolver를 사용한다.
+
+### Validation
+
+- State Machine, Crosswalk, OpenAPI, Example, Code Registry Validator PASS
+- Backend 표적 `128 passed / 5 skipped`, 전체 `993 passed / 19 skipped`
+- 격리 PostgreSQL 16.14 Row Lock 5건과 취소 Runtime·계약 25건 PASS
+- Data CI Unit 76건·결정적 Rebuild·Source Hash·생성물 Drift Gate PASS
+
+### Boundary
+
+- `UPDATE_VISIT_SCHEDULE`의 `TR-INQ-028`은 후속 계약 Owner 결정에서
+  동일 Operation 전이로 승인됐으며 위 절에서 적용 범위를 기록한다.
+- 코드 커밋 `e290fe3d43ae5adf2a6ab758cbf2e19922046cd1`은 작성자 검증
+  후보이며 독립 QA와 PM 소비 ACK를 대신하지 않는다.
+- Inquiry Model Source Hash와 파생 Manifest는
+  `5b60fd18ba72ff7272be8621e72710b8cbdaa391`에서 정합화했다.
+
 ## 2026-08-11 — Backend 소비 의미 불일치 확인
 
 ### Audit

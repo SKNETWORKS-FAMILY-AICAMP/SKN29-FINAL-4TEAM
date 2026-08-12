@@ -1,7 +1,7 @@
 # 5주차 Web·Mobile Consumer Integration Gate
 
 > 착수일: **2026-08-11 KST**
-> 기준 Commit: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
+> 기준 Commit: `main@4ac79e6227ce271252054b1e986d6ee24eefce4a`
 > 관련 업무: `윤승혁_5주차_업무_지침서.md` 3.6
 > 현재 판정: **IN_PROGRESS · PRECHECK_HOLD**
 
@@ -12,7 +12,7 @@
 | 영역 | 확인된 증거 | 미충족 조건 | 현재 판정 |
 |---|---|---|---|
 | Web | 상태·`state_version`·`allowed_actions`·Date·403/404/409 소비, Remote 표적 34 Test·Mock 142 Test·Lint·TypeScript·Build PASS 보고 | 보고 Commit의 현재 기준선 포함 확인, 실제 Backend 목록·상세·상담·Visit·Evidence Remote Smoke | `HOLD` |
-| Mobile | DTO·UiState·Action·Date·Error·Remote/Mock 경계, Unit·Connected·APK·실단말 설치 PASS 보고; 구현 Commit은 현재 main 포함 | Guidance·Follow-up·기사 Visit Backend Route와 같은 Commit의 고객·기사 Remote Smoke | `HOLD` |
+| Mobile | DTO·UiState·Action·Date·Error·Remote/Mock 경계, Unit·Connected·APK·실단말 설치 PASS 보고; Mobile 영역은 최초 ACK 이후 Diff 없음 | 고객 Snapshot 동적 `allowed_actions` 후속, Guidance·Follow-up·기사 Visit Route와 같은 Commit의 고객·기사 Remote Smoke | `HOLD` |
 
 3.3 계약 소비 승인과 3.6 실제 Remote 통합 승인은 별도다. 작성자 Test가 통과했더라도 실제 Backend 소비 증거가 없으면 3.6 ACK로 계산하지 않는다.
 
@@ -37,7 +37,7 @@
 
 ## 4. 해제 조건
 
-1. Backend 계약 소비 `CHANGE_REQUEST`가 해소된다.
+1. Backend 후속 계약과 독립 QA가 완료된다.
 2. Web의 현재 기준선 포함 여부와 실제 Remote Smoke가 확인된다.
 3. Mobile에 필요한 Backend Route가 제공되고 고객·기사 Remote Smoke가 통과한다.
 4. Web·Mobile·Backend 결과가 같은 후보 Commit을 가리킨다.

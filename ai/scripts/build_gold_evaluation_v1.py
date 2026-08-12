@@ -12,7 +12,7 @@ from ai.evaluation.file_integrity import file_sha256
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-DATASET_VERSION = "1.0.0-draft.1"
+DATASET_VERSION = "1.0.0-draft.2"
 OUTPUT_DATASET = "ai/evaluation/datasets/gold/rag_gold_v1.jsonl"
 OUTPUT_MANIFEST = "ai/evaluation/datasets/gold/rag_gold_v1_manifest.json"
 SCHEMA_PATH = "ai/evaluation/schemas/gold_evaluation_case_v1.schema.json"
@@ -48,7 +48,7 @@ EVIDENCE: dict[str, dict[str, Any]] = {
     },
     "LEAK": {
         "document_id": JAC_DOCUMENT,
-        "page_refs": [38],
+        "page_refs": [5, 7, 38],
         "section_id": "JAC104-SECTION-TROUBLESHOOTING",
         "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
         "risk": "danger",
@@ -375,7 +375,7 @@ def main() -> None:
         "dataset_id": "RAG-GOLD-V1",
         "dataset_version": DATASET_VERSION,
         "status": "DRAFT_REVIEW_REQUIRED",
-        "generated_at": "2026-08-10T00:00:00+09:00",
+        "generated_at": "2026-08-11T00:00:00+09:00",
         "dataset": {
             "path": OUTPUT_DATASET,
             "records": len(cases),

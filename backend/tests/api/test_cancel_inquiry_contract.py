@@ -168,6 +168,7 @@ def test_cancel_request_and_success_result_are_minimal_and_explicit():
         "state",
         "state_version",
         "idempotent_replay",
+        "allowed_actions",
     }
     assert result_schema["properties"]["inquiry_id"]["format"] == "uuid"
     assert result_schema["properties"]["state"]["const"] == "CANCELLED"
@@ -176,6 +177,11 @@ def test_cancel_request_and_success_result_are_minimal_and_explicit():
         result_schema["properties"]["idempotent_replay"]["type"]
         == "boolean"
     )
+    assert result_schema["properties"]["allowed_actions"] == {
+        "type": "array",
+        "description": "취소 후 동일 동적 Resolver가 계산한 호출 가능한 Action 목록",
+        "items": {"$ref": "./AllowedAction.yaml"},
+    }
     assert success_schema["allOf"][1]["properties"]["data"] == {
         "$ref": (
             "../components/schemas/workflow/"
@@ -198,11 +204,11 @@ def test_cancel_action_matches_read_only_pm_state_machine_contract():
         for item in event_contract["events"]
         if item["code"] == "CANCEL_INQUIRY"
     )
-    transition = next(
-        item
+    transitions = {
+        item["id"]: item
         for item in transition_contract["transitions"]
-        if item["id"] == "TR-INQ-004"
-    )
+        if item["id"] in {"TR-INQ-004", "TR-INQ-005"}
+    }
     draft_customer_actions = action_contract["state_role_actions"][
         "DRAFT"
     ]["CUSTOMER"]
@@ -217,29 +223,34 @@ def test_cancel_action_matches_read_only_pm_state_machine_contract():
         if item["code"] == "CANCELLED"
     )
 
-    assert "CUSTOMER" in event["actor_roles"]
+    assert event["actor_roles"] == ["CUSTOMER", "CONSULTANT", "OPERATOR"]
     assert event["requires_idempotency_key"] is True
     assert event["requires_state_version"] is True
     assert event["external_action"] == {
         "exposed": True,
         "operation_id": "cancelInquiry",
     }
-    assert transition["event"] == "CANCEL_INQUIRY"
-    assert transition["from_inquiry_state"] == "DRAFT"
-    assert transition["to_inquiry_state"] == "CANCELLED"
+    assert set(transitions) == {"TR-INQ-004", "TR-INQ-005"}
     assert {
-        "G-STATE-VERSION",
-        "G-IDEMPOTENCY-KEY",
-        "G-CANCELLATION-REASON",
-    }.issubset(transition["guard_refs"])
+        transition["from_inquiry_state"] for transition in transitions.values()
+    } == {"DRAFT", "QUESTIONNAIRE_IN_PROGRESS"}
+    for transition in transitions.values():
+        assert transition["event"] == "CANCEL_INQUIRY"
+        assert transition["to_inquiry_state"] == "CANCELLED"
+        assert {
+            "G-CANCEL-ACTOR-AUTHORIZED",
+            "G-STATE-VERSION",
+            "G-IDEMPOTENCY-KEY",
+            "G-CANCELLATION-REASON",
+        }.issubset(transition["guard_refs"])
     assert cancel_action["transition_rule_ids"] == ["TR-INQ-004"]
     assert cancelled_state["terminal"] is True
     assert operation["x-state-machine"] == {
         "event": "CANCEL_INQUIRY",
-        "transition_rule": "TR-INQ-004",
-        "from_state": "DRAFT",
+        "transition_rules": ["TR-INQ-004", "TR-INQ-005"],
+        "from_states": ["DRAFT", "QUESTIONNAIRE_IN_PROGRESS"],
         "to_state": "CANCELLED",
-        "actor_role": "CUSTOMER",
+        "actor_roles": ["CUSTOMER", "CONSULTANT", "OPERATOR"],
     }
 
 

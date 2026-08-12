@@ -80,6 +80,7 @@ class WorkflowRepository:
         correlation_id: UUID,
         idempotency_key: str,
         changed_by_type_code: str | None = None,
+        change_reason: str | None = None,
     ) -> TransitionHistory:
         changed_by_type = changed_by_type_code or (
             TransitionHistory.ChangedByType.SYSTEM
@@ -96,6 +97,7 @@ class WorkflowRepository:
             correlation_id=correlation_id,
             idempotency_key=idempotency_key,
             changed_by_type_code=changed_by_type,
+            change_reason=change_reason,
         )
 
     @staticmethod

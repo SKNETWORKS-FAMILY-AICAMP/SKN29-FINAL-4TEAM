@@ -1,9 +1,10 @@
 # WaterCare Backend
 
 Django와 Django REST Framework 기반 업무 백엔드입니다. T-016 공통
-기반과 T-017 OWNER 구현 기준선이 있으며, T-022 문의 생성과 T-023
-문의 취소의 최소 수직 흐름을 실제 Runtime으로 검증합니다. 그 밖의
-API 계약과 PM State 입력은 실제 Runtime 준비도와 분리해 판정합니다.
+기반과 T-017 OWNER 구현 기준선이 있으며, 문의 3·상담 4·방문 5개
+External Action을 Crosswalk `RUNTIME_IMPLEMENTED` 12개로 실행합니다.
+API 계약과 PM State 입력은 실제 Route·Service·실행 테스트 증거와
+분리해 판정합니다.
 
 이 `backend/**`가 현행 Django Runtime 원본입니다. 저장소 루트의
 `WaterCareBackend/**`와 이를 호출하는 구형 BAT 파일은 과거 Android
@@ -59,17 +60,19 @@ T-022의 대표 `START_INQUIRY`는 `POST /api/v1/inquiries`로 구현돼
 
 T-023의 대표 `CANCEL_INQUIRY`는
 `POST /api/v1/inquiries/{inquiry_id}/cancel`로 구현돼 있습니다.
-고객 본인의 `DRAFT` 문의를 `CANCELLED`로 전환하고
-`state_version`을 증가시킵니다. 같은 키·같은 요청은 저장 결과를
-재생하며, 키 재사용 충돌은 `DUPLICATE-EVENT-01`, 상태·버전 충돌은
-`STATE-CONFLICT-01`의 HTTP 409로 반환합니다.
+고객 본인·현재 담당 상담사·`inquiries.cancel_inquiry` 권한 운영자가
+`DRAFT` 또는 `QUESTIONNAIRE_IN_PROGRESS` 문의를 `CANCELLED`로
+전환하며 실제 직전 상태를 이력에 남기고 `state_version`을 증가시킵니다.
+같은 키·같은 요청은 저장 결과를 재생하며, 키 재사용 충돌은
+`DUPLICATE-EVENT-01`, 상태·버전 충돌은 `STATE-CONFLICT-01`의 HTTP
+409로 반환합니다.
 
-PM State 계약의 상태 13·이벤트 30·전이 34·Guard 39·역할 5·외부
-행동 23은 Loader·Validator가 교차검증합니다. 현재 Runtime 완료
-범위는 위 생성·취소 두 수직 흐름뿐이며, 나머지 Action과 범용
-Workflow Engine·Guard는 후속 구현입니다. 상태 계약 원본은
-윤승혁(PM) 주관, `backend/apps/workflow/**` 구현은 최지용
-주관입니다.
+PM State 계약의 상태 13·이벤트 30·전이 34·Guard 39·외부 행동 23은
+Loader·Validator가 교차검증합니다. `allowed_actions`는 State·Role 후보,
+Transition Rule, 저장된 Domain Guard, Crosswalk Runtime 가용성을 모두
+통과한 Action만 반환하며 성공과 stale 409에서 같은 Resolver를
+사용합니다. 상태 계약 원본은 윤승혁(PM) 주관,
+`backend/apps/workflow/**` 구현은 최지용 주관입니다.
 
 사람용 Public API 명세는 `OWNER_CONFIRMED DESIGN BASELINE`이며 41개
 작성·설계 기준선이 확정됐습니다. 기계 계약의 세부 성숙도는

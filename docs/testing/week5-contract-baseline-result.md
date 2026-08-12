@@ -2,11 +2,12 @@
 
 > 실행일: 2026-08-11 14:21 KST
 > 계약 검증 기준: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
-> 판정: **VALIDATOR_PASS · BACKEND_SEMANTIC_CHANGE_REQUEST**
+> 현재 재검증 후보: `main@4ac79e6227ce271252054b1e986d6ee24eefce4a`
+> 판정: **REMOTE_CONTRACT_PASS · CONSUMER_REVALIDATION_REQUIRED**
 
 ## 1. 결론
 
-정적 계약과 Root Contract Test는 모두 통과했다. 그러나 Backend 소비 검토에서 `CANCEL_INQUIRY`와 `allowed_actions`의 Runtime 의미 불일치가 확인됐고 소비자 ACK도 모두 모이지 않았으므로 `TEAM_BASELINE`으로 최종 폐쇄하지 않는다.
+최초 기준의 정적 계약과 Root Contract Test는 모두 통과했다. Backend 의미 불일치 두 건은 `e290fe3`에서 작성자 수정됐고 원격 Contract CI·Data CI도 통과했다. 다만 후속 고객 Snapshot 계약 적용과 현재 후보의 독립 QA·소비자 ACK가 남아 `TEAM_BASELINE`으로 최종 폐쇄하지 않는다.
 
 ## 2. 실행 결과
 
@@ -59,5 +60,15 @@ python -B -m pytest tests/contract -q -p no:cacheprovider
 
 - 정적 Crosswalk 수치 `12/7/0/4`와 Test PASS는 유지되지만, `CANCEL_INQUIRY`의 승인 역할·상태 전체가 Runtime에 구현되지 않았다.
 - `allowed_actions`가 계약의 Visit·Transition·Domain Guard와 Runtime availability를 평가하지 않는다.
-- 이 불일치는 Validator 수치로 발견되지 않는 Runtime 소비 결함이므로 Backend 수정·독립 QA 전까지 Baseline을 `HOLD`한다.
-- PM 결정: `docs/decisions/20260811-backend-contract-consumer-change-request-decision.md`
+- 이 불일치는 Validator 수치로 발견되지 않는 Runtime 소비 결함이었다.
+- 최초 PM 결정: `docs/decisions/Backend Contract 소비 불일치 PM 결정.md`
+
+## 6. Backend 수정 이후 재판정
+
+- Runtime 수정 `e290fe3`과 작성자 후보 `83f7373`은 현재 `main@4ac79e6`에 포함된다.
+- 후보 이후 현재 main까지 Contract·Validator·Contract CI Workflow Diff는 없다.
+- 원격 Contract CI와 Data CI는 작성자 후보에서 PASS했다.
+- 작성자 검증은 취소·Resolver 수정의 기술 후보 증거로 인정한다.
+- `submitSymptom` AI 경계, 재방문 일정 전이, 고객 Snapshot 동적 `allowed_actions` 후속 적용이 필요하다.
+- 기존 QA ACK는 변경 전 `92b0674` 기준이므로 현재 최종 후보에서 재검증한다.
+- PM 후속 결정: `docs/decisions/Backend Runtime12 후속 계약 PM 결정.md`
