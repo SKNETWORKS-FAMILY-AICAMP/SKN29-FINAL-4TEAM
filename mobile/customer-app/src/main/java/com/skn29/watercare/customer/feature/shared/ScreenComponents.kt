@@ -38,10 +38,12 @@ import com.skn29.watercare.core.ui.components.LiquidGlassPanel
 import com.skn29.watercare.core.ui.components.LiquidGlassPill
 import com.skn29.watercare.core.ui.components.LiquidGlassTone
 import com.skn29.watercare.core.ui.components.LiquidGlassToneProvider
+import com.skn29.watercare.core.ui.components.CustomerReferencePalette
+import com.skn29.watercare.core.ui.components.ReferencePearlBackground
 import com.skn29.watercare.core.ui.theme.WaterCaution
 import com.skn29.watercare.core.ui.theme.WaterDanger
 import com.skn29.watercare.core.ui.theme.WaterGeneral
-import com.skn29.watercare.core.ui.theme.WaterGradientBackground
+import com.skn29.watercare.customer.R
 import com.skn29.watercare.core.ui.theme.WaterSubText
 import com.skn29.watercare.core.ui.theme.WaterTokens
 
@@ -68,7 +70,11 @@ private fun WaterCareScreenBody(
     onBack: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    WaterGradientBackground {
+    ReferencePearlBackground(
+        palette = CustomerReferencePalette,
+        backgroundRes = R.drawable.water_splash_customer_r19,
+        imageAlpha = 0.58f,
+    ) {
         Scaffold(
             containerColor = Color.Transparent,
             topBar = {
@@ -92,7 +98,7 @@ private fun WaterCareScreenBody(
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color.Transparent,
-                        scrolledContainerColor = Color.White.copy(alpha = 0.72f),
+                        scrolledContainerColor = Color.White.copy(alpha = 0.84f),
                     ),
                 )
             },
