@@ -221,9 +221,9 @@ def test_g2_operation_inventory_crosswalk_and_runtime_boundary():
         for item in crosswalk["operations"]
     }
 
-    assert root["info"]["version"] == "0.8.0"
-    assert len(operations) == 33
-    assert len({item["operationId"] for item in operations.values()}) == 33
+    assert root["info"]["version"] == "0.9.0"
+    assert len(operations) == 35
+    assert len({item["operationId"] for item in operations.values()}) == 35
     assert set(crosswalk_operations) == set(G2_OPERATIONS)
     assert crosswalk["contract"]["included_decisions"] == [
         "DEC-001",
@@ -271,6 +271,57 @@ def test_g2_operation_inventory_crosswalk_and_runtime_boundary():
         assert actual_rules == normalize_rule_ids(
             crosswalk_item["transition_rule"]
         )
+
+
+def test_update_visit_schedule_includes_revisit_transition_tr_inq_028():
+    operation = collect_operations()[
+        ("/visits/{visit_id}/schedule", "patch")
+    ]
+    crosswalk = load_yaml(API_DIR / "g2-operation-crosswalk.yaml")
+    crosswalk_item = next(
+        item
+        for item in crosswalk["operations"]
+        if item["operation_id"] == "updateVisitSchedule"
+    )
+    rules = {
+        item["id"]: item
+        for item in load_yaml(
+            REPOSITORY_ROOT
+            / "contracts"
+            / "state-machine"
+            / "transition-rules.yaml"
+        )["transitions"]
+    }
+
+    assert operation["x-state-machine"] == {
+        "event": "UPDATE_VISIT_SCHEDULE",
+        "transition_rules": [
+            "TR-INQ-020",
+            "TR-INQ-021",
+            "TR-INQ-028",
+        ],
+        "inquiry_states": ["VISIT_SCHEDULING", "REVISIT_REQUIRED"],
+        "visit_from_statuses": [
+            "ASSIGNING",
+            "SCHEDULING",
+            "FOLLOW_UP_REQUIRED",
+        ],
+        "visit_to_status": "SCHEDULING",
+    }
+    assert crosswalk_item["transition_rule"] == [
+        "TR-INQ-020",
+        "TR-INQ-021",
+        "TR-INQ-028",
+    ]
+    revisit = rules["TR-INQ-028"]
+    assert revisit["from_inquiry_state"] == "REVISIT_REQUIRED"
+    assert revisit["to_inquiry_state"] == "VISIT_SCHEDULING"
+    assert revisit["visit"] == {
+        "mode": "TRANSITION",
+        "from_status": "FOLLOW_UP_REQUIRED",
+        "to_status": "SCHEDULING",
+    }
+    assert "G-ASSIGNED-CONSULTANT" in revisit["guard_refs"]
 
 
 def test_all_g2_external_references_resolve():

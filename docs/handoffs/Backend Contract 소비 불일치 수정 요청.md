@@ -1,7 +1,7 @@
 # 최지용 — Backend Contract 소비 불일치 수정 요청
 
 > 기준 Commit: `92b0674cd1a3376a2c058715cd5ef32222125755`
-> PM 결정: `docs/decisions/20260811-backend-contract-consumer-change-request-decision.md`
+> PM 결정: `docs/decisions/Backend Contract 소비 불일치 PM 결정.md`
 > 상태: **CHANGE_REQUEST**
 
 ## 요청 작업

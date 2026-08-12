@@ -2,7 +2,7 @@
   "status": "PASS",
   "dataset_version": "0.9.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
-  "source_commit": "b937c0a91290ab31e935815b28bbb24ffb799409",
+  "source_commit": "1362bc9cf0efae23be54e9089e97618f9cc5fe55",
   "service_contracts_used": true,
   "contract_alignment": {
     "state_machine_version": "1.0.0",
@@ -30,8 +30,8 @@
           "path": "processed/structured/evidence/jac104_evidence_registry.jsonl",
           "role": "REFERENCE",
           "records": 9,
-          "size_bytes": 16234,
-          "sha256": "483D82DC9F199C9EEAC373508461288F3558C9AC9D8D1AB433D26540CA680145"
+          "size_bytes": 16261,
+          "sha256": "40A1B328F86FF6E57A3EFD1F5EBD63051DCDE06AB32E0A08CC6C6D5BE638F61F"
         },
         {
           "path": "processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
@@ -228,7 +228,7 @@
           "role": "MAPPING_DB_FULL_VERIFIED",
           "records": 1,
           "size_bytes": 18600,
-          "sha256": "99A1198282807A928A83D162591B4197AC35BAA1AEE20C88C96AE9D8CB787EA4"
+          "sha256": "6BF3E70C3BF86A72AE665F6088FCDDAF1A41FB649408E5BBB24FD7A152D0AF45"
         },
         {
           "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
@@ -374,7 +374,7 @@
           "role": "MAPPING_DB_FULL_VERIFIED",
           "records": 1,
           "size_bytes": 18600,
-          "sha256": "99A1198282807A928A83D162591B4197AC35BAA1AEE20C88C96AE9D8CB787EA4"
+          "sha256": "6BF3E70C3BF86A72AE665F6088FCDDAF1A41FB649408E5BBB24FD7A152D0AF45"
         },
         {
           "path": "schemas/synthetic/syntheticCustomerProfile.schema.json",
@@ -439,49 +439,49 @@
           "role": "SUMMARY",
           "records": 1,
           "size_bytes": 7046,
-          "sha256": "1375D251573E45D238D2F890F25632390514E0B381A52F43C2F5E2BB22E7B3BB"
+          "sha256": "D23783E4B1949411E15FE452248E17CAB25CCEE789476DD8AC85E5AB5E0F590C"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 8471,
-          "sha256": "F055FCEBD31C1422A8671512A07E99A69C5D3B567D8D7BB580F32B2AC84C571A"
+          "sha256": "E6884E9A309FB504723BEC548106363C9E7E9242DA078F1487732BE77778CE8F"
         },
         {
           "path": "processed/validation/integrity/latest_integrity_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1340,
-          "sha256": "4DEBC16EC199AFF8F75941445E105B794BD8543BB5BF106D609DAEBEF56A27EB"
+          "sha256": "A19673144F68B9F3FD1551AEBA404553A2164753F0C9F8459E1276C41FB077F1"
         },
         {
           "path": "processed/validation/quality/latest_quality_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1246,
-          "sha256": "E09518E22A4BCB64439E74F01ED8D61335C950C67B18FC0B832342E37E619B3E"
+          "sha256": "E463D2D5E1C9A8374CD8CD08598A533F1B0A91C7B1A8225ECCE79D3A5D612293"
         },
         {
           "path": "processed/validation/business/latest_business_rules_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1544,
-          "sha256": "15435EF62BE8333463902AE4AEAC3E85B2A4B3A1D9F5C9BB1C067C38E440B52F"
+          "sha256": "069C088BA561D66D1409137A3942067065A67B16056539065F42BB90F87DA833"
         },
         {
           "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1151,
-          "sha256": "FAA56C8783A03D855854F2AED69892B3E261648FD40E5D7AD909C705E3F57D9C"
+          "sha256": "0589C73990E7080B192B93F8AC982734EDB80720D5DE43D0330D68D57D450C12"
         },
         {
           "path": "processed/metadata/dataset_manifest.json",
           "role": "MANIFEST",
           "records": 1,
           "size_bytes": 10106,
-          "sha256": "DDB2B080DC692687B9A333F9D32E989BB498B4DDAD695B46192597462E860B42"
+          "sha256": "56D39B3DA90D004766303A065352D2742BB3574E5D829054B44EADED54CF8B22"
         },
         {
           "path": "processed/metadata/DATA_PROCESSING_SPEC.md",

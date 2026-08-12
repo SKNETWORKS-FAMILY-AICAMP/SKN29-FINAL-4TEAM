@@ -4,16 +4,28 @@ from django.urls import path
 
 from apps.inquiries.api.views import (
     CancelInquiryView,
+    ConsultantCustomerSubscriptionSearchView,
     ConsultantInquiryDetailView,
     CreateInquiryView,
     CustomerInquiryQuestionsView,
     CustomerInquirySnapshotView,
+    RegisterConsultantPhoneInquiryView,
     SubmitSymptomView,
     SubmitFollowUpAnswersView,
 )
 
 
 urlpatterns = [
+    path(
+        "consultant/customer-subscriptions/search",
+        ConsultantCustomerSubscriptionSearchView.as_view(),
+        name="consultant-customer-subscription-search",
+    ),
+    path(
+        "consultant/phone-inquiries",
+        RegisterConsultantPhoneInquiryView.as_view(),
+        name="consultant-phone-inquiry-register",
+    ),
     path(
         "me/inquiries/<uuid:inquiry_id>",
         CustomerInquirySnapshotView.as_view(),

@@ -33,7 +33,7 @@
 | 기본 MVP 제품 | `WPUJAC104DWH` / `WPU-JAC104D·WPU-JCC104D REV.00` |
 | 후속 확장 제품 | `WPUIAC425SNW` / MVP 검색·화면에서 비노출 |
 | 대표 시연 | `SYN-JAC104-002` · `DEMO-INQ-002` · 출수량 저하 · 매뉴얼 38쪽 |
-| 현재 상태 | `main@92b0674` 기준 Contract Gate PASS, 소비자 ACK 2/5, Backend 계약 소비 CHANGE_REQUEST와 Backend↔AI Integration HOLD를 반영해 진행 중 |
+| 현재 상태 | `main@2a1b308` 기준 Backend Runtime12 ACK 승인, 소비자 ACK 3/5, AI 병합 승인·Web ACK 및 Backend↔AI 전체 Integration HOLD를 반영해 진행 중 |
 
 # 2. 핵심 확정 사항
 

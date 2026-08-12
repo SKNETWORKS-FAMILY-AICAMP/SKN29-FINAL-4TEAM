@@ -1,6 +1,7 @@
 # 2026-08-11 Web·Mobile 계약 소비 회신 접수
 
 > PM 기준 Commit: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
+> 현재 재검증 후보: `main@2a1b308ed5eae8bdbaec57ee6026f14529b10794`
 > 접수자: 윤승혁
 > 목적: 외부 전달 회신을 3.3 소비자 검토 증거로 정규화
 
@@ -72,10 +73,48 @@ PM은 승인 계약 유지와 `DYNAMIC_GUARD_AND_RUNTIME_FILTER`를 결정했다
 ## 5. 현재 취합 결과
 
 ```text
-mobile=APPROVE
+mobile=APPROVE_NO_AREA_DIFF
 web=CONTENT_APPROVED_CURRENT_BASELINE_ACK_PENDING
-qa=APPROVE
-backend=CHANGE_REQUEST
-consumer_ack=2/5
-remaining_reviewers=최지용-fix, 이동윤, 한예나-current-baseline
+qa=APPROVE_EVIDENCE_PATH_FOLLOWUP
+backend=APPROVE
+ai=MERGE_APPROVED_ACK_AFTER_MAIN
+consumer_ack=3/5
+remaining_reviewers=이동윤-main-merge,한예나-current-baseline
 ```
+
+## 6. Backend 수정·검증 회신 v0.4
+
+| 항목 | 접수 내용 |
+|---|---|
+| Runtime 수정 | `e290fe3d43ae5adf2a6ab758cbf2e19922046cd1` |
+| 작성자 후보 | `83f737326de75a6015a606c0050eaa81d1f67a4f` |
+| 현재 main 포함 | YES — 현재 `main@4ac79e6`의 조상 |
+| 원래 불일치 | 취소 역할·상태 확대, 동적 Guard·Runtime Filter Resolver 적용 |
+| 작성자 검증 | 표적 128/5 Skip, 전체 993/19 Skip, PostgreSQL Row Lock 5·취소 25 PASS |
+| 원격 검증 | Contract CI·Data CI PASS |
+| PM 판정 | **AUTHOR_FIX_ACCEPTED · CONTRACT_FOLLOWUP_AND_INDEPENDENT_QA_PENDING** |
+
+계약 Owner는 `submitSymptom`의 Commit 이후 AI 경계 명시, `updateVisitSchedule`의 `TR-INQ-028` 포함, 고객 Snapshot 동적 `allowed_actions` 포함을 결정했다. API 계약·Backend 후속 적용과 김은진 독립 QA 전까지 Backend ACK로 계산하지 않는다.
+
+## 7. 2026-08-12 Backend 독립 QA 최종 회신
+
+| 항목 | 결과 |
+|---|---|
+| 검토 Commit | `e146d2349d82c964ca57baa4c77b501f8e84c1ab` |
+| QA 결정 | `APPROVE` |
+| 표적 Test | 98 PASS / 5 Skip / 0 Fail |
+| Backend 전체 | 1004 PASS / 19 Skip / 0 Fail |
+| PostgreSQL Row Lock | 5 PASS / 0 Skip / 0 Fail |
+| Runtime12 후속 4건 | PASS |
+| Migration Drift | NONE |
+| PM 판정 | **BACKEND ACK APPROVE** |
+
+QA 증거 문서의 정확한 파일명·Commit은 감사 추적 보완으로 남기되 Backend ACK를 막지 않는다.
+
+## 8. 2026-08-12 AI P0-2 공동 Mock 회신
+
+- 정상 제출·Replay 공동 Mock Gate는 `PASS`로 종료한다.
+- AI 전체 단위 회귀는 `167 passed`, 실제 Mock HTTP 정상·Replay Smoke는 `1 passed`로 보고됐다.
+- 실제 공동 503·Timeout은 선택 검증이므로 `NOT_RUN`을 유지한다.
+- AI Runtime 병합은 문서의 `c70e9f7`이 아니라 최신 `origin/dongyoon@692ccd5`를 승인 후보로 사용한다.
+- 실제 main 병합 전까지 AI 소비 ACK 수치에는 포함하지 않는다.

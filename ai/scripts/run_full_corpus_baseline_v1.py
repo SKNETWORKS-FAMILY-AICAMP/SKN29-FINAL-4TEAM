@@ -238,45 +238,96 @@ def _metrics(
     expected: list[dict[str, Any]],
     expected_no_evidence: bool,
     product_model_code: str,
+    evidence_match_policy: str,
 ) -> dict[str, Any]:
-    matched_expected: set[int] = set()
-    relevances: list[int] = []
+    if evidence_match_policy not in {"ANY", "ALL", "NONE"}:
+        raise ValueError(f"지원하지 않는 Evidence Match Policy: {evidence_match_policy}")
+    if evidence_match_policy == "NONE":
+        if expected or not expected_no_evidence:
+            raise ValueError("NONE Policy는 빈 expected_evidence와 expected_no_evidence=true가 필요합니다.")
+    elif not expected or expected_no_evidence:
+        raise ValueError(
+            f"{evidence_match_policy} Policy는 expected_evidence와 "
+            "expected_no_evidence=false가 필요합니다."
+        )
+
+    expected_by_id = {unit["evidence_unit_id"]: unit for unit in expected}
+    if len(expected_by_id) != len(expected):
+        raise ValueError("expected_evidence의 evidence_unit_id는 고유해야 합니다.")
+    required_ids = set(expected_by_id)
+    covered_by_rank: list[set[str]] = []
+    covered_ids: set[str] = set()
     for item in ranked:
-        matching_units = [
-            index
-            for index, unit in enumerate(expected)
-            if index not in matched_expected
-            and item["chunk"]["document_id"] == unit["document_id"]
-            and bool(set(item["chunk"]["page_refs"]).intersection(unit["page_refs"]))
-        ]
-        if matching_units:
-            # One ranked item earns one relevance gain. This prevents a
-            # parent/child profile from counting duplicate children from the
-            # same Gold Evidence as independent correct answers.
-            matched_expected.add(matching_units[0])
-            relevances.append(1)
-        else:
-            relevances.append(0)
-    first_rank = next((i + 1 for i, value in enumerate(relevances) if value), None)
+        chunk = item["chunk"]
+        chunk_evidence_ids = set(chunk.get("evidence_unit_ids", []))
+        matched_ids = {
+            evidence_id
+            for evidence_id, unit in expected_by_id.items()
+            if evidence_id in chunk_evidence_ids
+            and chunk["document_id"] == unit["document_id"]
+            and bool(set(chunk["page_refs"]).intersection(unit["page_refs"]))
+        }
+        covered_by_rank.append(matched_ids)
+        covered_ids.update(matched_ids)
+
+    first_matched_rank = next(
+        (rank for rank, matched_ids in enumerate(covered_by_rank, 1) if matched_ids),
+        None,
+    )
+
+    def covered_through(k: int) -> set[str]:
+        return set().union(*covered_by_rank[:k]) if covered_by_rank[:k] else set()
 
     def hit(k: int) -> float:
-        return float(any(relevances[:k])) if expected else 0.0
+        if evidence_match_policy == "NONE":
+            return 0.0
+        covered = covered_through(k)
+        if evidence_match_policy == "ANY":
+            return float(bool(covered))
+        return float(required_ids.issubset(covered))
 
-    dcg = sum(value / math.log2(index + 2) for index, value in enumerate(relevances[:5]))
-    ideal_count = min(len(expected), 5)
-    idcg = sum(1.0 / math.log2(index + 2) for index in range(ideal_count))
+    if evidence_match_policy == "ANY":
+        completion_rank = first_matched_rank
+        ndcg_at_5 = (
+            1.0 / math.log2(completion_rank + 1)
+            if completion_rank is not None and completion_rank <= 5
+            else 0.0
+        )
+    elif evidence_match_policy == "ALL":
+        completion_rank = next(
+            (
+                rank
+                for rank in range(1, len(covered_by_rank) + 1)
+                if required_ids.issubset(covered_through(rank))
+            ),
+            None,
+        )
+        # D-01은 ALL Hit·MRR만 확정한다. Multi-evidence nDCG는 별도 합의 전 제외한다.
+        ndcg_at_5 = None
+    else:
+        completion_rank = None
+        ndcg_at_5 = 0.0
+
     wrong_product_hits = sum(
         item["chunk"]["exact_sales_code"] != product_model_code for item in ranked[:5]
     )
+    retrieval_empty = bool(expected_no_evidence and not ranked)
     return {
+        "evidence_match_policy": evidence_match_policy,
+        "required_evidence_unit_ids": sorted(required_ids),
+        "covered_evidence_unit_ids": sorted(covered_ids),
         "hit_at_1": hit(1),
         "hit_at_3": hit(3),
         "hit_at_5": hit(5),
-        "mrr": 1.0 / first_rank if first_rank else 0.0,
-        "ndcg_at_5": dcg / idcg if idcg else 0.0,
-        "first_relevant_rank": first_rank,
+        "mrr": 1.0 / completion_rank if completion_rank else 0.0,
+        "ndcg_at_5": ndcg_at_5,
+        "first_matched_rank": first_matched_rank,
+        "evidence_completion_rank": completion_rank,
+        "first_relevant_rank": completion_rank,
         "wrong_product_hit_count": wrong_product_hits,
-        "no_evidence_passed": bool(expected_no_evidence and not ranked),
+        "no_evidence_retrieval_empty": retrieval_empty,
+        "no_evidence_passed": retrieval_empty,
+        "answerability_gate_passed": None,
     }
 
 
@@ -359,6 +410,7 @@ def run_baseline(
                     case["expected_evidence"],
                     case["expected_no_evidence"],
                     case["product_model_code"],
+                    case["evidence_match_policy"],
                 )
                 results.append({
                     "case_id": case["case_id"],
@@ -369,6 +421,7 @@ def run_baseline(
                     "corpus_variant": variant_name,
                     "filter_mode": filter_mode,
                     "expected_evidence": case["expected_evidence"],
+                    "evidence_match_policy": case["evidence_match_policy"],
                     "expected_no_evidence": case["expected_no_evidence"],
                     "ranked_results": [
                         {
@@ -392,9 +445,23 @@ def run_baseline(
     for (variant, filter_mode), rows in sorted(groups.items()):
         positive = [row for row in rows if not row["expected_no_evidence"]]
         negative = [row for row in rows if row["expected_no_evidence"]]
-        mean = lambda key: round(
-            sum(row["metrics"][key] for row in positive) / len(positive), 6
-        ) if positive else None
+        def mean(key: str) -> float | None:
+            values = [
+                row["metrics"][key]
+                for row in positive
+                if row["metrics"][key] is not None
+            ]
+            return round(sum(values) / len(values), 6) if values else None
+
+        no_evidence_empty_result_rate = (
+            round(
+                sum(row["metrics"]["no_evidence_retrieval_empty"] for row in negative)
+                / len(negative),
+                6,
+            )
+            if negative
+            else None
+        )
         group_summaries.append({
             "corpus_variant": variant,
             "filter_mode": filter_mode,
@@ -406,13 +473,18 @@ def run_baseline(
             "mean_hit_at_5": mean("hit_at_5"),
             "mean_mrr": mean("mrr"),
             "mean_ndcg_at_5": mean("ndcg_at_5"),
+            "ndcg_at_5_evaluated_case_count": sum(
+                row["metrics"]["ndcg_at_5"] is not None for row in positive
+            ),
+            "ndcg_at_5_excluded_all_case_count": sum(
+                row["evidence_match_policy"] == "ALL" for row in positive
+            ),
             "wrong_product_hit_count": sum(
                 row["metrics"]["wrong_product_hit_count"] for row in rows
             ),
-            "no_evidence_accuracy": round(
-                sum(row["metrics"]["no_evidence_passed"] for row in negative) / len(negative),
-                6,
-            ) if negative else None,
+            "no_evidence_empty_result_rate": no_evidence_empty_result_rate,
+            "no_evidence_accuracy": no_evidence_empty_result_rate,
+            "no_evidence_metric_status": "RETRIEVAL_DIAGNOSTIC_D03_GATE_PENDING",
         })
 
     total_seconds = time.perf_counter() - started_clock
@@ -424,6 +496,12 @@ def run_baseline(
         "profile_id": profile["profile_id"],
         "run_status": "DRAFT_BASELINE_COMPLETE",
         "metrics_publishable_as_official": metrics_publishable,
+        "evaluation_contract": {
+            "version": "d01_evidence_policy_v1",
+            "all_hit_and_mrr": "ALL_UNIQUE_EVIDENCE_UNIT_IDS_REQUIRED",
+            "all_ndcg_at_5": "EXCLUDED_PENDING_DEFINITION",
+            "none_metric": "RETRIEVAL_EMPTY_RESULT_DIAGNOSTIC_D03_GATE_PENDING",
+        },
         "groups": group_summaries,
         "publication_limits": profile["publication_limits"],
     }

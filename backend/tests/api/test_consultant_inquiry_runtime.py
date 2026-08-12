@@ -176,7 +176,7 @@ def test_consultant_list_returns_only_assigned_synthetic_projection(
         consultant=other_consultant,
     )
 
-    with django_assert_max_num_queries(4):
+    with django_assert_max_num_queries(5):
         response = authenticated_client(consultant).get(
             "/api/v1/inquiries"
         )
@@ -480,7 +480,7 @@ def test_consultant_detail_returns_closed_assigned_projection(
         idempotency_key="consultant-read-detail-030",
     )
 
-    with django_assert_max_num_queries(5):
+    with django_assert_max_num_queries(7):
         response = authenticated_client(consultant).get(
             f"/api/v1/inquiries/{inquiry.public_id}"
         )

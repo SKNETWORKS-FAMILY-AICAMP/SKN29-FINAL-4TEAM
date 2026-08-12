@@ -1,0 +1,104 @@
+/consultant/customer-subscriptions/search:
+  post:
+    operationId: searchConsultantCustomerSubscriptions
+    summary: 상담사 전화 접수용 기존 고객·활성 구독 검색
+    description: |
+      인증 상담사가 합성·비삭제 고객의 ACTIVE 구독만 검색한다. 고객명은
+      trim 후 2자 이상, 연락처는 하이픈·공백을 제거한 숫자 4자리 이상을
+      허용한다. 전화번호 원문은 반환하지 않고 마스킹 값만 반환한다.
+      검색어가 URL·Access Log에 남지 않도록 JSON Body를 사용한다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-requirements: [CR-001, NFR-011, NFR-012]
+    x-permission-scope: SYNTHETIC_ACTIVE_CUSTOMER_SUBSCRIPTIONS
+    security:
+      - BearerAuth: []
+    parameters:
+      - $ref: ../components/parameters/CorrelationId.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/inquiry/ConsultantCustomerSubscriptionSearchRequest.yaml
+    responses:
+      "200":
+        description: 검색 조건에 맞는 활성 구독 후보. 결과 없음은 빈 배열이다.
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/inquiry/ConsultantCustomerSubscriptionSearchResult.yaml
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "500":
+        $ref: ../components/responses/InternalServerError.yaml
+
+/consultant/phone-inquiries:
+  post:
+    operationId: registerConsultantPhoneInquiry
+    summary: 상담사 전화 문의 등록
+    description: |
+      상담사가 검색 결과에서 선택한 합성 고객의 ACTIVE 구독으로 전화
+      문의를 생성한다. 서버가 고객·제품 관계를 다시 검증하고 현재
+      상담사를 등록자이자 담당자로 배정한 뒤 CONSULTATION_REQUIRED 상태로
+      초기화한다. 기존 CUSTOMER POST /inquiries 계약은 변경하지 않는다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-requirements: [CR-001, NFR-011, NFR-012]
+    x-permission-scope: SYNTHETIC_ACTIVE_CUSTOMER_SUBSCRIPTIONS
+    x-state-machine:
+      event: REGISTER_PHONE_INQUIRY
+      transition_rule: TR-INQ-035
+      from_state: null
+      to_state: CONSULTATION_REQUIRED
+      actor_role: CONSULTANT
+    security:
+      - BearerAuth: []
+    parameters:
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+      - $ref: ../components/parameters/CorrelationId.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/inquiry/RegisterConsultantPhoneInquiryRequest.yaml
+    responses:
+      "201":
+        description: 신규 전화 문의 생성 또는 같은 요청의 안전한 재생
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/inquiry/RegisterConsultantPhoneInquiryResult.yaml
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "404":
+        $ref: ../components/responses/NotFound.yaml
+      "409":
+        $ref: ../components/responses/WorkflowConflict.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "500":
+        $ref: ../components/responses/InternalServerError.yaml

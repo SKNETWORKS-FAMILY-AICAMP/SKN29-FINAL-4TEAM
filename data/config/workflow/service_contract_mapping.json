@@ -29,11 +29,11 @@
     },
     "inquiry_events": {
       "path": "contracts/state-machine/inquiry-events.yaml",
-      "sha256": "8D61B168FD2EC836F454386BE613D2BE57E52549230259FFABCF3CCA4B7BB60F"
+      "sha256": "14CA17CE2EDD81C3F290C9C2A5FC3318B8B5780777B0D7D7AC4887D69EEB9418"
     },
     "transition_rules": {
       "path": "contracts/state-machine/transition-rules.yaml",
-      "sha256": "90F392DC3E4635F52342B2F0F85B80CD000DB6F716389CC3D8D4CB760594758D"
+      "sha256": "E2777027D5434808B16CB9810DC786C93F7BB6A5A08242EB6EC480140C98C85C"
     },
     "allowed_actions": {
       "path": "contracts/state-machine/allowed-actions.yaml",

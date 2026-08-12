@@ -82,6 +82,22 @@ EXPECTED_OPERATIONS = {
         "url_name": "customer-inquiry-questions",
         "view_name": "CustomerInquiryQuestionsView",
     },
+    ("/consultant/customer-subscriptions/search", "post"): {
+        "operation_id": "searchConsultantCustomerSubscriptions",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            "/api/v1/consultant/customer-subscriptions/search"
+        ),
+        "url_name": "consultant-customer-subscription-search",
+        "view_name": "ConsultantCustomerSubscriptionSearchView",
+    },
+    ("/consultant/phone-inquiries", "post"): {
+        "operation_id": "registerConsultantPhoneInquiry",
+        "contract_status": "CONFIRMED",
+        "runtime_path": "/api/v1/consultant/phone-inquiries",
+        "url_name": "consultant-phone-inquiry-register",
+        "view_name": "RegisterConsultantPhoneInquiryView",
+    },
     ("/inquiries", "post"): {
         "operation_id": "startInquiry",
         "contract_status": "CONFIRMED",
@@ -321,11 +337,11 @@ def runtime_view_name(match) -> str:
     return match.func.__name__
 
 
-def test_openapi_operation_inventory_is_exactly_thirty_three():
+def test_openapi_operation_inventory_is_exactly_thirty_five():
     operations = collect_operations()
 
     assert set(operations) == set(EXPECTED_OPERATIONS)
-    assert len(operations) == 33
+    assert len(operations) == 35
     assert {
         operation["operationId"] for operation in operations.values()
     } == {
@@ -341,7 +357,7 @@ def test_openapi_operation_inventory_is_exactly_thirty_three():
         )
 
 
-def test_twenty_three_operations_resolve_to_expected_runtime_views():
+def test_twenty_six_operations_resolve_to_expected_runtime_views():
     implemented = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -350,7 +366,7 @@ def test_twenty_three_operations_resolve_to_expected_runtime_views():
         )
     ]
 
-    assert len(implemented) == 24
+    assert len(implemented) == 26
     for (_, method), expected in implemented:
         match = resolve(expected["runtime_path"])
         assert match.url_name == expected["url_name"]

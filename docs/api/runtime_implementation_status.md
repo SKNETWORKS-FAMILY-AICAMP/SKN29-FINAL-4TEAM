@@ -1,6 +1,6 @@
 # WaterBridge API Runtime 구현 상태
 
-> 기준일: 2026-08-02
+> 기준일: 2026-08-11
 >
 > 유지관리 역할: Backend·API 담당
 >
@@ -8,23 +8,34 @@
 
 ## 1. 현재 판정
 
-현재 OpenAPI에는 Operation 10개가 등록돼 있다. 실제 Django Route와
-View가 있는 Operation은 8개이고, 나머지 2개는 기계 계약만 존재하는
+현재 OpenAPI에는 Operation 35개가 등록돼 있다. 실제 Django Route와
+HTTP Method가 있는 Operation은 26개이고, 나머지 9개는 기계 계약만 존재하는
 `OPENAPI_ONLY` 상태다.
 
 | 구분 | 수량 | 판정 |
 |---|---:|---|
-| OpenAPI Operation | 10 | 기계 계약 등록 |
-| Django Runtime | 8 | 실제 Route·View 존재 |
-| OpenAPI-only | 2 | 계약은 있으나 Runtime 미구현 |
-| Runtime 경계 자동 검증 | 10 | Runtime 8개와 미구현 경계 2개를 테스트로 구분 |
+| OpenAPI Operation | 35 | 기계 계약 등록 |
+| Django Runtime | 26 | 실제 Route·HTTP Method 존재 |
+| OpenAPI-only | 9 | 계약은 있으나 Runtime 미구현 |
+| Runtime 경계 자동 검증 | 35 | Runtime 26개와 미구현 경계 9개를 테스트로 구분 |
 | 오류 Registry | 10 | 대표 오류 코드와 Runtime HTTP 매핑 등록 |
 | 팀 검토 완료 | 0 | 비작성자 독립 재현·PM 통합 검토 전 |
 
 `x-contract-status: CONFIRMED`는 Method·Path·Schema가 기계 계약에
 등록됐다는 뜻이며 Runtime 구현 완료를 의미하지 않는다.
 
-## 2. Operation별 지원 상태
+## 2. CR-001 신규 Operation 지원 상태
+
+| 상태 | Method | OpenAPI Path | `operationId` | View |
+|---|---|---|---|---|
+| `AUTHOR_VERIFICATION_IN_PROGRESS` | POST | `/consultant/customer-subscriptions/search` | `searchConsultantCustomerSubscriptions` | `ConsultantCustomerSubscriptionSearchView` |
+| `AUTHOR_VERIFICATION_IN_PROGRESS` | POST | `/consultant/phone-inquiries` | `registerConsultantPhoneInquiry` | `RegisterConsultantPhoneInquiryView` |
+
+두 Operation은 Route·Serializer·Service·Repository·표적 테스트가 있으며
+독립 QA와 Web 실제 소비 전까지 `VERIFIED`로 올리지 않는다. 세부 계약은
+[CR-001 상담사 전화 문의 등록 API](consultant_phone_inquiry_api.md)를 따른다.
+
+## 3. 2026-08-02 대표 Operation 역사 표
 
 | 상태 | Method | OpenAPI Path | `operationId` | 실제 Runtime Path | View |
 |---|---|---|---|---|---|
@@ -41,10 +52,10 @@ View가 있는 Operation은 8개이고, 나머지 2개는 기계 계약만 존�
 
 OpenAPI 기본 Server는 `/api/v1`이며 `/health`만 Operation별 Server `/`를
 사용한다. 구현된 문의 Endpoint의 Public ID와 Django Path Parameter는
-UUID다. OpenAPI-only 두 Operation은 Runtime 착수 전에 Path ID Schema를
+UUID다. OpenAPI-only Operation은 Runtime 착수 전에 Path ID Schema를
 현행 UUID 원칙과 다시 정합화해야 한다.
 
-## 3. Runtime 구성 근거
+## 4. Runtime 구성 근거
 
 | Operation | 주요 Serializer·응답 조립 | 집중 검증 파일 |
 |---|---|---|
@@ -53,8 +64,10 @@ UUID다. OpenAPI-only 두 Operation은 Runtime 착수 전에 Path ID Schema를
 | 문의 생성 | `CreateInquirySerializer`, `InquiryResponseSerializer` | `test_openapi_inquiry_contract.py`, `test_t022_create_inquiry.py` |
 | 증상 제출 | `SymptomSubmissionSerializer`, `SubmitSymptomResponseSerializer` | `test_t022_submit_symptom.py`, `test_t022_submit_symptom_serializer.py` |
 | 문의 취소 | `CancelInquirySerializer`, `CancelInquiryResponseSerializer` | `test_cancel_inquiry_contract.py`, `test_t023_cancel_inquiry.py` |
+| 상담사 고객·구독 검색 | `ConsultantCustomerSubscriptionSearchSerializer` | `test_consultant_phone_inquiry_runtime.py` |
+| 상담사 전화 문의 등록 | `RegisterConsultantPhoneInquirySerializer` | `test_consultant_phone_inquiry_contract.py`, `test_consultant_phone_inquiry_runtime.py` |
 
-## 4. 오류와 JSON 예시
+## 5. 오류와 JSON 예시
 
 최상위 [오류 코드 Registry](../../contracts/error-codes/error-codes.yaml)는
 10개 코드를 제공한다. `INVALID_REQUEST`의 기타 4xx fallback과
@@ -70,9 +83,9 @@ UUID다. OpenAPI-only 두 Operation은 Runtime 착수 전에 Path ID Schema를
 | 합계 | 25 | Runtime Operation에만 연결 |
 
 `/health`는 200과 빈 본문을 반환하므로 JSON 예시가 없다. OpenAPI-only
-두 Operation에도 구현 예시를 연결하지 않는다.
+Runtime이 없는 Operation에는 구현 완료로 오해할 예시를 연결하지 않는다.
 
-## 5. 변경 금지선
+## 6. 변경 금지선
 
 현재 정합 작업에서는 다음 계약을 문서만으로 변경하지 않는다.
 
@@ -86,7 +99,7 @@ UUID다. OpenAPI-only 두 Operation은 Runtime 착수 전에 Path ID Schema를
 차이가 발견되면 OpenAPI, Route, Serializer, State 계약과 테스트 중 어느
 기준이 다른지 먼저 기록하고 관련 담당 역할의 검토를 거친다.
 
-## 6. 검증 기록
+## 7. 검증 기록
 
 저장소 루트에서 실행하는 기본 검증 명령은 다음과 같다.
 
@@ -128,7 +141,7 @@ PostgreSQL 재현에서는 Demo Login과 CORS의 개발용 `.env` 값이 테스�
 [Backend 작성자 구현·보안검증 가이드](../individual/jiyong/API/Django_REST_API_OpenAPI_계약_구현_보안검증_가이드.md)를
 따른다.
 
-## 7. 팀 검토 Gate
+## 8. 팀 검토 Gate
 
 다음 조건이 모두 확인되기 전에는 `VERIFIED` 또는 팀 완료로 표시하지
 않는다.
@@ -140,5 +153,5 @@ PostgreSQL 재현에서는 Demo Login과 CORS의 개발용 `.env` 값이 테스�
 5. QA 담당이 결과, 미구현 경계와 회귀 위험을 기록한다.
 6. 승인된 변경이 팀 기준 Branch에 반영된 뒤 같은 기준으로 재검증된다.
 
-Web·Mobile·QA는 OpenAPI-only 두 Operation을 구현 API로 소비하면 안 된다.
+Web·Mobile·QA는 OpenAPI-only 9개 Operation을 구현 API로 소비하면 안 된다.
 팀별 인계 흐름은 [통합 인계 허브](../handoffs/README.md)를 따른다.

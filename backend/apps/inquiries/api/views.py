@@ -13,18 +13,29 @@ from apps.inquiries.api.serializers import (
     ConsultantInquiryDetailDataSerializer,
     ConsultantInquiryListDataSerializer,
     ConsultantInquiryListQuerySerializer,
+    ConsultantCustomerSubscriptionSearchResultSerializer,
+    ConsultantCustomerSubscriptionSearchSerializer,
     CreateInquirySerializer,
     CustomerInquiryQuestionsSerializer,
     CustomerInquirySnapshotSerializer,
     InquiryResponseSerializer,
+    RegisterConsultantPhoneInquiryResultSerializer,
+    RegisterConsultantPhoneInquirySerializer,
     SubmitFollowUpAnswersResponseSerializer,
     SubmitFollowUpAnswersSerializer,
     SubmitSymptomResponseSerializer,
     SymptomSubmissionSerializer,
 )
-from apps.inquiries.permissions import IsConsultant, IsCustomer
+from apps.inquiries.permissions import (
+    CanAttemptInquiryCancel,
+    IsConsultant,
+    IsCustomer,
+)
 from apps.inquiries.services.consultant_inquiry_service import (
     ConsultantInquiryService,
+)
+from apps.inquiries.services.consultant_phone_inquiry_service import (
+    ConsultantPhoneInquiryService,
 )
 from apps.inquiries.services.customer_inquiry_service import (
     CustomerInquiryService,
@@ -185,6 +196,57 @@ class ConsultantInquiryDetailView(APIView):
         )
 
 
+class ConsultantCustomerSubscriptionSearchView(APIView):
+    """Search masked synthetic-customer active subscription candidates."""
+
+    permission_classes = [IsAuthenticated, IsConsultant]
+
+    def post(self, request):
+        reject_unknown_query_parameters(request, set())
+        require_correlation_id(request)
+        serializer = ConsultantCustomerSubscriptionSearchSerializer(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+        data = ConsultantPhoneInquiryService.search(
+            query=serializer.validated_data["query"],
+            limit=serializer.validated_data["limit"],
+        )
+        return success_response(
+            ConsultantCustomerSubscriptionSearchResultSerializer(data).data
+        )
+
+
+class RegisterConsultantPhoneInquiryView(APIView):
+    """Create one consultant-owned PHONE inquiry from an approved candidate."""
+
+    permission_classes = [IsAuthenticated, IsConsultant]
+
+    def post(self, request):
+        reject_unknown_query_parameters(request, set())
+        idempotency_key = require_idempotency_key(request)
+        correlation_id = require_correlation_id(request)
+        serializer = RegisterConsultantPhoneInquirySerializer(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            outcome = ConsultantPhoneInquiryService.register(
+                actor=request.user,
+                validated_data=serializer.validated_data,
+                idempotency_key=idempotency_key,
+                correlation_id=correlation_id,
+            )
+            response_data = RegisterConsultantPhoneInquiryResultSerializer(
+                outcome.data
+            ).data
+        return success_response(
+            response_data,
+            status_code=outcome.status_code,
+        )
+
+
 class CustomerInquirySnapshotView(APIView):
     """Return the authenticated CUSTOMER's minimal inquiry Snapshot."""
 
@@ -214,25 +276,26 @@ class CustomerInquiryQuestionsView(APIView):
 
 
 class CancelInquiryView(APIView):
-    """Execute CANCEL_INQUIRY for the authenticated inquiry owner."""
+    """Execute CANCEL_INQUIRY within the approved actor object scope."""
 
-    permission_classes = [IsAuthenticated, IsCustomer]
+    permission_classes = [IsAuthenticated, CanAttemptInquiryCancel]
 
     def post(self, request, inquiry_id: UUID):
         idempotency_key = require_idempotency_key(request)
         serializer = CancelInquirySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        outcome = InquiryService.cancel(
-            actor=request.user,
-            inquiry_public_id=inquiry_id,
-            validated_data=serializer.validated_data,
-            idempotency_key=idempotency_key,
-            correlation_id=UUID(request.correlation_id),
-        )
-        response_data = CancelInquiryResponseSerializer(
-            outcome.data
-        ).data
+        with transaction.atomic():
+            outcome = InquiryService.cancel(
+                actor=request.user,
+                inquiry_public_id=inquiry_id,
+                validated_data=serializer.validated_data,
+                idempotency_key=idempotency_key,
+                correlation_id=UUID(request.correlation_id),
+            )
+            response_data = CancelInquiryResponseSerializer(
+                outcome.data
+            ).data
         return success_response(
             response_data,
             status_code=outcome.status_code,

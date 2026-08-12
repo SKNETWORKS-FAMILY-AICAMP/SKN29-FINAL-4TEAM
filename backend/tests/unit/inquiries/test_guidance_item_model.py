@@ -223,9 +223,14 @@ def test_database_catalog_contains_guidance_item_constraints():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_guidance_item_empty_migration_rolls_back_and_reapplies():
+def test_guidance_item_empty_migration_rolls_back_and_reapplies(request):
     target_0008 = [("inquiries", "0008_guidance")]
     target_0009 = [("inquiries", "0009_guidanceitem")]
+    latest_target = [("inquiries", "0013_inquiry_priority_code")]
+
+    request.addfinalizer(
+        lambda: MigrationExecutor(connection).migrate(latest_target)
+    )
 
     executor = MigrationExecutor(connection)
     executor.migrate(target_0008)
@@ -237,6 +242,7 @@ def test_guidance_item_empty_migration_rolls_back_and_reapplies():
 
     executor = MigrationExecutor(connection)
     executor.migrate(target_0009)
+    MigrationExecutor(connection).migrate(latest_target)
     guidance_item_0009 = executor.loader.project_state(
         target_0009
     ).apps.get_model("inquiries", "GuidanceItem")

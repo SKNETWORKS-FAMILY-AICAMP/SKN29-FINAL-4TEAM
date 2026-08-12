@@ -21,6 +21,15 @@ from apps.workflow.models import TransitionHistory
 
 
 pytestmark = pytest.mark.django_db
+INQUIRY_LATEST = ("inquiries", "0013_inquiry_priority_code")
+LATEST_SCHEMA = [
+    ("workflow", "0005_status_history_contract_names_indexes"),
+    INQUIRY_LATEST,
+]
+
+
+def restore_latest_schema() -> None:
+    MigrationExecutor(connection).migrate(LATEST_SCHEMA)
 
 
 def create_subscription(sequence: int) -> CustomerSubscription:
@@ -390,9 +399,19 @@ def test_audit_event_keeps_protected_inbound_status_history_fk():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_status_history_migration_backfills_and_restores_uuid_bridge():
-    target_0003 = [("workflow", "0003_backfill_legacy_changed_at")]
-    target_0004 = [("workflow", "0004_align_contract_status_history")]
+def test_status_history_migration_backfills_and_restores_uuid_bridge(
+    request,
+):
+    restore_latest_schema()
+    request.addfinalizer(restore_latest_schema)
+    target_0003 = [
+        ("workflow", "0003_backfill_legacy_changed_at"),
+        INQUIRY_LATEST,
+    ]
+    target_0004 = [
+        ("workflow", "0004_align_contract_status_history"),
+        INQUIRY_LATEST,
+    ]
 
     executor = MigrationExecutor(connection)
     executor.migrate(target_0003)
@@ -442,9 +461,19 @@ def test_status_history_migration_backfills_and_restores_uuid_bridge():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_status_history_migration_preserves_125_rows_and_audit_inbound_fk():
-    target_0003 = [("workflow", "0003_backfill_legacy_changed_at")]
-    target_0004 = [("workflow", "0004_align_contract_status_history")]
+def test_status_history_migration_preserves_125_rows_and_audit_inbound_fk(
+    request,
+):
+    restore_latest_schema()
+    request.addfinalizer(restore_latest_schema)
+    target_0003 = [
+        ("workflow", "0003_backfill_legacy_changed_at"),
+        INQUIRY_LATEST,
+    ]
+    target_0004 = [
+        ("workflow", "0004_align_contract_status_history"),
+        INQUIRY_LATEST,
+    ]
 
     executor = MigrationExecutor(connection)
     executor.migrate(target_0003)
@@ -554,10 +583,18 @@ def test_status_history_migration_preserves_125_rows_and_audit_inbound_fk():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_status_history_contract_names_are_isolated_in_reversible_0005():
-    target_0004 = [("workflow", "0004_align_contract_status_history")]
+def test_status_history_contract_names_are_isolated_in_reversible_0005(
+    request,
+):
+    restore_latest_schema()
+    request.addfinalizer(restore_latest_schema)
+    target_0004 = [
+        ("workflow", "0004_align_contract_status_history"),
+        INQUIRY_LATEST,
+    ]
     target_0005 = [
-        ("workflow", "0005_status_history_contract_names_indexes")
+        ("workflow", "0005_status_history_contract_names_indexes"),
+        INQUIRY_LATEST,
     ]
     old_constraints = {
         "ck_transition_state_version_positive",

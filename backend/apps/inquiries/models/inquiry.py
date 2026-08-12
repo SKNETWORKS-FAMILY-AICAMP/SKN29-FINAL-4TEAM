@@ -71,6 +71,12 @@ class Inquiry(TimestampedModel):
         CAUTION = "caution", "Caution"
         DANGER = "danger", "Danger"
 
+    class Priority(models.TextChoices):
+        LOW = "LOW", "Low"
+        NORMAL = "NORMAL", "Normal"
+        HIGH = "HIGH", "High"
+        URGENT = "URGENT", "Urgent"
+
     class UsageGuidanceStatus(models.TextChoices):
         NORMAL = "NORMAL", "Normal use"
         PARTIAL_STOP = "PARTIAL_STOP", "Partial stop"
@@ -143,6 +149,11 @@ class Inquiry(TimestampedModel):
         null=True,
         blank=True,
     )
+    priority_code = models.CharField(
+        max_length=40,
+        choices=Priority.choices,
+        default=Priority.NORMAL,
+    )
     usage_guidance_status = models.CharField(
         max_length=40,
         choices=UsageGuidanceStatus.choices,
@@ -187,6 +198,9 @@ class Inquiry(TimestampedModel):
 
     class Meta:
         db_table = "support_inquiry"
+        permissions = [
+            ("cancel_inquiry", "Can cancel inquiry"),
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=["id", "subscription"],
@@ -241,6 +255,17 @@ class Inquiry(TimestampedModel):
                     )
                 ),
                 name="ck_inquiry_risk_level",
+            ),
+            models.CheckConstraint(
+                condition=Q(
+                    priority_code__in=[
+                        "LOW",
+                        "NORMAL",
+                        "HIGH",
+                        "URGENT",
+                    ]
+                ),
+                name="ck_inquiry_priority_code",
             ),
             models.CheckConstraint(
                 condition=(

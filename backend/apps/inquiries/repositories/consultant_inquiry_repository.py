@@ -23,6 +23,7 @@ from django.db.models import (
 from django.db.models.functions import Coalesce
 
 from apps.care.models import CareRecord
+from apps.consultations.models import Consultation
 from apps.inquiries.models import (
     Guidance,
     Inquiry,
@@ -30,6 +31,7 @@ from apps.inquiries.models import (
     SymptomAssessment,
 )
 from apps.workflow.models import TransitionHistory
+from apps.visits.models import Visit
 
 
 BUSINESS_TIMEZONE = ZoneInfo("Asia/Seoul")
@@ -56,6 +58,20 @@ class ConsultantInquiryRepository:
                 "subscription",
                 "subscription__customer",
                 "subscription__product_model",
+            )
+            .prefetch_related(
+                Prefetch(
+                    "consultations",
+                    queryset=Consultation.objects.order_by("-sequence", "-id"),
+                    to_attr="allowed_action_consultations",
+                ),
+                Prefetch(
+                    "visits",
+                    queryset=Visit.objects.select_related("technician").order_by(
+                        "-created_at", "-id"
+                    ),
+                    to_attr="allowed_action_visits",
+                ),
             )
             .annotate(
                 latest_assessment_risk=Subquery(
@@ -85,6 +101,10 @@ class ConsultantInquiryRepository:
                         then=Value("URGENT"),
                     ),
                     When(
+                        priority_code=Inquiry.Priority.URGENT,
+                        then=Value("URGENT"),
+                    ),
+                    When(
                         latest_assessment_priority__in=(
                             "URGENT",
                             "priority_consultation",
@@ -96,6 +116,10 @@ class ConsultantInquiryRepository:
                         then=Value("HIGH"),
                     ),
                     When(
+                        priority_code=Inquiry.Priority.HIGH,
+                        then=Value("HIGH"),
+                    ),
+                    When(
                         latest_assessment_priority__in=(
                             "HIGH",
                             "consultation_recommended",
@@ -103,7 +127,15 @@ class ConsultantInquiryRepository:
                         then=Value("HIGH"),
                     ),
                     When(
+                        priority_code=Inquiry.Priority.NORMAL,
+                        then=Value("NORMAL"),
+                    ),
+                    When(
                         latest_assessment_priority="LOW",
+                        then=Value("LOW"),
+                    ),
+                    When(
+                        priority_code=Inquiry.Priority.LOW,
                         then=Value("LOW"),
                     ),
                     When(

@@ -111,9 +111,9 @@
     x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: UPDATE_VISIT_SCHEDULE
-      transition_rules: [TR-INQ-020, TR-INQ-021]
-      inquiry_state: VISIT_SCHEDULING
-      visit_from_statuses: [ASSIGNING, SCHEDULING]
+      transition_rules: [TR-INQ-020, TR-INQ-021, TR-INQ-028]
+      inquiry_states: [VISIT_SCHEDULING, REVISIT_REQUIRED]
+      visit_from_statuses: [ASSIGNING, SCHEDULING, FOLLOW_UP_REQUIRED]
       visit_to_status: SCHEDULING
     x-permission-scope: ASSIGNED_INQUIRIES
     security: [{BearerAuth: []}]

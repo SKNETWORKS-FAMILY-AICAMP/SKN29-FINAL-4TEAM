@@ -1,14 +1,14 @@
 # WaterBridge Public API Specification
 
-> 문서 기준일: 2026-08-02
+> 문서 기준일: 2026-08-11
 >
-> 사람용 문서 Revision: `2026.08.02`
+> 사람용 문서 Revision: `2026.08.11-CR001`
 >
-> 기계 계약 Version: OpenAPI `0.5.0`
+> 기계 계약 Version: OpenAPI `0.9.0`
 >
 > 유지관리 역할: Backend·API 담당
 >
-> 상태: 부분 구현 — OpenAPI 10개, Runtime 8개, OpenAPI-only 2개
+> 상태: 부분 구현 — OpenAPI 35개, Runtime 26개, OpenAPI-only 9개
 
 > 정본 경로: `docs/api/waterbridge_api_specification.md`
 
@@ -20,17 +20,15 @@
 파일이며, 실행 지원 여부는 [API Runtime 구현 상태](runtime_implementation_status.md)를
 함께 확인한다.
 
-사람용 카탈로그에는 총 42개 ID가 남아 있지만 모두 같은 성숙도가 아니다.
+현행 기계 계약과 2026-08-02 역사 카탈로그는 성숙도가 다르다. 실제 호출
+가능 여부는 현재 OpenAPI·Runtime Coverage를 우선한다.
 
 | 구분 | 수량 | 의미 |
 |---|---:|---|
-| 기계 계약 | 10 | OpenAPI에 등록된 Operation |
-| └ Django Runtime | 8 | 실제 Route·View가 존재하나 팀 검토 전 |
-| └ OpenAPI-only | 2 | Route가 없는 계약 |
-| 설계 백로그 | 31 | OpenAPI 미등록; 구현 계약이 아님 |
-| └ 구현 차단 | 4 | 저장 모델·정책 결정 전 구현 금지 |
-| 폐기 설계 | 1 | generic `/events`; 현재 행동별 Endpoint 원칙에서 제외 |
-| 합계 | 42 | 추적용 API ID 카탈로그 |
+| 기계 계약 | 35 | OpenAPI에 등록된 Operation |
+| └ Django Runtime | 26 | 실제 Route·HTTP Method가 존재하나 팀 검토 전 |
+| └ OpenAPI-only | 9 | 실행 Method가 없는 계약 |
+| 역사 설계·백로그 | 별도 | 아래 2026-08-02 목록과 Change Backlog로 추적 |
 | `VERIFIED` | 0 | 독립 재현·소비 검토·통합 승인 전 |
 
 ## 2. 상태 정의와 기준 원본
@@ -110,8 +108,8 @@ flowchart LR
 
 현재 Runtime이 있는 문의 Endpoint의 `inquiry_id`, 문의 생성의
 `subscription_id`와 선택 `questionnaire_session_id`는 UUID다.
-OpenAPI-only 두 Operation의 Path ID는 아직 길이 기반 문자열 정의가
-남아 있어 Runtime 착수 전에 UUID 원칙과 정합화해야 한다.
+OpenAPI-only Operation은 Runtime 착수 전에 현행 UUID·권한·오류 원칙과
+정합화해야 한다.
 
 ### 4.2 공통 성공·오류 Envelope
 
@@ -189,7 +187,25 @@ Refresh Token을 폐기한다.
 - P1 본인 프로필 API도 OpenAPI와 Runtime에 등록되기 전에는 소비하지
   않는다.
 
-## 5. 기계 계약 10개
+## 5. 현행 CR-001 계약과 2026-08-02 역사 목록
+
+### 5.1 CR-001 상담사 전화 문의 등록
+
+| 상태 | ID | Method | Public Path | `operationId` |
+| --- | --- | --- | --- | --- |
+| `AUTHOR_VERIFICATION_IN_PROGRESS` | `API-CNS-005` | POST | `/api/v1/consultant/customer-subscriptions/search` | `searchConsultantCustomerSubscriptions` |
+| `AUTHOR_VERIFICATION_IN_PROGRESS` | `API-CNS-006` | POST | `/api/v1/consultant/phone-inquiries` | `registerConsultantPhoneInquiry` |
+
+검색은 합성·비삭제 고객의 ACTIVE 구독만 반환하고 연락처를 마스킹한다.
+등록은 선택한 `subscription_id`를 다시 검증하고 현재 상담사에게 배정된
+`CONSULTATION_REQUIRED`, `state_version=1` 문의를 생성한다. 상세 DTO와
+오류 처리는 [CR-001 상담사 전화 문의 등록 API](consultant_phone_inquiry_api.md)를
+따른다.
+
+### 5.2 2026-08-02 대표 Operation 역사 목록
+
+아래 표는 전체 35개 Operation이 아니라 과거 기준선의 대표 10개다.
+현행 전체 목록은 OpenAPI와 Runtime Coverage Test를 사용한다.
 
 | 상태 | ID | Method | Public Path | `operationId` | Request → `data` Response |
 |---|---|---|---|---|---|

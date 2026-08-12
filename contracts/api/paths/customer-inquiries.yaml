@@ -11,8 +11,12 @@
     operationId: getMyInquiry
     summary: 고객 본인 문의 Snapshot 조회
     description: |
-      앱 재시작과 화면 복구를 위해 인증 고객이 본인 문의의 최소 상태만
-      조회한다. 타 고객 문의와 없는 문의는 동일한 404로 응답한다.
+      앱 재시작과 화면 복구를 위해 인증 고객이 본인 문의의 최신 상태와
+      Backend 동적 Resolver가 계산한 allowed_actions를 조회한다. AI가
+      미답변 질문을 저장한 뒤 재조회하면 SUBMIT_ANSWERS 노출 여부가 최신
+      Guard 결과에 따라 바뀐다. Mobile·Web은 질문 존재만으로 Action을
+      자체 계산하지 않는다. 타 고객 문의와 없는 문의는 동일한 404로
+      응답한다.
     x-contract-status: CONFIRMED
     x-runtime-status: IMPLEMENTED
     x-permission-scope: OWN_INQUIRY
