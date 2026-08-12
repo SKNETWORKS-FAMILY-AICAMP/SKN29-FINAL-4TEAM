@@ -108,6 +108,9 @@ def test_local_mode_no_match_is_200_fallback(client, monkeypatch):
     assert body["status"] == "FALLBACK"
     assert body["failure_stage"] == "RETRIEVING"
     assert body["evidence_references"] == []
+    assert body["safety_assessment"]["risk_level"] == "caution"
+    assert body["safety_assessment"]["requires_consultation"] is True
+    assert body["usage_guidance"]["guidance_status"] == "PENDING_CONSULTATION"
 
 
 def test_local_mode_missing_vector_config_is_non_retryable_503(client, monkeypatch):
