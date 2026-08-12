@@ -1,7 +1,7 @@
 # 5주차 대표 E2E Action 결정
 
 > 결정일: 2026-08-10 KST  
-> 현행화 기준: `main@92b0674cd1a3376a2c058715cd5ef32222125755`
+> 현행화 기준: `main@f781e92be75d09a1f5bf0464f9ae1fdf90e97bdc`
 > 상태: **PM_DECISION_APPLIED · CONTRACT_QA_VERIFIED**
 > 범위: PM 결정과 계약 적용 완료를 기록하며 각 Action의 Runtime 완료는 Crosswalk와 WBS에서 별도로 판정한다.
 
@@ -53,9 +53,10 @@
 - 이번 PM 결정은 기존 Event에 정확한 OpenAPI Operation을 연결하는 비파괴 추가안이다.
 - `contracts/VERSION`과 State Machine `1.0.0`은 유지한다.
 - 현재 OpenAPI는 `0.8.0`, 32개 Path·33개 Operation이다.
-- 현재 Crosswalk는 `RUNTIME_IMPLEMENTED=12`, `OPENAPI_CONFIRMED=7`, `CONTRACT_ONLY=0`, `DEFERRED=4`다.
-- 승인한 8개 중 `SUBMIT_ANSWERS`는 Runtime 구현이 확인됐고, 나머지 7개는 `OPENAPI_CONFIRMED`로 유지한다.
+- 현재 Crosswalk는 `RUNTIME_IMPLEMENTED=13`, `OPENAPI_CONFIRMED=6`, `CONTRACT_ONLY=0`, `DEFERRED=4`다.
+- 승인한 8개 중 `SUBMIT_ANSWERS`와 `REQUEST_CONSULTATION`은 Runtime 구현이 확인됐고, 나머지 6개는 `OPENAPI_CONFIRMED`로 유지한다.
 - 계약 적용과 Runtime 완료를 동일시하지 않으며, Runtime 승격은 Source·Test 증거가 모두 있을 때만 허용한다.
+- Deferred 4건은 6주차로 고정한다: `CUSTOMER_REPORTED_SELF_RESOLVED`는 `T-055`, `UPDATE_PREVISIT_REPORT`·`CONFIRM_PREVISIT_REPORT`는 `T-030B`~`T-030C`, `REVISIT_NEEDED`는 `T-043`·`T-055` 후속 경계에서 구현 여부를 판정한다.
 
 ## 5. 완료 판정
 

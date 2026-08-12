@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "data": {
+    "subscription_id": "20000000-0000-4000-8000-000000000011",
+    "status_code": "ACTIVE",
+    "management_type_code": "VISIT_CARE",
+    "started_on": "2026-07-15",
+    "ended_on": null,
+    "last_care_on": "2026-08-07",
+    "next_care_on": null,
+    "product": {
+      "product_model_id": "10000000-0000-4000-8000-000000000001",
+      "model_code": "WPUJAC104DWH",
+      "model_name": "WPU JAC104D 올인원 플러스 직수 정수기",
+      "generation_code": "D",
+      "manufacturer": "SK매직"
+    },
+    "idempotent_replay": false
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "30000000-0000-4000-8000-000000000013"
+  }
+}

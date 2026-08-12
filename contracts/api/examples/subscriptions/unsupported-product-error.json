@@ -1,0 +1,14 @@
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "PRODUCT_NOT_SUPPORTED",
+    "message": "지원하는 제품 모델을 선택해 주세요.",
+    "details": {
+      "model_code": "WPUIAC425SNW"
+    }
+  },
+  "metadata": {
+    "correlation_id": "30000000-0000-4000-8000-000000000015"
+  }
+}

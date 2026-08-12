@@ -1,0 +1,136 @@
+{
+  "preflight_id": "D04-ROW-CHILD-PARTIAL-V2-PREFLIGHT",
+  "status": "READY",
+  "generated_at": "2026-08-12T06:55:52.692702+00:00",
+  "base_preflight": {
+    "preflight_id": "A3-1-FULL-CORPUS-BASELINE-PREFLIGHT",
+    "status": "READY",
+    "generated_at": "2026-08-12T06:55:52.689549+00:00",
+    "profile": {
+      "path": "ai/configs/experiments/full_corpus_baseline_v1.yaml",
+      "sha256": "E1B38207CD291B67CBF64155F11BCDF7DE308650C8E742CA4D332A2F6FA255EA"
+    },
+    "checks": [
+      {
+        "name": "dataset_hash",
+        "passed": true,
+        "blocking": true,
+        "detail": {
+          "records": 60,
+          "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A"
+        }
+      },
+      {
+        "name": "corpus_hash",
+        "passed": true,
+        "blocking": true,
+        "detail": {
+          "records": 96,
+          "sha256": "FE62AF6030045C532BC8E68D11C5461E8C65BD16DCD6758E0C2412C8C37C472C"
+        }
+      },
+      {
+        "name": "corpus_count",
+        "passed": true,
+        "blocking": true,
+        "detail": {
+          "JAC104_ONLY": 44,
+          "IAC425_ONLY": 52
+        }
+      },
+      {
+        "name": "gold_two_person_review",
+        "passed": true,
+        "blocking": true,
+        "detail": {
+          "pending_records": 60,
+          "allow_draft_gold": true,
+          "official_metrics_allowed": false
+        }
+      },
+      {
+        "name": "embedding_runtime_dependencies",
+        "passed": true,
+        "blocking": true,
+        "detail": {
+          "missing_modules": []
+        }
+      },
+      {
+        "name": "embedding_model_snapshot",
+        "passed": true,
+        "blocking": true,
+        "detail": {
+          "model": "BAAI/bge-m3",
+          "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+        }
+      }
+    ],
+    "blockers": [],
+    "decision": {
+      "draft_baseline_execution": "READY",
+      "official_phase_b_baseline": "BLOCKED",
+      "dependency_install_performed": false,
+      "docker_used": false
+    }
+  },
+  "checks": [
+    {
+      "name": "base_preflight",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "partial_scope_status",
+      "passed": true,
+      "detail": "PARTIAL_SCOPE_DIAGNOSTIC"
+    },
+    {
+      "name": "selected_case_ids",
+      "passed": true,
+      "detail": {
+        "selected": 16,
+        "missing": []
+      }
+    },
+    {
+      "name": "data_qa",
+      "passed": true,
+      "detail": "PASS"
+    },
+    {
+      "name": "child_hash",
+      "passed": true,
+      "detail": "8949C6DD03EE57C87F73E8740F82BD26DAE17259DAF0E85D80D62C4B8FC97ACA"
+    },
+    {
+      "name": "parent_hash",
+      "passed": true,
+      "detail": "FDE0EFE1275114F8BE3DE190055251D411C1A38A705E8E929F08998675DDC05D"
+    },
+    {
+      "name": "qa_hash",
+      "passed": true,
+      "detail": "AE013B1FB4A25CA2C5EF51D2A38590B99696B711B39CAB3834541AB39D4D4162"
+    },
+    {
+      "name": "record_counts",
+      "passed": true,
+      "detail": {
+        "children": 15,
+        "parents": 5
+      }
+    },
+    {
+      "name": "child_single_evidence",
+      "passed": true,
+      "detail": "one scalar evidence_group_id per Child"
+    },
+    {
+      "name": "child_parent_links",
+      "passed": true,
+      "detail": "all Child parent_id values resolve"
+    }
+  ],
+  "blockers": []
+}

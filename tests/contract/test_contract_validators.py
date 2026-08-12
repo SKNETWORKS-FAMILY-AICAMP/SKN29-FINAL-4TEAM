@@ -31,17 +31,17 @@ class ContractValidatorsTest(unittest.TestCase):
     def test_openapi_refs_paths_and_operations_are_resolvable(self) -> None:
         result = validate_openapi.validate_repository(REPO_ROOT)
 
-        self.assertEqual(34, result.paths)
-        self.assertEqual(35, result.operations)
+        self.assertEqual(36, result.paths)
+        self.assertEqual(40, result.operations)
         self.assertGreater(result.references, 0)
 
     def test_json_examples_are_parseable_and_referenced(self) -> None:
         result = validate_examples.validate_repository(REPO_ROOT)
 
-        self.assertEqual(50, result.api_examples)
+        self.assertEqual(61, result.api_examples)
         self.assertEqual(result.api_examples, result.referenced_examples)
         self.assertEqual(5, result.integration_examples)
-        self.assertEqual(33, result.wrapped_responses)
+        self.assertEqual(44, result.wrapped_responses)
 
     def test_state_machine_digest_input_is_line_ending_independent(self) -> None:
         with patch.object(

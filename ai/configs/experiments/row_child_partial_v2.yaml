@@ -1,0 +1,70 @@
+{
+  "experiment_id": "D04-ROW-CHILD-PARTIAL-V2",
+  "experiment_version": "2.0.0-draft.1",
+  "status": "PARTIAL_SCOPE_DIAGNOSTIC",
+  "dataset_split": "DEV",
+  "fixed_retrieval": {
+    "method": "dense_cosine_exact_v1",
+    "top_k": 5,
+    "score_threshold": 0.4,
+    "filter_mode": "EXACT_PRODUCT_FILTER"
+  },
+  "inputs": {
+    "children": "data/processed/structured/rag/experimental/rag_child_chunks_v2.jsonl",
+    "parents": "data/processed/structured/rag/experimental/rag_parent_pages_v2.jsonl",
+    "data_manifest": "data/processed/structured/rag/experimental/rag_child_chunks_v2_manifest.json",
+    "data_qa": "data/processed/validation/rag_experiments/rag_child_chunks_v2_qa.json"
+  },
+  "candidate_corpus": {
+    "mode": "PARTIAL_PAGE_REPLACEMENT",
+    "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+    "replaced_page_refs": [5, 7, 37, 38, 39],
+    "warning": "지정 페이지의 일부 행만 Child로 보존하므로 Full Corpus v2가 아니다."
+  },
+  "impact_case_ids": [
+    "RAGV2-GOLD-0004",
+    "RAGV2-GOLD-0005",
+    "RAGV2-GOLD-0007",
+    "RAGV2-GOLD-0008",
+    "RAGV2-GOLD-0021",
+    "RAGV2-GOLD-0024",
+    "RAGV2-GOLD-0025",
+    "RAGV2-GOLD-0027",
+    "RAGV2-GOLD-0036",
+    "RAGV2-GOLD-0037",
+    "RAGV2-GOLD-0038"
+  ],
+  "normal_control_case_ids": [
+    "RAGV2-GOLD-0001",
+    "RAGV2-GOLD-0002",
+    "RAGV2-GOLD-0003",
+    "RAGV2-GOLD-0006",
+    "RAGV2-GOLD-0009"
+  ],
+  "required_focus_case_ids": [
+    "RAGV2-GOLD-0004",
+    "RAGV2-GOLD-0025",
+    "RAGV2-GOLD-0027",
+    "RAGV2-GOLD-0036",
+    "RAGV2-GOLD-0037",
+    "RAGV2-GOLD-0038"
+  ],
+  "variants": [
+    {"variant_id": "CURRENT_PAGE_V1", "retrieval_corpus": "BASELINE", "context_mode": "CHUNK_ONLY"},
+    {"variant_id": "CHILD_ONLY_V2", "retrieval_corpus": "PARTIAL_V2", "context_mode": "CHILD_ONLY"},
+    {"variant_id": "CHILD_PARENT_CONTEXT_V2", "retrieval_corpus": "PARTIAL_V2", "context_mode": "DEDUPLICATED_PARENT"}
+  ],
+  "success_gate": {
+    "maximum_normal_control_hit_at_5_regression_count": 0,
+    "maximum_normal_control_ranking_regression_count": 0,
+    "require_identical_v2_child_rankings": true,
+    "require_parent_deduplication": true,
+    "require_human_context_review": true
+  },
+  "publication_limits": [
+    "Gold DEV Draft 16건의 부분 진단이며 전체 B1 또는 운영 성능으로 발표하지 않는다.",
+    "지정 5개 페이지의 검색 가능 원문을 완전 보존한 Full Corpus v2가 아니다.",
+    "Parent Context 관련성은 자동 검색 지표가 아니라 사람 검수 대상이다.",
+    "운영 Pipeline, Corpus, retrieval_policy와 Backend 계약을 변경하지 않는다."
+  ]
+}

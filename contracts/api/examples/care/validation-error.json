@@ -1,0 +1,16 @@
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "입력값을 확인해 주세요.",
+    "details": {
+      "care_type_code": [
+        "유효하지 않은 선택입니다."
+      ]
+    }
+  },
+  "metadata": {
+    "correlation_id": "30000000-0000-4000-8000-000000000026"
+  }
+}
