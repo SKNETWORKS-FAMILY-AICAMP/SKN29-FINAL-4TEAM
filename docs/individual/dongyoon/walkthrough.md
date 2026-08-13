@@ -1204,3 +1204,40 @@ Public UUID 분석 요청이 모두 성공했다.
   `AI_LLM_MODEL`, `AI_EMBEDDING_REVISION`, `AI_VECTOR_TABLE_NAME`이 모두
   미주입이므로 실제
   OpenAI·팀 DB·Local HTTP Gate는 계속 `NOT_RUN`이다.
+
+### 2026-08-13 Backend-AI 실제 LLM Runtime 공동 작업 요청 회신
+
+- 최지용의 실제 LLM·팀 pgvector·Backend 저장 공동 검증 요청을 현재
+  `origin/dongyoon@7d07862e50a796e83701bda6ffd04dc974325b57`에서 재검토했다.
+  이후 `origin/main@502570487510749e9e3cb4351610df5ca5e46f5f`를 Fast-forward로 반영했으며,
+  검증 범위인 `ai/**`, `contracts/ai/**`, `backend/**`, `contracts/state-machine/**`에는 파일 차이가 없음을 확인했다.
+- Python `3.13.13`에서 AI Unit `219 passed, 5 warnings, 7 subtests passed`,
+  `pip check=PASS`, G1-A 표적 `43 passed`, Backend Evidence·Danger 표적
+  `35 passed`를 확인했다.
+- 실제 Runtime Verifier는 `OPENAI_API_KEY` 부재로 exit 1, 팀 pgvector Gate는
+  `AI_VECTOR_DSN` 부재로 `1 failed`, exit 1을 확인했다. 환경 누락을 Skip이나
+  성공으로 숨기지 않는 의도된 Fail-closed 결과이며 실제 OpenAI·팀 DB·Local
+  HTTP·Backend 저장은 `NOT_RUN`이다.
+- G1-A를 `BLOCKED`, G1-B를 `NOT_RUN`, 전체 Backend E2E를 `HOLD`로 회신했다.
+  Secret·팀 DSN 주입 뒤 pgvector 최소권한 → 내부 LLM Runtime → Strict HTTP →
+  Backend AIRun·EvidenceLink·Replay 순서로 공동 검증하도록 고정했다.
+- 상세 회신은
+  `docs/individual/dongyoon/인계/20260813_이동윤_to_최지용_Backend_AI_양방향로컬환경_실제LLM_Runtime_공동작업_회신_v0.1.md`에 기록했다.
+### 2026-08-13 G1-A Embedding 연계·로컬 Runtime 사전 협업 회신
+
+- 최신 `main@111da4bcd6fd8cb7e019e545254d55b3ad7406ca`로 Fast-forward한 뒤
+  `rag_verified_sample.jsonl`, `canonical_evidence_identity.json`,
+  `index_manifest.json`의 승인 7개 Chunk ID·Text Hash·Manifest를 재검증했다.
+- 원문 SHA-256 7/7과 Chunk-set SHA-256
+  `175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958`의
+  정본·Identity·Manifest 일치를 확인했다.
+- `BAAI/bge-m3@5617a9f61b028005a4858fdac845db406aefb181`를 실제 로드해 Vector를
+  메모리에서 재생성했다. 결과는 7개 모두 1024차원, L2 Normalize PASS이며
+  Vector 값은 출력·저장하지 않았다.
+- Backend Importer Schema·저장 경로가 아직 합의되지 않았으므로 승인 Export
+  Fixture를 임의 생성하지 않고 `REPRODUCIBLE_GENERATION_ONLY`로 판정했다.
+- AI 전체 Unit은 `219 passed, 5 warnings, 7 subtests passed`, `pip check=PASS`다.
+  실제 OpenAI Key가 없어 Local Runtime Verifier는 의도대로 Exit 1이며
+  `local_actual_llm=NOT_RUN`, 팀 G1-A는 `WAITING_ENVIRONMENT_READY`다.
+- 회신:
+  `docs/individual/dongyoon/인계/20260813_이동윤_to_최지용_AI_RAG_G1A_Embedding연계_로컬Runtime_사전협업_회신_v0.3.md`
