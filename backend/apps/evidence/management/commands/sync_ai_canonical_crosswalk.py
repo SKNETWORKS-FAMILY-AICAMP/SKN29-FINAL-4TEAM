@@ -110,7 +110,7 @@ class Command(BaseCommand):
             with transaction.atomic():
                 self._acquire_apply_lock()
                 plan = self._build_plan(identity=identity, index=index)
-                self._apply_plan(
+                apply_result = self._apply_plan(
                     plan=plan,
                     identity=identity,
                     index=index,
@@ -122,7 +122,12 @@ class Command(BaseCommand):
                 "Crosswalk synchronization failed and was rolled back."
             ) from exc
         self.stdout.write(
-            self.style.SUCCESS(f"APPLIED mappings={len(plan)}")
+            self.style.SUCCESS(
+                f"APPLIED mappings={len(plan)} "
+                f"created={apply_result['created']} "
+                f"updated={apply_result['updated']} "
+                f"unchanged={apply_result['unchanged']}"
+            )
         )
 
     @staticmethod
@@ -327,7 +332,7 @@ class Command(BaseCommand):
         index: dict[str, Any],
         manifest_digest: str,
         verifier: User,
-    ) -> None:
+    ) -> dict[str, int]:
         canonical_ids = [item.canonical["chunk_id"] for item in plan]
         locked_mappings = AIChunkCrosswalk.objects.select_for_update()
         conflicting = locked_mappings.filter(
@@ -340,11 +345,13 @@ class Command(BaseCommand):
         ).update(is_active=False)
 
         verified_at = timezone.now()
+        result = {"created": 0, "updated": 0, "unchanged": 0}
         for item in plan:
             canonical = item.canonical
             mapping = locked_mappings.filter(
                 canonical_chunk_id=canonical["chunk_id"]
             ).first()
+            was_created = mapping is None
             if mapping is None:
                 mapping = AIChunkCrosswalk(
                     canonical_chunk_id=canonical["chunk_id"],
@@ -355,36 +362,67 @@ class Command(BaseCommand):
                 raise CommandError(
                     f"{mapping.canonical_chunk_id}: existing Backend chunk mapping differs."
                 )
-            mapping.model_scope = item.model_scope
-            mapping.manifest_schema_version = str(identity["schema_version"])
-            mapping.identity_manifest_sha256 = manifest_digest
-            mapping.canonical_verification_status = canonical["verification_status"]
-            mapping.source_file_sha256 = self._lower_hash(
-                canonical["source_file_sha256"]
+            expected_fields = {
+                "model_scope": item.model_scope,
+                "manifest_schema_version": str(identity["schema_version"]),
+                "identity_manifest_sha256": manifest_digest,
+                "canonical_verification_status": canonical["verification_status"],
+                "source_file_sha256": self._lower_hash(
+                    canonical["source_file_sha256"]
+                ),
+                "chunk_text_sha256": self._lower_hash(
+                    canonical["chunk_text_sha256"]
+                ),
+                "embedding_model": index["model_name"],
+                "embedding_model_version": index["model_revision"],
+                "index_version": index["index_version"],
+                "chunk_set_sha256": self._lower_hash(
+                    index["chunk_set_sha256"]
+                ),
+                "is_verified": True,
+                "is_active": True,
+            }
+            fields_changed = was_created or any(
+                getattr(mapping, field_name) != expected_value
+                for field_name, expected_value in expected_fields.items()
             )
-            mapping.chunk_text_sha256 = self._lower_hash(
-                canonical["chunk_text_sha256"]
+            expected_pages = [
+                (page.id, order)
+                for order, page in enumerate(item.pages, start=1)
+            ]
+            current_pages = [] if was_created else list(
+                mapping.source_pages.order_by("display_order", "id").values_list(
+                    "page_id", "display_order"
+                )
             )
-            mapping.embedding_model = index["model_name"]
-            mapping.embedding_model_version = index["model_revision"]
-            mapping.index_version = index["index_version"]
-            mapping.chunk_set_sha256 = self._lower_hash(index["chunk_set_sha256"])
-            mapping.is_verified = True
+            pages_changed = current_pages != expected_pages
+            if not was_created and not fields_changed and not pages_changed:
+                result["unchanged"] += 1
+                continue
+
+            for field_name, expected_value in expected_fields.items():
+                setattr(mapping, field_name, expected_value)
             mapping.verified_by = verifier
             mapping.verified_at = verified_at
-            mapping.is_active = True
             mapping.full_clean()
-            mapping.save()
+            if was_created:
+                mapping.save()
+                result["created"] += 1
+            else:
+                mapping.save()
+                result["updated"] += 1
 
-            mapping.source_pages.all().delete()
-            for order, page in enumerate(item.pages, start=1):
-                page_mapping = AIChunkCrosswalkPage(
-                    crosswalk=mapping,
-                    page=page,
-                    display_order=order,
-                )
-                page_mapping.full_clean()
-                page_mapping.save()
+            if pages_changed:
+                mapping.source_pages.all().delete()
+                for order, page in enumerate(item.pages, start=1):
+                    page_mapping = AIChunkCrosswalkPage(
+                        crosswalk=mapping,
+                        page=page,
+                        display_order=order,
+                    )
+                    page_mapping.full_clean()
+                    page_mapping.save()
+        return result
 
     @staticmethod
     def _acquire_apply_lock() -> None:

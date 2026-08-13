@@ -707,6 +707,11 @@
       "sha256": "8A53051F5AD8AB7BADFE3DD6535B87541372AFEC2C02913FAD2F4938C80562CC"
     },
     {
+      "path": "config/evidence/backend_ai_canonical_import_v1.json",
+      "size_bytes": 2875,
+      "sha256": "7952063A2DC75DDAABCDFD596C3CA80D98FE1DA20FC755EE20F6B76C3E884383"
+    },
+    {
       "path": "config/faq/ocr_transcriptions.json",
       "size_bytes": 7128,
       "sha256": "21CC6F14F6534B59B5C5A18F26B5C6D6838DAACFA7A38F30EF6FF6527873CE33"

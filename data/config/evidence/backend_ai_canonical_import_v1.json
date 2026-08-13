@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "status": "BACKEND_AI_G1B_IMPORT_PACKAGE_FIXED",
+  "package_id": "BACKEND-AI-CANONICAL-EVIDENCE-7-V1",
+  "dataset_scope": "MVP",
+  "batch_no": "BACKEND-AI-EVIDENCE-7-V1",
+  "pipeline_version": "backend-ai-canonical-evidence/1.0.0",
+  "product": {
+    "model_code": "WPUJAC104DWH",
+    "model_name": "WPU-JAC104 (D)",
+    "generation_code": "D",
+    "manufacturer": "SK매직"
+  },
+  "source": {
+    "inventory_path": "data/processed/metadata/source_inventory.csv",
+    "inventory_sha256": "F9D3589C86FD74629454CA73FBF0D754A8CFB81646408712A854E9F9AF4622F6",
+    "inventory_id": "SRC-JAC104D-MANUAL",
+    "manual_pages_path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+    "manual_pages_sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F",
+    "rag_chunks_path": "data/processed/structured/rag/mvp/rag_verified_sample.jsonl",
+    "rag_chunks_sha256": "2BF3582E42A309D846BC383BE9C3E08874512318DD4046082498DBFBC8584DD0",
+    "document_code": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+    "document_title": "WPU-JAC104, WPU-JCC104 냉온정수기 메뉴얼",
+    "document_type_code": "OFFICIAL_MANUAL",
+    "source_org": "SK매직",
+    "official_source_url": "https://www.skintellixservice.com/web/easy/easyMain.do?inputBasicKeyword=WPUJAC104DWH&tabIndex=3",
+    "usage_terms_url": "https://www.skmagic.com/introduce/terms/termsService?tabId=tabStieTerms",
+    "license_note": "공식 원문 재배포 권한은 확인되지 않았다. 원본은 승인된 내부 QA·RAG 검증에만 사용하며 Git, 공개 API, 화면 및 로그에 원문 전체를 노출하지 않는다. 외부 공개 또는 재배포 전 권리자의 약관이나 허가를 별도로 확인한다.",
+    "original_file_uri": "object://official-sources/mvp/MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00/0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c.pdf",
+    "reviewed_page_numbers": [37, 38, 39]
+  },
+  "identity": {
+    "path": "ai/configs/canonical_evidence_identity.json",
+    "sha256": "925088A352A81180B51E5418EB3152A1244ABA3DA07569712C4D903468220B85"
+  },
+  "index": {
+    "path": "ai/configs/index_manifest.json",
+    "sha256": "91027E88DEC6C3BFF1E590AAF4479CA021AC284EB0BDC8E1EEC6C76473DA667E",
+    "model_name": "BAAI/bge-m3",
+    "model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "index_version": "1.0.0",
+    "index_type": "exact_search",
+    "chunk_count": 7,
+    "chunk_set_sha256": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+  },
+  "expected_counts": {
+    "ingestion_batches": 1,
+    "source_documents": 1,
+    "document_pages": 3,
+    "document_model_scopes": 1,
+    "document_chunks": 7,
+    "chunk_embeddings": 7,
+    "crosswalks_after_sync": 7,
+    "crosswalk_page_links_after_sync": 8,
+    "readonly_view_rows_after_sync": 7
+  }
+}

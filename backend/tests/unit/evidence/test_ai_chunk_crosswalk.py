@@ -352,13 +352,15 @@ def test_sync_command_plan_validates_then_applies_exactly_seven_rows():
     assert len(plan) == 7
     stale_mapping, _stale_inquiry = create_verified_mapping(sequence=99)
     with transaction.atomic():
-        command._apply_plan(
+        first_result = command._apply_plan(
             plan=plan,
             identity=identity,
             index=index,
             manifest_digest="b" * 64,
             verifier=verifier,
         )
+
+    assert first_result == {"created": 0, "updated": 7, "unchanged": 0}
 
     assert AIChunkCrosswalk.objects.filter(
         is_active=True,
@@ -375,6 +377,37 @@ def test_sync_command_plan_validates_then_applies_exactly_seven_rows():
             flat=True,
         )
     ) == {item["chunk_id"] for item in chunks}
+    mapping_snapshot = list(
+        AIChunkCrosswalk.objects.filter(is_active=True)
+        .order_by("canonical_chunk_id")
+        .values_list("id", "verified_at", "created_at", "updated_at")
+    )
+    page_snapshot = list(
+        AIChunkCrosswalkPage.objects.filter(crosswalk__is_active=True)
+        .order_by("crosswalk_id", "display_order")
+        .values_list("id", "crosswalk_id", "page_id", "display_order")
+    )
+
+    with transaction.atomic():
+        replay_result = command._apply_plan(
+            plan=plan,
+            identity=identity,
+            index=index,
+            manifest_digest="b" * 64,
+            verifier=verifier,
+        )
+
+    assert replay_result == {"created": 0, "updated": 0, "unchanged": 7}
+    assert mapping_snapshot == list(
+        AIChunkCrosswalk.objects.filter(is_active=True)
+        .order_by("canonical_chunk_id")
+        .values_list("id", "verified_at", "created_at", "updated_at")
+    )
+    assert page_snapshot == list(
+        AIChunkCrosswalkPage.objects.filter(crosswalk__is_active=True)
+        .order_by("crosswalk_id", "display_order")
+        .values_list("id", "crosswalk_id", "page_id", "display_order")
+    )
 
 
 def test_sync_command_rejects_identity_index_version_mismatch():
