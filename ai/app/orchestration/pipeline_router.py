@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 from uuid import UUID
 
 from ..integrations.embedding.embedding_client import BgeM3EmbeddingClient
+from ..integrations.llm import GuidanceLLMClient
 from ..integrations.vector_store.vector_store import PgVectorStore
 from ..retrieval.search.vector_search import VectorSearchService
 from ..retrieval.indexing.index_manifest import IndexManifest
@@ -99,6 +100,7 @@ class PipelineRouter:
     def __init__(
         self,
         search_service: VectorSearchService | None | object = _AUTO_SEARCH_SERVICE,
+        llm_client: GuidanceLLMClient | None = None,
     ):
         self.retrieval_configuration_error: RetrievalConfigurationError | None = None
         if search_service is _AUTO_SEARCH_SERVICE:
@@ -109,6 +111,7 @@ class PipelineRouter:
                 self.retrieval_configuration_error = exc
         else:
             self.search_service = search_service
+        self.llm_client = llm_client
 
     @staticmethod
     def _configured_search_service() -> VectorSearchService | None:
@@ -145,5 +148,6 @@ class PipelineRouter:
         pipeline = SingleRAGPipeline(
             self.search_service,
             retrieval_configuration_error=self.retrieval_configuration_error,
+            llm_client=self.llm_client,
         )
         return pipeline.run(ctx, cancellation_token=token)

@@ -11,6 +11,9 @@ from ..request_models import SymptomAnalysisApiRequest
 from ..errors import AiServiceError
 from ..runtime_policy import get_runtime_policy
 from ....orchestration.pipeline_router import PipelineRouter
+from ....generation.customer_guidance.guidance_generator import (
+    GuidanceGenerationExecutionError,
+)
 from ....retrieval import RetrievalConfigurationError, RetrievalExecutionError
 from ....common.timeout import CancellationToken, PipelineStageTimeoutError
 from ....schemas.common import AiStage, RiskLevel, UsageGuidanceStatus
@@ -216,6 +219,23 @@ async def analyze_symptom(
             message="AI 근거 검색을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.",
             retryable=exc.retryable,
             failure_stage=AiStage.RETRIEVING,
+            correlation_id=req.correlation_id,
+            inquiry_id=req.inquiry_id,
+            ai_request_id=req.ai_request_id,
+            state_version=req.state_version,
+            retry_count=exc.retry_count,
+        ) from exc
+    except GuidanceGenerationExecutionError as exc:
+        raise AiServiceError(
+            code="AI-TIMEOUT-01" if exc.timed_out else "AI-FAILED-01",
+            http_status=504 if exc.timed_out else 503,
+            message=(
+                "AI 안내 생성 시간이 초과되었습니다."
+                if exc.timed_out
+                else "AI 안내 생성을 완료하지 못했습니다."
+            ),
+            retryable=exc.retryable,
+            failure_stage=AiStage.GENERATING,
             correlation_id=req.correlation_id,
             inquiry_id=req.inquiry_id,
             ai_request_id=req.ai_request_id,

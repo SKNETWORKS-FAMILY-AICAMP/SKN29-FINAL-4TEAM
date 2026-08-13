@@ -1105,3 +1105,55 @@ Public UUID 분석 요청이 모두 성공했다.
   96건이며, 이번 후보는 그중 지정 5쪽을 선택 Child 15건으로 교체한 부분 진단
   Corpus다. 전체 검색 가능 원문 보존, 제품 범위 유지와 전체 Gold·NO_EVIDENCE
   재실행을 Full Corpus v2의 선행 조건으로 명시했다.
+
+### 2026-08-13 Backend AI Timeout 상담 전환 Gate 회신
+
+- 현재 Backend Timeout 경로를 코드·계약·테스트로 재검토해, HTTP Timeout이
+  `AITimeoutError(http_status=504)`로 매핑되고 AIRun에는 `TIMED_OUT`,
+  `AI-TIMEOUT-01`, 재시도·지연시간·완료시각이 저장되지만 상태 Event 없이
+  반환되는 경계를 확인했다.
+- Timeout 예외 분기는 `event_candidate=None`, `event_applied=None`이므로 현재
+  `StateMachine`, Guard, `CONSULTATION_REQUIRED` 전이와 SYSTEM History에
+  도달하지 않는다는 근거를 줄 번호 링크로 정리했다.
+- 정상 검색 후 근거 0건인 HTTP 200 `NO_EVIDENCE`와 처리 미완료인 HTTP 504
+  Timeout의 계약 의미가 다르므로, `NO_EVIDENCE` 임의 재사용 대신 Timeout SYSTEM
+  Event·Guard 매핑 승인을 선행 Gate로 명시했다.
+- Backend 담당을 최지용, 중요도를 P1 통합 완료 전 필수 Gate로 두고 AIRun 저장,
+  상담 전환 1회, state_version·Guard, Replay·stale·History와 실제 HTTP 주입까지
+  완료 조건과 회신 형식으로 고정했다.
+- Python `3.13.13`에서 관련 기존 Backend 단위 테스트 3건을 실행해
+  `3 passed in 5.95s`를 확인했다. Timeout 상담 자동 전환과 실제 공동 HTTP Timeout
+  주입은 완료 증거가 아니므로 각각 `OPEN`, `NOT_RUN`으로 구분했다.
+- 회신문과 근거표는
+  `docs/individual/dongyoon/인계/20260813_이동윤_to_최지용_Backend_AI_Timeout_상담전환_Gate_회신_v0.1.md`에
+  기록했다.
+
+### 2026-08-13 GUIDANCE_ONLY OpenAI Runtime 구현
+
+- PM 조건부 승인 기준선
+  `1289d4b3673d9b061833fa94d45096bde1541a02`에서 Python `3.13.13`과 AI Unit
+  `174 passed, 3 warnings, 7 subtests passed`를 변경 전 기준선으로 고정했다.
+- OpenAI 공식 문서에서 `gpt-4.1-mini`의 Responses API·Structured Outputs 지원을
+  확인하고, 기존 `httpx` 의존성을 사용하는 Provider Adapter를 구현했다. 공개
+  Backend↔AI 계약 `3.0.0`은 변경하지 않았다.
+- 내부 `GuidanceGenerationResult`는 `message`, `next_actions`만 허용한다. Safety,
+  사용 안내 상태, 제한 기능, Evidence와 Correlation·요청 식별자는 결정적
+  Rule·Runtime이 계속 소유한다. `next_actions`는 Runtime이 제공한
+  `allowed_next_actions`의 정확한 문장만 선택할 수 있으며 새 행동을 만들면 결정적
+  안내로 복귀한다.
+- danger와 No-Evidence는 LLM 호출 0회로 기존 `TOTAL_STOP`과
+  `PENDING_CONSULTATION` 경계를 유지한다. 공식 Evidence가 있는 일반·주의
+  경로에서만 LLM을 호출하고 생성 뒤 금지 표현·행동 Validator를 적용한다.
+- Provider 연결·일시 오류는 설정 SSOT에 따라 내부 최대 1회 재시도한다. 최종
+  Timeout은 HTTP `504 AI-TIMEOUT-01`, `failure_stage=GENERATING`으로 반환하고,
+  Schema·거부·구성 오류는 `503`으로 실패 폐쇄한다. Timeout을 HTTP 200 성공으로
+  숨기지 않는다.
+- 모델명, Prompt Version, 입력·출력·전체 Token, 지연시간, 재시도 횟수는 고객
+  원문·Evidence 본문·Prompt·Secret 없이 구조화 로그에 기록한다.
+- Fake Provider 기반 표적 테스트는 Strict Schema, Runtime 소유 필드 보존,
+  danger·No-Evidence 호출 0회, 일시 오류 재시도, HTTP 504, 안전 위반 Fallback,
+  Secret 부재 실패 폐쇄와 로그 비노출을 검증한다.
+- 최종 검증은 AI Unit `185 passed, 3 warnings, 7 subtests passed`,
+  `pip check=PASS`, `git diff --check=PASS`다. `OPENAI_API_KEY`와 팀
+  `AI_VECTOR_DSN`이 아직 통합환경에 주입되지 않아 실제 Provider·팀 pgvector
+  공동 HTTP 실행은 `NOT_RUN`이며 AI Runtime Gate 전체 PASS로 확대하지 않는다.

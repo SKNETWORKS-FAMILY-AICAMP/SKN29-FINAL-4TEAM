@@ -8,10 +8,10 @@ tasks:
     max_tokens: 500
 
   safety_and_guidance:
-    provider: "rule_engine_first"  # 명시적 규칙 우선 적용 후 LLM 보완
-    llm_fallback:
+    provider: "rule_engine_first"  # 명시적 규칙·근거 허용 판정 후 안내 문구만 LLM 생성
+    grounded_guidance:
       provider: "openai"
-      model_name: "gpt-4o-mini"
+      model_name: "gpt-4.1-mini"
       temperature: 0.0
       max_tokens: 500
 
