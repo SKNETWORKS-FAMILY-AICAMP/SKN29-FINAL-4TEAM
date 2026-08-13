@@ -20,6 +20,17 @@ function readRole(value: string | undefined): AppRole {
   throw new Error(`지원하지 않는 Mock 역할입니다: ${role}`);
 }
 
+export type MockDataset = "REMOTE_PARITY" | "DESIGN_SCENARIOS";
+
+function readMockDataset(value: string | undefined): MockDataset {
+  const dataset =
+    value ?? (import.meta.env.MODE === "test" ? "DESIGN_SCENARIOS" : "REMOTE_PARITY");
+  if (dataset === "REMOTE_PARITY" || dataset === "DESIGN_SCENARIOS") {
+    return dataset;
+  }
+  throw new Error(`지원하지 않는 Mock 데이터셋입니다: ${dataset}`);
+}
+
 export function readApiBaseUrl(value: string | undefined): string {
   const apiBaseUrl = value?.trim() || "/api/v1";
 
@@ -50,4 +61,7 @@ export const appEnv = {
     import.meta.env.DEV,
   ),
   mockRole: readRole(import.meta.env.VITE_MOCK_ROLE),
+  // 일반 개발 Mock은 실제 CONS-04 Backend 응답과 같은 화면 밀도를 사용한다.
+  // 다건·상태 전환 시나리오는 자동 Test에서만 명시적으로 사용한다.
+  mockDataset: readMockDataset(import.meta.env.VITE_MOCK_DATASET),
 } as const;

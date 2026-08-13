@@ -2,7 +2,10 @@ import { appEnv } from "../../../app/config/env";
 import { ApiClientError } from "../../../common/api/apiError";
 import type { ApiResponse } from "../../../common/api/apiResponse";
 import { requestApi } from "../../../common/api/httpClient";
-import { CONSULTANT_QUEUE_INQUIRIES } from "../model/consultantWorkspaceMock";
+import {
+  CONSULTANT_QUEUE_INQUIRIES,
+  REMOTE_PARITY_CONSULTANT_INQUIRIES,
+} from "../model/consultantWorkspaceMock";
 import {
   mapConsultantInquiryDetail,
   mapConsultantInquiryList,
@@ -36,6 +39,12 @@ export interface ConsultantWorkspaceDataRepository {
 export type ConsultantApiRequester = <TData>(
   path: string,
 ) => Promise<ApiResponse<TData>>;
+
+function getMockInquiries(): readonly CounselorInquiry[] {
+  return appEnv.mockDataset === "DESIGN_SCENARIOS"
+    ? CONSULTANT_QUEUE_INQUIRIES
+    : REMOTE_PARITY_CONSULTANT_INQUIRIES;
+}
 
 function requireResponseData<TData>(response: ApiResponse<TData>): TData {
   if (response.data === null) {
@@ -178,7 +187,7 @@ export function createMockConsultantWorkspaceDataRepository(): ConsultantWorkspa
       };
     },
     async getInquiryDetail(inquiryId) {
-      const inquiry = CONSULTANT_QUEUE_INQUIRIES.find(
+      const inquiry = getMockInquiries().find(
         (item) => item.inquiryId === inquiryId,
       );
       if (!inquiry) {
@@ -246,13 +255,14 @@ export function createMockConsultantWorkspaceDataRepository(): ConsultantWorkspa
 export function createMockConsultantInquiryListViewModel(
   query: ConsultantInquiryListQuery = {},
 ): ConsultantInquiryListViewModel {
-  const filtered = CONSULTANT_QUEUE_INQUIRIES.filter((item) =>
+  const mockInquiries = getMockInquiries();
+  const filtered = mockInquiries.filter((item) =>
     matchesMockQuery(item, query),
   );
   const page = query.page ?? 1;
   const size = query.size ?? 20;
   const start = (page - 1) * size;
-  const statusCounts = CONSULTANT_QUEUE_INQUIRIES.reduce<
+  const statusCounts = mockInquiries.reduce<
     Partial<Record<ConsultantInquiryStatusDto, number>>
   >((counts, item) => {
     const status = toStatus(item.status);

@@ -3,6 +3,10 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    "import.meta.env.VITE_USE_MOCK_API": JSON.stringify("true"),
+    "import.meta.env.VITE_MOCK_DATASET": JSON.stringify("DESIGN_SCENARIOS"),
+  },
   server: {
     fs: {
       allow: [".."],

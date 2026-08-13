@@ -40,7 +40,7 @@ const MOCK_USERS: Record<AppRole, AuthenticatedUser> = {
   },
   CONSULTANT: {
     id: "00000000-0000-4000-8000-000000000102",
-    displayName: "한유진",
+    displayName: "합성 상담사 001",
     roleCode: "CONSULTANT",
     isActive: true,
   },
@@ -77,7 +77,11 @@ function getInitialUser(
   initialUser: AuthenticatedUser | null | undefined,
 ): AuthenticatedUser | null {
   if (initialUser !== undefined) return initialUser;
-  return authSessionStore.getSession()?.user ?? getDefaultMockUser();
+  const storedUser = authSessionStore.getSession()?.user;
+  if (appEnv.useMockApi && storedUser) {
+    return MOCK_USERS[storedUser.roleCode];
+  }
+  return storedUser ?? getDefaultMockUser();
 }
 
 export function AuthProvider({ children, initialUser }: AuthProviderProps) {
@@ -94,7 +98,12 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       return;
     }
 
-    if (authSessionStore.getSession()?.user.id !== user.id) {
+    const storedUser = authSessionStore.getSession()?.user;
+    if (
+      storedUser?.id !== user.id ||
+      storedUser.displayName !== user.displayName ||
+      storedUser.roleCode !== user.roleCode
+    ) {
       authSessionStore.setSession(createMockSession(user));
     }
   }, [user]);

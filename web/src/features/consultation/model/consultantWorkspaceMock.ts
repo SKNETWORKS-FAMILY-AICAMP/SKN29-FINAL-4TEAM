@@ -617,3 +617,36 @@ export const COUNSELOR_INQUIRIES: readonly CounselorInquiry[] = [
 // 실제 Remote 연동에서는 Backend가 전달한 배정·위험도 결과를 그대로 사용한다.
 export const CONSULTANT_QUEUE_INQUIRIES: readonly CounselorInquiry[] =
   COUNSELOR_INQUIRIES.filter(isConsultantQueueInquiry);
+
+const REMOTE_PARITY_TEMPLATE = CONSULTANT_QUEUE_INQUIRIES.find(
+  (inquiry) =>
+    getCounselorWorkBucket(inquiry.status) === "NEW" &&
+    inquiry.riskLevel === "GENERAL",
+);
+
+if (!REMOTE_PARITY_TEMPLATE) {
+  throw new Error("CONS-04 Remote parity Mock의 기준 문의를 찾을 수 없습니다.");
+}
+
+// 로컬 Backend에 cons04-phone-inquiry-v1만 적재했을 때의 목록 응답과
+// 같은 화면을 확인하기 위한 기본 Mock이다. 공개·합성 정보만 포함한다.
+export const REMOTE_PARITY_CONSULTANT_INQUIRIES: readonly CounselorInquiry[] = [
+  {
+    ...REMOTE_PARITY_TEMPLATE,
+    inquiryCode: parseInquiryCode("INQ-MOCK-CONS04-0001"),
+    customerName: "합성 전화문의 고객 001",
+    customerDisplayName: "합성 전화문의 고객 00*",
+    customerPhone: "010-****-1204 (합성)",
+    customerMessage: "정수기 하단에서 물이 새는 것 같습니다.",
+    symptomLabel: "제품 누수",
+    symptomLabels: ["제품 누수", "바닥 물기"],
+    displayCode: "제품 주변 누수",
+    status: "CONSULTATION_REQUIRED",
+    riskLevel: "GENERAL",
+    priority: "NORMAL",
+    routingTarget: "CONSULTANT",
+    requiresConsultation: true,
+    stateVersion: 1,
+    allowedActions: [],
+  },
+];
