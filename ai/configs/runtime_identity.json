@@ -27,8 +27,15 @@
     "model_version": "v1",
     "prompt_version": "v1",
     "pipeline_version": "single-rag-pipeline-v1",
-    "generation_method": "deterministic-rules-and-templates",
-    "external_llm_used": false,
+    "generation_method": "deterministic-safety-and-rag-grounded-openai-guidance",
+    "external_llm_used": true,
+    "llm": {
+      "provider": "openai",
+      "model_name": "gpt-4.1-mini",
+      "output_scope": "GUIDANCE_ONLY",
+      "prompt_version": "customer_guidance/v1",
+      "timeout_policy": "HTTP_504_BACKEND_TRANSITION"
+    },
     "retrieval": {
       "provider": "pgvector",
       "search_type": "exact_search",

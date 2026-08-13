@@ -503,7 +503,10 @@ def test_runtime_identity_matches_pipeline_and_retrieval_manifests():
     assert runtime["local"]["model_name"] == "single-rag-pipeline-v1"
     assert runtime["local"]["model_version"] == "v1"
     assert runtime["local"]["prompt_version"] == "v1"
-    assert runtime["local"]["external_llm_used"] is False
+    assert runtime["local"]["external_llm_used"] is True
+    assert runtime["local"]["llm"]["model_name"] == "gpt-4.1-mini"
+    assert runtime["local"]["llm"]["output_scope"] == "GUIDANCE_ONLY"
+    assert runtime["local"]["llm"]["timeout_policy"] == "HTTP_504_BACKEND_TRANSITION"
     context_metadata = PipelineContext.model_fields["model_metadata"].default_factory()
     assert runtime["local"]["model_name"] == context_metadata.model_name
     assert runtime["local"]["prompt_version"] == context_metadata.prompt_version

@@ -3,6 +3,8 @@
 import os
 import yaml
 import pytest
+from ai.app.generation.customer_guidance.models import GuidanceGenerationResult
+from ai.app.integrations.llm import GuidanceLLMResponse, LLMUsage
 from ai.app.orchestration.pipeline_router import PipelineRouter
 from ai.app.retrieval import (
     IndexManifest,
@@ -67,6 +69,23 @@ class FlakySearchService:
         if self.calls == 1:
             raise ConnectionError("test-only transient vector failure")
         return EvidenceSearchService().search(*args, **kwargs)
+
+
+class FakeGuidanceLLMClient:
+    def __init__(self):
+        self.calls = 0
+
+    def generate_guidance(self, request, *, timeout_seconds):
+        self.calls += 1
+        return GuidanceLLMResponse(
+            output=GuidanceGenerationResult(
+                message="공식 사용설명서의 점검 항목을 순서대로 확인해 주세요.",
+                next_actions=["안내된 자가조치 단계별 점검 수행"],
+            ),
+            model_name="gpt-4.1-mini",
+            usage=LLMUsage(input_tokens=10, output_tokens=8, total_tokens=18),
+            latency_ms=12.5,
+        )
 
 
 def test_single_rag_pipeline_execution():
@@ -179,7 +198,10 @@ def test_configured_search_failure_is_typed_separately_from_no_match():
 
 def test_transient_search_failure_retries_once_then_succeeds():
     service = FlakySearchService()
-    result = PipelineRouter(search_service=service).run_pipeline(
+    result = PipelineRouter(
+        search_service=service,
+        llm_client=FakeGuidanceLLMClient(),
+    ).run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b315",
         correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
         ai_request_id="ai-req-vector-retry-success",
@@ -217,7 +239,11 @@ def test_non_transient_search_failure_is_not_retried():
 
 
 def test_configured_search_with_evidence_is_available():
-    result = PipelineRouter(search_service=EvidenceSearchService()).run_pipeline(
+    llm_client = FakeGuidanceLLMClient()
+    result = PipelineRouter(
+        search_service=EvidenceSearchService(),
+        llm_client=llm_client,
+    ).run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b310",
         correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
         ai_request_id="ai-req-vector-available",
@@ -230,6 +256,10 @@ def test_configured_search_with_evidence_is_available():
     assert response.status.value == "SUCCEEDED"
     assert len(response.evidence_references) == 1
     assert result.context.retrieval_outcome == RetrievalOutcome.AVAILABLE
+    assert response.usage_guidance.message.startswith("공식 사용설명서")
+    assert result.context.model_metadata.model_name == "gpt-4.1-mini"
+    assert result.context.model_metadata.tokens_used == 18
+    assert llm_client.calls == 1
 
 
 def test_danger_path_does_not_require_vector_store():

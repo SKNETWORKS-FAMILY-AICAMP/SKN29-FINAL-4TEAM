@@ -150,6 +150,34 @@ Backend 상태 변경, 방문 필요 여부의 자동 확정은 수행하지 않
 연동 완료로 표시하지 않는다. Agent Runtime Routing·Handoff와 실제 Provider는
 별도 Gate다.
 
+## 고객 안내 LLM Runtime
+
+`mode=local`의 일반·주의 증상에서 공식 Evidence가 발견된 경우에만 OpenAI
+`gpt-4.1-mini`를 호출한다. LLM Structured Output은 내부
+`GuidanceGenerationResult`의 `message`, `next_actions` 두 필드로 제한한다.
+Safety 판정, 사용 안내 상태, 제한 기능, Evidence와 요청 추적 식별자는 기존
+Rule·Runtime이 조립하며 공개 Backend↔AI 계약 `3.0.0`을 변경하지 않는다.
+
+위험 입력은 Safety Rule이 먼저 처리하고, 근거 없음은 기존
+`PENDING_CONSULTATION` Fallback을 사용하므로 두 경로 모두 LLM을 호출하지
+않는다. 생성 결과는 금지 표현·행동 Validator를 통과해야 하며 안전 위반 시
+결정적 안내로 복귀한다. Provider Schema 오류·거부·구성 오류는 정상 성공으로
+감추지 않고 `503`으로 반환한다. Provider Timeout은 내부 최대 1회 재시도 후
+`504 AI-TIMEOUT-01`, `failure_stage=GENERATING`으로 반환하며 이후 상담 전환은
+Backend 책임이다.
+
+실행 환경에는 값 자체를 Git·문서·로그에 남기지 않고 다음 이름으로 주입한다.
+
+```text
+OPENAI_API_KEY
+AI_LLM_MODEL=gpt-4.1-mini
+AI_VECTOR_DSN
+AI_EMBEDDING_REVISION
+```
+
+실제 Provider 호출이 없는 Fake Client 단위 테스트는 구조·안전 경계 증거이며
+실제 LLM 호출 PASS로 보고하지 않는다.
+
 ## RAG 실행 기준
 
 Local 검색은 `BAAI/bge-m3`의 1024차원 정규화 임베딩과 pgvector Cosine
