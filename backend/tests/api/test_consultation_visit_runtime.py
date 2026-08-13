@@ -583,6 +583,7 @@ def test_update_visit_schedule_supports_revisit_transition_tr_inq_028():
     assert visit.completed_at is None
     assert visit.confirmed_cause is None
     assert visit.action_taken is None
+    assert result.submitted_by == original_technician
     assert result.revisit_required is True
     assert result.revisit_reason == "유량 재확인이 필요합니다."
     assert TransitionHistory.objects.filter(

@@ -6,7 +6,7 @@ import uuid
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import DEFAULT_DB_ALIAS, models
 from django.db.models import Q
 from django.utils import timezone
 
@@ -82,10 +82,32 @@ class VisitResult(TimestampedModel):
         ]
 
     def clean(self) -> None:
-        """Validate the portable half of the assigned-technician contract."""
+        """Validate submission context and keep its historical keys immutable."""
 
         super().clean()
         errors: dict[str, str] = {}
+
+        if not self._state.adding:
+            database = self._state.db or DEFAULT_DB_ALIAS
+            persisted = (
+                type(self)._default_manager.using(database)
+                .filter(pk=self.pk)
+                .values("visit_id", "submitted_by_id")
+                .first()
+            )
+            if persisted is not None:
+                if self.visit_id != persisted["visit_id"]:
+                    errors["visit"] = (
+                        "A submitted visit result cannot change its visit."
+                    )
+                if self.submitted_by_id != persisted["submitted_by_id"]:
+                    errors["submitted_by"] = (
+                        "A submitted visit result cannot change its "
+                        "submitting technician."
+                    )
+                if errors:
+                    raise ValidationError(errors)
+                return
 
         if self.submitted_by_id is not None:
             user_model = self._meta.get_field(
