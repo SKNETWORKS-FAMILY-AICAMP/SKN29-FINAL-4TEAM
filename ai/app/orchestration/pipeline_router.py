@@ -22,7 +22,7 @@ from ..schemas import TraceContext
 
 _AUTO_SEARCH_SERVICE = object()
 _SEARCH_SERVICE_LOCK = Lock()
-_SEARCH_SERVICE_CACHE_KEY: tuple[str, str, str] | None = None
+_SEARCH_SERVICE_CACHE_KEY: tuple[str, str, str, str] | None = None
 _SEARCH_SERVICE_CACHE: VectorSearchService | None = None
 
 
@@ -39,6 +39,7 @@ def _configured_search_service() -> VectorSearchService | None:
         raise RetrievalConfigurationError(
             "AI_VECTOR_DSN 사용 시 재현 가능한 AI_EMBEDDING_REVISION이 필요합니다."
         )
+    table_name = os.getenv("AI_VECTOR_TABLE_NAME", "ai_rag_chunks")
 
     repository_root = Path(__file__).resolve().parents[3]
     manifest_path = repository_root / "ai" / "configs" / "index_manifest.json"
@@ -52,6 +53,7 @@ def _configured_search_service() -> VectorSearchService | None:
     cache_key = (
         sha256(dsn.encode("utf-8")).hexdigest(),
         model_revision,
+        table_name,
         sha256(manifest_bytes).hexdigest(),
     )
     with _SEARCH_SERVICE_LOCK:
@@ -65,7 +67,7 @@ def _configured_search_service() -> VectorSearchService | None:
                 )
             service = VectorSearchService(
                 BgeM3EmbeddingClient(model_revision=model_revision),
-                PgVectorStore(dsn),
+                PgVectorStore(dsn, table_name=table_name),
                 index_manifest=manifest,
             )
         except RetrievalConfigurationError:

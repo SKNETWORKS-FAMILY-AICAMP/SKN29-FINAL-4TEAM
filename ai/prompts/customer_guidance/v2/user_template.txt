@@ -1,0 +1,2 @@
+아래 구조화 JSON을 기반으로 근거 안의 설명형 고객 안내 문구와 허용된 다음 행동만 작성해 주세요.
+{guidance_generation_request_json}

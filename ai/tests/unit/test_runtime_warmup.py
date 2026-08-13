@@ -10,6 +10,7 @@ def test_configured_search_service_is_reused_and_warmed_up(monkeypatch):
     dsn = "postgresql://test-only-secret@127.0.0.1:55432/test"
     revision = "5617a9f61b028005a4858fdac845db406aefb181"
     created_clients = []
+    created_stores = []
 
     class FakeEmbeddingClient:
         model_name = "BAAI/bge-m3"
@@ -25,8 +26,15 @@ def test_configured_search_service_is_reused_and_warmed_up(monkeypatch):
 
     monkeypatch.setenv("AI_VECTOR_DSN", dsn)
     monkeypatch.setenv("AI_EMBEDDING_REVISION", revision)
+    monkeypatch.setenv("AI_VECTOR_TABLE_NAME", "backend_ai_rag_chunks_v1")
     monkeypatch.setattr(pipeline_router, "BgeM3EmbeddingClient", FakeEmbeddingClient)
-    monkeypatch.setattr(pipeline_router, "PgVectorStore", lambda configured_dsn: object())
+    monkeypatch.setattr(
+        pipeline_router,
+        "PgVectorStore",
+        lambda configured_dsn, *, table_name: created_stores.append(
+            (configured_dsn, table_name)
+        ) or object(),
+    )
     monkeypatch.setattr(pipeline_router, "_SEARCH_SERVICE_CACHE_KEY", None)
     monkeypatch.setattr(pipeline_router, "_SEARCH_SERVICE_CACHE", None)
 
@@ -38,6 +46,8 @@ def test_configured_search_service_is_reused_and_warmed_up(monkeypatch):
     assert pipeline_router.warmup_configured_search_service() is True
     assert created_clients[0].warmup_calls == 1
     assert dsn not in pipeline_router._SEARCH_SERVICE_CACHE_KEY
+    assert created_stores == [(dsn, "backend_ai_rag_chunks_v1")]
+    assert "backend_ai_rag_chunks_v1" in pipeline_router._SEARCH_SERVICE_CACHE_KEY
 
 
 def test_app_startup_warms_local_rag_only_when_vector_dsn_exists(monkeypatch):

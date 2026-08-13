@@ -445,13 +445,25 @@ def test_backend_integration_environment_manifest_is_reproducible():
     assert manifest["ai_modes"] == ["mock", "local"]
     assert manifest["required_environment_variable_names"]["mock"] == []
     assert manifest["required_environment_variable_names"]["local_general_or_caution"] == [
+        "OPENAI_API_KEY",
+        "AI_LLM_MODEL",
         "AI_VECTOR_DSN",
         "AI_EMBEDDING_REVISION",
+        "AI_VECTOR_TABLE_NAME",
     ]
     assert "AI_MAX_IN_FLIGHT_WORKERS" in manifest["optional_environment_variable_names"]
     assert "POST http://127.0.0.1:8001/api/v1/ai/analyze" in manifest["analysis_endpoint"]
+    assert "--expected-result-status SUCCEEDED" in manifest["local_runtime_gate_command"]
+    assert "--require-verified-evidence" in manifest["local_runtime_gate_command"]
+    assert "--expected-guidance-message" in manifest["local_runtime_gate_command"]
+    assert manifest["local_llm_runtime_gate_command"].endswith(
+        "-m ai.scripts.verify_local_runtime"
+    )
     assert manifest["db_seed_or_reset_command"]["mock"] == "NOT_REQUIRED"
     assert {item["http_status"] for item in manifest["missing_configuration_contract"]} == {503}
+    assert {
+        item["failure_stage"] for item in manifest["missing_configuration_contract"]
+    } == {"RETRIEVING", "GENERATING"}
 
 
 def test_canonical_evidence_identity_matches_approved_source_and_index_manifest():
@@ -495,16 +507,28 @@ def test_runtime_identity_matches_pipeline_and_retrieval_manifests():
     runtime = json.loads(Path("ai/configs/runtime_identity.json").read_text(encoding="utf-8"))
     retrieval = yaml.safe_load(Path("ai/configs/retrieval_policy.yaml").read_text(encoding="utf-8"))
     index_manifest = json.loads(Path("ai/configs/index_manifest.json").read_text(encoding="utf-8"))
+    prompt_registry = yaml.safe_load(
+        Path("ai/prompts/prompt_registry.yaml").read_text(encoding="utf-8")
+    )
 
     assert runtime["contract_version"] == "3.0.0"
     assert runtime["public_response_policy"] == "NOT_EXPOSED"
     assert runtime["backend_delivery"]["method"] == "BACKEND_ENV_AND_SHARED_MANIFEST"
+    assert runtime["backend_delivery"]["environment_mapping"] == {
+        "AI_MODEL_PROVIDER": "local.llm.provider",
+        "AI_MODEL_NAME": "local.llm.model_name",
+        "AI_PROMPT_VERSION": "local.llm.prompt_version",
+    }
     assert runtime["local"]["model_provider"] == "waterbridge-local"
     assert runtime["local"]["model_name"] == "single-rag-pipeline-v1"
     assert runtime["local"]["model_version"] == "v1"
     assert runtime["local"]["prompt_version"] == "v1"
     assert runtime["local"]["external_llm_used"] is True
     assert runtime["local"]["llm"]["model_name"] == "gpt-4.1-mini"
+    assert runtime["local"]["llm"]["prompt_version"] == "customer_guidance/v2"
+    assert prompt_registry["tasks"]["customer_guidance"]["active_version"] == "v2"
+    assert Path("ai/prompts/customer_guidance/v2/system.txt").is_file()
+    assert Path("ai/prompts/customer_guidance/v2/user_template.txt").is_file()
     assert runtime["local"]["llm"]["output_scope"] == "GUIDANCE_ONLY"
     assert runtime["local"]["llm"]["timeout_policy"] == "HTTP_504_BACKEND_TRANSITION"
     context_metadata = PipelineContext.model_fields["model_metadata"].default_factory()

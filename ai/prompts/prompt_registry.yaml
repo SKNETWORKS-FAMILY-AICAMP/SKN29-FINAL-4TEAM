@@ -6,8 +6,8 @@ tasks:
     description: "고객 자연어 및 선택 증상 표준 필드 구조화"
 
   customer_guidance:
-    active_version: "v1"
-    description: "위험도 및 근거 기반 정수기 사용 안내 문구 생성"
+    active_version: "v2"
+    description: "근거 안의 설명형 안내와 Allowlist 다음 행동 생성"
 
   consultation_summary:
     active_version: "v1"
