@@ -37,7 +37,7 @@
 
 | Gate | 현재 상태 | 판정 조건 |
 |---|---|---|
-| 대표 전체 E2E | `NOT_STARTED` | 필수 Gate 전체 PASS 후 실제 서비스 흐름 재현 |
+| 대표 전체 E2E | `CRITERIA_READY · EXECUTION_HOLD` | `docs/testing/e2e/week5-e2e-acceptance.md` 기준 확정. 필수 Gate 전체 PASS 후 실제 서비스 흐름 재현 |
 | 전체 회귀 | `NOT_STARTED` | 대표 E2E 후보 Commit과 영역별 Test 준비 |
 | Feature Complete | `NOT_ASSESSED` | 대표 E2E·전체 회귀·차단 결함 0 |
 
