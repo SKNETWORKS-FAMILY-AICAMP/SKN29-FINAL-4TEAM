@@ -1,0 +1,892 @@
+/* Counselor home v2: personal next-action queue + AI summary review. */
+
+html body.compact-consultant-body {
+  background: #eaf0f5 !important;
+}
+
+html body .simple-consultant-app.simple-consultant-app.consultant-queue-app {
+  --counselor-ink: #12263a;
+  --counselor-muted: #607286;
+  --counselor-line: #dce5ec;
+  --counselor-blue: #147da8;
+  --counselor-cyan: #38b7d9;
+  --counselor-orange: #ed7437;
+  background:
+    radial-gradient(circle at 84% 0%, rgb(56 183 217 / 10%), transparent 28%),
+    linear-gradient(145deg, #eef4f7, #f7f9fa 55%, #f6f1ec) !important;
+  color: var(--counselor-ink);
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-queue-main {
+  display: grid !important;
+  height: 100dvh !important;
+  grid-template-columns: 224px minmax(0, 1fr) !important;
+  grid-template-rows: 64px 164px minmax(0, 1fr) !important;
+  gap: 14px !important;
+  padding: 0 18px 18px 0 !important;
+  background: transparent !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-sidebar {
+  grid-column: 1 !important;
+  grid-row: 1 / 4 !important;
+  height: 100% !important;
+  border-radius: 0 24px 24px 0 !important;
+  background: linear-gradient(180deg, #17253d 0%, #101d31 100%) !important;
+  box-shadow: 12px 0 34px rgb(24 37 61 / 14%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-main-header {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  height: 64px !important;
+  padding: 0 8px 0 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-header-search {
+  width: min(620px, 58vw) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-header-search
+  .simple-search {
+  min-height: 42px;
+  border: 1px solid #dbe5ec !important;
+  border-radius: 12px !important;
+  background: rgb(255 255 255 / 94%) !important;
+  box-shadow: 0 6px 18px rgb(28 54 74 / 6%) !important;
+}
+
+.counselor-home-summary {
+  display: grid;
+  min-width: 0;
+  grid-column: 2;
+  grid-row: 2;
+  grid-template-columns: minmax(255px, 0.72fr) minmax(680px, 1.8fr);
+  align-items: stretch;
+  gap: 16px;
+}
+
+.counselor-home-summary__intro {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px 24px;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 92%);
+  border-radius: 18px;
+  background:
+    linear-gradient(120deg, rgb(255 255 255 / 96%), rgb(239 248 251 / 91%));
+  box-shadow: 0 14px 36px rgb(28 61 80 / 8%);
+}
+
+.counselor-home-summary__intro > span,
+.counselor-work-queue__header > div > span,
+.counselor-ai-review__header span {
+  color: #1685ad;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.counselor-home-summary__intro h1 {
+  margin: 7px 0 5px;
+  color: #10283c;
+  font-size: clamp(21px, 1.55vw, 27px);
+  letter-spacing: -0.035em;
+}
+
+.counselor-home-summary__intro p {
+  margin: 0;
+  color: #607386;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.counselor-home-metrics {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(4, minmax(145px, 1fr));
+  gap: 10px;
+}
+
+.counselor-home-metric {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  align-content: center;
+  justify-items: start;
+  padding: 16px 17px;
+  overflow: hidden;
+  border: 1px solid #dce7ed;
+  border-radius: 17px;
+  background: rgb(255 255 255 / 91%);
+  box-shadow: 0 10px 26px rgb(27 57 75 / 7%);
+  color: #173047;
+  text-align: left;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.counselor-home-metric::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background: var(--metric-color, #4baaca);
+  content: "";
+}
+
+.counselor-home-metric:hover,
+.counselor-home-metric.is-active {
+  border-color: color-mix(in srgb, var(--metric-color, #4baaca) 52%, white);
+  box-shadow: 0 13px 30px color-mix(in srgb, var(--metric-color, #4baaca) 15%, transparent);
+  transform: translateY(-1px);
+}
+
+.counselor-home-metric.is-active {
+  background: linear-gradient(145deg, #fff, color-mix(in srgb, var(--metric-color) 8%, white));
+}
+
+.counselor-home-metric--call {
+  --metric-color: #e75259;
+}
+
+.counselor-home-metric--work {
+  --metric-color: #268eb7;
+}
+
+.counselor-home-metric--waiting {
+  --metric-color: #dc912a;
+}
+
+.counselor-home-metric--ai {
+  --metric-color: #7564c8;
+}
+
+.counselor-home-metric span {
+  color: #52687c;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.counselor-home-metric strong {
+  margin: 4px 0 3px;
+  color: #10283c;
+  font-size: 30px;
+  line-height: 1;
+}
+
+.counselor-home-metric small {
+  overflow: hidden;
+  width: 100%;
+  color: #7b8c9c;
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-queue-panel {
+  display: grid !important;
+  min-width: 0;
+  min-height: 0;
+  grid-column: 2 !important;
+  grid-row: 3 !important;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px) !important;
+  grid-template-rows: minmax(0, 1fr) auto !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid #dae4eb !important;
+  border-radius: 18px !important;
+  background: #f7fafc !important;
+  box-shadow: 0 16px 42px rgb(28 54 72 / 9%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-columns {
+  display: grid !important;
+  min-width: 0;
+  min-height: 0;
+  grid-column: 1;
+  grid-row: 1;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: auto 44px minmax(0, 1fr) !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-right: 1px solid var(--counselor-line);
+}
+
+.counselor-work-queue__header {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 16px 11px;
+  border-bottom: 1px solid #e3ebf0;
+  background: #fff;
+}
+
+.counselor-work-queue__header h2,
+.counselor-ai-review__header h2 {
+  margin: 3px 0 0;
+  color: #142b3f;
+  font-size: 18px;
+  letter-spacing: -0.025em;
+}
+
+.counselor-work-queue__header p {
+  margin: 3px 0 0;
+  color: #748596;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.counselor-work-focus {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.counselor-work-focus button {
+  min-height: 31px;
+  padding: 0 10px;
+  border: 1px solid #d9e3e9;
+  border-radius: 999px;
+  background: #f7fafc;
+  color: #627587;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.counselor-work-focus button:hover,
+.counselor-work-focus button.is-active {
+  border-color: #277fa5;
+  background: #e9f5f9;
+  color: #155f80;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tabs {
+  grid-column: 1;
+  grid-row: 2;
+  padding-left: 14px;
+  background: #f1f6f8;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-tab {
+  width: 150px;
+  min-width: 120px;
+  height: 44px;
+  padding-right: 25px;
+  padding-left: 15px;
+  font-size: 12px;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section[role="tabpanel"] {
+  grid-column: 1 !important;
+  grid-row: 3 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section[role="tabpanel"]
+  .consultant-risk-section__head {
+  min-height: 44px;
+  padding: 0 14px;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section[role="tabpanel"]
+  .consultant-risk-section__list {
+  display: grid;
+  min-height: 0;
+  align-content: start;
+  gap: 8px !important;
+  padding: 10px !important;
+  overflow-y: auto;
+  background: #f2f6f8 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item,
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item:nth-child(even) {
+  display: grid !important;
+  min-height: 74px !important;
+  grid-template-columns: 126px minmax(205px, 1.5fr) 112px 116px 138px !important;
+  align-items: center;
+  gap: 10px !important;
+  padding: 11px 13px !important;
+  border: 1px solid #d7e2e8 !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: 0 5px 15px rgb(30 59 76 / 6%) !important;
+  transform: none;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item::before {
+  right: 10px;
+  left: 10px;
+  height: 2px;
+  background: linear-gradient(90deg, #50bdd8, #8cd8e5) !important;
+  box-shadow: none;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item:hover {
+  border-color: #8dbdce !important;
+  box-shadow: 0 8px 20px rgb(27 75 99 / 10%) !important;
+}
+
+.consultant-list-item__signals,
+.consultant-list-item__subject,
+.consultant-list-item__customer,
+.consultant-list-item__progress,
+.consultant-list-item__next {
+  display: grid;
+  min-width: 0;
+  align-content: center;
+  justify-items: start;
+  gap: 4px;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  :is(
+    .consultant-list-item__signals,
+    .consultant-list-item__subject,
+    .consultant-list-item__customer,
+    .consultant-list-item__progress,
+    .consultant-list-item__next
+  ) {
+  display: grid !important;
+  grid-area: auto !important;
+  grid-column: auto !important;
+  grid-row: auto !important;
+}
+
+.consultant-list-item__signals {
+  grid-template-columns: auto auto;
+  align-items: center;
+}
+
+.consultant-list-item__signals em {
+  grid-column: 1 / -1;
+  color: #b43e43;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.consultant-signal,
+.consultant-priority {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.consultant-signal--danger {
+  background: #ffe8ea;
+  color: #c53840;
+}
+
+.consultant-signal--caution {
+  background: #fff1db;
+  color: #ae6a11;
+}
+
+.consultant-signal--general {
+  background: #eaf0f4;
+  color: #617384;
+}
+
+.consultant-priority {
+  background: #eef4f7;
+  color: #536d7e;
+}
+
+.consultant-priority--urgent,
+.consultant-priority--high {
+  background: #fff0e7;
+  color: #bc5c2d;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-list-item__subject {
+  color: #10273a !important;
+}
+
+.consultant-list-item__subject strong,
+.consultant-list-item__customer strong,
+.consultant-list-item__progress strong,
+.consultant-list-item__next strong {
+  overflow: hidden;
+  max-width: 100%;
+  color: #142a3d;
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consultant-list-item__subject strong {
+  font-size: 13px;
+}
+
+.consultant-list-item__subject small,
+.consultant-list-item__customer small,
+.consultant-list-item__progress small,
+.consultant-list-item__next small {
+  overflow: hidden;
+  max-width: 100%;
+  color: #7a8a99;
+  font-size: 9px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .consultant-list-item__customer {
+  min-height: 38px;
+  padding-left: 10px;
+  border-left: 1px solid #e0e7ec;
+  color: #142a3e !important;
+}
+
+.consultant-list-item__next strong {
+  color: #136f97;
+}
+
+.counselor-ai-review {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  grid-column: 2;
+  grid-row: 1 / 3;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+}
+
+.counselor-ai-review__header {
+  display: flex;
+  min-height: 68px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e3ebf0;
+  background: linear-gradient(135deg, #f9fbff, #f3f0fc);
+}
+
+.counselor-ai-review__header > b {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 11px;
+  background: #7564c8;
+  color: #fff;
+  font-size: 14px;
+}
+
+.counselor-ai-review__notice {
+  margin: 10px 12px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #edf8f2;
+  color: #27704e;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.counselor-ai-review__case {
+  padding: 12px 15px 10px;
+  border-bottom: 1px solid #edf1f4;
+}
+
+.counselor-ai-review__case > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.counselor-ai-review__case > div > span {
+  color: #758596;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.counselor-ai-review__case > strong {
+  display: block;
+  margin-top: 8px;
+  color: #142b3f;
+  font-size: 13px;
+}
+
+.counselor-ai-review__case > p {
+  margin: 2px 0 0;
+  color: #80909e;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.counselor-ai-compare {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  grid-template-rows: minmax(92px, auto) minmax(138px, 1fr);
+  gap: 8px;
+  padding: 10px 12px;
+  overflow-y: auto;
+  background: #f6f8fa;
+}
+
+.counselor-ai-compare article {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  padding: 10px;
+  border: 1px solid #dfe7ec;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.counselor-ai-compare article header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.counselor-ai-compare article header span {
+  display: grid;
+  width: 21px;
+  height: 21px;
+  place-items: center;
+  border-radius: 7px;
+  background: #e8f4f8;
+  color: #1b7da3;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.counselor-ai-compare article header strong {
+  color: #405668;
+  font-size: 10px;
+}
+
+.counselor-ai-compare blockquote {
+  margin: 0;
+  color: #20384b;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.55;
+}
+
+.counselor-ai-compare textarea {
+  width: 100%;
+  min-height: 92px;
+  flex: 1;
+  resize: none;
+  padding: 9px;
+  border: 1px solid #cfdde5;
+  border-radius: 8px;
+  outline: 0;
+  background: #fbfdfe;
+  color: #173044;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.55;
+}
+
+.counselor-ai-compare textarea:focus {
+  border-color: #2788ae;
+  box-shadow: 0 0 0 3px rgb(39 136 174 / 10%);
+}
+
+.counselor-ai-review__integration {
+  padding: 10px;
+  border-radius: 8px;
+  background: #f2f0fa;
+}
+
+.counselor-ai-review__integration strong {
+  color: #5d50a4;
+  font-size: 10px;
+}
+
+.counselor-ai-review__integration p {
+  margin: 5px 0 0;
+  color: #736d91;
+  font-size: 9px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.counselor-ai-review__checklist {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  padding: 0 12px 10px;
+  background: #f6f8fa;
+}
+
+.counselor-ai-review__checklist span {
+  padding: 6px 3px;
+  border-radius: 7px;
+  background: #eaf4f7;
+  color: #427084;
+  font-size: 8px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.counselor-ai-review__actions {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: 0.8fr 1fr 1fr;
+  gap: 6px;
+  padding: 10px 12px;
+  border-top: 1px solid #e2e9ee;
+}
+
+.counselor-ai-review__actions button {
+  min-height: 36px;
+  border: 1px solid #cfdce4;
+  border-radius: 9px;
+  background: #fff;
+  color: #40586b;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.counselor-ai-review__actions button.is-reject {
+  border-color: #edcdd0;
+  color: #b34449;
+}
+
+.counselor-ai-review__actions button.is-primary {
+  border-color: #176f96;
+  background: #176f96;
+  color: #fff;
+}
+
+.counselor-ai-review__actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.counselor-ai-review__queue {
+  display: flex;
+  min-width: 0;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  border-top: 1px solid #edf1f4;
+}
+
+.counselor-ai-review__queue > span {
+  margin-right: 2px;
+  color: #738495;
+  font-size: 8px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.counselor-ai-review__queue button {
+  padding: 5px 7px;
+  border: 1px solid #d8e1e7;
+  border-radius: 7px;
+  background: #fff;
+  color: #607386;
+  font-size: 8px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.counselor-ai-review__queue button.is-active {
+  border-color: #7564c8;
+  background: #f0eefb;
+  color: #5849a7;
+}
+
+.counselor-ai-review__empty {
+  display: grid;
+  flex: 1;
+  place-content: center;
+  justify-items: center;
+  padding: 28px;
+  color: #6d7f90;
+  text-align: center;
+}
+
+.counselor-ai-review__empty > span {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 12px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e8f5ef;
+  color: #287e58;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.counselor-ai-review__empty strong {
+  color: #324a5d;
+  font-size: 12px;
+}
+
+.counselor-ai-review__empty p {
+  margin: 5px 0 0;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-queue-panel
+  > .common-pagination {
+  grid-column: 1;
+  grid-row: 2;
+  padding: 8px 14px;
+  border-top: 1px solid #dce5eb !important;
+  background: #fff !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-columns
+  > .common-state {
+  grid-column: 1;
+  grid-row: 2 / 4;
+  margin: auto;
+}
+
+@media (max-width: 1480px) {
+  .counselor-home-summary {
+    grid-template-columns: minmax(245px, 0.65fr) minmax(590px, 1.55fr);
+  }
+
+  .counselor-home-metrics {
+    gap: 7px;
+  }
+
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app
+    .consultant-queue-panel {
+    grid-template-columns: minmax(0, 1fr) 315px !important;
+  }
+
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app
+    .consultant-risk-section
+    .v6-queue-item.consultant-list-item,
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app
+    .consultant-risk-section
+    .v6-queue-item.consultant-list-item:nth-child(even) {
+    grid-template-columns: 105px minmax(160px, 1.4fr) 88px 90px 110px !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app
+    .consultant-queue-main {
+    grid-template-columns: 205px minmax(0, 1fr) !important;
+    padding-right: 10px !important;
+  }
+
+  .counselor-home-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .counselor-home-summary__intro {
+    display: none;
+  }
+
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app
+    .consultant-queue-panel {
+    grid-template-columns: minmax(0, 1fr) 286px !important;
+  }
+
+  .counselor-work-queue__header p,
+  .counselor-work-focus button:first-child {
+    display: none;
+  }
+
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app
+    .consultant-risk-section
+    .v6-queue-item.consultant-list-item,
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app
+    .consultant-risk-section
+    .v6-queue-item.consultant-list-item:nth-child(even) {
+    grid-template-columns: 105px minmax(160px, 1fr) 82px 110px !important;
+  }
+
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app
+    .consultant-risk-section
+    .consultant-list-item__progress {
+    display: none !important;
+  }
+}
