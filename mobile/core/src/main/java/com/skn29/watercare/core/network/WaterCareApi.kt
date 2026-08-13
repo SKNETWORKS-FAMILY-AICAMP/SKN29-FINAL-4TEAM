@@ -10,6 +10,8 @@ import com.skn29.watercare.core.model.DemoLoginRequest
 import com.skn29.watercare.core.model.InquiryResponse
 import com.skn29.watercare.core.model.LogoutResponse
 import com.skn29.watercare.core.model.RefreshTokenRequest
+import com.skn29.watercare.core.model.RequestConsultationRequestDto
+import com.skn29.watercare.core.model.RequestConsultationResponseDto
 import com.skn29.watercare.core.model.SessionResponse
 import com.skn29.watercare.core.model.SubmitSymptomRequest
 import com.skn29.watercare.core.model.SubmitFollowUpAnswersRequestDto
@@ -91,6 +93,12 @@ interface WaterCareApi {
         @Header("Idempotency-Key") idempotencyKey: String,
         @Body body: SubmitFollowUpAnswersRequestDto,
     ): Response<ApiEnvelope<SubmitFollowUpAnswersResponseDto>>
+    @POST("api/v1/inquiries/{inquiryId}/request-consultation")
+    suspend fun requestConsultation(
+        @Path("inquiryId") inquiryId: String,
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: RequestConsultationRequestDto,
+    ): Response<ApiEnvelope<RequestConsultationResponseDto>>
 }
 
 interface RefreshApi {

@@ -4,6 +4,8 @@ import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.CustomerInquiryQuestions
 import com.skn29.watercare.core.model.CustomerInquirySnapshot
 import com.skn29.watercare.core.model.FollowUpAnswer
+import com.skn29.watercare.core.model.RequestConsultationRequestDto
+import com.skn29.watercare.core.model.RequestConsultationResult
 import com.skn29.watercare.core.model.SubmitFollowUpAnswersRequestDto
 import com.skn29.watercare.core.model.SubmitFollowUpAnswersResult
 import com.skn29.watercare.core.model.toDomain
@@ -20,6 +22,15 @@ interface CustomerInquiryRepository {
         stateVersion: Int,
         answers: List<FollowUpAnswer>,
     ): ApiResult<SubmitFollowUpAnswersResult>
+    suspend fun requestConsultation(
+        inquiryId: String,
+        stateVersion: Int,
+    ): ApiResult<RequestConsultationResult> =
+        ApiResult.Failure(
+            code = "REQUEST_CONSULTATION_UNAVAILABLE",
+            message = "상담 요청 기능을 사용할 수 없습니다.",
+            retryable = false,
+        )
 }
 
 class RemoteCustomerInquiryRepository(
@@ -27,6 +38,9 @@ class RemoteCustomerInquiryRepository(
     private val json: Json,
     private val idempotencyKeys: FollowUpIdempotencyKeyStore =
         FollowUpIdempotencyKeyStore(),
+    private val consultationIdempotencyKeys:
+        ConsultationRequestIdempotencyKeyStore =
+        ConsultationRequestIdempotencyKeyStore(),
 ) : CustomerInquiryRepository {
     override suspend fun snapshot(
         inquiryId: String,
@@ -88,6 +102,61 @@ class RemoteCustomerInquiryRepository(
                 }
             }
         }
+        return result
+    }
+
+    override suspend fun requestConsultation(
+        inquiryId: String,
+        stateVersion: Int,
+    ): ApiResult<RequestConsultationResult> {
+        val normalizedInquiryId = inquiryId.trim()
+
+        if (
+            normalizedInquiryId.isBlank() ||
+            stateVersion < 1
+        ) {
+            return ApiResult.Failure(
+                code = "CLIENT_VALIDATION_ERROR",
+                message = "최신 문의 상태를 확인한 뒤 다시 시도해 주세요.",
+                retryable = false,
+            )
+        }
+
+        val operation =
+            ConsultationRequestOperationIdentity(
+                inquiryId = normalizedInquiryId,
+                stateVersion = stateVersion,
+            )
+
+        val idempotencyKey =
+            consultationIdempotencyKeys.keyFor(operation)
+
+        val result = safeApiCall(json) {
+            api.requestConsultation(
+                inquiryId = operation.inquiryId,
+                idempotencyKey = idempotencyKey,
+                body = RequestConsultationRequestDto(
+                    stateVersion = stateVersion,
+                ),
+            )
+        }.mapSuccess { it.toDomain() }
+
+        when (result) {
+            is ApiResult.Success ->
+                consultationIdempotencyKeys.complete(operation)
+
+            is ApiResult.Failure -> {
+                val preserveForSafeRetry =
+                    result.retryable &&
+                        result.conflict == null &&
+                        result.code != "DUPLICATE-EVENT-01"
+
+                if (!preserveForSafeRetry) {
+                    consultationIdempotencyKeys.abandon(operation)
+                }
+            }
+        }
+
         return result
     }
 }

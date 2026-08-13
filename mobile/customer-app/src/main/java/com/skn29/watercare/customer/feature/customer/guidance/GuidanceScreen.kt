@@ -92,11 +92,9 @@ fun GuidanceScreen(
         viewModel.cancelState.collectAsStateWithLifecycle()
     val followUpState by
         viewModel.followUpState.collectAsStateWithLifecycle()
-    var consultationNotice by remember { mutableStateOf(false) }
+    val consultationState by
+        viewModel.consultationState.collectAsStateWithLifecycle()
     var showCancelDialog by remember { mutableStateOf(false) }
-    val requestConsultation = {
-        consultationNotice = true
-    }
     val actualInquiryCode = submittedInquiryCode.trim()
     val latestInquirySnapshot = followUpState.snapshotOrNull()
     val effectiveStateVersion =
@@ -257,7 +255,6 @@ fun GuidanceScreen(
                 ),
                 noEvidence = false,
                 onRetry = viewModel::load,
-                onRequestConsultation = requestConsultation,
             )
 
             is GuidanceUiState.NoEvidence -> GuidanceContent(
@@ -266,7 +263,6 @@ fun GuidanceScreen(
                 ),
                 noEvidence = true,
                 onRetry = viewModel::load,
-                onRequestConsultation = requestConsultation,
             )
 
             is GuidanceUiState.AiFailure -> FailureFallback(
@@ -290,12 +286,154 @@ fun GuidanceScreen(
                 )
         }
 
-        if (consultationNotice) {
-            SectionCard("상담 요청") {
+        val consultationAction =
+            effectiveAllowedActions.firstOrNull {
+                it.normalizedCode ==
+                    InquiryActionLabels.REQUEST_CONSULTATION
+            }
+
+        if (
+            consultationAction != null &&
+            consultationState !is
+                ConsultationRequestUiState.Success
+        ) {
+            SectionCard("상담 연결") {
+                WorkflowActionButton(
+                    action = consultationAction,
+                    enabled =
+                        consultationState !is
+                            ConsultationRequestUiState.Requesting,
+                    onClick =
+                        viewModel::requestConsultation,
+                )
+
                 Text(
-                    "상담 요청 API가 아직 제공되지 않아 실제 요청을 보내지 않았습니다."
+                    "현재 문의 상태에서 상담 요청이 허용될 때만 사용할 수 있습니다.",
+                    style =
+                        MaterialTheme.typography.bodySmall,
+                    color =
+                        MaterialTheme.colorScheme
+                            .onSurfaceVariant,
                 )
             }
+        }
+
+        when (val currentConsultation = consultationState) {
+            ConsultationRequestUiState.Idle -> Unit
+
+            ConsultationRequestUiState.Requesting ->
+                LoadingBlock(
+                    "상담 요청을 보내는 중입니다"
+                )
+
+            is ConsultationRequestUiState.Success ->
+                SectionCard("상담 요청 완료") {
+                    LiquidGlassPill("상담 접수됨")
+
+                    Text(
+                        "상담 요청이 전달됐어요.",
+                        style =
+                            MaterialTheme.typography
+                                .titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+
+                    Text(
+                        customerInquiryStatusText(
+                            currentConsultation
+                                .snapshot
+                                .statusCode
+                        )
+                    )
+
+                    Text(
+                        "담당 상담사가 같은 문의를 확인할 수 있도록 요청을 저장했습니다.",
+                        style =
+                            MaterialTheme.typography
+                                .bodyMedium,
+                    )
+
+                    if (
+                        currentConsultation
+                            .idempotentReplay
+                    ) {
+                        Text(
+                            "이미 처리된 요청의 결과를 안전하게 다시 확인했습니다.",
+                            style =
+                                MaterialTheme.typography
+                                    .bodySmall,
+                            color =
+                                MaterialTheme.colorScheme
+                                    .onSurfaceVariant,
+                        )
+                    }
+
+                    LiquidGlassButton(
+                        text = "홈으로",
+                        onClick = onDone,
+                        accent = true,
+                        modifier =
+                            Modifier.fillMaxWidth(),
+                    )
+                }
+
+            is ConsultationRequestUiState.Conflict ->
+                SectionCard(
+                    "문의 상태가 변경됐어요"
+                ) {
+                    Text(
+                        currentConsultation.message
+                    )
+
+                    Text(
+                        customerInquiryStatusText(
+                            currentConsultation
+                                .snapshot
+                                .statusCode
+                        )
+                    )
+
+                    if (
+                        currentConsultation.canRetry
+                    ) {
+                        LiquidGlassButton(
+                            text =
+                                "최신 상태로 상담 다시 요청",
+                            onClick =
+                                viewModel::
+                                    retryConsultationAfterConflict,
+                            accent = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(
+                                    "retryConsultationAfterConflict"
+                                ),
+                        )
+                    } else {
+                        Text(
+                            "현재 상태에서는 상담 요청을 다시 보낼 수 없습니다.",
+                            style =
+                                MaterialTheme.typography
+                                    .bodySmall,
+                            color =
+                                MaterialTheme.colorScheme
+                                    .onSurfaceVariant,
+                        )
+                    }
+                }
+
+            is ConsultationRequestUiState.Error ->
+                ErrorCard(
+                    currentConsultation.message,
+                    if (
+                        currentConsultation.retryable
+                    ) {
+                        viewModel::
+                            retryConsultationRequest
+                    } else {
+                        null
+                    },
+                )
         }
 
         if (showCancelDialog) {
@@ -435,7 +573,6 @@ fun GuidanceContent(
     guidance: GuidanceDisplayModel,
     noEvidence: Boolean,
     onRetry: () -> Unit,
-    onRequestConsultation: () -> Unit,
 ) {
     val dangerous = guidance.requiresConsultation ||
         guidance.riskLevel == RiskLevel.DANGER ||
@@ -564,30 +701,6 @@ fun GuidanceContent(
         BulletList(guidance.prohibitedActions)
     }
 
-    val consultationAction = guidance.allowedActions.firstOrNull {
-        it.normalizedCode ==
-            InquiryActionLabels.REQUEST_CONSULTATION
-    }
-
-    if (consultationAction != null) {
-        LiquidGlassButton(
-            text = "상담 요청 · API 준비 중",
-            onClick = {},
-            enabled = false,
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("consultationUnavailable"),
-        )
-    } else if (dangerous) {
-        LiquidGlassButton(
-            text = "상담 요청 준비 중",
-            onClick = {},
-            enabled = false,
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("consultationUnavailable"),
-        )
-    }
 
     if (dangerous) {
         Text(
