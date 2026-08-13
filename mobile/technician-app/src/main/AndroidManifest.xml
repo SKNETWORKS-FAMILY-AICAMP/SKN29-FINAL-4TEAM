@@ -6,7 +6,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher_watercare_technician"
         android:roundIcon="@mipmap/ic_launcher_watercare_technician"
-        android:label="WaterCare 방문기사"
+        android:label="WaterBridge 방문기사"
         android:theme="@style/Theme.WaterCare"
         android:usesCleartextTraffic="true">
 

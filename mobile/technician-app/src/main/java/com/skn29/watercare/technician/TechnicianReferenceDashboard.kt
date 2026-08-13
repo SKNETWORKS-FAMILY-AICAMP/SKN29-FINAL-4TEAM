@@ -10,7 +10,7 @@ import androidx.compose.ui.text.font.FontWeight
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.core.ui.components.ReferenceActionItem
-import com.skn29.watercare.core.ui.components.ReferenceActionRow
+import com.skn29.watercare.core.ui.components.WaterBridgeActionRow
 import com.skn29.watercare.core.ui.components.ReferenceBottomItem
 import com.skn29.watercare.core.ui.components.ReferenceCompactBanner
 import com.skn29.watercare.core.ui.components.ReferenceDashboardScaffold
@@ -18,11 +18,14 @@ import com.skn29.watercare.core.ui.components.ReferenceGlassButton
 import com.skn29.watercare.core.ui.components.ReferenceGlassPanel
 import com.skn29.watercare.core.ui.components.ReferenceHeroCard
 import com.skn29.watercare.core.ui.components.ReferenceSectionHeader
-import com.skn29.watercare.core.ui.components.ReferenceScheduleCard
+import com.skn29.watercare.core.ui.components.WaterBridgeScheduleCard
 import com.skn29.watercare.core.ui.components.ReferenceBackendStatusCard
 import com.skn29.watercare.core.ui.components.ReferenceStatusItem
 import com.skn29.watercare.core.ui.components.ReferenceWelcomeCard
-import com.skn29.watercare.core.ui.components.TechnicianReferencePalette
+import com.skn29.watercare.core.ui.components.WaterBridgeTechnicianPalette
+import com.skn29.watercare.core.ui.components.WaterBridgeTechnicianScheduleCard
+import com.skn29.watercare.core.ui.components.WaterBridgeTechnicianActionRow
+import com.skn29.watercare.core.ui.components.WaterBridgeTechnicianLogoutButton
 
 @Composable
 fun TechnicianReferenceLogin(
@@ -31,19 +34,20 @@ fun TechnicianReferenceLogin(
     onOfflinePreview: () -> Unit,
     onRetryBackend: () -> Unit,
 ) {
-    val palette = TechnicianReferencePalette
+    val palette = WaterBridgeTechnicianPalette
 
     ReferenceDashboardScaffold(
-        title = "정수기 딜러",
+        title = "WaterBridge",
         roleLabel = "방문기사용",
         palette = palette,
-        backgroundRes = R.drawable.water_splash_technician_r19,
-        backgroundImageAlpha = 0.50f,
+                                brandLogoRes = R.drawable.waterbridge_brand_logo,
+backgroundRes = R.drawable.water_splash_technician_r19,
+        backgroundImageAlpha = 0.12f,
     ) {
         ReferenceWelcomeCard(
             title = "방문 업무를\n시작하세요",
             subtitle = "배정 방문과 읽기 전용 사전 점검 내용을 확인합니다.",
-            imageRes = R.drawable.dashboard_toolkit,
+            imageRes = R.drawable.waterbridge_brand_logo,
             palette = palette,
         )
 
@@ -128,7 +132,7 @@ fun TechnicianReferenceDashboard(
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val palette = TechnicianReferencePalette
+    val palette = WaterBridgeTechnicianPalette
     val total = state.visits.size
     val confirmed = state.visits.count {
         it.scheduleStatusCode == "CONFIRMED"
@@ -148,11 +152,12 @@ fun TechnicianReferenceDashboard(
         ?: "방문기사"
 
     ReferenceDashboardScaffold(
-        title = "정수기 딜러",
+        title = "WaterBridge",
         roleLabel = "방문기사용",
         palette = palette,
-        backgroundRes = R.drawable.water_splash_technician_r19,
-        backgroundImageAlpha = 0.66f,
+                                brandLogoRes = R.drawable.waterbridge_brand_logo,
+backgroundRes = R.drawable.water_splash_technician_r19,
+        backgroundImageAlpha = 0.16f,
         modifier = modifier,
         bottomItems = listOf(
             ReferenceBottomItem(
@@ -190,7 +195,7 @@ fun TechnicianReferenceDashboard(
             metricUnit = "",
             progress = 0f,
             footnote = "",
-            imageRes = R.drawable.dashboard_toolkit,
+            imageRes = R.drawable.waterbridge_brand_logo,
             palette = palette,
             roleLabel = "방문기사용",
             imageEmphasis = 1.06f,
@@ -253,7 +258,7 @@ fun TechnicianReferenceDashboard(
             }
         } else {
             state.visits.take(2).forEach { visit ->
-                ReferenceScheduleCard(
+                WaterBridgeTechnicianScheduleCard(
                     time = visit.scheduledAt,
                     customerName = visit.customerMaskedName,
                     badge = visit.scheduleStatusLabel,
@@ -275,7 +280,7 @@ fun TechnicianReferenceDashboard(
             trailing = "전체보기  ›",
             palette = palette,
         )
-        ReferenceActionRow(
+        WaterBridgeTechnicianActionRow(
             items = listOf(
                 ReferenceActionItem(
                     iconRes = R.drawable.ref_visits,
@@ -365,7 +370,7 @@ fun TechnicianReferenceDashboard(
             trailing = "더보기  ›",
             palette = palette,
         )
-        ReferenceActionRow(
+        WaterBridgeTechnicianActionRow(
             items = listOf(
                 ReferenceActionItem(
                     iconRes = R.drawable.ref_support,
@@ -406,10 +411,11 @@ fun TechnicianReferenceDashboard(
             palette = palette,
         )
 
-        ReferenceGlassButton(
+        WaterBridgeTechnicianLogoutButton(
             text = "로그아웃",
             palette = palette,
             onClick = onLogout,
+            danger = true,
             modifier = Modifier.fillMaxWidth(),
         )
     }
