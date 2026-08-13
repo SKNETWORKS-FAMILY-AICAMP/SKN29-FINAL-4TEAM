@@ -87,6 +87,26 @@ Serializer·테스트 증거로 각각 판정합니다.
 직접·간접 의존성 32개를 고정합니다. 팀이 버전을 변경하면 세 파일과
 검증 기록을 같은 변경 단위로 갱신합니다.
 
+### Python 패키지 설치 기준
+
+`backend/requirements.txt`는 이 프로젝트의 Backend 개발 환경에 필요한
+Python 패키지를 동일한 기준으로 설치하기 위한 단일 진입점입니다. 이
+파일은 새로운 의존성을 정의하거나 패키지 버전을 중복해서 관리하지
+않습니다. 대신 `requirements/local.txt`의 직접 의존성을
+`requirements/constraints-py313.txt`에서 검증한 버전으로 설치합니다.
+
+Python 3.13.13으로 `backend/.venv`를 이미 생성한 경우, 저장소 루트에서
+다음 명령으로 필요한 패키지를 설치할 수 있습니다.
+
+```powershell
+& .\backend\.venv\Scripts\python.exe -m pip install -r .\backend\requirements.txt
+```
+
+신규 환경의 생성·동기화·검증에는 위 `pip install` 명령만 사용하지
+않습니다. 가상환경 생성, pip 버전 고정, 검증된 의존성 설치, fingerprint
+기록과 환경 검사를 포함하는 공식 기본 절차는 아래 `bootstrap.py`
+명령입니다.
+
 새 PC에서는 Python 3.13.13을 준비한 뒤 저장소 루트에서 다음 한 줄로
 `backend/.venv`를 생성·동기화합니다.
 
