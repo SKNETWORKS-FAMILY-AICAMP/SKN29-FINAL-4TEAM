@@ -79,7 +79,7 @@ class FakeGuidanceLLMClient:
         self.calls += 1
         return GuidanceLLMResponse(
             output=GuidanceGenerationResult(
-                message="공식 사용설명서의 점검 항목을 순서대로 확인해 주세요.",
+                message="냉수 온도가 높으면 잠시 기다린 뒤 다시 확인합니다.",
                 next_actions=["안내된 자가조치 단계별 점검 수행"],
             ),
             model_name="gpt-4.1-mini",
@@ -256,7 +256,9 @@ def test_configured_search_with_evidence_is_available():
     assert response.status.value == "SUCCEEDED"
     assert len(response.evidence_references) == 1
     assert result.context.retrieval_outcome == RetrievalOutcome.AVAILABLE
-    assert response.usage_guidance.message.startswith("공식 사용설명서")
+    assert response.usage_guidance.message == (
+        "냉수 온도가 높으면 잠시 기다린 뒤 다시 확인합니다."
+    )
     assert result.context.model_metadata.model_name == "gpt-4.1-mini"
     assert result.context.model_metadata.tokens_used == 18
     assert llm_client.calls == 1

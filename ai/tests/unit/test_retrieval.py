@@ -333,3 +333,77 @@ def test_manifest_revision_mismatch_is_rejected_before_search():
         assert False, "Embedding Revision 불일치를 거부해야 합니다."
     except RuntimeError as exc:
         assert "Revision" in str(exc)
+
+
+def test_manifest_sha256_comparison_accepts_backend_lowercase_view_values():
+    class FakeEmbedding:
+        model_name = "BAAI/bge-m3"
+        model_revision = "a" * 40
+        dimension = 1024
+
+    manifest = IndexManifest(
+        model_name="BAAI/bge-m3",
+        model_revision="a" * 40,
+        chunk_set_sha256="B" * 64,
+        document_hashes={"DOC-001": "C" * 64},
+    )
+    chunk = RetrievedChunk(
+        chunk_id="RAG-WPUJAC104DWH-TEST-001",
+        document_id="DOC-001",
+        document_title="공식 문서",
+        manual_model="WPUJAC104DWH",
+        model_code="WPUJAC104DWH",
+        product_generation="D",
+        content="공식 근거",
+        similarity_score=0.9,
+        verification_status="official_verified",
+        allowed_use=True,
+        source_hash="c" * 64,
+        embedding_model="BAAI/bge-m3",
+        embedding_model_revision="a" * 40,
+        index_version=manifest.index_version,
+        chunk_set_sha256="b" * 64,
+    )
+    service = VectorSearchService(
+        FakeEmbedding(),
+        object(),
+        index_manifest=manifest,
+    )
+
+    assert service._is_valid_result(chunk, "WPUJAC104DWH") is True
+
+
+def test_invalid_or_missing_manifest_hashes_fail_closed():
+    class FakeEmbedding:
+        model_name = "BAAI/bge-m3"
+        model_revision = "a" * 40
+        dimension = 1024
+
+    manifest = IndexManifest(
+        model_name="BAAI/bge-m3",
+        model_revision="a" * 40,
+        chunk_set_sha256="Z" * 64,
+        document_hashes={"DOC-001": "Y" * 64},
+    )
+    chunk = RetrievedChunk(
+        chunk_id="RAG-WPUJAC104DWH-TEST-INVALID",
+        document_id="DOC-001",
+        document_title="공식 문서",
+        manual_model="WPUJAC104DWH",
+        model_code="WPUJAC104DWH",
+        product_generation="D",
+        content="공식 근거",
+        similarity_score=0.9,
+        verification_status="official_verified",
+        allowed_use=True,
+        embedding_model="BAAI/bge-m3",
+        embedding_model_revision="a" * 40,
+        index_version=manifest.index_version,
+    )
+    service = VectorSearchService(
+        FakeEmbedding(),
+        object(),
+        index_manifest=manifest,
+    )
+
+    assert service._is_valid_result(chunk, "WPUJAC104DWH") is False

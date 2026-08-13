@@ -2,12 +2,16 @@
 
 import json
 import logging
+from pathlib import Path
+import subprocess
+import sys
 
 import httpx
 import pytest
 from fastapi.testclient import TestClient
 
 from ai.app.bootstrap import create_app
+from ai.app.common.timeout import PipelineStageTimeoutError
 from ai.app.generation.customer_guidance.guidance_generator import (
     GuidanceGenerationExecutionError,
 )
@@ -17,6 +21,7 @@ from ai.app.generation.customer_guidance.models import (
 )
 from ai.app.integrations.llm import (
     GuidanceLLMResponse,
+    LLMConfigurationError,
     LLMOutputValidationError,
     LLMProviderConnectionError,
     LLMProviderTimeoutError,
@@ -62,8 +67,12 @@ class SequenceLLMClient:
     def __init__(self, *values):
         self.values = list(values)
         self.calls = 0
+        self.requests = []
+        self.timeouts = []
 
     def generate_guidance(self, request, *, timeout_seconds):
+        self.requests.append(request)
+        self.timeouts.append(timeout_seconds)
         value = self.values[self.calls]
         self.calls += 1
         if isinstance(value, Exception):
@@ -71,7 +80,11 @@ class SequenceLLMClient:
         return value
 
 
-def llm_response(*, message="공식 안내에 따라 출수 상태를 확인해 주세요.", actions=None):
+def llm_response(
+    *,
+    message="출수량이 적을 때 원수 공급과 필터 상태를 확인합니다.",
+    actions=None,
+):
     return GuidanceLLMResponse(
         output=GuidanceGenerationResult(
             message=message,
@@ -83,7 +96,14 @@ def llm_response(*, message="공식 안내에 따라 출수 상태를 확인해 
     )
 
 
-def run_pipeline(*, search_service, llm_client, raw_symptom="냉수 출수량이 적습니다."):
+def run_pipeline(
+    *,
+    search_service,
+    llm_client,
+    raw_symptom="냉수 출수량이 적습니다.",
+    selected_symptoms=None,
+    model_code="WPUJAC104DWH",
+):
     return PipelineRouter(
         search_service=search_service,
         llm_client=llm_client,
@@ -93,7 +113,29 @@ def run_pipeline(*, search_service, llm_client, raw_symptom="냉수 출수량이
         ai_request_id="ai-req-guidance-only",
         state_version=1,
         raw_symptom=raw_symptom,
+        model_code=model_code,
+        selected_symptoms=selected_symptoms,
+    )
+
+
+def accepted_actions(raw_symptom="냉수 출수량이 적습니다."):
+    return (
+        ["안내된 자가조치 단계별 점검 수행"]
+        if "미지근" in raw_symptom or "출수량" in raw_symptom
+        else ["기본 필터 및 사용 환경 유지"]
+    )
+
+
+def generation_request() -> GuidanceGenerationRequest:
+    return GuidanceGenerationRequest(
         model_code="WPUJAC104DWH",
+        symptom_summary="출수량 저하",
+        risk_level="caution",
+        guidance_status="PARTIAL_STOP",
+        safety_reason="일반 점검 필요",
+        restricted_functions=["냉수 출수 확인 필요"],
+        allowed_next_actions=["원수 공급 상태를 확인하세요."],
+        evidence_summaries=["원수 공급과 필터 상태를 확인합니다."],
     )
 
 
@@ -104,6 +146,7 @@ def test_openai_adapter_sends_guidance_only_strict_schema():
         captured["authorization"] = request.headers["Authorization"]
         captured["payload"] = json.loads(request.content)
         return httpx.Response(200, json={
+            "status": "completed",
             "model": "gpt-4.1-mini-2025-04-14",
             "output": [{
                 "type": "message",
@@ -120,22 +163,16 @@ def test_openai_adapter_sends_guidance_only_strict_schema():
 
     http_client = httpx.Client(transport=httpx.MockTransport(handler))
     client = OpenAIResponsesLLMClient(api_key="test-only-key", http_client=http_client)
-    request = GuidanceGenerationRequest(
-        model_code="WPUJAC104DWH",
-        symptom_summary="출수량 저하",
-        risk_level="caution",
-        guidance_status="PARTIAL_STOP",
-        safety_reason="일반 점검 필요",
-        restricted_functions=["냉수 출수 확인 필요"],
-        allowed_next_actions=["원수 공급 상태를 확인하세요."],
-        evidence_summaries=["원수 공급과 필터 상태를 확인합니다."],
-    )
+    request = generation_request()
 
     response = client.generate_guidance(request, timeout_seconds=1.0)
 
     output_schema = captured["payload"]["text"]["format"]["schema"]
     assert captured["authorization"] == "Bearer test-only-key"
     assert captured["payload"]["model"] == "gpt-4.1-mini"
+    assert captured["payload"]["store"] is False
+    assert captured["payload"]["temperature"] == 0.0
+    assert captured["payload"]["max_output_tokens"] == 500
     assert captured["payload"]["text"]["format"]["strict"] is True
     assert set(output_schema["properties"]) == {"message", "next_actions"}
     assert "correlation_id" not in output_schema["properties"]
@@ -151,6 +188,7 @@ def test_openai_adapter_rejects_schema_violation_without_retry():
         http_client=httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(
             200,
             json={
+                "status": "completed",
                 "output": [{"type": "message", "content": [{
                     "type": "output_text",
                     "text": '{"message":"안내"}',
@@ -171,13 +209,106 @@ def test_openai_adapter_rejects_schema_violation_without_retry():
         client.generate_guidance(request, timeout_seconds=1.0)
 
 
+@pytest.mark.parametrize(
+    ("status_code", "expected_error"),
+    [
+        (408, LLMProviderTimeoutError),
+        (504, LLMProviderTimeoutError),
+        (429, LLMProviderConnectionError),
+        (500, LLMProviderConnectionError),
+    ],
+)
+def test_openai_adapter_classifies_provider_http_failures(
+    status_code,
+    expected_error,
+):
+    client = OpenAIResponsesLLMClient(
+        api_key="test-only-key",
+        http_client=httpx.Client(
+            transport=httpx.MockTransport(
+                lambda request: httpx.Response(status_code, json={"error": {}})
+            )
+        ),
+    )
+
+    with pytest.raises(expected_error):
+        client.generate_guidance(generation_request(), timeout_seconds=1.0)
+
+
+def test_openai_adapter_rejects_incomplete_response_even_with_valid_output():
+    client = OpenAIResponsesLLMClient(
+        api_key="test-only-key",
+        http_client=httpx.Client(
+            transport=httpx.MockTransport(
+                lambda request: httpx.Response(
+                    200,
+                    json={
+                        "status": "incomplete",
+                        "incomplete_details": {"reason": "max_output_tokens"},
+                        "output": [
+                            {
+                                "type": "message",
+                                "content": [
+                                    {
+                                        "type": "output_text",
+                                        "text": json.dumps(
+                                            {
+                                                "message": "안내",
+                                                "next_actions": ["상담 연결"],
+                                            },
+                                            ensure_ascii=False,
+                                        ),
+                                    }
+                                ],
+                            }
+                        ],
+                    },
+                )
+            )
+        ),
+    )
+
+    with pytest.raises(LLMOutputValidationError):
+        client.generate_guidance(generation_request(), timeout_seconds=1.0)
+
+
+@pytest.mark.parametrize(
+    "base_url",
+    [
+        "http://api.openai.com/v1",
+        "https://api.openai.com.evil.example/v1",
+        "https://evil.example/v1",
+        "https://api.openai.com/v1?redirect=evil",
+        "https://token@api.openai.com/v1",
+        "https://api.openai.com:8443/v1",
+        "https://api.openai.com:not-a-port/v1",
+    ],
+)
+def test_openai_adapter_rejects_untrusted_base_url(base_url):
+    with pytest.raises(LLMConfigurationError):
+        OpenAIResponsesLLMClient(
+            api_key="test-only-key",
+            base_url=base_url,
+        )
+
+
+def test_environment_rejects_unapproved_llm_model(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "test-only-key")
+    monkeypatch.setenv("AI_LLM_MODEL", "unapproved-model")
+
+    with pytest.raises(LLMConfigurationError, match="승인된"):
+        OpenAIResponsesLLMClient.from_environment()
+
+
 def test_evidence_path_calls_llm_and_preserves_runtime_owned_fields():
     client = SequenceLLMClient(llm_response())
     result = run_pipeline(search_service=EvidenceSearchService(), llm_client=client)
     response = result.to_analysis_result()
 
     assert client.calls == 1
-    assert response.usage_guidance.message.startswith("공식 안내")
+    assert response.usage_guidance.message == (
+        "출수량이 적을 때 원수 공급과 필터 상태를 확인합니다."
+    )
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PARTIAL_STOP
     assert response.safety_assessment.risk_level.value == "caution"
     assert len(response.evidence_references) == 1
@@ -190,12 +321,15 @@ def test_llm_usage_log_records_tokens_without_customer_or_evidence_text(caplog):
     with caplog.at_level(logging.INFO, logger="watercare.ai.llm"):
         run_pipeline(
             search_service=EvidenceSearchService(),
-            llm_client=SequenceLLMClient(llm_response()),
+            llm_client=SequenceLLMClient(
+                llm_response(actions=accepted_actions(raw_symptom))
+            ),
             raw_symptom=raw_symptom,
         )
     payload = json.loads(caplog.records[-1].message)
     assert payload["event"] == "llm_guidance_completed"
     assert payload["model_name"] == "gpt-4.1-mini"
+    assert payload["prompt_version"] == "customer_guidance/v2"
     assert payload["total_tokens"] == 30
     assert payload["correlation_id"] == CORRELATION_ID
     assert raw_symptom not in caplog.text
@@ -261,16 +395,129 @@ def test_llm_timeout_retries_once_then_raises_typed_504_candidate():
     assert raised.value.retry_count == 1
 
 
-def test_prohibited_llm_action_falls_back_to_deterministic_guidance():
+def test_pipeline_stage_timeout_is_not_reclassified_as_provider_503():
+    client = SequenceLLMClient(PipelineStageTimeoutError("GENERATING"))
+
+    with pytest.raises(PipelineStageTimeoutError) as raised:
+        run_pipeline(search_service=EvidenceSearchService(), llm_client=client)
+
+    assert raised.value.stage == "GENERATING"
+    assert client.calls == 1
+
+
+def test_prohibited_llm_action_fails_closed():
     client = SequenceLLMClient(llm_response(
         message="정확한 원인은 점검이 필요합니다.",
         actions=["커버를 분해하세요."],
     ))
-    result = run_pipeline(search_service=EvidenceSearchService(), llm_client=client)
-    guidance = result.to_analysis_result().usage_guidance
+    with pytest.raises(GuidanceGenerationExecutionError) as raised:
+        run_pipeline(search_service=EvidenceSearchService(), llm_client=client)
+
     assert client.calls == 1
-    assert "커버를 분해하세요" not in guidance.next_actions
-    assert guidance.message.startswith("일부 기능에 이상")
+    assert raised.value.retryable is False
+
+
+@pytest.mark.parametrize(
+    "unsafe_message",
+    [
+        "모든 기능을 정상적으로 계속 사용해도 됩니다.",
+        "제품 뒷면을 열고 전선 연결을 확인해 주세요.",
+        "공식 수질 검사 결과 세균이 없으므로 바로 마셔도 됩니다.",
+        "원수 공급과 필터 상태 확인은 필요 없습니다.",
+    ],
+)
+def test_unsafe_or_ungrounded_llm_message_fails_closed(
+    unsafe_message,
+):
+    client = SequenceLLMClient(llm_response(message=unsafe_message))
+
+    with pytest.raises(GuidanceGenerationExecutionError) as raised:
+        run_pipeline(search_service=EvidenceSearchService(), llm_client=client)
+
+    assert client.calls == 1
+    assert raised.value.retryable is False
+
+
+def test_provider_request_redacts_pii_and_excludes_raw_occurrence_condition():
+    phone_number = "010-1234-5678"
+    raw_symptom = (
+        f"냉수 출수량이 적고 사용할 때 연락처 {phone_number}, "
+        "주소 서울시 고객동 1번지로 연락해 주세요."
+    )
+    client = SequenceLLMClient(llm_response())
+
+    run_pipeline(
+        search_service=EvidenceSearchService(),
+        llm_client=client,
+        raw_symptom=raw_symptom,
+        selected_symptoms=[f"출수량 저하 {phone_number}"],
+        model_code="customer@example.com",
+    )
+
+    provider_request = client.requests[0]
+    serialized = provider_request.model_dump_json()
+    assert phone_number not in serialized
+    assert "서울시 고객동" not in serialized
+    assert raw_symptom not in serialized
+    assert provider_request.symptom_summary.startswith("기타 증상")
+    assert provider_request.model_code == "UNKNOWN_MODEL"
+
+
+def test_provider_request_excludes_free_form_previous_answers():
+    name_and_address = "홍길동이 서울특별시 강남구 테헤란로 123에서 확인했습니다."
+    client = SequenceLLMClient(llm_response())
+
+    PipelineRouter(
+        search_service=EvidenceSearchService(),
+        llm_client=client,
+    ).run_pipeline(
+        inquiry_id=INQUIRY_ID,
+        correlation_id=CORRELATION_ID,
+        ai_request_id="ai-req-free-form-pii",
+        state_version=1,
+        raw_symptom="냉수 출수량이 적습니다.",
+        model_code="WPUJAC104DWH",
+        previous_answers=[
+            {
+                "question_id": "followup-occurrence-time",
+                "answer_text": name_and_address,
+            },
+            {
+                "question_id": "followup-actions-taken",
+                "answer_text": name_and_address,
+            },
+            {
+                "question_id": "followup-target-water-type",
+                "answer_text": name_and_address,
+            },
+        ],
+    )
+
+    serialized = client.requests[0].model_dump_json()
+    assert "홍길동" not in serialized
+    assert "서울특별시" not in serialized
+    assert "테헤란로" not in serialized
+
+
+def test_guidance_generator_imports_in_fresh_interpreter():
+    repository_root = Path(__file__).resolve().parents[3]
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "from ai.app.generation.customer_guidance.guidance_generator "
+                "import CustomerGuidanceGenerator"
+            ),
+        ],
+        cwd=repository_root,
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
 
 
 def test_http_llm_timeout_is_504_generating(monkeypatch):

@@ -8,14 +8,17 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
+from urllib.parse import urlsplit
 
 import httpx
+import yaml
 from pydantic import ValidationError
 
 from ...generation.customer_guidance.models import (
     GuidanceGenerationRequest,
     GuidanceGenerationResult,
 )
+from ...generation.customer_guidance.prompt_identity import PROMPT_VERSION
 
 
 class LLMConfigurationError(RuntimeError):
@@ -80,24 +83,42 @@ class OpenAIResponsesLLMClient:
         api_key: str,
         model_name: str = DEFAULT_MODEL,
         base_url: str = DEFAULT_BASE_URL,
+        temperature: float = 0.0,
+        max_output_tokens: int = 500,
         http_client: httpx.Client | None = None,
     ) -> None:
         if not api_key.strip():
             raise LLMConfigurationError("OPENAI_API_KEY가 설정되지 않았습니다.")
         if not model_name.strip():
             raise LLMConfigurationError("AI_LLM_MODEL이 비어 있습니다.")
+        self._validate_base_url(base_url)
+        if not 0.0 <= temperature <= 2.0:
+            raise LLMConfigurationError("LLM temperature는 0.0~2.0 범위여야 합니다.")
+        if not 1 <= max_output_tokens <= 2000:
+            raise LLMConfigurationError("LLM max_output_tokens는 1~2000 범위여야 합니다.")
         self._api_key = api_key
         self.model_name = model_name
         self.base_url = base_url.rstrip("/")
+        self.temperature = temperature
+        self.max_output_tokens = max_output_tokens
         self._http_client = http_client
 
     @classmethod
     def from_environment(cls) -> "OpenAIResponsesLLMClient":
         api_key = os.getenv("OPENAI_API_KEY", "")
+        profile = cls._grounded_guidance_profile()
+        approved_model = str(profile.get("model_name") or cls.DEFAULT_MODEL)
+        configured_model = os.getenv("AI_LLM_MODEL", approved_model)
+        if configured_model != approved_model:
+            raise LLMConfigurationError(
+                "AI_LLM_MODEL이 승인된 grounded_guidance Profile과 일치하지 않습니다."
+            )
         return cls(
             api_key=api_key,
-            model_name=os.getenv("AI_LLM_MODEL", cls.DEFAULT_MODEL),
+            model_name=configured_model,
             base_url=os.getenv("OPENAI_BASE_URL", cls.DEFAULT_BASE_URL),
+            temperature=float(profile.get("temperature", 0.0)),
+            max_output_tokens=int(profile.get("max_tokens", 500)),
         )
 
     def generate_guidance(
@@ -131,7 +152,9 @@ class OpenAIResponsesLLMClient:
                     "schema": schema,
                 }
             },
-            "max_output_tokens": 500,
+            "store": False,
+            "temperature": self.temperature,
+            "max_output_tokens": self.max_output_tokens,
         }
         started_at = time.perf_counter()
         try:
@@ -159,7 +182,11 @@ class OpenAIResponsesLLMClient:
         except httpx.TransportError as exc:
             raise LLMProviderConnectionError("OpenAI 연결을 완료하지 못했습니다.") from exc
 
-        if response.status_code in {408, 409, 429} or response.status_code >= 500:
+        if response.status_code in {408, 504}:
+            raise LLMProviderTimeoutError(
+                f"OpenAI Timeout 상태가 반환되었습니다: {response.status_code}"
+            )
+        if response.status_code in {409, 429} or response.status_code >= 500:
             raise LLMProviderConnectionError(
                 f"OpenAI 일시 오류 상태가 반환되었습니다: {response.status_code}"
             )
@@ -172,6 +199,11 @@ class OpenAIResponsesLLMClient:
             body = response.json()
         except ValueError as exc:
             raise LLMOutputValidationError("OpenAI 응답이 JSON이 아닙니다.") from exc
+
+        if not isinstance(body, dict):
+            raise LLMOutputValidationError("OpenAI 응답 객체가 올바르지 않습니다.")
+        if body.get("status") != "completed":
+            raise LLMOutputValidationError("OpenAI 응답이 완료 상태가 아닙니다.")
 
         output_text = self._extract_output_text(body)
         try:
@@ -199,6 +231,7 @@ class OpenAIResponsesLLMClient:
     def _extract_output_text(body: object) -> str:
         if not isinstance(body, dict):
             raise LLMOutputValidationError("OpenAI 응답 객체가 올바르지 않습니다.")
+        output_texts: list[str] = []
         for output in body.get("output", []):
             if not isinstance(output, dict) or output.get("type") != "message":
                 continue
@@ -208,8 +241,12 @@ class OpenAIResponsesLLMClient:
                 if item.get("type") == "refusal":
                     raise LLMRefusalError("OpenAI가 Guidance 생성을 거부했습니다.")
                 if item.get("type") == "output_text" and isinstance(item.get("text"), str):
-                    return item["text"]
-        raise LLMOutputValidationError("OpenAI 응답에 Guidance 출력이 없습니다.")
+                    output_texts.append(item["text"])
+        if len(output_texts) != 1:
+            raise LLMOutputValidationError(
+                "OpenAI 응답에는 Guidance 출력이 정확히 1개여야 합니다."
+            )
+        return output_texts[0]
 
     @staticmethod
     def _nonnegative_int(value: object) -> int:
@@ -217,12 +254,20 @@ class OpenAIResponsesLLMClient:
 
     @staticmethod
     def _prompts(request: GuidanceGenerationRequest) -> tuple[str, str]:
-        prompt_dir = Path(__file__).resolve().parents[3] / "prompts" / "customer_guidance" / "v1"
+        prompt_directory_version = PROMPT_VERSION.rsplit("/", maxsplit=1)[-1]
+        prompt_dir = (
+            Path(__file__).resolve().parents[3]
+            / "prompts"
+            / "customer_guidance"
+            / prompt_directory_version
+        )
         try:
             system_prompt = (prompt_dir / "system.txt").read_text(encoding="utf-8").strip()
             user_template = (prompt_dir / "user_template.txt").read_text(encoding="utf-8").strip()
         except OSError as exc:
-            raise LLMConfigurationError("customer_guidance/v1 Prompt를 읽을 수 없습니다.") from exc
+            raise LLMConfigurationError(
+                f"{PROMPT_VERSION} Prompt를 읽을 수 없습니다."
+            ) from exc
         request_json = json.dumps(
             request.model_dump(mode="json"),
             ensure_ascii=False,
@@ -231,3 +276,46 @@ class OpenAIResponsesLLMClient:
         return system_prompt, user_template.format(
             guidance_generation_request_json=request_json,
         )
+
+    @staticmethod
+    def _validate_base_url(base_url: str) -> None:
+        parsed = urlsplit(base_url)
+        try:
+            port = parsed.port
+        except ValueError as exc:
+            raise LLMConfigurationError(
+                "OPENAI_BASE_URL의 Port가 올바르지 않습니다."
+            ) from exc
+        hostname = (parsed.hostname or "").casefold()
+        official_host = hostname == "api.openai.com"
+        if (
+            parsed.scheme != "https"
+            or not official_host
+            or parsed.username is not None
+            or parsed.password is not None
+            or port not in {None, 443}
+            or parsed.query
+            or parsed.fragment
+            or parsed.path.rstrip("/") != "/v1"
+        ):
+            raise LLMConfigurationError(
+                "OPENAI_BASE_URL은 승인된 공식 HTTPS /v1 Endpoint여야 합니다."
+            )
+
+    @staticmethod
+    def _grounded_guidance_profile() -> dict[str, object]:
+        config_path = (
+            Path(__file__).resolve().parents[3] / "configs" / "model_profiles.yaml"
+        )
+        try:
+            config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+            profile = config["tasks"]["safety_and_guidance"]["grounded_guidance"]
+        except (OSError, KeyError, TypeError, yaml.YAMLError) as exc:
+            raise LLMConfigurationError(
+                "safety_and_guidance 모델 프로필을 읽을 수 없습니다."
+            ) from exc
+        if not isinstance(profile, dict) or profile.get("provider") != "openai":
+            raise LLMConfigurationError(
+                "safety_and_guidance 모델 프로필이 OpenAI 기준선과 일치하지 않습니다."
+            )
+        return profile

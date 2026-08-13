@@ -47,14 +47,36 @@ class VectorSearchService:
         if self.index_manifest is None:
             return True
         expected_hash = self.index_manifest.document_hashes.get(chunk.document_id or "")
+        normalized_chunk_set = self._normalized_sha256(chunk.chunk_set_sha256)
+        normalized_source_hash = self._normalized_sha256(chunk.source_hash)
+        expected_chunk_set = self._normalized_sha256(
+            self.index_manifest.chunk_set_sha256
+        )
+        normalized_expected_hash = self._normalized_sha256(expected_hash)
         return all((
             chunk.embedding_model == self.index_manifest.model_name,
             chunk.embedding_model_revision == self.index_manifest.model_revision,
             chunk.index_version == self.index_manifest.index_version,
-            chunk.chunk_set_sha256 == self.index_manifest.chunk_set_sha256,
-            expected_hash is not None,
-            chunk.source_hash == expected_hash,
+            normalized_chunk_set is not None,
+            expected_chunk_set is not None,
+            normalized_chunk_set == expected_chunk_set,
+            normalized_source_hash is not None,
+            normalized_expected_hash is not None,
+            normalized_source_hash == normalized_expected_hash,
         ))
+
+    @staticmethod
+    def _normalized_sha256(value: str | None) -> str | None:
+        """SHA-256의 의미는 대소문자와 무관하되 다른 Metadata는 엄격 비교한다."""
+
+        if value is None:
+            return None
+        normalized = value.casefold()
+        if len(normalized) != 64 or any(
+            character not in "0123456789abcdef" for character in normalized
+        ):
+            return None
+        return normalized
 
     def search(
         self,

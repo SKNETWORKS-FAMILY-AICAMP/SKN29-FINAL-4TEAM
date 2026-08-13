@@ -7,9 +7,9 @@
     "method": "BACKEND_ENV_AND_SHARED_MANIFEST",
     "manifest_path": "ai/configs/runtime_identity.json",
     "environment_mapping": {
-      "AI_MODEL_PROVIDER": "local.model_provider",
-      "AI_MODEL_NAME": "local.model_name",
-      "AI_PROMPT_VERSION": "local.prompt_version"
+      "AI_MODEL_PROVIDER": "local.llm.provider",
+      "AI_MODEL_NAME": "local.llm.model_name",
+      "AI_PROMPT_VERSION": "local.llm.prompt_version"
     },
     "required_persistence_target": "backend.apps.audit.models.AIRun"
   },
@@ -33,7 +33,7 @@
       "provider": "openai",
       "model_name": "gpt-4.1-mini",
       "output_scope": "GUIDANCE_ONLY",
-      "prompt_version": "customer_guidance/v1",
+      "prompt_version": "customer_guidance/v2",
       "timeout_policy": "HTTP_504_BACKEND_TRANSITION"
     },
     "retrieval": {

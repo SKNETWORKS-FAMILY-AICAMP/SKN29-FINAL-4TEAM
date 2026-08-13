@@ -19,19 +19,25 @@
   "required_environment_variable_names": {
     "mock": [],
     "local_general_or_caution": [
+      "OPENAI_API_KEY",
+      "AI_LLM_MODEL",
       "AI_VECTOR_DSN",
-      "AI_EMBEDDING_REVISION"
+      "AI_EMBEDDING_REVISION",
+      "AI_VECTOR_TABLE_NAME"
     ],
     "local_danger_rule_only": []
   },
   "optional_environment_variable_names": [
     "AI_MAX_IN_FLIGHT_WORKERS",
-    "AI_LOG_LEVEL"
+    "AI_LOG_LEVEL",
+    "OPENAI_BASE_URL"
   ],
   "start_command": ".\\ai\\.venv\\Scripts\\python.exe -m uvicorn ai.app.main:app --host 127.0.0.1 --port 8001",
   "health_url": "http://127.0.0.1:8001/health",
   "analysis_endpoint": "POST http://127.0.0.1:8001/api/v1/ai/analyze?mode={mock|local}",
   "smoke_command": ".\\ai\\.venv\\Scripts\\python.exe -m ai.scripts.smoke_test --base-url http://127.0.0.1:8001 --mode mock",
+  "local_llm_runtime_gate_command": ".\\ai\\.venv\\Scripts\\python.exe -m ai.scripts.verify_local_runtime",
+  "local_runtime_gate_command": ".\\ai\\.venv\\Scripts\\python.exe -m ai.scripts.smoke_test --base-url http://127.0.0.1:8001 --mode local --expected-result-status SUCCEEDED --expected-failure-stage NONE --expected-evidence-id RAG-WPUJAC104DWH-LOW-FLOW-001 --minimum-evidence-count 1 --require-verified-evidence --expected-guidance-message \"출수량이 적으면 조리수 또는 다른 수전을 동시에 사용하는지 확인하고 조리수 사용을 멈춘 뒤 출수합니다. 필터 교체 주기를 확인해 필터를 교체하고, 교체 후에도 출수량이 적으면 고객상담센터에 연락합니다. 순간 온수 출수는 냉수와 정수보다 느릴 수 있고 설치 지역 수압이 약해도 출수 속도가 느릴 수 있습니다.\"",
   "db_seed_or_reset_command": {
     "mock": "NOT_REQUIRED",
     "local_disposable": [
@@ -55,11 +61,22 @@
       "failure_stage": "RETRIEVING",
       "retryable": false,
       "retry_count": 0
+    },
+    {
+      "condition": "공식 근거 검색 성공 후 OPENAI_API_KEY 미설정",
+      "http_status": 503,
+      "error_code": "AI-FAILED-01",
+      "failure_stage": "GENERATING",
+      "retryable": false,
+      "retry_count": 0
     }
   ],
   "notes": [
     "health는 Liveness이며 Local RAG Readiness 성공을 의미하지 않는다.",
     "Local 위험 입력은 결정론적 안전 규칙이 검색보다 우선하므로 Vector 환경변수 없이도 실행될 수 있다.",
+    "팀 통합환경의 AI_VECTOR_TABLE_NAME은 Backend 읽기 전용 View backend_ai_rag_chunks_v1을 사용한다.",
+    "팀 최소 권한 AI Role은 Vector 청크를 적재하지 않고 읽기 전용 View만 SELECT한다.",
+    "Backend AIRun에는 AI_MODEL_PROVIDER=openai, AI_MODEL_NAME=gpt-4.1-mini, AI_PROMPT_VERSION=customer_guidance/v2를 같은 배포 설정으로 주입하고 E2E 저장값을 대조한다.",
     "실제 DSN과 Secret 값은 Manifest, 명령 출력, 구조화 로그에 기록하지 않는다."
   ]
 }
