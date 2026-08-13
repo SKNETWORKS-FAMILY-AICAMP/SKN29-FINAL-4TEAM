@@ -103,7 +103,11 @@ suspend fun <T> safeApiCall(
             message = ApiErrorMapper.userMessage(status, error?.message),
             details = error?.details?.toString(),
             httpStatus = status,
-            retryable = status == 408 || status == 429 || status >= 500,
+            retryable =
+                error?.code == "AI_GUIDANCE_NOT_READY" ||
+                    status == 408 ||
+                    status == 429 ||
+                    status >= 500,
             conflict = if (status == 409) {
                 extractConflict(error?.details, parsed?.data)
             } else {
@@ -140,6 +144,7 @@ internal fun extractConflict(
     val current = (root["current"] as? JsonObject) ?: root
     val status = current.stringValue("current_status")
         ?: current.stringValue("status")
+        ?: current.stringValue("status_code")
     val version = current.intValue("current_state_version")
         ?: current.intValue("state_version")
     val actions = (current["allowed_actions"] as? JsonArray)

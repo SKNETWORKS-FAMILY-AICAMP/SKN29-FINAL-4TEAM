@@ -133,6 +133,138 @@ def test_request_from_ai_guidance_creates_waiting_consultation():
     assert history.state_version == 4
 
 
+def test_requested_consultation_is_claimable_from_the_consultant_queue():
+    owner, inquiry = create_inquiry(
+        sequence=8,
+        status=Inquiry.Status.AI_GUIDANCE,
+        state_version=3,
+    )
+    first_consultant = create_user(
+        sequence=80,
+        role=User.Role.CONSULTANT,
+    )
+    second_consultant = create_user(
+        sequence=81,
+        role=User.Role.CONSULTANT,
+    )
+
+    requested = client_for(owner).post(
+        endpoint(inquiry),
+        {"state_version": 3},
+        format="json",
+        **headers(key="request-consultation-claim-001"),
+    )
+    assert requested.status_code == 200, requested.json()
+
+    first_client = client_for(first_consultant)
+    second_client = client_for(second_consultant)
+    queue = first_client.get("/api/v1/inquiries")
+    detail_path = f"/api/v1/inquiries/{inquiry.public_id}"
+    first_detail = first_client.get(detail_path)
+    second_detail = second_client.get(detail_path)
+
+    assert queue.status_code == 200, queue.json()
+    queued = next(
+        item
+        for item in queue.json()["data"]["items"]
+        if item["inquiry_id"] == str(inquiry.public_id)
+    )
+    assert [action["code"] for action in queued["allowed_actions"]] == [
+        "START_CONSULTATION"
+    ]
+    assert first_detail.status_code == 200, first_detail.json()
+    assert second_detail.status_code == 200, second_detail.json()
+    assert [
+        action["code"]
+        for action in first_detail.json()["data"]["workflow"][
+            "allowed_actions"
+        ]
+    ] == ["START_CONSULTATION"]
+    inquiry.refresh_from_db()
+    assert inquiry.assigned_user is None
+    assert inquiry.assigned_role_code == Inquiry.AssignedRole.NONE
+
+    started = first_client.post(
+        f"{detail_path}/start-consultation",
+        {"state_version": 4},
+        format="json",
+        **headers(key="start-consultation-claim-001"),
+    )
+
+    assert started.status_code == 200, started.json()
+    assert started.json()["data"]["status"] == (
+        Inquiry.Status.CONSULTATION_IN_PROGRESS
+    )
+    inquiry.refresh_from_db()
+    consultation = Consultation.objects.get(inquiry=inquiry)
+    assert inquiry.assigned_user == first_consultant
+    assert inquiry.assigned_role_code == Inquiry.AssignedRole.CONSULTANT
+    assert consultation.consultant == first_consultant
+
+    assert second_client.get(detail_path).status_code == 404
+    denied_start = second_client.post(
+        f"{detail_path}/start-consultation",
+        {"state_version": inquiry.state_version},
+        format="json",
+        **headers(key="start-consultation-claim-002"),
+    )
+    assert denied_start.status_code == 404
+    second_queue = second_client.get("/api/v1/inquiries")
+    assert str(inquiry.public_id) not in {
+        item["inquiry_id"]
+        for item in second_queue.json()["data"]["items"]
+    }
+    assert first_client.get(detail_path).status_code == 200
+
+
+def test_failed_start_does_not_claim_the_waiting_inquiry():
+    owner, inquiry = create_inquiry(
+        sequence=9,
+        status=Inquiry.Status.AI_GUIDANCE,
+        state_version=3,
+    )
+    stale_consultant = create_user(
+        sequence=90,
+        role=User.Role.CONSULTANT,
+    )
+    next_consultant = create_user(
+        sequence=91,
+        role=User.Role.CONSULTANT,
+    )
+    requested = client_for(owner).post(
+        endpoint(inquiry),
+        {"state_version": 3},
+        format="json",
+        **headers(key="request-consultation-claim-rollback-001"),
+    )
+    assert requested.status_code == 200, requested.json()
+
+    path = f"/api/v1/inquiries/{inquiry.public_id}/start-consultation"
+    stale = client_for(stale_consultant).post(
+        path,
+        {"state_version": 3},
+        format="json",
+        **headers(key="start-consultation-claim-rollback-001"),
+    )
+
+    assert stale.status_code == 409, stale.json()
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 4
+    assert inquiry.assigned_user is None
+    assert inquiry.assigned_role_code == Inquiry.AssignedRole.NONE
+
+    claimed = client_for(next_consultant).post(
+        path,
+        {"state_version": 4},
+        format="json",
+        **headers(key="start-consultation-claim-rollback-002"),
+    )
+    assert claimed.status_code == 200, claimed.json()
+    inquiry.refresh_from_db()
+    assert inquiry.assigned_user == next_consultant
+
+
 def test_same_key_replays_and_changed_request_conflicts():
     owner, inquiry = create_inquiry(
         sequence=2,

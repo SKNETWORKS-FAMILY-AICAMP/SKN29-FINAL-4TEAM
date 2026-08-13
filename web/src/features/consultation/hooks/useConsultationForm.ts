@@ -6,9 +6,15 @@ import type {
   ConsultationFieldErrors,
   ConsultationFormValues,
 } from "../model/consultationTypes";
-import { validateConsultation } from "../validation/consultationSchema";
+import {
+  validateConsultation,
+  type ConsultationValidationOptions,
+} from "../validation/consultationSchema";
 
-export function useConsultationForm(initialValues: ConsultationFormValues) {
+export function useConsultationForm(
+  initialValues: ConsultationFormValues,
+  validationOptions: ConsultationValidationOptions = {},
+) {
   const [values, setValues] = useState(initialValues);
   const [fieldErrors, setFieldErrors] = useState<ConsultationFieldErrors>({});
 
@@ -26,7 +32,11 @@ export function useConsultationForm(initialValues: ConsultationFormValues) {
   };
 
   const validate = (actionCode: CounselorActionCode) => {
-    const nextErrors = validateConsultation(values, actionCode);
+    const nextErrors = validateConsultation(
+      values,
+      actionCode,
+      validationOptions,
+    );
     setFieldErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };

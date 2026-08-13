@@ -20,6 +20,8 @@ export default function RemoteConsultantInquiryDetail({
   const productError = inquiry.sectionErrors.find(
     (error) => error.section === "product_and_care",
   );
+  const usageGuidanceMessage =
+    inquiry.guidanceAndActions.usageGuidanceMessage?.trim() ?? "";
 
   return (
     <div className="remote-inquiry-detail" aria-label="실제 API 문의 상세">
@@ -107,10 +109,12 @@ export default function RemoteConsultantInquiryDetail({
 
       <section className="remote-inquiry-detail__section">
         <h2>사용 안내</h2>
+        <strong>AI 안내 상태</strong>
         <p>{inquiry.guidanceAndActions.usageGuidanceStatus ?? "안내 상태 미제공"}</p>
-        {inquiry.guidanceAndActions.usageGuidanceMessage && (
-          <p>{inquiry.guidanceAndActions.usageGuidanceMessage}</p>
-        )}
+        <strong>AI 안내 내용</strong>
+        <p>
+          {usageGuidanceMessage || "AI 안내 미제공 / 상담 검토 필요"}
+        </p>
         <strong>제한 기능</strong>
         {inquiry.guidanceAndActions.restrictedFunctions.length > 0 ? (
           <ul>
@@ -121,11 +125,42 @@ export default function RemoteConsultantInquiryDetail({
         ) : (
           <p>제한 정보 미제공</p>
         )}
+        <strong>공개 근거</strong>
+        <p>공개 근거 미제공 / 상담 검토 필요</p>
       </section>
 
       <section className="remote-inquiry-detail__section">
         <h2>상담·방문 정보</h2>
-        {inquiry.consultation === null && <p>상담 기록이 아직 제공되지 않았습니다.</p>}
+        {inquiry.consultation === null ? (
+          <p>상담 기록이 아직 제공되지 않았습니다.</p>
+        ) : (
+          <dl className="inquiry-v13-remote-summary">
+            <div>
+              <dt>상담 결과</dt>
+              <dd>{inquiry.consultation.resultCode}</dd>
+            </div>
+            <div>
+              <dt>AI 요약 초안</dt>
+              <dd>{inquiry.consultation.summary.aiDraftSummary ?? "미제공"}</dd>
+            </div>
+            <div>
+              <dt>상담사 수정 요약</dt>
+              <dd>{inquiry.consultation.summary.editedSummary ?? "미저장"}</dd>
+            </div>
+            <div>
+              <dt>확정 요약</dt>
+              <dd>{inquiry.consultation.summary.confirmedSummary ?? "미확정"}</dd>
+            </div>
+            <div>
+              <dt>상담 기록</dt>
+              <dd>{inquiry.consultation.consultationNote ?? "미저장"}</dd>
+            </div>
+            <div>
+              <dt>고객 안내</dt>
+              <dd>{inquiry.consultation.customerGuidance ?? "미저장"}</dd>
+            </div>
+          </dl>
+        )}
         {inquiry.visit === null && <p>방문 기록이 아직 제공되지 않았습니다.</p>}
       </section>
 
@@ -140,7 +175,7 @@ export default function RemoteConsultantInquiryDetail({
         ) : (
           <p>현재 가능한 작업이 없습니다.</p>
         )}
-        <p>상담·방문 저장 API가 준비될 때까지 실행 버튼은 제공하지 않습니다.</p>
+        <p>Backend가 반환한 allowed_actions만 실행 버튼으로 제공합니다.</p>
       </section>
 
       {onOpenVisit && onRefresh && (

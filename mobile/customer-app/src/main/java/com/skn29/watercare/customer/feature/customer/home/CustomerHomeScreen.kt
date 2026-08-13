@@ -140,6 +140,11 @@ fun CustomerHomeContent(
             val fixtureGuidanceAvailable =
                 state.offlinePreview ||
                     state.customerCareMode == CustomerCareMode.FAKE
+            val remoteGuidanceAvailable =
+                state.customerCareMode == CustomerCareMode.REMOTE &&
+                    activeInquiry != null
+            val guidanceAvailable =
+                fixtureGuidanceAvailable || remoteGuidanceAvailable
             val previewLabel = when {
                 state.offlinePreview ->
                     "오프라인 UI 미리보기"
@@ -220,12 +225,12 @@ fun CustomerHomeContent(
                     ReferenceActionItem(
                         iconRes = R.drawable.ref_care,
                         label = "AI 자가진단",
-                        subtitle = if (fixtureGuidanceAvailable) {
+                        subtitle = if (guidanceAvailable) {
                             "문제 확인하기"
                         } else {
-                            "API 준비 중"
+                            "진행 중 문의 없음"
                         },
-                        enabled = fixtureGuidanceAvailable,
+                        enabled = guidanceAvailable,
                         onClick = {
                             onOpenGuidance(
                                 activeInquiry?.inquiryId
@@ -334,14 +339,14 @@ fun CustomerHomeContent(
                         color = palette.accent,
                     )
                     ReferenceGlassButton(
-                        text = if (fixtureGuidanceAvailable) {
-                            "안내 미리보기"
+                        text = if (remoteGuidanceAvailable) {
+                            "실제 AI 안내 확인"
                         } else {
-                            "안내 API 준비 중"
+                            "안내 미리보기"
                         },
                         palette = palette,
                         accent = true,
-                        enabled = fixtureGuidanceAvailable,
+                        enabled = guidanceAvailable,
                         onClick = {
                             onOpenGuidance(
                                 active.inquiryId,

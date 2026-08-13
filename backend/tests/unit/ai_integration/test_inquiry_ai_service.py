@@ -13,6 +13,9 @@ from django.db import IntegrityError
 
 from apps.accounts.models import CustomerProfile, User
 from apps.audit.models import AIRun
+from apps.evidence.services.evidence_validation_service import (
+    BASELINE_CORPUS_PATH,
+)
 from apps.inquiries.models import (
     FollowUpAnswer,
     Guidance,
@@ -261,6 +264,45 @@ def test_verified_evidence_allows_safe_guidance_system_transition():
     http_client.close()
 
 
+def test_default_verifier_accepts_exact_baseline_ai_reference():
+    with BASELINE_CORPUS_PATH.open(encoding="utf-8") as source:
+        row = json.loads(next(line for line in source if line.strip()))
+    inquiry = create_inquiry(102)
+    product = inquiry.subscription.product_model
+    product.model_code = row["exact_sales_code"]
+    product.generation_code = row["product_generation"]
+    product.save(update_fields=["model_code", "generation_code", "updated_at"])
+
+    def exact_baseline(response: dict, _request: dict) -> dict:
+        response["evidence_references"] = [
+            {
+                "document_title": row["section_title"],
+                "document_version": row["version"],
+                "page": row["page_start"],
+                "page_refs": row["page_refs"],
+                "chunk_id": row["chunk_id"],
+                "official_url": row["source_url"],
+                "summary": row["chunk_text"],
+                "similarity_score": 0.9,
+                "verification_status": "official_verified",
+            }
+        ]
+        return response
+
+    client, http_client, _calls = make_client(transform=exact_baseline)
+    outcome = analyze(inquiry, client)
+
+    assert outcome.status == AIRun.Status.SUCCEEDED
+    assert outcome.event_applied == "SAFE_GUIDANCE_READY"
+    assert outcome.pending_reason is None
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.AI_GUIDANCE
+    assert inquiry.state_version == 3
+    assert inquiry.evidence_mode == Inquiry.EvidenceMode.EXACT_MODEL
+    assert inquiry.evidence_ids == [row["evidence_id"]]
+    http_client.close()
+
+
 def test_no_evidence_result_routes_to_consultation_required():
     inquiry = create_inquiry(3)
 
@@ -336,7 +378,7 @@ def test_followup_questions_are_saved_without_advancing_state():
     http_client.close()
 
 
-def test_danger_result_is_held_until_matched_safety_rule_ids_exist():
+def test_danger_result_with_configured_safety_rule_ids_routes_to_consultation():
     inquiry = create_inquiry(10)
 
     def danger(response: dict, request: dict) -> dict:
@@ -362,11 +404,51 @@ def test_danger_result_is_held_until_matched_safety_rule_ids_exist():
     outcome = analyze(inquiry, client)
 
     assert outcome.event_candidate == "DANGER_DETECTED"
-    assert outcome.event_applied is None
-    assert outcome.pending_reason == "MATCHED_SAFETY_RULE_IDS_REQUIRED"
+    assert outcome.event_applied == "DANGER_DETECTED"
+    assert outcome.pending_reason is None
     assessment = SymptomAssessment.objects.get(inquiry=inquiry)
     assert assessment.risk_level_code == SymptomAssessment.RiskLevel.DANGER
     assert assessment.requires_consultation is True
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 3
+    history = TransitionHistory.objects.get(inquiry=inquiry)
+    assert history.event_code == "DANGER_DETECTED"
+    assert history.changed_by_type_code == TransitionHistory.ChangedByType.SYSTEM
+    http_client.close()
+
+
+def test_danger_result_without_safety_rule_ids_is_held_fail_closed():
+    inquiry = create_inquiry(11)
+
+    def danger_without_rule_ids(_response: dict, request: dict) -> dict:
+        example_path = (
+            DEFAULT_CONTRACT_ROOT
+            / "examples"
+            / "symptom-analysis"
+            / "danger-detected.json"
+        )
+        danger_response = json.loads(
+            example_path.read_text(encoding="utf-8")
+        )["response"]
+        for field in (
+            "inquiry_id",
+            "correlation_id",
+            "ai_request_id",
+            "state_version",
+        ):
+            danger_response[field] = request[field]
+        danger_response["safety_assessment"]["matched_safety_rule_ids"] = []
+        return danger_response
+
+    client, http_client, _calls = make_client(
+        transform=danger_without_rule_ids
+    )
+    outcome = analyze(inquiry, client)
+
+    assert outcome.event_candidate == "DANGER_DETECTED"
+    assert outcome.event_applied is None
+    assert outcome.pending_reason == "MATCHED_SAFETY_RULE_IDS_REQUIRED"
     inquiry.refresh_from_db()
     assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
     assert inquiry.state_version == 2

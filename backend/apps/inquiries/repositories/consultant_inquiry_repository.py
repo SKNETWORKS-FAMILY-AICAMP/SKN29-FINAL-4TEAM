@@ -1,4 +1,4 @@
-"""ORM reads for synthetic inquiries assigned to one consultant."""
+"""ORM reads for assigned inquiries and the synthetic consultation queue."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from django.db.models import (
     Case,
     CharField,
     Count,
+    Exists,
     IntegerField,
     OuterRef,
     Prefetch,
@@ -22,6 +23,7 @@ from django.db.models import (
 )
 from django.db.models.functions import Coalesce
 
+from apps.audit.models import AIRun
 from apps.care.models import CareRecord
 from apps.consultations.models import Consultation
 from apps.inquiries.models import (
@@ -38,18 +40,34 @@ BUSINESS_TIMEZONE = ZoneInfo("Asia/Seoul")
 
 
 class ConsultantInquiryRepository:
-    """Apply assignment and synthetic-data scope before all other filters."""
+    """Apply claimable assignment and synthetic scope before other filters."""
 
     @staticmethod
     def visible_for_consultant(actor: Any) -> QuerySet[Inquiry]:
         latest_assessment = SymptomAssessment.objects.filter(
             inquiry_id=OuterRef("pk")
         ).order_by("-assessment_version", "-created_at", "-pk")
+        waiting_consultation = Consultation.objects.filter(
+            inquiry_id=OuterRef("pk"),
+            status=Consultation.Status.WAITING,
+            consultant__isnull=True,
+        )
+        assignment_scope = Q(
+            assigned_user=actor,
+            assigned_role_code=Inquiry.AssignedRole.CONSULTANT,
+        ) | Q(
+            status_code=Inquiry.Status.CONSULTATION_REQUIRED,
+            assigned_user__isnull=True,
+            assigned_role_code=Inquiry.AssignedRole.NONE,
+            has_waiting_consultation=True,
+        )
 
         queryset = (
-            Inquiry.objects.filter(
-                assigned_user=actor,
-                assigned_role_code=Inquiry.AssignedRole.CONSULTANT,
+            Inquiry.objects.annotate(
+                has_waiting_consultation=Exists(waiting_consultation),
+            )
+            .filter(
+                assignment_scope,
                 subscription__customer__deleted_at__isnull=True,
                 subscription__customer__is_synthetic=True,
                 subscription__customer__user__is_synthetic=True,
@@ -286,9 +304,23 @@ class ConsultantInquiryRepository:
             "sequence_no",
             "public_id",
         )
-        guidance_versions = Guidance.objects.filter(
-            review_status_code__in=("APPROVED", "CONFIRMED"),
-        ).order_by("-guidance_version", "-created_at", "-public_id")
+        guidance_versions = (
+            Guidance.objects.filter(
+                Q(review_status_code__in=("APPROVED", "CONFIRMED"))
+                | Q(
+                    generated_by_ai_run__status_code__in=(
+                        AIRun.Status.SUCCEEDED,
+                        AIRun.Status.NO_EVIDENCE,
+                    ),
+                    generated_by_ai_run__schema_validation_status_code=(
+                        AIRun.SchemaValidationStatus.PASSED
+                    ),
+                    generated_by_ai_run__validated_output_payload__isnull=False,
+                )
+            )
+            .select_related("generated_by_ai_run")
+            .order_by("-guidance_version", "-created_at", "-public_id")
+        )
         state_history = (
             TransitionHistory.objects.filter(
                 target_type_code=TransitionHistory.TargetType.INQUIRY,

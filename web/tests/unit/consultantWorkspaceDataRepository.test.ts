@@ -145,7 +145,20 @@ describe("상담사 실제 API 전환 Repository", () => {
         usage_guidance_message: null,
         restricted_functions: [],
       },
-      consultation: null,
+      consultation: {
+        consultation_id: "30000000-0000-4000-8000-000000000301",
+        result_code: "COMPLETED_NO_VISIT",
+        summary: {
+          ai_draft_summary: "AI 초안",
+          edited_summary: "상담사 수정 요약",
+          confirmed_summary: "확정 요약",
+          confirmed_at: "2026-08-10T09:09:00+09:00",
+        },
+        consultation_note: "고객 상태 확인",
+        additional_check: "필터 상태 확인",
+        customer_guidance: "정상 사용 안내",
+        usage_guidance_status: "NORMAL",
+      },
       visit: null,
       state_history: [],
       workflow: {
@@ -182,6 +195,17 @@ describe("상담사 실제 API 전환 Repository", () => {
       code: "START_CONSULTATION",
       operationId: "startConsultation",
       requiresConfirmation: false,
+    });
+    expect(result.data.consultation).toMatchObject({
+      consultationId: "30000000-0000-4000-8000-000000000301",
+      resultCode: "COMPLETED_NO_VISIT",
+      summary: {
+        aiDraftSummary: "AI 초안",
+        editedSummary: "상담사 수정 요약",
+        confirmedSummary: "확정 요약",
+      },
+      consultationNote: "고객 상태 확인",
+      customerGuidance: "정상 사용 안내",
     });
   });
 });

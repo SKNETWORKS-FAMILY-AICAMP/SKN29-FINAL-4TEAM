@@ -66,6 +66,28 @@ describe("Remote 상담사 문의 상세", () => {
     expect(screen.getByText("방문 관리")).toBeInTheDocument();
     expect(screen.getByText("관리 이력 없음")).toBeInTheDocument();
     expect(screen.getByText("제한 정보 미제공")).toBeInTheDocument();
+    expect(screen.getByText("AI 안내 미제공 / 상담 검토 필요")).toBeInTheDocument();
+    expect(screen.getByText("공개 근거 미제공 / 상담 검토 필요")).toBeInTheDocument();
+  });
+
+  it("실제 Backend AI Guidance가 있으면 원문 그대로 표시한다", () => {
+    render(
+      <RemoteConsultantInquiryDetail
+        inquiry={createDetail({
+          guidanceAndActions: {
+            usageGuidanceStatus: "PARTIAL_STOP",
+            usageGuidanceMessage: "급수 밸브를 잠그고 상담을 기다려 주세요.",
+            restrictedFunctions: ["냉수 출수"],
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText("PARTIAL_STOP")).toBeInTheDocument();
+    expect(
+      screen.getByText("급수 밸브를 잠그고 상담을 기다려 주세요."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("냉수 출수")).toBeInTheDocument();
   });
 
   it("consultation·visit null을 불필요로 해석하지 않는다", () => {
@@ -75,14 +97,42 @@ describe("Remote 상담사 문의 상세", () => {
     expect(screen.getByText("방문 기록이 아직 제공되지 않았습니다.")).toBeInTheDocument();
   });
 
-  it("쓰기 Runtime 전에는 allowed action을 버튼으로 활성화하지 않는다", () => {
+  it("실행 UI가 없을 때도 Backend allowed action을 임의 버튼으로 만들지 않는다", () => {
     render(<RemoteConsultantInquiryDetail inquiry={createDetail()} />);
 
     expect(screen.getByText("상담 시작")).toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
     expect(
-      screen.getByText("상담·방문 저장 API가 준비될 때까지 실행 버튼은 제공하지 않습니다."),
+      screen.getByText("Backend가 반환한 allowed_actions만 실행 버튼으로 제공합니다."),
     ).toBeInTheDocument();
+  });
+
+  it("재조회된 상담 기록과 확정 요약을 표시한다", () => {
+    render(
+      <RemoteConsultantInquiryDetail
+        inquiry={createDetail({
+          consultation: {
+            consultationId: "30000000-0000-4000-8000-000000000301",
+            resultCode: "COMPLETED_NO_VISIT",
+            summary: {
+              aiDraftSummary: "AI 초안",
+              editedSummary: "상담사 수정 요약",
+              confirmedSummary: "확정된 상담 요약",
+              confirmedAt: "2026-08-13T10:30:00+09:00",
+            },
+            consultationNote: "고객과 필터 상태를 확인함",
+            additionalCheck: null,
+            customerGuidance: "정상 사용 가능 안내",
+            usageGuidanceStatus: "NORMAL",
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText("COMPLETED_NO_VISIT")).toBeInTheDocument();
+    expect(screen.getByText("확정된 상담 요약")).toBeInTheDocument();
+    expect(screen.getByText("고객과 필터 상태를 확인함")).toBeInTheDocument();
+    expect(screen.getByText("정상 사용 가능 안내")).toBeInTheDocument();
   });
 
   it("Section 오류는 다른 상세 정보와 함께 부분 오류로 표시한다", () => {

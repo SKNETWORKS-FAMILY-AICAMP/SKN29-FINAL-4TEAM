@@ -70,6 +70,22 @@ data class SubmitFollowUpAnswersResponseDto(
     val resource: kotlinx.serialization.json.JsonElement? = null,
 )
 
+@Serializable
+data class StateTransitionRequestDto(
+    @SerialName("state_version") val stateVersion: Int,
+)
+
+@Serializable
+data class RequestConsultationResponseDto(
+    val message: String,
+    @SerialName("inquiry_id") val inquiryId: String,
+    val status: String,
+    @SerialName("state_version") val stateVersion: Int,
+    @SerialName("allowed_actions") val allowedActions: List<AllowedAction> = emptyList(),
+    @SerialName("idempotent_replay") val idempotentReplay: Boolean,
+    val resource: kotlinx.serialization.json.JsonElement? = null,
+)
+
 data class CustomerInquirySnapshot(
     val inquiryId: String,
     val statusCode: String,
@@ -140,6 +156,15 @@ data class SubmitFollowUpAnswersResult(
     val idempotentReplay: Boolean,
 )
 
+data class RequestConsultationResult(
+    val message: String,
+    val inquiryId: String,
+    val statusCode: String,
+    val stateVersion: Int,
+    val allowedActions: List<AllowedAction>,
+    val idempotentReplay: Boolean,
+)
+
 fun CustomerInquirySnapshotDto.toDomain(): CustomerInquirySnapshot =
     CustomerInquirySnapshot(
         inquiryId = inquiryId,
@@ -193,6 +218,16 @@ fun FollowUpAnswer.toRequestDto(): FollowUpAnswerItemDto {
 
 fun SubmitFollowUpAnswersResponseDto.toDomain(): SubmitFollowUpAnswersResult =
     SubmitFollowUpAnswersResult(
+        message = message,
+        inquiryId = inquiryId,
+        statusCode = status,
+        stateVersion = stateVersion,
+        allowedActions = allowedActions,
+        idempotentReplay = idempotentReplay,
+    )
+
+fun RequestConsultationResponseDto.toDomain(): RequestConsultationResult =
+    RequestConsultationResult(
         message = message,
         inquiryId = inquiryId,
         statusCode = status,

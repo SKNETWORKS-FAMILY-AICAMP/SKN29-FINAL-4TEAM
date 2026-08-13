@@ -91,12 +91,23 @@ export function useSaveConsultation(
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState<ConsultationActionSuccess | null>(null);
   const [error, setError] = useState<ConsultationActionErrorDetails | null>(null);
-  const [currentStatus, setCurrentStatus] = useState(inquiry.status);
-  const [stateVersion, setStateVersion] = useState(inquiry.stateVersion);
-  const [allowedActions, setAllowedActions] = useState(inquiry.allowedActions);
+  const [localSnapshot, setLocalSnapshot] =
+    useState<ConsultationRuntimeInquiry | null>(null);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
   const savingRef = useRef(false);
   const [operationTracker] = useState(() => new IdempotencyOperationTracker());
+  const useLocalSnapshot =
+    localSnapshot?.inquiryId === inquiry.inquiryId &&
+    localSnapshot.stateVersion > inquiry.stateVersion;
+  const currentStatus = useLocalSnapshot
+    ? localSnapshot.status
+    : inquiry.status;
+  const stateVersion = useLocalSnapshot
+    ? localSnapshot.stateVersion
+    : inquiry.stateVersion;
+  const allowedActions = useLocalSnapshot
+    ? localSnapshot.allowedActions
+    : inquiry.allowedActions;
 
   const execute = async ({ action, values, scenario }: ExecuteConsultationArgs) => {
     if (savingRef.current) {
@@ -150,12 +161,13 @@ export function useSaveConsultation(
           case "START_CONSULTATION":
             response = await writeRepository.start(inquiry.inquiryId, stateBody, context);
             break;
-          case "UPDATE_CONSULTATION_SUMMARY":
+          case "UPDATE_CONSULTATION_SUMMARY": {
+            const summary = values.summaryRevision.trim();
             response = await writeRepository.saveSummary(
               inquiry.inquiryId,
               {
                 ...stateBody,
-                summary: values.summaryRevision.trim(),
+                ...(summary ? { summary } : {}),
                 consultation_note: values.consultationNote.trim(),
                 additional_check: values.additionalCheck.trim(),
                 customer_guidance: values.customerGuidance.trim(),
@@ -165,6 +177,7 @@ export function useSaveConsultation(
               context,
             );
             break;
+          }
           case "CONFIRM_CONSULTATION_SUMMARY":
             response = await writeRepository.confirmSummary(inquiry.inquiryId, stateBody, context);
             break;
@@ -198,9 +211,12 @@ export function useSaveConsultation(
         };
         operationTracker.finish();
         setSuccess(result);
-        setCurrentStatus(result.status);
-        setStateVersion(result.stateVersion);
-        setAllowedActions(nextAllowedActions);
+        setLocalSnapshot({
+          inquiryId: inquiry.inquiryId,
+          status: result.status,
+          stateVersion: result.stateVersion,
+          allowedActions: nextAllowedActions,
+        });
         setLastRefreshedAt(new Date().toISOString());
         return {
           ok: true as const,
@@ -215,9 +231,12 @@ export function useSaveConsultation(
       const latestDetail = await reloadConsultationDetailMock(inquiry.inquiryId, result);
       operationTracker.finish();
       setSuccess(result);
-      setCurrentStatus(result.status);
-      setStateVersion(latestDetail.stateVersion);
-      setAllowedActions(latestDetail.allowedActions);
+      setLocalSnapshot({
+        inquiryId: inquiry.inquiryId,
+        status: result.status,
+        stateVersion: latestDetail.stateVersion,
+        allowedActions: latestDetail.allowedActions,
+      });
       setLastRefreshedAt(latestDetail.refreshedAt);
       return {
         ok: true as const,
@@ -279,9 +298,12 @@ export function useSaveConsultation(
           nextError.kind === "SERVER_ERROR",
       );
       if (nextError.kind === "CONFLICT" && nextError.conflictCode === "STATE-CONFLICT-01") {
-        if (nextError.currentStatus) setCurrentStatus(nextError.currentStatus);
-        setStateVersion(nextError.currentStateVersion);
-        setAllowedActions(nextError.allowedActions);
+        setLocalSnapshot({
+          inquiryId: inquiry.inquiryId,
+          status: nextError.currentStatus ?? currentStatus,
+          stateVersion: nextError.currentStateVersion,
+          allowedActions: nextError.allowedActions,
+        });
       }
       return { ok: false as const, error: nextError };
     } finally {

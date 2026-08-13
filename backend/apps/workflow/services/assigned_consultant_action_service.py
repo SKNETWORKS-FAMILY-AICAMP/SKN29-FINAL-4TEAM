@@ -10,6 +10,7 @@ from uuid import UUID
 from django.db import IntegrityError, transaction
 from rest_framework.exceptions import NotFound, PermissionDenied
 
+from apps.consultations.models import Consultation
 from apps.inquiries.models import Inquiry
 from apps.inquiries.repositories.inquiry_repository import InquiryRepository
 from apps.workflow.domain.transition import Transition
@@ -82,9 +83,10 @@ class AssignedConsultantActionService:
             }
         )
 
-        inquiry = cls._lock_assigned_inquiry(
+        inquiry = cls._lock_assigned_or_claimable_inquiry(
             actor=actor,
             inquiry_public_id=inquiry_public_id,
+            event_code=event_code,
         )
         if inquiry is None:
             raise NotFound()
@@ -232,27 +234,70 @@ class AssignedConsultantActionService:
         return WorkflowActionOutcome(status_code=200, data=data)
 
     @staticmethod
-    def _lock_assigned_inquiry(
+    def _lock_assigned_or_claimable_inquiry(
         *,
         actor: Any,
         inquiry_public_id: UUID,
+        event_code: str,
     ) -> Inquiry | None:
-        return (
-            Inquiry.objects.select_for_update()
+        """Lock an assigned inquiry or atomically claim a waiting queue item."""
+        inquiry = (
+            Inquiry.objects.select_for_update(of=("self",))
             .select_related(
                 "initiated_by",
                 "subscription__customer",
+                "subscription__customer__user",
                 "subscription__product_model",
             )
             .filter(
                 public_id=inquiry_public_id,
-                assigned_user=actor,
-                assigned_role_code=Inquiry.AssignedRole.CONSULTANT,
                 initiated_by__is_synthetic=True,
+                subscription__customer__deleted_at__isnull=True,
                 subscription__customer__is_synthetic=True,
+                subscription__customer__user__is_synthetic=True,
             )
             .first()
         )
+        if inquiry is None:
+            return None
+        if (
+            inquiry.assigned_user_id == actor.pk
+            and inquiry.assigned_role_code == Inquiry.AssignedRole.CONSULTANT
+        ):
+            return inquiry
+
+        claimable = bool(
+            event_code == "START_CONSULTATION"
+            and getattr(actor, "role_code", None) == "CONSULTANT"
+            and inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+            and inquiry.assigned_user_id is None
+            and inquiry.assigned_role_code == Inquiry.AssignedRole.NONE
+        )
+        if not claimable:
+            return None
+
+        waiting_consultation_exists = (
+            Consultation.objects.select_for_update()
+            .filter(
+                inquiry=inquiry,
+                status=Consultation.Status.WAITING,
+                consultant__isnull=True,
+            )
+            .exists()
+        )
+        if not waiting_consultation_exists:
+            return None
+
+        inquiry.assigned_user = actor
+        inquiry.assigned_role_code = Inquiry.AssignedRole.CONSULTANT
+        inquiry.save(
+            update_fields=[
+                "assigned_user",
+                "assigned_role_code",
+                "updated_at",
+            ]
+        )
+        return inquiry
 
     @classmethod
     def _raise_guard_failure(

@@ -125,11 +125,15 @@ export function useConsultantInquiryDetailQuery(
   }, [inquiryId, repository, requestKey]);
 
   const retry = useCallback(() => setRetryCount((count) => count + 1), []);
+  const previousDataForSameInquiry =
+    state.data !== null && state.data.inquiryId === inquiryId;
   const currentState: QueryState<ConsultantInquiryDetailViewModel> = !inquiryId
     ? { data: null, error: null, status: "idle" }
     : state.requestKey === requestKey
       ? state
-      : { data: null, error: null, status: "loading" };
+      : previousDataForSameInquiry
+        ? { data: state.data, error: null, status: "success" }
+        : { data: null, error: null, status: "loading" };
   return {
     ...currentState,
     isForbidden: hasStatus(currentState.error, 403),

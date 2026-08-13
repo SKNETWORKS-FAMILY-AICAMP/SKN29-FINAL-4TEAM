@@ -152,6 +152,53 @@ describe("상담사 화면 비동기 Query 상태", () => {
     expect(result.current.isForbidden).toBe(false);
   });
 
+  it("같은 문의 재조회 중에는 기존 상세를 유지해 작성 Form을 언마운트하지 않는다", async () => {
+    let resolveRefresh:
+      | ((value: {
+          data: ConsultantInquiryDetailViewModel;
+          correlationId: string;
+        }) => void)
+      | undefined;
+    const refreshedDetail = {
+      ...DETAIL,
+      status: "CONSULTATION_IN_PROGRESS" as const,
+      stateVersion: 4,
+      workflow: {
+        ...DETAIL.workflow,
+        status: "CONSULTATION_IN_PROGRESS" as const,
+        stateVersion: 4,
+      },
+    };
+    const getInquiryDetail = vi
+      .fn()
+      .mockResolvedValueOnce({ data: DETAIL, correlationId: "corr-detail" })
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveRefresh = resolve;
+        }),
+      );
+    const repository = createRepository({ getInquiryDetail });
+
+    const { result } = renderHook(() =>
+      useConsultantInquiryDetailQuery(DETAIL.inquiryId, repository),
+    );
+
+    await waitFor(() => expect(result.current.status).toBe("success"));
+    act(() => result.current.retry());
+
+    expect(result.current.status).toBe("success");
+    expect(result.current.data).toEqual(DETAIL);
+
+    act(() => {
+      resolveRefresh?.({
+        data: refreshedDetail,
+        correlationId: "corr-refresh",
+      });
+    });
+    await waitFor(() => expect(result.current.data?.stateVersion).toBe(4));
+    expect(getInquiryDetail).toHaveBeenCalledTimes(2);
+  });
+
   it("문의 ID가 없으면 상세 API를 호출하지 않는다", () => {
     const repository = createRepository();
 

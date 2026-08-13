@@ -29,16 +29,40 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
   );
   const runtimeInquiry = useMemo(() => ({
     inquiryId: inquiry.inquiryId,
-    status: inquiry.status,
-    stateVersion: inquiry.stateVersion,
+    status: inquiry.workflow.status,
+    stateVersion: inquiry.workflow.stateVersion,
     allowedActions: actions,
-  }), [actions, inquiry.inquiryId, inquiry.stateVersion, inquiry.status]);
-  const form = useConsultationForm({
-    consultationNote: "", additionalCheck: "", customerGuidance: "",
-    consultationResult: "", summaryRevision: "", summaryConfirmed: false,
-    visitRequired: "UNDECIDED",
-    usageStatus: inquiry.guidanceAndActions.usageGuidanceStatus ?? "PENDING_CONSULTATION",
-  });
+  }), [
+    actions,
+    inquiry.inquiryId,
+    inquiry.workflow.stateVersion,
+    inquiry.workflow.status,
+  ]);
+  const consultation = inquiry.consultation;
+  const form = useConsultationForm(
+    {
+      consultationNote: consultation?.consultationNote ?? "",
+      additionalCheck: consultation?.additionalCheck ?? "",
+      customerGuidance: consultation?.customerGuidance ?? "",
+      consultationResult: "",
+      summaryRevision:
+        consultation?.summary.confirmedSummary ??
+        consultation?.summary.editedSummary ??
+        consultation?.summary.aiDraftSummary ??
+        "",
+      summaryConfirmed: Boolean(consultation?.summary.confirmedAt),
+      visitRequired: consultation?.resultCode === "VISIT_REQUIRED"
+        ? "REQUIRED"
+        : consultation?.resultCode === "COMPLETED_NO_VISIT"
+          ? "NOT_REQUIRED"
+          : "UNDECIDED",
+      usageStatus:
+        consultation?.usageGuidanceStatus ??
+        inquiry.guidanceAndActions.usageGuidanceStatus ??
+        "PENDING_CONSULTATION",
+    },
+    { requireConsultationResult: false },
+  );
   const save = useSaveConsultation(runtimeInquiry, { dataSource: "REMOTE" });
   const showSummaryForm = save.allowedActions.some(
     (action) => action.code === "UPDATE_CONSULTATION_SUMMARY",
@@ -56,6 +80,13 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
     if (!form.validate(action.code)) return;
     const outcome = await save.execute({ action, values: form.values, scenario: "SUCCESS" });
     if (outcome.ok) onRefresh();
+    if (
+      !outcome.ok &&
+      "error" in outcome &&
+      outcome.error?.kind === "CONFLICT"
+    ) {
+      onRefresh();
+    }
     if ("error" in outcome && outcome.error && "fieldErrors" in outcome.error) {
       form.setServerFieldErrors(outcome.error.fieldErrors ?? {});
     }
@@ -75,7 +106,6 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
             ["consultationNote", "상담 기록"],
             ["additionalCheck", "추가 확인사항"],
             ["customerGuidance", "고객 안내"],
-            ["consultationResult", "상담 결과"],
             ["summaryRevision", "확정 요약"],
           ] as const).map(([field, label]) => (
             <label className="v6-form-field" key={field}>
@@ -84,6 +114,23 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
               {form.fieldErrors[field] && <span className="v6-field-error">{form.fieldErrors[field]}</span>}
             </label>
           ))}
+          <label className="v6-form-field">
+            <span>
+              <input
+                type="checkbox"
+                checked={form.values.summaryConfirmed}
+                onChange={(event) =>
+                  form.updateField("summaryConfirmed", event.target.checked)
+                }
+              />
+              상담 요약 검토·확정
+            </span>
+            {form.fieldErrors.summaryConfirmed && (
+              <span className="v6-field-error">
+                {form.fieldErrors.summaryConfirmed}
+              </span>
+            )}
+          </label>
           <label className="v6-form-field">
             방문 필요 여부
             <select value={form.values.visitRequired} onChange={(event) => form.updateField("visitRequired", event.target.value as typeof form.values.visitRequired)}>

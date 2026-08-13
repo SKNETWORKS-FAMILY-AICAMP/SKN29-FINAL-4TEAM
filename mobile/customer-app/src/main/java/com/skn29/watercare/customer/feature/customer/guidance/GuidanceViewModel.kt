@@ -10,6 +10,7 @@ import com.skn29.watercare.core.model.FollowUpAnswer
 import com.skn29.watercare.core.model.GuidanceMapper
 import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.MockScenario
+import com.skn29.watercare.core.model.RequestConsultationResult
 import com.skn29.watercare.core.model.SubmitFollowUpAnswersResult
 import com.skn29.watercare.core.repository.CustomerCareRepository
 import com.skn29.watercare.core.repository.CustomerInquiryRepository
@@ -39,8 +40,15 @@ class GuidanceViewModel(
     )
     val followUpState: StateFlow<FollowUpUiState> = _followUpState.asStateFlow()
 
+    private val _consultationState = MutableStateFlow<ConsultationRequestUiState>(
+        ConsultationRequestUiState.Idle
+    )
+    val consultationState: StateFlow<ConsultationRequestUiState> =
+        _consultationState.asStateFlow()
+
     private var lastCancelReasonCode: String = "CUSTOMER_REQUEST"
     private var lastCancelReasonDetail: String? = null
+    private var lastConsultationStateVersion: Int? = null
 
     init {
         load()
@@ -57,6 +65,18 @@ class GuidanceViewModel(
                     else GuidanceUiState.Content(mapped)
                 }
                 is ApiResult.Failure -> when {
+                    result.code == "AI_GUIDANCE_NOT_READY" -> {
+                        val workflow = result.conflict
+                        GuidanceUiState.AiFailure(
+                            message =
+                                "검증된 AI 안내가 아직 준비되지 않았습니다. " +
+                                    "잠시 후 다시 확인하거나 상담을 요청해 주세요.",
+                            retryable = true,
+                            statusCode = workflow?.currentStatus,
+                            stateVersion = workflow?.currentStateVersion,
+                            allowedActions = workflow?.allowedActions.orEmpty(),
+                        )
+                    }
                     result.code.startsWith("AI_") ->
                         GuidanceUiState.AiFailure(result.message, result.retryable)
                     result.code == "NETWORK_ERROR" ->
@@ -95,6 +115,117 @@ class GuidanceViewModel(
     }
 
     fun retryFollowUpLoad() = loadFollowUp()
+
+    fun requestConsultation(
+        stateVersion: Int?,
+        allowedActions: List<AllowedAction>,
+    ) {
+        if (
+            _consultationState.value is ConsultationRequestUiState.Submitting ||
+            _consultationState.value is ConsultationRequestUiState.Success
+        ) return
+        val remote = customerInquiryRepository
+        if (remote == null) {
+            _consultationState.value = ConsultationRequestUiState.Error(
+                message = "상담 요청 기능을 사용할 수 없습니다.",
+                code = "CUSTOMER_INQUIRY_REPOSITORY_UNAVAILABLE",
+                httpStatus = null,
+                retryable = false,
+            )
+            return
+        }
+        if (stateVersion == null || stateVersion < 1) {
+            _consultationState.value = ConsultationRequestUiState.Error(
+                message = "최신 문의 상태 버전을 확인한 뒤 다시 시도해 주세요.",
+                code = "CLIENT_VALIDATION_ERROR",
+                httpStatus = null,
+                retryable = false,
+            )
+            return
+        }
+        val requestAllowed = allowedActions.any {
+            it.normalizedCode == InquiryActionLabels.REQUEST_CONSULTATION
+        }
+        if (!requestAllowed) {
+            _consultationState.value = ConsultationRequestUiState.Error(
+                message = "현재 문의 상태에서는 상담을 요청할 수 없습니다.",
+                code = "ACTION_NOT_ALLOWED",
+                httpStatus = null,
+                retryable = false,
+            )
+            return
+        }
+
+        lastConsultationStateVersion = stateVersion
+        performConsultationRequest(remote, stateVersion)
+    }
+
+    fun retryConsultationRequest() {
+        val current = _consultationState.value as? ConsultationRequestUiState.Error
+            ?: return
+        if (!current.retryable) return
+        val stateVersion = lastConsultationStateVersion ?: return
+        val remote = customerInquiryRepository ?: return
+        performConsultationRequest(remote, stateVersion)
+    }
+
+    fun retryConsultationAfterConflict() {
+        val current = _consultationState.value as? ConsultationRequestUiState.Conflict
+            ?: return
+        if (!current.canRetry) return
+        val stateVersion = current.currentStateVersion ?: return
+        val remote = customerInquiryRepository ?: return
+        lastConsultationStateVersion = stateVersion
+        performConsultationRequest(remote, stateVersion)
+    }
+
+    private fun performConsultationRequest(
+        repository: CustomerInquiryRepository,
+        stateVersion: Int,
+    ) {
+        // Close the tap race before scheduling the coroutine. If this assignment
+        // happens inside launch, two clicks in the same main-loop turn can both
+        // pass the Submitting/Success guard and send duplicate requests.
+        _consultationState.value = ConsultationRequestUiState.Submitting
+        viewModelScope.launch {
+            _consultationState.value = when (
+                val result = repository.requestConsultation(
+                    inquiryId = inquiryId,
+                    stateVersion = stateVersion,
+                )
+            ) {
+                is ApiResult.Success -> result.value.toConsultationSuccess()
+                is ApiResult.Failure -> {
+                    val conflict = result.conflict
+                    if (conflict != null) {
+                        ConsultationRequestUiState.Conflict(
+                            message = result.message,
+                            currentStatus = conflict.currentStatus,
+                            currentStateVersion = conflict.currentStateVersion,
+                            allowedActions = conflict.allowedActions,
+                        )
+                    } else {
+                        ConsultationRequestUiState.Error(
+                            message = result.message,
+                            code = result.code,
+                            httpStatus = result.httpStatus,
+                            retryable = result.retryable,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun RequestConsultationResult.toConsultationSuccess() =
+        ConsultationRequestUiState.Success(
+            message = message,
+            inquiryId = inquiryId,
+            statusCode = statusCode,
+            stateVersion = stateVersion,
+            allowedActions = allowedActions,
+            idempotentReplay = idempotentReplay,
+        )
 
     fun updateFollowUpText(questionId: String, value: String) {
         editFollowUpDraft(questionId) { current ->
@@ -455,4 +586,37 @@ sealed interface CancelInquiryUiState {
         val message: String,
         val retryable: Boolean,
     ) : CancelInquiryUiState
+}
+
+sealed interface ConsultationRequestUiState {
+    data object Idle : ConsultationRequestUiState
+    data object Submitting : ConsultationRequestUiState
+
+    data class Success(
+        val message: String,
+        val inquiryId: String,
+        val statusCode: String,
+        val stateVersion: Int,
+        val allowedActions: List<AllowedAction>,
+        val idempotentReplay: Boolean,
+    ) : ConsultationRequestUiState
+
+    data class Conflict(
+        val message: String,
+        val currentStatus: String?,
+        val currentStateVersion: Int?,
+        val allowedActions: List<AllowedAction>,
+    ) : ConsultationRequestUiState {
+        val canRetry: Boolean
+            get() = currentStateVersion != null && allowedActions.any {
+                it.normalizedCode == InquiryActionLabels.REQUEST_CONSULTATION
+            }
+    }
+
+    data class Error(
+        val message: String,
+        val code: String,
+        val httpStatus: Int?,
+        val retryable: Boolean,
+    ) : ConsultationRequestUiState
 }

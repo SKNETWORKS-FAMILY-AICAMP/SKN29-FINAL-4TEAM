@@ -6,6 +6,7 @@ import {
 import type { RequestContext } from "../../../common/api/requestContext";
 import type {
   AllowedActionDto,
+  ConsultantConsultationRecordDto,
   ConsultantInquiryStatusDto,
 } from "../api/consultantWorkspaceRemoteTypes";
 
@@ -39,7 +40,7 @@ export interface StateTransitionResultDto {
   state_version: number;
   allowed_actions: AllowedActionDto[];
   idempotent_replay: boolean;
-  resource?: Record<string, unknown> | null;
+  resource: ConsultantConsultationRecordDto | null;
 }
 
 export type ConsultationWriteRequester = <TData>(

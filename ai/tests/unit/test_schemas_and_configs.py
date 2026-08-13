@@ -468,11 +468,14 @@ def test_canonical_evidence_identity_matches_approved_source_and_index_manifest(
         for row in [json.loads(line)]
     }
 
-    assert identity["status"] == "AI_SOURCE_IDENTITY_FIXED_BACKEND_MAPPING_PENDING"
+    assert identity["status"] == "BACKEND_STATE_VERIFICATION_IMPLEMENTED"
     assert identity["index_version"] == index_manifest["index_version"]
     assert identity["chunk_set_sha256"] == index_manifest["chunk_set_sha256"]
     assert len(identity["chunks"]) == index_manifest["chunk_count"] == len(source_rows) == 7
     assert identity["identity_policy"]["ai_does_not_generate_backend_id"] is True
+    assert identity["identity_policy"]["backend_target_key"] == (
+        "canonical_evidence_identity.chunks[].evidence_id"
+    )
 
     canonical_ids = [chunk["chunk_id"] for chunk in identity["chunks"]]
     assert len(canonical_ids) == len(set(canonical_ids))

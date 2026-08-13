@@ -11,7 +11,11 @@ from django.utils.dateparse import parse_datetime
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
+from apps.audit.models import AIRun
 from apps.care.models import CareRecord
+from apps.consultations.repositories.consultation_repository import (
+    ConsultationRepository,
+)
 from apps.inquiries.models import (
     FollowUpAnswer,
     Guidance,
@@ -447,6 +451,42 @@ def test_consultant_detail_returns_closed_assigned_projection(
         evidence_sufficiency_code="PENDING",
         requires_consultation=True,
     )
+    now = timezone.now()
+    validated_payload = {
+        "usage_guidance": {
+            "guidance_status": "PARTIAL_STOP",
+            "message": "Validated baseline AI guidance.",
+            "restricted_functions": ["HOT_WATER", "ICE"],
+            "next_actions": ["Request a consultation."],
+        }
+    }
+    ai_run = AIRun.objects.create(
+        inquiry=inquiry,
+        task_type_code=AIRun.TaskType.ANALYZE_SYMPTOM,
+        response_schema_version="3.0.0",
+        model_provider="local",
+        model_name="baseline-guidance-test",
+        prompt_version="baseline-guidance-v1",
+        input_payload={"inquiry_id": str(inquiry.public_id)},
+        input_sha256="a" * 64,
+        idempotency_key="consultant-read-ai-guidance-030",
+        validated_output_payload=validated_payload,
+        schema_validation_status_code=AIRun.SchemaValidationStatus.PASSED,
+        status_code=AIRun.Status.SUCCEEDED,
+        started_at=now,
+        completed_at=now,
+        correlation_id=uuid4(),
+    )
+    Guidance.objects.create(
+        inquiry=inquiry,
+        guidance_version=3,
+        review_status_code="PENDING",
+        title="Validated baseline AI guidance",
+        summary_text="Validated baseline AI guidance.",
+        evidence_sufficiency_code="SUFFICIENT",
+        requires_consultation=True,
+        generated_by_ai_run=ai_run,
+    )
     CareRecord.objects.create(
         care_code="CONSULTANT-READ-CARE-029",
         subscription=inquiry.subscription,
@@ -560,10 +600,8 @@ def test_consultant_detail_returns_closed_assigned_projection(
     }
     assert data["guidance_and_actions"] == {
         "usage_guidance_status": "PENDING_CONSULTATION",
-        "usage_guidance_message": (
-            "Keep usage paused until the consultant review."
-        ),
-        "restricted_functions": [],
+        "usage_guidance_message": "Validated baseline AI guidance.",
+        "restricted_functions": ["HOT_WATER", "ICE"],
     }
     assert data["consultation"] is None
     assert data["visit"] is None
@@ -595,7 +633,7 @@ def test_consultant_detail_returns_closed_assigned_projection(
         assert forbidden not in serialized
 
 
-def test_consultant_detail_uses_same_404_for_all_invisible_inquiries():
+def test_consultant_detail_exposes_only_the_unassigned_claim_queue():
     consultant = create_user(40, role=User.Role.CONSULTANT)
     other_consultant = create_user(41, role=User.Role.CONSULTANT)
     owner = create_user(42, role=User.Role.CUSTOMER)
@@ -613,6 +651,23 @@ def test_consultant_detail_uses_same_404_for_all_invisible_inquiries():
         assigned_user=None,
         assigned_role_code=Inquiry.AssignedRole.NONE,
     )
+    unassigned.refresh_from_db()
+    ConsultationRepository.request(
+        inquiry=unassigned,
+        state_version=unassigned.state_version,
+        idempotency_key="consultant-read-claimable-041",
+        correlation_id=uuid4(),
+        current=None,
+    )
+    unrequested = create_assigned_inquiry(
+        sequence=44,
+        owner=owner,
+        consultant=consultant,
+    )
+    Inquiry.objects.filter(pk=unrequested.pk).update(
+        assigned_user=None,
+        assigned_role_code=Inquiry.AssignedRole.NONE,
+    )
     nonsynthetic_owner = create_user(43, role=User.Role.CUSTOMER)
     nonsynthetic_owner.is_synthetic = False
     nonsynthetic_owner.save(update_fields=["is_synthetic"])
@@ -623,15 +678,25 @@ def test_consultant_detail_uses_same_404_for_all_invisible_inquiries():
     )
 
     client = authenticated_client(consultant)
+    unassigned_response = client.get(
+        f"/api/v1/inquiries/{unassigned.public_id}"
+    )
     paths = (
         f"/api/v1/inquiries/{assigned_elsewhere.public_id}",
-        f"/api/v1/inquiries/{unassigned.public_id}",
+        f"/api/v1/inquiries/{unrequested.public_id}",
         f"/api/v1/inquiries/{uuid4()}",
         "/api/v1/inquiries/not-a-uuid",
         f"/api/v1/inquiries/{nonsynthetic.public_id}",
     )
     responses = [client.get(path) for path in paths]
 
+    assert unassigned_response.status_code == 200
+    assert [
+        action["code"]
+        for action in unassigned_response.json()["data"]["workflow"][
+            "allowed_actions"
+        ]
+    ] == ["START_CONSULTATION"]
     assert [response.status_code for response in responses] == [404] * 5
     assert {
         response.json()["error"]["code"] for response in responses

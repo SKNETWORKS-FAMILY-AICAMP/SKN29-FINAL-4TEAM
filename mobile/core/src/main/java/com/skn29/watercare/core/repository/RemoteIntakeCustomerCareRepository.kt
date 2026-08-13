@@ -12,15 +12,15 @@ import com.skn29.watercare.core.model.toCustomerHomeData
 import java.util.UUID
 
 /**
- * 4주차 부분 Remote 구현.
+ * 5주차 P0 고객 Mobile Remote 구현.
  *
- * 현재 Runtime에 공개된 구독 조회·문의 생성·증상 제출 API를 실제 Backend에 연결한다.
- * Guidance customer route가 공개되기 전에는 REMOTE에서 명시적으로 실패한다.
- * 합성 Guidance는 FAKE 또는 Offline Preview에서만 사용한다.
+ * 현재 Runtime에 공개된 구독 조회·문의 생성·증상 제출·Guidance API를
+ * 실제 Backend에 연결한다. Remote 실패를 합성 Guidance로 대체하지 않는다.
  */
 class RemoteIntakeCustomerCareRepository(
     private val inquiryRepository: InquiryRepository,
     private val subscriptionRepository: SubscriptionRepository,
+    private val customerInquiryRepository: CustomerInquiryRepository? = null,
 ) : CustomerCareRepository {
     private data class PendingIntakeOperation(
         val createIdempotencyKey: String,
@@ -47,14 +47,15 @@ class RemoteIntakeCustomerCareRepository(
     override suspend fun getGuidance(
         inquiryId: String,
         scenario: MockScenario,
-    ): ApiResult<GuidanceData> =
-        ApiResult.Failure(
-            code = "GUIDANCE_ROUTE_UNAVAILABLE",
-            message =
-                "문의 접수는 완료되었지만 안전 안내 API가 아직 제공되지 않습니다. " +
-                    "상담 확인 전 사용 가능 여부나 자가조치를 판단하지 않습니다.",
-            retryable = false,
-        )
+    ): ApiResult<GuidanceData> {
+        val remote = customerInquiryRepository
+            ?: return ApiResult.Failure(
+                code = "GUIDANCE_REPOSITORY_UNAVAILABLE",
+                message = "안전 안내 조회 기능을 사용할 수 없습니다.",
+                retryable = false,
+            )
+        return remote.guidance(inquiryId)
+    }
 
     override suspend fun submitIntake(
         request: SymptomIntakeRequest,

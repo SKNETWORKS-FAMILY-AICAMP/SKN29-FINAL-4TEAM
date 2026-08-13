@@ -49,6 +49,28 @@ def test_request_consultation_is_available_in_all_confirmed_states():
     assert "REQUEST_CONSULTATION" in completion_pending
 
 
+def test_unassigned_consultation_queue_exposes_only_the_claim_action():
+    _actions, claimable = resolve_codes(
+        inquiry_state="CONSULTATION_REQUIRED",
+        state_version=4,
+        actor_role="CONSULTANT",
+        actor_id=20,
+        assigned_user_id=None,
+        consultant_claimable=True,
+    )
+    _actions, assigned_elsewhere = resolve_codes(
+        inquiry_state="CONSULTATION_REQUIRED",
+        state_version=4,
+        actor_role="CONSULTANT",
+        actor_id=20,
+        assigned_user_id=21,
+        consultant_claimable=False,
+    )
+
+    assert claimable == ["START_CONSULTATION"]
+    assert assigned_elsewhere == []
+
+
 def test_cancel_availability_uses_owner_assignment_and_operator_capability():
     _actions, owner_codes = resolve_codes()
     _actions, assigned_codes = resolve_codes(

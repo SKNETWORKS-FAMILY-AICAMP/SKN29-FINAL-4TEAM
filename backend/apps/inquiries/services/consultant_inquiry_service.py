@@ -11,6 +11,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from rest_framework.exceptions import NotFound
 
+from apps.consultations.services.consultation_service import (
+    ConsultationService,
+)
 from apps.inquiries.models import Inquiry
 from apps.inquiries.repositories.consultant_inquiry_repository import (
     ConsultantInquiryRepository,
@@ -90,6 +93,11 @@ class ConsultantInquiryService:
             iter(inquiry.consultant_guidance_versions),
             None,
         )
+        latest_consultation = next(
+            iter(inquiry.allowed_action_consultations),
+            None,
+        )
+        guidance_usage = cls._validated_guidance_usage(latest_guidance)
         allowed_actions = AllowedActionResolver.resolve(
             context=AllowedActionContext.from_models(
                 inquiry=inquiry,
@@ -135,11 +143,14 @@ class ConsultantInquiryService:
                     if latest_guidance is not None
                     else None
                 ),
-                "restricted_functions": [],
+                "restricted_functions": cls._public_string_list(
+                    guidance_usage.get("restricted_functions")
+                ),
             },
-            # These nullable sections belong to later confirmed write slices.
-            # Keep them closed rather than guessing another owner's projection.
-            "consultation": None,
+            "consultation": ConsultationService.build_resource(
+                latest_consultation
+            ),
+            # Visit detail remains a later read-projection slice.
             "visit": None,
             "state_history": [
                 {
@@ -246,6 +257,26 @@ class ConsultantInquiryService:
                 }
             )
         return answers
+
+    @staticmethod
+    def _validated_guidance_usage(guidance) -> dict[str, Any]:
+        if guidance is None or guidance.generated_by_ai_run is None:
+            return {}
+        payload = guidance.generated_by_ai_run.validated_output_payload
+        if not isinstance(payload, dict):
+            return {}
+        usage = payload.get("usage_guidance")
+        return usage if isinstance(usage, dict) else {}
+
+    @staticmethod
+    def _public_string_list(value: Any) -> list[str]:
+        if not isinstance(value, list):
+            return []
+        return [
+            item.strip()[:120]
+            for item in value
+            if isinstance(item, str) and item.strip()
+        ]
 
     @staticmethod
     def _actor_role(history) -> str:

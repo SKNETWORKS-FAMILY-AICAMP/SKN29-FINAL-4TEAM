@@ -92,17 +92,72 @@ fun GuidanceScreen(
         viewModel.cancelState.collectAsStateWithLifecycle()
     val followUpState by
         viewModel.followUpState.collectAsStateWithLifecycle()
-    var consultationNotice by remember { mutableStateOf(false) }
+    val consultationState by
+        viewModel.consultationState.collectAsStateWithLifecycle()
     var showCancelDialog by remember { mutableStateOf(false) }
-    val requestConsultation = {
-        consultationNotice = true
-    }
     val actualInquiryCode = submittedInquiryCode.trim()
     val latestInquirySnapshot = followUpState.snapshotOrNull()
-    val effectiveStateVersion =
-        latestInquirySnapshot?.stateVersion ?: submittedStateVersion
-    val effectiveAllowedActions =
-        latestInquirySnapshot?.allowedActions ?: submittedAllowedActions
+    val guidanceWorkflow = state.workflowSnapshotOrNull(priority = 2)
+    val consultationWorkflow = when (val current = consultationState) {
+        is ConsultationRequestUiState.Success -> WorkflowDisplaySnapshot(
+            statusCode = current.statusCode,
+            stateVersion = current.stateVersion,
+            allowedActions = current.allowedActions,
+            priority = 4,
+        )
+        is ConsultationRequestUiState.Conflict ->
+            current.currentStateVersion?.let { version ->
+                WorkflowDisplaySnapshot(
+                    statusCode = current.currentStatus,
+                    stateVersion = version,
+                    allowedActions = current.allowedActions,
+                    priority = 4,
+                )
+            }
+        else -> null
+    }
+    val inquiryWorkflow = latestInquirySnapshot?.let {
+        WorkflowDisplaySnapshot(
+            statusCode = it.statusCode,
+            stateVersion = it.stateVersion,
+            allowedActions = it.allowedActions,
+            priority = 3,
+        )
+    }
+    val submittedWorkflow = submittedStateVersion?.let {
+        WorkflowDisplaySnapshot(
+            statusCode = submittedStatusCode,
+            stateVersion = it,
+            allowedActions = submittedAllowedActions,
+            priority = 1,
+        )
+    }
+    val effectiveWorkflow = listOfNotNull(
+        consultationWorkflow,
+        inquiryWorkflow,
+        guidanceWorkflow,
+        submittedWorkflow,
+    ).maxWithOrNull(
+        compareBy<WorkflowDisplaySnapshot> { it.stateVersion }
+            .thenBy { it.priority }
+    )
+    val effectiveStateVersion = effectiveWorkflow?.stateVersion
+    val effectiveAllowedActions = effectiveWorkflow?.allowedActions.orEmpty()
+    val requestableAllowedActions = if (
+        consultationState is ConsultationRequestUiState.Success
+    ) {
+        effectiveAllowedActions.filterNot {
+            it.normalizedCode == InquiryActionLabels.REQUEST_CONSULTATION
+        }
+    } else {
+        effectiveAllowedActions
+    }
+    val requestConsultation = {
+        viewModel.requestConsultation(
+            stateVersion = effectiveStateVersion,
+            allowedActions = requestableAllowedActions,
+        )
+    }
 
     WaterCareScreen(title = "AI 자가진단", onBack = onBack) {
         if (fixturePreview) {
@@ -116,9 +171,7 @@ fun GuidanceScreen(
         if (actualInquiryCode.isNotEmpty()) {
             SubmissionReceiptCard(
                 inquiryCode = actualInquiryCode,
-                statusCode =
-                    latestInquirySnapshot?.statusCode
-                        ?: submittedStatusCode,
+                statusCode = effectiveWorkflow?.statusCode,
                 stateVersion = effectiveStateVersion,
                 allowedActions = effectiveAllowedActions,
                 idempotentReplay = submittedIdempotentReplay,
@@ -254,23 +307,31 @@ fun GuidanceScreen(
             is GuidanceUiState.Content -> GuidanceContent(
                 guidance = current.guidance.withInquiryCode(
                     actualInquiryCode
-                ),
+                ).copy(allowedActions = requestableAllowedActions),
                 noEvidence = false,
                 onRetry = viewModel::load,
                 onRequestConsultation = requestConsultation,
+                consultationSubmitting =
+                    consultationState is ConsultationRequestUiState.Submitting,
             )
 
             is GuidanceUiState.NoEvidence -> GuidanceContent(
                 guidance = current.guidance.withInquiryCode(
                     actualInquiryCode
-                ),
+                ).copy(allowedActions = requestableAllowedActions),
                 noEvidence = true,
                 onRetry = viewModel::load,
                 onRequestConsultation = requestConsultation,
+                consultationSubmitting =
+                    consultationState is ConsultationRequestUiState.Submitting,
             )
 
             is GuidanceUiState.AiFailure -> FailureFallback(
-                title = "AI 안내 생성 실패",
+                title = if (current.stateVersion != null) {
+                    "AI 안내 준비 확인 필요"
+                } else {
+                    "AI 안내 생성 실패"
+                },
                 message = current.message,
                 retryable = current.retryable,
                 onRetry = viewModel::load,
@@ -290,13 +351,36 @@ fun GuidanceScreen(
                 )
         }
 
-        if (consultationNotice) {
-            SectionCard("상담 요청") {
-                Text(
-                    "상담 요청 API가 아직 제공되지 않아 실제 요청을 보내지 않았습니다."
-                )
+        if (
+            state !is GuidanceUiState.Content &&
+            state !is GuidanceUiState.NoEvidence
+        ) {
+            requestableAllowedActions.firstOrNull {
+                it.normalizedCode == InquiryActionLabels.REQUEST_CONSULTATION
+            }?.let { action ->
+                SectionCard("상담 연결") {
+                    WorkflowActionButton(
+                        action = action,
+                        enabled =
+                            effectiveStateVersion != null &&
+                                consultationState !is
+                                    ConsultationRequestUiState.Submitting,
+                        onClick = requestConsultation,
+                    )
+                    Text(
+                        "AI 안내가 준비되지 않았더라도 Backend가 허용한 경우에만 상담을 요청합니다.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
         }
+
+        ConsultationRequestSection(
+            state = consultationState,
+            onRetry = viewModel::retryConsultationRequest,
+            onRetryConflict = viewModel::retryConsultationAfterConflict,
+            onReload = viewModel::retryFollowUpLoad,
+        )
 
         if (showCancelDialog) {
             val action = effectiveAllowedActions.firstOrNull {
@@ -356,6 +440,115 @@ private fun GuidanceDisplayModel.withInquiryCode(
     submittedInquiryCode.takeIf(String::isNotEmpty)
         ?.let { copy(inquiryCode = it) }
         ?: this
+
+private data class WorkflowDisplaySnapshot(
+    val statusCode: String?,
+    val stateVersion: Int,
+    val allowedActions: List<AllowedAction>,
+    val priority: Int,
+)
+
+private fun GuidanceUiState.workflowSnapshotOrNull(
+    priority: Int,
+): WorkflowDisplaySnapshot? {
+    return when (this) {
+        is GuidanceUiState.Content -> WorkflowDisplaySnapshot(
+            statusCode = guidance.statusCode,
+            stateVersion = guidance.stateVersion,
+            allowedActions = guidance.allowedActions,
+            priority = priority,
+        )
+        is GuidanceUiState.NoEvidence -> WorkflowDisplaySnapshot(
+            statusCode = guidance.statusCode,
+            stateVersion = guidance.stateVersion,
+            allowedActions = guidance.allowedActions,
+            priority = priority,
+        )
+        is GuidanceUiState.AiFailure -> stateVersion?.let { version ->
+            WorkflowDisplaySnapshot(
+                statusCode = statusCode,
+                stateVersion = version,
+                allowedActions = allowedActions,
+                priority = priority,
+            )
+        }
+        else -> null
+    }
+}
+
+@Composable
+private fun ConsultationRequestSection(
+    state: ConsultationRequestUiState,
+    onRetry: () -> Unit,
+    onRetryConflict: () -> Unit,
+    onReload: () -> Unit,
+) {
+    when (state) {
+        ConsultationRequestUiState.Idle -> Unit
+        ConsultationRequestUiState.Submitting ->
+            LoadingBlock("상담 요청을 접수하는 중입니다")
+
+        is ConsultationRequestUiState.Success ->
+            SectionCard("상담 요청 완료") {
+                LiquidGlassPill("Backend 접수")
+                Text(state.message)
+                Text(
+                    "현재 상태 · ${InquiryLabels.status(state.statusCode)} " +
+                        "(${state.statusCode})"
+                )
+                Text("상태 버전 · ${state.stateVersion}")
+                Text("문의 ID · ${state.inquiryId}")
+                if (state.idempotentReplay) {
+                    Text(
+                        "동일 요청의 기존 처리 결과를 안전하게 재사용했습니다.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                LiquidGlassButton(
+                    text = "최신 문의 상태 확인",
+                    onClick = onReload,
+                    accent = false,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("refreshAfterConsultationRequest"),
+                )
+            }
+
+        is ConsultationRequestUiState.Conflict ->
+            SectionCard("상담 요청 상태가 변경되었습니다") {
+                Text(state.message)
+                state.currentStatus?.let { status ->
+                    Text(
+                        "현재 상태 · ${InquiryLabels.status(status)} ($status)"
+                    )
+                }
+                state.currentStateVersion?.let { version ->
+                    Text("최신 상태 버전 · $version")
+                }
+                if (state.canRetry) {
+                    LiquidGlassButton(
+                        text = "최신 상태로 상담 다시 요청",
+                        onClick = onRetryConflict,
+                        accent = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("retryConsultationAfterConflict"),
+                    )
+                } else {
+                    Text(
+                        "현재 Backend 허용 행동에는 상담 요청이 없습니다.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+
+        is ConsultationRequestUiState.Error ->
+            ErrorCard(
+                state.message,
+                if (state.retryable) onRetry else null,
+            )
+    }
+}
 
 @Composable
 private fun SubmissionReceiptCard(
@@ -429,6 +622,7 @@ fun GuidanceContent(
     noEvidence: Boolean,
     onRetry: () -> Unit,
     onRequestConsultation: () -> Unit,
+    consultationSubmitting: Boolean = false,
 ) {
     val dangerous = guidance.requiresConsultation ||
         guidance.riskLevel == RiskLevel.DANGER ||
@@ -563,22 +757,10 @@ fun GuidanceContent(
     }
 
     if (consultationAction != null) {
-        LiquidGlassButton(
-            text = "상담 요청 · API 준비 중",
-            onClick = {},
-            enabled = false,
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("consultationUnavailable"),
-        )
-    } else if (dangerous) {
-        LiquidGlassButton(
-            text = "상담 요청 준비 중",
-            onClick = {},
-            enabled = false,
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("consultationUnavailable"),
+        WorkflowActionButton(
+            action = consultationAction,
+            onClick = onRequestConsultation,
+            enabled = !consultationSubmitting,
         )
     }
 
@@ -614,10 +796,4 @@ private fun FailureFallback(
         if (retryable) onRetry else null,
     )
 
-    LiquidGlassButton(
-        text = "상담 요청 준비 중",
-        onClick = {},
-        enabled = false,
-        modifier = Modifier.fillMaxWidth(),
-    )
 }

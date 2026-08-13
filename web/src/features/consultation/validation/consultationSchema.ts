@@ -4,6 +4,10 @@ import type {
   ConsultationFormValues,
 } from "../model/consultationTypes";
 
+export interface ConsultationValidationOptions {
+  requireConsultationResult?: boolean;
+}
+
 function isBlank(value: string) {
   return value.trim().length === 0;
 }
@@ -11,8 +15,11 @@ function isBlank(value: string) {
 export function validateConsultation(
   values: ConsultationFormValues,
   actionCode: CounselorActionCode,
+  options: ConsultationValidationOptions = {},
 ): ConsultationFieldErrors {
   const errors: ConsultationFieldErrors = {};
+  const requireConsultationResult =
+    options.requireConsultationResult ?? true;
 
   if (
     actionCode === "UPDATE_CONSULTATION_SUMMARY" &&
@@ -47,7 +54,10 @@ export function validateConsultation(
   }
 
   if (actionCode === "CONSULTATION_COMPLETED") {
-    if (isBlank(values.consultationResult)) {
+    if (
+      requireConsultationResult &&
+      isBlank(values.consultationResult)
+    ) {
       errors.consultationResult = "상담 결과를 입력해 주세요.";
     }
     if (!values.summaryConfirmed) {

@@ -71,6 +71,7 @@ def test_mobile_followup_seed_is_idempotent_and_emits_crosswalk():
     }
     assert ProductModel.objects.filter(
         model_code=SUPPORTED_PRODUCT_MODEL_CODE,
+        generation_code="D",
         is_supported_mvp=True,
         is_active=True,
     ).count() == 1
@@ -134,3 +135,19 @@ def test_mobile_followup_seed_rejects_inactive_supported_product():
     assert not Inquiry.objects.filter(
         scenario_code=DEMO_INQUIRY_SCENARIO_CODE
     ).exists()
+
+
+def test_mobile_followup_seed_normalizes_existing_baseline_generation():
+    call_command("seed_demo_accounts", verbosity=0)
+    product = ProductModel.objects.create(
+        model_code=SUPPORTED_PRODUCT_MODEL_CODE,
+        model_name="Legacy active smoke product",
+        generation_code="DEMO-G1",
+        is_supported_mvp=True,
+        is_active=True,
+    )
+
+    seed_json()
+
+    product.refresh_from_db()
+    assert product.generation_code == "D"

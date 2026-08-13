@@ -73,6 +73,7 @@ class AllowedActionContext:
     actor_id: Any | None = None
     owner_id: Any | None = None
     assigned_user_id: Any | None = None
+    consultant_claimable: bool = False
     actor_permissions: frozenset[str] = frozenset()
     product_present: bool = False
     symptom_payload_valid: bool = False
@@ -159,6 +160,15 @@ class AllowedActionContext:
             actor_id=getattr(actor, "pk", None),
             owner_id=getattr(customer, "user_id", None),
             assigned_user_id=getattr(inquiry, "assigned_user_id", None),
+            consultant_claimable=bool(
+                actor_role == "CONSULTANT"
+                and inquiry.status_code == "CONSULTATION_REQUIRED"
+                and getattr(inquiry, "assigned_user_id", None) is None
+                and getattr(inquiry, "assigned_role_code", None) == "NONE"
+                and consultation is not None
+                and getattr(consultation, "status", None) == "WAITING"
+                and getattr(consultation, "consultant_id", None) is None
+            ),
             actor_permissions=frozenset(permissions),
             product_present=product_present,
             symptom_payload_valid=bool(
@@ -269,7 +279,10 @@ class AllowedActionResolver:
         if guard_id == "G-ASSIGNED-CONSULTANT":
             return (
                 context.actor_role == "CONSULTANT"
-                and context.actor_id == context.assigned_user_id
+                and (
+                    context.actor_id == context.assigned_user_id
+                    or context.consultant_claimable
+                )
             )
         if guard_id == "G-CANCEL-ACTOR-AUTHORIZED":
             return bool(

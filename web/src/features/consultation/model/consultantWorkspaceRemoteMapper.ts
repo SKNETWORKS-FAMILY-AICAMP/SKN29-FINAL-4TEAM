@@ -68,7 +68,29 @@ export interface ConsultantInquiryDetailViewModel {
     usageGuidanceMessage: string | null;
     restrictedFunctions: readonly string[];
   };
-  consultation: unknown | null;
+  consultation: {
+    consultationId: string;
+    resultCode:
+      | "PENDING"
+      | "COMPLETED_NO_VISIT"
+      | "VISIT_REQUIRED"
+      | "REOPENED_FOLLOWUP";
+    summary: {
+      aiDraftSummary: string | null;
+      editedSummary: string | null;
+      confirmedSummary: string | null;
+      confirmedAt: string | null;
+    };
+    consultationNote: string | null;
+    additionalCheck: string | null;
+    customerGuidance: string | null;
+    usageGuidanceStatus:
+      | "NORMAL"
+      | "PARTIAL_STOP"
+      | "TOTAL_STOP"
+      | "PENDING_CONSULTATION"
+      | null;
+  } | null;
   visit: unknown | null;
   stateHistory: readonly {
     fromStatus: string | null;
@@ -183,7 +205,22 @@ export function mapConsultantInquiryDetail(
       usageGuidanceMessage: dto.guidance_and_actions.usage_guidance_message,
       restrictedFunctions: dto.guidance_and_actions.restricted_functions,
     },
-    consultation: dto.consultation,
+    consultation: dto.consultation
+      ? {
+          consultationId: dto.consultation.consultation_id,
+          resultCode: dto.consultation.result_code,
+          summary: {
+            aiDraftSummary: dto.consultation.summary.ai_draft_summary,
+            editedSummary: dto.consultation.summary.edited_summary,
+            confirmedSummary: dto.consultation.summary.confirmed_summary,
+            confirmedAt: dto.consultation.summary.confirmed_at,
+          },
+          consultationNote: dto.consultation.consultation_note,
+          additionalCheck: dto.consultation.additional_check,
+          customerGuidance: dto.consultation.customer_guidance,
+          usageGuidanceStatus: dto.consultation.usage_guidance_status,
+        }
+      : null,
     visit: dto.visit,
     stateHistory: dto.state_history.map((history) => ({
       fromStatus: history.from_status,

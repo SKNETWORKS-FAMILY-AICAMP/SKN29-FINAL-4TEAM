@@ -79,6 +79,32 @@ export interface ConsultantGuidanceAndActionsDto {
   restricted_functions: readonly string[];
 }
 
+export interface ConsultantConsultationSummaryDto {
+  ai_draft_summary: string | null;
+  edited_summary: string | null;
+  confirmed_summary: string | null;
+  confirmed_at: string | null;
+}
+
+export interface ConsultantConsultationRecordDto {
+  consultation_id: string;
+  result_code:
+    | "PENDING"
+    | "COMPLETED_NO_VISIT"
+    | "VISIT_REQUIRED"
+    | "REOPENED_FOLLOWUP";
+  summary: ConsultantConsultationSummaryDto;
+  consultation_note: string | null;
+  additional_check: string | null;
+  customer_guidance: string | null;
+  usage_guidance_status:
+    | "NORMAL"
+    | "PARTIAL_STOP"
+    | "TOTAL_STOP"
+    | "PENDING_CONSULTATION"
+    | null;
+}
+
 export interface ConsultantStateHistoryDto {
   from_status: string | null;
   to_status: string;
@@ -117,7 +143,7 @@ export interface ConsultantInquiryDetailDto {
   product_and_care: ConsultantProductAndCareDto | null;
   symptom_and_questionnaire: ConsultantSymptomAndQuestionnaireDto;
   guidance_and_actions: ConsultantGuidanceAndActionsDto;
-  consultation: unknown | null;
+  consultation: ConsultantConsultationRecordDto | null;
   visit: unknown | null;
   state_history: readonly ConsultantStateHistoryDto[];
   workflow: ConsultantWorkflowDto;

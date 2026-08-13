@@ -6,8 +6,10 @@ import com.skn29.watercare.core.model.CustomerInquiryQuestion
 import com.skn29.watercare.core.model.CustomerInquiryQuestions
 import com.skn29.watercare.core.model.CustomerInquirySnapshot
 import com.skn29.watercare.core.model.FollowUpAnswer
+import com.skn29.watercare.core.model.GuidanceData
 import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.MockScenario
+import com.skn29.watercare.core.model.RequestConsultationResult
 import com.skn29.watercare.core.model.StateConflictSnapshot
 import com.skn29.watercare.core.model.SubmitFollowUpAnswersResult
 import com.skn29.watercare.core.repository.CustomerInquiryRepository
@@ -288,6 +290,10 @@ class FollowUpViewModelTest {
 
         override suspend fun snapshot(inquiryId: String) = snapshots.removeAt(0)
         override suspend fun questions(inquiryId: String) = questions.removeAt(0)
+        override suspend fun guidance(
+            inquiryId: String,
+        ): ApiResult<GuidanceData> =
+            error("이 테스트에서는 사용하지 않습니다.")
         override suspend fun submitAnswers(
             inquiryId: String,
             stateVersion: Int,
@@ -297,6 +303,12 @@ class FollowUpViewModelTest {
             submittedAnswers += listOf(answers)
             return submits.removeAt(0)
         }
+
+        override suspend fun requestConsultation(
+            inquiryId: String,
+            stateVersion: Int,
+        ): ApiResult<RequestConsultationResult> =
+            error("이 테스트에서는 사용하지 않습니다.")
     }
 
     companion object {

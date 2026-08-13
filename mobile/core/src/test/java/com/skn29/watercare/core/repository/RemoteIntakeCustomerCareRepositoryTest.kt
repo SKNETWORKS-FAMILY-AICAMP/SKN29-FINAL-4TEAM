@@ -4,10 +4,16 @@ import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.CancelInquiryResponse
 import com.skn29.watercare.core.model.CreateInquiryRequest
+import com.skn29.watercare.core.model.CustomerInquiryQuestions
+import com.skn29.watercare.core.model.CustomerInquirySnapshot
+import com.skn29.watercare.core.model.FollowUpAnswer
+import com.skn29.watercare.core.model.GuidanceData
 import com.skn29.watercare.core.model.InquiryResponse
 import com.skn29.watercare.core.model.IntakeSubmission
 import com.skn29.watercare.core.model.MockScenario
+import com.skn29.watercare.core.model.RequestConsultationResult
 import com.skn29.watercare.core.model.StateConflictSnapshot
+import com.skn29.watercare.core.model.SubmitFollowUpAnswersResult
 import com.skn29.watercare.core.model.SubmitSymptomResponse
 import com.skn29.watercare.core.model.SubscriptionDetailDto
 import com.skn29.watercare.core.model.SubscriptionListDataDto
@@ -96,10 +102,25 @@ class RemoteIntakeCustomerCareRepositoryTest {
     }
 
     @Test
-    fun guidanceWithoutBackendRoute_failsClosed() = runBlocking {
+    fun guidanceWithPublishedRoute_returnsActualRemoteProjection() = runBlocking {
+        val guidance = GuidanceData(
+            inquiryId = "00000000-0000-4000-8000-000000000301",
+            inquiryCode = "INQ-REMOTE-001",
+            statusCode = "AI_GUIDANCE",
+            stateVersion = 3,
+            symptomSummary = "실제 AI 요약",
+            riskLevel = "GENERAL",
+            usageGuidanceStatus = "NORMAL",
+            usageGuidanceMessage = "실제 AI 안내",
+            nextAction = "상담 요청",
+            requiresConsultation = false,
+            evidence = emptyList(),
+            allowedActions = listOf(AllowedAction(code = "REQUEST_CONSULTATION")),
+        )
         val repository = RemoteIntakeCustomerCareRepository(
             inquiryRepository = RecordingInquiryRepository(),
             subscriptionRepository = FailingSubscriptionRepository(),
+            customerInquiryRepository = GuidanceCustomerInquiryRepository(guidance),
         )
 
         val result = repository.getGuidance(
@@ -107,10 +128,10 @@ class RemoteIntakeCustomerCareRepositoryTest {
             scenario = MockScenario.NORMAL,
         )
 
-        assertTrue(result is ApiResult.Failure)
-        val failure = result as ApiResult.Failure
-        assertEquals("GUIDANCE_ROUTE_UNAVAILABLE", failure.code)
-        assertEquals(false, failure.retryable)
+        assertTrue(result is ApiResult.Success<*>)
+        val success = result as ApiResult.Success<GuidanceData>
+        assertEquals("실제 AI 안내", success.value.usageGuidanceMessage)
+        assertEquals(3, success.value.stateVersion)
     }
 
     @Test
@@ -263,6 +284,37 @@ class RemoteIntakeCustomerCareRepositoryTest {
         override suspend fun detail(
             subscriptionId: String,
         ): ApiResult<SubscriptionDetailDto> =
+            error("이 테스트에서는 사용하지 않습니다.")
+    }
+
+    private class GuidanceCustomerInquiryRepository(
+        private val guidance: GuidanceData,
+    ) : CustomerInquiryRepository {
+        override suspend fun snapshot(
+            inquiryId: String,
+        ): ApiResult<CustomerInquirySnapshot> =
+            error("이 테스트에서는 사용하지 않습니다.")
+
+        override suspend fun questions(
+            inquiryId: String,
+        ): ApiResult<CustomerInquiryQuestions> =
+            error("이 테스트에서는 사용하지 않습니다.")
+
+        override suspend fun guidance(
+            inquiryId: String,
+        ): ApiResult<GuidanceData> = ApiResult.Success(guidance)
+
+        override suspend fun submitAnswers(
+            inquiryId: String,
+            stateVersion: Int,
+            answers: List<FollowUpAnswer>,
+        ): ApiResult<SubmitFollowUpAnswersResult> =
+            error("이 테스트에서는 사용하지 않습니다.")
+
+        override suspend fun requestConsultation(
+            inquiryId: String,
+            stateVersion: Int,
+        ): ApiResult<RequestConsultationResult> =
             error("이 테스트에서는 사용하지 않습니다.")
     }
 }
