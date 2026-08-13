@@ -9,7 +9,7 @@ from uuid import uuid4
 import pytest
 from django.db import connection, connections
 
-from apps.accounts.models import AccountAuditEvent, User
+from apps.accounts.models import AccountAuditEvent, AccountLifecycleLock, User
 from apps.accounts.services.account_lifecycle_service import (
     AccountLifecycleError,
     AccountLifecycleService,
@@ -58,6 +58,14 @@ def revoke_concurrently(
 def test_two_concurrent_revokes_preserve_one_practical_administrator():
     if connection.vendor != "postgresql":
         pytest.skip("PostgreSQL row-lock verification only")
+
+    # Transactional tests that run earlier in the full suite can flush rows
+    # created by data migrations.  This test owns its runtime prerequisite so
+    # it remains deterministic regardless of collection order.
+    AccountLifecycleLock.objects.update_or_create(
+        pk=1,
+        defaults={"label": "ACCOUNT_LIFECYCLE"},
+    )
 
     actor = User.objects.create_superuser(
         username="SYN-T017C-PG-SUPERUSER",
