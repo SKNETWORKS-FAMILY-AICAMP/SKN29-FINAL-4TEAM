@@ -79,6 +79,7 @@ docs/individual/jiyong/
 │  └─ Django_State_Machine_API_구현_검증_인계서.md
 ├─ 연동_인계/
 │  ├─ Backend_AI_API_계약_구현_미해결_사항.md
+│  ├─ Backend_AI_Crosswalk_Readonly_View_Verifier_Danger_Guard_구현_검증_가이드.md
 │  ├─ Backend_Mobile_API_연동_가이드.md
 │  └─ Backend_팀_검토_인계_체크리스트.md
 └─ archive/
@@ -134,6 +135,7 @@ docs/individual/jiyong/
 | 문서 | 용도 |
 | --- | --- |
 | [Backend·AI API 계약·구현 미해결 사항](연동_인계/Backend_AI_API_계약_구현_미해결_사항.md) | Schema Parity·Timeout·Retry·stale·검색 후검증·공동 E2E |
+| [Backend·AI Crosswalk·Readonly View·Verifier·Danger Guard 구현·검증 가이드](연동_인계/Backend_AI_Crosswalk_Readonly_View_Verifier_Danger_Guard_구현_검증_가이드.md) | Canonical ID 변환·AI Readonly View·Evidence fail-closed·Safety 정책 충돌·공동 Gate |
 | [Backend·Mobile API 연동 가이드](연동_인계/Backend_Mobile_API_연동_가이드.md) | Runtime·OpenAPI-only·Mock·Blocked와 DTO·오류 소비 경계 |
 | [Django 방문 Runtime PostgreSQL Row Lock QA 재검증 요청서](연동_인계/Django_방문_Runtime_PostgreSQL_Row_Lock_QA_재검증_요청서.md) | 김은진 영향 Case 재현, Operation별 PASS, 소비자 연결 Gate |
 | [Backend 팀 검토·인계 체크리스트](연동_인계/Backend_팀_검토_인계_체크리스트.md) | 담당자별 검토 요청·반환 증거·금지사항 |
@@ -174,6 +176,7 @@ docs/individual/jiyong/
 | 격리 Importer | Source 367, 최초 355 created·12 projected, Replay 355 unchanged·12 projected |
 | Backend 회귀 — 8/10 AI Wiring 후보 | SQLite `936 passed, 16 skipped`; 실제 Uvicorn Mock HTTP `1 passed` |
 | Backend 회귀 — 8/11 T-017C·T-024 통합 후보 | SQLite `966 passed, 17 skipped`; 실제 Uvicorn Mock HTTP `1 passed` |
+| Backend 회귀 — 8/13 Crosswalk·Readonly View·Verifier·EvidenceLink 후보 | SQLite `1100 passed, 19 skipped`; 계약 Validator PASS; 팀 PostgreSQL Role·공식 7건 Apply·실제 Local RAG 공동 Gate HOLD |
 | 공식 완료 | 비작성자 독립 재현·외부 소비 검토·PM 승인 대기 |
 
 수치는 작성자 로컬 검증 증거이며 PM의 WBS 완료 판정과 같지 않다.

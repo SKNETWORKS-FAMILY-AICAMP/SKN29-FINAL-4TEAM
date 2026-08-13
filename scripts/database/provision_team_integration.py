@@ -36,6 +36,8 @@ from config.env import (  # noqa: E402
 TARGET_DATABASE = "waterbridge_team_integration"
 ADMIN_DATABASE = "postgres"
 OBJECT_MARKER = "waterbridge:team-integration:v1"
+AI_READONLY_VIEW = "backend_ai_rag_chunks_v1"
+AI_READONLY_VIEW_REGCLASS = f"public.{AI_READONLY_VIEW}"
 ADVISORY_LOCK_KEY = 870_429_001
 TEAM_ENV_PATH = BACKEND_DIR / ".env.team-integration"
 PROTECTED_DATABASES = frozenset(
@@ -495,6 +497,17 @@ def _grant_roles(cursor: Any) -> None:
             "IN SCHEMA public FROM {}"
         ).format(sql.Identifier(roles["ai_readonly"]))
     )
+    cursor.execute(
+        "SELECT to_regclass(%s) IS NOT NULL",
+        (AI_READONLY_VIEW_REGCLASS,),
+    )
+    if cursor.fetchone()[0]:
+        cursor.execute(
+            sql.SQL("GRANT SELECT ON TABLE {} TO {}").format(
+                sql.Identifier("public", AI_READONLY_VIEW),
+                sql.Identifier(roles["ai_readonly"]),
+            )
+        )
 
     cursor.execute(
         "SELECT to_regclass('public.django_migrations') IS NOT NULL"

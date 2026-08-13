@@ -17,6 +17,7 @@ from django.db.models import Max, Prefetch
 from django.utils import timezone
 
 from apps.audit.models import AIRun
+from apps.evidence.models import AIChunkCrosswalk, EvidenceLink
 from apps.inquiries.models import (
     Guidance,
     GuidanceItem,
@@ -25,6 +26,9 @@ from apps.inquiries.models import (
     SymptomAssessment,
 )
 from apps.inquiries.repositories.inquiry_repository import InquiryRepository
+from apps.inquiries.services.safety_rule_registry import (
+    danger_assessment_is_valid,
+)
 from apps.workflow.domain.workflow_snapshot import WorkflowSnapshot
 from apps.workflow.engine.guard_evaluator import GuardContext, GuardEvaluator
 from apps.workflow.engine.state_machine import StateMachine
@@ -84,6 +88,10 @@ class InquiryAIService:
         validator: AIContractValidator | None = None,
         evidence_verifier: EvidenceVerifier | None = None,
     ) -> InquiryAIOutcome:
+        if evidence_verifier is None:
+            from apps.evidence.services import EvidenceReferenceVerifier
+
+            evidence_verifier = EvidenceReferenceVerifier.verify
         contract_validator = validator or AIContractValidator()
         inquiry = (
             Inquiry.objects.select_related("subscription__product_model")
@@ -441,11 +449,48 @@ class InquiryAIService:
         assessment = cls._save_assessment(inquiry, run, result)
         guidance = cls._save_guidance(inquiry, run, result)
         saved_questions = cls._save_followup_questions(inquiry, run, result)
-        verified_evidence_ids = (
-            evidence_verifier(result.payload["evidence_references"], inquiry)
-            if evidence_verifier is not None
-            else []
-        )
+        try:
+            verified_evidence_ids = (
+                evidence_verifier(result.payload["evidence_references"], inquiry)
+                if evidence_verifier is not None
+                else []
+            )
+        except Exception as exc:  # Evidence failures remain fail-closed.
+            ai_trace_logger.warning(
+                "evidence_verification_failed",
+                extra={
+                    "trace_stage": "EVIDENCE_VERIFICATION_FAILED",
+                    "ai_run_id": str(run.public_id),
+                    "inquiry_id": str(inquiry.public_id),
+                    "correlation_id": str(run.correlation_id),
+                    "failure_type": type(exc).__name__,
+                },
+            )
+            verified_evidence_ids = []
+        if verified_evidence_ids:
+            try:
+                # Keep partial link writes out while preserving the already
+                # validated AI result as a reviewable draft.
+                with transaction.atomic():
+                    cls._save_evidence_links(
+                        inquiry=inquiry,
+                        run=run,
+                        guidance=guidance,
+                        references=result.payload["evidence_references"],
+                        verified_evidence_ids=verified_evidence_ids,
+                    )
+            except Exception as exc:
+                ai_trace_logger.warning(
+                    "evidence_link_persistence_failed",
+                    extra={
+                        "trace_stage": "EVIDENCE_LINK_PERSISTENCE_FAILED",
+                        "ai_run_id": str(run.public_id),
+                        "inquiry_id": str(inquiry.public_id),
+                        "correlation_id": str(run.correlation_id),
+                        "failure_type": type(exc).__name__,
+                    },
+                )
+                verified_evidence_ids = []
         cls._update_inquiry_projection(
             inquiry,
             result=result,
@@ -468,6 +513,92 @@ class InquiryAIService:
             saved_guidance=guidance is not None,
             saved_questions=saved_questions,
         )
+
+    @staticmethod
+    def _save_evidence_links(
+        *,
+        inquiry: Inquiry,
+        run: AIRun,
+        guidance: Guidance,
+        references: list[dict[str, Any]],
+        verified_evidence_ids: list[str],
+    ) -> None:
+        """Snapshot only Backend-verified evidence behind one Guidance."""
+
+        canonical_ids = [reference.get("chunk_id") for reference in references]
+        if (
+            len(canonical_ids) != len(verified_evidence_ids)
+            or any(not isinstance(value, str) for value in canonical_ids)
+        ):
+            raise ValueError("Verified evidence identity bundle is inconsistent.")
+
+        mappings = {
+            mapping.canonical_chunk_id: mapping
+            for mapping in AIChunkCrosswalk.objects.filter(
+                canonical_chunk_id__in=canonical_ids,
+                is_active=True,
+                is_verified=True,
+            )
+            .select_related(
+                "chunk__page__document",
+                "model_scope__product_model",
+                "verified_by",
+            )
+            .prefetch_related("source_pages__page")
+        }
+        if set(mappings) != set(canonical_ids):
+            raise ValueError("Verified evidence mapping disappeared before persistence.")
+
+        for display_order, (reference, public_id) in enumerate(
+            zip(references, verified_evidence_ids, strict=True),
+            start=1,
+        ):
+            mapping = mappings[reference["chunk_id"]]
+            chunk = mapping.chunk
+            document = chunk.page.document
+            source_pages = [item.page for item in mapping.source_pages.all()]
+            page_numbers = [page.page_no for page in source_pages]
+            evidence_summary = str(
+                (chunk.metadata or {}).get("evidence_summary") or ""
+            ).strip()
+            if (
+                str(chunk.public_id) != public_id
+                or not page_numbers
+                or not evidence_summary
+                or mapping.verified_by_id is None
+                or mapping.verified_at is None
+            ):
+                raise ValueError("Verified evidence snapshot is incomplete.")
+
+            page_label = ", ".join(str(value) for value in page_numbers)
+            link = EvidenceLink(
+                inquiry=inquiry,
+                guidance=guidance,
+                ai_run=run,
+                chunk=chunk,
+                selection_origin_code="AUTO_RETRIEVAL",
+                evidence_role_code="SUPPORTING",
+                display_order=display_order,
+                citation_label=f"{document.title} p.{page_label}"[:200],
+                document_code_snapshot=document.document_code,
+                document_title_snapshot=document.title,
+                source_org_snapshot=document.source_org,
+                revision_label_snapshot=document.revision_label,
+                official_source_url_snapshot=document.official_source_url,
+                document_sha256_snapshot=document.sha256_hash,
+                evidence_summary=evidence_summary,
+                cited_text_snapshot=chunk.chunk_text,
+                page_no_snapshot=page_numbers[0],
+                section_snapshot=chunk.section_path,
+                product_model_codes_snapshot=[
+                    mapping.model_scope.product_model.model_code
+                ],
+                is_verified=True,
+                verified_by=mapping.verified_by,
+                verified_at=mapping.verified_at,
+            )
+            link.full_clean()
+            link.save()
 
     @staticmethod
     def _save_assessment(
@@ -593,7 +724,12 @@ class InquiryAIService:
         guidance = result.payload["usage_guidance"]
         inquiry.risk_level_code = safety["risk_level"]
         inquiry.usage_guidance_status = guidance["guidance_status"]
-        inquiry.requires_fallback = result.is_no_evidence
+        references_were_rejected = bool(
+            result.payload["evidence_references"]
+        ) and not verified_evidence_ids
+        inquiry.requires_fallback = (
+            result.is_no_evidence or references_were_rejected
+        )
         update_fields = [
             "risk_level_code",
             "usage_guidance_status",
@@ -608,6 +744,10 @@ class InquiryAIService:
             inquiry.evidence_mode = Inquiry.EvidenceMode.EXACT_MODEL
             inquiry.evidence_ids = verified_evidence_ids
             update_fields.extend(["evidence_mode", "evidence_ids"])
+        elif references_were_rejected:
+            inquiry.evidence_mode = Inquiry.EvidenceMode.PARTIAL_EVIDENCE
+            inquiry.evidence_ids = []
+            update_fields.extend(["evidence_mode", "evidence_ids"])
         inquiry.save(update_fields=update_fields)
 
     @classmethod
@@ -621,8 +761,6 @@ class InquiryAIService:
         event = result.event_candidate
         if event is None:
             return None, "NO_STATE_EVENT_CANDIDATE"
-        if event == "DANGER_DETECTED":
-            return None, "MATCHED_SAFETY_RULE_IDS_REQUIRED"
         if event == "SAFE_GUIDANCE_READY" and not verified_evidence_ids:
             return None, "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
 
@@ -636,6 +774,9 @@ class InquiryAIService:
             ),
             "G-OFFICIAL-EVIDENCE-AVAILABLE": bool(verified_evidence_ids),
             "G-NO-DANGER-CONFLICT": result.risk_level != "danger",
+            "G-DANGER-ASSESSMENT-VALID": danger_assessment_is_valid(
+                result.payload
+            ),
         }
         snapshot = WorkflowSnapshot(
             inquiry_state=inquiry.status_code,

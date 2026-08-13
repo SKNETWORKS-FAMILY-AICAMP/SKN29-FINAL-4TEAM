@@ -22,7 +22,7 @@ class ContractValidatorsTest(unittest.TestCase):
     def test_code_registries_match_state_machine_sources(self) -> None:
         result = validate_codes.validate_repository(REPO_ROOT)
 
-        self.assertEqual(28, result.registry_files)
+        self.assertEqual(29, result.registry_files)
         self.assertEqual(13, result.inquiry_statuses)
         self.assertEqual(23, result.workflow_actions)
         self.assertEqual(4, result.user_roles)
