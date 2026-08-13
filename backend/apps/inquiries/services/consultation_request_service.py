@@ -14,6 +14,9 @@ from apps.consultations.repositories.consultation_repository import (
 )
 from apps.inquiries.models import Inquiry
 from apps.inquiries.repositories.inquiry_repository import InquiryRepository
+from apps.inquiries.services.synthetic_e2e_assignment_service import (
+    SyntheticE2EAssignmentService,
+)
 from apps.workflow.domain.workflow_snapshot import WorkflowSnapshot
 from apps.workflow.engine.allowed_action_resolver import (
     AllowedActionContext,
@@ -157,6 +160,7 @@ class ConsultationRequestService:
                 raise
             return replay
 
+        SyntheticE2EAssignmentService.assign_if_marked(inquiry)
         consultation = ConsultationRepository.request(
             inquiry=inquiry,
             state_version=transition.state_version_after,
