@@ -1,8 +1,8 @@
 # 5주차 산출물 의존성 Map
 
-> 기준일: **2026-08-10 KST**
+> 기준일: **2026-08-12 KST**
 > WBS 기준: `docs/planning/md/WBS.md` v2.1
-> 기준 Commit: `main@dd172c796bfeede07a9f72094b5d044b67855381`
+> 기준 Commit: `main@f781e92be75d09a1f5bf0464f9ae1fdf90e97bdc`
 > 원칙: 담당자 이름이 아니라 **소비 가능한 산출물**이 다음 작업을 연다.
 
 ## 1. WBS 5주차 필수 흐름

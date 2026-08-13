@@ -1,5 +1,6 @@
 """로그인·토큰·현재 사용자 조회 Controller."""
 
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 
@@ -29,6 +30,29 @@ def _session_data(user, pair: TokenPair) -> dict:
 class DemoLoginView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        operation_id="demoLogin",
+        summary="상담사 Demo 계정으로 로그인",
+        description=(
+            "Swagger 검증용 Demo 계정 로그인을 수행합니다. "
+            "응답의 access_token을 상단 Authorize 버튼에 입력하세요."
+        ),
+        tags=["Auth"],
+        auth=[],
+        request=DemoLoginRequestSerializer,
+        responses={
+            200: OpenApiResponse(
+                description="Demo JWT access_token과 사용자 정보를 반환합니다.",
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                "상담사 Demo 로그인",
+                value={"demo_user_code": "DEMO-CONSULTANT-001"},
+                request_only=True,
+            ),
+        ],
+    )
     def post(self, request):
         serializer = DemoLoginRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

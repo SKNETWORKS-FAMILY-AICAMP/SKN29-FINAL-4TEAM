@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "care_record_id": "60000000-0000-4000-8000-000000000001",
+        "subscription_id": "20000000-0000-4000-8000-000000000001",
+        "care_type_code": "FILTER_REPLACEMENT",
+        "status_code": "COMPLETED",
+        "performed_on": "2026-08-10",
+        "result_code": "FILTER_REPLACED",
+        "source_code": "CUSTOMER"
+      }
+    ],
+    "page": 1,
+    "size": 20,
+    "total": 1
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "30000000-0000-4000-8000-000000000021"
+  }
+}

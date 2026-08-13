@@ -30,7 +30,7 @@ export interface SaveConsultationRequestDto extends StateTransitionRequestDto {
     | "PENDING_CONSULTATION";
 }
 
-export type CompleteConsultationRequestDto = SaveConsultationRequestDto;
+export type CompleteConsultationRequestDto = StateTransitionRequestDto;
 
 export interface StateTransitionResultDto {
   message: string;

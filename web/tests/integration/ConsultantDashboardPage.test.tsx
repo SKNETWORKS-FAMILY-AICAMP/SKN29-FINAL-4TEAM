@@ -17,15 +17,15 @@ const CONSULTANT_USER = {
 };
 
 const TAB_LABELS: Record<CounselorWorkBucket, RegExp> = {
-  NEW: /새로 들어온 문의/,
+  NEW: /새 문의/,
   IN_PROGRESS: /처리 중인 문의/,
   COMPLETED: /처리 완료된 문의/,
 };
 
 const EXPECTED_BUCKET_COUNTS: Record<CounselorWorkBucket, number> = {
-  NEW: 15,
-  IN_PROGRESS: 23,
-  COMPLETED: 12,
+  NEW: 30,
+  IN_PROGRESS: 30,
+  COMPLETED: 30,
 };
 
 function renderPage(path = "/consultant/inquiries") {
@@ -54,12 +54,13 @@ describe("ConsultantDashboardPage", () => {
   it("첫 화면은 세 가지 업무 탭과 문의 목록만 보여준다", () => {
     renderPage();
 
-    expect(screen.getByRole("tab", { name: /새로 들어온 문의/ })).toHaveAttribute(
+    expect(screen.getByRole("tab", { name: /새 문의/ })).toHaveAttribute(
       "aria-selected",
       "true",
     );
     expect(screen.getByRole("tab", { name: /처리 중인 문의/ })).toBeVisible();
     expect(screen.getByRole("tab", { name: /처리 완료된 문의/ })).toBeVisible();
+    expect(screen.getByRole("tab", { name: "전화 문의 등록" })).toBeVisible();
     expect(screen.getByLabelText("상담 문의 목록")).toBeVisible();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: /상담 기록/ })).not.toBeInTheDocument();
@@ -85,7 +86,7 @@ describe("ConsultantDashboardPage", () => {
 
     await openInquiry(user, "INQ-20260707-0024", "NEW");
 
-    expect(screen.getByRole("dialog", { name: /합성 고객.*IoT 기능 지원 문의/ })).toBeVisible();
+    expect(screen.getByRole("dialog", { name: /IoT 기능 지원 문의/ })).toBeVisible();
     expect(screen.getByRole("button", { name: "상담 시작" })).toBeInTheDocument();
 
     await user.click(screen.getAllByRole("button", { name: "문의 상세 닫기" })[1]);
@@ -188,22 +189,127 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.getByRole("heading", { name: "최근 처리 이력" })).toBeInTheDocument();
   });
 
-  it("일반 문의는 방문기사에게 자동 인계되어 상담사 탭에 포함되지 않는다", () => {
+  it("긴급·주의·일반 탭을 전환하면 해당 문의 10건만 보여준다", async () => {
+    const user = userEvent.setup();
     renderPage();
 
+    (["NEW", "IN_PROGRESS", "COMPLETED"] as const).forEach((bucket) => {
+      const bucketItems = CONSULTANT_QUEUE_INQUIRIES.filter(
+        (item) => getCounselorWorkBucket(item.status) === bucket,
+      );
+      expect(
+        bucketItems.filter((item) => item.riskLevel === "DANGER"),
+      ).toHaveLength(10);
+      expect(
+        bucketItems.filter((item) => item.riskLevel === "CAUTION"),
+      ).toHaveLength(10);
+      expect(
+        bucketItems.filter((item) => item.riskLevel === "GENERAL"),
+      ).toHaveLength(10);
+    });
+
+    const dangerTab = screen.getByRole("tab", { name: /긴급 문의/ });
+    const cautionTab = screen.getByRole("tab", { name: /주의 문의/ });
+    const generalTab = screen.getByRole("tab", { name: /일반 문의/ });
+
+    expect(dangerTab).toHaveAttribute("aria-selected", "true");
+    expect(dangerTab).toHaveClass("consultant-risk-tab--danger");
+    expect(cautionTab).toHaveClass("consultant-risk-tab--caution");
+    expect(generalTab).toHaveClass("consultant-risk-tab--general");
+    expect(within(dangerTab).getByText("10")).toHaveClass(
+      "consultant-risk-tab__count",
+    );
+    expect(within(cautionTab).getByText("10")).toHaveClass(
+      "consultant-risk-tab__count",
+    );
+    expect(within(generalTab).getByText("10")).toHaveClass(
+      "consultant-risk-tab__count",
+    );
     expect(
-      CONSULTANT_QUEUE_INQUIRIES.every(
-        (item) => item.riskLevel === "CAUTION" || item.riskLevel === "DANGER",
+      within(screen.getByRole("tabpanel", { name: /긴급 문의/ })).getAllByRole(
+        "button",
+        { name: /상세 열기/ },
       ),
-    ).toBe(true);
-    expect(screen.queryByLabelText("위험도: 일반")).not.toBeInTheDocument();
+    ).toHaveLength(10);
+    expect(
+      screen.queryByRole("button", { name: "긴급 문의 상태 필터" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen
+        .getByRole("tabpanel", { name: /긴급 문의/ })
+        .querySelector(".consultant-risk-section__count"),
+    ).toBeNull();
+
+    dangerTab.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(cautionTab).toHaveAttribute("aria-selected", "true");
+    expect(
+      within(screen.getByRole("tabpanel", { name: /주의 문의/ })).getAllByRole(
+        "button",
+        { name: /상세 열기/ },
+      ),
+    ).toHaveLength(10);
+
+    await user.click(generalTab);
+    expect(generalTab).toHaveAttribute("aria-selected", "true");
+    expect(
+      within(screen.getByRole("tabpanel", { name: /일반 문의/ })).getAllByRole(
+        "button",
+        { name: /상세 열기/ },
+      ),
+    ).toHaveLength(10);
+  });
+
+  it("각 문의 탭의 상태 필터를 독립적으로 유지한다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole("tab", { name: /처리 중인 문의/ }));
+
+    let dangerFilter = screen.getByRole("button", {
+      name: "긴급 문의 상태 필터",
+    });
+
+    expect(dangerFilter).toHaveTextContent("전체 상태");
+
+    let dangerSection = screen.getByRole("tabpanel", { name: /긴급 문의/ });
+    expect(
+      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
+    ).toHaveLength(10);
+
+    await user.click(dangerFilter);
+    await user.click(screen.getByRole("option", { name: "방문 예정" }));
+
+    expect(dangerFilter).toHaveTextContent("방문 예정");
+    expect(
+      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
+    ).toHaveLength(2);
+    expect(within(dangerSection).queryByLabelText(/^상태:/)).not.toBeInTheDocument();
+    expect(within(dangerSection).queryByText(/^INQ-/)).not.toBeInTheDocument();
+    expect(within(dangerSection).queryByText(/^WPU-/)).not.toBeInTheDocument();
+    expect(within(dangerSection).queryByText(/^대기 /)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /주의 문의/ }));
+    expect(
+      screen.getByRole("button", { name: "주의 문의 상태 필터" }),
+    ).toHaveTextContent("전체 상태");
+
+    await user.click(screen.getByRole("tab", { name: /긴급 문의/ }));
+    dangerFilter = screen.getByRole("button", {
+      name: "긴급 문의 상태 필터",
+    });
+    dangerSection = screen.getByRole("tabpanel", { name: /긴급 문의/ });
+    expect(dangerFilter).toHaveTextContent("방문 예정");
+    expect(
+      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
+    ).toHaveLength(2);
   });
 
   it.each([
     ["loading", "상담 문의 목록을 불러오고 있습니다."],
     ["error", "상담 문의 목록을 불러오지 못했습니다."],
     ["forbidden", "상담 문의 목록을 볼 권한이 없습니다."],
-    ["empty", "새로 들어온 문의가 없습니다."],
+    ["empty", "새 문의가 없습니다."],
   ])("목록 %s 상태를 구분해 안내한다", async (state, message) => {
     renderPage(`/consultant/inquiries?mockState=${state}`);
 

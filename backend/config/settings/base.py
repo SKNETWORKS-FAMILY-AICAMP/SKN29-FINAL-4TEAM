@@ -156,6 +156,21 @@ REST_FRAMEWORK = {
     "UNAUTHENTICATED_USER": None,
 }
 
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Water Bridge API",
+    "DESCRIPTION": (
+        "Water Bridge Backend Runtime API 문서입니다. "
+        "Health 항목은 인증 없이 직접 실행할 수 있습니다."
+    ),
+    "VERSION": "0.8.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_SETTINGS": {
+        "persistAuthorization": True,
+        "displayRequestDuration": True,
+        "filter": True,
+    },
+}
+
 AUTH_USER_MODEL = "accounts.User"
 
 

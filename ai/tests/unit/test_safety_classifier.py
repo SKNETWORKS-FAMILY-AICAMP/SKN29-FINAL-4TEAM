@@ -1,7 +1,7 @@
 """안전 분류기 및 가드레일 단위 테스트."""
 
 import pytest
-from ai.app.schemas import RiskLevel, UsageGuidanceStatus
+from ai.app.schemas import RiskLevel, SafetyPriority, UsageGuidanceStatus
 from ai.app.safety import RiskClassifier, UsageGuidanceClassifier
 from ai.app.safety import ProhibitedActionGuard
 from ai.app.validation.safety import ProhibitedPhraseValidator
@@ -95,7 +95,14 @@ def test_no_evidence_fallback(risk_classifier, guidance_classifier):
     assessment = risk_classifier.classify(raw_text)
 
     # 근거가 없는 경우 (has_evidence=False)
-    guidance = guidance_classifier.determine_guidance(assessment, raw_text, has_evidence=False)
+    assessment, guidance = guidance_classifier.determine_assessment_and_guidance(
+        assessment,
+        raw_text,
+        has_evidence=False,
+    )
+    assert assessment.risk_level == RiskLevel.CAUTION
+    assert assessment.priority == SafetyPriority.CONSULTATION_RECOMMENDED
+    assert assessment.requires_consultation is True
     assert guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
     assert "전문 상담사 연결" in guidance.next_actions[0]
 

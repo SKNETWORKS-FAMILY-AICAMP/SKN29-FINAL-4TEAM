@@ -1,8 +1,8 @@
 # 5주차 담당자·완료 증거 Matrix
 
-> 기준일: **2026-08-10 KST**
+> 기준일: **2026-08-12 KST**
 > WBS 기준: `docs/planning/md/WBS.md` v2.1
-> 기준 Commit: `main@dd172c796bfeede07a9f72094b5d044b67855381`
+> 기준 Commit: `main@f781e92be75d09a1f5bf0464f9ae1fdf90e97bdc`
 
 ## 1. 필수 Owner Matrix
 

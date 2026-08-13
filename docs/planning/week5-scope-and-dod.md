@@ -1,9 +1,9 @@
 # 5주차 Scope 및 Definition of Done
 
-> 기준일: **2026-08-10 KST**
+> 기준일: **2026-08-12 KST**
 > WBS 기준: `docs/planning/md/WBS.md` v2.1
-> 기준 Commit: `main@2a1b308ed5eae8bdbaec57ee6026f14529b10794`
-> 상태: **CONTRACT_BASELINE_REVIEW**
+> 기준 Commit: `main@f781e92be75d09a1f5bf0464f9ae1fdf90e97bdc`
+> 상태: **SCOPE_DEPENDENCY_ALIGNED · 3.1 COMPLETE**
 
 ## 1. 범위 원칙
 
@@ -73,7 +73,8 @@ target_at=<YYYY-MM-DD HH:mm KST>
 - 미해결→재상담 2개 Action은 정상 14단계에서 제외하고 `T-055` 보조 시나리오 승인안으로 결정했다.
 - 현행 WBS 일정은 변경하지 않는다.
 - OpenAPI·Crosswalk 적용과 Contract QA가 완료돼 3.2는 완료다.
-- 현재 계약 수량은 OpenAPI 32개 Path·33개 Operation, Crosswalk `12/7/0/4`, Root Contract Test 12개다.
+- 현재 계약 수량은 OpenAPI 32개 Path·33개 Operation, Crosswalk `13/6/0/4`다. `REQUEST_CONSULTATION`이 `60046c5`에서 Runtime으로 승격됐다.
+- Deferred 4건은 6주차에 고정한다: `CUSTOMER_REPORTED_SELF_RESOLVED`는 `T-055`, `UPDATE_PREVISIT_REPORT`·`CONFIRM_PREVISIT_REPORT`는 `T-030B`~`T-030C`, `REVISIT_NEEDED`는 `T-043`·`T-055`의 후속 경계에서 처리한다.
 - 3.3에서는 현재 Commit의 Validator 결과와 Backend·AI·Web·Mobile·QA 소비 증거를 모아 `TEAM_BASELINE` 전환 여부를 판정한다.
 - 결정 원본: `docs/decisions/week5-e2e-action-decision.md`
 - Event–Operation 연결: `docs/decisions/week5-e2e-event-operation-matrix.md`
@@ -87,8 +88,10 @@ target_at=<YYYY-MM-DD HH:mm KST>
 - 팀원 회신 요청: `docs/handoffs/week5-contract-consumer-review-request.md`
 - Backend Runtime12 후속 4건은 `e146d23` 독립 QA `APPROVE`로 Backend ACK를 승인했다.
 - Mobile·QA와 함께 현재 소비자 ACK는 `3/5`다.
-- AI No-Evidence Runtime은 최신 `origin/dongyoon@692ccd5` 병합을 승인했으며 실제 main 반영 후 AI ACK를 계산한다.
-- 현재 판정은 `CONSUMER_ACK 3/5 · AI_MAIN_PENDING · WEB_ACK_PENDING`이다.
+- AI No-Evidence Runtime과 Web 소비 코드는 현재 main에 병합됐다.
+- 코드 병합은 확인했지만 담당자의 최종 승인 의사를 대신하지 않으므로 현재 판정은 `CONSUMER_ACK 3/5 · AI_ACK_PENDING · WEB_ACK_PENDING`이다.
+- `f781e92` 로컬 재검증은 실행 환경에 `PyYAML`이 없어 첫 Validator에서 중단됐지만, 동일 SHA의 원격 [Contract CI](https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/31572598233)와 [Data CI](https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/31572598249)가 모두 PASS했다.
+- 기술 Gate는 닫혔으며 3.3의 남은 조건은 AI·Web 명시적 ACK와 그 결과를 기록한 최종 Baseline Commit이다.
 - 최종 `TEAM_BASELINE`은 아직 아니다.
 
 ## 8. 3.4 Contract CI 강화 진행 기록
@@ -113,15 +116,25 @@ target_at=<YYYY-MM-DD HH:mm KST>
 ## 10. 3.6 Web·Mobile Consumer Integration Gate 진행 기록
 
 - 계약 소비 회신과 영역별 작성자 Test를 사전 증거로 접수했다.
-- Web은 보고 Commit의 현재 기준선 포함 여부와 실제 Backend Remote Smoke가 필요하다.
-- Mobile은 구현 Commit이 현재 main에 포함됐지만 Guidance·Follow-up·기사 Visit Route와 같은 후보 Commit의 Remote Smoke가 필요하다.
-- 현재 판정은 `IN_PROGRESS · PRECHECK_HOLD`이며 실제 Remote 소비와 Mock 비대체를 확인하기 전까지 PASS로 닫지 않는다.
+- Web 상담·Visit 소비 코드와 CONS-04 전화문의 Remote Repository·공동 Smoke Fixture가 현재 main에 포함됐다. 실제 Backend 상담사 Remote Smoke는 아직 필요하다.
+- Mobile 고객 Follow-up 3 API는 실단말 Remote PASS다. `REQUEST_CONSULTATION` Backend Runtime도 `60046c5`에서 제공됐으며 Mobile 실단말 재검증이 남았다.
+- 고객 Guidance·Evidence와 기사 Visit 공개 Route는 아직 제공되지 않아 Mobile이 fail-closed 상태를 유지한다.
+- 현재 판정은 `IN_PROGRESS · HOLD`이며 실제 Remote 소비와 Mock 비대체를 확인하기 전까지 PASS로 닫지 않는다.
 - Gate 결과: `docs/testing/week5/web-mobile-consumer-integration-gate.md`
 
 ## 11. 3.7 일일 Integration Gate 진행 기록
 
 - 8월 10일 Scope·Action 결정은 후속 입력 사용이 가능한 `CONDITIONAL_PASS`로 기록했다.
 - 8월 11일 Backend↔AI Gate는 실제 Runtime 증거 부족으로 `HOLD`다.
-- 8월 12일 Web·Mobile Gate는 사전 검토를 시작했으며 `PRECHECK_HOLD`다.
+- 8월 12일 Web·Mobile Gate는 고객 Follow-up Remote PASS와 Web·상담요청 Runtime 병합을 반영해 재판정했으나, Web 실제 Smoke와 Guidance·기사 Visit이 남아 `HOLD`다.
 - 일일 기록: `docs/testing/week5/daily-integration-gates.md`
 - 최신 Blocker: `docs/planning/week5-blocker-register.md`
+
+## 12. 3.1 완료 판정과 즉시 후속
+
+- Scope·Dependency·Owner·Exit·Blocker가 `main@f781e92`와 같은 잔여 범위를 가리킨다.
+- 완료된 계약 CI, Mobile Follow-up, Web 소비 코드, 상담요청 Runtime을 현재 상태에 반영했다.
+- 실제 Multi-Agent·LLM·팀 pgvector·Evidence, Web 실제 Remote Smoke, 고객 Guidance·기사 Visit을 미완료로 분리하고 담당자·해제 조건을 Blocker Register에 고정했다.
+- 6주차 자동 이월을 허용하지 않는다. 8월 14일까지 해제 증거가 없으면 5주차 Exit를 `HOLD`로 확정하고 [5주차 종료·6주차 비상 인계](../handoffs/week5-closeout-and-week6-contingency.md)의 첫 작업으로 넘긴다.
+
+따라서 3.1은 **완료**다. 즉시 후속 순서는 3.3 Baseline 폐쇄 → 3.6 소비자 실연동 → 3.5 실제 AI 수직 연결 → 3.7 최종 Exit 판정이다.

@@ -1,9 +1,11 @@
 # Web CONS-04 상담사 전화 문의 등록 Runtime 구현·검증 보고서
 
 > 작성일: 2026-08-11
+> 현행화: 2026-08-12
 > 작성자: 최지용(Backend·DB·Public API)
-> 상태: `AUTHOR_VERIFIED / NOT_MERGED / WEB_REMOTE_PENDING`
+> 상태: `BACKEND_MAIN_MERGED / WEB_MAIN_MERGED / BACKEND_POSTGRESQL_SOCKET_PASS / SHARED_BROWSER_SMOKE_PENDING`
 > 작업 시작 기준선: `origin/jiyong@e146d2349d82c964ca57baa4c77b501f8e84c1ab`
+> 최신 공유 기준선: `main@8b5bb6292e087fd15558f53c530b06653edc4d29`
 
 ## 1. 결론
 
@@ -13,12 +15,15 @@
 - Backend 계약·Runtime·Migration 작성자 검증: PASS
 - PostgreSQL 격리 검증: PASS, 동일 묶음 2회
 - Backend 전체 회귀: PASS
-- Web Remote Adapter·화면·공동 Smoke: 아직 미수행
+- Web Remote Adapter·화면: `main` 병합 및 작성자 회귀 PASS
+- Backend PostgreSQL 실제 Socket: PASS
+- Web↔Backend 공동 Browser Smoke: 아직 미수행
 - 신규 테이블: 없음
 - 기존 테이블 변경: `support_inquiry.priority_code` 1개 컬럼 추가
 
-이 결과는 CONS-04 Backend Slice가 인계 가능한 후보라는 뜻이며, Web 연결
-완료나 main 병합 완료를 뜻하지 않는다.
+Backend와 Web 구현은 현재 `main`에 함께 존재한다. 남은 완료 Gate는
+접근 가능한 Backend 실행 주소에서 양측이 같은 `main`을 사용해 수행하는
+공동 Browser Smoke다.
 
 ## 2. 승인 범위와 보호선
 
@@ -207,7 +212,56 @@ Manifest 8개를 재생성했다. 이후 Data 도구 `76 tests OK`, 결정적 �
 - 비작성자 QA와 최종 회귀 판정
 
 위 Gate 전까지 최종 상태는
-`BACKEND_AUTHOR_VERIFIED / WEB_REMOTE_PENDING / NOT_MERGED`다.
+`BACKEND_AND_WEB_MAIN_MERGED / SHARED_BROWSER_SMOKE_PENDING`이다.
 
 Commit·Push 여부와 게시 SHA는 이 문서의 현재형 문구가 아니라 Git 이력을
 단일 근거로 확인한다.
+
+## 11. 2026-08-12 공용 Fixture·실제 Socket 현행화
+
+기존 `DEMO-CUSTOMER-001`의 전화번호는 빈 값이므로 이름 검색은 가능하지만
+전화번호 일부 검색의 공동 재현값으로 사용할 수 없다. 기존 Demo 고객을
+변경하지 않고 별도 합성 Fixture를 추가했다.
+
+```powershell
+python manage.py seed_demo_accounts
+python manage.py seed_demo_products
+python manage.py seed_demo_cons04_phone_inquiry --json
+```
+
+| 항목 | 값 |
+| --- | --- |
+| Fixture | `cons04-phone-inquiry-v1` |
+| 상담사 Login Code | `DEMO-CONSULTANT-001` |
+| 이름 검색어 | `전화문의 고객 001` |
+| 전화번호 검색어 | `1204` |
+| 공개 Subscription UUID | `c0a50412-3b89-5d39-8cd4-4c1d8c360401` |
+| 기대 마스킹 | `010-****-1204` |
+
+로컬 공식 PostgreSQL `waterbridge.public`에서 다음을 실제 Socket으로
+확인했다.
+
+| 검증 | 결과 |
+| --- | --- |
+| 이름 일부 검색 | `200` |
+| 전화번호 일부 검색 | `200` |
+| 전화번호 원문 비노출 | PASS |
+| 전화 문의 등록 | `201` |
+| 동일 키·동일 요청 Replay | `201` |
+| Header·Body·JSON Log Correlation | PASS |
+| Migration `inquiries.0013` | APPLIED |
+| Migration drift | PASS |
+
+현재 `127.0.0.1`의 임시 Socket은 검증 종료 후 닫았으므로 공용 URL이 아니다.
+공동 Smoke 당일에는 접근 가능한 Runtime 주소를 별도로 합의해야 한다.
+
+Web `main@9a670fb` 재검증 결과는 `33 files / 144 tests`, ESLint,
+TypeScript, Production Build `142 modules` 모두 PASS다. 다만 CONS-04 전용
+Debounce·최신 응답·빈 결과·409·422·중복 클릭·멱등 재시도 자동 Test와
+실제 Browser Smoke는 별도 Gate로 유지한다.
+
+이후 반영된 `main@8b5bb62` 변경은 RAG 실험 데이터·문서 범위이며
+`web/` 경로 차이는 없다.
+
+같은 작업선의 Backend 전체 회귀는 `1031 passed, 19 skipped`, Data QA는
+`740 records / 0 errors / 0 warnings / changed_files=[]`로 PASS했다.

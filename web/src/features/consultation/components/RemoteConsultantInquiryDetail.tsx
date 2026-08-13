@@ -1,15 +1,21 @@
 import type { ConsultantInquiryDetailViewModel } from "../model/consultantWorkspaceRemoteMapper";
+import { maskCustomerPhone } from "../../../common/privacy/customerPrivacy";
 import {
   getManagementTypeLabel,
   getSubscriptionStatusLabel,
 } from "../model/consultantWorkspaceRemoteMapper";
+import RemoteConsultationActionPanel from "./RemoteConsultationActionPanel";
 
 interface RemoteConsultantInquiryDetailProps {
   inquiry: ConsultantInquiryDetailViewModel;
+  onOpenVisit?: (entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED") => void;
+  onRefresh?: () => void;
 }
 
 export default function RemoteConsultantInquiryDetail({
   inquiry,
+  onOpenVisit,
+  onRefresh,
 }: RemoteConsultantInquiryDetailProps) {
   const productError = inquiry.sectionErrors.find(
     (error) => error.section === "product_and_care",
@@ -39,7 +45,7 @@ export default function RemoteConsultantInquiryDetail({
           </div>
           <div>
             <dt>연락처</dt>
-            <dd>{inquiry.customer.phone}</dd>
+            <dd>{maskCustomerPhone(inquiry.customer.phone)}</dd>
           </div>
           <div>
             <dt>상태·버전</dt>
@@ -136,6 +142,14 @@ export default function RemoteConsultantInquiryDetail({
         )}
         <p>상담·방문 저장 API가 준비될 때까지 실행 버튼은 제공하지 않습니다.</p>
       </section>
+
+      {onOpenVisit && onRefresh && (
+        <RemoteConsultationActionPanel
+          inquiry={inquiry}
+          onOpenVisit={onOpenVisit}
+          onRefresh={onRefresh}
+        />
+      )}
 
       {inquiry.stateHistory.length > 0 && (
         <section className="remote-inquiry-detail__section">

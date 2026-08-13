@@ -1,0 +1,103 @@
+{
+  "checks": [
+    {
+      "check_id": "INPUT_HASHES",
+      "detail": "official PDF, page corpus and evidence registry hashes recorded",
+      "status": "PASS"
+    },
+    {
+      "check_id": "PARENT_COUNT",
+      "detail": "expected=5 actual=5",
+      "status": "PASS"
+    },
+    {
+      "check_id": "CHILD_COUNT",
+      "detail": "expected=15 actual=15",
+      "status": "PASS"
+    },
+    {
+      "check_id": "CHILD_COUNT_BY_PAGE",
+      "detail": "expected={5: 1, 7: 1, 37: 4, 38: 5, 39: 4} actual={5: 1, 7: 1, 37: 4, 38: 5, 39: 4}",
+      "status": "PASS"
+    },
+    {
+      "check_id": "ORPHAN_CHILD",
+      "detail": "all children reference an emitted parent",
+      "status": "PASS"
+    },
+    {
+      "check_id": "EVIDENCE_SINGLETON",
+      "detail": "every child has exactly one evidence_group_id",
+      "status": "PASS"
+    },
+    {
+      "check_id": "EVIDENCE_REGISTRY_MEMBERSHIP",
+      "detail": "all evidence groups exist in the current registry",
+      "status": "PASS"
+    },
+    {
+      "check_id": "LEAK_VARIANTS",
+      "detail": "actual=['LEAK-001-P005', 'LEAK-001-P007', 'LEAK-001-P038']",
+      "status": "PASS"
+    },
+    {
+      "check_id": "SOURCE_SPAN_LINEAGE",
+      "detail": "page, line range and start/end anchors are present",
+      "status": "PASS"
+    },
+    {
+      "check_id": "SOURCE_FILE_HASH_LINEAGE",
+      "detail": "all children retain the official source PDF hash",
+      "status": "PASS"
+    },
+    {
+      "check_id": "EXCLUDED_MICRO_PARTICLE_ROW",
+      "detail": "the excluded page 38 micro-particle row is not a Child",
+      "status": "PASS"
+    },
+    {
+      "check_id": "ID_UNIQUENESS",
+      "detail": "child_id and source_variant_id are unique",
+      "status": "PASS"
+    },
+    {
+      "check_id": "GOLD_QUERY_COPY",
+      "detail": "exact child_text copies of Gold query count=0",
+      "status": "PASS"
+    },
+    {
+      "check_id": "DETERMINISTIC_TEXT_HASHES",
+      "detail": "child text hashes recompute identically",
+      "status": "PASS"
+    },
+    {
+      "check_id": "PARENT_TEXT_HASHES",
+      "detail": "parent text hashes recompute identically",
+      "status": "PASS"
+    }
+  ],
+  "counts": {
+    "children": 15,
+    "evidence_groups": 7,
+    "parents": 5
+  },
+  "generation_date": "2026-08-12",
+  "git_head": "880bef7f26b9a5cad70832f3c1cfe6de4b1f41c5",
+  "input_hashes": {
+    "evidence_registry": "40A1B328F86FF6E57A3EFD1F5EBD63051DCDE06AB32E0A08CC6C6D5BE638F61F",
+    "official_pdf": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+    "page_corpus": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F"
+  },
+  "output_hashes_before_qa": {
+    "child": "8949C6DD03EE57C87F73E8740F82BD26DAE17259DAF0E85D80D62C4B8FC97ACA",
+    "parent": "FDE0EFE1275114F8BE3DE190055251D411C1A38A705E8E929F08998675DDC05D"
+  },
+  "promotion_status": "NOT_APPROVED",
+  "qa_schema_version": "d04-row-child-v2-qa-1",
+  "qa_status": "PASS",
+  "run_id": "d04-row-child-v2-20260812",
+  "warnings": [
+    "Referenced evaluation contract file is absent at this HEAD; experimental schema follows the approved field mapping in the plan.",
+    "Parent is full-page context and may contain unrelated rows; Parent relevance, added tokens and latency require the AI-owner follow-up experiment."
+  ]
+}

@@ -1,7 +1,7 @@
 # 5주차 일일 Integration Gate 기록
 
 > 착수일: **2026-08-11 KST**
-> 기준 Commit: `main@2a1b308ed5eae8bdbaec57ee6026f14529b10794`
+> 기준 Commit: `main@f781e92be75d09a1f5bf0464f9ae1fdf90e97bdc`
 > 김은진 QA 후보: `eunjin@88148c97ba727c62fc520104aa20a796d089d10b`
 > 관련 업무: `윤승혁_5주차_업무_지침서.md` 3.7
 > 현재 상태: **IN_PROGRESS**
@@ -12,7 +12,7 @@
 |---|---|---|---|---|
 | 8/10 | Contract / Scope Freeze | `CONDITIONAL_PASS` | 3.1 Scope·Dependency 정렬과 3.2 Action 결정 완료, 정적 Contract Gate PASS | 소비자 5/5 ACK와 최종 후보 Commit 재검증 |
 | 8/11 | Backend↔AI | `HOLD` | Backend Runtime12 작성자 수정·Contract CI PASS. 기존 Local Gate와 Django→AI Client·저장·State Event 코드 확인 | Backend 후속 계약·독립 QA와 실제 Multi-Agent·LLM·팀 pgvector·HTTP·DB·Trace 재현 |
-| 8/12 | Web·Mobile Consumer | `PRECHECK_HOLD` | Backend ACK 승인, P0-2 정상·Replay 공동 Mock 종료, AI 병합 승인 | AI 실제 main 반영과 Web·Mobile 실제 Backend Remote Smoke·Mock 비대체 |
+| 8/12 | Web·Mobile Consumer | `HOLD` | AI·Web main 병합, Mobile Follow-up 실단말 PASS, Web CONS-04 Fixture, 상담요청 Runtime 포함 | AI·Web 최종 ACK, Web 실제 Remote Smoke, Mobile 상담요청 재Smoke, Guidance·기사 Visit Route |
 | 8/13 | Mandatory Scope Close / Optional E2E | `NOT_STARTED` | 선행 Gate 대기 | 3.3~3.6 필수 Gate 판정 |
 | 8/14 | Week5 Exit / Optional Feature Complete | `NOT_STARTED` | 주간 종료 전 | 필수 Gate·Blocker·6~7주차 인계 확정 |
 
@@ -22,19 +22,20 @@
 
 | 항목 | 결과 |
 |---|---|
-| PM Commit | `2a1b308ed5eae8bdbaec57ee6026f14529b10794` |
+| PM Commit | `f781e92be75d09a1f5bf0464f9ae1fdf90e97bdc` |
 | QA 후보 Commit | `88148c97ba727c62fc520104aa20a796d089d10b` — PM 승인 아님 |
 | Contract Test | Validator 6종 PASS, Root `38 passed` |
 | Contract CI | 후보 `83f7373` 원격 PASS, 현재 main까지 계약·Workflow Diff 없음 |
+| 최신 Contract·Data CI | `f781e92` Contract CI `31572598233`·Data CI `31572598249` PASS |
 | Data | Unit `76 passed`, QA 오류·경고 0, Drift 0 |
 | Backend | `966 passed, 17 skipped`, Migration Drift 0 |
 | AI | Unit `142 passed, 3 warnings`, pgvector `1 skipped` |
-| Web | Lint·단일 worker `137 passed`·Build PASS, Remote 미실행 |
+| Web | 상담·Visit·CONS-04 Remote 소비 코드 main 포함, `f781e92` PM 표적 `10 passed`·TypeScript·Build PASS, 실제 통합 Remote 미실행 |
 | Root Safety | `4 passed` — Runtime E2E가 아닌 교차 계약 Test |
 | Contract Consumer | 3/5 ACK, Backend·Mobile·QA `APPROVE`, AI 병합 승인, Web 기준선 ACK 대기 |
 | Runtime | 단일 Workflow·Mock 기준선 PASS, 실제 Multi-Agent·LLM·팀 DB·Backend Live 미완료 |
-| Consumer | Web 기준선 ACK 대기, Mobile 계약 ACK, 실제 Remote Gate 미완료 |
-| Blocker | AI main 병합, 실제 Local RAG·pgvector·오류 시나리오, Web·Mobile Remote 증거 없음 |
+| Consumer | Web 최종 ACK 대기, Mobile Follow-up 실단말 PASS, 상담요청 재Smoke·Guidance·기사 Visit 미완료 |
+| Blocker | AI·Web 최종 ACK, 실제 Local RAG·pgvector·오류 시나리오, Web Remote와 Mobile 잔여 Route 증거 없음 |
 | Evidence | Contract Baseline, Consumer Matrix, Backend↔AI Gate, Web·Mobile Gate |
 
 ## 3. 운영 규칙

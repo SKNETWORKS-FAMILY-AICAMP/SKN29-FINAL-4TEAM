@@ -1,5 +1,41 @@
 title: NextCareSchedule
 type: object
-description: 다음 케어 일정
+description: T-020 출처 있는 주기 계산 결과 또는 확인 필요 상태
+x-contract-status: CONFIRMED
+x-rule-policy:
+  interval_unit: CALENDAR_MONTH
+  no_rule_status: CONFIRMATION_REQUIRED
+  no_guessing: true
+  month_end_policy: LAST_VALID_DAY
+  persistence:
+    schedule_history: CareRecord
+    current_cache: CustomerSubscription.next_care_on
 additionalProperties: false
-properties: {}
+required:
+  - status
+  - next_care_on
+  - basis
+  - base_on
+  - care_type_code
+  - source_reference
+  - source_version
+properties:
+  status:
+    type: string
+    enum: [SCHEDULED, CONFIRMATION_REQUIRED]
+  next_care_on:
+    type: [string, "null"]
+    format: date
+  basis:
+    type: [string, "null"]
+    enum: [OFFICIAL, TEAM_RULE, null]
+  base_on:
+    type: string
+    format: date
+  care_type_code:
+    type: [string, "null"]
+    enum: [FILTER_REPLACEMENT, PERIODIC_CHECK, CLEANING, VISIT_SERVICE, OTHER, null]
+  source_reference:
+    type: [string, "null"]
+  source_version:
+    type: [string, "null"]

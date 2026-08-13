@@ -1,0 +1,494 @@
+html body .phone-inquiry-entry-app .phone-inquiry-main-header {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px 0 32px !important;
+}
+
+.phone-inquiry-main-header__copy {
+  min-width: 0;
+}
+
+.phone-inquiry-main-header__copy small,
+.phone-inquiry-card-head span,
+.phone-inquiry-guide-card header span {
+  color: #728096;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.phone-inquiry-main-header__copy h1 {
+  margin: 2px 0 0;
+  color: #202a39;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.phone-inquiry-main-header__copy p {
+  margin: 3px 0 0;
+  color: #718093;
+  font-size: 11px;
+}
+
+html body .phone-inquiry-entry-app .phone-inquiry-entry-panel {
+  overflow: auto !important;
+  background: #f3f5f9 !important;
+}
+
+.phone-inquiry-entry-layout {
+  display: grid;
+  min-height: 100%;
+  grid-template-columns: minmax(0, 1.7fr) minmax(270px, 0.72fr);
+  align-items: start;
+  gap: 18px;
+  padding: 20px;
+}
+
+.phone-inquiry-form-card,
+.phone-inquiry-guide-card {
+  border: 1px solid #e0e5ec;
+  border-radius: 14px !important;
+  background: #fff;
+  box-shadow: 0 10px 28px rgb(45 57 78 / 7%);
+}
+
+.phone-inquiry-form-card {
+  padding: 22px;
+}
+
+.phone-inquiry-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.phone-inquiry-card-head h2,
+.phone-inquiry-guide-card h2 {
+  margin: 4px 0 0;
+  color: #263142;
+  font-size: 17px;
+}
+
+.phone-inquiry-card-head > small {
+  color: #9b5f66;
+  font-size: 11px;
+}
+
+.phone-inquiry-customer-search {
+  display: grid;
+  gap: 7px;
+  padding: 18px 0;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.phone-inquiry-customer-search > label,
+.phone-inquiry-details > label > span,
+.phone-inquiry-details > legend,
+.phone-inquiry-priority legend {
+  color: #3e4857;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.phone-inquiry-combobox {
+  position: relative;
+}
+
+html body .phone-inquiry-entry-app :is(input, select, textarea) {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #d9dfe7 !important;
+  border-radius: 8px !important;
+  outline: none;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: #303947 !important;
+  font: inherit;
+}
+
+html body .phone-inquiry-entry-app :is(input, select) {
+  height: 40px;
+  padding: 0 11px;
+}
+
+html body .phone-inquiry-entry-app textarea {
+  min-height: 112px;
+  padding: 10px 11px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+html body .phone-inquiry-entry-app :is(input, select, textarea):focus {
+  border-color: #6377d9 !important;
+  box-shadow: 0 0 0 3px rgb(99 119 217 / 11%) !important;
+}
+
+html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
+  cursor: not-allowed;
+  background: #f5f6f8 !important;
+  color: #8a94a3 !important;
+}
+
+.phone-inquiry-search-hint,
+.phone-inquiry-details > label > small {
+  color: #7c8798;
+  font-size: 10px;
+}
+
+.phone-inquiry-details > label > small {
+  justify-self: end;
+}
+
+.phone-inquiry-candidate-panel {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #d9dfe7;
+  border-radius: 10px !important;
+  background: #fff;
+  box-shadow: 0 12px 28px rgb(45 57 78 / 14%);
+}
+
+.phone-inquiry-candidate-panel > p,
+.phone-inquiry-search-error {
+  margin: 0;
+  padding: 20px 16px;
+  color: #677386;
+  font-size: 12px;
+  text-align: center;
+}
+
+.phone-inquiry-candidate-panel > button[role="option"] {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(140px, 0.75fr) minmax(180px, 1fr);
+  gap: 16px;
+  padding: 12px 14px;
+  border: 0 !important;
+  border-bottom: 1px solid #edf0f4 !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  color: #303947 !important;
+  text-align: left;
+}
+
+.phone-inquiry-candidate-panel > button[role="option"]:last-child {
+  border-bottom: 0 !important;
+}
+
+.phone-inquiry-candidate-panel > button[role="option"]:hover,
+.phone-inquiry-candidate-panel > button[role="option"].is-active {
+  background: #f1f4ff !important;
+}
+
+.phone-inquiry-candidate-panel button span {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.phone-inquiry-candidate-panel strong,
+.phone-inquiry-candidate-panel b {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-inquiry-candidate-panel small {
+  color: #7c8798;
+  font-size: 10px;
+}
+
+.phone-inquiry-search-error {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.phone-inquiry-search-error p {
+  margin: 0;
+}
+
+.phone-inquiry-search-error button {
+  padding: 6px 10px;
+  border: 1px solid #d9dfe7 !important;
+  border-radius: 7px !important;
+  background: #fff !important;
+  color: #536073 !important;
+  font-size: 11px;
+}
+
+.phone-inquiry-selected-card {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.7fr) minmax(260px, 1.3fr) auto;
+  align-items: center;
+  gap: 18px;
+  margin-top: 18px;
+  padding: 15px;
+  border: 1px solid #b9dfd1;
+  border-radius: 10px !important;
+  background: #f3faf7;
+}
+
+.phone-inquiry-selected-card > div {
+  display: grid;
+  gap: 3px;
+}
+
+.phone-inquiry-selected-card > div span {
+  color: #3c8067;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.phone-inquiry-selected-card > div strong {
+  color: #294b40;
+  font-size: 14px;
+}
+
+.phone-inquiry-selected-card small,
+.phone-inquiry-selected-card dt {
+  color: #748379;
+  font-size: 10px;
+}
+
+.phone-inquiry-selected-card dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.phone-inquiry-selected-card dl div {
+  min-width: 0;
+}
+
+.phone-inquiry-selected-card dd {
+  margin: 3px 0 0;
+  overflow: hidden;
+  color: #3e514a;
+  font-size: 11px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-inquiry-selected-card > button {
+  padding: 7px 10px;
+  border: 1px solid #9fcbbd !important;
+  border-radius: 7px !important;
+  background: #fff !important;
+  color: #376c5a !important;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.phone-inquiry-details {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.7fr) minmax(260px, 1.3fr);
+  gap: 16px;
+  margin: 18px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.phone-inquiry-details > legend {
+  width: 100%;
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  padding: 0;
+}
+
+.phone-inquiry-details > label {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
+.phone-inquiry-field--wide,
+.phone-inquiry-priority {
+  grid-column: 1 / -1;
+}
+
+.phone-inquiry-priority {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.phone-inquiry-priority legend {
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.phone-inquiry-priority label {
+  display: block;
+  cursor: pointer;
+}
+
+.phone-inquiry-priority input {
+  position: absolute;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0;
+}
+
+.phone-inquiry-priority label span {
+  display: grid;
+  min-width: 76px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #d9dfe7;
+  border-radius: 999px !important;
+  color: #596577;
+  font-size: 12px;
+}
+
+.phone-inquiry-priority input:checked + span {
+  border-color: #6377d9;
+  background: #f0f2ff;
+  color: #4054b5;
+  font-weight: 700;
+}
+
+.phone-inquiry-details:disabled .phone-inquiry-priority label {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.phone-inquiry-save-notice,
+.phone-inquiry-submit-error {
+  margin-top: 16px;
+  padding: 11px 13px;
+  border-radius: 8px !important;
+  font-size: 12px;
+}
+
+.phone-inquiry-save-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #b9dfd1;
+  background: #f0faf6;
+  color: #2e6753;
+}
+
+.phone-inquiry-save-notice a {
+  color: #315dc5;
+  font-weight: 700;
+}
+
+.phone-inquiry-submit-error {
+  border: 1px solid #ecc6c2;
+  background: #fff4f2;
+  color: #9f4038;
+}
+
+.phone-inquiry-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #edf0f4;
+}
+
+.phone-inquiry-button {
+  min-width: 112px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 8px !important;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.phone-inquiry-button--secondary {
+  border: 1px solid #d9dfe7 !important;
+  background: #fff !important;
+  color: #536073 !important;
+}
+
+.phone-inquiry-button--primary {
+  border: 1px solid #5368cc !important;
+  background: #6377d9 !important;
+  color: #fff !important;
+  box-shadow: 0 7px 16px rgb(71 91 185 / 20%) !important;
+}
+
+.phone-inquiry-button--primary:disabled {
+  cursor: not-allowed;
+  border-color: #aeb7c8 !important;
+  background: #aeb7c8 !important;
+  box-shadow: none !important;
+}
+
+.phone-inquiry-guide-card {
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+  padding: 18px;
+}
+
+.phone-inquiry-guide-card header {
+  padding-bottom: 14px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.phone-inquiry-guide-card ol {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0;
+  padding-left: 20px;
+  color: #596577;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.phone-inquiry-guide-card p {
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px !important;
+  background: #f5f7fa;
+  color: #6e7a8c;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+@media (max-width: 1050px) {
+  .phone-inquiry-entry-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .phone-inquiry-guide-card {
+    position: static;
+  }
+}
+
+@media (max-width: 700px) {
+  .phone-inquiry-selected-card,
+  .phone-inquiry-selected-card dl,
+  .phone-inquiry-details,
+  .phone-inquiry-candidate-panel > button[role="option"] {
+    grid-template-columns: 1fr;
+  }
+
+  .phone-inquiry-field--wide,
+  .phone-inquiry-priority,
+  .phone-inquiry-details > legend {
+    grid-column: 1;
+  }
+}

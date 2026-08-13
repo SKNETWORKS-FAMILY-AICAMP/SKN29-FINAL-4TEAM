@@ -24,12 +24,12 @@
       "detail": "missing_tokens=[]"
     },
     {
-      "name": "document_section:docs/planning/md/화면설계서.md:# 3. 시연 시나리오와 근거 매핑",
+      "name": "document_section:docs/planning/md/화면설계서_260812.md:# 3. 시연 시나리오와 근거 매핑",
       "status": "PASS",
       "detail": "missing_tokens=[]"
     },
     {
-      "name": "document_section:docs/planning/md/화면설계서.md:## 3-7. 대표 E2E 시연 시나리오",
+      "name": "document_section:docs/planning/md/화면설계서_260812.md:## 3-7. 대표 E2E 시연 시나리오",
       "status": "PASS",
       "detail": "missing_tokens=[]"
     },

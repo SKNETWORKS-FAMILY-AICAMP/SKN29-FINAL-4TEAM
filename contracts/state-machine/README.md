@@ -559,17 +559,18 @@ State Machine의 업무 의미는 여전히 `v1.0.0`이다.
 
 | 분류 | 수량 | 의미 |
 |---|---:|---|
-| `RUNTIME_IMPLEMENTED` | 12 | Backend Runtime과 검증 증거 존재 |
-| `OPENAPI_CONFIRMED` | 7 | OpenAPI Operation 확정, Runtime 완료는 아님 |
+| `RUNTIME_IMPLEMENTED` | 13 | Backend Runtime과 검증 증거 존재 |
+| `OPENAPI_CONFIRMED` | 6 | OpenAPI Operation 확정, Runtime 완료는 아님 |
 | `CONTRACT_ONLY` | 0 | State Machine에만 존재하는 외부 Action 없음 |
 | `DEFERRED` | 4 | 후속 구현 범위 |
 
-### Runtime 구현 완료 12개
+### Runtime 구현 완료 13개
 
 ```text
 SUBMIT_SYMPTOM
 CANCEL_INQUIRY
 SUBMIT_ANSWERS
+REQUEST_CONSULTATION
 START_CONSULTATION
 UPDATE_CONSULTATION_SUMMARY
 CONFIRM_CONSULTATION_SUMMARY
@@ -581,10 +582,9 @@ CONFIRM_VISIT
 VISIT_NOT_NEEDED
 ```
 
-### OpenAPI 확정 7개
+### OpenAPI 확정 6개
 
 ```text
-REQUEST_CONSULTATION
 START_VISIT
 VISIT_COMPLETED
 SUBMIT_RESOLUTION_FEEDBACK

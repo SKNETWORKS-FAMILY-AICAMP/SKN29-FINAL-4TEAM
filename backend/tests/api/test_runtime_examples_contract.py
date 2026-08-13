@@ -43,6 +43,12 @@ EXPECTED_JSON_FILES = {
     "errors/invalid-request.json",
     "errors/resource-not-found.json",
     "consultations/save-consultation-request.json",
+    "care/create-replay.json",
+    "care/create-success.json",
+    "care/detail-success.json",
+    "care/idempotency-conflict.json",
+    "care/list-success.json",
+    "care/validation-error.json",
     "inquiries/consultant-inquiry-detail-success.json",
     "inquiries/consultant-inquiry-list-success.json",
     "inquiries/start-inquiry-replay-response.json",
@@ -52,9 +58,14 @@ EXPECTED_JSON_FILES = {
     "inquiries/submit-symptom-request.json",
     "inquiries/submit-symptom-success-response.json",
     "subscriptions/detail-active-success.json",
+    "subscriptions/create-replay.json",
+    "subscriptions/create-success.json",
+    "subscriptions/duplicate-active-error.json",
     "subscriptions/list-active-success.json",
     "subscriptions/list-empty-success.json",
     "subscriptions/query-validation-error.json",
+    "subscriptions/unsupported-product-error.json",
+    "subscriptions/update-success.json",
     "visits/create-visit-request.json",
     "visits/complete-visit-request.json",
     "visits/complete-visit-success-response.json",
@@ -329,7 +340,6 @@ def test_action_results_and_week5_runtime_statuses_are_explicit():
     for path in ("/inquiries/{id}/action-results",):
         assert list(collect_external_values(inquiry_paths[path])) == []
     pending = {
-        "/inquiries/{id}/request-consultation": workflow_paths,
         "/inquiries/{id}/resolution-feedback": workflow_paths,
         "/inquiries/{id}/finalize": workflow_paths,
         "/inquiries/{id}/report-unresolved": workflow_paths,
@@ -344,4 +354,7 @@ def test_action_results_and_week5_runtime_statuses_are_explicit():
     assert workflow_paths["/inquiries/{id}/answers"]["post"][
         "x-runtime-status"
     ] == "IMPLEMENTED"
+    assert workflow_paths["/inquiries/{id}/request-consultation"][
+        "post"
+    ]["x-runtime-status"] == "IMPLEMENTED"
     assert list(collect_external_values(openapi["paths"]["/health"])) == []

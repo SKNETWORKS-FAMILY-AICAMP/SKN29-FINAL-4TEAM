@@ -977,3 +977,131 @@ Public UUID 분석 요청이 모두 성공했다.
   `1 passed`, 격리 평가 `12/12 PASS`를 확인했다. Canonical AI 청크 ID 7건은
   고정됐지만 Backend `knowledge_document_chunk.public_id` Crosswalk와 팀 DB
   Migration·최소권한 DSN 검증은 Backend/DB 담당 입력 전까지 미완료다.
+
+### 2026-08-11 No Evidence Fallback 계약 정합성 수정
+
+- 실제 AI 근거 없음 Runtime이 `FALLBACK`, `RETRIEVING`, 빈 Evidence와
+  `PENDING_CONSULTATION`은 반환하지만 `SafetyAssessment.requires_consultation`을
+  `false`로 유지해 Backend `NO_EVIDENCE` 불변식에서 거부되는 간극을 확인했다.
+- `safety_rules.yaml`의 근거 없음 정책에 `caution`,
+  `consultation_recommended`, `requires_consultation=true`와 안전 사유를 명시하고
+  `SafetyRuleLoader`가 해당 고정값을 시작 시 검증하도록 했다. 설정 변경에 맞춰
+  `runtime_identity.json`의 안전 규칙 SHA-256도 갱신했다.
+- Generation Stage는 근거 없음이면서 danger가 아닌 경우 SafetyAssessment와
+  UsageGuidance를 함께 정규화한다. Danger 우선 분기와 Vector 구성 실패의 HTTP
+  503 경계는 변경하지 않았다.
+- 실제 `PipelineRouter`의 근거 없음 출력을 Backend `map_success_response`에
+  전달해 `NO_EVIDENCE`, `requires_consultation=true`,
+  `PENDING_CONSULTATION` 통과를 확인했다.
+- AI Unit `159 passed, 3 warnings`, Backend AI Integration `23 passed`,
+  `pip check=PASS`, `git diff --check=PASS`다. Backend의 `DANGER_DETECTED` 무조건
+  보류 문제는 Backend 담당 수정 항목으로 남아 있다.
+
+### 2026-08-12 Retrieval Policy Identity Hash 정합성 수정
+
+- D-03 Answerability·Capability Gate 추가 이후 `retrieval_policy.yaml`의 내용은
+  변경됐지만 `runtime_identity.json`의 `configuration_sha256.retrieval_policy`가
+  이전 값으로 남아 있던 불일치를 수정했다.
+- 프로젝트 검증 규칙과 동일하게 CRLF를 LF로 정규화한 SHA-256
+  `1AD4C4DB9E63233DE4694D77F078436095D83F2F41309DE382E9E48D128797D8`을
+  기록했다. 파일 원본 바이트의 줄바꿈 차이는 Runtime Identity 변경으로
+  취급하지 않는다.
+- 설정·Schema 단위 테스트 `39 passed, 2 warnings`, AI 전체 단위 테스트
+  `167 passed, 3 warnings`를 Python `3.13.13`에서 확인했다.
+
+### 2026-08-12 P0-2 공동 Mock 후속 확인·회신
+
+- 원격 `main@382ddc5933d0ec63a38778a0c78d037c351b7128`을 Fetch한 뒤 AI 작업
+  Branch에 병합했다. AI 고유 No-Evidence Runtime 정합화와 Runtime Identity Hash
+  수정은 제품 Runtime에 필요하므로 `MAIN_MERGE_REQUIRED`로 판정했다. 병합 Commit
+  `c70e9f79c87db0b88c029e3fdcfa3018c6593d89`가 `origin/dongyoon`에 Push된 상태도
+  원격 Fetch로 재확인했다.
+- Python `3.13.13`, `pip check=PASS`, AI 전체 단위 테스트
+  `167 passed, 3 warnings`를 최신 main 병합 상태에서 확인했다.
+- 실제 Uvicorn Mock과 Backend Live HTTP Test를 재실행해 `/health` 200과 정상
+  제출·Replay `1 passed`를 확인했다. 신규 AI 호출 1회, Replay 추가 호출 0회,
+  계약 `3.0.0`, Correlation과 AIRun·Assessment·Guidance 저장을 함께 검증했다.
+- 실제 공동 HTTP 503·Timeout은 실행하지 않아 `NOT_RUN`으로 유지하고, 기존
+  결정적 오류 경계·독립 QA 증거를 사용하는 `KEEP_NOT_RUN`으로 회신했다.
+- `docs/individual/dongyoon/인계/20260812_이동윤_to_최지용_P0-2_공동Mock_후속정보_회신_v0.1.md`에
+  Branch·병합 상태, 명령·Exit, P0-2 완료 경계와 PM 결정 요청을 기록했다.
+
+### 2026-08-12 Experiment Lab B2-4 Alias Query Expansion 비교
+
+- B2-3의 양쪽 누락 가설을 이어 받아 Parent/Child Dense 원문 Query와 Draft Alias
+  확장 Query를 동일 Gold DEV 35건에서 비교했다. B2-3 이후 Gold Dataset Hash가
+  변경돼 B2-4 안에서 원문 Dense 대조군을 다시 실행했다.
+- 누수 Alias는 `RAGV2-GOLD-0027`을 Top-5 밖에서 3위로 복구하고 `0021`을
+  2위에서 1위로 개선했다. 무출수 Alias는 `0025`를 복구하지 못해 Rule별 판정을
+  각각 `SUPPORTED_ON_DRAFT_DEV_PENDING_REVIEW`,
+  `NOT_SUPPORTED_ON_CURRENT_DRAFT_DEV`로 분리했다.
+- DEV Positive Hit@5는 `0.925926`에서 `0.962963`, MRR은 `0.783951`에서
+  `0.814815`로 변했다. Positive 회귀 0, 무근거 8건 회귀 0, 잘못된 제품 Hit 0을
+  확인했다.
+- 부정형과 비제품·다른 원인의 문맥을 포함한 Hard Negative 7건을 추가했다. 초기
+  과활성화 3건을 확인해 명시적 제외 조건을 보강했고 최종 예상 밖 활성화 0을
+  확인했다.
+- 결과는 `DRAFT_ALIAS_CANDIDATE_PARTIALLY_SUPPORTED_PENDING_REVIEW`이며 운영
+  Pipeline·검색 정책·Corpus·Evidence·Backend 계약은 변경하지 않았다. 누수 Alias는
+  Data Owner 검수와 Gold 승인 뒤 TEST·SAFETY 독립 검증이 필요하다.
+
+### 2026-08-12 P0-2 AI main 병합 후 최종 ACK
+
+- 원격 `main@78b4c45f47b58ce10f0415c804ae959aeeaaf0d7`에 승인된 No-Evidence
+  Runtime Commit `50a135bb839ebaa753d11e891220cf793bd32bae`와 Runtime Identity Hash
+  Commit `f001e7065c9c0af8604dc1295ffcbc690c883047`이 포함됐음을 확인했다.
+- 과거 Branch 검증을 복사하지 않고 정확한 `origin/main` SHA를 Detached Checkout해
+  Python `3.13.13`, `pip check=PASS`, AI 전체 `172 passed, 3 warnings,
+  7 subtests passed`를 다시 실행했다.
+- 같은 SHA에서 Uvicorn `/health` HTTP 200과 Backend→AI 정상 제출·Replay Live
+  Smoke `1 passed`를 확인했다. 신규 AI 호출 1회와 Replay 추가 호출 0회,
+  계약 `3.0.0`, Correlation, AIRun·Assessment·Guidance 저장을 함께 검증했다.
+- 실제 공동 HTTP 503·Timeout은 합의대로 `NOT_RUN`을 유지하고 P0-2 최종 AI
+  ACK를 `APPROVE`, 잔여 P0-2 Blocker를 `NONE`으로 회신했다.
+- `docs/individual/dongyoon/인계/20260812_이동윤_to_최지용_P0-2_AI_main병합후_최종ACK_v0.1.md`에
+  최종 main SHA, 명령·Exit, 완료·비완료 경계를 기록했다.
+
+### 2026-08-12 B1 행 단위 Parent·Child 구조 결정 회신
+
+- B1 데이터 전처리 보완안의 검색 후보, Evidence 판정과 Runner 연결 방식을 AI
+  관점에서 검토하고 `Child 검색 → 선택 Child의 Parent Context 중복 제거 확장`을
+  목표 구조로 결정했다. Top-K·Hit·MRR·`ANY`·`ALL`은 Child의 실제 Evidence만으로
+  계산하고 Parent를 검색 정답으로 중복 계산하지 않는다.
+- Parent와 Child 동시 검색은 동일 근거의 Top-K 중복 점유, Parent 다중 Evidence에
+  의한 `ALL` 과대평가와 실패 원인 혼합 때문에 제외했다. Child-only는 검색 대조군으로
+  유지하되 최종 Runtime 구조로 고정하지 않는다.
+- 누수 5·7·38쪽은 대표 Evidence Group 하나와 페이지별 Source Variant로 분리하고,
+  Group ID만 정답 판정에 사용하며 Variant ID는 출처 역추적에 사용하도록 결정했다.
+- 기존 B1 v1을 즉시 변경하지 않고 experimental v2 Adapter로 검증한 뒤 행 경계,
+  Child 단일 Evidence, Child→Parent 연결, 영향 11건과 정상 통제 표본을 검수한 경우에만
+  정식 v2 승격을 검토한다.
+- `docs/individual/dongyoon/인계/20260812_이동윤_to_김은진_B1_행단위ParentChild_구조결정_회신_v0.1.md`에
+  대안별 제외 근거, Dataset 필수 필드, 평가 출력 계약과 실행 Gate를 기록했다.
+
+### 2026-08-12 D04 행 단위 Parent·Child 부분 진단 실행
+
+- D04 Parent 5건·Child 15건을 기존 Full Corpus v1의 대상 페이지 5건과 부분 교체한
+  106개 후보에서 영향 11건과 정상 통제 5건을 BGE-M3 고정 Revision, Exact Product
+  Filter, Top-K 5, Threshold 0.4로 실행했다. 결과 상태는 전체 B1이 아닌
+  `PARTIAL_SCOPE_DIAGNOSTIC_COMPLETE`로 제한했다.
+- 행 단위 Child는 기존 Top-5 밖이었던 무출수 `0025`를 2위, 바닥 누수 `0027`을
+  4위로 복구했다. 선택 16건 Hit@5는 `0.875`에서 `1.0`, MRR은 `0.677083`에서
+  `0.767708`로 변했고 정상 통제 Hit@5·순위 회귀는 0건이었다.
+- 영향 Case 중 `0021`은 2위에서 5위, 복합 `0038`의 Completion Rank는 1에서 2로
+  회귀했다. 평균 개선만으로 전체 성공을 판정하지 않고 Full Corpus v2 재검증
+  대상으로 남겼다.
+- Child와 동일 순위를 공유하는 페이지 Parent Context 확장은 평균 Context를
+  342.2에서 825.9 whitespace token으로 늘렸다. 16건 중 15건에 다른 Evidence
+  Group이, 12건에 제외된 미세입자 행이 포함돼 전체 페이지 Parent를 기본 Context로
+  쓰는 안은 `NOT_SUPPORTED_AS_DEFAULT_PENDING_REDESIGN`으로 판정했다.
+- 평가 계약, experimental Profile, Adapter, 단위 테스트와 실행 결과를 추가했다.
+  운영 Pipeline·Corpus·`retrieval_policy.yaml`·Backend 계약은 변경하지 않았다.
+- Python `3.13.13`에서 AI 전체 단위 테스트 `174 passed, 3 warnings,
+  7 subtests passed`, `pip check=PASS`, `git diff --check=PASS`를 확인했다.
+- `docs/testing/rag/d04-row-child-partial-diagnostic-result_20260812.md`에 Case별 결과,
+  Context 비용, 제한과 다음 bounded Context 설계 Gate를 기록했다.
+- 공유 시 부분 Corpus 106건을 Full Corpus v2로 오해하지 않도록 결과서에 Corpus
+  경계를 보완했다. Full Corpus v1은 JAC104 44쪽과 IAC425 52쪽의 페이지 Chunk
+  96건이며, 이번 후보는 그중 지정 5쪽을 선택 Child 15건으로 교체한 부분 진단
+  Corpus다. 전체 검색 가능 원문 보존, 제품 범위 유지와 전체 Gold·NO_EVIDENCE
+  재실행을 Full Corpus v2의 선행 조건으로 명시했다.

@@ -1,5 +1,26 @@
 # Contracts Changelog
 
+## 2026-08-12 — CUSTOMER REQUEST_CONSULTATION Runtime 게시
+
+### Changed
+
+- 확정된 `POST /inquiries/{id}/request-consultation`을 Backend Runtime으로
+  게시하고 `x-runtime-status=IMPLEMENTED`로 승격했다.
+- 화면설계서와 State Machine에 이미 확정된 `TR-INQ-012`, `TR-INQ-013`,
+  `TR-INQ-031`을 한 Operation에 연결했다.
+- Action Crosswalk 집계를 `RUNTIME_IMPLEMENTED=13`,
+  `OPENAPI_CONFIRMED=6`, `CONTRACT_ONLY=0`, `DEFERRED=4`로 갱신했다.
+
+### Boundary
+
+- Request Body는 `state_version`만 허용하며 Customer 본인 문의, 필수
+  `Idempotency-Key`, `X-Correlation-ID` 경계를 유지한다.
+- 첫 요청은 미배정 `WAITING` 상담을 만들고, 기존 대기 상담 재확인은 같은
+  레코드를 갱신하며, 완료 후 재요청은 새 상담 순번을 만든다.
+- 공개 응답의 `resource`는 기존 계약대로 `null`이며 내부 상담 레코드나
+  배정 정보를 노출하지 않는다.
+- 신규 Model·Migration·기존 상태 코드 변경은 없다.
+
 ## 2026-08-11 — CR-001 상담사 전화 문의 등록 계약
 
 ### Added

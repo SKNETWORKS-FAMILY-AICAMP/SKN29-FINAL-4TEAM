@@ -24,6 +24,70 @@ class ConsultationRepository:
         )
 
     @staticmethod
+    def request(
+        *,
+        inquiry: Inquiry,
+        state_version: int,
+        idempotency_key: str,
+        correlation_id,
+        current: Consultation | None,
+    ) -> Consultation:
+        """Create or refresh the unassigned waiting consultation."""
+
+        if current is not None and current.status in {
+            Consultation.Status.WAITING,
+            Consultation.Status.ASSIGNED,
+        }:
+            current.state_version = state_version
+            current.idempotency_key = idempotency_key
+            current.correlation_id = correlation_id
+            current.save(
+                update_fields=[
+                    "state_version",
+                    "idempotency_key",
+                    "correlation_id",
+                    "updated_at",
+                ]
+            )
+            return current
+
+        if (
+            current is not None
+            and current.status == Consultation.Status.IN_PROGRESS
+        ):
+            raise RuntimeError(
+                "An in-progress consultation cannot be replaced by a request."
+            )
+
+        last_sequence = (
+            Consultation.objects.filter(inquiry=inquiry).aggregate(
+                maximum=Max("sequence")
+            )["maximum"]
+            or 0
+        )
+        customer = inquiry.subscription.customer
+        is_synthetic = bool(
+            customer.is_synthetic and customer.user.is_synthetic
+        )
+        return Consultation.objects.create(
+            consultation_code=f"CONS-{uuid4().hex.upper()}",
+            inquiry=inquiry,
+            sequence=last_sequence + 1,
+            consultant=None,
+            status=Consultation.Status.WAITING,
+            outcome=Consultation.Outcome.PENDING,
+            summary="",
+            state_version=state_version,
+            idempotency_key=idempotency_key,
+            correlation_id=correlation_id,
+            data_classification=(
+                Consultation.DataClassification.SYNTHETIC
+                if is_synthetic
+                else Consultation.DataClassification.OPERATIONAL
+            ),
+        )
+
+    @staticmethod
     def start(
         *,
         inquiry: Inquiry,

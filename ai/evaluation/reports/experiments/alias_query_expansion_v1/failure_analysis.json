@@ -1,0 +1,19 @@
+{
+  "experiment_id": "B2-4-ALIAS-QUERY-EXPANSION-V1",
+  "status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED",
+  "items": [
+    {
+      "case_id": "RAGV2-GOLD-0025",
+      "failure_type": "POSITIVE_RETRIEVAL_MISS",
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    },
+    {
+      "rule_id": "ALIAS-JAC104-NO-WATER-001",
+      "failure_type": "ALIAS_RULE_NO_TARGET_RECOVERY",
+      "target_case_ids": [
+        "RAGV2-GOLD-0025"
+      ],
+      "review_status": "AUTOMATED_TRIAGE_REVIEW_REQUIRED"
+    }
+  ]
+}

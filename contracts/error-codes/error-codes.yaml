@@ -23,6 +23,18 @@ errors:
     retryable: false
     user_message: 동일 Idempotency-Key가 다른 요청에 재사용되었습니다.
     recommended_action: USE_NEW_IDEMPOTENCY_KEY
+  - code: PRODUCT_NOT_SUPPORTED
+    category: product
+    http_status: 422
+    retryable: false
+    user_message: 지원하는 제품 모델을 선택해 주세요.
+    recommended_action: SELECT_SUPPORTED_MODEL
+  - code: SUBSCRIPTION_ALREADY_ACTIVE
+    category: product
+    http_status: 409
+    retryable: false
+    user_message: 동일 제품의 활성 구독이 이미 등록되어 있습니다.
+    recommended_action: OPEN_EXISTING_SUBSCRIPTION
   - code: AI-FAILED-01
     category: ai
     http_status: 503

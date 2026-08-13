@@ -1,0 +1,11 @@
+title: SubscriptionMutationResult
+description: T-018 등록·수정 결과와 멱등 Replay 여부
+x-contract-status: CONFIRMED
+allOf:
+  - $ref: ./SubscriptionDetail.yaml
+  - type: object
+    required:
+      - idempotent_replay
+    properties:
+      idempotent_replay:
+        type: boolean

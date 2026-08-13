@@ -1,5 +1,35 @@
 title: CareHistoryItem
 type: object
-description: 케어 이력 항목
+description: T-019 고객 공개용 완료 케어 이력 최소 안전 필드
+x-contract-status: CONFIRMED
 additionalProperties: false
-properties: {}
+required:
+  - care_record_id
+  - subscription_id
+  - care_type_code
+  - status_code
+  - performed_on
+  - result_code
+  - source_code
+properties:
+  care_record_id:
+    type: string
+    format: uuid
+  subscription_id:
+    type: string
+    format: uuid
+  care_type_code:
+    type: string
+    enum: [FILTER_REPLACEMENT, PERIODIC_CHECK, CLEANING, VISIT_SERVICE, OTHER]
+  status_code:
+    type: string
+    const: COMPLETED
+  performed_on:
+    type: string
+    format: date
+  result_code:
+    type: [string, "null"]
+    enum: [NORMAL, FILTER_REPLACED, ISSUE_RESOLVED, null]
+  source_code:
+    type: string
+    enum: [SYSTEM, CONSULTANT, TECHNICIAN, CUSTOMER, IMPORT]

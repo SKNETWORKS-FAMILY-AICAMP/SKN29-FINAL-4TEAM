@@ -13,6 +13,7 @@ HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
 INQUIRY_ID = "00000000-0000-4000-8000-000000000001"
 VISIT_ID = "00000000-0000-4000-8000-000000000002"
 SUBSCRIPTION_ID = "00000000-0000-4000-8000-000000000003"
+CARE_RECORD_ID = "00000000-0000-4000-8000-000000000004"
 
 EXPECTED_OPERATIONS = {
     ("/health", "get"): {
@@ -57,6 +58,13 @@ EXPECTED_OPERATIONS = {
         "url_name": "my-subscription-list",
         "view_name": "MySubscriptionListView",
     },
+    ("/me/subscriptions", "post"): {
+        "operation_id": "createMySubscription",
+        "contract_status": "CONFIRMED",
+        "runtime_path": "/api/v1/me/subscriptions",
+        "url_name": "my-subscription-list",
+        "view_name": "MySubscriptionListView",
+    },
     ("/me/subscriptions/{subscription_id}", "get"): {
         "operation_id": "getMySubscription",
         "contract_status": "CONFIRMED",
@@ -65,6 +73,47 @@ EXPECTED_OPERATIONS = {
         ),
         "url_name": "my-subscription-detail",
         "view_name": "MySubscriptionDetailView",
+    },
+    ("/me/subscriptions/{subscription_id}", "patch"): {
+        "operation_id": "updateMySubscription",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/me/subscriptions/{SUBSCRIPTION_ID}"
+        ),
+        "url_name": "my-subscription-detail",
+        "view_name": "MySubscriptionDetailView",
+    },
+    ("/me/subscriptions/{subscription_id}/care-records", "get"): {
+        "operation_id": "listMyCareRecords",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/me/subscriptions/{SUBSCRIPTION_ID}/care-records"
+        ),
+        "url_name": "my-care-record-list-create",
+        "view_name": "MyCareRecordListCreateView",
+    },
+    ("/me/subscriptions/{subscription_id}/care-records", "post"): {
+        "operation_id": "createMyCareRecord",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/me/subscriptions/{SUBSCRIPTION_ID}/care-records"
+        ),
+        "url_name": "my-care-record-list-create",
+        "view_name": "MyCareRecordListCreateView",
+    },
+    (
+        "/me/subscriptions/{subscription_id}/care-records/"
+        "{care_record_id}",
+        "get",
+    ): {
+        "operation_id": "getMyCareRecord",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/me/subscriptions/{SUBSCRIPTION_ID}/care-records/"
+            f"{CARE_RECORD_ID}"
+        ),
+        "url_name": "my-care-record-detail",
+        "view_name": "MyCareRecordDetailView",
     },
     ("/me/inquiries/{inquiry_id}", "get"): {
         "operation_id": "getMyInquiry",
@@ -155,8 +204,8 @@ EXPECTED_OPERATIONS = {
         "runtime_path": (
             f"/api/v1/inquiries/{INQUIRY_ID}/request-consultation"
         ),
-        "url_name": None,
-        "view_name": None,
+        "url_name": "inquiry-request-consultation",
+        "view_name": "RequestConsultationView",
     },
     ("/inquiries/{id}/resolution-feedback", "post"): {
         "operation_id": "submitResolutionFeedback",
@@ -337,11 +386,11 @@ def runtime_view_name(match) -> str:
     return match.func.__name__
 
 
-def test_openapi_operation_inventory_is_exactly_thirty_five():
+def test_openapi_operation_inventory_is_exactly_forty():
     operations = collect_operations()
 
     assert set(operations) == set(EXPECTED_OPERATIONS)
-    assert len(operations) == 35
+    assert len(operations) == 40
     assert {
         operation["operationId"] for operation in operations.values()
     } == {
@@ -357,7 +406,7 @@ def test_openapi_operation_inventory_is_exactly_thirty_five():
         )
 
 
-def test_twenty_six_operations_resolve_to_expected_runtime_views():
+def test_thirty_two_operations_resolve_to_expected_runtime_views():
     implemented = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -366,7 +415,7 @@ def test_twenty_six_operations_resolve_to_expected_runtime_views():
         )
     ]
 
-    assert len(implemented) == 26
+    assert len(implemented) == 32
     for (_, method), expected in implemented:
         match = resolve(expected["runtime_path"])
         assert match.url_name == expected["url_name"]
@@ -376,7 +425,7 @@ def test_twenty_six_operations_resolve_to_expected_runtime_views():
             assert callable(getattr(view_class, method, None))
 
 
-def test_nine_openapi_only_operations_have_no_runtime_method():
+def test_eight_openapi_only_operations_have_no_runtime_method():
     openapi_only = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -385,7 +434,7 @@ def test_nine_openapi_only_operations_have_no_runtime_method():
         )
     ]
 
-    assert len(openapi_only) == 9
+    assert len(openapi_only) == 8
     for (_, method), expected in openapi_only:
         match = resolve(expected["runtime_path"])
         if expected["url_name"] is None:
