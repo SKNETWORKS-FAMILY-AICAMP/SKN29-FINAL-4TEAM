@@ -104,7 +104,7 @@ fun GuidanceScreen(
     val effectiveAllowedActions =
         latestInquirySnapshot?.allowedActions ?: submittedAllowedActions
 
-    WaterCareScreen(title = "AI 자가진단", onBack = onBack) {
+    WaterCareScreen(title = "문제 해결 안내", onBack = onBack) {
         if (fixturePreview) {
             SectionCard("합성 Fixture 미리보기") {
                 Text(
@@ -154,7 +154,7 @@ fun GuidanceScreen(
                     onClick = { showCancelDialog = true },
                 )
                 Text(
-                    "Backend가 허용한 문의에서만 취소할 수 있습니다.",
+                    "취소 가능한 문의에서만 이 버튼을 사용할 수 있습니다.",
                     style = MaterialTheme.typography.bodySmall,
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
@@ -224,7 +224,7 @@ fun GuidanceScreen(
                         )
                     } else {
                         Text(
-                            "현재 Backend 허용 행동에는 문의 취소가 없습니다.",
+                            "현재 상태에서는 문의를 취소할 수 없습니다.",
                             style =
                                 MaterialTheme.typography.bodySmall,
                         )
@@ -371,11 +371,17 @@ private fun SubmissionReceiptCard(
             .testTag("submissionReceipt"),
         strong = true,
     ) {
-        LiquidGlassPill("문의 접수 완료")
+        LiquidGlassPill("증상 접수가 완료됐어요")
+
         Text(
-            inquiryCode,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Black,
+            "입력해주신 내용을 확인하고 있어요.",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+        )
+
+        Text(
+            "접수번호 $inquiryCode",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         statusCode
@@ -384,43 +390,44 @@ private fun SubmissionReceiptCard(
             ?.takeIf(String::isNotEmpty)
             ?.let { code ->
                 Text(
-                    "현재 상태 · ${InquiryLabels.status(code)} ($code)"
+                    customerInquiryStatusText(code),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
                 )
             }
 
-        stateVersion?.let { version ->
-            Text("상태 버전 · $version")
-        }
+        Text(
+            "추가 확인이 필요하면 이 화면에서 바로 안내해드릴게요.",
+            style = MaterialTheme.typography.bodyMedium,
+        )
 
-        if (allowedActions.isNotEmpty()) {
+        if (idempotentReplay == true) {
             Text(
-                "Backend 허용 행동",
-                fontWeight = FontWeight.Bold,
-            )
-            allowedActions.forEach { action ->
-                Text("• ${action.displayLabel}")
-            }
-        } else {
-            Text(
-                "현재 화면에서 실행할 수 있는 Backend 허용 행동이 없습니다.",
+                "이미 접수된 내용을 다시 확인했습니다.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-
-        if (idempotentReplay == true) {
-            Text(
-                "동일 요청이 재전송되어 기존 접수 결과를 안전하게 재사용했습니다.",
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
-
-        Text(
-            "데이터 출처 · 문의 생성·증상 제출 실제 API 응답",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
+}
+
+private fun customerInquiryStatusText(
+    statusCode: String,
+): String = when (statusCode.trim().uppercase()) {
+    "DRAFT" -> "접수 내용을 확인하고 있어요"
+    "QUESTIONNAIRE_IN_PROGRESS" -> "증상을 조금 더 확인하고 있어요"
+    "AI_GUIDANCE" -> "문제 해결 안내를 확인해주세요"
+    "CONSULTATION_REQUIRED" -> "상담이 필요해요"
+    "CONSULTATION_IN_PROGRESS" -> "상담을 진행하고 있어요"
+    "VISIT_REVIEW_PENDING" -> "방문 점검이 필요한지 확인하고 있어요"
+    "VISIT_SCHEDULING" -> "방문 일정을 조율하고 있어요"
+    "VISIT_SCHEDULED" -> "방문 일정이 잡혔어요"
+    "COMPLETION_PENDING" -> "처리 결과를 확인하고 있어요"
+    "REVISIT_REQUIRED" -> "추가 방문 점검이 필요해요"
+    "REOPENED" -> "문의 내용을 다시 확인하고 있어요"
+    "RESOLVED" -> "처리가 완료됐어요"
+    "CANCELLED" -> "접수가 취소됐어요"
+    else -> "접수 내용을 확인하고 있어요"
 }
 
 @Composable

@@ -122,7 +122,7 @@ fun SymptomIntakeContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 150.dp),
+                    .heightIn(min = 132.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(
@@ -130,47 +130,36 @@ fun SymptomIntakeContent(
                     verticalArrangement = Arrangement.spacedBy(7.dp),
                 ) {
                     Text(
-                        "어떤 증상이 있나요?",
+                        "어떤 문제가 있나요?",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Black,
                     )
                     Text(
-                        "증상을 선택하고 현재 상태를 자세히 알려주세요.",
+                        "가장 가까운 증상을 먼저 선택해주세요.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 Image(
                     painter = painterResource(R.drawable.mascot_customer),
-                    contentDescription = "문진 안내 캐릭터",
-                    modifier = Modifier.size(115.dp),
+                    contentDescription = "증상 접수 안내",
+                    modifier = Modifier.size(100.dp),
                     contentScale = ContentScale.Fit,
                 )
             }
         }
 
-        SectionCard("접수 유형") {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                EntryMode.entries.forEach { mode ->
-                    LiquidFilterChip(
-                        selected = state.entryMode == mode,
-                        onClick = { onEntryModeChange(mode) },
-                        label = if (mode == EntryMode.CARE_PRECHECK) {
-                            "케어 사전 문진"
-                        } else {
-                            "일반 문의"
-                        },
-                    )
-                }
-            }
-        }
-
-        SectionCard("증상 선택 · 복수 선택") {
+        SectionCard("증상 선택") {
+            Text(
+                "여러 증상이 함께 있다면 복수로 선택할 수 있어요.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 SymptomTopic.entries.forEach { topic ->
                     LiquidFilterChip(
                         selected = topic in state.selectedSymptoms,
                         onClick = { onToggleSymptom(topic) },
-                        label = topic.label,
+                        label = customerSymptomLabel(topic),
                     )
                 }
             }
@@ -179,15 +168,18 @@ fun SymptomIntakeContent(
         OutlinedTextField(
             value = state.rawText,
             onValueChange = onRawTextChange,
-            label = { Text("상세 설명") },
+            label = { Text("조금 더 알려주세요") },
+            placeholder = {
+                Text("예: 어제부터 물이 평소보다 약하게 나와요")
+            },
             supportingText = {
                 Text(
                     state.rawTextError
-                        ?: "증상 설명은 필수입니다. ${state.rawText.length}/5000"
+                        ?: "짧게 적어주셔도 괜찮아요. ${state.rawText.length}/5000"
                 )
             },
             isError = state.rawTextError != null,
-            minLines = 4,
+            minLines = 3,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("rawText"),
@@ -198,102 +190,57 @@ fun SymptomIntakeContent(
         OutlinedTextField(
             value = state.occurrenceCondition,
             onValueChange = onOccurrenceConditionChange,
-            label = { Text("언제, 어떤 상황에서 발생했나요?") },
-            placeholder = { Text("예: 냉수 출수 시, 설치 후 3일째부터") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
-            colors = liquidTextFieldColors(),
-        )
-
-        OutlinedTextField(
-            value = state.displayText,
-            onValueChange = onDisplayTextChange,
-            label = { Text("제품 표시 문구·오류 코드") },
-            supportingText = {
-                Text("확인되지 않은 코드는 앱에서 추정하지 않습니다.")
-            },
+            label = { Text("언제 주로 발생하나요? (선택)") },
+            placeholder = { Text("예: 냉수를 사용할 때, 어제 저녁부터") },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(18.dp),
             colors = liquidTextFieldColors(),
         )
 
         if (BuildConfig.SHOW_DEVELOPER_TOOLS) {
-
-        SectionCard("개발 검증 시나리오") {
-            Text(
-                "선택하지 않으면 입력 내용으로 안전하게 판단합니다.",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                LiquidFilterChip(
-                    selected = state.forcedScenario == null,
-                    onClick = { onScenarioChange(null) },
-                    label = "자동",
+            SectionCard("개발 검증") {
+                Text(
+                    "개발 빌드에서만 표시되는 검증 옵션입니다.",
+                    style = MaterialTheme.typography.bodySmall,
                 )
-                MockScenario.entries.forEach { scenario ->
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     LiquidFilterChip(
-                        selected = state.forcedScenario == scenario,
-                        onClick = { onScenarioChange(scenario) },
-                        label = scenario.name,
+                        selected = state.forcedScenario == null,
+                        onClick = { onScenarioChange(null) },
+                        label = "자동",
                     )
+                    MockScenario.entries.forEach { scenario ->
+                        LiquidFilterChip(
+                            selected = state.forcedScenario == scenario,
+                            onClick = { onScenarioChange(scenario) },
+                            label = scenario.name,
+                        )
+                    }
                 }
             }
-        }
         }
 
         state.globalError
             ?.takeIf { state.errorKind != IntakeErrorKind.AUTH_EXPIRED }
             ?.let { message ->
-                Text(
-                    text = state.errorKind?.displayName
-                        ?: IntakeErrorKind.UNKNOWN.displayName,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.error,
-                )
                 ErrorCard(
-                    message = message,
+                    message = customerIntakeErrorMessage(
+                        kind = state.errorKind,
+                        originalMessage = message,
+                    ),
                     onRetry = if (state.retryable) onRetry else null,
                 )
             }
 
-        if (
-            state.conflictStatus != null ||
-            state.conflictStateVersion != null ||
-            state.conflictAllowedActions.isNotEmpty()
-        ) {
-            SectionCard("최신 업무 상태 · 충돌 확인") {
-                state.conflictStatus?.let {
-                    Text("현재 상태 · $it")
-                }
-                state.conflictStateVersion?.let {
-                    Text("버전 · $it")
-                }
-
-                if (visibleConflictActions.isNotEmpty()) {
-                    Text(
-                        "Backend가 허용한 작업",
-                        fontWeight = FontWeight.Bold,
-                    )
-                    visibleConflictActions.forEach { action ->
-                        Text("• ${action.displayLabel}")
-                    }
-                }
-
-                if (
-                    visibleConflictActions.any {
-                        !it.isRetrySubmitAction()
-                    }
-                ) {
-                    Text(
-                        "현재 화면에서 지원하지 않는 작업은 임의로 실행하지 않습니다.",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
+        if (hasConflict) {
+            SectionCard("접수 상태가 변경됐어요") {
+                Text(
+                    "작성한 내용은 그대로 보관했어요. 최신 상태를 확인한 뒤 다시 시도해주세요."
+                )
 
                 retrySubmitAction?.let { action ->
                     LiquidGlassButton(
-                        text = action.displayLabel,
+                        text = "다시 접수하기",
                         onClick = onRetry,
                         enabled = !state.isSubmitting,
                         accent = true,
@@ -302,23 +249,18 @@ fun SymptomIntakeContent(
                             .testTag("retrySubmitAfterConflict"),
                     )
                 }
-
-                Text(
-                    "작성한 입력은 유지되었습니다.",
-                    style = MaterialTheme.typography.bodySmall,
-                )
             }
         }
 
         if (state.isSubmitting) {
-            LoadingBlock("입력 내용을 안전하게 제출하고 있습니다")
+            LoadingBlock("증상을 접수하고 있어요")
         }
 
         LiquidGlassButton(
             text = when {
-                state.isSubmitting -> "제출 중"
+                state.isSubmitting -> "접수 중"
                 hasConflict -> "최신 상태 확인 필요"
-                else -> "증상 제출"
+                else -> "증상 접수하기"
             },
             onClick = onSubmit,
             enabled = !state.isSubmitting && !hasConflict,
@@ -328,6 +270,38 @@ fun SymptomIntakeContent(
                 .testTag("submitIntake"),
         )
     }
+}
+
+private fun customerSymptomLabel(
+    topic: SymptomTopic,
+): String = when (topic) {
+    SymptomTopic.LOW_FLOW -> "물이 안 나오거나 약해요"
+    SymptomTopic.TASTE_ODOR -> "물맛이나 냄새가 이상해요"
+    SymptomTopic.LEAK -> "물이 새요"
+    SymptomTopic.TEMPERATURE -> "냉수·온수 온도가 이상해요"
+    SymptomTopic.OTHER -> "기타"
+}
+
+private fun customerIntakeErrorMessage(
+    kind: IntakeErrorKind?,
+    originalMessage: String,
+): String = when (kind) {
+    IntakeErrorKind.VALIDATION ->
+        "입력한 내용을 한 번 확인해주세요."
+    IntakeErrorKind.CONFLICT ->
+        "접수 상태가 바뀌었어요. 작성한 내용은 유지되어 있습니다."
+    IntakeErrorKind.NETWORK ->
+        "인터넷 연결을 확인한 뒤 다시 시도해주세요."
+    IntakeErrorKind.SERVER ->
+        "잠시 처리에 문제가 생겼어요. 잠시 후 다시 시도해주세요."
+    IntakeErrorKind.FORBIDDEN ->
+        "현재 이 문의를 처리할 수 없습니다."
+    IntakeErrorKind.NOT_FOUND ->
+        "필요한 정보를 찾지 못했어요. 홈에서 다시 시작해주세요."
+    IntakeErrorKind.AUTH_EXPIRED ->
+        "로그인이 만료됐어요. 다시 로그인해주세요."
+    IntakeErrorKind.UNKNOWN, null ->
+        "문제를 처리하는 중 오류가 발생했어요. 잠시 후 다시 시도해주세요."
 }
 
 @Composable

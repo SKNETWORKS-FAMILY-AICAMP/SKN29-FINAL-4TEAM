@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
-import com.skn29.watercare.core.ui.components.CustomerReferencePalette
+import com.skn29.watercare.core.ui.components.WaterBridgeCustomerPalette
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.core.ui.components.ReferenceBackendStatusCard
@@ -38,7 +38,7 @@ fun LoginScreen(
         }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val palette = CustomerReferencePalette
+    val palette = WaterBridgeCustomerPalette
 
     LaunchedEffect(state.authenticated) {
         if (state.authenticated) {
@@ -47,15 +47,17 @@ fun LoginScreen(
     }
 
     ReferenceDashboardScaffold(
-        title = "정수기 딜러",
+        title = "WaterBridge",
         roleLabel = "고객용",
         palette = palette,
-        backgroundRes = R.drawable.water_background_customer,
+                                brandLogoRes = R.drawable.waterbridge_brand_logo,
+backgroundRes = R.drawable.water_background_customer,
+        backgroundImageAlpha = 0.12f,
     ) {
         ReferenceWelcomeCard(
             title = "안녕하세요!",
             subtitle = "정수기 상태 확인부터 안전 안내까지 쉽고 빠르게 도와드릴게요.",
-            imageRes = R.drawable.mascot_customer,
+            imageRes = R.drawable.waterbridge_brand_logo,
             palette = palette,
         )
 

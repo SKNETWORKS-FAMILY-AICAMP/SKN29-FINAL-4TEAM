@@ -2,7 +2,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:icon="@mipmap/ic_launcher_watercare"
-        android:roundIcon="@mipmap/ic_launcher_watercare" android:usesCleartextTraffic="true" android:name=".CustomerApplication" android:allowBackup="true" android:label="WaterCare 고객" android:theme="@style/Theme.WaterCare">
+        android:roundIcon="@mipmap/ic_launcher_watercare" android:usesCleartextTraffic="true" android:name=".CustomerApplication" android:allowBackup="true" android:label="WaterBridge 고객" android:theme="@style/Theme.WaterCare">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
