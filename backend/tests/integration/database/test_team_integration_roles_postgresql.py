@@ -99,8 +99,23 @@ def test_team_integration_role_matrix_postgresql():
             connection,
             "SHOW default_transaction_read_only",
         ) == "on"
+        assert scalar(
+            connection,
+            "SELECT has_schema_privilege(current_user, 'public', 'CREATE')",
+        ) is False
         assert has_table_privilege(
             connection,
             "public.accounts_user",
             "SELECT",
         ) is False
+        assert has_table_privilege(
+            connection,
+            "public.backend_ai_rag_chunks_v1",
+            "SELECT",
+        ) is True
+        for privilege in ("INSERT", "UPDATE", "DELETE", "TRUNCATE"):
+            assert has_table_privilege(
+                connection,
+                "public.backend_ai_rag_chunks_v1",
+                privilege,
+            ) is False

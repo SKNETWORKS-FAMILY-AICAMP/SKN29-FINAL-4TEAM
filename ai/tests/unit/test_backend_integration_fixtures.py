@@ -8,6 +8,9 @@ from fastapi.testclient import TestClient
 
 from ai.app.bootstrap import create_app
 from ai.app.common.timeout import PipelineStageTimeoutError
+from ai.app.generation.customer_guidance import guidance_generator
+from ai.app.generation.customer_guidance.models import GuidanceGenerationResult
+from ai.app.integrations.llm import GuidanceLLMResponse, LLMUsage
 from ai.app.interfaces.http.routes import analysis_routes
 from ai.app.retrieval import RetrievedChunk
 
@@ -62,6 +65,19 @@ class NonTransientFailureSearchService:
         raise ValueError("fixture non-transient provider failure")
 
 
+class FixtureGuidanceLLMClient:
+    def generate_guidance(self, request, *, timeout_seconds):
+        return GuidanceLLMResponse(
+            output=GuidanceGenerationResult(
+                message="냉수 온도가 높으면 잠시 기다린 뒤 다시 확인합니다.",
+                next_actions=["안내된 자가조치 단계별 점검 수행"],
+            ),
+            model_name="gpt-4.1-mini",
+            usage=LLMUsage(total_tokens=12),
+            latency_ms=5.0,
+        )
+
+
 def _manifest() -> dict:
     return json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
 
@@ -91,6 +107,15 @@ def _configure_driver(monkeypatch, driver: str) -> None:
             analysis_routes.PipelineRouter,
             "_configured_search_service",
             staticmethod(lambda: service),
+        )
+    if driver in {
+        "IN_PROCESS_HTTP_EVIDENCE_ADAPTER",
+        "IN_PROCESS_HTTP_FLAKY_ADAPTER",
+    }:
+        monkeypatch.setattr(
+            guidance_generator.OpenAIResponsesLLMClient,
+            "from_environment",
+            classmethod(lambda cls: FixtureGuidanceLLMClient()),
         )
     if driver == "IN_PROCESS_HTTP_STAGE_TIMEOUT_ADAPTER":
         def stage_timeout(*args, **kwargs):

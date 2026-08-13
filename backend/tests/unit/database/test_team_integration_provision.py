@@ -262,3 +262,57 @@ def test_source_has_no_destructive_or_secret_cli_path():
     assert "REVOKE ALL PRIVILEGES ON DATABASE" in source
     assert 'cursor.execute("BEGIN")' in source
     assert 'cursor.execute("ROLLBACK")' in source
+
+
+def test_ai_readonly_grant_is_scoped_to_the_verified_rag_view(
+    provision_module: ModuleType,
+):
+    class RecordingCursor:
+        def __init__(self):
+            self.statements: list[tuple[str, object]] = []
+            self.rows = iter([(True,), (False,)])
+
+        def execute(self, statement, parameters=None):
+            rendered = (
+                statement.as_string()
+                if hasattr(statement, "as_string")
+                else statement
+            )
+            self.statements.append((rendered, parameters))
+
+        def fetchone(self):
+            return next(self.rows)
+
+    assert provision_module.AI_READONLY_VIEW == "backend_ai_rag_chunks_v1"
+    assert (
+        provision_module.AI_READONLY_VIEW_REGCLASS
+        == "public.backend_ai_rag_chunks_v1"
+    )
+
+    cursor = RecordingCursor()
+    provision_module._grant_roles(cursor)
+    statements = cursor.statements
+    ai_role = '"waterbridge_ti_ai_readonly"'
+
+    assert (
+        "SELECT to_regclass(%s) IS NOT NULL",
+        ("public.backend_ai_rag_chunks_v1",),
+    ) in statements
+    assert [
+        statement
+        for statement, _parameters in statements
+        if statement.startswith("GRANT SELECT") and ai_role in statement
+    ] == [
+        'GRANT SELECT ON TABLE "public"."backend_ai_rag_chunks_v1" '
+        'TO "waterbridge_ti_ai_readonly"'
+    ]
+    assert any(
+        "REVOKE ALL PRIVILEGES ON ALL TABLES" in statement
+        and ai_role in statement
+        for statement, _parameters in statements
+    )
+    assert any(
+        "REVOKE ALL PRIVILEGES ON ALL SEQUENCES" in statement
+        and ai_role in statement
+        for statement, _parameters in statements
+    )

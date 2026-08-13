@@ -74,6 +74,7 @@ data class ReferenceDashboardPalette(
     val warning: Color,
     val danger: Color,
     val darkSurface: Boolean = false,
+    val sunsetBackground: Boolean = false,
 )
 
 val CustomerReferencePalette = ReferenceDashboardPalette(
@@ -140,7 +141,8 @@ fun ReferenceDashboardScaffold(
     palette: ReferenceDashboardPalette,
     @DrawableRes backgroundRes: Int? = null,
     backgroundImageAlpha: Float = 0.54f,
-    bottomItems: List<ReferenceBottomItem> = emptyList(),
+        @DrawableRes brandLogoRes: Int? = null,
+bottomItems: List<ReferenceBottomItem> = emptyList(),
     modifier: Modifier = Modifier,
     onNotification: () -> Unit = {},
     onSupport: () -> Unit = {},
@@ -193,6 +195,7 @@ fun ReferenceDashboardScaffold(
                     roleLabel = roleLabel,
                     palette = palette,
                     title = title,
+                    brandLogoRes = brandLogoRes,
                     onNotification = onNotification,
                     onSupport = onSupport,
                     notificationEnabled = notificationEnabled,
@@ -485,8 +488,9 @@ private fun ReferenceBrandMark(
 fun ReferenceDashboardHeader(
     roleLabel: String,
     palette: ReferenceDashboardPalette,
-    title: String = "정수기 딜러",
-    onNotification: () -> Unit = {},
+    title: String = "WaterBridge",
+        @DrawableRes brandLogoRes: Int? = null,
+onNotification: () -> Unit = {},
     onSupport: () -> Unit = {},
     notificationEnabled: Boolean = false,
     supportEnabled: Boolean = false,
@@ -507,7 +511,16 @@ fun ReferenceDashboardHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            ReferenceBrandMark(palette)
+            if (brandLogoRes != null) {
+                Image(
+                    painter = painterResource(brandLogoRes),
+                    contentDescription = "WaterBridge logo",
+                    modifier = Modifier.size(58.dp),
+                    contentScale = ContentScale.Fit,
+                )
+            } else {
+                ReferenceBrandMark(palette)
+            }
             Column(
                 verticalArrangement = Arrangement.spacedBy(1.dp),
             ) {
@@ -528,9 +541,9 @@ fun ReferenceDashboardHeader(
                 )
                 Text(
                     if (roleLabel.contains("기사")) {
-                        "WaterCare Field Service"
+                        "WaterBridge Field Service"
                     } else {
-                        "WaterCare Home Service"
+                        "WaterBridge Home Service"
                     },
                     color = if (palette.darkSurface) {
                         palette.textMuted.copy(alpha = 0.82f)
@@ -591,11 +604,11 @@ fun ReferenceHeroCard(
         BoxWithConstraints(
             modifier = Modifier.fillMaxWidth(),
         ) {
-            val compact = maxWidth < 360.dp
+            val compact = maxWidth < 430.dp
             val imageSize = (
-                if (compact) 160.dp else 198.dp
-            ) * imageEmphasis.coerceIn(0.94f, 1.12f)
-            val heroHeight = if (compact) 236.dp else 272.dp
+                if (compact) 118.dp else 174.dp
+            ) * imageEmphasis.coerceIn(0.94f, 1.06f)
+            val heroHeight = if (compact) 250.dp else 264.dp
             val firstLine = greeting.substringBefore("\n")
             val secondLine = greeting.substringAfter("\n", "")
 
@@ -635,8 +648,8 @@ fun ReferenceHeroCard(
                         firstLine,
                         color = palette.textStrong,
                         fontFamily = FontFamily.SansSerif,
-                        fontSize = if (compact) 24.sp else 29.sp,
-                        lineHeight = if (compact) 30.sp else 36.sp,
+                        fontSize = if (compact) 23.sp else 28.sp,
+                        lineHeight = if (compact) 29.sp else 34.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = (-0.45).sp,
                         maxLines = 1,
@@ -648,8 +661,8 @@ fun ReferenceHeroCard(
                             secondLine,
                             color = palette.accent,
                             fontFamily = FontFamily.SansSerif,
-                            fontSize = if (compact) 33.sp else 40.sp,
-                            lineHeight = if (compact) 39.sp else 46.sp,
+                            fontSize = if (compact) 28.sp else 36.sp,
+                            lineHeight = if (compact) 34.sp else 42.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = (-0.75).sp,
                             maxLines = 1,
@@ -660,8 +673,8 @@ fun ReferenceHeroCard(
                     Text(
                         subtitle,
                         color = palette.textMuted,
-                        fontSize = if (compact) 14.sp else 16.sp,
-                        lineHeight = if (compact) 21.sp else 24.sp,
+                        fontSize = if (compact) 13.sp else 15.sp,
+                        lineHeight = if (compact) 20.sp else 23.sp,
                         fontWeight = FontWeight.Medium,
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
@@ -860,7 +873,11 @@ fun ReferenceSectionHeader(
 
             Text(
                 title,
-                color = palette.textStrong,
+                color = if (palette.sunsetBackground) {
+                    Color.White
+                } else {
+                    palette.textStrong
+                },
                 fontFamily = FontFamily.SansSerif,
                 fontSize = 22.sp,
                 lineHeight = 28.sp,
@@ -874,7 +891,11 @@ fun ReferenceSectionHeader(
         if (!trailing.isNullOrBlank()) {
             Text(
                 trailing,
-                color = palette.accent,
+                color = if (palette.sunsetBackground) {
+                    palette.accentSecondary
+                } else {
+                    palette.accent
+                },
                 fontSize = 12.5.sp,
                 lineHeight = 17.sp,
                 fontWeight = FontWeight.Bold,
@@ -1601,30 +1622,107 @@ fun ReferenceGlassButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     accent: Boolean = false,
+    danger: Boolean = false,
     compact: Boolean = false,
 ) {
     val shape = RoundedCornerShape(999.dp)
     val interactionSource = remember { MutableInteractionSource() }
 
-    val accentPrimaryAlpha = if (enabled) 0.98f else 0.30f
-    val accentSecondaryAlpha = if (enabled) 0.88f else 0.22f
-    val neutralAlpha = if (enabled) 0.220f else 0.060f
-    val buttonGlowAlpha = if (accent) 0.46f else 0.26f
+    val isTechnicianNeutral =
+        palette.sunsetBackground && !accent && !danger
+
+    val backgroundBrush = when {
+        danger -> Brush.linearGradient(
+            listOf(
+                Color(0xFF9E332C),
+                Color(0xFFD4573A),
+                Color(0xFFB84131),
+            )
+        )
+
+        accent -> Brush.linearGradient(
+            listOf(
+                palette.accent,
+                palette.accentSecondary,
+                palette.accent.copy(alpha = 0.82f),
+            )
+        )
+
+        isTechnicianNeutral -> Brush.linearGradient(
+            listOf(
+                Color(0xFFFFFCF7),
+                Color(0xFFFFF3E1),
+                Color(0xFFFFD9A5),
+            )
+        )
+
+        else -> Brush.linearGradient(
+            listOf(
+                Color.White.copy(alpha = if (enabled) 0.30f else 0.10f),
+                palette.accentSoft.copy(alpha = if (enabled) 0.20f else 0.08f),
+                palette.accentSecondary.copy(alpha = if (enabled) 0.12f else 0.05f),
+                Color.White.copy(alpha = if (enabled) 0.16f else 0.06f),
+            )
+        )
+    }
+
+    val borderBrush = when {
+        danger -> Brush.linearGradient(
+            listOf(
+                Color.White.copy(alpha = 0.96f),
+                Color(0xFFFFB29A),
+                palette.danger,
+                Color.White.copy(alpha = 0.82f),
+            )
+        )
+
+        isTechnicianNeutral -> Brush.linearGradient(
+            listOf(
+                Color.White,
+                Color(0xFFF59E0B).copy(alpha = 0.86f),
+                Color(0xFF334E68).copy(alpha = 0.54f),
+                Color.White.copy(alpha = 0.94f),
+            )
+        )
+
+        else -> Brush.linearGradient(
+            listOf(
+                Color.White.copy(alpha = if (enabled) 0.98f else 0.42f),
+                palette.accent.copy(alpha = if (accent) 0.96f else 0.78f),
+                palette.accentSecondary.copy(alpha = if (accent) 0.90f else 0.66f),
+                Color.White.copy(alpha = if (enabled) 0.84f else 0.30f),
+            )
+        )
+    }
+
+    val shadowBase = when {
+        danger -> palette.danger
+        isTechnicianNeutral -> Color(0xFFF59E0B)
+        else -> palette.accent
+    }
 
     Row(
         modifier = modifier
             .shadow(
-                elevation = if (accent) 15.dp else 8.dp,
+                elevation = when {
+                    danger -> 12.dp
+                    accent -> 13.dp
+                    isTechnicianNeutral -> 10.dp
+                    else -> 7.dp
+                },
                 shape = shape,
-                ambientColor = palette.accent.copy(
-                    alpha = buttonGlowAlpha
+                ambientColor = shadowBase.copy(
+                    alpha = if (enabled) 0.28f else 0.08f
                 ),
-                spotColor = palette.accentSecondary.copy(
-                    alpha = buttonGlowAlpha * 0.92f
+                spotColor = shadowBase.copy(
+                    alpha = if (enabled) 0.24f else 0.06f
                 ),
                 clip = false,
             )
             .clip(shape)
+            .graphicsLayer {
+                alpha = if (enabled) 1f else 0.58f
+            }
             .clickable(
                 enabled = enabled,
                 role = Role.Button,
@@ -1632,51 +1730,11 @@ fun ReferenceGlassButton(
                 indication = LocalIndication.current,
                 onClick = onClick,
             )
-            .background(
-                if (accent) {
-                    Brush.linearGradient(
-                        listOf(
-                            palette.accent.copy(
-                                alpha = accentPrimaryAlpha
-                            ),
-                            palette.accentSecondary.copy(
-                                alpha = accentSecondaryAlpha
-                            ),
-                            palette.accent.copy(
-                                alpha = accentPrimaryAlpha * 0.76f
-                            ),
-                        )
-                    )
-                } else {
-                    Brush.linearGradient(
-                        listOf(
-                            Color.White.copy(alpha = neutralAlpha),
-                            palette.accentSoft.copy(alpha = 0.180f),
-                            palette.accentSecondary.copy(alpha = 0.120f),
-                            Color.Transparent,
-                            Color.White.copy(alpha = neutralAlpha * 0.52f),
-                        )
-                    )
-                }
-            )
+            .background(backgroundBrush)
             .drawBehind {
-                drawOval(
-                    color = Color.White.copy(
-                        alpha = if (accent) 0.38f else 0.28f
-                    ),
-                    topLeft = Offset(
-                        x = size.width * 0.08f,
-                        y = size.height * 0.05f,
-                    ),
-                    size = Size(
-                        width = size.width * 0.38f,
-                        height = size.height * 0.34f,
-                    ),
-                )
-
                 drawLine(
                     color = Color.White.copy(
-                        alpha = if (accent) 0.86f else 0.62f
+                        alpha = if (enabled) 0.84f else 0.34f
                     ),
                     start = Offset(
                         x = size.width * 0.12f,
@@ -1692,23 +1750,13 @@ fun ReferenceGlassButton(
             }
             .border(
                 BorderStroke(
-                    width = if (accent) 1.70.dp else 1.50.dp,
-                    brush = Brush.linearGradient(
-                        listOf(
-                            Color.White.copy(
-                                alpha = if (enabled) 0.98f else 0.40f
-                            ),
-                            palette.accent.copy(
-                                alpha = if (accent) 0.98f else 0.84f
-                            ),
-                            palette.accentSecondary.copy(
-                                alpha = if (accent) 0.92f else 0.72f
-                            ),
-                            Color.White.copy(
-                                alpha = if (enabled) 0.86f else 0.32f
-                            ),
-                        )
-                    ),
+                    width = when {
+                        danger -> 1.9.dp
+                        accent -> 1.7.dp
+                        isTechnicianNeutral -> 1.7.dp
+                        else -> 1.4.dp
+                    },
+                    brush = borderBrush,
                 ),
                 shape,
             )
@@ -1721,15 +1769,21 @@ fun ReferenceGlassButton(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = if (enabled) "$text  ›" else text,
+            text = if (enabled) {
+                text + "  \u203A"
+            } else {
+                text
+            },
             color = when {
                 !enabled -> palette.textMuted
+                danger -> Color.White
                 accent -> Color.White
+                isTechnicianNeutral -> Color(0xFF20384C)
                 else -> palette.accent
             },
             fontSize = if (compact) 13.sp else 14.sp,
             lineHeight = if (compact) 16.sp else 18.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold,
             textAlign = TextAlign.Center,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -2558,28 +2612,40 @@ fun ReferencePearlBackground(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val baseGradient = when {
+        palette.sunsetBackground -> Brush.verticalGradient(
+            listOf(
+                Color(0xFF0A2238),
+                Color(0xFF12344E),
+                Color(0xFF3C3B43),
+                Color(0xFF76503E),
+                Color(0xFF9A5A37),
+            )
+        )
+
+        palette.darkSurface -> Brush.verticalGradient(
+            listOf(
+                Color(0xFF043A55),
+                Color(0xFF05324A),
+                palette.backgroundStart,
+                Color(0xFF031F32),
+            )
+        )
+
+        else -> Brush.verticalGradient(
+            listOf(
+                Color(0xFF4FAFE8),
+                Color(0xFF9FDCF5),
+                Color(0xFFEAF8FF),
+                palette.backgroundEnd,
+            )
+        )
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    if (palette.darkSurface) {
-                        listOf(
-                            Color(0xFF043A55),
-                            Color(0xFF05324A),
-                            palette.backgroundStart,
-                            Color(0xFF031F32),
-                        )
-                    } else {
-                        listOf(
-                            Color(0xFF4FAFE8),
-                            Color(0xFF9FDCF5),
-                            Color(0xFFEAF8FF),
-                            palette.backgroundEnd,
-                        )
-                    }
-                )
-            ),
+            .background(baseGradient),
     ) {
         backgroundRes?.let { resource ->
             Image(
@@ -2591,80 +2657,161 @@ fun ReferencePearlBackground(
             )
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    if (palette.darkSurface) {
+        if (palette.sunsetBackground) {
+            // Navy veil: keeps the technician screen professional and
+            // prevents the water texture from looking like the customer app.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
                         Brush.verticalGradient(
                             listOf(
-                                Color(0xFF03283D).copy(alpha = 0.36f),
-                                Color(0xFF04334A).copy(alpha = 0.20f),
-                                Color(0xFF021F32).copy(alpha = 0.56f),
+                                Color(0xFF071C2F).copy(alpha = 0.52f),
+                                Color(0xFF0E2A41).copy(alpha = 0.30f),
+                                Color(0xFF382E32).copy(alpha = 0.18f),
+                                Color(0xFF5C392E).copy(alpha = 0.24f),
                             )
                         )
-                    } else {
-                        Brush.verticalGradient(
-                            listOf(
-                                Color(0xFF1689D1).copy(alpha = 0.10f),
-                                Color.White.copy(alpha = 0.05f),
-                                Color.White.copy(alpha = 0.12f),
-                                Color(0xFFEAF8FF).copy(alpha = 0.24f),
-                            )
-                        )
-                    }
-                )
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            if (palette.darkSurface) {
-                                palette.accent.copy(alpha = 0.12f)
-                            } else {
-                                Color.White.copy(alpha = 0.36f)
-                            },
-                            Color.Transparent,
-                        ),
-                        center = Offset(180f, 140f),
-                        radius = 820f,
                     )
-                )
-        )
+            )
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            palette.accentSecondary.copy(
-                                alpha = if (
-                                    palette.darkSurface
-                                ) 0.09f else 0.06f
+            // Warm sunset glow from the right side.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFFFFA33A).copy(alpha = 0.62f),
+                                Color(0xFFF07A2D).copy(alpha = 0.28f),
+                                Color.Transparent,
                             ),
-                            Color.Transparent,
-                        ),
-                        center = Offset(880f, 1380f),
-                        radius = 920f,
+                            center = Offset(980f, 660f),
+                            radius = 760f,
+                        )
                     )
-                )
-        )
+            )
+
+            // Secondary amber reflection near the lower-right area.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFFFFB15A).copy(alpha = 0.28f),
+                                Color(0xFFE9772F).copy(alpha = 0.14f),
+                                Color.Transparent,
+                            ),
+                            center = Offset(900f, 1480f),
+                            radius = 780f,
+                        )
+                    )
+            )
+
+            // Cool navy light at the top-left preserves WaterBridge identity.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFF2A5D82).copy(alpha = 0.32f),
+                                Color.Transparent,
+                            ),
+                            center = Offset(120f, 110f),
+                            radius = 680f,
+                        )
+                    )
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        if (palette.darkSurface) {
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color(0xFF03283D).copy(alpha = 0.36f),
+                                    Color(0xFF04334A).copy(alpha = 0.20f),
+                                    Color(0xFF021F32).copy(alpha = 0.56f),
+                                )
+                            )
+                        } else {
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color(0xFF1689D1).copy(alpha = 0.10f),
+                                    Color.White.copy(alpha = 0.05f),
+                                    Color.White.copy(alpha = 0.12f),
+                                    Color(0xFFEAF8FF).copy(alpha = 0.24f),
+                                )
+                            )
+                        }
+                    )
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                if (palette.darkSurface) {
+                                    palette.accent.copy(alpha = 0.12f)
+                                } else {
+                                    Color.White.copy(alpha = 0.36f)
+                                },
+                                Color.Transparent,
+                            ),
+                            center = Offset(180f, 140f),
+                            radius = 820f,
+                        )
+                    )
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                palette.accentSecondary.copy(
+                                    alpha = if (palette.darkSurface) {
+                                        0.09f
+                                    } else {
+                                        0.06f
+                                    }
+                                ),
+                                Color.Transparent,
+                            ),
+                            center = Offset(880f, 1380f),
+                            radius = 920f,
+                        )
+                    )
+            )
+        }
 
         Canvas(
             modifier = Modifier.fillMaxSize(),
         ) {
-            val lineColor = if (palette.darkSurface) {
-                Color.White.copy(alpha = 0.045f)
-            } else {
-                Color.White.copy(alpha = 0.18f)
+            val lineColor = when {
+                palette.sunsetBackground ->
+                    Color.White.copy(alpha = 0.075f)
+
+                palette.darkSurface ->
+                    Color.White.copy(alpha = 0.045f)
+
+                else ->
+                    Color.White.copy(alpha = 0.18f)
             }
-            val accentLine = palette.accent.copy(
-                alpha = if (palette.darkSurface) 0.055f else 0.07f
-            )
+
+            val accentLine = if (palette.sunsetBackground) {
+                Color(0xFFFFA33A).copy(alpha = 0.16f)
+            } else {
+                palette.accent.copy(
+                    alpha = if (palette.darkSurface) 0.055f else 0.07f
+                )
+            }
 
             drawArc(
                 color = lineColor,
@@ -2706,9 +2853,11 @@ fun ReferencePearlBackground(
 
             drawCircle(
                 color = Color.White.copy(
-                    alpha = if (
-                        palette.darkSurface
-                    ) 0.035f else 0.12f
+                    alpha = when {
+                        palette.sunsetBackground -> 0.07f
+                        palette.darkSurface -> 0.035f
+                        else -> 0.12f
+                    }
                 ),
                 radius = size.minDimension * 0.075f,
                 center = Offset(
@@ -2719,11 +2868,13 @@ fun ReferencePearlBackground(
             )
 
             drawCircle(
-                color = palette.accentSecondary.copy(
-                    alpha = if (
-                        palette.darkSurface
-                    ) 0.045f else 0.055f
-                ),
+                color = if (palette.sunsetBackground) {
+                    Color(0xFFFFA33A).copy(alpha = 0.12f)
+                } else {
+                    palette.accentSecondary.copy(
+                        alpha = if (palette.darkSurface) 0.045f else 0.055f
+                    )
+                },
                 radius = size.minDimension * 0.055f,
                 center = Offset(
                     x = size.width * 0.12f,

@@ -1,5 +1,6 @@
 """Evidence Model 공개 목록."""
 
+from .ai_chunk_crosswalk import AIChunkCrosswalk, AIChunkCrosswalkPage
 from .chunk_embedding import ChunkEmbedding
 from .data_quality_issue import DataQualityIssue
 from .document_chunk import DocumentChunk
@@ -11,6 +12,8 @@ from .source_document import SourceDocument
 
 
 __all__ = [
+    "AIChunkCrosswalk",
+    "AIChunkCrosswalkPage",
     "ChunkEmbedding",
     "DataQualityIssue",
     "DocumentChunk",

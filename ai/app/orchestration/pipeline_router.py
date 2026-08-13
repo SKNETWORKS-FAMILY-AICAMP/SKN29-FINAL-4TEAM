@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 from uuid import UUID
 
 from ..integrations.embedding.embedding_client import BgeM3EmbeddingClient
+from ..integrations.llm import GuidanceLLMClient
 from ..integrations.vector_store.vector_store import PgVectorStore
 from ..retrieval.search.vector_search import VectorSearchService
 from ..retrieval.indexing.index_manifest import IndexManifest
@@ -21,7 +22,7 @@ from ..schemas import TraceContext
 
 _AUTO_SEARCH_SERVICE = object()
 _SEARCH_SERVICE_LOCK = Lock()
-_SEARCH_SERVICE_CACHE_KEY: tuple[str, str, str] | None = None
+_SEARCH_SERVICE_CACHE_KEY: tuple[str, str, str, str] | None = None
 _SEARCH_SERVICE_CACHE: VectorSearchService | None = None
 
 
@@ -38,6 +39,7 @@ def _configured_search_service() -> VectorSearchService | None:
         raise RetrievalConfigurationError(
             "AI_VECTOR_DSN 사용 시 재현 가능한 AI_EMBEDDING_REVISION이 필요합니다."
         )
+    table_name = os.getenv("AI_VECTOR_TABLE_NAME", "ai_rag_chunks")
 
     repository_root = Path(__file__).resolve().parents[3]
     manifest_path = repository_root / "ai" / "configs" / "index_manifest.json"
@@ -51,6 +53,7 @@ def _configured_search_service() -> VectorSearchService | None:
     cache_key = (
         sha256(dsn.encode("utf-8")).hexdigest(),
         model_revision,
+        table_name,
         sha256(manifest_bytes).hexdigest(),
     )
     with _SEARCH_SERVICE_LOCK:
@@ -64,7 +67,7 @@ def _configured_search_service() -> VectorSearchService | None:
                 )
             service = VectorSearchService(
                 BgeM3EmbeddingClient(model_revision=model_revision),
-                PgVectorStore(dsn),
+                PgVectorStore(dsn, table_name=table_name),
                 index_manifest=manifest,
             )
         except RetrievalConfigurationError:
@@ -99,6 +102,7 @@ class PipelineRouter:
     def __init__(
         self,
         search_service: VectorSearchService | None | object = _AUTO_SEARCH_SERVICE,
+        llm_client: GuidanceLLMClient | None = None,
     ):
         self.retrieval_configuration_error: RetrievalConfigurationError | None = None
         if search_service is _AUTO_SEARCH_SERVICE:
@@ -109,6 +113,7 @@ class PipelineRouter:
                 self.retrieval_configuration_error = exc
         else:
             self.search_service = search_service
+        self.llm_client = llm_client
 
     @staticmethod
     def _configured_search_service() -> VectorSearchService | None:
@@ -145,5 +150,6 @@ class PipelineRouter:
         pipeline = SingleRAGPipeline(
             self.search_service,
             retrieval_configuration_error=self.retrieval_configuration_error,
+            llm_client=self.llm_client,
         )
         return pipeline.run(ctx, cancellation_token=token)

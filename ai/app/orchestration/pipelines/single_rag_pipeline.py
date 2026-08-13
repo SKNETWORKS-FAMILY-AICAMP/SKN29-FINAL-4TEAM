@@ -5,6 +5,7 @@ from langgraph.graph import END, START, StateGraph
 from ..pipeline_context import PipelineContext
 from ..pipeline_result import PipelineResult
 from ...common.timeout import CancellationToken, get_stage_timeout_policy
+from ...integrations.llm import GuidanceLLMClient
 from ...retrieval import RetrievalConfigurationError
 from ...schemas import AiStage
 from ..stages import (
@@ -25,9 +26,11 @@ class SingleRAGPipeline:
         search_service=None,
         *,
         retrieval_configuration_error: RetrievalConfigurationError | None = None,
+        llm_client: GuidanceLLMClient | None = None,
     ) -> None:
         self.search_service = search_service
         self.retrieval_configuration_error = retrieval_configuration_error
+        self.llm_client = llm_client
         self.cancellation_token = CancellationToken()
         self.timeout_policy = get_stage_timeout_policy()
         graph = StateGraph(dict)
@@ -81,7 +84,17 @@ class SingleRAGPipeline:
         return state
 
     def _generation(self, state):
-        self._run_stage(AiStage.GENERATING, execute_generation_stage, state["ctx"])
+        timeout_seconds = self.timeout_policy.for_stage(AiStage.GENERATING.value)
+        with self.cancellation_token.deadline_scope(
+            timeout_seconds,
+            AiStage.GENERATING.value,
+        ):
+            execute_generation_stage(
+                state["ctx"],
+                self.llm_client,
+                self.cancellation_token,
+                attempt_timeout_seconds=min(7.0, timeout_seconds / 2.0),
+            )
         return state
 
     def _validation(self, state):

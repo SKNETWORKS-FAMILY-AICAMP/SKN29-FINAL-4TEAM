@@ -12,6 +12,7 @@ from .interfaces.http.routes.experiment_playground_routes import router as exper
 from .interfaces.http.routes.health_routes import router as health_router
 from .interfaces.http.runtime_policy import get_runtime_policy
 from .interfaces.http.structured_logging import configure_structured_logging
+from .integrations.llm.token_usage import configure_llm_usage_logging
 from .orchestration.pipeline_router import warmup_configured_search_service
 
 
@@ -39,6 +40,7 @@ def create_app() -> FastAPI:
     """FastAPI 인스턴스 생성 및 라우터·미들웨어·오류핸들러 설정"""
     get_runtime_policy()
     configure_structured_logging()
+    configure_llm_usage_logging()
     app = FastAPI(
         title="SK Watercare AI Service",
         description="정수기 구독 고객 케어 및 A/S 업무 지원 시스템 - AI/RAG 분석 서비스",

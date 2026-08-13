@@ -38,7 +38,7 @@ import com.skn29.watercare.core.ui.components.LiquidGlassPanel
 import com.skn29.watercare.core.ui.components.LiquidGlassPill
 import com.skn29.watercare.core.ui.components.LiquidGlassTone
 import com.skn29.watercare.core.ui.components.LiquidGlassToneProvider
-import com.skn29.watercare.core.ui.components.CustomerReferencePalette
+import com.skn29.watercare.core.ui.components.WaterBridgeCustomerPalette
 import com.skn29.watercare.core.ui.components.ReferencePearlBackground
 import com.skn29.watercare.core.ui.theme.WaterCaution
 import com.skn29.watercare.core.ui.theme.WaterDanger
@@ -71,9 +71,9 @@ private fun WaterCareScreenBody(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     ReferencePearlBackground(
-        palette = CustomerReferencePalette,
+        palette = WaterBridgeCustomerPalette,
         backgroundRes = R.drawable.water_splash_customer_r19,
-        imageAlpha = 0.58f,
+        imageAlpha = 0.16f,
     ) {
         Scaffold(
             containerColor = Color.Transparent,
@@ -98,7 +98,7 @@ private fun WaterCareScreenBody(
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color.Transparent,
-                        scrolledContainerColor = Color.White.copy(alpha = 0.84f),
+                        scrolledContainerColor = Color.White.copy(alpha = 0.94f),
                     ),
                 )
             },

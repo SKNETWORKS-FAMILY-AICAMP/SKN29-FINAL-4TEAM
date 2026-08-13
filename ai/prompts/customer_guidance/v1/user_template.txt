@@ -1,7 +1,2 @@
-[위험도 판정]
-{risk_level} (이유: {safety_reason})
-
-[검색된 매뉴얼 근거]
-{evidence_summary}
-
-고객에게 안내할 현재 사용 가능 상태와 다음 조치 행동을 작성해 주세요.
+아래 구조화 JSON을 기반으로 고객 안내 문구와 다음 행동만 작성해 주세요.
+{guidance_generation_request_json}

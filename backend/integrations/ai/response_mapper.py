@@ -82,11 +82,13 @@ def map_success_response(
         )
     if is_danger and (
         not safety["requires_consultation"]
-        or guidance["guidance_status"]
-        not in {"PARTIAL_STOP", "TOTAL_STOP", "PENDING_CONSULTATION"}
+        # Backend persistence currently enforces the stricter TOTAL_STOP
+        # invariant.  PARTIAL_STOP remains fail-closed until PM resolves the
+        # AI/State/DB policy conflict.
+        or guidance["guidance_status"] != "TOTAL_STOP"
     ):
         errors.append(
-            "danger: 상담 필요와 사용 제한 상태가 필요합니다."
+            "danger: 상담 필요와 TOTAL_STOP 상태가 필요합니다."
         )
     if errors:
         raise AIResponseValidationError(

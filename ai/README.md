@@ -150,6 +150,34 @@ Backend 상태 변경, 방문 필요 여부의 자동 확정은 수행하지 않
 연동 완료로 표시하지 않는다. Agent Runtime Routing·Handoff와 실제 Provider는
 별도 Gate다.
 
+## 고객 안내 LLM Runtime
+
+`mode=local`의 일반·주의 증상에서 공식 Evidence가 발견된 경우에만 OpenAI
+`gpt-4.1-mini`를 호출한다. LLM Structured Output은 내부
+`GuidanceGenerationResult`의 `message`, `next_actions` 두 필드로 제한한다.
+Safety 판정, 사용 안내 상태, 제한 기능, Evidence와 요청 추적 식별자는 기존
+Rule·Runtime이 조립하며 공개 Backend↔AI 계약 `3.0.0`을 변경하지 않는다.
+
+위험 입력은 Safety Rule이 먼저 처리하고, 근거 없음은 기존
+`PENDING_CONSULTATION` Fallback을 사용하므로 두 경로 모두 LLM을 호출하지
+않는다. 생성 결과는 금지 표현·행동 Validator를 통과해야 하며 안전 위반 시
+결정적 안내로 복귀한다. Provider Schema 오류·거부·구성 오류는 정상 성공으로
+감추지 않고 `503`으로 반환한다. Provider Timeout은 내부 최대 1회 재시도 후
+`504 AI-TIMEOUT-01`, `failure_stage=GENERATING`으로 반환하며 이후 상담 전환은
+Backend 책임이다.
+
+실행 환경에는 값 자체를 Git·문서·로그에 남기지 않고 다음 이름으로 주입한다.
+
+```text
+OPENAI_API_KEY
+AI_LLM_MODEL=gpt-4.1-mini
+AI_VECTOR_DSN
+AI_EMBEDDING_REVISION
+```
+
+실제 Provider 호출이 없는 Fake Client 단위 테스트는 구조·안전 경계 증거이며
+실제 LLM 호출 PASS로 보고하지 않는다.
+
 ## RAG 실행 기준
 
 Local 검색은 `BAAI/bge-m3`의 1024차원 정규화 임베딩과 pgvector Cosine
@@ -183,18 +211,63 @@ Embedding 모델을 한 번 초기화하고 이후 요청이 같은 검색 서�
 Timeout에 포함되지 않는다. `/health` 성공은 모델 Warmup 완료를 뜻하지만 실제
 pgvector Query와 팀 DB 준비 완료까지 보장하는 Readiness 판정은 아니다.
 
-## 기존 Schema에 청크 UPSERT
+## 팀 DB 읽기 전용 Runtime
 
-`build_vector_index`는 `CREATE EXTENSION`이나 `CREATE TABLE`을 실행하지
-않는다. 팀 DB에서는 DB 담당자의 Migration으로 Schema가 준비된 후에만
-승인 청크를 UPSERT한다. 결과는 DB 전체 행 수가 아니라 이번 배치의 청크 ID
-범위로 검증한다.
+팀 DB의 공식 Evidence·Embedding 적재, Crosswalk 적용과 View 게시 책임은
+Backend·Database 영역에 있다. AI 최소 권한 Role은
+`backend_ai_rag_chunks_v1` View만 `SELECT`하며 `build_vector_index`로 팀 DB에
+쓰지 않는다. Backend Migration `0009`·`0010`, 승인 7건 Crosswalk와 View 7행이
+확인된 뒤 다음 이름만 환경변수로 주입한다. 실제 Secret 값은 명령·문서·로그에
+남기지 않는다.
 
 ```powershell
-$env:AI_VECTOR_DSN='<PostgreSQL DSN>'
+$env:OPENAI_API_KEY='<Secret>'
+$env:AI_LLM_MODEL='gpt-4.1-mini'
+$env:AI_VECTOR_DSN='<최소 권한 읽기 전용 DSN>'
+$env:AI_VECTOR_TABLE_NAME='backend_ai_rag_chunks_v1'
 $env:AI_EMBEDDING_REVISION='5617a9f61b028005a4858fdac845db406aefb181'
-.\ai\.venv\Scripts\python.exe -m ai.scripts.build_vector_index
+$env:AI_MODEL_PROVIDER='openai'
+$env:AI_MODEL_NAME='gpt-4.1-mini'
+$env:AI_PROMPT_VERSION='customer_guidance/v2'
+
+.\ai\.venv\Scripts\python.exe -m pytest `
+  ai\tests\integration\test_pgvector_runtime.py -v
+
+.\ai\.venv\Scripts\python.exe -m ai.scripts.verify_local_runtime
+
+.\ai\.venv\Scripts\python.exe -m ai.scripts.smoke_test `
+  --base-url http://127.0.0.1:8001 `
+  --mode local `
+  --expected-result-status SUCCEEDED `
+  --expected-failure-stage NONE `
+  --expected-evidence-id RAG-WPUJAC104DWH-LOW-FLOW-001 `
+  --minimum-evidence-count 1 `
+  --require-verified-evidence `
+  --expected-guidance-message '출수량이 적으면 조리수 또는 다른 수전을 동시에 사용하는지 확인하고 조리수 사용을 멈춘 뒤 출수합니다. 필터 교체 주기를 확인해 필터를 교체하고, 교체 후에도 출수량이 적으면 고객상담센터에 연락합니다. 순간 온수 출수는 냉수와 정수보다 느릴 수 있고 설치 지역 수압이 약해도 출수 속도가 느릴 수 있습니다.'
 ```
+
+팀 DB 통합 테스트는 환경변수 미주입 시 `SKIP`하지 않고 실패한다. 대상 객체가
+정확히 `backend_ai_rag_chunks_v1` View인지, 현재 Role은 SELECT만 가능하고
+INSERT·UPDATE·DELETE·TRUNCATE 권한이 없는지 확인한다. 또한 Transaction
+Read-only, public Schema CREATE 금지와 Backend 원본 사용자·Chunk·Embedding·
+Crosswalk Table의 SELECT/DML 금지까지 검증한다.
+
+`verify_local_runtime`은 실제 Pipeline 내부에서 승인 모델 계열,
+`customer_guidance/v2`, Token 사용량, Low-flow Evidence와 추출형 message 일치를
+확인한다. Secret·DSN·고객 원문은 결과에 출력하지 않는다.
+Backend 통합 Process에도 위 세 AIRun 환경변수를 같은 배포 설정에서 주입하고,
+E2E에서는 저장된 AIRun 값이 `openai`, `gpt-4.1-mini`,
+`customer_guidance/v2`인지 반드시 대조한다. 이 대조 전에는 Backend 수직 Gate를
+PASS로 판정하지 않는다.
+
+마지막 명령은 HTTP 200만으로 PASS하지 않는다. `SUCCEEDED`, 실패 단계 없음,
+예상 승인 Chunk, 공식 HTTPS URL과 페이지 식별자, 고정 입력에서 Prompt v2가
+추출해야 하는 승인 Evidence 원문까지 모두 확인하므로 `FALLBACK` 200이나
+결정적 Fallback 문구는 Local Runtime Gate PASS가 아니다. 실제 모델명·Token은
+Backend AIRun과 AI 구조화 LLM 사용 로그를 같은 Correlation ID로 별도 대조한다.
+
+`build_vector_index`는 아래 Disposable 검증 DB에서만 AI가 직접 적재하는 경로로
+유지한다. 팀 DB에서 View 조회 권한과 적재 권한을 혼합하지 않는다.
 
 ## Disposable pgvector 실증
 

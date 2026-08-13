@@ -99,7 +99,6 @@ interface WaterCareApi {
         @Header("Idempotency-Key") idempotencyKey: String,
         @Body body: SubmitFollowUpAnswersRequestDto,
     ): Response<ApiEnvelope<SubmitFollowUpAnswersResponseDto>>
-
     @POST("api/v1/inquiries/{inquiryId}/request-consultation")
     suspend fun requestConsultation(
         @Path("inquiryId") inquiryId: String,

@@ -1,0 +1,38 @@
+version: 1.0.0
+status: OWNER_BASELINE
+owner: BACKEND_DATABASE
+description: >-
+  Backend가 DANGER_DETECTED 적용 전에 검증하는 Canonical Safety Rule ID
+  원장이다. DB의 danger=TOTAL_STOP 불변식을 유지하며, 충돌 중인 Rule은
+  State Event 적용에서 차단한다.
+codes:
+  - SAFETY-LEAK-001
+  - SAFETY-ELECTRICAL-001
+  - SAFETY-HOT-WATER-001
+  - SAFETY-TEMP-ABNORMAL-001
+rules:
+  - rule_id: SAFETY-LEAK-001
+    active: true
+    risk_level: danger
+    requires_consultation: true
+    allowed_guidance_statuses: [TOTAL_STOP]
+    danger_event_enabled: true
+  - rule_id: SAFETY-ELECTRICAL-001
+    active: true
+    risk_level: danger
+    requires_consultation: true
+    allowed_guidance_statuses: [TOTAL_STOP]
+    danger_event_enabled: true
+  - rule_id: SAFETY-HOT-WATER-001
+    active: true
+    risk_level: danger
+    requires_consultation: true
+    allowed_guidance_statuses: [PARTIAL_STOP]
+    danger_event_enabled: false
+    hold_reason: BACKEND_DANGER_TOTAL_STOP_POLICY_CONFLICT
+  - rule_id: SAFETY-TEMP-ABNORMAL-001
+    active: true
+    risk_level: caution
+    requires_consultation: false
+    allowed_guidance_statuses: [PARTIAL_STOP]
+    danger_event_enabled: false

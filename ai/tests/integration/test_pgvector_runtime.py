@@ -1,9 +1,10 @@
-"""실제 PostgreSQL/pgvector 연결이 제공될 때만 실행하는 통합 검증."""
+"""팀 PostgreSQL/pgvector 읽기 전용 Runtime Gate."""
 
 import os
 from pathlib import Path
 
 import psycopg
+from psycopg import sql
 import pytest
 
 from ai.app.integrations.embedding.embedding_client import BgeM3EmbeddingClient
@@ -13,23 +14,68 @@ from ai.app.retrieval.search.vector_search import VectorSearchService
 from ai.app.retrieval.indexing.index_manifest import IndexManifest
 
 
-pytestmark = pytest.mark.skipif(
-    not os.getenv("AI_VECTOR_DSN") or not os.getenv("AI_EMBEDDING_REVISION"),
-    reason="실제 pgvector 통합 검증 환경이 설정되지 않았습니다.",
+REQUIRED_TEAM_TABLE = "backend_ai_rag_chunks_v1"
+FORBIDDEN_BACKEND_TABLES = (
+    "accounts_user",
+    "knowledge_document_chunk",
+    "knowledge_chunk_embedding",
+    "knowledge_ai_chunk_crosswalk",
 )
 
 
+def _required_environment(name: str) -> str:
+    value = os.getenv(name)
+    if not value:
+        pytest.fail(f"팀 pgvector Gate 필수 환경변수가 없습니다: {name}")
+    return value
+
+
 def test_actual_pgvector_rows_dimension_and_exact_search():
-    dsn = os.environ["AI_VECTOR_DSN"]
-    revision = os.environ["AI_EMBEDDING_REVISION"]
+    dsn = _required_environment("AI_VECTOR_DSN")
+    revision = _required_environment("AI_EMBEDDING_REVISION")
+    table_name = _required_environment("AI_VECTOR_TABLE_NAME")
+    assert table_name == REQUIRED_TEAM_TABLE
+    store = PgVectorStore(dsn, table_name=table_name)
     with psycopg.connect(dsn) as connection, connection.cursor() as cursor:
+        cursor.execute("SHOW default_transaction_read_only")
+        assert cursor.fetchone() == ("on",)
+        cursor.execute(
+            "SELECT has_schema_privilege(current_user, 'public', 'CREATE')"
+        )
+        assert cursor.fetchone() == (False,)
         cursor.execute(
             """
+            SELECT c.relkind,
+                   has_table_privilege(current_user, c.oid, 'SELECT'),
+                   has_table_privilege(current_user, c.oid, 'INSERT'),
+                   has_table_privilege(current_user, c.oid, 'UPDATE'),
+                   has_table_privilege(current_user, c.oid, 'DELETE'),
+                   has_table_privilege(current_user, c.oid, 'TRUNCATE')
+            FROM pg_class AS c
+            JOIN pg_namespace AS n ON n.oid = c.relnamespace
+            WHERE n.nspname = current_schema()
+              AND c.relname = %s
+            """,
+            (table_name,),
+        )
+        assert cursor.fetchone() == ("v", True, False, False, False, False)
+        for backend_table in FORBIDDEN_BACKEND_TABLES:
+            cursor.execute("SELECT to_regclass(%s)", (f"public.{backend_table}",))
+            relation = cursor.fetchone()[0]
+            assert relation is not None
+            for privilege in ("SELECT", "INSERT", "UPDATE", "DELETE", "TRUNCATE"):
+                cursor.execute(
+                    "SELECT has_table_privilege(current_user, %s, %s)",
+                    (f"public.{backend_table}", privilege),
+                )
+                assert cursor.fetchone() == (False,)
+        cursor.execute(
+            sql.SQL("""
             SELECT COUNT(*), COUNT(DISTINCT chunk_id),
                    MIN(vector_dims(embedding)), MAX(vector_dims(embedding))
-            FROM ai_rag_chunks
+            FROM {}
             WHERE chunk_id LIKE 'RAG-WPUJAC104DWH-%'
-            """
+            """).format(sql.Identifier(store.table_name))
         )
         assert cursor.fetchone() == (7, 7, 1024, 1024)
 
@@ -39,7 +85,7 @@ def test_actual_pgvector_rows_dimension_and_exact_search():
     assert manifest is not None
     service = VectorSearchService(
         BgeM3EmbeddingClient(model_revision=revision),
-        PgVectorStore(dsn),
+        store,
         index_manifest=manifest,
     )
     results = service.search(RetrievalQuery(
@@ -55,4 +101,7 @@ def test_actual_pgvector_rows_dimension_and_exact_search():
     assert all(result.page_refs for result in results)
     assert all(result.embedding_model_revision == revision for result in results)
     assert all(result.index_version == manifest.index_version for result in results)
-    assert all(result.chunk_set_sha256 == manifest.chunk_set_sha256 for result in results)
+    assert all(
+        result.chunk_set_sha256.casefold() == manifest.chunk_set_sha256.casefold()
+        for result in results
+    )

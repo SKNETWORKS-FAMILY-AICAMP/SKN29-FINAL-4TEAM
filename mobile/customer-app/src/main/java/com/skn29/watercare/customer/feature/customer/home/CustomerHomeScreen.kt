@@ -20,18 +20,10 @@ import com.skn29.watercare.core.repository.FakeCustomerCareRepository
 import com.skn29.watercare.core.ui.components.CustomerReferencePalette
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LoadingBlock
-import com.skn29.watercare.core.ui.components.ReferenceActionItem
-import com.skn29.watercare.core.ui.components.ReferenceActionRow
 import com.skn29.watercare.core.ui.components.ReferenceBottomItem
-import com.skn29.watercare.core.ui.components.ReferenceCompactBanner
 import com.skn29.watercare.core.ui.components.ReferenceDashboardScaffold
-import com.skn29.watercare.core.ui.components.ReferenceDetailCard
 import com.skn29.watercare.core.ui.components.ReferenceGlassButton
 import com.skn29.watercare.core.ui.components.ReferenceGlassPanel
-import com.skn29.watercare.core.ui.components.ReferenceHeroCard
-import com.skn29.watercare.core.ui.components.ReferenceSectionHeader
-import com.skn29.watercare.core.ui.components.ReferenceStatusItem
-import com.skn29.watercare.core.ui.components.ReferenceStatusRow
 import com.skn29.watercare.customer.BuildConfig
 import com.skn29.watercare.customer.R
 import com.skn29.watercare.customer.common.VmFactory
@@ -64,6 +56,7 @@ fun CustomerHomeScreen(
             )
         }
     )
+
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     CustomerHomeContent(
@@ -71,8 +64,9 @@ fun CustomerHomeScreen(
         onStartIntake = onStartIntake,
         onOpenGuidance = onOpenGuidance,
         onRetry = viewModel::load,
-        onLogout = { viewModel.logout(onLogout) },
-        onSelectSubscription = viewModel::selectSubscription,
+        onLogout = {
+            viewModel.logout(onLogout)
+        },
         showDeveloperTools = BuildConfig.SHOW_DEVELOPER_TOOLS,
     )
 }
@@ -90,290 +84,80 @@ fun CustomerHomeContent(
     val palette = CustomerReferencePalette
 
     ReferenceDashboardScaffold(
-        title = "정수기 딜러",
-        roleLabel = "고객용",
+        title = "WaterBridge",
+        roleLabel = "WaterBridge Home Service",
         palette = palette,
         backgroundRes = R.drawable.water_splash_customer_r19,
-        backgroundImageAlpha = 0.72f,
+        backgroundImageAlpha = 0.30f,
+        brandLogoRes = R.drawable.waterbridge_brand_logo,
         bottomItems = listOf(
-    ReferenceBottomItem(
-        iconRes = R.drawable.ref_home,
-        label = "홈",
-        selected = true,
-    ),
-    ReferenceBottomItem(
-        iconRes = R.drawable.ref_care,
-        label = "케어",
-        enabled = false,
-    ),
-    ReferenceBottomItem(
-        iconRes = R.drawable.ref_notice,
-        label = "문의",
-        enabled = false,
-    ),
-    ReferenceBottomItem(
-        iconRes = R.drawable.ref_profile,
-        label = "마이",
-        enabled = false,
-    ),
-),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_home,
+                label = "홈",
+                selected = true,
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_care,
+                label = "케어",
+                enabled = false,
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_notice,
+                label = "문의",
+                enabled = false,
+            ),
+            ReferenceBottomItem(
+                iconRes = R.drawable.ref_profile,
+                label = "마이",
+                enabled = false,
+            ),
+        ),
     ) {
         if (state.loading) {
-            LoadingBlock()
+            LoadingBlock("정수기 정보를 불러오고 있어요")
         }
 
-        state.error?.let {
-            ErrorCard(it, onRetry = onRetry)
+        state.error?.let { message ->
+            ErrorCard(
+                message = customerHomeErrorMessage(message),
+                onRetry = onRetry,
+            )
         }
-
-        SubscriptionSelector(
-            state = state,
-            onSelect = onSelectSubscription,
-        )
 
         state.home?.let { home ->
-            val displayName = state.user?.displayName
-                ?.takeIf(String::isNotBlank)
-                ?.removeSuffix("님")
-                ?: "합성 고객 001"
-            val activeInquiry = home.activeInquiry
+            CustomerCareHeroBanner(
+                home = home,
+                intakeAvailable = state.intakeAvailable,
+                intakeUnavailableReason = state.intakeUnavailableReason,
+                onStartIntake = onStartIntake,
+                onOpenInquiry = { inquiryId ->
+                    onOpenGuidance(
+                        inquiryId,
+                        MockScenario.NORMAL,
+                    )
+                },
+            )
+            CustomerProductInfoCard(
+                home = home,
+            )
+
             val fixtureGuidanceAvailable =
                 state.offlinePreview ||
                     state.customerCareMode == CustomerCareMode.FAKE
-            val remoteGuidanceAvailable =
-                state.customerCareMode == CustomerCareMode.REMOTE &&
-                    activeInquiry != null
-            val guidanceAvailable =
-                fixtureGuidanceAvailable || remoteGuidanceAvailable
-            val previewLabel = when {
-                state.offlinePreview ->
-                    "오프라인 UI 미리보기"
-                state.customerCareMode == CustomerCareMode.FAKE ->
-                    "Demo Mock"
-                else ->
-                    "실제 구독·문의 API"
-            }
 
-            ReferenceHeroCard(
-                greeting = if (
-                    displayName.contains("합성", ignoreCase = true) ||
-                    displayName.contains("SYN", ignoreCase = true)
-                ) {
-                    "고객님,\n안녕하세요"
-                } else {
-                    "${displayName}님,\n안녕하세요"
-                },
-                subtitle = "오늘도 깨끗한 물 관리를 도와드릴게요.",
-                metricLabel = "",
-                metricValue = "",
-                metricUnit = "",
-                progress = 0f,
-                footnote = "",
-                imageRes = R.drawable.dashboard_purifier,
-                palette = palette,
-                roleLabel = "고객용",
-                imageEmphasis = 1.12f,
-            )
-
-            ReferenceSectionHeader(
-                title = "내 정수기 상태",
-                trailing = "한눈에 확인  ›",
-                palette = palette,
-            )
-            ReferenceStatusRow(
-                items = listOf(
-                    ReferenceStatusItem(
-                        iconRes = R.drawable.ref_filter,
-                        label = "정수 상태",
-                        value = "확인 완료",
-                    ),
-                    ReferenceStatusItem(
-                        iconRes = R.drawable.ref_temperature,
-                        label = "다음 관리",
-                        value = home.nextCareOn,
-                    ),
-                    ReferenceStatusItem(
-                        iconRes = R.drawable.ref_power,
-                        label = "최근 진단",
-                        value = activeInquiry?.statusLabel ?: "확인 완료",
-                    ),
-                ),
-                palette = palette,
-            )
-
-            ReferenceSectionHeader(
-                title = "빠른 서비스",
-                trailing = "전체보기  ›",
-                palette = palette,
-            )
-            ReferenceActionRow(
-                items = listOf(
-                    ReferenceActionItem(
-                        iconRes = R.drawable.ref_intake,
-                        label = "증상 접수",
-                        subtitle = if (state.intakeAvailable) {
-                            "신청하기"
-                        } else {
-                            "설정 필요"
-                        },
-                        enabled = state.intakeAvailable,
-                        testTag = "startIntake",
-                        onClick = {
-                            onStartIntake(home.subscriptionId)
-                        },
-                    ),
-                    ReferenceActionItem(
-                        iconRes = R.drawable.ref_care,
-                        label = "AI 자가진단",
-                        subtitle = if (guidanceAvailable) {
-                            "문제 확인하기"
-                        } else {
-                            "진행 중 문의 없음"
-                        },
-                        enabled = guidanceAvailable,
-                        onClick = {
-                            onOpenGuidance(
-                                activeInquiry?.inquiryId
-                                    ?: home.subscriptionId,
-                                MockScenario.NORMAL,
-                            )
-                        },
-                    ),
-                    ReferenceActionItem(
-                        iconRes = R.drawable.ref_schedule,
-                        label = "방문 예약 조회",
-                        subtitle = "예약 확인",
-                        enabled = false,
-                        onClick = {},
-                    ),
-                    ReferenceActionItem(
-                        iconRes = R.drawable.ref_product,
-                        label = "제품 정보",
-                        subtitle = "제품 안내",
-                        enabled = false,
-                        onClick = {},
-                    ),
-                ),
-                palette = palette,
-            )
-
-            ReferenceSectionHeader(
-                title = "내 제품",
-                palette = palette,
-            )
-            ReferenceDetailCard(
-                imageRes = R.drawable.dashboard_purifier,
-                title = home.product.modelName,
-                badge = home.product.managementTypeLabel,
-                lines = listOf(
-                    "모델명  ${home.product.modelCode}",
-                    "식별번호  ${home.product.serialNo}",
-                    "다음 관리  ${home.nextCareOn}",
-                ),
-                status = "현재 정보 확인 완료",
-                palette = palette,
-                primaryActionLabel = "",
-                secondaryActionLabel = "",
-                onPrimaryAction = {},
-                onSecondaryAction = {},
-                primaryActionEnabled = false,
-                secondaryActionEnabled = false,
-            )
-
-            ReferenceSectionHeader(
-                title = "케어 & 지원 서비스",
-                trailing = "더보기 ›",
-                palette = palette,
-            )
-            ReferenceActionRow(
-                items = listOf(
-                    ReferenceActionItem(
-                        iconRes = R.drawable.ref_support,
-                        label = "고객센터",
-                        subtitle = "준비 중",
-                        enabled = false,
-                        onClick = {},
-                    ),
-                    ReferenceActionItem(
-                        iconRes = R.drawable.ref_selfcheck,
-                        label = "자가 점검",
-                        subtitle = "준비 중",
-                        enabled = false,
-                        onClick = {},
-                    ),
-                    ReferenceActionItem(
-                        iconRes = R.drawable.ref_benefit,
-                        label = "보증/혜택",
-                        subtitle = "준비 중",
-                        enabled = false,
-                        onClick = {},
-                    ),
-                    ReferenceActionItem(
-                        iconRes = R.drawable.ref_event,
-                        label = "이벤트",
-                        subtitle = "준비 중",
-                        enabled = false,
-                        onClick = {},
-                    ),
-                ),
-                palette = palette,
-            )
-
-            activeInquiry?.let { active ->
+            if (
+                showDeveloperTools &&
+                fixtureGuidanceAvailable
+            ) {
                 ReferenceGlassPanel(
                     palette = palette,
-                    strong = true,
                 ) {
-                    Text(
-                        "진행 중인 문의",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Black,
-                    )
-                    Text(
-                        active.inquiryCode,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.ExtraBold,
-                    )
-                    Text(
-                        active.statusLabel,
-                        color = palette.accent,
-                    )
-                    ReferenceGlassButton(
-                        text = if (remoteGuidanceAvailable) {
-                            "실제 AI 안내 확인"
-                        } else {
-                            "안내 미리보기"
-                        },
-                        palette = palette,
-                        accent = true,
-                        enabled = guidanceAvailable,
-                        onClick = {
-                            onOpenGuidance(
-                                active.inquiryId,
-                                MockScenario.NORMAL,
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            }
-
-            state.intakeUnavailableReason?.let { reason ->
-                ReferenceCompactBanner(
-                    title = "연결 상태 안내",
-                    message = reason,
-                    palette = palette,
-                    warning = true,
-                )
-            }
-
-            if (showDeveloperTools && fixtureGuidanceAvailable) {
-                ReferenceGlassPanel(palette = palette) {
                     Text(
                         "개발 검증 도구",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Black,
                     )
+
                     Column(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
@@ -383,7 +167,7 @@ fun CustomerHomeContent(
                                 palette = palette,
                                 onClick = {
                                     onOpenGuidance(
-                                        activeInquiry?.inquiryId
+                                        home.activeInquiry?.inquiryId
                                             ?: home.subscriptionId,
                                         scenario,
                                     )
@@ -410,6 +194,17 @@ fun CustomerHomeContent(
     }
 }
 
+private fun customerHomeErrorMessage(
+    message: String,
+): String = when {
+    message.contains("Backend", ignoreCase = true) ||
+        message.contains("API", ignoreCase = true) ||
+        message.contains("Remote", ignoreCase = true) ->
+        "정수기 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요."
+
+    else -> message
+}
+
 private fun scenarioLabel(
     scenario: MockScenario,
 ): String = when (scenario) {
@@ -417,7 +212,7 @@ private fun scenarioLabel(
     MockScenario.CAUTION -> "주의 안내"
     MockScenario.DANGER -> "위험 누수"
     MockScenario.NO_EVIDENCE -> "근거 없음"
-    MockScenario.BACKEND_PROCESSING -> "Backend 처리 중"
+    MockScenario.BACKEND_PROCESSING -> "처리 중"
     MockScenario.AI_FAILURE -> "AI 실패"
     MockScenario.NETWORK_FAILURE -> "네트워크 실패"
 }

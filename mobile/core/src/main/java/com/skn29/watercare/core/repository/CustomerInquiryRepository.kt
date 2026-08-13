@@ -27,7 +27,12 @@ interface CustomerInquiryRepository {
     suspend fun requestConsultation(
         inquiryId: String,
         stateVersion: Int,
-    ): ApiResult<RequestConsultationResult>
+    ): ApiResult<RequestConsultationResult> =
+        ApiResult.Failure(
+            code = "REQUEST_CONSULTATION_UNAVAILABLE",
+            message = "상담 요청 기능을 사용할 수 없습니다.",
+            retryable = false,
+        )
 }
 
 class RemoteCustomerInquiryRepository(
@@ -166,10 +171,12 @@ class RemoteCustomerInquiryRepository(
                 }
             }
             is ApiResult.Failure -> {
-                if (
-                    result.code == "DUPLICATE-EVENT-01" ||
-                    result.code == "STATE-CONFLICT-01"
-                ) {
+                val preserveForSafeRetry =
+                    result.retryable &&
+                        result.conflict == null &&
+                        result.code != "DUPLICATE-EVENT-01"
+
+                if (!preserveForSafeRetry) {
                     consultationIdempotencyKeys.abandon(operation)
                 }
             }

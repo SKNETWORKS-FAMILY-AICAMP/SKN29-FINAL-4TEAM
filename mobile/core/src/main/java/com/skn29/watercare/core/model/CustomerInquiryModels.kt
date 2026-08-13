@@ -225,7 +225,6 @@ fun SubmitFollowUpAnswersResponseDto.toDomain(): SubmitFollowUpAnswersResult =
         allowedActions = allowedActions,
         idempotentReplay = idempotentReplay,
     )
-
 fun RequestConsultationResponseDto.toDomain(): RequestConsultationResult =
     RequestConsultationResult(
         message = message,

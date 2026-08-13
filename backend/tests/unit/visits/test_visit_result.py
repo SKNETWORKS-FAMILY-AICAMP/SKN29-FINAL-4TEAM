@@ -1,11 +1,14 @@
 """VisitResult schema, integrity, and Care bridge coverage."""
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
+from threading import Event
 from uuid import UUID, uuid4
 
 import pytest
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, connection, transaction
+from django.db import IntegrityError, connection, connections, transaction
+from django.db.utils import OperationalError
 from django.db.models.deletion import ProtectedError
 
 from apps.accounts.models import CustomerProfile, User
@@ -127,6 +130,87 @@ def result_values(visit: Visit, sequence: int) -> dict:
     }
 
 
+def create_result_in_open_transaction(
+    *,
+    visit_pk: int,
+    submitter_pk: int,
+    inserted: Event,
+    release: Event,
+) -> int:
+    """Create a result and hold its parent KEY SHARE lock until released."""
+
+    connections.close_all()
+    try:
+        with transaction.atomic():
+            result = VisitResult.objects.create(
+                visit_id=visit_pk,
+                inspection_summary="Concurrent inspection summary",
+                action_summary="Concurrent action summary",
+                resolved_on_site=True,
+                revisit_required=False,
+                submitted_by_id=submitter_pk,
+                idempotency_key=f"visit-result-concurrent-{uuid4()}",
+            )
+            inserted.set()
+            if not release.wait(timeout=10):
+                raise TimeoutError("Result transaction release timed out")
+        return result.pk
+    finally:
+        connections.close_all()
+
+
+def reassign_with_short_lock_timeout(
+    *,
+    visit_pk: int,
+    technician_pk: int,
+) -> str:
+    """Attempt reassignment without waiting indefinitely for the guard lock."""
+
+    connections.close_all()
+    try:
+        try:
+            with transaction.atomic():
+                with connections["default"].cursor() as cursor:
+                    cursor.execute("SET LOCAL lock_timeout = '750ms'")
+                Visit.objects.filter(pk=visit_pk).update(
+                    technician_id=technician_pk
+                )
+        except OperationalError as exc:
+            if getattr(exc.__cause__, "sqlstate", None) == "55P03":
+                return "LOCK_TIMEOUT"
+            raise
+        return "UPDATED"
+    finally:
+        connections.close_all()
+
+
+def insert_result_for_submitter(
+    *,
+    visit_pk: int,
+    submitter_pk: int,
+) -> str:
+    """Insert on a separate connection and report the guard decision."""
+
+    connections.close_all()
+    try:
+        try:
+            with transaction.atomic():
+                VisitResult.objects.create(
+                    visit_id=visit_pk,
+                    inspection_summary="Post-reassignment inspection",
+                    action_summary="Post-reassignment action",
+                    resolved_on_site=True,
+                    revisit_required=False,
+                    submitted_by_id=submitter_pk,
+                    idempotency_key=f"visit-result-after-reassign-{uuid4()}",
+                )
+        except IntegrityError:
+            return "REJECTED"
+        return "CREATED"
+    finally:
+        connections.close_all()
+
+
 def test_visit_result_preserves_contract_fields_and_identifiers():
     visit = create_completed_visit(1)
     result = VisitResult.objects.create(**result_values(visit, 1))
@@ -232,21 +316,44 @@ def test_existing_care_uuid_bridge_accepts_result_public_id():
     assert bridge.is_relation is False
 
 
-def test_postgresql_composite_fk_exists_with_bigint_columns():
+def test_postgresql_submitter_guard_exists_with_bigint_columns():
     if connection.vendor != "postgresql":
         pytest.skip("PostgreSQL structural assertion")
 
     with connection.cursor() as cursor:
         cursor.execute(
             """
-            SELECT pg_get_constraintdef(oid)
+            SELECT 1
             FROM pg_constraint
             WHERE conname = %s
               AND conrelid = 'field_service_visit_result'::regclass
             """,
             ["fk_visit_result_assigned_technician"],
         )
-        definition = cursor.fetchone()
+        legacy_constraint = cursor.fetchone()
+        cursor.execute(
+            """
+            SELECT trigger.tgenabled
+            FROM pg_trigger trigger
+            WHERE trigger.tgname = %s
+              AND trigger.tgrelid = 'field_service_visit_result'::regclass
+              AND NOT trigger.tgisinternal
+            """,
+            ["trg_visit_result_submitter_assignment"],
+        )
+        trigger = cursor.fetchone()
+        cursor.execute(
+            """
+            SELECT 1
+            FROM pg_proc procedure
+            JOIN pg_namespace namespace
+              ON namespace.oid = procedure.pronamespace
+            WHERE procedure.proname = %s
+              AND namespace.nspname = current_schema()
+            """,
+            ["check_visit_result_submitter_assignment"],
+        )
+        function = cursor.fetchone()
         cursor.execute(
             """
             SELECT column_name, data_type
@@ -263,12 +370,9 @@ def test_postgresql_composite_fk_exists_with_bigint_columns():
         )
         column_types = dict(cursor.fetchall())
 
-    assert definition is not None
-    assert "FOREIGN KEY (visit_id, submitted_by_id)" in definition[0]
-    assert (
-        "REFERENCES field_service_visit(id, technician_id)"
-        in definition[0]
-    )
+    assert legacy_constraint is None
+    assert trigger == ("O",)
+    assert function == (1,)
     assert column_types == {
         "id": "bigint",
         "public_id": "uuid",
@@ -277,9 +381,9 @@ def test_postgresql_composite_fk_exists_with_bigint_columns():
     }
 
 
-def test_postgresql_composite_fk_rejects_unassigned_technician():
+def test_postgresql_submitter_guard_rejects_unassigned_technician():
     if connection.vendor != "postgresql":
-        pytest.skip("PostgreSQL composite FK assertion")
+        pytest.skip("PostgreSQL submitter guard assertion")
 
     visit = create_completed_visit(9)
     other_technician = create_technician(99)
@@ -288,3 +392,114 @@ def test_postgresql_composite_fk_rejects_unassigned_technician():
 
     with pytest.raises(IntegrityError), transaction.atomic():
         VisitResult.objects.create(**values)
+
+
+def test_postgresql_submitter_guard_preserves_historical_assignment():
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL submitter guard assertion")
+
+    visit = create_completed_visit(10)
+    original_technician = visit.technician
+    result = VisitResult.objects.create(**result_values(visit, 10))
+    replacement_technician = create_technician(100)
+
+    visit.technician = replacement_technician
+    visit.save(update_fields=["technician", "updated_at"])
+    result.refresh_from_db()
+
+    assert visit.technician == replacement_technician
+    assert result.submitted_by == original_technician
+    result.full_clean()
+
+    result.submitted_by = replacement_technician
+    with pytest.raises(ValidationError) as error:
+        result.full_clean()
+    assert "submitted_by" in error.value.message_dict
+
+    with pytest.raises(IntegrityError), transaction.atomic():
+        result.save(update_fields=["submitted_by", "updated_at"])
+
+
+def test_existing_result_validation_uses_historical_submission_context():
+    visit = create_completed_visit(11)
+    original_technician = visit.technician
+    result = VisitResult.objects.create(**result_values(visit, 11))
+    replacement_technician = create_technician(110)
+
+    visit.technician = replacement_technician
+    visit.save(update_fields=["technician", "updated_at"])
+
+    result.refresh_from_db()
+    result.full_clean()
+    assert result.submitted_by == original_technician
+
+    result.visit = create_completed_visit(12)
+    with pytest.raises(ValidationError) as error:
+        result.full_clean()
+    assert "visit" in error.value.message_dict
+
+
+@pytest.mark.django_db(transaction=True)
+def test_postgresql_submitter_guard_serializes_insert_and_reassignment():
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL submitter guard concurrency assertion")
+
+    visit = create_completed_visit(13)
+    original_technician = visit.technician
+    replacement_technician = create_technician(130)
+    inserted = Event()
+    release = Event()
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        insert_future = executor.submit(
+            create_result_in_open_transaction,
+            visit_pk=visit.pk,
+            submitter_pk=original_technician.pk,
+            inserted=inserted,
+            release=release,
+        )
+        assert inserted.wait(timeout=10)
+        try:
+            update_future = executor.submit(
+                reassign_with_short_lock_timeout,
+                visit_pk=visit.pk,
+                technician_pk=replacement_technician.pk,
+            )
+            assert update_future.result(timeout=10) == "LOCK_TIMEOUT"
+        finally:
+            release.set()
+        result_pk = insert_future.result(timeout=10)
+
+    Visit.objects.filter(pk=visit.pk).update(
+        technician_id=replacement_technician.pk
+    )
+    result = VisitResult.objects.get(pk=result_pk)
+    visit.refresh_from_db()
+
+    assert visit.technician == replacement_technician
+    assert result.submitted_by == original_technician
+
+
+@pytest.mark.django_db(transaction=True)
+def test_postgresql_submitter_guard_rejects_old_submitter_after_reassignment():
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL submitter guard concurrency assertion")
+
+    visit = create_completed_visit(14)
+    original_technician = visit.technician
+    replacement_technician = create_technician(140)
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        assert executor.submit(
+            reassign_with_short_lock_timeout,
+            visit_pk=visit.pk,
+            technician_pk=replacement_technician.pk,
+        ).result(timeout=10) == "UPDATED"
+        result = executor.submit(
+            insert_result_for_submitter,
+            visit_pk=visit.pk,
+            submitter_pk=original_technician.pk,
+        ).result(timeout=10)
+
+    assert result == "REJECTED"
+    assert not VisitResult.objects.filter(visit=visit).exists()
