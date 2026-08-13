@@ -9,10 +9,12 @@ from uuid import uuid4
 
 import httpx
 import pytest
+from django.test import override_settings
 from django.db import IntegrityError
 
 from apps.accounts.models import CustomerProfile, User
 from apps.audit.models import AIRun
+from apps.evidence.models import EvidenceLink
 from apps.inquiries.models import (
     FollowUpAnswer,
     Guidance,
@@ -180,7 +182,57 @@ def test_safe_result_is_persisted_but_held_without_verified_evidence():
     assert inquiry.state_version == 2
     assert inquiry.risk_level_code == Inquiry.RiskLevel.GENERAL
     assert inquiry.evidence_ids == []
+    assert inquiry.evidence_mode == Inquiry.EvidenceMode.PARTIAL_EVIDENCE
+    assert inquiry.requires_fallback is True
     assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
+    http_client.close()
+
+
+def test_evidence_verifier_failure_is_fail_closed_without_losing_ai_result():
+    inquiry = create_inquiry(101)
+    client, http_client, _calls = make_client()
+
+    def unavailable_verifier(_references, _inquiry):
+        raise RuntimeError("synthetic verifier unavailable")
+
+    outcome = analyze(
+        inquiry,
+        client,
+        evidence_verifier=unavailable_verifier,
+    )
+
+    inquiry.refresh_from_db()
+    assert outcome.status == AIRun.Status.SUCCEEDED
+    assert outcome.event_applied is None
+    assert outcome.pending_reason == "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
+    assert inquiry.evidence_ids == []
+    assert inquiry.requires_fallback is True
+    assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
+    assert Guidance.objects.filter(inquiry=inquiry).count() == 1
+    assert EvidenceLink.objects.filter(inquiry=inquiry).count() == 0
+    http_client.close()
+
+
+@override_settings(
+    AI_MODEL_PROVIDER="openai",
+    AI_MODEL_NAME="gpt-4.1-mini",
+    AI_PROMPT_VERSION="e2e-baseline-v1",
+)
+def test_airun_persists_runtime_identity_from_backend_settings():
+    inquiry = create_inquiry(102)
+    client, http_client, _calls = make_client()
+
+    outcome = analyze(inquiry, client)
+
+    run = AIRun.objects.get(public_id=outcome.ai_run_id)
+    assert run.model_provider == "openai"
+    assert run.model_name == "gpt-4.1-mini"
+    assert run.prompt_version == "e2e-baseline-v1"
+    assert run.model_config == {
+        "mode": "local",
+        "timeout_seconds": 30.0,
+        "backend_max_retries": 0,
+    }
     http_client.close()
 
 
@@ -234,7 +286,7 @@ def test_cancel_during_http_prevents_late_ai_terminal_overwrite(upstream_status)
     http_client.close()
 
 
-def test_verified_evidence_allows_safe_guidance_system_transition():
+def test_injected_evidence_id_cannot_bypass_backend_mapping():
     inquiry = create_inquiry(2)
     client, http_client, _calls = make_client()
 
@@ -246,18 +298,15 @@ def test_verified_evidence_allows_safe_guidance_system_transition():
         ],
     )
 
-    assert outcome.event_applied == "SAFE_GUIDANCE_READY"
-    assert outcome.pending_reason is None
+    assert outcome.event_applied is None
+    assert outcome.pending_reason == "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
     inquiry.refresh_from_db()
-    assert inquiry.status_code == Inquiry.Status.AI_GUIDANCE
-    assert inquiry.state_version == 3
-    assert inquiry.evidence_mode == Inquiry.EvidenceMode.EXACT_MODEL
-    assert len(inquiry.evidence_ids) == 1
-    history = TransitionHistory.objects.get(inquiry=inquiry)
-    assert history.event_code == "SAFE_GUIDANCE_READY"
-    assert history.actor is None
-    assert history.changed_by_type_code == TransitionHistory.ChangedByType.SYSTEM
-    assert history.state_version == 3
+    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
+    assert inquiry.state_version == 2
+    assert inquiry.evidence_mode == Inquiry.EvidenceMode.PARTIAL_EVIDENCE
+    assert inquiry.evidence_ids == []
+    assert EvidenceLink.objects.filter(inquiry=inquiry).count() == 0
+    assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 0
     http_client.close()
 
 
@@ -336,7 +385,7 @@ def test_followup_questions_are_saved_without_advancing_state():
     http_client.close()
 
 
-def test_danger_result_is_held_until_matched_safety_rule_ids_exist():
+def test_registered_danger_rules_apply_consultation_required_transition():
     inquiry = create_inquiry(10)
 
     def danger(response: dict, request: dict) -> dict:
@@ -362,15 +411,17 @@ def test_danger_result_is_held_until_matched_safety_rule_ids_exist():
     outcome = analyze(inquiry, client)
 
     assert outcome.event_candidate == "DANGER_DETECTED"
-    assert outcome.event_applied is None
-    assert outcome.pending_reason == "MATCHED_SAFETY_RULE_IDS_REQUIRED"
+    assert outcome.event_applied == "DANGER_DETECTED"
+    assert outcome.pending_reason is None
     assessment = SymptomAssessment.objects.get(inquiry=inquiry)
     assert assessment.risk_level_code == SymptomAssessment.RiskLevel.DANGER
     assert assessment.requires_consultation is True
     inquiry.refresh_from_db()
-    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
-    assert inquiry.state_version == 2
-    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 3
+    history = TransitionHistory.objects.get(inquiry=inquiry)
+    assert history.event_code == "DANGER_DETECTED"
+    assert history.state_version == 3
     http_client.close()
 
 

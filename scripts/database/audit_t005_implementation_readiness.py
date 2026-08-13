@@ -28,6 +28,16 @@ REQUIRED_POSTGRES_ENV_KEYS = {
     "POSTGRES_PORT",
 }
 APPROVED_RUNTIME_SUPPORT_TABLES = {
+    "knowledge_ai_chunk_crosswalk": (
+        "Verified one-to-one AI canonical chunk to Backend evidence UUID "
+        "mapping; runtime AI evidence support outside the immutable "
+        "32-table domain contract."
+    ),
+    "knowledge_ai_chunk_crosswalk_page": (
+        "Reviewed multi-page provenance for AI canonical chunk mappings; "
+        "runtime AI evidence support outside the immutable 32-table domain "
+        "contract."
+    ),
     "accounts_account_audit_event": (
         "Append-only synthetic-account lifecycle audit ledger for T-017C; "
         "runtime security support outside the immutable 32-table domain contract."
