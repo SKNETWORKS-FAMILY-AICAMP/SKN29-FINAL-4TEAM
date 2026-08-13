@@ -39,6 +39,14 @@ class GuidanceViewModel(
     )
     val followUpState: StateFlow<FollowUpUiState> = _followUpState.asStateFlow()
 
+    private val _consultationState =
+        MutableStateFlow<ConsultationRequestUiState>(
+            ConsultationRequestUiState.Idle
+        )
+    val consultationState:
+        StateFlow<ConsultationRequestUiState> =
+        _consultationState.asStateFlow()
+
     private var lastCancelReasonCode: String = "CUSTOMER_REQUEST"
     private var lastCancelReasonDetail: String? = null
 
@@ -95,6 +103,256 @@ class GuidanceViewModel(
     }
 
     fun retryFollowUpLoad() = loadFollowUp()
+
+    fun requestConsultation() {
+        if (
+            _consultationState.value is
+                ConsultationRequestUiState.Requesting
+        ) {
+            return
+        }
+
+        val remote = customerInquiryRepository
+        if (remote == null) {
+            _consultationState.value =
+                ConsultationRequestUiState.Error(
+                    message =
+                        "상담 요청 기능을 사용할 수 없습니다.",
+                    retryable = false,
+                )
+            return
+        }
+
+        viewModelScope.launch {
+            _consultationState.value =
+                ConsultationRequestUiState.Requesting
+
+            when (
+                val latest = remote.snapshot(inquiryId)
+            ) {
+                is ApiResult.Failure -> {
+                    _consultationState.value =
+                        ConsultationRequestUiState.Error(
+                            message = latest.message,
+                            retryable = latest.retryable,
+                        )
+                }
+
+                is ApiResult.Success -> {
+                    val snapshot = latest.value
+                    replaceFollowUpSnapshot(snapshot)
+
+                    val allowed =
+                        snapshot.allowedActions.any {
+                            it.normalizedCode ==
+                                InquiryActionLabels
+                                    .REQUEST_CONSULTATION
+                        }
+
+                    if (!allowed) {
+                        _consultationState.value =
+                            ConsultationRequestUiState.Error(
+                                message =
+                                    "현재 문의 상태에서는 상담을 요청할 수 없습니다.",
+                                retryable = false,
+                            )
+                    } else {
+                        performConsultationRequest(
+                            remote = remote,
+                            snapshot = snapshot,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun retryConsultationRequest() =
+        requestConsultation()
+
+    fun retryConsultationAfterConflict() {
+        val current =
+            _consultationState.value
+                as? ConsultationRequestUiState.Conflict
+                ?: return
+
+        if (!current.canRetry) {
+            return
+        }
+
+        val remote = customerInquiryRepository
+            ?: return
+
+        viewModelScope.launch {
+            _consultationState.value =
+                ConsultationRequestUiState.Requesting
+
+            performConsultationRequest(
+                remote = remote,
+                snapshot = current.snapshot,
+            )
+        }
+    }
+
+    private suspend fun performConsultationRequest(
+        remote: CustomerInquiryRepository,
+        snapshot: CustomerInquirySnapshot,
+    ) {
+        when (
+            val result = remote.requestConsultation(
+                inquiryId = inquiryId,
+                stateVersion = snapshot.stateVersion,
+            )
+        ) {
+            is ApiResult.Success -> {
+                applyConsultationSuccess(
+                    remote = remote,
+                    result = result.value,
+                )
+            }
+
+            is ApiResult.Failure -> {
+                applyConsultationFailure(
+                    remote = remote,
+                    failure = result,
+                )
+            }
+        }
+    }
+
+    private suspend fun applyConsultationSuccess(
+        remote: CustomerInquiryRepository,
+        result:
+            com.skn29.watercare.core.model.RequestConsultationResult,
+    ) {
+        if (result.inquiryId != inquiryId) {
+            _consultationState.value =
+                ConsultationRequestUiState.Error(
+                    message =
+                        "상담 요청 응답의 문의 정보가 일치하지 않습니다.",
+                    retryable = true,
+                )
+            return
+        }
+
+        when (
+            val refreshed = remote.snapshot(inquiryId)
+        ) {
+            is ApiResult.Failure -> {
+                _consultationState.value =
+                    ConsultationRequestUiState.Error(
+                        message =
+                            "상담 요청은 처리됐지만 최신 상태를 다시 확인하지 못했습니다. " +
+                                refreshed.message,
+                        retryable = refreshed.retryable,
+                    )
+            }
+
+            is ApiResult.Success -> {
+                val latest = refreshed.value
+                replaceFollowUpSnapshot(latest)
+
+                _consultationState.value =
+                    ConsultationRequestUiState.Success(
+                        message = result.message,
+                        snapshot = latest,
+                        idempotentReplay =
+                            result.idempotentReplay,
+                    )
+            }
+        }
+    }
+
+    private suspend fun applyConsultationFailure(
+        remote: CustomerInquiryRepository,
+        failure: ApiResult.Failure,
+    ) {
+        val shouldRefresh =
+            failure.httpStatus == 409 ||
+                failure.conflict != null ||
+                failure.code == "DUPLICATE-EVENT-01"
+
+        if (!shouldRefresh) {
+            _consultationState.value =
+                ConsultationRequestUiState.Error(
+                    message = failure.message,
+                    retryable = failure.retryable,
+                )
+            return
+        }
+
+        when (
+            val refreshed = remote.snapshot(inquiryId)
+        ) {
+            is ApiResult.Failure -> {
+                _consultationState.value =
+                    ConsultationRequestUiState.Error(
+                        message = refreshed.message,
+                        retryable = refreshed.retryable,
+                    )
+            }
+
+            is ApiResult.Success -> {
+                val latest = refreshed.value
+                replaceFollowUpSnapshot(latest)
+
+                if (
+                    failure.code ==
+                        "DUPLICATE-EVENT-01" &&
+                    latest.statusCode in setOf(
+                        "CONSULTATION_REQUIRED",
+                        "CONSULTATION_IN_PROGRESS",
+                    )
+                ) {
+                    _consultationState.value =
+                        ConsultationRequestUiState.Success(
+                            message =
+                                "이미 접수된 상담 요청의 최신 상태를 확인했습니다.",
+                            snapshot = latest,
+                            idempotentReplay = true,
+                        )
+                } else {
+                    _consultationState.value =
+                        ConsultationRequestUiState.Conflict(
+                            message = failure.message,
+                            snapshot = latest,
+                        )
+                }
+            }
+        }
+    }
+
+    private fun replaceFollowUpSnapshot(
+        snapshot: CustomerInquirySnapshot,
+    ) {
+        _followUpState.value =
+            when (val current = _followUpState.value) {
+                is FollowUpUiState.Empty ->
+                    current.copy(snapshot = snapshot)
+
+                is FollowUpUiState.Form ->
+                    current.copy(snapshot = snapshot)
+
+                is FollowUpUiState.Submitting ->
+                    current.copy(snapshot = snapshot)
+
+                is FollowUpUiState.Success ->
+                    current.copy(snapshot = snapshot)
+
+                is FollowUpUiState.Conflict ->
+                    current.copy(snapshot = snapshot)
+
+                is FollowUpUiState.DuplicateConflict ->
+                    current.copy(snapshot = snapshot)
+
+                is FollowUpUiState.Error ->
+                    current.copy(snapshot = snapshot)
+
+                FollowUpUiState.Disabled,
+                FollowUpUiState.Loading ->
+                    current
+            }
+    }
 
     fun updateFollowUpText(questionId: String, value: String) {
         editFollowUpDraft(questionId) { current ->
