@@ -72,39 +72,3 @@
       "404": {$ref: ../components/responses/NotFound.yaml}
       "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
       "500": {$ref: ../components/responses/InternalServerError.yaml}
-
-/me/inquiries/{inquiry_id}/guidance:
-  parameters: *customer_inquiry_path_parameters
-  get:
-    operationId: getMyInquiryGuidance
-    summary: 고객 본인 문의의 최신 AI Guidance 조회
-    description: |
-      스키마 검증을 통과해 저장된 최신 AI Guidance와 현재 문의 상태 및
-      Backend Resolver가 계산한 allowed_actions를 반환한다. Public Evidence
-      Runtime은 이번 P0 범위 밖이므로 evidence는 빈 배열이며 내부 chunk,
-      score, prompt, 저장 경로, AI trace를 노출하지 않는다. Guidance가 아직
-      생성되지 않았거나 AI 실행이 실패한 경우 AI_GUIDANCE_NOT_READY를 반환한다.
-    x-contract-status: CONFIRMED
-    x-runtime-status: IMPLEMENTED
-    x-permission-scope: OWN_INQUIRY
-    security: [{BearerAuth: []}]
-    responses:
-      "200":
-        description: 고객 본인 문의의 최신 검증 완료 AI Guidance
-        headers:
-          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: ../components/schemas/common/ApiResponse.yaml
-                - type: object
-                  properties:
-                    data:
-                      $ref: ../components/schemas/inquiry/CustomerInquiryGuidance.yaml
-      "401": {$ref: ../components/responses/Unauthorized.yaml}
-      "403": {$ref: ../components/responses/Forbidden.yaml}
-      "404": {$ref: ../components/responses/NotFound.yaml}
-      "409": {$ref: ../components/responses/Conflict.yaml}
-      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
-      "500": {$ref: ../components/responses/InternalServerError.yaml}

@@ -97,58 +97,11 @@ fun GuidanceScreen(
     var showCancelDialog by remember { mutableStateOf(false) }
     val actualInquiryCode = submittedInquiryCode.trim()
     val latestInquirySnapshot = followUpState.snapshotOrNull()
-    val guidanceWorkflow = state.workflowSnapshotOrNull(priority = 2)
-    val consultationWorkflow = when (val current = consultationState) {
-        is ConsultationRequestUiState.Success -> WorkflowDisplaySnapshot(
-            statusCode = current.snapshot.statusCode,
-            stateVersion = current.snapshot.stateVersion,
-            allowedActions = current.snapshot.allowedActions,
-            priority = 4,
-        )
-        is ConsultationRequestUiState.Conflict -> WorkflowDisplaySnapshot(
-            statusCode = current.snapshot.statusCode,
-            stateVersion = current.snapshot.stateVersion,
-            allowedActions = current.snapshot.allowedActions,
-            priority = 4,
-        )
-        else -> null
-    }
-    val inquiryWorkflow = latestInquirySnapshot?.let {
-        WorkflowDisplaySnapshot(
-            statusCode = it.statusCode,
-            stateVersion = it.stateVersion,
-            allowedActions = it.allowedActions,
-            priority = 3,
-        )
-    }
-    val submittedWorkflow = submittedStateVersion?.let {
-        WorkflowDisplaySnapshot(
-            statusCode = submittedStatusCode,
-            stateVersion = it,
-            allowedActions = submittedAllowedActions,
-            priority = 1,
-        )
-    }
-    val effectiveWorkflow = listOfNotNull(
-        consultationWorkflow,
-        inquiryWorkflow,
-        guidanceWorkflow,
-        submittedWorkflow,
-    ).maxWithOrNull(
-        compareBy<WorkflowDisplaySnapshot> { it.stateVersion }
-            .thenBy { it.priority }
-    )
-    val effectiveStateVersion = effectiveWorkflow?.stateVersion
-    val effectiveAllowedActions = effectiveWorkflow?.allowedActions.orEmpty()
-    val requestableAllowedActions = if (
-        consultationState is ConsultationRequestUiState.Success
-    ) {
-        effectiveAllowedActions.filterNot {
-            it.normalizedCode == InquiryActionLabels.REQUEST_CONSULTATION
-        }
-    } else {
-        effectiveAllowedActions
-    }
+    val effectiveStateVersion =
+        latestInquirySnapshot?.stateVersion ?: submittedStateVersion
+    val effectiveAllowedActions =
+        latestInquirySnapshot?.allowedActions ?: submittedAllowedActions
+
     WaterCareScreen(title = "문제 해결 안내", onBack = onBack) {
         if (fixturePreview) {
             SectionCard("합성 Fixture 미리보기") {
@@ -161,7 +114,9 @@ fun GuidanceScreen(
         if (actualInquiryCode.isNotEmpty()) {
             SubmissionReceiptCard(
                 inquiryCode = actualInquiryCode,
-                statusCode = effectiveWorkflow?.statusCode,
+                statusCode =
+                    latestInquirySnapshot?.statusCode
+                        ?: submittedStatusCode,
                 stateVersion = effectiveStateVersion,
                 allowedActions = effectiveAllowedActions,
                 idempotentReplay = submittedIdempotentReplay,
@@ -297,7 +252,7 @@ fun GuidanceScreen(
             is GuidanceUiState.Content -> GuidanceContent(
                 guidance = current.guidance.withInquiryCode(
                     actualInquiryCode
-                ).copy(allowedActions = requestableAllowedActions),
+                ),
                 noEvidence = false,
                 onRetry = viewModel::load,
             )
@@ -305,17 +260,13 @@ fun GuidanceScreen(
             is GuidanceUiState.NoEvidence -> GuidanceContent(
                 guidance = current.guidance.withInquiryCode(
                     actualInquiryCode
-                ).copy(allowedActions = requestableAllowedActions),
+                ),
                 noEvidence = true,
                 onRetry = viewModel::load,
             )
 
             is GuidanceUiState.AiFailure -> FailureFallback(
-                title = if (current.stateVersion != null) {
-                    "AI 안내 준비 확인 필요"
-                } else {
-                    "AI 안내 생성 실패"
-                },
+                title = "AI 안내 생성 실패",
                 message = current.message,
                 retryable = current.retryable,
                 onRetry = viewModel::load,
@@ -543,41 +494,6 @@ private fun GuidanceDisplayModel.withInquiryCode(
     submittedInquiryCode.takeIf(String::isNotEmpty)
         ?.let { copy(inquiryCode = it) }
         ?: this
-
-private data class WorkflowDisplaySnapshot(
-    val statusCode: String?,
-    val stateVersion: Int,
-    val allowedActions: List<AllowedAction>,
-    val priority: Int,
-)
-
-private fun GuidanceUiState.workflowSnapshotOrNull(
-    priority: Int,
-): WorkflowDisplaySnapshot? {
-    return when (this) {
-        is GuidanceUiState.Content -> WorkflowDisplaySnapshot(
-            statusCode = guidance.statusCode,
-            stateVersion = guidance.stateVersion,
-            allowedActions = guidance.allowedActions,
-            priority = priority,
-        )
-        is GuidanceUiState.NoEvidence -> WorkflowDisplaySnapshot(
-            statusCode = guidance.statusCode,
-            stateVersion = guidance.stateVersion,
-            allowedActions = guidance.allowedActions,
-            priority = priority,
-        )
-        is GuidanceUiState.AiFailure -> stateVersion?.let { version ->
-            WorkflowDisplaySnapshot(
-                statusCode = statusCode,
-                stateVersion = version,
-                allowedActions = allowedActions,
-                priority = priority,
-            )
-        }
-        else -> null
-    }
-}
 
 @Composable
 private fun SubmissionReceiptCard(
@@ -818,4 +734,10 @@ private fun FailureFallback(
         if (retryable) onRetry else null,
     )
 
+    LiquidGlassButton(
+        text = "상담 요청 준비 중",
+        onClick = {},
+        enabled = false,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }

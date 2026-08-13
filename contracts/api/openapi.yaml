@@ -26,8 +26,6 @@ paths:
     $ref: ./paths/customer-inquiries.yaml#/~1me~1inquiries~1{inquiry_id}
   /me/inquiries/{inquiry_id}/questions:
     $ref: ./paths/customer-inquiries.yaml#/~1me~1inquiries~1{inquiry_id}~1questions
-  /me/inquiries/{inquiry_id}/guidance:
-    $ref: ./paths/customer-inquiries.yaml#/~1me~1inquiries~1{inquiry_id}~1guidance
   /consultant/customer-subscriptions/search:
     $ref: ./paths/consultant-phone-inquiries.yaml#/~1consultant~1customer-subscriptions~1search
   /consultant/phone-inquiries:

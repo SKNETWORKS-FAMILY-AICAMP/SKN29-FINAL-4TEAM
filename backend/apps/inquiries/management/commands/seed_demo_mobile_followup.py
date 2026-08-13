@@ -121,7 +121,7 @@ class Command(BaseCommand):
             model_code=SUPPORTED_PRODUCT_MODEL_CODE,
             defaults={
                 "model_name": "WaterBridge Mobile Smoke 정수기",
-                "generation_code": "D",
+                "generation_code": "DEMO-G1",
                 "manufacturer": "SK매직",
                 "launched_on": date(2026, 1, 1),
                 "discontinued_on": None,
@@ -139,9 +139,6 @@ class Command(BaseCommand):
             raise CommandError(
                 f"{SUPPORTED_PRODUCT_MODEL_CODE} 제품이 활성 지원 상태가 아닙니다."
             )
-        if not created and product.generation_code != "D":
-            product.generation_code = "D"
-            product.save(update_fields=["generation_code", "updated_at"])
         return product
 
     @staticmethod

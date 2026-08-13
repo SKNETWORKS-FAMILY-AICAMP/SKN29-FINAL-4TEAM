@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import date
-import hashlib
 from uuid import UUID, uuid4
 
 import pytest
@@ -12,14 +11,7 @@ from django.utils.dateparse import parse_datetime
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
-from apps.audit.models import AIRun
-from apps.inquiries.models import (
-    FollowUpAnswer,
-    Guidance,
-    GuidanceItem,
-    Inquiry,
-    InquiryQA,
-)
+from apps.inquiries.models import FollowUpAnswer, Inquiry, InquiryQA
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
 
@@ -95,69 +87,6 @@ def authenticated_client(user: User) -> APIClient:
     return client
 
 
-def create_ai_guidance(inquiry: Inquiry, sequence: int) -> Guidance:
-    now = timezone.now()
-    payload = {
-        "safety_assessment": {
-            "risk_level": "caution",
-            "requires_consultation": False,
-        },
-        "usage_guidance": {
-            "guidance_status": "PARTIAL_STOP",
-            "message": "온수 기능은 잠시 중지하고 냉수 출수 상태를 확인해 주세요.",
-            "restricted_functions": ["온수 출수"],
-            "next_actions": ["냉수 출수량을 확인해 주세요."],
-        },
-        "evidence_references": [
-            {
-                "chunk_id": "INTERNAL-CHUNK-MUST-NOT-LEAK",
-                "similarity_score": 0.99,
-            }
-        ],
-    }
-    run = AIRun.objects.create(
-        inquiry=inquiry,
-        task_type_code=AIRun.TaskType.ANALYZE_SYMPTOM,
-        request_schema_version="3.0.0",
-        response_schema_version="3.0.0",
-        model_provider="local",
-        model_name="baseline-guidance-test",
-        model_config_version="3.0.0",
-        model_config={"mode": "local"},
-        prompt_version="baseline-guidance-v1",
-        input_payload={"inquiry_id": str(inquiry.public_id)},
-        input_sha256=hashlib.sha256(
-            str(inquiry.public_id).encode("utf-8")
-        ).hexdigest(),
-        idempotency_key=f"customer-guidance-read-{sequence:03d}",
-        correlation_id=uuid4(),
-        validated_output_payload=payload,
-        schema_validation_status_code=AIRun.SchemaValidationStatus.PASSED,
-        schema_validation_errors=[],
-        status_code=AIRun.Status.SUCCEEDED,
-        started_at=now,
-        completed_at=now,
-    )
-    guidance = Guidance.objects.create(
-        inquiry=inquiry,
-        guidance_version=1,
-        review_status_code="PENDING",
-        title="AI 사용 안내 초안",
-        summary_text=payload["usage_guidance"]["message"],
-        safety_notice="상태가 악화되면 상담을 요청해 주세요.",
-        evidence_sufficiency_code="CANDIDATE",
-        requires_consultation=False,
-        generated_by_ai_run=run,
-    )
-    GuidanceItem.objects.create(
-        guidance=guidance,
-        step_no=1,
-        action_type_code="NEXT_ACTION",
-        instruction_text=payload["usage_guidance"]["next_actions"][0],
-    )
-    return guidance
-
-
 def test_customer_snapshot_returns_exact_owned_projection(
     django_assert_num_queries,
 ):
@@ -215,102 +144,6 @@ def test_customer_snapshot_returns_exact_owned_projection(
         "assigned_user",
     ):
         assert forbidden not in serialized
-
-
-def test_customer_guidance_returns_latest_ai_projection_without_evidence():
-    owner = create_user(50)
-    inquiry = create_inquiry(owner, 50)
-    Inquiry.objects.filter(pk=inquiry.pk).update(
-        status_code=Inquiry.Status.AI_GUIDANCE,
-        state_version=3,
-        risk_level_code=Inquiry.RiskLevel.CAUTION,
-        usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
-    )
-    inquiry.refresh_from_db()
-    create_ai_guidance(inquiry, 50)
-
-    response = authenticated_client(owner).get(
-        f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
-    )
-
-    assert response.status_code == 200
-    data = response.json()["data"]
-    assert data == {
-        "inquiry_id": str(inquiry.public_id),
-        "inquiry_code": inquiry.inquiry_code,
-        "status_code": Inquiry.Status.AI_GUIDANCE,
-        "state_version": 3,
-        "symptom_summary": inquiry.raw_text,
-        "risk_level": "caution",
-        "usage_guidance_status": "PARTIAL_STOP",
-        "usage_guidance_message": (
-            "온수 기능은 잠시 중지하고 냉수 출수 상태를 확인해 주세요."
-        ),
-        "restricted_functions": ["온수 출수"],
-        "safe_actions": ["냉수 출수량을 확인해 주세요."],
-        "escalation_conditions": [],
-        "prohibited_actions": [],
-        "next_action": "냉수 출수량을 확인해 주세요.",
-        "requires_consultation": False,
-        "evidence": [],
-        "allowed_actions": data["allowed_actions"],
-    }
-    assert [item["code"] for item in data["allowed_actions"]] == [
-        "REQUEST_CONSULTATION"
-    ]
-    serialized = str(data)
-    for forbidden in (
-        "INTERNAL-CHUNK-MUST-NOT-LEAK",
-        "similarity_score",
-        "validated_output_payload",
-        "model_config",
-        "correlation_id",
-    ):
-        assert forbidden not in serialized
-
-
-def test_customer_guidance_uses_latest_workflow_state_after_completion():
-    owner = create_user(51)
-    inquiry = create_inquiry(owner, 51)
-    create_ai_guidance(inquiry, 51)
-    Inquiry.objects.filter(pk=inquiry.pk).update(
-        status_code=Inquiry.Status.RESOLVED,
-        state_version=9,
-    )
-
-    response = authenticated_client(owner).get(
-        f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
-    )
-
-    assert response.status_code == 200
-    data = response.json()["data"]
-    assert data["status_code"] == Inquiry.Status.RESOLVED
-    assert data["state_version"] == 9
-    assert data["allowed_actions"] == []
-
-
-def test_customer_guidance_not_ready_and_ownership_fail_closed():
-    owner = create_user(52)
-    other = create_user(53)
-    consultant = create_user(54, role=User.Role.CONSULTANT)
-    inquiry = create_inquiry(owner, 52)
-    path = f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
-
-    not_ready = authenticated_client(owner).get(path)
-    hidden = authenticated_client(other).get(path)
-    forbidden = authenticated_client(consultant).get(path)
-
-    assert not_ready.status_code == 409
-    assert not_ready.json()["error"]["code"] == "AI_GUIDANCE_NOT_READY"
-    details = not_ready.json()["error"]["details"]
-    assert details["inquiry_id"] == str(inquiry.public_id)
-    assert details["status_code"] == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
-    assert details["state_version"] == 2
-    assert [action["code"] for action in details["allowed_actions"]] == [
-        "CANCEL_INQUIRY"
-    ]
-    assert hidden.status_code == 404
-    assert forbidden.status_code == 403
 
 
 def test_customer_snapshot_recalculates_actions_before_after_and_answered():

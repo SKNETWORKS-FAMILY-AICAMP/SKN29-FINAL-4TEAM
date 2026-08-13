@@ -22,44 +22,6 @@ class CustomerInquirySnapshotSerializer(serializers.Serializer):
     updated_at = serializers.DateTimeField()
 
 
-class CustomerInquiryGuidanceSerializer(serializers.Serializer):
-    """Public CUSTOMER projection of the latest validated AI guidance."""
-
-    inquiry_id = serializers.UUIDField()
-    inquiry_code = serializers.CharField(max_length=50)
-    status_code = serializers.ChoiceField(choices=Inquiry.Status.values)
-    state_version = serializers.IntegerField(min_value=1)
-    symptom_summary = serializers.CharField(max_length=2000)
-    risk_level = serializers.ChoiceField(choices=Inquiry.RiskLevel.values)
-    usage_guidance_status = serializers.ChoiceField(
-        choices=Inquiry.UsageGuidanceStatus.values
-    )
-    usage_guidance_message = serializers.CharField(max_length=3000)
-    restricted_functions = serializers.ListField(
-        child=serializers.CharField(max_length=1000),
-        max_length=20,
-    )
-    safe_actions = serializers.ListField(
-        child=serializers.CharField(max_length=1000),
-        max_length=20,
-    )
-    escalation_conditions = serializers.ListField(
-        child=serializers.CharField(max_length=1000),
-        max_length=20,
-    )
-    prohibited_actions = serializers.ListField(
-        child=serializers.CharField(max_length=1000),
-        max_length=20,
-    )
-    next_action = serializers.CharField(max_length=1000)
-    requires_consultation = serializers.BooleanField()
-    evidence = serializers.ListField(
-        child=serializers.DictField(),
-        max_length=0,
-    )
-    allowed_actions = AllowedActionSerializer(many=True)
-
-
 class CustomerInquiryQuestionOptionSerializer(serializers.Serializer):
     value = serializers.CharField(max_length=200)
     label = serializers.CharField(max_length=200)

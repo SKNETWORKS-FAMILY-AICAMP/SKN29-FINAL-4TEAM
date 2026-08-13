@@ -327,32 +327,6 @@ def test_consultation_start_save_confirm_complete_and_replay():
     ]
     assert IdempotencyRecord.objects.filter(actor=consultant).count() == 4
 
-    detail = client.get(f"/api/v1/inquiries/{inquiry.public_id}")
-    assert detail.status_code == 200, detail.json()
-    consultation_record = detail.json()["data"]["consultation"]
-    assert consultation_record == {
-        "consultation_id": str(consultation.public_id),
-        "result_code": "COMPLETED_NO_VISIT",
-        "summary": {
-            "ai_draft_summary": None,
-            "edited_summary": consultation.summary,
-            "confirmed_summary": consultation.confirmed_summary,
-            "confirmed_at": consultation.summary_confirmed_at.isoformat(),
-        },
-        "consultation_note": consultation.consultation_note,
-        "additional_check": None,
-        "customer_guidance": None,
-        "usage_guidance_status": "NORMAL",
-    }
-
-    customer_snapshot = client_for(inquiry.initiated_by).get(
-        f"/api/v1/me/inquiries/{inquiry.public_id}"
-    )
-    assert customer_snapshot.status_code == 200, customer_snapshot.json()
-    snapshot = customer_snapshot.json()["data"]
-    assert snapshot["status_code"] == "COMPLETION_PENDING"
-    assert snapshot["state_version"] == 6
-
 
 def test_reassigned_consultant_cannot_replay_previous_assignee_response():
     original_consultant = create_user(91, role=User.Role.CONSULTANT)

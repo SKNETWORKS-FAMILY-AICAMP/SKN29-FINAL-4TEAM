@@ -124,8 +124,6 @@ class FakeCustomerCareRepository(
     private fun backendProcessingGuidance(inquiryId: String) = GuidanceData(
         inquiryId = inquiryId,
         inquiryCode = "BACKEND-INQUIRY",
-        statusCode = "QUESTIONNAIRE_IN_PROGRESS",
-        stateVersion = 2,
         symptomSummary = "문의가 실제 Backend에 접수되었습니다. AI 안내 조회 API는 아직 준비 중입니다.",
         riskLevel = "unknown",
         usageGuidanceStatus = "PENDING_CONSULTATION",
@@ -142,8 +140,6 @@ class FakeCustomerCareRepository(
     private fun normalGuidance(inquiryId: String) = GuidanceData(
         inquiryId = inquiryId,
         inquiryCode = "DEMO-INQ-002",
-        statusCode = "AI_GUIDANCE",
-        stateVersion = 3,
         symptomSummary = "출수량이 이전보다 줄었고 필터 교체 이후에도 동일한 증상이 지속됩니다.",
         riskLevel = "general",
         usageGuidanceStatus = "NORMAL",
@@ -171,8 +167,6 @@ class FakeCustomerCareRepository(
     private fun cautionGuidance(inquiryId: String) = GuidanceData(
         inquiryId = inquiryId,
         inquiryCode = "DEMO-CAUTION-001",
-        statusCode = "AI_GUIDANCE",
-        stateVersion = 3,
         symptomSummary = "온수 온도가 평소와 달라 화상 예방을 위한 일부 기능 제한이 필요합니다.",
         riskLevel = "caution",
         usageGuidanceStatus = "PARTIAL_STOP",
@@ -199,8 +193,6 @@ class FakeCustomerCareRepository(
     private fun dangerGuidance(inquiryId: String) = GuidanceData(
         inquiryId = inquiryId,
         inquiryCode = "DEMO-DANGER-001",
-        statusCode = "AI_GUIDANCE",
-        stateVersion = 3,
         symptomSummary = "제품 하단에서 물이 확인되어 누수 위험 규칙이 우선 적용되었습니다.",
         riskLevel = "danger",
         usageGuidanceStatus = "TOTAL_STOP",
@@ -227,8 +219,6 @@ class FakeCustomerCareRepository(
     private fun noEvidenceGuidance(inquiryId: String) = GuidanceData(
         inquiryId = inquiryId,
         inquiryCode = "DEMO-NO-EVIDENCE-001",
-        statusCode = "AI_GUIDANCE",
-        stateVersion = 3,
         symptomSummary = "현재 지원 범위 밖의 표시 문구가 입력되었습니다.",
         riskLevel = "unknown-code",
         usageGuidanceStatus = "UNKNOWN",

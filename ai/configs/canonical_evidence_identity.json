@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "status": "BACKEND_STATE_VERIFICATION_IMPLEMENTED",
+  "status": "AI_SOURCE_IDENTITY_FIXED_BACKEND_MAPPING_PENDING",
   "source_dataset": "data/processed/structured/rag/mvp/rag_verified_sample.jsonl",
   "evidence_registry": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
   "index_manifest": "ai/configs/index_manifest.json",
@@ -8,7 +8,7 @@
   "chunk_set_sha256": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
   "identity_policy": {
     "ai_canonical_key": "chunk_id",
-    "backend_target_key": "canonical_evidence_identity.chunks[].evidence_id",
+    "backend_target_key": "knowledge_document_chunk.public_id",
     "backend_mapping_owner": "Backend·Database",
     "ai_does_not_generate_backend_id": true,
     "required_match_fields": [

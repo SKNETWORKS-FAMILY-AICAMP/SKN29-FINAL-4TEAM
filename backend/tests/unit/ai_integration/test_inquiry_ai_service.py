@@ -15,9 +15,6 @@ from django.db import IntegrityError
 from apps.accounts.models import CustomerProfile, User
 from apps.audit.models import AIRun
 from apps.evidence.models import EvidenceLink
-from apps.evidence.services.evidence_validation_service import (
-    BASELINE_CORPUS_PATH,
-)
 from apps.inquiries.models import (
     FollowUpAnswer,
     Guidance,
@@ -313,45 +310,6 @@ def test_injected_evidence_id_cannot_bypass_backend_mapping():
     http_client.close()
 
 
-def test_canonical_reference_without_persisted_crosswalk_is_held_fail_closed():
-    with BASELINE_CORPUS_PATH.open(encoding="utf-8") as source:
-        row = json.loads(next(line for line in source if line.strip()))
-    inquiry = create_inquiry(102)
-    product = inquiry.subscription.product_model
-    product.model_code = row["exact_sales_code"]
-    product.generation_code = row["product_generation"]
-    product.save(update_fields=["model_code", "generation_code", "updated_at"])
-
-    def exact_baseline(response: dict, _request: dict) -> dict:
-        response["evidence_references"] = [
-            {
-                "document_title": row["section_title"],
-                "document_version": row["version"],
-                "page": row["page_start"],
-                "page_refs": row["page_refs"],
-                "chunk_id": row["chunk_id"],
-                "official_url": row["source_url"],
-                "summary": row["chunk_text"],
-                "similarity_score": 0.9,
-                "verification_status": "official_verified",
-            }
-        ]
-        return response
-
-    client, http_client, _calls = make_client(transform=exact_baseline)
-    outcome = analyze(inquiry, client)
-
-    assert outcome.status == AIRun.Status.SUCCEEDED
-    assert outcome.event_applied is None
-    assert outcome.pending_reason == "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
-    inquiry.refresh_from_db()
-    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
-    assert inquiry.state_version == 2
-    assert inquiry.evidence_mode == Inquiry.EvidenceMode.PARTIAL_EVIDENCE
-    assert inquiry.evidence_ids == []
-    http_client.close()
-
-
 def test_no_evidence_result_routes_to_consultation_required():
     inquiry = create_inquiry(3)
 
@@ -427,7 +385,7 @@ def test_followup_questions_are_saved_without_advancing_state():
     http_client.close()
 
 
-def test_danger_result_with_configured_safety_rule_ids_routes_to_consultation():
+def test_registered_danger_rules_apply_consultation_required_transition():
     inquiry = create_inquiry(10)
 
     def danger(response: dict, request: dict) -> dict:
@@ -463,46 +421,7 @@ def test_danger_result_with_configured_safety_rule_ids_routes_to_consultation():
     assert inquiry.state_version == 3
     history = TransitionHistory.objects.get(inquiry=inquiry)
     assert history.event_code == "DANGER_DETECTED"
-    assert history.changed_by_type_code == TransitionHistory.ChangedByType.SYSTEM
     assert history.state_version == 3
-    http_client.close()
-
-
-def test_danger_result_without_safety_rule_ids_is_held_fail_closed():
-    inquiry = create_inquiry(11)
-
-    def danger_without_rule_ids(_response: dict, request: dict) -> dict:
-        example_path = (
-            DEFAULT_CONTRACT_ROOT
-            / "examples"
-            / "symptom-analysis"
-            / "danger-detected.json"
-        )
-        danger_response = json.loads(
-            example_path.read_text(encoding="utf-8")
-        )["response"]
-        for field in (
-            "inquiry_id",
-            "correlation_id",
-            "ai_request_id",
-            "state_version",
-        ):
-            danger_response[field] = request[field]
-        danger_response["safety_assessment"]["matched_safety_rule_ids"] = []
-        return danger_response
-
-    client, http_client, _calls = make_client(
-        transform=danger_without_rule_ids
-    )
-    outcome = analyze(inquiry, client)
-
-    assert outcome.event_candidate == "DANGER_DETECTED"
-    assert outcome.event_applied is None
-    assert outcome.pending_reason == "MATCHED_SAFETY_RULE_IDS_REQUIRED"
-    inquiry.refresh_from_db()
-    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
-    assert inquiry.state_version == 2
-    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
     http_client.close()
 
 

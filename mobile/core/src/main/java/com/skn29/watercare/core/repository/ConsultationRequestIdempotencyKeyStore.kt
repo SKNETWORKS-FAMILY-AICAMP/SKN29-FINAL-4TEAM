@@ -8,19 +8,33 @@ data class ConsultationRequestOperationIdentity(
 )
 
 class ConsultationRequestIdempotencyKeyStore(
-    private val createKey: () -> String = { UUID.randomUUID().toString() },
+    private val createKey: () -> String = {
+        UUID.randomUUID().toString()
+    },
 ) {
     private val lock = Any()
-    private val pending = mutableMapOf<ConsultationRequestOperationIdentity, String>()
+    private val pending =
+        mutableMapOf<ConsultationRequestOperationIdentity, String>()
 
-    fun keyFor(operation: ConsultationRequestOperationIdentity): String =
-        synchronized(lock) { pending.getOrPut(operation, createKey) }
-
-    fun complete(operation: ConsultationRequestOperationIdentity) {
-        synchronized(lock) { pending.remove(operation) }
+    fun keyFor(
+        operation: ConsultationRequestOperationIdentity,
+    ): String = synchronized(lock) {
+        pending.getOrPut(operation, createKey)
     }
 
-    fun abandon(operation: ConsultationRequestOperationIdentity) {
-        synchronized(lock) { pending.remove(operation) }
+    fun complete(
+        operation: ConsultationRequestOperationIdentity,
+    ) {
+        synchronized(lock) {
+            pending.remove(operation)
+        }
+    }
+
+    fun abandon(
+        operation: ConsultationRequestOperationIdentity,
+    ) {
+        synchronized(lock) {
+            pending.remove(operation)
+        }
     }
 }

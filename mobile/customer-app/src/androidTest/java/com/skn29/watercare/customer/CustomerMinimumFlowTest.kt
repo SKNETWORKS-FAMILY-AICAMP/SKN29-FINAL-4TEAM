@@ -171,9 +171,9 @@ class CustomerMinimumFlowTest {
 
         waitForIdle()
 
-        onNodeWithTag("requestConsultation")
+        onNodeWithTag("consultationUnavailable")
             .assertIsDisplayed()
-            .performClick()
+            .assertIsNotEnabled()
 
         val resolvedActionDoesNotExist = runCatching {
             onNodeWithTag("resolvedAction").fetchSemanticsNode()
@@ -337,8 +337,6 @@ class CustomerMinimumFlowTest {
     private fun dangerGuidance() = GuidanceDisplayModel(
         inquiryId = TEST_INQUIRY_ID,
         inquiryCode = "DEMO-DANGER-001",
-        statusCode = "AI_GUIDANCE",
-        stateVersion = 3,
         symptomSummary = "제품 하단 누수 위험",
         riskLevel = RiskLevel.DANGER,
         usageStatus = UsageGuidanceStatus.TOTAL_STOP,

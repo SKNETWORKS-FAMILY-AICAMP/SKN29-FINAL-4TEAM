@@ -49,6 +49,7 @@ class GuidanceViewModel(
 
     private var lastCancelReasonCode: String = "CUSTOMER_REQUEST"
     private var lastCancelReasonDetail: String? = null
+
     init {
         load()
         if (followUpEnabled) loadFollowUp()
@@ -64,18 +65,6 @@ class GuidanceViewModel(
                     else GuidanceUiState.Content(mapped)
                 }
                 is ApiResult.Failure -> when {
-                    result.code == "AI_GUIDANCE_NOT_READY" -> {
-                        val workflow = result.conflict
-                        GuidanceUiState.AiFailure(
-                            message =
-                                "검증된 AI 안내가 아직 준비되지 않았습니다. " +
-                                    "잠시 후 다시 확인하거나 상담을 요청해 주세요.",
-                            retryable = true,
-                            statusCode = workflow?.currentStatus,
-                            stateVersion = workflow?.currentStateVersion,
-                            allowedActions = workflow?.allowedActions.orEmpty(),
-                        )
-                    }
                     result.code.startsWith("AI_") ->
                         GuidanceUiState.AiFailure(result.message, result.retryable)
                     result.code == "NETWORK_ERROR" ->
@@ -118,9 +107,7 @@ class GuidanceViewModel(
     fun requestConsultation() {
         if (
             _consultationState.value is
-                ConsultationRequestUiState.Requesting ||
-            _consultationState.value is
-                ConsultationRequestUiState.Success
+                ConsultationRequestUiState.Requesting
         ) {
             return
         }
@@ -136,8 +123,9 @@ class GuidanceViewModel(
             return
         }
 
-        _consultationState.value = ConsultationRequestUiState.Requesting
         viewModelScope.launch {
+            _consultationState.value =
+                ConsultationRequestUiState.Requesting
 
             when (
                 val latest = remote.snapshot(inquiryId)
@@ -179,91 +167,6 @@ class GuidanceViewModel(
         }
     }
 
-    fun requestConsultation(
-        stateVersion: Int?,
-        allowedActions: List<AllowedAction>,
-    ) {
-        if (
-            _consultationState.value is ConsultationRequestUiState.Requesting ||
-            _consultationState.value is ConsultationRequestUiState.Success
-        ) return
-
-        val remote = customerInquiryRepository
-        if (remote == null) {
-            _consultationState.value = ConsultationRequestUiState.Error(
-                message = "상담 요청 기능을 사용할 수 없습니다.",
-                retryable = false,
-                code = "CUSTOMER_INQUIRY_REPOSITORY_UNAVAILABLE",
-            )
-            return
-        }
-        if (stateVersion == null || stateVersion < 1) {
-            _consultationState.value = ConsultationRequestUiState.Error(
-                message = "최신 문의 상태 버전을 확인한 뒤 다시 시도해 주세요.",
-                retryable = false,
-                code = "CLIENT_VALIDATION_ERROR",
-            )
-            return
-        }
-        if (allowedActions.none {
-                it.normalizedCode == InquiryActionLabels.REQUEST_CONSULTATION
-            }
-        ) {
-            _consultationState.value = ConsultationRequestUiState.Error(
-                message = "현재 문의 상태에서는 상담을 요청할 수 없습니다.",
-                retryable = false,
-                code = "ACTION_NOT_ALLOWED",
-            )
-            return
-        }
-
-        _consultationState.value = ConsultationRequestUiState.Requesting
-        viewModelScope.launch {
-            when (
-                val result = remote.requestConsultation(
-                    inquiryId = inquiryId,
-                    stateVersion = stateVersion,
-                )
-            ) {
-                is ApiResult.Success -> {
-                    _consultationState.value = ConsultationRequestUiState.Success(
-                        message = result.value.message,
-                        snapshot = result.value.toWorkflowSnapshot(),
-                        idempotentReplay = result.value.idempotentReplay,
-                    )
-                }
-
-                is ApiResult.Failure -> {
-                    val conflict = result.conflict
-                    val conflictStateVersion = conflict?.currentStateVersion
-                    _consultationState.value = if (
-                        conflictStateVersion != null
-                    ) {
-                        ConsultationRequestUiState.Conflict(
-                            message = result.message,
-                            snapshot = CustomerInquirySnapshot(
-                                inquiryId = inquiryId,
-                                statusCode = conflict.currentStatus.orEmpty(),
-                                stateVersion = conflictStateVersion,
-                                subscriptionId = "",
-                                productModelCode = "",
-                                allowedActions = conflict.allowedActions,
-                                updatedAtRfc3339 = "",
-                            ),
-                        )
-                    } else {
-                        ConsultationRequestUiState.Error(
-                            message = result.message,
-                            retryable = result.retryable,
-                            code = result.code,
-                            httpStatus = result.httpStatus,
-                        )
-                    }
-                }
-            }
-        }
-    }
-
     fun retryConsultationRequest() =
         requestConsultation()
 
@@ -277,10 +180,18 @@ class GuidanceViewModel(
             return
         }
 
-        requestConsultation(
-            stateVersion = current.snapshot.stateVersion,
-            allowedActions = current.snapshot.allowedActions,
-        )
+        val remote = customerInquiryRepository
+            ?: return
+
+        viewModelScope.launch {
+            _consultationState.value =
+                ConsultationRequestUiState.Requesting
+
+            performConsultationRequest(
+                remote = remote,
+                snapshot = current.snapshot,
+            )
+        }
     }
 
     private suspend fun performConsultationRequest(
@@ -328,11 +239,13 @@ class GuidanceViewModel(
             val refreshed = remote.snapshot(inquiryId)
         ) {
             is ApiResult.Failure -> {
-                _consultationState.value = ConsultationRequestUiState.Success(
-                    message = result.message,
-                    snapshot = result.toWorkflowSnapshot(),
-                    idempotentReplay = result.idempotentReplay,
-                )
+                _consultationState.value =
+                    ConsultationRequestUiState.Error(
+                        message =
+                            "상담 요청은 처리됐지만 최신 상태를 다시 확인하지 못했습니다. " +
+                                refreshed.message,
+                        retryable = refreshed.retryable,
+                    )
             }
 
             is ApiResult.Success -> {
@@ -440,17 +353,6 @@ class GuidanceViewModel(
                     current
             }
     }
-
-    private fun com.skn29.watercare.core.model.RequestConsultationResult
-        .toWorkflowSnapshot() = CustomerInquirySnapshot(
-        inquiryId = inquiryId,
-        statusCode = statusCode,
-        stateVersion = stateVersion,
-        subscriptionId = "",
-        productModelCode = "",
-        allowedActions = allowedActions,
-        updatedAtRfc3339 = "",
-    )
 
     fun updateFollowUpText(questionId: String, value: String) {
         editFollowUpDraft(questionId) { current ->

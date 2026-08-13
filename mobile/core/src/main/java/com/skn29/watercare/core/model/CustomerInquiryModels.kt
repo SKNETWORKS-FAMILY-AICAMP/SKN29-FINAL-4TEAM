@@ -71,7 +71,7 @@ data class SubmitFollowUpAnswersResponseDto(
 )
 
 @Serializable
-data class StateTransitionRequestDto(
+data class RequestConsultationRequestDto(
     @SerialName("state_version") val stateVersion: Int,
 )
 
@@ -86,6 +86,14 @@ data class RequestConsultationResponseDto(
     val resource: kotlinx.serialization.json.JsonElement? = null,
 )
 
+data class RequestConsultationResult(
+    val message: String,
+    val inquiryId: String,
+    val statusCode: String,
+    val stateVersion: Int,
+    val allowedActions: List<AllowedAction>,
+    val idempotentReplay: Boolean,
+)
 data class CustomerInquirySnapshot(
     val inquiryId: String,
     val statusCode: String,
@@ -148,15 +156,6 @@ data class FollowUpAnswer(
 }
 
 data class SubmitFollowUpAnswersResult(
-    val message: String,
-    val inquiryId: String,
-    val statusCode: String,
-    val stateVersion: Int,
-    val allowedActions: List<AllowedAction>,
-    val idempotentReplay: Boolean,
-)
-
-data class RequestConsultationResult(
     val message: String,
     val inquiryId: String,
     val statusCode: String,

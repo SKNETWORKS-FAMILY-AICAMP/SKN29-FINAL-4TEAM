@@ -8,12 +8,8 @@ import logging
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from functools import lru_cache
-from pathlib import Path
 from typing import Any
 from uuid import UUID
-
-import yaml
 
 from django.conf import settings
 from django.db import IntegrityError, transaction
@@ -22,9 +18,6 @@ from django.utils import timezone
 
 from apps.audit.models import AIRun
 from apps.evidence.models import AIChunkCrosswalk, EvidenceLink
-from apps.evidence.services.evidence_validation_service import (
-    verify_canonical_evidence,
-)
 from apps.inquiries.models import (
     Guidance,
     GuidanceItem,
@@ -60,31 +53,6 @@ from integrations.ai.schema_validator import AIContractValidator
 
 EvidenceVerifier = Callable[[list[dict[str, Any]], Inquiry], list[str]]
 ai_trace_logger = logging.getLogger("watercare.ai")
-REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
-SAFETY_RULES_PATH = REPOSITORY_ROOT / "ai" / "configs" / "safety_rules.yaml"
-
-
-@lru_cache(maxsize=1)
-def _configured_safety_rule_ids() -> frozenset[str]:
-    """Load the AI runtime's configured safety rule IDs fail-closed."""
-
-    try:
-        document = yaml.safe_load(SAFETY_RULES_PATH.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, yaml.YAMLError):
-        ai_trace_logger.exception("Failed to load configured AI safety rules")
-        return frozenset()
-
-    rules = document.get("rules") if isinstance(document, dict) else None
-    if not isinstance(rules, dict) or not rules:
-        return frozenset()
-
-    rule_ids: set[str] = set()
-    for rule in rules.values():
-        rule_id = rule.get("rule_id") if isinstance(rule, dict) else None
-        if not isinstance(rule_id, str) or not rule_id.strip():
-            return frozenset()
-        rule_ids.add(rule_id)
-    return frozenset(rule_ids)
 
 
 @dataclass(frozen=True, slots=True)
@@ -481,11 +449,11 @@ class InquiryAIService:
         assessment = cls._save_assessment(inquiry, run, result)
         guidance = cls._save_guidance(inquiry, run, result)
         saved_questions = cls._save_followup_questions(inquiry, run, result)
-        verifier = evidence_verifier or verify_canonical_evidence
         try:
-            verified_evidence_ids = verifier(
-                result.payload["evidence_references"],
-                inquiry,
+            verified_evidence_ids = (
+                evidence_verifier(result.payload["evidence_references"], inquiry)
+                if evidence_verifier is not None
+                else []
             )
         except Exception as exc:  # Evidence failures remain fail-closed.
             ai_trace_logger.warning(
@@ -793,29 +761,16 @@ class InquiryAIService:
         event = result.event_candidate
         if event is None:
             return None, "NO_STATE_EVENT_CANDIDATE"
-        safety = result.payload["safety_assessment"]
-        guidance = result.payload["usage_guidance"]
-        matched_safety_rule_ids = safety["matched_safety_rule_ids"]
-        if event == "DANGER_DETECTED" and not matched_safety_rule_ids:
-            return None, "MATCHED_SAFETY_RULE_IDS_REQUIRED"
         if event == "SAFE_GUIDANCE_READY" and not verified_evidence_ids:
             return None, "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
 
         domain_results = {
-            "G-DANGER-ASSESSMENT-VALID": (
-                event == "DANGER_DETECTED"
-                and result.risk_level == "danger"
-                and safety["requires_consultation"] is True
-                and guidance["guidance_status"]
-                in {"PARTIAL_STOP", "TOTAL_STOP", "PENDING_CONSULTATION"}
-                and set(matched_safety_rule_ids).issubset(
-                    _configured_safety_rule_ids()
-                )
-            ),
             "G-NO-USABLE-EVIDENCE": result.is_no_evidence,
             "G-SAFE-GUIDANCE-VALID": (
                 event == "SAFE_GUIDANCE_READY"
-                and not safety["requires_consultation"]
+                and not result.payload["safety_assessment"][
+                    "requires_consultation"
+                ]
             ),
             "G-OFFICIAL-EVIDENCE-AVAILABLE": bool(verified_evidence_ids),
             "G-NO-DANGER-CONFLICT": result.risk_level != "danger",

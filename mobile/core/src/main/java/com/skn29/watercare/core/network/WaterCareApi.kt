@@ -8,12 +8,11 @@ import com.skn29.watercare.core.model.CustomerInquiryQuestionsDto
 import com.skn29.watercare.core.model.CustomerInquirySnapshotDto
 import com.skn29.watercare.core.model.DemoLoginRequest
 import com.skn29.watercare.core.model.InquiryResponse
-import com.skn29.watercare.core.model.GuidanceData
 import com.skn29.watercare.core.model.LogoutResponse
 import com.skn29.watercare.core.model.RefreshTokenRequest
+import com.skn29.watercare.core.model.RequestConsultationRequestDto
 import com.skn29.watercare.core.model.RequestConsultationResponseDto
 import com.skn29.watercare.core.model.SessionResponse
-import com.skn29.watercare.core.model.StateTransitionRequestDto
 import com.skn29.watercare.core.model.SubmitSymptomRequest
 import com.skn29.watercare.core.model.SubmitFollowUpAnswersRequestDto
 import com.skn29.watercare.core.model.SubmitFollowUpAnswersResponseDto
@@ -88,11 +87,6 @@ interface WaterCareApi {
         @Path("inquiryId") inquiryId: String,
     ): Response<ApiEnvelope<CustomerInquiryQuestionsDto>>
 
-    @GET("api/v1/me/inquiries/{inquiryId}/guidance")
-    suspend fun customerInquiryGuidance(
-        @Path("inquiryId") inquiryId: String,
-    ): Response<ApiEnvelope<GuidanceData>>
-
     @POST("api/v1/inquiries/{inquiryId}/answers")
     suspend fun submitFollowUpAnswers(
         @Path("inquiryId") inquiryId: String,
@@ -103,7 +97,7 @@ interface WaterCareApi {
     suspend fun requestConsultation(
         @Path("inquiryId") inquiryId: String,
         @Header("Idempotency-Key") idempotencyKey: String,
-        @Body body: StateTransitionRequestDto,
+        @Body body: RequestConsultationRequestDto,
     ): Response<ApiEnvelope<RequestConsultationResponseDto>>
 }
 

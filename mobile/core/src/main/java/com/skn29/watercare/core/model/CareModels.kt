@@ -112,8 +112,6 @@ data class EvidenceCardData(
 data class GuidanceData(
     @SerialName("inquiry_id") val inquiryId: String,
     @SerialName("inquiry_code") val inquiryCode: String,
-    @SerialName("status_code") val statusCode: String,
-    @SerialName("state_version") val stateVersion: Int,
     @SerialName("symptom_summary") val symptomSummary: String,
     @SerialName("risk_level") val riskLevel: String,
     @SerialName("usage_guidance_status") val usageGuidanceStatus: String,
@@ -131,8 +129,6 @@ data class GuidanceData(
 data class GuidanceDisplayModel(
     val inquiryId: String,
     val inquiryCode: String,
-    val statusCode: String,
-    val stateVersion: Int,
     val symptomSummary: String,
     val riskLevel: RiskLevel,
     val usageStatus: UsageGuidanceStatus,
@@ -152,27 +148,26 @@ object GuidanceMapper {
         val risk = parseRiskLevel(source.riskLevel)
         val usage = parseUsageGuidanceStatus(source.usageGuidanceStatus)
         val unknownCode = risk == RiskLevel.UNKNOWN || usage == UsageGuidanceStatus.UNKNOWN
-        val mustConsult = source.requiresConsultation || unknownCode
-        val safeUsage = if (unknownCode) UsageGuidanceStatus.PENDING_CONSULTATION else usage
+        val noEvidence = source.evidence.isEmpty()
+        val mustConsult = source.requiresConsultation || unknownCode || noEvidence
+        val safeUsage = if (unknownCode || noEvidence) UsageGuidanceStatus.PENDING_CONSULTATION else usage
         return GuidanceDisplayModel(
             inquiryId = source.inquiryId,
             inquiryCode = source.inquiryCode,
-            statusCode = source.statusCode,
-            stateVersion = source.stateVersion,
             symptomSummary = source.symptomSummary,
             riskLevel = if (unknownCode) RiskLevel.UNKNOWN else risk,
             usageStatus = safeUsage,
-            usageMessage = if (unknownCode) {
+            usageMessage = if (unknownCode || noEvidence) {
                 "공식 근거를 확인하지 못해 사용 가능 여부를 판단하지 않습니다. 상담 확인이 필요합니다."
             } else source.usageGuidanceMessage,
-            restrictedFunctions = if (unknownCode) emptyList() else source.restrictedFunctions,
-            safeActions = if (unknownCode) emptyList() else source.safeActions,
+            restrictedFunctions = if (unknownCode || noEvidence) emptyList() else source.restrictedFunctions,
+            safeActions = if (unknownCode || noEvidence) emptyList() else source.safeActions,
             escalationConditions = source.escalationConditions,
             prohibitedActions = source.prohibitedActions,
             nextAction = if (mustConsult) "상담 요청" else source.nextAction,
             requiresConsultation = mustConsult,
             evidence = source.evidence,
-            allowedActions = sanitizeAllowedActions(source.allowedActions),
+            allowedActions = sanitizeAllowedActions(source.allowedActions, risk, safeUsage, mustConsult),
         )
     }
 
@@ -193,11 +188,14 @@ object GuidanceMapper {
 
     private fun sanitizeAllowedActions(
         actions: List<AllowedAction>,
+        risk: RiskLevel,
+        usage: UsageGuidanceStatus,
+        mustConsult: Boolean,
     ): List<AllowedAction> {
-        val supportedCodes = setOf(
-            InquiryActionLabels.REQUEST_CONSULTATION,
-            InquiryActionLabels.CANCEL_INQUIRY,
-        )
-        return actions.filter { it.normalizedCode in supportedCodes }
+        val supportedCodes = setOf(InquiryActionLabels.REQUEST_CONSULTATION)
+        val supported = actions.filter { it.normalizedCode in supportedCodes }
+        return if (risk == RiskLevel.DANGER || usage == UsageGuidanceStatus.TOTAL_STOP || mustConsult) {
+            supported.filter { it.normalizedCode == InquiryActionLabels.REQUEST_CONSULTATION }
+        } else supported
     }
 }

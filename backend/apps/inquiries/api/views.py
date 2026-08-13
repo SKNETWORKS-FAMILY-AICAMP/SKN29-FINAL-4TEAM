@@ -16,7 +16,6 @@ from apps.inquiries.api.serializers import (
     ConsultantCustomerSubscriptionSearchResultSerializer,
     ConsultantCustomerSubscriptionSearchSerializer,
     CreateInquirySerializer,
-    CustomerInquiryGuidanceSerializer,
     CustomerInquiryQuestionsSerializer,
     CustomerInquirySnapshotSerializer,
     InquiryResponseSerializer,
@@ -279,20 +278,6 @@ class CustomerInquiryQuestionsView(APIView):
             inquiry_public_id=inquiry_id,
         )
         return success_response(CustomerInquiryQuestionsSerializer(data).data)
-
-
-class CustomerInquiryGuidanceView(APIView):
-    """Return latest validated AI guidance without internal evidence data."""
-
-    permission_classes = [IsAuthenticated, IsCustomer]
-
-    def get(self, request, inquiry_id: UUID):
-        reject_unknown_query_parameters(request, set())
-        data = CustomerInquiryService.guidance_for_customer(
-            actor=request.user,
-            inquiry_public_id=inquiry_id,
-        )
-        return success_response(CustomerInquiryGuidanceSerializer(data).data)
 
 
 class CancelInquiryView(APIView):
