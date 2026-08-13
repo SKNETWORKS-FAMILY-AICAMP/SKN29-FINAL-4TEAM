@@ -1,191 +1,145 @@
-# Backend·AI Crosswalk·Readonly View·Verifier 구현·검증 가이드
+# Backend·AI G1-B Crosswalk·Readonly View 사전점검 가이드
 
 > 최신 검증: 2026-08-13 KST
-> 작성 책임: 최지용 — Backend·Database
-> 기준: `main@1289d4b3673d9b061833fa94d45096bde1541a02`에서 만든 로컬 후보
-> 상태: `AUTHOR_VERIFIED / POSTGRESQL_TEAM_QA_PENDING / JOINT_E2E_HOLD`
+>
+> 작성 기준 main: `920176ebd77c9b5285ca62aea5f76671f9816997`
+>
+> Backend G1-B 구현 기준: `df9c01ccc4f6de748dec4503bb08f53aa42efe76`
+>
+> AI 공동검증 후보: `f1691df17dfdbc82283982379d9422d6a31e3c68`
+>
+> 상태: `AUTHOR_PREFLIGHT_PASS / LOCAL_DATA_BLOCKED / JOINT_E2E_PENDING`
 
-## 1. 결론
+## 1. 목적
 
-Backend 단독 범위로 다음을 구현·검증했다.
+G1-B 공동 Smoke 전에 Backend PostgreSQL이 AI/RAG 조회에 필요한 조건을 모두 갖췄는지
+한 명령으로 확인한다. 도구는 `SELECT/SHOW`만 수행하고 Host·DSN·사용자·비밀번호를
+출력하지 않는다.
 
-1. AI Canonical `chunk_id`와 Backend `DocumentChunk`의 검증된 Crosswalk
-2. AI가 읽을 PostgreSQL `backend_ai_rag_chunks_v1` View
-3. BGE-M3 1024차원·고정 Revision·Exact Search·승인 7건 검증
-4. AI Evidence Reference의 all-or-none 검증과 Public UUID 변환
-5. 검증 Evidence를 `Guidance`·`AIRun`·`DocumentChunk`에 연결하는 `EvidenceLink` 저장
-6. AI 전용 Role이 해당 View만 조회하도록 하는 최소권한 Provisioning
-7. Provider·Model·Prompt 등 AIRun Runtime Identity 저장 증거
+제품 Runtime, AI 소유 코드, 공개 Guidance/Evidence API는 이번 작업에서 변경하지 않았다.
 
-고객 Guidance/Public Evidence API는 구현하지 않았다. 현재 Evidence Path·Schema가
-준비 상태이고 고객 Snapshot 계약에 해당 필드가 없으므로 계약 Owner 결정이 먼저다.
+## 2. Backend 준비물
 
-## 2. 책임과 ID 경계
-
-| 항목 | 정본·책임 |
+| 항목 | 구현·정본 |
 | --- | --- |
-| 공식 문서·Page·Chunk·Embedding | Backend `knowledge_*` 테이블 |
-| AI 검색 ID | AI Canonical `chunk_id` |
-| Backend 저장 ID | `DocumentChunk.public_id` UUID |
-| Crosswalk·View·Verifier·EvidenceLink | 최지용 |
-| View Adapter·실제 RAG·LLM | 이동윤 |
-| 공용 PostgreSQL·Role 독립 검증 | 김은진 |
-| Public Guidance/Evidence 계약 | PM·계약 Owner |
+| Canonical ID ↔ Backend Chunk | [`AIChunkCrosswalk`](../../../../backend/apps/evidence/models/ai_chunk_crosswalk.py) |
+| Crosswalk Migration | [`evidence.0009`](../../../../backend/apps/evidence/migrations/0009_ai_chunk_crosswalk.py) |
+| AI 조회 View | [`evidence.0010`](../../../../backend/apps/evidence/migrations/0010_backend_ai_rag_chunks_view.py) |
+| 공식 7건 동기화 | [`sync_ai_canonical_crosswalk`](../../../../backend/apps/evidence/management/commands/sync_ai_canonical_crosswalk.py) |
+| AI Reference 검증 | [`EvidenceReferenceVerifier`](../../../../backend/apps/evidence/services/evidence_reference_verifier.py) |
+| Guidance·AIRun Evidence 저장 | [`InquiryAIService`](../../../../backend/apps/inquiries/services/inquiry_ai_service.py) |
+| AI 최소권한 Role | [`provision_team_integration.py`](../../../../scripts/database/provision_team_integration.py) |
+| G1-B 사전점검 | [`audit_backend_ai_g1b_readiness.py`](../../../../scripts/database/audit_backend_ai_g1b_readiness.py) |
 
-내부 PK, Canonical ID, Vector, 서버 경로, 원문 전체는 고객 DTO로 내보내지 않는다.
-
-## 3. Crosswalk·Migration
-
-- [`AIChunkCrosswalk`](../../../../backend/apps/evidence/models/ai_chunk_crosswalk.py):
-  Canonical ID와 Backend Chunk의 1:1 매핑
-- [`evidence.0009`](../../../../backend/apps/evidence/migrations/0009_ai_chunk_crosswalk.py):
-  Crosswalk·Page 순서·Constraint·Index
-- [`evidence.0010`](../../../../backend/apps/evidence/migrations/0010_backend_ai_rag_chunks_view.py):
-  PostgreSQL 보안 경계 View
-
-View 제공 필드는 다음 8개뿐이다.
+View 공개 열은 다음 8개로 고정한다.
 
 ```text
 chunk_id, metadata, content, embedding,
 model_code, product_generation, verification_status, allowed_use
 ```
 
-View는 활성·검증 Crosswalk, 승인 MVP 문서·Page·모델 Scope, 활성 Embedding,
-미해결 Data Quality Issue 0건을 모두 만족할 때만 행을 제공한다.
+내부 PK, Backend Public UUID, 서버 경로, 전체 원문 파일은 AI View 계약 밖으로 내보내지 않는다.
 
-## 4. 승인 7건 동기화
+## 3. READY 판정
 
-[`sync_ai_canonical_crosswalk`](../../../../backend/apps/evidence/management/commands/sync_ai_canonical_crosswalk.py)는
-다음을 fail-closed로 검증한다.
+다음 조건을 같은 PostgreSQL DB에서 모두 만족해야 `READY`다.
 
-- 정확히 7개 Canonical Chunk와 중복 0건
-- `BAAI/bge-m3`
-- Revision `5617a9f61b028005a4858fdac845db406aefb181`
-- 1024차원, `exact_search`
-- Manifest·Document·Chunk-set Hash
-- 공식 문서·Page·제품 세대·Chunk·Embedding 일치
-- 승인된 비어 있지 않은 `evidence_summary`
-- 미해결 Data Quality Issue 0건
+1. `evidence.0009`, `evidence.0010` Migration 적용
+2. 활성·검증 Crosswalk 정확히 7건
+3. 7건 모두 `BAAI/bge-m3`와 승인 Revision 사용
+4. `backend_ai_rag_chunks_v1` 존재, 8개 열 순서 일치
+5. View 행 7건, `chunk_id` 중복 0건
+6. `waterbridge_ti_ai_readonly`가 안전한 Login Role
+7. AI Role의 기본 Transaction이 read-only
+8. AI Role은 View SELECT만 허용
+9. AI Role의 Schema CREATE, View DML, Base Table SELECT는 거부
+
+한 항목이라도 다르면 `BLOCKED`이며 완료로 확대하지 않는다.
+
+## 4. 실행 명령
+
+저장소 루트에서 현재 설정 DB를 보고서 형태로 확인한다. `BLOCKED`여도 진단 명령은 Exit 0이다.
 
 ```powershell
-Set-Location C:\python-src\Final_PROJECT\SKN29-FINAL-4TEAM\backend
-\.venv\Scripts\python.exe manage.py sync_ai_canonical_crosswalk `
-  --settings=config.settings.local
+.\backend\.venv\Scripts\python.exe -B `
+  .\scripts\database\audit_backend_ai_g1b_readiness.py
 ```
 
-실제 적용은 활성 합성 Operator와 `--apply --verified-by`가 필요하며 한 Transaction과
-PostgreSQL Advisory Lock으로 처리한다. 공식 Backend Evidence 7건이 적재되지 않은 DB에서
-Dry-run/Apply를 PASS로 기록하면 안 된다.
+공동 환경 Gate는 DB명까지 확인하고, READY가 아니면 Exit 1로 닫는다.
 
-## 5. Runtime Verifier와 EvidenceLink
-
-[`EvidenceReferenceVerifier`](../../../../backend/apps/evidence/services/evidence_reference_verifier.py)는
-AI 응답 전체를 all-or-none으로 확인한다.
-
-- 모든 Canonical ID가 활성·검증 Crosswalk에 존재
-- 한 응답 안의 Manifest·Chunk-set·Index·Embedding Identity가 하나로 일치
-- 문서·Revision·Page·제품·Hash·Embedding·DQ 상태 일치
-- AI Reference 상태가 `official_verified`
-
-성공 시 Backend Public UUID만 반환한다. 실패·혼합·예외는 빈 목록으로 닫는다.
-
-[`InquiryAIService`](../../../../backend/apps/inquiries/services/inquiry_ai_service.py)는
-기본 Verifier를 자동 사용한다. 검증 성공 시 `EvidenceLink`에 다음 Snapshot을 저장한다.
-
-- Inquiry, Guidance, AIRun, DocumentChunk
-- 문서 코드·제목·기관·Revision·공식 URL·SHA-256
-- 승인 `evidence_summary`, 인용 Chunk 원문, Page, Section, 제품 코드
-- 검증자와 검증 시각
-
-검증 또는 Link 저장 실패 시 Assessment·Guidance 초안은 보존하되 다음처럼 처리한다.
-
-```text
-EvidenceLink=0
-Inquiry.evidence_ids=[]
-requires_fallback=true
-SAFE_GUIDANCE_READY 미적용
+```powershell
+.\backend\.venv\Scripts\python.exe -B `
+  .\scripts\database\audit_backend_ai_g1b_readiness.py `
+  --require-ready --require-team-database
 ```
 
-Replay는 기존 AIRun 결과를 반환하므로 Guidance·EvidenceLink를 추가 생성하지 않는다.
+환경변수는 외부에서 안전하게 주입한다. `.env`, DSN, Password, Token을 명령·문서·로그에
+복사하지 않는다.
 
-## 6. AI 전용 Readonly Role
+## 5. 2026-08-13 로컬 실측
 
-[`provision_team_integration.py`](../../../../scripts/database/provision_team_integration.py)는
-`waterbridge_ti_ai_readonly`의 전체 Table·Sequence 권한을 회수한 뒤,
-View가 존재할 때만 `public.backend_ai_rag_chunks_v1`의 `SELECT`를 부여한다.
-
-| 대상 | AI Role |
+| 확인 | 결과 |
 | --- | --- |
-| View SELECT | 허용 |
-| View INSERT/UPDATE/DELETE/TRUNCATE | 거부 |
-| Base Table SELECT·DML | 거부 |
-| Sequence | 거부 |
-| Schema CREATE·DDL | 거부 |
-| 기본 Transaction | Read only |
+| PostgreSQL | `16.14`, 로컬 작성자 DB |
+| Migration 0009·0010 | `APPLIED` |
+| View 존재·열 | `YES`, 8/8 일치 |
+| 활성·검증 Crosswalk | `0/7` |
+| View 행 | `0/7` |
+| AI Role | 존재·Role 속성 안전 |
+| 현재 DB의 AI Role read-only/View SELECT | 미적용 |
+| 보고서 명령 | `BLOCKED`, Exit 0 |
+| 강제 Gate 명령 | `BLOCKED`, Exit 1 |
 
-Migration 전 최초 Provisioning은 View가 없어도 실패하지 않는다. Migration 후 Provisioning을
-다시 실행하고 PostgreSQL Role Test로 실제 권한을 확인해야 한다.
-
-## 7. AIRun Identity
-
-Backend는 다음 설정을 AIRun에 저장한다.
+현재 Blocker는 다음과 같다.
 
 ```text
-AI_MODEL_PROVIDER
-AI_MODEL_NAME
-AI_PROMPT_VERSION
-mode
-timeout_seconds=30
-backend_max_retries=0
+ACTIVE_VERIFIED_CROSSWALK_COUNT_NOT_7
+BASELINE_EMBEDDING_IDENTITY_COUNT_NOT_7
+BACKEND_AI_RAG_VIEW_ROW_COUNT_NOT_7
+AI_READONLY_DEFAULT_TRANSACTION_NOT_READ_ONLY
+AI_READONLY_VIEW_SELECT_DENIED
 ```
 
-단위 Test는 `openai / gpt-4.1-mini / e2e-baseline-v1` 주입값이 그대로 저장됨을 확인한다.
-실제 운영값은 이동윤 후보의 Runtime Manifest를 받은 뒤 환경변수로 일치시키고 공동 Smoke에서
-AIRun Row로 재확인한다.
+이는 제품 코드 실패가 아니다. 로컬 작성자 DB에 공식 Evidence 7건과 팀 통합 DB용 권한을
+적용하지 않았다는 정확한 사전점검 결과다.
 
-## 8. 작성자 검증 결과
+## 6. 작성자 검증
 
 | 검증 | 결과 |
 | --- | --- |
-| Crosswalk·Verifier·EvidenceLink·AIRun Identity·Safety·Provisioning 표적 | `53 passed` |
-| EvidenceLink·Submit·Follow-up·Role 표적 | `80 passed, 3 skipped` |
-| Root Contract Test | `38 passed` |
-| State/Crosswalk/OpenAPI/Example/Code Validator | 모두 PASS |
-| Django Check | PASS |
-| Migration Drift | `No changes detected` |
-| 로컬 PostgreSQL evidence Migration | `0009·0010 applied` |
-| 로컬 View | 8개 Column 일치, `0 rows` |
-| 실제 Crosswalk Dry-run | Exit 1, 공식 문서 또는 제품 모델 미적재로 BLOCKED |
-| Backend 전체 | `1100 passed, 19 skipped, 0 failed` |
+| 신규 Audit 판정·비밀 보호 + Provisioning 단위 | `25 passed` |
+| 실제 Role 통합 Test 수집 | `1 skipped` |
+| Django Check | `0 issues` |
+| Python 구문 검사 | PASS |
 | `git diff --check` | PASS |
 
-Skip 19건은 PostgreSQL 구조·Row Lock·Role 17건, 실제 AI Uvicorn Socket 1건 등 환경 전용
-Case다. PASS로 환산하지 않는다.
+통합 Test Skip은 `TEAM_INTEGRATION_POSTGRES_TEST=1`과 폐기 가능한 팀 PostgreSQL 환경이
+없어 의도적으로 미실행한 것이다. PASS로 계산하지 않는다.
 
-## 9. 아직 남은 Gate
+검증 Test:
 
-1. 공식 Backend Evidence 7건 적재 후 Crosswalk Dry-run·Apply·Replay
-2. PostgreSQL Migration 0009·0010 및 View Row·Column 확인
-3. AI Role의 View SELECT와 Base Table/View DML 거부 독립 재현
-4. 이동윤 AI Runtime의 View Target·Readonly DSN 적용
-5. 실제 BGE-M3·pgvector·gpt-4.1-mini 공동 HTTP Smoke
-6. AIRun·Guidance·EvidenceLink·Correlation DB 추적
-7. 고객 Guidance/Public Evidence 계약 결정과 별도 Runtime 구현
+- [`test_backend_ai_g1b_readiness.py`](../../../../backend/tests/unit/database/test_backend_ai_g1b_readiness.py)
+- [`test_team_integration_provision.py`](../../../../backend/tests/unit/database/test_team_integration_provision.py)
+- [`test_team_integration_roles_postgresql.py`](../../../../backend/tests/integration/database/test_team_integration_roles_postgresql.py)
+
+## 7. 공동 환경에서 남은 순서
+
+1. 김은진이 동일 후보의 팀 PostgreSQL·pgvector와 최소권한 Role 준비
+2. 공식 Backend Evidence 7건 적재
+3. Crosswalk Dry-run → Apply → Replay로 신규 0 확인
+4. Provisioning 재실행 후 본 가이드의 강제 Gate `READY` 확인
+5. 이동윤 AI Runtime이 readonly DSN과 `backend_ai_rag_chunks_v1`을 조회
+6. Backend→AI→RAG→LLM→Backend 저장 공동 HTTP Smoke
+7. AIRun·Guidance·EvidenceLink·Correlation을 같은 요청으로 추적
 8. 김은진 독립 QA와 PM 최종 Gate
 
-## 10. Safety 변경 경계
+## 8. 변경 금지 경계
 
-Danger Rule 후보는 기존 State Guard의 fail-closed 검증을 보강하지만, 공식 Safety 정책은 별도다.
-State 계약·DB 제약·AI 온수 Rule의 `PARTIAL_STOP/TOTAL_STOP/PENDING_CONSULTATION` 정합을
-PM·AI와 확정하기 전 Safety 전체 완료를 주장하지 않는다. 출수량 저하 Happy Path의
-Crosswalk·Evidence 구현과 Safety 정책 승인을 구분한다.
+- AI 후보의 Vector Store·LLM 코드는 이동윤 소유이므로 여기서 수정하지 않는다.
+- 공식 7건이 없는 DB에서 Crosswalk Apply나 READY를 주장하지 않는다.
+- Public Guidance/Evidence Path·DTO는 계약 확정 전 추가하지 않는다.
+- Danger Safety 정책과 G1-B 출수량 저하 Happy Path를 하나의 완료로 묶지 않는다.
+- 실제 Role 통합 Test 없이 최소권한을 최종 PASS로 선언하지 않는다.
 
-## 11. 공개 API 차단 사유
-
-- `contracts/api/paths/evidence.yaml`은 빈 계약
-- Evidence Card 준비 문서는 `PREPARATION_ONLY / runtime_implemented=false`
-- `CustomerInquirySnapshot`은 `additionalProperties:false`
-- Mobile DTO에도 Guidance/Evidence가 없음
-
-따라서 PM·계약 Owner가 Snapshot 확장 또는 별도 Endpoint, PENDING Guidance 공개 여부,
-공개 Evidence 필드, 미생성 응답 정책을 결정하기 전 Public API를 임의 구현하지 않는다.
+업무 범위는 [최지용 E2E 집중 지침](../../../weekly-task/최지용_5주차_8월13-14일_E2E_집중_업무_지침서.md)의
+G1-B Backend 수직 연동 사전검증에 한정한다.
