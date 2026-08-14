@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 from django.core.management import call_command
 from django.core.management.base import CommandError
+from django.db import connection
 
 from apps.accounts.models import User
 from apps.evidence.models import (
@@ -158,6 +159,13 @@ def _run_import(
     ]
     if apply:
         arguments.append("--apply")
+        if connection.vendor == "postgresql":
+            arguments.extend(
+                [
+                    "--confirm-database",
+                    connection.settings_dict["NAME"],
+                ]
+            )
     call_command("import_ai_canonical_evidence", *arguments, stdout=stdout)
 
 
