@@ -1364,3 +1364,26 @@ Public UUID 분석 요청이 모두 성공했다.
   Container·Volume은 Healthy 상태로 보존했다.
 - 상세 회신은
   `docs/individual/dongyoon/인계/20260814_이동윤_to_최지용_AI_G1A_PhaseB_로컬기술재현_실행결과_회신_v0.1.md`에 기록했다.
+
+### 2026-08-14 Customer Guidance G1-A·G1-B 실연결 진행 회신
+
+- 이동윤 고유 문서를 `b516c06`에 보존한 뒤 새 브랜치 없이
+  `main@a43fd2d6f27243935a5d92fed349cb3e19e8bd13`을 `dongyoon`에 병합했다. 현재
+  실행 Commit은 `2119a4bdbf1d7c56501b0c0db81f659cb3b641bb`이며 AI·AI 계약·Canonical
+  입력 충돌은 없다.
+- Backend·계약 표적 회귀는 `123 passed, 3 skipped`, 최종 Schema의 Readiness는
+  `READY`, 실제 AI Readonly pgvector는 `1 passed in 10.61s`다. 최종 main 동기화
+  후 실제 OpenAI Runtime도 `gpt-4.1-mini-2025-04-14`, Token 1180, 예상 Low-flow
+  Evidence Hit로 PASS했다.
+- 실제 AI Runtime은 이동윤 Host `127.0.0.1:8001`에서 Health 200으로 유지했다.
+  외부 Host 공개 바인딩이나 방화벽 변경은 수행하지 않았다.
+- `evidence.0011` 적용과 권한 재조정 후 G1-B Seed를 시작했지만 DB에
+  `support_inquiry.priority_code`가 없어 중단됐다. 전체 Plan에는 Inquiry·Workflow·
+  Consultation 등을 포함한 19개 Migration이 남아 있어 명시 승인 전 적용하지 않았다.
+- Migration 전 DB Custom-format Backup을
+  `.runtime/g1b/20260814-main-a43/waterbridge-pre-a43-migrations.dump`에 생성했다. 이
+  파일은 Git·전달 대상이 아니다.
+- 현재 판정은 `g1a_final_baseline=PASS`, `g1b_joint_result=BLOCKED`다. Backend
+  AIRun·Guidance·Evidence 저장과 Replay는 Migration 승인 후 새 Inquiry로 실행한다.
+- 요청 양식에 맞춘 단일 진행 회신은
+  `docs/individual/dongyoon/인계/20260814_이동윤_to_최지용_AI_RAG_CustomerGuidance_G1A_G1B_실연결_진행회신_v0.1.md`에 기록했다.

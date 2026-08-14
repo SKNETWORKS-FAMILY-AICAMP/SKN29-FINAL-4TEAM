@@ -9,7 +9,7 @@ __pycache__/
 .runtime/
 .pytest_cache/
 pytest-cache-files-*/
-
+.codex_tmp/
 AGENTS.md
 # 공식 원본 파일만 제외
 data/raw/manuals/**/*.pdf
