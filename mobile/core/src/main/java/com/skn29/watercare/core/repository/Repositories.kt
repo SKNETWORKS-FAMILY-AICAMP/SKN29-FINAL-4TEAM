@@ -33,7 +33,9 @@ interface InquiryRepository {
         inquiryId: String,
         stateVersion: Int,
         idempotencyKey: String,
-    ): ApiResult<SubmitSymptomResponse>    suspend fun cancel(
+    ): ApiResult<SubmitSymptomResponse>
+
+    suspend fun cancel(
         inquiryId: String,
         stateVersion: Int,
         reasonCode: String,

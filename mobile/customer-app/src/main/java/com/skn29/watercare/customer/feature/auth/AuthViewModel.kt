@@ -6,6 +6,7 @@ import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.P0_SYNTHETIC_CUSTOMER_LOGIN_CODE
 import com.skn29.watercare.core.repository.AuthRepository
 import com.skn29.watercare.core.repository.BackendStatusRepository
+import com.skn29.watercare.customer.BuildConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +24,7 @@ data class AuthUiState(
 class AuthViewModel(
     private val authRepository: AuthRepository,
     private val backendStatusRepository: BackendStatusRepository,
+    private val demoCustomerCode: String = BuildConfig.E2E_CUSTOMER_CODE,
 ) : ViewModel() {
     private val _state = MutableStateFlow(AuthUiState())
     val state: StateFlow<AuthUiState> = _state.asStateFlow()
@@ -43,12 +45,27 @@ class AuthViewModel(
         if (_state.value.submitting) return
         viewModelScope.launch {
             _state.value = _state.value.copy(submitting = true, error = null)
-            _state.value = when (val result = authRepository.demoLogin(P0_SYNTHETIC_CUSTOMER_LOGIN_CODE)) {
-                is ApiResult.Success -> _state.value.copy(
-                    submitting = false,
-                    authenticated = true,
-                    offlinePreview = false,
-                )
+            val loginCode = demoCustomerCode.trim().ifBlank {
+                P0_SYNTHETIC_CUSTOMER_LOGIN_CODE
+            }
+            _state.value = when (val result = authRepository.demoLogin(loginCode)) {
+                is ApiResult.Success -> {
+                    if (result.value.user.roleCode != "CUSTOMER") {
+                        authRepository.logout()
+                        _state.value.copy(
+                            submitting = false,
+                            authenticated = false,
+                            offlinePreview = false,
+                            error = "고객 계정으로 로그인해 주세요.",
+                        )
+                    } else {
+                        _state.value.copy(
+                            submitting = false,
+                            authenticated = true,
+                            offlinePreview = false,
+                        )
+                    }
+                }
                 is ApiResult.Failure -> _state.value.copy(
                     submitting = false,
                     error = result.message,

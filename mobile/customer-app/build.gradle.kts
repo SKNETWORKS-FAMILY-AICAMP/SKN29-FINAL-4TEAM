@@ -19,6 +19,10 @@ val customerCareMode = localProperties
 val demoSubscriptionId = localProperties
     .getProperty("DEMO_SUBSCRIPTION_ID", "")
     .trim()
+val e2eCustomerCode = localProperties
+    .getProperty("E2E_CUSTOMER_CODE", "SYN-CUSTOMER-001")
+    .trim()
+    .ifBlank { "SYN-CUSTOMER-001" }
 val showDeveloperTools = localProperties
     .getProperty("SHOW_DEVELOPER_TOOLS", "false")
     .trim()
@@ -37,6 +41,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "BACKEND_BASE_URL", "\"${localProperties.getProperty("BACKEND_BASE_URL", "http://127.0.0.1:8000/").asBuildConfigString()}\"")
         buildConfigField("String", "CUSTOMER_CARE_MODE", "\"${customerCareMode.asBuildConfigString()}\"")
+        buildConfigField("String", "E2E_CUSTOMER_CODE", "\"${e2eCustomerCode.asBuildConfigString()}\"")
         buildConfigField("String", "DEMO_SUBSCRIPTION_ID", "\"${demoSubscriptionId.asBuildConfigString()}\"")
         buildConfigField("boolean", "SHOW_DEVELOPER_TOOLS", showDeveloperTools.toString())
         buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${localProperties.getProperty("KAKAO_NATIVE_APP_KEY", "").asBuildConfigString()}\"")
