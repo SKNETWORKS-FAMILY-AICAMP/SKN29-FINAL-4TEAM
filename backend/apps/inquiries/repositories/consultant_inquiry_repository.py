@@ -22,6 +22,7 @@ from django.db.models import (
 )
 from django.db.models.functions import Coalesce
 
+from apps.audit.models import AIRun
 from apps.care.models import CareRecord
 from apps.consultations.models import Consultation
 from apps.inquiries.models import (
@@ -286,9 +287,23 @@ class ConsultantInquiryRepository:
             "sequence_no",
             "public_id",
         )
-        guidance_versions = Guidance.objects.filter(
-            review_status_code__in=("APPROVED", "CONFIRMED"),
-        ).order_by("-guidance_version", "-created_at", "-public_id")
+        guidance_versions = (
+            Guidance.objects.filter(
+                Q(review_status_code__in=("APPROVED", "CONFIRMED"))
+                | Q(
+                    generated_by_ai_run__status_code__in=(
+                        AIRun.Status.SUCCEEDED,
+                        AIRun.Status.NO_EVIDENCE,
+                    ),
+                    generated_by_ai_run__schema_validation_status_code=(
+                        AIRun.SchemaValidationStatus.PASSED
+                    ),
+                    generated_by_ai_run__validated_output_payload__isnull=False,
+                )
+            )
+            .select_related("generated_by_ai_run")
+            .order_by("-guidance_version", "-created_at", "-public_id")
+        )
         state_history = (
             TransitionHistory.objects.filter(
                 target_type_code=TransitionHistory.TargetType.INQUIRY,

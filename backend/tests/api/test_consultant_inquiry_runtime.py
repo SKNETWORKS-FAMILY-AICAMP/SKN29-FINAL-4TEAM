@@ -11,7 +11,9 @@ from django.utils.dateparse import parse_datetime
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
+from apps.audit.models import AIRun
 from apps.care.models import CareRecord
+from apps.consultations.models import Consultation
 from apps.inquiries.models import (
     FollowUpAnswer,
     Guidance,
@@ -128,6 +130,73 @@ def authenticated_client(user: User) -> APIClient:
     client = APIClient()
     client.force_authenticate(user=user)
     return client
+
+
+def create_validated_guidance(
+    inquiry: Inquiry,
+    *,
+    sequence: int,
+    restricted_functions,
+    run_status: str = AIRun.Status.SUCCEEDED,
+    schema_status: str = AIRun.SchemaValidationStatus.PASSED,
+    review_status: str = "PENDING",
+) -> Guidance:
+    now = timezone.now()
+    payload = {
+        "usage_guidance": {
+            "guidance_status": "PARTIAL_STOP",
+            "message": "Validated AI guidance for consultant review.",
+            "restricted_functions": restricted_functions,
+            "next_actions": ["Request a consultation."],
+        }
+    }
+    persisted_payload = (
+        payload
+        if schema_status == AIRun.SchemaValidationStatus.PASSED
+        and run_status
+        in {AIRun.Status.SUCCEEDED, AIRun.Status.NO_EVIDENCE}
+        else None
+    )
+    ai_run = AIRun.objects.create(
+        inquiry=inquiry,
+        task_type_code=AIRun.TaskType.ANALYZE_SYMPTOM,
+        response_schema_version="3.0.0",
+        model_provider="local",
+        model_name="consultant-read-test",
+        prompt_version="consultant-read-v1",
+        input_payload={"inquiry_id": str(inquiry.public_id)},
+        input_sha256="a" * 64,
+        idempotency_key=f"consultant-read-ai-{sequence:03d}",
+        validated_output_payload=persisted_payload,
+        schema_validation_status_code=schema_status,
+        schema_validation_errors=(
+            []
+            if schema_status == AIRun.SchemaValidationStatus.PASSED
+            else [{"path": "usage_guidance", "message": "invalid"}]
+        ),
+        status_code=run_status,
+        error_code=(
+            "AI-FAILED-01" if run_status == AIRun.Status.FAILED else None
+        ),
+        error_message=(
+            "Synthetic failed run for fail-closed projection test."
+            if run_status == AIRun.Status.FAILED
+            else None
+        ),
+        started_at=now,
+        completed_at=now,
+        correlation_id=uuid4(),
+    )
+    return Guidance.objects.create(
+        inquiry=inquiry,
+        guidance_version=sequence,
+        review_status_code=review_status,
+        title="Validated AI guidance",
+        summary_text=payload["usage_guidance"]["message"],
+        evidence_sufficiency_code="SUFFICIENT",
+        requires_consultation=True,
+        generated_by_ai_run=ai_run,
+    )
 
 
 def test_consultant_list_returns_only_assigned_synthetic_projection(
@@ -447,6 +516,17 @@ def test_consultant_detail_returns_closed_assigned_projection(
         evidence_sufficiency_code="PENDING",
         requires_consultation=True,
     )
+    create_validated_guidance(
+        inquiry,
+        sequence=3,
+        restricted_functions=[
+            " HOT_WATER ",
+            "",
+            None,
+            "ICE",
+            "X" * 121,
+        ],
+    )
     CareRecord.objects.create(
         care_code="CONSULTANT-READ-CARE-029",
         subscription=inquiry.subscription,
@@ -561,9 +641,9 @@ def test_consultant_detail_returns_closed_assigned_projection(
     assert data["guidance_and_actions"] == {
         "usage_guidance_status": "PENDING_CONSULTATION",
         "usage_guidance_message": (
-            "Keep usage paused until the consultant review."
+            "Validated AI guidance for consultant review."
         ),
-        "restricted_functions": [],
+        "restricted_functions": ["HOT_WATER", "ICE", "X" * 120],
     }
     assert data["consultation"] is None
     assert data["visit"] is None
@@ -593,6 +673,123 @@ def test_consultant_detail_returns_closed_assigned_projection(
         "internal_target",
     ):
         assert forbidden not in serialized
+
+
+def test_consultant_detail_projects_latest_persisted_consultation():
+    consultant = create_user(35, role=User.Role.CONSULTANT)
+    owner = create_user(36, role=User.Role.CUSTOMER)
+    inquiry = create_assigned_inquiry(
+        sequence=35,
+        owner=owner,
+        consultant=consultant,
+        status=Inquiry.Status.CONSULTATION_IN_PROGRESS,
+    )
+    now = timezone.now()
+    Consultation.objects.create(
+        consultation_code="CONSULTANT-READ-CONSULT-OLD-035",
+        inquiry=inquiry,
+        sequence=1,
+        consultant=consultant,
+        status=Consultation.Status.COMPLETED,
+        outcome=Consultation.Outcome.COMPLETED_NO_VISIT,
+        summary="Old summary must not be projected.",
+        state_version=2,
+        idempotency_key="consultant-read-old-035",
+        correlation_id=uuid4(),
+        started_at=now - timedelta(minutes=2),
+        completed_at=now - timedelta(minutes=1),
+        created_at=now - timedelta(minutes=3),
+        data_classification=Consultation.DataClassification.SYNTHETIC,
+    )
+    latest = Consultation.objects.create(
+        consultation_code="CONSULTANT-READ-CONSULT-LATEST-035",
+        inquiry=inquiry,
+        sequence=2,
+        consultant=consultant,
+        status=Consultation.Status.IN_PROGRESS,
+        outcome=Consultation.Outcome.PENDING,
+        summary="Consultant edited summary.",
+        ai_draft_summary="AI draft summary.",
+        confirmed_summary="Consultant confirmed summary.",
+        summary_confirmed_at=now,
+        consultation_note="Persisted consultation note.",
+        additional_check="Check the cold-water flow.",
+        customer_guidance="Keep hot water paused.",
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
+        state_version=4,
+        idempotency_key="consultant-read-latest-035",
+        correlation_id=uuid4(),
+        started_at=now,
+        created_at=now,
+        data_classification=Consultation.DataClassification.SYNTHETIC,
+    )
+
+    response = authenticated_client(consultant).get(
+        f"/api/v1/inquiries/{inquiry.public_id}"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["data"]["consultation"] == {
+        "consultation_id": str(latest.public_id),
+        "result_code": Consultation.Outcome.PENDING,
+        "summary": {
+            "ai_draft_summary": "AI draft summary.",
+            "edited_summary": "Consultant edited summary.",
+            "confirmed_summary": "Consultant confirmed summary.",
+            "confirmed_at": now.isoformat(),
+        },
+        "consultation_note": "Persisted consultation note.",
+        "additional_check": "Check the cold-water flow.",
+        "customer_guidance": "Keep hot water paused.",
+        "usage_guidance_status": "PARTIAL_STOP",
+    }
+
+
+@pytest.mark.parametrize(
+    ("run_status", "schema_status"),
+    (
+        (AIRun.Status.FAILED, AIRun.SchemaValidationStatus.PASSED),
+    ),
+)
+def test_consultant_detail_rejects_untrusted_ai_restrictions(
+    run_status,
+    schema_status,
+):
+    consultant = create_user(37, role=User.Role.CONSULTANT)
+    owner = create_user(38, role=User.Role.CUSTOMER)
+    inquiry = create_assigned_inquiry(
+        sequence=37,
+        owner=owner,
+        consultant=consultant,
+    )
+    create_validated_guidance(
+        inquiry,
+        sequence=1,
+        restricted_functions=["MALICIOUS_UNTRUSTED_RESTRICTION"],
+        run_status=run_status,
+        schema_status=schema_status,
+        review_status="CONFIRMED",
+    )
+    guidance = Guidance.objects.get(inquiry=inquiry)
+    ai_run = guidance.generated_by_ai_run
+    AIRun.objects.filter(pk=ai_run.pk).update(
+        validated_output_payload={
+            "usage_guidance": {
+                "restricted_functions": [
+                    "MALICIOUS_UNTRUSTED_RESTRICTION"
+                ]
+            }
+        }
+    )
+
+    response = authenticated_client(consultant).get(
+        f"/api/v1/inquiries/{inquiry.public_id}"
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["guidance_and_actions"]["restricted_functions"] == []
+    assert "MALICIOUS_UNTRUSTED_RESTRICTION" not in str(data)
 
 
 def test_consultant_detail_uses_same_404_for_all_invisible_inquiries():
