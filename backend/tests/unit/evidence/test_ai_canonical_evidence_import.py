@@ -23,6 +23,7 @@ from apps.evidence.models import (
 from apps.products.models import ProductModel
 from apps.evidence.services.canonical_evidence_importer import (
     CanonicalEvidenceImporter,
+    DEFAULT_PACKAGE_MANIFEST,
     FIXED_LICENSE_NOTE,
     FIXED_OBJECT_URI,
     FIXED_USAGE_TERMS_URL,
@@ -86,6 +87,7 @@ def _embedding_fixture(*, corrupt_dimension: bool = False):
         for line in RAG_PATH.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
+    chunks.sort(key=lambda row: row["chunk_id"])
     dimension = 3 if corrupt_dimension else 1024
     payload = {
         "schema_version": "1.0.0",
@@ -93,6 +95,7 @@ def _embedding_fixture(*, corrupt_dimension: bool = False):
         "model_name": MODEL_NAME,
         "model_revision": MODEL_REVISION,
         "dimension": 1024,
+        "embedding_dtype": "FLOAT32",
         "index_version": "1.0.0",
         "chunk_set_sha256": CHUNK_SET_SHA256,
         "rows": [
@@ -110,10 +113,32 @@ def _embedding_fixture(*, corrupt_dimension: bool = False):
     suffix = "bad-dimension" if corrupt_dimension else "valid"
     fixture_path = RUNTIME_FIXTURE_ROOT / f"canonical-embedding-{suffix}.json"
     fixture_path.write_text(
-        json.dumps(payload, ensure_ascii=False, sort_keys=True),
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ),
         encoding="utf-8",
     )
     return fixture_path, sha256(fixture_path.read_bytes()).hexdigest()
+
+
+def _rewrite_fixture(fixture_path: Path, mutate, *, allow_nan: bool = False) -> str:
+    payload = json.loads(fixture_path.read_text(encoding="utf-8"))
+    mutate(payload)
+    fixture_path.write_text(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=allow_nan,
+        ),
+        encoding="utf-8",
+    )
+    return sha256(fixture_path.read_bytes()).hexdigest()
 
 
 def _run_import(
@@ -286,6 +311,159 @@ def test_invalid_embedding_fixture_fails_closed_without_writes(
 
     assert not any(_counts().values())
     assert ProductModel.objects.count() == 0
+
+
+@pytest.mark.parametrize(
+    ("case", "message"),
+    [
+        ("wrong_schema_version", "schema_version does not match"),
+        ("wrong_status", "status does not match"),
+        ("missing_dtype", "root fields do not match contract v1"),
+        ("wrong_dtype", "embedding_dtype does not match"),
+        ("wrong_order", "chunk_id ascending order"),
+    ],
+)
+def test_embedding_fixture_contract_mismatch_fails_closed(
+    approved_source_runtime,
+    case,
+    message,
+):
+    del approved_source_runtime
+    _operator()
+    fixture_path, _fixture_hash = _embedding_fixture()
+
+    def mutate(payload):
+        if case == "wrong_schema_version":
+            payload["schema_version"] = "2.0.0"
+        elif case == "wrong_status":
+            payload["status"] = "READY"
+        elif case == "missing_dtype":
+            payload.pop("embedding_dtype")
+        elif case == "wrong_dtype":
+            payload["embedding_dtype"] = "FLOAT64"
+        else:
+            payload["rows"].reverse()
+
+    fixture_hash = _rewrite_fixture(fixture_path, mutate)
+
+    with pytest.raises(CommandError, match=message):
+        _run_import(fixture_path, fixture_hash, apply=True)
+
+    assert not any(_counts().values())
+    assert ProductModel.objects.count() == 0
+
+
+@pytest.mark.parametrize("serialization", ["pretty", "trailing-newline"])
+def test_embedding_fixture_rejects_noncanonical_json_bytes_without_writes(
+    approved_source_runtime,
+    serialization,
+):
+    del approved_source_runtime
+    _operator()
+    fixture_path, _fixture_hash = _embedding_fixture()
+    payload = json.loads(fixture_path.read_text(encoding="utf-8"))
+    if serialization == "pretty":
+        serialized = json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=False,
+            indent=2,
+            allow_nan=False,
+        ).encode("utf-8")
+    else:
+        serialized = fixture_path.read_bytes() + b"\n"
+    fixture_path.write_bytes(serialized)
+
+    with pytest.raises(CommandError, match="canonical compact sorted UTF-8 JSON"):
+        _run_import(
+            fixture_path,
+            sha256(serialized).hexdigest(),
+            apply=False,
+        )
+
+    assert not any(_counts().values())
+    assert ProductModel.objects.count() == 0
+
+
+@pytest.mark.parametrize("scope", ["root", "row"])
+def test_embedding_fixture_rejects_extra_fields_without_writes(
+    approved_source_runtime,
+    scope,
+):
+    del approved_source_runtime
+    _operator()
+    fixture_path, _fixture_hash = _embedding_fixture()
+
+    def mutate(payload):
+        if scope == "root":
+            payload["unexpected"] = "forbidden"
+        else:
+            payload["rows"][0]["unexpected"] = "forbidden"
+
+    fixture_hash = _rewrite_fixture(fixture_path, mutate)
+
+    with pytest.raises(CommandError, match="fields do not match contract v1"):
+        _run_import(fixture_path, fixture_hash, apply=False)
+
+    assert not any(_counts().values())
+    assert ProductModel.objects.count() == 0
+
+
+@pytest.mark.parametrize(
+    ("invalid_value", "message"),
+    [
+        (True, "contains invalid values"),
+        ("0.1", "contains invalid values"),
+        (float("nan"), "Cannot load canonical embedding fixture"),
+        (float("inf"), "Cannot load canonical embedding fixture"),
+    ],
+)
+def test_embedding_fixture_rejects_invalid_json_numbers(
+    approved_source_runtime,
+    invalid_value,
+    message,
+):
+    del approved_source_runtime
+    _operator()
+    fixture_path, _fixture_hash = _embedding_fixture()
+
+    def mutate(payload):
+        payload["rows"][0]["embedding"][0] = invalid_value
+
+    fixture_hash = _rewrite_fixture(fixture_path, mutate, allow_nan=True)
+
+    with pytest.raises(CommandError, match=message):
+        _run_import(fixture_path, fixture_hash, apply=True)
+
+    assert not any(_counts().values())
+    assert ProductModel.objects.count() == 0
+
+
+def test_embedding_fixture_rejects_non_nfc_source_without_mutation():
+    fixture_path, _fixture_hash = _embedding_fixture()
+    fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+    manifest = json.loads(DEFAULT_PACKAGE_MANIFEST.read_text(encoding="utf-8"))
+    chunks = [
+        json.loads(line)
+        for line in RAG_PATH.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    chunks.sort(key=lambda row: row["chunk_id"])
+    chunks[0] = {**chunks[0], "chunk_text": "e\u0301"}
+
+    with pytest.raises(CommandError, match="already be NFC normalized"):
+        CanonicalEvidenceImporter()._validate_embedding_fixture(
+            fixture=fixture,
+            manifest=manifest,
+            chunks=chunks,
+        )
+
+
+def test_db_replay_vector_tolerance_is_one_e_minus_six():
+    importer = CanonicalEvidenceImporter()
+
+    assert importer._vectors_equal([0.0, 1.0], [0.0000005, 0.9999995]) is True
+    assert importer._vectors_equal([0.0, 1.0], [0.0000011, 1.0]) is False
 
 
 def test_late_persistence_failure_rolls_back_entire_package(
