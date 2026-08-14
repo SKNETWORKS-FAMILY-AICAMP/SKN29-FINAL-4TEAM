@@ -1321,3 +1321,46 @@ Public UUID 분석 요청이 모두 성공했다.
   ACK 후 실행한다.
 - 상세 회신은
   `docs/individual/dongyoon/인계/20260814_이동윤_to_김은진_최지용_AI_G1A_PhaseB_기술사전검증_착수회신_v0.1.md`에 기록했다.
+
+### 2026-08-14 Backend `vector_dims(unknown)` Django 사전검증 경고 재현 회신
+
+- `dongyoon@d6ab1e480e090369a03360aa385c74eff64720a6`, clean 상태의 이동윤 Host
+  `LOCAL_QA_ISOLATED` PostgreSQL `16.15`, pgvector `0.8.6`에서 Canonical Import
+  신규 Embedding 생성 경로의 `function vector_dims(unknown) is not unique` 경고를
+  재현했다.
+- 경고는 `CanonicalEvidenceImporter._get_or_create_exact()`가 신규
+  `ChunkEmbedding`에 `full_clean()`을 호출할 때 Django CheckConstraint 검증 SQL의
+  Vector Parameter Type이 `unknown`으로 평가되는 경계다. 최초 Dry-run·Apply는 Exit
+  0이고 Chunk·Embedding 7건을 생성했으며 동일 입력 Replay는 Create·Update 0,
+  Embedding Unchanged 7이다.
+- Import 후 동일 Dry-run은 기존 Embedding 조회 경로라
+  `VECTOR_DIMS_UNKNOWN_WARNING_COUNT=0`, Exit 0이었다. 따라서 Replay만으로 수정 여부를
+  판정하지 않고 실제 신규 Embedding 생성 PostgreSQL 회귀가 필요하다.
+- 저장 DB Constraint, Crosswalk 7/7, Page Link 8, Readonly View 7행, Readiness Audit
+  `READY`, AI 실제 pgvector `1 passed in 9.97s`, Backend 표적 `81 passed in 11.88s`는
+  통과했다. 현재 판정은 P0가 아닌 `P1_BACKEND_VALIDATION_WARNING_NON_BLOCKING`이다.
+- 상세 재현·영향 경계·Backend 완료 조건과 회신 형식은
+  `docs/individual/dongyoon/인계/20260814_이동윤_to_최지용_Backend_pgvector_vector_dims_unknown_Django사전검증경고_재현회신_v0.1.md`에 기록했다.
+
+### 2026-08-14 AI G1-A Phase B 이동윤 Host 기술재현 실행결과
+
+- `dongyoon@d6ab1e480e090369a03360aa385c74eff64720a6`의
+  `이동윤_HOST_LOCAL_TECHNICAL_REPRODUCTION`
+  환경에서 실제 Readonly pgvector와 OpenAI Runtime을 검증했다. 요청 기준
+  `main@ccf30f2d30ae556ffce4b9f7b009f5e04854aeb7`은 실행 HEAD의 조상이며, 두
+  Commit 사이 AI·계약·Canonical 입력 차이는 없다.
+- AI pgvector Integration은 `1 passed in 9.97s`, Runtime Verifier는 실제
+  `gpt-4.1-mini-2025-04-14` 호출·Token 1180·예상 Low-flow Evidence Hit로 PASS했다.
+  Local Strict HTTP Smoke도 HTTP 200, `SUCCEEDED`, `failure_stage=null`, Verified
+  Evidence 5건, Guidance 일치와 Header·Body·로그 Correlation을 통과했다.
+- 공개 `SymptomAnalysisResponse`의 `x-contract-version=3.0.0`,
+  `additionalProperties=false`와 상태 전환·Evidence 승인 필드 부재를 확인해
+  `GUIDANCE_ONLY` 경계를 PASS로 판정했다.
+- 별도 실제 HTTP Process에서 `RETRIEVING` Pipeline Stage Timeout을 주입해 HTTP
+  504, `AI-TIMEOUT-01`, Retryable·Failure Stage·Correlation Echo를 통과했다. 이는
+  실제 HTTP 오류 계약 증거이며 OpenAI Provider 네트워크 장애 자체는 `NOT_RUN`이다.
+- 이 결과는 이동윤 Host 기술재현이며 김은진 Host 공식 공동 실행, Backend 저장·Replay·
+  상태 전환 E2E로 확대하지 않는다. 테스트 후 AI Process는 종료했고 PostgreSQL
+  Container·Volume은 Healthy 상태로 보존했다.
+- 상세 회신은
+  `docs/individual/dongyoon/인계/20260814_이동윤_to_최지용_AI_G1A_PhaseB_로컬기술재현_실행결과_회신_v0.1.md`에 기록했다.
