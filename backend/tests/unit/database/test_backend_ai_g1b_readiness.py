@@ -188,6 +188,23 @@ def test_missing_pgvector_and_crosswalk_page_table_fail_closed(
     )
 
 
+def test_latest_pgvector_dimension_migration_is_required(
+    audit_module: ModuleType,
+):
+    snapshot = ready_snapshot(audit_module)
+    snapshot["applied_migrations"].remove(
+        "0011_cast_chunk_embedding_vector_dimensions"
+    )
+
+    result = audit_module.evaluate_snapshot(snapshot)
+
+    assert result["status"] == "BLOCKED"
+    assert (
+        "MIGRATION_MISSING:0011_cast_chunk_embedding_vector_dimensions"
+        in result["blockers"]
+    )
+
+
 def test_connection_is_forced_read_only_and_result_does_not_expose_secrets(
     audit_module: ModuleType,
 ):
