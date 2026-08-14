@@ -10,6 +10,7 @@ import math
 import os
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
+import unicodedata
 from urllib.parse import urlsplit
 from uuid import NAMESPACE_URL, uuid5
 
@@ -40,6 +41,23 @@ FIXED_PACKAGE_STATUS = "BACKEND_AI_G1B_IMPORT_PACKAGE_FIXED"
 APPROVED_EMBEDDING_FIXTURE_STATUS = (
     "GENERATED_FROM_APPROVED_BASELINE_PENDING_DB_IMPORT"
 )
+APPROVED_EMBEDDING_DTYPE = "FLOAT32"
+EXPECTED_EMBEDDING_FIXTURE_FIELDS = {
+    "schema_version",
+    "status",
+    "model_name",
+    "model_revision",
+    "dimension",
+    "embedding_dtype",
+    "index_version",
+    "chunk_set_sha256",
+    "rows",
+}
+EXPECTED_EMBEDDING_ROW_FIELDS = {
+    "chunk_id",
+    "chunk_text_sha256",
+    "embedding",
+}
 APPROVED_CANONICAL_STATUS = "TEXT_AND_VISUAL_VERIFIED"
 EXPECTED_CHUNK_COUNT = 7
 OFFICIAL_SOURCE_PATH_ENV = "BACKEND_AI_OFFICIAL_SOURCE_PATH"
@@ -160,7 +178,7 @@ class CanonicalEvidenceImporter:
         fixture_digest = self._file_digest(fixture_path)
         if fixture_digest != self._lower_hash(embedding_fixture_sha256):
             raise CommandError("Embedding fixture SHA-256 does not match.")
-        fixture = self._load_json(fixture_path)
+        fixture = self._load_canonical_embedding_fixture(fixture_path)
 
         reviewed_page_numbers = source.get("reviewed_page_numbers")
         if reviewed_page_numbers != [37, 38, 39]:
@@ -536,15 +554,31 @@ class CanonicalEvidenceImporter:
             "model_name": index["model_name"],
             "model_revision": index["model_revision"],
             "dimension": index["dimension"],
+            "embedding_dtype": APPROVED_EMBEDDING_DTYPE,
             "index_version": index["index_version"],
             "chunk_set_sha256": index["chunk_set_sha256"],
         }
+        if set(fixture) != EXPECTED_EMBEDDING_FIXTURE_FIELDS:
+            raise CommandError(
+                "Embedding fixture root fields do not match contract v1."
+            )
         for key, expected_value in expected.items():
             if fixture.get(key) != expected_value:
                 raise CommandError(f"Embedding fixture {key} does not match.")
         rows = fixture.get("rows")
         if not isinstance(rows, list) or len(rows) != EXPECTED_CHUNK_COUNT:
             raise CommandError("Embedding fixture must contain exactly seven rows.")
+        if any(not isinstance(row, dict) for row in rows):
+            raise CommandError("Embedding fixture rows must be objects.")
+        if any(set(row) != EXPECTED_EMBEDDING_ROW_FIELDS for row in rows):
+            raise CommandError("Embedding fixture row fields do not match contract v1.")
+        row_ids = [row.get("chunk_id") for row in rows]
+        if any(not isinstance(chunk_id, str) or not chunk_id for chunk_id in row_ids):
+            raise CommandError("Embedding fixture chunk IDs must be non-empty strings.")
+        if row_ids != sorted(row_ids):
+            raise CommandError(
+                "Embedding fixture rows must use chunk_id ascending order."
+            )
         by_id = {row.get("chunk_id"): row for row in rows}
         if len(by_id) != EXPECTED_CHUNK_COUNT:
             raise CommandError("Embedding fixture chunk IDs must be unique.")
@@ -553,8 +587,13 @@ class CanonicalEvidenceImporter:
             raise CommandError("Embedding fixture chunk set does not match.")
         chunks_by_id = {row["chunk_id"]: row for row in chunks}
         for chunk_id, row in by_id.items():
+            chunk_text = chunks_by_id[chunk_id]["chunk_text"]
+            if unicodedata.normalize("NFC", chunk_text) != chunk_text:
+                raise CommandError(
+                    f"{chunk_id}: embedding source text must already be NFC normalized."
+                )
             expected_hash = sha256(
-                chunks_by_id[chunk_id]["chunk_text"].encode("utf-8")
+                chunk_text.encode("utf-8")
             ).hexdigest()
             if row.get("chunk_text_sha256") != expected_hash:
                 raise CommandError(f"{chunk_id}: embedding source hash differs.")
@@ -737,6 +776,33 @@ class CanonicalEvidenceImporter:
             raise CommandError(f"Cannot load JSON input: {path}") from exc
         if not isinstance(payload, dict):
             raise CommandError(f"JSON root must be an object: {path}")
+        return payload
+
+    @staticmethod
+    def _load_canonical_embedding_fixture(path: Path) -> dict[str, Any]:
+        """Load the transient fixture only when its bytes are canonical JSON."""
+
+        try:
+            raw_bytes = path.read_bytes()
+            payload = json.loads(raw_bytes.decode("utf-8"))
+            canonical_bytes = json.dumps(
+                payload,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            ).encode("utf-8")
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+            raise CommandError(
+                f"Cannot load canonical embedding fixture: {path}"
+            ) from exc
+        if not isinstance(payload, dict):
+            raise CommandError(f"JSON root must be an object: {path}")
+        if raw_bytes != canonical_bytes:
+            raise CommandError(
+                "Embedding fixture must use canonical compact sorted UTF-8 JSON "
+                "without a trailing newline."
+            )
         return payload
 
     def _verified_repository_file(self, raw_path: Any, raw_hash: Any) -> Path:

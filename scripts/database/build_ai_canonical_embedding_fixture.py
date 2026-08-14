@@ -7,6 +7,7 @@ from hashlib import sha256
 import json
 import math
 from pathlib import Path
+import unicodedata
 
 from ai.app.integrations.embedding.embedding_client import BgeM3EmbeddingClient
 
@@ -25,6 +26,9 @@ DEFAULT_OUTPUT = (
     / "backend-ai"
     / "canonical_embedding_fixture_v1.json"
 )
+FIXTURE_SCHEMA_VERSION = "1.0.0"
+FIXTURE_STATUS = "GENERATED_FROM_APPROVED_BASELINE_PENDING_DB_IMPORT"
+EMBEDDING_DTYPE = "FLOAT32"
 
 
 def _load_json(path: Path) -> dict:
@@ -36,6 +40,14 @@ def _load_json(path: Path) -> dict:
 
 def _file_digest(path: Path) -> str:
     return sha256(path.read_bytes()).hexdigest().upper()
+
+
+def _require_nfc(text: object, *, label: str) -> str:
+    if not isinstance(text, str) or not text:
+        raise RuntimeError(f"{label} must be a non-empty string.")
+    if unicodedata.normalize("NFC", text) != text:
+        raise RuntimeError(f"{label} must already be NFC normalized.")
+    return text
 
 
 def build_fixture(*, output_path: Path) -> dict:
@@ -52,6 +64,13 @@ def build_fixture(*, output_path: Path) -> dict:
     ]
     if len(chunks) != 7:
         raise RuntimeError("Approved RAG source must contain exactly seven rows.")
+    if any(not isinstance(row, dict) for row in chunks):
+        raise RuntimeError("Approved RAG source rows must be objects.")
+    for row in chunks:
+        _require_nfc(row.get("chunk_text"), label=f"{row.get('chunk_id')}: chunk_text")
+    chunks.sort(key=lambda row: _require_nfc(row.get("chunk_id"), label="chunk_id"))
+    if len({row["chunk_id"] for row in chunks}) != 7:
+        raise RuntimeError("Approved RAG chunk IDs must be unique.")
 
     client = BgeM3EmbeddingClient(model_revision=index["model_revision"])
     if client.model_name != index["model_name"] or client.dimension != 1024:
@@ -60,18 +79,21 @@ def build_fixture(*, output_path: Path) -> dict:
     if len(vectors) != 7 or any(len(vector) != 1024 for vector in vectors):
         raise RuntimeError("Generated embedding fixture must be 7 x 1024.")
     if any(
-        not math.isfinite(float(value))
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(float(value))
         for vector in vectors
         for value in vector
     ):
         raise RuntimeError("Generated embedding fixture contains invalid values.")
 
     payload = {
-        "schema_version": "1.0.0",
-        "status": "GENERATED_FROM_APPROVED_BASELINE_PENDING_DB_IMPORT",
+        "schema_version": FIXTURE_SCHEMA_VERSION,
+        "status": FIXTURE_STATUS,
         "model_name": index["model_name"],
         "model_revision": index["model_revision"],
         "dimension": index["dimension"],
+        "embedding_dtype": EMBEDDING_DTYPE,
         "index_version": index["index_version"],
         "chunk_set_sha256": index["chunk_set_sha256"],
         "rows": [
@@ -90,13 +112,16 @@ def build_fixture(*, output_path: Path) -> dict:
     try:
         resolved_output.relative_to(runtime_root)
     except ValueError as exc:
-        raise RuntimeError("Embedding fixture output must stay under .runtime/.") from exc
+        raise RuntimeError(
+            "Embedding fixture output must stay under .runtime/."
+        ) from exc
     resolved_output.parent.mkdir(parents=True, exist_ok=True)
     serialized = json.dumps(
         payload,
         ensure_ascii=False,
         sort_keys=True,
         separators=(",", ":"),
+        allow_nan=False,
     ).encode("utf-8")
     temporary_path = resolved_output.with_suffix(resolved_output.suffix + ".tmp")
     temporary_path.write_bytes(serialized)
@@ -107,8 +132,12 @@ def build_fixture(*, output_path: Path) -> dict:
         "fixture_sha256": sha256(serialized).hexdigest(),
         "row_count": len(vectors),
         "dimension": client.dimension,
+        "embedding_dtype": EMBEDDING_DTYPE,
+        "row_order": "chunk_id_ASC",
+        "nfc_validation": "7/7",
         "model_name": client.model_name,
         "model_revision": index["model_revision"],
+        "chunk_set_sha256": index["chunk_set_sha256"],
     }
 
 
