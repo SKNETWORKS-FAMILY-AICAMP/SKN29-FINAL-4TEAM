@@ -1,3 +1,4 @@
+import { useAuth } from "../../../app/providers/authContext";
 import type { ReactNode } from "react";
 import { appEnv } from "../../../app/config/env";
 
@@ -20,6 +21,12 @@ export default function ConsultantWorkspaceLayout({
   onNavigate,
   onToggleNotifications,
 }: ConsultantWorkspaceLayoutProps) {
+  const { user } = useAuth();
+
+  const displayName = user?.displayName ?? "상담사";
+  const avatarText = displayName.trim().charAt(0) || "상";
+  const roleLabel = user?.roleCode === "CONSULTANT" ? "상담원" : "사용자";
+
   const workspaceSource = appEnv.useMockApi ? "합성 Mock 화면" : "Backend API 연결 화면";
   return (
     <div className="v6-workspace">
@@ -65,10 +72,10 @@ export default function ConsultantWorkspaceLayout({
           </button>
 
           <div className="v6-user-chip">
-            <span>한</span>
+            <span>{avatarText}</span>
             <div>
-              <strong>한유진</strong>
-              <small>상담원 · STAFF-CONS-01</small>
+              <strong>{displayName}</strong>
+              <small>{roleLabel}</small>
             </div>
           </div>
         </div>
