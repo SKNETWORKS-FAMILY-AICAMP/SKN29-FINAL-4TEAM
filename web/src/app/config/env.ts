@@ -51,17 +51,24 @@ export function readApiBaseUrl(value: string | undefined): string {
   }
 }
 
+const isDesignPreview = import.meta.env.DEV && import.meta.env.MODE === "design";
+
 export const appEnv = {
   apiBaseUrl: readApiBaseUrl(import.meta.env.VITE_API_BASE_URL),
   // 로컬 개발·Test에서는 명시값이 없을 때만 Mock을 허용한다.
   // Production Build는 환경변수 누락을 Mock 전환으로 해석하지 않는다.
-  useMockApi: readBoolean(import.meta.env.VITE_USE_MOCK_API, import.meta.env.DEV),
-  mockAuthenticated: readBoolean(
-    import.meta.env.VITE_MOCK_AUTHENTICATED,
-    import.meta.env.DEV,
-  ),
-  mockRole: readRole(import.meta.env.VITE_MOCK_ROLE),
+  useMockApi:
+    isDesignPreview ||
+    readBoolean(import.meta.env.VITE_USE_MOCK_API, import.meta.env.DEV),
+  mockAuthenticated:
+    isDesignPreview ||
+    readBoolean(import.meta.env.VITE_MOCK_AUTHENTICATED, import.meta.env.DEV),
+  mockRole: isDesignPreview
+    ? "CONSULTANT"
+    : readRole(import.meta.env.VITE_MOCK_ROLE),
   // 일반 개발 Mock은 실제 CONS-04 Backend 응답과 같은 화면 밀도를 사용한다.
-  // 다건·상태 전환 시나리오는 자동 Test에서만 명시적으로 사용한다.
-  mockDataset: readMockDataset(import.meta.env.VITE_MOCK_DATASET),
+  // 디자인 모드는 DB와 분리된 다건·상태 전환 시나리오를 사용한다.
+  mockDataset: isDesignPreview
+    ? "DESIGN_SCENARIOS"
+    : readMockDataset(import.meta.env.VITE_MOCK_DATASET),
 } as const;

@@ -30,19 +30,15 @@ import type {
 } from "../../features/consultation/api/consultantWorkspaceRemoteTypes";
 import {
   COUNSELOR_QUEUE_PAGE_SIZE,
-  PRIORITY_LABELS,
   getCounselorWorkBucket,
-  formatWaitingTime,
   STATUS_LABELS,
   WORK_BUCKET_LABELS,
 } from "../../features/consultation/model/consultantWorkspaceModel";
 import type {
   CounselorAllowedAction,
-  CounselorInquiry,
   CounselorStatus,
   CounselorWorkBucket,
 } from "../../features/consultation/model/consultantWorkspaceTypes";
-import type { ConsultantInquiryListItemViewModel } from "../../features/consultation/model/consultantWorkspaceRemoteMapper";
 import {
   consultantWorkspaceRepository,
   createConsultantWorkspaceRepository,
@@ -58,7 +54,7 @@ import "../../common/styles/watercare-liquid-glass-theme.css";
 import "../../common/styles/pearl-workspace-v2.css";
 import "../../common/styles/water-glass-theme.css";
 import "./ConsultantOperationsTone.css";
-import "./ConsultantWorkDashboard.css";
+import "./ConsultantInquiryListPage.css";
 
 const BUCKET_STATUSES: Record<
   CounselorWorkBucket,
@@ -79,11 +75,6 @@ const BUCKET_STATUSES: Record<
   COMPLETED: ["RESOLVED", "CANCELLED"],
 };
 
-const ACTIVE_WORK_STATUSES = [
-  ...BUCKET_STATUSES.NEW,
-  ...BUCKET_STATUSES.IN_PROGRESS,
-] as const;
-
 const RISK_SECTIONS: readonly {
   id: ConsultantRiskLevelDto;
   label: string;
@@ -94,98 +85,6 @@ const RISK_SECTIONS: readonly {
 ];
 
 type RiskSectionStatusFilter = "ALL" | ConsultantInquiryStatusDto;
-type WorkFocus = "ALL" | "NEW" | "CALL" | "IN_PROGRESS" | "AI_REVIEW";
-type AiReviewDecision = "APPROVED" | "REJECTED";
-type DashboardInquiryListItem = Omit<
-  ConsultantInquiryListItemViewModel,
-  "status" | "allowedActions"
-> & {
-  status: CounselorStatus;
-  allowedActions: readonly { code: string; label: string }[];
-};
-
-const RISK_LABELS: Record<ConsultantRiskLevelDto, string> = {
-  danger: "긴급",
-  caution: "주의",
-  general: "일반",
-};
-
-const WORK_FOCUS_OPTIONS: readonly {
-  id: WorkFocus;
-  label: string;
-}[] = [
-  { id: "NEW", label: "새 문의" },
-  { id: "CALL", label: "전화 연결 필요" },
-  { id: "IN_PROGRESS", label: "진행 중인 문의" },
-  { id: "AI_REVIEW", label: "AI 검수" },
-];
-
-function getWaitingMinutes(inquiry: DashboardInquiryListItem) {
-  return Math.max(0, Math.floor(inquiry.waitingSeconds / 60));
-}
-
-function requiresImmediateCall(inquiry: DashboardInquiryListItem) {
-  if (["RESOLVED", "CANCELLED"].includes(inquiry.status)) return false;
-  const canStartConsultation = inquiry.allowedActions.some((action) =>
-    ["START_CONSULTATION", "RESUME_CONSULTATION"].includes(action.code),
-  );
-  return (
-    canStartConsultation ||
-    inquiry.status === "REOPENED" ||
-    inquiry.status === "CONSULTATION_REQUIRED" ||
-    (inquiry.riskLevel === "danger" &&
-      inquiry.status === "CONSULTATION_IN_PROGRESS")
-  );
-}
-
-function getCallReason(inquiry: DashboardInquiryListItem) {
-  if (["RESOLVED", "CANCELLED"].includes(inquiry.status)) {
-    return "처리 이력 확인";
-  }
-  if (inquiry.riskLevel === "danger") return "안전 위험 확인 필요";
-  if (inquiry.status === "REOPENED") return "동일 증상 재문의";
-  if (inquiry.status === "CONSULTATION_REQUIRED") return "상담 연결 요청";
-  if (inquiry.priority === "URGENT") return "긴급 처리 요청";
-  return "현재 단계 확인";
-}
-
-function getNextActionLabel(inquiry: DashboardInquiryListItem) {
-  return inquiry.allowedActions[0]?.label ?? STATUS_LABELS[inquiry.status];
-}
-
-function getWorkPriorityScore(inquiry: DashboardInquiryListItem) {
-  const riskScore = { danger: 300, caution: 200, general: 100 };
-  const priorityScore = { URGENT: 80, HIGH: 50, NORMAL: 20, LOW: 0 };
-  return (
-    (requiresImmediateCall(inquiry) ? 1000 : 0) +
-    riskScore[inquiry.riskLevel] +
-    priorityScore[inquiry.priority] +
-    Math.min(180, getWaitingMinutes(inquiry))
-  );
-}
-
-function isAiReviewCandidate(
-  inquiry: DashboardInquiryListItem,
-  detail?: CounselorInquiry,
-) {
-  if (["RESOLVED", "CANCELLED"].includes(inquiry.status)) return false;
-  if (detail) {
-    return (
-      detail.aiStatus === "COMPLETED" &&
-      !detail.confirmedSummary &&
-      [
-        "CONSULTATION_REQUIRED",
-        "CONSULTATION_IN_PROGRESS",
-        "VISIT_REVIEW_PENDING",
-      ].includes(inquiry.status)
-    );
-  }
-  return inquiry.allowedActions.some((action) =>
-    ["UPDATE_CONSULTATION_SUMMARY", "CONFIRM_CONSULTATION_SUMMARY"].includes(
-      action.code,
-    ),
-  );
-}
 
 const INITIAL_RISK_SECTION_STATUS_FILTERS: Record<
   ConsultantRiskLevelDto,
@@ -201,7 +100,32 @@ function getInitialBucket(search: string): CounselorWorkBucket {
   return bucket === "IN_PROGRESS" || bucket === "COMPLETED" ? bucket : "NEW";
 }
 
-export default function ConsultantDashboardPage() {
+const INQUIRY_TAG_RULES: readonly {
+  label: string;
+  keywords: readonly string[];
+}[] = [
+  { label: "출수", keywords: ["출수", "물이 안 나오", "물 안 나오"] },
+  { label: "물 온도", keywords: ["냉수", "온수", "미지근", "온도"] },
+  { label: "소음", keywords: ["소음", "소리", "진동"] },
+  {
+    label: "누수",
+    keywords: ["누수", "물이 고", "물 새", "물샘", "물기", "아래에 물"],
+  },
+  { label: "필터", keywords: ["필터", "교체"] },
+  { label: "냄새·맛", keywords: ["냄새", "물맛", "맛이"] },
+  { label: "화면", keywords: ["LCD", "화면", "표시"] },
+  { label: "전원", keywords: ["전원", "꺼져", "작동하지"] },
+];
+
+function getInquiryTag(symptomSummary: string): string {
+  return (
+    INQUIRY_TAG_RULES.find(({ keywords }) =>
+      keywords.some((keyword) => symptomSummary.includes(keyword)),
+    )?.label ?? "기타"
+  );
+}
+
+export default function ConsultantInquiryListPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -218,13 +142,6 @@ export default function ConsultantDashboardPage() {
     useState<ConsultantRiskLevelDto | null>(null);
   const [activeRiskSection, setActiveRiskSection] =
     useState<ConsultantRiskLevelDto>("danger");
-  const [workFocus, setWorkFocus] = useState<WorkFocus>("NEW");
-  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
-  const [reviewDrafts, setReviewDrafts] = useState<Record<string, string>>({});
-  const [reviewDecisions, setReviewDecisions] = useState<
-    Record<string, AiReviewDecision>
-  >({});
-  const [reviewNotice, setReviewNotice] = useState<string | null>(null);
   const [selectedInquiryId, setSelectedInquiryId] =
     useState<InquiryId | null>(null);
   const [autoAdvance, setAutoAdvance] = useState(true);
@@ -272,31 +189,34 @@ export default function ConsultantDashboardPage() {
   const listQuery = useConsultantInquiryListQuery(repositoryQuery);
   const overviewRepositoryQuery = useMemo<ConsultantInquiryListQuery>(
     () => ({
-      status: ACTIVE_WORK_STATUSES,
-      sort: "RISK_DESC",
+      status: [
+        ...BUCKET_STATUSES.NEW,
+        ...BUCKET_STATUSES.IN_PROGRESS,
+        ...BUCKET_STATUSES.COMPLETED,
+      ],
       page: 1,
       size: 100,
     }),
     [],
   );
   const overviewQuery = useConsultantInquiryListQuery(overviewRepositoryQuery);
-  const remoteOverviewHasEmptyWorkBucket =
+  const remoteOverviewHasEmptyBucket =
     overviewQuery.status === "success" &&
-    (!overviewQuery.data?.items.some((inquiry) =>
-      BUCKET_STATUSES.NEW.includes(inquiry.status),
-    ) ||
-      !overviewQuery.data?.items.some((inquiry) =>
-        BUCKET_STATUSES.IN_PROGRESS.includes(inquiry.status),
-      ));
+    Object.values(BUCKET_STATUSES).some(
+      (statuses) =>
+        !overviewQuery.data?.items.some((inquiry) =>
+          statuses.includes(inquiry.status),
+        ),
+    );
   const useDesignMockFallback =
     import.meta.env.DEV &&
     consultantWorkspaceDataRepository.dataSource === "REMOTE" &&
-    (remoteOverviewHasEmptyWorkBucket ||
+    (remoteOverviewHasEmptyBucket ||
       listQuery.status === "error" ||
       overviewQuery.status === "error" ||
       (listQuery.status === "success" &&
         (listQuery.data?.pageInfo.total ?? 0) === 0));
-  const useDashboardMockData =
+  const useListMockData =
     consultantWorkspaceDataRepository.dataSource === "MOCK" ||
     useDesignMockFallback;
   const designMockWorkspaceRepository = useMemo(
@@ -307,38 +227,22 @@ export default function ConsultantDashboardPage() {
     ? designMockWorkspaceRepository
     : consultantWorkspaceRepository;
   const queryData = useMemo(
-    () => {
-      if (useDesignMockFallback) {
-        return createMockConsultantInquiryListViewModel(
-          repositoryQuery,
-          "DESIGN_SCENARIOS",
-        );
-      }
-      return consultantWorkspaceDataRepository.dataSource === "MOCK"
-        ? createMockConsultantInquiryListViewModel(repositoryQuery)
-        : listQuery.data;
-    },
+    () =>
+      useDesignMockFallback
+        ? createMockConsultantInquiryListViewModel(
+            repositoryQuery,
+            "DESIGN_SCENARIOS",
+          )
+        : consultantWorkspaceDataRepository.dataSource === "MOCK"
+          ? createMockConsultantInquiryListViewModel(repositoryQuery)
+        : listQuery.data,
     [listQuery.data, repositoryQuery, useDesignMockFallback],
-  );
-  const overviewData = useMemo(
-    () => {
-      if (useDesignMockFallback) {
-        return createMockConsultantInquiryListViewModel(
-          overviewRepositoryQuery,
-          "DESIGN_SCENARIOS",
-        );
-      }
-      return consultantWorkspaceDataRepository.dataSource === "MOCK"
-        ? createMockConsultantInquiryListViewModel(overviewRepositoryQuery)
-        : overviewQuery.data;
-    },
-    [overviewQuery.data, overviewRepositoryQuery, useDesignMockFallback],
   );
   const loadState = ["loading", "error", "forbidden"].includes(
     mockState ?? "",
   )
     ? (mockState as "loading" | "error" | "forbidden")
-    : useDashboardMockData
+    : useListMockData
       ? "ready"
       : listQuery.isForbidden
         ? "forbidden"
@@ -441,52 +345,6 @@ export default function ConsultantDashboardPage() {
       ),
     ),
   };
-  const overviewItems: readonly DashboardInquiryListItem[] =
-    overviewData?.items ?? queuePage.items;
-  const mockInquiryDetails = useMemo(
-    () =>
-      new Map<string, CounselorInquiry>(
-        activeWorkspaceRepository
-          .listConsultantQueue()
-          .map((inquiry) => [inquiry.inquiryId, inquiry] as const),
-      ),
-    [activeWorkspaceRepository],
-  );
-  const aiReviewCandidates = overviewItems
-    .filter(
-      (inquiry) =>
-        !reviewDecisions[inquiry.inquiryId] &&
-        isAiReviewCandidate(
-          inquiry,
-          mockInquiryDetails.get(inquiry.inquiryId),
-        ),
-    )
-    .sort((left, right) => {
-      const riskScore = { danger: 3, caution: 2, general: 1 };
-      return (
-        riskScore[right.riskLevel] - riskScore[left.riskLevel] ||
-        right.waitingSeconds - left.waitingSeconds
-      );
-    });
-  const selectedReview =
-    aiReviewCandidates.find(
-      (inquiry) => inquiry.inquiryId === selectedReviewId,
-    ) ??
-    aiReviewCandidates[0] ??
-    null;
-  const selectedReviewDetail = selectedReview
-    ? mockInquiryDetails.get(selectedReview.inquiryId)
-    : undefined;
-  const selectedReviewDraft = selectedReview
-    ? (reviewDrafts[selectedReview.inquiryId] ??
-      selectedReviewDetail?.aiSummaryRevision ??
-      selectedReviewDetail?.aiSummaryOriginal ??
-      "")
-    : "";
-  const immediateCallCount = overviewItems.filter(requiresImmediateCall).length;
-  const aiReviewCandidateIds = new Set(
-    aiReviewCandidates.map((inquiry) => inquiry.inquiryId),
-  );
   const selectedBase = activeWorkspaceRepository.findInquiry(selectedInquiryId);
   const selectedInquiry = selectedBase
     ? {
@@ -494,60 +352,18 @@ export default function ConsultantDashboardPage() {
         ...inquiryStateUpdates[selectedBase.inquiryId],
       }
     : null;
-  const dashboardCounselorName =
-    user?.displayName === "합성 상담사 001"
-      ? "한예나"
-      : (user?.displayName ?? "상담사");
-  const changeRiskSection = (riskLevel: ConsultantRiskLevelDto) => {
-    setActiveRiskSection(riskLevel);
-    setOpenRiskStatusFilter(null);
-    setSelectedInquiryId(null);
-  };
-
-  const changeWorkFocus = (focus: WorkFocus) => {
-    if (focus === "NEW" || focus === "CALL") {
-      setActiveBucket("NEW");
-    } else if (focus === "IN_PROGRESS") {
-      setActiveBucket("IN_PROGRESS");
-    }
-    setWorkFocus(focus);
+  const changeBucket = (bucket: CounselorWorkBucket) => {
+    setActiveBucket(bucket);
     setRiskSectionStatusFilters(INITIAL_RISK_SECTION_STATUS_FILTERS);
     setOpenRiskStatusFilter(null);
     setSelectedInquiryId(null);
     if (filters.page !== 1) setFilters({ ...filters, page: 1 });
   };
 
-  const matchesWorkFocus = (inquiry: DashboardInquiryListItem) => {
-    if (workFocus === "CALL") return requiresImmediateCall(inquiry);
-    if (inquiry.status === "UNKNOWN") return false;
-    if (workFocus === "NEW") return BUCKET_STATUSES.NEW.includes(inquiry.status);
-    if (workFocus === "IN_PROGRESS") {
-      return BUCKET_STATUSES.IN_PROGRESS.includes(inquiry.status);
-    }
-    if (workFocus === "AI_REVIEW") {
-      return aiReviewCandidateIds.has(inquiry.inquiryId);
-    }
-    return true;
-  };
-
-  const finishAiReview = (decision: AiReviewDecision, revised: boolean) => {
-    if (!selectedReview) return;
-    if (revised && !selectedReviewDraft.trim()) {
-      setReviewNotice("수정한 요약 내용을 입력해 주세요.");
-      return;
-    }
-    setReviewDecisions((current) => ({
-      ...current,
-      [selectedReview.inquiryId]: decision,
-    }));
-    setReviewNotice(
-      decision === "REJECTED"
-        ? `${selectedReview.inquiryCode} 요약을 반려했습니다.`
-        : revised
-          ? `${selectedReview.inquiryCode} 요약을 수정 승인했습니다.`
-          : `${selectedReview.inquiryCode} 요약을 승인했습니다.`,
-    );
-    setSelectedReviewId(null);
+  const changeRiskSection = (riskLevel: ConsultantRiskLevelDto) => {
+    setActiveRiskSection(riskLevel);
+    setOpenRiskStatusFilter(null);
+    setSelectedInquiryId(null);
   };
 
   const handleRiskTabKeyDown = (
@@ -596,17 +412,17 @@ export default function ConsultantDashboardPage() {
     const inquiryId = toInquiryId(rawInquiryId);
     if (!inquiryId) return;
 
-    if (useDashboardMockData) {
+    if (useListMockData) {
       setSelectedInquiryId(inquiryId);
       return;
     }
     navigate(createInquiryDetailPath(inquiryId), {
-      state: { returnTo: `/consultant/dashboard${location.search}` },
+      state: { returnTo: `/consultant/inquiries${location.search}` },
     });
   };
 
   return (
-    <div className="simple-consultant-app consultant-queue-app">
+    <div className="simple-consultant-app consultant-queue-app consultant-inquiry-list-app">
       <main className="simple-consultant-main consultant-queue-main">
         <h1 id="simple-page-title" className="consultant-visually-hidden">
           고객 문의
@@ -655,7 +471,7 @@ export default function ConsultantDashboardPage() {
               />
             </span>
             <strong className="simple-user__name">
-              {dashboardCounselorName}
+              {user?.displayName ?? "상담사"}
             </strong>
             <svg
               className="simple-user__chevron"
@@ -669,80 +485,10 @@ export default function ConsultantDashboardPage() {
         </header>
 
         <ConsultantQueueSidebar
-          activeBucket={null}
+          activeBucket={activeBucket}
           bucketCounts={bucketCounts}
-          dashboardActive
+          onBucketChange={changeBucket}
         />
-
-        <section
-          id="consultant-dashboard-panel"
-          className="counselor-home-summary"
-          aria-labelledby="counselor-home-title"
-        >
-          <div className="counselor-home-summary__intro">
-            <span>
-              MY WORKSPACE
-              {useDashboardMockData && (
-                <b
-                  className="counselor-home-summary__mock-badge"
-                  aria-label="디자인 Mock 데이터 사용 중"
-                >
-                  DESIGN MOCK
-                </b>
-              )}
-            </span>
-            <h1 id="counselor-home-title">
-              {dashboardCounselorName}님의 지금 할 일
-            </h1>
-          </div>
-
-          <div className="counselor-home-metrics" aria-label="업무 요약">
-            <button
-              type="button"
-              className={`counselor-home-metric counselor-home-metric--call${
-                workFocus === "CALL" ? " is-active" : ""
-              }`}
-              aria-pressed={workFocus === "CALL"}
-              onClick={() => changeWorkFocus("CALL")}
-            >
-              <span>전화 연결 필요</span>
-              <strong>{immediateCallCount}</strong>
-            </button>
-            <button
-              type="button"
-              className={`counselor-home-metric counselor-home-metric--work${
-                workFocus === "NEW" ? " is-active" : ""
-              }`}
-              aria-pressed={workFocus === "NEW"}
-              onClick={() => changeWorkFocus("NEW")}
-            >
-              <span>새 문의</span>
-              <strong>{bucketCounts.NEW}</strong>
-            </button>
-            <button
-              type="button"
-              className={`counselor-home-metric counselor-home-metric--waiting${
-                workFocus === "IN_PROGRESS" ? " is-active" : ""
-              }`}
-              aria-pressed={workFocus === "IN_PROGRESS"}
-              onClick={() => changeWorkFocus("IN_PROGRESS")}
-            >
-              <span>진행 중인 문의</span>
-              <strong>{bucketCounts.IN_PROGRESS}</strong>
-            </button>
-            <button
-              type="button"
-              className={`counselor-home-metric counselor-home-metric--ai${
-                workFocus === "AI_REVIEW" ? " is-active" : ""
-              }`}
-              aria-pressed={workFocus === "AI_REVIEW"}
-              onClick={() => changeWorkFocus("AI_REVIEW")}
-            >
-              <span>AI 요약 검수</span>
-              <strong>{aiReviewCandidates.length}</strong>
-            </button>
-          </div>
-        </section>
 
         <section
           id="consultant-queue-panel"
@@ -754,28 +500,6 @@ export default function ConsultantDashboardPage() {
             className="consultant-list consultant-risk-columns"
             aria-label="상담 문의 목록"
           >
-            <header className="counselor-work-queue__header">
-              <div>
-                <span>PRIORITY QUEUE</span>
-                <h2>지금 처리할 업무</h2>
-                <p>
-                  {WORK_BUCKET_LABELS[activeBucket]} · 위험도와 접수 경과 기준 정렬
-                </p>
-              </div>
-              <nav className="counselor-work-focus" aria-label="업무 빠른 필터">
-                {WORK_FOCUS_OPTIONS.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    className={workFocus === option.id ? "is-active" : ""}
-                    aria-pressed={workFocus === option.id}
-                    onClick={() => changeWorkFocus(option.id)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </nav>
-            </header>
             {loadState === "loading" ? (
               <LoadingState
                 title="상담 문의 목록을 불러오고 있습니다."
@@ -863,17 +587,10 @@ export default function ConsultantDashboardPage() {
                       (inquiry) => inquiry.status === status,
                     ),
                 );
-                const inquiries = sectionInquiries
-                  .filter(
-                    (inquiry) =>
-                      (statusFilter === "ALL" ||
-                        inquiry.status === statusFilter) &&
-                      matchesWorkFocus(inquiry),
-                  )
-                  .sort(
-                    (left, right) =>
-                      getWorkPriorityScore(right) - getWorkPriorityScore(left),
-                  );
+                const inquiries = sectionInquiries.filter(
+                  (inquiry) =>
+                    statusFilter === "ALL" || inquiry.status === statusFilter,
+                );
 
                 return (
                   <section
@@ -993,39 +710,16 @@ export default function ConsultantDashboardPage() {
                             aria-label={`${inquiry.inquiryCode} ${inquiry.customerDisplayNameMasked} ${inquiry.symptomSummary} 상세 열기`}
                             onClick={() => openInquiry(inquiry.inquiryId)}
                           >
-                            <span className="consultant-list-item__signals">
-                              <b
-                                className={`consultant-signal consultant-signal--${inquiry.riskLevel}`}
-                              >
-                                {RISK_LABELS[inquiry.riskLevel]}
-                              </b>
-                              <b className={`consultant-priority consultant-priority--${inquiry.priority.toLowerCase()}`}>
-                                우선 {PRIORITY_LABELS[inquiry.priority]}
-                              </b>
-                              {requiresImmediateCall(inquiry) && (
-                                <em>전화 연결 필요</em>
-                              )}
-                            </span>
                             <span className="consultant-list-item__subject">
-                              <strong>{inquiry.symptomSummary}</strong>
-                              <small>{inquiry.inquiryCode}</small>
+                              {inquiry.symptomSummary}
+                            </span>
+
+                            <span className="consultant-list-item__tag">
+                              {getInquiryTag(inquiry.symptomSummary)}
                             </span>
 
                             <span className="consultant-list-item__customer">
-                              <strong>{inquiry.customerDisplayNameMasked}</strong>
-                              <small>{inquiry.productModel}</small>
-                            </span>
-
-                            <span className="consultant-list-item__progress">
-                              <strong>{STATUS_LABELS[inquiry.status]}</strong>
-                              <small>
-                                접수 후 {formatWaitingTime(getWaitingMinutes(inquiry))}
-                              </small>
-                            </span>
-
-                            <span className="consultant-list-item__next">
-                              <small>{getCallReason(inquiry)}</small>
-                              <strong>{getNextActionLabel(inquiry)}</strong>
+                              {inquiry.customerDisplayNameMasked}
                             </span>
                           </button>
                         ))
@@ -1037,134 +731,6 @@ export default function ConsultantDashboardPage() {
               </>
             )}
           </div>
-
-          <aside className="counselor-ai-review" aria-labelledby="counselor-ai-review-title">
-            <header className="counselor-ai-review__header">
-              <div>
-                <span>AI QUALITY CHECK</span>
-                <h2 id="counselor-ai-review-title">AI 요약 검수</h2>
-              </div>
-              <b>{aiReviewCandidates.length}</b>
-            </header>
-
-            {reviewNotice && (
-              <p className="counselor-ai-review__notice" role="status">
-                {reviewNotice}
-              </p>
-            )}
-
-            {!selectedReview ? (
-              <div className="counselor-ai-review__empty">
-                <span aria-hidden="true">✓</span>
-                <strong>현재 검수할 요약이 없습니다.</strong>
-                <p>새 AI 요약이 생성되면 원문과 함께 표시됩니다.</p>
-              </div>
-            ) : (
-              <>
-                <div className="counselor-ai-review__case">
-                  <div>
-                    <b
-                      className={`consultant-signal consultant-signal--${selectedReview.riskLevel}`}
-                    >
-                      {RISK_LABELS[selectedReview.riskLevel]}
-                    </b>
-                    <span>{selectedReview.inquiryCode}</span>
-                  </div>
-                  <strong>{selectedReview.customerDisplayNameMasked}</strong>
-                  <p>{selectedReview.productModel}</p>
-                </div>
-
-                <section className="counselor-ai-compare" aria-label="고객 원문과 AI 요약 비교">
-                  <article>
-                    <header>
-                      <span>01</span>
-                      <strong>고객 원문</strong>
-                    </header>
-                    <blockquote>{selectedReview.symptomSummary}</blockquote>
-                  </article>
-                  <article>
-                    <header>
-                      <span>02</span>
-                      <strong>AI 요약 초안</strong>
-                    </header>
-                    {selectedReviewDetail ? (
-                      <textarea
-                        aria-label="AI 요약 수정본"
-                        value={selectedReviewDraft}
-                        onChange={(event) =>
-                          setReviewDrafts((current) => ({
-                            ...current,
-                            [selectedReview.inquiryId]: event.target.value,
-                          }))
-                        }
-                      />
-                    ) : (
-                      <div className="counselor-ai-review__integration">
-                        <strong>요약 상세 연동 필요</strong>
-                        <p>
-                          목록에는 검수 행동만 제공됩니다. 원문·AI 초안 비교는 상담 상세 API 연동 후 활성화됩니다.
-                        </p>
-                      </div>
-                    )}
-                  </article>
-                </section>
-
-                <div className="counselor-ai-review__checklist" aria-label="요약 확인 항목">
-                  <span>증상</span>
-                  <span>안전 신호</span>
-                  <span>고객 요청</span>
-                  <span>다음 행동</span>
-                </div>
-
-                <div className="counselor-ai-review__actions">
-                  <button
-                    type="button"
-                    className="is-reject"
-                    disabled={!selectedReviewDetail}
-                    onClick={() => finishAiReview("REJECTED", false)}
-                  >
-                    반려
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!selectedReviewDetail}
-                    onClick={() => finishAiReview("APPROVED", true)}
-                  >
-                    수정 승인
-                  </button>
-                  <button
-                    type="button"
-                    className="is-primary"
-                    disabled={!selectedReviewDetail}
-                    onClick={() => finishAiReview("APPROVED", false)}
-                  >
-                    승인
-                  </button>
-                </div>
-
-                {aiReviewCandidates.length > 1 && (
-                  <div className="counselor-ai-review__queue">
-                    <span>다음 검수</span>
-                    {aiReviewCandidates.slice(0, 4).map((inquiry) => (
-                      <button
-                        key={inquiry.inquiryId}
-                        type="button"
-                        className={
-                          inquiry.inquiryId === selectedReview.inquiryId
-                            ? "is-active"
-                            : ""
-                        }
-                        aria-label={`${inquiry.inquiryCode} AI 요약 검수`}
-                        onClick={() => setSelectedReviewId(inquiry.inquiryId)}
-                      >
-                        {inquiry.customerDisplayNameMasked}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </aside>
 
           {loadState === "ready" && queuePage.totalItems > 0 && (
             <Pagination
@@ -1220,19 +786,11 @@ export default function ConsultantDashboardPage() {
                     ...current,
                     [selectedInquiry.inquiryId]: update,
                   }));
-                  const nextBucket = getCounselorWorkBucket(update.status);
-                  setActiveBucket(nextBucket);
-                  setWorkFocus(
-                    nextBucket === "NEW"
-                      ? "NEW"
-                      : nextBucket === "IN_PROGRESS"
-                        ? "IN_PROGRESS"
-                        : "ALL",
-                  );
+                  setActiveBucket(getCounselorWorkBucket(update.status));
                 }}
                 onOpenFullDetail={() =>
                   navigate(createInquiryDetailPath(selectedInquiry.inquiryId), {
-                    state: { returnTo: `/consultant/dashboard${location.search}` },
+                    state: { returnTo: `/consultant/inquiries${location.search}` },
                   })
                 }
               />

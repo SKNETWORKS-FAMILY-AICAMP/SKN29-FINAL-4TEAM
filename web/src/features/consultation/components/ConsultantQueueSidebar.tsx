@@ -67,9 +67,26 @@ function PhoneInquiryIcon() {
   );
 }
 
+function DashboardIcon() {
+  return (
+    <svg
+      className="consultant-work-tab__icon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="3.5" width="7" height="4.5" rx="1.5" />
+      <rect x="13.5" y="10.5" width="7" height="10" rx="1.5" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+    </svg>
+  );
+}
+
 interface ConsultantQueueSidebarProps {
   activeBucket: CounselorWorkBucket | null;
   bucketCounts?: Readonly<Record<CounselorWorkBucket, number>>;
+  dashboardActive?: boolean;
   phoneEntryActive?: boolean;
   onBucketChange?: (bucket: CounselorWorkBucket) => void;
 }
@@ -77,6 +94,7 @@ interface ConsultantQueueSidebarProps {
 export default function ConsultantQueueSidebar({
   activeBucket,
   bucketCounts,
+  dashboardActive = false,
   phoneEntryActive = false,
   onBucketChange,
 }: ConsultantQueueSidebarProps) {
@@ -109,15 +127,34 @@ export default function ConsultantQueueSidebar({
         aria-label="상담사 메뉴"
         role="tablist"
       >
+        <Link
+          to={ROUTE_PATHS.consultantDashboard}
+          role="tab"
+          aria-selected={dashboardActive}
+          aria-controls="consultant-dashboard-panel"
+          className={`consultant-work-tab consultant-work-tab--dashboard${
+            dashboardActive ? " is-active" : ""
+          }`}
+        >
+          <span>
+            <DashboardIcon />
+            <strong>업무 대시보드</strong>
+          </span>
+        </Link>
+
         {WORK_BUCKETS.map((bucket) => (
           <button
             key={bucket}
             type="button"
             role="tab"
-            aria-selected={!phoneEntryActive && activeBucket === bucket}
+            aria-selected={
+              !dashboardActive && !phoneEntryActive && activeBucket === bucket
+            }
             aria-controls="consultant-queue-panel"
             className={`consultant-work-tab consultant-work-tab--${bucket.toLowerCase()}${
-              !phoneEntryActive && activeBucket === bucket ? " is-active" : ""
+              !dashboardActive && !phoneEntryActive && activeBucket === bucket
+                ? " is-active"
+                : ""
             }`}
             onClick={() => openBucket(bucket)}
           >
@@ -132,10 +169,10 @@ export default function ConsultantQueueSidebar({
         <Link
           to={ROUTE_PATHS.consultantPhoneInquiryCreate}
           role="tab"
-          aria-selected={phoneEntryActive}
+          aria-selected={!dashboardActive && phoneEntryActive}
           aria-controls="consultant-phone-entry-panel"
           className={`consultant-work-tab consultant-work-tab--phone${
-            phoneEntryActive ? " is-active" : ""
+            !dashboardActive && phoneEntryActive ? " is-active" : ""
           }`}
         >
           <span>

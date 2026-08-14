@@ -1,4 +1,4 @@
-import { appEnv } from "../../../app/config/env";
+import { appEnv, type MockDataset } from "../../../app/config/env";
 import { ApiClientError } from "../../../common/api/apiError";
 import type { ApiResponse } from "../../../common/api/apiResponse";
 import { requestApi } from "../../../common/api/httpClient";
@@ -40,8 +40,10 @@ export type ConsultantApiRequester = <TData>(
   path: string,
 ) => Promise<ApiResponse<TData>>;
 
-function getMockInquiries(): readonly CounselorInquiry[] {
-  return appEnv.mockDataset === "DESIGN_SCENARIOS"
+function getMockInquiries(
+  dataset: MockDataset = appEnv.mockDataset,
+): readonly CounselorInquiry[] {
+  return dataset === "DESIGN_SCENARIOS"
     ? CONSULTANT_QUEUE_INQUIRIES
     : REMOTE_PARITY_CONSULTANT_INQUIRIES;
 }
@@ -177,17 +179,20 @@ function matchesMockQuery(
   return true;
 }
 
-export function createMockConsultantWorkspaceDataRepository(): ConsultantWorkspaceDataRepository {
+export function createMockConsultantWorkspaceDataRepository(
+  dataset: MockDataset = appEnv.mockDataset,
+): ConsultantWorkspaceDataRepository {
+  const mockInquiries = getMockInquiries(dataset);
   return {
     dataSource: "MOCK",
     async listInquiries(query = {}) {
       return {
-        data: createMockConsultantInquiryListViewModel(query),
+        data: createMockConsultantInquiryListViewModel(query, dataset),
         correlationId: "mock-consultant-workspace",
       };
     },
     async getInquiryDetail(inquiryId) {
-      const inquiry = getMockInquiries().find(
+      const inquiry = mockInquiries.find(
         (item) => item.inquiryId === inquiryId,
       );
       if (!inquiry) {
@@ -254,8 +259,9 @@ export function createMockConsultantWorkspaceDataRepository(): ConsultantWorkspa
 
 export function createMockConsultantInquiryListViewModel(
   query: ConsultantInquiryListQuery = {},
+  dataset: MockDataset = appEnv.mockDataset,
 ): ConsultantInquiryListViewModel {
-  const mockInquiries = getMockInquiries();
+  const mockInquiries = getMockInquiries(dataset);
   const filtered = mockInquiries.filter((item) =>
     matchesMockQuery(item, query),
   );

@@ -70,6 +70,18 @@ describe("App Router Guard", () => {
     ).toBeInTheDocument();
   });
 
+  it("상담사는 별도 업무 대시보드에 접근할 수 있다", async () => {
+    renderRoute("/consultant/dashboard", createUser("CONSULTANT"));
+
+    expect(
+      await screen.findByRole("heading", { name: "테스트 CONSULTANT님의 지금 할 일" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "업무 대시보드" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+  });
+
   it("상담사는 전화 문의 등록 화면에 접근할 수 있다", async () => {
     renderRoute(
       "/consultant/phone-inquiries/new",

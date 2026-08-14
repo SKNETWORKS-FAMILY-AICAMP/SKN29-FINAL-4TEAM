@@ -28,7 +28,7 @@ const EXPECTED_BUCKET_COUNTS: Record<CounselorWorkBucket, number> = {
   COMPLETED: 30,
 };
 
-function renderPage(path = "/consultant/dashboard") {
+function renderPage(path = "/consultant/inquiries") {
   return render(
     <AuthProvider initialUser={CONSULTANT_USER}>
       <MemoryRouter initialEntries={[path]}>
@@ -47,42 +47,16 @@ async function openInquiry(
     await user.click(screen.getByRole("tab", { name: TAB_LABELS[bucket] }));
   }
   await user.type(screen.getByRole("searchbox", { name: "문의 검색" }), inquiryCode);
-  await user.click(
-    within(screen.getByLabelText("상담 문의 목록")).getByRole("button", {
-      name: new RegExp(`${inquiryCode}.*상세 열기`),
-    }),
-  );
+  await user.click(screen.getByRole("button", { name: new RegExp(inquiryCode) }));
 }
 
-describe("ConsultantDashboardPage", () => {
-  it("첫 화면은 개인 업무 요약과 세 가지 업무 탭을 함께 보여준다", () => {
+describe("ConsultantInquiryListPage", () => {
+  it("첫 화면은 세 가지 업무 탭과 문의 목록만 보여준다", () => {
     renderPage();
 
-    expect(
-      screen.getByRole("heading", { name: "테스트 상담원님의 지금 할 일" }),
-    ).toBeVisible();
-    const workSummary = within(screen.getByLabelText("업무 요약"));
-    expect(workSummary.getByRole("button", { name: /전화 연결 필요/ })).toBeVisible();
-    expect(workSummary.getByRole("button", { name: /새 문의30/ })).toBeVisible();
-    expect(workSummary.getByRole("button", { name: /진행 중인 문의30/ })).toBeVisible();
-    expect(screen.getByRole("heading", { name: "AI 요약 검수" })).toBeVisible();
-    expect(
-      screen.getByLabelText("디자인 Mock 데이터 사용 중"),
-    ).toBeVisible();
-    expect(
-      screen.queryByText("안전 확인과 상담 연결이 필요한 문의부터 순서대로 보여드립니다."),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText("안전·재문의·상담 대기")).not.toBeInTheDocument();
-    expect(screen.queryByText("신규·진행 중 전체")).not.toBeInTheDocument();
-    expect(screen.queryByText("접수 후 90분 이상")).not.toBeInTheDocument();
-    expect(screen.queryByText("현재 목록 기준")).not.toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "업무 대시보드" })).toHaveAttribute(
-      "aria-selected",
-      "true",
-    );
     expect(screen.getByRole("tab", { name: /새 문의/ })).toHaveAttribute(
       "aria-selected",
-      "false",
+      "true",
     );
     expect(screen.getByRole("tab", { name: /처리 중인 문의/ })).toBeVisible();
     expect(screen.getByRole("tab", { name: /처리 완료된 문의/ })).toBeVisible();
@@ -90,26 +64,6 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.getByLabelText("상담 문의 목록")).toBeVisible();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: /상담 기록/ })).not.toBeInTheDocument();
-  });
-
-  it("디자인 Mock에서는 모든 업무 요약 카드가 문의 목록을 제공한다", async () => {
-    const user = userEvent.setup();
-    renderPage();
-
-    const workSummary = within(screen.getByLabelText("업무 요약"));
-    const inquiryList = within(screen.getByLabelText("상담 문의 목록"));
-
-    for (const cardName of [
-      /새 문의30/,
-      /전화 연결 필요32/,
-      /진행 중인 문의30/,
-      /AI 요약 검수42/,
-    ]) {
-      await user.click(workSummary.getByRole("button", { name: cardName }));
-      expect(
-        inquiryList.getAllByRole("button", { name: /상세 열기/ }).length,
-      ).toBeGreaterThan(0);
-    }
   });
 
   it("세 업무 탭의 건수는 상담사 문의 상태와 일치한다", () => {
@@ -159,7 +113,7 @@ describe("ConsultantDashboardPage", () => {
     await user.click(screen.getByRole("button", { name: "상담 시작" }));
 
     expect(await screen.findByRole("textbox", { name: /상담 기록/ })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "업무 대시보드" })).toHaveAttribute(
+    expect(screen.getByRole("tab", { name: /처리 중인 문의/ })).toHaveAttribute(
       "aria-selected",
       "true",
     );
@@ -306,13 +260,58 @@ describe("ConsultantDashboardPage", () => {
     ).toHaveLength(10);
   });
 
+  it("각 문의 탭의 상태 필터를 독립적으로 유지한다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole("tab", { name: /처리 중인 문의/ }));
+
+    let dangerFilter = screen.getByRole("button", {
+      name: "긴급 문의 상태 필터",
+    });
+
+    expect(dangerFilter).toHaveTextContent("전체 상태");
+
+    let dangerSection = screen.getByRole("tabpanel", { name: /긴급 문의/ });
+    expect(
+      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
+    ).toHaveLength(10);
+
+    await user.click(dangerFilter);
+    await user.click(screen.getByRole("option", { name: "방문 예정" }));
+
+    expect(dangerFilter).toHaveTextContent("방문 예정");
+    expect(
+      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
+    ).toHaveLength(2);
+    expect(within(dangerSection).queryByLabelText(/^상태:/)).not.toBeInTheDocument();
+    expect(within(dangerSection).queryByText(/^INQ-/)).not.toBeInTheDocument();
+    expect(within(dangerSection).queryByText(/^WPU-/)).not.toBeInTheDocument();
+    expect(within(dangerSection).queryByText(/^대기 /)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /주의 문의/ }));
+    expect(
+      screen.getByRole("button", { name: "주의 문의 상태 필터" }),
+    ).toHaveTextContent("전체 상태");
+
+    await user.click(screen.getByRole("tab", { name: /긴급 문의/ }));
+    dangerFilter = screen.getByRole("button", {
+      name: "긴급 문의 상태 필터",
+    });
+    dangerSection = screen.getByRole("tabpanel", { name: /긴급 문의/ });
+    expect(dangerFilter).toHaveTextContent("방문 예정");
+    expect(
+      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
+    ).toHaveLength(2);
+  });
+
   it.each([
     ["loading", "상담 문의 목록을 불러오고 있습니다."],
     ["error", "상담 문의 목록을 불러오지 못했습니다."],
     ["forbidden", "상담 문의 목록을 볼 권한이 없습니다."],
     ["empty", "새 문의가 없습니다."],
   ])("목록 %s 상태를 구분해 안내한다", async (state, message) => {
-    renderPage(`/consultant/dashboard?mockState=${state}`);
+    renderPage(`/consultant/inquiries?mockState=${state}`);
 
     expect(await screen.findByText(message)).toBeInTheDocument();
   });
@@ -349,16 +348,14 @@ describe("ConsultantDashboardPage", () => {
 
   it("URL의 검색어를 복원하고 해당 상태 탭에서 결과를 찾을 수 있다", async () => {
     const user = userEvent.setup();
-    renderPage("/consultant/dashboard?q=INQ-20260704-0013&page=1");
+    renderPage("/consultant/inquiries?q=INQ-20260704-0013&page=1");
 
     expect(screen.getByRole("searchbox", { name: "문의 검색" })).toHaveValue(
       "INQ-20260704-0013",
     );
     await user.click(screen.getByRole("tab", { name: /처리 중인 문의/ }));
     expect(
-      within(screen.getByLabelText("상담 문의 목록")).getByRole("button", {
-        name: /INQ-20260704-0013.*상세 열기/,
-      }),
+      screen.getByRole("button", { name: /INQ-20260704-0013/ }),
     ).toBeInTheDocument();
   });
 
@@ -383,18 +380,5 @@ describe("ConsultantDashboardPage", () => {
 
     expect(await screen.findByRole("dialog")).toBeVisible();
   });
-
-  it("고객 원문과 AI 요약을 비교하고 승인할 수 있다", async () => {
-    const user = userEvent.setup();
-    renderPage();
-
-    const summary = screen.getByRole("textbox", { name: "AI 요약 수정본" });
-    expect((summary as HTMLTextAreaElement).value).toContain("문의입니다");
-
-    await user.click(screen.getByRole("button", { name: "승인" }));
-
-    expect(await screen.findByRole("status")).toHaveTextContent(
-      /요약을 승인했습니다/,
-    );
-  });
 });
+

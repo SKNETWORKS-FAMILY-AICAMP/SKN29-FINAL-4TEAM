@@ -102,6 +102,19 @@ html body
   letter-spacing: 0.14em;
 }
 
+.counselor-home-summary__mock-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 3px 7px;
+  border: 1px solid rgb(117 100 200 / 28%);
+  border-radius: 999px;
+  background: rgb(117 100 200 / 10%);
+  color: #6657b7;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
 .counselor-home-summary__intro h1 {
   margin: 7px 0 5px;
   color: #10283c;
