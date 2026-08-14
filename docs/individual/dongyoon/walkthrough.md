@@ -1276,3 +1276,48 @@ Public UUID 분석 요청이 모두 성공했다.
   `fixture_generated_commit=PENDING_MERGE`, `artifact_delivery=BLOCKED`다.
   `ENVIRONMENT_READY`도 아직 수신하지 않았으므로 실제 pgvector·OpenAI G1-A는
   `NOT_RUN_WAITING_QA`이며 Unit·Health 결과로 대체하지 않는다.
+
+### 2026-08-14 Canonical Identity 정본 승인·Fixture provenance 후속 확인
+
+- 최신 `main@ccf30f2d30ae556ffce4b9f7b009f5e04854aeb7`과 로컬 `dongyoon`의
+  SHA가 같은 상태에서 Canonical Identity·Index Manifest의 `text eol=lf` 계약과
+  Backend Importer 보강을 확인했다.
+- 기존 Windows checkout에 남은 `index_manifest.json` CRLF 때문에 첫 Backend
+  Importer 회귀는 `25 passed, 19 failed`였으나, main LF blob으로 다시
+  materialize한 뒤 `44 passed, 0 failed`를 재현했다. Identity SHA
+  `925088a352a81180b51e5418eb3152a1244aba3da07569712c4d903468220b85`와 Index
+  Manifest SHA `91027e88dec6c3bff1e590aaf4479ca021ac284eb0bdc8e1eec6c76473da667e`는
+  Backend Manifest 기대값과 일치한다.
+- Exporter Commit `626a7a4584d381085615d80b2269b8155322176d` 당시와 현재 main의 Identity
+  SHA가 같고, Identity·Index Manifest·Exporter·승인 JSONL 내용 변경이 없음을
+  확인했다. Fixture SHA는
+  `759379308abdafbe66ef205e13cd829d8ad49714d0b824032eb0fbc58546d019`, 계약은
+  `7x1024 / FLOAT32 / chunk_id_ASC / NFC 7/7`이다.
+- AI Exporter 전용 테스트는 `10 passed`다. Identity·Exporter·Model Revision·Chunk
+  Set과 Fixture SHA가 불변이므로 재생성·재전송은 `NO`로 판정했다. QA 수신 완료는
+  요청서의 외부 ACK를 근거로 하며 AI가 Host 파일을 직접 확인한 것으로 확대하지
+  않는다.
+- 실제 G1-A Phase B는 김은진의 Importer `44 passed`, Readiness·Crosswalk·Readonly
+  View와 `ENVIRONMENT_READY=YES` 회신 전까지 `WAITING_QA`다.
+- 상세 회신은
+  `docs/individual/dongyoon/인계/20260814_이동윤_to_최지용_AI_CanonicalIdentity_정본승인_Fixture생성근거_후속확인_회신_v0.1.md`에 기록했다.
+
+### 2026-08-14 G1-A Phase B 기술 사전검증 착수
+
+- 고정 `main@ccf30f2d30ae556ffce4b9f7b009f5e04854aeb7`에서 QA의
+  `environment_ready=YES`, `g1a_joint_execution_ready=YES`를 수신했지만,
+  `source_policy_review=PENDING`, `APPROVE_WITH_POLICY_HOLD`를 실제 OpenAI 무조건
+  실행 승인으로 확대하지 않았다.
+- Backend Fixture Builder·Importer·Crosswalk·G1-B Readiness 계약 회귀는
+  `81 passed in 12.54s`, exit 0이다. 이는 Unit·계약 증거이며 실제 팀 DB 결과가 아니다.
+- AI pgvector Integration Gate는 현재 Codex Process에 `AI_VECTOR_DSN`이 없어
+  `1 failed in 0.25s`, exit 1로 fail-closed 했다. QA Host 준비 회신과 현재 Process의
+  Secret 미주입 상태를 분리하며, 검색 0건이나 PASS로 숨기지 않았다.
+- 실제 OpenAI 요청은 공식 Evidence Summary를 Provider 입력에 포함하므로 Source
+  Policy 승인 전까지 `NOT_RUN_POLICY_HOLD`다. Strict HTTP와 실제 Timeout 504도
+  실행하지 않았다.
+- 재개에는 김은진 Host에서의 직접 실행 또는 승인된 Process 환경 주입이 필요하다.
+  실제 OpenAI는 `source_policy_review=APPROVED`와 Evidence Summary 외부 전송 허용
+  ACK 후 실행한다.
+- 상세 회신은
+  `docs/individual/dongyoon/인계/20260814_이동윤_to_김은진_최지용_AI_G1A_PhaseB_기술사전검증_착수회신_v0.1.md`에 기록했다.
