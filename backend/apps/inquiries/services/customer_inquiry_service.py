@@ -7,18 +7,39 @@ from uuid import UUID
 
 from rest_framework.exceptions import NotFound
 
+from apps.audit.models import AIRun
+from apps.inquiries.models import Inquiry
 from apps.inquiries.models.inquiry_qa import public_question_options
 from apps.inquiries.repositories.customer_inquiry_repository import (
     CustomerInquiryRepository,
+)
+from apps.inquiries.services.safety_rule_registry import (
+    danger_assessment_is_valid,
 )
 from apps.workflow.engine.allowed_action_resolver import (
     AllowedActionContext,
     AllowedActionResolver,
 )
+from common.exceptions.business import BusinessError
+from common.exceptions.error_codes import AI_GUIDANCE_NOT_READY
 
 
 class CustomerInquiryService:
     """Build only the fields required by the Mobile CUSTOMER read slice."""
+
+    PUBLIC_GUIDANCE_STATES = frozenset(
+        {
+            Inquiry.Status.AI_GUIDANCE,
+            Inquiry.Status.CONSULTATION_REQUIRED,
+            Inquiry.Status.CONSULTATION_IN_PROGRESS,
+            Inquiry.Status.VISIT_REVIEW_PENDING,
+            Inquiry.Status.VISIT_SCHEDULING,
+            Inquiry.Status.VISIT_SCHEDULED,
+            Inquiry.Status.COMPLETION_PENDING,
+            Inquiry.Status.REVISIT_REQUIRED,
+            Inquiry.Status.RESOLVED,
+        }
+    )
 
     @classmethod
     def snapshot_for_customer(
@@ -83,6 +104,155 @@ class CustomerInquiryService:
             # belongs to the separate customer_answer relation/write slice.
             "questions": questions,
         }
+
+    @classmethod
+    def guidance_for_customer(
+        cls,
+        *,
+        actor: Any,
+        inquiry_public_id: UUID,
+    ) -> dict[str, Any]:
+        """Return the latest customer-safe guidance or a retryable 409."""
+
+        inquiry = CustomerInquiryRepository.find_with_guidance(
+            actor=actor,
+            inquiry_public_id=inquiry_public_id,
+        )
+        if inquiry is None:
+            raise NotFound()
+
+        allowed_actions = cls._allowed_actions(inquiry, actor=actor)
+        if inquiry.status_code not in cls.PUBLIC_GUIDANCE_STATES:
+            raise cls._guidance_not_ready(inquiry, allowed_actions)
+        guidance = next(iter(inquiry.customer_guidance_versions), None)
+        if guidance is None:
+            raise cls._guidance_not_ready(inquiry, allowed_actions)
+
+        ai_run = guidance.generated_by_ai_run
+        payload = ai_run.validated_output_payload
+        if not isinstance(payload, dict):
+            raise cls._guidance_not_ready(inquiry, allowed_actions)
+        is_no_evidence = ai_run.status_code == AIRun.Status.NO_EVIDENCE
+        if (
+            inquiry.evidence_mode == Inquiry.EvidenceMode.PARTIAL_EVIDENCE
+            or (inquiry.requires_fallback and not is_no_evidence)
+            or (
+                not is_no_evidence
+                and inquiry.evidence_mode == Inquiry.EvidenceMode.NO_EVIDENCE
+            )
+        ):
+            raise cls._guidance_not_ready(inquiry, allowed_actions)
+        safety = payload.get("safety_assessment")
+        usage = payload.get("usage_guidance")
+        if not isinstance(safety, dict) or not isinstance(usage, dict):
+            raise cls._guidance_not_ready(inquiry, allowed_actions)
+
+        risk_level = safety.get("risk_level")
+        requires_consultation = safety.get("requires_consultation")
+        usage_status = usage.get("guidance_status")
+        usage_message = usage.get("message")
+        restricted_functions = cls._validated_public_string_list(
+            usage.get("restricted_functions")
+        )
+        safe_actions = cls._validated_public_string_list(
+            usage.get("next_actions")
+        )
+        symptom_summary = inquiry.raw_text.strip()[:2000]
+        if (
+            risk_level not in set(inquiry.RiskLevel.values)
+            or not isinstance(requires_consultation, bool)
+            or usage_status not in set(inquiry.UsageGuidanceStatus.values)
+            or not isinstance(usage_message, str)
+            or not usage_message.strip()
+            or len(usage_message.strip()) > 3000
+            or restricted_functions is None
+            or safe_actions is None
+            or not safe_actions
+            or not symptom_summary
+        ):
+            raise cls._guidance_not_ready(inquiry, allowed_actions)
+        if guidance.requires_consultation is not requires_consultation:
+            raise cls._guidance_not_ready(inquiry, allowed_actions)
+        if is_no_evidence and (
+            inquiry.requires_fallback is not True
+            or inquiry.evidence_mode != Inquiry.EvidenceMode.NO_EVIDENCE
+            or requires_consultation is not True
+            or usage_status
+            != Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION
+        ):
+            raise cls._guidance_not_ready(inquiry, allowed_actions)
+        if (
+            risk_level == Inquiry.RiskLevel.DANGER
+            and not danger_assessment_is_valid(payload)
+        ):
+            raise cls._guidance_not_ready(inquiry, allowed_actions)
+
+        return {
+            "inquiry_id": inquiry.public_id,
+            "inquiry_code": inquiry.inquiry_code,
+            "status_code": inquiry.status_code,
+            "state_version": inquiry.state_version,
+            "symptom_summary": symptom_summary,
+            "risk_level": risk_level,
+            "usage_guidance_status": usage_status,
+            "usage_guidance_message": usage_message.strip(),
+            "restricted_functions": restricted_functions,
+            "safe_actions": safe_actions,
+            # The current AI response contract has no public fields for these.
+            # Do not infer new safety instructions in the Backend projection.
+            "escalation_conditions": [],
+            "prohibited_actions": [],
+            "next_action": safe_actions[0],
+            "requires_consultation": requires_consultation,
+            # Public Evidence is outside this P0. Internal chunks, scores,
+            # paths, prompts, and trace data must never cross this boundary.
+            "evidence": [],
+            "allowed_actions": allowed_actions,
+        }
+
+    @classmethod
+    def _allowed_actions(cls, inquiry, *, actor: Any) -> list[dict]:
+        open_followup_questions = any(
+            cls._question(question) is not None
+            for question in inquiry.allowed_action_open_questions
+        )
+        return AllowedActionResolver.resolve(
+            context=AllowedActionContext.from_models(
+                inquiry=inquiry,
+                actor=actor,
+                consultation=None,
+                visit=None,
+                open_followup_questions=open_followup_questions,
+            )
+        )
+
+    @staticmethod
+    def _validated_public_string_list(value: Any) -> list[str] | None:
+        if not isinstance(value, list) or len(value) > 20:
+            return None
+        projected: list[str] = []
+        for item in value:
+            if not isinstance(item, str) or not item.strip():
+                return None
+            normalized = item.strip()
+            if len(normalized) > 1000:
+                return None
+            projected.append(normalized)
+        return projected
+
+    @staticmethod
+    def _guidance_not_ready(inquiry, allowed_actions) -> BusinessError:
+        return BusinessError(
+            AI_GUIDANCE_NOT_READY,
+            "AI 안내가 아직 준비되지 않았습니다. 상담 검토가 필요합니다.",
+            details={
+                "inquiry_id": str(inquiry.public_id),
+                "current_status": inquiry.status_code,
+                "current_state_version": inquiry.state_version,
+                "allowed_actions": allowed_actions,
+            },
+            status_code=409,
+        )
 
     @staticmethod
     def _question(question) -> dict[str, Any] | None:

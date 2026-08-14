@@ -27,10 +27,14 @@ class VectorDimensions(models.Func):
     output_field = models.IntegerField()
 
     def as_postgresql(self, compiler, connection, **extra_context):
+        # Constraint validation replaces F("embedding") with a bound value.
+        # PostgreSQL then sees an untyped parameter and cannot choose between
+        # vector_dims(vector) and vector_dims(halfvec).  The explicit cast
+        # keeps both model.full_clean() and the database constraint strict.
         return super().as_sql(
             compiler,
             connection,
-            template="vector_dims(%(expressions)s)",
+            template="vector_dims((%(expressions)s)::vector)",
             **extra_context,
         )
 

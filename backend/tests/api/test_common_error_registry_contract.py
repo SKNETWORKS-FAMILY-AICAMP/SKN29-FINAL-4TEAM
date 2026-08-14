@@ -12,6 +12,7 @@ from rest_framework.exceptions import (
 )
 
 from common.exceptions.error_codes import (
+    AI_GUIDANCE_NOT_READY,
     AUTH_REQUIRED,
     DUPLICATE_EVENT,
     FORBIDDEN,
@@ -62,6 +63,7 @@ def test_all_runtime_common_codes_exist_in_registry():
         INTERNAL_ERROR,
         STATE_CONFLICT,
         DUPLICATE_EVENT,
+        AI_GUIDANCE_NOT_READY,
     } <= set(registered)
 
 
@@ -99,6 +101,16 @@ def test_new_runtime_common_error_metadata_is_exact():
         "retryable": False,
         "user_message": "요청 처리 중 오류가 발생했습니다.",
         "recommended_action": "REPORT_WITH_CORRELATION_ID",
+    }
+    assert registered[AI_GUIDANCE_NOT_READY] == {
+        "code": AI_GUIDANCE_NOT_READY,
+        "category": "ai",
+        "http_status": 409,
+        "retryable": True,
+        "user_message": (
+            "AI 안내가 아직 준비되지 않았습니다. 상담 검토가 필요합니다."
+        ),
+        "recommended_action": "REFRESH_OR_REQUEST_CONSULTATION",
     }
 
 

@@ -7,6 +7,7 @@ from apps.inquiries.api.views import (
     ConsultantCustomerSubscriptionSearchView,
     ConsultantInquiryDetailView,
     CreateInquiryView,
+    CustomerInquiryGuidanceView,
     CustomerInquiryQuestionsView,
     CustomerInquirySnapshotView,
     RegisterConsultantPhoneInquiryView,
@@ -36,6 +37,11 @@ urlpatterns = [
         "me/inquiries/<uuid:inquiry_id>/questions",
         CustomerInquiryQuestionsView.as_view(),
         name="customer-inquiry-questions",
+    ),
+    path(
+        "me/inquiries/<uuid:inquiry_id>/guidance",
+        CustomerInquiryGuidanceView.as_view(),
+        name="customer-inquiry-guidance",
     ),
     path(
         "inquiries",

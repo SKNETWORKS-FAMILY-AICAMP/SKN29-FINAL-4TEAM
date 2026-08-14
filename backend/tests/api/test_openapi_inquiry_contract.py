@@ -219,6 +219,10 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
             "listMyInquiryQuestions",
             "CustomerInquiryQuestions.yaml",
         ),
+        "/me/inquiries/{inquiry_id}/guidance": (
+            "getMyInquiryGuidance",
+            "CustomerInquiryGuidance.yaml",
+        ),
     }
 
     for path, (operation_id, schema_name) in expected.items():
@@ -227,7 +231,7 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
         assert operation["x-contract-status"] == "CONFIRMED"
         assert operation["x-runtime-status"] == "IMPLEMENTED"
         assert operation["x-permission-scope"] == "OWN_INQUIRY"
-        assert set(operation["responses"]) == {
+        expected_responses = {
             "200",
             "401",
             "403",
@@ -235,6 +239,9 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
             "422",
             "500",
         }
+        if path.endswith("/guidance"):
+            expected_responses.add("409")
+        assert set(operation["responses"]) == expected_responses
         assert load_yaml(INQUIRY_SCHEMA_DIR / schema_name)[
             "x-contract-status"
         ] == "CONFIRMED"
@@ -248,11 +255,20 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
         "./paths/customer-inquiries.yaml"
         "#/~1me~1inquiries~1{inquiry_id}~1questions"
     )
+    assert root["paths"][
+        "/me/inquiries/{inquiry_id}/guidance"
+    ]["$ref"] == (
+        "./paths/customer-inquiries.yaml"
+        "#/~1me~1inquiries~1{inquiry_id}~1guidance"
+    )
     questions_schema = load_yaml(
         INQUIRY_SCHEMA_DIR / "CustomerInquiryQuestions.yaml"
     )
     snapshot_schema = load_yaml(
         INQUIRY_SCHEMA_DIR / "CustomerInquirySnapshot.yaml"
+    )
+    guidance_schema = load_yaml(
+        INQUIRY_SCHEMA_DIR / "CustomerInquiryGuidance.yaml"
     )
     assert "allowed_actions" in snapshot_schema["required"]
     assert snapshot_schema["properties"]["allowed_actions"] == {
@@ -264,6 +280,12 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
         "items": {"$ref": "../workflow/AllowedAction.yaml"},
     }
     question_item = questions_schema["properties"]["questions"]["items"]
+    assert guidance_schema["additionalProperties"] is False
+    assert guidance_schema["properties"]["evidence"]["maxItems"] == 0
+    assert guidance_schema["properties"]["safe_actions"]["minItems"] == 1
+    assert set(guidance_schema["required"]) == set(
+        guidance_schema["properties"]
+    )
     assert "required" in question_item["required"]
     assert question_item["properties"]["required"] == {
         "type": "boolean",

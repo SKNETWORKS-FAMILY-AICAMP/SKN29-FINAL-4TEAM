@@ -1,5 +1,6 @@
 """T-005 Wave 5C pgvector chunk-embedding contract tests."""
 
+import logging
 from importlib import import_module
 from importlib.metadata import version
 from uuid import UUID, uuid4
@@ -170,6 +171,14 @@ def test_vector_field_dependency_and_migration_contract():
         migration.PortableVectorExtension,
     )
 
+    cast_migration = import_module(
+        "apps.evidence.migrations."
+        "0011_cast_chunk_embedding_vector_dimensions"
+    )
+    assert cast_migration.Migration.dependencies == [
+        ("evidence", "0010_backend_ai_rag_chunks_view"),
+    ]
+
 
 def test_indexes_and_constraints_match_contract():
     indexes = {
@@ -246,6 +255,47 @@ def test_invalid_vector_length_is_database_rejected():
             50,
             embedding=[1.0] * (EMBEDDING_DIMENSION - 1),
         )
+
+
+@pytest.mark.parametrize(
+    ("overrides", "invalid_field"),
+    [
+        ({"embedding_dimension": 768}, "embedding_dimension"),
+        (
+            {"embedding": [1.0] * (EMBEDDING_DIMENSION - 1)},
+            "embedding",
+        ),
+    ],
+)
+def test_full_clean_rejects_dimension_mismatch(
+    overrides: dict,
+    invalid_field: str,
+):
+    candidate = ChunkEmbedding(
+        **embedding_values(51 + len(invalid_field), **overrides)
+    )
+
+    with pytest.raises(ValidationError) as exc_info:
+        candidate.full_clean()
+
+    assert invalid_field in exc_info.value.message_dict
+
+
+def test_postgresql_full_clean_has_no_database_constraint_warning(caplog):
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL constraint-validation assertion")
+
+    candidate = ChunkEmbedding(**embedding_values(59))
+
+    with caplog.at_level(logging.WARNING, logger="django.db.models"):
+        candidate.full_clean()
+
+    database_check_warnings = [
+        record.getMessage()
+        for record in caplog.records
+        if "database error calling check" in record.getMessage().lower()
+    ]
+    assert database_check_warnings == []
 
 
 def test_source_hash_must_match_referenced_chunk_version():
@@ -375,6 +425,10 @@ def test_postgresql_vector_catalog_and_composite_source_fk():
 
     assert extension_version == ("0.8.6",)
     assert vector_type == ("vector(1024)",)
+    assert "ck_chunk_embedding_dimension" in constraints
+    assert "vector_dims((embedding)::vector)" in constraints[
+        "ck_chunk_embedding_dimension"
+    ][0]
     assert "fk_chunk_embedding_source_hash" in constraints
     source_hash_fk = constraints["fk_chunk_embedding_source_hash"]
     assert source_hash_fk[1:] == (
