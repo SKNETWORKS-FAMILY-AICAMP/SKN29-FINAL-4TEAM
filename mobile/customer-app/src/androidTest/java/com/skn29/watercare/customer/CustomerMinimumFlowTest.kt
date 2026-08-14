@@ -143,7 +143,6 @@ class CustomerMinimumFlowTest {
                         guidance = dangerGuidance(),
                         noEvidence = false,
                         onRetry = {},
-                        onRequestConsultation = {},
                     )
                 } else {
                     CustomerHomeContent(
