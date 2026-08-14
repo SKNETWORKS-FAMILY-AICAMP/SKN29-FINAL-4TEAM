@@ -1401,3 +1401,57 @@ Public UUID 분석 요청이 모두 성공했다.
   진행한다. NO_EVIDENCE와 DANGER는 Happy Path 결과 후 실행 여부를 결정한다.
 - 상세 전달본은
   `docs/individual/dongyoon/인계/20260814_이동윤_to_최지용_AI_RAG_CustomerGuidance_G1B_공동실행_준비회신_v0.1.md`에 기록했다.
+
+### 2026-08-14 AI RAG G1-B 단독준비 마감·사전확인 회신
+
+- 원격 `origin/main`을 갱신해 기준 SHA를
+  `720573906c5cba166a7f8fb35c9ff17f359350ab`로 확인했다. 현재
+  `dongyoon@237a9b525f64670e1afef4fbc9fa1db2545a3aa5`에 해당 main이 포함돼 있고,
+  AI·AI 계약·Canonical 입력 차이는 0건이며 검증 시 Worktree는 clean이었다.
+- QA Host용 보호 Loader·Uvicorn 기동 명령, AI Process 필수 환경변수 5개,
+  `openai / gpt-4.1-mini / customer_guidance/v2 / local` Metadata와 Backend 저장
+  설정을 코드·Runbook 기준으로 확인했다.
+- 현재 AI Health는 HTTP 200이고 `analysis_started`, `llm_guidance_completed`,
+  `analysis_completed` Correlation 로그 Event가 준비돼 있다. 기존 수용 결과와 입력이
+  같으므로 실제 OpenAI·pgvector·HTTP 504를 반복 실행하지 않았다.
+- AI 단독 준비는 `READY`, 남은 단독 작업은 `NONE`, 차단 사유는 `NONE`이다. 공동실행
+  시간은 `협의 필요`이며, 김은진 `ENVIRONMENT_READY=YES`와 최지용의 새 Inquiry·
+  Idempotency Key·Correlation ID 준비 ACK 수신 후 지원한다.
+- 상세 회신은
+  `docs/individual/dongyoon/인계/20260814_이동윤_to_최지용_AI_RAG_G1B_단독준비_마감_사전확인_회신_v0.1.md`에 기록했다.
+
+### 2026-08-14 Backend↔AI G1-B 비동기 연동 동일 Host 1차 준비 ACK
+
+- Backend와 AI를 같은 Host에서 실행하는 방식으로 고정했다. AI Base URL은
+  `http://127.0.0.1:8001`, Network Scope는 `SAME_HOST`이며 Public/LAN 바인딩과
+  방화벽 변경은 수행하지 않는다.
+- `main@720573906c5cba166a7f8fb35c9ff17f359350ab`과 Vector 수정
+  `11d771ab71aa8adc01a72af45dfe9eff280c219e`이 현재
+  `dongyoon@237a9b525f64670e1afef4fbc9fa1db2545a3aa5`에 포함된 것을 확인했다. AI·AI
+  계약·Canonical 입력 차이는 0건이다.
+- 실제 AI Runtime은 `127.0.0.1:8001` Listen, Health HTTP 200,
+  `config_loaded=true` 상태이며 `openai / gpt-4.1-mini / customer_guidance/v2 /
+  local / backend_ai_rag_chunks_v1` 준비 ACK를 확정했다.
+- 다음 담당은 최지용이다. 같은 Host Backend에 Base URL과 Metadata를 반영하고 새 합성
+  Inquiry를 제출한 뒤 공개 Inquiry ID·Correlation ID·제출시각·결과만 전달해야 한다.
+  수신 후 이동윤이 AI 로그를 비동기로 대조해 2차 증거를 회신한다.
+- 상세 1차 ACK는
+  `docs/individual/dongyoon/인계/20260814_이동윤_to_최지용_Backend_AI_G1B_비동기연동_동일Host_1차준비ACK_v0.1.md`에 기록했다.
+
+### 2026-08-14 Backend↔AI G1-B 동일 Host 실행차단
+
+- 요청대로 AI Runtime은 `127.0.0.1:8001`에서 유지하고, 같은 Checkout의 별도
+  PowerShell에서 Runtime Role을 주입했다. Django System Check는 Exit 0, G1-B
+  Readiness는 `READY`, Exit 0이었다.
+- Backend 기동 전 전체 `migrate --check --plan`을 추가 확인한 결과 Evidence 0011은
+  적용돼 있지만 Inquiry·Workflow·Consultation 등을 포함한 19개 Migration이 미적용으로
+  남아 Exit 1이었다. 이전 Seed에서 `support_inquiry.priority_code` 미존재가 실제
+  `ProgrammingError`로 재현된 상태와 일치한다.
+- 요청서의 중단 조건에 따라 임의 Migration·Import·SQL을 실행하지 않고 Backend
+  Runserver, 새 Inquiry, Submit과 Replay를 모두 `NOT_RUN`으로 유지했다. AI Health는
+  계속 HTTP 200이며 Backend 8000번 Port는 열지 않았다.
+- 준비 ACK는 `BLOCKED`, 실제 G1-B 결과는 `BLOCKED_AT_BACKEND_PRESTART_MIGRATION_GATE`다.
+  다음 결정은 현재 DB에 19개 Migration을 적용할지, 완전 적용된 QA DB·Volume을 사용할지
+  최지용 Backend·DB 담당자가 내려야 한다.
+- 상세 회신은
+  `docs/individual/dongyoon/인계/20260814_이동윤_to_최지용_Backend_AI_G1B_동일Host_실행차단_회신_v0.1.md`에 기록했다.
