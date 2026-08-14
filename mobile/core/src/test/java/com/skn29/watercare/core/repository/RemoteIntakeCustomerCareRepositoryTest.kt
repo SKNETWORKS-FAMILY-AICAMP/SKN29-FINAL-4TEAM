@@ -4,10 +4,15 @@ import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.CancelInquiryResponse
 import com.skn29.watercare.core.model.CreateInquiryRequest
+import com.skn29.watercare.core.model.CustomerInquiryQuestions
+import com.skn29.watercare.core.model.CustomerInquirySnapshot
+import com.skn29.watercare.core.model.FollowUpAnswer
+import com.skn29.watercare.core.model.GuidanceData
 import com.skn29.watercare.core.model.InquiryResponse
 import com.skn29.watercare.core.model.IntakeSubmission
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.StateConflictSnapshot
+import com.skn29.watercare.core.model.SubmitFollowUpAnswersResult
 import com.skn29.watercare.core.model.SubmitSymptomResponse
 import com.skn29.watercare.core.model.SubscriptionDetailDto
 import com.skn29.watercare.core.model.SubscriptionListDataDto
@@ -25,6 +30,7 @@ class RemoteIntakeCustomerCareRepositoryTest {
         val repository = RemoteIntakeCustomerCareRepository(
             inquiryRepository = inquiryRepository,
             subscriptionRepository = FailingSubscriptionRepository(),
+            customerInquiryRepository = StubCustomerInquiryRepository(),
         )
         val request = sampleRequest()
 
@@ -61,6 +67,7 @@ class RemoteIntakeCustomerCareRepositoryTest {
         val repository = RemoteIntakeCustomerCareRepository(
             inquiryRepository = inquiryRepository,
             subscriptionRepository = FailingSubscriptionRepository(),
+            customerInquiryRepository = StubCustomerInquiryRepository(),
         )
         val request = sampleRequest()
 
@@ -81,6 +88,7 @@ class RemoteIntakeCustomerCareRepositoryTest {
         val repository = RemoteIntakeCustomerCareRepository(
             inquiryRepository = inquiryRepository,
             subscriptionRepository = FailingSubscriptionRepository(),
+            customerInquiryRepository = StubCustomerInquiryRepository(),
         )
         val request = sampleRequest()
 
@@ -96,10 +104,14 @@ class RemoteIntakeCustomerCareRepositoryTest {
     }
 
     @Test
-    fun guidanceWithoutBackendRoute_failsClosed() = runBlocking {
+    fun guidance_delegatesToCustomerInquiryRepository_withoutFixtureFallback() = runBlocking {
+        val guidanceRepository = StubCustomerInquiryRepository(
+            guidanceResult = ApiResult.Success(sampleGuidance()),
+        )
         val repository = RemoteIntakeCustomerCareRepository(
             inquiryRepository = RecordingInquiryRepository(),
             subscriptionRepository = FailingSubscriptionRepository(),
+            customerInquiryRepository = guidanceRepository,
         )
 
         val result = repository.getGuidance(
@@ -107,10 +119,13 @@ class RemoteIntakeCustomerCareRepositoryTest {
             scenario = MockScenario.NORMAL,
         )
 
-        assertTrue(result is ApiResult.Failure)
-        val failure = result as ApiResult.Failure
-        assertEquals("GUIDANCE_ROUTE_UNAVAILABLE", failure.code)
-        assertEquals(false, failure.retryable)
+        assertTrue(result is ApiResult.Success)
+        val success = result as ApiResult.Success<GuidanceData>
+        assertEquals("INQ-GUIDANCE-001", success.value.inquiryCode)
+        assertEquals(
+            listOf("00000000-0000-4000-8000-000000000301"),
+            guidanceRepository.inquiryIds,
+        )
     }
 
     @Test
@@ -118,6 +133,7 @@ class RemoteIntakeCustomerCareRepositoryTest {
         val repository = RemoteIntakeCustomerCareRepository(
             inquiryRepository = RecordingInquiryRepository(),
             subscriptionRepository = FailingSubscriptionRepository(),
+            customerInquiryRepository = StubCustomerInquiryRepository(),
         )
 
         val result = repository.getHome()
@@ -136,6 +152,26 @@ class RemoteIntakeCustomerCareRepositoryTest {
         displayText = "E01",
         entryMode = "ADHOC_INQUIRY",
         idempotencyKey = "legacy-ui-key",
+    )
+
+    private fun sampleGuidance() = GuidanceData(
+        inquiryId = "00000000-0000-4000-8000-000000000301",
+        inquiryCode = "INQ-GUIDANCE-001",
+        statusCode = "AI_GUIDANCE",
+        stateVersion = 3,
+        symptomSummary = "누수 증상",
+        riskLevel = "danger",
+        usageGuidanceStatus = "TOTAL_STOP",
+        usageGuidanceMessage = "즉시 사용을 중지하세요.",
+        safeActions = listOf("전원에서 떨어진 안전한 곳에서 대기하세요."),
+        escalationConditions = listOf("누수가 계속되면 상담을 요청하세요."),
+        prohibitedActions = listOf("제품을 분해하지 마세요."),
+        nextAction = "상담 요청",
+        requiresConsultation = true,
+        evidence = emptyList(),
+        allowedActions = listOf(
+            AllowedAction(code = "REQUEST_CONSULTATION")
+        ),
     )
 
     private class RecordingInquiryRepository(
@@ -263,6 +299,40 @@ class RemoteIntakeCustomerCareRepositoryTest {
         override suspend fun detail(
             subscriptionId: String,
         ): ApiResult<SubscriptionDetailDto> =
+            error("이 테스트에서는 사용하지 않습니다.")
+    }
+
+    private class StubCustomerInquiryRepository(
+        private val guidanceResult: ApiResult<GuidanceData> =
+            ApiResult.Failure(
+                code = "GUIDANCE_ROUTE_UNAVAILABLE",
+                message = "테스트 Guidance 미설정",
+            ),
+    ) : CustomerInquiryRepository {
+        val inquiryIds = mutableListOf<String>()
+
+        override suspend fun guidance(
+            inquiryId: String,
+        ): ApiResult<GuidanceData> {
+            inquiryIds += inquiryId
+            return guidanceResult
+        }
+
+        override suspend fun snapshot(
+            inquiryId: String,
+        ): ApiResult<CustomerInquirySnapshot> =
+            error("이 테스트에서는 사용하지 않습니다.")
+
+        override suspend fun questions(
+            inquiryId: String,
+        ): ApiResult<CustomerInquiryQuestions> =
+            error("이 테스트에서는 사용하지 않습니다.")
+
+        override suspend fun submitAnswers(
+            inquiryId: String,
+            stateVersion: Int,
+            answers: List<FollowUpAnswer>,
+        ): ApiResult<SubmitFollowUpAnswersResult> =
             error("이 테스트에서는 사용하지 않습니다.")
     }
 }

@@ -61,10 +61,15 @@ class GuidanceViewModel(
             _state.value = when (val result = repository.getGuidance(inquiryId, scenario)) {
                 is ApiResult.Success -> {
                     val mapped = GuidanceMapper.map(result.value)
-                    if (mapped.evidence.isEmpty()) GuidanceUiState.NoEvidence(mapped)
+                    if (mapped.riskLevel ==
+                        com.skn29.watercare.core.model.RiskLevel.UNKNOWN
+                    ) GuidanceUiState.NoEvidence(mapped)
                     else GuidanceUiState.Content(mapped)
                 }
                 is ApiResult.Failure -> when {
+                    result.code == "AI_GUIDANCE_NOT_READY" &&
+                        result.httpStatus == 409 ->
+                        GuidanceUiState.NotReady(result.message)
                     result.code.startsWith("AI_") ->
                         GuidanceUiState.AiFailure(result.message, result.retryable)
                     result.code == "NETWORK_ERROR" ->

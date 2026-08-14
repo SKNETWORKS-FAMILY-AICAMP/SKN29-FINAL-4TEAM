@@ -4,11 +4,16 @@ import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.CancelInquiryResponse
 import com.skn29.watercare.core.model.CreateInquiryRequest
+import com.skn29.watercare.core.model.CustomerHomeData
+import com.skn29.watercare.core.model.GuidanceData
 import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.InquiryResponse
+import com.skn29.watercare.core.model.IntakeSubmission
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.StateConflictSnapshot
 import com.skn29.watercare.core.model.SubmitSymptomResponse
+import com.skn29.watercare.core.model.SymptomIntakeRequest
+import com.skn29.watercare.core.repository.CustomerCareRepository
 import com.skn29.watercare.core.repository.FakeCustomerCareRepository
 import com.skn29.watercare.core.repository.InquiryRepository
 import com.skn29.watercare.customer.feature.customer.intake.MainDispatcherRule
@@ -38,6 +43,43 @@ class GuidanceViewModelTest {
                 viewModel.state.value is
                     GuidanceUiState.NoEvidence
             )
+        }
+
+    @Test
+    fun guidanceNotReady409_offersExplicitReload_thenShowsGuidance() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val repository = SequencedGuidanceRepository(
+                mutableListOf(
+                    ApiResult.Failure(
+                        code = "AI_GUIDANCE_NOT_READY",
+                        message = "AI 안내를 준비하고 있습니다.",
+                        httpStatus = 409,
+                        retryable = false,
+                    ),
+                    ApiResult.Success(remoteGuidance()),
+                )
+            )
+            val viewModel = GuidanceViewModel(
+                inquiryId = TEST_INQUIRY_ID,
+                scenario = MockScenario.NORMAL,
+                repository = repository,
+            )
+            advanceUntilIdle()
+
+            val notReady = viewModel.state.value as GuidanceUiState.NotReady
+            assertEquals("AI 안내를 준비하고 있습니다.", notReady.message)
+
+            viewModel.load()
+            advanceUntilIdle()
+
+            val loaded = viewModel.state.value as GuidanceUiState.Content
+            assertEquals("검증된 안전 안내", loaded.guidance.usageMessage)
+            assertEquals(listOf("전원을 끄세요."), loaded.guidance.safeActions)
+            assertEquals(
+                InquiryActionLabels.REQUEST_CONSULTATION,
+                loaded.guidance.allowedActions.single().code,
+            )
+            assertEquals(2, repository.calls)
         }
 
     @Test
@@ -192,6 +234,49 @@ class GuidanceViewModelTest {
         repository = FakeCustomerCareRepository(),
         inquiryRepository = inquiryRepository,
     )
+
+    private fun remoteGuidance() = GuidanceData(
+        inquiryId = TEST_INQUIRY_ID,
+        inquiryCode = "INQ-GUIDANCE-301",
+        statusCode = "AI_GUIDANCE",
+        stateVersion = 3,
+        symptomSummary = "누수 증상",
+        riskLevel = "danger",
+        usageGuidanceStatus = "TOTAL_STOP",
+        usageGuidanceMessage = "검증된 안전 안내",
+        safeActions = listOf("전원을 끄세요."),
+        escalationConditions = listOf("누수가 계속되는 경우"),
+        prohibitedActions = listOf("제품 분해"),
+        nextAction = "상담 요청",
+        requiresConsultation = true,
+        evidence = emptyList(),
+        allowedActions = listOf(
+            AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION)
+        ),
+    )
+
+    private class SequencedGuidanceRepository(
+        private val results: MutableList<ApiResult<GuidanceData>>,
+    ) : CustomerCareRepository {
+        var calls: Int = 0
+            private set
+
+        override suspend fun getGuidance(
+            inquiryId: String,
+            scenario: MockScenario,
+        ): ApiResult<GuidanceData> {
+            calls += 1
+            return results.removeAt(0)
+        }
+
+        override suspend fun getHome(): ApiResult<CustomerHomeData> =
+            error("이 테스트에서는 사용하지 않습니다.")
+
+        override suspend fun submitIntake(
+            request: SymptomIntakeRequest,
+        ): ApiResult<IntakeSubmission> =
+            error("이 테스트에서는 사용하지 않습니다.")
+    }
 
     private class RecordingInquiryRepository(
         private val cancelResults:
