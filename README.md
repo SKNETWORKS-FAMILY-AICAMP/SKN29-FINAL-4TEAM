@@ -214,6 +214,10 @@ Push-Location .\backend
 Pop-Location
 ```
 
+`backend/.venv`가 이미 생성된 경우 패키지 설치 진입점은
+[`backend/requirements.txt`](backend/requirements.txt)이며, 신규 환경의
+생성·동기화·검증은 위 `bootstrap.py` 절차를 사용합니다.
+
 상세한 최초 설치, 일상 실행, Seed와 Smoke 검증은 [Backend README](backend/README.md)를 확인합니다.
 
 ### 2. Web

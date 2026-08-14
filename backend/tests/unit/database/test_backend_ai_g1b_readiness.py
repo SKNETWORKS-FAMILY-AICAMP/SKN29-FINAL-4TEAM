@@ -53,11 +53,14 @@ def ready_snapshot(module: ModuleType) -> dict[str, object]:
     return {
         "database_name": module.TEAM_INTEGRATION_DATABASE,
         "server_version": "16.14",
+        "pgvector_version": module.EXPECTED_PGVECTOR_VERSION,
         "migrations_table_exists": True,
         "applied_migrations": list(module.REQUIRED_MIGRATIONS),
         "crosswalk_table_exists": True,
         "active_verified_count": 7,
         "baseline_identity_count": 7,
+        "crosswalk_page_table_exists": True,
+        "crosswalk_page_link_count": 8,
         "view_exists": True,
         "view_columns": list(module.EXPECTED_VIEW_COLUMNS),
         "view_row_count": 7,
@@ -86,7 +89,12 @@ def test_ready_requires_all_crosswalk_view_and_role_gates(
         "expected": 7,
         "active_verified": 7,
         "baseline_identity": 7,
+        "page_table_exists": True,
+        "page_links_expected": 8,
+        "page_links": 8,
     }
+    assert result["database"]["pgvector_version"] == "0.8.6"
+    assert result["database"]["expected_pgvector_version"] == "0.8.6"
     assert result["ai_readonly_role"]["view_select"] is True
     assert result["ai_readonly_role"]["base_table_select"] is False
 
@@ -103,6 +111,16 @@ def test_ready_requires_all_crosswalk_view_and_role_gates(
             "baseline_identity_count",
             6,
             "BASELINE_EMBEDDING_IDENTITY_COUNT_NOT_7",
+        ),
+        (
+            "crosswalk_page_link_count",
+            7,
+            "ACTIVE_VERIFIED_CROSSWALK_PAGE_LINK_COUNT_NOT_8",
+        ),
+        (
+            "pgvector_version",
+            "0.7.4",
+            "PGVECTOR_VERSION_MISMATCH",
         ),
         ("view_row_count", 0, "BACKEND_AI_RAG_VIEW_ROW_COUNT_NOT_7"),
         ("view_select", False, "AI_READONLY_VIEW_SELECT_DENIED"),
@@ -149,6 +167,25 @@ def test_view_column_order_and_team_database_are_explicit_gates(
     assert result["status"] == "BLOCKED"
     assert "TEAM_INTEGRATION_DATABASE_MISMATCH" in result["blockers"]
     assert "BACKEND_AI_RAG_VIEW_COLUMNS_MISMATCH" in result["blockers"]
+
+
+def test_missing_pgvector_and_crosswalk_page_table_fail_closed(
+    audit_module: ModuleType,
+):
+    snapshot = ready_snapshot(audit_module)
+    snapshot["pgvector_version"] = None
+    snapshot["crosswalk_page_table_exists"] = False
+    snapshot["crosswalk_page_link_count"] = 0
+
+    result = audit_module.evaluate_snapshot(snapshot)
+
+    assert result["status"] == "BLOCKED"
+    assert "PGVECTOR_EXTENSION_MISSING" in result["blockers"]
+    assert "CROSSWALK_PAGE_TABLE_MISSING" in result["blockers"]
+    assert (
+        "ACTIVE_VERIFIED_CROSSWALK_PAGE_LINK_COUNT_NOT_8"
+        in result["blockers"]
+    )
 
 
 def test_connection_is_forced_read_only_and_result_does_not_expose_secrets(

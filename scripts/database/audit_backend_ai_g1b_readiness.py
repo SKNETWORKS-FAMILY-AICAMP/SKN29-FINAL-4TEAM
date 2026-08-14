@@ -54,6 +54,8 @@ EXPECTED_VIEW_COLUMNS = (
     "allowed_use",
 )
 EXPECTED_CHUNK_COUNT = 7
+EXPECTED_CROSSWALK_PAGE_LINK_COUNT = 8
+EXPECTED_PGVECTOR_VERSION = "0.8.6"
 EXPECTED_EMBEDDING_MODEL = "BAAI/bge-m3"
 EXPECTED_EMBEDDING_REVISION = (
     "5617a9f61b028005a4858fdac845db406aefb181"
@@ -153,6 +155,10 @@ def collect_snapshot(
         with connection.cursor() as cursor:
             database_name = _scalar(cursor, "SELECT current_database()")
             server_version = _scalar(cursor, "SHOW server_version")
+            pgvector_version = _scalar(
+                cursor,
+                "SELECT extversion FROM pg_extension WHERE extname = 'vector'",
+            )
 
             migrations_table_exists = bool(
                 _scalar(
@@ -197,6 +203,36 @@ def collect_snapshot(
                 row = cursor.fetchone()
                 active_verified_count = int(row[0])
                 baseline_identity_count = int(row[1])
+
+            crosswalk_page_table_exists = bool(
+                _scalar(
+                    cursor,
+                    "SELECT to_regclass("
+                    "'public.knowledge_ai_chunk_crosswalk_page') IS NOT NULL",
+                )
+            )
+            crosswalk_page_link_count = 0
+            if crosswalk_table_exists and crosswalk_page_table_exists:
+                crosswalk_page_link_count = int(
+                    _scalar(
+                        cursor,
+                        "SELECT COUNT(*) "
+                        "FROM knowledge_ai_chunk_crosswalk_page AS page_link "
+                        "JOIN knowledge_ai_chunk_crosswalk AS crosswalk "
+                        "ON crosswalk.id = page_link.crosswalk_id "
+                        "WHERE crosswalk.is_active "
+                        "AND crosswalk.is_verified "
+                        "AND crosswalk.canonical_verification_status = "
+                        "'TEXT_AND_VISUAL_VERIFIED' "
+                        "AND crosswalk.embedding_model = %s "
+                        "AND crosswalk.embedding_model_version = %s",
+                        (
+                            EXPECTED_EMBEDDING_MODEL,
+                            EXPECTED_EMBEDDING_REVISION,
+                        ),
+                    )
+                    or 0
+                )
 
             view_exists = bool(
                 _scalar(
@@ -302,11 +338,14 @@ def collect_snapshot(
     return {
         "database_name": database_name,
         "server_version": server_version,
+        "pgvector_version": pgvector_version,
         "migrations_table_exists": migrations_table_exists,
         "applied_migrations": applied_migrations,
         "crosswalk_table_exists": crosswalk_table_exists,
         "active_verified_count": active_verified_count,
         "baseline_identity_count": baseline_identity_count,
+        "crosswalk_page_table_exists": crosswalk_page_table_exists,
+        "crosswalk_page_link_count": crosswalk_page_link_count,
         "view_exists": view_exists,
         "view_columns": view_columns,
         "view_row_count": view_row_count,
@@ -329,8 +368,19 @@ def evaluate_snapshot(
     """수집값을 공개 가능한 READY/BLOCKED 판정으로 바꾼다."""
 
     blockers: list[str] = []
+    pgvector_version = snapshot.get("pgvector_version")
+    crosswalk_page_table_exists = bool(
+        snapshot.get("crosswalk_page_table_exists", False)
+    )
+    crosswalk_page_link_count = int(
+        snapshot.get("crosswalk_page_link_count", 0)
+    )
     if require_team_database and snapshot["database_name"] != TEAM_INTEGRATION_DATABASE:
         blockers.append("TEAM_INTEGRATION_DATABASE_MISMATCH")
+    if not pgvector_version:
+        blockers.append("PGVECTOR_EXTENSION_MISSING")
+    elif pgvector_version != EXPECTED_PGVECTOR_VERSION:
+        blockers.append("PGVECTOR_VERSION_MISMATCH")
     if not snapshot["migrations_table_exists"]:
         blockers.append("DJANGO_MIGRATIONS_TABLE_MISSING")
     missing_migrations = sorted(
@@ -343,6 +393,10 @@ def evaluate_snapshot(
         blockers.append("ACTIVE_VERIFIED_CROSSWALK_COUNT_NOT_7")
     if snapshot["baseline_identity_count"] != EXPECTED_CHUNK_COUNT:
         blockers.append("BASELINE_EMBEDDING_IDENTITY_COUNT_NOT_7")
+    if not crosswalk_page_table_exists:
+        blockers.append("CROSSWALK_PAGE_TABLE_MISSING")
+    if crosswalk_page_link_count != EXPECTED_CROSSWALK_PAGE_LINK_COUNT:
+        blockers.append("ACTIVE_VERIFIED_CROSSWALK_PAGE_LINK_COUNT_NOT_8")
     if not snapshot["view_exists"]:
         blockers.append("BACKEND_AI_RAG_VIEW_MISSING")
     if tuple(snapshot["view_columns"]) != EXPECTED_VIEW_COLUMNS:
@@ -372,6 +426,8 @@ def evaluate_snapshot(
         "database": {
             "name": snapshot["database_name"],
             "server_version": snapshot["server_version"],
+            "pgvector_version": pgvector_version,
+            "expected_pgvector_version": EXPECTED_PGVECTOR_VERSION,
             "team_integration_required": require_team_database,
         },
         "migrations": {
@@ -383,6 +439,9 @@ def evaluate_snapshot(
             "expected": EXPECTED_CHUNK_COUNT,
             "active_verified": snapshot["active_verified_count"],
             "baseline_identity": snapshot["baseline_identity_count"],
+            "page_table_exists": crosswalk_page_table_exists,
+            "page_links_expected": EXPECTED_CROSSWALK_PAGE_LINK_COUNT,
+            "page_links": crosswalk_page_link_count,
         },
         "view": {
             "name": EXPECTED_VIEW,

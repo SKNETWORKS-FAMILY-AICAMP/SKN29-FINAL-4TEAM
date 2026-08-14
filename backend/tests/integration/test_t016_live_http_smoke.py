@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from datetime import date
 import json
 from pathlib import Path
+from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 from uuid import UUID, uuid4
@@ -307,16 +308,22 @@ def test_t016_existing_routes_pass_actual_http_and_error_matrix(
     )
     traced_error(conflict, 409, "DUPLICATE-EVENT-01")
 
-    submitted = request_http(
-        live_server.url,
-        f"/api/v1/inquiries/{first_data['inquiry_id']}/submit",
-        method="POST",
-        payload={"state_version": 1},
-        headers={
-            **bearer(customer_access),
-            "Idempotency-Key": "t016-live-submit",
-        },
-    )
+    # T-016 verifies the common Backend socket and response boundary.  Keep
+    # the separately owned Backend-AI live HTTP gate out of this smoke test.
+    with patch(
+        "apps.inquiries.services.inquiry_ai_service."
+        "InquiryAIService.analyze_inquiry"
+    ):
+        submitted = request_http(
+            live_server.url,
+            f"/api/v1/inquiries/{first_data['inquiry_id']}/submit",
+            method="POST",
+            payload={"state_version": 1},
+            headers={
+                **bearer(customer_access),
+                "Idempotency-Key": "t016-live-submit",
+            },
+        )
     assert traced(submitted, 200)["data"]["state"] == (
         "QUESTIONNAIRE_IN_PROGRESS"
     )

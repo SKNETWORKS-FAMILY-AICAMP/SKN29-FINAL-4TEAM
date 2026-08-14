@@ -1,0 +1,6 @@
+# Backend local/team development environment.
+# Python 3.13.13 is required by .python-version.
+# Keep direct dependencies in requirements/local.txt and the fully verified
+# dependency versions in requirements/constraints-py313.txt.
+-c requirements/constraints-py313.txt
+-r requirements/local.txt
