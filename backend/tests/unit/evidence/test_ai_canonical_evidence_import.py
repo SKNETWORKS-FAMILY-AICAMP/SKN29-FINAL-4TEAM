@@ -176,6 +176,17 @@ def test_dry_run_validates_complete_package_without_persisting(
     approved_source_runtime,
 ):
     del approved_source_runtime
+    attributes = (REPOSITORY_ROOT / ".gitattributes").read_text(
+        encoding="utf-8"
+    ).splitlines()
+    canonical_paths = (
+        "ai/configs/canonical_evidence_identity.json",
+        "ai/configs/index_manifest.json",
+    )
+    for relative_path in canonical_paths:
+        assert f"{relative_path} text eol=lf" in attributes
+        assert b"\r" not in (REPOSITORY_ROOT / relative_path).read_bytes()
+
     _operator()
     fixture_path, fixture_hash = _embedding_fixture()
     fixture_before = fixture_path.read_bytes()

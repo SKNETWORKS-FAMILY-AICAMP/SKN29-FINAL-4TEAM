@@ -1,2 +1,4 @@
 ai/configs/experiments/** text eol=lf
 ai/evaluation/** text eol=lf
+ai/configs/canonical_evidence_identity.json text eol=lf
+ai/configs/index_manifest.json text eol=lf
