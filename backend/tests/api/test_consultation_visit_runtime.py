@@ -304,6 +304,10 @@ def test_consultation_start_save_confirm_complete_and_replay():
         "상담 결과 방문 없이 해결되었습니다."
     )
 
+    detail = client.get(f"/api/v1/inquiries/{inquiry.public_id}")
+    assert detail.status_code == 200, detail.json()
+    assert detail.json()["data"]["consultation"] == data["resource"]
+
     consultation = Consultation.objects.get(inquiry=inquiry)
     assert consultation.status == Consultation.Status.COMPLETED
     assert consultation.completed_at is not None
