@@ -97,10 +97,23 @@ fun GuidanceScreen(
     var showCancelDialog by remember { mutableStateOf(false) }
     val actualInquiryCode = submittedInquiryCode.trim()
     val latestInquirySnapshot = followUpState.snapshotOrNull()
+    val latestGuidance = when (val current = state) {
+        is GuidanceUiState.Content -> current.guidance
+        is GuidanceUiState.NoEvidence -> current.guidance
+        else -> null
+    }
+    val preferredGuidance = latestGuidance?.takeIf { guidance ->
+        latestInquirySnapshot == null ||
+            guidance.stateVersion >= latestInquirySnapshot.stateVersion
+    }
     val effectiveStateVersion =
-        latestInquirySnapshot?.stateVersion ?: submittedStateVersion
+        preferredGuidance?.stateVersion
+            ?: latestInquirySnapshot?.stateVersion
+            ?: submittedStateVersion
     val effectiveAllowedActions =
-        latestInquirySnapshot?.allowedActions ?: submittedAllowedActions
+        preferredGuidance?.allowedActions
+            ?: latestInquirySnapshot?.allowedActions
+            ?: submittedAllowedActions
 
     WaterCareScreen(title = "문제 해결 안내", onBack = onBack) {
         if (fixturePreview) {
@@ -115,7 +128,8 @@ fun GuidanceScreen(
             SubmissionReceiptCard(
                 inquiryCode = actualInquiryCode,
                 statusCode =
-                    latestInquirySnapshot?.statusCode
+                    preferredGuidance?.statusCode
+                        ?: latestInquirySnapshot?.statusCode
                         ?: submittedStatusCode,
                 stateVersion = effectiveStateVersion,
                 allowedActions = effectiveAllowedActions,
@@ -262,6 +276,13 @@ fun GuidanceScreen(
                     actualInquiryCode
                 ),
                 noEvidence = true,
+                onRetry = viewModel::load,
+            )
+
+            is GuidanceUiState.NotReady -> FailureFallback(
+                title = "AI 안내 준비 중",
+                message = current.message,
+                retryable = true,
                 onRetry = viewModel::load,
             )
 
@@ -675,10 +696,11 @@ fun GuidanceContent(
     SectionCard("5. 공식 근거") {
         if (guidance.evidence.isEmpty()) {
             Text(
-                "표시 가능한 공식 근거가 없습니다. 판단을 보류하고 상담 확인을 우선합니다."
+                "이번 단계에서는 공개 근거를 제공하지 않습니다. " +
+                    "안내 내용과 상담 필요 여부는 Backend 검증 결과를 따릅니다."
             )
             LiquidGlassButton(
-                text = "근거 다시 확인",
+                text = "안내 다시 확인",
                 onClick = onRetry,
                 accent = true,
                 modifier = Modifier.fillMaxWidth(),
