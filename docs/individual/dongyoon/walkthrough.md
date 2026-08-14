@@ -1387,3 +1387,17 @@ Public UUID 분석 요청이 모두 성공했다.
   AIRun·Guidance·Evidence 저장과 Replay는 Migration 승인 후 새 Inquiry로 실행한다.
 - 요청 양식에 맞춘 단일 진행 회신은
   `docs/individual/dongyoon/인계/20260814_이동윤_to_최지용_AI_RAG_CustomerGuidance_G1A_G1B_실연결_진행회신_v0.1.md`에 기록했다.
+
+### 2026-08-14 Customer Guidance G1-B 공동실행 준비 회신
+
+- 최지용의 최신 회신에 따라 이동윤 Host의 미적용 Migration은 추가 적용하지 않고,
+  김은진 QA 통합환경에서 최종 main을 재기동해 실제 Backend G1-B를 진행하는 것으로
+  실행 범위를 조정했다.
+- 김은진 작업자에게 보호 Loader와 Uvicorn을 같은 Process에서 실행하는 실제 AI
+  Runtime 기동 명령, 필수 환경변수 이름, 같은 Host Backend의
+  `AI_SERVICE_BASE_URL`·`AI_SERVICE_MODE=local` 설정을 전달했다.
+- 공동검증은 새 합성 Inquiry Happy Path → AIRun·Assessment·Guidance·Evidence 저장 →
+  Replay 추가 AI 호출·중복 저장 차단 → Backend·AI Log·DB Correlation 일치 순서로
+  진행한다. NO_EVIDENCE와 DANGER는 Happy Path 결과 후 실행 여부를 결정한다.
+- 상세 전달본은
+  `docs/individual/dongyoon/인계/20260814_이동윤_to_최지용_AI_RAG_CustomerGuidance_G1B_공동실행_준비회신_v0.1.md`에 기록했다.
