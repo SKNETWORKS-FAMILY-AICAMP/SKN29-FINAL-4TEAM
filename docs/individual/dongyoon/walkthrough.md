@@ -1241,3 +1241,38 @@ Public UUID 분석 요청이 모두 성공했다.
   `local_actual_llm=NOT_RUN`, 팀 G1-A는 `WAITING_ENVIRONMENT_READY`다.
 - 회신:
   `docs/individual/dongyoon/인계/20260813_이동윤_to_최지용_AI_RAG_G1A_Embedding연계_로컬Runtime_사전협업_회신_v0.3.md`
+
+### 2026-08-14 AI Canonical Embedding Fixture Exporter Phase A
+
+- 최신 `origin/main@ab433c332229bc7c6fb0af764291d2376ea10df8`의 Clean 상태에서
+  `codex/ai-canonical-fixture-exporter-g1a` 브랜치를 생성하고, AI 공식 Producer
+  `ai/scripts/export_canonical_embedding_fixture.py`와 전용 계약 테스트를 추가했다.
+  Backend Builder는 구현 입력으로 재사용하지 않고 계약 참고 검증기로만 대조했다.
+- Exporter는 AI 소유 `canonical_evidence_identity.json`, `index_manifest.json`, 승인
+  JSONL을 교차 검증한다. 고정 BGE-M3 Revision의 출력을 명시적으로 Float32로
+  변환하고, 7x1024·Chunk Set Hash·Chunk Text Hash·Chunk ID ASC·중복 ID·NFC
+  Validate-only를 fail-closed로 검사한다. Bool·문자열·NaN·Infinity와 Float32 변환
+  후 비유한 값도 Artifact 작성 전에 거부한다.
+- 출력은 repository root 기준
+  `.runtime/backend-ai/canonical_embedding_fixture_v1.json` 아래로 제한하고, 임시
+  파일 교체 방식으로 쓴다. JSON은 `ensure_ascii=false`, Key Sort, Compact
+  Separator, `allow_nan=false`, trailing newline 없음으로 고정하며 `.runtime/`의
+  기존 Git ignore 적용을 확인했다.
+- Python `3.13.13`에서 Exporter 전용 `10 passed`, AI 전체 Unit
+  `229 passed, 5 warnings, 7 subtests passed`, Backend 참고 Builder `6 passed`,
+  `py_compile`, `git diff --check`를 확인했다. 실제 고정 Revision 모델 생성과 별도
+  byte-level 검증도 PASS했으며 Candidate Fixture SHA-256은
+  `759379308abdafbe66ef205e13cd829d8ad49714d0b824032eb0fbc58546d019`다. Fixture와
+  Vector 본문은 Git·문서·채팅에 기록하지 않았다.
+- `P1 Backend blocker`: 현재 main의 Backend Importer 회귀는 `31 passed, 19 failed`다.
+  모든 실패는 Fixture 계약 평가 전
+  `data/config/evidence/backend_ai_canonical_import_v1.json`의 Index Manifest 기대
+  Byte SHA-256 `91027E88DEC6C3BFF1E590AAF4479CA021AC284EB0BDC8E1EEC6C76473DA667E`과
+  실제 `ai/configs/index_manifest.json` SHA-256
+  `C71488A7F0A9226D804FBE0BEE3C4B911B926B4F9EF39E026DC93420B8A03D66` 불일치에서
+  시작한다. AI Exporter 변경과 무관하지만 Phase B Import를 막으므로 Backend
+  Owner가 최종 병합 전에 정합성을 갱신하고 재검증해야 한다.
+- 최종 Backend·AI 병합 main SHA와 승인된 김은진 Host 전달 경로가 아직 없어
+  `fixture_generated_commit=PENDING_MERGE`, `artifact_delivery=BLOCKED`다.
+  `ENVIRONMENT_READY`도 아직 수신하지 않았으므로 실제 pgvector·OpenAI G1-A는
+  `NOT_RUN_WAITING_QA`이며 Unit·Health 결과로 대체하지 않는다.
