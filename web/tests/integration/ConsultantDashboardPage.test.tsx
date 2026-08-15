@@ -298,7 +298,14 @@ describe("ConsultantDashboardPage", () => {
     expect(within(dangerSection).queryByLabelText(/^상태:/)).not.toBeInTheDocument();
     expect(within(dangerSection).getAllByText(/^INQ-/)).toHaveLength(2);
     expect(within(dangerSection).getAllByText(/^WPU-/)).toHaveLength(2);
-    expect(within(dangerSection).getAllByText(/^접수 후 /)).toHaveLength(2);
+    const receivedTimes = Array.from(dangerSection.querySelectorAll("time"));
+    expect(receivedTimes).toHaveLength(2);
+    receivedTimes.forEach((receivedTime) => {
+      expect(receivedTime).toHaveTextContent(
+        /^접수 \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
+      );
+      expect(receivedTime.parentElement).toHaveTextContent(/ · 경과 /);
+    });
 
     await user.click(screen.getByRole("tab", { name: /주의 문의/ }));
     expect(
