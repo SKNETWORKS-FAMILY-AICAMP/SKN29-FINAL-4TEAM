@@ -231,6 +231,26 @@ def test_prepare_command_rejects_a_second_active_marker():
     assert second.scenario_code is None
 
 
+def test_prepare_command_rotates_marker_after_the_previous_p0_run_finishes():
+    create_demo_consultant()
+    _, previous = create_target_inquiry(sequence=11)
+    _, current = create_target_inquiry(sequence=12)
+    prepare(previous)
+    previous.status_code = Inquiry.Status.COMPLETION_PENDING
+    previous.save(update_fields=["status_code", "updated_at"])
+    previous_updated_at = previous.updated_at
+
+    prepared = prepare(current)
+
+    previous.refresh_from_db()
+    current.refresh_from_db()
+    assert previous.status_code == Inquiry.Status.COMPLETION_PENDING
+    assert previous.scenario_code is None
+    assert previous.updated_at == previous_updated_at
+    assert current.scenario_code == SYNTHETIC_E2E_RUNTIME_SCENARIO_CODE
+    assert prepared["inquiry_id"] == str(current.public_id)
+
+
 def test_marked_request_assigns_inquiry_but_preserves_waiting_consultation():
     consultant = create_demo_consultant()
     other_consultant = create_user(

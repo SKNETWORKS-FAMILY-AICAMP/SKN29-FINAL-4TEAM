@@ -19,6 +19,9 @@ from apps.inquiries.services.synthetic_e2e_assignment_service import (
 )
 
 
+REPLACEABLE_E2E_STATUSES = {Inquiry.Status.COMPLETION_PENDING}
+
+
 class Command(BaseCommand):
     help = (
         "Mobile에서 생성된 한 개의 합성 문의를 대표 E2E 상담사 배정 대상으로 "
@@ -51,16 +54,23 @@ class Command(BaseCommand):
         except SyntheticE2EAssignmentValidationError as exc:
             raise CommandError(str(exc)) from exc
 
-        duplicate_marker = (
+        previous_marker = (
             Inquiry.objects.select_for_update(of=("self",))
             .filter(scenario_code=SYNTHETIC_E2E_RUNTIME_SCENARIO_CODE)
             .exclude(pk=inquiry.pk)
-            .exists()
+            .first()
         )
-        if duplicate_marker:
-            raise CommandError(
-                "다른 문의가 이미 합성 E2E 배정 대상으로 표시되어 있습니다."
-            )
+        if previous_marker is not None:
+            if previous_marker.status_code not in REPLACEABLE_E2E_STATUSES:
+                raise CommandError(
+                    "다른 문의가 이미 합성 E2E 배정 대상으로 표시되어 있습니다."
+                )
+
+            # The runtime marker is globally unique. Rotate it only after the
+            # previous P0 flow has finished; its business rows and histories
+            # remain intact.
+            previous_marker.scenario_code = None
+            previous_marker.save(update_fields=["scenario_code"])
 
         created = inquiry.scenario_code != SYNTHETIC_E2E_RUNTIME_SCENARIO_CODE
         if created:

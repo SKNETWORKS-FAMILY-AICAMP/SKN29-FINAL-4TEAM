@@ -289,24 +289,24 @@ def stage_blockers(snapshot: dict, expected_stage: str) -> list[str]:
     if inquiry["product_model_code"] != EXPECTED_MODEL_CODE:
         blockers.append("PRODUCT_MODEL_IS_NOT_P0_TARGET")
 
-    if ai["run_count"] != 1:
+    if ai["run_count"] < 1:
         blockers.append("AI_RUN_COUNT_NOT_1")
     else:
-        run = ai["runs"][-1]
-        if run["status_code"] != AIRun.Status.SUCCEEDED:
-            blockers.append("AI_RUN_NOT_SUCCEEDED")
-        if (
-            run["schema_validation_status_code"]
-            != AIRun.SchemaValidationStatus.PASSED
-        ):
-            blockers.append("AI_SCHEMA_NOT_PASSED")
-        if run["task_type_code"] != AIRun.TaskType.ANALYZE_SYMPTOM:
-            blockers.append("AI_TASK_IS_NOT_ANALYZE_SYMPTOM")
         history_correlations = {
             row["correlation_id"] for row in histories
         }
-        if run["correlation_id"] not in history_correlations:
-            blockers.append("AI_CORRELATION_NOT_IN_HISTORY")
+        for run in ai["runs"]:
+            if run["status_code"] != AIRun.Status.SUCCEEDED:
+                blockers.append("AI_RUN_NOT_SUCCEEDED")
+            if (
+                run["schema_validation_status_code"]
+                != AIRun.SchemaValidationStatus.PASSED
+            ):
+                blockers.append("AI_SCHEMA_NOT_PASSED")
+            if run["task_type_code"] != AIRun.TaskType.ANALYZE_SYMPTOM:
+                blockers.append("AI_TASK_IS_NOT_ANALYZE_SYMPTOM")
+            if run["correlation_id"] not in history_correlations:
+                blockers.append("AI_CORRELATION_NOT_IN_HISTORY")
 
     if ai["assessment_count"] < 1:
         blockers.append("SYMPTOM_ASSESSMENT_MISSING")
