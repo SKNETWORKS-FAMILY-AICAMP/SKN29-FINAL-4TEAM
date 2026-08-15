@@ -51,11 +51,11 @@ Manifest도 위의 루트 `MainActivity`와 `WaterPurifierDealerApplication`을 
 
 이 항목들은 별도 기능 리팩터링 또는 백엔드 연동 작업입니다.
 
-## 2026-07-31 Week 3 completion
+## 2026-07-31 3주차 완료 내역
 
-- Removed calls to Backend routes that are not actually registered (`/auth/login`, `/auth/register`, `/customer/profile`).
-- Added actual health and Demo-auth status checks.
-- Added CUST-01 → CUST-02 → CUST-04 navigation and state management.
-- Added safe normal/danger/no-evidence/AI/network fixtures behind `CustomerCareRepository`.
-- Added contract-safe evidence display, unknown-code fallback and action filtering.
-- Added unit/Compose test sources and reproducible Windows verification scripts.
+- 실제로 등록되지 않은 백엔드 경로(`/auth/login`, `/auth/register`, `/customer/profile`) 호출을 제거했습니다.
+- 실제 상태 확인 및 데모 인증 상태 검사를 추가했습니다.
+- CUST-01 → CUST-02 → CUST-04 화면 이동과 상태 관리를 추가했습니다.
+- `CustomerCareRepository` 뒤에 일반·위험·근거 없음·AI 실패·네트워크 실패 상황을 안전하게 재현하는 Fixture를 추가했습니다.
+- 계약에 맞는 근거 표시, 알 수 없는 코드의 안전한 대체 처리, 동작 필터링을 추가했습니다.
+- 단위 테스트·Compose 테스트 소스와 Windows에서 재현 가능한 검증 스크립트를 추가했습니다.

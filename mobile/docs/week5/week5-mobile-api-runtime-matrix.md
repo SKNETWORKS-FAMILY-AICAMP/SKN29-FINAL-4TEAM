@@ -1,31 +1,31 @@
-# Week 5 Mobile API Runtime Matrix
+# 5주차 모바일 API 런타임 대응표
 
 기준일: 2026-08-12 KST
-Backend 기준: `origin/main@41ef3d4f7a6699821c6d65398438071a06d23c92`
+백엔드 기준: `origin/main@41ef3d4f7a6699821c6d65398438071a06d23c92`
 
-| Area | Backend Runtime | Mobile state |
+| 영역 | 백엔드 런타임 | 모바일 상태 |
 | --- | --- | --- |
-| Customer demo login / `/me` | READY | INTEGRATED |
-| Technician demo login / `/me` | READY | INTEGRATED |
-| Subscription list | READY | INTEGRATED |
-| Subscription detail | READY | INTEGRATED |
-| Inquiry create | READY | INTEGRATED |
-| Symptom submit | READY | INTEGRATED |
-| Inquiry cancel | READY | INTEGRATED |
-| Customer inquiry Snapshot | READY | INTEGRATED |
-| Customer unanswered Questions | READY | INTEGRATED |
-| Customer follow-up Answers | READY | INTEGRATED |
-| Official Mobile follow-up Fixture | READY | CONSUMED_BY_DEVICE_SMOKE |
-| Backend actual-socket 3API smoke | AUTHOR_VERIFIED | PASS |
-| Mobile device 3API remote smoke | READY / REAL_DEVICE | PASS (SM-F721N, skipped=0) |
-| Guidance / Evidence | CUSTOMER_ROUTE_NOT_PUBLISHED | MOBILE_FAIL_CLOSED / BLOCKED_BY_BACKEND |
-| Customer consultation request | CUSTOMER_ROUTE_NOT_PUBLISHED | BLOCKED_BY_BACKEND |
-| Consultant consultation workflow | READY / CONSULTANT_ONLY | NOT_CUSTOMER_MOBILE_API |
-| Consultant Visit review/create/schedule/confirm | READY / CONSULTANT_ONLY | NOT_TECHNICIAN_API |
-| Technician Visit list/detail | NOT_ROUTED | MOBILE_FAIL_CLOSED / BLOCKED_BY_BACKEND |
-| Technician Visit start/complete/result | NOT_ROUTED | BLOCKED_BY_BACKEND |
+| 고객 데모 로그인 / `/me` | READY | INTEGRATED |
+| 방문기사 데모 로그인 / `/me` | READY | INTEGRATED |
+| 구독 목록 | READY | INTEGRATED |
+| 구독 상세 | READY | INTEGRATED |
+| 문의 생성 | READY | INTEGRATED |
+| 증상 제출 | READY | INTEGRATED |
+| 문의 취소 | READY | INTEGRATED |
+| 고객 문의 Snapshot | READY | INTEGRATED |
+| 고객 미답변 Questions | READY | INTEGRATED |
+| 고객 Follow-up Answers | READY | INTEGRATED |
+| 공식 모바일 Follow-up Fixture | READY | CONSUMED_BY_DEVICE_SMOKE |
+| 백엔드 실제 Socket 3API Smoke | AUTHOR_VERIFIED | PASS |
+| 모바일 실단말 3API 원격 Smoke | READY / REAL_DEVICE | PASS (SM-F721N, skipped=0) |
+| 안내 / 근거 | CUSTOMER_ROUTE_NOT_PUBLISHED | MOBILE_FAIL_CLOSED / BLOCKED_BY_BACKEND |
+| 고객 상담 요청 | CUSTOMER_ROUTE_NOT_PUBLISHED | BLOCKED_BY_BACKEND |
+| 상담사 상담 업무 흐름 | READY / CONSULTANT_ONLY | NOT_CUSTOMER_MOBILE_API |
+| 상담사 Visit 검토/생성/일정/확정 | READY / CONSULTANT_ONLY | NOT_TECHNICIAN_API |
+| 방문기사 Visit 목록/상세 | NOT_ROUTED | MOBILE_FAIL_CLOSED / BLOCKED_BY_BACKEND |
+| 방문기사 Visit 시작/완료/결과 | NOT_ROUTED | BLOCKED_BY_BACKEND |
 
-## Customer Inquiry 3 API
+## 고객 문의 3개 API
 
 ```text
 GET  /api/v1/me/inquiries/{inquiry_id}
@@ -33,7 +33,7 @@ GET  /api/v1/me/inquiries/{inquiry_id}/questions
 POST /api/v1/inquiries/{inquiry_id}/answers
 ```
 
-Mobile Adapter:
+모바일 어댑터:
 
 ```text
 Snapshot DTO / Domain / Mapper
@@ -71,9 +71,9 @@ Answers Request / Response
 5xx / NETWORK_ERROR → Fake 성공으로 대체하지 않음
 ```
 
-## Official fixture
+## 공식 Fixture
 
-Backend `main`에는 다음 공식 명령이 존재한다.
+백엔드 `main`에는 다음 공식 명령이 존재한다.
 
 ```text
 python manage.py seed_demo_accounts
@@ -86,10 +86,10 @@ python manage.py seed_demo_mobile_followup --json
 WPUJAC104DWH
 ```
 
-Fixture Public UUID는 Mobile 제품 코드에 상수로 넣지 않는다. 실제 앱은 로그인 후
+Fixture Public UUID는 모바일 제품 코드에 상수로 넣지 않는다. 실제 앱은 로그인 후
 `/api/v1/me/subscriptions`, Snapshot, Questions 응답을 소비한다.
 
-## Remote / Fake boundary
+## 원격 / Fake 경계
 
 ```text
 REMOTE_FAILURE != FAKE_SUCCESS
@@ -98,10 +98,10 @@ BACKEND_STATE_VERSION = SOURCE_OF_TRUTH
 BACKEND_ALLOWED_ACTIONS = SOURCE_OF_TRUTH
 ```
 
-Customer `REMOTE`에서는 실제 Subscription / Inquiry Runtime을 사용한다.
-`FAKE` 또는 Offline Preview에서만 합성 Guidance를 사용한다.
+고객 `REMOTE`에서는 실제 Subscription / Inquiry Runtime을 사용한다.
+`FAKE` 또는 오프라인 미리보기에서만 합성 Guidance를 사용한다.
 
-## Current blockers
+## 현재 차단 항목
 
 ```text
 CUSTOMER_GUIDANCE_EVIDENCE = BLOCKED_BY_BACKEND
@@ -111,5 +111,5 @@ TECHNICIAN_VISIT_START_COMPLETE_RESULT = BLOCKED_BY_BACKEND
 FULL_CUSTOMER_AI_CONSULTATION_VISIT_TECHNICIAN_E2E = BLOCKED_PREREQUISITES
 ```
 
-현재 게시된 Consultation / Visit write Runtime은 `CONSULTANT` 역할 전용이므로
-Customer 또는 Technician Mobile API로 오사용하지 않는다.
+현재 게시된 Consultation / Visit 쓰기 Runtime은 `CONSULTANT` 역할 전용이므로
+고객 또는 방문기사 모바일 API로 오사용하지 않는다.

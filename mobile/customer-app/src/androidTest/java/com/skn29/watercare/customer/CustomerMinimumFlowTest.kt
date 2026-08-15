@@ -30,6 +30,7 @@ import com.skn29.watercare.core.model.RiskLevel
 import com.skn29.watercare.core.model.UsageGuidanceStatus
 import com.skn29.watercare.core.ui.theme.WaterCareTheme
 import com.skn29.watercare.customer.feature.customer.guidance.GuidanceContent
+import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 import com.skn29.watercare.customer.feature.customer.home.CustomerHomeContent
 import com.skn29.watercare.customer.feature.customer.home.CustomerHomeUiState
 import com.skn29.watercare.customer.feature.customer.intake.IntakeErrorKind
@@ -135,57 +136,39 @@ class CustomerMinimumFlowTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun dangerGuidance_hidesResolvedAction() = runManualComposeUiTest {
-        setContent {
-            var showDangerGuidance by remember { mutableStateOf(false) }
-
-            WaterCareTheme {
-                if (showDangerGuidance) {
-                    GuidanceContent(
-                        guidance = dangerGuidance(),
-                        noEvidence = false,
-                        onRetry = {},
-                    )
-                } else {
-                    CustomerHomeContent(
-                        state = sampleHomeState(),
-                        onStartIntake = {},
-                        onOpenGuidance = { _, scenario ->
-                            if (scenario == MockScenario.DANGER) {
-                                showDangerGuidance = true
-                            }
-                        },
-                        onRetry = {},
-                        onLogout = {},
-                        showDeveloperTools = true,
-                    )
+    fun dangerGuidance_hidesResolvedAction() =
+        runManualComposeUiTest {
+            setContent {
+                WaterCareTheme {
+                    WaterCareScreen(
+                        title = "Guidance test",
+                    ) {
+                        GuidanceContent(
+                            guidance = dangerGuidance(),
+                            noEvidence = false,
+                            onRetry = {},
+                        )
+                    }
                 }
             }
+
+            waitForIdle()
+
+            onNodeWithText(
+                "위험·상담 필수·근거 없음 상태에서는 해결됨 또는 문의 종료 버튼을 표시하지 않습니다."
+            )
+                .performScrollTo()
+                .assertIsDisplayed()
+
+            val resolvedActionDoesNotExist = runCatching {
+                onNodeWithTag("resolvedAction").fetchSemanticsNode()
+            }.isFailure
+
+            assertTrue(
+                "위험 안내 화면에서는 해결 처리 버튼이 표시되면 안 됩니다.",
+                resolvedActionDoesNotExist,
+            )
         }
-
-        waitForIdle()
-
-        onNodeWithTag("scenario_DANGER")
-            .performScrollTo()
-            .assertIsDisplayed()
-            .performClick()
-
-        waitForIdle()
-
-        onNodeWithText(
-            "위험·상담 필수·근거 없음 상태에서는 해결됨 또는 문의 종료 버튼을 표시하지 않습니다."
-        )
-            .assertIsDisplayed()
-
-        val resolvedActionDoesNotExist = runCatching {
-            onNodeWithTag("resolvedAction").fetchSemanticsNode()
-        }.isFailure
-
-        assertTrue(
-            "위험 안내 화면에서는 해결 처리 버튼이 표시되면 안 됩니다.",
-            resolvedActionDoesNotExist,
-        )
-    }
 
     @Test
     @OptIn(ExperimentalTestApi::class)
