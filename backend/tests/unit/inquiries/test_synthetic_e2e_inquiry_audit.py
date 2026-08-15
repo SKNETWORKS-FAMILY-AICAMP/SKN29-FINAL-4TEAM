@@ -97,6 +97,40 @@ def test_g1_snapshot_is_ready_and_rejects_unverified_evidence():
     )
 
 
+def test_g1_accepts_multiple_successful_ai_runs_from_follow_up_answers():
+    snapshot = base_snapshot()
+    snapshot["inquiry"]["state_version"] = 4
+    snapshot["ai"]["run_count"] = 2
+    snapshot["ai"]["runs"].append(
+        {
+            "task_type_code": "ANALYZE_SYMPTOM",
+            "status_code": "SUCCEEDED",
+            "schema_validation_status_code": "PASSED",
+            "correlation_id": "corr-answer",
+        }
+    )
+    snapshot["ai"]["assessment_count"] = 2
+    snapshot["guidance"]["count"] = 2
+    snapshot["evidence"].update(count=2, verified_count=2)
+    snapshot["workflow"]["history"][-1]["state_version"] = 4
+    snapshot["workflow"]["history"].insert(
+        -1,
+        {
+            "event_code": "SUBMIT_ANSWERS",
+            "state_version": 3,
+            "correlation_id": "corr-answer",
+        },
+    )
+    snapshot["workflow"]["idempotency_records"].append(
+        {"operation_id": "submitFollowUpAnswers"}
+    )
+
+    assert stage_blockers(snapshot, "G1") == []
+
+    snapshot["ai"]["runs"][-1]["status_code"] = "FAILED"
+    assert "AI_RUN_NOT_SUCCEEDED" in stage_blockers(snapshot, "G1")
+
+
 def test_g3_and_g4_stage_boundaries_are_distinct():
     snapshot = base_snapshot()
     snapshot["inquiry"].update(
