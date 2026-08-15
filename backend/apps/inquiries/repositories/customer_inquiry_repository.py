@@ -45,6 +45,29 @@ class CustomerInquiryRepository:
         )
 
     @classmethod
+    def find_latest_active(cls, *, actor: Any) -> Inquiry | None:
+        """Return the customer's most recently updated non-terminal inquiry."""
+
+        return (
+            cls.visible_for_customer(actor)
+            .prefetch_related(
+                Prefetch(
+                    "qa_entries",
+                    queryset=cls.unanswered_question_rows(),
+                    to_attr="allowed_action_open_questions",
+                )
+            )
+            .exclude(
+                status_code__in=(
+                    Inquiry.Status.RESOLVED,
+                    Inquiry.Status.CANCELLED,
+                )
+            )
+            .order_by("-updated_at", "-created_at", "-pk")
+            .first()
+        )
+
+    @classmethod
     def find_snapshot(
         cls,
         *,

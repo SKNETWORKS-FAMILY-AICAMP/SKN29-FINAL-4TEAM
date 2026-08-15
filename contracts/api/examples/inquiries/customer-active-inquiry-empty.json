@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "data": {
+    "active_inquiry": null
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "30000000-0000-4000-8000-000000000016"
+  }
+}

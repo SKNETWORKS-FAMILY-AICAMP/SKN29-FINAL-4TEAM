@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "data": {
+    "active_inquiry": {
+      "inquiry_id": "a40c8360-5de5-44a3-8970-8aaea12cbe79",
+      "status_code": "COMPLETION_PENDING",
+      "state_version": 9,
+      "subscription_id": "20000000-0000-4000-8000-000000000001",
+      "product": {
+        "model_code": "WPUJAC104DWH"
+      },
+      "allowed_actions": [
+        {
+          "code": "REQUEST_CONSULTATION",
+          "label": "상담 요청",
+          "operation_id": "requestConsultation",
+          "style": "SECONDARY",
+          "requires_confirmation": false,
+          "confirmation_message": null
+        }
+      ],
+      "updated_at": "2026-08-15T10:50:50+09:00"
+    }
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "30000000-0000-4000-8000-000000000015"
+  }
+}

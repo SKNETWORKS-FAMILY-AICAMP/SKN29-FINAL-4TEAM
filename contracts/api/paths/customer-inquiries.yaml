@@ -1,3 +1,41 @@
+/me/inquiries/active:
+  get:
+    operationId: getMyActiveInquiry
+    summary: 고객 최신 진행 문의 조회
+    description: |
+      인증 고객이 홈 복귀 또는 앱 재시작 후 가장 최근에 갱신된 비종결
+      문의를 다시 찾도록 최소 Snapshot을 반환한다. RESOLVED와 CANCELLED는
+      제외하며 진행 문의가 없으면 active_inquiry=null을 반환한다. 고객은
+      응답의 inquiry_id로 기존 Snapshot과 Guidance를 다시 조회하고,
+      Mobile은 상태나 allowed_actions를 자체 계산하지 않는다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-permission-scope: OWN_INQUIRY
+    security: [{BearerAuth: []}]
+    responses:
+      "200":
+        description: 최신 진행 문의 Snapshot 또는 null
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/inquiry/CustomerActiveInquiry.yaml
+            examples:
+              activeInquiry:
+                externalValue: ../examples/inquiries/customer-active-inquiry-success.json
+              noActiveInquiry:
+                externalValue: ../examples/inquiries/customer-active-inquiry-empty.json
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}
+
 /me/inquiries/{inquiry_id}:
   parameters: &customer_inquiry_path_parameters
     - name: inquiry_id
