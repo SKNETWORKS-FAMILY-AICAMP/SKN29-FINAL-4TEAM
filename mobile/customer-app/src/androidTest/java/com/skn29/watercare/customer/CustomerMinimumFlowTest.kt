@@ -107,7 +107,9 @@ class CustomerMinimumFlowTest {
                     )
                 } else {
                     CustomerHomeContent(
-                        state = sampleHomeState(),
+                        state = sampleHomeState(
+                            activeInquiry = null,
+                        ),
                         onStartIntake = { showIntake = true },
                         onOpenGuidance = { _, _ -> },
                         onRetry = {},
@@ -119,7 +121,7 @@ class CustomerMinimumFlowTest {
 
         waitForIdle()
 
-        onNodeWithTag("startIntake")
+        onNodeWithTag("heroStartIntake")
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()
@@ -170,9 +172,10 @@ class CustomerMinimumFlowTest {
 
         waitForIdle()
 
-        onNodeWithTag("consultationUnavailable")
+        onNodeWithText(
+            "위험·상담 필수·근거 없음 상태에서는 해결됨 또는 문의 종료 버튼을 표시하지 않습니다."
+        )
             .assertIsDisplayed()
-            .assertIsNotEnabled()
 
         val resolvedActionDoesNotExist = runCatching {
             onNodeWithTag("resolvedAction").fetchSemanticsNode()
@@ -304,7 +307,14 @@ class CustomerMinimumFlowTest {
         )
     }
 
-    private fun sampleHomeState() = CustomerHomeUiState(
+    private fun sampleHomeState(
+        activeInquiry: ActiveInquirySummary? = ActiveInquirySummary(
+            inquiryId = TEST_INQUIRY_ID,
+            inquiryCode = "DEMO-INQ-002",
+            statusCode = "AI_GUIDANCE",
+            statusLabel = "AI 안내 확인",
+        ),
+    ) = CustomerHomeUiState(
         loading = false,
         home = CustomerHomeData(
             subscriptionId = TEST_SUBSCRIPTION_ID,
@@ -319,12 +329,7 @@ class CustomerMinimumFlowTest {
             ),
             questionnaireStatus = "사전 문진 가능",
             nextCareOn = "2026-08-04",
-            activeInquiry = ActiveInquirySummary(
-                inquiryId = TEST_INQUIRY_ID,
-                inquiryCode = "DEMO-INQ-002",
-                statusCode = "AI_GUIDANCE",
-                statusLabel = "AI 안내 확인",
-            ),
+            activeInquiry = activeInquiry,
         ),
         backendAvailable = false,
         offlinePreview = true,

@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class CustomerRemoteBackendSmokeTest {
     @Test
-    fun login_subscriptionDetail_createAndSubmit_realBackend() = runBlocking {
+    fun login_subscriptionDetail_createAndSubmit_realBackend() = runBlocking<Unit> {
         val args = InstrumentationRegistry.getArguments()
         assumeTrue(args.getString("runRemoteSmoke") == "true")
 
@@ -86,7 +86,7 @@ class CustomerRemoteBackendSmokeTest {
     }
 
     @Test
-    fun customerGuidanceAndConsultationRequest_realBackend() = runBlocking {
+    fun customerGuidanceAndConsultationRequest_realBackend() = runBlocking<Unit> {
         val args = InstrumentationRegistry.getArguments()
         assumeTrue(args.getString("runRemoteSmoke") == "true")
         val inquiryId = args.getString("guidanceInquiryId").orEmpty().trim()
