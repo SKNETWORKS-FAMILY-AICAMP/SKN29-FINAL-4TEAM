@@ -1,11 +1,15 @@
-# WaterCare customer app
+# WaterCare 고객 앱
 
-Week 3 mandatory customer flow:
+## 3주차 필수 고객 이용 흐름
 
-- actual Backend health and Demo customer authentication
-- CUST-01 product/subscription summary with synthetic marker
-- CUST-02 symptom selection and validated intake state
-- CUST-04 safe guidance and official evidence presentation
-- deterministic normal, caution, danger, no-evidence, AI-failure and network-failure fixtures
+- 실제 백엔드 상태 확인 및 데모 고객 인증
+- CUST-01 제품·구독 정보 요약 및 합성 데이터 표시
+- CUST-02 증상 선택 및 입력 내용 검증
+- CUST-04 안전 안내 및 공식 근거 표시
+- 일반·주의·위험·근거 없음·AI 실패·네트워크 실패 상황을 재현할 수 있는 고정 시나리오 데이터
 
-The app defaults to `http://127.0.0.1:8000/` for a physical device using `adb reverse`. Override `BACKEND_BASE_URL` in untracked `mobile/local.properties` for an emulator.
+## 로컬 실행 환경
+
+실제 Android 기기에서는 `adb reverse`를 사용하며, 앱은 기본적으로 `http://127.0.0.1:8000/`의 백엔드에 연결합니다.
+
+에뮬레이터에서 다른 백엔드 주소를 사용해야 하는 경우 Git에 포함되지 않는 `mobile/local.properties` 파일의 `BACKEND_BASE_URL` 값을 변경합니다.

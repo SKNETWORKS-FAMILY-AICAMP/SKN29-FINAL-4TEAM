@@ -1,10 +1,10 @@
-# Week 5 Mobile Blockers — 2026-08-12
+# 5주차 모바일 차단 항목 — 2026-08-12
 
-Backend 기준: `origin/main@41ef3d4f7a6699821c6d65398438071a06d23c92`
+백엔드 기준: `origin/main@41ef3d4f7a6699821c6d65398438071a06d23c92`
 
 ## 즉시 해제된 항목
 
-| 항목 | 판정 | Mobile 조치 |
+| 항목 | 판정 | 모바일 조치 |
 |---|---|---|
 | 고객 구독 목록 | READY | 기존 Remote 유지 |
 | 고객 구독 상세 | READY | 기존 Remote 유지 |
@@ -14,12 +14,12 @@ Backend 기준: `origin/main@41ef3d4f7a6699821c6d65398438071a06d23c92`
 | 고객 문의 Snapshot | READY | 실제 Remote 연결 |
 | 미답변 Questions | READY | 실제 Remote 연결 |
 | Follow-up Answers | READY | 실제 Remote 연결 |
-| 공식 Mobile follow-up Fixture | READY | 실단말 Smoke 소비 완료 (현재 로컬 DB) |
-| Customer Follow-up 3API 실단말 Smoke | PASS | SM-F721N / skipped=0 |
+| 공식 모바일 Follow-up Fixture | READY | 실단말 Smoke 소비 완료 (현재 로컬 DB) |
+| 고객 Follow-up 3API 실단말 Smoke | PASS | SM-F721N / skipped=0 |
 
-## 현재 Backend 차단
+## 현재 백엔드 차단
 
-### CUSTOMER Guidance / Evidence
+### 고객 Guidance / Evidence
 
 ```text
 상태=BLOCKED_BY_BACKEND
@@ -28,7 +28,7 @@ Mobile 처리=GUIDANCE_ROUTE_UNAVAILABLE fail-closed 유지
 금지=AI FastAPI/VectorDB/LLM 직접 호출, Fake 성공 자동 대체
 ```
 
-### CUSTOMER 상담 요청
+### 고객 상담 요청
 
 ```text
 상태=BLOCKED_BY_BACKEND
@@ -36,7 +36,7 @@ Mobile 처리=GUIDANCE_ROUTE_UNAVAILABLE fail-closed 유지
 Mobile 처리=실제 요청 성공으로 표시하지 않음
 ```
 
-### TECHNICIAN Visit Remote
+### 방문기사 Visit 원격 연동
 
 ```text
 상태=BLOCKED_BY_BACKEND

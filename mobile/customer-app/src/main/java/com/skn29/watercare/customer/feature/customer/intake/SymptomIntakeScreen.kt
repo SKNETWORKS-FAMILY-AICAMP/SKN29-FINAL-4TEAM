@@ -117,7 +117,7 @@ fun SymptomIntakeContent(
     val retrySubmitAction = visibleConflictActions
         .firstOrNull { it.isRetrySubmitAction() }
 
-    WaterCareScreen(title = "증상 접수", onBack = onBack) {
+    WaterCareScreen(title = "불편한 점 접수", onBack = onBack) {
         LiquidGlassPanel(strong = true) {
             Row(
                 modifier = Modifier
@@ -135,7 +135,7 @@ fun SymptomIntakeContent(
                         fontWeight = FontWeight.Black,
                     )
                     Text(
-                        "가장 가까운 증상을 먼저 선택해주세요.",
+                        "현재 불편한 점과 가장 가까운 항목을 선택해주세요.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -148,9 +148,9 @@ fun SymptomIntakeContent(
             }
         }
 
-        SectionCard("증상 선택") {
+        SectionCard("불편한 점 선택") {
             Text(
-                "여러 증상이 함께 있다면 복수로 선택할 수 있어요.",
+                "불편한 점이 여러 개라면 모두 선택할 수 있어요.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -253,14 +253,14 @@ fun SymptomIntakeContent(
         }
 
         if (state.isSubmitting) {
-            LoadingBlock("증상을 접수하고 있어요")
+            LoadingBlock("내용을 보내고 있어요")
         }
 
         LiquidGlassButton(
             text = when {
-                state.isSubmitting -> "접수 중"
-                hasConflict -> "최신 상태 확인 필요"
-                else -> "증상 접수하기"
+                state.isSubmitting -> "보내는 중"
+                hasConflict -> "다시 확인해주세요"
+                else -> "불편한 점 접수하기"
             },
             onClick = onSubmit,
             enabled = !state.isSubmitting && !hasConflict,
