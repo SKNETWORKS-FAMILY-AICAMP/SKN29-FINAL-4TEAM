@@ -211,6 +211,10 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
         OPENAPI_DIR / "paths" / "customer-inquiries.yaml"
     )
     expected = {
+        "/me/inquiries/active": (
+            "getMyActiveInquiry",
+            "CustomerActiveInquiry.yaml",
+        ),
         "/me/inquiries/{inquiry_id}": (
             "getMyInquiry",
             "CustomerInquirySnapshot.yaml",
@@ -235,10 +239,11 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
             "200",
             "401",
             "403",
-            "404",
             "422",
             "500",
         }
+        if path != "/me/inquiries/active":
+            expected_responses.add("404")
         if path.endswith("/guidance"):
             expected_responses.add("409")
         assert set(operation["responses"]) == expected_responses
@@ -246,6 +251,9 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
             "x-contract-status"
         ] == "CONFIRMED"
 
+    assert root["paths"]["/me/inquiries/active"]["$ref"] == (
+        "./paths/customer-inquiries.yaml#/~1me~1inquiries~1active"
+    )
     assert root["paths"]["/me/inquiries/{inquiry_id}"]["$ref"] == (
         "./paths/customer-inquiries.yaml#/~1me~1inquiries~1{inquiry_id}"
     )
@@ -267,10 +275,18 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
     snapshot_schema = load_yaml(
         INQUIRY_SCHEMA_DIR / "CustomerInquirySnapshot.yaml"
     )
+    active_schema = load_yaml(
+        INQUIRY_SCHEMA_DIR / "CustomerActiveInquiry.yaml"
+    )
     guidance_schema = load_yaml(
         INQUIRY_SCHEMA_DIR / "CustomerInquiryGuidance.yaml"
     )
     assert "allowed_actions" in snapshot_schema["required"]
+    assert active_schema["required"] == ["active_inquiry"]
+    assert active_schema["properties"]["active_inquiry"]["oneOf"] == [
+        {"$ref": "./CustomerInquirySnapshot.yaml"},
+        {"type": "null"},
+    ]
     assert snapshot_schema["properties"]["allowed_actions"] == {
         "type": "array",
         "description": (

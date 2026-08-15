@@ -1,5 +1,20 @@
 # Contracts Changelog
 
+## 2026-08-15 — CUSTOMER 최신 진행 문의 복구 조회
+
+### Added
+
+- `GET /me/inquiries/active`와 `getMyActiveInquiry`를 추가했다.
+- 고객 본인의 가장 최근 비종결 문의 Snapshot 또는 `null`을 반환해 Mobile
+  홈 복귀·앱 재시작 후 기존 문의를 다시 열 수 있게 했다.
+
+### Boundary
+
+- `RESOLVED`, `CANCELLED` 문의는 최신 진행 문의에서 제외한다.
+- 기존 Customer Snapshot을 재사용하며 내부 원문·Evidence ID·배정정보는
+  노출하지 않는다.
+- 신규 Model·Table·Column·Migration과 상태 변경은 없다.
+
 ## 2026-08-12 — CUSTOMER REQUEST_CONSULTATION Runtime 게시
 
 ### Changed

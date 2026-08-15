@@ -42,6 +42,17 @@ class CustomerInquiryService:
     )
 
     @classmethod
+    def latest_active_for_customer(cls, *, actor: Any) -> dict[str, Any]:
+        inquiry = CustomerInquiryRepository.find_latest_active(actor=actor)
+        return {
+            "active_inquiry": (
+                None
+                if inquiry is None
+                else cls._snapshot(inquiry, actor=actor)
+            )
+        }
+
+    @classmethod
     def snapshot_for_customer(
         cls,
         *,
@@ -54,6 +65,10 @@ class CustomerInquiryService:
         )
         if inquiry is None:
             raise NotFound()
+        return cls._snapshot(inquiry, actor=actor)
+
+    @classmethod
+    def _snapshot(cls, inquiry: Inquiry, *, actor: Any) -> dict[str, Any]:
         open_followup_questions = any(
             cls._question(question) is not None
             for question in inquiry.allowed_action_open_questions
