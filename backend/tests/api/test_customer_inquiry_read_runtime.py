@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 import hashlib
 from uuid import UUID, uuid4
 
@@ -251,6 +251,109 @@ def test_customer_snapshot_returns_exact_owned_projection(
         "assigned_user",
     ):
         assert forbidden not in serialized
+
+
+def test_customer_active_inquiry_returns_latest_owned_non_terminal_snapshot(
+    django_assert_num_queries,
+):
+    owner = create_user(60)
+    other = create_user(61)
+    older = create_inquiry(owner, 60)
+    latest = create_inquiry(owner, 61)
+    terminal = create_inquiry(owner, 62)
+    other_inquiry = create_inquiry(other, 63)
+    now = timezone.now()
+
+    Inquiry.objects.filter(pk=older.pk).update(
+        status_code=Inquiry.Status.AI_GUIDANCE,
+        state_version=3,
+        updated_at=now - timedelta(minutes=3),
+    )
+    Inquiry.objects.filter(pk=latest.pk).update(
+        status_code=Inquiry.Status.COMPLETION_PENDING,
+        state_version=9,
+        updated_at=now - timedelta(minutes=2),
+    )
+    Inquiry.objects.filter(pk=terminal.pk).update(
+        status_code=Inquiry.Status.RESOLVED,
+        state_version=10,
+        updated_at=now,
+    )
+    Inquiry.objects.filter(pk=other_inquiry.pk).update(
+        status_code=Inquiry.Status.CONSULTATION_REQUIRED,
+        state_version=5,
+        updated_at=now + timedelta(minutes=1),
+    )
+
+    with django_assert_num_queries(2):
+        response = authenticated_client(owner).get(
+            "/api/v1/me/inquiries/active"
+        )
+
+    assert response.status_code == 200
+    data = response.json()["data"]["active_inquiry"]
+    assert data["inquiry_id"] == str(latest.public_id)
+    assert data["status_code"] == Inquiry.Status.COMPLETION_PENDING
+    assert data["state_version"] == 9
+    assert data["subscription_id"] == str(latest.subscription.public_id)
+    assert [action["code"] for action in data["allowed_actions"]] == [
+        "REQUEST_CONSULTATION"
+    ]
+
+    serialized = str(data)
+    for forbidden in (
+        latest.inquiry_code,
+        latest.raw_text,
+        latest.subscription.contract_no,
+        latest.subscription.serial_no,
+        latest.subscription.installation_address,
+        owner.customer_profile.customer_name,
+        owner.customer_profile.phone,
+        "INTERNAL-EVIDENCE-ID",
+        "assigned_user",
+    ):
+        assert forbidden not in serialized
+
+
+@pytest.mark.parametrize(
+    "terminal_status",
+    [Inquiry.Status.CANCELLED, Inquiry.Status.RESOLVED],
+)
+def test_customer_active_inquiry_returns_null_when_only_terminal_rows_exist(
+    terminal_status,
+):
+    owner = create_user(64)
+    inquiry = create_inquiry(owner, 64)
+    terminal_fields = {
+        "status_code": terminal_status,
+        "state_version": 3,
+    }
+    if terminal_status == Inquiry.Status.CANCELLED:
+        terminal_fields.update(
+            cancelled_at=timezone.now(),
+            cancellation_reason_code=Inquiry.CancellationReason.CUSTOMER_REQUEST,
+        )
+    Inquiry.objects.filter(pk=inquiry.pk).update(**terminal_fields)
+
+    response = authenticated_client(owner).get(
+        "/api/v1/me/inquiries/active"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["data"] == {"active_inquiry": None}
+
+
+def test_customer_active_inquiry_enforces_auth_role_and_query_boundaries():
+    owner = create_user(65)
+    consultant = create_user(66, role=User.Role.CONSULTANT)
+    create_inquiry(owner, 65)
+    path = "/api/v1/me/inquiries/active"
+
+    assert APIClient().get(path).status_code == 401
+    assert authenticated_client(consultant).get(path).status_code == 403
+    invalid_query = authenticated_client(owner).get(f"{path}?expand=all")
+    assert invalid_query.status_code == 422
+    assert invalid_query.json()["error"]["code"] == "VALIDATION_ERROR"
 
 
 def test_customer_guidance_returns_latest_safe_projection_without_evidence(

@@ -22,6 +22,10 @@ class CustomerInquirySnapshotSerializer(serializers.Serializer):
     updated_at = serializers.DateTimeField()
 
 
+class CustomerActiveInquirySerializer(serializers.Serializer):
+    active_inquiry = CustomerInquirySnapshotSerializer(allow_null=True)
+
+
 class CustomerInquiryGuidanceSerializer(serializers.Serializer):
     """Public CUSTOMER projection of the latest trusted AI guidance."""
 
