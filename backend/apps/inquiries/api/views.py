@@ -16,6 +16,7 @@ from apps.inquiries.api.serializers import (
     ConsultantCustomerSubscriptionSearchResultSerializer,
     ConsultantCustomerSubscriptionSearchSerializer,
     CreateInquirySerializer,
+    CustomerActiveInquirySerializer,
     CustomerInquiryGuidanceSerializer,
     CustomerInquiryQuestionsSerializer,
     CustomerInquirySnapshotSerializer,
@@ -265,6 +266,19 @@ class CustomerInquirySnapshotView(APIView):
             inquiry_public_id=inquiry_id,
         )
         return success_response(CustomerInquirySnapshotSerializer(data).data)
+
+
+class CustomerActiveInquiryView(APIView):
+    """Return the CUSTOMER's latest non-terminal inquiry, if one exists."""
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get(self, request):
+        reject_unknown_query_parameters(request, set())
+        data = CustomerInquiryService.latest_active_for_customer(
+            actor=request.user,
+        )
+        return success_response(CustomerActiveInquirySerializer(data).data)
 
 
 class CustomerInquiryQuestionsView(APIView):

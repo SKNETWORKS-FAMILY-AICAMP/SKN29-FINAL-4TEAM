@@ -1,0 +1,12 @@
+title: CustomerActiveInquiry
+type: object
+description: 고객이 홈 또는 앱 재시작 후 복구할 최신 진행 문의 Projection
+x-contract-status: CONFIRMED
+additionalProperties: false
+required: [active_inquiry]
+properties:
+  active_inquiry:
+    description: 최신 비종결 문의 Snapshot이며 진행 문의가 없으면 null
+    oneOf:
+      - $ref: ./CustomerInquirySnapshot.yaml
+      - type: "null"
