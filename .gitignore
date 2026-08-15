@@ -56,5 +56,7 @@ db.sqlite3
 .idea/
 *.iml
 
-#
+# 동윤
 ai/tests/.tmp/
+docs/individual/dongyoon/walkthrough.md
+docs/individual/dongyoon/인계/
