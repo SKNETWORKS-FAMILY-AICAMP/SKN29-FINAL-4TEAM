@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 from uuid import UUID, uuid4
+from zoneinfo import ZoneInfo
 
 import pytest
 from django.utils import timezone
@@ -342,6 +343,10 @@ def test_consultant_list_filters_searches_sorts_and_paginates():
         created_at=now - timedelta(minutes=30),
         updated_at=now - timedelta(minutes=10),
     )
+    business_today = timezone.localtime(
+        now,
+        ZoneInfo("Asia/Seoul"),
+    ).date()
 
     client = authenticated_client(consultant)
     response = client.get(
@@ -353,8 +358,8 @@ def test_consultant_list_filters_searches_sorts_and_paginates():
             ],
             "risk_level": ["general", "danger"],
             "priority": ["NORMAL", "URGENT"],
-            "from": (now - timedelta(days=1)).date().isoformat(),
-            "to": now.date().isoformat(),
+            "from": (business_today - timedelta(days=1)).isoformat(),
+            "to": business_today.isoformat(),
             "sort": "RISK_DESC",
             "page": 1,
             "size": 1,
