@@ -22,6 +22,14 @@
 - 6주차 모바일 인계 문서
 - 추적 중인 local.properties / 흔한 secret / 개인 IP 정적 검사
 
+## 2026-08-15 Mobile 고객 최신 진행 문의 복구 조회 연동
+
+- `GET /api/v1/me/inquiries/active` Remote 연동 완료
+- `active_inquiry` null/non-null 응답을 서버 Snapshot 그대로 매핑
+- 동일 `inquiry_id` 복구 및 `COMPLETION_PENDING`, `state_version` 보존
+- Remote 조회 실패 시 Fake/Fixture 성공 자동 대체 없음
+- Core / Customer Unit Test 및 Customer Debug Build PASS
+- 전체 실제 기기 E2E Smoke는 Backend 테스트 계정·신규 Inquiry 인계 후 수행
 ## 백엔드 없이는 완료할 수 없는 항목
 
 - CUSTOMER_GUIDANCE_EVIDENCE_RUNTIME
