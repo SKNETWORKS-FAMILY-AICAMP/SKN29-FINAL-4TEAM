@@ -1455,3 +1455,32 @@ Public UUID 분석 요청이 모두 성공했다.
   최지용 Backend·DB 담당자가 내려야 한다.
 - 상세 회신은
   `docs/individual/dongyoon/인계/20260814_이동윤_to_최지용_Backend_AI_G1B_동일Host_실행차단_회신_v0.1.md`에 기록했다.
+
+### 2026-08-15 Backend↔AI G1-B Migration 적용·동일 Host Happy Path
+
+- 최지용의 명시 승인에 따라 `waterbridge_team_integration`에 남은 19개 Migration을
+  적용했다. 적용 전 Backend 8000 미기동, DB Healthy, Migrator Role, 정확히 19개 Plan을
+  확인하고 Fresh Custom-format Backup을 생성했다. Backup Archive List 검증과 Git ignore는
+  PASS이며 수동 SQL·새 DB·새 Role 생성은 수행하지 않았다.
+- 19개 Migration은 모두 `OK`였다. 적용 후 `migrate --check --plan`은 계획 0,
+  Django Check는 0 issues, Migration Drift는 없음으로 통과했다. G1-B Readiness는
+  `READY`, Crosswalk 7/7, Page Link 8/8, Readonly View 7행·고유 ID 7개, AI Readonly
+  Policy Safe를 다시 확인했다.
+- 같은 `dongyoon@e9e7971334f3951e1fee922e97bf4d2e5bab45f2`에서 AI 8001과 Backend
+  8000을 loopback으로 기동하고 두 Health HTTP 200을 확인했다. 최종 합성 Inquiry
+  `3f7cc298-13a4-4716-804b-eef052f9bd51`는 실제 OpenAI
+  `gpt-4.1-mini-2025-04-14`와 Readonly pgvector를 거쳐 Schema PASS, 내부 근거 5건,
+  AIRun·Assessment·Guidance 각 1건, EvidenceLink 5건을 저장했다.
+- 누락·후속 질문 0인 최종 Happy Path는 `SAFE_GUIDANCE_READY`를 적용해
+  `AI_GUIDANCE@v3`에 도달했고 고객 Guidance HTTP 200을 반환했다. 고객 공개
+  `evidence=[]`는 현재 확정 공개 계약의 의도된 경계이며 내부 EvidenceLink 5건과
+  구분한다.
+- 같은 Submit Replay는 HTTP 200, `idempotent_replay=true`, 추가 AI 호출 0, 추가
+  AIRun·Assessment·Guidance·EvidenceLink·Transition 0이었다. Backend 요청, AI 로그,
+  AIRun과 Submit Transition의 Correlation ID가 일치했고 AI 로그 Token Usage는
+  999 input, 110 output, 1109 total이었다.
+- AI·Backend Runtime은 문서 작성 시점 Health 200으로 유지했다. Secret·DSN·Password,
+  합성 고객 원문, Prompt, Evidence 본문과 Vector는 회신문서·실행 출력·Git에 기록하지
+  않았다.
+  상세 회신은
+  `docs/individual/dongyoon/인계/20260815_이동윤_to_최지용_Backend_AI_G1B_Migration적용_동일Host실행_회신_v0.1.md`에 기록했다.
