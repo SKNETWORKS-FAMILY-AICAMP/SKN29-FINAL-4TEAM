@@ -2,7 +2,12 @@ package com.skn29.watercare.customer.feature.customer.home
 
 import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.config.CustomerCareRuntimeConfig
+import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.ApiResult
+import com.skn29.watercare.core.model.CustomerInquiryQuestions
+import com.skn29.watercare.core.model.CustomerInquirySnapshot
+import com.skn29.watercare.core.model.FollowUpAnswer
+import com.skn29.watercare.core.model.SubmitFollowUpAnswersResult
 import com.skn29.watercare.core.model.P0_SUPPORTED_MODEL_CODE
 import com.skn29.watercare.core.model.SessionResponse
 import com.skn29.watercare.core.model.SubscriptionDetailDto
@@ -13,6 +18,7 @@ import com.skn29.watercare.core.model.UserData
 import com.skn29.watercare.core.repository.AuthRepository
 import com.skn29.watercare.core.repository.BackendStatusRepository
 import com.skn29.watercare.core.repository.FakeCustomerCareRepository
+import com.skn29.watercare.core.repository.CustomerInquiryRepository
 import com.skn29.watercare.core.repository.SubscriptionRepository
 import com.skn29.watercare.customer.feature.customer.intake.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -253,14 +259,251 @@ class CustomerHomeViewModelTest {
             assertTrue(state.dataSourceLabel.contains("문의 전송 차단"))
         }
 
+    @Test
+    fun remoteMode_activeInquiryRestoresCompletionPendingAndPreservesServerSnapshot() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val inquiryRepository =
+                FakeCustomerInquiryRepository(
+                    activeResult = ApiResult.Success(
+                        activeSnapshot(
+                            stateVersion = 9,
+                            statusCode = "COMPLETION_PENDING",
+                        )
+                    )
+                )
+
+            val viewModel = createViewModel(
+                config = CustomerCareRuntimeConfig.from("REMOTE", ""),
+                offlinePreview = false,
+                subscriptionRepository = FakeSubscriptionRepository(
+                    items = listOf(summary("sub-1")),
+                ),
+                customerInquiryRepository = inquiryRepository,
+            )
+
+            advanceUntilIdle()
+
+            val state = viewModel.state.value
+            val active = requireNotNull(state.activeInquiry)
+
+            assertEquals("active-inquiry-1", active.inquiryId)
+            assertEquals("COMPLETION_PENDING", active.statusCode)
+            assertEquals(9, active.stateVersion)
+            assertEquals("sub-1", active.subscriptionId)
+            assertEquals(
+                P0_SUPPORTED_MODEL_CODE,
+                active.productModelCode,
+            )
+            assertEquals(1, active.allowedActions.size)
+            assertEquals(
+                "REQUEST_CONSULTATION",
+                active.allowedActions.single().code,
+            )
+            assertEquals(
+                "requestConsultation",
+                active.allowedActions.single().operationId,
+            )
+            assertEquals("sub-1", state.selectedSubscriptionId)
+            assertEquals(1, inquiryRepository.activeCalls)
+        }
+
+    @Test
+    fun remoteMode_nullActiveInquiryKeepsNewIntakeStateWithoutFakeInquiry() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val inquiryRepository =
+                FakeCustomerInquiryRepository(
+                    activeResult =
+                        ApiResult.Success<CustomerInquirySnapshot?>(
+                            null
+                        ),
+                )
+
+            val viewModel = createViewModel(
+                config = CustomerCareRuntimeConfig.from("REMOTE", ""),
+                offlinePreview = false,
+                subscriptionRepository = FakeSubscriptionRepository(
+                    items = listOf(summary("sub-1")),
+                ),
+                customerInquiryRepository = inquiryRepository,
+            )
+
+            advanceUntilIdle()
+
+            val state = viewModel.state.value
+
+            assertNull(state.activeInquiry)
+            assertEquals("sub-1", state.home?.subscriptionId)
+            assertTrue(state.intakeAvailable)
+            assertNull(state.error)
+            assertEquals(1, inquiryRepository.activeCalls)
+        }
+
+    @Test
+    fun remoteMode_loadAgainRefreshesLatestActiveInquiryStateVersion() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val inquiryRepository =
+                FakeCustomerInquiryRepository(
+                    activeResult = ApiResult.Success(
+                        activeSnapshot(
+                            stateVersion = 9,
+                            statusCode =
+                                "CONSULTATION_IN_PROGRESS",
+                        )
+                    )
+                )
+
+            val viewModel = createViewModel(
+                config = CustomerCareRuntimeConfig.from("REMOTE", ""),
+                offlinePreview = false,
+                subscriptionRepository = FakeSubscriptionRepository(
+                    items = listOf(summary("sub-1")),
+                ),
+                customerInquiryRepository = inquiryRepository,
+            )
+
+            advanceUntilIdle()
+
+            assertEquals(
+                9,
+                viewModel.state.value
+                    .activeInquiry
+                    ?.stateVersion,
+            )
+
+            inquiryRepository.activeResult =
+                ApiResult.Success(
+                    activeSnapshot(
+                        stateVersion = 10,
+                        statusCode = "COMPLETION_PENDING",
+                    )
+                )
+
+            viewModel.load()
+            advanceUntilIdle()
+
+            val refreshed =
+                requireNotNull(
+                    viewModel.state.value.activeInquiry
+                )
+
+            assertEquals(
+                "active-inquiry-1",
+                refreshed.inquiryId,
+            )
+            assertEquals(
+                "COMPLETION_PENDING",
+                refreshed.statusCode,
+            )
+            assertEquals(10, refreshed.stateVersion)
+            assertEquals(2, inquiryRepository.activeCalls)
+        }
+
+    @Test
+    fun remoteMode_activeInquiryFailureDoesNotFallBackToFakeHome() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val inquiryRepository =
+                FakeCustomerInquiryRepository(
+                    activeResult = ApiResult.Failure(
+                        code = "NETWORK_ERROR",
+                        message =
+                            "네트워크 연결을 확인해 주세요.",
+                        retryable = true,
+                    )
+                )
+
+            val viewModel = createViewModel(
+                config = CustomerCareRuntimeConfig.from("REMOTE", ""),
+                offlinePreview = false,
+                subscriptionRepository = FakeSubscriptionRepository(
+                    items = listOf(summary("sub-1")),
+                ),
+                customerInquiryRepository = inquiryRepository,
+            )
+
+            advanceUntilIdle()
+
+            val state = viewModel.state.value
+
+            assertNull(state.activeInquiry)
+            assertNull(state.home)
+            assertEquals("NETWORK_ERROR", state.errorCode)
+            assertFalse(state.intakeAvailable)
+            assertEquals(1, inquiryRepository.activeCalls)
+        }
+
+    private fun activeSnapshot(
+        stateVersion: Int,
+        statusCode: String,
+    ) = CustomerInquirySnapshot(
+        inquiryId = "active-inquiry-1",
+        statusCode = statusCode,
+        stateVersion = stateVersion,
+        subscriptionId = "sub-1",
+        productModelCode = P0_SUPPORTED_MODEL_CODE,
+        allowedActions = listOf(
+            AllowedAction(
+                code = "REQUEST_CONSULTATION",
+                label = "상담 요청",
+                operationId = "requestConsultation",
+                style = "SECONDARY",
+                requiresConfirmation = false,
+                confirmationMessage = null,
+            )
+        ),
+        updatedAtRfc3339 =
+            "2026-08-15T10:50:50+09:00",
+    )
+
+    private class FakeCustomerInquiryRepository(
+        var activeResult:
+            ApiResult<CustomerInquirySnapshot?>,
+    ) : CustomerInquiryRepository {
+
+        var activeCalls: Int = 0
+            private set
+
+        override suspend fun activeInquiry():
+            ApiResult<CustomerInquirySnapshot?> {
+            activeCalls += 1
+            return activeResult
+        }
+
+        override suspend fun snapshot(
+            inquiryId: String,
+        ): ApiResult<CustomerInquirySnapshot> =
+            error(
+                "snapshot() is not used by " +
+                    "CustomerHomeViewModel tests."
+            )
+
+        override suspend fun questions(
+            inquiryId: String,
+        ): ApiResult<CustomerInquiryQuestions> =
+            error(
+                "questions() is not used by " +
+                    "CustomerHomeViewModel tests."
+            )
+
+        override suspend fun submitAnswers(
+            inquiryId: String,
+            stateVersion: Int,
+            answers: List<FollowUpAnswer>,
+        ): ApiResult<SubmitFollowUpAnswersResult> =
+            error(
+                "submitAnswers() is not used by " +
+                    "CustomerHomeViewModel tests."
+            )
+    }
     private fun createViewModel(
         config: CustomerCareRuntimeConfig,
         offlinePreview: Boolean,
         subscriptionRepository: SubscriptionRepository?,
+        customerInquiryRepository: CustomerInquiryRepository? = null,
     ) = CustomerHomeViewModel(
         authRepository = SuccessAuthRepository,
         careRepository = FakeCustomerCareRepository(config.fixtureSubscriptionId),
         subscriptionRepository = subscriptionRepository,
+        customerInquiryRepository = customerInquiryRepository,
         backendStatusRepository = SuccessBackendStatusRepository,
         runtimeConfig = config,
         offlinePreview = offlinePreview,

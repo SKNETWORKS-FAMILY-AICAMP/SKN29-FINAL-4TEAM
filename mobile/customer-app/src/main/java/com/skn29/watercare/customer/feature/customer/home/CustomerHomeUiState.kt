@@ -2,12 +2,14 @@ package com.skn29.watercare.customer.feature.customer.home
 
 import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.model.CustomerHomeData
+import com.skn29.watercare.core.model.CustomerInquirySnapshot
 import com.skn29.watercare.core.model.UserData
 
 data class CustomerHomeUiState(
     val loading: Boolean = true,
     val user: UserData? = null,
     val home: CustomerHomeData? = null,
+    val activeInquiry: CustomerInquirySnapshot? = null,
     val subscriptions: List<CustomerHomeData> = emptyList(),
     val selectedSubscriptionId: String? = null,
     val selectingSubscription: Boolean = false,

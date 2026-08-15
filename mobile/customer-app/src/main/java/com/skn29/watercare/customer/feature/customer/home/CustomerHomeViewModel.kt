@@ -6,12 +6,14 @@ import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.config.CustomerCareRuntimeConfig
 import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.CustomerHomeData
+import com.skn29.watercare.core.model.CustomerInquirySnapshot
 import com.skn29.watercare.core.model.UserData
 import com.skn29.watercare.core.model.isP0SupportedActiveSubscription
 import com.skn29.watercare.core.model.toCustomerHomeData
 import com.skn29.watercare.core.repository.AuthRepository
 import com.skn29.watercare.core.repository.BackendStatusRepository
 import com.skn29.watercare.core.repository.CustomerCareRepository
+import com.skn29.watercare.core.repository.CustomerInquiryRepository
 import com.skn29.watercare.core.repository.SubscriptionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +24,7 @@ class CustomerHomeViewModel(
     private val authRepository: AuthRepository,
     private val careRepository: CustomerCareRepository,
     private val subscriptionRepository: SubscriptionRepository? = null,
+    private val customerInquiryRepository: CustomerInquiryRepository? = null,
     private val backendStatusRepository: BackendStatusRepository,
     private val runtimeConfig: CustomerCareRuntimeConfig,
     offlinePreview: Boolean,
@@ -103,11 +106,28 @@ class CustomerHomeViewModel(
             is ApiResult.Success -> {
                 val subscriptions = listResult.value.items.map { it.toCustomerHomeData() }
 
+                val activeInquiryResult =
+                    customerInquiryRepository?.activeInquiry()
+
+                if (activeInquiryResult is ApiResult.Failure) {
+                    publishFailure(
+                        failure = activeInquiryResult,
+                        runtimeState = runtimeState,
+                        health = health,
+                        user = user,
+                    )
+                    return
+                }
+
+                val activeInquiry =
+                    (activeInquiryResult as? ApiResult.Success)?.value
+
                 if (subscriptions.isEmpty()) {
                     _state.value = _state.value.copy(
                         loading = false,
                         user = user.successValue(),
                         home = null,
+                        activeInquiry = activeInquiry,
                         subscriptions = emptyList(),
                         selectedSubscriptionId = null,
                         backendAvailable = health is ApiResult.Success<*>,
@@ -123,6 +143,8 @@ class CustomerHomeViewModel(
 
                 val previousSelection = _state.value.selectedSubscriptionId
                 val selectedSummary = subscriptions.firstOrNull {
+                    it.subscriptionId == activeInquiry?.subscriptionId
+                } ?: subscriptions.firstOrNull {
                     it.subscriptionId == previousSelection
                 } ?: subscriptions.firstOrNull {
                     it.isP0SupportedActiveSubscription()
@@ -135,6 +157,7 @@ class CustomerHomeViewModel(
                     health = health,
                     user = user,
                     initialLoad = true,
+                    activeInquiry = activeInquiry,
                 )
             }
         }
@@ -147,6 +170,7 @@ class CustomerHomeViewModel(
         health: ApiResult<Unit>?,
         user: ApiResult<UserData>?,
         initialLoad: Boolean,
+        activeInquiry: CustomerInquirySnapshot?,
     ) {
         val repository = subscriptionRepository ?: return
         val summary = subscriptions.firstOrNull { it.subscriptionId == selectedId }
@@ -160,6 +184,7 @@ class CustomerHomeViewModel(
                     selectingSubscription = false,
                     user = user.successValue(),
                     home = if (initialLoad) summary else _state.value.home,
+                    activeInquiry = activeInquiry,
                     subscriptions = subscriptions,
                     selectedSubscriptionId = if (initialLoad) {
                         summary?.subscriptionId
@@ -185,6 +210,7 @@ class CustomerHomeViewModel(
                     selectingSubscription = false,
                     user = user.successValue(),
                     home = selectedHome,
+                    activeInquiry = activeInquiry,
                     subscriptions = subscriptions,
                     selectedSubscriptionId = selectedHome.subscriptionId,
                     backendAvailable = health is ApiResult.Success<*>,
@@ -216,6 +242,7 @@ class CustomerHomeViewModel(
         _state.value = _state.value.copy(
             loading = false,
             home = homeData,
+            activeInquiry = null,
             subscriptions = listOfNotNull(homeData),
             selectedSubscriptionId = homeData?.subscriptionId,
             user = user.successValue(),
@@ -268,6 +295,7 @@ class CustomerHomeViewModel(
                 health = health,
                 user = user,
                 initialLoad = false,
+                activeInquiry = _state.value.activeInquiry,
             )
         }
     }
@@ -328,6 +356,7 @@ class CustomerHomeViewModel(
             loading = false,
             user = user.successValue(),
             home = null,
+            activeInquiry = null,
             subscriptions = emptyList(),
             selectedSubscriptionId = null,
             backendAvailable = health is ApiResult.Success<*>,

@@ -9,6 +9,11 @@ data class CustomerInquiryProductDto(
 )
 
 @Serializable
+data class CustomerActiveInquiryDataDto(
+    @SerialName("active_inquiry") val activeInquiry: CustomerInquirySnapshotDto? = null,
+)
+
+@Serializable
 data class CustomerInquirySnapshotDto(
     @SerialName("inquiry_id") val inquiryId: String,
     @SerialName("status_code") val statusCode: String,

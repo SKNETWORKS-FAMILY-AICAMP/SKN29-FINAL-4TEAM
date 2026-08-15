@@ -50,6 +50,7 @@ fun CustomerHomeScreen(
                 authRepository = WaterCareCore.authRepository,
                 careRepository = careRepository,
                 subscriptionRepository = WaterCareCore.subscriptionRepository,
+                customerInquiryRepository = WaterCareCore.customerInquiryRepository,
                 backendStatusRepository = WaterCareCore.backendStatusRepository,
                 runtimeConfig = WaterCareCore.customerCareRuntimeConfig,
                 offlinePreview = offlinePreview,
@@ -127,6 +128,12 @@ fun CustomerHomeContent(
         state.home?.let { home ->
             CustomerCareHeroBanner(
                 home = home,
+                activeInquiryId =
+                    state.activeInquiry?.inquiryId
+                        ?: home.activeInquiry?.inquiryId,
+                activeInquiryStatusCode =
+                    state.activeInquiry?.statusCode
+                        ?: home.activeInquiry?.statusCode,
                 intakeAvailable = state.intakeAvailable,
                 intakeUnavailableReason = state.intakeUnavailableReason,
                 onStartIntake = onStartIntake,

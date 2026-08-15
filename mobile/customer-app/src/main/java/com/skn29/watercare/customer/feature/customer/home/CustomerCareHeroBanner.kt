@@ -46,6 +46,8 @@ import kotlin.math.roundToInt
 @Composable
 fun CustomerCareHeroBanner(
     home: CustomerHomeData,
+    activeInquiryId: String? = home.activeInquiry?.inquiryId,
+    activeInquiryStatusCode: String? = home.activeInquiry?.statusCode,
     intakeAvailable: Boolean,
     intakeUnavailableReason: String?,
     onStartIntake: (String) -> Unit,
@@ -53,7 +55,7 @@ fun CustomerCareHeroBanner(
 ) {
     val palette = CustomerReferencePalette
     val estimate = calculateFilterUsageEstimate(home)
-    val activeInquiry = home.activeInquiry
+    val hasActiveInquiry = !activeInquiryId.isNullOrBlank()
 
     val infiniteTransition =
         rememberInfiniteTransition(
@@ -162,7 +164,7 @@ fun CustomerCareHeroBanner(
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            if (activeInquiry == null) {
+            if (!hasActiveInquiry) {
                 "정수기에 불편한 점이 있으신가요?"
             } else {
                 "처리 중인 문의가 있어요"
@@ -173,11 +175,11 @@ fun CustomerCareHeroBanner(
         )
 
         Text(
-            if (activeInquiry == null) {
+            if (!hasActiveInquiry) {
                 "증상을 선택하면 필요한 확인을 바로 시작할게요."
             } else {
                 customerHeroInquiryStatus(
-                    activeInquiry.statusCode
+                    activeInquiryStatusCode.orEmpty()
                 )
             },
             color = palette.textMuted,
@@ -185,7 +187,7 @@ fun CustomerCareHeroBanner(
         )
 
         ReferenceGlassButton(
-            text = if (activeInquiry == null) {
+            text = if (!hasActiveInquiry) {
                 "증상 접수하기"
             } else {
                 "진행 상황 확인"
@@ -193,19 +195,19 @@ fun CustomerCareHeroBanner(
             palette = palette,
             accent = true,
             enabled =
-                activeInquiry != null ||
+                hasActiveInquiry ||
                     intakeAvailable,
             onClick = {
-                if (activeInquiry == null) {
+                if (!hasActiveInquiry) {
                     onStartIntake(home.subscriptionId)
                 } else {
-                    onOpenInquiry(activeInquiry.inquiryId)
+                    onOpenInquiry(requireNotNull(activeInquiryId))
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag(
-                    if (activeInquiry == null) {
+                    if (!hasActiveInquiry) {
                         "heroStartIntake"
                     } else {
                         "heroOpenInquiry"
@@ -214,7 +216,7 @@ fun CustomerCareHeroBanner(
         )
 
         if (
-            activeInquiry == null &&
+            !hasActiveInquiry &&
             !intakeAvailable
         ) {
             Text(

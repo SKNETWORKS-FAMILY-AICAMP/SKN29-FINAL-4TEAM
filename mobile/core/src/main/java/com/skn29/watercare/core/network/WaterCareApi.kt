@@ -1,6 +1,7 @@
 package com.skn29.watercare.core.network
 
 import com.skn29.watercare.core.model.ApiEnvelope
+import com.skn29.watercare.core.model.CustomerActiveInquiryDataDto
 import com.skn29.watercare.core.model.CancelInquiryRequest
 import com.skn29.watercare.core.model.CancelInquiryResponse
 import com.skn29.watercare.core.model.CreateInquiryRequest
@@ -47,6 +48,9 @@ interface WaterCareApi {
 
     @GET("api/v1/me")
     suspend fun me(): Response<ApiEnvelope<UserData>>
+
+    @GET("api/v1/me/inquiries/active")
+    suspend fun customerActiveInquiry(): Response<ApiEnvelope<CustomerActiveInquiryDataDto>>
 
     @GET("api/v1/me/subscriptions")
     suspend fun mySubscriptions(

@@ -17,6 +17,13 @@ import kotlinx.serialization.json.Json
 
 interface CustomerInquiryRepository {
     suspend fun snapshot(inquiryId: String): ApiResult<CustomerInquirySnapshot>
+
+    suspend fun activeInquiry(): ApiResult<CustomerInquirySnapshot?> =
+        ApiResult.Failure(
+            code = "ACTIVE_INQUIRY_ROUTE_UNAVAILABLE",
+            message = "진행 중인 문의 조회 기능을 사용할 수 없습니다.",
+            retryable = false,
+        )
     suspend fun guidance(inquiryId: String): ApiResult<GuidanceData> =
         ApiResult.Failure(
             code = "GUIDANCE_ROUTE_UNAVAILABLE",
@@ -49,6 +56,13 @@ class RemoteCustomerInquiryRepository(
         ConsultationRequestIdempotencyKeyStore =
         ConsultationRequestIdempotencyKeyStore(),
 ) : CustomerInquiryRepository {
+    override suspend fun activeInquiry(): ApiResult<CustomerInquirySnapshot?> =
+        safeApiCall(json) {
+            api.customerActiveInquiry()
+        }.mapSuccess { response ->
+            response.activeInquiry?.toDomain()
+        }
+
     override suspend fun snapshot(
         inquiryId: String,
     ): ApiResult<CustomerInquirySnapshot> =
