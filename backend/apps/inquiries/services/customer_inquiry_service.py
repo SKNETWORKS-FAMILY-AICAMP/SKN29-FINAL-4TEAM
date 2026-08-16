@@ -27,6 +27,10 @@ from common.exceptions.error_codes import AI_GUIDANCE_NOT_READY
 class CustomerInquiryService:
     """Build only the fields required by the Mobile CUSTOMER read slice."""
 
+    AI_PROCESSING_TIMEOUT_NOTICE = (
+        "AI 안내 생성이 지연되어 상담으로 연결합니다."
+    )
+
     PUBLIC_GUIDANCE_STATES = frozenset(
         {
             Inquiry.Status.AI_GUIDANCE,
@@ -65,7 +69,19 @@ class CustomerInquiryService:
         )
         if inquiry is None:
             raise NotFound()
-        return cls._snapshot(inquiry, actor=actor)
+        snapshot = cls._snapshot(inquiry, actor=actor)
+        snapshot["system_notice"] = cls._system_notice(inquiry)
+        return snapshot
+
+    @classmethod
+    def _system_notice(cls, inquiry: Inquiry) -> str | None:
+        if (
+            inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+            and getattr(inquiry, "latest_state_change_event", None)
+            == "AI_PROCESSING_TIMEOUT"
+        ):
+            return cls.AI_PROCESSING_TIMEOUT_NOTICE
+        return None
 
     @classmethod
     def _snapshot(cls, inquiry: Inquiry, *, actor: Any) -> dict[str, Any]:

@@ -20,6 +20,11 @@ class CustomerInquirySnapshotSerializer(serializers.Serializer):
     product = CustomerInquiryProductSerializer()
     allowed_actions = AllowedActionSerializer(many=True)
     updated_at = serializers.DateTimeField()
+    system_notice = serializers.CharField(
+        max_length=200,
+        allow_null=True,
+        required=False,
+    )
 
 
 class CustomerActiveInquirySerializer(serializers.Serializer):

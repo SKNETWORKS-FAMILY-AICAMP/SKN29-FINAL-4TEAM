@@ -454,6 +454,59 @@ def test_assigned_consultant_guards_and_object_concealment_are_required():
     ]["effects"]
 
 
+def test_ai_processing_timeout_contract_is_internal_and_fail_closed():
+    events_document = load_yaml(
+        REPOSITORY_ROOT
+        / "contracts"
+        / "state-machine"
+        / "inquiry-events.yaml"
+    )
+    rules_document = load_yaml(
+        REPOSITORY_ROOT
+        / "contracts"
+        / "state-machine"
+        / "transition-rules.yaml"
+    )
+    guards_document = load_yaml(
+        REPOSITORY_ROOT
+        / "contracts"
+        / "state-machine"
+        / "transition-guards.yaml"
+    )
+    roles_document = load_yaml(
+        REPOSITORY_ROOT
+        / "contracts"
+        / "state-machine"
+        / "role-permissions.yaml"
+    )
+    events = {item["code"]: item for item in events_document["events"]}
+    rules = {item["id"]: item for item in rules_document["transitions"]}
+    guards = {item["id"]: item for item in guards_document["guards"]}
+    roles = {item["code"]: item for item in roles_document["roles"]}
+
+    event = events["AI_PROCESSING_TIMEOUT"]
+    assert event["actor_roles"] == ["SYSTEM"]
+    assert event["requires_state_version"] is True
+    assert event["external_action"] == {
+        "exposed": False,
+        "operation_id": None,
+    }
+    rule = rules["TR-INQ-036"]
+    assert rule["event"] == "AI_PROCESSING_TIMEOUT"
+    assert rule["from_inquiry_state"] == "QUESTIONNAIRE_IN_PROGRESS"
+    assert rule["to_inquiry_state"] == "CONSULTATION_REQUIRED"
+    assert rule["visit"] == {"mode": "REQUIRE_ABSENT"}
+    assert "G-AI-PROCESSING-TIMEOUT-VALID" in rule["guard_refs"]
+    assert "DO_NOT_CREATE_CONSULTATION" in rule["effects"]
+    assert guards["G-AI-PROCESSING-TIMEOUT-VALID"]["failure"] == {
+        "http_status": 409,
+        "error_code": "AI_PROCESSING_TIMEOUT_PRECONDITION_FAILED",
+        "message": "AI 처리 시간 초과 전환 조건을 충족하지 못했습니다.",
+        "expose_to_external_client": False,
+    }
+    assert "AI_PROCESSING_TIMEOUT" in roles["SYSTEM"]["allowed_events"]
+
+
 def test_error_matrix_separates_role_object_and_workflow_conflicts():
     matrix = load_yaml(API_DIR / "g2-error-matrix.yaml")
     registry = load_yaml(

@@ -14,6 +14,7 @@ from django.db import IntegrityError
 
 from apps.accounts.models import CustomerProfile, User
 from apps.audit.models import AIRun
+from apps.consultations.models import Consultation
 from apps.evidence.models import EvidenceLink
 from apps.inquiries.models import (
     FollowUpAnswer,
@@ -675,14 +676,88 @@ def test_error_contract_and_timeout_are_audited_without_backend_retry():
         base_url="http://ai.test",
         http_client=timeout_http_client,
     )
-    timed_out = analyze(timeout_inquiry, timeout_client)
+    timeout_correlation_id = uuid4()
+    timeout_request_id = uuid4()
+    original_text = timeout_inquiry.raw_text
+    timed_out = analyze(
+        timeout_inquiry,
+        timeout_client,
+        correlation_id=timeout_correlation_id,
+        ai_request_id=timeout_request_id,
+    )
     timeout_run = AIRun.objects.get(inquiry=timeout_inquiry)
 
     assert timed_out.status == AIRun.Status.TIMED_OUT
-    assert timed_out.pending_reason == "AI-TIMEOUT-01"
+    assert timed_out.event_candidate == "AI_PROCESSING_TIMEOUT"
+    assert timed_out.event_applied == "AI_PROCESSING_TIMEOUT"
+    assert timed_out.pending_reason is None
     assert timeout_run.retry_count == 0
+    assert timeout_run.error_code == "AI-TIMEOUT-01"
     assert len(timeout_calls) == 1
+    timeout_inquiry.refresh_from_db()
+    assert timeout_inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert timeout_inquiry.state_version == 3
+    assert timeout_inquiry.raw_text == original_text
+    assert timeout_inquiry.requires_fallback is True
+    assert (
+        timeout_inquiry.usage_guidance_status
+        == Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION
+    )
+    history = TransitionHistory.objects.get(inquiry=timeout_inquiry)
+    assert history.event_code == "AI_PROCESSING_TIMEOUT"
+    assert history.from_state == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
+    assert history.to_state == Inquiry.Status.CONSULTATION_REQUIRED
+    assert history.state_version == 3
+    assert history.actor_id is None
+    assert history.changed_by_type_code == TransitionHistory.ChangedByType.SYSTEM
+    assert history.correlation_id == timeout_correlation_id
+    assert history.idempotency_key == str(timeout_request_id)
+    assert not Consultation.objects.filter(inquiry=timeout_inquiry).exists()
+    assert not Guidance.objects.filter(inquiry=timeout_inquiry).exists()
+    assert not EvidenceLink.objects.filter(inquiry=timeout_inquiry).exists()
+
+    replay = InquiryAIService._replay_or_conflict(
+        timeout_run,
+        input_digest=timeout_run.input_sha256,
+        request_payload=timeout_run.input_payload,
+        validator=AIContractValidator(),
+    )
+    assert replay.idempotent_replay is True
+    assert replay.event_candidate == "AI_PROCESSING_TIMEOUT"
+    assert replay.event_applied is None
+    assert replay.stale is True
+    assert TransitionHistory.objects.filter(inquiry=timeout_inquiry).count() == 1
     timeout_http_client.close()
+
+
+def test_timeout_result_does_not_overwrite_a_newer_inquiry_version():
+    inquiry = create_inquiry(109)
+    calls = []
+
+    def timeout_after_state_change(request: httpx.Request) -> httpx.Response:
+        calls.append(request)
+        Inquiry.objects.filter(pk=inquiry.pk).update(state_version=3)
+        raise httpx.ReadTimeout("timeout", request=request)
+
+    http_client = httpx.Client(
+        transport=httpx.MockTransport(timeout_after_state_change)
+    )
+    client = AIClient(base_url="http://ai.test", http_client=http_client)
+
+    outcome = analyze(inquiry, client)
+
+    assert outcome.status == AIRun.Status.TIMED_OUT
+    assert outcome.event_candidate == "AI_PROCESSING_TIMEOUT"
+    assert outcome.event_applied is None
+    assert outcome.pending_reason == "STALE_STATE_VERSION"
+    assert outcome.stale is True
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
+    assert inquiry.state_version == 3
+    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
+    assert not Consultation.objects.filter(inquiry=inquiry).exists()
+    assert len(calls) == 1
+    http_client.close()
 
 
 def test_ai_lifecycle_trace_contains_only_safe_identifiers_and_outcome_fields():

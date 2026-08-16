@@ -53,3 +53,11 @@ properties:
   updated_at:
     type: string
     format: date-time
+  system_notice:
+    description: 고객 상세 조회 시 현재 상태 진입 원인이 AI 처리 시간 초과이면 Backend가 제공하는 고정 안내문이며 그 외에는 null
+    oneOf:
+      - type: string
+        maxLength: 200
+        enum:
+          - AI 안내 생성이 지연되어 상담으로 연결합니다.
+      - type: "null"

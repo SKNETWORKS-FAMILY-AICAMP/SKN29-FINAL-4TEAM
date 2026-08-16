@@ -552,6 +552,19 @@ guards:
     error_code: NO_EVIDENCE_EVENT_PRECONDITION_FAILED
     message: 근거 없음 전환 조건을 충족하지 못했습니다.
     expose_to_external_client: false
+- id: G-AI-PROCESSING-TIMEOUT-VALID
+  category: SAFETY_AND_EVIDENCE
+  description: 같은 Inquiry·요청의 AI Run이 실제 Timeout 감사 상태로 확정되어야 한다.
+  conditions:
+  - ai_run.status_code == TIMED_OUT
+  - ai_run.error_code == AI-TIMEOUT-01
+  - ai_run.retry_count == 0
+  - ai_run.inquiry_id == inquiry.id
+  failure:
+    http_status: 409
+    error_code: AI_PROCESSING_TIMEOUT_PRECONDITION_FAILED
+    message: AI 처리 시간 초과 전환 조건을 충족하지 못했습니다.
+    expose_to_external_client: false
 - id: G-SELF-RESOLUTION-ALLOWED
   category: COMPLETION
   description: 자가조치 단독 해결은 방문·상담 처리 없이 AI 안내 흐름에서만 허용한다.

@@ -265,6 +265,26 @@ transitions:
   - SET_REQUIRES_CONSULTATION
   - SET_USAGE_GUIDANCE_PENDING_CONSULTATION
   description: 사용할 공식 근거가 없으면 임의 안내를 차단하고 상담 대기로 전환한다.
+- id: TR-INQ-036
+  event: AI_PROCESSING_TIMEOUT
+  from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  to_inquiry_state: CONSULTATION_REQUIRED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-SYSTEM
+  - G-STATE-VERSION
+  - G-AI-PROCESSING-TIMEOUT-VALID
+  effects:
+  - PRESERVE_CUSTOMER_INPUT
+  - SET_REQUIRES_CONSULTATION
+  - SET_USAGE_GUIDANCE_PENDING_CONSULTATION
+  - DO_NOT_CREATE_CONSULTATION
+  description: AI 처리 시간 초과를 감사 이력으로 남기고 고객이 직접 상담을 요청할 수 있는 상태로 전환한다.
 - id: TR-INQ-011
   event: CUSTOMER_REPORTED_SELF_RESOLVED
   from_inquiry_state: AI_GUIDANCE
