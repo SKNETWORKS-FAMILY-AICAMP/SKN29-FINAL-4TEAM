@@ -32,6 +32,7 @@ import com.skn29.watercare.customer.common.VmFactory
 fun CustomerHomeScreen(
     offlinePreview: Boolean,
     onStartIntake: (subscriptionId: String) -> Unit,
+    onOpenFollowUp: (inquiryId: String, scenario: MockScenario) -> Unit,
     onOpenGuidance: (inquiryId: String, scenario: MockScenario) -> Unit,
     onLogout: () -> Unit,
 ) {
@@ -63,7 +64,24 @@ fun CustomerHomeScreen(
     CustomerHomeContent(
         state = state,
         onStartIntake = onStartIntake,
-        onOpenGuidance = onOpenGuidance,
+        onOpenGuidance = { inquiryId, scenario ->
+            val useRemoteFollowUpResolver =
+                !offlinePreview &&
+                    WaterCareCore.customerCareRuntimeConfig.mode ==
+                        CustomerCareMode.REMOTE
+
+            if (useRemoteFollowUpResolver) {
+                onOpenFollowUp(
+                    inquiryId,
+                    scenario,
+                )
+            } else {
+                onOpenGuidance(
+                    inquiryId,
+                    scenario,
+                )
+            }
+        },
         onRetry = viewModel::load,
         onLogout = {
             viewModel.logout(onLogout)
@@ -209,7 +227,7 @@ private fun customerHomeErrorMessage(
         message.contains("Remote", ignoreCase = true) ->
         "정수기 정보를 가져오지 못했어요. 잠시 후 다시 확인해주세요."
 
-    else -> message
+    else -> "정수기 정보를 불러오는 중 문제가 생겼어요. 잠시 후 다시 시도해주세요."
 }
 
 private fun scenarioLabel(

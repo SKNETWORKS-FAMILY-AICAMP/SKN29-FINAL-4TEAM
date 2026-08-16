@@ -118,7 +118,12 @@ fun SymptomIntakeContent(
         .firstOrNull { it.isRetrySubmitAction() }
 
     WaterCareScreen(title = "불편한 점 접수", onBack = onBack) {
-        LiquidGlassPanel(strong = true) {
+        LiquidGlassPanel(
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("intakeHero"),
+            strong = true,
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

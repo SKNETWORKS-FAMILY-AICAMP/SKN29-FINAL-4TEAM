@@ -155,7 +155,7 @@ fun CustomerCareHeroBanner(
 
         estimate?.let {
             Text(
-                "${it.basisLabel} · 날짜 기준 예상값",
+                "관리 일정은 예상 날짜예요.",
                 color = palette.textMuted,
                 style = MaterialTheme.typography.bodySmall,
             )
@@ -518,9 +518,8 @@ private fun customerIntakeUnavailableMessage(
             ignoreCase = true,
         ) ->
         "현재 증상 접수를 이용할 수 없어요. 잠시 후 다시 시도해주세요."
-
     else ->
-        reason
+        "현재 증상 접수를 이용할 수 없어요. 잠시 후 다시 시도해주세요."
 }
 @Composable
 fun CustomerProductInfoCard(
@@ -561,16 +560,10 @@ fun CustomerProductInfoCard(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
-                    home.product.modelName,
+                    "사용 중인 정수기",
                     style = MaterialTheme.typography.titleMedium,
                     color = palette.textStrong,
                     fontWeight = FontWeight.ExtraBold,
-                )
-
-                Text(
-                    "모델 ${home.product.modelCode}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = palette.textMuted,
                 )
 
                 Text(

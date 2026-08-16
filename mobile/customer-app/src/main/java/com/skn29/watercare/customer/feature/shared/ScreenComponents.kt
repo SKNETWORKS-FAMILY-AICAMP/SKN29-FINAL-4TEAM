@@ -122,9 +122,13 @@ private fun WaterCareScreenBody(
 fun SectionCard(
     title: String,
     isDanger: Boolean = false,
+    modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    LiquidGlassPanel(danger = isDanger) {
+    LiquidGlassPanel(
+        modifier = modifier.fillMaxWidth(),
+        danger = isDanger,
+    ) {
         Text(
             title,
             style = MaterialTheme.typography.titleMedium,
@@ -149,19 +153,10 @@ fun ProductInfoCard(
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            if (product.isSynthetic) {
-                LiquidGlassPill("합성 데이터")
-            }
             LiquidGlassPill(product.managementTypeLabel)
         }
-
         Text(
-            product.modelCode,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold,
-        )
-        Text(
-            product.modelName,
+            "사용 중인 정수기",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
@@ -173,11 +168,6 @@ fun ProductInfoCard(
                 "현재 정수기 정보",
                 fontWeight = FontWeight.ExtraBold,
             )
-            Text(
-                "식별번호 ${product.serialNo}",
-                color = WaterSubText,
-            )
-            Text("문진 상태 · $questionnaireStatus")
             Text("다음 관리 · $nextCareOn")
         }
     }
@@ -218,7 +208,10 @@ fun StatusBadge(
 
 @Composable
 fun EvidenceCard(evidence: EvidenceCardData) {
-    LiquidGlassPanel(strong = true) {
+    LiquidGlassPanel(
+        modifier = Modifier.fillMaxWidth(),
+        strong = true,
+    ) {
         val classification = when (
             evidence.dataClassification.lowercase()
         ) {
@@ -230,10 +223,10 @@ fun EvidenceCard(evidence: EvidenceCardData) {
 
         LiquidGlassPill(
             when (classification) {
-                DataClassification.OFFICIAL -> "공식 근거"
-                DataClassification.TEAM_DESIGNED -> "팀 설계 자료"
-                DataClassification.SYNTHETIC -> "합성 검증 자료"
-                DataClassification.UNKNOWN -> "분류 확인 필요"
+                DataClassification.OFFICIAL -> "공식 안내 자료"
+                DataClassification.TEAM_DESIGNED -> "서비스 안내 자료"
+                DataClassification.SYNTHETIC -> "예시 안내 자료"
+                DataClassification.UNKNOWN -> "안내 자료"
             }
         )
         Text(
@@ -241,22 +234,13 @@ fun EvidenceCard(evidence: EvidenceCardData) {
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.ExtraBold,
         )
-        Text(
-            "버전 ${evidence.version}${
-                evidence.page?.let { " · ${it}쪽" }.orEmpty()
-            }"
-        )
         Text(evidence.structuredSummary)
-        Text(
-            "검증 상태 · ${evidence.verificationStatus}",
-            style = MaterialTheme.typography.bodySmall,
-        )
 
         val officialUrl = evidence.officialUrl
         if (!officialUrl.isNullOrBlank()) {
             val uriHandler = LocalUriHandler.current
             LiquidGlassButton(
-                text = "공식 문서 열기",
+                text = "공식 안내 확인",
                 onClick = { uriHandler.openUri(officialUrl) },
                 accent = true,
                 modifier = Modifier.fillMaxWidth(),
