@@ -19,9 +19,8 @@ Gate로 남아 있다. 따라서 로컬 기술 완료와 공식 WBS 완료를 �
 | [WaterBridge 테이블 명세](waterbridge_table_dictionary.md) | 32개 테이블과 526개 필드의 역사적 v0.5 공개 스냅샷 |
 | [대화형 ERD](erd/waterbridge_erd.html) | 역사적 v0.5 테이블·PK·FK 관계 탐색 |
 | [ERD 정적 미리보기](erd/waterbridge_erd.png) | 역사적 v0.5 관계도 화면 |
-| [Django·PostgreSQL 스키마 변경 가이드](../individual/jiyong/데이터베이스/Django_PostgreSQL_스키마_변경_가이드.md) | Model·Migration·Seed·Importer·Auditor 검증과 역할별 인계 절차 |
-| [WaterBridge PostgreSQL 통합 검증 보고서](../individual/jiyong/데이터베이스/PostgreSQL_통합검증_보고서_20260731.md) | 32/32, Backup·Restore, Seed·Importer, SQLite·PostgreSQL 회귀 증거 |
-| [Django·PostgreSQL 테이블 구현·변경 이력](../individual/jiyong/데이터베이스/Django_PostgreSQL_테이블_구현_변경이력_20260730.md) | Wave별 Model·Migration·제약·당시 검증과 최종 상태 |
+| [데이터베이스 Schema·Migration 구현 가이드](../individual/jiyong/데이터베이스/데이터베이스_스키마_마이그레이션_구현_가이드.md) | Model·Migration·Registry·제약 구현과 현재 검증 절차 |
+| [합성데이터 Seed·Importer 검증 가이드](../individual/jiyong/데이터베이스/합성데이터_시드_Importer_검증_가이드.md) | 합성 Fixture의 Dry-run·Apply·Replay와 원장 정합성 검증 절차 |
 
 [![WaterBridge ERD 정적 미리보기](erd/waterbridge_erd.png)](erd/waterbridge_erd.html)
 
