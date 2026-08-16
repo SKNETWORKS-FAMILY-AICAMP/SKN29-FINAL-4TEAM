@@ -40,6 +40,15 @@ private class FollowUpManualScope(
     }
 }
 
+
+private fun androidx.compose.ui.test.SemanticsNodeInteraction.assertDoesNotExistCompat() {
+    assertTrue(
+        "화면에 존재하지 않아야 하는 UI가 표시되었습니다.",
+        runCatching {
+            fetchSemanticsNode()
+        }.isFailure,
+    )
+}
 @RunWith(AndroidJUnit4::class)
 class FollowUpQuestionsSectionTest {
     @get:Rule
@@ -59,7 +68,7 @@ class FollowUpQuestionsSectionTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun emptyQuestions_isExplicitlyRendered() = runManual {
+    fun emptyQuestions_doesNotRenderEmptyCard() = runManual {
         setContent {
             WaterCareTheme {
                 FollowUpQuestionsSection(
@@ -72,10 +81,12 @@ class FollowUpQuestionsSectionTest {
                 )
             }
         }
-        waitForIdle()
-        onNodeWithTag("followUpEmpty").assertIsDisplayed()
-    }
 
+        waitForIdle()
+
+        onNodeWithTag("followUpEmpty")
+            .assertDoesNotExistCompat()
+    }
     @Test
     @OptIn(ExperimentalTestApi::class)
     fun completedForm_enablesExplicitSubmit() = runManual {

@@ -333,10 +333,10 @@ class CustomerHomeViewModel(
 
     private fun supportReason(home: CustomerHomeData): String? = when {
         home.statusCode != "ACTIVE" ->
-            "활성 구독에서만 문의를 시작할 수 있습니다."
+            "현재 이용 중인 정수기에서만 문의를 시작할 수 있어요."
 
         home.product.modelCode != com.skn29.watercare.core.model.P0_SUPPORTED_MODEL_CODE ->
-            "현재 P0에서는 WPUJAC104DWH 모델만 문의를 지원합니다."
+            "이 정수기는 현재 문의 기능을 이용할 수 없어요."
 
         else -> null
     }

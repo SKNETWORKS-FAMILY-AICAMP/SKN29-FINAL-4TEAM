@@ -36,16 +36,7 @@ fun FollowUpQuestionsSection(
         FollowUpUiState.Disabled -> Unit
         FollowUpUiState.Loading -> LoadingBlock("몇 가지만 더 확인할게요")
 
-        is FollowUpUiState.Empty -> SectionCard("확인할 내용") {
-            Column(
-                modifier = Modifier.testTag("followUpEmpty"),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                LiquidGlassPill("확인 완료")
-                Text("지금은 더 확인할 내용이 없어요.")
-                SnapshotLine(state.snapshot.statusCode, state.snapshot.stateVersion)
-            }
-        }
+        is FollowUpUiState.Empty -> Unit
 
         is FollowUpUiState.Form -> FollowUpForm(
             state.snapshot.statusCode,
@@ -77,24 +68,18 @@ fun FollowUpQuestionsSection(
         }
 
         is FollowUpUiState.Success -> {
-            SectionCard("답변을 확인했어요") {
-                LiquidGlassPill("답변 저장 완료")
-                Text(state.message)
-                if (state.idempotentReplay) {
-                    Text(
-                        "이미 보낸 답변을 다시 확인했어요.",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-                SnapshotLine(state.snapshot.statusCode, state.snapshot.stateVersion)
-            }
-            if (state.questions.isEmpty()) {
-                SectionCard("확인할 내용") {
-                    Column(modifier = Modifier.testTag("followUpEmpty")) {
-                        Text("지금은 더 확인할 내용이 없어요.")
+            if (state.questions.isNotEmpty()) {
+                SectionCard("답변을 확인했어요") {
+                    LiquidGlassPill("답변 저장 완료")
+
+                    if (state.idempotentReplay) {
+                        Text(
+                            "이미 보낸 답변을 다시 확인했어요.",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
                     }
                 }
-            } else {
+
                 FollowUpForm(
                     state.snapshot.statusCode,
                     state.snapshot.stateVersion,
@@ -109,15 +94,12 @@ fun FollowUpQuestionsSection(
                 )
             }
         }
-
         is FollowUpUiState.Conflict -> {
             SectionCard("문의 상황이 바뀌었어요") {
                 Column(
                     modifier = Modifier.testTag("followUpConflict"),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(state.message)
-                    SnapshotLine(state.snapshot.statusCode, state.snapshot.stateVersion)
                     Text(
                         "작성한 답변은 그대로 있어요. 현재 질문을 확인한 뒤 다시 보내주세요.",
                         style = MaterialTheme.typography.bodySmall,
@@ -154,7 +136,6 @@ fun FollowUpQuestionsSection(
                     modifier = Modifier.testTag("followUpDuplicateConflict"),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(state.message)
                     Text(
                         "같은 답변이 다시 전송되지 않도록 멈췄어요. 내용을 바꾸면 다시 보낼 수 있어요.",
                         style = MaterialTheme.typography.bodySmall,
@@ -177,7 +158,7 @@ fun FollowUpQuestionsSection(
 
         is FollowUpUiState.Error -> {
             ErrorCard(
-                state.message,
+                "추가 질문을 확인하는 중 문제가 생겼어요. 잠시 후 다시 시도해주세요.",
                 if (state.retryable && state.questions.isEmpty()) onReload else null,
             )
             if (state.snapshot != null && state.questions.isNotEmpty()) {
@@ -202,8 +183,8 @@ fun FollowUpQuestionsSection(
 
 @Composable
 private fun FollowUpForm(
-    snapshotStatus: String,
-    snapshotVersion: Int,
+    _snapshotStatus: String,
+    _snapshotVersion: Int,
     questions: List<CustomerInquiryQuestion>,
     drafts: Map<String, FollowUpDraft>,
     submitAllowed: Boolean,
@@ -213,12 +194,11 @@ private fun FollowUpForm(
     onSelectOption: (String, String) -> Unit,
     onSubmit: () -> Unit,
 ) {
-    SectionCard("확인할 내용") {
+    SectionCard("추가 질문") {
         Column(
             modifier = Modifier.fillMaxWidth().testTag("followUpQuestions"),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            SnapshotLine(snapshotStatus, snapshotVersion)
             questions.forEachIndexed { index, question ->
                 val draft = drafts[question.questionId] ?: FollowUpDraft()
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -278,15 +258,6 @@ private fun FollowUpForm(
             }
         }
     }
-}
-
-@Composable
-private fun SnapshotLine(statusCode: String, _stateVersion: Int) {
-    Text(
-        "현재 진행 상황 · ${InquiryLabels.status(statusCode)}",
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
 }
 
 private fun snapshotCanSubmit(

@@ -6,7 +6,16 @@ import com.skn29.watercare.core.model.AllowedAction
 object CustomerRoute {
     const val LOGIN = "login"
     const val HOME = "home?offline={offline}"
-    const val INTAKE = "intake/{subscriptionId}"
+
+    const val INTAKE =
+        "intake/{subscriptionId}" +
+            "?fixturePreview={fixturePreview}"
+
+    const val FOLLOW_UP =
+        "follow-up/{inquiryId}/{scenario}" +
+            "?inquiryCode={inquiryCode}" +
+            "&idempotentReplay={idempotentReplay}"
+
     const val GUIDANCE =
         "guidance/{inquiryId}/{scenario}" +
             "?inquiryCode={inquiryCode}" +
@@ -16,10 +25,66 @@ object CustomerRoute {
             "&allowedActions={allowedActions}" +
             "&fixturePreview={fixturePreview}"
 
-    fun home(offline: Boolean) = "home?offline=$offline"
+    fun home(
+        offline: Boolean,
+    ) =
+        "home?offline=$offline"
 
-    fun intake(subscriptionId: String) =
-        "intake/${Uri.encode(subscriptionId)}"
+    fun intake(
+        subscriptionId: String,
+        fixturePreview: Boolean = false,
+    ) =
+        buildString {
+            append("intake/")
+            append(
+                Uri.encode(
+                    subscriptionId
+                )
+            )
+            append(
+                "?fixturePreview="
+            )
+            append(
+                fixturePreview
+            )
+        }
+
+    fun followUp(
+        inquiryId: String,
+        scenario: String,
+        inquiryCode: String = "",
+        idempotentReplay:
+            Boolean? = null,
+    ): String =
+        buildString {
+            append("follow-up/")
+            append(
+                Uri.encode(
+                    inquiryId
+                )
+            )
+            append("/")
+            append(
+                Uri.encode(
+                    scenario
+                )
+            )
+            append(
+                "?inquiryCode="
+            )
+            append(
+                Uri.encode(
+                    inquiryCode
+                )
+            )
+            append(
+                "&idempotentReplay="
+            )
+            append(
+                idempotentReplay
+                    ?: false
+            )
+        }
 
     fun guidance(
         inquiryId: String,
@@ -27,33 +92,83 @@ object CustomerRoute {
         inquiryCode: String = "",
         statusCode: String? = null,
         stateVersion: Int? = null,
-        idempotentReplay: Boolean? = null,
-        allowedActions: List<AllowedAction> = emptyList(),
-        fixturePreview: Boolean = false,
+        idempotentReplay:
+            Boolean? = null,
+        allowedActions:
+            List<AllowedAction> =
+            emptyList(),
+        fixturePreview:
+            Boolean = false,
     ): String {
-        val actionCodes = allowedActions
-            .map(AllowedAction::normalizedCode)
-            .filter(String::isNotEmpty)
-            .distinct()
-            .joinToString(",")
+        val actionCodes =
+            allowedActions
+                .map(
+                    AllowedAction::
+                        normalizedCode
+                )
+                .filter(
+                    String::isNotEmpty
+                )
+                .distinct()
+                .joinToString(",")
 
         return buildString {
             append("guidance/")
-            append(Uri.encode(inquiryId))
+            append(
+                Uri.encode(
+                    inquiryId
+                )
+            )
             append("/")
-            append(Uri.encode(scenario))
-            append("?inquiryCode=")
-            append(Uri.encode(inquiryCode))
-            append("&statusCode=")
-            append(Uri.encode(statusCode.orEmpty()))
-            append("&stateVersion=")
-            append(stateVersion ?: -1)
-            append("&idempotentReplay=")
-            append(idempotentReplay ?: false)
-            append("&allowedActions=")
-            append(Uri.encode(actionCodes))
-            append("&fixturePreview=")
-            append(fixturePreview)
+            append(
+                Uri.encode(
+                    scenario
+                )
+            )
+            append(
+                "?inquiryCode="
+            )
+            append(
+                Uri.encode(
+                    inquiryCode
+                )
+            )
+            append(
+                "&statusCode="
+            )
+            append(
+                Uri.encode(
+                    statusCode
+                        .orEmpty()
+                )
+            )
+            append(
+                "&stateVersion="
+            )
+            append(
+                stateVersion ?: -1
+            )
+            append(
+                "&idempotentReplay="
+            )
+            append(
+                idempotentReplay
+                    ?: false
+            )
+            append(
+                "&allowedActions="
+            )
+            append(
+                Uri.encode(
+                    actionCodes
+                )
+            )
+            append(
+                "&fixturePreview="
+            )
+            append(
+                fixturePreview
+            )
         }
     }
 }
