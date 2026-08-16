@@ -83,6 +83,50 @@ def test_missing_domain_guard_result_fails_closed(
     assert result.failure.reason == "DOMAIN_RESULT_MISSING"
 
 
+def test_ai_timeout_requires_trusted_system_and_audited_timeout_result(
+    state_machine: StateMachine,
+    guard_evaluator: GuardEvaluator,
+):
+    snapshot = WorkflowSnapshot(
+        inquiry_state="QUESTIONNAIRE_IN_PROGRESS",
+        state_version=2,
+    )
+    transition = state_machine.resolve(
+        snapshot=snapshot,
+        event_code="AI_PROCESSING_TIMEOUT",
+    )
+    context = GuardContext(
+        actor_role="SYSTEM",
+        is_authenticated=False,
+        correlation_id="corr-timeout-001",
+        idempotency_key=None,
+        requested_state_version=2,
+        trusted_internal_actor=True,
+        domain_results={"G-AI-PROCESSING-TIMEOUT-VALID": True},
+    )
+
+    assert guard_evaluator.evaluate(
+        transition=transition,
+        snapshot=snapshot,
+        context=context,
+    ).allowed is True
+
+    rejected = guard_evaluator.evaluate(
+        transition=transition,
+        snapshot=snapshot,
+        context=replace(
+            context,
+            domain_results={"G-AI-PROCESSING-TIMEOUT-VALID": False},
+        ),
+    )
+    assert rejected.allowed is False
+    assert rejected.failure is not None
+    assert rejected.failure.guard_id == "G-AI-PROCESSING-TIMEOUT-VALID"
+    assert rejected.failure.error_code == (
+        "AI_PROCESSING_TIMEOUT_PRECONDITION_FAILED"
+    )
+
+
 def test_state_version_mismatch_returns_contract_409(
     state_machine: StateMachine,
     guard_evaluator: GuardEvaluator,

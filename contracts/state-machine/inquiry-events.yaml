@@ -483,6 +483,21 @@ events:
   description: '사용할 수 있는 공식 근거가 없어 임의 안내를 차단하고 Inquiry를 CONSULTATION_REQUIRED로 전환한다. 사용 안내 상태는 PENDING_CONSULTATION을 사용한다.
 
     '
+- code: AI_PROCESSING_TIMEOUT
+  category: SYSTEM_EVENT
+  scope: AI_RESULT
+  actor_roles:
+  - SYSTEM
+  changes_inquiry_state: true
+  changes_visit_state: false
+  requires_idempotency_key: false
+  requires_state_version: true
+  external_action:
+    exposed: false
+    operation_id: null
+  description: 'Backend가 AI-TIMEOUT-01을 확인하면 고객 입력을 보존하고 자동 재시도나 상담 레코드 생성 없이 Inquiry를 CONSULTATION_REQUIRED로 전환한다.
+
+    '
 - code: VISIT_NOT_NEEDED
   category: STAFF_COMMAND
   scope: CONSULTATION

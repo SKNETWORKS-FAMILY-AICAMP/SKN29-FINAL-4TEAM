@@ -22,6 +22,7 @@ from apps.inquiries.models import (
 )
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
+from apps.workflow.models import TransitionHistory
 
 
 pytestmark = pytest.mark.django_db
@@ -233,6 +234,7 @@ def test_customer_snapshot_returns_exact_owned_projection(
                 "confirmation_message": "문의를 취소하시겠습니까?",
             }
         ],
+        "system_notice": None,
     }
     assert parse_datetime(updated_at) == inquiry.updated_at
 
@@ -251,6 +253,77 @@ def test_customer_snapshot_returns_exact_owned_projection(
         "assigned_user",
     ):
         assert forbidden not in serialized
+
+
+def test_customer_snapshot_projects_timeout_notice_until_next_state_change(
+    django_assert_num_queries,
+):
+    owner = create_user(2)
+    inquiry = create_inquiry(owner, 2)
+    correlation_id = uuid4()
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        status_code=Inquiry.Status.CONSULTATION_REQUIRED,
+        state_version=3,
+    )
+    TransitionHistory.objects.create(
+        inquiry=inquiry,
+        actor=None,
+        changed_by_type_code=TransitionHistory.ChangedByType.SYSTEM,
+        event_code="AI_PROCESSING_TIMEOUT",
+        from_state=Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS,
+        to_state=Inquiry.Status.CONSULTATION_REQUIRED,
+        state_version=3,
+        correlation_id=correlation_id,
+        idempotency_key="customer-timeout-notice-001",
+    )
+
+    with django_assert_num_queries(2):
+        timeout_response = authenticated_client(owner).get(
+            f"/api/v1/me/inquiries/{inquiry.public_id}"
+        )
+
+    assert timeout_response.status_code == 200
+    assert timeout_response.json()["data"]["system_notice"] == (
+        "AI 안내 생성이 지연되어 상담으로 연결합니다."
+    )
+
+    TransitionHistory.objects.create(
+        inquiry=inquiry,
+        actor=owner,
+        event_code="REQUEST_CONSULTATION",
+        from_state=Inquiry.Status.CONSULTATION_REQUIRED,
+        to_state=Inquiry.Status.CONSULTATION_REQUIRED,
+        state_version=4,
+        correlation_id=uuid4(),
+        idempotency_key="customer-timeout-notice-002",
+    )
+    Inquiry.objects.filter(pk=inquiry.pk).update(state_version=4)
+    same_state_response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}"
+    )
+    assert same_state_response.json()["data"]["system_notice"] == (
+        "AI 안내 생성이 지연되어 상담으로 연결합니다."
+    )
+
+    TransitionHistory.objects.create(
+        inquiry=inquiry,
+        actor=None,
+        changed_by_type_code=TransitionHistory.ChangedByType.SYSTEM,
+        event_code="START_CONSULTATION",
+        from_state=Inquiry.Status.CONSULTATION_REQUIRED,
+        to_state=Inquiry.Status.CONSULTATION_IN_PROGRESS,
+        state_version=5,
+        correlation_id=uuid4(),
+        idempotency_key="customer-timeout-notice-003",
+    )
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        status_code=Inquiry.Status.CONSULTATION_IN_PROGRESS,
+        state_version=5,
+    )
+    progressed_response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}"
+    )
+    assert progressed_response.json()["data"]["system_notice"] is None
 
 
 def test_customer_active_inquiry_returns_latest_owned_non_terminal_snapshot(

@@ -5,10 +5,11 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
-from django.db.models import Prefetch, QuerySet
+from django.db.models import F, OuterRef, Prefetch, QuerySet, Subquery
 
 from apps.audit.models import AIRun
 from apps.inquiries.models import Guidance, Inquiry, InquiryQA
+from apps.workflow.models import TransitionHistory
 
 
 class CustomerInquiryRepository:
@@ -44,6 +45,16 @@ class CustomerInquiryRepository:
             .order_by("sequence_no", "public_id")
         )
 
+    @staticmethod
+    def latest_state_change_event() -> QuerySet[TransitionHistory]:
+        """Select the event that most recently changed the Inquiry state."""
+
+        return (
+            TransitionHistory.objects.filter(inquiry_id=OuterRef("pk"))
+            .exclude(from_state=F("to_state"))
+            .order_by("-state_version", "-pk")
+        )
+
     @classmethod
     def find_latest_active(cls, *, actor: Any) -> Inquiry | None:
         """Return the customer's most recently updated non-terminal inquiry."""
@@ -76,6 +87,11 @@ class CustomerInquiryRepository:
     ) -> Inquiry | None:
         return (
             cls.visible_for_customer(actor)
+            .annotate(
+                latest_state_change_event=Subquery(
+                    cls.latest_state_change_event().values("event_code")[:1]
+                )
+            )
             .prefetch_related(
                 Prefetch(
                     "qa_entries",

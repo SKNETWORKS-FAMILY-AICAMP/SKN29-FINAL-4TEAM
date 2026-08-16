@@ -1,5 +1,23 @@
 # Contracts Changelog
 
+## 2026-08-16 — AI 처리 시간 초과 상담 전환
+
+### Added
+
+- 내부 SYSTEM Event `AI_PROCESSING_TIMEOUT`과 `TR-INQ-036`을 추가했다.
+- `QUESTIONNAIRE_IN_PROGRESS → CONSULTATION_REQUIRED` 전환과
+  `AIRun=TIMED_OUT`, `AI-TIMEOUT-01`, `state_version` Guard를 확정했다.
+- 고객 문의 상세 Snapshot에 Timeout 전용 nullable `system_notice`를
+  추가하고 합성 Example을 게시했다.
+
+### Boundary
+
+- Backend 재시도는 0회이며 고객 입력과 원본 AIRun 감사정보를 보존한다.
+- Timeout 전환은 Consultation, Guidance, Evidence, EvidenceLink를 자동
+  생성하지 않는다. 상담 레코드는 고객의 `REQUEST_CONSULTATION` Action이
+  소유한다.
+- 신규 Model·Table·Column·Migration과 외부 쓰기 API는 추가하지 않는다.
+
 ## 2026-08-15 — CUSTOMER 최신 진행 문의 복구 조회
 
 ### Added

@@ -77,6 +77,8 @@ class InquiryAIOutcome:
 class InquiryAIService:
     """HTTP 호출은 Transaction 밖, 결과 적용은 잠금 Transaction 안에서 수행."""
 
+    AI_PROCESSING_TIMEOUT_EVENT = "AI_PROCESSING_TIMEOUT"
+
     @classmethod
     def analyze_inquiry(
         cls,
@@ -179,14 +181,25 @@ class InquiryAIService:
                 outcome = cls._cancelled_outcome(run)
                 cls._log_outcome(outcome, trace=trace, latency_ms=latency_ms)
                 return outcome
+            event_candidate = None
+            event_applied = None
+            pending_reason = exc.code
+            stale = False
+            if (
+                run.status_code == AIRun.Status.TIMED_OUT
+                and run.error_code == "AI-TIMEOUT-01"
+            ):
+                event_candidate = cls.AI_PROCESSING_TIMEOUT_EVENT
+                event_applied, pending_reason = cls._apply_timeout_event(run)
+                stale = pending_reason == "STALE_STATE_VERSION"
             outcome = InquiryAIOutcome(
                 ai_run_id=str(run.public_id),
                 status=run.status_code,
                 idempotent_replay=False,
-                stale=False,
-                event_candidate=None,
-                event_applied=None,
-                pending_reason=exc.code,
+                stale=stale,
+                event_candidate=event_candidate,
+                event_applied=event_applied,
+                pending_reason=pending_reason,
             )
             cls._log_outcome(
                 outcome,
@@ -300,6 +313,84 @@ class InquiryAIService:
         locked.save(update_fields=["status_code", "started_at", "updated_at"])
         run.refresh_from_db()
         return True
+
+    @classmethod
+    @transaction.atomic
+    def _apply_timeout_event(
+        cls,
+        run: AIRun,
+    ) -> tuple[str | None, str | None]:
+        """Apply the audited timeout fallback once without creating Consultation."""
+
+        inquiry = (
+            Inquiry.objects.select_for_update()
+            .select_related("subscription__product_model")
+            .get(pk=run.inquiry_id)
+        )
+        requested_state_version = run.input_payload.get("state_version")
+        if (
+            inquiry.status_code != Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
+            or inquiry.state_version != requested_state_version
+        ):
+            return None, "STALE_STATE_VERSION"
+
+        snapshot = WorkflowSnapshot(
+            inquiry_state=inquiry.status_code,
+            state_version=inquiry.state_version,
+            visit_status=InquiryRepository.latest_visit_status(inquiry),
+        )
+        transition = StateMachine().resolve(
+            snapshot=snapshot,
+            event_code=cls.AI_PROCESSING_TIMEOUT_EVENT,
+        )
+        guard_result = GuardEvaluator().evaluate(
+            transition=transition,
+            snapshot=snapshot,
+            context=GuardContext(
+                actor_role="SYSTEM",
+                is_authenticated=False,
+                correlation_id=str(run.correlation_id),
+                idempotency_key=None,
+                requested_state_version=requested_state_version,
+                trusted_internal_actor=True,
+                domain_results={
+                    "G-AI-PROCESSING-TIMEOUT-VALID": (
+                        run.status_code == AIRun.Status.TIMED_OUT
+                        and run.error_code == "AI-TIMEOUT-01"
+                        and run.retry_count == 0
+                        and run.inquiry_id == inquiry.pk
+                    )
+                },
+            ),
+        )
+        if not guard_result.allowed:
+            failure = guard_result.failure
+            return None, failure.error_code if failure else "GUARD_REJECTED"
+
+        InquiryRepository.apply_state_transition(
+            inquiry,
+            status_code=transition.inquiry_state_after,
+            state_version=transition.state_version_after,
+        )
+        inquiry.requires_fallback = True
+        inquiry.usage_guidance_status = (
+            Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION
+        )
+        inquiry.full_clean()
+        inquiry.save(
+            update_fields=[
+                "requires_fallback",
+                "usage_guidance_status",
+                "updated_at",
+            ]
+        )
+        TransitionHistoryService.record_ai_result(
+            inquiry=inquiry,
+            transition=transition,
+            correlation_id=run.correlation_id,
+            ai_request_id=run.idempotency_key,
+        )
+        return cls.AI_PROCESSING_TIMEOUT_EVENT, None
 
     @staticmethod
     @transaction.atomic
@@ -841,6 +932,11 @@ class InquiryAIService:
                 validator=validator,
             )
             event_candidate = result.event_candidate
+        elif (
+            run.status_code == AIRun.Status.TIMED_OUT
+            and run.error_code == "AI-TIMEOUT-01"
+        ):
+            event_candidate = cls.AI_PROCESSING_TIMEOUT_EVENT
         current_inquiry = Inquiry.objects.only(
             "status_code",
             "state_version",
