@@ -4,6 +4,7 @@ import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.CustomerInquiryQuestions
 import com.skn29.watercare.core.model.CustomerInquirySnapshot
 import com.skn29.watercare.core.model.FollowUpAnswer
+import com.skn29.watercare.core.model.GuidanceData
 import com.skn29.watercare.core.model.RequestConsultationRequestDto
 import com.skn29.watercare.core.model.RequestConsultationResult
 import com.skn29.watercare.core.model.SubmitFollowUpAnswersRequestDto
@@ -16,6 +17,19 @@ import kotlinx.serialization.json.Json
 
 interface CustomerInquiryRepository {
     suspend fun snapshot(inquiryId: String): ApiResult<CustomerInquirySnapshot>
+
+    suspend fun activeInquiry(): ApiResult<CustomerInquirySnapshot?> =
+        ApiResult.Failure(
+            code = "ACTIVE_INQUIRY_ROUTE_UNAVAILABLE",
+            message = "진행 중인 문의 조회 기능을 사용할 수 없습니다.",
+            retryable = false,
+        )
+    suspend fun guidance(inquiryId: String): ApiResult<GuidanceData> =
+        ApiResult.Failure(
+            code = "GUIDANCE_ROUTE_UNAVAILABLE",
+            message = "안전 안내 조회 기능을 사용할 수 없습니다.",
+            retryable = false,
+        )
     suspend fun questions(inquiryId: String): ApiResult<CustomerInquiryQuestions>
     suspend fun submitAnswers(
         inquiryId: String,
@@ -42,12 +56,47 @@ class RemoteCustomerInquiryRepository(
         ConsultationRequestIdempotencyKeyStore =
         ConsultationRequestIdempotencyKeyStore(),
 ) : CustomerInquiryRepository {
+    override suspend fun activeInquiry(): ApiResult<CustomerInquirySnapshot?> =
+        safeApiCall(json) {
+            api.customerActiveInquiry()
+        }.mapSuccess { response ->
+            response.activeInquiry?.toDomain()
+        }
+
     override suspend fun snapshot(
         inquiryId: String,
     ): ApiResult<CustomerInquirySnapshot> =
         safeApiCall(json) {
             api.customerInquirySnapshot(inquiryId.trim())
         }.mapSuccess { it.toDomain() }
+
+    override suspend fun guidance(
+        inquiryId: String,
+    ): ApiResult<GuidanceData> {
+        val normalizedInquiryId = inquiryId.trim()
+        if (normalizedInquiryId.isEmpty()) {
+            return ApiResult.Failure(
+                code = "CLIENT_VALIDATION_ERROR",
+                message = "문의 식별자를 확인해 주세요.",
+                retryable = false,
+            )
+        }
+        val result = safeApiCall(json) {
+            api.customerInquiryGuidance(normalizedInquiryId)
+        }.mapSuccess { it.toDomain() }
+        return if (
+            result is ApiResult.Failure &&
+            result.httpStatus == 409 &&
+            result.code == "AI_GUIDANCE_NOT_READY"
+        ) {
+            result.copy(
+                message = "AI 안내를 준비하고 있습니다. 잠시 후 다시 확인해 주세요.",
+                retryable = true,
+            )
+        } else {
+            result
+        }
+    }
 
     override suspend fun questions(
         inquiryId: String,

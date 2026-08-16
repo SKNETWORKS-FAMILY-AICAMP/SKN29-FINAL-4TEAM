@@ -211,6 +211,10 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
         OPENAPI_DIR / "paths" / "customer-inquiries.yaml"
     )
     expected = {
+        "/me/inquiries/active": (
+            "getMyActiveInquiry",
+            "CustomerActiveInquiry.yaml",
+        ),
         "/me/inquiries/{inquiry_id}": (
             "getMyInquiry",
             "CustomerInquirySnapshot.yaml",
@@ -218,6 +222,10 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
         "/me/inquiries/{inquiry_id}/questions": (
             "listMyInquiryQuestions",
             "CustomerInquiryQuestions.yaml",
+        ),
+        "/me/inquiries/{inquiry_id}/guidance": (
+            "getMyInquiryGuidance",
+            "CustomerInquiryGuidance.yaml",
         ),
     }
 
@@ -227,18 +235,25 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
         assert operation["x-contract-status"] == "CONFIRMED"
         assert operation["x-runtime-status"] == "IMPLEMENTED"
         assert operation["x-permission-scope"] == "OWN_INQUIRY"
-        assert set(operation["responses"]) == {
+        expected_responses = {
             "200",
             "401",
             "403",
-            "404",
             "422",
             "500",
         }
+        if path != "/me/inquiries/active":
+            expected_responses.add("404")
+        if path.endswith("/guidance"):
+            expected_responses.add("409")
+        assert set(operation["responses"]) == expected_responses
         assert load_yaml(INQUIRY_SCHEMA_DIR / schema_name)[
             "x-contract-status"
         ] == "CONFIRMED"
 
+    assert root["paths"]["/me/inquiries/active"]["$ref"] == (
+        "./paths/customer-inquiries.yaml#/~1me~1inquiries~1active"
+    )
     assert root["paths"]["/me/inquiries/{inquiry_id}"]["$ref"] == (
         "./paths/customer-inquiries.yaml#/~1me~1inquiries~1{inquiry_id}"
     )
@@ -248,13 +263,30 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
         "./paths/customer-inquiries.yaml"
         "#/~1me~1inquiries~1{inquiry_id}~1questions"
     )
+    assert root["paths"][
+        "/me/inquiries/{inquiry_id}/guidance"
+    ]["$ref"] == (
+        "./paths/customer-inquiries.yaml"
+        "#/~1me~1inquiries~1{inquiry_id}~1guidance"
+    )
     questions_schema = load_yaml(
         INQUIRY_SCHEMA_DIR / "CustomerInquiryQuestions.yaml"
     )
     snapshot_schema = load_yaml(
         INQUIRY_SCHEMA_DIR / "CustomerInquirySnapshot.yaml"
     )
+    active_schema = load_yaml(
+        INQUIRY_SCHEMA_DIR / "CustomerActiveInquiry.yaml"
+    )
+    guidance_schema = load_yaml(
+        INQUIRY_SCHEMA_DIR / "CustomerInquiryGuidance.yaml"
+    )
     assert "allowed_actions" in snapshot_schema["required"]
+    assert active_schema["required"] == ["active_inquiry"]
+    assert active_schema["properties"]["active_inquiry"]["oneOf"] == [
+        {"$ref": "./CustomerInquirySnapshot.yaml"},
+        {"type": "null"},
+    ]
     assert snapshot_schema["properties"]["allowed_actions"] == {
         "type": "array",
         "description": (
@@ -264,6 +296,12 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
         "items": {"$ref": "../workflow/AllowedAction.yaml"},
     }
     question_item = questions_schema["properties"]["questions"]["items"]
+    assert guidance_schema["additionalProperties"] is False
+    assert guidance_schema["properties"]["evidence"]["maxItems"] == 0
+    assert guidance_schema["properties"]["safe_actions"]["minItems"] == 1
+    assert set(guidance_schema["required"]) == set(
+        guidance_schema["properties"]
+    )
     assert "required" in question_item["required"]
     assert question_item["properties"]["required"] == {
         "type": "boolean",

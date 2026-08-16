@@ -34,15 +34,15 @@ fun FollowUpQuestionsSection(
 ) {
     when (state) {
         FollowUpUiState.Disabled -> Unit
-        FollowUpUiState.Loading -> LoadingBlock("추가 질문을 확인하는 중입니다")
+        FollowUpUiState.Loading -> LoadingBlock("몇 가지만 더 확인할게요")
 
-        is FollowUpUiState.Empty -> SectionCard("추가 질문") {
+        is FollowUpUiState.Empty -> SectionCard("확인할 내용") {
             Column(
                 modifier = Modifier.testTag("followUpEmpty"),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 LiquidGlassPill("확인 완료")
-                Text("현재 추가로 답변할 질문이 없습니다.")
+                Text("지금은 더 확인할 내용이 없어요.")
                 SnapshotLine(state.snapshot.statusCode, state.snapshot.stateVersion)
             }
         }
@@ -77,21 +77,21 @@ fun FollowUpQuestionsSection(
         }
 
         is FollowUpUiState.Success -> {
-            SectionCard("추가 답변 반영 완료") {
-                LiquidGlassPill("Backend 반영")
+            SectionCard("답변을 확인했어요") {
+                LiquidGlassPill("답변 저장 완료")
                 Text(state.message)
                 if (state.idempotentReplay) {
                     Text(
-                        "동일 요청의 기존 처리 결과를 안전하게 재사용했습니다.",
+                        "이미 보낸 답변을 다시 확인했어요.",
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
                 SnapshotLine(state.snapshot.statusCode, state.snapshot.stateVersion)
             }
             if (state.questions.isEmpty()) {
-                SectionCard("추가 질문") {
+                SectionCard("확인할 내용") {
                     Column(modifier = Modifier.testTag("followUpEmpty")) {
-                        Text("현재 추가로 답변할 질문이 없습니다.")
+                        Text("지금은 더 확인할 내용이 없어요.")
                     }
                 }
             } else {
@@ -111,7 +111,7 @@ fun FollowUpQuestionsSection(
         }
 
         is FollowUpUiState.Conflict -> {
-            SectionCard("문의 상태가 변경되었습니다") {
+            SectionCard("문의 상황이 바뀌었어요") {
                 Column(
                     modifier = Modifier.testTag("followUpConflict"),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -119,11 +119,11 @@ fun FollowUpQuestionsSection(
                     Text(state.message)
                     SnapshotLine(state.snapshot.statusCode, state.snapshot.stateVersion)
                     Text(
-                        "작성한 답변은 유지했습니다. 최신 질문을 확인한 뒤 직접 재시도해 주세요.",
+                        "작성한 답변은 그대로 있어요. 현재 질문을 확인한 뒤 다시 보내주세요.",
                         style = MaterialTheme.typography.bodySmall,
                     )
                     LiquidGlassButton(
-                        text = "최신 상태로 추가 답변 다시 제출",
+                        text = "답변 다시 보내기",
                         onClick = onRetryConflict,
                         enabled = state.canRetry && allAnswersReady(state.questions, state.drafts),
                         modifier = Modifier
@@ -149,14 +149,14 @@ fun FollowUpQuestionsSection(
         }
 
         is FollowUpUiState.DuplicateConflict -> {
-            SectionCard("중복 요청 충돌") {
+            SectionCard("이미 보낸 답변이에요") {
                 Column(
                     modifier = Modifier.testTag("followUpDuplicateConflict"),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(state.message)
                     Text(
-                        "같은 멱등 Key를 자동으로 다시 사용하지 않습니다. 답변을 실제로 수정하면 새 사용자 의도로 다시 제출할 수 있습니다.",
+                        "같은 답변이 다시 전송되지 않도록 멈췄어요. 내용을 바꾸면 다시 보낼 수 있어요.",
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -213,7 +213,7 @@ private fun FollowUpForm(
     onSelectOption: (String, String) -> Unit,
     onSubmit: () -> Unit,
 ) {
-    SectionCard("추가 질문") {
+    SectionCard("확인할 내용") {
         Column(
             modifier = Modifier.fillMaxWidth().testTag("followUpQuestions"),
             verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -235,7 +235,7 @@ private fun FollowUpForm(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .testTag("followUpText_${question.questionId}"),
-                            label = { Text("답변 입력") },
+                            label = { Text("답변을 적어주세요") },
                             minLines = 2,
                             maxLines = 4,
                         )
@@ -256,7 +256,7 @@ private fun FollowUpForm(
                             }
                         }
                         else -> Text(
-                            "지원하지 않는 질문 유형입니다. 임의 입력을 생성하지 않습니다.",
+                            "이 질문은 지금 앱에서 답하기 어려워요. 다른 항목을 먼저 확인해주세요.",
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
@@ -264,7 +264,7 @@ private fun FollowUpForm(
             }
             if (showSubmit) {
                 LiquidGlassButton(
-                    text = "추가 답변 제출",
+                    text = "답변 보내기",
                     onClick = onSubmit,
                     enabled =
                         submitAllowed &&
@@ -281,9 +281,9 @@ private fun FollowUpForm(
 }
 
 @Composable
-private fun SnapshotLine(statusCode: String, stateVersion: Int) {
+private fun SnapshotLine(statusCode: String, _stateVersion: Int) {
     Text(
-        "현재 문의 · ${InquiryLabels.status(statusCode)} ($statusCode) · v$stateVersion",
+        "현재 진행 상황 · ${InquiryLabels.status(statusCode)}",
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )

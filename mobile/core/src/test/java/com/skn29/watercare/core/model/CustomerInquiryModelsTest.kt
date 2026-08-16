@@ -1,6 +1,10 @@
 package com.skn29.watercare.core.model
 
+import com.skn29.watercare.core.network.WaterCareApi
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
+import retrofit2.http.GET
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -71,5 +75,137 @@ class CustomerInquiryModelsTest {
         ).toRequestDto()
         assertNull(choice.answerText)
         assertEquals("YES", choice.answerPayload?.selectedOption)
+    }
+    @Test
+    fun activeInquiryEnvelope_decodesServerSnapshotWithoutLosingState() {
+        val raw = """
+            {
+              "success": true,
+              "data": {
+                "active_inquiry": {
+                  "inquiry_id": "00000000-0000-4000-8000-000000000901",
+                  "status_code": "COMPLETION_PENDING",
+                  "state_version": 10,
+                  "subscription_id": "00000000-0000-4000-8000-000000000101",
+                  "product": {
+                    "model_code": "WPUJAC104DWH"
+                  },
+                  "allowed_actions": [
+                    {
+                      "code": "REQUEST_CONSULTATION",
+                      "label": "상담 요청",
+                      "operation_id": "requestConsultation",
+                      "style": "SECONDARY",
+                      "requires_confirmation": false,
+                      "confirmation_message": null
+                    }
+                  ],
+                  "updated_at": "2026-08-15T10:50:50+09:00"
+                }
+              },
+              "error": null,
+              "metadata": {
+                "correlation_id": "active-contract-test"
+              }
+            }
+        """.trimIndent()
+
+        val envelope =
+            Json.decodeFromString<
+                ApiEnvelope<CustomerActiveInquiryDataDto>
+            >(raw)
+
+        assertTrue(envelope.success)
+
+        val activeDto =
+            requireNotNull(
+                requireNotNull(envelope.data).activeInquiry
+            )
+
+        val active = activeDto.toDomain()
+
+        assertEquals(
+            "00000000-0000-4000-8000-000000000901",
+            active.inquiryId,
+        )
+        assertEquals(
+            "COMPLETION_PENDING",
+            active.statusCode,
+        )
+        assertEquals(
+            10,
+            active.stateVersion,
+        )
+        assertEquals(
+            "00000000-0000-4000-8000-000000000101",
+            active.subscriptionId,
+        )
+        assertEquals(
+            "WPUJAC104DWH",
+            active.productModelCode,
+        )
+        assertEquals(
+            "REQUEST_CONSULTATION",
+            active.allowedActions.single().code,
+        )
+        assertEquals(
+            "requestConsultation",
+            active.allowedActions.single().operationId,
+        )
+        assertEquals(
+            "2026-08-15T10:50:50+09:00",
+            active.updatedAtRfc3339,
+        )
+    }
+
+    @Test
+    fun activeInquiryEnvelope_decodesNullWithoutSynthesizingInquiry() {
+        val raw = """
+            {
+              "success": true,
+              "data": {
+                "active_inquiry": null
+              },
+              "error": null,
+              "metadata": {
+                "correlation_id": "active-null-test"
+              }
+            }
+        """.trimIndent()
+
+        val envelope =
+            Json.decodeFromString<
+                ApiEnvelope<CustomerActiveInquiryDataDto>
+            >(raw)
+
+        assertTrue(envelope.success)
+        assertNull(
+            requireNotNull(envelope.data).activeInquiry
+        )
+    }
+
+    @Test
+    fun activeInquiryApi_usesExactBackendGetPath() {
+        val methods =
+            WaterCareApi::class.java.declaredMethods
+                .filter {
+                    it.name == "customerActiveInquiry"
+                }
+
+        assertEquals(
+            1,
+            methods.size,
+        )
+
+        val get =
+            requireNotNull(
+                methods.single()
+                    .getAnnotation(GET::class.java)
+            )
+
+        assertEquals(
+            "api/v1/me/inquiries/active",
+            get.value,
+        )
     }
 }

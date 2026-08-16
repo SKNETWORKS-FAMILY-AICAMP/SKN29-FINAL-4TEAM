@@ -30,7 +30,6 @@ import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.GuidanceDisplayModel
 import com.skn29.watercare.core.model.InquiryActionLabels
-import com.skn29.watercare.core.model.InquiryLabels
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.RiskLevel
 import com.skn29.watercare.core.model.UsageGuidanceStatus
@@ -97,16 +96,32 @@ fun GuidanceScreen(
     var showCancelDialog by remember { mutableStateOf(false) }
     val actualInquiryCode = submittedInquiryCode.trim()
     val latestInquirySnapshot = followUpState.snapshotOrNull()
+    val latestGuidance = when (val current = state) {
+        is GuidanceUiState.Content -> current.guidance
+        is GuidanceUiState.NoEvidence -> current.guidance
+        else -> null
+    }
+    val preferredGuidance = latestGuidance?.takeIf { guidance ->
+        latestInquirySnapshot == null ||
+            guidance.stateVersion >= latestInquirySnapshot.stateVersion
+    }
     val effectiveStateVersion =
-        latestInquirySnapshot?.stateVersion ?: submittedStateVersion
+        preferredGuidance?.stateVersion
+            ?: latestInquirySnapshot?.stateVersion
+            ?: submittedStateVersion
     val effectiveAllowedActions =
-        latestInquirySnapshot?.allowedActions ?: submittedAllowedActions
+        preferredGuidance?.allowedActions
+            ?: latestInquirySnapshot?.allowedActions
+            ?: submittedAllowedActions
 
-    WaterCareScreen(title = "문제 해결 안내", onBack = onBack) {
+    WaterCareScreen(title = "문의 진행 상황", onBack = onBack) {
+        CustomerProgressOverview(
+            statusCode = latestInquirySnapshot?.statusCode ?: submittedStatusCode,
+        )
         if (fixturePreview) {
-            SectionCard("합성 Fixture 미리보기") {
+            SectionCard("미리보기 화면") {
                 Text(
-                    "이 화면의 안내는 UI 검증용 합성 데이터이며 실제 Backend·AI 결과가 아닙니다."
+                    "이 화면은 기능을 둘러보기 위한 예시 화면이에요."
                 )
             }
         }
@@ -115,7 +130,8 @@ fun GuidanceScreen(
             SubmissionReceiptCard(
                 inquiryCode = actualInquiryCode,
                 statusCode =
-                    latestInquirySnapshot?.statusCode
+                    preferredGuidance?.statusCode
+                        ?: latestInquirySnapshot?.statusCode
                         ?: submittedStatusCode,
                 stateVersion = effectiveStateVersion,
                 allowedActions = effectiveAllowedActions,
@@ -142,7 +158,7 @@ fun GuidanceScreen(
             cancelAction != null &&
             cancelState !is CancelInquiryUiState.Success
         ) {
-            SectionCard("문의 관리") {
+            SectionCard("문의 취소") {
                 WorkflowActionButton(
                     action = cancelAction,
                     enabled =
@@ -152,7 +168,7 @@ fun GuidanceScreen(
                     onClick = { showCancelDialog = true },
                 )
                 Text(
-                    "취소 가능한 문의에서만 이 버튼을 사용할 수 있습니다.",
+                    "진행 중인 문의는 상황에 따라 취소할 수 있어요.",
                     style = MaterialTheme.typography.bodySmall,
                     color =
                         MaterialTheme.colorScheme.onSurfaceVariant,
@@ -170,15 +186,9 @@ fun GuidanceScreen(
                 SectionCard("문의 취소 완료") {
                     LiquidGlassPill("취소됨")
                     Text(
-                        "현재 상태 · " +
-                            InquiryLabels.status(
-                                currentCancel.state
-                            ) +
-                            " (" + currentCancel.state + ")"
-                    )
-                    Text(
-                        "상태 버전 · " +
-                            currentCancel.stateVersion
+                        "문의가 취소됐어요.",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
                     )
                     if (currentCancel.idempotentReplay) {
                         Text(
@@ -200,13 +210,10 @@ fun GuidanceScreen(
                     Text(currentCancel.message)
                     currentCancel.currentStatus?.let { status ->
                         Text(
-                            "현재 상태 · " +
-                                InquiryLabels.status(status) +
-                                " (" + status + ")"
+                            customerInquiryStatusText(status),
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
                         )
-                    }
-                    currentCancel.currentStateVersion?.let { version ->
-                        Text("최신 상태 버전 · $version")
                     }
                     if (currentCancel.canRetry) {
                         LiquidGlassButton(
@@ -247,7 +254,7 @@ fun GuidanceScreen(
 
         when (val current = state) {
             GuidanceUiState.Loading ->
-                LoadingBlock("AI 안내 결과를 불러오는 중입니다")
+                LoadingBlock("해결 방법을 준비하고 있어요")
 
             is GuidanceUiState.Content -> GuidanceContent(
                 guidance = current.guidance.withInquiryCode(
@@ -265,15 +272,22 @@ fun GuidanceScreen(
                 onRetry = viewModel::load,
             )
 
+            is GuidanceUiState.NotReady -> FailureFallback(
+                title = "AI 안내 준비 중",
+                message = current.message,
+                retryable = true,
+                onRetry = viewModel::load,
+            )
+
             is GuidanceUiState.AiFailure -> FailureFallback(
-                title = "AI 안내 생성 실패",
+                title = "지금은 안내를 준비하지 못했어요",
                 message = current.message,
                 retryable = current.retryable,
                 onRetry = viewModel::load,
             )
 
             is GuidanceUiState.NetworkFailure -> FailureFallback(
-                title = "네트워크 연결 실패",
+                title = "연결이 잠시 불안정해요",
                 message = current.message,
                 retryable = current.retryable,
                 onRetry = viewModel::load,
@@ -281,7 +295,7 @@ fun GuidanceScreen(
 
             is GuidanceUiState.Error ->
                 ErrorCard(
-                    current.message,
+                    "현재 안내를 확인할 수 없어요. 잠시 후 다시 시도해주세요.",
                     if (current.retryable) viewModel::load else null,
                 )
         }
@@ -308,7 +322,7 @@ fun GuidanceScreen(
                 )
 
                 Text(
-                    "현재 문의 상태에서 상담 요청이 허용될 때만 사용할 수 있습니다.",
+                    "안내만으로 해결이 어렵다면 지금까지 입력한 내용을 상담사에게 그대로 전달할 수 있어요.",
                     style =
                         MaterialTheme.typography.bodySmall,
                     color =
@@ -347,10 +361,24 @@ fun GuidanceScreen(
                     )
 
                     Text(
-                        "담당 상담사가 같은 문의를 확인할 수 있도록 요청을 저장했습니다.",
+                        "지금까지 입력한 증상과 문의 내용이 상담사에게 함께 전달됐어요.",
                         style =
                             MaterialTheme.typography
                                 .bodyMedium,
+                    )
+
+                    Text(
+                        "다음 진행 순서",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+
+                    BulletList(
+                        listOf(
+                            "상담사가 문의 내용을 확인해요",
+                            "필요한 경우 연락 또는 방문 안내를 드려요",
+                            "진행 상태는 이 문의에서 계속 확인할 수 있어요",
+                        )
                     )
 
                     if (
@@ -369,7 +397,7 @@ fun GuidanceScreen(
                     }
 
                     LiquidGlassButton(
-                        text = "홈으로",
+                        text = "홈에서 진행 상태 보기",
                         onClick = onDone,
                         accent = true,
                         modifier =
@@ -411,7 +439,7 @@ fun GuidanceScreen(
                         )
                     } else {
                         Text(
-                            "현재 상태에서는 상담 요청을 다시 보낼 수 없습니다.",
+                            "지금은 상담 연결을 다시 요청할 수 없어요.",
                             style =
                                 MaterialTheme.typography
                                     .bodySmall,
@@ -495,6 +523,216 @@ private fun GuidanceDisplayModel.withInquiryCode(
         ?.let { copy(inquiryCode = it) }
         ?: this
 
+
+@Composable
+private fun CustomerProgressOverview(
+    statusCode: String?,
+) {
+    val currentStep = customerInquiryCurrentStep(statusCode)
+
+    SectionCard("문의 진행 상황") {
+        Text(
+            customerInquiryProgressHeadline(statusCode),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.ExtraBold,
+        )
+
+        Text(
+            customerInquiryProgressDescription(statusCode),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            CustomerProgressStep(
+                number = 1,
+                title = "문의 접수",
+                description = "증상 내용을 전달했어요",
+                currentStep = currentStep,
+            )
+            CustomerProgressStep(
+                number = 2,
+                title = "추가 확인",
+                description = "필요한 내용을 조금 더 확인해요",
+                currentStep = currentStep,
+            )
+            CustomerProgressStep(
+                number = 3,
+                title = "해결 안내",
+                description = "공식 근거를 바탕으로 해결 방법을 확인해요",
+                currentStep = currentStep,
+            )
+            CustomerProgressStep(
+                number = 4,
+                title = "상담 연결",
+                description = "필요한 경우 상담사에게 그대로 이어져요",
+                currentStep = currentStep,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CustomerProgressStep(
+    number: Int,
+    title: String,
+    description: String,
+    currentStep: Int,
+) {
+    val completed = number < currentStep
+    val current = number == currentStep
+
+    Row(
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            when {
+                completed -> "✓"
+                current -> "●"
+                else -> "○"
+            },
+            style = MaterialTheme.typography.titleMedium,
+            color = if (completed || current) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            fontWeight = FontWeight.Bold,
+        )
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = if (current) FontWeight.ExtraBold else FontWeight.Bold,
+                color = if (current) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
+            )
+
+            if (current || completed) {
+                Text(
+                    description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+private fun customerInquiryCurrentStep(
+    statusCode: String?,
+): Int = when (statusCode?.trim()?.uppercase()) {
+    "DRAFT" -> 1
+    "QUESTIONNAIRE_IN_PROGRESS" -> 2
+    "AI_GUIDANCE" -> 3
+    "CONSULTATION_REQUIRED",
+    "CONSULTATION_IN_PROGRESS",
+    "VISIT_REVIEW_PENDING",
+    "VISIT_SCHEDULING",
+    "VISIT_SCHEDULED",
+    "COMPLETION_PENDING",
+    "REVISIT_REQUIRED",
+    "REOPENED",
+    "RESOLVED" -> 4
+    "CANCELLED" -> 1
+    else -> 1
+}
+
+private fun customerInquiryProgressHeadline(
+    statusCode: String?,
+): String = when (statusCode?.trim()?.uppercase()) {
+    "DRAFT" ->
+        "문의가 접수됐어요"
+
+    "QUESTIONNAIRE_IN_PROGRESS" ->
+        "증상을 조금 더 확인할게요"
+
+    "AI_GUIDANCE" ->
+        "해결 방법을 확인해보세요"
+
+    "CONSULTATION_REQUIRED" ->
+        "상담 연결이 필요해요"
+
+    "CONSULTATION_IN_PROGRESS" ->
+        "상담사가 문의를 확인하고 있어요"
+
+    "VISIT_REVIEW_PENDING" ->
+        "방문 점검이 필요한지 확인하고 있어요"
+
+    "VISIT_SCHEDULING" ->
+        "방문 일정을 조율하고 있어요"
+
+    "VISIT_SCHEDULED" ->
+        "방문 일정이 정해졌어요"
+
+    "COMPLETION_PENDING" ->
+        "처리 결과를 확인하고 있어요"
+
+    "REVISIT_REQUIRED" ->
+        "추가 확인이 필요해요"
+
+    "REOPENED" ->
+        "문의 내용을 다시 확인하고 있어요"
+
+    "RESOLVED" ->
+        "문의 처리가 완료됐어요"
+
+    "CANCELLED" ->
+        "문의가 취소됐어요"
+
+    else ->
+        "문의 내용을 확인하고 있어요"
+}
+
+private fun customerInquiryProgressDescription(
+    statusCode: String?,
+): String = when (statusCode?.trim()?.uppercase()) {
+    "DRAFT" ->
+        "입력한 증상 내용을 안전하게 저장했어요."
+
+    "QUESTIONNAIRE_IN_PROGRESS" ->
+        "정확한 안내를 위해 필요한 내용만 간단히 더 확인할게요."
+
+    "AI_GUIDANCE" ->
+        "공식 문서를 기준으로 지금 할 수 있는 조치를 안내해드려요."
+
+    "CONSULTATION_REQUIRED" ->
+        "지금까지 입력한 내용을 다시 설명하지 않아도 상담사에게 그대로 전달할 수 있어요."
+
+    "CONSULTATION_IN_PROGRESS" ->
+        "상담사가 지금까지 입력한 증상과 안내 내용을 함께 확인하고 있어요."
+
+    "VISIT_REVIEW_PENDING",
+    "VISIT_SCHEDULING",
+    "VISIT_SCHEDULED" ->
+        "상담 내용이 이어진 상태로 방문 점검 절차를 진행하고 있어요."
+
+    "COMPLETION_PENDING" ->
+        "마지막으로 문제가 해결됐는지 확인하고 있어요."
+
+    "REVISIT_REQUIRED",
+    "REOPENED" ->
+        "기존 문의 내용을 유지한 채 필요한 부분을 다시 확인하고 있어요."
+
+    "RESOLVED" ->
+        "확인과 상담 과정이 모두 완료됐어요."
+
+    "CANCELLED" ->
+        "이 문의는 더 이상 진행되지 않아요."
+
+    else ->
+        "현재 진행 상태를 확인하고 있어요."
+}
+
 @Composable
 private fun SubmissionReceiptCard(
     inquiryCode: String,
@@ -512,16 +750,10 @@ private fun SubmissionReceiptCard(
         LiquidGlassPill("증상 접수가 완료됐어요")
 
         Text(
-            "입력해주신 내용을 확인하고 있어요.",
+            "입력한 증상을 확인하고 있어요.",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
         )
-
-        Text(
-            "접수번호 $inquiryCode",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
         statusCode
             ?.trim()
             ?.uppercase()
@@ -535,7 +767,7 @@ private fun SubmissionReceiptCard(
             }
 
         Text(
-            "추가 확인이 필요하면 이 화면에서 바로 안내해드릴게요.",
+            "필요한 내용이 있으면 이 화면에서 하나씩 안내해드릴게요.",
             style = MaterialTheme.typography.bodyMedium,
         )
 
@@ -608,10 +840,6 @@ fun GuidanceContent(
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Black,
                 )
-                Text(
-                    "문의번호 ${guidance.inquiryCode}",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
             Image(
                 painter = painterResource(R.drawable.mascot_customer),
@@ -623,7 +851,7 @@ fun GuidanceContent(
     }
 
     SectionCard(
-        "1. 지금 해야 할 행동",
+        "지금 해야 할 일",
         isDanger = dangerous,
     ) {
         Text(
@@ -634,7 +862,7 @@ fun GuidanceContent(
     }
 
     SectionCard(
-        "2. 사용 가능 여부",
+        "사용 가능 여부",
         isDanger = dangerous,
     ) {
         StatusBadge(
@@ -652,7 +880,7 @@ fun GuidanceContent(
     }
 
     SectionCard(
-        "3. 안전 행동",
+        "안전하게 사용하려면",
         isDanger = dangerous,
     ) {
         BulletList(
@@ -666,19 +894,26 @@ fun GuidanceContent(
     }
 
     SectionCard(
-        "4. 상담이 필요한 경우",
+        "상담이 필요한 경우",
         isDanger = dangerous,
     ) {
         BulletList(guidance.escalationConditions)
     }
 
-    SectionCard("5. 공식 근거") {
+    SectionCard("공식 근거") {
+        Text(
+            "공식 문서에서 확인된 내용만 보여드려요.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
         if (guidance.evidence.isEmpty()) {
             Text(
-                "표시 가능한 공식 근거가 없습니다. 판단을 보류하고 상담 확인을 우선합니다."
+                "이번 단계에서는 공개 근거를 제공하지 않습니다. " +
+                    "안내 내용과 상담 필요 여부는 Backend 검증 결과를 따릅니다."
             )
             LiquidGlassButton(
-                text = "근거 다시 확인",
+                text = "안내 다시 확인",
                 onClick = onRetry,
                 accent = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -690,12 +925,12 @@ fun GuidanceContent(
         }
     }
 
-    SectionCard("6. 입력한 증상 요약") {
+    SectionCard("내가 입력한 증상") {
         Text(guidance.symptomSummary)
     }
 
     SectionCard(
-        "7. 하지 말아야 할 행동",
+        "하지 말아야 할 행동",
         isDanger = dangerous,
     ) {
         BulletList(guidance.prohibitedActions)
@@ -725,19 +960,12 @@ private fun FailureFallback(
             fontWeight = FontWeight.Black,
         )
         Text(
-            "입력값은 유지되며 내부 오류나 Stack Trace는 표시하지 않습니다."
+            "입력하신 문의 내용은 그대로 보관되어 있어요. 잠시 후 다시 확인해주세요."
         )
     }
 
     ErrorCard(
         message,
         if (retryable) onRetry else null,
-    )
-
-    LiquidGlassButton(
-        text = "상담 요청 준비 중",
-        onClick = {},
-        enabled = false,
-        modifier = Modifier.fillMaxWidth(),
     )
 }

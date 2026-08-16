@@ -16,6 +16,8 @@ from apps.inquiries.api.serializers import (
     ConsultantCustomerSubscriptionSearchResultSerializer,
     ConsultantCustomerSubscriptionSearchSerializer,
     CreateInquirySerializer,
+    CustomerActiveInquirySerializer,
+    CustomerInquiryGuidanceSerializer,
     CustomerInquiryQuestionsSerializer,
     CustomerInquirySnapshotSerializer,
     InquiryResponseSerializer,
@@ -266,6 +268,19 @@ class CustomerInquirySnapshotView(APIView):
         return success_response(CustomerInquirySnapshotSerializer(data).data)
 
 
+class CustomerActiveInquiryView(APIView):
+    """Return the CUSTOMER's latest non-terminal inquiry, if one exists."""
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get(self, request):
+        reject_unknown_query_parameters(request, set())
+        data = CustomerInquiryService.latest_active_for_customer(
+            actor=request.user,
+        )
+        return success_response(CustomerActiveInquirySerializer(data).data)
+
+
 class CustomerInquiryQuestionsView(APIView):
     """Return question metadata for one CUSTOMER-owned inquiry."""
 
@@ -278,6 +293,20 @@ class CustomerInquiryQuestionsView(APIView):
             inquiry_public_id=inquiry_id,
         )
         return success_response(CustomerInquiryQuestionsSerializer(data).data)
+
+
+class CustomerInquiryGuidanceView(APIView):
+    """Return the authenticated CUSTOMER's latest trusted AI Guidance."""
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get(self, request, inquiry_id: UUID):
+        reject_unknown_query_parameters(request, set())
+        data = CustomerInquiryService.guidance_for_customer(
+            actor=request.user,
+            inquiry_public_id=inquiry_id,
+        )
+        return success_response(CustomerInquiryGuidanceSerializer(data).data)
 
 
 class CancelInquiryView(APIView):

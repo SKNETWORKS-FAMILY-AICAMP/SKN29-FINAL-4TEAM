@@ -11,6 +11,9 @@ import { createInquiryDetailPath } from "../../app/router/routePaths";
 import { useAuth } from "../../app/providers/authContext";
 import consultantAvatar from "../../assets/images/water-bridge-consultant.png";
 import Pagination from "../../common/components/data-display/Pagination";
+import {
+  formatContractDateTimePrecise,
+} from "../../common/date-time/contractDateTime";
 import EmptyState from "../../common/components/feedback/EmptyState";
 import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
@@ -1019,7 +1022,14 @@ export default function ConsultantDashboardPage() {
                             <span className="consultant-list-item__progress">
                               <strong>{STATUS_LABELS[inquiry.status]}</strong>
                               <small>
-                                접수 후 {formatWaitingTime(getWaitingMinutes(inquiry))}
+                                <time dateTime={inquiry.receivedAt}>
+                                  접수 {formatContractDateTimePrecise(
+                                    inquiry.receivedAt,
+                                  ) ?? "시각 확인 불가"}
+                                </time>
+                                {" · "}경과 {formatWaitingTime(
+                                  getWaitingMinutes(inquiry),
+                                )}
                               </small>
                             </span>
 

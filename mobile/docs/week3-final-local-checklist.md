@@ -1,58 +1,58 @@
-# Week 3 Mobile Final Local Checklist
+# 3주차 모바일 최종 로컬 체크리스트
 
-- Verified: 2026-07-31 15:56:02 +09:00
-- Local branch: jeonghyun
-- Remote connection/push: intentionally excluded
+- 검증 일시: 2026-07-31 15:56:02 +09:00
+- 로컬 브랜치: jeonghyun
+- 원격 연결/Push: 의도적으로 제외
 
-## 3.1 Android environment and common structure
+## 3.1 Android 환경 및 공통 구조
 
-- [x] Three-module structure: customer-app / technician-app / core
-- [x] Material 3 sky-blue and orange design system
-- [x] Customer and technician mascot assets
-- [x] Customer and technician launcher icons
-- [x] Debug builds generated
-- [x] Backend URL remains outside screen code
+- [x] 3개 모듈 구조: customer-app / technician-app / core
+- [x] Material 3 하늘색·주황색 디자인 시스템
+- [x] 고객·방문기사 마스코트 Asset
+- [x] 고객·방문기사 Launcher Icon
+- [x] Debug 빌드 생성
+- [x] 백엔드 URL을 화면 코드 밖에서 관리
 
-## 3.2 Customer minimum flow
+## 3.2 고객 최소 흐름
 
-- [x] CUST-01 customer home
-- [x] CUST-02 multiple symptom intake
-- [x] CUST-04 safety guidance
-- [x] Navigation and UI-test contracts
-- [x] General, caution, danger, no-evidence, AI-failure, network-failure scenarios
+- [x] CUST-01 고객 홈
+- [x] CUST-02 복수 증상 입력
+- [x] CUST-04 안전 안내
+- [x] 화면 이동 및 UI 테스트 계약
+- [x] 일반·주의·위험·근거 없음·AI 실패·네트워크 실패 시나리오
 
-## 3.3 State management and serialization
+## 3.3 상태 관리 및 직렬화
 
-- [x] ViewModel and UiState-based customer screens
-- [x] StateFlow collection
-- [x] Duplicate submission protection
-- [x] Failure and conflict state display
-- [x] Unknown values use safe handling
+- [x] ViewModel 및 UiState 기반 고객 화면
+- [x] StateFlow 수집
+- [x] 중복 제출 방지
+- [x] 실패 및 충돌 상태 표시
+- [x] 알 수 없는 값의 안전한 처리
 
-## 3.4 Backend and Mock integration
+## 3.4 백엔드 및 Mock 연동
 
-- [x] Local Backend health validation or explicitly skipped
-- [x] Customer Demo login validation or explicitly skipped
-- [x] Technician Demo login validation or explicitly skipped
-- [x] Repository/Mock separation retained
-- [x] Backend and contract source not modified
+- [x] 로컬 백엔드 상태 검증 또는 명시적 생략
+- [x] 고객 데모 로그인 검증 또는 명시적 생략
+- [x] 방문기사 데모 로그인 검증 또는 명시적 생략
+- [x] Repository/Mock 분리 유지
+- [x] 백엔드 및 계약 원본 미수정
 
-## 3.5 AI, risk and evidence
+## 3.5 AI, 위험도 및 근거
 
-- [x] Risk and usage status
-- [x] Safe actions and prohibited actions
-- [x] Consultation fallback
-- [x] Danger resolved action hidden
-- [x] Public Evidence fields only
+- [x] 위험도 및 사용 상태
+- [x] 안전 행동 및 금지 행동
+- [x] 상담 전환 처리
+- [x] 위험 상태에서 해결 완료 동작 숨김
+- [x] 외부 공개용 Evidence 필드만 표시
 
-## 3.6 Test and documentation
+## 3.6 테스트 및 문서
 
-- [x] Core and customer tests
-- [x] Connected Compose UI tests
-- [x] Customer and technician APK builds
-- [x] Week 3 decisions document
-- [x] API/AI field map
-- [x] Test result
-- [x] Open issues
-- [ ] Git commit and push — intentionally left to the user
-- [ ] PR/reviewer confirmation — performed after user push
+- [x] Core 및 고객 테스트
+- [x] 연결된 Compose UI 테스트
+- [x] 고객·방문기사 APK 빌드
+- [x] 3주차 결정사항 문서
+- [x] API/AI 필드 대응표
+- [x] 테스트 결과
+- [x] 미해결 항목
+- [ ] Git Commit 및 Push — 사용자 실행으로 의도적으로 남김
+- [ ] PR/Reviewer 확인 — 사용자 Push 이후 수행

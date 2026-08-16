@@ -41,6 +41,7 @@ REQUIRED_ENV_KEYS = (
 REQUIRED_MIGRATIONS = (
     "0009_ai_chunk_crosswalk",
     "0010_backend_ai_rag_chunks_view",
+    "0011_cast_chunk_embedding_vector_dimensions",
 )
 EXPECTED_VIEW = "public.backend_ai_rag_chunks_v1"
 EXPECTED_VIEW_COLUMNS = (

@@ -1,42 +1,42 @@
-# Week 5 Mobile E2E Result
+# 5주차 모바일 E2E 결과
 
-## Real-device verified
+## 실단말 검증 완료
 
-- Galaxy: Samsung SM-F721N / Android 16
-- Customer login: PASS
-- Active subscription list/detail: PASS
-- Inquiry create: PASS
-- Symptom submit: PASS
-- Customer inquiry Snapshot: PASS
-- Customer unanswered Questions: PASS
-- Customer follow-up Answers POST: PASS
-- Follow-up state_version advancement: PASS
-- Follow-up post-submit Snapshot/Questions refresh: PASS
-- REMOTE Guidance unavailable fail-closed: PASS
-- Technician login + `/me`: PASS
+- 기기: Samsung SM-F721N / Android 16
+- 고객 로그인: PASS
+- 활성 구독 목록/상세: PASS
+- 문의 생성: PASS
+- 증상 제출: PASS
+- 고객 문의 Snapshot: PASS
+- 고객 미답변 Questions: PASS
+- 고객 Follow-up Answers POST: PASS
+- Follow-up `state_version` 증가: PASS
+- Follow-up 제출 후 Snapshot/Questions 재조회: PASS
+- REMOTE에서 Guidance 미제공 시 fail-closed: PASS
+- 방문기사 로그인 + `/me`: PASS
 
-## Mobile safety boundaries
+## 모바일 안전 경계
 
-- Customer Guidance Fixture in REMOTE: **BLOCKED**
-- Guidance Fixture in Offline/FAKE preview: **ALLOWED + LABELED**
-- Technician Visit Fixture in REMOTE: **BLOCKED**
-- Technician Visit Fixture in Offline Preview: **ALLOWED + LABELED**
+- REMOTE에서 고객 Guidance Fixture: **차단**
+- Offline/FAKE 미리보기에서 Guidance Fixture: **허용 + 표시**
+- REMOTE에서 방문기사 Visit Fixture: **차단**
+- 오프라인 미리보기에서 방문기사 Visit Fixture: **허용 + 표시**
 
-## Runtime pending
+## 런타임 대기 항목
 
-- Customer Guidance actual API
-- Consultation actual API
-- Technician Visit actual API
+- 고객 Guidance 실제 API
+- 상담 실제 API
+- 방문기사 Visit 실제 API
 
-## Verdict
+## 판정
 
-현재 Mobile이 실제 Backend로 검증한 범위는:
+현재 모바일이 실제 백엔드로 검증한 범위는:
 
-`Customer login → subscription → inquiry create → symptom submit → Snapshot → Questions → Follow-up Answers → Snapshot/Questions refresh`
+`고객 로그인 → 구독 → 문의 생성 → 증상 제출 → Snapshot → Questions → Follow-up Answers → Snapshot/Questions 재조회`
 
 및:
 
-`Technician login → role verification`
+`방문기사 로그인 → 역할 검증`
 
 이다.
 

@@ -65,6 +65,7 @@ object WaterCareCore {
             CustomerCareMode.REMOTE -> RemoteIntakeCustomerCareRepository(
                 inquiryRepository = inquiryRepository,
                 subscriptionRepository = subscriptionRepository,
+                customerInquiryRepository = customerInquiryRepository,
             )
             CustomerCareMode.FAKE -> fixtureRepository
         }

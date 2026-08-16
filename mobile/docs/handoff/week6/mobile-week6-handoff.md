@@ -1,8 +1,8 @@
-# Mobile Week6 Handoff
+# 모바일 6주차 인계 문서
 
 ## 5주차 고정 기준
 
-Customer:
+고객:
 
 ```text
 실제 인증
@@ -12,7 +12,7 @@ Customer:
 → 실제 증상 제출
 ```
 
-Technician:
+방문기사:
 
 ```text
 실제 인증
@@ -20,19 +20,19 @@ Technician:
 → 명시적 Offline Preview에서만 synthetic Fixture
 ```
 
-## Backend Runtime 개방 즉시 연결 순서
+## 백엔드 Runtime 개방 즉시 연결 순서
 
-1. Customer Follow-up
-2. Customer Guidance / Evidence
-3. Customer Request Consultation
-4. Technician assigned Visit list/detail
-5. Technician Visit start/complete/result
-6. Full Customer → AI → Consultation → Visit → Technician E2E
+1. 고객 Follow-up
+2. 고객 Guidance / Evidence
+3. 고객 상담 요청
+4. 방문기사 배정 Visit 목록/상세
+5. 방문기사 Visit 시작/완료/결과
+6. 전체 고객 → AI → 상담 → 방문 → 방문기사 E2E
 
-## 6주차 Mobile 허용 범위
+## 6주차 모바일 허용 범위
 
 - 잔여 UI/UX 버그
-- 배포 Backend Base URL 반영
+- 배포 백엔드 Base URL 반영
 - 접근성 / 긴 문구 / Touch target 마감
 - 성능·안정성
 - Release APK 또는 시연 APK 검증
@@ -40,7 +40,7 @@ Technician:
 
 ## 금지
 
-- Mobile 전용 가짜 Endpoint 생성
+- 모바일 전용 가짜 Endpoint 생성
 - Remote 실패 시 Fixture 자동 대체
 - Visit 상태 임의 생성
 - `WAITING_COMPLETION`을 `COMPLETED`로 처리

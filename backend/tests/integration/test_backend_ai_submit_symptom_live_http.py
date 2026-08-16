@@ -218,6 +218,33 @@ def test_submit_symptom_calls_real_ai_mock_once_and_persists_result(
     assert inquiry.risk_level_code == "caution"
     assert inquiry.usage_guidance_status == "PARTIAL_STOP"
 
+    guidance_result = request_http(
+        live_server.url,
+        f"/api/v1/me/inquiries/{inquiry_id}/guidance",
+        headers=authorization,
+    )
+    assert guidance_result.status == 409
+    assert guidance_result.payload is not None
+    guidance_error = guidance_result.payload["error"]
+    assert guidance_error["code"] == "AI_GUIDANCE_NOT_READY"
+    assert guidance_error["details"]["inquiry_id"] == inquiry_id
+    assert guidance_error["details"]["current_status"] == (
+        "QUESTIONNAIRE_IN_PROGRESS"
+    )
+    assert guidance_error["details"]["current_state_version"] == 2
+    serialized_guidance = json.dumps(
+        guidance_result.payload,
+        ensure_ascii=False,
+    )
+    for forbidden in (
+        "evidence_references",
+        "similarity_score",
+        "model_config",
+        "validated_output_payload",
+        "prompt_version",
+    ):
+        assert forbidden not in serialized_guidance
+
     replay = request_http(
         live_server.url,
         f"/api/v1/inquiries/{inquiry_id}/submit",

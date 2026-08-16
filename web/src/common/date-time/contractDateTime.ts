@@ -1,11 +1,12 @@
 const ISO_DATE_TIME_PATTERN =
-  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
 
 interface ContractDateTimeParts {
   day: number;
   hour: number;
   minute: string;
   month: number;
+  second: string;
   year: number;
 }
 
@@ -14,13 +15,14 @@ function parseContractDateTime(value: string): ContractDateTimeParts | null {
 
   if (!match || Number.isNaN(Date.parse(value))) return null;
 
-  const [, year, month, day, hour, minute] = match;
+  const [, year, month, day, hour, minute, second = "00"] = match;
   return {
     year: Number(year),
     month: Number(month),
     day: Number(day),
     hour: Number(hour),
     minute,
+    second,
   };
 }
 
@@ -50,4 +52,17 @@ export function formatContractDateTimeShort(value: string): string | null {
     2,
     "0",
   )}. ${formatClock(parts.hour, parts.minute)}`;
+}
+
+// 상담 목록에서 API 계약의 접수시각을 초 단위까지 식별할 수 있게 표시한다.
+// 기존 계약 포매터와 동일하게 입력 문자열의 wall-clock 값을 보존한다.
+export function formatContractDateTimePrecise(value: string): string | null {
+  const parts = parseContractDateTime(value);
+  if (!parts) return null;
+
+  return `${parts.year}-${String(parts.month).padStart(2, "0")}-${String(
+    parts.day,
+  ).padStart(2, "0")} ${String(parts.hour).padStart(2, "0")}:${
+    parts.minute
+  }:${parts.second}`;
 }

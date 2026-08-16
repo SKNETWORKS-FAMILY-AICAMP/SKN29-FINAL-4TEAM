@@ -50,6 +50,7 @@ fun CustomerHomeScreen(
                 authRepository = WaterCareCore.authRepository,
                 careRepository = careRepository,
                 subscriptionRepository = WaterCareCore.subscriptionRepository,
+                customerInquiryRepository = WaterCareCore.customerInquiryRepository,
                 backendStatusRepository = WaterCareCore.backendStatusRepository,
                 runtimeConfig = WaterCareCore.customerCareRuntimeConfig,
                 offlinePreview = offlinePreview,
@@ -85,7 +86,7 @@ fun CustomerHomeContent(
 
     ReferenceDashboardScaffold(
         title = "WaterBridge",
-        roleLabel = "WaterBridge Home Service",
+        roleLabel = "정수기 케어",
         palette = palette,
         backgroundRes = R.drawable.water_splash_customer_r19,
         backgroundImageAlpha = 0.30f,
@@ -127,6 +128,12 @@ fun CustomerHomeContent(
         state.home?.let { home ->
             CustomerCareHeroBanner(
                 home = home,
+                activeInquiryId =
+                    state.activeInquiry?.inquiryId
+                        ?: home.activeInquiry?.inquiryId,
+                activeInquiryStatusCode =
+                    state.activeInquiry?.statusCode
+                        ?: home.activeInquiry?.statusCode,
                 intakeAvailable = state.intakeAvailable,
                 intakeUnavailableReason = state.intakeUnavailableReason,
                 onStartIntake = onStartIntake,
@@ -200,7 +207,7 @@ private fun customerHomeErrorMessage(
     message.contains("Backend", ignoreCase = true) ||
         message.contains("API", ignoreCase = true) ||
         message.contains("Remote", ignoreCase = true) ->
-        "정수기 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요."
+        "정수기 정보를 가져오지 못했어요. 잠시 후 다시 확인해주세요."
 
     else -> message
 }

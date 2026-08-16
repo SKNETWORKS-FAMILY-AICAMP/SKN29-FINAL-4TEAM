@@ -9,14 +9,14 @@
 ## 정보 카드
 
 - 물방울 비대칭 Corner 강화
-  - Top Start 38dp
-  - Top End 58dp
-  - Bottom End 30dp
-  - Bottom Start 48dp
+  - 위쪽 시작 38dp
+  - 위쪽 끝 58dp
+  - 아래쪽 끝 30dp
+  - 아래쪽 시작 48dp
 - 강한 카드 표면 Highlight 18%
 - 일반 카드 표면 Highlight 11%
 - Accent 수분광 14% / 8.5%
-- Glow 13dp / 8dp
+- 발광 효과 13dp / 8dp
 - Iridescent 외곽선 2dp
 - 내부 반사광과 하단 Accent 물방울 광 강화
 

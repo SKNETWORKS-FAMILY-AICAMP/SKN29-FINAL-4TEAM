@@ -64,24 +64,24 @@ backgroundRes = R.drawable.water_background_customer,
         when {
             state.checkingBackend -> {
                 ReferenceBackendStatusCard(
-                    title = "Backend 확인 중",
-                    message = "Demo 로그인 가능 여부를 확인하고 있습니다.",
+                    title = "서비스 준비 중",
+                    message = "서비스를 시작할 수 있는지 확인하고 있어요.",
                     palette = palette,
                 )
             }
 
             state.backendAvailable == true -> {
                 ReferenceBackendStatusCard(
-                    title = "Backend 연결됨",
-                    message = "실제 Demo 인증으로 로그인할 수 있습니다.",
+                    title = "서비스 이용 가능",
+                    message = "바로 서비스를 시작할 수 있어요.",
                     palette = palette,
                 )
             }
 
             else -> {
                 ReferenceBackendStatusCard(
-                    title = "Backend 연결 확인 필요",
-                    message = "대시보드 디자인은 오프라인 미리보기로 바로 확인할 수 있습니다.",
+                    title = "연결을 확인해주세요",
+                    message = "인터넷 연결을 확인한 뒤 다시 시도해주세요.",
                     palette = palette,
                     warning = true,
                     actionLabel = "다시 확인",
@@ -95,7 +95,7 @@ backgroundRes = R.drawable.water_background_customer,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             ReferenceGlassButton(
-                text = "고객 Demo 로그인",
+                text = "시작하기",
                 palette = palette,
                 onClick = viewModel::demoLogin,
                 enabled = !state.submitting &&
@@ -104,7 +104,7 @@ backgroundRes = R.drawable.water_background_customer,
                 modifier = Modifier.fillMaxWidth(),
             )
             ReferenceGlassButton(
-                text = "오프라인 대시보드 미리보기",
+                text = "서비스 둘러보기",
                 palette = palette,
                 onClick = viewModel::startOfflinePreview,
                 enabled = !state.submitting,
@@ -114,7 +114,7 @@ backgroundRes = R.drawable.water_background_customer,
         }
 
         if (state.submitting) {
-            LoadingBlock("Demo 로그인 중입니다")
+            LoadingBlock("서비스를 시작하고 있어요")
         }
 
         state.error?.let {
@@ -122,7 +122,7 @@ backgroundRes = R.drawable.water_background_customer,
         }
 
         Text(
-            "현재 Backend 계약에 존재하는 Demo 인증만 사용합니다. 제공되지 않은 기능은 임시 API로 표시하지 않습니다.",
+            "일부 기능은 연결 상태에 따라 이용이 제한될 수 있어요.",
             modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.bodySmall,
             color = palette.textMuted,

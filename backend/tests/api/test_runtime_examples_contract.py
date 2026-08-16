@@ -51,6 +51,8 @@ EXPECTED_JSON_FILES = {
     "care/validation-error.json",
     "inquiries/consultant-inquiry-detail-success.json",
     "inquiries/consultant-inquiry-list-success.json",
+    "inquiries/customer-active-inquiry-empty.json",
+    "inquiries/customer-active-inquiry-success.json",
     "inquiries/start-inquiry-replay-response.json",
     "inquiries/start-inquiry-request.json",
     "inquiries/start-inquiry-success-response.json",
