@@ -8,6 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from apps.inquiries.api.serializers import (
+    ActionResultRequestSerializer,
+    ActionResultResponseSerializer,
     CancelInquiryResponseSerializer,
     CancelInquirySerializer,
     ConsultantInquiryDetailDataSerializer,
@@ -38,6 +40,7 @@ from apps.inquiries.permissions import (
 from apps.inquiries.services.consultant_inquiry_service import (
     ConsultantInquiryService,
 )
+from apps.inquiries.services.action_result_service import ActionResultService
 from apps.inquiries.services.consultant_phone_inquiry_service import (
     ConsultantPhoneInquiryService,
 )
@@ -385,6 +388,33 @@ class SubmitFollowUpAnswersView(APIView):
                 correlation_id=correlation_id,
             )
             response_data = SubmitFollowUpAnswersResponseSerializer(
+                outcome.data
+            ).data
+        return success_response(
+            response_data,
+            status_code=outcome.status_code,
+        )
+
+
+class CreateActionResultView(APIView):
+    """Append a CUSTOMER-owned guidance action result."""
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def post(self, request, inquiry_id: UUID):
+        reject_unknown_query_parameters(request, set())
+        idempotency_key = require_idempotency_key(request)
+        serializer = ActionResultRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            outcome = ActionResultService.create(
+                actor=request.user,
+                inquiry_public_id=inquiry_id,
+                validated_data=serializer.validated_data,
+                idempotency_key=idempotency_key,
+            )
+            response_data = ActionResultResponseSerializer(
                 outcome.data
             ).data
         return success_response(

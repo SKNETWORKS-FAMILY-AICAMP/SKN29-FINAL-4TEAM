@@ -552,14 +552,11 @@ def test_cli_accepts_completion_evidence_path():
     assert result["completion_blockers"] == ["TEAM_REVIEWED"]
 
 
-def test_deferred_t022_runtime_contract_gaps_fail_closed():
+def test_deferred_t022_runtime_contracts_are_ready():
     result = load_module().inspect_deferred_runtime_contracts()
 
-    assert result["ready"] is False
-    assert result["blockers"] == [
-        "ACTION_RESULTS_PATH_ID_NOT_UUID",
-        "ACTION_RESULTS_IDEMPOTENCY_KEY_UNDECLARED",
-    ]
+    assert result["ready"] is True
+    assert result["blockers"] == []
     assert result["operations"] == {
         "submitFollowUpAnswers": {
             "path_id_uuid": True,
@@ -567,18 +564,18 @@ def test_deferred_t022_runtime_contract_gaps_fail_closed():
             "answers_typed": True,
         },
         "createInquiryActionResult": {
-            "path_id_uuid": False,
-            "idempotency_key_declared": False,
+            "path_id_uuid": True,
+            "idempotency_key_declared": True,
         },
     }
 
 
-def test_deferred_t022_runtime_contract_gate_is_reported_separately():
+def test_deferred_t022_runtime_contract_gate_is_ready_separately():
     result = load_module().audit_readiness(environ={})
 
     gate = result["evidence"]["deferred_runtime_contracts"]
-    assert gate["ready"] is False
-    assert gate["blockers"]
+    assert gate["ready"] is True
+    assert gate["blockers"] == []
     assert not any(
         blocker in result["owner_blockers"]
         for blocker in gate["blockers"]
@@ -600,7 +597,7 @@ def test_cli_can_require_deferred_t022_runtime_contracts():
     )
 
     result = json.loads(completed.stdout)
-    assert completed.returncode == 3
+    assert completed.returncode == 0
     assert result["evidence"]["deferred_runtime_contracts"][
         "ready"
-    ] is False
+    ] is True
