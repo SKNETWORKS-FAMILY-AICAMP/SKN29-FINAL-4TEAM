@@ -147,6 +147,8 @@ def audit_readiness() -> dict[str, Any]:
         blockers.append("EVIDENCE_API_CONTRACT_EMPTY")
     if not any(runtime_files.values()):
         blockers.append("EVIDENCE_RUNTIME_STUBS_ONLY")
+    elif not all(runtime_files.values()):
+        blockers.append("EVIDENCE_PUBLIC_RUNTIME_INCOMPLETE")
     if not preparation_example:
         blockers.append("CONTRACT_PREPARATION_EXAMPLE_MISSING")
 

@@ -120,8 +120,27 @@ def test_current_repository_fails_closed_before_t028b_runtime():
         "W5_G04_NOT_PASS",
         "T028A_NOT_COMPLETE",
         "EVIDENCE_API_CONTRACT_EMPTY",
-        "EVIDENCE_RUNTIME_STUBS_ONLY",
+        "EVIDENCE_PUBLIC_RUNTIME_INCOMPLETE",
     ]
+    runtime_files = result["evidence"]["runtime_files"]
+    assert runtime_files[
+        "backend/apps/evidence/repositories/evidence_repository.py"
+    ] is True
+    assert runtime_files[
+        "backend/apps/evidence/services/evidence_card_service.py"
+    ] is True
+    assert runtime_files[
+        "backend/apps/evidence/services/evidence_validation_service.py"
+    ] is True
+    assert runtime_files[
+        "backend/apps/evidence/api/serializers.py"
+    ] is False
+    assert runtime_files[
+        "backend/apps/evidence/api/views.py"
+    ] is False
+    assert runtime_files[
+        "backend/apps/evidence/api/urls.py"
+    ] is False
     assert result["evidence"][
         "contract_preparation_example_ready"
     ] is True
