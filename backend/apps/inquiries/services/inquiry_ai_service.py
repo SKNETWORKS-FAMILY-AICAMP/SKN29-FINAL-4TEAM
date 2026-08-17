@@ -8,6 +8,7 @@ import logging
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
+from decimal import Decimal, InvalidOperation
 from typing import Any
 from uuid import UUID
 
@@ -16,7 +17,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import Max, Prefetch
 from django.utils import timezone
 
-from apps.audit.models import AIRun
+from apps.audit.models import AIRetrievalHit, AIRetrievalRun, AIRun
 from apps.evidence.models import AIChunkCrosswalk, EvidenceLink
 from apps.inquiries.models import (
     Guidance,
@@ -605,8 +606,9 @@ class InquiryAIService:
             saved_questions=saved_questions,
         )
 
-    @staticmethod
+    @classmethod
     def _save_evidence_links(
+        cls,
         *,
         inquiry: Inquiry,
         run: AIRun,
@@ -640,6 +642,13 @@ class InquiryAIService:
         if set(mappings) != set(canonical_ids):
             raise ValueError("Verified evidence mapping disappeared before persistence.")
 
+        lineage_by_chunk = cls._save_retrieval_lineage(
+            inquiry=inquiry,
+            run=run,
+            references=references,
+            mappings=mappings,
+        )
+
         for display_order, (reference, public_id) in enumerate(
             zip(references, verified_evidence_ids, strict=True),
             start=1,
@@ -662,11 +671,17 @@ class InquiryAIService:
                 raise ValueError("Verified evidence snapshot is incomplete.")
 
             page_label = ", ".join(str(value) for value in page_numbers)
+            retrieval_run, retrieval_hit = lineage_by_chunk.get(
+                reference["chunk_id"],
+                (None, None),
+            )
             link = EvidenceLink(
                 inquiry=inquiry,
                 guidance=guidance,
                 ai_run=run,
                 chunk=chunk,
+                retrieval_run=retrieval_run,
+                retrieval_hit=retrieval_hit,
                 selection_origin_code="AUTO_RETRIEVAL",
                 evidence_role_code="SUPPORTING",
                 display_order=display_order,
@@ -690,6 +705,176 @@ class InquiryAIService:
             )
             link.full_clean()
             link.save()
+
+    @classmethod
+    def _save_retrieval_lineage(
+        cls,
+        *,
+        inquiry: Inquiry,
+        run: AIRun,
+        references: list[dict[str, Any]],
+        mappings: dict[str, AIChunkCrosswalk],
+    ) -> dict[str, tuple[AIRetrievalRun, AIRetrievalHit]]:
+        """Persist only retrieval metadata present in the approved contract.
+
+        The success contract exposes selected evidence order and cosine
+        similarity only. Missing scores or inconsistent Crosswalk runtime
+        identity therefore keep the legacy EvidenceLink without inventing
+        candidates, ranks, or model configuration.
+        """
+
+        prepared = cls._prepare_retrieval_lineage(
+            run=run,
+            references=references,
+            mappings=mappings,
+        )
+        if prepared is None:
+            return {}
+
+        try:
+            with transaction.atomic():
+                return cls._persist_retrieval_lineage(
+                    inquiry=inquiry,
+                    run=run,
+                    prepared=prepared,
+                )
+        except Exception as exc:
+            ai_trace_logger.warning(
+                "retrieval_lineage_persistence_failed",
+                extra={
+                    "trace_stage": "RETRIEVAL_LINEAGE_PERSISTENCE_FAILED",
+                    "ai_run_id": str(run.public_id),
+                    "inquiry_id": str(inquiry.public_id),
+                    "correlation_id": str(run.correlation_id),
+                    "failure_type": type(exc).__name__,
+                },
+            )
+            return {}
+
+    @staticmethod
+    def _prepare_retrieval_lineage(
+        *,
+        run: AIRun,
+        references: list[dict[str, Any]],
+        mappings: dict[str, AIChunkCrosswalk],
+    ) -> dict[str, Any] | None:
+        """Return a persistence bundle only when observed metadata is complete."""
+
+        query_text = str(run.input_payload.get("raw_symptom") or "").strip()
+        if not query_text or not references or len(references) > 100:
+            return None
+
+        canonical_ids = [reference.get("chunk_id") for reference in references]
+        if len(set(canonical_ids)) != len(canonical_ids):
+            return None
+
+        scores: list[Decimal] = []
+        try:
+            for reference in references:
+                raw_score = reference.get("similarity_score")
+                if raw_score is None:
+                    return None
+                score = Decimal(str(raw_score)).quantize(Decimal("0.000001"))
+                if not Decimal("-1") <= score <= Decimal("1"):
+                    return None
+                scores.append(score)
+        except (InvalidOperation, TypeError, ValueError):
+            return None
+
+        runtime_identities = {
+            (
+                mapping.embedding_model,
+                mapping.embedding_model_version,
+                mapping.index_version,
+                mapping.chunk_set_sha256,
+                mapping.manifest_schema_version,
+            )
+            for mapping in mappings.values()
+        }
+        if len(runtime_identities) != 1:
+            return None
+
+        (
+            embedding_model,
+            embedding_model_version,
+            index_version,
+            chunk_set_sha256,
+            manifest_schema_version,
+        ) = runtime_identities.pop()
+        return {
+            "query_text": query_text,
+            "scores": scores,
+            "references": references,
+            "mappings": mappings,
+            "embedding_model": embedding_model,
+            "embedding_model_version": embedding_model_version,
+            "index_version": index_version,
+            "chunk_set_sha256": chunk_set_sha256,
+            "manifest_schema_version": manifest_schema_version,
+        }
+
+    @staticmethod
+    def _persist_retrieval_lineage(
+        *,
+        inquiry: Inquiry,
+        run: AIRun,
+        prepared: dict[str, Any],
+    ) -> dict[str, tuple[AIRetrievalRun, AIRetrievalHit]]:
+        """Write one observed retrieval run and its selected evidence hits."""
+
+        query_text = prepared["query_text"]
+        completed_at = run.completed_at or timezone.now()
+        started_at = run.started_at or completed_at
+        retrieval_run = AIRetrievalRun(
+            ai_run=run,
+            inquiry=inquiry,
+            query_text=query_text,
+            query_sha256=hashlib.sha256(query_text.encode("utf-8")).hexdigest(),
+            filter_payload={
+                "model_code": run.input_payload.get("model_code"),
+            },
+            retrieval_config_version=prepared["index_version"],
+            retrieval_config={
+                "index_version": prepared["index_version"],
+                "chunk_set_sha256": prepared["chunk_set_sha256"],
+                "manifest_schema_version": prepared[
+                    "manifest_schema_version"
+                ],
+                "observed_selected_count": len(prepared["references"]),
+            },
+            embedding_model=prepared["embedding_model"],
+            embedding_model_version=prepared["embedding_model_version"],
+            distance_metric_code=AIRetrievalRun.DistanceMetric.COSINE,
+            top_k=len(prepared["references"]),
+            status_code=AIRetrievalRun.Status.SUCCEEDED,
+            started_at=started_at,
+            completed_at=completed_at,
+            correlation_id=run.correlation_id,
+        )
+        retrieval_run.full_clean()
+        retrieval_run.save()
+
+        lineage: dict[str, tuple[AIRetrievalRun, AIRetrievalHit]] = {}
+        for rank_no, (reference, score) in enumerate(
+            zip(prepared["references"], prepared["scores"], strict=True),
+            start=1,
+        ):
+            mapping = prepared["mappings"][reference["chunk_id"]]
+            hit = AIRetrievalHit(
+                retrieval_run=retrieval_run,
+                chunk=mapping.chunk,
+                rank_no=rank_no,
+                vector_score=score,
+                applicability_status_code=(
+                    mapping.canonical_verification_status
+                ),
+                selected_for_answer=True,
+                selected_at=completed_at,
+            )
+            hit.full_clean()
+            hit.save()
+            lineage[reference["chunk_id"]] = (retrieval_run, hit)
+        return lineage
 
     @staticmethod
     def _save_assessment(
