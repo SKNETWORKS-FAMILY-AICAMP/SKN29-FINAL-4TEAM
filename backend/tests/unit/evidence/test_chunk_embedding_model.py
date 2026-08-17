@@ -27,6 +27,7 @@ from apps.evidence.models import (
     SourceDocument,
 )
 from apps.evidence.models.chunk_embedding import EMBEDDING_DIMENSION
+from config.pgvector_compatibility import SUPPORTED_PGVECTOR_VERSIONS
 
 
 pytestmark = pytest.mark.django_db
@@ -423,7 +424,8 @@ def test_postgresql_vector_catalog_and_composite_source_fk():
             ) in cursor.fetchall()
         }
 
-    assert extension_version == ("0.8.6",)
+    assert extension_version is not None
+    assert extension_version[0] in SUPPORTED_PGVECTOR_VERSIONS
     assert vector_type == ("vector(1024)",)
     assert "ck_chunk_embedding_dimension" in constraints
     assert "vector_dims((embedding)::vector)" in constraints[

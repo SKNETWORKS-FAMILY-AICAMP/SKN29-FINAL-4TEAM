@@ -29,6 +29,11 @@ from config.env import (  # noqa: E402
     build_postgres_connection_options,
     load_backend_env,
 )
+from config.pgvector_compatibility import (  # noqa: E402
+    PREFERRED_PGVECTOR_VERSION,
+    SUPPORTED_PGVECTOR_VERSIONS,
+    is_supported_pgvector_version,
+)
 
 
 REQUIRED_ENV_KEYS = (
@@ -56,7 +61,8 @@ EXPECTED_VIEW_COLUMNS = (
 )
 EXPECTED_CHUNK_COUNT = 7
 EXPECTED_CROSSWALK_PAGE_LINK_COUNT = 8
-EXPECTED_PGVECTOR_VERSION = "0.8.6"
+# 이전 Audit 소비자가 참조하는 이름은 우선 버전 Alias로 보존한다.
+EXPECTED_PGVECTOR_VERSION = PREFERRED_PGVECTOR_VERSION
 EXPECTED_EMBEDDING_MODEL = "BAAI/bge-m3"
 EXPECTED_EMBEDDING_REVISION = (
     "5617a9f61b028005a4858fdac845db406aefb181"
@@ -380,7 +386,7 @@ def evaluate_snapshot(
         blockers.append("TEAM_INTEGRATION_DATABASE_MISMATCH")
     if not pgvector_version:
         blockers.append("PGVECTOR_EXTENSION_MISSING")
-    elif pgvector_version != EXPECTED_PGVECTOR_VERSION:
+    elif not is_supported_pgvector_version(pgvector_version):
         blockers.append("PGVECTOR_VERSION_MISMATCH")
     if not snapshot["migrations_table_exists"]:
         blockers.append("DJANGO_MIGRATIONS_TABLE_MISSING")
@@ -429,6 +435,11 @@ def evaluate_snapshot(
             "server_version": snapshot["server_version"],
             "pgvector_version": pgvector_version,
             "expected_pgvector_version": EXPECTED_PGVECTOR_VERSION,
+            "preferred_pgvector_version": PREFERRED_PGVECTOR_VERSION,
+            "supported_pgvector_versions": list(SUPPORTED_PGVECTOR_VERSIONS),
+            "pgvector_version_supported": is_supported_pgvector_version(
+                pgvector_version
+            ),
             "team_integration_required": require_team_database,
         },
         "migrations": {

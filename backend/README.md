@@ -306,6 +306,13 @@ Compose는 `pgvector/pgvector:0.8.6-pg16-bookworm` 이미지를 사용하고
 pgvector 0.8.6은 실제 연결 검사와 Django Migration에서 함께
 검증합니다.
 
+Backend가 명시적으로 검증하는 pgvector 서버 Extension 버전은
+`0.8.2`와 `0.8.6`입니다. 로컬 Docker 기준이자 우선 버전은 계속
+`0.8.6`이며, AWS RDS PostgreSQL 16 프로필에서는 제공 버전인 `0.8.2`를
+사용할 수 있습니다. 그 외 버전은 Readiness Audit에서 차단하며, 버전
+허용만으로 G1-B 완료를 선언하지 않고 vector(1024)·정확 코사인 검색·
+Constraint·Readonly Role 테스트를 같은 환경에서 별도로 통과해야 합니다.
+
 ### 서버와 Health·Auth Smoke
 
 저장소 루트에서 8000 점유 Process를 먼저 확인한 뒤 서버를 시작합니다.
