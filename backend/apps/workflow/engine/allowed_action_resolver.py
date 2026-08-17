@@ -142,7 +142,10 @@ class AllowedActionContext:
         last_handler_id = None
         last_handling_completed_at = None
         latest_resolved_feedback = None
-        if inquiry.status_code == "COMPLETION_PENDING":
+        if (
+            inquiry.status_code == "COMPLETION_PENDING"
+            and actor_role in {"CONSULTANT", "TECHNICIAN"}
+        ):
             completed_consultation = (
                 inquiry.consultations.select_related("consultant")
                 .filter(status="COMPLETED", completed_at__isnull=False)

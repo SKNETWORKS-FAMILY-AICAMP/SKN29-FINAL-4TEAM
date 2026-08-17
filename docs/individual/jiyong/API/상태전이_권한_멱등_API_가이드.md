@@ -107,6 +107,7 @@ Route·Service·권한·이력·PostgreSQL 동시성 Test까지 존재해야
 - Migration 경계: 신규 Migration 없음, `visits.0005` 적용 범위 변경 없음
 - OpenAPI·State Machine·Action Crosswalk 검증 통과
 - Crosswalk: Runtime 17, OpenAPI-only 2, Deferred 4
+- 고객 `COMPLETION_PENDING` Snapshot: 2 Query 유지, 불필요한 최종 처리자 조회 없음
 
 ## 9. 검증 명령
 
