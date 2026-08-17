@@ -34,6 +34,21 @@ class IsConsultant(BasePermission):
         )
 
 
+class IsCompletionStaff(BasePermission):
+    """Allow staff roles named by FINALIZE_INQUIRY."""
+
+    def has_permission(self, request, view) -> bool:
+        del view
+        user = getattr(request, "user", None)
+        return bool(
+            user is not None
+            and getattr(user, "is_authenticated", False)
+            and getattr(user, "is_active", False)
+            and getattr(user, "role_code", None)
+            in {"CONSULTANT", "TECHNICIAN"}
+        )
+
+
 class CanAttemptInquiryCancel(BasePermission):
     """Allow only roles named by CANCEL_INQUIRY before object masking."""
 

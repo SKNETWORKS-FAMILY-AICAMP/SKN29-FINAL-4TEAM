@@ -13,7 +13,11 @@ from apps.inquiries.api.views import (
     CustomerInquiryQuestionsView,
     CustomerInquirySnapshotView,
     RegisterConsultantPhoneInquiryView,
+    FinalizeInquiryView,
+    ReportUnresolvedView,
     RequestConsultationView,
+    ResumeConsultationView,
+    SubmitResolutionFeedbackView,
     SubmitSymptomView,
     SubmitFollowUpAnswersView,
 )
@@ -79,6 +83,26 @@ urlpatterns = [
         "inquiries/<uuid:inquiry_id>/action-results",
         CreateActionResultView.as_view(),
         name="inquiry-create-action-result",
+    ),
+    path(
+        "inquiries/<uuid:inquiry_id>/resolution-feedback",
+        SubmitResolutionFeedbackView.as_view(),
+        name="inquiry-resolution-feedback",
+    ),
+    path(
+        "inquiries/<uuid:inquiry_id>/report-unresolved",
+        ReportUnresolvedView.as_view(),
+        name="inquiry-report-unresolved",
+    ),
+    path(
+        "inquiries/<uuid:inquiry_id>/resume-consultation",
+        ResumeConsultationView.as_view(),
+        name="inquiry-resume-consultation",
+    ),
+    path(
+        "inquiries/<uuid:inquiry_id>/finalize",
+        FinalizeInquiryView.as_view(),
+        name="inquiry-finalize",
     ),
     path(
         "inquiries/<uuid:inquiry_id>/request-consultation",

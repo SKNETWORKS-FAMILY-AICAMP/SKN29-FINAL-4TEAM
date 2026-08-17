@@ -342,11 +342,15 @@ def test_action_results_and_week5_runtime_statuses_are_explicit():
 
     for path in ("/inquiries/{id}/action-results",):
         assert list(collect_external_values(inquiry_paths[path])) == []
-    pending = {
+    implemented = {
         "/inquiries/{id}/resolution-feedback": workflow_paths,
         "/inquiries/{id}/finalize": workflow_paths,
         "/inquiries/{id}/report-unresolved": workflow_paths,
         "/inquiries/{id}/resume-consultation": workflow_paths,
+    }
+    for path, document in implemented.items():
+        assert document[path]["post"]["x-runtime-status"] == "IMPLEMENTED"
+    pending = {
         "/visits/{visit_id}/start": visit_paths,
         "/visits/{visit_id}/complete": visit_paths,
     }

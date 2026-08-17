@@ -91,6 +91,9 @@ class AllowedActionContext:
     technician_active: bool = False
     technician_synthetic: bool = False
     technician_role: str | None = None
+    completion_source: str | None = None
+    actor_is_last_handler: bool = False
+    fresh_resolved_feedback_exists: bool = False
 
     @classmethod
     def from_models(
@@ -135,6 +138,48 @@ class AllowedActionContext:
             permissions.add("INQUIRY_CANCEL")
 
         technician = getattr(visit, "technician", None) if visit else None
+        completion_source = None
+        last_handler_id = None
+        last_handling_completed_at = None
+        latest_resolved_feedback = None
+        if inquiry.status_code == "COMPLETION_PENDING":
+            completed_consultation = (
+                inquiry.consultations.select_related("consultant")
+                .filter(status="COMPLETED", completed_at__isnull=False)
+                .order_by("-completed_at", "-id")
+                .first()
+            )
+            completed_visit = (
+                inquiry.visits.select_related("technician")
+                .filter(status="COMPLETED", completed_at__isnull=False)
+                .order_by("-completed_at", "-id")
+                .first()
+            )
+            if completed_visit is not None and (
+                completed_consultation is None
+                or completed_visit.completed_at
+                >= completed_consultation.completed_at
+            ):
+                completion_source = "VISIT"
+                last_handler_id = completed_visit.technician_id
+                last_handling_completed_at = completed_visit.completed_at
+            elif completed_consultation is not None:
+                completion_source = "CONSULTATION"
+                last_handler_id = completed_consultation.consultant_id
+                last_handling_completed_at = completed_consultation.completed_at
+            latest_resolved_feedback = (
+                inquiry.followup_confirmations.filter(
+                    resolution_status_code="RESOLVED"
+                )
+                .order_by("-created_at", "-id")
+                .first()
+            )
+        fresh_resolved_feedback_exists = bool(
+            latest_resolved_feedback is not None
+            and last_handling_completed_at is not None
+            and latest_resolved_feedback.created_at
+            > last_handling_completed_at
+        )
         customer = getattr(getattr(inquiry, "subscription", None), "customer", None)
         product_present = bool(
             getattr(getattr(inquiry, "subscription", None), "product_model_id", None)
@@ -192,6 +237,14 @@ class AllowedActionContext:
                 getattr(technician, "is_synthetic", False)
             ),
             technician_role=getattr(technician, "role_code", None),
+            completion_source=completion_source,
+            actor_is_last_handler=(
+                last_handler_id is not None
+                and last_handler_id == getattr(actor, "pk", None)
+            ),
+            fresh_resolved_feedback_exists=(
+                fresh_resolved_feedback_exists
+            ),
         )
 
 
@@ -293,8 +346,15 @@ class AllowedActionResolver:
             "G-STATE-VERSION",
             "G-IDEMPOTENCY-KEY",
             "G-CANCELLATION-REASON",
+            "G-RESOLUTION-FEEDBACK-RESOLVED",
+            "G-UNRESOLVED-FEEDBACK-VALID",
+            "G-FINALIZATION-PAYLOAD-VALID",
         }:
             return True
+        if guard_id == "G-ACTOR-LAST-HANDLER":
+            return context.actor_is_last_handler
+        if guard_id == "G-RESOLVED-CUSTOMER-FEEDBACK-EXISTS":
+            return context.fresh_resolved_feedback_exists
         if guard_id == "G-SYMPTOM-PAYLOAD-VALID":
             return context.symptom_payload_valid
         if guard_id == "G-FOLLOWUP-ANSWERS-VALID":

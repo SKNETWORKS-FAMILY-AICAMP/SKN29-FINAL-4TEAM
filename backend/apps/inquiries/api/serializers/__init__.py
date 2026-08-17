@@ -35,6 +35,13 @@ from apps.inquiries.api.serializers.request_consultation import (
     RequestConsultationResponseSerializer,
     RequestConsultationSerializer,
 )
+from apps.inquiries.api.serializers.resolution_feedback import (
+    FinalizeInquiryRequestSerializer,
+    ReportUnresolvedRequestSerializer,
+    ResolutionFeedbackRequestSerializer,
+    ResolutionTransitionResponseSerializer,
+    StateVersionRequestSerializer,
+)
 from apps.inquiries.api.serializers.followup_answers import (
     SubmitFollowUpAnswersResponseSerializer,
     SubmitFollowUpAnswersSerializer,
@@ -65,6 +72,11 @@ __all__ = [
     "RegisterConsultantPhoneInquirySerializer",
     "RequestConsultationResponseSerializer",
     "RequestConsultationSerializer",
+    "FinalizeInquiryRequestSerializer",
+    "ReportUnresolvedRequestSerializer",
+    "ResolutionFeedbackRequestSerializer",
+    "ResolutionTransitionResponseSerializer",
+    "StateVersionRequestSerializer",
     "SubmitFollowUpAnswersResponseSerializer",
     "SubmitFollowUpAnswersSerializer",
     "SubmitSymptomResponseSerializer",

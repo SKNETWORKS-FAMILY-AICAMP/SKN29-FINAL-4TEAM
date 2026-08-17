@@ -229,15 +229,15 @@ EXPECTED_OPERATIONS = {
         "runtime_path": (
             f"/api/v1/inquiries/{INQUIRY_ID}/resolution-feedback"
         ),
-        "url_name": None,
-        "view_name": None,
+        "url_name": "inquiry-resolution-feedback",
+        "view_name": "SubmitResolutionFeedbackView",
     },
     ("/inquiries/{id}/finalize", "post"): {
         "operation_id": "finalizeInquiry",
         "contract_status": "CONFIRMED",
         "runtime_path": f"/api/v1/inquiries/{INQUIRY_ID}/finalize",
-        "url_name": None,
-        "view_name": None,
+        "url_name": "inquiry-finalize",
+        "view_name": "FinalizeInquiryView",
     },
     ("/inquiries/{id}/report-unresolved", "post"): {
         "operation_id": "reportUnresolved",
@@ -245,8 +245,8 @@ EXPECTED_OPERATIONS = {
         "runtime_path": (
             f"/api/v1/inquiries/{INQUIRY_ID}/report-unresolved"
         ),
-        "url_name": None,
-        "view_name": None,
+        "url_name": "inquiry-report-unresolved",
+        "view_name": "ReportUnresolvedView",
     },
     ("/inquiries/{id}/resume-consultation", "post"): {
         "operation_id": "resumeConsultation",
@@ -254,8 +254,8 @@ EXPECTED_OPERATIONS = {
         "runtime_path": (
             f"/api/v1/inquiries/{INQUIRY_ID}/resume-consultation"
         ),
-        "url_name": None,
-        "view_name": None,
+        "url_name": "inquiry-resume-consultation",
+        "view_name": "ResumeConsultationView",
     },
     ("/inquiries/{id}/action-results", "post"): {
         "operation_id": "createInquiryActionResult",
@@ -422,7 +422,7 @@ def test_openapi_operation_inventory_is_exactly_forty_two():
         )
 
 
-def test_thirty_five_operations_resolve_to_expected_runtime_views():
+def test_thirty_nine_operations_resolve_to_expected_runtime_views():
     implemented = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -431,7 +431,7 @@ def test_thirty_five_operations_resolve_to_expected_runtime_views():
         )
     ]
 
-    assert len(implemented) == 35
+    assert len(implemented) == 39
     for (_, method), expected in implemented:
         match = resolve(expected["runtime_path"])
         assert match.url_name == expected["url_name"]
@@ -441,7 +441,7 @@ def test_thirty_five_operations_resolve_to_expected_runtime_views():
             assert callable(getattr(view_class, method, None))
 
 
-def test_seven_openapi_only_operations_have_no_runtime_method():
+def test_three_openapi_only_operations_have_no_runtime_method():
     openapi_only = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -450,7 +450,7 @@ def test_seven_openapi_only_operations_have_no_runtime_method():
         )
     ]
 
-    assert len(openapi_only) == 7
+    assert len(openapi_only) == 3
     for (_, method), expected in openapi_only:
         match = resolve(expected["runtime_path"])
         if expected["url_name"] is None:

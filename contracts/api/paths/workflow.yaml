@@ -200,7 +200,7 @@
     summary: 고객 해결 피드백 제출
     description: 해결 피드백만으로 문의를 RESOLVED 처리하지 않는다.
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: SUBMIT_RESOLUTION_FEEDBACK
       transition_rule: TR-INQ-029
@@ -249,7 +249,7 @@
     summary: 마지막 처리 담당자의 문의 최종 완료
     description: 최신 해결됨 피드백과 마지막 처리 담당자 Guard를 모두 통과해야 한다.
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: FINALIZE_INQUIRY
       transition_rule: TR-INQ-033
@@ -297,7 +297,7 @@
     operationId: reportUnresolved
     summary: 고객 미해결 보고
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: CUSTOMER_REPORTED_UNRESOLVED
       transition_rule: TR-INQ-030
@@ -345,7 +345,7 @@
     operationId: resumeConsultation
     summary: 재개 문의를 상담 대기열로 복귀
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     x-state-machine:
       event: RESUME_CONSULTATION
       transition_rule: TR-INQ-032
