@@ -2,21 +2,29 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
+from threading import Barrier, local
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+from django.db import connection, connections
 from django.utils import timezone
 from rest_framework.exceptions import NotFound
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
 from apps.care.models import CareRecord
+from apps.care.repositories.care_history_repository import (
+    CareHistoryRepository,
+)
 from apps.care.services.care_history_service import CareHistoryService
 from apps.inquiries.models import Inquiry
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
 from apps.workflow.models import IdempotencyRecord
+from apps.workflow.repositories.workflow_repository import WorkflowRepository
 
 
 pytestmark = pytest.mark.django_db
@@ -113,6 +121,52 @@ def list_path(subscription: CustomerSubscription) -> str:
     return f"/api/v1/me/subscriptions/{subscription.public_id}/care-records"
 
 
+def concurrent_create_care(
+    *,
+    actor_id: int,
+    subscription_id,
+    key: str,
+    payload: dict,
+    barrier: Barrier,
+) -> tuple[int, dict]:
+    """Issue one care create request with a thread-local DB connection."""
+
+    connections.close_all()
+    try:
+        actor = User.objects.get(pk=actor_id)
+        client = client_for(actor)
+        barrier.wait(timeout=10)
+        response = client.post(
+            "/api/v1/me/subscriptions/"
+            f"{subscription_id}/care-records",
+            payload,
+            format="json",
+            **headers(key),
+        )
+        return response.status_code, response.json()
+    finally:
+        connections.close_all()
+
+
+def customer_lock_barrier(barrier: Barrier):
+    """Make both PostgreSQL requests contend for the customer row lock."""
+
+    original = CareHistoryRepository.lock_customer
+    thread_state = local()
+
+    def synchronized_lock(*args, **kwargs):
+        if not getattr(thread_state, "lock_attempted", False):
+            thread_state.lock_attempted = True
+            barrier.wait(timeout=10)
+        return original(*args, **kwargs)
+
+    return patch.object(
+        CareHistoryRepository,
+        "lock_customer",
+        side_effect=synchronized_lock,
+    )
+
+
 def test_create_self_care_derives_safe_result_and_replays_once():
     owner = create_user(1)
     subscription = create_subscription(owner, create_product(1), 1)
@@ -185,6 +239,169 @@ def test_same_key_different_payload_conflicts_without_second_write():
     assert CareRecord.objects.count() == 1
 
 
+@pytest.mark.django_db(transaction=True)
+def test_postgresql_concurrent_create_same_key_is_one_write_and_one_replay():
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL row-lock verification only")
+
+    owner = create_user(90)
+    subscription = create_subscription(owner, create_product(90), 90)
+    payload = {
+        "care_type_code": "FILTER_REPLACEMENT",
+        "performed_on": "2026-08-10",
+    }
+    request_barrier = Barrier(2)
+    lock_barrier = Barrier(2)
+    with customer_lock_barrier(lock_barrier), ThreadPoolExecutor(
+        max_workers=2
+    ) as executor:
+        futures = [
+            executor.submit(
+                concurrent_create_care,
+                actor_id=owner.pk,
+                subscription_id=subscription.public_id,
+                key="t019-concurrent-same-key",
+                payload=payload,
+                barrier=request_barrier,
+            )
+            for _ in range(2)
+        ]
+        results = [future.result(timeout=30) for future in futures]
+
+    assert sorted(status for status, _payload in results) == [201, 201]
+    assert sorted(
+        response["data"]["idempotent_replay"]
+        for _status, response in results
+    ) == [False, True]
+    resource_ids = {
+        response["data"]["care_record_id"]
+        for _status, response in results
+    }
+    assert len(resource_ids) == 1
+    assert CareRecord.objects.count() == 1
+    assert IdempotencyRecord.objects.filter(
+        actor=owner,
+        operation_id="createMyCareRecord",
+        idempotency_key="t019-concurrent-same-key",
+    ).count() == 1
+
+
+@pytest.mark.django_db(transaction=True)
+def test_postgresql_concurrent_same_key_different_payload_has_one_winner():
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL row-lock verification only")
+
+    owner = create_user(91)
+    subscription = create_subscription(owner, create_product(91), 91)
+    payloads = (
+        {
+            "care_type_code": "FILTER_REPLACEMENT",
+            "performed_on": "2026-08-09",
+        },
+        {
+            "care_type_code": "CLEANING",
+            "performed_on": "2026-08-10",
+        },
+    )
+    request_barrier = Barrier(2)
+    lock_barrier = Barrier(2)
+    with customer_lock_barrier(lock_barrier), ThreadPoolExecutor(
+        max_workers=2
+    ) as executor:
+        futures = [
+            executor.submit(
+                concurrent_create_care,
+                actor_id=owner.pk,
+                subscription_id=subscription.public_id,
+                key="t019-concurrent-conflicting-payload",
+                payload=payload,
+                barrier=request_barrier,
+            )
+            for payload in payloads
+        ]
+        outcomes = [
+            (payload, future.result(timeout=30))
+            for payload, future in zip(payloads, futures, strict=True)
+        ]
+
+    assert sorted(result[0] for _payload, result in outcomes) == [201, 409]
+    conflict = next(
+        response
+        for _request, (status, response) in outcomes
+        if status == 409
+    )
+    assert conflict["error"]["code"] == "DUPLICATE-EVENT-01"
+    winner_request, (_status, winner_response) = next(
+        outcome for outcome in outcomes if outcome[1][0] == 201
+    )
+    care = CareRecord.objects.get()
+    assert care.care_type_code == winner_request["care_type_code"]
+    assert care.performed_on == date.fromisoformat(
+        winner_request["performed_on"]
+    )
+    assert winner_response["data"]["care_record_id"] == str(care.public_id)
+    assert IdempotencyRecord.objects.filter(
+        actor=owner,
+        operation_id="createMyCareRecord",
+        idempotency_key="t019-concurrent-conflicting-payload",
+    ).count() == 1
+
+
+@pytest.mark.django_db(transaction=True)
+def test_postgresql_concurrent_new_keys_preserve_both_care_records():
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL row-lock verification only")
+
+    owner = create_user(92)
+    subscription = create_subscription(owner, create_product(92), 92)
+    requests = (
+        (
+            "t019-concurrent-key-a",
+            {
+                "care_type_code": "FILTER_REPLACEMENT",
+                "performed_on": "2026-08-09",
+            },
+        ),
+        (
+            "t019-concurrent-key-b",
+            {
+                "care_type_code": "CLEANING",
+                "performed_on": "2026-08-10",
+            },
+        ),
+    )
+    request_barrier = Barrier(2)
+    lock_barrier = Barrier(2)
+    with customer_lock_barrier(lock_barrier), ThreadPoolExecutor(
+        max_workers=2
+    ) as executor:
+        futures = [
+            executor.submit(
+                concurrent_create_care,
+                actor_id=owner.pk,
+                subscription_id=subscription.public_id,
+                key=key,
+                payload=payload,
+                barrier=request_barrier,
+            )
+            for key, payload in requests
+        ]
+        results = [future.result(timeout=30) for future in futures]
+
+    assert [status for status, _payload in results] == [201, 201]
+    assert CareRecord.objects.filter(subscription=subscription).count() == 2
+    assert set(
+        CareRecord.objects.filter(subscription=subscription).values_list(
+            "care_type_code",
+            flat=True,
+        )
+    ) == {"FILTER_REPLACEMENT", "CLEANING"}
+    assert IdempotencyRecord.objects.filter(
+        actor=owner,
+        operation_id="createMyCareRecord",
+    ).count() == 2
+
+
 def test_list_returns_completed_only_ordered_and_paginated():
     owner = create_user(1)
     subscription = create_subscription(owner, create_product(1), 1)
@@ -241,6 +458,67 @@ def test_detail_and_list_hide_owner_status_and_product_scope():
         response = client.get(path)
         assert response.status_code == 404
         assert response.json()["error"]["code"] == "RESOURCE_NOT_FOUND"
+
+
+def test_create_masks_other_inactive_unsupported_and_unknown_subscriptions():
+    owner = create_user(10)
+    other = create_user(11)
+    supported = create_product(10)
+    unsupported = create_product(11, model_code="OTHER-MODEL")
+    hidden_subscriptions = (
+        create_subscription(other, supported, 10),
+        create_subscription(owner, supported, 11, status="EXPIRED"),
+        create_subscription(owner, unsupported, 12),
+    )
+    paths = [list_path(subscription) for subscription in hidden_subscriptions]
+    paths.append(f"/api/v1/me/subscriptions/{uuid4()}/care-records")
+    client = client_for(owner)
+
+    for sequence, path in enumerate(paths, start=1):
+        response = client.post(
+            path,
+            {
+                "care_type_code": "CLEANING",
+                "performed_on": "2026-08-10",
+            },
+            format="json",
+            **headers(f"t019-hidden-write-{sequence}"),
+        )
+        assert response.status_code == 404
+        assert response.json()["error"]["code"] == "RESOURCE_NOT_FOUND"
+
+    assert CareRecord.objects.count() == 0
+    assert IdempotencyRecord.objects.count() == 0
+
+
+def test_create_rolls_back_care_and_idempotency_on_late_failure(monkeypatch):
+    owner = create_user(12)
+    subscription = create_subscription(owner, create_product(12), 12)
+
+    def fail_completion(*args, **kwargs):
+        del args, kwargs
+        raise RuntimeError("private-t019-late-error")
+
+    monkeypatch.setattr(
+        WorkflowRepository,
+        "complete_idempotency_record",
+        fail_completion,
+    )
+    response = client_for(owner).post(
+        list_path(subscription),
+        {
+            "care_type_code": "CLEANING",
+            "performed_on": "2026-08-10",
+        },
+        format="json",
+        **headers("t019-create-rollback"),
+    )
+
+    assert response.status_code == 500
+    assert response.json()["error"]["code"] == "INTERNAL_ERROR"
+    assert "private-t019-late-error" not in response.content.decode()
+    assert CareRecord.objects.count() == 0
+    assert IdempotencyRecord.objects.count() == 0
 
 
 @pytest.mark.parametrize(
