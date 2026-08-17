@@ -20,6 +20,10 @@ from apps.care.models.care_schedule import (
 from apps.care.repositories.care_schedule_repository import (
     CareScheduleRepository,
 )
+from apps.care.services.care_cycle_rule_registry import (
+    ApprovedCareCycleRuleRegistry,
+)
+from apps.subscriptions.models import CustomerSubscription
 
 
 BUSINESS_TIMEZONE = ZoneInfo("Asia/Seoul")
@@ -74,6 +78,50 @@ class CareScheduleService:
         subscription = CareScheduleRepository.lock_eligible_subscription(
             subscription_public_id
         )
+        return cls._recalculate_locked(
+            subscription=subscription,
+            rule=rule,
+            change_reason=change_reason,
+        )
+
+    @classmethod
+    @transaction.atomic
+    def recalculate_from_registry(
+        cls,
+        *,
+        subscription_public_id: UUID,
+        care_type_code: str,
+        registry: ApprovedCareCycleRuleRegistry,
+        change_reason: str,
+    ) -> CareScheduleMutationOutcome:
+        """Resolve an exact approved rule while holding the subscription lock."""
+
+        if care_type_code not in CareRecord.CareType.values:
+            raise ValueError("care_type_code is not in the CareRecord contract")
+        subscription = CareScheduleRepository.lock_eligible_subscription(
+            subscription_public_id
+        )
+        rule = registry.resolve(
+            product_model_code=subscription.product_model.model_code,
+            management_type_code=subscription.management_type_code,
+            care_type_code=care_type_code,
+        )
+        return cls._recalculate_locked(
+            subscription=subscription,
+            rule=rule,
+            change_reason=change_reason,
+        )
+
+    @classmethod
+    def _recalculate_locked(
+        cls,
+        *,
+        subscription: CustomerSubscription,
+        rule: CareCycleRule | None,
+        change_reason: str,
+    ) -> CareScheduleMutationOutcome:
+        """Recalculate after the caller has serialized the subscription row."""
+
         if rule is None:
             schedule = cls.calculate(
                 base_on=subscription.started_on,
