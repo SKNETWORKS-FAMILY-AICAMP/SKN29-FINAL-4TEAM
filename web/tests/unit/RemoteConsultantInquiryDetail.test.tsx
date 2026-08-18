@@ -59,15 +59,58 @@ function createDetail(
 }
 
 describe("Remote 상담사 문의 상세", () => {
-  it("LOW·관리 유형·최근 관리일 null을 계약대로 표시한다", () => {
-    render(<RemoteConsultantInquiryDetail inquiry={createDetail()} />);
+  it("최근 관리일 null은 관리 이력 없음으로 표시하고 날짜 요소를 만들지 않는다", () => {
+    const { container } = render(
+      <RemoteConsultantInquiryDetail inquiry={createDetail()} />,
+    );
 
     expect(screen.getByText("LOW")).toBeInTheDocument();
     expect(screen.getByText("방문 관리")).toBeInTheDocument();
     expect(screen.getByText("관리 이력 없음")).toBeInTheDocument();
+    expect(container.querySelector("time")).not.toBeInTheDocument();
     expect(screen.getByText("제한 정보 미제공")).toBeInTheDocument();
     expect(screen.getByText("AI 안내 미제공 / 상담 검토 필요")).toBeInTheDocument();
     expect(screen.getByText("공개 근거 미제공 / 상담 검토 필요")).toBeInTheDocument();
+  });
+
+  it("담당 문의의 안전 Projection 최근 관리일을 날짜 이동 없이 표시한다", () => {
+    render(
+      <RemoteConsultantInquiryDetail
+        inquiry={createDetail({
+          productAndCare: {
+            productModel: "SYN-WP-01",
+            subscriptionStatus: "ACTIVE",
+            managementType: "VISIT_CARE",
+            recentCareDate: "2026-08-01",
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText("2026. 8. 1.")).toHaveAttribute(
+      "datetime",
+      "2026-08-01",
+    );
+  });
+
+  it("잘못된 최근 관리일은 원문과 날짜 속성을 숨기고 확인 필요로 표시한다", () => {
+    const { container } = render(
+      <RemoteConsultantInquiryDetail
+        inquiry={createDetail({
+          productAndCare: {
+            productModel: "SYN-WP-01",
+            subscriptionStatus: "ACTIVE",
+            managementType: "VISIT_CARE",
+            recentCareDate: "2026-02-31",
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText("최근 관리일 확인 필요")).toBeInTheDocument();
+    expect(screen.queryByText("2026-02-31")).not.toBeInTheDocument();
+    expect(container.querySelector("time")).not.toBeInTheDocument();
+    expect(container.innerHTML).not.toContain("2026-02-31");
   });
 
   it("실제 Backend AI Guidance가 있으면 원문 그대로 표시한다", () => {
