@@ -1,6 +1,10 @@
 package com.skn29.watercare.core.network
 
 import com.skn29.watercare.core.model.ApiEnvelope
+import com.skn29.watercare.core.model.CareHistoryCreateRequestDto
+import com.skn29.watercare.core.model.CareHistoryItemDto
+import com.skn29.watercare.core.model.CareHistoryListDataDto
+import com.skn29.watercare.core.model.CareHistoryMutationResultDto
 import com.skn29.watercare.core.model.CustomerActiveInquiryDataDto
 import com.skn29.watercare.core.model.CancelInquiryRequest
 import com.skn29.watercare.core.model.CancelInquiryResponse
@@ -62,6 +66,26 @@ interface WaterCareApi {
     suspend fun mySubscription(
         @Path("subscriptionId") subscriptionId: String,
     ): Response<ApiEnvelope<SubscriptionDetailDto>>
+
+    @GET("api/v1/me/subscriptions/{subscriptionId}/care-records")
+    suspend fun myCareRecords(
+        @Path("subscriptionId") subscriptionId: String,
+        @Query("page") page: Int = 1,
+        @Query("size") size: Int = 20,
+    ): Response<ApiEnvelope<CareHistoryListDataDto>>
+
+    @GET("api/v1/me/subscriptions/{subscriptionId}/care-records/{careRecordId}")
+    suspend fun myCareRecord(
+        @Path("subscriptionId") subscriptionId: String,
+        @Path("careRecordId") careRecordId: String,
+    ): Response<ApiEnvelope<CareHistoryItemDto>>
+
+    @POST("api/v1/me/subscriptions/{subscriptionId}/care-records")
+    suspend fun createMyCareRecord(
+        @Path("subscriptionId") subscriptionId: String,
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: CareHistoryCreateRequestDto,
+    ): Response<ApiEnvelope<CareHistoryMutationResultDto>>
 
     @POST("api/v1/inquiries")
     suspend fun createInquiry(

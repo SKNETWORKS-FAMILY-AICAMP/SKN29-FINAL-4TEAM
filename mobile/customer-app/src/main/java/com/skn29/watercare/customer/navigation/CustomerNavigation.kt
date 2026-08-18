@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.customer.feature.auth.LoginScreen
+import com.skn29.watercare.customer.feature.customer.care.CareHistoryScreen
 import com.skn29.watercare.customer.feature.customer.guidance.FollowUpQuestionsScreen
 import com.skn29.watercare.customer.feature.customer.guidance.GuidanceScreen
 import com.skn29.watercare.customer.feature.customer.home.CustomerHomeScreen
@@ -79,11 +80,42 @@ fun CustomerNavigation() {
                         )
                     )
                 },
+                onOpenCare = {
+                    navController.navigate(
+                        CustomerRoute.CARE
+                    ) {
+                        launchSingleTop = true
+                    }
+                },
                 onLogout = {
                     navController.navigate(
                         CustomerRoute.LOGIN
                     ) {
                         popUpTo(CustomerRoute.HOME) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
+
+        composable(
+            route = CustomerRoute.CARE,
+        ) {
+            CareHistoryScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                onAuthExpired = {
+                    navController.navigate(
+                        CustomerRoute.LOGIN
+                    ) {
+                        popUpTo(
+                            navController
+                                .graph
+                                .startDestinationId
+                        ) {
                             inclusive = true
                         }
                         launchSingleTop = true
