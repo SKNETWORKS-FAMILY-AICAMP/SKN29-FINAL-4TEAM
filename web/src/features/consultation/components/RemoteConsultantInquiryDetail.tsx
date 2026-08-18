@@ -12,6 +12,39 @@ interface RemoteConsultantInquiryDetailProps {
   onRefresh?: () => void;
 }
 
+const CONTRACT_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+interface RecentCareDatePresentation {
+  dateTime: string | null;
+  label: string;
+}
+
+function getRecentCareDatePresentation(
+  value: string | null,
+): RecentCareDatePresentation {
+  if (value === null) {
+    return { dateTime: null, label: "관리 이력 없음" };
+  }
+
+  const matched = CONTRACT_DATE_PATTERN.exec(value);
+  if (!matched) {
+    return { dateTime: null, label: "최근 관리일 확인 필요" };
+  }
+
+  const year = Number(matched[1]);
+  const month = Number(matched[2]);
+  const day = Number(matched[3]);
+  const lastDayOfMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  if (month < 1 || month > 12 || day < 1 || day > lastDayOfMonth) {
+    return { dateTime: null, label: "최근 관리일 확인 필요" };
+  }
+
+  return {
+    dateTime: value,
+    label: `${year}. ${month}. ${day}.`,
+  };
+}
+
 export default function RemoteConsultantInquiryDetail({
   inquiry,
   onOpenVisit,
@@ -22,6 +55,9 @@ export default function RemoteConsultantInquiryDetail({
   );
   const usageGuidanceMessage =
     inquiry.guidanceAndActions.usageGuidanceMessage?.trim() ?? "";
+  const recentCareDate = getRecentCareDatePresentation(
+    inquiry.productAndCare?.recentCareDate ?? null,
+  );
 
   return (
     <div className="remote-inquiry-detail" aria-label="실제 API 문의 상세">
@@ -84,7 +120,15 @@ export default function RemoteConsultantInquiryDetail({
             </div>
             <div>
               <dt>최근 관리일</dt>
-              <dd>{inquiry.productAndCare.recentCareDate ?? "관리 이력 없음"}</dd>
+              <dd>
+                {recentCareDate.dateTime ? (
+                  <time dateTime={recentCareDate.dateTime}>
+                    {recentCareDate.label}
+                  </time>
+                ) : (
+                  recentCareDate.label
+                )}
+              </dd>
             </div>
           </dl>
         ) : (
