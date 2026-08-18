@@ -53,6 +53,7 @@ EXPECTED_JSON_FILES = {
     "inquiries/consultant-inquiry-list-success.json",
     "inquiries/customer-active-inquiry-empty.json",
     "inquiries/customer-active-inquiry-success.json",
+    "inquiries/customer-timeout-snapshot-success.json",
     "inquiries/start-inquiry-replay-response.json",
     "inquiries/start-inquiry-request.json",
     "inquiries/start-inquiry-success-response.json",

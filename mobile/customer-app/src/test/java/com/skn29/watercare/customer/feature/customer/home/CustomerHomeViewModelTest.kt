@@ -123,7 +123,7 @@ class CustomerHomeViewModelTest {
             val state = viewModel.state.value
             assertEquals("sub-ended", state.home?.subscriptionId)
             assertFalse(state.intakeAvailable)
-            assertTrue(state.intakeUnavailableReason.orEmpty().contains("활성 구독"))
+            assertEquals("현재 이용 중인 정수기에서만 문의를 시작할 수 있어요.", state.intakeUnavailableReason)
         }
 
     @Test
@@ -143,7 +143,7 @@ class CustomerHomeViewModelTest {
 
             val state = viewModel.state.value
             assertFalse(state.intakeAvailable)
-            assertTrue(state.intakeUnavailableReason.orEmpty().contains(P0_SUPPORTED_MODEL_CODE))
+            assertEquals("이 정수기는 현재 문의 기능을 이용할 수 없어요.", state.intakeUnavailableReason)
         }
 
     @Test

@@ -53,7 +53,7 @@ def ready_snapshot(module: ModuleType) -> dict[str, object]:
     return {
         "database_name": module.TEAM_INTEGRATION_DATABASE,
         "server_version": "16.14",
-        "pgvector_version": module.EXPECTED_PGVECTOR_VERSION,
+        "pgvector_version": module.PREFERRED_PGVECTOR_VERSION,
         "migrations_table_exists": True,
         "applied_migrations": list(module.REQUIRED_MIGRATIONS),
         "crosswalk_table_exists": True,
@@ -95,8 +95,45 @@ def test_ready_requires_all_crosswalk_view_and_role_gates(
     }
     assert result["database"]["pgvector_version"] == "0.8.6"
     assert result["database"]["expected_pgvector_version"] == "0.8.6"
+    assert result["database"]["preferred_pgvector_version"] == "0.8.6"
+    assert result["database"]["supported_pgvector_versions"] == [
+        "0.8.2",
+        "0.8.6",
+    ]
+    assert result["database"]["pgvector_version_supported"] is True
     assert result["ai_readonly_role"]["view_select"] is True
     assert result["ai_readonly_role"]["base_table_select"] is False
+
+
+@pytest.mark.parametrize("version", ["0.8.2", "0.8.6"])
+def test_explicitly_supported_pgvector_versions_are_ready(
+    audit_module: ModuleType,
+    version: str,
+):
+    snapshot = ready_snapshot(audit_module)
+    snapshot["pgvector_version"] = version
+
+    result = audit_module.evaluate_snapshot(snapshot)
+
+    assert result["status"] == "READY"
+    assert result["blockers"] == []
+    assert result["database"]["pgvector_version"] == version
+    assert result["database"]["pgvector_version_supported"] is True
+
+
+@pytest.mark.parametrize("version", ["0.7.4", "0.8.1", "0.8.3", "0.9.0"])
+def test_unverified_pgvector_versions_fail_closed(
+    audit_module: ModuleType,
+    version: str,
+):
+    snapshot = ready_snapshot(audit_module)
+    snapshot["pgvector_version"] = version
+
+    result = audit_module.evaluate_snapshot(snapshot)
+
+    assert result["status"] == "BLOCKED"
+    assert "PGVECTOR_VERSION_MISMATCH" in result["blockers"]
+    assert result["database"]["pgvector_version_supported"] is False
 
 
 @pytest.mark.parametrize(

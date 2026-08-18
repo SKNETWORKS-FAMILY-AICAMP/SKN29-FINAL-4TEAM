@@ -295,6 +295,21 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
         ),
         "items": {"$ref": "../workflow/AllowedAction.yaml"},
     }
+    assert "system_notice" not in snapshot_schema["required"]
+    assert snapshot_schema["properties"]["system_notice"] == {
+        "description": (
+            "고객 상세 조회 시 현재 상태 진입 원인이 AI 처리 시간 초과이면 "
+            "Backend가 제공하는 고정 안내문이며 그 외에는 null"
+        ),
+        "oneOf": [
+            {
+                "type": "string",
+                "maxLength": 200,
+                "enum": ["AI 안내 생성이 지연되어 상담으로 연결합니다."],
+            },
+            {"type": "null"},
+        ],
+    }
     question_item = questions_schema["properties"]["questions"]["items"]
     assert guidance_schema["additionalProperties"] is False
     assert guidance_schema["properties"]["evidence"]["maxItems"] == 0

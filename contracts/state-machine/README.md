@@ -68,6 +68,7 @@ QUESTIONNAIRE_IN_PROGRESS
   │                                                     │
   ├─ DANGER_DETECTED ────────────────────┐              │
   ├─ NO_EVIDENCE ────────────────────────┼──────────────┤
+  ├─ AI_PROCESSING_TIMEOUT ──────────────┤              │
   └─ PRODUCT_VALIDATION_FAILED ──────────┘              ↓
                                             CONSULTATION_REQUIRED
                                                       │
@@ -137,13 +138,14 @@ Terminal State에서는 추가 수정·전이·같은 Inquiry의 재개를 허�
 
 ## 4. AI 판정은 어떻게 상태로 연결되는가
 
-AI/System 결과 중 Inquiry 상태를 바꾸는 핵심 이벤트는 다음 네 가지다.
+AI/System 결과 중 Inquiry 상태를 바꾸는 핵심 이벤트는 다음 다섯 가지다.
 
 | System Event | 의미 | 다음 State |
 |---|---|---|
 | `SAFE_GUIDANCE_READY` | 안전 검증 완료 + 공식 근거 존재 | `AI_GUIDANCE` |
 | `DANGER_DETECTED` | 명시적 위험 규칙에서 위험 감지 | `CONSULTATION_REQUIRED` |
 | `NO_EVIDENCE` | 고객 안내에 사용할 공식 근거 없음 | `CONSULTATION_REQUIRED` |
+| `AI_PROCESSING_TIMEOUT` | AI 처리 시간 초과, 입력 보존·상담 레코드 미생성 | `CONSULTATION_REQUIRED` |
 | `PRODUCT_VALIDATION_FAILED` | 제품 검증 실패 | `CONSULTATION_REQUIRED` |
 
 AI는 다음 State를 직접 저장하지 않는다.
@@ -255,6 +257,7 @@ PRODUCT_VALIDATION_FAILED
 SAFE_GUIDANCE_READY
 DANGER_DETECTED
 NO_EVIDENCE
+AI_PROCESSING_TIMEOUT
 ```
 
 `START_CARE_PRECHECK`, `PRODUCT_UPDATED`는 Event Registry에는 존재하지만 Inquiry State Transition 자체에서는 제외된다.

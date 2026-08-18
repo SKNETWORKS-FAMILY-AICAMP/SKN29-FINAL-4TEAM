@@ -62,6 +62,24 @@ def test_unlisted_state_event_pair_fails_closed(
     assert exc_info.value.reason == "UNLISTED_TRANSITION"
 
 
+def test_ai_processing_timeout_routes_to_consultation_without_visit(
+    state_machine: StateMachine,
+):
+    transition = state_machine.resolve(
+        snapshot=WorkflowSnapshot(
+            inquiry_state="QUESTIONNAIRE_IN_PROGRESS",
+            state_version=2,
+        ),
+        event_code="AI_PROCESSING_TIMEOUT",
+    )
+
+    assert transition.rule_id == "TR-INQ-036"
+    assert transition.inquiry_state_after == "CONSULTATION_REQUIRED"
+    assert transition.visit_status_after is None
+    assert transition.state_version_after == 3
+    assert "DO_NOT_CREATE_CONSULTATION" in transition.effects
+
+
 @pytest.mark.parametrize(
     ("visit_status", "rule_id", "next_status"),
     [

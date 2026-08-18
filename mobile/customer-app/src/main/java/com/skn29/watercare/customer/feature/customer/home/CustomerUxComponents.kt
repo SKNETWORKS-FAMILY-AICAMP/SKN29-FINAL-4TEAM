@@ -157,7 +157,7 @@ fun CustomerFilterUsageCard(
             )
 
             Text(
-                "${estimate.basisLabel} · 날짜 기준 예상값",
+                "관리 일정은 예상 날짜예요.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

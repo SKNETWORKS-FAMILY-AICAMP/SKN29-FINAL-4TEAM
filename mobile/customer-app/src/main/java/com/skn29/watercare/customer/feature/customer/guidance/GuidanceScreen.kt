@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
-import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.GuidanceDisplayModel
 import com.skn29.watercare.core.model.InquiryActionLabels
@@ -79,44 +78,33 @@ fun GuidanceScreen(
                 inquiryRepository = WaterCareCore.inquiryRepository,
                 customerInquiryRepository =
                     WaterCareCore.customerInquiryRepository,
-                followUpEnabled =
-                    !fixturePreview &&
-                        WaterCareCore.customerCareRuntimeConfig.mode ==
-                            CustomerCareMode.REMOTE,
+                followUpEnabled = false,
             )
         }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
     val cancelState by
         viewModel.cancelState.collectAsStateWithLifecycle()
-    val followUpState by
-        viewModel.followUpState.collectAsStateWithLifecycle()
+
     val consultationState by
         viewModel.consultationState.collectAsStateWithLifecycle()
     var showCancelDialog by remember { mutableStateOf(false) }
     val actualInquiryCode = submittedInquiryCode.trim()
-    val latestInquirySnapshot = followUpState.snapshotOrNull()
-    val latestGuidance = when (val current = state) {
+    val preferredGuidance = when (val current = state) {
         is GuidanceUiState.Content -> current.guidance
         is GuidanceUiState.NoEvidence -> current.guidance
         else -> null
     }
-    val preferredGuidance = latestGuidance?.takeIf { guidance ->
-        latestInquirySnapshot == null ||
-            guidance.stateVersion >= latestInquirySnapshot.stateVersion
-    }
     val effectiveStateVersion =
         preferredGuidance?.stateVersion
-            ?: latestInquirySnapshot?.stateVersion
             ?: submittedStateVersion
     val effectiveAllowedActions =
         preferredGuidance?.allowedActions
-            ?: latestInquirySnapshot?.allowedActions
             ?: submittedAllowedActions
 
-    WaterCareScreen(title = "문의 진행 상황", onBack = onBack) {
+    WaterCareScreen(title = "AI 안내", onBack = onBack) {
         CustomerProgressOverview(
-            statusCode = latestInquirySnapshot?.statusCode ?: submittedStatusCode,
+            statusCode = preferredGuidance?.statusCode ?: submittedStatusCode,
         )
         if (fixturePreview) {
             SectionCard("미리보기 화면") {
@@ -131,7 +119,6 @@ fun GuidanceScreen(
                 inquiryCode = actualInquiryCode,
                 statusCode =
                     preferredGuidance?.statusCode
-                        ?: latestInquirySnapshot?.statusCode
                         ?: submittedStatusCode,
                 stateVersion = effectiveStateVersion,
                 allowedActions = effectiveAllowedActions,
@@ -139,15 +126,6 @@ fun GuidanceScreen(
             )
         }
 
-        FollowUpQuestionsSection(
-            state = followUpState,
-            onTextChange = viewModel::updateFollowUpText,
-            onSelectOption = viewModel::selectFollowUpOption,
-            onSubmit = viewModel::submitFollowUpAnswers,
-            onRetryConflict =
-                viewModel::retryFollowUpAfterConflict,
-            onReload = viewModel::retryFollowUpLoad,
-        )
 
         val cancelAction = effectiveAllowedActions.firstOrNull {
             it.normalizedCode ==
@@ -192,7 +170,7 @@ fun GuidanceScreen(
                     )
                     if (currentCancel.idempotentReplay) {
                         Text(
-                            "동일 요청의 기존 취소 결과를 안전하게 재사용했습니다.",
+                            "문의 취소가 이미 처리되어 있어요.",
                             style =
                                 MaterialTheme.typography.bodySmall,
                         )
@@ -206,8 +184,8 @@ fun GuidanceScreen(
                 }
 
             is CancelInquiryUiState.Conflict ->
-                SectionCard("문의 상태가 변경되었습니다") {
-                    Text(currentCancel.message)
+                SectionCard("문의 내용이 변경됐어요") {
+                    Text("문의 내용이 변경됐어요. 최신 상태를 확인해주세요.")
                     currentCancel.currentStatus?.let { status ->
                         Text(
                             customerInquiryStatusText(status),
@@ -217,7 +195,7 @@ fun GuidanceScreen(
                     }
                     if (currentCancel.canRetry) {
                         LiquidGlassButton(
-                            text = "최신 상태로 문의 취소 다시 시도",
+                            text = "문의 취소 다시 시도",
                             onClick =
                                 viewModel::retryCancelAfterConflict,
                             accent = false,
@@ -238,7 +216,7 @@ fun GuidanceScreen(
 
             is CancelInquiryUiState.Error ->
                 ErrorCard(
-                    currentCancel.message,
+                    "문의 취소를 처리하지 못했어요. 잠시 후 다시 시도해주세요.",
                     if (currentCancel.retryable) {
                         {
                             viewModel.cancelInquiry(
@@ -274,21 +252,21 @@ fun GuidanceScreen(
 
             is GuidanceUiState.NotReady -> FailureFallback(
                 title = "AI 안내 준비 중",
-                message = current.message,
+                message = "AI 안내를 준비하고 있어요. 잠시 후 다시 확인해주세요.",
                 retryable = true,
                 onRetry = viewModel::load,
             )
 
             is GuidanceUiState.AiFailure -> FailureFallback(
                 title = "지금은 안내를 준비하지 못했어요",
-                message = current.message,
+                message = "지금은 AI 안내를 준비하지 못했어요. 잠시 후 다시 시도해주세요.",
                 retryable = current.retryable,
                 onRetry = viewModel::load,
             )
 
             is GuidanceUiState.NetworkFailure -> FailureFallback(
                 title = "연결이 잠시 불안정해요",
-                message = current.message,
+                message = "서비스에 연결할 수 없어요. 잠시 후 다시 시도해주세요.",
                 retryable = current.retryable,
                 onRetry = viewModel::load,
             )
@@ -386,7 +364,7 @@ fun GuidanceScreen(
                             .idempotentReplay
                     ) {
                         Text(
-                            "이미 처리된 요청의 결과를 안전하게 다시 확인했습니다.",
+                            "상담 요청이 이미 처리되어 있어요.",
                             style =
                                 MaterialTheme.typography
                                     .bodySmall,
@@ -409,9 +387,7 @@ fun GuidanceScreen(
                 SectionCard(
                     "문의 상태가 변경됐어요"
                 ) {
-                    Text(
-                        currentConsultation.message
-                    )
+                    Text("문의 내용이 변경됐어요. 최신 상태를 확인해주세요.")
 
                     Text(
                         customerInquiryStatusText(
@@ -426,7 +402,7 @@ fun GuidanceScreen(
                     ) {
                         LiquidGlassButton(
                             text =
-                                "최신 상태로 상담 다시 요청",
+                                "상담 다시 요청",
                             onClick =
                                 viewModel::
                                     retryConsultationAfterConflict,
@@ -452,7 +428,7 @@ fun GuidanceScreen(
 
             is ConsultationRequestUiState.Error ->
                 ErrorCard(
-                    currentConsultation.message,
+                    "상담 요청을 처리하지 못했어요. 잠시 후 다시 시도해주세요.",
                     if (
                         currentConsultation.retryable
                     ) {
@@ -801,19 +777,23 @@ private fun customerInquiryStatusText(
 }
 
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun GuidanceContent(
     guidance: GuidanceDisplayModel,
     noEvidence: Boolean,
     onRetry: () -> Unit,
 ) {
-    val dangerous = guidance.requiresConsultation ||
-        guidance.riskLevel == RiskLevel.DANGER ||
-        guidance.usageStatus == UsageGuidanceStatus.TOTAL_STOP ||
-        guidance.usageStatus ==
-            UsageGuidanceStatus.PENDING_CONSULTATION ||
-        noEvidence
+    val safetyCritical =
+        guidance.requiresConsultation ||
+            guidance.riskLevel == RiskLevel.DANGER ||
+            guidance.usageStatus == UsageGuidanceStatus.TOTAL_STOP ||
+            guidance.usageStatus ==
+                UsageGuidanceStatus.PENDING_CONSULTATION
+
+    val dangerous = safetyCritical || noEvidence
 
     LiquidGlassPanel(
+        modifier = Modifier.fillMaxWidth(),
         strong = !dangerous,
         danger = dangerous,
     ) {
@@ -831,16 +811,18 @@ fun GuidanceContent(
                     guidance.riskLevel,
                     guidance.usageStatus,
                 )
+
                 Text(
                     if (noEvidence) {
                         "공식 근거 확인이 필요해요"
                     } else {
-                        "지금 해야 할 행동을 확인하세요"
+                        "지금 필요한 안내를 확인하세요"
                     },
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Black,
                 )
             }
+
             Image(
                 painter = painterResource(R.drawable.mascot_customer),
                 contentDescription = "안전 안내 캐릭터",
@@ -850,99 +832,93 @@ fun GuidanceContent(
         }
     }
 
-    SectionCard(
-        "지금 해야 할 일",
-        isDanger = dangerous,
-    ) {
-        Text(
-            guidance.nextAction,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold,
-        )
-    }
-
-    SectionCard(
-        "사용 가능 여부",
-        isDanger = dangerous,
-    ) {
-        StatusBadge(
-            guidance.riskLevel,
-            guidance.usageStatus,
-        )
-        Text(guidance.usageMessage)
-        if (guidance.restrictedFunctions.isNotEmpty()) {
+    if (guidance.nextAction.isNotBlank()) {
+        SectionCard(
+            "지금 해야 할 행동",
+            isDanger = dangerous,
+        ) {
             Text(
-                "사용 제한 기능",
-                fontWeight = FontWeight.Bold,
+                guidance.nextAction,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.ExtraBold,
             )
-            BulletList(guidance.restrictedFunctions)
         }
     }
 
-    SectionCard(
-        "안전하게 사용하려면",
-        isDanger = dangerous,
-    ) {
-        BulletList(
-            guidance.safeActions,
-            emptyText = if (noEvidence) {
-                "근거가 없어 자가조치를 추정하지 않습니다."
-            } else {
-                "추가 안전조치가 없습니다."
-            },
-        )
+    val showUsage =
+        guidance.usageMessage.isNotBlank() ||
+            guidance.restrictedFunctions.isNotEmpty() ||
+            safetyCritical
+
+    if (showUsage) {
+        SectionCard(
+            "사용 가능 여부",
+            isDanger = dangerous,
+        ) {
+            StatusBadge(
+                guidance.riskLevel,
+                guidance.usageStatus,
+            )
+
+            if (guidance.usageMessage.isNotBlank()) {
+                Text(guidance.usageMessage)
+            }
+
+            if (guidance.restrictedFunctions.isNotEmpty()) {
+                Text(
+                    "사용 제한 기능",
+                    fontWeight = FontWeight.Bold,
+                )
+                BulletList(guidance.restrictedFunctions)
+            }
+        }
     }
 
-    SectionCard(
-        "상담이 필요한 경우",
-        isDanger = dangerous,
-    ) {
-        BulletList(guidance.escalationConditions)
+    if (guidance.safeActions.isNotEmpty()) {
+        SectionCard(
+            "안전 행동",
+            isDanger = dangerous,
+        ) {
+            BulletList(guidance.safeActions)
+        }
     }
 
-    SectionCard("공식 근거") {
-        Text(
-            "공식 문서에서 확인된 내용만 보여드려요.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+    if (guidance.escalationConditions.isNotEmpty()) {
+        SectionCard(
+            "상담이 필요한 경우",
+            isDanger = dangerous,
+        ) {
+            BulletList(guidance.escalationConditions)
+        }
+    }
 
-        if (guidance.evidence.isEmpty()) {
+    if (guidance.evidence.isNotEmpty()) {
+        SectionCard("공식 근거") {
             Text(
-                "이번 단계에서는 공개 근거를 제공하지 않습니다. " +
-                    "안내 내용과 상담 필요 여부는 Backend 검증 결과를 따릅니다."
+                "공식 문서에서 확인된 내용만 보여드려요.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            LiquidGlassButton(
-                text = "안내 다시 확인",
-                onClick = onRetry,
-                accent = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        } else {
+
             guidance.evidence.forEach {
                 EvidenceCard(it)
             }
         }
     }
 
-    SectionCard("내가 입력한 증상") {
-        Text(guidance.symptomSummary)
+    if (guidance.symptomSummary.isNotBlank()) {
+        SectionCard("입력한 증상 요약") {
+            Text(guidance.symptomSummary)
+        }
     }
 
-    SectionCard(
-        "하지 말아야 할 행동",
-        isDanger = dangerous,
-    ) {
-        BulletList(guidance.prohibitedActions)
-    }
-
-
-    if (dangerous) {
-        Text(
-            "위험·상담 필수·근거 없음 상태에서는 해결됨 또는 문의 종료 버튼을 표시하지 않습니다.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+    if (guidance.prohibitedActions.isNotEmpty()) {
+        SectionCard(
+            "하지 말아야 할 행동",
+            isDanger = dangerous,
+        ) {
+            BulletList(guidance.prohibitedActions)
+        }
     }
 }
 

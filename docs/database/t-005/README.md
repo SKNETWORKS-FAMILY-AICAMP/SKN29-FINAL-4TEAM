@@ -17,9 +17,8 @@
 | 역할 | 단일 기준 |
 | --- | --- |
 | 기계 판독 계약 | 이 디렉터리의 Logical·Decision·Physical Contract |
-| 현재 스키마 변경 절차 | [Django·PostgreSQL 스키마 변경 가이드](../../individual/jiyong/데이터베이스/Django_PostgreSQL_스키마_변경_가이드.md) |
-| 2026-07-31 실행 증거 | [WaterBridge PostgreSQL 통합 검증 보고서](../../individual/jiyong/데이터베이스/PostgreSQL_통합검증_보고서_20260731.md) |
-| 구현 변화와 사고 이력 | [Django·PostgreSQL 테이블 구현·변경 이력](../../individual/jiyong/데이터베이스/Django_PostgreSQL_테이블_구현_변경이력_20260730.md) |
+| 현재 스키마 변경 절차 | [데이터베이스 Schema·Migration 구현 가이드](../../individual/jiyong/데이터베이스/데이터베이스_스키마_마이그레이션_구현_가이드.md) |
+| 현재 Seed·Importer 재현 절차 | [합성데이터 Seed·Importer 검증 가이드](../../individual/jiyong/데이터베이스/합성데이터_시드_Importer_검증_가이드.md) |
 | 사람이 읽는 전체 테이블 설명 | [WaterBridge 테이블 명세](../waterbridge_table_dictionary.md) |
 
 문서와 Runtime이 다르면 ADR·활성 계약·Django Model·Migration·실제
@@ -151,9 +150,10 @@ Importer는 새 빈 격리 DB에서 Migration 후 실행·Replay하고 검증 �
 
 ## 9. 이력 관리
 
-과거 v0.1~v1.6 서술과 Wave별 세부 실행 기록은
-[Django·PostgreSQL 테이블 구현·변경 이력](../../individual/jiyong/데이터베이스/Django_PostgreSQL_테이블_구현_변경이력_20260730.md)으로
-통합했다. 이 README에는 현재 계약·검증 방법·완료 경계만 유지한다.
+과거 v0.1~v1.6 서술과 Wave별 세부 실행 기록은 Git history에 보존한다.
+현재 Model·Migration 변경은
+[데이터베이스 Schema·Migration 구현 가이드](../../individual/jiyong/데이터베이스/데이터베이스_스키마_마이그레이션_구현_가이드.md)를 따르며,
+이 README에는 현재 계약·검증 방법·완료 경계만 유지한다.
 
 정확한 과거 원문은 Git 이력에서 확인하며, 이전 계약 JSON·ERD·Evidence
 파일은 감사 추적을 위해 그대로 보존한다.

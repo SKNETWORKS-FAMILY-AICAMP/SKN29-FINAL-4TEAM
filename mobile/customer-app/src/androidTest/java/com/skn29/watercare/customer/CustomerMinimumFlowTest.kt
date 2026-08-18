@@ -1,5 +1,8 @@
 package com.skn29.watercare.customer
 
+
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,6 +66,38 @@ private class ManualComposeTestScope(
 
         delegate.waitForIdle()
     }
+    fun requestOrientation(
+        orientation: Int,
+    ) {
+        scenario.onActivity { activity ->
+            activity.requestedOrientation = orientation
+        }
+        Thread.sleep(1200)
+    }
+
+    fun currentOrientation(): Int {
+        if (scenario.state != Lifecycle.State.RESUMED) {
+            scenario.moveToState(Lifecycle.State.RESUMED)
+        }
+
+        var orientation = Configuration.ORIENTATION_UNDEFINED
+
+        scenario.onActivity { activity ->
+            orientation =
+                activity.resources.configuration.orientation
+        }
+
+        return orientation
+    }
+}
+
+private fun androidx.compose.ui.test.SemanticsNodeInteraction.assertDoesNotExistCompat() {
+    assertTrue(
+        "화면에 존재하지 않아야 하는 UI가 표시되었습니다.",
+        runCatching {
+            fetchSemanticsNode()
+        }.isFailure,
+    )
 }
 @RunWith(AndroidJUnit4::class)
 class CustomerMinimumFlowTest {
@@ -136,7 +171,97 @@ class CustomerMinimumFlowTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun dangerGuidance_hidesResolvedAction() =
+    fun symptomIntake_portraitAndLandscape_keepsFullWidth() =
+        runManualComposeUiTest {
+            fun renderIntake() {
+                setContent {
+                    WaterCareTheme {
+                        SymptomIntakeContent(
+                            state = SymptomIntakeUiState(),
+                            onBack = {},
+                            onEntryModeChange = {},
+                            onToggleSymptom = {},
+                            onRawTextChange = {},
+                            onOccurrenceConditionChange = {},
+                            onDisplayTextChange = {},
+                            onScenarioChange = {},
+                            onRetry = {},
+                            onSubmit = {},
+                        )
+                    }
+                }
+            }
+
+            fun assertFullWidthLayout() {
+                waitForIdle()
+
+                val heroNode =
+                    onNodeWithTag("intakeHero")
+                        .assertIsDisplayed()
+
+                val heroWidth =
+                    heroNode
+                        .fetchSemanticsNode()
+                        .boundsInRoot
+                        .width
+
+                val inputNode =
+                    onNodeWithTag("rawText")
+                        .performScrollTo()
+                        .assertIsDisplayed()
+
+                waitForIdle()
+
+                val inputWidth =
+                    inputNode
+                        .fetchSemanticsNode()
+                        .boundsInRoot
+                        .width
+
+                val difference =
+                    if (heroWidth >= inputWidth) {
+                        heroWidth - inputWidth
+                    } else {
+                        inputWidth - heroWidth
+                    }
+
+                assertTrue(
+                    "Hero와 입력 영역 폭이 일치하지 않습니다. hero=$heroWidth input=$inputWidth",
+                    difference <= 2f,
+                )
+            }
+
+            try {
+                requestOrientation(
+                    ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,
+                )
+                renderIntake()
+
+                assertTrue(
+                    currentOrientation() ==
+                        Configuration.ORIENTATION_PORTRAIT,
+                )
+                assertFullWidthLayout()
+
+                requestOrientation(
+                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE,
+                )
+                renderIntake()
+
+                assertTrue(
+                    currentOrientation() ==
+                        Configuration.ORIENTATION_LANDSCAPE,
+                )
+                assertFullWidthLayout()
+            } finally {
+                requestOrientation(
+                    ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED,
+                )
+            }
+        }
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun dangerGuidance_keepsSafetyAndHidesInternalEmptyUi() =
         runManualComposeUiTest {
             setContent {
                 WaterCareTheme {
@@ -155,21 +280,37 @@ class CustomerMinimumFlowTest {
             waitForIdle()
 
             onNodeWithText(
-                "위험·상담 필수·근거 없음 상태에서는 해결됨 또는 문의 종료 버튼을 표시하지 않습니다."
+                "제품 사용을 즉시 중지하세요."
             )
                 .performScrollTo()
                 .assertIsDisplayed()
 
-            val resolvedActionDoesNotExist = runCatching {
-                onNodeWithTag("resolvedAction").fetchSemanticsNode()
-            }.isFailure
-
-            assertTrue(
-                "위험 안내 화면에서는 해결 처리 버튼이 표시되면 안 됩니다.",
-                resolvedActionDoesNotExist,
+            onNodeWithText(
+                "하지 말아야 할 행동"
             )
-        }
+                .performScrollTo()
+                .assertIsDisplayed()
 
+            onNodeWithText(
+                "공식 근거"
+            )
+                .assertDoesNotExistCompat()
+
+            onNodeWithText(
+                "1. 지금 해야 할 행동"
+            )
+                .assertDoesNotExistCompat()
+
+            onNodeWithText(
+                "위험·상담 필수·근거 없음 상태에서는 해결됨 또는 문의 종료 버튼을 표시하지 않습니다."
+            )
+                .assertDoesNotExistCompat()
+
+            onNodeWithTag(
+                "resolvedAction"
+            )
+                .assertDoesNotExistCompat()
+        }
     @Test
     @OptIn(ExperimentalTestApi::class)
     fun cancelInquiryAction_isVisibleAndClickable() =

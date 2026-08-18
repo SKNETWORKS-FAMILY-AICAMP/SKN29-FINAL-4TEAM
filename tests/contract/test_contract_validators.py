@@ -38,10 +38,10 @@ class ContractValidatorsTest(unittest.TestCase):
     def test_json_examples_are_parseable_and_referenced(self) -> None:
         result = validate_examples.validate_repository(REPO_ROOT)
 
-        self.assertEqual(63, result.api_examples)
+        self.assertEqual(64, result.api_examples)
         self.assertEqual(result.api_examples, result.referenced_examples)
         self.assertEqual(5, result.integration_examples)
-        self.assertEqual(46, result.wrapped_responses)
+        self.assertEqual(47, result.wrapped_responses)
 
     def test_state_machine_digest_input_is_line_ending_independent(self) -> None:
         with patch.object(

@@ -33,23 +33,23 @@ fun SubscriptionSelector(
     val palette = CustomerReferencePalette
     ReferenceSectionHeader(
         title = "내 구독",
-        trailing = if (state.subscriptions.size > 1) "문의할 제품을 선택하세요" else "실제 Backend 조회",
+        trailing = if (state.subscriptions.size > 1) "문의할 정수기를 선택하세요" else "사용 중인 정수기",
         palette = palette,
     )
     ReferenceGlassPanel(palette = palette) {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            state.subscriptions.forEach { subscription ->
+            state.subscriptions.forEachIndexed { index, subscription ->
                 val selected =
                     state.selectedSubscriptionId == subscription.subscriptionId
                 val supported = subscription.isP0SupportedActiveSubscription()
                 Text(
                     text = buildString {
-                        append(subscription.product.modelName)
+                        append("정수기 ${index + 1}")
                         append(" · ")
-                        append(subscription.statusCode ?: "상태 확인")
-                        if (!supported) append(" · P0 문의 제한")
+                        append(subscription.product.managementTypeLabel)
+                        if (!supported) append(" · 문의 이용 제한")
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.Medium,

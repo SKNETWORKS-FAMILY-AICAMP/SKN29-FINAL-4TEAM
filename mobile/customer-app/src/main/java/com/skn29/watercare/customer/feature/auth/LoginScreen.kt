@@ -118,7 +118,7 @@ backgroundRes = R.drawable.water_background_customer,
         }
 
         state.error?.let {
-            ErrorCard(it, onRetry = viewModel::demoLogin)
+            ErrorCard(customerLoginErrorMessage(it), onRetry = viewModel::demoLogin)
         }
 
         Text(
@@ -129,4 +129,14 @@ backgroundRes = R.drawable.water_background_customer,
             textAlign = TextAlign.Center,
         )
     }
+}
+
+private fun customerLoginErrorMessage(
+    message: String,
+): String = when {
+    message.contains("고객 계정", ignoreCase = true) ->
+        "고객 계정으로 로그인해 주세요."
+
+    else ->
+        "서비스를 시작하지 못했어요. 잠시 후 다시 시도해주세요."
 }

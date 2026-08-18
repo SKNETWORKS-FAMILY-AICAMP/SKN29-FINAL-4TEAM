@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "data": {
+    "inquiry_id": "a40c8360-5de5-44a3-8970-8aaea12cbe70",
+    "status_code": "CONSULTATION_REQUIRED",
+    "state_version": 3,
+    "subscription_id": "20000000-0000-4000-8000-000000000001",
+    "product": {
+      "model_code": "WPUJAC104DWH"
+    },
+    "allowed_actions": [
+      {
+        "code": "REQUEST_CONSULTATION",
+        "label": "상담 요청",
+        "operation_id": "requestConsultation",
+        "style": "SECONDARY",
+        "requires_confirmation": false,
+        "confirmation_message": null
+      }
+    ],
+    "updated_at": "2026-08-16T12:00:00+09:00",
+    "system_notice": "AI 안내 생성이 지연되어 상담으로 연결합니다."
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "30000000-0000-4000-8000-000000000016"
+  }
+}
