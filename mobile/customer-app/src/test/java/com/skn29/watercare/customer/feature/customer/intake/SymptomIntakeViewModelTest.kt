@@ -57,6 +57,87 @@ class SymptomIntakeViewModelTest {
         }
 
     @Test
+    fun rapidDoubleSubmit_callsRepositoryOnce() =
+        runTest(mainDispatcherRule.dispatcher) {
+            var submitCalls = 0
+
+            val repository =
+                object : CustomerCareRepository {
+                    override suspend fun getHome():
+                        ApiResult<CustomerHomeData> =
+                        error("unused")
+
+                    override suspend fun submitIntake(
+                        request: SymptomIntakeRequest,
+                    ): ApiResult<IntakeSubmission> {
+                        submitCalls += 1
+                        return ApiResult.Failure(
+                            code = "NETWORK_ERROR",
+                            message = "network",
+                            retryable = true,
+                        )
+                    }
+
+                    override suspend fun getGuidance(
+                        inquiryId: String,
+                        scenario: MockScenario,
+                    ): ApiResult<GuidanceData> =
+                        error("unused")
+                }
+
+            val viewModel = SymptomIntakeViewModel(
+                subscriptionId = "subscription",
+                repository = repository,
+                savedStateHandle = SavedStateHandle(),
+            )
+
+            viewModel.updateRawText("중복 제출 방지 테스트")
+
+            viewModel.submit()
+            viewModel.submit()
+
+            assertTrue(viewModel.state.value.isSubmitting)
+
+            advanceUntilIdle()
+
+            assertEquals(1, submitCalls)
+        }
+
+    @Test
+    fun server500_mapsToServerAndKeepsDraft() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val viewModel = SymptomIntakeViewModel(
+                subscriptionId = "subscription",
+                repository = failureRepository(
+                    ApiResult.Failure(
+                        code = "INTERNAL_SERVER_ERROR",
+                        message = "internal server detail",
+                        httpStatus = 500,
+                        retryable = true,
+                    )
+                ),
+                savedStateHandle = SavedStateHandle(),
+            )
+
+            viewModel.updateRawText("서버 오류 뒤에도 유지할 내용")
+            viewModel.submit()
+            advanceUntilIdle()
+
+            val state = viewModel.state.value
+
+            assertEquals(
+                IntakeErrorKind.SERVER,
+                state.errorKind,
+            )
+            assertEquals(
+                "서버 오류 뒤에도 유지할 내용",
+                state.rawText,
+            )
+            assertTrue(state.retryable)
+            assertFalse(state.isSubmitting)
+        }
+
+    @Test
     fun savedStateHandle_restoresOnlyCustomerDraftInput() {
         val handle = SavedStateHandle()
         val first = SymptomIntakeViewModel(

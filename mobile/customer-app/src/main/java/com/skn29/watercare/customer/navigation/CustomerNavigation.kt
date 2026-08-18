@@ -1,6 +1,7 @@
 package com.skn29.watercare.customer.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -118,38 +119,46 @@ fun CustomerNavigation() {
                 },
                 onCompleted = { submission ->
                     if (fixturePreview) {
-                        navController.navigate(
-                            CustomerRoute.guidance(
-                                inquiryId =
-                                    submission.inquiryId,
-                                scenario =
-                                    submission.guidanceScenario,
-                                inquiryCode =
-                                    submission.inquiryCode,
-                                statusCode =
-                                    submission.statusCode,
-                                stateVersion =
-                                    submission.stateVersion,
-                                idempotentReplay =
-                                    submission.idempotentReplay,
-                                allowedActions =
-                                    submission.allowedActions,
-                                fixturePreview = true,
+                        navController
+                            .navigateReplacingCurrentCustomerStep(
+                                route =
+                                    CustomerRoute.guidance(
+                                        inquiryId =
+                                            submission.inquiryId,
+                                        scenario =
+                                            submission.guidanceScenario,
+                                        inquiryCode =
+                                            submission.inquiryCode,
+                                        statusCode =
+                                            submission.statusCode,
+                                        stateVersion =
+                                            submission.stateVersion,
+                                        idempotentReplay =
+                                            submission.idempotentReplay,
+                                        allowedActions =
+                                            submission.allowedActions,
+                                        fixturePreview = true,
+                                    ),
+                                currentDestinationId =
+                                    entry.destination.id,
                             )
-                        )
                     } else {
-                        navController.navigate(
-                            CustomerRoute.followUp(
-                                inquiryId =
-                                    submission.inquiryId,
-                                scenario =
-                                    submission.guidanceScenario,
-                                inquiryCode =
-                                    submission.inquiryCode,
-                                idempotentReplay =
-                                    submission.idempotentReplay,
+                        navController
+                            .navigateReplacingCurrentCustomerStep(
+                                route =
+                                    CustomerRoute.followUp(
+                                        inquiryId =
+                                            submission.inquiryId,
+                                        scenario =
+                                            submission.guidanceScenario,
+                                        inquiryCode =
+                                            submission.inquiryCode,
+                                        idempotentReplay =
+                                            submission.idempotentReplay,
+                                    ),
+                                currentDestinationId =
+                                    entry.destination.id,
                             )
-                        )
                     }
                 },
                 onAuthExpired = {
@@ -219,28 +228,36 @@ fun CustomerNavigation() {
                 onBack = {
                     navController.popBackStack()
                 },
-                onOpenGuidance = { snapshot ->
+                onAuthExpired = {
                     navController.navigate(
-                        CustomerRoute.guidance(
-                            inquiryId = inquiryId,
-                            scenario = scenario.name,
-                            inquiryCode = inquiryCode,
-                            statusCode =
-                                snapshot.statusCode,
-                            stateVersion =
-                                snapshot.stateVersion,
-                            idempotentReplay =
-                                idempotentReplay,
-                            allowedActions =
-                                snapshot.allowedActions,
-                        )
+                        CustomerRoute.LOGIN
                     ) {
-                        popUpTo(
-                            entry.destination.id
-                        ) {
+                        popUpTo(navController.graph.id) {
                             inclusive = true
                         }
+                        launchSingleTop = true
                     }
+                },
+                onOpenGuidance = { snapshot ->
+                    navController
+                        .navigateReplacingCurrentCustomerStep(
+                            route =
+                                CustomerRoute.guidance(
+                                    inquiryId = inquiryId,
+                                    scenario = scenario.name,
+                                    inquiryCode = inquiryCode,
+                                    statusCode =
+                                        snapshot.statusCode,
+                                    stateVersion =
+                                        snapshot.stateVersion,
+                                    idempotentReplay =
+                                        idempotentReplay,
+                                    allowedActions =
+                                        snapshot.allowedActions,
+                                ),
+                            currentDestinationId =
+                                entry.destination.id,
+                        )
                 },
             )
         }
@@ -357,6 +374,16 @@ fun CustomerNavigation() {
                 onBack = {
                     navController.popBackStack()
                 },
+                onAuthExpired = {
+                    navController.navigate(
+                        CustomerRoute.LOGIN
+                    ) {
+                        popUpTo(navController.graph.id) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
                 onDone = {
                     navController.navigate(
                         CustomerRoute.home(false)
@@ -371,5 +398,17 @@ fun CustomerNavigation() {
                 },
             )
         }
+    }
+}
+
+internal fun NavController.navigateReplacingCurrentCustomerStep(
+    route: String,
+    currentDestinationId: Int,
+) {
+    navigate(route) {
+        popUpTo(currentDestinationId) {
+            inclusive = true
+        }
+        launchSingleTop = true
     }
 }

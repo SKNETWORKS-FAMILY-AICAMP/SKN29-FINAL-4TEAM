@@ -261,6 +261,66 @@ class CustomerMinimumFlowTest {
         }
     @Test
     @OptIn(ExperimentalTestApi::class)
+    fun homeLoading_showsCustomerFriendlyProgress() =
+        runManualComposeUiTest {
+            setContent {
+                WaterCareTheme {
+                    CustomerHomeContent(
+                        state = sampleHomeState(
+                            activeInquiry = null,
+                        ).copy(
+                            loading = true,
+                            home = null,
+                            error = null,
+                        ),
+                        onStartIntake = {},
+                        onOpenGuidance = { _, _ -> },
+                        onRetry = {},
+                        onLogout = {},
+                    )
+                }
+            }
+
+            waitForIdle()
+
+            onNodeWithText("정수기 정보를 불러오고 있어요")
+                .assertIsDisplayed()
+        }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun homeError_hidesTechnicalMessageAndShowsCustomerCopy() =
+        runManualComposeUiTest {
+            setContent {
+                WaterCareTheme {
+                    CustomerHomeContent(
+                        state = sampleHomeState(
+                            activeInquiry = null,
+                        ).copy(
+                            loading = false,
+                            home = null,
+                            error = "Backend API Remote timeout",
+                        ),
+                        onStartIntake = {},
+                        onOpenGuidance = { _, _ -> },
+                        onRetry = {},
+                        onLogout = {},
+                    )
+                }
+            }
+
+            waitForIdle()
+
+            onNodeWithText(
+                "정수기 정보를 가져오지 못했어요. 잠시 후 다시 확인해주세요."
+            ).assertIsDisplayed()
+
+            onNodeWithText("Backend API Remote timeout")
+                .assertDoesNotExistCompat()
+        }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
     fun dangerGuidance_keepsSafetyAndHidesInternalEmptyUi() =
         runManualComposeUiTest {
             setContent {

@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,6 +59,7 @@ fun GuidanceScreen(
     submittedIdempotentReplay: Boolean? = null,
     fixturePreview: Boolean = false,
     onBack: () -> Unit,
+    onAuthExpired: () -> Unit = {},
     onDone: () -> Unit,
 ) {
     val guidanceRepository = if (fixturePreview) {
@@ -83,6 +85,15 @@ fun GuidanceScreen(
         }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val authExpired by
+        viewModel.authExpired.collectAsStateWithLifecycle()
+
+    LaunchedEffect(authExpired) {
+        if (authExpired) {
+            viewModel.consumeAuthExpired()
+            onAuthExpired()
+        }
+    }
     val cancelState by
         viewModel.cancelState.collectAsStateWithLifecycle()
 
@@ -250,26 +261,23 @@ fun GuidanceScreen(
                 onRetry = viewModel::load,
             )
 
-            is GuidanceUiState.NotReady -> FailureFallback(
-                title = "AI 안내 준비 중",
-                message = "AI 안내를 준비하고 있어요. 잠시 후 다시 확인해주세요.",
-                retryable = true,
-                onRetry = viewModel::load,
-            )
+            is GuidanceUiState.NotReady ->
+                GuidanceFailureStateContent(
+                    state = current,
+                    onRetry = viewModel::load,
+                )
 
-            is GuidanceUiState.AiFailure -> FailureFallback(
-                title = "지금은 안내를 준비하지 못했어요",
-                message = "지금은 AI 안내를 준비하지 못했어요. 잠시 후 다시 시도해주세요.",
-                retryable = current.retryable,
-                onRetry = viewModel::load,
-            )
+            is GuidanceUiState.AiFailure ->
+                GuidanceFailureStateContent(
+                    state = current,
+                    onRetry = viewModel::load,
+                )
 
-            is GuidanceUiState.NetworkFailure -> FailureFallback(
-                title = "연결이 잠시 불안정해요",
-                message = "서비스에 연결할 수 없어요. 잠시 후 다시 시도해주세요.",
-                retryable = current.retryable,
-                onRetry = viewModel::load,
-            )
+            is GuidanceUiState.NetworkFailure ->
+                GuidanceFailureStateContent(
+                    state = current,
+                    onRetry = viewModel::load,
+                )
 
             is GuidanceUiState.Error ->
                 ErrorCard(
@@ -919,6 +927,37 @@ fun GuidanceContent(
         ) {
             BulletList(guidance.prohibitedActions)
         }
+    }
+}
+
+@Composable
+internal fun GuidanceFailureStateContent(
+    state: GuidanceUiState,
+    onRetry: () -> Unit,
+) {
+    when (state) {
+        is GuidanceUiState.NotReady -> FailureFallback(
+            title = "AI 안내 준비 중",
+            message = "AI 안내를 준비하고 있어요. 잠시 후 다시 확인해주세요.",
+            retryable = true,
+            onRetry = onRetry,
+        )
+
+        is GuidanceUiState.AiFailure -> FailureFallback(
+            title = "지금은 안내를 준비하지 못했어요",
+            message = "지금은 AI 안내를 준비하지 못했어요. 잠시 후 다시 시도해주세요.",
+            retryable = state.retryable,
+            onRetry = onRetry,
+        )
+
+        is GuidanceUiState.NetworkFailure -> FailureFallback(
+            title = "연결이 잠시 불안정해요",
+            message = "서비스에 연결할 수 없어요. 잠시 후 다시 시도해주세요.",
+            retryable = state.retryable,
+            onRetry = onRetry,
+        )
+
+        else -> Unit
     }
 }
 

@@ -1,5 +1,6 @@
 package com.skn29.watercare.customer.feature.customer.guidance
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.skn29.watercare.core.model.ApiResult
@@ -22,9 +23,16 @@ sealed interface FollowUpNavigationEvent {
     ) : FollowUpNavigationEvent
 }
 
-class FollowUpQuestionsViewModel(
-    private val inquiryId: String,
+private object FollowUpDraftStateKeys {
+    const val IDS = "follow_up.draft_ids"
+    const val TEXTS = "follow_up.draft_texts"
+    const val OPTIONS = "follow_up.draft_options"
+    const val NULL_OPTION = "\u0000"
+}
+
+class FollowUpQuestionsViewModel(    private val inquiryId: String,
     private val repository: CustomerInquiryRepository,
+    private val savedStateHandle: SavedStateHandle = SavedStateHandle(),
 ) : ViewModel() {
     private val _state =
         MutableStateFlow<FollowUpUiState>(
@@ -50,7 +58,7 @@ class FollowUpQuestionsViewModel(
         val drafts =
             contextOrNull(_state.value)
                 ?.drafts
-                .orEmpty()
+                ?: restoreDrafts()
 
         viewModelScope.launch {
             _state.value =
@@ -178,6 +186,8 @@ class FollowUpQuestionsViewModel(
             context.drafts +
                 (questionId to after)
 
+        persistDrafts(updated)
+
         _state.value =
             when (current) {
                 is FollowUpUiState.Conflict ->
@@ -243,14 +253,14 @@ class FollowUpQuestionsViewModel(
             return
         }
 
-        viewModelScope.launch {
-            _state.value =
-                FollowUpUiState.Submitting(
-                    snapshot = context.snapshot,
-                    questions = context.questions,
-                    drafts = context.drafts,
-                )
+        _state.value =
+            FollowUpUiState.Submitting(
+                snapshot = context.snapshot,
+                questions = context.questions,
+                drafts = context.drafts,
+            )
 
+        viewModelScope.launch {
             when (
                 val result =
                     repository.submitAnswers(
@@ -277,6 +287,7 @@ class FollowUpQuestionsViewModel(
     private suspend fun applySubmitSuccess(
         result: SubmitFollowUpAnswersResult,
     ) {
+        clearPersistedDrafts()
         when (
             val refreshed =
                 fetchContext(
@@ -509,6 +520,7 @@ class FollowUpQuestionsViewModel(
         context: FollowUpContext,
     ) {
         if (context.questions.isEmpty()) {
+            clearPersistedDrafts()
             _state.value =
                 FollowUpUiState.Empty(
                     context.snapshot
@@ -539,7 +551,7 @@ class FollowUpQuestionsViewModel(
     ): FollowUpUiState.Error {
         val mayKeepInput =
             failure.httpStatus !in
-                setOf(401, 403, 404)
+                setOf(403, 404)
 
         return FollowUpUiState.Error(
             message = failure.message,
@@ -665,6 +677,77 @@ class FollowUpQuestionsViewModel(
         return answers
     }
 
+    private fun persistDrafts(
+        drafts: Map<String, FollowUpDraft>,
+    ) {
+        val entries = drafts.entries.sortedBy { it.key }
+        savedStateHandle[FollowUpDraftStateKeys.IDS] =
+            ArrayList(entries.map { it.key })
+        savedStateHandle[FollowUpDraftStateKeys.TEXTS] =
+            ArrayList(entries.map { it.value.text })
+        savedStateHandle[FollowUpDraftStateKeys.OPTIONS] =
+            ArrayList(
+                entries.map {
+                    it.value.selectedOption
+                        ?: FollowUpDraftStateKeys.NULL_OPTION
+                }
+            )
+    }
+
+    private fun restoreDrafts():
+        Map<String, FollowUpDraft> {
+        val ids =
+            savedStateHandle
+                .get<ArrayList<String>>(
+                    FollowUpDraftStateKeys.IDS
+                )
+                .orEmpty()
+        val texts =
+            savedStateHandle
+                .get<ArrayList<String>>(
+                    FollowUpDraftStateKeys.TEXTS
+                )
+                .orEmpty()
+        val options =
+            savedStateHandle
+                .get<ArrayList<String>>(
+                    FollowUpDraftStateKeys.OPTIONS
+                )
+                .orEmpty()
+
+        if (
+            ids.size != texts.size ||
+            ids.size != options.size
+        ) {
+            return emptyMap()
+        }
+
+        return ids.indices.associate { index ->
+            ids[index] to
+                FollowUpDraft(
+                    text = texts[index],
+                    selectedOption =
+                        options[index]
+                            .takeUnless {
+                                it ==
+                                    FollowUpDraftStateKeys
+                                        .NULL_OPTION
+                            },
+                )
+        }
+    }
+
+    private fun clearPersistedDrafts() {
+        savedStateHandle.remove<ArrayList<String>>(
+            FollowUpDraftStateKeys.IDS
+        )
+        savedStateHandle.remove<ArrayList<String>>(
+            FollowUpDraftStateKeys.TEXTS
+        )
+        savedStateHandle.remove<ArrayList<String>>(
+            FollowUpDraftStateKeys.OPTIONS
+        )
+    }
     private fun contextOrNull(
         state: FollowUpUiState,
     ): FollowUpContext? =

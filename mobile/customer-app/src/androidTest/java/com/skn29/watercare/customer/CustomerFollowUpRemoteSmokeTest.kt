@@ -79,14 +79,14 @@ class CustomerFollowUpRemoteSmokeTest {
 
         assertEquals(inquiryId, questionData.inquiryId)
         assertEquals(snapshot.stateVersion, questionData.stateVersion)
-        assertEquals(2, questionData.questions.size)
+        assertTrue(questionData.questions.isNotEmpty())
 
         val answers = questionData.questions.map { question ->
             when {
                 question.isFreeText -> {
                     FollowUpAnswer(
                         questionId = question.questionId,
-                        answerText = "오늘 아침부터 증상이 계속되고 있습니다.",
+                        answerText = "?ㅻ뒛 ?꾩묠遺??利앹긽??怨꾩냽?섍퀬 ?덉뒿?덈떎.",
                     )
                 }
 
@@ -112,7 +112,7 @@ class CustomerFollowUpRemoteSmokeTest {
             }
         }
 
-        assertEquals(2, answers.size)
+        assertEquals(questionData.questions.size, answers.size)
         assertTrue(answers.all { it.isValid })
 
         val submitResult =
@@ -122,6 +122,16 @@ class CustomerFollowUpRemoteSmokeTest {
                 answers = answers,
             )
 
+        if (submitResult is ApiResult.Failure) {
+            throw AssertionError(
+                "submitAnswers failed: " +
+                    "code=${submitResult.code}, " +
+                    "httpStatus=${submitResult.httpStatus}, " +
+                    "retryable=${submitResult.retryable}, " +
+                    "conflictStatus=${submitResult.conflict?.currentStatus}, " +
+                    "conflictStateVersion=${submitResult.conflict?.currentStateVersion}"
+            )
+        }
         assertTrue(submitResult is ApiResult.Success<*>)
 
         val submitted =

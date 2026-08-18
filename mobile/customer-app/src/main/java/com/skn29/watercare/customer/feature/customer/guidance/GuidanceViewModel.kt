@@ -30,6 +30,14 @@ class GuidanceViewModel(
     private val _state = MutableStateFlow<GuidanceUiState>(GuidanceUiState.Loading)
     val state: StateFlow<GuidanceUiState> = _state.asStateFlow()
 
+    private val _authExpired =
+        MutableStateFlow(false)
+    val authExpired: StateFlow<Boolean> =
+        _authExpired.asStateFlow()
+
+    fun consumeAuthExpired() {
+        _authExpired.value = false
+    }
     private val _cancelState =
         MutableStateFlow<CancelInquiryUiState>(CancelInquiryUiState.Idle)
     val cancelState: StateFlow<CancelInquiryUiState> = _cancelState.asStateFlow()
@@ -67,6 +75,13 @@ class GuidanceViewModel(
                     else GuidanceUiState.Content(mapped)
                 }
                 is ApiResult.Failure -> when {
+                    result.httpStatus == 401 -> {
+                        _authExpired.value = true
+                        GuidanceUiState.Error(
+                            message = "濡쒓렇?몄씠 留뚮즺?먯뼱?? ?ㅼ떆 濡쒓렇?명빐二쇱꽭??",
+                            retryable = false,
+                        )
+                    }
                     result.code == "AI_GUIDANCE_NOT_READY" &&
                         result.httpStatus == 409 ->
                         GuidanceUiState.NotReady(result.message)
@@ -128,17 +143,19 @@ class GuidanceViewModel(
             return
         }
 
-        viewModelScope.launch {
-            _consultationState.value =
-                ConsultationRequestUiState.Requesting
+        _consultationState.value =
+            ConsultationRequestUiState.Requesting
 
+        viewModelScope.launch {
             when (
                 val latest = remote.snapshot(inquiryId)
             ) {
                 is ApiResult.Failure -> {
+                    registerAuthExpiry(latest)
                     _consultationState.value =
                         ConsultationRequestUiState.Error(
-                            message = latest.message,
+                            message =
+                                "?곷떞 ?붿껌??泥섎━?섏? 紐삵뻽?댁슂. ?좎떆 ???ㅼ떆 ?쒕룄?댁＜?몄슂.",
                             retryable = latest.retryable,
                         )
                 }
@@ -188,10 +205,10 @@ class GuidanceViewModel(
         val remote = customerInquiryRepository
             ?: return
 
-        viewModelScope.launch {
-            _consultationState.value =
-                ConsultationRequestUiState.Requesting
+        _consultationState.value =
+            ConsultationRequestUiState.Requesting
 
+        viewModelScope.launch {
             performConsultationRequest(
                 remote = remote,
                 snapshot = current.snapshot,
@@ -278,9 +295,11 @@ class GuidanceViewModel(
                 failure.code == "DUPLICATE-EVENT-01"
 
         if (!shouldRefresh) {
+            registerAuthExpiry(failure)
             _consultationState.value =
                 ConsultationRequestUiState.Error(
-                    message = failure.message,
+                    message =
+                        "?곷떞 ?붿껌??泥섎━?섏? 紐삵뻽?댁슂. ?좎떆 ???ㅼ떆 ?쒕룄?댁＜?몄슂.",
                     retryable = failure.retryable,
                 )
             return
@@ -327,6 +346,16 @@ class GuidanceViewModel(
         }
     }
 
+    private fun registerAuthExpiry(
+        failure: ApiResult.Failure,
+    ): Boolean {
+        if (failure.httpStatus != 401) {
+            return false
+        }
+
+        _authExpired.value = true
+        return true
+    }
     private fun replaceFollowUpSnapshot(
         snapshot: CustomerInquirySnapshot,
     ) {
@@ -635,8 +664,17 @@ class GuidanceViewModel(
         reasonCode: String,
         reasonDetail: String?,
     ) {
+        if (
+            _cancelState.value is
+                CancelInquiryUiState.Cancelling
+        ) {
+            return
+        }
+
+        _cancelState.value =
+            CancelInquiryUiState.Cancelling
+
         viewModelScope.launch {
-            _cancelState.value = CancelInquiryUiState.Cancelling
             _cancelState.value = when (
                 val result = repository.cancel(
                     inquiryId = inquiryId,

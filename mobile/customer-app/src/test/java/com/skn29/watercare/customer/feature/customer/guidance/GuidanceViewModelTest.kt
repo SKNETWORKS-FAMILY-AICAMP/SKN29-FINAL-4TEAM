@@ -83,6 +83,134 @@ class GuidanceViewModelTest {
         }
 
     @Test
+    fun rapidDoubleConsultationRequest_callsWriteOnce() =
+        runTest(mainDispatcherRule.dispatcher) {
+            var snapshotCalls = 0
+            var requestCalls = 0
+
+            val snapshot =
+                com.skn29.watercare.core.model.CustomerInquirySnapshot(
+                    inquiryId = TEST_INQUIRY_ID,
+                    statusCode = "AI_GUIDANCE",
+                    stateVersion = 3,
+                    subscriptionId =
+                        "00000000-0000-4000-8000-000000000101",
+                    productModelCode = "WPUJAC104DWH",
+                    allowedActions = listOf(
+                        AllowedAction(
+                            code =
+                                InquiryActionLabels
+                                    .REQUEST_CONSULTATION,
+                        )
+                    ),
+                    updatedAtRfc3339 =
+                        "2026-08-17T16:00:00+09:00",
+                )
+
+            val remote =
+                object :
+                    com.skn29.watercare.core.repository.CustomerInquiryRepository {
+                    override suspend fun snapshot(
+                        inquiryId: String,
+                    ): ApiResult<
+                        com.skn29.watercare.core.model.CustomerInquirySnapshot
+                    > {
+                        snapshotCalls += 1
+                        return ApiResult.Success(snapshot)
+                    }
+
+                    override suspend fun questions(
+                        inquiryId: String,
+                    ): ApiResult<
+                        com.skn29.watercare.core.model.CustomerInquiryQuestions
+                    > = error("unused")
+
+                    override suspend fun submitAnswers(
+                        inquiryId: String,
+                        stateVersion: Int,
+                        answers: List<
+                            com.skn29.watercare.core.model.FollowUpAnswer
+                        >,
+                    ): ApiResult<
+                        com.skn29.watercare.core.model.SubmitFollowUpAnswersResult
+                    > = error("unused")
+
+                    override suspend fun requestConsultation(
+                        inquiryId: String,
+                        stateVersion: Int,
+                    ): ApiResult<
+                        com.skn29.watercare.core.model.RequestConsultationResult
+                    > {
+                        requestCalls += 1
+
+                        return ApiResult.Failure(
+                            code = "NETWORK_ERROR",
+                            message = "network",
+                            retryable = true,
+                        )
+                    }
+                }
+
+            val viewModel = GuidanceViewModel(
+                inquiryId = TEST_INQUIRY_ID,
+                scenario = MockScenario.NORMAL,
+                repository = FakeCustomerCareRepository(),
+                customerInquiryRepository = remote,
+            )
+
+            advanceUntilIdle()
+
+            viewModel.requestConsultation()
+            viewModel.requestConsultation()
+
+            assertTrue(
+                viewModel.consultationState.value is
+                    ConsultationRequestUiState.Requesting
+            )
+
+            advanceUntilIdle()
+
+            assertEquals(1, snapshotCalls)
+            assertEquals(1, requestCalls)
+        }
+
+    @Test
+    fun rapidDoubleCancel_callsRepositoryOnce() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val inquiryRepository =
+                RecordingInquiryRepository(
+                    mutableListOf(
+                        ApiResult.Success(
+                            CancelInquiryResponse(
+                                inquiryId = TEST_INQUIRY_ID,
+                                state = "CANCELLED",
+                                stateVersion = 3,
+                                idempotentReplay = false,
+                            )
+                        )
+                    )
+                )
+
+            val viewModel =
+                newViewModel(inquiryRepository)
+
+            viewModel.cancelInquiry(stateVersion = 2)
+            viewModel.cancelInquiry(stateVersion = 2)
+
+            assertTrue(
+                viewModel.cancelState.value is
+                    CancelInquiryUiState.Cancelling
+            )
+
+            advanceUntilIdle()
+
+            assertEquals(
+                listOf(2),
+                inquiryRepository.stateVersions,
+            )
+        }
+
+    @Test
     fun cancelSuccess_usesBackendState() =
         runTest(mainDispatcherRule.dispatcher) {
             val inquiryRepository = RecordingInquiryRepository(
