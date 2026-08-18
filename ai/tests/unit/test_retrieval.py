@@ -9,6 +9,7 @@ import pytest
 from ai.app.common.protected_database import ProtectedDatabaseOperationError
 from ai.app.common.timeout import CancellationToken, PipelineCancelledError
 from ai.app.retrieval.filters.document_policy_filter import DocumentPolicyFilter
+from ai.app.retrieval.filters.evidence_topic_filter import EvidenceTopicFilter
 from ai.app.retrieval.filters.product_filter import ProductFilter
 from ai.app.retrieval.indexing.chunk_loader import ChunkLoader
 from ai.app.retrieval.indexing.index_manifest import IndexManifest
@@ -92,8 +93,46 @@ def test_chunk_loader_reads_verified_common_data():
     assert {chunk.page for chunk in chunks}.issuperset({37, 38})
     assert all(chunk.source_hash for chunk in chunks)
     assert all(chunk.verification_status == "official_verified" for chunk in chunks)
+    assert all(chunk.topic_code for chunk in chunks)
     hot_water = next(chunk for chunk in chunks if chunk.chunk_id.endswith("HOT-WATER-SAFETY-001"))
     assert hot_water.page_refs == [38, 39]
+
+
+def test_taste_or_odor_topic_filter_keeps_only_matching_evidence():
+    chunks = ChunkLoader().load_verified_chunks()
+
+    selected = EvidenceTopicFilter().filter_chunks(
+        chunks,
+        symptom_type="물맛/냄새 이상",
+    )
+
+    assert [chunk.topic_code for chunk in selected] == ["symptom_taste_odor"]
+
+
+def test_taste_or_odor_topic_filter_uses_canonical_id_when_view_omits_topic():
+    taste_chunk = next(
+        chunk
+        for chunk in ChunkLoader().load_verified_chunks()
+        if chunk.topic_code == "symptom_taste_odor"
+    ).model_copy(update={"topic_code": None})
+    unrelated = RetrievedChunk(
+        chunk_id="UNKNOWN-OFFICIAL-CHUNK",
+        document_title="공식 문서",
+        manual_model="WPUJAC104DWH",
+        model_code="WPUJAC104DWH",
+        product_generation="D",
+        content="다른 주제의 근거",
+        similarity_score=0.99,
+        verification_status="official_verified",
+        allowed_use=True,
+    )
+
+    selected = EvidenceTopicFilter().filter_chunks(
+        [unrelated, taste_chunk],
+        symptom_type="물맛/냄새 이상",
+    )
+
+    assert [chunk.chunk_id for chunk in selected] == [taste_chunk.chunk_id]
 
 
 def test_index_manifest_save_and_load(tmp_path):

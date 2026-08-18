@@ -16,7 +16,21 @@ class SymptomNormalizer:
             "출수량 저하",
             ("졸졸", "쫄쫄", "출수량", "출수양", "물이 안 나", "물 안 나", "수압"),
         ),
-        ("물맛/냄새 이상", ("물맛", "이상한 맛", "냄새", "비린", "역한")),
+        (
+            "물맛/냄새 이상",
+            (
+                "물맛",
+                "이상한 맛",
+                "흙맛",
+                "흙 맛",
+                "흙냄새",
+                "흙 냄새",
+                "토양 냄새",
+                "냄새",
+                "비린",
+                "역한",
+            ),
+        ),
         ("소음 이상", ("소음", "진동", "웅웅", "덜컹")),
         ("필터/관리 문의", ("필터", "교체 주기", "관리 주기")),
     )
@@ -40,7 +54,7 @@ class SymptomNormalizer:
     )
 
     def normalize_symptom_type(self, raw_text: str, selected_symptoms: list[str]) -> str:
-        if selected_symptoms:
+        if selected_symptoms and selected_symptoms[0] != "기타 증상":
             return selected_symptoms[0]
         normalized_text = raw_text
         for pattern in self._NEGATED_SYMPTOM_PATTERNS:

@@ -26,3 +26,4 @@ class RetrievedChunk(BaseModel):
     index_version: Optional[str] = Field(None, description="적재·검색 설정 버전")
     chunk_set_sha256: Optional[str] = Field(None, description="적재 청크 집합 SHA-256")
     safe_actions: List[str] = Field(default_factory=list, description="근거에 명시된 안전 행동")
+    topic_code: Optional[str] = Field(None, description="공식 근거의 증상 주제 코드")
