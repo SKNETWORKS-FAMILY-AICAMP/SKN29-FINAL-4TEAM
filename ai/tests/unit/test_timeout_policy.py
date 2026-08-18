@@ -10,6 +10,7 @@ from ai.app.common.timeout import (
     get_stage_timeout_policy,
 )
 from ai.app.common.retry import get_retry_policy
+from ai.app.common.protected_database import ProtectedDatabaseOperationError
 
 
 def test_stage_timeout_policy_matches_configured_budget():
@@ -33,6 +34,12 @@ def test_retry_policy_is_enabled_for_transient_failures_only():
     assert policy.can_retry(ValueError("invalid"), retry_count=0) is False
     assert policy.is_retryable_exception(ConnectionError("temporary")) is True
     assert policy.is_retryable_exception(ValueError("invalid")) is False
+    assert policy.is_retryable_exception(
+        ProtectedDatabaseOperationError("safe", retryable=True)
+    ) is True
+    assert policy.is_retryable_exception(
+        ProtectedDatabaseOperationError("safe", retryable=False)
+    ) is False
 
 
 def test_deadline_scope_raises_stage_specific_timeout():

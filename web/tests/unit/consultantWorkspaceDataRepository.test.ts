@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { ApiClientError } from "../../src/common/api/apiError";
 import type { ApiResponse } from "../../src/common/api/apiResponse";
 import type {
   ConsultantInquiryDetailDto,
@@ -154,7 +155,7 @@ describe("상담사 실제 API 전환 Repository", () => {
         product_model: "SYN-WP-01",
         subscription_status: "ACTIVE",
         management_type: "VISIT_CARE",
-        recent_care_date: null,
+        recent_care_date: "2026-08-01",
       },
       symptom_and_questionnaire: {
         symptom_summary: "누수가 있어요",
@@ -209,7 +210,7 @@ describe("상담사 실제 API 전환 Repository", () => {
       productModel: "SYN-WP-01",
       subscriptionStatus: "ACTIVE",
       managementType: "VISIT_CARE",
-      recentCareDate: null,
+      recentCareDate: "2026-08-01",
     });
     expect(result.data.workflow.allowedActions[0]).toMatchObject({
       code: "START_CONSULTATION",
@@ -227,5 +228,35 @@ describe("상담사 실제 API 전환 Repository", () => {
       consultationNote: "고객 상태 확인",
       customerGuidance: "정상 사용 안내",
     });
+  });
+
+  it("비배정·미존재 문의를 같은 404로 처리하고 고객용 API를 우회 호출하지 않는다", async () => {
+    const requester = vi.fn(async () => {
+      throw new ApiClientError({
+        kind: "NOT_FOUND",
+        status: 404,
+        code: "INQUIRY_NOT_FOUND",
+        message: "문의를 찾을 수 없습니다.",
+      });
+    }) as ConsultantApiRequester;
+    const repository = createRemoteConsultantWorkspaceDataRepository(requester);
+    const unassignedInquiryId = "b7df3cd0-c9d6-42bd-b93e-a70ee24c6f99";
+    const missingInquiryId = "ed7222d0-42e8-48eb-84be-9b0d45f51f65";
+
+    for (const inquiryId of [unassignedInquiryId, missingInquiryId]) {
+      await expect(repository.getInquiryDetail(inquiryId)).rejects.toMatchObject({
+        kind: "NOT_FOUND",
+        status: 404,
+        code: "INQUIRY_NOT_FOUND",
+      });
+    }
+
+    expect(requester).toHaveBeenCalledTimes(2);
+    expect(requester).toHaveBeenCalledWith(`/inquiries/${unassignedInquiryId}`);
+    expect(requester).toHaveBeenCalledWith(`/inquiries/${missingInquiryId}`);
+
+    const requestedPaths = requester.mock.calls.flat().join(" ");
+    expect(requestedPaths).not.toMatch(/(?:^|\/)me(?:\/|\?|$)/);
+    expect(requestedPaths).not.toMatch(/subscriptions|care[-_/]?(?:records|history)?/i);
   });
 });

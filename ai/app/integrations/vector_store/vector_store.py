@@ -4,6 +4,7 @@ import json
 import re
 from typing import List, Protocol, Sequence
 
+from ...common.protected_database import run_protected_database_operation
 from ...retrieval.models.retrieved_chunk import RetrievedChunk
 
 
@@ -25,7 +26,7 @@ class PgVectorStore:
     ) -> None:
         if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", table_name):
             raise ValueError("허용되지 않은 Vector Table 이름입니다.")
-        self.dsn = dsn
+        self._dsn = dsn
         self.table_name = table_name
         if not 0.0 <= score_threshold <= 1.0:
             raise ValueError("검색 점수 Threshold는 0.0~1.0이어야 합니다.")
@@ -61,13 +62,28 @@ class PgVectorStore:
             LIMIT %s
         """
         literal = self._vector_literal(vector)
-        with psycopg.connect(self.dsn, connect_timeout=5) as connection, connection.cursor() as cursor:
-            cursor.execute("SET LOCAL statement_timeout = '5s'")
-            cursor.execute(
-                sql,
-                (literal, model_code, product_generation, self.score_threshold, top_k),
-            )
-            rows = cursor.fetchall()
+        def execute_search():
+            with (
+                psycopg.connect(self._dsn, connect_timeout=5) as connection,
+                connection.cursor() as cursor,
+            ):
+                cursor.execute("SET LOCAL statement_timeout = '5s'")
+                cursor.execute(
+                    sql,
+                    (
+                        literal,
+                        model_code,
+                        product_generation,
+                        self.score_threshold,
+                        top_k,
+                    ),
+                )
+                return cursor.fetchall()
+
+        rows = run_protected_database_operation(
+            execute_search,
+            public_message="pgvector 검색 작업에 실패했습니다.",
+        )
 
         chunks: List[RetrievedChunk] = []
         for chunk_id, metadata, content, score in rows:
@@ -112,14 +128,27 @@ class PgVectorStore:
                     CHECK (vector_dims(embedding) = 1024)
             );
         """
-        with psycopg.connect(self.dsn, connect_timeout=5) as connection, connection.cursor() as cursor:
-            cursor.execute("SELECT current_database()")
-            database_name = str(cursor.fetchone()[0])
-            if not re.search(r"(verify|test|tmp|disposable)", database_name, re.IGNORECASE):
-                raise RuntimeError(
-                    f"Disposable DB 식별 Guard를 통과하지 못했습니다: {database_name}"
-                )
-            cursor.execute(sql)
+        def initialize():
+            with (
+                psycopg.connect(self._dsn, connect_timeout=5) as connection,
+                connection.cursor() as cursor,
+            ):
+                cursor.execute("SELECT current_database()")
+                database_name = str(cursor.fetchone()[0])
+                if not re.search(
+                    r"(verify|test|tmp|disposable)",
+                    database_name,
+                    re.IGNORECASE,
+                ):
+                    raise RuntimeError(
+                        "Disposable DB 식별 Guard를 통과하지 못했습니다."
+                    )
+                cursor.execute(sql)
+
+        run_protected_database_operation(
+            initialize,
+            public_message="pgvector Schema 초기화 작업에 실패했습니다.",
+        )
 
     def upsert(self, chunks: Sequence[RetrievedChunk], vectors: Sequence[Sequence[float]]) -> int:
         """청크 ID 기준 멱등 UPSERT를 수행하고 처리 행 수를 반환한다."""
@@ -183,24 +212,44 @@ class PgVectorStore:
                 json.dumps(chunk.safe_actions, ensure_ascii=False),
                 json.dumps(metadata, ensure_ascii=False),
             ))
-        with psycopg.connect(self.dsn, connect_timeout=5) as connection, connection.cursor() as cursor:
-            cursor.execute("SET LOCAL statement_timeout = '10s'")
-            cursor.executemany(sql, rows)
+        def execute_upsert():
+            with (
+                psycopg.connect(self._dsn, connect_timeout=5) as connection,
+                connection.cursor() as cursor,
+            ):
+                cursor.execute("SET LOCAL statement_timeout = '10s'")
+                cursor.executemany(sql, rows)
+
+        run_protected_database_operation(
+            execute_upsert,
+            public_message="pgvector 적재 작업에 실패했습니다.",
+        )
         return len(rows)
 
     def count(self, chunk_ids: Sequence[str] | None = None) -> int:
         """전체 또는 이번 배치 청크 범위의 적재 행 수를 반환한다."""
         import psycopg
 
-        with psycopg.connect(self.dsn, connect_timeout=5) as connection, connection.cursor() as cursor:
-            if chunk_ids is None:
-                cursor.execute(f"SELECT COUNT(*) FROM {self.table_name}")
-            elif not chunk_ids:
-                return 0
-            else:
-                placeholders = ", ".join(["%s"] * len(chunk_ids))
-                cursor.execute(
-                    f"SELECT COUNT(*) FROM {self.table_name} WHERE chunk_id IN ({placeholders})",
-                    tuple(chunk_ids),
-                )
-            return int(cursor.fetchone()[0])
+        if chunk_ids is not None and not chunk_ids:
+            return 0
+
+        def execute_count():
+            with (
+                psycopg.connect(self._dsn, connect_timeout=5) as connection,
+                connection.cursor() as cursor,
+            ):
+                if chunk_ids is None:
+                    cursor.execute(f"SELECT COUNT(*) FROM {self.table_name}")
+                else:
+                    placeholders = ", ".join(["%s"] * len(chunk_ids))
+                    cursor.execute(
+                        f"SELECT COUNT(*) FROM {self.table_name} "
+                        f"WHERE chunk_id IN ({placeholders})",
+                        tuple(chunk_ids),
+                    )
+                return int(cursor.fetchone()[0])
+
+        return run_protected_database_operation(
+            execute_count,
+            public_message="pgvector 행 수 확인 작업에 실패했습니다.",
+        )

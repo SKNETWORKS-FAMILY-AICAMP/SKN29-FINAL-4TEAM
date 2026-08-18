@@ -3,6 +3,10 @@
 import json
 from pathlib import Path
 
+import psycopg
+import pytest
+
+from ai.app.common.protected_database import ProtectedDatabaseOperationError
 from ai.app.common.timeout import CancellationToken, PipelineCancelledError
 from ai.app.retrieval.filters.document_policy_filter import DocumentPolicyFilter
 from ai.app.retrieval.filters.product_filter import ProductFilter
@@ -130,6 +134,45 @@ def test_pgvector_rejects_non_1024_dimension_and_invalid_table_name():
         assert False, "허용되지 않은 Table 이름을 거부해야 합니다."
     except ValueError:
         pass
+
+
+@pytest.mark.parametrize(
+    "operation",
+    [
+        lambda store: store.search(
+            [0.0] * 1024,
+            model_code="WPUJAC104DWH",
+            product_generation="D",
+            top_k=5,
+        ),
+        lambda store: store.count(),
+        lambda store: store.upsert([], []),
+        lambda store: store.initialize_schema(disposable_confirm=True),
+    ],
+    ids=("search", "count", "upsert", "initialize_schema"),
+)
+def test_pgvector_operations_suppress_driver_error_and_context(
+    monkeypatch,
+    operation,
+):
+    from ai.app.integrations.vector_store.vector_store import PgVectorStore
+
+    secret_sentinel = "SENSITIVE_RUNTIME_DSN_SENTINEL"
+
+    def fail_connect(*args, **kwargs):
+        raise psycopg.OperationalError(
+            f"connection failed with protected value {secret_sentinel}"
+        )
+
+    monkeypatch.setattr(psycopg, "connect", fail_connect)
+    store = PgVectorStore("postgresql://protected-runtime-value")
+
+    with pytest.raises(ProtectedDatabaseOperationError) as captured:
+        operation(store)
+
+    assert captured.value.retryable is True
+    assert secret_sentinel not in str(captured.value)
+    assert captured.value.__context__ is None
 
 
 def test_unverified_source_only_query_is_blocked_before_embedding():
