@@ -1,4 +1,4 @@
-import { appEnv } from "../../../app/config/env";
+import { appEnv, type MockDataset } from "../../../app/config/env";
 import type { InquiryId } from "../../../entities/inquiry/inquiryIdentifiers";
 import {
   CONSULTANT_QUEUE_INQUIRIES,
@@ -35,6 +35,7 @@ export interface ConsultantWorkspaceRepository {
  */
 export function createConsultantWorkspaceRepository(
   useMockApi: boolean,
+  mockDataset: MockDataset = appEnv.mockDataset,
 ): ConsultantWorkspaceRepository {
   if (!useMockApi) {
     return {
@@ -48,7 +49,7 @@ export function createConsultantWorkspaceRepository(
   }
 
   const mockQueue =
-    appEnv.mockDataset === "DESIGN_SCENARIOS"
+    mockDataset === "DESIGN_SCENARIOS"
       ? CONSULTANT_QUEUE_INQUIRIES
       : REMOTE_PARITY_CONSULTANT_INQUIRIES;
 

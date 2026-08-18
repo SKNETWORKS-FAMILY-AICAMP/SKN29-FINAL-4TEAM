@@ -1,0 +1,143 @@
+/* Keep the standalone inquiry list independent from the dashboard-only grid. */
+@media (min-width: 901px) {
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-queue-main {
+    height: 100dvh !important;
+    grid-template-columns: 240px minmax(0, 1fr) !important;
+    grid-template-rows: 76px minmax(0, 1fr) !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    background: #1a1a2e !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-sidebar {
+    grid-column: 1 !important;
+    grid-row: 1 / 3 !important;
+    border-radius: 0 !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-main-header {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    height: 76px !important;
+    padding: 0 18px !important;
+    background: #fff !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-queue-panel {
+    display: grid !important;
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) auto !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #f7fafc !important;
+    box-shadow: none !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-risk-columns {
+    width: 100%;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    border-right: 0 !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-queue-panel
+    > .common-pagination {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+  }
+
+  html body
+    .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-risk-section
+    .v6-queue-item.consultant-list-item,
+  html body
+    .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-risk-section
+    .v6-queue-item.consultant-list-item:nth-child(even) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(130px, 180px) minmax(150px, 220px) !important;
+    align-items: center;
+    gap: 0 !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-list-item__subject {
+    display: block !important;
+    min-width: 0;
+    width: 100% !important;
+    grid-area: auto !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
+    padding-right: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    -webkit-line-clamp: unset;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-list-item__tag,
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-list-item__customer {
+    display: flex;
+    min-width: 0;
+    width: 100% !important;
+    min-height: 32px;
+    grid-area: auto !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
+    align-items: center;
+    padding: 0 18px;
+    border-left: 1px solid #dce5eb;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-list-item__tag {
+    color: #167da5;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-list-item__customer {
+    overflow: hidden;
+    color: #142a3e !important;
+    font-size: 14px;
+    font-weight: 750 !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 900px) {
+  .consultant-inquiry-list-app .consultant-list-item__tag {
+    display: inline-flex;
+    width: fit-content;
+    margin-top: 6px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #e8f5fa;
+    color: #167da5;
+    font-size: 12px;
+    font-weight: 800;
+  }
+}

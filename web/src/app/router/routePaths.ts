@@ -5,6 +5,7 @@ export const ROUTE_PATHS = {
   error: "/error",
   adminDashboard: "/admin",
   adminInsights: "/admin/insights",
+  consultantDashboard: "/consultant/dashboard",
   consultantInquiryList: "/consultant/inquiries",
   consultantPhoneInquiryCreate: "/consultant/phone-inquiries/new",
   consultantInquiryDetail: "/consultant/inquiries/:inquiryId",
@@ -25,7 +26,9 @@ export function createVisitTransitionPath(inquiryId: InquiryId): string {
 export function getSafeInquiryListReturnPath(value: unknown): string {
   if (
     typeof value === "string" &&
-    (value === ROUTE_PATHS.consultantInquiryList ||
+    (value === ROUTE_PATHS.consultantDashboard ||
+      value.startsWith(`${ROUTE_PATHS.consultantDashboard}?`) ||
+      value === ROUTE_PATHS.consultantInquiryList ||
       value.startsWith(`${ROUTE_PATHS.consultantInquiryList}?`))
   ) {
     return value;

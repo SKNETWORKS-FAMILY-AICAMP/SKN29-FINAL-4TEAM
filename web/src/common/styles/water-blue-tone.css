@@ -1,0 +1,821 @@
+/*
+ * Water Bridge visual tone.
+ * This file intentionally changes only paint properties: color, background,
+ * border color and shadow. Layout, spacing and component geometry stay intact.
+ */
+
+:root {
+  --water-tone-canvas: #eaf5fb;
+  --water-tone-canvas-soft: #f3f9fd;
+  --water-tone-surface: #ffffff;
+  --water-tone-surface-blue: #edf8fd;
+  --water-tone-primary: #4a9fd0;
+  --water-tone-primary-strong: #1c78ad;
+  --water-tone-deep: #123e69;
+  --water-tone-aqua: #20bfd0;
+  --water-tone-ink: #172b43;
+  --water-tone-muted: #698096;
+  --water-tone-line: #c9dfeb;
+  --water-tone-shadow: 0 12px 30px rgb(40 93 124 / 12%);
+
+  --v6-ink-950: #0d3155;
+  --v6-ink-900: #153a5d;
+  --v6-ink-800: #244c6d;
+  --v6-ink-700: #3b607d;
+  --v6-ink-600: #5d7890;
+  --v6-ink-500: #7890a4;
+  --v6-ink-400: #98acbc;
+  --v6-ink-300: #b8cbd8;
+  --v6-ink-200: #cfdee8;
+  --v6-ink-100: #e1edf3;
+  --v6-ink-50: #f1f8fb;
+  --v6-green: #2b93c5;
+  --v6-green-700: #1875a8;
+  --v6-green-100: #dff3fb;
+  --v6-green-50: #eff9fd;
+  --v6-lime: #65d9e5;
+  --v6-blue: #3c8fd0;
+  --v6-blue-100: #e2f1fb;
+  --v6-shadow-sm: 0 5px 16px rgb(40 93 124 / 8%);
+  --v6-shadow-md: 0 14px 36px rgb(40 93 124 / 13%);
+}
+
+html body {
+  background: var(--water-tone-canvas-soft);
+  color: var(--water-tone-ink);
+}
+
+html body.compact-consultant-body {
+  background:
+    radial-gradient(circle at 84% 4%, rgb(79 174 217 / 13%), transparent 27%),
+    linear-gradient(145deg, var(--water-tone-canvas), var(--water-tone-canvas-soft)) !important;
+}
+
+/* Authentication and system states */
+.system-page {
+  background:
+    radial-gradient(circle at 12% 12%, rgb(92 184 224 / 20%), transparent 28%),
+    radial-gradient(circle at 88% 86%, rgb(32 191 208 / 13%), transparent 25%),
+    linear-gradient(145deg, #e7f5fb, #f4fafd 58%, #eaf5fb) !important;
+}
+
+.system-card,
+.system-card__plan {
+  border-color: var(--water-tone-line) !important;
+  background: rgb(255 255 255 / 94%) !important;
+  box-shadow: var(--water-tone-shadow) !important;
+}
+
+.system-card small,
+.system-card__plan dt {
+  color: var(--water-tone-primary-strong) !important;
+}
+
+.system-card h1,
+.system-card__plan h2 {
+  color: var(--water-tone-ink) !important;
+}
+
+.system-card p,
+.system-card__plan dd,
+.system-card label {
+  color: var(--water-tone-muted) !important;
+}
+
+.system-card select {
+  border-color: var(--water-tone-line) !important;
+  background: var(--water-tone-surface) !important;
+  color: var(--water-tone-ink) !important;
+}
+
+.system-card button {
+  background: linear-gradient(135deg, var(--water-tone-primary), var(--water-tone-primary-strong)) !important;
+  box-shadow: 0 9px 20px rgb(34 126 178 / 22%) !important;
+}
+
+/* Counselor queue, work dashboard and phone intake */
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app,
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-queue-main {
+  background:
+    radial-gradient(circle at 84% 4%, rgb(79 174 217 / 13%), transparent 27%),
+    linear-gradient(145deg, var(--water-tone-canvas), var(--water-tone-canvas-soft)) !important;
+  color: var(--water-tone-ink) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-sidebar {
+  border-color: rgb(255 255 255 / 20%) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgb(91 204 230 / 36%), transparent 30%),
+    linear-gradient(165deg, #207fad, #135e91 72%, #104f7c) !important;
+  box-shadow: 10px 0 28px rgb(28 93 132 / 13%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-sidebar
+  :is(.consultant-work-tabs, .consultant-sidebar-brand) {
+  border-color: rgb(255 255 255 / 20%) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab {
+  color: rgb(255 255 255 / 78%) !important;
+  background: transparent !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab:hover {
+  background: rgb(255 255 255 / 11%) !important;
+  color: #fff !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab.is-active {
+  border-color: rgb(255 255 255 / 72%) !important;
+  background: rgb(255 255 255 / 94%) !important;
+  color: var(--water-tone-deep) !important;
+  box-shadow: 0 9px 22px rgb(8 76 119 / 17%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab.is-active
+  :is(strong, em, small, .consultant-work-tab__icon) {
+  color: var(--water-tone-deep) !important;
+  -webkit-text-fill-color: var(--water-tone-deep) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab:not(.is-active)
+  :is(strong, em, small, .consultant-work-tab__icon) {
+  color: rgb(255 255 255 / 82%) !important;
+  -webkit-text-fill-color: rgb(255 255 255 / 82%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab
+  > b {
+  border-color: rgb(255 255 255 / 24%) !important;
+  background: rgb(255 255 255 / 14%) !important;
+  color: #fff !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab.is-active
+  > b {
+  border-color: var(--water-tone-primary) !important;
+  background: var(--water-tone-primary) !important;
+  color: #fff !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  :is(.consultant-main-header, .simple-topbar) {
+  border-color: var(--water-tone-line) !important;
+  background: rgb(255 255 255 / 94%) !important;
+  box-shadow: 0 6px 20px rgb(43 96 126 / 7%) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  :is(.consultant-queue-panel, .counselor-home-summary__intro, .counselor-home-metric, .counselor-ai-review, .phone-inquiry-form-card, .phone-inquiry-guide-card) {
+  border-color: var(--water-tone-line) !important;
+  background: var(--water-tone-surface) !important;
+  box-shadow: var(--water-tone-shadow) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  :is(.counselor-home-summary__intro, .counselor-work-queue__header, .counselor-ai-review__header, .consultant-risk-tabs) {
+  border-color: var(--water-tone-line) !important;
+  background: linear-gradient(135deg, #f8fcfe, #e8f5fb) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-home-metric {
+  background: linear-gradient(145deg, #fff, #eef8fc) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  :is(.counselor-home-summary__intro > span, .counselor-work-queue__header > div > span, .counselor-ai-review__header span, .phone-inquiry-main-header__copy small, .phone-inquiry-card-head span, .phone-inquiry-guide-card header span) {
+  color: var(--water-tone-primary-strong) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  :is(.counselor-home-summary__intro h1, .counselor-work-queue__header h2, .counselor-ai-review__header h2, .phone-inquiry-card-head h2, .phone-inquiry-guide-card h2) {
+  color: var(--water-tone-ink) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-home-summary__mock-badge {
+  border-color: rgb(74 159 208 / 30%) !important;
+  background: rgb(74 159 208 / 11%) !important;
+  color: var(--water-tone-primary-strong) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-home-metric--ai {
+  --metric-color: #3c8fd0;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-ai-review__header
+  > b {
+  background: linear-gradient(135deg, var(--water-tone-primary), var(--water-tone-primary-strong)) !important;
+  color: #fff !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-ai-review__integration {
+  background: var(--water-tone-surface-blue) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-ai-review__integration
+  strong {
+  color: var(--water-tone-primary-strong) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-ai-review__integration
+  p {
+  color: var(--water-tone-muted) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-ai-review__queue
+  button.is-active {
+  border-color: var(--water-tone-primary) !important;
+  background: var(--water-tone-surface-blue) !important;
+  color: var(--water-tone-primary-strong) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  :is(.consultant-risk-section__list, .phone-inquiry-entry-panel) {
+  background: var(--water-tone-canvas-soft) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .v6-queue-item.consultant-list-item,
+html body
+  .simple-consultant-app.consultant-queue-app
+  .v6-queue-item.consultant-list-item:nth-child(even) {
+  border-color: #b9d9e8 !important;
+  background: #fff !important;
+  box-shadow: 0 7px 18px rgb(42 95 125 / 8%) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .v6-queue-item.consultant-list-item:hover {
+  border-color: #77b9d8 !important;
+  background: #f3fbfe !important;
+  box-shadow: 0 10px 24px rgb(36 112 153 / 13%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item::before {
+  background: linear-gradient(90deg, var(--water-tone-primary), var(--water-tone-aqua)) !important;
+  box-shadow: none !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  :is(input, select, textarea, .simple-search) {
+  border-color: var(--water-tone-line) !important;
+  background: #fff !important;
+  color: var(--water-tone-ink) !important;
+  box-shadow: inset 0 1px 0 #fff, 0 4px 12px rgb(48 105 135 / 6%) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  :is(input, select, textarea):focus {
+  border-color: var(--water-tone-primary) !important;
+  box-shadow: 0 0 0 3px rgb(74 159 208 / 14%) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  :is(.phone-inquiry-selected-card, .phone-inquiry-save-notice) {
+  border-color: #acd6e8 !important;
+  background: var(--water-tone-surface-blue) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .phone-inquiry-button--primary {
+  border-color: var(--water-tone-primary-strong) !important;
+  background: linear-gradient(135deg, var(--water-tone-primary), var(--water-tone-primary-strong)) !important;
+  box-shadow: 0 9px 20px rgb(34 126 178 / 20%) !important;
+}
+
+/* Counselor detail and visit workspaces */
+.v6-workspace {
+  background:
+    radial-gradient(circle at 88% 4%, rgb(77 176 219 / 13%), transparent 26%),
+    var(--water-tone-canvas-soft) !important;
+  color: var(--water-tone-ink);
+}
+
+.v6-topbar,
+.v6-sidebar {
+  background:
+    radial-gradient(circle at 10% 0%, rgb(91 204 230 / 32%), transparent 28%),
+    linear-gradient(165deg, #207fad, #135e91 74%, #104f7c) !important;
+  box-shadow: 0 8px 24px rgb(24 91 130 / 14%) !important;
+}
+
+.v6-brand__mark,
+.v6-user-chip > span,
+.v6-nav-item > b {
+  background: #dff6fb !important;
+  color: var(--water-tone-deep) !important;
+}
+
+.v6-nav-item.is-active {
+  background: rgb(255 255 255 / 16%) !important;
+}
+
+.v6-nav-item.is-active::before {
+  background: #71e0ea !important;
+}
+
+.v6-main {
+  background: transparent !important;
+}
+
+:is(.v6-panel, .inquiry-v13-toolbar, .visit-v13-toolbar, .visit-v13-context, .visit-v13-form-panel, .inquiry-dashboard__metrics article, .inquiry-dashboard__card, .inquiry-dashboard__timeline) {
+  border-color: var(--water-tone-line) !important;
+  background: #fff !important;
+  box-shadow: var(--v6-shadow-sm) !important;
+}
+
+:is(.v6-page-head__meta span, .visit-v13-status-card, .inquiry-dashboard__title > span, .inquiry-dashboard__timeline > header > span) {
+  border-color: var(--water-tone-line) !important;
+  background: var(--water-tone-surface-blue) !important;
+  color: var(--water-tone-deep) !important;
+}
+
+:is(.v6-page-head__copy > small, .v6-kicker, .inquiry-dashboard__title small, .inquiry-dashboard__card header small, .inquiry-dashboard__timeline header small, .visit-v13-context > header small, .visit-v13-form-head small) {
+  color: var(--water-tone-primary-strong) !important;
+}
+
+.v6-button--primary,
+.visit-v13-actions button.is-primary {
+  border-color: var(--water-tone-primary-strong) !important;
+  background: linear-gradient(135deg, var(--water-tone-primary), var(--water-tone-primary-strong)) !important;
+  color: #fff !important;
+}
+
+.v6-button--secondary,
+.visit-v13-actions button:not(.is-primary) {
+  border-color: var(--water-tone-line) !important;
+  background: #fff !important;
+  color: var(--water-tone-deep) !important;
+}
+
+/* Operations dashboard and infographic */
+.operations-page {
+  --operations-green: #3c95c8;
+  --operations-green-soft: #e5f4fb;
+  --operations-ink: #172b43;
+  --operations-muted: #6c8195;
+  --operations-line: #c9dfeb;
+  --operations-surface: #fff;
+  --operations-bg: #edf7fc;
+  background:
+    radial-gradient(circle at 88% 5%, rgb(72 171 216 / 13%), transparent 25%),
+    linear-gradient(145deg, #eaf5fb, #f5fafc) !important;
+}
+
+.operations-topbar {
+  border-color: rgb(255 255 255 / 22%) !important;
+  background:
+    radial-gradient(circle at 16% 0%, rgb(102 215 232 / 34%), transparent 28%),
+    linear-gradient(165deg, #2386b7, #176b9e 72%, #115783) !important;
+  box-shadow: 10px 0 28px rgb(28 93 132 / 13%) !important;
+}
+
+.operations-navigation a.is-active,
+.operations-navigation a:first-of-type.is-active {
+  border-color: rgb(255 255 255 / 74%) !important;
+  background: #fff !important;
+  color: var(--water-tone-deep) !important;
+  box-shadow: 0 9px 22px rgb(8 76 119 / 16%) !important;
+}
+
+.operations-navigation a:not(.is-active) {
+  color: rgb(255 255 255 / 80%) !important;
+  background: transparent !important;
+}
+
+.operations-navigation a:not(.is-active):hover {
+  background: rgb(255 255 255 / 12%) !important;
+  color: #fff !important;
+}
+
+:is(.operations-page-head, .operations-panel, .operations-metric, .operations-insights-intro) {
+  border-color: var(--operations-line) !important;
+  background: rgb(255 255 255 / 94%) !important;
+  box-shadow: var(--water-tone-shadow) !important;
+}
+
+.operations-page-head {
+  background:
+    radial-gradient(circle at 92% 18%, rgb(57 176 206 / 17%), transparent 23%),
+    linear-gradient(135deg, #f9fdff, #e7f5fb) !important;
+}
+
+.operations-metric {
+  background: linear-gradient(145deg, #fff, #f0f8fc) !important;
+}
+
+:is(.operations-filters input, .operations-filters select, .operations-filters__footer button, .operations-user button) {
+  border-color: var(--operations-line) !important;
+  background: #fff !important;
+  color: var(--operations-ink) !important;
+  box-shadow: 0 4px 12px rgb(45 99 128 / 6%) !important;
+}
+
+.operations-chart__track {
+  background: #dcecf4 !important;
+}
+
+.operations-chart__track i {
+  background: linear-gradient(90deg, var(--water-tone-primary), var(--water-tone-aqua)) !important;
+}
+
+.operations-table-section .common-data-table-wrap,
+.common-data-table-wrap {
+  border-color: var(--operations-line) !important;
+  background: #fff !important;
+  box-shadow: 0 7px 20px rgb(39 91 120 / 7%) !important;
+}
+
+.common-data-table thead {
+  background: #eaf5fb !important;
+  color: var(--water-tone-deep) !important;
+}
+
+.common-data-table tbody tr:hover {
+  background: #f0f9fd !important;
+}
+
+/* Match the specificity of the legacy admin readability layer. */
+html body .operations-page.waterdrop-workspace--operator {
+  background:
+    radial-gradient(circle at 88% 5%, rgb(72 171 216 / 14%), transparent 25%),
+    linear-gradient(145deg, #eaf5fb, #f5fafc) !important;
+  color: var(--water-tone-ink) !important;
+}
+
+html body .operations-page.waterdrop-workspace--operator .operations-topbar {
+  border-color: rgb(255 255 255 / 22%) !important;
+  background:
+    radial-gradient(circle at 16% 0%, rgb(102 215 232 / 35%), transparent 28%),
+    linear-gradient(165deg, #2386b7, #176b9e 72%, #115783) !important;
+  background-image:
+    radial-gradient(circle at 16% 0%, rgb(102 215 232 / 35%), transparent 28%),
+    linear-gradient(165deg, #2386b7, #176b9e 72%, #115783) !important;
+  box-shadow: 10px 0 28px rgb(28 93 132 / 13%) !important;
+}
+
+html body .operations-page :is(.operations-brand strong, .operations-user strong) {
+  color: #fff !important;
+}
+
+html body .operations-page :is(.operations-brand small, .operations-user small, .operations-navigation::before) {
+  color: rgb(255 255 255 / 67%) !important;
+}
+
+html body .operations-page.waterdrop-workspace--operator .operations-navigation::before {
+  color: rgb(255 255 255 / 67%) !important;
+}
+
+html body .operations-page .operations-brand > span {
+  border-color: rgb(255 255 255 / 74%) !important;
+  background: #fff !important;
+  color: var(--water-tone-primary-strong) !important;
+  box-shadow: 0 8px 18px rgb(7 74 117 / 17%) !important;
+}
+
+html body .operations-page .operations-navigation a,
+html body .operations-page .operations-navigation a:first-of-type {
+  border-color: transparent !important;
+  background: transparent !important;
+  color: rgb(255 255 255 / 79%) !important;
+  box-shadow: none !important;
+}
+
+html body .operations-page .operations-navigation a:hover {
+  border-color: rgb(255 255 255 / 24%) !important;
+  background: rgb(255 255 255 / 11%) !important;
+  color: #fff !important;
+}
+
+html body .operations-page .operations-navigation a.is-active,
+html body .operations-page .operations-navigation a[aria-current="page"] {
+  border-color: rgb(255 255 255 / 76%) !important;
+  background: #fff !important;
+  color: var(--water-tone-deep) !important;
+  box-shadow: 0 9px 22px rgb(7 72 113 / 18%) !important;
+}
+
+html body .operations-page .operations-navigation a span,
+html body .operations-page .operations-navigation a:first-of-type span {
+  border-color: rgb(255 255 255 / 20%) !important;
+  background: rgb(255 255 255 / 13%) !important;
+  color: #fff !important;
+}
+
+html body .operations-page .operations-navigation a.is-active span,
+html body .operations-page .operations-navigation a[aria-current="page"] span {
+  background: #e5f4fb !important;
+  color: var(--water-tone-primary-strong) !important;
+}
+
+html body .operations-page.waterdrop-workspace--operator :is(.operations-runtime-status, .operations-user) {
+  border-color: rgb(255 255 255 / 25%) !important;
+  background: rgb(255 255 255 / 10%) !important;
+  box-shadow: none !important;
+}
+
+html body .operations-page .operations-user button {
+  border-color: rgb(255 255 255 / 28%) !important;
+  background: rgb(255 255 255 / 12%) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+html body .operations-page.waterdrop-workspace--operator :is(.operations-page-head, .operations-panel, .operations-metric, .operations-insights-intro) {
+  border-color: var(--water-tone-line) !important;
+  background: rgb(255 255 255 / 95%) !important;
+  box-shadow: var(--water-tone-shadow) !important;
+}
+
+html body .operations-page.waterdrop-workspace--operator .operations-page-head {
+  background:
+    radial-gradient(circle at 92% 18%, rgb(57 176 206 / 18%), transparent 23%),
+    linear-gradient(135deg, #f9fdff, #e7f5fb) !important;
+  background-image:
+    radial-gradient(circle at 92% 18%, rgb(57 176 206 / 18%), transparent 23%),
+    linear-gradient(135deg, #f9fdff, #e7f5fb) !important;
+}
+
+html body .operations-page .operations-page-head::before,
+html body .operations-page .operations-page-head::after {
+  background: linear-gradient(90deg, var(--water-tone-primary), var(--water-tone-aqua)) !important;
+}
+
+html body .operations-page .operations-metric,
+html body .operations-page .operations-metric:first-child {
+  border-color: var(--water-tone-line) !important;
+  background: linear-gradient(145deg, #fff, #eff8fc) !important;
+  color: var(--water-tone-ink) !important;
+  box-shadow: 0 9px 24px rgb(40 93 124 / 9%) !important;
+}
+
+html body
+  .operations-page.waterdrop-workspace--operator
+  .operations-metric:first-child
+  strong {
+  color: var(--water-tone-ink) !important;
+  -webkit-text-fill-color: var(--water-tone-ink) !important;
+}
+
+html body
+  .operations-page.waterdrop-workspace--operator
+  .operations-metric:first-child
+  :is(span, small) {
+  color: var(--water-tone-muted) !important;
+  -webkit-text-fill-color: var(--water-tone-muted) !important;
+}
+
+html body .operations-page :is(.operations-filters input, .operations-filters select, .operations-filters__footer button) {
+  border-color: var(--water-tone-line) !important;
+  background: #fff !important;
+  color: var(--water-tone-ink) !important;
+  box-shadow: 0 4px 12px rgb(45 99 128 / 6%) !important;
+}
+
+html body .operations-page :is(.operations-filters input, .operations-filters select):focus {
+  border-color: var(--water-tone-primary) !important;
+  outline-color: rgb(74 159 208 / 22%) !important;
+}
+
+html body .operations-page .operations-chart__track {
+  background: #dcecf4 !important;
+}
+
+html body .operations-page .operations-chart__track i,
+html body
+  .operations-page.waterdrop-workspace--operator
+  .operations-chart
+  li:nth-child(even)
+  .operations-chart__track
+  i {
+  background: linear-gradient(90deg, var(--water-tone-primary), var(--water-tone-aqua)) !important;
+}
+
+html body .operations-page .common-data-table-wrap {
+  border-color: var(--water-tone-line) !important;
+  background: #fff !important;
+  box-shadow: 0 7px 20px rgb(39 91 120 / 7%) !important;
+}
+
+html body .operations-page .common-data-table thead {
+  background: #e8f4fa !important;
+  color: var(--water-tone-deep) !important;
+}
+
+html body .operations-page .common-data-table tbody tr:hover {
+  background: #f0f9fd !important;
+}
+
+/* Preserve list/intake geometry while repainting their page-specific canvases. */
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+  .consultant-queue-main,
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app.phone-inquiry-entry-app
+  .consultant-queue-main {
+  background:
+    radial-gradient(circle at 84% 4%, rgb(79 174 217 / 13%), transparent 27%),
+    linear-gradient(145deg, var(--water-tone-canvas), var(--water-tone-canvas-soft)) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+  .consultant-queue-panel,
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app.phone-inquiry-entry-app
+  :is(.phone-inquiry-main-header, .phone-inquiry-entry-panel) {
+  border-color: var(--water-tone-line) !important;
+  background: var(--water-tone-canvas-soft) !important;
+  box-shadow: none !important;
+}
+
+/* Match the detail/visit readability layer without changing its geometry. */
+html body .v6-workspace {
+  --v6-ink-950: #0d3155;
+  --v6-ink-900: #153a5d;
+  --v6-ink-800: #244c6d;
+  --v6-ink-700: #3b607d;
+  --v6-ink-600: #5d7890;
+  --v6-ink-500: #7890a4;
+  --v6-ink-400: #98acbc;
+  --v6-ink-300: #b8cbd8;
+  --v6-ink-200: #cfdee8;
+  --v6-ink-100: #e1edf3;
+  --v6-ink-50: #f1f8fb;
+  --v6-green: #2b93c5;
+  --v6-green-700: #1875a8;
+  --v6-green-100: #dff3fb;
+  --v6-green-50: #eff9fd;
+  --v6-lime: #65d9e5;
+  --v6-blue: #3c8fd0;
+  --v6-blue-100: #e2f1fb;
+  --v6-shadow-sm: 0 5px 16px rgb(40 93 124 / 8%);
+  --v6-shadow-md: 0 14px 36px rgb(40 93 124 / 13%);
+  --readable-bg: #edf7fc;
+  --readable-surface: #fff;
+  --readable-ink: #172b43;
+  --readable-muted: #698096;
+  --readable-line: #c9dfeb;
+  background:
+    radial-gradient(circle at 88% 4%, rgb(77 176 219 / 13%), transparent 26%),
+    var(--water-tone-canvas-soft) !important;
+  color: var(--water-tone-ink) !important;
+}
+
+html body .v6-workspace .v6-topbar,
+html body .v6-workspace .v6-sidebar {
+  border-color: rgb(255 255 255 / 20%) !important;
+  background:
+    radial-gradient(circle at 10% 0%, rgb(91 204 230 / 32%), transparent 28%),
+    linear-gradient(165deg, #207fad, #135e91 74%, #104f7c) !important;
+  box-shadow: 0 8px 24px rgb(24 91 130 / 14%) !important;
+}
+
+html body .v6-workspace .v6-sidebar :is(small, p) {
+  color: rgb(255 255 255 / 62%) !important;
+}
+
+html body .v6-workspace .v6-sidebar :is(.v6-nav-item, .v6-home-link) {
+  border-color: transparent !important;
+  background: transparent !important;
+  color: rgb(255 255 255 / 78%) !important;
+  box-shadow: none !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item:hover {
+  background: rgb(255 255 255 / 11%) !important;
+  color: #fff !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active,
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active:hover {
+  border-color: rgb(255 255 255 / 24%) !important;
+  background: rgb(255 255 255 / 16%) !important;
+  box-shadow: inset 3px 0 0 #71e0ea !important;
+  color: #fff !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item:not(.is-active) :is(span, strong, small),
+html body .v6-workspace .v6-sidebar .v6-home-link :is(span, strong, small) {
+  color: rgb(255 255 255 / 78%) !important;
+  -webkit-text-fill-color: rgb(255 255 255 / 78%) !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item.is-active :is(span, strong, small, b) {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body .v6-workspace .v6-sidebar .v6-nav-item > b {
+  border-color: rgb(255 255 255 / 24%) !important;
+  background: rgb(255 255 255 / 14%) !important;
+  color: #fff !important;
+}
+
+html body .v6-workspace :is(
+  .v6-page-head,
+  .v6-panel,
+  .v6-action-panel,
+  .v6-section,
+  .inquiry-v13-toolbar,
+  .inquiry-dashboard__metrics article,
+  .inquiry-dashboard__card,
+  .inquiry-dashboard__timeline,
+  .visit-v13-toolbar,
+  .visit-v13-context,
+  .visit-v13-form-panel,
+  .visit-v13-status-card
+) {
+  border-color: var(--water-tone-line) !important;
+  background: #fff !important;
+  background-image: none !important;
+  box-shadow: var(--v6-shadow-sm) !important;
+}
+
+html body .v6-workspace :is(input, select, textarea) {
+  border-color: var(--water-tone-line) !important;
+  background: #fff !important;
+  color: var(--water-tone-ink) !important;
+  box-shadow: inset 0 1px 0 #fff !important;
+}
+
+html body .v6-workspace :is(input, select, textarea):focus {
+  border-color: var(--water-tone-primary) !important;
+  outline-color: rgb(74 159 208 / 22%) !important;
+  box-shadow: 0 0 0 3px rgb(74 159 208 / 13%) !important;
+}
+
+html body .v6-workspace :is(.v6-button--primary, .visit-v13-actions button.is-primary) {
+  border-color: var(--water-tone-primary-strong) !important;
+  background: linear-gradient(135deg, var(--water-tone-primary), var(--water-tone-primary-strong)) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 18px rgb(34 126 178 / 18%) !important;
+}
+
+html body .v6-workspace :is(.v6-button--secondary, .visit-v13-actions button:not(.is-primary)) {
+  border-color: var(--water-tone-line) !important;
+  background: #fff !important;
+  color: var(--water-tone-deep) !important;
+  box-shadow: 0 4px 12px rgb(45 99 128 / 6%) !important;
+}

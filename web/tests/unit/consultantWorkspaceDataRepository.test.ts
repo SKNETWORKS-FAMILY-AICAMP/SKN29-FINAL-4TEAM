@@ -113,6 +113,26 @@ describe("상담사 실제 API 전환 Repository", () => {
     expect(detail.data.customer).not.toHaveProperty("serviceAddress");
   });
 
+  it("디자인 Mock 데이터셋은 상태별 다건 문의를 명시적으로 제공한다", async () => {
+    const repository = createMockConsultantWorkspaceDataRepository(
+      "DESIGN_SCENARIOS",
+    );
+
+    const newInquiries = await repository.listInquiries({
+      status: ["CONSULTATION_REQUIRED", "REOPENED"],
+      page: 1,
+      size: 100,
+    });
+    const inProgressInquiries = await repository.listInquiries({
+      status: ["CONSULTATION_IN_PROGRESS", "VISIT_SCHEDULED"],
+      page: 1,
+      size: 100,
+    });
+
+    expect(newInquiries.data.pageInfo.total).toBeGreaterThan(0);
+    expect(inProgressInquiries.data.pageInfo.total).toBeGreaterThan(0);
+  });
+
   it("Remote 상세 조회는 공개 inquiry id만 주소에 사용한다", async () => {
     const dto: ConsultantInquiryDetailDto = {
       inquiry: {

@@ -1,4 +1,5 @@
 import {
+  type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
   useEffect,
   useMemo,
@@ -46,7 +47,10 @@ import type {
   CounselorWorkBucket,
 } from "../../features/consultation/model/consultantWorkspaceTypes";
 import type { ConsultantInquiryListItemViewModel } from "../../features/consultation/model/consultantWorkspaceRemoteMapper";
-import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
+import {
+  consultantWorkspaceRepository,
+  createConsultantWorkspaceRepository,
+} from "../../features/consultation/repositories/consultantWorkspaceRepository";
 import {
   consultantWorkspaceDataRepository,
   createMockConsultantInquiryListViewModel,
@@ -94,7 +98,7 @@ const RISK_SECTIONS: readonly {
 ];
 
 type RiskSectionStatusFilter = "ALL" | ConsultantInquiryStatusDto;
-type WorkFocus = "ALL" | "CALL" | "WAITING" | "AI_REVIEW";
+type WorkFocus = "ALL" | "NEW" | "IN_PROGRESS" | "AI_REVIEW";
 type AiReviewDecision = "APPROVED" | "REJECTED";
 type DashboardInquiryListItem = Omit<
   ConsultantInquiryListItemViewModel,
@@ -114,11 +118,37 @@ const WORK_FOCUS_OPTIONS: readonly {
   id: WorkFocus;
   label: string;
 }[] = [
-  { id: "ALL", label: "전체 업무" },
-  { id: "CALL", label: "상담 연결" },
-  { id: "WAITING", label: "장기 대기" },
-  { id: "AI_REVIEW", label: "AI 검수" },
+  { id: "ALL", label: "전체 문의" },
+  { id: "NEW", label: "새 문의" },
+  { id: "IN_PROGRESS", label: "처리 중인 문의" },
 ];
+
+const DASHBOARD_NOTICES = [
+  { category: "긴급", title: "긴급 문의 응대 절차 안내", department: "고객케어팀", date: "2026.08.18" },
+  { category: "이벤트", title: "고객 만족도 조사 참여 이벤트", department: "고객경험팀", date: "2026.08.18" },
+  { category: "시스템", title: "상담 시스템 정기 점검 안내", department: "시스템운영팀", date: "2026.08.17" },
+  { category: "근무", title: "8월 상담 근무 일정 확인 요청", department: "고객케어팀", date: "2026.08.16" },
+  { category: "복지", title: "임직원 건강검진 신청 안내", department: "경영지원팀", date: "2026.08.15" },
+  { category: "교육", title: "정수기 안전 점검 상담 교육", department: "품질관리팀", date: "2026.08.14" },
+] as const;
+
+const DASHBOARD_DEPARTMENTS = [
+  "고객케어팀",
+  "품질관리팀",
+  "방문지원팀",
+  "시스템운영팀",
+] as const;
+
+const DASHBOARD_EMPLOYEE_CONTACTS = [
+  { name: "김하윤", department: "고객케어팀", position: "팀장", extension: "101", mobile: "010-2101-1001", email: "hayoon.kim@waterbridge.co.kr" },
+  { name: "한예나", department: "고객케어팀", position: "상담사", extension: "102", mobile: "010-2101-1002", email: "yena.han@waterbridge.co.kr" },
+  { name: "임현우", department: "품질관리팀", position: "매니저", extension: "201", mobile: "010-2201-2001", email: "hyunwoo.lim@waterbridge.co.kr" },
+  { name: "박지우", department: "품질관리팀", position: "담당", extension: "202", mobile: "010-2201-2002", email: "jiwoo.park@waterbridge.co.kr" },
+  { name: "이서연", department: "방문지원팀", position: "매니저", extension: "301", mobile: "010-2301-3001", email: "seoyeon.lee@waterbridge.co.kr" },
+  { name: "최지우", department: "방문지원팀", position: "담당", extension: "302", mobile: "010-2301-3002", email: "jiwoo.choi@waterbridge.co.kr" },
+  { name: "정하윤", department: "시스템운영팀", position: "매니저", extension: "401", mobile: "010-2401-4001", email: "hayoon.jeong@waterbridge.co.kr" },
+  { name: "강민준", department: "시스템운영팀", position: "담당", extension: "402", mobile: "010-2401-4002", email: "minjun.kang@waterbridge.co.kr" },
+] as const;
 
 function getWaitingMinutes(inquiry: DashboardInquiryListItem) {
   return Math.max(0, Math.floor(inquiry.waitingSeconds / 60));
@@ -147,10 +177,6 @@ function getCallReason(inquiry: DashboardInquiryListItem) {
   if (inquiry.status === "CONSULTATION_REQUIRED") return "상담 연결 요청";
   if (inquiry.priority === "URGENT") return "긴급 처리 요청";
   return "현재 단계 확인";
-}
-
-function needsWaitingAttention(inquiry: DashboardInquiryListItem) {
-  return inquiry.waitingSeconds >= 90 * 60;
 }
 
 function getNextActionLabel(inquiry: DashboardInquiryListItem) {
@@ -222,7 +248,10 @@ export default function ConsultantDashboardPage() {
     useState<ConsultantRiskLevelDto | null>(null);
   const [activeRiskSection, setActiveRiskSection] =
     useState<ConsultantRiskLevelDto>("danger");
-  const [workFocus, setWorkFocus] = useState<WorkFocus>("ALL");
+  const [workFocus, setWorkFocus] = useState<WorkFocus>("NEW");
+  const [selectedContactDepartment, setSelectedContactDepartment] =
+    useState<string | null>(null);
+  const [contactQuery, setContactQuery] = useState("");
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
   const [reviewDrafts, setReviewDrafts] = useState<Record<string, string>>({});
   const [reviewDecisions, setReviewDecisions] = useState<
@@ -284,25 +313,65 @@ export default function ConsultantDashboardPage() {
     [],
   );
   const overviewQuery = useConsultantInquiryListQuery(overviewRepositoryQuery);
+  const remoteOverviewHasEmptyWorkBucket =
+    overviewQuery.status === "success" &&
+    (!overviewQuery.data?.items.some((inquiry) =>
+      BUCKET_STATUSES.NEW.includes(inquiry.status),
+    ) ||
+      !overviewQuery.data?.items.some((inquiry) =>
+        BUCKET_STATUSES.IN_PROGRESS.includes(inquiry.status),
+      ));
+  const useDesignMockFallback =
+    import.meta.env.DEV &&
+    consultantWorkspaceDataRepository.dataSource === "REMOTE" &&
+    (remoteOverviewHasEmptyWorkBucket ||
+      listQuery.status === "error" ||
+      overviewQuery.status === "error" ||
+      (listQuery.status === "success" &&
+        (listQuery.data?.pageInfo.total ?? 0) === 0));
+  const useDashboardMockData =
+    consultantWorkspaceDataRepository.dataSource === "MOCK" ||
+    useDesignMockFallback;
+  const designMockWorkspaceRepository = useMemo(
+    () => createConsultantWorkspaceRepository(true, "DESIGN_SCENARIOS"),
+    [],
+  );
+  const activeWorkspaceRepository = useDesignMockFallback
+    ? designMockWorkspaceRepository
+    : consultantWorkspaceRepository;
   const queryData = useMemo(
-    () =>
-      consultantWorkspaceDataRepository.dataSource === "MOCK"
+    () => {
+      if (useDesignMockFallback) {
+        return createMockConsultantInquiryListViewModel(
+          repositoryQuery,
+          "DESIGN_SCENARIOS",
+        );
+      }
+      return consultantWorkspaceDataRepository.dataSource === "MOCK"
         ? createMockConsultantInquiryListViewModel(repositoryQuery)
-        : listQuery.data,
-    [listQuery.data, repositoryQuery],
+        : listQuery.data;
+    },
+    [listQuery.data, repositoryQuery, useDesignMockFallback],
   );
   const overviewData = useMemo(
-    () =>
-      consultantWorkspaceDataRepository.dataSource === "MOCK"
+    () => {
+      if (useDesignMockFallback) {
+        return createMockConsultantInquiryListViewModel(
+          overviewRepositoryQuery,
+          "DESIGN_SCENARIOS",
+        );
+      }
+      return consultantWorkspaceDataRepository.dataSource === "MOCK"
         ? createMockConsultantInquiryListViewModel(overviewRepositoryQuery)
-        : overviewQuery.data,
-    [overviewQuery.data, overviewRepositoryQuery],
+        : overviewQuery.data;
+    },
+    [overviewQuery.data, overviewRepositoryQuery, useDesignMockFallback],
   );
   const loadState = ["loading", "error", "forbidden"].includes(
     mockState ?? "",
   )
     ? (mockState as "loading" | "error" | "forbidden")
-    : consultantWorkspaceDataRepository.dataSource === "MOCK"
+    : useDashboardMockData
       ? "ready"
       : listQuery.isForbidden
         ? "forbidden"
@@ -410,11 +479,11 @@ export default function ConsultantDashboardPage() {
   const mockInquiryDetails = useMemo(
     () =>
       new Map<string, CounselorInquiry>(
-        consultantWorkspaceRepository
+        activeWorkspaceRepository
           .listConsultantQueue()
           .map((inquiry) => [inquiry.inquiryId, inquiry] as const),
       ),
-    [],
+    [activeWorkspaceRepository],
   );
   const aiReviewCandidates = overviewItems
     .filter(
@@ -431,7 +500,8 @@ export default function ConsultantDashboardPage() {
         riskScore[right.riskLevel] - riskScore[left.riskLevel] ||
         right.waitingSeconds - left.waitingSeconds
       );
-    });
+    })
+    .slice(0, useDashboardMockData ? 30 : undefined);
   const selectedReview =
     aiReviewCandidates.find(
       (inquiry) => inquiry.inquiryId === selectedReviewId,
@@ -447,39 +517,47 @@ export default function ConsultantDashboardPage() {
       selectedReviewDetail?.aiSummaryOriginal ??
       "")
     : "";
-  const immediateCallCount = overviewItems.filter(requiresImmediateCall).length;
-  const waitingAttentionCount = overviewItems.filter(
-    needsWaitingAttention,
-  ).length;
+  const totalInquiryCount =
+    bucketCounts.NEW + bucketCounts.IN_PROGRESS;
   const aiReviewCandidateIds = new Set(
     aiReviewCandidates.map((inquiry) => inquiry.inquiryId),
   );
-  const pendingWorkCount = overviewData?.pageInfo.total ?? overviewItems.length;
-  const selectedBase = consultantWorkspaceRepository.findInquiry(selectedInquiryId);
+  const selectedBase = activeWorkspaceRepository.findInquiry(selectedInquiryId);
   const selectedInquiry = selectedBase
     ? {
         ...selectedBase,
         ...inquiryStateUpdates[selectedBase.inquiryId],
       }
     : null;
-  const changeBucket = (bucket: CounselorWorkBucket) => {
-    setActiveBucket(bucket);
-    setWorkFocus("ALL");
-    setRiskSectionStatusFilters(INITIAL_RISK_SECTION_STATUS_FILTERS);
-    setOpenRiskStatusFilter(null);
-    setSelectedInquiryId(null);
-    if (filters.page !== 1) setFilters({ ...filters, page: 1 });
-  };
-
+  const dashboardCounselorName =
+    user?.displayName === "합성 상담사 001"
+      ? "한예나"
+      : (user?.displayName ?? "상담사");
   const changeRiskSection = (riskLevel: ConsultantRiskLevelDto) => {
     setActiveRiskSection(riskLevel);
     setOpenRiskStatusFilter(null);
     setSelectedInquiryId(null);
   };
 
+  const changeWorkFocus = (focus: WorkFocus) => {
+    if (focus === "NEW") {
+      setActiveBucket("NEW");
+    } else if (focus === "IN_PROGRESS") {
+      setActiveBucket("IN_PROGRESS");
+    }
+    setWorkFocus(focus);
+    setRiskSectionStatusFilters(INITIAL_RISK_SECTION_STATUS_FILTERS);
+    setOpenRiskStatusFilter(null);
+    setSelectedInquiryId(null);
+    if (filters.page !== 1) setFilters({ ...filters, page: 1 });
+  };
+
   const matchesWorkFocus = (inquiry: DashboardInquiryListItem) => {
-    if (workFocus === "CALL") return requiresImmediateCall(inquiry);
-    if (workFocus === "WAITING") return needsWaitingAttention(inquiry);
+    if (inquiry.status === "UNKNOWN") return false;
+    if (workFocus === "NEW") return BUCKET_STATUSES.NEW.includes(inquiry.status);
+    if (workFocus === "IN_PROGRESS") {
+      return BUCKET_STATUSES.IN_PROGRESS.includes(inquiry.status);
+    }
     if (workFocus === "AI_REVIEW") {
       return aiReviewCandidateIds.has(inquiry.inquiryId);
     }
@@ -552,14 +630,43 @@ export default function ConsultantDashboardPage() {
     const inquiryId = toInquiryId(rawInquiryId);
     if (!inquiryId) return;
 
-    if (consultantWorkspaceDataRepository.dataSource === "MOCK") {
+    if (useDashboardMockData) {
       setSelectedInquiryId(inquiryId);
       return;
     }
     navigate(createInquiryDetailPath(inquiryId), {
-      state: { returnTo: `/consultant/inquiries${location.search}` },
+      state: { returnTo: `/consultant/dashboard${location.search}` },
     });
   };
+
+  const openInquiryList = (
+    bucket: "ALL" | "NEW" | "IN_PROGRESS",
+    query = "",
+  ) => {
+    const params = new URLSearchParams({ bucket });
+    if (query.trim()) params.set("q", query.trim());
+    navigate(`/consultant/inquiries?${params.toString()}`);
+  };
+
+  const submitDashboardSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const query = String(new FormData(event.currentTarget).get("query") ?? "");
+    if (!query.trim()) return;
+    openInquiryList("ALL", query);
+  };
+
+  const normalizedContactQuery = contactQuery.trim().toLowerCase();
+  const visibleContactEmployees = DASHBOARD_EMPLOYEE_CONTACTS.filter(
+    (employee) =>
+      (!selectedContactDepartment ||
+        employee.department === selectedContactDepartment) &&
+      (!normalizedContactQuery ||
+        Object.values(employee).some((value) =>
+          value.toLowerCase().includes(normalizedContactQuery),
+        )),
+  );
+  const showContactTable =
+    selectedContactDepartment !== null || normalizedContactQuery.length > 0;
 
   return (
     <div className="simple-consultant-app consultant-queue-app">
@@ -569,11 +676,15 @@ export default function ConsultantDashboardPage() {
         </h1>
 
         <header className="simple-topbar consultant-main-header">
-          <div className="consultant-queue-tools consultant-header-search">
+          <form
+            className="consultant-queue-tools consultant-header-search"
+            onSubmit={submitDashboardSearch}
+          >
             <label className="simple-search">
               <span aria-hidden="true">⌕</span>
               <input
                 type="search"
+                name="query"
                 aria-label="문의 검색"
                 value={queryInput}
                 onCompositionStart={() => {
@@ -581,26 +692,16 @@ export default function ConsultantDashboardPage() {
                 }}
                 onCompositionEnd={(event) => {
                   isQueryComposingRef.current = false;
-                  const query = event.currentTarget.value;
-                  setQueryInput(query);
-                  setFilters({ ...filters, query, page: 1 });
+                  setQueryInput(event.currentTarget.value);
                 }}
                 onChange={(event) => {
-                  const query = event.target.value;
-                  setQueryInput(query);
-                  if (!isQueryComposingRef.current) {
-                    setFilters({ ...filters, query, page: 1 });
-                  }
+                  setQueryInput(event.target.value);
                 }}
                 placeholder="고객명, 증상, 문의번호 검색"
               />
             </label>
-            {hasChangedConditions && (
-              <button type="button" onClick={resetFilters}>
-                검색 초기화
-              </button>
-            )}
-          </div>
+            <button type="submit">검색</button>
+          </form>
 
           <div className="simple-user">
             <span className="simple-user__avatar-frame" aria-hidden="true">
@@ -611,7 +712,7 @@ export default function ConsultantDashboardPage() {
               />
             </span>
             <strong className="simple-user__name">
-              {user?.displayName ?? "상담사"}
+              {dashboardCounselorName}
             </strong>
             <svg
               className="simple-user__chevron"
@@ -625,75 +726,176 @@ export default function ConsultantDashboardPage() {
         </header>
 
         <ConsultantQueueSidebar
-          activeBucket={activeBucket}
+          activeBucket={null}
           bucketCounts={bucketCounts}
-          onBucketChange={changeBucket}
+          dashboardActive
         />
 
-        <section className="counselor-home-summary" aria-labelledby="counselor-home-title">
+        <section
+          id="consultant-dashboard-panel"
+          className="counselor-home-summary"
+          aria-labelledby="counselor-home-title"
+        >
           <div className="counselor-home-summary__intro">
-            <span>MY WORKSPACE</span>
             <h1 id="counselor-home-title">
-              {user?.displayName ?? "상담사"}님의 지금 할 일
+              {dashboardCounselorName}님의{" "}
+              <br />
+              지금 할 일
             </h1>
-            <p>안전 확인과 상담 연결이 필요한 문의부터 순서대로 보여드립니다.</p>
           </div>
 
-          <div className="counselor-home-metrics" aria-label="현재 목록 기준 업무 요약">
+          <div className="counselor-home-metrics" aria-label="업무 요약">
             <button
               type="button"
-              className={`counselor-home-metric counselor-home-metric--call${
-                workFocus === "CALL" ? " is-active" : ""
-              }`}
-              aria-pressed={workFocus === "CALL"}
-              onClick={() => setWorkFocus(workFocus === "CALL" ? "ALL" : "CALL")}
+              className="counselor-home-metric counselor-home-metric--total"
+              onClick={() => openInquiryList("ALL")}
             >
-              <span>상담 연결 우선</span>
-              <strong>{immediateCallCount}</strong>
-              <small>안전·재문의·상담 대기</small>
+              <span>전체 문의 수</span>
+              <strong>{totalInquiryCount}</strong>
             </button>
             <button
               type="button"
-              className={`counselor-home-metric counselor-home-metric--work${
-                workFocus === "ALL" ? " is-active" : ""
-              }`}
-              aria-pressed={workFocus === "ALL"}
-              onClick={() => setWorkFocus("ALL")}
+              className="counselor-home-metric counselor-home-metric--work"
+              onClick={() => openInquiryList("NEW")}
             >
-              <span>내 처리 대기</span>
-              <strong>{pendingWorkCount}</strong>
-              <small>신규·진행 중 전체</small>
+              <span>새 문의</span>
+              <strong>{bucketCounts.NEW}</strong>
             </button>
             <button
               type="button"
-              className={`counselor-home-metric counselor-home-metric--waiting${
-                workFocus === "WAITING" ? " is-active" : ""
-              }`}
-              aria-pressed={workFocus === "WAITING"}
-              onClick={() =>
-                setWorkFocus(workFocus === "WAITING" ? "ALL" : "WAITING")
-              }
+              className="counselor-home-metric counselor-home-metric--waiting"
+              onClick={() => openInquiryList("IN_PROGRESS")}
             >
-              <span>장기 대기</span>
-              <strong>{waitingAttentionCount}</strong>
-              <small>접수 후 90분 이상</small>
+              <span>처리 중인 문의</span>
+              <strong>{bucketCounts.IN_PROGRESS}</strong>
             </button>
             <button
               type="button"
-              className={`counselor-home-metric counselor-home-metric--ai${
-                workFocus === "AI_REVIEW" ? " is-active" : ""
-              }`}
-              aria-pressed={workFocus === "AI_REVIEW"}
-              onClick={() =>
-                setWorkFocus(workFocus === "AI_REVIEW" ? "ALL" : "AI_REVIEW")
-              }
+              className="counselor-home-metric counselor-home-metric--ai"
+              onClick={() => openInquiryList("IN_PROGRESS")}
             >
-              <span>AI 요약 검수</span>
+              <span>AI 검토</span>
               <strong>{aiReviewCandidates.length}</strong>
-              <small>현재 목록 기준</small>
             </button>
           </div>
         </section>
+
+        <section className="counselor-dashboard-info" aria-label="사내 업무 정보">
+          <article className="counselor-dashboard-info__panel">
+            <header>
+              <h2>공지사항</h2>
+            </header>
+            <ul className="counselor-dashboard-notices">
+              {DASHBOARD_NOTICES.map((notice) => (
+                <li key={notice.title}>
+                  <div>
+                    <div className="counselor-dashboard-notices__headline">
+                      <em data-category={notice.category}>{notice.category}</em>
+                      <strong>{notice.title}</strong>
+                    </div>
+                    <span>{notice.department}</span>
+                  </div>
+                  <time dateTime={notice.date.replaceAll(".", "-")}>{notice.date}</time>
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="counselor-dashboard-info__panel">
+            <header>
+              <h2>직원 연락처</h2>
+              <div className="counselor-dashboard-contact-tools">
+                <label>
+                  <span aria-hidden="true">⌕</span>
+                  <input
+                    type="search"
+                    aria-label="직원 연락처 검색"
+                    placeholder="직원 검색"
+                    value={contactQuery}
+                    onChange={(event) => setContactQuery(event.target.value)}
+                  />
+                </label>
+              {showContactTable && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedContactDepartment(null);
+                    setContactQuery("");
+                  }}
+                >
+                  조직도
+                </button>
+              )}
+              </div>
+            </header>
+            {showContactTable ? (
+              <div className="counselor-dashboard-contact-table-wrap">
+                <strong className="counselor-dashboard-contact-table__title">
+                  {selectedContactDepartment ?? "검색 결과"}
+                </strong>
+                <table className="counselor-dashboard-contact-table">
+                  <thead>
+                    <tr>
+                      <th>직원명</th>
+                      <th>부서명</th>
+                      <th>직책</th>
+                      <th>내선번호</th>
+                      <th>휴대폰번호</th>
+                      <th>이메일</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleContactEmployees.map((employee) => (
+                      <tr key={employee.email}>
+                        <td>{employee.name}</td>
+                        <td>{employee.department}</td>
+                        <td>{employee.position}</td>
+                        <td>{employee.extension}</td>
+                        <td>{employee.mobile}</td>
+                        <td>
+                          <a href={`mailto:${employee.email}`}>
+                            {employee.email}
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                    {visibleContactEmployees.length === 0 && (
+                      <tr>
+                        <td colSpan={6}>검색 결과가 없습니다.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="counselor-dashboard-org" aria-label="조직도">
+                <strong>고객지원본부</strong>
+                <span aria-hidden="true" />
+                <div>
+                  {DASHBOARD_DEPARTMENTS.map((department) => (
+                    <button
+                      key={department}
+                      type="button"
+                      onClick={() => setSelectedContactDepartment(department)}
+                    >
+                      <b>{department}</b>
+                      <small>
+                        {
+                          DASHBOARD_EMPLOYEE_CONTACTS.filter(
+                            (employee) => employee.department === department,
+                          ).length
+                        }
+                        명
+                      </small>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </article>
+        </section>
+
+        <div hidden>
 
         <section
           id="consultant-queue-panel"
@@ -707,11 +909,7 @@ export default function ConsultantDashboardPage() {
           >
             <header className="counselor-work-queue__header">
               <div>
-                <span>PRIORITY QUEUE</span>
-                <h2>지금 처리할 업무</h2>
-                <p>
-                  {WORK_BUCKET_LABELS[activeBucket]} · 위험도와 접수 경과 기준 정렬
-                </p>
+                <h2>처리 필요한 업무</h2>
               </div>
               <nav className="counselor-work-focus" aria-label="업무 빠른 필터">
                 {WORK_FOCUS_OPTIONS.map((option) => (
@@ -720,7 +918,7 @@ export default function ConsultantDashboardPage() {
                     type="button"
                     className={workFocus === option.id ? "is-active" : ""}
                     aria-pressed={workFocus === option.id}
-                    onClick={() => setWorkFocus(option.id)}
+                    onClick={() => changeWorkFocus(option.id)}
                   >
                     {option.label}
                   </button>
@@ -835,11 +1033,8 @@ export default function ConsultantDashboardPage() {
                     aria-labelledby={`consultant-risk-tab-${section.id}`}
                     tabIndex={0}
                   >
-                    <header className="consultant-risk-section__head">
-                      <h2 id={`consultant-risk-section-${section.id}`}>
-                        {section.label} 목록
-                      </h2>
-                      {activeBucket !== "NEW" && (
+                    {activeBucket !== "NEW" && (
+                      <header className="consultant-risk-section__head">
                         <div className="consultant-risk-section__tools">
                           <span className="consultant-risk-section__count">
                             {inquiries.length}
@@ -918,8 +1113,8 @@ export default function ConsultantDashboardPage() {
                             )}
                           </div>
                         </div>
-                      )}
-                    </header>
+                      </header>
+                    )}
 
                     <div className="consultant-risk-section__list">
                       {inquiries.length === 0 ? (
@@ -954,7 +1149,7 @@ export default function ConsultantDashboardPage() {
                                 우선 {PRIORITY_LABELS[inquiry.priority]}
                               </b>
                               {requiresImmediateCall(inquiry) && (
-                                <em>상담 연결 우선</em>
+                                <em>전화 연결 필요</em>
                               )}
                             </span>
                             <span className="consultant-list-item__subject">
@@ -1133,6 +1328,7 @@ export default function ConsultantDashboardPage() {
             />
           )}
         </section>
+        </div>
       </main>
 
       {selectedInquiry && (
@@ -1178,11 +1374,19 @@ export default function ConsultantDashboardPage() {
                     ...current,
                     [selectedInquiry.inquiryId]: update,
                   }));
-                  setActiveBucket(getCounselorWorkBucket(update.status));
+                  const nextBucket = getCounselorWorkBucket(update.status);
+                  setActiveBucket(nextBucket);
+                  setWorkFocus(
+                    nextBucket === "NEW"
+                      ? "NEW"
+                      : nextBucket === "IN_PROGRESS"
+                        ? "IN_PROGRESS"
+                        : "ALL",
+                  );
                 }}
                 onOpenFullDetail={() =>
                   navigate(createInquiryDetailPath(selectedInquiry.inquiryId), {
-                    state: { returnTo: `/consultant/inquiries${location.search}` },
+                    state: { returnTo: `/consultant/dashboard${location.search}` },
                   })
                 }
               />

@@ -4,6 +4,7 @@ import OperationsDashboardPage from "../../pages/admin/OperationsDashboardPage";
 import OperationsInfographicPage from "../../pages/admin/OperationsInfographicPage";
 import LoginPage from "../../pages/auth/LoginPage";
 import ConsultantDashboardPage from "../../pages/consultant/ConsultantDashboardPage";
+import ConsultantInquiryListPage from "../../pages/consultant/ConsultantInquiryListPage";
 import InquiryDetailPage from "../../pages/consultant/InquiryDetailPage";
 import PhoneInquiryCreatePage from "../../pages/consultant/PhoneInquiryCreatePage";
 import VisitTransitionPage from "../../pages/consultant/VisitTransitionPage";
@@ -26,7 +27,7 @@ function HomeRedirect() {
     return <Navigate to={ROUTE_PATHS.login} replace />;
   }
   if (user.roleCode === "CONSULTANT") {
-    return <Navigate to={ROUTE_PATHS.consultantInquiryList} replace />;
+    return <Navigate to={ROUTE_PATHS.consultantDashboard} replace />;
   }
   if (user.roleCode === "OPERATOR") {
     return <Navigate to={ROUTE_PATHS.adminDashboard} replace />;
@@ -51,8 +52,12 @@ export function AppRoutes() {
           <Route element={<RoleGuard allowedRoles={["CONSULTANT"]} />}>
             <Route element={<ConsultantLayout />}>
               <Route
-                path={ROUTE_PATHS.consultantInquiryList}
+                path={ROUTE_PATHS.consultantDashboard}
                 element={<ConsultantDashboardPage />}
+              />
+              <Route
+                path={ROUTE_PATHS.consultantInquiryList}
+                element={<ConsultantInquiryListPage />}
               />
               <Route
                 path={ROUTE_PATHS.consultantPhoneInquiryCreate}

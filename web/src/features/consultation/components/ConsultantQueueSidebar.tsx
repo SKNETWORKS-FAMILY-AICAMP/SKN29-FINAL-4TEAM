@@ -5,13 +5,28 @@ import waterBridgeLogo from "../../../assets/images/water-bridge-logo-transparen
 import { WORK_BUCKET_LABELS } from "../model/consultantWorkspaceModel";
 import type { CounselorWorkBucket } from "../model/consultantWorkspaceTypes";
 
-const WORK_BUCKETS: readonly CounselorWorkBucket[] = [
+export type ConsultantInquiryBucket = CounselorWorkBucket | "ALL";
+
+const WORK_BUCKETS: readonly ConsultantInquiryBucket[] = [
+  "ALL",
   "NEW",
   "IN_PROGRESS",
   "COMPLETED",
 ];
 
-function WorkBucketIcon({ bucket }: { bucket: CounselorWorkBucket }) {
+function WorkBucketIcon({ bucket }: { bucket: ConsultantInquiryBucket }) {
+  if (bucket === "ALL") {
+    return (
+      <svg
+        className="consultant-work-tab__icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path d="M5 5.5h14v4H5zM5 12h14v6.5H5z" />
+      </svg>
+    );
+  }
   if (bucket === "NEW") {
     return (
       <svg
@@ -67,22 +82,40 @@ function PhoneInquiryIcon() {
   );
 }
 
+function DashboardIcon() {
+  return (
+    <svg
+      className="consultant-work-tab__icon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="3.5" width="7" height="4.5" rx="1.5" />
+      <rect x="13.5" y="10.5" width="7" height="10" rx="1.5" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+    </svg>
+  );
+}
+
 interface ConsultantQueueSidebarProps {
-  activeBucket: CounselorWorkBucket | null;
+  activeBucket: ConsultantInquiryBucket | null;
   bucketCounts?: Readonly<Record<CounselorWorkBucket, number>>;
+  dashboardActive?: boolean;
   phoneEntryActive?: boolean;
-  onBucketChange?: (bucket: CounselorWorkBucket) => void;
+  onBucketChange?: (bucket: ConsultantInquiryBucket) => void;
 }
 
 export default function ConsultantQueueSidebar({
   activeBucket,
   bucketCounts,
+  dashboardActive = false,
   phoneEntryActive = false,
   onBucketChange,
 }: ConsultantQueueSidebarProps) {
   const navigate = useNavigate();
 
-  const openBucket = (bucket: CounselorWorkBucket) => {
+  const openBucket = (bucket: ConsultantInquiryBucket) => {
     if (onBucketChange) {
       onBucketChange(bucket);
       return;
@@ -109,33 +142,60 @@ export default function ConsultantQueueSidebar({
         aria-label="상담사 메뉴"
         role="tablist"
       >
+        <Link
+          to={ROUTE_PATHS.consultantDashboard}
+          role="tab"
+          aria-selected={dashboardActive}
+          aria-controls="consultant-dashboard-panel"
+          className={`consultant-work-tab consultant-work-tab--dashboard${
+            dashboardActive ? " is-active" : ""
+          }`}
+        >
+          <span>
+            <DashboardIcon />
+            <strong>업무 대시보드</strong>
+          </span>
+        </Link>
+
         {WORK_BUCKETS.map((bucket) => (
           <button
             key={bucket}
             type="button"
             role="tab"
-            aria-selected={!phoneEntryActive && activeBucket === bucket}
+            aria-selected={
+              !dashboardActive && !phoneEntryActive && activeBucket === bucket
+            }
             aria-controls="consultant-queue-panel"
             className={`consultant-work-tab consultant-work-tab--${bucket.toLowerCase()}${
-              !phoneEntryActive && activeBucket === bucket ? " is-active" : ""
+              !dashboardActive && !phoneEntryActive && activeBucket === bucket
+                ? " is-active"
+                : ""
             }`}
             onClick={() => openBucket(bucket)}
           >
             <span>
               <WorkBucketIcon bucket={bucket} />
-              <strong>{WORK_BUCKET_LABELS[bucket]}</strong>
+              <strong>{bucket === "ALL" ? "전체 문의" : WORK_BUCKET_LABELS[bucket]}</strong>
             </span>
-            {bucketCounts && <b>{bucketCounts[bucket]}</b>}
+            {bucketCounts && (
+              <b>
+                {bucket === "ALL"
+                  ? bucketCounts.NEW +
+                    bucketCounts.IN_PROGRESS +
+                    bucketCounts.COMPLETED
+                  : bucketCounts[bucket]}
+              </b>
+            )}
           </button>
         ))}
 
         <Link
           to={ROUTE_PATHS.consultantPhoneInquiryCreate}
           role="tab"
-          aria-selected={phoneEntryActive}
+          aria-selected={!dashboardActive && phoneEntryActive}
           aria-controls="consultant-phone-entry-panel"
           className={`consultant-work-tab consultant-work-tab--phone${
-            phoneEntryActive ? " is-active" : ""
+            !dashboardActive && phoneEntryActive ? " is-active" : ""
           }`}
         >
           <span>

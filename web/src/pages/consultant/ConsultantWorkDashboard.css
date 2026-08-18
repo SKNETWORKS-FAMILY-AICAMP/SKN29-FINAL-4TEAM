@@ -102,10 +102,24 @@ html body
   letter-spacing: 0.14em;
 }
 
+.counselor-home-summary__mock-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 3px 7px;
+  border: 1px solid rgb(117 100 200 / 28%);
+  border-radius: 999px;
+  background: rgb(117 100 200 / 10%);
+  color: #6657b7;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
 .counselor-home-summary__intro h1 {
   margin: 7px 0 5px;
   color: #10283c;
-  font-size: clamp(21px, 1.55vw, 27px);
+  font-size: clamp(28px, 2.07vw, 36px);
+  line-height: 1.08;
   letter-spacing: -0.035em;
 }
 
@@ -141,16 +155,6 @@ html body
   transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 
-.counselor-home-metric::before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 4px;
-  background: var(--metric-color, #4baaca);
-  content: "";
-}
-
 .counselor-home-metric:hover,
 .counselor-home-metric.is-active {
   border-color: color-mix(in srgb, var(--metric-color, #4baaca) 52%, white);
@@ -162,8 +166,8 @@ html body
   background: linear-gradient(145deg, #fff, color-mix(in srgb, var(--metric-color) 8%, white));
 }
 
-.counselor-home-metric--call {
-  --metric-color: #e75259;
+.counselor-home-metric--total {
+  --metric-color: #278eb8;
 }
 
 .counselor-home-metric--work {
@@ -180,14 +184,14 @@ html body
 
 .counselor-home-metric span {
   color: #52687c;
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 800;
 }
 
 .counselor-home-metric strong {
   margin: 4px 0 3px;
   color: #10283c;
-  font-size: 30px;
+  font-size: 40px;
   line-height: 1;
 }
 
@@ -201,6 +205,311 @@ html body
   white-space: nowrap;
 }
 
+.counselor-dashboard-info {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-column: 2;
+  grid-row: 3;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.counselor-dashboard-info__panel {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #d7e7f0;
+  border-radius: 18px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 14px 36px rgb(28 61 80 / 8%);
+}
+
+.counselor-dashboard-info__panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid #dceaf2;
+  background: linear-gradient(135deg, #f8fcff, #edf8fd);
+}
+
+.counselor-dashboard-info__panel > header button {
+  padding: 6px 11px;
+  border: 1px solid #bcdbea;
+  border-radius: 999px;
+  background: #fff;
+  color: #267da6;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.counselor-dashboard-contact-tools {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.counselor-dashboard-contact-tools label {
+  display: flex;
+  width: 150px;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border: 1px solid #cfe1ea;
+  border-radius: 9px;
+  background: #fff;
+  color: #5890aa;
+}
+
+.counselor-dashboard-contact-tools input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #294c61;
+  font-size: 11px;
+}
+
+.counselor-dashboard-info__panel h2 {
+  margin: 0;
+  color: #173b5e;
+  font-size: 22px;
+}
+
+.counselor-dashboard-notices,
+.counselor-dashboard-contacts {
+  display: grid;
+  margin: 0;
+  padding: 12px 20px;
+  list-style: none;
+}
+
+.counselor-dashboard-notices {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.counselor-dashboard-notices li,
+.counselor-dashboard-contacts li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 4px;
+  border-bottom: 1px solid #e4eef4;
+}
+
+.counselor-dashboard-notices li {
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+.counselor-dashboard-notices li:last-child,
+.counselor-dashboard-contacts li:last-child {
+  border-bottom: 0;
+}
+
+.counselor-dashboard-notices li > div,
+.counselor-dashboard-contacts li > div {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.counselor-dashboard-notices li > div {
+  flex: 1;
+  gap: 3px;
+}
+
+.counselor-dashboard-notices__headline {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.counselor-dashboard-notices__headline em {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #e8f3f9;
+  color: #37657d;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.counselor-dashboard-notices__headline em[data-category="긴급"] {
+  background: #ffe8e8;
+  color: #c53d45;
+}
+
+.counselor-dashboard-notices__headline em[data-category="이벤트"] {
+  background: #fff2d9;
+  color: #a86c05;
+}
+
+.counselor-dashboard-notices__headline em[data-category="시스템"] {
+  background: #e4f2ff;
+  color: #2474ad;
+}
+
+.counselor-dashboard-notices__headline em[data-category="근무"] {
+  background: #e8f7ef;
+  color: #297852;
+}
+
+.counselor-dashboard-notices__headline em[data-category="복지"] {
+  background: #f0eaff;
+  color: #7250b0;
+}
+
+.counselor-dashboard-notices strong,
+.counselor-dashboard-contacts strong {
+  overflow: hidden;
+  color: #183b58;
+  font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.counselor-dashboard-notices span,
+.counselor-dashboard-notices time,
+.counselor-dashboard-contacts small {
+  color: #71879a;
+  font-size: 12px;
+}
+
+.counselor-dashboard-notices time {
+  flex: 0 0 auto;
+}
+
+.counselor-dashboard-contacts li > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e4f5fc;
+  color: #247ca5;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.counselor-dashboard-contacts li > div {
+  flex: 1;
+}
+
+.counselor-dashboard-contacts li > b {
+  flex: 0 0 auto;
+  color: #257fa9;
+  font-size: 13px;
+}
+
+.counselor-dashboard-org {
+  display: grid;
+  min-height: 330px;
+  place-content: center;
+  justify-items: center;
+  padding: 24px;
+}
+
+.counselor-dashboard-org > strong {
+  padding: 12px 28px;
+  border: 1px solid #9fcde1;
+  border-radius: 12px;
+  background: #e7f6fc;
+  color: #195f81;
+  font-size: 15px;
+}
+
+.counselor-dashboard-org > span {
+  width: 1px;
+  height: 24px;
+  background: #a9c8d8;
+}
+
+.counselor-dashboard-org > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.counselor-dashboard-org button {
+  display: grid;
+  min-width: 140px;
+  gap: 4px;
+  padding: 14px 18px;
+  border: 1px solid #d1e4ed;
+  border-radius: 12px;
+  background: #fff;
+  color: #204b64;
+  box-shadow: 0 5px 14px rgb(35 91 121 / 7%);
+}
+
+.counselor-dashboard-org button:hover {
+  border-color: #70b5d4;
+  background: #f2fbff;
+}
+
+.counselor-dashboard-org button small {
+  color: #7890a0;
+  font-size: 10px;
+}
+
+.counselor-dashboard-contact-table-wrap {
+  min-width: 0;
+  padding: 18px 14px;
+  overflow-x: auto;
+}
+
+.counselor-dashboard-contact-table__title {
+  display: block;
+  margin: 0 0 12px 2px;
+  color: #1b5877;
+  font-size: 14px;
+}
+
+.counselor-dashboard-contact-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.counselor-dashboard-contact-table th,
+.counselor-dashboard-contact-table td {
+  overflow: hidden;
+  padding: 10px 5px;
+  border-bottom: 1px solid #deebf1;
+  color: #36566b;
+  font-size: 10px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.counselor-dashboard-contact-table th {
+  background: #edf7fb;
+  color: #547287;
+  font-weight: 900;
+}
+
+.counselor-dashboard-contact-table th:nth-child(1) { width: 11%; }
+.counselor-dashboard-contact-table th:nth-child(2) { width: 16%; }
+.counselor-dashboard-contact-table th:nth-child(3) { width: 11%; }
+.counselor-dashboard-contact-table th:nth-child(4) { width: 12%; }
+.counselor-dashboard-contact-table th:nth-child(5) { width: 19%; }
+.counselor-dashboard-contact-table th:nth-child(6) { width: 31%; }
+
+.counselor-dashboard-contact-table a {
+  color: #1679a7;
+  text-decoration: none;
+}
+
 html body
   .simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-queue-panel {
@@ -209,7 +518,7 @@ html body
   min-height: 0;
   grid-column: 2 !important;
   grid-row: 3 !important;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px) !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   grid-template-rows: minmax(0, 1fr) auto !important;
   gap: 0 !important;
   overflow: hidden !important;
@@ -830,7 +1139,7 @@ html body
   html body
     .simple-consultant-app.simple-consultant-app.consultant-queue-app
     .consultant-queue-panel {
-    grid-template-columns: minmax(0, 1fr) 315px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
   html body
@@ -864,7 +1173,7 @@ html body
   html body
     .simple-consultant-app.simple-consultant-app.consultant-queue-app
     .consultant-queue-panel {
-    grid-template-columns: minmax(0, 1fr) 286px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
   .counselor-work-queue__header p,
