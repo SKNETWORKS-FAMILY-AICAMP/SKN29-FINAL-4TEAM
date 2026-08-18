@@ -5,13 +5,28 @@ import waterBridgeLogo from "../../../assets/images/water-bridge-logo-transparen
 import { WORK_BUCKET_LABELS } from "../model/consultantWorkspaceModel";
 import type { CounselorWorkBucket } from "../model/consultantWorkspaceTypes";
 
-const WORK_BUCKETS: readonly CounselorWorkBucket[] = [
+export type ConsultantInquiryBucket = CounselorWorkBucket | "ALL";
+
+const WORK_BUCKETS: readonly ConsultantInquiryBucket[] = [
+  "ALL",
   "NEW",
   "IN_PROGRESS",
   "COMPLETED",
 ];
 
-function WorkBucketIcon({ bucket }: { bucket: CounselorWorkBucket }) {
+function WorkBucketIcon({ bucket }: { bucket: ConsultantInquiryBucket }) {
+  if (bucket === "ALL") {
+    return (
+      <svg
+        className="consultant-work-tab__icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path d="M5 5.5h14v4H5zM5 12h14v6.5H5z" />
+      </svg>
+    );
+  }
   if (bucket === "NEW") {
     return (
       <svg
@@ -84,11 +99,11 @@ function DashboardIcon() {
 }
 
 interface ConsultantQueueSidebarProps {
-  activeBucket: CounselorWorkBucket | null;
+  activeBucket: ConsultantInquiryBucket | null;
   bucketCounts?: Readonly<Record<CounselorWorkBucket, number>>;
   dashboardActive?: boolean;
   phoneEntryActive?: boolean;
-  onBucketChange?: (bucket: CounselorWorkBucket) => void;
+  onBucketChange?: (bucket: ConsultantInquiryBucket) => void;
 }
 
 export default function ConsultantQueueSidebar({
@@ -100,7 +115,7 @@ export default function ConsultantQueueSidebar({
 }: ConsultantQueueSidebarProps) {
   const navigate = useNavigate();
 
-  const openBucket = (bucket: CounselorWorkBucket) => {
+  const openBucket = (bucket: ConsultantInquiryBucket) => {
     if (onBucketChange) {
       onBucketChange(bucket);
       return;
@@ -160,9 +175,17 @@ export default function ConsultantQueueSidebar({
           >
             <span>
               <WorkBucketIcon bucket={bucket} />
-              <strong>{WORK_BUCKET_LABELS[bucket]}</strong>
+              <strong>{bucket === "ALL" ? "전체 문의" : WORK_BUCKET_LABELS[bucket]}</strong>
             </span>
-            {bucketCounts && <b>{bucketCounts[bucket]}</b>}
+            {bucketCounts && (
+              <b>
+                {bucket === "ALL"
+                  ? bucketCounts.NEW +
+                    bucketCounts.IN_PROGRESS +
+                    bucketCounts.COMPLETED
+                  : bucketCounts[bucket]}
+              </b>
+            )}
           </button>
         ))}
 

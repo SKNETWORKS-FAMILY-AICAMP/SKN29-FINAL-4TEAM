@@ -94,6 +94,10 @@ export default function useCounselorQueueFilters() {
 
   const setFilters = (next: CounselorFilters) => {
     const params = new URLSearchParams();
+    const bucket = searchParams.get("bucket");
+    if (["ALL", "NEW", "IN_PROGRESS", "COMPLETED"].includes(bucket ?? "")) {
+      params.set("bucket", bucket!);
+    }
     const entries: readonly [string, string, string][] = [
       ["q", next.query, ""],
       ["status", next.status, "ALL"],
@@ -132,7 +136,14 @@ export default function useCounselorQueueFilters() {
       filters.receivedFrom.length > 0 ||
       filters.receivedTo.length > 0 ||
       filters.sort !== "UPDATED_DESC",
-    resetFilters: () => setSearchParams(new URLSearchParams(), { replace: true }),
+    resetFilters: () => {
+      const params = new URLSearchParams();
+      const bucket = searchParams.get("bucket");
+      if (["ALL", "NEW", "IN_PROGRESS", "COMPLETED"].includes(bucket ?? "")) {
+        params.set("bucket", bucket!);
+      }
+      setSearchParams(params, { replace: true });
+    },
     setFilters: updateFilters,
   };
 }

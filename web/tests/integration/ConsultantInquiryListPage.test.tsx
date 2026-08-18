@@ -51,7 +51,7 @@ async function openInquiry(
 }
 
 describe("ConsultantInquiryListPage", () => {
-  it("첫 화면은 세 가지 업무 탭과 문의 목록만 보여준다", () => {
+  it("첫 화면은 전체 문의를 포함한 업무 탭과 문의 목록만 보여준다", () => {
     renderPage();
 
     expect(screen.getByRole("tab", { name: /새 문의/ })).toHaveAttribute(
@@ -60,10 +60,22 @@ describe("ConsultantInquiryListPage", () => {
     );
     expect(screen.getByRole("tab", { name: /처리 중인 문의/ })).toBeVisible();
     expect(screen.getByRole("tab", { name: /처리 완료된 문의/ })).toBeVisible();
+    expect(screen.getByRole("tab", { name: /전체 문의/ })).toBeVisible();
     expect(screen.getByRole("tab", { name: "전화 문의 등록" })).toBeVisible();
     expect(screen.getByLabelText("상담 문의 목록")).toBeVisible();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: /상담 기록/ })).not.toBeInTheDocument();
+  });
+
+  it("전체 문의 메뉴는 새 문의·처리 중·완료 문의를 모두 보여준다", () => {
+    renderPage("/consultant/inquiries?bucket=ALL");
+
+    expect(screen.getByRole("tab", { name: /전체 문의90/ })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(screen.getByLabelText("전체 문의")).toBeVisible();
+    expect(screen.getByText(/총 90건/)).toBeVisible();
   });
 
   it("세 업무 탭의 건수는 상담사 문의 상태와 일치한다", () => {
@@ -381,4 +393,3 @@ describe("ConsultantInquiryListPage", () => {
     expect(await screen.findByRole("dialog")).toBeVisible();
   });
 });
-

@@ -21,6 +21,7 @@ import {
 } from "../../entities/inquiry/inquiryIdentifiers";
 import CompactConsultationDesk from "../../features/consultation/components/CompactConsultationDesk";
 import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
+import type { ConsultantInquiryBucket } from "../../features/consultation/components/ConsultantQueueSidebar";
 import useCounselorQueueFilters from "../../features/consultation/hooks/useCounselorQueueFilters";
 import { useConsultantInquiryListQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
 import type {
@@ -95,9 +96,27 @@ const INITIAL_RISK_SECTION_STATUS_FILTERS: Record<
   general: "ALL",
 };
 
-function getInitialBucket(search: string): CounselorWorkBucket {
+function getInitialBucket(search: string): ConsultantInquiryBucket {
   const bucket = new URLSearchParams(search).get("bucket");
-  return bucket === "IN_PROGRESS" || bucket === "COMPLETED" ? bucket : "NEW";
+  return bucket === "ALL" || bucket === "IN_PROGRESS" || bucket === "COMPLETED"
+    ? bucket
+    : "NEW";
+}
+
+function getBucketStatuses(
+  bucket: ConsultantInquiryBucket,
+): readonly ConsultantInquiryStatusDto[] {
+  return bucket === "ALL"
+    ? [
+        ...BUCKET_STATUSES.NEW,
+        ...BUCKET_STATUSES.IN_PROGRESS,
+        ...BUCKET_STATUSES.COMPLETED,
+      ]
+    : BUCKET_STATUSES[bucket];
+}
+
+function getBucketLabel(bucket: ConsultantInquiryBucket): string {
+  return bucket === "ALL" ? "전체 문의" : WORK_BUCKET_LABELS[bucket];
 }
 
 const INQUIRY_TAG_RULES: readonly {
@@ -134,7 +153,7 @@ export default function ConsultantInquiryListPage() {
   const isQueryComposingRef = useRef(false);
   const [queryInput, setQueryInput] = useState(filters.query);
   const [activeBucket, setActiveBucket] =
-    useState<CounselorWorkBucket>(() => getInitialBucket(location.search));
+    useState<ConsultantInquiryBucket>(() => getInitialBucket(location.search));
   const [riskSectionStatusFilters, setRiskSectionStatusFilters] = useState(
     INITIAL_RISK_SECTION_STATUS_FILTERS,
   );
@@ -160,7 +179,7 @@ export default function ConsultantInquiryListPage() {
   const repositoryQuery = useMemo<ConsultantInquiryListQuery>(
     () => ({
       q: filters.query || undefined,
-      status: BUCKET_STATUSES[activeBucket],
+      status: getBucketStatuses(activeBucket),
       riskLevel:
         filters.risk !== "ALL" && filters.risk !== "UNKNOWN"
           ? [filters.risk.toLowerCase() as "general" | "caution" | "danger"]
@@ -352,12 +371,15 @@ export default function ConsultantInquiryListPage() {
         ...inquiryStateUpdates[selectedBase.inquiryId],
       }
     : null;
-  const changeBucket = (bucket: CounselorWorkBucket) => {
+  const changeBucket = (bucket: ConsultantInquiryBucket) => {
     setActiveBucket(bucket);
+    const params = new URLSearchParams(location.search);
+    params.set("bucket", bucket);
+    params.delete("page");
+    navigate(`${location.pathname}?${params.toString()}`, { replace: true });
     setRiskSectionStatusFilters(INITIAL_RISK_SECTION_STATUS_FILTERS);
     setOpenRiskStatusFilter(null);
     setSelectedInquiryId(null);
-    if (filters.page !== 1) setFilters({ ...filters, page: 1 });
   };
 
   const changeRiskSection = (riskLevel: ConsultantRiskLevelDto) => {
@@ -494,7 +516,7 @@ export default function ConsultantInquiryListPage() {
           id="consultant-queue-panel"
           className="consultant-queue-panel"
           role="tabpanel"
-          aria-label={WORK_BUCKET_LABELS[activeBucket]}
+          aria-label={getBucketLabel(activeBucket)}
         >
           <div
             className="consultant-list consultant-risk-columns"
@@ -525,7 +547,7 @@ export default function ConsultantInquiryListPage() {
                 title={
                   hasChangedConditions
                     ? "검색 조건에 맞는 문의가 없습니다."
-                    : `${WORK_BUCKET_LABELS[activeBucket]}가 없습니다.`
+                    : `${getBucketLabel(activeBucket)}가 없습니다.`
                 }
                 description={
                   hasChangedConditions
@@ -581,7 +603,7 @@ export default function ConsultantInquiryListPage() {
                   (inquiry) => inquiry.riskLevel === section.id,
                 );
                 const statusFilter = riskSectionStatusFilters[section.id];
-                const availableStatuses = BUCKET_STATUSES[activeBucket].filter(
+                const availableStatuses = getBucketStatuses(activeBucket).filter(
                   (status) =>
                     sectionInquiries.some(
                       (inquiry) => inquiry.status === status,
