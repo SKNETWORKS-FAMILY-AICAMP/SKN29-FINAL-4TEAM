@@ -53,6 +53,7 @@ class ChunkLoader:
                     allowed_use=allowed_use,
                     source_hash=raw["source_file_sha256"],
                     safe_actions=raw.get("safe_actions", []),
+                    topic_code=raw.get("topic_code"),
                 ))
         return chunks
 

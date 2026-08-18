@@ -222,6 +222,24 @@ Exact Search(`<=>`)를 사용한다. `WPUJAC104DWH`·D세대·공식 검증·고
 | 비일시적 검색 결과·검증 오류 | `503`, `AI-FAILED-01`, `RETRIEVING`, `retry_count=0` | 내부 재시도 없음 |
 | 검색·Pipeline Timeout | `504`, `AI-TIMEOUT-01`, 실제 실패 Stage | `true` |
 
+물맛·냄새 증상은 `흙맛`, `흙 냄새`, `토양 냄새`를 포함해
+`물맛/냄새 이상`으로 정규화한다. 이 증상은 Vector 유사도 상위 후보를 그대로 생성
+단계에 넘기지 않고 Canonical `topic_code=symptom_taste_odor`와 일치하는 공식 근거만
+선별한다. 팀 DB Readonly View가 `topic_code`를 직접 제공하지 않는 현재 계약에서는
+고정 Canonical `chunk_id` 매핑으로 주제를 복원하며, 매핑되지 않은 후보는 맛·냄새
+안내 근거로 사용하지 않는다.
+
+맛·냄새 공식 근거의 적용 조건을 확인하기 위해 발생 시점, 대상 출수 종류, 기존 조치와
+전용 적용조건 문진이 모두 확인되기 전에는 임베딩·DB 검색·LLM 생성을 실행하지 않는다.
+전용 문진은 `10일 이내 부재`, `10일 이상 부재`, `장시간 미사용`, `부적합 장소 설치`,
+`해당 없음`, `확인 불가`만 고정 코드로 수용한다. 자유 답변 원문은 Provider에 보내지
+않고, `10일 이내 부재`의 비식별 고정 요약만 생성 입력에 포함한다.
+
+현재 Canonical 근거에서 고객 자가안내로 허용하는 분기는 `10일 이내 부재`뿐이다.
+나머지 적용조건·해당 없음·확인 불가는 검색 후 부적합 근거를 제거하고 LLM을 호출하지
+않으며 기존 `NO_EVIDENCE` Fallback으로 상담 경로를 사용한다. 조건 미응답은
+`SUCCEEDED`, 추가 질문, `PENDING_CONSULTATION`으로 고객 답변을 기다린다.
+
 위험 입력은 안전 규칙이 검색보다 우선하므로 Vector Store가 없더라도 검색을
 건너뛰고 `TOTAL_STOP` 등 안전 안내를 반환할 수 있다. 운영 Health·Readiness와
 Backend 공개 `evidence_status`·저장 방식은 별도 통합 계약에서 확정한다.

@@ -92,6 +92,42 @@ def test_typo_and_negated_symptom_are_structured_without_false_leak_label():
     assert error_code.error_code == "E-12"
 
 
+def test_earthy_taste_is_structured_as_taste_or_odor_issue():
+    symptom = SymptomStructurer().structure("물에서 흙맛이 나는 것 같아요")
+    selected_other = SymptomStructurer().structure(
+        "물에서 흙맛이 나는 것 같아요",
+        ["기타 증상"],
+    )
+
+    assert symptom.symptom_type == "물맛/냄새 이상"
+    assert selected_other.symptom_type == "물맛/냄새 이상"
+
+
+def test_backend_taste_and_odor_codes_use_canonical_symptom_boundary():
+    for code in ("TASTE", "ODOR", "TASTE_ODOR"):
+        symptom = SymptomStructurer().structure(
+            "물에서 흙맛이 나는 것 같아요",
+            [code],
+        )
+
+        assert symptom.symptom_type == "물맛/냄새 이상"
+
+
+def test_backend_representative_codes_map_to_canonical_symptoms():
+    expected_by_code = {
+        "NO_WATER": "출수량 저하",
+        "LOW_FLOW": "출수량 저하",
+        "LEAK": "제품 누수",
+        "TEMPERATURE_ABNORMAL": "온도 이상",
+        "NOISE": "소음 이상",
+    }
+
+    for code, expected in expected_by_code.items():
+        symptom = SymptomStructurer().structure("증상이 발생했습니다", [code])
+
+        assert symptom.symptom_type == expected
+
+
 def test_declined_answer_is_not_stored_as_symptom_value_and_is_not_reasked():
     previous_answers = [
         {"question_id": "followup-occurrence-time", "answer_text": "답변하지 않음"},

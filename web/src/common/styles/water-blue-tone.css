@@ -108,11 +108,10 @@ html body
 html body
   .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-sidebar {
-  border-color: rgb(255 255 255 / 20%) !important;
-  background:
-    radial-gradient(circle at 18% 0%, rgb(91 204 230 / 36%), transparent 30%),
-    linear-gradient(165deg, #207fad, #135e91 72%, #104f7c) !important;
-  box-shadow: 10px 0 28px rgb(28 93 132 / 13%) !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
 }
 
 html body
@@ -122,6 +121,36 @@ html body
   border-color: rgb(255 255 255 / 20%) !important;
   background: transparent !important;
   box-shadow: none !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-sidebar
+  .consultant-sidebar-brand {
+  border: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-sidebar
+  .consultant-sidebar-brand::after {
+  display: none !important;
+  background: transparent !important;
+  content: none !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-sidebar
+  .consultant-work-tabs {
+  border-color: rgb(255 255 255 / 20%) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgb(91 204 230 / 36%), transparent 30%),
+    linear-gradient(165deg, #207fad, #135e91 72%, #104f7c) !important;
+  box-shadow: 10px 0 28px rgb(28 93 132 / 13%) !important;
 }
 
 html body
@@ -194,6 +223,84 @@ html body
   border-color: var(--water-tone-line) !important;
   background: rgb(255 255 255 / 94%) !important;
   box-shadow: 0 6px 20px rgb(43 96 126 / 7%) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+  .consultant-main-header {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+  .consultant-main-header::after {
+  display: none !important;
+  background: transparent !important;
+  content: none !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+  .simple-user {
+  color: var(--water-tone-ink) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+  .simple-user__divider {
+  display: block !important;
+  width: 1px !important;
+  height: 16px !important;
+  flex: 0 0 1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--water-tone-line) !important;
+  box-shadow: none !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+  .simple-user__employee-number {
+  display: inline !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--water-tone-muted) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+  .simple-user__sign-out {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--water-tone-ink) !important;
+  font: inherit !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+  .simple-user__sign-out:hover {
+  color: var(--water-tone-primary) !important;
 }
 
 html body

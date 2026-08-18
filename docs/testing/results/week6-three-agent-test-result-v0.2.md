@@ -3,6 +3,7 @@
 > 검증일: 2026-08-18 KST  
 > 실연결 기준 main Commit: `63103efe3248cf49579bb3c1fd163a19de37c6e8`  
 > 후속 DB 비노출 보강 검증 HEAD: `31f73405568637ae545d7f38d635f7a920ec9510`  
+> 후속 물맛 문진 Gate E2E 후보 HEAD: `d62a1fefe9a9d2bc570d1c81ae010120c645ad8f` (`UNCOMMITTED_WORKTREE`)
 > Branch: `dongyoon`  
 > 종합 판정: `ACTUAL_PROVIDER_AND_BACKEND_E2E_PASS / DEFAULT_SWITCH_NOT_APPROVED`
 
@@ -109,7 +110,8 @@ Replay에서 AI Provider를 추가 호출하지 않은 실제 소켓 증거와 D
 | 범위 | 상태 | 완료 조건 |
 |---|---|---|
 | 후보 Runtime 기본값 전환 | `HOLD` | PM 승인과 확대 평가셋 비교 |
-| 질문→고객 답변→재검색 | `NOT_RUN` | 동일 Inquiry 실제 HTTP·DB 증거 |
+| 질문→고객 답변→재검색 | `PASS_CANDIDATE_HEAD` | 최종 main 병합 SHA 재실행 필요 |
+| 최종 main 물맛 문진 Gate 재검증 | `HOLD` | 병합 후 동일 HTTP·DB 시나리오 PASS |
 | Mobile·Web 전체 사용자 흐름 | `NOT_RUN` | 공동 실행과 동일 Inquiry 추적 |
 | 상담 인계 Runtime | `CONTRACT_DECISION_REQUIRED` | 공개 계약·Backend 조합 책임 확정 |
 | 독립 QA 재현 | `NOT_RUN` | 별도 작업자·Host에서 동일 Gate 실행 |
@@ -150,3 +152,28 @@ Happy/Replay·503·Timeout 경계는 검증됐다. 다만 단일 합성 정상 �
 현재 판정은 `LOCAL_APPLICATION_DEFENSE=PASS`,
 `DEPLOYMENT_APPLICATION_BOUNDARY=PASS`,
 `EXTERNAL_APM_FILTER=REQUIRED_IF_USED`다.
+
+## 9. 2026-08-18 물맛 문진→적용성 분기 실제 HTTP·DB 후속 검증
+
+- 이 절은 아직 병합되지 않은 `dongyoon` 후보 Worktree의 검증 결과다. 최종 main
+  통합 결과로 사용하려면 병합 SHA에서 동일 시나리오를 다시 실행해야 한다.
+- Backend 대표 증상 코드 `TASTE`, `ODOR`, `TASTE_ODOR`를 AI의
+  `물맛/냄새 이상` 표준 증상으로 연결하고, 문진 대기 초안을 Backend DB의
+  `PENDING_CONSULTATION` 안전 불변식과 맞췄다.
+- 신규 합성 Inquiry의 최초 AI 호출은 Follow-up 질문 4개를 저장하고 검색·OpenAI
+  생성을 실행하지 않은 채 `QUESTIONNAIRE_IN_PROGRESS@v2`를 유지했다.
+- 적용 가능 고정 답변 Case는 후속 답변 뒤 실제 Readonly pgvector Run 1건·Hit 1건,
+  OpenAI 완료 이벤트 1건, 내부 Evidence 1건을 확인했다.
+  `SAFE_GUIDANCE_READY`를 정확히 1회 적용해 `AI_GUIDANCE@v4`로 전환했다.
+- `10일 이상 부재 후`와 `해당 없음` 두 비적용 Case는 각각 AIRun
+  `NO_EVIDENCE`, Schema `PASSED`, Evidence 0건, `NO_EVIDENCE` Event 1회와
+  `CONSULTATION_REQUIRED@v4`를 확인했다. Consultation 행은 자동 생성하지 않았다.
+- 비적용 두 Case의 AI Runtime에는 Analysis 시작·완료 Event가 각각 4건 있었고
+  `llm_guidance_completed`는 0건이었다. 따라서 조건 불일치 뒤 OpenAI 생성이
+  실행되지 않았음을 확인했다.
+- 적용 가능·비적용 Case의 동일 답변 Replay는 모두 최초 응답을 유지했으며 추가 AI
+  호출과 추가 AIRun·Assessment·Guidance·Evidence·Transition 저장은 0이었다.
+- AI Unit `277 passed, 5 warnings, 7 subtests passed`, Root AI Contract·Safety
+  `27 passed`, Backend AI Integration `30 passed`, `pip check=PASS`다.
+  Harness는 `.runtime` Git ignore에 유지했고 8000·8001 Listener는 종료했다.
+  Secret·DSN·질문·답변·Prompt·Evidence·Vector 본문은 기록하지 않았다.

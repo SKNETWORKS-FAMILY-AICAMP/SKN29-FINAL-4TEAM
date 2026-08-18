@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
-import waterBridgeLogo from "../../../assets/images/water-bridge-logo-transparent.png";
+import waterBridgeLogo from "../../../assets/images/water-bridge-logo-v2.png";
 import { WORK_BUCKET_LABELS } from "../model/consultantWorkspaceModel";
 import type { CounselorWorkBucket } from "../model/consultantWorkspaceTypes";
 

@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-import time
-
 from ...common.timeout import CancellationToken, get_stage_timeout_policy
 from ...integrations.llm import GuidanceLLMClient
-from ...schemas import AiStage, ProcessingTrace, UsageGuidance, UsageGuidanceStatus
+from ...schemas import AiStage
 from ..pipeline_context import PipelineContext
-from ..stages import execute_generation_stage, execute_validation_stage
+from ..stages import (
+    execute_generation_stage,
+    execute_questionnaire_pending_stage,
+    execute_validation_stage,
+)
 from .contracts import CareDecisionAgentOutput
 
 
@@ -37,7 +39,7 @@ class CareDecisionAgent:
         awaiting_customer_input: bool = False,
     ) -> CareDecisionAgentOutput:
         if awaiting_customer_input:
-            self._set_questionnaire_pending_guidance(ctx)
+            execute_questionnaire_pending_stage(ctx)
         else:
             timeout_seconds = self.timeout_policy.for_stage(AiStage.GENERATING.value)
             with self.cancellation_token.deadline_scope(
@@ -63,25 +65,4 @@ class CareDecisionAgent:
             usage_guidance=ctx.usage_guidance,
             requires_consultation=ctx.safety_assessment.requires_consultation,
             awaiting_customer_input=awaiting_customer_input,
-        )
-
-    @staticmethod
-    def _set_questionnaire_pending_guidance(ctx: PipelineContext) -> None:
-        """근거 부재 확정 전에는 LLM 자가조치 없이 질문 응답만 요청한다."""
-
-        started_at = time.perf_counter()
-        ctx.awaiting_customer_input = True
-        ctx.usage_guidance = UsageGuidance(
-            guidance_status=UsageGuidanceStatus.PENDING_CONSULTATION,
-            message="안전한 안내를 위해 추가 정보가 필요합니다. 표시된 질문에 답변해 주세요.",
-            restricted_functions=["근거 확인 전 자가조치 안내"],
-            next_actions=["추가 질문에 답변해 주세요."],
-        )
-        ctx.processing_traces.append(
-            ProcessingTrace(
-                stage=AiStage.GENERATING,
-                status="SUCCEEDED",
-                latency_ms=round((time.perf_counter() - started_at) * 1000.0, 2),
-                retry_count=ctx.retry_count,
-            )
         )

@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "../../src/app/providers/AuthProvider";
 import { AppRoutes } from "../../src/app/router/AppRouter";
+import { classifyInquiryCategory } from "../../src/features/consultation/model/consultantInquiryCategories";
 import { CONSULTANT_QUEUE_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
 import { getCounselorWorkBucket } from "../../src/features/consultation/model/consultantWorkspaceModel";
 import type { CounselorWorkBucket } from "../../src/features/consultation/model/consultantWorkspaceTypes";
@@ -43,10 +44,18 @@ async function openInquiry(
   inquiryCode: string,
   bucket: CounselorWorkBucket,
 ) {
-  if (bucket !== "NEW") {
-    await user.click(screen.getByRole("tab", { name: TAB_LABELS[bucket] }));
-  }
-  await user.type(screen.getByRole("searchbox", { name: "문의 검색" }), inquiryCode);
+  await user.click(screen.getByRole("tab", { name: TAB_LABELS[bucket] }));
+  const inquiry = CONSULTANT_QUEUE_INQUIRIES.find(
+    (item) => item.inquiryCode === inquiryCode,
+  );
+  if (!inquiry) throw new Error(`문의 Mock을 찾을 수 없습니다: ${inquiryCode}`);
+  const riskTabName = {
+    DANGER: /긴급 문의/,
+    CAUTION: /주의 문의/,
+    GENERAL: /일반 문의/,
+    UNKNOWN: /일반 문의/,
+  }[inquiry.riskLevel];
+  await user.click(screen.getByRole("tab", { name: riskTabName }));
   await user.click(screen.getByRole("button", { name: new RegExp(inquiryCode) }));
 }
 
@@ -54,6 +63,9 @@ describe("ConsultantInquiryListPage", () => {
   it("첫 화면은 전체 문의를 포함한 업무 탭과 문의 목록만 보여준다", () => {
     renderPage();
 
+    expect(
+      screen.getByRole("img", { name: "Water Bridge" }).getAttribute("src"),
+    ).toContain("water-bridge-logo-v2");
     expect(screen.getByRole("tab", { name: /새 문의/ })).toHaveAttribute(
       "aria-selected",
       "true",
@@ -62,9 +74,61 @@ describe("ConsultantInquiryListPage", () => {
     expect(screen.getByRole("tab", { name: /처리 완료된 문의/ })).toBeVisible();
     expect(screen.getByRole("tab", { name: /전체 문의/ })).toBeVisible();
     expect(screen.getByRole("tab", { name: "전화 문의 등록" })).toBeVisible();
+    expect(
+      screen.queryByRole("searchbox", { name: "문의 검색" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("테스트 상담원")).toBeVisible();
+    expect(screen.getByText("STAFF-CONS-TEST")).toBeVisible();
+    expect(screen.getByRole("button", { name: "로그아웃" })).toBeVisible();
     expect(screen.getByLabelText("상담 문의 목록")).toBeVisible();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: /상담 기록/ })).not.toBeInTheDocument();
+  });
+
+  it("모든 문의 행을 제목·3단계 카테고리·문의 일시·고객명 순서로 표시한다", () => {
+    renderPage();
+
+    const inquiryRows = screen.getAllByRole("button", { name: /상세 열기/ });
+
+    inquiryRows.forEach((row) => {
+      const [subject, categoryPath, receivedAt, customer] = Array.from(
+        row.children,
+      );
+      const category = classifyInquiryCategory(subject.textContent ?? "");
+
+      expect(subject).toHaveClass("consultant-list-item__subject");
+      expect(categoryPath).toHaveClass("consultant-list-item__category");
+      expect(categoryPath).toHaveTextContent(
+        `${category.major} > ${category.middle} > ${category.minor}`,
+      );
+      expect(receivedAt).toHaveClass("consultant-list-item__received-at");
+      expect(receivedAt).toHaveAttribute("datetime");
+      expect(receivedAt).not.toBeEmptyDOMElement();
+      expect(customer).toHaveClass("consultant-list-item__customer");
+      expect(customer).not.toBeEmptyDOMElement();
+    });
+  });
+
+  it("전체 문의의 위험도별 총합은 90건이며 페이지를 이동해도 유지된다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole("tab", { name: /전체 문의/ }));
+
+    const expectStableRiskCounts = () => {
+      const dangerTab = screen.getByRole("tab", { name: /긴급 문의/ });
+      const cautionTab = screen.getByRole("tab", { name: /주의 문의/ });
+      const generalTab = screen.getByRole("tab", { name: /일반 문의/ });
+
+      expect(within(dangerTab).getByText("30")).toBeVisible();
+      expect(within(cautionTab).getByText("30")).toBeVisible();
+      expect(within(generalTab).getByText("30")).toBeVisible();
+      expect(screen.getByText(/총 90건/)).toBeVisible();
+    };
+
+    expectStableRiskCounts();
+    await user.click(screen.getByRole("button", { name: "다음" }));
+    expectStableRiskCounts();
   });
 
   it("전체 문의 메뉴는 새 문의·처리 중·완료 문의를 모두 보여준다", () => {
@@ -272,49 +336,39 @@ describe("ConsultantInquiryListPage", () => {
     ).toHaveLength(10);
   });
 
-  it("각 문의 탭의 상태 필터를 독립적으로 유지한다", async () => {
+  it("대분류·중분류·소분류 순서로 문의를 필터링한다", async () => {
     const user = userEvent.setup();
     renderPage();
 
-    await user.click(screen.getByRole("tab", { name: /처리 중인 문의/ }));
+    const major = screen.getByRole("combobox", { name: "문의 대분류" });
+    const middle = screen.getByRole("combobox", { name: "문의 중분류" });
+    const minor = screen.getByRole("combobox", { name: "문의 소분류" });
 
-    let dangerFilter = screen.getByRole("button", {
-      name: "긴급 문의 상태 필터",
-    });
-
-    expect(dangerFilter).toHaveTextContent("전체 상태");
-
-    let dangerSection = screen.getByRole("tabpanel", { name: /긴급 문의/ });
+    expect(major).toHaveValue("");
+    expect(middle).toBeDisabled();
+    expect(minor).toBeDisabled();
+    expect(screen.queryByText("긴급 문의 목록")).not.toBeInTheDocument();
     expect(
-      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
-    ).toHaveLength(10);
+      screen.queryByRole("button", { name: "긴급 문의 상태 필터" }),
+    ).not.toBeInTheDocument();
 
-    await user.click(dangerFilter);
-    await user.click(screen.getByRole("option", { name: "방문 예정" }));
+    await user.selectOptions(major, "안전·긴급 문제");
+    expect(middle).toBeEnabled();
+    expect(minor).toBeDisabled();
 
-    expect(dangerFilter).toHaveTextContent("방문 예정");
+    await user.selectOptions(middle, "누수");
+    expect(minor).toBeEnabled();
     expect(
-      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
-    ).toHaveLength(2);
-    expect(within(dangerSection).queryByLabelText(/^상태:/)).not.toBeInTheDocument();
-    expect(within(dangerSection).queryByText(/^INQ-/)).not.toBeInTheDocument();
-    expect(within(dangerSection).queryByText(/^WPU-/)).not.toBeInTheDocument();
-    expect(within(dangerSection).queryByText(/^대기 /)).not.toBeInTheDocument();
+      within(screen.getByRole("tabpanel", { name: /긴급 문의/ })).getAllByRole(
+        "button",
+        { name: /상세 열기/ },
+      ).length,
+    ).toBeGreaterThan(0);
 
-    await user.click(screen.getByRole("tab", { name: /주의 문의/ }));
-    expect(
-      screen.getByRole("button", { name: "주의 문의 상태 필터" }),
-    ).toHaveTextContent("전체 상태");
-
-    await user.click(screen.getByRole("tab", { name: /긴급 문의/ }));
-    dangerFilter = screen.getByRole("button", {
-      name: "긴급 문의 상태 필터",
-    });
-    dangerSection = screen.getByRole("tabpanel", { name: /긴급 문의/ });
-    expect(dangerFilter).toHaveTextContent("방문 예정");
-    expect(
-      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
-    ).toHaveLength(2);
+    await user.click(screen.getByRole("button", { name: "카테고리 초기화" }));
+    expect(major).toHaveValue("");
+    expect(middle).toBeDisabled();
+    expect(minor).toBeDisabled();
   });
 
   it.each([
@@ -328,56 +382,12 @@ describe("ConsultantInquiryListPage", () => {
     expect(await screen.findByText(message)).toBeInTheDocument();
   });
 
-  it("검색 결과가 없으면 검색 초기화 행동을 제공한다", async () => {
-    const user = userEvent.setup();
-    renderPage();
-
-    await user.type(
-      screen.getByRole("searchbox", { name: "문의 검색" }),
-      "존재하지 않는 문의",
-    );
-
-    expect(screen.getByText("검색 조건에 맞는 문의가 없습니다.")).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "검색 초기화" })).toHaveLength(2);
-  });
-
-  it("한글 조합 중에는 검색 URL을 갱신하지 않고 조합 완료 후 검색한다", () => {
-    renderPage();
-    const searchInput = screen.getByRole("searchbox", { name: "문의 검색" });
-
-    fireEvent.compositionStart(searchInput);
-    fireEvent.change(searchInput, { target: { value: "존재하지 않는 문의" } });
-
-    expect(searchInput).toHaveValue("존재하지 않는 문의");
-    expect(
-      screen.queryByText("검색 조건에 맞는 문의가 없습니다."),
-    ).not.toBeInTheDocument();
-
-    fireEvent.compositionEnd(searchInput, { data: "의" });
-
-    expect(screen.getByText("검색 조건에 맞는 문의가 없습니다.")).toBeInTheDocument();
-  });
-
-  it("URL의 검색어를 복원하고 해당 상태 탭에서 결과를 찾을 수 있다", async () => {
-    const user = userEvent.setup();
-    renderPage("/consultant/inquiries?q=INQ-20260704-0013&page=1");
-
-    expect(screen.getByRole("searchbox", { name: "문의 검색" })).toHaveValue(
-      "INQ-20260704-0013",
-    );
-    await user.click(screen.getByRole("tab", { name: /처리 중인 문의/ }));
-    expect(
-      screen.getByRole("button", { name: /INQ-20260704-0013/ }),
-    ).toBeInTheDocument();
-  });
-
   it("상담 완료 후 자동 진행을 사용하면 다음 처리 문의를 연다", async () => {
     const user = userEvent.setup();
     vi.spyOn(window, "confirm").mockReturnValue(true);
     renderPage();
 
     await openInquiry(user, "INQ-20260704-0013", "IN_PROGRESS");
-    await user.clear(screen.getByRole("searchbox", { name: "문의 검색" }));
     await user.type(
       screen.getByRole("textbox", { name: /상담 기록/ }),
       "안전 안내 후 누수가 멈춘 것을 확인했습니다.",

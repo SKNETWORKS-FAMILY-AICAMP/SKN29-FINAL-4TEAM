@@ -49,7 +49,26 @@
     width: 100%;
     grid-column: 1 !important;
     grid-row: 1 !important;
+    grid-template-rows: 44px auto minmax(0, 1fr) !important;
     border-right: 0 !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-risk-tabs {
+    grid-row: 1 !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-category-filters {
+    grid-row: 2 !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-risk-section[role="tabpanel"] {
+    grid-row: 3 !important;
   }
 
   html body
@@ -69,7 +88,11 @@
     .consultant-risk-section
     .v6-queue-item.consultant-list-item:nth-child(even) {
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) minmax(130px, 180px) minmax(150px, 220px) !important;
+    grid-template-columns:
+      minmax(160px, 1.35fr)
+      minmax(210px, 1.2fr)
+      minmax(150px, 0.65fr)
+      minmax(100px, 0.5fr) !important;
     align-items: center;
     gap: 0 !important;
   }
@@ -92,7 +115,10 @@
 
   html body
     .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
-    .consultant-list-item__tag,
+    .consultant-list-item__category,
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-list-item__received-at,
   html body
     .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
     .consultant-list-item__customer {
@@ -110,10 +136,24 @@
 
   html body
     .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
-    .consultant-list-item__tag {
+    .consultant-list-item__category {
+    overflow: hidden;
     color: #167da5;
     font-size: 13px;
     font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-list-item__received-at {
+    overflow: hidden;
+    color: #587186;
+    font-size: 13px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   html body
@@ -128,16 +168,105 @@
   }
 }
 
+.consultant-inquiry-list-app .consultant-category-filters {
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(170px, 1fr) auto minmax(170px, 1fr) auto minmax(170px, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #d7e7f0;
+  background: #fff;
+}
+
+.consultant-inquiry-list-app .consultant-category-filters > label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.consultant-inquiry-list-app .consultant-category-filters > label > span {
+  color: #587186;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.consultant-inquiry-list-app .consultant-category-filters > span {
+  align-self: center;
+  color: #6f9db8;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.consultant-inquiry-list-app .consultant-category-filters select,
+.consultant-inquiry-list-app .consultant-category-filters button {
+  min-height: 42px;
+  border: 1px solid #bfd7e5;
+  border-radius: 10px;
+  background: #f8fcff;
+  color: #173b5e;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.consultant-inquiry-list-app .consultant-category-filters select {
+  width: 100%;
+  padding: 0 38px 0 12px;
+}
+
+.consultant-inquiry-list-app .consultant-category-filters select:focus,
+.consultant-inquiry-list-app .consultant-category-filters button:focus-visible {
+  border-color: #2f96d1;
+  outline: 3px solid rgb(47 150 209 / 18%);
+}
+
+.consultant-inquiry-list-app .consultant-category-filters select:disabled {
+  cursor: not-allowed;
+  background: #f1f5f8;
+  color: #91a4b2;
+}
+
+.consultant-inquiry-list-app .consultant-category-filters button {
+  padding: 0 16px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.consultant-inquiry-list-app .consultant-category-filters button:hover {
+  border-color: #2f96d1;
+  background: #eaf6fd;
+}
+
 @media (max-width: 900px) {
-  .consultant-inquiry-list-app .consultant-list-item__tag {
-    display: inline-flex;
-    width: fit-content;
+  .consultant-inquiry-list-app .consultant-category-filters {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .consultant-inquiry-list-app .consultant-category-filters > span {
+    display: none;
+  }
+
+  .consultant-inquiry-list-app .consultant-list-item__category,
+  .consultant-inquiry-list-app .consultant-list-item__received-at {
+    display: flex;
+    width: 100%;
     margin-top: 6px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    background: #e8f5fa;
+    padding: 0;
+  }
+
+  .consultant-inquiry-list-app .consultant-list-item__category {
     color: #167da5;
     font-size: 12px;
     font-weight: 800;
+  }
+
+  .consultant-inquiry-list-app .consultant-list-item__received-at {
+    color: #587186;
+    font-size: 12px;
+    font-weight: 700;
   }
 }

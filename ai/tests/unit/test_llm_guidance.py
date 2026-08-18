@@ -30,7 +30,7 @@ from ai.app.integrations.llm import (
 )
 from ai.app.orchestration.pipeline_router import PipelineRouter
 from ai.app.retrieval import RetrievedChunk
-from ai.app.schemas.common import UsageGuidanceStatus
+from ai.app.schemas.common import RiskLevel, UsageGuidanceStatus
 
 
 INQUIRY_ID = "018f2f9b-7c30-7981-b541-1a987c88b321"
@@ -61,6 +61,46 @@ class EvidenceSearchService:
 class EmptySearchService:
     def search(self, *args, **kwargs):
         return []
+
+
+class MixedTasteEvidenceSearchService:
+    def search(self, *args, **kwargs):
+        return [
+            RetrievedChunk(
+                chunk_id="RAG-WPUJAC104DWH-LOW-FLOW-001",
+                document_title="WPU-JAC104D 사용설명서",
+                manual_model="WPUJAC104DWH",
+                model_code="WPUJAC104DWH",
+                product_generation="D",
+                content="무관한 출수량 근거",
+                similarity_score=0.99,
+                verification_status="official_verified",
+                allowed_use=True,
+                topic_code="symptom_low_flow",
+            ),
+            RetrievedChunk(
+                chunk_id="RAG-WPUJAC104DWH-TASTE-ODOR-001",
+                document_title="WPU-JAC104D 사용설명서",
+                manual_model="WPUJAC104DWH",
+                model_code="WPUJAC104DWH",
+                product_generation="D",
+                content="물맛과 냄새 관련 공식 근거",
+                similarity_score=0.91,
+                verification_status="official_verified",
+                allowed_use=True,
+                topic_code="symptom_taste_odor",
+            ),
+        ]
+
+
+class UnrelatedTasteEvidenceSearchService:
+    def search(self, *args, **kwargs):
+        return MixedTasteEvidenceSearchService().search(*args, **kwargs)[:1]
+
+
+class UnexpectedSearchService:
+    def search(self, *args, **kwargs):
+        raise AssertionError("문진 완료 전에는 근거 검색을 호출하면 안 됩니다.")
 
 
 class SequenceLLMClient:
@@ -103,6 +143,7 @@ def run_pipeline(
     raw_symptom="냉수 출수량이 적습니다.",
     selected_symptoms=None,
     model_code="WPUJAC104DWH",
+    previous_answers=None,
 ):
     return PipelineRouter(
         search_service=search_service,
@@ -115,6 +156,7 @@ def run_pipeline(
         raw_symptom=raw_symptom,
         model_code=model_code,
         selected_symptoms=selected_symptoms,
+        previous_answers=previous_answers or [],
     )
 
 
@@ -124,6 +166,131 @@ def accepted_actions(raw_symptom="냉수 출수량이 적습니다."):
         if "미지근" in raw_symptom or "출수량" in raw_symptom
         else ["기본 필터 및 사용 환경 유지"]
     )
+
+
+COMPLETE_TASTE_ANSWERS = [
+    {"question_id": "followup-occurrence-time", "answer_text": "오늘부터"},
+    {"question_id": "followup-target-water-type", "answer_text": "정수"},
+    {"question_id": "followup-actions-taken", "answer_text": "아직 조치하지 않음"},
+    {
+        "question_id": "followup-taste-odor-applicability",
+        "answer_text": "10일 이내 부재 후",
+    },
+]
+
+
+def test_earthy_taste_waits_for_context_before_retrieval_or_llm():
+    client = SequenceLLMClient(llm_response())
+
+    pipeline_result = run_pipeline(
+        search_service=UnexpectedSearchService(),
+        llm_client=client,
+        raw_symptom="물에서 흙맛이 나는 것 같아요",
+    )
+    result = pipeline_result.to_analysis_result()
+
+    assert client.calls == 0
+    assert pipeline_result.context.awaiting_customer_input is True
+    assert pipeline_result.context.retrieval_outcome.value == "NOT_RUN"
+    assert result.status.value == "SUCCEEDED"
+    assert result.failure_stage is None
+    assert {
+        question.question_id for question in result.followup_questions
+    }.issuperset({"followup-taste-odor-applicability"})
+    assert "followup-occurrence-condition" not in {
+        question.question_id for question in result.followup_questions
+    }
+    assert result.evidence_references == []
+    assert result.usage_guidance.guidance_status.value == "PENDING_CONSULTATION"
+    assert result.safety_assessment.risk_level == RiskLevel.CAUTION
+    assert result.safety_assessment.requires_consultation is True
+
+
+def test_earthy_taste_generation_receives_only_taste_or_odor_evidence():
+    taste_message = "물맛과 냄새 관련 공식 근거"
+    client = SequenceLLMClient(
+        llm_response(
+            message=taste_message,
+            actions=["기본 필터 및 사용 환경 유지"],
+        )
+    )
+
+    result = run_pipeline(
+        search_service=MixedTasteEvidenceSearchService(),
+        llm_client=client,
+        raw_symptom="물에서 흙맛이 나는 것 같아요",
+        previous_answers=COMPLETE_TASTE_ANSWERS,
+    ).to_analysis_result()
+
+    assert result.structured_symptom.symptom_type == "물맛/냄새 이상"
+    assert result.structured_symptom.occurrence_condition == "10일 이내 부재 후"
+    assert [reference.summary for reference in result.evidence_references] == [
+        taste_message
+    ]
+    assert client.requests[0].symptom_summary == (
+        "물맛/냄새 이상 | 정수 | 10일 이내 부재 후"
+    )
+    assert client.requests[0].evidence_summaries == [taste_message]
+
+
+@pytest.mark.parametrize(
+    ("answer_text", "expected_code", "expected_condition"),
+    [
+        ("해당 없음", "NOT_APPLICABLE", "해당 없음"),
+        ("10일 이상 부재 후", "ABSENCE_OVER_10_DAYS", "10일 이상 부재 후"),
+        ("장시간 미사용 후", "LONG_UNUSED", "장시간 미사용 후"),
+        (
+            "부적합 장소 설치 후",
+            "UNSUITABLE_INSTALLATION",
+            "부적합 장소 설치 후",
+        ),
+    ],
+)
+def test_earthy_taste_context_without_safe_self_guidance_routes_to_no_evidence(
+    answer_text,
+    expected_code,
+    expected_condition,
+):
+    client = SequenceLLMClient(llm_response())
+    previous_answers = [
+        *COMPLETE_TASTE_ANSWERS[:-1],
+        {
+            "question_id": "followup-taste-odor-applicability",
+            "answer_text": answer_text,
+        },
+    ]
+
+    pipeline_result = run_pipeline(
+        search_service=MixedTasteEvidenceSearchService(),
+        llm_client=client,
+        raw_symptom="물에서 흙맛이 나는 것 같아요",
+        previous_answers=previous_answers,
+    )
+    result = pipeline_result.to_analysis_result()
+
+    assert client.calls == 0
+    assert pipeline_result.context.evidence_applicability.value == expected_code
+    assert result.structured_symptom.occurrence_condition == expected_condition
+    assert pipeline_result.context.retrieval_outcome.value == "NO_MATCH"
+    assert result.status.value == "FALLBACK"
+    assert result.failure_stage.value == "RETRIEVING"
+    assert result.evidence_references == []
+    assert result.usage_guidance.guidance_status.value == "PENDING_CONSULTATION"
+
+
+def test_earthy_taste_with_only_unrelated_evidence_fails_closed_without_llm():
+    client = SequenceLLMClient(llm_response())
+
+    result = run_pipeline(
+        search_service=UnrelatedTasteEvidenceSearchService(),
+        llm_client=client,
+        raw_symptom="물에서 흙맛이 나는 것 같아요",
+        previous_answers=COMPLETE_TASTE_ANSWERS,
+    ).to_analysis_result()
+
+    assert client.calls == 0
+    assert result.evidence_references == []
+    assert result.usage_guidance.guidance_status.value == "PENDING_CONSULTATION"
 
 
 def generation_request() -> GuidanceGenerationRequest:
