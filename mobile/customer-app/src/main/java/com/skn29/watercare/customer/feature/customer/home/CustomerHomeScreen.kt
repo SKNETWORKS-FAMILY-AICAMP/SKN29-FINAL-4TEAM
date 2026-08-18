@@ -34,6 +34,7 @@ fun CustomerHomeScreen(
     onStartIntake: (subscriptionId: String) -> Unit,
     onOpenFollowUp: (inquiryId: String, scenario: MockScenario) -> Unit,
     onOpenGuidance: (inquiryId: String, scenario: MockScenario) -> Unit,
+    onOpenCare: () -> Unit,
     onLogout: () -> Unit,
 ) {
     val careRepository = if (offlinePreview) {
@@ -83,6 +84,7 @@ fun CustomerHomeScreen(
             }
         },
         onRetry = viewModel::load,
+        onOpenCare = onOpenCare,
         onLogout = {
             viewModel.logout(onLogout)
         },
@@ -97,6 +99,7 @@ fun CustomerHomeContent(
     onOpenGuidance: (inquiryId: String, scenario: MockScenario) -> Unit,
     onRetry: () -> Unit,
     onLogout: () -> Unit,
+    onOpenCare: () -> Unit = {},
     onSelectSubscription: (String) -> Unit = {},
     showDeveloperTools: Boolean = false,
 ) {
@@ -118,7 +121,8 @@ fun CustomerHomeContent(
             ReferenceBottomItem(
                 iconRes = R.drawable.ref_care,
                 label = "케어",
-                enabled = false,
+                enabled = !state.offlinePreview,
+                onClick = onOpenCare,
             ),
             ReferenceBottomItem(
                 iconRes = R.drawable.ref_notice,

@@ -6,12 +6,14 @@ import com.skn29.watercare.core.config.CustomerCareRuntimeConfig
 import com.skn29.watercare.core.network.NetworkFactory
 import com.skn29.watercare.core.repository.AuthRepository
 import com.skn29.watercare.core.repository.BackendStatusRepository
+import com.skn29.watercare.core.repository.CareHistoryRepository
 import com.skn29.watercare.core.repository.CustomerCareRepository
 import com.skn29.watercare.core.repository.CustomerInquiryRepository
 import com.skn29.watercare.core.repository.FakeCustomerCareRepository
 import com.skn29.watercare.core.repository.InquiryRepository
 import com.skn29.watercare.core.repository.RemoteAuthRepository
 import com.skn29.watercare.core.repository.RemoteBackendStatusRepository
+import com.skn29.watercare.core.repository.RemoteCareHistoryRepository
 import com.skn29.watercare.core.repository.RemoteCustomerInquiryRepository
 import com.skn29.watercare.core.repository.RemoteInquiryRepository
 import com.skn29.watercare.core.repository.RemoteIntakeCustomerCareRepository
@@ -26,6 +28,8 @@ object WaterCareCore {
     lateinit var customerInquiryRepository: CustomerInquiryRepository
         private set
     lateinit var subscriptionRepository: SubscriptionRepository
+        private set
+    lateinit var careHistoryRepository: CareHistoryRepository
         private set
     lateinit var backendStatusRepository: BackendStatusRepository
         private set
@@ -56,6 +60,7 @@ object WaterCareCore {
             network.json,
         )
         subscriptionRepository = RemoteSubscriptionRepository(network.api, network.json)
+        careHistoryRepository = RemoteCareHistoryRepository(network.api, network.json)
         backendStatusRepository = RemoteBackendStatusRepository(network.api)
 
         val fixtureRepository = FakeCustomerCareRepository(

@@ -6,6 +6,7 @@ import com.skn29.watercare.core.model.AllowedAction
 object CustomerRoute {
     const val LOGIN = "login"
     const val HOME = "home?offline={offline}"
+    const val CARE = "care"
 
     const val INTAKE =
         "intake/{subscriptionId}" +
