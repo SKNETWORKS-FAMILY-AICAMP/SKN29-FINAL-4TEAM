@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:design": "vite --mode design",
     "build": "tsc -b && vite build",
     "fixtures:generate": "node scripts/generate-contract-fixtures.mjs",
     "lint": "eslint .",

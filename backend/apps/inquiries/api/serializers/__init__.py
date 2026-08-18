@@ -1,5 +1,9 @@
 """Public inquiry serializer exports."""
 
+from apps.inquiries.api.serializers.action_result import (
+    ActionResultRequestSerializer,
+    ActionResultResponseSerializer,
+)
 from apps.inquiries.api.serializers.cancel_inquiry import (
     CancelInquiryResponseSerializer,
     CancelInquirySerializer,
@@ -31,6 +35,13 @@ from apps.inquiries.api.serializers.request_consultation import (
     RequestConsultationResponseSerializer,
     RequestConsultationSerializer,
 )
+from apps.inquiries.api.serializers.resolution_feedback import (
+    FinalizeInquiryRequestSerializer,
+    ReportUnresolvedRequestSerializer,
+    ResolutionFeedbackRequestSerializer,
+    ResolutionTransitionResponseSerializer,
+    StateVersionRequestSerializer,
+)
 from apps.inquiries.api.serializers.followup_answers import (
     SubmitFollowUpAnswersResponseSerializer,
     SubmitFollowUpAnswersSerializer,
@@ -42,6 +53,8 @@ from apps.inquiries.api.serializers.symptom_submission import (
 
 
 __all__ = [
+    "ActionResultRequestSerializer",
+    "ActionResultResponseSerializer",
     "CancelInquiryResponseSerializer",
     "CancelInquirySerializer",
     "ConsultantInquiryDetailDataSerializer",
@@ -59,6 +72,11 @@ __all__ = [
     "RegisterConsultantPhoneInquirySerializer",
     "RequestConsultationResponseSerializer",
     "RequestConsultationSerializer",
+    "FinalizeInquiryRequestSerializer",
+    "ReportUnresolvedRequestSerializer",
+    "ResolutionFeedbackRequestSerializer",
+    "ResolutionTransitionResponseSerializer",
+    "StateVersionRequestSerializer",
     "SubmitFollowUpAnswersResponseSerializer",
     "SubmitFollowUpAnswersSerializer",
     "SubmitSymptomResponseSerializer",

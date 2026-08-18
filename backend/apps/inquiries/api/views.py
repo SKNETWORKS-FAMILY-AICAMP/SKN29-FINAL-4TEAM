@@ -8,6 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from apps.inquiries.api.serializers import (
+    ActionResultRequestSerializer,
+    ActionResultResponseSerializer,
     CancelInquiryResponseSerializer,
     CancelInquirySerializer,
     ConsultantInquiryDetailDataSerializer,
@@ -21,10 +23,15 @@ from apps.inquiries.api.serializers import (
     CustomerInquiryQuestionsSerializer,
     CustomerInquirySnapshotSerializer,
     InquiryResponseSerializer,
+    FinalizeInquiryRequestSerializer,
     RegisterConsultantPhoneInquiryResultSerializer,
     RegisterConsultantPhoneInquirySerializer,
+    ReportUnresolvedRequestSerializer,
     RequestConsultationResponseSerializer,
     RequestConsultationSerializer,
+    ResolutionFeedbackRequestSerializer,
+    ResolutionTransitionResponseSerializer,
+    StateVersionRequestSerializer,
     SubmitFollowUpAnswersResponseSerializer,
     SubmitFollowUpAnswersSerializer,
     SubmitSymptomResponseSerializer,
@@ -32,12 +39,14 @@ from apps.inquiries.api.serializers import (
 )
 from apps.inquiries.permissions import (
     CanAttemptInquiryCancel,
+    IsCompletionStaff,
     IsConsultant,
     IsCustomer,
 )
 from apps.inquiries.services.consultant_inquiry_service import (
     ConsultantInquiryService,
 )
+from apps.inquiries.services.action_result_service import ActionResultService
 from apps.inquiries.services.consultant_phone_inquiry_service import (
     ConsultantPhoneInquiryService,
 )
@@ -54,6 +63,7 @@ from apps.inquiries.services.followup_answer_service import (
 from apps.inquiries.services.inquiry_transition_service import (
     InquiryTransitionService,
 )
+from apps.inquiries.services.resolution_service import ResolutionService
 from common.api.response import success_response
 
 
@@ -393,6 +403,33 @@ class SubmitFollowUpAnswersView(APIView):
         )
 
 
+class CreateActionResultView(APIView):
+    """Append a CUSTOMER-owned guidance action result."""
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def post(self, request, inquiry_id: UUID):
+        reject_unknown_query_parameters(request, set())
+        idempotency_key = require_idempotency_key(request)
+        serializer = ActionResultRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            outcome = ActionResultService.create(
+                actor=request.user,
+                inquiry_public_id=inquiry_id,
+                validated_data=serializer.validated_data,
+                idempotency_key=idempotency_key,
+            )
+            response_data = ActionResultResponseSerializer(
+                outcome.data
+            ).data
+        return success_response(
+            response_data,
+            status_code=outcome.status_code,
+        )
+
+
 class RequestConsultationView(APIView):
     """Execute REQUEST_CONSULTATION for the authenticated owner."""
 
@@ -420,3 +457,59 @@ class RequestConsultationView(APIView):
             response_data,
             status_code=outcome.status_code,
         )
+
+
+class ResolutionActionView(APIView):
+    """Shared strict HTTP boundary for confirmed T-023 actions."""
+
+    request_serializer_class = StateVersionRequestSerializer
+    service_method = ""
+
+    def post(self, request, inquiry_id: UUID):
+        reject_unknown_query_parameters(request, set())
+        idempotency_key = require_idempotency_key(request)
+        correlation_id = require_correlation_id(request)
+        serializer = self.request_serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            outcome = getattr(
+                ResolutionService,
+                self.service_method,
+            )(
+                actor=request.user,
+                inquiry_public_id=inquiry_id,
+                validated_data=serializer.validated_data,
+                idempotency_key=idempotency_key,
+                correlation_id=correlation_id,
+            )
+            response_data = ResolutionTransitionResponseSerializer(
+                outcome.data
+            ).data
+        return success_response(
+            response_data,
+            status_code=outcome.status_code,
+        )
+
+
+class SubmitResolutionFeedbackView(ResolutionActionView):
+    permission_classes = [IsAuthenticated, IsCustomer]
+    request_serializer_class = ResolutionFeedbackRequestSerializer
+    service_method = "submit_feedback"
+
+
+class ReportUnresolvedView(ResolutionActionView):
+    permission_classes = [IsAuthenticated, IsCustomer]
+    request_serializer_class = ReportUnresolvedRequestSerializer
+    service_method = "report_unresolved"
+
+
+class ResumeConsultationView(ResolutionActionView):
+    permission_classes = [IsAuthenticated, IsConsultant]
+    service_method = "resume_consultation"
+
+
+class FinalizeInquiryView(ResolutionActionView):
+    permission_classes = [IsAuthenticated, IsCompletionStaff]
+    request_serializer_class = FinalizeInquiryRequestSerializer
+    service_method = "finalize"

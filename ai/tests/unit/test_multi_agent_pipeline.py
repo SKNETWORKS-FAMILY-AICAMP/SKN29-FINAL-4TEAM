@@ -1,0 +1,297 @@
+"""6주차 3-Agent Supervisor·Routing·Feedback 후보 Runtime 검증."""
+
+from __future__ import annotations
+
+import json
+
+import pytest
+
+from ai.app.generation.customer_guidance.models import GuidanceGenerationResult
+from ai.evaluation.runners.pipeline_comparison_runner import PipelineComparisonRunner
+from ai.app.integrations.llm import GuidanceLLMResponse, LLMUsage
+from ai.app.orchestration.agents import (
+    AgentHopLimitExceeded,
+    AgentRole,
+    CareDecisionAgent,
+    EvidenceAnalysisAgent,
+    HandoffReason,
+    SymptomAnalysisAgent,
+)
+from ai.app.common.timeout import CancellationToken
+from ai.app.orchestration.pipeline_context import PipelineContext
+from ai.app.orchestration.pipeline_router import PipelineRouter
+from ai.app.orchestration.pipelines.multi_agent_pipeline import MultiAgentPipeline
+from ai.app.retrieval import RetrievedChunk
+from ai.app.schemas import TraceContext, UsageGuidanceStatus
+
+
+INQUIRY_ID = "018f2f9b-7c30-7981-b541-1a987c88b601"
+CORRELATION_ID = "018f2f9b-7c30-7981-b541-1a987c88b602"
+COMPLETE_SYMPTOM = "어제부터 냉수 버튼을 누르면 물이 졸졸 나옵니다. 전원을 껐다 켰어요."
+EVIDENCE_SUMMARY = "냉수 온도가 높으면 잠시 기다린 뒤 다시 확인합니다."
+
+
+class EmptySearchService:
+    def search(self, *args, **kwargs):
+        return []
+
+
+class EvidenceSearchService:
+    def search(self, *args, **kwargs):
+        return [
+            RetrievedChunk(
+                chunk_id="RAG-WPUJAC104DWH-COLD-MA-TEST",
+                document_title="WPU-JAC104D 사용설명서",
+                document_version="REV.00",
+                page=37,
+                page_refs=[37],
+                manual_model="WPUJAC104DWH",
+                model_code="WPUJAC104DWH",
+                product_generation="D",
+                content=EVIDENCE_SUMMARY,
+                similarity_score=0.91,
+                official_url="https://example.invalid/official-manual",
+                verification_status="official_verified",
+                allowed_use=True,
+            )
+        ]
+
+
+class FakeGuidanceLLMClient:
+    def __init__(self):
+        self.calls = 0
+
+    def generate_guidance(self, request, *, timeout_seconds):
+        self.calls += 1
+        return GuidanceLLMResponse(
+            output=GuidanceGenerationResult(
+                message=EVIDENCE_SUMMARY,
+                next_actions=["안내된 자가조치 단계별 점검 수행"],
+            ),
+            model_name="gpt-4.1-mini",
+            usage=LLMUsage(input_tokens=10, output_tokens=8, total_tokens=18),
+            latency_ms=12.5,
+        )
+
+
+def _run_multi_agent(*, search_service, raw_symptom=COMPLETE_SYMPTOM, previous_answers=None):
+    return PipelineRouter(
+        search_service=search_service,
+        llm_client=FakeGuidanceLLMClient(),
+    ).run_pipeline(
+        inquiry_id=INQUIRY_ID,
+        correlation_id=CORRELATION_ID,
+        ai_request_id="ai-req-multi-agent",
+        state_version=1,
+        raw_symptom=raw_symptom,
+        model_code="WPUJAC104DWH",
+        previous_answers=previous_answers or [],
+        runtime_name="multi_agent",
+    )
+
+
+def test_default_runtime_remains_single_rag():
+    result = PipelineRouter(search_service=None).run_pipeline(
+        inquiry_id=INQUIRY_ID,
+        correlation_id=CORRELATION_ID,
+        ai_request_id="ai-req-default-runtime",
+        state_version=1,
+        raw_symptom="정수기 밑 바닥에 물이 새서 누수가 심합니다.",
+        selected_symptoms=["누수"],
+    )
+
+    assert result.runtime_name == "single_rag"
+    assert result.multi_agent_metadata is None
+
+
+def test_multi_agent_danger_routes_without_retrieval_or_llm():
+    llm = FakeGuidanceLLMClient()
+    result = PipelineRouter(search_service=None, llm_client=llm).run_pipeline(
+        inquiry_id=INQUIRY_ID,
+        correlation_id=CORRELATION_ID,
+        ai_request_id="ai-req-multi-danger",
+        state_version=1,
+        raw_symptom="정수기 밑 바닥에 물이 새서 누수가 심합니다.",
+        selected_symptoms=["누수"],
+        runtime_name="multi_agent",
+    )
+    response = result.to_analysis_result()
+
+    assert result.runtime_name == "multi_agent"
+    assert response.safety_assessment.risk_level.value == "danger"
+    assert response.usage_guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
+    assert response.evidence_references == []
+    assert llm.calls == 0
+    assert [item.reason_code for item in result.multi_agent_metadata.handoffs] == [
+        HandoffReason.START_ANALYSIS,
+        HandoffReason.DANGER_PRIORITY,
+        HandoffReason.CARE_DECISION_READY,
+    ]
+
+
+def test_multi_agent_evidence_path_matches_single_rag_public_contract():
+    single = PipelineRouter(
+        search_service=EvidenceSearchService(),
+        llm_client=FakeGuidanceLLMClient(),
+    ).run_pipeline(
+        inquiry_id=INQUIRY_ID,
+        correlation_id=CORRELATION_ID,
+        ai_request_id="ai-req-parity",
+        state_version=1,
+        raw_symptom=COMPLETE_SYMPTOM,
+        runtime_name="single_rag",
+    )
+    multi = PipelineRouter(
+        search_service=EvidenceSearchService(),
+        llm_client=FakeGuidanceLLMClient(),
+    ).run_pipeline(
+        inquiry_id=INQUIRY_ID,
+        correlation_id=CORRELATION_ID,
+        ai_request_id="ai-req-parity",
+        state_version=1,
+        raw_symptom=COMPLETE_SYMPTOM,
+        runtime_name="multi_agent",
+    )
+
+    assert multi.to_analysis_result().model_dump(mode="json") == (
+        single.to_analysis_result().model_dump(mode="json")
+    )
+    assert [item.to_agent for item in multi.multi_agent_metadata.handoffs] == [
+        AgentRole.SYMPTOM_ANALYSIS,
+        AgentRole.EVIDENCE_ANALYSIS,
+        AgentRole.CARE_DECISION,
+        AgentRole.SUPERVISOR,
+    ]
+
+
+def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence():
+    raw_symptom = "정수기 상태가 이상합니다."
+    result = _run_multi_agent(
+        search_service=EmptySearchService(),
+        raw_symptom=raw_symptom,
+    )
+    response = result.to_analysis_result()
+
+    assert result.context.awaiting_customer_input is True
+    assert result.multi_agent_metadata.awaiting_customer_input is True
+    assert response.status.value == "SUCCEEDED"
+    assert response.failure_stage is None
+    assert response.followup_questions
+    assert response.evidence_references == []
+    assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
+    assert HandoffReason.MORE_INFORMATION_REQUIRED in {
+        item.reason_code for item in result.multi_agent_metadata.handoffs
+    }
+    assert raw_symptom not in json.dumps(
+        result.multi_agent_metadata.model_dump(mode="json"),
+        ensure_ascii=False,
+    )
+
+
+def test_answered_questions_then_empty_retrieval_becomes_no_evidence():
+    result = _run_multi_agent(
+        search_service=EmptySearchService(),
+        raw_symptom="정수기 상태가 이상합니다.",
+        previous_answers=[
+            {"question_id": "followup-occurrence-time", "answer_text": "어제부터"},
+            {"question_id": "followup-target-water-type", "answer_text": "냉수"},
+            {"question_id": "followup-occurrence-condition", "answer_text": "버튼을 누를 때"},
+            {"question_id": "followup-actions-taken", "answer_text": "전원 재부팅"},
+        ],
+    )
+    response = result.to_analysis_result()
+
+    assert result.context.awaiting_customer_input is False
+    assert response.followup_questions == []
+    assert response.status.value == "FALLBACK"
+    assert response.failure_stage.value == "RETRIEVING"
+    assert HandoffReason.NO_EVIDENCE in {
+        item.reason_code for item in result.multi_agent_metadata.handoffs
+    }
+
+
+def test_multi_agent_hop_limit_fails_closed():
+    ctx = PipelineContext(
+        trace_context=TraceContext(
+            inquiry_id=INQUIRY_ID,
+            correlation_id=CORRELATION_ID,
+            ai_request_id="ai-req-hop-limit",
+            state_version=1,
+        ),
+        raw_symptom="정수기 밑 바닥에 물이 새서 누수가 심합니다.",
+        selected_symptoms=["누수"],
+    )
+
+    with pytest.raises(AgentHopLimitExceeded, match="최대 Handoff 1회"):
+        MultiAgentPipeline(search_service=None, max_hops=1).run(ctx)
+
+
+def test_invalid_runtime_name_does_not_silently_fallback():
+    with pytest.raises(RuntimeError, match="single_rag 또는 multi_agent"):
+        PipelineRouter(search_service=None).run_pipeline(
+            inquiry_id=INQUIRY_ID,
+            correlation_id=CORRELATION_ID,
+            ai_request_id="ai-req-invalid-runtime",
+            state_version=1,
+            raw_symptom="정수기 밑 바닥에 물이 새서 누수가 심합니다.",
+            selected_symptoms=["누수"],
+            runtime_name="unknown",
+        )
+
+
+def test_each_agent_returns_its_explicit_output_contract():
+    ctx = PipelineContext(
+        trace_context=TraceContext(
+            inquiry_id=INQUIRY_ID,
+            correlation_id=CORRELATION_ID,
+            ai_request_id="ai-req-agent-contracts",
+            state_version=1,
+        ),
+        raw_symptom=COMPLETE_SYMPTOM,
+    )
+    token = CancellationToken()
+
+    symptom_output = SymptomAnalysisAgent(token).run(ctx)
+    evidence_output = EvidenceAnalysisAgent(
+        EvidenceSearchService(),
+        token,
+    ).run(ctx)
+    care_output = CareDecisionAgent(token, FakeGuidanceLLMClient()).run(ctx)
+
+    assert symptom_output.structured_symptom == ctx.structured_symptom
+    assert symptom_output.safety_assessment == ctx.safety_assessment
+    assert evidence_output.evidence_sufficient is True
+    assert evidence_output.evidence_references == ctx.evidence_references
+    assert care_output.usage_guidance == ctx.usage_guidance
+    assert care_output.awaiting_customer_input is False
+
+
+def test_comparison_runner_records_parity_without_exposing_bodies():
+    request = {
+        "inquiry_id": INQUIRY_ID,
+        "correlation_id": CORRELATION_ID,
+        "ai_request_id": "ai-req-comparison",
+        "state_version": 1,
+        "raw_symptom": COMPLETE_SYMPTOM,
+        "model_code": "WPUJAC104DWH",
+    }
+    report = PipelineComparisonRunner().compare(
+        single_router=PipelineRouter(
+            search_service=EvidenceSearchService(),
+            llm_client=FakeGuidanceLLMClient(),
+        ),
+        multi_agent_router=PipelineRouter(
+            search_service=EvidenceSearchService(),
+            llm_client=FakeGuidanceLLMClient(),
+        ),
+        request_kwargs=request,
+    )
+
+    assert report.public_contract_equal is True
+    assert report.safety_result_equal is True
+    assert report.evidence_identity_equal is True
+    assert report.single_rag.tokens_used == 18
+    assert report.multi_agent.tokens_used == 18
+    serialized = report.model_dump_json()
+    assert COMPLETE_SYMPTOM not in serialized
+    assert EVIDENCE_SUMMARY not in serialized

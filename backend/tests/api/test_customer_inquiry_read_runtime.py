@@ -370,6 +370,8 @@ def test_customer_active_inquiry_returns_latest_owned_non_terminal_snapshot(
     assert data["state_version"] == 9
     assert data["subscription_id"] == str(latest.subscription.public_id)
     assert [action["code"] for action in data["allowed_actions"]] == [
+        "SUBMIT_RESOLUTION_FEEDBACK",
+        "CUSTOMER_REPORTED_UNRESOLVED",
         "REQUEST_CONSULTATION"
     ]
 

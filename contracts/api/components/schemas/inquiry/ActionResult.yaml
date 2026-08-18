@@ -3,13 +3,29 @@ type: object
 description: 고객 자가조치 결과 T-022 확정 DTO
 x-contract-status: CONFIRMED
 additionalProperties: false
+required:
+  - id
+  - inquiry_id
+  - guidance_item_id
+  - attempt_no
+  - result_code
+  - result_text
+  - performed_at
+  - customer_comment
+  - submitted_by
+  - state_version
+  - idempotent_replay
+  - created_at
 properties:
   id:
     type: string
-    maxLength: 48
+    format: uuid
+  inquiry_id:
+    type: string
+    format: uuid
   guidance_item_id:
     type: string
-    maxLength: 48
+    format: uuid
   attempt_no:
     type: integer
   result_code:
@@ -29,7 +45,12 @@ properties:
       - "null"
   submitted_by:
     type: string
-    maxLength: 48
+    format: uuid
+  state_version:
+    type: integer
+    minimum: 1
+  idempotent_replay:
+    type: boolean
   created_at:
     type: string
     format: date-time

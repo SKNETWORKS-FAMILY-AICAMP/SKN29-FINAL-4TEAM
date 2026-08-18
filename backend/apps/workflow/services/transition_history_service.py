@@ -90,6 +90,7 @@ class TransitionHistoryService:
         actor: Any,
         correlation_id: UUID,
         idempotency_key: str,
+        change_reason: str | None = None,
     ) -> TransitionHistory:
         """Record one consultant-owned workflow business event."""
 
@@ -102,6 +103,7 @@ class TransitionHistoryService:
             state_version=transition.state_version_after,
             correlation_id=correlation_id,
             idempotency_key=idempotency_key,
+            change_reason=change_reason,
         )
 
     @staticmethod

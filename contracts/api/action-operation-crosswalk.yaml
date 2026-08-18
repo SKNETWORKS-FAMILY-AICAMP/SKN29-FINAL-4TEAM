@@ -3,7 +3,7 @@ contract:
   version: 1.0.0
   status: PM_BASELINE_CANDIDATE
   owner: PM_TECHNICAL_INTEGRATION
-  updated_at: 2026-08-11
+  updated_at: 2026-08-17
   sources:
     action_registry: ../codes/workflow-actions.yaml
     allowed_actions: ../state-machine/allowed-actions.yaml
@@ -28,8 +28,8 @@ classification_policy:
 
 summary:
   total_actions: 23
-  RUNTIME_IMPLEMENTED: 13
-  OPENAPI_CONFIRMED: 6
+  RUNTIME_IMPLEMENTED: 17
+  OPENAPI_CONFIRMED: 2
   CONTRACT_ONLY: 0
   DEFERRED: 4
 
@@ -338,58 +338,77 @@ actions:
   - action: SUBMIT_RESOLUTION_FEEDBACK
     event: SUBMIT_RESOLUTION_FEEDBACK
     operation_id: submitResolutionFeedback
-    classification: OPENAPI_CONFIRMED
+    classification: RUNTIME_IMPLEMENTED
     openapi:
       confirmed: true
       method: POST
       path: /inquiries/{id}/resolution-feedback
       contract_status: CONFIRMED
     runtime:
-      implemented: false
-      source_evidence: []
-      test_evidence: []
+      implemented: true
+      source_evidence:
+        - ../../backend/apps/inquiries/api/views.py
+        - ../../backend/apps/inquiries/services/resolution_service.py
+        - ../../backend/apps/inquiries/repositories/resolution_repository.py
+        - ../../backend/apps/inquiries/models/followup_confirmation.py
+      test_evidence:
+        - ../../backend/tests/api/test_t023_resolution_runtime.py
 
   - action: CUSTOMER_REPORTED_UNRESOLVED
     event: CUSTOMER_REPORTED_UNRESOLVED
     operation_id: reportUnresolved
-    classification: OPENAPI_CONFIRMED
+    classification: RUNTIME_IMPLEMENTED
     openapi:
       confirmed: true
       method: POST
       path: /inquiries/{id}/report-unresolved
       contract_status: CONFIRMED
     runtime:
-      implemented: false
-      source_evidence: []
-      test_evidence: []
+      implemented: true
+      source_evidence:
+        - ../../backend/apps/inquiries/api/views.py
+        - ../../backend/apps/inquiries/services/resolution_service.py
+        - ../../backend/apps/inquiries/repositories/resolution_repository.py
+        - ../../backend/apps/inquiries/models/followup_confirmation.py
+      test_evidence:
+        - ../../backend/tests/api/test_t023_resolution_runtime.py
 
   - action: RESUME_CONSULTATION
     event: RESUME_CONSULTATION
     operation_id: resumeConsultation
-    classification: OPENAPI_CONFIRMED
+    classification: RUNTIME_IMPLEMENTED
     openapi:
       confirmed: true
       method: POST
       path: /inquiries/{id}/resume-consultation
       contract_status: CONFIRMED
     runtime:
-      implemented: false
-      source_evidence: []
-      test_evidence: []
+      implemented: true
+      source_evidence:
+        - ../../backend/apps/inquiries/api/views.py
+        - ../../backend/apps/inquiries/services/resolution_service.py
+        - ../../backend/apps/consultations/repositories/consultation_repository.py
+      test_evidence:
+        - ../../backend/tests/api/test_t023_resolution_runtime.py
 
   - action: FINALIZE_INQUIRY
     event: FINALIZE_INQUIRY
     operation_id: finalizeInquiry
-    classification: OPENAPI_CONFIRMED
+    classification: RUNTIME_IMPLEMENTED
     openapi:
       confirmed: true
       method: POST
       path: /inquiries/{id}/finalize
       contract_status: CONFIRMED
     runtime:
-      implemented: false
-      source_evidence: []
-      test_evidence: []
+      implemented: true
+      source_evidence:
+        - ../../backend/apps/inquiries/api/views.py
+        - ../../backend/apps/inquiries/services/resolution_service.py
+        - ../../backend/apps/inquiries/repositories/resolution_repository.py
+        - ../../backend/apps/inquiries/models/inquiry.py
+      test_evidence:
+        - ../../backend/tests/api/test_t023_resolution_runtime.py
 
   - action: VISIT_NOT_NEEDED
     event: VISIT_NOT_NEEDED

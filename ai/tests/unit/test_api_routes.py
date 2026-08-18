@@ -82,6 +82,52 @@ def test_analyze_endpoint_local_mode_leak(client):
     assert data["safety_assessment"]["requires_consultation"] is True
 
 
+def test_local_mode_can_select_multi_agent_without_changing_public_schema(client, monkeypatch):
+    """후보 Runtime은 Process 설정으로만 선택되고 공개 계약은 3.0.0을 유지한다."""
+
+    monkeypatch.setenv("AI_PIPELINE_RUNTIME", "multi_agent")
+    response = client.post(
+        "/api/v1/ai/analyze?mode=local",
+        json={
+            "inquiry_id": INQUIRY_ID,
+            "correlation_id": CORRELATION_ID,
+            "ai_request_id": "ai-req-multi-agent-http",
+            "state_version": 1,
+            "raw_symptom": "정수기 하부에서 누수가 생기고 전원선 근처에 물이 샙니다.",
+            "model_code": "WPUJAC104DWH",
+            "selected_symptoms": ["누수"],
+            "previous_answers": [],
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["safety_assessment"]["risk_level"] == "danger"
+    assert body["usage_guidance"]["guidance_status"] == "TOTAL_STOP"
+    assert "runtime_name" not in body
+    assert "multi_agent_metadata" not in body
+
+
+def test_invalid_pipeline_runtime_fails_closed_as_503(client, monkeypatch):
+    monkeypatch.setenv("AI_PIPELINE_RUNTIME", "unsupported")
+    response = client.post(
+        "/api/v1/ai/analyze?mode=local",
+        json={
+            "inquiry_id": INQUIRY_ID,
+            "correlation_id": CORRELATION_ID,
+            "ai_request_id": "ai-req-invalid-runtime-http",
+            "state_version": 1,
+            "raw_symptom": "정수기 하부에서 누수가 생기고 전원선 근처에 물이 샙니다.",
+            "model_code": "WPUJAC104DWH",
+            "selected_symptoms": ["누수"],
+            "previous_answers": [],
+        },
+    )
+
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "AI-FAILED-01"
+
+
 def test_local_mode_no_match_is_200_fallback(client, monkeypatch):
     from ai.app.interfaces.http.routes import analysis_routes
 

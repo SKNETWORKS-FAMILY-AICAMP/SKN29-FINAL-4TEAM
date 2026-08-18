@@ -281,7 +281,7 @@
       description: 기존 문의의 공개 식별값
       schema:
         type: string
-        maxLength: 48
+        format: uuid
   post:
     operationId: createInquiryActionResult
     summary: 고객 자가조치 결과 누적
@@ -289,11 +289,14 @@
       자가조치 결과 원문을 동일 문의에 누적한다. 수행 여부는
       result_code를 단일 원천으로 사용한다.
     x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
     x-requirements:
       - FR-020
       - DR-006
     security:
       - BearerAuth: []
+    parameters:
+      - $ref: ../components/parameters/IdempotencyKey.yaml
     requestBody:
       required: true
       content:
@@ -325,6 +328,10 @@
         $ref: ../components/responses/NotFound.yaml
       "409":
         $ref: ../components/responses/Conflict.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "500":
+        $ref: ../components/responses/InternalServerError.yaml
 
 /inquiries/{id}/submit:
   parameters:

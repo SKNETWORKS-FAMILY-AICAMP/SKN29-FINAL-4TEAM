@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import date
+from decimal import Decimal
 from importlib import import_module
 from uuid import UUID, uuid4
 
@@ -15,7 +17,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from apps.accounts.models import CustomerProfile, User
-from apps.audit.models import AIRun
+from apps.audit.models import AIRetrievalHit, AIRetrievalRun, AIRun
 from apps.evidence.models import (
     AIChunkCrosswalk,
     AIChunkCrosswalkPage,
@@ -511,16 +513,57 @@ def test_default_verifier_persists_evidence_link_and_applies_safe_event():
     assert inquiry.evidence_ids == [str(mapping.chunk.public_id)]
     guidance = Guidance.objects.get(inquiry=inquiry)
     run = AIRun.objects.get(inquiry=inquiry)
+    retrieval_run = AIRetrievalRun.objects.get(ai_run=run)
+    retrieval_hit = AIRetrievalHit.objects.get(
+        retrieval_run=retrieval_run,
+    )
     link = EvidenceLink.objects.get(inquiry=inquiry)
+    history = TransitionHistory.objects.get(inquiry=inquiry)
+    assert retrieval_run.inquiry == inquiry
+    assert retrieval_run.query_text == inquiry.raw_text
+    assert retrieval_run.query_sha256 == hashlib.sha256(
+        inquiry.raw_text.encode("utf-8")
+    ).hexdigest()
+    assert retrieval_run.filter_payload == {
+        "model_code": inquiry.subscription.product_model.model_code,
+    }
+    assert retrieval_run.retrieval_config_version == mapping.index_version
+    assert retrieval_run.retrieval_config == {
+        "index_version": mapping.index_version,
+        "chunk_set_sha256": mapping.chunk_set_sha256,
+        "manifest_schema_version": mapping.manifest_schema_version,
+        "observed_selected_count": 1,
+    }
+    assert retrieval_run.embedding_model == mapping.embedding_model
+    assert (
+        retrieval_run.embedding_model_version
+        == mapping.embedding_model_version
+    )
+    assert retrieval_run.distance_metric_code == "COSINE"
+    assert retrieval_run.top_k == 1
+    assert retrieval_run.status_code == AIRetrievalRun.Status.SUCCEEDED
+    assert retrieval_hit.chunk == mapping.chunk
+    assert retrieval_hit.rank_no == 1
+    assert retrieval_hit.vector_score == Decimal("0.900000")
+    assert retrieval_hit.selected_for_answer is True
+    assert (
+        retrieval_hit.applicability_status_code
+        == mapping.canonical_verification_status
+    )
     assert link.guidance == guidance
     assert link.ai_run == run
     assert link.chunk == mapping.chunk
+    assert link.retrieval_run == retrieval_run
+    assert link.retrieval_hit == retrieval_hit
     assert link.evidence_summary == "Approved customer-safe evidence summary."
     assert link.cited_text_snapshot == mapping.chunk.chunk_text
     assert link.is_verified is True
-    assert TransitionHistory.objects.get(inquiry=inquiry).event_code == (
-        "SAFE_GUIDANCE_READY"
-    )
+    assert history.event_code == "SAFE_GUIDANCE_READY"
+    assert {
+        run.correlation_id,
+        retrieval_run.correlation_id,
+        history.correlation_id,
+    } == {correlation_id}
 
     replay = InquiryAIService._replay_or_conflict(
         run,
@@ -530,4 +573,61 @@ def test_default_verifier_persists_evidence_link_and_applies_safe_event():
     )
     assert replay.idempotent_replay is True
     assert EvidenceLink.objects.filter(inquiry=inquiry).count() == 1
+    assert AIRetrievalRun.objects.filter(ai_run=run).count() == 1
+    assert AIRetrievalHit.objects.filter(
+        retrieval_run=retrieval_run,
+    ).count() == 1
+    http_client.close()
+
+
+def test_missing_similarity_keeps_verified_evidence_without_fake_lineage():
+    mapping, inquiry = create_verified_mapping(sequence=121)
+    correlation_id = uuid4()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        request_payload = json.loads(request.content.decode("utf-8"))
+        example_path = (
+            DEFAULT_CONTRACT_ROOT
+            / "examples"
+            / "symptom-analysis"
+            / "general-guidance.json"
+        )
+        response = json.loads(example_path.read_text(encoding="utf-8"))[
+            "response"
+        ]
+        for field in (
+            "inquiry_id",
+            "correlation_id",
+            "ai_request_id",
+            "state_version",
+        ):
+            response[field] = request_payload[field]
+        reference = evidence_reference(mapping)
+        reference["similarity_score"] = None
+        response["evidence_references"] = [reference]
+        return httpx.Response(200, json=response)
+
+    http_client = httpx.Client(transport=httpx.MockTransport(handler))
+    client = AIClient(
+        base_url="http://ai.test",
+        mode="local",
+        http_client=http_client,
+    )
+
+    outcome = InquiryAIService.analyze_inquiry(
+        inquiry_public_id=inquiry.public_id,
+        correlation_id=correlation_id,
+        ai_request_id=uuid4(),
+        client=client,
+    )
+
+    assert outcome.event_applied == "SAFE_GUIDANCE_READY"
+    link = EvidenceLink.objects.get(inquiry=inquiry)
+    assert link.is_verified is True
+    assert link.retrieval_run is None
+    assert link.retrieval_hit is None
+    assert not AIRetrievalRun.objects.filter(inquiry=inquiry).exists()
+    assert not AIRetrievalHit.objects.filter(
+        retrieval_run__in=AIRetrievalRun.objects.filter(inquiry=inquiry)
+    ).exists()
     http_client.close()

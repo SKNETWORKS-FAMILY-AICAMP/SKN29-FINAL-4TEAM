@@ -10,11 +10,11 @@ required:
 properties:
   guidance_item_id:
     type: string
-    minLength: 1
-    maxLength: 48
+    format: uuid
   result_code:
     type: string
     minLength: 1
+    maxLength: 40
     description: 수행 여부 단일 원천이며 NOT_PERFORMED는 확인된 값
   result_text:
     type:
@@ -32,4 +32,5 @@ properties:
     description: 수행 시각을 나타내는 RFC 3339 DateTimeString
   state_version:
     type: integer
+    minimum: 1
     description: 동시 수정 검사용 Inquiry 기대 version

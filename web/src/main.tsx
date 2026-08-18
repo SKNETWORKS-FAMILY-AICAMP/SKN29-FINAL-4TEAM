@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./app/App";
 import "./common/styles/pearl-workspace-v2.css";
+import "./common/styles/water-blue-tone.css";
 
 const rootElement = document.getElementById("root");
 

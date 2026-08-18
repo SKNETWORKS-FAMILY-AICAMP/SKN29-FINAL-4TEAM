@@ -16,11 +16,14 @@
 
 - `backend/apps/subscriptions/**`
 - `backend/apps/care/**`
+- `backend/apps/care/services/care_cycle_rule_registry.py`
 - `backend/apps/catalog/**`
 - `contracts/api/paths/products.yaml`
 - `contracts/api/paths/care.yaml`
 - `backend/tests/api/test_t018_*`
 - `backend/tests/api/test_t019_*`
+- `backend/tests/unit/care/test_care_cycle_rule_registry.py`
+- `backend/tests/integration/test_t020_care_schedule_postgresql.py`
 
 ## 3. 권한·데이터 경계
 
@@ -51,6 +54,24 @@ Transaction에서 잠근다. 같은 Key의 동시 요청은 저장 1건과 Repla
 공식 제품·관리 규칙의 `model`, `care_type`, `interval`, `source`, `version`을
 사용한다. 복수 필터 주기를 임의로 한 날짜로 합치지 않는다. 규칙이 확정되지
 않으면 계산 결과를 운영 기준으로 승격하지 않는다.
+
+`ApprovedCareCycleRuleRegistry`는 외부에서 검증·승인된 Entry만 입력받는 내부
+Adapter다. 다음 세 값이 완전히 일치할 때만 `CareCycleRule`을 반환한다.
+
+```text
+(product_model_code, management_type_code, care_type_code)
+```
+
+- Registry는 규칙 값을 코드에 내장하지 않는다.
+- 같은 Scope의 중복 Entry는 초기화 단계에서 거부한다.
+- 모델·관리방식·케어유형이 다르거나 Entry가 없으면 `None`을 반환한다.
+- `None`이면 `CONFIRMATION_REQUIRED`, `next_care_on=null`, DB Write 0건이다.
+- Exact Match만 기존 월말·윤년·최근 완료 이력 계산기로 전달한다.
+- Subscription Row Lock을 잡은 상태에서 Lookup·재산정을 수행한다.
+
+현재 1개월·2개월·3개월 등 테스트 값과 `test-fixture://` 출처는 검증 Fixture일
+뿐 운영 정책이 아니다. 공식 주기 Dataset이 승인될 때까지 Registry는 운영
+Rule을 제공하지 않으며 고객 공개 날짜도 임의 생성하지 않는다.
 
 ## 6. T-019 검증 Matrix
 
@@ -117,7 +138,22 @@ T-019 Skip 3건은 PostgreSQL Row Lock 전용 Case다. 이를 PASS로 승격하�
 PostgreSQL QA Gate는 `PASS`로 판정한다. 소비자 연결과 WBS 완료는 기존
 PM 결정에 따라 별도 승인을 유지한다.
 
-## 10. 판정
+## 10. 2026-08-17 T-020 Registry·PostgreSQL 검증
+
+- Registry·계산·계약 표적: `17 passed / 1 PostgreSQL 전용 skipped`
+- Care·T-018·T-019 연관 회귀: `56 passed / 4 PostgreSQL 전용 skipped`
+- PostgreSQL 16 임시 DB 동시 재산정: `PASS`
+- 동시 결과: 신규 일정 1건, Replay 1건, 열린 일정 총 1건
+- Django System Check·Migration drift: 별도 누적 Gate에서 재확인
+- Schema·Migration·공개 API 변경: 없음
+
+임시 DB에는 필요한 의존 Migration과 `visits.0001`까지만 적용했다.
+`visits.0005`는 미적용 상태를 확인했고 검증 후 임시 DB를 제거했다.
+
+Registry 골격과 PostgreSQL 작성자 검증은 완료했지만 공식 Rule Dataset과 운영
+변경 승인, 독립 QA, 고객 DTO 소비는 외부 Gate다.
+
+## 11. 판정
 
 계약·권한·IDOR·멱등·Rollback·PostgreSQL 동시성과 Projection 비노출이
 통과하면 구현 완료다. 관리 주기 정책이 미확정이면 다음 케어일만 별도 HOLD다.
