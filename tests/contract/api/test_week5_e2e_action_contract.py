@@ -47,6 +47,10 @@ EXPECTED = {
 IMPLEMENTED_PATHS = {
     "/inquiries/{id}/answers",
     "/inquiries/{id}/request-consultation",
+    "/inquiries/{id}/resolution-feedback",
+    "/inquiries/{id}/finalize",
+    "/inquiries/{id}/report-unresolved",
+    "/inquiries/{id}/resume-consultation",
 }
 
 

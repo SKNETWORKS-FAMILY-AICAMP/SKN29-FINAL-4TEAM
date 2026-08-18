@@ -44,8 +44,8 @@ class ActionOperationCrosswalkTest(unittest.TestCase):
         self.assertEqual(23, result.total_actions)
         self.assertEqual(
             {
-                "RUNTIME_IMPLEMENTED": 13,
-                "OPENAPI_CONFIRMED": 6,
+                "RUNTIME_IMPLEMENTED": 17,
+                "OPENAPI_CONFIRMED": 2,
                 "CONTRACT_ONLY": 0,
                 "DEFERRED": 4,
             },
