@@ -1,16 +1,13 @@
 import {
-  type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { createInquiryDetailPath } from "../../app/router/routePaths";
 import { useAuth } from "../../app/providers/authContext";
-import consultantAvatar from "../../assets/images/water-bridge-consultant.png";
 import Pagination from "../../common/components/data-display/Pagination";
 import {
   formatContractDateTimePrecise,
@@ -25,6 +22,7 @@ import {
 } from "../../entities/inquiry/inquiryIdentifiers";
 import CompactConsultationDesk from "../../features/consultation/components/CompactConsultationDesk";
 import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
+import ConsultantUserMenu from "../../features/consultation/components/ConsultantUserMenu";
 import useCounselorQueueFilters from "../../features/consultation/hooks/useCounselorQueueFilters";
 import { useConsultantInquiryListQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
 import type {
@@ -237,8 +235,6 @@ export default function ConsultantDashboardPage() {
   const { user } = useAuth();
   const { filters, hasChangedConditions, resetFilters, setFilters } =
     useCounselorQueueFilters();
-  const isQueryComposingRef = useRef(false);
-  const [queryInput, setQueryInput] = useState(filters.query);
   const [activeBucket, setActiveBucket] =
     useState<CounselorWorkBucket>(() => getInitialBucket(location.search));
   const [riskSectionStatusFilters, setRiskSectionStatusFilters] = useState(
@@ -400,12 +396,6 @@ export default function ConsultantDashboardPage() {
         )?.id ?? activeRiskSection);
 
   useEffect(() => {
-    if (!isQueryComposingRef.current) {
-      setQueryInput(filters.query);
-    }
-  }, [filters.query]);
-
-  useEffect(() => {
     document.body.classList.add("compact-consultant-body");
     return () => document.body.classList.remove("compact-consultant-body");
   }, []);
@@ -518,7 +508,7 @@ export default function ConsultantDashboardPage() {
       "")
     : "";
   const totalInquiryCount =
-    bucketCounts.NEW + bucketCounts.IN_PROGRESS;
+    bucketCounts.NEW + bucketCounts.IN_PROGRESS + bucketCounts.COMPLETED;
   const aiReviewCandidateIds = new Set(
     aiReviewCandidates.map((inquiry) => inquiry.inquiryId),
   );
@@ -648,13 +638,6 @@ export default function ConsultantDashboardPage() {
     navigate(`/consultant/inquiries?${params.toString()}`);
   };
 
-  const submitDashboardSearch = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const query = String(new FormData(event.currentTarget).get("query") ?? "");
-    if (!query.trim()) return;
-    openInquiryList("ALL", query);
-  };
-
   const normalizedContactQuery = contactQuery.trim().toLowerCase();
   const visibleContactEmployees = DASHBOARD_EMPLOYEE_CONTACTS.filter(
     (employee) =>
@@ -669,60 +652,14 @@ export default function ConsultantDashboardPage() {
     selectedContactDepartment !== null || normalizedContactQuery.length > 0;
 
   return (
-    <div className="simple-consultant-app consultant-queue-app">
+    <div className="simple-consultant-app consultant-queue-app consultant-dashboard-app">
       <main className="simple-consultant-main consultant-queue-main">
         <h1 id="simple-page-title" className="consultant-visually-hidden">
           고객 문의
         </h1>
 
-        <header className="simple-topbar consultant-main-header">
-          <form
-            className="consultant-queue-tools consultant-header-search"
-            onSubmit={submitDashboardSearch}
-          >
-            <label className="simple-search">
-              <span aria-hidden="true">⌕</span>
-              <input
-                type="search"
-                name="query"
-                aria-label="문의 검색"
-                value={queryInput}
-                onCompositionStart={() => {
-                  isQueryComposingRef.current = true;
-                }}
-                onCompositionEnd={(event) => {
-                  isQueryComposingRef.current = false;
-                  setQueryInput(event.currentTarget.value);
-                }}
-                onChange={(event) => {
-                  setQueryInput(event.target.value);
-                }}
-                placeholder="고객명, 증상, 문의번호 검색"
-              />
-            </label>
-            <button type="submit">검색</button>
-          </form>
-
-          <div className="simple-user">
-            <span className="simple-user__avatar-frame" aria-hidden="true">
-              <img
-                className="simple-user__avatar-image"
-                src={consultantAvatar}
-                alt=""
-              />
-            </span>
-            <strong className="simple-user__name">
-              {dashboardCounselorName}
-            </strong>
-            <svg
-              className="simple-user__chevron"
-              viewBox="0 0 16 16"
-              aria-hidden="true"
-              focusable="false"
-            >
-              <path d="m4.5 6 3.5 3.5L11.5 6" />
-            </svg>
-          </div>
+        <header className="simple-topbar consultant-main-header consultant-unified-header">
+          <ConsultantUserMenu className="simple-user" />
         </header>
 
         <ConsultantQueueSidebar

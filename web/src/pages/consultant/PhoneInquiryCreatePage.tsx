@@ -7,14 +7,13 @@ import {
 } from "react";
 import { Link } from "react-router-dom";
 
-import { useAuth } from "../../app/providers/authContext";
 import { createInquiryDetailPath } from "../../app/router/routePaths";
-import consultantAvatar from "../../assets/images/water-bridge-consultant.png";
 import { ApiClientError } from "../../common/api/apiError";
 import { IdempotencyOperationTracker } from "../../common/api/idempotencyOperation";
 import { createRequestContext } from "../../common/api/requestContext";
 import { parseInquiryId } from "../../entities/inquiry/inquiryIdentifiers";
 import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
+import ConsultantUserMenu from "../../features/consultation/components/ConsultantUserMenu";
 import {
   phoneInquiryRemoteRepository,
   type CustomerSubscriptionCandidateDto,
@@ -105,7 +104,6 @@ function candidateOptionId(subscriptionId: string): string {
 }
 
 export default function PhoneInquiryCreatePage() {
-  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchRetry, setSearchRetry] = useState(0);
   const [searchState, setSearchState] = useState<SearchState>("IDLE");
@@ -259,25 +257,8 @@ export default function PhoneInquiryCreatePage() {
   return (
     <div className="simple-consultant-app consultant-queue-app phone-inquiry-entry-app">
       <main className="simple-consultant-main consultant-queue-main">
-        <header className="simple-topbar consultant-main-header phone-inquiry-main-header">
-          <div className="phone-inquiry-main-header__copy">
-            <small>CALL INTAKE</small>
-            <h1>전화 문의 등록</h1>
-            <p>기존 구독 고객을 확인한 뒤 전화 상담 내용을 등록합니다.</p>
-          </div>
-
-          <div className="simple-user">
-            <span className="simple-user__avatar-frame" aria-hidden="true">
-              <img
-                className="simple-user__avatar-image"
-                src={consultantAvatar}
-                alt=""
-              />
-            </span>
-            <strong className="simple-user__name">
-              {user?.displayName ?? "상담사"}
-            </strong>
-          </div>
+        <header className="simple-topbar consultant-main-header phone-inquiry-main-header consultant-unified-header">
+          <ConsultantUserMenu className="simple-user" />
         </header>
 
         <ConsultantQueueSidebar activeBucket={null} phoneEntryActive />

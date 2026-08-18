@@ -1,6 +1,5 @@
-import { useAuth } from "../../../app/providers/authContext";
 import type { ReactNode } from "react";
-import { appEnv } from "../../../app/config/env";
+import ConsultantUserMenu from "./ConsultantUserMenu";
 
 interface ConsultantWorkspaceLayoutProps {
   activeSection?: "queue" | "detail" | "visit";
@@ -19,66 +18,15 @@ export default function ConsultantWorkspaceLayout({
   queueCount,
   onCloseNotifications,
   onNavigate,
-  onToggleNotifications,
 }: ConsultantWorkspaceLayoutProps) {
-  const { user } = useAuth();
-
-  const displayName = user?.displayName ?? "상담사";
-  const avatarText = displayName.trim().charAt(0) || "상";
-  const roleLabel = user?.roleCode === "CONSULTANT" ? "상담원" : "사용자";
-
-  const workspaceSource = appEnv.useMockApi ? "합성 Mock 화면" : "Backend API 연결 화면";
   return (
     <div className="v6-workspace">
       <a className="v6-skip-link" href="#v6-main">
         본문 바로가기
       </a>
 
-      <header className="v6-topbar">
-        <a
-          className="v6-brand"
-          href="/"
-          aria-label="Water Bridge 역할 선택 홈으로 이동"
-        >
-          <span className="v6-brand__mark" aria-hidden="true">
-            W
-          </span>
-          <span>
-            <strong>Water Bridge</strong>
-            <small>상담원 워크스페이스</small>
-          </span>
-        </a>
-
-        <div className="v6-topbar__context" aria-label="현재 업무 컨텍스트">
-          <span className="v6-live-dot">
-            <i /> {workspaceSource}
-          </span>
-          <span>
-            기준 모델 <b>WPUJAC104DWH</b>
-          </span>
-          <span>화면설계 v13</span>
-        </div>
-
-        <div className="v6-topbar__actions">
-          <button
-            className="v6-icon-button"
-            type="button"
-            aria-label="상담원 알림, 읽지 않은 알림 1개"
-            aria-expanded={notificationOpen}
-            onClick={onToggleNotifications}
-          >
-            <span aria-hidden="true">●</span>
-            <b>1</b>
-          </button>
-
-          <div className="v6-user-chip">
-            <span>{avatarText}</span>
-            <div>
-              <strong>{displayName}</strong>
-              <small>{roleLabel}</small>
-            </div>
-          </div>
-        </div>
+      <header className="v6-topbar consultant-unified-header">
+        <ConsultantUserMenu />
       </header>
 
       <div className="v6-shell">

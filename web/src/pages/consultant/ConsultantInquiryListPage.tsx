@@ -2,14 +2,11 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { createInquiryDetailPath } from "../../app/router/routePaths";
-import { useAuth } from "../../app/providers/authContext";
-import consultantAvatar from "../../assets/images/water-bridge-consultant.png";
 import Pagination from "../../common/components/data-display/Pagination";
 import EmptyState from "../../common/components/feedback/EmptyState";
 import ErrorState from "../../common/components/feedback/ErrorState";
@@ -21,6 +18,7 @@ import {
 } from "../../entities/inquiry/inquiryIdentifiers";
 import CompactConsultationDesk from "../../features/consultation/components/CompactConsultationDesk";
 import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
+import ConsultantUserMenu from "../../features/consultation/components/ConsultantUserMenu";
 import type { ConsultantInquiryBucket } from "../../features/consultation/components/ConsultantQueueSidebar";
 import useCounselorQueueFilters from "../../features/consultation/hooks/useCounselorQueueFilters";
 import { useConsultantInquiryListQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
@@ -31,10 +29,14 @@ import type {
 } from "../../features/consultation/api/consultantWorkspaceRemoteTypes";
 import {
   COUNSELOR_QUEUE_PAGE_SIZE,
+  formatWorkspaceDateTime,
   getCounselorWorkBucket,
-  STATUS_LABELS,
   WORK_BUCKET_LABELS,
 } from "../../features/consultation/model/consultantWorkspaceModel";
+import {
+  classifyInquiryCategory,
+  INQUIRY_CATEGORY_TREE,
+} from "../../features/consultation/model/consultantInquiryCategories";
 import type {
   CounselorAllowedAction,
   CounselorStatus,
@@ -85,17 +87,6 @@ const RISK_SECTIONS: readonly {
   { id: "general", label: "일반 문의" },
 ];
 
-type RiskSectionStatusFilter = "ALL" | ConsultantInquiryStatusDto;
-
-const INITIAL_RISK_SECTION_STATUS_FILTERS: Record<
-  ConsultantRiskLevelDto,
-  RiskSectionStatusFilter
-> = {
-  danger: "ALL",
-  caution: "ALL",
-  general: "ALL",
-};
-
 function getInitialBucket(search: string): ConsultantInquiryBucket {
   const bucket = new URLSearchParams(search).get("bucket");
   return bucket === "ALL" || bucket === "IN_PROGRESS" || bucket === "COMPLETED"
@@ -119,46 +110,23 @@ function getBucketLabel(bucket: ConsultantInquiryBucket): string {
   return bucket === "ALL" ? "전체 문의" : WORK_BUCKET_LABELS[bucket];
 }
 
-const INQUIRY_TAG_RULES: readonly {
-  label: string;
-  keywords: readonly string[];
-}[] = [
-  { label: "출수", keywords: ["출수", "물이 안 나오", "물 안 나오"] },
-  { label: "물 온도", keywords: ["냉수", "온수", "미지근", "온도"] },
-  { label: "소음", keywords: ["소음", "소리", "진동"] },
-  {
-    label: "누수",
-    keywords: ["누수", "물이 고", "물 새", "물샘", "물기", "아래에 물"],
-  },
-  { label: "필터", keywords: ["필터", "교체"] },
-  { label: "냄새·맛", keywords: ["냄새", "물맛", "맛이"] },
-  { label: "화면", keywords: ["LCD", "화면", "표시"] },
-  { label: "전원", keywords: ["전원", "꺼져", "작동하지"] },
-];
-
-function getInquiryTag(symptomSummary: string): string {
-  return (
-    INQUIRY_TAG_RULES.find(({ keywords }) =>
-      keywords.some((keyword) => symptomSummary.includes(keyword)),
-    )?.label ?? "기타"
-  );
+function getInquiryCategoryPath(symptomSummary: string): string {
+  const category = classifyInquiryCategory(symptomSummary);
+  return `${category.major} > ${category.middle} > ${category.minor}`;
 }
 
 export default function ConsultantInquiryListPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
   const { filters, hasChangedConditions, resetFilters, setFilters } =
     useCounselorQueueFilters();
-  const isQueryComposingRef = useRef(false);
-  const [queryInput, setQueryInput] = useState(filters.query);
   const [activeBucket, setActiveBucket] =
     useState<ConsultantInquiryBucket>(() => getInitialBucket(location.search));
-  const [riskSectionStatusFilters, setRiskSectionStatusFilters] = useState(
-    INITIAL_RISK_SECTION_STATUS_FILTERS,
-  );
-  const [openRiskStatusFilter, setOpenRiskStatusFilter] =
-    useState<ConsultantRiskLevelDto | null>(null);
+  const [categoryFilters, setCategoryFilters] = useState({
+    major: "",
+    middle: "",
+    minor: "",
+  });
   const [activeRiskSection, setActiveRiskSection] =
     useState<ConsultantRiskLevelDto>("danger");
   const [selectedInquiryId, setSelectedInquiryId] =
@@ -174,6 +142,7 @@ export default function ConsultantInquiryListPage() {
       }
     >
   >({});
+  const hasCategoryFilter = Boolean(categoryFilters.major);
 
   const mockState = new URLSearchParams(location.search).get("mockState");
   const repositoryQuery = useMemo<ConsultantInquiryListQuery>(
@@ -191,8 +160,8 @@ export default function ConsultantInquiryListPage() {
       from: filters.receivedFrom || undefined,
       to: filters.receivedTo || undefined,
       sort: filters.sort,
-      page: filters.page,
-      size: COUNSELOR_QUEUE_PAGE_SIZE,
+      page: hasCategoryFilter ? 1 : filters.page,
+      size: hasCategoryFilter ? 100 : COUNSELOR_QUEUE_PAGE_SIZE,
     }),
     [
       activeBucket,
@@ -203,6 +172,7 @@ export default function ConsultantInquiryListPage() {
       filters.receivedTo,
       filters.risk,
       filters.sort,
+      hasCategoryFilter,
     ],
   );
   const listQuery = useConsultantInquiryListQuery(repositoryQuery);
@@ -257,6 +227,18 @@ export default function ConsultantInquiryListPage() {
         : listQuery.data,
     [listQuery.data, repositoryQuery, useDesignMockFallback],
   );
+  const overviewData = useMemo(
+    () =>
+      useDesignMockFallback
+        ? createMockConsultantInquiryListViewModel(
+            overviewRepositoryQuery,
+            "DESIGN_SCENARIOS",
+          )
+        : consultantWorkspaceDataRepository.dataSource === "MOCK"
+          ? createMockConsultantInquiryListViewModel(overviewRepositoryQuery)
+          : overviewQuery.data,
+    [overviewQuery.data, overviewRepositoryQuery, useDesignMockFallback],
+  );
   const loadState = ["loading", "error", "forbidden"].includes(
     mockState ?? "",
   )
@@ -288,41 +270,87 @@ export default function ConsultantInquiryListPage() {
       : (RISK_SECTIONS.find((section) =>
           sourceInquiries.some((inquiry) => inquiry.riskLevel === section.id),
         )?.id ?? activeRiskSection);
+  const selectedMajorCategory = INQUIRY_CATEGORY_TREE.find(
+    (category) => category.label === categoryFilters.major,
+  );
+  const selectedMiddleCategory = selectedMajorCategory?.children.find(
+    (category) => category.label === categoryFilters.middle,
+  );
+  const riskSummaryCounts = useMemo(() => {
+    const bucketStatuses = getBucketStatuses(activeBucket);
+    const query = filters.query.trim().toLowerCase();
+    const counts: Record<ConsultantRiskLevelDto, number> = {
+      danger: 0,
+      caution: 0,
+      general: 0,
+    };
 
-  useEffect(() => {
-    if (!isQueryComposingRef.current) {
-      setQueryInput(filters.query);
-    }
-  }, [filters.query]);
+    if (mockState === "empty") return counts;
+
+    (overviewData?.items ?? []).forEach((inquiry) => {
+      if (!bucketStatuses.includes(inquiry.status)) return;
+      if (
+        query &&
+        ![
+          inquiry.inquiryCode,
+          inquiry.customerDisplayNameMasked,
+          inquiry.symptomSummary,
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(query)
+      ) {
+        return;
+      }
+      if (
+        filters.risk !== "ALL" &&
+        filters.risk !== "UNKNOWN" &&
+        inquiry.riskLevel !== filters.risk.toLowerCase()
+      ) {
+        return;
+      }
+      if (
+        filters.priority !== "ALL" &&
+        filters.priority !== "UNKNOWN" &&
+        inquiry.priority !== filters.priority
+      ) {
+        return;
+      }
+      const receivedDate = inquiry.receivedAt.slice(0, 10);
+      if (filters.receivedFrom && receivedDate < filters.receivedFrom) return;
+      if (filters.receivedTo && receivedDate > filters.receivedTo) return;
+
+      const category = classifyInquiryCategory(inquiry.symptomSummary);
+      if (
+        (categoryFilters.major && category.major !== categoryFilters.major) ||
+        (categoryFilters.middle && category.middle !== categoryFilters.middle) ||
+        (categoryFilters.minor && category.minor !== categoryFilters.minor)
+      ) {
+        return;
+      }
+
+      counts[inquiry.riskLevel] += 1;
+    });
+
+    return counts;
+  }, [
+    activeBucket,
+    categoryFilters.major,
+    categoryFilters.middle,
+    categoryFilters.minor,
+    filters.priority,
+    filters.query,
+    filters.receivedFrom,
+    filters.receivedTo,
+    filters.risk,
+    mockState,
+    overviewData?.items,
+  ]);
 
   useEffect(() => {
     document.body.classList.add("compact-consultant-body");
     return () => document.body.classList.remove("compact-consultant-body");
   }, []);
-
-  useEffect(() => {
-    if (!openRiskStatusFilter) return;
-
-    const closeFilter = (event: PointerEvent) => {
-      if (
-        event.target instanceof Element &&
-        event.target.closest(".consultant-risk-section__filter")
-      ) {
-        return;
-      }
-      setOpenRiskStatusFilter(null);
-    };
-    const closeFilterOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpenRiskStatusFilter(null);
-    };
-
-    document.addEventListener("pointerdown", closeFilter);
-    window.addEventListener("keydown", closeFilterOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeFilter);
-      window.removeEventListener("keydown", closeFilterOnEscape);
-    };
-  }, [openRiskStatusFilter]);
 
   useEffect(() => {
     if (!selectedInquiryId) return;
@@ -377,14 +405,12 @@ export default function ConsultantInquiryListPage() {
     params.set("bucket", bucket);
     params.delete("page");
     navigate(`${location.pathname}?${params.toString()}`, { replace: true });
-    setRiskSectionStatusFilters(INITIAL_RISK_SECTION_STATUS_FILTERS);
-    setOpenRiskStatusFilter(null);
+    setCategoryFilters({ major: "", middle: "", minor: "" });
     setSelectedInquiryId(null);
   };
 
   const changeRiskSection = (riskLevel: ConsultantRiskLevelDto) => {
     setActiveRiskSection(riskLevel);
-    setOpenRiskStatusFilter(null);
     setSelectedInquiryId(null);
   };
 
@@ -450,60 +476,8 @@ export default function ConsultantInquiryListPage() {
           고객 문의
         </h1>
 
-        <header className="simple-topbar consultant-main-header">
-          <div className="consultant-queue-tools consultant-header-search">
-            <label className="simple-search">
-              <span aria-hidden="true">⌕</span>
-              <input
-                type="search"
-                aria-label="문의 검색"
-                value={queryInput}
-                onCompositionStart={() => {
-                  isQueryComposingRef.current = true;
-                }}
-                onCompositionEnd={(event) => {
-                  isQueryComposingRef.current = false;
-                  const query = event.currentTarget.value;
-                  setQueryInput(query);
-                  setFilters({ ...filters, query, page: 1 });
-                }}
-                onChange={(event) => {
-                  const query = event.target.value;
-                  setQueryInput(query);
-                  if (!isQueryComposingRef.current) {
-                    setFilters({ ...filters, query, page: 1 });
-                  }
-                }}
-                placeholder="고객명, 증상, 문의번호 검색"
-              />
-            </label>
-            {hasChangedConditions && (
-              <button type="button" onClick={resetFilters}>
-                검색 초기화
-              </button>
-            )}
-          </div>
-
-          <div className="simple-user">
-            <span className="simple-user__avatar-frame" aria-hidden="true">
-              <img
-                className="simple-user__avatar-image"
-                src={consultantAvatar}
-                alt=""
-              />
-            </span>
-            <strong className="simple-user__name">
-              {user?.displayName ?? "상담사"}
-            </strong>
-            <svg
-              className="simple-user__chevron"
-              viewBox="0 0 16 16"
-              aria-hidden="true"
-              focusable="false"
-            >
-              <path d="m4.5 6 3.5 3.5L11.5 6" />
-            </svg>
-          </div>
+        <header className="simple-topbar consultant-main-header consultant-unified-header">
+          <ConsultantUserMenu className="simple-user" />
         </header>
 
         <ConsultantQueueSidebar
@@ -568,9 +542,7 @@ export default function ConsultantInquiryListPage() {
                 >
                   {RISK_SECTIONS.map((section, index) => {
                     const isActive = displayedRiskSection === section.id;
-                    const count = queuePage.items.filter(
-                      (inquiry) => inquiry.riskLevel === section.id,
-                    ).length;
+                    const count = riskSummaryCounts[section.id];
 
                     return (
                       <button
@@ -596,22 +568,127 @@ export default function ConsultantInquiryListPage() {
                   })}
                 </div>
 
+                <div
+                  className="consultant-category-filters"
+                  aria-label="문의 카테고리 필터"
+                >
+                  <label>
+                    <span>대분류</span>
+                    <select
+                      aria-label="문의 대분류"
+                      value={categoryFilters.major}
+                      onChange={(event) => {
+                        setCategoryFilters({
+                          major: event.target.value,
+                          middle: "",
+                          minor: "",
+                        });
+                        setSelectedInquiryId(null);
+                      }}
+                    >
+                      <option value="">전체 대분류</option>
+                      {INQUIRY_CATEGORY_TREE.map((category) => (
+                        <option key={category.label} value={category.label}>
+                          {category.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <span aria-hidden="true">›</span>
+
+                  <label>
+                    <span>중분류</span>
+                    <select
+                      aria-label="문의 중분류"
+                      value={categoryFilters.middle}
+                      disabled={!selectedMajorCategory}
+                      onChange={(event) => {
+                        setCategoryFilters((current) => ({
+                          ...current,
+                          middle: event.target.value,
+                          minor: "",
+                        }));
+                        setSelectedInquiryId(null);
+                      }}
+                    >
+                      <option value="">
+                        {selectedMajorCategory
+                          ? "전체 중분류"
+                          : "대분류를 먼저 선택"}
+                      </option>
+                      {selectedMajorCategory?.children.map((category) => (
+                        <option key={category.label} value={category.label}>
+                          {category.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <span aria-hidden="true">›</span>
+
+                  <label>
+                    <span>소분류</span>
+                    <select
+                      aria-label="문의 소분류"
+                      value={categoryFilters.minor}
+                      disabled={!selectedMiddleCategory}
+                      onChange={(event) => {
+                        setCategoryFilters((current) => ({
+                          ...current,
+                          minor: event.target.value,
+                        }));
+                        setSelectedInquiryId(null);
+                      }}
+                    >
+                      <option value="">
+                        {selectedMiddleCategory
+                          ? "전체 소분류"
+                          : "중분류를 먼저 선택"}
+                      </option>
+                      {selectedMiddleCategory?.children.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  {(categoryFilters.major ||
+                    categoryFilters.middle ||
+                    categoryFilters.minor) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCategoryFilters({ major: "", middle: "", minor: "" });
+                        setSelectedInquiryId(null);
+                      }}
+                    >
+                      카테고리 초기화
+                    </button>
+                  )}
+                </div>
+
                 {RISK_SECTIONS.filter(
                   (section) => section.id === displayedRiskSection,
                 ).map((section) => {
                 const sectionInquiries = queuePage.items.filter(
                   (inquiry) => inquiry.riskLevel === section.id,
                 );
-                const statusFilter = riskSectionStatusFilters[section.id];
-                const availableStatuses = getBucketStatuses(activeBucket).filter(
-                  (status) =>
-                    sectionInquiries.some(
-                      (inquiry) => inquiry.status === status,
-                    ),
-                );
                 const inquiries = sectionInquiries.filter(
-                  (inquiry) =>
-                    statusFilter === "ALL" || inquiry.status === statusFilter,
+                  (inquiry) => {
+                    const category = classifyInquiryCategory(
+                      inquiry.symptomSummary,
+                    );
+                    return (
+                      (!categoryFilters.major ||
+                        category.major === categoryFilters.major) &&
+                      (!categoryFilters.middle ||
+                        category.middle === categoryFilters.middle) &&
+                      (!categoryFilters.minor ||
+                        category.minor === categoryFilters.minor)
+                    );
+                  },
                 );
 
                 return (
@@ -623,98 +700,10 @@ export default function ConsultantInquiryListPage() {
                     aria-labelledby={`consultant-risk-tab-${section.id}`}
                     tabIndex={0}
                   >
-                    <header className="consultant-risk-section__head">
-                      <h2 id={`consultant-risk-section-${section.id}`}>
-                        {section.label} 목록
-                      </h2>
-                      {activeBucket !== "NEW" && (
-                        <div className="consultant-risk-section__tools">
-                          <span className="consultant-risk-section__count">
-                            {inquiries.length}
-                          </span>
-                          <div className="consultant-risk-section__filter">
-                            <button
-                              type="button"
-                              className="consultant-risk-section__filter-trigger"
-                              aria-label={`${section.label} 상태 필터`}
-                              aria-haspopup="listbox"
-                              aria-expanded={openRiskStatusFilter === section.id}
-                              aria-controls={`consultant-risk-filter-${section.id}`}
-                              onClick={() =>
-                                setOpenRiskStatusFilter((current) =>
-                                  current === section.id ? null : section.id,
-                                )
-                              }
-                            >
-                              <span>
-                                {statusFilter === "ALL"
-                                  ? "전체 상태"
-                                  : STATUS_LABELS[statusFilter]}
-                              </span>
-                              <svg
-                                viewBox="0 0 16 16"
-                                aria-hidden="true"
-                                focusable="false"
-                              >
-                                <path d="m4 6 4 4 4-4" />
-                              </svg>
-                            </button>
-
-                            {openRiskStatusFilter === section.id && (
-                              <div
-                                id={`consultant-risk-filter-${section.id}`}
-                                className="consultant-risk-section__filter-menu"
-                                role="listbox"
-                                aria-label={`${section.label} 상태 선택`}
-                              >
-                                {(["ALL", ...availableStatuses] as const).map(
-                                  (status) => {
-                                    const isSelected = statusFilter === status;
-                                    return (
-                                      <button
-                                        key={status}
-                                        type="button"
-                                        role="option"
-                                        aria-selected={isSelected}
-                                        onClick={() => {
-                                          setRiskSectionStatusFilters(
-                                            (current) => ({
-                                              ...current,
-                                              [section.id]: status,
-                                            }),
-                                          );
-                                          setOpenRiskStatusFilter(null);
-                                          setSelectedInquiryId(null);
-                                        }}
-                                      >
-                                        <span
-                                          className="consultant-risk-section__filter-check"
-                                          aria-hidden="true"
-                                        >
-                                          {isSelected ? "✓" : ""}
-                                        </span>
-                                        <span>
-                                          {status === "ALL"
-                                            ? "전체 상태"
-                                            : STATUS_LABELS[status]}
-                                        </span>
-                                      </button>
-                                    );
-                                  },
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </header>
-
                     <div className="consultant-risk-section__list">
                       {inquiries.length === 0 ? (
                         <p className="consultant-risk-section__empty">
-                          {statusFilter === "ALL"
-                            ? "해당 문의가 없습니다."
-                            : "선택한 상태의 문의가 없습니다."}
+                          선택한 카테고리에 해당하는 문의가 없습니다.
                         </p>
                       ) : (
                         inquiries.map((inquiry) => (
@@ -736,9 +725,16 @@ export default function ConsultantInquiryListPage() {
                               {inquiry.symptomSummary}
                             </span>
 
-                            <span className="consultant-list-item__tag">
-                              {getInquiryTag(inquiry.symptomSummary)}
+                            <span className="consultant-list-item__category">
+                              {getInquiryCategoryPath(inquiry.symptomSummary)}
                             </span>
+
+                            <time
+                              className="consultant-list-item__received-at"
+                              dateTime={inquiry.receivedAt}
+                            >
+                              {formatWorkspaceDateTime(inquiry.receivedAt)}
+                            </time>
 
                             <span className="consultant-list-item__customer">
                               {inquiry.customerDisplayNameMasked}
@@ -754,7 +750,7 @@ export default function ConsultantInquiryListPage() {
             )}
           </div>
 
-          {loadState === "ready" && queuePage.totalItems > 0 && (
+          {loadState === "ready" && queuePage.totalItems > 0 && !hasCategoryFilter && (
             <Pagination
               page={queuePage.currentPage}
               totalItems={queuePage.totalItems}
