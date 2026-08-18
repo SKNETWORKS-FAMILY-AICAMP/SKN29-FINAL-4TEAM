@@ -8,6 +8,19 @@ import re
 class SymptomNormalizer:
     """결정적인 규칙으로 대표 증상·출수 종류·시간 표현을 정규화한다."""
 
+    _SELECTED_SYMPTOM_CODE_MAP = {
+        "NO_WATER": "출수량 저하",
+        "LOW_FLOW": "출수량 저하",
+        "LEAK": "제품 누수",
+        "ODOR": "물맛/냄새 이상",
+        "TASTE": "물맛/냄새 이상",
+        "TASTE_ODOR": "물맛/냄새 이상",
+        "TEMPERATURE_ABNORMAL": "온도 이상",
+        "NOISE": "소음 이상",
+        "DISPLAY_ERROR": "기타 증상",
+        "OTHER": "기타 증상",
+    }
+
     _SYMPTOM_RULES = (
         ("제품 누수", ("누수", "물이 새", "물 새", "바닥에 물", "젖어")),
         ("전기 이상", ("스파크", "탄 냄새", "타는 냄새", "연기", "전원선")),
@@ -55,7 +68,10 @@ class SymptomNormalizer:
 
     def normalize_symptom_type(self, raw_text: str, selected_symptoms: list[str]) -> str:
         if selected_symptoms and selected_symptoms[0] != "기타 증상":
-            return selected_symptoms[0]
+            selected = selected_symptoms[0]
+            mapped = self._SELECTED_SYMPTOM_CODE_MAP.get(selected.upper())
+            if mapped != "기타 증상":
+                return mapped or selected
         normalized_text = raw_text
         for pattern in self._NEGATED_SYMPTOM_PATTERNS:
             normalized_text = re.sub(pattern, " ", normalized_text)

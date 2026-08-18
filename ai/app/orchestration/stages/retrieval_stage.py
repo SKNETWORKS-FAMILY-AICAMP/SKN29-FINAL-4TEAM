@@ -3,6 +3,7 @@
 import time
 from ...common.retry import get_retry_policy
 from ...retrieval import (
+    EvidenceApplicabilityGate,
     EvidenceTopicFilter,
     RetrievalConfigurationError,
     RetrievalExecutionError,
@@ -53,6 +54,21 @@ def execute_retrieval_stage(
                     if ctx.structured_symptom is not None
                     else None
                 ),
+            )
+            applicability_gate = EvidenceApplicabilityGate()
+            symptom_type = (
+                ctx.structured_symptom.symptom_type
+                if ctx.structured_symptom is not None
+                else None
+            )
+            ctx.evidence_applicability = applicability_gate.classify_for_symptom(
+                symptom_type=symptom_type,
+                previous_answers=ctx.previous_answers,
+            )
+            chunks = applicability_gate.filter_chunks(
+                chunks,
+                symptom_type=symptom_type,
+                applicability=ctx.evidence_applicability,
             )
 
             # RetrievedChunk -> EvidenceReference 변환

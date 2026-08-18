@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from ...common.timeout import CancellationToken
 from ...integrations.llm import GuidanceLLMClient
-from ...retrieval import RetrievalConfigurationError, RetrievalOutcome
+from ...retrieval import (
+    EvidenceApplicabilityGate,
+    RetrievalConfigurationError,
+    RetrievalOutcome,
+)
 from ...schemas import RiskLevel
 from ..agents import (
     AgentRole,
@@ -57,6 +61,19 @@ class MultiAgentPipeline:
         if symptom_output.safety_assessment.risk_level == RiskLevel.DANGER:
             shared.handoff(AgentRole.CARE_DECISION, HandoffReason.DANGER_PRIORITY)
             care_agent.run(ctx)
+        elif EvidenceApplicabilityGate().requires_more_information(
+            symptom_type=symptom_output.structured_symptom.symptom_type,
+            missing_field_names=(
+                item.field_name for item in symptom_output.missing_fields
+            ),
+            previous_answers=ctx.previous_answers,
+        ):
+            shared.awaiting_customer_input = True
+            shared.handoff(
+                AgentRole.CARE_DECISION,
+                HandoffReason.CUSTOMER_INPUT_PENDING,
+            )
+            care_agent.run(ctx, awaiting_customer_input=True)
         else:
             shared.handoff(AgentRole.EVIDENCE_ANALYSIS, HandoffReason.RETRIEVAL_REQUIRED)
             evidence_output = evidence_agent.run(ctx)

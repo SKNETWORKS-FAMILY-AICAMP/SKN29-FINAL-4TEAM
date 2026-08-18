@@ -9,6 +9,10 @@ import pytest
 from ai.app.common.protected_database import ProtectedDatabaseOperationError
 from ai.app.common.timeout import CancellationToken, PipelineCancelledError
 from ai.app.retrieval.filters.document_policy_filter import DocumentPolicyFilter
+from ai.app.retrieval.filters.evidence_applicability_gate import (
+    EvidenceApplicability,
+    EvidenceApplicabilityGate,
+)
 from ai.app.retrieval.filters.evidence_topic_filter import EvidenceTopicFilter
 from ai.app.retrieval.filters.product_filter import ProductFilter
 from ai.app.retrieval.indexing.chunk_loader import ChunkLoader
@@ -133,6 +137,129 @@ def test_taste_or_odor_topic_filter_uses_canonical_id_when_view_omits_topic():
     )
 
     assert [chunk.chunk_id for chunk in selected] == [taste_chunk.chunk_id]
+
+
+def test_taste_or_odor_applicability_requires_all_questionnaire_fields():
+    gate = EvidenceApplicabilityGate()
+    applicable_answer = [
+        {
+            "question_id": gate.QUESTION_ID,
+            "answer_text": "10일 이상 부재 후",
+        }
+    ]
+
+    assert gate.requires_more_information(
+        symptom_type="물맛/냄새 이상",
+        missing_field_names=[gate.TARGET_FIELD],
+        previous_answers=applicable_answer,
+    ) is True
+    assert gate.requires_more_information(
+        symptom_type="물맛/냄새 이상",
+        missing_field_names=[],
+        previous_answers=applicable_answer,
+    ) is False
+    assert gate.requires_more_information(
+        symptom_type="물맛/냄새 이상",
+        missing_field_names=[],
+    ) is True
+
+
+def test_other_symptom_does_not_acquire_taste_or_odor_questionnaire_gate():
+    assert EvidenceApplicabilityGate().requires_more_information(
+        symptom_type="출수량 저하",
+        missing_field_names=["occurrence_condition"],
+    ) is False
+
+
+@pytest.mark.parametrize(
+    ("answer_text", "expected"),
+    [
+        ("10일 이내 부재 후", EvidenceApplicability.ABSENCE_WITHIN_10_DAYS),
+        ("10일 이상 부재 후", EvidenceApplicability.ABSENCE_OVER_10_DAYS),
+        ("장시간 미사용 후", EvidenceApplicability.LONG_UNUSED),
+        ("부적합 장소 설치 후", EvidenceApplicability.UNSUITABLE_INSTALLATION),
+        ("해당 없음", EvidenceApplicability.NOT_APPLICABLE),
+        ("확인 불가", EvidenceApplicability.UNKNOWN),
+    ],
+)
+def test_taste_or_odor_applicability_answer_uses_fixed_codes(answer_text, expected):
+    gate = EvidenceApplicabilityGate()
+
+    assert gate.classify([
+        {"question_id": gate.QUESTION_ID, "answer_text": answer_text},
+    ]) == expected
+
+
+def test_invalid_taste_or_odor_applicability_answer_is_reasked():
+    gate = EvidenceApplicabilityGate()
+    previous_answers = [
+        {"question_id": gate.QUESTION_ID, "answer_text": "잘 모르겠습니다"},
+    ]
+
+    question = gate.followup_question(
+        symptom_type="물맛/냄새 이상",
+        previous_answers=previous_answers,
+    )
+
+    assert question is not None
+    assert question.question_id == gate.QUESTION_ID
+    assert "해당 없음" in question.options
+
+
+def test_declined_taste_or_odor_applicability_is_not_reasked():
+    gate = EvidenceApplicabilityGate()
+    previous_answers = [
+        {"question_id": gate.QUESTION_ID, "answer_text": "답변하지 않음"},
+    ]
+
+    assert gate.classify(previous_answers) == EvidenceApplicability.UNKNOWN
+    assert gate.followup_question(
+        symptom_type="물맛/냄새 이상",
+        previous_answers=previous_answers,
+    ) is None
+
+
+def test_taste_or_odor_answer_is_not_reused_for_another_symptom():
+    gate = EvidenceApplicabilityGate()
+    previous_answers = [
+        {"question_id": gate.QUESTION_ID, "answer_text": "10일 이내 부재 후"},
+    ]
+
+    assert gate.classify_for_symptom(
+        symptom_type="출수량 저하",
+        previous_answers=previous_answers,
+    ) is None
+
+
+def test_taste_or_odor_conditional_evidence_is_removed_when_not_applicable():
+    gate = EvidenceApplicabilityGate()
+    taste_chunk = next(
+        chunk
+        for chunk in ChunkLoader().load_verified_chunks()
+        if chunk.topic_code == "symptom_taste_odor"
+    )
+
+    assert gate.filter_chunks(
+        [taste_chunk],
+        symptom_type="물맛/냄새 이상",
+        applicability=EvidenceApplicability.NOT_APPLICABLE,
+    ) == []
+    assert gate.filter_chunks(
+        [taste_chunk],
+        symptom_type="물맛/냄새 이상",
+        applicability=EvidenceApplicability.ABSENCE_WITHIN_10_DAYS,
+    ) == [taste_chunk]
+    for consultation_context in (
+        EvidenceApplicability.ABSENCE_OVER_10_DAYS,
+        EvidenceApplicability.LONG_UNUSED,
+        EvidenceApplicability.UNSUITABLE_INSTALLATION,
+        EvidenceApplicability.UNKNOWN,
+    ):
+        assert gate.filter_chunks(
+            [taste_chunk],
+            symptom_type="물맛/냄새 이상",
+            applicability=consultation_context,
+        ) == []
 
 
 def test_index_manifest_save_and_load(tmp_path):
