@@ -69,6 +69,52 @@ class FollowUpQuestionsViewModelTest {
     }
 
     @Test
+    fun rapidDoubleSubmit_callsRepositoryOnce() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val remote = QueueRepository(
+                snapshots = mutableListOf(
+                    ApiResult.Success(snapshot(2)),
+                    ApiResult.Success(snapshot(3)),
+                ),
+                questions = mutableListOf(
+                    ApiResult.Success(
+                        questions(
+                            2,
+                            listOf(freeTextQuestion()),
+                        )
+                    ),
+                    ApiResult.Success(
+                        questions(3, emptyList())
+                    ),
+                ),
+                submits = mutableListOf(
+                    ApiResult.Success(submitResult(3))
+                ),
+            )
+
+            val viewModel = newViewModel(remote)
+            advanceUntilIdle()
+
+            viewModel.updateText(
+                QUESTION_ID,
+                "빠른 연속 제출 테스트",
+            )
+
+            viewModel.submitAnswers()
+            viewModel.submitAnswers()
+
+            assertTrue(
+                viewModel.state.value is
+                    FollowUpUiState.Submitting
+            )
+
+            advanceUntilIdle()
+
+            assertEquals(1, remote.submittedVersions.size)
+            assertEquals(listOf(2), remote.submittedVersions)
+        }
+
+    @Test
     fun stale409_preservesInputAndExplicitRetryUsesLatestVersion() =
         runTest(mainDispatcherRule.dispatcher) {
             val remote = QueueRepository(

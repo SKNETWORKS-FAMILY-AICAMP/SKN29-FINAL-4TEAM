@@ -83,11 +83,11 @@ class SymptomIntakeViewModel(
             scenario = snapshot.forcedScenario,
         )
 
-        viewModelScope.launch {
-            update {
-                clearFailure().copy(isSubmitting = true)
-            }
+        update {
+            clearFailure().copy(isSubmitting = true)
+        }
 
+        viewModelScope.launch {
             when (val result = repository.submitIntake(request)) {
                 is ApiResult.Success -> {
                     savedStateHandle.clearDraft()

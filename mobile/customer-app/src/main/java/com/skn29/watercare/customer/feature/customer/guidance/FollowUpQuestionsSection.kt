@@ -168,7 +168,7 @@ fun FollowUpQuestionsSection(
                         state.snapshot.stateVersion,
                         state.questions,
                         state.drafts,
-                        submitAllowed = state.snapshot?.let(::snapshotCanSubmit) ?: false,
+                        submitAllowed = snapshotCanSubmit(state.snapshot),
                         submitting = false,
                         showSubmit = true,
                         onTextChange = onTextChange,

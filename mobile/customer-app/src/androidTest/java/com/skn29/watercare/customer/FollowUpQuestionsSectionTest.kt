@@ -6,6 +6,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
@@ -87,6 +88,59 @@ class FollowUpQuestionsSectionTest {
         onNodeWithTag("followUpEmpty")
             .assertDoesNotExistCompat()
     }
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun loading_showsCustomerFriendlyProgress() = runManual {
+        setContent {
+            WaterCareTheme {
+                FollowUpQuestionsSection(
+                    state = FollowUpUiState.Loading,
+                    onTextChange = { _, _ -> },
+                    onSelectOption = { _, _ -> },
+                    onSubmit = {},
+                    onRetryConflict = {},
+                    onReload = {},
+                )
+            }
+        }
+
+        waitForIdle()
+
+        onNodeWithText("몇 가지만 더 확인할게요")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun retryableError_hidesRawMessageAndShowsCustomerCopy() = runManual {
+        setContent {
+            WaterCareTheme {
+                FollowUpQuestionsSection(
+                    state = FollowUpUiState.Error(
+                        message = "Backend API timeout",
+                        code = "NETWORK_ERROR",
+                        httpStatus = 500,
+                        retryable = true,
+                    ),
+                    onTextChange = { _, _ -> },
+                    onSelectOption = { _, _ -> },
+                    onSubmit = {},
+                    onRetryConflict = {},
+                    onReload = {},
+                )
+            }
+        }
+
+        waitForIdle()
+
+        onNodeWithText(
+            "추가 질문을 확인하는 중 문제가 생겼어요. 잠시 후 다시 시도해주세요."
+        ).assertIsDisplayed()
+
+        onNodeWithText("Backend API timeout")
+            .assertDoesNotExistCompat()
+    }
+
     @Test
     @OptIn(ExperimentalTestApi::class)
     fun completedForm_enablesExplicitSubmit() = runManual {

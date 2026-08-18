@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.model.CustomerInquirySnapshot
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.collect
 fun FollowUpQuestionsScreen(
     inquiryId: String,
     onBack: () -> Unit,
+    onAuthExpired: () -> Unit = {},
     onOpenGuidance:
         (CustomerInquirySnapshot) -> Unit,
 ) {
@@ -22,13 +24,15 @@ fun FollowUpQuestionsScreen(
         FollowUpQuestionsViewModel =
         viewModel(
             factory =
-                VmFactory { _ ->
+                VmFactory { extras ->
                     FollowUpQuestionsViewModel(
                         inquiryId =
                             inquiryId,
                         repository =
                             WaterCareCore
                                 .customerInquiryRepository,
+                        savedStateHandle =
+                            extras.createSavedStateHandle(),
                     )
                 }
         )
@@ -36,6 +40,15 @@ fun FollowUpQuestionsScreen(
     val state by
         viewModel.state
             .collectAsStateWithLifecycle()
+
+    LaunchedEffect(state) {
+        val error =
+            state as? FollowUpUiState.Error
+
+        if (error?.httpStatus == 401) {
+            onAuthExpired()
+        }
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.navigationEvents
