@@ -31,6 +31,9 @@ fun FollowUpQuestionsScreen(
                         repository =
                             WaterCareCore
                                 .customerInquiryRepository,
+                        inquiryRepository =
+                            WaterCareCore
+                                .inquiryRepository,
                         savedStateHandle =
                             extras.createSavedStateHandle(),
                     )
@@ -40,6 +43,21 @@ fun FollowUpQuestionsScreen(
     val state by
         viewModel.state
             .collectAsStateWithLifecycle()
+
+    val cancelState by
+        viewModel.cancelState
+            .collectAsStateWithLifecycle()
+
+    val authExpired by
+        viewModel.authExpired
+            .collectAsStateWithLifecycle()
+
+    LaunchedEffect(authExpired) {
+        if (authExpired) {
+            viewModel.consumeAuthExpired()
+            onAuthExpired()
+        }
+    }
 
     LaunchedEffect(state) {
         val error =
@@ -63,22 +81,56 @@ fun FollowUpQuestionsScreen(
             }
     }
 
+    val snapshot =
+        state.snapshotOrNull()
+
+    val blockFollowUpInteraction =
+        cancelState is CancelInquiryUiState.Cancelling ||
+            cancelState is CancelInquiryUiState.Conflict ||
+            cancelState is CancelInquiryUiState.Success
+
     WaterCareScreen(
-        title = "추가 질문",
+        title = "?? ??",
         onBack = onBack,
     ) {
-        FollowUpQuestionsSection(
-            state = state,
-            onTextChange =
-                viewModel::updateText,
-            onSelectOption =
-                viewModel::selectOption,
-            onSubmit =
-                viewModel::submitAnswers,
+        FollowUpCancelSection(
+            snapshot = snapshot,
+            cancelState = cancelState,
+            onConfirmCancel = { stateVersion ->
+                viewModel.cancelInquiry(
+                    stateVersion = stateVersion,
+                    reasonCode = "CUSTOMER_REQUEST",
+                )
+            },
             onRetryConflict =
-                viewModel::retryAfterConflict,
-            onReload =
+                viewModel::retryCancelAfterConflict,
+            onRetryFailure = { stateVersion ->
+                viewModel.cancelInquiry(
+                    stateVersion = stateVersion,
+                    reasonCode = "CUSTOMER_REQUEST",
+                )
+            },
+            onReloadLatest =
                 viewModel::load,
+            onCancelledDone =
+                onBack,
         )
+
+        if (!blockFollowUpInteraction) {
+            FollowUpQuestionsSection(
+                state = state,
+                onTextChange =
+                    viewModel::updateText,
+                onSelectOption =
+                    viewModel::selectOption,
+                onSubmit =
+                    viewModel::submitAnswers,
+                onRetryConflict =
+                    viewModel::retryAfterConflict,
+                onReload =
+                    viewModel::load,
+            )
+        }
     }
+
 }

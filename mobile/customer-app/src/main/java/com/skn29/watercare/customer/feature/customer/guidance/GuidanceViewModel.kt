@@ -38,9 +38,18 @@ class GuidanceViewModel(
     fun consumeAuthExpired() {
         _authExpired.value = false
     }
-    private val _cancelState =
-        MutableStateFlow<CancelInquiryUiState>(CancelInquiryUiState.Idle)
-    val cancelState: StateFlow<CancelInquiryUiState> = _cancelState.asStateFlow()
+    private val cancelRuntime =
+        InquiryCancelRuntime(
+            inquiryId = inquiryId,
+            repository = inquiryRepository,
+            scope = viewModelScope,
+            onAuthExpired = {
+                _authExpired.value = true
+            },
+        )
+
+    val cancelState: StateFlow<CancelInquiryUiState> =
+        cancelRuntime.state
 
     private val _followUpState = MutableStateFlow<FollowUpUiState>(
         if (followUpEnabled) FollowUpUiState.Loading else FollowUpUiState.Disabled
@@ -54,9 +63,6 @@ class GuidanceViewModel(
     val consultationState:
         StateFlow<ConsultationRequestUiState> =
         _consultationState.asStateFlow()
-
-    private var lastCancelReasonCode: String = "CUSTOMER_REQUEST"
-    private var lastCancelReasonDetail: String? = null
 
     init {
         load()
@@ -626,83 +632,15 @@ class GuidanceViewModel(
         reasonCode: String = "CUSTOMER_REQUEST",
         reasonDetail: String? = null,
     ) {
-        val remote = inquiryRepository
-        if (remote == null) {
-            _cancelState.value = CancelInquiryUiState.Error(
-                message = "문의 취소 기능을 사용할 수 없습니다.",
-                retryable = false,
-            )
-            return
-        }
-        if (stateVersion == null || stateVersion < 1) {
-            _cancelState.value = CancelInquiryUiState.Error(
-                message = "최신 문의 상태 버전을 확인한 뒤 다시 시도해 주세요.",
-                retryable = false,
-            )
-            return
-        }
-        lastCancelReasonCode = reasonCode
-        lastCancelReasonDetail = reasonDetail
-        performCancel(remote, stateVersion, reasonCode, reasonDetail)
+        cancelRuntime.cancelInquiry(
+            stateVersion = stateVersion,
+            reasonCode = reasonCode,
+            reasonDetail = reasonDetail,
+        )
     }
 
     fun retryCancelAfterConflict() {
-        val current = _cancelState.value
-        if (current !is CancelInquiryUiState.Conflict) return
-        val latestVersion = current.currentStateVersion
-        val canRetry = latestVersion != null && current.allowedActions.any {
-            it.normalizedCode == InquiryActionLabels.CANCEL_INQUIRY
-        }
-        if (!canRetry) return
-        val remote = inquiryRepository ?: return
-        performCancel(remote, latestVersion, lastCancelReasonCode, lastCancelReasonDetail)
-    }
-
-    private fun performCancel(
-        repository: InquiryRepository,
-        stateVersion: Int,
-        reasonCode: String,
-        reasonDetail: String?,
-    ) {
-        if (
-            _cancelState.value is
-                CancelInquiryUiState.Cancelling
-        ) {
-            return
-        }
-
-        _cancelState.value =
-            CancelInquiryUiState.Cancelling
-
-        viewModelScope.launch {
-            _cancelState.value = when (
-                val result = repository.cancel(
-                    inquiryId = inquiryId,
-                    stateVersion = stateVersion,
-                    reasonCode = reasonCode,
-                    reasonDetail = reasonDetail,
-                )
-            ) {
-                is ApiResult.Success -> CancelInquiryUiState.Success(
-                    state = result.value.state,
-                    stateVersion = result.value.stateVersion,
-                    idempotentReplay = result.value.idempotentReplay,
-                )
-                is ApiResult.Failure -> {
-                    val conflict = result.conflict
-                    if (conflict != null) {
-                        CancelInquiryUiState.Conflict(
-                            message = result.message,
-                            currentStatus = conflict.currentStatus,
-                            currentStateVersion = conflict.currentStateVersion,
-                            allowedActions = conflict.allowedActions,
-                        )
-                    } else {
-                        CancelInquiryUiState.Error(result.message, result.retryable)
-                    }
-                }
-            }
-        }
+        cancelRuntime.retryAfterConflict()
     }
 
     private data class FollowUpContext(
@@ -747,9 +685,12 @@ sealed interface CancelInquiryUiState {
         val allowedActions: List<AllowedAction>,
     ) : CancelInquiryUiState {
         val canRetry: Boolean
-            get() = currentStateVersion != null && allowedActions.any {
-                it.normalizedCode == InquiryActionLabels.CANCEL_INQUIRY
-            }
+            get() =
+                canCancelInquiry(
+                    statusCode = currentStatus,
+                    stateVersion = currentStateVersion,
+                    allowedActions = allowedActions,
+                )
     }
 
     data class Error(

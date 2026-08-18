@@ -10,6 +10,7 @@ import com.skn29.watercare.core.model.FollowUpAnswer
 import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.SubmitFollowUpAnswersResult
 import com.skn29.watercare.core.repository.CustomerInquiryRepository
+import com.skn29.watercare.core.repository.InquiryRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,8 +31,10 @@ private object FollowUpDraftStateKeys {
     const val NULL_OPTION = "\u0000"
 }
 
-class FollowUpQuestionsViewModel(    private val inquiryId: String,
+class FollowUpQuestionsViewModel(
+    private val inquiryId: String,
     private val repository: CustomerInquiryRepository,
+    private val inquiryRepository: InquiryRepository? = null,
     private val savedStateHandle: SavedStateHandle = SavedStateHandle(),
 ) : ViewModel() {
     private val _state =
@@ -41,6 +44,29 @@ class FollowUpQuestionsViewModel(    private val inquiryId: String,
 
     val state: StateFlow<FollowUpUiState> =
         _state.asStateFlow()
+
+    private val _authExpired =
+        MutableStateFlow(false)
+
+    val authExpired: StateFlow<Boolean> =
+        _authExpired.asStateFlow()
+
+    fun consumeAuthExpired() {
+        _authExpired.value = false
+    }
+
+    private val cancelRuntime =
+        InquiryCancelRuntime(
+            inquiryId = inquiryId,
+            repository = inquiryRepository,
+            scope = viewModelScope,
+            onAuthExpired = {
+                _authExpired.value = true
+            },
+        )
+
+    val cancelState: StateFlow<CancelInquiryUiState> =
+        cancelRuntime.state
 
     private val navigationChannel =
         Channel<FollowUpNavigationEvent>(
@@ -110,6 +136,16 @@ class FollowUpQuestionsViewModel(    private val inquiryId: String,
     }
 
     fun submitAnswers() {
+        val cancel =
+            cancelState.value
+
+        if (
+            cancel is CancelInquiryUiState.Cancelling ||
+            cancel is CancelInquiryUiState.Success
+        ) {
+            return
+        }
+
         val current = _state.value
 
         if (
@@ -131,6 +167,16 @@ class FollowUpQuestionsViewModel(    private val inquiryId: String,
     }
 
     fun retryAfterConflict() {
+        val cancel =
+            cancelState.value
+
+        if (
+            cancel is CancelInquiryUiState.Cancelling ||
+            cancel is CancelInquiryUiState.Success
+        ) {
+            return
+        }
+
         val current =
             _state.value as?
                 FollowUpUiState.Conflict
@@ -147,6 +193,43 @@ class FollowUpQuestionsViewModel(    private val inquiryId: String,
                 drafts = current.drafts,
             )
         )
+    }
+
+    fun cancelInquiry(
+        stateVersion: Int?,
+        reasonCode: String = "CUSTOMER_REQUEST",
+        reasonDetail: String? = null,
+    ) {
+        val snapshot =
+            contextOrNull(_state.value)
+                ?.snapshot
+                ?: (_state.value as? FollowUpUiState.Empty)
+                    ?.snapshot
+                ?: return
+
+        if (
+            !canCancelInquiry(
+                statusCode = snapshot.statusCode,
+                stateVersion = stateVersion,
+                allowedActions = snapshot.allowedActions,
+            )
+        ) {
+            return
+        }
+
+        if (stateVersion != snapshot.stateVersion) {
+            return
+        }
+
+        cancelRuntime.cancelInquiry(
+            stateVersion = snapshot.stateVersion,
+            reasonCode = reasonCode,
+            reasonDetail = reasonDetail,
+        )
+    }
+
+    fun retryCancelAfterConflict() {
+        cancelRuntime.retryAfterConflict()
     }
 
     private fun editDraft(
