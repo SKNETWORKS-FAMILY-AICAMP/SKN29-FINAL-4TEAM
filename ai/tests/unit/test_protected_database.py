@@ -24,8 +24,58 @@ def test_psycopg_exception_context_and_secret_are_suppressed():
         )
 
     assert str(captured.value) == "보호 DB 작업에 실패했습니다."
+    assert captured.value.retryable is True
     assert secret_sentinel not in str(captured.value)
     assert captured.value.__suppress_context__ is True
+    assert captured.value.__context__ is None
+    assert captured.value.__cause__ is None
+
+
+def test_non_retryable_database_error_is_sanitized_without_context():
+    secret_sentinel = "SENSITIVE_DATABASE_SCHEMA_SENTINEL"
+
+    def fail_with_schema_error():
+        raise psycopg.ProgrammingError(
+            f"schema failure with protected value {secret_sentinel}"
+        )
+
+    with pytest.raises(ProtectedDatabaseOperationError) as captured:
+        run_protected_database_operation(
+            fail_with_schema_error,
+            public_message="보호 DB 작업에 실패했습니다.",
+        )
+
+    assert captured.value.retryable is False
+    assert secret_sentinel not in str(captured.value)
+    assert captured.value.__context__ is None
+
+
+def test_authentication_sqlstate_is_not_retried_even_if_operational():
+    def fail_with_authentication_error():
+        raise psycopg.errors.InvalidPassword("protected authentication failure")
+
+    with pytest.raises(ProtectedDatabaseOperationError) as captured:
+        run_protected_database_operation(
+            fail_with_authentication_error,
+            public_message="보호 DB 작업에 실패했습니다.",
+        )
+
+    assert captured.value.retryable is False
+    assert captured.value.__context__ is None
+
+
+def test_statement_timeout_sqlstate_remains_retryable_once():
+    def fail_with_statement_timeout():
+        raise psycopg.errors.QueryCanceled("protected statement timeout")
+
+    with pytest.raises(ProtectedDatabaseOperationError) as captured:
+        run_protected_database_operation(
+            fail_with_statement_timeout,
+            public_message="보호 DB 작업에 실패했습니다.",
+        )
+
+    assert captured.value.retryable is True
+    assert captured.value.__context__ is None
 
 
 def test_non_database_assertion_is_not_hidden():

@@ -17,6 +17,9 @@ class RetryPolicy:
     retryable_exception_names: frozenset[str]
 
     def is_retryable_exception(self, exc: Exception) -> bool:
+        explicit_retryable = getattr(exc, "retryable", None)
+        if isinstance(explicit_retryable, bool):
+            return explicit_retryable
         exception_names = {cls.__name__ for cls in type(exc).__mro__}
         return bool(exception_names & self.retryable_exception_names)
 

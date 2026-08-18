@@ -220,6 +220,67 @@ def test_local_mode_vector_failure_retries_once_then_returns_503(client, monkeyp
     assert payloads[-1]["retry_count"] == 1
 
 
+def test_local_mode_protected_database_failure_is_not_exposed(
+    client,
+    monkeypatch,
+    caplog,
+):
+    import psycopg
+
+    from ai.app.common.protected_database import (
+        run_protected_database_operation,
+    )
+    from ai.app.interfaces.http.routes import analysis_routes
+
+    secret_sentinel = "SENSITIVE_DEPLOYMENT_DSN_SENTINEL"
+
+    class ProtectedFailingSearchService:
+        def __init__(self):
+            self.calls = 0
+
+        def search(self, *args, **kwargs):
+            self.calls += 1
+
+            def fail_operation():
+                raise psycopg.OperationalError(
+                    "connection failed with protected value "
+                    f"{secret_sentinel}"
+                )
+
+            return run_protected_database_operation(
+                fail_operation,
+                public_message="pgvector 검색 작업에 실패했습니다.",
+            )
+
+    service = ProtectedFailingSearchService()
+    monkeypatch.setattr(
+        analysis_routes.PipelineRouter,
+        "_configured_search_service",
+        staticmethod(lambda: service),
+    )
+    with caplog.at_level(logging.INFO, logger="watercare.ai.analysis"):
+        response = client.post(
+            "/api/v1/ai/analyze?mode=local",
+            json={
+                "inquiry_id": INQUIRY_ID,
+                "correlation_id": CORRELATION_ID,
+                "ai_request_id": "ai-req-protected-db-failed",
+                "state_version": 1,
+                "raw_symptom": "냉수 온도가 평소와 다릅니다.",
+                "model_code": "WPUJAC104DWH",
+            },
+        )
+
+    serialized_response = json.dumps(response.json(), ensure_ascii=False)
+    serialized_logs = "\n".join(record.message for record in caplog.records)
+    assert response.status_code == 503
+    assert response.json()["error"]["retryable"] is True
+    assert response.json()["error"]["retry_count"] == 1
+    assert service.calls == 2
+    assert secret_sentinel not in serialized_response
+    assert secret_sentinel not in serialized_logs
+
+
 def test_local_mode_non_transient_search_failure_is_non_retryable_503(client, monkeypatch):
     from ai.app.interfaces.http.routes import analysis_routes
 

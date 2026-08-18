@@ -236,6 +236,27 @@ Embedding 모델을 한 번 초기화하고 이후 요청이 같은 검색 서�
 Timeout에 포함되지 않는다. `/health` 성공은 모델 Warmup 완료를 뜻하지만 실제
 pgvector Query와 팀 DB 준비 완료까지 보장하는 Readiness 판정은 아니다.
 
+### 보호 DB 오류와 배포 로그 경계
+
+`PgVectorStore`의 검색·행 수 확인·적재·Disposable Schema 초기화는 모두
+`ProtectedDatabaseOperationError` 경계를 사용한다. `psycopg` Driver 메시지와 원본
+예외 Context는 API·구조화 로그·Traceback 수집기로 전달하지 않으며 고정된 비민감
+메시지만 상위 Retrieval 경계로 보낸다.
+
+재시도 여부는 Driver 메시지를 파싱하지 않고 SQLSTATE와 안전한 `retryable` 속성으로
+판정한다. 연결·일시적 자원·Statement Timeout은 기존 계약대로 최대 1회 재시도하고,
+인증·권한·Schema·데이터·무결성 오류는 재시도하지 않는다. Assertion, 입력 검증과
+계약 불일치는 보호 DB 오류로 숨기지 않는다.
+
+배포 환경은 다음 항목을 함께 적용한다.
+
+- `DJANGO_DEBUG`나 AI Server Debug Traceback을 운영에서 활성화하지 않는다.
+- DSN은 Process Secret으로만 주입하고 명령행 인자·로그 Field로 전달하지 않는다.
+- Sentry·APM·Cloud Log Agent가 Driver Span을 직접 수집한다면 해당 제품의 Secret
+  Redaction 또는 `before_send` Filter를 별도로 활성화한다.
+- HTTP 응답·stdout·stderr의 Sentinel 검증과 실제 Readonly pgvector 정상 검색을 모두
+  통과해야 배포 DB 오류 경계를 PASS로 판정한다.
+
 ## 팀 DB 읽기 전용 Runtime
 
 팀 DB의 공식 Evidence·Embedding 적재, Crosswalk 적용과 View 게시 책임은
