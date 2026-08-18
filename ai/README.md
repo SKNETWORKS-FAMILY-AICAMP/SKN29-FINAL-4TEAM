@@ -178,6 +178,31 @@ AI_EMBEDDING_REVISION
 실제 Provider 호출이 없는 Fake Client 단위 테스트는 구조·안전 경계 증거이며
 실제 LLM 호출 PASS로 보고하지 않는다.
 
+## 3-Agent 후보 Runtime
+
+기본 `local` 실행은 계속 `SingleRAGPipeline`이다. 6주차 후보 Runtime은 같은
+공개 계약 `3.0.0`을 유지하면서 `Symptom Analysis`, `Evidence Analysis`,
+`Care Decision` 역할과 Supervisor Handoff를 내부에서 실행한다.
+
+```powershell
+# 안정 기준선
+$env:AI_PIPELINE_RUNTIME='single_rag'
+
+# 후보 Runtime을 명시적으로 검증하는 Process에서만 사용
+$env:AI_PIPELINE_RUNTIME='multi_agent'
+```
+
+지원하지 않는 값은 Single RAG로 묵시적 복귀하지 않고 HTTP 503 구성 실패로
+종료한다. `multi_agent` 설정은 운영 채택을 의미하지 않는다. Agent 단위·Routing,
+Single RAG 비교, 실제 pgvector·OpenAI·Backend HTTP와 고객 질문→답변→재검색 E2E가
+같은 Commit에서 통과하기 전에는 기본값을 변경하지 않는다.
+
+정보 부족과 공식 근거 부재는 분리한다. 검색 근거가 부족하고 답변 가능한 추가
+질문이 있으면 `SUCCEEDED` 질문 결과로 고객 입력을 기다린다. 질문이 남지 않았는데
+공식 Evidence가 0건이면 기존 `NO_EVIDENCE` Fallback을 적용한다. Agent Handoff
+Metadata는 고객 공개 응답에 포함하지 않으며 고객 원문·Prompt·Evidence 본문·Secret을
+기록하지 않는다.
+
 ## RAG 실행 기준
 
 Local 검색은 `BAAI/bge-m3`의 1024차원 정규화 임베딩과 pgvector Cosine
