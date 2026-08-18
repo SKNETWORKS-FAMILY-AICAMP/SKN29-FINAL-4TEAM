@@ -63,6 +63,41 @@ class EmptySearchService:
         return []
 
 
+class MixedTasteEvidenceSearchService:
+    def search(self, *args, **kwargs):
+        return [
+            RetrievedChunk(
+                chunk_id="RAG-WPUJAC104DWH-LOW-FLOW-001",
+                document_title="WPU-JAC104D 사용설명서",
+                manual_model="WPUJAC104DWH",
+                model_code="WPUJAC104DWH",
+                product_generation="D",
+                content="무관한 출수량 근거",
+                similarity_score=0.99,
+                verification_status="official_verified",
+                allowed_use=True,
+                topic_code="symptom_low_flow",
+            ),
+            RetrievedChunk(
+                chunk_id="RAG-WPUJAC104DWH-TASTE-ODOR-001",
+                document_title="WPU-JAC104D 사용설명서",
+                manual_model="WPUJAC104DWH",
+                model_code="WPUJAC104DWH",
+                product_generation="D",
+                content="물맛과 냄새 관련 공식 근거",
+                similarity_score=0.91,
+                verification_status="official_verified",
+                allowed_use=True,
+                topic_code="symptom_taste_odor",
+            ),
+        ]
+
+
+class UnrelatedTasteEvidenceSearchService:
+    def search(self, *args, **kwargs):
+        return MixedTasteEvidenceSearchService().search(*args, **kwargs)[:1]
+
+
 class SequenceLLMClient:
     def __init__(self, *values):
         self.values = list(values)
@@ -124,6 +159,43 @@ def accepted_actions(raw_symptom="냉수 출수량이 적습니다."):
         if "미지근" in raw_symptom or "출수량" in raw_symptom
         else ["기본 필터 및 사용 환경 유지"]
     )
+
+
+def test_earthy_taste_generation_receives_only_taste_or_odor_evidence():
+    taste_message = "물맛과 냄새 관련 공식 근거"
+    client = SequenceLLMClient(
+        llm_response(
+            message=taste_message,
+            actions=["기본 필터 및 사용 환경 유지"],
+        )
+    )
+
+    result = run_pipeline(
+        search_service=MixedTasteEvidenceSearchService(),
+        llm_client=client,
+        raw_symptom="물에서 흙맛이 나는 것 같아요",
+    ).to_analysis_result()
+
+    assert result.structured_symptom.symptom_type == "물맛/냄새 이상"
+    assert [reference.summary for reference in result.evidence_references] == [
+        taste_message
+    ]
+    assert client.requests[0].symptom_summary == "물맛/냄새 이상"
+    assert client.requests[0].evidence_summaries == [taste_message]
+
+
+def test_earthy_taste_with_only_unrelated_evidence_fails_closed_without_llm():
+    client = SequenceLLMClient(llm_response())
+
+    result = run_pipeline(
+        search_service=UnrelatedTasteEvidenceSearchService(),
+        llm_client=client,
+        raw_symptom="물에서 흙맛이 나는 것 같아요",
+    ).to_analysis_result()
+
+    assert client.calls == 0
+    assert result.evidence_references == []
+    assert result.usage_guidance.guidance_status.value == "PENDING_CONSULTATION"
 
 
 def generation_request() -> GuidanceGenerationRequest:

@@ -3,6 +3,7 @@
 import time
 from ...common.retry import get_retry_policy
 from ...retrieval import (
+    EvidenceTopicFilter,
     RetrievalConfigurationError,
     RetrievalExecutionError,
     RetrievalOutcome,
@@ -44,6 +45,14 @@ def execute_retrieval_stage(
             chunks = search_service.search(
                 query,
                 cancellation_token=cancellation_token,
+            )
+            chunks = EvidenceTopicFilter().filter_chunks(
+                chunks,
+                symptom_type=(
+                    ctx.structured_symptom.symptom_type
+                    if ctx.structured_symptom is not None
+                    else None
+                ),
             )
 
             # RetrievedChunk -> EvidenceReference 변환
