@@ -1,0 +1,91 @@
+.consultant-user-menu {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #172b43 !important;
+}
+
+.consultant-user-menu__name,
+.consultant-user-menu__employee-number,
+.consultant-user-menu__sign-out {
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  font-family:
+    Pretendard, "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+}
+
+.consultant-user-menu__name,
+.consultant-user-menu__sign-out {
+  color: #172b43 !important;
+  font-weight: 700 !important;
+}
+
+.consultant-user-menu__employee-number {
+  display: inline !important;
+  color: #698096 !important;
+  font-weight: 600 !important;
+}
+
+.consultant-user-menu__divider {
+  display: block !important;
+  width: 1px !important;
+  height: 16px !important;
+  flex: 0 0 1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #c9dfeb !important;
+  box-shadow: none !important;
+}
+
+.consultant-user-menu__sign-out {
+  cursor: pointer !important;
+}
+
+.consultant-user-menu__sign-out:hover {
+  color: #1c78ad !important;
+}
+
+.consultant-user-menu__sign-out:focus-visible {
+  outline: 2px solid #4a9fd0 !important;
+  outline-offset: 4px !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-unified-header,
+html body .v6-workspace .consultant-unified-header {
+  justify-content: flex-end !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-unified-header::after,
+html body .v6-workspace .consultant-unified-header::after {
+  display: none !important;
+  background: transparent !important;
+  content: none !important;
+}
