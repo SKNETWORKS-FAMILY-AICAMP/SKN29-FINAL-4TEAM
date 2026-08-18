@@ -6,11 +6,12 @@ from ..pipeline_context import PipelineContext
 from ..pipeline_result import PipelineResult
 from ...common.timeout import CancellationToken, get_stage_timeout_policy
 from ...integrations.llm import GuidanceLLMClient
-from ...retrieval import RetrievalConfigurationError
+from ...retrieval import EvidenceApplicabilityGate, RetrievalConfigurationError
 from ...schemas import AiStage
 from ..stages import (
     execute_generation_stage,
     execute_missing_fields_stage,
+    execute_questionnaire_pending_stage,
     execute_retrieval_stage,
     execute_safety_check_stage,
     execute_structuring_stage,
@@ -37,6 +38,7 @@ class SingleRAGPipeline:
         graph.add_node("structuring", self._structuring)
         graph.add_node("safety", self._safety)
         graph.add_node("missing_fields", self._missing_fields)
+        graph.add_node("questionnaire_pending", self._questionnaire_pending)
         graph.add_node("retrieval", self._retrieval)
         graph.add_node("generation", self._generation)
         graph.add_node("validation", self._validation)
@@ -47,7 +49,15 @@ class SingleRAGPipeline:
             self._route_after_safety,
             {"danger": "generation", "questionnaire": "missing_fields"},
         )
-        graph.add_edge("missing_fields", "retrieval")
+        graph.add_conditional_edges(
+            "missing_fields",
+            self._route_after_missing_fields,
+            {
+                "questionnaire_pending": "questionnaire_pending",
+                "retrieval": "retrieval",
+            },
+        )
+        graph.add_edge("questionnaire_pending", "validation")
         graph.add_edge("retrieval", "generation")
         graph.add_edge("generation", "validation")
         graph.add_edge("validation", END)
@@ -67,6 +77,28 @@ class SingleRAGPipeline:
 
     def _missing_fields(self, state):
         self._run_stage(AiStage.CHECKING_MISSING_FIELDS, execute_missing_fields_stage, state["ctx"])
+        return state
+
+    @staticmethod
+    def _route_after_missing_fields(state):
+        ctx = state["ctx"]
+        requires_more_information = EvidenceApplicabilityGate().requires_more_information(
+            symptom_type=(
+                ctx.structured_symptom.symptom_type
+                if ctx.structured_symptom is not None
+                else None
+            ),
+            missing_field_names=(item.field_name for item in ctx.missing_fields),
+            previous_answers=ctx.previous_answers,
+        )
+        return "questionnaire_pending" if requires_more_information else "retrieval"
+
+    def _questionnaire_pending(self, state):
+        self._run_stage(
+            AiStage.GENERATING,
+            execute_questionnaire_pending_stage,
+            state["ctx"],
+        )
         return state
 
     def _retrieval(self, state):

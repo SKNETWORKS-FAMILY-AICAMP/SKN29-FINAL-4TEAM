@@ -184,6 +184,11 @@ class CustomerGuidanceGenerator:
                 symptom_type,
                 target_water_type,
                 symptom.error_code,
+                (
+                    ctx.evidence_applicability.provider_label
+                    if ctx.evidence_applicability is not None
+                    else None
+                ),
             ]
         symptom_summary = " | ".join(
             CustomerGuidanceGenerator._redact_provider_text(value)

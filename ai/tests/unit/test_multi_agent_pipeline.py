@@ -21,19 +21,25 @@ from ai.app.common.timeout import CancellationToken
 from ai.app.orchestration.pipeline_context import PipelineContext
 from ai.app.orchestration.pipeline_router import PipelineRouter
 from ai.app.orchestration.pipelines.multi_agent_pipeline import MultiAgentPipeline
-from ai.app.retrieval import RetrievedChunk
-from ai.app.schemas import TraceContext, UsageGuidanceStatus
+from ai.app.retrieval import RetrievedChunk, RetrievalOutcome
+from ai.app.schemas import RiskLevel, TraceContext, UsageGuidanceStatus
 
 
 INQUIRY_ID = "018f2f9b-7c30-7981-b541-1a987c88b601"
 CORRELATION_ID = "018f2f9b-7c30-7981-b541-1a987c88b602"
 COMPLETE_SYMPTOM = "어제부터 냉수 버튼을 누르면 물이 졸졸 나옵니다. 전원을 껐다 켰어요."
 EVIDENCE_SUMMARY = "냉수 온도가 높으면 잠시 기다린 뒤 다시 확인합니다."
+TASTE_EVIDENCE_SUMMARY = "장기 부재·미사용 조건에 따른 물맛·냄새 공식 근거"
 
 
 class EmptySearchService:
     def search(self, *args, **kwargs):
         return []
+
+
+class UnexpectedSearchService:
+    def search(self, *args, **kwargs):
+        raise AssertionError("문진 완료 전에는 근거 검색을 호출하면 안 됩니다.")
 
 
 class EvidenceSearchService:
@@ -57,6 +63,24 @@ class EvidenceSearchService:
         ]
 
 
+class TasteEvidenceSearchService:
+    def search(self, *args, **kwargs):
+        return [
+            RetrievedChunk(
+                chunk_id="RAG-WPUJAC104DWH-TASTE-ODOR-001",
+                document_title="WPU-JAC104D 사용설명서",
+                manual_model="WPUJAC104DWH",
+                model_code="WPUJAC104DWH",
+                product_generation="D",
+                content=TASTE_EVIDENCE_SUMMARY,
+                similarity_score=0.91,
+                verification_status="official_verified",
+                allowed_use=True,
+                topic_code="symptom_taste_odor",
+            )
+        ]
+
+
 class FakeGuidanceLLMClient:
     def __init__(self):
         self.calls = 0
@@ -74,10 +98,40 @@ class FakeGuidanceLLMClient:
         )
 
 
-def _run_multi_agent(*, search_service, raw_symptom=COMPLETE_SYMPTOM, previous_answers=None):
+class UnexpectedGuidanceLLMClient:
+    def generate_guidance(self, request, *, timeout_seconds):
+        raise AssertionError("문진 완료 전에는 LLM을 호출하면 안 됩니다.")
+
+
+class TasteGuidanceLLMClient:
+    def __init__(self):
+        self.calls = 0
+        self.requests = []
+
+    def generate_guidance(self, request, *, timeout_seconds):
+        self.calls += 1
+        self.requests.append(request)
+        return GuidanceLLMResponse(
+            output=GuidanceGenerationResult(
+                message=TASTE_EVIDENCE_SUMMARY,
+                next_actions=["기본 필터 및 사용 환경 유지"],
+            ),
+            model_name="gpt-4.1-mini",
+            usage=LLMUsage(input_tokens=10, output_tokens=8, total_tokens=18),
+            latency_ms=12.5,
+        )
+
+
+def _run_multi_agent(
+    *,
+    search_service,
+    raw_symptom=COMPLETE_SYMPTOM,
+    previous_answers=None,
+    llm_client=None,
+):
     return PipelineRouter(
         search_service=search_service,
-        llm_client=FakeGuidanceLLMClient(),
+        llm_client=llm_client or FakeGuidanceLLMClient(),
     ).run_pipeline(
         inquiry_id=INQUIRY_ID,
         correlation_id=CORRELATION_ID,
@@ -179,6 +233,8 @@ def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence
     assert response.followup_questions
     assert response.evidence_references == []
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
+    assert response.safety_assessment.risk_level == RiskLevel.CAUTION
+    assert response.safety_assessment.requires_consultation is True
     assert HandoffReason.MORE_INFORMATION_REQUIRED in {
         item.reason_code for item in result.multi_agent_metadata.handoffs
     }
@@ -186,6 +242,87 @@ def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence
         result.multi_agent_metadata.model_dump(mode="json"),
         ensure_ascii=False,
     )
+
+
+def test_multi_agent_earthy_taste_waits_for_context_before_evidence_handoff():
+    result = _run_multi_agent(
+        search_service=UnexpectedSearchService(),
+        raw_symptom="물에서 흙맛이 나는 것 같아요",
+        llm_client=UnexpectedGuidanceLLMClient(),
+    )
+    response = result.to_analysis_result()
+    reasons = [item.reason_code for item in result.multi_agent_metadata.handoffs]
+
+    assert result.context.awaiting_customer_input is True
+    assert result.context.retrieval_outcome == RetrievalOutcome.NOT_RUN
+    assert result.multi_agent_metadata.awaiting_customer_input is True
+    assert response.status.value == "SUCCEEDED"
+    assert response.failure_stage is None
+    assert response.followup_questions
+    assert response.evidence_references == []
+    assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
+    assert HandoffReason.CUSTOMER_INPUT_PENDING in reasons
+    assert HandoffReason.RETRIEVAL_REQUIRED not in reasons
+    assert AgentRole.EVIDENCE_ANALYSIS not in {
+        item.to_agent for item in result.multi_agent_metadata.handoffs
+    }
+
+
+def test_multi_agent_earthy_taste_non_applicable_context_becomes_no_evidence():
+    llm = FakeGuidanceLLMClient()
+    result = _run_multi_agent(
+        search_service=TasteEvidenceSearchService(),
+        raw_symptom="물에서 흙맛이 나는 것 같아요",
+        previous_answers=[
+            {"question_id": "followup-occurrence-time", "answer_text": "오늘부터"},
+            {"question_id": "followup-target-water-type", "answer_text": "정수"},
+            {"question_id": "followup-actions-taken", "answer_text": "없음"},
+            {
+                "question_id": "followup-taste-odor-applicability",
+                "answer_text": "해당 없음",
+            },
+        ],
+        llm_client=llm,
+    )
+    response = result.to_analysis_result()
+
+    assert llm.calls == 0
+    assert result.context.retrieval_outcome == RetrievalOutcome.NO_MATCH
+    assert response.status.value == "FALLBACK"
+    assert response.failure_stage.value == "RETRIEVING"
+    assert response.evidence_references == []
+    assert HandoffReason.NO_EVIDENCE in {
+        item.reason_code for item in result.multi_agent_metadata.handoffs
+    }
+
+
+def test_multi_agent_earthy_taste_within_ten_days_uses_applicable_evidence():
+    llm = TasteGuidanceLLMClient()
+    result = _run_multi_agent(
+        search_service=TasteEvidenceSearchService(),
+        raw_symptom="물에서 흙맛이 나는 것 같아요",
+        previous_answers=[
+            {"question_id": "followup-occurrence-time", "answer_text": "오늘부터"},
+            {"question_id": "followup-target-water-type", "answer_text": "정수"},
+            {"question_id": "followup-actions-taken", "answer_text": "없음"},
+            {
+                "question_id": "followup-taste-odor-applicability",
+                "answer_text": "10일 이내 부재 후",
+            },
+        ],
+        llm_client=llm,
+    )
+    response = result.to_analysis_result()
+
+    assert llm.calls == 1
+    assert result.context.retrieval_outcome == RetrievalOutcome.AVAILABLE
+    assert response.status.value == "SUCCEEDED"
+    assert response.failure_stage is None
+    assert len(response.evidence_references) == 1
+    assert llm.requests[0].symptom_summary.endswith("10일 이내 부재 후")
+    assert HandoffReason.EVIDENCE_READY in {
+        item.reason_code for item in result.multi_agent_metadata.handoffs
+    }
 
 
 def test_answered_questions_then_empty_retrieval_becomes_no_evidence():
