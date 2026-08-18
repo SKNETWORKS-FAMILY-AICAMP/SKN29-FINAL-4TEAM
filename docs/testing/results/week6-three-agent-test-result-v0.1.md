@@ -57,3 +57,22 @@ Test와 Backend 전용 `.venv` 명령으로 분리해 각각 Exit 0을 확인했
 
 따라서 현재 결과는 후보 Runtime의 코드·계약·Unit 기준선이다. 기본 Runtime 전환이나
 6주차 Feature Complete 근거로 사용할 수 없다.
+
+## 5. 2026-08-18 보호 DB 오류 비노출 보강
+
+실제 pgvector Gate의 접속 Timeout Traceback이 Driver 연결정보를 포함할 수 있는
+문제를 확인한 뒤 다음과 같이 보강했다.
+
+- `psycopg.Error` 원문과 예외 Context를 외부로 전달하지 않는
+  `ProtectedDatabaseOperationError` 경계를 추가했다.
+- 팀 pgvector 연결·권한·Shape Query와 실제 검색을 보호 DB 작업 경계로 감쌌다.
+- DB 연결 Timeout을 5초로 명시해 기본 Driver 대기시간까지 장기 대기하지 않는다.
+- Assertion·계약 불일치는 숨기지 않고 기존 실패 원인을 유지한다.
+- 실제 보호값 대신 합성 Sentinel이 포함된 연결 오류를 주입했다. 의도된 실패 Exit는
+  `1`, `SENTINEL_EXPOSED=False`, 보호 오류 형식 확인은 `PASS`다.
+- 비노출 Unit은 `2 passed`, Multi-Agent 포함 표적은 `11 passed`, AI Unit 전체는
+  `242 passed, 5 warnings, 7 subtests passed`다.
+
+노출된 기존 AI Readonly 자격증명은 회전 전 재사용하지 않는다. 실제 pgvector·OpenAI
+후보 Runtime 재검증은 Docker 가동과 별개로 자격증명 회전·보호 파일 갱신 확인 후
+수행한다.
