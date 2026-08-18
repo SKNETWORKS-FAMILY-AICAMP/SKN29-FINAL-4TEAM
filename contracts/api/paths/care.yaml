@@ -10,7 +10,7 @@ x-t019-policy:
   ai_projection: RECENT_COMPLETED_SAFE_FIELDS_MAX_5
   next_care_owner: T-020
   visit_result_dedupe_owner: T-044
-  consumer_connection_allowed: false
+  consumer_connection_allowed: true
   staff_scope: ASSIGNED_SAFE_PROJECTION_ONLY
   operator_scope: EXPLICIT_PERMISSION_ONLY
 
