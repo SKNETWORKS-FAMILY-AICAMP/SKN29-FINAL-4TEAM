@@ -15,6 +15,7 @@ from ..retrieval.indexing.index_manifest import IndexManifest
 from ..retrieval import RetrievalConfigurationError
 from .pipeline_context import PipelineContext
 from .pipeline_result import PipelineResult
+from .pipelines.multi_agent_pipeline import MultiAgentPipeline
 from .pipelines.single_rag_pipeline import SingleRAGPipeline
 from ..common.timeout import CancellationToken
 from ..schemas import TraceContext
@@ -130,8 +131,9 @@ class PipelineRouter:
         selected_symptoms: Optional[List[str]] = None,
         previous_answers: Optional[List[Dict[str, str]]] = None,
         cancellation_token: CancellationToken | None = None,
+        runtime_name: str | None = None,
     ) -> PipelineResult:
-        """단일 RAG 파이프라인 가동 및 결과 반환"""
+        """명시된 Runtime을 실행하되 기본값은 안정된 Single RAG로 유지한다."""
         token = cancellation_token or CancellationToken()
         token.raise_if_cancelled()
         ctx = PipelineContext(
@@ -147,9 +149,21 @@ class PipelineRouter:
             previous_answers=previous_answers or []
         )
 
-        pipeline = SingleRAGPipeline(
-            self.search_service,
-            retrieval_configuration_error=self.retrieval_configuration_error,
-            llm_client=self.llm_client,
-        )
+        selected_runtime = runtime_name or os.getenv("AI_PIPELINE_RUNTIME", "single_rag")
+        if selected_runtime == "single_rag":
+            pipeline = SingleRAGPipeline(
+                self.search_service,
+                retrieval_configuration_error=self.retrieval_configuration_error,
+                llm_client=self.llm_client,
+            )
+        elif selected_runtime == "multi_agent":
+            pipeline = MultiAgentPipeline(
+                self.search_service,
+                retrieval_configuration_error=self.retrieval_configuration_error,
+                llm_client=self.llm_client,
+            )
+        else:
+            raise RuntimeError(
+                "AI_PIPELINE_RUNTIME은 single_rag 또는 multi_agent여야 합니다."
+            )
         return pipeline.run(ctx, cancellation_token=token)

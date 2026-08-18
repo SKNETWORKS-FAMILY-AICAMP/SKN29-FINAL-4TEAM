@@ -36,6 +36,10 @@ class PipelineContext(BaseModel):
     )
     retry_count: int = Field(0, ge=0, le=1, description="AI 내부 실제 재시도 횟수")
     usage_guidance: Optional[UsageGuidance] = Field(None, description="사용 안내 상태 및 문구")
+    awaiting_customer_input: bool = Field(
+        False,
+        description="Multi-Agent가 NO_EVIDENCE 확정 전에 추가 질문 답변을 기다리는 내부 상태",
+    )
 
     # 메타데이터 및 지연 추적
     model_metadata: ModelMetadata = Field(
