@@ -36,7 +36,7 @@
     "정확 판매코드 미검증 JCC104(D)",
     "model-unverified common FAQ"
   ],
-  "dataset_version": "1.0.0",
+  "dataset_version": "1.1.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
   "files": [
     {
@@ -272,6 +272,12 @@
       "records": 12,
       "sha256": "5918EC8D52D731402CCDFCC6DAEEF468BCDEFFA850A045CB35EBD5D8A3129CA8",
       "schema": "schemas/synthetic/syntheticCustomerProfile.schema.json"
+    },
+    {
+      "path": "synthetic/candidates/product_expansion_e2e_cases.json",
+      "records": 2,
+      "sha256": "139C074F41D1D0E7C8320ABC62ED34D3F0C4494983F6C613115158727A5D9E17",
+      "schema": "schemas/synthetic/productExpansionE2ECase.schema.json"
     }
   ],
   "counts": {
@@ -299,6 +305,7 @@
     "synthetic_audit_events": 125,
     "synthetic_followup_confirmations": 1,
     "synthetic_fixture_records": 369,
+    "product_expansion_e2e_candidates": 2,
     "supported_products": 3,
     "reference_manual_pages": 144,
     "rag_expansion_parents": 15,

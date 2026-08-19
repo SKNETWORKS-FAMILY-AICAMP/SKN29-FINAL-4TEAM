@@ -234,6 +234,9 @@ def _dataset_counts(config: PipelineConfig) -> dict[str, int]:
             rows["followup_confirmations"]
         ),
         "synthetic_fixture_records": count_synthetic_fixture_records(rows),
+        "product_expansion_e2e_candidates": len(
+            read_json(config.path("product_expansion_candidate_output"))
+        ),
         "supported_products": len(supported_products["products"]),
         "reference_manual_pages": (
             len(read_jsonl(config.path("manual_input")))
@@ -272,6 +275,9 @@ def refresh_dataset_manifest(config: PipelineConfig) -> dict[str, Any]:
         ),
         "synthetic/expected/api_idempotency_cases.json": (
             "schemas/synthetic/expectedApiIdempotencyCase.schema.json"
+        ),
+        "synthetic/candidates/product_expansion_e2e_cases.json": (
+            "schemas/synthetic/productExpansionE2ECase.schema.json"
         ),
     }
     existing_paths = {item["path"] for item in manifest["files"]}
@@ -405,7 +411,10 @@ def _write_detailed_qa_reports(
         "business_report": {
             **common,
             "report_type": "BUSINESS",
-            "records": counts["synthetic_active_scenarios"],
+            "records": (
+                counts["synthetic_active_scenarios"]
+                + counts["product_expansion_e2e_candidates"]
+            ),
             "summary": {
                 "source_scenarios": counts["synthetic_source_scenarios"],
                 "active_scenarios": counts["synthetic_active_scenarios"],
@@ -414,6 +423,9 @@ def _write_detailed_qa_reports(
                 "subset_records": counts["synthetic_scenario_subset_records"],
                 "api_idempotency_cases": counts[
                     "synthetic_api_idempotency_cases"
+                ],
+                "product_expansion_e2e_candidates": counts[
+                    "product_expansion_e2e_candidates"
                 ],
             },
             "checks": [
@@ -433,6 +445,22 @@ def _write_detailed_qa_reports(
                     "status": "PASS",
                     "internal_conflict_code": "IDEMPOTENCY_KEY_REUSE_CONFLICT",
                     "expected_api_error_code": "DUPLICATE-EVENT-01",
+                },
+                {
+                    "code": "PRODUCT_EXPANSION_COVERAGE",
+                    "status": report["product_expansion_coverage"]["status"],
+                    "active_product_codes": report[
+                        "product_expansion_coverage"
+                    ]["active_product_codes"],
+                    "excluded_manual_aliases": report[
+                        "product_expansion_coverage"
+                    ]["excluded_manual_aliases"],
+                    "canonical": report["product_expansion_coverage"][
+                        "canonical"
+                    ],
+                    "candidates": report["product_expansion_coverage"][
+                        "candidates"
+                    ],
                 },
             ],
         },

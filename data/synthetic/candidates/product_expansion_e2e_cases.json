@@ -1,0 +1,124 @@
+[
+  {
+    "case_id": "E2E-IAC425-001",
+    "scope_status": "E2E_CANDIDATE",
+    "backend_import_status": "NOT_IMPORTED",
+    "runtime_status": "NOT_VERIFIED",
+    "product": {
+      "fixture_public_id": "f6789e6b-cdb6-5550-b535-e73e746561bb",
+      "exact_sales_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425"
+    },
+    "customer_product": {
+      "candidate_ref": "CAND-CP-IAC425-001",
+      "parent_ref": "WPUIAC425SNW"
+    },
+    "subscription": {
+      "candidate_ref": "CAND-SUB-IAC425-001",
+      "parent_ref": "CAND-CP-IAC425-001"
+    },
+    "inquiry": {
+      "candidate_ref": "CAND-INQ-IAC425-001",
+      "subscription_ref": "CAND-SUB-IAC425-001",
+      "scenario_id": "SYN-IAC425-001",
+      "original_text": "온수가 나오다가 중간에 멈췄어요.",
+      "topic_code": "hot_water_stopped"
+    },
+    "evidence": {
+      "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+      "exact_sales_code": "WPUIAC425SNW",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        46
+      ],
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+    },
+    "safety": {
+      "risk_level": "danger",
+      "requires_consultation": true,
+      "safe_actions": [
+        "중간 밸브 열림 상태 및 원수 사용량을 확인해 주세요."
+      ],
+      "consultation_conditions": [
+        "히터 고장 - [온수], [정수], [냉수] 버튼이 전부 깜박이고 LED 디스플레이 표시창이 빨간색으로 켜졌을 경우 순간 온수 히터의 고장으로 출수된 물은 마시지 말고 SK매직 고객상담센터로 문의해 주세요."
+      ]
+    },
+    "expected_outcome": {
+      "resolution_mode": "CONSULTANT_HANDOFF",
+      "handoff_target": "CONSULTANT"
+    },
+    "promotion": {
+      "canonical_fixture_included": false,
+      "db_handoff_profile_included": false,
+      "blockers": [
+        "BACKEND_WORKFLOW_CONTRACT_NOT_MAPPED",
+        "POSTGRESQL_NOT_VERIFIED"
+      ]
+    },
+    "data_classification": "synthetic",
+    "generated_at": "2026-07-29T00:00:00+09:00"
+  },
+  {
+    "case_id": "E2E-IAC606-001",
+    "scope_status": "E2E_CANDIDATE",
+    "backend_import_status": "NOT_IMPORTED",
+    "runtime_status": "NOT_VERIFIED",
+    "product": {
+      "fixture_public_id": "c092ea36-fbc3-53dd-98dc-a17e22ef83dc",
+      "exact_sales_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606"
+    },
+    "customer_product": {
+      "candidate_ref": "CAND-CP-IAC606-001",
+      "parent_ref": "WPUIAC606SNW"
+    },
+    "subscription": {
+      "candidate_ref": "CAND-SUB-IAC606-001",
+      "parent_ref": "CAND-CP-IAC606-001"
+    },
+    "inquiry": {
+      "candidate_ref": "CAND-INQ-IAC606-001",
+      "subscription_ref": "CAND-SUB-IAC606-001",
+      "scenario_id": "SYN-IAC606-001",
+      "original_text": "얼음 버튼을 눌러도 얼음이 나오지 않아요.",
+      "topic_code": "no_ice"
+    },
+    "evidence": {
+      "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+      "exact_sales_code": "WPUIAC606SNW",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        42
+      ],
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+    },
+    "safety": {
+      "risk_level": "caution",
+      "requires_consultation": false,
+      "safe_actions": [
+        "얼음 생성 기능 OFF - 잠금 표시등이 켜져 있다면 [설정] 버튼을 3초 동안 길게 눌러 얼음 기능이 꺼져 있는지 확인해 주세요.",
+        "꺼져 있다면 얼음 기능을 켜고 얼음이 만들어지는 시간을 기다려 주세요.",
+        "- 중간 밸브가 잠겼는지 확인해 주세요.",
+        "- 제품 뒷면에 볼 밸브(파란색 밸브)가 잠겼는지 확인해 주세요.",
+        "방열팬 덮개 막힘 (먼지에 의한 막힘) - 청소하기 페이지 확인 후 방열팬 덮개를 청소해 주세요.",
+        "(청소하기 p.",
+        "36 참고) 배수 호스가 꺾이거나 수돗물이 얼진 않았는지 확인해 주세요."
+      ],
+      "consultation_conditions": []
+    },
+    "expected_outcome": {
+      "resolution_mode": "SELF_RESOLUTION",
+      "handoff_target": "NONE"
+    },
+    "promotion": {
+      "canonical_fixture_included": false,
+      "db_handoff_profile_included": false,
+      "blockers": [
+        "BACKEND_WORKFLOW_CONTRACT_NOT_MAPPED",
+        "POSTGRESQL_NOT_VERIFIED"
+      ]
+    },
+    "data_classification": "synthetic",
+    "generated_at": "2026-07-29T00:00:00+09:00"
+  }
+]
