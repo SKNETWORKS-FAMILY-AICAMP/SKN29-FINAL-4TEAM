@@ -40,7 +40,8 @@ npm run test:e2e
 
 현재 Backend Fixture에는 비배정 문의 ID가 없으므로, 비배정 404까지 실행하려면
 Backend·QA가 제공한 합성 ID를 `E2E_UNASSIGNED_INQUIRY_ID`로 전달해야 합니다.
-값이 없으면 나머지 상담 흐름을 검증한 뒤 전체 E2E 결과를 실패로 처리합니다.
+이 ID가 실제 타 상담사 배정 문의라는 출처는 Backend·QA 인계로 확인합니다. 값이
+없으면 정상 Fixture를 소비하지 않도록 상담 흐름 시작 전에 전체 E2E를 중단합니다.
 
 ## 실패 결과물
 

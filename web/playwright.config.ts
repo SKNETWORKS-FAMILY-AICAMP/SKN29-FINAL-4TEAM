@@ -54,6 +54,7 @@ export default defineConfig({
           ...process.env,
           VITE_API_BASE_URL: "/api/v1",
           VITE_BACKEND_PROXY_TARGET: backendBaseUrl,
+          VITE_ENABLE_DESIGN_MOCK_FALLBACK: "false",
           VITE_MOCK_AUTHENTICATED: "false",
           VITE_USE_MOCK_API: "false",
         },

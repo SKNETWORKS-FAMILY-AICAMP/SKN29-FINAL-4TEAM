@@ -6,6 +6,7 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { appEnv } from "../../app/config/env";
 import { createInquiryDetailPath } from "../../app/router/routePaths";
 import Pagination from "../../common/components/data-display/Pagination";
 import EmptyState from "../../common/components/feedback/EmptyState";
@@ -214,6 +215,7 @@ export default function ConsultantInquiryListPage() {
         ),
     );
   const useDesignMockFallback =
+    appEnv.enableDesignMockFallback &&
     import.meta.env.DEV &&
     consultantWorkspaceDataRepository.dataSource === "REMOTE" &&
     (remoteOverviewHasEmptyBucket ||
@@ -793,6 +795,8 @@ export default function ConsultantInquiryListPage() {
                                 : ""
                             }`}
                             type="button"
+                            data-testid={`consultant-inquiry-${inquiry.inquiryId}`}
+                            data-e2e-sensitive="true"
                             aria-pressed={
                               selectedInquiryId === inquiry.inquiryId
                             }

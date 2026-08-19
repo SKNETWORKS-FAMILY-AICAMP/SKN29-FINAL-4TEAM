@@ -27,6 +27,46 @@ function isDetailResponse(response: Response, inquiryId: string): boolean {
   );
 }
 
+function isNewInquiryListResponse(
+  response: Response,
+  activeFixture: WebConsultationE2EFixture,
+): boolean {
+  const url = new URL(response.url());
+  const statuses = url.searchParams.getAll("status");
+  return (
+    response.request().method() === "GET" &&
+    url.pathname.endsWith("/api/v1/inquiries") &&
+    url.searchParams.get("q") === activeFixture.inquiryCode &&
+    statuses.length === 2 &&
+    statuses.includes("CONSULTATION_REQUIRED") &&
+    statuses.includes("REOPENED")
+  );
+}
+
+async function expectFixtureInNewInquiryList(
+  response: Response,
+  activeFixture: WebConsultationE2EFixture,
+): Promise<void> {
+  expect(response.status()).toBe(200);
+  const payload: unknown = await response.json();
+  if (
+    !isRecord(payload) ||
+    !isRecord(payload.data) ||
+    !Array.isArray(payload.data.items)
+  ) {
+    throw new Error("상담사 신규 문의 목록 응답이 공통 API 구조와 다릅니다.");
+  }
+  const fixtureItem = payload.data.items.find(
+    (item: unknown) =>
+      isRecord(item) && item.inquiry_id === activeFixture.inquiryId,
+  );
+  if (!isRecord(fixtureItem)) {
+    throw new Error("Backend Fixture가 상담사 신규 문의 목록에 없습니다.");
+  }
+  expect(fixtureItem.inquiry_code).toBe(activeFixture.inquiryCode);
+  expect(fixtureItem.status).toBe(activeFixture.status);
+}
+
 async function expectInitialDetailContract(
   response: Response,
   activeFixture: WebConsultationE2EFixture,
@@ -64,17 +104,17 @@ async function loginToFixture(
   page: Page,
   activeFixture: WebConsultationE2EFixture,
 ): Promise<Response> {
-  const detailPath = `/consultant/inquiries/${encodeURIComponent(activeFixture.inquiryId)}`;
-  await page.goto(detailPath);
+  const listPath = `/consultant/inquiries?bucket=NEW&q=${encodeURIComponent(activeFixture.inquiryCode)}`;
+  await page.goto(listPath);
   await expect(page).toHaveURL(/\/login$/);
   await page.getByLabel("역할").selectOption("CONSULTANT");
-  const detailResponse = page.waitForResponse((response) =>
-    isDetailResponse(response, activeFixture.inquiryId),
+  const listResponse = page.waitForResponse((response) =>
+    isNewInquiryListResponse(response, activeFixture),
   );
   await page
     .getByRole("button", { name: "API 데모 계정으로 로그인" })
     .click();
-  return detailResponse;
+  return listResponse;
 }
 
 async function authenticatedBrowserRequest(
@@ -168,6 +208,87 @@ async function authenticatedBrowserRequest(
   }, input);
 }
 
+async function authenticatedInquiryListIds(page: Page): Promise<{
+  status: number;
+  inquiryIds: string[];
+}> {
+  return page.evaluate(async () => {
+    const serialized = window.localStorage.getItem(
+      "waterbridge.auth.session.v1",
+    );
+    if (!serialized) throw new Error("상담사 로그인 세션이 없습니다.");
+    const session: unknown = JSON.parse(serialized);
+    if (
+      typeof session !== "object" ||
+      session === null ||
+      !("accessToken" in session) ||
+      typeof session.accessToken !== "string"
+    ) {
+      throw new Error("상담사 로그인 세션 형식이 올바르지 않습니다.");
+    }
+
+    const inquiryIds: string[] = [];
+    const size = 100;
+    let page = 1;
+    let total: number;
+    let lastStatus: number;
+
+    do {
+      const params = new URLSearchParams({
+        sort: "UPDATED_DESC",
+        page: String(page),
+        size: String(size),
+      });
+      const response = await fetch(`/api/v1/inquiries?${params.toString()}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
+          "X-Correlation-ID": crypto.randomUUID(),
+        },
+      });
+      lastStatus = response.status;
+      const payload: unknown = await response.json();
+      const data =
+        typeof payload === "object" &&
+        payload !== null &&
+        "data" in payload &&
+        typeof payload.data === "object" &&
+        payload.data !== null
+          ? payload.data
+          : null;
+      const items =
+        data && "items" in data && Array.isArray(data.items) ? data.items : [];
+      inquiryIds.push(
+        ...items.flatMap((item) =>
+          typeof item === "object" &&
+          item !== null &&
+          "inquiry_id" in item &&
+          typeof item.inquiry_id === "string"
+            ? [item.inquiry_id]
+            : [],
+        ),
+      );
+      const pageInfo =
+        data &&
+        "page_info" in data &&
+        typeof data.page_info === "object" &&
+        data.page_info !== null
+          ? data.page_info
+          : null;
+      total =
+        pageInfo &&
+        "total" in pageInfo &&
+        typeof pageInfo.total === "number"
+          ? pageInfo.total
+          : inquiryIds.length;
+      if (!response.ok || items.length === 0) break;
+      page += 1;
+    } while (inquiryIds.length < total && page <= 100);
+
+    return { status: lastStatus, inquiryIds };
+  });
+}
+
 test.describe.configure({ mode: "serial" });
 
 test.beforeAll(() => {
@@ -190,15 +311,65 @@ test.afterEach(async ({ page }, testInfo) => {
 test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", async ({
   page,
 }) => {
+  const unassignedInquiryId = process.env.E2E_UNASSIGNED_INQUIRY_ID?.trim();
+  if (!unassignedInquiryId) {
+    throw new Error(
+      "BACKEND_FIXTURE_BLOCKED: 비배정 404 검증용 합성 inquiry_id가 필요합니다.",
+    );
+  }
+  if (
+    unassignedInquiryId === fixture.inquiryId ||
+    unassignedInquiryId === missingInquiryId
+  ) {
+    throw new Error(
+      "BACKEND_FIXTURE_BLOCKED: 비배정 문의 ID가 양성 또는 미존재 테스트 ID와 같습니다.",
+    );
+  }
   const detailPath = `/consultant/inquiries/${encodeURIComponent(fixture.inquiryId)}`;
   const consultationNote = `E2E 상담 기록 ${fixture.runId}`;
   const customerGuidance = `E2E 고객 안내 ${fixture.runId}`;
   const confirmedSummary = `E2E 확정 요약 ${fixture.runId}`;
-  const initialDetailResponse = await loginToFixture(page, fixture);
-  await expectInitialDetailContract(initialDetailResponse, fixture);
+  const newInquiryListResponse = await loginToFixture(page, fixture);
+  await expectFixtureInNewInquiryList(await newInquiryListResponse, fixture);
+  const fixtureCard = page.getByTestId(
+    `consultant-inquiry-${fixture.inquiryId}`,
+  );
+  await expect(fixtureCard).toBeVisible();
+  const initialDetailResponse = page.waitForResponse((response) =>
+    isDetailResponse(response, fixture.inquiryId),
+  );
+  await fixtureCard.click();
+  await expect(page).toHaveURL(detailPath);
+  await expectInitialDetailContract(await initialDetailResponse, fixture);
   await expect(
     page.locator('[data-action-code="START_CONSULTATION"]'),
   ).toBeVisible();
+
+  const visibleInquiryList = await authenticatedInquiryListIds(page);
+  expect(visibleInquiryList.status).toBe(200);
+  expect(visibleInquiryList.inquiryIds).toContain(fixture.inquiryId);
+  expect(visibleInquiryList.inquiryIds).not.toContain(unassignedInquiryId);
+
+  const concealedDetail = await authenticatedBrowserRequest(page, {
+    method: "GET",
+    path: `/api/v1/inquiries/${encodeURIComponent(unassignedInquiryId)}`,
+  });
+  expect(concealedDetail).toEqual({
+    status: 404,
+    code: "RESOURCE_NOT_FOUND",
+    stateVersion: null,
+  });
+  const concealedStart = await authenticatedBrowserRequest(page, {
+    method: "POST",
+    path: `/api/v1/inquiries/${encodeURIComponent(unassignedInquiryId)}/start-consultation`,
+    idempotencyKey: `e2e-unassigned-start-${fixture.runId}`,
+    body: { state_version: Number.MAX_SAFE_INTEGER },
+  });
+  expect(concealedStart).toEqual({
+    status: 404,
+    code: "RESOURCE_NOT_FOUND",
+    stateVersion: null,
+  });
 
   const missingDetail = await authenticatedBrowserRequest(page, {
     method: "GET",
@@ -213,7 +384,7 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     method: "POST",
     path: `/api/v1/inquiries/${missingInquiryId}/start-consultation`,
     idempotencyKey: `e2e-missing-${fixture.runId}`,
-    body: { state_version: fixture.stateVersion },
+    body: { state_version: Number.MAX_SAFE_INTEGER },
   });
   expect(missingStart).toEqual({
     status: 404,
@@ -378,16 +549,29 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
   await expect(consultationSection.getByText(customerGuidance)).toBeVisible();
   await expect(consultationSection.getByText(confirmedSummary)).toBeVisible();
 
-  const unassignedInquiryId = process.env.E2E_UNASSIGNED_INQUIRY_ID?.trim();
-  if (!unassignedInquiryId) {
-    throw new Error(
-      "BACKEND_FIXTURE_BLOCKED: 비배정 404 검증용 합성 inquiry_id가 필요합니다.",
-    );
-  }
-  const concealed = await authenticatedBrowserRequest(page, {
-    method: "GET",
-    path: `/api/v1/inquiries/${encodeURIComponent(unassignedInquiryId)}`,
-  });
-  expect(concealed.status).toBe(404);
-  expect(concealed.code).toBe("RESOURCE_NOT_FOUND");
+  const recoveredPage = await page.context().newPage();
+  await installArtifactPrivacyMask(recoveredPage);
+  const newTabDetailResponse = recoveredPage.waitForResponse((response) =>
+    isDetailResponse(response, fixture.inquiryId),
+  );
+  await recoveredPage.goto(detailPath);
+  expect((await newTabDetailResponse).status()).toBe(200);
+  await expect(
+    recoveredPage.getByTestId("consultation-current-status"),
+  ).toHaveAttribute("data-workflow-status", "COMPLETION_PENDING");
+  const recoveredConsultationSection = recoveredPage
+    .locator("section")
+    .filter({
+      has: recoveredPage.getByRole("heading", { name: "상담·방문 정보" }),
+    });
+  await expect(
+    recoveredConsultationSection.getByText(consultationNote),
+  ).toBeVisible();
+  await expect(
+    recoveredConsultationSection.getByText(customerGuidance),
+  ).toBeVisible();
+  await expect(
+    recoveredConsultationSection.getByText(confirmedSummary),
+  ).toBeVisible();
+  await recoveredPage.close();
 });
