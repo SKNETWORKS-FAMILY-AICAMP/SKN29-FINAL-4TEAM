@@ -618,7 +618,7 @@ def test_provider_request_redacts_pii_and_excludes_raw_occurrence_condition():
         llm_client=client,
         raw_symptom=raw_symptom,
         selected_symptoms=[f"출수량 저하 {phone_number}"],
-        model_code="customer@example.com",
+        model_code="WPUJAC104DWH",
     )
 
     provider_request = client.requests[0]
@@ -627,7 +627,23 @@ def test_provider_request_redacts_pii_and_excludes_raw_occurrence_condition():
     assert "서울시 고객동" not in serialized
     assert raw_symptom not in serialized
     assert provider_request.symptom_summary.startswith("기타 증상")
-    assert provider_request.model_code == "UNKNOWN_MODEL"
+    assert provider_request.model_code == "WPUJAC104DWH"
+
+
+def test_unregistered_pii_shaped_model_code_stops_before_provider():
+    client = SequenceLLMClient(llm_response())
+
+    pipeline_result = run_pipeline(
+        search_service=EvidenceSearchService(),
+        llm_client=client,
+        model_code="customer@example.com",
+    )
+
+    response = pipeline_result.to_analysis_result()
+    assert client.calls == 0
+    assert client.requests == []
+    assert response.status.value == "FALLBACK"
+    assert response.evidence_references == []
 
 
 def test_provider_request_excludes_free_form_previous_answers():

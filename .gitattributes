@@ -4,3 +4,6 @@ ai/configs/canonical_evidence_identity.json text eol=lf
 ai/configs/index_manifest.json text eol=lf
 ai/configs/canonical_evidence_identity_3model.json text eol=lf
 ai/configs/three_model_index_target.json text eol=lf
+ai/configs/three_model_backend_evidence_handoff.json text eol=lf
+ai/configs/index_manifest_3model.json text eol=lf
+ai/configs/schemas/*.schema.json text eol=lf

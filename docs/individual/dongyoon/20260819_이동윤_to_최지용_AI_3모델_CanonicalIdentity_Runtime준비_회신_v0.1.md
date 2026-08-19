@@ -71,15 +71,13 @@ Backend 53건 Importer·Crosswalk 실행 명령이 존재하지 않으므로 임
 
 - Canonical Identity 생성물 stale 검사: PASS, 53건
 - 3모델 Handoff Preflight: READY, Child 53·Evidence Group 43·Case 50
-- AI 표적 테스트: `59 passed`
+- AI 표적 테스트: `61 passed`
 - Backend 판매코드 매핑 표적 테스트: `3 passed`
-- AI 전체 회귀: `332 passed`, `2 failed`, `5 warnings`, `7 subtests passed`
-  - `F02` No Evidence Fixture는 최신 Harness가 검색을 1회 재시도한 실제 결과와
-    기존 기대값 0회가 불일치한다.
-  - 기존 개인정보 마스킹 테스트는 미등록 판매코드를 넣고 Provider 호출을
-    기대하지만, 최신 제품 Runtime Guard가 Provider 전에 Fail-closed한다.
-  - 두 항목은 이번 3모델 Identity·검색 필터 변경의 표적 테스트에는 영향이 없지만,
-    Retry 정책과 테스트 기대값을 담당자와 합의하기 전 전체 회귀 PASS로 표시하지 않는다.
+- AI 전체 회귀: `338 passed`, `1 failed`, `5 warnings`, `7 subtests passed`
+  - 기존 개인정보 마스킹 테스트는 지원 모델의 Provider 비노출 검증과 미등록 모델의
+    Provider 호출 0회 검증으로 분리해 PASS로 정리했다.
+  - 남은 `F02`는 최신 Harness가 No Evidence 검색을 1회 재시도한 실제 결과와 기존
+    기대값 0회가 불일치한다. PM Retry 정책 결정 전 임의 변경하지 않는다.
 - AI Readonly Role 주입: PASS, Secret 출력 없음
 - 공식 View 실측: `WPUJAC104DWH=7`, 신규 두 모델 0건
 - 공식 View 기반 3모델 50 Case: NOT_RUN
@@ -103,7 +101,7 @@ cross_model_candidate_evaluation=PASS_0_HITS
 cross_model_official_readonly_evaluation=NOT_RUN
 backend_qa_pass=PENDING_CONFIRMATION
 ai_targeted_regression=PASS
-ai_full_regression=HOLD_2_PREEXISTING_CONTRACT_EXPECTATION_FAILURES
+ai_full_regression=HOLD_F02_RETRY_POLICY_DECISION
 joint_e2e=HOLD
 joint_e2e_blocker=OFFICIAL_53_IMPORT_AND_CROSSWALK_AND_READONLY_50_CASE_PASS_AND_FULL_REGRESSION_RECONCILIATION
 ```

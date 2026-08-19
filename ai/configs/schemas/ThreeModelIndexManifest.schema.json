@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ThreeModelIndexManifest.schema.json",
+  "title": "ThreeModelIndexManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "model_name",
+    "model_revision",
+    "dimension",
+    "index_type",
+    "index_version",
+    "chunk_count",
+    "chunk_set_sha256",
+    "document_hashes",
+    "indexed_at"
+  ],
+  "properties": {
+    "model_name": {"const": "BAAI/bge-m3"},
+    "model_revision": {"const": "5617a9f61b028005a4858fdac845db406aefb181"},
+    "dimension": {"const": 1024},
+    "index_type": {"const": "exact_search"},
+    "index_version": {"const": "2.0.0"},
+    "chunk_count": {"const": 53},
+    "chunk_set_sha256": {"$ref": "#/$defs/sha256"},
+    "document_hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-IAC425-REV02",
+        "MAN-SKMAGIC-WPU-IAC606-REV00"
+      ],
+      "properties": {
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00": {"$ref": "#/$defs/sha256"},
+        "MAN-SKMAGIC-WPU-IAC425-REV02": {"$ref": "#/$defs/sha256"},
+        "MAN-SKMAGIC-WPU-IAC606-REV00": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "indexed_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9A-F]{64}$"
+    }
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "CanonicalEvidenceIdentity53.schema.json",
+  "title": "CanonicalEvidenceIdentity53",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "runtime_activation",
+    "source_dataset",
+    "evidence_registry",
+    "required_index_manifest",
+    "index_version",
+    "chunk_count",
+    "model_chunk_counts",
+    "chunk_set_sha256",
+    "identity_policy",
+    "chunks"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "status": {"const": "AI_SOURCE_IDENTITY_FIXED_BACKEND_MAPPING_PENDING"},
+    "runtime_activation": {"const": "HOLD_PENDING_OFFICIAL_INDEX_AND_BACKEND_CROSSWALK"},
+    "source_dataset": {"const": "data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl"},
+    "evidence_registry": {"const": "data/processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl"},
+    "required_index_manifest": {"const": "ai/configs/index_manifest_3model.json"},
+    "index_version": {"const": "2.0.0"},
+    "chunk_count": {"const": 53},
+    "model_chunk_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["WPUJAC104DWH", "WPUIAC425SNW", "WPUIAC606SNW"],
+      "properties": {
+        "WPUJAC104DWH": {"const": 15},
+        "WPUIAC425SNW": {"const": 19},
+        "WPUIAC606SNW": {"const": 19}
+      }
+    },
+    "chunk_set_sha256": {"$ref": "#/$defs/sha256"},
+    "identity_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ai_canonical_key",
+        "backend_target_key",
+        "backend_mapping_owner",
+        "ai_does_not_generate_backend_id",
+        "required_match_fields"
+      ],
+      "properties": {
+        "ai_canonical_key": {"const": "chunk_id"},
+        "backend_target_key": {"const": "knowledge_document_chunk.public_id"},
+        "backend_mapping_owner": {"const": "Backend·Database"},
+        "ai_does_not_generate_backend_id": {"const": true},
+        "required_match_fields": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "chunk_id",
+              "document_id",
+              "page_refs",
+              "model_code",
+              "product_generation",
+              "verification_status",
+              "source_file_sha256",
+              "chunk_text_sha256"
+            ]
+          }
+        }
+      }
+    },
+    "chunks": {
+      "type": "array",
+      "minItems": 53,
+      "maxItems": 53,
+      "items": {"$ref": "#/$defs/chunk"}
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9A-F]{64}$"
+    },
+    "chunk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chunk_id",
+        "document_id",
+        "page_refs",
+        "model_code",
+        "product_generation",
+        "verification_status",
+        "source_file_sha256",
+        "chunk_text_sha256"
+      ],
+      "properties": {
+        "chunk_id": {
+          "type": "string",
+          "pattern": "^CHILD-[A-Z0-9]+(?:-[A-Z0-9]+)*$"
+        },
+        "document_id": {
+          "type": "string",
+          "pattern": "^MAN-[A-Z0-9]+(?:-[A-Z0-9]+)*$"
+        },
+        "page_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "integer", "minimum": 1}
+        },
+        "model_code": {
+          "enum": ["WPUJAC104DWH", "WPUIAC425SNW", "WPUIAC606SNW"]
+        },
+        "product_generation": {
+          "enum": ["D", "IAC425", "IAC606"]
+        },
+        "verification_status": {"const": "TEXT_AND_VISUAL_VERIFIED"},
+        "source_file_sha256": {"$ref": "#/$defs/sha256"},
+        "chunk_text_sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"model_code": {"const": "WPUJAC104DWH"}}},
+          "then": {"properties": {"product_generation": {"const": "D"}}}
+        },
+        {
+          "if": {"properties": {"model_code": {"const": "WPUIAC425SNW"}}},
+          "then": {"properties": {"product_generation": {"const": "IAC425"}}}
+        },
+        {
+          "if": {"properties": {"model_code": {"const": "WPUIAC606SNW"}}},
+          "then": {"properties": {"product_generation": {"const": "IAC606"}}}
+        }
+      ]
+    }
+  }
+}

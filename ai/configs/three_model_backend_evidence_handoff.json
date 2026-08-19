@@ -1,0 +1,122 @@
+{
+  "schema_version": "1.0.0",
+  "status": "AI_INPUT_FIXED_BACKEND_53_IMPLEMENTATION_PENDING",
+  "runtime_activation": "HOLD_PENDING_OFFICIAL_DB_AND_JOINT_E2E",
+  "canonical_identity": {
+    "path": "ai/configs/canonical_evidence_identity_3model.json",
+    "file_bytes_sha256": "AB98AA6CFE839366CB13ECC3839D72EE0AE99419AF85F702F0C2F1D05BDCA169",
+    "schema_path": "ai/configs/schemas/CanonicalEvidenceIdentity53.schema.json",
+    "schema_sha256": "6B3D79508F7D7074CF83A68D5862B111888F55BFC0132C6904184DC9D386C366",
+    "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304",
+    "chunk_count": 53,
+    "model_chunk_counts": {
+      "WPUJAC104DWH": 15,
+      "WPUIAC425SNW": 19,
+      "WPUIAC606SNW": 19
+    },
+    "line_endings": "LF"
+  },
+  "source_children": {
+    "path": "data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
+    "file_bytes_sha256": "05C7A387ED76EFEFE95E172FA37E4CFC8A0BF8842491512CB5AF4808E3BB20BB",
+    "schema_path": "data/schemas/processed/ragChildChunk.schema.json",
+    "schema_sha256": "EB22280F515E3B3390F56B916E643D1BF505DA17190AE80D9CE45AD915B40C00",
+    "index_only_record_type": "child",
+    "index_only_retrieval_role": "SEARCH_CANDIDATE",
+    "required_verification_status": "TEXT_AND_VISUAL_VERIFIED",
+    "required_allowed_use": "RAG_HANDOFF_ONLY"
+  },
+  "index_manifest": {
+    "path": "ai/configs/index_manifest_3model.json",
+    "schema_path": "ai/configs/schemas/ThreeModelIndexManifest.schema.json",
+    "schema_sha256": "121BAA9F78AF8DA5B5F7EBECBA61388E37B8BE21D23507858A0F71620B8EBE56",
+    "target_path": "ai/configs/three_model_index_target.json",
+    "target_file_bytes_sha256": "04A94D7C72947DBA03DC27C5013DB6E0DA38EB0198FA32A61FEDD7F23804AC48",
+    "generation_command": ".\\ai\\.venv\\Scripts\\python.exe -m ai.scripts.generate_three_model_index_manifest --indexed-at <UTC_ISO8601> --confirmed-total 53 --confirmed-jac104 15 --confirmed-iac425 19 --confirmed-iac606 19",
+    "generation_precondition": "Backend atomic import validated 53 embeddings and model counts 15/19/19",
+    "expected_chunk_count": 53,
+    "expected_model_chunk_counts": {
+      "WPUJAC104DWH": 15,
+      "WPUIAC425SNW": 19,
+      "WPUIAC606SNW": 19
+    },
+    "expected_chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304",
+    "model_name": "BAAI/bge-m3",
+    "model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "index_type": "exact_search",
+    "index_version": "2.0.0"
+  },
+  "retrieval_contract": {
+    "backend_model_code_source": "ProductModel.model_code",
+    "ai_request_field": "model_code",
+    "model_code_transformation": "NONE",
+    "required_pre_score_filter": "exact_sales_code == model_code",
+    "cross_model_fallback": false,
+    "top_k": 5,
+    "require_official_verification": true,
+    "allowed_model_generation_pairs": {
+      "WPUJAC104DWH": "D",
+      "WPUIAC425SNW": "IAC425",
+      "WPUIAC606SNW": "IAC606"
+    }
+  },
+  "evaluation_contract": {
+    "path": "data/config/rag/three_model_evaluation_cases.json",
+    "file_bytes_sha256": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1",
+    "schema_path": "data/schemas/config/threeModelRagEvaluation.schema.json",
+    "schema_sha256": "991FA7F916CA57D471D12266D43E60E3C04A99DE888EC024E25900C0D996A2D8",
+    "total": 50,
+    "positive": 43,
+    "negative": 7,
+    "positive_acceptance": "at least one verified Variant of every expected Evidence Group in Top-5",
+    "negative_acceptance": "NO_EVIDENCE before pgvector search",
+    "cross_model_hit_count": 0,
+    "direct_parent_hit_count": 0,
+    "unverified_evidence_hit_count": 0
+  },
+  "crosswalk_validation": {
+    "canonical_id_pattern": "^CHILD-[A-Z0-9]+(?:-[A-Z0-9]+)*$",
+    "canonical_id_storage": "knowledge_ai_chunk_crosswalk.canonical_chunk_id",
+    "backend_public_id_policy": "Backend UUID is generated independently and is not replaced by chunk_id",
+    "backend_chunk_resolution": [
+      "document_id",
+      "page_refs",
+      "chunk_text_sha256",
+      "is_active"
+    ],
+    "required_equalities": [
+      "identity file SHA-256 == stored identity_manifest_sha256",
+      "identity schema_version == stored manifest_schema_version",
+      "identity chunk_id set == imported Child chunk ID set",
+      "identity chunk_set_sha256 == index chunk_set_sha256",
+      "identity index_version == index index_version",
+      "identity source_file_sha256 == SourceDocument.sha256_hash",
+      "identity chunk_text_sha256 == DocumentChunk.chunk_text_sha256",
+      "identity model_code == ProductModel.model_code",
+      "identity product_generation == ProductModel.generation_code",
+      "index document_hashes[document_id] == SourceDocument.sha256_hash",
+      "index model_name/revision/dimension == active ChunkEmbedding identity",
+      "ChunkEmbedding.source_text_sha256 == DocumentChunk.chunk_text_sha256"
+    ],
+    "required_counts": {
+      "canonical_ids": 53,
+      "active_chunks": 53,
+      "active_embeddings": 53,
+      "active_crosswalks": 53,
+      "readonly_view_rows": 53,
+      "readonly_view_model_counts": {
+        "WPUJAC104DWH": 15,
+        "WPUIAC425SNW": 19,
+        "WPUIAC606SNW": 19
+      }
+    }
+  },
+  "backend_extension_notes": [
+    "Replace every approved-count constant fixed at 7 with contract-driven 53 validation",
+    "Extend canonical ID validation from legacy RAG-* to the fixed CHILD-* identity",
+    "Import three official documents and their reviewed pages before Crosswalk resolution",
+    "Do not expose Parent rows directly through the readonly retrieval View",
+    "Do not activate the three-model Runtime until readonly 50-case verification passes"
+  ]
+}

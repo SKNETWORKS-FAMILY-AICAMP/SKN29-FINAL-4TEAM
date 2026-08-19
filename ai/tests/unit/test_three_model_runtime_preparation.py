@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from collections import Counter
+from hashlib import sha256
 import json
 from pathlib import Path
 
+from jsonschema import Draft202012Validator, FormatChecker
 import pytest
 import yaml
 
@@ -15,12 +17,19 @@ from ai.app.retrieval.filters.product_filter import ProductFilter
 from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk
 from ai.app.schemas import TraceContext
 from ai.scripts.export_three_model_canonical_identity import (
+    BACKEND_HANDOFF_PATH,
     EXPECTED_MODEL_COUNTS,
     IDENTITY_PATH,
+    IDENTITY_SCHEMA_PATH,
+    INDEX_MANIFEST_SCHEMA_PATH,
     INDEX_TARGET_PATH,
     build_identity,
     build_index_target,
     load_source_rows,
+)
+from ai.scripts.generate_three_model_index_manifest import (
+    build_manifest,
+    validate_confirmed_counts,
 )
 from ai.scripts import verify_three_model_readonly_runtime as readonly_verifier
 from ai.scripts.verify_three_model_readonly_runtime import (
@@ -50,6 +59,50 @@ def test_three_model_identity_artifacts_match_canonical_handoff() -> None:
     assert index_target["ai_access"] == "SELECT_ONLY"
     assert index_target["required_pre_score_filter"] == "exact_sales_code"
     assert index_target["cross_model_fallback"] is False
+
+
+def test_three_model_identity_and_handoff_hashes_match_schemas() -> None:
+    identity = json.loads(IDENTITY_PATH.read_text(encoding="utf-8"))
+    identity_schema = json.loads(IDENTITY_SCHEMA_PATH.read_text(encoding="utf-8"))
+    Draft202012Validator(
+        identity_schema,
+        format_checker=FormatChecker(),
+    ).validate(identity)
+
+    handoff = json.loads(BACKEND_HANDOFF_PATH.read_text(encoding="utf-8"))
+    identity_contract = handoff["canonical_identity"]
+    assert identity_contract["file_bytes_sha256"] == sha256(
+        IDENTITY_PATH.read_bytes()
+    ).hexdigest().upper()
+    assert identity_contract["schema_sha256"] == sha256(
+        IDENTITY_SCHEMA_PATH.read_bytes()
+    ).hexdigest().upper()
+    assert handoff["evaluation_contract"]["total"] == 50
+    assert handoff["evaluation_contract"]["positive"] == 43
+    assert handoff["evaluation_contract"]["negative"] == 7
+    assert handoff["crosswalk_validation"]["required_counts"] == {
+        "canonical_ids": 53,
+        "active_chunks": 53,
+        "active_embeddings": 53,
+        "active_crosswalks": 53,
+        "readonly_view_rows": 53,
+        "readonly_view_model_counts": EXPECTED_MODEL_COUNTS,
+    }
+
+
+def test_three_model_index_manifest_contract_and_confirmed_counts() -> None:
+    manifest = build_manifest(indexed_at="2026-08-19T12:34:56Z")
+    schema = json.loads(INDEX_MANIFEST_SCHEMA_PATH.read_text(encoding="utf-8"))
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(manifest)
+    assert manifest["chunk_count"] == 53
+    assert manifest["chunk_set_sha256"] == json.loads(
+        IDENTITY_PATH.read_text(encoding="utf-8")
+    )["chunk_set_sha256"]
+    assert manifest["indexed_at"] == "2026-08-19T12:34:56Z"
+
+    validate_confirmed_counts(total=53, jac104=15, iac425=19, iac606=19)
+    with pytest.raises(ValueError, match="15/19/19"):
+        validate_confirmed_counts(total=53, jac104=16, iac425=18, iac606=19)
 
 
 def test_three_model_identity_rejects_text_hash_drift(tmp_path: Path) -> None:
