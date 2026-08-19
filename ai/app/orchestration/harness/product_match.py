@@ -22,6 +22,7 @@ class ProductContext(BaseModel):
 
     model_code: str = Field(..., min_length=1, max_length=100)
     product_family: ProductFamily
+    runtime_approved: bool = True
     supported_functions: set[str] = Field(default_factory=set)
 
 

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+
+import pytest
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -12,7 +14,11 @@ from ai.app.orchestration.harness import (
     ProductFamily,
 )
 from ai.app.orchestration.harness.evidence_capture import GuardedEvidenceSearchService
-from ai.app.orchestration.harness.product_registry import SUPPORTED_EXACT_MODEL_CODES
+from ai.app.orchestration.harness.product_registry import (
+    KNOWN_EXACT_MODEL_CODES,
+    RUNTIME_APPROVED_EXACT_MODEL_CODES,
+    resolve_product_context,
+)
 from ai.app.orchestration.pipeline_router import PipelineRouter
 from ai.app.retrieval.models.retrieval_query import RetrievalQuery
 from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk
@@ -137,34 +143,45 @@ def test_guarded_search_forwards_only_exact_runtime_eligible_evidence():
     assert guarded.rejected_chunk_ids == ["wrong", "disabled"]
 
 
-def test_guarded_search_rewrites_iac_product_generation_before_delegate_search():
-    product = ProductContext(
-        model_code="WPUIAC425SNW",
-        product_family=ProductFamily.ICE_WATER_PURIFIER,
-    )
-
-    class RecordingSearchService:
+@pytest.mark.parametrize("model_code", ["WPUIAC425SNW", "WPUIAC606SNW"])
+def test_unapproved_iac_products_never_reach_delegate_search_or_llm(model_code):
+    class FailIfSearched:
         def __init__(self):
-            self.query = None
+            self.calls = 0
 
-        def search(self, query, *args, **kwargs):
-            self.query = query
-            return []
+        def search(self, *args, **kwargs):
+            self.calls += 1
+            raise AssertionError("runtime-unapproved product must not reach vector search")
 
-    delegate = RecordingSearchService()
-    guarded = GuardedEvidenceSearchService(delegate, product)
-    guarded.search(
-        RetrievalQuery(
-            query_text="얼음이 나오지 않아요.",
-            model_code="WPUIAC425SNW",
-            product_generation="D",
-        )
+    delegate = FailIfSearched()
+    result = PipelineRouter(
+        search_service=delegate,
+        llm_client=FailIfCalledLLM(),
+    ).run_pipeline(
+        inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b403",
+        correlation_id="018f2f9b-7c30-7981-b541-1a987c88e403",
+        ai_request_id=f"ai-req-runtime-block-{model_code}",
+        state_version=1,
+        raw_symptom="얼음 또는 출수 기능을 확인하고 싶습니다.",
+        model_code=model_code,
     )
 
-    assert delegate.query.model_code == "WPUIAC425SNW"
-    assert delegate.query.product_generation == "IAC425"
+    reliability = result.reliability_runtime
+    assert delegate.calls == 0
+    assert reliability is not None
+    assert reliability.retrieval_retry_performed is False
+    assert reliability.harness_runtime.harness.decision == HarnessDecision.ESCALATE
+    assert [
+        issue.code.value
+        for issue in reliability.harness_runtime.harness.verification.issues
+    ] == ["RUNTIME_PRODUCT_NOT_APPROVED"]
+    assert reliability.harness_runtime.handoff is not None
+    assert reliability.harness_runtime.handoff.model_code == model_code
+    assert reliability.harness_runtime.handoff.product_family == "ICE_WATER_PURIFIER"
+    assert result.to_analysis_result().status.value == "FALLBACK"
 
-def test_runtime_registry_matches_current_three_product_data_contract():
+
+def test_runtime_registry_matches_data_contract_and_activation_status():
     repository_root = Path(__file__).resolve().parents[4]
     contract = json.loads(
         (repository_root / "data" / "config" / "rag" / "supported_products.json").read_text(
@@ -172,13 +189,19 @@ def test_runtime_registry_matches_current_three_product_data_contract():
         )
     )
     contract_codes = {item["exact_sales_code"] for item in contract["products"]}
-
-    assert set(SUPPORTED_EXACT_MODEL_CODES) == contract_codes
-    assert set(SUPPORTED_EXACT_MODEL_CODES) == {
-        "WPUJAC104DWH",
-        "WPUIAC425SNW",
-        "WPUIAC606SNW",
+    runtime_approved_codes = {
+        item["exact_sales_code"]
+        for item in contract["products"]
+        if item["runtime_status"] == "INDEXED_MVP"
     }
+
+    assert set(KNOWN_EXACT_MODEL_CODES) == contract_codes
+    assert RUNTIME_APPROVED_EXACT_MODEL_CODES == runtime_approved_codes == {
+        "WPUJAC104DWH"
+    }
+    assert resolve_product_context("WPUIAC425SNW").product_family == ProductFamily.ICE_WATER_PURIFIER
+    assert resolve_product_context("WPUIAC425SNW").runtime_approved is False
+    assert resolve_product_context("WPUJAC104DWH").runtime_approved is True
 
 def test_reliability_metadata_is_excluded_from_pipeline_serialization():
     result = _run_danger_pipeline()

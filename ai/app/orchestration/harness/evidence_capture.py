@@ -28,6 +28,10 @@ class GuardedEvidenceSearchService:
         self._rejected = []
 
     def search(self, *args: Any, **kwargs: Any) -> list[RetrievedChunk]:
+        # Known-but-unapproved products must not reach embedding/pgvector at all.
+        if not self.product.runtime_approved:
+            return []
+
         guarded_args = args
         if args:
             guarded_args = (self._with_product_context(args[0]), *args[1:])
@@ -43,7 +47,8 @@ class GuardedEvidenceSearchService:
             candidate = chunk.model_copy(deep=True)
             exact_model_match = normalize_model_code(candidate.model_code) == expected_model
             customer_safe = (
-                self.product.product_family != ProductFamily.UNKNOWN
+                self.product.runtime_approved
+                and self.product.product_family != ProductFamily.UNKNOWN
                 and candidate.allowed_use
                 and candidate.runtime_eligible
                 and candidate.verification_status in self.VERIFIED_STATUSES

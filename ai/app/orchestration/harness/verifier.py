@@ -56,6 +56,30 @@ class HarnessVerifier:
                 issues=issues,
             )
 
+        if not product.runtime_approved:
+            issues.append(
+                VerificationIssue(
+                    code=VerificationIssueCode.RUNTIME_PRODUCT_NOT_APPROVED,
+                    message=(
+                        "The exact product is known but is not approved for the current "
+                        "customer-facing AI runtime."
+                    ),
+                    retryable=False,
+                )
+            )
+            return VerificationResult(
+                passed=False,
+                decision=HarnessDecision.ESCALATE,
+                evidence_present=False,
+                product_match_valid=False,
+                product_family_valid=product.product_family.value != "UNKNOWN",
+                function_compatibility_valid=False,
+                safety_valid=self._safety_is_consistent(safety_assessment, guidance),
+                schema_valid=self._schema_is_valid(guidance, output_payload, output_schema),
+                rejected_evidence_chunk_ids=[chunk.chunk_id for chunk in evidence_chunks],
+                issues=issues,
+            )
+
         if evidence_required is None:
             evidence_required = not (
                 safety_assessment is not None
