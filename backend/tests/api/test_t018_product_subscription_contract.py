@@ -158,8 +158,13 @@ def test_t018_pm_decision_and_contract_runtime_gates_are_exact():
         "decision_id": "T018-D07",
         "decision_status": "FINAL_APPROVED",
         "customer_scope": "OWNER_ONLY",
-        "product_model_code": "WPUJAC104DWH",
+        "product_model_codes": [
+            "WPUJAC104DWH",
+            "WPUIAC425SNW",
+            "WPUIAC606SNW",
+        ],
         "product_model_active_required": True,
+        "product_model_supported_required": True,
         "subscription_status_scope": "ACTIVE_ONLY",
         "business_timezone": "Asia/Seoul",
         "last_care_on": {
@@ -258,7 +263,9 @@ def test_t018_list_query_is_active_only_and_correlation_header_is_optional():
     }
     assert operation["x-subscription-filter"] == "status_code=ACTIVE"
     assert operation["x-product-filter"] == (
-        "model_code=WPUJAC104DWH AND product_model.is_active=true"
+        "model_code IN (WPUJAC104DWH,WPUIAC425SNW,WPUIAC606SNW) "
+        "AND product_model.is_active=true "
+        "AND product_model.is_supported_mvp=true"
     )
     assert operation["x-sort"] == [
         "started_on DESC",
@@ -290,9 +297,11 @@ def test_t018_references_resolve_and_public_schemas_use_exact_allowlists():
         "manufacturer",
     }
     assert set(product["properties"]) == set(product["required"])
-    assert product["properties"]["model_code"]["const"] == (
-        "WPUJAC104DWH"
-    )
+    assert product["properties"]["model_code"]["enum"] == [
+        "WPUJAC104DWH",
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+    ]
 
     common_fields = {
         "subscription_id",

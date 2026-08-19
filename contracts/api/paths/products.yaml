@@ -3,8 +3,9 @@ x-t018-r1-policy:
   decision_id: T018-D07
   decision_status: FINAL_APPROVED
   customer_scope: OWNER_ONLY
-  product_model_code: WPUJAC104DWH
+  product_model_codes: [WPUJAC104DWH, WPUIAC425SNW, WPUIAC606SNW]
   product_model_active_required: true
+  product_model_supported_required: true
   subscription_status_scope: ACTIVE_ONLY
   business_timezone: Asia/Seoul
   last_care_on:
@@ -32,7 +33,7 @@ x-t018-r2-write-policy:
   status: CONFIRMED_IMPLEMENTED
   customer_scope: SYNTHETIC_OWNER_ONLY
   product_catalog_creation_allowed: false
-  supported_model_code: WPUJAC104DWH
+  supported_model_codes: [WPUJAC104DWH, WPUIAC425SNW, WPUIAC606SNW]
   create_fields: [model_code, started_on, management_type_code, last_care_on]
   update_fields: [started_on, management_type_code, last_care_on]
   active_duplicate_policy: REJECT_409
@@ -44,15 +45,15 @@ x-t018-r2-write-policy:
     operationId: listMySubscriptions
     summary: 고객 본인 ACTIVE 구독 목록 조회
     description: |
-      인증된 CUSTOMER가 본인에게 연결된 WPUJAC104DWH 활성 제품 모델의
-      ACTIVE 구독만 조회한다. 문의 가능 여부는 T-022 Guard가 검증하며
+      인증된 CUSTOMER가 본인에게 연결된 계약 허용 3모델 중 활성·지원된
+      제품 모델의 ACTIVE 구독만 조회한다. 문의 가능 여부는 T-022 Guard가 검증하며
       allowed_actions는 T-023 State Machine 후속 계약에서 제공한다.
       정렬은 started_on DESC, public_id ASC이며 상태 변경을 수행하지 않는다.
     x-contract-status: CONFIRMED
     x-runtime-status: IMPLEMENTED
     x-requirements: [FR-002, DR-003]
     x-owner-filter: customer.user=request.user AND customer.deleted_at IS NULL
-    x-product-filter: model_code=WPUJAC104DWH AND product_model.is_active=true
+    x-product-filter: model_code IN (WPUJAC104DWH,WPUIAC425SNW,WPUIAC606SNW) AND product_model.is_active=true AND product_model.is_supported_mvp=true
     x-subscription-filter: status_code=ACTIVE
     x-sort: [started_on DESC, public_id ASC]
     x-unknown-query-policy: REJECT_422
@@ -105,7 +106,7 @@ x-t018-r2-write-policy:
     operationId: createMySubscription
     summary: 합성 고객 본인 구독 제품 등록
     description: |
-      인증된 합성 CUSTOMER가 기존 Catalog의 WPUJAC104DWH를 선택해 ACTIVE
+      인증된 합성 CUSTOMER가 기존 Catalog의 계약 허용 3모델 중 활성·지원된 제품을 선택해 ACTIVE
       구독을 등록한다. Catalog Row, 계약번호와 Serial은 고객 입력으로 만들지
       않으며 서버가 합성 식별자를 생성한다. 동일 Key·동일 요청은 저장 결과를
       Replay하고 같은 Key의 다른 요청 또는 동일 활성 제품 중복은 409로 거부한다.
@@ -177,14 +178,14 @@ x-t018-r2-write-policy:
     operationId: getMySubscription
     summary: 고객 본인 ACTIVE 구독 상세 조회
     description: |
-      인증된 CUSTOMER 본인의 WPUJAC104DWH 활성 제품 모델·ACTIVE 구독만
+      인증된 CUSTOMER 본인의 계약 허용 3모델 중 활성·지원된 제품 모델·ACTIVE 구독만
       조회한다. 잘못된 UUID, 미존재, 타 고객, 삭제 고객, 비활성 구독과
       비지원 모델은 존재를 숨기고 동일한 404를 반환한다.
     x-contract-status: CONFIRMED
     x-runtime-status: IMPLEMENTED
     x-requirements: [FR-002, DR-003]
     x-owner-filter: customer.user=request.user AND customer.deleted_at IS NULL
-    x-product-filter: model_code=WPUJAC104DWH AND product_model.is_active=true
+    x-product-filter: model_code IN (WPUJAC104DWH,WPUIAC425SNW,WPUIAC606SNW) AND product_model.is_active=true AND product_model.is_supported_mvp=true
     x-subscription-filter: status_code=ACTIVE
     x-unknown-query-policy: REJECT_422
     security:
@@ -234,7 +235,7 @@ x-t018-r2-write-policy:
     operationId: updateMySubscription
     summary: 고객 본인 ACTIVE 구독 허용 필드 수정
     description: |
-      인증된 합성 CUSTOMER가 본인 ACTIVE WPUJAC104DWH 구독의 사용 시작일,
+      인증된 합성 CUSTOMER가 본인 ACTIVE·지원 3모델 구독의 사용 시작일,
       관리 유형과 최근 필터 교체 기준일만 수정한다. 타인·비활성·미지원 제품은
       동일 404로 숨기고, 기존 완료 관리일 뒤로 사용 시작일을 늦추지 않는다.
     x-contract-status: CONFIRMED

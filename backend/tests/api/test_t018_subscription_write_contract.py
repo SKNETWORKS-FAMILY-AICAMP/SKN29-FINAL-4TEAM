@@ -72,7 +72,11 @@ def test_write_request_and_response_schemas_use_closed_allowlists():
         "management_type_code",
         "last_care_on",
     }
-    assert create["properties"]["model_code"]["const"] == "WPUJAC104DWH"
+    assert create["properties"]["model_code"]["enum"] == [
+        "WPUJAC104DWH",
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+    ]
     assert update["additionalProperties"] is False
     assert set(update["properties"]) == {
         "started_on",

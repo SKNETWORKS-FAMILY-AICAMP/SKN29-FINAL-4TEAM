@@ -26,6 +26,11 @@ from apps.workflow.repositories.workflow_repository import WorkflowRepository
 
 pytestmark = pytest.mark.django_db
 SUPPORTED_CODE = "WPUJAC104DWH"
+SUPPORTED_CODES = (
+    "WPUJAC104DWH",
+    "WPUIAC425SNW",
+    "WPUIAC606SNW",
+)
 
 
 def create_customer(sequence: int, *, synthetic: bool = True) -> User:
@@ -54,13 +59,18 @@ def create_staff(sequence: int) -> User:
     )
 
 
-def create_product(*, active: bool = True) -> ProductModel:
+def create_product(
+    *,
+    model_code: str = SUPPORTED_CODE,
+    active: bool = True,
+    supported: bool = True,
+) -> ProductModel:
     return ProductModel.objects.create(
-        model_code=SUPPORTED_CODE,
+        model_code=model_code,
         model_name="T018 supported purifier",
         generation_code="D",
         manufacturer="SK magic",
-        is_supported_mvp=True,
+        is_supported_mvp=supported,
         is_active=active,
     )
 
@@ -172,6 +182,31 @@ def test_create_applies_the_approved_cycle_only_to_self_management(
     ).count() == schedule_count
 
 
+@pytest.mark.parametrize(
+    "model_code",
+    ["WPUIAC425SNW", "WPUIAC606SNW"],
+)
+def test_create_supports_activated_new_model_without_unapproved_care_schedule(
+    model_code,
+):
+    owner = create_customer(20 if model_code.endswith("425SNW") else 21)
+    create_product(model_code=model_code)
+
+    response = client_for(owner).post(
+        "/api/v1/me/subscriptions",
+        create_payload(model_code=model_code, last_care_on=None),
+        format="json",
+        **write_headers(f"t018-three-model-{model_code}"),
+    )
+
+    assert response.status_code == 201
+    assert response.json()["data"]["product"]["model_code"] == model_code
+    assert response.json()["data"]["next_care_on"] is None
+    assert not CareRecord.objects.filter(
+        status_code=CareRecord.Status.SCHEDULED
+    ).exists()
+
+
 def test_create_replay_is_stable_and_different_payload_conflicts():
     owner = create_customer(1)
     create_product()
@@ -231,7 +266,7 @@ def test_create_rejects_duplicate_active_and_unsupported_product():
     )
     unsupported = client.post(
         "/api/v1/me/subscriptions",
-        create_payload(model_code="WPUIAC425SNW"),
+        create_payload(model_code="WPUUNKNOWN000"),
         format="json",
         **write_headers("t018-unsupported"),
     )
@@ -267,6 +302,22 @@ def test_create_rejects_inactive_product_and_non_synthetic_customer():
         **write_headers("t018-real-customer"),
     )
     assert forbidden.status_code == 403
+
+
+def test_create_rejects_recognized_model_until_runtime_support_is_enabled():
+    owner = create_customer(22)
+    create_product(model_code="WPUIAC425SNW", supported=False)
+
+    response = client_for(owner).post(
+        "/api/v1/me/subscriptions",
+        create_payload(model_code="WPUIAC425SNW"),
+        format="json",
+        **write_headers("t018-model-candidate-not-active"),
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "PRODUCT_NOT_SUPPORTED"
+    assert not CustomerSubscription.objects.exists()
 
 
 def test_patch_updates_allowlist_and_replays_without_extra_care_row():

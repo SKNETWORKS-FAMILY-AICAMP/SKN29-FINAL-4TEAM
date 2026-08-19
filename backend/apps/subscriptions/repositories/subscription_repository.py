@@ -14,6 +14,11 @@ from apps.subscriptions.models import CustomerSubscription
 
 
 SUPPORTED_PRODUCT_MODEL_CODE = "WPUJAC104DWH"
+SUPPORTED_PRODUCT_MODEL_CODES = (
+    "WPUJAC104DWH",
+    "WPUIAC425SNW",
+    "WPUIAC606SNW",
+)
 
 
 class SubscriptionRepository:
@@ -31,7 +36,8 @@ class SubscriptionRepository:
                 customer__user=actor,
                 customer__deleted_at__isnull=True,
                 status_code=CustomerSubscription.Status.ACTIVE,
-                product_model__model_code=SUPPORTED_PRODUCT_MODEL_CODE,
+                product_model__model_code__in=SUPPORTED_PRODUCT_MODEL_CODES,
+                product_model__is_supported_mvp=True,
                 product_model__is_active=True,
             )
             .select_related("product_model")
@@ -85,6 +91,7 @@ class SubscriptionRepository:
     def find_supported_product(model_code: str) -> ProductModel | None:
         return ProductModel.objects.filter(
             model_code=model_code,
+            model_code__in=SUPPORTED_PRODUCT_MODEL_CODES,
             is_supported_mvp=True,
             is_active=True,
         ).first()
@@ -139,7 +146,7 @@ class SubscriptionRepository:
                 customer__user=actor,
                 customer__deleted_at__isnull=True,
                 status_code=CustomerSubscription.Status.ACTIVE,
-                product_model__model_code=SUPPORTED_PRODUCT_MODEL_CODE,
+                product_model__model_code__in=SUPPORTED_PRODUCT_MODEL_CODES,
                 product_model__is_supported_mvp=True,
                 product_model__is_active=True,
             )

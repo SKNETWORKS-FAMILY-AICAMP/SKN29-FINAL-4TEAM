@@ -60,6 +60,18 @@ APPROVED_RUNTIME_SUPPORT_TABLES = {
         "operational import support outside the immutable 32-table domain "
         "contract."
     ),
+    "operations_staff_directory_entry": (
+        "Consultant dashboard staff directory projection; operational "
+        "read-model support outside the immutable 32-table domain contract."
+    ),
+    "operations_dashboard_notice": (
+        "Consultant dashboard notice projection; operational read-model "
+        "support outside the immutable 32-table domain contract."
+    ),
+    "operations_inquiry_dashboard_profile": (
+        "Consultant inquiry dashboard presentation profile; operational "
+        "read-model support outside the immutable 32-table domain contract."
+    ),
     "workflow_idempotency_record": (
         "HTTP replay and payload-conflict request ledger defined by ADR "
         "0011; runtime idempotency support outside the immutable 32-table "
