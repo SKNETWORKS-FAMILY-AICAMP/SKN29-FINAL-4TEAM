@@ -81,7 +81,7 @@ Connection Timeout, DNS·CA 불일치, Credential 미주입은 코드 실패가 
 | 4 | products | `0001_initial` |
 | 5 | subscriptions | `0002_add_synthetic_projection_fields` |
 | 6 | care | `0002_add_imported_care_fields` |
-| 7 | operations | `0001_initial` |
+| 7 | operations | `0002_consultant_dashboard_projection` |
 | 8 | accounts | `0005_account_lifecycle_and_audit` |
 | 9 | admin | `0003_logentry_add_action_flag_choices` |
 | 10 | audit | `0005_airun_analyze_symptom_task` |
@@ -138,6 +138,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command '& {
 전체 승인 Closure, 예상 외 Migration 0, 남은 승인 Plan 0과 아래 상태를 재검증한다.
 
 ```ini
+operations.0002=APPLIED
 visits.0004=APPLIED
 visits.0005=NOT_APPLIED_P1_HOLD
 approved_targets=APPLIED
@@ -166,3 +167,10 @@ allowlist_unit_and_related_tests=48_PASSED
 금지 Migration을 격리 DB에 의도적으로 적용한 반대 검증에서는 Plan이
 `forbidden_migration_already_applied`, Exit 3으로 중단됐다. 검증용 Container와
 Volume은 종료 후 삭제했다. 이 결과는 AWS RDS 적용 승인이나 독립 QA가 아니다.
+
+### 8.4 2026-08-19 `operations.0002` Graph 정합화
+
+상담사 Dashboard Projection이 추가된 최신 Graph의 `operations` Leaf는
+`0002_consultant_dashboard_projection`이다. Allowlist와 최종 검증 출력도 이 Target을
+명시하며 `visits.0005` 제외 경계는 바꾸지 않았다. 작성자 표적 테스트는 13건 모두
+통과했다. 공용 PostgreSQL 적용은 PM 승인과 QA 실행 전까지 HOLD다.

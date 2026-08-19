@@ -69,6 +69,14 @@ def test_current_graph_matches_explicit_allowlist_and_excludes_visits_0005(
         "visits",
         "0004_visit_runtime_fields",
     ) in allowlist_module.APPROVED_TARGETS
+    assert (
+        "operations",
+        "0002_consultant_dashboard_projection",
+    ) in closure
+    assert (
+        "operations",
+        "0002_consultant_dashboard_projection",
+    ) in allowlist_module.APPROVED_TARGETS
 
 
 def test_empty_database_plan_is_forward_only_and_has_explicit_target_order(
@@ -89,6 +97,7 @@ def test_empty_database_plan_is_forward_only_and_has_explicit_target_order(
         allowlist_module.APPROVED_TARGETS
     )
     assert plan["expected_final"] == {
+        "operations.0002": "APPLIED",
         "visits.0004": "APPLIED",
         "visits.0005": "NOT_APPLIED_P1_HOLD",
         "approved_targets": "APPLIED",
@@ -215,6 +224,7 @@ def test_apply_runs_explicit_targets_and_verifies_exact_final_state(
         (target["app"], target["target"])
         for target in initial_plan["execution_targets"]
     ]
+    assert result["verification"]["operations.0002"] == "APPLIED"
     assert result["verification"]["visits.0004"] == "APPLIED"
     assert (
         result["verification"]["visits.0005"]
