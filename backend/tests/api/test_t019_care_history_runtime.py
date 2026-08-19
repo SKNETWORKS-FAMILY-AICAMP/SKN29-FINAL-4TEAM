@@ -202,12 +202,60 @@ def test_create_self_care_derives_safe_result_and_replays_once():
         "idempotent_replay": False,
     }
     assert replay.json()["data"]["idempotent_replay"] is True
-    care = CareRecord.objects.get()
+    care = CareRecord.objects.get(status_code=CareRecord.Status.COMPLETED)
     assert care.performed_by == owner
     assert care.completed_at is not None
     assert care.inquiry_id is None and care.visit_id is None
-    assert CareRecord.objects.count() == 1
+    assert CareRecord.objects.count() == 2
+    schedule = CareRecord.objects.get(status_code=CareRecord.Status.SCHEDULED)
+    assert schedule.scheduled_on == date(2026, 12, 10)
+    subscription.refresh_from_db()
+    assert subscription.next_care_on == date(2026, 12, 10)
     assert IdempotencyRecord.objects.count() == 1
+
+
+def test_new_filter_completion_replaces_only_the_open_official_schedule():
+    owner = create_user(2)
+    subscription = create_subscription(owner, create_product(2), 2)
+    client = client_for(owner)
+
+    first = client.post(
+        list_path(subscription),
+        {
+            "care_type_code": "FILTER_REPLACEMENT",
+            "performed_on": "2026-08-10",
+        },
+        format="json",
+        **headers("t019-filter-cycle-first"),
+    )
+    second = client.post(
+        list_path(subscription),
+        {
+            "care_type_code": "FILTER_REPLACEMENT",
+            "performed_on": "2026-08-18",
+        },
+        format="json",
+        **headers("t019-filter-cycle-second"),
+    )
+
+    assert first.status_code == second.status_code == 201
+    assert CareRecord.objects.filter(
+        subscription=subscription,
+        status_code=CareRecord.Status.COMPLETED,
+    ).count() == 2
+    assert CareRecord.objects.filter(
+        subscription=subscription,
+        status_code=CareRecord.Status.CANCELLED,
+        source_code=CareRecord.Source.SYSTEM,
+    ).count() == 1
+    open_schedule = CareRecord.objects.get(
+        subscription=subscription,
+        status_code=CareRecord.Status.SCHEDULED,
+        source_code=CareRecord.Source.SYSTEM,
+    )
+    assert open_schedule.scheduled_on == date(2026, 12, 18)
+    subscription.refresh_from_db()
+    assert subscription.next_care_on == date(2026, 12, 18)
 
 
 def test_same_key_different_payload_conflicts_without_second_write():
@@ -278,7 +326,7 @@ def test_postgresql_concurrent_create_same_key_is_one_write_and_one_replay():
         for _status, response in results
     }
     assert len(resource_ids) == 1
-    assert CareRecord.objects.count() == 1
+    assert CareRecord.objects.count() == 2
     assert IdempotencyRecord.objects.filter(
         actor=owner,
         operation_id="createMyCareRecord",
@@ -334,7 +382,7 @@ def test_postgresql_concurrent_same_key_different_payload_has_one_winner():
     winner_request, (_status, winner_response) = next(
         outcome for outcome in outcomes if outcome[1][0] == 201
     )
-    care = CareRecord.objects.get()
+    care = CareRecord.objects.get(status_code=CareRecord.Status.COMPLETED)
     assert care.care_type_code == winner_request["care_type_code"]
     assert care.performed_on == date.fromisoformat(
         winner_request["performed_on"]
@@ -389,9 +437,12 @@ def test_postgresql_concurrent_new_keys_preserve_both_care_records():
         results = [future.result(timeout=30) for future in futures]
 
     assert [status for status, _payload in results] == [201, 201]
-    assert CareRecord.objects.filter(subscription=subscription).count() == 2
+    assert CareRecord.objects.filter(subscription=subscription).count() == 3
     assert set(
-        CareRecord.objects.filter(subscription=subscription).values_list(
+        CareRecord.objects.filter(
+            subscription=subscription,
+            status_code=CareRecord.Status.COMPLETED,
+        ).values_list(
             "care_type_code",
             flat=True,
         )

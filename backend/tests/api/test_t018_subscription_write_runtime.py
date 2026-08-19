@@ -106,6 +106,7 @@ def test_create_persists_subscription_and_last_care_without_private_fields():
     assert data["status_code"] == "ACTIVE"
     assert data["started_on"] == "2026-08-01"
     assert data["last_care_on"] == "2026-08-05"
+    assert data["next_care_on"] == "2026-12-05"
     assert data["product"]["model_code"] == SUPPORTED_CODE
     assert all(
         field not in str(data)
@@ -120,12 +121,55 @@ def test_create_persists_subscription_and_last_care_without_private_fields():
     assert subscription.management_type_code == "SELF_MANAGED"
     assert subscription.contract_no.startswith("SYN-SUB-")
     assert subscription.serial_no.startswith("SYN-SERIAL-")
-    care = CareRecord.objects.get(subscription=subscription)
+    care = CareRecord.objects.get(
+        subscription=subscription,
+        status_code=CareRecord.Status.COMPLETED,
+    )
     assert care.care_type_code == CareRecord.CareType.FILTER_REPLACEMENT
     assert care.status_code == CareRecord.Status.COMPLETED
     assert care.source_code == CareRecord.Source.IMPORT
     assert care.performed_on == date(2026, 8, 5)
     assert care.result_code == CareRecord.Result.FILTER_REPLACED
+    schedule = CareRecord.objects.get(
+        subscription=subscription,
+        status_code=CareRecord.Status.SCHEDULED,
+    )
+    assert schedule.scheduled_on == date(2026, 12, 5)
+    assert schedule.source_code == CareRecord.Source.SYSTEM
+    assert "interval_months=4" in schedule.summary
+
+
+@pytest.mark.parametrize(
+    ("management_type_code", "expected_next_care_on", "schedule_count"),
+    [
+        ("SELF_MANAGED", "2026-12-01", 1),
+        ("VISIT_CARE", None, 0),
+    ],
+)
+def test_create_applies_the_approved_cycle_only_to_self_management(
+    management_type_code,
+    expected_next_care_on,
+    schedule_count,
+):
+    owner = create_customer(2)
+    create_product()
+
+    response = client_for(owner).post(
+        "/api/v1/me/subscriptions",
+        create_payload(
+            management_type_code=management_type_code,
+            last_care_on=None,
+        ),
+        format="json",
+        **write_headers(f"t018-approved-cycle-{management_type_code}"),
+    )
+
+    assert response.status_code == 201
+    assert response.json()["data"]["next_care_on"] == expected_next_care_on
+    assert CareRecord.objects.filter(
+        status_code=CareRecord.Status.SCHEDULED,
+        source_code=CareRecord.Source.SYSTEM,
+    ).count() == schedule_count
 
 
 def test_create_replay_is_stable_and_different_payload_conflicts():
@@ -161,7 +205,7 @@ def test_create_replay_is_stable_and_different_payload_conflicts():
     assert conflict.status_code == 409
     assert conflict.json()["error"]["code"] == "DUPLICATE-EVENT-01"
     assert CustomerSubscription.objects.count() == 1
-    assert CareRecord.objects.count() == 1
+    assert CareRecord.objects.count() == 2
     assert IdempotencyRecord.objects.count() == 1
 
 
@@ -260,8 +304,13 @@ def test_patch_updates_allowlist_and_replays_without_extra_care_row():
     assert first.json()["data"]["started_on"] == "2026-07-15"
     assert first.json()["data"]["management_type_code"] == "VISIT_CARE"
     assert first.json()["data"]["last_care_on"] == "2026-08-07"
+    assert first.json()["data"]["next_care_on"] is None
     assert replay.json()["data"]["idempotent_replay"] is True
-    assert CareRecord.objects.count() == 1
+    assert CareRecord.objects.count() == 2
+    assert CareRecord.objects.filter(
+        status_code=CareRecord.Status.CANCELLED,
+        source_code=CareRecord.Source.SYSTEM,
+    ).count() == 1
 
 
 def test_patch_owner_role_and_hidden_resource_boundaries():
@@ -502,7 +551,7 @@ def test_postgresql_concurrent_create_same_key_is_one_write_and_one_replay():
         data["subscription_id"] == str(subscription.public_id)
         for data in response_data
     )
-    assert CareRecord.objects.count() == 1
+    assert CareRecord.objects.count() == 2
     assert IdempotencyRecord.objects.filter(
         actor=owner,
         operation_id="createMySubscription",
@@ -561,7 +610,17 @@ def test_postgresql_concurrent_same_key_different_payload_has_one_winner():
     assert winner_response["data"]["management_type_code"] == (
         winner_request["management_type_code"]
     )
-    assert CareRecord.objects.count() == 1
+    assert CareRecord.objects.filter(
+        status_code=CareRecord.Status.COMPLETED
+    ).count() == 1
+    expected_schedule_count = (
+        1
+        if winner_request["management_type_code"] == "SELF_MANAGED"
+        else 0
+    )
+    assert CareRecord.objects.filter(
+        status_code=CareRecord.Status.SCHEDULED
+    ).count() == expected_schedule_count
     assert IdempotencyRecord.objects.filter(
         actor=owner,
         operation_id="createMySubscription",
@@ -598,7 +657,7 @@ def test_postgresql_concurrent_new_keys_prevent_duplicate_active_product():
     conflict = next(payload for status, payload in results if status == 409)
     assert conflict["error"]["code"] == "SUBSCRIPTION_ALREADY_ACTIVE"
     assert CustomerSubscription.objects.count() == 1
-    assert CareRecord.objects.count() == 1
+    assert CareRecord.objects.count() == 2
     assert IdempotencyRecord.objects.filter(
         actor=owner,
         operation_id="createMySubscription",

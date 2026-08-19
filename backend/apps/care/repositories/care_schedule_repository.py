@@ -95,6 +95,29 @@ class CareScheduleRepository:
         )
 
     @staticmethod
+    def cancel_official_open_schedules(
+        *,
+        subscription: CustomerSubscription,
+        care_type_code: str,
+        reason: str,
+        cancelled_at,
+    ) -> int:
+        """Cancel only schedules produced from an approved official rule."""
+
+        return CareRecord.objects.filter(
+            subscription=subscription,
+            care_type_code=care_type_code,
+            status_code__in=OPEN_SCHEDULE_STATUSES,
+            source_code=CareRecord.Source.SYSTEM,
+            summary__startswith="basis=OFFICIAL;",
+        ).update(
+            status_code=CareRecord.Status.CANCELLED,
+            cancelled_at=cancelled_at,
+            cancellation_reason=reason,
+            updated_at=cancelled_at,
+        )
+
+    @staticmethod
     def create_schedule(
         *,
         subscription: CustomerSubscription,
