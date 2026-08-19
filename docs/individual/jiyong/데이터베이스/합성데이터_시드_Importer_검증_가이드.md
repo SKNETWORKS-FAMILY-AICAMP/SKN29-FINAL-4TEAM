@@ -70,3 +70,72 @@ Set-Location .\backend
 
 Fresh Migration, Dry-run, Apply, Replay, 원장·상태·감사 검증이 모두 통과하면
 합성데이터 적재 기능은 작성자 검증 완료다. 소비자 E2E와 독립 QA는 별도다.
+
+## 9. 2026-08-19 3제품 Fixture 선택 적재 보완
+
+### 9.1 문제와 원인
+
+Data/RAG 계보 확장으로 `products.json`의 물리 제품은 다음 3건이 됐다.
+
+- `WPUJAC104DWH`: 기존 Backend 적재 대상
+- `WPUIAC425SNW`: RAG 준비·Backend 계약 차단
+- `WPUIAC606SNW`: RAG 준비·Backend 계약 차단
+
+기존 Importer는 물리 파일을 읽을 때부터 제품 수를 1건으로 강제했다. 이 때문에
+`LOAD_FILTERED` 선택 전 `Fixture count mismatch: products 3 != 1`로 중단됐다.
+
+### 9.2 구현 내용
+
+- 물리 Fixture 기대값과 DB Profile 선택 기대값을 분리했다.
+- 물리 입력은 369행·제품 3건을 모두 식별자·분류 기준으로 검증한다.
+- `db-smoke`, `db-full`은 CustomerProduct가 참조하는 제품만 선택한다.
+- 현재 두 Profile의 선택 결과는 JAC104 제품 1건·전체 367행이다.
+- IAC425·IAC606 ProductModel, 고객제품, 구독, 문의는 생성하지 않는다.
+- 신규 제품을 삭제하거나 Backend Runtime 지원으로 승격하지 않았다.
+- Model·Migration·OpenAPI 변경은 없다.
+
+변경 경로:
+
+- `backend/apps/operations/services/operations_service.py`
+- `backend/tests/integration/operations/test_synthetic_handoff_import.py`
+- `data/config/handoff/backend_import_crosswalk.json`
+- `data/processed/metadata/consumer_handoff_manifest.json`
+- `data/processed/metadata/final_dataset_manifest.json`
+
+Data 파일 3개는 기능 데이터를 수동 수정한 것이 아니라, 변경된 Importer 소스
+해시를 공식 동기화 도구로 갱신한 결정적 생성 산출물이다.
+
+### 9.3 작성자 검증 결과
+
+| 검증 | 결과 |
+| --- | --- |
+| 기존 실패 재현 | 5 failed, 모두 제품 물리 건수 불일치 |
+| 수정 후 Importer 표적 | 6 passed, 0 failed |
+| Django Check | PASS, issue 0 |
+| Migration Drift | NONE |
+| 최신 main Backend 전체 회귀 | 1302 passed, 0 failed, 34 skipped |
+| Data QA·결정적 재생성 | PASS, 오류 0·경고 0·Drift 0 |
+| Source Hash 재검사 | PASS, stale 0 |
+| Diff 검사 | PASS |
+
+34건의 Skip은 실제 PostgreSQL 구조·Row Lock, AI Uvicorn, 팀 Role Credential이
+필요한 기존 별도 Gate다. 이번 변경은 SQLite Test Settings에서 작성자 회귀를
+마쳤으며, Fresh PostgreSQL Apply·Replay는 비작성자 독립 QA에서 확인한다.
+Windows 공용 Pytest 임시폴더 ACL로 발생한 Setup Error 5건은 전용 `basetemp`로
+재실행해 해당 파일 7건과 전체 회귀가 모두 PASS함을 확인했다.
+
+### 9.4 QA 확인 항목
+
+1. 물리 제품 3건이 입력 검증을 통과하는지 확인한다.
+2. Dry-run 후 도메인·Batch·Item 저장이 0건인지 확인한다.
+3. `db-full` Apply 결과가 367 source, 355 created, 12 projected인지 확인한다.
+4. ProductModel에는 `WPUJAC104DWH` 한 건만 적재되는지 확인한다.
+5. IAC425·IAC606 관련 DB 행이 생성되지 않는지 확인한다.
+6. Replay의 비의도 created·updated가 0건인지 확인한다.
+7. 식별자 충돌 시 전체 Transaction이 Rollback되는지 확인한다.
+
+## 10. 현재 판정
+
+Backend 코드와 작성자 회귀는 `AUTHOR_READY`다. 신규 두 모델의 Runtime 활성화,
+Vector DB 적재와 성능 평가는 포함하지 않는다. PostgreSQL 독립 QA가 PASS한 뒤
+Importer 소비자 Gate를 완료로 판정한다.
