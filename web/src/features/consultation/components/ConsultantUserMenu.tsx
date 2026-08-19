@@ -14,23 +14,13 @@ function getConsultantDisplayName(displayName?: string) {
     : (displayName ?? "상담사");
 }
 
-function getConsultantEmployeeNumber(
-  userId?: string,
-  displayName?: string,
-) {
-  return displayName === "합성 상담사 001" ? "001" : (userId ?? "-");
-}
-
 export default function ConsultantUserMenu({
   className = "",
 }: ConsultantUserMenuProps) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const displayName = getConsultantDisplayName(user?.displayName);
-  const employeeNumber = getConsultantEmployeeNumber(
-    user?.id,
-    user?.displayName,
-  );
+  const employeeNumber = "2026-001-256";
 
   const handleSignOut = async () => {
     await signOut();
