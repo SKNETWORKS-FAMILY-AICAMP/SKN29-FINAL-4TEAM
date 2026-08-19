@@ -39,6 +39,7 @@ import {
 } from "../../features/consultation/model/consultantInquiryCategories";
 import type {
   CounselorAllowedAction,
+  CounselorSort,
   CounselorStatus,
   CounselorWorkBucket,
 } from "../../features/consultation/model/consultantWorkspaceTypes";
@@ -110,9 +111,25 @@ function getBucketLabel(bucket: ConsultantInquiryBucket): string {
   return bucket === "ALL" ? "전체 문의" : WORK_BUCKET_LABELS[bucket];
 }
 
-function getInquiryCategoryPath(symptomSummary: string): string {
-  const category = classifyInquiryCategory(symptomSummary);
-  return `${category.major} > ${category.middle} > ${category.minor}`;
+function formatRelativeReceivedTime(receivedAt: string): string {
+  const receivedTime = new Date(receivedAt).getTime();
+  if (!Number.isFinite(receivedTime)) return "시간 확인 필요";
+
+  const elapsedMinutes = Math.max(
+    0,
+    Math.floor((Date.now() - receivedTime) / 60_000),
+  );
+  if (elapsedMinutes < 1) return "방금 전";
+  if (elapsedMinutes < 60) return `${elapsedMinutes}분 전`;
+
+  const elapsedHours = Math.floor(elapsedMinutes / 60);
+  if (elapsedHours < 24) return `${elapsedHours}시간 전`;
+
+  const elapsedDays = Math.floor(elapsedHours / 24);
+  if (elapsedDays < 30) return `${elapsedDays}일 전`;
+
+  const elapsedMonths = Math.floor(elapsedDays / 30);
+  return `${elapsedMonths}개월 전`;
 }
 
 export default function ConsultantInquiryListPage() {
@@ -570,7 +587,7 @@ export default function ConsultantInquiryListPage() {
 
                 <div
                   className="consultant-category-filters"
-                  aria-label="문의 카테고리 필터"
+                  aria-label="문의 목록 필터와 정렬"
                 >
                   <label>
                     <span>대분류</span>
@@ -654,6 +671,55 @@ export default function ConsultantInquiryListPage() {
                     </select>
                   </label>
 
+                  <label className="consultant-category-filters__search">
+                    <span>검색</span>
+                    <div>
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle cx="10.5" cy="10.5" r="6.25" />
+                        <path d="m15.25 15.25 4.5 4.5" />
+                      </svg>
+                      <input
+                        type="search"
+                        aria-label="문의 검색"
+                        placeholder="문의 제목, 고객명, 문의번호 검색"
+                        value={filters.query}
+                        onChange={(event) =>
+                          setFilters({ ...filters, query: event.target.value })
+                        }
+                      />
+                    </div>
+                  </label>
+
+                  <label className="consultant-category-filters__sort">
+                    <span>정렬</span>
+                    <div>
+                      <select
+                        aria-label="문의 정렬"
+                        value={filters.sort}
+                        onChange={(event) =>
+                          setFilters({
+                            ...filters,
+                            sort: event.target.value as CounselorSort,
+                          })
+                        }
+                      >
+                        <option value="UPDATED_DESC">최신순</option>
+                        <option value="UPDATED_ASC">오래된순</option>
+                      </select>
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="m7 9.5 5 5 5-5" />
+                      </svg>
+                    </div>
+                  </label>
+
                   {(categoryFilters.major ||
                     categoryFilters.middle ||
                     categoryFilters.minor) && (
@@ -725,15 +791,12 @@ export default function ConsultantInquiryListPage() {
                               {inquiry.symptomSummary}
                             </span>
 
-                            <span className="consultant-list-item__category">
-                              {getInquiryCategoryPath(inquiry.symptomSummary)}
-                            </span>
-
                             <time
                               className="consultant-list-item__received-at"
                               dateTime={inquiry.receivedAt}
+                              title={formatWorkspaceDateTime(inquiry.receivedAt)}
                             >
-                              {formatWorkspaceDateTime(inquiry.receivedAt)}
+                              {formatRelativeReceivedTime(inquiry.receivedAt)}
                             </time>
 
                             <span className="consultant-list-item__customer">
