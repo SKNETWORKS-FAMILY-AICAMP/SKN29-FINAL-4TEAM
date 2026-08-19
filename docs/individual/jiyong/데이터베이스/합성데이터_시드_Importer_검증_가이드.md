@@ -139,3 +139,45 @@ Windows 공용 Pytest 임시폴더 ACL로 발생한 Setup Error 5건은 전용 `
 Backend 코드와 작성자 회귀는 `AUTHOR_READY`다. 신규 두 모델의 Runtime 활성화,
 Vector DB 적재와 성능 평가는 포함하지 않는다. PostgreSQL 독립 QA가 PASS한 뒤
 Importer 소비자 Gate를 완료로 판정한다.
+
+## 11. 2026-08-19 상담사 Dashboard 로컬 Seed
+
+Canonical Handoff Importer와 별개인 로컬 UI 연동용 합성 Seed다. 기존 문의 Runtime
+DTO의 개인정보 비노출 경계를 바꾸지 않고 `operations` 읽기 Projection으로 제공한다.
+
+### 11.1 제공 데이터
+
+- 상담사 연락처 8건, 방문기사 연락처 4건
+- 새 문의·처리 중·완료 문의 각 30건
+- 상태별 긴급·주의·일반 문의 각 10건, 합계 90건
+- 문의 제목·상세·합성 연락처·주소·고객코드·제품·보증·이전 방문 횟수
+- 공지사항 6건과 본문
+- 모든 이메일은 `.example`, 모든 행은 합성 식별자 Prefix로 격리
+
+### 11.2 로컬 PostgreSQL 적용
+
+전체 Migration을 실행하지 않는다. Plan에 `visits.0005`가 없는지 확인한 뒤 아래
+Target만 선택 적용한다.
+
+```powershell
+Set-Location .\backend
+.\.venv\Scripts\python.exe manage.py migrate operations 0002 --plan
+.\.venv\Scripts\python.exe manage.py migrate operations 0002
+.\.venv\Scripts\python.exe manage.py seed_consultant_dashboard --dry-run
+.\.venv\Scripts\python.exe manage.py seed_consultant_dashboard
+.\.venv\Scripts\python.exe manage.py seed_consultant_dashboard
+```
+
+Replay 성공 기준은 `created_count=0`, `updated_count=0`, 문의 90건이다. 기존 행을
+삭제하거나 초기화하지 않는다.
+
+### 11.3 Web 소비 API
+
+- `GET /api/v1/consultant/dashboard`
+- 인증: 활성 `CONSULTANT`
+- 범위: 현재 상담사에게 배정된 합성 문의와 합성 공지·연락처만 반환
+- 기존 `GET /api/v1/inquiries`는 상태 작업과 상세 이동에 계속 사용
+
+Web은 `DASHBOARD_NOTICES`, `DASHBOARD_EMPLOYEE_CONTACTS`,
+`DASHBOARD_VISIT_TECHNICIAN_CONTACTS` 및 Design Scenario 자동 대체를 제거하고 실제
+API 응답을 사용한다. 이번 단계는 로컬 PostgreSQL 전용이며 RDS 적재는 포함하지 않는다.
