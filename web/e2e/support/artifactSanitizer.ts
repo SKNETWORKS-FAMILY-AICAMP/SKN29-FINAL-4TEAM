@@ -1,4 +1,5 @@
 import {
+  existsSync,
   readFileSync,
   readdirSync,
   statSync,
@@ -41,6 +42,10 @@ export function redactSensitiveText(source: string): string {
     `Bearer ${REDACTED}`,
   );
   text = text.replace(
+    /Bearer\s+\$\{[^}\r\n]+\}/gi,
+    `Bearer ${REDACTED}`,
+  );
+  text = text.replace(
     /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g,
     REDACTED,
   );
@@ -57,7 +62,7 @@ export function redactSensitiveText(source: string): string {
 
 export function containsSensitiveText(text: string): boolean {
   return [
-    /Bearer\s+(?!\[REDACTED\])/i,
+    /Bearer(?=\s)(?!\s*\[REDACTED\])\s+/i,
     /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/,
     /"(?:access_token|refresh_token|password)"\s*:\s*"(?!\[REDACTED\])/i,
     /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i,
@@ -74,26 +79,28 @@ function decodeText(bytes: Uint8Array): string | null {
 }
 
 export function sanitizeTraceArchive(archivePath: string): void {
-  const entries = unzipSync(new Uint8Array(readFileSync(archivePath)));
+  try {
+    const entries = unzipSync(new Uint8Array(readFileSync(archivePath)));
 
-  for (const name of Object.keys(entries)) {
-    if (name.endsWith(".network") || name.startsWith("resources/")) {
-      delete entries[name];
-      continue;
+    for (const name of Object.keys(entries)) {
+      if (name.endsWith(".network") || name.startsWith("resources/")) {
+        delete entries[name];
+        continue;
+      }
+      const decoded = decodeText(entries[name]);
+      if (decoded === null) continue;
+      const sanitized = redactSensitiveText(decoded);
+      if (containsSensitiveText(sanitized)) {
+        throw new Error(`Trace 정제에 실패했습니다: ${name}`);
+      }
+      entries[name] = strToU8(sanitized);
     }
-    const decoded = decodeText(entries[name]);
-    if (decoded === null) continue;
-    const sanitized = redactSensitiveText(decoded);
-    if (containsSensitiveText(sanitized)) {
-      unlinkSync(archivePath);
-      throw new Error(
-        `Trace 정제에 실패하여 원본을 삭제했습니다: ${name}`,
-      );
-    }
-    entries[name] = strToU8(sanitized);
+
+    writeFileSync(archivePath, zipSync(entries, { level: 6 }));
+  } catch {
+    if (existsSync(archivePath)) unlinkSync(archivePath);
+    throw new Error("Trace 정제에 실패하여 원본을 삭제했습니다.");
   }
-
-  writeFileSync(archivePath, zipSync(entries, { level: 6 }));
 }
 
 function sanitizeTextFile(filePath: string): void {
@@ -105,22 +112,39 @@ function sanitizeTextFile(filePath: string): void {
   writeFileSync(filePath, sanitized, "utf8");
 }
 
-export function sanitizeArtifactTree(rootPath: string): void {
+function sanitizeArtifactTreeCollect(
+  rootPath: string,
+  errors: unknown[],
+): void {
   const entries = readdirSync(rootPath, { withFileTypes: true });
   for (const entry of entries) {
     const target = join(rootPath, entry.name);
     if (entry.isDirectory()) {
-      sanitizeArtifactTree(target);
+      sanitizeArtifactTreeCollect(target, errors);
       continue;
     }
     if (!entry.isFile() || statSync(target).size === 0) continue;
-    if (entry.name.endsWith("trace.zip")) {
-      sanitizeTraceArchive(target);
-      continue;
+    try {
+      if (entry.name.endsWith("trace.zip")) {
+        sanitizeTraceArchive(target);
+        continue;
+      }
+      if (TEXT_EXTENSIONS.has(extname(entry.name).toLowerCase())) {
+        sanitizeTextFile(target);
+      }
+    } catch (error) {
+      errors.push(error);
     }
-    if (TEXT_EXTENSIONS.has(extname(entry.name).toLowerCase())) {
-      sanitizeTextFile(target);
-    }
+  }
+}
+
+export function sanitizeArtifactTree(rootPath: string): void {
+  const errors: unknown[] = [];
+  sanitizeArtifactTreeCollect(rootPath, errors);
+  if (errors.length > 0) {
+    throw new Error(
+      `Playwright 결과물 ${errors.length}개를 안전하게 정제하지 못해 삭제했습니다.`,
+    );
   }
 }
 

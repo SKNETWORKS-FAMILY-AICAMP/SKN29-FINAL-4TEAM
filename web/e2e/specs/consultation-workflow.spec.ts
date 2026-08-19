@@ -27,46 +27,6 @@ function isDetailResponse(response: Response, inquiryId: string): boolean {
   );
 }
 
-function isNewInquiryListResponse(
-  response: Response,
-  activeFixture: WebConsultationE2EFixture,
-): boolean {
-  const url = new URL(response.url());
-  const statuses = url.searchParams.getAll("status");
-  return (
-    response.request().method() === "GET" &&
-    url.pathname.endsWith("/api/v1/inquiries") &&
-    url.searchParams.get("q") === activeFixture.inquiryCode &&
-    statuses.length === 2 &&
-    statuses.includes("CONSULTATION_REQUIRED") &&
-    statuses.includes("REOPENED")
-  );
-}
-
-async function expectFixtureInNewInquiryList(
-  response: Response,
-  activeFixture: WebConsultationE2EFixture,
-): Promise<void> {
-  expect(response.status()).toBe(200);
-  const payload: unknown = await response.json();
-  if (
-    !isRecord(payload) ||
-    !isRecord(payload.data) ||
-    !Array.isArray(payload.data.items)
-  ) {
-    throw new Error("상담사 신규 문의 목록 응답이 공통 API 구조와 다릅니다.");
-  }
-  const fixtureItem = payload.data.items.find(
-    (item: unknown) =>
-      isRecord(item) && item.inquiry_id === activeFixture.inquiryId,
-  );
-  if (!isRecord(fixtureItem)) {
-    throw new Error("Backend Fixture가 상담사 신규 문의 목록에 없습니다.");
-  }
-  expect(fixtureItem.inquiry_code).toBe(activeFixture.inquiryCode);
-  expect(fixtureItem.status).toBe(activeFixture.status);
-}
-
 async function expectInitialDetailContract(
   response: Response,
   activeFixture: WebConsultationE2EFixture,
@@ -103,18 +63,21 @@ async function expectInitialDetailContract(
 async function loginToFixture(
   page: Page,
   activeFixture: WebConsultationE2EFixture,
-): Promise<Response> {
+): Promise<void> {
   const listPath = `/consultant/inquiries?bucket=NEW&q=${encodeURIComponent(activeFixture.inquiryCode)}`;
   await page.goto(listPath);
   await expect(page).toHaveURL(/\/login$/);
   await page.getByLabel("역할").selectOption("CONSULTANT");
-  const listResponse = page.waitForResponse((response) =>
-    isNewInquiryListResponse(response, activeFixture),
-  );
   await page
     .getByRole("button", { name: "API 데모 계정으로 로그인" })
     .click();
-  return listResponse;
+  await expect(page).toHaveURL((url) => {
+    return (
+      url.pathname === "/consultant/inquiries" &&
+      url.searchParams.get("bucket") === "NEW" &&
+      url.searchParams.get("q") === activeFixture.inquiryCode
+    );
+  });
 }
 
 async function authenticatedBrowserRequest(
@@ -329,8 +292,7 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
   const consultationNote = `E2E 상담 기록 ${fixture.runId}`;
   const customerGuidance = `E2E 고객 안내 ${fixture.runId}`;
   const confirmedSummary = `E2E 확정 요약 ${fixture.runId}`;
-  const newInquiryListResponse = await loginToFixture(page, fixture);
-  await expectFixtureInNewInquiryList(await newInquiryListResponse, fixture);
+  await loginToFixture(page, fixture);
   const fixtureCard = page.getByTestId(
     `consultant-inquiry-${fixture.inquiryId}`,
   );

@@ -1,4 +1,10 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -9,6 +15,7 @@ import {
   containsSensitiveText,
   readSanitizedTraceEntry,
   redactSensitiveText,
+  sanitizeArtifactTree,
   sanitizeTraceArchive,
 } from "../../e2e/support/artifactSanitizer";
 
@@ -29,6 +36,15 @@ describe("Playwright Artifact sanitizer", () => {
     expect(containsSensitiveText(sanitized)).toBe(false);
     expect(sanitized).not.toContain("user@example.com");
     expect(sanitized).not.toContain("010-1234-5678");
+  });
+
+  it("오류 문맥의 Bearer 템플릿 표현을 실제 Token처럼 남기지 않는다", () => {
+    const sanitized = redactSensitiveText(
+      "Authorization: `Bearer ${session.accessToken}`",
+    );
+
+    expect(containsSensitiveText(sanitized)).toBe(false);
+    expect(sanitized).toBe("Authorization: `Bearer [REDACTED]`");
   });
 
   it("Trace의 network와 resource를 제거하고 텍스트를 정제한다", () => {
@@ -56,5 +72,20 @@ describe("Playwright Artifact sanitizer", () => {
     expect(trace).not.toContain(jwt);
     expect(trace).not.toContain("private");
     expect(trace).toContain("[REDACTED]");
+  });
+
+  it("손상된 Trace를 삭제해도 다른 결과물 정제를 끝까지 수행한다", () => {
+    const directory = mkdtempSync(join(tmpdir(), "waterbridge-e2e-"));
+    temporaryDirectories.push(directory);
+    const tracePath = join(directory, "trace.zip");
+    const logPath = join(directory, "result.log");
+    writeFileSync(tracePath, "not-a-zip");
+    writeFileSync(logPath, "email=user@example.com");
+
+    expect(() => sanitizeArtifactTree(directory)).toThrow(
+      "Playwright 결과물 1개를 안전하게 정제하지 못해 삭제했습니다.",
+    );
+    expect(existsSync(tracePath)).toBe(false);
+    expect(readFileSync(logPath, "utf8")).toBe("email=[REDACTED]");
   });
 });
