@@ -165,8 +165,13 @@
           "path": "config/rag/three_model_evaluation_cases.json",
           "role": "EVALUATION_CONTRACT",
           "records": 50,
+<<<<<<< HEAD
           "size_bytes": 28600,
           "sha256": "8D5DEE5392EAC6F5963FBB04AB0016714A154AFEE38676DA8ADD13EEE222AA11"
+=======
+          "size_bytes": 28732,
+          "sha256": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1"
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
         },
         {
           "path": "config/rag/supported_products.json",
@@ -180,7 +185,11 @@
           "role": "MANIFEST",
           "records": 1,
           "size_bytes": 1286,
+<<<<<<< HEAD
           "sha256": "EF01B094C89C77C5FFAD52089AADEDD16BB3D32628F2571AE2C92084AC3898E3"
+=======
+          "sha256": "082AAA87D1C44A2FFB1796A62397A7AE5A1BC95513B29D969456B75473285B27"
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
         },
         {
           "path": "schemas/processed/ragParentPage.schema.json",
@@ -207,8 +216,13 @@
           "path": "schemas/config/threeModelRagEvaluation.schema.json",
           "role": "SCHEMA",
           "records": 1,
+<<<<<<< HEAD
           "size_bytes": 1740,
           "sha256": "6D7E8418772FC88C6565572B0E61945106027E7DFB43FB0F7DD63666E587AA53"
+=======
+          "size_bytes": 2480,
+          "sha256": "991FA7F916CA57D471D12266D43E60E3C04A99DE888EC024E25900C0D996A2D8"
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
         }
       ],
       "selection": {
@@ -591,7 +605,7 @@
           "role": "GUIDE",
           "records": null,
           "size_bytes": 2822,
-          "sha256": "F392452B8DA954B3E9D1FDA0A935C35B49633FF8195B744D47D0DA01B082D18A"
+          "sha256": "DE33CBD6F340AD7505E57C7549A4BD45096503DD76EBC2A938FAB4DDEE44068D"
         }
       ],
       "selection": {

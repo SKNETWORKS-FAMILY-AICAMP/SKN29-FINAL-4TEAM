@@ -5,7 +5,6 @@ import { describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "../../src/app/providers/AuthProvider";
 import { AppRoutes } from "../../src/app/router/AppRouter";
-import { classifyInquiryCategory } from "../../src/features/consultation/model/consultantInquiryCategories";
 import { CONSULTANT_QUEUE_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
 import { getCounselorWorkBucket } from "../../src/features/consultation/model/consultantWorkspaceModel";
 import type { CounselorWorkBucket } from "../../src/features/consultation/model/consultantWorkspaceTypes";
@@ -74,39 +73,50 @@ describe("ConsultantInquiryListPage", () => {
     expect(screen.getByRole("tab", { name: /처리 완료된 문의/ })).toBeVisible();
     expect(screen.getByRole("tab", { name: /전체 문의/ })).toBeVisible();
     expect(screen.getByRole("tab", { name: "전화 문의 등록" })).toBeVisible();
-    expect(
-      screen.queryByRole("searchbox", { name: "문의 검색" }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByRole("searchbox", { name: "문의 검색" })).toBeVisible();
+    expect(screen.getByRole("combobox", { name: "문의 정렬" })).toHaveValue(
+      "UPDATED_DESC",
+    );
     expect(screen.getByText("테스트 상담원")).toBeVisible();
-    expect(screen.getByText("STAFF-CONS-TEST")).toBeVisible();
+    expect(screen.getByText("2026-001-256")).toBeVisible();
     expect(screen.getByRole("button", { name: "로그아웃" })).toBeVisible();
     expect(screen.getByLabelText("상담 문의 목록")).toBeVisible();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: /상담 기록/ })).not.toBeInTheDocument();
   });
 
-  it("모든 문의 행을 제목·3단계 카테고리·문의 일시·고객명 순서로 표시한다", () => {
+  it("모든 문의 행을 제목·접수 경과 시간·고객명 순서로 표시한다", () => {
     renderPage();
 
     const inquiryRows = screen.getAllByRole("button", { name: /상세 열기/ });
 
     inquiryRows.forEach((row) => {
-      const [subject, categoryPath, receivedAt, customer] = Array.from(
-        row.children,
-      );
-      const category = classifyInquiryCategory(subject.textContent ?? "");
+      const [subject, receivedAt, customer] = Array.from(row.children);
 
       expect(subject).toHaveClass("consultant-list-item__subject");
-      expect(categoryPath).toHaveClass("consultant-list-item__category");
-      expect(categoryPath).toHaveTextContent(
-        `${category.major} > ${category.middle} > ${category.minor}`,
-      );
       expect(receivedAt).toHaveClass("consultant-list-item__received-at");
       expect(receivedAt).toHaveAttribute("datetime");
+      expect(receivedAt).toHaveAttribute("title");
+      expect(receivedAt).toHaveTextContent(/(방금 전|분 전|시간 전|일 전|개월 전)/);
       expect(receivedAt).not.toBeEmptyDOMElement();
       expect(customer).toHaveClass("consultant-list-item__customer");
       expect(customer).not.toBeEmptyDOMElement();
     });
+  });
+
+  it("문의 검색과 최신순·오래된순 정렬을 제공한다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const search = screen.getByRole("searchbox", { name: "문의 검색" });
+    const sort = screen.getByRole("combobox", { name: "문의 정렬" });
+
+    await user.type(search, "필터 교체");
+    expect(search).toHaveValue("필터 교체");
+
+    await user.selectOptions(sort, "UPDATED_ASC");
+    expect(sort).toHaveValue("UPDATED_ASC");
+    expect(screen.getByRole("option", { name: "오래된순" })).toBeInTheDocument();
   });
 
   it("전체 문의의 위험도별 총합은 90건이며 페이지를 이동해도 유지된다", async () => {

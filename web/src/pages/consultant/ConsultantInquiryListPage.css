@@ -49,7 +49,7 @@
     width: 100%;
     grid-column: 1 !important;
     grid-row: 1 !important;
-    grid-template-rows: 44px auto minmax(0, 1fr) !important;
+    grid-template-rows: 66px auto minmax(0, 1fr) !important;
     border-right: 0 !important;
   }
 
@@ -57,6 +57,43 @@
     .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
     .consultant-risk-tabs {
     grid-row: 1 !important;
+    min-height: 66px !important;
+  }
+
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-risk-tabs
+    .consultant-risk-tab,
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-risk-tabs
+    .consultant-risk-tab.is-active {
+    width: 225px !important;
+    min-width: 180px !important;
+    max-width: 31% !important;
+    height: 66px !important;
+    min-height: 66px !important;
+    padding: 0 34px 0 22px !important;
+    clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 100%, 0 100%) !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-risk-tabs
+    .consultant-risk-tab
+    > span {
+    font-size: 16px !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-risk-tabs
+    .consultant-risk-tab__count {
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    flex-basis: 32px !important;
+    font-size: 13px !important;
   }
 
   html body
@@ -89,10 +126,9 @@
     .v6-queue-item.consultant-list-item:nth-child(even) {
     display: grid !important;
     grid-template-columns:
-      minmax(160px, 1.35fr)
-      minmax(210px, 1.2fr)
-      minmax(150px, 0.65fr)
-      minmax(100px, 0.5fr) !important;
+      minmax(280px, 1.7fr)
+      minmax(140px, 0.45fr)
+      minmax(120px, 0.45fr) !important;
     align-items: center;
     gap: 0 !important;
   }
@@ -115,9 +151,6 @@
 
   html body
     .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
-    .consultant-list-item__category,
-  html body
-    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
     .consultant-list-item__received-at,
   html body
     .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
@@ -132,17 +165,6 @@
     align-items: center;
     padding: 0 18px;
     border-left: 1px solid #dce5eb;
-  }
-
-  html body
-    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
-    .consultant-list-item__category {
-    overflow: hidden;
-    color: #167da5;
-    font-size: 13px;
-    font-weight: 800;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   html body
@@ -171,9 +193,17 @@
 .consultant-inquiry-list-app .consultant-category-filters {
   z-index: 3;
   display: grid;
-  grid-template-columns: minmax(170px, 1fr) auto minmax(170px, 1fr) auto minmax(170px, 1fr) auto;
+  grid-template-columns:
+    minmax(100px, 0.55fr)
+    auto
+    minmax(100px, 0.55fr)
+    auto
+    minmax(100px, 0.55fr)
+    minmax(360px, 2.7fr)
+    minmax(130px, 0.65fr)
+    auto;
   align-items: end;
-  gap: 12px;
+  gap: 10px;
   padding: 14px 18px;
   border-bottom: 1px solid #d7e7f0;
   background: #fff;
@@ -199,6 +229,7 @@
 }
 
 .consultant-inquiry-list-app .consultant-category-filters select,
+.consultant-inquiry-list-app .consultant-category-filters input,
 .consultant-inquiry-list-app .consultant-category-filters button {
   min-height: 42px;
   border: 1px solid #bfd7e5;
@@ -215,10 +246,107 @@
   padding: 0 38px 0 12px;
 }
 
+.consultant-inquiry-list-app .consultant-category-filters__search > div {
+  display: flex;
+  min-width: 0;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #bfd7e5;
+  border-radius: 10px;
+  background: #f8fcff;
+}
+
+.consultant-inquiry-list-app .consultant-category-filters__search svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  fill: none;
+  stroke: #4385a5;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
+.consultant-inquiry-list-app .consultant-category-filters__sort > div {
+  position: relative;
+  min-width: 0;
+}
+
+.consultant-inquiry-list-app
+  .consultant-category-filters__sort
+  > div
+  select {
+  appearance: none;
+}
+
+.consultant-inquiry-list-app
+  .consultant-category-filters__sort
+  > div
+  svg {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: #587186;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+  .consultant-category-filters__search
+  input {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: #173b5e !important;
+  box-shadow: none !important;
+}
+
+.consultant-inquiry-list-app
+  .consultant-category-filters__search
+  > div:focus-within {
+  border-color: #2f96d1;
+  outline: 3px solid rgb(47 150 209 / 18%);
+}
+
 .consultant-inquiry-list-app .consultant-category-filters select:focus,
 .consultant-inquiry-list-app .consultant-category-filters button:focus-visible {
   border-color: #2f96d1;
   outline: 3px solid rgb(47 150 209 / 18%);
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+  .consultant-risk-section--danger
+  .v6-queue-item.consultant-list-item::before {
+  background: #e5484d !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+  .consultant-risk-section--caution
+  .v6-queue-item.consultant-list-item::before {
+  background: #df9126 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+  .consultant-risk-section--general
+  .v6-queue-item.consultant-list-item::before {
+  background: #7a8794 !important;
 }
 
 .consultant-inquiry-list-app .consultant-category-filters select:disabled {
@@ -250,18 +378,11 @@
     display: none;
   }
 
-  .consultant-inquiry-list-app .consultant-list-item__category,
   .consultant-inquiry-list-app .consultant-list-item__received-at {
     display: flex;
     width: 100%;
     margin-top: 6px;
     padding: 0;
-  }
-
-  .consultant-inquiry-list-app .consultant-list-item__category {
-    color: #167da5;
-    font-size: 12px;
-    font-weight: 800;
   }
 
   .consultant-inquiry-list-app .consultant-list-item__received-at {

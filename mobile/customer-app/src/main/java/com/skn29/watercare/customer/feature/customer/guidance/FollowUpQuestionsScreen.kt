@@ -90,7 +90,7 @@ fun FollowUpQuestionsScreen(
             cancelState is CancelInquiryUiState.Success
 
     WaterCareScreen(
-        title = "?? ??",
+        title = "추가 질문",
         onBack = onBack,
     ) {
         FollowUpCancelSection(

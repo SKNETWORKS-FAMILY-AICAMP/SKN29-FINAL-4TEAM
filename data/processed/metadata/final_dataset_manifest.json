@@ -289,13 +289,13 @@
   "metadata_files": [
     {
       "path": "README.md",
-      "size_bytes": 4268,
-      "sha256": "942FD9D5F99645761638BC7D34F1C5F45B0BEF88226B2F5334C91BF33AFBB086"
+      "size_bytes": 4279,
+      "sha256": "2F557733521B8683EE20C99B3BB28E2A6D2DB70F756EBAE9971024C71E84DF88"
     },
     {
       "path": "catalog/CHANGELOG.md",
-      "size_bytes": 9174,
-      "sha256": "7BD191169BD04322B25F42FB44D20420F6D2E6FB24343ECF5385BBC078F346B1"
+      "size_bytes": 9188,
+      "sha256": "346DDE58FD45F5F4E45ED0AAD0E106CD04B436237AE298A4CC357F2438558CAF"
     },
     {
       "path": "catalog/datasets.yaml",
@@ -310,7 +310,7 @@
     {
       "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
       "size_bytes": 2822,
-      "sha256": "F392452B8DA954B3E9D1FDA0A935C35B49633FF8195B744D47D0DA01B082D18A"
+      "sha256": "DE33CBD6F340AD7505E57C7549A4BD45096503DD76EBC2A938FAB4DDEE44068D"
     },
     {
       "path": "processed/metadata/collection_log.csv",
@@ -320,7 +320,11 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 22290,
+<<<<<<< HEAD
       "sha256": "FF8EDEDCF25AE9E3A9714F14E0037AC182F8438D0025588C08FE124A66B1DEA5"
+=======
+      "sha256": "4948A49C4E7F3EB3CF1DAA3C488DA6A7245D929C6AD5E983B15E61127CE081E3"
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -340,7 +344,11 @@
     {
       "path": "processed/metadata/rag_three_model_handoff_manifest.json",
       "size_bytes": 1286,
+<<<<<<< HEAD
       "sha256": "EF01B094C89C77C5FFAD52089AADEDD16BB3D32628F2571AE2C92084AC3898E3"
+=======
+      "sha256": "082AAA87D1C44A2FFB1796A62397A7AE5A1BC95513B29D969456B75473285B27"
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "processed/metadata/source_inventory.csv",
@@ -426,8 +434,13 @@
     },
     {
       "path": "schemas/config/threeModelRagEvaluation.schema.json",
+<<<<<<< HEAD
       "size_bytes": 1740,
       "sha256": "6D7E8418772FC88C6565572B0E61945106027E7DFB43FB0F7DD63666E587AA53"
+=======
+      "size_bytes": 2480,
+      "sha256": "991FA7F916CA57D471D12266D43E60E3C04A99DE888EC024E25900C0D996A2D8"
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "schemas/processed/evidenceRegistry.schema.json",
@@ -638,18 +651,23 @@
     },
     {
       "path": "tools/rag_experiments/build_iac425_pages.py",
-      "size_bytes": 8907,
-      "sha256": "88B4D67E341CDA21D68C0E0A4F32BA9698771988C2A70AC1A27962592964626B"
+      "size_bytes": 8929,
+      "sha256": "344C1BDD697067498C0D52FB27D08D0706B894C8CC030ED8E310C575F7E525AD"
     },
     {
       "path": "tools/rag_experiments/build_iac606_pages.py",
-      "size_bytes": 8566,
-      "sha256": "BF8D0EC23BB492E0A7F03CBFB5119F54BC2105A56D4BD4848A5604658939164E"
+      "size_bytes": 8588,
+      "sha256": "C85B24B5E8F6E9AD77B821E105480F278F4AE98AEB4640DD424F9DDA31582A57"
     },
     {
       "path": "tools/rag_experiments/build_three_model_handoff.py",
+<<<<<<< HEAD
       "size_bytes": 22318,
       "sha256": "9AFEB053D1AF4D5166366FAFFA6E96B4C5A7028D09D77A077F9B0003BD6DD710"
+=======
+      "size_bytes": 22513,
+      "sha256": "6DB1FFF763A49B883B6245A3D06F7297240C3A80AA464F6E2913EE9566B6C41C"
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "tools/rag_experiments/qa_faq_corpus.py",
@@ -673,8 +691,13 @@
     },
     {
       "path": "tools/rag_experiments/qa_three_model_handoff.py",
+<<<<<<< HEAD
       "size_bytes": 11079,
       "sha256": "DB8AA034544DAA3742D172BE554C484E2B76A03E1DEB5593EEE54E30C249DEDA"
+=======
+      "size_bytes": 12059,
+      "sha256": "0282D3398C0FC63063093F27737F9CFEA3DE947C2C3569C163316715DC9CF1D8"
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "tools/tests/__init__.py",
@@ -708,13 +731,13 @@
     },
     {
       "path": "tools/tests/test_iac425_manual_corpus.py",
-      "size_bytes": 2687,
-      "sha256": "80C1EF189DBF1519F9D63370CF1590080E2D48956721BBEA7A9E6626F9A0C9AA"
+      "size_bytes": 2830,
+      "sha256": "1AC7440CA394C7CEF5730032E1D4FE7FE65D829FB71987ADE6DD82509CDDAA14"
     },
     {
       "path": "tools/tests/test_iac606_manual_corpus.py",
-      "size_bytes": 2162,
-      "sha256": "6FF9FAF6D642676691673C408742C514E9C487DEC86FABC06872828D7158B593"
+      "size_bytes": 2305,
+      "sha256": "553DDD998195F6D9E41FE6DDFEF8738121A6480497093FDDBD9B09F3D75E23E4"
     },
     {
       "path": "tools/tests/test_manual_corpus_qa.py",
@@ -748,6 +771,7 @@
     },
     {
       "path": "tools/tests/test_t005_data_projection.py",
+<<<<<<< HEAD
       "size_bytes": 16125,
       "sha256": "1CA5BEFFB5F5B226E6C3E25BD90FF8B7EE07865B2FE8D307D0F16F7B7961B281"
     },
@@ -755,6 +779,15 @@
       "path": "tools/tests/test_three_model_rag_handoff.py",
       "size_bytes": 3108,
       "sha256": "15A290AE6A25A2F52DEB89D6A5A33B2A26947BBCB62D943046F981EDF2A2A8A6"
+=======
+      "size_bytes": 16712,
+      "sha256": "2FFEC4AABDA98DF6EE6186D8882010E0F5A226CDE40D551FA698BD107C70000F"
+    },
+    {
+      "path": "tools/tests/test_three_model_rag_handoff.py",
+      "size_bytes": 4012,
+      "sha256": "854920210BD8ABC909E54695BAA26275A6408751DBD166BFD60E62024B7F08C2"
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "tools/watercare/__init__.py",
@@ -788,8 +821,8 @@
     },
     {
       "path": "tools/watercare/operations.py",
-      "size_bytes": 27962,
-      "sha256": "9DC58AC9B3D4052D2203244B583E76F383A5286E5A8910029D1940C867F3FACD"
+      "size_bytes": 28513,
+      "sha256": "E14F14A1AA48181EC6A5774482756AD76C5DC451C54E66D96A9038506DDB0615"
     },
     {
       "path": "tools/watercare/validation.py",
@@ -845,8 +878,13 @@
     },
     {
       "path": "config/rag/three_model_evaluation_cases.json",
+<<<<<<< HEAD
       "size_bytes": 28600,
       "sha256": "8D5DEE5392EAC6F5963FBB04AB0016714A154AFEE38676DA8ADD13EEE222AA11"
+=======
+      "size_bytes": 28732,
+      "sha256": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1"
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "config/synthetic/scenarios.json",
@@ -867,13 +905,13 @@
   "template_files": [
     {
       "path": "templates/data_readme.md.tpl",
-      "size_bytes": 4271,
-      "sha256": "1ABAA887B0DF9A7120CF9D8EC830B3424D3627856E7159C8795E87F4A156EEE9"
+      "size_bytes": 4282,
+      "sha256": "9470FD03FE0087D813CCD9685F154CD646D0A90469A87035305DE576CD920B64"
     },
     {
       "path": "templates/processing_spec.md.tpl",
       "size_bytes": 2825,
-      "sha256": "C206D7EAB8A1D98EE8EAFC85E71C0EC4117E1F1695DB888DC860DEB0014BE6B4"
+      "sha256": "1B1B8B82B395431A107177E47D0E34CC38395B5131933B4CBFAE8CA64E9F659E"
     },
     {
       "path": "templates/status_qa.md.tpl",
@@ -1005,7 +1043,11 @@
     {
       "path": "processed/validation/rag_experiments/three_model_handoff_qa.json",
       "size_bytes": 1563,
+<<<<<<< HEAD
       "sha256": "C89CAD4953BFE9772C3C6B537C630B4604BF094936D189E64E5567271B6EAEF4"
+=======
+      "sha256": "0227AF46C94A9E20BD24C19B1B5655FEEE0190D6BA39745F769EA5924B4BB4FF"
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "processed/validation/refactor/latest_equivalence_report.json",
@@ -1123,7 +1165,11 @@
   },
   "toolchain": {
     "python_files": 41,
+<<<<<<< HEAD
     "python_lines": 8325,
+=======
+    "python_lines": 8398,
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     "max_wrapper_lines": 10,
     "max_module_lines": 1226
   },

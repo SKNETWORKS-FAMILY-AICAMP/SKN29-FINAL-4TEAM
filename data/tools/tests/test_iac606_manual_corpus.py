@@ -31,6 +31,9 @@ class Iac606ManualCorpusTests(unittest.TestCase):
         self.assertTrue(all(row["mvp_use"] is False for row in self.rows))
         self.assertIn("고객상담센터 1600-1661", self.rows[-1]["text"])
 
+    def test_dataset_uses_platform_independent_lf_line_endings(self) -> None:
+        self.assertNotIn(b"\r", self.dataset_path.read_bytes())
+
     def test_known_extraction_corrections_are_explicit(self) -> None:
         page_one, ids = normalize_extracted_text("1\nWater Puri/f_ier with Ice Dispenser", 1)
         self.assertEqual(page_one, "Water Purifier with Ice Dispenser")

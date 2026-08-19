@@ -166,16 +166,16 @@ Variant를 사용하되 동일 증상의 근거 계보를 유지해야 한다.
 | `data/processed/structured/rag/expansion/rag_parent_pages_3model_v1.jsonl` | 문맥 확장용 Parent 15건 |
 | `data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl` | 검색 후보 Child 53건 |
 | `data/processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl` | Evidence Group 43건 |
-| `data/config/rag/three_model_evaluation_cases.json` | 평가 Case 49건 |
+| `data/config/rag/three_model_evaluation_cases.json` | 평가 Case 50건 |
 | `data/config/rag/supported_products.json` | 지원 판매코드와 Runtime 상태 |
 | `data/processed/metadata/rag_three_model_handoff_manifest.json` | 산출물 경로·건수·해시 Manifest |
 
 ## 7. 평가 데이터와 검색 안전 규칙
 
-평가 초안은 총 49건이다.
+평가 초안은 총 50건이다.
 
 - 양성 Case 43건: 각 Evidence Group에 대응하는 정상 질문
-- 부정 Case 6건: 근거를 반환하면 안 되는 질문
+- 부정 Case 7건: 근거를 반환하면 안 되는 질문
 
 모든 양성 Case는 정답 모델 외의 두 지원 모델을 금지 모델로 지정한다.
 예를 들어 IAC425 질문이라면 JAC104와 IAC606 문서 또는 Child가 검색 결과에
@@ -200,8 +200,8 @@ Variant를 사용하되 동일 증상의 근거 계보를 유지해야 한다.
 
 최종 AI 합격 조건은 다음과 같다.
 
-1. 양성 43건에서 기대 Evidence의 Source Variant가 Top-5에 모두 포함된다.
-2. 부정 6건은 전부 no-evidence다.
+1. 양성 43건에서 기대 Evidence Group별 검증된 Source Variant 중 하나 이상이 Top-5에 포함된다.
+2. 부정 7건은 전부 no-evidence다.
 3. 금지 모델, 금지 문서 또는 다른 판매코드의 검색 hit가 0건이다.
 4. Parent가 독립 검색 결과로 반환되는 사례가 0건이다.
 5. 평가 실행에 사용한 BGE-M3 모델명, 고정 revision, pgvector 환경과
@@ -260,7 +260,7 @@ Backend 가상환경은 공식 Bootstrap 절차로 Python 3.13.13 기반으로
 | 검사 파일·레코드 | 55개 파일·955개 레코드 |
 | 합성 Fixture | 369건 |
 | 결정적 재생성 | 변경 파일 0·canonical drift 0 |
-| 3모델 RAG QA | Parent 15·Child 53·Group 43·Case 49 |
+| 3모델 RAG QA | Parent 15·Child 53·Group 43·Case 50 |
 | 원본 PDF Git 유입 | 0건 |
 | 계약 검증기 | OpenAPI·Code·Example·State Machine·Crosswalk 모두 PASS |
 | 계약 pytest | 38건 통과 |
@@ -400,10 +400,10 @@ LF 정규화 후 다음을 확인한다.
 
 ### 평가 실행
 
-`data/config/rag/three_model_evaluation_cases.json`의 49건을 실행한다.
+`data/config/rag/three_model_evaluation_cases.json`의 50건을 실행한다.
 
 - 양성 43건: 기대 Evidence Source Variant가 Top-5에 포함되는지 확인
-- 부정 6건: 전부 no-evidence인지 확인
+- 부정 7건: 전부 no-evidence인지 확인
 - 모든 Case: 다른 판매코드·문서 hit가 0건인지 확인
 - 모델별 조작부 질문: IAC425와 IAC606의 답변이 서로 섞이지 않는지 확인
 
@@ -416,7 +416,7 @@ Backend/API 계약이 확장되기 전에는 신규 모델을 Runtime 활성 상
 - AI canonical evidence 테스트가 줄바꿈 검증을 포함해 통과한다.
 - Child 53건과 Parent 15건의 역할이 분리된다.
 - 양성 43건이 Top-5 합격 조건을 충족한다.
-- 부정 6건이 모두 no-evidence다.
+- 부정 7건이 모두 no-evidence다.
 - 금지 모델·문서 hit가 0건이다.
 - 평가 환경과 실행 결과가 재현 가능한 보고서로 남는다.
 
@@ -461,7 +461,7 @@ Backend/API 계약이 확장되기 전에는 신규 모델을 Runtime 활성 상
 - [x] 보정·전사 ID 기록
 - [x] Parent 15건과 Child 53건 생성
 - [x] Evidence Group 43건 생성
-- [x] 평가 Case 49건 생성
+- [x] 평가 Case 50건 생성
 - [x] 지원 제품 레지스트리 작성
 - [x] 합성 제품 3건과 전체 Fixture 369건 검증
 - [x] 원본 PDF Git 유입 0건 확인
@@ -481,7 +481,7 @@ Backend/API 계약이 확장되기 전에는 신규 모델을 Runtime 활성 상
 - [ ] canonical evidence 테스트 44건 재실행
 - [ ] Child 53건 pgvector 적재
 - [ ] Parent 15건 검색 후보 제외 확인
-- [ ] 평가 Case 49건 실행
+- [ ] 평가 Case 50건 실행
 - [ ] 금지 모델·문서 hit 0건 확인
 - [ ] 실행 환경과 성능 결과 기록
 

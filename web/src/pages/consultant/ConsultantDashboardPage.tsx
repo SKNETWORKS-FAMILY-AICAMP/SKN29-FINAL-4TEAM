@@ -7,7 +7,6 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { createInquiryDetailPath } from "../../app/router/routePaths";
-import { useAuth } from "../../app/providers/authContext";
 import Pagination from "../../common/components/data-display/Pagination";
 import {
   formatContractDateTimePrecise,
@@ -138,14 +137,23 @@ const DASHBOARD_DEPARTMENTS = [
 ] as const;
 
 const DASHBOARD_EMPLOYEE_CONTACTS = [
-  { name: "김하윤", department: "고객케어팀", position: "팀장", extension: "101", mobile: "010-2101-1001", email: "hayoon.kim@waterbridge.co.kr" },
-  { name: "한예나", department: "고객케어팀", position: "상담사", extension: "102", mobile: "010-2101-1002", email: "yena.han@waterbridge.co.kr" },
-  { name: "임현우", department: "품질관리팀", position: "매니저", extension: "201", mobile: "010-2201-2001", email: "hyunwoo.lim@waterbridge.co.kr" },
-  { name: "박지우", department: "품질관리팀", position: "담당", extension: "202", mobile: "010-2201-2002", email: "jiwoo.park@waterbridge.co.kr" },
-  { name: "이서연", department: "방문지원팀", position: "매니저", extension: "301", mobile: "010-2301-3001", email: "seoyeon.lee@waterbridge.co.kr" },
-  { name: "최지우", department: "방문지원팀", position: "담당", extension: "302", mobile: "010-2301-3002", email: "jiwoo.choi@waterbridge.co.kr" },
-  { name: "정하윤", department: "시스템운영팀", position: "매니저", extension: "401", mobile: "010-2401-4001", email: "hayoon.jeong@waterbridge.co.kr" },
-  { name: "강민준", department: "시스템운영팀", position: "담당", extension: "402", mobile: "010-2401-4002", email: "minjun.kang@waterbridge.co.kr" },
+  { name: "김하윤", department: "고객케어팀", position: "팀장", extension: "02-3274-9501", email: "hayoon.kim@waterbridge.co.kr" },
+  { name: "한예나", department: "고객케어팀", position: "상담사", extension: "02-3274-9502", email: "yena.han@waterbridge.co.kr" },
+  { name: "임현우", department: "품질관리팀", position: "매니저", extension: "02-3274-9503", email: "hyunwoo.lim@waterbridge.co.kr" },
+  { name: "박지우", department: "품질관리팀", position: "담당", extension: "02-3274-9504", email: "jiwoo.park@waterbridge.co.kr" },
+  { name: "이서연", department: "방문지원팀", position: "매니저", extension: "02-3274-9505", email: "seoyeon.lee@waterbridge.co.kr" },
+  { name: "최지우", department: "방문지원팀", position: "담당", extension: "02-3274-9506", email: "jiwoo.choi@waterbridge.co.kr" },
+  { name: "정하윤", department: "시스템운영팀", position: "매니저", extension: "02-3274-9507", email: "hayoon.jeong@waterbridge.co.kr" },
+  { name: "강민준", department: "시스템운영팀", position: "담당", extension: "02-3274-9508", email: "minjun.kang@waterbridge.co.kr" },
+] as const;
+
+const VISIT_TECHNICIAN_DIRECTORY = "방문기사 연락처";
+
+const DASHBOARD_VISIT_TECHNICIAN_CONTACTS = [
+  { name: "오민석", branch: "서울동부지사", contact: "010-2501-5001", email: "minseok.oh@waterbridge.co.kr" },
+  { name: "서지훈", branch: "서울서부지사", contact: "010-2501-5002", email: "jihoon.seo@waterbridge.co.kr" },
+  { name: "윤도현", branch: "경기남부지사", contact: "010-2501-5003", email: "dohyun.yoon@waterbridge.co.kr" },
+  { name: "배수아", branch: "경기북부지사", contact: "010-2501-5004", email: "sua.bae@waterbridge.co.kr" },
 ] as const;
 
 function getWaitingMinutes(inquiry: DashboardInquiryListItem) {
@@ -232,7 +240,6 @@ function getInitialBucket(search: string): CounselorWorkBucket {
 export default function ConsultantDashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
   const { filters, hasChangedConditions, resetFilters, setFilters } =
     useCounselorQueueFilters();
   const [activeBucket, setActiveBucket] =
@@ -519,10 +526,6 @@ export default function ConsultantDashboardPage() {
         ...inquiryStateUpdates[selectedBase.inquiryId],
       }
     : null;
-  const dashboardCounselorName =
-    user?.displayName === "합성 상담사 001"
-      ? "한예나"
-      : (user?.displayName ?? "상담사");
   const changeRiskSection = (riskLevel: ConsultantRiskLevelDto) => {
     setActiveRiskSection(riskLevel);
     setOpenRiskStatusFilter(null);
@@ -639,6 +642,8 @@ export default function ConsultantDashboardPage() {
   };
 
   const normalizedContactQuery = contactQuery.trim().toLowerCase();
+  const isVisitTechnicianDirectory =
+    selectedContactDepartment === VISIT_TECHNICIAN_DIRECTORY;
   const visibleContactEmployees = DASHBOARD_EMPLOYEE_CONTACTS.filter(
     (employee) =>
       (!selectedContactDepartment ||
@@ -647,6 +652,13 @@ export default function ConsultantDashboardPage() {
         Object.values(employee).some((value) =>
           value.toLowerCase().includes(normalizedContactQuery),
         )),
+  );
+  const visibleVisitTechnicians = DASHBOARD_VISIT_TECHNICIAN_CONTACTS.filter(
+    (technician) =>
+      !normalizedContactQuery ||
+      Object.values(technician).some((value) =>
+        value.toLowerCase().includes(normalizedContactQuery),
+      ),
   );
   const showContactTable =
     selectedContactDepartment !== null || normalizedContactQuery.length > 0;
@@ -675,9 +687,11 @@ export default function ConsultantDashboardPage() {
         >
           <div className="counselor-home-summary__intro">
             <h1 id="counselor-home-title">
-              {dashboardCounselorName}님의{" "}
+              <span>반갑습니다!</span>
               <br />
-              지금 할 일
+              <span className="counselor-home-summary__greeting-subline">
+                오늘도 좋은 하루 되세요 😊
+              </span>
             </h1>
           </div>
 
@@ -689,6 +703,10 @@ export default function ConsultantDashboardPage() {
             >
               <span>전체 문의 수</span>
               <strong>{totalInquiryCount}</strong>
+              <small className="counselor-home-metric__trend">
+                <b>↑ +8</b>
+                <span>전날 대비</span>
+              </small>
             </button>
             <button
               type="button"
@@ -697,6 +715,10 @@ export default function ConsultantDashboardPage() {
             >
               <span>새 문의</span>
               <strong>{bucketCounts.NEW}</strong>
+              <small className="counselor-home-metric__trend">
+                <b>↑ +5</b>
+                <span>전날 대비</span>
+              </small>
             </button>
             <button
               type="button"
@@ -705,6 +727,10 @@ export default function ConsultantDashboardPage() {
             >
               <span>처리 중인 문의</span>
               <strong>{bucketCounts.IN_PROGRESS}</strong>
+              <small className="counselor-home-metric__trend">
+                <b>↓ -2</b>
+                <span>전날 대비</span>
+              </small>
             </button>
             <button
               type="button"
@@ -713,6 +739,10 @@ export default function ConsultantDashboardPage() {
             >
               <span>AI 검토</span>
               <strong>{aiReviewCandidates.length}</strong>
+              <small className="counselor-home-metric__trend">
+                <b>↑ +3</b>
+                <span>전날 대비</span>
+              </small>
             </button>
           </div>
         </section>
@@ -743,11 +773,17 @@ export default function ConsultantDashboardPage() {
               <h2>직원 연락처</h2>
               <div className="counselor-dashboard-contact-tools">
                 <label>
-                  <span aria-hidden="true">⌕</span>
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="10.5" cy="10.5" r="6.25" />
+                    <path d="m15.25 15.25 4.5 4.5" />
+                  </svg>
                   <input
                     type="search"
                     aria-label="직원 연락처 검색"
-                    placeholder="직원 검색"
                     value={contactQuery}
                     onChange={(event) => setContactQuery(event.target.value)}
                   />
@@ -770,35 +806,63 @@ export default function ConsultantDashboardPage() {
                 <strong className="counselor-dashboard-contact-table__title">
                   {selectedContactDepartment ?? "검색 결과"}
                 </strong>
-                <table className="counselor-dashboard-contact-table">
+                <table
+                  className={`counselor-dashboard-contact-table counselor-dashboard-contact-table--${
+                    isVisitTechnicianDirectory ? "visit" : "employee"
+                  }`}
+                >
                   <thead>
-                    <tr>
-                      <th>직원명</th>
-                      <th>부서명</th>
-                      <th>직책</th>
-                      <th>내선번호</th>
-                      <th>휴대폰번호</th>
-                      <th>이메일</th>
-                    </tr>
+                    {isVisitTechnicianDirectory ? (
+                      <tr>
+                        <th>직원명</th>
+                        <th>지사</th>
+                        <th>연락처</th>
+                        <th>이메일</th>
+                      </tr>
+                    ) : (
+                      <tr>
+                        <th>직원명</th>
+                        <th>부서명</th>
+                        <th>직책</th>
+                        <th>내선번호</th>
+                        <th>이메일</th>
+                      </tr>
+                    )}
                   </thead>
                   <tbody>
-                    {visibleContactEmployees.map((employee) => (
-                      <tr key={employee.email}>
-                        <td>{employee.name}</td>
-                        <td>{employee.department}</td>
-                        <td>{employee.position}</td>
-                        <td>{employee.extension}</td>
-                        <td>{employee.mobile}</td>
-                        <td>
-                          <a href={`mailto:${employee.email}`}>
-                            {employee.email}
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
-                    {visibleContactEmployees.length === 0 && (
+                    {isVisitTechnicianDirectory
+                      ? visibleVisitTechnicians.map((technician) => (
+                          <tr key={technician.email}>
+                            <td>{technician.name}</td>
+                            <td>{technician.branch}</td>
+                            <td>{technician.contact}</td>
+                            <td>
+                              <a href={`mailto:${technician.email}`}>
+                                {technician.email}
+                              </a>
+                            </td>
+                          </tr>
+                        ))
+                      : visibleContactEmployees.map((employee) => (
+                          <tr key={employee.email}>
+                            <td>{employee.name}</td>
+                            <td>{employee.department}</td>
+                            <td>{employee.position}</td>
+                            <td>{employee.extension}</td>
+                            <td>
+                              <a href={`mailto:${employee.email}`}>
+                                {employee.email}
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
+                    {(isVisitTechnicianDirectory
+                      ? visibleVisitTechnicians.length === 0
+                      : visibleContactEmployees.length === 0) && (
                       <tr>
-                        <td colSpan={6}>검색 결과가 없습니다.</td>
+                        <td colSpan={isVisitTechnicianDirectory ? 4 : 5}>
+                          검색 결과가 없습니다.
+                        </td>
                       </tr>
                     )}
                   </tbody>
@@ -806,26 +870,51 @@ export default function ConsultantDashboardPage() {
               </div>
             ) : (
               <div className="counselor-dashboard-org" aria-label="조직도">
-                <strong>고객지원본부</strong>
-                <span aria-hidden="true" />
-                <div>
+                <div className="counselor-dashboard-org__root">
+                  <div>
+                    <strong>고객지원본부</strong>
+                  </div>
+                </div>
+                <span className="counselor-dashboard-org__stem" aria-hidden="true" />
+                <div className="counselor-dashboard-org__departments">
                   {DASHBOARD_DEPARTMENTS.map((department) => (
                     <button
                       key={department}
                       type="button"
+                      className="counselor-dashboard-org__department"
                       onClick={() => setSelectedContactDepartment(department)}
                     >
-                      <b>{department}</b>
-                      <small>
-                        {
-                          DASHBOARD_EMPLOYEE_CONTACTS.filter(
-                            (employee) => employee.department === department,
-                          ).length
-                        }
-                        명
-                      </small>
+                      <div>
+                        <b>{department}</b>
+                        <small>
+                          {
+                            DASHBOARD_EMPLOYEE_CONTACTS.filter(
+                              (employee) => employee.department === department,
+                            ).length
+                          }
+                          명 · 연락처 보기
+                        </small>
+                      </div>
+                      <i aria-hidden="true">›</i>
                     </button>
                   ))}
+                </div>
+                <div className="counselor-dashboard-org__field-directory">
+                  <span className="counselor-dashboard-org__field-stem" aria-hidden="true" />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedContactDepartment(VISIT_TECHNICIAN_DIRECTORY)
+                    }
+                  >
+                    <div>
+                      <b>방문기사 연락처</b>
+                    </div>
+                    <strong>
+                      {DASHBOARD_VISIT_TECHNICIAN_CONTACTS.length}명
+                      <i aria-hidden="true">›</i>
+                    </strong>
+                  </button>
                 </div>
               </div>
             )}

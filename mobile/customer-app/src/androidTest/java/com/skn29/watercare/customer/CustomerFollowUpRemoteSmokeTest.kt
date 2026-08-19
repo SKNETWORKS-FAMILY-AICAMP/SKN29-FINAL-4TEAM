@@ -86,7 +86,7 @@ class CustomerFollowUpRemoteSmokeTest {
                 question.isFreeText -> {
                     FollowUpAnswer(
                         questionId = question.questionId,
-                        answerText = "?ㅻ뒛 ?꾩묠遺??利앹긽??怨꾩냽?섍퀬 ?덉뒿?덈떎.",
+                        answerText = "오늘 아침부터 증상이 계속되고 있습니다.",
                     )
                 }
 

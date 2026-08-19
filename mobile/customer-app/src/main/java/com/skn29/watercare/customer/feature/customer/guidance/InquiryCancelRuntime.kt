@@ -39,7 +39,7 @@ internal class InquiryCancelRuntime(
             _state.value =
                 CancelInquiryUiState.Error(
                     message =
-                        "?? ?? ??? ??? ? ????.",
+                        "문의 취소 기능을 사용할 수 없습니다.",
                     retryable = false,
                 )
             return
@@ -49,7 +49,7 @@ internal class InquiryCancelRuntime(
             _state.value =
                 CancelInquiryUiState.Error(
                     message =
-                        "?? ?? ?? ??? ??? ? ?? ??? ???.",
+                        "최신 문의 상태 버전을 확인한 뒤 다시 시도해 주세요.",
                     retryable = false,
                 )
             return

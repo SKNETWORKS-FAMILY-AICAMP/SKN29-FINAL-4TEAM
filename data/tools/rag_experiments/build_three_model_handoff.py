@@ -397,7 +397,15 @@ def _build_evaluations(
         ("WPUJCC104D", "WPU-JCC104D의 누수 대처 방법은?", "INACTIVE_BUNDLED_MANUAL_ALIAS"),
         ("WPUIAC506SNW", "WPU-IAC506의 필터 교체 방법은?", "BLOCKED_MODEL"),
         ("UNVERIFIED_FAQ", "모델을 확인할 수 없는 정수기 FAQ 답변을 알려줘.", "MODEL_UNVERIFIED_FAQ"),
+<<<<<<< HEAD
         ("WPUIAC999ZZZ", "WPUIAC999ZZZ 모델의 온수 잠금을 해제하는 방법은?", "UNREGISTERED_EXACT_SALES_CODE"),
+=======
+        (
+            "WPUIAC999ZZZ",
+            "WPUIAC999ZZZ 모델의 온수 잠금을 해제하는 방법은?",
+            "UNREGISTERED_EXACT_SALES_CODE",
+        ),
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     ]
     negative_cases = []
     for index, (code, query, reason) in enumerate(negative_specs, start=1):
@@ -419,7 +427,15 @@ def _build_evaluations(
         "status": "DATA_READY_AI_NOT_RUN",
         "human_review_status": "HUMAN_REVIEW_PENDING",
         "retrieval_acceptance": {
+<<<<<<< HEAD
             "positive": "질문의 정확 판매코드와 일치하는 검증된 expected Evidence Group의 근거 중 1개 이상이 Top-5 안에 포함",
+=======
+            "positive": "기대 Evidence Group별 검증된 Source Variant 중 하나 이상이 Top-5에 포함",
+            "positive_rule_id": "RAG-EVAL-GROUP-TOP5-001",
+            "positive_match_mode": "AT_LEAST_ONE_VERIFIED_VARIANT_PER_EXPECTED_GROUP",
+            "positive_top_k": 5,
+            "required_variant_verification_status": "TEXT_AND_VISUAL_VERIFIED",
+>>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
             "negative": "no-evidence",
             "cross_model_hits": 0,
             "direct_parent_hits": 0,

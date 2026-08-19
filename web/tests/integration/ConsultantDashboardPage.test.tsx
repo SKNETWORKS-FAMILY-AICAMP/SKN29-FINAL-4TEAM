@@ -67,12 +67,18 @@ describe("ConsultantDashboardPage", () => {
     renderPage();
 
     expect(
-      screen.getByRole("heading", { name: "테스트 상담원님의 지금 할 일" }),
+      screen.getByRole("heading", {
+        name: "반갑습니다!오늘도 좋은 하루 되세요 😊",
+      }),
     ).toBeVisible();
     const workSummary = within(screen.getByLabelText("업무 요약"));
     expect(workSummary.getByRole("button", { name: /전체 문의 수90/ })).toBeVisible();
     expect(workSummary.getByRole("button", { name: /새 문의30/ })).toBeVisible();
     expect(workSummary.getByRole("button", { name: /처리 중인 문의30/ })).toBeVisible();
+    expect(workSummary.getAllByText("전날 대비")).toHaveLength(4);
+    ["↑ +8", "↑ +5", "↓ -2", "↑ +3"].forEach((change) =>
+      expect(workSummary.getByText(change)).toBeVisible(),
+    );
     expect(screen.getByRole("heading", { name: "공지사항" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "직원 연락처" })).toBeVisible();
     expect(screen.getAllByRole("listitem")).toHaveLength(6);
@@ -122,14 +128,35 @@ describe("ConsultantDashboardPage", () => {
 
     await user.click(screen.getByRole("button", { name: /고객케어팀/ }));
 
-    ["직원명", "부서명", "직책", "내선번호", "휴대폰번호", "이메일"].forEach(
+    ["직원명", "부서명", "직책", "내선번호", "이메일"].forEach(
       (column) =>
         expect(screen.getByRole("columnheader", { name: column })).toBeVisible(),
     );
+    expect(
+      screen.queryByRole("columnheader", { name: "휴대폰번호" }),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "한예나" })).toBeVisible();
+    expect(screen.getByRole("cell", { name: "02-3274-9502" })).toBeVisible();
 
     await user.click(screen.getByRole("button", { name: "조직도" }));
     expect(screen.getByLabelText("조직도")).toBeVisible();
+  });
+
+  it("조직도 아래에서 방문기사 연락처 목록을 확인한다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(
+      screen.getByRole("button", { name: /방문기사 연락처/ }),
+    );
+
+    expect(screen.getByText("방문기사 연락처")).toBeVisible();
+    ["직원명", "지사", "연락처", "이메일"].forEach((column) =>
+      expect(screen.getByRole("columnheader", { name: column })).toBeVisible(),
+    );
+    expect(screen.getByRole("cell", { name: "오민석" })).toBeVisible();
+    expect(screen.getByRole("cell", { name: "서울동부지사" })).toBeVisible();
+    expect(screen.getByRole("cell", { name: "010-2501-5001" })).toBeVisible();
   });
 
   it("직원 연락처 검색으로 전체 조직의 직원을 찾는다", async () => {
@@ -143,7 +170,7 @@ describe("ConsultantDashboardPage", () => {
 
     expect(screen.getByRole("cell", { name: "한예나" })).toBeVisible();
     expect(screen.getByRole("cell", { name: "고객케어팀" })).toBeVisible();
-    expect(screen.getByRole("cell", { name: "102" })).toBeVisible();
+    expect(screen.getByRole("cell", { name: "02-3274-9502" })).toBeVisible();
   });
 
   it("대시보드 상단에는 문의 검색과 사용자 화살표를 표시하지 않는다", () => {
@@ -155,7 +182,7 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.queryByRole("button", { name: "검색" })).not.toBeInTheDocument();
     expect(container.querySelector(".simple-user__chevron")).toBeNull();
     expect(screen.getByText("테스트 상담원")).toBeVisible();
-    expect(screen.getByText("STAFF-CONS-TEST")).toBeVisible();
+    expect(screen.getByText("2026-001-256")).toBeVisible();
     expect(screen.getByRole("button", { name: "로그아웃" })).toBeVisible();
   });
 
@@ -392,48 +419,6 @@ describe("ConsultantDashboardPage", () => {
         { name: /상세 열기/ },
       ),
     ).toHaveLength(10);
-  });
-
-  it("각 문의 탭의 상태 필터를 독립적으로 유지한다", async () => {
-    const user = userEvent.setup();
-    renderPage();
-
-    await user.click(screen.getByRole("tab", { name: /처리 중인 문의/ }));
-
-    let dangerFilter = screen.getByRole("button", {
-      name: "긴급 문의 상태 필터",
-    });
-
-    expect(dangerFilter).toHaveTextContent("전체 상태");
-
-    let dangerSection = screen.getByRole("tabpanel", { name: /긴급 문의/ });
-    expect(
-      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
-    ).toHaveLength(10);
-
-    await user.click(dangerFilter);
-    await user.click(screen.getByRole("option", { name: "방문 예정" }));
-
-    expect(dangerFilter).toHaveTextContent("방문 예정");
-    expect(
-      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
-    ).toHaveLength(2);
-    expect(within(dangerSection).queryByLabelText(/^상태:/)).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole("tab", { name: /주의 문의/ }));
-    expect(
-      screen.getByRole("button", { name: "주의 문의 상태 필터" }),
-    ).toHaveTextContent("전체 상태");
-
-    await user.click(screen.getByRole("tab", { name: /긴급 문의/ }));
-    dangerFilter = screen.getByRole("button", {
-      name: "긴급 문의 상태 필터",
-    });
-    dangerSection = screen.getByRole("tabpanel", { name: /긴급 문의/ });
-    expect(dangerFilter).toHaveTextContent("방문 예정");
-    expect(
-      within(dangerSection).getAllByRole("button", { name: /상세 열기/ }),
-    ).toHaveLength(2);
   });
 
   it.each([

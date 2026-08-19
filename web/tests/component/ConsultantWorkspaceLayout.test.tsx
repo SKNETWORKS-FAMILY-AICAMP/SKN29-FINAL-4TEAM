@@ -36,9 +36,7 @@ describe("ConsultantWorkspaceLayout", () => {
     expect(userChip).not.toBeNull();
     expect(within(userChip as HTMLElement).getByText("인증 세션 상담원")).toBeVisible();
     expect(
-      within(userChip as HTMLElement).getByText(
-        "00000000-0000-4000-8000-000000000102",
-      ),
+      within(userChip as HTMLElement).getByText("2026-001-256"),
     ).toBeVisible();
     expect(
       within(userChip as HTMLElement).getByRole("button", { name: "로그아웃" }),

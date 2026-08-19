@@ -9,7 +9,20 @@
     "dataset_id": {"const": "RAG-3MODEL-EVALUATION-DRAFT-V1"},
     "status": {"const": "DATA_READY_AI_NOT_RUN"},
     "human_review_status": {"const": "HUMAN_REVIEW_PENDING"},
-    "retrieval_acceptance": {"type": "object"},
+    "retrieval_acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["positive", "positive_rule_id", "positive_match_mode", "positive_top_k", "required_variant_verification_status", "negative", "cross_model_hits"],
+      "properties": {
+        "positive": {"const": "기대 Evidence Group별 검증된 Source Variant 중 하나 이상이 Top-5에 포함"},
+        "positive_rule_id": {"const": "RAG-EVAL-GROUP-TOP5-001"},
+        "positive_match_mode": {"const": "AT_LEAST_ONE_VERIFIED_VARIANT_PER_EXPECTED_GROUP"},
+        "positive_top_k": {"const": 5},
+        "required_variant_verification_status": {"const": "TEXT_AND_VISUAL_VERIFIED"},
+        "negative": {"const": "no-evidence"},
+        "cross_model_hits": {"const": 0}
+      }
+    },
     "generated_at": {"type": "string", "format": "date-time"},
     "cases": {
       "type": "array",

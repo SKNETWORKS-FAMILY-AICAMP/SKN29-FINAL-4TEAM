@@ -14,6 +14,11 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
+from apps.care.models import CareRecord
+from apps.care.services.approved_care_cycle_rule_loader import (
+    load_approved_care_cycle_rule_registry,
+)
+from apps.care.services.care_schedule_service import CareScheduleService
 from apps.subscriptions.models import CustomerSubscription
 from apps.subscriptions.repositories.subscription_repository import (
     SUPPORTED_PRODUCT_MODEL_CODE,
@@ -155,6 +160,11 @@ class SubscriptionService:
                 subscription,
                 performed_on=last_care_on,
             )
+        cls._align_approved_filter_schedule(
+            subscription=subscription,
+            change_reason="SUBSCRIPTION_CREATED",
+        )
+        subscription.refresh_from_db()
         data = cls._mutation_data(subscription, idempotent_replay=False)
         cls._complete_idempotency(
             idempotency_record,
@@ -245,6 +255,11 @@ class SubscriptionService:
                 subscription,
                 performed_on=last_care_on,
             )
+        cls._align_approved_filter_schedule(
+            subscription=subscription,
+            change_reason="SUBSCRIPTION_SCOPE_OR_BASELINE_CHANGED",
+        )
+        subscription.refresh_from_db()
         data = cls._mutation_data(subscription, idempotent_replay=False)
         cls._complete_idempotency(
             idempotency_record,
@@ -316,6 +331,20 @@ class SubscriptionService:
             "ended_on": subscription.ended_on,
             "idempotent_replay": idempotent_replay,
         }
+
+    @staticmethod
+    def _align_approved_filter_schedule(
+        *,
+        subscription: CustomerSubscription,
+        change_reason: str,
+    ) -> None:
+        CareScheduleService.recalculate_from_registry(
+            subscription_public_id=subscription.public_id,
+            care_type_code=CareRecord.CareType.FILTER_REPLACEMENT,
+            registry=load_approved_care_cycle_rule_registry(),
+            change_reason=change_reason,
+            invalidate_official_on_miss=True,
+        )
 
     @classmethod
     def _completed_care_dates(
