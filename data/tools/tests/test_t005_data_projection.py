@@ -72,7 +72,16 @@ class T005DataProjectionTests(unittest.TestCase):
         self.assertEqual(15, counts["rag_expansion_parents"])
         self.assertEqual(53, counts["rag_expansion_children"])
         self.assertEqual(43, counts["rag_expansion_evidence_groups"])
-        self.assertEqual(49, counts["rag_expansion_evaluation_cases"])
+        self.assertEqual(50, counts["rag_expansion_evaluation_cases"])
+
+    def test_rag_expansion_scope_matches_materialized_counts(self) -> None:
+        counts = _dataset_counts(self.config)
+        manifest = read_json(self.config.path("dataset_manifest"))
+        scope = manifest["rag_expansion_scope"]
+        self.assertEqual(counts["rag_expansion_parents"], scope["parent_pages"])
+        self.assertEqual(counts["rag_expansion_children"], scope["child_chunks"])
+        self.assertEqual(counts["rag_expansion_evidence_groups"], scope["evidence_groups"])
+        self.assertEqual(counts["rag_expansion_evaluation_cases"], scope["evaluation_cases"])
 
     def test_pipeline_schema_requires_exact_fixture_total(self) -> None:
         schema = read_json(DATA_ROOT / "schemas/config/pipeline.schema.json")

@@ -27,7 +27,7 @@
     "parent_pages": 15,
     "child_chunks": 53,
     "evidence_groups": 43,
-    "evaluation_cases": 49,
+    "evaluation_cases": 50,
     "required_pre_score_filter": "exact_sales_code"
   },
   "excluded_from_rag": [
@@ -304,7 +304,7 @@
     "rag_expansion_parents": 15,
     "rag_expansion_children": 53,
     "rag_expansion_evidence_groups": 43,
-    "rag_expansion_evaluation_cases": 49,
+    "rag_expansion_evaluation_cases": 50,
     "synthetic_api_idempotency_cases": 3,
     "synthetic_scenario_subset_files": 7,
     "synthetic_scenario_subset_records": 33

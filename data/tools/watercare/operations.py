@@ -294,6 +294,17 @@ def refresh_dataset_manifest(config: PipelineConfig) -> dict[str, Any]:
             item["records"] = records
         item["sha256"] = sha256_file(target)
     manifest["counts"] = _dataset_counts(config)
+    expansion_scope = manifest.get("rag_expansion_scope")
+    if not isinstance(expansion_scope, dict):
+        raise ValueError("dataset manifest rag_expansion_scope is missing")
+    expansion_scope.update(
+        {
+            "parent_pages": manifest["counts"]["rag_expansion_parents"],
+            "child_chunks": manifest["counts"]["rag_expansion_children"],
+            "evidence_groups": manifest["counts"]["rag_expansion_evidence_groups"],
+            "evaluation_cases": manifest["counts"]["rag_expansion_evaluation_cases"],
+        }
+    )
     write_json(config.data_root, path, manifest)
     return manifest
 

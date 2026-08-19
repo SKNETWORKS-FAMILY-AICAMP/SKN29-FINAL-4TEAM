@@ -5,7 +5,7 @@
 - 정확 판매코드 `WPUJAC104DWH`, `WPUIAC425SNW`, `WPUIAC606SNW` 3개를 데이터 지원 레지스트리에 고정했다.
 - 공식 매뉴얼 144쪽을 계보·해시가 있는 `REFERENCE_ONLY` 페이지 코퍼스로 구성하고 IAC606 텍스트 레이어 결함 3건을 correction/transcription ID로 보정했다.
 - 시각 검수한 15 Parent와 행 단위 53 Child, 모델별 Source Variant를 묶은 43 Evidence Group을 `rag-expansion` 인계 후보로 추가했다.
-- 양성 43건·부정 6건 평가 초안을 추가했으며 AI 검색 평가는 실행 전 상태인 `DATA_READY_AI_NOT_RUN`으로 고정했다.
+- 양성 43건·부정 7건, 총 50건의 평가 초안을 추가했으며 AI 검색 평가는 실행 전 상태인 `DATA_READY_AI_NOT_RUN`으로 고정했다.
 - 합성 제품 2건을 `RAG_READY_CONTRACT_BLOCKED`로 추가하되 신규 고객제품·구독·문의는 생성하지 않았다.
 - Backend handoff는 참조된 JAC104 제품만 적재하도록 제품 fixture를 `LOAD_FILTERED`로 유지하고 신규 두 제품의 Runtime 활성화를 차단했다.
 

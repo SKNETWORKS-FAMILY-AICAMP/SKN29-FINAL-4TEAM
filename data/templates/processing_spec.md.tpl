@@ -17,7 +17,7 @@
 | RAG Parent | 15(`CONTEXT_ONLY`) |
 | RAG Child | 53(`INGEST_CANDIDATE`) |
 | Evidence Group | 43 |
-| RAG 평가 초안 | 49(양성 43·부정 6) |
+| RAG 평가 초안 | 50(양성 43·부정 7) |
 | FAQ 정규화 | 119 |
 | OCR 검증 FAQ | 5 |
 | 공식 FAQ 이미지 자산 | 10 |

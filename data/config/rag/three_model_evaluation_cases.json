@@ -783,6 +783,22 @@
       "human_review_status": "HUMAN_REVIEW_PENDING",
       "negative_reason": "MODEL_UNVERIFIED_FAQ",
       "query": "모델을 확인할 수 없는 정수기 FAQ 답변을 알려줘."
+    },
+    {
+      "case_id": "RAG3-NEG-007",
+      "case_type": "NEGATIVE",
+      "data_status": "DATA_READY_AI_NOT_RUN",
+      "exact_sales_code": "WPUIAC999ZZZ",
+      "expected_evidence_group_ids": [],
+      "expected_no_evidence": true,
+      "forbidden_model_codes": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "negative_reason": "UNREGISTERED_EXACT_SALES_CODE",
+      "query": "WPUIAC999ZZZ 모델의 온수 잠금을 해제하는 방법은?"
     }
   ],
   "dataset_id": "RAG-3MODEL-EVALUATION-DRAFT-V1",
@@ -791,7 +807,11 @@
   "retrieval_acceptance": {
     "cross_model_hits": 0,
     "negative": "no-evidence",
-    "positive": "expected Evidence Group의 모든 Source Variant가 Top-5 안에 포함"
+    "positive": "기대 Evidence Group별 검증된 Source Variant 중 하나 이상이 Top-5에 포함",
+    "positive_match_mode": "AT_LEAST_ONE_VERIFIED_VARIANT_PER_EXPECTED_GROUP",
+    "positive_rule_id": "RAG-EVAL-GROUP-TOP5-001",
+    "positive_top_k": 5,
+    "required_variant_verification_status": "TEXT_AND_VISUAL_VERIFIED"
   },
   "schema_version": "1.0.0",
   "status": "DATA_READY_AI_NOT_RUN"
