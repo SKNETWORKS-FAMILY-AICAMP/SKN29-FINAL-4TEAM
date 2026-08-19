@@ -118,3 +118,71 @@ def test_timeout_maps_to_ai_processing_timeout():
     )
     assert result.decision == HarnessDecision.ESCALATE
     assert result.error_code == HarnessErrorCode.AI_PROCESSING_TIMEOUT
+
+
+def test_retryable_mcp_evidence_search_failure_retries_once_then_escalates():
+    from ai.app.orchestration.harness import McpToolFailure, McpToolFailureKind, McpToolName
+
+    failure = McpToolFailure(
+        tool_name=McpToolName.SEARCH_OFFICIAL_EVIDENCE,
+        kind=McpToolFailureKind.TIMEOUT,
+        retryable=True,
+    )
+    runner = HarnessRunner()
+    first = runner.run(
+        product=_product(),
+        evidence_chunks=[],
+        safety_assessment=_safety(),
+        guidance=_guidance(),
+        tool_failure=failure,
+    )
+    assert first.decision == HarnessDecision.RETRY_RETRIEVAL
+    assert first.retry_state.retrieval_retries == 1
+    assert any(issue.code.value == "MCP_TOOL_FAILURE" for issue in first.verification.issues)
+
+    second = runner.run(
+        product=_product(),
+        evidence_chunks=[],
+        safety_assessment=_safety(),
+        guidance=_guidance(),
+        retry_state=first.retry_state,
+        tool_failure=failure,
+    )
+    assert second.decision == HarnessDecision.ESCALATE
+    assert second.error_code == HarnessErrorCode.MCP_TOOL_FAILURE
+
+
+def test_non_retrieval_mcp_tool_failure_escalates_without_retry():
+    from ai.app.orchestration.harness import McpToolFailure, McpToolFailureKind, McpToolName
+
+    result = HarnessRunner().run(
+        product=_product(),
+        evidence_chunks=[],
+        safety_assessment=_safety(),
+        guidance=_guidance(),
+        tool_failure=McpToolFailure(
+            tool_name=McpToolName.LOOKUP_PRODUCT_CONTEXT,
+            kind=McpToolFailureKind.UNAVAILABLE,
+            retryable=True,
+        ),
+    )
+
+    assert result.decision == HarnessDecision.ESCALATE
+    assert result.should_retry is False
+    assert result.retry_state.retrieval_retries == 0
+
+
+def test_mcp_tool_failure_contract_rejects_raw_internal_error_fields():
+    import pytest
+    from pydantic import ValidationError
+    from ai.app.orchestration.harness import McpToolFailure, McpToolFailureKind, McpToolName
+
+    with pytest.raises(ValidationError):
+        McpToolFailure.model_validate(
+            {
+                "tool_name": McpToolName.SEARCH_OFFICIAL_EVIDENCE,
+                "kind": McpToolFailureKind.EXECUTION_ERROR,
+                "retryable": False,
+                "raw_error": "postgres password=super-secret stacktrace",
+            }
+        )
