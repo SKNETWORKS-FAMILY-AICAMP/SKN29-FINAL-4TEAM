@@ -202,6 +202,7 @@ def main() -> None:
             for row in rows
         ),
         encoding="utf-8",
+        newline="\n",
     )
     print(json.dumps({
         "status": "IAC425_PAGE_DATASET_CREATED",

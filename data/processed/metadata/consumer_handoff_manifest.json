@@ -584,7 +584,7 @@
           "role": "MANIFEST",
           "records": 1,
           "size_bytes": 12240,
-          "sha256": "E8A3ED1024D5D3B6CE2AF56FEBFA1C79DA80910E3F5C1739FA1EED425C358BB7"
+          "sha256": "C71E17C131070AB195FF87837735E6176FEC0DEC8F3037209CB2A0C4AF7E588A"
         },
         {
           "path": "processed/metadata/DATA_PROCESSING_SPEC.md",

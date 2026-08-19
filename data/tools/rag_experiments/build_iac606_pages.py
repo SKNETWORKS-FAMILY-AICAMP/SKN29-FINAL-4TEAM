@@ -188,6 +188,7 @@ def main() -> None:
     output_path.write_text(
         "".join(json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n" for row in rows),
         encoding="utf-8",
+        newline="\n",
     )
     print(json.dumps({
         "status": "IAC606_PAGE_DATASET_CREATED",
