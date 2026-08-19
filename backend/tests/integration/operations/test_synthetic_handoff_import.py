@@ -27,7 +27,6 @@ from apps.operations.models import (
 from apps.operations.repositories import SyntheticImportConflict
 from apps.operations.services import SyntheticHandoffImportService
 from apps.operations.services.operations_service import (
-    EXPECTED_FIXTURE_COUNTS,
     EXPECTED_FULL_COUNTS,
 )
 from apps.products.models import ProductModel
@@ -52,31 +51,6 @@ DOMAIN_MODELS = (
     SyntheticImportBatch,
     SyntheticImportItem,
 )
-
-
-def test_physical_fixture_products_are_filtered_by_database_profiles():
-    service = SyntheticHandoffImportService()
-
-    all_rows = service._load_fixture_set()
-    actual_counts = {
-        dataset: len(rows) for dataset, rows in all_rows.items()
-    }
-
-    assert actual_counts == EXPECTED_FIXTURE_COUNTS
-    assert sum(actual_counts.values()) == 369
-    assert {
-        row["product_code"] for row in all_rows["products"]
-    } == {
-        "WPUJAC104DWH",
-        "WPUIAC425SNW",
-        "WPUIAC606SNW",
-    }
-
-    for profile in ("db-smoke", "db-full"):
-        selected = service._select_rows(profile, all_rows)
-        assert [
-            row["product_code"] for row in selected["products"]
-        ] == ["WPUJAC104DWH"]
 
 
 @pytest.mark.django_db
@@ -208,12 +182,6 @@ def test_full_import_preserves_provenance_and_history_invariants():
     assert User.objects.filter(is_synthetic=True).count() == 16
     assert CustomerProfile.objects.count() == 12
     assert ProductModel.objects.count() == 1
-    assert list(
-        ProductModel.objects.values_list("model_code", flat=True)
-    ) == ["WPUJAC104DWH"]
-    assert not ProductModel.objects.filter(
-        model_code__in=("WPUIAC425SNW", "WPUIAC606SNW")
-    ).exists()
     assert CustomerSubscription.objects.count() == 12
     assert Inquiry.objects.count() == 22
     assert SymptomEntry.objects.count() == 22

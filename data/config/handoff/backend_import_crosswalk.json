@@ -67,7 +67,7 @@
     },
     "import_service": {
       "path": "backend/apps/operations/services/operations_service.py",
-      "sha256": "2BE7987418FF5FD223F018E47F1F6F0925167A14F16BBCD6F7D27B51791086AA"
+      "sha256": "57646834CC18BEFDFAC114F6CA3F1DBD9EAC235AB3169D38141E313AA6B712A9"
     },
     "import_command": {
       "path": "backend/apps/operations/management/commands/import_synthetic_handoff.py",
