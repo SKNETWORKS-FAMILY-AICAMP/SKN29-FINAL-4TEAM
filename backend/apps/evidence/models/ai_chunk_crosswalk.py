@@ -16,7 +16,7 @@ from apps.evidence.models.document_page import DocumentPage
 from common.models.base import TimestampedModel
 
 
-CANONICAL_CHUNK_ID_PATTERN = r"^RAG-[A-Z0-9]+(?:-[A-Z0-9]+)*$"
+CANONICAL_CHUNK_ID_PATTERN = r"^(?:RAG|CHILD)-[A-Z0-9]+(?:-[A-Z0-9]+)*$"
 
 
 class AIChunkCrosswalk(TimestampedModel):
@@ -122,7 +122,9 @@ class AIChunkCrosswalk(TimestampedModel):
         super().clean()
         errors: dict[str, str] = {}
         if re.fullmatch(CANONICAL_CHUNK_ID_PATTERN, self.canonical_chunk_id or "") is None:
-            errors["canonical_chunk_id"] = "canonical_chunk_id must use the approved RAG-* format."
+            errors["canonical_chunk_id"] = (
+                "canonical_chunk_id must use an approved RAG-* or CHILD-* format."
+            )
 
         for field in (
             "identity_manifest_sha256",

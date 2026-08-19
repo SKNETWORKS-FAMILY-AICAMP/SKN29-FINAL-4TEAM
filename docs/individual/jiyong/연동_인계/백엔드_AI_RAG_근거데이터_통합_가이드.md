@@ -1,7 +1,7 @@
 # 백엔드·AI RAG 근거데이터 통합 가이드
 
 > 관련 업무: Canonical Evidence·Crosswalk·Readonly View·Verifier·T-028B
-> 최신 반영일: 2026-08-17
+> 최신 반영일: 2026-08-19
 > 원칙: Backend 공식 문서·Chunk가 근거 데이터의 SSOT다.
 
 ## 1. 식별자 계약
@@ -17,6 +17,7 @@ AI는 Canonical `chunk_id`를 반환한다. Backend는 승인된 1:1 Crosswalk�
 - `backend/apps/evidence/migrations/**`
 - `backend/apps/evidence/management/commands/**`
 - `backend/integrations/ai/response_mapper.py`
+- `scripts/database/build_ai_three_model_embedding_fixture.py`
 - `scripts/database/audit_backend_ai_g1b_readiness.py`
 - `backend/tests/unit/database/test_backend_ai_g1b_readiness.py`
 - `backend/tests/integration/database/test_team_integration_roles_postgresql.py`
@@ -129,3 +130,45 @@ AI Retrieval·Provider·Backend 저장과 독립 QA가 통과해야 통합 Gate�
 
 T-028B는 내부 안전 후보와 Failing Test를 구현한 상태다. 공개 DTO 승인·소비자 연결·
 독립 QA 전에는 Public Runtime 또는 전체 WBS 완료로 판정하지 않는다.
+
+## 11. 3모델 53청크 확장
+
+### 범위
+
+- `WPUJAC104DWH` 15청크
+- `WPUIAC425SNW` 19청크
+- `WPUIAC606SNW` 19청크
+- 합계 53청크와 `CHILD-*` Canonical ID를 지원한다.
+- 신규 두 모델의 `ProductModel.is_supported_mvp=false`는 Import 과정에서 변경하지 않는다.
+
+### 실행 순서
+
+1. 이동윤이 승인한 53건 Canonical Identity와 실제 Index Manifest를 준비한다.
+2. 세 공식 원본 PDF 경로를 현재 Process의 다음 환경변수로 주입한다.
+   - `BACKEND_AI_OFFICIAL_SOURCE_PATH_JAC104`
+   - `BACKEND_AI_OFFICIAL_SOURCE_PATH_IAC425`
+   - `BACKEND_AI_OFFICIAL_SOURCE_PATH_IAC606`
+3. `build_ai_three_model_embedding_fixture.py`로 `.runtime` 임시 Fixture와
+   Index Manifest를 만들고 출력 Hash를 기록한다.
+4. `import_ai_three_model_evidence`를 먼저 Dry-run하고, 승인 DB 이름을 명시해
+   Apply한 뒤 같은 입력을 Replay한다.
+5. `sync_ai_canonical_crosswalk`로 53건 Crosswalk를 Dry-run·Apply·Replay한다.
+6. `audit_backend_ai_g1b_readiness.py --evidence-profile three-model`로
+   53건·15/19/19 분포와 Readonly View를 확인한다.
+
+### Fail-closed 경계
+
+- Identity·Index·Fixture SHA256, Chunk Set, Index Version, 문서별 Source Hash,
+  Embedding Model·Revision·1024차원이 하나라도 다르면 DB 쓰기 전에 중단한다.
+- 신규 모델 Product, 구독, 문의, Care 일정은 이 Importer가 만들지 않는다.
+- 공식 PDF는 저장소나 로그에 복사하지 않고 보호 경로에서 Hash·크기만 검증한다.
+- 53건 적재와 Crosswalk 준비는 Runtime 활성 완료가 아니다. 신규 모델
+  `is_supported_mvp` 전환, AI Readonly 50 Case, 교차 모델 0건 및 공동 E2E는
+  PM·AI·QA 후속 Gate로 유지한다.
+
+### 작성자 검증 결과
+
+- 3모델 표적·Readiness: `53 passed`
+- 실제 PostgreSQL Import·Crosswalk: `26 passed / 0 skipped`
+- Django Check: `PASS`, Migration Drift: `NONE`
+- Backend 전체 회귀: `1349 passed / 36 separate-gate skipped`

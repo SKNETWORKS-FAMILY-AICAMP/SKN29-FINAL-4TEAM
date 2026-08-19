@@ -45,7 +45,7 @@ EXPECTED_GRAPH_LEAVES: tuple[MigrationKey, ...] = (
     ("common_codes", "0002_common_code"),
     ("consultations", "0002_consultation_runtime_fields"),
     ("contenttypes", "0002_remove_content_type_name"),
-    ("evidence", "0011_cast_chunk_embedding_vector_dimensions"),
+    ("evidence", "0012_expand_ai_crosswalk_canonical_id"),
     ("inquiries", "0013_inquiry_priority_code"),
     ("operations", "0003_product_expansion_import_profile"),
     ("products", "0001_initial"),

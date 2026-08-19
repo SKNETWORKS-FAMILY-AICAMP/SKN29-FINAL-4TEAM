@@ -105,6 +105,53 @@ def test_ready_requires_all_crosswalk_view_and_role_gates(
     assert result["ai_readonly_role"]["base_table_select"] is False
 
 
+def test_three_model_profile_requires_exact_53_row_runtime_gate(
+    audit_module: ModuleType,
+):
+    snapshot = ready_snapshot(audit_module)
+    snapshot.update(
+        active_verified_count=53,
+        baseline_identity_count=53,
+        crosswalk_page_link_count=53,
+        view_row_count=53,
+        view_distinct_chunk_count=53,
+    )
+
+    result = audit_module.evaluate_snapshot(
+        snapshot,
+        require_team_database=True,
+        evidence_profile="three-model",
+    )
+
+    assert result["status"] == "READY"
+    assert result["evidence_profile"] == "three-model"
+    assert result["crosswalk"] == {
+        "expected": 53,
+        "active_verified": 53,
+        "baseline_identity": 53,
+        "page_table_exists": True,
+        "page_links_expected": 53,
+        "page_links": 53,
+    }
+
+
+def test_three_model_profile_rejects_legacy_seven_row_database(
+    audit_module: ModuleType,
+):
+    result = audit_module.evaluate_snapshot(
+        ready_snapshot(audit_module),
+        evidence_profile="three-model",
+    )
+
+    assert result["status"] == "BLOCKED"
+    assert "ACTIVE_VERIFIED_CROSSWALK_COUNT_NOT_53" in result["blockers"]
+    assert "BASELINE_EMBEDDING_IDENTITY_COUNT_NOT_53" in result["blockers"]
+    assert "ACTIVE_VERIFIED_CROSSWALK_PAGE_LINK_COUNT_NOT_53" in result[
+        "blockers"
+    ]
+    assert "BACKEND_AI_RAG_VIEW_ROW_COUNT_NOT_53" in result["blockers"]
+
+
 @pytest.mark.parametrize("version", ["0.8.2", "0.8.6"])
 def test_explicitly_supported_pgvector_versions_are_ready(
     audit_module: ModuleType,
