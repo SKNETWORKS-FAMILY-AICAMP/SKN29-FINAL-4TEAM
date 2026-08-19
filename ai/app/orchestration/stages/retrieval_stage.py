@@ -1,7 +1,9 @@
 """공식 문서 RAG 검색 Stage 모듈."""
 
 import time
+
 from ...common.retry import get_retry_policy
+from ...common.timeout import CancellationToken, PipelineCancelledError
 from ...retrieval import (
     EvidenceApplicabilityGate,
     EvidenceTopicFilter,
@@ -12,8 +14,8 @@ from ...retrieval import (
 )
 from ...retrieval.search.vector_search import VectorSearchService
 from ...schemas import AiStage, EvidenceReference, ProcessingTrace
+from ..harness.product_registry import resolve_product_generation
 from ..pipeline_context import PipelineContext
-from ...common.timeout import CancellationToken, PipelineCancelledError
 
 
 def execute_retrieval_stage(
@@ -24,10 +26,15 @@ def execute_retrieval_stage(
     """bge-m3 pgvector Exact Search 기반 관련 매뉴얼/FAQ 청크 검색"""
     start_time = time.perf_counter()
 
+    # Known products use their exact configured generation. Unknown products are
+    # still passed through unchanged so the outer fail-closed product guard can
+    # reject them without rewriting customer-provided identity.
+    product_generation = resolve_product_generation(ctx.model_code) or "D"
+
     query = RetrievalQuery(
         query_text=ctx.raw_symptom,
         model_code=ctx.model_code,
-        product_generation="D",
+        product_generation=product_generation,
         top_k=5,
         require_official_verified=True
     )

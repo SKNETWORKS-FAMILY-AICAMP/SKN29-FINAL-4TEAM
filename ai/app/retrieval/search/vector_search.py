@@ -31,12 +31,14 @@ class VectorSearchService:
         index_manifest: IndexManifest | None = None,
         answerability_gate: AnswerabilityCapabilityGate | None = None,
         model_capability_gate: ModelCapabilityGate | None = None,
+        product_filter: ProductFilter | None = None,
     ):
         self.embedding_client = embedding_client
         self.vector_store = vector_store
         self.index_manifest = index_manifest
         self.answerability_gate = answerability_gate or AnswerabilityCapabilityGate()
         self.model_capability_gate = model_capability_gate or ModelCapabilityGate()
+        self.product_filter = product_filter or ProductFilter()
         if index_manifest is not None:
             if getattr(embedding_client, "model_name", None) != index_manifest.model_name:
                 raise RuntimeError("Embedding 모델과 Index Manifest 모델이 일치하지 않습니다.")
@@ -46,7 +48,10 @@ class VectorSearchService:
                 raise RuntimeError("Embedding 차원과 Index Manifest 차원이 일치하지 않습니다.")
 
     def _is_valid_result(self, chunk: RetrievedChunk, requested_model: str) -> bool:
-        if not ProductFilter().is_valid_chunk(chunk, requested_model=requested_model):
+        if not self.product_filter.is_valid_chunk(
+            chunk,
+            requested_model=requested_model,
+        ):
             return False
         if not DocumentPolicyFilter().is_valid_chunk(chunk):
             return False
