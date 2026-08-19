@@ -18,6 +18,10 @@ from apps.care.models import CareRecord
 from apps.care.repositories.care_history_repository import (
     CareHistoryRepository,
 )
+from apps.care.services.approved_care_cycle_rule_loader import (
+    load_approved_care_cycle_rule_registry,
+)
+from apps.care.services.care_schedule_service import CareScheduleService
 from apps.subscriptions.models import CustomerSubscription
 from apps.workflow.repositories.workflow_repository import WorkflowRepository
 from apps.workflow.services.idempotency_service import IdempotencyService
@@ -149,6 +153,14 @@ class CareHistoryService:
             result_code=result_code,
             completed_at=timezone.now(),
         )
+        if care_type == CareRecord.CareType.FILTER_REPLACEMENT:
+            CareScheduleService.recalculate_from_registry(
+                subscription_public_id=subscription.public_id,
+                care_type_code=care_type,
+                registry=load_approved_care_cycle_rule_registry(),
+                change_reason="CUSTOMER_FILTER_REPLACEMENT_COMPLETED",
+                invalidate_official_on_miss=True,
+            )
         data = {**cls._item(record), "idempotent_replay": False}
         serializable = json.loads(json.dumps(data, cls=DjangoJSONEncoder))
         WorkflowRepository.complete_idempotency_record(

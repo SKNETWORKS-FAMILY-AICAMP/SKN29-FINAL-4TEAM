@@ -55,23 +55,34 @@ Transaction에서 잠근다. 같은 Key의 동시 요청은 저장 1건과 Repla
 사용한다. 복수 필터 주기를 임의로 한 날짜로 합치지 않는다. 규칙이 확정되지
 않으면 계산 결과를 운영 기준으로 승격하지 않는다.
 
-`ApprovedCareCycleRuleRegistry`는 외부에서 검증·승인된 Entry만 입력받는 내부
+`ApprovedCareCycleRuleRegistry`는 검증·승인된 Entry만 입력받는 내부
 Adapter다. 다음 세 값이 완전히 일치할 때만 `CareCycleRule`을 반환한다.
 
 ```text
 (product_model_code, management_type_code, care_type_code)
 ```
 
-- Registry는 규칙 값을 코드에 내장하지 않는다.
+- 운영 Rule은 `backend/apps/care/policies/approved_care_cycle_rules_v1.json`에
+  출처 Identity와 함께 저장하고 Loader가 Fail-closed로 읽는다.
 - 같은 Scope의 중복 Entry는 초기화 단계에서 거부한다.
 - 모델·관리방식·케어유형이 다르거나 Entry가 없으면 `None`을 반환한다.
 - `None`이면 `CONFIRMATION_REQUIRED`, `next_care_on=null`, DB Write 0건이다.
 - Exact Match만 기존 월말·윤년·최근 완료 이력 계산기로 전달한다.
 - Subscription Row Lock을 잡은 상태에서 Lookup·재산정을 수행한다.
 
-현재 1개월·2개월·3개월 등 테스트 값과 `test-fixture://` 출처는 검증 Fixture일
-뿐 운영 정책이 아니다. 공식 주기 Dataset이 승인될 때까지 Registry는 운영
-Rule을 제공하지 않으며 고객 공개 날짜도 임의 생성하지 않는다.
+2026-08-18 PM 결정으로 P0 운영 Rule은 다음 한 건만 활성화한다.
+
+```text
+WPUJAC104DWH + SELF_MANAGED + FILTER_REPLACEMENT = 4개월
+기준일 = 최근 일반 FILTER_REPLACEMENT 완료일, 없으면 구독 시작일
+효력일 = 2026-08-18
+사용량·수질 = 자동 단축하지 않고 안내만 제공
+```
+
+근거는 `MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P031`의 Page Text·원본
+SHA-256이다. 같은 페이지의 12개월 2단계 필터는 원문에서 삭제하지 않지만,
+P0 대표 일정에는 사용하지 않는다. `WPUIAC425SNW`, `WPUIAC606SNW`는 제품
+확장 후보일 뿐 모델별 공식 관리 주기가 검증되지 않아 Rule을 등록하지 않는다.
 
 ## 6. T-019 검증 Matrix
 
@@ -153,10 +164,52 @@ PM 결정에 따라 별도 승인을 유지한다.
 Registry 골격과 PostgreSQL 작성자 검증은 완료했지만 공식 Rule Dataset과 운영
 변경 승인, 독립 QA, 고객 DTO 소비는 외부 Gate다.
 
-## 11. 판정
+## 11. 2026-08-19 T-020 승인 Rule Runtime 구현
+
+### 구현 결과
+
+- 승인 JSON은 Schema·Status·효력일·Exact Scope·출처 SHA를 엄격히 검증한다.
+- 승인 전 날짜, 알 수 없는 필드, 비정상 Hash·주기·계약 값은 Fail-closed다.
+- `SELF_MANAGED` 구독 생성 시 최근 교체 이력 또는 시작일에서 4개월을 계산한다.
+- 고객이 필터 교체를 완료하면 이전 공식 예약을 취소하고 새 예약 1건을 만든다.
+- `VISIT_CARE`로 변경하면 기존 공식 예약만 취소하고 `next_care_on`을 동기화한다.
+- 동일 멱등 요청은 예약을 추가 생성하지 않으며 응답 날짜도 동일하게 Replay한다.
+- 기존 구독 일괄 소급 재산정 Command는 만들지 않았다.
+- DB Schema·Migration·공개 API·State Machine·`data/**`는 변경하지 않았다.
+
+### 작성자 검증
+
+| 검증 | 결과 |
+| --- | --- |
+| Loader·T-018·T-019·T-020 표적 | `55 passed / 9 PG-only skipped` |
+| Care·T-018·T-019 연관 회귀 | `97 passed / 10 PG-only skipped` |
+| PostgreSQL 16·pgvector 0.8.6 폐기 DB | `43 passed / 0 skipped` |
+| Django System Check | Issue 0 |
+| Migration drift | No changes detected |
+| Diff whitespace | PASS |
+
+PostgreSQL은 공유 DB가 아닌 폐기 컨테이너에서 실행했다. P1 HOLD인
+`visits.0005`를 적용하지 않기 위해 Test Schema 생성 모드를 사용했고, 검증 후
+컨테이너를 제거했다.
+
+전체 Backend 실행은 `1296 passed / 34 skipped / 5 failed`였다. 실패 5건은
+현재 HEAD의 `data/synthetic/fixtures/products.json`이 3건인데 기존
+`EXPECTED_FULL_COUNTS["products"]`가 1건인 합성 인계 Importer 기준선
+불일치다. 이번 T-020 변경에는 `operations/**`와 `data/synthetic/**`가 없으므로
+별도 Baseline 이슈로 분리하며 T-020 PASS로 숨기지 않는다.
+
+### 남은 Gate
+
+- 김은진의 동일 정책값 PostgreSQL/RDS 독립 재검증
+- PM의 T-020 WBS 완료 판정
+- P1: 4개월·12개월 부품별 일정, 추가 모델별 공식 주기, 공식 사용량 보정식
+- T-020 완료 후 T-021 `CARE_PRECHECK` 착수
+
+## 12. 판정
 
 계약·권한·IDOR·멱등·Rollback·PostgreSQL 동시성과 Projection 비노출이
-통과하면 구현 완료다. 관리 주기 정책이 미확정이면 다음 케어일만 별도 HOLD다.
+통과하면 구현 완료다. T-020 작성자 Runtime은 완료했으며 독립 QA와 PM WBS
+판정만 별도 Gate로 유지한다.
 
 ```text
 T019_RUNTIME_IMPLEMENTATION=UNCHANGED_EXISTING
@@ -169,6 +222,12 @@ T019_QA_RESULT=21_PASSED_0_SKIPPED_0_FAILED
 T019_QA_BLOCKER=NONE
 T019_CONSUMER_CONNECTION=PENDING_PM_APPROVAL
 T019_WBS_COMPLETION=PENDING_PM
+T020_PM_POLICY=APPROVED_2026_08_18
+T020_APPROVED_SCOPE=WPUJAC104DWH_SELF_MANAGED_FILTER_REPLACEMENT_4_MONTHS
+T020_AUTHOR_RUNTIME=PASS
+T020_POSTGRESQL_AUTHOR_RUN=43_PASSED_0_SKIPPED
+T020_INDEPENDENT_QA=PENDING
+T020_WBS_COMPLETION=PENDING_PM
 ```
 
 독립 QA 통과는 소비자 연결 또는 윤승혁(PM)의 WBS 완료 승인을 대체하지 않는다.

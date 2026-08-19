@@ -93,6 +93,7 @@ class CareScheduleService:
         care_type_code: str,
         registry: ApprovedCareCycleRuleRegistry,
         change_reason: str,
+        invalidate_official_on_miss: bool = False,
     ) -> CareScheduleMutationOutcome:
         """Resolve an exact approved rule while holding the subscription lock."""
 
@@ -110,6 +111,7 @@ class CareScheduleService:
             subscription=subscription,
             rule=rule,
             change_reason=change_reason,
+            invalidate_official_on_miss=invalidate_official_on_miss,
         )
 
     @classmethod
@@ -119,6 +121,7 @@ class CareScheduleService:
         subscription: CustomerSubscription,
         rule: CareCycleRule | None,
         change_reason: str,
+        invalidate_official_on_miss: bool = False,
     ) -> CareScheduleMutationOutcome:
         """Recalculate after the caller has serialized the subscription row."""
 
@@ -127,7 +130,27 @@ class CareScheduleService:
                 base_on=subscription.started_on,
                 rule=None,
             )
-            return CareScheduleMutationOutcome(False, schedule, None)
+            if not invalidate_official_on_miss:
+                return CareScheduleMutationOutcome(False, schedule, None)
+            reason = change_reason.strip()
+            if not reason:
+                raise ValueError("change_reason is required")
+            previous_next_care_on = subscription.next_care_on
+            cancelled = CareScheduleRepository.cancel_official_open_schedules(
+                subscription=subscription,
+                care_type_code=CareRecord.CareType.FILTER_REPLACEMENT,
+                reason=reason,
+                cancelled_at=timezone.now(),
+            )
+            current_next_care_on = (
+                CareScheduleRepository.sync_next_care_cache(subscription)
+            )
+            return CareScheduleMutationOutcome(
+                cancelled > 0
+                or current_next_care_on != previous_next_care_on,
+                schedule,
+                None,
+            )
         if rule.care_type_code not in CareRecord.CareType.values:
             raise ValueError("care_type_code is not in the CareRecord contract")
 

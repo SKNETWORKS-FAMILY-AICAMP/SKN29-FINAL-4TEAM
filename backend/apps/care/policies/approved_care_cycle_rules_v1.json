@@ -1,0 +1,21 @@
+{
+  "approval_reference": "PM_T020_DECISION_2026-08-18",
+  "effective_on": "2026-08-18",
+  "policy_id": "T020-P0-REPRESENTATIVE-CARE-CYCLE-V1",
+  "rules": [
+    {
+      "basis": "OFFICIAL",
+      "care_type_code": "FILTER_REPLACEMENT",
+      "interval_months": 4,
+      "management_type_code": "SELF_MANAGED",
+      "product_model_code": "WPUJAC104DWH",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "source_page_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P031",
+      "source_page_text_sha256": "8F2C31209804A36F3B1DEA7D2E660F2CA2CEA4F3A63E1A72AAE577EDB8C3E43A",
+      "source_version": "REV.00"
+    }
+  ],
+  "schema_version": "1.0",
+  "status": "APPROVED",
+  "usage_adjustment_mode": "NOTICE_ONLY"
+}
