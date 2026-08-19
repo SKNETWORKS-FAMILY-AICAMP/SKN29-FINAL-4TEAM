@@ -428,6 +428,11 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
       ) &&
       response.status() === 409,
   );
+  const conflictRefreshResponse = page.waitForResponse(
+    (response) =>
+      isDetailResponse(response, fixture.inquiryId) &&
+      response.status() === 200,
+  );
   await page
     .locator('[data-action-code="UPDATE_CONSULTATION_SUMMARY"]')
     .click();
@@ -438,6 +443,7 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
       isRecord(stalePayload.error) &&
       stalePayload.error.code,
   ).toBe("STATE-CONFLICT-01");
+  expect((await conflictRefreshResponse).status()).toBe(200);
   await expect(page.getByRole("alert")).toBeVisible();
   await expect(
     page.getByTestId("consultation-current-status"),
