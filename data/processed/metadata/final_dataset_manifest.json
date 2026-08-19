@@ -320,11 +320,7 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 22290,
-<<<<<<< HEAD
-      "sha256": "FF8EDEDCF25AE9E3A9714F14E0037AC182F8438D0025588C08FE124A66B1DEA5"
-=======
       "sha256": "4948A49C4E7F3EB3CF1DAA3C488DA6A7245D929C6AD5E983B15E61127CE081E3"
->>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -344,11 +340,7 @@
     {
       "path": "processed/metadata/rag_three_model_handoff_manifest.json",
       "size_bytes": 1286,
-<<<<<<< HEAD
-      "sha256": "EF01B094C89C77C5FFAD52089AADEDD16BB3D32628F2571AE2C92084AC3898E3"
-=======
       "sha256": "082AAA87D1C44A2FFB1796A62397A7AE5A1BC95513B29D969456B75473285B27"
->>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "processed/metadata/source_inventory.csv",
@@ -434,13 +426,8 @@
     },
     {
       "path": "schemas/config/threeModelRagEvaluation.schema.json",
-<<<<<<< HEAD
-      "size_bytes": 1740,
-      "sha256": "6D7E8418772FC88C6565572B0E61945106027E7DFB43FB0F7DD63666E587AA53"
-=======
       "size_bytes": 2480,
       "sha256": "991FA7F916CA57D471D12266D43E60E3C04A99DE888EC024E25900C0D996A2D8"
->>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "schemas/processed/evidenceRegistry.schema.json",
@@ -661,13 +648,8 @@
     },
     {
       "path": "tools/rag_experiments/build_three_model_handoff.py",
-<<<<<<< HEAD
-      "size_bytes": 22318,
-      "sha256": "9AFEB053D1AF4D5166366FAFFA6E96B4C5A7028D09D77A077F9B0003BD6DD710"
-=======
       "size_bytes": 22513,
       "sha256": "6DB1FFF763A49B883B6245A3D06F7297240C3A80AA464F6E2913EE9566B6C41C"
->>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "tools/rag_experiments/qa_faq_corpus.py",
@@ -691,13 +673,8 @@
     },
     {
       "path": "tools/rag_experiments/qa_three_model_handoff.py",
-<<<<<<< HEAD
-      "size_bytes": 11079,
-      "sha256": "DB8AA034544DAA3742D172BE554C484E2B76A03E1DEB5593EEE54E30C249DEDA"
-=======
       "size_bytes": 12059,
       "sha256": "0282D3398C0FC63063093F27737F9CFEA3DE947C2C3569C163316715DC9CF1D8"
->>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "tools/tests/__init__.py",
@@ -771,15 +748,6 @@
     },
     {
       "path": "tools/tests/test_t005_data_projection.py",
-<<<<<<< HEAD
-      "size_bytes": 16125,
-      "sha256": "1CA5BEFFB5F5B226E6C3E25BD90FF8B7EE07865B2FE8D307D0F16F7B7961B281"
-    },
-    {
-      "path": "tools/tests/test_three_model_rag_handoff.py",
-      "size_bytes": 3108,
-      "sha256": "15A290AE6A25A2F52DEB89D6A5A33B2A26947BBCB62D943046F981EDF2A2A8A6"
-=======
       "size_bytes": 16712,
       "sha256": "2FFEC4AABDA98DF6EE6186D8882010E0F5A226CDE40D551FA698BD107C70000F"
     },
@@ -787,7 +755,6 @@
       "path": "tools/tests/test_three_model_rag_handoff.py",
       "size_bytes": 4012,
       "sha256": "854920210BD8ABC909E54695BAA26275A6408751DBD166BFD60E62024B7F08C2"
->>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "tools/watercare/__init__.py",
@@ -878,13 +845,8 @@
     },
     {
       "path": "config/rag/three_model_evaluation_cases.json",
-<<<<<<< HEAD
-      "size_bytes": 28600,
-      "sha256": "8D5DEE5392EAC6F5963FBB04AB0016714A154AFEE38676DA8ADD13EEE222AA11"
-=======
       "size_bytes": 28732,
       "sha256": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1"
->>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "config/synthetic/scenarios.json",
@@ -1043,11 +1005,7 @@
     {
       "path": "processed/validation/rag_experiments/three_model_handoff_qa.json",
       "size_bytes": 1563,
-<<<<<<< HEAD
-      "sha256": "C89CAD4953BFE9772C3C6B537C630B4604BF094936D189E64E5567271B6EAEF4"
-=======
       "sha256": "0227AF46C94A9E20BD24C19B1B5655FEEE0190D6BA39745F769EA5924B4BB4FF"
->>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     },
     {
       "path": "processed/validation/refactor/latest_equivalence_report.json",
@@ -1165,11 +1123,7 @@
   },
   "toolchain": {
     "python_files": 41,
-<<<<<<< HEAD
-    "python_lines": 8325,
-=======
     "python_lines": 8398,
->>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     "max_wrapper_lines": 10,
     "max_module_lines": 1226
   },

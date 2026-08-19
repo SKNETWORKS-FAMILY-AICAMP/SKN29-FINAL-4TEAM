@@ -32,11 +32,7 @@
     },
     {
       "path": "data/config/rag/three_model_evaluation_cases.json",
-<<<<<<< HEAD
-      "sha256": "8D5DEE5392EAC6F5963FBB04AB0016714A154AFEE38676DA8ADD13EEE222AA11"
-=======
       "sha256": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1"
->>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
     }
   ],
   "model_counts": {

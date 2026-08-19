@@ -25,10 +25,7 @@ class ThreeModelRagHandoffTests(unittest.TestCase):
         self.assertEqual(53, report["counts"]["children"])
         self.assertEqual(43, report["counts"]["groups"])
         self.assertEqual(50, report["counts"]["cases"])
-<<<<<<< HEAD
-=======
         self.assertEqual(7, report["counts"]["negative_cases"])
->>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
 
     def test_rebuild_is_byte_identical(self) -> None:
         canonical = [
@@ -54,14 +51,6 @@ class ThreeModelRagHandoffTests(unittest.TestCase):
         for case in positives:
             self.assertEqual(2, len(case["forbidden_model_codes"]), case["case_id"])
 
-<<<<<<< HEAD
-    def test_unregistered_model_negative_case_is_included(self) -> None:
-        document = json.loads(
-            (REPO_ROOT / "data/config/rag/three_model_evaluation_cases.json").read_text(encoding="utf-8")
-        )
-        case = next(row for row in document["cases"] if row["case_id"] == "RAG3-NEG-007")
-
-=======
     def test_acceptance_uses_one_verified_variant_per_expected_group(self) -> None:
         document = json.loads(
             (REPO_ROOT / "data/config/rag/three_model_evaluation_cases.json").read_text(encoding="utf-8")
@@ -85,7 +74,6 @@ class ThreeModelRagHandoffTests(unittest.TestCase):
         negatives = [row for row in document["cases"] if row["case_type"] == "NEGATIVE"]
         self.assertEqual(7, len(negatives))
         case = next(row for row in negatives if row["case_id"] == "RAG3-NEG-007")
->>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
         self.assertEqual("WPUIAC999ZZZ", case["exact_sales_code"])
         self.assertEqual("UNREGISTERED_EXACT_SALES_CODE", case["negative_reason"])
         self.assertTrue(case["expected_no_evidence"])

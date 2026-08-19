@@ -717,7 +717,7 @@
         "WPUJAC104DWH"
       ],
       "human_review_status": "HUMAN_REVIEW_PENDING",
-      "negative_reason": "MODEL_CONTROL_MISMATCH",
+      "negative_reason": "OTHER_MODEL_CONTROL_MISMATCH",
       "query": "WPU-IAC425에서 출수/출빙 버튼을 눌러 온수를 다시 받는 방법은?"
     },
     {
@@ -733,7 +733,7 @@
         "WPUJAC104DWH"
       ],
       "human_review_status": "HUMAN_REVIEW_PENDING",
-      "negative_reason": "MODEL_CONTROL_MISMATCH",
+      "negative_reason": "OTHER_MODEL_CONTROL_MISMATCH",
       "query": "WPU-IAC606에서 [물] 버튼을 눌러 온수를 다시 받는 방법은?"
     },
     {
@@ -806,18 +806,12 @@
   "human_review_status": "HUMAN_REVIEW_PENDING",
   "retrieval_acceptance": {
     "cross_model_hits": 0,
-    "direct_parent_hits": 0,
     "negative": "no-evidence",
-<<<<<<< HEAD
-    "positive": "질문의 정확 판매코드와 일치하는 검증된 expected Evidence Group의 근거 중 1개 이상이 Top-5 안에 포함",
-    "verified_evidence_only": true
-=======
     "positive": "기대 Evidence Group별 검증된 Source Variant 중 하나 이상이 Top-5에 포함",
     "positive_match_mode": "AT_LEAST_ONE_VERIFIED_VARIANT_PER_EXPECTED_GROUP",
     "positive_rule_id": "RAG-EVAL-GROUP-TOP5-001",
     "positive_top_k": 5,
     "required_variant_verification_status": "TEXT_AND_VISUAL_VERIFIED"
->>>>>>> a31b6966db25a4f35d278c8270b2fc793ebc8dd4
   },
   "schema_version": "1.0.0",
   "status": "DATA_READY_AI_NOT_RUN"
