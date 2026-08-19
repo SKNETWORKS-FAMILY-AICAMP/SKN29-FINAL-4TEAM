@@ -87,6 +87,24 @@ class HandoffProfileTests(unittest.TestCase):
             {row["case_type"] for row in cases["cases"]},
         )
 
+    def test_rag_expansion_is_candidate_only_and_exact_model_filtered(self) -> None:
+        profile = self.definitions["profiles"]["rag-expansion"]
+        self.assertEqual("DATA_READY_AI_REVERIFY_REQUIRED", profile["readiness"])
+        self.assertEqual(
+            "BACKEND_RUNTIME_MAPPING_PENDING",
+            profile["contract_dependency"],
+        )
+        roles = {item["path"]: item["role"] for item in profile["items"]}
+        self.assertEqual(
+            "INGEST_CANDIDATE",
+            roles["processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl"],
+        )
+        self.assertEqual(
+            "CONTEXT_ONLY",
+            roles["processed/structured/rag/expansion/rag_parent_pages_3model_v1.jsonl"],
+        )
+        self.assertEqual("exact_sales_code", profile["selection"]["required_pre_score_filter"])
+
     def test_db_smoke_selects_six_existing_scenarios(self) -> None:
         selected = self.definitions["profiles"]["db-smoke"]["selection"][
             "scenario_ids"
@@ -111,7 +129,7 @@ class HandoffProfileTests(unittest.TestCase):
         expected_fixture_roles = {
             "synthetic/fixtures/users.json": "LOAD_FILTERED",
             "synthetic/fixtures/customer_profiles.json": "LOAD_FILTERED",
-            "synthetic/fixtures/products.json": "LOAD",
+            "synthetic/fixtures/products.json": "LOAD_FILTERED",
             "synthetic/fixtures/customer_products.json": "PROJECT_FILTERED",
             "synthetic/fixtures/subscriptions.json": "LOAD_FILTERED",
             "synthetic/fixtures/inquiries.json": "LOAD_FILTERED",
@@ -162,6 +180,10 @@ class HandoffProfileTests(unittest.TestCase):
         self.assertEqual(
             "PROJECT",
             fixture_roles.pop("synthetic/fixtures/customer_products.json"),
+        )
+        self.assertEqual(
+            "LOAD_FILTERED",
+            fixture_roles.pop("synthetic/fixtures/products.json"),
         )
         self.assertEqual({"LOAD"}, set(fixture_roles.values()))
         self.assertEqual(

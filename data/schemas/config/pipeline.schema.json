@@ -47,7 +47,13 @@
         "evidence",
         "synthetic_source_scenarios",
         "synthetic_inquiries",
-        "synthetic_fixture_records"
+        "synthetic_fixture_records",
+        "supported_products",
+        "reference_manual_pages",
+        "rag_expansion_parents",
+        "rag_expansion_children",
+        "rag_expansion_evidence_groups",
+        "rag_expansion_evaluation_cases"
       ],
       "properties": {
         "manual_pages": {"type": "integer", "const": 44},
@@ -58,7 +64,13 @@
         "evidence": {"type": "integer", "const": 9},
         "synthetic_source_scenarios": {"type": "integer", "const": 24},
         "synthetic_inquiries": {"type": "integer", "const": 22},
-        "synthetic_fixture_records": {"type": "integer", "const": 367}
+        "synthetic_fixture_records": {"type": "integer", "const": 369},
+        "supported_products": {"type": "integer", "const": 3},
+        "reference_manual_pages": {"type": "integer", "const": 144},
+        "rag_expansion_parents": {"type": "integer", "const": 15},
+        "rag_expansion_children": {"type": "integer", "const": 53},
+        "rag_expansion_evidence_groups": {"type": "integer", "const": 43},
+        "rag_expansion_evaluation_cases": {"type": "integer", "const": 49}
       }
     },
     "paths": {
@@ -72,12 +84,14 @@
     "config_schemas": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["pipeline", "ocr", "rag", "rag_evaluation_cases", "synthetic", "vocabulary", "contract_mapping", "handoff", "backend_crosswalk", "e2e"],
+      "required": ["pipeline", "ocr", "rag", "rag_evaluation_cases", "supported_products", "rag_expansion_evaluation_cases", "synthetic", "vocabulary", "contract_mapping", "handoff", "backend_crosswalk", "e2e"],
       "properties": {
         "pipeline": {"type": "string", "minLength": 1},
         "ocr": {"type": "string", "minLength": 1},
         "rag": {"type": "string", "minLength": 1},
         "rag_evaluation_cases": {"type": "string", "minLength": 1},
+        "supported_products": {"type": "string", "minLength": 1},
+        "rag_expansion_evaluation_cases": {"type": "string", "minLength": 1},
         "synthetic": {"type": "string", "minLength": 1},
         "vocabulary": {"type": "string", "minLength": 1},
         "contract_mapping": {"type": "string", "minLength": 1},

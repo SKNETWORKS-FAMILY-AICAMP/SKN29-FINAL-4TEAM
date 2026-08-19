@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-18T00:00:00+09:00",
+  "products": [
+    {
+      "exact_sales_code": "WPUJAC104DWH",
+      "manual_model": "WPU-JAC104 (D) / WPU-JCC104 (D)",
+      "model_family": "WPU-JAC104",
+      "product_generation": "D",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "revision": "REV.00",
+      "source_inventory_id": "SRC-JAC104D-MANUAL",
+      "manual_pages_path": "processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+      "rag_parent_pages": [5, 7, 37, 38, 39],
+      "data_status": "MVP_VERIFIED",
+      "runtime_status": "INDEXED_MVP"
+    },
+    {
+      "exact_sales_code": "WPUIAC425SNW",
+      "manual_model": "WPU-IAC425",
+      "model_family": "WPU-IAC425",
+      "product_generation": "IAC425",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "revision": "REV.02",
+      "source_inventory_id": "SRC-IAC425-MANUAL",
+      "manual_pages_path": "processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
+      "rag_parent_pages": [5, 43, 44, 45, 46],
+      "data_status": "RAG_READY_LIMITED_SCOPE",
+      "runtime_status": "CONTRACT_BLOCKED_NOT_INDEXED"
+    },
+    {
+      "exact_sales_code": "WPUIAC606SNW",
+      "manual_model": "WPU-IAC606",
+      "model_family": "WPU-IAC606",
+      "product_generation": "IAC606",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "revision": "REV.00",
+      "source_inventory_id": "SRC-IAC606-MANUAL",
+      "manual_pages_path": "processed/documents/manuals/expansion/manual_pages_iac606.jsonl",
+      "rag_parent_pages": [5, 40, 41, 42, 43],
+      "data_status": "RAG_READY_LIMITED_SCOPE",
+      "runtime_status": "CONTRACT_BLOCKED_NOT_INDEXED"
+    }
+  ],
+  "inactive_manual_aliases": [
+    {
+      "alias": "WPU-JCC104 (D)",
+      "reason": "공동 매뉴얼에는 포함되지만 정확 판매코드가 검증되지 않아 활성 제품으로 사용하지 않음"
+    }
+  ],
+  "retrieval_policy": {
+    "filter_field": "exact_sales_code",
+    "filter_required_before_scoring": true,
+    "cross_model_fallback": false,
+    "model_unverified_faq_included": false
+  }
+}

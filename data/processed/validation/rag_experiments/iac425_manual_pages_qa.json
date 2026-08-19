@@ -1,7 +1,7 @@
 {
   "qa_id": "A1-2-IAC425-FULL-PAGE-QA",
-  "status": "STRUCTURAL_PASS_VISUAL_REVIEW_PENDING",
-  "generated_at": "2026-08-10T11:49:19.133385+00:00",
+  "status": "RAG_SELECTED_PAGES_VERIFIED_REFERENCE_READY",
+  "generated_at": "2026-08-18T00:00:00+09:00",
   "scope": {
     "included": "WPU-IAC425 REV.02 실험용 52페이지 JSONL",
     "excluded": [
@@ -14,12 +14,12 @@
   },
   "dataset": {
     "path": "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
-    "sha256": "D9708B3877E4126DA7388906BC637EEB0BF69BEEF9B1B8E91454FF70A74ADF05",
+    "sha256": "A16E0BDDD349DC6BD10A72DAD6D8777D75186DFB260FB9D4B2721564B6639F1B",
     "record_count": 52
   },
   "schema": {
     "path": "data/schemas/processed/experimentalManualPage.schema.json",
-    "sha256": "9BBB1E7914EE2D27C1343CBA953A94F0D0665D59323B2E492B5FD6EEAF1F3A3D"
+    "sha256": "D034084A8C3FAE610D17FAE3D608754BDE96CA7074F34ECD6F75041CD40D0975"
   },
   "summary": {
     "errors": 0,
@@ -33,19 +33,17 @@
     "blank_text_pages": [],
     "text_hash_mismatch_pages": [],
     "mojibake_pages": [],
-    "visual_review_pending_count": 47
+    "visual_review_pending_count": 42
   },
   "verification_coverage": {
     "status_counts": {
-      "TEXT_EXTRACTED": 47,
-      "VISUALLY_REVIEWED": 1,
-      "VISUAL_SPOT_CHECKED": 4
+      "TEXT_EXTRACTED": 42,
+      "VISUALLY_REVIEWED": 10
     },
     "visual_review_pending_pages": [
       2,
       3,
       4,
-      5,
       6,
       7,
       8,
@@ -81,10 +79,6 @@
       39,
       41,
       42,
-      44,
-      45,
-      46,
-      47,
       48,
       49,
       50,
@@ -116,7 +110,7 @@
       false
     ],
     "allowed_use": [
-      "EXPERIMENT_ONLY"
+      "REFERENCE_ONLY"
     ],
     "version": [
       "REV.02"
@@ -132,7 +126,7 @@
   "warnings": [
     {
       "code": "VISUAL_REVIEW_PENDING",
-      "count": 47,
+      "count": 42,
       "message": "실험용 텍스트 사용은 가능하나 Gold·Production 승인을 의미하지 않음"
     }
   ],
@@ -140,6 +134,7 @@
     "experimental_corpus_text_use": "READY",
     "mvp_search_use": "BLOCKED",
     "gold_evidence_use": "REVIEW_REQUIRED",
-    "production_corpus_expansion": "NOT_AUTHORIZED"
+    "rag_handoff_candidate": "READY",
+    "production_corpus_expansion": "NOT_INDEXED"
   }
 }

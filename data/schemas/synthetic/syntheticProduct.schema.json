@@ -7,12 +7,12 @@
   "properties": {
     "id": {"type": "integer", "minimum": 1},
     "public_id": {"type": "string", "format": "uuid"},
-    "product_code": {"type": "string", "const": "WPUJAC104DWH"},
-    "product_model": {"type": "string", "const": "WPU-JAC104 (D)"},
-    "model_family": {"type": "string", "const": "WPU-JAC104"},
-    "product_generation": {"type": "string", "const": "D"},
-    "manual_revision": {"type": "string", "const": "REV.00"},
-    "support_scope": {"type": "string", "const": "MVP"},
+    "product_code": {"type": "string", "enum": ["WPUJAC104DWH", "WPUIAC425SNW", "WPUIAC606SNW"]},
+    "product_model": {"type": "string", "enum": ["WPU-JAC104 (D)", "WPU-IAC425", "WPU-IAC606"]},
+    "model_family": {"type": "string", "enum": ["WPU-JAC104", "WPU-IAC425", "WPU-IAC606"]},
+    "product_generation": {"type": "string", "enum": ["D", "IAC425", "IAC606"]},
+    "manual_revision": {"type": "string", "enum": ["REV.00", "REV.02"]},
+    "support_scope": {"type": "string", "enum": ["MVP", "RAG_READY_CONTRACT_BLOCKED"]},
     "data_classification": {"type": "string", "const": "synthetic"}
   }
 }

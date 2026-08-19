@@ -6,11 +6,15 @@ import argparse
 import hashlib
 import json
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .build_iac425_pages import DOCUMENT_ID, REPOSITORY_ROOT, SOURCE_INVENTORY_ID
+from .build_iac425_pages import (
+    DEFAULT_GENERATED_AT,
+    DOCUMENT_ID,
+    REPOSITORY_ROOT,
+    SOURCE_INVENTORY_ID,
+)
 from .qa_manual_pages import MOJIBAKE_MARKERS, _load_jsonl, _sha256_file, _validate_schema
 
 
@@ -84,7 +88,7 @@ def build_qa_report(dataset_path: Path, schema_path: Path) -> dict[str, Any]:
         "product_model": "WPU-IAC425",
         "scope_role": "expansion",
         "mvp_use": False,
-        "allowed_use": "EXPERIMENT_ONLY",
+        "allowed_use": "REFERENCE_ONLY",
         "version": "REV.02",
         "page_count": 52,
         "source_file_sha256": (
@@ -114,11 +118,19 @@ def build_qa_report(dataset_path: Path, schema_path: Path) -> dict[str, Any]:
             "message": "실험용 텍스트 사용은 가능하나 Gold·Production 승인을 의미하지 않음",
         })
 
-    status = "FAIL" if errors else "STRUCTURAL_PASS_VISUAL_REVIEW_PENDING"
+    selected_pages = {5, 43, 44, 45, 46}
+    selected_pending = sorted(selected_pages.intersection(visual_review_pending_pages))
+    if selected_pending:
+        errors.append({
+            "code": "RAG_SELECTED_PAGE_VISUAL_REVIEW_PENDING",
+            "pages": selected_pending,
+        })
+
+    status = "FAIL" if errors else "RAG_SELECTED_PAGES_VERIFIED_REFERENCE_READY"
     return {
         "qa_id": "A1-2-IAC425-FULL-PAGE-QA",
         "status": status,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": DEFAULT_GENERATED_AT,
         "scope": {
             "included": "WPU-IAC425 REV.02 실험용 52페이지 JSONL",
             "excluded": ["MVP 검색", "Chunking", "Embedding", "Vector DB", "Production 승인"],
@@ -160,7 +172,8 @@ def build_qa_report(dataset_path: Path, schema_path: Path) -> dict[str, Any]:
             "experimental_corpus_text_use": "READY" if not errors else "BLOCKED",
             "mvp_search_use": "BLOCKED",
             "gold_evidence_use": "REVIEW_REQUIRED",
-            "production_corpus_expansion": "NOT_AUTHORIZED",
+            "rag_handoff_candidate": "READY" if not errors else "BLOCKED",
+            "production_corpus_expansion": "NOT_INDEXED",
         },
     }
 

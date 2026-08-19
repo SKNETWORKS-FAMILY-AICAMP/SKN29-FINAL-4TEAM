@@ -1,4 +1,4 @@
-version: 0.9.0
+version: 1.0.0
 generated_at: "2026-07-29T00:00:00+09:00"
 datasets:
   - id: manual_pages_jac104d
@@ -7,6 +7,18 @@ datasets:
     scope: mvp_source
     records: 44
     schema: schemas/processed/manualPage.schema.json
+  - id: manual_pages_iac425
+    path: processed/documents/manuals/expansion/manual_pages_iac425.jsonl
+    classification: official
+    scope: reference_only_expansion
+    records: 52
+    schema: schemas/processed/experimentalManualPage.schema.json
+  - id: manual_pages_iac606
+    path: processed/documents/manuals/expansion/manual_pages_iac606.jsonl
+    classification: official
+    scope: reference_only_expansion
+    records: 48
+    schema: schemas/processed/experimentalManualPage.schema.json
   - id: faq_snapshot_normalized
     path: processed/documents/faq/faq_snapshot_normalized.jsonl
     classification: official
@@ -49,6 +61,24 @@ datasets:
     scope: evidence_policy
     records: 9
     schema: schemas/processed/evidenceRegistry.schema.json
+  - id: rag_parent_pages_3model_v1
+    path: processed/structured/rag/expansion/rag_parent_pages_3model_v1.jsonl
+    classification: official
+    scope: rag_handoff_context_only
+    records: 15
+    schema: schemas/processed/ragParentPage.schema.json
+  - id: rag_child_chunks_3model_v1
+    path: processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl
+    classification: official
+    scope: rag_ingest_candidate
+    records: 53
+    schema: schemas/processed/ragChildChunk.schema.json
+  - id: rag_evidence_groups_3model_v1
+    path: processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl
+    classification: official
+    scope: rag_evidence_group
+    records: 43
+    schema: schemas/processed/ragEvidenceGroup.schema.json
   - id: users
     path: synthetic/fixtures/users.json
     classification: synthetic
@@ -65,7 +95,7 @@ datasets:
     path: synthetic/fixtures/products.json
     classification: synthetic
     scope: contract_aligned_fixture
-    records: 1
+    records: 3
     schema: schemas/synthetic/syntheticProduct.schema.json
   - id: customer_products
     path: synthetic/fixtures/customer_products.json

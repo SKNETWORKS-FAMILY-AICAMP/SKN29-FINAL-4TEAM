@@ -1,0 +1,70 @@
+{
+  "qa_id": "IAC606-FULL-PAGE-QA",
+  "status": "RAG_SELECTED_PAGES_VERIFIED_REFERENCE_READY",
+  "generated_at": "2026-08-18T00:00:00+09:00",
+  "dataset": {
+    "path": "data/processed/documents/manuals/expansion/manual_pages_iac606.jsonl",
+    "sha256": "9DE6C9DCE5E7EB56698EDE2F5F1429C4DB0B5570233988715A64B876F602091D",
+    "record_count": 48
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 1,
+    "pages_expected": 48,
+    "pages_found": 48,
+    "missing_pages": [],
+    "duplicate_pages": [],
+    "blank_text_pages": [],
+    "text_hash_mismatch_pages": [],
+    "mojibake_pages": [],
+    "visual_review_pending_count": 39
+  },
+  "metadata_invariants": {
+    "document_id": [
+      "MAN-SKMAGIC-WPU-IAC606-REV00"
+    ],
+    "source_inventory_id": [
+      "SRC-IAC606-MANUAL"
+    ],
+    "exact_sales_code": [
+      "WPUIAC606SNW"
+    ],
+    "product_model": [
+      "WPU-IAC606"
+    ],
+    "product_generation": [
+      "IAC606"
+    ],
+    "scope_role": [
+      "expansion"
+    ],
+    "mvp_use": [
+      false
+    ],
+    "allowed_use": [
+      "REFERENCE_ONLY"
+    ],
+    "version": [
+      "REV.00"
+    ],
+    "page_count": [
+      48
+    ],
+    "source_file_sha256": [
+      "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572"
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "REFERENCE_PAGE_VISUAL_REVIEW_PENDING",
+      "count": 39,
+      "message": "선택된 RAG 페이지 외 전체 매뉴얼 페이지는 참고용이며 운영 검색 승인을 의미하지 않음"
+    }
+  ],
+  "decision": {
+    "reference_corpus_text_use": "READY",
+    "rag_handoff_candidate": "READY",
+    "runtime_activation": "CONTRACT_BLOCKED_NOT_INDEXED"
+  }
+}

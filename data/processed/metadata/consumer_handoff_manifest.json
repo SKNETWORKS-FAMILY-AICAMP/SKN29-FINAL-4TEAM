@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "dataset_version": "0.9.0",
+  "dataset_version": "1.0.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
   "source_commit": "01053a4697e7a363b12d3c2e9820ac484b7b9bad",
   "service_contracts_used": true,
@@ -11,8 +11,8 @@
     "backend_runtime_verified": true,
     "legacy_service_contracts_used_semantics": "BACKEND_RUNTIME_INTEGRATION_ONLY"
   },
-  "profile_count": 4,
-  "unique_file_count": 40,
+  "profile_count": 5,
+  "unique_file_count": 50,
   "profiles": {
     "rag": {
       "purpose": "검증된 JAC104D 청크 적재와 검색 품질 확인",
@@ -57,16 +57,16 @@
         {
           "path": "processed/metadata/model_document_lineage.csv",
           "role": "REFERENCE",
-          "records": 3,
-          "size_bytes": 397,
-          "sha256": "1DEF48EB546C69142FF07294392E504131D2668652BA5CAEBEEA0C71E16B5DA0"
+          "records": 4,
+          "size_bytes": 502,
+          "sha256": "FF7BD65A961F39E3260C9EF98CE559E986D9C61B6091CC8096311532AA755E14"
         },
         {
           "path": "processed/metadata/source_inventory.csv",
           "role": "REFERENCE",
-          "records": 4,
-          "size_bytes": 1670,
-          "sha256": "F9D3589C86FD74629454CA73FBF0D754A8CFB81646408712A854E9F9AF4622F6"
+          "records": 5,
+          "size_bytes": 2135,
+          "sha256": "7DCB539727FD8E5E8CE235626D160065BFDA9898C3FBC6FE03EB62CFF040DB1D"
         },
         {
           "path": "synthetic/fixtures/inquiries.json",
@@ -85,7 +85,7 @@
         {
           "path": "config/rag/jac104_retrieval_cases.json",
           "role": "EVALUATION_CONTRACT",
-          "records": 1,
+          "records": 12,
           "size_bytes": 8840,
           "sha256": "FCF2B7A391A13216B41DF983061F4672AC266EC9C14BA3274AB7AD377B9B2235"
         },
@@ -126,12 +126,115 @@
       },
       "excluded": [
         "FAQ 119건 전체의 기본 임베딩",
-        "IAC425·IAC506 자료",
+        "IAC425·IAC606 확장 자료(rag-expansion 프로필에서 별도 인계)",
+        "IAC506 자료",
         "모델 미검증 FAQ의 단독 근거 사용"
       ],
       "commands": [
         "python -B data/tools/pipeline.py handoff rag",
         "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-29T00:00:00+09:00"
+      ]
+    },
+    "rag-expansion": {
+      "purpose": "검증된 3모델 53개 Child·15개 Parent와 49개 평가 Case를 AI 재평가 후보로 인계",
+      "readiness": "DATA_READY_AI_REVERIFY_REQUIRED",
+      "contract_dependency": "BACKEND_RUNTIME_MAPPING_PENDING",
+      "items": [
+        {
+          "path": "processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
+          "role": "INGEST_CANDIDATE",
+          "records": 53,
+          "size_bytes": 123114,
+          "sha256": "05C7A387ED76EFEFE95E172FA37E4CFC8A0BF8842491512CB5AF4808E3BB20BB"
+        },
+        {
+          "path": "processed/structured/rag/expansion/rag_parent_pages_3model_v1.jsonl",
+          "role": "CONTEXT_ONLY",
+          "records": 15,
+          "size_bytes": 46350,
+          "sha256": "EB58882ED9EC996C7665FE6C3C472A6B25273D278D79799F6F15A98AF9B1578E"
+        },
+        {
+          "path": "processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl",
+          "role": "REFERENCE",
+          "records": 43,
+          "size_bytes": 44013,
+          "sha256": "997119C395935D0815AA497C9EEB73EF73EAD4DA346FD83B5FC10867F86400E5"
+        },
+        {
+          "path": "config/rag/three_model_evaluation_cases.json",
+          "role": "EVALUATION_CONTRACT",
+          "records": 49,
+          "size_bytes": 27943,
+          "sha256": "39237E4122DD10F63FCD73360F0B12299BA63C2139CC78C396DAD19D624BC8F5"
+        },
+        {
+          "path": "config/rag/supported_products.json",
+          "role": "REFERENCE",
+          "records": 1,
+          "size_bytes": 2123,
+          "sha256": "A32B060A231842EEECE2F010E658BAC32B42C065B03DD1F563EB4D1F1FA4FAFF"
+        },
+        {
+          "path": "processed/metadata/rag_three_model_handoff_manifest.json",
+          "role": "MANIFEST",
+          "records": 1,
+          "size_bytes": 1286,
+          "sha256": "B887251F85ED317699B2710F657C0D0193FCCB5F69B2C4741D1EC66B01E5A977"
+        },
+        {
+          "path": "schemas/processed/ragParentPage.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 1893,
+          "sha256": "298BBC34415D5552F689A2543C60BE61160B41D919040385D7E9F9C327EB4603"
+        },
+        {
+          "path": "schemas/processed/ragChildChunk.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 3242,
+          "sha256": "EB22280F515E3B3390F56B916E643D1BF505DA17190AE80D9CE45AD915B40C00"
+        },
+        {
+          "path": "schemas/processed/ragEvidenceGroup.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 1816,
+          "sha256": "89885D58FDF0BCEAA99968CF7E7D942F6D8DB35FFB0B9168D10A49EC5BCCE550"
+        },
+        {
+          "path": "schemas/config/threeModelRagEvaluation.schema.json",
+          "role": "SCHEMA",
+          "records": 1,
+          "size_bytes": 1740,
+          "sha256": "AD1E63FA160989BF093209C29945BEF29AEAF06928B79A095AE3DD382B9E6703"
+        }
+      ],
+      "selection": {
+        "index_only_roles": [
+          "INGEST_CANDIDATE"
+        ],
+        "context_only_roles": [
+          "CONTEXT_ONLY"
+        ],
+        "required_pre_score_filter": "exact_sales_code",
+        "expected_counts": {
+          "parents": 15,
+          "children": 53,
+          "evidence_groups": 43,
+          "evaluation_cases": 49
+        }
+      },
+      "excluded": [
+        "실제 pgvector 적재 완료 선언",
+        "Backend/API Runtime 활성화",
+        "모델 미검증 FAQ",
+        "WPU-IAC506과 정확 판매코드 미검증 JCC104(D)"
+      ],
+      "commands": [
+        "python -B data/tools/pipeline.py handoff rag-expansion",
+        "python -B -m data.tools.rag_experiments.qa_three_model_handoff"
       ]
     },
     "db-smoke": {
@@ -155,10 +258,10 @@
         },
         {
           "path": "synthetic/fixtures/products.json",
-          "role": "LOAD",
-          "records": 1,
-          "size_bytes": 322,
-          "sha256": "EA4D3F710A72AF64B41318F4662F296AD74D977AE1B488418E144E7E622B9E4F"
+          "role": "LOAD_FILTERED",
+          "records": 3,
+          "size_bytes": 1008,
+          "sha256": "1CBED4342ABDD21185B66475D0D41CE2F70B843CF1A2ABE88081F43E2F0249A6"
         },
         {
           "path": "synthetic/fixtures/customer_products.json",
@@ -248,8 +351,8 @@
           "path": "schemas/synthetic/syntheticProduct.schema.json",
           "role": "SCHEMA",
           "records": 1,
-          "size_bytes": 879,
-          "sha256": "5A79A0839A5C2563ED7D86B7FF51D6F9C4EEDFA2369794DEABE2EE184513E189"
+          "size_bytes": 1033,
+          "sha256": "FE08DE25C272CCE796B9E884B35F3C20E19443FDF7B0EE15B2D64F0B46C30A29"
         },
         {
           "path": "schemas/synthetic/syntheticInquiry.schema.json",
@@ -301,10 +404,10 @@
         },
         {
           "path": "synthetic/fixtures/products.json",
-          "role": "LOAD",
-          "records": 1,
-          "size_bytes": 322,
-          "sha256": "EA4D3F710A72AF64B41318F4662F296AD74D977AE1B488418E144E7E622B9E4F"
+          "role": "LOAD_FILTERED",
+          "records": 3,
+          "size_bytes": 1008,
+          "sha256": "1CBED4342ABDD21185B66475D0D41CE2F70B843CF1A2ABE88081F43E2F0249A6"
         },
         {
           "path": "synthetic/fixtures/customer_products.json",
@@ -439,56 +542,56 @@
           "role": "SUMMARY",
           "records": 1,
           "size_bytes": 7060,
-          "sha256": "FE7AAA0470675E605F54EB36D2F84D1A039CEF191AD8601D0FF0740BCAF51F22"
+          "sha256": "EB4717E7F8FE6867225A89E0B3ED7A589C4D6DBEF89D8786C8E5DDE35344355D"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 8471,
-          "sha256": "01E4CC2E649680DC228810E518CB9BF0277CDEF551D917B1E84D705961173FBD"
+          "size_bytes": 9692,
+          "sha256": "57BBE264C012833DD66207FC125C62EF387CEB342B91D10E24B59BA6DBACF5C0"
         },
         {
           "path": "processed/validation/integrity/latest_integrity_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1340,
-          "sha256": "6C95070AAC01CE8500884F70AED0D65BCEE0F121D94E440DE15914DE3C9EBB07"
+          "sha256": "15BD41F2FEF2AE4C96747626E19933ADC84D10314C1C56C9835DBB290E219CED"
         },
         {
           "path": "processed/validation/quality/latest_quality_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1246,
-          "sha256": "2868C2EA0C26118B3CBF5DE5F0439D00EE10879F3A4223265A035477D2407536"
+          "sha256": "4FDF3ABF985EB22D8C7A28BA7EE1B99606074E6B859B9C8A1071470239F30059"
         },
         {
           "path": "processed/validation/business/latest_business_rules_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1544,
-          "sha256": "360797DE782B9E8C1993DDBECE1AF5250DDBF2554749BC071546845ED6939771"
+          "sha256": "8216DB28CCCA6004C220801EC4A3BCD358E3C586C1C63573BE439557FE3747D9"
         },
         {
           "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1151,
-          "sha256": "235B66D5F8B30AF44C505FC42E60CC8A9A3445977ECB9BED3A627CF72BBD789D"
+          "sha256": "C6573C12F800FB461816638DE7AA00650D7F501E05638EEC6B360AA7F1DFC896"
         },
         {
           "path": "processed/metadata/dataset_manifest.json",
           "role": "MANIFEST",
           "records": 1,
-          "size_bytes": 10106,
-          "sha256": "56D39B3DA90D004766303A065352D2742BB3574E5D829054B44EADED54CF8B22"
+          "size_bytes": 12240,
+          "sha256": "E8A3ED1024D5D3B6CE2AF56FEBFA1C79DA80910E3F5C1739FA1EED425C358BB7"
         },
         {
           "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
           "role": "GUIDE",
           "records": null,
-          "size_bytes": 2037,
-          "sha256": "4568D2B1CEEE18D7B88346D2F4AC0615CEA512E8DC8BF732D289E4CC8D12EA6D"
+          "size_bytes": 2822,
+          "sha256": "F392452B8DA954B3E9D1FDA0A935C35B49633FF8195B744D47D0DA01B082D18A"
         }
       ],
       "selection": {

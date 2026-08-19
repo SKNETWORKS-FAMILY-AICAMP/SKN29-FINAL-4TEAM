@@ -3,7 +3,9 @@
   "mvp_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
   "source_hashes": {
     "manual": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
-    "faq_snapshot": "670C739A69B3ACF811D763FF17F21C53EB661F7BAE1F7D505275B571FF4D3FF8"
+    "faq_snapshot": "670C739A69B3ACF811D763FF17F21C53EB661F7BAE1F7D505275B571FF4D3FF8",
+    "iac425_manual": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+    "iac606_manual": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572"
   },
   "rag_scope": {
     "included_document": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
@@ -14,13 +16,27 @@
     ],
     "faq_included": 0
   },
+  "rag_expansion_scope": {
+    "status": "DATA_READY_AI_NOT_RUN",
+    "runtime_status": "CONTRACT_BLOCKED_NOT_INDEXED",
+    "exact_sales_codes": [
+      "WPUJAC104DWH",
+      "WPUIAC425SNW",
+      "WPUIAC606SNW"
+    ],
+    "parent_pages": 15,
+    "child_chunks": 53,
+    "evidence_groups": 43,
+    "evaluation_cases": 49,
+    "required_pre_score_filter": "exact_sales_code"
+  },
   "excluded_from_rag": [
-    "WPUIAC425SNW",
     "WPU-IAC506",
     "WPUJAC104S family",
+    "정확 판매코드 미검증 JCC104(D)",
     "model-unverified common FAQ"
   ],
-  "dataset_version": "0.9.0",
+  "dataset_version": "1.0.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
   "files": [
     {
@@ -28,6 +44,18 @@
       "records": 44,
       "sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F",
       "schema": "schemas/processed/manualPage.schema.json"
+    },
+    {
+      "path": "processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
+      "records": 52,
+      "sha256": "A16E0BDDD349DC6BD10A72DAD6D8777D75186DFB260FB9D4B2721564B6639F1B",
+      "schema": "schemas/processed/experimentalManualPage.schema.json"
+    },
+    {
+      "path": "processed/documents/manuals/expansion/manual_pages_iac606.jsonl",
+      "records": 48,
+      "sha256": "9DE6C9DCE5E7EB56698EDE2F5F1429C4DB0B5570233988715A64B876F602091D",
+      "schema": "schemas/processed/experimentalManualPage.schema.json"
     },
     {
       "path": "processed/documents/faq/faq_snapshot_normalized.jsonl",
@@ -72,6 +100,24 @@
       "schema": "schemas/processed/evidenceRegistry.schema.json"
     },
     {
+      "path": "processed/structured/rag/expansion/rag_parent_pages_3model_v1.jsonl",
+      "records": 15,
+      "sha256": "EB58882ED9EC996C7665FE6C3C472A6B25273D278D79799F6F15A98AF9B1578E",
+      "schema": "schemas/processed/ragParentPage.schema.json"
+    },
+    {
+      "path": "processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
+      "records": 53,
+      "sha256": "05C7A387ED76EFEFE95E172FA37E4CFC8A0BF8842491512CB5AF4808E3BB20BB",
+      "schema": "schemas/processed/ragChildChunk.schema.json"
+    },
+    {
+      "path": "processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl",
+      "records": 43,
+      "sha256": "997119C395935D0815AA497C9EEB73EF73EAD4DA346FD83B5FC10867F86400E5",
+      "schema": "schemas/processed/ragEvidenceGroup.schema.json"
+    },
+    {
       "path": "synthetic/fixtures/users.json",
       "records": 16,
       "sha256": "C450F72529C3A288E8175B3FDDD504C16EA7BCBB93FBABBA03AE78342A971FC0",
@@ -79,8 +125,8 @@
     },
     {
       "path": "synthetic/fixtures/products.json",
-      "records": 1,
-      "sha256": "EA4D3F710A72AF64B41318F4662F296AD74D977AE1B488418E144E7E622B9E4F",
+      "records": 3,
+      "sha256": "1CBED4342ABDD21185B66475D0D41CE2F70B843CF1A2ABE88081F43E2F0249A6",
       "schema": "schemas/synthetic/syntheticProduct.schema.json"
     },
     {
@@ -240,7 +286,7 @@
     "synthetic_users": 16,
     "synthetic_customers": 12,
     "synthetic_customer_profiles": 12,
-    "synthetic_products": 1,
+    "synthetic_products": 3,
     "synthetic_customer_products": 12,
     "synthetic_subscriptions": 12,
     "synthetic_source_scenarios": 24,
@@ -252,7 +298,13 @@
     "synthetic_status_histories": 125,
     "synthetic_audit_events": 125,
     "synthetic_followup_confirmations": 1,
-    "synthetic_fixture_records": 367,
+    "synthetic_fixture_records": 369,
+    "supported_products": 3,
+    "reference_manual_pages": 144,
+    "rag_expansion_parents": 15,
+    "rag_expansion_children": 53,
+    "rag_expansion_evidence_groups": 43,
+    "rag_expansion_evaluation_cases": 49,
     "synthetic_api_idempotency_cases": 3,
     "synthetic_scenario_subset_files": 7,
     "synthetic_scenario_subset_records": 33

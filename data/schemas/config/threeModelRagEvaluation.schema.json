@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ThreeModelRagEvaluationDraft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "dataset_id", "status", "human_review_status", "retrieval_acceptance", "generated_at", "cases"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "dataset_id": {"const": "RAG-3MODEL-EVALUATION-DRAFT-V1"},
+    "status": {"const": "DATA_READY_AI_NOT_RUN"},
+    "human_review_status": {"const": "HUMAN_REVIEW_PENDING"},
+    "retrieval_acceptance": {"type": "object"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "cases": {
+      "type": "array",
+      "minItems": 49,
+      "maxItems": 49,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case_id", "case_type", "query", "exact_sales_code", "expected_evidence_group_ids", "forbidden_model_codes", "expected_no_evidence", "data_status", "human_review_status"],
+        "properties": {
+          "case_id": {"type": "string", "pattern": "^RAG3-(POS|NEG)-\\d{3}$"},
+          "case_type": {"enum": ["POSITIVE", "NEGATIVE"]},
+          "query": {"type": "string", "minLength": 1},
+          "exact_sales_code": {"type": "string", "minLength": 1},
+          "expected_evidence_group_ids": {"type": "array", "items": {"type": "string"}},
+          "forbidden_model_codes": {"type": "array", "minItems": 2, "items": {"type": "string"}},
+          "expected_no_evidence": {"type": "boolean"},
+          "negative_reason": {"type": "string", "minLength": 1},
+          "data_status": {"const": "DATA_READY_AI_NOT_RUN"},
+          "human_review_status": {"const": "HUMAN_REVIEW_PENDING"}
+        }
+      }
+    }
+  }
+}
