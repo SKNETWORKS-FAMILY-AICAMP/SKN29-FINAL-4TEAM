@@ -124,7 +124,7 @@ export default function ConsultantQueueSidebar({
   };
 
   return (
-    <aside className="consultant-sidebar">
+    <aside id="consultant-queue-sidebar" className="consultant-sidebar">
       <a
         className="simple-brand consultant-sidebar-brand"
         href="/"

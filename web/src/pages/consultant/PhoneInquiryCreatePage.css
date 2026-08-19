@@ -32,7 +32,13 @@ html body .phone-inquiry-entry-app .phone-inquiry-main-header {
 }
 
 html body .phone-inquiry-entry-app .phone-inquiry-entry-panel {
-  overflow: auto !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-color: #8bbbd2 transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
   background: #f3f5f9 !important;
 }
 
@@ -502,12 +508,17 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
     .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app.phone-inquiry-entry-app
     .phone-inquiry-entry-panel {
     display: block !important;
+    height: 100% !important;
+    max-height: calc(100dvh - 76px) !important;
+    min-height: 0 !important;
     grid-column: 2 !important;
     grid-row: 2 !important;
     grid-template-columns: minmax(0, 1fr) !important;
     grid-template-rows: minmax(0, 1fr) !important;
     border: 0 !important;
     border-radius: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
     background: #f3f5f9 !important;
     box-shadow: none !important;
   }

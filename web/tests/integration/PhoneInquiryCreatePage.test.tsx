@@ -113,6 +113,21 @@ afterEach(() => {
 });
 
 describe("PhoneInquiryCreatePage", () => {
+  it("전화 문의 등록 화면에서도 공통 문의 건수를 표시한다", async () => {
+    renderPage();
+
+    expect(
+      await screen.findByRole("tab", { name: "전체 문의90" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "새 문의30" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: "처리 중인 문의30" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: "처리 완료된 문의30" }),
+    ).toBeInTheDocument();
+  });
+
   it("이름·연락처 검색을 JSON Body로 보내고 활성 구독 후보를 선택한다", async () => {
     const fetchMock = createSuccessfulFetchMock();
     vi.stubGlobal("fetch", fetchMock);
