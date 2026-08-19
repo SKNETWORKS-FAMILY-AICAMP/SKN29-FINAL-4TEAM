@@ -140,7 +140,7 @@ class FollowUpCancelViewModelTest {
                     mutableListOf(
                         ApiResult.Failure(
                             code = "STATE-CONFLICT-01",
-                            message = "?? ??? ???????.",
+                            message = "문의 상태가 변경되었습니다.",
                             httpStatus = 409,
                             conflict =
                                 StateConflictSnapshot(
@@ -214,7 +214,7 @@ class FollowUpCancelViewModelTest {
                     mutableListOf(
                         ApiResult.Failure(
                             code = "STATE-CONFLICT-01",
-                            message = "?? ??? ???????.",
+                            message = "문의 상태가 변경되었습니다.",
                             httpStatus = 409,
                             conflict =
                                 StateConflictSnapshot(
@@ -366,7 +366,7 @@ class FollowUpCancelViewModelTest {
                     mutableListOf(
                         ApiResult.Failure(
                             code = "UNAUTHORIZED",
-                            message = "???? ?????.",
+                            message = "로그인이 만료되었습니다.",
                             httpStatus = 401,
                             retryable = false,
                         )
@@ -405,7 +405,7 @@ class FollowUpCancelViewModelTest {
                     mutableListOf(
                         ApiResult.Failure(
                             code = "RESOURCE_NOT_FOUND",
-                            message = "??? ??? ?? ? ????.",
+                            message = "문의 정보를 찾을 수 없습니다.",
                             httpStatus = 404,
                             retryable = false,
                         )
@@ -444,7 +444,7 @@ class FollowUpCancelViewModelTest {
                     mutableListOf(
                         ApiResult.Failure(
                             code = "NETWORK_ERROR",
-                            message = "???? ??",
+                            message = "네트워크 오류",
                             retryable = true,
                         )
                     )
@@ -544,7 +544,7 @@ class FollowUpCancelViewModelTest {
                             code =
                                 InquiryActionLabels
                                     .CANCEL_INQUIRY,
-                            label = "?? ??",
+                            label = "문의 취소",
                         )
                     )
                 } else {
@@ -558,7 +558,7 @@ class FollowUpCancelViewModelTest {
         CustomerInquiryQuestion(
             questionId = QUESTION_ID,
             questionType = "FREE_TEXT",
-            prompt = "???? ??? ?????",
+            prompt = "증상이 언제 시작됐나요?",
             required = true,
             options = emptyList(),
         )
@@ -602,7 +602,7 @@ class FollowUpCancelViewModelTest {
             CustomerInquiryQuestion(
                 questionId = QUESTION_ID,
                 questionType = "FREE_TEXT",
-                prompt = "???? ??? ?????",
+                prompt = "증상이 언제 시작됐나요?",
                 required = true,
                 options = emptyList(),
             )

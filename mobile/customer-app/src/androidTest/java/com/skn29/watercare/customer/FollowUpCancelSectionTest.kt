@@ -6,6 +6,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
@@ -55,7 +56,7 @@ private class FollowUpCancelManualScope(
 private fun SemanticsNodeInteraction
     .assertDoesNotExistCompat() {
     assertTrue(
-        "??? ???? ??? ?? UI? ???????.",
+        "해당 요소는 화면에 표시되지 않아야 합니다.",
         runCatching {
             fetchSemanticsNode()
         }.isFailure,
@@ -125,6 +126,10 @@ class FollowUpCancelSectionTest {
                 "cancelInquiry"
             )
                 .assertIsDisplayed()
+
+            onNodeWithText(
+                "진행 중인 문의는 상황에 따라 취소할 수 있어요."
+            ).assertIsDisplayed()
         }
 
     @Test
@@ -159,6 +164,14 @@ class FollowUpCancelSectionTest {
             onNodeWithTag(
                 "cancelInquiry"
             ).performClick()
+
+            onNodeWithText(
+                "문의를 취소할까요?"
+            ).assertIsDisplayed()
+
+            onNodeWithText(
+                "취소 후에는 현재 문의 흐름을 계속 진행할 수 없습니다."
+            ).assertIsDisplayed()
 
             onNodeWithTag(
                 "dismissCancelFollowUpInquiry"
@@ -256,6 +269,10 @@ class FollowUpCancelSectionTest {
                 "cancelledFollowUpInquiry"
             )
                 .assertIsDisplayed()
+
+            onNodeWithText(
+                "문의가 취소됐어요."
+            ).assertIsDisplayed()
 
             onNodeWithTag(
                 "cancelInquiry"
@@ -442,7 +459,7 @@ class FollowUpCancelSectionTest {
                                 InquiryActionLabels
                                     .CANCEL_INQUIRY,
                             label =
-                                "?? ??",
+                                "문의 취소",
                         )
                     )
                 } else {

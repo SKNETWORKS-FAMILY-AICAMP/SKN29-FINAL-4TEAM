@@ -62,7 +62,7 @@ internal fun FollowUpCancelSection(
         cancelAction != null &&
         cancelState is CancelInquiryUiState.Idle
     ) {
-        SectionCard("?? ??") {
+        SectionCard("문의 취소") {
             WorkflowActionButton(
                 action = cancelAction,
                 enabled = true,
@@ -72,7 +72,7 @@ internal fun FollowUpCancelSection(
             )
 
             Text(
-                "?? ?? ??? ??? ? ???.",
+                "진행 중인 문의는 상황에 따라 취소할 수 있어요.",
                 style =
                     MaterialTheme.typography
                         .bodySmall,
@@ -89,15 +89,15 @@ internal fun FollowUpCancelSection(
 
         CancelInquiryUiState.Cancelling ->
             LoadingBlock(
-                "??? ???? ????"
+                "문의를 취소하는 중입니다"
             )
 
         is CancelInquiryUiState.Success ->
-            SectionCard("?? ?? ??") {
-                LiquidGlassPill("???")
+            SectionCard("문의 취소 완료") {
+                LiquidGlassPill("취소됨")
 
                 Text(
-                    "??? ?????.",
+                    "문의가 취소됐어요.",
                     style =
                         MaterialTheme.typography
                             .titleMedium,
@@ -111,7 +111,7 @@ internal fun FollowUpCancelSection(
 
                 if (current.idempotentReplay) {
                     Text(
-                        "?? ??? ?? ??? ?????.",
+                        "문의 취소가 이미 처리되어 있어요.",
                         style =
                             MaterialTheme.typography
                                 .bodySmall,
@@ -119,7 +119,7 @@ internal fun FollowUpCancelSection(
                 }
 
                 LiquidGlassButton(
-                    text = "????",
+                    text = "홈으로",
                     onClick =
                         onCancelledDone,
                     accent = true,
@@ -130,10 +130,10 @@ internal fun FollowUpCancelSection(
 
         is CancelInquiryUiState.Conflict ->
             SectionCard(
-                "?? ??? ?????"
+                "문의 내용이 변경됐어요"
             ) {
                 Text(
-                    "?? ?? ??? ??????."
+                    "문의 내용이 변경됐어요. 최신 상태를 확인해주세요."
                 )
 
                 current.currentStatus
@@ -149,7 +149,7 @@ internal fun FollowUpCancelSection(
                 if (current.canRetry) {
                     LiquidGlassButton(
                         text =
-                            "?? ?? ?? ??",
+                            "문의 취소 다시 시도",
                         onClick =
                             onRetryConflict,
                         accent = false,
@@ -162,7 +162,7 @@ internal fun FollowUpCancelSection(
                     )
                 } else {
                     Text(
-                        "?? ????? ??? ??? ? ????.",
+                        "현재 상태에서는 문의를 취소할 수 없습니다.",
                         style =
                             MaterialTheme.typography
                                 .bodySmall,
@@ -170,7 +170,7 @@ internal fun FollowUpCancelSection(
 
                     LiquidGlassButton(
                         text =
-                            "?? ?? ??",
+                            "최신 상태 확인",
                         onClick =
                             onReloadLatest,
                         accent = false,
@@ -182,7 +182,7 @@ internal fun FollowUpCancelSection(
 
         is CancelInquiryUiState.Error ->
             ErrorCard(
-                "?? ??? ???? ????. ?? ? ?? ??????.",
+                "문의 취소를 처리하지 못했어요. 잠시 후 다시 시도해주세요.",
                 if (
                     current.retryable &&
                     cancelAllowed &&
@@ -212,7 +212,7 @@ internal fun FollowUpCancelSection(
             },
             title = {
                 Text(
-                    "??? ??????"
+                    "문의를 취소할까요?"
                 )
             },
             text = {
@@ -222,7 +222,7 @@ internal fun FollowUpCancelSection(
                         ?.takeIf(
                             String::isNotBlank
                         )
-                        ?: "?? ??? ?? ??? ?? ??? ?? ??? ? ????."
+                        ?: "취소 후에는 현재 문의 흐름을 계속 진행할 수 없습니다."
                 )
             },
             confirmButton = {
@@ -239,7 +239,7 @@ internal fun FollowUpCancelSection(
                             "confirmCancelFollowUpInquiry"
                         ),
                 ) {
-                    Text("?? ??")
+                    Text("문의 취소")
                 }
             },
             dismissButton = {
@@ -252,7 +252,7 @@ internal fun FollowUpCancelSection(
                             "dismissCancelFollowUpInquiry"
                         ),
                 ) {
-                    Text("????")
+                    Text("돌아가기")
                 }
             },
         )

@@ -84,7 +84,7 @@ class GuidanceViewModel(
                     result.httpStatus == 401 -> {
                         _authExpired.value = true
                         GuidanceUiState.Error(
-                            message = "濡쒓렇?몄씠 留뚮즺?먯뼱?? ?ㅼ떆 濡쒓렇?명빐二쇱꽭??",
+                            message = "로그인이 만료되었습니다. 다시 로그인해 주세요.",
                             retryable = false,
                         )
                     }
@@ -161,7 +161,7 @@ class GuidanceViewModel(
                     _consultationState.value =
                         ConsultationRequestUiState.Error(
                             message =
-                                "?곷떞 ?붿껌??泥섎━?섏? 紐삵뻽?댁슂. ?좎떆 ???ㅼ떆 ?쒕룄?댁＜?몄슂.",
+                                "상담 요청을 처리하지 못했어요. 잠시 후 다시 시도해주세요.",
                             retryable = latest.retryable,
                         )
                 }
@@ -305,7 +305,7 @@ class GuidanceViewModel(
             _consultationState.value =
                 ConsultationRequestUiState.Error(
                     message =
-                        "?곷떞 ?붿껌??泥섎━?섏? 紐삵뻽?댁슂. ?좎떆 ???ㅼ떆 ?쒕룄?댁＜?몄슂.",
+                        "상담 요청을 처리하지 못했어요. 잠시 후 다시 시도해주세요.",
                     retryable = failure.retryable,
                 )
             return
