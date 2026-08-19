@@ -12,6 +12,7 @@ from .verification_result import VerificationIssue, VerificationIssueCode
 
 
 class ProductFamily(str, Enum):
+    UNKNOWN = "UNKNOWN"
     DIRECT_WATER_PURIFIER = "DIRECT_WATER_PURIFIER"
     ICE_WATER_PURIFIER = "ICE_WATER_PURIFIER"
 

@@ -76,6 +76,7 @@ class HarnessRunner:
         output_payload: Any | None = None,
         output_schema: Type[BaseModel] | None = None,
         timed_out: bool = False,
+        evidence_required: bool | None = None,
     ) -> HarnessResult:
         state = retry_state or HarnessRetryState()
         verification = self.verifier.verify(
@@ -87,6 +88,7 @@ class HarnessRunner:
             output_payload=output_payload,
             output_schema=output_schema,
             timed_out=timed_out,
+            evidence_required=evidence_required,
         )
 
         if timed_out:
@@ -119,7 +121,6 @@ class HarnessRunner:
             should_escalate=policy.decision == HarnessDecision.ESCALATE,
         )
 
-
     def run_runtime(
         self,
         *,
@@ -133,6 +134,7 @@ class HarnessRunner:
         output_payload: Any | None = None,
         output_schema: Type[BaseModel] | None = None,
         timed_out: bool = False,
+        evidence_required: bool | None = None,
     ) -> HarnessRuntimeResult:
         """Run Harness and route HUMAN_REVIEW/ESCALATE without re-running the LLM pipeline."""
 
@@ -146,7 +148,25 @@ class HarnessRunner:
             output_payload=output_payload,
             output_schema=output_schema,
             timed_out=timed_out,
+            evidence_required=evidence_required,
         )
+        return self.route_runtime(
+            ctx=ctx,
+            product=product,
+            harness=harness,
+            guidance=guidance,
+        )
+
+    def route_runtime(
+        self,
+        *,
+        ctx: Any,
+        product: ProductContext,
+        harness: HarnessResult,
+        guidance: UsageGuidance | None,
+        force_handoff_reason: str | None = None,
+    ) -> HarnessRuntimeResult:
+        """Route an already-verified HarnessResult to HITL/Handoff without re-verification."""
 
         if harness.decision == HarnessDecision.HUMAN_REVIEW:
             if guidance is None:
@@ -183,6 +203,16 @@ class HarnessRunner:
                     ctx=ctx,
                     product=product,
                     reason=self._escalation_reason(harness),
+                ),
+            )
+
+        if force_handoff_reason:
+            return HarnessRuntimeResult(
+                harness=harness,
+                handoff=self._create_handoff(
+                    ctx=ctx,
+                    product=product,
+                    reason=force_handoff_reason,
                 ),
             )
 

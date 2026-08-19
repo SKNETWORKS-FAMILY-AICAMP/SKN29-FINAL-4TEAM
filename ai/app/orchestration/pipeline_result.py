@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from ..retrieval import RetrievalOutcome
 from ..schemas import AiExecutionStatus, AiStage, SymptomAnalysisResult, UsageGuidanceStatus
 from .agents.contracts import MultiAgentRunMetadata
+from .harness.runtime import ReliabilityRuntimeResult
 from .pipeline_context import PipelineContext
 
 
@@ -21,6 +22,11 @@ class PipelineResult(BaseModel):
         None,
         description="Multi-Agent Handoff 내부 증거. 공개 AI 응답에는 포함하지 않음",
     )
+    reliability_runtime: ReliabilityRuntimeResult | None = Field(
+        None,
+        exclude=True,
+        description="Harness/HITL/Handoff 내부 실행 결과. 공개 AI 응답에는 포함하지 않음",
+    )
 
     def to_analysis_result(self) -> SymptomAnalysisResult:
         """SymptomAnalysisResult DTO 변환"""
@@ -31,13 +37,27 @@ class PipelineResult(BaseModel):
             and not ctx.awaiting_customer_input
             and ctx.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
         )
+        reliability_decision = None
+        if self.reliability_runtime is not None:
+            reliability_decision = (
+                self.reliability_runtime.harness_runtime.harness.decision.value
+            )
+        is_reliability_fallback = (
+            reliability_decision is not None and reliability_decision != "PASS"
+        )
+        is_fallback = is_no_evidence_fallback or is_reliability_fallback
+        failure_stage = (
+            AiStage.RETRIEVING
+            if is_no_evidence_fallback
+            else AiStage.VALIDATING if is_reliability_fallback else None
+        )
         return SymptomAnalysisResult(
             inquiry_id=ctx.trace_context.inquiry_id,
             correlation_id=ctx.trace_context.correlation_id,
             ai_request_id=ctx.trace_context.ai_request_id,
             state_version=ctx.trace_context.state_version,
-            status=AiExecutionStatus.FALLBACK if is_no_evidence_fallback else AiExecutionStatus.SUCCEEDED,
-            failure_stage=AiStage.RETRIEVING if is_no_evidence_fallback else None,
+            status=AiExecutionStatus.FALLBACK if is_fallback else AiExecutionStatus.SUCCEEDED,
+            failure_stage=failure_stage,
             retry_count=ctx.retry_count,
             structured_symptom=ctx.structured_symptom,
             missing_fields=ctx.missing_fields,

@@ -31,6 +31,7 @@ class HarnessVerifier:
         output_payload: Any | None = None,
         output_schema: Type[BaseModel] | None = None,
         timed_out: bool = False,
+        evidence_required: bool | None = None,
     ) -> VerificationResult:
         issues: list[VerificationIssue] = []
 
@@ -55,15 +56,25 @@ class HarnessVerifier:
                 issues=issues,
             )
 
+        if evidence_required is None:
+            evidence_required = not (
+                safety_assessment is not None
+                and safety_assessment.risk_level == RiskLevel.DANGER
+            )
+
         eligible: list[RetrievedChunk] = []
         rejected_ids: list[str] = []
         for chunk in evidence_chunks:
-            if not chunk.allowed_use or chunk.verification_status not in self.VERIFIED_STATUSES:
+            if (
+                not chunk.allowed_use
+                or not chunk.runtime_eligible
+                or chunk.verification_status not in self.VERIFIED_STATUSES
+            ):
                 rejected_ids.append(chunk.chunk_id)
                 issues.append(
                     VerificationIssue(
                         code=VerificationIssueCode.UNVERIFIED_EVIDENCE,
-                        message="Evidence is not approved for customer guidance.",
+                        message="Evidence is not approved or runtime-eligible for customer guidance.",
                         retryable=True,
                         chunk_id=chunk.chunk_id,
                     )
@@ -80,7 +91,7 @@ class HarnessVerifier:
         rejected_ids.extend(product_result.rejected_chunk_ids)
 
         evidence_present = bool(product_result.accepted_chunk_ids)
-        if not evidence_present:
+        if evidence_required and not evidence_present:
             issues.append(
                 VerificationIssue(
                     code=VerificationIssueCode.NO_EVIDENCE,
@@ -113,7 +124,11 @@ class HarnessVerifier:
             decision = HarnessDecision.ESCALATE
         elif not product_result.function_compatibility_valid:
             decision = HarnessDecision.HUMAN_REVIEW
-        elif not evidence_present or not product_result.model_match_valid or not product_result.product_family_valid:
+        elif evidence_required and (
+            not evidence_present
+            or not product_result.model_match_valid
+            or not product_result.product_family_valid
+        ):
             decision = HarnessDecision.RETRY_RETRIEVAL
         elif not schema_valid:
             decision = HarnessDecision.RETRY_GENERATION

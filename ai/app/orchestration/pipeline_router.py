@@ -13,6 +13,9 @@ from ..integrations.vector_store.vector_store import PgVectorStore
 from ..retrieval.search.vector_search import VectorSearchService
 from ..retrieval.indexing.index_manifest import IndexManifest
 from ..retrieval import RetrievalConfigurationError
+from .harness.evidence_capture import GuardedEvidenceSearchService
+from .harness.product_registry import resolve_product_context
+from .harness.runtime import ReliabilityRuntime
 from .pipeline_context import PipelineContext
 from .pipeline_result import PipelineResult
 from .pipelines.multi_agent_pipeline import MultiAgentPipeline
@@ -115,6 +118,7 @@ class PipelineRouter:
         else:
             self.search_service = search_service
         self.llm_client = llm_client
+        self.reliability_runtime = ReliabilityRuntime()
 
     @staticmethod
     def _configured_search_service() -> VectorSearchService | None:
@@ -136,6 +140,7 @@ class PipelineRouter:
         """명시된 Runtime을 실행하되 기본값은 안정된 Single RAG로 유지한다."""
         token = cancellation_token or CancellationToken()
         token.raise_if_cancelled()
+        product_context = resolve_product_context(model_code)
         ctx = PipelineContext(
             trace_context=TraceContext(
                 inquiry_id=inquiry_id,
@@ -144,21 +149,30 @@ class PipelineRouter:
                 state_version=state_version,
             ),
             raw_symptom=raw_symptom,
-            model_code=model_code,
+            model_code=product_context.model_code,
             selected_symptoms=selected_symptoms or [],
             previous_answers=previous_answers or []
         )
 
         selected_runtime = runtime_name or os.getenv("AI_PIPELINE_RUNTIME", "single_rag")
+        guarded_search_service = (
+            GuardedEvidenceSearchService(self.search_service, product_context)
+            if self.search_service is not None
+            else None
+        )
+        if guarded_search_service is not None:
+            guarded_search_service.begin_attempt()
+        runtime_search_service = guarded_search_service or self.search_service
+
         if selected_runtime == "single_rag":
             pipeline = SingleRAGPipeline(
-                self.search_service,
+                runtime_search_service,
                 retrieval_configuration_error=self.retrieval_configuration_error,
                 llm_client=self.llm_client,
             )
         elif selected_runtime == "multi_agent":
             pipeline = MultiAgentPipeline(
-                self.search_service,
+                runtime_search_service,
                 retrieval_configuration_error=self.retrieval_configuration_error,
                 llm_client=self.llm_client,
             )
@@ -166,4 +180,13 @@ class PipelineRouter:
             raise RuntimeError(
                 "AI_PIPELINE_RUNTIME은 single_rag 또는 multi_agent여야 합니다."
             )
-        return pipeline.run(ctx, cancellation_token=token)
+        pipeline_result = pipeline.run(ctx, cancellation_token=token)
+        pipeline_result.reliability_runtime = self.reliability_runtime.run(
+            ctx=pipeline_result.context,
+            product=product_context,
+            evidence_capture=guarded_search_service,
+            search_service=runtime_search_service,
+            llm_client=self.llm_client,
+            cancellation_token=token,
+        )
+        return pipeline_result
