@@ -8,7 +8,7 @@
   "dataset": {
     "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
     "records": 96,
-    "sha256": "FE62AF6030045C532BC8E68D11C5461E8C65BD16DCD6758E0C2412C8C37C472C"
+    "sha256": "4B0890BC079207C8F9AA9DB1208D371F295BD53537A9B692FA6B7D686333FABC"
   },
   "schema": {
     "path": "ai/evaluation/schemas/full_corpus_chunk_v1.schema.json",
@@ -25,7 +25,7 @@
     },
     {
       "path": "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
-      "sha256": "FF1540D19AB500D2DCFE30A9F1C45F2AF1650FA70363ECA6CA560CEF175887E0"
+      "sha256": "97DE9C6AB06DB5C9C1AC90F2C4B3773A9971AC410093B1FB8B62BABD49F87BE2"
     }
   ],
   "limitations": [

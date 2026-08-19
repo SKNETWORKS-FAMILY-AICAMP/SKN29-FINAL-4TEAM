@@ -57,7 +57,7 @@ def build_qa_report(
         for issue in _validate_schema(rows, schema):
             _error(errors, f"{name.upper()}_{issue['code']}", issue)
 
-    expected_counts = {"parents": 15, "children": 53, "groups": 43, "cases": 49}
+    expected_counts = {"parents": 15, "children": 53, "groups": 43, "cases": 50}
     actual_counts = {
         "parents": len(parents),
         "children": len(children),
@@ -147,7 +147,7 @@ def build_qa_report(
     cases = evaluations.get("cases", [])
     positive = [row for row in cases if row.get("case_type") == "POSITIVE"]
     negative = [row for row in cases if row.get("case_type") == "NEGATIVE"]
-    if (len(positive), len(negative)) != (43, 6):
+    if (len(positive), len(negative)) != (43, 7):
         _error(errors, "EVALUATION_COUNT", {"positive": len(positive), "negative": len(negative)})
     child_texts = {row["child_text"] for row in children}
     all_codes = set(products)

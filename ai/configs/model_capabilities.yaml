@@ -1,0 +1,43 @@
+# 정확 판매코드와 사용자가 명시한 조작부 명칭의 호환성을 pgvector 검색 전에 검사한다.
+model_capability_gate:
+  policy_id: "RAG-GATE-MODEL-CAPABILITY-001"
+  unregistered_rule_id: "RAG-GATE-MODEL-CAPABILITY-001"
+  unregistered_reason: "UNREGISTERED_EXACT_SALES_CODE"
+
+  # 존재하지만 현재 Candidate가 아니거나 별도 정책으로 차단되는 코드도 등록 여부
+  # 판정에는 포함한다. 실제 검색 허용 여부는 뒤의 Answerability Gate가 결정한다.
+  known_exact_sales_codes:
+    - "WPUJAC104DWH"
+    - "WPU-JAC104D/JCC104D"
+    - "WPUJCC104D"
+    - "WPUIAC425SNW"
+    - "WPUIAC506SNW"
+    - "WPU-IAC506"
+    - "WPUIAC606SNW"
+
+  controls:
+    WATER_BUTTON:
+      explicit_mentions:
+        - "[물] 버튼"
+        - "[물]버튼"
+        - "물 출수 버튼"
+    DISPENSE_ICE_BUTTON:
+      explicit_mentions:
+        - "출수/출빙 버튼"
+        - "출수 / 출빙 버튼"
+        - "출수·출빙 버튼"
+
+  models:
+    WPUJAC104DWH:
+      validate_explicit_controls: false
+      supported_control_ids: []
+    WPUIAC425SNW:
+      validate_explicit_controls: true
+      rule_id: "CAP-WPUIAC425SNW-DISPENSE-CONTROL-001"
+      supported_control_ids:
+        - "WATER_BUTTON"
+    WPUIAC606SNW:
+      validate_explicit_controls: true
+      rule_id: "CAP-WPUIAC606SNW-DISPENSE-CONTROL-001"
+      supported_control_ids:
+        - "DISPENSE_ICE_BUTTON"

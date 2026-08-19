@@ -353,3 +353,39 @@ $env:AI_VECTOR_DISPOSABLE_CONFIRM='DISPOSABLE_ONLY'
 금지 Fixture는 한 Transaction에서 확인한 후 Rollback하며 공유 DB 식별 Guard를
 통과하지 못하면 삽입 전에 중단한다. 팀 공용 DB Schema는 반드시 Backend/DB
 담당자의 정식 Migration으로 반영한다.
+
+### 3모델 `rag-expansion` Candidate
+
+3모델 확장 데이터는 공식 Runtime 입력이 아니라 `INGEST_CANDIDATE`다. 먼저 DB와
+Embedding을 사용하지 않는 Preflight로 Child 53건, Evidence Group 43건, 평가 Case
+50건과 `exact_sales_code` 선필터 계약을 확인한다.
+
+```powershell
+.\ai\.venv\Scripts\python.exe -m ai.scripts.evaluate_rag_expansion_pgvector --preflight-only
+```
+
+실제 Candidate 적재·평가는 운영 `ai_rag_chunks`와 분리된
+`ai_rag_chunks_expansion_candidate` Table 및 식별 가능한 Disposable DB에서만
+허용한다. Manifest와 Vector 비포함 평가 보고서는 Git 제외 경로인
+`.runtime/rag-expansion/`에 생성된다.
+
+```powershell
+$env:AI_VECTOR_TABLE_NAME='ai_rag_chunks_expansion_candidate'
+$env:AI_VECTOR_DISPOSABLE_CONFIRM='DISPOSABLE_ONLY'
+
+.\ai\.venv\Scripts\python.exe -m ai.scripts.initialize_disposable_vector_schema
+.\ai\.venv\Scripts\python.exe -m ai.scripts.build_vector_index --profile rag-expansion
+.\ai\.venv\Scripts\python.exe -m ai.scripts.evaluate_rag_expansion_pgvector
+```
+
+검색 전 모델 Capability Gate는 `ai/configs/model_capabilities.yaml`을 사용한다.
+등록되지 않은 정확 판매코드와 IAC425·IAC606의 명시적 조작부 불일치를 임베딩·
+pgvector 전에 차단한다. 일반적인 `물`, `출수`, `버튼` 단어만으로는 차단하지
+않으며 적용 Rule ID와 차단 사유, 검색 실행 여부를 평가 보고서에 남긴다.
+
+2026-08-19 Disposable Candidate 실행에서는 53행·1024차원·3개 판매코드·43개
+Evidence Group 적재를 확인했다. 정상 43건은 판매코드가 일치하는 검증 Evidence
+Group을 Top-5에서 찾았고 부정 7건은 모두 검색 전 No Evidence로 처리됐다. 총
+`50/50`, 교차 모델 Hit 0건, Parent 직접 Hit 0건, 미검증 Evidence Hit 0건이다.
+이 결과는 `rag-expansion` Candidate 검색 성능 PASS이며 Backend·Public API 계약
+확장이 끝나지 않았으므로 IAC425·IAC606 Runtime 활성 상태는 `NOT_APPROVED`다.

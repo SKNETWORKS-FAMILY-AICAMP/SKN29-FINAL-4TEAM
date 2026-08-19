@@ -72,7 +72,7 @@ class T005DataProjectionTests(unittest.TestCase):
         self.assertEqual(15, counts["rag_expansion_parents"])
         self.assertEqual(53, counts["rag_expansion_children"])
         self.assertEqual(43, counts["rag_expansion_evidence_groups"])
-        self.assertEqual(49, counts["rag_expansion_evaluation_cases"])
+        self.assertEqual(50, counts["rag_expansion_evaluation_cases"])
 
     def test_pipeline_schema_requires_exact_fixture_total(self) -> None:
         schema = read_json(DATA_ROOT / "schemas/config/pipeline.schema.json")

@@ -14,6 +14,10 @@ from ..verification.answerability_capability_gate import (
     AnswerabilityCapabilityGate,
     AnswerabilityDecision,
 )
+from ..verification.model_capability_gate import (
+    ModelCapabilityDecision,
+    ModelCapabilityGate,
+)
 from ...common.timeout import CancellationToken
 
 
@@ -26,11 +30,13 @@ class VectorSearchService:
         vector_store: VectorStore,
         index_manifest: IndexManifest | None = None,
         answerability_gate: AnswerabilityCapabilityGate | None = None,
+        model_capability_gate: ModelCapabilityGate | None = None,
     ):
         self.embedding_client = embedding_client
         self.vector_store = vector_store
         self.index_manifest = index_manifest
         self.answerability_gate = answerability_gate or AnswerabilityCapabilityGate()
+        self.model_capability_gate = model_capability_gate or ModelCapabilityGate()
         if index_manifest is not None:
             if getattr(embedding_client, "model_name", None) != index_manifest.model_name:
                 raise RuntimeError("Embedding 모델과 Index Manifest 모델이 일치하지 않습니다.")
@@ -89,7 +95,7 @@ class VectorSearchService:
         token.raise_if_cancelled()
         if not query.model_code:
             raise ValueError("검색에는 공개 제품 모델 코드가 필요합니다.")
-        decision = self.evaluate_answerability(query)
+        decision = self.evaluate_pre_search_gate(query)
         if decision.blocked:
             return []
         if not FaqUsageValidator().allows_query(query.query_text):
@@ -117,11 +123,33 @@ class VectorSearchService:
             product_generation=query.product_generation or "D",
         )
 
+    def evaluate_model_capability(
+        self,
+        query: RetrievalQuery,
+    ) -> ModelCapabilityDecision:
+        """정확 판매코드와 명시적 조작부를 Answerability보다 먼저 판정한다."""
+
+        return self.model_capability_gate.evaluate(
+            query_text=query.query_text,
+            model_code=query.model_code or "",
+        )
+
+    def evaluate_pre_search_gate(
+        self,
+        query: RetrievalQuery,
+    ) -> ModelCapabilityDecision | AnswerabilityDecision:
+        """pgvector 이전 Gate를 실행 순서대로 적용한다."""
+
+        model_decision = self.evaluate_model_capability(query)
+        if model_decision.blocked:
+            return model_decision
+        return self.evaluate_answerability(query)
+
     def execution_path(self, query: RetrievalQuery) -> str:
         """평가 보고서에서 DB Query와 검색 전 정책 차단을 구분한다."""
         if not query.model_code:
             return "POLICY_BLOCK_MISSING_MODEL"
-        decision = self.evaluate_answerability(query)
+        decision = self.evaluate_pre_search_gate(query)
         if decision.blocked:
             return decision.execution_path
         if not FaqUsageValidator().allows_query(query.query_text):

@@ -13,8 +13,8 @@
     "generated_at": {"type": "string", "format": "date-time"},
     "cases": {
       "type": "array",
-      "minItems": 49,
-      "maxItems": 49,
+      "minItems": 50,
+      "maxItems": 50,
       "items": {
         "type": "object",
         "additionalProperties": false,

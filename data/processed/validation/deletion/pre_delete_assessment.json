@@ -5,7 +5,7 @@
   "targets": {
     "data/raw": {
       "file_count": 7,
-      "size_bytes": 1124,
+      "size_bytes": 1126,
       "git_tracked_files": 7,
       "not_git_recoverable_files": 0
     },

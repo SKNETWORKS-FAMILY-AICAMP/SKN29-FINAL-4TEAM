@@ -91,7 +91,7 @@
       ]
     },
     "rag-expansion": {
-      "purpose": "검증된 3모델 53개 Child·15개 Parent와 49개 평가 Case를 AI 재평가 후보로 인계",
+      "purpose": "검증된 3모델 53개 Child·15개 Parent와 50개 평가 Case를 AI 재평가 후보로 인계",
       "readiness": "DATA_READY_AI_REVERIFY_REQUIRED",
       "contract_dependency": "BACKEND_RUNTIME_MAPPING_PENDING",
       "items": [
@@ -144,7 +144,7 @@
           "parents": 15,
           "children": 53,
           "evidence_groups": 43,
-          "evaluation_cases": 49
+          "evaluation_cases": 50
         }
       },
       "excluded": [

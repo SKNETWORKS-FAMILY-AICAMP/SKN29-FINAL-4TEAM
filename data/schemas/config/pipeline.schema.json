@@ -70,7 +70,7 @@
         "rag_expansion_parents": {"type": "integer", "const": 15},
         "rag_expansion_children": {"type": "integer", "const": 53},
         "rag_expansion_evidence_groups": {"type": "integer", "const": 43},
-        "rag_expansion_evaluation_cases": {"type": "integer", "const": 49}
+        "rag_expansion_evaluation_cases": {"type": "integer", "const": 50}
       }
     },
     "paths": {

@@ -19,7 +19,7 @@
     "rag_expansion_parents": 15,
     "rag_expansion_children": 53,
     "rag_expansion_evidence_groups": 43,
-    "rag_expansion_evaluation_cases": 49
+    "rag_expansion_evaluation_cases": 50
   },
   "paths": {
     "ocr": "config/faq/ocr_transcriptions.json",

@@ -392,11 +392,12 @@ def _build_evaluations(
         })
     negative_specs = [
         ("WPUJAC104DWH", "WPU-JAC104D에서 얼음이 만들어지지 않을 때 조치 방법은?", "UNSUPPORTED_FEATURE_FOR_MODEL"),
-        ("WPUIAC425SNW", "WPU-IAC425에서 출수/출빙 버튼을 눌러 온수를 다시 받는 방법은?", "OTHER_MODEL_CONTROL_MISMATCH"),
-        ("WPUIAC606SNW", "WPU-IAC606에서 [물] 버튼을 눌러 온수를 다시 받는 방법은?", "OTHER_MODEL_CONTROL_MISMATCH"),
+        ("WPUIAC425SNW", "WPU-IAC425에서 출수/출빙 버튼을 눌러 온수를 다시 받는 방법은?", "MODEL_CONTROL_MISMATCH"),
+        ("WPUIAC606SNW", "WPU-IAC606에서 [물] 버튼을 눌러 온수를 다시 받는 방법은?", "MODEL_CONTROL_MISMATCH"),
         ("WPUJCC104D", "WPU-JCC104D의 누수 대처 방법은?", "INACTIVE_BUNDLED_MANUAL_ALIAS"),
         ("WPUIAC506SNW", "WPU-IAC506의 필터 교체 방법은?", "BLOCKED_MODEL"),
         ("UNVERIFIED_FAQ", "모델을 확인할 수 없는 정수기 FAQ 답변을 알려줘.", "MODEL_UNVERIFIED_FAQ"),
+        ("WPUIAC999ZZZ", "WPUIAC999ZZZ 모델의 온수 잠금을 해제하는 방법은?", "UNREGISTERED_EXACT_SALES_CODE"),
     ]
     negative_cases = []
     for index, (code, query, reason) in enumerate(negative_specs, start=1):
@@ -418,9 +419,11 @@ def _build_evaluations(
         "status": "DATA_READY_AI_NOT_RUN",
         "human_review_status": "HUMAN_REVIEW_PENDING",
         "retrieval_acceptance": {
-            "positive": "expected Evidence Group의 모든 Source Variant가 Top-5 안에 포함",
+            "positive": "질문의 정확 판매코드와 일치하는 검증된 expected Evidence Group의 근거 중 1개 이상이 Top-5 안에 포함",
             "negative": "no-evidence",
             "cross_model_hits": 0,
+            "direct_parent_hits": 0,
+            "verified_evidence_only": True,
         },
         "generated_at": GENERATED_AT,
         "cases": positive_cases + negative_cases,
@@ -449,7 +452,7 @@ def build(
     children.sort(key=lambda row: row["child_id"])
     groups.sort(key=lambda row: row["evidence_group_id"])
     evaluations = _build_evaluations(groups, products)
-    if (len(parents), len(children), len(groups), len(evaluations["cases"])) != (15, 53, 43, 49):
+    if (len(parents), len(children), len(groups), len(evaluations["cases"])) != (15, 53, 43, 50):
         raise ValueError("three-model handoff count gate failed")
 
     _write_jsonl(parent_output, parents)
@@ -477,7 +480,7 @@ def build(
             "evidence_groups": len(groups),
             "evaluation_cases": len(evaluations["cases"]),
             "positive_cases": 43,
-            "negative_cases": 6,
+            "negative_cases": 7,
         },
         "outputs": [
             {
