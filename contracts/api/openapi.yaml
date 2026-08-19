@@ -22,6 +22,12 @@ paths:
     $ref: ./paths/care.yaml#/~1me~1subscriptions~1{subscription_id}~1care-records
   /me/subscriptions/{subscription_id}/care-records/{care_record_id}:
     $ref: ./paths/care.yaml#/~1me~1subscriptions~1{subscription_id}~1care-records~1{care_record_id}
+  /me/questionnaire-sessions:
+    $ref: ./paths/questionnaires.yaml#/~1me~1questionnaire-sessions
+  /me/questionnaire-sessions/{questionnaire_session_id}:
+    $ref: ./paths/questionnaires.yaml#/~1me~1questionnaire-sessions~1{questionnaire_session_id}
+  /me/questionnaire-sessions/{questionnaire_session_id}/submit:
+    $ref: ./paths/questionnaires.yaml#/~1me~1questionnaire-sessions~1{questionnaire_session_id}~1submit
   /me/inquiries/active:
     $ref: ./paths/customer-inquiries.yaml#/~1me~1inquiries~1active
   /me/inquiries/{inquiry_id}:

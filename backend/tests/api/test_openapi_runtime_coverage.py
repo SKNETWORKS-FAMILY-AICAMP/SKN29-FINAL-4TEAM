@@ -14,6 +14,7 @@ INQUIRY_ID = "00000000-0000-4000-8000-000000000001"
 VISIT_ID = "00000000-0000-4000-8000-000000000002"
 SUBSCRIPTION_ID = "00000000-0000-4000-8000-000000000003"
 CARE_RECORD_ID = "00000000-0000-4000-8000-000000000004"
+QUESTIONNAIRE_SESSION_ID = "00000000-0000-4000-8000-000000000005"
 
 EXPECTED_OPERATIONS = {
     ("/health", "get"): {
@@ -146,6 +147,46 @@ EXPECTED_OPERATIONS = {
         ),
         "url_name": "customer-inquiry-guidance",
         "view_name": "CustomerInquiryGuidanceView",
+    },
+    ("/me/questionnaire-sessions", "post"): {
+        "operation_id": "startCarePrecheck",
+        "contract_status": "CONFIRMED",
+        "runtime_path": "/api/v1/me/questionnaire-sessions",
+        "url_name": "care-precheck-start",
+        "view_name": "CarePrecheckCollectionView",
+    },
+    ("/me/questionnaire-sessions/{questionnaire_session_id}", "get"): {
+        "operation_id": "getCarePrecheck",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            "/api/v1/me/questionnaire-sessions/"
+            f"{QUESTIONNAIRE_SESSION_ID}"
+        ),
+        "url_name": "care-precheck-detail",
+        "view_name": "CarePrecheckDetailView",
+    },
+    ("/me/questionnaire-sessions/{questionnaire_session_id}", "patch"): {
+        "operation_id": "saveCarePrecheck",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            "/api/v1/me/questionnaire-sessions/"
+            f"{QUESTIONNAIRE_SESSION_ID}"
+        ),
+        "url_name": "care-precheck-detail",
+        "view_name": "CarePrecheckDetailView",
+    },
+    (
+        "/me/questionnaire-sessions/{questionnaire_session_id}/submit",
+        "post",
+    ): {
+        "operation_id": "submitCarePrecheck",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            "/api/v1/me/questionnaire-sessions/"
+            f"{QUESTIONNAIRE_SESSION_ID}/submit"
+        ),
+        "url_name": "care-precheck-submit",
+        "view_name": "CarePrecheckSubmitView",
     },
     ("/consultant/customer-subscriptions/search", "post"): {
         "operation_id": "searchConsultantCustomerSubscriptions",
@@ -402,11 +443,11 @@ def runtime_view_name(match) -> str:
     return match.func.__name__
 
 
-def test_openapi_operation_inventory_is_exactly_forty_two():
+def test_openapi_operation_inventory_is_exactly_forty_six():
     operations = collect_operations()
 
     assert set(operations) == set(EXPECTED_OPERATIONS)
-    assert len(operations) == 42
+    assert len(operations) == 46
     assert {
         operation["operationId"] for operation in operations.values()
     } == {
@@ -422,7 +463,7 @@ def test_openapi_operation_inventory_is_exactly_forty_two():
         )
 
 
-def test_thirty_nine_operations_resolve_to_expected_runtime_views():
+def test_forty_three_operations_resolve_to_expected_runtime_views():
     implemented = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -431,7 +472,7 @@ def test_thirty_nine_operations_resolve_to_expected_runtime_views():
         )
     ]
 
-    assert len(implemented) == 39
+    assert len(implemented) == 43
     for (_, method), expected in implemented:
         match = resolve(expected["runtime_path"])
         assert match.url_name == expected["url_name"]

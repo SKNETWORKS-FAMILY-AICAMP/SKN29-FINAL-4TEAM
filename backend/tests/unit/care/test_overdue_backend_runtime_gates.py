@@ -23,10 +23,10 @@ def load_module():
     return module
 
 
-def test_runtime_gates_reflect_t019_t020_and_hold_t021_only():
+def test_runtime_gates_reflect_t019_t020_and_t021_ready():
     result = load_module().audit_runtime_gates()
 
-    assert result["overall_status"] == "PREPARATION_ONLY"
+    assert result["overall_status"] == "RUNTIME_READY"
     assert result["tasks"] == {
         "T-019": {
             "status": "READY",
@@ -39,17 +39,14 @@ def test_runtime_gates_reflect_t019_t020_and_hold_t021_only():
             "blockers": [],
         },
         "T-021": {
-            "status": "BLOCKED",
-            "runtime_change_allowed": False,
-            "blockers": [
-                "QUESTIONNAIRE_API_CONTRACT_EMPTY",
-                "QUESTIONNAIRE_RUNTIME_STUBS_ONLY",
-            ],
+            "status": "READY",
+            "runtime_change_allowed": True,
+            "blockers": [],
         },
     }
 
 
-def test_preflight_allows_ready_work_and_blocks_t021_scope_only():
+def test_preflight_allows_all_three_ready_scopes():
     result = load_module().audit_runtime_gates()
 
     assert "IMPLEMENTED_ROUTE_REGRESSION" in result[
@@ -64,15 +61,16 @@ def test_preflight_allows_ready_work_and_blocks_t021_scope_only():
     assert "NEXT_CARE_DATE_CALCULATION" not in result[
         "forbidden_while_blocked"
     ]
-    assert "PUBLIC_QUESTIONNAIRE_ENDPOINT_IMPLEMENTATION" in result[
+    assert "PUBLIC_QUESTIONNAIRE_ENDPOINT_IMPLEMENTATION" not in result[
         "forbidden_while_blocked"
     ]
+    assert result["forbidden_while_blocked"] == []
 
 
-def test_require_runtime_ready_passes_t019_t020_and_blocks_t021(capsys):
+def test_require_runtime_ready_passes_t019_t020_and_t021(capsys):
     module = load_module()
 
     assert module.main(["--require-runtime-ready", "T-019"]) == 0
     assert module.main(["--require-runtime-ready", "T-020"]) == 0
-    assert module.main(["--require-runtime-ready", "T-021"]) == 2
-    assert '"overall_status": "PREPARATION_ONLY"' in capsys.readouterr().out
+    assert module.main(["--require-runtime-ready", "T-021"]) == 0
+    assert '"overall_status": "RUNTIME_READY"' in capsys.readouterr().out

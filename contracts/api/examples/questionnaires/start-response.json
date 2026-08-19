@@ -1,0 +1,20 @@
+{
+  "success": true,
+  "data": {
+    "questionnaire_session_id": "21000000-0000-4000-8000-000000000001",
+    "subscription_id": "20000000-0000-4000-8000-000000000021",
+    "questionnaire_type_code": "CARE_PRECHECK",
+    "questionnaire_version": "CARE_PRECHECK-v1",
+    "status_code": "UNANSWERED",
+    "state_version": 1,
+    "answers": {},
+    "started_at": "2026-08-19T09:00:00+09:00",
+    "submitted_at": null,
+    "linked_inquiry_id": null,
+    "idempotent_replay": false
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "30000000-0000-4000-8000-000000000021"
+  }
+}
