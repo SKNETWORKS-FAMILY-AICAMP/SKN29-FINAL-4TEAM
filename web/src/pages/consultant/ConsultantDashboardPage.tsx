@@ -52,6 +52,7 @@ import {
   consultantWorkspaceDataRepository,
   createMockConsultantInquiryListViewModel,
 } from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
+import { CONSULTANT_NOTICE_FIXTURES } from "../../features/notice/model/consultantNotice";
 import "./ConsultantDashboardPage.css";
 import "./ConsultantDashboardTheme.css";
 import "./ConsultantInquiryPearlTheme.css";
@@ -119,15 +120,6 @@ const WORK_FOCUS_OPTIONS: readonly {
   { id: "NEW", label: "새 문의" },
   { id: "IN_PROGRESS", label: "처리 중인 문의" },
 ];
-
-const DASHBOARD_NOTICES = [
-  { category: "긴급", title: "긴급 문의 응대 절차 안내", department: "고객케어팀", date: "2026.08.18" },
-  { category: "이벤트", title: "고객 만족도 조사 참여 이벤트", department: "고객경험팀", date: "2026.08.18" },
-  { category: "시스템", title: "상담 시스템 정기 점검 안내", department: "시스템운영팀", date: "2026.08.17" },
-  { category: "근무", title: "8월 상담 근무 일정 확인 요청", department: "고객케어팀", date: "2026.08.16" },
-  { category: "복지", title: "임직원 건강검진 신청 안내", department: "경영지원팀", date: "2026.08.15" },
-  { category: "교육", title: "정수기 안전 점검 상담 교육", department: "품질관리팀", date: "2026.08.14" },
-] as const;
 
 const DASHBOARD_DEPARTMENTS = [
   "고객케어팀",
@@ -748,27 +740,32 @@ export default function ConsultantDashboardPage() {
         </section>
 
         <section className="counselor-dashboard-info" aria-label="사내 업무 정보">
-          <article className="counselor-dashboard-info__panel">
+          <article className="counselor-dashboard-info__panel counselor-dashboard-info__panel--notices">
             <header>
               <h2>공지사항</h2>
             </header>
             <ul className="counselor-dashboard-notices">
-              {DASHBOARD_NOTICES.map((notice) => (
+              {CONSULTANT_NOTICE_FIXTURES.map((notice) => (
                 <li key={notice.title}>
                   <div>
                     <div className="counselor-dashboard-notices__headline">
                       <em data-category={notice.category}>{notice.category}</em>
                       <strong>{notice.title}</strong>
                     </div>
-                    <span>{notice.department}</span>
                   </div>
-                  <time dateTime={notice.date.replaceAll(".", "-")}>{notice.date}</time>
+                  <span className="counselor-dashboard-notices__meta">
+                    <span>{notice.department}</span>
+                    <i aria-hidden="true">|</i>
+                    <time dateTime={notice.publishedOn}>
+                      {notice.publishedOn.replaceAll("-", ".")}
+                    </time>
+                  </span>
                 </li>
               ))}
             </ul>
           </article>
 
-          <article className="counselor-dashboard-info__panel">
+          <article className="counselor-dashboard-info__panel counselor-dashboard-info__panel--contacts">
             <header>
               <h2>직원 연락처</h2>
               <div className="counselor-dashboard-contact-tools">

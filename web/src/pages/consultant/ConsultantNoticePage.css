@@ -1,0 +1,267 @@
+@media (min-width: 901px) {
+  html body
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app.consultant-notice-app
+    .consultant-queue-main {
+    grid-template-columns: 224px minmax(0, 1fr) !important;
+    grid-template-rows: 64px minmax(0, 1fr) !important;
+    gap: 14px !important;
+    padding: 0 18px 18px 0 !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-notice-app
+    .consultant-sidebar {
+    grid-row: 1 / 3 !important;
+  }
+}
+
+.consultant-notice-panel {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-column: 2;
+  grid-row: 2;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid #cde3ef;
+  border-radius: 18px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 16px 40px rgb(34 105 142 / 10%);
+}
+
+.consultant-notice-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 32px 22px;
+  border-bottom: 1px solid #dbeaf2;
+  background:
+    radial-gradient(circle at 88% 0%, rgb(69 184 224 / 16%), transparent 38%),
+    linear-gradient(120deg, #fff, #eff9fd);
+}
+
+.consultant-notice-head > div > span {
+  color: #1987b6;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+}
+
+.consultant-notice-head h1 {
+  margin: 5px 0 4px;
+  color: #102b44;
+  font-size: 28px;
+  letter-spacing: -0.04em;
+}
+
+.consultant-notice-head p {
+  margin: 0;
+  color: #698095;
+  font-size: 14px;
+}
+
+.consultant-notice-head > strong {
+  display: grid;
+  min-width: 58px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid #b9dcea;
+  border-radius: 12px;
+  background: #e9f7fc;
+  color: #147ba8;
+  font-size: 16px;
+}
+
+.consultant-notice-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 14px 22px;
+  border-bottom: 1px solid #e1edf3;
+  background: #f9fcfe;
+}
+
+.consultant-notice-categories {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.consultant-notice-categories button {
+  min-width: 58px;
+  padding: 8px 13px;
+  border: 1px solid #d4e5ee;
+  border-radius: 999px;
+  background: #fff;
+  color: #60778c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.consultant-notice-categories button:hover {
+  border-color: #8bc9e1;
+  color: #126f98;
+}
+
+.consultant-notice-categories button.is-active {
+  border-color: #2b9dca;
+  background: #e5f6fc;
+  color: #0d719a;
+}
+
+.consultant-notice-search {
+  display: flex;
+  width: min(330px, 34vw);
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 9px;
+  padding: 0 4px 7px;
+  border-bottom: 2px solid #8fc8dc;
+}
+
+.consultant-notice-search:focus-within {
+  border-bottom-color: #1688b6;
+}
+
+.consultant-notice-search svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: #278ab2;
+  stroke-width: 1.8;
+}
+
+.consultant-notice-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #17324d;
+  font-size: 14px;
+}
+
+.consultant-notice-search input::placeholder {
+  color: #91a5b4;
+}
+
+.consultant-notice-content {
+  min-height: 0;
+  padding: 18px 22px 24px;
+  overflow-y: auto;
+  scrollbar-color: #91bdd1 transparent;
+  scrollbar-width: thin;
+}
+
+.consultant-notice-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  gap: 12px;
+  list-style: none;
+}
+
+.consultant-notice-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 19px 22px;
+  border: 1px solid #d7e7ef;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 7px 20px rgb(33 95 126 / 6%);
+}
+
+.consultant-notice-list article:hover {
+  border-color: #a8d3e4;
+  box-shadow: 0 10px 25px rgb(33 95 126 / 10%);
+}
+
+.consultant-notice-list__main {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 66px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.consultant-notice-list__main em {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 7px;
+  background: #e8f5fb;
+  color: #197ba5;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.consultant-notice-list__main em[data-category="긴급"] {
+  background: #fff0f0;
+  color: #d33f49;
+}
+
+.consultant-notice-list__main em[data-category="이벤트"] {
+  background: #fff5e7;
+  color: #bf7417;
+}
+
+.consultant-notice-list__main em[data-category="시스템"] {
+  background: #ebf5ff;
+  color: #2d77b5;
+}
+
+.consultant-notice-list__main em[data-category="근무"] {
+  background: #eef2ff;
+  color: #5368bd;
+}
+
+.consultant-notice-list__main em[data-category="복지"] {
+  background: #edf8f2;
+  color: #378760;
+}
+
+.consultant-notice-list h2 {
+  margin: 0 0 7px;
+  color: #16324c;
+  font-size: 17px;
+  letter-spacing: -0.025em;
+}
+
+.consultant-notice-list p {
+  margin: 0;
+  color: #63798d;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.consultant-notice-list__meta {
+  display: grid;
+  min-width: 112px;
+  justify-items: end;
+  gap: 7px;
+  color: #7b8fa1;
+  font-size: 12px;
+}
+
+.consultant-notice-list__meta span {
+  color: #506a80;
+  font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+  .consultant-notice-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .consultant-notice-search {
+    width: min(520px, 100%);
+  }
+}

@@ -201,7 +201,12 @@ describe("ConsultantDashboardPage", () => {
       }),
     );
 
-    expect(screen.getByRole("tab", { name: menu })).toHaveAttribute(
+    expect(
+      within(screen.getByRole("tablist", { name: "상담사 메뉴" })).getByRole(
+        "tab",
+        { name: menu },
+      ),
+    ).toHaveAttribute(
       "aria-selected",
       "true",
     );
