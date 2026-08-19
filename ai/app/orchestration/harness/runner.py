@@ -13,6 +13,7 @@ from ..handoff import ConsultationHandoffAgent, ConsultationHandoffInput, Consul
 from ..hitl import HumanReviewExecutionResult, HumanReviewRequest, HumanReviewResume, HumanReviewWorkflow
 from .product_match import ProductContext
 from .retry_policy import HarnessRetryPolicy, HarnessRetryState
+from .tool_failure import McpToolFailure
 from .verification_result import HarnessDecision, VerificationResult
 from .verifier import HarnessVerifier
 
@@ -20,6 +21,7 @@ from .verifier import HarnessVerifier
 class HarnessErrorCode(str, Enum):
     NO_EVIDENCE = "NO_EVIDENCE"
     AI_PROCESSING_TIMEOUT = "AI_PROCESSING_TIMEOUT"
+    MCP_TOOL_FAILURE = "MCP_TOOL_FAILURE"
 
 
 class HarnessResult(BaseModel):
@@ -77,6 +79,7 @@ class HarnessRunner:
         output_schema: Type[BaseModel] | None = None,
         timed_out: bool = False,
         evidence_required: bool | None = None,
+        tool_failure: McpToolFailure | None = None,
     ) -> HarnessResult:
         state = retry_state or HarnessRetryState()
         verification = self.verifier.verify(
@@ -89,6 +92,7 @@ class HarnessRunner:
             output_schema=output_schema,
             timed_out=timed_out,
             evidence_required=evidence_required,
+            tool_failure=tool_failure,
         )
 
         if timed_out:
@@ -100,13 +104,22 @@ class HarnessRunner:
                 should_escalate=True,
             )
 
+        if tool_failure is not None and verification.decision == HarnessDecision.ESCALATE:
+            return HarnessResult(
+                decision=HarnessDecision.ESCALATE,
+                verification=verification,
+                retry_state=state,
+                error_code=HarnessErrorCode.MCP_TOOL_FAILURE,
+                should_escalate=True,
+            )
+
         policy = self.retry_policy.apply(verification.decision, state)
         if policy.exhausted:
             return HarnessResult(
                 decision=HarnessDecision.ESCALATE,
                 verification=verification,
                 retry_state=policy.state,
-                error_code=HarnessErrorCode.NO_EVIDENCE,
+                error_code=self._exhausted_error_code(verification),
                 should_escalate=True,
             )
 
@@ -135,6 +148,7 @@ class HarnessRunner:
         output_schema: Type[BaseModel] | None = None,
         timed_out: bool = False,
         evidence_required: bool | None = None,
+        tool_failure: McpToolFailure | None = None,
     ) -> HarnessRuntimeResult:
         """Run Harness and route HUMAN_REVIEW/ESCALATE without re-running the LLM pipeline."""
 
@@ -149,6 +163,7 @@ class HarnessRunner:
             output_schema=output_schema,
             timed_out=timed_out,
             evidence_required=evidence_required,
+            tool_failure=tool_failure,
         )
         return self.route_runtime(
             ctx=ctx,
@@ -259,6 +274,13 @@ class HarnessRunner:
             escalation_reason=reason,
         )
         return self.handoff_agent.run(handoff_input)
+
+    @staticmethod
+    def _exhausted_error_code(verification: VerificationResult) -> HarnessErrorCode:
+        issue_codes = {issue.code.value for issue in verification.issues}
+        if "MCP_TOOL_FAILURE" in issue_codes:
+            return HarnessErrorCode.MCP_TOOL_FAILURE
+        return HarnessErrorCode.NO_EVIDENCE
 
     @staticmethod
     def _review_reason(issue_codes: list[str]) -> str:

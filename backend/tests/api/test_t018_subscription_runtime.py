@@ -18,6 +18,11 @@ from apps.subscriptions.models import CustomerSubscription
 pytestmark = pytest.mark.django_db
 
 SUPPORTED_CODE = "WPUJAC104DWH"
+SUPPORTED_CODES = (
+    "WPUJAC104DWH",
+    "WPUIAC425SNW",
+    "WPUIAC606SNW",
+)
 
 
 def create_user(sequence: int, *, role_code=User.Role.CUSTOMER) -> User:
@@ -48,13 +53,14 @@ def create_product(
     *,
     model_code: str = SUPPORTED_CODE,
     is_active: bool = True,
+    is_supported_mvp: bool = True,
 ) -> ProductModel:
     return ProductModel.objects.create(
         model_code=model_code,
         model_name=f"T018 purifier {sequence}",
         generation_code="D",
         manufacturer="SK magic",
-        is_supported_mvp=True,
+        is_supported_mvp=is_supported_mvp,
         is_active=is_active,
         features={"private": "must-not-leak"},
     )
@@ -148,6 +154,42 @@ def assert_safe_summary(item: dict) -> None:
         "customer_name",
     ):
         assert forbidden not in serialized
+
+
+def test_list_and_detail_expose_three_supported_models_and_hide_candidate():
+    owner = create_user(20)
+    expected_subscriptions = []
+    for sequence, model_code in enumerate(SUPPORTED_CODES, start=20):
+        product = create_product(sequence, model_code=model_code)
+        expected_subscriptions.append(
+            create_subscription(owner, product, sequence)
+        )
+    candidate_product = create_product(
+        30,
+        model_code="WPU-CANDIDATE-ONLY",
+        is_supported_mvp=False,
+    )
+    candidate = create_subscription(owner, candidate_product, 30)
+    client = authenticated_client(owner)
+
+    response = client.get("/api/v1/me/subscriptions")
+    assert response.status_code == 200
+    assert {
+        item["product"]["model_code"]
+        for item in response.json()["data"]["items"]
+    } == set(SUPPORTED_CODES)
+
+    for subscription in expected_subscriptions:
+        detail = client.get(
+            f"/api/v1/me/subscriptions/{subscription.public_id}"
+        )
+        assert detail.status_code == 200
+        assert detail.json()["data"]["product"]["model_code"] == (
+            subscription.product_model.model_code
+        )
+    assert client.get(
+        f"/api/v1/me/subscriptions/{candidate.public_id}"
+    ).status_code == 404
 
 
 def test_list_filters_orders_paginates_and_projects_last_care(

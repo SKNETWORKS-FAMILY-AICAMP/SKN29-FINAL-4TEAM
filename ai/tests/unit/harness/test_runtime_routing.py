@@ -140,3 +140,25 @@ def test_rejected_review_routes_to_consultation_handoff():
     assert resolved.guidance is None
     assert resolved.handoff.escalation_reason == "HUMAN_REVIEW_REJECTED"
     assert resolved.handoff.model_code == "WPU-JAC104"
+
+
+def test_mcp_context_tool_failure_creates_sanitized_consultation_handoff():
+    from ai.app.orchestration.harness import McpToolFailure, McpToolFailureKind, McpToolName
+
+    result = HarnessRunner().run_runtime(
+        ctx=_ctx(),
+        product=_product(),
+        evidence_chunks=[],
+        safety_assessment=None,
+        guidance=None,
+        tool_failure=McpToolFailure(
+            tool_name=McpToolName.GET_INQUIRY_CONTEXT,
+            kind=McpToolFailureKind.EXECUTION_ERROR,
+            retryable=False,
+        ),
+    )
+
+    assert result.harness.decision == HarnessDecision.ESCALATE
+    assert result.handoff is not None
+    assert result.handoff.escalation_reason == "MCP_TOOL_FAILURE"
+    assert result.handoff.model_code == "WPU-JAC104"

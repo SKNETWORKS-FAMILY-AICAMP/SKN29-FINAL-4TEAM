@@ -59,7 +59,7 @@
     },
     "import_ledger_model": {
       "path": "backend/apps/operations/models/synthetic_import_ledger.py",
-      "sha256": "E05BD632AE9690F4B91736DFED1E314169AF6DCE652EFDB4BDB321DCCD5A408F"
+      "sha256": "4C025984FFB311CEEE5C2954A84869F47EACD059159984A267D9A4CE0453C683"
     },
     "import_repository": {
       "path": "backend/apps/operations/repositories/operations_repository.py",
@@ -67,11 +67,11 @@
     },
     "import_service": {
       "path": "backend/apps/operations/services/operations_service.py",
-      "sha256": "2BE7987418FF5FD223F018E47F1F6F0925167A14F16BBCD6F7D27B51791086AA"
+      "sha256": "0141EC967FB46FC54EB72BC633F6F078EB08944FE9338A2D3C2DC385B305BD4B"
     },
     "import_command": {
       "path": "backend/apps/operations/management/commands/import_synthetic_handoff.py",
-      "sha256": "6C94918402DF07FCD77840A7C58B457B24C3E973E48961BBAA3CD39575B90AE2"
+      "sha256": "35A4BB9F18C9CA5D0976FF06CB3ADBF7F20E6165C0F6812639CA82EC59880C39"
     },
     "demo_auth_repository": {
       "path": "backend/apps/accounts/repositories/account_repository.py",

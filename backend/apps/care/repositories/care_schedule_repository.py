@@ -11,7 +11,7 @@ from django.db.models import Min
 from apps.care.models import CareRecord
 from apps.subscriptions.models import CustomerSubscription
 from apps.subscriptions.repositories.subscription_repository import (
-    SUPPORTED_PRODUCT_MODEL_CODE,
+    SUPPORTED_PRODUCT_MODEL_CODES,
 )
 
 
@@ -33,7 +33,7 @@ class CareScheduleRepository:
             .get(
                 public_id=subscription_public_id,
                 status_code=CustomerSubscription.Status.ACTIVE,
-                product_model__model_code=SUPPORTED_PRODUCT_MODEL_CODE,
+                product_model__model_code__in=SUPPORTED_PRODUCT_MODEL_CODES,
                 product_model__is_supported_mvp=True,
                 product_model__is_active=True,
             )

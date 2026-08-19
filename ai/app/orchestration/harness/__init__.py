@@ -2,6 +2,7 @@
 
 from .product_match import ProductContext, ProductFamily, ProductMatchResult, ProductMatchVerifier
 from .retry_policy import HarnessRetryPolicy, HarnessRetryState, RetryPolicyOutcome
+from .tool_failure import McpToolFailure, McpToolFailureKind, McpToolName
 from .runner import (
     HarnessErrorCode,
     HarnessResult,
@@ -22,6 +23,9 @@ __all__ = [
     "HarnessRuntimeResult",
     "HumanReviewResolution",
     "HarnessVerifier",
+    "McpToolFailure",
+    "McpToolFailureKind",
+    "McpToolName",
     "ProductContext",
     "ProductFamily",
     "ProductMatchResult",

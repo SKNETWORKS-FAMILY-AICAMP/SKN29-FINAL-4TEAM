@@ -6,7 +6,11 @@ from typing import Any, Type
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from ...common.timeout import CancellationToken, get_stage_timeout_policy
+from ...common.timeout import (
+    CancellationToken,
+    PipelineStageTimeoutError,
+    get_stage_timeout_policy,
+)
 from ...integrations.llm import GuidanceLLMClient
 from ...retrieval import RetrievalOutcome
 from ...schemas import AiStage, RiskLevel, UsageGuidance, UsageGuidanceStatus
@@ -27,6 +31,7 @@ class ReliabilityRuntimeResult(BaseModel):
     retrieval_retry_performed: bool = False
     generation_retry_performed: bool = False
     blocked_evidence_chunk_ids: list[str] = Field(default_factory=list)
+    timeout_stage: str | None = None
 
 
 class ReliabilityRuntime:
@@ -76,24 +81,46 @@ class ReliabilityRuntime:
                 if retrieval_retry_performed or search_service is None:
                     break
                 retrieval_retry_performed = True
-                self._retry_retrieval(
-                    ctx=ctx,
-                    evidence_capture=evidence_capture,
-                    search_service=search_service,
-                    llm_client=llm_client,
-                    cancellation_token=cancellation_token,
-                )
+                try:
+                    self._retry_retrieval(
+                        ctx=ctx,
+                        evidence_capture=evidence_capture,
+                        search_service=search_service,
+                        llm_client=llm_client,
+                        cancellation_token=cancellation_token,
+                    )
+                except PipelineStageTimeoutError as exc:
+                    return self._timeout_result(
+                        ctx=ctx,
+                        product=product,
+                        evidence_capture=evidence_capture,
+                        retry_state=retry_state,
+                        retrieval_retry_performed=retrieval_retry_performed,
+                        generation_retry_performed=generation_retry_performed,
+                        timeout_stage=exc.stage,
+                    )
                 continue
 
             if harness.decision == HarnessDecision.RETRY_GENERATION:
                 if generation_retry_performed:
                     break
                 generation_retry_performed = True
-                self._retry_generation(
-                    ctx=ctx,
-                    llm_client=llm_client,
-                    cancellation_token=cancellation_token,
-                )
+                try:
+                    self._retry_generation(
+                        ctx=ctx,
+                        llm_client=llm_client,
+                        cancellation_token=cancellation_token,
+                    )
+                except PipelineStageTimeoutError as exc:
+                    return self._timeout_result(
+                        ctx=ctx,
+                        product=product,
+                        evidence_capture=evidence_capture,
+                        retry_state=retry_state,
+                        retrieval_retry_performed=retrieval_retry_performed,
+                        generation_retry_performed=generation_retry_performed,
+                        timeout_stage=exc.stage,
+                    )
                 continue
 
             final_runtime = self._route_final(
@@ -139,6 +166,50 @@ class ReliabilityRuntime:
                 if evidence_capture is not None
                 else []
             ),
+        )
+
+    def _timeout_result(
+        self,
+        *,
+        ctx: Any,
+        product: ProductContext,
+        evidence_capture: GuardedEvidenceSearchService | None,
+        retry_state: HarnessRetryState,
+        retrieval_retry_performed: bool,
+        generation_retry_performed: bool,
+        timeout_stage: str,
+    ) -> ReliabilityRuntimeResult:
+        """Convert a Harness-controlled stage timeout into a sanitized counselor handoff."""
+
+        evidence_chunks = (
+            evidence_capture.evidence_for_harness(ctx)
+            if evidence_capture is not None
+            else []
+        )
+        harness = self.runner.run(
+            product=product,
+            evidence_chunks=evidence_chunks,
+            safety_assessment=getattr(ctx, "safety_assessment", None),
+            guidance=getattr(ctx, "usage_guidance", None),
+            retry_state=retry_state,
+            timed_out=True,
+            evidence_required=False,
+        )
+        final_runtime = self._route_final(
+            ctx=ctx,
+            product=product,
+            harness=harness,
+        )
+        return ReliabilityRuntimeResult(
+            harness_runtime=final_runtime,
+            retrieval_retry_performed=retrieval_retry_performed,
+            generation_retry_performed=generation_retry_performed,
+            blocked_evidence_chunk_ids=(
+                evidence_capture.rejected_chunk_ids
+                if evidence_capture is not None
+                else []
+            ),
+            timeout_stage=timeout_stage,
         )
 
     @staticmethod

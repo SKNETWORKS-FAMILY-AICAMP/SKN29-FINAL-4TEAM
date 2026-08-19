@@ -15,19 +15,28 @@ from apps.operations.services import (
 
 
 class Command(BaseCommand):
-    """Run one atomic smoke, full, or dry-run synthetic import."""
+    """Run one atomic handoff or product-expansion import."""
 
     help = (
-        "Import the canonical 367-row synthetic handoff with strict "
-        "identifier and post-import verification."
+        "Import the canonical synthetic handoff or the isolated two-product "
+        "expansion with strict identifier and post-import verification."
     )
 
     def add_arguments(self, parser) -> None:
         parser.add_argument(
             "--profile",
-            choices=("smoke", "full", "db-smoke", "db-full"),
+            choices=(
+                "smoke",
+                "full",
+                "db-smoke",
+                "db-full",
+                "db-product-expansion",
+            ),
             required=True,
-            help="Select the exact 37-row smoke or 367-row full closure.",
+            help=(
+                "Select the exact 37-row smoke, 367-row full closure, or "
+                "isolated two-product expansion."
+            ),
         )
         parser.add_argument(
             "--dry-run",

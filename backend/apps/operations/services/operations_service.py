@@ -83,7 +83,19 @@ EXPECTED_SMOKE_COUNTS = {
     "inquiry_status_histories": 0,
     "audit_events": 0,
 }
-EXPECTED_SOURCE_COUNTS = {"db-smoke": 37, "db-full": 367}
+EXPECTED_PRODUCT_EXPANSION_COUNTS = {
+    dataset: (2 if dataset == "products" else 0)
+    for dataset in DATASET_ORDER
+}
+PRODUCT_EXPANSION_MODEL_CODES = {
+    "WPUIAC425SNW",
+    "WPUIAC606SNW",
+}
+EXPECTED_SOURCE_COUNTS = {
+    "db-smoke": 37,
+    "db-full": 367,
+    "db-product-expansion": 2,
+}
 SMOKE_SCENARIOS = {
     f"SYN-JAC104-{sequence:03d}" for sequence in range(1, 7)
 }
@@ -194,18 +206,21 @@ class SyntheticHandoffImportService:
 
         with transaction.atomic():
             context = _ImportContext(rows=selected_rows)
-            self._import_users(context)
-            self._import_profiles(context)
-            self._import_products(context)
-            self._project_customer_products(context)
-            self._import_subscriptions(context)
-            self._import_inquiries_and_symptoms(context)
-            self._import_consultations(context)
-            self._import_visits(context)
-            self._import_followups(context)
-            self._import_care_records(context)
-            self._import_histories(context)
-            self._import_audits(context)
+            if normalized_profile == "db-product-expansion":
+                self._import_products(context)
+            else:
+                self._import_users(context)
+                self._import_profiles(context)
+                self._import_products(context)
+                self._project_customer_products(context)
+                self._import_subscriptions(context)
+                self._import_inquiries_and_symptoms(context)
+                self._import_consultations(context)
+                self._import_visits(context)
+                self._import_followups(context)
+                self._import_care_records(context)
+                self._import_histories(context)
+                self._import_audits(context)
             verification = self._verify(
                 profile=normalized_profile,
                 context=context,
@@ -1236,6 +1251,22 @@ class SyntheticHandoffImportService:
         profile: str,
         all_rows: dict[str, list[dict[str, Any]]],
     ) -> dict[str, list[dict[str, Any]]]:
+        if profile == "db-product-expansion":
+            selected = {
+                dataset: [] for dataset in DATASET_ORDER
+            }
+            selected["products"] = [
+                row
+                for row in all_rows["products"]
+                if row["product_code"] in PRODUCT_EXPANSION_MODEL_CODES
+            ]
+            self._assert_profile_counts(
+                profile,
+                selected,
+                EXPECTED_PRODUCT_EXPANSION_COUNTS,
+            )
+            return selected
+
         if profile == "db-full":
             selected = {
                 dataset: list(all_rows[dataset])
@@ -1490,6 +1521,7 @@ class SyntheticHandoffImportService:
             "db-smoke": "db-smoke",
             "full": "db-full",
             "db-full": "db-full",
+            "db-product-expansion": "db-product-expansion",
         }
         try:
             return aliases[profile]

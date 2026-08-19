@@ -9,6 +9,7 @@ from pydantic import BaseModel, ValidationError
 from ...retrieval.models.retrieved_chunk import RetrievedChunk
 from ...schemas import RiskLevel, SafetyAssessment, UsageGuidance, UsageGuidanceStatus
 from .product_match import ProductContext, ProductMatchVerifier
+from .tool_failure import McpToolFailure
 from .verification_result import (
     HarnessDecision,
     VerificationIssue,
@@ -32,6 +33,7 @@ class HarnessVerifier:
         output_schema: Type[BaseModel] | None = None,
         timed_out: bool = False,
         evidence_required: bool | None = None,
+        tool_failure: McpToolFailure | None = None,
     ) -> VerificationResult:
         issues: list[VerificationIssue] = []
 
@@ -72,6 +74,34 @@ class HarnessVerifier:
                 decision=HarnessDecision.ESCALATE,
                 evidence_present=False,
                 product_match_valid=False,
+                product_family_valid=product.product_family.value != "UNKNOWN",
+                function_compatibility_valid=False,
+                safety_valid=self._safety_is_consistent(safety_assessment, guidance),
+                schema_valid=self._schema_is_valid(guidance, output_payload, output_schema),
+                rejected_evidence_chunk_ids=[chunk.chunk_id for chunk in evidence_chunks],
+                issues=issues,
+            )
+
+        if tool_failure is not None:
+            issues.append(
+                VerificationIssue(
+                    code=VerificationIssueCode.MCP_TOOL_FAILURE,
+                    message=(
+                        f"MCP Tool failed: {tool_failure.tool_name.value} "
+                        f"({tool_failure.kind.value})."
+                    ),
+                    retryable=tool_failure.retrieval_retry_allowed,
+                )
+            )
+            return VerificationResult(
+                passed=False,
+                decision=(
+                    HarnessDecision.RETRY_RETRIEVAL
+                    if tool_failure.retrieval_retry_allowed
+                    else HarnessDecision.ESCALATE
+                ),
+                evidence_present=False,
+                product_match_valid=True,
                 product_family_valid=product.product_family.value != "UNKNOWN",
                 function_compatibility_valid=False,
                 safety_valid=self._safety_is_consistent(safety_assessment, guidance),

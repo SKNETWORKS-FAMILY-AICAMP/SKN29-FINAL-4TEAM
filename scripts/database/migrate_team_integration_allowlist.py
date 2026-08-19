@@ -47,7 +47,7 @@ EXPECTED_GRAPH_LEAVES: tuple[MigrationKey, ...] = (
     ("contenttypes", "0002_remove_content_type_name"),
     ("evidence", "0011_cast_chunk_embedding_vector_dimensions"),
     ("inquiries", "0013_inquiry_priority_code"),
-    ("operations", "0002_consultant_dashboard_projection"),
+    ("operations", "0003_product_expansion_import_profile"),
     ("products", "0001_initial"),
     ("questionnaires", "0003_questionnaire_answers_allow_blank"),
     ("sessions", "0001_initial"),
@@ -192,7 +192,7 @@ def build_plan(
         "remaining_plan": _node_sequence(remaining),
         "applied_count": len(applied),
         "expected_final": {
-            "operations.0002": "APPLIED",
+            "operations.0003": "APPLIED",
             "visits.0004": "APPLIED",
             "visits.0005": "NOT_APPLIED_P1_HOLD",
             "approved_targets": "APPLIED",
@@ -221,11 +221,11 @@ def verify_final(executor: Any) -> dict[str, Any]:
 
     return {
         "status": "VERIFIED" if not blockers else "BLOCKED",
-        "operations.0002": (
+        "operations.0003": (
             "APPLIED"
             if (
                 "operations",
-                "0002_consultant_dashboard_projection",
+                "0003_product_expansion_import_profile",
             )
             in applied
             else "MISSING"
