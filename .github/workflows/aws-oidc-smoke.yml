@@ -1,0 +1,142 @@
+name: AWS OIDC Smoke Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: aws-oidc-smoke
+  cancel-in-progress: false
+
+jobs:
+  verify-aws-oidc:
+    name: Verify AWS OIDC, ECR, and SSM
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+      EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+      ECR_WEB_REPOSITORY: ${{ vars.ECR_WEB_REPOSITORY }}
+      ECR_BACKEND_REPOSITORY: ${{ vars.ECR_BACKEND_REPOSITORY }}
+      ECR_AI_REPOSITORY: ${{ vars.ECR_AI_REPOSITORY }}
+
+    steps:
+      - name: Validate repository variables
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo 'This smoke test must run from the main branch.' >&2
+            exit 1
+          fi
+
+          required=(
+            AWS_REGION
+            AWS_ROLE_ARN
+            AWS_ACCOUNT_ID
+            EC2_INSTANCE_ID
+            ECR_WEB_REPOSITORY
+            ECR_BACKEND_REPOSITORY
+            ECR_AI_REPOSITORY
+          )
+          missing=()
+
+          for name in "${required[@]}"; do
+            if [[ -z "${!name:-}" ]]; then
+              missing+=("$name")
+            fi
+          done
+
+          if (( ${#missing[@]} > 0 )); then
+            printf 'Missing repository variables: %s\n' "${missing[*]}" >&2
+            exit 1
+          fi
+
+          if [[ ! "$AWS_ACCOUNT_ID" =~ ^[0-9]{12}$ ]]; then
+            echo 'AWS_ACCOUNT_ID must contain exactly 12 digits.' >&2
+            exit 1
+          fi
+
+          if [[ ! "$EC2_INSTANCE_ID" =~ ^i-[0-9a-f]+$ ]]; then
+            echo 'EC2_INSTANCE_ID must be a complete EC2 instance ID.' >&2
+            exit 1
+          fi
+
+      - name: Configure temporary AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.2.3
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
+          role-session-name: waterbridge-oidc-${{ github.run_id }}
+
+      - name: Verify assumed AWS account and role
+        shell: bash
+        run: |
+          actual_account="$(aws sts get-caller-identity --query Account --output text)"
+          actual_arn="$(aws sts get-caller-identity --query Arn --output text)"
+
+          if [[ "$actual_account" != "$AWS_ACCOUNT_ID" ]]; then
+            echo 'OIDC assumed an unexpected AWS account.' >&2
+            exit 1
+          fi
+
+          if [[ "$actual_arn" != *":assumed-role/WaterBridgeGitHubDeployRole/"* ]]; then
+            echo 'OIDC assumed an unexpected IAM role.' >&2
+            exit 1
+          fi
+
+          echo 'AWS OIDC authentication verified.'
+
+      - name: Verify ECR repositories
+        shell: bash
+        run: |
+          repositories=(
+            "$ECR_WEB_REPOSITORY"
+            "$ECR_BACKEND_REPOSITORY"
+            "$ECR_AI_REPOSITORY"
+          )
+
+          for repository in "${repositories[@]}"; do
+            aws ecr describe-repositories \
+              --region "$AWS_REGION" \
+              --repository-names "$repository" \
+              >/dev/null
+          done
+
+          echo 'WaterBridge ECR repositories verified.'
+
+      - name: Verify SSM command path
+        shell: bash
+        run: |
+          command_id="$(aws ssm send-command \
+            --region "$AWS_REGION" \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment 'WaterBridge GitHub OIDC smoke test' \
+            --parameters 'commands=["true"]' \
+            --query Command.CommandId \
+            --output text)"
+
+          aws ssm wait command-executed \
+            --region "$AWS_REGION" \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID"
+
+          status="$(aws ssm get-command-invocation \
+            --region "$AWS_REGION" \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID" \
+            --query Status \
+            --output text)"
+
+          if [[ "$status" != "Success" ]]; then
+            echo "SSM smoke command failed with status: $status" >&2
+            exit 1
+          fi
+
+          echo 'EC2 SSM command path verified.'
