@@ -108,18 +108,22 @@ html body
 html body
   .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-sidebar {
+  border-radius: 0 !important;
   border-color: transparent !important;
-  background: transparent !important;
+  background: #111c33 !important;
+  background-color: #111c33 !important;
   background-image: none !important;
-  box-shadow: none !important;
+  box-shadow: 8px 0 24px rgb(7 18 38 / 16%) !important;
 }
 
 html body
   .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-sidebar
   :is(.consultant-work-tabs, .consultant-sidebar-brand) {
-  border-color: rgb(255 255 255 / 20%) !important;
+  border-color: transparent !important;
   background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
   box-shadow: none !important;
 }
 
@@ -146,37 +150,98 @@ html body
   .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-sidebar
   .consultant-work-tabs {
-  border-color: rgb(255 255 255 / 20%) !important;
-  background:
-    radial-gradient(circle at 18% 0%, rgb(91 204 230 / 36%), transparent 30%),
-    linear-gradient(165deg, #207fad, #135e91 72%, #104f7c) !important;
-  box-shadow: 10px 0 28px rgb(28 93 132 / 13%) !important;
+  border-radius: 0 !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
 }
 
 html body
   .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-work-tabs
   .consultant-work-tab {
-  color: rgb(255 255 255 / 78%) !important;
+  display: flex !important;
+  width: 100% !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  max-height: 64px !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin: 0 !important;
+  padding: 0 20px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+  color: rgb(255 255 255 / 70%) !important;
   background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab
+  > span {
+  display: flex !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab
+  .consultant-work-tab__icon {
+  width: 23px !important;
+  height: 23px !important;
+  flex: 0 0 23px !important;
+  margin: 0 12px 0 0 !important;
+  transform: none !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab
+  strong,
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab.is-active
+  strong {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+  transform: none !important;
 }
 
 html body
   .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-work-tabs
   .consultant-work-tab:hover {
-  background: rgb(255 255 255 / 11%) !important;
-  color: #fff !important;
+  background: transparent !important;
+  color: rgb(255 255 255 / 70%) !important;
 }
 
 html body
   .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-work-tabs
   .consultant-work-tab.is-active {
-  border-color: rgb(255 255 255 / 72%) !important;
-  background: rgb(255 255 255 / 94%) !important;
-  color: var(--water-tone-deep) !important;
-  box-shadow: 0 9px 22px rgb(8 76 119 / 17%) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: rgb(255 255 255 / 50%) !important;
+  background-color: rgb(255 255 255 / 50%) !important;
+  background-image: none !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 html body
@@ -184,8 +249,8 @@ html body
   .consultant-work-tabs
   .consultant-work-tab.is-active
   :is(strong, em, small, .consultant-work-tab__icon) {
-  color: var(--water-tone-deep) !important;
-  -webkit-text-fill-color: var(--water-tone-deep) !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
 }
 
 html body
@@ -193,8 +258,8 @@ html body
   .consultant-work-tabs
   .consultant-work-tab:not(.is-active)
   :is(strong, em, small, .consultant-work-tab__icon) {
-  color: rgb(255 255 255 / 82%) !important;
-  -webkit-text-fill-color: rgb(255 255 255 / 82%) !important;
+  color: rgb(255 255 255 / 70%) !important;
+  -webkit-text-fill-color: rgb(255 255 255 / 70%) !important;
 }
 
 html body
@@ -202,9 +267,22 @@ html body
   .consultant-work-tabs
   .consultant-work-tab
   > b {
-  border-color: rgb(255 255 255 / 24%) !important;
-  background: rgb(255 255 255 / 14%) !important;
-  color: #fff !important;
+  display: inline-flex !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  flex: 0 0 24px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: #3299d0 !important;
+  color: #000 !important;
+  -webkit-text-fill-color: #000 !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
 }
 
 html body
@@ -212,9 +290,10 @@ html body
   .consultant-work-tabs
   .consultant-work-tab.is-active
   > b {
-  border-color: var(--water-tone-primary) !important;
-  background: var(--water-tone-primary) !important;
-  color: #fff !important;
+  border: 0 !important;
+  background: #3299d0 !important;
+  color: #000 !important;
+  -webkit-text-fill-color: #000 !important;
 }
 
 html body
@@ -263,6 +342,21 @@ html body
   border: 0 !important;
   border-radius: 0 !important;
   background: var(--water-tone-line) !important;
+  box-shadow: none !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab:not(.is-active),
+html body
+  .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
+  .consultant-work-tabs
+  .consultant-work-tab:not(.is-active):hover {
+  border-color: transparent !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
   box-shadow: none !important;
 }
 
@@ -316,6 +410,25 @@ html body
   :is(.counselor-home-summary__intro, .counselor-work-queue__header, .counselor-ai-review__header, .consultant-risk-tabs) {
   border-color: var(--water-tone-line) !important;
   background: linear-gradient(135deg, #f8fcfe, #e8f5fb) !important;
+}
+
+html body
+  .simple-consultant-app.simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+  .counselor-home-summary__intro {
+  border: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+  .counselor-home-summary__greeting-subline {
+  display: inline-block !important;
+  font-size: clamp(18px, 1.45vw, 24px) !important;
+  letter-spacing: -0.04em !important;
+  white-space: nowrap !important;
 }
 
 html body
