@@ -81,12 +81,81 @@
       },
       "excluded": [
         "FAQ 119건 전체의 기본 임베딩",
-        "IAC425·IAC506 자료",
+        "IAC425·IAC606 확장 자료(rag-expansion 프로필에서 별도 인계)",
+        "IAC506 자료",
         "모델 미검증 FAQ의 단독 근거 사용"
       ],
       "commands": [
         "python -B data/tools/pipeline.py handoff rag",
         "python -B data/tools/pipeline.py qa --verify-rebuild --generated-at 2026-07-29T00:00:00+09:00"
+      ]
+    },
+    "rag-expansion": {
+      "purpose": "검증된 3모델 53개 Child·15개 Parent와 49개 평가 Case를 AI 재평가 후보로 인계",
+      "readiness": "DATA_READY_AI_REVERIFY_REQUIRED",
+      "contract_dependency": "BACKEND_RUNTIME_MAPPING_PENDING",
+      "items": [
+        {
+          "path": "processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
+          "role": "INGEST_CANDIDATE"
+        },
+        {
+          "path": "processed/structured/rag/expansion/rag_parent_pages_3model_v1.jsonl",
+          "role": "CONTEXT_ONLY"
+        },
+        {
+          "path": "processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl",
+          "role": "REFERENCE"
+        },
+        {
+          "path": "config/rag/three_model_evaluation_cases.json",
+          "role": "EVALUATION_CONTRACT"
+        },
+        {
+          "path": "config/rag/supported_products.json",
+          "role": "REFERENCE"
+        },
+        {
+          "path": "processed/metadata/rag_three_model_handoff_manifest.json",
+          "role": "MANIFEST"
+        },
+        {
+          "path": "schemas/processed/ragParentPage.schema.json",
+          "role": "SCHEMA"
+        },
+        {
+          "path": "schemas/processed/ragChildChunk.schema.json",
+          "role": "SCHEMA"
+        },
+        {
+          "path": "schemas/processed/ragEvidenceGroup.schema.json",
+          "role": "SCHEMA"
+        },
+        {
+          "path": "schemas/config/threeModelRagEvaluation.schema.json",
+          "role": "SCHEMA"
+        }
+      ],
+      "selection": {
+        "index_only_roles": ["INGEST_CANDIDATE"],
+        "context_only_roles": ["CONTEXT_ONLY"],
+        "required_pre_score_filter": "exact_sales_code",
+        "expected_counts": {
+          "parents": 15,
+          "children": 53,
+          "evidence_groups": 43,
+          "evaluation_cases": 49
+        }
+      },
+      "excluded": [
+        "실제 pgvector 적재 완료 선언",
+        "Backend/API Runtime 활성화",
+        "모델 미검증 FAQ",
+        "WPU-IAC506과 정확 판매코드 미검증 JCC104(D)"
+      ],
+      "commands": [
+        "python -B data/tools/pipeline.py handoff rag-expansion",
+        "python -B -m data.tools.rag_experiments.qa_three_model_handoff"
       ]
     },
     "db-smoke": {
@@ -104,7 +173,7 @@
         },
         {
           "path": "synthetic/fixtures/products.json",
-          "role": "LOAD"
+          "role": "LOAD_FILTERED"
         },
         {
           "path": "synthetic/fixtures/customer_products.json",
@@ -199,7 +268,7 @@
         },
         {
           "path": "synthetic/fixtures/products.json",
-          "role": "LOAD"
+          "role": "LOAD_FILTERED"
         },
         {
           "path": "synthetic/fixtures/customer_products.json",

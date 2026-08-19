@@ -34,9 +34,12 @@ class Iac425ManualCorpusTests(unittest.TestCase):
         self.assertEqual([row["page"] for row in self.rows], list(range(1, 53)))
         self.assertTrue(all(row["document_id"] == DOCUMENT_ID for row in self.rows))
         self.assertTrue(all(row["mvp_use"] is False for row in self.rows))
-        self.assertTrue(all(row["allowed_use"] == "EXPERIMENT_ONLY" for row in self.rows))
+        self.assertTrue(all(row["allowed_use"] == "REFERENCE_ONLY" for row in self.rows))
         self.assertTrue(all(row["text"].strip() for row in self.rows))
         self.assertIn("고객상담센터 1600-1661", self.rows[-1]["text"])
+
+    def test_dataset_uses_platform_independent_lf_line_endings(self) -> None:
+        self.assertNotIn(b"\r", self.dataset_path.read_bytes())
 
     def test_known_extraction_corrections_are_explicit(self) -> None:
         page_one, ids = normalize_extracted_text(
@@ -52,12 +55,12 @@ class Iac425ManualCorpusTests(unittest.TestCase):
 
     def test_generated_dataset_passes_minimum_qa(self) -> None:
         report = build_qa_report(self.dataset_path, self.schema_path)
-        self.assertEqual(report["status"], "STRUCTURAL_PASS_VISUAL_REVIEW_PENDING")
+        self.assertEqual(report["status"], "RAG_SELECTED_PAGES_VERIFIED_REFERENCE_READY")
         self.assertEqual(report["summary"]["errors"], 0)
         self.assertEqual(report["summary"]["pages_found"], 52)
         self.assertEqual(report["summary"]["blank_text_pages"], [])
         self.assertEqual(report["summary"]["text_hash_mismatch_pages"], [])
-        self.assertEqual(report["summary"]["visual_review_pending_count"], 47)
+        self.assertEqual(report["summary"]["visual_review_pending_count"], 42)
         self.assertEqual(report["decision"]["experimental_corpus_text_use"], "READY")
         self.assertEqual(report["decision"]["mvp_search_use"], "BLOCKED")
 

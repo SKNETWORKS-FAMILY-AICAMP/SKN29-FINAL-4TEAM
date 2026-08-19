@@ -207,7 +207,7 @@ def _parser() -> argparse.ArgumentParser:
     handoff.add_argument(
         "profile",
         nargs="?",
-        choices=["rag", "db-smoke", "db-full", "qa"],
+        choices=["rag", "rag-expansion", "db-smoke", "db-full", "qa"],
     )
     handoff.add_argument("--generated-at")
     commands.add_parser("equivalence")

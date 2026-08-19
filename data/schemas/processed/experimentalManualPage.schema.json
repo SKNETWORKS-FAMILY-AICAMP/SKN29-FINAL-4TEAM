@@ -35,15 +35,18 @@
   "properties": {
     "page_id": {
       "type": "string",
-      "pattern": "^MAN-SKMAGIC-WPU-IAC425-REV02-P\\d{3}$"
+      "pattern": "^MAN-SKMAGIC-WPU-IAC(425-REV02|606-REV00)-P\\d{3}$"
     },
     "document_id": {
       "type": "string",
-      "const": "MAN-SKMAGIC-WPU-IAC425-REV02"
+      "enum": [
+        "MAN-SKMAGIC-WPU-IAC425-REV02",
+        "MAN-SKMAGIC-WPU-IAC606-REV00"
+      ]
     },
     "source_inventory_id": {
       "type": "string",
-      "const": "SRC-IAC425-MANUAL"
+      "enum": ["SRC-IAC425-MANUAL", "SRC-IAC606-MANUAL"]
     },
     "source_type": {
       "type": "string",
@@ -55,15 +58,15 @@
     },
     "exact_sales_code": {
       "type": "string",
-      "const": "WPUIAC425SNW"
+      "enum": ["WPUIAC425SNW", "WPUIAC606SNW"]
     },
     "product_model": {
       "type": "string",
-      "const": "WPU-IAC425"
+      "enum": ["WPU-IAC425", "WPU-IAC606"]
     },
     "model_family": {
       "type": "string",
-      "const": "WPU-IAC425"
+      "enum": ["WPU-IAC425", "WPU-IAC606"]
     },
     "product_generation": {
       "type": ["string", "null"]
@@ -78,11 +81,11 @@
     },
     "allowed_use": {
       "type": "string",
-      "const": "EXPERIMENT_ONLY"
+      "const": "REFERENCE_ONLY"
     },
     "version": {
       "type": "string",
-      "const": "REV.02"
+      "enum": ["REV.00", "REV.02"]
     },
     "page": {
       "type": "integer",
@@ -90,11 +93,11 @@
     },
     "page_count": {
       "type": "integer",
-      "const": 52
+      "enum": [48, 52]
     },
     "section_id": {
       "type": "string",
-      "pattern": "^IAC425-SECTION-[A-Z0-9-]+$"
+      "pattern": "^IAC(425|606)-SECTION-[A-Z0-9-]+$"
     },
     "section_title": {
       "type": "string",
@@ -110,7 +113,10 @@
     },
     "source_file_sha256": {
       "type": "string",
-      "const": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8"
+      "enum": [
+        "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+        "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572"
+      ]
     },
     "extraction_method": {
       "type": "string",

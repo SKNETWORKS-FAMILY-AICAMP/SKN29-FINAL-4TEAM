@@ -13,7 +13,7 @@
   },
   "source": {
     "inventory_path": "data/processed/metadata/source_inventory.csv",
-    "inventory_sha256": "F9D3589C86FD74629454CA73FBF0D754A8CFB81646408712A854E9F9AF4622F6",
+    "inventory_sha256": "7DCB539727FD8E5E8CE235626D160065BFDA9898C3FBC6FE03EB62CFF040DB1D",
     "inventory_id": "SRC-JAC104D-MANUAL",
     "manual_pages_path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
     "manual_pages_sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F",

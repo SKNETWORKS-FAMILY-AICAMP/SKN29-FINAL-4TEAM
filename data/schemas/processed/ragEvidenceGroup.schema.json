@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ThreeModelRagEvidenceGroup",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_group_id", "record_type", "exact_sales_code", "product_model",
+    "document_id", "topic_code", "row_labels", "page_refs", "source_variant_ids",
+    "child_ids", "risk_level", "safe_actions", "requires_consultation",
+    "consultation_conditions", "allowed_use", "verification_status", "generated_at"
+  ],
+  "properties": {
+    "evidence_group_id": {"type": "string", "pattern": "^EVD-[A-Z0-9]+-.+-001$"},
+    "record_type": {"const": "evidence_group"},
+    "exact_sales_code": {"enum": ["WPUJAC104DWH", "WPUIAC425SNW", "WPUIAC606SNW"]},
+    "product_model": {"type": "string", "minLength": 1},
+    "document_id": {"type": "string", "minLength": 1},
+    "topic_code": {"type": "string", "minLength": 1},
+    "row_labels": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "page_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 1}},
+    "source_variant_ids": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "child_ids": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "risk_level": {"enum": ["general", "caution", "danger"]},
+    "safe_actions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "requires_consultation": {"type": "boolean"},
+    "consultation_conditions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "allowed_use": {"const": "RAG_HANDOFF_ONLY"},
+    "verification_status": {"const": "TEXT_AND_VISUAL_VERIFIED"},
+    "generated_at": {"type": "string", "format": "date-time"}
+  }
+}

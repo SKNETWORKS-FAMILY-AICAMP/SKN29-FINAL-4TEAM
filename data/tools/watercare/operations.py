@@ -128,6 +128,8 @@ def _record_count(path: Path) -> int | None:
             return len(value)
         if isinstance(value, dict) and isinstance(value.get("scenarios"), list):
             return len(value["scenarios"])
+        if isinstance(value, dict) and isinstance(value.get("cases"), list):
+            return len(value["cases"])
         return 1
     return None
 
@@ -201,6 +203,8 @@ def _dataset_counts(config: PipelineConfig) -> dict[str, int]:
         read_json(config.data_root / "synthetic" / "scenarios" / filename)
         for filename in synthetic["scenario_subsets"]
     ]
+    expansion_evaluations = read_json(config.path("rag_expansion_evaluation_cases"))
+    supported_products = read_json(config.path("supported_products"))
     return {
         "manual_pages": len(read_jsonl(config.path("manual_input"))),
         "faq_normalized": len(read_jsonl(config.path("faq_input"))),
@@ -230,6 +234,22 @@ def _dataset_counts(config: PipelineConfig) -> dict[str, int]:
             rows["followup_confirmations"]
         ),
         "synthetic_fixture_records": count_synthetic_fixture_records(rows),
+        "supported_products": len(supported_products["products"]),
+        "reference_manual_pages": (
+            len(read_jsonl(config.path("manual_input")))
+            + len(read_jsonl(config.path("iac425_manual_pages")))
+            + len(read_jsonl(config.path("iac606_manual_pages")))
+        ),
+        "rag_expansion_parents": len(
+            read_jsonl(config.path("rag_expansion_parent_output"))
+        ),
+        "rag_expansion_children": len(
+            read_jsonl(config.path("rag_expansion_child_output"))
+        ),
+        "rag_expansion_evidence_groups": len(
+            read_jsonl(config.path("rag_expansion_evidence_output"))
+        ),
+        "rag_expansion_evaluation_cases": len(expansion_evaluations["cases"]),
         "synthetic_api_idempotency_cases": len(
             rows["api_idempotency_cases"]
         ),
@@ -708,13 +728,18 @@ def _write_final_manifest(config: PipelineConfig) -> dict[str, Any]:
             ),
         },
         "rag_policy": {
-            "included_model": config.values["mvp_product_code"],
-            "included_pages": [37, 38, 39],
+            "mvp_indexed_model": config.values["mvp_product_code"],
+            "mvp_indexed_pages": [37, 38, 39],
+            "expansion_candidate_models": ["WPUIAC425SNW", "WPUIAC606SNW"],
+            "expansion_parent_pages": 15,
+            "expansion_child_chunks": 53,
+            "required_pre_score_filter": "exact_sales_code",
+            "expansion_runtime_status": "CONTRACT_BLOCKED_NOT_INDEXED",
             "faq_included": 0,
             "blocked": [
-                "WPUIAC425SNW",
                 "WPU-IAC506",
                 "WPUJAC104S family",
+                "exact-sales-code-unverified JCC104(D)",
                 "model-unverified common FAQ",
             ],
         },

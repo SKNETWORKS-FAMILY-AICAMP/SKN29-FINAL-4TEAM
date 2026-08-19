@@ -7,6 +7,11 @@
 - 데이터 버전: `${dataset_version}`
 - 생성 기준 시각: `${generated_at}`
 - MVP 제품: `WPUJAC104DWH` / WPU-JAC104D·WPU-JCC104D REV.00
+- 제한 RAG 인계 후보: `WPUIAC425SNW`, `WPUIAC606SNW`
+- 공식 매뉴얼 페이지: 144쪽(`REFERENCE_ONLY`)
+- RAG 확장: Parent 15건·Child 53건·Evidence Group 43건
+- 평가 초안: 양성 43건·부정 6건(`DATA_READY_AI_NOT_RUN`)
+- 합성 fixture: 369건(제품 3건), 기존 DB handoff closure: 367건
 - 합성 원본 시나리오: 24개
 - 계약 정합 활성 projection: 22개
 - 차단 유지: `SYN-JAC104-012`, `SYN-JAC104-016`
@@ -21,6 +26,12 @@ RAG 실행 승인은 `WPUJAC104DWH`, D세대, 공식 매뉴얼 REV.00
 `1.0`, 평균 MRR `0.8857142857`, 금지 문서·모델 유입 0건을
 확인했습니다. 누수 기대 청크는 Top-5의 5위이므로 적재 승인을
 막지는 않지만 검색 품질 P1 후속으로 유지합니다.
+
+`rag-expansion`은 실제 적재 결과가 아니라 `INGEST_CANDIDATE`입니다.
+Parent는 문맥 확장용 `CONTEXT_ONLY`이고 검색 후보는 Child 53건뿐입니다.
+검색 점수 계산 전에 `exact_sales_code` 필터를 적용해야 하며 다른 모델로
+fallback하지 않습니다. IAC425·IAC606은 Backend/API 계약이 확장되기 전까지
+`CONTRACT_BLOCKED_NOT_INDEXED` 상태입니다.
 
 원본 24개 카탈로그와 alignment registry는 보존합니다. Fixture·expected·DB handoff 후보에는 차단된 두 시나리오를 제외한 22개만 투영합니다.
 
@@ -50,6 +61,9 @@ State Machine v1.0.0과 Crosswalk v2를 사용한다는 뜻입니다. T-005 전�
 ```powershell
 python -B -m unittest discover -s data/tools/tests -v
 python -B data/tools/pipeline.py build synthetic
+python -B -m data.tools.rag_experiments.build_three_model_handoff
+python -B -m data.tools.rag_experiments.qa_three_model_handoff
+python -B data/tools/pipeline.py handoff rag-expansion
 python -B data/tools/pipeline.py handoff db-smoke
 python -B data/tools/pipeline.py handoff db-full
 python -B data/tools/pipeline.py handoff qa

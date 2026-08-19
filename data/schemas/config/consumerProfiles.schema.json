@@ -44,9 +44,10 @@
     "profiles": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["rag", "db-smoke", "db-full", "qa"],
+      "required": ["rag", "rag-expansion", "db-smoke", "db-full", "qa"],
       "properties": {
         "rag": {"$ref": "#/$defs/profile"},
+        "rag-expansion": {"$ref": "#/$defs/profile"},
         "db-smoke": {"$ref": "#/$defs/profile"},
         "db-full": {"$ref": "#/$defs/profile"},
         "qa": {"$ref": "#/$defs/profile"}
@@ -69,7 +70,7 @@
       "properties": {
         "purpose": {"type": "string", "minLength": 1},
         "readiness": {
-          "enum": ["READY", "DB_SMOKE_VERIFIED", "DB_FULL_VERIFIED"]
+          "enum": ["READY", "DATA_READY_AI_REVERIFY_REQUIRED", "DB_SMOKE_VERIFIED", "DB_FULL_VERIFIED"]
         },
         "contract_dependency": {
           "enum": [
@@ -90,6 +91,8 @@
               "role": {
                 "enum": [
                   "INGEST",
+                  "INGEST_CANDIDATE",
+                  "CONTEXT_ONLY",
                   "REFERENCE",
                   "REFERENCE_ONLY",
                   "EVALUATION_INPUT",

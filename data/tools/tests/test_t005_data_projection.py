@@ -42,7 +42,7 @@ class T005DataProjectionTests(unittest.TestCase):
         expected = {
             "users": 16,
             "customer_profiles": 12,
-            "products": 1,
+            "products": 3,
             "customer_products": 12,
             "subscriptions": 12,
             "inquiries": 22,
@@ -65,14 +65,20 @@ class T005DataProjectionTests(unittest.TestCase):
 
     def test_operations_counts_products_and_all_fixture_records(self) -> None:
         counts = _dataset_counts(self.config)
-        self.assertEqual(1, counts["synthetic_products"])
-        self.assertEqual(367, counts["synthetic_fixture_records"])
+        self.assertEqual(3, counts["synthetic_products"])
+        self.assertEqual(369, counts["synthetic_fixture_records"])
+        self.assertEqual(3, counts["supported_products"])
+        self.assertEqual(144, counts["reference_manual_pages"])
+        self.assertEqual(15, counts["rag_expansion_parents"])
+        self.assertEqual(53, counts["rag_expansion_children"])
+        self.assertEqual(43, counts["rag_expansion_evidence_groups"])
+        self.assertEqual(49, counts["rag_expansion_evaluation_cases"])
 
     def test_pipeline_schema_requires_exact_fixture_total(self) -> None:
         schema = read_json(DATA_ROOT / "schemas/config/pipeline.schema.json")
         self.assertEqual([], validate_schema(self.config.values, schema))
         invalid = deepcopy(self.config.values)
-        invalid["expected_counts"]["synthetic_fixture_records"] = 366
+        invalid["expected_counts"]["synthetic_fixture_records"] = 368
         self.assertTrue(validate_schema(invalid, schema))
 
     def test_status_history_has_exactly_one_matching_target(self) -> None:

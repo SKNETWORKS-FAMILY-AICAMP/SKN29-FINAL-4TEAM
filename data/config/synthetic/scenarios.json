@@ -596,6 +596,28 @@
         "manual_revision": "REV.00",
         "support_scope": "MVP",
         "data_classification": "synthetic"
+      },
+      {
+        "id": 2,
+        "public_id": "f6789e6b-cdb6-5550-b535-e73e746561bb",
+        "product_code": "WPUIAC425SNW",
+        "product_model": "WPU-IAC425",
+        "model_family": "WPU-IAC425",
+        "product_generation": "IAC425",
+        "manual_revision": "REV.02",
+        "support_scope": "RAG_READY_CONTRACT_BLOCKED",
+        "data_classification": "synthetic"
+      },
+      {
+        "id": 3,
+        "public_id": "c092ea36-fbc3-53dd-98dc-a17e22ef83dc",
+        "product_code": "WPUIAC606SNW",
+        "product_model": "WPU-IAC606",
+        "model_family": "WPU-IAC606",
+        "product_generation": "IAC606",
+        "manual_revision": "REV.00",
+        "support_scope": "RAG_READY_CONTRACT_BLOCKED",
+        "data_classification": "synthetic"
       }
     ],
     "customer_products": [
