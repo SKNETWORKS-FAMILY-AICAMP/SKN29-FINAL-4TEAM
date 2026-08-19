@@ -10,7 +10,13 @@ required:
 properties:
   model_code:
     type: string
-    const: WPUJAC104DWH
+    enum:
+      - WPUJAC104DWH
+      - WPUIAC425SNW
+      - WPUIAC606SNW
+    description: >-
+      계약상 인식하는 정확 판매코드. 실제 등록 가능 여부는 Backend의
+      ProductModel 활성·지원 상태를 함께 검증한다.
   started_on:
     type: string
     format: date

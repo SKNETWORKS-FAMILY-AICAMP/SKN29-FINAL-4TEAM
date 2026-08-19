@@ -16,8 +16,11 @@ properties:
     description: ProductModel.public_id 공개 UUID
   model_code:
     type: string
-    const: WPUJAC104DWH
-    description: R1에서 허용하는 단일 정수기 모델 코드
+    enum:
+      - WPUJAC104DWH
+      - WPUIAC425SNW
+      - WPUIAC606SNW
+    description: 계약에서 허용하며 Backend 활성·지원 상태를 통과한 정확 판매코드
   model_name:
     type: string
     minLength: 1

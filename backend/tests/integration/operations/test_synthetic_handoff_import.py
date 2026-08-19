@@ -78,6 +78,97 @@ def test_physical_fixture_products_are_filtered_by_database_profiles():
             row["product_code"] for row in selected["products"]
         ] == ["WPUJAC104DWH"]
 
+    expansion = service._select_rows("db-product-expansion", all_rows)
+    assert {
+        row["product_code"] for row in expansion["products"]
+    } == {"WPUIAC425SNW", "WPUIAC606SNW"}
+    assert all(
+        not rows
+        for dataset, rows in expansion.items()
+        if dataset != "products"
+    )
+
+
+@pytest.mark.django_db
+def test_product_expansion_dry_run_apply_and_replay_are_isolated():
+    service = SyntheticHandoffImportService()
+    full = service.run(profile="db-full")
+
+    dry_run = service.run(profile="db-product-expansion", dry_run=True)
+    assert (
+        dry_run.source_count,
+        dry_run.created_count,
+        dry_run.updated_count,
+        dry_run.unchanged_count,
+        dry_run.projected_count,
+    ) == (2, 2, 0, 0, 0)
+    assert ProductModel.objects.count() == 1
+    assert SyntheticImportBatch.objects.count() == 1
+
+    first = service.run(profile="db-product-expansion")
+    replay = service.run(profile="db-product-expansion")
+    assert (
+        first.source_count,
+        first.created_count,
+        first.updated_count,
+        first.unchanged_count,
+        first.projected_count,
+    ) == (2, 2, 0, 0, 0)
+    assert (
+        replay.source_count,
+        replay.created_count,
+        replay.updated_count,
+        replay.unchanged_count,
+        replay.projected_count,
+    ) == (2, 0, 0, 2, 0)
+    assert full.source_count == 367
+    assert ProductModel.objects.count() == 3
+    assert set(
+        ProductModel.objects.values_list("model_code", flat=True)
+    ) == {
+        "WPUJAC104DWH",
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+    }
+    assert ProductModel.objects.filter(
+        model_code__in=("WPUIAC425SNW", "WPUIAC606SNW"),
+        is_active=True,
+        is_supported_mvp=False,
+    ).count() == 2
+    assert CustomerSubscription.objects.count() == 12
+    assert Inquiry.objects.count() == 22
+    assert SyntheticImportBatch.objects.filter(
+        profile="db-product-expansion"
+    ).count() == 2
+    assert SyntheticImportItem.objects.filter(
+        batch__profile="db-product-expansion"
+    ).count() == 4
+
+
+@pytest.mark.django_db
+def test_product_expansion_identifier_conflict_rolls_back_both_products():
+    ProductModel.objects.create(
+        public_id=uuid4(),
+        model_code="WPUIAC425SNW",
+        model_name="conflicting expansion row",
+    )
+
+    with pytest.raises(
+        SyntheticImportConflict,
+        match="public UUID mismatch",
+    ):
+        SyntheticHandoffImportService().run(
+            profile="db-product-expansion"
+        )
+
+    assert ProductModel.objects.count() == 1
+    assert not ProductModel.objects.filter(
+        model_code="WPUIAC606SNW"
+    ).exists()
+    assert not SyntheticImportBatch.objects.filter(
+        profile="db-product-expansion"
+    ).exists()
+
 
 @pytest.mark.django_db
 def test_dry_run_command_emits_one_json_document_and_writes_nothing():

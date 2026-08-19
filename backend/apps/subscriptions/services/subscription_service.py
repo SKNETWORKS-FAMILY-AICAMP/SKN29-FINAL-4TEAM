@@ -21,7 +21,7 @@ from apps.care.services.approved_care_cycle_rule_loader import (
 from apps.care.services.care_schedule_service import CareScheduleService
 from apps.subscriptions.models import CustomerSubscription
 from apps.subscriptions.repositories.subscription_repository import (
-    SUPPORTED_PRODUCT_MODEL_CODE,
+    SUPPORTED_PRODUCT_MODEL_CODES,
     SubscriptionRepository,
 )
 from common.api.pagination import build_page_data
@@ -122,7 +122,10 @@ class SubscriptionService:
         product = SubscriptionRepository.find_supported_product(
             validated_data["model_code"]
         )
-        if product is None or product.model_code != SUPPORTED_PRODUCT_MODEL_CODE:
+        if (
+            product is None
+            or product.model_code not in SUPPORTED_PRODUCT_MODEL_CODES
+        ):
             raise BusinessError(
                 PRODUCT_NOT_SUPPORTED,
                 "지원하는 제품 모델을 선택해 주세요.",

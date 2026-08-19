@@ -26,6 +26,10 @@ class SyntheticImportBatch(TimestampedModel):
     class Profile(models.TextChoices):
         DB_SMOKE = "db-smoke", "DB smoke"
         DB_FULL = "db-full", "DB full"
+        DB_PRODUCT_EXPANSION = (
+            "db-product-expansion",
+            "DB product expansion",
+        )
 
     class Status(models.TextChoices):
         COMPLETED = "COMPLETED", "Completed"
@@ -62,7 +66,13 @@ class SyntheticImportBatch(TimestampedModel):
         db_table = "operations_synthetic_import_batch"
         constraints = [
             models.CheckConstraint(
-                condition=Q(profile__in=["db-smoke", "db-full"]),
+                condition=Q(
+                    profile__in=[
+                        "db-smoke",
+                        "db-full",
+                        "db-product-expansion",
+                    ]
+                ),
                 name="ck_syn_import_batch_profile",
             ),
             models.CheckConstraint(
@@ -73,6 +83,7 @@ class SyntheticImportBatch(TimestampedModel):
                 condition=(
                     Q(profile="db-smoke", source_count=37)
                     | Q(profile="db-full", source_count=367)
+                    | Q(profile="db-product-expansion", source_count=2)
                 ),
                 name="ck_syn_import_profile_count",
             ),

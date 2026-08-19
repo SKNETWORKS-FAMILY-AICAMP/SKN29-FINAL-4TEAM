@@ -238,6 +238,24 @@ def test_verifier_returns_backend_public_id_for_fully_approved_mapping():
     assert mapping.canonical_chunk_id not in result
 
 
+def test_verifier_rejects_cross_model_evidence_for_owned_subscription():
+    mapping, inquiry = create_verified_mapping(sequence=121)
+    other_product = ProductModel.objects.create(
+        model_code="WPUIAC425SNW",
+        model_name="Cross-model candidate",
+        generation_code="S",
+        is_supported_mvp=True,
+        is_active=True,
+    )
+    inquiry.subscription.product_model = other_product
+    inquiry.subscription.save(update_fields=["product_model", "updated_at"])
+
+    assert EvidenceReferenceVerifier.verify(
+        [evidence_reference(mapping)],
+        inquiry,
+    ) == []
+
+
 @pytest.mark.parametrize(
     "mutator",
     [
