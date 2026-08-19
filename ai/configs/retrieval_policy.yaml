@@ -70,3 +70,38 @@ answerability_capability_gate:
         - ["외관", "제품", "모델"]
       excluded_terms: ["청소", "닦", "얼룩", "변색", "표시등", "표시창", "버튼"]
       reason: "사용설명서만으로 판매 색상·옵션의 전체 목록을 보장할 수 없음"
+
+# Backend 3모델 계약은 병합됐지만 공식 Evidence Import·Crosswalk·Readonly View
+# 검증 전에는 활성 정책으로 사용하지 않는다. 아래 Profile은 그 이후 적용할
+# 변경값을 고정해 두는 준비 계약이며 현재 Runtime Loader는 읽지 않는다.
+prepared_runtime_profiles:
+  three_model:
+    activation_status: "PREPARED_NOT_ACTIVE"
+    activation_blockers:
+      - "OFFICIAL_53_CHILD_IMPORT"
+      - "BACKEND_EVIDENCE_CROSSWALK_53"
+      - "READONLY_VIEW_MODEL_COUNTS_15_19_19"
+      - "BACKEND_QA_PASS"
+    supported_model_codes:
+      - "WPUJAC104DWH"
+      - "WPUIAC425SNW"
+      - "WPUIAC606SNW"
+    supported_generations:
+      - "D"
+      - "IAC425"
+      - "IAC606"
+    metadata_filters:
+      allowed_generations:
+        - "D"
+        - "IAC425"
+        - "IAC606"
+      target_models:
+        - "WPUJAC104DWH"
+        - "WPUIAC425SNW"
+        - "WPUIAC606SNW"
+      excluded_models:
+        - "WPUJCC104D"
+        - "WPUIAC506SNW"
+        - "WPU-IAC506"
+    required_pre_score_filter: "exact_sales_code"
+    cross_model_fallback: false

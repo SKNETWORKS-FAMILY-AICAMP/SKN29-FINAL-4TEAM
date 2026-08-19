@@ -1,0 +1,670 @@
+{
+  "schema_version": "1.0.0",
+  "status": "AI_SOURCE_IDENTITY_FIXED_BACKEND_MAPPING_PENDING",
+  "runtime_activation": "HOLD_PENDING_OFFICIAL_INDEX_AND_BACKEND_CROSSWALK",
+  "source_dataset": "data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
+  "evidence_registry": "data/processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl",
+  "required_index_manifest": "ai/configs/index_manifest_3model.json",
+  "index_version": "2.0.0",
+  "chunk_count": 53,
+  "model_chunk_counts": {
+    "WPUJAC104DWH": 15,
+    "WPUIAC425SNW": 19,
+    "WPUIAC606SNW": 19
+  },
+  "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304",
+  "identity_policy": {
+    "ai_canonical_key": "chunk_id",
+    "backend_target_key": "knowledge_document_chunk.public_id",
+    "backend_mapping_owner": "Backend·Database",
+    "ai_does_not_generate_backend_id": true,
+    "required_match_fields": [
+      "chunk_id",
+      "document_id",
+      "page_refs",
+      "model_code",
+      "product_generation",
+      "verification_status",
+      "source_file_sha256",
+      "chunk_text_sha256"
+    ]
+  },
+  "chunks": [
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P005-LEAK-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        5
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "55D0E74C850BC3334A64B140F543C7B7B5F03873B91F9075BBC585CADC0410B3"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        43
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "736573B9BC5C43D00AC74BC5A22E615F2DD45FFE040EC9E0AFC74C5C2AB951D5"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        43
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "124647EE129A5F5AC19D50483A42ACE87EEDE5CDE776B457C1C5E15A5E28F232"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        43
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "05A9AB6982ED9BD4ABAED0A1F7E7DE7D89A65362F9DA0720B55FDF663F1C1F41"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        43
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "985A17C90B22D1C61733C23AED2FAC167239E0B5EC038CE70E0C7755A8C869D1"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P043-NOISE-VENTILATION-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        43
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "0823999A8417D6FE685CDC1371978C6546389F1D2EC5882F5A63BE392BB5A05E"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P044-DEFROST-NOISE-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        44
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "C2E1AE5A2D3CA1DB65A9A1A63367BC8817F99ABAC6AB6F4A6EAFBA3ED214FDCC"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        44
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "6BA0413BF0F2302C69D764F5544086BB4C948F281AC2BCA9C0B366CF826AA7DB"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        44
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "CDF1476F4CA2C2D1AB26B0AB1665CF22746AAFA0FDE042C2B5B34AA7E1265401"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        44
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "EA8A343039D8C7D467C684DD5EA111E9CF240566BF48399DEC38FF7E9D7E74C8"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P045-LEAK-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        45
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "C3F622596DBBD6A861BF5242A680C9A16E2DE124B12FB14408ACDDD4F14535C2"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        45
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "3312A5FCCD176A5A9860F4DA3849CAFD45E5B02B609AAD1A7959301761C5D583"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P045-PARTICLES-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        45
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "5FB968F5FF89AB4C57998429D2506AF6E8A6C6A1D8D53A4A9F4D9149D0357D2D"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        45
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "1205799C82781C1FF448E324B7C385466B3B729298F550AAFBC48C979633B32C"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-STEAM-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        46
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "D575854725A1D68781CAB08A8008307C70EA84579B3ED5587FB711C45A96AFFC"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        46
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "0BE96D16FC1DEC64EC2913F5EE596B0CA0FB0A7CB7B2C4E78C1E0C199B800548"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        46
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "EB37B43064C01E9A73DC0210657F5E777A4209B3573B9AF170A285E7C7821208"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P046-ICE-QUALITY-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        46
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "0B5DC72752CDCC62F4082EA30AAC70D1D22D15E59B6B2DFB57CFDD68B36048B1"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "page_refs": [
+        46
+      ],
+      "model_code": "WPUIAC425SNW",
+      "product_generation": "IAC425",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "chunk_text_sha256": "32CF762CB6B252DE6B9C7E57387AE1529E42962AAD34E90596935A808BF4773C"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P005-LEAK-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        5
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "55D0E74C850BC3334A64B140F543C7B7B5F03873B91F9075BBC585CADC0410B3"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-LOCK-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        40
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "E2576F710B13CE2F12790DED9268EDA2007965BB16008E687B035CEBFC3EB400"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-FAULT-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        40
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "124647EE129A5F5AC19D50483A42ACE87EEDE5CDE776B457C1C5E15A5E28F232"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-NORMAL-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        40
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "05A9AB6982ED9BD4ABAED0A1F7E7DE7D89A65362F9DA0720B55FDF663F1C1F41"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P040-NOISE-NORMAL-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        40
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "985A17C90B22D1C61733C23AED2FAC167239E0B5EC038CE70E0C7755A8C869D1"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P040-NOISE-VENTILATION-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        40
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "3FD1789D0C27AE636B6E6DBC7C627CA363278F520E74D01BADA81DCAD3836575"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P041-DEFROST-NOISE-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        41
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "C2E1AE5A2D3CA1DB65A9A1A63367BC8817F99ABAC6AB6F4A6EAFBA3ED214FDCC"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P041-ICE-MAKING-NOISE-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        41
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "6BA0413BF0F2302C69D764F5544086BB4C948F281AC2BCA9C0B366CF826AA7DB"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P041-LOW-FLOW-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        41
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "CDF1476F4CA2C2D1AB26B0AB1665CF22746AAFA0FDE042C2B5B34AA7E1265401"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P041-NO-WATER-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        41
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "EA8A343039D8C7D467C684DD5EA111E9CF240566BF48399DEC38FF7E9D7E74C8"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P042-LEAK-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        42
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "C3F622596DBBD6A861BF5242A680C9A16E2DE124B12FB14408ACDDD4F14535C2"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        42
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "F989CEE5563EC521892D5579956120A01F766056E81A2CACC7AD96548C971882"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P042-PARTICLES-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        42
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "5FB968F5FF89AB4C57998429D2506AF6E8A6C6A1D8D53A4A9F4D9149D0357D2D"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P042-TASTE-ODOR-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        42
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "23A257687A88088E7785797F4AC490DDDAFEFE5D51523ACC21F8F116B7A22625"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-STEAM-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        43
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "D575854725A1D68781CAB08A8008307C70EA84579B3ED5587FB711C45A96AFFC"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-INTERRUPTION-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        43
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "0BE96D16FC1DEC64EC2913F5EE596B0CA0FB0A7CB7B2C4E78C1E0C199B800548"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-STOPPED-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        43
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "E1279E01749E08BA9CD880CB9401AF1CD5F9BF8998942275BD2E335CEEEBFF10"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P043-ICE-QUALITY-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        43
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "0B5DC72752CDCC62F4082EA30AAC70D1D22D15E59B6B2DFB57CFDD68B36048B1"
+    },
+    {
+      "chunk_id": "CHILD-WPUIAC606SNW-P043-NO-HOT-WATER-001",
+      "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "page_refs": [
+        43
+      ],
+      "model_code": "WPUIAC606SNW",
+      "product_generation": "IAC606",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "chunk_text_sha256": "32CF762CB6B252DE6B9C7E57387AE1529E42962AAD34E90596935A808BF4773C"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P005-LEAK-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        5
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "17B782E185EE813959CF9F48FE4B539B62FA4B0AE5FE90BC4BB1FB191C48895F"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P007-LEAK-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        7
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "D0E1113A934F601F14B4594ADF6A8208425026810EAECCEEC292105930891FE2"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        37
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "0D09AA73634381BE2A48E5F26485C3BA8EE45A23EEC3BC0C48A5B1A2A29F63E9"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        37
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "0C49E7D73000AED4871CDF795F57F655C1E265EE0686F99BFC6F443409995D66"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        37
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "C984007F3D361BF0E98FE17968137E1B2C43B8565BDE5BCD9E71ABAC9DDE069D"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P037-NOISE-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        37
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "87EED047034EF1DC29BE1A23FEAE67CF65E9DF06C1A0B9D380C4CE6005752FC0"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P038-HOT-INTERRUPTION-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        38
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "9CAFA12E2919BFF32865A00104B1495888CCD75CC00FD2F5AA6F292806A59BF4"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P038-HOT-STEAM-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        38
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "B9AE749F1CEA1F782DCC9F09FFDCDFFCE8FC58CDE596029716CFC835D13F1389"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P038-LEAK-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        38
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "6297F178B1356A36741E5DF06D2BEBD18CAC7BA3637F1FC044EBDE950AF4CB2E"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        38
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "4201347AFD47AC794634B79460D45B47FCCBF27982BDA90BB4A631F2185D2FE6"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        38
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "CD5ADF7E6B828B8CE69BA9F8071DC2725B11DA2658DF010F06707D6C02A9413F"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        39
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "2A3BA70CE1368C7877F909A0606A1C46C0CBBB15FDF281476A1B2D9BC5B2CE92"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        39
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "7454E3D36FBDBD877D338248C8568D0C8D1CA1FD73AD93A1549D149E6D9D085C"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P039-HOT-MODULE-CHECK-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        39
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "3368485943D987DBBCD7D2369A3CEE5AEF3BC942D9947DCCD574F12268C11981"
+    },
+    {
+      "chunk_id": "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [
+        39
+      ],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "77BB926777B8358C32D11DA7DC373670F1253B7CAA1663BCF6DD2923813C7C38"
+    }
+  ]
+}
