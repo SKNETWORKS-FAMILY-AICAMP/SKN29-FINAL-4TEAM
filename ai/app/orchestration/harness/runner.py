@@ -9,6 +9,8 @@ from pydantic import BaseModel, ConfigDict
 
 from ...retrieval.models.retrieved_chunk import RetrievedChunk
 from ...schemas import SafetyAssessment, UsageGuidance
+from ..handoff import ConsultationHandoffAgent, ConsultationHandoffInput, ConsultationHandoffResult
+from ..hitl import HumanReviewExecutionResult, HumanReviewRequest, HumanReviewResume, HumanReviewWorkflow
 from .product_match import ProductContext
 from .retry_policy import HarnessRetryPolicy, HarnessRetryState
 from .verification_result import HarnessDecision, VerificationResult
@@ -31,14 +33,36 @@ class HarnessResult(BaseModel):
     should_escalate: bool = False
 
 
+class HarnessRuntimeResult(BaseModel):
+    """Harness decision plus optional HITL or counselor handoff side effect."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    harness: HarnessResult
+    human_review: HumanReviewExecutionResult | None = None
+    handoff: ConsultationHandoffResult | None = None
+
+
+class HumanReviewResolution(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    review: HumanReviewExecutionResult
+    guidance: UsageGuidance | None = None
+    handoff: ConsultationHandoffResult | None = None
+
+
 class HarnessRunner:
     def __init__(
         self,
         verifier: HarnessVerifier | None = None,
         retry_policy: HarnessRetryPolicy | None = None,
+        hitl_workflow: HumanReviewWorkflow | None = None,
+        handoff_agent: ConsultationHandoffAgent | None = None,
     ) -> None:
         self.verifier = verifier or HarnessVerifier()
         self.retry_policy = retry_policy or HarnessRetryPolicy()
+        self.hitl_workflow = hitl_workflow or HumanReviewWorkflow()
+        self.handoff_agent = handoff_agent or ConsultationHandoffAgent()
 
     def run(
         self,
@@ -94,3 +118,127 @@ class HarnessRunner:
             },
             should_escalate=policy.decision == HarnessDecision.ESCALATE,
         )
+
+
+    def run_runtime(
+        self,
+        *,
+        ctx: Any,
+        product: ProductContext,
+        evidence_chunks: list[RetrievedChunk],
+        safety_assessment: SafetyAssessment | None,
+        guidance: UsageGuidance | None,
+        retry_state: HarnessRetryState | None = None,
+        required_functions: set[str] | None = None,
+        output_payload: Any | None = None,
+        output_schema: Type[BaseModel] | None = None,
+        timed_out: bool = False,
+    ) -> HarnessRuntimeResult:
+        """Run Harness and route HUMAN_REVIEW/ESCALATE without re-running the LLM pipeline."""
+
+        harness = self.run(
+            product=product,
+            evidence_chunks=evidence_chunks,
+            safety_assessment=safety_assessment,
+            guidance=guidance,
+            retry_state=retry_state,
+            required_functions=required_functions,
+            output_payload=output_payload,
+            output_schema=output_schema,
+            timed_out=timed_out,
+        )
+
+        if harness.decision == HarnessDecision.HUMAN_REVIEW:
+            if guidance is None:
+                return HarnessRuntimeResult(
+                    harness=harness,
+                    handoff=self._create_handoff(
+                        ctx=ctx,
+                        product=product,
+                        reason="HUMAN_REVIEW_WITHOUT_GUIDANCE",
+                    ),
+                )
+            trace = ctx.trace_context
+            issue_codes = [issue.code.value for issue in harness.verification.issues]
+            review = self.hitl_workflow.start(
+                HumanReviewRequest(
+                    inquiry_id=trace.inquiry_id,
+                    correlation_id=trace.correlation_id,
+                    ai_request_id=trace.ai_request_id,
+                    state_version=trace.state_version,
+                    model_code=product.model_code,
+                    product_family=product.product_family.value,
+                    review_reason=self._review_reason(issue_codes),
+                    verification_issue_codes=issue_codes,
+                    evidence_chunk_ids=harness.verification.accepted_evidence_chunk_ids,
+                    proposed_guidance=guidance,
+                )
+            )
+            return HarnessRuntimeResult(harness=harness, human_review=review)
+
+        if harness.should_escalate:
+            return HarnessRuntimeResult(
+                harness=harness,
+                handoff=self._create_handoff(
+                    ctx=ctx,
+                    product=product,
+                    reason=self._escalation_reason(harness),
+                ),
+            )
+
+        return HarnessRuntimeResult(harness=harness)
+
+    def resume_human_review(
+        self,
+        *,
+        ctx: Any,
+        product: ProductContext,
+        interrupted: HumanReviewExecutionResult,
+        response: HumanReviewResume,
+    ) -> HumanReviewResolution:
+        """Resume only the checkpointed review graph; prior retrieval/generation is not called again."""
+
+        review = self.hitl_workflow.resume(
+            checkpoint=interrupted.checkpoint,
+            response=response,
+        )
+        outcome = review.outcome
+        if outcome is None:
+            raise RuntimeError("human review resume did not produce an outcome")
+        if outcome.approved:
+            return HumanReviewResolution(review=review, guidance=outcome.guidance)
+        return HumanReviewResolution(
+            review=review,
+            handoff=self._create_handoff(
+                ctx=ctx,
+                product=product,
+                reason="HUMAN_REVIEW_REJECTED",
+            ),
+        )
+
+    def _create_handoff(
+        self,
+        *,
+        ctx: Any,
+        product: ProductContext,
+        reason: str,
+    ) -> ConsultationHandoffResult:
+        handoff_input = ConsultationHandoffInput.from_pipeline_context(
+            ctx=ctx,
+            product_family=product.product_family.value,
+            escalation_reason=reason,
+        )
+        return self.handoff_agent.run(handoff_input)
+
+    @staticmethod
+    def _review_reason(issue_codes: list[str]) -> str:
+        suffix = ",".join(issue_codes) if issue_codes else "UNSPECIFIED"
+        return f"HARNESS_HUMAN_REVIEW:{suffix}"
+
+    @staticmethod
+    def _escalation_reason(harness: HarnessResult) -> str:
+        if harness.error_code is not None:
+            return harness.error_code.value
+        issue_codes = [issue.code.value for issue in harness.verification.issues]
+        suffix = ",".join(issue_codes) if issue_codes else "UNSPECIFIED"
+        return f"HARNESS_ESCALATE:{suffix}"
