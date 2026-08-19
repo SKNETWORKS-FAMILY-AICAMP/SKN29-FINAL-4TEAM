@@ -10,7 +10,7 @@
 - 제한 RAG 인계 후보: `WPUIAC425SNW`, `WPUIAC606SNW`
 - 공식 매뉴얼 페이지: 144쪽(`REFERENCE_ONLY`)
 - RAG 확장: Parent 15건·Child 53건·Evidence Group 43건
-- 평가 초안: 양성 43건·부정 6건(`DATA_READY_AI_NOT_RUN`)
+- 평가 초안: 양성 43건·부정 7건, 총 50건(`DATA_READY_AI_NOT_RUN`)
 - 합성 fixture: 369건(제품 3건), 기존 DB handoff closure: 367건
 - 합성 원본 시나리오: 24개
 - 계약 정합 활성 projection: 22개

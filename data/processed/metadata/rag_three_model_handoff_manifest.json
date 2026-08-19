@@ -1,9 +1,9 @@
 {
   "counts": {
     "child_chunks": 53,
-    "evaluation_cases": 49,
+    "evaluation_cases": 50,
     "evidence_groups": 43,
-    "negative_cases": 6,
+    "negative_cases": 7,
     "parent_pages": 15,
     "positive_cases": 43,
     "reference_pages": 144,
@@ -29,9 +29,9 @@
       "sha256": "997119C395935D0815AA497C9EEB73EF73EAD4DA346FD83B5FC10867F86400E5"
     },
     {
-      "bytes": 27943,
+      "bytes": 28732,
       "path": "data/config/rag/three_model_evaluation_cases.json",
-      "sha256": "39237E4122DD10F63FCD73360F0B12299BA63C2139CC78C396DAD19D624BC8F5"
+      "sha256": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1"
     }
   ],
   "role": "INGEST_CANDIDATE",

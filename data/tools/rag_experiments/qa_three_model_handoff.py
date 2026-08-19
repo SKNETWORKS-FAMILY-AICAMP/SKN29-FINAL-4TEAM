@@ -57,7 +57,7 @@ def build_qa_report(
         for issue in _validate_schema(rows, schema):
             _error(errors, f"{name.upper()}_{issue['code']}", issue)
 
-    expected_counts = {"parents": 15, "children": 53, "groups": 43, "cases": 49}
+    expected_counts = {"parents": 15, "children": 53, "groups": 43, "cases": 50}
     actual_counts = {
         "parents": len(parents),
         "children": len(children),
@@ -147,7 +147,7 @@ def build_qa_report(
     cases = evaluations.get("cases", [])
     positive = [row for row in cases if row.get("case_type") == "POSITIVE"]
     negative = [row for row in cases if row.get("case_type") == "NEGATIVE"]
-    if (len(positive), len(negative)) != (43, 6):
+    if (len(positive), len(negative)) != (43, 7):
         _error(errors, "EVALUATION_COUNT", {"positive": len(positive), "negative": len(negative)})
     child_texts = {row["child_text"] for row in children}
     all_codes = set(products)
@@ -165,6 +165,27 @@ def build_qa_report(
     for case in negative:
         if not case.get("expected_no_evidence") or case.get("expected_evidence_group_ids"):
             _error(errors, "NEGATIVE_EXPECTATION", case["case_id"])
+
+    acceptance = evaluations.get("retrieval_acceptance", {})
+    expected_acceptance = {
+        "positive": "기대 Evidence Group별 검증된 Source Variant 중 하나 이상이 Top-5에 포함",
+        "positive_rule_id": "RAG-EVAL-GROUP-TOP5-001",
+        "positive_match_mode": "AT_LEAST_ONE_VERIFIED_VARIANT_PER_EXPECTED_GROUP",
+        "positive_top_k": 5,
+        "required_variant_verification_status": "TEXT_AND_VISUAL_VERIFIED",
+        "negative": "no-evidence",
+        "cross_model_hits": 0,
+    }
+    if acceptance != expected_acceptance:
+        _error(errors, "RETRIEVAL_ACCEPTANCE", {"expected": expected_acceptance, "actual": acceptance})
+
+    unregistered_cases = [
+        case
+        for case in negative
+        if case.get("negative_reason") == "UNREGISTERED_EXACT_SALES_CODE"
+    ]
+    if len(unregistered_cases) != 1 or unregistered_cases[0].get("exact_sales_code") in all_codes:
+        _error(errors, "UNREGISTERED_MODEL_CASE", unregistered_cases)
 
     status_values = {
         case.get("data_status") for case in cases

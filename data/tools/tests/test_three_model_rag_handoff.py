@@ -24,7 +24,8 @@ class ThreeModelRagHandoffTests(unittest.TestCase):
         self.assertEqual(15, report["counts"]["parents"])
         self.assertEqual(53, report["counts"]["children"])
         self.assertEqual(43, report["counts"]["groups"])
-        self.assertEqual(49, report["counts"]["cases"])
+        self.assertEqual(50, report["counts"]["cases"])
+        self.assertEqual(7, report["counts"]["negative_cases"])
 
     def test_rebuild_is_byte_identical(self) -> None:
         canonical = [
@@ -49,6 +50,33 @@ class ThreeModelRagHandoffTests(unittest.TestCase):
         self.assertEqual(43, len(positives))
         for case in positives:
             self.assertEqual(2, len(case["forbidden_model_codes"]), case["case_id"])
+
+    def test_acceptance_uses_one_verified_variant_per_expected_group(self) -> None:
+        document = json.loads(
+            (REPO_ROOT / "data/config/rag/three_model_evaluation_cases.json").read_text(encoding="utf-8")
+        )
+        acceptance = document["retrieval_acceptance"]
+        self.assertEqual("RAG-EVAL-GROUP-TOP5-001", acceptance["positive_rule_id"])
+        self.assertEqual(
+            "AT_LEAST_ONE_VERIFIED_VARIANT_PER_EXPECTED_GROUP",
+            acceptance["positive_match_mode"],
+        )
+        self.assertEqual(5, acceptance["positive_top_k"])
+        self.assertEqual(
+            "TEXT_AND_VISUAL_VERIFIED",
+            acceptance["required_variant_verification_status"],
+        )
+
+    def test_unregistered_model_negative_case_is_preserved(self) -> None:
+        document = json.loads(
+            (REPO_ROOT / "data/config/rag/three_model_evaluation_cases.json").read_text(encoding="utf-8")
+        )
+        negatives = [row for row in document["cases"] if row["case_type"] == "NEGATIVE"]
+        self.assertEqual(7, len(negatives))
+        case = next(row for row in negatives if row["case_id"] == "RAG3-NEG-007")
+        self.assertEqual("WPUIAC999ZZZ", case["exact_sales_code"])
+        self.assertEqual("UNREGISTERED_EXACT_SALES_CODE", case["negative_reason"])
+        self.assertTrue(case["expected_no_evidence"])
 
 
 if __name__ == "__main__":
