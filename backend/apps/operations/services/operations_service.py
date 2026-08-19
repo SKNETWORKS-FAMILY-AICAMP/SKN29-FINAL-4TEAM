@@ -62,6 +62,13 @@ EXPECTED_FULL_COUNTS = {
     "inquiry_status_histories": 125,
     "audit_events": 125,
 }
+# The physical fixture package also carries two contract-blocked products for
+# Data/RAG lineage. Database handoff profiles still select only the product
+# referenced by their CustomerProduct closure.
+EXPECTED_FIXTURE_COUNTS = {
+    **EXPECTED_FULL_COUNTS,
+    "products": 3,
+}
 EXPECTED_SMOKE_COUNTS = {
     "users": 8,
     "customer_profiles": 6,
@@ -1174,7 +1181,7 @@ class SyntheticHandoffImportService:
                 raise SyntheticImportConflict(
                     f"Fixture root must be an array: {path}"
                 )
-            expected_count = EXPECTED_FULL_COUNTS[dataset]
+            expected_count = EXPECTED_FIXTURE_COUNTS[dataset]
             if len(rows) != expected_count:
                 raise SyntheticImportConflict(
                     f"Fixture count mismatch: {dataset} "
@@ -1216,9 +1223,11 @@ class SyntheticHandoffImportService:
                         f"{dataset}:{public_id}"
                     )
             result[dataset] = rows
-        if sum(map(len, result.values())) != 367:
+        expected_total = sum(EXPECTED_FIXTURE_COUNTS.values())
+        if sum(map(len, result.values())) != expected_total:
             raise SyntheticImportConflict(
-                "Canonical fixture set must contain exactly 367 rows."
+                "Canonical physical fixture set must contain exactly "
+                f"{expected_total} rows."
             )
         return result
 
@@ -1232,6 +1241,15 @@ class SyntheticHandoffImportService:
                 dataset: list(all_rows[dataset])
                 for dataset in DATASET_ORDER
             }
+            referenced_product_ids = {
+                row["product_id"]
+                for row in selected["customer_products"]
+            }
+            selected["products"] = [
+                row
+                for row in all_rows["products"]
+                if row["id"] in referenced_product_ids
+            ]
             self._assert_profile_counts(
                 profile,
                 selected,
