@@ -1,0 +1,25 @@
+title: CarePrecheckAnswers
+type: object
+description: 질문 코드별 답변 Snapshot
+minProperties: 1
+maxProperties: 100
+propertyNames:
+  pattern: ^[A-Z][A-Z0-9_]{0,39}$
+additionalProperties:
+  oneOf:
+    - type: string
+      maxLength: 2000
+    - type: boolean
+    - type: integer
+    - type: number
+    - type: "null"
+    - type: array
+      maxItems: 50
+      items:
+        oneOf:
+          - type: string
+            maxLength: 2000
+          - type: boolean
+          - type: integer
+          - type: number
+          - type: "null"

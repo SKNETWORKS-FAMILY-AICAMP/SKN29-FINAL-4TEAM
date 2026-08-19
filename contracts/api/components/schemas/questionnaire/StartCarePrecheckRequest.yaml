@@ -1,0 +1,9 @@
+title: StartCarePrecheckRequest
+type: object
+additionalProperties: false
+required: [subscription_id]
+properties:
+  subscription_id:
+    type: string
+    format: uuid
+    description: 인증 고객 본인의 ACTIVE 구독 공개 UUID

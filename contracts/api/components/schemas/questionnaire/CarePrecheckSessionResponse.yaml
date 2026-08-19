@@ -1,0 +1,7 @@
+title: CarePrecheckSessionResponse
+allOf:
+  - $ref: ../common/ApiResponse.yaml
+  - type: object
+    properties:
+      data:
+        $ref: ./CarePrecheckSession.yaml

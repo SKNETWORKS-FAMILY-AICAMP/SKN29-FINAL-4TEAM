@@ -126,3 +126,30 @@ class WorkflowRepository:
             correlation_id=correlation_id,
             idempotency_key=idempotency_key,
         )
+
+    @staticmethod
+    def create_questionnaire_transition_history(
+        *,
+        questionnaire_session: Any,
+        actor: Any,
+        event_code: str,
+        from_state: str | None,
+        to_state: str,
+        state_version: int,
+        correlation_id: UUID,
+        idempotency_key: str,
+    ) -> TransitionHistory:
+        """Persist one questionnaire-target lifecycle history row."""
+
+        return TransitionHistory.objects.create(
+            target_type_code=TransitionHistory.TargetType.QUESTIONNAIRE,
+            questionnaire_session=questionnaire_session,
+            actor=actor,
+            changed_by_type_code=TransitionHistory.ChangedByType.USER,
+            event_code=event_code,
+            from_state=from_state,
+            to_state=to_state,
+            state_version=state_version,
+            correlation_id=correlation_id,
+            idempotency_key=idempotency_key,
+        )

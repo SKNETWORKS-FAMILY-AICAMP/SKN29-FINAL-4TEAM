@@ -1,0 +1,38 @@
+title: CarePrecheckSession
+type: object
+additionalProperties: false
+required:
+  - questionnaire_session_id
+  - subscription_id
+  - questionnaire_type_code
+  - questionnaire_version
+  - status_code
+  - state_version
+  - answers
+  - started_at
+  - submitted_at
+  - linked_inquiry_id
+properties:
+  questionnaire_session_id: {type: string, format: uuid}
+  subscription_id: {type: string, format: uuid}
+  questionnaire_type_code:
+    type: string
+    enum: [CARE_PRECHECK]
+  questionnaire_version:
+    type: string
+    enum: [CARE_PRECHECK-v1]
+  status_code:
+    type: string
+    enum: [UNANSWERED, IN_PROGRESS, SUBMITTED]
+  state_version: {type: integer, minimum: 1}
+  answers:
+    type: object
+    additionalProperties: true
+  started_at: {type: string, format: date-time}
+  submitted_at:
+    type: [string, "null"]
+    format: date-time
+  linked_inquiry_id:
+    type: [string, "null"]
+    format: uuid
+  idempotent_replay: {type: boolean}

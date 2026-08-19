@@ -1,0 +1,11 @@
+title: MutateCarePrecheckRequest
+type: object
+additionalProperties: false
+required: [state_version, answers]
+properties:
+  state_version:
+    type: integer
+    minimum: 1
+    description: 클라이언트가 마지막으로 조회한 문진 상태 버전
+  answers:
+    $ref: ./CarePrecheckAnswers.yaml

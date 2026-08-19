@@ -13,6 +13,9 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from apps.audit.models import AIRun
 from apps.inquiries.models import Inquiry
 from apps.inquiries.repositories.inquiry_repository import InquiryRepository
+from apps.questionnaires.services.inquiry_link_service import (
+    InquiryLinkService,
+)
 from apps.workflow.domain.workflow_snapshot import WorkflowSnapshot
 from apps.workflow.engine.allowed_action_resolver import (
     AllowedActionContext,
@@ -140,6 +143,13 @@ class InquiryService:
                 data=data,
             )
 
+        questionnaire_session = InquiryLinkService.lock_candidate(
+            actor=actor,
+            subscription=subscription,
+            session_public_id=validated_data.get(
+                "questionnaire_session_id"
+            ),
+        )
         inquiry = InquiryRepository.create_inquiry(
             subscription=subscription,
             actor=actor,
@@ -148,6 +158,13 @@ class InquiryService:
             questionnaire_session_public_id=validated_data.get(
                 "questionnaire_session_id"
             ),
+        )
+        InquiryLinkService.link(
+            session=questionnaire_session,
+            inquiry=inquiry,
+            actor=actor,
+            correlation_id=correlation_id,
+            idempotency_key=idempotency_key,
         )
 
         symptom_code = validated_data.get(

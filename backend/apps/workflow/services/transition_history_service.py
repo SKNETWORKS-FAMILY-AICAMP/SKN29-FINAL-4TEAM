@@ -129,6 +129,31 @@ class TransitionHistoryService:
         )
 
     @staticmethod
+    def record_questionnaire_action(
+        *,
+        questionnaire_session: Any,
+        actor: Any,
+        event_code: str,
+        from_state: str | None,
+        to_state: str,
+        state_version: int,
+        correlation_id: UUID,
+        idempotency_key: str,
+    ) -> TransitionHistory:
+        """Record one customer-owned questionnaire lifecycle event."""
+
+        return WorkflowRepository.create_questionnaire_transition_history(
+            questionnaire_session=questionnaire_session,
+            actor=actor,
+            event_code=event_code,
+            from_state=from_state,
+            to_state=to_state,
+            state_version=state_version,
+            correlation_id=correlation_id,
+            idempotency_key=idempotency_key,
+        )
+
+    @staticmethod
     def record_ai_result(
         *,
         inquiry: Inquiry,

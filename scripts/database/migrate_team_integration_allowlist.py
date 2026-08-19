@@ -49,7 +49,7 @@ EXPECTED_GRAPH_LEAVES: tuple[MigrationKey, ...] = (
     ("inquiries", "0013_inquiry_priority_code"),
     ("operations", "0001_initial"),
     ("products", "0001_initial"),
-    ("questionnaires", "0002_postgresql_inquiry_subscription_fk"),
+    ("questionnaires", "0003_questionnaire_answers_allow_blank"),
     ("sessions", "0001_initial"),
     ("subscriptions", "0002_add_synthetic_projection_fields"),
     ("token_blacklist", "0013_alter_blacklistedtoken_options_and_more"),

@@ -57,7 +57,7 @@ class QuestionnaireSession(TimestampedModel):
         default=Status.UNANSWERED,
     )
     questionnaire_version = models.CharField(max_length=40)
-    answers_payload = models.JSONField(default=dict)
+    answers_payload = models.JSONField(default=dict, blank=True)
     state_version = models.PositiveIntegerField(default=1)
     started_at = models.DateTimeField(default=timezone.now)
     submitted_at = models.DateTimeField(null=True, blank=True)
