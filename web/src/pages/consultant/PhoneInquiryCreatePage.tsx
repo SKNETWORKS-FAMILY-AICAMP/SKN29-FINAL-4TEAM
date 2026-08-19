@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type FormEvent,
@@ -12,8 +13,18 @@ import { ApiClientError } from "../../common/api/apiError";
 import { IdempotencyOperationTracker } from "../../common/api/idempotencyOperation";
 import { createRequestContext } from "../../common/api/requestContext";
 import { parseInquiryId } from "../../entities/inquiry/inquiryIdentifiers";
+import type {
+  ConsultantInquiryListQuery,
+  ConsultantInquiryStatusDto,
+} from "../../features/consultation/api/consultantWorkspaceRemoteTypes";
 import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
 import ConsultantUserMenu from "../../features/consultation/components/ConsultantUserMenu";
+import { useConsultantInquiryListQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
+import type { CounselorWorkBucket } from "../../features/consultation/model/consultantWorkspaceTypes";
+import {
+  consultantWorkspaceDataRepository,
+  createMockConsultantInquiryListViewModel,
+} from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
 import {
   phoneInquiryRemoteRepository,
   type CustomerSubscriptionCandidateDto,
@@ -32,6 +43,25 @@ import "./PhoneInquiryCreatePage.css";
 
 const SEARCH_DELAY_MS = 300;
 const PHONE_LIKE_PATTERN = /^[0-9\s()+-]+$/;
+
+const SIDEBAR_BUCKET_STATUSES: Record<
+  CounselorWorkBucket,
+  readonly ConsultantInquiryStatusDto[]
+> = {
+  NEW: ["CONSULTATION_REQUIRED", "REOPENED"],
+  IN_PROGRESS: [
+    "DRAFT",
+    "QUESTIONNAIRE_IN_PROGRESS",
+    "AI_GUIDANCE",
+    "CONSULTATION_IN_PROGRESS",
+    "VISIT_REVIEW_PENDING",
+    "VISIT_SCHEDULING",
+    "VISIT_SCHEDULED",
+    "COMPLETION_PENDING",
+    "REVISIT_REQUIRED",
+  ],
+  COMPLETED: ["RESOLVED", "CANCELLED"],
+};
 
 const SYMPTOM_LABELS: Readonly<Record<PhoneInquirySymptomCode, string>> = {
   NO_WATER: "출수 안 됨",
@@ -104,6 +134,61 @@ function candidateOptionId(subscriptionId: string): string {
 }
 
 export default function PhoneInquiryCreatePage() {
+  const sidebarRepositoryQuery = useMemo<ConsultantInquiryListQuery>(
+    () => ({
+      status: [
+        ...SIDEBAR_BUCKET_STATUSES.NEW,
+        ...SIDEBAR_BUCKET_STATUSES.IN_PROGRESS,
+        ...SIDEBAR_BUCKET_STATUSES.COMPLETED,
+      ],
+      page: 1,
+      size: 100,
+    }),
+    [],
+  );
+  const sidebarQuery = useConsultantInquiryListQuery(sidebarRepositoryQuery);
+  const remoteSidebarHasEmptyBucket =
+    sidebarQuery.status === "success" &&
+    Object.values(SIDEBAR_BUCKET_STATUSES).some(
+      (statuses) =>
+        !sidebarQuery.data?.items.some((inquiry) =>
+          statuses.includes(inquiry.status),
+        ),
+    );
+  const useSidebarDesignMockFallback =
+    import.meta.env.DEV &&
+    consultantWorkspaceDataRepository.dataSource === "REMOTE" &&
+    (sidebarQuery.status === "error" || remoteSidebarHasEmptyBucket);
+  const sidebarData = useMemo(
+    () =>
+      useSidebarDesignMockFallback
+        ? createMockConsultantInquiryListViewModel(
+            sidebarRepositoryQuery,
+            "DESIGN_SCENARIOS",
+          )
+        : consultantWorkspaceDataRepository.dataSource === "MOCK"
+          ? createMockConsultantInquiryListViewModel(sidebarRepositoryQuery)
+          : sidebarQuery.data,
+    [sidebarQuery.data, sidebarRepositoryQuery, useSidebarDesignMockFallback],
+  );
+  const sidebarBucketCounts = useMemo(
+    () =>
+      sidebarData
+        ? (Object.fromEntries(
+            Object.entries(SIDEBAR_BUCKET_STATUSES).map(
+              ([bucket, statuses]) => [
+                bucket,
+                statuses.reduce(
+                  (total, status) =>
+                    total + (sidebarData.statusCounts[status] ?? 0),
+                  0,
+                ),
+              ],
+            ),
+          ) as Record<CounselorWorkBucket, number>)
+        : undefined,
+    [sidebarData],
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [searchRetry, setSearchRetry] = useState(0);
   const [searchState, setSearchState] = useState<SearchState>("IDLE");
@@ -230,6 +315,7 @@ export default function PhoneInquiryCreatePage() {
       );
       operationTrackerRef.current.finish();
       setRegisteredInquiry(result.data);
+      sidebarQuery.retry();
     } catch (error) {
       const retryable =
         error instanceof ApiClientError &&
@@ -261,7 +347,11 @@ export default function PhoneInquiryCreatePage() {
           <ConsultantUserMenu className="simple-user" />
         </header>
 
-        <ConsultantQueueSidebar activeBucket={null} phoneEntryActive />
+        <ConsultantQueueSidebar
+          activeBucket={null}
+          bucketCounts={sidebarBucketCounts}
+          phoneEntryActive
+        />
 
         <section
           id="consultant-phone-entry-panel"
