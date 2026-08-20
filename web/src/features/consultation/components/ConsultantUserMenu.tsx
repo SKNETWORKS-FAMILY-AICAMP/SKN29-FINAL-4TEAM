@@ -15,7 +15,6 @@ export default function ConsultantUserMenu({
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const displayName = getConsultantDisplayName(user?.displayName);
-  const employeeNumber = "2026-001-256";
 
   const handleSignOut = async () => {
     await signOut();
@@ -28,11 +27,6 @@ export default function ConsultantUserMenu({
       data-e2e-sensitive="true"
     >
       <strong className="consultant-user-menu__name">{displayName}</strong>
-      <i className="consultant-user-menu__divider" aria-hidden="true" />
-      <small className="consultant-user-menu__employee-number">
-        <span className="consultant-visually-hidden">사번 </span>
-        {employeeNumber}
-      </small>
       <i className="consultant-user-menu__divider" aria-hidden="true" />
       <button
         type="button"

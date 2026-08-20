@@ -17,10 +17,3 @@ export type VisitTransitionField = keyof VisitTransitionValues;
 export type VisitTransitionErrors = Partial<
   Record<VisitTransitionField, string>
 >;
-
-export interface MockTechnician {
-  id: string;
-  name: string;
-  team: string;
-  area: string;
-}

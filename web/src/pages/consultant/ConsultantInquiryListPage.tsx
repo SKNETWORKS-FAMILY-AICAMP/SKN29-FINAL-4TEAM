@@ -33,10 +33,6 @@ import {
   getCounselorWorkBucket,
   WORK_BUCKET_LABELS,
 } from "../../features/consultation/model/consultantWorkspaceModel";
-import {
-  classifyInquiryCategory,
-  INQUIRY_CATEGORY_TREE,
-} from "../../features/consultation/model/consultantInquiryCategories";
 import type {
   CounselorAllowedAction,
   CounselorSort,
@@ -136,11 +132,6 @@ export default function ConsultantInquiryListPage() {
     useCounselorQueueFilters();
   const [activeBucket, setActiveBucket] =
     useState<ConsultantInquiryBucket>(() => getInitialBucket(location.search));
-  const [categoryFilters, setCategoryFilters] = useState({
-    major: "",
-    middle: "",
-    minor: "",
-  });
   const [activeRiskSection, setActiveRiskSection] =
     useState<RiskSectionId>("all");
   const [selectedInquiryId, setSelectedInquiryId] =
@@ -156,8 +147,6 @@ export default function ConsultantInquiryListPage() {
       }
     >
   >({});
-  const hasCategoryFilter = Boolean(categoryFilters.major);
-
   const mockState = new URLSearchParams(location.search).get("mockState");
   const repositoryQuery = useMemo<ConsultantInquiryListQuery>(
     () => ({
@@ -176,8 +165,8 @@ export default function ConsultantInquiryListPage() {
       from: filters.receivedFrom || undefined,
       to: filters.receivedTo || undefined,
       sort: filters.sort,
-      page: hasCategoryFilter ? 1 : filters.page,
-      size: hasCategoryFilter ? 100 : INQUIRY_LIST_PAGE_SIZE,
+      page: filters.page,
+      size: INQUIRY_LIST_PAGE_SIZE,
     }),
     [
       activeBucket,
@@ -189,7 +178,6 @@ export default function ConsultantInquiryListPage() {
       filters.receivedTo,
       filters.risk,
       filters.sort,
-      hasCategoryFilter,
     ],
   );
   const listQuery = useConsultantInquiryListQuery(repositoryQuery);
@@ -282,12 +270,6 @@ export default function ConsultantInquiryListPage() {
   );
 
   const displayedRiskSection = activeRiskSection;
-  const selectedMajorCategory = INQUIRY_CATEGORY_TREE.find(
-    (category) => category.label === categoryFilters.major,
-  );
-  const selectedMiddleCategory = selectedMajorCategory?.children.find(
-    (category) => category.label === categoryFilters.middle,
-  );
   const riskSummaryCounts = useMemo(() => {
     const bucketStatuses = getBucketStatuses(activeBucket);
     const query = filters.query.trim().toLowerCase();
@@ -333,15 +315,6 @@ export default function ConsultantInquiryListPage() {
       if (filters.receivedFrom && receivedDate < filters.receivedFrom) return;
       if (filters.receivedTo && receivedDate > filters.receivedTo) return;
 
-      const category = classifyInquiryCategory(inquiry.symptomSummary);
-      if (
-        (categoryFilters.major && category.major !== categoryFilters.major) ||
-        (categoryFilters.middle && category.middle !== categoryFilters.middle) ||
-        (categoryFilters.minor && category.minor !== categoryFilters.minor)
-      ) {
-        return;
-      }
-
       counts[inquiry.riskLevel] += 1;
       counts.all += 1;
     });
@@ -349,9 +322,6 @@ export default function ConsultantInquiryListPage() {
     return counts;
   }, [
     activeBucket,
-    categoryFilters.major,
-    categoryFilters.middle,
-    categoryFilters.minor,
     filters.priority,
     filters.query,
     filters.receivedFrom,
@@ -396,32 +366,12 @@ export default function ConsultantInquiryListPage() {
     },
     [overviewData?.statusCounts, queryData?.statusCounts],
   );
-  const categoryFilteredInquiries = sourceInquiries.filter((inquiry) => {
-    if (!hasCategoryFilter) return true;
-    const category = classifyInquiryCategory(inquiry.symptomSummary);
-    return (
-      (!categoryFilters.major || category.major === categoryFilters.major) &&
-      (!categoryFilters.middle || category.middle === categoryFilters.middle) &&
-      (!categoryFilters.minor || category.minor === categoryFilters.minor)
-    );
-  });
-  const categoryPageStart = (filters.page - 1) * INQUIRY_LIST_PAGE_SIZE;
-  const queuePageItems = hasCategoryFilter
-    ? categoryFilteredInquiries.slice(
-        categoryPageStart,
-        categoryPageStart + INQUIRY_LIST_PAGE_SIZE,
-      )
-    : sourceInquiries;
   const queueTotalItems = mockState === "empty"
     ? 0
-    : hasCategoryFilter
-      ? categoryFilteredInquiries.length
-      : (queryData?.pageInfo.total ?? 0);
+    : (queryData?.pageInfo.total ?? 0);
   const queuePage = {
-    currentPage: hasCategoryFilter
-      ? filters.page
-      : (queryData?.pageInfo.page ?? filters.page),
-    items: queuePageItems,
+    currentPage: queryData?.pageInfo.page ?? filters.page,
+    items: sourceInquiries,
     totalItems: queueTotalItems,
     totalPages: Math.max(
       1,
@@ -444,7 +394,6 @@ export default function ConsultantInquiryListPage() {
     params.set("bucket", bucket);
     params.delete("page");
     navigate(`${location.pathname}?${params.toString()}`, { replace: true });
-    setCategoryFilters({ major: "", middle: "", minor: "" });
     setSelectedInquiryId(null);
   };
 
@@ -612,91 +561,6 @@ export default function ConsultantInquiryListPage() {
                   className="consultant-category-filters"
                   aria-label="문의 목록 필터와 정렬"
                 >
-                  <label>
-                    <span>대분류</span>
-                    <select
-                      aria-label="문의 대분류"
-                      value={categoryFilters.major}
-                      onChange={(event) => {
-                        setCategoryFilters({
-                          major: event.target.value,
-                          middle: "",
-                          minor: "",
-                        });
-                        resetInquiryListPage();
-                        setSelectedInquiryId(null);
-                      }}
-                    >
-                      <option value="">전체 대분류</option>
-                      {INQUIRY_CATEGORY_TREE.map((category) => (
-                        <option key={category.label} value={category.label}>
-                          {category.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <span aria-hidden="true">›</span>
-
-                  <label>
-                    <span>중분류</span>
-                    <select
-                      aria-label="문의 중분류"
-                      value={categoryFilters.middle}
-                      disabled={!selectedMajorCategory}
-                      onChange={(event) => {
-                        setCategoryFilters((current) => ({
-                          ...current,
-                          middle: event.target.value,
-                          minor: "",
-                        }));
-                        resetInquiryListPage();
-                        setSelectedInquiryId(null);
-                      }}
-                    >
-                      <option value="">
-                        {selectedMajorCategory
-                          ? "전체 중분류"
-                          : "대분류를 먼저 선택"}
-                      </option>
-                      {selectedMajorCategory?.children.map((category) => (
-                        <option key={category.label} value={category.label}>
-                          {category.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <span aria-hidden="true">›</span>
-
-                  <label>
-                    <span>소분류</span>
-                    <select
-                      aria-label="문의 소분류"
-                      value={categoryFilters.minor}
-                      disabled={!selectedMiddleCategory}
-                      onChange={(event) => {
-                        setCategoryFilters((current) => ({
-                          ...current,
-                          minor: event.target.value,
-                        }));
-                        resetInquiryListPage();
-                        setSelectedInquiryId(null);
-                      }}
-                    >
-                      <option value="">
-                        {selectedMiddleCategory
-                          ? "전체 소분류"
-                          : "중분류를 먼저 선택"}
-                      </option>
-                      {selectedMiddleCategory?.children.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
                   <label className="consultant-category-filters__search">
                     <span>검색</span>
                     <div>
@@ -745,21 +609,6 @@ export default function ConsultantInquiryListPage() {
                       </svg>
                     </div>
                   </label>
-
-                  {(categoryFilters.major ||
-                    categoryFilters.middle ||
-                    categoryFilters.minor) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCategoryFilters({ major: "", middle: "", minor: "" });
-                        resetInquiryListPage();
-                        setSelectedInquiryId(null);
-                      }}
-                    >
-                      카테고리 초기화
-                    </button>
-                  )}
                 </div>
 
                 {RISK_SECTIONS.filter(
@@ -783,7 +632,7 @@ export default function ConsultantInquiryListPage() {
                     <div className="consultant-risk-section__list">
                       {inquiries.length === 0 ? (
                         <p className="consultant-risk-section__empty">
-                          선택한 카테고리에 해당하는 문의가 없습니다.
+                          선택한 조건에 해당하는 문의가 없습니다.
                         </p>
                       ) : (
                         inquiries.map((inquiry) => (

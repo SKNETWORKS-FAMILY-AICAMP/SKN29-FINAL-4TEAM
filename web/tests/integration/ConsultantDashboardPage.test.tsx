@@ -81,10 +81,8 @@ describe("ConsultantDashboardPage", () => {
     expect(workSummary.getByRole("button", { name: /전체 문의 수90/ })).toBeVisible();
     expect(workSummary.getByRole("button", { name: /새 문의30/ })).toBeVisible();
     expect(workSummary.getByRole("button", { name: /처리 중인 문의30/ })).toBeVisible();
-    expect(workSummary.getAllByText("전날 대비")).toHaveLength(4);
-    ["↑ +8", "↑ +5", "↓ -2", "↑ +3"].forEach((change) =>
-      expect(workSummary.getByText(change)).toBeVisible(),
-    );
+    expect(workSummary.queryByText("전날 대비")).not.toBeInTheDocument();
+    expect(workSummary.queryByText("AI 검토")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "공지사항" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "직원 연락처" })).toBeVisible();
     expect(screen.getAllByRole("listitem")).toHaveLength(6);
@@ -190,7 +188,8 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.queryByRole("button", { name: "검색" })).not.toBeInTheDocument();
     expect(container.querySelector(".simple-user__chevron")).toBeNull();
     expect(screen.getByText("테스트 상담원")).toBeVisible();
-    expect(screen.getByText("2026-001-256")).toBeVisible();
+    expect(screen.queryByText("2026-001-256")).not.toBeInTheDocument();
+    expect(screen.queryByText("사번")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "로그아웃" })).toBeVisible();
   });
 
@@ -198,7 +197,6 @@ describe("ConsultantDashboardPage", () => {
     [/전체 문의 수90/, /전체 문의/],
     [/새 문의30/, /새 문의/],
     [/처리 중인 문의30/, /처리 중인 문의/],
-    [/AI 검토30/, /처리 중인 문의/],
   ])("업무 요약 카드 %s가 해당 문의 메뉴로 이동한다", async (card, menu) => {
     const user = userEvent.setup();
     renderPage();
@@ -231,7 +229,6 @@ describe("ConsultantDashboardPage", () => {
       /전체 문의 수90/,
       /새 문의30/,
       /처리 중인 문의30/,
-      /AI 검토30/,
     ]) {
       await user.click(workSummary.getByRole("button", { name: cardName }));
       expect(
@@ -294,7 +291,7 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.queryByRole("button", { name: "상담 시작" })).not.toBeInTheDocument();
   });
 
-  it("상담 상세에서 기사 배정과 방문 일정을 한 흐름으로 확정한다", async () => {
+  it("기사 선택·배정 API가 없으면 로컬 성공 처리 없이 비활성화한다", async () => {
     const user = userEvent.setup();
     renderPage();
 
@@ -317,25 +314,20 @@ describe("ConsultantDashboardPage", () => {
     const scheduler = await screen.findByRole("region", {
       name: "기사 배정 및 일정 조율",
     });
-    await user.selectOptions(
-      within(scheduler).getByRole("combobox", { name: "방문기사" }),
-      "00000000-0000-4000-8000-000000000101",
-    );
-    fireEvent.change(within(scheduler).getByLabelText("고객 희망일"), {
-      target: { value: "2026-08-01" },
-    });
-    fireEvent.change(within(scheduler).getByLabelText("확정 방문일"), {
-      target: { value: "2026-08-02" },
-    });
-    await user.click(
-      within(scheduler).getByRole("button", { name: "기사 배정·방문 확정" }),
-    );
-
     expect(
-      await within(scheduler).findByText(
-        "오세훈 기사 배정과 방문 일정이 확정되었습니다.",
-      ),
-    ).toBeInTheDocument();
+      within(scheduler).getByRole("heading", {
+        name: "기사 선택·배정 API 미지원",
+      }),
+    ).toBeVisible();
+    expect(
+      within(scheduler).getByRole("button", {
+        name: "기사 선택·배정 비활성화",
+      }),
+    ).toBeDisabled();
+    expect(
+      within(scheduler).queryByRole("combobox", { name: "방문기사" }),
+    ).not.toBeInTheDocument();
+    expect(within(scheduler).queryByRole("status")).not.toBeInTheDocument();
   });
 
   it("처리 완료 탭에서는 완료된 문의 이력을 확인한다", async () => {
@@ -466,17 +458,11 @@ describe("ConsultantDashboardPage", () => {
     expect(await screen.findByRole("dialog")).toBeVisible();
   });
 
-  it.skip("고객 원문과 AI 요약을 비교하고 승인할 수 있다", async () => {
-    const user = userEvent.setup();
+  it("별도 AI 검수 API가 없을 때 승인·반려 동작을 노출하지 않는다", () => {
     renderPage();
 
-    const summary = screen.getByRole("textbox", { name: "AI 요약 수정본" });
-    expect((summary as HTMLTextAreaElement).value).toContain("문의입니다");
-
-    await user.click(screen.getByRole("button", { name: "승인" }));
-
-    expect(await screen.findByRole("status")).toHaveTextContent(
-      /요약을 승인했습니다/,
-    );
+    expect(screen.queryByRole("button", { name: "승인" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "반려" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "AI 요약 수정본" })).not.toBeInTheDocument();
   });
 });

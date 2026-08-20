@@ -6,6 +6,7 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { appEnv } from "../../app/config/env";
 import { useAuth } from "../../app/providers/authContext";
 import { createInquiryDetailPath } from "../../app/router/routePaths";
 import Pagination from "../../common/components/data-display/Pagination";
@@ -42,7 +43,6 @@ import { getConsultantDashboardDate } from "../../features/consultation/model/co
 import { getConsultantDisplayName } from "../../features/consultation/model/consultantDisplayName";
 import type {
   CounselorAllowedAction,
-  CounselorInquiry,
   CounselorStatus,
   CounselorWorkBucket,
 } from "../../features/consultation/model/consultantWorkspaceTypes";
@@ -55,7 +55,11 @@ import {
   consultantWorkspaceDataRepository,
   createMockConsultantInquiryListViewModel,
 } from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
-import { CONSULTANT_NOTICE_FIXTURES } from "../../features/notice/model/consultantNotice";
+import { getSyntheticConsultantDashboardData } from "../../features/notice/api/consultantNoticeApi";
+import {
+  MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA,
+  type SyntheticConsultantDashboardData,
+} from "../../features/notice/model/consultantNotice";
 import "./ConsultantDashboardPage.css";
 import "./ConsultantDashboardTheme.css";
 import "./ConsultantInquiryPearlTheme.css";
@@ -84,11 +88,6 @@ const BUCKET_STATUSES: Record<
   COMPLETED: ["RESOLVED", "CANCELLED"],
 };
 
-const ACTIVE_WORK_STATUSES = [
-  ...BUCKET_STATUSES.NEW,
-  ...BUCKET_STATUSES.IN_PROGRESS,
-] as const;
-
 const RISK_SECTIONS: readonly {
   id: ConsultantRiskLevelDto;
   label: string;
@@ -99,8 +98,7 @@ const RISK_SECTIONS: readonly {
 ];
 
 type RiskSectionStatusFilter = "ALL" | ConsultantInquiryStatusDto;
-type WorkFocus = "ALL" | "NEW" | "IN_PROGRESS" | "AI_REVIEW";
-type AiReviewDecision = "APPROVED" | "REJECTED";
+type WorkFocus = "ALL" | "NEW" | "IN_PROGRESS";
 type DashboardInquiryListItem = Omit<
   ConsultantInquiryListItemViewModel,
   "status" | "allowedActions"
@@ -124,32 +122,7 @@ const WORK_FOCUS_OPTIONS: readonly {
   { id: "IN_PROGRESS", label: "처리 중인 문의" },
 ];
 
-const DASHBOARD_DEPARTMENTS = [
-  "고객케어팀",
-  "품질관리팀",
-  "방문지원팀",
-  "시스템운영팀",
-] as const;
-
-const DASHBOARD_EMPLOYEE_CONTACTS = [
-  { name: "김하윤", department: "고객케어팀", position: "팀장", extension: "02-3274-9501", email: "hayoon.kim@waterbridge.co.kr" },
-  { name: "한예나", department: "고객케어팀", position: "상담사", extension: "02-3274-9502", email: "yena.han@waterbridge.co.kr" },
-  { name: "임현우", department: "품질관리팀", position: "매니저", extension: "02-3274-9503", email: "hyunwoo.lim@waterbridge.co.kr" },
-  { name: "박지우", department: "품질관리팀", position: "담당", extension: "02-3274-9504", email: "jiwoo.park@waterbridge.co.kr" },
-  { name: "이서연", department: "방문지원팀", position: "매니저", extension: "02-3274-9505", email: "seoyeon.lee@waterbridge.co.kr" },
-  { name: "최지우", department: "방문지원팀", position: "담당", extension: "02-3274-9506", email: "jiwoo.choi@waterbridge.co.kr" },
-  { name: "정하윤", department: "시스템운영팀", position: "매니저", extension: "02-3274-9507", email: "hayoon.jeong@waterbridge.co.kr" },
-  { name: "강민준", department: "시스템운영팀", position: "담당", extension: "02-3274-9508", email: "minjun.kang@waterbridge.co.kr" },
-] as const;
-
 const VISIT_TECHNICIAN_DIRECTORY = "방문기사 연락처";
-
-const DASHBOARD_VISIT_TECHNICIAN_CONTACTS = [
-  { name: "오민석", branch: "서울동부지사", contact: "010-2501-5001", email: "minseok.oh@waterbridge.co.kr" },
-  { name: "서지훈", branch: "서울서부지사", contact: "010-2501-5002", email: "jihoon.seo@waterbridge.co.kr" },
-  { name: "윤도현", branch: "경기남부지사", contact: "010-2501-5003", email: "dohyun.yoon@waterbridge.co.kr" },
-  { name: "배수아", branch: "경기북부지사", contact: "010-2501-5004", email: "sua.bae@waterbridge.co.kr" },
-] as const;
 
 function getWaitingMinutes(inquiry: DashboardInquiryListItem) {
   return Math.max(0, Math.floor(inquiry.waitingSeconds / 60));
@@ -195,29 +168,6 @@ function getWorkPriorityScore(inquiry: DashboardInquiryListItem) {
   );
 }
 
-function isAiReviewCandidate(
-  inquiry: DashboardInquiryListItem,
-  detail?: CounselorInquiry,
-) {
-  if (["RESOLVED", "CANCELLED"].includes(inquiry.status)) return false;
-  if (detail) {
-    return (
-      detail.aiStatus === "COMPLETED" &&
-      !detail.confirmedSummary &&
-      [
-        "CONSULTATION_REQUIRED",
-        "CONSULTATION_IN_PROGRESS",
-        "VISIT_REVIEW_PENDING",
-      ].includes(inquiry.status)
-    );
-  }
-  return inquiry.allowedActions.some((action) =>
-    ["UPDATE_CONSULTATION_SUMMARY", "CONFIRM_CONSULTATION_SUMMARY"].includes(
-      action.code,
-    ),
-  );
-}
-
 const INITIAL_RISK_SECTION_STATUS_FILTERS: Record<
   ConsultantRiskLevelDto,
   RiskSectionStatusFilter
@@ -257,18 +207,43 @@ export default function ConsultantDashboardPage() {
   const [selectedContactDepartment, setSelectedContactDepartment] =
     useState<string | null>(null);
   const [contactQuery, setContactQuery] = useState("");
-  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
-  const [reviewDrafts, setReviewDrafts] = useState<Record<string, string>>({});
-  const [reviewDecisions, setReviewDecisions] = useState<
-    Record<string, AiReviewDecision>
-  >({});
+  const [dashboardData, setDashboardData] =
+    useState<SyntheticConsultantDashboardData | null>(() =>
+      appEnv.useMockApi ? MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA : null,
+    );
+  const [dashboardLoadState, setDashboardLoadState] = useState<
+    "loading" | "ready" | "error"
+  >(() => (appEnv.useMockApi ? "ready" : "loading"));
+  const [dashboardRetryCount, setDashboardRetryCount] = useState(0);
 
   useEffect(() => {
     const timerId = window.setInterval(() => setDashboardNow(new Date()), 60_000);
 
     return () => window.clearInterval(timerId);
   }, []);
-  const [reviewNotice, setReviewNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (appEnv.useMockApi) return;
+    let active = true;
+
+    getSyntheticConsultantDashboardData().then(
+      (result) => {
+        if (!active) return;
+        setDashboardData(result);
+        setDashboardLoadState("ready");
+      },
+      () => {
+        if (!active) return;
+        setDashboardData(null);
+        setDashboardLoadState("error");
+      },
+    );
+
+    return () => {
+      active = false;
+    };
+  }, [dashboardRetryCount]);
+
   const [selectedInquiryId, setSelectedInquiryId] =
     useState<InquiryId | null>(null);
   const [autoAdvance, setAutoAdvance] = useState(true);
@@ -314,30 +289,11 @@ export default function ConsultantDashboardPage() {
     ],
   );
   const listQuery = useConsultantInquiryListQuery(repositoryQuery);
-  const overviewRepositoryQuery = useMemo<ConsultantInquiryListQuery>(
-    () => ({
-      status: ACTIVE_WORK_STATUSES,
-      sort: "RISK_DESC",
-      page: 1,
-      size: 100,
-    }),
-    [],
-  );
-  const overviewQuery = useConsultantInquiryListQuery(overviewRepositoryQuery);
-  const remoteOverviewHasEmptyWorkBucket =
-    overviewQuery.status === "success" &&
-    (!overviewQuery.data?.items.some((inquiry) =>
-      BUCKET_STATUSES.NEW.includes(inquiry.status),
-    ) ||
-      !overviewQuery.data?.items.some((inquiry) =>
-        BUCKET_STATUSES.IN_PROGRESS.includes(inquiry.status),
-      ));
   const useDesignMockFallback =
+    appEnv.enableDesignMockFallback &&
     import.meta.env.DEV &&
     consultantWorkspaceDataRepository.dataSource === "REMOTE" &&
-    (remoteOverviewHasEmptyWorkBucket ||
-      listQuery.status === "error" ||
-      overviewQuery.status === "error" ||
+    (listQuery.status === "error" ||
       (listQuery.status === "success" &&
         (listQuery.data?.pageInfo.total ?? 0) === 0));
   const useDashboardMockData =
@@ -363,20 +319,6 @@ export default function ConsultantDashboardPage() {
         : listQuery.data;
     },
     [listQuery.data, repositoryQuery, useDesignMockFallback],
-  );
-  const overviewData = useMemo(
-    () => {
-      if (useDesignMockFallback) {
-        return createMockConsultantInquiryListViewModel(
-          overviewRepositoryQuery,
-          "DESIGN_SCENARIOS",
-        );
-      }
-      return consultantWorkspaceDataRepository.dataSource === "MOCK"
-        ? createMockConsultantInquiryListViewModel(overviewRepositoryQuery)
-        : overviewQuery.data;
-    },
-    [overviewQuery.data, overviewRepositoryQuery, useDesignMockFallback],
   );
   const loadState = ["loading", "error", "forbidden"].includes(
     mockState ?? "",
@@ -455,17 +397,27 @@ export default function ConsultantDashboardPage() {
   }, [selectedInquiryId]);
 
   const bucketCounts = useMemo(
-    () =>
-      Object.fromEntries(
-        Object.entries(BUCKET_STATUSES).map(([bucket, statuses]) => [
-          bucket,
-          statuses.reduce(
-            (total, status) => total + (queryData?.statusCounts[status] ?? 0),
-            0,
-          ),
-        ]),
-      ) as Record<CounselorWorkBucket, number>,
-    [queryData?.statusCounts],
+    () => ({
+      NEW:
+        dashboardData?.summary.new ??
+        BUCKET_STATUSES.NEW.reduce(
+          (total, status) => total + (queryData?.statusCounts[status] ?? 0),
+          0,
+        ),
+      IN_PROGRESS:
+        dashboardData?.summary.inProgress ??
+        BUCKET_STATUSES.IN_PROGRESS.reduce(
+          (total, status) => total + (queryData?.statusCounts[status] ?? 0),
+          0,
+        ),
+      COMPLETED:
+        dashboardData?.summary.completed ??
+        BUCKET_STATUSES.COMPLETED.reduce(
+          (total, status) => total + (queryData?.statusCounts[status] ?? 0),
+          0,
+        ),
+    }),
+    [dashboardData?.summary, queryData?.statusCounts],
   );
   const queuePage = {
     currentPage: queryData?.pageInfo.page ?? filters.page,
@@ -479,54 +431,6 @@ export default function ConsultantDashboardPage() {
       ),
     ),
   };
-  const overviewItems: readonly DashboardInquiryListItem[] =
-    overviewData?.items ?? queuePage.items;
-  const mockInquiryDetails = useMemo(
-    () =>
-      new Map<string, CounselorInquiry>(
-        activeWorkspaceRepository
-          .listConsultantQueue()
-          .map((inquiry) => [inquiry.inquiryId, inquiry] as const),
-      ),
-    [activeWorkspaceRepository],
-  );
-  const aiReviewCandidates = overviewItems
-    .filter(
-      (inquiry) =>
-        !reviewDecisions[inquiry.inquiryId] &&
-        isAiReviewCandidate(
-          inquiry,
-          mockInquiryDetails.get(inquiry.inquiryId),
-        ),
-    )
-    .sort((left, right) => {
-      const riskScore = { danger: 3, caution: 2, general: 1 };
-      return (
-        riskScore[right.riskLevel] - riskScore[left.riskLevel] ||
-        right.waitingSeconds - left.waitingSeconds
-      );
-    })
-    .slice(0, useDashboardMockData ? 30 : undefined);
-  const selectedReview =
-    aiReviewCandidates.find(
-      (inquiry) => inquiry.inquiryId === selectedReviewId,
-    ) ??
-    aiReviewCandidates[0] ??
-    null;
-  const selectedReviewDetail = selectedReview
-    ? mockInquiryDetails.get(selectedReview.inquiryId)
-    : undefined;
-  const selectedReviewDraft = selectedReview
-    ? (reviewDrafts[selectedReview.inquiryId] ??
-      selectedReviewDetail?.aiSummaryRevision ??
-      selectedReviewDetail?.aiSummaryOriginal ??
-      "")
-    : "";
-  const totalInquiryCount =
-    bucketCounts.NEW + bucketCounts.IN_PROGRESS + bucketCounts.COMPLETED;
-  const aiReviewCandidateIds = new Set(
-    aiReviewCandidates.map((inquiry) => inquiry.inquiryId),
-  );
   const selectedBase = activeWorkspaceRepository.findInquiry(selectedInquiryId);
   const selectedInquiry = selectedBase
     ? {
@@ -559,30 +463,7 @@ export default function ConsultantDashboardPage() {
     if (workFocus === "IN_PROGRESS") {
       return BUCKET_STATUSES.IN_PROGRESS.includes(inquiry.status);
     }
-    if (workFocus === "AI_REVIEW") {
-      return aiReviewCandidateIds.has(inquiry.inquiryId);
-    }
     return true;
-  };
-
-  const finishAiReview = (decision: AiReviewDecision, revised: boolean) => {
-    if (!selectedReview) return;
-    if (revised && !selectedReviewDraft.trim()) {
-      setReviewNotice("수정한 요약 내용을 입력해 주세요.");
-      return;
-    }
-    setReviewDecisions((current) => ({
-      ...current,
-      [selectedReview.inquiryId]: decision,
-    }));
-    setReviewNotice(
-      decision === "REJECTED"
-        ? `${selectedReview.inquiryCode} 요약을 반려했습니다.`
-        : revised
-          ? `${selectedReview.inquiryCode} 요약을 수정 승인했습니다.`
-          : `${selectedReview.inquiryCode} 요약을 승인했습니다.`,
-    );
-    setSelectedReviewId(null);
   };
 
   const handleRiskTabKeyDown = (
@@ -652,7 +533,12 @@ export default function ConsultantDashboardPage() {
   const normalizedContactQuery = contactQuery.trim().toLowerCase();
   const isVisitTechnicianDirectory =
     selectedContactDepartment === VISIT_TECHNICIAN_DIRECTORY;
-  const visibleContactEmployees = DASHBOARD_EMPLOYEE_CONTACTS.filter(
+  const dashboardConsultants = dashboardData?.consultants ?? [];
+  const dashboardTechnicians = dashboardData?.technicians ?? [];
+  const dashboardDepartments = [
+    ...new Set(dashboardConsultants.map((consultant) => consultant.department)),
+  ];
+  const visibleContactEmployees = dashboardConsultants.filter(
     (employee) =>
       (!selectedContactDepartment ||
         employee.department === selectedContactDepartment) &&
@@ -661,7 +547,7 @@ export default function ConsultantDashboardPage() {
           value.toLowerCase().includes(normalizedContactQuery),
         )),
   );
-  const visibleVisitTechnicians = DASHBOARD_VISIT_TECHNICIAN_CONTACTS.filter(
+  const visibleVisitTechnicians = dashboardTechnicians.filter(
     (technician) =>
       !normalizedContactQuery ||
       Object.values(technician).some((value) =>
@@ -670,6 +556,10 @@ export default function ConsultantDashboardPage() {
   );
   const showContactTable =
     selectedContactDepartment !== null || normalizedContactQuery.length > 0;
+  const retryDashboard = () => {
+    setDashboardLoadState("loading");
+    setDashboardRetryCount((current) => current + 1);
+  };
 
   return (
     <div className="simple-consultant-app consultant-queue-app consultant-dashboard-app">
@@ -712,50 +602,29 @@ export default function ConsultantDashboardPage() {
             <button
               type="button"
               className="counselor-home-metric counselor-home-metric--total"
+              disabled={dashboardLoadState !== "ready"}
               onClick={() => openInquiryList("ALL")}
             >
               <span>전체 문의 수</span>
-              <strong>{totalInquiryCount}</strong>
-              <small className="counselor-home-metric__trend">
-                <b>↑ +8</b>
-                <span>전날 대비</span>
-              </small>
+              <strong>{dashboardData?.summary.total ?? "—"}</strong>
             </button>
             <button
               type="button"
               className="counselor-home-metric counselor-home-metric--work"
+              disabled={dashboardLoadState !== "ready"}
               onClick={() => openInquiryList("NEW")}
             >
               <span>새 문의</span>
-              <strong>{bucketCounts.NEW}</strong>
-              <small className="counselor-home-metric__trend">
-                <b>↑ +5</b>
-                <span>전날 대비</span>
-              </small>
+              <strong>{dashboardData?.summary.new ?? "—"}</strong>
             </button>
             <button
               type="button"
               className="counselor-home-metric counselor-home-metric--waiting"
+              disabled={dashboardLoadState !== "ready"}
               onClick={() => openInquiryList("IN_PROGRESS")}
             >
               <span>처리 중인 문의</span>
-              <strong>{bucketCounts.IN_PROGRESS}</strong>
-              <small className="counselor-home-metric__trend">
-                <b>↓ -2</b>
-                <span>전날 대비</span>
-              </small>
-            </button>
-            <button
-              type="button"
-              className="counselor-home-metric counselor-home-metric--ai"
-              onClick={() => openInquiryList("IN_PROGRESS")}
-            >
-              <span>AI 검토</span>
-              <strong>{aiReviewCandidates.length}</strong>
-              <small className="counselor-home-metric__trend">
-                <b>↑ +3</b>
-                <span>전날 대비</span>
-              </small>
+              <strong>{dashboardData?.summary.inProgress ?? "—"}</strong>
             </button>
           </div>
         </section>
@@ -765,25 +634,43 @@ export default function ConsultantDashboardPage() {
             <header>
               <h2>공지사항</h2>
             </header>
-            <ul className="counselor-dashboard-notices">
-              {CONSULTANT_NOTICE_FIXTURES.map((notice) => (
-                <li key={notice.title}>
-                  <div>
-                    <div className="counselor-dashboard-notices__headline">
-                      <em data-category={notice.category}>{notice.category}</em>
-                      <strong>{notice.title}</strong>
+            {dashboardLoadState === "loading" ? (
+              <LoadingState
+                title="대시보드 공지를 불러오고 있습니다."
+                description="로컬 합성 Runtime 응답을 확인하고 있습니다."
+              />
+            ) : dashboardLoadState === "error" ? (
+              <ErrorState
+                title="대시보드 공지를 불러오지 못했습니다."
+                description="로컬 합성 Dashboard Runtime 상태를 확인해 주세요."
+                onRetry={retryDashboard}
+              />
+            ) : (dashboardData?.notices.length ?? 0) === 0 ? (
+              <EmptyState
+                title="등록된 공지사항이 없습니다."
+                description="새 공지가 등록되면 이 영역에 표시됩니다."
+              />
+            ) : (
+              <ul className="counselor-dashboard-notices">
+                {dashboardData?.notices.map((notice) => (
+                  <li key={notice.noticeId}>
+                    <div>
+                      <div className="counselor-dashboard-notices__headline">
+                        <em data-category={notice.category}>{notice.category}</em>
+                        <strong>{notice.title}</strong>
+                      </div>
                     </div>
-                  </div>
-                  <span className="counselor-dashboard-notices__meta">
-                    <span>{notice.department}</span>
-                    <i aria-hidden="true">|</i>
-                    <time dateTime={notice.publishedOn}>
-                      {notice.publishedOn.replaceAll("-", ".")}
-                    </time>
-                  </span>
-                </li>
-              ))}
-            </ul>
+                    <span className="counselor-dashboard-notices__meta">
+                      <span>{notice.department}</span>
+                      <i aria-hidden="true">|</i>
+                      <time dateTime={notice.publishedOn}>
+                        {notice.publishedOn.replaceAll("-", ".")}
+                      </time>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </article>
 
           <article className="counselor-dashboard-info__panel counselor-dashboard-info__panel--contacts">
@@ -820,7 +707,24 @@ export default function ConsultantDashboardPage() {
                 )}
               </div>
             </header>
-            {showContactTable ? (
+            {dashboardLoadState === "loading" ? (
+              <LoadingState
+                title="직원 연락처를 불러오고 있습니다."
+                description="로컬 합성 Runtime 응답을 확인하고 있습니다."
+              />
+            ) : dashboardLoadState === "error" ? (
+              <ErrorState
+                title="직원 연락처를 불러오지 못했습니다."
+                description="로컬 합성 Dashboard Runtime 상태를 확인해 주세요."
+                onRetry={retryDashboard}
+              />
+            ) : dashboardConsultants.length === 0 &&
+              dashboardTechnicians.length === 0 ? (
+              <EmptyState
+                title="표시할 직원 연락처가 없습니다."
+                description="Dashboard Runtime에 등록된 합성 연락처가 없습니다."
+              />
+            ) : showContactTable ? (
               <div className="counselor-dashboard-contact-table-wrap">
                 <strong className="counselor-dashboard-contact-table__title">
                   {selectedContactDepartment ?? "검색 결과"}
@@ -854,7 +758,7 @@ export default function ConsultantDashboardPage() {
                           <tr key={technician.email}>
                             <td>{technician.name}</td>
                             <td>{technician.branch}</td>
-                            <td>{technician.contact}</td>
+                            <td>{technician.phone}</td>
                             <td>
                               <a href={`mailto:${technician.email}`}>
                                 {technician.email}
@@ -896,7 +800,7 @@ export default function ConsultantDashboardPage() {
                 </div>
                 <span className="counselor-dashboard-org__stem" aria-hidden="true" />
                 <div className="counselor-dashboard-org__departments">
-                  {DASHBOARD_DEPARTMENTS.map((department) => (
+                  {dashboardDepartments.map((department) => (
                     <button
                       key={department}
                       type="button"
@@ -907,7 +811,7 @@ export default function ConsultantDashboardPage() {
                         <b>{department}</b>
                         <small>
                           {
-                            DASHBOARD_EMPLOYEE_CONTACTS.filter(
+                            dashboardConsultants.filter(
                               (employee) => employee.department === department,
                             ).length
                           }
@@ -930,7 +834,7 @@ export default function ConsultantDashboardPage() {
                       <b>방문기사 연락처</b>
                     </div>
                     <strong>
-                      {DASHBOARD_VISIT_TECHNICIAN_CONTACTS.length}명
+                      {dashboardTechnicians.length}명
                       <i aria-hidden="true">›</i>
                     </strong>
                   </button>
@@ -1242,126 +1146,13 @@ export default function ConsultantDashboardPage() {
                 <span>AI QUALITY CHECK</span>
                 <h2 id="counselor-ai-review-title">AI 요약 검수</h2>
               </div>
-              <b>{aiReviewCandidates.length}</b>
+              <b>—</b>
             </header>
-
-            {reviewNotice && (
-              <p className="counselor-ai-review__notice" role="status">
-                {reviewNotice}
-              </p>
-            )}
-
-            {!selectedReview ? (
-              <div className="counselor-ai-review__empty">
-                <span aria-hidden="true">✓</span>
-                <strong>현재 검수할 요약이 없습니다.</strong>
-                <p>새 AI 요약이 생성되면 원문과 함께 표시됩니다.</p>
-              </div>
-            ) : (
-              <>
-                <div className="counselor-ai-review__case">
-                  <div>
-                    <b
-                      className={`consultant-signal consultant-signal--${selectedReview.riskLevel}`}
-                    >
-                      {RISK_LABELS[selectedReview.riskLevel]}
-                    </b>
-                    <span>{selectedReview.inquiryCode}</span>
-                  </div>
-                  <strong>{selectedReview.customerDisplayNameMasked}</strong>
-                  <p>{selectedReview.productModel}</p>
-                </div>
-
-                <section className="counselor-ai-compare" aria-label="고객 원문과 AI 요약 비교">
-                  <article>
-                    <header>
-                      <span>01</span>
-                      <strong>고객 원문</strong>
-                    </header>
-                    <blockquote>{selectedReview.symptomSummary}</blockquote>
-                  </article>
-                  <article>
-                    <header>
-                      <span>02</span>
-                      <strong>AI 요약 초안</strong>
-                    </header>
-                    {selectedReviewDetail ? (
-                      <textarea
-                        aria-label="AI 요약 수정본"
-                        value={selectedReviewDraft}
-                        onChange={(event) =>
-                          setReviewDrafts((current) => ({
-                            ...current,
-                            [selectedReview.inquiryId]: event.target.value,
-                          }))
-                        }
-                      />
-                    ) : (
-                      <div className="counselor-ai-review__integration">
-                        <strong>요약 상세 연동 필요</strong>
-                        <p>
-                          목록에는 검수 행동만 제공됩니다. 원문·AI 초안 비교는 상담 상세 API 연동 후 활성화됩니다.
-                        </p>
-                      </div>
-                    )}
-                  </article>
-                </section>
-
-                <div className="counselor-ai-review__checklist" aria-label="요약 확인 항목">
-                  <span>증상</span>
-                  <span>안전 신호</span>
-                  <span>고객 요청</span>
-                  <span>다음 행동</span>
-                </div>
-
-                <div className="counselor-ai-review__actions">
-                  <button
-                    type="button"
-                    className="is-reject"
-                    disabled={!selectedReviewDetail}
-                    onClick={() => finishAiReview("REJECTED", false)}
-                  >
-                    반려
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!selectedReviewDetail}
-                    onClick={() => finishAiReview("APPROVED", true)}
-                  >
-                    수정 승인
-                  </button>
-                  <button
-                    type="button"
-                    className="is-primary"
-                    disabled={!selectedReviewDetail}
-                    onClick={() => finishAiReview("APPROVED", false)}
-                  >
-                    승인
-                  </button>
-                </div>
-
-                {aiReviewCandidates.length > 1 && (
-                  <div className="counselor-ai-review__queue">
-                    <span>다음 검수</span>
-                    {aiReviewCandidates.slice(0, 4).map((inquiry) => (
-                      <button
-                        key={inquiry.inquiryId}
-                        type="button"
-                        className={
-                          inquiry.inquiryId === selectedReview.inquiryId
-                            ? "is-active"
-                            : ""
-                        }
-                        aria-label={`${inquiry.inquiryCode} AI 요약 검수`}
-                        onClick={() => setSelectedReviewId(inquiry.inquiryId)}
-                      >
-                        {inquiry.customerDisplayNameMasked}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
+            <div className="counselor-ai-review__empty">
+              <span aria-hidden="true">○</span>
+              <strong>AI 검수 API 연동 대기</strong>
+              <p>승인·반려 API가 제공되기 전에는 검수 결과를 저장하지 않습니다.</p>
+            </div>
           </aside>
 
           {loadState === "ready" && queuePage.totalItems > 0 && (

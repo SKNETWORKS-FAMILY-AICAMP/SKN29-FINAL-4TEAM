@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
@@ -158,47 +158,27 @@ describe("App Router Guard", () => {
     ).toBeInTheDocument();
   });
 
-  it("방문 검토 상태는 요청 생성 후에만 일정 조율 행동을 연다", async () => {
-    const user = userEvent.setup();
+  it("방문 검토 상태에서도 기사 선택·배정 API가 없으면 비활성화한다", async () => {
     renderRoute(
       "/consultant/inquiries/a6bdf6b7-b9ba-553a-8447-f928384c1ad1/visit-transition",
       createUser("CONSULTANT"),
     );
 
     expect(
-      await screen.findByRole("button", {
-        name: "방문 필요 확정·요청 생성",
+      await screen.findByRole("heading", {
+        name: "기사 선택·배정 API 미지원",
       }),
-    ).toBeInTheDocument();
+    ).toBeVisible();
     expect(
-      screen.queryByRole("button", { name: "일정 조율 저장" }),
+      screen.getByRole("button", { name: "기사 선택·배정 비활성화" }),
+    ).toBeDisabled();
+    expect(
+      screen.queryByRole("combobox", { name: /방문기사/ }),
     ).not.toBeInTheDocument();
-
-    fireEvent.change(screen.getByLabelText("고객 희망일"), {
-      target: { value: "2026-07-29" },
-    });
-    await user.selectOptions(
-      screen.getByRole("combobox", { name: /가상 방문기사/ }),
-      "00000000-0000-4000-8000-000000000101",
+    ["방문 필요 확정·요청 생성", "일정 조율 저장", "방문 확정"].forEach(
+      (name) =>
+        expect(screen.queryByRole("button", { name })).not.toBeInTheDocument(),
     );
-    await user.click(
-      screen.getByRole("button", { name: "방문 필요 확정·요청 생성" }),
-    );
-
-    expect(
-      screen.getByRole("button", { name: "일정 조율 저장" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "방문 확정" }),
-    ).not.toBeInTheDocument();
-
-    await user.click(
-      screen.getByRole("button", { name: "일정 조율 저장" }),
-    );
-
-    expect(
-      screen.getByRole("button", { name: "방문 확정" }),
-    ).toBeInTheDocument();
   });
 
   it.each([
@@ -246,7 +226,7 @@ describe("App Router Guard", () => {
     expect(
       await screen.findByRole("heading", { name: "운영 대시보드" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("ADMIN-01 · P1 MOCK")).toBeInTheDocument();
+    expect(screen.getByText("ADMIN-01 · API PENDING")).toBeInTheDocument();
   });
 
   it("상담사가 운영 경로에 접근하면 403 화면으로 이동한다", async () => {

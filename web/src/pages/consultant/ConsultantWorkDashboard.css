@@ -134,7 +134,7 @@ html body
 .counselor-home-metrics {
   display: grid;
   min-width: 0;
-  grid-template-columns: repeat(4, minmax(145px, 1fr));
+  grid-template-columns: repeat(3, minmax(145px, 1fr));
   gap: 10px;
 }
 
@@ -176,6 +176,17 @@ html body
 
 .counselor-home-metric.is-active {
   background: linear-gradient(145deg, #fff, color-mix(in srgb, var(--metric-color) 8%, white));
+}
+
+.counselor-home-metric:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.counselor-home-metric:disabled:hover {
+  border-color: #dce7ed;
+  box-shadow: 0 10px 26px rgb(27 57 75 / 7%);
+  transform: none;
 }
 
 .counselor-home-metric--total {

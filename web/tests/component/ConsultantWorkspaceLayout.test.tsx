@@ -36,12 +36,48 @@ describe("ConsultantWorkspaceLayout", () => {
     expect(userChip).not.toBeNull();
     expect(within(userChip as HTMLElement).getByText("인증 세션 상담원")).toBeVisible();
     expect(
-      within(userChip as HTMLElement).getByText("2026-001-256"),
-    ).toBeVisible();
+      within(userChip as HTMLElement).queryByText("2026-001-256"),
+    ).not.toBeInTheDocument();
+    expect(
+      userChip?.querySelectorAll(".consultant-user-menu__divider"),
+    ).toHaveLength(1);
     expect(
       within(userChip as HTMLElement).getByRole("button", { name: "로그아웃" }),
     ).toBeVisible();
     expect(within(header).queryByText("한유진")).not.toBeInTheDocument();
     expect(within(header).queryByText("STAFF-CONS-01")).not.toBeInTheDocument();
+  });
+
+  it("알림 API 연결 전에는 고정 알림 대신 빈 상태를 표시한다", () => {
+    render(
+      <AuthProvider initialUser={AUTHENTICATED_CONSULTANT}>
+        <MemoryRouter>
+          <ConsultantWorkspaceLayout
+            notificationOpen
+            queueCount={0}
+            onCloseNotifications={vi.fn()}
+            onNavigate={vi.fn()}
+            onToggleNotifications={vi.fn()}
+          >
+            <p>테스트 본문</p>
+          </ConsultantWorkspaceLayout>
+        </MemoryRouter>
+      </AuthProvider>,
+    );
+
+    const notificationPanel = screen.getByRole("dialog", {
+      name: "상담 업무 알림",
+    });
+    expect(
+      within(notificationPanel).getByText("표시할 알림이 없습니다."),
+    ).toBeVisible();
+    expect(
+      within(notificationPanel).queryByText("고객 해결 피드백 도착"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(notificationPanel).queryByText("INQ-20260705-0017", {
+        exact: false,
+      }),
+    ).not.toBeInTheDocument();
   });
 });
