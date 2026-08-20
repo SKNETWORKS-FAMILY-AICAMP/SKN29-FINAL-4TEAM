@@ -277,6 +277,7 @@ html body
   box-shadow: var(--consultant-refresh-dashboard-shadow) !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
+  -webkit-text-fill-color: #090909 !important;
 }
 
 html body
@@ -284,6 +285,7 @@ html body
   .consultant-dashboard-app
   .counselor-home-metric:hover {
   background: var(--consultant-refresh-surface-hover) !important;
+  background-color: var(--consultant-refresh-surface-hover) !important;
   box-shadow: var(--consultant-refresh-dashboard-shadow-hover) !important;
   transform: translateY(-1px) !important;
 }
@@ -365,12 +367,20 @@ html body
   -webkit-text-fill-color: #fff !important;
 }
 
-/* Flat dashboard notice and contact surfaces. */
+/* Flat dashboard recent-inquiry, notice, and contact surfaces. */
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-info {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
 
 html body
   #root
   .consultant-dashboard-app
   :is(
+    .counselor-dashboard-info__panel--recent,
     .counselor-dashboard-info__panel--notices,
     .counselor-dashboard-info__panel--contacts
   ) {
@@ -389,6 +399,7 @@ html body
   #root
   .consultant-dashboard-app
   :is(
+    .counselor-dashboard-info__panel--recent,
     .counselor-dashboard-info__panel--notices,
     .counselor-dashboard-info__panel--contacts
   )
@@ -405,6 +416,7 @@ html body
   #root
   .consultant-dashboard-app
   :is(
+    .counselor-dashboard-info__panel--recent,
     .counselor-dashboard-info__panel--notices,
     .counselor-dashboard-info__panel--contacts
   )
@@ -423,6 +435,7 @@ html body
   #root
   .consultant-dashboard-app
   :is(
+    .counselor-dashboard-recent,
     .counselor-dashboard-notices,
     .counselor-dashboard-org,
     .counselor-dashboard-contact-table-wrap
@@ -445,6 +458,340 @@ html body
   background-color: transparent !important;
   background-image: none !important;
   box-shadow: none !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: 8px;
+  margin: 0 !important;
+  padding: 14px 20px 16px !important;
+  overflow-y: auto;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  list-style: none;
+  scrollbar-color: var(--consultant-refresh-navy) transparent;
+  scrollbar-width: thin;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent::-webkit-scrollbar {
+  width: 6px;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--consultant-refresh-navy);
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent
+  > li {
+  min-width: 0;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__item {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  min-height: 66px;
+  grid-template-columns: 5px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 12px 9px 10px !important;
+  border: 1px solid #d4d0c7 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  color: #17191d !important;
+  text-align: left;
+  box-shadow: none !important;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    transform 140ms ease;
+  -webkit-text-fill-color: #17191d !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__item:hover {
+  border-color: #aaa69d !important;
+  background: #f9f7f2 !important;
+  background-color: #f9f7f2 !important;
+  transform: translateY(-1px);
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__item:focus-visible {
+  border-color: var(--consultant-refresh-navy) !important;
+  outline: 2px solid var(--consultant-refresh-navy) !important;
+  outline-offset: 2px;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__rail {
+  width: 5px;
+  height: 100%;
+  min-height: 42px;
+  align-self: stretch;
+  border-radius: 999px;
+  background: #4f8967;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__item[data-risk="danger"]
+  .counselor-dashboard-recent__rail,
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__item[data-risk="DANGER"]
+  .counselor-dashboard-recent__rail {
+  background: #c84e4e;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__item[data-risk="caution"]
+  .counselor-dashboard-recent__rail,
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__item[data-risk="CAUTION"]
+  .counselor-dashboard-recent__rail {
+  background: #d18a37;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__item[data-risk="general"]
+  .counselor-dashboard-recent__rail,
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__item[data-risk="GENERAL"]
+  .counselor-dashboard-recent__rail {
+  background: #858991;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__copy {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__title {
+  display: block;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #17191d !important;
+  font-size: 14px;
+  font-weight: 500 !important;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  -webkit-text-fill-color: #17191d !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__meta {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  color: #62666d !important;
+  font-size: 11px;
+  line-height: 1.2;
+  -webkit-text-fill-color: #62666d !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__meta
+  > :not(.counselor-dashboard-recent__status) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__status {
+  display: inline-flex;
+  min-height: 21px;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 3px 7px;
+  border: 0;
+  border-radius: 5px;
+  background: #e9e3d8 !important;
+  color: var(--consultant-refresh-navy) !important;
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+  -webkit-text-fill-color: var(--consultant-refresh-navy) !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__status[data-status="NEW"] {
+  background: #e0ebe3 !important;
+  color: #376248 !important;
+  -webkit-text-fill-color: #376248 !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__status[data-status="IN_PROGRESS"] {
+  background: #e9e3d8 !important;
+  color: var(--consultant-refresh-navy) !important;
+  -webkit-text-fill-color: var(--consultant-refresh-navy) !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__status[data-status="COMPLETED"] {
+  background: #e2e3e5 !important;
+  color: #535a66 !important;
+  -webkit-text-fill-color: #535a66 !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-recent__arrow {
+  display: block;
+  width: auto;
+  height: auto;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--consultant-refresh-navy) !important;
+  font-size: 19px;
+  line-height: 1;
+  -webkit-text-fill-color: var(--consultant-refresh-navy) !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-info__panel--recent
+  :is(
+    .counselor-dashboard-recent__empty,
+    .counselor-dashboard-recent__state,
+    .empty-state,
+    .loading-state
+  ) {
+  min-height: 230px;
+  margin: 14px 20px 16px;
+  padding: 24px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #f8f6f1 !important;
+  color: #555b65 !important;
+  box-shadow: none !important;
+  text-align: center;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-info__panel--recent
+  .counselor-dashboard-recent__empty {
+  display: grid;
+  place-content: center;
+  gap: 8px;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-info__panel--recent
+  :is(.empty-state__icon, .loading-state__spinner) {
+  background-color: #e9e3d8 !important;
+  color: var(--consultant-refresh-navy) !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-info__panel--recent
+  .loading-state__spinner {
+  border-color: #d9d2c5 !important;
+  border-top-color: var(--consultant-refresh-navy) !important;
+  background: transparent !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-info__panel--recent
+  :is(
+    .counselor-dashboard-recent__empty,
+    .empty-state__title,
+    .loading-state__title
+  ) {
+  color: #252932 !important;
+  font-weight: 500 !important;
+  -webkit-text-fill-color: #252932 !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-info__panel--recent
+  :is(.empty-state__description, .loading-state__description) {
+  color: #656a73 !important;
+  -webkit-text-fill-color: #656a73 !important;
 }
 
 html body
@@ -1036,6 +1383,46 @@ html body
   -webkit-text-fill-color: var(--consultant-refresh-navy) !important;
 }
 
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-tab.consultant-risk-tab--all
+  .consultant-risk-tab__count {
+  background: #2f9d68 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-tab.consultant-risk-tab--danger
+  .consultant-risk-tab__count {
+  background: #e5484d !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-tab.consultant-risk-tab--caution
+  .consultant-risk-tab__count {
+  background: #df9126 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-tab.consultant-risk-tab--general
+  .consultant-risk-tab__count {
+  background: #7a8794 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
 html body #root .consultant-inquiry-list-app .consultant-risk-tab:focus-visible {
   outline: 2px solid var(--consultant-refresh-navy) !important;
   outline-offset: -3px !important;
@@ -1190,6 +1577,14 @@ html body
 html body
   #root
   .consultant-inquiry-list-app
+  .consultant-risk-section--all
+  .v6-queue-item.consultant-list-item::before {
+  background: #2f9d68 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
   .consultant-risk-section
   :is(
     .v6-queue-item.consultant-list-item:hover,
@@ -1304,6 +1699,347 @@ html body
   background: var(--consultant-refresh-navy) !important;
   color: #fff !important;
   -webkit-text-fill-color: #fff !important;
+}
+
+/* Compact inquiry detail: match the navy, light-gray, and white workspace. */
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-backdrop {
+  background: rgb(63 72 88 / 24%) !important;
+  background-image: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer {
+  border-left: 1px solid var(--consultant-refresh-navy) !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__head {
+  border-bottom: 1px solid var(--consultant-refresh-navy) !important;
+  background: var(--consultant-refresh-surface) !important;
+  background-color: var(--consultant-refresh-surface) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__head
+  small {
+  color: var(--consultant-refresh-navy) !important;
+  font-weight: 500 !important;
+  -webkit-text-fill-color: var(--consultant-refresh-navy) !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__head
+  h2 {
+  color: #111 !important;
+  font-weight: 500 !important;
+  -webkit-text-fill-color: #111 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__head
+  p {
+  color: #555 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #555 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__head
+  > button {
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: var(--consultant-refresh-navy) !important;
+  background-color: var(--consultant-refresh-navy) !important;
+  background-image: none !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__head
+  > button:hover {
+  background: var(--consultant-refresh-navy-hover) !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__body {
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  scrollbar-color: var(--consultant-refresh-navy) transparent !important;
+  scrollbar-width: thin;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__body::-webkit-scrollbar {
+  width: 7px;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--consultant-refresh-navy);
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__body
+  .simple-desk {
+  border: 0 !important;
+  border-radius: var(--consultant-refresh-surface-radius) !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  :is(
+    .simple-mini-profile > div,
+    .simple-focus-grid > article,
+    .simple-action-panel,
+    .simple-ai-assist,
+    .simple-result-field,
+    .simple-visit-followup,
+    .simple-visit-context,
+    .simple-readonly-action
+  ) {
+  border: 1px solid #d2d2d2 !important;
+  border-radius: var(--consultant-refresh-surface-radius) !important;
+  background: var(--consultant-refresh-surface) !important;
+  background-color: var(--consultant-refresh-surface) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  .simple-next-step {
+  border: 0 !important;
+  border-radius: var(--consultant-refresh-surface-radius) !important;
+  background: var(--consultant-refresh-navy) !important;
+  background-color: var(--consultant-refresh-navy) !important;
+  background-image: none !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  .simple-next-step
+  :is(span, strong) {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  .simple-next-step
+  span {
+  border-color: rgb(255 255 255 / 55%) !important;
+  background: rgb(255 255 255 / 12%) !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  :is(
+    .simple-case-head > button,
+    .simple-action-buttons button,
+    .simple-visit-actions button,
+    .simple-visit-scheduler header > button
+  ) {
+  border: 1px solid #bfc3c8 !important;
+  border-radius: 7px !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  color: #222 !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+  transform: none !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  :is(
+    .simple-case-head > button,
+    .simple-action-buttons button,
+    .simple-visit-actions button,
+    .simple-visit-scheduler header > button
+  ):hover:not(:disabled) {
+  border-color: var(--consultant-refresh-navy) !important;
+  background: var(--consultant-refresh-surface-hover) !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  .simple-action-buttons
+  button.is-primary {
+  border-color: var(--consultant-refresh-navy) !important;
+  background: var(--consultant-refresh-navy) !important;
+  background-color: var(--consultant-refresh-navy) !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  .simple-action-buttons
+  button.is-primary:hover:not(:disabled) {
+  border-color: var(--consultant-refresh-navy-hover) !important;
+  background: var(--consultant-refresh-navy-hover) !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  border: 1px solid #c8c8c8 !important;
+  border-radius: 5px !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  color: #111 !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #111 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea):focus {
+  border-color: var(--consultant-refresh-navy) !important;
+  outline: 2px solid var(--consultant-refresh-navy-ring) !important;
+  outline-offset: 1px;
+  box-shadow: none !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  :is(input[type="checkbox"], input[type="radio"]) {
+  accent-color: var(--consultant-refresh-navy) !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  :is(.simple-case-head h2, .simple-visit-scheduler h3, .simple-ai-assist h4, .simple-visit-followup h4) {
+  color: #111 !important;
+  font-weight: 500 !important;
+  -webkit-text-fill-color: #111 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  :is(.simple-case-head p, .simple-mini-profile dt, .simple-focus-grid article > small) {
+  color: #555 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #555 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  :is(.simple-mini-profile dd, .simple-customer-voice blockquote) {
+  color: #222 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  .simple-desk.is-consulting
+  .simple-action-buttons {
+  background: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  :is(button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--consultant-refresh-navy) !important;
+  outline-offset: 2px;
 }
 
 /* Phone inquiry menu: the same gray surfaces with neutral form controls. */
@@ -1888,6 +2624,24 @@ html body
 }
 
 @media (max-width: 900px) {
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-dashboard-info {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-auto-rows: minmax(360px, auto);
+    align-content: start;
+    gap: 12px !important;
+    overflow-y: auto;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-dashboard-recent__item {
+    min-height: 62px;
+  }
+
   html body
     #root
     :is(

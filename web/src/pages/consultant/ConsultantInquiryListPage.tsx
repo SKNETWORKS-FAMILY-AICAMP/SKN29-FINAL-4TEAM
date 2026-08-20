@@ -7,6 +7,7 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { appEnv } from "../../app/config/env";
+import { useAuth } from "../../app/providers/authContext";
 import { createInquiryDetailPath } from "../../app/router/routePaths";
 import Pagination from "../../common/components/data-display/Pagination";
 import EmptyState from "../../common/components/feedback/EmptyState";
@@ -33,6 +34,9 @@ import {
   getCounselorWorkBucket,
   WORK_BUCKET_LABELS,
 } from "../../features/consultation/model/consultantWorkspaceModel";
+import {
+  rememberRecentConsultantInquiryId,
+} from "../../features/consultation/model/recentConsultantInquiryIds";
 import type {
   CounselorAllowedAction,
   CounselorSort,
@@ -128,6 +132,7 @@ function formatBucketElapsedTime(
 export default function ConsultantInquiryListPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const { filters, hasChangedConditions, resetFilters, setFilters } =
     useCounselorQueueFilters();
   const [activeBucket, setActiveBucket] =
@@ -442,12 +447,21 @@ export default function ConsultantInquiryListPage() {
       currentIndex < 0
         ? queuePage.items[0]
         : queuePage.items[currentIndex + 1] ?? queuePage.items[0];
-    setSelectedInquiryId(toInquiryId(nextInquiry.inquiryId));
+    const nextInquiryId = toInquiryId(nextInquiry.inquiryId);
+    if (!nextInquiryId) return;
+    if (user?.id) {
+      rememberRecentConsultantInquiryId(user.id, nextInquiryId);
+    }
+    setSelectedInquiryId(nextInquiryId);
   };
 
   const openInquiry = (rawInquiryId: string) => {
     const inquiryId = toInquiryId(rawInquiryId);
     if (!inquiryId) return;
+
+    if (user?.id) {
+      rememberRecentConsultantInquiryId(user.id, inquiryId);
+    }
 
     if (useListMockData) {
       setSelectedInquiryId(inquiryId);

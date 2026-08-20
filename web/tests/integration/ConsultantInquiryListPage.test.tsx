@@ -1,12 +1,16 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "../../src/app/providers/AuthProvider";
 import { AppRoutes } from "../../src/app/router/AppRouter";
 import { CONSULTANT_QUEUE_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
 import { getCounselorWorkBucket } from "../../src/features/consultation/model/consultantWorkspaceModel";
+import {
+  clearRecentConsultantInquiryIds,
+  readRecentConsultantInquiryIds,
+} from "../../src/features/consultation/model/recentConsultantInquiryIds";
 import type { CounselorWorkBucket } from "../../src/features/consultation/model/consultantWorkspaceTypes";
 
 const CONSULTANT_USER = {
@@ -73,6 +77,10 @@ async function openInquiry(
 }
 
 describe("ConsultantInquiryListPage", () => {
+  beforeEach(() => {
+    clearRecentConsultantInquiryIds(CONSULTANT_USER.id);
+  });
+
   it("첫 화면은 전체 문의를 포함한 업무 탭과 문의 목록만 보여준다", () => {
     renderPage();
     const sidebarTabs = getSidebarTabs();
@@ -205,6 +213,14 @@ describe("ConsultantInquiryListPage", () => {
     renderPage();
 
     await openInquiry(user, "INQ-20260707-0024", "NEW");
+
+    const openedInquiry = CONSULTANT_QUEUE_INQUIRIES.find(
+      (inquiry) => inquiry.inquiryCode === "INQ-20260707-0024",
+    );
+    expect(openedInquiry).toBeDefined();
+    expect(readRecentConsultantInquiryIds(CONSULTANT_USER.id)).toEqual([
+      openedInquiry!.inquiryId,
+    ]);
 
     expect(screen.getByRole("dialog", { name: /IoT 기능 지원 문의/ })).toBeVisible();
     expect(screen.getByRole("button", { name: "상담 시작" })).toBeInTheDocument();
