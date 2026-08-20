@@ -8,6 +8,7 @@ from typing import Any
 
 from django.utils import timezone
 
+from apps.accounts.models import User
 from apps.inquiries.models import Inquiry
 from apps.operations.models import (
     DashboardNotice,
@@ -117,6 +118,7 @@ class ConsultantDashboardService:
                 for entry in directory_rows
                 if entry.staff_type
                 == StaffDirectoryEntry.StaffType.CONSULTANT
+                and entry.user.role_code == User.Role.CONSULTANT
             ],
             "technicians": [
                 {
@@ -129,6 +131,7 @@ class ConsultantDashboardService:
                 for entry in directory_rows
                 if entry.staff_type
                 == StaffDirectoryEntry.StaffType.TECHNICIAN
+                and entry.user.role_code == User.Role.TECHNICIAN
             ],
             "inquiries": inquiries,
         }

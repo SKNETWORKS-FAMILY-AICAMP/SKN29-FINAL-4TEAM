@@ -1,0 +1,171 @@
+title: ConsultantDashboardData
+type: object
+description: 로컬 E2E에서 사용하는 상담사 전용 합성 Dashboard projection
+additionalProperties: false
+required:
+  - data_classification
+  - generated_at
+  - summary
+  - notices
+  - consultants
+  - technicians
+  - inquiries
+properties:
+  data_classification:
+    type: string
+    const: synthetic
+  generated_at:
+    type: string
+    format: date-time
+  summary:
+    $ref: "#/$defs/summary"
+  notices:
+    type: array
+    items:
+      $ref: "#/$defs/notice"
+  consultants:
+    type: array
+    items:
+      $ref: "#/$defs/consultant"
+  technicians:
+    type: array
+    description: |
+      활성 합성 TECHNICIAN만 반환한다. 각 user_id는
+      UpdateVisitScheduleRequest.synthetic_technician_id 입력으로 사용한다.
+    items:
+      $ref: "#/$defs/technician"
+  inquiries:
+    type: array
+    description: 현재 인증 상담사에게 배정된 합성 고객 문의만 반환한다.
+    items:
+      $ref: "#/$defs/inquiry"
+$defs:
+  summary:
+    type: object
+    additionalProperties: false
+    required: [total, new, in_progress, completed]
+    properties:
+      total: {type: integer, minimum: 0}
+      new: {type: integer, minimum: 0}
+      in_progress: {type: integer, minimum: 0}
+      completed: {type: integer, minimum: 0}
+  notice:
+    type: object
+    additionalProperties: false
+    required:
+      - notice_id
+      - notice_code
+      - category_code
+      - category
+      - title
+      - content
+      - department
+      - published_on
+    properties:
+      notice_id: {type: string, format: uuid}
+      notice_code: {type: string, maxLength: 50}
+      category_code:
+        type: string
+        enum: [EMERGENCY, EVENT, SYSTEM, WORK, WELFARE, TRAINING]
+      category: {type: string, maxLength: 20}
+      title: {type: string, maxLength: 160}
+      content: {type: string}
+      department: {type: string, maxLength: 100}
+      published_on: {type: string, format: date}
+  consultant:
+    type: object
+    additionalProperties: false
+    required: [user_id, name, department, position, extension, email]
+    properties:
+      user_id: {type: string, format: uuid}
+      name: {type: string, maxLength: 100}
+      department: {type: string, maxLength: 100}
+      position: {type: string, maxLength: 80}
+      extension: {type: string, maxLength: 30}
+      email: {type: string, format: email}
+  technician:
+    type: object
+    additionalProperties: false
+    required: [user_id, name, branch, phone, email]
+    properties:
+      user_id:
+        type: string
+        format: uuid
+        description: 방문 일정 저장 요청의 synthetic_technician_id로 사용할 공개 UUID
+        x-visit-schedule-request-field: synthetic_technician_id
+      name: {type: string, maxLength: 100}
+      branch: {type: string, maxLength: 100}
+      phone: {type: string, maxLength: 30}
+      email: {type: string, format: email}
+  inquiry:
+    type: object
+    additionalProperties: false
+    required:
+      - inquiry_id
+      - inquiry_code
+      - bucket
+      - status
+      - risk_level
+      - priority
+      - title
+      - detail
+      - contact
+      - address
+      - customer_name
+      - customer_code
+      - product_name
+      - product_code
+      - warranty_status
+      - warranty_ends_on
+      - warranty_label
+      - previous_visit_count
+      - received_at
+      - updated_at
+    properties:
+      inquiry_id: {type: string, format: uuid}
+      inquiry_code: {type: string, maxLength: 50}
+      bucket:
+        type: string
+        enum: [NEW, IN_PROGRESS, COMPLETED]
+      status:
+        type: string
+        enum:
+          - DRAFT
+          - QUESTIONNAIRE_IN_PROGRESS
+          - AI_GUIDANCE
+          - CONSULTATION_REQUIRED
+          - CONSULTATION_IN_PROGRESS
+          - VISIT_REVIEW_PENDING
+          - VISIT_SCHEDULING
+          - VISIT_SCHEDULED
+          - COMPLETION_PENDING
+          - REVISIT_REQUIRED
+          - REOPENED
+          - RESOLVED
+          - CANCELLED
+      risk_level:
+        type: string
+        enum: [general, caution, danger]
+      priority:
+        type: string
+        enum: [LOW, NORMAL, HIGH, URGENT]
+      title: {type: string, maxLength: 160}
+      detail: {type: string, maxLength: 4000}
+      contact: {type: string, maxLength: 30}
+      address: {type: string, maxLength: 520}
+      customer_name: {type: string, maxLength: 100}
+      customer_code: {type: string, maxLength: 40}
+      product_name: {type: string, maxLength: 150}
+      product_code: {type: string, maxLength: 60}
+      warranty_status:
+        type: string
+        enum: [IN_WARRANTY, EXPIRED, NOT_REGISTERED]
+      warranty_ends_on:
+        oneOf:
+          - type: string
+            format: date
+          - type: "null"
+      warranty_label: {type: string, maxLength: 80}
+      previous_visit_count: {type: integer, minimum: 0}
+      received_at: {type: string, format: date-time}
+      updated_at: {type: string, format: date-time}

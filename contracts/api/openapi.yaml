@@ -40,6 +40,8 @@ paths:
     $ref: ./paths/consultant-phone-inquiries.yaml#/~1consultant~1customer-subscriptions~1search
   /consultant/phone-inquiries:
     $ref: ./paths/consultant-phone-inquiries.yaml#/~1consultant~1phone-inquiries
+  /consultant/dashboard:
+    $ref: ./paths/operations.yaml#/~1consultant~1dashboard
   /inquiries:
     $ref: ./paths/inquiries.yaml#/~1inquiries
   /inquiries/{id}:
