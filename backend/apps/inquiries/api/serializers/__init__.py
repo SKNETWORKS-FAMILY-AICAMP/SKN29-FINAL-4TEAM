@@ -31,6 +31,9 @@ from apps.inquiries.api.serializers.customer_inquiry import (
 from apps.inquiries.api.serializers.inquiry_response import (
     InquiryResponseSerializer,
 )
+from apps.inquiries.api.serializers.internal_ai_context import (
+    InternalAIInquiryContextDataSerializer,
+)
 from apps.inquiries.api.serializers.request_consultation import (
     RequestConsultationResponseSerializer,
     RequestConsultationSerializer,
@@ -68,6 +71,7 @@ __all__ = [
     "CustomerInquiryQuestionsSerializer",
     "CustomerInquirySnapshotSerializer",
     "InquiryResponseSerializer",
+    "InternalAIInquiryContextDataSerializer",
     "RegisterConsultantPhoneInquiryResultSerializer",
     "RegisterConsultantPhoneInquirySerializer",
     "RequestConsultationResponseSerializer",
