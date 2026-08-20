@@ -13,8 +13,10 @@ describe("consultant dashboard presentation", () => {
     });
   });
 
-  it("디자인 상담사 이름을 한예나로 표시하고 빈 이름은 보완한다", () => {
-    expect(getConsultantDisplayName("합성 상담사 001")).toBe("한예나");
+  it("인증 사용자 이름을 그대로 표시하고 빈 이름은 보완한다", () => {
+    expect(getConsultantDisplayName("합성 상담사 001")).toBe(
+      "합성 상담사 001",
+    );
     expect(getConsultantDisplayName("  테스트 상담원  ")).toBe("테스트 상담원");
     expect(getConsultantDisplayName("   ")).toBe("상담사");
   });

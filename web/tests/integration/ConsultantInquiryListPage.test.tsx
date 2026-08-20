@@ -100,7 +100,7 @@ describe("ConsultantInquiryListPage", () => {
       "UPDATED_DESC",
     );
     expect(screen.getByText("테스트 상담원")).toBeVisible();
-    expect(screen.getByText("2026-001-256")).toBeVisible();
+    expect(screen.queryByText("2026-001-256")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "로그아웃" })).toBeVisible();
     expect(screen.getByLabelText("상담 문의 목록")).toBeVisible();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -240,7 +240,7 @@ describe("ConsultantInquiryListPage", () => {
     expect(screen.queryByRole("button", { name: "상담 시작" })).not.toBeInTheDocument();
   });
 
-  it("상담 상세에서 기사 배정과 방문 일정을 한 흐름으로 확정한다", async () => {
+  it("기사 선택 API가 없으면 로컬 배정 대신 비활성 안내를 표시한다", async () => {
     const user = userEvent.setup();
     renderPage();
 
@@ -263,25 +263,20 @@ describe("ConsultantInquiryListPage", () => {
     const scheduler = await screen.findByRole("region", {
       name: "기사 배정 및 일정 조율",
     });
-    await user.selectOptions(
-      within(scheduler).getByRole("combobox", { name: "방문기사" }),
-      "00000000-0000-4000-8000-000000000101",
-    );
-    fireEvent.change(within(scheduler).getByLabelText("고객 희망일"), {
-      target: { value: "2026-08-01" },
-    });
-    fireEvent.change(within(scheduler).getByLabelText("확정 방문일"), {
-      target: { value: "2026-08-02" },
-    });
-    await user.click(
-      within(scheduler).getByRole("button", { name: "기사 배정·방문 확정" }),
-    );
-
     expect(
-      await within(scheduler).findByText(
-        "오세훈 기사 배정과 방문 일정이 확정되었습니다.",
-      ),
-    ).toBeInTheDocument();
+      within(scheduler).getByRole("heading", {
+        name: "기사 선택·배정 API 미지원",
+      }),
+    ).toBeVisible();
+    expect(
+      within(scheduler).queryByRole("combobox", { name: "방문기사" }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(scheduler).getByRole("button", {
+        name: "기사 선택·배정 비활성화",
+      }),
+    ).toBeDisabled();
+    expect(within(scheduler).queryByRole("status")).not.toBeInTheDocument();
   });
 
   it("처리 완료 탭에서는 완료된 문의 이력을 확인한다", async () => {
@@ -392,39 +387,20 @@ describe("ConsultantInquiryListPage", () => {
     ).toHaveLength(10);
   });
 
-  it("대분류·중분류·소분류 순서로 문의를 필터링한다", async () => {
-    const user = userEvent.setup();
+  it("API가 없는 대·중·소 분류는 숨기고 검색과 정렬은 유지한다", () => {
     renderPage();
 
-    const major = screen.getByRole("combobox", { name: "문의 대분류" });
-    const middle = screen.getByRole("combobox", { name: "문의 중분류" });
-    const minor = screen.getByRole("combobox", { name: "문의 소분류" });
-
-    expect(major).toHaveValue("");
-    expect(middle).toBeDisabled();
-    expect(minor).toBeDisabled();
-    expect(screen.queryByText("긴급 문의 목록")).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "긴급 문의 상태 필터" }),
+      screen.queryByRole("combobox", { name: "문의 대분류" }),
     ).not.toBeInTheDocument();
-
-    await user.selectOptions(major, "안전·긴급 문제");
-    expect(middle).toBeEnabled();
-    expect(minor).toBeDisabled();
-
-    await user.selectOptions(middle, "누수");
-    expect(minor).toBeEnabled();
     expect(
-      getRiskPanel("all").getAllByRole(
-        "button",
-        { name: /상세 열기/ },
-      ).length,
-    ).toBeGreaterThan(0);
-
-    await user.click(screen.getByRole("button", { name: "카테고리 초기화" }));
-    expect(major).toHaveValue("");
-    expect(middle).toBeDisabled();
-    expect(minor).toBeDisabled();
+      screen.queryByRole("combobox", { name: "문의 중분류" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("combobox", { name: "문의 소분류" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("searchbox", { name: "문의 검색" })).toBeVisible();
+    expect(screen.getByRole("combobox", { name: "문의 정렬" })).toBeVisible();
   });
 
   it.each([

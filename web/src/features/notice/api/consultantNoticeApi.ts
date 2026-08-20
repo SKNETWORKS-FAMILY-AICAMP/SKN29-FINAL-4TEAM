@@ -3,9 +3,11 @@ import { requestApi } from "../../../common/api/httpClient";
 import {
   CONSULTANT_NOTICE_CATEGORY_LABELS,
   MOCK_CONSULTANT_NOTICE_PAGE_DATA,
+  MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA,
   type ConsultantNotice,
   type ConsultantNoticeCategoryCode,
   type ConsultantNoticePageData,
+  type SyntheticConsultantDashboardData,
 } from "../model/consultantNotice";
 
 interface ConsultantDashboardSummaryDto {
@@ -26,9 +28,54 @@ interface ConsultantDashboardNoticeDto {
   published_on: string;
 }
 
+interface ConsultantDashboardConsultantDto {
+  user_id: string;
+  name: string;
+  department: string;
+  position: string;
+  extension: string;
+  email: string;
+}
+
+interface ConsultantDashboardTechnicianDto {
+  user_id: string;
+  name: string;
+  branch: string;
+  phone: string;
+  email: string;
+}
+
+interface ConsultantDashboardInquiryDto {
+  inquiry_id: string;
+  inquiry_code: string;
+  bucket: "NEW" | "IN_PROGRESS" | "COMPLETED";
+  status: string;
+  risk_level: string;
+  priority: string;
+  title: string;
+  detail: string;
+  contact: string;
+  address: string;
+  customer_name: string;
+  customer_code: string;
+  product_name: string;
+  product_code: string;
+  warranty_status: "IN_WARRANTY" | "EXPIRED" | "NOT_REGISTERED";
+  warranty_ends_on: string | null;
+  warranty_label: string;
+  previous_visit_count: number;
+  received_at: string;
+  updated_at: string;
+}
+
 interface ConsultantDashboardDto {
+  data_classification: string;
+  generated_at: string;
   summary: ConsultantDashboardSummaryDto;
   notices: readonly ConsultantDashboardNoticeDto[];
+  consultants: readonly ConsultantDashboardConsultantDto[];
+  technicians: readonly ConsultantDashboardTechnicianDto[];
+  inquiries: readonly ConsultantDashboardInquiryDto[];
 }
 
 function mapNotice(dto: ConsultantDashboardNoticeDto): ConsultantNotice {
@@ -45,25 +92,93 @@ function mapNotice(dto: ConsultantDashboardNoticeDto): ConsultantNotice {
   };
 }
 
+export function mapSyntheticConsultantDashboardDto(
+  dto: ConsultantDashboardDto,
+): SyntheticConsultantDashboardData {
+  if (dto.data_classification !== "synthetic") {
+    throw new Error("상담사 Dashboard는 로컬 합성 데이터만 사용할 수 있습니다.");
+  }
+
+  return {
+    dataClassification: "synthetic",
+    generatedAt: dto.generated_at,
+    summary: {
+      total: dto.summary.total,
+      new: dto.summary.new,
+      inProgress: dto.summary.in_progress,
+      completed: dto.summary.completed,
+    },
+    notices: dto.notices.map(mapNotice),
+    consultants: dto.consultants.map((consultant) => ({
+      userId: consultant.user_id,
+      name: consultant.name,
+      department: consultant.department,
+      position: consultant.position,
+      extension: consultant.extension,
+      email: consultant.email,
+    })),
+    technicians: dto.technicians.map((technician) => ({
+      userId: technician.user_id,
+      name: technician.name,
+      branch: technician.branch,
+      phone: technician.phone,
+      email: technician.email,
+    })),
+    inquiries: dto.inquiries.map((inquiry) => ({
+      inquiryId: inquiry.inquiry_id,
+      inquiryCode: inquiry.inquiry_code,
+      bucket: inquiry.bucket,
+      status: inquiry.status,
+      riskLevel: inquiry.risk_level,
+      priority: inquiry.priority,
+      title: inquiry.title,
+      detail: inquiry.detail,
+      contact: inquiry.contact,
+      address: inquiry.address,
+      customerName: inquiry.customer_name,
+      customerCode: inquiry.customer_code,
+      productName: inquiry.product_name,
+      productCode: inquiry.product_code,
+      warrantyStatus: inquiry.warranty_status,
+      warrantyEndsOn: inquiry.warranty_ends_on,
+      warrantyLabel: inquiry.warranty_label,
+      previousVisitCount: inquiry.previous_visit_count,
+      receivedAt: inquiry.received_at,
+      updatedAt: inquiry.updated_at,
+    })),
+  };
+}
+
+export async function fetchSyntheticConsultantDashboardData(): Promise<SyntheticConsultantDashboardData> {
+  if (!import.meta.env.DEV) {
+    throw new Error(
+      "상담사 Dashboard Runtime은 로컬 합성 Web G4에서만 사용할 수 있습니다.",
+    );
+  }
+  const response = await requestApi<ConsultantDashboardDto>(
+    "/consultant/dashboard",
+  );
+  if (!response.data) {
+    throw new Error("상담사 Dashboard 응답에 데이터가 없습니다.");
+  }
+  return mapSyntheticConsultantDashboardDto(response.data);
+}
+
+export async function getSyntheticConsultantDashboardData(): Promise<SyntheticConsultantDashboardData> {
+  if (appEnv.useMockApi) {
+    return MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA;
+  }
+  return fetchSyntheticConsultantDashboardData();
+}
+
 export async function getConsultantNoticePageData(): Promise<ConsultantNoticePageData> {
   if (appEnv.useMockApi) {
     return MOCK_CONSULTANT_NOTICE_PAGE_DATA;
   }
 
-  const response = await requestApi<ConsultantDashboardDto>(
-    "/operations/consultant/dashboard",
-  );
-  if (!response.data) {
-    throw new Error("공지사항 응답에 데이터가 없습니다.");
-  }
-
+  const dashboard = await fetchSyntheticConsultantDashboardData();
   return {
-    summary: {
-      total: response.data.summary.total,
-      new: response.data.summary.new,
-      inProgress: response.data.summary.in_progress,
-      completed: response.data.summary.completed,
-    },
-    notices: response.data.notices.map(mapNotice),
+    summary: dashboard.summary,
+    notices: dashboard.notices,
   };
 }

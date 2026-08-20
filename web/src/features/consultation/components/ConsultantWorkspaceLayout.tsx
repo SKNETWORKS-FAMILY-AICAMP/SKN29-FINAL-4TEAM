@@ -110,23 +110,15 @@ export default function ConsultantWorkspaceLayout({
           </header>
 
           <div className="v6-notification-list">
-            <button
-              type="button"
-              className="v6-notification-item is-unread is-danger"
-              onClick={() => {
-                onNavigate("detail");
-                onCloseNotifications();
-              }}
-            >
-              <span>!</span>
+            <div className="v6-notification-item" role="status">
+              <span aria-hidden="true">−</span>
               <div>
-                <strong>고객 해결 피드백 도착</strong>
-                <p>INQ-20260705-0017 문의를 최종 확인해 주세요.</p>
-                <small>합성 시연 · 방금 전</small>
+                <strong>표시할 알림이 없습니다.</strong>
+                <p>상담사 알림 API가 준비되면 이 영역에 표시됩니다.</p>
               </div>
-            </button>
+            </div>
           </div>
-          <footer>알림을 선택하면 연결된 문의 상세를 엽니다.</footer>
+          <footer>현재는 상담 업무 알림을 제공하지 않습니다.</footer>
         </section>
       )}
     </div>

@@ -746,6 +746,24 @@ html body
   box-shadow: none !important;
 }
 
+html body #root .consultant-inquiry-list-app .consultant-risk-columns {
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-columns::before,
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-columns::after {
+  display: none !important;
+  content: none !important;
+}
+
 html body
   #root
   .phone-inquiry-entry-app
@@ -841,6 +859,1025 @@ html body
   )
   :is(h1, h2, h3, strong, b, em, span, time, small, button, input, a) {
   font-weight: 400 !important;
+}
+
+/* Inquiry menu: flat monochrome tabs, controls, rows, and pagination. */
+
+html body #root .consultant-inquiry-list-app .consultant-risk-tabs {
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 10px !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-tabs
+  :is(.consultant-risk-tab, .consultant-risk-tab.is-active) {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  flex: 1 1 0 !important;
+  padding: 0 13px !important;
+  border: 1px solid #c8c8c8 !important;
+  border-radius: 7px !important;
+  background: #fafafa !important;
+  background-color: #fafafa !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  clip-path: none !important;
+  color: #222 !important;
+  font-weight: 400 !important;
+  transform: none !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-tabs
+  .consultant-risk-tab:not(.is-active):hover {
+  border-color: #999 !important;
+  background: var(--consultant-refresh-surface-hover) !important;
+  color: #111 !important;
+  -webkit-text-fill-color: #111 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-tabs
+  .consultant-risk-tab.is-active {
+  border-color: #050505 !important;
+  background: #050505 !important;
+  color: #fff !important;
+  font-weight: 500 !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-tab
+  > span {
+  color: inherit !important;
+  font-weight: inherit !important;
+  -webkit-text-fill-color: currentcolor !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-tab
+  .consultant-risk-tab__count {
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 24px !important;
+  flex-basis: 28px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: #050505 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-tab.is-active
+  .consultant-risk-tab__count {
+  background: #fff !important;
+  color: #050505 !important;
+  -webkit-text-fill-color: #050505 !important;
+}
+
+html body #root .consultant-inquiry-list-app .consultant-risk-tab:focus-visible {
+  outline: 2px solid #050505 !important;
+  outline-offset: -3px !important;
+}
+
+html body #root .consultant-inquiry-list-app .consultant-category-filters {
+  padding: 12px 10px 14px !important;
+  border-bottom: 1px solid #111 !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-category-filters
+  > label
+  > span {
+  color: #555 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #555 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  :is(
+    .consultant-category-filters__search > div,
+    .consultant-category-filters__sort select
+  ) {
+  border: 1px solid #c8c8c8 !important;
+  border-radius: 4px !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #111 !important;
+  font-weight: 400 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-category-filters__search
+  input {
+  color: #111 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #111 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-category-filters__search
+  input::placeholder {
+  color: #888 !important;
+  opacity: 1;
+  -webkit-text-fill-color: #888 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  :is(
+    .consultant-category-filters__search svg,
+    .consultant-category-filters__sort svg
+  ) {
+  stroke: #555 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-category-filters__search
+  > div:focus-within,
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-category-filters__sort
+  select:focus {
+  border-color: #050505 !important;
+  outline: 2px solid rgb(5 5 5 / 10%) !important;
+  outline-offset: 1px;
+  box-shadow: none !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-section[role="tabpanel"] {
+  border: 0 !important;
+  border-radius: var(--consultant-refresh-surface-radius) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-section[role="tabpanel"]
+  .consultant-risk-section__list {
+  gap: 6px !important;
+  padding: 8px 10px !important;
+  border-radius: var(--consultant-refresh-surface-radius) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-section
+  :is(
+    .v6-queue-item.consultant-list-item,
+    .v6-queue-item.consultant-list-item:nth-child(even)
+  ) {
+  padding: 5px 16px 5px 25px !important;
+  border: 1px solid #c8c8c8 !important;
+  border-radius: var(--consultant-refresh-surface-radius) !important;
+  background: #fafafa !important;
+  background-color: #fafafa !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #111 !important;
+  font-weight: 400 !important;
+  transform: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item::before {
+  top: 10px !important;
+  right: auto !important;
+  bottom: 10px !important;
+  left: 10px !important;
+  width: 4px !important;
+  height: auto !important;
+  border-radius: 999px !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-section
+  :is(
+    .v6-queue-item.consultant-list-item:hover,
+    .v6-queue-item.consultant-list-item.is-selected
+  ) {
+  border-color: #050505 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-section
+  .v6-queue-item.consultant-list-item:focus-visible {
+  outline: 0 !important;
+  box-shadow: inset 0 0 0 2px #050505 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-section
+  :is(
+    .consultant-list-item__subject,
+    .consultant-list-item__received-at,
+    .consultant-list-item__customer
+  ) {
+  color: #222 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-section
+  :is(.consultant-list-item__received-at, .consultant-list-item__customer) {
+  border-left-color: #d0d0d0 !important;
+  color: #555 !important;
+  -webkit-text-fill-color: #555 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-section__empty {
+  border: 1px solid #c8c8c8 !important;
+  border-radius: var(--consultant-refresh-surface-radius) !important;
+  background: #fafafa !important;
+  color: #555 !important;
+  font-weight: 400 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-queue-panel
+  > .common-pagination {
+  padding: 12px 18px !important;
+  border-top: 1px solid #111 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  color: #333 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .common-pagination__summary {
+  color: #555 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #555 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .common-pagination__actions
+  :is(button, span) {
+  min-width: 38px !important;
+  height: 34px !important;
+  border: 1px solid #c8c8c8 !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  color: #222 !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .common-pagination__actions
+  button:hover:not(:disabled) {
+  border-color: #050505 !important;
+  background: var(--consultant-refresh-surface-hover) !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .common-pagination__actions
+  span[aria-current="page"] {
+  border-color: #050505 !important;
+  background: #050505 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+/* Phone inquiry menu: the same gray surfaces with neutral form controls. */
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  :is(.phone-inquiry-card-head, .phone-inquiry-guide-card > header) {
+  border-bottom: 1px solid #111 !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  :is(.phone-inquiry-card-head span, .phone-inquiry-guide-card header span) {
+  color: #555 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.08em !important;
+  -webkit-text-fill-color: #555 !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  :is(
+    .phone-inquiry-card-head h2,
+    .phone-inquiry-guide-card h2,
+    .phone-inquiry-customer-search > label,
+    .phone-inquiry-details > label > span,
+    .phone-inquiry-details > legend,
+    .phone-inquiry-priority legend
+  ) {
+  color: #111 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #111 !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  :is(.phone-inquiry-customer-search, .phone-inquiry-form-actions) {
+  border-color: #d2d2d2 !important;
+}
+
+html body #root .phone-inquiry-entry-app :is(input, select, textarea) {
+  border: 1px solid #c8c8c8 !important;
+  border-radius: 5px !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: #111 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #111 !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  :is(input, select, textarea)::placeholder {
+  color: #888 !important;
+  opacity: 1;
+  -webkit-text-fill-color: #888 !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  :is(input, select, textarea):focus {
+  border-color: #050505 !important;
+  outline: 2px solid rgb(5 5 5 / 12%) !important;
+  outline-offset: 1px;
+  box-shadow: none !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  :is(input, select, textarea):disabled {
+  border-color: #d6d6d6 !important;
+  background: #e7e7e7 !important;
+  color: #777 !important;
+  -webkit-text-fill-color: #777 !important;
+}
+
+html body #root .phone-inquiry-entry-app .phone-inquiry-candidate-panel {
+  border: 1px solid #c8c8c8 !important;
+  border-radius: var(--consultant-refresh-surface-radius) !important;
+  background: #fff !important;
+  background-image: none !important;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 12%) !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  .phone-inquiry-candidate-panel
+  > button[role="option"] {
+  border-bottom-color: #d2d2d2 !important;
+  background: #fff !important;
+  color: #222 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  .phone-inquiry-candidate-panel
+  > button[role="option"]:is(:hover, .is-active) {
+  background: var(--consultant-refresh-surface-hover) !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  .phone-inquiry-selected-card {
+  border: 1px solid #c8c8c8 !important;
+  border-radius: var(--consultant-refresh-surface-radius) !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  .phone-inquiry-selected-card
+  :is(span, strong, small, dt, dd) {
+  color: #333 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #333 !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  .phone-inquiry-selected-card
+  > div
+  span {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: #050505 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  :is(
+    .phone-inquiry-selected-card > button,
+    .phone-inquiry-search-error button,
+    .phone-inquiry-button--secondary
+  ) {
+  border: 1px solid #c8c8c8 !important;
+  border-radius: 7px !important;
+  background: #fff !important;
+  background-image: none !important;
+  color: #222 !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  :is(
+    .phone-inquiry-selected-card > button,
+    .phone-inquiry-search-error button,
+    .phone-inquiry-button--secondary
+  ):hover {
+  border-color: #050505 !important;
+  background: var(--consultant-refresh-surface-hover) !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  .phone-inquiry-priority
+  label
+  span {
+  border: 1px solid #c8c8c8 !important;
+  border-radius: 7px !important;
+  background: #fff !important;
+  color: #333 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #333 !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  .phone-inquiry-priority
+  input:checked
+  + span {
+  border-color: #050505 !important;
+  background: #050505 !important;
+  color: #fff !important;
+  font-weight: 500 !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  .phone-inquiry-priority
+  input:focus-visible
+  + span {
+  outline: 2px solid #050505;
+  outline-offset: 2px;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  .phone-inquiry-button--primary {
+  border: 1px solid #050505 !important;
+  border-radius: 7px !important;
+  background: #050505 !important;
+  background-color: #050505 !important;
+  background-image: none !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  .phone-inquiry-button--primary:hover:not(:disabled) {
+  border-color: #242424 !important;
+  background: #242424 !important;
+}
+
+html body
+  #root
+  .phone-inquiry-entry-app
+  .phone-inquiry-button--primary:disabled {
+  border-color: #aaa !important;
+  background: #aaa !important;
+  color: #f7f7f7 !important;
+  box-shadow: none !important;
+  -webkit-text-fill-color: #f7f7f7 !important;
+}
+
+html body #root .phone-inquiry-entry-app .phone-inquiry-guide-card ol {
+  color: #444 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #444 !important;
+}
+
+html body #root .phone-inquiry-entry-app .phone-inquiry-guide-card > p {
+  border: 1px solid #d2d2d2;
+  border-radius: 7px !important;
+  background: #fff !important;
+  color: #555 !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #555 !important;
+}
+
+/* Notice menu: dashboard-like header line, controls, and separated rows. */
+
+html body #root .consultant-notice-app .consultant-notice-head {
+  position: relative;
+}
+
+html body #root .consultant-notice-app .consultant-notice-head::after {
+  position: absolute;
+  right: 32px;
+  bottom: 0;
+  left: 32px;
+  height: 1px;
+  background: #111;
+  content: "";
+  pointer-events: none;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-head
+  > div
+  > span {
+  color: #555 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #555 !important;
+}
+
+html body #root .consultant-notice-app .consultant-notice-head h1 {
+  color: #111 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #111 !important;
+}
+
+html body #root .consultant-notice-app .consultant-notice-head p {
+  color: #555 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #555 !important;
+}
+
+html body #root .consultant-notice-app .consultant-notice-head > strong {
+  min-width: 58px;
+  height: 38px;
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: #050505 !important;
+  background-image: none !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body #root .consultant-notice-app .consultant-notice-toolbar {
+  padding-top: 18px !important;
+  border-bottom: 0 !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-categories
+  button {
+  min-width: 58px;
+  border: 1px solid #c8c8c8 !important;
+  border-radius: 7px !important;
+  background: #fff !important;
+  background-image: none !important;
+  color: #333 !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #333 !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-categories
+  button:hover:not(.is-active) {
+  border-color: #999 !important;
+  background: var(--consultant-refresh-surface-hover) !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-categories
+  button.is-active {
+  border-color: #050505 !important;
+  background: #050505 !important;
+  color: #fff !important;
+  font-weight: 500 !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-categories
+  button:focus-visible {
+  outline: 2px solid #050505;
+  outline-offset: 2px;
+}
+
+html body #root .consultant-notice-app .consultant-notice-search {
+  padding: 0 10px !important;
+  border: 1px solid #d2d2d2 !important;
+  border-radius: 4px !important;
+  background: #fff !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html body #root .consultant-notice-app .consultant-notice-search:focus-within {
+  border-color: #050505 !important;
+  outline: 2px solid rgb(5 5 5 / 10%);
+  outline-offset: 1px;
+}
+
+html body #root .consultant-notice-app .consultant-notice-search svg {
+  stroke: #555 !important;
+}
+
+html body #root .consultant-notice-app .consultant-notice-search input {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  min-height: 40px;
+  color: #111 !important;
+  font-weight: 400 !important;
+  appearance: none;
+  -webkit-text-fill-color: #111 !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-search
+  input::placeholder {
+  color: #888 !important;
+  opacity: 1;
+  -webkit-text-fill-color: #888 !important;
+}
+
+html body #root .consultant-notice-app .consultant-notice-content {
+  padding-top: 10px !important;
+  scrollbar-color: #050505 transparent !important;
+  scrollbar-width: thin;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-content::-webkit-scrollbar {
+  width: 7px;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-content::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #050505;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-content::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+html body #root .consultant-notice-app .consultant-notice-list {
+  gap: 8px !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-list
+  article {
+  border: 1px solid #c8c8c8 !important;
+  border-radius: 14px !important;
+  background: #fafafa !important;
+  background-color: #fafafa !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-list
+  article:hover {
+  border-color: #c8c8c8 !important;
+  background: #fafafa !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html body #root .consultant-notice-app .consultant-notice-list h2 {
+  color: #111 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #111 !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-list
+  :is(p, .consultant-notice-list__meta, .consultant-notice-list__meta span) {
+  color: #555 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #555 !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-list__main
+  em {
+  border-radius: 7px !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-list__main
+  em[data-category="긴급"] {
+  background: #ffe8e8 !important;
+  color: #c53d45 !important;
+  -webkit-text-fill-color: #c53d45 !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-list__main
+  em[data-category="이벤트"] {
+  background: #fff2d9 !important;
+  color: #a86c05 !important;
+  -webkit-text-fill-color: #a86c05 !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-list__main
+  em[data-category="시스템"] {
+  background: #e4f2ff !important;
+  color: #2474ad !important;
+  -webkit-text-fill-color: #2474ad !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-list__main
+  em[data-category="근무"] {
+  background: #e8f7ef !important;
+  color: #297852 !important;
+  -webkit-text-fill-color: #297852 !important;
+}
+
+html body
+  #root
+  .consultant-notice-app
+  .consultant-notice-list__main
+  em[data-category="복지"] {
+  background: #f0eaff !important;
+  color: #7250b0 !important;
+  -webkit-text-fill-color: #7250b0 !important;
+}
+
+@media (max-width: 1050px) {
+  html body
+    #root
+    .phone-inquiry-entry-app
+    .phone-inquiry-entry-layout {
+    width: 100% !important;
+    min-width: 0 !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html body
+    #root
+    .phone-inquiry-entry-app
+    :is(.phone-inquiry-form-card, .phone-inquiry-guide-card) {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html body #root .phone-inquiry-entry-app .phone-inquiry-guide-card {
+    position: static !important;
+  }
+}
+
+@media (max-width: 900px) {
+  html body
+    #root
+    :is(
+      .consultant-inquiry-list-app .consultant-queue-panel,
+      .phone-inquiry-entry-app .phone-inquiry-entry-panel,
+      .consultant-notice-app .consultant-notice-panel
+    ) {
+    min-width: 0 !important;
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+  }
+
+  html body #root .consultant-inquiry-list-app .consultant-risk-columns {
+    grid-template-rows: auto auto minmax(320px, 1fr) !important;
+  }
+
+  html body #root .consultant-inquiry-list-app .consultant-risk-tabs {
+    display: grid !important;
+    min-height: 0 !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch !important;
+    gap: 6px !important;
+  }
+
+  html body
+    #root
+    .consultant-inquiry-list-app
+    .consultant-risk-tabs
+    :is(.consultant-risk-tab, .consultant-risk-tab.is-active) {
+    width: 100% !important;
+    max-width: none !important;
+    height: 40px !important;
+    min-height: 40px !important;
+  }
+
+  html body #root .consultant-inquiry-list-app .consultant-category-filters {
+    grid-row: 2 !important;
+  }
+
+  html body
+    #root
+    .consultant-inquiry-list-app
+    .consultant-risk-section[role="tabpanel"] {
+    grid-row: 3 !important;
+  }
+}
+
+@media (max-width: 700px) {
+  html body
+    #root
+    .consultant-notice-app
+    .consultant-notice-list
+    article {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  html body
+    #root
+    .consultant-notice-app
+    .consultant-notice-list__meta {
+    display: flex !important;
+    min-width: 0 !important;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px !important;
+  }
 }
 
 @media (min-width: 1301px) {

@@ -29,6 +29,58 @@ export interface ConsultantNoticePageData {
   notices: readonly ConsultantNotice[];
 }
 
+export interface ConsultantDashboardConsultant {
+  userId: string;
+  name: string;
+  department: string;
+  position: string;
+  extension: string;
+  email: string;
+}
+
+export interface ConsultantDashboardTechnician {
+  userId: string;
+  name: string;
+  branch: string;
+  phone: string;
+  email: string;
+}
+
+export interface ConsultantDashboardInquiry {
+  inquiryId: string;
+  inquiryCode: string;
+  bucket: "NEW" | "IN_PROGRESS" | "COMPLETED";
+  status: string;
+  riskLevel: string;
+  priority: string;
+  title: string;
+  detail: string;
+  contact: string;
+  address: string;
+  customerName: string;
+  customerCode: string;
+  productName: string;
+  productCode: string;
+  warrantyStatus: "IN_WARRANTY" | "EXPIRED" | "NOT_REGISTERED";
+  warrantyEndsOn: string | null;
+  warrantyLabel: string;
+  previousVisitCount: number;
+  receivedAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 정식 OpenAPI 계약이 아닌 로컬 합성 Web G4 전용 Dashboard projection이다.
+ */
+export interface SyntheticConsultantDashboardData
+  extends ConsultantNoticePageData {
+  dataClassification: "synthetic";
+  generatedAt: string;
+  consultants: readonly ConsultantDashboardConsultant[];
+  technicians: readonly ConsultantDashboardTechnician[];
+  inquiries: readonly ConsultantDashboardInquiry[];
+}
+
 export const CONSULTANT_NOTICE_CATEGORY_LABELS: Readonly<
   Record<ConsultantNoticeCategoryCode, string>
 > = {
@@ -117,4 +169,107 @@ export const MOCK_CONSULTANT_NOTICE_PAGE_DATA: ConsultantNoticePageData = {
     completed: 30,
   },
   notices: CONSULTANT_NOTICE_FIXTURES,
+};
+
+export const MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA: SyntheticConsultantDashboardData = {
+  dataClassification: "synthetic",
+  generatedAt: "2026-08-20T00:00:00+09:00",
+  ...MOCK_CONSULTANT_NOTICE_PAGE_DATA,
+  consultants: [
+    {
+      userId: "mock-consultant-001",
+      name: "김하윤",
+      department: "고객케어팀",
+      position: "팀장",
+      extension: "02-3274-9501",
+      email: "hayoon.kim@waterbridge.co.kr",
+    },
+    {
+      userId: "mock-consultant-002",
+      name: "한예나",
+      department: "고객케어팀",
+      position: "상담사",
+      extension: "02-3274-9502",
+      email: "yena.han@waterbridge.co.kr",
+    },
+    {
+      userId: "mock-consultant-003",
+      name: "임현우",
+      department: "품질관리팀",
+      position: "매니저",
+      extension: "02-3274-9503",
+      email: "hyunwoo.lim@waterbridge.co.kr",
+    },
+    {
+      userId: "mock-consultant-004",
+      name: "박지우",
+      department: "품질관리팀",
+      position: "담당",
+      extension: "02-3274-9504",
+      email: "jiwoo.park@waterbridge.co.kr",
+    },
+    {
+      userId: "mock-consultant-005",
+      name: "이서연",
+      department: "방문지원팀",
+      position: "매니저",
+      extension: "02-3274-9505",
+      email: "seoyeon.lee@waterbridge.co.kr",
+    },
+    {
+      userId: "mock-consultant-006",
+      name: "최지우",
+      department: "방문지원팀",
+      position: "담당",
+      extension: "02-3274-9506",
+      email: "jiwoo.choi@waterbridge.co.kr",
+    },
+    {
+      userId: "mock-consultant-007",
+      name: "정하윤",
+      department: "시스템운영팀",
+      position: "매니저",
+      extension: "02-3274-9507",
+      email: "hayoon.jeong@waterbridge.co.kr",
+    },
+    {
+      userId: "mock-consultant-008",
+      name: "강민준",
+      department: "시스템운영팀",
+      position: "담당",
+      extension: "02-3274-9508",
+      email: "minjun.kang@waterbridge.co.kr",
+    },
+  ],
+  technicians: [
+    {
+      userId: "mock-technician-001",
+      name: "오민석",
+      branch: "서울동부지사",
+      phone: "010-2501-5001",
+      email: "minseok.oh@waterbridge.co.kr",
+    },
+    {
+      userId: "mock-technician-002",
+      name: "서지훈",
+      branch: "서울서부지사",
+      phone: "010-2501-5002",
+      email: "jihoon.seo@waterbridge.co.kr",
+    },
+    {
+      userId: "mock-technician-003",
+      name: "윤도현",
+      branch: "경기남부지사",
+      phone: "010-2501-5003",
+      email: "dohyun.yoon@waterbridge.co.kr",
+    },
+    {
+      userId: "mock-technician-004",
+      name: "배수아",
+      branch: "경기북부지사",
+      phone: "010-2501-5004",
+      email: "sua.bae@waterbridge.co.kr",
+    },
+  ],
+  inquiries: [],
 };

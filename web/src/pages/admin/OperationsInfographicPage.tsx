@@ -1,55 +1,24 @@
-import { useMemo } from "react";
-
-import OperationsDistributionChart from "../../features/operations-dashboard/components/OperationsDistributionChart";
-import OperationsMetricCards from "../../features/operations-dashboard/components/OperationsMetricCards";
-import {
-  createOperationsDashboardSummary,
-  DEFAULT_OPERATIONS_FILTERS,
-} from "../../features/operations-dashboard/model/operationsDashboardModel";
-import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
-
-const OPERATIONS_INQUIRIES = consultantWorkspaceRepository.listAllInquiries();
+import EmptyState from "../../common/components/feedback/EmptyState";
 
 export default function OperationsInfographicPage() {
-  const summary = useMemo(
-    () =>
-      createOperationsDashboardSummary(
-        OPERATIONS_INQUIRIES,
-        DEFAULT_OPERATIONS_FILTERS,
-      ),
-    [],
-  );
-
   return (
     <main className="operations-main operations-insights-page">
       <header className="operations-page-head operations-insights-head">
         <div>
-          <small>ADMIN-02 · INFOGRAPHIC</small>
+          <small>ADMIN-02 · API PENDING</small>
           <h1>운영 인포그래픽</h1>
-          <p>필터와 문의 목록 없이 핵심 운영 수치와 분포만 한눈에 확인합니다.</p>
+          <p>운영 집계 API가 제공되면 핵심 운영 수치와 분포를 표시합니다.</p>
         </div>
-        <span>기준 데이터 · 공식 합성 문의 {OPERATIONS_INQUIRIES.length}건</span>
+        <span>운영 집계 API 연동 대기</span>
       </header>
 
-      <section className="operations-insights-intro" aria-label="인포그래픽 안내">
-        <div>
-          <small>AT A GLANCE</small>
-          <h2>고객 문의 운영 현황</h2>
-        </div>
-        <p>전체 문의를 기준으로 상담·방문·완료 흐름과 주요 증상 분포를 요약했습니다.</p>
-      </section>
-
-      <OperationsMetricCards metrics={summary.metrics} />
-      <section className="operations-distributions operations-insights-grid" aria-label="운영 인포그래픽">
-        <OperationsDistributionChart
-          title="주요 증상 유형"
-          description="전체 문의 기준"
-          items={summary.symptomDistribution}
-        />
-        <OperationsDistributionChart
-          title="문의 처리 상태"
-          description="현재 상태 기준"
-          items={summary.statusDistribution}
+      <section
+        className="operations-panel operations-feedback"
+        aria-label="운영 인포그래픽 연동 상태"
+      >
+        <EmptyState
+          title="운영 인포그래픽 API 연동을 기다리고 있습니다."
+          description="현재는 로컬 합성 데이터로 운영 지표나 분포를 계산하지 않습니다. Backend 집계 API가 제공되면 이 화면에 표시합니다."
         />
       </section>
     </main>
