@@ -8,6 +8,12 @@ from uuid import UUID
 
 from ..integrations.embedding.embedding_client import BgeM3EmbeddingClient
 from ..integrations.llm import GuidanceLLMClient
+from ..integrations.backend import BackendContextFailureKind
+from ..integrations.mcp.context_service import (
+    McpBackendContextError,
+    McpBackendContextService,
+    McpBackendContextToolName,
+)
 from ..integrations.mcp.search_service import (
     McpEvidenceSearchError,
     McpEvidenceSearchService,
@@ -33,11 +39,14 @@ from .pipeline_context import PipelineContext
 from .pipeline_result import PipelineResult
 from .pipelines.multi_agent_pipeline import MultiAgentPipeline
 from .pipelines.single_rag_pipeline import SingleRAGPipeline
+from .stages.safety_check_stage import execute_safety_check_stage
+from .stages.structuring_stage import execute_structuring_stage
 from ..common.timeout import CancellationToken
 from ..schemas import TraceContext
 
 
 _AUTO_SEARCH_SERVICE = object()
+_AUTO_MCP_CONTEXT_SERVICE = object()
 _SEARCH_SERVICE_LOCK = Lock()
 _SEARCH_SERVICE_CACHE_KEY: tuple[str, ...] | None = None
 _SEARCH_SERVICE_CACHE: VectorSearchService | None = None
@@ -132,6 +141,9 @@ class PipelineRouter:
         self,
         search_service: VectorSearchService | None | object = _AUTO_SEARCH_SERVICE,
         llm_client: GuidanceLLMClient | None = None,
+        mcp_context_service: McpBackendContextService | None | object = (
+            _AUTO_MCP_CONTEXT_SERVICE
+        ),
     ):
         self.retrieval_configuration_error: RetrievalConfigurationError | None = None
         try:
@@ -151,6 +163,7 @@ class PipelineRouter:
         else:
             self.search_service = search_service
         self.llm_client = llm_client
+        self.mcp_context_service = mcp_context_service
         self.reliability_runtime = ReliabilityRuntime()
 
     @staticmethod
@@ -177,10 +190,100 @@ class PipelineRouter:
             raise self.retrieval_configuration_error or RetrievalConfigurationError(
                 "RAG Runtime Profile을 확인할 수 없습니다."
             )
+
+        selected_runtime = runtime_name or os.getenv(
+            "AI_PIPELINE_RUNTIME",
+            "single_rag",
+        )
+        if selected_runtime not in {"single_rag", "multi_agent"}:
+            raise RuntimeError(
+                "AI_PIPELINE_RUNTIME은 single_rag 또는 multi_agent여야 합니다."
+            )
+        retrieval_transport = os.getenv(
+            "AI_RETRIEVAL_TRANSPORT",
+            "direct",
+        ).strip().lower()
+        if retrieval_transport not in {"direct", "mcp"}:
+            raise RuntimeError(
+                "AI_RETRIEVAL_TRANSPORT는 direct 또는 mcp여야 합니다."
+            )
+
+        if retrieval_transport == "mcp":
+            try:
+                context_service = self.mcp_context_service
+                if context_service is _AUTO_MCP_CONTEXT_SERVICE:
+                    context_service = McpBackendContextService()
+                if context_service is None:
+                    raise McpBackendContextError(
+                        tool_name=(
+                            McpBackendContextToolName.LOOKUP_PRODUCT_CONTEXT
+                        ),
+                        kind=BackendContextFailureKind.UNAVAILABLE,
+                        retryable=False,
+                    )
+                resolved_context = context_service.resolve(
+                    inquiry_id=inquiry_id,
+                    correlation_id=correlation_id,
+                    expected_state_version=state_version,
+                    expected_model_code=model_code,
+                    cancellation_token=token,
+                )
+            except McpBackendContextError as exc:
+                return self._context_failure_result(
+                    inquiry_id=inquiry_id,
+                    correlation_id=correlation_id,
+                    ai_request_id=ai_request_id,
+                    state_version=state_version,
+                    raw_symptom=raw_symptom,
+                    model_code=model_code,
+                    selected_symptoms=selected_symptoms,
+                    previous_answers=previous_answers,
+                    cancellation_token=token,
+                    runtime_name=selected_runtime,
+                    failure=exc,
+                )
+
+            backend_product = resolved_context.product_context
+            backend_inquiry = resolved_context.inquiry_context
+            model_code = backend_product.model_code
+            raw_symptom = backend_inquiry.customer_query
+            selected_symptoms = list(backend_inquiry.selected_symptoms)
+            previous_answers = [
+                answer.model_dump()
+                for answer in backend_inquiry.previous_answers
+            ]
+
         product_context = resolve_product_context(
             model_code,
+            supported_functions=(
+                set(resolved_context.product_context.features.supported_functions)
+                if retrieval_transport == "mcp"
+                else None
+            ),
             runtime_approved_model_codes=self.rag_runtime_profile.approved_model_codes,
         )
+        if retrieval_transport == "mcp" and (
+            product_context.model_code != model_code
+            or product_context.product_family.value
+            != resolved_context.product_context.product_family
+        ):
+            return self._context_failure_result(
+                inquiry_id=inquiry_id,
+                correlation_id=correlation_id,
+                ai_request_id=ai_request_id,
+                state_version=state_version,
+                raw_symptom=raw_symptom,
+                model_code=model_code,
+                selected_symptoms=selected_symptoms,
+                previous_answers=previous_answers,
+                cancellation_token=token,
+                runtime_name=selected_runtime,
+                failure=McpBackendContextError(
+                    tool_name=McpBackendContextToolName.LOOKUP_PRODUCT_CONTEXT,
+                    kind=BackendContextFailureKind.INVALID_RESPONSE,
+                    retryable=False,
+                ),
+            )
         ctx = PipelineContext(
             trace_context=TraceContext(
                 inquiry_id=inquiry_id,
@@ -194,12 +297,6 @@ class PipelineRouter:
             previous_answers=previous_answers or []
         )
 
-        selected_runtime = runtime_name or os.getenv("AI_PIPELINE_RUNTIME", "single_rag")
-        retrieval_transport = os.getenv("AI_RETRIEVAL_TRANSPORT", "direct").strip().lower()
-        if retrieval_transport not in {"direct", "mcp"}:
-            raise RuntimeError(
-                "AI_RETRIEVAL_TRANSPORT는 direct 또는 mcp여야 합니다."
-            )
         base_search_service = (
             McpEvidenceSearchService()
             if retrieval_transport == "mcp"
@@ -228,10 +325,6 @@ class PipelineRouter:
                 runtime_search_service,
                 retrieval_configuration_error=retrieval_configuration_error,
                 llm_client=self.llm_client,
-            )
-        else:
-            raise RuntimeError(
-                "AI_PIPELINE_RUNTIME은 single_rag 또는 multi_agent여야 합니다."
             )
         try:
             pipeline_result = pipeline.run(ctx, cancellation_token=token)
@@ -266,3 +359,61 @@ class PipelineRouter:
             cancellation_token=token,
         )
         return pipeline_result
+
+    def _context_failure_result(
+        self,
+        *,
+        inquiry_id: UUID,
+        correlation_id: UUID,
+        ai_request_id: str,
+        state_version: int,
+        raw_symptom: str,
+        model_code: str,
+        selected_symptoms: Optional[List[str]],
+        previous_answers: Optional[List[Dict[str, str]]],
+        cancellation_token: CancellationToken,
+        runtime_name: str,
+        failure: McpBackendContextError,
+    ) -> PipelineResult:
+        """Stop before retrieval/provider and route a sanitized Tool failure."""
+
+        product_context = resolve_product_context(
+            model_code,
+            runtime_approved_model_codes=self.rag_runtime_profile.approved_model_codes,
+        )
+        ctx = PipelineContext(
+            trace_context=TraceContext(
+                inquiry_id=inquiry_id,
+                correlation_id=correlation_id,
+                ai_request_id=ai_request_id,
+                state_version=state_version,
+            ),
+            raw_symptom=raw_symptom,
+            model_code=product_context.model_code,
+            selected_symptoms=selected_symptoms or [],
+            previous_answers=previous_answers or [],
+        )
+        # Backend Context가 실패해도 공개 응답의 필수 계약과 명시적 안전 규칙은
+        # 유지한다. 검색과 Provider는 아래 Tool failure 경계에서 계속 차단된다.
+        execute_structuring_stage(ctx)
+        execute_safety_check_stage(ctx)
+        tool_failure = McpToolFailure(
+            tool_name=McpToolName(failure.tool_name.value),
+            kind=McpToolFailureKind(failure.kind.value),
+            retryable=failure.retryable,
+        )
+        reliability = self.reliability_runtime.run(
+            ctx=ctx,
+            product=product_context,
+            evidence_capture=None,
+            search_service=None,
+            llm_client=self.llm_client,
+            cancellation_token=cancellation_token,
+            tool_failure=tool_failure,
+        )
+        return PipelineResult(
+            success=False,
+            context=ctx,
+            runtime_name=runtime_name,
+            reliability_runtime=reliability,
+        )

@@ -21,8 +21,8 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from ...common.timeout import CancellationToken
 from ...retrieval.models.retrieval_query import RetrievalQuery
 from ...retrieval.models.retrieved_chunk import RetrievedChunk
-from ...schemas import EvidenceReference
 from .client import WaterBridgeMCPClient
+from .models import SearchOfficialEvidenceReference
 
 
 class _SearchOfficialEvidenceOutput(BaseModel):
@@ -30,7 +30,9 @@ class _SearchOfficialEvidenceOutput(BaseModel):
 
     """MCP transport boundary response shape."""
 
-    evidence_references: list[EvidenceReference] = Field(default_factory=list)
+    evidence_references: list[SearchOfficialEvidenceReference] = Field(
+        default_factory=list
+    )
     vector_search_executed: bool = False
     search_result_found: bool = False
     evidence_found: bool = False
@@ -105,14 +107,10 @@ class McpEvidenceSearchService:
         if output.policy_blocked or not output.evidence_found:
             return []
 
-        generation = query.product_generation or "D"
-        model_code = query.model_code or ""
-
         # The MCP server executes VectorSearchService with the exact sales code.
-        # Reconstruct only fields present in the allowlisted MCP response plus
-        # the request identity used for that exact-match search.  The outer
-        # GuardedEvidenceSearchService still performs the independent product
-        # match gate before any chunk can reach generation.
+        # Preserve the actual identity returned by the Tool. The outer
+        # GuardedEvidenceSearchService independently compares it with the
+        # Backend subscription product before any chunk can reach generation.
         return [
             RetrievedChunk(
                 chunk_id=evidence.chunk_id,
@@ -120,15 +118,15 @@ class McpEvidenceSearchService:
                 document_version=evidence.document_version,
                 page=evidence.page,
                 page_refs=evidence.page_refs,
-                manual_model=model_code,
-                model_code=model_code,
-                product_generation=generation,
+                manual_model=evidence.model_code,
+                model_code=evidence.model_code,
+                product_generation=evidence.product_generation,
                 content=evidence.summary,
                 similarity_score=evidence.similarity_score,
                 official_url=evidence.official_url,
                 verification_status=evidence.verification_status,
-                allowed_use=True,
-                runtime_eligible=True,
+                allowed_use=evidence.allowed_use,
+                runtime_eligible=evidence.runtime_eligible,
             )
             for evidence in output.evidence_references
         ]
