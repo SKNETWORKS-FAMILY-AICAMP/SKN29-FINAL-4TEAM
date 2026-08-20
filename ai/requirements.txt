@@ -10,3 +10,4 @@ langgraph==1.2.2
 sentence-transformers==5.5.1
 psycopg[binary]==3.2.9
 pytest==9.0.3
+mcp[cli]==2.0.0
