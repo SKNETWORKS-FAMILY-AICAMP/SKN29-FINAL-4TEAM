@@ -74,7 +74,9 @@ describe("App Router Guard", () => {
     renderRoute("/consultant/dashboard", createUser("CONSULTANT"));
 
     expect(
-      await screen.findByRole("heading", { name: "테스트 CONSULTANT님의 지금 할 일" }),
+      await screen.findByRole("heading", {
+        name: "반갑습니다!오늘도 좋은 하루 되세요 😊",
+      }),
     ).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "업무 대시보드" })).toHaveAttribute(
       "aria-selected",
@@ -89,7 +91,7 @@ describe("App Router Guard", () => {
     );
 
     expect(
-      await screen.findByRole("heading", { name: "전화 문의 등록" }),
+      await screen.findByRole("tabpanel", { name: "전화 문의 등록" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "전화 문의 등록" }),

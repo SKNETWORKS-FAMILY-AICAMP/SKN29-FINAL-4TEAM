@@ -6,6 +6,7 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { appEnv } from "../../app/config/env";
 import { createInquiryDetailPath } from "../../app/router/routePaths";
 import Pagination from "../../common/components/data-display/Pagination";
 import EmptyState from "../../common/components/feedback/EmptyState";
@@ -28,7 +29,6 @@ import type {
   ConsultantInquiryStatusDto,
 } from "../../features/consultation/api/consultantWorkspaceRemoteTypes";
 import {
-  COUNSELOR_QUEUE_PAGE_SIZE,
   formatWorkspaceDateTime,
   getCounselorWorkBucket,
   WORK_BUCKET_LABELS,
@@ -79,10 +79,14 @@ const BUCKET_STATUSES: Record<
   COMPLETED: ["RESOLVED", "CANCELLED"],
 };
 
+type RiskSectionId = "all" | ConsultantRiskLevelDto;
+const INQUIRY_LIST_PAGE_SIZE = 10;
+
 const RISK_SECTIONS: readonly {
-  id: ConsultantRiskLevelDto;
+  id: RiskSectionId;
   label: string;
 }[] = [
+  { id: "all", label: "전체 문의" },
   { id: "danger", label: "긴급 문의" },
   { id: "caution", label: "주의 문의" },
   { id: "general", label: "일반 문의" },
@@ -111,25 +115,18 @@ function getBucketLabel(bucket: ConsultantInquiryBucket): string {
   return bucket === "ALL" ? "전체 문의" : WORK_BUCKET_LABELS[bucket];
 }
 
-function formatRelativeReceivedTime(receivedAt: string): string {
-  const receivedTime = new Date(receivedAt).getTime();
-  if (!Number.isFinite(receivedTime)) return "시간 확인 필요";
+function formatBucketElapsedTime(
+  status: CounselorStatus,
+  waitingSeconds: number,
+): string {
+  const waitingMinutes = Math.max(1, Math.floor(waitingSeconds / 60));
+  const bucket = getCounselorWorkBucket(status);
 
-  const elapsedMinutes = Math.max(
-    0,
-    Math.floor((Date.now() - receivedTime) / 60_000),
-  );
-  if (elapsedMinutes < 1) return "방금 전";
-  if (elapsedMinutes < 60) return `${elapsedMinutes}분 전`;
-
-  const elapsedHours = Math.floor(elapsedMinutes / 60);
-  if (elapsedHours < 24) return `${elapsedHours}시간 전`;
-
-  const elapsedDays = Math.floor(elapsedHours / 24);
-  if (elapsedDays < 30) return `${elapsedDays}일 전`;
-
-  const elapsedMonths = Math.floor(elapsedDays / 30);
-  return `${elapsedMonths}개월 전`;
+  if (bucket === "NEW") return `${waitingMinutes}분 전`;
+  if (bucket === "IN_PROGRESS") {
+    return `${Math.max(1, Math.floor(waitingMinutes / 60))}시간 전`;
+  }
+  return `${Math.max(1, Math.floor(waitingMinutes / 1_440))}일 전`;
 }
 
 export default function ConsultantInquiryListPage() {
@@ -145,7 +142,7 @@ export default function ConsultantInquiryListPage() {
     minor: "",
   });
   const [activeRiskSection, setActiveRiskSection] =
-    useState<ConsultantRiskLevelDto>("danger");
+    useState<RiskSectionId>("all");
   const [selectedInquiryId, setSelectedInquiryId] =
     useState<InquiryId | null>(null);
   const [autoAdvance, setAutoAdvance] = useState(true);
@@ -167,9 +164,11 @@ export default function ConsultantInquiryListPage() {
       q: filters.query || undefined,
       status: getBucketStatuses(activeBucket),
       riskLevel:
-        filters.risk !== "ALL" && filters.risk !== "UNKNOWN"
-          ? [filters.risk.toLowerCase() as "general" | "caution" | "danger"]
-          : undefined,
+        activeRiskSection !== "all"
+          ? [activeRiskSection]
+          : filters.risk !== "ALL" && filters.risk !== "UNKNOWN"
+            ? [filters.risk.toLowerCase() as "general" | "caution" | "danger"]
+            : undefined,
       priority:
         filters.priority !== "ALL" && filters.priority !== "UNKNOWN"
           ? [filters.priority]
@@ -178,10 +177,11 @@ export default function ConsultantInquiryListPage() {
       to: filters.receivedTo || undefined,
       sort: filters.sort,
       page: hasCategoryFilter ? 1 : filters.page,
-      size: hasCategoryFilter ? 100 : COUNSELOR_QUEUE_PAGE_SIZE,
+      size: hasCategoryFilter ? 100 : INQUIRY_LIST_PAGE_SIZE,
     }),
     [
       activeBucket,
+      activeRiskSection,
       filters.page,
       filters.priority,
       filters.query,
@@ -215,6 +215,7 @@ export default function ConsultantInquiryListPage() {
         ),
     );
   const useDesignMockFallback =
+    appEnv.enableDesignMockFallback &&
     import.meta.env.DEV &&
     consultantWorkspaceDataRepository.dataSource === "REMOTE" &&
     (remoteOverviewHasEmptyBucket ||
@@ -280,13 +281,7 @@ export default function ConsultantInquiryListPage() {
     [inquiryStateUpdates, mockState, queryData?.items],
   );
 
-  const displayedRiskSection =
-    sourceInquiries.length === 0 ||
-    sourceInquiries.some((inquiry) => inquiry.riskLevel === activeRiskSection)
-      ? activeRiskSection
-      : (RISK_SECTIONS.find((section) =>
-          sourceInquiries.some((inquiry) => inquiry.riskLevel === section.id),
-        )?.id ?? activeRiskSection);
+  const displayedRiskSection = activeRiskSection;
   const selectedMajorCategory = INQUIRY_CATEGORY_TREE.find(
     (category) => category.label === categoryFilters.major,
   );
@@ -296,7 +291,8 @@ export default function ConsultantInquiryListPage() {
   const riskSummaryCounts = useMemo(() => {
     const bucketStatuses = getBucketStatuses(activeBucket);
     const query = filters.query.trim().toLowerCase();
-    const counts: Record<ConsultantRiskLevelDto, number> = {
+    const counts: Record<RiskSectionId, number> = {
+      all: 0,
       danger: 0,
       caution: 0,
       general: 0,
@@ -347,6 +343,7 @@ export default function ConsultantInquiryListPage() {
       }
 
       counts[inquiry.riskLevel] += 1;
+      counts.all += 1;
     });
 
     return counts;
@@ -385,28 +382,50 @@ export default function ConsultantInquiryListPage() {
   }, [selectedInquiryId]);
 
   const bucketCounts = useMemo(
-    () =>
-      Object.fromEntries(
+    () => {
+      const statusCounts = overviewData?.statusCounts ?? queryData?.statusCounts;
+      return Object.fromEntries(
         Object.entries(BUCKET_STATUSES).map(([bucket, statuses]) => [
           bucket,
           statuses.reduce(
-            (total, status) => total + (queryData?.statusCounts[status] ?? 0),
+            (total, status) => total + (statusCounts?.[status] ?? 0),
             0,
           ),
         ]),
-      ) as Record<CounselorWorkBucket, number>,
-    [queryData?.statusCounts],
+      ) as Record<CounselorWorkBucket, number>;
+    },
+    [overviewData?.statusCounts, queryData?.statusCounts],
   );
+  const categoryFilteredInquiries = sourceInquiries.filter((inquiry) => {
+    if (!hasCategoryFilter) return true;
+    const category = classifyInquiryCategory(inquiry.symptomSummary);
+    return (
+      (!categoryFilters.major || category.major === categoryFilters.major) &&
+      (!categoryFilters.middle || category.middle === categoryFilters.middle) &&
+      (!categoryFilters.minor || category.minor === categoryFilters.minor)
+    );
+  });
+  const categoryPageStart = (filters.page - 1) * INQUIRY_LIST_PAGE_SIZE;
+  const queuePageItems = hasCategoryFilter
+    ? categoryFilteredInquiries.slice(
+        categoryPageStart,
+        categoryPageStart + INQUIRY_LIST_PAGE_SIZE,
+      )
+    : sourceInquiries;
+  const queueTotalItems = mockState === "empty"
+    ? 0
+    : hasCategoryFilter
+      ? categoryFilteredInquiries.length
+      : (queryData?.pageInfo.total ?? 0);
   const queuePage = {
-    currentPage: queryData?.pageInfo.page ?? filters.page,
-    items: sourceInquiries,
-    totalItems: mockState === "empty" ? 0 : (queryData?.pageInfo.total ?? 0),
+    currentPage: hasCategoryFilter
+      ? filters.page
+      : (queryData?.pageInfo.page ?? filters.page),
+    items: queuePageItems,
+    totalItems: queueTotalItems,
     totalPages: Math.max(
       1,
-      Math.ceil(
-        (mockState === "empty" ? 0 : (queryData?.pageInfo.total ?? 0)) /
-          (queryData?.pageInfo.size ?? COUNSELOR_QUEUE_PAGE_SIZE),
-      ),
+      Math.ceil(queueTotalItems / INQUIRY_LIST_PAGE_SIZE),
     ),
   };
   const selectedBase = activeWorkspaceRepository.findInquiry(selectedInquiryId);
@@ -416,6 +435,9 @@ export default function ConsultantInquiryListPage() {
         ...inquiryStateUpdates[selectedBase.inquiryId],
       }
     : null;
+  const resetInquiryListPage = () => {
+    if (filters.page !== 1) setFilters({ ...filters, page: 1 });
+  };
   const changeBucket = (bucket: ConsultantInquiryBucket) => {
     setActiveBucket(bucket);
     const params = new URLSearchParams(location.search);
@@ -426,9 +448,10 @@ export default function ConsultantInquiryListPage() {
     setSelectedInquiryId(null);
   };
 
-  const changeRiskSection = (riskLevel: ConsultantRiskLevelDto) => {
+  const changeRiskSection = (riskLevel: RiskSectionId) => {
     setActiveRiskSection(riskLevel);
     setSelectedInquiryId(null);
+    resetInquiryListPage();
   };
 
   const handleRiskTabKeyDown = (
@@ -600,6 +623,7 @@ export default function ConsultantInquiryListPage() {
                           middle: "",
                           minor: "",
                         });
+                        resetInquiryListPage();
                         setSelectedInquiryId(null);
                       }}
                     >
@@ -626,6 +650,7 @@ export default function ConsultantInquiryListPage() {
                           middle: event.target.value,
                           minor: "",
                         }));
+                        resetInquiryListPage();
                         setSelectedInquiryId(null);
                       }}
                     >
@@ -655,6 +680,7 @@ export default function ConsultantInquiryListPage() {
                           ...current,
                           minor: event.target.value,
                         }));
+                        resetInquiryListPage();
                         setSelectedInquiryId(null);
                       }}
                     >
@@ -727,6 +753,7 @@ export default function ConsultantInquiryListPage() {
                       type="button"
                       onClick={() => {
                         setCategoryFilters({ major: "", middle: "", minor: "" });
+                        resetInquiryListPage();
                         setSelectedInquiryId(null);
                       }}
                     >
@@ -738,24 +765,11 @@ export default function ConsultantInquiryListPage() {
                 {RISK_SECTIONS.filter(
                   (section) => section.id === displayedRiskSection,
                 ).map((section) => {
-                const sectionInquiries = queuePage.items.filter(
-                  (inquiry) => inquiry.riskLevel === section.id,
-                );
-                const inquiries = sectionInquiries.filter(
-                  (inquiry) => {
-                    const category = classifyInquiryCategory(
-                      inquiry.symptomSummary,
+                const inquiries = section.id === "all"
+                  ? queuePage.items
+                  : queuePage.items.filter(
+                      (inquiry) => inquiry.riskLevel === section.id,
                     );
-                    return (
-                      (!categoryFilters.major ||
-                        category.major === categoryFilters.major) &&
-                      (!categoryFilters.middle ||
-                        category.middle === categoryFilters.middle) &&
-                      (!categoryFilters.minor ||
-                        category.minor === categoryFilters.minor)
-                    );
-                  },
-                );
 
                 return (
                   <section
@@ -775,12 +789,14 @@ export default function ConsultantInquiryListPage() {
                         inquiries.map((inquiry) => (
                           <button
                             key={inquiry.inquiryId}
-                            className={`v6-queue-item consultant-list-item${
+                            className={`v6-queue-item consultant-list-item consultant-list-item--risk-${inquiry.riskLevel}${
                               selectedInquiryId === inquiry.inquiryId
                                 ? " is-selected"
                                 : ""
                             }`}
                             type="button"
+                            data-testid={`consultant-inquiry-${inquiry.inquiryId}`}
+                            data-e2e-sensitive="true"
                             aria-pressed={
                               selectedInquiryId === inquiry.inquiryId
                             }
@@ -796,7 +812,10 @@ export default function ConsultantInquiryListPage() {
                               dateTime={inquiry.receivedAt}
                               title={formatWorkspaceDateTime(inquiry.receivedAt)}
                             >
-                              {formatRelativeReceivedTime(inquiry.receivedAt)}
+                              {formatBucketElapsedTime(
+                                inquiry.status,
+                                inquiry.waitingSeconds,
+                              )}
                             </time>
 
                             <span className="consultant-list-item__customer">
@@ -813,7 +832,7 @@ export default function ConsultantInquiryListPage() {
             )}
           </div>
 
-          {loadState === "ready" && queuePage.totalItems > 0 && !hasCategoryFilter && (
+          {loadState === "ready" && queuePage.totalItems > 0 && (
             <Pagination
               page={queuePage.currentPage}
               totalItems={queuePage.totalItems}

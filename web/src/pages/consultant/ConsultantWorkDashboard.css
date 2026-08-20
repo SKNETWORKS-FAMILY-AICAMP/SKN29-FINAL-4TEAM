@@ -261,6 +261,76 @@ html body
   box-shadow: 0 14px 36px rgb(28 61 80 / 8%);
 }
 
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-dashboard-info__panel--notices,
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-dashboard-info__panel--contacts {
+  position: relative;
+  isolation: isolate;
+  border-color: rgb(255 255 255 / 76%);
+  border-radius: 24px !important;
+  background: linear-gradient(
+    145deg,
+    rgb(255 255 255 / 66%),
+    rgb(225 237 243 / 49%)
+  );
+  box-shadow:
+    inset 1px 1px 0 rgb(255 255 255 / 82%),
+    inset -1px -1px 0 rgb(79 111 128 / 11%),
+    0 4px 7px rgb(20 54 74 / 10%),
+    0 18px 32px rgb(30 67 88 / 16%),
+    0 36px 64px rgb(40 105 135 / 17%);
+  -webkit-backdrop-filter: blur(30px) saturate(78%) !important;
+  backdrop-filter: blur(30px) saturate(78%) !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-dashboard-info__panel--notices {
+  margin: 7px 0 7px 10px;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-dashboard-info__panel--contacts {
+  margin: 7px 10px 7px 0;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-dashboard-info__panel--notices::before,
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-dashboard-info__panel--contacts::before {
+  display: none;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-dashboard-info__panel--notices
+  > *,
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-dashboard-info__panel--contacts
+  > * {
+  position: relative;
+  z-index: 1;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-dashboard-info__panel--notices
+  > header,
+html body
+  .simple-consultant-app.consultant-queue-app
+  .counselor-dashboard-info__panel--contacts
+  > header {
+  border-bottom: 0 !important;
+  background: linear-gradient(135deg, rgb(202 220 229 / 62%), rgb(219 232 238 / 56%));
+}
+
 .counselor-dashboard-info__panel > header {
   display: flex;
   align-items: center;
@@ -396,14 +466,16 @@ html body
 }
 
 .counselor-dashboard-notices__headline {
-  display: flex;
+  display: grid;
   min-width: 0;
+  grid-template-columns: 48px minmax(0, 1fr);
   align-items: center;
   gap: 8px;
 }
 
 .counselor-dashboard-notices__headline em {
-  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: 48px;
   padding: 3px 7px;
   border-radius: 999px;
   background: #e8f3f9;
@@ -411,6 +483,7 @@ html body
   font-size: 10px;
   font-style: normal;
   font-weight: 900;
+  text-align: center;
 }
 
 .counselor-dashboard-notices__headline em[data-category="긴급"] {
@@ -456,6 +529,20 @@ html body
 
 .counselor-dashboard-notices time {
   flex: 0 0 auto;
+}
+
+.counselor-dashboard-notices__meta {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.counselor-dashboard-notices__meta i {
+  color: rgb(113 135 154 / 48%);
+  font-size: 11px;
+  font-style: normal;
 }
 
 .counselor-dashboard-contacts li > span {

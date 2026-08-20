@@ -98,10 +98,25 @@ function DashboardIcon() {
   );
 }
 
+function NoticeIcon() {
+  return (
+    <svg
+      className="consultant-work-tab__icon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M6 4.5h12v15H6z" />
+      <path d="M9 8h6M9 11.5h6M9 15h4" />
+    </svg>
+  );
+}
+
 interface ConsultantQueueSidebarProps {
   activeBucket: ConsultantInquiryBucket | null;
   bucketCounts?: Readonly<Record<CounselorWorkBucket, number>>;
   dashboardActive?: boolean;
+  noticeActive?: boolean;
   phoneEntryActive?: boolean;
   onBucketChange?: (bucket: ConsultantInquiryBucket) => void;
 }
@@ -110,6 +125,7 @@ export default function ConsultantQueueSidebar({
   activeBucket,
   bucketCounts,
   dashboardActive = false,
+  noticeActive = false,
   phoneEntryActive = false,
   onBucketChange,
 }: ConsultantQueueSidebarProps) {
@@ -163,11 +179,17 @@ export default function ConsultantQueueSidebar({
             type="button"
             role="tab"
             aria-selected={
-              !dashboardActive && !phoneEntryActive && activeBucket === bucket
+              !dashboardActive &&
+              !noticeActive &&
+              !phoneEntryActive &&
+              activeBucket === bucket
             }
             aria-controls="consultant-queue-panel"
             className={`consultant-work-tab consultant-work-tab--${bucket.toLowerCase()}${
-              !dashboardActive && !phoneEntryActive && activeBucket === bucket
+              !dashboardActive &&
+              !noticeActive &&
+              !phoneEntryActive &&
+              activeBucket === bucket
                 ? " is-active"
                 : ""
             }`}
@@ -201,6 +223,21 @@ export default function ConsultantQueueSidebar({
           <span>
             <PhoneInquiryIcon />
             <strong>전화 문의 등록</strong>
+          </span>
+        </Link>
+
+        <Link
+          to={ROUTE_PATHS.consultantNotices}
+          role="tab"
+          aria-selected={noticeActive}
+          aria-controls="consultant-notice-panel"
+          className={`consultant-work-tab consultant-work-tab--notice${
+            noticeActive ? " is-active" : ""
+          }`}
+        >
+          <span>
+            <NoticeIcon />
+            <strong>공지사항</strong>
           </span>
         </Link>
       </nav>

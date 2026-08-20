@@ -28,7 +28,10 @@ export default function ConsultantUserMenu({
   };
 
   return (
-    <div className={`consultant-user-menu ${className}`.trim()}>
+    <div
+      className={`consultant-user-menu ${className}`.trim()}
+      data-e2e-sensitive="true"
+    >
       <strong className="consultant-user-menu__name">{displayName}</strong>
       <i className="consultant-user-menu__divider" aria-hidden="true" />
       <small className="consultant-user-menu__employee-number">
