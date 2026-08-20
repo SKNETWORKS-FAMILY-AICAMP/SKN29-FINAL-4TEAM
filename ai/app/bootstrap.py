@@ -13,6 +13,10 @@ from .interfaces.http.routes.health_routes import router as health_router
 from .interfaces.http.runtime_policy import get_runtime_policy
 from .interfaces.http.structured_logging import configure_structured_logging
 from .integrations.llm.token_usage import configure_llm_usage_logging
+from .observability.telemetry import (
+    configure_telemetry,
+    shutdown_telemetry,
+)
 from .orchestration.pipeline_router import warmup_configured_search_service
 
 
@@ -23,9 +27,12 @@ EXPERIMENT_PLAYGROUND_ENV = "AI_ENABLE_EXPERIMENT_PLAYGROUND"
 async def _lifespan(app: FastAPI):
     """Local RAG 모델을 요청 Timeout 밖인 애플리케이션 시작 단계에서 준비한다."""
 
-    if os.getenv("AI_VECTOR_DSN"):
-        await asyncio.to_thread(warmup_configured_search_service)
-    yield
+    try:
+        if os.getenv("AI_VECTOR_DSN"):
+            await asyncio.to_thread(warmup_configured_search_service)
+        yield
+    finally:
+        shutdown_telemetry()
 
 
 def experiment_playground_enabled() -> bool:
@@ -39,6 +46,7 @@ def experiment_playground_enabled() -> bool:
 def create_app() -> FastAPI:
     """FastAPI 인스턴스 생성 및 라우터·미들웨어·오류핸들러 설정"""
     get_runtime_policy()
+    configure_telemetry()
     configure_structured_logging()
     configure_llm_usage_logging()
     app = FastAPI(
