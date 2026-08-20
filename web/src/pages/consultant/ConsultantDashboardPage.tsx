@@ -6,6 +6,7 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { useAuth } from "../../app/providers/authContext";
 import { createInquiryDetailPath } from "../../app/router/routePaths";
 import Pagination from "../../common/components/data-display/Pagination";
 import {
@@ -37,6 +38,8 @@ import {
   STATUS_LABELS,
   WORK_BUCKET_LABELS,
 } from "../../features/consultation/model/consultantWorkspaceModel";
+import { getConsultantDashboardDate } from "../../features/consultation/model/consultantDashboardDate";
+import { getConsultantDisplayName } from "../../features/consultation/model/consultantDisplayName";
 import type {
   CounselorAllowedAction,
   CounselorInquiry,
@@ -232,6 +235,13 @@ function getInitialBucket(search: string): CounselorWorkBucket {
 export default function ConsultantDashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+  const consultantDisplayName = getConsultantDisplayName(user?.displayName);
+  const [dashboardNow, setDashboardNow] = useState(() => new Date());
+  const dashboardDate = useMemo(
+    () => getConsultantDashboardDate(dashboardNow),
+    [dashboardNow],
+  );
   const { filters, hasChangedConditions, resetFilters, setFilters } =
     useCounselorQueueFilters();
   const [activeBucket, setActiveBucket] =
@@ -252,6 +262,12 @@ export default function ConsultantDashboardPage() {
   const [reviewDecisions, setReviewDecisions] = useState<
     Record<string, AiReviewDecision>
   >({});
+
+  useEffect(() => {
+    const timerId = window.setInterval(() => setDashboardNow(new Date()), 60_000);
+
+    return () => window.clearInterval(timerId);
+  }, []);
   const [reviewNotice, setReviewNotice] = useState<string | null>(null);
   const [selectedInquiryId, setSelectedInquiryId] =
     useState<InquiryId | null>(null);
@@ -679,12 +695,17 @@ export default function ConsultantDashboardPage() {
         >
           <div className="counselor-home-summary__intro">
             <h1 id="counselor-home-title">
-              <span>반갑습니다!</span>
-              <br />
-              <span className="counselor-home-summary__greeting-subline">
-                오늘도 좋은 하루 되세요 😊
-              </span>
+              {consultantDisplayName}님 반갑습니다!
             </h1>
+            <p className="counselor-home-summary__greeting-subline">
+              오늘도 좋은 하루 되세요 😊
+            </p>
+            <time
+              className="counselor-home-summary__date"
+              dateTime={dashboardDate.dateTime}
+            >
+              {dashboardDate.label}
+            </time>
           </div>
 
           <div className="counselor-home-metrics" aria-label="업무 요약">
@@ -781,21 +802,22 @@ export default function ConsultantDashboardPage() {
                   <input
                     type="search"
                     aria-label="직원 연락처 검색"
+                    placeholder="검색"
                     value={contactQuery}
                     onChange={(event) => setContactQuery(event.target.value)}
                   />
                 </label>
-              {showContactTable && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedContactDepartment(null);
-                    setContactQuery("");
-                  }}
-                >
-                  조직도
-                </button>
-              )}
+                {showContactTable && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedContactDepartment(null);
+                      setContactQuery("");
+                    }}
+                  >
+                    조직도
+                  </button>
+                )}
               </div>
             </header>
             {showContactTable ? (
@@ -889,7 +911,7 @@ export default function ConsultantDashboardPage() {
                               (employee) => employee.department === department,
                             ).length
                           }
-                          명 · 연락처 보기
+                          명
                         </small>
                       </div>
                       <i aria-hidden="true">›</i>
