@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProductExpansionE2ECasesConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "active_product_codes",
+    "excluded_manual_aliases",
+    "canonical_coverage",
+    "candidate_defaults",
+    "cases"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "active_product_codes": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["WPUJAC104DWH", "WPUIAC425SNW", "WPUIAC606SNW"]
+      }
+    },
+    "excluded_manual_aliases": {
+      "type": "array",
+      "contains": {"const": "WPU-JCC104 (D)"}
+    },
+    "canonical_coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exact_sales_code", "required_layers", "minimum_counts"],
+      "properties": {
+        "exact_sales_code": {"const": "WPUJAC104DWH"},
+        "required_layers": {
+          "const": ["product", "customer_product", "subscription", "inquiry"]
+        },
+        "minimum_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["customer_products", "subscriptions", "inquiries"],
+          "properties": {
+            "customer_products": {"type": "integer", "minimum": 1},
+            "subscriptions": {"type": "integer", "minimum": 1},
+            "inquiries": {"type": "integer", "minimum": 1}
+          }
+        }
+      }
+    },
+    "candidate_defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope_status",
+        "backend_import_status",
+        "runtime_status",
+        "canonical_fixture_included",
+        "db_handoff_profile_included",
+        "promotion_blockers"
+      ],
+      "properties": {
+        "scope_status": {"const": "E2E_CANDIDATE"},
+        "backend_import_status": {"const": "NOT_IMPORTED"},
+        "runtime_status": {"const": "NOT_VERIFIED"},
+        "canonical_fixture_included": {"const": false},
+        "db_handoff_profile_included": {"const": false},
+        "promotion_blockers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {"$ref": "#/$defs/case"}
+    }
+  },
+  "$defs": {
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "case_id",
+        "scenario_id",
+        "exact_sales_code",
+        "topic_code",
+        "original_text",
+        "evidence_group_id",
+        "customer_product_ref",
+        "subscription_ref",
+        "inquiry_ref",
+        "expected_resolution_mode",
+        "expected_handoff_target"
+      ],
+      "properties": {
+        "case_id": {"type": "string", "pattern": "^E2E-IAC(425|606)-001$"},
+        "scenario_id": {"type": "string", "pattern": "^SYN-IAC(425|606)-001$"},
+        "exact_sales_code": {"enum": ["WPUIAC425SNW", "WPUIAC606SNW"]},
+        "topic_code": {"enum": ["hot_water_stopped", "no_ice"]},
+        "original_text": {"type": "string", "minLength": 1},
+        "evidence_group_id": {"type": "string", "pattern": "^EVD-WPUIAC(425|606)SNW-"},
+        "customer_product_ref": {"type": "string", "pattern": "^CAND-CP-IAC(425|606)-001$"},
+        "subscription_ref": {"type": "string", "pattern": "^CAND-SUB-IAC(425|606)-001$"},
+        "inquiry_ref": {"type": "string", "pattern": "^CAND-INQ-IAC(425|606)-001$"},
+        "expected_resolution_mode": {"enum": ["CONSULTANT_HANDOFF", "SELF_RESOLUTION"]},
+        "expected_handoff_target": {"enum": ["CONSULTANT", "NONE"]}
+      }
+    }
+  }
+}

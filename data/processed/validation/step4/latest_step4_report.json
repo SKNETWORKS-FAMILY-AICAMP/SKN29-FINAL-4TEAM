@@ -32,7 +32,8 @@
     "scenario_subset:visit_handoff.json": 5,
     "scenario_subset:danger_escalation.json": 3,
     "scenario_subset:no_evidence_fallback.json": 3,
-    "scenario_subset:reopened_inquiry.json": 0
+    "scenario_subset:reopened_inquiry.json": 0,
+    "product_expansion_e2e_candidates": 2
   },
   "output_sha256": {
     "users": "C450F72529C3A288E8175B3FDDD504C16EA7BCBB93FBABBA03AE78342A971FC0",
@@ -60,6 +61,7 @@
     "scenario_subset:visit_handoff.json": "E0A323E4A02ADFBE33CBB438E2E14E0A678A7F5B4EDB27818C8DA5B9B6A6A312",
     "scenario_subset:danger_escalation.json": "8E7DED72AA81D859C2B08EBC4A5ADB71A6B50C949DB23B6FE2F1200457101711",
     "scenario_subset:no_evidence_fallback.json": "2CA9198B6A68F41B537CC2030A4D0197522DCC9AF910FB4D3507403AD3B9C2D1",
-    "scenario_subset:reopened_inquiry.json": "37517E5F3DC66819F61F5A7BB8ACE1921282415F10551D2DEFA5C3EB0985B570"
+    "scenario_subset:reopened_inquiry.json": "37517E5F3DC66819F61F5A7BB8ACE1921282415F10551D2DEFA5C3EB0985B570",
+    "product_expansion_e2e_candidates": "139C074F41D1D0E7C8320ABC62ED34D3F0C4494983F6C613115158727A5D9E17"
   }
 }

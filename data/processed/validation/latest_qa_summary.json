@@ -5,23 +5,23 @@
   "reports": [
     {
       "path": "processed/validation/schema/latest_schema_report.json",
-      "sha256": "C240B38A119A15109BE58DC708139F6913BAFD0E57DB760C77E2150B37F4F8E6"
+      "sha256": "8ACB1B8E75162D35991C8DE578295782FCAB59A9CA3F7173D83B00EBD44821A4"
     },
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
-      "sha256": "83371DBCA8F45661A18CF5B3C3DAC3F3929924A295C728F4F64634637EB6FF17"
+      "sha256": "28B287D314908D89D3F06333DD0B11EBEE35D8E7B4FE0D3440BF5D277F966ED1"
     },
     {
       "path": "processed/validation/quality/latest_quality_report.json",
-      "sha256": "7E4D373DFF986F44D8A448AF3C41D414425E58EB939B41393435A5F156C1F29E"
+      "sha256": "842D9433F9EAB5C71F8308B73E1FA5B55B76CD2DA0549F4AC8724EB2A45B7236"
     },
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
-      "sha256": "9FA5DEF4B7FDBD390FCFEC24DE2F2E48714DBF658A1F0617FFFE8E61DBEDE3D7"
+      "sha256": "B5237A7AD6F69D4BBF6F354A14C27CC57637F0393E1E7C0BD01A8995475C6A2C"
     },
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
-      "sha256": "55840D030E58CF9BE652A25A4CA95AE2C60AA626DA8A1C3D8DC739B124FFD662"
+      "sha256": "282053E510835F4FC882D8036D49727EE805E51958DA8307BE8978AF8CFCD1DA"
     }
   ],
   "totals": {
@@ -44,8 +44,8 @@
     "summary": {
       "errors": 0,
       "warnings": 0,
-      "files_checked": 55,
-      "records_checked": 955
+      "files_checked": 57,
+      "records_checked": 958
     },
     "counts": {
       "manual_pages": 44,
@@ -53,7 +53,8 @@
       "rag_chunks": 7,
       "evidence": 9,
       "synthetic_inquiries": 22,
-      "synthetic_fixture_records": 369
+      "synthetic_fixture_records": 369,
+      "product_expansion_e2e_candidates": 2
     },
     "errors": [],
     "representative_e2e": {
@@ -154,6 +155,33 @@
       ],
       "errors": []
     },
+    "product_expansion_coverage": {
+      "status": "PASS",
+      "errors": [],
+      "active_product_codes": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "excluded_manual_aliases": [
+        "WPU-JCC104 (D)"
+      ],
+      "canonical": {
+        "exact_sales_code": "WPUJAC104DWH",
+        "customer_products": 12,
+        "subscriptions": 12,
+        "inquiries": 22
+      },
+      "candidates": {
+        "records": 2,
+        "exact_sales_codes": [
+          "WPUIAC425SNW",
+          "WPUIAC606SNW"
+        ],
+        "backend_import_status": "NOT_IMPORTED",
+        "runtime_status": "NOT_VERIFIED"
+      }
+    },
     "reproducibility": {
       "enabled": true,
       "changed_files": [],
@@ -167,7 +195,7 @@
       "status": "TEAM_APPROVED",
       "data_projection_consumes_contract": true,
       "backend_runtime_verified": true,
-      "pipeline_config_sha256": "91DDA2579EFC98261376AADE741F87666459B2D1357ABA3993A223F028CC894C",
+      "pipeline_config_sha256": "5B93AF57E8388C1D77330B1EFC3AD034F4223E807B4DF24D35FA2E657E69A8D0",
       "contract_mapping_sha256": "1673C4358290172EAC17161F6C3D7B91D5C572D58B180E7D59C0A06418CA8BDA",
       "source_hashes_verified": true
     },
@@ -192,7 +220,7 @@
     "status": "TEAM_APPROVED",
     "data_projection_consumes_contract": true,
     "backend_runtime_verified": true,
-    "pipeline_config_sha256": "91DDA2579EFC98261376AADE741F87666459B2D1357ABA3993A223F028CC894C",
+    "pipeline_config_sha256": "5B93AF57E8388C1D77330B1EFC3AD034F4223E807B4DF24D35FA2E657E69A8D0",
     "contract_mapping_sha256": "1673C4358290172EAC17161F6C3D7B91D5C572D58B180E7D59C0A06418CA8BDA",
     "source_hashes_verified": true
   },

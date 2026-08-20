@@ -290,6 +290,33 @@ EXPECTED_SYNTHETIC_FIXTURE_SET_SHA256 = (
     "7C407CB6F013BE584011E446650BACD4A6A958895F88448B17EE523AA5B9D068"
 )
 
+EXPECTED_ACTIVE_PRODUCT_CODES = {
+    "WPUJAC104DWH",
+    "WPUIAC425SNW",
+    "WPUIAC606SNW",
+}
+
+EXPECTED_PRODUCT_EXPANSION_CASES = {
+    "WPUIAC425SNW": {
+        "topic_code": "hot_water_stopped",
+        "risk_level": "danger",
+        "requires_consultation": True,
+        "evidence_group_id": (
+            "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001"
+        ),
+        "resolution_mode": "CONSULTANT_HANDOFF",
+        "handoff_target": "CONSULTANT",
+    },
+    "WPUIAC606SNW": {
+        "topic_code": "no_ice",
+        "risk_level": "caution",
+        "requires_consultation": False,
+        "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+        "resolution_mode": "SELF_RESOLUTION",
+        "handoff_target": "NONE",
+    },
+}
+
 RUNTIME_DATABASE_PATTERN = re.compile(
     r"^watercare_synthetic_(smoke|full)_verify_[0-9]{8}"
     r"(?:_[a-z0-9]+)?$"
@@ -889,6 +916,226 @@ def validate_dataset_catalog(
     return errors
 
 
+def validate_product_expansion_coverage(
+    config: PipelineConfig,
+) -> dict[str, Any]:
+    """Validate canonical and candidate business-chain coverage per product."""
+
+    errors: list[str] = []
+    definitions = config.config("product_expansion_candidates")
+    candidates = read_json(config.path("product_expansion_candidate_output"))
+    supported = config.config("supported_products")
+    products = read_json(
+        config.data_root / "synthetic" / "fixtures" / "products.json"
+    )
+    customer_products = read_json(
+        config.data_root
+        / "synthetic"
+        / "fixtures"
+        / "customer_products.json"
+    )
+    subscriptions = read_json(
+        config.data_root / "synthetic" / "fixtures" / "subscriptions.json"
+    )
+    inquiries = read_json(
+        config.data_root / "synthetic" / "fixtures" / "inquiries.json"
+    )
+    evidence_groups = {
+        row["evidence_group_id"]: row
+        for row in read_jsonl(config.path("rag_expansion_evidence_output"))
+    }
+
+    configured_codes = set(definitions["active_product_codes"])
+    supported_codes = {
+        row["exact_sales_code"] for row in supported["products"]
+    }
+    fixture_products = {row["product_code"]: row for row in products}
+    if configured_codes != EXPECTED_ACTIVE_PRODUCT_CODES:
+        errors.append("product_coverage:active_product_codes_mismatch")
+    if supported_codes != EXPECTED_ACTIVE_PRODUCT_CODES:
+        errors.append("product_coverage:supported_product_codes_mismatch")
+    if set(fixture_products) != EXPECTED_ACTIVE_PRODUCT_CODES:
+        errors.append("product_coverage:fixture_product_codes_mismatch")
+    if "WPU-JCC104 (D)" not in definitions["excluded_manual_aliases"]:
+        errors.append("product_coverage:jcc104_alias_not_excluded")
+    if "WPU-JCC104 (D)" not in {
+        row["alias"] for row in supported["inactive_manual_aliases"]
+    }:
+        errors.append("product_coverage:jcc104_alias_not_inactive")
+
+    canonical_code = definitions["canonical_coverage"]["exact_sales_code"]
+    canonical_product = fixture_products.get(canonical_code)
+    canonical_customer_products: list[dict[str, Any]] = []
+    canonical_subscriptions: list[dict[str, Any]] = []
+    canonical_inquiries: list[dict[str, Any]] = []
+    if canonical_product is None:
+        errors.append("product_coverage:canonical_product_missing")
+    else:
+        canonical_customer_products = [
+            row
+            for row in customer_products
+            if row["product_id"] == canonical_product["id"]
+        ]
+        customer_product_ids = {
+            row["id"] for row in canonical_customer_products
+        }
+        canonical_subscriptions = [
+            row
+            for row in subscriptions
+            if row["customer_product_id"] in customer_product_ids
+        ]
+        subscription_ids = {row["id"] for row in canonical_subscriptions}
+        canonical_inquiries = [
+            row
+            for row in inquiries
+            if row["subscription_id"] in subscription_ids
+        ]
+        actual_counts = {
+            "customer_products": len(canonical_customer_products),
+            "subscriptions": len(canonical_subscriptions),
+            "inquiries": len(canonical_inquiries),
+        }
+        for layer, minimum in definitions["canonical_coverage"][
+            "minimum_counts"
+        ].items():
+            if actual_counts[layer] < minimum:
+                errors.append(
+                    f"product_coverage:canonical_{layer}_missing"
+                )
+
+    candidate_codes = set(EXPECTED_PRODUCT_EXPANSION_CASES)
+    for code in candidate_codes:
+        product = fixture_products.get(code)
+        if product is None:
+            continue
+        if any(
+            row["product_id"] == product["id"]
+            for row in customer_products
+        ):
+            errors.append(
+                f"product_coverage:candidate_in_canonical_fixture:{code}"
+            )
+
+    configured_cases = {
+        row["exact_sales_code"]: row for row in definitions["cases"]
+    }
+    output_cases = {
+        row["product"]["exact_sales_code"]: row for row in candidates
+    }
+    if (
+        len(configured_cases) != len(definitions["cases"])
+        or set(configured_cases) != candidate_codes
+    ):
+        errors.append("product_coverage:candidate_config_coverage_mismatch")
+    if (
+        len(output_cases) != len(candidates)
+        or set(output_cases) != candidate_codes
+    ):
+        errors.append("product_coverage:candidate_output_coverage_mismatch")
+    if len(candidates) != config.values["expected_counts"][
+        "product_expansion_e2e_candidates"
+    ]:
+        errors.append("product_coverage:candidate_count_mismatch")
+
+    for code, expected in EXPECTED_PRODUCT_EXPANSION_CASES.items():
+        source = configured_cases.get(code)
+        candidate = output_cases.get(code)
+        if source is None or candidate is None:
+            continue
+        evidence = evidence_groups.get(source["evidence_group_id"])
+        if evidence is None:
+            errors.append(f"product_coverage:evidence_missing:{code}")
+            continue
+        if (
+            source["topic_code"] != expected["topic_code"]
+            or source["evidence_group_id"]
+            != expected["evidence_group_id"]
+            or source["expected_resolution_mode"]
+            != expected["resolution_mode"]
+            or source["expected_handoff_target"]
+            != expected["handoff_target"]
+        ):
+            errors.append(f"product_coverage:case_contract_mismatch:{code}")
+        if (
+            evidence["exact_sales_code"] != code
+            or evidence["topic_code"] != expected["topic_code"]
+            or evidence["risk_level"] != expected["risk_level"]
+            or evidence["requires_consultation"]
+            is not expected["requires_consultation"]
+        ):
+            errors.append(f"product_coverage:evidence_scope_mismatch:{code}")
+        if (
+            candidate["scope_status"] != "E2E_CANDIDATE"
+            or candidate["backend_import_status"] != "NOT_IMPORTED"
+            or candidate["runtime_status"] != "NOT_VERIFIED"
+            or candidate["promotion"]["canonical_fixture_included"]
+            or candidate["promotion"]["db_handoff_profile_included"]
+        ):
+            errors.append(f"product_coverage:candidate_status_mismatch:{code}")
+        if (
+            candidate["customer_product"]["parent_ref"] != code
+            or candidate["subscription"]["parent_ref"]
+            != candidate["customer_product"]["candidate_ref"]
+            or candidate["inquiry"]["subscription_ref"]
+            != candidate["subscription"]["candidate_ref"]
+        ):
+            errors.append(f"product_coverage:chain_reference_mismatch:{code}")
+        if (
+            candidate["inquiry"]["topic_code"] != evidence["topic_code"]
+            or candidate["evidence"]["evidence_group_id"]
+            != evidence["evidence_group_id"]
+            or candidate["evidence"]["exact_sales_code"] != code
+            or candidate["safety"]["risk_level"]
+            != evidence["risk_level"]
+            or candidate["safety"]["requires_consultation"]
+            is not evidence["requires_consultation"]
+            or candidate["safety"]["safe_actions"]
+            != evidence["safe_actions"]
+            or candidate["safety"]["consultation_conditions"]
+            != evidence["consultation_conditions"]
+        ):
+            errors.append(f"product_coverage:grounding_mismatch:{code}")
+        if (
+            candidate["expected_outcome"]["resolution_mode"]
+            != expected["resolution_mode"]
+            or candidate["expected_outcome"]["handoff_target"]
+            != expected["handoff_target"]
+        ):
+            errors.append(f"product_coverage:outcome_mismatch:{code}")
+
+    candidate_path = config.values["paths"][
+        "product_expansion_candidate_output"
+    ]
+    handoff = config.config("handoff")
+    for profile_name in ("db-smoke", "db-full"):
+        if candidate_path in {
+            item["path"]
+            for item in handoff["profiles"][profile_name]["items"]
+        }:
+            errors.append(
+                f"product_coverage:candidate_in_db_handoff:{profile_name}"
+            )
+
+    return {
+        "status": "PASS" if not errors else "FAIL",
+        "errors": errors,
+        "active_product_codes": sorted(configured_codes),
+        "excluded_manual_aliases": definitions["excluded_manual_aliases"],
+        "canonical": {
+            "exact_sales_code": canonical_code,
+            "customer_products": len(canonical_customer_products),
+            "subscriptions": len(canonical_subscriptions),
+            "inquiries": len(canonical_inquiries),
+        },
+        "candidates": {
+            "records": len(candidates),
+            "exact_sales_codes": sorted(output_cases),
+            "backend_import_status": "NOT_IMPORTED",
+            "runtime_status": "NOT_VERIFIED",
+        },
+    }
+
+
 def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
     manifest = read_json(config.path("dataset_manifest"))
     errors: list[str] = []
@@ -899,6 +1146,8 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
     errors.extend(validate_contract_alignment_registry(config))
     errors.extend(validate_backend_import_crosswalk(config))
     errors.extend(validate_dataset_catalog(config, manifest))
+    product_expansion_coverage = validate_product_expansion_coverage(config)
+    errors.extend(product_expansion_coverage["errors"])
     risk_vocabulary = vocabulary["risk_levels"]
     usage_vocabulary = vocabulary["usage_guidance_statuses"]
     for name, codes in schema_risk_codes(config.data_root).items():
@@ -1204,6 +1453,9 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
         "evidence": len(read_jsonl(config.path("evidence_output"))),
         "synthetic_inquiries": len(outputs["inquiries"]),
         "synthetic_fixture_records": count_synthetic_fixture_records(outputs),
+        "product_expansion_e2e_candidates": len(
+            read_json(config.path("product_expansion_candidate_output"))
+        ),
     }
     for key, value in actual.items():
         if value != expected[key]:
@@ -1223,4 +1475,5 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
         "counts": actual,
         "errors": errors,
         "representative_e2e": representative_e2e,
+        "product_expansion_coverage": product_expansion_coverage,
     }
