@@ -82,6 +82,10 @@ APPROVED_RUNTIME_SUPPORT_TABLES = {
         "metadata for SUBMIT_ANSWERS runtime; support storage outside the "
         "immutable 32-table domain contract."
     ),
+    "support_consultation_handoff": (
+        "Sanitized AI-to-consultant handoff ledger; Week-6 runtime bridge "
+        "outside the immutable 32-table domain contract."
+    ),
 }
 
 
