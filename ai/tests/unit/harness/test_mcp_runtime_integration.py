@@ -64,6 +64,10 @@ def _output_payload():
                 "summary": "공식 근거입니다.",
                 "similarity_score": 0.91,
                 "verification_status": "official_verified",
+                "model_code": "WPUJAC104DWH",
+                "product_generation": "D",
+                "allowed_use": True,
+                "runtime_eligible": True,
             }
         ],
         "vector_search_executed": True,
@@ -117,6 +121,27 @@ def test_invalid_mcp_response_is_sanitized():
     assert exc_info.value.kind == McpEvidenceFailureKind.INVALID_RESPONSE
     assert exc_info.value.retryable is False
     assert "unexpected" not in str(exc_info.value)
+
+
+def test_mcp_search_preserves_actual_cross_model_identity_for_outer_guard():
+    payload = _output_payload()
+    payload["evidence_references"][0]["model_code"] = "WPUIAC606SNW"
+    payload["evidence_references"][0]["product_generation"] = "IAC606"
+    service = McpEvidenceSearchService(
+        client_factory=lambda: _FakeMcpClient(payload)
+    )
+
+    results = service.search(
+        RetrievalQuery(
+            query_text="물이 나오지 않아요",
+            model_code="WPUIAC425SNW",
+            product_generation="IAC425",
+            top_k=5,
+        )
+    )
+
+    assert results[0].model_code == "WPUIAC606SNW"
+    assert results[0].product_generation == "IAC606"
 
 
 def _ctx() -> PipelineContext:

@@ -150,7 +150,9 @@ class HarnessVerifier:
                 VerificationIssue(
                     code=VerificationIssueCode.NO_EVIDENCE,
                     message="No product-matched evidence is available for final guidance.",
-                    retryable=True,
+                    # A successful search that returns zero eligible evidence is a
+                    # terminal business outcome, not a transient provider failure.
+                    retryable=False,
                 )
             )
 
@@ -174,13 +176,31 @@ class HarnessVerifier:
                 )
             )
 
+        retryable_retrieval_issue_codes = {
+            VerificationIssueCode.UNVERIFIED_EVIDENCE,
+            VerificationIssueCode.WRONG_MODEL_EVIDENCE,
+            VerificationIssueCode.PRODUCT_FAMILY_MISMATCH,
+        }
+        has_retryable_retrieval_issue = any(
+            issue.retryable and issue.code in retryable_retrieval_issue_codes
+            for issue in issues
+        )
+
         if not safety_valid:
             decision = HarnessDecision.ESCALATE
         elif not product_result.function_compatibility_valid:
             decision = HarnessDecision.HUMAN_REVIEW
+        elif evidence_required and not evidence_present:
+            # Retry only when retrieval produced unusable/contaminated evidence.
+            # A clean zero-result search is terminal NO_EVIDENCE and escalates
+            # immediately with retry_count=0.
+            decision = (
+                HarnessDecision.RETRY_RETRIEVAL
+                if has_retryable_retrieval_issue
+                else HarnessDecision.ESCALATE
+            )
         elif evidence_required and (
-            not evidence_present
-            or not product_result.model_match_valid
+            not product_result.model_match_valid
             or not product_result.product_family_valid
         ):
             decision = HarnessDecision.RETRY_RETRIEVAL

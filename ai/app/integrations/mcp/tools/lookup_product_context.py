@@ -1,135 +1,72 @@
+"""MCP Tool for the subscription-owned exact Product Context."""
+
 from __future__ import annotations
 
+from collections.abc import Callable
+from uuid import UUID
 
-from typing import Protocol
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from pydantic import BaseModel, ConfigDict, Field
-
-# MCP Context에서 발생하는 제품 불일치 오류를 사용합니다.
-from ..errors import MCPContextMismatchError
-
-from ....orchestration.harness.product_match import ProductFamily
-from ....orchestration.harness.product_registry import (
-    is_runtime_approved_model_code,
+from ....integrations.backend import (
+    BackendContextClient,
+    BackendContextFailureKind,
+    BackendProductContext,
 )
-
-
-class BackendProductContext(BaseModel):
-    """
-    Backend에서 조회한 제품 정보.
-
-    아직 실제 Backend API 계약이 확정되지 않았기 때문에
-    MCP Adapter가 필요로 하는 최소 필드만 정의한다.
-    """
-
-    model_config = ConfigDict(
-        extra="forbid",
-        str_strip_whitespace=True,
-    )
-
-    model_code: str = Field(
-        ...,
-        min_length=1,
-        max_length=100,
-    )
-
-    product_family: ProductFamily
-
-    supported_functions: set[str] = Field(
-        default_factory=set,
-    )
-
-
-class ProductContextReader(Protocol): # 나는 제품 정보를 어디서 가져오는지 모르겠고, get_product_context()라는 기능만 있으면 됨
-    """
-    제품 Context를 제공하는 객체가 따라야 하는 계약.
-
-    실제 BackendContextClient가 완성되면
-    이 인터페이스를 만족하도록 연결한다.
-    """
-
-    def get_product_context(
-        self,
-        model_code: str,
-    ) -> BackendProductContext:
-        ...
+from .backend_context_common import fetch_backend_context
 
 
 class LookupProductContextInput(BaseModel):
-    """MCP lookup_product_context Tool 입력."""
+    model_config = ConfigDict(extra="forbid")
 
-    model_config = ConfigDict(
-        extra="forbid",
-        str_strip_whitespace=True,
-    )
-
-    model_code: str = Field(
-        ...,
-        min_length=1,
-        max_length=100,
-        description="고객 구독에서 확인한 정확한 판매 모델 코드",
-    )
+    inquiry_id: UUID
+    correlation_id: UUID
 
 
 class LookupProductContextOutput(BaseModel):
-    """MCP lookup_product_context Tool 출력."""
+    model_config = ConfigDict(extra="forbid")
 
-    model_code: str
+    success: bool
+    inquiry_id: UUID
+    correlation_id: UUID
+    product_context: BackendProductContext | None = None
+    failure_kind: BackendContextFailureKind | None = None
+    retryable: bool = False
 
-    product_family: ProductFamily
-
-    supported_functions: list[str] = Field(
-        default_factory=list,
-    )
-
-    runtime_approved: bool
+    @model_validator(mode="after")
+    def validate_result(self) -> "LookupProductContextOutput":
+        valid = (
+            self.product_context is not None and self.failure_kind is None
+            if self.success
+            else self.product_context is None and self.failure_kind is not None
+        )
+        if not valid:
+            raise ValueError("Product Context Tool result is inconsistent")
+        return self
 
 
 class LookupProductContextAdapter:
-    """
-    Backend Product Context를
-    MCP Tool 출력 계약으로 변환한다.
-    """
-
     def __init__(
         self,
-        context_reader: ProductContextReader,
+        client_factory: Callable[[], BackendContextClient] = (
+            BackendContextClient.from_environment
+        ),
     ) -> None:
-        self.context_reader = context_reader
+        self.client_factory = client_factory
 
     def execute(
         self,
         request: LookupProductContextInput,
     ) -> LookupProductContextOutput:
-        requested_model_code = ( # 요청을 실수로 보내도 소문자로 보내도 정규화 되게 함
-            request.model_code.strip().upper()
+        context, failure_kind, retryable = fetch_backend_context(
+            inquiry_id=request.inquiry_id,
+            correlation_id=request.correlation_id,
+            client_factory=self.client_factory,
         )
-
-        product = self.context_reader.get_product_context(
-            requested_model_code
-        )
-
-        backend_model_code = (
-            product.model_code.strip().upper()
-        )
-
-        if backend_model_code != requested_model_code:
-         # 요청 제품과 Backend가 돌려준 제품이 다르면
-         # 다른 제품의 정보를 AI가 사용하지 못하도록 즉시 차단합니다.
-            raise MCPContextMismatchError(
-                "Backend Product Context의 model_code가 "
-                "요청한 model_code와 일치하지 않습니다."
-            )
-
         return LookupProductContextOutput(
-            model_code=backend_model_code,
-            product_family=product.product_family,
-            supported_functions=sorted(
-                product.supported_functions
-            ),
-            runtime_approved=( # AI가 집적 판단함
-                is_runtime_approved_model_code(
-                    backend_model_code
-                )
-            ),
+            success=context is not None,
+            inquiry_id=request.inquiry_id,
+            correlation_id=request.correlation_id,
+            product_context=(context.product_context if context is not None else None),
+            failure_kind=failure_kind,
+            retryable=retryable,
         )

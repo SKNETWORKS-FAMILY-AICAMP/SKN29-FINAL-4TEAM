@@ -29,19 +29,13 @@ class WaterBridgeMCPClient:
         """
         return Path(__file__).resolve().parents[3]
 
-    @staticmethod
-    def _server_module() -> str:
-        """
-        MCP Server? Python Package Module ??? ???? ?? ?????.
+    @classmethod
+    def _server_path(cls) -> Path:
+        return cls._ai_root() / "app" / "integrations" / "mcp" / "server.py"
 
-        ??? ?? ???? ??:
-
-            python -m app.integrations.mcp.server
-
-        ??? ???? server.py ??? ?? import? ?? ?????.
-        """
-
-        return "app.integrations.mcp.server"
+    @classmethod
+    def _repository_root(cls) -> Path:
+        return cls._ai_root().parent
 
     @classmethod
     def _server_environment(cls) -> dict[str, str]:
@@ -51,13 +45,17 @@ class WaterBridgeMCPClient:
         Secret을 로그에 출력하거나 Tool Argument로 전달하지 않는다.
         """
         environment = {
-            "PYTHONPATH": str(cls._ai_root()),
+            "PYTHONPATH": str(cls._repository_root()),
         }
 
         optional_keys = (
             "AI_VECTOR_DSN",
             "AI_VECTOR_TABLE_NAME",
             "AI_EMBEDDING_REVISION",
+            "AI_RAG_RUNTIME_PROFILE",
+            "AI_BACKEND_BASE_URL",
+            "AI_HANDOFF_INTERNAL_TOKEN",
+            "AI_BACKEND_CONTEXT_TIMEOUT_SECONDS",
         )
 
         for key in optional_keys:
@@ -75,17 +73,9 @@ class WaterBridgeMCPClient:
 
         server_params = StdioServerParameters(
             command=sys.executable,
-            # server.py ??? ?? ???? ??
-            # Python Package Module ??? ?????.
-            #
-            # ?? ??:
-            # python -m app.integrations.mcp.server
-            args=[
-                "-m",
-                self._server_module(),
-            ],
+            args=["-m", "ai.app.integrations.mcp.server"],
             env=self._server_environment(),
-            cwd=str(self._ai_root()),
+            cwd=str(self._repository_root()),
         )
 
         read_stream, write_stream = await self._exit_stack.enter_async_context(

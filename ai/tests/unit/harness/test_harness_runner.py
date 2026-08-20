@@ -63,6 +63,27 @@ def test_pass_when_all_gates_match():
     assert result.verification.passed is True
 
 
+def test_no_evidence_escalates_without_retrieval_retry():
+    result = HarnessRunner().run(
+        product=_product(),
+        evidence_chunks=[],
+        safety_assessment=_safety(),
+        guidance=_guidance(UsageGuidanceStatus.PENDING_CONSULTATION),
+    )
+
+    assert result.decision == HarnessDecision.ESCALATE
+    assert result.should_retry is False
+    assert result.should_escalate is True
+    assert result.retry_state.retrieval_retries == 0
+    no_evidence = [
+        issue
+        for issue in result.verification.issues
+        if issue.code.value == "NO_EVIDENCE"
+    ]
+    assert len(no_evidence) == 1
+    assert no_evidence[0].retryable is False
+
+
 def test_wrong_model_requests_one_retrieval_retry_then_no_evidence_escalation():
     first = HarnessRunner().run(
         product=_product(),

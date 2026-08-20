@@ -26,6 +26,10 @@ from ai.app.orchestration.harness.product_registry import (
 from ai.app.orchestration.harness.verification_result import HarnessDecision
 from ai.app.orchestration.pipeline_router import PipelineRouter
 from ai.app.retrieval.models.retrieval_query import RetrievalQuery
+from ai.app.retrieval.runtime_profile import (
+    RagRuntimeProfile,
+    resolve_rag_runtime_profile,
+)
 
 
 THREE_MODEL_CASES = (
@@ -51,8 +55,25 @@ def _require_three_model_e2e() -> None:
         )
 
 
-def _runtime_router() -> PipelineRouter:
+def _selected_three_model_profile() -> RagRuntimeProfile:
+    """Require the explicit integration-only profile for this gated suite."""
+
     _require_three_model_e2e()
+    profile = resolve_rag_runtime_profile()
+    if profile.name != "three_model_integration":
+        pytest.fail(
+            "3모델 E2E에는 "
+            "AI_RAG_RUNTIME_PROFILE=three_model_integration이 필요합니다."
+        )
+    if profile.activation_scope != "INTEGRATION_VERIFICATION_ONLY":
+        pytest.fail(
+            "3모델 E2E Profile의 통합검증 전용 계약이 유지되지 않았습니다."
+        )
+    return profile
+
+
+def _runtime_router() -> PipelineRouter:
+    _selected_three_model_profile()
     router = PipelineRouter()
     if router.retrieval_configuration_error is not None:
         pytest.fail("3모델 E2E용 Retrieval Runtime 설정이 유효하지 않습니다.")
@@ -79,12 +100,19 @@ def _run_pipeline(
 
 
 def test_three_model_runtime_approval_is_active() -> None:
-    """Guard 해제 이후 세 판매코드가 모두 Runtime 승인 상태여야 한다."""
+    """Selected integration profile must approve all three exact sales codes."""
 
-    _require_three_model_e2e()
+    profile = _selected_three_model_profile()
+
+    assert profile.approved_model_codes == frozenset(
+        model_code for model_code, _query in THREE_MODEL_CASES
+    )
 
     for model_code, _query in THREE_MODEL_CASES:
-        assert is_runtime_approved_model_code(model_code) is True
+        assert is_runtime_approved_model_code(
+            model_code,
+            runtime_approved_model_codes=profile.approved_model_codes,
+        ) is True
 
 
 @pytest.mark.parametrize(("model_code", "query_text"), THREE_MODEL_CASES)
