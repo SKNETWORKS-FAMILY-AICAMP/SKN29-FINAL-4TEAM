@@ -12,6 +12,9 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from apps.consultations.repositories.consultation_repository import (
     ConsultationRepository,
 )
+from apps.consultations.repositories.consultation_handoff_repository import (
+    ConsultationHandoffRepository,
+)
 from apps.inquiries.models import Inquiry
 from apps.inquiries.repositories.inquiry_repository import InquiryRepository
 from apps.inquiries.services.synthetic_e2e_assignment_service import (
@@ -167,6 +170,10 @@ class ConsultationRequestService:
             idempotency_key=idempotency_key,
             correlation_id=correlation_id,
             current=current_consultation,
+        )
+        ConsultationHandoffRepository.attach_to_latest_consultation(
+            inquiry=inquiry,
+            consultation=consultation,
         )
         InquiryRepository.apply_state_transition(
             inquiry,

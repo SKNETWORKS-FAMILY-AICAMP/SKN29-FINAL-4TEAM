@@ -9,9 +9,8 @@ AI NO_EVIDENCE
     -> Consultation WAITING
     -> consultant GET /api/v1/inquiries and detail
 
-A second strict-xfail documents the remaining Week-6 blocker:
-the internal AI ConsultationHandoffResult is not yet persisted into the
-Backend Consultation.ai_draft_summary / consultant Web projection.
+The second case persists a sanitized internal AI handoff before the customer
+creates a Consultation, then verifies the same draft in the consultant view.
 """
 
 from __future__ import annotations
@@ -22,11 +21,12 @@ from uuid import uuid4
 
 import httpx
 import pytest
+from django.test import override_settings
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
 from apps.audit.models import AIRun
-from apps.consultations.models import Consultation
+from apps.consultations.models import Consultation, ConsultationHandoff
 from apps.inquiries.models import Inquiry, SymptomEntry
 from apps.inquiries.services.inquiry_ai_service import InquiryAIService
 from apps.inquiries.services.synthetic_e2e_assignment_service import (
@@ -44,6 +44,7 @@ from integrations.ai.schema_validator import DEFAULT_CONTRACT_ROOT
 pytestmark = pytest.mark.django_db
 
 TARGET_MODEL_CODE = "WPUJAC104DWH"
+INTERNAL_HANDOFF_TOKEN = "test-protected-ai-handoff-token"
 
 
 def _create_user(*, username: str, role: str) -> User:
@@ -178,15 +179,45 @@ def _client_for(user: User) -> APIClient:
     return client
 
 
-def _run_same_inquiry_bridge() -> tuple[Inquiry, Consultation, dict]:
+def _handoff_payload(
+    *,
+    inquiry: Inquiry,
+    correlation_id,
+    ai_request_id,
+) -> dict:
+    return {
+        "inquiry_id": str(inquiry.public_id),
+        "correlation_id": str(correlation_id),
+        "ai_request_id": str(ai_request_id),
+        "model_code": TARGET_MODEL_CODE,
+        "product_family": "WATER_PURIFIER",
+        "customer_symptom_summary": "출수량 저하가 확인되어 상담 확인이 필요합니다.",
+        "questionnaire_answers": [],
+        "self_help_actions": [],
+        "evidence": [],
+        "safety_level": "unknown",
+        "safety_requires_consultation": False,
+        "safety_notes": ["공식 근거 없음"],
+        "escalation_reason": "NO_EVIDENCE",
+        "consultant_priority_checks": ["제품 상태와 출수 환경 확인"],
+        "source_chunk_ids": [],
+    }
+
+
+def _run_same_inquiry_bridge(
+    *,
+    persist_handoff: bool = False,
+) -> tuple[Inquiry, Consultation, dict]:
     customer, consultant, inquiry = _create_runtime_fixture()
     ai_client, http_client = _ai_client()
+    correlation_id = uuid4()
+    ai_request_id = f"ai-handoff-{uuid4().hex}"
 
     try:
         outcome = InquiryAIService.analyze_inquiry(
             inquiry_public_id=inquiry.public_id,
-            correlation_id=uuid4(),
-            ai_request_id=f"ai-handoff-{uuid4().hex}",
+            correlation_id=correlation_id,
+            ai_request_id=ai_request_id,
             client=ai_client,
         )
     finally:
@@ -208,6 +239,25 @@ def _run_same_inquiry_bridge() -> tuple[Inquiry, Consultation, dict]:
     assert inquiry.assigned_user is None
     assert inquiry.assigned_role_code == Inquiry.AssignedRole.NONE
     assert not Consultation.objects.filter(inquiry=inquiry).exists()
+
+    if persist_handoff:
+        handoff_response = APIClient().post(
+            (
+                f"/api/v1/internal/ai/inquiries/{inquiry.public_id}/"
+                "consultation-handoffs"
+            ),
+            _handoff_payload(
+                inquiry=inquiry,
+                correlation_id=correlation_id,
+                ai_request_id=ai_request_id,
+            ),
+            format="json",
+            HTTP_X_AI_HANDOFF_TOKEN=INTERNAL_HANDOFF_TOKEN,
+            HTTP_IDEMPOTENCY_KEY=ai_request_id,
+            HTTP_X_CORRELATION_ID=str(correlation_id),
+        )
+        assert handoff_response.status_code == 201
+        assert handoff_response.data["data"]["consultation_id"] is None
 
     request_response = _client_for(customer).post(
         f"/api/v1/inquiries/{inquiry.public_id}/request-consultation",
@@ -277,19 +327,19 @@ def test_ai_no_evidence_customer_confirmation_reaches_consultant_projection():
     assert detail["inquiry"]["inquiry_id"] == str(inquiry.public_id)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Week-6 blocker: AI ConsultationHandoffResult is excluded from the "
-        "public analysis contract and no Backend Handoff persistence API "
-        "currently populates Consultation.ai_draft_summary."
-    ),
-)
+@override_settings(AI_HANDOFF_INTERNAL_TOKEN=INTERNAL_HANDOFF_TOKEN)
 def test_consultant_projection_contains_persisted_ai_handoff_draft():
-    """Remove xfail when ESCALATE -> Handoff -> Backend -> Web is truly wired."""
+    """Persist the AI handoff before Consultation and expose its safe draft."""
 
-    _inquiry, _consultation, detail = _run_same_inquiry_bridge()
+    inquiry, consultation, detail = _run_same_inquiry_bridge(
+        persist_handoff=True
+    )
 
     ai_draft = detail["consultation"]["summary"]["ai_draft_summary"]
     assert isinstance(ai_draft, str)
     assert ai_draft.strip()
+    assert "출수량 저하" in ai_draft
+    handoff = ConsultationHandoff.objects.get(inquiry=inquiry)
+    assert handoff.consultation == consultation
+    assert handoff.ai_draft_summary == ai_draft
+    assert ConsultationHandoff.objects.filter(inquiry=inquiry).count() == 1
