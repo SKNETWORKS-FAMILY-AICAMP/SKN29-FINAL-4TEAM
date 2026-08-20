@@ -31,8 +31,8 @@ class ContractValidatorsTest(unittest.TestCase):
     def test_openapi_refs_paths_and_operations_are_resolvable(self) -> None:
         result = validate_openapi.validate_repository(REPO_ROOT)
 
-        self.assertEqual(41, result.paths)
-        self.assertEqual(46, result.operations)
+        self.assertEqual(42, result.paths)
+        self.assertEqual(47, result.operations)
         self.assertGreater(result.references, 0)
 
     def test_json_examples_are_parseable_and_referenced(self) -> None:
