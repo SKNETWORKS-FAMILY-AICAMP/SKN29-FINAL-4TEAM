@@ -41,6 +41,10 @@ import {
 } from "../../features/consultation/model/consultantWorkspaceModel";
 import { getConsultantDashboardDate } from "../../features/consultation/model/consultantDashboardDate";
 import { getConsultantDisplayName } from "../../features/consultation/model/consultantDisplayName";
+import {
+  readRecentConsultantInquiryIds,
+  rememberRecentConsultantInquiryId,
+} from "../../features/consultation/model/recentConsultantInquiryIds";
 import type {
   CounselorAllowedAction,
   CounselorStatus,
@@ -99,6 +103,7 @@ const RISK_SECTIONS: readonly {
 
 type RiskSectionStatusFilter = "ALL" | ConsultantInquiryStatusDto;
 type WorkFocus = "ALL" | "NEW" | "IN_PROGRESS";
+type RecentInquiryLoadState = "loading" | "ready" | "error";
 type DashboardInquiryListItem = Omit<
   ConsultantInquiryListItemViewModel,
   "status" | "allowedActions"
@@ -112,6 +117,20 @@ const RISK_LABELS: Record<ConsultantRiskLevelDto, string> = {
   caution: "주의",
   general: "일반",
 };
+
+interface RecentInquiryPreview {
+  inquiryId: InquiryId;
+  inquiryCode: string;
+  title: string;
+  status: ConsultantInquiryStatusDto;
+  riskLevel: ConsultantRiskLevelDto;
+}
+
+interface RecentInquiryResult {
+  requestKey: string;
+  previews: readonly RecentInquiryPreview[];
+  failed: boolean;
+}
 
 const WORK_FOCUS_OPTIONS: readonly {
   id: WorkFocus;
@@ -215,6 +234,30 @@ export default function ConsultantDashboardPage() {
     "loading" | "ready" | "error"
   >(() => (appEnv.useMockApi ? "ready" : "loading"));
   const [dashboardRetryCount, setDashboardRetryCount] = useState(0);
+  const [recentInquiryIds, setRecentInquiryIds] = useState<readonly InquiryId[]>(
+    () =>
+      user?.id ? readRecentConsultantInquiryIds(user.id) : [],
+  );
+  const [recentInquiryResult, setRecentInquiryResult] =
+    useState<RecentInquiryResult>({
+      requestKey: "",
+      previews: [],
+      failed: false,
+    });
+  const recentInquiryRequestKey = recentInquiryIds.join("|");
+  const hasCurrentRecentInquiryResult =
+    recentInquiryResult.requestKey === recentInquiryRequestKey;
+  const recentInquiryPreviews = hasCurrentRecentInquiryResult
+    ? recentInquiryResult.previews
+    : [];
+  const recentInquiryLoadState: RecentInquiryLoadState =
+    recentInquiryIds.length === 0
+      ? "ready"
+      : !hasCurrentRecentInquiryResult
+        ? "loading"
+        : recentInquiryResult.failed
+          ? "error"
+          : "ready";
 
   useEffect(() => {
     const timerId = window.setInterval(() => setDashboardNow(new Date()), 60_000);
@@ -243,6 +286,49 @@ export default function ConsultantDashboardPage() {
       active = false;
     };
   }, [dashboardRetryCount]);
+
+  useEffect(() => {
+    if (recentInquiryIds.length === 0) return;
+
+    let active = true;
+
+    void Promise.all(
+      recentInquiryIds.map(async (recentInquiryId) => {
+        try {
+          const result =
+            await consultantWorkspaceDataRepository.getInquiryDetail(
+              recentInquiryId,
+            );
+          const inquiryId = toInquiryId(result.data.inquiryId);
+          if (!inquiryId) return null;
+
+          return {
+            inquiryId,
+            inquiryCode: result.data.inquiryCode,
+            title: result.data.symptomAndQuestionnaire.symptomSummary,
+            status: result.data.status,
+            riskLevel: result.data.riskLevel,
+          } satisfies RecentInquiryPreview;
+        } catch {
+          return null;
+        }
+      }),
+    ).then((previews) => {
+      if (!active) return;
+      const availablePreviews = previews.filter(
+        (preview): preview is RecentInquiryPreview => preview !== null,
+      );
+      setRecentInquiryResult({
+        requestKey: recentInquiryRequestKey,
+        previews: availablePreviews,
+        failed: availablePreviews.length === 0,
+      });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [recentInquiryIds, recentInquiryRequestKey]);
 
   const [selectedInquiryId, setSelectedInquiryId] =
     useState<InquiryId | null>(null);
@@ -505,12 +591,25 @@ export default function ConsultantDashboardPage() {
       currentIndex < 0
         ? queuePage.items[0]
         : queuePage.items[currentIndex + 1] ?? queuePage.items[0];
-    setSelectedInquiryId(toInquiryId(nextInquiry.inquiryId));
+    const nextInquiryId = toInquiryId(nextInquiry.inquiryId);
+    if (!nextInquiryId) return;
+    if (user?.id) {
+      setRecentInquiryIds(
+        rememberRecentConsultantInquiryId(user.id, nextInquiryId),
+      );
+    }
+    setSelectedInquiryId(nextInquiryId);
   };
 
   const openInquiry = (rawInquiryId: string) => {
     const inquiryId = toInquiryId(rawInquiryId);
     if (!inquiryId) return;
+
+    if (user?.id) {
+      setRecentInquiryIds(
+        rememberRecentConsultantInquiryId(user.id, inquiryId),
+      );
+    }
 
     if (useDashboardMockData) {
       setSelectedInquiryId(inquiryId);
@@ -630,6 +729,70 @@ export default function ConsultantDashboardPage() {
         </section>
 
         <section className="counselor-dashboard-info" aria-label="사내 업무 정보">
+          <article className="counselor-dashboard-info__panel counselor-dashboard-info__panel--recent">
+            <header>
+              <h2>최근 본 문의</h2>
+            </header>
+            {recentInquiryLoadState === "loading" ? (
+              <p className="counselor-dashboard-recent__state" role="status">
+                최근 본 문의를 불러오고 있습니다.
+              </p>
+            ) : recentInquiryLoadState === "error" ? (
+              <p className="counselor-dashboard-recent__state" role="status">
+                최근 본 문의를 표시하지 못했습니다.
+              </p>
+            ) : recentInquiryPreviews.length === 0 ? (
+              <div className="counselor-dashboard-recent__empty">
+                <strong>아직 본 문의가 없습니다.</strong>
+                <span>문의 목록에서 상세를 열면 여기에 표시됩니다.</span>
+              </div>
+            ) : (
+              <ul
+                className="counselor-dashboard-recent"
+                aria-label="최근 본 문의 목록"
+              >
+                {recentInquiryPreviews.map((inquiry) => (
+                  <li key={inquiry.inquiryId}>
+                    <button
+                      type="button"
+                      className="counselor-dashboard-recent__item"
+                      data-risk={inquiry.riskLevel}
+                      data-e2e-sensitive="true"
+                      onClick={() => openInquiry(inquiry.inquiryId)}
+                      aria-label={`${inquiry.inquiryCode} ${inquiry.title} 다시 열기`}
+                    >
+                      <span
+                        className="counselor-dashboard-recent__rail"
+                        data-risk={inquiry.riskLevel}
+                        aria-hidden="true"
+                      />
+                      <span className="counselor-dashboard-recent__copy">
+                        <strong className="counselor-dashboard-recent__title">
+                          {inquiry.title}
+                        </strong>
+                        <small className="counselor-dashboard-recent__meta">
+                          {inquiry.inquiryCode} · {RISK_LABELS[inquiry.riskLevel]}
+                        </small>
+                      </span>
+                      <span
+                        className="counselor-dashboard-recent__status"
+                        data-status={inquiry.status}
+                      >
+                        {STATUS_LABELS[inquiry.status]}
+                      </span>
+                      <i
+                        className="counselor-dashboard-recent__arrow"
+                        aria-hidden="true"
+                      >
+                        ›
+                      </i>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </article>
+
           <article className="counselor-dashboard-info__panel counselor-dashboard-info__panel--notices">
             <header>
               <h2>공지사항</h2>

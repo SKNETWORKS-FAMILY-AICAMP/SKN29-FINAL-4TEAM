@@ -1,12 +1,16 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "../../src/app/providers/AuthProvider";
 import { AppRoutes } from "../../src/app/router/AppRouter";
 import { CONSULTANT_QUEUE_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
 import { getCounselorWorkBucket } from "../../src/features/consultation/model/consultantWorkspaceModel";
+import {
+  clearRecentConsultantInquiryIds,
+  rememberRecentConsultantInquiryId,
+} from "../../src/features/consultation/model/recentConsultantInquiryIds";
 import type { CounselorWorkBucket } from "../../src/features/consultation/model/consultantWorkspaceTypes";
 
 const CONSULTANT_USER = {
@@ -63,6 +67,10 @@ async function openInquiry(
 }
 
 describe("ConsultantDashboardPage", () => {
+  beforeEach(() => {
+    clearRecentConsultantInquiryIds(CONSULTANT_USER.id);
+  });
+
   it("첫 화면은 개인 업무 요약과 세 가지 업무 탭을 함께 보여준다", () => {
     renderPage();
 
@@ -83,13 +91,15 @@ describe("ConsultantDashboardPage", () => {
     expect(workSummary.getByRole("button", { name: /처리 중인 문의30/ })).toBeVisible();
     expect(workSummary.queryByText("전날 대비")).not.toBeInTheDocument();
     expect(workSummary.queryByText("AI 검토")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "최근 본 문의" })).toBeVisible();
+    expect(screen.getByText("아직 본 문의가 없습니다.")).toBeVisible();
     expect(screen.getByRole("heading", { name: "공지사항" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "직원 연락처" })).toBeVisible();
-    expect(screen.getAllByRole("listitem")).toHaveLength(6);
     expect(screen.getByLabelText("조직도")).toBeVisible();
     const noticePanel = within(
       screen.getByRole("heading", { name: "공지사항" }).closest("article")!,
     );
+    expect(noticePanel.getAllByRole("listitem")).toHaveLength(6);
     ["긴급", "이벤트", "시스템", "근무", "복지", "교육"].forEach(
       (category) => expect(noticePanel.getByText(category)).toBeVisible(),
     );
@@ -124,6 +134,39 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.getByLabelText("상담 문의 목록")).not.toBeVisible();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: /상담 기록/ })).not.toBeInTheDocument();
+  });
+
+  it("최근에 본 문의를 최신순으로 세션에서 불러와 다시 연다", async () => {
+    const user = userEvent.setup();
+    const olderInquiry = CONSULTANT_QUEUE_INQUIRIES[0];
+    const newerInquiry = CONSULTANT_QUEUE_INQUIRIES[1];
+    rememberRecentConsultantInquiryId(
+      CONSULTANT_USER.id,
+      olderInquiry.inquiryId,
+    );
+    rememberRecentConsultantInquiryId(
+      CONSULTANT_USER.id,
+      newerInquiry.inquiryId,
+    );
+
+    renderPage();
+
+    const recentList = await screen.findByRole("list", {
+      name: "최근 본 문의 목록",
+    });
+    const recentItems = within(recentList).getAllByRole("button");
+    expect(recentItems).toHaveLength(2);
+    expect(recentItems[0]).toHaveTextContent(newerInquiry.inquiryCode);
+    expect(recentItems[0]).toHaveTextContent(newerInquiry.customerMessage);
+    expect(recentItems[1]).toHaveTextContent(olderInquiry.inquiryCode);
+
+    const infoPanels = Array.from(
+      screen.getByLabelText("사내 업무 정보").querySelectorAll(":scope > article"),
+    ).map((panel) => panel.querySelector("h2")?.textContent);
+    expect(infoPanels).toEqual(["최근 본 문의", "공지사항", "직원 연락처"]);
+
+    await user.click(recentItems[0]);
+    expect(screen.getByRole("dialog")).toBeVisible();
   });
 
   it("조직도에서 부서를 선택하면 직원 연락처 목록을 표시한다", async () => {

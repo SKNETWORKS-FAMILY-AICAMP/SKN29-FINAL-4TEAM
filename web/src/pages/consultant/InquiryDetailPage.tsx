@@ -6,6 +6,7 @@ import {
   getSafeInquiryListReturnPath,
   ROUTE_PATHS,
 } from "../../app/router/routePaths";
+import { useAuth } from "../../app/providers/authContext";
 import { ApiClientError } from "../../common/api/apiError";
 import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
@@ -20,6 +21,9 @@ import RemoteConsultantInquiryDetail from "../../features/consultation/component
 import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
 import { useConsultantInquiryDetailQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
 import { getCounselorMetrics } from "../../features/consultation/model/consultantWorkspaceModel";
+import {
+  rememberRecentConsultantInquiryId,
+} from "../../features/consultation/model/recentConsultantInquiryIds";
 import type { DetailTab } from "../../features/consultation/model/consultantWorkspaceTypes";
 import { consultantWorkspaceDataRepository } from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
 import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
@@ -47,6 +51,7 @@ const READY_SECTIONS: ConsultantDetailSectionStates = {
 export default function InquiryDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const { inquiryId: rawInquiryId } = useParams<{ inquiryId: string }>();
   const [detailTab, setDetailTab] = useState<DetailTab>("summary");
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -88,6 +93,19 @@ export default function InquiryDetailPage() {
       document.body.classList.remove("v6-body", "v6-body--counselor");
     };
   }, []);
+
+  useEffect(() => {
+    if (
+      !user?.id ||
+      !inquiryId ||
+      loadState !== "ready" ||
+      (!inquiry && !remoteDetail)
+    ) {
+      return;
+    }
+
+    rememberRecentConsultantInquiryId(user.id, inquiryId);
+  }, [inquiry, inquiryId, loadState, remoteDetail, user?.id]);
 
   const metrics = useMemo(
     () =>
