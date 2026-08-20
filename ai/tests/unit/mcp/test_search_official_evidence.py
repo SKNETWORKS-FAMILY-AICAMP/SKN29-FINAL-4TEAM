@@ -1,16 +1,16 @@
 from types import SimpleNamespace
 
-import app.retrieval.filters.evidence_topic_filter as topic_filter_module
+import ai.app.retrieval.filters.evidence_topic_filter as topic_filter_module
 
-from app.integrations.mcp.tools.search_official_evidence import (
+from ai.app.integrations.mcp.tools.search_official_evidence import (
     SearchOfficialEvidenceAdapter,
     SearchOfficialEvidenceInput,
 )
-from app.retrieval.models.retrieved_chunk import RetrievedChunk
+from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk
 
 # 실제 VectorSearchService를 사용해서
 # "다른 제품의 Evidence가 정말 제거되는지" 검증합니다.
-from app.retrieval.search.vector_search import VectorSearchService
+from ai.app.retrieval.search.vector_search import VectorSearchService
 
 
 class FakeSearchService:

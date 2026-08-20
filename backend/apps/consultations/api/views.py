@@ -3,20 +3,79 @@
 from uuid import UUID
 
 from django.db import transaction
+from drf_spectacular.utils import extend_schema
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from apps.consultations.api.handoff_serializers import (
+    ConsultationHandoffRequestSerializer,
+)
 from apps.consultations.api.serializers import (
     CompleteConsultationRequestSerializer,
     SaveConsultationRequestSerializer,
     StateTransitionRequestSerializer,
 )
-from apps.consultations.permissions import IsConsultant
+from apps.consultations.permissions import HasValidAIHandoffToken, IsConsultant
+from apps.consultations.services.consultation_handoff_service import (
+    ConsultationHandoffService,
+)
 from apps.consultations.services.consultation_service import (
     ConsultationService,
 )
 from common.api.request_headers import require_idempotency_key
 from common.api.response import success_response
+
+
+@extend_schema(exclude=True)
+class InternalAIConsultationHandoffView(APIView):
+    """Receive one sanitized handoff from the trusted AI service."""
+
+    authentication_classes = []
+    permission_classes = [HasValidAIHandoffToken]
+
+    def post(self, request, inquiry_id: UUID):
+        serializer = ConsultationHandoffRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        if data["inquiry_id"] != inquiry_id:
+            raise ValidationError(
+                {"inquiry_id": ["Path와 Payload의 Inquiry가 일치해야 합니다."]}
+            )
+
+        idempotency_key = require_idempotency_key(request)
+        if idempotency_key != data["ai_request_id"]:
+            raise ValidationError(
+                {
+                    "Idempotency-Key": [
+                        "AI Request ID와 동일한 값이어야 합니다."
+                    ]
+                }
+            )
+
+        raw_correlation = request.headers.get("X-Correlation-ID", "")
+        try:
+            correlation_id = UUID(raw_correlation)
+        except (TypeError, ValueError, AttributeError):
+            raise ValidationError(
+                {"X-Correlation-ID": ["UUID 형식의 필수 헤더입니다."]}
+            ) from None
+        if correlation_id != data["correlation_id"]:
+            raise ValidationError(
+                {
+                    "X-Correlation-ID": [
+                        "Payload의 Correlation ID와 일치해야 합니다."
+                    ]
+                }
+            )
+
+        outcome = ConsultationHandoffService.persist(
+            inquiry_public_id=inquiry_id,
+            validated_data=data,
+            idempotency_key=idempotency_key,
+            correlation_id=correlation_id,
+        )
+        return success_response(outcome.data, status_code=outcome.status_code)
 
 
 class ConsultationActionView(APIView):

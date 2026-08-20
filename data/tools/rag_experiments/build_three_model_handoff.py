@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -141,7 +142,24 @@ def _clean_child_text(text: str, line_start: int, line_end: int) -> str:
 
 
 def _actions(child_text: str) -> tuple[list[str], list[str], bool]:
-    sentences = [piece.strip() for piece in child_text.split(".") if piece.strip()]
+    normalized = re.sub(
+        r"\.\s+(\([^()]*\bp\.\s*\d+\s*참고\))",
+        r" \1.",
+        child_text,
+        flags=re.IGNORECASE,
+    )
+    page_reference_marker = "__PAGE_REFERENCE_PERIOD__"
+    normalized = re.sub(
+        r"\bp\.(?=\s*\d+)",
+        lambda match: match.group(0)[:-1] + page_reference_marker,
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    sentences = [
+        piece.replace(page_reference_marker, ".").strip()
+        for piece in normalized.split(".")
+        if piece.strip()
+    ]
     consultation = [sentence + "." for sentence in sentences if "고객상담센터" in sentence]
     safe = [
         sentence + "."

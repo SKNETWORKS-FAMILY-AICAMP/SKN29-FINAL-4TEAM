@@ -27,6 +27,7 @@ REQUIRED_KEYS = {
     "POSTGRES_SSLROOTCERT",
     "DJANGO_CORS_ALLOWED_ORIGINS",
     "AI_SERVICE_BASE_URL",
+    "AI_HANDOFF_INTERNAL_TOKEN",
 }
 
 SAFE_PUBLIC_DEFAULTS = {
@@ -84,4 +85,5 @@ def test_env_example_uses_non_secret_replacement_markers():
 
     assert entries["DJANGO_SECRET_KEY"].startswith("replace-with-")
     assert entries["POSTGRES_PASSWORD"].startswith("replace-with-")
+    assert entries["AI_HANDOFF_INTERNAL_TOKEN"].startswith("replace-with-")
     assert entries["POSTGRES_SSLROOTCERT"] == ""

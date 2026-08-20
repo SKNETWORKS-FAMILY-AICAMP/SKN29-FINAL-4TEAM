@@ -10,6 +10,13 @@ from .filters import (
 from .indexing import ChunkLoader, IndexManifest
 from .models import RetrievalQuery, RetrievedChunk
 from .runtime import RetrievalConfigurationError, RetrievalExecutionError, RetrievalOutcome
+from .runtime_profile import (
+    RUNTIME_PROFILE_ENV,
+    RagRuntimeProfile,
+    load_runtime_retrieval_policy,
+    resolve_rag_runtime_profile,
+    validate_runtime_manifest,
+)
 
 __all__ = [
     "RetrievalQuery",
@@ -24,4 +31,9 @@ __all__ = [
     "RetrievalConfigurationError",
     "RetrievalExecutionError",
     "RetrievalOutcome",
+    "RUNTIME_PROFILE_ENV",
+    "RagRuntimeProfile",
+    "load_runtime_retrieval_policy",
+    "resolve_rag_runtime_profile",
+    "validate_runtime_manifest",
 ]

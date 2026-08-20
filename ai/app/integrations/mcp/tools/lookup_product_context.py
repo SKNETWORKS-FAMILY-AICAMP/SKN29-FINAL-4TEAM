@@ -6,10 +6,10 @@ from typing import Protocol
 from pydantic import BaseModel, ConfigDict, Field
 
 # MCP Context에서 발생하는 제품 불일치 오류를 사용합니다.
-from app.integrations.mcp.errors import MCPContextMismatchError
+from ..errors import MCPContextMismatchError
 
-from app.orchestration.harness.product_match import ProductFamily
-from app.orchestration.harness.product_registry import (
+from ....orchestration.harness.product_match import ProductFamily
+from ....orchestration.harness.product_registry import (
     is_runtime_approved_model_code,
 )
 

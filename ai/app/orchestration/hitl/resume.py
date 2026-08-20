@@ -5,6 +5,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any
 
+from opentelemetry import trace
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -12,6 +13,9 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from ...schemas import UsageGuidance
 from .checkpoint import HumanReviewCheckpoint, build_hitl_thread_id, create_hitl_checkpointer
 from .interrupt import HumanReviewRequest, human_review_interrupt_node
+
+
+_HITL_TRACER = trace.get_tracer("waterbridge.ai.hitl", "1.0.0")
 
 
 class HumanReviewDecision(str, Enum):
@@ -77,6 +81,48 @@ class HumanReviewWorkflow:
         self.graph = graph.compile(checkpointer=self.checkpointer)
 
     def start(self, request: HumanReviewRequest) -> HumanReviewExecutionResult:
+        with _HITL_TRACER.start_as_current_span(
+            "waterbridge.hitl.start"
+        ) as span:
+            span.set_attribute(
+                "waterbridge.inquiry.id",
+                str(request.inquiry_id),
+            )
+            span.set_attribute(
+                "waterbridge.model.code",
+                request.model_code,
+            )
+            span.set_attribute(
+                "waterbridge.product.family",
+                request.product_family,
+            )
+            span.set_attribute(
+                "waterbridge.hitl.state_version",
+                request.state_version,
+            )
+            span.set_attribute(
+                "waterbridge.hitl.issue_count",
+                len(request.verification_issue_codes),
+            )
+            span.set_attribute(
+                "waterbridge.hitl.evidence_count",
+                len(request.evidence_chunk_ids),
+            )
+            result = self._start_untraced(request)
+            span.set_attribute(
+                "waterbridge.hitl.thread_id",
+                result.checkpoint.thread_id,
+            )
+            span.set_attribute(
+                "waterbridge.hitl.status",
+                result.status.value,
+            )
+            return result
+
+    def _start_untraced(
+        self,
+        request: HumanReviewRequest,
+    ) -> HumanReviewExecutionResult:
         checkpoint = self._checkpoint_for(request)
         raw = self.graph.invoke(
             {"request": request.model_dump(mode="json")},
@@ -85,6 +131,50 @@ class HumanReviewWorkflow:
         return self._execution_result(raw, checkpoint)
 
     def resume(
+        self,
+        *,
+        checkpoint: HumanReviewCheckpoint,
+        response: HumanReviewResume,
+    ) -> HumanReviewExecutionResult:
+        with _HITL_TRACER.start_as_current_span(
+            "waterbridge.hitl.resume"
+        ) as span:
+            span.set_attribute(
+                "waterbridge.hitl.thread_id",
+                checkpoint.thread_id,
+            )
+            span.set_attribute(
+                "waterbridge.hitl.state_version",
+                response.state_version,
+            )
+            span.set_attribute(
+                "waterbridge.hitl.decision",
+                response.decision.value,
+            )
+            span.set_attribute(
+                "waterbridge.hitl.modified_guidance.present",
+                response.modified_guidance is not None,
+            )
+            span.set_attribute(
+                "waterbridge.hitl.reviewer_note.present",
+                bool(response.reviewer_note),
+            )
+            result = self._resume_untraced(
+                checkpoint=checkpoint,
+                response=response,
+            )
+            span.set_attribute(
+                "waterbridge.hitl.status",
+                result.status.value,
+            )
+            if result.outcome is not None:
+                span.set_attribute(
+                    "waterbridge.hitl.approved",
+                    result.outcome.approved,
+                )
+            return result
+
+    def _resume_untraced(
         self,
         *,
         checkpoint: HumanReviewCheckpoint,

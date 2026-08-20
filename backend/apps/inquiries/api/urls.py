@@ -12,6 +12,7 @@ from apps.inquiries.api.views import (
     CustomerInquiryGuidanceView,
     CustomerInquiryQuestionsView,
     CustomerInquirySnapshotView,
+    InternalAIInquiryContextView,
     RegisterConsultantPhoneInquiryView,
     FinalizeInquiryView,
     ReportUnresolvedView,
@@ -24,6 +25,11 @@ from apps.inquiries.api.views import (
 
 
 urlpatterns = [
+    path(
+        "internal/ai/inquiries/<uuid:inquiry_id>/context",
+        InternalAIInquiryContextView.as_view(),
+        name="internal-ai-inquiry-context",
+    ),
     path(
         "consultant/customer-subscriptions/search",
         ConsultantCustomerSubscriptionSearchView.as_view(),

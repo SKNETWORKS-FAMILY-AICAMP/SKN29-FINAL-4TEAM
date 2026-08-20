@@ -138,3 +138,56 @@ Setup Error가 됐다. 해당 파일을 권한 분리 재실행해 7건 모두 P
 `MODEL_TABLES_OUTSIDE_CONTRACT`, `MIGRATION_TABLES_OUTSIDE_CONTRACT`다. 이 작업에서는
 다른 담당자 소유 Data 계약을 변경하지 않았으며 PM 후속 정합화 전까지 전체 Audit은
 `NOT_READY`다.
+
+## 12. 2026-08-20 AI 상담 인계 저장·Web 연결
+
+### 12.1 구현 범위
+
+```text
+AI ConsultationHandoffResult
+→ Backend 내부 저장 API
+→ Sanitized Handoff 원장
+→ 고객 REQUEST_CONSULTATION
+→ Consultation.ai_draft_summary
+→ 상담사 문의 상세 Web Projection
+```
+
+- 내부 경로: `POST /api/v1/internal/ai/inquiries/{inquiry_id}/consultation-handoffs`
+- 인증: 보호 환경변수 `AI_HANDOFF_INTERNAL_TOKEN`과
+  `X-AI-Handoff-Token`을 상수시간 비교하며 미설정 시 Fail Closed한다.
+- 동일성: Path·Payload·AIRun의 `inquiry_id`, `correlation_id`,
+  `ai_request_id`가 모두 일치하고 AIRun이 종료 상태여야 한다.
+- 멱등성: `Idempotency-Key=ai_request_id`; 같은 Payload Replay는 같은 원장을
+  반환하고, 다른 Payload 재사용은 `DUPLICATE-EVENT-01` 409로 거절한다.
+- 제품: 고객 소유 구독의 `ProductModel.model_code`를 SSOT로 사용한다.
+- Evidence: 활성·검증 Crosswalk와 제품·문서 제목·Page가 일치할 때만 저장한다.
+- 순서 독립성: AI Handoff가 Consultation보다 먼저 도착해도 별도 원장에 보존하고,
+  고객 상담 요청으로 Consultation이 생기면 같은 Transaction에서 최신 Handoff를 연결한다.
+- Web 공개: 구조화 Payload 전체가 아니라 허용된 `ai_draft_summary`만 기존 상담사
+  상세 Projection으로 제공한다.
+
+### 12.2 저장·보안 경계
+
+- 신규 Migration: `consultations.0003_consultationhandoff`
+- 신규 지원 테이블: `support_consultation_handoff`
+- Prompt, 임의 확장 필드, 전화번호·이메일 원문은 Serializer에서 거절한다.
+- 실제 Token·Password·DSN은 코드, `.env.example`, 문서, 로그에 기록하지 않는다.
+- 내부 Endpoint는 공개 OpenAPI에서 제외했다.
+- Handoff 저장 자체는 Inquiry State를 변경하거나 Consultation을 자동 생성하지 않는다.
+
+### 12.3 작성자 검증
+
+| 검증 | 결과 |
+| --- | --- |
+| Handoff API·Backend/Web Bridge·환경·Readiness 표적 | 16 passed, PostgreSQL 전용 1 skipped |
+| 실제 PostgreSQL 16/pgvector Migration·Runtime·동시 Replay | 6 passed, 0 skipped |
+| Root Contract | 38 passed |
+| Backend 전체 회귀 | 1,370 passed, 37 별도 환경 Gate skipped, 0 failed |
+| Django Check | PASS |
+| Migration Drift | NONE |
+| `git diff --check` | PASS |
+
+PostgreSQL 검증은 합성 전용 계정과 볼륨 없는 일회성 컨테이너에서 수행했으며 종료 후
+컨테이너와 Test DB를 제거했다. Backend 저장 후보는 준비됐지만 AI Runtime이 이 내부
+Endpoint를 실제 호출하는 코드는 AI 담당 범위이므로 실제 FastAPI→Django Socket
+공동 E2E는 아직 `HOLD`다.

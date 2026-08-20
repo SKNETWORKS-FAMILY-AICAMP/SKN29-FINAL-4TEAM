@@ -1,4 +1,4 @@
-from app.integrations.mcp.errors import (
+from ai.app.integrations.mcp.errors import (
     MCPContextConfigurationError,
     MCPContextMismatchError,
     MCPContextNotFoundError,

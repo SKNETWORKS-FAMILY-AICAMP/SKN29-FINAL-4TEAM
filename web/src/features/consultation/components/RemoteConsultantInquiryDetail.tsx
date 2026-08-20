@@ -70,7 +70,10 @@ export default function RemoteConsultantInquiryDetail({
         </div>
       )}
 
-      <section className="remote-inquiry-detail__section">
+      <section
+        className="remote-inquiry-detail__section"
+        data-e2e-sensitive="true"
+      >
         <h2>문의·고객 정보</h2>
         <dl className="inquiry-v13-remote-summary">
           <div>
@@ -100,7 +103,10 @@ export default function RemoteConsultantInquiryDetail({
         </dl>
       </section>
 
-      <section className="remote-inquiry-detail__section">
+      <section
+        className="remote-inquiry-detail__section"
+        data-e2e-sensitive="true"
+      >
         <h2>제품·관리 정보</h2>
         {productError ? (
           <p>제품·관리 정보를 확인할 수 없습니다.</p>
@@ -136,7 +142,10 @@ export default function RemoteConsultantInquiryDetail({
         )}
       </section>
 
-      <section className="remote-inquiry-detail__section">
+      <section
+        className="remote-inquiry-detail__section"
+        data-e2e-sensitive="true"
+      >
         <h2>증상·문진</h2>
         <p>{inquiry.symptomAndQuestionnaire.symptomSummary}</p>
         {inquiry.symptomAndQuestionnaire.answers.length > 0 && (
@@ -151,7 +160,10 @@ export default function RemoteConsultantInquiryDetail({
         )}
       </section>
 
-      <section className="remote-inquiry-detail__section">
+      <section
+        className="remote-inquiry-detail__section"
+        data-e2e-sensitive="true"
+      >
         <h2>사용 안내</h2>
         <strong>AI 안내 상태</strong>
         <p>{inquiry.guidanceAndActions.usageGuidanceStatus ?? "안내 상태 미제공"}</p>
@@ -173,7 +185,10 @@ export default function RemoteConsultantInquiryDetail({
         <p>공개 근거 미제공 / 상담 검토 필요</p>
       </section>
 
-      <section className="remote-inquiry-detail__section">
+      <section
+        className="remote-inquiry-detail__section"
+        data-e2e-sensitive="true"
+      >
         <h2>상담·방문 정보</h2>
         {inquiry.consultation === null ? (
           <p>상담 기록이 아직 제공되지 않았습니다.</p>

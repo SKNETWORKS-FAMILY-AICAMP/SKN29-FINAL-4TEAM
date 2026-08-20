@@ -12,18 +12,18 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 # 요청한 문의와 Backend가 반환한 문의가 다른 경우 사용하는 오류입니다.
-from app.integrations.mcp.errors import MCPContextMismatchError
+from ..errors import MCPContextMismatchError
 
 # 제품 종류를 나타내는 공통 Enum입니다.
 #
 # 예:
 # DIRECT_WATER_PURIFIER
 # ICE_WATER_PURIFIER
-from app.orchestration.harness.product_match import ProductFamily
+from ....orchestration.harness.product_match import ProductFamily
 
 # 해당 제품이 현재 AI Runtime 검색 대상으로 승인되어 있는지
 # 확인하는 기존 함수를 재사용합니다.
-from app.orchestration.harness.product_registry import (
+from ....orchestration.harness.product_registry import (
     is_runtime_approved_model_code,
 )
 

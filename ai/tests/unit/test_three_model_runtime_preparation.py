@@ -15,6 +15,7 @@ from ai.app.orchestration.pipeline_context import PipelineContext
 from ai.app.orchestration.stages.retrieval_stage import execute_retrieval_stage
 from ai.app.retrieval.filters.product_filter import ProductFilter
 from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk
+from ai.app.retrieval.runtime_profile import resolve_rag_runtime_profile
 from ai.app.schemas import TraceContext
 from ai.scripts.export_three_model_canonical_identity import (
     BACKEND_HANDOFF_PATH,
@@ -34,8 +35,8 @@ from ai.scripts.generate_three_model_index_manifest import (
 from ai.scripts import verify_three_model_readonly_runtime as readonly_verifier
 from ai.scripts.verify_three_model_readonly_runtime import (
     EXPECTED_TABLE,
+    _integration_product_filter,
     _load_identity_and_manifest,
-    _prepared_product_filter,
     _required_environment,
 )
 
@@ -121,7 +122,7 @@ def test_three_model_identity_rejects_text_hash_drift(tmp_path: Path) -> None:
         load_source_rows(drifted_source)
 
 
-def test_three_model_policy_is_prepared_but_active_policy_remains_jac104() -> None:
+def test_three_model_policy_is_integration_only_and_default_remains_jac104() -> None:
     policy = yaml.safe_load(
         Path("ai/configs/retrieval_policy.yaml").read_text(encoding="utf-8")
     )
@@ -130,7 +131,8 @@ def test_three_model_policy_is_prepared_but_active_policy_remains_jac104() -> No
     assert policy["answerability_capability_gate"]["supported_model_codes"] == [
         "WPUJAC104DWH"
     ]
-    assert prepared["activation_status"] == "PREPARED_NOT_ACTIVE"
+    assert prepared["activation_status"] == "INTEGRATION_VERIFICATION_ONLY"
+    assert prepared["public_runtime_activation"] == "HOLD"
     assert prepared["supported_model_codes"] == list(EXPECTED_MODEL_COUNTS)
     assert prepared["supported_generations"] == ["D", "IAC425", "IAC606"]
     assert prepared["cross_model_fallback"] is False
@@ -213,9 +215,12 @@ def test_readonly_runtime_verifier_requires_official_view_and_actual_manifest(
         _required_environment("AI_VECTOR_TABLE_NAME")
 
     assert EXPECTED_TABLE == "backend_ai_rag_chunks_v1"
-    assert _prepared_product_filter().target_models == set(EXPECTED_MODEL_COUNTS)
+    runtime_profile = resolve_rag_runtime_profile("three_model_integration")
+    assert _integration_product_filter(runtime_profile).target_models == set(
+        EXPECTED_MODEL_COUNTS
+    )
     with pytest.raises(RuntimeError, match="actual three-model index manifest"):
-        _load_identity_and_manifest()
+        _load_identity_and_manifest(runtime_profile)
 
 
 def test_readonly_runtime_verifier_does_not_print_connection_details(

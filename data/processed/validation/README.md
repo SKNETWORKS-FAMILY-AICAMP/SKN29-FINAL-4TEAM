@@ -1,6 +1,6 @@
 # Validation Reports
 
-데이터 버전 `1.0.0`, 생성 기준 `2026-07-29T00:00:00+09:00`의 검증 산출물입니다.
+데이터 버전 `1.1.0`, 생성 기준 `2026-07-29T00:00:00+09:00`의 검증 산출물입니다.
 
 - `schema/`: manifest 등록 파일의 schema·records
 - `integrity/`: FK, CustomerProfile 1:1, 상태이력·Audit 대응

@@ -221,6 +221,88 @@ def build_rag_preview(config: PipelineConfig) -> Preview:
     }
 
 
+def _product_expansion_candidate_rows(
+    config: PipelineConfig,
+) -> list[dict[str, Any]]:
+    definitions = config.config("product_expansion_candidates")
+    defaults = definitions["candidate_defaults"]
+    products = {
+        row["product_code"]: row
+        for row in read_json(
+            config.data_root / "synthetic" / "fixtures" / "products.json"
+        )
+    }
+    evidence_groups = {
+        row["evidence_group_id"]: row
+        for row in read_jsonl(config.path("rag_expansion_evidence_output"))
+    }
+    rows: list[dict[str, Any]] = []
+    for case in definitions["cases"]:
+        product = products[case["exact_sales_code"]]
+        evidence = evidence_groups[case["evidence_group_id"]]
+        rows.append(
+            {
+                "case_id": case["case_id"],
+                "scope_status": defaults["scope_status"],
+                "backend_import_status": defaults["backend_import_status"],
+                "runtime_status": defaults["runtime_status"],
+                "product": {
+                    "fixture_public_id": product["public_id"],
+                    "exact_sales_code": product["product_code"],
+                    "model_family": product["model_family"],
+                },
+                "customer_product": {
+                    "candidate_ref": case["customer_product_ref"],
+                    "parent_ref": product["product_code"],
+                },
+                "subscription": {
+                    "candidate_ref": case["subscription_ref"],
+                    "parent_ref": case["customer_product_ref"],
+                },
+                "inquiry": {
+                    "candidate_ref": case["inquiry_ref"],
+                    "subscription_ref": case["subscription_ref"],
+                    "scenario_id": case["scenario_id"],
+                    "original_text": case["original_text"],
+                    "topic_code": case["topic_code"],
+                },
+                "evidence": {
+                    "evidence_group_id": evidence["evidence_group_id"],
+                    "exact_sales_code": evidence["exact_sales_code"],
+                    "document_id": evidence["document_id"],
+                    "page_refs": evidence["page_refs"],
+                    "verification_status": evidence["verification_status"],
+                },
+                "safety": {
+                    "risk_level": evidence["risk_level"],
+                    "requires_consultation": evidence[
+                        "requires_consultation"
+                    ],
+                    "safe_actions": evidence["safe_actions"],
+                    "consultation_conditions": evidence[
+                        "consultation_conditions"
+                    ],
+                },
+                "expected_outcome": {
+                    "resolution_mode": case["expected_resolution_mode"],
+                    "handoff_target": case["expected_handoff_target"],
+                },
+                "promotion": {
+                    "canonical_fixture_included": defaults[
+                        "canonical_fixture_included"
+                    ],
+                    "db_handoff_profile_included": defaults[
+                        "db_handoff_profile_included"
+                    ],
+                    "blockers": defaults["promotion_blockers"],
+                },
+                "data_classification": "synthetic",
+                "generated_at": config.generated_at,
+            }
+        )
+    return rows
+
+
 def build_synthetic_preview(config: PipelineConfig) -> Preview:
     definitions = replace_tokens(
         config.config("synthetic"), {"generated_at": config.generated_at}
@@ -315,6 +397,12 @@ def build_synthetic_preview(config: PipelineConfig) -> Preview:
             json_bytes(rows),
             len(rows),
         )
+    candidate_rows = _product_expansion_candidate_rows(config)
+    result["product_expansion_e2e_candidates"] = (
+        config.path("product_expansion_candidate_output"),
+        json_bytes(candidate_rows),
+        len(candidate_rows),
+    )
     return result
 
 

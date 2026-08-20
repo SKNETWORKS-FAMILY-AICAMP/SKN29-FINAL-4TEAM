@@ -68,9 +68,15 @@ describe("ConsultantDashboardPage", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "반갑습니다!오늘도 좋은 하루 되세요 😊",
+        name: "테스트 상담원님 반갑습니다!",
       }),
     ).toBeVisible();
+    expect(screen.getByText("오늘도 좋은 하루 되세요 😊")).toBeVisible();
+    expect(
+      screen
+        .getByText(/^\d{4}\. \d{2}\. \d{2}\. \([일월화수목금토]\)$/)
+        .getAttribute("datetime"),
+    ).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     const workSummary = within(screen.getByLabelText("업무 요약"));
     expect(workSummary.getByRole("button", { name: /전체 문의 수90/ })).toBeVisible();
     expect(workSummary.getByRole("button", { name: /새 문의30/ })).toBeVisible();
@@ -163,10 +169,12 @@ describe("ConsultantDashboardPage", () => {
     const user = userEvent.setup();
     renderPage();
 
-    await user.type(
-      screen.getByRole("searchbox", { name: "직원 연락처 검색" }),
-      "한예나",
-    );
+    const contactSearch = screen.getByRole("searchbox", {
+      name: "직원 연락처 검색",
+    });
+    expect(contactSearch).toHaveAttribute("placeholder", "검색");
+
+    await user.type(contactSearch, "한예나");
 
     expect(screen.getByRole("cell", { name: "한예나" })).toBeVisible();
     expect(screen.getByRole("cell", { name: "고객케어팀" })).toBeVisible();
@@ -201,7 +209,12 @@ describe("ConsultantDashboardPage", () => {
       }),
     );
 
-    expect(screen.getByRole("tab", { name: menu })).toHaveAttribute(
+    expect(
+      within(screen.getByRole("tablist", { name: "상담사 메뉴" })).getByRole(
+        "tab",
+        { name: menu },
+      ),
+    ).toHaveAttribute(
       "aria-selected",
       "true",
     );

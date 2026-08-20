@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "active_product_codes": [
+    "WPUJAC104DWH",
+    "WPUIAC425SNW",
+    "WPUIAC606SNW"
+  ],
+  "excluded_manual_aliases": [
+    "WPU-JCC104 (D)"
+  ],
+  "canonical_coverage": {
+    "exact_sales_code": "WPUJAC104DWH",
+    "required_layers": [
+      "product",
+      "customer_product",
+      "subscription",
+      "inquiry"
+    ],
+    "minimum_counts": {
+      "customer_products": 1,
+      "subscriptions": 1,
+      "inquiries": 1
+    }
+  },
+  "candidate_defaults": {
+    "scope_status": "E2E_CANDIDATE",
+    "backend_import_status": "NOT_IMPORTED",
+    "runtime_status": "NOT_VERIFIED",
+    "canonical_fixture_included": false,
+    "db_handoff_profile_included": false,
+    "promotion_blockers": [
+      "BACKEND_WORKFLOW_CONTRACT_NOT_MAPPED",
+      "POSTGRESQL_NOT_VERIFIED"
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "E2E-IAC425-001",
+      "scenario_id": "SYN-IAC425-001",
+      "exact_sales_code": "WPUIAC425SNW",
+      "topic_code": "hot_water_stopped",
+      "original_text": "온수가 나오다가 중간에 멈췄어요.",
+      "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+      "customer_product_ref": "CAND-CP-IAC425-001",
+      "subscription_ref": "CAND-SUB-IAC425-001",
+      "inquiry_ref": "CAND-INQ-IAC425-001",
+      "expected_resolution_mode": "CONSULTANT_HANDOFF",
+      "expected_handoff_target": "CONSULTANT"
+    },
+    {
+      "case_id": "E2E-IAC606-001",
+      "scenario_id": "SYN-IAC606-001",
+      "exact_sales_code": "WPUIAC606SNW",
+      "topic_code": "no_ice",
+      "original_text": "얼음 버튼을 눌러도 얼음이 나오지 않아요.",
+      "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+      "customer_product_ref": "CAND-CP-IAC606-001",
+      "subscription_ref": "CAND-SUB-IAC606-001",
+      "inquiry_ref": "CAND-INQ-IAC606-001",
+      "expected_resolution_mode": "SELF_RESOLUTION",
+      "expected_handoff_target": "NONE"
+    }
+  ]
+}

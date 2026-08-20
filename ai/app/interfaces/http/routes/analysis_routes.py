@@ -6,11 +6,22 @@ import time
 from threading import BoundedSemaphore
 from uuid import UUID
 
-from fastapi import APIRouter, Header, Query, Request, Response
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Header,
+    Query,
+    Request,
+    Response,
+)
 from ..request_models import SymptomAnalysisApiRequest
 from ..errors import AiServiceError
 from ..runtime_policy import get_runtime_policy
 from ....orchestration.pipeline_router import PipelineRouter
+from ....integrations.backend.handoff_client import (
+    handoff_delivery_enabled,
+    publish_consultation_handoff,
+)
 from ....generation.customer_guidance.guidance_generator import (
     GuidanceGenerationExecutionError,
 )
@@ -24,6 +35,41 @@ from ....schemas.symptom import StructuredSymptom
 from ..structured_logging import log_analysis_event
 
 router = APIRouter(prefix="/api/v1/ai", tags=["Analysis"])
+
+
+def _deliver_handoff_background(handoff) -> None:
+    """Publish after the analysis response without surfacing transport failure."""
+
+    result = publish_consultation_handoff(handoff)
+    log_analysis_event(
+        "handoff_delivery",
+        inquiry_id=handoff.inquiry_id,
+        correlation_id=handoff.correlation_id,
+        ai_request_id=handoff.ai_request_id,
+        stage="HANDOFF",
+        status=result.status.value,
+        retry_count=max(result.attempts - 1, 0),
+        error_code=(
+            result.failure_kind.value
+            if result.failure_kind is not None
+            else None
+        ),
+    )
+
+
+def _schedule_handoff_delivery(background_tasks, pipeline_result) -> bool:
+    """Queue only an internal sanitized HandoffResult, never the public DTO."""
+
+    reliability = getattr(pipeline_result, "reliability_runtime", None)
+    harness_runtime = getattr(reliability, "harness_runtime", None)
+    handoff = getattr(harness_runtime, "handoff", None)
+    if handoff is None or not handoff_delivery_enabled():
+        return False
+
+    # Starlette executes BackgroundTasks after sending the response. Backend
+    # can therefore terminalize AIRun before its internal Handoff API checks it.
+    background_tasks.add_task(_deliver_handoff_background, handoff)
+    return True
 
 
 def _worker_limit() -> int:
@@ -54,6 +100,7 @@ async def analyze_symptom(
     req: SymptomAnalysisApiRequest,
     request: Request,
     response: Response,
+    background_tasks: BackgroundTasks,
     mode: str = Query("local", pattern="^(mock|local)$", description="실행 모드"),
     x_correlation_id: UUID | None = Header(None, alias="X-Correlation-ID"),
 ):
@@ -263,6 +310,7 @@ async def analyze_symptom(
         raise
 
     result = pipeline_result.to_analysis_result()
+    _schedule_handoff_delivery(background_tasks, pipeline_result)
     log_fields["retry_count"] = result.retry_count
     log_analysis_event(
         "analysis_completed",

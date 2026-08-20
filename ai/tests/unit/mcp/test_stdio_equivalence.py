@@ -10,10 +10,10 @@ import asyncio
 # → 별도 MCP Server 프로세스
 #
 # 구조로 통신합니다.
-from app.integrations.mcp.client import WaterBridgeMCPClient
+from ai.app.integrations.mcp.client import WaterBridgeMCPClient
 
 # MCP를 거치지 않고 직접 호출할 함수입니다.
-from app.integrations.mcp.server import search_official_evidence
+from ai.app.integrations.mcp.server import search_official_evidence
 
 
 # -------------------------------------------------------------------

@@ -6,12 +6,12 @@ from mcp.server import MCPServer
 from uuid import UUID
 
 # Backend Context 연동 설정이 아직 없는 경우 사용하는 전용 오류입니다.
-from app.integrations.mcp.errors import (
+from .errors import (
     MCPContextConfigurationError,
 )
 
 # 문의 Context 조회 MCP Tool에 필요한 부품들을 가져옵니다.
-from app.integrations.mcp.tools.get_inquiry_context import (
+from .tools.get_inquiry_context import (
     # Backend에서 받아온 문의 전체 정보를 담는 형태
     BackendInquiryContext,
 
@@ -30,7 +30,7 @@ from app.integrations.mcp.tools.get_inquiry_context import (
 
 # lookup_product_context.py에서
 # 제품 정보를 조회할 때 필요한 부품들을 가져옵니다.
-from app.integrations.mcp.tools.lookup_product_context import (
+from .tools.lookup_product_context import (
     BackendProductContext, # Backend에서 받아온 제품 정보를 담는 데이터 형태
     LookupProductContextAdapter, # Backend 제품 정보를 MCP가 사용할 형태로 바꿔주는 변환기
     LookupProductContextInput, # lookup_product_context Tool이 받을 입력 형식
@@ -40,14 +40,14 @@ from app.integrations.mcp.tools.lookup_product_context import (
 
 # search_official_evidence.py에서
 # 공식 문서 검색에 필요한 부품들을 가져옵니다.
-from app.integrations.mcp.tools.search_official_evidence import (
+from .tools.search_official_evidence import (
     SearchOfficialEvidenceAdapter, # MCP 요청을 기존 검색 시스템에 연결해주는 변환기
     SearchOfficialEvidenceInput, # 공식 근거 검색 Tool의 입력 형식
     SearchOfficialEvidenceOutput, # 공식 근거 검색 Tool의 출력 형식
 )
-from app.orchestration.pipeline_router import PipelineRouter # 이미 AI Runtime에서 사용 중인 검색 서비스가 있는지 확인하기 위해 가져옵니다.
-from app.retrieval import RetrievalConfigurationError # 검색 환경이 없거나 잘못 설정되었을 때 발생시키는 전용 오류입니다.
-from app.retrieval.search.vector_search import VectorSearchService # 실제 Vector DB 검색을 담당하는 기존 검색 서비스입니다.
+from ...orchestration.pipeline_router import PipelineRouter # 이미 AI Runtime에서 사용 중인 검색 서비스가 있는지 확인하기 위해 가져옵니다.
+from ...retrieval import RetrievalConfigurationError # 검색 환경이 없거나 잘못 설정되었을 때 발생시키는 전용 오류입니다.
+from ...retrieval.search.vector_search import VectorSearchService # 실제 Vector DB 검색을 담당하는 기존 검색 서비스입니다.
 
 
 # 1. Vector Store가 준비되지 않았을 때 사용하는 안전장치

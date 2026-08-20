@@ -1,13 +1,13 @@
 import pytest
 
-from app.integrations.mcp.errors import MCPContextMismatchError
+from ai.app.integrations.mcp.errors import MCPContextMismatchError
 
-from app.integrations.mcp.tools.lookup_product_context import (
+from ai.app.integrations.mcp.tools.lookup_product_context import (
     BackendProductContext,
     LookupProductContextAdapter,
     LookupProductContextInput,
 )
-from app.orchestration.harness.product_match import ProductFamily
+from ai.app.orchestration.harness.product_match import ProductFamily
 
 
 class FakeProductContextReader:

@@ -1,5 +1,12 @@
 # Data Changelog
 
+## 1.1.0 — 2026-08-19
+
+- `WPUIAC425SNW` 온수 출수 중단과 `WPUIAC606SNW` 얼음 미출수 업무 체인을 `E2E_CANDIDATE` 데이터로 추가했다.
+- 제품·고객제품 후보·구독 후보·문의 후보·근거·안전성·예상 처리 결과의 참조 무결성을 모델별 Coverage Gate로 검증한다.
+- `WPU-JCC104 (D)`는 공동 매뉴얼 Alias로만 보존하고 활성 제품 및 Coverage 대상에서 제외했다.
+- 신규 후보는 Backend Import와 Runtime 검증 대상이 아니며 기존 정식 Fixture 369건과 DB handoff closure 367건을 변경하지 않았다.
+
 ## 1.0.0 — 2026-08-18
 
 - 정확 판매코드 `WPUJAC104DWH`, `WPUIAC425SNW`, `WPUIAC606SNW` 3개를 데이터 지원 레지스트리에 고정했다.

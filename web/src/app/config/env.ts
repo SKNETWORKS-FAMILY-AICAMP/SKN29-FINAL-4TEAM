@@ -71,4 +71,10 @@ export const appEnv = {
   mockDataset: isDesignPreview
     ? "DESIGN_SCENARIOS"
     : readMockDataset(import.meta.env.VITE_MOCK_DATASET),
+  // Backend가 비어 있거나 일부 업무함만 있을 때 디자인용 다건 Mock으로
+  // 자동 전환할지 선택한다. 실제 API/E2E에서는 반드시 false로 둔다.
+  enableDesignMockFallback: readBoolean(
+    import.meta.env.VITE_ENABLE_DESIGN_MOCK_FALLBACK,
+    false,
+  ),
 } as const;

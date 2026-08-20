@@ -1,4 +1,4 @@
-version: 1.0.0
+version: 1.1.0
 fields:
   data_classification:
     type: string
@@ -61,3 +61,15 @@ fields:
     format: ISO-8601
     timezone: Asia/Seoul
     description: 결정적 산출물 생성 기준 시각
+  scope_status:
+    type: string
+    allowed: [E2E_CANDIDATE]
+    description: 정식 Backend Fixture가 아닌 제품 확장 업무 체인 후보 상태
+  backend_import_status:
+    type: string
+    allowed: [NOT_IMPORTED]
+    description: 후보 업무 체인이 Backend Import 대상이 아님을 나타내는 상태
+  runtime_status:
+    type: string
+    allowed: [NOT_VERIFIED]
+    description: 후보 업무 체인의 Runtime 미검증 상태

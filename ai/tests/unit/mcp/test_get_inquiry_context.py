@@ -2,15 +2,15 @@ from uuid import UUID
 
 import pytest
 
-from app.integrations.mcp.errors import MCPContextMismatchError
+from ai.app.integrations.mcp.errors import MCPContextMismatchError
 
-from app.integrations.mcp.tools.get_inquiry_context import (
+from ai.app.integrations.mcp.tools.get_inquiry_context import (
     BackendInquiryContext,
     GetInquiryContextAdapter,
     GetInquiryContextInput,
     InquiryAnswer,
 )
-from app.orchestration.harness.product_match import ProductFamily
+from ai.app.orchestration.harness.product_match import ProductFamily
 
 
 # -------------------------------------------------------------------
