@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 
+from ..models import SearchOfficialEvidenceReference
 from ....orchestration.harness.product_registry import (
     resolve_product_generation,
 )
@@ -63,7 +64,7 @@ class SearchOfficialEvidenceOutput(BaseModel):
     """MCP 공식 근거 검색 Tool 출력 계약."""
 
     # 최종적으로 사용할 수 있는 공식 근거
-    evidence_references: list[EvidenceReference] = Field(
+    evidence_references: list[SearchOfficialEvidenceReference] = Field(
         default_factory=list
     )
 
@@ -221,7 +222,7 @@ class SearchOfficialEvidenceAdapter:
         # 11. 내부 RetrievedChunk를
         #     MCP가 외부에 반환할 EvidenceReference로 변환
         evidence_references = [
-            EvidenceReference(
+            SearchOfficialEvidenceReference(
                 document_title=chunk.document_title,
                 document_version=chunk.document_version,
                 page=chunk.page,
@@ -231,6 +232,10 @@ class SearchOfficialEvidenceAdapter:
                 summary=chunk.content,
                 similarity_score=chunk.similarity_score,
                 verification_status=chunk.verification_status,
+                model_code=chunk.model_code or "",
+                product_generation=chunk.product_generation or "",
+                allowed_use=chunk.allowed_use,
+                runtime_eligible=chunk.runtime_eligible,
             )
             for chunk in chunks
         ]

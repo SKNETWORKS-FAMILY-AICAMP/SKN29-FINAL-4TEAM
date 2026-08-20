@@ -1,5 +1,15 @@
 from mcp.server import MCPServer
 
+from .tools.get_inquiry_context import (
+    GetInquiryContextAdapter,
+    GetInquiryContextInput,
+    GetInquiryContextOutput,
+)
+from .tools.lookup_product_context import (
+    LookupProductContextAdapter,
+    LookupProductContextInput,
+    LookupProductContextOutput,
+)
 from .tools.search_official_evidence import (
     SearchOfficialEvidenceAdapter,
     SearchOfficialEvidenceInput,
@@ -80,6 +90,34 @@ def health_check() -> dict[str, str]:
         "status": "ok",
         "service": "waterbridge-mcp",
     }
+
+
+@mcp.tool()
+def lookup_product_context(
+    inquiry_id: str,
+    correlation_id: str,
+) -> LookupProductContextOutput:
+    """Read the subscription-owned exact Product Context from Backend."""
+
+    request = LookupProductContextInput(
+        inquiry_id=inquiry_id,
+        correlation_id=correlation_id,
+    )
+    return LookupProductContextAdapter().execute(request)
+
+
+@mcp.tool()
+def get_inquiry_context(
+    inquiry_id: str,
+    correlation_id: str,
+) -> GetInquiryContextOutput:
+    """Read privacy-minimized symptom and questionnaire Context from Backend."""
+
+    request = GetInquiryContextInput(
+        inquiry_id=inquiry_id,
+        correlation_id=correlation_id,
+    )
+    return GetInquiryContextAdapter().execute(request)
 
 
 @mcp.tool()

@@ -409,3 +409,21 @@ Group을 Top-5에서 찾았고 부정 7건은 모두 검색 전 No Evidence로 �
 `50/50`, 교차 모델 Hit 0건, Parent 직접 Hit 0건, 미검증 Evidence Hit 0건이다.
 이 결과는 `rag-expansion` Candidate 검색 성능 PASS이며 Backend·Public API 계약
 확장이 끝나지 않았으므로 IAC425·IAC606 Runtime 활성 상태는 `NOT_APPROVED`다.
+
+### Backend Context MCP Transport
+
+`AI_RETRIEVAL_TRANSPORT=mcp`에서는 Pipeline이 검색 전에 Backend의 읽기 전용
+Inquiry Context API를 MCP Tool로 조회한다. Secret은 Tool 인자가 아니라 현재 AI
+Process 환경에서 MCP subprocess로만 전달한다.
+
+- `lookup_product_context`: 구독의 `ProductModel.model_code`, 제품 유형과 지원 기능 조회
+- `get_inquiry_context`: 문의 상태·버전, 고객 증상과 이전 문진 답변 조회
+- `search_official_evidence`: 조회된 정확 판매코드를 변경하지 않고 공식 근거 검색
+- `health_check`: MCP Server 기동 상태 확인
+
+필수 환경변수 이름은 `AI_BACKEND_BASE_URL`, `AI_HANDOFF_INTERNAL_TOKEN`,
+`AI_RETRIEVAL_TRANSPORT`다. Timeout은 `AI_BACKEND_CONTEXT_TIMEOUT_SECONDS`와
+`AI_MCP_CONTEXT_TIMEOUT_SECONDS`로 제한한다. Context의 Inquiry·Correlation·상태
+버전 또는 제품코드가 호출 요청과 다르면 검색과 Provider 호출 전에 중단한다.
+근거가 없거나 MCP가 실제 다른 모델의 근거를 반환해도 Guidance에 전달하지 않고
+Harness 상담 경로로 fail-closed한다.
