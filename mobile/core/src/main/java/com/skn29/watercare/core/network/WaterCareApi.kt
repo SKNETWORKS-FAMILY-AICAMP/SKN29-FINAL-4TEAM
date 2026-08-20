@@ -1,6 +1,10 @@
 package com.skn29.watercare.core.network
 
 import com.skn29.watercare.core.model.ApiEnvelope
+import com.skn29.watercare.core.model.CarePrecheckSessionDto
+import com.skn29.watercare.core.model.SaveCarePrecheckRequestDto
+import com.skn29.watercare.core.model.StartCarePrecheckRequestDto
+import com.skn29.watercare.core.model.SubmitCarePrecheckRequestDto
 import com.skn29.watercare.core.model.CareHistoryCreateRequestDto
 import com.skn29.watercare.core.model.CareHistoryItemDto
 import com.skn29.watercare.core.model.CareHistoryListDataDto
@@ -33,6 +37,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.PATCH
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -127,6 +132,52 @@ interface WaterCareApi {
         @Header("Idempotency-Key") idempotencyKey: String,
         @Body body: SubmitFollowUpAnswersRequestDto,
     ): Response<ApiEnvelope<SubmitFollowUpAnswersResponseDto>>
+    // -------------------------------------------------------
+    // T-021 CARE_PRECHECK
+    // -------------------------------------------------------
+
+    // ? ?? ?? ?? ??
+    @POST("api/v1/me/questionnaire-sessions")
+    suspend fun startCarePrecheck(
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: StartCarePrecheckRequestDto,
+    ): Response<ApiEnvelope<CarePrecheckSessionDto>>
+
+    // ?? ?? ???
+    //
+    // ? ??? ?? ?? ?? ?
+    // Backend? ??? ?? ??? ??? ? ?????.
+    @GET("api/v1/me/questionnaire-sessions/{questionnaireSessionId}")
+    suspend fun carePrecheckDetail(
+        @Path("questionnaireSessionId")
+        questionnaireSessionId: String,
+    ): Response<ApiEnvelope<CarePrecheckSessionDto>>
+
+    // ?? ? ?? ?? ??
+    @PATCH("api/v1/me/questionnaire-sessions/{questionnaireSessionId}")
+    suspend fun saveCarePrecheck(
+        @Path("questionnaireSessionId")
+        questionnaireSessionId: String,
+        @Header("Idempotency-Key")
+        idempotencyKey: String,
+        @Body
+        body: SaveCarePrecheckRequestDto,
+    ): Response<ApiEnvelope<CarePrecheckSessionDto>>
+
+    // ?? ??
+    @POST(
+        "api/v1/me/questionnaire-sessions/" +
+            "{questionnaireSessionId}/submit"
+    )
+    suspend fun submitCarePrecheck(
+        @Path("questionnaireSessionId")
+        questionnaireSessionId: String,
+        @Header("Idempotency-Key")
+        idempotencyKey: String,
+        @Body
+        body: SubmitCarePrecheckRequestDto,
+    ): Response<ApiEnvelope<CarePrecheckSessionDto>>
+
     @POST("api/v1/inquiries/{inquiryId}/request-consultation")
     suspend fun requestConsultation(
         @Path("inquiryId") inquiryId: String,
