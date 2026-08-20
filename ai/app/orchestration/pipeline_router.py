@@ -8,6 +8,10 @@ from uuid import UUID
 
 from ..integrations.embedding.embedding_client import BgeM3EmbeddingClient
 from ..integrations.llm import GuidanceLLMClient
+from ..integrations.mcp.search_service import (
+    McpEvidenceSearchError,
+    McpEvidenceSearchService,
+)
 from ..integrations.vector_store.vector_store import PgVectorStore
 from ..retrieval.search.vector_search import VectorSearchService
 from ..retrieval.indexing.index_manifest import IndexManifest
@@ -24,6 +28,7 @@ from ..retrieval import (
 from .harness.evidence_capture import GuardedEvidenceSearchService
 from .harness.product_registry import resolve_product_context
 from .harness.runtime import ReliabilityRuntime
+from .harness.tool_failure import McpToolFailure, McpToolFailureKind, McpToolName
 from .pipeline_context import PipelineContext
 from .pipeline_result import PipelineResult
 from .pipelines.multi_agent_pipeline import MultiAgentPipeline
@@ -190,32 +195,68 @@ class PipelineRouter:
         )
 
         selected_runtime = runtime_name or os.getenv("AI_PIPELINE_RUNTIME", "single_rag")
+        retrieval_transport = os.getenv("AI_RETRIEVAL_TRANSPORT", "direct").strip().lower()
+        if retrieval_transport not in {"direct", "mcp"}:
+            raise RuntimeError(
+                "AI_RETRIEVAL_TRANSPORT는 direct 또는 mcp여야 합니다."
+            )
+        base_search_service = (
+            McpEvidenceSearchService()
+            if retrieval_transport == "mcp"
+            else self.search_service
+        )
         guarded_search_service = (
-            GuardedEvidenceSearchService(self.search_service, product_context)
-            if self.search_service is not None
+            GuardedEvidenceSearchService(base_search_service, product_context)
+            if base_search_service is not None
             else None
         )
         if guarded_search_service is not None:
             guarded_search_service.begin_attempt()
-        runtime_search_service = guarded_search_service or self.search_service
+        runtime_search_service = guarded_search_service or base_search_service
+        retrieval_configuration_error = (
+            None if retrieval_transport == "mcp" else self.retrieval_configuration_error
+        )
 
         if selected_runtime == "single_rag":
             pipeline = SingleRAGPipeline(
                 runtime_search_service,
-                retrieval_configuration_error=self.retrieval_configuration_error,
+                retrieval_configuration_error=retrieval_configuration_error,
                 llm_client=self.llm_client,
             )
         elif selected_runtime == "multi_agent":
             pipeline = MultiAgentPipeline(
                 runtime_search_service,
-                retrieval_configuration_error=self.retrieval_configuration_error,
+                retrieval_configuration_error=retrieval_configuration_error,
                 llm_client=self.llm_client,
             )
         else:
             raise RuntimeError(
                 "AI_PIPELINE_RUNTIME은 single_rag 또는 multi_agent여야 합니다."
             )
-        pipeline_result = pipeline.run(ctx, cancellation_token=token)
+        try:
+            pipeline_result = pipeline.run(ctx, cancellation_token=token)
+        except McpEvidenceSearchError as exc:
+            failure = McpToolFailure(
+                tool_name=McpToolName.SEARCH_OFFICIAL_EVIDENCE,
+                kind=McpToolFailureKind(exc.kind.value),
+                retryable=exc.retryable,
+            )
+            reliability = self.reliability_runtime.run(
+                ctx=ctx,
+                product=product_context,
+                evidence_capture=guarded_search_service,
+                search_service=runtime_search_service,
+                llm_client=self.llm_client,
+                cancellation_token=token,
+                tool_failure=failure,
+            )
+            return PipelineResult(
+                success=False,
+                context=ctx,
+                runtime_name=selected_runtime,
+                reliability_runtime=reliability,
+            )
+
         pipeline_result.reliability_runtime = self.reliability_runtime.run(
             ctx=pipeline_result.context,
             product=product_context,

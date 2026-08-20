@@ -11,6 +11,10 @@ from ...common.timeout import (
     PipelineStageTimeoutError,
     get_stage_timeout_policy,
 )
+from ...integrations.mcp.search_service import (
+    McpEvidenceFailureKind,
+    McpEvidenceSearchError,
+)
 from ...integrations.llm import GuidanceLLMClient
 from ...retrieval import RetrievalOutcome
 from ...schemas import AiStage, RiskLevel, UsageGuidance, UsageGuidanceStatus
@@ -19,6 +23,7 @@ from .evidence_capture import GuardedEvidenceSearchService
 from .product_match import ProductContext
 from .retry_policy import HarnessRetryState
 from .runner import HarnessRunner, HarnessRuntimeResult
+from .tool_failure import McpToolFailure, McpToolFailureKind, McpToolName
 from .verification_result import HarnessDecision
 
 
@@ -53,6 +58,7 @@ class ReliabilityRuntime:
         required_functions: set[str] | None = None,
         output_payload: Any | None = None,
         output_schema: Type[BaseModel] | None = None,
+        tool_failure: McpToolFailure | None = None,
     ) -> ReliabilityRuntimeResult:
         retry_state = HarnessRetryState()
         retrieval_retry_performed = False
@@ -74,8 +80,10 @@ class ReliabilityRuntime:
                 output_payload=output_payload,
                 output_schema=output_schema,
                 evidence_required=self._evidence_required(ctx),
+                tool_failure=tool_failure,
             )
             retry_state = harness.retry_state
+            tool_failure = None
 
             if harness.decision == HarnessDecision.RETRY_RETRIEVAL:
                 if retrieval_retry_performed or search_service is None:
@@ -98,6 +106,16 @@ class ReliabilityRuntime:
                         retrieval_retry_performed=retrieval_retry_performed,
                         generation_retry_performed=generation_retry_performed,
                         timeout_stage=exc.stage,
+                    )
+                except McpEvidenceSearchError as exc:
+                    return self._tool_failure_result(
+                        ctx=ctx,
+                        product=product,
+                        evidence_capture=evidence_capture,
+                        retry_state=retry_state,
+                        retrieval_retry_performed=retrieval_retry_performed,
+                        generation_retry_performed=generation_retry_performed,
+                        failure=self._mcp_tool_failure(exc),
                     )
                 continue
 
@@ -157,6 +175,47 @@ class ReliabilityRuntime:
             evidence_required=self._evidence_required(ctx),
         )
         final_runtime = self._route_final(ctx=ctx, product=product, harness=harness)
+        return ReliabilityRuntimeResult(
+            harness_runtime=final_runtime,
+            retrieval_retry_performed=retrieval_retry_performed,
+            generation_retry_performed=generation_retry_performed,
+            blocked_evidence_chunk_ids=(
+                evidence_capture.rejected_chunk_ids
+                if evidence_capture is not None
+                else []
+            ),
+        )
+
+    def _tool_failure_result(
+        self,
+        *,
+        ctx: Any,
+        product: ProductContext,
+        evidence_capture: GuardedEvidenceSearchService | None,
+        retry_state: HarnessRetryState,
+        retrieval_retry_performed: bool,
+        generation_retry_performed: bool,
+        failure: McpToolFailure,
+    ) -> ReliabilityRuntimeResult:
+        evidence_chunks = (
+            evidence_capture.evidence_for_harness(ctx)
+            if evidence_capture is not None
+            else []
+        )
+        harness = self.runner.run(
+            product=product,
+            evidence_chunks=evidence_chunks,
+            safety_assessment=getattr(ctx, "safety_assessment", None),
+            guidance=getattr(ctx, "usage_guidance", None),
+            retry_state=retry_state,
+            evidence_required=False,
+            tool_failure=failure,
+        )
+        final_runtime = self._route_final(
+            ctx=ctx,
+            product=product,
+            harness=harness,
+        )
         return ReliabilityRuntimeResult(
             harness_runtime=final_runtime,
             retrieval_retry_performed=retrieval_retry_performed,
@@ -340,4 +399,18 @@ class ReliabilityRuntime:
             message="자동 안내를 확정하지 못해 상담사 검토가 필요합니다.",
             restricted_functions=["검토 전 자가조치 안내"],
             next_actions=["전문 상담 연결을 요청해 주세요."],
+        )
+
+    @staticmethod
+    def _mcp_tool_failure(exc: McpEvidenceSearchError) -> McpToolFailure:
+        kind_map = {
+            McpEvidenceFailureKind.TIMEOUT: McpToolFailureKind.TIMEOUT,
+            McpEvidenceFailureKind.UNAVAILABLE: McpToolFailureKind.UNAVAILABLE,
+            McpEvidenceFailureKind.INVALID_RESPONSE: McpToolFailureKind.INVALID_RESPONSE,
+            McpEvidenceFailureKind.EXECUTION_ERROR: McpToolFailureKind.EXECUTION_ERROR,
+        }
+        return McpToolFailure(
+            tool_name=McpToolName.SEARCH_OFFICIAL_EVIDENCE,
+            kind=kind_map[exc.kind],
+            retryable=exc.retryable,
         )

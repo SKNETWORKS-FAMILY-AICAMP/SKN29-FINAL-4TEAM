@@ -2,6 +2,7 @@
 
 import time
 
+from ...integrations.mcp.search_service import McpEvidenceSearchError
 from ...common.retry import get_retry_policy
 from ...common.timeout import CancellationToken, PipelineCancelledError
 from ...retrieval import (
@@ -96,6 +97,8 @@ def execute_retrieval_stage(
                 )
             break
         except PipelineCancelledError:
+            raise
+        except McpEvidenceSearchError:
             raise
         except Exception as exc:
             if not retry_policy.can_retry(exc, retry_count):
