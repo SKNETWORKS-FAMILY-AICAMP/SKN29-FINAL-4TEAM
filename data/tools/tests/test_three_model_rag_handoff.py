@@ -13,6 +13,14 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 class ThreeModelRagHandoffTests(unittest.TestCase):
+    @staticmethod
+    def _canonical_children() -> list[dict[str, object]]:
+        path = (
+            REPO_ROOT
+            / "data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl"
+        )
+        return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
     def test_canonical_handoff_passes_count_lineage_and_anchor_gates(self) -> None:
         report = build_qa_report(
             REPO_ROOT / "data/processed/structured/rag/expansion/rag_parent_pages_3model_v1.jsonl",
@@ -77,6 +85,46 @@ class ThreeModelRagHandoffTests(unittest.TestCase):
         self.assertEqual("WPUIAC999ZZZ", case["exact_sales_code"])
         self.assertEqual("UNREGISTERED_EXACT_SALES_CODE", case["negative_reason"])
         self.assertTrue(case["expected_no_evidence"])
+
+    def test_page_references_are_not_split_across_safe_actions(self) -> None:
+        children = {row["child_id"]: row for row in self._canonical_children()}
+        expected = {
+            "CHILD-WPUIAC425SNW-P045-NO-ICE-001": (
+                "방열팬 덮개 막힘 (먼지에 의한 막힘) - 청소하기 페이지 확인 후 "
+                "방열팬 덮개를 청소해 주세요 (청소하기 p.41 참고)."
+            ),
+            "CHILD-WPUIAC606SNW-P040-NOISE-VENTILATION-001": (
+                "방열팬 덮개 막힘 (먼지에 의한 막힘) - 청소하기 페이지 확인 후 "
+                "방열팬 덮개를 청소해 주세요 (청소하기 p.36 참고)."
+            ),
+            "CHILD-WPUIAC606SNW-P042-NO-ICE-001": (
+                "방열팬 덮개 막힘 (먼지에 의한 막힘) - 청소하기 페이지 확인 후 "
+                "방열팬 덮개를 청소해 주세요 (청소하기 p.36 참고)."
+            ),
+        }
+        for child_id, action in expected.items():
+            self.assertIn(action, children[child_id]["safe_actions"], child_id)
+            self.assertFalse(
+                any(item.endswith(" p.") for item in children[child_id]["safe_actions"]),
+                child_id,
+            )
+
+        for child_id in (
+            "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+            "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+        ):
+            self.assertIn(
+                "배수 호스가 꺾이거나 수돗물이 얼진 않았는지 확인해 주세요.",
+                children[child_id]["safe_actions"],
+                child_id,
+            )
+
+        for child in children.values():
+            for action in child["safe_actions"]:
+                self.assertFalse(
+                    action.startswith("(") and " p." in action,
+                    child["child_id"],
+                )
 
 
 if __name__ == "__main__":

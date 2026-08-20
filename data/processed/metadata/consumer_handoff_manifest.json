@@ -144,8 +144,8 @@
           "path": "processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
           "role": "INGEST_CANDIDATE",
           "records": 53,
-          "size_bytes": 123114,
-          "sha256": "05C7A387ED76EFEFE95E172FA37E4CFC8A0BF8842491512CB5AF4808E3BB20BB"
+          "size_bytes": 123148,
+          "sha256": "B4BA15C045D7C4EAF1E4CF90DFF83EC9FA2C236F9CFCDAD85467A42F1921EB78"
         },
         {
           "path": "processed/structured/rag/expansion/rag_parent_pages_3model_v1.jsonl",
@@ -158,8 +158,8 @@
           "path": "processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl",
           "role": "REFERENCE",
           "records": 43,
-          "size_bytes": 44013,
-          "sha256": "997119C395935D0815AA497C9EEB73EF73EAD4DA346FD83B5FC10867F86400E5"
+          "size_bytes": 44047,
+          "sha256": "CCD797DB8C87B9B90EFD88EBE16BE5AC4D80008BC75E0CCE46B3854F70C3143D"
         },
         {
           "path": "config/rag/three_model_evaluation_cases.json",
@@ -180,7 +180,7 @@
           "role": "MANIFEST",
           "records": 1,
           "size_bytes": 1286,
-          "sha256": "082AAA87D1C44A2FFB1796A62397A7AE5A1BC95513B29D969456B75473285B27"
+          "sha256": "1210923AF695C68EAAE921C2490C69704A3152D4CB43443ACE2113D0191B97BC"
         },
         {
           "path": "schemas/processed/ragParentPage.schema.json",
@@ -584,7 +584,7 @@
           "role": "MANIFEST",
           "records": 1,
           "size_bytes": 12543,
-          "sha256": "86C2EE0ED01538EC711ECF08FDEB613B65CAF0645AB1DE1471A671578777D0D4"
+          "sha256": "6482B74773F1C5D83D69C9EE38BC8D323AB01A0860B39818DCD3AB33D637435A"
         },
         {
           "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
