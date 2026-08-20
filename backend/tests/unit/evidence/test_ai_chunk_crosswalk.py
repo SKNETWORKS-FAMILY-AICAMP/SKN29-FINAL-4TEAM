@@ -226,6 +226,15 @@ def test_crosswalk_rejects_uppercase_hash_and_unverified_active_mapping():
     assert "is_active" in exc_info.value.message_dict
 
 
+def test_crosswalk_accepts_three_model_child_canonical_id():
+    mapping, _inquiry = create_verified_mapping(sequence=122)
+    mapping.canonical_chunk_id = "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001"
+
+    mapping.full_clean()
+
+    assert mapping.canonical_chunk_id.startswith("CHILD-")
+
+
 def test_verifier_returns_backend_public_id_for_fully_approved_mapping():
     mapping, inquiry = create_verified_mapping()
 
@@ -447,6 +456,103 @@ def test_sync_command_rejects_identity_index_version_mismatch():
                 "index_version": "2.0.0",
             },
             index={"index_version": "1.0.0"},
+        )
+
+
+def test_sync_command_accepts_manifest_driven_three_model_count(monkeypatch):
+    command_module = import_module(
+        "apps.evidence.management.commands.sync_ai_canonical_crosswalk"
+    )
+    command = command_module.Command()
+    model_counts = {
+        "WPUJAC104DWH": 15,
+        "WPUIAC425SNW": 19,
+        "WPUIAC606SNW": 19,
+    }
+    chunks = []
+    for model_code, count in model_counts.items():
+        chunks.extend(
+            {
+                "chunk_id": f"CHILD-{model_code}-P001-CASE-{index:03d}",
+                "model_code": model_code,
+                "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+            }
+            for index in range(1, count + 1)
+        )
+    identity = {
+        "status": "AI_SOURCE_IDENTITY_FIXED_BACKEND_MAPPING_PENDING",
+        "schema_version": "1.0.0",
+        "index_version": "2.0.0",
+        "chunk_count": 53,
+        "model_chunk_counts": model_counts,
+        "chunk_set_sha256": "a" * 64,
+        "chunks": chunks,
+    }
+    index = {
+        "model_name": "BAAI/bge-m3",
+        "model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+        "dimension": 1024,
+        "index_type": "exact_search",
+        "index_version": "2.0.0",
+        "chunk_count": 53,
+        "chunk_set_sha256": "a" * 64,
+    }
+    monkeypatch.setattr(
+        command,
+        "_resolve_item",
+        lambda *, canonical, index: canonical,
+    )
+
+    plan = command._build_plan(identity=identity, index=index)
+
+    assert len(plan) == 53
+
+
+def test_sync_command_rejects_three_model_distribution_drift(monkeypatch):
+    command_module = import_module(
+        "apps.evidence.management.commands.sync_ai_canonical_crosswalk"
+    )
+    command = command_module.Command()
+    chunks = [
+        {
+            "chunk_id": f"CHILD-WPUJAC104DWH-P001-CASE-{index:03d}",
+            "model_code": "WPUJAC104DWH",
+            "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+        }
+        for index in range(1, 54)
+    ]
+    monkeypatch.setattr(
+        command,
+        "_resolve_item",
+        lambda *, canonical, index: canonical,
+    )
+
+    with pytest.raises(CommandError, match="model_chunk_counts"):
+        command._build_plan(
+            identity={
+                "status": "AI_SOURCE_IDENTITY_FIXED_BACKEND_MAPPING_PENDING",
+                "schema_version": "1.0.0",
+                "index_version": "2.0.0",
+                "chunk_count": 53,
+                "model_chunk_counts": {
+                    "WPUJAC104DWH": 15,
+                    "WPUIAC425SNW": 19,
+                    "WPUIAC606SNW": 19,
+                },
+                "chunk_set_sha256": "a" * 64,
+                "chunks": chunks,
+            },
+            index={
+                "model_name": "BAAI/bge-m3",
+                "model_revision": (
+                    "5617a9f61b028005a4858fdac845db406aefb181"
+                ),
+                "dimension": 1024,
+                "index_type": "exact_search",
+                "index_version": "2.0.0",
+                "chunk_count": 53,
+                "chunk_set_sha256": "a" * 64,
+            },
         )
 
 

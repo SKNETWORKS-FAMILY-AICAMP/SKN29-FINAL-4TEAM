@@ -7,6 +7,7 @@ import com.skn29.watercare.core.network.NetworkFactory
 import com.skn29.watercare.core.repository.AuthRepository
 import com.skn29.watercare.core.repository.BackendStatusRepository
 import com.skn29.watercare.core.repository.CareHistoryRepository
+import com.skn29.watercare.core.repository.CarePrecheckRepository
 import com.skn29.watercare.core.repository.CustomerCareRepository
 import com.skn29.watercare.core.repository.CustomerInquiryRepository
 import com.skn29.watercare.core.repository.FakeCustomerCareRepository
@@ -14,6 +15,7 @@ import com.skn29.watercare.core.repository.InquiryRepository
 import com.skn29.watercare.core.repository.RemoteAuthRepository
 import com.skn29.watercare.core.repository.RemoteBackendStatusRepository
 import com.skn29.watercare.core.repository.RemoteCareHistoryRepository
+import com.skn29.watercare.core.repository.RemoteCarePrecheckRepository
 import com.skn29.watercare.core.repository.RemoteCustomerInquiryRepository
 import com.skn29.watercare.core.repository.RemoteInquiryRepository
 import com.skn29.watercare.core.repository.RemoteIntakeCustomerCareRepository
@@ -30,6 +32,10 @@ object WaterCareCore {
     lateinit var subscriptionRepository: SubscriptionRepository
         private set
     lateinit var careHistoryRepository: CareHistoryRepository
+        private set
+
+    // T-021 CARE_PRECHECK ?? Repository
+    lateinit var carePrecheckRepository: CarePrecheckRepository
         private set
     lateinit var backendStatusRepository: BackendStatusRepository
         private set
@@ -61,6 +67,13 @@ object WaterCareCore {
         )
         subscriptionRepository = RemoteSubscriptionRepository(network.api, network.json)
         careHistoryRepository = RemoteCareHistoryRepository(network.api, network.json)
+
+        // T-021 CARE_PRECHECK? ?? ??/Network Client? ?????.
+        carePrecheckRepository =
+            RemoteCarePrecheckRepository(
+                network.api,
+                network.json,
+            )
         backendStatusRepository = RemoteBackendStatusRepository(network.api)
 
         val fixtureRepository = FakeCustomerCareRepository(

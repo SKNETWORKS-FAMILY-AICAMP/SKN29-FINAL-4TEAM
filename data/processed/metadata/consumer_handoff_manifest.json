@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "dataset_version": "1.0.0",
+  "dataset_version": "1.1.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
   "source_commit": "01053a4697e7a363b12d3c2e9820ac484b7b9bad",
   "service_contracts_used": true,
@@ -144,8 +144,8 @@
           "path": "processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
           "role": "INGEST_CANDIDATE",
           "records": 53,
-          "size_bytes": 123114,
-          "sha256": "05C7A387ED76EFEFE95E172FA37E4CFC8A0BF8842491512CB5AF4808E3BB20BB"
+          "size_bytes": 123148,
+          "sha256": "B4BA15C045D7C4EAF1E4CF90DFF83EC9FA2C236F9CFCDAD85467A42F1921EB78"
         },
         {
           "path": "processed/structured/rag/expansion/rag_parent_pages_3model_v1.jsonl",
@@ -158,8 +158,8 @@
           "path": "processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl",
           "role": "REFERENCE",
           "records": 43,
-          "size_bytes": 44013,
-          "sha256": "997119C395935D0815AA497C9EEB73EF73EAD4DA346FD83B5FC10867F86400E5"
+          "size_bytes": 44047,
+          "sha256": "CCD797DB8C87B9B90EFD88EBE16BE5AC4D80008BC75E0CCE46B3854F70C3143D"
         },
         {
           "path": "config/rag/three_model_evaluation_cases.json",
@@ -180,7 +180,7 @@
           "role": "MANIFEST",
           "records": 1,
           "size_bytes": 1286,
-          "sha256": "082AAA87D1C44A2FFB1796A62397A7AE5A1BC95513B29D969456B75473285B27"
+          "sha256": "1210923AF695C68EAAE921C2490C69704A3152D4CB43443ACE2113D0191B97BC"
         },
         {
           "path": "schemas/processed/ragParentPage.schema.json",
@@ -541,57 +541,57 @@
           "path": "processed/validation/latest_qa_summary.json",
           "role": "SUMMARY",
           "records": 1,
-          "size_bytes": 7060,
-          "sha256": "51DA2782F9891E1296EB4E75ECEDE8071204D391C335821088F381AF24C1CE81"
+          "size_bytes": 7768,
+          "sha256": "1F07568D7CE494ECCC0ED46FF085E55B694009A22073FCF635E01735B954A676"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 9692,
-          "sha256": "C240B38A119A15109BE58DC708139F6913BAFD0E57DB760C77E2150B37F4F8E6"
+          "size_bytes": 9929,
+          "sha256": "8ACB1B8E75162D35991C8DE578295782FCAB59A9CA3F7173D83B00EBD44821A4"
         },
         {
           "path": "processed/validation/integrity/latest_integrity_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1340,
-          "sha256": "83371DBCA8F45661A18CF5B3C3DAC3F3929924A295C728F4F64634637EB6FF17"
+          "sha256": "28B287D314908D89D3F06333DD0B11EBEE35D8E7B4FE0D3440BF5D277F966ED1"
         },
         {
           "path": "processed/validation/quality/latest_quality_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1246,
-          "sha256": "7E4D373DFF986F44D8A448AF3C41D414425E58EB939B41393435A5F156C1F29E"
+          "sha256": "842D9433F9EAB5C71F8308B73E1FA5B55B76CD2DA0549F4AC8724EB2A45B7236"
         },
         {
           "path": "processed/validation/business/latest_business_rules_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 1544,
-          "sha256": "9FA5DEF4B7FDBD390FCFEC24DE2F2E48714DBF658A1F0617FFFE8E61DBEDE3D7"
+          "size_bytes": 2244,
+          "sha256": "B5237A7AD6F69D4BBF6F354A14C27CC57637F0393E1E7C0BD01A8995475C6A2C"
         },
         {
           "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1151,
-          "sha256": "55840D030E58CF9BE652A25A4CA95AE2C60AA626DA8A1C3D8DC739B124FFD662"
+          "sha256": "282053E510835F4FC882D8036D49727EE805E51958DA8307BE8978AF8CFCD1DA"
         },
         {
           "path": "processed/metadata/dataset_manifest.json",
           "role": "MANIFEST",
           "records": 1,
-          "size_bytes": 12240,
-          "sha256": "E893955C18495D8C0D2EEBE79A66E42A8CA3185666715E89F48D8D053E8E3D2F"
+          "size_bytes": 12543,
+          "sha256": "6482B74773F1C5D83D69C9EE38BC8D323AB01A0860B39818DCD3AB33D637435A"
         },
         {
           "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
           "role": "GUIDE",
           "records": null,
           "size_bytes": 2822,
-          "sha256": "DE33CBD6F340AD7505E57C7549A4BD45096503DD76EBC2A938FAB4DDEE44068D"
+          "sha256": "E57BA935671232211AB8349B6A532218D18AB9363CD27FF6D99A86C626B1DE02"
         }
       ],
       "selection": {

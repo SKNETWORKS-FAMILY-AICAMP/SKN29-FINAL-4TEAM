@@ -2,16 +2,11 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../../app/providers/authContext";
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
+import { getConsultantDisplayName } from "../model/consultantDisplayName";
 import "./ConsultantUserMenu.css";
 
 interface ConsultantUserMenuProps {
   className?: string;
-}
-
-function getConsultantDisplayName(displayName?: string) {
-  return displayName === "합성 상담사 001"
-    ? "한예나"
-    : (displayName ?? "상담사");
 }
 
 export default function ConsultantUserMenu({
@@ -28,7 +23,10 @@ export default function ConsultantUserMenu({
   };
 
   return (
-    <div className={`consultant-user-menu ${className}`.trim()}>
+    <div
+      className={`consultant-user-menu ${className}`.trim()}
+      data-e2e-sensitive="true"
+    >
       <strong className="consultant-user-menu__name">{displayName}</strong>
       <i className="consultant-user-menu__divider" aria-hidden="true" />
       <small className="consultant-user-menu__employee-number">

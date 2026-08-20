@@ -3,6 +3,7 @@
 from uuid import UUID
 
 from django.db import transaction
+from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -23,6 +24,7 @@ from apps.inquiries.api.serializers import (
     CustomerInquiryQuestionsSerializer,
     CustomerInquirySnapshotSerializer,
     InquiryResponseSerializer,
+    InternalAIInquiryContextDataSerializer,
     FinalizeInquiryRequestSerializer,
     RegisterConsultantPhoneInquiryResultSerializer,
     RegisterConsultantPhoneInquirySerializer,
@@ -63,8 +65,12 @@ from apps.inquiries.services.followup_answer_service import (
 from apps.inquiries.services.inquiry_transition_service import (
     InquiryTransitionService,
 )
+from apps.inquiries.services.internal_ai_context_service import (
+    InternalAIContextService,
+)
 from apps.inquiries.services.resolution_service import ResolutionService
 from common.api.response import success_response
+from common.permissions import HasValidAIInternalToken
 
 
 def reject_unknown_query_parameters(request, allowed: set[str]) -> None:
@@ -123,6 +129,25 @@ def require_correlation_id(request) -> UUID:
                 ]
             }
         ) from None
+
+
+@extend_schema(exclude=True)
+class InternalAIInquiryContextView(APIView):
+    """Return one privacy-minimized Context to the trusted AI service."""
+
+    authentication_classes = []
+    permission_classes = [HasValidAIInternalToken]
+
+    def get(self, request, inquiry_id: UUID):
+        reject_unknown_query_parameters(request, set())
+        correlation_id = require_correlation_id(request)
+        data = InternalAIContextService.retrieve(
+            inquiry_public_id=inquiry_id,
+            correlation_id=correlation_id,
+        )
+        return success_response(
+            InternalAIInquiryContextDataSerializer(data).data
+        )
 
 
 class CreateInquiryView(APIView):

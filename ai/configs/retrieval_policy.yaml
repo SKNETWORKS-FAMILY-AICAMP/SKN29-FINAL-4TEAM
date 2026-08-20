@@ -70,3 +70,40 @@ answerability_capability_gate:
         - ["외관", "제품", "모델"]
       excluded_terms: ["청소", "닦", "얼룩", "변색", "표시등", "표시창", "버튼"]
       reason: "사용설명서만으로 판매 색상·옵션의 전체 목록을 보장할 수 없음"
+
+# 3모델은 AI_RAG_RUNTIME_PROFILE=three_model_integration을 명시한 공식 통합검증
+# Process에서만 선택한다. 기본 Profile은 계속 mvp이며 Public Runtime 활성화는 HOLD다.
+prepared_runtime_profiles:
+  three_model:
+    activation_status: "INTEGRATION_VERIFICATION_ONLY"
+    public_runtime_activation: "HOLD"
+    selection_environment: "AI_RAG_RUNTIME_PROFILE"
+    selection_value: "three_model_integration"
+    activation_blockers:
+      - "BACKEND_VIEW_METADATA_PATCH_MAIN_MERGE"
+      - "OFFICIAL_THREE_MODEL_MANIFEST_PROVENANCE"
+      - "AI_PROVIDER_RUNTIME_PASS"
+      - "JOINT_E2E"
+    supported_model_codes:
+      - "WPUJAC104DWH"
+      - "WPUIAC425SNW"
+      - "WPUIAC606SNW"
+    supported_generations:
+      - "D"
+      - "IAC425"
+      - "IAC606"
+    metadata_filters:
+      allowed_generations:
+        - "D"
+        - "IAC425"
+        - "IAC606"
+      target_models:
+        - "WPUJAC104DWH"
+        - "WPUIAC425SNW"
+        - "WPUIAC606SNW"
+      excluded_models:
+        - "WPUJCC104D"
+        - "WPUIAC506SNW"
+        - "WPU-IAC506"
+    required_pre_score_filter: "exact_sales_code"
+    cross_model_fallback: false

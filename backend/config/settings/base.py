@@ -37,6 +37,7 @@ CORS_ALLOWED_ORIGINS = [
 AI_SERVICE_BASE_URL = os.getenv("AI_SERVICE_BASE_URL", "")
 AI_SERVICE_MODE = os.getenv("AI_SERVICE_MODE", "local")
 AI_SERVICE_TIMEOUT_SECONDS = 30.0
+AI_HANDOFF_INTERNAL_TOKEN = os.getenv("AI_HANDOFF_INTERNAL_TOKEN", "")
 AI_MODEL_PROVIDER = os.getenv("AI_MODEL_PROVIDER", "waterbridge-local")
 AI_MODEL_NAME = os.getenv("AI_MODEL_NAME", "single-rag-pipeline")
 AI_PROMPT_VERSION = os.getenv("AI_PROMPT_VERSION", "unknown")

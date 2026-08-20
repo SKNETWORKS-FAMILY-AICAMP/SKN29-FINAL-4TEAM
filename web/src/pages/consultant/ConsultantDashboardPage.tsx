@@ -6,6 +6,7 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { useAuth } from "../../app/providers/authContext";
 import { createInquiryDetailPath } from "../../app/router/routePaths";
 import Pagination from "../../common/components/data-display/Pagination";
 import {
@@ -37,6 +38,8 @@ import {
   STATUS_LABELS,
   WORK_BUCKET_LABELS,
 } from "../../features/consultation/model/consultantWorkspaceModel";
+import { getConsultantDashboardDate } from "../../features/consultation/model/consultantDashboardDate";
+import { getConsultantDisplayName } from "../../features/consultation/model/consultantDisplayName";
 import type {
   CounselorAllowedAction,
   CounselorInquiry,
@@ -52,6 +55,7 @@ import {
   consultantWorkspaceDataRepository,
   createMockConsultantInquiryListViewModel,
 } from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
+import { CONSULTANT_NOTICE_FIXTURES } from "../../features/notice/model/consultantNotice";
 import "./ConsultantDashboardPage.css";
 import "./ConsultantDashboardTheme.css";
 import "./ConsultantInquiryPearlTheme.css";
@@ -119,15 +123,6 @@ const WORK_FOCUS_OPTIONS: readonly {
   { id: "NEW", label: "새 문의" },
   { id: "IN_PROGRESS", label: "처리 중인 문의" },
 ];
-
-const DASHBOARD_NOTICES = [
-  { category: "긴급", title: "긴급 문의 응대 절차 안내", department: "고객케어팀", date: "2026.08.18" },
-  { category: "이벤트", title: "고객 만족도 조사 참여 이벤트", department: "고객경험팀", date: "2026.08.18" },
-  { category: "시스템", title: "상담 시스템 정기 점검 안내", department: "시스템운영팀", date: "2026.08.17" },
-  { category: "근무", title: "8월 상담 근무 일정 확인 요청", department: "고객케어팀", date: "2026.08.16" },
-  { category: "복지", title: "임직원 건강검진 신청 안내", department: "경영지원팀", date: "2026.08.15" },
-  { category: "교육", title: "정수기 안전 점검 상담 교육", department: "품질관리팀", date: "2026.08.14" },
-] as const;
 
 const DASHBOARD_DEPARTMENTS = [
   "고객케어팀",
@@ -240,6 +235,13 @@ function getInitialBucket(search: string): CounselorWorkBucket {
 export default function ConsultantDashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+  const consultantDisplayName = getConsultantDisplayName(user?.displayName);
+  const [dashboardNow, setDashboardNow] = useState(() => new Date());
+  const dashboardDate = useMemo(
+    () => getConsultantDashboardDate(dashboardNow),
+    [dashboardNow],
+  );
   const { filters, hasChangedConditions, resetFilters, setFilters } =
     useCounselorQueueFilters();
   const [activeBucket, setActiveBucket] =
@@ -260,6 +262,12 @@ export default function ConsultantDashboardPage() {
   const [reviewDecisions, setReviewDecisions] = useState<
     Record<string, AiReviewDecision>
   >({});
+
+  useEffect(() => {
+    const timerId = window.setInterval(() => setDashboardNow(new Date()), 60_000);
+
+    return () => window.clearInterval(timerId);
+  }, []);
   const [reviewNotice, setReviewNotice] = useState<string | null>(null);
   const [selectedInquiryId, setSelectedInquiryId] =
     useState<InquiryId | null>(null);
@@ -687,12 +695,17 @@ export default function ConsultantDashboardPage() {
         >
           <div className="counselor-home-summary__intro">
             <h1 id="counselor-home-title">
-              <span>반갑습니다!</span>
-              <br />
-              <span className="counselor-home-summary__greeting-subline">
-                오늘도 좋은 하루 되세요 😊
-              </span>
+              {consultantDisplayName}님 반갑습니다!
             </h1>
+            <p className="counselor-home-summary__greeting-subline">
+              오늘도 좋은 하루 되세요 😊
+            </p>
+            <time
+              className="counselor-home-summary__date"
+              dateTime={dashboardDate.dateTime}
+            >
+              {dashboardDate.label}
+            </time>
           </div>
 
           <div className="counselor-home-metrics" aria-label="업무 요약">
@@ -748,27 +761,32 @@ export default function ConsultantDashboardPage() {
         </section>
 
         <section className="counselor-dashboard-info" aria-label="사내 업무 정보">
-          <article className="counselor-dashboard-info__panel">
+          <article className="counselor-dashboard-info__panel counselor-dashboard-info__panel--notices">
             <header>
               <h2>공지사항</h2>
             </header>
             <ul className="counselor-dashboard-notices">
-              {DASHBOARD_NOTICES.map((notice) => (
+              {CONSULTANT_NOTICE_FIXTURES.map((notice) => (
                 <li key={notice.title}>
                   <div>
                     <div className="counselor-dashboard-notices__headline">
                       <em data-category={notice.category}>{notice.category}</em>
                       <strong>{notice.title}</strong>
                     </div>
-                    <span>{notice.department}</span>
                   </div>
-                  <time dateTime={notice.date.replaceAll(".", "-")}>{notice.date}</time>
+                  <span className="counselor-dashboard-notices__meta">
+                    <span>{notice.department}</span>
+                    <i aria-hidden="true">|</i>
+                    <time dateTime={notice.publishedOn}>
+                      {notice.publishedOn.replaceAll("-", ".")}
+                    </time>
+                  </span>
                 </li>
               ))}
             </ul>
           </article>
 
-          <article className="counselor-dashboard-info__panel">
+          <article className="counselor-dashboard-info__panel counselor-dashboard-info__panel--contacts">
             <header>
               <h2>직원 연락처</h2>
               <div className="counselor-dashboard-contact-tools">
@@ -784,21 +802,22 @@ export default function ConsultantDashboardPage() {
                   <input
                     type="search"
                     aria-label="직원 연락처 검색"
+                    placeholder="검색"
                     value={contactQuery}
                     onChange={(event) => setContactQuery(event.target.value)}
                   />
                 </label>
-              {showContactTable && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedContactDepartment(null);
-                    setContactQuery("");
-                  }}
-                >
-                  조직도
-                </button>
-              )}
+                {showContactTable && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedContactDepartment(null);
+                      setContactQuery("");
+                    }}
+                  >
+                    조직도
+                  </button>
+                )}
               </div>
             </header>
             {showContactTable ? (
@@ -892,7 +911,7 @@ export default function ConsultantDashboardPage() {
                               (employee) => employee.department === department,
                             ).length
                           }
-                          명 · 연락처 보기
+                          명
                         </small>
                       </div>
                       <i aria-hidden="true">›</i>

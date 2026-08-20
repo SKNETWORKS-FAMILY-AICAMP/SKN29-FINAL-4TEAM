@@ -5,6 +5,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Type
 
+from opentelemetry import trace
 from pydantic import BaseModel, ConfigDict
 
 from ...retrieval.models.retrieved_chunk import RetrievedChunk
@@ -16,6 +17,9 @@ from .retry_policy import HarnessRetryPolicy, HarnessRetryState
 from .tool_failure import McpToolFailure
 from .verification_result import HarnessDecision, VerificationResult
 from .verifier import HarnessVerifier
+
+
+_HARNESS_TRACER = trace.get_tracer("waterbridge.ai.harness", "1.0.0")
 
 
 class HarnessErrorCode(str, Enum):
@@ -67,6 +71,105 @@ class HarnessRunner:
         self.handoff_agent = handoff_agent or ConsultationHandoffAgent()
 
     def run(
+        self,
+        *,
+        product: ProductContext,
+        evidence_chunks: list[RetrievedChunk],
+        safety_assessment: SafetyAssessment | None,
+        guidance: UsageGuidance | None,
+        retry_state: HarnessRetryState | None = None,
+        required_functions: set[str] | None = None,
+        output_payload: Any | None = None,
+        output_schema: Type[BaseModel] | None = None,
+        timed_out: bool = False,
+        evidence_required: bool | None = None,
+        tool_failure: McpToolFailure | None = None,
+    ) -> HarnessResult:
+        state = retry_state or HarnessRetryState()
+        with _HARNESS_TRACER.start_as_current_span(
+            "waterbridge.harness.verify"
+        ) as span:
+            span.set_attribute("waterbridge.model.code", product.model_code)
+            span.set_attribute(
+                "waterbridge.product.family",
+                product.product_family.value,
+            )
+            span.set_attribute(
+                "waterbridge.harness.evidence.input_count",
+                len(evidence_chunks),
+            )
+            span.set_attribute(
+                "waterbridge.harness.retry.retrieval_count",
+                state.retrieval_retries,
+            )
+            span.set_attribute(
+                "waterbridge.harness.retry.generation_count",
+                state.generation_retries,
+            )
+            span.set_attribute("waterbridge.harness.timed_out", timed_out)
+            span.set_attribute(
+                "waterbridge.harness.tool_failure.present",
+                tool_failure is not None,
+            )
+            if tool_failure is not None:
+                span.set_attribute(
+                    "waterbridge.harness.tool_failure.kind",
+                    tool_failure.kind.value,
+                )
+                span.set_attribute(
+                    "waterbridge.harness.tool_failure.tool",
+                    tool_failure.tool_name.value,
+                )
+
+            result = self._run_untraced(
+                product=product,
+                evidence_chunks=evidence_chunks,
+                safety_assessment=safety_assessment,
+                guidance=guidance,
+                retry_state=state,
+                required_functions=required_functions,
+                output_payload=output_payload,
+                output_schema=output_schema,
+                timed_out=timed_out,
+                evidence_required=evidence_required,
+                tool_failure=tool_failure,
+            )
+            issue_codes = [
+                issue.code.value for issue in result.verification.issues
+            ]
+            span.set_attribute(
+                "waterbridge.harness.decision",
+                result.decision.value,
+            )
+            span.set_attribute(
+                "waterbridge.harness.issue_count",
+                len(issue_codes),
+            )
+            if issue_codes:
+                span.set_attribute(
+                    "waterbridge.harness.issue_codes",
+                    issue_codes,
+                )
+            span.set_attribute(
+                "waterbridge.harness.evidence.accepted_count",
+                len(result.verification.accepted_evidence_chunk_ids),
+            )
+            span.set_attribute(
+                "waterbridge.harness.should_retry",
+                result.should_retry,
+            )
+            span.set_attribute(
+                "waterbridge.harness.should_escalate",
+                result.should_escalate,
+            )
+            if result.error_code is not None:
+                span.set_attribute(
+                    "waterbridge.harness.error_code",
+                    result.error_code.value,
+                )
+            return result
+
+    def _run_untraced(
         self,
         *,
         product: ProductContext,
@@ -135,6 +238,67 @@ class HarnessRunner:
         )
 
     def run_runtime(
+        self,
+        *,
+        ctx: Any,
+        product: ProductContext,
+        evidence_chunks: list[RetrievedChunk],
+        safety_assessment: SafetyAssessment | None,
+        guidance: UsageGuidance | None,
+        retry_state: HarnessRetryState | None = None,
+        required_functions: set[str] | None = None,
+        output_payload: Any | None = None,
+        output_schema: Type[BaseModel] | None = None,
+        timed_out: bool = False,
+        evidence_required: bool | None = None,
+        tool_failure: McpToolFailure | None = None,
+    ) -> HarnessRuntimeResult:
+        """Trace the full Reliability runtime around verification and routing."""
+
+        with _HARNESS_TRACER.start_as_current_span(
+            "waterbridge.harness.runtime"
+        ) as span:
+            trace_context = getattr(ctx, "trace_context", None)
+            inquiry_id = getattr(trace_context, "inquiry_id", None)
+            if inquiry_id is not None:
+                span.set_attribute(
+                    "waterbridge.inquiry.id",
+                    str(inquiry_id),
+                )
+            span.set_attribute("waterbridge.model.code", product.model_code)
+            span.set_attribute(
+                "waterbridge.product.family",
+                product.product_family.value,
+            )
+            result = self._run_runtime_untraced(
+                ctx=ctx,
+                product=product,
+                evidence_chunks=evidence_chunks,
+                safety_assessment=safety_assessment,
+                guidance=guidance,
+                retry_state=retry_state,
+                required_functions=required_functions,
+                output_payload=output_payload,
+                output_schema=output_schema,
+                timed_out=timed_out,
+                evidence_required=evidence_required,
+                tool_failure=tool_failure,
+            )
+            span.set_attribute(
+                "waterbridge.harness.decision",
+                result.harness.decision.value,
+            )
+            span.set_attribute(
+                "waterbridge.harness.human_review.present",
+                result.human_review is not None,
+            )
+            span.set_attribute(
+                "waterbridge.harness.handoff.present",
+                result.handoff is not None,
+            )
+            return result
+
+    def _run_runtime_untraced(
         self,
         *,
         ctx: Any,
@@ -234,6 +398,55 @@ class HarnessRunner:
         return HarnessRuntimeResult(harness=harness)
 
     def resume_human_review(
+        self,
+        *,
+        ctx: Any,
+        product: ProductContext,
+        interrupted: HumanReviewExecutionResult,
+        response: HumanReviewResume,
+    ) -> HumanReviewResolution:
+        """Trace review resume without recording reviewer free text."""
+
+        with _HARNESS_TRACER.start_as_current_span(
+            "waterbridge.harness.resume_review"
+        ) as span:
+            trace_context = getattr(ctx, "trace_context", None)
+            inquiry_id = getattr(trace_context, "inquiry_id", None)
+            if inquiry_id is not None:
+                span.set_attribute(
+                    "waterbridge.inquiry.id",
+                    str(inquiry_id),
+                )
+            span.set_attribute("waterbridge.model.code", product.model_code)
+            span.set_attribute(
+                "waterbridge.hitl.thread_id",
+                interrupted.checkpoint.thread_id,
+            )
+            span.set_attribute(
+                "waterbridge.hitl.state_version",
+                response.state_version,
+            )
+            span.set_attribute(
+                "waterbridge.hitl.decision",
+                response.decision.value,
+            )
+            resolution = self._resume_human_review_untraced(
+                ctx=ctx,
+                product=product,
+                interrupted=interrupted,
+                response=response,
+            )
+            span.set_attribute(
+                "waterbridge.harness.handoff.present",
+                resolution.handoff is not None,
+            )
+            span.set_attribute(
+                "waterbridge.hitl.guidance.present",
+                resolution.guidance is not None,
+            )
+            return resolution
+
+    def _resume_human_review_untraced(
         self,
         *,
         ctx: Any,

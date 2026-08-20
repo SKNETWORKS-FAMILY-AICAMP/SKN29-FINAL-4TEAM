@@ -5,12 +5,18 @@ from django.urls import path
 from apps.consultations.api.views import (
     CompleteConsultationView,
     ConfirmConsultationSummaryView,
+    InternalAIConsultationHandoffView,
     StartConsultationView,
     UpdateConsultationSummaryView,
 )
 
 
 urlpatterns = [
+    path(
+        "internal/ai/inquiries/<uuid:inquiry_id>/consultation-handoffs",
+        InternalAIConsultationHandoffView.as_view(),
+        name="internal-ai-consultation-handoff",
+    ),
     path(
         "inquiries/<uuid:inquiry_id>/start-consultation",
         StartConsultationView.as_view(),

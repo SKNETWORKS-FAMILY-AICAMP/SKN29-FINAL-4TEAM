@@ -1,5 +1,10 @@
 # Synthetic Data
 
+`candidates/product_expansion_e2e_cases.json`은 IAC425·IAC606의 모델별
+업무 체인 Coverage를 확인하기 위한 후보 데이터다. Backend Fixture 및
+`db-smoke`·`db-full` 적재 대상이 아니며, `NOT_IMPORTED`와
+`NOT_VERIFIED` 상태를 정식 승격 전까지 유지한다.
+
 실제 개인정보를 포함하지 않는 결정적 시연·테스트 데이터입니다.
 
 ## 규모

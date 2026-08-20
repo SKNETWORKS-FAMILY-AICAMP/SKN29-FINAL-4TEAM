@@ -27,14 +27,24 @@ PRODUCT_GENERATION_BY_MODEL_CODE: dict[str, str] = {
 }
 
 
-def is_runtime_approved_model_code(model_code: str) -> bool:
-    return model_code.strip().upper() in RUNTIME_APPROVED_EXACT_MODEL_CODES
+def is_runtime_approved_model_code(
+    model_code: str,
+    *,
+    runtime_approved_model_codes: frozenset[str] | None = None,
+) -> bool:
+    approved_codes = (
+        runtime_approved_model_codes
+        if runtime_approved_model_codes is not None
+        else RUNTIME_APPROVED_EXACT_MODEL_CODES
+    )
+    return model_code.strip().upper() in approved_codes
 
 
 def resolve_product_context(
     model_code: str,
     *,
     supported_functions: set[str] | None = None,
+    runtime_approved_model_codes: frozenset[str] | None = None,
 ) -> ProductContext:
     """Resolve exact product identity separately from current runtime approval."""
 
@@ -46,7 +56,10 @@ def resolve_product_context(
     return ProductContext(
         model_code=exact_code,
         product_family=product_family,
-        runtime_approved=is_runtime_approved_model_code(exact_code),
+        runtime_approved=is_runtime_approved_model_code(
+            exact_code,
+            runtime_approved_model_codes=runtime_approved_model_codes,
+        ),
         supported_functions=supported_functions or set(),
     )
 

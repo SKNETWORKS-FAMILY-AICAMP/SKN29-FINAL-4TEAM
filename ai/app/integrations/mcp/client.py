@@ -29,9 +29,19 @@ class WaterBridgeMCPClient:
         """
         return Path(__file__).resolve().parents[3]
 
-    @classmethod
-    def _server_path(cls) -> Path:
-        return cls._ai_root() / "app" / "integrations" / "mcp" / "server.py"
+    @staticmethod
+    def _server_module() -> str:
+        """
+        MCP Server? Python Package Module ??? ???? ?? ?????.
+
+        ??? ?? ???? ??:
+
+            python -m app.integrations.mcp.server
+
+        ??? ???? server.py ??? ?? import? ?? ?????.
+        """
+
+        return "app.integrations.mcp.server"
 
     @classmethod
     def _server_environment(cls) -> dict[str, str]:
@@ -65,7 +75,15 @@ class WaterBridgeMCPClient:
 
         server_params = StdioServerParameters(
             command=sys.executable,
-            args=[str(self._server_path())],
+            # server.py ??? ?? ???? ??
+            # Python Package Module ??? ?????.
+            #
+            # ?? ??:
+            # python -m app.integrations.mcp.server
+            args=[
+                "-m",
+                self._server_module(),
+            ],
             env=self._server_environment(),
             cwd=str(self._ai_root()),
         )

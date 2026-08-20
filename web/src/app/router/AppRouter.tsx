@@ -5,6 +5,7 @@ import OperationsInfographicPage from "../../pages/admin/OperationsInfographicPa
 import LoginPage from "../../pages/auth/LoginPage";
 import ConsultantDashboardPage from "../../pages/consultant/ConsultantDashboardPage";
 import ConsultantInquiryListPage from "../../pages/consultant/ConsultantInquiryListPage";
+import ConsultantNoticePage from "../../pages/consultant/ConsultantNoticePage";
 import InquiryDetailPage from "../../pages/consultant/InquiryDetailPage";
 import PhoneInquiryCreatePage from "../../pages/consultant/PhoneInquiryCreatePage";
 import VisitTransitionPage from "../../pages/consultant/VisitTransitionPage";
@@ -54,6 +55,10 @@ export function AppRoutes() {
               <Route
                 path={ROUTE_PATHS.consultantDashboard}
                 element={<ConsultantDashboardPage />}
+              />
+              <Route
+                path={ROUTE_PATHS.consultantNotices}
+                element={<ConsultantNoticePage />}
               />
               <Route
                 path={ROUTE_PATHS.consultantInquiryList}

@@ -1,5 +1,5 @@
 {
-  "dataset_version": "1.0.0",
+  "dataset_version": "1.1.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
   "source_commit": "01053a4697e7a363b12d3c2e9820ac484b7b9bad",
   "contract_alignment": {
@@ -7,7 +7,7 @@
     "status": "TEAM_APPROVED",
     "data_projection_consumes_contract": true,
     "backend_runtime_verified": true,
-    "pipeline_config_sha256": "91DDA2579EFC98261376AADE741F87666459B2D1357ABA3993A223F028CC894C",
+    "pipeline_config_sha256": "5B93AF57E8388C1D77330B1EFC3AD034F4223E807B4DF24D35FA2E657E69A8D0",
     "contract_mapping_sha256": "1673C4358290172EAC17161F6C3D7B91D5C572D58B180E7D59C0A06418CA8BDA",
     "source_hashes_verified": true
   },
@@ -27,14 +27,15 @@
   },
   "status": "PASS",
   "report_type": "BUSINESS",
-  "records": 22,
+  "records": 24,
   "summary": {
     "source_scenarios": 24,
     "active_scenarios": 22,
     "status_histories": 125,
     "audit_events": 125,
     "subset_records": 33,
-    "api_idempotency_cases": 3
+    "api_idempotency_cases": 3,
+    "product_expansion_e2e_candidates": 2
   },
   "checks": [
     {
@@ -56,6 +57,33 @@
       "status": "PASS",
       "internal_conflict_code": "IDEMPOTENCY_KEY_REUSE_CONFLICT",
       "expected_api_error_code": "DUPLICATE-EVENT-01"
+    },
+    {
+      "code": "PRODUCT_EXPANSION_COVERAGE",
+      "status": "PASS",
+      "active_product_codes": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "excluded_manual_aliases": [
+        "WPU-JCC104 (D)"
+      ],
+      "canonical": {
+        "exact_sales_code": "WPUJAC104DWH",
+        "customer_products": 12,
+        "subscriptions": 12,
+        "inquiries": 22
+      },
+      "candidates": {
+        "records": 2,
+        "exact_sales_codes": [
+          "WPUIAC425SNW",
+          "WPUIAC606SNW"
+        ],
+        "backend_import_status": "NOT_IMPORTED",
+        "runtime_status": "NOT_VERIFIED"
+      }
     }
   ]
 }

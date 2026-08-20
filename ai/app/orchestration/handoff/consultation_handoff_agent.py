@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import re
 
+from opentelemetry import trace
+
 from .handoff_input import ConsultationHandoffInput, HandoffQuestionnaireAnswer
 from .handoff_result import ConsultationHandoffResult
 
@@ -12,10 +14,63 @@ _PHONE = re.compile(r"(?<!\d)(?:01[016789])[- ]?\d{3,4}[- ]?\d{4}(?!\d)")
 _EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 
 
+_HANDOFF_TRACER = trace.get_tracer("waterbridge.ai.handoff", "1.0.0")
+
+
 class ConsultationHandoffAgent:
     """Transform only supplied runtime facts into a counselor-facing structure."""
 
     def run(self, handoff: ConsultationHandoffInput) -> ConsultationHandoffResult:
+        with _HANDOFF_TRACER.start_as_current_span(
+            "waterbridge.handoff.create"
+        ) as span:
+            span.set_attribute(
+                "waterbridge.inquiry.id",
+                str(handoff.inquiry_id),
+            )
+            span.set_attribute(
+                "waterbridge.model.code",
+                handoff.model_code,
+            )
+            span.set_attribute(
+                "waterbridge.product.family",
+                handoff.product_family,
+            )
+            span.set_attribute(
+                "waterbridge.handoff.safety_level",
+                handoff.safety_level,
+            )
+            span.set_attribute(
+                "waterbridge.handoff.safety_requires_consultation",
+                handoff.safety_requires_consultation,
+            )
+            span.set_attribute(
+                "waterbridge.handoff.evidence_count",
+                len(handoff.evidence),
+            )
+            span.set_attribute(
+                "waterbridge.handoff.questionnaire_count",
+                len(handoff.questionnaire_answers),
+            )
+            span.set_attribute(
+                "waterbridge.handoff.self_help_action_count",
+                len(handoff.proposed_self_help_actions),
+            )
+            result = self._run_untraced(handoff)
+            span.set_attribute(
+                "waterbridge.handoff.source_chunk_count",
+                len(result.source_chunk_ids),
+            )
+            span.set_attribute(
+                "waterbridge.handoff.redaction.enabled",
+                True,
+            )
+            return result
+
+    def _run_untraced(
+        self,
+        handoff: ConsultationHandoffInput,
+    ) -> ConsultationHandoffResult:
         answers = [
             HandoffQuestionnaireAnswer(
                 field_name=item.field_name,

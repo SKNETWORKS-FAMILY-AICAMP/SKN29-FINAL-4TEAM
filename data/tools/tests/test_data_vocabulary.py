@@ -103,7 +103,7 @@ class DataVocabularyTests(unittest.TestCase):
         self.assertLessEqual(inquiry_statuses | history_statuses, statuses)
 
     def test_dataset_version_is_e2e_release(self) -> None:
-        self.assertEqual("1.0.0", self.config.dataset_version)
+        self.assertEqual("1.1.0", self.config.dataset_version)
 
     def test_dataset_manifest_version_and_hashes_are_current(self) -> None:
         manifest = read_json(self.config.path("dataset_manifest"))

@@ -181,6 +181,34 @@ def test_unapproved_iac_products_never_reach_delegate_search_or_llm(model_code):
     assert result.to_analysis_result().status.value == "FALLBACK"
 
 
+@pytest.mark.parametrize("model_code", ["WPUIAC425SNW", "WPUIAC606SNW"])
+def test_three_model_integration_profile_allows_iac_retrieval_only_when_explicit(
+    monkeypatch,
+    model_code,
+):
+    class EmptySearchService:
+        def __init__(self):
+            self.calls = 0
+
+        def search(self, *args, **kwargs):
+            self.calls += 1
+            return []
+
+    monkeypatch.setenv("AI_RAG_RUNTIME_PROFILE", "three_model_integration")
+    delegate = EmptySearchService()
+    result = PipelineRouter(search_service=delegate).run_pipeline(
+        inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b404",
+        correlation_id="018f2f9b-7c30-7981-b541-1a987c88e404",
+        ai_request_id=f"ai-req-runtime-integration-{model_code}",
+        state_version=1,
+        raw_symptom="출수 기능을 확인하고 싶습니다.",
+        model_code=model_code,
+    )
+
+    assert delegate.calls > 0
+    assert result.to_analysis_result().status.value == "FALLBACK"
+
+
 def test_runtime_registry_matches_data_contract_and_activation_status():
     repository_root = Path(__file__).resolve().parents[4]
     contract = json.loads(

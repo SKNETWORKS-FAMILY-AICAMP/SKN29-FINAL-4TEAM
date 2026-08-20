@@ -1,8 +1,9 @@
-"""Validate and synchronize the approved seven-row AI evidence crosswalk."""
+"""Validate and synchronize an approved AI evidence crosswalk manifest."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections import Counter
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -37,7 +38,6 @@ DEFAULT_IDENTITY_MANIFEST = (
     REPOSITORY_ROOT / "ai" / "configs" / "canonical_evidence_identity.json"
 )
 DEFAULT_INDEX_MANIFEST = REPOSITORY_ROOT / "ai" / "configs" / "index_manifest.json"
-APPROVED_CHUNK_COUNT = 7
 APPROVED_IDENTITY_STATUS = "AI_SOURCE_IDENTITY_FIXED_BACKEND_MAPPING_PENDING"
 APPROVED_CANONICAL_STATUS = "TEXT_AND_VISUAL_VERIFIED"
 APPLY_ADVISORY_LOCK_ID = 8_102_026_081_207
@@ -54,7 +54,7 @@ class CrosswalkPlanItem:
 
 
 class Command(BaseCommand):
-    help = "Validate or atomically synchronize the seven approved AI chunk mappings."
+    help = "Validate or atomically synchronize an approved AI chunk mapping set."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -160,15 +160,43 @@ class Command(BaseCommand):
         if index.get("index_type") != "exact_search":
             raise CommandError("Index search type must use the approved exact-search baseline.")
         chunks = identity.get("chunks")
-        if not isinstance(chunks, list) or len(chunks) != APPROVED_CHUNK_COUNT:
+        if not isinstance(chunks, list) or not chunks:
+            raise CommandError("Canonical identity chunks must be a non-empty list.")
+        approved_chunk_count = self._positive_int(
+            identity.get("chunk_count", len(chunks)),
+            label="Canonical identity chunk_count",
+        )
+        if len(chunks) != approved_chunk_count:
             raise CommandError(
-                f"Canonical identity must contain exactly {APPROVED_CHUNK_COUNT} chunks."
+                "Canonical identity chunk_count does not match its chunk rows."
             )
         canonical_ids = [item.get("chunk_id") for item in chunks]
-        if len(set(canonical_ids)) != APPROVED_CHUNK_COUNT:
+        if (
+            any(not isinstance(value, str) or not value for value in canonical_ids)
+            or len(set(canonical_ids)) != approved_chunk_count
+        ):
             raise CommandError("Canonical chunk IDs must be unique.")
-        if int(index.get("chunk_count", -1)) != APPROVED_CHUNK_COUNT:
+        if self._positive_int(
+            index.get("chunk_count"),
+            label="Index manifest chunk_count",
+        ) != approved_chunk_count:
             raise CommandError("Index manifest chunk_count does not match the approved set.")
+        expected_model_counts = identity.get("model_chunk_counts")
+        if expected_model_counts is not None:
+            if not isinstance(expected_model_counts, dict) or not expected_model_counts:
+                raise CommandError("Canonical identity model_chunk_counts must be an object.")
+            normalized_expected_counts = {
+                str(model_code): self._positive_int(
+                    count,
+                    label=f"model_chunk_counts.{model_code}",
+                )
+                for model_code, count in expected_model_counts.items()
+            }
+            actual_model_counts = Counter(str(item.get("model_code")) for item in chunks)
+            if dict(actual_model_counts) != normalized_expected_counts:
+                raise CommandError(
+                    "Canonical identity model_chunk_counts do not match its chunk rows."
+                )
         if self._lower_hash(identity.get("chunk_set_sha256")) != self._lower_hash(
             index.get("chunk_set_sha256")
         ):
@@ -196,8 +224,12 @@ class Command(BaseCommand):
         document_code = canonical.get("document_id")
         model_code = canonical.get("model_code")
         page_refs = canonical.get("page_refs")
-        if not isinstance(canonical_id, str) or not canonical_id.startswith("RAG-"):
-            raise CommandError("Every canonical chunk requires an approved RAG-* ID.")
+        if not isinstance(canonical_id, str) or not canonical_id.startswith(
+            ("RAG-", "CHILD-")
+        ):
+            raise CommandError(
+                "Every canonical chunk requires an approved RAG-* or CHILD-* ID."
+            )
         if not isinstance(page_refs, list) or not page_refs:
             raise CommandError(f"{canonical_id}: page_refs must be non-empty.")
 
@@ -444,3 +476,15 @@ class Command(BaseCommand):
         if any(character not in "0123456789abcdef" for character in normalized):
             raise CommandError("SHA-256 values must contain hexadecimal characters only.")
         return normalized
+
+    @staticmethod
+    def _positive_int(value: Any, *, label: str) -> int:
+        if isinstance(value, bool):
+            raise CommandError(f"{label} must be a positive integer.")
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError) as exc:
+            raise CommandError(f"{label} must be a positive integer.") from exc
+        if parsed <= 0:
+            raise CommandError(f"{label} must be a positive integer.")
+        return parsed

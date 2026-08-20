@@ -98,10 +98,20 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
         <small>COUNSEL DESK · REMOTE</small>
         <h3>상담 처리</h3>
         <p>{inquiry.inquiryCode} · stateVersion {save.stateVersion}</p>
-        <small>currentStatus {save.currentStatus}</small>
+        <small
+          data-testid="consultation-current-status"
+          data-workflow-status={save.currentStatus}
+          data-state-version={save.stateVersion}
+        >
+          currentStatus {save.currentStatus}
+        </small>
       </div>
       {showSummaryForm && (
-        <form onSubmit={(event) => event.preventDefault()} noValidate>
+        <form
+          data-e2e-sensitive="true"
+          onSubmit={(event) => event.preventDefault()}
+          noValidate
+        >
           {([
             ["consultationNote", "상담 기록"],
             ["additionalCheck", "추가 확인사항"],
@@ -152,7 +162,7 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
       )}
       <div className="v6-action-buttons">
         {save.allowedActions.map((action) => (
-          <button key={action.code} className={`v6-button v6-button--${action.style === "PRIMARY" ? "primary" : "secondary"} v6-button--full`} type="button" disabled={save.isSaving} onClick={() => handleAction(action)}>
+          <button key={action.code} className={`v6-button v6-button--${action.style === "PRIMARY" ? "primary" : "secondary"} v6-button--full`} type="button" data-action-code={action.code} disabled={save.isSaving} onClick={() => handleAction(action)}>
             {save.isSaving ? "처리 중" : action.label}
           </button>
         ))}

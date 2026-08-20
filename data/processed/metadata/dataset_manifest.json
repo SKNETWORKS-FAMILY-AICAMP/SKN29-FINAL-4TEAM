@@ -36,7 +36,7 @@
     "정확 판매코드 미검증 JCC104(D)",
     "model-unverified common FAQ"
   ],
-  "dataset_version": "1.0.0",
+  "dataset_version": "1.1.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
   "files": [
     {
@@ -108,13 +108,13 @@
     {
       "path": "processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
       "records": 53,
-      "sha256": "05C7A387ED76EFEFE95E172FA37E4CFC8A0BF8842491512CB5AF4808E3BB20BB",
+      "sha256": "B4BA15C045D7C4EAF1E4CF90DFF83EC9FA2C236F9CFCDAD85467A42F1921EB78",
       "schema": "schemas/processed/ragChildChunk.schema.json"
     },
     {
       "path": "processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl",
       "records": 43,
-      "sha256": "997119C395935D0815AA497C9EEB73EF73EAD4DA346FD83B5FC10867F86400E5",
+      "sha256": "CCD797DB8C87B9B90EFD88EBE16BE5AC4D80008BC75E0CCE46B3854F70C3143D",
       "schema": "schemas/processed/ragEvidenceGroup.schema.json"
     },
     {
@@ -272,6 +272,12 @@
       "records": 12,
       "sha256": "5918EC8D52D731402CCDFCC6DAEEF468BCDEFFA850A045CB35EBD5D8A3129CA8",
       "schema": "schemas/synthetic/syntheticCustomerProfile.schema.json"
+    },
+    {
+      "path": "synthetic/candidates/product_expansion_e2e_cases.json",
+      "records": 2,
+      "sha256": "12CB780CCCE1AF1201390A05E687CF9084826F8B8AC191C63DC550F138123F71",
+      "schema": "schemas/synthetic/productExpansionE2ECase.schema.json"
     }
   ],
   "counts": {
@@ -299,6 +305,7 @@
     "synthetic_audit_events": 125,
     "synthetic_followup_confirmations": 1,
     "synthetic_fixture_records": 369,
+    "product_expansion_e2e_candidates": 2,
     "supported_products": 3,
     "reference_manual_pages": 144,
     "rag_expansion_parents": 15,

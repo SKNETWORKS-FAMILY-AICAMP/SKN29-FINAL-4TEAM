@@ -280,9 +280,11 @@ pgvector Query와 팀 DB 준비 완료까지 보장하는 Readiness 판정은 �
 팀 DB의 공식 Evidence·Embedding 적재, Crosswalk 적용과 View 게시 책임은
 Backend·Database 영역에 있다. AI 최소 권한 Role은
 `backend_ai_rag_chunks_v1` View만 `SELECT`하며 `build_vector_index`로 팀 DB에
-쓰지 않는다. Backend Migration `0009`·`0010`, 승인 7건 Crosswalk와 View 7행이
-확인된 뒤 다음 이름만 환경변수로 주입한다. 실제 Secret 값은 명령·문서·로그에
-남기지 않는다.
+쓰지 않는다. 기본 `mvp` Profile은 승인 7건을 유지한다. 3모델 53건은 Backend
+Importer·Crosswalk·Readonly View 검증과 실제 `index_manifest_3model.json` 확보 후
+`AI_RAG_RUNTIME_PROFILE=three_model_integration`을 명시한 통합검증 Process에서만
+선택한다. 이 Profile은 Public Runtime 활성화를 의미하지 않는다. 실제 Secret 값은
+명령·문서·로그에 남기지 않는다.
 
 ```powershell
 $env:OPENAI_API_KEY='<Secret>'
@@ -310,15 +312,33 @@ $env:AI_PROMPT_VERSION='customer_guidance/v2'
   --expected-guidance-message '출수량이 적으면 조리수 또는 다른 수전을 동시에 사용하는지 확인하고 조리수 사용을 멈춘 뒤 출수합니다. 필터 교체 주기를 확인해 필터를 교체하고, 교체 후에도 출수량이 적으면 고객상담센터에 연락합니다. 순간 온수 출수는 냉수와 정수보다 느릴 수 있고 설치 지역 수압이 약해도 출수 속도가 느릴 수 있습니다.'
 ```
 
+3모델 공식 통합검증에서는 위 환경을 주입한 같은 Process에 다음 설정을 추가한다.
+환경변수에는 임의 Manifest 경로를 받지 않으며, 허용된 Profile 이름이 고정 경로와
+정책을 함께 선택한다.
+
+```powershell
+$env:AI_RAG_RUNTIME_PROFILE='three_model_integration'
+
+.\ai\.venv\Scripts\python.exe -m ai.scripts.verify_three_model_readonly_runtime
+.\ai\.venv\Scripts\python.exe -m ai.scripts.verify_local_runtime
+```
+
+`three_model_integration`은 `ai/configs/index_manifest_3model.json`, Index Version
+`2.0.0`, Child 53건과 모델별 15/19/19, 정확 판매코드 정책을 함께 검증한다. 공식
+Importer에 사용된 Manifest의 출처와 Hash를 확인할 수 없으면 파일을 임의 생성하지
+않고 Runtime 검증을 중단한다.
+
 팀 DB 통합 테스트는 환경변수 미주입 시 `SKIP`하지 않고 실패한다. 대상 객체가
 정확히 `backend_ai_rag_chunks_v1` View인지, 현재 Role은 SELECT만 가능하고
 INSERT·UPDATE·DELETE·TRUNCATE 권한이 없는지 확인한다. 또한 Transaction
 Read-only, public Schema CREATE 금지와 Backend 원본 사용자·Chunk·Embedding·
 Crosswalk Table의 SELECT/DML 금지까지 검증한다.
 
-`verify_local_runtime`은 실제 Pipeline 내부에서 승인 모델 계열,
-`customer_guidance/v2`, Token 사용량, Low-flow Evidence와 추출형 message 일치를
-확인한다. Secret·DSN·고객 원문은 결과에 출력하지 않는다.
+`verify_local_runtime`은 선택 Profile의 전체 Canonical Identity를 먼저 검증한다.
+기본 `mvp`는 7건 범위를, `three_model_integration`은 Child 53건과 3개 판매코드를
+확인한 뒤 모델별 대표 정상 Case로 실제 Retriever·Provider를 실행한다. 반환된
+Evidence가 해당 판매코드의 Canonical ID 집합에만 속하는지, Prompt Version과 Token
+사용 증거가 있는지도 확인한다. Secret·DSN·질의·Evidence 본문은 출력하지 않는다.
 Backend 통합 Process에도 위 세 AIRun 환경변수를 같은 배포 설정에서 주입하고,
 E2E에서는 저장된 AIRun 값이 `openai`, `gpt-4.1-mini`,
 `customer_guidance/v2`인지 반드시 대조한다. 이 대조 전에는 Backend 수직 Gate를

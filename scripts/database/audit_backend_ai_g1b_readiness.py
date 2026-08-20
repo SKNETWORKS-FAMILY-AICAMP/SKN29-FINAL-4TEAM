@@ -47,6 +47,7 @@ REQUIRED_MIGRATIONS = (
     "0009_ai_chunk_crosswalk",
     "0010_backend_ai_rag_chunks_view",
     "0011_cast_chunk_embedding_vector_dimensions",
+    "0012_expand_ai_crosswalk_canonical_id",
 )
 EXPECTED_VIEW = "public.backend_ai_rag_chunks_v1"
 EXPECTED_VIEW_COLUMNS = (
@@ -61,6 +62,16 @@ EXPECTED_VIEW_COLUMNS = (
 )
 EXPECTED_CHUNK_COUNT = 7
 EXPECTED_CROSSWALK_PAGE_LINK_COUNT = 8
+EVIDENCE_PROFILES = {
+    "baseline": {
+        "chunk_count": EXPECTED_CHUNK_COUNT,
+        "page_link_count": EXPECTED_CROSSWALK_PAGE_LINK_COUNT,
+    },
+    "three-model": {
+        "chunk_count": 53,
+        "page_link_count": 53,
+    },
+}
 # 이전 Audit 소비자가 참조하는 이름은 우선 버전 Alias로 보존한다.
 EXPECTED_PGVECTOR_VERSION = PREFERRED_PGVECTOR_VERSION
 EXPECTED_EMBEDDING_MODEL = "BAAI/bge-m3"
@@ -371,9 +382,15 @@ def evaluate_snapshot(
     snapshot: Mapping[str, Any],
     *,
     require_team_database: bool = False,
+    evidence_profile: str = "baseline",
 ) -> dict[str, Any]:
     """수집값을 공개 가능한 READY/BLOCKED 판정으로 바꾼다."""
 
+    if evidence_profile not in EVIDENCE_PROFILES:
+        raise ValueError("Unsupported Backend-AI evidence profile.")
+    expectations = EVIDENCE_PROFILES[evidence_profile]
+    expected_chunk_count = expectations["chunk_count"]
+    expected_page_link_count = expectations["page_link_count"]
     blockers: list[str] = []
     pgvector_version = snapshot.get("pgvector_version")
     crosswalk_page_table_exists = bool(
@@ -396,20 +413,27 @@ def evaluate_snapshot(
     blockers.extend(f"MIGRATION_MISSING:{name}" for name in missing_migrations)
     if not snapshot["crosswalk_table_exists"]:
         blockers.append("CROSSWALK_TABLE_MISSING")
-    if snapshot["active_verified_count"] != EXPECTED_CHUNK_COUNT:
-        blockers.append("ACTIVE_VERIFIED_CROSSWALK_COUNT_NOT_7")
-    if snapshot["baseline_identity_count"] != EXPECTED_CHUNK_COUNT:
-        blockers.append("BASELINE_EMBEDDING_IDENTITY_COUNT_NOT_7")
+    if snapshot["active_verified_count"] != expected_chunk_count:
+        blockers.append(
+            f"ACTIVE_VERIFIED_CROSSWALK_COUNT_NOT_{expected_chunk_count}"
+        )
+    if snapshot["baseline_identity_count"] != expected_chunk_count:
+        blockers.append(
+            f"BASELINE_EMBEDDING_IDENTITY_COUNT_NOT_{expected_chunk_count}"
+        )
     if not crosswalk_page_table_exists:
         blockers.append("CROSSWALK_PAGE_TABLE_MISSING")
-    if crosswalk_page_link_count != EXPECTED_CROSSWALK_PAGE_LINK_COUNT:
-        blockers.append("ACTIVE_VERIFIED_CROSSWALK_PAGE_LINK_COUNT_NOT_8")
+    if crosswalk_page_link_count != expected_page_link_count:
+        blockers.append(
+            "ACTIVE_VERIFIED_CROSSWALK_PAGE_LINK_COUNT_NOT_"
+            f"{expected_page_link_count}"
+        )
     if not snapshot["view_exists"]:
         blockers.append("BACKEND_AI_RAG_VIEW_MISSING")
     if tuple(snapshot["view_columns"]) != EXPECTED_VIEW_COLUMNS:
         blockers.append("BACKEND_AI_RAG_VIEW_COLUMNS_MISMATCH")
-    if snapshot["view_row_count"] != EXPECTED_CHUNK_COUNT:
-        blockers.append("BACKEND_AI_RAG_VIEW_ROW_COUNT_NOT_7")
+    if snapshot["view_row_count"] != expected_chunk_count:
+        blockers.append(f"BACKEND_AI_RAG_VIEW_ROW_COUNT_NOT_{expected_chunk_count}")
     if snapshot["view_distinct_chunk_count"] != snapshot["view_row_count"]:
         blockers.append("BACKEND_AI_RAG_VIEW_CHUNK_ID_NOT_UNIQUE")
     if not snapshot["role_exists"]:
@@ -430,6 +454,7 @@ def evaluate_snapshot(
     return {
         "status": "READY" if not blockers else "BLOCKED",
         "scope": "BACKEND_AI_G1B_READINESS",
+        "evidence_profile": evidence_profile,
         "database": {
             "name": snapshot["database_name"],
             "server_version": snapshot["server_version"],
@@ -448,11 +473,11 @@ def evaluate_snapshot(
             "missing": missing_migrations,
         },
         "crosswalk": {
-            "expected": EXPECTED_CHUNK_COUNT,
+            "expected": expected_chunk_count,
             "active_verified": snapshot["active_verified_count"],
             "baseline_identity": snapshot["baseline_identity_count"],
             "page_table_exists": crosswalk_page_table_exists,
-            "page_links_expected": EXPECTED_CROSSWALK_PAGE_LINK_COUNT,
+            "page_links_expected": expected_page_link_count,
             "page_links": crosswalk_page_link_count,
         },
         "view": {
@@ -485,6 +510,7 @@ def run_audit(
     *,
     require_ready: bool = False,
     require_team_database: bool = False,
+    evidence_profile: str = "baseline",
     connect: Callable[..., Any] = psycopg.connect,
 ) -> tuple[dict[str, Any], int]:
     """설정·연결 실패도 비밀 없는 구조화 결과로 반환한다."""
@@ -508,6 +534,7 @@ def run_audit(
         result = evaluate_snapshot(
             snapshot,
             require_team_database=require_team_database,
+            evidence_profile=evidence_profile,
         )
     except Exception as exc:  # noqa: BLE001 - 비밀 없는 진단 결과로 변환
         return (
@@ -537,6 +564,15 @@ def parse_args() -> argparse.Namespace:
         help="READY가 아니면 Exit 1을 반환한다.",
     )
     parser.add_argument(
+        "--evidence-profile",
+        choices=tuple(EVIDENCE_PROFILES),
+        default="baseline",
+        help=(
+            "baseline은 기존 7건, three-model은 15/19/19 합계 53건 "
+            "Crosswalk·View를 검증한다."
+        ),
+    )
+    parser.add_argument(
         "--require-team-database",
         action="store_true",
         help=(
@@ -554,6 +590,7 @@ def main() -> int:
         os.environ,
         require_ready=arguments.require_ready,
         require_team_database=arguments.require_team_database,
+        evidence_profile=arguments.evidence_profile,
     )
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
