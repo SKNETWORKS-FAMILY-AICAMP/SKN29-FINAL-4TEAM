@@ -75,7 +75,7 @@ describe("App Router Guard", () => {
 
     expect(
       await screen.findByRole("heading", {
-        name: "반갑습니다!오늘도 좋은 하루 되세요 😊",
+        name: "테스트 CONSULTANT님 반갑습니다!",
       }),
     ).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "업무 대시보드" })).toHaveAttribute(

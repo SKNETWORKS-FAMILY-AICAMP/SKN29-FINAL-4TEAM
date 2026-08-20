@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
-import waterBridgeLogo from "../../../assets/images/water-bridge-logo-v2.png";
 import { WORK_BUCKET_LABELS } from "../model/consultantWorkspaceModel";
 import type { CounselorWorkBucket } from "../model/consultantWorkspaceTypes";
 
@@ -146,11 +145,10 @@ export default function ConsultantQueueSidebar({
         href="/"
         aria-label="Water Bridge 홈으로 이동"
       >
-        <img
-          className="simple-brand__logo"
-          src={waterBridgeLogo}
-          alt="Water Bridge"
-        />
+        <span className="simple-brand__wordmark" aria-hidden="true">
+          <span className="simple-brand__wordmark-water">Water</span>
+          <span className="simple-brand__wordmark-bridge">Bridge</span>
+        </span>
       </a>
 
       <nav

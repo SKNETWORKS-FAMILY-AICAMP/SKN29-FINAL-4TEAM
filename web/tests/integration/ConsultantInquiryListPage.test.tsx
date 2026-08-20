@@ -78,9 +78,11 @@ describe("ConsultantInquiryListPage", () => {
     const sidebarTabs = getSidebarTabs();
     const riskTabs = getRiskTabs();
 
-    expect(
-      screen.getByRole("img", { name: "Water Bridge" }).getAttribute("src"),
-    ).toContain("water-bridge-logo-v2");
+    const brandLink = screen.getByRole("link", {
+      name: "Water Bridge 홈으로 이동",
+    });
+    expect(brandLink).toHaveTextContent("WaterBridge");
+    expect(brandLink.querySelector("img")).toBeNull();
     expect(sidebarTabs.getByRole("tab", { name: /새 문의/ })).toHaveAttribute(
       "aria-selected",
       "true",
