@@ -4,7 +4,7 @@ from uuid import UUID
 from ai.app.common.timeout import CancellationToken, PipelineStageTimeoutError
 from ai.app.orchestration.harness import HarnessDecision, HarnessErrorCode, ProductContext, ProductFamily
 from ai.app.orchestration.harness.runtime import ReliabilityRuntime
-from ai.app.retrieval import RetrievalOutcome
+from ai.app.retrieval import RetrievalOutcome, RetrievedChunk
 from ai.app.schemas import RiskLevel, SafetyAssessment, UsageGuidance, UsageGuidanceStatus
 
 
@@ -48,6 +48,24 @@ def _ctx():
     )
 
 
+class _RetryableEvidenceCapture:
+    rejected_chunk_ids = []
+
+    def evidence_for_harness(self, _ctx):
+        return [
+            RetrievedChunk(
+                chunk_id="RAG-WRONG-MODEL-TIMEOUT-001",
+                document_title="official manual",
+                manual_model="WPUIAC606SNW",
+                model_code="WPUIAC606SNW",
+                content="다른 제품의 공식 근거",
+                similarity_score=0.9,
+                verification_status="official_verified",
+                allowed_use=True,
+            )
+        ]
+
+
 def test_retrieval_retry_stage_timeout_is_converted_to_harness_handoff(monkeypatch):
     runtime = ReliabilityRuntime()
 
@@ -63,7 +81,7 @@ def test_retrieval_retry_stage_timeout_is_converted_to_harness_handoff(monkeypat
             product_family=ProductFamily.DIRECT_WATER_PURIFIER,
             runtime_approved=True,
         ),
-        evidence_capture=None,
+        evidence_capture=_RetryableEvidenceCapture(),
         search_service=object(),
         llm_client=None,
         cancellation_token=CancellationToken(),
