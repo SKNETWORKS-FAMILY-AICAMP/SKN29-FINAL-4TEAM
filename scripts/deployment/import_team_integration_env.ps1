@@ -3,6 +3,7 @@ param(
     [string]$Role = 'Admin',
     [string]$RuntimeRoot,
     [switch]$LoadOfficialSource,
+    [switch]$LoadThreeModelOfficialSources,
     [switch]$RequireOpenAIKey,
     [string[]]$OfficialSourceSearchRoots
 )
@@ -24,8 +25,11 @@ if (-not $RuntimeRoot.StartsWith(
 )) {
     throw 'RuntimeRoot must stay inside the repository workspace.'
 }
-if ($LoadOfficialSource -and $Role -ne 'Runtime') {
+if (($LoadOfficialSource -or $LoadThreeModelOfficialSources) -and $Role -ne 'Runtime') {
     throw 'Official source loading requires the Runtime role.'
+}
+if ($LoadOfficialSource -and $LoadThreeModelOfficialSources) {
+    throw 'Choose one official source loading profile.'
 }
 if ($RequireOpenAIKey -and $Role -ne 'AI') {
     throw 'OpenAI key enforcement requires the AI role.'
@@ -69,7 +73,10 @@ foreach ($variableName in @(
     'AI_EMBEDDING_REVISION',
     'AI_LLM_MODEL',
     'OPENAI_API_KEY',
-    'BACKEND_AI_OFFICIAL_SOURCE_PATH'
+    'BACKEND_AI_OFFICIAL_SOURCE_PATH',
+    'BACKEND_AI_OFFICIAL_SOURCE_PATH_JAC104',
+    'BACKEND_AI_OFFICIAL_SOURCE_PATH_IAC425',
+    'BACKEND_AI_OFFICIAL_SOURCE_PATH_IAC606'
 )) {
     [Environment]::SetEnvironmentVariable($variableName, $null, 'Process')
 }
@@ -176,25 +183,16 @@ if ($Role -eq 'AI') {
     }
 }
 
-$officialSourceStatus = 'NOT_REQUESTED'
-if ($LoadOfficialSource) {
-    $expectedSourceSize = 5131906
-    $expectedSourceHash = (
-        '0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c'
+function Find-VerifiedOfficialSource {
+    param(
+        [Parameter(Mandatory)][long]$ExpectedSize,
+        [Parameter(Mandatory)][string]$ExpectedHash,
+        [Parameter(Mandatory)][string[]]$SearchRoots,
+        [Parameter(Mandatory)][string]$SourceLabel
     )
-    if (-not $OfficialSourceSearchRoots) {
-        if ([string]::IsNullOrWhiteSpace($env:USERPROFILE)) {
-            throw 'The user profile root is unavailable.'
-        }
-        $OfficialSourceSearchRoots = @(
-            (Join-Path $env:USERPROFILE 'Downloads'),
-            (Join-Path $env:USERPROFILE 'Documents'),
-            (Join-Path $env:USERPROFILE 'Desktop')
-        )
-    }
 
     $matches = @{}
-    foreach ($searchRoot in $OfficialSourceSearchRoots) {
+    foreach ($searchRoot in $SearchRoots) {
         if (-not (Test-Path -LiteralPath $searchRoot)) {
             continue
         }
@@ -202,27 +200,109 @@ if ($LoadOfficialSource) {
             $candidate in Get-ChildItem -LiteralPath $searchRoot -Filter '*.pdf' `
                 -File -Recurse -ErrorAction SilentlyContinue
         ) {
-            if ($candidate.Length -ne $expectedSourceSize) {
+            if ($candidate.Length -ne $ExpectedSize) {
                 continue
             }
             $candidateHash = (
                 Get-FileHash -LiteralPath $candidate.FullName -Algorithm SHA256
-            ).Hash.ToLowerInvariant()
-            if ($candidateHash -eq $expectedSourceHash) {
+            ).Hash.ToUpperInvariant()
+            if ($candidateHash -eq $ExpectedHash.ToUpperInvariant()) {
                 $matches[$candidate.FullName] = $candidate.FullName
             }
         }
     }
     if ($matches.Count -ne 1) {
-        throw 'The official source must have exactly one size and SHA-256 match.'
+        throw "$SourceLabel must have exactly one size and SHA-256 match."
     }
-    $officialSourcePath = @($matches.Values)[0]
+    return @($matches.Values)[0]
+}
+
+function Get-DefaultOfficialSourceSearchRoots {
+    param([switch]$PreferProtectedRuntime)
+
+    if ($PreferProtectedRuntime) {
+        $protectedRoot = Join-Path (
+            Split-Path -Parent $RuntimeRoot
+        ) 'official-source'
+        if (Test-Path -LiteralPath $protectedRoot) {
+            return @($protectedRoot)
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace($env:USERPROFILE)) {
+        throw 'The user profile root is unavailable.'
+    }
+    return @(
+        (Join-Path $env:USERPROFILE 'Downloads'),
+        (Join-Path $env:USERPROFILE 'Documents'),
+        (Join-Path $env:USERPROFILE 'Desktop')
+    )
+}
+
+$officialSourceStatus = 'NOT_REQUESTED'
+$officialSourceProfile = 'NONE'
+if ($LoadOfficialSource) {
+    if (-not $OfficialSourceSearchRoots) {
+        $OfficialSourceSearchRoots = Get-DefaultOfficialSourceSearchRoots
+    }
+    $officialSourcePath = Find-VerifiedOfficialSource `
+        -ExpectedSize 5131906 `
+        -ExpectedHash '0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C' `
+        -SearchRoots $OfficialSourceSearchRoots `
+        -SourceLabel 'The official source'
     [Environment]::SetEnvironmentVariable(
         'BACKEND_AI_OFFICIAL_SOURCE_PATH',
         $officialSourcePath,
         'Process'
     )
     $officialSourceStatus = 'PASS'
+    $officialSourceProfile = 'SINGLE_MODEL'
+}
+elseif ($LoadThreeModelOfficialSources) {
+    if (-not $OfficialSourceSearchRoots) {
+        $OfficialSourceSearchRoots = Get-DefaultOfficialSourceSearchRoots `
+            -PreferProtectedRuntime
+    }
+    $sourceSpecifications = @(
+        @{
+            EnvironmentKey = 'BACKEND_AI_OFFICIAL_SOURCE_PATH_JAC104'
+            Size = 5131906
+            Hash = '0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C'
+            Label = 'The JAC104 official source'
+        },
+        @{
+            EnvironmentKey = 'BACKEND_AI_OFFICIAL_SOURCE_PATH_IAC425'
+            Size = 8571676
+            Hash = '97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8'
+            Label = 'The IAC425 official source'
+        },
+        @{
+            EnvironmentKey = 'BACKEND_AI_OFFICIAL_SOURCE_PATH_IAC606'
+            Size = 8448650
+            Hash = 'A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572'
+            Label = 'The IAC606 official source'
+        }
+    )
+    $verifiedSources = @{}
+    foreach ($specification in $sourceSpecifications) {
+        $verifiedPath = Find-VerifiedOfficialSource `
+            -ExpectedSize $specification.Size `
+            -ExpectedHash $specification.Hash `
+            -SearchRoots $OfficialSourceSearchRoots `
+            -SourceLabel $specification.Label
+        [Environment]::SetEnvironmentVariable(
+            $specification.EnvironmentKey,
+            $verifiedPath,
+            'Process'
+        )
+        $verifiedSources[$specification.EnvironmentKey] = $verifiedPath
+    }
+    [Environment]::SetEnvironmentVariable(
+        'BACKEND_AI_OFFICIAL_SOURCE_PATH',
+        $verifiedSources['BACKEND_AI_OFFICIAL_SOURCE_PATH_JAC104'],
+        'Process'
+    )
+    $officialSourceStatus = 'PASS'
+    $officialSourceProfile = 'THREE_MODEL'
 }
 
 [pscustomobject]@{
@@ -230,6 +310,7 @@ if ($LoadOfficialSource) {
     role = $Role
     target_database = $selected[0]
     official_source_size_hash = $officialSourceStatus
+    official_source_profile = $officialSourceProfile
     openai_key = if ($openAIKeyLoaded) { 'YES' } else { 'NO' }
     ai_readonly_dsn = if ($aiReadonlyDsnLoaded) { 'YES' } else { 'NO' }
     secret_values_printed = $false

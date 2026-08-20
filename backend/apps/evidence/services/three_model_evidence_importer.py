@@ -100,6 +100,11 @@ DOCUMENT_CONFIG = {
         "source_path_env": "BACKEND_AI_OFFICIAL_SOURCE_PATH_IAC606",
     },
 }
+APPROVED_EXISTING_DOCUMENT_TITLE_ALIASES = {
+    "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00": frozenset(
+        {"WPU-JAC104, WPU-JCC104 냉온정수기 메뉴얼"}
+    ),
+}
 EXPECTED_MODEL_COUNTS = {
     "WPUJAC104DWH": 15,
     "WPUIAC425SNW": 19,
@@ -778,7 +783,18 @@ class ThreeModelEvidenceImporter:
             "deleted_at": None,
         }
         for field_name, expected_value in expected.items():
-            if getattr(document, field_name) != expected_value:
+            actual_value = getattr(document, field_name)
+            if field_name == "title":
+                approved_titles = {
+                    expected_value,
+                    *APPROVED_EXISTING_DOCUMENT_TITLE_ALIASES.get(
+                        document.document_code,
+                        frozenset(),
+                    ),
+                }
+                if actual_value in approved_titles:
+                    continue
+            if actual_value != expected_value:
                 raise CommandError(
                     f"{document.document_code}: existing {field_name} differs."
                 )

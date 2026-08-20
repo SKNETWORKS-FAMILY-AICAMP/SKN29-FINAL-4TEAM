@@ -329,6 +329,27 @@ def test_replay_accepts_existing_approved_pages_from_another_reviewer(package):
     }
 
 
+def test_replay_accepts_only_the_approved_legacy_jac104_title_alias(package):
+    operator = _operator()
+    _products()
+    importer = ThreeModelEvidenceImporter()
+    importer.persist(package=package, verifier=operator)
+    document = SourceDocument.objects.get(
+        document_code="MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+    )
+    document.title = "WPU-JAC104, WPU-JCC104 냉온정수기 메뉴얼"
+    document.save(update_fields=["title"])
+
+    replay = importer.persist(package=package, verifier=operator)
+
+    assert replay.unchanged["documents"] == 3
+
+    document.title = "검증되지 않은 문서 제목"
+    document.save(update_fields=["title"])
+    with pytest.raises(CommandError, match="existing title differs"):
+        importer.persist(package=package, verifier=operator)
+
+
 def test_late_embedding_failure_rolls_back_entire_import(monkeypatch, package):
     operator = _operator()
     _products()
