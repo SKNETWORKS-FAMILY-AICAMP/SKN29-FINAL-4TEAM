@@ -208,15 +208,21 @@ export default function RemoteConsultantInquiryDetail({
             </div>
             <div>
               <dt>확정 요약</dt>
-              <dd>{inquiry.consultation.summary.confirmedSummary ?? "미확정"}</dd>
+              <dd data-testid="consultation-detail-confirmed-summary">
+                {inquiry.consultation.summary.confirmedSummary ?? "미확정"}
+              </dd>
             </div>
             <div>
               <dt>상담 기록</dt>
-              <dd>{inquiry.consultation.consultationNote ?? "미저장"}</dd>
+              <dd data-testid="consultation-detail-note">
+                {inquiry.consultation.consultationNote ?? "미저장"}
+              </dd>
             </div>
             <div>
               <dt>고객 안내</dt>
-              <dd>{inquiry.consultation.customerGuidance ?? "미저장"}</dd>
+              <dd data-testid="consultation-detail-customer-guidance">
+                {inquiry.consultation.customerGuidance ?? "미저장"}
+              </dd>
             </div>
           </dl>
         )}

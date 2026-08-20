@@ -109,6 +109,10 @@ describe("Remote 상담 처리 Panel", () => {
     await user.type(screen.getByLabelText("확정 요약"), "필터 체결 안내 완료");
     await user.click(screen.getByRole("checkbox", { name: "상담 요약 검토·확정" }));
 
+    expect(
+      screen.getByTestId("consultation-field-consultationNote"),
+    ).toHaveValue("고객 상태 확인");
+
     rerender(
       <RemoteConsultationActionPanel
         inquiry={createDetail(5)}

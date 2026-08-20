@@ -7,6 +7,7 @@ import {
   type WebConsultationE2EFixture,
 } from "../support/backendFixture.js";
 import {
+  attachMaskedEvidenceScreenshot,
   attachMaskedFailureScreenshot,
   installArtifactPrivacyMask,
 } from "../support/privacy.js";
@@ -271,9 +272,10 @@ test.afterEach(async ({ page }, testInfo) => {
   await attachMaskedFailureScreenshot(page, testInfo);
 });
 
-test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", async ({
-  page,
-}) => {
+test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", async (
+  { page },
+  testInfo,
+) => {
   const unassignedInquiryId = process.env.E2E_UNASSIGNED_INQUIRY_ID?.trim();
   if (!unassignedInquiryId) {
     throw new Error(
@@ -454,9 +456,9 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     "data-state-version",
     String(fixture.stateVersion + 2),
   );
-  await expect(page.getByLabel("상담 기록", { exact: true })).toHaveValue(
-    consultationNote,
-  );
+  await expect(
+    page.getByTestId("consultation-field-consultationNote"),
+  ).toHaveValue(consultationNote);
   page.off("request", countUpdateRequest);
 
   const saveResponse = page.waitForResponse(
@@ -510,12 +512,15 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     page.getByTestId("consultation-current-status"),
   ).toHaveAttribute("data-workflow-status", "COMPLETION_PENDING");
 
-  const consultationSection = page
-    .locator("section")
-    .filter({ has: page.getByRole("heading", { name: "상담·방문 정보" }) });
-  await expect(consultationSection.getByText(consultationNote)).toBeVisible();
-  await expect(consultationSection.getByText(customerGuidance)).toBeVisible();
-  await expect(consultationSection.getByText(confirmedSummary)).toBeVisible();
+  await expect(page.getByTestId("consultation-detail-note")).toHaveText(
+    consultationNote,
+  );
+  await expect(
+    page.getByTestId("consultation-detail-customer-guidance"),
+  ).toHaveText(customerGuidance);
+  await expect(
+    page.getByTestId("consultation-detail-confirmed-summary"),
+  ).toHaveText(confirmedSummary);
 
   const recoveredPage = await page.context().newPage();
   await installArtifactPrivacyMask(recoveredPage);
@@ -527,19 +532,15 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
   await expect(
     recoveredPage.getByTestId("consultation-current-status"),
   ).toHaveAttribute("data-workflow-status", "COMPLETION_PENDING");
-  const recoveredConsultationSection = recoveredPage
-    .locator("section")
-    .filter({
-      has: recoveredPage.getByRole("heading", { name: "상담·방문 정보" }),
-    });
   await expect(
-    recoveredConsultationSection.getByText(consultationNote),
-  ).toBeVisible();
+    recoveredPage.getByTestId("consultation-detail-note"),
+  ).toHaveText(consultationNote);
   await expect(
-    recoveredConsultationSection.getByText(customerGuidance),
-  ).toBeVisible();
+    recoveredPage.getByTestId("consultation-detail-customer-guidance"),
+  ).toHaveText(customerGuidance);
   await expect(
-    recoveredConsultationSection.getByText(confirmedSummary),
-  ).toBeVisible();
+    recoveredPage.getByTestId("consultation-detail-confirmed-summary"),
+  ).toHaveText(confirmedSummary);
   await recoveredPage.close();
+  await attachMaskedEvidenceScreenshot(page, testInfo);
 });

@@ -120,7 +120,14 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
           ] as const).map(([field, label]) => (
             <label className="v6-form-field" key={field}>
               {label}
-              <textarea value={form.values[field]} onChange={(event) => form.updateField(field, event.target.value)} />
+              <textarea
+                data-testid={`consultation-field-${field}`}
+                name={field}
+                value={form.values[field]}
+                onChange={(event) =>
+                  form.updateField(field, event.target.value)
+                }
+              />
               {form.fieldErrors[field] && <span className="v6-field-error">{form.fieldErrors[field]}</span>}
             </label>
           ))}
