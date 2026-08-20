@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from uuid import UUID, uuid4
 
 import pytest
 from rest_framework.test import APIClient
@@ -15,6 +16,7 @@ from apps.operations.models import (
     StaffDirectoryEntry,
 )
 from apps.operations.services import ConsultantDashboardSeedService
+from apps.visits.repositories.visit_repository import VisitRepository
 
 
 pytestmark = pytest.mark.django_db
@@ -94,8 +96,12 @@ def test_dashboard_api_returns_database_projection_for_assigned_consultant():
     consultant = User.objects.get(username="DEMO-CONSULTANT-001")
     client = APIClient()
     client.force_authenticate(consultant)
+    correlation_id = uuid4()
 
-    response = client.get("/api/v1/consultant/dashboard")
+    response = client.get(
+        "/api/v1/consultant/dashboard",
+        HTTP_X_CORRELATION_ID=str(correlation_id),
+    )
 
     assert response.status_code == 200
     payload = response.json()
@@ -111,6 +117,14 @@ def test_dashboard_api_returns_database_projection_for_assigned_consultant():
     assert len(data["notices"]) == 6
     assert len(data["consultants"]) == 8
     assert len(data["technicians"]) == 4
+    assert response["X-Correlation-ID"] == str(correlation_id)
+    assert payload["metadata"]["correlation_id"] == str(correlation_id)
+    for contact in data["technicians"]:
+        technician = VisitRepository.synthetic_technician(
+            UUID(contact["user_id"])
+        )
+        assert technician is not None
+        assert technician.role_code == User.Role.TECHNICIAN
     assert len(data["inquiries"]) == 90
     assert all(
         contact["email"].endswith("@waterbridge.example")
@@ -144,6 +158,22 @@ def test_dashboard_api_masks_assignment_and_rejects_other_roles_and_queries():
         is_synthetic=True,
     )
     customer = User.objects.get(username="SYN-WEB-DASH-CUSTOMER-001")
+    mismatched_directory_user = User.objects.create_user(
+        username="MISMATCHED-DIRECTORY-TECHNICIAN",
+        full_name="Mismatched directory technician",
+        role_code=User.Role.CONSULTANT,
+        employee_no="MISMATCHED-DIRECTORY-001",
+        email="mismatched@waterbridge.example",
+        phone="010-0000-9999",
+        is_synthetic=True,
+    )
+    StaffDirectoryEntry.objects.create(
+        user=mismatched_directory_user,
+        staff_type=StaffDirectoryEntry.StaffType.TECHNICIAN,
+        branch_name="합성 역할 불일치 지사",
+        display_order=999,
+        is_active=True,
+    )
     client = APIClient()
 
     client.force_authenticate(other_consultant)
@@ -151,6 +181,10 @@ def test_dashboard_api_masks_assignment_and_rejects_other_roles_and_queries():
     assert other_response.status_code == 200
     assert other_response.json()["data"]["summary"]["total"] == 0
     assert other_response.json()["data"]["inquiries"] == []
+    assert all(
+        contact["user_id"] != str(mismatched_directory_user.public_id)
+        for contact in other_response.json()["data"]["technicians"]
+    )
 
     query_response = client.get("/api/v1/consultant/dashboard?size=10")
     assert query_response.status_code == 422

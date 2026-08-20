@@ -204,6 +204,13 @@ EXPECTED_OPERATIONS = {
         "url_name": "consultant-phone-inquiry-register",
         "view_name": "RegisterConsultantPhoneInquiryView",
     },
+    ("/consultant/dashboard", "get"): {
+        "operation_id": "getConsultantDashboard",
+        "contract_status": "CONFIRMED",
+        "runtime_path": "/api/v1/consultant/dashboard",
+        "url_name": "consultant-dashboard",
+        "view_name": "ConsultantDashboardView",
+    },
     ("/inquiries", "post"): {
         "operation_id": "startInquiry",
         "contract_status": "CONFIRMED",
@@ -443,11 +450,11 @@ def runtime_view_name(match) -> str:
     return match.func.__name__
 
 
-def test_openapi_operation_inventory_is_exactly_forty_six():
+def test_openapi_operation_inventory_is_exactly_forty_seven():
     operations = collect_operations()
 
     assert set(operations) == set(EXPECTED_OPERATIONS)
-    assert len(operations) == 46
+    assert len(operations) == 47
     assert {
         operation["operationId"] for operation in operations.values()
     } == {
@@ -463,7 +470,7 @@ def test_openapi_operation_inventory_is_exactly_forty_six():
         )
 
 
-def test_forty_three_operations_resolve_to_expected_runtime_views():
+def test_forty_four_operations_resolve_to_expected_runtime_views():
     implemented = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -472,7 +479,7 @@ def test_forty_three_operations_resolve_to_expected_runtime_views():
         )
     ]
 
-    assert len(implemented) == 43
+    assert len(implemented) == 44
     for (_, method), expected in implemented:
         match = resolve(expected["runtime_path"])
         assert match.url_name == expected["url_name"]

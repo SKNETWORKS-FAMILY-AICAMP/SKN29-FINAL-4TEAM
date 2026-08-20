@@ -57,6 +57,15 @@ jobs:
             backend/requirements/constraints-py313.txt
             ai/requirements.txt
 
+      - name: Prepare Linux Backend constraint packages
+        run: |
+          python -m venv backend/.venv
+          backend/.venv/bin/python -m pip install \
+            --disable-pip-version-check \
+            --constraint backend/requirements/constraints-py313.txt \
+            colorama==0.4.6 \
+            tzdata==2026.3
+
       - name: Bootstrap Backend environment
         run: python scripts/development/bootstrap.py --service backend
 

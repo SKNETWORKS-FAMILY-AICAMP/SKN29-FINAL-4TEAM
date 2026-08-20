@@ -1,3 +1,41 @@
-# operations API 경로 계약
-# Endpoint와 request/response 참조는 백엔드 API 설계 확정 후 작성한다.
-{}
+/consultant/dashboard:
+  get:
+    operationId: getConsultantDashboard
+    summary: 상담사 합성 Dashboard 조회
+    description: |
+      인증 상담사에게 로컬 E2E용 합성 공지·직원·방문기사·담당 문의
+      projection을 반환한다. 응답의 technicians는 활성 합성 TECHNICIAN
+      계정만 포함하며, technicians[].user_id는 방문 일정 저장 요청의
+      synthetic_technician_id로 사용할 수 있다. 실제 기사 배정·예약
+      시스템과는 연동하지 않는다. Query parameter는 허용하지 않는다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-requirements: [FR-026, CR-005]
+    x-permission-scope: CONSULTANT_SYNTHETIC_DASHBOARD
+    security:
+      - BearerAuth: []
+    parameters:
+      - $ref: ../components/parameters/CorrelationId.yaml
+    responses:
+      "200":
+        description: 담당 합성 문의와 합성 Dashboard reference data
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/operations/ConsultantDashboardData.yaml
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "500":
+        $ref: ../components/responses/InternalServerError.yaml

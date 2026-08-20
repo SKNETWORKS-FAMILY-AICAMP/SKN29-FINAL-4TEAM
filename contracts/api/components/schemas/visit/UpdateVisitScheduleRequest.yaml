@@ -21,3 +21,4 @@ properties:
   synthetic_technician_id:
     type: string
     format: uuid
+    description: 가상 방문기사 공개 UUID
