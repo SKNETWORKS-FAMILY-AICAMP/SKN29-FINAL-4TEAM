@@ -10,6 +10,7 @@ import { configureApiAuth } from "../../common/api/httpClient";
 import { createCorrelationId } from "../../common/api/requestContext";
 import {
   DEMO_USER_CODES,
+  getCurrentUser,
   loginWithDemoCode,
   refreshAuthSession,
   revokeRefreshToken,
@@ -84,11 +85,35 @@ function getInitialUser(
   return storedUser ?? getDefaultMockUser();
 }
 
+function shouldHydrateStoredRemoteSession(
+  initialUser: AuthenticatedUser | null | undefined,
+): boolean {
+  return (
+    initialUser === undefined &&
+    !appEnv.useMockApi &&
+    authSessionStore.getSession() !== null
+  );
+}
+
+async function hydrateRemoteSessionUser(): Promise<AuthSession> {
+  const currentUser = await getCurrentUser();
+  const currentSession = authSessionStore.getSession();
+  if (!currentSession) {
+    throw new Error("현재 사용자 정보를 반영할 인증 세션이 없습니다.");
+  }
+
+  const hydratedSession = { ...currentSession, user: currentUser };
+  authSessionStore.setSession(hydratedSession);
+  return hydratedSession;
+}
+
 export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const [user, setUser] = useState<AuthenticatedUser | null>(() =>
     getInitialUser(initialUser),
   );
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(() =>
+    shouldHydrateStoredRemoteSession(initialUser),
+  );
 
   useEffect(() => {
     if (!appEnv.useMockApi) return;
@@ -115,9 +140,12 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
         const currentSession = authSessionStore.getSession();
         if (!currentSession) return null;
 
-        const nextSession = appEnv.useMockApi
+        const refreshedSession = appEnv.useMockApi
           ? createMockSession(currentSession.user)
           : await refreshAuthSession(currentSession.refreshToken);
+        const nextSession = appEnv.useMockApi
+          ? refreshedSession
+          : { ...refreshedSession, user: currentSession.user };
         authSessionStore.setSession(nextSession);
         setUser(nextSession.user);
         return nextSession.accessToken;
@@ -131,6 +159,29 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
     return () => configureApiAuth(null);
   }, []);
 
+  useEffect(() => {
+    if (appEnv.useMockApi || initialUser !== undefined) return;
+    if (!authSessionStore.getSession()) return;
+
+    let isActive = true;
+    void hydrateRemoteSessionUser()
+      .then((session) => {
+        if (isActive) setUser(session.user);
+      })
+      .catch(() => {
+        if (!isActive) return;
+        authSessionStore.clear();
+        setUser(null);
+      })
+      .finally(() => {
+        if (isActive) setIsLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [initialUser]);
+
   const signInAs = useCallback(async (role: AppRole) => {
     setIsLoading(true);
     try {
@@ -138,7 +189,18 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
         ? createMockSession(MOCK_USERS[role])
         : await loginWithDemoCode(DEMO_USER_CODES[role]);
       authSessionStore.setSession(session);
-      setUser(session.user);
+      if (appEnv.useMockApi) {
+        setUser(session.user);
+      } else {
+        try {
+          const hydratedSession = await hydrateRemoteSessionUser();
+          setUser(hydratedSession.user);
+        } catch (error) {
+          authSessionStore.clear();
+          setUser(null);
+          throw error;
+        }
+      }
     } finally {
       setIsLoading(false);
     }

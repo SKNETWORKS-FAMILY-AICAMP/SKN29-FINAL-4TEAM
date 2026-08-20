@@ -1,31 +1,5 @@
-import { useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-
-import { ROUTE_PATHS } from "../../app/router/routePaths";
-import RiskBadge from "../../common/components/badge/RiskBadge";
-import StatusBadge from "../../common/components/badge/StatusBadge";
-import DataTable, {
-  type DataTableColumn,
-} from "../../common/components/data-display/DataTable";
-import ErrorState from "../../common/components/feedback/ErrorState";
-import LoadingState from "../../common/components/feedback/LoadingState";
+import EmptyState from "../../common/components/feedback/EmptyState";
 import WaterDropBubbles from "../../common/components/water/WaterDropBubbles";
-import OperationsDashboardFilters from "../../features/operations-dashboard/components/OperationsDashboardFilters";
-import OperationsDistributionChart from "../../features/operations-dashboard/components/OperationsDistributionChart";
-import OperationsExceptionTable from "../../features/operations-dashboard/components/OperationsExceptionTable";
-import OperationsMetricCards from "../../features/operations-dashboard/components/OperationsMetricCards";
-import useOperationsDashboardFilters from "../../features/operations-dashboard/hooks/useOperationsDashboardFilters";
-import {
-  createOperationsDashboardSummary,
-  getOperationsFilterOptions,
-} from "../../features/operations-dashboard/model/operationsDashboardModel";
-import {
-  formatWorkspaceDateTime,
-  getStatusBadgeVariant,
-  STATUS_LABELS,
-} from "../../features/consultation/model/consultantWorkspaceModel";
-import type { CounselorInquiry } from "../../features/consultation/model/consultantWorkspaceTypes";
-import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
 import ApiIntegrationPanel from "../../features/runtime-status/components/ApiIntegrationPanel";
 import "./OperationsDashboardPage.css";
 import "./OperationsDashboardTheme.css";
@@ -33,163 +7,46 @@ import "../../common/styles/water-glass-theme.css";
 import "../../common/styles/watercare-liquid-glass-theme.css";
 import "../../common/styles/pearl-workspace-v2.css";
 
-const OPERATIONS_INQUIRIES =
-  consultantWorkspaceRepository.listAllInquiries();
-
-const INQUIRY_COLUMNS: readonly DataTableColumn<CounselorInquiry>[] = [
-  {
-    key: "inquiry",
-    header: "문의",
-    render: (item) => (
-      <span className="operations-table__primary">
-        <b>{item.inquiryCode}</b>
-        <small>{item.symptomLabel}</small>
-      </span>
-    ),
-  },
-  {
-    key: "risk",
-    header: "위험도",
-    render: (item) => <RiskBadge level={item.riskLevel.toLowerCase()} size="compact" />,
-  },
-  {
-    key: "status",
-    header: "상태",
-    render: (item) => (
-      <StatusBadge
-        label={STATUS_LABELS[item.status]}
-        size="compact"
-        variant={getStatusBadgeVariant(item.status)}
-      />
-    ),
-  },
-  { key: "assignee", header: "처리 담당", render: (item) => item.assignedCounselor },
-  { key: "model", header: "제품 모델", render: (item) => item.productCode },
-  {
-    key: "updatedAt",
-    header: "마지막 변경",
-    render: (item) => (
-      <time dateTime={item.updatedAt}>{formatWorkspaceDateTime(item.updatedAt)}</time>
-    ),
-  },
-];
-
 export default function OperationsDashboardPage() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { filters, hasChangedFilters, resetFilters, setFilters } =
-    useOperationsDashboardFilters();
-  const mockState = searchParams.get("mockState");
-  const sourceInquiries = useMemo(
-    () => (mockState === "empty" ? [] : OPERATIONS_INQUIRIES),
-    [mockState],
-  );
-  const options = useMemo(
-    () => getOperationsFilterOptions(OPERATIONS_INQUIRIES),
-    [],
-  );
-  const summary = useMemo(
-    () => createOperationsDashboardSummary(sourceInquiries, filters),
-    [filters, sourceInquiries],
-  );
-
-  const renderContent = () => {
-    if (mockState === "loading") {
-      return (
-        <div className="operations-panel operations-feedback">
-          <LoadingState
-            title="운영 현황을 집계하고 있습니다."
-            description="합성 문의의 상태·전환·예외 정보를 확인하고 있습니다."
-          />
-        </div>
-      );
-    }
-    if (mockState === "error") {
-      return (
-        <div className="operations-panel operations-feedback">
-          <ErrorState
-            title="운영 현황을 불러오지 못했습니다."
-            description="현재 조회 조건은 유지됩니다. 잠시 후 다시 시도해 주세요."
-            onRetry={() => navigate(ROUTE_PATHS.adminDashboard, { replace: true })}
-          />
-        </div>
-      );
-    }
-
-    return (
-      <>
-        <OperationsMetricCards metrics={summary.metrics} />
-        <section className="operations-distributions" aria-label="운영 분포 지표">
-          <OperationsDistributionChart
-            title="주요 증상 유형"
-            description="조회 문의 기준"
-            items={summary.symptomDistribution}
-          />
-          <OperationsDistributionChart
-            title="문의 처리 상태"
-            description="현재 상태 기준"
-            items={summary.statusDistribution}
-          />
-        </section>
-        <OperationsExceptionTable exceptions={summary.exceptions} />
-        <section className="operations-panel operations-table-section">
-          <div className="operations-section-head">
-            <div>
-              <small>INQUIRY</small>
-              <h2>조건별 문의 현황</h2>
-            </div>
-            <strong>{summary.inquiries.length}건</strong>
-          </div>
-          <DataTable
-            caption="운영 조회 조건에 포함된 문의"
-            columns={INQUIRY_COLUMNS}
-            emptyMessage="현재 조회 조건에 맞는 문의가 없습니다."
-            getRowKey={(item) => item.inquiryId}
-            rows={summary.inquiries}
-          />
-        </section>
-      </>
-    );
-  };
-
   return (
     <main className="operations-main">
-        <header id="operations-overview" className="operations-page-head waterdrop-hero">
-          <WaterDropBubbles />
-          <div className="operations-waterdrop-hero__copy">
-            <span className="waterdrop-role-chip">운영 워크스페이스 · 공식 합성 데이터</span>
-            <small>ADMIN-01 · P1 MOCK</small>
-            <h1>운영 대시보드</h1>
-            <p>문의 현황과 상담·방문 전환, 처리 예외를 공식 합성 데이터로 점검합니다.</p>
-            <div className="operations-waterdrop-hero__facts" aria-label="운영 화면 안내">
-              <span>실제 API 연결 대기</span>
-              <span>상태·위험도 구분</span>
-              <span>예외 문의 우선 확인</span>
-            </div>
+      <header id="operations-overview" className="operations-page-head waterdrop-hero">
+        <WaterDropBubbles />
+        <div className="operations-waterdrop-hero__copy">
+          <span className="waterdrop-role-chip">운영 워크스페이스 · API 연동 대기</span>
+          <small>ADMIN-01 · API PENDING</small>
+          <h1>운영 대시보드</h1>
+          <p>
+            운영 관리자용 집계 API가 제공되면 문의 현황과 처리 흐름을 표시합니다.
+          </p>
+          <div className="operations-waterdrop-hero__facts" aria-label="운영 화면 안내">
+            <span>운영 집계 미제공</span>
+            <span>조회 필터 비활성</span>
+            <span>로컬 계산값 미표시</span>
           </div>
-          <div className="operations-waterdrop-hero__visual" aria-label="조회 문의 요약">
-            <span className="waterdrop-fixture-chip">기준 데이터 {OPERATIONS_INQUIRIES.length}건</span>
-            <div className="operations-waterdrop-orb">
-              <span>FILTERED CASES</span>
-              <strong>{summary.inquiries.length}</strong>
-              <small>현재 조회 문의</small>
-            </div>
-          </div>
-        </header>
-
-        <ApiIntegrationPanel />
-
-        <div id="operations-filters">
-          <OperationsDashboardFilters
-            filters={filters}
-            hasChangedFilters={hasChangedFilters}
-            options={options}
-            resultCount={summary.inquiries.length}
-            onChange={setFilters}
-            onReset={resetFilters}
-          />
         </div>
-        <div id="operations-results">{renderContent()}</div>
+        <div className="operations-waterdrop-hero__visual" aria-label="운영 데이터 연동 상태">
+          <span className="waterdrop-fixture-chip">운영 집계 API 미제공</span>
+          <div className="operations-waterdrop-orb">
+            <span>DATA STATUS</span>
+            <strong aria-label="집계 데이터 없음">—</strong>
+            <small>Backend 연동 대기</small>
+          </div>
+        </div>
+      </header>
+
+      <ApiIntegrationPanel />
+
+      <section
+        id="operations-results"
+        className="operations-panel operations-feedback"
+        aria-label="운영 집계 연동 상태"
+      >
+        <EmptyState
+          title="운영 집계 API 연동을 기다리고 있습니다."
+          description="운영 관리자 집계 API가 제공되기 전까지 지표, 분포, 예외 계산, 조회 필터와 문의 목록을 표시하지 않습니다."
+        />
+      </section>
     </main>
   );
 }
