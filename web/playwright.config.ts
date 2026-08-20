@@ -28,7 +28,7 @@ export default defineConfig({
     navigationTimeout: 30_000,
     screenshot: "off",
     trace: {
-      mode: "retain-on-failure",
+      mode: "on",
       attachments: false,
       screenshots: false,
       snapshots: false,

@@ -58,3 +58,23 @@ export async function attachMaskedFailureScreenshot(
     contentType: "image/png",
   });
 }
+
+export async function attachMaskedEvidenceScreenshot(
+  page: Page,
+  testInfo: TestInfo,
+): Promise<void> {
+  const screenshotPath = testInfo.outputPath("g4-success-screenshot.png");
+  await page.screenshot({
+    path: screenshotPath,
+    fullPage: true,
+    mask: [
+      page.locator(
+        '[data-e2e-sensitive="true"], input, textarea, .consultant-user-menu',
+      ),
+    ],
+  });
+  await testInfo.attach("g4-success-screenshot", {
+    path: screenshotPath,
+    contentType: "image/png",
+  });
+}

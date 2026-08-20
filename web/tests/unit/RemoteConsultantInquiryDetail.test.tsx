@@ -173,9 +173,15 @@ describe("Remote 상담사 문의 상세", () => {
     );
 
     expect(screen.getByText("COMPLETED_NO_VISIT")).toBeInTheDocument();
-    expect(screen.getByText("확정된 상담 요약")).toBeInTheDocument();
-    expect(screen.getByText("고객과 필터 상태를 확인함")).toBeInTheDocument();
-    expect(screen.getByText("정상 사용 가능 안내")).toBeInTheDocument();
+    expect(screen.getByTestId("consultation-detail-confirmed-summary")).toHaveTextContent(
+      "확정된 상담 요약",
+    );
+    expect(screen.getByTestId("consultation-detail-note")).toHaveTextContent(
+      "고객과 필터 상태를 확인함",
+    );
+    expect(
+      screen.getByTestId("consultation-detail-customer-guidance"),
+    ).toHaveTextContent("정상 사용 가능 안내");
   });
 
   it("Section 오류는 다른 상세 정보와 함께 부분 오류로 표시한다", () => {
