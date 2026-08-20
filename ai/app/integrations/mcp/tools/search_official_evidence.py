@@ -1,15 +1,15 @@
 from pydantic import BaseModel, Field
 
-from app.orchestration.harness.product_registry import (
+from ....orchestration.harness.product_registry import (
     resolve_product_generation,
 )
-from app.retrieval import (
+from ....retrieval import (
     EvidenceApplicabilityGate,
     EvidenceTopicFilter,
     RetrievalQuery,
 )
-from app.retrieval.search.vector_search import VectorSearchService
-from app.schemas import EvidenceReference
+from ....retrieval.search.vector_search import VectorSearchService
+from ....schemas import EvidenceReference
 
 
 class SearchOfficialEvidencePreviousAnswer(BaseModel):

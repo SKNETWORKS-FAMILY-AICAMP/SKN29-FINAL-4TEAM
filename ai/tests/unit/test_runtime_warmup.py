@@ -1,9 +1,15 @@
 """Local RAG Runtime의 공유 검색 서비스와 시작 Warmup 검증."""
 
+from dataclasses import replace
+from datetime import datetime, timezone
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 from ai.app import bootstrap
 from ai.app.orchestration import pipeline_router
+from ai.app.retrieval.indexing.index_manifest import IndexManifest
+from ai.app.retrieval.runtime_profile import resolve_rag_runtime_profile
 
 
 def test_configured_search_service_is_reused_and_warmed_up(monkeypatch):
@@ -76,3 +82,69 @@ def test_app_startup_skips_local_rag_warmup_without_vector_dsn(monkeypatch):
 
     with TestClient(bootstrap.create_app()) as client:
         assert client.get("/health").status_code == 200
+
+
+def test_three_model_runtime_profile_selects_only_allowlisted_manifest_and_policy(
+    monkeypatch,
+    tmp_path,
+):
+    revision = "5617a9f61b028005a4858fdac845db406aefb181"
+
+    class FakeEmbeddingClient:
+        model_name = "BAAI/bge-m3"
+        dimension = 1024
+
+        def __init__(self, *, model_revision):
+            self.model_revision = model_revision
+
+    manifest = IndexManifest(
+        model_name="BAAI/bge-m3",
+        model_revision=revision,
+        dimension=1024,
+        index_type="exact_search",
+        index_version="2.0.0",
+        chunk_count=53,
+        chunk_set_sha256=(
+            "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304"
+        ),
+        document_hashes={
+            "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00": "a" * 64,
+            "MAN-SKMAGIC-WPU-IAC425-REV02": "b" * 64,
+            "MAN-SKMAGIC-WPU-IAC606-REV00": "c" * 64,
+        },
+        indexed_at=datetime.now(timezone.utc),
+    )
+    manifest_path = tmp_path / "index_manifest_3model.json"
+    manifest_path.write_text(manifest.model_dump_json(), encoding="utf-8")
+    repository_root = Path(__file__).resolve().parents[3]
+    test_profile = replace(
+        resolve_rag_runtime_profile("three_model_integration"),
+        manifest_relative_path=manifest_path.relative_to(repository_root).as_posix(),
+    )
+
+    monkeypatch.setenv("AI_VECTOR_DSN", "postgresql://test-only")
+    monkeypatch.setenv("AI_EMBEDDING_REVISION", revision)
+    monkeypatch.setenv("AI_VECTOR_TABLE_NAME", "backend_ai_rag_chunks_v1")
+    monkeypatch.setenv("AI_RAG_RUNTIME_PROFILE", "three_model_integration")
+    monkeypatch.setattr(pipeline_router, "BgeM3EmbeddingClient", FakeEmbeddingClient)
+    monkeypatch.setattr(pipeline_router, "PgVectorStore", lambda *args, **kwargs: object())
+    monkeypatch.setattr(
+        pipeline_router,
+        "resolve_rag_runtime_profile",
+        lambda: test_profile,
+    )
+    monkeypatch.setattr(pipeline_router, "_SEARCH_SERVICE_CACHE_KEY", None)
+    monkeypatch.setattr(pipeline_router, "_SEARCH_SERVICE_CACHE", None)
+
+    service = pipeline_router._configured_search_service()
+
+    assert service.index_manifest == manifest
+    assert service.product_filter.target_models == {
+        "WPUJAC104DWH",
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+    }
+    assert set(service.answerability_gate.definition["supported_model_codes"]) == (
+        service.product_filter.target_models
+    )
+    assert "three_model_integration" in pipeline_router._SEARCH_SERVICE_CACHE_KEY

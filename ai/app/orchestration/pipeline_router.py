@@ -2,7 +2,6 @@
 
 import os
 from hashlib import sha256
-from pathlib import Path
 from threading import Lock
 from typing import Dict, List, Optional
 from uuid import UUID
@@ -12,7 +11,16 @@ from ..integrations.llm import GuidanceLLMClient
 from ..integrations.vector_store.vector_store import PgVectorStore
 from ..retrieval.search.vector_search import VectorSearchService
 from ..retrieval.indexing.index_manifest import IndexManifest
-from ..retrieval import RetrievalConfigurationError
+from ..retrieval.filters.product_filter import ProductFilter
+from ..retrieval.verification.answerability_capability_gate import (
+    AnswerabilityCapabilityGate,
+)
+from ..retrieval import (
+    RetrievalConfigurationError,
+    load_runtime_retrieval_policy,
+    resolve_rag_runtime_profile,
+    validate_runtime_manifest,
+)
 from .harness.evidence_capture import GuardedEvidenceSearchService
 from .harness.product_registry import resolve_product_context
 from .harness.runtime import ReliabilityRuntime
@@ -26,7 +34,7 @@ from ..schemas import TraceContext
 
 _AUTO_SEARCH_SERVICE = object()
 _SEARCH_SERVICE_LOCK = Lock()
-_SEARCH_SERVICE_CACHE_KEY: tuple[str, str, str, str] | None = None
+_SEARCH_SERVICE_CACHE_KEY: tuple[str, ...] | None = None
 _SEARCH_SERVICE_CACHE: VectorSearchService | None = None
 
 
@@ -45,8 +53,8 @@ def _configured_search_service() -> VectorSearchService | None:
         )
     table_name = os.getenv("AI_VECTOR_TABLE_NAME", "ai_rag_chunks")
 
-    repository_root = Path(__file__).resolve().parents[3]
-    manifest_path = repository_root / "ai" / "configs" / "index_manifest.json"
+    profile = resolve_rag_runtime_profile()
+    manifest_path = profile.manifest_path
     try:
         manifest_bytes = manifest_path.read_bytes()
     except OSError as exc:
@@ -56,6 +64,7 @@ def _configured_search_service() -> VectorSearchService | None:
 
     cache_key = (
         sha256(dsn.encode("utf-8")).hexdigest(),
+        profile.name,
         model_revision,
         table_name,
         sha256(manifest_bytes).hexdigest(),
@@ -69,10 +78,21 @@ def _configured_search_service() -> VectorSearchService | None:
                 raise RetrievalConfigurationError(
                     "AI_VECTOR_DSN 사용 시 Index Manifest가 필요합니다."
                 )
+            validate_runtime_manifest(profile, manifest)
+            runtime_policy = load_runtime_retrieval_policy(profile)
+            metadata_filters = runtime_policy.metadata_filters
             service = VectorSearchService(
                 BgeM3EmbeddingClient(model_revision=model_revision),
                 PgVectorStore(dsn, table_name=table_name),
                 index_manifest=manifest,
+                answerability_gate=AnswerabilityCapabilityGate(
+                    definition=runtime_policy.answerability_gate
+                ),
+                product_filter=ProductFilter(
+                    allowed_generations=metadata_filters["allowed_generations"],
+                    excluded_models=metadata_filters["excluded_models"],
+                    target_models=metadata_filters["target_models"],
+                ),
             )
         except RetrievalConfigurationError:
             raise
@@ -109,12 +129,20 @@ class PipelineRouter:
         llm_client: GuidanceLLMClient | None = None,
     ):
         self.retrieval_configuration_error: RetrievalConfigurationError | None = None
-        if search_service is _AUTO_SEARCH_SERVICE:
+        try:
+            self.rag_runtime_profile = resolve_rag_runtime_profile()
+        except RetrievalConfigurationError as exc:
+            self.rag_runtime_profile = None
+            self.retrieval_configuration_error = exc
+
+        if search_service is _AUTO_SEARCH_SERVICE and self.rag_runtime_profile is not None:
             try:
                 self.search_service = self._configured_search_service()
             except RetrievalConfigurationError as exc:
                 self.search_service = None
                 self.retrieval_configuration_error = exc
+        elif search_service is _AUTO_SEARCH_SERVICE:
+            self.search_service = None
         else:
             self.search_service = search_service
         self.llm_client = llm_client
@@ -140,7 +168,14 @@ class PipelineRouter:
         """명시된 Runtime을 실행하되 기본값은 안정된 Single RAG로 유지한다."""
         token = cancellation_token or CancellationToken()
         token.raise_if_cancelled()
-        product_context = resolve_product_context(model_code)
+        if self.rag_runtime_profile is None:
+            raise self.retrieval_configuration_error or RetrievalConfigurationError(
+                "RAG Runtime Profile을 확인할 수 없습니다."
+            )
+        product_context = resolve_product_context(
+            model_code,
+            runtime_approved_model_codes=self.rag_runtime_profile.approved_model_codes,
+        )
         ctx = PipelineContext(
             trace_context=TraceContext(
                 inquiry_id=inquiry_id,

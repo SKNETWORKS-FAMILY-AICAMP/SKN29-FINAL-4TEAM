@@ -1,13 +1,13 @@
 from mcp.server import MCPServer
 
-from app.integrations.mcp.tools.search_official_evidence import (
+from .tools.search_official_evidence import (
     SearchOfficialEvidenceAdapter,
     SearchOfficialEvidenceInput,
     SearchOfficialEvidenceOutput,
 )
-from app.orchestration.pipeline_router import PipelineRouter
-from app.retrieval import RetrievalConfigurationError
-from app.retrieval.search.vector_search import VectorSearchService
+from ...orchestration.pipeline_router import PipelineRouter
+from ...retrieval import RetrievalConfigurationError
+from ...retrieval.search.vector_search import VectorSearchService
 
 
 class _UnconfiguredEmbeddingProvider:

@@ -4,15 +4,18 @@ from __future__ import annotations
 
 import json
 import os
-from pathlib import Path
 import sys
-
-import yaml
 
 from ai.app.integrations.embedding.embedding_client import BgeM3EmbeddingClient
 from ai.app.integrations.vector_store.vector_store import PgVectorStore
 from ai.app.retrieval.filters.product_filter import ProductFilter
 from ai.app.retrieval.indexing import IndexManifest, load_rag_handoff_profile
+from ai.app.retrieval.runtime_profile import (
+    RagRuntimeProfile,
+    load_runtime_retrieval_policy,
+    resolve_rag_runtime_profile,
+    validate_runtime_manifest,
+)
 from ai.app.retrieval.models.retrieval_query import RetrievalQuery
 from ai.app.retrieval.search.vector_search import VectorSearchService
 from ai.evaluation.three_model_rag import (
@@ -27,7 +30,6 @@ from ai.scripts.export_three_model_canonical_identity import IDENTITY_PATH
 
 
 EXPECTED_TABLE = "backend_ai_rag_chunks_v1"
-REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _required_environment(name: str) -> str:
@@ -37,15 +39,9 @@ def _required_environment(name: str) -> str:
     return value
 
 
-def _prepared_product_filter() -> ProductFilter:
-    policy = yaml.safe_load(
-        (REPOSITORY_ROOT / "ai/configs/retrieval_policy.yaml").read_text(
-            encoding="utf-8"
-        )
-    )["prepared_runtime_profiles"]["three_model"]
-    if policy["activation_status"] != "PREPARED_NOT_ACTIVE":
-        raise RuntimeError("Unexpected three-model preparation policy status")
-    metadata = policy["metadata_filters"]
+def _integration_product_filter(profile: RagRuntimeProfile) -> ProductFilter:
+    policy = load_runtime_retrieval_policy(profile)
+    metadata = policy.metadata_filters
     return ProductFilter(
         allowed_generations=metadata["allowed_generations"],
         excluded_models=metadata["excluded_models"],
@@ -53,12 +49,14 @@ def _prepared_product_filter() -> ProductFilter:
     )
 
 
-def _load_identity_and_manifest() -> tuple[dict, IndexManifest]:
+def _load_identity_and_manifest(
+    profile: RagRuntimeProfile,
+) -> tuple[dict, IndexManifest]:
     identity = json.loads(IDENTITY_PATH.read_text(encoding="utf-8"))
-    manifest_path = REPOSITORY_ROOT / identity["required_index_manifest"]
-    manifest = IndexManifest.load_manifest(str(manifest_path))
+    manifest = IndexManifest.load_manifest(str(profile.manifest_path))
     if manifest is None:
         raise RuntimeError("The actual three-model index manifest is not available")
+    validate_runtime_manifest(profile, manifest)
     if manifest.chunk_count != identity["chunk_count"]:
         raise RuntimeError("Identity and index manifest chunk counts differ")
     if manifest.chunk_set_sha256.upper() != identity["chunk_set_sha256"]:
@@ -69,18 +67,23 @@ def _load_identity_and_manifest() -> tuple[dict, IndexManifest]:
 
 
 def _verify_runtime() -> None:
+    runtime_profile = resolve_rag_runtime_profile()
+    if runtime_profile.name != "three_model_integration":
+        raise RuntimeError(
+            "AI_RAG_RUNTIME_PROFILE must be three_model_integration"
+        )
     table_name = _required_environment("AI_VECTOR_TABLE_NAME")
     if table_name != EXPECTED_TABLE:
         raise RuntimeError(f"AI_VECTOR_TABLE_NAME must be {EXPECTED_TABLE}")
     dsn = _required_environment("AI_VECTOR_DSN")
     model_revision = _required_environment("AI_EMBEDDING_REVISION")
 
-    identity, manifest = _load_identity_and_manifest()
+    identity, manifest = _load_identity_and_manifest(runtime_profile)
     if model_revision != manifest.model_revision:
         raise RuntimeError("Configured embedding revision differs from the index manifest")
 
-    profile = load_rag_handoff_profile("rag-expansion")
-    cases, groups, chunks = load_three_model_evaluation_inputs(profile)
+    handoff_profile = load_rag_handoff_profile("rag-expansion")
+    cases, groups, chunks = load_three_model_evaluation_inputs(handoff_profile)
     expected_ids = [chunk.chunk_id for chunk in chunks]
     if set(expected_ids) != {item["chunk_id"] for item in identity["chunks"]}:
         raise RuntimeError("Canonical identity and evaluation Child sets differ")
@@ -99,7 +102,7 @@ def _verify_runtime() -> None:
         store,
         index_manifest=manifest,
         answerability_gate=build_candidate_answerability_gate(chunks),
-        product_filter=_prepared_product_filter(),
+        product_filter=_integration_product_filter(runtime_profile),
     )
 
     def search(query: str, exact_sales_code: str, top_k: int):
@@ -145,7 +148,8 @@ def _verify_runtime() -> None:
         json.dumps(
             {
                 "status": "PASS" if passed else "FAIL",
-                "runtime_activation": "READY_FOR_JOINT_E2E" if passed else "HOLD",
+                "activation_scope": "INTEGRATION_VERIFICATION_ONLY",
+                "public_runtime_activation": "HOLD",
                 **summary,
             },
             ensure_ascii=False,
@@ -163,7 +167,8 @@ def main() -> int:
             json.dumps(
                 {
                     "status": "BLOCKED",
-                    "runtime_activation": "HOLD",
+                    "activation_scope": "INTEGRATION_VERIFICATION_ONLY",
+                    "public_runtime_activation": "HOLD",
                     "reason_code": "THREE_MODEL_READONLY_RUNTIME_REQUIREMENTS_NOT_MET",
                 },
                 ensure_ascii=False,

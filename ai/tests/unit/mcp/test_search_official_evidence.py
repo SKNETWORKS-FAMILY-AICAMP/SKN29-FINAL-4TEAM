@@ -1,12 +1,12 @@
 from types import SimpleNamespace
 
-import app.retrieval.filters.evidence_topic_filter as topic_filter_module
+import ai.app.retrieval.filters.evidence_topic_filter as topic_filter_module
 
-from app.integrations.mcp.tools.search_official_evidence import (
+from ai.app.integrations.mcp.tools.search_official_evidence import (
     SearchOfficialEvidenceAdapter,
     SearchOfficialEvidenceInput,
 )
-from app.retrieval.models.retrieved_chunk import RetrievedChunk
+from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk
 
 
 class FakeSearchService:
