@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from datetime import date
 from unittest.mock import patch
 from uuid import uuid4
@@ -89,7 +90,49 @@ def success_payload(request_payload: dict) -> dict:
         "state_version",
     ):
         response[field] = request_payload[field]
+    if "model_code" in response:
+        response["model_code"] = request_payload["model_code"]
     return response
+
+
+class ContractV4CompatValidator:
+    """Validate owner-proposed 4.0 fields over the current 3.0 baseline."""
+
+    allowed_fallback_reasons = {
+        "RUNTIME_PRODUCT_NOT_APPROVED",
+        "NO_EVIDENCE",
+        "MCP_TOOL_FAILURE",
+        "OUTPUT_SCHEMA_INVALID",
+        "UNSPECIFIED_FALLBACK",
+    }
+
+    def __init__(self) -> None:
+        self._current = AIContractValidator()
+
+    def validate_request(self, payload: dict) -> None:
+        self._current.validate_request(payload)
+
+    def validate_success_response(self, payload: dict) -> None:
+        assert isinstance(payload.get("model_code"), str)
+        reason = payload.get("fallback_reason_code")
+        if payload["status"] == "FALLBACK":
+            assert reason in self.allowed_fallback_reasons
+        else:
+            assert reason is None
+        if self._current.contract_version("success") == "4.0.0":
+            self._current.validate_success_response(payload)
+            return
+        legacy = deepcopy(payload)
+        legacy.pop("model_code")
+        legacy.pop("fallback_reason_code")
+        self._current.validate_success_response(legacy)
+
+    def validate_error_response(self, payload: dict) -> None:
+        self._current.validate_error_response(payload)
+
+    @staticmethod
+    def contract_version(_kind: str = "request") -> str:
+        return "4.0.0"
 
 
 def error_payload(request_payload: dict) -> dict:
@@ -110,7 +153,7 @@ def error_payload(request_payload: dict) -> dict:
     }
 
 
-def make_client(*, transform=None, status_code: int = 200):
+def make_client(*, transform=None, status_code: int = 200, validator=None):
     calls: list[httpx.Request] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -129,6 +172,7 @@ def make_client(*, transform=None, status_code: int = 200):
         AIClient(
             base_url="http://ai.test",
             mode="local",
+            validator=validator,
             http_client=http_client,
         ),
         http_client,
@@ -322,6 +366,8 @@ def test_no_evidence_result_routes_to_consultation_required():
                 "evidence_references": [],
             }
         )
+        if "fallback_reason_code" in response:
+            response["fallback_reason_code"] = "NO_EVIDENCE"
         response["safety_assessment"]["requires_consultation"] = True
         response["usage_guidance"].update(
             {
@@ -343,6 +389,198 @@ def test_no_evidence_result_routes_to_consultation_required():
     assert inquiry.evidence_mode == Inquiry.EvidenceMode.NO_EVIDENCE
     assert inquiry.requires_fallback is True
     assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
+    http_client.close()
+
+
+def test_product_runtime_hold_applies_product_validation_failed_once():
+    inquiry = create_inquiry(103)
+    validator = ContractV4CompatValidator()
+    correlation_id = uuid4()
+    ai_request_id = uuid4()
+
+    def product_hold(response: dict, request: dict) -> dict:
+        response.update(
+            {
+                "model_code": request["model_code"],
+                "status": "FALLBACK",
+                "fallback_reason_code": "RUNTIME_PRODUCT_NOT_APPROVED",
+                "failure_stage": "RETRIEVING",
+                "evidence_references": [],
+            }
+        )
+        response["safety_assessment"].update(
+            {
+                "risk_level": "caution",
+                "priority": "consultation_recommended",
+                "requires_consultation": True,
+                "matched_safety_rule_ids": [],
+                "detected_risks": [],
+                "safety_reason": "Public Runtime approval is pending.",
+            }
+        )
+        response["usage_guidance"].update(
+            {
+                "guidance_status": "PENDING_CONSULTATION",
+                "message": "Consultant review is required.",
+                "restricted_functions": ["Unverified self-service guidance"],
+                "next_actions": ["Request a customer consultation."],
+            }
+        )
+        return response
+
+    client, http_client, calls = make_client(
+        transform=product_hold,
+        validator=validator,
+    )
+    outcome = analyze(
+        inquiry,
+        client,
+        correlation_id=correlation_id,
+        ai_request_id=ai_request_id,
+        validator=validator,
+    )
+
+    assert outcome.status == AIRun.Status.SUCCEEDED
+    assert outcome.event_candidate == "PRODUCT_VALIDATION_FAILED"
+    assert outcome.event_applied == "PRODUCT_VALIDATION_FAILED"
+    assert outcome.pending_reason is None
+    assert len(calls) == 1
+
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 3
+    assert inquiry.risk_level_code == Inquiry.RiskLevel.CAUTION
+    assert (
+        inquiry.usage_guidance_status
+        == Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION
+    )
+    assert inquiry.requires_fallback is True
+    assert inquiry.evidence_ids == []
+
+    history = TransitionHistory.objects.get(inquiry=inquiry)
+    assert history.event_code == "PRODUCT_VALIDATION_FAILED"
+    assert history.from_state == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
+    assert history.to_state == Inquiry.Status.CONSULTATION_REQUIRED
+    assert history.state_version == 3
+    assert history.changed_by_type_code == TransitionHistory.ChangedByType.SYSTEM
+    assert history.actor is None
+    assert history.correlation_id == correlation_id
+    assert history.idempotency_key == str(ai_request_id)
+
+    run = AIRun.objects.get(inquiry=inquiry)
+    assert run.request_schema_version == "4.0.0"
+    assert run.response_schema_version == "4.0.0"
+    assert run.validated_output_payload["model_code"] == (
+        inquiry.subscription.product_model.model_code
+    )
+    assert run.validated_output_payload["fallback_reason_code"] == (
+        "RUNTIME_PRODUCT_NOT_APPROVED"
+    )
+
+    replay = InquiryAIService._replay_or_conflict(
+        run,
+        input_digest=run.input_sha256,
+        request_payload=run.input_payload,
+        validator=validator,
+    )
+    assert replay.idempotent_replay is True
+    assert replay.event_candidate == "PRODUCT_VALIDATION_FAILED"
+    assert replay.event_applied is None
+    assert replay.stale is True
+    assert replay.pending_reason == "STALE_STATE_VERSION"
+    assert len(calls) == 1
+    assert AIRun.objects.filter(inquiry=inquiry).count() == 1
+    assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
+    assert Guidance.objects.filter(inquiry=inquiry).count() == 1
+    assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 1
+    http_client.close()
+
+
+def test_product_runtime_hold_preserves_valid_danger_total_stop():
+    inquiry = create_inquiry(104)
+    validator = ContractV4CompatValidator()
+
+    def dangerous_product_hold(_response: dict, request: dict) -> dict:
+        example_path = (
+            DEFAULT_CONTRACT_ROOT
+            / "examples"
+            / "symptom-analysis"
+            / "danger-detected.json"
+        )
+        response = json.loads(example_path.read_text(encoding="utf-8"))[
+            "response"
+        ]
+        for field in (
+            "inquiry_id",
+            "correlation_id",
+            "ai_request_id",
+            "state_version",
+            "model_code",
+        ):
+            response[field] = request[field]
+        response.update(
+            {
+                "status": "FALLBACK",
+                "fallback_reason_code": "RUNTIME_PRODUCT_NOT_APPROVED",
+                "failure_stage": "VALIDATING",
+                "evidence_references": [],
+            }
+        )
+        return response
+
+    client, http_client, _calls = make_client(
+        transform=dangerous_product_hold,
+        validator=validator,
+    )
+    outcome = analyze(
+        inquiry,
+        client,
+        validator=validator,
+    )
+
+    assert outcome.event_candidate == "PRODUCT_VALIDATION_FAILED"
+    assert outcome.event_applied == "PRODUCT_VALIDATION_FAILED"
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.risk_level_code == Inquiry.RiskLevel.DANGER
+    assert (
+        inquiry.usage_guidance_status
+        == Inquiry.UsageGuidanceStatus.TOTAL_STOP
+    )
+    assert inquiry.requires_fallback is True
+    http_client.close()
+
+
+def test_other_contract_v4_fallback_stays_fail_closed_without_state_event():
+    inquiry = create_inquiry(105)
+    validator = ContractV4CompatValidator()
+
+    def mcp_failure(response: dict, request: dict) -> dict:
+        response.update(
+            {
+                "model_code": request["model_code"],
+                "status": "FALLBACK",
+                "fallback_reason_code": "MCP_TOOL_FAILURE",
+                "failure_stage": "VALIDATING",
+                "evidence_references": [],
+            }
+        )
+        return response
+
+    client, http_client, _calls = make_client(
+        transform=mcp_failure,
+        validator=validator,
+    )
+    outcome = analyze(inquiry, client, validator=validator)
+
+    assert outcome.event_candidate is None
+    assert outcome.event_applied is None
+    assert outcome.pending_reason == "NO_STATE_EVENT_CANDIDATE"
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
+    assert inquiry.state_version == 2
+    assert inquiry.requires_fallback is True
+    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
     http_client.close()
 
 
@@ -406,6 +644,8 @@ def test_registered_danger_rules_apply_consultation_required_transition():
             "state_version",
         ):
             danger_response[field] = request[field]
+        if "model_code" in danger_response:
+            danger_response["model_code"] = request["model_code"]
         return danger_response
 
     client, http_client, _calls = make_client(transform=danger)

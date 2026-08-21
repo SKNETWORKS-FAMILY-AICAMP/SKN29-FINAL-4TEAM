@@ -133,14 +133,18 @@ def _no_evidence_payload(request_payload: dict) -> dict:
         "state_version",
     ):
         response[field] = request_payload[field]
+    if "model_code" in response:
+        response["model_code"] = request_payload["model_code"]
 
     response.update(
         {
             "status": "FALLBACK",
-            "failure_stage": "RETRIEVING",
             "evidence_references": [],
+            "failure_stage": "RETRIEVING",
         }
     )
+    if "fallback_reason_code" in response:
+        response["fallback_reason_code"] = "NO_EVIDENCE"
     response["safety_assessment"]["requires_consultation"] = True
     response["usage_guidance"].update(
         {

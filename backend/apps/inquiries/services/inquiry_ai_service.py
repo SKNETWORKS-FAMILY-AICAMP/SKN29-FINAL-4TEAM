@@ -1004,7 +1004,7 @@ class InquiryAIService:
             result.payload["evidence_references"]
         ) and not verified_evidence_ids
         inquiry.requires_fallback = (
-            result.is_no_evidence or references_were_rejected
+            result.is_fallback or references_were_rejected
         )
         update_fields = [
             "risk_level_code",
@@ -1041,6 +1041,9 @@ class InquiryAIService:
             return None, "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
 
         domain_results = {
+            "G-PRODUCT-VALIDATION-FAILED": (
+                result.is_product_validation_failed
+            ),
             "G-NO-USABLE-EVIDENCE": result.is_no_evidence,
             "G-SAFE-GUIDANCE-VALID": (
                 event == "SAFE_GUIDANCE_READY"
