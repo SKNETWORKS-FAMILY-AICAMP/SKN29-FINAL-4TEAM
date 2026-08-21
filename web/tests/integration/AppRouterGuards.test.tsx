@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 
 import { AuthProvider } from "../../src/app/providers/AuthProvider";
@@ -19,6 +19,16 @@ function createUser(roleCode: AppRole): AuthenticatedUser {
   };
 }
 
+function RouterLocationProbe() {
+  const location = useLocation();
+  return (
+    <span data-testid="router-location" hidden>
+      {location.pathname}
+      {location.search}
+    </span>
+  );
+}
+
 function renderRoute(
   path: string,
   initialUser: AuthenticatedUser | null,
@@ -26,6 +36,7 @@ function renderRoute(
   return render(
     <AuthProvider initialUser={initialUser}>
       <MemoryRouter initialEntries={[path]}>
+        <RouterLocationProbe />
         <AppRoutes />
       </MemoryRouter>
     </AuthProvider>,
@@ -43,7 +54,7 @@ describe("App Router Guard", () => {
 
   it("Mock 상담사 로그인 후 원래 요청한 상담 경로로 돌아간다", async () => {
     const user = userEvent.setup();
-    renderRoute("/consultant/inquiries", null);
+    renderRoute("/consultant/inquiries?bucket=NEW&q=누수", null);
 
     await user.click(
       await screen.findByRole("button", { name: "Mock 계정으로 로그인" }),
@@ -52,6 +63,9 @@ describe("App Router Guard", () => {
     expect(
       await screen.findByRole("heading", { name: "고객 문의" }),
     ).toBeInTheDocument();
+    expect(screen.getByTestId("router-location")).toHaveTextContent(
+      "/consultant/inquiries?bucket=NEW&q=누수",
+    );
   });
 
   it("운영 담당자가 상담사 경로에 접근하면 403 화면으로 이동한다", async () => {

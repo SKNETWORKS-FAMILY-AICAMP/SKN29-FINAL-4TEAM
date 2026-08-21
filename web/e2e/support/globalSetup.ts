@@ -19,6 +19,10 @@ const RUNTIME_FIXTURE_PATH = resolve(
   WEB_ROOT,
   ".runtime/playwright/backend-fixture.json",
 );
+const RUNTIME_VISIT_FIXTURE_PATH = resolve(
+  WEB_ROOT,
+  ".runtime/playwright/backend-visit-fixture.json",
+);
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1", "[::1]"]);
 
 function createRunId(): string {
@@ -219,27 +223,78 @@ function assertSafeReplay(
   }
 }
 
+function assertDistinctVisitFixture(
+  primary: WebConsultationE2EFixture,
+  visit: WebConsultationE2EFixture,
+): void {
+  if (
+    visit.runId === primary.runId ||
+    visit.inquiryId === primary.inquiryId ||
+    visit.inquiryCode === primary.inquiryCode
+  ) {
+    throw new Error(
+      "방문 전환 E2E에는 상담 완료 흐름과 다른 공식 Fixture가 필요합니다.",
+    );
+  }
+}
+
+function writeRuntimeFixture(
+  fixturePath: string,
+  fixture: WebConsultationE2EFixture,
+): void {
+  mkdirSync(dirname(fixturePath), { recursive: true });
+  writeFileSync(
+    fixturePath,
+    `${JSON.stringify(toPublicFixtureJson(fixture), null, 2)}\n`,
+    { encoding: "utf8", mode: 0o600 },
+  );
+}
+
 export default async function globalSetup(): Promise<void> {
   await assertBackendHealth();
   const suppliedFixturePath = process.env.E2E_FIXTURE_JSON_PATH?.trim();
+  const suppliedVisitFixturePath =
+    process.env.E2E_VISIT_FIXTURE_JSON_PATH?.trim();
   let fixture: WebConsultationE2EFixture;
+  let visitFixture: WebConsultationE2EFixture | undefined;
 
-  if (suppliedFixturePath) {
+  if (Boolean(suppliedFixturePath) !== Boolean(suppliedVisitFixturePath)) {
+    throw new Error(
+      "외부 Fixture를 사용할 때는 E2E_FIXTURE_JSON_PATH와 E2E_VISIT_FIXTURE_JSON_PATH를 함께 제공해야 합니다.",
+    );
+  }
+
+  if (suppliedFixturePath && suppliedVisitFixturePath) {
     fixture = readBackendFixture(resolve(suppliedFixturePath));
+    visitFixture = readBackendFixture(resolve(suppliedVisitFixturePath));
+    assertDistinctVisitFixture(fixture, visitFixture);
   } else {
     assertLocalFixtureTarget();
     assertMigrationGate();
     const runId = process.env.E2E_RUN_ID?.trim() || createRunId();
+    const visitRunId =
+      process.env.E2E_VISIT_RUN_ID?.trim() || createRunId();
+    if (visitRunId === runId) {
+      throw new Error(
+        "E2E_VISIT_RUN_ID는 상담 완료 흐름의 E2E_RUN_ID와 달라야 합니다.",
+      );
+    }
     fixture = generateFixture(runId);
     const replay = generateFixture(runId);
     assertSafeReplay(fixture, replay);
+    visitFixture = generateFixture(visitRunId);
+    const visitReplay = generateFixture(visitRunId);
+    assertSafeReplay(visitFixture, visitReplay);
+    assertDistinctVisitFixture(fixture, visitFixture);
   }
 
-  mkdirSync(dirname(RUNTIME_FIXTURE_PATH), { recursive: true });
-  writeFileSync(
-    RUNTIME_FIXTURE_PATH,
-    `${JSON.stringify(toPublicFixtureJson(fixture), null, 2)}\n`,
-    { encoding: "utf8", mode: 0o600 },
-  );
+  writeRuntimeFixture(RUNTIME_FIXTURE_PATH, fixture);
   process.env.E2E_FIXTURE_JSON_PATH = RUNTIME_FIXTURE_PATH;
+
+  if (visitFixture) {
+    writeRuntimeFixture(RUNTIME_VISIT_FIXTURE_PATH, visitFixture);
+    process.env.E2E_VISIT_FIXTURE_JSON_PATH = RUNTIME_VISIT_FIXTURE_PATH;
+  } else {
+    delete process.env.E2E_VISIT_FIXTURE_JSON_PATH;
+  }
 }

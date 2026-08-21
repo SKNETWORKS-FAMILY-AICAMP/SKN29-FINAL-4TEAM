@@ -41,7 +41,12 @@ export default function LoginPage() {
   const [loginError, setLoginError] = useState<string | null>(null);
 
   if (isAuthenticated && user) {
-    return <Navigate to={getRoleHome(user.roleCode)} replace />;
+    return (
+      <Navigate
+        to={getSafeReturnTo(location.state, user.roleCode)}
+        replace
+      />
+    );
   }
 
   const handleSubmit = async (event: FormEvent) => {
