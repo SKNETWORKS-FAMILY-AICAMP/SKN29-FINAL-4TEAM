@@ -11,7 +11,11 @@ def _analysis_body(*, status="SUCCEEDED", failure_stage=None, evidence=None):
         "correlation_id": smoke_test.CORRELATION_ID,
         "ai_request_id": smoke_test.AI_REQUEST_ID,
         "state_version": 1,
+        "model_code": "WPUJAC104DWH",
         "status": status,
+        "fallback_reason_code": (
+            None if status == "SUCCEEDED" else "NO_EVIDENCE"
+        ),
         "failure_stage": failure_stage,
         "retry_count": 0,
         "structured_symptom": {
@@ -114,7 +118,7 @@ def test_strict_local_smoke_rejects_unverified_evidence(monkeypatch):
     evidence["verification_status"] = "unverified"
     _install_fake_http(monkeypatch, _analysis_body(evidence=[evidence]))
 
-    with pytest.raises(smoke_test.SmokeFailure, match="계약 3.0.0 검증 실패"):
+    with pytest.raises(smoke_test.SmokeFailure, match="계약 4.0.0 검증 실패"):
         smoke_test.run_smoke(
             "http://127.0.0.1:8001",
             "local",
@@ -172,7 +176,7 @@ def test_strict_local_smoke_rejects_schema_invalid_success_response(monkeypatch)
     del body["retry_count"]
     _install_fake_http(monkeypatch, body)
 
-    with pytest.raises(smoke_test.SmokeFailure, match="계약 3.0.0 검증 실패"):
+    with pytest.raises(smoke_test.SmokeFailure, match="계약 4.0.0 검증 실패"):
         smoke_test.run_smoke(
             "http://127.0.0.1:8001",
             "local",

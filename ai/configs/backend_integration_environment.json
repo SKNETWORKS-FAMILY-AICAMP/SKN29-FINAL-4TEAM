@@ -7,7 +7,7 @@
     "mock",
     "local"
   ],
-  "contract_version": "3.0.0",
+  "contract_version": "4.0.0",
   "config_paths": [
     "ai/configs/retry_policy.yaml",
     "ai/configs/retrieval_policy.yaml",

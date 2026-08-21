@@ -40,7 +40,11 @@ class NonRetryableFailingSearchService:
 
 
 class EvidenceSearchService:
+    def __init__(self):
+        self.calls = 0
+
     def search(self, *args, **kwargs):
+        self.calls += 1
         return [
             RetrievedChunk(
                 chunk_id="RAG-WPUJAC104DWH-COLD-TEST",
@@ -164,6 +168,8 @@ def test_no_evidence_uses_pending_consultation_branch():
     assert response.safety_assessment.risk_level == RiskLevel.CAUTION
     assert response.safety_assessment.requires_consultation is True
     assert response.status.value == "FALLBACK"
+    assert response.model_code == "WPUJAC104DWH"
+    assert response.fallback_reason_code.value == "NO_EVIDENCE"
     assert response.failure_stage.value == "RETRIEVING"
     assert result.context.retrieval_outcome == RetrievalOutcome.NO_MATCH
 
@@ -240,8 +246,9 @@ def test_non_transient_search_failure_is_not_retried():
 
 def test_configured_search_with_evidence_is_available():
     llm_client = FakeGuidanceLLMClient()
+    search_service = EvidenceSearchService()
     result = PipelineRouter(
-        search_service=EvidenceSearchService(),
+        search_service=search_service,
         llm_client=llm_client,
     ).run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b310",
@@ -254,6 +261,8 @@ def test_configured_search_with_evidence_is_available():
 
     response = result.to_analysis_result()
     assert response.status.value == "SUCCEEDED"
+    assert response.model_code == "WPUJAC104DWH"
+    assert response.fallback_reason_code is None
     assert len(response.evidence_references) == 1
     assert result.context.retrieval_outcome == RetrievalOutcome.AVAILABLE
     assert response.usage_guidance.message == (
@@ -261,11 +270,17 @@ def test_configured_search_with_evidence_is_available():
     )
     assert result.context.model_metadata.model_name == "gpt-4.1-mini"
     assert result.context.model_metadata.tokens_used == 18
+    assert search_service.calls == 1
     assert llm_client.calls == 1
 
 
-def test_danger_path_does_not_require_vector_store():
-    result = PipelineRouter(search_service=None).run_pipeline(
+def test_jac104_leak_path_skips_vector_and_provider():
+    search_service = FailingSearchService()
+    llm_client = FakeGuidanceLLMClient()
+    result = PipelineRouter(
+        search_service=search_service,
+        llm_client=llm_client,
+    ).run_pipeline(
         inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b309",
         correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
         ai_request_id="ai-req-danger-no-vector",
@@ -276,8 +291,12 @@ def test_danger_path_does_not_require_vector_store():
     )
 
     response = result.to_analysis_result()
+    assert response.model_code == "WPUJAC104DWH"
+    assert response.fallback_reason_code is None
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
     assert result.context.retrieval_outcome == RetrievalOutcome.NOT_RUN
+    assert search_service.calls == 0
+    assert llm_client.calls == 0
 
 
 def test_vector_dsn_requires_pinned_embedding_revision(monkeypatch):

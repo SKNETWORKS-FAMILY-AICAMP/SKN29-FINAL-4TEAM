@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "contract_version": "3.0.0",
+  "contract_version": "4.0.0",
   "public_response_policy": "NOT_EXPOSED",
   "public_response_reason": "실행 식별자는 고객 공개 응답이 아니라 Backend AIRun 감사 레코드에 저장한다.",
   "backend_delivery": {

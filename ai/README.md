@@ -6,7 +6,7 @@
 - PostgreSQL과 `vector` 확장
 - 환경 설치 SSOT: `ai/requirements.lock`
 - 직접 의존성 선언·정합성 대상: `ai/requirements.txt`, `ai/pyproject.toml`
-- AI 계약 버전: `3.0.0`
+- AI 계약 버전: `4.0.0`
 
 Backend와 AI는 Python 버전만 `3.13.13`으로 통일하고 가상환경과 의존성은
 분리한다. Backend는 `backend/.venv`, AI는 `ai/.venv`를 사용한다. 한쪽
@@ -117,7 +117,7 @@ pgvector, Backend 저장을 모두 통과한 공동 E2E 증거로 사용하지 �
 stale `state_version` 차단은 Backend 소유이며, F12의 답변·거절 저장과 버전
 증가는 Backend와 공동 검증한다.
 
-위험 응답은 자연어 `detected_risks`와 별개로 계약 `3.0.0`의 필수 필드
+위험 응답은 자연어 `detected_risks`와 별개로 계약 `4.0.0`의 필수 필드
 `safety_assessment.matched_safety_rule_ids`에 안정적인 규칙 ID를 반환한다.
 Backend는 이 ID를 자연어에서 재추론하지 않고 State Event Guard에 직접 사용한다.
 
@@ -156,7 +156,8 @@ Backend 상태 변경, 방문 필요 여부의 자동 확정은 수행하지 않
 `gpt-4.1-mini`를 호출한다. LLM Structured Output은 내부
 `GuidanceGenerationResult`의 `message`, `next_actions` 두 필드로 제한한다.
 Safety 판정, 사용 안내 상태, 제한 기능, Evidence와 요청 추적 식별자는 기존
-Rule·Runtime이 조립하며 공개 Backend↔AI 계약 `3.0.0`을 변경하지 않는다.
+Rule·Runtime이 조립한다. Fallback 원인은 공개 Backend↔AI 계약 `4.0.0`의
+안정 코드로만 노출하고 내부 Harness 상세는 공개하지 않는다.
 
 위험 입력은 Safety Rule이 먼저 처리하고, 근거 없음은 기존
 `PENDING_CONSULTATION` Fallback을 사용하므로 두 경로 모두 LLM을 호출하지
@@ -181,7 +182,7 @@ AI_EMBEDDING_REVISION
 ## 3-Agent 후보 Runtime
 
 기본 `local` 실행은 계속 `SingleRAGPipeline`이다. 6주차 후보 Runtime은 같은
-공개 계약 `3.0.0`을 유지하면서 `Symptom Analysis`, `Evidence Analysis`,
+공개 계약 `4.0.0`을 유지하면서 `Symptom Analysis`, `Evidence Analysis`,
 `Care Decision` 역할과 Supervisor Handoff를 내부에서 실행한다.
 
 ```powershell

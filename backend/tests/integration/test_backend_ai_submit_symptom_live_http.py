@@ -196,8 +196,8 @@ def test_submit_symptom_calls_real_ai_mock_once_and_persists_result(
     assert run.schema_validation_status_code == (
         AIRun.SchemaValidationStatus.PASSED
     )
-    assert run.request_schema_version == "3.0.0"
-    assert run.response_schema_version == "3.0.0"
+    assert run.request_schema_version == "4.0.0"
+    assert run.response_schema_version == "4.0.0"
     assert str(run.correlation_id) == submit_correlation_id
     assert run.inquiry_id == history.inquiry_id == inquiry.id
     assert run.correlation_id == history.correlation_id

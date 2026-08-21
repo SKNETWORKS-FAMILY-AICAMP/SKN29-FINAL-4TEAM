@@ -24,7 +24,7 @@ class SmokeFailure(RuntimeError):
 
 
 def _validate_analysis_contract(body: dict[str, Any]) -> None:
-    """공개 SymptomAnalysisResponse 3.0.0 전체 Schema를 검증한다."""
+    """공개 SymptomAnalysisResponse 4.0.0 전체 Schema를 검증한다."""
 
     contract_root = Path(__file__).resolve().parents[2] / "contracts" / "ai"
     schema_path = contract_root / "responses" / "SymptomAnalysisResponse.schema.json"
@@ -48,7 +48,7 @@ def _validate_analysis_contract(body: dict[str, Any]) -> None:
         first = errors[0]
         location = ".".join(str(item) for item in first.absolute_path) or "$"
         raise SmokeFailure(
-            f"Analyze 계약 3.0.0 검증 실패: path={location}, message={first.message}"
+            f"Analyze 계약 4.0.0 검증 실패: path={location}, message={first.message}"
         )
 
 

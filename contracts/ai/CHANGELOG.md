@@ -1,5 +1,16 @@
 # AI Contract Changelog
 
+## 4.0.0 - 2026-08-21
+
+- `SymptomAnalysisResponse.model_code`를 필수 필드로 추가해 요청 제품과 응답
+  판정 제품을 대조할 수 있게 함
+- `fallback_reason_code`를 필수 nullable 필드로 추가하고 제품 미승인,
+  No-Evidence, MCP 실패, 출력 Schema 실패와 미분류 Fallback을 분리
+- Backend가 `failure_stage`만으로 제품 미승인이나 `NO_EVIDENCE`를 추정하지
+  않도록 응답 Mapper 불변식 강화
+- strict 응답 Schema에 필수 필드를 추가하는 호환성 파괴 변경이므로 계약 Major
+  Version을 갱신
+
 ## 3.0.0 - 2026-08-10
 
 - `SafetyAssessment.matched_safety_rule_ids`를 필수 배열로 추가

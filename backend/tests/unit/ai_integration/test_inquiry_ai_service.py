@@ -87,6 +87,7 @@ def success_payload(request_payload: dict) -> dict:
         "correlation_id",
         "ai_request_id",
         "state_version",
+        "model_code",
     ):
         response[field] = request_payload[field]
     return response
@@ -318,6 +319,7 @@ def test_no_evidence_result_routes_to_consultation_required():
         response.update(
             {
                 "status": "FALLBACK",
+                "fallback_reason_code": "NO_EVIDENCE",
                 "failure_stage": "RETRIEVING",
                 "evidence_references": [],
             }
@@ -404,6 +406,7 @@ def test_registered_danger_rules_apply_consultation_required_transition():
             "correlation_id",
             "ai_request_id",
             "state_version",
+            "model_code",
         ):
             danger_response[field] = request[field]
         return danger_response
@@ -512,7 +515,16 @@ def test_selected_answer_is_forwarded_and_same_question_is_not_recreated():
 
 def test_duplicate_request_replays_without_second_http_call_or_rows():
     inquiry = create_inquiry(5)
-    client, http_client, calls = make_client()
+    ai_internal_calls = {"vector": 0, "provider": 0}
+
+    def instrument_ai_boundary(response: dict, _request: dict) -> dict:
+        # Deterministic local-AI boundary counter. Backend Replay가 HTTP를 생략하면
+        # 이 경계 뒤의 Vector/Provider도 추가 호출될 수 없다.
+        ai_internal_calls["vector"] += 1
+        ai_internal_calls["provider"] += 1
+        return response
+
+    client, http_client, calls = make_client(transform=instrument_ai_boundary)
     correlation_id = uuid4()
     ai_request_id = uuid4()
 
@@ -522,6 +534,7 @@ def test_duplicate_request_replays_without_second_http_call_or_rows():
         correlation_id=correlation_id,
         ai_request_id=ai_request_id,
     )
+    first_call_counts = dict(ai_internal_calls)
     replay = analyze(
         inquiry,
         client,
@@ -534,6 +547,8 @@ def test_duplicate_request_replays_without_second_http_call_or_rows():
     assert replay.ai_run_id == first.ai_run_id
     assert replay.pending_reason == "REPLAYED_EXISTING_RESULT"
     assert len(calls) == 1
+    assert first_call_counts == {"vector": 1, "provider": 1}
+    assert ai_internal_calls == first_call_counts
     assert AIRun.objects.filter(inquiry=inquiry).count() == 1
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
     assert Guidance.objects.filter(inquiry=inquiry).count() == 1

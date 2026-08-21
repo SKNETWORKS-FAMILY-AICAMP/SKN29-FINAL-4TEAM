@@ -141,6 +141,8 @@ async def analyze_symptom(
             correlation_id=req.correlation_id,
             ai_request_id=req.ai_request_id,
             state_version=req.state_version,
+            model_code=req.model_code,
+            fallback_reason_code=None,
             structured_symptom=StructuredSymptom(
                 symptom_type="출수량 저하",
                 occurrence_time="3일 전",

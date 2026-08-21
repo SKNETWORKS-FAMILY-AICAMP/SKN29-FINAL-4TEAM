@@ -137,6 +137,7 @@ def _no_evidence_payload(request_payload: dict) -> dict:
     response.update(
         {
             "status": "FALLBACK",
+            "fallback_reason_code": "NO_EVIDENCE",
             "failure_stage": "RETRIEVING",
             "evidence_references": [],
         }
