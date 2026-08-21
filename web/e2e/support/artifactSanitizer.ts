@@ -10,8 +10,21 @@ import { extname, join } from "node:path";
 
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
 
-const TEXT_EXTENSIONS = new Set([".json", ".log", ".md", ".txt"]);
+const TEXT_EXTENSIONS = new Set([
+  ".csv",
+  ".json",
+  ".jsonl",
+  ".log",
+  ".md",
+  ".txt",
+]);
 const REDACTED = "[REDACTED]";
+const SENSITIVE_JSON_FIELD_NAMES =
+  "[A-Za-z0-9_.-]*(?:password|secret|token|api[_-]?key|dsn)[A-Za-z0-9_.-]*|authorization|cookie|set-cookie";
+const MOBILE_PHONE_PATTERN =
+  /(?<![A-Fa-f0-9])01[016789][ -]?\d{3,4}[ -]?\d{4}(?![A-Fa-f0-9])/g;
+const PHONE_PATTERN =
+  /(?<![A-Fa-f0-9])0\d{1,2}[ -]?\d{3,4}[ -]?\d{4}(?![A-Fa-f0-9])/g;
 
 function replaceJsonField(text: string, fieldNames: string): string {
   const plain = new RegExp(
@@ -29,10 +42,7 @@ function replaceJsonField(text: string, fieldNames: string): string {
 
 export function redactSensitiveText(source: string): string {
   let text = source;
-  text = replaceJsonField(
-    text,
-    "access_token|refresh_token|authorization|cookie|set-cookie|password",
-  );
+  text = replaceJsonField(text, SENSITIVE_JSON_FIELD_NAMES);
   text = replaceJsonField(
     text,
     "display_name|customer_name|customer_display_name_masked|phone|email|raw_text|answer|consultation_note|additional_check|customer_guidance|summary|inputValue|value",
@@ -53,8 +63,8 @@ export function redactSensitiveText(source: string): string {
     /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
     REDACTED,
   );
-  text = text.replace(/01[016789][ -]?\d{3,4}[ -]?\d{4}/g, REDACTED);
-  text = text.replace(/0\d{1,2}[ -]?\d{3,4}[ -]?\d{4}/g, REDACTED);
+  text = text.replace(MOBILE_PHONE_PATTERN, REDACTED);
+  text = text.replace(PHONE_PATTERN, REDACTED);
   text = text.replace(/C:\\Users\\[^\\"\s]+/gi, "C:\\Users\\[REDACTED]");
   text = text.replace(/\/home\/[^/"\s]+/g, "/home/[REDACTED]");
   return text;
@@ -64,9 +74,13 @@ export function containsSensitiveText(text: string): boolean {
   return [
     /Bearer(?=\s)(?!\s*\[REDACTED\])\s+/i,
     /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/,
-    /"(?:access_token|refresh_token|password)"\s*:\s*"(?!\[REDACTED\])/i,
+    new RegExp(
+      `"(?:${SENSITIVE_JSON_FIELD_NAMES})"\\s*:\\s*"(?!\\[REDACTED\\])`,
+      "i",
+    ),
     /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i,
-    /01[016789][ -]?\d{3,4}[ -]?\d{4}/,
+    new RegExp(MOBILE_PHONE_PATTERN.source),
+    new RegExp(PHONE_PATTERN.source),
   ].some((pattern) => pattern.test(text));
 }
 
