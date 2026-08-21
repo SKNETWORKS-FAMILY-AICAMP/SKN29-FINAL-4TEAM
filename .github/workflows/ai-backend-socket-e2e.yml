@@ -153,8 +153,9 @@ jobs:
           exit 1
 
       - name: Verify disposable PostgreSQL connection
+        working-directory: backend
         run: >-
-          backend/.venv/bin/python -c
+          .venv/bin/python -c
           "import django;
           django.setup();
           from django.db import connection;
