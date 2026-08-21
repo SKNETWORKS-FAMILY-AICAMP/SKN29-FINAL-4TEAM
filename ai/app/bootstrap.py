@@ -13,6 +13,10 @@ from .interfaces.http.routes.health_routes import router as health_router
 from .interfaces.http.runtime_policy import get_runtime_policy
 from .interfaces.http.structured_logging import configure_structured_logging
 from .integrations.llm.token_usage import configure_llm_usage_logging
+from .integrations.mcp.session_manager import (
+    close_shared_mcp_session_manager,
+    warmup_shared_mcp_search_runtime,
+)
 from .observability.telemetry import (
     configure_telemetry,
     shutdown_telemetry,
@@ -29,9 +33,24 @@ async def _lifespan(app: FastAPI):
 
     try:
         if os.getenv("AI_VECTOR_DSN"):
-            await asyncio.to_thread(warmup_configured_search_service)
+            retrieval_transport = os.getenv(
+                "AI_RETRIEVAL_TRANSPORT",
+                "direct",
+            ).strip().lower()
+
+            if retrieval_transport == "mcp":
+                await asyncio.to_thread(
+                    warmup_shared_mcp_search_runtime
+                )
+            else:
+                await asyncio.to_thread(
+                    warmup_configured_search_service
+                )
         yield
     finally:
+        await asyncio.to_thread(
+            close_shared_mcp_session_manager
+        )
         shutdown_telemetry()
 
 

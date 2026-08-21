@@ -93,6 +93,30 @@ def health_check() -> dict[str, str]:
 
 
 @mcp.tool()
+def warmup_search_runtime() -> dict[str, str | bool]:
+    """Load the configured embedding model before user retrieval traffic."""
+
+    search_service = PipelineRouter._configured_search_service()
+    if search_service is None:
+        raise RetrievalConfigurationError(
+            "Vector Store가 설정되지 않아 MCP 검색 Runtime을 준비할 수 없습니다."
+        )
+
+    warmup = getattr(search_service.embedding_client, "warmup", None)
+    if not callable(warmup):
+        raise RetrievalConfigurationError(
+            "설정된 Embedding Provider가 Runtime Warmup을 지원하지 않습니다."
+        )
+
+    warmup()
+
+    return {
+        "status": "ready",
+        "ready": True,
+    }
+
+
+@mcp.tool()
 def lookup_product_context(
     inquiry_id: str,
     correlation_id: str,

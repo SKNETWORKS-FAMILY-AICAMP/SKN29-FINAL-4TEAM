@@ -6,6 +6,7 @@ import asyncio
 import json
 import os
 from enum import Enum
+from time import monotonic
 from typing import Any, Callable
 from uuid import UUID
 
@@ -18,6 +19,7 @@ from ..backend import (
     BackendProductContext,
 )
 from .client import WaterBridgeMCPClient
+from .session_manager import get_shared_mcp_session_manager
 from .tools.get_inquiry_context import GetInquiryContextOutput
 from .tools.lookup_product_context import LookupProductContextOutput
 
@@ -94,15 +96,21 @@ class McpBackendContextService:
         token = cancellation_token or CancellationToken()
         token.raise_if_cancelled()
         try:
-            product, inquiry = asyncio.run(
-                asyncio.wait_for(
-                    self._call_tools(
-                        inquiry_id=inquiry_id,
-                        correlation_id=correlation_id,
-                    ),
-                    timeout=self.timeout_seconds,
+            if self._client_factory is WaterBridgeMCPClient:
+                product, inquiry = self._call_tools_persistent(
+                    inquiry_id=inquiry_id,
+                    correlation_id=correlation_id,
                 )
-            )
+            else:
+                product, inquiry = asyncio.run(
+                    asyncio.wait_for(
+                        self._call_tools(
+                            inquiry_id=inquiry_id,
+                            correlation_id=correlation_id,
+                        ),
+                        timeout=self.timeout_seconds,
+                    )
+                )
         except TimeoutError as exc:
             raise McpBackendContextError(
                 tool_name=McpBackendContextToolName.LOOKUP_PRODUCT_CONTEXT,
@@ -161,6 +169,58 @@ class McpBackendContextService:
             inquiry_context=inquiry.inquiry_context,
         )
 
+    def _call_tools_persistent(
+        self,
+        *,
+        inquiry_id: UUID,
+        correlation_id: UUID,
+    ) -> tuple[LookupProductContextOutput, GetInquiryContextOutput]:
+        """Resolve both Backend Context Tools on the shared MCP stdio session."""
+
+        manager = get_shared_mcp_session_manager()
+        deadline = monotonic() + self.timeout_seconds
+        arguments = {
+            "inquiry_id": str(inquiry_id),
+            "correlation_id": str(correlation_id),
+        }
+
+        def remaining_timeout() -> float:
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                raise TimeoutError("MCP Backend Context timeout")
+            return remaining
+
+        product_result = manager.call_tool(
+            McpBackendContextToolName.LOOKUP_PRODUCT_CONTEXT.value,
+            arguments,
+            timeout_seconds=remaining_timeout(),
+        )
+        product = self._parse_output(
+            product_result,
+            LookupProductContextOutput,
+            McpBackendContextToolName.LOOKUP_PRODUCT_CONTEXT,
+        )
+        self._raise_tool_failure(
+            product,
+            McpBackendContextToolName.LOOKUP_PRODUCT_CONTEXT,
+        )
+
+        inquiry_result = manager.call_tool(
+            McpBackendContextToolName.GET_INQUIRY_CONTEXT.value,
+            arguments,
+            timeout_seconds=remaining_timeout(),
+        )
+        inquiry = self._parse_output(
+            inquiry_result,
+            GetInquiryContextOutput,
+            McpBackendContextToolName.GET_INQUIRY_CONTEXT,
+        )
+        self._raise_tool_failure(
+            inquiry,
+            McpBackendContextToolName.GET_INQUIRY_CONTEXT,
+        )
+
+        return product, inquiry
     async def _call_tools(
         self,
         *,

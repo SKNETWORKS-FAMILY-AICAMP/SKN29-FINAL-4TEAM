@@ -56,6 +56,11 @@ class WaterBridgeMCPClient:
             "AI_BACKEND_BASE_URL",
             "AI_HANDOFF_INTERNAL_TOKEN",
             "AI_BACKEND_CONTEXT_TIMEOUT_SECONDS",
+            "HF_HOME",
+            "HUGGINGFACE_HUB_CACHE",
+            "SENTENCE_TRANSFORMERS_HOME",
+            "HF_HUB_OFFLINE",
+            "TRANSFORMERS_OFFLINE",
         )
 
         for key in optional_keys:

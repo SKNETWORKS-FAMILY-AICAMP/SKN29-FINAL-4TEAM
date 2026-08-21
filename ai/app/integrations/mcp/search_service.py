@@ -23,6 +23,7 @@ from ...retrieval.models.retrieval_query import RetrievalQuery
 from ...retrieval.models.retrieved_chunk import RetrievedChunk
 from .client import WaterBridgeMCPClient
 from .models import SearchOfficialEvidenceReference
+from .session_manager import get_shared_mcp_session_manager
 
 
 class _SearchOfficialEvidenceOutput(BaseModel):
@@ -83,7 +84,13 @@ class McpEvidenceSearchService:
         token.raise_if_cancelled()
 
         try:
-            result = asyncio.run(self._call_tool(query))
+            if self._client_factory is WaterBridgeMCPClient:
+                result = get_shared_mcp_session_manager().call_tool(
+                    "search_official_evidence",
+                    self._tool_arguments(query),
+                )
+            else:
+                result = asyncio.run(self._call_tool(query))
         except TimeoutError as exc:
             raise McpEvidenceSearchError(
                 kind=McpEvidenceFailureKind.TIMEOUT,
@@ -131,17 +138,20 @@ class McpEvidenceSearchService:
             for evidence in output.evidence_references
         ]
 
-    async def _call_tool(self, query: RetrievalQuery):
-        arguments = {
+    @staticmethod
+    def _tool_arguments(query: RetrievalQuery) -> dict[str, Any]:
+        return {
             "customer_query": query.query_text,
             "model_code": query.model_code,
             "symptom_type": None,
             "previous_answers": [],
         }
+
+    async def _call_tool(self, query: RetrievalQuery):
         async with self._client_factory() as client:
             return await client.call_tool(
                 "search_official_evidence",
-                arguments,
+                self._tool_arguments(query),
             )
 
     @classmethod
