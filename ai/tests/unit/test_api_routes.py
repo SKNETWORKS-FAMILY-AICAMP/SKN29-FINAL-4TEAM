@@ -53,6 +53,8 @@ def test_analyze_endpoint_mock_mode(client):
     assert data["correlation_id"] == CORRELATION_ID
     assert data["ai_request_id"] == "ai-req-test-999"
     assert data["state_version"] == 3
+    assert data["model_code"] == "WPUJAC104DWH"
+    assert data["fallback_reason_code"] is None
     assert response.headers["X-Correlation-ID"] == CORRELATION_ID
     assert "model_metadata" not in data
     assert "processing_traces" not in data
@@ -83,7 +85,7 @@ def test_analyze_endpoint_local_mode_leak(client):
 
 
 def test_local_mode_can_select_multi_agent_without_changing_public_schema(client, monkeypatch):
-    """후보 Runtime은 Process 설정으로만 선택되고 공개 계약은 3.0.0을 유지한다."""
+    """후보 Runtime은 Process 설정으로만 선택되고 공개 계약은 4.0.0을 유지한다."""
 
     monkeypatch.setenv("AI_PIPELINE_RUNTIME", "multi_agent")
     response = client.post(

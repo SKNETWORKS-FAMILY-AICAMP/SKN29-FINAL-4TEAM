@@ -1,0 +1,49 @@
+{
+  "request": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b205",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c005",
+    "ai_request_id": "ai-req-20260821-product-hold",
+    "state_version": 2,
+    "raw_symptom": "얼음 출수 상태를 확인하고 싶습니다.",
+    "model_code": "WPUIAC425SNW",
+    "selected_symptoms": ["출수 이상"],
+    "previous_answers": []
+  },
+  "response": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b205",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c005",
+    "ai_request_id": "ai-req-20260821-product-hold",
+    "state_version": 2,
+    "model_code": "WPUIAC425SNW",
+    "status": "FALLBACK",
+    "fallback_reason_code": "RUNTIME_PRODUCT_NOT_APPROVED",
+    "failure_stage": "RETRIEVING",
+    "retry_count": 0,
+    "structured_symptom": {
+      "symptom_type": "출수 이상",
+      "occurrence_time": null,
+      "target_water_type": null,
+      "occurrence_condition": "얼음 출수 상태 확인 요청",
+      "error_code": null,
+      "accompanying_symptoms": [],
+      "actions_taken": []
+    },
+    "missing_fields": [],
+    "followup_questions": [],
+    "safety_assessment": {
+      "risk_level": "caution",
+      "priority": "consultation_recommended",
+      "requires_consultation": true,
+      "matched_safety_rule_ids": [],
+      "detected_risks": [],
+      "safety_reason": "현재 고객 공개 Runtime에서 승인되지 않은 제품이므로 상담사 확인이 필요합니다."
+    },
+    "usage_guidance": {
+      "guidance_status": "PENDING_CONSULTATION",
+      "message": "자동 안내를 확정하지 못해 상담사 검토가 필요합니다.",
+      "restricted_functions": ["검토 전 자가조치 안내"],
+      "next_actions": ["전문 상담 연결을 요청해 주세요."]
+    },
+    "evidence_references": []
+  }
+}

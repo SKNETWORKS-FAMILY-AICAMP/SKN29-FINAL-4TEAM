@@ -6,7 +6,7 @@
 - PostgreSQL과 `vector` 확장
 - 환경 설치 SSOT: `ai/requirements.lock`
 - 직접 의존성 선언·정합성 대상: `ai/requirements.txt`, `ai/pyproject.toml`
-- AI 계약 버전: `3.0.0`
+- AI 계약 버전: `4.0.0`
 
 Backend와 AI는 Python 버전만 `3.13.13`으로 통일하고 가상환경과 의존성은
 분리한다. Backend는 `backend/.venv`, AI는 `ai/.venv`를 사용한다. 한쪽
@@ -117,7 +117,7 @@ pgvector, Backend 저장을 모두 통과한 공동 E2E 증거로 사용하지 �
 stale `state_version` 차단은 Backend 소유이며, F12의 답변·거절 저장과 버전
 증가는 Backend와 공동 검증한다.
 
-위험 응답은 자연어 `detected_risks`와 별개로 계약 `3.0.0`의 필수 필드
+위험 응답은 자연어 `detected_risks`와 별개로 계약 `4.0.0`의 필수 필드
 `safety_assessment.matched_safety_rule_ids`에 안정적인 규칙 ID를 반환한다.
 Backend는 이 ID를 자연어에서 재추론하지 않고 State Event Guard에 직접 사용한다.
 
@@ -156,7 +156,8 @@ Backend 상태 변경, 방문 필요 여부의 자동 확정은 수행하지 않
 `gpt-4.1-mini`를 호출한다. LLM Structured Output은 내부
 `GuidanceGenerationResult`의 `message`, `next_actions` 두 필드로 제한한다.
 Safety 판정, 사용 안내 상태, 제한 기능, Evidence와 요청 추적 식별자는 기존
-Rule·Runtime이 조립하며 공개 Backend↔AI 계약 `3.0.0`을 변경하지 않는다.
+Rule·Runtime이 조립한다. Fallback 원인은 공개 Backend↔AI 계약 `4.0.0`의
+안정 코드로만 노출하고 내부 Harness 상세는 공개하지 않는다.
 
 위험 입력은 Safety Rule이 먼저 처리하고, 근거 없음은 기존
 `PENDING_CONSULTATION` Fallback을 사용하므로 두 경로 모두 LLM을 호출하지
@@ -181,7 +182,7 @@ AI_EMBEDDING_REVISION
 ## 3-Agent 후보 Runtime
 
 기본 `local` 실행은 계속 `SingleRAGPipeline`이다. 6주차 후보 Runtime은 같은
-공개 계약 `3.0.0`을 유지하면서 `Symptom Analysis`, `Evidence Analysis`,
+공개 계약 `4.0.0`을 유지하면서 `Symptom Analysis`, `Evidence Analysis`,
 `Care Decision` 역할과 Supervisor Handoff를 내부에서 실행한다.
 
 ```powershell
@@ -249,10 +250,13 @@ Backend 공개 `evidence_status`·저장 방식은 별도 통합 계약에서 �
 남기지 않고 `AI_VECTOR_DSN`으로 전달한다.
 
 `AI_VECTOR_DSN`이 설정된 Process는 Uvicorn 시작 단계에서 고정 Revision의
-Embedding 모델을 한 번 초기화하고 이후 요청이 같은 검색 서비스를 공유한다.
-따라서 최초 시작은 모델 초기화만큼 늦어질 수 있지만 이 시간은 요청별 30초
-Timeout에 포함되지 않는다. `/health` 성공은 모델 Warmup 완료를 뜻하지만 실제
-pgvector Query와 팀 DB 준비 완료까지 보장하는 Readiness 판정은 아니다.
+Embedding 모델을 로드하고 비민감 고정 문자열로 첫 Encode까지 완료한다. 이후
+요청은 같은 검색 서비스를 공유하며 Warmup은 Process당 한 번만 실행한다. 따라서
+최초 시작은 모델 초기화만큼 늦어질 수 있지만 이 시간은 요청별 30초 Timeout에
+포함되지 않는다. Lifespan은 Warmup 완료 후에만 요청 처리를 시작하고 Warmup 실패는
+애플리케이션 시작 실패로 드러낸다. `/health` 성공은 모델 로드·첫 Encode Warmup
+완료를 뜻하지만 실제 pgvector Query와 팀 DB 준비 완료까지 보장하는 Readiness
+판정은 아니다.
 
 ### 보호 DB 오류와 배포 로그 경계
 

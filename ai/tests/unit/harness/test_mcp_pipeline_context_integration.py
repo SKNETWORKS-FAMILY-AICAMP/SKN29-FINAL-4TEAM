@@ -186,6 +186,7 @@ def test_mcp_context_timeout_stops_before_search_and_provider(monkeypatch):
     context_service = _ContextService(error=failure)
     llm = _LLM()
     search_created = []
+    correlation_id = uuid4()
     monkeypatch.setattr(
         pipeline_router_module,
         "McpEvidenceSearchService",
@@ -198,7 +199,7 @@ def test_mcp_context_timeout_stops_before_search_and_provider(monkeypatch):
         mcp_context_service=context_service,
     ).run_pipeline(
         inquiry_id=uuid4(),
-        correlation_id=uuid4(),
+        correlation_id=correlation_id,
         ai_request_id="mcp-context-timeout",
         state_version=1,
         raw_symptom="냉수가 미지근합니다.",
@@ -214,6 +215,9 @@ def test_mcp_context_timeout_stops_before_search_and_provider(monkeypatch):
     assert llm.calls == 0
     response = result.to_analysis_result()
     assert response.status.value == "FALLBACK"
+    assert response.model_code == "WPUJAC104DWH"
+    assert response.fallback_reason_code.value == "MCP_TOOL_FAILURE"
+    assert str(response.correlation_id) == str(correlation_id)
     assert response.structured_symptom is not None
     assert response.safety_assessment is not None
     assert response.evidence_references == []

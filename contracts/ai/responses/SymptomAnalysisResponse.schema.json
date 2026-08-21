@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "SymptomAnalysisResponse.schema.json",
-  "x-contract-version": "3.0.0",
+  "x-contract-version": "4.0.0",
   "title": "SymptomAnalysisResponse",
   "description": "구조화 증상, 위험도, RAG 근거 및 사용 안내 통합 응답. 업무 상태를 직접 변경하지 않는 제안 결과",
   "type": "object",
   "required": [
-    "inquiry_id", "correlation_id", "ai_request_id", "state_version", "status",
-    "failure_stage", "retry_count", "structured_symptom", "missing_fields",
+    "inquiry_id", "correlation_id", "ai_request_id", "state_version", "model_code",
+    "status", "fallback_reason_code", "failure_stage", "retry_count", "structured_symptom", "missing_fields",
     "followup_questions", "safety_assessment", "usage_guidance", "evidence_references"
   ],
   "additionalProperties": false,
@@ -20,7 +20,25 @@
       "minimum": 1,
       "description": "요청에서 받은 호출 시작 시점 버전의 Echo. Backend가 최신 버전과 다시 비교한다"
     },
+    "model_code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "AI가 판정 대상으로 사용한 Exact 제품 코드"
+    },
     "status": { "type": "string", "enum": ["SUCCEEDED", "FALLBACK"] },
+    "fallback_reason_code": {
+      "type": ["string", "null"],
+      "enum": [
+        "RUNTIME_PRODUCT_NOT_APPROVED",
+        "NO_EVIDENCE",
+        "MCP_TOOL_FAILURE",
+        "OUTPUT_SCHEMA_INVALID",
+        "UNSPECIFIED_FALLBACK",
+        null
+      ],
+      "description": "FALLBACK 상태의 기계 판독 사유. failure_stage와 독립적으로 판정한다"
+    },
     "failure_stage": {
       "type": ["string", "null"],
       "enum": ["STRUCTURING", "CHECKING_MISSING_FIELDS", "SAFETY_CHECK", "RETRIEVING", "RERANKING", "GENERATING", "VALIDATING", "FAILED", "CANCELLED", null],
@@ -42,5 +60,27 @@
       "type": "array",
       "items": { "$ref": "../common/EvidenceReference.schema.json" }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "FALLBACK" } } },
+      "then": {
+        "properties": {
+          "fallback_reason_code": {
+            "type": "string",
+            "enum": [
+              "RUNTIME_PRODUCT_NOT_APPROVED",
+              "NO_EVIDENCE",
+              "MCP_TOOL_FAILURE",
+              "OUTPUT_SCHEMA_INVALID",
+              "UNSPECIFIED_FALLBACK"
+            ]
+          }
+        }
+      },
+      "else": {
+        "properties": { "fallback_reason_code": { "type": "null" } }
+      }
+    }
+  ]
 }

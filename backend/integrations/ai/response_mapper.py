@@ -33,6 +33,23 @@ class AIAnalysisResult:
     def usage_guidance_status(self) -> str:
         return str(self.payload["usage_guidance"]["guidance_status"])
 
+    @property
+    def is_fallback(self) -> bool:
+        return self.payload["status"] == "FALLBACK"
+
+    @property
+    def fallback_reason_code(self) -> str | None:
+        value = self.payload.get("fallback_reason_code")
+        return str(value) if isinstance(value, str) else None
+
+    @property
+    def is_product_validation_failed(self) -> bool:
+        return (
+            self.is_fallback
+            and self.fallback_reason_code
+            == "RUNTIME_PRODUCT_NOT_APPROVED"
+        )
+
 
 @dataclass(frozen=True, slots=True)
 class AIErrorResult:
@@ -55,19 +72,45 @@ def map_success_response(
 
     contract_validator = validator or AIContractValidator()
     contract_validator.validate_success_response(payload)
-    _validate_identifier_echo(payload, expected_request, allow_null=False)
+    identifier_fields = [
+        "inquiry_id",
+        "correlation_id",
+        "ai_request_id",
+        "state_version",
+    ]
+    # Contract 4.0.0 requires model_code. Keeping this conditional lets the
+    # Backend-only compatibility commit remain green until the AI contract
+    # commit is merged, while the 4.0.0 schema still makes the field mandatory.
+    if "model_code" in payload:
+        identifier_fields.append("model_code")
+    _validate_identifier_echo(
+        payload,
+        expected_request,
+        allow_null=False,
+        fields=tuple(identifier_fields),
+    )
     _validate_uuid(payload["correlation_id"], "correlation_id")
 
     safety = payload["safety_assessment"]
     guidance = payload["usage_guidance"]
     evidence = payload["evidence_references"]
     status = payload["status"]
+    fallback_reason_code = payload.get("fallback_reason_code")
+    has_reason_contract = "fallback_reason_code" in payload
 
     is_danger = safety["risk_level"] == "danger"
     is_no_evidence = (
         status == "FALLBACK"
-        and payload["failure_stage"] == "RETRIEVING"
+        and (
+            fallback_reason_code == "NO_EVIDENCE"
+            if has_reason_contract
+            else payload["failure_stage"] == "RETRIEVING"
+        )
         and not evidence
+    )
+    is_product_validation_failed = (
+        status == "FALLBACK"
+        and fallback_reason_code == "RUNTIME_PRODUCT_NOT_APPROVED"
     )
 
     errors = []
@@ -79,6 +122,19 @@ def map_success_response(
     ):
         errors.append(
             "NO_EVIDENCE: 상담 필요와 PENDING_CONSULTATION이 필요합니다."
+        )
+    if is_product_validation_failed and (
+        "model_code" not in payload
+        or evidence
+        or not safety["requires_consultation"]
+        or (
+            not is_danger
+            and guidance["guidance_status"] != "PENDING_CONSULTATION"
+        )
+    ):
+        errors.append(
+            "RUNTIME_PRODUCT_NOT_APPROVED: 제품 Echo, 근거 미조회, "
+            "상담 필요와 안전 안내 상태가 필요합니다."
         )
     if is_danger and (
         not safety["requires_consultation"]
@@ -98,7 +154,11 @@ def map_success_response(
         )
 
     event_candidate = None
-    if is_danger:
+    if is_product_validation_failed:
+        # Product authorization is the state-transition reason. A leak can
+        # still retain danger/TOTAL_STOP in the persisted safety projection.
+        event_candidate = "PRODUCT_VALIDATION_FAILED"
+    elif is_danger:
         event_candidate = "DANGER_DETECTED"
     elif is_no_evidence:
         event_candidate = "NO_EVIDENCE"
@@ -140,14 +200,15 @@ def _validate_identifier_echo(
     expected: dict[str, Any],
     *,
     allow_null: bool,
-) -> None:
-    mismatches = []
-    for field in (
+    fields: tuple[str, ...] = (
         "inquiry_id",
         "correlation_id",
         "ai_request_id",
         "state_version",
-    ):
+    ),
+) -> None:
+    mismatches = []
+    for field in fields:
         actual = payload.get(field)
         if allow_null and actual is None:
             continue

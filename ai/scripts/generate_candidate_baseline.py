@@ -18,7 +18,7 @@ from ai.scripts.build_vector_index import _chunk_set_sha256
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-CURRENT_CONTRACT_VERSION = "3.0.0"
+CURRENT_CONTRACT_VERSION = "4.0.0"
 
 
 def file_sha256(path: Path) -> str:

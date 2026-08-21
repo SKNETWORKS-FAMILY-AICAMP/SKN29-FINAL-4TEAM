@@ -14,7 +14,9 @@
     "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c003",
     "ai_request_id": "ai-req-20260729-003",
     "state_version": 2,
+    "model_code": "WPUJAC104DWH",
     "status": "FALLBACK",
+    "fallback_reason_code": "NO_EVIDENCE",
     "failure_stage": "RETRIEVING",
     "retry_count": 0,
     "structured_symptom": {

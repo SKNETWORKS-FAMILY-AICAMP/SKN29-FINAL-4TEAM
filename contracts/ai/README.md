@@ -4,7 +4,7 @@ Backend와 AI 서비스 사이의 요청·응답 JSON Schema 단일 진실원칙
 
 ## 현재 버전
 
-- 계약 버전: `3.0.0`
+- 계약 버전: `4.0.0`
 - `SafetyAssessment.matched_safety_rule_ids`는 위험 규칙의 안정적인 ID 배열이며
   필수 필드다. 자연어 `detected_risks`를 규칙 ID로 재해석하지 않는다.
 - JSON Schema: Draft 2020-12
@@ -32,8 +32,16 @@ AI 응답의 `state_version`은 상태 전환 결과가 아니다. Backend가 �
 ## 실행 결과
 
 - `status`: `SUCCEEDED` 또는 `FALLBACK`
+- `model_code`: AI가 판정에 사용한 Exact 제품 코드. 요청 값과 Backend의
+  Subscription 제품 코드를 대조한다.
+- `fallback_reason_code`: `FALLBACK`의 기계 판독 사유. `SUCCEEDED`이면 `null`
 - `failure_stage`: `contracts/codes/ai-stages.yaml` 표준 코드 또는 `null`
 - `retry_count`: AI 내부 실제 재시도 횟수, `0..1`
+
+`fallback_reason_code` Enum은 `RUNTIME_PRODUCT_NOT_APPROVED`, `NO_EVIDENCE`,
+`MCP_TOOL_FAILURE`, `OUTPUT_SCHEMA_INVALID`, `UNSPECIFIED_FALLBACK`이다.
+Backend는 `failure_stage`만으로 제품 미승인이나 업무 Event를 추정하지 않는다.
+알 수 없거나 명시적으로 매핑하지 않은 사유는 상담 경로로 Fail-closed한다.
 
 AI는 증상 구조화·안전 평가·사용 안내·근거 참조 또는 요약 초안만 반환한다.
 업무 상태·권한·최종 EvidenceCard·DB 기록은 Backend가 담당한다.
@@ -57,7 +65,8 @@ Stack Trace, Secret, 개인정보는 오류 상세에 포함하지 않는다.
 응답이나 Header에 Echo하지 않고 `correlation_id=null`로 반환한다.
 
 정상적으로 검색을 완료했지만 근거가 0건이면 오류가 아니다. HTTP 200,
-`status=FALLBACK`, `failure_stage=RETRIEVING`, 빈 `evidence_references`와
+`status=FALLBACK`, `fallback_reason_code=NO_EVIDENCE`,
+`failure_stage=RETRIEVING`, 빈 `evidence_references`와
 `PENDING_CONSULTATION`을 반환한다. Vector Store 설정이 없어 검색을 시작하지
 못한 경우에는 같은 0건으로 처리하지 않고 HTTP 503과
 `AI-FAILED-01`, `retryable=false`, `failure_stage=RETRIEVING`을 반환한다.

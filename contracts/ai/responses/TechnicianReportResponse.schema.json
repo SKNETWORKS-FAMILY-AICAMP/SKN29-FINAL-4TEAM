@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "TechnicianReportResponse.schema.json",
-  "x-contract-version": "3.0.0",
+  "x-contract-version": "4.0.0",
   "title": "TechnicianReportResponse",
   "description": "기사 작업 결과 요약 초안. Backend가 검토·상태 전환·저장을 담당한다.",
   "type": "object",

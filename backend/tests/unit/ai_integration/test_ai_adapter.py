@@ -52,7 +52,29 @@ def success_payload(request: dict) -> dict:
         "state_version",
     ):
         payload[field] = request[field]
+    if "model_code" in payload:
+        payload["model_code"] = request["model_code"]
     return payload
+
+
+class ContractV4ResponseValidator:
+    """Narrow validator used until the owner Contract 4.0 commit is merged."""
+
+    allowed_fallback_reasons = {
+        "RUNTIME_PRODUCT_NOT_APPROVED",
+        "NO_EVIDENCE",
+        "MCP_TOOL_FAILURE",
+        "OUTPUT_SCHEMA_INVALID",
+        "UNSPECIFIED_FALLBACK",
+    }
+
+    def validate_success_response(self, payload: dict) -> None:
+        assert isinstance(payload.get("model_code"), str)
+        reason = payload.get("fallback_reason_code")
+        if payload["status"] == "FALLBACK":
+            assert reason in self.allowed_fallback_reasons
+        else:
+            assert reason is None
 
 
 def error_payload(request: dict) -> dict:
@@ -114,6 +136,26 @@ def test_success_mapper_rejects_identifier_mismatch():
         map_success_response(response, expected_request=request)
 
 
+def test_success_mapper_rejects_contract_v4_model_code_mismatch():
+    request = request_payload()
+    response = success_payload(request)
+    response.update(
+        {
+            "model_code": "WPUIAC606SNW",
+            "fallback_reason_code": None,
+        }
+    )
+
+    with pytest.raises(AIIdentifierMismatchError) as exc_info:
+        map_success_response(
+            response,
+            expected_request=request,
+            validator=ContractV4ResponseValidator(),
+        )
+
+    assert "identifier mismatch: model_code" in exc_info.value.validation_errors
+
+
 def test_success_mapper_classifies_safe_and_no_evidence_results():
     request = request_payload()
     safe = map_success_response(
@@ -131,6 +173,8 @@ def test_success_mapper_classifies_safe_and_no_evidence_results():
             "evidence_references": [],
         }
     )
+    if "fallback_reason_code" in no_evidence_payload:
+        no_evidence_payload["fallback_reason_code"] = "NO_EVIDENCE"
     no_evidence_payload["safety_assessment"]["requires_consultation"] = True
     no_evidence_payload["usage_guidance"][
         "guidance_status"
@@ -141,6 +185,61 @@ def test_success_mapper_classifies_safe_and_no_evidence_results():
     )
     assert no_evidence.event_candidate == "NO_EVIDENCE"
     assert no_evidence.is_no_evidence is True
+
+
+def test_success_mapper_uses_reason_not_stage_for_product_validation_event():
+    request = request_payload()
+    response = success_payload(request)
+    response.update(
+        {
+            "model_code": request["model_code"],
+            "status": "FALLBACK",
+            "fallback_reason_code": "RUNTIME_PRODUCT_NOT_APPROVED",
+            "failure_stage": "VALIDATING",
+            "evidence_references": [],
+        }
+    )
+    response["safety_assessment"]["requires_consultation"] = True
+    response["usage_guidance"][
+        "guidance_status"
+    ] = "PENDING_CONSULTATION"
+
+    result = map_success_response(
+        response,
+        expected_request=request,
+        validator=ContractV4ResponseValidator(),
+    )
+
+    assert result.event_candidate == "PRODUCT_VALIDATION_FAILED"
+    assert result.is_product_validation_failed is True
+    assert result.is_no_evidence is False
+
+
+def test_success_mapper_does_not_use_failure_stage_as_product_reason():
+    request = request_payload()
+    response = success_payload(request)
+    response.update(
+        {
+            "model_code": request["model_code"],
+            "status": "FALLBACK",
+            "fallback_reason_code": "UNSPECIFIED_FALLBACK",
+            "failure_stage": "VALIDATING",
+            "evidence_references": [],
+        }
+    )
+    response["safety_assessment"]["requires_consultation"] = True
+    response["usage_guidance"][
+        "guidance_status"
+    ] = "PENDING_CONSULTATION"
+
+    result = map_success_response(
+        response,
+        expected_request=request,
+        validator=ContractV4ResponseValidator(),
+    )
+
+    assert result.event_candidate is None
+    assert result.is_product_validation_failed is False
 
 
 def test_client_sends_matching_header_and_calls_once():
