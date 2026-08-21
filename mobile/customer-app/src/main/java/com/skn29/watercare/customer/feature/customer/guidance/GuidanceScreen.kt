@@ -1,5 +1,15 @@
 package com.skn29.watercare.customer.feature.customer.guidance
 
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -47,6 +57,7 @@ import com.skn29.watercare.customer.feature.shared.SectionCard
 import com.skn29.watercare.customer.feature.shared.StatusBadge
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 import com.skn29.watercare.customer.feature.shared.WorkflowActionButton
+import kotlinx.coroutines.delay
 
 @Composable
 fun GuidanceScreen(
@@ -100,6 +111,9 @@ fun GuidanceScreen(
     val consultationState by
         viewModel.consultationState.collectAsStateWithLifecycle()
     var showCancelDialog by remember { mutableStateOf(false) }
+    var guidanceAutoRetryCount by remember {
+        mutableStateOf(0)
+    }
     val actualInquiryCode = submittedInquiryCode.trim()
     val preferredGuidance = when (val current = state) {
         is GuidanceUiState.Content -> current.guidance
@@ -112,10 +126,37 @@ fun GuidanceScreen(
     val effectiveAllowedActions =
         preferredGuidance?.allowedActions
             ?: submittedAllowedActions
+    val progressStatusCode = when (state) {
+        GuidanceUiState.Loading,
+        is GuidanceUiState.NotReady ->
+            "AI_GUIDANCE"
+
+        else ->
+            preferredGuidance?.statusCode
+                ?: submittedStatusCode
+    }
+
+    LaunchedEffect(state) {
+        when (state) {
+            is GuidanceUiState.NotReady -> {
+                if (guidanceAutoRetryCount < 6) {
+                    delay(3_500)
+                    guidanceAutoRetryCount += 1
+                    viewModel.load()
+                }
+            }
+
+            is GuidanceUiState.Content,
+            is GuidanceUiState.NoEvidence ->
+                guidanceAutoRetryCount = 0
+
+            else -> Unit
+        }
+    }
 
     WaterCareScreen(title = "AI 안내", onBack = onBack) {
         CustomerProgressOverview(
-            statusCode = preferredGuidance?.statusCode ?: submittedStatusCode,
+            statusCode = progressStatusCode,
         )
         if (fixturePreview) {
             SectionCard("미리보기 화면") {
@@ -123,18 +164,6 @@ fun GuidanceScreen(
                     "이 화면은 기능을 둘러보기 위한 예시 화면이에요."
                 )
             }
-        }
-
-        if (actualInquiryCode.isNotEmpty()) {
-            SubmissionReceiptCard(
-                inquiryCode = actualInquiryCode,
-                statusCode =
-                    preferredGuidance?.statusCode
-                        ?: submittedStatusCode,
-                stateVersion = effectiveStateVersion,
-                allowedActions = effectiveAllowedActions,
-                idempotentReplay = submittedIdempotentReplay,
-            )
         }
 
 
@@ -147,21 +176,28 @@ fun GuidanceScreen(
             cancelAction != null &&
             cancelState !is CancelInquiryUiState.Success
         ) {
-            SectionCard("문의 취소") {
-                WorkflowActionButton(
-                    action = cancelAction,
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                TextButton(
+                    onClick = { showCancelDialog = true },
                     enabled =
                         effectiveStateVersion != null &&
                             cancelState !is
                                 CancelInquiryUiState.Cancelling,
-                    onClick = { showCancelDialog = true },
-                )
-                Text(
-                    "진행 중인 문의는 상황에 따라 취소할 수 있어요.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color =
-                        MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                    modifier = Modifier.testTag(
+                        "cancelInquiryAction"
+                    ),
+                ) {
+                    Text(
+                        text = "문의 취소하기",
+                        style = MaterialTheme.typography.bodySmall,
+                        color =
+                            MaterialTheme.colorScheme
+                                .onSurfaceVariant,
+                    )
+                }
             }
         }
 
@@ -243,27 +279,40 @@ fun GuidanceScreen(
 
         when (val current = state) {
             GuidanceUiState.Loading ->
-                LoadingBlock("해결 방법을 준비하고 있어요")
+                GuidancePreparingContent(
+                    autoRetryCount = guidanceAutoRetryCount,
+                    onRetry = viewModel::load,
+                )
 
-            is GuidanceUiState.Content -> GuidanceContent(
-                guidance = current.guidance.withInquiryCode(
-                    actualInquiryCode
-                ),
-                noEvidence = false,
-                onRetry = viewModel::load,
-            )
+            is GuidanceUiState.Content ->
+                GuidanceResultReveal {
+                    GuidanceContent(
+                        guidance =
+                            current.guidance
+                                .withInquiryCode(
+                                    actualInquiryCode
+                                ),
+                        noEvidence = false,
+                        onRetry = viewModel::load,
+                    )
+                }
 
-            is GuidanceUiState.NoEvidence -> GuidanceContent(
-                guidance = current.guidance.withInquiryCode(
-                    actualInquiryCode
-                ),
-                noEvidence = true,
-                onRetry = viewModel::load,
-            )
+            is GuidanceUiState.NoEvidence ->
+                GuidanceResultReveal {
+                    GuidanceContent(
+                        guidance =
+                            current.guidance
+                                .withInquiryCode(
+                                    actualInquiryCode
+                                ),
+                        noEvidence = true,
+                        onRetry = viewModel::load,
+                    )
+                }
 
             is GuidanceUiState.NotReady ->
-                GuidanceFailureStateContent(
-                    state = current,
+                GuidancePreparingContent(
+                    autoRetryCount = guidanceAutoRetryCount,
                     onRetry = viewModel::load,
                 )
 
@@ -514,21 +563,28 @@ private fun CustomerProgressOverview(
 ) {
     val currentStep = customerInquiryCurrentStep(statusCode)
 
-    SectionCard("문의 진행 상황") {
+    LiquidGlassPanel(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("guidanceProgress"),
+        strong = true,
+    ) {
+        LiquidGlassPill("진행 상태")
+
         Text(
             customerInquiryProgressHeadline(statusCode),
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold,
+            fontWeight = FontWeight.Bold,
         )
 
         Text(
             customerInquiryProgressDescription(statusCode),
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             CustomerProgressStep(
                 number = 1,
@@ -567,18 +623,39 @@ private fun CustomerProgressStep(
 ) {
     val completed = number < currentStep
     val current = number == currentStep
+    val stepTransition =
+        rememberInfiniteTransition(
+            label = "guidanceStepPulse",
+        )
+    val stepScale by stepTransition.animateFloat(
+        initialValue = 1f,
+        targetValue =
+            if (current) 1.42f
+            else 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 460,
+            ),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "guidanceStepScale",
+    )
 
     Row(
         verticalAlignment = Alignment.Top,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            when {
+            modifier = Modifier.graphicsLayer {
+                scaleX = stepScale
+                scaleY = stepScale
+            },
+            text = when {
                 completed -> "✓"
                 current -> "●"
-                else -> "○"
+                else -> "·"
             },
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleSmall,
             color = if (completed || current) {
                 MaterialTheme.colorScheme.primary
             } else {
@@ -592,8 +669,10 @@ private fun CustomerProgressStep(
         ) {
             Text(
                 title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = if (current) FontWeight.ExtraBold else FontWeight.Bold,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight =
+                    if (current) FontWeight.Bold
+                    else FontWeight.SemiBold,
                 color = if (current) {
                     MaterialTheme.colorScheme.primary
                 } else {
@@ -601,11 +680,12 @@ private fun CustomerProgressStep(
                 },
             )
 
-            if (current || completed) {
+            if (current) {
                 Text(
                     description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color =
+                        MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -785,6 +865,45 @@ private fun customerInquiryStatusText(
 }
 
 @Composable
+private fun GuidanceResultReveal(
+    content: @Composable () -> Unit,
+) {
+    var visible by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(Unit) {
+        delay(70)
+        visible = true
+    }
+
+    AnimatedVisibility(
+        visible = visible,
+        enter =
+            fadeIn(
+                animationSpec = tween(
+                    durationMillis = 360,
+                )
+            ) +
+                slideInVertically(
+                    animationSpec = tween(
+                        durationMillis = 480,
+                    ),
+                    initialOffsetY = {
+                        (it * 0.72f).toInt()
+                    },
+                ) +
+                scaleIn(
+                    initialScale = 0.72f,
+                    animationSpec = tween(
+                        durationMillis = 500,
+                    ),
+                ),
+    ) {
+        content()
+    }
+}
+@Composable
 @Suppress("UNUSED_PARAMETER")
 fun GuidanceContent(
     guidance: GuidanceDisplayModel,
@@ -926,6 +1045,89 @@ fun GuidanceContent(
             isDanger = dangerous,
         ) {
             BulletList(guidance.prohibitedActions)
+        }
+    }
+}
+
+@Composable
+private fun GuidancePreparingContent(
+    autoRetryCount: Int,
+    onRetry: () -> Unit,
+) {
+    val preparingTransition =
+        rememberInfiniteTransition(
+            label = "guidancePreparingBreath",
+        )
+    val preparingScale by
+        preparingTransition.animateFloat(
+            initialValue = 0.86f,
+            targetValue = 1.14f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 690,
+                ),
+                repeatMode = RepeatMode.Reverse,
+            ),
+            label = "guidancePreparingScale",
+        )
+
+    LiquidGlassPanel(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("guidancePreparing"),
+        strong = true,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 118.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                LiquidGlassPill("안내 준비 중")
+
+                Text(
+                    text = "답변을 바탕으로 안내를 준비하고 있어요",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+
+                Text(
+                    text = if (autoRetryCount < 6) {
+                        "완료되면 자동으로 다시 확인할게요. 잠시만 기다려주세요."
+                    } else {
+                        "준비가 조금 길어지고 있어요. 입력한 문의 내용은 그대로 보관되어 있어요."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color =
+                        MaterialTheme.colorScheme
+                            .onSurfaceVariant,
+                )
+            }
+
+            Image(
+                painter = painterResource(
+                    R.drawable.mascot_customer
+                ),
+                contentDescription = "AI 안내 준비 중",
+                modifier = Modifier
+                    .size(82.dp)
+                    .graphicsLayer {
+                        scaleX = preparingScale
+                        scaleY = preparingScale
+                    },
+                contentScale = ContentScale.Fit,
+            )
+        }
+
+        if (autoRetryCount >= 6) {
+            TextButton(onClick = onRetry) {
+                Text("지금 다시 확인")
+            }
         }
     }
 }

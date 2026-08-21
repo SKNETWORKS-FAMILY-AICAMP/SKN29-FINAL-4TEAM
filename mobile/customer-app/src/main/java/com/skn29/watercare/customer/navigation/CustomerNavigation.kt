@@ -1,5 +1,10 @@
 package com.skn29.watercare.customer.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.fadeIn
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -24,6 +29,50 @@ fun CustomerNavigation() {
     NavHost(
         navController = navController,
         startDestination = CustomerRoute.LOGIN,
+        enterTransition = {
+            fadeIn(
+                animationSpec = tween(320),
+            ) +
+                slideInHorizontally(
+                    animationSpec = tween(420),
+                    initialOffsetX = {
+                        (it * 0.72f).toInt()
+                    },
+                )
+        },
+        exitTransition = {
+            fadeOut(
+                animationSpec = tween(220),
+            ) +
+                slideOutHorizontally(
+                    animationSpec = tween(360),
+                    targetOffsetX = {
+                        -(it * 0.34f).toInt()
+                    },
+                )
+        },
+        popEnterTransition = {
+            fadeIn(
+                animationSpec = tween(300),
+            ) +
+                slideInHorizontally(
+                    animationSpec = tween(400),
+                    initialOffsetX = {
+                        -(it * 0.58f).toInt()
+                    },
+                )
+        },
+        popExitTransition = {
+            fadeOut(
+                animationSpec = tween(220),
+            ) +
+                slideOutHorizontally(
+                    animationSpec = tween(340),
+                    targetOffsetX = {
+                        (it * 0.52f).toInt()
+                    },
+                )
+        },
     ) {
         composable(CustomerRoute.LOGIN) {
             LoginScreen(

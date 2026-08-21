@@ -392,7 +392,14 @@ class FollowUpQuestionsViewModel(
                             result.idempotentReplay,
                     )
 
-                if (context.questions.isEmpty()) {
+                val canSubmitMoreAnswers =
+                    context.snapshot.allowedActions.any {
+                        it.normalizedCode ==
+                            InquiryActionLabels
+                                .SUBMIT_ANSWERS
+                    }
+
+                if (context.questions.isEmpty() || !canSubmitMoreAnswers) {
                     navigationChannel.send(
                         FollowUpNavigationEvent
                             .OpenGuidance(

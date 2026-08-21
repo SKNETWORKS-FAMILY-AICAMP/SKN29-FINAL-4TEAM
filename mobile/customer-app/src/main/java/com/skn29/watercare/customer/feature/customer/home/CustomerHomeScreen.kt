@@ -1,12 +1,22 @@
 package com.skn29.watercare.customer.feature.customer.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -20,13 +30,12 @@ import com.skn29.watercare.core.repository.FakeCustomerCareRepository
 import com.skn29.watercare.core.ui.components.CustomerReferencePalette
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LoadingBlock
-import com.skn29.watercare.core.ui.components.ReferenceBottomItem
-import com.skn29.watercare.core.ui.components.ReferenceDashboardScaffold
 import com.skn29.watercare.core.ui.components.ReferenceGlassButton
 import com.skn29.watercare.core.ui.components.ReferenceGlassPanel
 import com.skn29.watercare.customer.BuildConfig
 import com.skn29.watercare.customer.R
 import com.skn29.watercare.customer.common.VmFactory
+import kotlinx.coroutines.delay
 
 @Composable
 fun CustomerHomeScreen(
@@ -61,9 +70,83 @@ fun CustomerHomeScreen(
     )
 
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var selectionConfirmed by rememberSaveable(state.user?.id, offlinePreview) {
+        mutableStateOf(false)
+    }
+    var pendingSubscriptionId by rememberSaveable(state.user?.id, offlinePreview) {
+        mutableStateOf<String?>(null)
+    }
+    var displayModelCode by rememberSaveable(state.user?.id, offlinePreview) {
+        mutableStateOf<String?>(null)
+    }
+
+    LaunchedEffect(
+        pendingSubscriptionId,
+        state.selectedSubscriptionId,
+        state.selectingSubscription,
+        state.error,
+    ) {
+        val pendingId = pendingSubscriptionId ?: return@LaunchedEffect
+        when {
+            !state.selectingSubscription &&
+                state.selectedSubscriptionId == pendingId -> {
+                selectionConfirmed = true
+                pendingSubscriptionId = null
+            }
+
+            !state.selectingSubscription && state.error != null -> {
+                pendingSubscriptionId = null
+            }
+        }
+    }
+
+    val selectableSubscriptionCount = state.subscriptions.size
+    val shouldShowSubscriptionSelection =
+        !offlinePreview &&
+            state.customerCareMode == CustomerCareMode.REMOTE &&
+            selectableSubscriptionCount > 0 &&
+            !selectionConfirmed
+
+    if (shouldShowSubscriptionSelection) {
+        SubscriptionSelectionScreen(
+            state = state,
+            initialModelCode = displayModelCode,
+            onConfirm = { selection ->
+                displayModelCode = selection.modelCode
+                val subscriptionId =
+                    selection.subscriptionId
+
+                when {
+                    subscriptionId == null -> {
+                        pendingSubscriptionId = null
+                        selectionConfirmed = true
+                    }
+
+                    subscriptionId ==
+                        state.selectedSubscriptionId -> {
+                        selectionConfirmed = true
+                    }
+
+                    else -> {
+                        pendingSubscriptionId =
+                            subscriptionId
+                        viewModel.selectSubscription(
+                            subscriptionId
+                        )
+                    }
+                }
+            },
+            onRetry = viewModel::load,
+            onLogout = {
+                viewModel.logout(onLogout)
+            },
+        )
+        return
+    }
 
     CustomerHomeContent(
         state = state,
+        displayModelCode = displayModelCode,
         onStartIntake = onStartIntake,
         onOpenGuidance = { inquiryId, scenario ->
             val useRemoteFollowUpResolver =
@@ -71,7 +154,26 @@ fun CustomerHomeScreen(
                     WaterCareCore.customerCareRuntimeConfig.mode ==
                         CustomerCareMode.REMOTE
 
-            if (useRemoteFollowUpResolver) {
+            val activeStatus =
+                state.activeInquiry
+                    ?.takeIf {
+                        it.inquiryId == inquiryId
+                    }
+                    ?.statusCode
+                    ?.trim()
+                    ?.uppercase()
+                    .orEmpty()
+
+            val requiresQuestionnaire =
+                activeStatus.isBlank() ||
+                    activeStatus == "DRAFT" ||
+                    activeStatus ==
+                        "QUESTIONNAIRE_IN_PROGRESS"
+
+            if (
+                useRemoteFollowUpResolver &&
+                requiresQuestionnaire
+            ) {
                 onOpenFollowUp(
                     inquiryId,
                     scenario,
@@ -85,6 +187,10 @@ fun CustomerHomeScreen(
         },
         onRetry = viewModel::load,
         onOpenCare = onOpenCare,
+        onChangeProduct = {
+            selectionConfirmed = false
+        },
+        onSelectSubscription = viewModel::selectSubscription,
         onLogout = {
             viewModel.logout(onLogout)
         },
@@ -95,46 +201,23 @@ fun CustomerHomeScreen(
 @Composable
 fun CustomerHomeContent(
     state: CustomerHomeUiState,
+    displayModelCode: String? = null,
     onStartIntake: (subscriptionId: String) -> Unit,
     onOpenGuidance: (inquiryId: String, scenario: MockScenario) -> Unit,
     onRetry: () -> Unit,
     onLogout: () -> Unit,
     onOpenCare: () -> Unit = {},
+    onChangeProduct: () -> Unit = {},
     onSelectSubscription: (String) -> Unit = {},
     showDeveloperTools: Boolean = false,
 ) {
     val palette = CustomerReferencePalette
 
-    ReferenceDashboardScaffold(
-        title = "WaterBridge",
-        roleLabel = "정수기 케어",
-        palette = palette,
-        backgroundRes = R.drawable.water_splash_customer_r19,
-        backgroundImageAlpha = 0.30f,
-        brandLogoRes = R.drawable.waterbridge_brand_logo,
-        bottomItems = listOf(
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_home,
-                label = "홈",
-                selected = true,
-            ),
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_care,
-                label = "케어",
-                enabled = !state.offlinePreview,
-                onClick = onOpenCare,
-            ),
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_notice,
-                label = "문의",
-                enabled = false,
-            ),
-            ReferenceBottomItem(
-                iconRes = R.drawable.ref_profile,
-                label = "마이",
-                enabled = false,
-            ),
-        ),
+    CustomerCleanScaffold(
+        displayName = state.user?.displayName,
+        showBottomBar = true,
+        careEnabled = !state.offlinePreview,
+        onOpenCare = onOpenCare,
     ) {
         if (state.loading) {
             LoadingBlock("정수기 정보를 불러오고 있어요")
@@ -148,27 +231,142 @@ fun CustomerHomeContent(
         }
 
         state.home?.let { home ->
-            CustomerCareHeroBanner(
+            val displayModel =
+                customerModelVisualSpec(
+                    modelCode =
+                        displayModelCode
+                            ?: home.product.modelCode,
+                    fallbackModelName =
+                        home.product.modelName,
+                )
+            val previewMode =
+                !displayModel.modelCode.equals(
+                    home.product.modelCode,
+                    ignoreCase = true,
+                )
+
+            val remoteInquiryForSelectedProduct =
+                state.activeInquiry?.takeIf {
+                    it.subscriptionId == home.subscriptionId
+                }
+            val activeInquiryId =
+                remoteInquiryForSelectedProduct?.inquiryId
+                    ?: home.activeInquiry?.inquiryId
+            val activeInquiryStatusCode =
+                remoteInquiryForSelectedProduct?.statusCode
+                    ?: home.activeInquiry?.statusCode
+
+            CustomerVisualProductHero(
                 home = home,
-                activeInquiryId =
-                    state.activeInquiry?.inquiryId
-                        ?: home.activeInquiry?.inquiryId,
-                activeInquiryStatusCode =
-                    state.activeInquiry?.statusCode
-                        ?: home.activeInquiry?.statusCode,
-                intakeAvailable = state.intakeAvailable,
-                intakeUnavailableReason = state.intakeUnavailableReason,
-                onStartIntake = onStartIntake,
-                onOpenInquiry = { inquiryId ->
-                    onOpenGuidance(
-                        inquiryId,
-                        MockScenario.NORMAL,
-                    )
-                },
+                displayModel = displayModel,
+                previewMode = previewMode,
+                canChangeProduct = true,
+                onChangeProduct = onChangeProduct,
             )
-            CustomerProductInfoCard(
-                home = home,
-            )
+
+            var showTodayAction by remember(
+                home.subscriptionId,
+                activeInquiryStatusCode,
+                previewMode,
+            ) {
+                mutableStateOf(false)
+            }
+            var showQuickStatus by remember(
+                home.subscriptionId,
+                activeInquiryStatusCode,
+                previewMode,
+            ) {
+                mutableStateOf(false)
+            }
+
+            LaunchedEffect(
+                home.subscriptionId,
+                activeInquiryStatusCode,
+                previewMode,
+            ) {
+                showTodayAction = false
+                showQuickStatus = false
+
+                delay(120)
+                showTodayAction = true
+
+                delay(120)
+                showQuickStatus = true
+            }
+
+            AnimatedVisibility(
+                visible = showTodayAction,
+                enter =
+                    fadeIn(
+                        animationSpec = tween(
+                            durationMillis = 320,
+                        )
+                    ) +
+                        slideInVertically(
+                            animationSpec = tween(
+                                durationMillis = 360,
+                            ),
+                            initialOffsetY = {
+                                (it * 0.88f).toInt()
+                            },
+                        ) +
+                        scaleIn(
+                            initialScale = 0.76f,
+                            animationSpec = tween(
+                                durationMillis = 520,
+                            ),
+                        ),
+            ) {
+                CustomerVisualInquiryAction(
+                    home = home,
+                    activeInquiryId =
+                        if (previewMode) null
+                        else activeInquiryId,
+                    activeInquiryStatusCode =
+                        if (previewMode) null
+                        else activeInquiryStatusCode,
+                    intakeAvailable =
+                        !previewMode &&
+                            state.intakeAvailable,
+                    intakeUnavailableReason =
+                        if (previewMode) {
+                            "미연결 모델 미리보기예요. 실제 문의는 구독 중인 제품을 선택하면 이용할 수 있어요."
+                        } else {
+                            state.intakeUnavailableReason
+                        },
+                    previewMode = previewMode,
+                    onStartIntake = onStartIntake,
+                    onOpenInquiry = { inquiryId ->
+                        onOpenGuidance(
+                            inquiryId,
+                            MockScenario.NORMAL,
+                        )
+                    },
+                )
+            }
+            AnimatedVisibility(
+                visible = showQuickStatus,
+                enter =
+                    fadeIn(
+                        animationSpec = tween(
+                            durationMillis = 300,
+                        )
+                    ) +
+                        slideInVertically(
+                            animationSpec = tween(
+                                durationMillis = 360,
+                            ),
+                            initialOffsetY = {
+                                it / 6
+                            },
+                        ),
+            ) {
+                CustomerQuickStatusRow(
+                    home = home,
+                    previewMode = previewMode,
+                    onOpenCare = onOpenCare,
+                )
+            }
 
             val fixtureGuidanceAvailable =
                 state.offlinePreview ||

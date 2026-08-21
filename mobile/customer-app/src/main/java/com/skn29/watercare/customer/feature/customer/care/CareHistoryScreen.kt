@@ -1,5 +1,14 @@
 package com.skn29.watercare.customer.feature.customer.care
 
+import kotlinx.coroutines.delay
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -86,6 +96,27 @@ fun CareHistoryContent(
     onCreate: () -> Unit,
     onOpenDetail: (String) -> Unit,
 ) {
+    var visibleHistoryCount by remember(
+        state.items.map {
+            it.careRecordId
+        }
+    ) {
+        mutableIntStateOf(0)
+    }
+
+    LaunchedEffect(
+        state.items.map {
+            it.careRecordId
+        }
+    ) {
+        visibleHistoryCount = 0
+
+        state.items.indices.forEach { index ->
+            delay(55)
+            visibleHistoryCount = index + 1
+        }
+    }
+
     WaterCareScreen(
         title = "케어 이력",
         onBack = onBack,
@@ -281,12 +312,32 @@ fun CareHistoryContent(
                                 12.dp
                             )
                     ) {
-                        state.items.forEach {
-                            CareHistoryRow(
-                                item = it,
-                                onOpenDetail =
-                                    onOpenDetail,
-                            )
+                        state.items.forEachIndexed {
+                                index,
+                                item,
+                            ->
+                            AnimatedVisibility(
+                                visible =
+                                    index <
+                                        visibleHistoryCount,
+                                enter =
+                                    fadeIn() +
+                                        slideInVertically(
+                                            initialOffsetY = {
+                                                (it * 0.92f).toInt()
+                                            }
+                                        ) +
+                                        scaleIn(
+                                            initialScale =
+                                                0.76f
+                                        ),
+                            ) {
+                                CareHistoryRow(
+                                    item = item,
+                                    onOpenDetail =
+                                        onOpenDetail,
+                                )
+                            }
                         }
                     }
                 }
