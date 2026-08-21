@@ -1,0 +1,2 @@
+아래 구조화 JSON을 기반으로 승인 Evidence 원문 한 항목과 허용된 다음 행동만 선택해 주세요.
+{guidance_generation_request_json}

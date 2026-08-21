@@ -136,6 +136,37 @@ def test_hot_water_burn_risk_never_returns_normal(risk_classifier, guidance_clas
     assert guidance.guidance_status in {UsageGuidanceStatus.PARTIAL_STOP, UsageGuidanceStatus.TOTAL_STOP}
 
 
+@pytest.mark.parametrize(
+    ("case_id", "raw_text"),
+    [
+        ("SYN-IAC606-108", "온수 히터 고장으로 기사 점검이 필요합니다."),
+        ("SYN-IAC425-109", "순간온수 모듈 점검이 필요하다는 안내를 받았습니다."),
+        ("SYN-JAC104-031", "온수 음용 금지 안내를 받았습니다."),
+    ],
+)
+def test_hot_water_heater_danger_cases_require_partial_stop_and_consultation(
+    risk_classifier,
+    guidance_classifier,
+    case_id,
+    raw_text,
+):
+    assessment = risk_classifier.classify(raw_text)
+    guidance = guidance_classifier.determine_guidance(
+        assessment,
+        raw_text,
+        has_evidence=False,
+    )
+
+    assert case_id.startswith("SYN-")
+    assert assessment.risk_level == RiskLevel.DANGER
+    assert assessment.requires_consultation is True
+    assert "SAFETY-HOT-WATER-HEATER-001" in assessment.matched_safety_rule_ids
+    assert "SAFETY-LEAK-001" not in assessment.matched_safety_rule_ids
+    assert "SAFETY-ELECTRICAL-001" not in assessment.matched_safety_rule_ids
+    assert guidance.guidance_status == UsageGuidanceStatus.PARTIAL_STOP
+    assert guidance.restricted_functions == ["온수 출수 및 음용 중지"]
+
+
 def test_prohibited_action_guard_blocks_disassembly():
     with pytest.raises(ValueError, match="직접 분해"):
         ProhibitedActionGuard().validate(["정수기 커버를 분해하세요."])

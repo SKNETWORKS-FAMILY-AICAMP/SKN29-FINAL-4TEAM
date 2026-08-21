@@ -11,9 +11,6 @@ from ...schemas import UsageGuidanceStatus
 class GuidanceMessageGuard:
     """자유 문구가 Runtime의 Safety·Evidence 결정을 뒤집지 못하게 한다."""
 
-    _DIRECTIVE_PATTERN = re.compile(
-        r"(?:하세요|하십시오|해\s*주세요|해주시기|바랍니다|권장합니다)"
-    )
     _REPAIR_PATTERN = re.compile(
         r"(?:분해|뜯(?:어|고|으)|나사|전선|기판|모터|커버.{0,8}열|"
         r"뒷면.{0,8}열|직접\s*수리|피복|내부.{0,8}(?:열|점검|확인))"
@@ -52,10 +49,7 @@ class GuidanceMessageGuard:
         *,
         grounding_texts: Iterable[str],
     ) -> None:
-        """행동 지시는 분리하고 승인 Evidence 문장만 추출형으로 허용한다."""
-
-        if self._DIRECTIVE_PATTERN.search(message):
-            raise ValueError("LLM message에는 행동 지시를 포함할 수 없습니다.")
+        """승인 Evidence 한 항목과 완전히 같은 추출형 문구만 허용한다."""
 
         normalized_message = " ".join(message.split())
         approved_messages = {

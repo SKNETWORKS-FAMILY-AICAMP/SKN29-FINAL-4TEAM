@@ -207,7 +207,7 @@ def test_prepared_product_filter_accepts_only_exact_three_model_scope() -> None:
     assert product_filter.is_valid_chunk(wrong_model, "WPUIAC999ZZZ") is False
 
 
-def test_readonly_runtime_verifier_requires_official_view_and_actual_manifest(
+def test_readonly_runtime_verifier_requires_official_view_and_loads_candidate_manifest(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("AI_VECTOR_TABLE_NAME", raising=False)
@@ -219,8 +219,10 @@ def test_readonly_runtime_verifier_requires_official_view_and_actual_manifest(
     assert _integration_product_filter(runtime_profile).target_models == set(
         EXPECTED_MODEL_COUNTS
     )
-    with pytest.raises(RuntimeError, match="actual three-model index manifest"):
-        _load_identity_and_manifest(runtime_profile)
+    identity, manifest = _load_identity_and_manifest(runtime_profile)
+    assert manifest.chunk_count == identity["chunk_count"] == 53
+    assert manifest.chunk_set_sha256.upper() == identity["chunk_set_sha256"]
+    assert manifest.index_version == identity["index_version"] == "2.0.0"
 
 
 def test_readonly_runtime_verifier_does_not_print_connection_details(

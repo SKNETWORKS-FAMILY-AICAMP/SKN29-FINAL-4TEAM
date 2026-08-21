@@ -294,7 +294,7 @@ $env:AI_VECTOR_TABLE_NAME='backend_ai_rag_chunks_v1'
 $env:AI_EMBEDDING_REVISION='5617a9f61b028005a4858fdac845db406aefb181'
 $env:AI_MODEL_PROVIDER='openai'
 $env:AI_MODEL_NAME='gpt-4.1-mini'
-$env:AI_PROMPT_VERSION='customer_guidance/v2'
+$env:AI_PROMPT_VERSION='customer_guidance/v3'
 
 .\ai\.venv\Scripts\python.exe -m pytest `
   ai\tests\integration\test_pgvector_runtime.py -v
@@ -341,7 +341,7 @@ Evidence가 해당 판매코드의 Canonical ID 집합에만 속하는지, Promp
 사용 증거가 있는지도 확인한다. Secret·DSN·질의·Evidence 본문은 출력하지 않는다.
 Backend 통합 Process에도 위 세 AIRun 환경변수를 같은 배포 설정에서 주입하고,
 E2E에서는 저장된 AIRun 값이 `openai`, `gpt-4.1-mini`,
-`customer_guidance/v2`인지 반드시 대조한다. 이 대조 전에는 Backend 수직 Gate를
+`customer_guidance/v3`인지 반드시 대조한다. 이 대조 전에는 Backend 수직 Gate를
 PASS로 판정하지 않는다.
 
 마지막 명령은 HTTP 200만으로 PASS하지 않는다. `SUCCEEDED`, 실패 단계 없음,

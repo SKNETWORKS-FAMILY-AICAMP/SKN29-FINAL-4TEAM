@@ -6,8 +6,8 @@ tasks:
     description: "고객 자연어 및 선택 증상 표준 필드 구조화"
 
   customer_guidance:
-    active_version: "v2"
-    description: "근거 안의 설명형 안내와 Allowlist 다음 행동 생성"
+    active_version: "v3"
+    description: "승인 Evidence 원문 선택과 Allowlist 다음 행동 생성"
 
   consultation_summary:
     active_version: "v1"
