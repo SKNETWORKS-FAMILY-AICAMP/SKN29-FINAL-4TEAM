@@ -174,3 +174,31 @@ Volume은 종료 후 삭제했다. 이 결과는 AWS RDS 적용 승인이나 독
 `0002_consultant_dashboard_projection`이다. Allowlist와 최종 검증 출력도 이 Target을
 명시하며 `visits.0005` 제외 경계는 바꾸지 않았다. 작성자 표적 테스트는 13건 모두
 통과했다. 공용 PostgreSQL 적용은 PM 승인과 QA 실행 전까지 HOLD다.
+
+## 9. 2026-08-21 Web G4 DB 증거 수집
+
+`collect_web_g4_db_evidence`는 합성 Inquiry 한 건의 Consultation·상태 이력·멱등
+원장과 Migration·Schema 상태를 읽기 전용으로 수집한다. 업무 원문·사용자명·전화번호,
+Secret·DSN·절대경로는 출력하지 않으며 파일별 SHA-256과 정제 검사도 생성한다.
+
+```powershell
+.\backend\.venv\Scripts\python.exe .\backend\manage.py `
+  collect_web_g4_db_evidence --inquiry-id <합성 문의 UUID> `
+  --run-id <실행 ID> --source-ref <40자리 main SHA> `
+  --phase <단계> --output-dir <새 증거 폴더>
+```
+
+- 과거 r3는 `r3-final`만 허용하며 Replay 전후·Schema 전후를 소급 주장하지 않는다.
+- 신규 r4는 `before-first-write → after-first-write → after-replay → before-conflict →
+  after-conflict → compare` 순서로 같은 Inquiry·run_id·source-ref만 허용한다.
+- Replay는 같은 Key·같은 Payload의 추가 행 0과 기존 행 Timestamp·내용 Snapshot
+  Hash 불변을 판정한다. 409는 오래된 `state_version`의 `STATE-CONFLICT-01`,
+  추가 행 0, Snapshot Hash 불변을 판정한다.
+- 상태 이력은 event/from/to/state_version과 함께 SYSTEM·USER 및 actor 역할을
+  정제된 형태로 기록한다.
+- 첫 단계와 409 뒤에 `showmigrations visits`, `migrate --plan`, Schema Fingerprint를
+  수집하며 `visits.0005` 적용 또는 예상 밖 Pending·Applied를 차단한다.
+- 작성자 검증은 신규·기존 감사·재문의 표적 12건과 관련 회귀 50건 PASS,
+  PostgreSQL Row Lock 전용 1건 SKIP이며 Django Check와 Migration Drift도 PASS다.
+  이 PC에는 실행 중인 PostgreSQL·Docker가 없어 실제
+  보존 Volume 수집은 `ENVIRONMENT_BLOCKED`이고, 해당 환경에서 재실행해야 한다.
