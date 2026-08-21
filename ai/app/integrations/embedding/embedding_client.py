@@ -16,11 +16,13 @@ class BgeM3EmbeddingClient:
 
     model_name = "BAAI/bge-m3"
     dimension = 1024
+    _warmup_text = "정수기 검색 준비"
 
     def __init__(self, *, device: str = "cpu", model_revision: str | None = None) -> None:
         self.device = device
         self.model_revision = model_revision
         self._model = None
+        self._warmed_up = False
         self._model_lock = Lock()
         self._encode_lock = Lock()
 
@@ -37,9 +39,18 @@ class BgeM3EmbeddingClient:
         return self._model
 
     def warmup(self) -> None:
-        """요청 Timeout 밖에서 고정 Revision 모델을 한 번 초기화한다."""
+        """요청 Timeout 밖에서 모델 로드와 첫 Encode 초기화를 완료한다."""
 
-        self._load_model()
+        model = self._load_model()
+        with self._encode_lock:
+            if self._warmed_up:
+                return
+            model.encode(
+                [self._warmup_text],
+                normalize_embeddings=True,
+                show_progress_bar=False,
+            )
+            self._warmed_up = True
 
     def embed_documents(self, texts: Iterable[str]) -> List[List[float]]:
         model = self._load_model()
@@ -47,6 +58,7 @@ class BgeM3EmbeddingClient:
             vectors = model.encode(
                 list(texts), normalize_embeddings=True, show_progress_bar=False
             )
+            self._warmed_up = True
         return [vector.tolist() for vector in vectors]
 
     def embed_query(self, text: str) -> List[float]:

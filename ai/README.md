@@ -250,10 +250,13 @@ Backend 공개 `evidence_status`·저장 방식은 별도 통합 계약에서 �
 남기지 않고 `AI_VECTOR_DSN`으로 전달한다.
 
 `AI_VECTOR_DSN`이 설정된 Process는 Uvicorn 시작 단계에서 고정 Revision의
-Embedding 모델을 한 번 초기화하고 이후 요청이 같은 검색 서비스를 공유한다.
-따라서 최초 시작은 모델 초기화만큼 늦어질 수 있지만 이 시간은 요청별 30초
-Timeout에 포함되지 않는다. `/health` 성공은 모델 Warmup 완료를 뜻하지만 실제
-pgvector Query와 팀 DB 준비 완료까지 보장하는 Readiness 판정은 아니다.
+Embedding 모델을 로드하고 비민감 고정 문자열로 첫 Encode까지 완료한다. 이후
+요청은 같은 검색 서비스를 공유하며 Warmup은 Process당 한 번만 실행한다. 따라서
+최초 시작은 모델 초기화만큼 늦어질 수 있지만 이 시간은 요청별 30초 Timeout에
+포함되지 않는다. Lifespan은 Warmup 완료 후에만 요청 처리를 시작하고 Warmup 실패는
+애플리케이션 시작 실패로 드러낸다. `/health` 성공은 모델 로드·첫 Encode Warmup
+완료를 뜻하지만 실제 pgvector Query와 팀 DB 준비 완료까지 보장하는 Readiness
+판정은 아니다.
 
 ### 보호 DB 오류와 배포 로그 경계
 
