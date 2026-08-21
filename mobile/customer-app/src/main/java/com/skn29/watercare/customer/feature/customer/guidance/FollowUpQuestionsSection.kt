@@ -1,9 +1,19 @@
 package com.skn29.watercare.customer.feature.customer.guidance
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.getValue
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -11,9 +21,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.skn29.watercare.core.model.CustomerInquiryQuestion
 import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.InquiryLabels
@@ -200,12 +212,63 @@ private fun FollowUpForm(
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             questions.forEachIndexed { index, question ->
-                val draft = drafts[question.questionId] ?: FollowUpDraft()
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val draft =
+                    drafts[question.questionId]
+                        ?: FollowUpDraft()
+                val questionAnswered =
+                    when {
+                        question.isFreeText ->
+                            draft.text.isNotBlank()
+                        question.isSingleChoice ->
+                            !draft.selectedOption
+                                .isNullOrBlank()
+                        else -> false
+                    }
+                val questionScale by
+                    animateFloatAsState(
+                        targetValue =
+                            if (questionAnswered) {
+                                1.035f
+                            } else {
+                                1f
+                            },
+                        animationSpec = spring(
+                            dampingRatio =
+                                Spring
+                                    .DampingRatioHighBouncy,
+                            stiffness =
+                                Spring
+                                    .StiffnessMediumLow,
+                        ),
+                        label = "questionAnsweredScale",
+                    )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize(
+                            animationSpec = spring(
+                                dampingRatio =
+                                    Spring
+                                        .DampingRatioMediumBouncy,
+                                stiffness =
+                                    Spring
+                                        .StiffnessMediumLow,
+                            )
+                        )
+                        .graphicsLayer {
+                            scaleX = questionScale
+                            scaleY = questionScale
+                        },
+                    verticalArrangement =
+                        Arrangement.spacedBy(8.dp),
+                ) {
                     Text(
                         "${index + 1}. ${question.prompt}",
                         style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        lineHeight = 24.sp,
+                        fontWeight = FontWeight.ExtraBold,
                     )
                     when {
                         question.isFreeText -> OutlinedTextField(
@@ -218,21 +281,62 @@ private fun FollowUpForm(
                             label = { Text("답변을 적어주세요") },
                             minLines = 2,
                             maxLines = 4,
+                            shape = RoundedCornerShape(18.dp),
                         )
                         question.isSingleChoice -> question.options.forEachIndexed { optionIndex, option ->
+                            val optionSelected =
+                                draft.selectedOption ==
+                                    option.value
+                            val optionScale by
+                                animateFloatAsState(
+                                    targetValue =
+                                        if (optionSelected) {
+                                            1.09f
+                                        } else {
+                                            1f
+                                        },
+                                    animationSpec = spring(
+                                        dampingRatio =
+                                            Spring
+                                                .DampingRatioMediumBouncy,
+                                        stiffness =
+                                            Spring.StiffnessMedium,
+                                    ),
+                                    label =
+                                        "followUpOptionScale",
+                                )
+
                             Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .graphicsLayer {
+                                        scaleX = optionScale
+                                        scaleY = optionScale
+                                    }
+                                    .heightIn(min = 48.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(
+                                        MaterialTheme.colorScheme.surfaceVariant.copy(
+                                            alpha = 0.42f
+                                        )
+                                    )
+                                    .padding(horizontal = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(7.dp),
                             ) {
                                 RadioButton(
-                                    selected = draft.selectedOption == option.value,
+                                    selected = optionSelected,
                                     onClick = { onSelectOption(question.questionId, option.value) },
                                     enabled = !submitting,
                                     modifier = Modifier.testTag(
                                         "followUpOption_${question.questionId}_$optionIndex"
                                     ),
                                 )
-                                Text(option.label)
+                                Text(
+                                    text = option.label,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
                             }
                         }
                         else -> Text(
@@ -244,7 +348,7 @@ private fun FollowUpForm(
             }
             if (showSubmit) {
                 LiquidGlassButton(
-                    text = "답변 보내기",
+                    text = "문진 완료하고 계속",
                     onClick = onSubmit,
                     enabled =
                         submitAllowed &&

@@ -195,3 +195,30 @@ def test_three_model_runtime_profile_selects_only_allowlisted_manifest_and_polic
         service.product_filter.target_models
     )
     assert "three_model_integration" in pipeline_router._SEARCH_SERVICE_CACHE_KEY
+
+
+def test_app_startup_warms_persistent_mcp_runtime(monkeypatch):
+    calls = []
+
+    monkeypatch.setenv("AI_VECTOR_DSN", "postgresql://configured-for-test")
+    monkeypatch.setenv("AI_RETRIEVAL_TRANSPORT", "mcp")
+    monkeypatch.setattr(
+        bootstrap,
+        "warmup_shared_mcp_search_runtime",
+        lambda: calls.append("mcp-warmup") or True,
+    )
+    monkeypatch.setattr(
+        bootstrap,
+        "warmup_configured_search_service",
+        lambda: calls.append("local-warmup") or True,
+    )
+    monkeypatch.setattr(
+        bootstrap,
+        "close_shared_mcp_session_manager",
+        lambda: calls.append("mcp-close"),
+    )
+
+    with TestClient(bootstrap.create_app()) as client:
+        assert client.get("/health").status_code == 200
+
+    assert calls == ["mcp-warmup", "mcp-close"]

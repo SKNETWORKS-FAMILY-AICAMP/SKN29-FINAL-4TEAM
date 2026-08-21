@@ -15,6 +15,7 @@ def test_stdio_server_lists_context_and_evidence_tools():
 
     assert names == {
         "health_check",
+        "warmup_search_runtime",
         "lookup_product_context",
         "get_inquiry_context",
         "search_official_evidence",

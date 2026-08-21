@@ -2,6 +2,10 @@
 
 package com.skn29.watercare.customer.feature.customer.intake
 
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
@@ -9,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
@@ -27,6 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
@@ -159,7 +165,10 @@ fun SymptomIntakeContent(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 SymptomTopic.entries.forEach { topic ->
                     LiquidFilterChip(
                         selected = topic in state.selectedSymptoms,
@@ -280,7 +289,7 @@ fun SymptomIntakeContent(
 private fun customerSymptomLabel(
     topic: SymptomTopic,
 ): String = when (topic) {
-    SymptomTopic.LOW_FLOW -> "물이 안 나오거나 약해요"
+    SymptomTopic.LOW_FLOW -> "출수량이 적거나 약해요"
     SymptomTopic.TASTE_ODOR -> "물맛이나 냄새가 이상해요"
     SymptomTopic.LEAK -> "물이 새요"
     SymptomTopic.TEMPERATURE -> "냉수·온수 온도가 이상해요"
@@ -315,10 +324,40 @@ private fun LiquidFilterChip(
     onClick: () -> Unit,
     label: String,
 ) {
+    val selectionScale by animateFloatAsState(
+        targetValue =
+            if (selected) 1.13f
+            else 1f,
+        animationSpec = spring(
+            dampingRatio =
+                Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium,
+        ),
+        label = "symptomChipScale",
+    )
+
     FilterChip(
         selected = selected,
         onClick = onClick,
-        label = { Text(label) },
+        modifier = Modifier
+            .heightIn(min = 50.dp)
+            .graphicsLayer {
+                scaleX = selectionScale
+                scaleY = selectionScale
+            },
+        label = {
+            Text(
+                text = label,
+                modifier = Modifier.padding(
+                    horizontal = 3.dp,
+                    vertical = 4.dp,
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+            )
+        },
         colors = FilterChipDefaults.filterChipColors(
             containerColor = GlassFillStrong.copy(alpha = 0.72f),
             selectedContainerColor = Water700.copy(alpha = 0.94f),
