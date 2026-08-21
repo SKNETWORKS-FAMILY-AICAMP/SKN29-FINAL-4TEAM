@@ -8,16 +8,20 @@ import {
 } from "../../src/features/runtime-status/model/apiIntegrationReadiness";
 
 describe("Web Entry Gate Runtime 분류", () => {
-  it("상담사 P0 11개 Endpoint를 실제 Runtime 완료로 분류한다", () => {
-    expect(getApiIntegrationCount("CONSULTANT", "RUNTIME_DONE")).toBe(11);
+  it("상담사 P0와 기사 선택 Source 12개를 실제 Runtime 완료로 분류한다", () => {
+    expect(getApiIntegrationCount("CONSULTANT", "RUNTIME_DONE")).toBe(12);
   });
 
-  it("기사 선택 Source만 Backend blocker로 남긴다", () => {
-    expect(getBlockedApiCount("CONSULTANT")).toBe(1);
-    expect(BLOCKED_API_INTEGRATIONS[0]).toMatchObject({
+  it("기사 선택 Source를 Dashboard Runtime 계약에 연결한다", () => {
+    expect(getBlockedApiCount("CONSULTANT")).toBe(0);
+    expect(BLOCKED_API_INTEGRATIONS).toHaveLength(0);
+    expect(API_INTEGRATION_READINESS).toContainEqual(expect.objectContaining({
       key: "technician-selection-source",
-      status: "BLOCKED_BY_BACKEND",
-    });
+      method: "GET",
+      endpoint: "/api/v1/consultant/dashboard",
+      status: "RUNTIME_DONE",
+      contractPath: "contracts/api/paths/operations.yaml",
+    }));
   });
 
   it("모든 항목은 계약 경로와 중복되지 않은 key를 가진다", () => {

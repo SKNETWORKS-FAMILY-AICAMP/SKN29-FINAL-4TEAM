@@ -752,6 +752,7 @@ export default function ConsultantDashboardPage() {
                       type="button"
                       className="counselor-dashboard-recent__item"
                       data-risk={inquiry.riskLevel}
+                      data-testid={`consultant-recent-inquiry-${inquiry.inquiryId}`}
                       data-e2e-sensitive="true"
                       onClick={() => openInquiry(inquiry.inquiryId)}
                       aria-label={`${inquiry.inquiryCode} ${inquiry.title} 다시 열기`}

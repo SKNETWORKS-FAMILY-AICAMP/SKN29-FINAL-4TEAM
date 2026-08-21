@@ -61,6 +61,43 @@ async function expectInitialDetailContract(
   expect(actionCodes).toEqual([...activeFixture.allowedActions]);
 }
 
+async function expectCompletedDetailContract(
+  response: Response,
+  activeFixture: WebConsultationE2EFixture,
+  expected: {
+    consultationNote: string;
+    customerGuidance: string;
+    confirmedSummary: string;
+  },
+): Promise<void> {
+  expect(response.status()).toBe(200);
+  const payload: unknown = await response.json();
+  if (!isRecord(payload) || !isRecord(payload.data)) {
+    throw new Error("완료된 상담사 문의 상세 응답이 공통 API 구조와 다릅니다.");
+  }
+  const data = payload.data;
+  if (
+    !isRecord(data.inquiry) ||
+    !isRecord(data.workflow) ||
+    !isRecord(data.consultation) ||
+    !isRecord(data.consultation.summary)
+  ) {
+    throw new Error("완료된 상담사 문의 상세 Projection이 올바르지 않습니다.");
+  }
+
+  expect(data.inquiry.inquiry_id).toBe(activeFixture.inquiryId);
+  expect(data.inquiry.status).toBe("COMPLETION_PENDING");
+  expect(data.workflow.status).toBe("COMPLETION_PENDING");
+  expect(data.inquiry.state_version).toBe(data.workflow.state_version);
+  expect(data.workflow.state_version).toEqual(expect.any(Number));
+  expect(data.workflow.state_version).toBeGreaterThan(activeFixture.stateVersion);
+  expect(data.consultation.consultation_note).toBe(expected.consultationNote);
+  expect(data.consultation.customer_guidance).toBe(expected.customerGuidance);
+  expect(data.consultation.summary.confirmed_summary).toBe(
+    expected.confirmedSummary,
+  );
+}
+
 async function loginToFixture(
   page: Page,
   activeFixture: WebConsultationE2EFixture,
@@ -290,7 +327,6 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
       "BACKEND_FIXTURE_BLOCKED: 비배정 문의 ID가 양성 또는 미존재 테스트 ID와 같습니다.",
     );
   }
-  const detailPath = `/consultant/inquiries/${encodeURIComponent(fixture.inquiryId)}`;
   const consultationNote = `E2E 상담 기록 ${fixture.runId}`;
   const customerGuidance = `E2E 고객 안내 ${fixture.runId}`;
   const confirmedSummary = `E2E 확정 요약 ${fixture.runId}`;
@@ -303,21 +339,44 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     isDetailResponse(response, fixture.inquiryId),
   );
   await fixtureCard.click();
-  await expect(page.getByRole("dialog")).toBeVisible();
+  const listFirstDetailPanel = page.getByRole("dialog");
+  await expect(listFirstDetailPanel).toBeVisible();
   await expectInitialDetailContract(await initialDetailResponse, fixture);
   await expect(
-    page.locator('[data-action-code="START_CONSULTATION"]'),
+    listFirstDetailPanel.locator('[data-action-code="START_CONSULTATION"]'),
   ).toBeVisible();
+  await expect(
+    listFirstDetailPanel.getByRole("button", { name: "전체 기록 보기" }),
+  ).toBeVisible();
+  await expect(page).toHaveURL((url) => {
+    return (
+      url.pathname === "/consultant/inquiries" &&
+      url.searchParams.get("bucket") === "NEW" &&
+      url.searchParams.get("q") === fixture.inquiryCode
+    );
+  });
+  await listFirstDetailPanel
+    .getByRole("button", { name: "문의 상세 닫기" })
+    .click();
+  await expect(listFirstDetailPanel).not.toBeVisible();
 
-  const fullDetailResponse = page.waitForResponse((response) =>
+  await page.goto("/consultant/dashboard");
+  await expect(page).toHaveURL((url) => url.pathname === "/consultant/dashboard");
+  const recentInquiry = page.getByTestId(
+    `consultant-recent-inquiry-${fixture.inquiryId}`,
+  );
+  await expect(recentInquiry).toBeVisible();
+  const dashboardDetailResponse = page.waitForResponse((response) =>
     isDetailResponse(response, fixture.inquiryId),
   );
-  await page.getByRole("button", { name: "전체 기록 보기" }).click();
-  await expect(page).toHaveURL(detailPath);
-  await expectInitialDetailContract(await fullDetailResponse, fixture);
+  await recentInquiry.click();
+  const firstDetailPanel = page.getByRole("dialog");
+  await expect(firstDetailPanel).toBeVisible();
+  await expectInitialDetailContract(await dashboardDetailResponse, fixture);
   await expect(
-    page.locator('[data-action-code="START_CONSULTATION"]'),
+    firstDetailPanel.locator('[data-action-code="START_CONSULTATION"]'),
   ).toBeVisible();
+  await expect(page).toHaveURL((url) => url.pathname === "/consultant/dashboard");
 
   const visibleInquiryList = await authenticatedInquiryListIds(page);
   expect(visibleInquiryList.status).toBe(200);
@@ -366,22 +425,6 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     stateVersion: null,
   });
 
-  await page.goto(`/consultant/inquiries/${missingInquiryId}`);
-  await expect(
-    page.getByRole("heading", { name: "문의 정보를 찾을 수 없습니다." }),
-  ).toBeVisible();
-  await expect(
-    page.getByText(
-      "문의가 없거나 현재 상담사에게 배정되지 않은 경우 동일하게 안내됩니다.",
-    ),
-  ).toBeVisible();
-
-  const fixtureDetailResponse = page.waitForResponse((response) =>
-    isDetailResponse(response, fixture.inquiryId),
-  );
-  await page.goto(detailPath);
-  await fixtureDetailResponse;
-
   const startResponse = page.waitForResponse(
     (response) =>
       response.request().method() === "POST" &&
@@ -389,20 +432,34 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
         `/api/v1/inquiries/${fixture.inquiryId}/start-consultation`,
       ),
   );
-  await page.locator('[data-action-code="START_CONSULTATION"]').click();
+  await firstDetailPanel
+    .locator('[data-action-code="START_CONSULTATION"]')
+    .click();
   expect((await startResponse).status()).toBe(200);
   await expect(
-    page.locator('[data-action-code="UPDATE_CONSULTATION_SUMMARY"]'),
+    firstDetailPanel.locator(
+      '[data-action-code="UPDATE_CONSULTATION_SUMMARY"]',
+    ),
   ).toBeVisible();
 
-  await page.getByLabel("상담 기록", { exact: true }).fill(consultationNote);
-  await page
+  await firstDetailPanel
+    .getByLabel("상담 기록", { exact: true })
+    .fill(consultationNote);
+  await firstDetailPanel
     .getByLabel("고객 안내", { exact: true })
     .fill(customerGuidance);
-  await page.getByLabel("확정 요약", { exact: true }).fill(confirmedSummary);
-  await page.getByLabel("방문 필요 여부").selectOption("NOT_REQUIRED");
-  await page.getByLabel("사용 안내 상태").selectOption("NORMAL");
-  await page.getByRole("checkbox", { name: "상담 요약 검토·확정" }).check();
+  await firstDetailPanel
+    .getByLabel("확정 요약", { exact: true })
+    .fill(confirmedSummary);
+  await firstDetailPanel
+    .getByLabel("방문 필요 여부")
+    .selectOption("NOT_REQUIRED");
+  await firstDetailPanel
+    .getByLabel("사용 안내 상태")
+    .selectOption("NORMAL");
+  await firstDetailPanel
+    .getByRole("checkbox", { name: "상담 요약 검토·확정" })
+    .check();
 
   const concurrentSave = await authenticatedBrowserRequest(page, {
     method: "PATCH",
@@ -445,7 +502,7 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
       isDetailResponse(response, fixture.inquiryId) &&
       response.status() === 200,
   );
-  await page
+  await firstDetailPanel
     .locator('[data-action-code="UPDATE_CONSULTATION_SUMMARY"]')
     .click();
   const stalePayload: unknown = await (await staleResponse).json();
@@ -456,19 +513,36 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
       stalePayload.error.code,
   ).toBe("STATE-CONFLICT-01");
   expect((await conflictRefreshResponse).status()).toBe(200);
-  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(firstDetailPanel.getByRole("alert")).toBeVisible();
   await expect(
-    page.getByTestId("consultation-current-status"),
+    firstDetailPanel.getByTestId("consultation-current-status"),
   ).toHaveAttribute("data-workflow-status", "CONSULTATION_IN_PROGRESS");
   await expect(
-    page.getByTestId("consultation-current-status"),
+    firstDetailPanel.getByTestId("consultation-current-status"),
   ).toHaveAttribute(
     "data-state-version",
     String(fixture.stateVersion + 2),
   );
   await expect(
-    page.getByTestId("consultation-field-consultationNote"),
+    firstDetailPanel.getByTestId("consultation-field-consultationNote"),
   ).toHaveValue(consultationNote);
+  await expect(
+    firstDetailPanel.getByTestId("consultation-field-customerGuidance"),
+  ).toHaveValue(customerGuidance);
+  await expect(
+    firstDetailPanel.getByTestId("consultation-field-summaryRevision"),
+  ).toHaveValue(confirmedSummary);
+  await expect(
+    firstDetailPanel.getByLabel("방문 필요 여부"),
+  ).toHaveValue("NOT_REQUIRED");
+  await expect(
+    firstDetailPanel.getByLabel("사용 안내 상태"),
+  ).toHaveValue("NORMAL");
+  await expect(
+    firstDetailPanel.getByRole("checkbox", {
+      name: "상담 요약 검토·확정",
+    }),
+  ).toBeChecked();
   page.off("request", countUpdateRequest);
 
   const saveResponse = page.waitForResponse(
@@ -479,7 +553,7 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
       ) &&
       response.status() === 200,
   );
-  await page
+  await firstDetailPanel
     .locator('[data-action-code="UPDATE_CONSULTATION_SUMMARY"]')
     .click();
   expect((await saveResponse).status()).toBe(200);
@@ -492,7 +566,7 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
       ),
   );
   page.once("dialog", (dialog) => void dialog.accept());
-  await page
+  await firstDetailPanel
     .locator('[data-action-code="CONFIRM_CONSULTATION_SUMMARY"]')
     .click();
   expect((await confirmResponse).status()).toBe(200);
@@ -505,52 +579,59 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
       ),
   );
   page.once("dialog", (dialog) => void dialog.accept());
-  await page
+  await firstDetailPanel
     .locator('[data-action-code="CONSULTATION_COMPLETED"]')
     .click();
   expect((await completeResponse).status()).toBe(200);
   await expect(
-    page.getByTestId("consultation-current-status"),
+    firstDetailPanel.getByTestId("consultation-current-status"),
   ).toHaveAttribute("data-workflow-status", "COMPLETION_PENDING");
-
-  const refreshedDetailResponse = page.waitForResponse((response) =>
-    isDetailResponse(response, fixture.inquiryId),
-  );
-  await page.reload();
-  expect((await refreshedDetailResponse).status()).toBe(200);
+  await expect(page).toHaveURL((url) => url.pathname === "/consultant/dashboard");
   await expect(
-    page.getByTestId("consultation-current-status"),
-  ).toHaveAttribute("data-workflow-status", "COMPLETION_PENDING");
-
-  await expect(page.getByTestId("consultation-detail-note")).toHaveText(
+    firstDetailPanel.getByTestId("consultation-detail-note"),
+  ).toHaveText(
     consultationNote,
   );
   await expect(
-    page.getByTestId("consultation-detail-customer-guidance"),
+    firstDetailPanel.getByTestId("consultation-detail-customer-guidance"),
   ).toHaveText(customerGuidance);
   await expect(
-    page.getByTestId("consultation-detail-confirmed-summary"),
+    firstDetailPanel.getByTestId("consultation-detail-confirmed-summary"),
   ).toHaveText(confirmedSummary);
 
-  const recoveredPage = await page.context().newPage();
-  await installArtifactPrivacyMask(recoveredPage);
-  const newTabDetailResponse = recoveredPage.waitForResponse((response) =>
+  await page.reload();
+  await expect(page).toHaveURL((url) => url.pathname === "/consultant/dashboard");
+  const recoveredRecentInquiry = page.getByTestId(
+    `consultant-recent-inquiry-${fixture.inquiryId}`,
+  );
+  await expect(recoveredRecentInquiry).toBeVisible();
+  const recoveredDetailResponse = page.waitForResponse((response) =>
     isDetailResponse(response, fixture.inquiryId),
   );
-  await recoveredPage.goto(detailPath);
-  expect((await newTabDetailResponse).status()).toBe(200);
+  await recoveredRecentInquiry.click();
+  const recoveredFirstDetailPanel = page.getByRole("dialog");
+  await expect(recoveredFirstDetailPanel).toBeVisible();
+  await expectCompletedDetailContract(await recoveredDetailResponse, fixture, {
+    consultationNote,
+    customerGuidance,
+    confirmedSummary,
+  });
   await expect(
-    recoveredPage.getByTestId("consultation-current-status"),
+    recoveredFirstDetailPanel.getByTestId("consultation-current-status"),
   ).toHaveAttribute("data-workflow-status", "COMPLETION_PENDING");
   await expect(
-    recoveredPage.getByTestId("consultation-detail-note"),
+    recoveredFirstDetailPanel.getByTestId("consultation-detail-note"),
   ).toHaveText(consultationNote);
   await expect(
-    recoveredPage.getByTestId("consultation-detail-customer-guidance"),
+    recoveredFirstDetailPanel.getByTestId(
+      "consultation-detail-customer-guidance",
+    ),
   ).toHaveText(customerGuidance);
   await expect(
-    recoveredPage.getByTestId("consultation-detail-confirmed-summary"),
+    recoveredFirstDetailPanel.getByTestId(
+      "consultation-detail-confirmed-summary",
+    ),
   ).toHaveText(confirmedSummary);
-  await recoveredPage.close();
+  await expect(page).toHaveURL((url) => url.pathname === "/consultant/dashboard");
   await attachMaskedEvidenceScreenshot(page, testInfo);
 });

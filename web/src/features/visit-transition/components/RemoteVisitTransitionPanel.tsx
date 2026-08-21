@@ -4,20 +4,33 @@ import { ApiClientError } from "../../../common/api/apiError";
 import { IdempotencyOperationTracker } from "../../../common/api/idempotencyOperation";
 import { createRequestContext } from "../../../common/api/requestContext";
 import type { ConsultantInquiryDetailViewModel, RemoteAllowedAction } from "../../consultation/model/consultantWorkspaceRemoteMapper";
+import type { ConsultantDashboardTechnician } from "../../notice/model/consultantNotice";
 import type { VisitTransitionValues } from "../model/visitTransitionTypes";
 import {
   buildVisitScheduleRequest,
   createRemoteVisitWriteRepository,
   toNullableDateOnly,
   type VisitTransitionResultDto,
+  type VisitWriteRepository,
 } from "../repositories/visitWriteRepository";
+
+export type TechnicianSourceStatus =
+  | "loading"
+  | "ready"
+  | "empty"
+  | "forbidden"
+  | "error";
 
 interface Props {
   inquiry: ConsultantInquiryDetailViewModel;
   onRefresh: () => void;
+  onRetryTechnicians: () => void;
+  technicianSourceStatus: TechnicianSourceStatus;
+  technicians: readonly ConsultantDashboardTechnician[];
+  writeRepository?: VisitWriteRepository;
 }
 
-const repository = createRemoteVisitWriteRepository();
+const defaultWriteRepository = createRemoteVisitWriteRepository();
 
 function visitIdFromResource(resource: unknown): string | null {
   if (!resource || typeof resource !== "object") return null;
@@ -41,7 +54,14 @@ function technicianIdFromDetail(visit: unknown): string {
   return typeof technicianId === "string" ? technicianId : "";
 }
 
-export default function RemoteVisitTransitionPanel({ inquiry, onRefresh }: Props) {
+export default function RemoteVisitTransitionPanel({
+  inquiry,
+  onRefresh,
+  onRetryTechnicians,
+  technicianSourceStatus,
+  technicians,
+  writeRepository = defaultWriteRepository,
+}: Props) {
   const [values, setValues] = useState<VisitTransitionValues>(() =>
     ({
       visitReason: "",
@@ -62,6 +82,18 @@ export default function RemoteVisitTransitionPanel({ inquiry, onRefresh }: Props
   const savingRef = useRef(false);
   const [tracker] = useState(() => new IdempotencyOperationTracker());
   const actionCodes = useMemo(() => new Set(actions.map((action) => action.code)), [actions]);
+  const availableTechnicianIds = useMemo(
+    () => new Set(technicians.map((technician) => technician.userId)),
+    [technicians],
+  );
+  const hasAssignedTechnicianFallback = Boolean(
+    values.technicianId && !availableTechnicianIds.has(values.technicianId),
+  );
+  const hasSelectableTechnicians =
+    technicianSourceStatus === "ready" && technicians.length > 0;
+  const hasValidTechnicianSelection =
+    hasSelectableTechnicians &&
+    availableTechnicianIds.has(values.technicianId);
 
   const update = (field: keyof VisitTransitionValues, value: string) => {
     setValues((current) => ({ ...current, [field]: value }));
@@ -127,7 +159,7 @@ export default function RemoteVisitTransitionPanel({ inquiry, onRefresh }: Props
   const requestReview = () => {
     if (!requireValues(["visitReason"])) return;
     void execute(JSON.stringify(["review", stateVersion, values.visitReason]),
-      (context) => repository.requestReview(inquiry.inquiryId, {
+      (context) => writeRepository.requestReview(inquiry.inquiryId, {
       state_version: stateVersion,
       reason_code: "PHYSICAL_INSPECTION_REQUIRED",
       reason_detail: values.visitReason.trim() || null,
@@ -136,7 +168,7 @@ export default function RemoteVisitTransitionPanel({ inquiry, onRefresh }: Props
   const markNotNeeded = () => {
     if (!requireValues(["notes"])) return;
     void execute(JSON.stringify(["not-needed", stateVersion, values.notes]),
-      (context) => repository.markNotNeeded(inquiry.inquiryId, {
+      (context) => writeRepository.markNotNeeded(inquiry.inquiryId, {
       state_version: stateVersion,
       reason_code: "RESOLVED_BY_CONSULTATION",
       reason_detail: values.notes.trim() || null,
@@ -150,7 +182,7 @@ export default function RemoteVisitTransitionPanel({ inquiry, onRefresh }: Props
       return;
     }
     void execute(JSON.stringify(["create", stateVersion, values]),
-      (context) => repository.create(inquiry.inquiryId, {
+      (context) => writeRepository.create(inquiry.inquiryId, {
       state_version: stateVersion,
       visit_reason: values.visitReason.trim(),
       preferred_date: toNullableDateOnly(values.preferredDate),
@@ -170,10 +202,14 @@ export default function RemoteVisitTransitionPanel({ inquiry, onRefresh }: Props
       setError("서버 상세 응답에서 visit_id를 확인할 수 없습니다.");
       return;
     }
+    if (!hasValidTechnicianSelection) {
+      setError("Dashboard에서 조회된 활성 합성 방문기사를 선택해 주세요.");
+      return;
+    }
     if (!requireValues(["technicianId", "preferredDate"])) return;
     void execute(
       JSON.stringify(["schedule", visitId, stateVersion, values.technicianId, values.preferredDate, values.confirmedDate]),
-      (context) => repository.saveSchedule(visitId, buildVisitScheduleRequest({
+      (context) => writeRepository.saveSchedule(visitId, buildVisitScheduleRequest({
         stateVersion,
         technicianId: values.technicianId,
         preferredDate: values.preferredDate,
@@ -189,7 +225,7 @@ export default function RemoteVisitTransitionPanel({ inquiry, onRefresh }: Props
     if (!requireValues(["confirmedDate"])) return;
     void execute(
       JSON.stringify(["confirm", visitId, stateVersion]),
-      (context) => repository.confirm(visitId, { state_version: stateVersion }, context),
+      (context) => writeRepository.confirm(visitId, { state_version: stateVersion }, context),
     );
   };
 
@@ -208,18 +244,56 @@ export default function RemoteVisitTransitionPanel({ inquiry, onRefresh }: Props
       <label className="v6-form-field">안전 유의사항<textarea value={values.safetyNotes} onChange={(event) => update("safetyNotes", event.target.value)} /></label>
       <label className="v6-form-field">점검 우선순위<input value={values.inspectionPriority} onChange={(event) => update("inspectionPriority", event.target.value)} /></label>
       <label className="v6-form-field">고객 희망일<input type="date" value={values.preferredDate} onChange={(event) => update("preferredDate", event.target.value)} /></label>
-      <div className="v6-readonly-card">
-        <strong>방문 기사</strong>
-        {values.technicianId
-          ? `Backend 상세에 배정된 합성 기사 ID를 사용합니다: ${values.technicianId}`
-          : "기사 선택 Source 계약이 없어 신규 기사 배정은 비활성화됩니다."}
+      <div className="v6-form-field">
+        <label htmlFor="remote-visit-technician">방문 기사</label>
+        <select
+          id="remote-visit-technician"
+          aria-label="방문기사"
+          data-testid="visit-technician-select"
+          disabled={isSaving || !hasSelectableTechnicians}
+          value={values.technicianId}
+          onChange={(event) => update("technicianId", event.target.value)}
+        >
+          <option value="">방문기사를 선택해 주세요.</option>
+          {hasAssignedTechnicianFallback && (
+            <option value={values.technicianId} disabled>
+              현재 배정 기사 · 선택 목록 외
+            </option>
+          )}
+          {technicians.map((technician) => (
+            <option key={technician.userId} value={technician.userId}>
+              {technician.name} · {technician.branch}
+            </option>
+          ))}
+        </select>
+        {technicianSourceStatus === "loading" && (
+          <small role="status">방문기사 목록을 불러오고 있습니다.</small>
+        )}
+        {technicianSourceStatus === "empty" && (
+          <small role="status">선택 가능한 합성 방문기사가 없습니다.</small>
+        )}
+        {technicianSourceStatus === "forbidden" && (
+          <small role="alert">방문기사 목록을 조회할 권한이 없습니다.</small>
+        )}
+        {technicianSourceStatus === "error" && (
+          <span>
+            <small role="alert">방문기사 목록을 불러오지 못했습니다.</small>
+            <button
+              className="v6-button v6-button--secondary"
+              type="button"
+              onClick={onRetryTechnicians}
+            >
+              기사 목록 다시 불러오기
+            </button>
+          </span>
+        )}
       </div>
       <label className="v6-form-field">확정일<input type="date" value={values.confirmedDate} onChange={(event) => update("confirmedDate", event.target.value)} /></label>
       <div className="v6-action-buttons">
         {needsReview && <button className="v6-button v6-button--primary" type="button" disabled={isSaving} onClick={requestReview}>방문 필요 검토 요청</button>}
         {actionCodes.has("VISIT_NOT_NEEDED") && <button className="v6-button v6-button--secondary" type="button" disabled={isSaving} onClick={markNotNeeded}>방문 불필요 확정</button>}
         {canCreate && <button className="v6-button v6-button--primary" type="button" disabled={isSaving} onClick={createVisit}>방문 생성</button>}
-        {actionCodes.has("UPDATE_VISIT_SCHEDULE") && <button className="v6-button v6-button--primary" type="button" disabled={isSaving || !values.technicianId} onClick={saveSchedule}>기사·일정 저장</button>}
+        {actionCodes.has("UPDATE_VISIT_SCHEDULE") && <button className="v6-button v6-button--primary" type="button" data-action-code="UPDATE_VISIT_SCHEDULE" disabled={isSaving || !hasValidTechnicianSelection} onClick={saveSchedule}>기사·일정 저장</button>}
         {actionCodes.has("CONFIRM_VISIT") && <button className="v6-button v6-button--primary" type="button" disabled={isSaving} onClick={confirmVisit}>방문 확정</button>}
       </div>
       {message && <p className="v6-action-message is-success" role="status">{message}</p>}

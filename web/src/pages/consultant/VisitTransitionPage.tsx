@@ -15,7 +15,12 @@ import { useConsultantInquiryDetailQuery } from "../../features/consultation/hoo
 import { getCounselorMetrics } from "../../features/consultation/model/consultantWorkspaceModel";
 import { consultantWorkspaceDataRepository } from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
 import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
-import RemoteVisitTransitionPanel from "../../features/visit-transition/components/RemoteVisitTransitionPanel";
+import { getSyntheticConsultantDashboardData } from "../../features/notice/api/consultantNoticeApi";
+import type { ConsultantDashboardTechnician } from "../../features/notice/model/consultantNotice";
+import RemoteVisitTransitionPanel, {
+  type TechnicianSourceStatus,
+} from "../../features/visit-transition/components/RemoteVisitTransitionPanel";
+import { classifyTechnicianSourceFailure } from "../../features/visit-transition/model/technicianSource";
 import VisitTransitionForm from "../../features/visit-transition/components/VisitTransitionForm";
 import "./VisitTransitionPage.css";
 import "../../common/styles/water-glass-theme.css";
@@ -29,11 +34,23 @@ interface VisitTransitionLocationState {
   symptomSummary?: string;
 }
 
+interface TechnicianSourceState {
+  status: TechnicianSourceStatus;
+  technicians: readonly ConsultantDashboardTechnician[];
+}
+
 export default function VisitTransitionPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { inquiryId: rawInquiryId } = useParams<{ inquiryId: string }>();
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [technicianSource, setTechnicianSource] =
+    useState<TechnicianSourceState>({
+      status: "loading",
+      technicians: [],
+    });
+  const [technicianSourceRetryCount, setTechnicianSourceRetryCount] =
+    useState(0);
 
   const locationState = location.state as VisitTransitionLocationState | null;
   const inquiryListReturnPath = getSafeInquiryListReturnPath(
@@ -61,6 +78,33 @@ export default function VisitTransitionPage() {
       document.body.classList.remove("v6-body", "v6-body--counselor");
     };
   }, []);
+
+  useEffect(() => {
+    if (!isRemote) return;
+
+    let active = true;
+
+    void getSyntheticConsultantDashboardData().then(
+      (dashboard) => {
+        if (!active) return;
+        setTechnicianSource({
+          status: dashboard.technicians.length === 0 ? "empty" : "ready",
+          technicians: dashboard.technicians,
+        });
+      },
+      (caught: unknown) => {
+        if (!active) return;
+        setTechnicianSource({
+          status: classifyTechnicianSourceFailure(caught),
+          technicians: [],
+        });
+      },
+    );
+
+    return () => {
+      active = false;
+    };
+  }, [isRemote, technicianSourceRetryCount]);
 
   const metrics = useMemo(
     () =>
@@ -118,6 +162,12 @@ export default function VisitTransitionPage() {
             <RemoteVisitTransitionPanel
               inquiry={remoteInquiry}
               onRefresh={detailQuery.retry}
+              onRetryTechnicians={() => {
+                setTechnicianSource({ status: "loading", technicians: [] });
+                setTechnicianSourceRetryCount((current) => current + 1);
+              }}
+              technicianSourceStatus={technicianSource.status}
+              technicians={technicianSource.technicians}
             />
           </div>
         ) : (
