@@ -178,7 +178,16 @@ def test_unapproved_iac_products_never_reach_delegate_search_or_llm(model_code):
     assert reliability.harness_runtime.handoff is not None
     assert reliability.harness_runtime.handoff.model_code == model_code
     assert reliability.harness_runtime.handoff.product_family == "ICE_WATER_PURIFIER"
-    assert result.to_analysis_result().status.value == "FALLBACK"
+    public_result = result.to_analysis_result()
+    assert public_result.status.value == "FALLBACK"
+    assert public_result.failure_stage.value == "RETRIEVING"
+    assert public_result.safety_assessment.risk_level.value == "caution"
+    assert public_result.safety_assessment.requires_consultation is True
+    assert (
+        public_result.usage_guidance.guidance_status
+        == UsageGuidanceStatus.PENDING_CONSULTATION
+    )
+    assert public_result.evidence_references == []
 
 
 @pytest.mark.parametrize("model_code", ["WPUIAC425SNW", "WPUIAC606SNW"])

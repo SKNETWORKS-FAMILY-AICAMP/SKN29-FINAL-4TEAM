@@ -342,6 +342,12 @@ def test_openai_adapter_sends_guidance_only_strict_schema():
     assert captured["payload"]["max_output_tokens"] == 500
     assert captured["payload"]["text"]["format"]["strict"] is True
     assert set(output_schema["properties"]) == {"message", "next_actions"}
+    assert output_schema["properties"]["message"]["enum"] == (
+        request.evidence_summaries
+    )
+    assert output_schema["properties"]["next_actions"]["items"]["enum"] == (
+        request.allowed_next_actions
+    )
     assert "correlation_id" not in output_schema["properties"]
     assert "safety_assessment" not in output_schema["properties"]
     assert "evidence_references" not in output_schema["properties"]
@@ -496,7 +502,7 @@ def test_llm_usage_log_records_tokens_without_customer_or_evidence_text(caplog):
     payload = json.loads(caplog.records[-1].message)
     assert payload["event"] == "llm_guidance_completed"
     assert payload["model_name"] == "gpt-4.1-mini"
-    assert payload["prompt_version"] == "customer_guidance/v2"
+    assert payload["prompt_version"] == "customer_guidance/v3"
     assert payload["total_tokens"] == 30
     assert payload["correlation_id"] == CORRELATION_ID
     assert raw_symptom not in caplog.text
@@ -603,6 +609,49 @@ def test_unsafe_or_ungrounded_llm_message_fails_closed(
 
     assert client.calls == 1
     assert raised.value.retryable is False
+
+
+def test_exact_official_directive_message_is_allowed_without_rewriting():
+    official_message = "원수 공급 상태를 확인해 주세요."
+
+    class DirectiveEvidenceSearchService:
+        def search(self, *args, **kwargs):
+            chunk = EvidenceSearchService().search(*args, **kwargs)[0]
+            return [chunk.model_copy(update={"content": official_message})]
+
+    result = run_pipeline(
+        search_service=DirectiveEvidenceSearchService(),
+        llm_client=SequenceLLMClient(
+            llm_response(
+                message=official_message,
+                actions=accepted_actions(),
+            )
+        ),
+    ).to_analysis_result()
+
+    assert result.usage_guidance.message == official_message
+
+
+def test_rewritten_official_directive_message_fails_closed():
+    class DirectiveEvidenceSearchService:
+        def search(self, *args, **kwargs):
+            chunk = EvidenceSearchService().search(*args, **kwargs)[0]
+            return [
+                chunk.model_copy(
+                    update={"content": "원수 상태를 확인해 주세요."}
+                )
+            ]
+
+    with pytest.raises(GuidanceGenerationExecutionError):
+        run_pipeline(
+            search_service=DirectiveEvidenceSearchService(),
+            llm_client=SequenceLLMClient(
+                llm_response(
+                    message="원수 상태를 반드시 확인해 주세요.",
+                    actions=accepted_actions(),
+                )
+            ),
+        )
 
 
 def test_provider_request_redacts_pii_and_excludes_raw_occurrence_condition():

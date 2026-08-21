@@ -33,7 +33,7 @@
       "provider": "openai",
       "model_name": "gpt-4.1-mini",
       "output_scope": "GUIDANCE_ONLY",
-      "prompt_version": "customer_guidance/v2",
+      "prompt_version": "customer_guidance/v3",
       "timeout_policy": "HTTP_504_BACKEND_TRANSITION"
     },
     "retrieval": {
@@ -50,7 +50,7 @@
   },
   "configuration_sha256": {
     "retrieval_policy": "A65B1404BBD3E4E8B1797425211F2C66D9D5C84C923E154E4AE4A8EA6266FCBB",
-    "safety_rules": "39AC15F4BBF0ED1AAE23799B1D5BDCF3A1C06F2FFEDD9705F47FF584A3859E34",
+    "safety_rules": "9B62A66FE548651912B30992C3D327E1EE3581C579D7DCE59372364F1BD8BA76",
     "retry_policy": "76AC62B550426B1DCD2DDF61D28E539085AFBDF9C94F02BE256110DDCD22393D"
   }
 }

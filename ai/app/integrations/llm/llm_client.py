@@ -130,7 +130,7 @@ class OpenAIResponsesLLMClient:
         if timeout_seconds <= 0:
             raise LLMProviderTimeoutError("LLM 호출 시간 예산이 남아 있지 않습니다.")
 
-        schema = GuidanceGenerationResult.model_json_schema()
+        schema = self._guidance_schema(request)
         system_prompt, user_prompt = self._prompts(request)
         payload = {
             "model": self.model_name,
@@ -226,6 +226,20 @@ class OpenAIResponsesLLMClient:
             usage=usage,
             latency_ms=round((time.perf_counter() - started_at) * 1000.0, 2),
         )
+
+    @staticmethod
+    def _guidance_schema(request: GuidanceGenerationRequest) -> dict[str, object]:
+        """Constrain provider output to exact approved Evidence and actions."""
+
+        schema = GuidanceGenerationResult.model_json_schema()
+        properties = schema["properties"]
+        properties["message"]["enum"] = list(
+            dict.fromkeys(request.evidence_summaries)
+        )
+        properties["next_actions"]["items"]["enum"] = list(
+            dict.fromkeys(request.allowed_next_actions)
+        )
+        return schema
 
     @staticmethod
     def _extract_output_text(body: object) -> str:

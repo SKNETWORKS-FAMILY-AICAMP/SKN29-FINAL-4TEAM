@@ -22,6 +22,7 @@ import pytest
 
 from ai.app.orchestration.harness.product_registry import (
     is_runtime_approved_model_code,
+    resolve_product_generation,
 )
 from ai.app.orchestration.harness.verification_result import HarnessDecision
 from ai.app.orchestration.pipeline_router import PipelineRouter
@@ -130,6 +131,7 @@ def test_exact_model_retrieval_never_returns_cross_product_evidence(
         RetrievalQuery(
             query_text=query_text,
             model_code=model_code,
+            product_generation=resolve_product_generation(model_code),
             top_k=5,
         )
     )
@@ -190,6 +192,7 @@ def test_cross_product_fallback_is_not_used_when_target_model_has_no_match(
         RetrievalQuery(
             query_text="제품 정상 사용 방법",
             model_code=other_model,
+            product_generation=resolve_product_generation(other_model),
             top_k=5,
         )
     )

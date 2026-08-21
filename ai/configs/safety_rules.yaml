@@ -66,7 +66,32 @@ rules:
       - "온수 버튼을 다시 눌러 멈추지 않을 경우 정수 밸브를 잠그세요."
       - "화상에 주의하시고 아이들의 접근을 제한하세요."
 
-  # 4. 일반 기능 이상 (Caution)
+  # 4. 온수 히터/순간온수 모듈 고장 및 음용 제한 (Danger)
+  hot_water_heater_danger:
+    rule_id: "SAFETY-HOT-WATER-HEATER-001"
+    name: "온수 히터·순간온수 모듈 고장 및 음용 제한"
+    risk_level: "danger"
+    usage_guidance_status: "PARTIAL_STOP"
+    requires_consultation: true
+    priority: "priority_consultation"
+    keywords:
+      - "히터 고장"
+      - "히터 이상"
+      - "순간온수 모듈"
+      - "순간 온수 모듈"
+      - "온수 모듈 점검"
+      - "온수 음용 금지"
+      - "온수는 음용하지"
+      - "온수를 음용하지"
+      - "온수 마시지"
+      - "온수를 마시지"
+    restricted_functions:
+      - "온수 출수 및 음용 중지"
+    next_actions:
+      - "온수 기능 사용과 온수 음용을 중단하세요."
+      - "제품을 직접 분해하지 말고 전문 상담 및 기사 점검을 요청하세요."
+
+  # 5. 일반 기능 이상 (Caution)
   temp_abnormal_caution:
     rule_id: "SAFETY-TEMP-ABNORMAL-001"
     name: "냉/온수 미흡 및 출수량 저하"
