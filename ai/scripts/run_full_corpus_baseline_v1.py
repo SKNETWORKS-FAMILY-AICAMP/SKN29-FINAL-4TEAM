@@ -197,10 +197,17 @@ def build_preflight_report(
         / ".cache/huggingface/hub/models--BAAI--bge-m3/snapshots"
         / revision
     )
+    snapshot_required = not embedding_provider_supplied
+    snapshot_available = snapshot.is_dir()
     add_check(
         "embedding_model_snapshot",
-        snapshot.is_dir(),
-        {"model": profile["embedding"]["model"], "revision": revision},
+        snapshot_available or not snapshot_required,
+        {
+            "model": profile["embedding"]["model"],
+            "revision": revision,
+            "required": snapshot_required,
+            "available": snapshot_available,
+        },
     )
 
     blockers = [check["name"] for check in checks if check["blocking"] and not check["passed"]]

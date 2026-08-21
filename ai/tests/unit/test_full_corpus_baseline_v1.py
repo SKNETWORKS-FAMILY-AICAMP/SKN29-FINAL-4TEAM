@@ -117,6 +117,12 @@ class FullCorpusBaselineV1Tests(unittest.TestCase):
         )
         self.assertEqual(review["detail"]["pending_records"], 60)
         self.assertFalse(review["detail"]["official_metrics_allowed"])
+        snapshot = next(
+            check for check in report["checks"]
+            if check["name"] == "embedding_model_snapshot"
+        )
+        self.assertTrue(snapshot["passed"])
+        self.assertFalse(snapshot["detail"]["required"])
 
     def test_all_policy_requires_every_evidence_unit_for_0036_and_0037(self) -> None:
         for case_id, pages in (
