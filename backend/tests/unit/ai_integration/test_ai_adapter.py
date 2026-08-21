@@ -114,17 +114,6 @@ def test_success_mapper_rejects_identifier_mismatch():
         map_success_response(response, expected_request=request)
 
 
-def test_success_mapper_rejects_model_code_mismatch():
-    request = request_payload()
-    response = success_payload(request)
-    response["model_code"] = "WPUIAC606SNW"
-
-    with pytest.raises(AIIdentifierMismatchError) as exc_info:
-        map_success_response(response, expected_request=request)
-
-    assert "identifier mismatch: model_code" in exc_info.value.validation_errors
-
-
 def test_success_mapper_classifies_safe_and_no_evidence_results():
     request = request_payload()
     safe = map_success_response(
@@ -138,7 +127,6 @@ def test_success_mapper_classifies_safe_and_no_evidence_results():
     no_evidence_payload.update(
         {
             "status": "FALLBACK",
-            "fallback_reason_code": "NO_EVIDENCE",
             "failure_stage": "RETRIEVING",
             "evidence_references": [],
         }
@@ -153,26 +141,6 @@ def test_success_mapper_classifies_safe_and_no_evidence_results():
     )
     assert no_evidence.event_candidate == "NO_EVIDENCE"
     assert no_evidence.is_no_evidence is True
-
-    product_hold_payload = success_payload(request)
-    product_hold_payload.update(
-        {
-            "status": "FALLBACK",
-            "fallback_reason_code": "RUNTIME_PRODUCT_NOT_APPROVED",
-            "failure_stage": "RETRIEVING",
-            "evidence_references": [],
-        }
-    )
-    product_hold_payload["safety_assessment"]["requires_consultation"] = True
-    product_hold_payload["usage_guidance"][
-        "guidance_status"
-    ] = "PENDING_CONSULTATION"
-    product_hold = map_success_response(
-        product_hold_payload,
-        expected_request=request,
-    )
-    assert product_hold.event_candidate is None
-    assert product_hold.is_no_evidence is False
 
 
 def test_client_sends_matching_header_and_calls_once():

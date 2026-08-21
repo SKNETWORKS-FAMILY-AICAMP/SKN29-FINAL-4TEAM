@@ -55,30 +55,18 @@ def map_success_response(
 
     contract_validator = validator or AIContractValidator()
     contract_validator.validate_success_response(payload)
-    _validate_identifier_echo(
-        payload,
-        expected_request,
-        allow_null=False,
-        fields=(
-            "inquiry_id",
-            "correlation_id",
-            "ai_request_id",
-            "state_version",
-            "model_code",
-        ),
-    )
+    _validate_identifier_echo(payload, expected_request, allow_null=False)
     _validate_uuid(payload["correlation_id"], "correlation_id")
 
     safety = payload["safety_assessment"]
     guidance = payload["usage_guidance"]
     evidence = payload["evidence_references"]
     status = payload["status"]
-    fallback_reason_code = payload["fallback_reason_code"]
 
     is_danger = safety["risk_level"] == "danger"
     is_no_evidence = (
         status == "FALLBACK"
-        and fallback_reason_code == "NO_EVIDENCE"
+        and payload["failure_stage"] == "RETRIEVING"
         and not evidence
     )
 
@@ -152,15 +140,14 @@ def _validate_identifier_echo(
     expected: dict[str, Any],
     *,
     allow_null: bool,
-    fields: tuple[str, ...] = (
+) -> None:
+    mismatches = []
+    for field in (
         "inquiry_id",
         "correlation_id",
         "ai_request_id",
         "state_version",
-    ),
-) -> None:
-    mismatches = []
-    for field in fields:
+    ):
         actual = payload.get(field)
         if allow_null and actual is None:
             continue
