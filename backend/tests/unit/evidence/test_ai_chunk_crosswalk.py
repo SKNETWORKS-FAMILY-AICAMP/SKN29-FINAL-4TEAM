@@ -614,6 +614,8 @@ def test_default_verifier_persists_evidence_link_and_applies_safe_event():
             "state_version",
         ):
             response[field] = request_payload[field]
+        if "model_code" in response:
+            response["model_code"] = request_payload["model_code"]
         response["evidence_references"] = [evidence_reference(mapping)]
         return httpx.Response(200, json=response)
 
@@ -726,6 +728,8 @@ def test_missing_similarity_keeps_verified_evidence_without_fake_lineage():
             "state_version",
         ):
             response[field] = request_payload[field]
+        if "model_code" in response:
+            response["model_code"] = request_payload["model_code"]
         reference = evidence_reference(mapping)
         reference["similarity_score"] = None
         response["evidence_references"] = [reference]
