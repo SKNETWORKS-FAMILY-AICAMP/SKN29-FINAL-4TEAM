@@ -7,9 +7,56 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 from ai.app import bootstrap
+from ai.app.integrations.embedding.embedding_client import BgeM3EmbeddingClient
 from ai.app.orchestration import pipeline_router
 from ai.app.retrieval.indexing.index_manifest import IndexManifest
 from ai.app.retrieval.runtime_profile import resolve_rag_runtime_profile
+
+
+class _FakeVector:
+    def __init__(self, value):
+        self.value = value
+
+    def tolist(self):
+        return self.value
+
+
+def test_bge_warmup_primes_first_encode_once():
+    encode_calls = []
+
+    class FakeModel:
+        def encode(self, texts, *, normalize_embeddings, show_progress_bar):
+            encode_calls.append(
+                (list(texts), normalize_embeddings, show_progress_bar)
+            )
+            return [_FakeVector([0.0] * 1024) for _ in texts]
+
+    client = BgeM3EmbeddingClient(model_revision="test-revision")
+    client._model = FakeModel()
+
+    client.warmup()
+    client.warmup()
+
+    assert encode_calls == [
+        ([client._warmup_text], True, False),
+    ]
+
+
+def test_first_query_marks_bge_client_warm_and_skips_later_dummy_encode():
+    encode_calls = []
+
+    class FakeModel:
+        def encode(self, texts, *, normalize_embeddings, show_progress_bar):
+            encode_calls.append(list(texts))
+            return [_FakeVector([0.0] * 1024) for _ in texts]
+
+    client = BgeM3EmbeddingClient(model_revision="test-revision")
+    client._model = FakeModel()
+
+    assert client.embed_query("첫 실제 질의") == [0.0] * 1024
+    client.warmup()
+
+    assert encode_calls == [["첫 실제 질의"]]
 
 
 def test_configured_search_service_is_reused_and_warmed_up(monkeypatch):

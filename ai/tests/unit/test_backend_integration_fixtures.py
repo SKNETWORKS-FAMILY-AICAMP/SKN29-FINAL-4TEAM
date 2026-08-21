@@ -168,7 +168,7 @@ def _assert_expected(case: dict, response, request_body: dict) -> None:
 
 def test_fixture_manifest_has_all_cases_and_explicit_ownership():
     manifest = _manifest()
-    assert manifest["contract_version"] == "3.0.0"
+    assert manifest["contract_version"] == "4.0.0"
     assert [case["id"] for case in manifest["cases"]] == [f"F{index:02d}" for index in range(1, 13)]
     assert _case("F11")["owner"] == "BACKEND"
     assert _case("F12")["owner"] == "AI_AND_BACKEND"

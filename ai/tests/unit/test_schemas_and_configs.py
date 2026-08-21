@@ -15,7 +15,7 @@ from ai.app.schemas.common import RiskLevel, UsageGuidanceStatus, TraceContext
 from ai.app.schemas.symptom import StructuredSymptom
 from ai.app.schemas.safety import SafetyAssessment
 from ai.app.schemas.guidance import UsageGuidance
-from ai.app.schemas.pipeline import SymptomAnalysisResult
+from ai.app.schemas.pipeline import FallbackReasonCode, SymptomAnalysisResult
 from pydantic import ValidationError
 from ai.app.interfaces.http.request_models import SymptomAnalysisApiRequest
 from ai.app.interfaces.http.response_models import ApiErrorResponse
@@ -49,6 +49,8 @@ def test_symptom_analysis_result_schema():
         correlation_id="018f2f9b-7c30-7981-b541-1a987c88b499",
         ai_request_id="ai-req-002",
         state_version=1,
+        model_code="WPUJAC104DWH",
+        fallback_reason_code=None,
         structured_symptom=StructuredSymptom(
             symptom_type="누수",
             accompanying_symptoms=["전원 불빛 깜빡임"],
@@ -114,7 +116,15 @@ def _validator(schema_path: Path) -> Draft202012Validator:
     )
 
 
-@pytest.mark.parametrize("example_name", ["general-guidance.json", "danger-detected.json", "no-evidence.json"])
+@pytest.mark.parametrize(
+    "example_name",
+    [
+        "general-guidance.json",
+        "danger-detected.json",
+        "no-evidence.json",
+        "runtime-product-not-approved.json",
+    ],
+)
 def test_ai_contract_examples_json_schema(example_name):
     """대표 요청과 응답을 실제 Draft 2020-12 JSON Schema로 검증한다."""
     contract_root = Path("contracts/ai")
@@ -175,7 +185,46 @@ def test_symptom_runtime_and_contract_top_level_fields_match():
     response_contract = json.loads((contract_root / "responses/SymptomAnalysisResponse.schema.json").read_text(encoding="utf-8"))
     assert set(SymptomAnalysisApiRequest.model_json_schema()["properties"]) == set(request_contract["properties"])
     assert set(SymptomAnalysisResult.model_json_schema()["properties"]) == set(response_contract["properties"])
-    assert request_contract["x-contract-version"] == response_contract["x-contract-version"] == "3.0.0"
+    assert request_contract["x-contract-version"] == response_contract["x-contract-version"] == "4.0.0"
+
+
+def test_symptom_response_requires_reason_only_for_fallback():
+    contract_root = Path("contracts/ai")
+    schema = _validator(
+        contract_root / "responses/SymptomAnalysisResponse.schema.json"
+    )
+    succeeded = json.loads(
+        (
+            contract_root
+            / "examples/symptom-analysis/general-guidance.json"
+        ).read_text(encoding="utf-8")
+    )["response"]
+    fallback = json.loads(
+        (
+            contract_root
+            / "examples/symptom-analysis/no-evidence.json"
+        ).read_text(encoding="utf-8")
+    )["response"]
+
+    schema.validate(succeeded)
+    schema.validate(fallback)
+    assert SymptomAnalysisResult.model_validate(succeeded).fallback_reason_code is None
+    assert (
+        SymptomAnalysisResult.model_validate(fallback).fallback_reason_code
+        == FallbackReasonCode.NO_EVIDENCE
+    )
+
+    missing_reason = dict(fallback)
+    missing_reason.pop("fallback_reason_code")
+    assert list(schema.iter_errors(missing_reason))
+    with pytest.raises(ValidationError):
+        SymptomAnalysisResult.model_validate(missing_reason)
+
+    reason_on_success = dict(succeeded)
+    reason_on_success["fallback_reason_code"] = "NO_EVIDENCE"
+    assert list(schema.iter_errors(reason_on_success))
+    with pytest.raises(ValidationError):
+        SymptomAnalysisResult.model_validate(reason_on_success)
 
 
 def test_symptom_request_contract_and_runtime_reject_same_boundaries():
@@ -248,7 +297,7 @@ def test_all_ai_contract_schemas_are_versioned_and_well_formed():
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
         Draft202012Validator.check_schema(schema)
         assert schema["$id"]
-        assert schema["x-contract-version"] == "3.0.0"
+        assert schema["x-contract-version"] == "4.0.0"
 
 
 @pytest.mark.parametrize(
@@ -441,7 +490,7 @@ def test_backend_integration_environment_manifest_is_reproducible():
     )
     assert manifest["python_version"] == "3.13.13"
     assert manifest["dependency_manifest"] == "ai/requirements.lock"
-    assert manifest["contract_version"] == "3.0.0"
+    assert manifest["contract_version"] == "4.0.0"
     assert manifest["ai_modes"] == ["mock", "local"]
     assert manifest["required_environment_variable_names"]["mock"] == []
     assert manifest["required_environment_variable_names"]["local_general_or_caution"] == [
@@ -511,7 +560,7 @@ def test_runtime_identity_matches_pipeline_and_retrieval_manifests():
         Path("ai/prompts/prompt_registry.yaml").read_text(encoding="utf-8")
     )
 
-    assert runtime["contract_version"] == "3.0.0"
+    assert runtime["contract_version"] == "4.0.0"
     assert runtime["public_response_policy"] == "NOT_EXPOSED"
     assert runtime["backend_delivery"]["method"] == "BACKEND_ENV_AND_SHARED_MANIFEST"
     assert runtime["backend_delivery"]["environment_mapping"] == {

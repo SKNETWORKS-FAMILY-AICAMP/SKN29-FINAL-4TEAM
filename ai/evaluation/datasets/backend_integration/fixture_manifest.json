@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "contract_version": "3.0.0",
+  "contract_version": "4.0.0",
   "runner_command": ".\\ai\\.venv\\Scripts\\python.exe -m pytest ai\\tests\\unit\\test_backend_integration_fixtures.py -q",
   "cases": [
     {

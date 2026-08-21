@@ -17,7 +17,7 @@ from .common import (
 )
 from .consultation_summary import ConsultationSummaryRequest, ConsultationSummaryResult
 from .guidance import UsageGuidance
-from .pipeline import SymptomAnalysisResult
+from .pipeline import FallbackReasonCode, SymptomAnalysisResult
 from .retrieval import EvidenceReference
 from .safety import SafetyAssessment
 from .symptom import FollowUpQuestion, MissingField, StructuredSymptom
@@ -47,5 +47,6 @@ __all__ = [
     "ConsultationSummaryRequest",
     "TechnicianReportResult",
     "TechnicianReportRequest",
+    "FallbackReasonCode",
     "SymptomAnalysisResult",
 ]
