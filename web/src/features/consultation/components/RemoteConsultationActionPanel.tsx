@@ -174,8 +174,28 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
           </button>
         ))}
       </div>
-      {save.success && <p className="v6-action-message is-success" role="status">{save.success.message}</p>}
-      {save.error && <p className="v6-action-message" role="alert">{save.error.message}</p>}
+      {save.success && (
+        <p className="v6-action-message is-success" role="status">
+          {save.success.message}
+          <small>
+            상태 {save.success.status} · 상태 버전 {save.success.stateVersion}
+            {save.success.correlationId
+              ? ` · 확인 번호: ${save.success.correlationId}`
+              : ""}
+          </small>
+        </p>
+      )}
+      {save.error && (
+        <p
+          className={`v6-action-message is-${save.error.kind.toLowerCase()}`}
+          role="alert"
+        >
+          {save.error.message}
+          {save.error.correlationId && (
+            <small>확인 번호: {save.error.correlationId}</small>
+          )}
+        </p>
+      )}
       {save.error?.kind === "CONFLICT" && (
         <button className="v6-button v6-button--secondary v6-button--full" type="button" onClick={onRefresh}>최신 상태 다시 불러오기</button>
       )}

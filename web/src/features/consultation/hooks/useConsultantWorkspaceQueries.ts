@@ -14,6 +14,7 @@ import {
 export type ConsultantQueryStatus = "idle" | "loading" | "success" | "error";
 
 interface QueryState<TData> {
+  correlationId: string | null;
   data: TData | null;
   error: unknown | null;
   status: ConsultantQueryStatus;
@@ -24,6 +25,7 @@ interface StoredQueryState<TData> extends QueryState<TData> {
 }
 
 export interface ConsultantQueryResult<TData> extends QueryState<TData> {
+  isConflict: boolean;
   isForbidden: boolean;
   isNotFound: boolean;
   retry: () => void;
@@ -31,6 +33,10 @@ export interface ConsultantQueryResult<TData> extends QueryState<TData> {
 
 function hasStatus(error: unknown, status: number): boolean {
   return error instanceof ApiClientError && error.status === status;
+}
+
+function getErrorCorrelationId(error: unknown): string | null {
+  return error instanceof ApiClientError ? (error.correlationId ?? null) : null;
 }
 
 export function useConsultantInquiryListQuery(
@@ -46,7 +52,13 @@ export function useConsultantInquiryListQuery(
   const requestKey = `${queryKey}:${retryCount}`;
   const [state, setState] = useState<
     StoredQueryState<ConsultantInquiryListViewModel>
-  >({ data: null, error: null, requestKey: "", status: "loading" });
+  >({
+    correlationId: null,
+    data: null,
+    error: null,
+    requestKey: "",
+    status: "loading",
+  });
 
   useEffect(() => {
     let active = true;
@@ -54,6 +66,7 @@ export function useConsultantInquiryListQuery(
       (result) => {
         if (active) {
           setState({
+            correlationId: result.correlationId,
             data: result.data,
             error: null,
             requestKey,
@@ -63,7 +76,13 @@ export function useConsultantInquiryListQuery(
       },
       (error: unknown) => {
         if (active) {
-          setState({ data: null, error, requestKey, status: "error" });
+          setState({
+            correlationId: getErrorCorrelationId(error),
+            data: null,
+            error,
+            requestKey,
+            status: "error",
+          });
         }
       },
     );
@@ -76,9 +95,13 @@ export function useConsultantInquiryListQuery(
   const currentState: QueryState<ConsultantInquiryListViewModel> =
     state.requestKey === requestKey
       ? state
-      : { data: null, error: null, status: "loading" };
+      : { correlationId: null, data: null, error: null, status: "loading" };
   return {
     ...currentState,
+    isConflict:
+      hasStatus(currentState.error, 409) ||
+      (currentState.error instanceof ApiClientError &&
+        currentState.error.kind === "CONFLICT"),
     isForbidden: hasStatus(currentState.error, 403),
     isNotFound: hasStatus(currentState.error, 404),
     retry,
@@ -93,7 +116,13 @@ export function useConsultantInquiryDetailQuery(
   const requestKey = `${inquiryId ?? "idle"}:${retryCount}`;
   const [state, setState] = useState<
     StoredQueryState<ConsultantInquiryDetailViewModel>
-  >({ data: null, error: null, requestKey: "", status: "idle" });
+  >({
+    correlationId: null,
+    data: null,
+    error: null,
+    requestKey: "",
+    status: "idle",
+  });
 
   useEffect(() => {
     let active = true;
@@ -106,6 +135,7 @@ export function useConsultantInquiryDetailQuery(
       (result) => {
         if (active) {
           setState({
+            correlationId: result.correlationId,
             data: result.data,
             error: null,
             requestKey,
@@ -115,7 +145,13 @@ export function useConsultantInquiryDetailQuery(
       },
       (error: unknown) => {
         if (active) {
-          setState({ data: null, error, requestKey, status: "error" });
+          setState({
+            correlationId: getErrorCorrelationId(error),
+            data: null,
+            error,
+            requestKey,
+            status: "error",
+          });
         }
       },
     );
@@ -128,14 +164,28 @@ export function useConsultantInquiryDetailQuery(
   const previousDataForSameInquiry =
     state.data !== null && state.data.inquiryId === inquiryId;
   const currentState: QueryState<ConsultantInquiryDetailViewModel> = !inquiryId
-    ? { data: null, error: null, status: "idle" }
+    ? { correlationId: null, data: null, error: null, status: "idle" }
     : state.requestKey === requestKey
       ? state
       : previousDataForSameInquiry
-        ? { data: state.data, error: null, status: "success" }
-        : { data: null, error: null, status: "loading" };
+        ? {
+            correlationId: state.correlationId,
+            data: state.data,
+            error: null,
+            status: "success",
+          }
+        : {
+            correlationId: null,
+            data: null,
+            error: null,
+            status: "loading",
+          };
   return {
     ...currentState,
+    isConflict:
+      hasStatus(currentState.error, 409) ||
+      (currentState.error instanceof ApiClientError &&
+        currentState.error.kind === "CONFLICT"),
     isForbidden: hasStatus(currentState.error, 403),
     isNotFound: hasStatus(currentState.error, 404),
     retry,

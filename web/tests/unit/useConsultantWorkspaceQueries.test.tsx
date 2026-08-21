@@ -92,6 +92,7 @@ describe("상담사 화면 비동기 Query 상태", () => {
     });
     await waitFor(() => expect(result.current.status).toBe("success"));
     expect(result.current.data).toEqual(EMPTY_LIST);
+    expect(result.current.correlationId).toBe("corr-list");
   });
 
   it("목록 오류 뒤 재시도하면 같은 Query를 다시 호출한다", async () => {
@@ -117,6 +118,7 @@ describe("상담사 화면 비동기 Query 상태", () => {
     const repository = createRepository({
       getInquiryDetail: vi.fn(async () => {
         throw new ApiClientError({
+          correlationId: "corr-forbidden",
           kind: "FORBIDDEN",
           status: 403,
           message: "forbidden",
@@ -130,6 +132,7 @@ describe("상담사 화면 비동기 Query 상태", () => {
 
     await waitFor(() => expect(result.current.status).toBe("error"));
     expect(result.current.isForbidden).toBe(true);
+    expect(result.current.correlationId).toBe("corr-forbidden");
   });
 
   it("상세 404는 배정 여부를 구분하지 않는 찾을 수 없음 상태로 전달한다", async () => {
@@ -197,6 +200,7 @@ describe("상담사 화면 비동기 Query 상태", () => {
     });
     await waitFor(() => expect(result.current.data?.stateVersion).toBe(4));
     expect(getInquiryDetail).toHaveBeenCalledTimes(2);
+    expect(result.current.correlationId).toBe("corr-refresh");
   });
 
   it("문의 ID가 없으면 상세 API를 호출하지 않는다", () => {

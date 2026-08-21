@@ -24,6 +24,7 @@ import {
 import CompactConsultationDesk from "../../features/consultation/components/CompactConsultationDesk";
 import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
 import ConsultantUserMenu from "../../features/consultation/components/ConsultantUserMenu";
+import RemoteConsultantFirstDetailPanel from "../../features/consultation/components/RemoteConsultantFirstDetailPanel";
 import useCounselorQueueFilters from "../../features/consultation/hooks/useCounselorQueueFilters";
 import { useConsultantInquiryListQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
 import type {
@@ -611,13 +612,7 @@ export default function ConsultantDashboardPage() {
       );
     }
 
-    if (useDashboardMockData) {
-      setSelectedInquiryId(inquiryId);
-      return;
-    }
-    navigate(createInquiryDetailPath(inquiryId), {
-      state: { returnTo: `/consultant/dashboard${location.search}` },
-    });
+    setSelectedInquiryId(inquiryId);
   };
 
   const openInquiryList = (
@@ -1330,7 +1325,7 @@ export default function ConsultantDashboardPage() {
         </div>
       </main>
 
-      {selectedInquiry && (
+      {selectedInquiryId && (
         <div className="consultant-detail-layer">
           <button
             type="button"
@@ -1344,52 +1339,69 @@ export default function ConsultantDashboardPage() {
             aria-modal="true"
             aria-labelledby="consultant-detail-title"
           >
-            <header className="consultant-detail-drawer__head">
-              <div>
-                <small>{selectedInquiry.inquiryCode}</small>
-                <h2 id="consultant-detail-title">
-                  {selectedInquiry.customerName} · {selectedInquiry.symptomLabel}
-                </h2>
-                <p>선택한 문의의 상담과 기사 일정을 여기에서 처리합니다.</p>
-              </div>
-              <button
-                type="button"
-                aria-label="문의 상세 닫기"
-                onClick={() => setSelectedInquiryId(null)}
-              >
-                <span aria-hidden="true">×</span>
-              </button>
-            </header>
+            {useDashboardMockData && selectedInquiry ? (
+              <>
+                <header className="consultant-detail-drawer__head">
+                  <div>
+                    <small>{selectedInquiry.inquiryCode}</small>
+                    <h2 id="consultant-detail-title">
+                      {selectedInquiry.customerName} · {selectedInquiry.symptomLabel}
+                    </h2>
+                    <p>선택한 문의의 상담과 기사 일정을 여기에서 처리합니다.</p>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="문의 상세 닫기"
+                    onClick={() => setSelectedInquiryId(null)}
+                  >
+                    <span aria-hidden="true">×</span>
+                  </button>
+                </header>
 
-            <div className="consultant-detail-drawer__body">
-              <CompactConsultationDesk
-                key={selectedInquiry.inquiryId}
-                inquiry={selectedInquiry}
-                autoAdvance={autoAdvance}
-                onAutoAdvanceChange={setAutoAdvance}
-                onAdvanceToNext={advanceToNextInquiry}
-                onInquiryStateChange={(update) => {
-                  setInquiryStateUpdates((current) => ({
-                    ...current,
-                    [selectedInquiry.inquiryId]: update,
-                  }));
-                  const nextBucket = getCounselorWorkBucket(update.status);
-                  setActiveBucket(nextBucket);
-                  setWorkFocus(
-                    nextBucket === "NEW"
-                      ? "NEW"
-                      : nextBucket === "IN_PROGRESS"
-                        ? "IN_PROGRESS"
-                        : "ALL",
-                  );
+                <div className="consultant-detail-drawer__body">
+                  <CompactConsultationDesk
+                    key={selectedInquiry.inquiryId}
+                    inquiry={selectedInquiry}
+                    autoAdvance={autoAdvance}
+                    onAutoAdvanceChange={setAutoAdvance}
+                    onAdvanceToNext={advanceToNextInquiry}
+                    onInquiryStateChange={(update) => {
+                      setInquiryStateUpdates((current) => ({
+                        ...current,
+                        [selectedInquiry.inquiryId]: update,
+                      }));
+                      const nextBucket = getCounselorWorkBucket(update.status);
+                      setActiveBucket(nextBucket);
+                      setWorkFocus(
+                        nextBucket === "NEW"
+                          ? "NEW"
+                          : nextBucket === "IN_PROGRESS"
+                            ? "IN_PROGRESS"
+                            : "ALL",
+                      );
+                    }}
+                    onOpenFullDetail={() =>
+                      navigate(createInquiryDetailPath(selectedInquiry.inquiryId), {
+                        state: {
+                          returnTo: `/consultant/dashboard${location.search}`,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              </>
+            ) : !useDashboardMockData ? (
+              <RemoteConsultantFirstDetailPanel
+                key={selectedInquiryId}
+                inquiryId={selectedInquiryId}
+                returnTo={`/consultant/dashboard${location.search}`}
+                onClose={() => setSelectedInquiryId(null)}
+                onRefreshWorkspace={() => {
+                  listQuery.retry();
+                  setDashboardRetryCount((current) => current + 1);
                 }}
-                onOpenFullDetail={() =>
-                  navigate(createInquiryDetailPath(selectedInquiry.inquiryId), {
-                    state: { returnTo: `/consultant/dashboard${location.search}` },
-                  })
-                }
               />
-            </div>
+            ) : null}
           </section>
         </div>
       )}

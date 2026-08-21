@@ -6,7 +6,19 @@ import RemoteConsultationActionPanel from "../../src/features/consultation/compo
 import type { ConsultantInquiryDetailViewModel } from "../../src/features/consultation/model/consultantWorkspaceRemoteMapper";
 
 const hookMocks = vi.hoisted(() => ({
+  error: null as null | {
+    correlationId?: string;
+    kind: string;
+    message: string;
+  },
   execute: vi.fn(),
+  success: null as null | {
+    allowedActions: readonly unknown[];
+    correlationId: string;
+    message: string;
+    stateVersion: number;
+    status: string;
+  },
 }));
 
 vi.mock(
@@ -19,8 +31,8 @@ vi.mock(
     }) => ({
       isSaving: false,
       isWriteEnabled: true,
-      success: null,
-      error: null,
+      success: hookMocks.success,
+      error: hookMocks.error,
       currentStatus: inquiry.status,
       stateVersion: inquiry.stateVersion,
       allowedActions: inquiry.allowedActions,
@@ -90,8 +102,10 @@ function createDetail(
 
 describe("Remote 상담 처리 Panel", () => {
   beforeEach(() => {
+    hookMocks.error = null;
     hookMocks.execute.mockReset();
     hookMocks.execute.mockResolvedValue({ ok: true });
+    hookMocks.success = null;
   });
 
   it("요약 확정 입력을 제공하고 동일 문의 재조회에도 작성 내용을 유지한다", async () => {
@@ -258,6 +272,47 @@ describe("Remote 상담 처리 Panel", () => {
           visitRequired: "NOT_REQUIRED",
         }),
       }),
+    );
+  });
+
+  it("처리 성공과 오류의 확인 번호를 상담사에게 표시한다", () => {
+    hookMocks.success = {
+      allowedActions: [],
+      correlationId: "corr-action-success",
+      message: "상담 요약을 저장했습니다.",
+      stateVersion: 8,
+      status: "CONSULTATION_IN_PROGRESS",
+    };
+
+    const { rerender } = render(
+      <RemoteConsultationActionPanel
+        inquiry={createDetail()}
+        onOpenVisit={vi.fn()}
+        onRefresh={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "확인 번호: corr-action-success",
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("상태 버전 8");
+
+    hookMocks.success = null;
+    hookMocks.error = {
+      correlationId: "corr-action-conflict",
+      kind: "CONFLICT",
+      message: "문의 상태가 변경되었습니다.",
+    };
+    rerender(
+      <RemoteConsultationActionPanel
+        inquiry={createDetail()}
+        onOpenVisit={vi.fn()}
+        onRefresh={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "확인 번호: corr-action-conflict",
     );
   });
 });

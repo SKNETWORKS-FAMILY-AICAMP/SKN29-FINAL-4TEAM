@@ -303,8 +303,18 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     isDetailResponse(response, fixture.inquiryId),
   );
   await fixtureCard.click();
-  await expect(page).toHaveURL(detailPath);
+  await expect(page.getByRole("dialog")).toBeVisible();
   await expectInitialDetailContract(await initialDetailResponse, fixture);
+  await expect(
+    page.locator('[data-action-code="START_CONSULTATION"]'),
+  ).toBeVisible();
+
+  const fullDetailResponse = page.waitForResponse((response) =>
+    isDetailResponse(response, fixture.inquiryId),
+  );
+  await page.getByRole("button", { name: "전체 기록 보기" }).click();
+  await expect(page).toHaveURL(detailPath);
+  await expectInitialDetailContract(await fullDetailResponse, fixture);
   await expect(
     page.locator('[data-action-code="START_CONSULTATION"]'),
   ).toBeVisible();
