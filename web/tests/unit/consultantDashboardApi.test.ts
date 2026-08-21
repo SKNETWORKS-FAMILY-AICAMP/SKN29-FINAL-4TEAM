@@ -86,7 +86,10 @@ describe("로컬 합성 상담사 Dashboard API", () => {
     });
     expect(result.notices[0]?.noticeCode).toBe("NOTICE-001");
     expect(result.consultants[0]?.extension).toBe("02-0000-0001");
-    expect(result.technicians[0]?.phone).toBe("010-0000-0001");
+    expect(result.technicians[0]).toMatchObject({
+      userId: "00000000-0000-4000-8000-000000000003",
+      phone: "010-0000-0001",
+    });
     expect(result.inquiries[0]?.inquiryCode).toBe("WEB-G4-INQ-001");
   });
 

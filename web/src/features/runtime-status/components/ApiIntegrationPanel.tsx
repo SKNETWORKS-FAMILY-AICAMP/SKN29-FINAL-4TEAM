@@ -7,7 +7,7 @@ import {
 const COVERAGE = [
   {
     label: "상담사 P0 Runtime",
-    value: `${getApiIntegrationCount("CONSULTANT", "RUNTIME_DONE")} / 11`,
+    value: `${getApiIntegrationCount("CONSULTANT", "RUNTIME_DONE")} / 12`,
     tone: "ready",
   },
   {
@@ -39,8 +39,8 @@ export default function ApiIntegrationPanel() {
         ))}
       </div>
       <p>
-        상담사 P0 Endpoint Runtime은 구현되었습니다. 신규 방문의 기사 선택
-        Source와 AI·Evidence 공개 DTO는 별도 계약 해제가 필요합니다.
+        상담사 P0 Endpoint와 합성 방문기사 선택 Runtime은 구현되었습니다.
+        AI·Evidence 공개 DTO는 별도 계약 해제가 필요합니다.
       </p>
     </section>
   );

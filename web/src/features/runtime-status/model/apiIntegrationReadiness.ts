@@ -47,9 +47,10 @@ export const API_INTEGRATION_READINESS: readonly ApiIntegrationReadinessItem[] =
     key: "technician-selection-source",
     group: "CONSULTANT",
     label: "합성 기사 선택 Source",
-    status: "BLOCKED_BY_BACKEND",
-    contractPath: "contracts/api/paths/visits.yaml",
-    blocker: "기사 목록 Endpoint 또는 승인된 공용 Fixture가 필요합니다.",
+    method: "GET",
+    endpoint: "/api/v1/consultant/dashboard",
+    status: "RUNTIME_DONE",
+    contractPath: "contracts/api/paths/operations.yaml",
   },
   {
     key: "consultant-ai-evidence",
