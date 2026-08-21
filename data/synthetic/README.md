@@ -5,6 +5,11 @@
 `db-smoke`·`db-full` 적재 대상이 아니며, `NOT_IMPORTED`와
 `NOT_VERIFIED` 상태를 정식 승격 전까지 유지한다.
 
+`candidates/manual_3model_candidate_scenarios.json`은 매뉴얼 기반 30건을
+`mvp`와 `three_model_integration` Runtime Profile별로 검증하기 위한
+후보 데이터다. Current Runtime과 Target Oracle을 분리하며 AI·RAG·Backend
+실행 증거와 독립 검토 전에는 Golden Set으로 승격하지 않는다.
+
 실제 개인정보를 포함하지 않는 결정적 시연·테스트 데이터입니다.
 
 ## 규모

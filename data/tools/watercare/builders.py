@@ -6,6 +6,7 @@ import csv
 import hashlib
 from pathlib import Path
 from typing import Any
+import uuid
 
 from .config import PipelineConfig
 from .io import (
@@ -303,6 +304,38 @@ def _product_expansion_candidate_rows(
     return rows
 
 
+def _manual_three_model_candidate_rows(
+    config: PipelineConfig,
+) -> list[dict[str, Any]]:
+    """Build contract-complete AI requests without promoting candidates."""
+
+    definitions = config.config("manual_three_model_candidates")
+    namespace = uuid.UUID(definitions["uuid_namespace"])
+    rows: list[dict[str, Any]] = []
+    for scenario in definitions["scenarios"]:
+        scenario_id = scenario["scenario_id"]
+        request = scenario["request"]
+        row = dict(scenario)
+        row["request"] = {
+            "inquiry_id": request["inquiry_id"],
+            "correlation_id": str(
+                uuid.uuid5(
+                    namespace,
+                    f"manual-candidate:correlation:{scenario_id}",
+                )
+            ),
+            "ai_request_id": f"manual-candidate:{scenario_id}:v1",
+            "state_version": 1,
+            "raw_symptom": request["raw_symptom"],
+            "model_code": request["model_code"],
+            "selected_symptoms": request["selected_symptoms"],
+            "previous_answers": request["previous_answers"],
+        }
+        row["generated_at"] = config.generated_at
+        rows.append(row)
+    return rows
+
+
 def build_synthetic_preview(config: PipelineConfig) -> Preview:
     definitions = replace_tokens(
         config.config("synthetic"), {"generated_at": config.generated_at}
@@ -402,6 +435,12 @@ def build_synthetic_preview(config: PipelineConfig) -> Preview:
         config.path("product_expansion_candidate_output"),
         json_bytes(candidate_rows),
         len(candidate_rows),
+    )
+    manual_candidate_rows = _manual_three_model_candidate_rows(config)
+    result["manual_three_model_candidates"] = (
+        config.path("manual_three_model_candidate_output"),
+        json_bytes(manual_candidate_rows),
+        len(manual_candidate_rows),
     )
     return result
 

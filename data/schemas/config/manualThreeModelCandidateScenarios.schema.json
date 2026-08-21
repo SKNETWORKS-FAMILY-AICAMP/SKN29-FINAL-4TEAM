@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ManualThreeModelCandidateScenariosConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dataset_status",
+    "uuid_namespace",
+    "source_reference",
+    "runtime_profile_names",
+    "scenarios"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "dataset_status": {"const": "CANDIDATE"},
+    "uuid_namespace": {"type": "string", "format": "uuid"},
+    "source_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file_name", "content_classification", "decision_recorded_at"],
+      "properties": {
+        "file_name": {"type": "string", "pattern": "^[^/\\\\]+\\.md$"},
+        "content_classification": {"const": "EXTERNAL_REFERENCE_NOT_STORED"},
+        "decision_recorded_at": {"type": "string", "format": "date"}
+      }
+    },
+    "runtime_profile_names": {"const": ["mvp", "three_model_integration"]},
+    "scenarios": {
+      "type": "array",
+      "minItems": 30,
+      "maxItems": 30,
+      "items": {"$ref": "#/$defs/scenario"}
+    }
+  },
+  "$defs": {
+    "previousAnswer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question_id", "answer_text"],
+      "properties": {
+        "question_id": {"type": "string", "minLength": 1, "maxLength": 100},
+        "answer_text": {"type": "string", "minLength": 1, "maxLength": 1000}
+      }
+    },
+    "missingField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field_name", "reason", "importance"],
+      "properties": {
+        "field_name": {"type": "string", "minLength": 1, "maxLength": 100},
+        "reason": {"type": "string", "minLength": 1, "maxLength": 500},
+        "importance": {"enum": ["high", "medium", "low"]}
+      }
+    },
+    "followUpQuestion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question_id", "question_text", "options", "target_field"],
+      "properties": {
+        "question_id": {"type": "string", "minLength": 1, "maxLength": 100},
+        "question_text": {"type": "string", "minLength": 1, "maxLength": 500},
+        "options": {"type": "array", "maxItems": 10, "items": {"type": "string", "minLength": 1, "maxLength": 200}},
+        "target_field": {"type": "string", "minLength": 1, "maxLength": 100}
+      }
+    },
+    "aiOracle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["execution_status", "failure_stage", "risk_level", "usage_guidance_status", "requires_consultation", "internal_issue_codes"],
+      "properties": {
+        "execution_status": {"type": ["string", "null"], "enum": ["SUCCEEDED", "FALLBACK", null]},
+        "failure_stage": {"type": ["string", "null"], "enum": ["STRUCTURING", "RETRIEVING", "GENERATING", "VALIDATING", "CANCELLED", "FAILED", null]},
+        "risk_level": {"type": ["string", "null"], "enum": ["general", "caution", "danger", null]},
+        "usage_guidance_status": {"type": ["string", "null"], "enum": ["NORMAL", "PARTIAL_STOP", "TOTAL_STOP", "PENDING_CONSULTATION", null]},
+        "requires_consultation": {"type": ["boolean", "null"]},
+        "internal_issue_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "ragOracle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["execution_status", "expected_evidence_group_ids", "forbidden_model_codes", "expected_no_evidence"],
+      "properties": {
+        "execution_status": {"enum": ["NOT_RUN", "BLOCKED", "EXPECTED_MATCH", "NO_EVIDENCE"]},
+        "expected_evidence_group_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^EVD-[A-Z0-9-]+-[0-9]{3}$"}},
+        "forbidden_model_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "expected_no_evidence": {"type": ["boolean", "null"]}
+      }
+    },
+    "backendOracle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_candidate", "expected_state_path", "terminal_state"],
+      "properties": {
+        "event_candidate": {"type": ["string", "null"], "pattern": "^[A-Z][A-Z0-9_]+$"},
+        "expected_state_path": {"type": "array", "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"}},
+        "terminal_state": {"type": ["string", "null"], "pattern": "^[A-Z][A-Z0-9_]+$"}
+      }
+    },
+    "oracle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verification_status", "ai", "rag", "backend", "blockers"],
+      "properties": {
+        "verification_status": {"enum": ["NOT_RUN", "STATIC_CONFIRMED", "ENVIRONMENT_BLOCKED", "HOLD"]},
+        "ai": {"$ref": "#/$defs/aiOracle"},
+        "rag": {"$ref": "#/$defs/ragOracle"},
+        "backend": {"$ref": "#/$defs/backendOracle"},
+        "blockers": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "profileOracle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["current_runtime", "target_oracle"],
+      "properties": {
+        "current_runtime": {"$ref": "#/$defs/oracle"},
+        "target_oracle": {"$ref": "#/$defs/oracle"}
+      }
+    },
+    "workflowStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_role", "event", "from_state", "to_state"],
+      "properties": {
+        "actor_role": {"enum": ["CUSTOMER", "CONSULTANT", "SYSTEM"]},
+        "event": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"},
+        "from_state": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"},
+        "to_state": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"}
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scenario_id", "source_design_id", "candidate_status", "product", "family", "variant", "title", "workflow_kind", "expected_outcome", "topic_code", "request", "question_expectations", "retrieval_expectation", "runtime_profiles", "workflow_phases", "promotion", "data_classification"],
+      "properties": {
+        "scenario_id": {"type": "string", "pattern": "^SYN-(IAC606-1(?:0[1-9]|10)|IAC425-1(?:0[1-9]|10)|JAC104-0(?:2[5-9]|3[0-4]))$"},
+        "source_design_id": {"type": "string", "pattern": "^SYN-(IAC606-0(?:0[1-9]|10)|IAC425-0(?:0[1-9]|10)|JAC104-0(?:2[5-9]|3[0-4]))$"},
+        "candidate_status": {"const": "CANDIDATE"},
+        "product": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["exact_sales_code", "model_family"],
+          "properties": {
+            "exact_sales_code": {"enum": ["WPUJAC104DWH", "WPUJCC104D", "WPUIAC425SNW", "WPUIAC606SNW"]},
+            "model_family": {"enum": ["WPU-JAC104", "WPU-JCC104", "WPU-IAC425", "WPU-IAC606"]}
+          }
+        },
+        "family": {"type": "string", "minLength": 1},
+        "variant": {"enum": ["CLEAR", "AMBIGUOUS", "PERSISTENT_OR_RISK"]},
+        "title": {"type": "string", "minLength": 1, "maxLength": 300},
+        "workflow_kind": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"},
+        "expected_outcome": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"},
+        "topic_code": {"type": "string", "pattern": "^symptom_[a-z0-9_]+$"},
+        "request": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["inquiry_id", "raw_symptom", "model_code", "selected_symptoms", "previous_answers"],
+          "properties": {
+            "inquiry_id": {"type": "string", "format": "uuid"},
+            "raw_symptom": {"type": "string", "minLength": 1, "maxLength": 4000},
+            "model_code": {"enum": ["WPUJAC104DWH", "WPUJCC104D", "WPUIAC425SNW", "WPUIAC606SNW"]},
+            "selected_symptoms": {"type": "array", "maxItems": 30, "items": {"type": "string", "minLength": 1, "maxLength": 200}},
+            "previous_answers": {"type": "array", "maxItems": 50, "items": {"$ref": "#/$defs/previousAnswer"}}
+          }
+        },
+        "question_expectations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["common", "product_specific_target"],
+          "properties": {
+            "common": {"type": "array", "items": {"$ref": "#/$defs/followUpQuestion"}},
+            "product_specific_target": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["missing_fields", "followup_questions"],
+              "properties": {
+                "missing_fields": {"type": "array", "items": {"$ref": "#/$defs/missingField"}},
+                "followup_questions": {"type": "array", "items": {"$ref": "#/$defs/followUpQuestion"}}
+              }
+            }
+          }
+        },
+        "retrieval_expectation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["expected_evidence_group_ids", "forbidden_model_codes", "expected_no_evidence"],
+          "properties": {
+            "expected_evidence_group_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^EVD-[A-Z0-9-]+-[0-9]{3}$"}},
+            "forbidden_model_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "expected_no_evidence": {"type": "boolean"}
+          }
+        },
+        "runtime_profiles": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mvp", "three_model_integration"],
+          "properties": {
+            "mvp": {"$ref": "#/$defs/profileOracle"},
+            "three_model_integration": {"$ref": "#/$defs/profileOracle"}
+          }
+        },
+        "workflow_phases": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["phase", "success_state", "steps"],
+            "properties": {
+              "phase": {"enum": ["BASE_REOPEN", "FOLLOWUP_CONSULTATION_RESTART"]},
+              "success_state": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"},
+              "steps": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/workflowStep"}}
+            }
+          }
+        },
+        "promotion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["golden", "blockers"],
+          "properties": {
+            "golden": {"const": false},
+            "blockers": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+          }
+        },
+        "data_classification": {"const": "synthetic"}
+      }
+    }
+  }
+}

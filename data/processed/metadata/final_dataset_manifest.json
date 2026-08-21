@@ -1,6 +1,6 @@
 {
-  "dataset_version": "1.1.0",
-  "config_version": "1.7.0",
+  "dataset_version": "1.2.0",
+  "config_version": "1.8.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
   "status": "PASS",
   "mvp_product_code": "WPUJAC104DWH",
@@ -291,28 +291,35 @@
       "sha256": "12CB780CCCE1AF1201390A05E687CF9084826F8B8AC191C63DC550F138123F71",
       "schema": "schemas/synthetic/productExpansionE2ECase.schema.json",
       "size_bytes": 4458
+    },
+    {
+      "path": "synthetic/candidates/manual_3model_candidate_scenarios.json",
+      "records": 30,
+      "sha256": "F6F992872D5C2DDE3D35B0E163F8CDC8F70F81675DDBDCA92EFFC672CAA32195",
+      "schema": "schemas/synthetic/manualThreeModelCandidateScenario.schema.json",
+      "size_bytes": 239006
     }
   ],
   "metadata_files": [
     {
       "path": "README.md",
-      "size_bytes": 4474,
-      "sha256": "4665A1D79E7B56DC3EAF42EFDD5FD5D8FBF7A01AC7F039E9B3CA784EE605AE05"
+      "size_bytes": 4562,
+      "sha256": "A4EECB03B04CE412B278AE788EB55846B32CF4D8713A53D6D5FB3BA976EF90B1"
     },
     {
       "path": "catalog/CHANGELOG.md",
-      "size_bytes": 9787,
-      "sha256": "19498AD97B8603599745923F9DD22412015F5B9CC128772EEFAAD66ABD9C9816"
+      "size_bytes": 10808,
+      "sha256": "E42C879AA3F1C6F440221CF19120D56A60806289DFF1139AC0D1488AEF7CB71B"
     },
     {
       "path": "catalog/datasets.yaml",
-      "size_bytes": 9008,
-      "sha256": "C70266D9F75C2655D56D12A88548011AF5702DF14A0B66DBE55AE75A15BF63C8"
+      "size_bytes": 9296,
+      "sha256": "0E9A8BA494E2F7725F1C131FDE0F81B3F67C3C04C7D3660449700EBDC179FB40"
     },
     {
       "path": "catalog/field_dictionary.yaml",
       "size_bytes": 2915,
-      "sha256": "77E24F99B4E82A70CD89F74784D6139B9AFB0DCDB9D6FC6E6C46E1A7D0CED76C"
+      "sha256": "90F357FB5B1DA111E0847390D52E80D26FEBFECA04CC8DF1B22635E2C36C930B"
     },
     {
       "path": "processed/metadata/DATA_PROCESSING_SPEC.md",
@@ -326,13 +333,13 @@
     },
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
-      "size_bytes": 22290,
-      "sha256": "091A107D2C91858A27306C0976D394151E94C803BE85BA8D2F82DD19173126BB"
+      "size_bytes": 22291,
+      "sha256": "5F64A95F175829AAD4DEB9F132BAE533953FABBD9571661E53653A3F6CFBF353"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
-      "size_bytes": 12543,
-      "sha256": "6482B74773F1C5D83D69C9EE38BC8D323AB01A0860B39818DCD3AB33D637435A"
+      "size_bytes": 12861,
+      "sha256": "5ADE92DB8F1B5DE04F2D422618F571A10D499C9C2B1362F1ED1332EF93A33792"
     },
     {
       "path": "processed/metadata/error_missing_list.csv",
@@ -361,8 +368,8 @@
     },
     {
       "path": "synthetic/README.md",
-      "size_bytes": 1108,
-      "sha256": "D8904C590E83BACDF7AF8F5B79BABF7364F288C737918E805E3CD30EF577832E"
+      "size_bytes": 1436,
+      "sha256": "D630C6AA403747AD268E6799EED768736E72815E4ED5EDBF2BC793C04DB6B630"
     },
     {
       "path": "tools/README.md",
@@ -392,14 +399,19 @@
       "sha256": "2AFDF9CC83615876E214FACA45ACF6BA2E712F7B4DB6ED8EF6C39521877CA6EF"
     },
     {
+      "path": "schemas/config/manualThreeModelCandidateScenarios.schema.json",
+      "size_bytes": 10754,
+      "sha256": "F166A0A8D2A52D76E06D45D71B783772DE6C68CAC701048EB493BB607DE514F9"
+    },
+    {
       "path": "schemas/config/ocrTranscriptions.schema.json",
       "size_bytes": 985,
       "sha256": "B87532C3572B0D4F238C24B1E283AE0217A8D88EF882F550688DEC548B39F242"
     },
     {
       "path": "schemas/config/pipeline.schema.json",
-      "size_bytes": 3861,
-      "sha256": "B7E50FDF5B2EDC98EAE9BD4BCEE273976622A656D9D160B22F05BEEF731B15CD"
+      "size_bytes": 4087,
+      "sha256": "D6A731809A2AC6074F586597C3F945DBFB0EA999383F13A70481E406BAEAB6DF"
     },
     {
       "path": "schemas/config/productExpansionE2ECases.schema.json",
@@ -535,6 +547,11 @@
       "path": "schemas/synthetic/expectedWorkflow.schema.json",
       "size_bytes": 4989,
       "sha256": "A3AC4F2138A2DB68448DCA16D178D4791D2EF8993E62AA744A179FA9DAD87E55"
+    },
+    {
+      "path": "schemas/synthetic/manualThreeModelCandidateScenario.schema.json",
+      "size_bytes": 2826,
+      "sha256": "3458BF376D9347A88E1415E9B1443DB2F100AE7D8540FB11CB19EA2BAC22F9C2"
     },
     {
       "path": "schemas/synthetic/productExpansionE2ECase.schema.json",
@@ -711,7 +728,7 @@
     {
       "path": "tools/tests/test_data_vocabulary.py",
       "size_bytes": 4918,
-      "sha256": "D03661E4EC7F20BA2DD7810399BAF474741F25ECA24182C58D4E6F3CAFCEB2BB"
+      "sha256": "B1A6C5BEC28AEA1A59076B017A3FF589C1BF4DF7927AF8793B010102C4F9C955"
     },
     {
       "path": "tools/tests/test_faq_corpus_qa.py",
@@ -737,6 +754,11 @@
       "path": "tools/tests/test_manual_corpus_qa.py",
       "size_bytes": 1581,
       "sha256": "A76BFEA91F1792034F65B9E61FD7D36BC0E11505580DCE11CA423E7C911F6730"
+    },
+    {
+      "path": "tools/tests/test_manual_three_model_candidates.py",
+      "size_bytes": 8080,
+      "sha256": "2B3965D655EB217DDFD3E72BACE98DD715DE274CB87F4619AEECFD5A758A4151"
     },
     {
       "path": "tools/tests/test_pipeline_safety.py",
@@ -785,8 +807,8 @@
     },
     {
       "path": "tools/watercare/builders.py",
-      "size_bytes": 16143,
-      "sha256": "E80C1BE9D528F1DFA18255CE61C085F3FE393E0F863C61A82D86880E33C94D6E"
+      "size_bytes": 17604,
+      "sha256": "826126DB38B51C0C55FE57586340477889F82DBD0BCBF288D1903E2351B63D43"
     },
     {
       "path": "tools/watercare/cli.py",
@@ -810,13 +832,13 @@
     },
     {
       "path": "tools/watercare/operations.py",
-      "size_bytes": 29764,
-      "sha256": "6D0D51FD6AEE41EC5A9B7F02972CBF86DF76A54E726941C3F12B9C951EE33C89"
+      "size_bytes": 30243,
+      "sha256": "753C2D5D920E3E1EDEE2332A1DADCFE6C96E118F320C0D94AF63A9352D892A51"
     },
     {
       "path": "tools/watercare/validation.py",
-      "size_bytes": 57641,
-      "sha256": "EB0A298C9BB8A136C81922B19F0284D1DF8F178C55E035895717CC27886D7B2A"
+      "size_bytes": 70936,
+      "sha256": "EBFAF3D4F0CFAA3446CDE3CCBE8A64861F87A8CEEF70D4D3FAA5B349ACE5D558"
     }
   ],
   "config_files": [
@@ -847,8 +869,8 @@
     },
     {
       "path": "config/pipeline.json",
-      "size_bytes": 5400,
-      "sha256": "5B93AF57E8388C1D77330B1EFC3AD034F4223E807B4DF24D35FA2E657E69A8D0"
+      "size_bytes": 5745,
+      "sha256": "78B259E786E76EF8433E5C43D4F8DE2424A2C986390A794B969D648D433D1B31"
     },
     {
       "path": "config/rag/jac104_chunks.json",
@@ -869,6 +891,11 @@
       "path": "config/rag/three_model_evaluation_cases.json",
       "size_bytes": 28732,
       "sha256": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1"
+    },
+    {
+      "path": "config/synthetic/manual_3model_candidate_scenarios.json",
+      "size_bytes": 248061,
+      "sha256": "417198983292BBA1AB199F3262A12D13F562178B7A802138CFCA17DAFEB7D0EB"
     },
     {
       "path": "config/synthetic/product_expansion_e2e_cases.json",
@@ -894,8 +921,8 @@
   "template_files": [
     {
       "path": "templates/data_readme.md.tpl",
-      "size_bytes": 4477,
-      "sha256": "D4F13E2714D3D241AB0CE430C233D4D0C42F887CDD5FA81EBC682BC1A66A638F"
+      "size_bytes": 4565,
+      "sha256": "047DDA50D272036C862394ED84370A7279689D84CDEB92599DB070A43FF7E9C8"
     },
     {
       "path": "templates/processing_spec.md.tpl",
@@ -926,8 +953,8 @@
     },
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
-      "size_bytes": 2244,
-      "sha256": "B5237A7AD6F69D4BBF6F354A14C27CC57637F0393E1E7C0BD01A8995475C6A2C"
+      "size_bytes": 2285,
+      "sha256": "A02486BED6832386CEDC4E8750357DA2D76729CD6CFBCE3BB1BBB4119ACA4E63"
     },
     {
       "path": "processed/validation/business/latest_representative_e2e_report.json",
@@ -952,12 +979,12 @@
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
       "size_bytes": 1340,
-      "sha256": "28B287D314908D89D3F06333DD0B11EBEE35D8E7B4FE0D3440BF5D277F966ED1"
+      "sha256": "2F0E5FBC98607A9C5A95E9E42B8D5F386B2D976F3DFDEAA703FEB3D4352E6922"
     },
     {
       "path": "processed/validation/latest_qa_summary.json",
-      "size_bytes": 7768,
-      "sha256": "1F07568D7CE494ECCC0ED46FF085E55B694009A22073FCF635E01735B954A676"
+      "size_bytes": 8741,
+      "sha256": "352842FB9EBB170F198CEC52CC2F845D310749D4A27002574D189EB94CC34A5A"
     },
     {
       "path": "processed/validation/ocr_evidence/image_manifest.csv",
@@ -977,7 +1004,7 @@
     {
       "path": "processed/validation/quality/latest_quality_report.json",
       "size_bytes": 1246,
-      "sha256": "842D9433F9EAB5C71F8308B73E1FA5B55B76CD2DA0549F4AC8724EB2A45B7236"
+      "sha256": "284539D9CC7EC2614DBC557195AFAC2C431180840AB1F7B8BFA738B268DE84BE"
     },
     {
       "path": "processed/validation/rag_experiments/b1_chunking_240d0a1_20260812_01/case_results.jsonl",
@@ -1042,12 +1069,12 @@
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
       "size_bytes": 1151,
-      "sha256": "282053E510835F4FC882D8036D49727EE805E51958DA8307BE8978AF8CFCD1DA"
+      "sha256": "12AEA0FD1AE38888196DA8CB71F92158AA334B328B146139E4AC79F38A1F1E4D"
     },
     {
       "path": "processed/validation/schema/latest_schema_report.json",
-      "size_bytes": 9929,
-      "sha256": "8ACB1B8E75162D35991C8DE578295782FCAB59A9CA3F7173D83B00EBD44821A4"
+      "size_bytes": 10185,
+      "sha256": "9F1A57B28D022F7CD7525121EAADC8600FBD540F74A319FBC2EFF99A7F9C9200"
     },
     {
       "path": "processed/validation/step3/latest_step3_report.json",
@@ -1056,8 +1083,8 @@
     },
     {
       "path": "processed/validation/step4/latest_step4_report.json",
-      "size_bytes": 3741,
-      "sha256": "EE3D70E1C8470978591C527EF7B0CB0DC0963BB0F874D510E63F166DB1EAA9F6"
+      "size_bytes": 3887,
+      "sha256": "93925211424B1575C94F79ACB9D39CC1F302541978476C68530BE8499A4CDB57"
     },
     {
       "path": "processed/validation/step4/representative_e2e_fixture_report.json",
@@ -1133,6 +1160,7 @@
     "synthetic_followup_confirmations": 1,
     "synthetic_fixture_records": 369,
     "product_expansion_e2e_candidates": 2,
+    "manual_three_model_candidates": 30,
     "supported_products": 3,
     "reference_manual_pages": 144,
     "rag_expansion_parents": 15,
@@ -1150,10 +1178,10 @@
     "canonical_drift_files": 0
   },
   "toolchain": {
-    "python_files": 42,
-    "python_lines": 8955,
+    "python_files": 43,
+    "python_lines": 9526,
     "max_wrapper_lines": 10,
-    "max_module_lines": 1479
+    "max_module_lines": 1794
   },
   "rag_policy": {
     "mvp_indexed_model": "WPUJAC104DWH",

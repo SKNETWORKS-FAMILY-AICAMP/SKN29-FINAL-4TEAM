@@ -1,5 +1,5 @@
 {
-  "dataset_version": "1.1.0",
+  "dataset_version": "1.2.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
   "source_commit": "01053a4697e7a363b12d3c2e9820ac484b7b9bad",
   "contract_alignment": {
@@ -7,7 +7,7 @@
     "status": "TEAM_APPROVED",
     "data_projection_consumes_contract": true,
     "backend_runtime_verified": true,
-    "pipeline_config_sha256": "5B93AF57E8388C1D77330B1EFC3AD034F4223E807B4DF24D35FA2E657E69A8D0",
+    "pipeline_config_sha256": "78B259E786E76EF8433E5C43D4F8DE2424A2C986390A794B969D648D433D1B31",
     "contract_mapping_sha256": "1673C4358290172EAC17161F6C3D7B91D5C572D58B180E7D59C0A06418CA8BDA",
     "source_hashes_verified": true
   },

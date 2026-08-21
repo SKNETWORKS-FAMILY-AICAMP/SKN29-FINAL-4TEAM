@@ -317,6 +317,47 @@ EXPECTED_PRODUCT_EXPANSION_CASES = {
     },
 }
 
+EXPECTED_MANUAL_CANDIDATE_IDS = {
+    *(f"SYN-IAC425-{index:03d}" for index in range(101, 111)),
+    *(f"SYN-IAC606-{index:03d}" for index in range(101, 111)),
+    *(f"SYN-JAC104-{index:03d}" for index in range(25, 35)),
+}
+
+EXPECTED_MANUAL_SOURCE_ID_MAP = {
+    **{
+        f"SYN-IAC425-{index:03d}": f"SYN-IAC425-{index - 100:03d}"
+        for index in range(101, 111)
+    },
+    **{
+        f"SYN-IAC606-{index:03d}": f"SYN-IAC606-{index - 100:03d}"
+        for index in range(101, 111)
+    },
+    **{
+        f"SYN-JAC104-{index:03d}": f"SYN-JAC104-{index:03d}"
+        for index in range(25, 35)
+    },
+}
+
+MANUAL_NEGATIVE_SCENARIOS = {
+    "SYN-IAC425-110",
+    "SYN-IAC606-110",
+    "SYN-JAC104-032",
+    "SYN-JAC104-033",
+    "SYN-JAC104-034",
+}
+
+MANUAL_HOT_WATER_DANGER_SCENARIOS = {
+    "SYN-IAC425-109",
+    "SYN-IAC606-108",
+    "SYN-JAC104-031",
+}
+
+MANUAL_LEAK_DANGER_SCENARIOS = {
+    "SYN-IAC425-108",
+    "SYN-IAC606-107",
+    "SYN-JAC104-029",
+}
+
 RUNTIME_DATABASE_PATTERN = re.compile(
     r"^watercare_synthetic_(smoke|full)_verify_[0-9]{8}"
     r"(?:_[a-z0-9]+)?$"
@@ -945,6 +986,7 @@ def validate_product_expansion_coverage(
         for row in read_jsonl(config.path("rag_expansion_evidence_output"))
     }
 
+
     configured_codes = set(definitions["active_product_codes"])
     supported_codes = {
         row["exact_sales_code"] for row in supported["products"]
@@ -1136,6 +1178,273 @@ def validate_product_expansion_coverage(
     }
 
 
+def validate_manual_three_model_candidates(
+    config: PipelineConfig,
+) -> dict[str, Any]:
+    """Validate manual candidates without claiming unexecuted Runtime results."""
+
+    errors: list[str] = []
+    definitions = config.config("manual_three_model_candidates")
+    candidates = read_json(config.path("manual_three_model_candidate_output"))
+    configured = {row["scenario_id"]: row for row in definitions["scenarios"]}
+    output = {row["scenario_id"]: row for row in candidates}
+    if len(configured) != len(definitions["scenarios"]):
+        errors.append("manual_candidates:duplicate_config_scenario_id")
+    if len(output) != len(candidates):
+        errors.append("manual_candidates:duplicate_output_scenario_id")
+    if set(configured) != EXPECTED_MANUAL_CANDIDATE_IDS:
+        errors.append("manual_candidates:canonical_id_coverage")
+    if set(output) != EXPECTED_MANUAL_CANDIDATE_IDS:
+        errors.append("manual_candidates:output_id_coverage")
+    if len(candidates) != config.values["expected_counts"][
+        "manual_three_model_candidates"
+    ]:
+        errors.append("manual_candidates:count_mismatch")
+
+    evidence_groups = {
+        row["evidence_group_id"]: row
+        for row in read_jsonl(config.path("rag_expansion_evidence_output"))
+    }
+    contract_root = config.data_root.parent / "contracts"
+    request_schema = read_json(
+        contract_root / "ai/requests/SymptomAnalysisRequest.schema.json"
+    )
+    missing_field_schema = read_json(
+        contract_root / "ai/common/MissingField.schema.json"
+    )
+    followup_schema = read_json(
+        contract_root / "ai/common/FollowUpQuestion.schema.json"
+    )
+    transition_text = (
+        contract_root / "state-machine/transition-rules.yaml"
+    ).read_text(encoding="utf-8")
+    contract_events = set(
+        re.findall(
+            r"(?m)^\s*event:\s*([A-Z][A-Z0-9_]+)\s*$",
+            transition_text,
+        )
+    )
+    inquiry_states = set(config.config("vocabulary")["inquiry_statuses"])
+    prohibited_question_patterns = (
+        r"분해",
+        r"해체",
+        r"커버를\s*열",
+        r"내부를\s*(?:열|점검|확인)",
+    )
+    inquiry_ids: set[str] = set()
+    correlation_ids: set[str] = set()
+
+    for scenario_id in sorted(EXPECTED_MANUAL_CANDIDATE_IDS):
+        source = configured.get(scenario_id)
+        candidate = output.get(scenario_id)
+        if source is None or candidate is None:
+            continue
+        if source["source_design_id"] != EXPECTED_MANUAL_SOURCE_ID_MAP[
+            scenario_id
+        ]:
+            errors.append(f"manual_candidates:source_id_map:{scenario_id}")
+        if source["candidate_status"] != "CANDIDATE":
+            errors.append(f"manual_candidates:not_candidate:{scenario_id}")
+        if candidate["promotion"]["golden"] is not False:
+            errors.append(f"manual_candidates:golden_claim:{scenario_id}")
+        if candidate["request"]["model_code"] != candidate["product"][
+            "exact_sales_code"
+        ]:
+            errors.append(f"manual_candidates:model_request_mismatch:{scenario_id}")
+
+        errors.extend(
+            f"manual_candidates:request_contract:{scenario_id}:{detail}"
+            for detail in validate_schema(candidate["request"], request_schema)
+        )
+        inquiry_id = candidate["request"]["inquiry_id"]
+        correlation_id = candidate["request"]["correlation_id"]
+        if inquiry_id in inquiry_ids:
+            errors.append(f"manual_candidates:duplicate_inquiry_id:{scenario_id}")
+        if correlation_id in correlation_ids:
+            errors.append(f"manual_candidates:duplicate_correlation_id:{scenario_id}")
+        inquiry_ids.add(inquiry_id)
+        correlation_ids.add(correlation_id)
+
+        questions = candidate["question_expectations"]
+        for missing in questions["product_specific_target"]["missing_fields"]:
+            errors.extend(
+                f"manual_candidates:missing_field_contract:{scenario_id}:{detail}"
+                for detail in validate_schema(missing, missing_field_schema)
+            )
+        all_questions = [
+            *questions["common"],
+            *questions["product_specific_target"]["followup_questions"],
+        ]
+        for question in all_questions:
+            errors.extend(
+                f"manual_candidates:followup_contract:{scenario_id}:{detail}"
+                for detail in validate_schema(question, followup_schema)
+            )
+            if any(
+                re.search(pattern, question["question_text"], re.I)
+                for pattern in prohibited_question_patterns
+            ):
+                errors.append(f"manual_candidates:unsafe_question:{scenario_id}")
+
+        retrieval = candidate["retrieval_expectation"]
+        if scenario_id in MANUAL_NEGATIVE_SCENARIOS and (
+            retrieval["expected_evidence_group_ids"]
+            or retrieval["expected_no_evidence"] is not True
+        ):
+            errors.append(f"manual_candidates:negative_evidence:{scenario_id}")
+        for evidence_id in retrieval["expected_evidence_group_ids"]:
+            evidence = evidence_groups.get(evidence_id)
+            if evidence is None:
+                errors.append(
+                    f"manual_candidates:evidence_missing:{scenario_id}:{evidence_id}"
+                )
+            elif evidence["exact_sales_code"] != candidate["product"][
+                "exact_sales_code"
+            ]:
+                errors.append(
+                    f"manual_candidates:cross_model_evidence:{scenario_id}:{evidence_id}"
+                )
+        if candidate["request"]["model_code"] in retrieval[
+            "forbidden_model_codes"
+        ]:
+            errors.append(f"manual_candidates:self_forbidden_model:{scenario_id}")
+
+        for profile_name in ("mvp", "three_model_integration"):
+            profile = candidate["runtime_profiles"][profile_name]
+            for oracle_name in ("current_runtime", "target_oracle"):
+                oracle = profile[oracle_name]
+                if oracle["verification_status"] == "RUNTIME_VERIFIED":
+                    errors.append(
+                        "manual_candidates:unverified_runtime_claim:"
+                        f"{scenario_id}:{profile_name}:{oracle_name}"
+                    )
+                event = oracle["backend"]["event_candidate"]
+                if event is not None and event not in contract_events:
+                    errors.append(
+                        f"manual_candidates:unknown_event:{scenario_id}:{event}"
+                    )
+                for state in oracle["backend"]["expected_state_path"]:
+                    if state not in inquiry_states:
+                        errors.append(
+                            f"manual_candidates:unknown_state:{scenario_id}:{state}"
+                        )
+
+        if candidate["product"]["exact_sales_code"].startswith("WPUIAC"):
+            current = candidate["runtime_profiles"]["mvp"]["current_runtime"]
+            target = candidate["runtime_profiles"]["mvp"]["target_oracle"]
+            current_is_leak = scenario_id in MANUAL_LEAK_DANGER_SCENARIOS
+            expected_failure_stage = (
+                "VALIDATING" if current_is_leak else "RETRIEVING"
+            )
+            expected_risk_level = "danger" if current_is_leak else "caution"
+            expected_guidance_status = (
+                "TOTAL_STOP" if current_is_leak else "PENDING_CONSULTATION"
+            )
+            if (
+                current["ai"]["execution_status"] != "FALLBACK"
+                or current["ai"]["failure_stage"] != expected_failure_stage
+                or current["ai"]["risk_level"] != expected_risk_level
+                or current["ai"]["usage_guidance_status"]
+                != expected_guidance_status
+                or current["ai"]["requires_consultation"] is not True
+                or current["ai"]["internal_issue_codes"]
+                != ["RUNTIME_PRODUCT_NOT_APPROVED"]
+                or current["rag"]["execution_status"] != "BLOCKED"
+                or current["backend"]["event_candidate"] is not None
+            ):
+                errors.append(f"manual_candidates:mvp_iac_current:{scenario_id}")
+            if (
+                target["verification_status"] != "HOLD"
+                or target["backend"]["event_candidate"]
+                != "PRODUCT_VALIDATION_FAILED"
+                or target["backend"]["terminal_state"]
+                != "CONSULTATION_REQUIRED"
+            ):
+                errors.append(f"manual_candidates:mvp_iac_target:{scenario_id}")
+
+        target = candidate["runtime_profiles"]["three_model_integration"][
+            "target_oracle"
+        ]
+        if scenario_id in MANUAL_HOT_WATER_DANGER_SCENARIOS and (
+            target["verification_status"] != "HOLD"
+            or target["ai"]["risk_level"] != "danger"
+            or target["ai"]["usage_guidance_status"] != "PARTIAL_STOP"
+            or target["ai"]["requires_consultation"] is not True
+            or target["backend"]["event_candidate"] != "DANGER_DETECTED"
+            or "DANGER_PARTIAL_STOP_BACKEND_CONFLICT" not in target["blockers"]
+        ):
+            errors.append(f"manual_candidates:hot_water_policy:{scenario_id}")
+        if scenario_id in MANUAL_LEAK_DANGER_SCENARIOS and (
+            target["ai"]["risk_level"] != "danger"
+            or target["ai"]["usage_guidance_status"] != "TOTAL_STOP"
+            or target["ai"]["requires_consultation"] is not True
+        ):
+            errors.append(f"manual_candidates:leak_policy:{scenario_id}")
+
+    long_absence = output.get("SYN-IAC606-109")
+    if long_absence is not None:
+        target = long_absence["runtime_profiles"]["three_model_integration"][
+            "target_oracle"
+        ]
+        if (
+            target["ai"]["risk_level"] != "general"
+            or target["ai"]["usage_guidance_status"] != "PARTIAL_STOP"
+            or target["ai"]["requires_consultation"] is not False
+            or target["backend"]["event_candidate"] is not None
+            or long_absence["workflow_kind"] != "SELF_RESOLUTION"
+            or long_absence["expected_outcome"]
+            != "SELF_RESOLUTION_AFTER_CUSTOMER_CONFIRMATION"
+        ):
+            errors.append("manual_candidates:long_absence_policy")
+
+    reopened = output.get("SYN-IAC606-103")
+    if reopened is not None:
+        phase_signatures = [
+            (
+                phase["phase"],
+                phase["success_state"],
+                [
+                    (
+                        step["actor_role"],
+                        step["event"],
+                        step["from_state"],
+                        step["to_state"],
+                    )
+                    for step in phase["steps"]
+                ],
+            )
+            for phase in reopened["workflow_phases"]
+        ]
+        if phase_signatures != [
+            (
+                "BASE_REOPEN",
+                "REOPENED",
+                [("CUSTOMER", "CUSTOMER_REPORTED_UNRESOLVED", "COMPLETION_PENDING", "REOPENED")],
+            ),
+            (
+                "FOLLOWUP_CONSULTATION_RESTART",
+                "CONSULTATION_IN_PROGRESS",
+                [
+                    ("CONSULTANT", "RESUME_CONSULTATION", "REOPENED", "CONSULTATION_REQUIRED"),
+                    ("CONSULTANT", "START_CONSULTATION", "CONSULTATION_REQUIRED", "CONSULTATION_IN_PROGRESS"),
+                ],
+            ),
+        ]:
+            errors.append("manual_candidates:reopened_phase_split")
+
+    serialized = json_bytes(candidates).decode("utf-8")
+    if re.search(r"C:\\Users\\|C:/Users/|Playdata", serialized, re.I):
+        errors.append("manual_candidates:internal_path_exposure")
+    if re.search(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", serialized):
+        errors.append("manual_candidates:email_like_value")
+    return {
+        "status": "PASS" if not errors else "FAIL",
+        "errors": errors,
+        "records": len(candidates),
+        "scenario_ids": sorted(output),
+    }
+
+
 def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
     manifest = read_json(config.path("dataset_manifest"))
     errors: list[str] = []
@@ -1148,6 +1457,8 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
     errors.extend(validate_dataset_catalog(config, manifest))
     product_expansion_coverage = validate_product_expansion_coverage(config)
     errors.extend(product_expansion_coverage["errors"])
+    manual_candidate_coverage = validate_manual_three_model_candidates(config)
+    errors.extend(manual_candidate_coverage["errors"])
     risk_vocabulary = vocabulary["risk_levels"]
     usage_vocabulary = vocabulary["usage_guidance_statuses"]
     for name, codes in schema_risk_codes(config.data_root).items():
@@ -1456,6 +1767,9 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
         "product_expansion_e2e_candidates": len(
             read_json(config.path("product_expansion_candidate_output"))
         ),
+        "manual_three_model_candidates": len(
+            read_json(config.path("manual_three_model_candidate_output"))
+        ),
     }
     for key, value in actual.items():
         if value != expected[key]:
@@ -1476,4 +1790,5 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
         "errors": errors,
         "representative_e2e": representative_e2e,
         "product_expansion_coverage": product_expansion_coverage,
+        "manual_three_model_candidate_coverage": manual_candidate_coverage,
     }

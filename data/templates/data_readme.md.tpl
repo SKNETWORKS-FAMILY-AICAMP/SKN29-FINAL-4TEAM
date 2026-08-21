@@ -13,6 +13,7 @@
 - 평가 초안: 양성 43건·부정 7건, 총 50건(`DATA_READY_AI_NOT_RUN`)
 - 합성 fixture: 369건(제품 3건), 기존 DB handoff closure: 367건
 - 제품 확장 업무 체인 후보: 2건(`E2E_CANDIDATE`, Backend 미적재·Runtime 미검증)
+- 3모델 매뉴얼 합성 후보: 30건(`CANDIDATE`, Runtime Profile별 Oracle 분리)
 - 활성 Coverage: `WPUJAC104DWH`, `WPUIAC425SNW`, `WPUIAC606SNW`; `WPU-JCC104 (D)` Alias 제외
 - 합성 원본 시나리오: 24개
 - 계약 정합 활성 projection: 22개

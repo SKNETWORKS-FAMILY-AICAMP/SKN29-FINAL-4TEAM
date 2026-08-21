@@ -237,6 +237,9 @@ def _dataset_counts(config: PipelineConfig) -> dict[str, int]:
         "product_expansion_e2e_candidates": len(
             read_json(config.path("product_expansion_candidate_output"))
         ),
+        "manual_three_model_candidates": len(
+            read_json(config.path("manual_three_model_candidate_output"))
+        ),
         "supported_products": len(supported_products["products"]),
         "reference_manual_pages": (
             len(read_jsonl(config.path("manual_input")))
@@ -278,6 +281,9 @@ def refresh_dataset_manifest(config: PipelineConfig) -> dict[str, Any]:
         ),
         "synthetic/candidates/product_expansion_e2e_cases.json": (
             "schemas/synthetic/productExpansionE2ECase.schema.json"
+        ),
+        "synthetic/candidates/manual_3model_candidate_scenarios.json": (
+            "schemas/synthetic/manualThreeModelCandidateScenario.schema.json"
         ),
     }
     existing_paths = {item["path"] for item in manifest["files"]}
@@ -414,6 +420,7 @@ def _write_detailed_qa_reports(
             "records": (
                 counts["synthetic_active_scenarios"]
                 + counts["product_expansion_e2e_candidates"]
+                + counts["manual_three_model_candidates"]
             ),
             "summary": {
                 "source_scenarios": counts["synthetic_source_scenarios"],
@@ -426,6 +433,9 @@ def _write_detailed_qa_reports(
                 ],
                 "product_expansion_e2e_candidates": counts[
                     "product_expansion_e2e_candidates"
+                ],
+                "manual_three_model_candidates": counts[
+                    "manual_three_model_candidates"
                 ],
             },
             "checks": [

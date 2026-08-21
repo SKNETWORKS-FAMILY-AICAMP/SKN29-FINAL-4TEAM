@@ -1,5 +1,14 @@
 # Data Changelog
 
+## 1.2.0 — 2026-08-21
+
+- 정식 매뉴얼 기반 3모델 합성 시나리오 30건을 기존 Fixture와 분리된 `CANDIDATE` 데이터셋으로 추가했다.
+- 기존 ID와 충돌한 IAC425·IAC606 신규 시나리오는 각각 `101~110`으로 재번호화하고 원 설계 ID를 별도 보존했다.
+- `mvp`와 `three_model_integration`의 Current Runtime·Target Oracle을 분리하고, 실행 증거 없는 Golden·Runtime Verified 승격을 차단했다.
+- 온수 위험 3건의 `danger + PARTIAL_STOP` 목표 정책과 Backend 불변식 충돌, MVP IAC 제품 차단 결과를 `HOLD`와 인계 사유로 명시했다.
+- 재문의 기본 성공 상태 `REOPENED`와 후속 상담 재시작 단계를 분리하고, 장기 부재·모델 불일치·미인덱싱 Negative Test 정책을 반영했다.
+- Python 3.13.13 AI Runtime 표적 실행 결과를 반영해 MVP IAC Current Oracle을 일반 18건 `RETRIEVING + caution + PENDING_CONSULTATION`, 누수 2건 `VALIDATING + danger + TOTAL_STOP`으로 교정했다.
+
 ## 1.1.0 — 2026-08-19
 
 - `WPUIAC425SNW` 온수 출수 중단과 `WPUIAC606SNW` 얼음 미출수 업무 체인을 `E2E_CANDIDATE` 데이터로 추가했다.
