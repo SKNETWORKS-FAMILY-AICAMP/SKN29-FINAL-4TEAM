@@ -56,7 +56,7 @@ backgroundRes = R.drawable.water_background_customer,
     ) {
         ReferenceWelcomeCard(
             title = "안녕하세요!",
-            subtitle = "정수기 상태 확인부터 안전 안내까지 쉽고 빠르게 도와드릴게요.",
+            subtitle = "정수기 관리부터 문제 해결까지 필요한 내용을 쉽게 안내해드릴게요.",
             imageRes = R.drawable.waterbridge_brand_logo,
             palette = palette,
         )
@@ -64,24 +64,24 @@ backgroundRes = R.drawable.water_background_customer,
         when {
             state.checkingBackend -> {
                 ReferenceBackendStatusCard(
-                    title = "서비스 준비 중",
-                    message = "서비스를 시작할 수 있는지 확인하고 있어요.",
+                    title = "서비스를 확인하고 있어요",
+                    message = "잠시만 기다려주세요. 연결 상태를 확인하고 있어요.",
                     palette = palette,
                 )
             }
 
             state.backendAvailable == true -> {
                 ReferenceBackendStatusCard(
-                    title = "서비스 이용 가능",
-                    message = "바로 서비스를 시작할 수 있어요.",
+                    title = "서비스에 연결됐어요",
+                    message = "정수기 정보와 문의 기능을 바로 이용할 수 있어요.",
                     palette = palette,
                 )
             }
 
             else -> {
                 ReferenceBackendStatusCard(
-                    title = "연결을 확인해주세요",
-                    message = "인터넷 연결을 확인한 뒤 다시 시도해주세요.",
+                    title = "서비스에 연결할 수 없어요",
+                    message = "인터넷과 서비스 연결을 확인한 뒤 다시 시도해주세요.",
                     palette = palette,
                     warning = true,
                     actionLabel = "다시 확인",
@@ -122,7 +122,7 @@ backgroundRes = R.drawable.water_background_customer,
         }
 
         Text(
-            "일부 기능은 연결 상태에 따라 이용이 제한될 수 있어요.",
+            "연결 상태에 따라 일부 기능을 잠시 이용하지 못할 수 있어요.",
             modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.bodySmall,
             color = palette.textMuted,

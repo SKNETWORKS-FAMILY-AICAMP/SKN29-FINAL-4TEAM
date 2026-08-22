@@ -296,20 +296,10 @@ private fun CustomerCleanBottomItem(
             modifier = Modifier
                 .size(22.dp)
                 .graphicsLayer {
-                    translationY =
-                        -7.dp.toPx() *
-                            tabMotion
-                    scaleX =
-                        1f +
-                            (0.18f *
-                                tabMotion)
-                    scaleY =
-                        1f +
-                            (0.18f *
-                                tabMotion)
-                    rotationZ =
-                        6f *
-                            tabMotion
+                    translationY = -2.dp.toPx() * tabMotion
+                    scaleX = 1f + (0.04f * tabMotion)
+                    scaleY = 1f + (0.04f * tabMotion)
+                    rotationZ = 0f
                 },
             contentScale = ContentScale.Fit,
             alpha = if (enabled) 1f else 0.38f,
@@ -431,7 +421,7 @@ fun CustomerPrimaryButton(
         interactionSource.collectIsPressedAsState()
     val pressScale by animateFloatAsState(
         targetValue =
-            if (pressed) 0.89f
+            if (pressed) 0.96f
             else 1f,
         animationSpec = spring(
             dampingRatio =

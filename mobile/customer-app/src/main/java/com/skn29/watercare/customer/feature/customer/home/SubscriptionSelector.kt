@@ -92,10 +92,10 @@ fun SubscriptionSelectionScreen(
                 text = "내 정수기",
                 style = MaterialTheme.typography.headlineSmall,
                 color = palette.textStrong,
-                fontWeight = FontWeight.Black,
+                fontWeight = FontWeight.Bold,
             )
             Text(
-                text = "세 가지 모델을 넘겨보며 가장 맞는 제품을 선택해보세요.",
+                text = "제품을 좌우로 넘겨 내 정수기를 선택해주세요.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = palette.textMuted,
             )
@@ -110,7 +110,7 @@ fun SubscriptionSelectionScreen(
 
         if (subscriptions.isEmpty() && state.error == null) {
             Text(
-                text = "연결된 구독이 없어 모델 미리보기만 사용할 수 있어요.",
+                text = "현재 연결된 정수기가 없어 제품 화면만 미리 볼 수 있어요.",
                 style = MaterialTheme.typography.bodySmall,
                 color = palette.textMuted,
             )
@@ -148,13 +148,13 @@ fun SubscriptionSelectionScreen(
                 animateFloatAsState(
                     targetValue =
                         if (pageOffset < 0.06f) {
-                            1.10f
+                            1.03f
                         } else {
-                            0.96f
+                            0.98f
                         },
                     animationSpec = spring(
                         dampingRatio =
-                            Spring.DampingRatioHighBouncy,
+                            Spring.DampingRatioNoBouncy,
                         stiffness =
                             Spring.StiffnessMediumLow,
                     ),
@@ -169,17 +169,17 @@ fun SubscriptionSelectionScreen(
                         subscription.subscriptionId,
                 modifier = Modifier.graphicsLayer {
                     scaleX =
-                        (0.84f +
-                            (0.16f * focus)) *
+                        (0.94f +
+                            (0.06f * focus)) *
                             settleScale
                     scaleY =
-                        (0.84f +
-                            (0.16f * focus)) *
+                        (0.94f +
+                            (0.06f * focus)) *
                             settleScale
                     alpha = 0.48f + (0.52f * focus)
-                    translationY = 24f * pageOffset
+                    translationY = 8f * pageOffset
                     rotationY =
-                        signedPageOffset * 16f
+                        signedPageOffset * 5f
                     cameraDistance =
                         18f * density
                 },
@@ -218,7 +218,7 @@ fun SubscriptionSelectionScreen(
                 state.selectingSubscription ->
                     "제품 연결 중..."
                 selectedSubscription == null ->
-                    "홈에서 이 모델 미리보기"
+                    "이 모델 미리보기"
                 else ->
                     "이 제품으로 시작"
             },
@@ -243,7 +243,7 @@ fun SubscriptionSelectionScreen(
 
         if (selectedModel != null && selectedSubscription == null) {
             Text(
-                text = "미연결 모델은 홈 디자인만 미리 볼 수 있고 문의 기능은 실행되지 않아요.",
+                text = "구독하지 않은 모델은 화면만 미리 볼 수 있으며 문의 기능은 사용할 수 없어요.",
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodySmall,
@@ -298,7 +298,7 @@ private fun SubscriptionProductSlide(
                     "ACTIVE" -> "사용 중"
                     "PAUSED" -> "이용 일시정지"
                     "ENDED", "CANCELLED" -> "이용 종료"
-                    null -> "미연결"
+                    null -> "구독 없음"
                     else -> "구독 상태 확인"
                 },
                 emphasized =
@@ -313,7 +313,7 @@ private fun SubscriptionProductSlide(
                 }
                 !connected -> {
                     StatusChip(
-                        text = "미리보기",
+                        text = "화면 미리보기",
                         emphasized = false,
                     )
                 }
@@ -371,7 +371,7 @@ private fun SubscriptionProductSlide(
                 text = when {
                     supported -> "문의 가능"
                     connected -> "문의 준비 중"
-                    else -> "연결 후 문의"
+                    else -> "구독 후 이용"
                 },
                 emphasized = supported,
             )
@@ -381,7 +381,7 @@ private fun SubscriptionProductSlide(
             text = if (connected) {
                 "다음 관리 ${formatCareDate(subscription?.nextCareOn)}"
             } else {
-                "구독 연결 후 관리 일정이 표시돼요."
+                "내 정수기가 연결되면 관리 일정이 표시돼요."
             },
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
@@ -440,7 +440,7 @@ private fun SubscriptionPageIndicator(
                     },
                 animationSpec = spring(
                     dampingRatio =
-                        Spring.DampingRatioHighBouncy,
+                        Spring.DampingRatioNoBouncy,
                     stiffness =
                         Spring.StiffnessMediumLow,
                 ),
