@@ -44,6 +44,30 @@ def test_natural_leak_particle_expression_is_classified_as_danger(risk_classifie
     assert assessment.matched_safety_rule_ids == ["SAFETY-LEAK-001"]
 
 
+@pytest.mark.parametrize(
+    "selected_symptom",
+    ["symptom_leak", "LEAK", "제품 누수"],
+)
+def test_leak_selected_symptom_aliases_apply_leak_rule(
+    risk_classifier,
+    guidance_classifier,
+    selected_symptom,
+):
+    raw_text = "제품 밑으로 물이 번지고 있습니다."
+    assessment = risk_classifier.classify(raw_text, [selected_symptom])
+    guidance = guidance_classifier.determine_guidance(
+        assessment,
+        raw_text,
+        has_evidence=False,
+    )
+
+    assert assessment.risk_level == RiskLevel.DANGER
+    assert assessment.requires_consultation is True
+    assert assessment.matched_safety_rule_ids == ["SAFETY-LEAK-001"]
+    assert guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
+    assert any("젖은 손" in action for action in guidance.next_actions)
+
+
 def test_electrical_danger_classification(risk_classifier, guidance_classifier):
     """전기 타는 냄새/스파크 위험 감지 테스트"""
     raw_text = "정수기 뒤에서 타는 냄새가 나고 스파크가 튑니다."
@@ -87,6 +111,23 @@ def test_explicitly_negated_leak_does_not_override_detected_temperature_caution(
 
     assert assessment.risk_level == RiskLevel.CAUTION
     assert "제품 하부 및 전원부 주변 누수" not in assessment.detected_risks
+
+
+@pytest.mark.parametrize(
+    "raw_text",
+    [
+        "누수는 아니고 필터 교체 주기를 확인하고 싶습니다.",
+        "물이 새지 않는다. 정기 관리 일정만 확인하고 싶습니다.",
+    ],
+)
+def test_explicitly_negated_leak_ignores_selected_leak_alias(
+    risk_classifier,
+    raw_text,
+):
+    assessment = risk_classifier.classify(raw_text, ["symptom_leak"])
+
+    assert assessment.risk_level != RiskLevel.DANGER
+    assert "SAFETY-LEAK-001" not in assessment.matched_safety_rule_ids
 
 
 def test_no_evidence_fallback(risk_classifier, guidance_classifier):
