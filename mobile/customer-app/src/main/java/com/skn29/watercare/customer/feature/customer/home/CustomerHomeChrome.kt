@@ -252,24 +252,7 @@ private fun CustomerCleanBottomItem(
     modifier: Modifier = Modifier,
 ) {
     val palette = CustomerReferencePalette
-    val shape = RoundedCornerShape(22.dp)
-    val tabTransition =
-        rememberInfiniteTransition(
-            label = "bottomTab_$label",
-        )
-    val tabMotion by tabTransition.animateFloat(
-        initialValue = 0f,
-        targetValue =
-            if (selected) 1f
-            else 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 620,
-            ),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "bottomTabMotion",
-    )
+    val shape = RoundedCornerShape(20.dp)
 
     Column(
         modifier = modifier
@@ -277,7 +260,7 @@ private fun CustomerCleanBottomItem(
             .clip(shape)
             .background(
                 if (selected) {
-                    Color.White.copy(alpha = 0.15f)
+                    Color.White.copy(alpha = 0.24f)
                 } else {
                     Color.Transparent
                 }
@@ -293,20 +276,13 @@ private fun CustomerCleanBottomItem(
         Image(
             painter = painterResource(iconRes),
             contentDescription = label,
-            modifier = Modifier
-                .size(22.dp)
-                .graphicsLayer {
-                    translationY = -2.dp.toPx() * tabMotion
-                    scaleX = 1f + (0.04f * tabMotion)
-                    scaleY = 1f + (0.04f * tabMotion)
-                    rotationZ = 0f
-                },
+            modifier = Modifier.size(22.dp),
             contentScale = ContentScale.Fit,
             alpha = if (enabled) 1f else 0.38f,
         )
         Text(
             text = label,
-            modifier = Modifier.padding(top = 1.dp),
+            modifier = Modifier.padding(top = 2.dp),
             color = when {
                 !enabled -> palette.textMuted.copy(alpha = 0.48f)
                 selected -> palette.accent
@@ -318,10 +294,10 @@ private fun CustomerCleanBottomItem(
         )
         Box(
             modifier = Modifier
-                .padding(top = 2.dp)
+                .padding(top = 3.dp)
                 .size(
-                    width = if (selected) 18.dp else 0.dp,
-                    height = 2.dp,
+                    width = if (selected) 20.dp else 0.dp,
+                    height = 3.dp,
                 )
                 .clip(RoundedCornerShape(999.dp))
                 .background(
@@ -339,21 +315,21 @@ fun CustomerCleanCard(
 ) {
     val palette = CustomerReferencePalette
     val shape = RoundedCornerShape(
-        topStart = 28.dp,
-        topEnd = 28.dp,
-        bottomStart = 28.dp,
+        topStart = 24.dp,
+        topEnd = 24.dp,
+        bottomStart = 24.dp,
         bottomEnd = 24.dp,
     )
     val glassBrush = Brush.verticalGradient(
         listOf(
-            Color.White.copy(alpha = 0.40f),
-            Color.White.copy(alpha = 0.20f),
+            Color.White.copy(alpha = 0.56f),
+            Color.White.copy(alpha = 0.34f),
             palette.accentSoft.copy(alpha = 0.028f),
         )
     )
     val borderBrush = Brush.linearGradient(
         listOf(
-            Color.White.copy(alpha = 0.68f),
+            Color.White.copy(alpha = 0.78f),
             palette.accent.copy(alpha = 0.06f),
             palette.accentSecondary.copy(alpha = 0.045f),
             Color.White.copy(alpha = 0.46f),
@@ -373,7 +349,7 @@ fun CustomerCleanCard(
             .background(glassBrush)
             .drawBehind {
                 drawLine(
-                    color = Color.White.copy(alpha = 0.40f),
+                    color = Color.White.copy(alpha = 0.56f),
                     start = Offset(
                         x = size.width * 0.10f,
                         y = 1.4.dp.toPx(),
@@ -421,94 +397,26 @@ fun CustomerPrimaryButton(
         interactionSource.collectIsPressedAsState()
     val pressScale by animateFloatAsState(
         targetValue =
-            if (pressed) 0.96f
+            if (pressed) 0.97f
             else 1f,
         animationSpec = spring(
-            dampingRatio =
-                Spring.DampingRatioHighBouncy,
-            stiffness = Spring.StiffnessMediumLow,
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium,
         ),
         label = "customerPrimaryButtonScale",
     )
-    val shineTransition =
-        rememberInfiniteTransition(
-            label = "customerPrimaryShine",
-        )
-    val shineProgress by
-        shineTransition.animateFloat(
-            initialValue = -0.35f,
-            targetValue = 1.35f,
-            animationSpec =
-                infiniteRepeatable(
-                    animation = tween(
-                        durationMillis = 1250,
-                        easing = LinearEasing,
-                    ),
-                    repeatMode =
-                        RepeatMode.Restart,
-                ),
-            label = "customerPrimaryShineProgress",
-        )
 
     Button(
         onClick = onClick,
         modifier = modifier
-            .heightIn(min = 50.dp)
+            .heightIn(min = 52.dp)
             .graphicsLayer {
                 scaleX = pressScale
                 scaleY = pressScale
-            }
-            .drawWithContent {
-                drawContent()
-
-                if (enabled) {
-                    val centerX =
-                        size.width *
-                            shineProgress
-                    val halfBand =
-                        size.width *
-                            0.16f
-
-                    drawRect(
-                        brush =
-                            Brush.linearGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    Color.White.copy(
-                                        alpha = 0.06f
-                                    ),
-                                    Color.White.copy(
-                                        alpha = 0.62f
-                                    ),
-                                    Color.White.copy(
-                                        alpha = 0.06f
-                                    ),
-                                    Color.Transparent,
-                                ),
-                                start = Offset(
-                                    x =
-                                        centerX -
-                                            halfBand,
-                                    y = 0f,
-                                ),
-                                end = Offset(
-                                    x =
-                                        centerX +
-                                            halfBand,
-                                    y = size.height,
-                                ),
-                            ),
-                        topLeft = Offset.Zero,
-                        size = Size(
-                            width = size.width,
-                            height = size.height,
-                        ),
-                    )
-                }
             },
         enabled = enabled,
         interactionSource = interactionSource,
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = palette.accent,
             contentColor = Color.White,
@@ -517,7 +425,7 @@ fun CustomerPrimaryButton(
         ),
         contentPadding = PaddingValues(
             horizontal = 20.dp,
-            vertical = 12.dp,
+            vertical = 13.dp,
         ),
     ) {
         Text(

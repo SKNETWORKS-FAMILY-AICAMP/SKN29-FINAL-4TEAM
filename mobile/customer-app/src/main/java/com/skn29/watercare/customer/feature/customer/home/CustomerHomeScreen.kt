@@ -264,13 +264,6 @@ fun CustomerHomeContent(
                 onChangeProduct = onChangeProduct,
             )
 
-            CustomerServiceConnectionBanner(
-                backendAvailable = state.backendAvailable,
-                offlinePreview = state.offlinePreview,
-                hasActiveInquiry = !activeInquiryId.isNullOrBlank(),
-                intakeAvailable = !previewMode && state.intakeAvailable,
-            )
-
             var showTodayAction by remember(
                 home.subscriptionId,
                 activeInquiryStatusCode,
@@ -314,11 +307,11 @@ fun CustomerHomeContent(
                                 durationMillis = 360,
                             ),
                             initialOffsetY = {
-                                (it * 0.88f).toInt()
+                                it / 8
                             },
                         ) +
                         scaleIn(
-                            initialScale = 0.76f,
+                            initialScale = 0.96f,
                             animationSpec = tween(
                                 durationMillis = 520,
                             ),
@@ -374,6 +367,13 @@ fun CustomerHomeContent(
                     onOpenCare = onOpenCare,
                 )
             }
+
+            CustomerServiceConnectionBanner(
+                backendAvailable = state.backendAvailable,
+                offlinePreview = state.offlinePreview,
+                hasActiveInquiry = !activeInquiryId.isNullOrBlank(),
+                intakeAvailable = !previewMode && state.intakeAvailable,
+            )
 
             val fixtureGuidanceAvailable =
                 state.offlinePreview ||

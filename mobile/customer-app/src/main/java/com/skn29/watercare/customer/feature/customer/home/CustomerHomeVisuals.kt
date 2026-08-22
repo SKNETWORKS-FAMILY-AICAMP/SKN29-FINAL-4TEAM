@@ -170,9 +170,8 @@ fun CustomerVisualProductHero(
                             scaleX = floatingScale
                             scaleY = floatingScale
                             translationY =
-                                5.dp.toPx() * floatingWave
-                            rotationZ =
-                                1f * floatingWave
+                                3.dp.toPx() * floatingWave
+                            rotationZ = 0f
                         },
                 )
             }
@@ -187,7 +186,7 @@ fun CustomerVisualProductHero(
             fontWeight = FontWeight.Bold,
         )
         Text(
-            text = displayModel.modelCode,
+            text = "모델 ${displayModel.modelCode}",
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodySmall,
@@ -217,7 +216,7 @@ fun CustomerVisualProductHero(
         ) {
             HomeStatusPill(
                 text = if (previewMode) {
-                    "미연결"
+                    "구독 없음"
                 } else {
                     home.product.managementTypeLabel
                 },
@@ -240,7 +239,7 @@ fun CustomerVisualProductHero(
 
         Text(
             text = if (previewMode) {
-                "실제 구독 연결 시 관리 정보와 문의 기능을 사용할 수 있어요."
+                "내 정수기를 연결하면 관리 정보와 문의 기능을 사용할 수 있어요."
             } else {
                 "사용 중인 제품 상태를 한눈에 확인할 수 있어요."
             },
@@ -260,31 +259,25 @@ fun CustomerServiceConnectionBanner(
     intakeAvailable: Boolean,
 ) {
     val palette = CustomerReferencePalette
-    val title = when {
-        offlinePreview -> "서비스 미리보기"
-        backendAvailable == true -> "서비스 연결 완료"
-        backendAvailable == false -> "서비스 연결이 필요해요"
-        else -> "서비스 연결 확인 중"
-    }
-    val description = when {
-        offlinePreview ->
-            "화면만 확인하는 모드예요. 실제 Backend에는 문의를 전송하지 않아요."
-        backendAvailable == true && hasActiveInquiry ->
-            "내 정수기 정보와 진행 중인 문의를 안전하게 불러왔어요."
-        backendAvailable == true && intakeAvailable ->
-            "내 정수기 정보가 연결되어 있어 필요할 때 바로 증상 확인을 시작할 수 있어요."
-        backendAvailable == true ->
-            "내 정수기 정보를 안전하게 불러오고 있어요."
-        backendAvailable == false ->
-            "연결을 다시 확인하면 정수기 정보와 문의 기능을 사용할 수 있어요."
-        else ->
-            "실제 서비스 연결 상태를 확인하고 있어요."
-    }
     val statusText = when {
         offlinePreview -> "미리보기"
         backendAvailable == true -> "연결됨"
         backendAvailable == false -> "연결 필요"
         else -> "확인 중"
+    }
+    val detail = when {
+        offlinePreview ->
+            "화면 미리보기 중이에요. 실제 문의는 전송되지 않아요."
+        backendAvailable == true && hasActiveInquiry ->
+            "정수기와 진행 중인 문의가 안전하게 연결되어 있어요."
+        backendAvailable == true && intakeAvailable ->
+            "정수기 정보가 연결되어 바로 도움을 받을 수 있어요."
+        backendAvailable == true ->
+            "정수기 정보가 안전하게 연결되어 있어요."
+        backendAvailable == false ->
+            "연결을 확인하면 정수기 정보와 문의 기능을 이용할 수 있어요."
+        else ->
+            "서비스 연결 상태를 확인하고 있어요."
     }
 
     CustomerCleanCard(
@@ -292,8 +285,8 @@ fun CustomerServiceConnectionBanner(
             .fillMaxWidth()
             .testTag("customerServiceConnection"),
         contentPadding = PaddingValues(
-            horizontal = 14.dp,
-            vertical = 11.dp,
+            horizontal = 13.dp,
+            vertical = 10.dp,
         ),
     ) {
         Row(
@@ -303,7 +296,7 @@ fun CustomerServiceConnectionBanner(
         ) {
             Box(
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(34.dp)
                     .clip(CircleShape)
                     .background(palette.accentSoft.copy(alpha = 0.24f)),
                 contentAlignment = Alignment.Center,
@@ -311,7 +304,7 @@ fun CustomerServiceConnectionBanner(
                 Image(
                     painter = painterResource(R.drawable.ref_notice),
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(18.dp),
                 )
             }
 
@@ -320,23 +313,18 @@ fun CustomerServiceConnectionBanner(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall,
+                    text = "서비스 상태",
+                    style = MaterialTheme.typography.labelLarge,
                     color = palette.textStrong,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = description,
+                    text = detail,
                     style = MaterialTheme.typography.bodySmall,
                     color = palette.textMuted,
                 )
             }
-        }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-        ) {
             HomeStatusPill(
                 text = statusText,
                 accent = backendAvailable == true && !offlinePreview,
@@ -393,10 +381,10 @@ fun CustomerVisualInquiryAction(
             "미리보기"
 
         needsQuestionnaire ->
-            "추가 확인 필요"
+            "증상 확인 필요"
 
         isAiGuidance ->
-            "AI 안내"
+            "맞춤 안내 준비됨"
 
         isConsultationOrVisit ->
             "처리 진행 중"
@@ -408,7 +396,7 @@ fun CustomerVisualInquiryAction(
             "진행 중"
 
         intakeAvailable ->
-            "새 문의 가능"
+            "도움받기"
 
         else ->
             "도움 준비 중"
@@ -419,10 +407,10 @@ fun CustomerVisualInquiryAction(
             "실제 구독 제품을 선택해주세요"
 
         needsQuestionnaire ->
-            "작성하던 문진을 이어서 완료해주세요"
+            "증상 확인을 조금만 더 해주세요"
 
         isAiGuidance ->
-            "AI 안내를 확인할 차례예요"
+            "맞춤 해결 방법이 준비됐어요"
 
         isConsultationOrVisit ->
             "문의 처리 상태를 확인해보세요"
@@ -434,7 +422,7 @@ fun CustomerVisualInquiryAction(
             "진행 중인 문의를 이어서 확인해주세요"
 
         intakeAvailable ->
-            "현재 진행 중인 문의가 없어요"
+            "도움이 필요하신가요?"
 
         else ->
             "현재 문의 기능을 확인하고 있어요"
@@ -466,9 +454,9 @@ fun CustomerVisualInquiryAction(
         intakeAvailable -> {
             val nextCare = careDday(home.nextCareOn)
             if (nextCare == "확인 중") {
-                "필요한 경우 바로 문진을 작성하고 도움을 받을 수 있어요."
+                "불편한 점이 있다면 바로 증상을 확인하고 도움을 받을 수 있어요."
             } else {
-                "다음 관리 $nextCare · 불편한 점이 생기면 바로 문진을 시작할 수 있어요."
+                "다음 관리 $nextCare · 불편한 점이 생기면 바로 증상 확인을 시작할 수 있어요."
             }
         }
 
@@ -944,30 +932,9 @@ private fun HomeStatusPill(
     accent: Boolean,
 ) {
     val palette = CustomerReferencePalette
-    val pulseTransition =
-        rememberInfiniteTransition(
-            label = "homeStatusPulse",
-        )
-    val pulseScale by pulseTransition.animateFloat(
-        initialValue = 1f,
-        targetValue =
-            if (accent) 1.03f
-            else 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 900,
-            ),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "homeStatusPulseScale",
-    )
 
     Box(
         modifier = Modifier
-            .graphicsLayer {
-                scaleX = pulseScale
-                scaleY = pulseScale
-            }
             .clip(RoundedCornerShape(999.dp))
             .background(
                 if (accent) {

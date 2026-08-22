@@ -623,39 +623,14 @@ private fun CustomerProgressStep(
 ) {
     val completed = number < currentStep
     val current = number == currentStep
-    val stepTransition =
-        rememberInfiniteTransition(
-            label = "guidanceStepPulse",
-        )
-    val stepScale by stepTransition.animateFloat(
-        initialValue = 1f,
-        targetValue =
-            if (current) 1.06f
-            else 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 900,
-            ),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "guidanceStepScale",
-    )
 
     Row(
-        verticalAlignment = Alignment.Top,
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            modifier = Modifier.graphicsLayer {
-                scaleX = stepScale
-                scaleY = stepScale
-            },
-            text = when {
-                completed -> "✓"
-                current -> "●"
-                else -> "·"
-            },
-            style = MaterialTheme.typography.titleSmall,
+            text = if (completed) "✓" else number.toString(),
+            style = MaterialTheme.typography.labelLarge,
             color = if (completed || current) {
                 MaterialTheme.colorScheme.primary
             } else {
@@ -672,7 +647,7 @@ private fun CustomerProgressStep(
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight =
                     if (current) FontWeight.Bold
-                    else FontWeight.SemiBold,
+                    else FontWeight.Medium,
                 color = if (current) {
                     MaterialTheme.colorScheme.primary
                 } else {
@@ -924,6 +899,26 @@ fun GuidanceContent(
 
     val dangerous = safetyCritical || noEvidence
 
+    val headline = when {
+        noEvidence ->
+            "안내를 위해 조금 더 확인이 필요해요"
+        guidance.usageStatus == UsageGuidanceStatus.TOTAL_STOP ->
+            "안전을 위해 사용을 멈춰주세요"
+        guidance.usageStatus == UsageGuidanceStatus.PENDING_CONSULTATION ->
+            "사용 전에 상담이 필요해요"
+        guidance.riskLevel == RiskLevel.DANGER ->
+            "안전을 먼저 확인해주세요"
+        else ->
+            "지금 할 수 있는 해결 방법을 확인해보세요"
+    }
+
+    val heroMessage = when {
+        dangerous ->
+            "아래 내용을 순서대로 확인한 뒤 필요한 경우 상담을 연결해주세요."
+        else ->
+            "가장 중요한 내용부터 순서대로 정리했어요."
+    }
+
     LiquidGlassPanel(
         modifier = Modifier.fillMaxWidth(),
         strong = !dangerous,
@@ -932,47 +927,43 @@ fun GuidanceContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 165.dp),
+                .heightIn(min = 132.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                LiquidGlassPill(
+                    if (dangerous) "안전 확인"
+                    else "맞춤 안내"
+                )
+
                 StatusBadge(
                     guidance.riskLevel,
                     guidance.usageStatus,
                 )
 
                 Text(
-                    if (noEvidence) {
-                        "공식 근거 확인이 필요해요"
-                    } else {
-                        "지금 필요한 안내를 확인하세요"
-                    },
+                    text = headline,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
+                )
+
+                Text(
+                    text = heroMessage,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color =
+                        MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
             Image(
                 painter = painterResource(R.drawable.mascot_customer),
-                contentDescription = "안전 안내 캐릭터",
-                modifier = Modifier.size(125.dp),
+                contentDescription = "맞춤 안내 캐릭터",
+                modifier = Modifier.size(88.dp),
                 contentScale = ContentScale.Fit,
-            )
-        }
-    }
-
-    if (guidance.nextAction.isNotBlank()) {
-        SectionCard(
-            "지금 해야 할 행동",
-            isDanger = dangerous,
-        ) {
-            Text(
-                guidance.nextAction,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold,
             )
         }
     }
@@ -984,7 +975,7 @@ fun GuidanceContent(
 
     if (showUsage) {
         SectionCard(
-            "사용 가능 여부",
+            "사용해도 괜찮을까요?",
             isDanger = dangerous,
         ) {
             StatusBadge(
@@ -993,12 +984,16 @@ fun GuidanceContent(
             )
 
             if (guidance.usageMessage.isNotBlank()) {
-                Text(guidance.usageMessage)
+                Text(
+                    guidance.usageMessage,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
 
             if (guidance.restrictedFunctions.isNotEmpty()) {
                 Text(
-                    "사용 제한 기능",
+                    "지금 사용할 수 없는 기능",
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                 )
                 BulletList(guidance.restrictedFunctions)
@@ -1006,12 +1001,34 @@ fun GuidanceContent(
         }
     }
 
-    if (guidance.safeActions.isNotEmpty()) {
+    if (
+        guidance.nextAction.isNotBlank() ||
+        guidance.safeActions.isNotEmpty()
+    ) {
         SectionCard(
-            "안전 행동",
+            "지금 해볼 것",
             isDanger = dangerous,
         ) {
-            BulletList(guidance.safeActions)
+            if (guidance.nextAction.isNotBlank()) {
+                Text(
+                    guidance.nextAction,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+
+            if (guidance.safeActions.isNotEmpty()) {
+                BulletList(guidance.safeActions)
+            }
+        }
+    }
+
+    if (guidance.prohibitedActions.isNotEmpty()) {
+        SectionCard(
+            "주의해주세요",
+            isDanger = dangerous,
+        ) {
+            BulletList(guidance.prohibitedActions)
         }
     }
 
@@ -1024,10 +1041,19 @@ fun GuidanceContent(
         }
     }
 
-    if (guidance.evidence.isNotEmpty()) {
-        SectionCard("공식 근거") {
+    if (guidance.symptomSummary.isNotBlank()) {
+        SectionCard("입력한 증상") {
             Text(
-                "공식 문서에서 확인된 내용만 보여드려요.",
+                guidance.symptomSummary,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
+
+    if (guidance.evidence.isNotEmpty()) {
+        SectionCard("안내에 참고한 정보") {
+            Text(
+                "확인된 자료를 바탕으로 안내했어요.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -1035,21 +1061,6 @@ fun GuidanceContent(
             guidance.evidence.forEach {
                 EvidenceCard(it)
             }
-        }
-    }
-
-    if (guidance.symptomSummary.isNotBlank()) {
-        SectionCard("입력한 증상 요약") {
-            Text(guidance.symptomSummary)
-        }
-    }
-
-    if (guidance.prohibitedActions.isNotEmpty()) {
-        SectionCard(
-            "하지 말아야 할 행동",
-            isDanger = dangerous,
-        ) {
-            BulletList(guidance.prohibitedActions)
         }
     }
 }
@@ -1118,7 +1129,7 @@ private fun GuidancePreparingContent(
                 painter = painterResource(
                     R.drawable.mascot_customer
                 ),
-                contentDescription = "AI 안내 준비 중",
+                contentDescription = "맞춤 안내 준비 중",
                 modifier = Modifier
                     .size(82.dp)
                     .graphicsLayer {
@@ -1144,15 +1155,15 @@ internal fun GuidanceFailureStateContent(
 ) {
     when (state) {
         is GuidanceUiState.NotReady -> FailureFallback(
-            title = "AI 안내 준비 중",
-            message = "AI 안내를 준비하고 있어요. 잠시 후 다시 확인해주세요.",
+            title = "맞춤 안내 준비 중",
+            message = "맞춤 안내를 준비하고 있어요. 잠시 후 다시 확인해주세요.",
             retryable = true,
             onRetry = onRetry,
         )
 
         is GuidanceUiState.AiFailure -> FailureFallback(
             title = "지금은 안내를 준비하지 못했어요",
-            message = "지금은 AI 안내를 준비하지 못했어요. 잠시 후 다시 시도해주세요.",
+            message = "지금은 맞춤 안내를 준비하지 못했어요. 잠시 후 다시 시도해주세요.",
             retryable = state.retryable,
             onRetry = onRetry,
         )

@@ -48,7 +48,7 @@ fun LoginScreen(
 
     ReferenceDashboardScaffold(
         title = "WaterBridge",
-        roleLabel = "고객용",
+        roleLabel = "고객 서비스",
         palette = palette,
                                 brandLogoRes = R.drawable.waterbridge_brand_logo,
 backgroundRes = R.drawable.water_background_customer,
