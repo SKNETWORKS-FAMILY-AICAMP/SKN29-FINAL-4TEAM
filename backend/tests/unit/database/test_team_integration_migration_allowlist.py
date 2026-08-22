@@ -77,6 +77,14 @@ def test_current_graph_matches_explicit_allowlist_and_excludes_visits_0005(
         "operations",
         "0003_product_expansion_import_profile",
     ) in allowlist_module.APPROVED_TARGETS
+    assert (
+        "evidence",
+        "0013_expand_backend_ai_rag_lineage_metadata",
+    ) in closure
+    assert (
+        "evidence",
+        "0013_expand_backend_ai_rag_lineage_metadata",
+    ) in allowlist_module.APPROVED_TARGETS
 
 
 def test_empty_database_plan_is_forward_only_and_has_explicit_target_order(
@@ -97,6 +105,7 @@ def test_empty_database_plan_is_forward_only_and_has_explicit_target_order(
         allowlist_module.APPROVED_TARGETS
     )
     assert plan["expected_final"] == {
+        "evidence.0013": "APPLIED",
         "operations.0003": "APPLIED",
         "visits.0004": "APPLIED",
         "visits.0005": "NOT_APPLIED_P1_HOLD",
@@ -224,6 +233,7 @@ def test_apply_runs_explicit_targets_and_verifies_exact_final_state(
         (target["app"], target["target"])
         for target in initial_plan["execution_targets"]
     ]
+    assert result["verification"]["evidence.0013"] == "APPLIED"
     assert result["verification"]["operations.0003"] == "APPLIED"
     assert result["verification"]["visits.0004"] == "APPLIED"
     assert (

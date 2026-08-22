@@ -48,6 +48,7 @@ REQUIRED_MIGRATIONS = (
     "0010_backend_ai_rag_chunks_view",
     "0011_cast_chunk_embedding_vector_dimensions",
     "0012_expand_ai_crosswalk_canonical_id",
+    "0013_expand_backend_ai_rag_lineage_metadata",
 )
 EXPECTED_VIEW = "public.backend_ai_rag_chunks_v1"
 EXPECTED_VIEW_COLUMNS = (
@@ -66,12 +67,20 @@ EVIDENCE_PROFILES = {
     "baseline": {
         "chunk_count": EXPECTED_CHUNK_COUNT,
         "page_link_count": EXPECTED_CROSSWALK_PAGE_LINK_COUNT,
+        "require_complete_lineage": False,
     },
     "three-model": {
         "chunk_count": 53,
         "page_link_count": 53,
+        "require_complete_lineage": True,
     },
 }
+LINEAGE_METADATA_KEYS = (
+    "evidence_group_id",
+    "source_variant_id",
+    "parent_id",
+    "retrieval_role",
+)
 # 이전 Audit 소비자가 참조하는 이름은 우선 버전 Alias로 보존한다.
 EXPECTED_PGVECTOR_VERSION = PREFERRED_PGVECTOR_VERSION
 EXPECTED_EMBEDDING_MODEL = "BAAI/bge-m3"
@@ -262,6 +271,7 @@ def collect_snapshot(
             view_columns: list[str] = []
             view_row_count = 0
             view_distinct_chunk_count = 0
+            view_complete_lineage_count = 0
             if view_exists:
                 cursor.execute(
                     "SELECT column_name FROM information_schema.columns "
@@ -277,6 +287,21 @@ def collect_snapshot(
                 row = cursor.fetchone()
                 view_row_count = int(row[0])
                 view_distinct_chunk_count = int(row[1])
+                view_complete_lineage_count = int(
+                    _scalar(
+                        cursor,
+                        "SELECT COUNT(*) FILTER (WHERE "
+                        "NULLIF(metadata ->> 'evidence_group_id', '') "
+                        "IS NOT NULL AND "
+                        "NULLIF(metadata ->> 'source_variant_id', '') "
+                        "IS NOT NULL AND "
+                        "NULLIF(metadata ->> 'parent_id', '') IS NOT NULL AND "
+                        "metadata ->> 'retrieval_role' = "
+                        "'SEARCH_CANDIDATE') "
+                        "FROM public.backend_ai_rag_chunks_v1",
+                    )
+                    or 0
+                )
 
             cursor.execute(
                 "SELECT rolcanlogin, rolsuper, rolcreatedb, rolcreaterole, "
@@ -368,6 +393,7 @@ def collect_snapshot(
         "view_columns": view_columns,
         "view_row_count": view_row_count,
         "view_distinct_chunk_count": view_distinct_chunk_count,
+        "view_complete_lineage_count": view_complete_lineage_count,
         "role_exists": role_exists,
         "role_policy_safe": role_policy_safe,
         "default_transaction_read_only": default_transaction_read_only,
@@ -391,6 +417,8 @@ def evaluate_snapshot(
     expectations = EVIDENCE_PROFILES[evidence_profile]
     expected_chunk_count = expectations["chunk_count"]
     expected_page_link_count = expectations["page_link_count"]
+    require_complete_lineage = bool(expectations["require_complete_lineage"])
+    complete_lineage_count = int(snapshot.get("view_complete_lineage_count", 0))
     blockers: list[str] = []
     pgvector_version = snapshot.get("pgvector_version")
     crosswalk_page_table_exists = bool(
@@ -436,6 +464,10 @@ def evaluate_snapshot(
         blockers.append(f"BACKEND_AI_RAG_VIEW_ROW_COUNT_NOT_{expected_chunk_count}")
     if snapshot["view_distinct_chunk_count"] != snapshot["view_row_count"]:
         blockers.append("BACKEND_AI_RAG_VIEW_CHUNK_ID_NOT_UNIQUE")
+    if require_complete_lineage and complete_lineage_count != expected_chunk_count:
+        blockers.append(
+            f"BACKEND_AI_RAG_VIEW_COMPLETE_LINEAGE_COUNT_NOT_{expected_chunk_count}"
+        )
     if not snapshot["role_exists"]:
         blockers.append("AI_READONLY_ROLE_MISSING")
     if not snapshot["role_policy_safe"]:
@@ -487,6 +519,18 @@ def evaluate_snapshot(
             "expected_columns": list(EXPECTED_VIEW_COLUMNS),
             "rows": snapshot["view_row_count"],
             "distinct_chunk_ids": snapshot["view_distinct_chunk_count"],
+            "lineage": {
+                "required": require_complete_lineage,
+                "required_keys": list(LINEAGE_METADATA_KEYS),
+                "expected_complete": (
+                    expected_chunk_count if require_complete_lineage else None
+                ),
+                "complete": complete_lineage_count,
+                "incomplete": max(
+                    int(snapshot["view_row_count"]) - complete_lineage_count,
+                    0,
+                ),
+            },
         },
         "ai_readonly_role": {
             "name": AI_READONLY_ROLE,

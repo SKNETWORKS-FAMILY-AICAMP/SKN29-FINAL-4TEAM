@@ -65,6 +65,7 @@ def ready_snapshot(module: ModuleType) -> dict[str, object]:
         "view_columns": list(module.EXPECTED_VIEW_COLUMNS),
         "view_row_count": 7,
         "view_distinct_chunk_count": 7,
+        "view_complete_lineage_count": 0,
         "role_exists": True,
         "role_policy_safe": True,
         "default_transaction_read_only": True,
@@ -115,6 +116,7 @@ def test_three_model_profile_requires_exact_53_row_runtime_gate(
         crosswalk_page_link_count=53,
         view_row_count=53,
         view_distinct_chunk_count=53,
+        view_complete_lineage_count=53,
     )
 
     result = audit_module.evaluate_snapshot(
@@ -133,6 +135,43 @@ def test_three_model_profile_requires_exact_53_row_runtime_gate(
         "page_links_expected": 53,
         "page_links": 53,
     }
+    assert result["view"]["lineage"] == {
+        "required": True,
+        "required_keys": [
+            "evidence_group_id",
+            "source_variant_id",
+            "parent_id",
+            "retrieval_role",
+        ],
+        "expected_complete": 53,
+        "complete": 53,
+        "incomplete": 0,
+    }
+
+
+def test_three_model_profile_rejects_incomplete_view_lineage(
+    audit_module: ModuleType,
+):
+    snapshot = ready_snapshot(audit_module)
+    snapshot.update(
+        active_verified_count=53,
+        baseline_identity_count=53,
+        crosswalk_page_link_count=53,
+        view_row_count=53,
+        view_distinct_chunk_count=53,
+        view_complete_lineage_count=52,
+    )
+
+    result = audit_module.evaluate_snapshot(
+        snapshot,
+        evidence_profile="three-model",
+    )
+
+    assert result["status"] == "BLOCKED"
+    assert "BACKEND_AI_RAG_VIEW_COMPLETE_LINEAGE_COUNT_NOT_53" in result[
+        "blockers"
+    ]
+    assert result["view"]["lineage"]["incomplete"] == 1
 
 
 def test_three_model_profile_rejects_legacy_seven_row_database(
@@ -285,6 +324,23 @@ def test_latest_pgvector_dimension_migration_is_required(
     assert result["status"] == "BLOCKED"
     assert (
         "MIGRATION_MISSING:0011_cast_chunk_embedding_vector_dimensions"
+        in result["blockers"]
+    )
+
+
+def test_latest_readonly_view_lineage_migration_is_required(
+    audit_module: ModuleType,
+):
+    snapshot = ready_snapshot(audit_module)
+    snapshot["applied_migrations"].remove(
+        "0013_expand_backend_ai_rag_lineage_metadata"
+    )
+
+    result = audit_module.evaluate_snapshot(snapshot)
+
+    assert result["status"] == "BLOCKED"
+    assert (
+        "MIGRATION_MISSING:0013_expand_backend_ai_rag_lineage_metadata"
         in result["blockers"]
     )
 

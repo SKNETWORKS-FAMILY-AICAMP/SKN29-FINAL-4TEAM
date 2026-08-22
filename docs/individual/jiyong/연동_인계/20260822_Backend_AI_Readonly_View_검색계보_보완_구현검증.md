@@ -6,7 +6,7 @@
 >
 > 기준 소스: `a77f04ae433fe2bcff1672b519720773c356c6d8`
 >
-> 상태: 작성자 표적 검증 완료 / 실제 PostgreSQL·AI 50 Case 재검증 대기
+> 상태: 구현·Readiness Audit 정합성 보완 완료 / 실제 PostgreSQL·AI 50 Case 재검증 대기
 
 ## 1. 작업 목적
 
@@ -71,12 +71,25 @@ View 열 수와 이름은 유지하고 `metadata` JSON에 네 계보 값을 추�
 조건을 만족하지 않는 CHILD 행은 View에서 제외한다.
 Rollback 시에는 `evidence.0010`의 기존 View 정의로 복구한다.
 
+### 3.4 G1 Readiness Audit 정합성
+
+최신 View가 적용된 DB를 구형 기준으로 판정하지 않도록 읽기 전용 감사에
+다음 Gate를 추가했다.
+
+- 필수 Migration에 `evidence.0013` 포함
+- Migration Allowlist의 Evidence Leaf를 `0012`에서 `0013`으로 현행화
+- `three-model` Profile에서 검색 계보 4개가 완전한 행 `53/53` 요구
+- 누락 시 `BACKEND_AI_RAG_VIEW_COMPLETE_LINEAGE_COUNT_NOT_53`으로 차단
+- 기존 7건 `baseline` Profile은 계보를 완료 조건으로 강제하지 않음
+
+감사는 `SELECT`만 사용하며 DB·Role·Migration·Evidence를 변경하지 않는다.
+
 ## 4. 변경하지 않은 범위
 
 - View의 8개 열과 AI Readonly Role 권한
 - SourceDocument·Page·Embedding·Crosswalk 원장 행
 - Web·Mobile·AI 코드
-- 공용 `scripts/**`
+- `scripts/development/**` 등 공용 Bootstrap 실행 흐름
 - 공개 Backend API와 State Machine
 - `visits.0005` P1 HOLD
 - 공식 PDF·Embedding Fixture·Secret
@@ -98,6 +111,12 @@ Rollback 시에는 `evidence.0010`의 기존 View 정의로 복구한다.
 - 구형 Metadata Replay 시 기존 행 비변경 확인
 - 잘못된 Parent·Retrieval Role Fail-closed 확인
 - View 계보 필드·CHILD Guard·Read-only SQL 계약 확인
+- Readiness Audit이 `evidence.0013` 누락을 차단하는지 확인
+- 최신 Migration Graph Plan이 `visits.0005`를 제외하고 통과하는지 확인
+- 3모델 계보 `53/53`만 READY, `52/53`은 Fail-closed 확인
+- 7건 Baseline 호환 유지 확인
+- G1 Readiness·Migration Allowlist·Evidence 관련 회귀 `76 passed`
+- Backend Database Unit 전체 `111 passed`
 - Django Check: PASS
 - Migration drift: 없음
 
