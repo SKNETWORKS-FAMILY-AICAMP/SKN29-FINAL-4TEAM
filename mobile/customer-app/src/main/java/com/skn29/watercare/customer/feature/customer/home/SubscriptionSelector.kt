@@ -89,13 +89,13 @@ fun SubscriptionSelectionScreen(
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text(
-                text = "내 정수기",
+                text = "정수기 선택",
                 style = MaterialTheme.typography.headlineSmall,
                 color = palette.textStrong,
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = "제품을 좌우로 넘겨 내 정수기를 선택해주세요.",
+                text = "사용 중인 정수기를 선택해주세요. 좌우로 넘겨 확인할 수 있어요.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = palette.textMuted,
             )
@@ -148,9 +148,9 @@ fun SubscriptionSelectionScreen(
                 animateFloatAsState(
                     targetValue =
                         if (pageOffset < 0.06f) {
-                            1.03f
+                            1.01f
                         } else {
-                            0.98f
+                            0.99f
                         },
                     animationSpec = spring(
                         dampingRatio =
@@ -169,17 +169,16 @@ fun SubscriptionSelectionScreen(
                         subscription.subscriptionId,
                 modifier = Modifier.graphicsLayer {
                     scaleX =
-                        (0.94f +
-                            (0.06f * focus)) *
+                        (0.97f +
+                            (0.03f * focus)) *
                             settleScale
                     scaleY =
-                        (0.94f +
-                            (0.06f * focus)) *
+                        (0.97f +
+                            (0.03f * focus)) *
                             settleScale
                     alpha = 0.48f + (0.52f * focus)
-                    translationY = 8f * pageOffset
-                    rotationY =
-                        signedPageOffset * 5f
+                    translationY = 4f * pageOffset
+                    rotationY = 0f
                     cameraDistance =
                         18f * density
                 },
@@ -434,7 +433,7 @@ private fun SubscriptionPageIndicator(
             val width by animateDpAsState(
                 targetValue =
                     if (index == selectedPage) {
-                        38.dp
+                        28.dp
                     } else {
                         8.dp
                     },

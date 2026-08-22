@@ -109,6 +109,18 @@ fun CustomerVisualProductHero(
         animationSpec = tween(durationMillis = 760),
         label = "homeFilterRemainingProgress",
     )
+    val filterGaugeColor = when {
+        filter == null -> displayModel.accent
+        filter.percent <= 20 -> MaterialTheme.colorScheme.error
+        filter.percent <= 40 -> MaterialTheme.colorScheme.tertiary
+        else -> displayModel.accent
+    }
+    val filterStateLabel = when {
+        filter == null -> ""
+        filter.percent <= 20 -> "교체 확인"
+        filter.percent <= 40 -> "교체 준비"
+        else -> "상태 양호"
+    }
 
     CustomerCleanCard(
         modifier = Modifier
@@ -147,34 +159,58 @@ fun CustomerVisualProductHero(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(128.dp),
+                .height(164.dp),
             contentAlignment = Alignment.TopCenter,
         ) {
             Box(
                 modifier = Modifier
                     .padding(top = 2.dp)
-                    .size(132.dp),
+                    .size(154.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 FilterRemainingRing(
                     progress = animatedProgress,
-                    accentColor = displayModel.accent,
-                    trackColor = displayModel.softAccent.copy(alpha = 0.55f),
+                    accentColor = filterGaugeColor,
+                    trackColor = displayModel.softAccent.copy(alpha = 0.42f),
                     modifier = Modifier.fillMaxSize(),
                 )
                 CustomerModelMascot(
                     model = displayModel,
                     modifier = Modifier
-                        .size(104.dp)
+                        .size(96.dp)
                         .graphicsLayer {
                             scaleX = floatingScale
                             scaleY = floatingScale
                             translationY =
-                                5.dp.toPx() * floatingWave
-                            rotationZ =
-                                1f * floatingWave
+                                2.dp.toPx() * floatingWave
+                            rotationZ = 0f
                         },
                 )
+
+                if (!previewMode && filter != null) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(Color.White.copy(alpha = 0.92f))
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = "필터 ${filter.percent}%",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = palette.textStrong,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            text = filterStateLabel,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = filterGaugeColor,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
             }
         }
 
@@ -187,7 +223,7 @@ fun CustomerVisualProductHero(
             fontWeight = FontWeight.Bold,
         )
         Text(
-            text = displayModel.modelCode,
+            text = "모델 ${displayModel.modelCode}",
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodySmall,
@@ -195,20 +231,33 @@ fun CustomerVisualProductHero(
             fontWeight = FontWeight.SemiBold,
         )
 
-        Text(
-            text = when {
-                previewMode ->
-                    "이 모델은 화면 미리보기예요"
-                filter != null ->
-                    "필터 잔여 ${filter.percent}% · ${filter.message}"
-                else ->
-                    "관리 일정 확인 중"
-            },
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodySmall,
-            color = palette.textMuted,
-        )
+        when {
+            previewMode ->
+                Text(
+                    text = "이 모델은 화면 미리보기예요",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = palette.textMuted,
+                )
+
+            filter != null ->
+                CustomerFilterSummary(
+                    percent = filter.percent,
+                    progress = animatedProgress,
+                    message = filter.message,
+                    accentColor = displayModel.accent,
+                )
+
+            else ->
+                Text(
+                    text = "관리 일정을 확인하고 있어요",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = palette.textMuted,
+                )
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -217,7 +266,7 @@ fun CustomerVisualProductHero(
         ) {
             HomeStatusPill(
                 text = if (previewMode) {
-                    "미연결"
+                    "구독 없음"
                 } else {
                     home.product.managementTypeLabel
                 },
@@ -230,7 +279,7 @@ fun CustomerVisualProductHero(
                     home.isP0SupportedActiveSubscription() ->
                         "문의 가능"
                     else ->
-                        "도움 준비 중"
+                        "확인 중"
                 },
                 accent =
                     !previewMode &&
@@ -240,12 +289,71 @@ fun CustomerVisualProductHero(
 
         Text(
             text = if (previewMode) {
-                "실제 구독 연결 시 관리 정보와 문의 기능을 사용할 수 있어요."
+                "내 정수기를 연결하면 관리 정보와 문의 기능을 사용할 수 있어요."
             } else {
                 "사용 중인 제품 상태를 한눈에 확인할 수 있어요."
             },
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.bodySmall,
+            color = palette.textMuted,
+        )
+    }
+}
+
+@Composable
+private fun CustomerFilterSummary(
+    percent: Int,
+    progress: Float,
+    message: String,
+    accentColor: Color,
+) {
+    val palette = CustomerReferencePalette
+    val safeProgress = progress.coerceIn(0f, 1f)
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "필터 상태",
+                style = MaterialTheme.typography.labelLarge,
+                color = palette.textMuted,
+                fontWeight = FontWeight.Medium,
+            )
+            Text(
+                text = "${percent}% 남음",
+                style = MaterialTheme.typography.titleSmall,
+                color = palette.textStrong,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(7.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(palette.accentSoft.copy(alpha = 0.30f)),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(safeProgress)
+                    .height(7.dp)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(accentColor.copy(alpha = 0.86f)),
+            )
+        }
+
+        Text(
+            text = message,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Start,
             style = MaterialTheme.typography.bodySmall,
             color = palette.textMuted,
         )
@@ -260,31 +368,25 @@ fun CustomerServiceConnectionBanner(
     intakeAvailable: Boolean,
 ) {
     val palette = CustomerReferencePalette
-    val title = when {
-        offlinePreview -> "서비스 미리보기"
-        backendAvailable == true -> "서비스 연결 완료"
-        backendAvailable == false -> "서비스 연결이 필요해요"
-        else -> "서비스 연결 확인 중"
-    }
-    val description = when {
-        offlinePreview ->
-            "화면만 확인하는 모드예요. 실제 Backend에는 문의를 전송하지 않아요."
-        backendAvailable == true && hasActiveInquiry ->
-            "내 정수기 정보와 진행 중인 문의를 안전하게 불러왔어요."
-        backendAvailable == true && intakeAvailable ->
-            "내 정수기 정보가 연결되어 있어 필요할 때 바로 증상 확인을 시작할 수 있어요."
-        backendAvailable == true ->
-            "내 정수기 정보를 안전하게 불러오고 있어요."
-        backendAvailable == false ->
-            "연결을 다시 확인하면 정수기 정보와 문의 기능을 사용할 수 있어요."
-        else ->
-            "실제 서비스 연결 상태를 확인하고 있어요."
-    }
     val statusText = when {
         offlinePreview -> "미리보기"
         backendAvailable == true -> "연결됨"
         backendAvailable == false -> "연결 필요"
         else -> "확인 중"
+    }
+    val detail = when {
+        offlinePreview ->
+            "화면 미리보기 중이에요. 실제 문의는 전송되지 않아요."
+        backendAvailable == true && hasActiveInquiry ->
+            "정수기와 진행 중인 문의가 안전하게 연결되어 있어요."
+        backendAvailable == true && intakeAvailable ->
+            "정수기 정보가 연결되어 바로 도움을 받을 수 있어요."
+        backendAvailable == true ->
+            "정수기 정보가 안전하게 연결되어 있어요."
+        backendAvailable == false ->
+            "연결을 확인하면 정수기 정보와 문의 기능을 이용할 수 있어요."
+        else ->
+            "서비스 연결 상태를 확인하고 있어요."
     }
 
     CustomerCleanCard(
@@ -292,8 +394,8 @@ fun CustomerServiceConnectionBanner(
             .fillMaxWidth()
             .testTag("customerServiceConnection"),
         contentPadding = PaddingValues(
-            horizontal = 14.dp,
-            vertical = 11.dp,
+            horizontal = 13.dp,
+            vertical = 10.dp,
         ),
     ) {
         Row(
@@ -303,7 +405,7 @@ fun CustomerServiceConnectionBanner(
         ) {
             Box(
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(36.dp)
                     .clip(CircleShape)
                     .background(palette.accentSoft.copy(alpha = 0.24f)),
                 contentAlignment = Alignment.Center,
@@ -311,7 +413,7 @@ fun CustomerServiceConnectionBanner(
                 Image(
                     painter = painterResource(R.drawable.ref_notice),
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(18.dp),
                 )
             }
 
@@ -320,23 +422,18 @@ fun CustomerServiceConnectionBanner(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall,
+                    text = "서비스 연결",
+                    style = MaterialTheme.typography.labelLarge,
                     color = palette.textStrong,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
+                    text = detail,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = palette.textMuted,
                 )
             }
-        }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-        ) {
             HomeStatusPill(
                 text = statusText,
                 accent = backendAvailable == true && !offlinePreview,
@@ -393,10 +490,10 @@ fun CustomerVisualInquiryAction(
             "미리보기"
 
         needsQuestionnaire ->
-            "추가 확인 필요"
+            "확인 필요"
 
         isAiGuidance ->
-            "AI 안내"
+            "맞춤 안내 준비됨"
 
         isConsultationOrVisit ->
             "처리 진행 중"
@@ -408,7 +505,7 @@ fun CustomerVisualInquiryAction(
             "진행 중"
 
         intakeAvailable ->
-            "새 문의 가능"
+            "바로 확인"
 
         else ->
             "도움 준비 중"
@@ -419,10 +516,10 @@ fun CustomerVisualInquiryAction(
             "실제 구독 제품을 선택해주세요"
 
         needsQuestionnaire ->
-            "작성하던 문진을 이어서 완료해주세요"
+            "증상 확인을 조금만 더 해주세요"
 
         isAiGuidance ->
-            "AI 안내를 확인할 차례예요"
+            "맞춤 해결 방법이 준비됐어요"
 
         isConsultationOrVisit ->
             "문의 처리 상태를 확인해보세요"
@@ -434,15 +531,15 @@ fun CustomerVisualInquiryAction(
             "진행 중인 문의를 이어서 확인해주세요"
 
         intakeAvailable ->
-            "현재 진행 중인 문의가 없어요"
+            "정수기 사용이 불편하신가요?"
 
         else ->
-            "현재 문의 기능을 확인하고 있어요"
+            "도움 기능을 준비하고 있어요"
     }
 
     val description = when {
         previewMode ->
-            "실제 구독 중인 정수기를 선택하면 관리 정보와 문진 기능을 사용할 수 있어요."
+            "구독 중인 정수기를 선택하면 관리 정보와 증상 확인 기능을 사용할 수 있어요."
 
         needsQuestionnaire ->
             "몇 가지 간단한 질문에 답하면 상황에 맞는 안내를 받을 수 있어요."
@@ -466,9 +563,9 @@ fun CustomerVisualInquiryAction(
         intakeAvailable -> {
             val nextCare = careDday(home.nextCareOn)
             if (nextCare == "확인 중") {
-                "필요한 경우 바로 문진을 작성하고 도움을 받을 수 있어요."
+                "몇 가지 간단한 질문으로 증상을 확인하고 필요한 도움을 받을 수 있어요."
             } else {
-                "다음 관리 $nextCare · 불편한 점이 생기면 바로 문진을 시작할 수 있어요."
+                "다음 관리 $nextCare · 불편한 점이 생기면 바로 증상 확인을 시작할 수 있어요."
             }
         }
 
@@ -480,7 +577,7 @@ fun CustomerVisualInquiryAction(
 
     val actionText = when {
         needsQuestionnaire ->
-            "증상 확인 이어서"
+            "문제 확인 이어서"
 
         isAiGuidance ->
             "맞춤 안내 확인하기"
@@ -495,7 +592,7 @@ fun CustomerVisualInquiryAction(
             "진행 상황 보기"
 
         else ->
-            "증상 확인 시작"
+            "문제 확인 시작"
     }
 
     CustomerCleanCard(
@@ -515,7 +612,7 @@ fun CustomerVisualInquiryAction(
                 Alignment.CenterVertically,
         ) {
             Text(
-                text = "오늘 확인할 것",
+                text = "지금 확인해주세요",
                 style = MaterialTheme.typography.titleMedium,
                 color = palette.textStrong,
                 fontWeight = FontWeight.Bold,
@@ -645,7 +742,7 @@ fun CustomerQuickStatusRow(
         else careDday(home.nextCareOn)
     val managementValue =
         if (previewMode) {
-            "미연결"
+            "구독 없음"
         } else {
             when (home.product.managementTypeCode) {
                 "VISIT_CARE" -> "방문"
@@ -687,7 +784,7 @@ fun CustomerQuickStatusRow(
                 }
                 QuickStatusTile(
                     iconRes = R.drawable.ref_care,
-                    value = "내역",
+                    value = "보기",
                     label = "관리 기록",
                     onClick =
                         if (previewMode) null
@@ -714,7 +811,7 @@ fun CustomerQuickStatusRow(
                 )
                 QuickStatusTile(
                     iconRes = R.drawable.ref_care,
-                    value = "내역",
+                    value = "보기",
                     label = "관리 기록",
                     onClick =
                         if (previewMode) null
@@ -735,27 +832,6 @@ private fun QuickStatusTile(
     onClick: (() -> Unit)? = null,
 ) {
     val palette = CustomerReferencePalette
-    val tileTransition =
-        rememberInfiniteTransition(
-            label = "quickTileFloat_$label",
-        )
-    val tileFloat by tileTransition.animateFloat(
-        initialValue = -1f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = when (label) {
-                    "다음 방문",
-                    "다음 관리" -> 980
-                    "관리 방식" -> 1180
-                    else -> 1360
-                },
-            ),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "quickTileFloatValue",
-    )
-
     val clickModifier = if (onClick == null) {
         modifier
     } else {
@@ -765,62 +841,36 @@ private fun QuickStatusTile(
     CustomerCleanCard(
         modifier = clickModifier,
         contentPadding = PaddingValues(
-            horizontal = 7.dp,
-            vertical = 8.dp,
+            horizontal = 8.dp,
+            vertical = 10.dp,
         ),
     ) {
-        Image(
-            painter = painterResource(iconRes),
-            contentDescription = null,
+        Box(
             modifier = Modifier
-                .size(21.dp)
-                .align(Alignment.CenterHorizontally)
-                .graphicsLayer {
-                    translationY =
-                        2.dp.toPx() * tileFloat
-                    rotationZ = 0f
-                    scaleX =
-                        1f +
-                            (0.03f * tileFloat)
-                    scaleY =
-                        1f +
-                            (0.03f * tileFloat)
-                },
-        )
-        AnimatedContent(
-            targetState = value,
-            transitionSpec = {
-                (
-                    fadeIn(
-                        animationSpec = tween(220)
-                    ) +
-                        slideInVertically {
-                            it / 3
-                        }
-                    ) togetherWith (
-                    fadeOut(
-                        animationSpec = tween(150)
-                    ) +
-                        slideOutVertically {
-                            -it / 4
-                        }
-                    )
-            },
-            label = "quickStatusValue",
-        ) { animatedValue ->
-            Text(
-                text = animatedValue,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 1.dp),
-                textAlign = TextAlign.Center,
-                style =
-                    MaterialTheme.typography.titleMedium,
-                color = palette.textStrong,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
+                .size(34.dp)
+                .clip(CircleShape)
+                .background(palette.accentSoft.copy(alpha = 0.22f))
+                .align(Alignment.CenterHorizontally),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = painterResource(iconRes),
+                contentDescription = label,
+                modifier = Modifier.size(20.dp),
             )
         }
+
+        Text(
+            text = value,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 2.dp),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleMedium,
+            color = palette.textStrong,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+        )
 
         Text(
             text = label,
@@ -842,35 +892,23 @@ private fun FilterRemainingRing(
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.38f),
     modifier: Modifier = Modifier,
 ) {
-    val haloTransition =
-        rememberInfiniteTransition(
-            label = "heroOrbitHalo",
-        )
-    val haloAngle by haloTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 1650,
-                easing = LinearEasing,
-            ),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "heroOrbitAngle",
-    )
-    val haloColor =
-        MaterialTheme.colorScheme.primary
+    val safeProgress = progress.coerceIn(0f, 1f)
+
     Canvas(modifier = modifier) {
-        val stroke = 7.dp.toPx()
+        val stroke = 10.dp.toPx()
         val inset = stroke / 2f
         val arcSize = Size(
             width = size.width - stroke,
             height = size.height - stroke,
         )
+        val startAngle = 135f
+        val totalSweep = 270f
+        val progressSweep = totalSweep * safeProgress
+
         drawArc(
             color = trackColor,
-            startAngle = -90f,
-            sweepAngle = 360f,
+            startAngle = startAngle,
+            sweepAngle = totalSweep,
             useCenter = false,
             topLeft = Offset(inset, inset),
             size = arcSize,
@@ -878,65 +916,49 @@ private fun FilterRemainingRing(
                 width = stroke,
                 cap = StrokeCap.Round,
             ),
-        )
-        drawArc(
-            color = accentColor.copy(alpha = 0.62f),
-            startAngle = -90f,
-            sweepAngle = 360f * progress.coerceIn(0f, 1f),
-            useCenter = false,
-            topLeft = Offset(inset, inset),
-            size = arcSize,
-            style = Stroke(
-                width = stroke,
-                cap = StrokeCap.Round,
-            ),
-        )
-        val orbitRadians =
-            Math.toRadians(
-                haloAngle.toDouble()
-            )
-        val orbitRadius =
-            (size.minDimension / 2f) -
-                8.dp.toPx()
-        val orbitCenter = Offset(
-            x =
-                center.x +
-                    cos(orbitRadians)
-                        .toFloat() *
-                    orbitRadius,
-            y =
-                center.y +
-                    sin(orbitRadians)
-                        .toFloat() *
-                    orbitRadius,
         )
 
-        drawCircle(
-            color =
-                haloColor.copy(
-                    alpha = 0.28f
+        if (safeProgress > 0f) {
+            drawArc(
+                color = accentColor.copy(alpha = 0.92f),
+                startAngle = startAngle,
+                sweepAngle = progressSweep,
+                useCenter = false,
+                topLeft = Offset(inset, inset),
+                size = arcSize,
+                style = Stroke(
+                    width = stroke,
+                    cap = StrokeCap.Round,
                 ),
-            radius = 10.dp.toPx(),
-            center = orbitCenter,
-        )
-        drawCircle(
-            color =
-                Color.White.copy(
-                    alpha = 0.96f
-                ),
-            radius = 4.dp.toPx(),
-            center = orbitCenter,
-        )
-        drawCircle(
-            color =
-                haloColor.copy(
-                    alpha = 0.92f
-                ),
-            radius = 2.dp.toPx(),
-            center = orbitCenter,
-        )
+            )
+
+            val endAngle =
+                Math.toRadians(
+                    (startAngle + progressSweep).toDouble()
+                )
+            val radius =
+                (size.minDimension - stroke) / 2f
+            val marker = Offset(
+                x = center.x +
+                    cos(endAngle).toFloat() * radius,
+                y = center.y +
+                    sin(endAngle).toFloat() * radius,
+            )
+
+            drawCircle(
+                color = Color.White.copy(alpha = 0.98f),
+                radius = 6.dp.toPx(),
+                center = marker,
+            )
+            drawCircle(
+                color = accentColor,
+                radius = 3.3.dp.toPx(),
+                center = marker,
+            )
+        }
     }
 }
+
 
 @Composable
 private fun HomeStatusPill(
@@ -944,30 +966,9 @@ private fun HomeStatusPill(
     accent: Boolean,
 ) {
     val palette = CustomerReferencePalette
-    val pulseTransition =
-        rememberInfiniteTransition(
-            label = "homeStatusPulse",
-        )
-    val pulseScale by pulseTransition.animateFloat(
-        initialValue = 1f,
-        targetValue =
-            if (accent) 1.03f
-            else 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 900,
-            ),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "homeStatusPulseScale",
-    )
 
     Box(
         modifier = Modifier
-            .graphicsLayer {
-                scaleX = pulseScale
-                scaleY = pulseScale
-            }
             .clip(RoundedCornerShape(999.dp))
             .background(
                 if (accent) {

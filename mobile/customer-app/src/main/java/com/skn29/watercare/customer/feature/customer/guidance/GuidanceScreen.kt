@@ -11,12 +11,15 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
@@ -28,12 +31,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
@@ -569,7 +575,20 @@ private fun CustomerProgressOverview(
             .testTag("guidanceProgress"),
         strong = true,
     ) {
-        LiquidGlassPill("현재 진행 단계")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            LiquidGlassPill("현재 진행 단계")
+
+            Text(
+                text = "$currentStep / 4",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+            )
+        }
 
         Text(
             customerInquiryProgressHeadline(statusCode),
@@ -579,116 +598,15 @@ private fun CustomerProgressOverview(
 
         Text(
             customerInquiryProgressDescription(statusCode),
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            CustomerProgressStep(
-                number = 1,
-                title = "문의 접수",
-                description = "증상 내용을 전달했어요",
-                currentStep = currentStep,
-            )
-            CustomerProgressStep(
-                number = 2,
-                title = "증상 확인",
-                description = "필요한 증상만 간단히 더 확인해요",
-                currentStep = currentStep,
-            )
-            CustomerProgressStep(
-                number = 3,
-                title = "해결 방법",
-                description = "확인된 정보를 바탕으로 해결 방법을 안내해요",
-                currentStep = currentStep,
-            )
-            CustomerProgressStep(
-                number = 4,
-                title = "상담 연결",
-                description = "필요한 경우 상담사에게 그대로 이어져요",
-                currentStep = currentStep,
-            )
-        }
-    }
-}
-
-@Composable
-private fun CustomerProgressStep(
-    number: Int,
-    title: String,
-    description: String,
-    currentStep: Int,
-) {
-    val completed = number < currentStep
-    val current = number == currentStep
-    val stepTransition =
-        rememberInfiniteTransition(
-            label = "guidanceStepPulse",
-        )
-    val stepScale by stepTransition.animateFloat(
-        initialValue = 1f,
-        targetValue =
-            if (current) 1.06f
-            else 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 900,
-            ),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "guidanceStepScale",
-    )
-
-    Row(
-        verticalAlignment = Alignment.Top,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
         Text(
-            modifier = Modifier.graphicsLayer {
-                scaleX = stepScale
-                scaleY = stepScale
-            },
-            text = when {
-                completed -> "✓"
-                current -> "●"
-                else -> "·"
-            },
-            style = MaterialTheme.typography.titleSmall,
-            color = if (completed || current) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            },
-            fontWeight = FontWeight.Bold,
+            text = "문의 접수  →  증상 확인  →  해결 방법  →  상담 연결",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Text(
-                title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight =
-                    if (current) FontWeight.Bold
-                    else FontWeight.SemiBold,
-                color = if (current) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
-            )
-
-            if (current) {
-                Text(
-                    description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color =
-                        MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
     }
 }
 
@@ -924,6 +842,26 @@ fun GuidanceContent(
 
     val dangerous = safetyCritical || noEvidence
 
+    val headline = when {
+        noEvidence ->
+            "안내를 위해 조금 더 확인이 필요해요"
+        guidance.usageStatus == UsageGuidanceStatus.TOTAL_STOP ->
+            "안전을 위해 사용을 멈춰주세요"
+        guidance.usageStatus == UsageGuidanceStatus.PENDING_CONSULTATION ->
+            "사용 전에 상담이 필요해요"
+        guidance.riskLevel == RiskLevel.DANGER ->
+            "안전을 먼저 확인해주세요"
+        else ->
+            "지금 할 수 있는 해결 방법을 확인해보세요"
+    }
+
+    val heroMessage = when {
+        dangerous ->
+            "안전을 위해 아래 내용을 순서대로 확인해주세요. 필요하면 바로 상담을 연결할 수 있어요."
+        else ->
+            "가장 먼저 확인해야 할 내용부터 순서대로 정리했어요."
+    }
+
     LiquidGlassPanel(
         modifier = Modifier.fillMaxWidth(),
         strong = !dangerous,
@@ -932,47 +870,43 @@ fun GuidanceContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 165.dp),
+                .heightIn(min = 132.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                LiquidGlassPill(
+                    if (dangerous) "안전 확인"
+                    else "맞춤 안내"
+                )
+
                 StatusBadge(
                     guidance.riskLevel,
                     guidance.usageStatus,
                 )
 
                 Text(
-                    if (noEvidence) {
-                        "공식 근거 확인이 필요해요"
-                    } else {
-                        "지금 필요한 안내를 확인하세요"
-                    },
+                    text = headline,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
+                )
+
+                Text(
+                    text = heroMessage,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color =
+                        MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
             Image(
                 painter = painterResource(R.drawable.mascot_customer),
-                contentDescription = "안전 안내 캐릭터",
-                modifier = Modifier.size(125.dp),
+                contentDescription = "맞춤 안내 캐릭터",
+                modifier = Modifier.size(88.dp),
                 contentScale = ContentScale.Fit,
-            )
-        }
-    }
-
-    if (guidance.nextAction.isNotBlank()) {
-        SectionCard(
-            "지금 해야 할 행동",
-            isDanger = dangerous,
-        ) {
-            Text(
-                guidance.nextAction,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold,
             )
         }
     }
@@ -984,7 +918,7 @@ fun GuidanceContent(
 
     if (showUsage) {
         SectionCard(
-            "사용 가능 여부",
+            "현재 사용 상태",
             isDanger = dangerous,
         ) {
             StatusBadge(
@@ -993,12 +927,16 @@ fun GuidanceContent(
             )
 
             if (guidance.usageMessage.isNotBlank()) {
-                Text(guidance.usageMessage)
+                Text(
+                    guidance.usageMessage,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
 
             if (guidance.restrictedFunctions.isNotEmpty()) {
                 Text(
-                    "사용 제한 기능",
+                    "지금 사용할 수 없는 기능",
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                 )
                 BulletList(guidance.restrictedFunctions)
@@ -1006,12 +944,34 @@ fun GuidanceContent(
         }
     }
 
-    if (guidance.safeActions.isNotEmpty()) {
+    if (
+        guidance.nextAction.isNotBlank() ||
+        guidance.safeActions.isNotEmpty()
+    ) {
         SectionCard(
-            "안전 행동",
+            "이 순서대로 해보세요",
             isDanger = dangerous,
         ) {
-            BulletList(guidance.safeActions)
+            if (guidance.nextAction.isNotBlank()) {
+                Text(
+                    guidance.nextAction,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+
+            if (guidance.safeActions.isNotEmpty()) {
+                GuidanceActionSteps(guidance.safeActions)
+            }
+        }
+    }
+
+    if (guidance.prohibitedActions.isNotEmpty()) {
+        SectionCard(
+            "주의해주세요",
+            isDanger = dangerous,
+        ) {
+            BulletList(guidance.prohibitedActions)
         }
     }
 
@@ -1024,10 +984,19 @@ fun GuidanceContent(
         }
     }
 
-    if (guidance.evidence.isNotEmpty()) {
-        SectionCard("공식 근거") {
+    if (guidance.symptomSummary.isNotBlank()) {
+        SectionCard("입력한 증상") {
             Text(
-                "공식 문서에서 확인된 내용만 보여드려요.",
+                guidance.symptomSummary,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
+
+    if (guidance.evidence.isNotEmpty()) {
+        SectionCard("안내 기준") {
+            Text(
+                "확인된 정보를 기준으로 안내했어요.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -1037,19 +1006,52 @@ fun GuidanceContent(
             }
         }
     }
+}
 
-    if (guidance.symptomSummary.isNotBlank()) {
-        SectionCard("입력한 증상 요약") {
-            Text(guidance.symptomSummary)
-        }
-    }
+@Composable
+private fun GuidanceActionSteps(
+    actions: List<String>,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        actions.forEachIndexed { index, action ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.055f)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 11.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.13f)
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "${index + 1}",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
 
-    if (guidance.prohibitedActions.isNotEmpty()) {
-        SectionCard(
-            "하지 말아야 할 행동",
-            isDanger = dangerous,
-        ) {
-            BulletList(guidance.prohibitedActions)
+                Text(
+                    text = action,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
         }
     }
 }
@@ -1059,23 +1061,6 @@ private fun GuidancePreparingContent(
     autoRetryCount: Int,
     onRetry: () -> Unit,
 ) {
-    val preparingTransition =
-        rememberInfiniteTransition(
-            label = "guidancePreparingBreath",
-        )
-    val preparingScale by
-        preparingTransition.animateFloat(
-            initialValue = 0.97f,
-            targetValue = 1.03f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(
-                    durationMillis = 1100,
-                ),
-                repeatMode = RepeatMode.Reverse,
-            ),
-            label = "guidancePreparingScale",
-        )
-
     LiquidGlassPanel(
         modifier = Modifier
             .fillMaxWidth()
@@ -1085,9 +1070,9 @@ private fun GuidancePreparingContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 118.dp),
+                .heightIn(min = 104.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Column(
                 modifier = Modifier.weight(1f),
@@ -1096,18 +1081,18 @@ private fun GuidancePreparingContent(
                 LiquidGlassPill("안내 준비 중")
 
                 Text(
-                    text = "답변을 바탕으로 안내를 준비하고 있어요",
+                    text = "맞춤 해결 방법을 준비하고 있어요",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
 
                 Text(
                     text = if (autoRetryCount < 6) {
-                        "완료되면 자동으로 다시 확인할게요. 잠시만 기다려주세요."
+                        "완료되면 자동으로 확인할게요. 잠시만 기다려주세요."
                     } else {
-                        "준비가 조금 길어지고 있어요. 입력한 문의 내용은 그대로 보관되어 있어요."
+                        "준비가 조금 길어지고 있어요. 입력한 내용은 안전하게 보관되어 있어요."
                     },
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color =
                         MaterialTheme.colorScheme
                             .onSurfaceVariant,
@@ -1118,20 +1103,15 @@ private fun GuidancePreparingContent(
                 painter = painterResource(
                     R.drawable.mascot_customer
                 ),
-                contentDescription = "AI 안내 준비 중",
-                modifier = Modifier
-                    .size(82.dp)
-                    .graphicsLayer {
-                        scaleX = preparingScale
-                        scaleY = preparingScale
-                    },
+                contentDescription = "맞춤 안내 준비 중",
+                modifier = Modifier.size(72.dp),
                 contentScale = ContentScale.Fit,
             )
         }
 
         if (autoRetryCount >= 6) {
             TextButton(onClick = onRetry) {
-                Text("지금 다시 확인")
+                Text("다시 확인하기")
             }
         }
     }
@@ -1144,15 +1124,15 @@ internal fun GuidanceFailureStateContent(
 ) {
     when (state) {
         is GuidanceUiState.NotReady -> FailureFallback(
-            title = "AI 안내 준비 중",
-            message = "AI 안내를 준비하고 있어요. 잠시 후 다시 확인해주세요.",
+            title = "맞춤 안내 준비 중",
+            message = "맞춤 안내를 준비하고 있어요. 잠시 후 다시 확인해주세요.",
             retryable = true,
             onRetry = onRetry,
         )
 
         is GuidanceUiState.AiFailure -> FailureFallback(
             title = "지금은 안내를 준비하지 못했어요",
-            message = "지금은 AI 안내를 준비하지 못했어요. 잠시 후 다시 시도해주세요.",
+            message = "지금은 맞춤 안내를 준비하지 못했어요. 잠시 후 다시 시도해주세요.",
             retryable = state.retryable,
             onRetry = onRetry,
         )
