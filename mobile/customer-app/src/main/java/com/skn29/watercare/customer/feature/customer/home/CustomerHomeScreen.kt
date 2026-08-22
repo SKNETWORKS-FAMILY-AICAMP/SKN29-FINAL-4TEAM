@@ -264,6 +264,13 @@ fun CustomerHomeContent(
                 onChangeProduct = onChangeProduct,
             )
 
+            CustomerServiceConnectionBanner(
+                backendAvailable = state.backendAvailable,
+                offlinePreview = state.offlinePreview,
+                hasActiveInquiry = !activeInquiryId.isNullOrBlank(),
+                intakeAvailable = !previewMode && state.intakeAvailable,
+            )
+
             var showTodayAction by remember(
                 home.subscriptionId,
                 activeInquiryStatusCode,

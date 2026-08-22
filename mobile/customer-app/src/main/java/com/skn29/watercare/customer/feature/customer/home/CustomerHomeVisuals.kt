@@ -86,8 +86,8 @@ fun CustomerVisualProductHero(
         label = "homePurifierFloating",
     )
     val floatingScale by floatingTransition.animateFloat(
-        initialValue = 0.92f,
-        targetValue = 1.10f,
+        initialValue = 0.97f,
+        targetValue = 1.03f,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 1450),
             repeatMode = RepeatMode.Reverse,
@@ -170,11 +170,9 @@ fun CustomerVisualProductHero(
                             scaleX = floatingScale
                             scaleY = floatingScale
                             translationY =
-                                11.dp.toPx() *
-                                    floatingWave
+                                5.dp.toPx() * floatingWave
                             rotationZ =
-                                4.5f *
-                                    floatingWave
+                                1f * floatingWave
                         },
                 )
             }
@@ -232,7 +230,7 @@ fun CustomerVisualProductHero(
                     home.isP0SupportedActiveSubscription() ->
                         "문의 가능"
                     else ->
-                        "문의 준비 중"
+                        "도움 준비 중"
                 },
                 accent =
                     !previewMode &&
@@ -251,6 +249,99 @@ fun CustomerVisualProductHero(
             style = MaterialTheme.typography.bodySmall,
             color = palette.textMuted,
         )
+    }
+}
+
+@Composable
+fun CustomerServiceConnectionBanner(
+    backendAvailable: Boolean?,
+    offlinePreview: Boolean,
+    hasActiveInquiry: Boolean,
+    intakeAvailable: Boolean,
+) {
+    val palette = CustomerReferencePalette
+    val title = when {
+        offlinePreview -> "서비스 미리보기"
+        backendAvailable == true -> "서비스 연결 완료"
+        backendAvailable == false -> "서비스 연결이 필요해요"
+        else -> "서비스 연결 확인 중"
+    }
+    val description = when {
+        offlinePreview ->
+            "화면만 확인하는 모드예요. 실제 Backend에는 문의를 전송하지 않아요."
+        backendAvailable == true && hasActiveInquiry ->
+            "내 정수기 정보와 진행 중인 문의를 안전하게 불러왔어요."
+        backendAvailable == true && intakeAvailable ->
+            "내 정수기 정보가 연결되어 있어 필요할 때 바로 증상 확인을 시작할 수 있어요."
+        backendAvailable == true ->
+            "내 정수기 정보를 안전하게 불러오고 있어요."
+        backendAvailable == false ->
+            "연결을 다시 확인하면 정수기 정보와 문의 기능을 사용할 수 있어요."
+        else ->
+            "실제 서비스 연결 상태를 확인하고 있어요."
+    }
+    val statusText = when {
+        offlinePreview -> "미리보기"
+        backendAvailable == true -> "연결됨"
+        backendAvailable == false -> "연결 필요"
+        else -> "확인 중"
+    }
+
+    CustomerCleanCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("customerServiceConnection"),
+        contentPadding = PaddingValues(
+            horizontal = 14.dp,
+            vertical = 11.dp,
+        ),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(palette.accentSoft.copy(alpha = 0.24f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.ref_notice),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = palette.textStrong,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = palette.textMuted,
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            HomeStatusPill(
+                text = statusText,
+                accent = backendAvailable == true && !offlinePreview,
+            )
+        }
     }
 }
 
@@ -320,7 +411,7 @@ fun CustomerVisualInquiryAction(
             "새 문의 가능"
 
         else ->
-            "문의 준비 중"
+            "도움 준비 중"
     }
 
     val headline = when {
@@ -354,10 +445,10 @@ fun CustomerVisualInquiryAction(
             "실제 구독 중인 정수기를 선택하면 관리 정보와 문진 기능을 사용할 수 있어요."
 
         needsQuestionnaire ->
-            "몇 가지 질문에 답하면 더 정확한 안내를 받을 수 있어요."
+            "몇 가지 간단한 질문에 답하면 상황에 맞는 안내를 받을 수 있어요."
 
         isAiGuidance ->
-            "작성한 문진을 바탕으로 준비된 해결 안내를 확인해보세요."
+            "입력한 증상 정보를 바탕으로 준비된 해결 방법을 확인해보세요."
 
         isConsultationOrVisit ->
             inquiryStatusMessage(
@@ -389,10 +480,10 @@ fun CustomerVisualInquiryAction(
 
     val actionText = when {
         needsQuestionnaire ->
-            "문진 이어서 작성"
+            "증상 확인 이어서"
 
         isAiGuidance ->
-            "AI 안내 확인하기"
+            "맞춤 안내 확인하기"
 
         isConsultationOrVisit ->
             "진행 상황 보기"
@@ -404,7 +495,7 @@ fun CustomerVisualInquiryAction(
             "진행 상황 보기"
 
         else ->
-            "문진 작성하기"
+            "증상 확인 시작"
     }
 
     CustomerCleanCard(
@@ -686,19 +777,14 @@ private fun QuickStatusTile(
                 .align(Alignment.CenterHorizontally)
                 .graphicsLayer {
                     translationY =
-                        5.dp.toPx() *
-                            tileFloat
-                    rotationZ =
-                        4f *
-                            tileFloat
+                        2.dp.toPx() * tileFloat
+                    rotationZ = 0f
                     scaleX =
                         1f +
-                            (0.08f *
-                                tileFloat)
+                            (0.03f * tileFloat)
                     scaleY =
                         1f +
-                            (0.08f *
-                                tileFloat)
+                            (0.03f * tileFloat)
                 },
         )
         AnimatedContent(
@@ -731,7 +817,7 @@ private fun QuickStatusTile(
                 style =
                     MaterialTheme.typography.titleMedium,
                 color = palette.textStrong,
-                fontWeight = FontWeight.ExtraBold,
+                fontWeight = FontWeight.Bold,
                 maxLines = 1,
             )
         }
@@ -865,11 +951,11 @@ private fun HomeStatusPill(
     val pulseScale by pulseTransition.animateFloat(
         initialValue = 1f,
         targetValue =
-            if (accent) 1.11f
+            if (accent) 1.03f
             else 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = 560,
+                durationMillis = 900,
             ),
             repeatMode = RepeatMode.Reverse,
         ),
