@@ -136,6 +136,16 @@ Backend URL=http://127.0.0.1:18000
 GET /health=200
 ```
 
+로컬 합성 인증은 Case 소유권에 맞춰 다음 코드를 사용한다.
+
+| Case | Demo Login Code | 실제 합성 소유자 |
+| --- | --- | --- |
+| JAC104 | `SYN-CUSTOMER-001` | Import 계정 `CUS-0001` |
+| IAC425·IAC606 | `DEMO-CUSTOMER-001` | Demo 계정 `DEMO-CUSTOMER-001` |
+
+`CUS-0001`을 Login Code로 직접 사용하거나 다른 고객 Token으로 404 소유권 경계를
+우회하지 않는다. 위 두 Login Code는 이 격리 로컬 Runtime에만 허용된다.
+
 이 창은 Backend가 실행되는 동안 닫지 않는다.
 
 ## 8. AI 환경 주입·실행 — PowerShell 2
@@ -169,13 +179,13 @@ openai_key=PRESENT_NOT_PRINTED
 
 ## 9. 5 Case 기대값
 
-| Case | MVP 기대값 | Vector·Provider |
-| --- | --- | --- |
-| JAC104 정상 | 실제 근거 기반 `SUCCEEDED` | 최초 요청 실행 |
-| IAC425 일반 | `RUNTIME_PRODUCT_NOT_APPROVED` | 0회 |
-| IAC425 누수 | 위험 안전판정 유지 후 제품 미승인 | 0회 |
-| IAC606 일반 | `RUNTIME_PRODUCT_NOT_APPROVED` | 0회 |
-| IAC606 누수 | 위험 안전판정 유지 후 제품 미승인 | 0회 |
+| Case | Login Code | MVP 기대값 | Vector·Provider |
+| --- | --- | --- | --- |
+| JAC104 정상 | `SYN-CUSTOMER-001` | 실제 근거 기반 `SUCCEEDED` | 최초 요청 실행 |
+| IAC425 일반 | `DEMO-CUSTOMER-001` | `RUNTIME_PRODUCT_NOT_APPROVED` | 0회 |
+| IAC425 누수 | `DEMO-CUSTOMER-001` | 위험 안전판정 유지 후 제품 미승인 | 0회 |
+| IAC606 일반 | `DEMO-CUSTOMER-001` | `RUNTIME_PRODUCT_NOT_APPROVED` | 0회 |
+| IAC606 누수 | `DEMO-CUSTOMER-001` | 위험 안전판정 유지 후 제품 미승인 | 0회 |
 
 `public_runtime=mvp`와 `AI_RAG_RUNTIME_PROFILE=mvp`를 유지한다.
 `three_model_integration`, F02 재시도 정책, `danger+PARTIAL_STOP`은 바꾸지 않는다.
@@ -209,3 +219,16 @@ Token·DSN·OpenAI Key·공식 PDF 경로·고객 원문은 회신하지 않는�
 
 Bootstrap 성공은 이동윤 PC의 로컬 통합환경 READY다. 전체 팀 E2E PASS는 아니다.
 실제 5 Case 실행결과와 Replay 증거를 만든 뒤 김은진 독립 QA에서 최종 판정한다.
+
+## 13. JAC104 합성 인증 보완 검증
+
+- 기준 main SHA: `205428fd224fca3a99f84c223b841fdfcc51b555`
+- jiyong 선행 통합 SHA: `307f825e5f761269268ccbf00f4dd662c4c8cdfc`
+- 적용 범위: 격리 로컬 Bootstrap·Backend Process 환경만
+- 인증 계약: JAC104=`SYN-CUSTOMER-001`, IAC=`DEMO-CUSTOMER-001`
+- 소유권 정책: 직접 `CUS-0001` Login 및 타 고객 Token 우회 금지
+- PowerShell 구문 검사: 3개 Script 오류 0건
+- Backend 표적 회귀: 52건 PASS
+- Data QA: 60파일·990레코드, 오류·경고·재생성 변경 0건
+- 남은 Gate: AI 안전 정규화 Commit과 병합 후 신규 Run ID로 JAC104·IAC606
+  표적 Runtime 재검증

@@ -80,6 +80,17 @@ def test_backend_and_ai_processes_load_separate_minimum_roles():
     assert "PRESENT_NOT_PRINTED" in ai_content
 
 
+def test_local_backend_allows_both_approved_synthetic_customer_login_codes():
+    bootstrap_content = _text(BOOTSTRAP)
+    backend_content = _text(BACKEND_STARTER)
+
+    for content in (bootstrap_content, backend_content):
+        assert "DJANGO_DEMO_LOGIN_CODES" in content
+        assert "DEMO-CUSTOMER-001" in content
+        assert "SYN-CUSTOMER-001" in content
+        assert "'CUS-0001'" not in content
+
+
 def test_local_scripts_do_not_offer_destructive_or_secret_printing_shortcuts():
     combined = "\n".join(_text(path) for path in (BOOTSTRAP, BACKEND_STARTER, AI_LOADER))
     lowered = combined.lower()

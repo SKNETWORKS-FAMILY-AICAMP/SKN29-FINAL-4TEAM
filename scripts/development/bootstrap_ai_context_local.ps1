@@ -72,6 +72,13 @@ $composeOverride = Join-Path $RuntimeRoot 'compose.override.yaml'
 $composeProject = 'waterbridge-ai-context-local'
 $containerName = 'waterbridge-ai-context-local-postgres'
 $volumeName = 'waterbridge-ai-context-local-postgres-data'
+$localDemoLoginCodes = @(
+    'DEMO-CUSTOMER-001',
+    'DEMO-CONSULTANT-001',
+    'DEMO-TECHNICIAN-001',
+    'DEMO-OPERATOR-001',
+    'SYN-CUSTOMER-001'
+) -join ','
 
 function Assert-File {
     param([Parameter(Mandatory)][string]$Path)
@@ -148,6 +155,7 @@ function Set-DjangoRuntimeEnvironment {
         DJANGO_TIME_ZONE = 'Asia/Seoul'
         DJANGO_LOG_LEVEL = 'INFO'
         DJANGO_DEMO_LOGIN_ENABLED = 'true'
+        DJANGO_DEMO_LOGIN_CODES = $localDemoLoginCodes
         AI_HANDOFF_INTERNAL_TOKEN = $HandoffToken
         AI_SERVICE_BASE_URL = 'http://127.0.0.1:8001'
         AI_SERVICE_MODE = 'local'

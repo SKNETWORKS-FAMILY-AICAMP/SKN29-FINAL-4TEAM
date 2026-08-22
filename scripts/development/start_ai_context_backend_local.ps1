@@ -53,6 +53,13 @@ if ([string]::IsNullOrWhiteSpace($handoff.AI_HANDOFF_INTERNAL_TOKEN)) {
 }
 
 . $loader -RuntimeRoot $RuntimeRoot -Role Runtime | Out-Null
+$localDemoLoginCodes = @(
+    'DEMO-CUSTOMER-001',
+    'DEMO-CONSULTANT-001',
+    'DEMO-TECHNICIAN-001',
+    'DEMO-OPERATOR-001',
+    'SYN-CUSTOMER-001'
+) -join ','
 $runtimeVariables = @{
     DJANGO_SETTINGS_MODULE = 'config.settings.local'
     DJANGO_SECRET_KEY = $handoff.AI_HANDOFF_INTERNAL_TOKEN
@@ -62,6 +69,7 @@ $runtimeVariables = @{
     DJANGO_TIME_ZONE = 'Asia/Seoul'
     DJANGO_LOG_LEVEL = 'INFO'
     DJANGO_DEMO_LOGIN_ENABLED = 'true'
+    DJANGO_DEMO_LOGIN_CODES = $localDemoLoginCodes
     AI_HANDOFF_INTERNAL_TOKEN = $handoff.AI_HANDOFF_INTERNAL_TOKEN
     AI_SERVICE_BASE_URL = 'http://127.0.0.1:8001'
     AI_SERVICE_MODE = 'local'
