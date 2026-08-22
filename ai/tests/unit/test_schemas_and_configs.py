@@ -463,15 +463,19 @@ def test_dependency_manifests_keep_direct_dependencies_aligned():
         for requirement in [Requirement(raw)]
     }
     direct_requirements = _load_requirements("ai/requirements.txt")
-    locked_requirements = _load_requirements("ai/requirements.lock")
+    locked_manifests = {
+        "windows": _load_requirements("ai/requirements.lock"),
+        "linux_ci": _load_requirements("ai/requirements-linux.lock"),
+    }
 
     assert pyproject_requirements.keys() == direct_requirements.keys()
     for name, pyproject_requirement in pyproject_requirements.items():
         direct_requirement = direct_requirements[name]
         assert pyproject_requirement.extras == direct_requirement.extras
         assert _exact_pin(pyproject_requirement) == _exact_pin(direct_requirement)
-        assert name in locked_requirements
-        assert _exact_pin(pyproject_requirement) == _exact_pin(locked_requirements[name])
+        for locked_requirements in locked_manifests.values():
+            assert name in locked_requirements
+            assert _exact_pin(pyproject_requirement) == _exact_pin(locked_requirements[name])
 
     # requirements.lock은 Extra 표기 대신 실제 설치 Package를 고정한다.
     assert {
@@ -481,7 +485,18 @@ def test_dependency_manifests_keep_direct_dependencies_aligned():
         "python-dotenv",
         "watchfiles",
         "websockets",
-    }.issubset(locked_requirements)
+    }.issubset(locked_manifests["windows"])
+
+
+def test_linux_ci_lock_is_cpu_only_and_excludes_windows_packages():
+    locked_requirements = _load_requirements("ai/requirements-linux.lock")
+    assert _exact_pin(locked_requirements["torch"]) == "2.13.0+cpu"
+    assert "pywin32" not in locked_requirements
+    assert "triton" not in locked_requirements
+    assert not any(
+        name.startswith(("cuda-", "cupy-", "nvidia-", "pytorch-triton", "torchtriton"))
+        for name in locked_requirements
+    )
 
 
 def test_backend_integration_environment_manifest_is_reproducible():

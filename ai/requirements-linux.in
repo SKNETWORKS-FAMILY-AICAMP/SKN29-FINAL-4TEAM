@@ -1,0 +1,4 @@
+# Direct dependency input for the Ubuntu 24.04 x86_64 CPython 3.13.13 CI lock.
+# The CPU-specific torch pin prevents the default Linux resolver from selecting CUDA wheels.
+-r requirements.txt
+torch==2.13.0+cpu

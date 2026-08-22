@@ -49,8 +49,24 @@ Python `3.13.13`으로 다시 생성한다. 가상환경 디렉토리는 Git에 
 않으며 다른 팀원에게 복사하지 않는다.
 
 `ai/requirements.lock`은 Python 3.13.13·Windows x86-64 개발/테스트용이며
-Hash를 포함하지 않는다. Linux Container 배포 시에는 대상 Image에서 별도
-Lock을 생성하고 설치·테스트를 다시 검증한다.
+Hash를 포함하지 않는다. GitHub Actions의 Ubuntu 24.04 x86_64·CPython
+3.13.13·CPU-only Gate 후보는 `ai/requirements-linux.lock`을 사용한다. 두 Lock은
+대상 OS가 다르므로 서로 대체하지 않는다.
+
+Linux CI Lock은 저장소 Root에서 다음과 같이 생성·검증한다. 생성과 검증은 서로
+다른 새 Container에서 실행되며, `torch==2.13.0+cpu`는 PyTorch 공식 CPU Wheel
+Index에서 설치한다.
+
+```powershell
+docker build --file ai/docker/linux-lock/Dockerfile --tag waterbridge-ai-linux-lock:py31313-ubuntu2404 .
+docker run --rm --volume "${PWD}:/workspace" waterbridge-ai-linux-lock:py31313-ubuntu2404
+docker run --rm --volume "${PWD}:/workspace" --tmpfs /workspace/ai/tests/.linux-pytest-root --env PYTHONPYCACHEPREFIX=/tmp/pycache waterbridge-ai-linux-lock:py31313-ubuntu2404 python ai/scripts/verify_linux_ci_lock.py
+```
+
+생성 입력은 `ai/requirements-linux.in`, 결과는 `ai/requirements-linux.lock`이다.
+Resolver pip은 `26.1.2`로 고정한다. 이 Lock은 GitHub Actions Required Gate를 위한
+CI 후보이며, Package Hash는 포함하지 않는다. 운영 Container 공용 여부는 EC2
+OS·Architecture와 AI Base Image가 확정된 뒤 별도로 판정한다.
 
 Base URL은 `http://127.0.0.1:8001`, Health Check는 `GET /health`, 분석
 API는 `POST /api/v1/ai/analyze?mode=mock|local`이다. `mock`은 계약 연결용
