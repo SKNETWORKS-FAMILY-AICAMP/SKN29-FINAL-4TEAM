@@ -23,7 +23,7 @@ env:
 
 jobs:
   verify-linux-candidate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
 
     services:
@@ -55,7 +55,7 @@ jobs:
             backend/requirements/base.txt
             backend/requirements/local.txt
             backend/requirements/constraints-py313.txt
-            ai/requirements.txt
+            ai/requirements-linux.lock
 
       - name: Prepare Linux Backend constraint packages
         run: |
@@ -69,26 +69,41 @@ jobs:
       - name: Bootstrap Backend environment
         run: python scripts/development/bootstrap.py --service backend
 
-      - name: Create candidate AI environment
+      - name: Create locked CPU-only AI environment
         run: |
           python -m venv ai/.venv
-          ai/.venv/bin/python -m pip install --disable-pip-version-check -r ai/requirements.txt
+          ai/.venv/bin/python -m pip install --disable-pip-version-check pip==26.1.2
+          ai/.venv/bin/python -m pip install \
+            --disable-pip-version-check \
+            --no-deps \
+            --only-binary=:all: \
+            --index-url https://pypi.org/simple \
+            --extra-index-url https://download.pytorch.org/whl/cpu \
+            --requirement ai/requirements-linux.lock
 
       - name: Check Backend and AI dependencies
         run: |
           backend/.venv/bin/python -m pip check
           ai/.venv/bin/python -m pip check
 
-      - name: Record candidate AI dependency snapshot
+      - name: Verify and record AI Linux CI lock
+        shell: bash
         run: |
+          set -euo pipefail
+          lock_sha256="$(sha256sum ai/requirements-linux.lock | awk '{print $1}')"
+          ai/.venv/bin/python -c "import torch; assert torch.__version__ == '2.13.0+cpu'; assert torch.version.cuda is None"
+          if ai/.venv/bin/python -m pip freeze | grep -Eiq '^(cuda-|cupy-|nvidia-|pytorch-triton|torchtriton|triton==|pywin32==)'; then
+            echo "GPU/CUDA 또는 Windows 전용 Package가 Linux CI 환경에 설치됐습니다." >&2
+            exit 1
+          fi
           {
-            echo "### AI Linux Candidate dependency snapshot"
+            echo "### AI Linux CI lock"
             echo
-            echo 'Installed from `ai/requirements.txt`; this is not a verified Linux lock.'
-            echo
-            echo '```text'
-            ai/.venv/bin/python -m pip freeze
-            echo '```'
+            echo '- Path: `ai/requirements-linux.lock`'
+            echo "- SHA-256: \`${lock_sha256}\`"
+            echo "- $(ai/.venv/bin/python -m pip --version)"
+            echo '- Torch: `2.13.0+cpu`, CUDA runtime: `None`'
+            echo '- Scope: CI candidate; production reuse is not verified.'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Run AI unit tests
@@ -195,9 +210,10 @@ jobs:
             echo
             echo "### AI Backend Socket E2E result"
             echo
-            echo "LINUX_CANDIDATE_VERIFIED"
+            echo "LINUX_LOCK_CANDIDATE_VERIFIED"
             echo
-            echo "This result does not verify a reproducible Linux lock."
+            echo "The Ubuntu 24.04 CPU-only CI lock and Socket E2E candidate passed."
+            echo "Production container reuse remains NOT_VERIFIED."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Record Linux candidate failure
