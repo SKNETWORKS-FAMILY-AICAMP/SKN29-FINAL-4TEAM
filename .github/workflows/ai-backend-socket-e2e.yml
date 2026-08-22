@@ -1,10 +1,17 @@
-name: AI Backend Socket E2E Linux Candidate
+name: AI Backend Socket E2E Linux Gate
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
+
+concurrency:
+  group: ai-backend-socket-e2e-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   DJANGO_SETTINGS_MODULE: config.settings.local
@@ -22,7 +29,8 @@ env:
   RUN_AI_BACKEND_SOCKET_E2E: "1"
 
 jobs:
-  verify-linux-candidate:
+  verify-linux-gate:
+    name: AI Backend Socket E2E Linux Gate
     runs-on: ubuntu-24.04
     timeout-minutes: 45
 
@@ -45,9 +53,9 @@ jobs:
           --health-start-period 10s
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13.13"
           cache: pip
@@ -203,27 +211,27 @@ jobs:
             exit 1
           fi
 
-      - name: Record Linux candidate result
+      - name: Record Linux gate result
         if: ${{ success() }}
         run: |
           {
             echo
             echo "### AI Backend Socket E2E result"
             echo
-            echo "LINUX_LOCK_CANDIDATE_VERIFIED"
+            echo "LINUX_LOCK_GATE_VERIFIED"
             echo
-            echo "The Ubuntu 24.04 CPU-only CI lock and Socket E2E candidate passed."
+            echo "The Ubuntu 24.04 CPU-only CI lock and Socket E2E gate passed."
             echo "Production container reuse remains NOT_VERIFIED."
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Record Linux candidate failure
+      - name: Record Linux gate failure
         if: ${{ failure() }}
         run: |
           {
             echo
             echo "### AI Backend Socket E2E result"
             echo
-            echo "LINUX_CANDIDATE_FAILED"
+            echo "LINUX_GATE_FAILED"
             echo
             echo "Review the first failing step and hand it off to the owning area."
           } >> "$GITHUB_STEP_SUMMARY"
