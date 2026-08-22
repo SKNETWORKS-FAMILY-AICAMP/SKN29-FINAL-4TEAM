@@ -95,8 +95,10 @@ def create_lineage_view(apps, schema_editor):
 
     if schema_editor.connection.vendor != "postgresql":
         return
-    schema_editor.execute(f"DROP VIEW IF EXISTS {VIEW_NAME}")
-    schema_editor.execute(CREATE_VIEW_SQL)
+    # Static DDL contains literal LIKE wildcards. ``params=None`` prevents
+    # psycopg from treating those percent signs as client-side placeholders.
+    schema_editor.execute(f"DROP VIEW IF EXISTS {VIEW_NAME}", params=None)
+    schema_editor.execute(CREATE_VIEW_SQL, params=None)
 
 
 def restore_previous_view(apps, schema_editor):
@@ -104,8 +106,8 @@ def restore_previous_view(apps, schema_editor):
 
     if schema_editor.connection.vendor != "postgresql":
         return
-    schema_editor.execute(f"DROP VIEW IF EXISTS {VIEW_NAME}")
-    schema_editor.execute(BASE_CREATE_VIEW_SQL)
+    schema_editor.execute(f"DROP VIEW IF EXISTS {VIEW_NAME}", params=None)
+    schema_editor.execute(BASE_CREATE_VIEW_SQL, params=None)
 
 
 class Migration(migrations.Migration):
