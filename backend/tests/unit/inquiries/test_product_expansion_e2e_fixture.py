@@ -277,3 +277,187 @@ def test_explicit_candidate_activation_is_limited_to_isolated_test_database(
     assert result["fixture_readiness"] == "READY_FOR_ISOLATED_E2E"
     product = ProductModel.objects.get(model_code="WPUIAC425SNW")
     assert product.is_supported_mvp is True
+
+
+@pytest.mark.parametrize(
+    (
+        "scenario_id",
+        "model_code",
+        "case_name",
+        "topic_code",
+        "risk_level",
+        "guidance_status",
+        "raw_symptom",
+    ),
+    [
+        (
+            "SYN-IAC425-101",
+            "WPUIAC425SNW",
+            "IAC425_GENERAL",
+            "symptom_cold_lock",
+            "caution",
+            "PENDING_CONSULTATION",
+            (
+                "WPU-IAC425에서 냉수 버튼을 누르면 소리가 나고 잠금 표시가 "
+                "깜빡입니다. 정수는 나옵니다."
+            ),
+        ),
+        (
+            "SYN-IAC425-108",
+            "WPUIAC425SNW",
+            "IAC425_LEAK",
+            "symptom_leak",
+            "danger",
+            "TOTAL_STOP",
+            (
+                "물받이 밖으로 물이 새고 버튼을 누를 때마다 띵띵띵 소리가 "
+                "계속 납니다. 바닥에 물이 번지고 있어요."
+            ),
+        ),
+        (
+            "SYN-IAC606-101",
+            "WPUIAC606SNW",
+            "IAC606_GENERAL",
+            "symptom_cold_lock",
+            "caution",
+            "PENDING_CONSULTATION",
+            (
+                "WPU-IAC606인데 냉수 버튼을 누르면 부저음이 나고 잠금 표시가 "
+                "깜빡여요. 물은 정수로는 나옵니다."
+            ),
+        ),
+        (
+            "SYN-IAC606-107",
+            "WPUIAC606SNW",
+            "IAC606_LEAK",
+            "symptom_leak",
+            "danger",
+            "TOTAL_STOP",
+            (
+                "물받이는 넘치지 않았는데 제품 밑으로 물이 번지고, 버튼을 "
+                "누를 때마다 띵띵띵 소리가 납니다."
+            ),
+        ),
+    ],
+)
+def test_approved_product_validation_scenario_creates_exact_runtime_fixture(
+    scenario_id,
+    model_code,
+    case_name,
+    topic_code,
+    risk_level,
+    guidance_status,
+    raw_symptom,
+):
+    seed_customer()
+    create_product(model_code, supported=True)
+
+    result = invoke(
+        model_code,
+        f"{case_name.lower()}-001",
+        "--scenario-id",
+        scenario_id,
+        "--apply",
+    )
+
+    assert result["scenario_id"] == scenario_id
+    assert result["case_name"] == case_name
+    assert result["model_code"] == model_code
+    assert result["topic_code"] == topic_code
+    assert result["symptom_description"] == raw_symptom
+    assert result["expected_fallback_reason_code"] == (
+        "RUNTIME_PRODUCT_NOT_APPROVED"
+    )
+    assert result["expected_risk_level"] == risk_level
+    assert result["expected_usage_guidance_status"] == guidance_status
+    assert result["expected_runtime_evidence_count"] == 0
+    assert result["expected_vector_call_count"] == 0
+    assert result["expected_provider_call_count"] == 0
+
+    inquiry = Inquiry.objects.get(public_id=result["inquiry_id"])
+    symptom = SymptomEntry.objects.get(inquiry=inquiry)
+    assert inquiry.raw_text == raw_symptom
+    assert symptom.symptom_type_code == topic_code
+
+
+def test_same_scenario_run_replays_without_duplicate():
+    seed_customer()
+    create_product("WPUIAC425SNW", supported=True)
+
+    args = (
+        "--scenario-id",
+        "SYN-IAC425-101",
+        "--apply",
+    )
+    first = invoke("WPUIAC425SNW", "iac425-general-replay", *args)
+    replay = invoke("WPUIAC425SNW", "iac425-general-replay", *args)
+
+    assert first["created"] is True
+    assert replay["created"] is False
+    assert replay["inquiry_id"] == first["inquiry_id"]
+    assert Inquiry.objects.count() == 1
+    assert IdempotencyRecord.objects.filter(
+        operation_id="startInquiry"
+    ).count() == 1
+
+
+def test_same_model_and_run_with_different_scenario_stays_independent():
+    seed_customer()
+    create_product("WPUIAC425SNW", supported=True)
+
+    general = invoke(
+        "WPUIAC425SNW",
+        "iac425-shared-run",
+        "--scenario-id",
+        "SYN-IAC425-101",
+        "--apply",
+    )
+    leak = invoke(
+        "WPUIAC425SNW",
+        "iac425-shared-run",
+        "--scenario-id",
+        "SYN-IAC425-108",
+        "--apply",
+    )
+
+    assert general["inquiry_id"] != leak["inquiry_id"]
+    assert general["request_correlation_id"] != leak["request_correlation_id"]
+    assert Inquiry.objects.count() == 2
+
+
+def test_product_validation_scenario_rejects_model_mismatch():
+    seed_customer()
+    create_product("WPUIAC606SNW", supported=True)
+
+    with pytest.raises(CommandError, match="scenario_id와 model_code"):
+        invoke(
+            "WPUIAC606SNW",
+            "cross-model-scenario",
+            "--scenario-id",
+            "SYN-IAC425-101",
+            "--apply",
+        )
+
+
+def test_product_validation_scenario_fails_closed_on_oracle_drift():
+    payload = json.loads(
+        fixture_module.MANUAL_SCENARIO_FILE.read_text(encoding="utf-8")
+    )
+    scenario = deepcopy(
+        next(
+            item
+            for item in payload["scenarios"]
+            if item["scenario_id"] == "SYN-IAC606-101"
+        )
+    )
+    scenario["runtime_profiles"]["mvp"]["current_runtime"]["ai"][
+        "risk_level"
+    ] = "danger"
+
+    with pytest.raises(CommandError, match="승인된 MVP Oracle"):
+        fixture_module.Command._validate_product_validation_scenario(
+            scenario,
+            policy=fixture_module.APPROVED_PRODUCT_VALIDATION_SCENARIOS[
+                "SYN-IAC606-101"
+            ],
+        )

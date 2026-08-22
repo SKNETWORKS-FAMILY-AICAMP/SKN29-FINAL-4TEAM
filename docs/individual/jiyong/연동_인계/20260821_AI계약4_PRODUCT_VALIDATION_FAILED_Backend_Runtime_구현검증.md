@@ -1,13 +1,13 @@
 # AI 계약 4.0 제품 미승인 Backend Runtime 구현·검증
 
-- 작성일: 2026-08-21
+- 작성일: 2026-08-21 (최신 자체검증: 2026-08-22)
 - 담당: 최지용(Backend·DB)
 - 기준선: `origin/main=origin/jiyong=0d2869eb5b5ead3da833eb11e7c592b33030af31`
 - AI 계약 후보: `origin/dongyoon=17ac06f33fcba8a7ad4598699903264cb8d7716d`
 - AI 계약 구현 원본: `d11829424cc729fb9e35640df1cd69d7805530e6`
 - Backend 구현 Commit: `556994affdbfbc00486cefd0b906edcd3238c19f`
 - Evidence 회귀 보강 Commit: `5168436f06dce3af7f600179624eb47740c91e19`
-- 판정: `BACKEND_AUTHOR_TEST_PASS / ACTUAL_TEAM_RUNTIME_NOT_RUN`
+- 최신 판정: `BACKEND_DB_5CASE_READY / ACTUAL_AI_MCP_PROVIDER_NOT_RUN`
 
 ## 1. 목적
 
@@ -158,3 +158,39 @@ Root Contract tests: 38 passed
 
 이번 변경에는 `danger + PARTIAL_STOP` 정책 확대가 포함되지 않는다. 온수 전용
 Safety Rule과 저장 정책은 별도 승인·구현 Gate로 유지한다.
+
+## 10. 2026-08-22 격리 5 Case 준비·자체검증
+
+- 기준 main: `762c77b7ffdd336a835d891bc71292edb0e8eff2`
+- 추가 구현: `create_product_expansion_e2e_fixture --scenario-id`
+- 허용 Scenario: `SYN-IAC425-101`, `SYN-IAC425-108`,
+  `SYN-IAC606-101`, `SYN-IAC606-107`
+- `data/**`는 읽기만 했으며 AI·계약·Migration·Schema는 변경하지 않았다.
+
+| Case | inquiry_id | correlation_id |
+| --- | --- | --- |
+| JAC104 정상 | `bd867f55-77eb-4021-8142-7c320a61600c` | `c5697304-45fc-5827-9b15-892fb81833f0` |
+| IAC425 일반 | `6379e955-1ecc-4c11-b477-df0853b068d3` | `627c0782-3f69-5585-913e-ac826add4830` |
+| IAC425 누수 | `bf4d2e3d-fbcc-47b0-b4c9-935170a820c3` | `090631a0-ce36-53f6-bcbe-225757516155` |
+| IAC606 일반 | `98a02472-a9ae-4de3-868c-93c1ab308946` | `f2d2b039-f5c8-5d22-9d28-f78ca3ff23b5` |
+| IAC606 누수 | `03b58849-3af9-4ebd-8d94-2bc5f718d216` | `bc281130-4238-5604-97de-10644e90a54d` |
+
+모든 Case는 `DRAFT/state_version=1`이며 최초 생성 `created=true`, 동일 실행
+Replay `created=false`로 중복 Inquiry가 생기지 않았다. 일반은
+`caution/PENDING_CONSULTATION`, 누수는 `danger/TOTAL_STOP`, 미승인 제품 기대값은
+`RUNTIME_PRODUCT_NOT_APPROVED`와 Vector·Provider 호출 0회로 고정했다.
+
+격리 PostgreSQL은 `16.14`, pgvector는 `0.8.6`, DB는
+`waterbridge_team_integration`이다. 승인 Migration `90/90`을 적용했고
+`visits.0005=NOT_APPLIED_P1_HOLD`, 예상 밖 Migration 0건을 확인했다.
+
+Context 실제 HTTP 결과는 5건 모두 `200`이며 모델·증상·Correlation이 일치했다.
+실패 경계는 Token 누락·오류 `403`, 없는 Inquiry `404`, 잘못된 Query·Correlation
+누락 `422`였다. 조회 전후 `Inquiry=11`, `TransitionHistory=5`,
+`IdempotencyRecord=5`, `AIRun=0`으로 DB 변경은 0건이고 PII Key도 노출되지 않았다.
+
+표적 `22 passed`, 관련 회귀 `72 passed`, Django check 0건, Migration drift 없음,
+`git diff --check` PASS다. three-model Readiness는 Crosswalk·View 데이터 0/53이므로
+의도대로 `BLOCKED`다. Evidence Import와 실제 MCP·pgvector 검색·Provider 호출은
+실행하지 않았으며 해당 구간을 PASS로 확대하지 않는다. 임시 Backend는 종료했고
+보호 Token은 폐기했으며, 격리 PostgreSQL만 후속 공동 실행을 위해 유지한다.

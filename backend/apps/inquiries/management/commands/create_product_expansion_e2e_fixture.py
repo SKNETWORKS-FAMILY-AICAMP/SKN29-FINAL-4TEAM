@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from datetime import date
 import hashlib
 import json
@@ -40,6 +41,43 @@ CANDIDATE_FILE = (
     / "candidates"
     / "product_expansion_e2e_cases.json"
 )
+MANUAL_SCENARIO_FILE = (
+    REPOSITORY_ROOT
+    / "data"
+    / "config"
+    / "synthetic"
+    / "manual_3model_candidate_scenarios.json"
+)
+APPROVED_PRODUCT_VALIDATION_SCENARIOS = {
+    "SYN-IAC425-101": {
+        "case_name": "IAC425_GENERAL",
+        "model_code": "WPUIAC425SNW",
+        "topic_code": "symptom_cold_lock",
+        "risk_level": "caution",
+        "usage_guidance_status": "PENDING_CONSULTATION",
+    },
+    "SYN-IAC425-108": {
+        "case_name": "IAC425_LEAK",
+        "model_code": "WPUIAC425SNW",
+        "topic_code": "symptom_leak",
+        "risk_level": "danger",
+        "usage_guidance_status": "TOTAL_STOP",
+    },
+    "SYN-IAC606-101": {
+        "case_name": "IAC606_GENERAL",
+        "model_code": "WPUIAC606SNW",
+        "topic_code": "symptom_cold_lock",
+        "risk_level": "caution",
+        "usage_guidance_status": "PENDING_CONSULTATION",
+    },
+    "SYN-IAC606-107": {
+        "case_name": "IAC606_LEAK",
+        "model_code": "WPUIAC606SNW",
+        "topic_code": "symptom_leak",
+        "risk_level": "danger",
+        "usage_guidance_status": "TOTAL_STOP",
+    },
+}
 ISOLATED_DATABASE_NAMES = {"waterbridge_team_integration"}
 
 
@@ -52,6 +90,14 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--model-code", required=True)
         parser.add_argument("--run-id", required=True)
+        parser.add_argument(
+            "--scenario-id",
+            choices=tuple(sorted(APPROVED_PRODUCT_VALIDATION_SCENARIOS)),
+            help=(
+                "승인된 MVP 제품 미승인 일반·누수 Case를 선택합니다. "
+                "생략하면 기존 모델별 단일 후보를 사용합니다."
+            ),
+        )
         parser.add_argument(
             "--apply",
             action="store_true",
@@ -82,6 +128,7 @@ class Command(BaseCommand):
         del args
         model_code = self._validate_model_code(options["model_code"])
         run_id = self._validate_run_id(options["run_id"])
+        scenario_id = options.get("scenario_id")
         apply = bool(options["apply"])
         dry_run = bool(options["dry_run"])
         enable_candidate = bool(options["enable_candidate_product"])
@@ -92,7 +139,10 @@ class Command(BaseCommand):
                 "--enable-candidate-product는 --apply와 함께 사용해야 합니다."
             )
 
-        candidate = self._load_candidate(model_code)
+        candidate = self._load_candidate(
+            model_code,
+            scenario_id=scenario_id,
+        )
         owner, customer = self._customer()
         product = self._product(candidate)
         blockers = self._readiness_blockers(product=product)
@@ -131,6 +181,7 @@ class Command(BaseCommand):
             product=product,
             run_id=run_id,
             dry_run=dry_run,
+            identity_scenario_id=scenario_id,
         )
         if dry_run:
             transaction.set_rollback(True)
@@ -155,8 +206,24 @@ class Command(BaseCommand):
             )
         return value
 
+    @classmethod
+    def _load_candidate(
+        cls,
+        model_code: str,
+        *,
+        scenario_id: str | None = None,
+    ) -> dict:
+        candidate = cls._load_base_candidate(model_code)
+        if scenario_id is None:
+            return candidate
+        return cls._load_product_validation_scenario(
+            base_candidate=candidate,
+            model_code=model_code,
+            scenario_id=scenario_id,
+        )
+
     @staticmethod
-    def _load_candidate(model_code: str) -> dict:
+    def _load_base_candidate(model_code: str) -> dict:
         try:
             payload = json.loads(CANDIDATE_FILE.read_text(encoding="utf-8"))
         except (OSError, UnicodeError, json.JSONDecodeError) as exc:
@@ -179,6 +246,131 @@ class Command(BaseCommand):
         candidate = matches[0]
         Command._validate_candidate_contract(candidate, model_code=model_code)
         return candidate
+
+    @classmethod
+    def _load_product_validation_scenario(
+        cls,
+        *,
+        base_candidate: dict,
+        model_code: str,
+        scenario_id: str,
+    ) -> dict:
+        policy = APPROVED_PRODUCT_VALIDATION_SCENARIOS.get(scenario_id)
+        if policy is None:
+            raise CommandError("승인되지 않은 제품 미승인 E2E scenario_id입니다.")
+        if policy["model_code"] != model_code:
+            raise CommandError("scenario_id와 model_code가 일치하지 않습니다.")
+
+        try:
+            payload = json.loads(
+                MANUAL_SCENARIO_FILE.read_text(encoding="utf-8")
+            )
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise CommandError(
+                "3모델 합성 Scenario 파일을 읽을 수 없습니다."
+            ) from exc
+        scenarios = payload.get("scenarios") if isinstance(payload, dict) else None
+        if not isinstance(scenarios, list):
+            raise CommandError("3모델 합성 Scenario root가 올바르지 않습니다.")
+        matches = [
+            item
+            for item in scenarios
+            if isinstance(item, dict) and item.get("scenario_id") == scenario_id
+        ]
+        if len(matches) != 1:
+            raise CommandError(f"{scenario_id} Scenario는 정확히 1건이어야 합니다.")
+
+        scenario = matches[0]
+        cls._validate_product_validation_scenario(
+            scenario,
+            policy=policy,
+        )
+        expected_groups = scenario["retrieval_expectation"][
+            "expected_evidence_group_ids"
+        ]
+        candidate = deepcopy(base_candidate)
+        candidate.update(
+            {
+                "case_id": scenario_id,
+                "runtime_status": scenario["runtime_profiles"]["mvp"][
+                    "current_runtime"
+                ]["verification_status"],
+                "inquiry": {
+                    "original_text": scenario["request"]["raw_symptom"],
+                    "topic_code": scenario["topic_code"],
+                },
+                "safety": {
+                    "risk_level": policy["risk_level"],
+                    "requires_consultation": True,
+                    "usage_guidance_status": policy[
+                        "usage_guidance_status"
+                    ],
+                },
+                "expected_outcome": {
+                    "resolution_mode": "CONSULTANT_HANDOFF",
+                },
+                "product_validation_expectation": {
+                    "case_name": policy["case_name"],
+                    "fallback_reason_code": (
+                        "RUNTIME_PRODUCT_NOT_APPROVED"
+                    ),
+                    "runtime_evidence_count": 0,
+                    "vector_call_count": 0,
+                    "provider_call_count": 0,
+                },
+            }
+        )
+        candidate["evidence"] = {
+            **candidate["evidence"],
+            "exact_sales_code": model_code,
+            "evidence_group_id": expected_groups[0],
+        }
+        return candidate
+
+    @staticmethod
+    def _validate_product_validation_scenario(
+        scenario: dict,
+        *,
+        policy: dict,
+    ) -> None:
+        request = scenario.get("request", {})
+        product = scenario.get("product", {})
+        retrieval = scenario.get("retrieval_expectation", {})
+        current_runtime = (
+            scenario.get("runtime_profiles", {})
+            .get("mvp", {})
+            .get("current_runtime", {})
+        )
+        ai = current_runtime.get("ai", {})
+        expected_groups = retrieval.get("expected_evidence_group_ids")
+        valid = (
+            scenario.get("candidate_status") == "CANDIDATE"
+            and scenario.get("data_classification") == "synthetic"
+            and product.get("exact_sales_code") == policy["model_code"]
+            and request.get("model_code") == policy["model_code"]
+            and isinstance(request.get("raw_symptom"), str)
+            and bool(request.get("raw_symptom", "").strip())
+            and scenario.get("topic_code") == policy["topic_code"]
+            and current_runtime.get("verification_status")
+            == "STATIC_CONFIRMED"
+            and ai.get("execution_status") == "FALLBACK"
+            and ai.get("internal_issue_codes")
+            == ["RUNTIME_PRODUCT_NOT_APPROVED"]
+            and ai.get("risk_level") == policy["risk_level"]
+            and ai.get("usage_guidance_status")
+            == policy["usage_guidance_status"]
+            and ai.get("requires_consultation") is True
+            and isinstance(expected_groups, list)
+            and len(expected_groups) == 1
+            and isinstance(expected_groups[0], str)
+            and expected_groups[0].startswith(
+                f"EVD-{policy['model_code']}-"
+            )
+        )
+        if not valid:
+            raise CommandError(
+                "제품 미승인 E2E Scenario가 승인된 MVP Oracle과 다릅니다."
+            )
 
     @staticmethod
     def _validate_candidate_contract(candidate: dict, *, model_code: str) -> None:
@@ -288,25 +480,33 @@ class Command(BaseCommand):
             raise CommandError("후보 Product 활성화는 격리 Test DB에서만 허용합니다.")
 
     @staticmethod
-    def _identity(*, model_code: str, run_id: str) -> dict[str, object]:
-        digest = hashlib.sha256(f"{model_code}/{run_id}".encode("utf-8")).hexdigest()
+    def _identity(
+        *,
+        model_code: str,
+        run_id: str,
+        scenario_id: str | None = None,
+    ) -> dict[str, object]:
+        identity_source = f"{model_code}/{run_id}"
+        if scenario_id is not None:
+            identity_source = f"{model_code}/{scenario_id}/{run_id}"
+        digest = hashlib.sha256(identity_source.encode("utf-8")).hexdigest()
         short_model = model_code.removeprefix("WPU")
         return {
             "scenario_code": f"SYN-3M-{short_model}-{digest[:16]}",
             "subscription_public_id": uuid5(
                 FIXTURE_NAMESPACE,
-                f"subscription/{model_code}/{run_id}",
+                f"subscription/{identity_source}",
             ),
             "customer_product_public_id": uuid5(
                 FIXTURE_NAMESPACE,
-                f"customer-product/{model_code}/{run_id}",
+                f"customer-product/{identity_source}",
             ),
             "contract_no": f"E2E-{short_model}-{digest[:24].upper()}",
             "serial_no": f"E2E-{short_model}-{digest[24:48].upper()}",
             "idempotency_key": f"product-expansion-e2e-{digest}",
             "correlation_id": uuid5(
                 FIXTURE_NAMESPACE,
-                f"correlation/{model_code}/{run_id}",
+                f"correlation/{identity_source}",
             ),
         }
 
@@ -320,9 +520,14 @@ class Command(BaseCommand):
         product: ProductModel,
         run_id: str,
         dry_run: bool,
+        identity_scenario_id: str | None,
     ) -> dict:
         model_code = product.model_code
-        identity = cls._identity(model_code=model_code, run_id=run_id)
+        identity = cls._identity(
+            model_code=model_code,
+            run_id=run_id,
+            scenario_id=identity_scenario_id,
+        )
         subscription, _ = CustomerSubscription.objects.get_or_create(
             contract_no=identity["contract_no"],
             defaults={
@@ -375,9 +580,10 @@ class Command(BaseCommand):
             owner=owner,
             subscription=subscription,
             identity=identity,
+            candidate=candidate,
         )
 
-        return {
+        result = {
             "allowed_actions": [
                 item["code"] for item in outcome.data["allowed_actions"]
             ],
@@ -405,6 +611,36 @@ class Command(BaseCommand):
             "subscription_id": str(subscription.public_id),
             "topic_code": candidate["inquiry"]["topic_code"],
         }
+        expectation = candidate.get("product_validation_expectation")
+        if isinstance(expectation, dict):
+            result.update(
+                {
+                    "case_name": expectation["case_name"],
+                    "expected_fallback_reason_code": expectation[
+                        "fallback_reason_code"
+                    ],
+                    "expected_provider_call_count": expectation[
+                        "provider_call_count"
+                    ],
+                    "expected_risk_level": candidate["safety"][
+                        "risk_level"
+                    ],
+                    "expected_runtime_evidence_count": expectation[
+                        "runtime_evidence_count"
+                    ],
+                    "expected_usage_guidance_status": candidate["safety"][
+                        "usage_guidance_status"
+                    ],
+                    "expected_vector_call_count": expectation[
+                        "vector_call_count"
+                    ],
+                    "scenario_id": candidate["case_id"],
+                    "symptom_description": candidate["inquiry"][
+                        "original_text"
+                    ],
+                }
+            )
+        return result
 
     @staticmethod
     def _assert_subscription(
@@ -435,16 +671,22 @@ class Command(BaseCommand):
         owner: User,
         subscription: CustomerSubscription,
         identity: dict[str, object],
+        candidate: dict,
     ) -> None:
         identity_matches = (
             inquiry.scenario_code == identity["scenario_code"]
             and inquiry.initiated_by_id == owner.pk
             and inquiry.subscription_id == subscription.pk
+            and inquiry.raw_text == candidate["inquiry"]["original_text"]
         )
         unconsumed = (
             inquiry.status_code == Inquiry.Status.DRAFT
             and inquiry.state_version == 1
-            and SymptomEntry.objects.filter(inquiry=inquiry).count() == 1
+            and SymptomEntry.objects.filter(
+                inquiry=inquiry,
+                symptom_type_code=candidate["inquiry"]["topic_code"],
+            ).count()
+            == 1
             and not AIRun.objects.filter(inquiry=inquiry).exists()
             and not Consultation.objects.filter(inquiry=inquiry).exists()
         )
