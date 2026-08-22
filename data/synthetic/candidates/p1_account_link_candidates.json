@@ -1,0 +1,48 @@
+[
+  {
+    "fixture_id": "P1-ACCOUNT-LINK-001",
+    "scope_status": "P1_ACCOUNT_LINK_CANDIDATE",
+    "backend_import_status": "NOT_IMPORTED",
+    "runtime_status": "NOT_VERIFIED",
+    "approval": {
+      "status": "APPROVED",
+      "decision_date": "2026-08-22",
+      "source": "docs/planning/md/20260822_P1-A_회원가입_계정연결_PM승인결정.md"
+    },
+    "customer_candidate": {
+      "customer_code": "SYN-CUSTOMER-P1-001",
+      "display_name": "합성 계약고객 P1 001"
+    },
+    "contract_email": {
+      "synthetic_address": "customer-p1-001@waterbridge.invalid",
+      "is_active": true,
+      "runtime_storage_policy": "ENCRYPTED_PLUS_HMAC",
+      "delivery_policy": "RUNTIME_REDIRECT_ONLY"
+    },
+    "subscription": {
+      "contract_no": "SYN-CONTRACT-P1-001",
+      "product_model_code": "WPUJAC104DWH",
+      "serial_no": "SYN-P1-JAC104D-0001",
+      "management_type_code": "VISIT_CARE",
+      "status_code": "ACTIVE",
+      "started_on": "2026-08-01",
+      "next_care_on": "2026-09-01"
+    },
+    "initial_state": {
+      "waterbridge_user": "ABSENT",
+      "customer_account_link": "ABSENT"
+    },
+    "promotion": {
+      "canonical_fixture_included": false,
+      "db_handoff_profile_included": false,
+      "blockers": [
+        "P1_CONTRACT_CUSTOMER_RUNTIME_NOT_IMPLEMENTED",
+        "P1_CONTRACT_EMAIL_RUNTIME_NOT_IMPLEMENTED",
+        "P1_ACCOUNT_LINK_RUNTIME_NOT_IMPLEMENTED",
+        "POSTGRESQL_NOT_VERIFIED"
+      ]
+    },
+    "is_synthetic": true,
+    "data_classification": "synthetic"
+  }
+]

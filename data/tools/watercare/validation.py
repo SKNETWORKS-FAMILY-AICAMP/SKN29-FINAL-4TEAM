@@ -892,6 +892,145 @@ def _duplicates(rows: list[dict[str, Any]], key: str) -> list[str]:
     return sorted({str(value) for value in values if values.count(value) > 1})
 
 
+def _walk_candidate_values(
+    value: Any,
+    *,
+    path: str = "$",
+) -> list[tuple[str, str | Any]]:
+    values: list[tuple[str, str | Any]] = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            item_path = f"{path}.{key}"
+            values.append((item_path, key))
+            values.extend(_walk_candidate_values(item, path=item_path))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            values.extend(
+                _walk_candidate_values(item, path=f"{path}[{index}]")
+            )
+    else:
+        values.append((path, value))
+    return values
+
+
+def validate_p1_account_link_candidates(
+    config: PipelineConfig,
+) -> dict[str, Any]:
+    """P1 계정연결 후보가 미승격·합성 상태를 유지하는지 검증한다."""
+
+    errors: list[str] = []
+    candidates = read_json(config.path("p1_account_link_candidate_output"))
+    expected_count = config.values["expected_counts"][
+        "p1_account_link_candidates"
+    ]
+    if len(candidates) != expected_count:
+        errors.append(
+            f"p1_account_link:count:{len(candidates)}!={expected_count}"
+        )
+
+    fixture_ids = [row.get("fixture_id") for row in candidates]
+    customer_codes = [
+        row.get("customer_candidate", {}).get("customer_code")
+        for row in candidates
+    ]
+    contract_nos = [
+        row.get("subscription", {}).get("contract_no")
+        for row in candidates
+    ]
+    serial_nos = [
+        row.get("subscription", {}).get("serial_no")
+        for row in candidates
+    ]
+    for label, values in (
+        ("fixture_id", fixture_ids),
+        ("customer_code", customer_codes),
+        ("contract_no", contract_nos),
+        ("serial_no", serial_nos),
+    ):
+        if len(values) != len(set(values)):
+            errors.append(f"p1_account_link:duplicate:{label}")
+
+    products = {
+        row["product_code"]: row
+        for row in read_json(
+            config.data_root / "synthetic" / "fixtures" / "products.json"
+        )
+    }
+    forbidden_keys = {
+        "email_ciphertext",
+        "email_hmac",
+        "jwt",
+        "otp",
+        "password",
+        "phone",
+        "public_id",
+        "secret",
+        "token",
+        "user_id",
+        "username",
+    }
+    email_pattern = re.compile(
+        r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"
+    )
+    expected_blockers = {
+        "P1_CONTRACT_CUSTOMER_RUNTIME_NOT_IMPLEMENTED",
+        "P1_CONTRACT_EMAIL_RUNTIME_NOT_IMPLEMENTED",
+        "P1_ACCOUNT_LINK_RUNTIME_NOT_IMPLEMENTED",
+        "POSTGRESQL_NOT_VERIFIED",
+    }
+    for row in candidates:
+        fixture_id = row.get("fixture_id", "UNKNOWN")
+        values = _walk_candidate_values(row)
+        for item_path, item in values:
+            if item in forbidden_keys:
+                errors.append(
+                    f"p1_account_link:forbidden_field:{fixture_id}:{item_path}"
+                )
+            if isinstance(item, str) and email_pattern.fullmatch(item):
+                if item != "customer-p1-001@waterbridge.invalid":
+                    errors.append(
+                        f"p1_account_link:non_synthetic_email:{fixture_id}"
+                    )
+
+        product_code = row.get("subscription", {}).get(
+            "product_model_code"
+        )
+        product = products.get(product_code)
+        if product is None or product.get("support_scope") != "MVP":
+            errors.append(
+                f"p1_account_link:unsupported_product:{fixture_id}:{product_code}"
+            )
+        initial_state = row.get("initial_state", {})
+        if set(initial_state.values()) != {"ABSENT"}:
+            errors.append(
+                f"p1_account_link:linked_initial_state:{fixture_id}"
+            )
+        promotion = row.get("promotion", {})
+        if (
+            promotion.get("canonical_fixture_included") is not False
+            or promotion.get("db_handoff_profile_included") is not False
+            or set(promotion.get("blockers", [])) != expected_blockers
+        ):
+            errors.append(
+                f"p1_account_link:promotion_state_mismatch:{fixture_id}"
+            )
+
+    crosswalk = config.config("backend_crosswalk")
+    crosswalk_fixtures = {
+        row["fixture"] for row in crosswalk["entity_mappings"]
+    }
+    candidate_relative = "synthetic/candidates/p1_account_link_candidates.json"
+    if candidate_relative in crosswalk_fixtures:
+        errors.append("p1_account_link:premature_backend_crosswalk")
+
+    return {
+        "status": "PASS" if not errors else "FAIL",
+        "errors": errors,
+        "records": len(candidates),
+        "fixture_ids": sorted(str(value) for value in fixture_ids),
+    }
+
+
 def validate_dataset_catalog(
     config: PipelineConfig,
     manifest: dict[str, Any],
@@ -1459,6 +1598,8 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
     errors.extend(product_expansion_coverage["errors"])
     manual_candidate_coverage = validate_manual_three_model_candidates(config)
     errors.extend(manual_candidate_coverage["errors"])
+    p1_account_link_coverage = validate_p1_account_link_candidates(config)
+    errors.extend(p1_account_link_coverage["errors"])
     risk_vocabulary = vocabulary["risk_levels"]
     usage_vocabulary = vocabulary["usage_guidance_statuses"]
     for name, codes in schema_risk_codes(config.data_root).items():
@@ -1770,6 +1911,9 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
         "manual_three_model_candidates": len(
             read_json(config.path("manual_three_model_candidate_output"))
         ),
+        "p1_account_link_candidates": len(
+            read_json(config.path("p1_account_link_candidate_output"))
+        ),
     }
     for key, value in actual.items():
         if value != expected[key]:
@@ -1791,4 +1935,5 @@ def run_data_qa(config: PipelineConfig) -> dict[str, Any]:
         "representative_e2e": representative_e2e,
         "product_expansion_coverage": product_expansion_coverage,
         "manual_three_model_candidate_coverage": manual_candidate_coverage,
+        "p1_account_link_candidate_coverage": p1_account_link_coverage,
     }

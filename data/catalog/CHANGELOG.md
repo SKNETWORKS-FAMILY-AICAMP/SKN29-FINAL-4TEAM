@@ -1,5 +1,11 @@
 # Data Changelog
 
+## 1.3.0 — 2026-08-22
+
+- 합성 계약고객 회원가입 P1-A 수직 흐름을 기존 P0 Fixture와 분리된 `P1_ACCOUNT_LINK_CANDIDATE` 1건으로 추가했다.
+- 계약 이메일은 `.invalid` 합성 주소만 기록하고 Runtime 암호화·HMAC 및 시험 Inbox Redirect 정책을 명시했다.
+- Backend Import와 PostgreSQL 검증 전에는 User·CustomerAccountLink가 없는 후보 상태를 유지하고 정식 Fixture 승격을 차단한다.
+
 ## 1.2.0 — 2026-08-21
 
 - 정식 매뉴얼 기반 3모델 합성 시나리오 30건을 기존 Fixture와 분리된 `CANDIDATE` 데이터셋으로 추가했다.

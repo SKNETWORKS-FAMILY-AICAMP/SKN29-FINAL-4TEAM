@@ -1,4 +1,4 @@
-version: 1.2.0
+version: 1.3.0
 fields:
   data_classification:
     type: string
@@ -63,8 +63,8 @@ fields:
     description: 결정적 산출물 생성 기준 시각
   scope_status:
     type: string
-    allowed: [E2E_CANDIDATE]
-    description: 정식 Backend Fixture가 아닌 제품 확장 업무 체인 후보 상태
+    allowed: [E2E_CANDIDATE, P1_ACCOUNT_LINK_CANDIDATE]
+    description: 정식 Backend Fixture가 아닌 제품 확장 또는 P1 계정연결 후보 상태
   backend_import_status:
     type: string
     allowed: [NOT_IMPORTED]
@@ -73,3 +73,15 @@ fields:
     type: string
     allowed: [NOT_VERIFIED]
     description: 후보 업무 체인의 Runtime 미검증 상태
+  runtime_storage_policy:
+    type: string
+    allowed: [ENCRYPTED_PLUS_HMAC]
+    description: 합성 계약 이메일을 Runtime에서 암호문과 비교용 HMAC으로 저장하는 정책
+  delivery_policy:
+    type: string
+    allowed: [RUNTIME_REDIRECT_ONLY]
+    description: 실제 시험 Inbox 주소를 데이터에 기록하지 않는 Runtime Redirect 정책
+  account_link_initial_state:
+    type: string
+    allowed: [ABSENT]
+    description: 회원가입 전 WaterBridge User와 CustomerAccountLink가 존재하지 않는 상태
