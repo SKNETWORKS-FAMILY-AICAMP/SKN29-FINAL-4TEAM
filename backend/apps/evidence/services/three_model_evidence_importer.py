@@ -118,6 +118,7 @@ EMBEDDING_MODEL = "BAAI/bge-m3"
 EMBEDDING_REVISION = "5617a9f61b028005a4858fdac845db406aefb181"
 EMBEDDING_DIMENSION = 1024
 CHUNKING_VERSION = "rag_child_chunks_3model/1.0.0"
+LEGACY_LINEAGE_METADATA_KEYS = frozenset({"parent_id", "retrieval_role"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -328,6 +329,8 @@ class ThreeModelEvidenceImporter:
                 "requires_consultation": row["requires_consultation"],
                 "verification_status": row["verification_status"],
                 "source_variant_id": row["source_variant_id"],
+                "parent_id": row["parent_id"],
+                "retrieval_role": row["retrieval_role"],
             }
             expected = {
                 "page_id": page_models[(document_id, primary_page_no)].pk,
@@ -353,8 +356,23 @@ class ThreeModelEvidenceImporter:
                 chunk.save(force_insert=True)
                 result.add("chunks", created=True)
             else:
+                legacy_metadata = {
+                    key: value
+                    for key, value in metadata.items()
+                    if key not in LEGACY_LINEAGE_METADATA_KEYS
+                }
                 for field_name, expected_value in expected.items():
-                    if getattr(chunk, field_name) != expected_value:
+                    actual_value = getattr(chunk, field_name)
+                    if (
+                        field_name == "metadata"
+                        and actual_value == legacy_metadata
+                    ):
+                        # Before evidence.0013 these two values were verified at
+                        # import time but not persisted. Keep an exact legacy row
+                        # replayable; the compatibility view projects a guarded
+                        # fallback without mutating immutable evidence rows.
+                        continue
+                    if actual_value != expected_value:
                         raise CommandError(
                             f"{canonical_id}: existing {field_name} differs."
                         )

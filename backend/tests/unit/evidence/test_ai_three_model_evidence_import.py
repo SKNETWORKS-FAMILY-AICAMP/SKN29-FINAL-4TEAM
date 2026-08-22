@@ -260,6 +260,16 @@ def test_apply_replay_and_crosswalk_preserve_new_model_support_hold(package):
         "embeddings": 53,
     }
     assert _counts() == first.created
+    source_by_chunk_id = {
+        str(row["child_id"]): row
+        for row in package.chunks
+    }
+    for chunk in DocumentChunk.objects.all():
+        source = source_by_chunk_id[str(chunk.metadata["canonical_chunk_id"])]
+        assert chunk.metadata["evidence_group_id"] == source["evidence_group_id"]
+        assert chunk.metadata["source_variant_id"] == source["source_variant_id"]
+        assert chunk.metadata["parent_id"] == source["parent_id"]
+        assert chunk.metadata["retrieval_role"] == "SEARCH_CANDIDATE"
     assert set(
         ProductModel.objects.filter(is_supported_mvp=False).values_list(
             "model_code", flat=True
@@ -303,6 +313,48 @@ def test_apply_replay_and_crosswalk_preserve_new_model_support_hold(package):
             verifier=operator,
         )
     assert replay_crosswalk == {"created": 0, "updated": 0, "unchanged": 53}
+
+
+def test_replay_preserves_exact_legacy_lineage_metadata_without_mutation(package):
+    operator = _operator()
+    _products()
+    importer = ThreeModelEvidenceImporter()
+    importer.persist(package=package, verifier=operator)
+    chunk = DocumentChunk.objects.order_by("id").first()
+    assert chunk is not None
+    legacy_metadata = dict(chunk.metadata)
+    legacy_metadata.pop("parent_id")
+    legacy_metadata.pop("retrieval_role")
+    chunk.metadata = legacy_metadata
+    chunk.save(update_fields=["metadata"])
+
+    replay = importer.persist(package=package, verifier=operator)
+
+    chunk.refresh_from_db()
+    assert replay.created == {}
+    assert replay.unchanged["chunks"] == 53
+    assert chunk.metadata == legacy_metadata
+
+
+@pytest.mark.parametrize(
+    ("key", "value"),
+    (
+        ("parent_id", "PARENT-WRONG-P999"),
+        ("retrieval_role", "CONTEXT_ONLY"),
+    ),
+)
+def test_replay_rejects_unapproved_lineage_metadata(package, key, value):
+    operator = _operator()
+    _products()
+    importer = ThreeModelEvidenceImporter()
+    importer.persist(package=package, verifier=operator)
+    chunk = DocumentChunk.objects.order_by("id").first()
+    assert chunk is not None
+    chunk.metadata = {**chunk.metadata, key: value}
+    chunk.save(update_fields=["metadata"])
+
+    with pytest.raises(CommandError, match="existing metadata differs"):
+        importer.persist(package=package, verifier=operator)
 
 
 def test_replay_accepts_existing_approved_pages_from_another_reviewer(package):

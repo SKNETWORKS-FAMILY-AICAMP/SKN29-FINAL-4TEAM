@@ -332,6 +332,34 @@ def test_postgresql_view_contract_is_read_only_and_does_not_expose_public_uuid()
     assert "DELETE" not in sql
 
 
+def test_postgresql_lineage_view_is_additive_and_fail_closed():
+    migration = import_module(
+        "apps.evidence.migrations."
+        "0013_expand_backend_ai_rag_lineage_metadata"
+    )
+    sql = migration.CREATE_VIEW_SQL
+
+    assert migration.Migration.dependencies == [
+        ("evidence", "0012_expand_ai_crosswalk_canonical_id"),
+    ]
+    for field_name in (
+        "evidence_group_id",
+        "source_variant_id",
+        "parent_id",
+        "retrieval_role",
+    ):
+        assert f"'{field_name}'" in sql
+    assert "rag_child_chunks_3model/1.0.0" in sql
+    assert "SEARCH_CANDIDATE" in sql
+    assert "crosswalk.canonical_chunk_id !~ '^CHILD-'" in sql
+    assert "NULLIF(chunk.metadata ->> 'evidence_group_id', '') IS NOT NULL" in sql
+    assert "NULLIF(chunk.metadata ->> 'source_variant_id', '') IS NOT NULL" in sql
+    assert "DROP VIEW" not in sql
+    assert "INSERT" not in sql
+    assert "UPDATE" not in sql
+    assert "DELETE" not in sql
+
+
 def test_sync_command_plan_validates_then_applies_exactly_seven_rows():
     command_module = import_module(
         "apps.evidence.management.commands.sync_ai_canonical_crosswalk"
