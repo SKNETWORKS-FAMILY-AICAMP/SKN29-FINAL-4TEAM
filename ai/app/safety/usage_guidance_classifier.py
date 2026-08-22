@@ -33,9 +33,15 @@ class UsageGuidanceClassifier:
             next_actions = ["원수 공급 밸브(원수 밸브)를 잠그세요.", "전원 플러그를 뽑고 사용을 즉시 중단하세요.", "전문 기사 방문 점검을 신청하세요."]
 
             # 명시적 세부 규칙 매칭 확인
+            matched_rule_ids = set(
+                safety_assessment.matched_safety_rule_ids
+            )
             for rule_key, rule_def in self.rules_config.items():
                 keywords = rule_def.get("keywords", [])
-                if any(kw in raw_text for kw in keywords):
+                if (
+                    rule_def.get("rule_id") in matched_rule_ids
+                    or any(kw in raw_text for kw in keywords)
+                ):
                     status = UsageGuidanceStatus(rule_def.get("usage_guidance_status", "TOTAL_STOP"))
                     restricted_funcs = rule_def.get("restricted_functions", restricted_funcs)
                     next_actions = rule_def.get("next_actions", next_actions)

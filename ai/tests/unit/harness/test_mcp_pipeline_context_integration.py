@@ -68,6 +68,8 @@ def _resolved(
     *,
     model_code="WPUIAC425SNW",
     state_version=4,
+    customer_query="냉수가 미지근합니다.",
+    selected_symptoms=None,
 ):
     return ResolvedBackendContext(
         inquiry_id=inquiry_id,
@@ -100,9 +102,13 @@ def _resolved(
             }
         ),
         inquiry_context=BackendInquiryPayload(
-            customer_query="냉수가 미지근합니다.",
+            customer_query=customer_query,
             symptom_type="COLD_WATER_TEMPERATURE",
-            selected_symptoms=["COLD_WATER_TEMPERATURE"],
+            selected_symptoms=(
+                ["COLD_WATER_TEMPERATURE"]
+                if selected_symptoms is None
+                else selected_symptoms
+            ),
             previous_answers=[],
         ),
     )
@@ -174,6 +180,58 @@ def test_mcp_pipeline_uses_backend_model_code_unchanged(monkeypatch):
     assert context_service.calls[0]["expected_model_code"] == (
         "WPUIAC425SNW"
     )
+
+
+def test_mcp_unapproved_iac606_leak_code_applies_safety_before_retrieval(
+    monkeypatch,
+):
+    monkeypatch.setenv("AI_RETRIEVAL_TRANSPORT", "mcp")
+    inquiry_id = uuid4()
+    correlation_id = uuid4()
+    context_service = _ContextService(
+        _resolved(
+            inquiry_id,
+            correlation_id,
+            model_code="WPUIAC606SNW",
+            state_version=1,
+            customer_query="제품 밑으로 물이 번지고 있습니다.",
+            selected_symptoms=["symptom_leak"],
+        )
+    )
+    search_service = _SearchService([])
+    llm = _LLM()
+    monkeypatch.setattr(
+        pipeline_router_module,
+        "McpEvidenceSearchService",
+        lambda: search_service,
+    )
+
+    result = PipelineRouter(
+        search_service=None,
+        llm_client=llm,
+        mcp_context_service=context_service,
+    ).run_pipeline(
+        inquiry_id=inquiry_id,
+        correlation_id=correlation_id,
+        ai_request_id="mcp-context-iac606-leak-safety",
+        state_version=1,
+        raw_symptom="호출 Body보다 Backend Context가 우선합니다.",
+        model_code="WPUIAC606SNW",
+    )
+
+    response = result.to_analysis_result()
+    assert search_service.queries == []
+    assert llm.calls == 0
+    assert response.status.value == "FALLBACK"
+    assert response.fallback_reason_code.value == (
+        "RUNTIME_PRODUCT_NOT_APPROVED"
+    )
+    assert response.safety_assessment.risk_level.value == "danger"
+    assert response.safety_assessment.matched_safety_rule_ids == [
+        "SAFETY-LEAK-001"
+    ]
+    assert response.usage_guidance.guidance_status.value == "TOTAL_STOP"
+    assert response.evidence_references == []
 
 
 def test_mcp_context_timeout_stops_before_search_and_provider(monkeypatch):

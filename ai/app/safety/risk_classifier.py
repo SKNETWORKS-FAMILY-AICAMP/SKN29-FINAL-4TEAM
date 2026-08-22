@@ -9,11 +9,16 @@ from .rule_loader import SafetyRuleLoader
 class RiskClassifier:
     """명시적 키워드 기반 안전 분기 및 위험도 분류기"""
 
-    _NEGATED_DANGER_PATTERNS = (
+    _NEGATED_LEAK_PATTERNS = (
         r"누수(?:는|가)?\s*(?:아니(?:에요|예요|고|라|며)?|없(?:어요|습니다|고)?)",
         r"물(?:이)?\s*(?:안\s*새|새지\s*않)",
+    )
+    _NEGATED_DANGER_PATTERNS = _NEGATED_LEAK_PATTERNS + (
         r"연기(?:는|가)?\s*(?:안\s*나|없)",
         r"스파크(?:는|가)?\s*(?:안\s*튀|없)",
+    )
+    _LEAK_SELECTED_SIGNAL_ALIASES = frozenset(
+        {"symptom_leak", "leak", "누수", "제품 누수"}
     )
 
     def __init__(self, rule_loader: Optional[SafetyRuleLoader] = None):
@@ -22,10 +27,20 @@ class RiskClassifier:
 
     def classify(self, raw_text: str, selected_symptoms: Optional[List[str]] = None) -> SafetyAssessment:
         """자연어 증상 및 대표 선택 증상을 분석하여 위험도 판정"""
+        leak_is_explicitly_negated = any(
+            re.search(pattern, raw_text)
+            for pattern in self._NEGATED_LEAK_PATTERNS
+        )
         normalized_text = raw_text
         for pattern in self._NEGATED_DANGER_PATTERNS:
             normalized_text = re.sub(pattern, " ", normalized_text)
-        text_to_search = (normalized_text + " " + " ".join(selected_symptoms or [])).strip()
+        selected_signals = self._normalize_selected_signals(
+            selected_symptoms or [],
+            leak_is_explicitly_negated=leak_is_explicitly_negated,
+        )
+        text_to_search = (
+            normalized_text + " " + " ".join(selected_signals)
+        ).strip()
 
         matched_rule_ids = []
         detected_risks = []
@@ -68,3 +83,22 @@ class RiskClassifier:
             detected_risks=list(dict.fromkeys(detected_risks)),
             safety_reason=safety_reason
         )
+
+    @classmethod
+    def _normalize_selected_signals(
+        cls,
+        selected_symptoms: List[str],
+        *,
+        leak_is_explicitly_negated: bool,
+    ) -> List[str]:
+        """Backend 대표 증상 코드를 결정적 안전 신호로 정규화한다."""
+
+        normalized = []
+        for symptom in selected_symptoms:
+            selected = symptom.strip()
+            if selected.casefold() in cls._LEAK_SELECTED_SIGNAL_ALIASES:
+                if not leak_is_explicitly_negated:
+                    normalized.append("누수")
+                continue
+            normalized.append(selected)
+        return normalized
