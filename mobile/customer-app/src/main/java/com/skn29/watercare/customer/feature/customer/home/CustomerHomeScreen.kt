@@ -361,11 +361,21 @@ fun CustomerHomeContent(
                             },
                         ),
             ) {
-                CustomerQuickStatusRow(
-                    home = home,
-                    previewMode = previewMode,
-                    onOpenCare = onOpenCare,
-                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = "관리 정보",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = palette.textStrong,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    CustomerQuickStatusRow(
+                        home = home,
+                        previewMode = previewMode,
+                        onOpenCare = onOpenCare,
+                    )
+                }
             }
 
             CustomerServiceConnectionBanner(

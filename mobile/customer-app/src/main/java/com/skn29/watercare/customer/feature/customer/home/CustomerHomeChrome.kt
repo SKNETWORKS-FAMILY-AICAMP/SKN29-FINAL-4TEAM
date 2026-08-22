@@ -104,7 +104,7 @@ fun CustomerCleanScaffold(
                         top = 8.dp,
                         bottom = if (showBottomBar) 86.dp else 28.dp,
                     ),
-                verticalArrangement = Arrangement.spacedBy(11.dp),
+                verticalArrangement = Arrangement.spacedBy(13.dp),
             ) {
                 CustomerCleanHeader(
                     displayName = displayName,
@@ -123,7 +123,7 @@ private fun CustomerCleanHeader(
     val name = displayName
         ?.trim()
         ?.takeIf { it.isNotEmpty() }
-        ?: "WaterBridge 고객"
+        ?: "고객"
 
     Row(
         modifier = Modifier
@@ -147,7 +147,7 @@ private fun CustomerCleanHeader(
                 verticalArrangement = Arrangement.spacedBy(1.dp),
             ) {
                 Text(
-                    text = "${name}님",
+                    text = "${name}님, 안녕하세요",
                     color = palette.textStrong,
                     fontSize = 20.sp,
                     lineHeight = 24.sp,
@@ -158,8 +158,8 @@ private fun CustomerCleanHeader(
                 Text(
                     text = "WaterBridge",
                     color = palette.textMuted,
-                    fontSize = 10.5.sp,
-                    lineHeight = 13.sp,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp,
                     fontWeight = FontWeight.Medium,
                     letterSpacing = 0.2.sp,
                     maxLines = 1,
@@ -169,30 +169,23 @@ private fun CustomerCleanHeader(
 
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.66f),
-                            palette.accentSoft.copy(alpha = 0.10f),
-                        )
-                    )
-                )
+                .clip(RoundedCornerShape(999.dp))
+                .background(Color.White.copy(alpha = 0.42f))
                 .border(
                     BorderStroke(
                         1.dp,
-                        Color.White.copy(alpha = 0.86f),
+                        Color.White.copy(alpha = 0.72f),
                     ),
-                    CircleShape,
-                ),
+                    RoundedCornerShape(999.dp),
+                )
+                .padding(horizontal = 10.dp, vertical = 7.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Image(
-                painter = painterResource(R.drawable.ref_notice),
-                contentDescription = "알림",
-                modifier = Modifier.size(21.dp),
-                contentScale = ContentScale.Fit,
+            Text(
+                text = "고객 케어",
+                color = palette.accent,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
             )
         }
     }
@@ -204,6 +197,7 @@ private fun CustomerCleanBottomBar(
     onOpenCare: () -> Unit,
 ) {
     val palette = CustomerReferencePalette
+    val barShape = RoundedCornerShape(28.dp)
 
     Box(
         modifier = Modifier
@@ -212,15 +206,40 @@ private fun CustomerCleanBottomBar(
             .padding(
                 start = 16.dp,
                 end = 16.dp,
-                bottom = 7.dp,
+                bottom = 8.dp,
             ),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(58.dp)
-                .padding(horizontal = 8.dp),
+                .height(68.dp)
+                .shadow(
+                    elevation = 8.dp,
+                    shape = barShape,
+                    ambientColor = palette.accent.copy(alpha = 0.08f),
+                    spotColor = palette.accentSecondary.copy(alpha = 0.07f),
+                    clip = false,
+                )
+                .clip(barShape)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.White.copy(alpha = 0.82f),
+                            Color.White.copy(alpha = 0.64f),
+                            palette.accentSoft.copy(alpha = 0.14f),
+                        )
+                    )
+                )
+                .border(
+                    BorderStroke(
+                        1.dp,
+                        Color.White.copy(alpha = 0.88f),
+                    ),
+                    barShape,
+                )
+                .padding(horizontal = 8.dp, vertical = 5.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             CustomerCleanBottomItem(
                 iconRes = R.drawable.ref_home,
@@ -232,7 +251,7 @@ private fun CustomerCleanBottomBar(
             )
             CustomerCleanBottomItem(
                 iconRes = R.drawable.ref_care,
-                label = "케어",
+                label = "관리",
                 selected = false,
                 enabled = careEnabled,
                 onClick = onOpenCare,
@@ -260,7 +279,7 @@ private fun CustomerCleanBottomItem(
             .clip(shape)
             .background(
                 if (selected) {
-                    Color.White.copy(alpha = 0.24f)
+                    palette.accent.copy(alpha = 0.08f)
                 } else {
                     Color.Transparent
                 }
@@ -288,8 +307,8 @@ private fun CustomerCleanBottomItem(
                 selected -> palette.accent
                 else -> palette.textMuted
             },
-            fontSize = 11.5.sp,
-            lineHeight = 14.sp,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
         )
         Box(
@@ -409,7 +428,7 @@ fun CustomerPrimaryButton(
     Button(
         onClick = onClick,
         modifier = modifier
-            .heightIn(min = 52.dp)
+            .heightIn(min = 56.dp)
             .graphicsLayer {
                 scaleX = pressScale
                 scaleY = pressScale
