@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "P1AccountLinkCandidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "fixture_id",
+    "scope_status",
+    "backend_import_status",
+    "runtime_status",
+    "approval",
+    "customer_candidate",
+    "contract_email",
+    "subscription",
+    "initial_state",
+    "promotion",
+    "is_synthetic",
+    "data_classification"
+  ],
+  "properties": {
+    "fixture_id": {"const": "P1-ACCOUNT-LINK-001"},
+    "scope_status": {"const": "P1_ACCOUNT_LINK_CANDIDATE"},
+    "backend_import_status": {"const": "NOT_IMPORTED"},
+    "runtime_status": {"const": "NOT_VERIFIED"},
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "decision_date", "source"],
+      "properties": {
+        "status": {"const": "APPROVED"},
+        "decision_date": {"const": "2026-08-22"},
+        "source": {"const": "docs/planning/md/20260822_P1-A_회원가입_계정연결_PM승인결정.md"}
+      }
+    },
+    "customer_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["customer_code", "display_name"],
+      "properties": {
+        "customer_code": {"const": "SYN-CUSTOMER-P1-001"},
+        "display_name": {"const": "합성 계약고객 P1 001"}
+      }
+    },
+    "contract_email": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "synthetic_address",
+        "is_active",
+        "runtime_storage_policy",
+        "delivery_policy"
+      ],
+      "properties": {
+        "synthetic_address": {"const": "customer-p1-001@waterbridge.invalid"},
+        "is_active": {"const": true},
+        "runtime_storage_policy": {"const": "ENCRYPTED_PLUS_HMAC"},
+        "delivery_policy": {"const": "RUNTIME_REDIRECT_ONLY"}
+      }
+    },
+    "subscription": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract_no",
+        "product_model_code",
+        "serial_no",
+        "management_type_code",
+        "status_code",
+        "started_on",
+        "next_care_on"
+      ],
+      "properties": {
+        "contract_no": {"const": "SYN-CONTRACT-P1-001"},
+        "product_model_code": {"const": "WPUJAC104DWH"},
+        "serial_no": {"const": "SYN-P1-JAC104D-0001"},
+        "management_type_code": {"const": "VISIT_CARE"},
+        "status_code": {"const": "ACTIVE"},
+        "started_on": {"const": "2026-08-01"},
+        "next_care_on": {"const": "2026-09-01"}
+      }
+    },
+    "initial_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["waterbridge_user", "customer_account_link"],
+      "properties": {
+        "waterbridge_user": {"const": "ABSENT"},
+        "customer_account_link": {"const": "ABSENT"}
+      }
+    },
+    "promotion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_fixture_included",
+        "db_handoff_profile_included",
+        "blockers"
+      ],
+      "properties": {
+        "canonical_fixture_included": {"const": false},
+        "db_handoff_profile_included": {"const": false},
+        "blockers": {
+          "type": "array",
+          "minItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "P1_CONTRACT_CUSTOMER_RUNTIME_NOT_IMPLEMENTED",
+              "P1_CONTRACT_EMAIL_RUNTIME_NOT_IMPLEMENTED",
+              "P1_ACCOUNT_LINK_RUNTIME_NOT_IMPLEMENTED",
+              "POSTGRESQL_NOT_VERIFIED"
+            ]
+          }
+        }
+      }
+    },
+    "is_synthetic": {"const": true},
+    "data_classification": {"const": "synthetic"}
+  }
+}

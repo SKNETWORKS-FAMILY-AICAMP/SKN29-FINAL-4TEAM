@@ -1,4 +1,4 @@
-version: 1.2.0
+version: 1.3.0
 generated_at: "2026-07-29T00:00:00+09:00"
 datasets:
   - id: manual_pages_jac104d
@@ -109,6 +109,12 @@ datasets:
     scope: runtime_profile_candidate_not_backend_imported
     records: 30
     schema: schemas/synthetic/manualThreeModelCandidateScenario.schema.json
+  - id: p1_account_link_candidates
+    path: synthetic/candidates/p1_account_link_candidates.json
+    classification: synthetic
+    scope: p1_account_link_candidate_not_backend_imported
+    records: 1
+    schema: schemas/synthetic/p1AccountLinkCandidate.schema.json
   - id: customer_products
     path: synthetic/fixtures/customer_products.json
     classification: synthetic

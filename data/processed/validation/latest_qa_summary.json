@@ -5,23 +5,23 @@
   "reports": [
     {
       "path": "processed/validation/schema/latest_schema_report.json",
-      "sha256": "9F1A57B28D022F7CD7525121EAADC8600FBD540F74A319FBC2EFF99A7F9C9200"
+      "sha256": "BDB59500777450A7756F393F22B6B6EB66096FB2A3CC48A85E4F2A7E7A530428"
     },
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
-      "sha256": "2F0E5FBC98607A9C5A95E9E42B8D5F386B2D976F3DFDEAA703FEB3D4352E6922"
+      "sha256": "03E70FBD11867D54C25DAE77E44DF9C08CEB6A9548745BCFB652B8F9E8F35FF3"
     },
     {
       "path": "processed/validation/quality/latest_quality_report.json",
-      "sha256": "284539D9CC7EC2614DBC557195AFAC2C431180840AB1F7B8BFA738B268DE84BE"
+      "sha256": "105441593DEDF8D3B5203DA1D23BEE92D47390A062E387BF5508ED5A73259547"
     },
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
-      "sha256": "A02486BED6832386CEDC4E8750357DA2D76729CD6CFBCE3BB1BBB4119ACA4E63"
+      "sha256": "B8A095149993F42A370EAD9274E0A598A66AE5FA4F3E935E053A2B2A1ACACD15"
     },
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
-      "sha256": "12AEA0FD1AE38888196DA8CB71F92158AA334B328B146139E4AC79F38A1F1E4D"
+      "sha256": "39EF8A8809E89839059682209996BBBA7BAEC5611682C6EB7E8DBC2C57016073"
     }
   ],
   "totals": {
@@ -44,8 +44,8 @@
     "summary": {
       "errors": 0,
       "warnings": 0,
-      "files_checked": 59,
-      "records_checked": 989
+      "files_checked": 60,
+      "records_checked": 990
     },
     "counts": {
       "manual_pages": 44,
@@ -55,7 +55,8 @@
       "synthetic_inquiries": 22,
       "synthetic_fixture_records": 369,
       "product_expansion_e2e_candidates": 2,
-      "manual_three_model_candidates": 30
+      "manual_three_model_candidates": 30,
+      "p1_account_link_candidates": 1
     },
     "errors": [],
     "representative_e2e": {
@@ -220,6 +221,14 @@
         "SYN-JAC104-034"
       ]
     },
+    "p1_account_link_candidate_coverage": {
+      "status": "PASS",
+      "errors": [],
+      "records": 1,
+      "fixture_ids": [
+        "P1-ACCOUNT-LINK-001"
+      ]
+    },
     "reproducibility": {
       "enabled": true,
       "changed_files": [],
@@ -233,7 +242,7 @@
       "status": "TEAM_APPROVED",
       "data_projection_consumes_contract": true,
       "backend_runtime_verified": true,
-      "pipeline_config_sha256": "78B259E786E76EF8433E5C43D4F8DE2424A2C986390A794B969D648D433D1B31",
+      "pipeline_config_sha256": "DCB4D4BBEDC46CC4F9D227439E77104FE10C52F42631EE6975936B7132F9AD74",
       "contract_mapping_sha256": "1673C4358290172EAC17161F6C3D7B91D5C572D58B180E7D59C0A06418CA8BDA",
       "source_hashes_verified": true
     },
@@ -258,7 +267,7 @@
     "status": "TEAM_APPROVED",
     "data_projection_consumes_contract": true,
     "backend_runtime_verified": true,
-    "pipeline_config_sha256": "78B259E786E76EF8433E5C43D4F8DE2424A2C986390A794B969D648D433D1B31",
+    "pipeline_config_sha256": "DCB4D4BBEDC46CC4F9D227439E77104FE10C52F42631EE6975936B7132F9AD74",
     "contract_mapping_sha256": "1673C4358290172EAC17161F6C3D7B91D5C572D58B180E7D59C0A06418CA8BDA",
     "source_hashes_verified": true
   },

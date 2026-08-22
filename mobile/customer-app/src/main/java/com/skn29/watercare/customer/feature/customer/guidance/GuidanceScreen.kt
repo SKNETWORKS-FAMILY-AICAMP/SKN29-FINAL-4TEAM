@@ -154,7 +154,7 @@ fun GuidanceScreen(
         }
     }
 
-    WaterCareScreen(title = "AI 안내", onBack = onBack) {
+    WaterCareScreen(title = "맞춤 해결 안내", onBack = onBack) {
         CustomerProgressOverview(
             statusCode = progressStatusCode,
         )
@@ -205,7 +205,7 @@ fun GuidanceScreen(
             CancelInquiryUiState.Idle -> Unit
 
             CancelInquiryUiState.Cancelling ->
-                LoadingBlock("문의를 취소하는 중입니다")
+                LoadingBlock("문의를 취소하고 있어요")
 
             is CancelInquiryUiState.Success ->
                 SectionCard("문의 취소 완료") {
@@ -254,7 +254,7 @@ fun GuidanceScreen(
                         )
                     } else {
                         Text(
-                            "현재 상태에서는 문의를 취소할 수 없습니다.",
+                            "지금은 문의를 취소할 수 없어요.",
                             style =
                                 MaterialTheme.typography.bodySmall,
                         )
@@ -372,7 +372,7 @@ fun GuidanceScreen(
 
             ConsultationRequestUiState.Requesting ->
                 LoadingBlock(
-                    "상담 요청을 보내는 중입니다"
+                    "상담을 연결하고 있어요"
                 )
 
             is ConsultationRequestUiState.Success ->
@@ -569,7 +569,7 @@ private fun CustomerProgressOverview(
             .testTag("guidanceProgress"),
         strong = true,
     ) {
-        LiquidGlassPill("진행 상태")
+        LiquidGlassPill("현재 진행 단계")
 
         Text(
             customerInquiryProgressHeadline(statusCode),
@@ -594,14 +594,14 @@ private fun CustomerProgressOverview(
             )
             CustomerProgressStep(
                 number = 2,
-                title = "추가 확인",
-                description = "필요한 내용을 조금 더 확인해요",
+                title = "증상 확인",
+                description = "필요한 증상만 간단히 더 확인해요",
                 currentStep = currentStep,
             )
             CustomerProgressStep(
                 number = 3,
-                title = "해결 안내",
-                description = "공식 근거를 바탕으로 해결 방법을 확인해요",
+                title = "해결 방법",
+                description = "확인된 정보를 바탕으로 해결 방법을 안내해요",
                 currentStep = currentStep,
             )
             CustomerProgressStep(
@@ -630,11 +630,11 @@ private fun CustomerProgressStep(
     val stepScale by stepTransition.animateFloat(
         initialValue = 1f,
         targetValue =
-            if (current) 1.42f
+            if (current) 1.06f
             else 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = 460,
+                durationMillis = 900,
             ),
             repeatMode = RepeatMode.Reverse,
         ),
@@ -767,7 +767,7 @@ private fun customerInquiryProgressDescription(
         "정확한 안내를 위해 필요한 내용만 간단히 더 확인할게요."
 
     "AI_GUIDANCE" ->
-        "공식 문서를 기준으로 지금 할 수 있는 조치를 안내해드려요."
+        "확인된 정보를 바탕으로 지금 할 수 있는 방법을 안내해드려요."
 
     "CONSULTATION_REQUIRED" ->
         "지금까지 입력한 내용을 다시 설명하지 않아도 상담사에게 그대로 전달할 수 있어요."
@@ -894,13 +894,18 @@ private fun GuidanceResultReveal(
                     },
                 ) +
                 scaleIn(
-                    initialScale = 0.72f,
+                    initialScale = 0.96f,
                     animationSpec = tween(
                         durationMillis = 500,
                     ),
                 ),
     ) {
-        content()
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            content()
+        }
     }
 }
 @Composable
@@ -946,7 +951,7 @@ fun GuidanceContent(
                         "지금 필요한 안내를 확인하세요"
                     },
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Black,
+                    fontWeight = FontWeight.Bold,
                 )
             }
 
@@ -1060,11 +1065,11 @@ private fun GuidancePreparingContent(
         )
     val preparingScale by
         preparingTransition.animateFloat(
-            initialValue = 0.86f,
-            targetValue = 1.14f,
+            initialValue = 0.97f,
+            targetValue = 1.03f,
             animationSpec = infiniteRepeatable(
                 animation = tween(
-                    durationMillis = 690,
+                    durationMillis = 1100,
                 ),
                 repeatMode = RepeatMode.Reverse,
             ),
@@ -1174,7 +1179,7 @@ private fun FailureFallback(
         Text(
             title,
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Black,
+            fontWeight = FontWeight.Bold,
         )
         Text(
             "입력하신 문의 내용은 그대로 보관되어 있어요. 잠시 후 다시 확인해주세요."
