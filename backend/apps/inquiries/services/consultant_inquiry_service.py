@@ -38,6 +38,45 @@ class ConsultantInquiryService:
     """Build the closed list/detail DTO without exposing internal fields."""
 
     @classmethod
+    def list_unassigned_consultations(
+        cls,
+        *,
+        actor: Any,
+        q: str | None,
+        risk_levels: list[str],
+        priorities: list[str],
+        from_date: date | None,
+        to_date: date | None,
+        sort: str,
+        page: int,
+        size: int,
+    ) -> dict[str, Any]:
+        inquiries, total = (
+            ConsultantInquiryRepository.list_unassigned_page(
+                q=q,
+                risk_levels=risk_levels,
+                priorities=priorities,
+                from_date=from_date,
+                to_date=to_date,
+                sort=sort,
+                offset=(page - 1) * size,
+                limit=size,
+            )
+        )
+        now = timezone.now()
+        return {
+            "items": [
+                cls._unassigned_list_item(
+                    inquiry,
+                    actor=actor,
+                    now=now,
+                )
+                for inquiry in inquiries
+            ],
+            "page_info": {"page": page, "size": size, "total": total},
+        }
+
+    @classmethod
     def list_for_consultant(
         cls,
         *,
@@ -198,6 +237,48 @@ class ConsultantInquiryService:
                 context=AllowedActionContext.from_models(
                     inquiry=inquiry,
                     actor=actor,
+                ),
+            ),
+        }
+
+    @staticmethod
+    def _unassigned_list_item(
+        inquiry: Inquiry,
+        *,
+        actor: Any,
+        now,
+    ) -> dict[str, Any]:
+        customer = inquiry.subscription.customer
+        product = inquiry.subscription.product_model
+        latest_consultation = next(
+            iter(inquiry.allowed_action_consultations),
+            None,
+        )
+        waiting_seconds = max(
+            0,
+            int((now - inquiry.created_at).total_seconds()),
+        )
+        return {
+            "inquiry_id": inquiry.public_id,
+            "inquiry_code": inquiry.inquiry_code,
+            "status": inquiry.status_code,
+            "state_version": inquiry.state_version,
+            "risk_level": inquiry.effective_risk_level,
+            "priority": inquiry.effective_priority,
+            "symptom_summary": inquiry.raw_text.strip()[:1000],
+            "customer_display_name_masked": (
+                ConsultantInquiryService._mask_name(customer.customer_name)
+            ),
+            "product_model": product.model_code,
+            "current_assignee_type": "NONE",
+            "received_at": inquiry.created_at,
+            "updated_at": inquiry.updated_at,
+            "waiting_seconds": waiting_seconds,
+            "allowed_actions": AllowedActionResolver.resolve(
+                context=AllowedActionContext.from_models(
+                    inquiry=inquiry,
+                    actor=actor,
+                    consultation=latest_consultation,
                 ),
             ),
         }

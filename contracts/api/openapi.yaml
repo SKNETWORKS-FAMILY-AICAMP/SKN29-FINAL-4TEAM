@@ -44,6 +44,8 @@ paths:
     $ref: ./paths/operations.yaml#/~1consultant~1dashboard
   /inquiries:
     $ref: ./paths/inquiries.yaml#/~1inquiries
+  /inquiries/unassigned-consultations:
+    $ref: ./paths/inquiries.yaml#/~1inquiries~1unassigned-consultations
   /inquiries/{id}:
     $ref: ./paths/inquiries.yaml#/~1inquiries~1{id}
   /inquiries/{id}/questionnaire:
@@ -68,6 +70,8 @@ paths:
     $ref: ./paths/workflow.yaml#/~1inquiries~1{id}~1cancel
   /inquiries/{id}/start-consultation:
     $ref: ./paths/consultations.yaml#/~1inquiries~1{id}~1start-consultation
+  /inquiries/{id}/claim-consultation:
+    $ref: ./paths/consultations.yaml#/~1inquiries~1{id}~1claim-consultation
   /inquiries/{id}/consultation-summary:
     $ref: ./paths/consultations.yaml#/~1inquiries~1{id}~1consultation-summary
   /inquiries/{id}/consultation-summary/confirm:

@@ -49,6 +49,44 @@ def test_request_consultation_is_available_in_all_confirmed_states():
     assert "REQUEST_CONSULTATION" in completion_pending
 
 
+def test_consultant_claim_requires_both_unassigned_waiting_rows():
+    base = {
+        "inquiry_state": "CONSULTATION_REQUIRED",
+        "state_version": 4,
+        "actor_role": "CONSULTANT",
+        "actor_id": 20,
+        "owner_id": 10,
+        "assigned_user_id": None,
+        "assigned_role_code": "NONE",
+        "consultation_exists": True,
+        "consultation_status": "WAITING",
+        "consultation_consultant_id": None,
+    }
+    _actions, claimable = resolve_codes(**base)
+    _actions, missing_consultation = resolve_codes(
+        **{**base, "consultation_exists": False}
+    )
+    _actions, assigned_inquiry = resolve_codes(
+        **{
+            **base,
+            "assigned_user_id": 21,
+            "assigned_role_code": "CONSULTANT",
+        }
+    )
+    _actions, assigned_consultation = resolve_codes(
+        **{**base, "consultation_consultant_id": 21}
+    )
+    _actions, started_consultation = resolve_codes(
+        **{**base, "consultation_status": "IN_PROGRESS"}
+    )
+
+    assert claimable == ["CLAIM_CONSULTATION"]
+    assert missing_consultation == []
+    assert assigned_inquiry == []
+    assert assigned_consultation == []
+    assert started_consultation == []
+
+
 def test_cancel_availability_uses_owner_assignment_and_operator_capability():
     _actions, owner_codes = resolve_codes()
     _actions, assigned_codes = resolve_codes(

@@ -115,10 +115,10 @@ def test_current_contract_and_runtime_files_are_present_but_owner_gates_remain()
     assert result["evidence"]["contract_validation_errors"] == []
     assert result["evidence"]["contract_counts"] == {
         "states": 13,
-        "events": 32,
-        "transitions": 36,
-        "guards": 41,
-        "allowed_actions": 23,
+        "events": 33,
+        "transitions": 37,
+        "guards": 42,
+        "allowed_actions": 24,
         "role_permissions": 5,
     }
     assert "PM_STATE_MACHINE_CONTRACT_INCOMPLETE" not in result["blockers"]

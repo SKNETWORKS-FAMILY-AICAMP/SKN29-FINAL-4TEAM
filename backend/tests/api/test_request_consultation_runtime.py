@@ -377,5 +377,5 @@ def test_openapi_and_action_crosswalk_publish_the_runtime():
     )
     assert item["classification"] == "RUNTIME_IMPLEMENTED"
     assert item["runtime"]["implemented"] is True
-    assert crosswalk["summary"]["RUNTIME_IMPLEMENTED"] == 17
+    assert crosswalk["summary"]["RUNTIME_IMPLEMENTED"] == 18
     assert crosswalk["summary"]["OPENAPI_CONFIRMED"] == 2

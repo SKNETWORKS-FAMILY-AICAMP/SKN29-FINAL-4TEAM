@@ -3,7 +3,7 @@ contract:
   version: 1.0.0
   status: PM_BASELINE_CANDIDATE
   owner: PM_TECHNICAL_INTEGRATION
-  updated_at: 2026-08-17
+  updated_at: 2026-08-23
   sources:
     action_registry: ../codes/workflow-actions.yaml
     allowed_actions: ../state-machine/allowed-actions.yaml
@@ -27,8 +27,8 @@ classification_policy:
     - RUNTIME_IMPLEMENTED는 Backend Source와 Test 경로를 모두 증거로 기록한다.
 
 summary:
-  total_actions: 23
-  RUNTIME_IMPLEMENTED: 17
+  total_actions: 24
+  RUNTIME_IMPLEMENTED: 18
   OPENAPI_CONFIRMED: 2
   CONTRACT_ONLY: 0
   DEFERRED: 4
@@ -128,6 +128,27 @@ actions:
       test_evidence:
         - ../../backend/tests/api/test_request_consultation_runtime.py
         - ../../backend/tests/api/test_openapi_runtime_coverage.py
+
+  - action: CLAIM_CONSULTATION
+    event: CLAIM_CONSULTATION
+    operation_id: claimConsultation
+    classification: RUNTIME_IMPLEMENTED
+    openapi:
+      confirmed: true
+      method: POST
+      path: /inquiries/{id}/claim-consultation
+      contract_status: CONFIRMED
+    runtime:
+      implemented: true
+      source_evidence:
+        - ../../backend/apps/inquiries/api/views.py
+        - ../../backend/apps/inquiries/services/consultation_claim_service.py
+        - ../../backend/apps/inquiries/repositories/consultant_inquiry_repository.py
+        - ../../backend/apps/consultations/repositories/consultation_repository.py
+      test_evidence:
+        - ../../backend/tests/api/test_consultation_claim_runtime.py
+        - ../../backend/tests/api/test_openapi_runtime_coverage.py
+    note: Claim은 미배정 WAITING 상담과 Inquiry 담당자만 원자적으로 배정하고 상담 시작 상태 전이는 수행하지 않는다.
 
   - action: START_CONSULTATION
     event: START_CONSULTATION

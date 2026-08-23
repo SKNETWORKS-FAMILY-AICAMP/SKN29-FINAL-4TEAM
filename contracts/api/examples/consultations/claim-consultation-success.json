@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "data": {
+    "message": "상담 대기 문의를 배정받았습니다.",
+    "inquiry_id": "10000000-0000-4000-8000-000000000102",
+    "status": "CONSULTATION_REQUIRED",
+    "state_version": 4,
+    "allowed_actions": [
+      {
+        "code": "START_CONSULTATION",
+        "label": "상담 시작",
+        "operation_id": "startConsultation",
+        "style": "PRIMARY",
+        "requires_confirmation": false,
+        "confirmation_message": null
+      }
+    ],
+    "idempotent_replay": false,
+    "resource": null
+  },
+  "error": null,
+  "metadata": {"correlation_id": "20000000-0000-4000-8000-000000000202"}
+}

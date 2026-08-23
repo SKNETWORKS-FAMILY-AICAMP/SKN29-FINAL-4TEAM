@@ -1,4 +1,4 @@
-"""Transactional CUSTOMER REQUEST_CONSULTATION workflow Slice."""
+"""Atomic consultant Claim for the approved unassigned waiting queue."""
 
 from __future__ import annotations
 
@@ -9,13 +9,14 @@ from uuid import UUID
 from django.db import IntegrityError, transaction
 from rest_framework.exceptions import NotFound, PermissionDenied
 
+from apps.consultations.models import Consultation
 from apps.consultations.repositories.consultation_repository import (
     ConsultationRepository,
 )
-from apps.consultations.repositories.consultation_handoff_repository import (
-    ConsultationHandoffRepository,
-)
 from apps.inquiries.models import Inquiry
+from apps.inquiries.repositories.consultant_inquiry_repository import (
+    ConsultantInquiryRepository,
+)
 from apps.inquiries.repositories.inquiry_repository import InquiryRepository
 from apps.workflow.domain.workflow_snapshot import WorkflowSnapshot
 from apps.workflow.engine.allowed_action_resolver import (
@@ -23,10 +24,7 @@ from apps.workflow.engine.allowed_action_resolver import (
     AllowedActionResolver,
 )
 from apps.workflow.engine.guard_evaluator import GuardContext, GuardEvaluator
-from apps.workflow.engine.state_machine import (
-    InvalidStateTransition,
-    StateMachine,
-)
+from apps.workflow.engine.state_machine import InvalidStateTransition, StateMachine
 from apps.workflow.repositories.workflow_repository import WorkflowRepository
 from apps.workflow.services.idempotency_service import IdempotencyService
 from apps.workflow.services.transition_history_service import (
@@ -36,22 +34,26 @@ from common.exceptions.business import BusinessError
 from common.exceptions.error_codes import INTERNAL_ERROR, STATE_CONFLICT
 
 
-EVENT_CODE = "REQUEST_CONSULTATION"
-OPERATION_ID = "requestConsultation"
+EVENT_CODE = "CLAIM_CONSULTATION"
+OPERATION_ID = "claimConsultation"
+EXPECTED_EFFECTS = {
+    "ASSIGN_CURRENT_CONSULTANT",
+    "ASSIGN_WAITING_CONSULTATION",
+}
 
 
 @dataclass(frozen=True)
-class RequestConsultationOutcome:
+class ConsultationClaimOutcome:
     status_code: int
     data: dict
 
 
-class ConsultationRequestService:
-    """Upsert one waiting consultation and advance the owned inquiry."""
+class ConsultationClaimService:
+    """Claim one queue item without starting the actual consultation."""
 
     @classmethod
     @transaction.atomic
-    def request(
+    def claim(
         cls,
         *,
         actor: Any,
@@ -59,7 +61,7 @@ class ConsultationRequestService:
         validated_data: dict,
         idempotency_key: str,
         correlation_id: UUID,
-    ) -> RequestConsultationOutcome:
+    ) -> ConsultationClaimOutcome:
         request_hash = IdempotencyService.canonical_request_hash(
             {
                 "normalized_path_parameters": {
@@ -69,22 +71,41 @@ class ConsultationRequestService:
                 "target_public_id": inquiry_public_id,
             }
         )
-        inquiry = InquiryRepository.lock_owned_inquiry(
-            inquiry_public_id=inquiry_public_id,
-            actor=actor,
+        inquiry = ConsultantInquiryRepository.lock_claimable(
+            inquiry_public_id
         )
         if inquiry is None:
             raise NotFound()
 
-        replay = cls._replay(
+        existing = WorkflowRepository.lock_idempotency_scope(
             actor=actor,
+            operation_id=OPERATION_ID,
             idempotency_key=idempotency_key,
-            request_hash=request_hash,
         )
-        if replay is not None:
-            return replay
+        if existing is not None and (
+            existing.request_hash == request_hash
+            or existing.resource_public_id == inquiry.public_id
+        ):
+            status_code, data = IdempotencyService.replay_or_conflict(
+                existing,
+                request_hash=request_hash,
+            )
+            return ConsultationClaimOutcome(status_code, data)
 
-        current_consultation = ConsultationRepository.lock_latest(inquiry)
+        consultation = ConsultationRepository.lock_latest(inquiry)
+        if not cls._is_claimable(inquiry, consultation):
+            # The dedicated queue is visible, but full unassigned/other-user
+            # detail remains concealed after another consultant wins.
+            raise NotFound()
+        if existing is not None:
+            # A key used for another target may return 409 only when this
+            # target is independently visible in the unassigned queue.
+            status_code, data = IdempotencyService.replay_or_conflict(
+                existing,
+                request_hash=request_hash,
+            )
+            return ConsultationClaimOutcome(status_code, data)
+
         snapshot = WorkflowSnapshot(
             inquiry_state=inquiry.status_code,
             state_version=inquiry.state_version,
@@ -96,24 +117,8 @@ class ConsultationRequestService:
                 event_code=EVENT_CODE,
             )
         except InvalidStateTransition as exc:
-            if exc.reason in {
-                "TERMINAL_STATE",
-                "UNLISTED_TRANSITION",
-                "VISIT_STATE_MISMATCH",
-            }:
-                cls._raise_state_conflict(
-                    inquiry,
-                    actor=actor,
-                    consultation=current_consultation,
-                )
-            raise BusinessError(
-                INTERNAL_ERROR,
-                "요청 처리 중 오류가 발생했습니다.",
-                details={},
-                status_code=500,
-            ) from exc
-
-        if "UPSERT_CONSULTATION_REQUEST" not in transition.effects:
+            raise NotFound() from exc
+        if not EXPECTED_EFFECTS.issubset(set(transition.effects)):
             raise BusinessError(
                 INTERNAL_ERROR,
                 "요청 처리 중 오류가 발생했습니다.",
@@ -130,13 +135,15 @@ class ConsultationRequestService:
                 correlation_id=str(correlation_id),
                 idempotency_key=idempotency_key,
                 requested_state_version=validated_data["state_version"],
-                domain_results={"G-INQUIRY-OWNER": True},
+                domain_results={
+                    "G-UNASSIGNED-CONSULTATION-CLAIMABLE": True,
+                },
             ),
         )
         cls._raise_guard_failure(
             inquiry=inquiry,
             actor=actor,
-            consultation=current_consultation,
+            consultation=consultation,
             guard_result=guard_result,
         )
 
@@ -151,30 +158,30 @@ class ConsultationRequestService:
                     )
                 )
         except IntegrityError:
-            replay = cls._replay(
+            existing = WorkflowRepository.lock_idempotency_scope(
                 actor=actor,
+                operation_id=OPERATION_ID,
                 idempotency_key=idempotency_key,
+            )
+            if existing is None:
+                raise
+            status_code, data = IdempotencyService.replay_or_conflict(
+                existing,
                 request_hash=request_hash,
             )
-            if replay is None:
-                raise
-            return replay
+            return ConsultationClaimOutcome(status_code, data)
 
-        consultation = ConsultationRepository.request(
-            inquiry=inquiry,
+        InquiryRepository.assign_consultant(
+            inquiry,
+            actor=actor,
+            state_version=transition.state_version_after,
+        )
+        consultation = ConsultationRepository.claim(
+            consultation,
+            actor=actor,
             state_version=transition.state_version_after,
             idempotency_key=idempotency_key,
             correlation_id=correlation_id,
-            current=current_consultation,
-        )
-        ConsultationHandoffRepository.attach_to_latest_consultation(
-            inquiry=inquiry,
-            consultation=consultation,
-        )
-        InquiryRepository.apply_state_transition(
-            inquiry,
-            status_code=transition.inquiry_state_after,
-            state_version=transition.state_version_after,
         )
         if transition.record_business_event:
             TransitionHistoryService.record_inquiry_action(
@@ -185,7 +192,7 @@ class ConsultationRequestService:
                 idempotency_key=idempotency_key,
             )
         data = {
-            "message": "상담 요청이 접수되었습니다.",
+            "message": "상담 대기 문의를 배정받았습니다.",
             "inquiry_id": str(inquiry.public_id),
             "status": inquiry.status_code,
             "state_version": inquiry.state_version,
@@ -205,27 +212,22 @@ class ConsultationRequestService:
             response_body=data,
             resource_public_id=inquiry.public_id,
         )
-        return RequestConsultationOutcome(200, data)
+        return ConsultationClaimOutcome(200, data)
 
     @staticmethod
-    def _replay(
-        *,
-        actor: Any,
-        idempotency_key: str,
-        request_hash: str,
-    ) -> RequestConsultationOutcome | None:
-        record = WorkflowRepository.lock_idempotency_scope(
-            actor=actor,
-            operation_id=OPERATION_ID,
-            idempotency_key=idempotency_key,
+    def _is_claimable(
+        inquiry: Inquiry,
+        consultation: Consultation | None,
+    ) -> bool:
+        return bool(
+            inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+            and inquiry.assigned_user_id is None
+            and inquiry.assigned_role_code == Inquiry.AssignedRole.NONE
+            and consultation is not None
+            and consultation.status == Consultation.Status.WAITING
+            and consultation.consultant_id is None
+            and consultation.started_at is None
         )
-        if record is None:
-            return None
-        status_code, data = IdempotencyService.replay_or_conflict(
-            record,
-            request_hash=request_hash,
-        )
-        return RequestConsultationOutcome(status_code, data)
 
     @classmethod
     def _raise_guard_failure(
@@ -233,7 +235,7 @@ class ConsultationRequestService:
         *,
         inquiry: Inquiry,
         actor: Any,
-        consultation: Any,
+        consultation: Consultation,
         guard_result: Any,
     ) -> None:
         if guard_result.allowed:
@@ -268,7 +270,7 @@ class ConsultationRequestService:
         inquiry: Inquiry,
         *,
         actor: Any,
-        consultation: Any,
+        consultation: Consultation,
     ) -> None:
         allowed_actions = AllowedActionResolver.resolve(
             context=AllowedActionContext.from_models(

@@ -42,9 +42,10 @@ roles:
   - EXECUTE_SYSTEM_EVENT
   - VIEW_INTERNAL_AI_FIELDS
 - code: CONSULTANT
-  description: 합성 고객의 전화 문의 등록과 배정된 문의의 상담 처리, 방문 판단·일정 조율 및 상담 건 최종 완료를 수행한다.
+  description: 합성 고객의 전화 문의 등록, 미배정 상담 대기열 Claim과 배정된 문의의 상담 처리, 방문 판단·일정 조율 및 상담 건 최종 완료를 수행한다.
   resource_scope:
   - SYNTHETIC_ACTIVE_CUSTOMER_SUBSCRIPTIONS
+  - UNASSIGNED_CONSULTATION_QUEUE
   - ASSIGNED_INQUIRIES
   - ASSIGNED_CONSULTATIONS
   - RELATED_VISITS_FOR_SCHEDULING
@@ -52,6 +53,7 @@ roles:
   - REGISTER_PHONE_INQUIRY
   - CANCEL_INQUIRY
   - RESUME_CONSULTATION
+  - CLAIM_CONSULTATION
   - START_CONSULTATION
   - CONSULTATION_COMPLETED
   - VISIT_REVIEW_REQUIRED
@@ -127,6 +129,13 @@ g2_projection_contract:
     null_placeholder_for_denied_field: DENY
     pii_in_url_error_log_cache_analytics: DENY
   object_access:
+    unassigned_consultation_queue:
+      required_role: CONSULTANT
+      required_assignment: inquiry.assigned_consultant_id is null
+      required_consultation_status: WAITING
+      claim_conflict_behavior:
+        http_status: 404
+        error_code: RESOURCE_NOT_FOUND
     consultant_inquiry:
       required_role: CONSULTANT
       required_assignment: inquiry.assigned_consultant_id == actor.user_id
@@ -141,6 +150,30 @@ g2_projection_contract:
         http_status: 404
         error_code: RESOURCE_NOT_FOUND
   projections:
+    unassigned_consultation_queue:
+      schema_ref: ../api/components/schemas/inquiry/UnassignedConsultationQueueItem.yaml
+      required_scope: UNASSIGNED_CONSULTATION_QUEUE
+      data_source: SYNTHETIC_FIXTURE
+      allow_fields:
+      - inquiry_id
+      - inquiry_code
+      - status
+      - state_version
+      - risk_level
+      - priority
+      - symptom_summary
+      - customer_display_name_masked
+      - product_model
+      - current_assignee_type
+      - received_at
+      - updated_at
+      - waiting_seconds
+      - allowed_actions
+      deny_fields:
+      - customer_phone
+      - customer_address
+      - evidence
+      - consultation_detail
     consultant_inquiry_list:
       schema_ref: ../api/components/schemas/inquiry/ConsultantInquiryListItem.yaml
       required_scope: ASSIGNED_INQUIRIES
@@ -240,6 +273,7 @@ field_visibility:
     - internal_guard_failure_detail
   consultant:
     allow:
+    - unassigned_consultation_queue_projection
     - assigned_inquiry_projection
     - synthetic_customer_projection
     - synthetic_technician_projection
@@ -249,7 +283,7 @@ field_visibility:
     - state_version
     deny:
     - actual_personal_data
-    - unassigned_inquiries
+    - unassigned_inquiry_detail
     - evidence
     - raw_source_storage_path
     - vector_embedding

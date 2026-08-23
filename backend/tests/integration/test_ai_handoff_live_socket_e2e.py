@@ -372,11 +372,36 @@ def test_live_fastapi_callback_persists_and_reaches_consultant_projection(
         handoff.refresh_from_db()
         consultation = Consultation.objects.get(inquiry=inquiry)
         assert inquiry.state_version == 4
-        assert inquiry.assigned_user == consultant
-        assert inquiry.assigned_role_code == Inquiry.AssignedRole.CONSULTANT
+        assert inquiry.assigned_user is None
+        assert inquiry.assigned_role_code == Inquiry.AssignedRole.NONE
+        assert consultation.status == Consultation.Status.WAITING
+        assert consultation.consultant is None
         assert handoff.consultation == consultation
         assert consultation.ai_draft_summary == handoff.ai_draft_summary
         assert consultation.ai_draft_summary.strip()
+
+        claim_correlation = str(uuid4())
+        claim_status, _headers, claim_payload = _request_json(
+            live_server.url,
+            f"/api/v1/inquiries/{inquiry.public_id}/claim-consultation",
+            method="POST",
+            payload={"state_version": 4},
+            headers={
+                **_bearer(consultant_token),
+                "Idempotency-Key": f"live-handoff-claim-{uuid4().hex}",
+                "X-Correlation-ID": claim_correlation,
+            },
+        )
+        assert claim_status == 200, claim_payload
+
+        inquiry.refresh_from_db()
+        consultation.refresh_from_db()
+        assert inquiry.state_version == 5
+        assert inquiry.assigned_user == consultant
+        assert inquiry.assigned_role_code == Inquiry.AssignedRole.CONSULTANT
+        assert consultation.status == Consultation.Status.ASSIGNED
+        assert consultation.consultant == consultant
+        assert consultation.started_at is None
 
         detail_correlation = str(uuid4())
         detail_status, detail_headers, detail_payload = _request_json(

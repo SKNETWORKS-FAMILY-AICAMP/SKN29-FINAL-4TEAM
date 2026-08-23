@@ -29,23 +29,23 @@
     },
     "inquiry_events": {
       "path": "contracts/state-machine/inquiry-events.yaml",
-      "sha256": "F92337E4F4024C768EA015A425396D0E007C1C67B42B094D046B384E82866896"
+      "sha256": "051272FF4D011DAD872E0BF20C6CC2C8A8739664A9D352E6585B1BEC9DB6F618"
     },
     "transition_rules": {
       "path": "contracts/state-machine/transition-rules.yaml",
-      "sha256": "33E470BBBF2D0932599460924F40AB85D8133A5E6BD955169B060B1793BFD065"
+      "sha256": "AEDA3EB300005BA785955AF4DEECEF66B95BA89775FA1DB2CF90C733B710EA97"
     },
     "allowed_actions": {
       "path": "contracts/state-machine/allowed-actions.yaml",
-      "sha256": "7D4AF873F0871484900977D0A16963B231E161A02E25576C875896828811F8DD"
+      "sha256": "86931E09AE681E52C79639B7A6C9464CCBC68461387451C32BF5E6A3C847C6BD"
     },
     "data_state_crosswalk": {
       "path": "contracts/state-machine/data-state-crosswalk.yaml",
-      "sha256": "9E34117D32BAA9D47B64A9040F6C2AFBDB62A6C30DD0C7F04B8DAC371B412500"
+      "sha256": "789D2E5C06F7BFB47B8F6896310E6293D565C8AB9C7295499D2E9F27085BBC37"
     },
     "representative_e2e_contract": {
       "path": "contracts/state-machine/examples/representative-e2e.yaml",
-      "sha256": "3D45CAB38800AD8C48080456C5B2CF061A0E73C1B8B1CCEB0EA7FD782C1CADF0"
+      "sha256": "4065FE7C74B85B51D4AFE829E4707BB937E482D553EBC57C505D182019EC0D04"
     },
     "adr_0010_identifier_bridge": {
       "path": "docs/adr/0010-t005-three-layer-identifier-bridge.md",

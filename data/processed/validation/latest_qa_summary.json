@@ -5,23 +5,23 @@
   "reports": [
     {
       "path": "processed/validation/schema/latest_schema_report.json",
-      "sha256": "BDB59500777450A7756F393F22B6B6EB66096FB2A3CC48A85E4F2A7E7A530428"
+      "sha256": "4B495637E6A3EF0F97EC70BC9AE34A64946EDF75DFC72D9D504FA879AD6C6A34"
     },
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
-      "sha256": "03E70FBD11867D54C25DAE77E44DF9C08CEB6A9548745BCFB652B8F9E8F35FF3"
+      "sha256": "5957355847980F30F7242A5F44BA0A8527671330D0CED9E42540D2AF767458A4"
     },
     {
       "path": "processed/validation/quality/latest_quality_report.json",
-      "sha256": "105441593DEDF8D3B5203DA1D23BEE92D47390A062E387BF5508ED5A73259547"
+      "sha256": "43F22A3A6AA5753AF006D0854D82DA6CE2D04AB6C897416E3C84906C842F529A"
     },
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
-      "sha256": "B8A095149993F42A370EAD9274E0A598A66AE5FA4F3E935E053A2B2A1ACACD15"
+      "sha256": "818E5FCB1DBB31E7CD01F7A31B25F58703832A7B09796CC0078DACA43FC61DDB"
     },
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
-      "sha256": "39EF8A8809E89839059682209996BBBA7BAEC5611682C6EB7E8DBC2C57016073"
+      "sha256": "E0789A2554E61FEE106C9C1F46F832731CA6CC6BFB6511E3A538D19A0E99991B"
     }
   ],
   "totals": {
@@ -243,7 +243,7 @@
       "data_projection_consumes_contract": true,
       "backend_runtime_verified": true,
       "pipeline_config_sha256": "DCB4D4BBEDC46CC4F9D227439E77104FE10C52F42631EE6975936B7132F9AD74",
-      "contract_mapping_sha256": "1673C4358290172EAC17161F6C3D7B91D5C572D58B180E7D59C0A06418CA8BDA",
+      "contract_mapping_sha256": "F5356DE3D9B56E1EEE9333A6696ECBB654629505765C9FB44046505F368B0F20",
       "source_hashes_verified": true
     },
     "error_categories": {
@@ -268,7 +268,7 @@
     "data_projection_consumes_contract": true,
     "backend_runtime_verified": true,
     "pipeline_config_sha256": "DCB4D4BBEDC46CC4F9D227439E77104FE10C52F42631EE6975936B7132F9AD74",
-    "contract_mapping_sha256": "1673C4358290172EAC17161F6C3D7B91D5C572D58B180E7D59C0A06418CA8BDA",
+    "contract_mapping_sha256": "F5356DE3D9B56E1EEE9333A6696ECBB654629505765C9FB44046505F368B0F20",
     "source_hashes_verified": true
   },
   "error_categories": {

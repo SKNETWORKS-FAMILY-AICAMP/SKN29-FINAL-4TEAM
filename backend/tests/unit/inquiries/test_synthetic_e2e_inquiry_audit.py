@@ -135,7 +135,7 @@ def test_g3_and_g4_stage_boundaries_are_distinct():
     snapshot = base_snapshot()
     snapshot["inquiry"].update(
         status_code="CONSULTATION_REQUIRED",
-        state_version=4,
+        state_version=5,
         scenario_code=SYNTHETIC_E2E_RUNTIME_SCENARIO_CODE,
         assigned_role_code="CONSULTANT",
         assigned_user_code="DEMO-CONSULTANT-001",
@@ -147,15 +147,26 @@ def test_g3_and_g4_stage_boundaries_are_distinct():
             "correlation_id": "corr-request",
         }
     )
+    snapshot["workflow"]["history"].append(
+        {
+            "event_code": "CLAIM_CONSULTATION",
+            "state_version": 5,
+            "correlation_id": "corr-claim",
+        }
+    )
     snapshot["workflow"]["idempotency_records"].append(
         {"operation_id": "requestConsultation"}
+    )
+    snapshot["workflow"]["idempotency_records"].append(
+        {"operation_id": "claimConsultation"}
     )
     snapshot["consultation"] = {
         "count": 1,
         "items": [
             {
-                "status": "WAITING",
-                "consultant__username": None,
+                "status": "ASSIGNED",
+                "consultant__username": "DEMO-CONSULTANT-001",
+                "started_at": None,
             }
         ],
     }
@@ -167,7 +178,7 @@ def test_g3_and_g4_stage_boundaries_are_distinct():
 
     snapshot["inquiry"].update(
         status_code="COMPLETION_PENDING",
-        state_version=8,
+        state_version=9,
     )
     for version, event in enumerate(
         (
@@ -176,7 +187,7 @@ def test_g3_and_g4_stage_boundaries_are_distinct():
             "CONFIRM_CONSULTATION_SUMMARY",
             "CONSULTATION_COMPLETED",
         ),
-        start=5,
+        start=6,
     ):
         snapshot["workflow"]["history"].append(
             {
@@ -197,6 +208,7 @@ def test_g3_and_g4_stage_boundaries_are_distinct():
     snapshot["consultation"]["items"][0].update(
         status="COMPLETED",
         consultant__username="DEMO-CONSULTANT-001",
+        started_at="2026-08-14T19:30:00+09:00",
         confirmed_summary="합성 상담 완료",
         summary_confirmed_at="2026-08-14T20:00:00+09:00",
         completed_at="2026-08-14T20:01:00+09:00",

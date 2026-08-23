@@ -91,6 +91,19 @@ class ConsultantInquiryListDataSerializer(serializers.Serializer):
     )
 
 
+class UnassignedConsultationQueueItemSerializer(
+    ConsultantInquiryListItemSerializer
+):
+    """Minimal queue projection; full unassigned detail remains concealed."""
+
+    current_assignee_type = serializers.ChoiceField(choices=("NONE",))
+
+
+class UnassignedConsultationQueueDataSerializer(serializers.Serializer):
+    items = UnassignedConsultationQueueItemSerializer(many=True)
+    page_info = ConsultantInquiryPageInfoSerializer()
+
+
 class ConsultantInquiryHeaderSerializer(serializers.Serializer):
     inquiry_id = serializers.UUIDField()
     inquiry_code = serializers.CharField(max_length=48)

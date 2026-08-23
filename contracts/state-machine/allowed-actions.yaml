@@ -90,6 +90,12 @@ action_catalog:
   style: SECONDARY
   requires_confirmation: false
   confirmation_message: null
+- code: CLAIM_CONSULTATION
+  label: 상담 배정받기
+  operation_id: claimConsultation
+  style: PRIMARY
+  requires_confirmation: false
+  confirmation_message: null
 - code: START_CONSULTATION
   label: 상담 시작
   operation_id: startConsultation
@@ -255,6 +261,11 @@ state_role_actions:
       dynamic_requirements:
       - 시스템 전환으로 생성된 상담 필요 상태에서 고객의 상담 요청 확인을 기록할 수 있다.
     CONSULTANT:
+    - action: CLAIM_CONSULTATION
+      transition_rule_ids:
+      - TR-INQ-037
+      dynamic_requirements:
+      - 문의와 WAITING 상담이 모두 미배정 상태여야 한다.
     - action: START_CONSULTATION
       transition_rule_ids:
       - TR-INQ-014

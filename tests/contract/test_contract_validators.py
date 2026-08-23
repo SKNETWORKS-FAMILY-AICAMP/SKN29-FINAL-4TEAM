@@ -24,24 +24,24 @@ class ContractValidatorsTest(unittest.TestCase):
 
         self.assertEqual(29, result.registry_files)
         self.assertEqual(13, result.inquiry_statuses)
-        self.assertEqual(23, result.workflow_actions)
+        self.assertEqual(24, result.workflow_actions)
         self.assertEqual(4, result.user_roles)
         self.assertEqual(7, result.visit_statuses)
 
     def test_openapi_refs_paths_and_operations_are_resolvable(self) -> None:
         result = validate_openapi.validate_repository(REPO_ROOT)
 
-        self.assertEqual(42, result.paths)
-        self.assertEqual(47, result.operations)
+        self.assertEqual(44, result.paths)
+        self.assertEqual(49, result.operations)
         self.assertGreater(result.references, 0)
 
     def test_json_examples_are_parseable_and_referenced(self) -> None:
         result = validate_examples.validate_repository(REPO_ROOT)
 
-        self.assertEqual(70, result.api_examples)
+        self.assertEqual(72, result.api_examples)
         self.assertEqual(result.api_examples, result.referenced_examples)
         self.assertEqual(5, result.integration_examples)
-        self.assertEqual(50, result.wrapped_responses)
+        self.assertEqual(52, result.wrapped_responses)
 
     def test_state_machine_digest_input_is_line_ending_independent(self) -> None:
         with patch.object(

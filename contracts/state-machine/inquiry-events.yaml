@@ -211,6 +211,21 @@ events:
   description: '재개 문의를 상담 대기열에 다시 올려 REOPENED에서 CONSULTATION_REQUIRED로 전환한다.
 
     '
+- code: CLAIM_CONSULTATION
+  category: STAFF_COMMAND
+  scope: CONSULTATION
+  actor_roles:
+  - CONSULTANT
+  changes_inquiry_state: false
+  changes_visit_state: false
+  requires_idempotency_key: true
+  requires_state_version: true
+  external_action:
+    exposed: true
+    operation_id: claimConsultation
+  description: '미배정 WAITING 상담 문의를 현재 상담사에게 배정한다. Inquiry 상태는 CONSULTATION_REQUIRED로 유지하며 상담 시작은 별도 START_CONSULTATION으로 처리한다.
+
+    '
 - code: START_CONSULTATION
   category: STAFF_COMMAND
   scope: CONSULTATION

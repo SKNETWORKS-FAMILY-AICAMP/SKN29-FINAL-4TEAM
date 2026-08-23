@@ -16,6 +16,12 @@ OPENAPI_PATH = API_DIR / "openapi.yaml"
 HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
 
 G2_OPERATIONS = {
+    ("/inquiries/unassigned-consultations", "get"): (
+        "listUnassignedConsultationInquiries"
+    ),
+    ("/inquiries/{id}/claim-consultation", "post"): (
+        "claimConsultation"
+    ),
     ("/inquiries", "get"): "listConsultantInquiries",
     ("/inquiries/{id}", "get"): "getConsultantInquiryDetail",
     ("/inquiries/{id}/start-consultation", "post"): (
@@ -222,8 +228,8 @@ def test_g2_operation_inventory_crosswalk_and_runtime_boundary():
     }
 
     assert root["info"]["version"] == "0.9.0"
-    assert len(operations) == 47
-    assert len({item["operationId"] for item in operations.values()}) == 47
+    assert len(operations) == 49
+    assert len({item["operationId"] for item in operations.values()}) == 49
     assert set(crosswalk_operations) == set(G2_OPERATIONS)
     assert crosswalk["contract"]["included_decisions"] == [
         "DEC-001",
@@ -233,6 +239,7 @@ def test_g2_operation_inventory_crosswalk_and_runtime_boundary():
         "DEC-005",
         "DEC-007",
         "DEC-009",
+        "PM-20260823-CONSULTANT-CLAIM",
     ]
     assert crosswalk["contract"]["excluded_decisions"] == [
         "DEC-006",
@@ -422,7 +429,6 @@ def test_assigned_consultant_guards_and_object_concealment_are_required():
 
     for key in WRITE_G2_OPERATIONS:
         operation = operations[key]
-        assert operation["x-permission-scope"] == "ASSIGNED_INQUIRIES"
         assert {"401", "403", "404", "409", "422", "500"} <= set(
             operation["responses"]
         )
@@ -430,6 +436,18 @@ def test_assigned_consultant_guards_and_object_concealment_are_required():
         rule_ids = state_contract.get("transition_rules")
         if rule_ids is None:
             rule_ids = [state_contract["transition_rule"]]
+        if key == ("/inquiries/{id}/claim-consultation", "post"):
+            assert operation["x-permission-scope"] == (
+                "UNASSIGNED_CONSULTATION_QUEUE"
+            )
+            assert rule_ids == ["TR-INQ-037"]
+            assert {
+                "G-ACTOR-CONSULTANT",
+                "G-UNASSIGNED-CONSULTATION-CLAIMABLE",
+            } <= set(rules["TR-INQ-037"]["guard_refs"])
+            continue
+
+        assert operation["x-permission-scope"] == "ASSIGNED_INQUIRIES"
         for rule_id in rule_ids:
             assert {
                 "G-ACTOR-CONSULTANT",

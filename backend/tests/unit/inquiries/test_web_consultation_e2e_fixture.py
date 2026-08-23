@@ -45,7 +45,7 @@ def test_command_creates_ready_consultation_boundary_through_runtime():
     assert result == {
         "allowed_actions": ["START_CONSULTATION"],
         "assigned_consultant": "DEMO-CONSULTANT-001",
-        "consultation_status": "WAITING",
+        "consultation_status": "ASSIGNED",
         "created": True,
         "fixture_readiness": "READY",
         "fixture_scope": "WEB_G4_CONSULTATION",
@@ -55,7 +55,7 @@ def test_command_creates_ready_consultation_boundary_through_runtime():
         "known_blocker": "NONE",
         "request_correlation_id": result["request_correlation_id"],
         "run_id": "playwright-20260819-001",
-        "state_version": 2,
+        "state_version": 3,
         "status": "CONSULTATION_REQUIRED",
     }
     inquiry = Inquiry.objects.get(public_id=result["inquiry_id"])
@@ -63,14 +63,22 @@ def test_command_creates_ready_consultation_boundary_through_runtime():
     consultation = Consultation.objects.get(inquiry=inquiry)
     assert inquiry.assigned_user == consultant
     assert inquiry.assigned_role_code == Inquiry.AssignedRole.CONSULTANT
-    assert consultation.status == Consultation.Status.WAITING
-    assert consultation.consultant is None
+    assert consultation.status == Consultation.Status.ASSIGNED
+    assert consultation.consultant == consultant
+    assert consultation.started_at is None
     assert TransitionHistory.objects.filter(
         inquiry=inquiry,
         event_code="REQUEST_CONSULTATION",
         from_state=Inquiry.Status.AI_GUIDANCE,
         to_state=Inquiry.Status.CONSULTATION_REQUIRED,
         state_version=2,
+    ).exists()
+    assert TransitionHistory.objects.filter(
+        inquiry=inquiry,
+        event_code="CLAIM_CONSULTATION",
+        from_state=Inquiry.Status.CONSULTATION_REQUIRED,
+        to_state=Inquiry.Status.CONSULTATION_REQUIRED,
+        state_version=3,
     ).exists()
 
 

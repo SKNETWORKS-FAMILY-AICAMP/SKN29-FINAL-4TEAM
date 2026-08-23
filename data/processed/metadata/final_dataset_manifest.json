@@ -341,7 +341,7 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 22291,
-      "sha256": "E378BABB9BC0A7F1A47ABCA920866150147DCC5C4B513E9874C02B6A608D0959"
+      "sha256": "496410B7A65C2A5EDB5FE31C02D3F4D940EFF9BA3A467D7C33E0753891D89279"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -932,7 +932,7 @@
     {
       "path": "config/workflow/service_contract_mapping.json",
       "size_bytes": 5473,
-      "sha256": "1673C4358290172EAC17161F6C3D7B91D5C572D58B180E7D59C0A06418CA8BDA"
+      "sha256": "F5356DE3D9B56E1EEE9333A6696ECBB654629505765C9FB44046505F368B0F20"
     }
   ],
   "template_files": [
@@ -971,7 +971,7 @@
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
       "size_bytes": 2322,
-      "sha256": "B8A095149993F42A370EAD9274E0A598A66AE5FA4F3E935E053A2B2A1ACACD15"
+      "sha256": "818E5FCB1DBB31E7CD01F7A31B25F58703832A7B09796CC0078DACA43FC61DDB"
     },
     {
       "path": "processed/validation/business/latest_representative_e2e_report.json",
@@ -996,12 +996,12 @@
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
       "size_bytes": 1340,
-      "sha256": "03E70FBD11867D54C25DAE77E44DF9C08CEB6A9548745BCFB652B8F9E8F35FF3"
+      "sha256": "5957355847980F30F7242A5F44BA0A8527671330D0CED9E42540D2AF767458A4"
     },
     {
       "path": "processed/validation/latest_qa_summary.json",
       "size_bytes": 8956,
-      "sha256": "A74D936A68993DC6848E46A862AC36A9C0FC52C9C40425CE2EEFFC623E0B9F8A"
+      "sha256": "53103A1100AB4436D88DDA940AD99F3AD7C15CD4A91124513DE187278B12C2F0"
     },
     {
       "path": "processed/validation/ocr_evidence/image_manifest.csv",
@@ -1021,7 +1021,7 @@
     {
       "path": "processed/validation/quality/latest_quality_report.json",
       "size_bytes": 1246,
-      "sha256": "105441593DEDF8D3B5203DA1D23BEE92D47390A062E387BF5508ED5A73259547"
+      "sha256": "43F22A3A6AA5753AF006D0854D82DA6CE2D04AB6C897416E3C84906C842F529A"
     },
     {
       "path": "processed/validation/rag_experiments/b1_chunking_240d0a1_20260812_01/case_results.jsonl",
@@ -1086,12 +1086,12 @@
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
       "size_bytes": 1151,
-      "sha256": "39EF8A8809E89839059682209996BBBA7BAEC5611682C6EB7E8DBC2C57016073"
+      "sha256": "E0789A2554E61FEE106C9C1F46F832731CA6CC6BFB6511E3A538D19A0E99991B"
     },
     {
       "path": "processed/validation/schema/latest_schema_report.json",
       "size_bytes": 10420,
-      "sha256": "BDB59500777450A7756F393F22B6B6EB66096FB2A3CC48A85E4F2A7E7A530428"
+      "sha256": "4B495637E6A3EF0F97EC70BC9AE34A64946EDF75DFC72D9D504FA879AD6C6A34"
     },
     {
       "path": "processed/validation/step3/latest_step3_report.json",

@@ -3,13 +3,33 @@ contract:
   version: 1.0.0
   status: G2_ACTIVE_CANDIDATE
   owner: BACKEND_DB
-  policy_baseline: 윤승혁 PM 2026-08-04 14:43 KST 회신
-  included_decisions: [DEC-001, DEC-002, DEC-003, DEC-004, DEC-005, DEC-007, DEC-009]
+  policy_baseline: 윤승혁 PM 2026-08-04 14:43 KST 회신 + PM-20260823-CONSULTANT-CLAIM
+  included_decisions: [DEC-001, DEC-002, DEC-003, DEC-004, DEC-005, DEC-007, DEC-009, PM-20260823-CONSULTANT-CLAIM]
   excluded_decisions: [DEC-006, DEC-008]
   runtime_implementation_start_allowed: false
   consumer_integration_start_allowed: false
 
 operations:
+  - dec: PM-20260823-CONSULTANT-CLAIM
+    method: GET
+    path: /inquiries/unassigned-consultations
+    operation_id: listUnassignedConsultationInquiries
+    request_schema: null
+    response_schema: UnassignedConsultationQueueData
+    event: null
+    transition_rule: null
+    permission_scope: UNASSIGNED_CONSULTATION_QUEUE
+    runtime_status: IMPLEMENTED
+  - dec: PM-20260823-CONSULTANT-CLAIM
+    method: POST
+    path: /inquiries/{id}/claim-consultation
+    operation_id: claimConsultation
+    request_schema: StateTransitionRequest
+    response_schema: StateTransitionResult
+    event: CLAIM_CONSULTATION
+    transition_rule: TR-INQ-037
+    permission_scope: UNASSIGNED_CONSULTATION_QUEUE
+    runtime_status: IMPLEMENTED
   - dec: DEC-002
     method: GET
     path: /inquiries

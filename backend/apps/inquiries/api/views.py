@@ -16,6 +16,7 @@ from apps.inquiries.api.serializers import (
     ConsultantInquiryDetailDataSerializer,
     ConsultantInquiryListDataSerializer,
     ConsultantInquiryListQuerySerializer,
+    UnassignedConsultationQueueDataSerializer,
     ConsultantCustomerSubscriptionSearchResultSerializer,
     ConsultantCustomerSubscriptionSearchSerializer,
     CreateInquirySerializer,
@@ -47,6 +48,9 @@ from apps.inquiries.permissions import (
 )
 from apps.inquiries.services.consultant_inquiry_service import (
     ConsultantInquiryService,
+)
+from apps.inquiries.services.consultation_claim_service import (
+    ConsultationClaimService,
 )
 from apps.inquiries.services.action_result_service import ActionResultService
 from apps.inquiries.services.consultant_phone_inquiry_service import (
@@ -235,6 +239,85 @@ class ConsultantInquiryDetailView(APIView):
         )
         return success_response(
             ConsultantInquiryDetailDataSerializer(data).data
+        )
+
+
+class UnassignedConsultationQueueView(APIView):
+    """Return only synthetic, unassigned, waiting consultation work."""
+
+    permission_classes = [IsAuthenticated, IsConsultant]
+
+    def get(self, request):
+        reject_unknown_query_parameters(
+            request,
+            {
+                "q",
+                "risk_level",
+                "priority",
+                "from",
+                "to",
+                "sort",
+                "page",
+                "size",
+            },
+        )
+        raw_query = {}
+        for name in ("q", "sort", "page", "size"):
+            if name in request.query_params:
+                raw_query[name] = request.query_params.get(name)
+        for name in ("risk_level", "priority"):
+            if name in request.query_params:
+                raw_query[name] = request.query_params.getlist(name)
+        if "from" in request.query_params:
+            raw_query["from_date"] = request.query_params.get("from")
+        if "to" in request.query_params:
+            raw_query["to_date"] = request.query_params.get("to")
+
+        query = ConsultantInquiryListQuerySerializer(data=raw_query)
+        query.is_valid(raise_exception=True)
+        values = query.validated_data
+        data = ConsultantInquiryService.list_unassigned_consultations(
+            actor=request.user,
+            q=values.get("q") or None,
+            risk_levels=values.get("risk_level", []),
+            priorities=values.get("priority", []),
+            from_date=values.get("from_date"),
+            to_date=values.get("to_date"),
+            sort=values["sort"],
+            page=values["page"],
+            size=values["size"],
+        )
+        return success_response(
+            UnassignedConsultationQueueDataSerializer(data).data
+        )
+
+
+class ClaimConsultationView(APIView):
+    """Assign one unassigned queue item without starting consultation."""
+
+    permission_classes = [IsAuthenticated, IsConsultant]
+
+    def post(self, request, inquiry_id: UUID):
+        reject_unknown_query_parameters(request, set())
+        idempotency_key = require_idempotency_key(request)
+        correlation_id = require_correlation_id(request)
+        serializer = StateVersionRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            outcome = ConsultationClaimService.claim(
+                actor=request.user,
+                inquiry_public_id=inquiry_id,
+                validated_data=serializer.validated_data,
+                idempotency_key=idempotency_key,
+                correlation_id=correlation_id,
+            )
+            response_data = ResolutionTransitionResponseSerializer(
+                outcome.data
+            ).data
+        return success_response(
+            response_data,
+            status_code=outcome.status_code,
         )
 
 

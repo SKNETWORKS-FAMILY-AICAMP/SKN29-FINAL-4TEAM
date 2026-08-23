@@ -41,17 +41,17 @@ class ActionOperationCrosswalkTest(unittest.TestCase):
     def test_current_crosswalk_matches_all_sources(self) -> None:
         result = self.validate(deepcopy(self.crosswalk))
 
-        self.assertEqual(23, result.total_actions)
+        self.assertEqual(24, result.total_actions)
         self.assertEqual(
             {
-                "RUNTIME_IMPLEMENTED": 17,
+                "RUNTIME_IMPLEMENTED": 18,
                 "OPENAPI_CONFIRMED": 2,
                 "CONTRACT_ONLY": 0,
                 "DEFERRED": 4,
             },
             result.classifications,
         )
-        self.assertEqual(19, result.confirmed_operations)
+        self.assertEqual(20, result.confirmed_operations)
 
     def test_rejects_http_path_drift(self) -> None:
         crosswalk = deepcopy(self.crosswalk)

@@ -170,6 +170,91 @@
       "422":
         $ref: ../components/responses/UnprocessableEntity.yaml
 
+/inquiries/unassigned-consultations:
+  get:
+    operationId: listUnassignedConsultationInquiries
+    summary: 미배정 상담 대기열 조회
+    description: |
+      인증 상담사에게 아직 담당자가 정해지지 않은 합성 고객의 상담 대기
+      문의만 반환한다. 이 목록은 Claim에 필요한 최소 Projection이며 상세
+      정보는 Claim 전까지 404로 은닉한다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-policy-baseline: PM-20260823-CONSULTANT-CLAIM
+    x-permission-scope: UNASSIGNED_CONSULTATION_QUEUE
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: q
+        in: query
+        schema:
+          type: string
+          maxLength: 200
+      - name: risk_level
+        in: query
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum: [general, caution, danger]
+      - name: priority
+        in: query
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum: [LOW, NORMAL, HIGH, URGENT]
+      - name: from
+        in: query
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        schema:
+          type: string
+          format: date
+      - name: sort
+        in: query
+        schema:
+          type: string
+          default: UPDATED_DESC
+          enum: [UPDATED_DESC, UPDATED_ASC, WAITING_DESC, RISK_DESC]
+      - $ref: ../components/parameters/Page.yaml
+      - $ref: ../components/parameters/Size.yaml
+    responses:
+      "200":
+        description: 미배정 상담 대기열
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/inquiry/UnassignedConsultationQueueData.yaml
+            examples:
+              unassignedSyntheticQueue:
+                externalValue: ../examples/inquiries/unassigned-consultation-queue-success.json
+      "400":
+        $ref: ../components/responses/BadRequest.yaml
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "500":
+        $ref: ../components/responses/InternalServerError.yaml
+
 /inquiries/{id}:
   parameters:
     - name: id

@@ -4,7 +4,8 @@ contract:
   status: TEAM_APPROVED
   description: >
     SYN-JAC104-002 저출수 대표 시나리오를 State Machine v1.0.0의
-    Inquiry·Visit 분리 규칙으로 재현하는 14단계 기준 예시이다.
+    Inquiry·Visit 분리 규칙과 미배정 상담 Claim 정책으로 재현하는 15단계
+    기준 예시이다.
 
 representative_data:
   scenario_id: SYN-JAC104-002
@@ -58,93 +59,100 @@ steps:
     state_version_after: 5
   - order: 6
     actor: CONSULTANT
+    event: CLAIM_CONSULTATION
+    operation_id: claimConsultation
+    from_inquiry_state: CONSULTATION_REQUIRED
+    to_inquiry_state: CONSULTATION_REQUIRED
+    state_version_after: 6
+  - order: 7
+    actor: CONSULTANT
     event: START_CONSULTATION
     operation_id: startConsultation
     from_inquiry_state: CONSULTATION_REQUIRED
     to_inquiry_state: CONSULTATION_IN_PROGRESS
-    state_version_after: 6
-  - order: 7
+    state_version_after: 7
+  - order: 8
     actor: CONSULTANT
     event: VISIT_REVIEW_REQUIRED
     operation_id: requestVisitReview
     from_inquiry_state: CONSULTATION_IN_PROGRESS
     to_inquiry_state: VISIT_REVIEW_PENDING
-    state_version_after: 7
-  - order: 8
+    state_version_after: 8
+  - order: 9
     actor: CONSULTANT
     event: VISIT_NEEDED
     operation_id: createVisitRequest
     from_inquiry_state: VISIT_REVIEW_PENDING
     to_inquiry_state: VISIT_SCHEDULING
-    state_version_after: 8
+    state_version_after: 9
     visit_transition:
       from_status: null
       to_status: ASSIGNING
       state_version_after: 1
-  - order: 9
+  - order: 10
     actor: CONSULTANT
     event: UPDATE_VISIT_SCHEDULE
     operation_id: updateVisitSchedule
     from_inquiry_state: VISIT_SCHEDULING
     to_inquiry_state: VISIT_SCHEDULING
-    state_version_after: 9
+    state_version_after: 10
     visit_transition:
       from_status: ASSIGNING
       to_status: SCHEDULING
       state_version_after: 2
-  - order: 10
+  - order: 11
     actor: CONSULTANT
     event: CONFIRM_VISIT
     operation_id: confirmVisit
     from_inquiry_state: VISIT_SCHEDULING
     to_inquiry_state: VISIT_SCHEDULED
-    state_version_after: 10
+    state_version_after: 11
     visit_transition:
       from_status: SCHEDULING
       to_status: CONFIRMED
       state_version_after: 3
-  - order: 11
+  - order: 12
     actor: TECHNICIAN
     event: START_VISIT
     operation_id: startVisit
     from_inquiry_state: VISIT_SCHEDULED
     to_inquiry_state: VISIT_SCHEDULED
-    state_version_after: 11
+    state_version_after: 12
     visit_transition:
       from_status: CONFIRMED
       to_status: IN_PROGRESS
       state_version_after: 4
-  - order: 12
+  - order: 13
     actor: TECHNICIAN
     event: VISIT_COMPLETED
     operation_id: completeVisit
     from_inquiry_state: VISIT_SCHEDULED
     to_inquiry_state: COMPLETION_PENDING
-    state_version_after: 12
+    state_version_after: 13
     visit_transition:
       from_status: IN_PROGRESS
       to_status: COMPLETED
       state_version_after: 5
-  - order: 13
+  - order: 14
     actor: CUSTOMER
     event: SUBMIT_RESOLUTION_FEEDBACK
     operation_id: submitResolutionFeedback
     from_inquiry_state: COMPLETION_PENDING
     to_inquiry_state: COMPLETION_PENDING
-    state_version_after: 13
+    state_version_after: 14
     visit_status: COMPLETED
-  - order: 14
+  - order: 15
     actor: TECHNICIAN
     event: FINALIZE_INQUIRY
     operation_id: finalizeInquiry
     from_inquiry_state: COMPLETION_PENDING
     to_inquiry_state: RESOLVED
-    state_version_after: 14
+    state_version_after: 15
     visit_status: COMPLETED
 
 expected_result:
   inquiry_state: RESOLVED
-  state_version: 14
+  state_version: 15
   visit_status: COMPLETED
   terminal: true
   additional_allowed_actions: []

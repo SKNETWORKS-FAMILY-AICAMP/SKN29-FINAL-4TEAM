@@ -276,11 +276,41 @@ def _run_same_inquiry_bridge(
     consultation = Consultation.objects.get(inquiry=inquiry)
     assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
     assert inquiry.state_version == 4
-    assert inquiry.assigned_user == consultant
-    assert inquiry.assigned_role_code == Inquiry.AssignedRole.CONSULTANT
+    assert inquiry.assigned_user is None
+    assert inquiry.assigned_role_code == Inquiry.AssignedRole.NONE
     assert consultation.status == Consultation.Status.WAITING
+    assert consultation.consultant is None
 
     consultant_client = _client_for(consultant)
+
+    queue_response = consultant_client.get(
+        "/api/v1/inquiries/unassigned-consultations",
+        {"q": inquiry.inquiry_code},
+    )
+    assert queue_response.status_code == 200
+    assert [
+        item["inquiry_id"]
+        for item in queue_response.data["data"]["items"]
+    ] == [str(inquiry.public_id)]
+
+    claim_response = consultant_client.post(
+        f"/api/v1/inquiries/{inquiry.public_id}/claim-consultation",
+        {"state_version": 4},
+        format="json",
+        HTTP_IDEMPOTENCY_KEY="ai-handoff-bridge-claim-001",
+        HTTP_X_CORRELATION_ID=str(uuid4()),
+    )
+    assert claim_response.status_code == 200
+
+    inquiry.refresh_from_db()
+    consultation.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 5
+    assert inquiry.assigned_user == consultant
+    assert inquiry.assigned_role_code == Inquiry.AssignedRole.CONSULTANT
+    assert consultation.status == Consultation.Status.ASSIGNED
+    assert consultation.consultant == consultant
+    assert consultation.started_at is None
 
     list_response = consultant_client.get(
         "/api/v1/inquiries",
@@ -300,7 +330,7 @@ def _run_same_inquiry_bridge(
 
     assert detail["inquiry"]["inquiry_id"] == str(inquiry.public_id)
     assert detail["inquiry"]["status"] == Inquiry.Status.CONSULTATION_REQUIRED
-    assert detail["workflow"]["state_version"] == 4
+    assert detail["workflow"]["state_version"] == 5
     assert (
         detail["guidance_and_actions"]["usage_guidance_status"]
         == Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION
@@ -320,7 +350,7 @@ def _run_same_inquiry_bridge(
 
 
 def test_ai_no_evidence_customer_confirmation_reaches_consultant_projection():
-    """Current implemented same-Inquiry bridge works through customer confirmation."""
+    """Same-Inquiry bridge reaches Web only after explicit consultant Claim."""
 
     inquiry, consultation, detail = _run_same_inquiry_bridge()
 

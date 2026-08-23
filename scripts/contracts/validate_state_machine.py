@@ -120,10 +120,10 @@ assert crosswalk["terminal_and_reopen_policy"][
 
 representative_steps = representative["steps"]
 representative_events = [step["event"] for step in representative_steps]
-assert len(representative_steps) == 14
-assert [step["order"] for step in representative_steps] == list(range(1, 15))
+assert len(representative_steps) == 15
+assert [step["order"] for step in representative_steps] == list(range(1, 16))
 assert [step["state_version_after"] for step in representative_steps] == list(
-    range(1, 15)
+    range(1, 16)
 )
 assert representative_events == crosswalk["representative_flow"][
     "event_sequence"
@@ -144,7 +144,7 @@ for step in representative_steps:
 
 assert representative["expected_result"] == {
     "inquiry_state": "RESOLVED",
-    "state_version": 14,
+    "state_version": 15,
     "visit_status": "COMPLETED",
     "terminal": True,
     "additional_allowed_actions": [],

@@ -211,6 +211,13 @@ EXPECTED_OPERATIONS = {
         "url_name": "consultant-dashboard",
         "view_name": "ConsultantDashboardView",
     },
+    ("/inquiries/unassigned-consultations", "get"): {
+        "operation_id": "listUnassignedConsultationInquiries",
+        "contract_status": "CONFIRMED",
+        "runtime_path": "/api/v1/inquiries/unassigned-consultations",
+        "url_name": "unassigned-consultation-queue",
+        "view_name": "UnassignedConsultationQueueView",
+    },
     ("/inquiries", "post"): {
         "operation_id": "startInquiry",
         "contract_status": "CONFIRMED",
@@ -270,6 +277,15 @@ EXPECTED_OPERATIONS = {
         ),
         "url_name": "inquiry-request-consultation",
         "view_name": "RequestConsultationView",
+    },
+    ("/inquiries/{id}/claim-consultation", "post"): {
+        "operation_id": "claimConsultation",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/inquiries/{INQUIRY_ID}/claim-consultation"
+        ),
+        "url_name": "inquiry-claim-consultation",
+        "view_name": "ClaimConsultationView",
     },
     ("/inquiries/{id}/resolution-feedback", "post"): {
         "operation_id": "submitResolutionFeedback",
@@ -450,11 +466,11 @@ def runtime_view_name(match) -> str:
     return match.func.__name__
 
 
-def test_openapi_operation_inventory_is_exactly_forty_seven():
+def test_openapi_operation_inventory_is_exactly_forty_nine():
     operations = collect_operations()
 
     assert set(operations) == set(EXPECTED_OPERATIONS)
-    assert len(operations) == 47
+    assert len(operations) == 49
     assert {
         operation["operationId"] for operation in operations.values()
     } == {
@@ -470,7 +486,7 @@ def test_openapi_operation_inventory_is_exactly_forty_seven():
         )
 
 
-def test_forty_four_operations_resolve_to_expected_runtime_views():
+def test_forty_six_operations_resolve_to_expected_runtime_views():
     implemented = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -479,7 +495,7 @@ def test_forty_four_operations_resolve_to_expected_runtime_views():
         )
     ]
 
-    assert len(implemented) == 44
+    assert len(implemented) == 46
     for (_, method), expected in implemented:
         match = resolve(expected["runtime_path"])
         assert match.url_name == expected["url_name"]

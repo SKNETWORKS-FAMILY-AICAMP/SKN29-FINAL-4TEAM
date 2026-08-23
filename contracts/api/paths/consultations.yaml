@@ -46,6 +46,56 @@
       "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
       "500": {$ref: ../components/responses/InternalServerError.yaml}
 
+/inquiries/{id}/claim-consultation:
+  parameters: *inquiry_path_parameters
+  post:
+    operationId: claimConsultation
+    summary: 미배정 상담 대기 문의 Claim
+    description: |
+      미배정 WAITING 상담 문의를 현재 상담사에게 원자적으로 배정한다.
+      Inquiry 상태는 CONSULTATION_REQUIRED로 유지하고 state_version만 1
+      증가한다. Claim은 상담 시작이 아니므로 started_at을 기록하거나
+      CONSULTATION_IN_PROGRESS로 전이하지 않는다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-policy-baseline: PM-20260823-CONSULTANT-CLAIM
+    x-state-machine:
+      event: CLAIM_CONSULTATION
+      transition_rule: TR-INQ-037
+      from_state: CONSULTATION_REQUIRED
+      to_state: CONSULTATION_REQUIRED
+    x-permission-scope: UNASSIGNED_CONSULTATION_QUEUE
+    security: [{BearerAuth: []}]
+    parameters: *write_headers
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: ../components/schemas/workflow/StateTransitionRequest.yaml}
+    responses:
+      "200":
+        description: Claim 성공 또는 동일 요청 Replay
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data: {$ref: ../components/schemas/workflow/StateTransitionResult.yaml}
+            examples:
+              claimed:
+                externalValue: ../examples/consultations/claim-consultation-success.json
+      "400": {$ref: ../components/responses/BadRequest.yaml}
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "409": {$ref: ../components/responses/WorkflowConflict.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}
+
 /inquiries/{id}/consultation-summary:
   parameters: *inquiry_path_parameters
   patch:

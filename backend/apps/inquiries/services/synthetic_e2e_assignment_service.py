@@ -1,18 +1,14 @@
-"""Deterministic consultant assignment for the approved synthetic E2E run."""
+"""Validate one approved synthetic inquiry before queue-and-Claim E2E."""
 
 from __future__ import annotations
 
 from apps.accounts.models import User
 from apps.inquiries.models import Inquiry, SymptomEntry
 from apps.subscriptions.models import CustomerSubscription
-from common.exceptions.business import BusinessError
-from common.exceptions.error_codes import INTERNAL_ERROR, STATE_CONFLICT
-
-
 DEMO_CONSULTANT_USERNAME = "DEMO-CONSULTANT-001"
 DEMO_CUSTOMER_USERNAME = "DEMO-CUSTOMER-001"
 DEMO_CUSTOMER_NO = "DEMO-CUSTOMER-001"
-SYNTHETIC_E2E_ASSIGNMENT_MODE = "SYNTHETIC_E2E_ASSIGNMENT"
+SYNTHETIC_E2E_ASSIGNMENT_MODE = "UNASSIGNED_QUEUE_CLAIM"
 SYNTHETIC_E2E_SCENARIO_REFERENCE = "SYN-JAC104-002"
 SYNTHETIC_E2E_RUNTIME_SCENARIO_CODE = "SYN-JAC104-002-RUNTIME-E2E"
 SYNTHETIC_E2E_TARGET_MODEL_CODE = "WPUJAC104DWH"
@@ -24,7 +20,7 @@ class SyntheticE2EAssignmentValidationError(ValueError):
 
 
 class SyntheticE2EAssignmentService:
-    """Assign only the explicitly marked synthetic inquiry to the demo agent."""
+    """Validate the explicitly marked synthetic queue-and-Claim inquiry."""
 
     @classmethod
     def validate_preparation_candidate(cls, inquiry: Inquiry) -> None:
@@ -73,70 +69,6 @@ class SyntheticE2EAssignmentService:
                 "활성 합성 상담사 DEMO-CONSULTANT-001이 필요합니다."
             )
         return consultant
-
-    @classmethod
-    def assign_if_marked(cls, inquiry: Inquiry) -> bool:
-        """Assign a marked inquiry in the caller's existing transaction.
-
-        The method deliberately does nothing for every unmarked inquiry.  It
-        never creates the demo account and never overwrites another assignee.
-        """
-
-        if inquiry.scenario_code != SYNTHETIC_E2E_RUNTIME_SCENARIO_CODE:
-            return False
-
-        try:
-            cls._validate_common_boundary(inquiry)
-        except SyntheticE2EAssignmentValidationError as exc:
-            raise BusinessError(
-                INTERNAL_ERROR,
-                "합성 E2E 상담사 배정 조건을 확인할 수 없습니다.",
-                details={},
-                status_code=500,
-            ) from exc
-
-        if inquiry.assigned_user_id is not None or (
-            inquiry.assigned_role_code != Inquiry.AssignedRole.NONE
-        ):
-            existing = inquiry.assigned_user
-            if (
-                existing is not None
-                and existing.username == DEMO_CONSULTANT_USERNAME
-                and inquiry.assigned_role_code
-                == Inquiry.AssignedRole.CONSULTANT
-            ):
-                return False
-            raise BusinessError(
-                STATE_CONFLICT,
-                "이미 다른 담당자에게 배정된 문의입니다.",
-                details={
-                    "current_status": inquiry.status_code,
-                    "current_state_version": inquiry.state_version,
-                },
-                status_code=409,
-            )
-
-        try:
-            consultant = cls.require_active_demo_consultant()
-        except SyntheticE2EAssignmentValidationError as exc:
-            raise BusinessError(
-                INTERNAL_ERROR,
-                "합성 E2E 상담사 배정 계정을 확인할 수 없습니다.",
-                details={},
-                status_code=500,
-            ) from exc
-
-        inquiry.assigned_user = consultant
-        inquiry.assigned_role_code = Inquiry.AssignedRole.CONSULTANT
-        inquiry.clean()
-        inquiry.save(
-            update_fields=[
-                "assigned_user",
-                "assigned_role_code",
-                "updated_at",
-            ]
-        )
-        return True
 
     @staticmethod
     def _validate_common_boundary(inquiry: Inquiry) -> None:

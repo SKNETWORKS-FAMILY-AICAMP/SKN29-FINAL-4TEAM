@@ -41,13 +41,9 @@ BUSINESS_TIMEZONE = ZoneInfo("Asia/Seoul")
 class ConsultantInquiryRepository:
     """Apply assignment and synthetic-data scope before all other filters."""
 
-    @staticmethod
-    def visible_for_consultant(actor: Any) -> QuerySet[Inquiry]:
-        latest_assessment = SymptomAssessment.objects.filter(
-            inquiry_id=OuterRef("pk")
-        ).order_by("-assessment_version", "-created_at", "-pk")
-
-        queryset = (
+    @classmethod
+    def visible_for_consultant(cls, actor: Any) -> QuerySet[Inquiry]:
+        return cls._with_list_projection(
             Inquiry.objects.filter(
                 assigned_user=actor,
                 assigned_role_code=Inquiry.AssignedRole.CONSULTANT,
@@ -55,7 +51,71 @@ class ConsultantInquiryRepository:
                 subscription__customer__is_synthetic=True,
                 subscription__customer__user__is_synthetic=True,
             )
+        )
+
+    @classmethod
+    def unassigned_consultation_queue(cls) -> QuerySet[Inquiry]:
+        """Return only privacy-safe, currently claimable waiting work."""
+
+        latest_consultation = Consultation.objects.filter(
+            inquiry_id=OuterRef("pk")
+        ).order_by("-sequence", "-id")
+        return cls._with_list_projection(
+            Inquiry.objects.filter(
+                status_code=Inquiry.Status.CONSULTATION_REQUIRED,
+                assigned_user__isnull=True,
+                assigned_role_code=Inquiry.AssignedRole.NONE,
+                subscription__customer__deleted_at__isnull=True,
+                subscription__customer__is_synthetic=True,
+                subscription__customer__user__is_synthetic=True,
+            )
+            .annotate(
+                latest_consultation_status=Subquery(
+                    latest_consultation.values("status")[:1],
+                    output_field=CharField(),
+                ),
+                latest_consultation_consultant_id=Subquery(
+                    latest_consultation.values("consultant_id")[:1],
+                ),
+            )
+            .filter(
+                latest_consultation_status=Consultation.Status.WAITING,
+                latest_consultation_consultant_id__isnull=True,
+            )
+        )
+
+    @staticmethod
+    def lock_claimable(inquiry_public_id: UUID) -> Inquiry | None:
+        """Lock one synthetic inquiry before checking Claim eligibility."""
+
+        return (
+            Inquiry.objects.select_for_update(of=("self",))
             .select_related(
+                "subscription",
+                "subscription__customer",
+                "subscription__customer__user",
+                "subscription__product_model",
+                "assigned_user",
+            )
+            .filter(
+                public_id=inquiry_public_id,
+                subscription__customer__deleted_at__isnull=True,
+                subscription__customer__is_synthetic=True,
+                subscription__customer__user__is_synthetic=True,
+            )
+            .first()
+        )
+
+    @staticmethod
+    def _with_list_projection(
+        queryset: QuerySet[Inquiry],
+    ) -> QuerySet[Inquiry]:
+        latest_assessment = SymptomAssessment.objects.filter(
+            inquiry_id=OuterRef("pk")
+        ).order_by("-assessment_version", "-created_at", "-pk")
+
+        queryset = (
+            queryset.select_related(
                 "subscription",
                 "subscription__customer",
                 "subscription__product_model",
@@ -157,6 +217,31 @@ class ConsultantInquiryRepository:
             )
         )
         return queryset
+
+    @classmethod
+    def list_unassigned_page(
+        cls,
+        *,
+        q: str | None,
+        risk_levels: list[str],
+        priorities: list[str],
+        from_date: date | None,
+        to_date: date | None,
+        sort: str,
+        offset: int,
+        limit: int,
+    ) -> tuple[list[Inquiry], int]:
+        queryset = cls._apply_non_status_filters(
+            cls.unassigned_consultation_queue(),
+            q=q,
+            risk_levels=risk_levels,
+            priorities=priorities,
+            from_date=from_date,
+            to_date=to_date,
+        )
+        queryset = cls._apply_sort(queryset, sort=sort)
+        total = queryset.count()
+        return list(queryset[offset : offset + limit]), total
 
     @classmethod
     def list_page(

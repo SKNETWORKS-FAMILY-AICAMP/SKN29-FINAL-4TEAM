@@ -59,6 +59,8 @@ api/components/schemas/inquiry/InquiryDetail.yaml
 api/components/schemas/inquiry/InquiryHistoryItem.yaml
 api/components/schemas/inquiry/InquirySummary.yaml
 api/components/schemas/inquiry/ResolutionFeedbackRequest.yaml
+api/components/schemas/inquiry/UnassignedConsultationQueueData.yaml
+api/components/schemas/inquiry/UnassignedConsultationQueueItem.yaml
 api/components/schemas/operations/OperationsExceptionItem.yaml
 api/components/schemas/operations/OperationsMetrics.yaml
 api/components/schemas/product/ProductDetail.yaml
@@ -88,6 +90,7 @@ api/examples/auth/me-success-response.json
 api/examples/auth/refresh-request.json
 api/examples/auth/refresh-success-response.json
 api/examples/consultations/README.md
+api/examples/consultations/claim-consultation-success.json
 api/examples/errors/README.md
 api/examples/errors/auth-required.json
 api/examples/errors/body-validation-error.json
@@ -101,6 +104,7 @@ api/examples/inquiries/README.md
 api/examples/inquiries/start-inquiry-replay-response.json
 api/examples/inquiries/start-inquiry-request.json
 api/examples/inquiries/start-inquiry-success-response.json
+api/examples/inquiries/unassigned-consultation-queue-success.json
 api/examples/visits/README.md
 api/examples/workflow/README.md
 api/examples/workflow/cancel-inquiry-replay-response.json

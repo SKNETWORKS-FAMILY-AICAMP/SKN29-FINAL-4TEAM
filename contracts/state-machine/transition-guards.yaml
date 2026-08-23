@@ -183,6 +183,21 @@ guards:
     http_status: 404
     error_code: RESOURCE_NOT_FOUND
     message: 문의를 찾을 수 없습니다.
+- id: G-UNASSIGNED-CONSULTATION-CLAIMABLE
+  category: RESOURCE_ACCESS
+  description: Claim 대상은 상담 필요 상태의 미배정 Inquiry와 미배정 WAITING Consultation이어야 하며 경쟁 패배 후에는 존재 여부를 숨긴다.
+  conditions:
+  - inquiry.current_status == CONSULTATION_REQUIRED
+  - inquiry.assigned_consultant_id is null
+  - inquiry.assigned_role_code == NONE
+  - consultation.exists == true
+  - consultation.status == WAITING
+  - consultation.consultant_id is null
+  - consultation.started_at is null
+  failure:
+    http_status: 404
+    error_code: RESOURCE_NOT_FOUND
+    message: 문의를 찾을 수 없습니다.
 - id: G-ASSIGNED-TECHNICIAN
   category: RESOURCE_ACCESS
   description: 방문 작업은 해당 Visit에 배정된 합성 방문기사만 수행하며 비담당 방문의 존재 여부를 숨긴다.

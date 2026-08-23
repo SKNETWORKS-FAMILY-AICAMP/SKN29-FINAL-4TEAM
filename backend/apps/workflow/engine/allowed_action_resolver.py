@@ -73,11 +73,14 @@ class AllowedActionContext:
     actor_id: Any | None = None
     owner_id: Any | None = None
     assigned_user_id: Any | None = None
+    assigned_role_code: str | None = None
     actor_permissions: frozenset[str] = frozenset()
     product_present: bool = False
     symptom_payload_valid: bool = False
     open_followup_questions: bool = False
     consultation_exists: bool = False
+    consultation_status: str | None = None
+    consultation_consultant_id: Any | None = None
     consultation_summary: str = ""
     consultation_confirmed_summary: str | None = None
     consultation_summary_confirmed: bool = False
@@ -207,6 +210,11 @@ class AllowedActionContext:
             actor_id=getattr(actor, "pk", None),
             owner_id=getattr(customer, "user_id", None),
             assigned_user_id=getattr(inquiry, "assigned_user_id", None),
+            assigned_role_code=getattr(
+                inquiry,
+                "assigned_role_code",
+                None,
+            ),
             actor_permissions=frozenset(permissions),
             product_present=product_present,
             symptom_payload_valid=bool(
@@ -217,6 +225,12 @@ class AllowedActionContext:
             ),
             open_followup_questions=open_followup_questions,
             consultation_exists=consultation is not None,
+            consultation_status=getattr(consultation, "status", None),
+            consultation_consultant_id=getattr(
+                consultation,
+                "consultant_id",
+                None,
+            ),
             consultation_summary=(getattr(consultation, "summary", "") or ""),
             consultation_confirmed_summary=getattr(
                 consultation, "confirmed_summary", None
@@ -326,6 +340,15 @@ class AllowedActionResolver:
             return (
                 context.actor_role == "CONSULTANT"
                 and context.actor_id == context.assigned_user_id
+            )
+        if guard_id == "G-UNASSIGNED-CONSULTATION-CLAIMABLE":
+            return bool(
+                context.actor_role == "CONSULTANT"
+                and context.assigned_user_id is None
+                and context.assigned_role_code == "NONE"
+                and context.consultation_exists
+                and context.consultation_status == "WAITING"
+                and context.consultation_consultant_id is None
             )
         if guard_id == "G-CANCEL-ACTOR-AUTHORIZED":
             return bool(

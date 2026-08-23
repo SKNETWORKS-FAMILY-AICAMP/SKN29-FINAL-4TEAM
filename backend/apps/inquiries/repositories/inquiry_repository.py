@@ -204,6 +204,27 @@ class InquiryRepository:
         )
 
     @staticmethod
+    def assign_consultant(
+        inquiry: Inquiry,
+        *,
+        actor: Any,
+        state_version: int,
+    ) -> None:
+        """Assign one unclaimed inquiry without starting consultation work."""
+
+        inquiry.assigned_user = actor
+        inquiry.assigned_role_code = Inquiry.AssignedRole.CONSULTANT
+        inquiry.state_version = state_version
+        inquiry.save(
+            update_fields=[
+                "assigned_user",
+                "assigned_role_code",
+                "state_version",
+                "updated_at",
+            ]
+        )
+
+    @staticmethod
     def mark_cancelled(
         inquiry: Inquiry,
         *,

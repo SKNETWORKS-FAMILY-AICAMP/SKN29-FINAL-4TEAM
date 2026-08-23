@@ -25,13 +25,17 @@ EXPECTED_MODEL_CODE = "WPUJAC104DWH"
 G1_EVENTS = {"SUBMIT_SYMPTOM", "SAFE_GUIDANCE_READY"}
 G4_EVENTS = {
     "REQUEST_CONSULTATION",
+    "CLAIM_CONSULTATION",
     "START_CONSULTATION",
     "UPDATE_CONSULTATION_SUMMARY",
     "CONFIRM_CONSULTATION_SUMMARY",
     "CONSULTATION_COMPLETED",
 }
 G1_OPERATIONS = {"startInquiry", "submitSymptom"}
-G3_OPERATIONS = G1_OPERATIONS | {"requestConsultation"}
+G3_OPERATIONS = G1_OPERATIONS | {
+    "requestConsultation",
+    "claimConsultation",
+}
 G4_OPERATIONS = G3_OPERATIONS | {
     "startConsultation",
     "updateConsultationSummary",
@@ -168,6 +172,7 @@ class Command(BaseCommand):
                 "state_version",
                 "consultant__username",
                 "correlation_id",
+                "started_at",
                 "summary_confirmed_at",
                 "confirmed_summary",
                 "completed_at",
@@ -354,12 +359,19 @@ def stage_blockers(snapshot: dict, expected_stage: str) -> list[str]:
             blockers.append("G3_STATUS_IS_NOT_CONSULTATION_REQUIRED")
         if consultation["count"] == 1:
             current = consultation["items"][0]
-            if current["status"] != Consultation.Status.WAITING:
-                blockers.append("G3_CONSULTATION_IS_NOT_WAITING")
-            if current["consultant__username"] is not None:
+            if current["status"] != Consultation.Status.ASSIGNED:
+                blockers.append("G3_CONSULTATION_IS_NOT_ASSIGNED")
+            if (
+                current["consultant__username"]
+                != DEMO_CONSULTANT_USERNAME
+            ):
+                blockers.append("G3_CONSULTANT_MISMATCH")
+            if current.get("started_at") is not None:
                 blockers.append("G3_CONSULTATION_ALREADY_STARTED")
         if "REQUEST_CONSULTATION" not in events:
             blockers.append("EVENT_MISSING:REQUEST_CONSULTATION")
+        if "CLAIM_CONSULTATION" not in events:
+            blockers.append("EVENT_MISSING:CLAIM_CONSULTATION")
         return blockers
 
     if inquiry["status_code"] != Inquiry.Status.COMPLETION_PENDING:

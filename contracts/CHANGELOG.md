@@ -1,5 +1,30 @@
 # Contracts Changelog
 
+## 2026-08-23 — 미배정 상담 대기열과 상담사 Claim
+
+### Added
+
+- 상담사 전용 미배정 상담 대기열 `GET /inquiries/unassigned-consultations`를
+  추가하고, 고객 개인정보와 문의 상세를 제외한 최소 Projection만 허용했다.
+- 상담사 Claim `POST /inquiries/{id}/claim-consultation`과 외부 Event
+  `CLAIM_CONSULTATION`, 전이 규칙 `TR-INQ-037`, 전용 Claimable Guard를
+  추가했다.
+- Claim 시 현재 상담사를 Inquiry와 대기 중 Consultation에 배정하는 효과를
+  각각 명시하고, 상담 시작은 기존 `START_CONSULTATION`이 계속 소유하도록
+  분리했다.
+- 대표 E2E 계약도 `REQUEST_CONSULTATION → CLAIM_CONSULTATION →
+  START_CONSULTATION` 순서의 15단계로 맞췄다. 기존 Data 대표 입력은
+  `LEGACY_PRE_CLAIM_14_STEP_INPUT`으로 표시하고 원본은 변경하지 않았다.
+
+### Boundary
+
+- Claim은 `CONSULTATION_REQUIRED` 상태를 유지하고 `state_version`만 1 증가한다.
+- Claim만으로 상담 시작 시각이나 상담 내용은 생성·변경하지 않으며, 성공
+  응답의 `resource`는 `null`이다. 배정 결과는 이후 목록·상세 조회와
+  `START_CONSULTATION` 허용 Action으로 확인한다.
+- 이미 배정됐거나 Claim할 수 없는 문의의 존재 여부는 동일 404로 은닉한다.
+- 신규 Model·Table·Column·Migration은 추가하지 않는다.
+
 ## 2026-08-16 — AI 처리 시간 초과 상담 전환
 
 ### Added

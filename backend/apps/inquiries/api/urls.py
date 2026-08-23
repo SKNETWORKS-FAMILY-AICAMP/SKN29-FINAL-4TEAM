@@ -4,6 +4,7 @@ from django.urls import path
 
 from apps.inquiries.api.views import (
     CancelInquiryView,
+    ClaimConsultationView,
     ConsultantCustomerSubscriptionSearchView,
     ConsultantInquiryDetailView,
     CreateActionResultView,
@@ -21,6 +22,7 @@ from apps.inquiries.api.views import (
     SubmitResolutionFeedbackView,
     SubmitSymptomView,
     SubmitFollowUpAnswersView,
+    UnassignedConsultationQueueView,
 )
 
 
@@ -64,6 +66,11 @@ urlpatterns = [
         "inquiries",
         CreateInquiryView.as_view(),
         name="inquiry-create",
+    ),
+    path(
+        "inquiries/unassigned-consultations",
+        UnassignedConsultationQueueView.as_view(),
+        name="unassigned-consultation-queue",
     ),
     path(
         "inquiries/<uuid:inquiry_id>",
@@ -114,5 +121,10 @@ urlpatterns = [
         "inquiries/<uuid:inquiry_id>/request-consultation",
         RequestConsultationView.as_view(),
         name="inquiry-request-consultation",
+    ),
+    path(
+        "inquiries/<uuid:inquiry_id>/claim-consultation",
+        ClaimConsultationView.as_view(),
+        name="inquiry-claim-consultation",
     ),
 ]

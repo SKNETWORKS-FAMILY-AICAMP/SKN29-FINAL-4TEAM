@@ -1,0 +1,13 @@
+title: UnassignedConsultationQueueData
+type: object
+description: 상담사 공용 미배정 상담 대기열과 페이지 정보
+x-contract-status: CONFIRMED
+additionalProperties: false
+required: [items, page_info]
+properties:
+  items:
+    type: array
+    items:
+      $ref: ./UnassignedConsultationQueueItem.yaml
+  page_info:
+    $ref: ../common/PageInfo.yaml

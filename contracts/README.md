@@ -13,8 +13,8 @@
 
 ## 공통 기준선
 
-- `api/action-operation-crosswalk.yaml`: 외부 Action 23개의 State Machine Event·OpenAPI·Runtime 분류
-- `api/g2-operation-crosswalk.yaml`: 상담·방문 G2 결정과 Operation 11개의 상세 연결
+- `api/action-operation-crosswalk.yaml`: 외부 Action 24개의 State Machine Event·OpenAPI·Runtime 분류
+- `api/g2-operation-crosswalk.yaml`: 상담·방문 G2 결정과 Operation 13개의 상세 연결
 
 검증 명령:
 

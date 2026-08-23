@@ -29,6 +29,7 @@ def test_inquiry_operations_track_confirmed_runtime_status():
     assert set(operations) == {
         ("/inquiries", "get"),
         ("/inquiries", "post"),
+        ("/inquiries/unassigned-consultations", "get"),
         ("/inquiries/{id}", "get"),
         ("/inquiries/{id}/questionnaire", "patch"),
         ("/inquiries/{id}/action-results", "post"),
@@ -40,6 +41,9 @@ def test_inquiry_operations_track_confirmed_runtime_status():
     } == {"CONFIRMED"}
     assert all(operation.get("responses") for operation in operations.values())
     assert operations[("/inquiries", "get")][
+        "x-runtime-status"
+    ] == "IMPLEMENTED"
+    assert operations[("/inquiries/unassigned-consultations", "get")][
         "x-runtime-status"
     ] == "IMPLEMENTED"
     assert operations[("/inquiries/{id}", "get")][

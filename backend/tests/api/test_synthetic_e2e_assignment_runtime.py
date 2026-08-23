@@ -170,11 +170,12 @@ def test_prepare_command_marks_one_exact_runtime_inquiry_idempotently():
     inquiry.refresh_from_db()
     assert first == second
     assert first == {
-        "assigned_consultant_code": DEMO_CONSULTANT_USERNAME,
-        "assignment_mode": "SYNTHETIC_E2E_ASSIGNMENT",
+        "assignment_mode": "UNASSIGNED_QUEUE_CLAIM",
+        "claim_consultant_code": DEMO_CONSULTANT_USERNAME,
+        "claim_required": True,
         "inquiry_code": inquiry.inquiry_code,
         "inquiry_id": str(inquiry.public_id),
-        "operation_id": "requestConsultation",
+        "operation_ids": ["requestConsultation", "claimConsultation"],
         "scenario_code": SYNTHETIC_E2E_RUNTIME_SCENARIO_CODE,
         "scenario_reference": "SYN-JAC104-002",
         "state_version": 3,
@@ -251,7 +252,7 @@ def test_prepare_command_rotates_marker_after_the_previous_p0_run_finishes():
     assert prepared["inquiry_id"] == str(current.public_id)
 
 
-def test_marked_request_assigns_inquiry_but_preserves_waiting_consultation():
+def test_marked_request_uses_the_same_unassigned_queue_and_explicit_claim():
     consultant = create_demo_consultant()
     other_consultant = create_user(
         username="SYN-E2E-CONSULTANT-OTHER",
@@ -269,8 +270,8 @@ def test_marked_request_assigns_inquiry_but_preserves_waiting_consultation():
     assert response.status_code == 200
     inquiry.refresh_from_db()
     consultation = Consultation.objects.get(inquiry=inquiry)
-    assert inquiry.assigned_user == consultant
-    assert inquiry.assigned_role_code == Inquiry.AssignedRole.CONSULTANT
+    assert inquiry.assigned_user is None
+    assert inquiry.assigned_role_code == Inquiry.AssignedRole.NONE
     assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
     assert inquiry.state_version == 4
     assert consultation.status == Consultation.Status.WAITING
@@ -278,31 +279,56 @@ def test_marked_request_assigns_inquiry_but_preserves_waiting_consultation():
 
     consultant_client = client_for(consultant)
     inquiry_list = consultant_client.get("/api/v1/inquiries")
-    detail = consultant_client.get(f"/api/v1/inquiries/{inquiry.public_id}")
+    queue = consultant_client.get(
+        "/api/v1/inquiries/unassigned-consultations"
+    )
+    hidden_detail = consultant_client.get(
+        f"/api/v1/inquiries/{inquiry.public_id}"
+    )
     other_list = client_for(other_consultant).get("/api/v1/inquiries")
+    claimed = consultant_client.post(
+        f"/api/v1/inquiries/{inquiry.public_id}/claim-consultation",
+        {"state_version": 4},
+        format="json",
+        HTTP_IDEMPOTENCY_KEY="synthetic-e2e-claim-003",
+        HTTP_X_CORRELATION_ID=str(uuid4()),
+    )
+
+    assert inquiry_list.status_code == queue.status_code == 200
+    assert inquiry_list.data["data"]["items"] == []
+    assert [
+        item["inquiry_id"] for item in queue.data["data"]["items"]
+    ] == [str(inquiry.public_id)]
+    assert hidden_detail.status_code == 404
+    assert other_list.status_code == 200
+    assert other_list.data["data"]["items"] == []
+    assert claimed.status_code == 200
+
+    inquiry.refresh_from_db()
+    consultation.refresh_from_db()
+    assert inquiry.assigned_user == consultant
+    assert inquiry.assigned_role_code == Inquiry.AssignedRole.CONSULTANT
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 5
+    assert consultation.status == Consultation.Status.ASSIGNED
+    assert consultation.consultant == consultant
+    assert consultation.started_at is None
+
     hidden = client_for(other_consultant).get(
         f"/api/v1/inquiries/{inquiry.public_id}"
     )
     hidden_start = client_for(other_consultant).post(
         f"/api/v1/inquiries/{inquiry.public_id}/start-consultation",
-        {"state_version": 4},
+        {"state_version": 5},
         format="json",
         HTTP_IDEMPOTENCY_KEY="synthetic-e2e-hidden-start-003",
         HTTP_X_CORRELATION_ID=str(uuid4()),
     )
-
-    assert inquiry_list.status_code == detail.status_code == 200
-    assert str(inquiry.public_id) in {
-        item["inquiry_id"] for item in inquiry_list.data["data"]["items"]
-    }
-    assert other_list.status_code == 200
-    assert other_list.data["data"]["items"] == []
-    assert hidden.status_code == 404
-    assert hidden_start.status_code == 404
+    assert hidden.status_code == hidden_start.status_code == 404
 
     started = consultant_client.post(
         f"/api/v1/inquiries/{inquiry.public_id}/start-consultation",
-        {"state_version": 4},
+        {"state_version": 5},
         format="json",
         HTTP_IDEMPOTENCY_KEY="synthetic-e2e-start-consultation-003",
         HTTP_X_CORRELATION_ID=str(uuid4()),
@@ -333,7 +359,7 @@ def test_unmarked_request_keeps_existing_unassigned_behavior():
 
 
 def test_replay_does_not_duplicate_assignment_consultation_or_history():
-    consultant = create_demo_consultant()
+    create_demo_consultant()
     owner, inquiry = create_target_inquiry(sequence=5)
     prepare(inquiry)
 
@@ -351,7 +377,8 @@ def test_replay_does_not_duplicate_assignment_consultation_or_history():
     assert created.status_code == replayed.status_code == 200
     assert replayed.data["data"]["idempotent_replay"] is True
     inquiry.refresh_from_db()
-    assert inquiry.assigned_user == consultant
+    assert inquiry.assigned_user is None
+    assert inquiry.assigned_role_code == Inquiry.AssignedRole.NONE
     assert Consultation.objects.filter(inquiry=inquiry).count() == 1
     assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 1
     assert IdempotencyRecord.objects.filter(
@@ -360,7 +387,7 @@ def test_replay_does_not_duplicate_assignment_consultation_or_history():
     ).count() == 1
 
 
-def test_inactive_target_consultant_rolls_back_all_request_writes():
+def test_inactive_demo_consultant_does_not_block_unassigned_request():
     consultant = create_demo_consultant()
     owner, inquiry = create_target_inquiry(sequence=6)
     prepare(inquiry)
@@ -373,17 +400,20 @@ def test_inactive_target_consultant_rolls_back_all_request_writes():
         key="synthetic-e2e-inactive-consultant-006",
     )
 
-    assert response.status_code == 500
+    assert response.status_code == 200
     inquiry.refresh_from_db()
     assert inquiry.assigned_user is None
-    assert inquiry.status_code == Inquiry.Status.AI_GUIDANCE
-    assert inquiry.state_version == 3
-    assert not Consultation.objects.filter(inquiry=inquiry).exists()
-    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
-    assert not IdempotencyRecord.objects.filter(
+    assert inquiry.assigned_role_code == Inquiry.AssignedRole.NONE
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 4
+    consultation = Consultation.objects.get(inquiry=inquiry)
+    assert consultation.status == Consultation.Status.WAITING
+    assert consultation.consultant is None
+    assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 1
+    assert IdempotencyRecord.objects.filter(
         actor=owner,
         operation_id="requestConsultation",
-    ).exists()
+    ).count() == 1
 
 
 def test_existing_other_assignment_is_never_overwritten():
@@ -406,17 +436,20 @@ def test_existing_other_assignment_is_never_overwritten():
         key="synthetic-e2e-existing-assignment-007",
     )
 
-    assert response.status_code == 409
+    assert response.status_code == 200
     inquiry.refresh_from_db()
     assert inquiry.assigned_user == other_consultant
-    assert inquiry.status_code == Inquiry.Status.AI_GUIDANCE
-    assert inquiry.state_version == 3
-    assert not Consultation.objects.filter(inquiry=inquiry).exists()
-    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
-    assert not IdempotencyRecord.objects.filter(
+    assert inquiry.assigned_role_code == Inquiry.AssignedRole.CONSULTANT
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 4
+    consultation = Consultation.objects.get(inquiry=inquiry)
+    assert consultation.status == Consultation.Status.WAITING
+    assert consultation.consultant is None
+    assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 1
+    assert IdempotencyRecord.objects.filter(
         actor=owner,
         operation_id="requestConsultation",
-    ).exists()
+    ).count() == 1
 
 
 def test_late_failure_rolls_back_assignment_and_all_request_writes(

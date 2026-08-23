@@ -51,16 +51,19 @@ terminal_and_reopen_policy:
 representative_flow:
   scenario_id: SYN-JAC104-002
   source: data/config/e2e/representative_case.json
+  source_status: LEGACY_PRE_CLAIM_14_STEP_INPUT
+  policy_overlay: PM-20260823-CONSULTANT-CLAIM
   example: ./examples/representative-e2e.yaml
   expected_final_inquiry_state: RESOLVED
   expected_final_visit_status: COMPLETED
-  expected_final_state_version: 14
+  expected_final_state_version: 15
   event_sequence:
     - START_INQUIRY
     - SUBMIT_SYMPTOM
     - SUBMIT_ANSWERS
     - SAFE_GUIDANCE_READY
     - REQUEST_CONSULTATION
+    - CLAIM_CONSULTATION
     - START_CONSULTATION
     - VISIT_REVIEW_REQUIRED
     - VISIT_NEEDED

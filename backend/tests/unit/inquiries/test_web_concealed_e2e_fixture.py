@@ -13,6 +13,7 @@ from rest_framework.test import APIClient
 from apps.accounts.models import User
 from apps.consultations.models import Consultation
 from apps.inquiries.models import Inquiry
+from apps.workflow.models import TransitionHistory
 
 
 pytestmark = pytest.mark.django_db
@@ -45,7 +46,7 @@ def test_command_creates_other_consultant_assignment():
         "allowed_actions_for_assignee": ["START_CONSULTATION"],
         "assigned_consultant": "SYN-WEB-G4-CONSULTANT-404",
         "concealed_from": "DEMO-CONSULTANT-001",
-        "consultation_status": "WAITING",
+        "consultation_status": "ASSIGNED",
         "created": True,
         "expected_error_code": "RESOURCE_NOT_FOUND",
         "expected_http_status": 404,
@@ -54,7 +55,7 @@ def test_command_creates_other_consultant_assignment():
         "inquiry_code": result["inquiry_code"],
         "inquiry_id": result["inquiry_id"],
         "run_id": "playwright-concealed-001",
-        "state_version": 2,
+        "state_version": 3,
         "status": "CONSULTATION_REQUIRED",
     }
     inquiry = Inquiry.objects.get(public_id=result["inquiry_id"])
@@ -63,11 +64,17 @@ def test_command_creates_other_consultant_assignment():
     )
     assert inquiry.assigned_user == concealed_consultant
     assert inquiry.assigned_role_code == Inquiry.AssignedRole.CONSULTANT
-    assert Consultation.objects.filter(
+    consultation = Consultation.objects.get(inquiry=inquiry)
+    assert consultation.status == Consultation.Status.ASSIGNED
+    assert consultation.consultant == concealed_consultant
+    assert consultation.started_at is None
+    assert TransitionHistory.objects.filter(
         inquiry=inquiry,
-        status=Consultation.Status.WAITING,
-        consultant__isnull=True,
-    ).count() == 1
+        event_code="CLAIM_CONSULTATION",
+        from_state=Inquiry.Status.CONSULTATION_REQUIRED,
+        to_state=Inquiry.Status.CONSULTATION_REQUIRED,
+        state_version=3,
+    ).exists()
 
 
 def test_demo_consultant_get_and_start_are_concealed_as_404():

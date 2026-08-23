@@ -19,6 +19,9 @@ from apps.inquiries.models import Inquiry
 from apps.inquiries.services.consultation_request_service import (
     ConsultationRequestService,
 )
+from apps.inquiries.services.consultation_claim_service import (
+    ConsultationClaimService,
+)
 from apps.subscriptions.management.commands.seed_demo_subscriptions import (
     DEMO_SUBSCRIPTION_CONTRACT_NO,
 )
@@ -97,7 +100,7 @@ class Command(BaseCommand):
         inquiry = Inquiry.objects.select_for_update().get(pk=inquiry.pk)
 
         if created:
-            self._request_and_assign(
+            self._request_and_claim(
                 inquiry=inquiry,
                 owner=owner,
                 consultant=consultant,
@@ -113,7 +116,10 @@ class Command(BaseCommand):
             )
 
         inquiry.refresh_from_db()
-        consultation = self._waiting_consultation(inquiry)
+        consultation = self._assigned_consultation(
+            inquiry,
+            consultant=consultant,
+        )
         allowed_actions = AllowedActionResolver.resolve(
             context=AllowedActionContext.from_models(
                 inquiry=inquiry,
@@ -180,6 +186,7 @@ class Command(BaseCommand):
             ),
             "source_key": f"web-g4-fixture-{digest}",
             "request_key": f"web-g4-request-{digest}",
+            "claim_key": f"web-g4-claim-{digest}",
         }
 
     @staticmethod
@@ -220,7 +227,7 @@ class Command(BaseCommand):
         return owner, consultant, subscription
 
     @staticmethod
-    def _request_and_assign(
+    def _request_and_claim(
         *,
         inquiry: Inquiry,
         owner: User,
@@ -235,15 +242,12 @@ class Command(BaseCommand):
             correlation_id=identity["correlation_id"],
         )
         inquiry.refresh_from_db()
-        inquiry.assigned_user = consultant
-        inquiry.assigned_role_code = Inquiry.AssignedRole.CONSULTANT
-        inquiry.clean()
-        inquiry.save(
-            update_fields=[
-                "assigned_user",
-                "assigned_role_code",
-                "updated_at",
-            ]
+        ConsultationClaimService.claim(
+            actor=consultant,
+            inquiry_public_id=inquiry.public_id,
+            validated_data={"state_version": inquiry.state_version},
+            idempotency_key=str(identity["claim_key"]),
+            correlation_id=identity["correlation_id"],
         )
 
     @classmethod
@@ -269,10 +273,13 @@ class Command(BaseCommand):
         if not identity_matches:
             raise CommandError("Existing Web G4 Fixture identity conflicts.")
 
-        cls._waiting_consultation(inquiry)
+        cls._assigned_consultation(
+            inquiry,
+            consultant=consultant,
+        )
         if (
             inquiry.status_code != Inquiry.Status.CONSULTATION_REQUIRED
-            or inquiry.state_version != 2
+            or inquiry.state_version != 3
         ):
             raise CommandError(
                 "Web G4 Fixture가 이미 소비되었습니다. 이력을 되돌리지 말고 "
@@ -280,7 +287,11 @@ class Command(BaseCommand):
             )
 
     @staticmethod
-    def _waiting_consultation(inquiry: Inquiry) -> Consultation:
+    def _assigned_consultation(
+        inquiry: Inquiry,
+        *,
+        consultant: User,
+    ) -> Consultation:
         consultations = list(
             Consultation.objects.filter(inquiry=inquiry).order_by("sequence")
         )
@@ -290,8 +301,9 @@ class Command(BaseCommand):
             )
         consultation = consultations[0]
         if (
-            consultation.status != Consultation.Status.WAITING
-            or consultation.consultant_id is not None
+            consultation.status != Consultation.Status.ASSIGNED
+            or consultation.consultant_id != consultant.pk
+            or consultation.started_at is not None
             or consultation.state_version != inquiry.state_version
         ):
             raise CommandError(

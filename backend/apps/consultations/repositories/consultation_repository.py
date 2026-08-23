@@ -88,6 +88,40 @@ class ConsultationRepository:
         )
 
     @staticmethod
+    def claim(
+        consultation: Consultation,
+        *,
+        actor,
+        state_version: int,
+        idempotency_key: str,
+        correlation_id,
+    ) -> Consultation:
+        """Assign a waiting consultation while leaving started_at unset."""
+
+        if (
+            consultation.status != Consultation.Status.WAITING
+            or consultation.consultant_id is not None
+            or consultation.started_at is not None
+        ):
+            raise RuntimeError("The consultation is no longer claimable.")
+        consultation.consultant = actor
+        consultation.status = Consultation.Status.ASSIGNED
+        consultation.state_version = state_version
+        consultation.idempotency_key = idempotency_key
+        consultation.correlation_id = correlation_id
+        consultation.save(
+            update_fields=[
+                "consultant",
+                "status",
+                "state_version",
+                "idempotency_key",
+                "correlation_id",
+                "updated_at",
+            ]
+        )
+        return consultation
+
+    @staticmethod
     def start(
         *,
         inquiry: Inquiry,

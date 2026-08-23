@@ -1,4 +1,4 @@
-"""Mark one exact runtime inquiry for the approved synthetic E2E assignment."""
+"""Mark one exact runtime inquiry for queue-and-Claim synthetic E2E."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ REPLACEABLE_E2E_STATUSES = {Inquiry.Status.COMPLETION_PENDING}
 
 class Command(BaseCommand):
     help = (
-        "Mobile에서 생성된 한 개의 합성 문의를 대표 E2E 상담사 배정 대상으로 "
+        "Mobile에서 생성된 한 개의 합성 문의를 대표 E2E Claim 대상으로 "
         "안전하게 표시합니다."
     )
 
@@ -78,11 +78,15 @@ class Command(BaseCommand):
             inquiry.save(update_fields=["scenario_code", "updated_at"])
 
         crosswalk = {
-            "assigned_consultant_code": DEMO_CONSULTANT_USERNAME,
+            "claim_consultant_code": DEMO_CONSULTANT_USERNAME,
+            "claim_required": True,
             "assignment_mode": SYNTHETIC_E2E_ASSIGNMENT_MODE,
             "inquiry_code": inquiry.inquiry_code,
             "inquiry_id": str(inquiry.public_id),
-            "operation_id": "requestConsultation",
+            "operation_ids": [
+                "requestConsultation",
+                "claimConsultation",
+            ],
             "scenario_code": SYNTHETIC_E2E_RUNTIME_SCENARIO_CODE,
             "scenario_reference": SYNTHETIC_E2E_SCENARIO_REFERENCE,
             "state_version": inquiry.state_version,
@@ -100,7 +104,7 @@ class Command(BaseCommand):
         state = "marked" if created else "verified"
         self.stdout.write(
             self.style.SUCCESS(
-                "Synthetic E2E assignment candidate ready "
+                "Synthetic E2E Claim candidate ready "
                 f"({state}=1, inquiry_id={inquiry.public_id})"
             )
         )
