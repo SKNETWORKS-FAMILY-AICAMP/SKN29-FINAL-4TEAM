@@ -78,77 +78,108 @@ fun CustomerVisualProductHero(
     previewMode: Boolean = false,
     canChangeProduct: Boolean,
     onChangeProduct: () -> Unit,
+    activeInquiryId: String? = null,
+    activeInquiryStatusCode: String? = null,
+    intakeAvailable: Boolean = false,
+    intakeUnavailableReason: String? = null,
+    onStartIntake: (String) -> Unit = {},
+    onOpenInquiry: (String) -> Unit = {},
+    onOpenCare: () -> Unit = {},
 ) {
     val palette = CustomerReferencePalette
-    val filter = if (previewMode) null else calculateRemainingFilterEstimate(home)
+    val filter =
+        if (previewMode) {
+            null
+        } else {
+            calculateRemainingFilterEstimate(home)
+        }
 
-    val floatingTransition = rememberInfiniteTransition(
-        label = "homePurifierFloating",
-    )
-    val floatingScale by floatingTransition.animateFloat(
-        initialValue = 0.97f,
-        targetValue = 1.03f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1450),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "homePurifierScale",
-    )
-    val floatingWave by floatingTransition.animateFloat(
-        initialValue = -1f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2350),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "homePurifierWave",
-    )
-    val targetProgress = filter?.progress ?: 0f
     val animatedProgress by animateFloatAsState(
-        targetValue = targetProgress,
-        animationSpec = tween(durationMillis = 760),
-        label = "homeFilterRemainingProgress",
+        targetValue = filter?.progress ?: 0f,
+        animationSpec = tween(
+            durationMillis = 760,
+        ),
+        label = "finalDashboardFilterProgress",
     )
+
     val filterGaugeColor = when {
-        filter == null -> displayModel.accent
-        filter.percent <= 20 -> MaterialTheme.colorScheme.error
-        filter.percent <= 40 -> MaterialTheme.colorScheme.tertiary
-        else -> displayModel.accent
+        filter == null ->
+            displayModel.accent
+        filter.percent <= 20 ->
+            MaterialTheme.colorScheme.error
+        filter.percent <= 40 ->
+            MaterialTheme.colorScheme.tertiary
+        else ->
+            displayModel.accent
     }
+
     val filterStateLabel = when {
-        filter == null -> ""
-        filter.percent <= 20 -> "교체 확인"
-        filter.percent <= 40 -> "교체 준비"
-        else -> "상태 양호"
+        filter == null ->
+            "확인 중"
+        filter.percent <= 20 ->
+            "교체 확인"
+        filter.percent <= 40 ->
+            "교체 준비"
+        else ->
+            "양호"
     }
+
+    val nextCareLabel =
+        if (previewMode) {
+            "미리보기"
+        } else {
+            careDday(home.nextCareOn)
+        }
+
+    val hasActiveInquiry =
+        !activeInquiryId.isNullOrBlank()
 
     CustomerCleanCard(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("customerCareHeroBanner"),
         contentPadding = PaddingValues(
-            horizontal = 15.dp,
-            vertical = 12.dp,
+            horizontal = 16.dp,
+            vertical = 15.dp,
         ),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement =
+                Arrangement.SpaceBetween,
+            verticalAlignment =
+                Alignment.CenterVertically,
         ) {
-            Text(
-                text = "내 정수기",
-                style = MaterialTheme.typography.titleMedium,
-                color = palette.textStrong,
-                fontWeight = FontWeight.Bold,
-            )
+            Column(
+                verticalArrangement =
+                    Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = "내 정수기 상태",
+                    style =
+                        MaterialTheme.typography.titleLarge,
+                    color = palette.textStrong,
+                    fontWeight = FontWeight.Bold,
+                )
+
+                Text(
+                    text = "필요한 상태만 한눈에 확인하세요.",
+                    style =
+                        MaterialTheme.typography.bodySmall,
+                    color = palette.textMuted,
+                )
+            }
+
             if (canChangeProduct) {
                 TextButton(
                     onClick = onChangeProduct,
-                    modifier = Modifier.testTag("changeSubscription"),
+                    modifier =
+                        Modifier.testTag(
+                            "changeSubscription"
+                        ),
                 ) {
                     Text(
-                        text = "변경",
+                        text = "제품 변경 ›",
                         color = palette.accent,
                         fontWeight = FontWeight.Bold,
                     )
@@ -156,148 +187,853 @@ fun CustomerVisualProductHero(
             }
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(164.dp),
-            contentAlignment = Alignment.TopCenter,
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Box(
-                modifier = Modifier
-                    .padding(top = 2.dp)
-                    .size(154.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                FilterRemainingRing(
-                    progress = animatedProgress,
-                    accentColor = filterGaugeColor,
-                    trackColor = displayModel.softAccent.copy(alpha = 0.42f),
-                    modifier = Modifier.fillMaxSize(),
-                )
-                CustomerModelMascot(
-                    model = displayModel,
-                    modifier = Modifier
-                        .size(96.dp)
-                        .graphicsLayer {
-                            scaleX = floatingScale
-                            scaleY = floatingScale
-                            translationY =
-                                2.dp.toPx() * floatingWave
-                            rotationZ = 0f
-                        },
-                )
+            if (maxWidth < 370.dp) {
+                Column(
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    horizontalAlignment =
+                        Alignment.CenterHorizontally,
+                    verticalArrangement =
+                        Arrangement.spacedBy(12.dp),
+                ) {
+                    FinalDashboardPurifierGauge(
+                        displayModel = displayModel,
+                        previewMode = previewMode,
+                        progress = animatedProgress,
+                        filterPercent = filter?.percent,
+                        filterColor = filterGaugeColor,
+                        modifier = Modifier.size(190.dp),
+                    )
 
-                if (!previewMode && filter != null) {
-                    Row(
+                    FinalDashboardFilterSummary(
+                        previewMode = previewMode,
+                        filterPercent = filter?.percent,
+                        filterStateLabel = filterStateLabel,
+                        nextCareLabel = nextCareLabel,
+                        filterColor = filterGaugeColor,
+                        onOpenCare = onOpenCare,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            } else {
+                Row(
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    horizontalArrangement =
+                        Arrangement.spacedBy(16.dp),
+                    verticalAlignment =
+                        Alignment.CenterVertically,
+                ) {
+                    FinalDashboardPurifierGauge(
+                        displayModel = displayModel,
+                        previewMode = previewMode,
+                        progress = animatedProgress,
+                        filterPercent = filter?.percent,
+                        filterColor = filterGaugeColor,
                         modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .clip(RoundedCornerShape(999.dp))
-                            .background(Color.White.copy(alpha = 0.92f))
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = "필터 ${filter.percent}%",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = palette.textStrong,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Text(
-                            text = filterStateLabel,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = filterGaugeColor,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
+                            .weight(1f)
+                            .height(206.dp),
+                    )
+
+                    FinalDashboardFilterSummary(
+                        previewMode = previewMode,
+                        filterPercent = filter?.percent,
+                        filterStateLabel = filterStateLabel,
+                        nextCareLabel = nextCareLabel,
+                        filterColor = filterGaugeColor,
+                        onOpenCare = onOpenCare,
+                        modifier = Modifier.weight(1f),
+                    )
                 }
             }
         }
 
-        Text(
-            text = displayModel.modelName,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.titleMedium,
-            color = palette.textStrong,
-            fontWeight = FontWeight.Bold,
+        FinalDashboardProblemCheck(
+            home = home,
+            activeInquiryId = activeInquiryId,
+            activeInquiryStatusCode =
+                activeInquiryStatusCode,
+            intakeAvailable = intakeAvailable,
+            intakeUnavailableReason =
+                intakeUnavailableReason,
+            previewMode = previewMode,
+            hasActiveInquiry =
+                hasActiveInquiry,
+            onStartIntake = onStartIntake,
+            onOpenInquiry = onOpenInquiry,
         )
+    }
+}
+
+@Composable
+private fun FinalDashboardPurifierGauge(
+    displayModel: CustomerModelVisualSpec,
+    previewMode: Boolean,
+    progress: Float,
+    filterPercent: Int?,
+    filterColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    val palette = CustomerReferencePalette
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+    ) {
+        FilterRemainingRing(
+            progress = progress,
+            accentColor = filterColor,
+            trackColor =
+                displayModel.softAccent.copy(
+                    alpha = 0.42f
+                ),
+            modifier = Modifier.fillMaxSize(),
+        )
+
+        CustomerModelMascot(
+            model = displayModel,
+            modifier = Modifier.size(110.dp),
+        )
+
+        if (
+            !previewMode &&
+            filterPercent != null
+        ) {
+            Box(
+                modifier = Modifier
+                    .align(
+                        Alignment.BottomCenter
+                    )
+                    .clip(
+                        RoundedCornerShape(
+                            999.dp
+                        )
+                    )
+                    .background(
+                        Color.White.copy(
+                            alpha = 0.94f
+                        )
+                    )
+                    .padding(
+                        horizontal = 12.dp,
+                        vertical = 6.dp,
+                    ),
+            ) {
+                Text(
+                    text =
+                        "필터 ${filterPercent}%",
+                    style =
+                        MaterialTheme.typography
+                            .labelLarge,
+                    color = palette.textStrong,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FinalDashboardFilterSummary(
+    previewMode: Boolean,
+    filterPercent: Int?,
+    filterStateLabel: String,
+    nextCareLabel: String,
+    filterColor: Color,
+    onOpenCare: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val palette = CustomerReferencePalette
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment =
+            Alignment.Start,
+        verticalArrangement =
+            Arrangement.spacedBy(7.dp),
+    ) {
         Text(
-            text = "모델 ${displayModel.modelCode}",
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodySmall,
+            text = "필터 상태",
+            style =
+                MaterialTheme.typography
+                    .labelLarge,
             color = palette.textMuted,
-            fontWeight = FontWeight.SemiBold,
         )
 
-        when {
-            previewMode ->
+        Row(
+            horizontalArrangement =
+                Arrangement.spacedBy(7.dp),
+            verticalAlignment =
+                Alignment.CenterVertically,
+        ) {
+            Text(
+                text =
+                    if (previewMode) {
+                        "미리보기"
+                    } else {
+                        filterStateLabel
+                    },
+                style =
+                    MaterialTheme.typography
+                        .titleLarge,
+                color =
+                    if (previewMode) {
+                        palette.textStrong
+                    } else {
+                        filterColor
+                    },
+                fontWeight = FontWeight.Bold,
+            )
+
+            if (!previewMode) {
                 Text(
-                    text = "이 모델은 화면 미리보기예요",
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = "✓",
+                    style =
+                        MaterialTheme.typography
+                            .titleLarge,
+                    color = filterColor,
+                    fontWeight =
+                        FontWeight.Black,
+                )
+            }
+        }
+
+        if (
+            !previewMode &&
+            filterPercent != null
+        ) {
+            Text(
+                text =
+                    "${filterPercent}%",
+                style =
+                    MaterialTheme.typography
+                        .displaySmall,
+                color = filterColor,
+                fontWeight = FontWeight.Black,
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(
+                    RoundedCornerShape(14.dp)
+                )
+                .background(
+                    palette.accentSoft.copy(
+                        alpha = 0.18f
+                    )
+                )
+                .padding(
+                    horizontal = 11.dp,
+                    vertical = 10.dp,
+                ),
+        ) {
+            Column(
+                verticalArrangement =
+                    Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = "다음 관리까지",
+                    style =
+                        MaterialTheme.typography
+                            .labelMedium,
                     color = palette.textMuted,
                 )
+                Text(
+                    text = nextCareLabel,
+                    style =
+                        MaterialTheme.typography
+                            .titleSmall,
+                    color = palette.textStrong,
+                    fontWeight =
+                        FontWeight.Bold,
+                )
+            }
+        }
 
-            filter != null ->
-                CustomerFilterSummary(
-                    percent = filter.percent,
-                    progress = animatedProgress,
-                    message = filter.message,
-                    accentColor = displayModel.accent,
+        TextButton(
+            onClick = onOpenCare,
+            modifier =
+                Modifier.testTag(
+                    "openFilterCare"
+                ),
+        ) {
+            Text(
+                text = "필터 상태 자세히 보기 ›",
+                color = palette.accent,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+    }
+}
+
+@Composable
+private fun FinalDashboardProblemCheck(
+    home: CustomerHomeData,
+    activeInquiryId: String?,
+    activeInquiryStatusCode: String?,
+    intakeAvailable: Boolean,
+    intakeUnavailableReason: String?,
+    previewMode: Boolean,
+    hasActiveInquiry: Boolean,
+    onStartIntake: (String) -> Unit,
+    onOpenInquiry: (String) -> Unit,
+) {
+    val palette = CustomerReferencePalette
+
+    val normalized =
+        activeInquiryStatusCode
+            ?.trim()
+            ?.uppercase()
+            .orEmpty()
+
+    val title = when {
+        previewMode ->
+            "문제 확인하기"
+        normalized == "DRAFT" ||
+            normalized ==
+                "QUESTIONNAIRE_IN_PROGRESS" ->
+            "작성 중인 문진이 있어요"
+        normalized == "AI_GUIDANCE" ->
+            "해결 방법이 준비됐어요"
+        hasActiveInquiry ->
+            "진행 중인 요청이 있어요"
+        else ->
+            "문제 확인하기"
+    }
+
+    val subtitle = when {
+        previewMode ->
+            "실제 제품을 선택하면 이용할 수 있어요."
+        normalized == "DRAFT" ||
+            normalized ==
+                "QUESTIONNAIRE_IN_PROGRESS" ->
+            "작성하던 내용부터 이어서 진행하세요."
+        normalized == "AI_GUIDANCE" ->
+            "확인된 내용을 바탕으로 해결 방법을 확인해보세요."
+        hasActiveInquiry ->
+            inquiryStatusMessage(
+                activeInquiryStatusCode.orEmpty()
+            )
+        intakeAvailable ->
+            "물이 이상할 때 바로 확인하세요."
+        else ->
+            intakeUnavailableReason
+                ?.takeIf { it.isNotBlank() }
+                ?: "문제 확인 기능을 준비하고 있어요."
+    }
+
+    val actionText = when {
+        normalized == "DRAFT" ||
+            normalized ==
+                "QUESTIONNAIRE_IN_PROGRESS" ->
+            "이어서 작성"
+        normalized == "AI_GUIDANCE" ->
+            "해결 방법 보기"
+        hasActiveInquiry ->
+            "진행 상황 보기"
+        else ->
+            "문제 확인 시작"
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(
+                RoundedCornerShape(18.dp)
+            )
+            .background(
+                palette.accentSoft.copy(
+                    alpha = 0.18f
+                )
+            )
+            .padding(
+                horizontal = 14.dp,
+                vertical = 13.dp,
+            )
+            .testTag(
+                "customerProblemCheck"
+            ),
+        verticalArrangement =
+            Arrangement.spacedBy(10.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement =
+                Arrangement.SpaceBetween,
+            verticalAlignment =
+                Alignment.CenterVertically,
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement =
+                    Arrangement.spacedBy(3.dp),
+            ) {
+                Row(
+                    horizontalArrangement =
+                        Arrangement.spacedBy(8.dp),
+                    verticalAlignment =
+                        Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = title,
+                        style =
+                            MaterialTheme.typography
+                                .titleLarge,
+                        color = palette.accent,
+                        fontWeight =
+                            FontWeight.Black,
+                    )
+
+                    if (
+                        !hasActiveInquiry &&
+                        !previewMode
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .clip(
+                                    RoundedCornerShape(
+                                        999.dp
+                                    )
+                                )
+                                .background(
+                                    Color.White.copy(
+                                        alpha = 0.82f
+                                    )
+                                )
+                                .padding(
+                                    horizontal = 9.dp,
+                                    vertical = 4.dp,
+                                ),
+                        ) {
+                            Text(
+                                text =
+                                    "3단계로 빠르게",
+                                style =
+                                    MaterialTheme
+                                        .typography
+                                        .labelMedium,
+                                color =
+                                    palette.accent,
+                                fontWeight =
+                                    FontWeight.Bold,
+                            )
+                        }
+                    }
+                }
+
+                Text(
+                    text = subtitle,
+                    style =
+                        MaterialTheme.typography
+                            .bodyMedium,
+                    color = palette.textMuted,
+                )
+            }
+
+            if (
+                hasActiveInquiry ||
+                intakeAvailable
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
+                        .background(
+                            palette.accent
+                        )
+                        .clickable {
+                            if (hasActiveInquiry) {
+                                onOpenInquiry(
+                                    requireNotNull(
+                                        activeInquiryId
+                                    )
+                                )
+                            } else {
+                                onStartIntake(
+                                    home.subscriptionId
+                                )
+                            }
+                        }
+                        .testTag(
+                            "problemCheckArrow"
+                        ),
+                    contentAlignment =
+                        Alignment.Center,
+                ) {
+                    Text(
+                        text = "→",
+                        style =
+                            MaterialTheme.typography
+                                .headlineSmall,
+                        color = Color.White,
+                        fontWeight =
+                            FontWeight.Black,
+                    )
+                }
+            }
+        }
+
+        if (
+            !previewMode &&
+            !hasActiveInquiry &&
+            intakeAvailable
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement =
+                    Arrangement.spacedBy(7.dp),
+            ) {
+                FinalProblemChip(
+                    text = "물이 약해요",
+                    onClick = {
+                        onStartIntake(
+                            home.subscriptionId
+                        )
+                    },
+                    modifier =
+                        Modifier.weight(1f),
                 )
 
+                FinalProblemChip(
+                    text = "물맛이 이상해요",
+                    onClick = {
+                        onStartIntake(
+                            home.subscriptionId
+                        )
+                    },
+                    modifier =
+                        Modifier.weight(1f),
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement =
+                    Arrangement.spacedBy(7.dp),
+            ) {
+                FinalProblemChip(
+                    text = "소리가 나요",
+                    onClick = {
+                        onStartIntake(
+                            home.subscriptionId
+                        )
+                    },
+                    modifier =
+                        Modifier.weight(1f),
+                )
+
+                FinalProblemChip(
+                    text = "누수가 보여요",
+                    onClick = {
+                        onStartIntake(
+                            home.subscriptionId
+                        )
+                    },
+                    modifier =
+                        Modifier.weight(1f),
+                )
+            }
+        } else if (hasActiveInquiry) {
+            ReferenceGlassButton(
+                text = actionText,
+                palette = palette,
+                onClick = {
+                    onOpenInquiry(
+                        requireNotNull(
+                            activeInquiryId
+                        )
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(
+                        "problemCheckActiveAction"
+                    ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun FinalProblemChip(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val palette = CustomerReferencePalette
+
+    Box(
+        modifier = modifier
+            .clip(
+                RoundedCornerShape(999.dp)
+            )
+            .background(
+                Color.White.copy(
+                    alpha = 0.82f
+                )
+            )
+            .clickable(onClick = onClick)
+            .padding(
+                horizontal = 10.dp,
+                vertical = 10.dp,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            modifier =
+                Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            style =
+                MaterialTheme.typography
+                    .labelLarge,
+            color = palette.textStrong,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+        )
+    }
+}
+
+@Composable
+fun FinalCustomerCareOverviewCard(
+    home: CustomerHomeData,
+    activeInquiryStatusCode: String?,
+    previewMode: Boolean = false,
+    onOpenCare: () -> Unit,
+) {
+    val palette = CustomerReferencePalette
+
+    val requestText =
+        when (
+            activeInquiryStatusCode
+                ?.trim()
+                ?.uppercase()
+                .orEmpty()
+        ) {
+            "" ->
+                "접수된 요청이 없어요"
+            "DRAFT",
+            "QUESTIONNAIRE_IN_PROGRESS" ->
+                "문진 작성 중이에요"
+            "AI_GUIDANCE" ->
+                "해결 방법이 준비됐어요"
+            "CONSULTATION_REQUIRED",
+            "CONSULTATION_IN_PROGRESS",
+            "VISIT_REVIEW_PENDING",
+            "VISIT_SCHEDULING",
+            "VISIT_SCHEDULED",
+            "COMPLETION_PENDING",
+            "REVISIT_REQUIRED",
+            "REOPENED" ->
+                "요청을 처리하고 있어요"
             else ->
+                "진행 상태를 확인해보세요"
+        }
+
+    CustomerCleanCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(
+                "customerCareOverview"
+            ),
+        contentPadding = PaddingValues(
+            horizontal = 15.dp,
+            vertical = 14.dp,
+        ),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement =
+                Arrangement.SpaceBetween,
+            verticalAlignment =
+                Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "케어 관리 현황",
+                style =
+                    MaterialTheme.typography
+                        .titleMedium,
+                color = palette.textStrong,
+                fontWeight = FontWeight.Bold,
+            )
+
+            TextButton(
+                onClick = onOpenCare,
+            ) {
                 Text(
-                    text = "관리 일정을 확인하고 있어요",
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = palette.textMuted,
+                    text = "관리 보기 ›",
+                    color = palette.accent,
+                    fontWeight = FontWeight.Bold,
                 )
+            }
         }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement =
+                Arrangement.spacedBy(8.dp),
         ) {
-            HomeStatusPill(
-                text = if (previewMode) {
-                    "구독 없음"
-                } else {
-                    home.product.managementTypeLabel
-                },
-                accent = false,
+            FinalCareStatusTile(
+                title = "다음 케어",
+                value =
+                    if (previewMode) {
+                        "미리보기"
+                    } else {
+                        home.nextCareOn
+                            ?: "확인 중"
+                    },
+                modifier = Modifier.weight(1f),
             )
-            Spacer(modifier = Modifier.size(8.dp))
-            HomeStatusPill(
-                text = when {
-                    previewMode -> "미리보기"
-                    home.isP0SupportedActiveSubscription() ->
-                        "문의 가능"
-                    else ->
-                        "확인 중"
-                },
-                accent =
-                    !previewMode &&
-                        home.isP0SupportedActiveSubscription(),
+
+            FinalCareStatusTile(
+                title = "신청 현황",
+                value =
+                    if (previewMode) {
+                        "구독 없음"
+                    } else {
+                        requestText
+                    },
+                modifier = Modifier.weight(1f),
+            )
+
+            FinalCareStatusTile(
+                title = "최근 케어",
+                value =
+                    if (previewMode) {
+                        "미리보기"
+                    } else {
+                        home.lastCareOn
+                            ?: "확인 중"
+                    },
+                modifier = Modifier.weight(1f),
             )
         }
+    }
+}
+
+@Composable
+private fun FinalCareStatusTile(
+    title: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    val palette = CustomerReferencePalette
+
+    Column(
+        modifier = modifier
+            .clip(
+                RoundedCornerShape(14.dp)
+            )
+            .background(
+                palette.accentSoft.copy(
+                    alpha = 0.14f
+                )
+            )
+            .padding(
+                horizontal = 8.dp,
+                vertical = 10.dp,
+            ),
+        horizontalAlignment =
+            Alignment.CenterHorizontally,
+        verticalArrangement =
+            Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = title,
+            style =
+                MaterialTheme.typography
+                    .labelMedium,
+            color = palette.textMuted,
+            textAlign = TextAlign.Center,
+        )
 
         Text(
-            text = if (previewMode) {
-                "내 정수기를 연결하면 관리 정보와 문의 기능을 사용할 수 있어요."
-            } else {
-                "사용 중인 제품 상태를 한눈에 확인할 수 있어요."
-            },
-            modifier = Modifier.fillMaxWidth(),
+            text = value,
+            style =
+                MaterialTheme.typography
+                    .bodySmall,
+            color = palette.textStrong,
+            fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodySmall,
-            color = palette.textMuted,
+            maxLines = 2,
         )
+    }
+}
+
+@Composable
+fun FinalCustomerCareHelpBanner(
+    onOpenCare: () -> Unit,
+) {
+    val palette = CustomerReferencePalette
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(
+                RoundedCornerShape(18.dp)
+            )
+            .background(
+                palette.accentSoft.copy(
+                    alpha = 0.20f
+                )
+            )
+            .clickable(
+                onClick = onOpenCare
+            )
+            .padding(
+                horizontal = 16.dp,
+                vertical = 14.dp,
+            )
+            .testTag(
+                "customerCareHelp"
+            ),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement =
+                Arrangement.SpaceBetween,
+            verticalAlignment =
+                Alignment.CenterVertically,
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement =
+                    Arrangement.spacedBy(3.dp),
+            ) {
+                Text(
+                    text =
+                        "필터 관리가 궁금하신가요?",
+                    style =
+                        MaterialTheme.typography
+                            .titleSmall,
+                    color = palette.accent,
+                    fontWeight = FontWeight.Bold,
+                )
+
+                Text(
+                    text =
+                        "관리 화면에서 우리 집 정수기 정보를 자세히 확인하세요.",
+                    style =
+                        MaterialTheme.typography
+                            .bodySmall,
+                    color = palette.textMuted,
+                )
+            }
+
+            Text(
+                text = "›",
+                style =
+                    MaterialTheme.typography
+                        .headlineSmall,
+                color = palette.accent,
+                fontWeight = FontWeight.Black,
+            )
+        }
     }
 }
 

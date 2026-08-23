@@ -262,128 +262,60 @@ fun CustomerHomeContent(
                 previewMode = previewMode,
                 canChangeProduct = true,
                 onChangeProduct = onChangeProduct,
+                activeInquiryId =
+                    if (previewMode) null
+                    else activeInquiryId,
+                activeInquiryStatusCode =
+                    if (previewMode) null
+                    else activeInquiryStatusCode,
+                intakeAvailable =
+                    !previewMode &&
+                        state.intakeAvailable,
+                intakeUnavailableReason =
+                    if (previewMode) {
+                        "미연결 모델 미리보기예요. 실제 문의는 구독 중인 제품을 선택하면 이용할 수 있어요."
+                    } else {
+                        state.intakeUnavailableReason
+                    },
+                onStartIntake = onStartIntake,
+                onOpenInquiry = { inquiryId ->
+                    onOpenGuidance(
+                        inquiryId,
+                        MockScenario.NORMAL,
+                    )
+                },
+                onOpenCare = onOpenCare,
             )
 
-            var showTodayAction by remember(
-                home.subscriptionId,
-                activeInquiryStatusCode,
-                previewMode,
-            ) {
-                mutableStateOf(false)
-            }
-            var showQuickStatus by remember(
-                home.subscriptionId,
-                activeInquiryStatusCode,
-                previewMode,
-            ) {
-                mutableStateOf(false)
-            }
+            FinalCustomerCareOverviewCard(
+                home = home,
+                activeInquiryStatusCode =
+                    if (previewMode) null
+                    else activeInquiryStatusCode,
+                previewMode = previewMode,
+                onOpenCare = onOpenCare,
+            )
 
-            LaunchedEffect(
-                home.subscriptionId,
-                activeInquiryStatusCode,
-                previewMode,
+            FinalCustomerCareHelpBanner(
+                onOpenCare = onOpenCare,
+            )
+
+            if (
+                state.backendAvailable != true ||
+                state.offlinePreview
             ) {
-                showTodayAction = false
-                showQuickStatus = false
-
-                delay(120)
-                showTodayAction = true
-
-                delay(120)
-                showQuickStatus = true
-            }
-
-            AnimatedVisibility(
-                visible = showTodayAction,
-                enter =
-                    fadeIn(
-                        animationSpec = tween(
-                            durationMillis = 320,
-                        )
-                    ) +
-                        slideInVertically(
-                            animationSpec = tween(
-                                durationMillis = 360,
-                            ),
-                            initialOffsetY = {
-                                it / 8
-                            },
-                        ) +
-                        scaleIn(
-                            initialScale = 0.96f,
-                            animationSpec = tween(
-                                durationMillis = 520,
-                            ),
-                        ),
-            ) {
-                CustomerVisualInquiryAction(
-                    home = home,
-                    activeInquiryId =
-                        if (previewMode) null
-                        else activeInquiryId,
-                    activeInquiryStatusCode =
-                        if (previewMode) null
-                        else activeInquiryStatusCode,
+                CustomerServiceConnectionBanner(
+                    backendAvailable =
+                        state.backendAvailable,
+                    offlinePreview =
+                        state.offlinePreview,
+                    hasActiveInquiry =
+                        !activeInquiryId.isNullOrBlank(),
                     intakeAvailable =
                         !previewMode &&
                             state.intakeAvailable,
-                    intakeUnavailableReason =
-                        if (previewMode) {
-                            "미연결 모델 미리보기예요. 실제 문의는 구독 중인 제품을 선택하면 이용할 수 있어요."
-                        } else {
-                            state.intakeUnavailableReason
-                        },
-                    previewMode = previewMode,
-                    onStartIntake = onStartIntake,
-                    onOpenInquiry = { inquiryId ->
-                        onOpenGuidance(
-                            inquiryId,
-                            MockScenario.NORMAL,
-                        )
-                    },
                 )
             }
-            AnimatedVisibility(
-                visible = showQuickStatus,
-                enter =
-                    fadeIn(
-                        animationSpec = tween(
-                            durationMillis = 300,
-                        )
-                    ) +
-                        slideInVertically(
-                            animationSpec = tween(
-                                durationMillis = 360,
-                            ),
-                            initialOffsetY = {
-                                it / 6
-                            },
-                        ),
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(
-                        text = "관리 정보",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = palette.textStrong,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    CustomerQuickStatusRow(
-                        home = home,
-                        previewMode = previewMode,
-                        onOpenCare = onOpenCare,
-                    )
-                }
-            }
-
-            CustomerServiceConnectionBanner(
-                backendAvailable = state.backendAvailable,
-                offlinePreview = state.offlinePreview,
-                hasActiveInquiry = !activeInquiryId.isNullOrBlank(),
-                intakeAvailable = !previewMode && state.intakeAvailable,
-            )
 
             val fixtureGuidanceAvailable =
                 state.offlinePreview ||
