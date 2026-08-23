@@ -1,0 +1,65 @@
+name: Web CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "web/**"
+      - "contracts/api/**"
+      - "contracts/codes/**"
+      - "contracts/error-codes/**"
+      - "contracts/state-machine/**"
+      - "data/synthetic/**"
+      - "data/processed/structured/evidence/**"
+      - ".github/workflows/web-ci.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "web/**"
+      - "contracts/api/**"
+      - "contracts/codes/**"
+      - "contracts/error-codes/**"
+      - "contracts/state-machine/**"
+      - "data/synthetic/**"
+      - "data/processed/structured/evidence/**"
+      - ".github/workflows/web-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-web:
+    name: Verify Web baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: "true"
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install Web dependencies
+        run: npm ci
+
+      - name: Run Web lint
+        run: npm run lint
+
+      - name: Run Web unit tests
+        run: npm run test
+
+      - name: Build Web production bundle
+        run: npm run build
