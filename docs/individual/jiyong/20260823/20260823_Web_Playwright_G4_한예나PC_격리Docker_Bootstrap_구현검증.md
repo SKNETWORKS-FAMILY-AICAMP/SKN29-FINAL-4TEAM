@@ -2,7 +2,7 @@
 
 - 작성일: 2026-08-23
 - 담당: 최지용(Backend·DB)
-- 기준: `main@3eeb51ab`
+- 최초 구현 기준: `main@46c2eeab`
 - 대상: 한예나 PC의 합성 데이터 전용 Web G4 로컬 실행
 
 ## 1. 결론
@@ -77,17 +77,19 @@ Fixture다. 따라서 `g2_g3=NOT_APPLICABLE_FOR_WEB_G4`가 맞으며 G2·G3 PASS
 
 | 검증 | 결과 |
 |---|---|
-| PowerShell Parser | PASS |
-| Plan 무변경 실행 | PASS |
-| 신규·기존 Web Fixture 단위 테스트 | `20 passed` |
+| PowerShell 7 Parser | PASS |
+| Windows PowerShell 5.1 Parser | PASS |
+| Windows PowerShell 5.1 Plan 무변경 실행 | PASS |
+| Windows PowerShell 5.1 신규 Volume Bootstrap | PASS |
+| Bootstrap 계약·Web Fixture 표적 테스트 | `23 passed` |
 | Demo 상담사 상세·상담 시작 404 | PASS |
 | 실제 배정 상담사 상세 조회 200 | PASS |
 | 동일 `run_id` 멱등성 | PASS |
 | 잘못된 `run_id`·의존 Seed 누락 차단 | PASS |
-| 신규 전용 Docker Bootstrap | PASS |
+| 신규 전용 Docker Bootstrap | Windows PowerShell 5.1 PASS |
 | 승인 Migration | `91/91`, 예상 밖 적용 0건 |
 | `visits.0005` | `NOT_APPLIED_P1_HOLD` |
-| Bootstrap 명시적 재사용 | PASS, 기존 데이터 초기화 0건 |
+| Bootstrap 명시적 재사용 | Windows PowerShell 5.1 PASS, 초기화 0건 |
 | Backend `/health` | HTTP 200 |
 | Web E2E TypeScript | PASS |
 | Chromium Playwright | `2 passed` |
@@ -97,7 +99,36 @@ Fixture다. 따라서 `g2_g3=NOT_APPLICABLE_FOR_WEB_G4`가 맞으며 G2·G3 PASS
 한예나 PC에서는 Docker Desktop 준비 후 인계 가이드와 최신 main으로 독립
 재실행하며, 그 결과를 담당자 PC Runtime 증거로 별도 남긴다.
 
-## 7. 담당자 인계
+## 7. Windows PowerShell 신규 Volume 호환성 보완
+
+한예나 PC의 Windows PowerShell 5.1에서 신규 Volume 미존재 확인이
+`NativeCommandError`로 중단되는 문제가 확인됐다. 원인은 전역
+`$ErrorActionPreference = 'Stop'` 상태에서 `docker volume inspect`가 출력한
+정상적인 `no such volume` 메시지가 종료 오류로 승격된 것이다.
+
+신규 Volume이 없는 것은 첫 Bootstrap의 정상 조건이므로 존재 확인을
+`docker volume ls --quiet`의 정상 종료 결과에서 정확한 이름을 찾는 방식으로
+교체했다. Docker 목록 조회 자체가 실패할 때만 중단하며 다음 안전 경계는
+그대로 유지한다.
+
+- Runtime과 Volume이 모두 없으면 새 격리 환경 생성
+- Runtime만 있거나 Volume만 있으면 자동 복구·삭제 없이 중단
+- 둘 다 있으면 `-ReuseLocalRuntime` 명시 시에만 재사용
+- 기존 Volume 삭제·초기화·이름 추정 금지
+
+회귀 방지를 위해 `test_web_g4_local_bootstrap_contract.py`에 Windows PowerShell
+호환 Volume 조회 계약과 금지 명령 검사를 추가했다.
+
+호환성 보완본은 Windows PowerShell 5.1에서 Volume이 없는 첫 실행과 전용
+Volume이 있는 명시적 재실행을 모두 실제 수행했다. 첫 실행은 전용 Container와
+Volume을 새로 만들었고, 재실행은 같은 `run_id` Fixture를 초기화하지 않고
+재조회했다. 이어서 Backend Health 200과 Chromium G4 2건까지 통과했다.
+
+따라서 기존 `main@46c2eeab`에서 Runtime 생성 전에 멈춘 결과는 한예나의 실행
+순서 오류가 아니다. 호환성 보완이 병합된 최신 main을 받은 뒤 기존 실패 환경을
+삭제하지 않고 첫 Apply 명령을 그대로 다시 실행하면 된다.
+
+## 8. 담당자 인계
 
 한예나는 Backend·Migration·Seed·Fixture 코드를 수정하지 않고 제공된 Bootstrap을
 실행한다. 실패 시 Volume 삭제나 일반 Migration을 시도하지 말고, 비밀값을

@@ -240,11 +240,25 @@ if ($RunIdPrefix -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,39}$') {
     throw 'RunIdPrefix must use 1-40 safe ASCII characters.'
 }
 
-$volumeExists = $false
-& docker volume inspect $volumeName *> $null
-if ($LASTEXITCODE -eq 0) {
-    $volumeExists = $true
+try {
+    $rawVolumeNames = @(& docker volume ls --quiet 2>$null)
+    $volumeListExitCode = $LASTEXITCODE
 }
+catch {
+    throw 'Docker Volume 목록을 확인할 수 없습니다.'
+}
+if ($volumeListExitCode -ne 0) {
+    throw 'Docker Volume 목록을 확인할 수 없습니다.'
+}
+$volumeNames = @(
+    foreach ($rawVolumeName in $rawVolumeNames) {
+        $normalizedVolumeName = ([string]$rawVolumeName).Trim()
+        if (-not [string]::IsNullOrWhiteSpace($normalizedVolumeName)) {
+            $normalizedVolumeName
+        }
+    }
+)
+$volumeExists = $volumeNames -contains $volumeName
 
 if (Test-Path -LiteralPath $RuntimeRoot) {
     if (-not $ReuseLocalRuntime) {
