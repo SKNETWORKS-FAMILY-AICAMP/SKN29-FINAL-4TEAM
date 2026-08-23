@@ -9,6 +9,7 @@ Django==5.2.16
 djangorestframework==3.17.1
 djangorestframework-simplejwt==5.5.1
 drf-spectacular==0.30.0
+gunicorn==26.0.0
 h11==0.16.0
 httpcore==1.0.9
 httpx==0.28.1

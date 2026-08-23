@@ -1,2 +1,3 @@
-# 운영 WSGI/ASGI 서버는 배포 ADR 승인 후 추가합니다.
+# 운영 WSGI 서버는 Python 3.13.13 Linux 배포 기준으로 고정합니다.
 -r base.txt
+gunicorn==26.0.0
