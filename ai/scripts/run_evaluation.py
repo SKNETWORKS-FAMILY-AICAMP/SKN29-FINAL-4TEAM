@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from ai.evaluation.runners.generation_runner import GenerationEvaluationRunner
+from ai.evaluation.runners.retrieval_runner import RetrievalEvaluationRunner
 from ai.evaluation.runners.safety_runner import SafetyEvaluationRunner
 from ai.evaluation.runners.structuring_runner import StructuringEvaluationRunner
 
@@ -40,6 +41,7 @@ def build_deterministic_report(
     safety_report = SafetyEvaluationRunner(safety_dataset_path).run()
     structuring_report = StructuringEvaluationRunner().run()
     generation_report = GenerationEvaluationRunner(generation_dataset_path).run()
+    retrieval_report = RetrievalEvaluationRunner().run()
     statuses = [
         safety_report["status"],
         structuring_report["status"],
@@ -76,12 +78,7 @@ def build_deterministic_report(
         "safety_evaluation": safety_report,
         "structuring_evaluation": structuring_report,
         "generation_evaluation": generation_report,
-        "retrieval_evaluation": {
-            "status": "NOT_RUN",
-            "reason": (
-                "승인된 pgvector Runtime이 이 결정적 평가 범위에 포함되지 않았습니다."
-            ),
-        },
+        "retrieval_evaluation": retrieval_report,
         "provider_generation_evaluation": {
             "status": "NOT_RUN",
             "reason": "실제 Provider 호출은 별도 승인·Runtime Gate에서 수행합니다.",
@@ -131,6 +128,11 @@ def main() -> None:
                 "safety_summary": report["safety_evaluation"]["summary"],
                 "structuring_summary": report["structuring_evaluation"]["summary"],
                 "generation_summary": report["generation_evaluation"]["summary"],
+                "retrieval_summary": {
+                    "status": report["retrieval_evaluation"]["status"],
+                    "reason": report["retrieval_evaluation"].get("reason"),
+                    "summary": report["retrieval_evaluation"]["summary"],
+                },
                 "external_runtime": report["external_runtime"],
             },
             ensure_ascii=False,
