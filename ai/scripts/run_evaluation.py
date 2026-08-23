@@ -10,6 +10,8 @@ import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
+from ai.evaluation.runners.generation_runner import GenerationEvaluationRunner
+from ai.evaluation.runners.retrieval_runner import RetrievalEvaluationRunner
 from ai.evaluation.runners.safety_runner import SafetyEvaluationRunner
 from ai.evaluation.runners.structuring_runner import StructuringEvaluationRunner
 
@@ -32,12 +34,19 @@ def _git_output(*args: str) -> str:
 def build_deterministic_report(
     *,
     safety_dataset_path: str | Path | None = None,
+    generation_dataset_path: str | Path | None = None,
 ) -> dict[str, object]:
     """네트워크·DB·Provider를 호출하지 않는 품질 리포트를 조립한다."""
 
     safety_report = SafetyEvaluationRunner(safety_dataset_path).run()
     structuring_report = StructuringEvaluationRunner().run()
-    statuses = [safety_report["status"], structuring_report["status"]]
+    generation_report = GenerationEvaluationRunner(generation_dataset_path).run()
+    retrieval_report = RetrievalEvaluationRunner().run()
+    statuses = [
+        safety_report["status"],
+        structuring_report["status"],
+        generation_report["status"],
+    ]
     runtime_identity = json.loads(
         (REPOSITORY_ROOT / "ai" / "configs" / "runtime_identity.json").read_text(
             encoding="utf-8"
@@ -68,13 +77,9 @@ def build_deterministic_report(
         },
         "safety_evaluation": safety_report,
         "structuring_evaluation": structuring_report,
-        "retrieval_evaluation": {
-            "status": "NOT_RUN",
-            "reason": (
-                "승인된 pgvector Runtime이 이 결정적 평가 범위에 포함되지 않았습니다."
-            ),
-        },
-        "generation_evaluation": {
+        "generation_evaluation": generation_report,
+        "retrieval_evaluation": retrieval_report,
+        "provider_generation_evaluation": {
             "status": "NOT_RUN",
             "reason": "실제 Provider 호출은 별도 승인·Runtime Gate에서 수행합니다.",
         },
@@ -101,6 +106,10 @@ def main() -> None:
         help="기본 Candidate 대신 사용할 Safety 평가셋 경로",
     )
     parser.add_argument(
+        "--generation-dataset",
+        help="기본 Candidate 대신 사용할 Generation 평가셋 경로",
+    )
+    parser.add_argument(
         "--output",
         help="정제된 JSON 리포트 저장 경로. 생략하면 파일을 쓰지 않습니다.",
     )
@@ -108,6 +117,7 @@ def main() -> None:
 
     report = build_deterministic_report(
         safety_dataset_path=args.safety_dataset,
+        generation_dataset_path=args.generation_dataset,
     )
     if args.output:
         _write_report(report, args.output)
@@ -117,6 +127,12 @@ def main() -> None:
                 "overall_status": report["overall_status"],
                 "safety_summary": report["safety_evaluation"]["summary"],
                 "structuring_summary": report["structuring_evaluation"]["summary"],
+                "generation_summary": report["generation_evaluation"]["summary"],
+                "retrieval_summary": {
+                    "status": report["retrieval_evaluation"]["status"],
+                    "reason": report["retrieval_evaluation"].get("reason"),
+                    "summary": report["retrieval_evaluation"]["summary"],
+                },
                 "external_runtime": report["external_runtime"],
             },
             ensure_ascii=False,

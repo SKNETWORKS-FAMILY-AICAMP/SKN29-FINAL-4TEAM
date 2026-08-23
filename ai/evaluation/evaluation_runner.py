@@ -4,10 +4,10 @@ import json
 import os
 from typing import Any, Dict
 from ai.app.orchestration.pipeline_router import PipelineRouter
-from ai.app.retrieval import RetrievalQuery
 from ai.app.retrieval.search.vector_search import VectorSearchService
 from ai.evaluation.eval_dataset_loader import EvalDatasetLoader
-from ai.evaluation.metrics import calculate_mrr, calculate_recall_at_k
+from ai.evaluation.runners.generation_runner import GenerationEvaluationRunner
+from ai.evaluation.runners.retrieval_runner import RetrievalEvaluationRunner
 from ai.evaluation.runners.safety_runner import SafetyEvaluationRunner
 from ai.evaluation.runners.structuring_runner import StructuringEvaluationRunner
 
@@ -21,47 +21,12 @@ class EvaluationRunner:
         self.pipeline_router = PipelineRouter(search_service)
 
     def run_rag_evaluation(self) -> Dict[str, Any]:
-        """RAG 검색 Recall@5 및 MRR 지표 평가"""
-        dataset = self.loader.load_rag_dataset()
-        if self.search_service is None:
-            return {
-                "total_cases": len(dataset),
-                "mean_recall_at_5": 0.0,
-                "mean_mrr": 0.0,
-                "status": "vector_store_not_configured",
-            }
-        if not dataset:
-            return {"total_cases": 0, "mean_recall_at_5": 0.0, "mean_mrr": 0.0}
+        """양성 검색과 음성 차단을 분리한 Retrieval 품질 리포트를 반환한다."""
 
-        total_recall = 0.0
-        total_mrr = 0.0
-
-        for item in dataset:
-            query = RetrievalQuery(
-                query_text=item["query"],
-                model_code=item["product_model_code"],
-                top_k=item.get("top_k", 5),
-            )
-            chunks = self.search_service.search(query)
-            retrieved_ids = [c.chunk_id for c in chunks]
-
-            expected_ids = item["expected_chunk_ids"]
-            if item.get("expected_no_evidence"):
-                recall = 1.0 if not retrieved_ids else 0.0
-                mrr = recall
-            else:
-                recall = calculate_recall_at_k(retrieved_ids, expected_ids, k=item.get("top_k", 5))
-                mrr = calculate_mrr(retrieved_ids, expected_ids)
-
-            total_recall += recall
-            total_mrr += mrr
-
-        count = len(dataset)
-        return {
-            "total_cases": count,
-            "mean_recall_at_5": round(total_recall / count, 4),
-            "mean_mrr": round(total_mrr / count, 4)
-        }
+        return RetrievalEvaluationRunner(
+            self.search_service,
+            self.loader.rag_config_path,
+        ).run()
 
     def run_safety_evaluation(self) -> Dict[str, Any]:
         """T-049 Candidate Matrix의 Safety·No-Evidence 불변식을 평가한다."""
@@ -82,15 +47,22 @@ class EvaluationRunner:
             ),
         }
 
+    def run_generation_evaluation(self) -> Dict[str, Any]:
+        """합성 Candidate로 생성 출력의 결정적 계약을 평가한다."""
+
+        return GenerationEvaluationRunner().run()
+
     def run_all_evaluations(self, save_report: bool = True) -> Dict[str, Any]:
         """전체 RAG 및 안전 준수율 평가 일괄 수행 및 리포트 저장"""
         rag_metrics = self.run_rag_evaluation()
         safety_metrics = self.run_safety_evaluation()
         structuring_metrics = StructuringEvaluationRunner(self.loader).run()
+        generation_metrics = self.run_generation_evaluation()
 
         report = {
             "rag_evaluation": rag_metrics,
             "safety_evaluation": safety_metrics,
+            "generation_evaluation": generation_metrics,
             "structuring_evaluation": {
                 "status": structuring_metrics["status"],
                 "dataset": structuring_metrics["dataset"],

@@ -67,6 +67,7 @@ def test_evaluation_runner_execution():
 
     assert "rag_evaluation" in results
     assert "safety_evaluation" in results
+    assert "generation_evaluation" in results
     assert "structuring_evaluation" in results
 
     # Safety compliance rate 100% 준수 확인
@@ -81,6 +82,7 @@ def test_evaluation_runner_execution():
         == "deterministic_safety_and_no_evidence_candidate_matrix"
     )
     assert results["rag_evaluation"]["mean_recall_at_5"] == 1.0
+    assert results["generation_evaluation"]["summary"]["case_count"] == 13
     assert results["structuring_evaluation"]["status"] == "PASS"
 
 
