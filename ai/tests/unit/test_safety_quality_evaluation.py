@@ -71,7 +71,8 @@ def test_deterministic_quality_report_is_honest_about_not_run_runtime():
     assert report["safety_evaluation"]["summary"]["case_count"] == 20
     assert report["structuring_evaluation"]["summary"]["case_count"] == 12
     assert report["retrieval_evaluation"]["status"] == "NOT_RUN"
-    assert report["generation_evaluation"]["status"] == "NOT_RUN"
+    assert report["generation_evaluation"]["status"] == "PASS"
+    assert report["provider_generation_evaluation"]["status"] == "NOT_RUN"
     assert set(report["external_runtime"].values()) == {"NOT_RUN"}
     assert report["secret_values_printed"] is False
     assert report["raw_customer_text_printed"] is False

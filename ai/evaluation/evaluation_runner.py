@@ -8,6 +8,7 @@ from ai.app.retrieval import RetrievalQuery
 from ai.app.retrieval.search.vector_search import VectorSearchService
 from ai.evaluation.eval_dataset_loader import EvalDatasetLoader
 from ai.evaluation.metrics import calculate_mrr, calculate_recall_at_k
+from ai.evaluation.runners.generation_runner import GenerationEvaluationRunner
 from ai.evaluation.runners.safety_runner import SafetyEvaluationRunner
 from ai.evaluation.runners.structuring_runner import StructuringEvaluationRunner
 
@@ -82,15 +83,22 @@ class EvaluationRunner:
             ),
         }
 
+    def run_generation_evaluation(self) -> Dict[str, Any]:
+        """합성 Candidate로 생성 출력의 결정적 계약을 평가한다."""
+
+        return GenerationEvaluationRunner().run()
+
     def run_all_evaluations(self, save_report: bool = True) -> Dict[str, Any]:
         """전체 RAG 및 안전 준수율 평가 일괄 수행 및 리포트 저장"""
         rag_metrics = self.run_rag_evaluation()
         safety_metrics = self.run_safety_evaluation()
         structuring_metrics = StructuringEvaluationRunner(self.loader).run()
+        generation_metrics = self.run_generation_evaluation()
 
         report = {
             "rag_evaluation": rag_metrics,
             "safety_evaluation": safety_metrics,
+            "generation_evaluation": generation_metrics,
             "structuring_evaluation": {
                 "status": structuring_metrics["status"],
                 "dataset": structuring_metrics["dataset"],

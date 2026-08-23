@@ -19,6 +19,11 @@ class GuidanceMessageGuard:
         r"(?:세균|미생물|유해\s*물질|수질\s*(?:검사|안전)|"
         r"마셔도|음용|인체에|무해|완전히\s*안전|안심)"
     )
+    _INTERNAL_METADATA_PATTERN = re.compile(
+        r"\b(?:chunk_id|document_id|evidence_id|similarity_score|"
+        r"retrieval_score|distance_score|source_path|prompt)\s*[:=]",
+        re.IGNORECASE,
+    )
     _PARTIAL_STOP_CONFLICT_PATTERNS = (
         re.compile(
             r"(?:모든|전체).{0,16}(?:정상|계속\s*사용|사용\s*(?:가능|해도))"
@@ -37,6 +42,8 @@ class GuidanceMessageGuard:
             raise ValueError("LLM 안내 문구가 직접 수리·내부 점검을 유도합니다.")
         if self._UNVERIFIED_SAFETY_CLAIM_PATTERN.search(message):
             raise ValueError("LLM 안내 문구가 검증되지 않은 수질·안전 주장을 포함합니다.")
+        if self._INTERNAL_METADATA_PATTERN.search(message):
+            raise ValueError("LLM 안내 문구가 내부 검색 메타데이터를 포함합니다.")
         if guidance_status == UsageGuidanceStatus.PARTIAL_STOP and any(
             pattern.search(message)
             for pattern in self._PARTIAL_STOP_CONFLICT_PATTERNS
