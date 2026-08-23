@@ -71,7 +71,15 @@ def test_evaluation_runner_execution():
 
     # Safety compliance rate 100% 준수 확인
     assert results["safety_evaluation"]["safety_compliance_rate"] == 100.0
-    assert results["safety_evaluation"]["evaluation_mode"] == "rule_based_with_evidence_available"
+    assert results["safety_evaluation"]["total_cases"] == 20
+    assert (
+        results["safety_evaluation"]["dataset"]["approval_status"]
+        == "CANDIDATE_NOT_QA_APPROVED"
+    )
+    assert (
+        results["safety_evaluation"]["evaluation_mode"]
+        == "deterministic_safety_and_no_evidence_candidate_matrix"
+    )
     assert results["rag_evaluation"]["mean_recall_at_5"] == 1.0
     assert results["structuring_evaluation"]["status"] == "PASS"
 

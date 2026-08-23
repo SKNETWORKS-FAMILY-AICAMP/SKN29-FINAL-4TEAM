@@ -36,13 +36,13 @@ class UsageGuidanceClassifier:
             matched_rule_ids = set(
                 safety_assessment.matched_safety_rule_ids
             )
-            for rule_key, rule_def in self.rules_config.items():
-                keywords = rule_def.get("keywords", [])
-                if (
-                    rule_def.get("rule_id") in matched_rule_ids
-                    or any(kw in raw_text for kw in keywords)
-                ):
-                    status = UsageGuidanceStatus(rule_def.get("usage_guidance_status", "TOTAL_STOP"))
+            # RiskClassifier가 부정 표현을 제거해 확정한 Rule ID만 신뢰한다.
+            # 원문 키워드를 다시 검사하면 "누수는 아님" 같은 문장이 오탐된다.
+            for rule_def in self.rules_config.values():
+                if rule_def.get("rule_id") in matched_rule_ids:
+                    status = UsageGuidanceStatus(
+                        rule_def.get("usage_guidance_status", "TOTAL_STOP")
+                    )
                     restricted_funcs = rule_def.get("restricted_functions", restricted_funcs)
                     next_actions = rule_def.get("next_actions", next_actions)
                     break
