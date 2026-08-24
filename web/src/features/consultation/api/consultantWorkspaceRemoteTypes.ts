@@ -53,6 +53,28 @@ export interface ConsultantInquiryListDataDto {
   status_counts: Partial<Record<ConsultantInquiryStatusDto, number>>;
 }
 
+export interface UnassignedConsultationQueueItemDto {
+  inquiry_id: string;
+  inquiry_code: string;
+  status: "CONSULTATION_REQUIRED";
+  state_version: number;
+  risk_level: ConsultantRiskLevelDto;
+  priority: ConsultantPriorityDto;
+  symptom_summary: string;
+  customer_display_name_masked: string;
+  product_model: string;
+  current_assignee_type: "NONE";
+  received_at: string;
+  updated_at: string;
+  waiting_seconds: number;
+  allowed_actions: readonly AllowedActionDto[];
+}
+
+export interface UnassignedConsultationQueueDataDto {
+  items: readonly UnassignedConsultationQueueItemDto[];
+  page_info: { page: number; size: number; total: number };
+}
+
 export interface ConsultantProductAndCareDto {
   product_model: string;
   subscription_status: string;
@@ -153,6 +175,17 @@ export interface ConsultantInquiryDetailDto {
 export interface ConsultantInquiryListQuery {
   q?: string;
   status?: readonly ConsultantInquiryStatusDto[];
+  riskLevel?: readonly ConsultantRiskLevelDto[];
+  priority?: readonly ConsultantPriorityDto[];
+  from?: string;
+  to?: string;
+  sort?: ConsultantSortDto;
+  page?: number;
+  size?: number;
+}
+
+export interface UnassignedConsultationQueueQuery {
+  q?: string;
   riskLevel?: readonly ConsultantRiskLevelDto[];
   priority?: readonly ConsultantPriorityDto[];
   from?: string;

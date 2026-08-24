@@ -5,7 +5,7 @@ import { parseBackendFixture } from "../../e2e/support/backendFixture";
 const readyFixture = {
   allowed_actions: ["START_CONSULTATION"],
   assigned_consultant: "DEMO-CONSULTANT-001",
-  consultation_status: "WAITING",
+  consultation_status: "ASSIGNED",
   created: true,
   fixture_readiness: "READY",
   fixture_scope: "WEB_G4_CONSULTATION",

@@ -1,0 +1,58 @@
+@font-face {
+  font-family: "NanumSquare";
+  src:
+    local("NanumSquare Light"),
+    local("NanumSquareL"),
+    url("/fonts/nanum-square/NanumSquareL.woff") format("woff");
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NanumSquare";
+  src:
+    local("NanumSquare Regular"),
+    local("NanumSquareR"),
+    url("/fonts/nanum-square/NanumSquareR.woff") format("woff");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NanumSquare";
+  src:
+    local("NanumSquare Bold"),
+    local("NanumSquareB"),
+    url("/fonts/nanum-square/NanumSquareB.woff") format("woff");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "NanumSquare";
+  src:
+    local("NanumSquare ExtraBold"),
+    local("NanumSquareEB"),
+    url("/fonts/nanum-square/NanumSquareEB.woff") format("woff");
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+}
+
+:root {
+  --waterbridge-font-family: "NanumSquare", "Malgun Gothic", sans-serif;
+  font-family: var(--waterbridge-font-family);
+}
+
+html,
+body,
+#root,
+button,
+input,
+select,
+textarea {
+  font-family: var(--waterbridge-font-family) !important;
+}

@@ -1,9 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-import {
-  createInquiryDetailPath,
-  createVisitTransitionPath,
-} from "../../../app/router/routePaths";
+import { createVisitTransitionPath } from "../../../app/router/routePaths";
 import ErrorState from "../../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../../common/components/feedback/ForbiddenState";
 import LoadingState from "../../../common/components/feedback/LoadingState";
@@ -128,22 +125,11 @@ export default function RemoteConsultantFirstDetailPanel({
 
     return (
       <>
-        <div className="remote-first-detail-toolbar">
-          <button
-            type="button"
-            className="remote-first-detail-toolbar__history"
-            onClick={() =>
-              navigate(createInquiryDetailPath(inquiryId), {
-                state: { returnTo },
-              })
-            }
-          >
-            전체 기록 보기
-          </button>
-          {detailQuery.correlationId && (
+        {detailQuery.correlationId && (
+          <div className="remote-first-detail-toolbar">
             <small>조회 확인 번호: {detailQuery.correlationId}</small>
-          )}
-        </div>
+          </div>
+        )}
 
         <RemoteConsultantInquiryDetail
           key={inquiryId}

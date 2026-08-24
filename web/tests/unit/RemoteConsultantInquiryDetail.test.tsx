@@ -59,6 +59,22 @@ function createDetail(
 }
 
 describe("Remote 상담사 문의 상세", () => {
+  it("한 화면에서 상담에 필요한 상세 영역을 순서대로 보여준다", () => {
+    render(<RemoteConsultantInquiryDetail inquiry={createDetail()} />);
+
+    expect(
+      screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual([
+      "고객 정보",
+      "제품·관리 정보",
+      "증상·문진",
+      "사용 안내",
+      "상담·방문 정보",
+      "현재 가능한 작업",
+      "문의 정보",
+    ]);
+  });
+
   it("최근 관리일 null은 관리 이력 없음으로 표시하고 날짜 요소를 만들지 않는다", () => {
     const { container } = render(
       <RemoteConsultantInquiryDetail inquiry={createDetail()} />,
@@ -113,12 +129,12 @@ describe("Remote 상담사 문의 상세", () => {
     expect(container.innerHTML).not.toContain("2026-02-31");
   });
 
-  it("실제 Backend AI Guidance가 있으면 원문 그대로 표시한다", () => {
+  it("Backend AI 안내 상태 코드는 상담사가 이해할 수 있는 자연어로 표시한다", () => {
     render(
       <RemoteConsultantInquiryDetail
         inquiry={createDetail({
           guidanceAndActions: {
-            usageGuidanceStatus: "PARTIAL_STOP",
+            usageGuidanceStatus: "TOTAL_STOP",
             usageGuidanceMessage: "급수 밸브를 잠그고 상담을 기다려 주세요.",
             restrictedFunctions: ["냉수 출수"],
           },
@@ -126,7 +142,8 @@ describe("Remote 상담사 문의 상세", () => {
       />,
     );
 
-    expect(screen.getByText("PARTIAL_STOP")).toBeInTheDocument();
+    expect(screen.getByText("제품 전체 사용 중지")).toBeInTheDocument();
+    expect(screen.queryByText("TOTAL_STOP")).not.toBeInTheDocument();
     expect(
       screen.getByText("급수 밸브를 잠그고 상담을 기다려 주세요."),
     ).toBeInTheDocument();

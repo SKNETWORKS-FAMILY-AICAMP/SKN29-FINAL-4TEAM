@@ -5,10 +5,12 @@ import { ApiClientError } from "../../src/common/api/apiError";
 import {
   useConsultantInquiryDetailQuery,
   useConsultantInquiryListQuery,
+  useUnassignedConsultationQueueQuery,
 } from "../../src/features/consultation/hooks/useConsultantWorkspaceQueries";
 import type {
   ConsultantInquiryDetailViewModel,
   ConsultantInquiryListViewModel,
+  UnassignedConsultationQueueViewModel,
 } from "../../src/features/consultation/model/consultantWorkspaceRemoteMapper";
 import type { ConsultantWorkspaceDataRepository } from "../../src/features/consultation/repositories/consultantWorkspaceDataRepository";
 
@@ -16,6 +18,11 @@ const EMPTY_LIST: ConsultantInquiryListViewModel = {
   items: [],
   pageInfo: { page: 1, size: 10, total: 0 },
   statusCounts: {},
+};
+
+const UNASSIGNED_QUEUE: UnassignedConsultationQueueViewModel = {
+  items: [],
+  pageInfo: { page: 1, size: 3, total: 0 },
 };
 
 const DETAIL: ConsultantInquiryDetailViewModel = {
@@ -61,6 +68,10 @@ function createRepository(
     listInquiries: vi.fn(async () => ({
       data: EMPTY_LIST,
       correlationId: "corr-list",
+    })),
+    listUnassignedConsultations: vi.fn(async () => ({
+      data: UNASSIGNED_QUEUE,
+      correlationId: "corr-unassigned",
     })),
     getInquiryDetail: vi.fn(async () => ({
       data: DETAIL,
@@ -112,6 +123,31 @@ describe("상담사 화면 비동기 Query 상태", () => {
     await waitFor(() => expect(result.current.status).toBe("success"));
     expect(listInquiries).toHaveBeenCalledTimes(2);
     expect(listInquiries).toHaveBeenLastCalledWith(query);
+  });
+
+  it("미배정 상담 목록을 별도 Query로 조회하고 오류 뒤 다시 불러온다", async () => {
+    const listUnassignedConsultations = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("network down"))
+      .mockResolvedValueOnce({
+        data: UNASSIGNED_QUEUE,
+        correlationId: "corr-unassigned-retry",
+      });
+    const repository = createRepository({ listUnassignedConsultations });
+    const query = { sort: "WAITING_DESC" as const, page: 1, size: 3 };
+
+    const { result } = renderHook(() =>
+      useUnassignedConsultationQueueQuery(query, repository),
+    );
+
+    await waitFor(() => expect(result.current.status).toBe("error"));
+    act(() => result.current.retry());
+    await waitFor(() => expect(result.current.status).toBe("success"));
+
+    expect(result.current.data).toEqual(UNASSIGNED_QUEUE);
+    expect(result.current.correlationId).toBe("corr-unassigned-retry");
+    expect(listUnassignedConsultations).toHaveBeenCalledTimes(2);
+    expect(listUnassignedConsultations).toHaveBeenLastCalledWith(query);
   });
 
   it("상세 403 오류를 권한 오류로 구분한다", async () => {

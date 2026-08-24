@@ -17,7 +17,7 @@
     radial-gradient(circle at 91% 8%, rgb(21 151 255 / 11%), transparent 28rem),
     radial-gradient(circle at 72% 82%, rgb(82 221 233 / 12%), transparent 26rem),
     linear-gradient(180deg, #fff 0%, #f9fcff 46%, #f3faff 100%) !important;
-  font-family: Pretendard, SUIT, "Noto Sans KR", system-ui, sans-serif;
+  font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif);
   isolation: isolate;
 }
 

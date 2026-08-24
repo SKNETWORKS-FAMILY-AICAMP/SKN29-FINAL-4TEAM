@@ -31,7 +31,7 @@ body:has(.v6-workspace) {
 
 body :is(.consultant-queue-app, .operations-page, .v6-workspace) {
   color: var(--pearl-ink) !important;
-  font-family: Pretendard, "Pretendard Variable", Inter, "Noto Sans KR", system-ui, sans-serif !important;
+  font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif) !important;
 }
 
 body :is(.consultant-queue-app, .operations-page, .v6-workspace) :is(input, select, textarea) {

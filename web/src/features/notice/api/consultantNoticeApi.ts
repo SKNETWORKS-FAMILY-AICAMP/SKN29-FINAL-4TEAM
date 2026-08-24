@@ -1,4 +1,5 @@
 import { appEnv } from "../../../app/config/env";
+import { ApiClientError } from "../../../common/api/apiError";
 import { requestApi } from "../../../common/api/httpClient";
 import {
   CONSULTANT_NOTICE_CATEGORY_LABELS,
@@ -78,7 +79,9 @@ interface ConsultantDashboardDto {
   inquiries: readonly ConsultantDashboardInquiryDto[];
 }
 
-function mapNotice(dto: ConsultantDashboardNoticeDto): ConsultantNotice {
+export function mapConsultantNoticeDto(
+  dto: ConsultantDashboardNoticeDto,
+): ConsultantNotice {
   return {
     noticeId: dto.notice_id,
     noticeCode: dto.notice_code,
@@ -108,7 +111,7 @@ export function mapSyntheticConsultantDashboardDto(
       inProgress: dto.summary.in_progress,
       completed: dto.summary.completed,
     },
-    notices: dto.notices.map(mapNotice),
+    notices: dto.notices.map(mapConsultantNoticeDto),
     consultants: dto.consultants.map((consultant) => ({
       userId: consultant.user_id,
       name: consultant.name,
@@ -181,4 +184,42 @@ export async function getConsultantNoticePageData(): Promise<ConsultantNoticePag
     summary: dashboard.summary,
     notices: dashboard.notices,
   };
+}
+
+export async function fetchConsultantNoticeDetail(
+  noticeId: string,
+): Promise<ConsultantNotice> {
+  if (!import.meta.env.DEV) {
+    throw new Error(
+      "상담사 공지 상세 Runtime은 로컬 합성 Web G4에서만 사용할 수 있습니다.",
+    );
+  }
+  const response = await requestApi<ConsultantDashboardNoticeDto>(
+    `/consultant/notices/${encodeURIComponent(noticeId)}`,
+  );
+  if (!response.data) {
+    throw new Error("상담사 공지 상세 응답에 데이터가 없습니다.");
+  }
+  return mapConsultantNoticeDto(response.data);
+}
+
+export async function getConsultantNoticeDetail(
+  noticeId: string,
+): Promise<ConsultantNotice> {
+  if (!appEnv.useMockApi) {
+    return fetchConsultantNoticeDetail(noticeId);
+  }
+
+  const notice = MOCK_CONSULTANT_NOTICE_PAGE_DATA.notices.find(
+    (item) => item.noticeId === noticeId,
+  );
+  if (!notice) {
+    throw new ApiClientError({
+      kind: "NOT_FOUND",
+      status: 404,
+      code: "RESOURCE_NOT_FOUND",
+      message: "공지사항을 찾을 수 없습니다.",
+    });
+  }
+  return notice;
 }

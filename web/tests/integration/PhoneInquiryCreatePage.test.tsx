@@ -174,7 +174,7 @@ describe("PhoneInquiryCreatePage", () => {
     expect(status).toHaveTextContent("INQ-20260812-0001");
     expect(screen.getByRole("link", { name: "상담 기록 계속" })).toHaveAttribute(
       "href",
-      `/consultant/inquiries/${CREATED_INQUIRY_ID}`,
+      `/consultant/inquiries?inquiryId=${CREATED_INQUIRY_ID}`,
     );
 
     const [, registerOptions] = fetchMock.mock.calls[1];

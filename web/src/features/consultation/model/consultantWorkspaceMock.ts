@@ -13,3 +13,9 @@ export const CONSULTANT_QUEUE_INQUIRIES: readonly CounselorInquiry[] =
 
 export const REMOTE_PARITY_CONSULTANT_INQUIRIES: readonly CounselorInquiry[] =
   COUNSELOR_INQUIRIES;
+
+export const UNASSIGNED_CONSULTANT_INQUIRIES: readonly CounselorInquiry[] =
+  COUNSELOR_INQUIRIES;
+
+export const REMOTE_PARITY_UNASSIGNED_CONSULTANT_INQUIRIES: readonly CounselorInquiry[] =
+  COUNSELOR_INQUIRIES;

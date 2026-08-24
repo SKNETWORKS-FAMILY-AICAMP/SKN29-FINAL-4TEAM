@@ -20,6 +20,8 @@ export interface ApiIntegrationReadinessItem {
 }
 
 const P0_RUNTIME_ENDPOINTS = [
+  ["unassigned-consultation-list", "미배정 상담 대기 목록", "GET", "/api/v1/inquiries/unassigned-consultations", "contracts/api/paths/inquiries.yaml"],
+  ["claim-consultation", "상담사 문의 가져오기", "POST", "/api/v1/inquiries/{id}/claim-consultation", "contracts/api/paths/consultations.yaml"],
   ["consultant-list", "상담사 문의 목록", "GET", "/api/v1/inquiries", "contracts/api/paths/inquiries.yaml"],
   ["consultant-detail", "상담사 문의 상세", "GET", "/api/v1/inquiries/{id}", "contracts/api/paths/inquiries.yaml"],
   ["consultation-start", "상담 시작", "POST", "/api/v1/inquiries/{id}/start-consultation", "contracts/api/paths/consultations.yaml"],

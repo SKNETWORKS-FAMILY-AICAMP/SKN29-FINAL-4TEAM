@@ -8,8 +8,25 @@ import {
 } from "../../src/features/runtime-status/model/apiIntegrationReadiness";
 
 describe("Web Entry Gate Runtime 분류", () => {
-  it("상담사 P0와 기사 선택 Source 12개를 실제 Runtime 완료로 분류한다", () => {
-    expect(getApiIntegrationCount("CONSULTANT", "RUNTIME_DONE")).toBe(12);
+  it("미배정 상담 배정 흐름을 포함한 상담사 Runtime 14개를 완료로 분류한다", () => {
+    expect(getApiIntegrationCount("CONSULTANT", "RUNTIME_DONE")).toBe(14);
+    expect(API_INTEGRATION_READINESS).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "unassigned-consultation-list",
+          method: "GET",
+          endpoint: "/api/v1/inquiries/unassigned-consultations",
+          status: "RUNTIME_DONE",
+        }),
+        expect.objectContaining({
+          key: "claim-consultation",
+          method: "POST",
+          endpoint: "/api/v1/inquiries/{id}/claim-consultation",
+          status: "RUNTIME_DONE",
+          contractPath: "contracts/api/paths/consultations.yaml",
+        }),
+      ]),
+    );
   });
 
   it("기사 선택 Source를 Dashboard Runtime 계약에 연결한다", () => {

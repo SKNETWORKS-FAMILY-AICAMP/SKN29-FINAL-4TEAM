@@ -36,7 +36,7 @@
     grid-column: 2 !important;
     grid-row: 2 !important;
     grid-template-columns: minmax(0, 1fr) !important;
-    grid-template-rows: minmax(0, 1fr) auto !important;
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
     border: 0 !important;
     border-radius: 0 !important;
     background: #f7fafc !important;
@@ -48,7 +48,7 @@
     .consultant-risk-columns {
     width: 100%;
     grid-column: 1 !important;
-    grid-row: 1 !important;
+    grid-row: 2 !important;
     grid-template-rows: 66px auto minmax(0, 1fr) !important;
     border-right: 0 !important;
   }
@@ -114,7 +114,14 @@
     .consultant-queue-panel
     > .common-pagination {
     grid-column: 1 !important;
-    grid-row: 2 !important;
+    grid-row: 3 !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .unassigned-consultation-queue {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
   }
 
   html body

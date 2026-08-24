@@ -5,6 +5,7 @@ import type {
   ConsultantInquiryStatusDto,
   ConsultantPriorityDto,
   ConsultantRiskLevelDto,
+  UnassignedConsultationQueueDataDto,
 } from "../api/consultantWorkspaceRemoteTypes";
 
 export interface RemoteAllowedAction {
@@ -36,6 +37,28 @@ export interface ConsultantInquiryListViewModel {
   items: readonly ConsultantInquiryListItemViewModel[];
   pageInfo: { page: number; size: number; total: number };
   statusCounts: Partial<Record<ConsultantInquiryStatusDto, number>>;
+}
+
+export interface UnassignedConsultationQueueItemViewModel {
+  inquiryId: string;
+  inquiryCode: string;
+  status: "CONSULTATION_REQUIRED";
+  stateVersion: number;
+  riskLevel: ConsultantRiskLevelDto;
+  priority: ConsultantPriorityDto;
+  symptomSummary: string;
+  customerDisplayNameMasked: string;
+  productModel: string;
+  currentAssigneeType: "NONE";
+  receivedAt: string;
+  updatedAt: string;
+  waitingSeconds: number;
+  allowedActions: readonly RemoteAllowedAction[];
+}
+
+export interface UnassignedConsultationQueueViewModel {
+  items: readonly UnassignedConsultationQueueItemViewModel[];
+  pageInfo: { page: number; size: number; total: number };
 }
 
 export interface ConsultantInquiryDetailViewModel {
@@ -164,6 +187,30 @@ export function mapConsultantInquiryList(
     })),
     pageInfo: { ...dto.page_info },
     statusCounts: dto.status_counts,
+  };
+}
+
+export function mapUnassignedConsultationQueue(
+  dto: UnassignedConsultationQueueDataDto,
+): UnassignedConsultationQueueViewModel {
+  return {
+    items: dto.items.map((item) => ({
+      inquiryId: item.inquiry_id,
+      inquiryCode: item.inquiry_code,
+      status: item.status,
+      stateVersion: item.state_version,
+      riskLevel: item.risk_level,
+      priority: item.priority,
+      symptomSummary: item.symptom_summary,
+      customerDisplayNameMasked: item.customer_display_name_masked,
+      productModel: item.product_model,
+      currentAssigneeType: item.current_assignee_type,
+      receivedAt: item.received_at,
+      updatedAt: item.updated_at,
+      waitingSeconds: item.waiting_seconds,
+      allowedActions: item.allowed_actions.map(mapAllowedAction),
+    })),
+    pageInfo: { ...dto.page_info },
   };
 }
 
