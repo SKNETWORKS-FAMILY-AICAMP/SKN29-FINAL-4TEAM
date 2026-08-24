@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GoldQueryRewriteProposals",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "source_dataset",
+    "summary",
+    "proposals"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "status": {
+      "const": "GOLD_QUERY_REWRITE_PROPOSALS_READY_HUMAN_REVIEW_PENDING"
+    },
+    "source_dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "record_count"],
+      "properties": {
+        "path": {
+          "const": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        },
+        "record_count": {
+          "const": 60
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proposal_count",
+        "automatic_gold_update",
+        "human_review_status",
+        "label_revalidation_required"
+      ],
+      "properties": {
+        "proposal_count": {
+          "const": 60
+        },
+        "automatic_gold_update": {
+          "const": false
+        },
+        "human_review_status": {
+          "const": "PENDING"
+        },
+        "label_revalidation_required": {
+          "const": true
+        }
+      }
+    },
+    "proposals": {
+      "type": "array",
+      "minItems": 60,
+      "maxItems": 60,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "case_id",
+          "source_query_variant_type",
+          "proposed_query",
+          "rewrite_class",
+          "intent_change",
+          "review_note"
+        ],
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "pattern": "^RAGV2-GOLD-[0-9]{4}$"
+          },
+          "source_query_variant_type": {
+            "enum": [
+              "DIRECT",
+              "COLLOQUIAL",
+              "TYPO_ABBREVIATION",
+              "COMPOUND",
+              "SAFETY",
+              "NO_EVIDENCE",
+              "CROSS_PRODUCT"
+            ]
+          },
+          "proposed_query": {
+            "type": "string",
+            "minLength": 5
+          },
+          "rewrite_class": {
+            "enum": [
+              "NATURALIZED",
+              "INTENT_CLARIFIED",
+              "ANSWER_LEAKAGE_REMOVED",
+              "TYPO_VARIANT_PRESERVED",
+              "NEGATIVE_NATURALIZED"
+            ]
+          },
+          "intent_change": {
+            "type": "boolean"
+          },
+          "review_note": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

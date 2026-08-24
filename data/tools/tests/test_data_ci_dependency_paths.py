@@ -67,6 +67,17 @@ class DataCiDependencyPathTests(unittest.TestCase):
             with self.subTest(path=broad_path, event="push"):
                 self.assertNotIn(broad_path, push)
 
+    def test_data_ci_installs_pinned_schema_validation_dependencies(self) -> None:
+        workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+
+        self.assertIn('python-version: "3.13.13"', workflow)
+        self.assertIn(
+            "--constraint backend/requirements/constraints-py313.txt",
+            workflow,
+        )
+        self.assertIn("PyYAML==6.0.3", workflow)
+        self.assertIn("jsonschema==4.26.0", workflow)
+
 
 if __name__ == "__main__":
     unittest.main()

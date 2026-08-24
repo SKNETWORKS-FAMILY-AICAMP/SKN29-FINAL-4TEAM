@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GoldPrimaryReviewPacket",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "status", "generated_at", "source_dataset", "summary", "reviews"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "status": {"const": "GOLD_REVIEW_PACKET_READY_HUMAN_SIGNOFF_PENDING"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "source_dataset": {
+      "type": "object",
+      "required": ["path", "sha256", "record_count"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+        "record_count": {"const": 60}
+      }
+    },
+    "summary": {"type": "object"},
+    "reviews": {
+      "type": "array",
+      "minItems": 60,
+      "maxItems": 60,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case_id", "assistant_assessment", "assistant_reason", "review_priority", "human_signoff_status", "case_snapshot", "source_review_context", "checks", "suggested_changes", "required_human_checks"],
+        "properties": {
+          "case_id": {"pattern": "^RAGV2-GOLD-[0-9]{4}$"},
+          "assistant_assessment": {"enum": ["SUPPORTED", "CHANGE_PROPOSED", "REJECT_PROPOSED", "SOURCE_CHECK_REQUIRED"]},
+          "assistant_reason": {"type": "string", "minLength": 1},
+          "review_priority": {"enum": ["HIGH", "MEDIUM", "NORMAL"]},
+          "human_signoff_status": {"const": "PENDING"},
+          "case_snapshot": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["query", "query_variant_type", "product_model_code", "expected_no_evidence", "evidence_match_policy", "expected_risk_level", "expected_guidance_policy", "forbidden_document_ids", "forbidden_model_codes", "source_case_ids"],
+            "properties": {
+              "query": {"type": "string", "minLength": 1},
+              "query_variant_type": {"type": "string", "minLength": 1},
+              "product_model_code": {"type": "string", "minLength": 1},
+              "expected_no_evidence": {"type": "boolean"},
+              "evidence_match_policy": {"enum": ["ANY", "ALL", "NONE"]},
+              "expected_risk_level": {"type": "string", "minLength": 1},
+              "expected_guidance_policy": {"type": "string", "minLength": 1},
+              "forbidden_document_ids": {"type": "array", "items": {"type": "string"}},
+              "forbidden_model_codes": {"type": "array", "items": {"type": "string"}},
+              "source_case_ids": {"type": "array", "items": {"type": "string"}}
+            }
+          },
+          "source_review_context": {"type": "array", "items": {"type": "object"}},
+          "checks": {"type": "array", "items": {"type": "object"}},
+          "suggested_changes": {"type": "array", "items": {"type": "object"}},
+          "required_human_checks": {"type": "array", "minItems": 4, "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

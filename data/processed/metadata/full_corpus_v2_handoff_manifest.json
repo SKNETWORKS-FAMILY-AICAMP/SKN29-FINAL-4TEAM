@@ -1,0 +1,89 @@
+{
+  "counts": {
+    "by_product": {
+      "WPUIAC425SNW": 52,
+      "WPUJAC104DWH": 59
+    },
+    "by_record_type": {
+      "CHILD": 15,
+      "PRESERVATION": 5,
+      "SOURCE_PAGE": 91
+    },
+    "context_only_parents": 5,
+    "search_candidates": 111
+  },
+  "generated_at": "2026-08-23T00:00:00+09:00",
+  "gold_review_status": "GOLD_REVIEW_PACKET_READY_HUMAN_SIGNOFF_PENDING",
+  "iac425_candidate_status": "IAC425_GOLD_CANDIDATES_READY",
+  "inputs": {
+    "baseline_corpus": {
+      "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+      "sha256": "4B0890BC079207C8F9AA9DB1208D371F295BD53537A9B692FA6B7D686333FABC"
+    },
+    "children": {
+      "path": "data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
+      "sha256": "B4BA15C045D7C4EAF1E4CF90DFF83EC9FA2C236F9CFCDAD85467A42F1921EB78"
+    },
+    "evidence_groups": {
+      "path": "data/processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl",
+      "sha256": "CCD797DB8C87B9B90EFD88EBE16BE5AC4D80008BC75E0CCE46B3854F70C3143D"
+    },
+    "gold_dataset": {
+      "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+      "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A"
+    },
+    "jac104_evidence_registry": {
+      "path": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+      "sha256": "40A1B328F86FF6E57A3EFD1F5EBD63051DCDE06AB32E0A08CC6C6D5BE638F61F"
+    },
+    "manual_pages": {
+      "path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+      "sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F"
+    },
+    "parents": {
+      "path": "data/processed/structured/rag/expansion/rag_parent_pages_3model_v1.jsonl",
+      "sha256": "EB58882ED9EC996C7665FE6C3C472A6B25273D278D79799F6F15A98AF9B1578E"
+    },
+    "three_model_evaluation": {
+      "path": "data/config/rag/three_model_evaluation_cases.json",
+      "sha256": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1"
+    }
+  },
+  "outputs": {
+    "corpus": {
+      "path": "data/processed/structured/rag/experimental/full_corpus_chunks_v2.jsonl",
+      "record_count": 111,
+      "sha256": "2D4A022A8FEABD376C9F5D42E7D28BA8E18571274D19A05794D066B7113D6FC6"
+    },
+    "coverage": {
+      "page_count": 5,
+      "path": "data/processed/structured/rag/experimental/full_corpus_v2_coverage.json",
+      "sha256": "A79D62E529BCEEFA60870FA453A6BB64093E1EFF5BAEC183A96CFFB220E1474B"
+    },
+    "gold_review": {
+      "path": "data/processed/validation/rag_experiments/gold_v1_primary_review_packet.json",
+      "record_count": 60,
+      "sha256": "088CFC416185DEADADE4139702A5E60F178B0FF122FC3856B45BD116A6584DB2"
+    },
+    "iac425_candidates": {
+      "path": "data/config/rag/iac425_gold_candidates.json",
+      "record_count": 18,
+      "sha256": "3C5BF1A8ED9EC9DCF4A3644159605E387B5C6698F92D6AB9AD17FC9E88B67B72"
+    }
+  },
+  "publication_limits": [
+    "AI Runner와 운영 청킹 설정에 연결되지 않은 데이터 인계본이다.",
+    "Gold 검수표는 사람 서명이나 2인 승인을 대체하지 않는다.",
+    "IAC425 후보는 기존 Gold에 병합되지 않은 DEV 제안이다.",
+    "Full B1 재실행 전 성능 수치 또는 운영 승격을 주장하지 않는다."
+  ],
+  "schema_version": "1.0.0",
+  "schemas": {
+    "data/schemas/config/goldPrimaryReviewPacket.schema.json": "EAF37CAC08FE27635740A807460750B8AC3D95F958F6BFE3E5F3889F6714E2FE",
+    "data/schemas/config/iac425GoldCandidates.schema.json": "5F36EEABD3D20662457171CF06AA33A055A0C85CA648660086200E67DE736DB7",
+    "data/schemas/processed/fullCorpusV2Chunk.schema.json": "06B799F7527F29C0E2E087FEDD3B15352A93BF59D33FA572FD213192775972D9",
+    "data/schemas/processed/fullCorpusV2Coverage.schema.json": "0C729FCC3C17FEB70B91ADAF27C75B1EBF49826C441DB84845DDAD9616763012"
+  },
+  "source_commit": "e99cf78faa58a40f2cec49281119c437b594e470",
+  "status": "FULL_CORPUS_V2_DATA_HANDOFF_READY"
+}
