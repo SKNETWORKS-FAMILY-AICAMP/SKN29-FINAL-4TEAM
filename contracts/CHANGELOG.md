@@ -1,5 +1,27 @@
 # Contracts Changelog
 
+## 2026-08-24 — P1-A 회원가입·계정연결 G2 최종 검토 계약
+
+### Added
+
+- 합성 계약고객의 계약 확인·OTP·ID/PW 회원가입·일반 로그인·아이디 찾기·
+  비밀번호 재설정용 9개 `IN_REVIEW` Operation과 전용 Schema를 추가했다.
+- OTP 300초, 재전송 60초, 최대 실패 5회와 비밀번호 12~64자·영문/숫자
+  필수, 이용약관·개인정보 수집 이용 필수 동의를 기계 검증 계약으로 옮겼다.
+- `AUTH_VERIFICATION_FAILED`, `AUTH_LOGIN_FAILED`,
+  `AUTH_IDENTIFIER_UNAVAILABLE`, `AUTH_SIGNUP_CONFLICT`,
+  `AUTH_RATE_LIMITED` 공개 오류 코드를 추가했다.
+
+### Boundary
+
+- Challenge 생성은 계약·계정 존재 여부와 무관하게 동일 HTTP 202와 동일
+  Schema·일반 안내 문구를 반환하며 이메일 힌트를 공개하지 않는다.
+- 세 OTP 확인 Endpoint는 모두 `challenges/{challenge_id}/verify` 규칙을
+  사용하고, Mobile의 기존 `LoginResponse`를 재사용한다.
+- 현재 계약은 담당자 최종 ACK 전 `IN_REVIEW`이며 Runtime은
+  `NOT_IMPLEMENTED`다. G2 동결 전 Model·Migration·Seed·OTP Runtime을
+  선행하지 않는다.
+
 ## 2026-08-23 — 미배정 상담 대기열과 상담사 Claim
 
 ### Added

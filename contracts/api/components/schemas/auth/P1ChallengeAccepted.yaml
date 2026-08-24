@@ -1,0 +1,26 @@
+title: P1ChallengeAccepted
+type: object
+additionalProperties: false
+required:
+  - challenge_id
+  - expires_in
+  - resend_after
+  - message
+properties:
+  challenge_id:
+    type: string
+    format: uuid
+  expires_in:
+    type: integer
+    const: 300
+    description: OTP Challenge 유효시간(초)
+  resend_after:
+    type: integer
+    const: 60
+    description: OTP 재전송 가능 시점까지 남은 초
+  message:
+    type: string
+    const: 등록된 계약 연락처가 확인되면 인증번호가 발송됩니다.
+description: |
+  계약 후보가 존재하는 경우와 존재하지 않는 경우에 HTTP Status, Schema,
+  메시지와 필드 집합이 동일해야 한다. 전체 또는 마스킹 이메일은 반환하지 않는다.

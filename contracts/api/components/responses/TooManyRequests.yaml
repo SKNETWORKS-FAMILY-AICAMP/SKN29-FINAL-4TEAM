@@ -1,0 +1,14 @@
+description: HTTP 429 OTP 재전송·요청·검증 제한 응답
+headers:
+  X-Correlation-ID:
+    $ref: ../headers/CorrelationId.yaml
+  Retry-After:
+    description: 다시 요청할 수 있을 때까지 남은 초
+    schema:
+      type: integer
+      minimum: 1
+content:
+  application/json:
+    schema:
+      $ref: ../schemas/common/ApiResponse.yaml
+    description: error.details.retry_after_seconds에 동일한 남은 초를 제공한다.
