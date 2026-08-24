@@ -56,4 +56,28 @@ describe("ConsultantNoticePage", () => {
     expect(within(panel).getAllByRole("listitem")).toHaveLength(1);
     expect(within(panel).getByText("임직원 건강검진 신청 안내")).toBeVisible();
   });
+
+  it("noticeId가 있으면 해당 공지 상세를 보여주고 목록으로 돌아간다", async () => {
+    const user = userEvent.setup();
+    renderPage("/consultant/notices?noticeId=notice-emergency-001");
+
+    const panel = await screen.findByRole("tabpanel", { name: "공지사항 상세" });
+    expect(
+      within(panel).getByRole("heading", {
+        level: 2,
+        name: "긴급 문의 응대 절차 안내",
+      }),
+    ).toBeVisible();
+    expect(within(panel).getByText("SYN-WEB-DASH-NOTICE-001")).toBeVisible();
+    expect(
+      within(panel).getByText(/제품 사용 중지를 먼저 안내/),
+    ).toBeVisible();
+
+    await user.click(
+      within(panel).getByRole("button", { name: /공지사항 목록으로/ }),
+    );
+
+    const listPanel = await screen.findByRole("tabpanel", { name: "공지사항" });
+    expect(within(listPanel).getAllByRole("listitem")).toHaveLength(6);
+  });
 });

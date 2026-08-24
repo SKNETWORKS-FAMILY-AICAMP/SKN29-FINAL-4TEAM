@@ -27,7 +27,6 @@ interface CompactConsultationDeskProps {
     stateVersion: number;
     allowedActions: readonly CounselorAllowedAction[];
   }) => void;
-  onOpenFullDetail: () => void;
 }
 
 function FieldError({ message }: { message?: string }) {
@@ -64,7 +63,6 @@ export default function CompactConsultationDesk({
   onAutoAdvanceChange,
   onAdvanceToNext,
   onInquiryStateChange,
-  onOpenFullDetail,
 }: CompactConsultationDeskProps) {
   if (!inquiry) {
     return (
@@ -83,7 +81,6 @@ export default function CompactConsultationDesk({
       onAutoAdvanceChange={onAutoAdvanceChange}
       onAdvanceToNext={onAdvanceToNext}
       onInquiryStateChange={onInquiryStateChange}
-      onOpenFullDetail={onOpenFullDetail}
     />
   );
 }
@@ -94,7 +91,6 @@ function CompactConsultationDeskContent({
   onAutoAdvanceChange,
   onAdvanceToNext,
   onInquiryStateChange,
-  onOpenFullDetail,
 }: CompactConsultationDeskProps & { inquiry: CounselorInquiry }) {
   const [isVisitSchedulerOpen, setVisitSchedulerOpen] = useState(false);
   const [visitPreferredDate, setVisitPreferredDate] = useState("");
@@ -217,9 +213,6 @@ function CompactConsultationDeskContent({
             {inquiry.customerName} · {inquiry.productCode} · {inquiry.inquiryCode}
           </p>
         </div>
-        <button type="button" onClick={onOpenFullDetail}>
-          전체 기록 보기
-        </button>
       </header>
 
       <dl className="simple-mini-profile" aria-label="고객 및 제품 빠른 정보">

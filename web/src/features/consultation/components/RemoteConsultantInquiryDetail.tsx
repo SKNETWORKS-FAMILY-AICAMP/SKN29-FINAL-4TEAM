@@ -19,6 +19,19 @@ interface RecentCareDatePresentation {
   label: string;
 }
 
+function getUsageGuidanceStatusLabel(
+  status: ConsultantInquiryDetailViewModel["guidanceAndActions"]["usageGuidanceStatus"],
+): string {
+  const labels = {
+    NORMAL: "일반 사용 가능",
+    PARTIAL_STOP: "일부 기능 사용 중지",
+    TOTAL_STOP: "제품 전체 사용 중지",
+    PENDING_CONSULTATION: "상담 확인 전 안내 보류",
+  } as const;
+
+  return status ? labels[status] : "안내 상태 미제공";
+}
+
 function getRecentCareDatePresentation(
   value: string | null,
 ): RecentCareDatePresentation {
@@ -74,12 +87,8 @@ export default function RemoteConsultantInquiryDetail({
         className="remote-inquiry-detail__section"
         data-e2e-sensitive="true"
       >
-        <h2>문의·고객 정보</h2>
+        <h2>고객 정보</h2>
         <dl className="inquiry-v13-remote-summary">
-          <div>
-            <dt>문의 번호</dt>
-            <dd>{inquiry.inquiryCode}</dd>
-          </div>
           <div>
             <dt>고객명</dt>
             <dd>{inquiry.customer.displayName}</dd>
@@ -87,10 +96,6 @@ export default function RemoteConsultantInquiryDetail({
           <div>
             <dt>연락처</dt>
             <dd>{maskCustomerPhone(inquiry.customer.phone)}</dd>
-          </div>
-          <div>
-            <dt>상태·버전</dt>
-            <dd>{inquiry.status} · {inquiry.stateVersion}</dd>
           </div>
           <div>
             <dt>위험도</dt>
@@ -166,7 +171,11 @@ export default function RemoteConsultantInquiryDetail({
       >
         <h2>사용 안내</h2>
         <strong>AI 안내 상태</strong>
-        <p>{inquiry.guidanceAndActions.usageGuidanceStatus ?? "안내 상태 미제공"}</p>
+        <p>
+          {getUsageGuidanceStatusLabel(
+            inquiry.guidanceAndActions.usageGuidanceStatus,
+          )}
+        </p>
         <strong>AI 안내 내용</strong>
         <p>
           {usageGuidanceMessage || "AI 안내 미제공 / 상담 검토 필요"}
@@ -227,6 +236,19 @@ export default function RemoteConsultantInquiryDetail({
           </dl>
         )}
         {inquiry.visit === null && <p>방문 기록이 아직 제공되지 않았습니다.</p>}
+        {inquiry.stateHistory.length > 0 && (
+          <>
+            <strong>상태 변경 이력</strong>
+            <ol>
+              {inquiry.stateHistory.map((history) => (
+                <li key={`${history.changedAt}-${history.toStatus}`}>
+                  {history.fromStatus ?? "시작"} → {history.toStatus} ·{" "}
+                  {history.actorRole}
+                </li>
+              ))}
+            </ol>
+          </>
+        )}
       </section>
 
       <section className="remote-inquiry-detail__section">
@@ -251,18 +273,20 @@ export default function RemoteConsultantInquiryDetail({
         />
       )}
 
-      {inquiry.stateHistory.length > 0 && (
-        <section className="remote-inquiry-detail__section">
-          <h2>상태 변경 이력</h2>
-          <ol>
-            {inquiry.stateHistory.map((history) => (
-              <li key={`${history.changedAt}-${history.toStatus}`}>
-                {history.fromStatus ?? "시작"} → {history.toStatus} · {history.actorRole}
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
+      <section className="remote-inquiry-detail__section">
+        <h2>문의 정보</h2>
+        <dl className="inquiry-v13-remote-summary">
+          <div>
+            <dt>문의 번호</dt>
+            <dd>{inquiry.inquiryCode}</dd>
+          </div>
+          <div>
+            <dt>상태·버전</dt>
+            <dd>{inquiry.status} · {inquiry.stateVersion}</dd>
+          </div>
+        </dl>
+      </section>
+
     </div>
   );
 }

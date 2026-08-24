@@ -1,4 +1,10 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useParams,
+} from "react-router-dom";
 
 import OperationsDashboardPage from "../../pages/admin/OperationsDashboardPage";
 import OperationsInfographicPage from "../../pages/admin/OperationsInfographicPage";
@@ -6,7 +12,6 @@ import LoginPage from "../../pages/auth/LoginPage";
 import ConsultantDashboardPage from "../../pages/consultant/ConsultantDashboardPage";
 import ConsultantInquiryListPage from "../../pages/consultant/ConsultantInquiryListPage";
 import ConsultantNoticePage from "../../pages/consultant/ConsultantNoticePage";
-import InquiryDetailPage from "../../pages/consultant/InquiryDetailPage";
 import PhoneInquiryCreatePage from "../../pages/consultant/PhoneInquiryCreatePage";
 import VisitTransitionPage from "../../pages/consultant/VisitTransitionPage";
 import ErrorPage from "../../pages/system/ErrorPage";
@@ -17,9 +22,10 @@ import AuthLayout from "../layouts/AuthLayout";
 import ConsultantLayout from "../layouts/ConsultantLayout";
 import RootLayout from "../layouts/RootLayout";
 import { useAuth } from "../providers/authContext";
+import { toInquiryId } from "../../entities/inquiry/inquiryIdentifiers";
 import AuthGuard from "./guards/AuthGuard";
 import RoleGuard from "./guards/RoleGuard";
-import { ROUTE_PATHS } from "./routePaths";
+import { createInquiryDetailPath, ROUTE_PATHS } from "./routePaths";
 
 function HomeRedirect() {
   const { isAuthenticated, user } = useAuth();
@@ -34,6 +40,22 @@ function HomeRedirect() {
     return <Navigate to={ROUTE_PATHS.adminDashboard} replace />;
   }
   return <Navigate to={ROUTE_PATHS.forbidden} replace />;
+}
+
+function LegacyInquiryDetailRedirect() {
+  const { inquiryId: rawInquiryId } = useParams<{ inquiryId: string }>();
+  const inquiryId = toInquiryId(rawInquiryId);
+
+  return (
+    <Navigate
+      to={
+        inquiryId
+          ? createInquiryDetailPath(inquiryId)
+          : ROUTE_PATHS.consultantInquiryList
+      }
+      replace
+    />
+  );
 }
 
 export function AppRoutes() {
@@ -70,7 +92,7 @@ export function AppRoutes() {
               />
               <Route
                 path={ROUTE_PATHS.consultantInquiryDetail}
-                element={<InquiryDetailPage />}
+                element={<LegacyInquiryDetailRedirect />}
               />
               <Route
                 path={ROUTE_PATHS.consultantVisitTransition}

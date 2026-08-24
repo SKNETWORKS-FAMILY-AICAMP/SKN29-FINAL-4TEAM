@@ -529,3 +529,40 @@ export const REMOTE_PARITY_CONSULTANT_INQUIRIES: readonly CounselorInquiry[] = [
     allowedActions: [],
   },
 ];
+
+const UNASSIGNED_PRODUCT_MODELS = [
+  "WPUJAC104DWH",
+  "WPUIAC425SNW",
+  "WPUIAC606SNW",
+] as const;
+
+const UNASSIGNED_TEMPLATES = CONSULTANT_QUEUE_INQUIRIES.filter(
+  (inquiry) => inquiry.status === "CONSULTATION_REQUIRED",
+);
+
+if (UNASSIGNED_TEMPLATES.length === 0) {
+  throw new Error("미배정 상담 디자인 Mock의 기준 문의를 찾을 수 없습니다.");
+}
+
+// 배정된 상담 목록과 ID가 겹치지 않는 전용 합성 Fixture다.
+// 제품 코드는 실제 G4 양성 테스트에서 허용된 정식 3종만 사용한다.
+export const UNASSIGNED_CONSULTANT_INQUIRIES: readonly CounselorInquiry[] =
+  UNASSIGNED_PRODUCT_MODELS.map((productModel, index) => {
+    const template = UNASSIGNED_TEMPLATES[index % UNASSIGNED_TEMPLATES.length];
+    const sequence = String(index + 1).padStart(4, "0");
+    return {
+      ...template,
+      inquiryId: parseInquiryId(
+        `30000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+      ),
+      inquiryCode: parseInquiryCode(`INQ-MOCK-UNASSIGNED-${sequence}`),
+      scenarioId: `web-unassigned-${sequence}`,
+      manualModel: productModel,
+      stateVersion: 1,
+      status: "CONSULTATION_REQUIRED",
+      allowedActions: [],
+    };
+  });
+
+export const REMOTE_PARITY_UNASSIGNED_CONSULTANT_INQUIRIES: readonly CounselorInquiry[] =
+  UNASSIGNED_CONSULTANT_INQUIRIES.slice(0, 1);

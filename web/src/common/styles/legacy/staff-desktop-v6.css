@@ -36,7 +36,7 @@
 
 html { min-width: 1024px; scroll-behavior: smooth; }
 
-body, button, input, select, textarea { font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif; }
+body, button, input, select, textarea { font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif); }
 
 body { margin: 0; color: var(--v6-ink-900); background: var(--v6-ink-50); }
 

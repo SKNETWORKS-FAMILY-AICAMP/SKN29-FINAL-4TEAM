@@ -4,6 +4,7 @@ import App from "./app/App";
 import "./common/styles/pearl-workspace-v2.css";
 import "./common/styles/water-blue-tone.css";
 import "./pages/consultant/ConsultantDashboardRefresh.css";
+import "./common/styles/nanum-square.css";
 
 const rootElement = document.getElementById("root");
 

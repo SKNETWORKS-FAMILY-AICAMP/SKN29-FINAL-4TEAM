@@ -70,7 +70,8 @@ export interface ConsultantDashboardInquiry {
 }
 
 /**
- * 정식 OpenAPI 계약이 아닌 로컬 합성 Web G4 전용 Dashboard projection이다.
+ * OpenAPI에 등록된 로컬 합성 Web G4 전용 Dashboard projection이다.
+ * 운영형 일반 Dashboard 데이터로 확대하지 않는다.
  */
 export interface SyntheticConsultantDashboardData
   extends ConsultantNoticePageData {

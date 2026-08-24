@@ -8,7 +8,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { appEnv } from "../../app/config/env";
 import { useAuth } from "../../app/providers/authContext";
-import { createInquiryDetailPath } from "../../app/router/routePaths";
+import { ROUTE_PATHS } from "../../app/router/routePaths";
+import { ApiClientError } from "../../common/api/apiError";
 import Pagination from "../../common/components/data-display/Pagination";
 import {
   formatContractDateTimePrecise,
@@ -232,7 +233,7 @@ export default function ConsultantDashboardPage() {
       appEnv.useMockApi ? MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA : null,
     );
   const [dashboardLoadState, setDashboardLoadState] = useState<
-    "loading" | "ready" | "error"
+    "loading" | "ready" | "error" | "forbidden"
   >(() => (appEnv.useMockApi ? "ready" : "loading"));
   const [dashboardRetryCount, setDashboardRetryCount] = useState(0);
   const [recentInquiryIds, setRecentInquiryIds] = useState<readonly InquiryId[]>(
@@ -276,10 +277,14 @@ export default function ConsultantDashboardPage() {
         setDashboardData(result);
         setDashboardLoadState("ready");
       },
-      () => {
+      (error: unknown) => {
         if (!active) return;
         setDashboardData(null);
-        setDashboardLoadState("error");
+        setDashboardLoadState(
+          error instanceof ApiClientError && error.status === 403
+            ? "forbidden"
+            : "error",
+        );
       },
     );
 
@@ -792,11 +797,26 @@ export default function ConsultantDashboardPage() {
           <article className="counselor-dashboard-info__panel counselor-dashboard-info__panel--notices">
             <header>
               <h2>공지사항</h2>
+              <button
+                type="button"
+                className="counselor-dashboard-notices__more"
+                aria-label="공지사항 전체 보기"
+                onClick={() => navigate(ROUTE_PATHS.consultantNotices)}
+              >
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </button>
             </header>
             {dashboardLoadState === "loading" ? (
               <LoadingState
                 title="대시보드 공지를 불러오고 있습니다."
                 description="로컬 합성 Runtime 응답을 확인하고 있습니다."
+              />
+            ) : dashboardLoadState === "forbidden" ? (
+              <ForbiddenState
+                title="대시보드 공지를 볼 권한이 없습니다."
+                description="상담사 계정과 활성 상태를 확인해 주세요."
               />
             ) : dashboardLoadState === "error" ? (
               <ErrorState
@@ -813,19 +833,32 @@ export default function ConsultantDashboardPage() {
               <ul className="counselor-dashboard-notices">
                 {dashboardData?.notices.map((notice) => (
                   <li key={notice.noticeId}>
-                    <div>
-                      <div className="counselor-dashboard-notices__headline">
-                        <em data-category={notice.category}>{notice.category}</em>
-                        <strong>{notice.title}</strong>
+                    <button
+                      type="button"
+                      className="counselor-dashboard-notices__item"
+                      aria-label={`${notice.title} 상세 보기`}
+                      onClick={() =>
+                        navigate(
+                          `${ROUTE_PATHS.consultantNotices}?noticeId=${encodeURIComponent(notice.noticeId)}`,
+                        )
+                      }
+                    >
+                      <div>
+                        <div className="counselor-dashboard-notices__headline">
+                          <em data-category={notice.category}>
+                            {notice.category}
+                          </em>
+                          <strong>{notice.title}</strong>
+                        </div>
                       </div>
-                    </div>
-                    <span className="counselor-dashboard-notices__meta">
-                      <span>{notice.department}</span>
-                      <i aria-hidden="true">|</i>
-                      <time dateTime={notice.publishedOn}>
-                        {notice.publishedOn.replaceAll("-", ".")}
-                      </time>
-                    </span>
+                      <span className="counselor-dashboard-notices__meta">
+                        <span>{notice.department}</span>
+                        <i aria-hidden="true">|</i>
+                        <time dateTime={notice.publishedOn}>
+                          {notice.publishedOn.replaceAll("-", ".")}
+                        </time>
+                      </span>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -870,6 +903,11 @@ export default function ConsultantDashboardPage() {
               <LoadingState
                 title="직원 연락처를 불러오고 있습니다."
                 description="로컬 합성 Runtime 응답을 확인하고 있습니다."
+              />
+            ) : dashboardLoadState === "forbidden" ? (
+              <ForbiddenState
+                title="직원 연락처를 볼 권한이 없습니다."
+                description="상담사 계정과 활성 상태를 확인해 주세요."
               />
             ) : dashboardLoadState === "error" ? (
               <ErrorState
@@ -1381,13 +1419,6 @@ export default function ConsultantDashboardPage() {
                             : "ALL",
                       );
                     }}
-                    onOpenFullDetail={() =>
-                      navigate(createInquiryDetailPath(selectedInquiry.inquiryId), {
-                        state: {
-                          returnTo: `/consultant/dashboard${location.search}`,
-                        },
-                      })
-                    }
                   />
                 </div>
               </>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import EmptyState from "../../common/components/feedback/EmptyState";
 import ErrorState from "../../common/components/feedback/ErrorState";
@@ -49,6 +50,7 @@ function matchesQuery(notice: ConsultantNotice, query: string) {
 }
 
 export default function ConsultantNoticePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState<ConsultantNoticePageData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -56,6 +58,8 @@ export default function ConsultantNoticePage() {
   const [categoryFilter, setCategoryFilter] =
     useState<NoticeCategoryFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const isDetailRequested = searchParams.has("noticeId");
+  const requestedNoticeId = searchParams.get("noticeId") ?? "";
 
   useEffect(() => {
     let active = true;
@@ -93,6 +97,15 @@ export default function ConsultantNoticePage() {
         ),
     [categoryFilter, data?.notices, normalizedQuery],
   );
+  const selectedNotice = useMemo(
+    () =>
+      isDetailRequested
+        ? (data?.notices.find(
+            (notice) => notice.noticeId === requestedNoticeId,
+          ) ?? null)
+        : null,
+    [data?.notices, isDetailRequested, requestedNoticeId],
+  );
 
   const bucketCounts = useMemo<
     Readonly<Record<CounselorWorkBucket, number>> | undefined
@@ -107,6 +120,12 @@ export default function ConsultantNoticePage() {
         : undefined,
     [data],
   );
+
+  const returnToNoticeList = () => {
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.delete("noticeId");
+    setSearchParams(nextSearchParams);
+  };
 
   return (
     <div className="simple-consultant-app consultant-queue-app consultant-notice-app">
@@ -123,51 +142,63 @@ export default function ConsultantNoticePage() {
 
         <section
           id="consultant-notice-panel"
-          className="consultant-notice-panel"
+          className={`consultant-notice-panel${isDetailRequested ? " is-detail" : ""}`}
           role="tabpanel"
           aria-labelledby="consultant-notice-title"
         >
           <header className="consultant-notice-head">
             <div>
               <span>NOTICE</span>
-              <h1 id="consultant-notice-title">공지사항</h1>
-              <p>상담 업무에 필요한 안내와 일정을 확인해 주세요.</p>
+              <h1 id="consultant-notice-title">
+                {isDetailRequested ? "공지사항 상세" : "공지사항"}
+              </h1>
+              <p>
+                {isDetailRequested
+                  ? "선택한 공지의 내용을 자세히 확인해 주세요."
+                  : "상담 업무에 필요한 안내와 일정을 확인해 주세요."}
+              </p>
             </div>
-            <strong>{data?.notices.length ?? 0}건</strong>
+            <strong>
+              {isDetailRequested ? "상세" : `${data?.notices.length ?? 0}건`}
+            </strong>
           </header>
 
-          <div className="consultant-notice-toolbar">
-            <div
-              className="consultant-notice-categories"
-              aria-label="공지사항 분류"
-            >
-              {NOTICE_CATEGORY_FILTERS.map((category) => (
-                <button
-                  key={category.id}
-                  type="button"
-                  className={categoryFilter === category.id ? "is-active" : ""}
-                  aria-pressed={categoryFilter === category.id}
-                  onClick={() => setCategoryFilter(category.id)}
-                >
-                  {category.label}
-                </button>
-              ))}
-            </div>
+          {!isDetailRequested && (
+            <div className="consultant-notice-toolbar">
+              <div
+                className="consultant-notice-categories"
+                aria-label="공지사항 분류"
+              >
+                {NOTICE_CATEGORY_FILTERS.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    className={
+                      categoryFilter === category.id ? "is-active" : ""
+                    }
+                    aria-pressed={categoryFilter === category.id}
+                    onClick={() => setCategoryFilter(category.id)}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
 
-            <label className="consultant-notice-search">
-              <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
-                <circle cx="10.5" cy="10.5" r="6.25" />
-                <path d="m15.25 15.25 4.5 4.5" />
-              </svg>
-              <span className="consultant-visually-hidden">공지사항 검색</span>
-              <input
-                type="search"
-                value={searchQuery}
-                placeholder="제목, 내용, 부서 검색"
-                onChange={(event) => setSearchQuery(event.target.value)}
-              />
-            </label>
-          </div>
+              <label className="consultant-notice-search">
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                  <circle cx="10.5" cy="10.5" r="6.25" />
+                  <path d="m15.25 15.25 4.5 4.5" />
+                </svg>
+                <span className="consultant-visually-hidden">공지사항 검색</span>
+                <input
+                  type="search"
+                  value={searchQuery}
+                  placeholder="제목, 내용, 부서 검색"
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                />
+              </label>
+            </div>
+          )}
 
           <div className="consultant-notice-content">
             {isLoading ? (
@@ -185,6 +216,51 @@ export default function ConsultantNoticePage() {
                   setRetryCount((count) => count + 1);
                 }}
               />
+            ) : isDetailRequested ? (
+              selectedNotice ? (
+                <article
+                  className="consultant-notice-detail"
+                  aria-labelledby="consultant-notice-detail-title"
+                >
+                  <button
+                    type="button"
+                    className="consultant-notice-detail__back"
+                    onClick={returnToNoticeList}
+                  >
+                    <span aria-hidden="true">←</span>
+                    공지사항 목록으로
+                  </button>
+
+                  <header className="consultant-notice-detail__head">
+                    <div className="consultant-notice-detail__eyebrow">
+                      <em data-category={selectedNotice.category}>
+                        {selectedNotice.category}
+                      </em>
+                      <span>{selectedNotice.noticeCode}</span>
+                    </div>
+                    <h2 id="consultant-notice-detail-title">
+                      {selectedNotice.title}
+                    </h2>
+                    <div className="consultant-notice-detail__meta">
+                      <span>{selectedNotice.department}</span>
+                      <time dateTime={selectedNotice.publishedOn}>
+                        {formatNoticeDate(selectedNotice.publishedOn)}
+                      </time>
+                    </div>
+                  </header>
+
+                  <div className="consultant-notice-detail__body">
+                    <p>{selectedNotice.content}</p>
+                  </div>
+                </article>
+              ) : (
+                <EmptyState
+                  title="해당 공지사항을 찾을 수 없습니다."
+                  description="공지사항이 삭제되었거나 잘못된 주소일 수 있습니다."
+                  actionLabel="공지사항 목록으로"
+                  onAction={returnToNoticeList}
+                />
+              )
             ) : visibleNotices.length === 0 ? (
               <EmptyState
                 title="조건에 맞는 공지사항이 없습니다."

@@ -25,7 +25,7 @@
   --wc-radius-lg: 24px;
   --wc-shadow-sm: 0 8px 24px rgba(7, 35, 29, .08);
   --wc-shadow-lg: 0 24px 64px rgba(7, 35, 29, .16);
-  font-family: Pretendard, "Noto Sans KR", "Malgun Gothic", system-ui, -apple-system, sans-serif;
+  font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif);
   color: var(--wc-ink-900);
   background: var(--wc-ink-50);
   font-synthesis: none;

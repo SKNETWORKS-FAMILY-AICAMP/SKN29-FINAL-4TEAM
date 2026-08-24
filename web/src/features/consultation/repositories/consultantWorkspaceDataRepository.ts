@@ -5,12 +5,16 @@ import { requestApi } from "../../../common/api/httpClient";
 import {
   CONSULTANT_QUEUE_INQUIRIES,
   REMOTE_PARITY_CONSULTANT_INQUIRIES,
+  REMOTE_PARITY_UNASSIGNED_CONSULTANT_INQUIRIES,
+  UNASSIGNED_CONSULTANT_INQUIRIES,
 } from "../model/consultantWorkspaceMock";
 import {
   mapConsultantInquiryDetail,
   mapConsultantInquiryList,
+  mapUnassignedConsultationQueue,
   type ConsultantInquiryDetailViewModel,
   type ConsultantInquiryListViewModel,
+  type UnassignedConsultationQueueViewModel,
 } from "../model/consultantWorkspaceRemoteMapper";
 import type {
   AllowedActionDto,
@@ -18,6 +22,9 @@ import type {
   ConsultantInquiryListDataDto,
   ConsultantInquiryListQuery,
   ConsultantInquiryStatusDto,
+  UnassignedConsultationQueueDataDto,
+  UnassignedConsultationQueueItemDto,
+  UnassignedConsultationQueueQuery,
 } from "../api/consultantWorkspaceRemoteTypes";
 import type { CounselorInquiry } from "../model/consultantWorkspaceTypes";
 
@@ -31,6 +38,9 @@ export interface ConsultantWorkspaceDataRepository {
   listInquiries(
     query?: ConsultantInquiryListQuery,
   ): Promise<RepositoryResult<ConsultantInquiryListViewModel>>;
+  listUnassignedConsultations(
+    query?: UnassignedConsultationQueueQuery,
+  ): Promise<RepositoryResult<UnassignedConsultationQueueViewModel>>;
   getInquiryDetail(
     inquiryId: string,
   ): Promise<RepositoryResult<ConsultantInquiryDetailViewModel>>;
@@ -76,6 +86,32 @@ export function buildConsultantInquiryListPath(
   return `/inquiries${queryString ? `?${queryString}` : ""}`;
 }
 
+function getMockUnassignedInquiries(
+  dataset: MockDataset = appEnv.mockDataset,
+): readonly CounselorInquiry[] {
+  return dataset === "DESIGN_SCENARIOS"
+    ? UNASSIGNED_CONSULTANT_INQUIRIES
+    : REMOTE_PARITY_UNASSIGNED_CONSULTANT_INQUIRIES;
+}
+
+export function buildUnassignedConsultationQueuePath(
+  query: UnassignedConsultationQueueQuery = {},
+): string {
+  const params = new URLSearchParams();
+  if (query.q) params.set("q", query.q);
+  query.riskLevel?.forEach((value) => params.append("risk_level", value));
+  query.priority?.forEach((value) => params.append("priority", value));
+  if (query.from) params.set("from", query.from);
+  if (query.to) params.set("to", query.to);
+  if (query.sort) params.set("sort", query.sort);
+  if (query.page !== undefined) params.set("page", String(query.page));
+  if (query.size !== undefined) params.set("size", String(query.size));
+  const queryString = params.toString();
+  return `/inquiries/unassigned-consultations${
+    queryString ? `?${queryString}` : ""
+  }`;
+}
+
 export function createRemoteConsultantWorkspaceDataRepository(
   requester: ConsultantApiRequester = requestApi,
 ): ConsultantWorkspaceDataRepository {
@@ -87,6 +123,15 @@ export function createRemoteConsultantWorkspaceDataRepository(
       );
       return {
         data: mapConsultantInquiryList(requireResponseData(response)),
+        correlationId: response.metadata.correlation_id,
+      };
+    },
+    async listUnassignedConsultations(query) {
+      const response = await requester<UnassignedConsultationQueueDataDto>(
+        buildUnassignedConsultationQueuePath(query),
+      );
+      return {
+        data: mapUnassignedConsultationQueue(requireResponseData(response)),
         correlationId: response.metadata.correlation_id,
       };
     },
@@ -150,6 +195,27 @@ function toMockListItem(inquiry: CounselorInquiry) {
   };
 }
 
+function toMockUnassignedQueueItem(
+  inquiry: CounselorInquiry,
+): UnassignedConsultationQueueItemDto {
+  const item = toMockListItem(inquiry);
+  return {
+    ...item,
+    status: "CONSULTATION_REQUIRED",
+    current_assignee_type: "NONE",
+    allowed_actions: [
+      {
+        code: "CLAIM_CONSULTATION",
+        label: "상담 배정받기",
+        operation_id: "claimConsultation",
+        style: "PRIMARY",
+        requires_confirmation: false,
+        confirmation_message: null,
+      },
+    ],
+  };
+}
+
 function matchesMockQuery(
   inquiry: CounselorInquiry,
   query: ConsultantInquiryListQuery,
@@ -188,6 +254,12 @@ export function createMockConsultantWorkspaceDataRepository(
     async listInquiries(query = {}) {
       return {
         data: createMockConsultantInquiryListViewModel(query, dataset),
+        correlationId: "mock-consultant-workspace",
+      };
+    },
+    async listUnassignedConsultations(query = {}) {
+      return {
+        data: createMockUnassignedConsultationQueueViewModel(query, dataset),
         correlationId: "mock-consultant-workspace",
       };
     },
@@ -281,6 +353,24 @@ export function createMockConsultantInquiryListViewModel(
     status_counts: statusCounts,
   };
   return mapConsultantInquiryList(dto);
+}
+
+export function createMockUnassignedConsultationQueueViewModel(
+  query: UnassignedConsultationQueueQuery = {},
+  dataset: MockDataset = appEnv.mockDataset,
+): UnassignedConsultationQueueViewModel {
+  const mockInquiries = getMockUnassignedInquiries(dataset);
+  const filtered = mockInquiries.filter((item) =>
+    matchesMockQuery(item, query),
+  );
+  const page = query.page ?? 1;
+  const size = query.size ?? 20;
+  const start = (page - 1) * size;
+  const dto: UnassignedConsultationQueueDataDto = {
+    items: filtered.slice(start, start + size).map(toMockUnassignedQueueItem),
+    page_info: { page, size, total: filtered.length },
+  };
+  return mapUnassignedConsultationQueue(dto);
 }
 
 export function createConsultantWorkspaceDataRepository(

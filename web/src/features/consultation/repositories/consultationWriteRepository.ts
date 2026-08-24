@@ -49,6 +49,11 @@ export type ConsultationWriteRequester = <TData>(
 ) => Promise<ApiResponse<TData>>;
 
 export interface ConsultationWriteRepository {
+  claimConsultation(
+    inquiryId: string,
+    body: StateTransitionRequestDto,
+    requestContext: RequestContext,
+  ): Promise<ApiResponse<StateTransitionResultDto>>;
   start(
     inquiryId: string,
     body: StateTransitionRequestDto,
@@ -86,6 +91,11 @@ export function createRemoteConsultationWriteRepository(
     `/inquiries/${encodeURIComponent(inquiryId)}`;
 
   return {
+    claimConsultation: (inquiryId, body, requestContext) =>
+      requester<StateTransitionResultDto>(
+        `${inquiryPath(inquiryId)}/claim-consultation`,
+        createWriteRequest("POST", body, requestContext),
+      ),
     start: (inquiryId, body, requestContext) =>
       requester<StateTransitionResultDto>(
         `${inquiryPath(inquiryId)}/start-consultation`,

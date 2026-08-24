@@ -112,51 +112,31 @@ describe("App Router Guard", () => {
     ).toBeInTheDocument();
   });
 
-  it("상담사는 CONS-02 v13 상세 경로에 직접 접근할 수 있다", async () => {
-    renderRoute(
-      "/consultant/inquiries/205850d3-763c-5256-9d39-82da21be0c31",
-      createUser("CONSULTANT"),
-    );
-
-    expect(
-      await screen.findByRole("heading", { name: "문의 상세·상담 처리" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "제품 누수" }),
-    ).toBeInTheDocument();
-  });
-
-  it("발표 대표 문의 DEMO-INQ-002의 완료 상세와 공식 근거를 직접 확인할 수 있다", async () => {
+  it("기존 문의 상세 URL은 문의 목록으로 이동하고 같은 문의 드로어를 연다", async () => {
     const user = userEvent.setup();
+    const inquiryId = "205850d3-763c-5256-9d39-82da21be0c31";
+
     renderRoute(
-      "/consultant/inquiries/bcb70ef6-01ac-5e0e-8a8d-fe5af43e8bde",
+      `/consultant/inquiries/${inquiryId}`,
       createUser("CONSULTANT"),
     );
 
     expect(
-      await screen.findByText("문의 · DEMO-INQ-002"),
+      await screen.findByRole("heading", { name: "고객 문의" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "출수량 저하" })).toBeInTheDocument();
-
-    await user.click(screen.getByRole("tab", { name: "공식 근거·사용 상태" }));
-    expect(
-      screen.getByRole("heading", { name: "EvidenceCardDTO · 공식 근거" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/38쪽/)).toBeInTheDocument();
-  });
-
-  it("CONS-02 근거 부분 실패가 상세 전체를 가리지 않는다", async () => {
-    renderRoute(
-      "/consultant/inquiries/205850d3-763c-5256-9d39-82da21be0c31?mockFailure=evidence",
-      createUser("CONSULTANT"),
+    expect(screen.getByTestId("router-location")).toHaveTextContent(
+      `/consultant/inquiries?inquiryId=${inquiryId}`,
     );
+    expect(await screen.findByRole("dialog")).toBeVisible();
+    expect(screen.getByText("INQ-20260704-0013")).toBeInTheDocument();
 
-    expect(
-      await screen.findByText("공식 근거를 불러오지 못했습니다."),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "고객·제품·관리 이력" }),
-    ).toBeInTheDocument();
+    await user.click(
+      screen.getAllByRole("button", { name: "문의 상세 닫기" })[0],
+    );
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByTestId("router-location")).toHaveTextContent(
+      /^\/consultant\/inquiries$/,
+    );
   });
 
   it("방문 행동이 없는 문의의 CONS-03 직접 진입을 차단한다", async () => {
@@ -195,43 +175,16 @@ describe("App Router Guard", () => {
     );
   });
 
-  it.each([
-    ["loading", "문의 정보를 불러오고 있습니다."],
-    ["error", "문의 정보를 불러오지 못했습니다."],
-    ["forbidden", "이 문의에 접근할 권한이 없습니다."],
-    ["unsupported", "지원하지 않는 제품 모델입니다."],
-  ])("CONS-02 %s 상태를 명확히 표시한다", async (state, message) => {
-    renderRoute(
-      `/consultant/inquiries/205850d3-763c-5256-9d39-82da21be0c31?mockState=${state}`,
-      createUser("CONSULTANT"),
-    );
-
-    expect(await screen.findByText(message)).toBeInTheDocument();
-  });
-
-  it("무근거 문의는 AI 실패와 근거 없음 안내를 함께 표시한다", async () => {
-    const user = userEvent.setup();
-    renderRoute(
-      "/consultant/inquiries/dcf13b8e-e15f-5fc3-b194-0a3af2f54985",
-      createUser("CONSULTANT"),
-    );
-
-    expect(await screen.findByText("FAILED")).toBeInTheDocument();
-    await user.click(screen.getByRole("tab", { name: "공식 근거·사용 상태" }));
-    expect(
-      screen.getByText(/연결된 공식 근거가 없습니다/),
-    ).toBeInTheDocument();
-  });
-
-  it("표시용 문의 번호는 상세 URL의 리소스 ID로 사용하지 않는다", async () => {
+  it("표시용 문의 번호가 들어간 기존 URL은 문의를 임의 선택하지 않는다", async () => {
     renderRoute(
       "/consultant/inquiries/INQ-20260704-0013",
       createUser("CONSULTANT"),
     );
 
     expect(
-      await screen.findByText("문의를 찾을 수 없습니다."),
+      await screen.findByRole("heading", { name: "고객 문의" }),
     ).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("운영 담당자는 ADMIN-01 운영 대시보드에 접근할 수 있다", async () => {

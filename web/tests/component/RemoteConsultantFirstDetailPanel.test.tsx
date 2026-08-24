@@ -108,7 +108,7 @@ function renderPanel(
 }
 
 describe("Remote 첫 문의 상세 패널", () => {
-  it("로딩 후 실제 상세와 상담 처리 및 기존 전체 기록 버튼을 표시한다", async () => {
+  it("로딩 후 별도 전체 기록 화면 없이 실제 상세와 상담 처리를 한 화면에 표시한다", async () => {
     let resolveDetail:
       | ((value: {
           correlationId: string;
@@ -140,13 +140,21 @@ describe("Remote 첫 문의 상세 패널", () => {
     expect(screen.getByLabelText("상담 처리 작업")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "상담 시작" })).toBeInTheDocument();
     expect(screen.getByText("조회 확인 번호: corr-detail")).toBeInTheDocument();
-
-    await userEvent.click(
-      screen.getByRole("button", { name: "전체 기록 보기" }),
+    [
+      "고객 정보",
+      "제품·관리 정보",
+      "증상·문진",
+      "사용 안내",
+      "상담·방문 정보",
+      "현재 가능한 작업",
+      "상담 처리",
+      "문의 정보",
+    ].forEach((heading) =>
+      expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument(),
     );
     expect(
-      await screen.findByRole("heading", { name: "기존 전체 기록 화면" }),
-    ).toBeInTheDocument();
+      screen.queryByRole("button", { name: "전체 기록 보기" }),
+    ).not.toBeInTheDocument();
   });
 
   it("403 오류와 확인 번호를 패널 안에서 안내한다", async () => {
