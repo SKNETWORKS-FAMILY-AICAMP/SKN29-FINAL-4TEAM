@@ -11,6 +11,7 @@
 - 검색·필터·정렬·Pagination
 - 역할·배정 기반 최소 Projection
 - 상담사 전화 문의 등록
+- Dashboard 합성 공지 목록·상세 조회
 - 상담 시작·기록 저장·요약 확정·상담 완료
 - 완료 후 동일 문의 재조회
 
@@ -18,8 +19,10 @@
 
 - `backend/apps/inquiries/**`
 - `backend/apps/consultations/**`
+- `backend/apps/operations/**`
 - `contracts/api/paths/inquiries.yaml`
 - `contracts/api/paths/consultations.yaml`
+- `contracts/api/paths/operations.yaml`
 - `backend/tests/api/test_consultant_inquiry_runtime.py`
 - `backend/tests/api/test_consultation_claim_runtime.py`
 - `backend/tests/integration/test_consultation_claim_postgresql.py`
@@ -133,7 +136,7 @@ startConsultation
 
 - Backend 표적 회귀: 116 passed / 1 PostgreSQL-only skipped
 - Claim·G4 Fixture 표적 회귀: 43 passed
-- Backend 전체 회귀: 1449 passed / 39 external·PostgreSQL-only skipped
+- Backend 전체 회귀: 1454 passed / 40 external·PostgreSQL-only skipped
 - 계약 검증: 38 passed
 - PostgreSQL 16 + pgvector 동시 Claim: 1 passed
 - Django Check: PASS
@@ -148,3 +151,29 @@ Web·Mobile·AI 코드는 변경하지 않는다.
 
 실제 PostgreSQL과 HTTP에서 조회·등록·Claim·상담 흐름이 재현되면 Backend 구현
 완료다. Web 화면 소비 완료는 한예나 담당 결과로 별도 판정한다.
+
+## 9. 2026-08-24 공지 상세·Web 단일 화면 연동
+
+Dashboard 목록 DTO에는 공지 본문이 있었지만 한 건을 다시 조회할 경로가 없어
+직접 URL·새로고침에 불리했다. 기존 `DashboardNotice`를 그대로 사용해 Schema 변경
+없이 아래 읽기 API를 추가했다.
+
+```text
+GET /api/v1/consultant/notices/{notice_id}
+```
+
+- 활성 CONSULTANT만 접근한다.
+- 게시 중인 합성 공지만 반환한다.
+- 미게시·미래 게시·미존재 UUID는 모두 404로 숨긴다.
+- Query parameter는 422로 거절한다.
+- 응답은 `notice_id`, 분류, 제목, 본문, 부서, 게시일만 포함한다.
+- 기존 Dashboard·Claim·상담 API와 DB Migration은 변경하지 않는다.
+
+Web은 문의 상세 화면 한 곳에서 기존 조회·상담 시작·저장·확정·완료 API를 순서대로
+호출할 수 있다. 화면 구조는 Web 책임이며, 상태 권한은 계속 Backend의
+`allowed_actions`와 최신 `state_version`을 따른다. 409에서는 입력을 보존하고
+상세를 다시 조회하며 임의 성공 처리나 자동 재시도는 하지 않는다.
+
+검증 결과는 공지 Runtime·권한·404·계약·OpenAPI·Seed 표적 `25 passed`, 전체
+`1454 passed / 40 skipped`, OpenAPI `59 operations`, Django Check PASS다. 실제
+Web 클릭·화면 이동은 Web 담당 검증 범위다.

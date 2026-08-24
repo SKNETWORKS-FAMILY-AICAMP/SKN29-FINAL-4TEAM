@@ -171,9 +171,26 @@ Set-Location .\backend
 Replay 성공 기준은 `created_count=0`, `updated_count=0`, 문의 90건이다. 기존 행을
 삭제하거나 초기화하지 않는다.
 
+고정 기준일로 대기시간이 오래 보이면 운영 계산식 대신 합성 Seed 기준시각을 명시한다.
+같은 값을 Apply와 Replay에 사용해야 재현성과 멱등성이 유지된다.
+```powershell
+$referenceAt = "2026-08-24T14:30:00+09:00"
+.\.venv\Scripts\python.exe manage.py seed_consultant_dashboard `
+  --dry-run --reference-at $referenceAt
+.\.venv\Scripts\python.exe manage.py seed_consultant_dashboard `
+  --reference-at $referenceAt
+.\.venv\Scripts\python.exe manage.py seed_consultant_dashboard `
+  --reference-at $referenceAt
+```
+
+결과의 `inquiry_reference_at`이 입력값과 같고 Replay가 `updated_count=0`이어야 한다.
+옵션을 생략하면 기존 2026-08-18 기준을 유지한다. `now`를 코드에 직접 넣어 매번
+90건의 시간이 바뀌게 만들지 않는다.
+
 ### 11.3 Web 소비 API
 
 - `GET /api/v1/consultant/dashboard`
+- `GET /api/v1/consultant/notices/{notice_id}`
 - 인증: 활성 `CONSULTANT`
 - 범위: 현재 상담사에게 배정된 합성 문의와 합성 공지·연락처만 반환
 - 기존 `GET /api/v1/inquiries`는 상태 작업과 상세 이동에 계속 사용

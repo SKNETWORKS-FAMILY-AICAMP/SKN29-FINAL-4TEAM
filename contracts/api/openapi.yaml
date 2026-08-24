@@ -60,6 +60,8 @@ paths:
     $ref: ./paths/consultant-phone-inquiries.yaml#/~1consultant~1phone-inquiries
   /consultant/dashboard:
     $ref: ./paths/operations.yaml#/~1consultant~1dashboard
+  /consultant/notices/{notice_id}:
+    $ref: ./paths/operations.yaml#/~1consultant~1notices~1{notice_id}
   /inquiries:
     $ref: ./paths/inquiries.yaml#/~1inquiries
   /inquiries/unassigned-consultations:

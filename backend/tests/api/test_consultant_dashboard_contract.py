@@ -37,6 +37,30 @@ def test_consultant_dashboard_contract_is_confirmed_synthetic_runtime():
     }
 
 
+def test_consultant_dashboard_notice_detail_contract_is_confirmed():
+    root = load_yaml(OPENAPI_DIR / "openapi.yaml")
+    paths = load_yaml(OPENAPI_DIR / "paths" / "operations.yaml")
+    operation = paths["/consultant/notices/{notice_id}"]["get"]
+
+    assert root["paths"]["/consultant/notices/{notice_id}"]["$ref"] == (
+        "./paths/operations.yaml#/~1consultant~1notices~1{notice_id}"
+    )
+    assert operation["operationId"] == "getConsultantDashboardNotice"
+    assert operation["x-contract-status"] == "CONFIRMED"
+    assert operation["x-runtime-status"] == "IMPLEMENTED"
+    assert operation["x-permission-scope"] == (
+        "CONSULTANT_SYNTHETIC_DASHBOARD_NOTICE"
+    )
+    assert set(operation["responses"]) == {
+        "200",
+        "401",
+        "403",
+        "404",
+        "422",
+        "500",
+    }
+
+
 def test_dashboard_technician_id_is_the_visit_schedule_input_contract():
     schema = load_yaml(
         OPENAPI_DIR

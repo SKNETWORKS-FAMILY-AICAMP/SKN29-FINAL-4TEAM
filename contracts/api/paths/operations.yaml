@@ -39,3 +39,52 @@
         $ref: ../components/responses/UnprocessableEntity.yaml
       "500":
         $ref: ../components/responses/InternalServerError.yaml
+
+/consultant/notices/{notice_id}:
+  get:
+    operationId: getConsultantDashboardNotice
+    summary: 상담사 합성 공지 상세 조회
+    description: |
+      Dashboard에 공개된 합성 공지 한 건을 notice_id로 조회한다.
+      미게시·미래 게시·존재하지 않는 공지는 모두 404로 숨긴다.
+      Query parameter는 허용하지 않는다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-requirements: [FR-026, CR-005]
+    x-permission-scope: CONSULTANT_SYNTHETIC_DASHBOARD_NOTICE
+    security:
+      - BearerAuth: []
+    parameters:
+      - $ref: ../components/parameters/CorrelationId.yaml
+      - name: notice_id
+        in: path
+        required: true
+        description: 합성 공지 공개 UUID
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: 게시 중인 합성 공지 상세
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/operations/ConsultantDashboardData.yaml#/$defs/notice
+      "401":
+        $ref: ../components/responses/Unauthorized.yaml
+      "403":
+        $ref: ../components/responses/Forbidden.yaml
+      "404":
+        $ref: ../components/responses/NotFound.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "500":
+        $ref: ../components/responses/InternalServerError.yaml
