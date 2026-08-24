@@ -49,6 +49,7 @@ REQUIRED_MIGRATIONS = (
     "0011_cast_chunk_embedding_vector_dimensions",
     "0012_expand_ai_crosswalk_canonical_id",
     "0013_expand_backend_ai_rag_lineage_metadata",
+    "0014_decouple_ai_view_product_eligibility",
 )
 EXPECTED_VIEW = "public.backend_ai_rag_chunks_v1"
 EXPECTED_VIEW_COLUMNS = (
@@ -63,16 +64,39 @@ EXPECTED_VIEW_COLUMNS = (
 )
 EXPECTED_CHUNK_COUNT = 7
 EXPECTED_CROSSWALK_PAGE_LINK_COUNT = 8
+THREE_MODEL_COUNTS = {
+    "WPUJAC104DWH": 15,
+    "WPUIAC425SNW": 19,
+    "WPUIAC606SNW": 19,
+}
+THREE_MODEL_PRODUCT_SUPPORT = {
+    "WPUJAC104DWH": {
+        "is_active": True,
+        "is_supported_mvp": True,
+    },
+    "WPUIAC425SNW": {
+        "is_active": True,
+        "is_supported_mvp": False,
+    },
+    "WPUIAC606SNW": {
+        "is_active": True,
+        "is_supported_mvp": False,
+    },
+}
 EVIDENCE_PROFILES = {
     "baseline": {
         "chunk_count": EXPECTED_CHUNK_COUNT,
         "page_link_count": EXPECTED_CROSSWALK_PAGE_LINK_COUNT,
         "require_complete_lineage": False,
+        "model_counts": None,
+        "product_support": None,
     },
     "three-model": {
         "chunk_count": 53,
         "page_link_count": 53,
         "require_complete_lineage": True,
+        "model_counts": THREE_MODEL_COUNTS,
+        "product_support": THREE_MODEL_PRODUCT_SUPPORT,
     },
 }
 LINEAGE_METADATA_KEYS = (
@@ -213,6 +237,7 @@ def collect_snapshot(
             )
             active_verified_count = 0
             baseline_identity_count = 0
+            crosswalk_model_counts: dict[str, int] = {}
             if crosswalk_table_exists:
                 cursor.execute(
                     "SELECT "
@@ -230,6 +255,50 @@ def collect_snapshot(
                 row = cursor.fetchone()
                 active_verified_count = int(row[0])
                 baseline_identity_count = int(row[1])
+                cursor.execute(
+                    "SELECT product.model_code, COUNT(*) "
+                    "FROM knowledge_ai_chunk_crosswalk AS crosswalk "
+                    "JOIN knowledge_document_model_scope AS model_scope "
+                    "ON model_scope.id = crosswalk.model_scope_id "
+                    "JOIN catalog_product_model AS product "
+                    "ON product.id = model_scope.product_model_id "
+                    "WHERE crosswalk.is_active "
+                    "AND crosswalk.is_verified "
+                    "AND crosswalk.canonical_verification_status = "
+                    "'TEXT_AND_VISUAL_VERIFIED' "
+                    "AND crosswalk.embedding_model = %s "
+                    "AND crosswalk.embedding_model_version = %s "
+                    "GROUP BY product.model_code "
+                    "ORDER BY product.model_code",
+                    (EXPECTED_EMBEDDING_MODEL, EXPECTED_EMBEDDING_REVISION),
+                )
+                crosswalk_model_counts = {
+                    row[0]: int(row[1]) for row in cursor.fetchall()
+                }
+
+            product_table_exists = bool(
+                _scalar(
+                    cursor,
+                    "SELECT to_regclass('public.catalog_product_model') "
+                    "IS NOT NULL",
+                )
+            )
+            product_support: dict[str, dict[str, bool]] = {}
+            if product_table_exists:
+                cursor.execute(
+                    "SELECT model_code, is_active, is_supported_mvp "
+                    "FROM catalog_product_model "
+                    "WHERE model_code = ANY(%s) "
+                    "ORDER BY model_code",
+                    (list(THREE_MODEL_COUNTS),),
+                )
+                product_support = {
+                    row[0]: {
+                        "is_active": bool(row[1]),
+                        "is_supported_mvp": bool(row[2]),
+                    }
+                    for row in cursor.fetchall()
+                }
 
             crosswalk_page_table_exists = bool(
                 _scalar(
@@ -272,6 +341,7 @@ def collect_snapshot(
             view_row_count = 0
             view_distinct_chunk_count = 0
             view_complete_lineage_count = 0
+            view_model_counts: dict[str, int] = {}
             if view_exists:
                 cursor.execute(
                     "SELECT column_name FROM information_schema.columns "
@@ -287,6 +357,14 @@ def collect_snapshot(
                 row = cursor.fetchone()
                 view_row_count = int(row[0])
                 view_distinct_chunk_count = int(row[1])
+                cursor.execute(
+                    "SELECT model_code, COUNT(*) "
+                    "FROM public.backend_ai_rag_chunks_v1 "
+                    "GROUP BY model_code ORDER BY model_code"
+                )
+                view_model_counts = {
+                    row[0]: int(row[1]) for row in cursor.fetchall()
+                }
                 view_complete_lineage_count = int(
                     _scalar(
                         cursor,
@@ -387,6 +465,9 @@ def collect_snapshot(
         "crosswalk_table_exists": crosswalk_table_exists,
         "active_verified_count": active_verified_count,
         "baseline_identity_count": baseline_identity_count,
+        "crosswalk_model_counts": crosswalk_model_counts,
+        "product_table_exists": product_table_exists,
+        "product_support": product_support,
         "crosswalk_page_table_exists": crosswalk_page_table_exists,
         "crosswalk_page_link_count": crosswalk_page_link_count,
         "view_exists": view_exists,
@@ -394,6 +475,7 @@ def collect_snapshot(
         "view_row_count": view_row_count,
         "view_distinct_chunk_count": view_distinct_chunk_count,
         "view_complete_lineage_count": view_complete_lineage_count,
+        "view_model_counts": view_model_counts,
         "role_exists": role_exists,
         "role_policy_safe": role_policy_safe,
         "default_transaction_read_only": default_transaction_read_only,
@@ -418,7 +500,12 @@ def evaluate_snapshot(
     expected_chunk_count = expectations["chunk_count"]
     expected_page_link_count = expectations["page_link_count"]
     require_complete_lineage = bool(expectations["require_complete_lineage"])
+    expected_model_counts = expectations["model_counts"]
+    expected_product_support = expectations["product_support"]
     complete_lineage_count = int(snapshot.get("view_complete_lineage_count", 0))
+    crosswalk_model_counts = dict(snapshot.get("crosswalk_model_counts", {}))
+    view_model_counts = dict(snapshot.get("view_model_counts", {}))
+    product_support = dict(snapshot.get("product_support", {}))
     blockers: list[str] = []
     pgvector_version = snapshot.get("pgvector_version")
     crosswalk_page_table_exists = bool(
@@ -449,6 +536,10 @@ def evaluate_snapshot(
         blockers.append(
             f"BASELINE_EMBEDDING_IDENTITY_COUNT_NOT_{expected_chunk_count}"
         )
+    if expected_model_counts and crosswalk_model_counts != expected_model_counts:
+        blockers.append("ACTIVE_VERIFIED_CROSSWALK_MODEL_DISTRIBUTION_MISMATCH")
+    if expected_product_support and product_support != expected_product_support:
+        blockers.append("THREE_MODEL_PUBLIC_PRODUCT_SUPPORT_SCOPE_MISMATCH")
     if not crosswalk_page_table_exists:
         blockers.append("CROSSWALK_PAGE_TABLE_MISSING")
     if crosswalk_page_link_count != expected_page_link_count:
@@ -464,6 +555,8 @@ def evaluate_snapshot(
         blockers.append(f"BACKEND_AI_RAG_VIEW_ROW_COUNT_NOT_{expected_chunk_count}")
     if snapshot["view_distinct_chunk_count"] != snapshot["view_row_count"]:
         blockers.append("BACKEND_AI_RAG_VIEW_CHUNK_ID_NOT_UNIQUE")
+    if expected_model_counts and view_model_counts != expected_model_counts:
+        blockers.append("BACKEND_AI_RAG_VIEW_MODEL_DISTRIBUTION_MISMATCH")
     if require_complete_lineage and complete_lineage_count != expected_chunk_count:
         blockers.append(
             f"BACKEND_AI_RAG_VIEW_COMPLETE_LINEAGE_COUNT_NOT_{expected_chunk_count}"
@@ -508,6 +601,8 @@ def evaluate_snapshot(
             "expected": expected_chunk_count,
             "active_verified": snapshot["active_verified_count"],
             "baseline_identity": snapshot["baseline_identity_count"],
+            "model_counts_expected": expected_model_counts,
+            "model_counts": crosswalk_model_counts,
             "page_table_exists": crosswalk_page_table_exists,
             "page_links_expected": expected_page_link_count,
             "page_links": crosswalk_page_link_count,
@@ -519,6 +614,8 @@ def evaluate_snapshot(
             "expected_columns": list(EXPECTED_VIEW_COLUMNS),
             "rows": snapshot["view_row_count"],
             "distinct_chunk_ids": snapshot["view_distinct_chunk_count"],
+            "model_counts_expected": expected_model_counts,
+            "model_counts": view_model_counts,
             "lineage": {
                 "required": require_complete_lineage,
                 "required_keys": list(LINEAGE_METADATA_KEYS),
@@ -531,6 +628,15 @@ def evaluate_snapshot(
                     0,
                 ),
             },
+        },
+        "public_product_support_scope": {
+            "required": expected_product_support is not None,
+            "expected": expected_product_support,
+            "actual": product_support,
+            "matches": (
+                expected_product_support is None
+                or product_support == expected_product_support
+            ),
         },
         "ai_readonly_role": {
             "name": AI_READONLY_ROLE,

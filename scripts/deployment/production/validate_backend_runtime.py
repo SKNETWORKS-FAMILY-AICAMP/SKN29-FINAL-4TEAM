@@ -18,6 +18,9 @@ def main() -> int:
 
         django.setup()
 
+        from config.pgvector_compatibility import (
+            is_supported_pgvector_version,
+        )
         from django.db import connection
         from django.db.migrations.executor import MigrationExecutor
 
@@ -29,14 +32,16 @@ def main() -> int:
             cursor.execute(
                 "SELECT extversion FROM pg_extension WHERE extname = 'vector'"
             )
-            if cursor.fetchone() != ("0.8.6",):
+            pgvector_row = cursor.fetchone()
+            pgvector_version = None if pgvector_row is None else pgvector_row[0]
+            if not is_supported_pgvector_version(pgvector_version):
                 raise RuntimeError("unexpected pgvector version")
 
             cursor.execute(
                 """
                 SELECT app, name
                 FROM django_migrations
-                WHERE (app = 'evidence' AND name = '0013_expand_backend_ai_rag_lineage_metadata')
+                WHERE (app = 'evidence' AND name = '0014_decouple_ai_view_product_eligibility')
                    OR (app = 'visits' AND name = '0005_replace_visit_result_assignment_fk')
                 ORDER BY app, name
                 """
@@ -44,9 +49,9 @@ def main() -> int:
             applied = set(cursor.fetchall())
             if (
                 "evidence",
-                "0013_expand_backend_ai_rag_lineage_metadata",
+                "0014_decouple_ai_view_product_eligibility",
             ) not in applied:
-                raise RuntimeError("evidence.0013 is not applied")
+                raise RuntimeError("evidence.0014 is not applied")
             if (
                 "visits",
                 "0005_replace_visit_result_assignment_fk",
@@ -70,8 +75,8 @@ def main() -> int:
 
     print("BACKEND_RUNTIME_PREFLIGHT_PASS")
     print("postgresql=16.14")
-    print("pgvector=0.8.6")
-    print("evidence.0013=APPLIED")
+    print(f"pgvector={pgvector_version}")
+    print("evidence.0014=APPLIED")
     print("visits.0005=NOT_APPLIED_P1_HOLD")
     print("migration_plan=VISITS_0005_ONLY_HOLD")
     return 0
