@@ -6,7 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from ai.evaluation.runners.safety_runner import SafetyEvaluationRunner
-from ai.scripts.run_evaluation import build_deterministic_report
+from ai.scripts.run_evaluation import _combined_status, build_deterministic_report
 
 
 def test_safety_candidate_matrix_passes_required_categories():
@@ -64,7 +64,10 @@ def test_safety_candidate_rejects_duplicate_case_ids(tmp_path):
 def test_deterministic_quality_report_is_honest_about_not_run_runtime():
     report = build_deterministic_report()
 
-    assert report["overall_status"] == "PASS"
+    assert report["schema_version"] == "1.1.0"
+    assert report["overall_status"] == "PARTIAL"
+    assert report["deterministic_quality_status"] == "PASS"
+    assert report["retrieval_runtime_status"] == "NOT_RUN"
     assert len(report["execution"]["git_sha"]) == 40
     assert report["execution"]["python_version"] == "3.13.13"
     assert report["execution"]["contract_version"] == "4.0.0"
@@ -79,3 +82,28 @@ def test_deterministic_quality_report_is_honest_about_not_run_runtime():
     assert set(report["external_runtime"].values()) == {"NOT_RUN"}
     assert report["secret_values_printed"] is False
     assert report["raw_customer_text_printed"] is False
+
+
+@pytest.mark.parametrize(
+    ("deterministic_status", "retrieval_status", "external_status", "expected"),
+    (
+        ("PASS", "PASS", "PASS", "PASS"),
+        ("PASS", "NOT_RUN", "NOT_RUN", "PARTIAL"),
+        ("PASS", "FAIL", "NOT_RUN", "FAIL"),
+        ("FAIL", "NOT_RUN", "NOT_RUN", "FAIL"),
+    ),
+)
+def test_combined_status_never_promotes_not_run_or_fail_to_pass(
+    deterministic_status: str,
+    retrieval_status: str,
+    external_status: str,
+    expected: str,
+) -> None:
+    assert (
+        _combined_status(
+            deterministic_status=deterministic_status,
+            retrieval_status=retrieval_status,
+            external_runtime={"provider": external_status},
+        )
+        == expected
+    )

@@ -116,10 +116,36 @@ fun GuidanceScreen(
 
     val consultationState by
         viewModel.consultationState.collectAsStateWithLifecycle()
-    var showCancelDialog by remember { mutableStateOf(false) }
-    var guidanceAutoRetryCount by remember {
-        mutableStateOf(0)
+
+
+    val resolutionViewModel:
+        CustomerResolutionViewModel =
+        viewModel(
+            factory = VmFactory { _ ->
+                CustomerResolutionViewModel(
+                    inquiryId = inquiryId,
+                    repository =
+                        WaterCareCore
+                            .customerInquiryRepository,
+                )
+            }
+        )
+    val resolutionState by
+        resolutionViewModel.state
+            .collectAsStateWithLifecycle()
+    val resolutionAuthExpired by
+        resolutionViewModel.authExpired
+            .collectAsStateWithLifecycle()
+
+    LaunchedEffect(resolutionAuthExpired) {
+        if (resolutionAuthExpired) {
+            resolutionViewModel
+                .consumeAuthExpired()
+            onAuthExpired()
+        }
     }
+    var showCancelDialog by remember { mutableStateOf(false) }
+    val guidanceAutoRetryCount = 0
     val actualInquiryCode = submittedInquiryCode.trim()
     val preferredGuidance = when (val current = state) {
         is GuidanceUiState.Content -> current.guidance
@@ -132,6 +158,10 @@ fun GuidanceScreen(
     val effectiveAllowedActions =
         preferredGuidance?.allowedActions
             ?: submittedAllowedActions
+    val effectiveStatusCode =
+        preferredGuidance?.statusCode
+            ?: submittedStatusCode
+
     val progressStatusCode = when (state) {
         GuidanceUiState.Loading,
         is GuidanceUiState.NotReady ->
@@ -140,24 +170,6 @@ fun GuidanceScreen(
         else ->
             preferredGuidance?.statusCode
                 ?: submittedStatusCode
-    }
-
-    LaunchedEffect(state) {
-        when (state) {
-            is GuidanceUiState.NotReady -> {
-                if (guidanceAutoRetryCount < 6) {
-                    delay(3_500)
-                    guidanceAutoRetryCount += 1
-                    viewModel.load()
-                }
-            }
-
-            is GuidanceUiState.Content,
-            is GuidanceUiState.NoEvidence ->
-                guidanceAutoRetryCount = 0
-
-            else -> Unit
-        }
     }
 
     WaterCareScreen(title = "맞춤 해결 안내", onBack = onBack) {
@@ -502,6 +514,20 @@ fun GuidanceScreen(
                     },
                 )
         }
+
+        CustomerResolutionSection(
+            statusCode = effectiveStatusCode,
+            stateVersion = effectiveStateVersion,
+            allowedActions = effectiveAllowedActions,
+            state = resolutionState,
+            onResolved =
+                resolutionViewModel::markResolved,
+            onUnresolved =
+                resolutionViewModel::reportUnresolved,
+            onRetry =
+                resolutionViewModel::retryLastAction,
+            onDone = onDone,
+        )
 
         if (showCancelDialog) {
             val action = effectiveAllowedActions.firstOrNull {
@@ -1087,11 +1113,7 @@ private fun GuidancePreparingContent(
                 )
 
                 Text(
-                    text = if (autoRetryCount < 6) {
-                        "완료되면 자동으로 확인할게요. 잠시만 기다려주세요."
-                    } else {
-                        "준비가 조금 길어지고 있어요. 입력한 내용은 안전하게 보관되어 있어요."
-                    },
+                    text = "안내가 준비되는 동안 입력한 내용은 안전하게 보관되어 있어요.",
                     style = MaterialTheme.typography.bodyMedium,
                     color =
                         MaterialTheme.colorScheme
@@ -1109,10 +1131,8 @@ private fun GuidancePreparingContent(
             )
         }
 
-        if (autoRetryCount >= 6) {
-            TextButton(onClick = onRetry) {
-                Text("다시 확인하기")
-            }
+        TextButton(onClick = onRetry) {
+            Text("다시 확인하기")
         }
     }
 }

@@ -1,0 +1,11 @@
+title: P1UsernameRecoveryResult
+type: object
+description: 계약 이메일 OTP 확인 후 반환하는 마스킹된 WaterBridge ID
+additionalProperties: false
+required:
+  - masked_username
+properties:
+  masked_username:
+    type: string
+    minLength: 1
+    maxLength: 150

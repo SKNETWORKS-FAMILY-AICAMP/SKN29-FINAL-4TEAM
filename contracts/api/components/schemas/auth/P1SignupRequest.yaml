@@ -1,0 +1,64 @@
+title: P1SignupRequest
+type: object
+additionalProperties: false
+required:
+  - claim_ticket
+  - username
+  - password
+  - consents
+properties:
+  claim_ticket:
+    type: string
+    minLength: 32
+    writeOnly: true
+  username:
+    type: string
+    minLength: 4
+    maxLength: 150
+    pattern: '^[A-Za-z0-9._-]+$'
+  password:
+    type: string
+    minLength: 12
+    maxLength: 64
+    pattern: '^(?=.*[A-Za-z])(?=.*[0-9]).{12,64}$'
+    writeOnly: true
+  consents:
+    type: array
+    minItems: 2
+    uniqueItems: true
+    allOf:
+      - contains:
+          type: object
+          required: [code, agreed]
+          properties:
+            code: {const: TERMS_OF_SERVICE}
+            agreed: {const: true}
+      - contains:
+          type: object
+          required: [code, agreed]
+          properties:
+            code: {const: PRIVACY_COLLECTION_USE}
+            agreed: {const: true}
+    items:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - version
+        - agreed
+      properties:
+        code:
+          type: string
+          enum:
+            - TERMS_OF_SERVICE
+            - PRIVACY_COLLECTION_USE
+            - MARKETING
+        version:
+          type: string
+          minLength: 1
+          maxLength: 40
+        agreed:
+          type: boolean
+description: |
+  TERMS_OF_SERVICE와 PRIVACY_COLLECTION_USE는 반드시 agreed=true여야 한다.
+  MARKETING은 선택이며 요청에 없거나 agreed=false여도 가입을 허용한다.

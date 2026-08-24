@@ -1,0 +1,10 @@
+description: |
+  HTTP 401 AUTH_LOGIN_FAILED. 사용자명 존재 여부와 비밀번호 불일치를
+  동일한 Status·Schema·사용자 메시지로 처리한다.
+headers:
+  X-Correlation-ID:
+    $ref: ../headers/CorrelationId.yaml
+content:
+  application/json:
+    schema:
+      $ref: ../schemas/common/ApiResponse.yaml

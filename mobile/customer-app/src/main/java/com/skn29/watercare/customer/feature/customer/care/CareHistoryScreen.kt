@@ -40,6 +40,7 @@ import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 fun CareHistoryScreen(
     onBack: () -> Unit,
     onAuthExpired: () -> Unit,
+    onStartPrecheck: (String) -> Unit = {},
 ) {
     val viewModel: CareHistoryViewModel =
         viewModel(
@@ -79,6 +80,8 @@ fun CareHistoryScreen(
         onCreate = viewModel::createCareRecord,
         onOpenDetail =
             viewModel::openDetail,
+        onStartPrecheck =
+            onStartPrecheck,
     )
 }
 
@@ -95,6 +98,7 @@ fun CareHistoryContent(
         (String) -> Unit,
     onCreate: () -> Unit,
     onOpenDetail: (String) -> Unit,
+    onStartPrecheck: (String) -> Unit = {},
 ) {
     var visibleHistoryCount by remember(
         state.items.map {
@@ -208,6 +212,35 @@ fun CareHistoryContent(
                             )
                         }
                 }
+            }
+
+            SectionCard("방문 전 사전 점검") {
+                Text(
+                    "방문 관리 전에 현재 상태를 간단히 확인하고 저장할 수 있어요.",
+                    style =
+                        MaterialTheme.typography
+                            .bodySmall,
+                    color =
+                        MaterialTheme.colorScheme
+                            .onSurfaceVariant,
+                )
+
+                LiquidGlassButton(
+                    text = "사전 점검 시작하기",
+                    onClick = {
+                        state.selectedSubscriptionId
+                            ?.let(onStartPrecheck)
+                    },
+                    enabled =
+                        state.selectedSubscriptionId !=
+                            null,
+                    accent = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(
+                            "startCarePrecheck"
+                        ),
+                )
             }
 
             SectionCard("직접 관리 이력 등록") {

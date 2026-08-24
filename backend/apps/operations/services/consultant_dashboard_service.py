@@ -5,8 +5,10 @@ from __future__ import annotations
 from collections import Counter
 from datetime import date
 from typing import Any
+from uuid import UUID
 
 from django.utils import timezone
+from rest_framework.exceptions import NotFound
 
 from apps.accounts.models import User
 from apps.inquiries.models import Inquiry
@@ -93,19 +95,7 @@ class ConsultantDashboardService:
                 "in_progress": bucket_counts["IN_PROGRESS"],
                 "completed": bucket_counts["COMPLETED"],
             },
-            "notices": [
-                {
-                    "notice_id": notice.public_id,
-                    "notice_code": notice.notice_code,
-                    "category_code": notice.category_code,
-                    "category": notice.get_category_code_display(),
-                    "title": notice.title,
-                    "content": notice.body,
-                    "department": notice.department_name,
-                    "published_on": notice.published_on,
-                }
-                for notice in notice_rows
-            ],
+            "notices": [cls._notice_item(notice) for notice in notice_rows],
             "consultants": [
                 {
                     "user_id": entry.user.public_id,
@@ -134,6 +124,33 @@ class ConsultantDashboardService:
                 and entry.user.role_code == User.Role.TECHNICIAN
             ],
             "inquiries": inquiries,
+        }
+
+    @classmethod
+    def notice_detail(cls, *, notice_public_id: UUID) -> dict[str, Any]:
+        """Return one currently published synthetic notice or conceal it."""
+
+        notice = DashboardNotice.objects.filter(
+            public_id=notice_public_id,
+            is_published=True,
+            is_synthetic=True,
+            published_on__lte=timezone.localdate(),
+        ).first()
+        if notice is None:
+            raise NotFound()
+        return cls._notice_item(notice)
+
+    @staticmethod
+    def _notice_item(notice: DashboardNotice) -> dict[str, Any]:
+        return {
+            "notice_id": notice.public_id,
+            "notice_code": notice.notice_code,
+            "category_code": notice.category_code,
+            "category": notice.get_category_code_display(),
+            "title": notice.title,
+            "content": notice.body,
+            "department": notice.department_name,
+            "published_on": notice.published_on,
         }
 
     @classmethod

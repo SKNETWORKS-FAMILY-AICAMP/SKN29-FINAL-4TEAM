@@ -399,7 +399,13 @@ class FollowUpQuestionsViewModel(
                                 .SUBMIT_ANSWERS
                     }
 
-                if (context.questions.isEmpty() || !canSubmitMoreAnswers) {
+                if (
+                    context.questions.isEmpty() &&
+                    !canSubmitMoreAnswers &&
+                    canOpenCustomerGuidance(
+                        context.snapshot.statusCode
+                    )
+                ) {
                     navigationChannel.send(
                         FollowUpNavigationEvent
                             .OpenGuidance(
@@ -616,12 +622,18 @@ class FollowUpQuestionsViewModel(
                     context.snapshot
                 )
 
-            navigationChannel.send(
-                FollowUpNavigationEvent
-                    .OpenGuidance(
-                        context.snapshot
-                    )
-            )
+            if (
+                canOpenCustomerGuidance(
+                    context.snapshot.statusCode
+                )
+            ) {
+                navigationChannel.send(
+                    FollowUpNavigationEvent
+                        .OpenGuidance(
+                            context.snapshot
+                        )
+                )
+            }
         } else {
             _state.value =
                 FollowUpUiState.Form(
@@ -634,6 +646,22 @@ class FollowUpQuestionsViewModel(
                 )
         }
     }
+
+    private fun canOpenCustomerGuidance(
+        statusCode: String,
+    ): Boolean =
+        statusCode.trim().uppercase() in
+            setOf(
+                "AI_GUIDANCE",
+                "CONSULTATION_REQUIRED",
+                "CONSULTATION_IN_PROGRESS",
+                "VISIT_REVIEW_PENDING",
+                "VISIT_SCHEDULING",
+                "VISIT_SCHEDULED",
+                "COMPLETION_PENDING",
+                "REVISIT_REQUIRED",
+                "RESOLVED",
+            )
 
     private fun failureState(
         failure: ApiResult.Failure,

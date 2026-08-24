@@ -1,0 +1,17 @@
+title: P1ClaimTicket
+type: object
+description: 계약 이메일 OTP 성공 후 발급하는 단기·단회성 회원가입 Ticket
+additionalProperties: false
+required:
+  - claim_ticket
+  - expires_in
+properties:
+  claim_ticket:
+    type: string
+    minLength: 32
+    x-sensitive: true
+    description: 응답으로 한 번 전달하며 로그·영속 저장을 금지한다.
+  expires_in:
+    type: integer
+    minimum: 1
+    maximum: 900

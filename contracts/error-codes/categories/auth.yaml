@@ -1,7 +1,38 @@
 category: auth
 errors:
   - code: AUTH_REQUIRED
+    category: auth
     http_status: 401
     retryable: false
     user_message: 인증이 필요합니다.
     recommended_action: LOGIN
+  - code: AUTH_VERIFICATION_FAILED
+    category: auth
+    http_status: 401
+    retryable: true
+    user_message: 인증정보를 확인할 수 없습니다. 처음부터 다시 시도해 주세요.
+    recommended_action: RESTART_VERIFICATION
+  - code: AUTH_LOGIN_FAILED
+    category: auth
+    http_status: 401
+    retryable: true
+    user_message: 아이디 또는 비밀번호를 확인해 주세요.
+    recommended_action: CHECK_CREDENTIALS
+  - code: AUTH_IDENTIFIER_UNAVAILABLE
+    category: auth
+    http_status: 409
+    retryable: false
+    user_message: 사용할 수 없는 아이디입니다. 다른 아이디를 입력해 주세요.
+    recommended_action: CHOOSE_ANOTHER_IDENTIFIER
+  - code: AUTH_SIGNUP_CONFLICT
+    category: auth
+    http_status: 409
+    retryable: false
+    user_message: 회원가입을 완료할 수 없습니다. 처음부터 다시 시도하거나 고객지원을 이용해 주세요.
+    recommended_action: RESTART_OR_CONTACT_SUPPORT
+  - code: AUTH_RATE_LIMITED
+    category: auth
+    http_status: 429
+    retryable: true
+    user_message: 요청 횟수를 초과했습니다. 안내된 시간 후 다시 시도해 주세요.
+    recommended_action: RETRY_AFTER

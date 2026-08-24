@@ -1,0 +1,16 @@
+title: P1ChallengeRequest
+type: object
+description: 합성 계약고객 OTP Challenge 생성 요청
+additionalProperties: false
+required:
+  - customer_number
+  - contract_number
+properties:
+  customer_number:
+    type: string
+    minLength: 1
+    maxLength: 40
+  contract_number:
+    type: string
+    minLength: 1
+    maxLength: 50

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from decimal import Decimal
 from importlib import import_module
 from uuid import UUID, uuid4
@@ -18,6 +19,7 @@ from apps.accounts.models import User
 from apps.audit.models import AIRetrievalHit, AIRetrievalRun, AIRun
 from apps.consultations.models import Consultation
 from apps.evidence.models import DocumentChunk, EvidenceLink
+from apps.evidence.models.evidence_link import IsNonEmptyJSONArray
 from apps.inquiries.models import Guidance, Inquiry
 from apps.visits.models import HandoffReport
 from tests.unit.evidence.test_document_chunk_model import create_chunk
@@ -545,6 +547,41 @@ def test_complete_retrieval_context_accepts_open_applicability_code():
         link.retrieval_hit.applicability_status_code
         == "FUTURE_SELECTED_STATE"
     )
+
+
+def test_postgresql_non_empty_json_array_repeats_expression_parameters():
+    compiler = EvidenceLink.objects.all().query.get_compiler(
+        connection=connection
+    )
+    expression = IsNonEmptyJSONArray(
+        models.Value(
+            ["WPUJAC104DWH"],
+            output_field=models.JSONField(),
+        )
+    )
+
+    sql, params = expression.as_postgresql(compiler, connection)
+
+    assert sql.count("%s") == 2
+    assert len(params) == 2
+    assert params[0] == params[1]
+
+
+def test_postgresql_full_clean_has_no_database_constraint_warning(caplog):
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL constraint-validation assertion")
+
+    link = EvidenceLink(**link_values(61))
+
+    with caplog.at_level(logging.WARNING, logger="django.db.models"):
+        link.full_clean()
+
+    database_check_warnings = [
+        record.getMessage()
+        for record in caplog.records
+        if "database error calling check" in record.getMessage().lower()
+    ]
+    assert database_check_warnings == []
 
 
 @pytest.mark.parametrize(

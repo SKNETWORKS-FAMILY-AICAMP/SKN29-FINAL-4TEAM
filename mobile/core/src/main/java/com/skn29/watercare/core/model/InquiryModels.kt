@@ -40,6 +40,8 @@ object InquiryActionLabels {
     const val SUBMIT_ANSWERS = "SUBMIT_ANSWERS"
     const val CANCEL_INQUIRY = "CANCEL_INQUIRY"
     const val REQUEST_CONSULTATION = "REQUEST_CONSULTATION"
+    const val SUBMIT_RESOLUTION_FEEDBACK = "SUBMIT_RESOLUTION_FEEDBACK"
+    const val CUSTOMER_REPORTED_UNRESOLVED = "CUSTOMER_REPORTED_UNRESOLVED"
 
     val intakeConflictCodes: Set<String> = setOf(
         SUBMIT_SYMPTOM,
@@ -53,6 +55,8 @@ object InquiryActionLabels {
         SUBMIT_ANSWERS -> "추가 답변 제출"
         CANCEL_INQUIRY -> "문의 취소"
         REQUEST_CONSULTATION -> "상담 요청"
+        SUBMIT_RESOLUTION_FEEDBACK -> "해결됐어요"
+        CUSTOMER_REPORTED_UNRESOLVED -> "아직 해결되지 않았어요"
         else -> code.trim()
     }
 }

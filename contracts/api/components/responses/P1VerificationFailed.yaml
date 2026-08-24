@@ -1,0 +1,10 @@
+description: |
+  HTTP 401 AUTH_VERIFICATION_FAILED. 계약·계정 존재 여부, OTP 불일치,
+  만료·폐기·소비된 Challenge 또는 Ticket을 외부에서 구분하지 않는다.
+headers:
+  X-Correlation-ID:
+    $ref: ../headers/CorrelationId.yaml
+content:
+  application/json:
+    schema:
+      $ref: ../schemas/common/ApiResponse.yaml
