@@ -1,0 +1,432 @@
+package com.skn29.watercare.customer.feature.auth
+
+import com.skn29.watercare.core.model.ApiResult
+import com.skn29.watercare.core.model.P1ChallengeAccepted
+import com.skn29.watercare.core.model.P1ChallengeRequest
+import com.skn29.watercare.core.model.P1ClaimTicket
+import com.skn29.watercare.core.model.P1ConsentCode
+import com.skn29.watercare.core.model.P1ConsentRequest
+import com.skn29.watercare.core.model.P1OtpVerificationRequest
+import com.skn29.watercare.core.model.P1PasswordLoginRequest
+import com.skn29.watercare.core.model.P1PasswordResetConfirmRequest
+import com.skn29.watercare.core.model.P1PasswordResetResult
+import com.skn29.watercare.core.model.P1PasswordResetTicket
+import com.skn29.watercare.core.model.P1SignupRequest
+import com.skn29.watercare.core.model.P1UsernameRecoveryResult
+import com.skn29.watercare.core.model.SessionResponse
+import com.skn29.watercare.core.model.UserData
+import com.skn29.watercare.core.repository.AuthRepository
+import com.skn29.watercare.core.repository.BackendStatusRepository
+import com.skn29.watercare.core.repository.P1AuthRepository
+import com.skn29.watercare.customer.feature.customer.intake.MainDispatcherRule
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Rule
+import org.junit.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class P1SignupViewModelTest {
+
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
+    @Test
+    fun contractVerification_movesToOtpStage() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val p1 = FakeP1AuthRepository()
+
+            val viewModel = newViewModel(p1)
+            advanceUntilIdle()
+
+            viewModel.startSignupVerification(
+                customerNumber = "  CUSTOMER-001  ",
+                contractNumber = "  CONTRACT-001  ",
+            )
+            advanceUntilIdle()
+
+            assertEquals(
+                "CUSTOMER-001",
+                p1.lastChallengeRequest?.customerNumber,
+            )
+            assertEquals(
+                "CONTRACT-001",
+                p1.lastChallengeRequest?.contractNumber,
+            )
+            assertNotNull(p1.lastChallengeIdempotencyKey)
+
+            assertEquals(
+                SignupStage.OTP_REQUIRED,
+                viewModel.state.value.signupStage,
+            )
+            assertEquals(300, viewModel.state.value.challengeExpiresInSeconds)
+            assertEquals(60, viewModel.state.value.resendAfterSeconds)
+        }
+
+    @Test
+    fun otpVerification_movesToAccountStageWithoutExposingSensitiveValues() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val claimTicket = "CLAIM_TICKET_SHOULD_NOT_APPEAR_IN_UI_STATE_123456"
+            val challengeId = "123e4567-e89b-12d3-a456-426614174000"
+
+            val p1 = FakeP1AuthRepository(
+                challengeResult = ApiResult.Success(
+                    P1ChallengeAccepted(
+                        challengeId = challengeId,
+                        expiresIn = 300,
+                        resendAfter = 60,
+                        message = "인증번호를 전송했습니다.",
+                    )
+                ),
+                verifyResult = ApiResult.Success(
+                    P1ClaimTicket(
+                        claimTicket = claimTicket,
+                        expiresIn = 300,
+                    )
+                ),
+            )
+
+            val viewModel = newViewModel(p1)
+            advanceUntilIdle()
+
+            viewModel.startSignupVerification(
+                customerNumber = "CUSTOMER-001",
+                contractNumber = "CONTRACT-001",
+            )
+            advanceUntilIdle()
+
+            viewModel.verifySignupOtp("123456")
+            advanceUntilIdle()
+
+            assertEquals(challengeId, p1.lastVerifiedChallengeId)
+            assertEquals("123456", p1.lastOtpRequest?.otpCode)
+
+            assertEquals(
+                SignupStage.ACCOUNT_REQUIRED,
+                viewModel.state.value.signupStage,
+            )
+
+            val stateText = viewModel.state.value.toString()
+
+            assertFalse(stateText.contains(challengeId))
+            assertFalse(stateText.contains(claimTicket))
+            assertFalse(stateText.contains("123456"))
+            assertFalse(stateText.contains("CUSTOMER-001"))
+            assertFalse(stateText.contains("CONTRACT-001"))
+        }
+
+    @Test
+    fun completeSignup_usesClaimTicketAndAuthenticatesCustomer() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val claimTicket = "CLAIM_TICKET_FOR_SIGNUP_12345678901234567890"
+            val p1 = FakeP1AuthRepository(
+                verifyResult = ApiResult.Success(
+                    P1ClaimTicket(
+                        claimTicket = claimTicket,
+                        expiresIn = 300,
+                    )
+                ),
+                signupResults = mutableListOf(
+                    ApiResult.Success(customerSession())
+                ),
+            )
+
+            val viewModel = newViewModel(p1)
+            advanceUntilIdle()
+
+            prepareVerifiedSignup(viewModel)
+
+            val consents = requiredConsents()
+
+            viewModel.completeSignup(
+                username = "  water.user  ",
+                password = "Password1234",
+                consents = consents,
+            )
+            advanceUntilIdle()
+
+            assertEquals(claimTicket, p1.lastSignupRequest?.claimTicket)
+            assertEquals("water.user", p1.lastSignupRequest?.username)
+            assertEquals("Password1234", p1.lastSignupRequest?.password)
+            assertEquals(consents, p1.lastSignupRequest?.consents)
+            assertNotNull(p1.lastSignupIdempotencyKey)
+
+            assertTrue(viewModel.state.value.authenticated)
+            assertFalse(viewModel.state.value.offlinePreview)
+
+            val stateText = viewModel.state.value.toString()
+            assertFalse(stateText.contains(claimTicket))
+            assertFalse(stateText.contains("Password1234"))
+        }
+
+    @Test
+    fun signupRetry_reusesSameIdempotencyKey() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val p1 = FakeP1AuthRepository(
+                signupResults = mutableListOf(
+                    ApiResult.Failure(
+                        code = "NETWORK_ERROR",
+                        message = "network",
+                        retryable = true,
+                    ),
+                    ApiResult.Success(customerSession()),
+                )
+            )
+
+            val viewModel = newViewModel(p1)
+            advanceUntilIdle()
+
+            prepareVerifiedSignup(viewModel)
+
+            val consents = requiredConsents()
+
+            viewModel.completeSignup(
+                username = "water.user",
+                password = "Password1234",
+                consents = consents,
+            )
+            advanceUntilIdle()
+
+            val firstKey = p1.signupIdempotencyKeys.single()
+
+            viewModel.completeSignup(
+                username = "water.user",
+                password = "Password1234",
+                consents = consents,
+            )
+            advanceUntilIdle()
+
+            assertEquals(2, p1.signupIdempotencyKeys.size)
+            assertEquals(firstKey, p1.signupIdempotencyKeys[1])
+            assertTrue(viewModel.state.value.authenticated)
+        }
+
+    @Test
+    fun completeSignup_rejectsInvalidPasswordAndMissingRequiredConsentsLocally() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val p1 = FakeP1AuthRepository()
+            val viewModel = newViewModel(p1)
+            advanceUntilIdle()
+
+            viewModel.completeSignup(
+                username = "water.user",
+                password = "short",
+                consents = emptyList(),
+            )
+
+            assertTrue(
+                viewModel.state.value.fieldErrors["password"]
+                    .isNullOrEmpty()
+                    .not()
+            )
+            assertTrue(
+                viewModel.state.value.fieldErrors["terms"]
+                    .isNullOrEmpty()
+                    .not()
+            )
+            assertTrue(
+                viewModel.state.value.fieldErrors["privacy"]
+                    .isNullOrEmpty()
+                    .not()
+            )
+
+            assertEquals(0, p1.signupCalls)
+        }
+
+    private suspend fun TestScope.prepareVerifiedSignup(
+        viewModel: AuthViewModel,
+    ) {
+        viewModel.startSignupVerification(
+            customerNumber = "CUSTOMER-001",
+            contractNumber = "CONTRACT-001",
+        )
+        advanceUntilIdle()
+
+        viewModel.verifySignupOtp("123456")
+        advanceUntilIdle()
+    }
+
+    private fun requiredConsents() = listOf(
+        P1ConsentRequest(
+            code = P1ConsentCode.TERMS_OF_SERVICE,
+            version = "TEST_VERSION",
+            agreed = true,
+        ),
+        P1ConsentRequest(
+            code = P1ConsentCode.PRIVACY_COLLECTION_USE,
+            version = "TEST_VERSION",
+            agreed = true,
+        ),
+    )
+
+    private fun newViewModel(
+        p1: P1AuthRepository,
+    ) = AuthViewModel(
+        authRepository = FakeAuthRepository(),
+        backendStatusRepository = HealthyBackendStatusRepository,
+        p1AuthRepository = p1,
+    )
+
+    private fun customerSession() = SessionResponse(
+        accessToken = "test-access",
+        refreshToken = "test-refresh",
+        tokenType = "Bearer",
+        accessExpiresIn = 900,
+        refreshExpiresIn = 3600,
+        user = UserData(
+            id = "customer-user",
+            displayName = "테스트 고객",
+            roleCode = "CUSTOMER",
+            isActive = true,
+        ),
+    )
+
+    private class FakeP1AuthRepository(
+        private val challengeResult: ApiResult<P1ChallengeAccepted> =
+            ApiResult.Success(
+                P1ChallengeAccepted(
+                    challengeId = "123e4567-e89b-12d3-a456-426614174000",
+                    expiresIn = 300,
+                    resendAfter = 60,
+                    message = "인증번호를 전송했습니다.",
+                )
+            ),
+        private val verifyResult: ApiResult<P1ClaimTicket> =
+            ApiResult.Success(
+                P1ClaimTicket(
+                    claimTicket = "DEFAULT_CLAIM_TICKET_12345678901234567890",
+                    expiresIn = 300,
+                )
+            ),
+        private val signupResults: MutableList<ApiResult<SessionResponse>> =
+            mutableListOf(ApiResult.Success(defaultSession())),
+    ) : P1AuthRepository {
+
+        var lastChallengeRequest: P1ChallengeRequest? = null
+        var lastChallengeIdempotencyKey: String? = null
+        var lastVerifiedChallengeId: String? = null
+        var lastOtpRequest: P1OtpVerificationRequest? = null
+        var lastSignupRequest: P1SignupRequest? = null
+        var lastSignupIdempotencyKey: String? = null
+
+        val signupIdempotencyKeys = mutableListOf<String>()
+        var signupCalls = 0
+
+        override suspend fun createContractVerificationChallenge(
+            request: P1ChallengeRequest,
+            idempotencyKey: String,
+        ): ApiResult<P1ChallengeAccepted> {
+            lastChallengeRequest = request
+            lastChallengeIdempotencyKey = idempotencyKey
+            return challengeResult
+        }
+
+        override suspend fun verifyContractVerificationChallenge(
+            challengeId: String,
+            request: P1OtpVerificationRequest,
+        ): ApiResult<P1ClaimTicket> {
+            lastVerifiedChallengeId = challengeId
+            lastOtpRequest = request
+            return verifyResult
+        }
+
+        override suspend fun signup(
+            request: P1SignupRequest,
+            idempotencyKey: String,
+        ): ApiResult<SessionResponse> {
+            signupCalls += 1
+            lastSignupRequest = request
+            lastSignupIdempotencyKey = idempotencyKey
+            signupIdempotencyKeys += idempotencyKey
+
+            return if (signupResults.isNotEmpty()) {
+                signupResults.removeAt(0)
+            } else {
+                ApiResult.Failure(
+                    code = "NO_TEST_RESULT",
+                    message = "no test result",
+                )
+            }
+        }
+
+        override suspend fun login(
+            request: P1PasswordLoginRequest,
+        ): ApiResult<SessionResponse> = unused()
+
+        override suspend fun createUsernameRecoveryChallenge(
+            request: P1ChallengeRequest,
+            idempotencyKey: String,
+        ): ApiResult<P1ChallengeAccepted> = unused()
+
+        override suspend fun verifyUsernameRecoveryChallenge(
+            challengeId: String,
+            request: P1OtpVerificationRequest,
+        ): ApiResult<P1UsernameRecoveryResult> = unused()
+
+        override suspend fun createPasswordResetChallenge(
+            request: P1ChallengeRequest,
+            idempotencyKey: String,
+        ): ApiResult<P1ChallengeAccepted> = unused()
+
+        override suspend fun verifyPasswordResetChallenge(
+            challengeId: String,
+            request: P1OtpVerificationRequest,
+        ): ApiResult<P1PasswordResetTicket> = unused()
+
+        override suspend fun confirmPasswordReset(
+            request: P1PasswordResetConfirmRequest,
+            idempotencyKey: String,
+        ): ApiResult<P1PasswordResetResult> = unused()
+
+        private fun <T> unused(): ApiResult<T> =
+            ApiResult.Failure(
+                code = "UNUSED",
+                message = "unused",
+            )
+
+        companion object {
+            private fun defaultSession() = SessionResponse(
+                accessToken = "test-access",
+                refreshToken = "test-refresh",
+                tokenType = "Bearer",
+                accessExpiresIn = 900,
+                refreshExpiresIn = 3600,
+                user = UserData(
+                    id = "customer-user",
+                    displayName = "테스트 고객",
+                    roleCode = "CUSTOMER",
+                    isActive = true,
+                ),
+            )
+        }
+    }
+
+    private class FakeAuthRepository : AuthRepository {
+        override fun hasSession(): Boolean = false
+
+        override suspend fun demoLogin(
+            code: String,
+        ): ApiResult<SessionResponse> = unused()
+
+        override suspend fun logout(): ApiResult<Unit> =
+            ApiResult.Success(Unit)
+
+        override suspend fun me(): ApiResult<UserData> = unused()
+
+        private fun <T> unused(): ApiResult<T> =
+            ApiResult.Failure(
+                code = "UNUSED",
+                message = "unused",
+            )
+    }
+
+    private object HealthyBackendStatusRepository : BackendStatusRepository {
+        override suspend fun health(): ApiResult<Unit> =
+            ApiResult.Success(Unit)
+    }
+}
