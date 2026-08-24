@@ -1,0 +1,11 @@
+title: P1OtpVerificationRequest
+type: object
+additionalProperties: false
+required:
+  - otp_code
+properties:
+  otp_code:
+    type: string
+    pattern: '^[0-9]{6}$'
+    writeOnly: true
+description: OTP 원문은 응답·로그·감사 이벤트에 포함하지 않는다.

@@ -4,8 +4,8 @@
 >
 > 작성자: 최지용 (Backend·DB)
 >
-> 기준 소스: `origin/main@2df06b2091b1c32f73dfac8162abf9586dd1a496`
-> 판정: `G1_CANDIDATE_PASS / G2_REVIEW_READY / G3_NOT_STARTED`
+> 기준 소스: `origin/main@957de30549fd2b347b2ef21aeb5b6515db23f667`
+> 판정: `G1_CANDIDATE_PASS / G2_CONDITIONAL_APPROVAL_APPLIED / G2_FINAL_ACK_PENDING / G3_BLOCKED`
 
 ## 1. 이 문서의 목적
 
@@ -42,7 +42,7 @@ P1-B 카카오 로그인, 실제 고객 원장·개인정보, 중복 이메일 �
 대상 파일:
 
 - `data/synthetic/candidates/p1_account_link_candidates.json`
-- `data/schemas/p1-account-link-candidates.schema.json`
+- `data/schemas/synthetic/p1AccountLinkCandidate.schema.json`
 
 확인 결과:
 
@@ -67,9 +67,11 @@ P1-B 카카오 로그인, 실제 고객 원장·개인정보, 중복 이메일 �
 
 따라서 G1은 **Candidate 데이터 수준에서만 PASS**다. Backend DB 적재와 PostgreSQL 검증은 G3 이후 범위다.
 
-## 4. G2 API 계약 검토안
+## 4. G2 API 계약 최종 검토안
 
-아래 경로는 검토안이며 양정현(Mobile) 검토와 윤승혁(PM) 승인 전까지 `CONFIRMED`가 아니다.
+양정현(Mobile)의 Android 호환성 검토와 윤승혁(PM)의 조건부 정책 결정을
+반영했다. 아래 경로는 실제 OpenAPI에 `IN_REVIEW`로 반영하며, 두 담당자의
+최종 ACK 전까지 `CONFIRMED` 또는 `G2_FROZEN`으로 표시하지 않는다.
 
 | 순서 | Method·Path 제안 | 목적 | 인증 |
 |---|---|---|---|
@@ -78,24 +80,43 @@ P1-B 카카오 로그인, 실제 고객 원장·개인정보, 중복 이메일 �
 | 3 | `POST /api/v1/auth/signup` | ID/PW 생성과 계약고객 연결 | `claim_ticket` |
 | 4 | `POST /api/v1/auth/login` | 일반 ID/PW 로그인과 JWT 발급 | 없음 |
 | 5 | `POST /api/v1/auth/account-recovery/username/challenges` | 아이디 찾기 OTP Challenge 생성 | 없음 |
-| 6 | `POST /api/v1/auth/account-recovery/username/verify` | 마스킹된 로그인 ID 확인 | 없음 |
+| 6 | `POST /api/v1/auth/account-recovery/username/challenges/{challenge_id}/verify` | 마스킹된 로그인 ID 확인 | 없음 |
 | 7 | `POST /api/v1/auth/password-reset/challenges` | 비밀번호 재설정 OTP Challenge 생성 | 없음 |
-| 8 | `POST /api/v1/auth/password-reset/verify` | 단회성 `reset_ticket` 발급 | 없음 |
+| 8 | `POST /api/v1/auth/password-reset/challenges/{challenge_id}/verify` | 단회성 `reset_ticket` 발급 | 없음 |
 | 9 | `POST /api/v1/auth/password-reset/confirm` | 비밀번호 변경·`auth_version` 증가 | `reset_ticket` |
 | 10 | `GET /api/v1/me` | 로그인 사용자·안전한 고객 Projection | Bearer JWT |
 
-## 5. 공통 요청·응답 원칙
+## 5. 확정 정책값
+
+| 정책 | 값 |
+|---|---|
+| OTP 유효시간 | 300초 |
+| OTP 재전송 대기 | 60초 |
+| OTP 최대 실패 | 5회, 초과 시 Challenge 폐기 |
+| 비밀번호 | 12~64자, 영문과 숫자 필수, 특수문자 선택 |
+| 필수 약관 | 이용약관, 개인정보 수집·이용 |
+| 선택 약관 | 마케팅 동의 |
+| 계약·계정 존재 여부 | 외부 비노출 |
+| P1-A 범위 | 합성 고객 ID/PW·OTP·계정연결·로그인·복구 |
+
+## 6. 공통 요청·응답 원칙
 
 - 모든 응답은 기존 `ApiResponse` Envelope와 `X-Correlation-ID`를 사용한다.
 - 전체 이메일·계약번호·고객번호를 응답하지 않는다.
 - OTP, Password, JWT, claim/reset ticket 원문을 로그·감사 이벤트에 저장하지 않는다.
-- Challenge 응답은 `challenge_id`, 마스킹된 대상, 만료 초, 재전송 가능 시점만 공개한다.
+- Challenge 생성은 계약·계정 존재 여부와 관계없이 동일한 HTTP `202`, 동일한
+  Envelope와 일반 안내 문구를 반환한다.
+- Challenge 응답은 `challenge_id`, `expires_in=300`, `resend_after=60`만
+  공개하고 전체 또는 마스킹 이메일은 공개하지 않는다.
 - OTP 성공 응답은 단기·단회성·목적 고정 ticket만 반환한다.
+- `claim_ticket`, `reset_ticket`은 Authorization Header가 아니라 해당 요청
+  Body에 넣고 JWT와 분리한다.
+- 로그인 성공 응답은 기존 `LoginResponse`를 그대로 재사용한다.
 - 회원가입 Transaction 안에서 `User`, `CustomerAccountLink`, 동의·감사 이벤트를 함께 저장한다.
 - Transaction Commit 전에는 JWT를 발급하지 않는다.
 - OTP·인증 데이터는 AI Prompt, RAG Context, Inquiry Context에 포함하지 않는다.
 
-## 6. 핵심 요청 필드
+## 7. 핵심 요청 필드
 
 ### 계약 확인
 
@@ -120,20 +141,29 @@ P1-B 카카오 로그인, 실제 고객 원장·개인정보, 중복 이메일 �
 - `username`
 - `password`
 
-## 7. 오류 계약 검토안
+## 8. 오류 계약 최종 검토안
 
 | HTTP | 상황 | 외부 메시지 원칙 |
 |---|---|---|
 | 400 | 형식상 처리 불가능한 요청 | 안전한 공통 오류 |
-| 401 | 로그인 실패·만료/소비된 ticket | 인증 실패 정보만 반환 |
-| 404 | 계약 후보 없음·식별값 불일치 | 동일한 비노출형 응답 |
-| 409 | 이미 연결된 계약, username 중복, Idempotency 충돌, 동시 Claim 경합 | 현재 상태와 새 행동 안내 |
-| 422 | 필수 필드·Password 정책·약관 검증 실패 | 허용된 필드 오류만 반환 |
-| 429 | OTP 요청·검증 횟수 초과 | 재시도 가능 시점만 반환 |
+| 401 | 로그인 실패·OTP 실패·만료/소비된 ticket | 존재 여부를 구분하지 않는 공통 인증 실패 |
+| 409 | Idempotency 충돌·가입 처리 충돌·사용 불가능한 ID | 계약·계정 존재 원인을 직접 노출하지 않는 안전한 공개 코드 |
+| 422 | 필수 필드·Password 정책·약관 검증 실패 | `details.fields`에 필드명과 안전한 사유만 반환 |
+| 429 | OTP 재전송 대기·요청/검증 횟수 초과 | `Retry-After`와 `details.retry_after_seconds` 반환 |
 
-계약 후보 존재 여부, 전체 이메일, 다른 계정 연결 여부를 공격자가 구분할 수 있게 응답하지 않는다.
+계약 후보 없음은 `404`로 응답하지 않는다. Challenge 생성 단계에서 존재하는
+계약과 존재하지 않는 계약을 HTTP Status, 응답 Schema, 메시지, 이메일 힌트로
+구분할 수 없어야 한다.
 
-## 8. Replay·동시성 규칙
+공개 오류 코드는 다음 경계를 따른다.
+
+- 허용: `AUTH_VERIFICATION_FAILED`, `AUTH_LOGIN_FAILED`,
+  `DUPLICATE-EVENT-01`, `AUTH_SIGNUP_CONFLICT`,
+  `AUTH_IDENTIFIER_UNAVAILABLE`, `AUTH_RATE_LIMITED`
+- 금지: 계약 또는 다른 계정의 실제 존재를 직접 알리는 코드·문구
+- `422`는 입력값 원문을 되돌려주지 않고 필드명과 정책 위반 사유만 제공한다.
+
+## 9. Replay·동시성 규칙
 
 - 동일 `Idempotency-Key`·동일 Payload는 최초 응답을 Replay한다.
 - 동일 Key·다른 Payload는 `409`로 거부한다.
@@ -142,26 +172,31 @@ P1-B 카카오 로그인, 실제 고객 원장·개인정보, 중복 이메일 �
 - 두 회원가입 요청이 경합하면 `CustomerAccountLink`는 최종 1건이어야 한다.
 - 실패 Transaction에서는 `User`, Link, 동의, 감사 이벤트가 모두 Rollback되어야 한다.
 
-## 9. G2 동결 전에 필요한 확인
+## 10. 담당자 검토 반영 결과
 
-양정현(Mobile):
+양정현(Mobile) 검토 반영:
 
-- 위 경로와 화면 단계가 Android Route에 맞는지
-- 404·409·422·429를 화면에서 구분할 수 있는지
-- 앱이 전체 이메일·ticket을 영속 저장하지 않는지
+- 계약 확인→OTP→ID/PW 생성→로그인 Route는 구현 가능하다.
+- 아이디 찾기와 비밀번호 재설정도 같은 Challenge 규칙으로 구현 가능하다.
+- 세 OTP 확인 API를 `{challenge_id}/verify` 규칙으로 통일했다.
+- 기존 `LoginResponse`를 재사용한다.
+- `422` 필드 오류, `429` 재시도 초, 안전한 `409` 공개 코드를 제공한다.
+- 전체 이메일·OTP·claim/reset ticket을 영속 저장하지 않는다.
 
-윤승혁(PM):
+윤승혁(PM) 조건부 결정 반영:
 
-- Endpoint 이름과 단계 수 승인
-- OTP 만료·재전송·최대 실패 횟수 정책 승인
-- Password 정책과 필수 약관 범위 승인
-- 계정 존재 여부 비노출 정책 승인
+- Endpoint 이름과 단계 수를 승인했다.
+- OTP·Password·필수/선택 약관 값을 본 문서 5절대로 확정했다.
+- 계약·계정 존재 여부 비노출 정책을 적용했다.
+- 계약 후보 없음 `404`를 제거하고 동일 `202` 응답으로 수정했다.
+- P1-A를 합성 고객 ID/PW·OTP·계정연결·로그인·복구로 제한했다.
 
-## 10. 다음 Gate
+## 11. 다음 Gate
 
-1. Mobile 검토와 PM 승인을 받아 G2 계약을 동결한다.
-2. 동결된 계약만 `contracts/api`와 OpenAPI에 반영한다.
-3. G3에서 Additive Model·Migration·Seed를 구현한다.
-4. 기존 Migration을 수정하지 않고 `visits.0005` HOLD도 유지한다.
+1. 본 문서와 `IN_REVIEW` OpenAPI의 일치 여부를 Contract Test로 검증한다.
+2. 양정현과 윤승혁에게 수정된 경로·비노출 응답의 최종 ACK를 요청한다.
+3. 두 ACK를 받은 Commit에서만 `G2_FROZEN`·`CONFIRMED`로 승격한다.
+4. G2 동결 후 G3 Additive Model·Migration·Seed를 구현한다.
+5. 기존 Migration을 수정하지 않고 `visits.0005` HOLD도 유지한다.
 
-G2 승인 전에는 Model·Migration·OTP Runtime을 선행 구현하지 않는다.
+최종 ACK 전에는 Model·Migration·Seed·OTP Runtime을 선행 구현하지 않는다.

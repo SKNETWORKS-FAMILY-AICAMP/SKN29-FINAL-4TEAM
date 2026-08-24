@@ -1,0 +1,341 @@
+# P1-A 합성 계약고객 회원가입·계정연결 계약
+x-p1a-policy:
+  scope: SYNTHETIC_CONTRACT_CUSTOMER_ONLY
+  contract_status: IN_REVIEW
+  otp_ttl_seconds: 300
+  otp_resend_after_seconds: 60
+  otp_max_failures: 5
+  account_enumeration: CONCEALED
+  kakao_login: OUT_OF_SCOPE_P1_B_HOLD
+
+/auth/contract-verification/challenges:
+  post:
+    operationId: createContractVerificationChallenge
+    summary: 합성 계약고객 계약 이메일 OTP Challenge 접수
+    description: |
+      계약 후보가 존재하는 경우와 존재하지 않는 경우 모두 동일한 HTTP 202,
+      응답 Schema와 일반 안내 문구를 반환한다. 이메일 힌트는 공개하지 않는다.
+    x-contract-status: IN_REVIEW
+    x-runtime-status: NOT_IMPLEMENTED
+    security: []
+    parameters:
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth/P1ChallengeRequest.yaml
+    responses:
+      "202":
+        description: 계약 후보 존재 여부와 무관한 동일 Challenge 접수 응답
+        headers:
+          X-Correlation-ID:
+            $ref: ../components/headers/CorrelationId.yaml
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/auth/P1ChallengeAccepted.yaml
+      "400":
+        $ref: ../components/responses/BadRequest.yaml
+      "409":
+        $ref: ../components/responses/Conflict.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "429":
+        $ref: ../components/responses/TooManyRequests.yaml
+
+/auth/contract-verification/challenges/{challenge_id}/verify:
+  parameters:
+    - &challenge-id
+      name: challenge_id
+      in: path
+      required: true
+      description: 외부에 발급한 OTP Challenge UUID
+      schema: {type: string, format: uuid}
+  post:
+    operationId: verifyContractVerificationChallenge
+    summary: 회원가입용 계약 이메일 OTP 확인
+    x-contract-status: IN_REVIEW
+    x-runtime-status: NOT_IMPLEMENTED
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth/P1OtpVerificationRequest.yaml
+    responses:
+      "200":
+        description: 단기·단회성 claim_ticket 발급
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/auth/P1ClaimTicket.yaml
+      "401":
+        $ref: ../components/responses/P1VerificationFailed.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "429":
+        $ref: ../components/responses/TooManyRequests.yaml
+
+/auth/signup:
+  post:
+    operationId: signupContractCustomer
+    summary: 검증된 합성 계약고객 WaterBridge 계정 생성
+    description: |
+      claim_ticket 소비, User·CustomerAccountLink·필수 동의·감사 이벤트 저장을
+      하나의 Transaction으로 처리하고 Commit 후 기존 LoginResponse를 반환한다.
+    x-contract-status: IN_REVIEW
+    x-runtime-status: NOT_IMPLEMENTED
+    security: []
+    parameters:
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth/P1SignupRequest.yaml
+    responses:
+      "201":
+        description: 계정 연결 완료와 JWT Session 발급
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/auth/LoginResponse.yaml
+      "401":
+        $ref: ../components/responses/P1VerificationFailed.yaml
+      "409":
+        $ref: ../components/responses/Conflict.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "429":
+        $ref: ../components/responses/TooManyRequests.yaml
+
+/auth/login:
+  post:
+    operationId: loginWithPassword
+    summary: WaterBridge ID/PW 일반 로그인
+    description: 사용자명 또는 계정 존재 여부를 구분하지 않는 공통 401을 사용한다.
+    x-contract-status: IN_REVIEW
+    x-runtime-status: NOT_IMPLEMENTED
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth/P1PasswordLoginRequest.yaml
+    responses:
+      "200":
+        description: 기존 Mobile 호환 JWT Session
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/auth/LoginResponse.yaml
+      "401":
+        $ref: ../components/responses/P1LoginFailed.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "429":
+        $ref: ../components/responses/TooManyRequests.yaml
+
+/auth/account-recovery/username/challenges:
+  post:
+    operationId: createUsernameRecoveryChallenge
+    summary: 아이디 찾기 OTP Challenge 접수
+    description: 계약·계정 존재 여부와 무관하게 동일 HTTP 202를 반환한다.
+    x-contract-status: IN_REVIEW
+    x-runtime-status: NOT_IMPLEMENTED
+    security: []
+    parameters:
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth/P1ChallengeRequest.yaml
+    responses:
+      "202":
+        description: 존재 여부 비노출 Challenge 접수
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/auth/P1ChallengeAccepted.yaml
+      "400":
+        $ref: ../components/responses/BadRequest.yaml
+      "409":
+        $ref: ../components/responses/Conflict.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "429":
+        $ref: ../components/responses/TooManyRequests.yaml
+
+/auth/account-recovery/username/challenges/{challenge_id}/verify:
+  parameters:
+    - *challenge-id
+  post:
+    operationId: verifyUsernameRecoveryChallenge
+    summary: 아이디 찾기 OTP 확인
+    x-contract-status: IN_REVIEW
+    x-runtime-status: NOT_IMPLEMENTED
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth/P1OtpVerificationRequest.yaml
+    responses:
+      "200":
+        description: 마스킹된 WaterBridge ID
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/auth/P1UsernameRecoveryResult.yaml
+      "401":
+        $ref: ../components/responses/P1VerificationFailed.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "429":
+        $ref: ../components/responses/TooManyRequests.yaml
+
+/auth/password-reset/challenges:
+  post:
+    operationId: createPasswordResetChallenge
+    summary: 비밀번호 재설정 OTP Challenge 접수
+    description: 계약·계정 존재 여부와 무관하게 동일 HTTP 202를 반환한다.
+    x-contract-status: IN_REVIEW
+    x-runtime-status: NOT_IMPLEMENTED
+    security: []
+    parameters:
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth/P1ChallengeRequest.yaml
+    responses:
+      "202":
+        description: 존재 여부 비노출 Challenge 접수
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/auth/P1ChallengeAccepted.yaml
+      "400":
+        $ref: ../components/responses/BadRequest.yaml
+      "409":
+        $ref: ../components/responses/Conflict.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "429":
+        $ref: ../components/responses/TooManyRequests.yaml
+
+/auth/password-reset/challenges/{challenge_id}/verify:
+  parameters:
+    - *challenge-id
+  post:
+    operationId: verifyPasswordResetChallenge
+    summary: 비밀번호 재설정 OTP 확인
+    x-contract-status: IN_REVIEW
+    x-runtime-status: NOT_IMPLEMENTED
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth/P1OtpVerificationRequest.yaml
+    responses:
+      "200":
+        description: 단기·단회성 reset_ticket 발급
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/auth/P1PasswordResetTicket.yaml
+      "401":
+        $ref: ../components/responses/P1VerificationFailed.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "429":
+        $ref: ../components/responses/TooManyRequests.yaml
+
+/auth/password-reset/confirm:
+  post:
+    operationId: confirmPasswordReset
+    summary: reset_ticket을 사용한 비밀번호 변경
+    description: 비밀번호 변경과 auth_version 증가·기존 인증 세션 폐기를 함께 처리한다.
+    x-contract-status: IN_REVIEW
+    x-runtime-status: NOT_IMPLEMENTED
+    security: []
+    parameters:
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/auth/P1PasswordResetConfirmRequest.yaml
+    responses:
+      "200":
+        description: 비밀번호 변경과 기존 세션 폐기 완료
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/auth/P1PasswordResetResult.yaml
+      "401":
+        $ref: ../components/responses/P1VerificationFailed.yaml
+      "409":
+        $ref: ../components/responses/Conflict.yaml
+      "422":
+        $ref: ../components/responses/UnprocessableEntity.yaml
+      "429":
+        $ref: ../components/responses/TooManyRequests.yaml

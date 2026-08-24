@@ -12,6 +12,24 @@ paths:
     $ref: ./paths/auth.yaml#/~1auth~1refresh
   /auth/logout:
     $ref: ./paths/auth.yaml#/~1auth~1logout
+  /auth/contract-verification/challenges:
+    $ref: ./paths/p1-auth.yaml#/~1auth~1contract-verification~1challenges
+  /auth/contract-verification/challenges/{challenge_id}/verify:
+    $ref: ./paths/p1-auth.yaml#/~1auth~1contract-verification~1challenges~1{challenge_id}~1verify
+  /auth/signup:
+    $ref: ./paths/p1-auth.yaml#/~1auth~1signup
+  /auth/login:
+    $ref: ./paths/p1-auth.yaml#/~1auth~1login
+  /auth/account-recovery/username/challenges:
+    $ref: ./paths/p1-auth.yaml#/~1auth~1account-recovery~1username~1challenges
+  /auth/account-recovery/username/challenges/{challenge_id}/verify:
+    $ref: ./paths/p1-auth.yaml#/~1auth~1account-recovery~1username~1challenges~1{challenge_id}~1verify
+  /auth/password-reset/challenges:
+    $ref: ./paths/p1-auth.yaml#/~1auth~1password-reset~1challenges
+  /auth/password-reset/challenges/{challenge_id}/verify:
+    $ref: ./paths/p1-auth.yaml#/~1auth~1password-reset~1challenges~1{challenge_id}~1verify
+  /auth/password-reset/confirm:
+    $ref: ./paths/p1-auth.yaml#/~1auth~1password-reset~1confirm
   /me:
     $ref: ./paths/auth.yaml#/~1me
   /me/subscriptions:
