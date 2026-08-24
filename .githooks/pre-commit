@@ -1,6 +1,13 @@
 #!/bin/sh
 
-echo "[pre-commit] Data 산출물 자동 갱신..."
+# Data 관련 파일이 staged된 경우에만 Data QA를 실행한다.
+# Web/Mobile 등 Data와 무관한 커밋에서는 QA와 Data 산출물 자동 추가를 건너뛴다.
+if ! git diff --cached --name-only | grep -q '^data/'; then
+    echo "[pre-commit] Data 관련 변경 없음 - Data QA 생략."
+    exit 0
+fi
+
+echo "[pre-commit] Data 관련 변경 감지 - Data 산출물 자동 갱신..."
 
 python -B data/tools/pipeline.py qa --verify-rebuild
 
