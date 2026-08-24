@@ -1,17 +1,30 @@
 #!/bin/sh
 
 # Data 관련 파일이 staged된 경우에만 Data QA를 실행한다.
-# Web/Mobile 등 Data와 무관한 커밋에서는 QA와 Data 산출물 자동 추가를 건너뛴다.
-if ! git diff --cached --name-only | grep -q '^data/'; then
+# 외부 텍스트 검색 명령에 의존하지 않고 Git 자체 exit code로 판별한다.
+#   0: staged Data 변경 없음
+#   1: staged Data 변경 있음
+#  기타: Git 명령 오류 -> QA 누락 방지를 위해 commit 중단
+git diff --cached --quiet -- data/
+data_diff_status=$?
+
+if [ "$data_diff_status" -eq 0 ]; then
     echo "[pre-commit] Data 관련 변경 없음 - Data QA 생략."
     exit 0
+fi
+
+if [ "$data_diff_status" -ne 1 ]; then
+    echo "[ERROR] staged Data 변경 여부를 확인하지 못했습니다."
+    echo "commit을 중단합니다."
+    exit 1
 fi
 
 echo "[pre-commit] Data 관련 변경 감지 - Data 산출물 자동 갱신..."
 
 python -B data/tools/pipeline.py qa --verify-rebuild
+qa_status=$?
 
-if [ $? -ne 0 ]; then
+if [ "$qa_status" -ne 0 ]; then
     echo ""
     echo "[ERROR] Data QA 실패"
     echo "commit을 중단합니다."
