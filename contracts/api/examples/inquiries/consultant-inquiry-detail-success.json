@@ -14,10 +14,12 @@
     "customer": {
       "is_synthetic": true,
       "display_name": "합성고객 01",
-      "phone": "010-0000-0101"
+      "phone": "010-****-0101",
+      "phone_masked": "010-****-0101"
     },
     "product_and_care": {
       "product_model": "SYN-WP-01",
+      "product_model_name": "합성 시연용 정수기",
       "subscription_status": "ACTIVE",
       "management_type": "VISIT",
       "recent_care_date": "2026-07-01"
@@ -25,11 +27,16 @@
     "symptom_and_questionnaire": {
       "symptom_summary": "합성 시나리오: 출수량이 평소보다 감소함",
       "answers": [
-        {"question_code": "SYN-Q-01", "answer": "필터 교체 후에도 동일함"}
+        {
+          "question_code": "SYN-Q-01",
+          "question_text": "필터 교체 후에도 출수량이 동일하게 감소하나요?",
+          "answer": "필터 교체 후에도 동일함"
+        }
       ]
     },
     "guidance_and_actions": {
       "usage_guidance_status": "PENDING_CONSULTATION",
+      "usage_guidance_display_label": "상담 확인 필요",
       "usage_guidance_message": "합성 상담 시나리오를 확인합니다.",
       "restricted_functions": []
     },

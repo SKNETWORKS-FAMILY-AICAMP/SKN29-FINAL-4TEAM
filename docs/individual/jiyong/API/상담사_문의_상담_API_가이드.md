@@ -136,8 +136,8 @@ startConsultation
 
 - Backend 표적 회귀: 116 passed / 1 PostgreSQL-only skipped
 - Claim·G4 Fixture 표적 회귀: 43 passed
-- Backend 전체 회귀: 1454 passed / 40 external·PostgreSQL-only skipped
-- 계약 검증: 38 passed
+- Backend 전체 회귀: 1459 passed / 40 external·PostgreSQL-only skipped
+- 계약 검증: 46 passed
 - PostgreSQL 16 + pgvector 동시 Claim: 1 passed
 - Django Check: PASS
 - Migration drift: 없음
@@ -175,5 +175,26 @@ Web은 문의 상세 화면 한 곳에서 기존 조회·상담 시작·저장·
 상세를 다시 조회하며 임의 성공 처리나 자동 재시도는 하지 않는다.
 
 검증 결과는 공지 Runtime·권한·404·계약·OpenAPI·Seed 표적 `25 passed`, 전체
-`1454 passed / 40 skipped`, OpenAPI `59 operations`, Django Check PASS다. 실제
+`1459 passed / 40 skipped`, OpenAPI `59 operations`, Django Check PASS다. 실제
 Web 클릭·화면 이동은 Web 담당 검증 범위다.
+
+## 10. 2026-08-24 상담사 통합 상세 Projection 보완
+
+Claim 후 `GET /api/v1/inquiries/{inquiry_id}` 한 번으로 통합 상세 정보를 조회하며 기존 필드는 유지하고 다음 안전한 필드를 추가했다.
+| 화면 영역 | 응답 계약 |
+| --- | --- |
+| 고객 | `display_name`, `phone_masked` (`phone`은 같은 마스킹 값의 호환 필드) |
+| 제품·관리 | `product_model`(코드), `product_model_name`, 구독·관리·최근 관리일 |
+| 증상·문진 | `symptom_summary`, `answers[].question_code/question_text/answer` |
+| 사용 안내 | 원본 `usage_guidance_status`, 한글 `usage_guidance_display_label`, 안내·제한 기능 |
+| 상담·방문 | 상담 기록과 최신 합성 `visit`; 방문이 없으면 `null` |
+| 업무 처리 | 문의 번호·상태·버전과 Backend `allowed_actions` |
+상태 표시 계약은 `NORMAL=정상 사용 가능`, `PARTIAL_STOP=일부 기능 사용 중단`,
+`TOTAL_STOP=제품 사용 중단`, `PENDING_CONSULTATION=상담 확인 필요`다. Web은 원본
+코드로 분기하고 한글 필드는 화면 표시용으로만 사용한다. 방문 필요 여부는
+`consultation.result_code=VISIT_REQUIRED`와 최신 `visit` 존재 여부로 구분한다.
+DEC-008 공개 Evidence는 아직 이 상세 계약에서 제외된다. Backend 내부 Chunk,
+원문, 경로, 점수로 임의 화면 데이터를 만들지 않는다. 이번 보완은 Migration과
+Web·AI 소스를 변경하지 않으며 원문 고객 연락처도 응답하지 않는다. 상세·계약·
+OpenAPI·Demo Seed는 `42 passed`, 인접 회귀는 `18 passed / 1 PostgreSQL-only skipped`,
+전체 Backend 회귀는 `1459 passed / 40 external·PostgreSQL-only skipped`다.
