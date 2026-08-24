@@ -20,15 +20,14 @@ class IsNonEmptyJSONArray(models.Func):
     output_field = models.BooleanField()
 
     def as_postgresql(self, compiler, connection, **extra_context):
-        return super().as_sql(
-            compiler,
-            connection,
-            template=(
-                "CASE WHEN jsonb_typeof(%(expressions)s) = 'array' "
-                "THEN jsonb_array_length(%(expressions)s) > 0 "
-                "ELSE FALSE END"
-            ),
-            **extra_context,
+        expression_sql, expression_params = compiler.compile(
+            self.source_expressions[0]
+        )
+        return (
+            "CASE WHEN jsonb_typeof({expression}) = 'array' "
+            "THEN jsonb_array_length({expression}) > 0 "
+            "ELSE FALSE END".format(expression=expression_sql),
+            [*expression_params, *expression_params],
         )
 
     def as_sqlite(self, compiler, connection, **extra_context):
