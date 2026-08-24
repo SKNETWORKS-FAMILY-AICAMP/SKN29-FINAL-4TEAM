@@ -30,8 +30,20 @@ class FollowUpQuestionsViewModelTest {
     @Test
     fun emptyQuestions_isExplicitEmptyState() = runTest(mainDispatcherRule.dispatcher) {
         val remote = QueueRepository(
-            snapshots = mutableListOf(ApiResult.Success(snapshot(2))),
-            questions = mutableListOf(ApiResult.Success(questions(2, emptyList()))),
+            snapshots = mutableListOf(
+                ApiResult.Success(
+                    snapshot(
+                        version = 2,
+                        allowSubmit = false,
+                        statusCode = "AI_GUIDANCE",
+                    )
+                )
+            ),
+            questions = mutableListOf(
+                ApiResult.Success(
+                    questions(2, emptyList())
+                )
+            ),
         )
         val viewModel = newViewModel(remote)
         advanceUntilIdle()
@@ -45,7 +57,13 @@ class FollowUpQuestionsViewModelTest {
         val remote = QueueRepository(
             snapshots = mutableListOf(
                 ApiResult.Success(snapshot(2)),
-                ApiResult.Success(snapshot(3)),
+                ApiResult.Success(
+                    snapshot(
+                        version = 3,
+                        allowSubmit = false,
+                        statusCode = "AI_GUIDANCE",
+                    )
+                ),
             ),
             questions = mutableListOf(
                 ApiResult.Success(questions(2, listOf(freeTextQuestion()))),
@@ -287,9 +305,10 @@ class FollowUpQuestionsViewModelTest {
     private fun snapshot(
         version: Int,
         allowSubmit: Boolean = version < 4,
+        statusCode: String = "QUESTIONNAIRE_IN_PROGRESS",
     ) = CustomerInquirySnapshot(
         inquiryId = INQUIRY_ID,
-        statusCode = "QUESTIONNAIRE_IN_PROGRESS",
+        statusCode = statusCode,
         stateVersion = version,
         subscriptionId = SUBSCRIPTION_ID,
         productModelCode = "WPUJAC104DWH",

@@ -7,6 +7,7 @@ object CustomerRoute {
     const val LOGIN = "login"
     const val HOME = "home?offline={offline}"
     const val CARE = "care"
+    const val CARE_PRECHECK = "care-precheck/{subscriptionId}"
 
     const val INTAKE =
         "intake/{subscriptionId}" +
@@ -30,6 +31,11 @@ object CustomerRoute {
         offline: Boolean,
     ) =
         "home?offline=$offline"
+
+    fun carePrecheck(
+        subscriptionId: String,
+    ): String =
+        "care-precheck/${Uri.encode(subscriptionId)}"
 
     fun intake(
         subscriptionId: String,

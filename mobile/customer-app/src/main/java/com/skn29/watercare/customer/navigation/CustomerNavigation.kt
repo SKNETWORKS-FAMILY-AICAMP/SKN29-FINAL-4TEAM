@@ -16,6 +16,7 @@ import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.customer.feature.auth.LoginScreen
 import com.skn29.watercare.customer.feature.customer.care.CareHistoryScreen
+import com.skn29.watercare.customer.feature.customer.care.CarePrecheckScreen
 import com.skn29.watercare.customer.feature.customer.guidance.FollowUpQuestionsScreen
 import com.skn29.watercare.customer.feature.customer.guidance.GuidanceScreen
 import com.skn29.watercare.customer.feature.customer.home.CustomerHomeScreen
@@ -155,6 +156,51 @@ fun CustomerNavigation() {
             CareHistoryScreen(
                 onBack = {
                     navController.popBackStack()
+                },
+                onStartPrecheck = { subscriptionId ->
+                    navController.navigate(
+                        CustomerRoute
+                            .carePrecheck(
+                                subscriptionId
+                            )
+                    )
+                },
+                onAuthExpired = {
+                    navController.navigate(
+                        CustomerRoute.LOGIN
+                    ) {
+                        popUpTo(
+                            navController
+                                .graph
+                                .startDestinationId
+                        ) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
+
+        composable(
+            route =
+                CustomerRoute.CARE_PRECHECK,
+            arguments = listOf(
+                navArgument("subscriptionId") {
+                    type = NavType.StringType
+                }
+            ),
+        ) { entry ->
+            CarePrecheckScreen(
+                subscriptionId =
+                    entry.arguments
+                        ?.getString(
+                            "subscriptionId"
+                        )
+                        .orEmpty(),
+                onBack = {
+                    navController
+                        .popBackStack()
                 },
                 onAuthExpired = {
                     navController.navigate(

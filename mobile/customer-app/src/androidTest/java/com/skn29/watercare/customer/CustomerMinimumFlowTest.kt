@@ -123,7 +123,7 @@ class CustomerMinimumFlowTest {
     }
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun offlinePreview_opensCust01AndCust02() = runManualComposeUiTest {
+    fun offlinePreview_currentDashboardOpensIntake() = runManualComposeUiTest {
         setContent {
             var showIntake by remember { mutableStateOf(false) }
 
@@ -157,8 +157,11 @@ class CustomerMinimumFlowTest {
 
         waitForIdle()
 
-        onNodeWithTag("heroStartIntake")
+        onNodeWithTag("customerProblemCheck")
             .performScrollTo()
+            .assertIsDisplayed()
+
+        onNodeWithTag("problemCheckArrow")
             .assertIsDisplayed()
             .performClick()
 
@@ -346,7 +349,7 @@ class CustomerMinimumFlowTest {
                 .assertIsDisplayed()
 
             onNodeWithText(
-                "하지 말아야 할 행동"
+                "주의해주세요"
             )
                 .performScrollTo()
                 .assertIsDisplayed()

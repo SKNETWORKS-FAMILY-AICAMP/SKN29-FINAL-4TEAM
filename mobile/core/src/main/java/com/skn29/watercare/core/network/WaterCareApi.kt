@@ -22,6 +22,9 @@ import com.skn29.watercare.core.model.LogoutResponse
 import com.skn29.watercare.core.model.RefreshTokenRequest
 import com.skn29.watercare.core.model.RequestConsultationRequestDto
 import com.skn29.watercare.core.model.RequestConsultationResponseDto
+import com.skn29.watercare.core.model.ReportUnresolvedRequestDto
+import com.skn29.watercare.core.model.ResolutionFeedbackRequestDto
+import com.skn29.watercare.core.model.ResolutionTransitionResponseDto
 import com.skn29.watercare.core.model.SessionResponse
 import com.skn29.watercare.core.model.SubmitSymptomRequest
 import com.skn29.watercare.core.model.SubmitFollowUpAnswersRequestDto
@@ -184,6 +187,21 @@ interface WaterCareApi {
         @Header("Idempotency-Key") idempotencyKey: String,
         @Body body: RequestConsultationRequestDto,
     ): Response<ApiEnvelope<RequestConsultationResponseDto>>
+
+
+    @POST("api/v1/inquiries/{inquiryId}/resolution-feedback")
+    suspend fun submitResolutionFeedback(
+        @Path("inquiryId") inquiryId: String,
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: ResolutionFeedbackRequestDto,
+    ): Response<ApiEnvelope<ResolutionTransitionResponseDto>>
+
+    @POST("api/v1/inquiries/{inquiryId}/report-unresolved")
+    suspend fun reportUnresolved(
+        @Path("inquiryId") inquiryId: String,
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: ReportUnresolvedRequestDto,
+    ): Response<ApiEnvelope<ResolutionTransitionResponseDto>>
 }
 
 interface RefreshApi {

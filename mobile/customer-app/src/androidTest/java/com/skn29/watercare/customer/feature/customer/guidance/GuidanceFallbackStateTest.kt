@@ -104,11 +104,11 @@ class GuidanceFallbackStateTest {
             waitForIdle()
 
             onNodeWithText(
-                "AI 안내 준비 중"
+                "맞춤 안내 준비 중"
             ).assertIsDisplayed()
 
             onNodeWithText(
-                "AI 안내를 준비하고 있어요. 잠시 후 다시 확인해주세요."
+                "맞춤 안내를 준비하고 있어요. 잠시 후 다시 확인해주세요."
             ).assertIsDisplayed()
 
             onNodeWithText(
@@ -141,7 +141,7 @@ class GuidanceFallbackStateTest {
             ).assertIsDisplayed()
 
             onNodeWithText(
-                "지금은 AI 안내를 준비하지 못했어요. 잠시 후 다시 시도해주세요."
+                "지금은 맞춤 안내를 준비하지 못했어요. 잠시 후 다시 시도해주세요."
             ).assertIsDisplayed()
 
             onNodeWithText(

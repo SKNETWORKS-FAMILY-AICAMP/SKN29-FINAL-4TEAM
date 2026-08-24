@@ -3,6 +3,9 @@ package com.skn29.watercare.customer.feature.customer.guidance
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -11,6 +14,7 @@ import com.skn29.watercare.core.model.CustomerInquirySnapshot
 import com.skn29.watercare.customer.common.VmFactory
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.delay
 
 @Composable
 fun FollowUpQuestionsScreen(
@@ -43,6 +47,37 @@ fun FollowUpQuestionsScreen(
     val state by
         viewModel.state
             .collectAsStateWithLifecycle()
+
+
+    var processingRefreshCount by
+        remember(inquiryId) {
+            mutableIntStateOf(0)
+        }
+
+    LaunchedEffect(state) {
+        val empty =
+            state as? FollowUpUiState.Empty
+        val waiting =
+            empty?.snapshot
+                ?.statusCode
+                ?.trim()
+                ?.uppercase() ==
+                "QUESTIONNAIRE_IN_PROGRESS"
+
+        if (
+            waiting &&
+            processingRefreshCount < 15
+        ) {
+            delay(2_000)
+            processingRefreshCount += 1
+            viewModel.load()
+        } else if (
+            !waiting &&
+            state !is FollowUpUiState.Loading
+        ) {
+            processingRefreshCount = 0
+        }
+    }
 
     val cancelState by
         viewModel.cancelState
@@ -115,6 +150,22 @@ fun FollowUpQuestionsScreen(
             onCancelledDone =
                 onBack,
         )
+
+        if (
+            state is FollowUpUiState.Empty &&
+            snapshot?.statusCode
+                ?.trim()
+                ?.uppercase() ==
+                "QUESTIONNAIRE_IN_PROGRESS"
+        ) {
+            com.skn29.watercare.core.ui.components.LoadingBlock(
+                if (processingRefreshCount < 15) {
+                    "답변을 분석하고 있어요"
+                } else {
+                    "분석이 평소보다 오래 걸리고 있어요. 잠시 후 다시 확인해주세요."
+                }
+            )
+        }
 
         if (!blockFollowUpInteraction) {
             FollowUpQuestionsSection(
