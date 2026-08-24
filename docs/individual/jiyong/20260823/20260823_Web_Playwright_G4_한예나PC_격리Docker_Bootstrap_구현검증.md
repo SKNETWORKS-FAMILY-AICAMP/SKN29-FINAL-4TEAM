@@ -73,7 +73,7 @@ Fixture다. 따라서 `g2_g3=NOT_APPLICABLE_FOR_WEB_G4`가 맞으며 G2·G3 PASS
 전용 Volume과 신규 `run_id`만 사용하므로 기존 G2~G6 실행 증거를 수정하거나
 대체하지 않는다. 새 결과는 최신 main Web G4 회귀 증거로 별도 보관한다.
 
-## 6. 검증 결과
+## 6. 최초 구현·검증 결과
 
 | 검증 | 결과 |
 |---|---|
@@ -128,7 +128,58 @@ Volume을 새로 만들었고, 재실행은 같은 `run_id` Fixture를 초기화
 순서 오류가 아니다. 호환성 보완이 병합된 최신 main을 받은 뒤 기존 실패 환경을
 삭제하지 않고 첫 Apply 명령을 그대로 다시 실행하면 된다.
 
-## 8. 담당자 인계
+## 8. 2026-08-24 최신 main 안전 재점검
+
+### 8.1 기준선
+
+- 재점검 main: `bfa0b932ce5db345843893e3cd704d4c19c6410b`
+- Web 공지·Playwright Commit `873cb775`의 main 포함: 확인
+- Backend 통합 상세 Commit `a40efe68`의 main 포함: 확인
+- Mobile G3: 별도 실행 중이며 Web G4 격리 Runtime과 분리
+
+현재 main에는 격리 Bootstrap, JAC104 상담 Fixture, 타 상담사 404 Fixture와
+통합 상세 Backend Projection이 모두 있다. 따라서 Backend 소스·Migration·Seed를
+추가 수정할 필요는 없다.
+
+### 8.2 이번 재점검에서 수행한 작업
+
+- clean 최신 main에서 Bootstrap Plan 실행
+- `exact_origin_main=true`, `worktree_clean=true` 확인
+- Docker CLI 준비 확인
+- 전용 Container·Volume 이름의 기존 자원 없음 확인
+- Bootstrap·404 Fixture·Demo Seed·상담 상세 표적 테스트 실행
+- 결과: `29 passed / 0 failed`
+
+Plan은 `mutates_local_environment=false`로 종료했으며 PostgreSQL 생성, Migration,
+Seed, Fixture Apply는 실행하지 않았다. 신규 상세 필드를 소비하는 Web 변경이
+완료되기 전에 Runtime 증거를 만들면 같은 검증을 다시 해야 하기 때문이다.
+
+### 8.3 Mobile G3와 Web G4 실행선 분리
+
+Mobile G3의 IAC425·IAC606 일반·누수 4 Case는 미승인 제품 차단 검증이다.
+Web G4의 새 격리 DB에 해당 제품을 성공 Inquiry로 만들거나 Runtime 지원 상태로
+승격하지 않는다.
+
+- `WPUIAC425SNW`, `WPUIAC606SNW`: Mobile·AI G3에서 차단 결과 확인
+- `WPUJCC104D`: 실제 Product·Subscription·Inquiry를 만들지 않고 거절 계약만 확인
+- Web G4: 새 `WPUJAC104DWH` 상담·방문 Fixture와 404 권한 경계만 사용
+
+Mobile G3가 넘기는 동일 Inquiry를 이어받는 팀 수직 G4는 G3 완료 후 같은 DB와
+ID로 수행한다. 이 문서의 독립 Web G4는 전용 DB·전용 `run_id`를 사용하는 Web
+회귀이며 팀 수직 G4의 결과를 대체하지 않는다.
+
+### 8.4 다음 실행 순서
+
+1. 한예나가 최신 main을 반영한다.
+2. `phone_masked`, `product_model_name`, `question_text`,
+   `usage_guidance_display_label`, `visit`를 통합 화면에 연결한다.
+3. 공개 Evidence 계약은 확정 전까지 빈 상태를 유지한다.
+4. Web Test·Lint·TypeCheck·E2E TypeCheck·Build를 통과시킨다.
+5. Web 변경이 main에 병합된 clean 기준선에서 새 격리 Runtime을 Apply한다.
+6. 신규 `run_id`로 실제 Playwright G4와 Screenshot·Trace를 남긴다.
+7. Mobile G3 동일 Inquiry 수직 G4는 별도 인계 순서로 수행한다.
+
+## 9. 담당자 인계
 
 한예나는 Backend·Migration·Seed·Fixture 코드를 수정하지 않고 제공된 Bootstrap을
 실행한다. 실패 시 Volume 삭제나 일반 Migration을 시도하지 말고, 비밀값을
