@@ -8,6 +8,7 @@ from hashlib import sha256
 from html import escape
 import json
 from pathlib import Path
+import re
 from typing import Any, Mapping, Protocol
 from urllib.parse import urlparse
 
@@ -118,6 +119,28 @@ class GraphEdge:
             "source_id": self.source_id,
             "target_id": self.target_id,
             "properties": dict(self.properties),
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class VisualQueryPreset:
+    """Neo4j Browser에서 재현할 수 있는 정제 시각 검증 Query."""
+
+    query_id: str
+    title: str
+    purpose: str
+    statement: str
+    expected_result: Mapping[str, JsonScalar]
+
+    def manifest_row(self) -> dict[str, Any]:
+        return {
+            "query_id": self.query_id,
+            "title": self.title,
+            "purpose": self.purpose,
+            "expected_result": dict(self.expected_result),
+            "statement_sha256": sha256(
+                self.statement.encode("utf-8")
+            ).hexdigest().upper(),
         }
 
 
@@ -698,6 +721,25 @@ def verify_graph_in_neo4j(
         "r.evidence_group_count AS evidence_group_count "
         "ORDER BY model_code, topic_code"
     )
+    visual_query_results: list[dict[str, Any]] = []
+    visual_query_issues: list[str] = []
+    for preset in build_visual_query_presets(graph):
+        preset_rows = executor.query(preset.statement)
+        expected_row_count = int(preset.expected_result["row_count"])
+        actual_row_count = len(preset_rows)
+        status = "PASS" if actual_row_count == expected_row_count else "FAIL"
+        if status == "FAIL":
+            visual_query_issues.append(
+                f"VISUAL_QUERY_ROW_COUNT_MISMATCH:{preset.query_id}"
+            )
+        visual_query_results.append(
+            {
+                "query_id": preset.query_id,
+                "status": status,
+                "expected_row_count": expected_row_count,
+                "actual_row_count": actual_row_count,
+            }
+        )
 
     actual_node_counts = {
         str(row["label"]): int(row["count"]) for row in node_rows
@@ -720,6 +762,7 @@ def verify_graph_in_neo4j(
         issues.append("CROSS_MODEL_PATH_PRESENT")
     if len(visual_rows) != expected_visual_count:
         issues.append("VISUAL_SUMMARY_COUNT_MISMATCH")
+    issues.extend(visual_query_issues)
     return {
         "database_validation": "PASS" if not issues else "FAIL",
         "neo4j": {
@@ -736,6 +779,11 @@ def verify_graph_in_neo4j(
             "row_count": len(visual_rows),
             "result_set_sha256": canonical_json_sha256(visual_rows),
             "rows": visual_rows,
+        },
+        "visual_query_validation": {
+            "status": "PASS" if not visual_query_issues else "FAIL",
+            "query_count": len(visual_query_results),
+            "results": visual_query_results,
         },
         "issues": issues,
     }
@@ -853,6 +901,167 @@ VISUAL_BROWSER_QUERY = (
 )
 
 
+def build_visual_query_presets(
+    graph: EvidenceLineageGraph,
+) -> tuple[VisualQueryPreset, ...]:
+    """개요·제품별 계보·안전·이상관계 시각 Query를 고정한다."""
+
+    products = sorted(
+        node.node_id for node in graph.nodes if node.label == "Product"
+    )
+    if not products:
+        raise Neo4jEvidenceLineageError("시각 Query 대상 Product가 없습니다.")
+    for model_code in products:
+        if re.fullmatch(r"[A-Z0-9]+", model_code) is None:
+            raise Neo4jEvidenceLineageError(
+                "시각 Query의 제품 코드 형식이 올바르지 않습니다."
+            )
+
+    product_count = sum(node.label == "Product" for node in graph.nodes)
+    topic_count = sum(node.label == "Topic" for node in graph.nodes)
+    presets: list[VisualQueryPreset] = [
+        VisualQueryPreset(
+            query_id="product_topic_overview",
+            title="Product to Evidence Topic Overview",
+            purpose="제품별 공식 Evidence Topic 범위와 중첩을 확인한다.",
+            statement=VISUAL_BROWSER_QUERY,
+            expected_result={
+                "node_count": product_count + topic_count,
+                "relationship_count": graph.relationship_counts()[
+                    "COVERS_TOPIC"
+                ],
+                "row_count": graph.relationship_counts()["COVERS_TOPIC"],
+            },
+        )
+    ]
+    for model_code in products:
+        child_count = sum(
+            node.label == "EvidenceChunk"
+            and node.properties.get("model_code") == model_code
+            for node in graph.nodes
+        )
+        evidence_group_count = sum(
+            node.label == "EvidenceGroup"
+            and node.properties.get("model_code") == model_code
+            for node in graph.nodes
+        )
+        model_topic_count = sum(
+            edge.relationship == "COVERS_TOPIC"
+            and edge.source_id == model_code
+            for edge in graph.edges
+        )
+        presets.append(
+            VisualQueryPreset(
+                query_id=f"product_lineage_{model_code.casefold()}",
+                title=f"Evidence Lineage for {model_code}",
+                purpose=(
+                    "한 제품의 Document부터 Topic까지 정제된 Evidence 계보를 "
+                    "드릴다운한다."
+                ),
+                statement=(
+                    f"MATCH path=(p:Product {{model_code: '{model_code}'}})"
+                    "-[:HAS_DOCUMENT]->(:Document)-[:HAS_PARENT_PAGE]->"
+                    "(:ParentPage)-[:HAS_CHILD]->(:EvidenceChunk)"
+                    "-[:MEMBER_OF]->(:EvidenceGroup)-[:ABOUT]->(:Topic) "
+                    "RETURN path"
+                ),
+                expected_result={
+                    "model_code": model_code,
+                    "path_count": child_count,
+                    "row_count": child_count,
+                    "evidence_group_count": evidence_group_count,
+                    "topic_count": model_topic_count,
+                },
+            )
+        )
+
+    consultation_group_ids = {
+        node.node_id
+        for node in graph.nodes
+        if node.label == "EvidenceGroup"
+        and node.properties.get("requires_consultation") is True
+    }
+    consultation_path_count = sum(
+        edge.relationship == "MEMBER_OF"
+        and edge.target_id in consultation_group_ids
+        for edge in graph.edges
+    )
+    presets.extend(
+        [
+            VisualQueryPreset(
+                query_id="consultation_required_lineage",
+                title="Consultation Required Evidence Lineage",
+                purpose=(
+                    "상담이 필요한 Evidence Group의 제품별 계보가 유지되는지 "
+                    "확인한다."
+                ),
+                statement=(
+                    "MATCH path=(p:Product)-[:HAS_DOCUMENT]->(:Document)"
+                    "-[:HAS_PARENT_PAGE]->(:ParentPage)-[:HAS_CHILD]->"
+                    "(:EvidenceChunk)-[:MEMBER_OF]->"
+                    "(g:EvidenceGroup)-[:ABOUT]->(:Topic) "
+                    "WHERE g.requires_consultation = true RETURN path"
+                ),
+                expected_result={
+                    "evidence_group_count": len(consultation_group_ids),
+                    "path_count": consultation_path_count,
+                    "row_count": consultation_path_count,
+                },
+            ),
+            VisualQueryPreset(
+                query_id="integrity_anomalies",
+                title="Evidence Lineage Integrity Anomalies",
+                purpose=(
+                    "고아 Chunk 또는 Parent·Evidence Group과 제품이 다른 관계를 "
+                    "탐지한다."
+                ),
+                statement=(
+                    "MATCH (c:EvidenceChunk) "
+                    "OPTIONAL MATCH (parent:ParentPage)-[:HAS_CHILD]->(c) "
+                    "OPTIONAL MATCH (c)-[:MEMBER_OF]->(group:EvidenceGroup) "
+                    "WITH c, parent, group "
+                    "WHERE parent IS NULL OR group IS NULL "
+                    "OR c.model_code <> parent.model_code "
+                    "OR c.model_code <> group.model_code "
+                    "RETURN c, parent, group"
+                ),
+                expected_result={"row_count": 0},
+            ),
+        ]
+    )
+    return tuple(presets)
+
+
+def render_visual_query_bundle(
+    presets: tuple[VisualQueryPreset, ...],
+) -> str:
+    """Neo4j Browser에 하나씩 붙여 넣을 수 있는 정제 Query Bundle."""
+
+    if not presets:
+        raise Neo4jEvidenceLineageError("시각 Query Preset이 없습니다.")
+    lines = [
+        "// Neo4j Evidence Lineage Visual Validation",
+        "// LAB_ONLY / production runtime disconnected",
+        "",
+    ]
+    for preset in presets:
+        lines.extend(
+            [
+                f"// [{preset.query_id}] {preset.title}",
+                f"// Purpose: {preset.purpose}",
+                "// Expected: "
+                + json.dumps(
+                    dict(preset.expected_result),
+                    ensure_ascii=True,
+                    sort_keys=True,
+                ),
+                preset.statement.rstrip(";") + ";",
+                "",
+            ]
+        )
+    return "\n".join(lines)
+
+
 __all__ = [
     "DEFAULT_CHILD_CHUNKS_PATH",
     "DEFAULT_EVIDENCE_GROUPS_PATH",
@@ -864,9 +1073,12 @@ __all__ = [
     "Neo4jHttpQueryClient",
     "Neo4jQueryExecutor",
     "VISUAL_BROWSER_QUERY",
+    "VisualQueryPreset",
     "build_evidence_lineage_graph",
+    "build_visual_query_presets",
     "canonical_json_sha256",
     "load_graph_into_neo4j",
     "render_lineage_svg",
+    "render_visual_query_bundle",
     "verify_graph_in_neo4j",
 ]
