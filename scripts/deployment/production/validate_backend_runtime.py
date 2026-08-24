@@ -29,7 +29,7 @@ def main() -> int:
             cursor.execute(
                 "SELECT extversion FROM pg_extension WHERE extname = 'vector'"
             )
-            if cursor.fetchone() != ("0.8.6",):
+            if cursor.fetchone() != ("0.8.2",):
                 raise RuntimeError("unexpected pgvector version")
 
             cursor.execute(
@@ -70,7 +70,7 @@ def main() -> int:
 
     print("BACKEND_RUNTIME_PREFLIGHT_PASS")
     print("postgresql=16.14")
-    print("pgvector=0.8.6")
+    print("pgvector=0.8.2")
     print("evidence.0013=APPLIED")
     print("visits.0005=NOT_APPLIED_P1_HOLD")
     print("migration_plan=VISITS_0005_ONLY_HOLD")

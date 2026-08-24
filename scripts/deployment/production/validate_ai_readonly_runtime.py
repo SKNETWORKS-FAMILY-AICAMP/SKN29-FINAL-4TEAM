@@ -40,7 +40,7 @@ def main() -> int:
             cursor.execute(
                 "SELECT extversion FROM pg_extension WHERE extname = 'vector'"
             )
-            if cursor.fetchone() != ("0.8.6",):
+            if cursor.fetchone() != ("0.8.2",):
                 raise RuntimeError("unexpected pgvector version")
             cursor.execute("SHOW default_transaction_read_only")
             if cursor.fetchone() != ("on",):
