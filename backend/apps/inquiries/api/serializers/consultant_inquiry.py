@@ -119,10 +119,12 @@ class ConsultantCustomerSerializer(serializers.Serializer):
     is_synthetic = serializers.BooleanField()
     display_name = serializers.CharField(max_length=80)
     phone = serializers.CharField(max_length=32)
+    phone_masked = serializers.CharField(max_length=32)
 
 
 class ConsultantProductAndCareSerializer(serializers.Serializer):
     product_model = serializers.CharField(max_length=120)
+    product_model_name = serializers.CharField(max_length=150)
     subscription_status = serializers.CharField(max_length=40)
     management_type = serializers.CharField(max_length=40)
     recent_care_date = serializers.DateField(allow_null=True)
@@ -130,6 +132,7 @@ class ConsultantProductAndCareSerializer(serializers.Serializer):
 
 class ConsultantQuestionAnswerSerializer(serializers.Serializer):
     question_code = serializers.CharField(max_length=80)
+    question_text = serializers.CharField(max_length=500)
     answer = serializers.CharField(max_length=2000)
 
 
@@ -141,6 +144,10 @@ class ConsultantSymptomQuestionnaireSerializer(serializers.Serializer):
 class ConsultantGuidanceActionsSerializer(serializers.Serializer):
     usage_guidance_status = serializers.ChoiceField(
         choices=Inquiry.UsageGuidanceStatus.values,
+        allow_null=True,
+    )
+    usage_guidance_display_label = serializers.CharField(
+        max_length=40,
         allow_null=True,
     )
     usage_guidance_message = serializers.CharField(

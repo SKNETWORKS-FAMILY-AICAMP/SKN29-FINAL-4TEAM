@@ -63,11 +63,16 @@ properties:
     oneOf:
       - type: object
         additionalProperties: false
-        required: [product_model, subscription_status, management_type, recent_care_date]
+        required: [product_model, product_model_name, subscription_status, management_type, recent_care_date]
         properties:
           product_model:
             type: string
             maxLength: 120
+            description: 제품 판매 모델 코드
+          product_model_name:
+            type: string
+            maxLength: 150
+            description: 상담사 화면용 제품 모델명
           subscription_status:
             type: string
             maxLength: 40
@@ -91,22 +96,29 @@ properties:
         items:
           type: object
           additionalProperties: false
-          required: [question_code, answer]
+          required: [question_code, question_text, answer]
           properties:
             question_code:
               type: string
               maxLength: 80
+            question_text:
+              type: string
+              maxLength: 500
             answer:
               type: string
               maxLength: 2000
   guidance_and_actions:
     type: object
     additionalProperties: false
-    required: [usage_guidance_status, usage_guidance_message, restricted_functions]
+    required: [usage_guidance_status, usage_guidance_display_label, usage_guidance_message, restricted_functions]
     properties:
       usage_guidance_status:
         type: [string, "null"]
         enum: [NORMAL, PARTIAL_STOP, TOTAL_STOP, PENDING_CONSULTATION, null]
+      usage_guidance_display_label:
+        type: [string, "null"]
+        enum: [정상 사용 가능, 일부 기능 사용 중단, 제품 사용 중단, 상담 확인 필요, null]
+        description: 원본 상태 코드는 유지하면서 상담사 화면에 표시하는 Backend 공식 한글 명칭
       usage_guidance_message:
         type: [string, "null"]
         maxLength: 2000

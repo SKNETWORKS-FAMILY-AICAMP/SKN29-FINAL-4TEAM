@@ -19,6 +19,7 @@ from apps.inquiries.models import Inquiry
 from apps.inquiries.repositories.consultant_inquiry_repository import (
     ConsultantInquiryRepository,
 )
+from apps.visits.services.visit_service import VisitService
 from apps.workflow.engine.allowed_action_resolver import (
     AllowedActionContext,
     AllowedActionResolver,
@@ -31,6 +32,12 @@ PUBLIC_ACTOR_ROLES = {
     "CONSULTANT",
     "TECHNICIAN",
     "OPERATOR",
+}
+USAGE_GUIDANCE_DISPLAY_LABELS = {
+    Inquiry.UsageGuidanceStatus.NORMAL: "정상 사용 가능",
+    Inquiry.UsageGuidanceStatus.PARTIAL_STOP: "일부 기능 사용 중단",
+    Inquiry.UsageGuidanceStatus.TOTAL_STOP: "제품 사용 중단",
+    Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION: "상담 확인 필요",
 }
 
 
@@ -137,6 +144,8 @@ class ConsultantInquiryService:
             iter(inquiry.allowed_action_consultations),
             None,
         )
+        latest_visit = next(iter(inquiry.consultant_visits), None)
+        usage_guidance_status = inquiry.effective_usage_guidance_status
         guidance_usage = cls._validated_guidance_usage(latest_guidance)
         allowed_actions = AllowedActionResolver.resolve(
             context=AllowedActionContext.from_models(
@@ -158,10 +167,15 @@ class ConsultantInquiryService:
             "customer": {
                 "is_synthetic": True,
                 "display_name": cls._display_name(customer.customer_name),
-                "phone": customer.phone,
+                # Keep the legacy key masked while Web migrates to the
+                # explicit phone_masked field. Raw phone data never leaves
+                # this consultant projection.
+                "phone": cls._mask_phone(customer.phone),
+                "phone_masked": cls._mask_phone(customer.phone),
             },
             "product_and_care": {
                 "product_model": product.model_code,
+                "product_model_name": product.model_name.strip()[:150],
                 "subscription_status": inquiry.subscription.status_code,
                 "management_type": (
                     inquiry.subscription.management_type_code
@@ -175,8 +189,11 @@ class ConsultantInquiryService:
                 "answers": cls._questionnaire_answers(inquiry),
             },
             "guidance_and_actions": {
-                "usage_guidance_status": (
-                    inquiry.effective_usage_guidance_status
+                "usage_guidance_status": usage_guidance_status,
+                "usage_guidance_display_label": (
+                    cls._usage_guidance_display_label(
+                        usage_guidance_status
+                    )
                 ),
                 "usage_guidance_message": (
                     latest_guidance.summary_text.strip()[:2000]
@@ -190,8 +207,7 @@ class ConsultantInquiryService:
             "consultation": ConsultationService.build_resource(
                 latest_consultation
             ),
-            # Visit detail remains a later read-projection slice.
-            "visit": None,
+            "visit": VisitService.build_resource(latest_visit),
             "state_history": [
                 {
                     "from_status": history.from_state,
@@ -295,6 +311,27 @@ class ConsultantInquiryService:
         return value.strip()[:80]
 
     @staticmethod
+    def _mask_phone(value: str) -> str:
+        digits = "".join(
+            character for character in value if character.isdigit()
+        )
+        if not digits:
+            return ""
+        if len(digits) == 11:
+            return f"{digits[:3]}-****-{digits[-4:]}"
+        if len(digits) == 10:
+            return f"{digits[:3]}-***-{digits[-4:]}"
+        if len(digits) <= 4:
+            return "*" * len(digits)
+        return f"{'*' * (len(digits) - 4)}{digits[-4:]}"
+
+    @staticmethod
+    def _usage_guidance_display_label(status: str | None) -> str | None:
+        if status is None:
+            return None
+        return USAGE_GUIDANCE_DISPLAY_LABELS.get(status)
+
+    @staticmethod
     def _recent_care_date(subscription) -> date | None:
         care_dates: list[date] = []
         for care_record in subscription.consultant_completed_care_records:
@@ -335,6 +372,7 @@ class ConsultantInquiryService:
             answers.append(
                 {
                     "question_code": entry.question_code,
+                    "question_text": entry.question_text.strip()[:500],
                     "answer": answer[:2000],
                 }
             )
