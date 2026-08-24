@@ -16,6 +16,33 @@ SUBSCRIPTION_ID = "00000000-0000-4000-8000-000000000003"
 CARE_RECORD_ID = "00000000-0000-4000-8000-000000000004"
 QUESTIONNAIRE_SESSION_ID = "00000000-0000-4000-8000-000000000005"
 
+P1A_REVIEW_OPERATIONS = {
+    ("/auth/contract-verification/challenges", "post"): (
+        "createContractVerificationChallenge"
+    ),
+    (
+        "/auth/contract-verification/challenges/{challenge_id}/verify",
+        "post",
+    ): "verifyContractVerificationChallenge",
+    ("/auth/signup", "post"): "signupContractCustomer",
+    ("/auth/login", "post"): "loginWithPassword",
+    ("/auth/account-recovery/username/challenges", "post"): (
+        "createUsernameRecoveryChallenge"
+    ),
+    (
+        "/auth/account-recovery/username/challenges/{challenge_id}/verify",
+        "post",
+    ): "verifyUsernameRecoveryChallenge",
+    ("/auth/password-reset/challenges", "post"): (
+        "createPasswordResetChallenge"
+    ),
+    (
+        "/auth/password-reset/challenges/{challenge_id}/verify",
+        "post",
+    ): "verifyPasswordResetChallenge",
+    ("/auth/password-reset/confirm", "post"): "confirmPasswordReset",
+}
+
 EXPECTED_OPERATIONS = {
     ("/health", "get"): {
         "operation_id": "getProvisionalHealth",
@@ -466,17 +493,20 @@ def runtime_view_name(match) -> str:
     return match.func.__name__
 
 
-def test_openapi_operation_inventory_is_exactly_forty_nine():
+def test_openapi_operation_inventory_separates_runtime_and_p1a_review():
     operations = collect_operations()
-
-    assert set(operations) == set(EXPECTED_OPERATIONS)
-    assert len(operations) == 49
-    assert {
-        operation["operationId"] for operation in operations.values()
-    } == {
+    expected_operation_ids = {
         expected["operation_id"]
         for expected in EXPECTED_OPERATIONS.values()
-    }
+    } | set(P1A_REVIEW_OPERATIONS.values())
+
+    assert set(operations) == (
+        set(EXPECTED_OPERATIONS) | set(P1A_REVIEW_OPERATIONS)
+    )
+    assert len(operations) == 58
+    assert {
+        operation["operationId"] for operation in operations.values()
+    } == expected_operation_ids
 
     for key, expected in EXPECTED_OPERATIONS.items():
         operation = operations[key]
@@ -484,6 +514,12 @@ def test_openapi_operation_inventory_is_exactly_forty_nine():
         assert operation["x-contract-status"] == (
             expected["contract_status"]
         )
+
+    for key, operation_id in P1A_REVIEW_OPERATIONS.items():
+        operation = operations[key]
+        assert operation["operationId"] == operation_id
+        assert operation["x-contract-status"] == "IN_REVIEW"
+        assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
 
 
 def test_forty_six_operations_resolve_to_expected_runtime_views():
@@ -505,7 +541,7 @@ def test_forty_six_operations_resolve_to_expected_runtime_views():
             assert callable(getattr(view_class, method, None))
 
 
-def test_three_openapi_only_operations_have_no_runtime_method():
+def test_three_baseline_openapi_only_operations_have_no_runtime_method():
     openapi_only = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()

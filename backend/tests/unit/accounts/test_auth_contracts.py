@@ -167,7 +167,12 @@ def test_auth_schemas_and_error_contracts_are_nonempty():
         "contracts/error-codes/categories/permission.yaml"
     )
     assert {item["code"] for item in auth_errors["errors"]} == {
-        "AUTH_REQUIRED"
+        "AUTH_REQUIRED",
+        "AUTH_VERIFICATION_FAILED",
+        "AUTH_LOGIN_FAILED",
+        "AUTH_IDENTIFIER_UNAVAILABLE",
+        "AUTH_SIGNUP_CONFLICT",
+        "AUTH_RATE_LIMITED",
     }
     assert {
         item["code"] for item in permission_errors["errors"]
