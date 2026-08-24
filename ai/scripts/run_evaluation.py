@@ -19,6 +19,22 @@ from ai.evaluation.runners.structuring_runner import StructuringEvaluationRunner
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
 
+def _combined_status(
+    *,
+    deterministic_status: str,
+    retrieval_status: str,
+    external_runtime: dict[str, str],
+) -> str:
+    """실행하지 않은 Runtime을 전체 PASS로 승격하지 않는다."""
+
+    statuses = [deterministic_status, retrieval_status, *external_runtime.values()]
+    if any(status == "FAIL" for status in statuses):
+        return "FAIL"
+    if all(status == "PASS" for status in statuses):
+        return "PASS"
+    return "PARTIAL"
+
+
 def _git_output(*args: str) -> str:
     completed = subprocess.run(
         ["git", *args],
@@ -42,22 +58,37 @@ def build_deterministic_report(
     structuring_report = StructuringEvaluationRunner().run()
     generation_report = GenerationEvaluationRunner(generation_dataset_path).run()
     retrieval_report = RetrievalEvaluationRunner().run()
-    statuses = [
+    deterministic_statuses = [
         safety_report["status"],
         structuring_report["status"],
         generation_report["status"],
     ]
+    deterministic_quality_status = (
+        "PASS"
+        if all(item == "PASS" for item in deterministic_statuses)
+        else "FAIL"
+    )
+    external_runtime = {
+        "backend": "NOT_RUN",
+        "mcp": "NOT_RUN",
+        "vector_store": "NOT_RUN",
+        "provider": "NOT_RUN",
+    }
     runtime_identity = json.loads(
         (REPOSITORY_ROOT / "ai" / "configs" / "runtime_identity.json").read_text(
             encoding="utf-8"
         )
     )
     return {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "overall_status": (
-            "PASS" if all(item == "PASS" for item in statuses) else "FAIL"
+        "overall_status": _combined_status(
+            deterministic_status=deterministic_quality_status,
+            retrieval_status=str(retrieval_report["status"]),
+            external_runtime=external_runtime,
         ),
+        "deterministic_quality_status": deterministic_quality_status,
+        "retrieval_runtime_status": retrieval_report["status"],
         "evaluation_scope": "DETERMINISTIC_AI_QUALITY_WITHOUT_EXTERNAL_RUNTIME",
         "execution": {
             "git_sha": _git_output("rev-parse", "HEAD"),
@@ -69,12 +100,7 @@ def build_deterministic_report(
                 "NOT_CONFIGURED",
             ),
         },
-        "external_runtime": {
-            "backend": "NOT_RUN",
-            "mcp": "NOT_RUN",
-            "vector_store": "NOT_RUN",
-            "provider": "NOT_RUN",
-        },
+        "external_runtime": external_runtime,
         "safety_evaluation": safety_report,
         "structuring_evaluation": structuring_report,
         "generation_evaluation": generation_report,
@@ -125,6 +151,10 @@ def main() -> None:
         json.dumps(
             {
                 "overall_status": report["overall_status"],
+                "deterministic_quality_status": report[
+                    "deterministic_quality_status"
+                ],
+                "retrieval_runtime_status": report["retrieval_runtime_status"],
                 "safety_summary": report["safety_evaluation"]["summary"],
                 "structuring_summary": report["structuring_evaluation"]["summary"],
                 "generation_summary": report["generation_evaluation"]["summary"],
@@ -139,7 +169,7 @@ def main() -> None:
         )
     )
     if report["overall_status"] != "PASS":
-        raise SystemExit(1)
+        raise SystemExit(2 if report["overall_status"] == "PARTIAL" else 1)
 
 
 if __name__ == "__main__":

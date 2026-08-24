@@ -74,6 +74,16 @@ class RetrievalQualityDataset(_EvaluationModel):
         case_ids = [case.case_id for case in self.cases]
         if len(case_ids) != len(set(case_ids)):
             raise ValueError("Retrieval 평가 case_id는 중복될 수 없습니다.")
+        mismatched_top_k = [
+            case.case_id
+            for case in self.cases
+            if case.top_k != self.evaluation_policy.default_top_k
+        ]
+        if mismatched_top_k:
+            raise ValueError(
+                "Retrieval Case top_k는 evaluation_policy.default_top_k와 "
+                "일치해야 합니다."
+            )
         return self
 
 
@@ -151,10 +161,11 @@ class RetrievalEvaluationRunner:
         case: RetrievalQualityCase,
         dataset: RetrievalQualityDataset,
     ) -> dict[str, object]:
+        effective_top_k = dataset.evaluation_policy.default_top_k
         query = RetrievalQuery(
             query_text=case.query,
             model_code=case.product_model_code,
-            top_k=case.top_k,
+            top_k=effective_top_k,
         )
         execution_path = self._execution_path(query)
         started_at = time.perf_counter()
@@ -177,6 +188,11 @@ class RetrievalEvaluationRunner:
                 "product_contamination_hit_count": 0,
                 "invalid_evidence_hit_count": 0,
                 "expected_document_mismatch_count": 0,
+                "expected_page_mismatch_count": 0,
+                "missing_required_metadata_count": len(
+                    dataset.evaluation_policy.required_result_metadata
+                ),
+                "effective_top_k": dataset.evaluation_policy.default_top_k,
                 "top_k_exceeded": False,
                 "error_type": type(exc).__name__,
                 "passed": False,
@@ -185,7 +201,9 @@ class RetrievalEvaluationRunner:
 
         retrieved_ids = [chunk.chunk_id for chunk in chunks]
         expected_ids = set(case.expected_chunk_ids)
-        expected_hit_count = len(expected_ids.intersection(retrieved_ids[: case.top_k]))
+        expected_hit_count = len(
+            expected_ids.intersection(retrieved_ids[:effective_top_k])
+        )
         wrong_model_indexes = {
             index
             for index, chunk in enumerate(chunks)
@@ -210,6 +228,27 @@ class RetrievalEvaluationRunner:
             and case.expected_document_id is not None
             and chunk.document_id != case.expected_document_id
         )
+        expected_hit_chunks = [
+            chunk
+            for chunk in chunks[:effective_top_k]
+            if chunk.chunk_id in expected_ids
+        ]
+        returned_page_numbers = {
+            page_number
+            for chunk in expected_hit_chunks
+            for page_number in ([chunk.page] if chunk.page is not None else [])
+            + list(chunk.page_refs)
+        }
+        expected_page_mismatch_count = len(
+            set(case.expected_page_numbers) - returned_page_numbers
+        )
+        missing_required_metadata_count = len(
+            self._missing_required_metadata(
+                chunks=chunks,
+                execution_path=execution_path,
+                required=dataset.evaluation_policy.required_result_metadata,
+            )
+        )
 
         if case.expected_no_evidence:
             recall_at_k = None
@@ -220,14 +259,17 @@ class RetrievalEvaluationRunner:
                 and len(contamination_indexes)
                 <= dataset.evaluation_policy.negative_max_forbidden_hits
                 and not invalid_evidence_indexes
+                and missing_required_metadata_count == 0
             )
         else:
             recall_at_k = calculate_recall_at_k(
                 retrieved_ids,
                 case.expected_chunk_ids,
-                k=case.top_k,
+                k=effective_top_k,
             )
-            mrr = calculate_mrr(retrieved_ids[: case.top_k], case.expected_chunk_ids)
+            mrr = calculate_mrr(
+                retrieved_ids[:effective_top_k], case.expected_chunk_ids
+            )
             no_evidence_passed = None
             passed = (
                 expected_hit_count
@@ -235,7 +277,9 @@ class RetrievalEvaluationRunner:
                 and not contamination_indexes
                 and not invalid_evidence_indexes
                 and expected_document_mismatch_count == 0
-                and len(chunks) <= case.top_k
+                and expected_page_mismatch_count == 0
+                and missing_required_metadata_count == 0
+                and len(chunks) <= effective_top_k
             )
 
         return {
@@ -253,10 +297,46 @@ class RetrievalEvaluationRunner:
             "product_contamination_hit_count": len(contamination_indexes),
             "invalid_evidence_hit_count": len(invalid_evidence_indexes),
             "expected_document_mismatch_count": expected_document_mismatch_count,
-            "top_k_exceeded": len(chunks) > case.top_k,
+            "expected_page_mismatch_count": expected_page_mismatch_count,
+            "missing_required_metadata_count": missing_required_metadata_count,
+            "effective_top_k": effective_top_k,
+            "top_k_exceeded": len(chunks) > effective_top_k,
             "error_type": None,
             "passed": passed,
         }
+
+    @staticmethod
+    def _missing_required_metadata(
+        *,
+        chunks: Sequence[RetrievedChunk],
+        execution_path: str,
+        required: Sequence[str],
+    ) -> set[str]:
+        """필수 Metadata의 값은 노출하지 않고 누락 여부만 계산한다."""
+
+        chunk_attributes = {
+            "embedding_model": "embedding_model",
+            "embedding_model_version": "embedding_model_revision",
+            "chunk_set_sha256": "chunk_set_sha256",
+            "index_version": "index_version",
+        }
+        structurally_available = {"ranked_chunk_ids", "recall_at_k", "mrr"}
+        missing: set[str] = set()
+        for metadata_name in required:
+            attribute_name = chunk_attributes.get(metadata_name)
+            if attribute_name is not None:
+                if chunks and any(
+                    not getattr(chunk, attribute_name, None) for chunk in chunks
+                ):
+                    missing.add(metadata_name)
+                continue
+            if metadata_name == "filter":
+                if execution_path in {"UNAVAILABLE", "EXECUTION_PATH_ERROR"}:
+                    missing.add(metadata_name)
+                continue
+            if metadata_name not in structurally_available:
+                missing.add(metadata_name)
+        return missing
 
     def _execution_path(self, query: RetrievalQuery) -> str:
         resolver = getattr(self.search_service, "execution_path", None)
@@ -318,6 +398,13 @@ class RetrievalEvaluationRunner:
             ),
             "invalid_evidence_hit_count": sum(
                 int(case["invalid_evidence_hit_count"]) for case in case_results
+            ),
+            "expected_page_mismatch_count": sum(
+                int(case["expected_page_mismatch_count"]) for case in case_results
+            ),
+            "missing_required_metadata_count": sum(
+                int(case["missing_required_metadata_count"])
+                for case in case_results
             ),
             "search_error_count": sum(case["error_type"] is not None for case in case_results),
             "search_call_count": len(case_results),
