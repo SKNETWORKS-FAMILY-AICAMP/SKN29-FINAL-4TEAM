@@ -120,7 +120,9 @@ def test_consultant_inquiry_seed_passes_actual_http_smoke(
         detail_payload,
         expected=DETAIL_CORRELATION_ID,
     )
-    assert detail_payload["data"]["customer"]["phone"] == "010-0000-0000"
+    customer = detail_payload["data"]["customer"]
+    assert customer["phone"] == "010-****-0000"
+    assert customer["phone_masked"] == "010-****-0000"
 
     missing_status, missing_headers, missing_payload = request_json(
         live_server.url,

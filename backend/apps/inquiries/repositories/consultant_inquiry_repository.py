@@ -396,6 +396,17 @@ class ConsultantInquiryRepository:
             .select_related("actor")
             .order_by("state_version", "changed_at", "public_id")
         )
+        visits = (
+            Visit.objects.filter(
+                data_classification=Visit.DataClassification.SYNTHETIC,
+            )
+            .filter(
+                Q(technician__isnull=True)
+                | Q(technician__is_synthetic=True)
+            )
+            .select_related("technician")
+            .order_by("-requested_at", "-public_id")
+        )
         return (
             cls.visible_for_consultant(actor)
             .prefetch_related(
@@ -418,6 +429,11 @@ class ConsultantInquiryRepository:
                     "transition_history",
                     queryset=state_history,
                     to_attr="consultant_state_history",
+                ),
+                Prefetch(
+                    "visits",
+                    queryset=visits,
+                    to_attr="consultant_visits",
                 ),
             )
             .filter(public_id=inquiry_public_id)

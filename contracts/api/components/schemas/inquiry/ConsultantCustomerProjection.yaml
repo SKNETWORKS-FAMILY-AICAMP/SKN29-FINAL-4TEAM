@@ -1,9 +1,9 @@
 title: ConsultantCustomerProjection
 type: object
-description: 담당 상담사에게만 제공하는 합성 고객 최소 정보이며 주소는 제공하지 않는다.
+description: 담당 상담사에게만 제공하는 합성 고객 최소 정보이며 주소와 원문 연락처는 제공하지 않는다.
 x-contract-status: CONFIRMED
 additionalProperties: false
-required: [is_synthetic, display_name, phone]
+required: [is_synthetic, display_name, phone, phone_masked]
 properties:
   is_synthetic:
     type: boolean
@@ -15,4 +15,9 @@ properties:
   phone:
     type: string
     maxLength: 32
-    description: 합성 시연용 연락처
+    deprecated: true
+    description: 기존 Web 호환용 마스킹 연락처. 신규 소비자는 phone_masked를 사용한다.
+  phone_masked:
+    type: string
+    maxLength: 32
+    description: Backend에서 마스킹한 상담사 화면용 연락처

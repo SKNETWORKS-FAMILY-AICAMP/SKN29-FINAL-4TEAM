@@ -24,6 +24,7 @@ from apps.inquiries.models import (
 )
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
+from apps.visits.models import Visit
 from apps.workflow.models import IdempotencyRecord, TransitionHistory
 
 
@@ -491,7 +492,7 @@ def test_consultant_detail_returns_closed_assigned_projection(
         inquiry=inquiry,
         sequence_no=2,
         question_code="INTERNAL_OPTIONS",
-        question_text="Internal choice metadata must not be projected.",
+        question_text="Which symptom option did you select?",
         answer_type_code="SINGLE_CHOICE",
         answer_payload={
             "question_options": ["internal-a", "internal-b"],
@@ -565,7 +566,7 @@ def test_consultant_detail_returns_closed_assigned_projection(
         idempotency_key="consultant-read-detail-030",
     )
 
-    with django_assert_max_num_queries(7):
+    with django_assert_max_num_queries(8):
         response = authenticated_client(consultant).get(
             f"/api/v1/inquiries/{inquiry.public_id}"
         )
@@ -622,10 +623,12 @@ def test_consultant_detail_returns_closed_assigned_projection(
     assert data["customer"] == {
         "is_synthetic": True,
         "display_name": "A" * 80,
-        "phone": owner.customer_profile.phone,
+        "phone": "010-****-0031",
+        "phone_masked": "010-****-0031",
     }
     assert data["product_and_care"] == {
         "product_model": inquiry.subscription.product_model.model_code,
+        "product_model_name": inquiry.subscription.product_model.model_name,
         "subscription_status": CustomerSubscription.Status.ACTIVE,
         "management_type": CustomerSubscription.ManagementType.VISIT_CARE,
         "recent_care_date": "2026-08-01",
@@ -635,16 +638,19 @@ def test_consultant_detail_returns_closed_assigned_projection(
         "answers": [
             {
                 "question_code": "FILTER_FLOW",
+                "question_text": "Did the flow decrease after replacement?",
                 "answer": "Yes, the flow decreased.",
             },
             {
                 "question_code": "INTERNAL_OPTIONS",
+                "question_text": "Which symptom option did you select?",
                 "answer": "internal-a",
             },
         ],
     }
     assert data["guidance_and_actions"] == {
         "usage_guidance_status": "PENDING_CONSULTATION",
+        "usage_guidance_display_label": "상담 확인 필요",
         "usage_guidance_message": (
             "Validated AI guidance for consultant review."
         ),
@@ -666,6 +672,7 @@ def test_consultant_detail_returns_closed_assigned_projection(
 
     serialized = str(data)
     for forbidden in (
+        owner.customer_profile.phone,
         owner.customer_profile.address_line1,
         inquiry.subscription.contract_no,
         inquiry.subscription.serial_no,
@@ -678,6 +685,89 @@ def test_consultant_detail_returns_closed_assigned_projection(
         "internal_target",
     ):
         assert forbidden not in serialized
+
+
+def test_consultant_detail_projects_latest_synthetic_visit():
+    consultant = create_user(32, role=User.Role.CONSULTANT)
+    owner = create_user(33, role=User.Role.CUSTOMER)
+    technician = create_user(34, role=User.Role.TECHNICIAN)
+    technician.phone = "010-9999-0034"
+    technician.save(update_fields=["phone"])
+    inquiry = create_assigned_inquiry(
+        sequence=32,
+        owner=owner,
+        consultant=consultant,
+        status=Inquiry.Status.VISIT_SCHEDULING,
+    )
+    visit = Visit.objects.create(
+        visit_code="CONSULTANT-READ-VISIT-032",
+        inquiry=inquiry,
+        technician=technician,
+        status=Visit.Status.SCHEDULING,
+        requested_at=timezone.now(),
+        preferred_date=date(2026, 8, 20),
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
+        state_version=1,
+        idempotency_key="consultant-read-visit-032",
+        correlation_id=uuid4(),
+        data_classification=Visit.DataClassification.SYNTHETIC,
+    )
+
+    response = authenticated_client(consultant).get(
+        f"/api/v1/inquiries/{inquiry.public_id}"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["data"]["visit"] == {
+        "visit_id": str(visit.public_id),
+        "inquiry_id": str(inquiry.public_id),
+        "schedule": {
+            "preferred_date": "2026-08-20",
+            "confirmed_date": None,
+            "schedule_status": Visit.Status.SCHEDULING,
+            "synthetic_technician_id": str(technician.public_id),
+        },
+        "technician": {
+            "is_synthetic": True,
+            "technician_id": str(technician.public_id),
+            "display_name": technician.full_name,
+            "phone": technician.phone,
+        },
+    }
+
+
+@pytest.mark.parametrize(
+    ("status", "display_label"),
+    (
+        (Inquiry.UsageGuidanceStatus.NORMAL, "정상 사용 가능"),
+        (Inquiry.UsageGuidanceStatus.PARTIAL_STOP, "일부 기능 사용 중단"),
+        (Inquiry.UsageGuidanceStatus.TOTAL_STOP, "제품 사용 중단"),
+        (Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION, "상담 확인 필요"),
+    ),
+)
+def test_consultant_detail_projects_official_guidance_display_label(
+    status,
+    display_label,
+):
+    consultant = create_user(70, role=User.Role.CONSULTANT)
+    owner = create_user(71, role=User.Role.CUSTOMER)
+    inquiry = create_assigned_inquiry(
+        sequence=70,
+        owner=owner,
+        consultant=consultant,
+    )
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        usage_guidance_status=status,
+    )
+
+    response = authenticated_client(consultant).get(
+        f"/api/v1/inquiries/{inquiry.public_id}"
+    )
+
+    assert response.status_code == 200
+    guidance = response.json()["data"]["guidance_and_actions"]
+    assert guidance["usage_guidance_status"] == status
+    assert guidance["usage_guidance_display_label"] == display_label
 
 
 def test_consultant_detail_projects_latest_persisted_consultation():

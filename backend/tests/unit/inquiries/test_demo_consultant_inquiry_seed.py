@@ -90,7 +90,8 @@ def test_demo_consultant_can_read_seeded_list_and_detail(settings):
     assert detail_payload["data"]["customer"] == {
         "is_synthetic": True,
         "display_name": "합성 상담조회 고객 001",
-        "phone": "010-0000-0000",
+        "phone": "010-****-0000",
+        "phone_masked": "010-****-0000",
     }
     assert detail_payload["metadata"]["correlation_id"] == detail[
         "X-Correlation-ID"
