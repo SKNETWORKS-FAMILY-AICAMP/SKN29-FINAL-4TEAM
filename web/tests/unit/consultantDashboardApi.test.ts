@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import * as httpClient from "../../src/common/api/httpClient";
 import {
+  fetchConsultantNoticeDetail,
   fetchSyntheticConsultantDashboardData,
   mapSyntheticConsultantDashboardDto,
 } from "../../src/features/notice/api/consultantNoticeApi";
@@ -100,5 +101,54 @@ describe("로컬 합성 상담사 Dashboard API", () => {
         data_classification: "production",
       }),
     ).toThrow("로컬 합성 데이터만");
+  });
+
+  it("Dashboard notice_id로 공지 상세 API를 호출하고 화면 모델로 변환한다", async () => {
+    const noticeId = "00000000-0000-4000-8000-000000000001";
+    const request = vi.spyOn(httpClient, "requestApi").mockResolvedValue({
+      data: DASHBOARD_DTO.notices[0],
+      status: 200,
+    });
+
+    const result = await fetchConsultantNoticeDetail(noticeId);
+
+    expect(request).toHaveBeenCalledWith(`/consultant/notices/${noticeId}`);
+    expect(result).toEqual({
+      noticeId,
+      noticeCode: "NOTICE-001",
+      categoryCode: "WORK",
+      category: "근무",
+      title: "합성 공지",
+      content: "로컬 G4 전용 공지",
+      department: "고객케어팀",
+      publishedOn: "2026-08-20",
+    });
+  });
+
+  it("공지 식별자는 형식을 추측하지 않고 path segment로 한 번 인코딩한다", async () => {
+    const opaqueNoticeId = "notice id/with?#opaque";
+    const request = vi.spyOn(httpClient, "requestApi").mockResolvedValue({
+      data: DASHBOARD_DTO.notices[0],
+      status: 200,
+    });
+
+    await fetchConsultantNoticeDetail(opaqueNoticeId);
+
+    expect(request).toHaveBeenCalledWith(
+      "/consultant/notices/notice%20id%2Fwith%3F%23opaque",
+    );
+  });
+
+  it("공지 상세 응답에 data가 없으면 빈 상세를 만들지 않는다", async () => {
+    vi.spyOn(httpClient, "requestApi").mockResolvedValue({
+      data: null,
+      status: 200,
+    });
+
+    await expect(
+      fetchConsultantNoticeDetail(
+        "00000000-0000-4000-8000-000000000001",
+      ),
+    ).rejects.toThrow("공지 상세 응답에 데이터가 없습니다");
   });
 });

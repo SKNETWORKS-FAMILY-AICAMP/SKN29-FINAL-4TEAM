@@ -80,4 +80,16 @@ describe("ConsultantNoticePage", () => {
     const listPanel = await screen.findByRole("tabpanel", { name: "공지사항" });
     expect(within(listPanel).getAllByRole("listitem")).toHaveLength(6);
   });
+
+  it("게시되지 않았거나 존재하지 않는 공지는 빈 상태로 안내한다", async () => {
+    renderPage("/consultant/notices?noticeId=missing-notice");
+
+    const panel = await screen.findByRole("tabpanel", { name: "공지사항 상세" });
+    expect(
+      await within(panel).findByText("해당 공지사항을 찾을 수 없습니다."),
+    ).toBeVisible();
+    expect(
+      within(panel).getByRole("button", { name: "공지사항 목록으로" }),
+    ).toBeEnabled();
+  });
 });
