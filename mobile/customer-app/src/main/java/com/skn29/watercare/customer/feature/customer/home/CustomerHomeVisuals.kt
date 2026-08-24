@@ -500,6 +500,12 @@ private fun FinalDashboardProblemCheck(
             "작성 중인 문진이 있어요"
         normalized == "AI_GUIDANCE" ->
             "해결 방법이 준비됐어요"
+        normalized == "COMPLETION_PENDING" ->
+            "처리 결과를 확인해주세요"
+        normalized == "RESOLVED" ->
+            "문의 처리가 완료됐어요"
+        normalized == "REOPENED" ->
+            "후속 상담을 준비하고 있어요"
         hasActiveInquiry ->
             "진행 중인 요청이 있어요"
         else ->
@@ -515,6 +521,12 @@ private fun FinalDashboardProblemCheck(
             "작성하던 내용부터 이어서 진행하세요."
         normalized == "AI_GUIDANCE" ->
             "확인된 내용을 바탕으로 해결 방법을 확인해보세요."
+        normalized == "COMPLETION_PENDING" ->
+            "상담 또는 방문 처리가 끝났어요. 문제가 해결됐는지 확인해주세요."
+        normalized == "RESOLVED" ->
+            "고객 확인과 담당자 처리가 모두 완료됐어요."
+        normalized == "REOPENED" ->
+            "미해결 내용을 확인하고 후속 상담을 준비하고 있어요."
         hasActiveInquiry ->
             inquiryStatusMessage(
                 activeInquiryStatusCode.orEmpty()
@@ -534,6 +546,12 @@ private fun FinalDashboardProblemCheck(
             "이어서 작성"
         normalized == "AI_GUIDANCE" ->
             "해결 방법 보기"
+        normalized == "COMPLETION_PENDING" ->
+            "처리 결과 보기"
+        normalized == "RESOLVED" ->
+            "처리 결과 보기"
+        normalized == "REOPENED" ->
+            "후속 상태 보기"
         hasActiveInquiry ->
             "진행 상황 보기"
         else ->
@@ -822,6 +840,12 @@ fun FinalCustomerCareOverviewCard(
                 "문진 작성 중이에요"
             "AI_GUIDANCE" ->
                 "해결 방법이 준비됐어요"
+            "COMPLETION_PENDING" ->
+                "처리 결과 확인 필요"
+            "RESOLVED" ->
+                "처리 완료"
+            "REOPENED" ->
+                "후속 상담 준비 중"
             "CONSULTATION_REQUIRED",
             "CONSULTATION_IN_PROGRESS",
             "VISIT_REVIEW_PENDING",
