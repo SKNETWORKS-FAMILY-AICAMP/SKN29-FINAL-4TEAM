@@ -164,12 +164,14 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
     def test_runtime_preflights_enforce_approved_database_boundary(self) -> None:
         backend = BACKEND_PREFLIGHT.read_text(encoding="utf-8")
         ai = AI_PREFLIGHT.read_text(encoding="utf-8")
-        self.assertIn("0013_expand_backend_ai_rag_lineage_metadata", backend)
+        self.assertIn("0014_decouple_ai_view_product_eligibility", backend)
         self.assertIn("0005_replace_visit_result_assignment_fk", backend)
         self.assertIn('("160014",)', backend)
-        self.assertIn('("0.8.6",)', backend)
+        self.assertIn("is_supported_pgvector_version", backend)
+        self.assertIn('("0.8.2", "0.8.6")', ai)
         self.assertIn("EXPECTED_MODEL_COUNTS", ai)
-        self.assertIn("(53, 53, 1024, 1024)", ai)
+        self.assertIn("(53, 53, 1024, 1024, 53)", ai)
+        self.assertIn("complete_lineage=53", ai)
         self.assertIn("default_transaction_read_only", ai)
         self.assertNotIn("print(dsn", ai)
 

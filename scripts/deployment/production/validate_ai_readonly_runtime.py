@@ -10,6 +10,7 @@ from psycopg import sql
 
 
 VIEW_NAME = "backend_ai_rag_chunks_v1"
+SUPPORTED_PGVECTOR_VERSIONS = ("0.8.2", "0.8.6")
 EXPECTED_MODEL_COUNTS = {
     "WPUJAC104DWH": 15,
     "WPUIAC425SNW": 19,
@@ -40,7 +41,9 @@ def main() -> int:
             cursor.execute(
                 "SELECT extversion FROM pg_extension WHERE extname = 'vector'"
             )
-            if cursor.fetchone() != ("0.8.6",):
+            pgvector_row = cursor.fetchone()
+            pgvector_version = None if pgvector_row is None else pgvector_row[0]
+            if pgvector_version not in SUPPORTED_PGVECTOR_VERSIONS:
                 raise RuntimeError("unexpected pgvector version")
             cursor.execute("SHOW default_transaction_read_only")
             if cursor.fetchone() != ("on",):
@@ -83,13 +86,21 @@ def main() -> int:
                 sql.SQL(
                     """
                     SELECT COUNT(*), COUNT(DISTINCT chunk_id),
-                           MIN(vector_dims(embedding)), MAX(vector_dims(embedding))
+                           MIN(vector_dims(embedding)), MAX(vector_dims(embedding)),
+                           COUNT(*) FILTER (WHERE
+                               NULLIF(metadata ->> 'evidence_group_id', '') IS NOT NULL
+                               AND NULLIF(metadata ->> 'source_variant_id', '') IS NOT NULL
+                               AND NULLIF(metadata ->> 'parent_id', '') IS NOT NULL
+                               AND metadata ->> 'retrieval_role' = 'SEARCH_CANDIDATE'
+                           )
                     FROM {}
                     """
                 ).format(sql.Identifier(VIEW_NAME))
             )
-            if cursor.fetchone() != (53, 53, 1024, 1024):
-                raise RuntimeError("AI view count or vector dimension mismatch")
+            if cursor.fetchone() != (53, 53, 1024, 1024, 53):
+                raise RuntimeError(
+                    "AI view count, vector dimension, or lineage mismatch"
+                )
             cursor.execute(
                 sql.SQL(
                     "SELECT model_code, COUNT(*) FROM {} GROUP BY model_code ORDER BY model_code"
@@ -102,8 +113,10 @@ def main() -> int:
         return 1
 
     print("AI_READONLY_RUNTIME_PREFLIGHT_PASS")
+    print(f"pgvector={pgvector_version}")
     print("view_select=ONLY_APPROVED_VIEW")
     print("view_rows=53")
+    print("complete_lineage=53")
     print("vector_dimensions=1024")
     print("base_table_access=DENIED")
     print("transaction=READ_ONLY")

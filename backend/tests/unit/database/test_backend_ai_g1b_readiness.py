@@ -59,6 +59,14 @@ def ready_snapshot(module: ModuleType) -> dict[str, object]:
         "crosswalk_table_exists": True,
         "active_verified_count": 7,
         "baseline_identity_count": 7,
+        "crosswalk_model_counts": {"WPUJAC104DWH": 7},
+        "product_table_exists": True,
+        "product_support": {
+            "WPUJAC104DWH": {
+                "is_active": True,
+                "is_supported_mvp": True,
+            },
+        },
         "crosswalk_page_table_exists": True,
         "crosswalk_page_link_count": 8,
         "view_exists": True,
@@ -66,6 +74,7 @@ def ready_snapshot(module: ModuleType) -> dict[str, object]:
         "view_row_count": 7,
         "view_distinct_chunk_count": 7,
         "view_complete_lineage_count": 0,
+        "view_model_counts": {"WPUJAC104DWH": 7},
         "role_exists": True,
         "role_policy_safe": True,
         "default_transaction_read_only": True,
@@ -90,6 +99,8 @@ def test_ready_requires_all_crosswalk_view_and_role_gates(
         "expected": 7,
         "active_verified": 7,
         "baseline_identity": 7,
+        "model_counts_expected": None,
+        "model_counts": {"WPUJAC104DWH": 7},
         "page_table_exists": True,
         "page_links_expected": 8,
         "page_links": 8,
@@ -117,6 +128,9 @@ def test_three_model_profile_requires_exact_53_row_runtime_gate(
         view_row_count=53,
         view_distinct_chunk_count=53,
         view_complete_lineage_count=53,
+        crosswalk_model_counts=dict(audit_module.THREE_MODEL_COUNTS),
+        view_model_counts=dict(audit_module.THREE_MODEL_COUNTS),
+        product_support=dict(audit_module.THREE_MODEL_PRODUCT_SUPPORT),
     )
 
     result = audit_module.evaluate_snapshot(
@@ -131,6 +145,8 @@ def test_three_model_profile_requires_exact_53_row_runtime_gate(
         "expected": 53,
         "active_verified": 53,
         "baseline_identity": 53,
+        "model_counts_expected": audit_module.THREE_MODEL_COUNTS,
+        "model_counts": audit_module.THREE_MODEL_COUNTS,
         "page_table_exists": True,
         "page_links_expected": 53,
         "page_links": 53,
@@ -147,6 +163,13 @@ def test_three_model_profile_requires_exact_53_row_runtime_gate(
         "complete": 53,
         "incomplete": 0,
     }
+    assert result["view"]["model_counts"] == audit_module.THREE_MODEL_COUNTS
+    assert result["public_product_support_scope"] == {
+        "required": True,
+        "expected": audit_module.THREE_MODEL_PRODUCT_SUPPORT,
+        "actual": audit_module.THREE_MODEL_PRODUCT_SUPPORT,
+        "matches": True,
+    }
 
 
 def test_three_model_profile_rejects_incomplete_view_lineage(
@@ -160,6 +183,9 @@ def test_three_model_profile_rejects_incomplete_view_lineage(
         view_row_count=53,
         view_distinct_chunk_count=53,
         view_complete_lineage_count=52,
+        crosswalk_model_counts=dict(audit_module.THREE_MODEL_COUNTS),
+        view_model_counts=dict(audit_module.THREE_MODEL_COUNTS),
+        product_support=dict(audit_module.THREE_MODEL_PRODUCT_SUPPORT),
     )
 
     result = audit_module.evaluate_snapshot(
@@ -189,6 +215,46 @@ def test_three_model_profile_rejects_legacy_seven_row_database(
         "blockers"
     ]
     assert "BACKEND_AI_RAG_VIEW_ROW_COUNT_NOT_53" in result["blockers"]
+
+
+def test_three_model_profile_rejects_distribution_or_public_scope_drift(
+    audit_module: ModuleType,
+):
+    snapshot = ready_snapshot(audit_module)
+    snapshot.update(
+        active_verified_count=53,
+        baseline_identity_count=53,
+        crosswalk_page_link_count=53,
+        view_row_count=53,
+        view_distinct_chunk_count=53,
+        view_complete_lineage_count=53,
+        crosswalk_model_counts={"WPUJAC104DWH": 53},
+        view_model_counts={"WPUJAC104DWH": 53},
+        product_support={
+            **audit_module.THREE_MODEL_PRODUCT_SUPPORT,
+            "WPUIAC425SNW": {
+                "is_active": True,
+                "is_supported_mvp": True,
+            },
+        },
+    )
+
+    result = audit_module.evaluate_snapshot(
+        snapshot,
+        evidence_profile="three-model",
+    )
+
+    assert result["status"] == "BLOCKED"
+    assert (
+        "ACTIVE_VERIFIED_CROSSWALK_MODEL_DISTRIBUTION_MISMATCH"
+        in result["blockers"]
+    )
+    assert "BACKEND_AI_RAG_VIEW_MODEL_DISTRIBUTION_MISMATCH" in result[
+        "blockers"
+    ]
+    assert "THREE_MODEL_PUBLIC_PRODUCT_SUPPORT_SCOPE_MISMATCH" in result[
+        "blockers"
+    ]
 
 
 @pytest.mark.parametrize("version", ["0.8.2", "0.8.6"])
@@ -341,6 +407,23 @@ def test_latest_readonly_view_lineage_migration_is_required(
     assert result["status"] == "BLOCKED"
     assert (
         "MIGRATION_MISSING:0013_expand_backend_ai_rag_lineage_metadata"
+        in result["blockers"]
+    )
+
+
+def test_latest_ai_product_eligibility_migration_is_required(
+    audit_module: ModuleType,
+):
+    snapshot = ready_snapshot(audit_module)
+    snapshot["applied_migrations"].remove(
+        "0014_decouple_ai_view_product_eligibility"
+    )
+
+    result = audit_module.evaluate_snapshot(snapshot)
+
+    assert result["status"] == "BLOCKED"
+    assert (
+        "MIGRATION_MISSING:0014_decouple_ai_view_product_eligibility"
         in result["blockers"]
     )
 
