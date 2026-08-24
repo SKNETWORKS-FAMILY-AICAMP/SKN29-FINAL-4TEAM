@@ -208,7 +208,7 @@ jobs:
             ) and
             any(.Rules[];
               .Status == "Enabled" and
-              .Prefix == "tempo/" and
+              ((.Filter.Prefix // .Prefix) == "tempo/") and
               .NoncurrentVersionExpiration.NoncurrentDays == 14
             )
           ' <<<"$lifecycle" >/dev/null || {
