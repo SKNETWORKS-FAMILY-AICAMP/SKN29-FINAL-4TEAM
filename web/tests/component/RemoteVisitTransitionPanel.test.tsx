@@ -41,10 +41,11 @@ function createInquiry(
     customer: {
       isSynthetic: true,
       displayName: "합성 고객",
-      phone: "010-0000-0101",
+      phoneMasked: "010-****-0101",
     },
     productAndCare: {
       productModel: "SYN-PRODUCT-01",
+      productModelName: "합성 시연용 정수기",
       subscriptionStatus: "ACTIVE",
       managementType: "VISIT",
       recentCareDate: null,
@@ -55,18 +56,21 @@ function createInquiry(
     },
     guidanceAndActions: {
       usageGuidanceStatus: "PARTIAL_STOP",
+      usageGuidanceDisplayLabel: "일부 기능 사용 중단",
       usageGuidanceMessage: "일부 사용을 중지해 주세요.",
       restrictedFunctions: [],
     },
     consultation: null,
     visit: {
-      visit_id: VISIT_ID,
+      visitId: VISIT_ID,
+      inquiryId: INQUIRY_ID,
       schedule: {
-        preferred_date: null,
-        confirmed_date: null,
-        schedule_status: "ASSIGNING",
-        synthetic_technician_id: assignedTechnicianId,
+        preferredDate: null,
+        confirmedDate: null,
+        scheduleStatus: "ASSIGNING",
+        syntheticTechnicianId: assignedTechnicianId,
       },
+      technician: null,
     },
     stateHistory: [],
     workflow: {

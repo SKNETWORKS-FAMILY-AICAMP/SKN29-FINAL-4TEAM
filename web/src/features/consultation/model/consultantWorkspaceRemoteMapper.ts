@@ -70,16 +70,21 @@ export interface ConsultantInquiryDetailViewModel {
   priority: ConsultantPriorityDto;
   receivedAt: string;
   updatedAt: string;
-  customer: { isSynthetic: true; displayName: string; phone: string };
+  customer: { isSynthetic: true; displayName: string; phoneMasked: string };
   productAndCare: {
     productModel: string;
+    productModelName: string;
     subscriptionStatus: string;
     managementType: string;
     recentCareDate: string | null;
   } | null;
   symptomAndQuestionnaire: {
     symptomSummary: string;
-    answers: readonly { questionCode: string; answer: string }[];
+    answers: readonly {
+      questionCode: string;
+      questionText: string;
+      answer: string;
+    }[];
   };
   guidanceAndActions: {
     usageGuidanceStatus:
@@ -87,6 +92,12 @@ export interface ConsultantInquiryDetailViewModel {
       | "PARTIAL_STOP"
       | "TOTAL_STOP"
       | "PENDING_CONSULTATION"
+      | null;
+    usageGuidanceDisplayLabel:
+      | "정상 사용 가능"
+      | "일부 기능 사용 중단"
+      | "제품 사용 중단"
+      | "상담 확인 필요"
       | null;
     usageGuidanceMessage: string | null;
     restrictedFunctions: readonly string[];
@@ -114,7 +125,29 @@ export interface ConsultantInquiryDetailViewModel {
       | "PENDING_CONSULTATION"
       | null;
   } | null;
-  visit: unknown | null;
+  visit: {
+    visitId: string;
+    inquiryId: string;
+    schedule: {
+      preferredDate: string | null;
+      confirmedDate: string | null;
+      scheduleStatus:
+        | "ASSIGNING"
+        | "SCHEDULING"
+        | "CONFIRMED"
+        | "IN_PROGRESS"
+        | "COMPLETED"
+        | "FOLLOW_UP_REQUIRED"
+        | "CANCELLED";
+      syntheticTechnicianId: string | null;
+    };
+    technician: {
+      isSynthetic: true;
+      technicianId: string;
+      displayName: string;
+      phone: string;
+    } | null;
+  } | null;
   stateHistory: readonly {
     fromStatus: string | null;
     toStatus: string;
@@ -230,11 +263,12 @@ export function mapConsultantInquiryDetail(
     customer: {
       isSynthetic: customer.is_synthetic,
       displayName: customer.display_name,
-      phone: customer.phone,
+      phoneMasked: customer.phone_masked,
     },
     productAndCare: dto.product_and_care
       ? {
           productModel: dto.product_and_care.product_model,
+          productModelName: dto.product_and_care.product_model_name,
           subscriptionStatus: dto.product_and_care.subscription_status,
           managementType: dto.product_and_care.management_type,
           recentCareDate: dto.product_and_care.recent_care_date,
@@ -244,11 +278,14 @@ export function mapConsultantInquiryDetail(
       symptomSummary: dto.symptom_and_questionnaire.symptom_summary,
       answers: dto.symptom_and_questionnaire.answers.map((answer) => ({
         questionCode: answer.question_code,
+        questionText: answer.question_text,
         answer: answer.answer,
       })),
     },
     guidanceAndActions: {
       usageGuidanceStatus: dto.guidance_and_actions.usage_guidance_status,
+      usageGuidanceDisplayLabel:
+        dto.guidance_and_actions.usage_guidance_display_label,
       usageGuidanceMessage: dto.guidance_and_actions.usage_guidance_message,
       restrictedFunctions: dto.guidance_and_actions.restricted_functions,
     },
@@ -268,7 +305,27 @@ export function mapConsultantInquiryDetail(
           usageGuidanceStatus: dto.consultation.usage_guidance_status,
         }
       : null,
-    visit: dto.visit,
+    visit: dto.visit
+      ? {
+          visitId: dto.visit.visit_id,
+          inquiryId: dto.visit.inquiry_id,
+          schedule: {
+            preferredDate: dto.visit.schedule.preferred_date,
+            confirmedDate: dto.visit.schedule.confirmed_date,
+            scheduleStatus: dto.visit.schedule.schedule_status,
+            syntheticTechnicianId:
+              dto.visit.schedule.synthetic_technician_id,
+          },
+          technician: dto.visit.technician
+            ? {
+                isSynthetic: dto.visit.technician.is_synthetic,
+                technicianId: dto.visit.technician.technician_id,
+                displayName: dto.visit.technician.display_name,
+                phone: dto.visit.technician.phone,
+              }
+            : null,
+        }
+      : null,
     stateHistory: dto.state_history.map((history) => ({
       fromStatus: history.from_status,
       toStatus: history.to_status,

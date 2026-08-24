@@ -105,7 +105,7 @@ const DETAIL: ConsultantInquiryDetailViewModel = {
   customer: {
     isSynthetic: true,
     displayName: "합성 고객 01",
-    phone: "010-0000-0101",
+    phoneMasked: "010-****-0101",
   },
   productAndCare: null,
   symptomAndQuestionnaire: {
@@ -114,6 +114,7 @@ const DETAIL: ConsultantInquiryDetailViewModel = {
   },
   guidanceAndActions: {
     usageGuidanceStatus: "TOTAL_STOP",
+    usageGuidanceDisplayLabel: "제품 사용 중단",
     usageGuidanceMessage: "급수 밸브를 잠가 주세요.",
     restrictedFunctions: ["출수"],
   },
@@ -539,6 +540,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       stateVersion: currentStateVersion,
       productAndCare: {
         productModel: "WPUJAC104DWH",
+        productModelName: "아이콘 얼음정수기",
         subscriptionStatus: "ACTIVE",
         managementType: "VISIT_CARE",
         recentCareDate: null,
@@ -764,7 +766,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       ].forEach((heading) =>
         expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument(),
       );
-      expect(screen.getByText("제품 전체 사용 중지")).toBeInTheDocument();
+      expect(screen.getByText("제품 사용 중단")).toBeInTheDocument();
       expect(screen.queryByText("TOTAL_STOP")).not.toBeInTheDocument();
       expect(remoteMocks.getInquiryDetail).toHaveBeenCalledWith(INQUIRY_ID);
     },

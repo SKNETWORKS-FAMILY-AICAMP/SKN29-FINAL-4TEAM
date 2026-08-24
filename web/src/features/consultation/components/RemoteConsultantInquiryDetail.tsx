@@ -1,5 +1,4 @@
 import type { ConsultantInquiryDetailViewModel } from "../model/consultantWorkspaceRemoteMapper";
-import { maskCustomerPhone } from "../../../common/privacy/customerPrivacy";
 import {
   getManagementTypeLabel,
   getSubscriptionStatusLabel,
@@ -19,29 +18,28 @@ interface RecentCareDatePresentation {
   label: string;
 }
 
-function getUsageGuidanceStatusLabel(
-  status: ConsultantInquiryDetailViewModel["guidanceAndActions"]["usageGuidanceStatus"],
-): string {
-  const labels = {
-    NORMAL: "일반 사용 가능",
-    PARTIAL_STOP: "일부 기능 사용 중지",
-    TOTAL_STOP: "제품 전체 사용 중지",
-    PENDING_CONSULTATION: "상담 확인 전 안내 보류",
-  } as const;
-
-  return status ? labels[status] : "안내 상태 미제공";
-}
+const VISIT_SCHEDULE_STATUS_LABELS: Readonly<Record<string, string>> = {
+  ASSIGNING: "기사 배정 중",
+  SCHEDULING: "일정 조율 중",
+  CONFIRMED: "방문 일정 확정",
+  IN_PROGRESS: "방문 진행 중",
+  COMPLETED: "방문 완료",
+  FOLLOW_UP_REQUIRED: "추가 방문 필요",
+  CANCELLED: "방문 취소",
+};
 
 function getRecentCareDatePresentation(
   value: string | null,
+  emptyLabel = "관리 이력 없음",
+  invalidLabel = "최근 관리일 확인 필요",
 ): RecentCareDatePresentation {
   if (value === null) {
-    return { dateTime: null, label: "관리 이력 없음" };
+    return { dateTime: null, label: emptyLabel };
   }
 
   const matched = CONTRACT_DATE_PATTERN.exec(value);
   if (!matched) {
-    return { dateTime: null, label: "최근 관리일 확인 필요" };
+    return { dateTime: null, label: invalidLabel };
   }
 
   const year = Number(matched[1]);
@@ -49,7 +47,7 @@ function getRecentCareDatePresentation(
   const day = Number(matched[3]);
   const lastDayOfMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
   if (month < 1 || month > 12 || day < 1 || day > lastDayOfMonth) {
-    return { dateTime: null, label: "최근 관리일 확인 필요" };
+    return { dateTime: null, label: invalidLabel };
   }
 
   return {
@@ -70,6 +68,21 @@ export default function RemoteConsultantInquiryDetail({
     inquiry.guidanceAndActions.usageGuidanceMessage?.trim() ?? "";
   const recentCareDate = getRecentCareDatePresentation(
     inquiry.productAndCare?.recentCareDate ?? null,
+  );
+  const usageGuidanceDisplayLabel =
+    inquiry.guidanceAndActions.usageGuidanceDisplayLabel?.trim() ||
+    "안내 상태 미제공";
+  const isVisitRequired =
+    inquiry.consultation?.resultCode === "VISIT_REQUIRED";
+  const visitPreferredDate = getRecentCareDatePresentation(
+    inquiry.visit?.schedule.preferredDate ?? null,
+    "희망일 미정",
+    "희망일 확인 필요",
+  );
+  const visitConfirmedDate = getRecentCareDatePresentation(
+    inquiry.visit?.schedule.confirmedDate ?? null,
+    "확정일 미정",
+    "확정일 확인 필요",
   );
 
   return (
@@ -95,7 +108,7 @@ export default function RemoteConsultantInquiryDetail({
           </div>
           <div>
             <dt>연락처</dt>
-            <dd>{maskCustomerPhone(inquiry.customer.phone)}</dd>
+            <dd>{inquiry.customer.phoneMasked}</dd>
           </div>
           <div>
             <dt>위험도</dt>
@@ -117,6 +130,10 @@ export default function RemoteConsultantInquiryDetail({
           <p>제품·관리 정보를 확인할 수 없습니다.</p>
         ) : inquiry.productAndCare ? (
           <dl className="inquiry-v13-remote-summary">
+            <div>
+              <dt>제품명</dt>
+              <dd>{inquiry.productAndCare.productModelName}</dd>
+            </div>
             <div>
               <dt>제품 모델</dt>
               <dd>{inquiry.productAndCare.productModel}</dd>
@@ -157,7 +174,7 @@ export default function RemoteConsultantInquiryDetail({
           <dl className="remote-inquiry-detail__answers">
             {inquiry.symptomAndQuestionnaire.answers.map((answer) => (
               <div key={answer.questionCode}>
-                <dt>{answer.questionCode}</dt>
+                <dt>{answer.questionText}</dt>
                 <dd>{answer.answer}</dd>
               </div>
             ))}
@@ -171,11 +188,7 @@ export default function RemoteConsultantInquiryDetail({
       >
         <h2>사용 안내</h2>
         <strong>AI 안내 상태</strong>
-        <p>
-          {getUsageGuidanceStatusLabel(
-            inquiry.guidanceAndActions.usageGuidanceStatus,
-          )}
-        </p>
+        <p>{usageGuidanceDisplayLabel}</p>
         <strong>AI 안내 내용</strong>
         <p>
           {usageGuidanceMessage || "AI 안내 미제공 / 상담 검토 필요"}
@@ -235,7 +248,68 @@ export default function RemoteConsultantInquiryDetail({
             </div>
           </dl>
         )}
-        {inquiry.visit === null && <p>방문 기록이 아직 제공되지 않았습니다.</p>}
+        <dl className="inquiry-v13-remote-summary">
+          <div>
+            <dt>방문 필요 여부</dt>
+            <dd>
+              {isVisitRequired
+                ? "방문 필요"
+                : "방문 필요로 확정되지 않음"}
+            </dd>
+          </div>
+          <div>
+            <dt>방문 등록 상태</dt>
+            <dd>
+              {inquiry.visit
+                ? "방문 정보 등록됨"
+                : isVisitRequired
+                  ? "방문 정보 등록 대기"
+                  : "방문 정보 없음"}
+            </dd>
+          </div>
+          {inquiry.visit && (
+            <>
+              <div>
+                <dt>일정 상태</dt>
+                <dd>
+                  {VISIT_SCHEDULE_STATUS_LABELS[
+                    inquiry.visit.schedule.scheduleStatus
+                  ] ?? inquiry.visit.schedule.scheduleStatus}
+                </dd>
+              </div>
+              <div>
+                <dt>희망 방문일</dt>
+                <dd>
+                  {visitPreferredDate.dateTime ? (
+                    <time dateTime={visitPreferredDate.dateTime}>
+                      {visitPreferredDate.label}
+                    </time>
+                  ) : (
+                    visitPreferredDate.label
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt>확정 방문일</dt>
+                <dd>
+                  {visitConfirmedDate.dateTime ? (
+                    <time dateTime={visitConfirmedDate.dateTime}>
+                      {visitConfirmedDate.label}
+                    </time>
+                  ) : (
+                    visitConfirmedDate.label
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt>담당 기사</dt>
+                <dd>
+                  {inquiry.visit.technician?.displayName ?? "기사 미배정"}
+                </dd>
+              </div>
+            </>
+          )}
+        </dl>
         {inquiry.stateHistory.length > 0 && (
           <>
             <strong>상태 변경 이력</strong>

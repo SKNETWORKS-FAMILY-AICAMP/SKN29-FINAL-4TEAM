@@ -77,6 +77,7 @@ export interface UnassignedConsultationQueueDataDto {
 
 export interface ConsultantProductAndCareDto {
   product_model: string;
+  product_model_name: string;
   subscription_status: string;
   management_type: string;
   recent_care_date: string | null;
@@ -86,6 +87,7 @@ export interface ConsultantSymptomAndQuestionnaireDto {
   symptom_summary: string;
   answers: readonly {
     question_code: string;
+    question_text: string;
     answer: string;
   }[];
 }
@@ -97,8 +99,38 @@ export interface ConsultantGuidanceAndActionsDto {
     | "TOTAL_STOP"
     | "PENDING_CONSULTATION"
     | null;
+  usage_guidance_display_label:
+    | "정상 사용 가능"
+    | "일부 기능 사용 중단"
+    | "제품 사용 중단"
+    | "상담 확인 필요"
+    | null;
   usage_guidance_message: string | null;
   restricted_functions: readonly string[];
+}
+
+export interface ConsultantVisitDetailDto {
+  visit_id: string;
+  inquiry_id: string;
+  schedule: {
+    preferred_date: string | null;
+    confirmed_date: string | null;
+    schedule_status:
+      | "ASSIGNING"
+      | "SCHEDULING"
+      | "CONFIRMED"
+      | "IN_PROGRESS"
+      | "COMPLETED"
+      | "FOLLOW_UP_REQUIRED"
+      | "CANCELLED";
+    synthetic_technician_id: string | null;
+  };
+  technician: {
+    is_synthetic: true;
+    technician_id: string;
+    display_name: string;
+    phone: string;
+  } | null;
 }
 
 export interface ConsultantConsultationSummaryDto {
@@ -161,12 +193,13 @@ export interface ConsultantInquiryDetailDto {
     is_synthetic: true;
     display_name: string;
     phone: string;
+    phone_masked: string;
   };
   product_and_care: ConsultantProductAndCareDto | null;
   symptom_and_questionnaire: ConsultantSymptomAndQuestionnaireDto;
   guidance_and_actions: ConsultantGuidanceAndActionsDto;
   consultation: ConsultantConsultationRecordDto | null;
-  visit: unknown | null;
+  visit: ConsultantVisitDetailDto | null;
   state_history: readonly ConsultantStateHistoryDto[];
   workflow: ConsultantWorkflowDto;
   section_errors: readonly ConsultantSectionErrorDto[];

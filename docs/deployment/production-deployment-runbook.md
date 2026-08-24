@@ -53,7 +53,8 @@ After all gates pass it:
 2. Pushes SHA-tagged images and records their ECR digests.
 3. Creates a secret-free release bundle and uploads it to `releases/<SHA>/`.
 4. Uses SSM to download the bundle and verify its SHA-256 on EC2.
-5. Verifies PostgreSQL 16.14, pgvector 0.8.6, `evidence.0013` applied,
+5. Verifies PostgreSQL 16.14, the approved RDS pgvector 0.8.2 baseline,
+   `evidence.0013` applied,
    `visits.0005` not applied, and no unexpected Migration plan without changing
    the database.
 6. Verifies the AI role has read-only access to the approved 53-row View and no
@@ -93,6 +94,11 @@ and [deployment modes](https://grafana.com/docs/tempo/latest/reference-tempo-arc
   enabling the public Demo Login boundary requires an explicit security
   approval. Until then external Smoke is limited to redirect, root, health, and
   correlation checks.
+- Docker-based independent QA and socket E2E retain pgvector 0.8.6. The existing
+  production RDS is pinned separately to pgvector 0.8.2 because that server does
+  not provide 0.8.6, and 0.8.2 remains an explicitly verified Backend-compatible
+  extension version. Production preflight requires exactly 0.8.2 so unexpected
+  server drift still fails closed.
 
 ## 5. Evidence and rollback
 

@@ -37,7 +37,7 @@ const DETAIL: ConsultantInquiryDetailViewModel = {
   customer: {
     isSynthetic: true,
     displayName: "합성 고객 001",
-    phone: "010-****-0001",
+    phoneMasked: "010-****-0001",
   },
   productAndCare: null,
   symptomAndQuestionnaire: {
@@ -46,6 +46,7 @@ const DETAIL: ConsultantInquiryDetailViewModel = {
   },
   guidanceAndActions: {
     usageGuidanceStatus: "PENDING_CONSULTATION",
+    usageGuidanceDisplayLabel: "상담 확인 필요",
     usageGuidanceMessage: null,
     restrictedFunctions: [],
   },
