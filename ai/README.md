@@ -312,6 +312,10 @@ $env:AI_LLM_MODEL='gpt-4.1-mini'
 $env:AI_VECTOR_DSN='<최소 권한 읽기 전용 DSN>'
 $env:AI_VECTOR_TABLE_NAME='backend_ai_rag_chunks_v1'
 $env:AI_EMBEDDING_REVISION='5617a9f61b028005a4858fdac845db406aefb181'
+$env:AI_RAG_RUNTIME_PROFILE='mvp'
+$env:AI_PIPELINE_RUNTIME='multi_agent'
+$env:AI_RETRIEVAL_TRANSPORT='direct'
+$env:AI_EVIDENCE_ENVIRONMENT_ID='TEAM_DB_STAGING'
 $env:AI_MODEL_PROVIDER='openai'
 $env:AI_MODEL_NAME='gpt-4.1-mini'
 $env:AI_PROMPT_VERSION='customer_guidance/v3'
@@ -354,11 +358,18 @@ INSERT·UPDATE·DELETE·TRUNCATE 권한이 없는지 확인한다. 또한 Transa
 Read-only, public Schema CREATE 금지와 Backend 원본 사용자·Chunk·Embedding·
 Crosswalk Table의 SELECT/DML 금지까지 검증한다.
 
-`verify_local_runtime`은 선택 Profile의 전체 Canonical Identity를 먼저 검증한다.
+`verify_local_runtime`은 Clean Worktree와 Python `3.13.13`에서만 증거를 생성하고,
+선택 Profile의 전체 Canonical Identity를 먼저 검증한다.
 기본 `mvp`는 7건 범위를, `three_model_integration`은 Child 53건과 3개 판매코드를
 확인한 뒤 모델별 대표 정상 Case로 실제 Retriever·Provider를 실행한다. 반환된
 Evidence가 해당 판매코드의 Canonical ID 집합에만 속하는지, Prompt Version과 Token
-사용 증거가 있는지도 확인한다. Secret·DSN·질의·Evidence 본문은 출력하지 않는다.
+사용 증거가 있는지도 확인한다. 7/53은 Canonical 파일의 기대 수이며 DB 전체 행 수가
+아니다. DB cardinality·Readonly 권한, Harness·HITL·Consultation Handoff,
+Backend 저장과 Web/Mobile 소비는 이 Gate에서 `NOT_VERIFIED_BY_THIS_GATE` 또는
+`OWNER_EVIDENCE_REQUIRED`로 분리한다. Secret·DSN·질의·Evidence ID·본문은 출력하지
+않고 반환 ID 집합은 SHA-256으로만 남긴다. `OPENAI_BASE_URL`이 공식 기본 Endpoint와
+다르면 URL을 노출하지 않고 이 Gate를 fail-closed로 종료한다. 정제된 JSON에는
+`integrity.payload_sha256`을 포함하되, 실제 저장 파일의 SHA-256은 별도로 계산한다.
 Backend 통합 Process에도 위 세 AIRun 환경변수를 같은 배포 설정에서 주입하고,
 E2E에서는 저장된 AIRun 값이 `openai`, `gpt-4.1-mini`,
 `customer_guidance/v3`인지 반드시 대조한다. 이 대조 전에는 Backend 수직 Gate를
