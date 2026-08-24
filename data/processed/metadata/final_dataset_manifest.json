@@ -784,8 +784,8 @@
     },
     {
       "path": "tools/tests/test_data_ci_dependency_paths.py",
-      "size_bytes": 2582,
-      "sha256": "F8D8A259831A07AB0C7D6F834F45E57BFBBDD58679601BBA0CFE449E6C03AF9F"
+      "size_bytes": 3018,
+      "sha256": "8FDFEB597F5F3FCBE06ADEDDB4C102761D3BFC74AF6D2D598484FD45C5FF207E"
     },
     {
       "path": "tools/tests/test_data_vocabulary.py",
@@ -1307,7 +1307,7 @@
   },
   "toolchain": {
     "python_files": 50,
-    "python_lines": 11667,
+    "python_lines": 11678,
     "max_wrapper_lines": 10,
     "max_module_lines": 1939
   },

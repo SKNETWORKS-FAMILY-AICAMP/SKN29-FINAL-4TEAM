@@ -70,12 +70,17 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.13.13"
           cache: "pip"
-          cache-dependency-path: "backend/requirements/base.txt"
+          cache-dependency-path: |
+            backend/requirements/base.txt
+            backend/requirements/constraints-py313.txt
 
-      - name: Install contract validator dependency
-        run: python -m pip install PyYAML==6.0.3
+      - name: Install data gate dependencies
+        run: >-
+          python -m pip install
+          --constraint backend/requirements/constraints-py313.txt
+          PyYAML==6.0.3 jsonschema==4.26.0
 
       - name: Validate approved state machine
         run: python scripts/contracts/validate_state_machine.py

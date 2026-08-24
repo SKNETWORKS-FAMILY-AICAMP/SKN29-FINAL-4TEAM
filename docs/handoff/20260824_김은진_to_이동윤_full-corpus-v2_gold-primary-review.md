@@ -143,7 +143,7 @@ JAC104 5·7·37·38·39쪽을 교체했고 Coverage Map에서 모든 행을 `CHI
   -q -p no:cacheprovider
 ```
 
-김은진 최종 실행 결과는 데이터 단위 테스트 135건 통과, Pipeline QA 오류·경고
+김은진 최종 실행 결과는 데이터 단위 테스트 136건 통과, Pipeline QA 오류·경고
 0건, canonical drift 0건, AI 청킹 표적 테스트 6건 통과다.
 
 ## 8. 인계 후 이동윤 산출물
