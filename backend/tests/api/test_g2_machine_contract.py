@@ -47,7 +47,7 @@ G2_OPERATIONS = {
     ("/visits/{visit_id}/confirm", "post"): "confirmVisit",
 }
 
-P1A_REVIEW_OPERATIONS = {
+P1A_FROZEN_OPERATIONS = {
     ("/auth/contract-verification/challenges", "post"): (
         "createContractVerificationChallenge"
     ),
@@ -306,10 +306,10 @@ def test_g2_operation_inventory_crosswalk_and_runtime_boundary():
             crosswalk_item["transition_rule"]
         )
 
-    for key, operation_id in P1A_REVIEW_OPERATIONS.items():
+    for key, operation_id in P1A_FROZEN_OPERATIONS.items():
         operation = operations[key]
         assert operation["operationId"] == operation_id
-        assert operation["x-contract-status"] == "IN_REVIEW"
+        assert operation["x-contract-status"] == "CONFIRMED"
         assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
         assert key not in crosswalk_operations
 

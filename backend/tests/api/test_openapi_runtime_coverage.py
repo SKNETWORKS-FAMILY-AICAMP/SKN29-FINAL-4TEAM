@@ -17,7 +17,7 @@ CARE_RECORD_ID = "00000000-0000-4000-8000-000000000004"
 QUESTIONNAIRE_SESSION_ID = "00000000-0000-4000-8000-000000000005"
 NOTICE_ID = "00000000-0000-4000-8000-000000000006"
 
-P1A_REVIEW_OPERATIONS = {
+P1A_FROZEN_OPERATIONS = {
     ("/auth/contract-verification/challenges", "post"): (
         "createContractVerificationChallenge"
     ),
@@ -501,15 +501,15 @@ def runtime_view_name(match) -> str:
     return match.func.__name__
 
 
-def test_openapi_operation_inventory_separates_runtime_and_p1a_review():
+def test_openapi_operation_inventory_separates_runtime_and_p1a_frozen():
     operations = collect_operations()
     expected_operation_ids = {
         expected["operation_id"]
         for expected in EXPECTED_OPERATIONS.values()
-    } | set(P1A_REVIEW_OPERATIONS.values())
+    } | set(P1A_FROZEN_OPERATIONS.values())
 
     assert set(operations) == (
-        set(EXPECTED_OPERATIONS) | set(P1A_REVIEW_OPERATIONS)
+        set(EXPECTED_OPERATIONS) | set(P1A_FROZEN_OPERATIONS)
     )
     assert len(operations) == 59
     assert {
@@ -523,10 +523,10 @@ def test_openapi_operation_inventory_separates_runtime_and_p1a_review():
             expected["contract_status"]
         )
 
-    for key, operation_id in P1A_REVIEW_OPERATIONS.items():
+    for key, operation_id in P1A_FROZEN_OPERATIONS.items():
         operation = operations[key]
         assert operation["operationId"] == operation_id
-        assert operation["x-contract-status"] == "IN_REVIEW"
+        assert operation["x-contract-status"] == "CONFIRMED"
         assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
 
 
