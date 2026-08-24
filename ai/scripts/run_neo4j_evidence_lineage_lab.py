@@ -13,13 +13,14 @@ from typing import Any
 
 from ai.app.experiments.neo4j_evidence_lineage import (
     REPOSITORY_ROOT,
-    VISUAL_BROWSER_QUERY,
     Neo4jEvidenceLineageError,
     Neo4jHttpQueryClient,
     build_evidence_lineage_graph,
+    build_visual_query_presets,
     canonical_json_sha256,
     load_graph_into_neo4j,
     render_lineage_svg,
+    render_visual_query_bundle,
     verify_graph_in_neo4j,
 )
 
@@ -114,11 +115,21 @@ def run_lab(
     graph = build_evidence_lineage_graph()
     projection = graph.projection_payload()
     projection_hash = canonical_json_sha256(projection)
+    visual_query_presets = build_visual_query_presets(graph)
+    visual_query_bundle = render_visual_query_bundle(visual_query_presets)
     source = _git_identity()
 
     projection_path = resolved_output / "graph_projection.json"
     manifest_path = resolved_output / "projection_manifest.json"
     browser_query_path = resolved_output / "neo4j_browser_visual_query.cypher"
+    visual_query_catalog_path = resolved_output / "visual_query_catalog.json"
+    visual_query_catalog = {
+        "schema_version": "1.0.0",
+        "scope": "LAB_ONLY",
+        "production_runtime_connected": False,
+        "query_count": len(visual_query_presets),
+        "queries": [preset.manifest_row() for preset in visual_query_presets],
+    }
     projection_manifest = {
         "schema_version": "1.0.0",
         "status": "LAB_PROJECTION_READY",
@@ -145,11 +156,13 @@ def run_lab(
         "artifacts": {
             "projection": _relative(projection_path),
             "browser_visual_query": _relative(browser_query_path),
+            "visual_query_catalog": _relative(visual_query_catalog_path),
         },
     }
     _write_json_exclusive(projection_path, projection)
     _write_json_exclusive(manifest_path, projection_manifest)
-    _write_text_exclusive(browser_query_path, VISUAL_BROWSER_QUERY + ";\n")
+    _write_text_exclusive(browser_query_path, visual_query_bundle)
+    _write_json_exclusive(visual_query_catalog_path, visual_query_catalog)
 
     if endpoint is None:
         result = {
@@ -202,6 +215,12 @@ def run_lab(
             "path": _relative(svg_path),
             "file_sha256": sha256(svg.encode("utf-8")).hexdigest().upper(),
             "contains_source_text": False,
+        },
+        "visual_queries": {
+            "bundle_path": _relative(browser_query_path),
+            "catalog_path": _relative(visual_query_catalog_path),
+            "query_count": len(visual_query_presets),
+            "catalog_sha256": canonical_json_sha256(visual_query_catalog),
         },
         "owner_boundaries": {
             "production_retrieval": "UNCHANGED_PGVECTOR",

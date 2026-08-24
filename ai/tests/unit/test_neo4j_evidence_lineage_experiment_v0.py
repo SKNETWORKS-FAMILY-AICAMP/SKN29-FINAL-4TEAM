@@ -15,16 +15,24 @@ from ai.app.experiments.neo4j_evidence_lineage import (
     Neo4jEvidenceLineageError,
     Neo4jHttpQueryClient,
     build_evidence_lineage_graph,
+    build_visual_query_presets,
     load_graph_into_neo4j,
     render_lineage_svg,
+    render_visual_query_bundle,
     verify_graph_in_neo4j,
 )
 
 
 class FakeNeo4jExecutor:
-    def __init__(self, graph: EvidenceLineageGraph) -> None:
+    def __init__(
+        self,
+        graph: EvidenceLineageGraph,
+        *,
+        visual_row_count_overrides: Mapping[str, int] | None = None,
+    ) -> None:
         self.graph = graph
         self.calls: list[tuple[str, Mapping[str, Any]]] = []
+        self.visual_row_count_overrides = visual_row_count_overrides or {}
 
     def query(
         self,
@@ -70,6 +78,16 @@ class FakeNeo4jExecutor:
                 for edge in self.graph.edges
                 if edge.relationship == "COVERS_TOPIC"
             ]
+        for preset in build_visual_query_presets(self.graph):
+            if statement == preset.statement:
+                row_count = self.visual_row_count_overrides.get(
+                    preset.query_id,
+                    int(preset.expected_result["row_count"]),
+                )
+                return [
+                    {"visual_row": index}
+                    for index in range(row_count)
+                ]
         if "$rows" in statement:
             return [{"loaded": len(values.get("rows", []))}]
         return []
@@ -150,6 +168,8 @@ def test_neo4j_loader_and_verifier_keep_lab_boundary():
     assert report["orphan_chunk_count"] == 0
     assert report["cross_model_path_count"] == 0
     assert report["visual_summary"]["row_count"] == 43
+    assert report["visual_query_validation"]["status"] == "PASS"
+    assert report["visual_query_validation"]["query_count"] == 6
     assert "Neo4j Evidence Lineage Lab" in svg
     assert "LAB_ONLY" in svg
     assert "CHILD-" not in svg
@@ -158,6 +178,70 @@ def test_neo4j_loader_and_verifier_keep_lab_boundary():
     assert "parent_text" not in svg
     assert any("CREATE CONSTRAINT" in statement for statement, _ in executor.calls)
     assert all("$rows" in statement for statement, _ in executor.calls if "UNWIND" in statement)
+
+
+def test_visual_query_presets_cover_overview_drilldown_and_integrity():
+    graph = build_evidence_lineage_graph()
+
+    presets = build_visual_query_presets(graph)
+    by_id = {preset.query_id: preset for preset in presets}
+    bundle = render_visual_query_bundle(presets)
+
+    assert len(presets) == 6
+    assert by_id["product_topic_overview"].expected_result == {
+        "node_count": 28,
+        "relationship_count": 43,
+        "row_count": 43,
+    }
+    assert {
+        query_id
+        for query_id in by_id
+        if query_id.startswith("product_lineage_")
+    } == {
+        "product_lineage_wpujac104dwh",
+        "product_lineage_wpuiac425snw",
+        "product_lineage_wpuiac606snw",
+    }
+    assert by_id[
+        "product_lineage_wpujac104dwh"
+    ].expected_result["path_count"] == 15
+    assert by_id[
+        "product_lineage_wpuiac425snw"
+    ].expected_result["path_count"] == 19
+    assert by_id[
+        "product_lineage_wpuiac606snw"
+    ].expected_result["path_count"] == 19
+    assert by_id["integrity_anomalies"].expected_result == {"row_count": 0}
+    assert "LAB_ONLY" in bundle
+    assert bundle.count("// [") == 6
+    for forbidden_name in (
+        "child_text",
+        "parent_text",
+        "source_span",
+        "embedding",
+        "similarity_score",
+        "prompt",
+    ):
+        assert forbidden_name not in bundle
+
+
+def test_visual_query_validation_fails_closed_on_row_count_mismatch():
+    graph = build_evidence_lineage_graph()
+    executor = FakeNeo4jExecutor(
+        graph,
+        visual_row_count_overrides={
+            "product_lineage_wpujac104dwh": 14,
+        },
+    )
+
+    report = verify_graph_in_neo4j(graph, executor)
+
+    assert report["database_validation"] == "FAIL"
+    assert report["visual_query_validation"]["status"] == "FAIL"
+    assert (
+        "VISUAL_QUERY_ROW_COUNT_MISMATCH:product_lineage_wpujac104dwh"
+        in report["issues"]
+    )
 
 
 def test_http_query_client_accepts_only_loopback_and_parameterizes_request():
