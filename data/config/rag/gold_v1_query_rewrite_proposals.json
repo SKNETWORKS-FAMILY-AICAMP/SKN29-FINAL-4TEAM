@@ -1,0 +1,497 @@
+{
+  "schema_version": "1.0.0",
+  "status": "GOLD_QUERY_REWRITE_PROPOSALS_READY_HUMAN_REVIEW_PENDING",
+  "source_dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A",
+    "record_count": 60
+  },
+  "summary": {
+    "proposal_count": 60,
+    "automatic_gold_update": false,
+    "human_review_status": "PENDING",
+    "label_revalidation_required": true
+  },
+  "proposals": [
+    {
+      "case_id": "RAGV2-GOLD-0001",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "정수기에서 물이 안 나와요. 빨리 고쳐주세요.",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": true,
+      "review_note": "1차 검수자가 확정한 긴급 수리 요청형 사용자 발화다. 무출수 의도는 유지하되 상담·수리 전환 라벨을 다시 검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0002",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "냉수가 미지근해요. 해결 방법 알려주세요.",
+      "rewrite_class": "INTENT_CLARIFIED",
+      "intent_change": true,
+      "review_note": "1차 검수자가 일반적인 해결 방법 요청으로 확정했다. 기존 대기 시간·상담 조건 라벨은 다시 검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0003",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "정수기에서 평소와 다른 소리가 나는데 고장 아닌가요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 고장 여부 확인형 문의다. 정상 작동음과 과도한 소음을 구분하려는 의도는 유지한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0004",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "정수기 밑에서 물이 새는 것 같아요. 지금 어떻게 해야 하나요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "안전 조치를 질문 안에서 미리 제시하지 않도록 수정했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0005",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "정수기 물에서 이상한 맛과 냄새가 나요. 이거 문제있는거 아닌가요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 문제 여부 확인형 문의다. 맛·냄새 이상 의도는 유지하며 DIRECT와 COLLOQUIAL 중 변형 유형을 다시 검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0006",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "일주일 전부터 정수기 물이 예전보다 잘 안 나와요. 해결 방법 알려주세요!",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 비교형 저유량 문의다. 예전보다라는 표현으로 완전 무출수와 구분한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0007",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "온수를 받는데 김이 나고 물이 튀어요",
+      "rewrite_class": "INTENT_CLARIFIED",
+      "intent_change": true,
+      "review_note": "1차 검수자가 확정한 관찰형 문의다. 해결 요청을 명시하지 않았고 추상적인 화상 위험을 김과 물 튐 증상으로 바꿨으므로 근거와 안내 정책을 다시 검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0008",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "정수기에서 물이 안 나와요. 어떻게 해야 하나요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "짧은 무출수 문의를 자연스러운 질문으로 완성했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0009",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "냉수가 시원하지 않고 미지근해요. 어디를 확인해야 하나요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "냉수 온도 문제 의도를 유지했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0010",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "정수기에서 소리가 나는데 정상인가요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "어색한 종결 표현을 실제 문의 형태로 수정했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0011",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "정수기 밑에 물이 흥건해요. 누수가 의심됩니다.",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 관찰형 문의다. 정수기 밑에 고인 물을 근거로 누수를 의심하며 조치 요청은 명시하지 않았다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0012",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "물맛이나 냄새가 이상한데 무엇부터 확인하면 될까요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "기존 의도를 유지하면서 간결하게 정리했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0013",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "차가운 물이 너무 쫄쫄 나와요. 제품에 문제있는거 아닌가요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": true,
+      "review_note": "1차 검수자가 확정한 구어체 문의다. 냉수 저유량의 점검 방법 요청을 제품 이상 여부 확인으로 바꿨으므로 근거·안내 정책과 query_variant_type을 다시 검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0014",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "온수를 받을 때 뜨거운 물이나 김이 튀는데 계속 사용해도 괜찮을까요?",
+      "rewrite_class": "INTENT_CLARIFIED",
+      "intent_change": true,
+      "review_note": "주의사항 일반 질문을 실제 스팀 분사 상황으로 구체화했으므로 안내 정책을 재검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0015",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "필터를 교체했는데도 물이 안 나와요. 어떻게 해야 하나요?",
+      "rewrite_class": "INTENT_CLARIFIED",
+      "intent_change": true,
+      "review_note": "매뉴얼의 상담 전환 조건인 필터 교체 후 무출수로 명확히 맞췄다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0016",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "전원은 들어오는데 두 시간이 지나도 냉수가 차갑지 않아요. 어떻게 해야 하나요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "상담 전환 조건을 유지했으며 안내 정책 재검수가 필요하다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0017",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "방열팬 쪽에서 너무 큰 소리가 나요. 고장일까요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "과도한 소음의 상담 전환 조건을 유지했으며 안내 정책 재검수가 필요하다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0018",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "정수기 안쪽에서 물이 흘러나와요. 빠른 조치법을 알려주세요.",
+      "rewrite_class": "ANSWER_LEAKAGE_REMOVED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 긴급 조치 요청이다. 원수 밸브와 전원이라는 예상 조치를 질문에서 제거하고 빠른 조치 방법을 요청하도록 바꿨다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0019",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "오랜만에 정수기를 사용했는데 물에서 비린 맛과 냄새가 나요. 어떻게 해야 하나요?",
+      "rewrite_class": "INTENT_CLARIFIED",
+      "intent_change": true,
+      "review_note": "P038의 장기 부재 원인과 질문 조건을 맞췄다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0020",
+      "source_query_variant_type": "DIRECT",
+      "proposed_query": "안내받은 대로 정수기 아래쪽 밸브를 확인했는데 열려 있어요. 그런데도 물이 잘 안 나와요.",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 후속 문의다. 원수 밸브라는 전문 용어를 피하면서 밸브가 열려 있는데도 출수량이 적다는 진단 조건을 유지했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0021",
+      "source_query_variant_type": "COLLOQUIAL",
+      "proposed_query": "정수기 밑이 계속 축축해져요. 어디서 물이 새는지 모르겠어요.",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 구어체 누수 문의다. 반복적으로 바닥이 젖지만 누수 위치를 모르는 상황으로 RAGV2-GOLD-0004와 구분했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0022",
+      "source_query_variant_type": "COLLOQUIAL",
+      "proposed_query": "냉수가 계속 미지근한데 이유가 뭔가요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 구어체 원인 문의다. 중복 표현을 줄이면서 지속적인 냉수 온도 이상 의도를 유지했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0023",
+      "source_query_variant_type": "COLLOQUIAL",
+      "proposed_query": "정수기 물이 갑자기 졸졸 나와요. 어디를 확인해야 하나요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 구어체 저유량 문의다. 물줄기 대신 정수기 물로 바꾸면서 갑작스러운 저유량과 점검 요청 의도를 유지했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0024",
+      "source_query_variant_type": "COLLOQUIAL",
+      "proposed_query": "물에서 비린내 같은 게 나는데 먹어도 되는건가요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": true,
+      "review_note": "1차 검수자가 확정한 구어체 섭취 안전성 문의다. 일반 조치 요청을 비린내가 나는 물을 먹어도 되는지 묻는 질문으로 바꿨으므로 위험도와 안내 정책을 다시 검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0025",
+      "source_query_variant_type": "COLLOQUIAL",
+      "proposed_query": "버튼을 눌러도 물이 한 방울도 안 나와요. 뭘 확인해야 하나요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "구어체 무출수 문의를 유지했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0026",
+      "source_query_variant_type": "COLLOQUIAL",
+      "proposed_query": "정수기가 윙윙거리는데 고장 난 건가요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "이미 자연스러운 구어체를 유지했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0027",
+      "source_query_variant_type": "COLLOQUIAL",
+      "proposed_query": "정수기 아래 바닥에 물이 흥건해졌어요. 뭘 먼저 해야 하죠?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "누수 대상을 명확히 하고 구어체를 유지했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0028",
+      "source_query_variant_type": "COLLOQUIAL",
+      "proposed_query": "예전보다 물 나오는 힘이 확 약해졌어요. 어떻게 조치해 주실 건가요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": true,
+      "review_note": "1차 검수자가 확정한 서비스 조치 요청이다. 저유량 자가 점검 질문을 상담 주체의 조치를 요구하는 문의로 바꿨으므로 안내 정책을 다시 검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0029",
+      "source_query_variant_type": "COLLOQUIAL",
+      "proposed_query": "온수를 받을 때 김이 나고 물이 튀어서 무서워요. 계속 써도 되나요?",
+      "rewrite_class": "INTENT_CLARIFIED",
+      "intent_change": true,
+      "review_note": "1차 검수자가 확정한 구어체 안전성 문의다. 막연한 우려를 실제 김과 물 튐 상황 및 계속 사용 가능 여부 질문으로 구체화했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0030",
+      "source_query_variant_type": "COLLOQUIAL",
+      "proposed_query": "찬물 버튼을 눌렀는데 그냥 미지근한 물이 나와요. 왜 그런가요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 구어체 냉수 온도 문의다. 찬물 버튼을 선택했지만 미지근한 물이 나온다는 조건과 원인 질문을 명확히 했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0031",
+      "source_query_variant_type": "TYPO_ABBREVIATION",
+      "proposed_query": "정수기 물이 안 나와여 어떡게 해요?",
+      "rewrite_class": "TYPO_VARIANT_PRESERVED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 채팅형 오타 문의다. 나와여와 어떡게를 의도적으로 보존하면서 무출수 해결 요청을 유지했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0032",
+      "source_query_variant_type": "TYPO_ABBREVIATION",
+      "proposed_query": "냉수라면서 하나도 안 차가운데 어케 해요?",
+      "rewrite_class": "TYPO_VARIANT_PRESERVED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 채팅형 축약 문의다. 어케를 보존하고 냉수가 전혀 차갑지 않다는 불만 표현을 추가했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0033",
+      "source_query_variant_type": "TYPO_ABBREVIATION",
+      "proposed_query": "정수기 소리가 넘 커여 고장인가요?",
+      "rewrite_class": "TYPO_VARIANT_PRESERVED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 채팅형 소음 문의다. 소음을 소리로 바꾸고 넘과 커여라는 축약·오타를 유지했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0034",
+      "source_query_variant_type": "TYPO_ABBREVIATION",
+      "proposed_query": "정수기 밑에서 물이 세요 어떻해요?",
+      "rewrite_class": "TYPO_VARIANT_PRESERVED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 채팅형 오타 문의다. 세요와 어떻해요를 의도적으로 보존하고 정수기 밑이라는 위치로 누수 상황을 구분했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0035",
+      "source_query_variant_type": "TYPO_ABBREVIATION",
+      "proposed_query": "정수기 물 나오는 양이 갑자기 적어졋어요 뭐가 문제인가요?",
+      "rewrite_class": "TYPO_VARIANT_PRESERVED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 채팅형 오타 문의다. 출수량을 물 나오는 양으로 바꾸고 적어졋어요 오타와 문제 원인 질문을 유지했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0036",
+      "source_query_variant_type": "COMPOUND",
+      "proposed_query": "냉수가 미지근한 데다가 물도 조금씩만 나와요. 어떻게 해야 하나요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 복합 문의다. 냉수 온도 이상과 저유량 두 증상을 모두 보존했으므로 Evidence 정책의 ALL 여부를 다시 검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0037",
+      "source_query_variant_type": "COMPOUND",
+      "proposed_query": "정수기 아래로 물이 새고 평소보다 큰 소리도 나요. 지금 어떻게 해야 하는지 알려주세요.",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 복합 문의다. 누수와 평소보다 큰 소음 두 증상 및 즉시 조치 요청을 유지했으므로 Evidence 정책의 ALL 여부를 다시 검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0038",
+      "source_query_variant_type": "COMPOUND",
+      "proposed_query": "정수기 물에서 불쾌한 냄새가 나고 나오는 양도 줄었어요. 마셔도 되는거 맞아요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": true,
+      "review_note": "1차 검수자가 확정한 복합 섭취 안전성 문의다. 냄새와 저유량 두 증상은 유지했지만 점검 순서 요청을 섭취 가능 여부 질문으로 바꿨으므로 위험도·안내 정책과 Evidence 정책의 ALL 여부를 다시 검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0039",
+      "source_query_variant_type": "COMPOUND",
+      "proposed_query": "버튼을 누르면 작동 소리는 나는데 물이 안 나와요. 뭘 확인해야 하나요?",
+      "rewrite_class": "INTENT_CLARIFIED",
+      "intent_change": true,
+      "review_note": "소음을 별도 고장보다 무출수의 상황 정보로 명확히 했으므로 ALL 정책과 소음 Evidence를 재검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0040",
+      "source_query_variant_type": "COMPOUND",
+      "proposed_query": "온수를 받다가 물이 새고 뜨거운 물도 튀었어요. 지금 어떻게 해야 하나요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "누수와 온수 안전의 복합 상황을 유지한 제안이지만, 1차 검수자가 질문 제외를 제안했다. 원본 Gold에서는 삭제하지 않고 담당자 승인 전까지 보류한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0041",
+      "source_query_variant_type": "SAFETY",
+      "proposed_query": "정수기 아래 바닥과 전원선 주변이 물에 젖어 있어요. 이거 위험한 거 아닌가요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": true,
+      "review_note": "1차 검수자가 확정한 누수·전기 위험 확인 문의다. 조치 요청을 위험 여부 질문으로 바꿨으므로 위험도와 즉시 중단 안내 정책을 매뉴얼 원본과 다시 검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0042",
+      "source_query_variant_type": "SAFETY",
+      "proposed_query": "정수기 뒤에서 타는 냄새가 나고 불꽃도 튀었어요. 지금 어떻게 해야 하나요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "증상 의미를 유지하고 조치 문의를 추가했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0043",
+      "source_query_variant_type": "SAFETY",
+      "proposed_query": "플러그 주변이 젖어 있고 전원 코드가 뜨거워요. 지금 어떻게 해야 하나요?",
+      "rewrite_class": "INTENT_CLARIFIED",
+      "intent_change": true,
+      "review_note": "젖은 손으로 이미 플러그를 만졌다는 위험 행동을 정상적인 사용자 행동처럼 전제하지 않도록 교정했다. 플러그 주변 물기와 전원 코드 과열이라는 두 전기 위험 신호는 유지한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0044",
+      "source_query_variant_type": "SAFETY",
+      "proposed_query": "정수기에서 연기가 나고 매캐한 냄새가 나요. 전원을 꺼야 하나요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": true,
+      "review_note": "1차 검수자가 확정한 전원 차단 확인 문의다. 일반 긴급 조치 요청을 전원을 꺼야 하는지 묻는 질문으로 바꿨고 예상 조치가 일부 노출되므로 위험도·안내 정책과 정답 노출 여부를 다시 검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0045",
+      "source_query_variant_type": "SAFETY",
+      "proposed_query": "정수기 안에 물이 들어간 것 같은데 전원이 켜져 있어요. 어떻게 해야 하나요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": true,
+      "review_note": "침수 확정 표현이 추정형으로 약해졌으므로 의미 변경으로 분류한다. 내부 물 유입 의심과 전원 켜짐 상황에 맞춰 기존 Evidence 결정과 안내 정책을 다시 검수해야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0046",
+      "source_query_variant_type": "SAFETY",
+      "proposed_query": "콘센트 주변에 물이 고여 있고 정수기에서도 물이 새요. 지금 어떻게 해야 하나요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "복합 안전 상황을 실제 긴급 문의 형태로 바꿨다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0047",
+      "source_query_variant_type": "SAFETY",
+      "proposed_query": "아이가 온수 출수구에 손을 댈까 걱정돼요. 어떻게 안전하게 사용해야 하나요?",
+      "rewrite_class": "INTENT_CLARIFIED",
+      "intent_change": true,
+      "review_note": "화상 발생 후 처치로 오해되지 않도록 매뉴얼이 지원하는 예방 상황으로 바꿨다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0048",
+      "source_query_variant_type": "SAFETY",
+      "proposed_query": "정수기 주변에 물이 고여 있는데 계속 사용해도 될까요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "기존 의미를 유지하면서 실제 문의 말투로 정리했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0049",
+      "source_query_variant_type": "SAFETY",
+      "proposed_query": "정수기 옆에서 살충제를 뿌린 뒤 정수기에서 타는 냄새가 나요. 어떻게 해야 하나요?",
+      "rewrite_class": "INTENT_CLARIFIED",
+      "intent_change": true,
+      "review_note": "0049-H-B 결정에 따라 일반 가연성 스프레이를 살충제로 구체화하고 냄새의 발생 주체를 정수기, 종류를 타는 냄새로 명확히 했다. P004의 살충제 사용 위험과 P005의 사고 후 조치를 모두 요구한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0050",
+      "source_query_variant_type": "SAFETY",
+      "proposed_query": "전원 플러그를 다시 꽂았더니 타는 냄새와 연기가 나요. 어떻게 해야 하나요?",
+      "rewrite_class": "NATURALIZED",
+      "intent_change": false,
+      "review_note": "증상 의미를 유지하고 조치 문의를 추가했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0051",
+      "source_query_variant_type": "NO_EVIDENCE",
+      "proposed_query": "이 정수기 월 렌탈료랑 제휴카드 할인 금액이 궁금해요.",
+      "rewrite_class": "NEGATIVE_NATURALIZED",
+      "intent_change": false,
+      "review_note": "현재 가격성 정보 문의 의도를 유지했다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0052",
+      "source_query_variant_type": "NO_EVIDENCE",
+      "proposed_query": "교체용 필터의 현재 판매 가격은 얼마인가요?",
+      "rewrite_class": "NEGATIVE_NATURALIZED",
+      "intent_change": false,
+      "review_note": "필터 구매 경로는 P028에 존재하므로 혼합 질문이 되지 않도록 구매 의사를 제거했다. 현재 판매 가격만 묻는 순수 NO_EVIDENCE 질문으로 유지한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0053",
+      "source_query_variant_type": "NO_EVIDENCE",
+      "proposed_query": "오늘 방문 예정인 기사님이 몇 시쯤 도착하나요?",
+      "rewrite_class": "NEGATIVE_NATURALIZED",
+      "intent_change": false,
+      "review_note": "실시간 방문 일정 문의를 실제 말투로 바꿨다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0054",
+      "source_query_variant_type": "NO_EVIDENCE",
+      "proposed_query": "이 정수기는 어떤 색상으로 구매할 수 있나요?",
+      "rewrite_class": "NEGATIVE_NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 색상 구매 문의다. 질문에서 판매코드를 제거하되 Case의 제품 필드로 모델 식별을 유지한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0055",
+      "source_query_variant_type": "NO_EVIDENCE",
+      "proposed_query": "정수기 모델은 잘 모르겠고 인터넷 FAQ만 봤는데, 그 내용대로 누수 조치를 해도 될까요?",
+      "rewrite_class": "NEGATIVE_NATURALIZED",
+      "intent_change": true,
+      "review_note": "평가자 용어인 근거 확정을 제거하고 모델 미확인 FAQ 적용 가능성이라는 사용자 의도로 바꿨다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0056",
+      "source_query_variant_type": "CROSS_PRODUCT",
+      "proposed_query": "이 정수기에서 얼음이 안 나와요. 제빙 기능은 어디서 켜나요?",
+      "rewrite_class": "NEGATIVE_NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 교차 제품 문의다. 질문에서 판매코드를 제거하되 Case의 제품 필드로 JAC104를 식별하고 존재하지 않는 제빙 기능 문의를 유지한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0057",
+      "source_query_variant_type": "CROSS_PRODUCT",
+      "proposed_query": "이 정수기 얼음 저장고는 어떻게 분리해서 청소하나요?",
+      "rewrite_class": "NEGATIVE_NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 교차 제품 청소 문의다. 제품 약칭을 제거하되 Case의 제품 필드로 JAC104를 식별하고 존재하지 않는 얼음 저장고 문의를 유지한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0058",
+      "source_query_variant_type": "CROSS_PRODUCT",
+      "proposed_query": "이 정수기는 얼음 크기랑 제빙량을 어떻게 설정하나요?",
+      "rewrite_class": "NEGATIVE_NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 교차 제품 설정 문의다. 제품 약칭을 제거하되 Case의 제품 필드로 JAC104를 식별하고 존재하지 않는 얼음 크기·제빙량 설정 문의를 유지한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0059",
+      "source_query_variant_type": "CROSS_PRODUCT",
+      "proposed_query": "이 정수기 필터는 어떻게 교체하나요?",
+      "rewrite_class": "NEGATIVE_NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 검색 차단 모델 문의다. 질문에서 모델명을 제거해도 원본 Case의 product_model_code=WPU-IAC506으로 식별하며 JAC104·IAC425 근거를 반환하지 않아야 한다."
+    },
+    {
+      "case_id": "RAGV2-GOLD-0060",
+      "source_query_variant_type": "CROSS_PRODUCT",
+      "proposed_query": "이 정수기 냉수가 미지근한데 어떻게 확인해야 하나요?",
+      "rewrite_class": "NEGATIVE_NATURALIZED",
+      "intent_change": false,
+      "review_note": "1차 검수자가 확정한 교차 제품 문의다. 질문에서 제품 세대를 제거해도 원본 Case의 product_model_code=WPUJAC104SWH로 식별하며 JAC104 D세대·IAC425 근거를 반환하지 않아야 한다."
+    }
+  ]
+}

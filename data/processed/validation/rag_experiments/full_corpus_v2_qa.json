@@ -1,0 +1,122 @@
+{
+  "checks": [
+    {
+      "check_id": "SCHEMA",
+      "detail": [],
+      "status": "PASS"
+    },
+    {
+      "check_id": "CORPUS_COUNTS",
+      "detail": {
+        "products": {
+          "WPUIAC425SNW": 52,
+          "WPUJAC104DWH": 59
+        },
+        "record_types": {
+          "CHILD": 15,
+          "PRESERVATION": 5,
+          "SOURCE_PAGE": 91
+        },
+        "total": 111
+      },
+      "status": "PASS"
+    },
+    {
+      "check_id": "ID_AND_INDEX_UNIQUENESS",
+      "detail": "111 unique IDs and contiguous indexes",
+      "status": "PASS"
+    },
+    {
+      "check_id": "TEXT_HASHES",
+      "detail": [],
+      "status": "PASS"
+    },
+    {
+      "check_id": "LINE_COVERAGE",
+      "detail": [],
+      "status": "PASS"
+    },
+    {
+      "check_id": "CHILD_AND_PRESERVATION_LINEAGE",
+      "detail": {
+        "children": [],
+        "preservation": []
+      },
+      "status": "PASS"
+    },
+    {
+      "check_id": "GOLD_QUERY_COPY",
+      "detail": [],
+      "status": "PASS"
+    },
+    {
+      "check_id": "GOLD_REVIEW_PACKET",
+      "detail": {
+        "assessment_counts": {
+          "CHANGE_PROPOSED": 2,
+          "SOURCE_CHECK_REQUIRED": 18,
+          "SUPPORTED": 40
+        },
+        "automatic_gold_promotion": false,
+        "human_signed_records": 0,
+        "priority_counts": {
+          "HIGH": 20,
+          "MEDIUM": 5,
+          "NORMAL": 35
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "check_id": "IAC425_CANDIDATES",
+      "detail": {
+        "actual": 18,
+        "excluded_negative_cases": 1,
+        "expected": 18
+      },
+      "status": "PASS"
+    },
+    {
+      "check_id": "MANIFEST_OUTPUT_HASHES",
+      "detail": {
+        "corpus": {
+          "path": "data/processed/structured/rag/experimental/full_corpus_chunks_v2.jsonl",
+          "record_count": 111,
+          "sha256": "2D4A022A8FEABD376C9F5D42E7D28BA8E18571274D19A05794D066B7113D6FC6"
+        },
+        "coverage": {
+          "page_count": 5,
+          "path": "data/processed/structured/rag/experimental/full_corpus_v2_coverage.json",
+          "sha256": "A79D62E529BCEEFA60870FA453A6BB64093E1EFF5BAEC183A96CFFB220E1474B"
+        },
+        "gold_review": {
+          "path": "data/processed/validation/rag_experiments/gold_v1_primary_review_packet.json",
+          "record_count": 60,
+          "sha256": "088CFC416185DEADADE4139702A5E60F178B0FF122FC3856B45BD116A6584DB2"
+        },
+        "iac425_candidates": {
+          "path": "data/config/rag/iac425_gold_candidates.json",
+          "record_count": 18,
+          "sha256": "3C5BF1A8ED9EC9DCF4A3644159605E387B5C6698F92D6AB9AD17FC9E88B67B72"
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "check_id": "NO_LOCAL_ABSOLUTE_PATH",
+      "detail": [],
+      "status": "PASS"
+    }
+  ],
+  "counts": {
+    "errors": 0,
+    "gold_reviews": 60,
+    "iac425_candidates": 18,
+    "search_candidates": 111
+  },
+  "errors": [],
+  "generated_at": "2026-08-23T00:00:00+09:00",
+  "promotion_status": "NOT_APPROVED",
+  "schema_version": "1.0.0",
+  "status": "PASS"
+}

@@ -354,6 +354,11 @@
       "sha256": "22CB37E160C18E514B9180EE8E7F6DDFF2AD711F6D86EFCA14AFE024F4ED3AD7"
     },
     {
+      "path": "processed/metadata/full_corpus_v2_handoff_manifest.json",
+      "size_bytes": 3949,
+      "sha256": "22D48B89A1845B208C542DA7C368F45AF0D3531719F5C4616F1EE2A5AFD49C9E"
+    },
+    {
       "path": "processed/metadata/model_document_lineage.csv",
       "size_bytes": 502,
       "sha256": "FF7BD65A961F39E3260C9EF98CE559E986D9C61B6091CC8096311532AA755E14"
@@ -404,6 +409,26 @@
       "path": "schemas/config/datasetVocabulary.schema.json",
       "size_bytes": 1652,
       "sha256": "2AFDF9CC83615876E214FACA45ACF6BA2E712F7B4DB6ED8EF6C39521877CA6EF"
+    },
+    {
+      "path": "schemas/config/goldPostQueryLabelRevalidationPacket.schema.json",
+      "size_bytes": 4462,
+      "sha256": "BE4764BE3B6798E198A56C96EC2502D3A27093D299960FCFF8C5EE07596836E9"
+    },
+    {
+      "path": "schemas/config/goldPrimaryReviewPacket.schema.json",
+      "size_bytes": 3051,
+      "sha256": "EAF37CAC08FE27635740A807460750B8AC3D95F958F6BFE3E5F3889F6714E2FE"
+    },
+    {
+      "path": "schemas/config/goldQueryRewriteProposals.schema.json",
+      "size_bytes": 2759,
+      "sha256": "DD7BBF3625C268C8D9F9A55AB90A6CBD462489A56DB1A65D0B7BB665ECA9B9A3"
+    },
+    {
+      "path": "schemas/config/iac425GoldCandidates.schema.json",
+      "size_bytes": 2163,
+      "sha256": "5F36EEABD3D20662457171CF06AA33A055A0C85CA648660086200E67DE736DB7"
     },
     {
       "path": "schemas/config/manualThreeModelCandidateScenarios.schema.json",
@@ -484,6 +509,16 @@
       "path": "schemas/processed/faqOcrVerified.schema.json",
       "size_bytes": 2510,
       "sha256": "EEDDBE6AC1F591F584278BBF3B660DD56D73EEE7A01E7A09500C796DB16D84A5"
+    },
+    {
+      "path": "schemas/processed/fullCorpusV2Chunk.schema.json",
+      "size_bytes": 2100,
+      "sha256": "06B799F7527F29C0E2E087FEDD3B15352A93BF59D33FA572FD213192775972D9"
+    },
+    {
+      "path": "schemas/processed/fullCorpusV2Coverage.schema.json",
+      "size_bytes": 1442,
+      "sha256": "0C729FCC3C17FEB70B91ADAF27C75B1EBF49826C441DB84845DDAD9616763012"
     },
     {
       "path": "schemas/processed/manualPage.schema.json",
@@ -683,6 +718,16 @@
       "sha256": "82277187F184772D268ACA47E7987740B878EF49747E4C75975BB06800CEB5A2"
     },
     {
+      "path": "tools/rag_experiments/build_full_corpus_v2_review.py",
+      "size_bytes": 29833,
+      "sha256": "A7376C770DE05AEEE42656CFA326F5EE64A7CF5CAC6F8CEDC81DB81DB383241E"
+    },
+    {
+      "path": "tools/rag_experiments/build_gold_query_label_revalidation.py",
+      "size_bytes": 13345,
+      "sha256": "2C4D6B19112103E577DBB7A8E02A7D00317D0EA29252874C570B53EA48252472"
+    },
+    {
       "path": "tools/rag_experiments/build_iac425_pages.py",
       "size_bytes": 8929,
       "sha256": "344C1BDD697067498C0D52FB27D08D0706B894C8CC030ED8E310C575F7E525AD"
@@ -701,6 +746,11 @@
       "path": "tools/rag_experiments/qa_faq_corpus.py",
       "size_bytes": 14094,
       "sha256": "6866FE5E5D1AABBC53F430860C491583CC4F184A256D610FBBEDF26367834205"
+    },
+    {
+      "path": "tools/rag_experiments/qa_full_corpus_v2_review.py",
+      "size_bytes": 11498,
+      "sha256": "D15B07772F5F8C36F763ACF0EC4D3A48FF3D7FEF9B6A14A272EB4BDBBB5390E2"
     },
     {
       "path": "tools/rag_experiments/qa_iac425_pages.py",
@@ -746,6 +796,21 @@
       "path": "tools/tests/test_faq_corpus_qa.py",
       "size_bytes": 2580,
       "sha256": "F5D012D0D8AE79A8F0F1B4F2D006798CD3918E111824B201ED13A8A1E06C4BCA"
+    },
+    {
+      "path": "tools/tests/test_full_corpus_v2_review.py",
+      "size_bytes": 5213,
+      "sha256": "10314DFFC7C7890D55BFCB7D8A857516086A1173EC1AE347C1C374FC26CB0B10"
+    },
+    {
+      "path": "tools/tests/test_gold_post_query_label_revalidation.py",
+      "size_bytes": 11005,
+      "sha256": "1C98D1B4899213BF98376BD9876D60A5973EC4EBA1236C1FA052E506422E1431"
+    },
+    {
+      "path": "tools/tests/test_gold_query_rewrite_proposals.py",
+      "size_bytes": 6269,
+      "sha256": "016C04A5BBBE5EF45C3F0EA52FA0AFB8FB8CC929259319EAB3EB6A0F6C773E0D"
     },
     {
       "path": "tools/tests/test_handoff_profiles.py",
@@ -888,6 +953,21 @@
       "path": "config/pipeline.json",
       "size_bytes": 5878,
       "sha256": "DCB4D4BBEDC46CC4F9D227439E77104FE10C52F42631EE6975936B7132F9AD74"
+    },
+    {
+      "path": "config/rag/full_corpus_v2_segments.json",
+      "size_bytes": 5491,
+      "sha256": "02732E7AEB09F6E024EFA28DB5852E0C8870FD933EF794C89B5BA3DECE693E7E"
+    },
+    {
+      "path": "config/rag/gold_v1_query_rewrite_proposals.json",
+      "size_bytes": 27374,
+      "sha256": "97F4548FFEC0268B54AC5BFB12431CF061E6340D4AEFDF0DF2FF8C02228AF398"
+    },
+    {
+      "path": "config/rag/iac425_gold_candidates.json",
+      "size_bytes": 20566,
+      "sha256": "3C5BF1A8ED9EC9DCF4A3644159605E387B5C6698F92D6AB9AD17FC9E88B67B72"
     },
     {
       "path": "config/rag/jac104_chunks.json",
@@ -1054,6 +1134,36 @@
       "sha256": "51D4423D3FFD382FC59E2A7E640B28380B0EBDCB5999CA5FF4DCA908EC94A016"
     },
     {
+      "path": "processed/validation/rag_experiments/full_corpus_v2_qa.json",
+      "size_bytes": 3052,
+      "sha256": "3C0996A249C17039F31204A699B4A6FD6129B73A206C81F089C3B0031DF4A9DF"
+    },
+    {
+      "path": "processed/validation/rag_experiments/gold_v1_post_query_label_human_review_working.json",
+      "size_bytes": 19851,
+      "sha256": "618D99DAFCC72A6B75C9FD6BB80DFEA2710148A961CAC711CBBB7585DBC87042"
+    },
+    {
+      "path": "processed/validation/rag_experiments/gold_v1_post_query_label_revalidation_packet.json",
+      "size_bytes": 118528,
+      "sha256": "65665EF4C91F14724A09DC17BE083DD31172B0DC4886074074A3C27FD7EDDD32"
+    },
+    {
+      "path": "processed/validation/rag_experiments/gold_v1_primary_human_review_working.json",
+      "size_bytes": 3121,
+      "sha256": "98C9DE1C173F49C7B38B927C1871A58253955AAE4296D08971BFB7C49D26880F"
+    },
+    {
+      "path": "processed/validation/rag_experiments/gold_v1_primary_review_packet.json",
+      "size_bytes": 144756,
+      "sha256": "088CFC416185DEADADE4139702A5E60F178B0FF122FC3856B45BD116A6584DB2"
+    },
+    {
+      "path": "processed/validation/rag_experiments/gold_v1_query_human_review_working.json",
+      "size_bytes": 41999,
+      "sha256": "B44A0B1644FE70ECC2FE674006D44AF44F2A588BB03378F3D61432E5B800921D"
+    },
+    {
       "path": "processed/validation/rag_experiments/iac425_manual_pages_qa.json",
       "size_bytes": 2748,
       "sha256": "498BEEE2253DB6293F4D01D4C4FDF1FBE1EE1C8791F31F5E6F4837D03CC9E553"
@@ -1149,21 +1259,6 @@
       "path": "raw/manuals/mvp/.gitkeep",
       "size_bytes": 1,
       "sha256": "01BA4719C80B6FE911B091A7C05124B64EEECE964E09C058EF8F9805DACA546B"
-    },
-    {
-      "path": "raw/manuals/mvp/WPU-IAC425-얼음정수기메뉴얼.pdf",
-      "size_bytes": 8571676,
-      "sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8"
-    },
-    {
-      "path": "raw/manuals/mvp/WPU-JAC104,WPU-JCC104-냉온정수기메뉴얼.pdf",
-      "size_bytes": 5131906,
-      "sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C"
-    },
-    {
-      "path": "raw/manuals/mvp/WPUIAC606SNW MegaIceMini메뉴얼.pdf",
-      "size_bytes": 8448650,
-      "sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572"
     }
   ],
   "counts": {
@@ -1211,8 +1306,8 @@
     "canonical_drift_files": 0
   },
   "toolchain": {
-    "python_files": 44,
-    "python_lines": 9797,
+    "python_files": 50,
+    "python_lines": 11667,
     "max_wrapper_lines": 10,
     "max_module_lines": 1939
   },
@@ -1241,7 +1336,7 @@
   },
   "retention": {
     "raw_original_files": 0,
-    "raw_policy_files": 10,
+    "raw_policy_files": 7,
     "temp_exists": false,
     "work_exists": false
   }
