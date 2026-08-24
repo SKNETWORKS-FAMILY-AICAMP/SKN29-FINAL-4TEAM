@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "../../src/app/providers/AuthProvider";
 import { AppRoutes } from "../../src/app/router/AppRouter";
-import { CONSULTANT_QUEUE_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
+import { CONSULTANT_QUEUE_INQUIRIES } from "../fixtures/consultantWorkspaceMock";
 import { getCounselorWorkBucket } from "../../src/features/consultation/model/consultantWorkspaceModel";
 import {
   clearRecentConsultantInquiryIds,

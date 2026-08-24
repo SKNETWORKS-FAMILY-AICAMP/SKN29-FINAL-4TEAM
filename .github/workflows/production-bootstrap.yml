@@ -1,0 +1,301 @@
+name: Production Bootstrap
+
+on:
+  workflow_dispatch:
+    inputs:
+      existing_bucket_name:
+        description: Optional existing compliant WaterBridge S3 bucket
+        required: false
+        type: string
+      create_missing_storage:
+        description: Create the tagged storage stack when no reusable bucket exists
+        required: true
+        default: true
+        type: boolean
+      backend_env_file:
+        description: Protected EC2 Backend env file path
+        required: true
+        default: /etc/waterbridge/backend.env
+        type: string
+      ai_env_file:
+        description: Protected EC2 AI Readonly env file path
+        required: true
+        default: /etc/waterbridge/ai.env
+        type: string
+      rds_ca_file:
+        description: EC2 RDS CA certificate path
+        required: true
+        default: /etc/waterbridge/certs/rds-ca.pem
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: waterbridge-production-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    name: Validate AWS storage and EC2 host
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+      EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+      STACK_NAME: waterbridge-production-storage
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate repository variables
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in AWS_REGION AWS_ROLE_ARN EC2_INSTANCE_ID; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "Required repository variable is missing: ${key}" >&2
+              exit 1
+            fi
+          done
+
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve EC2 instance role
+        id: ec2-role
+        shell: bash
+        run: |
+          set -euo pipefail
+          metadata_tokens="$(aws ec2 describe-instances \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --query 'Reservations[0].Instances[0].MetadataOptions.HttpTokens' \
+            --output text)"
+          metadata_hop_limit="$(aws ec2 describe-instances \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --query 'Reservations[0].Instances[0].MetadataOptions.HttpPutResponseHopLimit' \
+            --output text)"
+          [[ "$metadata_tokens" == "required" ]] || {
+            echo "Production EC2 must require IMDSv2 tokens." >&2
+            exit 1
+          }
+          [[ "$metadata_hop_limit" =~ ^[0-9]+$ && "$metadata_hop_limit" -ge 2 ]] || {
+            echo "EC2 IMDS hop limit must be at least 2 for the Tempo container role." >&2
+            exit 1
+          }
+          profile_arn="$(aws ec2 describe-instances \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --query 'Reservations[0].Instances[0].IamInstanceProfile.Arn' \
+            --output text)"
+          if [[ -z "$profile_arn" || "$profile_arn" == "None" ]]; then
+            echo "The production EC2 instance has no instance profile." >&2
+            exit 1
+          fi
+          profile_name="${profile_arn##*/}"
+          role_arn="$(aws iam get-instance-profile \
+            --instance-profile-name "$profile_name" \
+            --query 'InstanceProfile.Roles[0].Arn' \
+            --output text)"
+          if [[ ! "$role_arn" =~ ^arn:aws:iam::[0-9]{12}:role/ ]]; then
+            echo "Could not resolve a canonical EC2 role ARN." >&2
+            exit 1
+          fi
+          echo "role_arn=${role_arn}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve reusable storage or create the stack
+        id: storage
+        shell: bash
+        env:
+          REQUESTED_BUCKET: ${{ inputs.existing_bucket_name }}
+          CREATE_MISSING: ${{ inputs.create_missing_storage }}
+          EC2_ROLE_ARN: ${{ steps.ec2-role.outputs.role_arn }}
+        run: |
+          set -euo pipefail
+          bucket="${REQUESTED_BUCKET//[[:space:]]/}"
+          source="input"
+
+          if [[ -z "$bucket" ]]; then
+            bucket="$(aws cloudformation describe-stacks \
+              --stack-name "$STACK_NAME" \
+              --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue | [0]" \
+              --output text 2>/dev/null || true)"
+            [[ "$bucket" == "None" ]] && bucket=""
+            source="stack"
+          fi
+
+          if [[ -z "$bucket" ]]; then
+            mapfile -t tagged_buckets < <(aws resourcegroupstaggingapi get-resources \
+              --resource-type-filters s3 \
+              --tag-filters Key=Project,Values=WaterBridge Key=Purpose,Values=deployment-observability \
+              --query 'ResourceTagMappingList[].ResourceARN' \
+              --output text 2>/dev/null | tr '\t' '\n' | sed -n 's#^arn:aws:s3:::\(.*\)$#\1#p')
+            if (( ${#tagged_buckets[@]} > 1 )); then
+              echo "More than one tagged deployment-observability bucket exists." >&2
+              exit 1
+            fi
+            if (( ${#tagged_buckets[@]} == 1 )); then
+              bucket="${tagged_buckets[0]}"
+              source="tag"
+            fi
+          fi
+
+          if [[ -z "$bucket" ]]; then
+            if [[ "$CREATE_MISSING" != "true" ]]; then
+              echo "No compliant storage was selected and creation is disabled." >&2
+              exit 1
+            fi
+            account_id="$(aws sts get-caller-identity --query Account --output text)"
+            bucket="waterbridge-production-${account_id}-${AWS_REGION}"
+            aws cloudformation deploy \
+              --stack-name "$STACK_NAME" \
+              --template-file infra/cloud/aws/deployment/storage-stack.yml \
+              --parameter-overrides \
+                "BucketName=${bucket}" \
+                "Ec2RoleArn=${EC2_ROLE_ARN}" \
+                "DeployRoleArn=${AWS_ROLE_ARN}" \
+              --no-fail-on-empty-changeset
+            source="created"
+          fi
+
+          aws s3api head-bucket --bucket "$bucket"
+          algorithm="$(aws s3api get-bucket-encryption \
+            --bucket "$bucket" \
+            --query 'ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm' \
+            --output text)"
+          [[ "$algorithm" == "AES256" || "$algorithm" == "aws:kms" ]] || {
+            echo "The selected bucket does not enforce server-side encryption." >&2
+            exit 1
+          }
+          versioning="$(aws s3api get-bucket-versioning --bucket "$bucket" --query Status --output text)"
+          [[ "$versioning" == "Enabled" ]] || {
+            echo "The selected bucket does not have versioning enabled." >&2
+            exit 1
+          }
+          public_block="$(aws s3api get-public-access-block \
+            --bucket "$bucket" \
+            --query 'PublicAccessBlockConfiguration.[BlockPublicAcls,IgnorePublicAcls,BlockPublicPolicy,RestrictPublicBuckets]' \
+            --output text)"
+          [[ "$public_block" == $'True\tTrue\tTrue\tTrue' ]] || {
+            echo "The selected bucket does not block all public access." >&2
+            exit 1
+          }
+          bucket_policy="$(aws s3api get-bucket-policy \
+            --bucket "$bucket" \
+            --query Policy \
+            --output text)"
+          jq -e --arg bucket_arn "arn:aws:s3:::${bucket}" '
+            def listify: if type == "array" then . else [.] end;
+            any(.Statement[];
+              .Effect == "Deny" and
+              .Principal == "*" and
+              (.Action | listify | index("s3:*") != null) and
+              (.Resource | listify | index($bucket_arn) != null) and
+              (.Resource | listify | index($bucket_arn + "/*") != null) and
+              (.Condition.Bool["aws:SecureTransport"] | tostring) == "false"
+            )
+          ' <<<"$bucket_policy" >/dev/null || {
+            echo "The selected bucket does not deny non-TLS S3 requests." >&2
+            exit 1
+          }
+          lifecycle="$(aws s3api get-bucket-lifecycle-configuration --bucket "$bucket")"
+          jq -e '
+            any(.Rules[];
+              .Status == "Enabled" and
+              .AbortIncompleteMultipartUpload.DaysAfterInitiation == 1
+            ) and
+            any(.Rules[];
+              .Status == "Enabled" and
+              .Prefix == "tempo/" and
+              .NoncurrentVersionExpiration.NoncurrentDays == 14
+            )
+          ' <<<"$lifecycle" >/dev/null || {
+            echo "The selected bucket does not enforce the approved Tempo lifecycle." >&2
+            exit 1
+          }
+
+          echo "bucket=${bucket}" >> "$GITHUB_OUTPUT"
+          echo "source=${source}" >> "$GITHUB_OUTPUT"
+
+          aws ssm put-parameter \
+            --name /waterbridge/production/storage-bucket \
+            --type String \
+            --value "$bucket" \
+            --overwrite >/dev/null
+
+      - name: Upload secret-free host bootstrap script
+        shell: bash
+        env:
+          STORAGE_BUCKET: ${{ steps.storage.outputs.bucket }}
+        run: |
+          set -euo pipefail
+          aws s3 cp \
+            scripts/deployment/production/bootstrap-host.sh \
+            "s3://${STORAGE_BUCKET}/releases/bootstrap/${GITHUB_SHA}/bootstrap-host.sh" \
+            --only-show-errors
+
+      - name: Validate EC2 host through SSM
+        id: host
+        shell: bash
+        env:
+          STORAGE_BUCKET: ${{ steps.storage.outputs.bucket }}
+          BACKEND_ENV_FILE: ${{ inputs.backend_env_file }}
+          AI_ENV_FILE: ${{ inputs.ai_env_file }}
+          RDS_CA_FILE: ${{ inputs.rds_ca_file }}
+        run: |
+          set -euo pipefail
+          commands_json="$(jq -cn \
+            --arg bucket "$STORAGE_BUCKET" \
+            --arg sha "$GITHUB_SHA" \
+            --arg backend_env "$BACKEND_ENV_FILE" \
+            --arg ai_env "$AI_ENV_FILE" \
+            --arg ca_file "$RDS_CA_FILE" \
+            '{commands:[
+              "set -euo pipefail",
+              "install -d -m 0750 /opt/waterbridge/shared",
+              ("aws s3 cp s3://" + $bucket + "/releases/bootstrap/" + $sha + "/bootstrap-host.sh /opt/waterbridge/shared/bootstrap-host.sh --only-show-errors"),
+              "chmod 0750 /opt/waterbridge/shared/bootstrap-host.sh",
+              ("/opt/waterbridge/shared/bootstrap-host.sh " + $backend_env + " " + $ai_env + " " + $ca_file + " waterbridge.site 18080"),
+              ("aws s3api list-objects-v2 --bucket " + $bucket + " --prefix tempo/ --max-items 1 >/dev/null")
+            ]}')"
+          command_id="$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "WaterBridge production host bootstrap ${GITHUB_SHA}" \
+            --parameters "$commands_json" \
+            --query 'Command.CommandId' \
+            --output text)"
+          aws ssm wait command-executed \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID"
+          status="$(aws ssm get-command-invocation \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID" \
+            --query Status \
+            --output text)"
+          output="$(aws ssm get-command-invocation \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID" \
+            --query StandardOutputContent \
+            --output text)"
+          printf '%s\n' "$output"
+          [[ "$status" == "Success" ]] || exit 1
+          grep -q '^HOST_BOOTSTRAP_PASS$' <<<"$output"
+          echo "command_id=${command_id}" >> "$GITHUB_OUTPUT"
+
+      - name: Record bootstrap result
+        env:
+          STORAGE_BUCKET: ${{ steps.storage.outputs.bucket }}
+          STORAGE_SOURCE: ${{ steps.storage.outputs.source }}
+        run: |
+          {
+            echo "### Production bootstrap"
+            echo
+            echo "- Result: \`HOST_BOOTSTRAP_PASS\`"
+            echo "- Storage source: \`${STORAGE_SOURCE}\`"
+            echo "- Storage bucket: configured and policy-validated"
+            echo "- Runtime secrets: values were not printed"
+            echo "- Database mutation: not executed"
+          } >> "$GITHUB_STEP_SUMMARY"

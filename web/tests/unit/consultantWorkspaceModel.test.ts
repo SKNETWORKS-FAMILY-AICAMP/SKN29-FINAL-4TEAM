@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   CONSULTANT_QUEUE_INQUIRIES,
   COUNSELOR_INQUIRIES,
-} from "../../src/features/consultation/model/consultantWorkspaceMock";
+} from "../fixtures/consultantWorkspaceMock";
 import {
   COUNSELOR_QUEUE_PAGE_SIZE,
   filterCounselorInquiries,

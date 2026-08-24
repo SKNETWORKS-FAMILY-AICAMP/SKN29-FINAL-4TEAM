@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import * as consultationApi from "../../src/features/consultation/api/consultationMockApi";
 import { ApiClientError } from "../../src/common/api/apiError";
 import { useSaveConsultation } from "../../src/features/consultation/hooks/useSaveConsultation";
-import { COUNSELOR_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
+import { COUNSELOR_INQUIRIES } from "../fixtures/consultantWorkspaceMock";
 import type { ConsultationFormValues } from "../../src/features/consultation/model/consultationTypes";
 import type { ConsultationWriteRepository } from "../../src/features/consultation/repositories/consultationWriteRepository";
 

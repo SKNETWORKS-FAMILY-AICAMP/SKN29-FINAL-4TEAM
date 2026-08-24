@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import ConsultationActionPanel from "../../src/features/consultation/components/ConsultationActionPanel";
-import { COUNSELOR_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
+import { COUNSELOR_INQUIRIES } from "../fixtures/consultantWorkspaceMock";
 
 function getInquiry(code: string) {
   const inquiry = COUNSELOR_INQUIRIES.find(

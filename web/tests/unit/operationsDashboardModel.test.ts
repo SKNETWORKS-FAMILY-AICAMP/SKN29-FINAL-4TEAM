@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { COUNSELOR_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
+import { COUNSELOR_INQUIRIES } from "../fixtures/consultantWorkspaceMock";
 import {
   createOperationsDashboardSummary,
   DEFAULT_OPERATIONS_FILTERS,

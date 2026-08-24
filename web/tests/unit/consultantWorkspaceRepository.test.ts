@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   CONSULTANT_QUEUE_INQUIRIES,
   COUNSELOR_INQUIRIES,
-} from "../../src/features/consultation/model/consultantWorkspaceMock";
+} from "../fixtures/consultantWorkspaceMock";
 import { createConsultantWorkspaceRepository } from "../../src/features/consultation/repositories/consultantWorkspaceRepository";
 
 describe("상담 업무 Repository 경계", () => {

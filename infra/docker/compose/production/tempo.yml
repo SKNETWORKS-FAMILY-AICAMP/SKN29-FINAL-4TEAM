@@ -1,0 +1,46 @@
+stream_over_http_enabled: true
+
+server:
+  http_listen_port: 3200
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+live_store:
+  flush_check_period: 5s
+  max_trace_idle: 5s
+  max_block_duration: 30s
+
+storage:
+  trace:
+    backend: s3
+    wal:
+      path: /var/tempo/wal
+    s3:
+      bucket: ${TEMPO_S3_BUCKET}
+      prefix: tempo
+      endpoint: s3.${AWS_REGION}.amazonaws.com
+      region: ${AWS_REGION}
+
+backend_scheduler:
+  provider:
+    retention:
+      interval: 1h
+    compaction:
+      compaction:
+        block_retention: 336h
+        compacted_block_retention: 1h
+
+backend_worker:
+  compaction:
+    block_retention: 336h
+    compacted_block_retention: 1h
+
+usage_report:
+  reporting_enabled: false

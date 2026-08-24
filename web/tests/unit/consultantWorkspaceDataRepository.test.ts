@@ -6,7 +6,7 @@ import type {
   ConsultantInquiryDetailDto,
   ConsultantInquiryListDataDto,
 } from "../../src/features/consultation/api/consultantWorkspaceRemoteTypes";
-import { CONSULTANT_QUEUE_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
+import { CONSULTANT_QUEUE_INQUIRIES } from "../fixtures/consultantWorkspaceMock";
 import {
   buildConsultantInquiryListPath,
   createMockConsultantWorkspaceDataRepository,

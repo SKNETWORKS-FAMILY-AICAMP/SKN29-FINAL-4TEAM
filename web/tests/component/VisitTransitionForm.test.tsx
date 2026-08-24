@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import VisitTransitionForm from "../../src/features/visit-transition/components/VisitTransitionForm";
-import { COUNSELOR_INQUIRIES } from "../../src/features/consultation/model/consultantWorkspaceMock";
+import { COUNSELOR_INQUIRIES } from "../fixtures/consultantWorkspaceMock";
 
 function getVisitInquiry() {
   const inquiry = COUNSELOR_INQUIRIES.find(

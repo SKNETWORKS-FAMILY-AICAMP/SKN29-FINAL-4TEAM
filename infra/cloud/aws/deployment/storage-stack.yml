@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: WaterBridge production release artifacts and Tempo trace storage
+
+Parameters:
+  BucketName:
+    Type: String
+    AllowedPattern: "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
+  Ec2RoleArn:
+    Type: String
+    AllowedPattern: "^arn:aws:iam::[0-9]{12}:role/.+$"
+  DeployRoleArn:
+    Type: String
+    AllowedPattern: "^arn:aws:iam::[0-9]{12}:role/.+$"
+
+Resources:
+  DeploymentStorage:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Ref BucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: AbortIncompleteMultipartUploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 1
+          - Id: ExpireTempoNoncurrentVersions
+            Status: Enabled
+            Prefix: tempo/
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 14
+          - Id: ExpireReleaseNoncurrentVersions
+            Status: Enabled
+            Prefix: releases/
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+      Tags:
+        - Key: Project
+          Value: WaterBridge
+        - Key: Purpose
+          Value: deployment-observability
+
+  DeploymentStoragePolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref DeploymentStorage
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: s3:*
+            Resource:
+              - !Sub "${DeploymentStorage.Arn}"
+              - !Sub "${DeploymentStorage.Arn}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+          - Sid: AllowEc2PrefixListing
+            Effect: Allow
+            Principal:
+              AWS: !Ref Ec2RoleArn
+            Action: s3:ListBucket
+            Resource: !GetAtt DeploymentStorage.Arn
+            Condition:
+              StringLike:
+                s3:prefix:
+                  - tempo/*
+                  - releases/*
+          - Sid: AllowEc2TempoObjects
+            Effect: Allow
+            Principal:
+              AWS: !Ref Ec2RoleArn
+            Action:
+              - s3:GetObject
+              - s3:GetObjectTagging
+              - s3:PutObject
+              - s3:PutObjectTagging
+              - s3:DeleteObject
+            Resource: !Sub "${DeploymentStorage.Arn}/tempo/*"
+          - Sid: AllowEc2ReleaseReads
+            Effect: Allow
+            Principal:
+              AWS: !Ref Ec2RoleArn
+            Action: s3:GetObject
+            Resource: !Sub "${DeploymentStorage.Arn}/releases/*"
+          - Sid: AllowDeployRoleReleaseObjects
+            Effect: Allow
+            Principal:
+              AWS: !Ref DeployRoleArn
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:PutObjectTagging
+            Resource: !Sub "${DeploymentStorage.Arn}/releases/*"
+
+Outputs:
+  BucketName:
+    Value: !Ref DeploymentStorage
+  BucketArn:
+    Value: !GetAtt DeploymentStorage.Arn
