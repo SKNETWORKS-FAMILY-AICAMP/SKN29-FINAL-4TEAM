@@ -73,7 +73,11 @@ async function openInquiry(
     UNKNOWN: /일반 문의/,
   }[inquiry.riskLevel];
   await user.click(screen.getByRole("tab", { name: riskTabName }));
-  await user.click(screen.getByRole("button", { name: new RegExp(inquiryCode) }));
+  await user.click(
+    screen.getByRole("button", {
+      name: new RegExp(`${inquiryCode}.*상세 열기$`),
+    }),
+  );
 }
 
 describe("ConsultantInquiryListPage", () => {
@@ -194,6 +198,26 @@ describe("ConsultantInquiryListPage", () => {
     expect(screen.getByText(/총 90건/)).toBeVisible();
   });
 
+  it("미배정 상담 대기 목록은 전체 문의와 새 문의에서만 보여준다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(screen.getByLabelText("미배정 상담 대기 목록")).toBeVisible();
+
+    await user.click(getSidebarTabs().getByRole("tab", { name: /전체 문의90/ }));
+    expect(screen.getByLabelText("미배정 상담 대기 목록")).toBeVisible();
+
+    await user.click(getSidebarTabs().getByRole("tab", { name: /처리 중인 문의/ }));
+    expect(
+      screen.queryByLabelText("미배정 상담 대기 목록"),
+    ).not.toBeInTheDocument();
+
+    await user.click(getSidebarTabs().getByRole("tab", { name: /처리 완료된 문의/ }));
+    expect(
+      screen.queryByLabelText("미배정 상담 대기 목록"),
+    ).not.toBeInTheDocument();
+  });
+
   it("세 업무 탭의 건수는 상담사 문의 상태와 일치한다", () => {
     renderPage();
 
@@ -308,16 +332,17 @@ describe("ConsultantInquiryListPage", () => {
     expect(screen.queryByRole("button", { name: "상담 시작" })).not.toBeInTheDocument();
   });
 
-  it("문의 전체 기록으로 이동하면 상세 대시보드를 보여준다", async () => {
+  it("문의 상세 안에서 상담을 처리하고 별도 전체 기록 버튼은 표시하지 않는다", async () => {
     const user = userEvent.setup();
     renderPage();
 
     await openInquiry(user, "INQ-20260704-0013", "IN_PROGRESS");
-    await user.click(screen.getByRole("button", { name: "전체 기록 보기" }));
 
-    expect(await screen.findByRole("heading", { name: "문의 핵심 현황" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "고객 문의" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "최근 처리 이력" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeVisible();
+    expect(screen.getByRole("textbox", { name: /상담 기록/ })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "전체 기록 보기" }),
+    ).not.toBeInTheDocument();
   });
 
   it("전체·긴급·주의·일반 탭을 전환하면 한 페이지에 문의 10건만 보여준다", async () => {

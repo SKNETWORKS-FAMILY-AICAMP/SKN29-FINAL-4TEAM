@@ -710,8 +710,7 @@ html body .simple-consultant-app.simple-consultant-app.consultant-queue-app
 
 html body .simple-consultant-app.consultant-queue-app .simple-user__name {
   color: #182338 !important;
-  font-family:
-    Pretendard, "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif;
+  font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif);
   font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
@@ -883,8 +882,7 @@ html body .simple-consultant-app.consultant-queue-app
   border: 0 !important;
   border-radius: 0 !important;
   text-decoration: none;
-  font-family:
-    Pretendard, "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif !important;
+  font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif) !important;
 }
 
 html body .simple-consultant-app.consultant-queue-app
@@ -1076,8 +1074,7 @@ html body
   h2 {
   margin: 0;
   color: #182338;
-  font-family:
-    Pretendard, "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif;
+  font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif);
   font-size: 15px;
   font-weight: 700;
 }
@@ -1114,8 +1111,7 @@ html body
   background: transparent !important;
   box-shadow: 0 2px 6px rgb(44 54 75 / 5%) !important;
   color: #3f4a5a !important;
-  font-family:
-    Pretendard, "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif;
+  font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif);
   font-size: 11px;
   font-weight: 600;
   text-align: left;

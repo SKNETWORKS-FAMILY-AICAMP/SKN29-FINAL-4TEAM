@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   MemoryRouter,
@@ -6,9 +6,10 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "../../src/app/providers/AuthProvider";
+import { ApiClientError } from "../../src/common/api/apiError";
 import type {
   ConsultantInquiryDetailViewModel,
   ConsultantInquiryListViewModel,
@@ -25,7 +26,19 @@ const remoteMocks = vi.hoisted(() => ({
   getDashboard: vi.fn(),
   getInquiryDetail: vi.fn(),
   listInquiries: vi.fn(),
+  listUnassignedConsultations: vi.fn(),
+  requestApi: vi.fn(),
 }));
+
+vi.mock("../../src/common/api/httpClient", async (importOriginal) => {
+  const actual = await importOriginal<
+    typeof import("../../src/common/api/httpClient")
+  >();
+  return {
+    ...actual,
+    requestApi: remoteMocks.requestApi,
+  };
+});
 
 vi.mock("../../src/app/config/env", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../src/app/config/env")>();
@@ -51,6 +64,7 @@ vi.mock(
         dataSource: "REMOTE",
         getInquiryDetail: remoteMocks.getInquiryDetail,
         listInquiries: remoteMocks.listInquiries,
+        listUnassignedConsultations: remoteMocks.listUnassignedConsultations,
       },
     };
   },
@@ -77,6 +91,7 @@ const CONSULTANT_USER = {
 };
 
 const INQUIRY_ID = "10000000-0000-4000-8000-000000000101";
+const CLAIM_INQUIRY_ID = "10000000-0000-4000-8000-000000000102";
 
 const DETAIL: ConsultantInquiryDetailViewModel = {
   inquiryId: INQUIRY_ID,
@@ -144,6 +159,37 @@ const LIST: ConsultantInquiryListViewModel = {
   statusCounts: { CONSULTATION_REQUIRED: 1 },
 };
 
+const REMOTE_DASHBOARD_DATA = {
+  ...MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA,
+  generatedAt: "2026-08-24T10:00:00+09:00",
+  summary: {
+    total: 7,
+    new: 2,
+    inProgress: 3,
+    completed: 2,
+  },
+  notices: [
+    {
+      ...MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA.notices[0],
+      title: "Backend에서 받은 상담사 공지",
+    },
+  ],
+  consultants: [
+    {
+      ...MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA.consultants[0],
+      name: "원격 상담사",
+      department: "원격 고객지원팀",
+    },
+  ],
+  technicians: [
+    {
+      ...MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA.technicians[0],
+      name: "원격 방문기사",
+      branch: "원격 서울지사",
+    },
+  ],
+};
+
 function LocationProbe() {
   const location = useLocation();
   return <output aria-label="현재 경로">{location.pathname}{location.search}</output>;
@@ -187,12 +233,14 @@ function renderPage(
 }
 
 describe("상담사 Remote 첫 상세 패널 경로", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   beforeEach(() => {
     clearRecentConsultantInquiryIds(CONSULTANT_USER.id);
     remoteMocks.getDashboard.mockReset();
-    remoteMocks.getDashboard.mockResolvedValue(
-      MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA,
-    );
+    remoteMocks.getDashboard.mockResolvedValue(REMOTE_DASHBOARD_DATA);
     remoteMocks.getInquiryDetail.mockReset();
     remoteMocks.getInquiryDetail.mockResolvedValue({
       correlationId: "corr-detail",
@@ -203,6 +251,481 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       correlationId: "corr-list",
       data: LIST,
     });
+    remoteMocks.listUnassignedConsultations.mockReset();
+    remoteMocks.listUnassignedConsultations.mockResolvedValue({
+      correlationId: "corr-unassigned",
+      data: {
+        items: [],
+        pageInfo: { page: 1, size: 3, total: 0 },
+      },
+    });
+    remoteMocks.requestApi.mockReset();
+    remoteMocks.requestApi.mockResolvedValue({
+      success: true,
+      data: {
+        message: "상담을 가져왔습니다.",
+        inquiry_id: CLAIM_INQUIRY_ID,
+        status: "CONSULTATION_REQUIRED",
+        state_version: 4,
+        allowed_actions: [],
+        idempotent_replay: false,
+        resource: null,
+      },
+      error: null,
+      metadata: { correlation_id: "corr-claim" },
+    });
+  });
+
+  it("Backend Dashboard 응답을 업무 요약·공지·직원·방문기사 화면에 표시한다", async () => {
+    const user = userEvent.setup();
+    renderPage("dashboard");
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Remote 상담원님 반갑습니다!",
+      }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "전체 문의 수7" }),
+    ).toBeEnabled();
+    expect(screen.getByRole("button", { name: "새 문의2" })).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: "처리 중인 문의3" }),
+    ).toBeEnabled();
+    expect(screen.getByText("Backend에서 받은 상담사 공지")).toBeVisible();
+
+    const contactSearch = screen.getByRole("searchbox", {
+      name: "직원 연락처 검색",
+    });
+    await user.type(contactSearch, "원격 상담사");
+    expect(screen.getByRole("cell", { name: "원격 상담사" })).toBeVisible();
+
+    await user.clear(contactSearch);
+    await user.click(
+      screen.getByRole("button", { name: /방문기사 연락처/ }),
+    );
+    expect(screen.getByRole("cell", { name: "원격 방문기사" })).toBeVisible();
+    expect(remoteMocks.getDashboard).toHaveBeenCalledTimes(1);
+  });
+
+  it("Dashboard 응답 대기 중에는 집계 카드를 비활성화하고 로딩 상태를 표시한다", () => {
+    remoteMocks.getDashboard.mockReturnValue(new Promise(() => undefined));
+
+    renderPage("dashboard");
+
+    expect(
+      screen.getByRole("button", { name: "전체 문의 수—" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByText("대시보드 공지를 불러오고 있습니다."),
+    ).toBeVisible();
+    expect(
+      screen.getByText("직원 연락처를 불러오고 있습니다."),
+    ).toBeVisible();
+    expect(
+      screen.queryByText("Backend에서 받은 상담사 공지"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("Dashboard Runtime 오류에서는 Mock을 섞지 않고 재시도로 원격 데이터를 복구한다", async () => {
+    const user = userEvent.setup();
+    remoteMocks.getDashboard
+      .mockRejectedValueOnce(new Error("backend unavailable"))
+      .mockResolvedValueOnce(REMOTE_DASHBOARD_DATA);
+
+    renderPage("dashboard");
+
+    expect(
+      await screen.findByText("대시보드 공지를 불러오지 못했습니다."),
+    ).toBeVisible();
+    expect(
+      screen.queryByText("긴급 문의 응대 절차 안내"),
+    ).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getAllByRole("button", { name: "다시 시도" })[0],
+    );
+
+    expect(
+      await screen.findByText("Backend에서 받은 상담사 공지"),
+    ).toBeVisible();
+    expect(remoteMocks.getDashboard).toHaveBeenCalledTimes(2);
+  });
+
+  it("Dashboard API 403은 일반 오류가 아닌 상담사 권한 안내로 구분한다", async () => {
+    remoteMocks.getDashboard.mockRejectedValue(
+      new ApiClientError({
+        kind: "FORBIDDEN",
+        status: 403,
+        code: "FORBIDDEN",
+        message: "forbidden",
+      }),
+    );
+
+    renderPage("dashboard");
+
+    expect(
+      await screen.findByText("대시보드 공지를 볼 권한이 없습니다."),
+    ).toBeVisible();
+    expect(
+      screen.getByText("직원 연락처를 볼 권한이 없습니다."),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "다시 시도" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("미배정 상담을 가져오면 내 목록을 갱신하고 그 문의 상세를 연다", async () => {
+    const user = userEvent.setup();
+    remoteMocks.listUnassignedConsultations.mockResolvedValue({
+      correlationId: "corr-unassigned",
+      data: {
+        items: [
+          {
+            inquiryId: CLAIM_INQUIRY_ID,
+            inquiryCode: "SYN-INQ-0102",
+            status: "CONSULTATION_REQUIRED",
+            stateVersion: 3,
+            riskLevel: "caution",
+            priority: "HIGH",
+            symptomSummary: "미배정 누수 상담",
+            customerDisplayNameMasked: "합성 고객 02",
+            productModel: "WPUJAC104DWH",
+            currentAssigneeType: "NONE",
+            receivedAt: "2026-08-24T09:00:00+09:00",
+            updatedAt: "2026-08-24T09:01:00+09:00",
+            waitingSeconds: 600,
+            allowedActions: [
+              {
+                code: "CLAIM_CONSULTATION",
+                label: "상담 가져오기",
+                operationId: "claimConsultation",
+                style: "PRIMARY",
+                requiresConfirmation: false,
+                confirmationMessage: null,
+              },
+            ],
+          },
+        ],
+        pageInfo: { page: 1, size: 3, total: 1 },
+      },
+    });
+    remoteMocks.getInquiryDetail.mockResolvedValue({
+      correlationId: "corr-claimed-detail",
+      data: {
+        ...DETAIL,
+        inquiryId: CLAIM_INQUIRY_ID,
+        inquiryCode: "SYN-INQ-0102",
+      },
+    });
+
+    renderPage("list");
+    await user.click(
+      await screen.findByRole("button", {
+        name: "SYN-INQ-0102 내가 상담하기",
+      }),
+    );
+
+    await waitFor(() =>
+      expect(remoteMocks.requestApi).toHaveBeenCalledWith(
+        `/inquiries/${CLAIM_INQUIRY_ID}/claim-consultation`,
+        expect.objectContaining({
+          method: "POST",
+          body: { state_version: 3 },
+          requestContext: expect.objectContaining({
+            idempotencyKey: expect.any(String),
+            correlationId: expect.any(String),
+          }),
+        }),
+      ),
+    );
+    await waitFor(() =>
+      expect(remoteMocks.listInquiries.mock.calls.length).toBeGreaterThanOrEqual(
+        4,
+      ),
+    );
+    expect(remoteMocks.getInquiryDetail).toHaveBeenCalledWith(CLAIM_INQUIRY_ID);
+    expect(await screen.findByRole("dialog")).toBeVisible();
+  });
+
+  it("WPUJAC104DWH 새 합성 문의를 가져와 상담 시작·저장·요약 확정·완료까지 이어간다", async () => {
+    const user = userEvent.setup();
+    type WorkflowAction = ConsultantInquiryDetailViewModel["workflow"]["allowedActions"][number];
+    type RuntimeStatus =
+      | "CONSULTATION_REQUIRED"
+      | "CONSULTATION_IN_PROGRESS"
+      | "COMPLETION_PENDING";
+    const makeAction = (
+      code: string,
+      label: string,
+      operationId: string,
+      requiresConfirmation = false,
+    ): WorkflowAction => ({
+      code,
+      label,
+      operationId,
+      style: "PRIMARY",
+      requiresConfirmation,
+      confirmationMessage: requiresConfirmation
+        ? `${label}하시겠습니까?`
+        : null,
+    });
+    const startAction = makeAction(
+      "START_CONSULTATION",
+      "상담 시작",
+      "startConsultation",
+    );
+    const saveAction = makeAction(
+      "UPDATE_CONSULTATION_SUMMARY",
+      "상담 내용 저장",
+      "updateConsultationSummary",
+    );
+    const confirmAction = makeAction(
+      "CONFIRM_CONSULTATION_SUMMARY",
+      "요약 확정",
+      "confirmConsultationSummary",
+      true,
+    );
+    const completeAction = makeAction(
+      "CONSULTATION_COMPLETED",
+      "상담 완료",
+      "completeConsultation",
+      true,
+    );
+    const toDto = (action: WorkflowAction) => ({
+      code: action.code,
+      label: action.label,
+      operation_id: action.operationId,
+      style: action.style,
+      requires_confirmation: action.requiresConfirmation,
+      confirmation_message: action.confirmationMessage,
+    });
+    let claimed = false;
+    let currentStatus: RuntimeStatus = "CONSULTATION_REQUIRED";
+    let currentStateVersion = 3;
+    let currentActions: readonly WorkflowAction[] = [startAction];
+    let savedNote: string | null = null;
+    let savedGuidance: string | null = null;
+    let savedSummary: string | null = null;
+    let confirmedSummary: string | null = null;
+
+    const unassignedItem = {
+      inquiryId: CLAIM_INQUIRY_ID,
+      inquiryCode: "SYN-INQ-WPUJAC104DWH-NEW",
+      status: "CONSULTATION_REQUIRED" as const,
+      stateVersion: 3,
+      riskLevel: "caution" as const,
+      priority: "HIGH" as const,
+      symptomSummary: "출수량이 줄어든 새 합성 문의",
+      customerDisplayNameMasked: "합성 고객 104",
+      productModel: "WPUJAC104DWH",
+      currentAssigneeType: "NONE" as const,
+      receivedAt: "2026-08-24T10:00:00+09:00",
+      updatedAt: "2026-08-24T10:01:00+09:00",
+      waitingSeconds: 60,
+      allowedActions: [
+        makeAction(
+          "CLAIM_CONSULTATION",
+          "상담 가져오기",
+          "claimConsultation",
+        ),
+      ],
+    };
+    const currentDetail = (): ConsultantInquiryDetailViewModel => ({
+      ...DETAIL,
+      inquiryId: CLAIM_INQUIRY_ID,
+      inquiryCode: unassignedItem.inquiryCode,
+      status: currentStatus,
+      stateVersion: currentStateVersion,
+      productAndCare: {
+        productModel: "WPUJAC104DWH",
+        subscriptionStatus: "ACTIVE",
+        managementType: "VISIT_CARE",
+        recentCareDate: null,
+      },
+      symptomAndQuestionnaire: {
+        symptomSummary: unassignedItem.symptomSummary,
+        answers: [],
+      },
+      consultation: currentStatus === "CONSULTATION_REQUIRED"
+        ? null
+        : {
+            consultationId: "consultation-wpujac104dwh",
+            resultCode: currentStatus === "COMPLETION_PENDING"
+              ? "COMPLETED_NO_VISIT"
+              : "PENDING",
+            summary: {
+              aiDraftSummary: null,
+              editedSummary: savedSummary,
+              confirmedSummary,
+              confirmedAt: confirmedSummary
+                ? "2026-08-24T10:10:00+09:00"
+                : null,
+            },
+            consultationNote: savedNote,
+            additionalCheck: null,
+            customerGuidance: savedGuidance,
+            usageGuidanceStatus: "NORMAL",
+          },
+      workflow: {
+        status: currentStatus,
+        stateVersion: currentStateVersion,
+        allowedActions: currentActions,
+      },
+    });
+    const transitionResponse = () => ({
+      success: true as const,
+      data: {
+        message: "Backend 상담 단계 처리 완료",
+        inquiry_id: CLAIM_INQUIRY_ID,
+        status: currentStatus,
+        state_version: currentStateVersion,
+        allowed_actions: currentActions.map(toDto),
+        idempotent_replay: false,
+        resource: null,
+      },
+      error: null,
+      metadata: { correlation_id: `corr-${currentStateVersion}` },
+    });
+
+    remoteMocks.listUnassignedConsultations.mockImplementation(async () => ({
+      correlationId: "corr-unassigned-wpujac104dwh",
+      data: {
+        items: claimed ? [] : [unassignedItem],
+        pageInfo: { page: 1, size: 3, total: claimed ? 0 : 1 },
+      },
+    }));
+    remoteMocks.listInquiries.mockImplementation(async () => ({
+      correlationId: "corr-list-wpujac104dwh",
+      data: claimed
+        ? {
+            items: [
+              {
+                ...LIST.items[0],
+                inquiryId: CLAIM_INQUIRY_ID,
+                inquiryCode: unassignedItem.inquiryCode,
+                status: currentStatus,
+                stateVersion: currentStateVersion,
+                symptomSummary: unassignedItem.symptomSummary,
+                productModel: "WPUJAC104DWH",
+                allowedActions: currentActions,
+              },
+            ],
+            pageInfo: { page: 1, size: 10, total: 1 },
+            statusCounts: { [currentStatus]: 1 },
+          }
+        : LIST,
+    }));
+    remoteMocks.getInquiryDetail.mockImplementation(async (inquiryId) => ({
+      correlationId: `corr-detail-${currentStateVersion}`,
+      data: inquiryId === CLAIM_INQUIRY_ID ? currentDetail() : DETAIL,
+    }));
+    remoteMocks.requestApi.mockImplementation(async (path) => {
+      if (path.endsWith("/claim-consultation")) {
+        claimed = true;
+        currentStateVersion = 4;
+        currentStatus = "CONSULTATION_REQUIRED";
+        currentActions = [startAction];
+        return transitionResponse();
+      }
+      if (path.endsWith("/start-consultation")) {
+        currentStateVersion = 5;
+        currentStatus = "CONSULTATION_IN_PROGRESS";
+        currentActions = [saveAction];
+        return transitionResponse();
+      }
+      if (path.endsWith("/consultation-summary")) {
+        currentStateVersion = 6;
+        currentStatus = "CONSULTATION_IN_PROGRESS";
+        currentActions = [saveAction, confirmAction];
+        savedNote = "고객과 출수 상태를 확인했습니다.";
+        savedGuidance = "필터 상태를 확인하고 정상 사용을 안내했습니다.";
+        savedSummary = "출수량 저하 상담 요약";
+        return transitionResponse();
+      }
+      if (path.endsWith("/consultation-summary/confirm")) {
+        currentStateVersion = 7;
+        currentStatus = "CONSULTATION_IN_PROGRESS";
+        currentActions = [saveAction, completeAction];
+        confirmedSummary = savedSummary;
+        return transitionResponse();
+      }
+      if (path.endsWith("/complete-consultation")) {
+        currentStateVersion = 8;
+        currentStatus = "COMPLETION_PENDING";
+        currentActions = [];
+        return transitionResponse();
+      }
+      throw new Error(`예상하지 않은 API 경로: ${path}`);
+    });
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    renderPage("list");
+    await user.click(
+      await screen.findByRole("button", {
+        name: `${unassignedItem.inquiryCode} 내가 상담하기`,
+      }),
+    );
+
+    expect(
+      await screen.findByText("현재 기다리는 미배정 상담이 없습니다."),
+    ).toBeVisible();
+    expect(await screen.findByRole("dialog")).toBeVisible();
+    expect(screen.getByText("WPUJAC104DWH")).toBeVisible();
+
+    await user.click(
+      await screen.findByRole("button", { name: "상담 시작" }),
+    );
+    await user.type(
+      await screen.findByLabelText("상담 기록"),
+      "고객과 출수 상태를 확인했습니다.",
+    );
+    await user.type(
+      screen.getByLabelText("고객 안내"),
+      "필터 상태를 확인하고 정상 사용을 안내했습니다.",
+    );
+    await user.type(
+      screen.getByLabelText("확정 요약"),
+      "출수량 저하 상담 요약",
+    );
+    await user.click(screen.getByRole("checkbox", { name: "상담 요약 검토·확정" }));
+    await user.selectOptions(screen.getByLabelText("방문 필요 여부"), "NOT_REQUIRED");
+
+    await user.click(screen.getByRole("button", { name: "상담 내용 저장" }));
+    await user.click(await screen.findByRole("button", { name: "요약 확정" }));
+    await user.click(await screen.findByRole("button", { name: "상담 완료" }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("consultation-current-status")).toHaveAttribute(
+        "data-workflow-status",
+        "COMPLETION_PENDING",
+      ),
+    );
+    expect(screen.getByTestId("consultation-current-status")).toHaveAttribute(
+      "data-state-version",
+      "8",
+    );
+
+    const expectedCalls = [
+      ["claim-consultation", 3],
+      ["start-consultation", 4],
+      ["consultation-summary", 5],
+      ["consultation-summary/confirm", 6],
+      ["complete-consultation", 7],
+    ] as const;
+    expectedCalls.forEach(([pathSuffix, stateVersion]) => {
+      expect(remoteMocks.requestApi).toHaveBeenCalledWith(
+        expect.stringContaining(pathSuffix),
+        expect.objectContaining({
+          body: expect.objectContaining({ state_version: stateVersion }),
+          requestContext: expect.objectContaining({
+            idempotencyKey: expect.any(String),
+            correlationId: expect.any(String),
+          }),
+        }),
+      );
+    });
+    expect(remoteMocks.getInquiryDetail.mock.calls.length).toBeGreaterThanOrEqual(5);
   });
 
   it.each([
@@ -227,13 +750,27 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       expect(screen.getByLabelText("실제 API 문의 상세")).toBeInTheDocument();
       expect(screen.getByLabelText("상담 처리 작업")).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: "전체 기록 보기" }),
-      ).toBeInTheDocument();
+        screen.queryByRole("button", { name: "전체 기록 보기" }),
+      ).not.toBeInTheDocument();
+      [
+        "고객 정보",
+        "제품·관리 정보",
+        "증상·문진",
+        "사용 안내",
+        "상담·방문 정보",
+        "현재 가능한 작업",
+        "상담 처리",
+        "문의 정보",
+      ].forEach((heading) =>
+        expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument(),
+      );
+      expect(screen.getByText("제품 전체 사용 중지")).toBeInTheDocument();
+      expect(screen.queryByText("TOTAL_STOP")).not.toBeInTheDocument();
       expect(remoteMocks.getInquiryDetail).toHaveBeenCalledWith(INQUIRY_ID);
     },
   );
 
-  it("Remote 첫 패널에서도 기존 전체 기록 화면으로 이동할 수 있다", async () => {
+  it("Remote 첫 패널은 별도 전체 기록 화면으로 이동하지 않고 현재 목록 경로를 유지한다", async () => {
     const user = userEvent.setup();
     renderPage("list");
 
@@ -242,12 +779,13 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
         name: /SYN-INQ-0101.*상세 열기/,
       }),
     );
-    await user.click(
-      await screen.findByRole("button", { name: "전체 기록 보기" }),
-    );
 
+    expect(await screen.findByRole("dialog")).toBeVisible();
+    expect(screen.getByLabelText("현재 경로")).toHaveTextContent(
+      "/consultant/inquiries?bucket=NEW",
+    );
     expect(
-      await screen.findByRole("heading", { name: "기존 전체 기록 화면" }),
-    ).toBeInTheDocument();
+      screen.queryByRole("button", { name: "전체 기록 보기" }),
+    ).not.toBeInTheDocument();
   });
 });

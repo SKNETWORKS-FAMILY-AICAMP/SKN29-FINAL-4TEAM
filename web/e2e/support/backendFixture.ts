@@ -21,7 +21,7 @@ const EXPECTED_KEYS = [
 export interface WebConsultationE2EFixture {
   allowedActions: readonly ["START_CONSULTATION"];
   assignedConsultant: "DEMO-CONSULTANT-001";
-  consultationStatus: "WAITING";
+  consultationStatus: "ASSIGNED";
   created: boolean;
   fixtureReadiness: "READY";
   fixtureScope: "WEB_G4_CONSULTATION";
@@ -136,7 +136,11 @@ export function parseBackendFixture(
       "assigned_consultant",
       "DEMO-CONSULTANT-001",
     ),
-    consultationStatus: requireLiteral(raw, "consultation_status", "WAITING"),
+    consultationStatus: requireLiteral(
+      raw,
+      "consultation_status",
+      "ASSIGNED",
+    ),
     created: raw.created,
     fixtureReadiness: requireLiteral(raw, "fixture_readiness", "READY"),
     fixtureScope: requireLiteral(

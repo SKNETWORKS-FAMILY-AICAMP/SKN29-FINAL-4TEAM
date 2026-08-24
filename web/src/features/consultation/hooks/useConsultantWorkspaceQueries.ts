@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ApiClientError } from "../../../common/api/apiError";
-import type { ConsultantInquiryListQuery } from "../api/consultantWorkspaceRemoteTypes";
+import type {
+  ConsultantInquiryListQuery,
+  UnassignedConsultationQueueQuery,
+} from "../api/consultantWorkspaceRemoteTypes";
 import type {
   ConsultantInquiryDetailViewModel,
   ConsultantInquiryListViewModel,
+  UnassignedConsultationQueueViewModel,
 } from "../model/consultantWorkspaceRemoteMapper";
 import {
   consultantWorkspaceDataRepository,
@@ -96,6 +100,76 @@ export function useConsultantInquiryListQuery(
     state.requestKey === requestKey
       ? state
       : { correlationId: null, data: null, error: null, status: "loading" };
+  return {
+    ...currentState,
+    isConflict:
+      hasStatus(currentState.error, 409) ||
+      (currentState.error instanceof ApiClientError &&
+        currentState.error.kind === "CONFLICT"),
+    isForbidden: hasStatus(currentState.error, 403),
+    isNotFound: hasStatus(currentState.error, 404),
+    retry,
+  };
+}
+
+export function useUnassignedConsultationQueueQuery(
+  query: UnassignedConsultationQueueQuery,
+  repository: ConsultantWorkspaceDataRepository = consultantWorkspaceDataRepository,
+): ConsultantQueryResult<UnassignedConsultationQueueViewModel> {
+  const queryKey = JSON.stringify(query);
+  const stableQuery = useMemo(
+    () => JSON.parse(queryKey) as UnassignedConsultationQueueQuery,
+    [queryKey],
+  );
+  const [retryCount, setRetryCount] = useState(0);
+  const requestKey = `${queryKey}:${retryCount}`;
+  const [state, setState] = useState<
+    StoredQueryState<UnassignedConsultationQueueViewModel>
+  >({
+    correlationId: null,
+    data: null,
+    error: null,
+    requestKey: "",
+    status: "loading",
+  });
+
+  useEffect(() => {
+    let active = true;
+    repository.listUnassignedConsultations(stableQuery).then(
+      (result) => {
+        if (active) {
+          setState({
+            correlationId: result.correlationId,
+            data: result.data,
+            error: null,
+            requestKey,
+            status: "success",
+          });
+        }
+      },
+      (error: unknown) => {
+        if (active) {
+          setState({
+            correlationId: getErrorCorrelationId(error),
+            data: null,
+            error,
+            requestKey,
+            status: "error",
+          });
+        }
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [repository, requestKey, stableQuery]);
+
+  const retry = useCallback(() => setRetryCount((count) => count + 1), []);
+  const currentState: QueryState<UnassignedConsultationQueueViewModel> =
+    state.requestKey === requestKey
+      ? state
+      : { correlationId: null, data: null, error: null, status: "loading" };
+
   return {
     ...currentState,
     isConflict:

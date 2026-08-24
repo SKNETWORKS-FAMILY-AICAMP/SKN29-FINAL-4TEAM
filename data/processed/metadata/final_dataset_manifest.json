@@ -1149,6 +1149,21 @@
       "path": "raw/manuals/mvp/.gitkeep",
       "size_bytes": 1,
       "sha256": "01BA4719C80B6FE911B091A7C05124B64EEECE964E09C058EF8F9805DACA546B"
+    },
+    {
+      "path": "raw/manuals/mvp/WPU-IAC425-얼음정수기메뉴얼.pdf",
+      "size_bytes": 8571676,
+      "sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8"
+    },
+    {
+      "path": "raw/manuals/mvp/WPU-JAC104,WPU-JCC104-냉온정수기메뉴얼.pdf",
+      "size_bytes": 5131906,
+      "sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C"
+    },
+    {
+      "path": "raw/manuals/mvp/WPUIAC606SNW MegaIceMini메뉴얼.pdf",
+      "size_bytes": 8448650,
+      "sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572"
     }
   ],
   "counts": {
@@ -1226,7 +1241,7 @@
   },
   "retention": {
     "raw_original_files": 0,
-    "raw_policy_files": 7,
+    "raw_policy_files": 10,
     "temp_exists": false,
     "work_exists": false
   }

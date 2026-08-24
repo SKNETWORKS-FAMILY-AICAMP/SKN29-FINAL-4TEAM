@@ -15,6 +15,34 @@ VISIT_ID = "00000000-0000-4000-8000-000000000002"
 SUBSCRIPTION_ID = "00000000-0000-4000-8000-000000000003"
 CARE_RECORD_ID = "00000000-0000-4000-8000-000000000004"
 QUESTIONNAIRE_SESSION_ID = "00000000-0000-4000-8000-000000000005"
+NOTICE_ID = "00000000-0000-4000-8000-000000000006"
+
+P1A_FROZEN_OPERATIONS = {
+    ("/auth/contract-verification/challenges", "post"): (
+        "createContractVerificationChallenge"
+    ),
+    (
+        "/auth/contract-verification/challenges/{challenge_id}/verify",
+        "post",
+    ): "verifyContractVerificationChallenge",
+    ("/auth/signup", "post"): "signupContractCustomer",
+    ("/auth/login", "post"): "loginWithPassword",
+    ("/auth/account-recovery/username/challenges", "post"): (
+        "createUsernameRecoveryChallenge"
+    ),
+    (
+        "/auth/account-recovery/username/challenges/{challenge_id}/verify",
+        "post",
+    ): "verifyUsernameRecoveryChallenge",
+    ("/auth/password-reset/challenges", "post"): (
+        "createPasswordResetChallenge"
+    ),
+    (
+        "/auth/password-reset/challenges/{challenge_id}/verify",
+        "post",
+    ): "verifyPasswordResetChallenge",
+    ("/auth/password-reset/confirm", "post"): "confirmPasswordReset",
+}
 
 EXPECTED_OPERATIONS = {
     ("/health", "get"): {
@@ -210,6 +238,13 @@ EXPECTED_OPERATIONS = {
         "runtime_path": "/api/v1/consultant/dashboard",
         "url_name": "consultant-dashboard",
         "view_name": "ConsultantDashboardView",
+    },
+    ("/consultant/notices/{notice_id}", "get"): {
+        "operation_id": "getConsultantDashboardNotice",
+        "contract_status": "CONFIRMED",
+        "runtime_path": f"/api/v1/consultant/notices/{NOTICE_ID}",
+        "url_name": "consultant-dashboard-notice-detail",
+        "view_name": "ConsultantDashboardNoticeDetailView",
     },
     ("/inquiries/unassigned-consultations", "get"): {
         "operation_id": "listUnassignedConsultationInquiries",
@@ -466,17 +501,20 @@ def runtime_view_name(match) -> str:
     return match.func.__name__
 
 
-def test_openapi_operation_inventory_is_exactly_forty_nine():
+def test_openapi_operation_inventory_separates_runtime_and_p1a_frozen():
     operations = collect_operations()
-
-    assert set(operations) == set(EXPECTED_OPERATIONS)
-    assert len(operations) == 49
-    assert {
-        operation["operationId"] for operation in operations.values()
-    } == {
+    expected_operation_ids = {
         expected["operation_id"]
         for expected in EXPECTED_OPERATIONS.values()
-    }
+    } | set(P1A_FROZEN_OPERATIONS.values())
+
+    assert set(operations) == (
+        set(EXPECTED_OPERATIONS) | set(P1A_FROZEN_OPERATIONS)
+    )
+    assert len(operations) == 59
+    assert {
+        operation["operationId"] for operation in operations.values()
+    } == expected_operation_ids
 
     for key, expected in EXPECTED_OPERATIONS.items():
         operation = operations[key]
@@ -485,8 +523,14 @@ def test_openapi_operation_inventory_is_exactly_forty_nine():
             expected["contract_status"]
         )
 
+    for key, operation_id in P1A_FROZEN_OPERATIONS.items():
+        operation = operations[key]
+        assert operation["operationId"] == operation_id
+        assert operation["x-contract-status"] == "CONFIRMED"
+        assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
 
-def test_forty_six_operations_resolve_to_expected_runtime_views():
+
+def test_forty_seven_operations_resolve_to_expected_runtime_views():
     implemented = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -495,7 +539,7 @@ def test_forty_six_operations_resolve_to_expected_runtime_views():
         )
     ]
 
-    assert len(implemented) == 46
+    assert len(implemented) == 47
     for (_, method), expected in implemented:
         match = resolve(expected["runtime_path"])
         assert match.url_name == expected["url_name"]
@@ -505,7 +549,7 @@ def test_forty_six_operations_resolve_to_expected_runtime_views():
             assert callable(getattr(view_class, method, None))
 
 
-def test_three_openapi_only_operations_have_no_runtime_method():
+def test_three_baseline_openapi_only_operations_have_no_runtime_method():
     openapi_only = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()

@@ -23,8 +23,7 @@
     radial-gradient(circle at 10% 4%, rgb(97 196 242 / 18%), transparent 30%),
     linear-gradient(145deg, #f5fbfe 0%, #f8faf9 52%, #fff8ef 100%);
   color: var(--simple-navy);
-  font-family:
-    Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif;
+  font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif);
 }
 
 .simple-consultant-app,

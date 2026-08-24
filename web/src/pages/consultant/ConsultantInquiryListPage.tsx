@@ -1,5 +1,6 @@
 import {
   type KeyboardEvent as ReactKeyboardEvent,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -8,7 +9,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { appEnv } from "../../app/config/env";
 import { useAuth } from "../../app/providers/authContext";
-import { createInquiryDetailPath } from "../../app/router/routePaths";
 import Pagination from "../../common/components/data-display/Pagination";
 import EmptyState from "../../common/components/feedback/EmptyState";
 import ErrorState from "../../common/components/feedback/ErrorState";
@@ -22,6 +22,7 @@ import CompactConsultationDesk from "../../features/consultation/components/Comp
 import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
 import ConsultantUserMenu from "../../features/consultation/components/ConsultantUserMenu";
 import RemoteConsultantFirstDetailPanel from "../../features/consultation/components/RemoteConsultantFirstDetailPanel";
+import UnassignedConsultationQueue from "../../features/consultation/components/UnassignedConsultationQueue";
 import type { ConsultantInquiryBucket } from "../../features/consultation/components/ConsultantQueueSidebar";
 import useCounselorQueueFilters from "../../features/consultation/hooks/useCounselorQueueFilters";
 import { useConsultantInquiryListQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
@@ -50,6 +51,7 @@ import {
 } from "../../features/consultation/repositories/consultantWorkspaceRepository";
 import {
   consultantWorkspaceDataRepository,
+  createMockConsultantWorkspaceDataRepository,
   createMockConsultantInquiryListViewModel,
 } from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
 import "./ConsultantDashboardPage.css";
@@ -100,6 +102,10 @@ function getInitialBucket(search: string): ConsultantInquiryBucket {
     : "NEW";
 }
 
+function getSelectedInquiryId(search: string): InquiryId | null {
+  return toInquiryId(new URLSearchParams(search).get("inquiryId"));
+}
+
 function getBucketStatuses(
   bucket: ConsultantInquiryBucket,
 ): readonly ConsultantInquiryStatusDto[] {
@@ -141,7 +147,7 @@ export default function ConsultantInquiryListPage() {
   const [activeRiskSection, setActiveRiskSection] =
     useState<RiskSectionId>("all");
   const [selectedInquiryId, setSelectedInquiryId] =
-    useState<InquiryId | null>(null);
+    useState<InquiryId | null>(() => getSelectedInquiryId(location.search));
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [inquiryStateUpdates, setInquiryStateUpdates] = useState<
     Record<
@@ -224,6 +230,10 @@ export default function ConsultantInquiryListPage() {
     () => createConsultantWorkspaceRepository(true, "DESIGN_SCENARIOS"),
     [],
   );
+  const designMockConsultantDataRepository = useMemo(
+    () => createMockConsultantWorkspaceDataRepository("DESIGN_SCENARIOS"),
+    [],
+  );
   const activeWorkspaceRepository = useDesignMockFallback
     ? designMockWorkspaceRepository
     : consultantWorkspaceRepository;
@@ -274,6 +284,20 @@ export default function ConsultantInquiryListPage() {
           })),
     [inquiryStateUpdates, mockState, queryData?.items],
   );
+
+  const closeSelectedInquiry = useCallback(() => {
+    setSelectedInquiryId(null);
+
+    const params = new URLSearchParams(location.search);
+    if (!params.has("inquiryId")) return;
+
+    params.delete("inquiryId");
+    const nextSearch = params.toString();
+    navigate(
+      `${location.pathname}${nextSearch ? `?${nextSearch}` : ""}`,
+      { replace: true },
+    );
+  }, [location.pathname, location.search, navigate]);
 
   const displayedRiskSection = activeRiskSection;
   const riskSummaryCounts = useMemo(() => {
@@ -347,7 +371,7 @@ export default function ConsultantInquiryListPage() {
 
     document.body.classList.add("consultant-detail-open");
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSelectedInquiryId(null);
+      if (event.key === "Escape") closeSelectedInquiry();
     };
     window.addEventListener("keydown", closeOnEscape);
 
@@ -355,7 +379,7 @@ export default function ConsultantInquiryListPage() {
       document.body.classList.remove("consultant-detail-open");
       window.removeEventListener("keydown", closeOnEscape);
     };
-  }, [selectedInquiryId]);
+  }, [closeSelectedInquiry, selectedInquiryId]);
 
   const bucketCounts = useMemo(
     () => {
@@ -399,13 +423,14 @@ export default function ConsultantInquiryListPage() {
     const params = new URLSearchParams(location.search);
     params.set("bucket", bucket);
     params.delete("page");
+    params.delete("inquiryId");
     navigate(`${location.pathname}?${params.toString()}`, { replace: true });
     setSelectedInquiryId(null);
   };
 
   const changeRiskSection = (riskLevel: RiskSectionId) => {
     setActiveRiskSection(riskLevel);
-    setSelectedInquiryId(null);
+    closeSelectedInquiry();
     resetInquiryListPage();
   };
 
@@ -437,7 +462,7 @@ export default function ConsultantInquiryListPage() {
 
   const advanceToNextInquiry = () => {
     if (!selectedInquiry || queuePage.items.length < 2) {
-      setSelectedInquiryId(null);
+      closeSelectedInquiry();
       return;
     }
 
@@ -467,6 +492,29 @@ export default function ConsultantInquiryListPage() {
     setSelectedInquiryId(inquiryId);
   };
 
+  const handleUnassignedConsultationClaimed = (rawInquiryId: string) => {
+    const inquiryId = toInquiryId(rawInquiryId);
+    if (!inquiryId) return;
+
+    setActiveBucket("NEW");
+    setActiveRiskSection("all");
+    if (filters.page !== 1) {
+      setFilters({ ...filters, page: 1 });
+    }
+
+    const params = new URLSearchParams(location.search);
+    params.set("bucket", "NEW");
+    params.delete("page");
+    navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+
+    listQuery.retry();
+    overviewQuery.retry();
+    if (user?.id) {
+      rememberRecentConsultantInquiryId(user.id, inquiryId);
+    }
+    setSelectedInquiryId(inquiryId);
+  };
+
   return (
     <div className="simple-consultant-app consultant-queue-app consultant-inquiry-list-app">
       <main className="simple-consultant-main consultant-queue-main">
@@ -490,6 +538,17 @@ export default function ConsultantInquiryListPage() {
           role="tabpanel"
           aria-label={getBucketLabel(activeBucket)}
         >
+          {(activeBucket === "ALL" || activeBucket === "NEW") && (
+            <UnassignedConsultationQueue
+              dataRepository={
+                useDesignMockFallback
+                  ? designMockConsultantDataRepository
+                  : consultantWorkspaceDataRepository
+              }
+              onClaimed={handleUnassignedConsultationClaimed}
+            />
+          )}
+
           <div
             className="consultant-list consultant-risk-columns"
             aria-label="상담 문의 목록"
@@ -707,7 +766,7 @@ export default function ConsultantInquiryListPage() {
             type="button"
             className="consultant-detail-backdrop"
             aria-label="문의 상세 닫기"
-            onClick={() => setSelectedInquiryId(null)}
+            onClick={closeSelectedInquiry}
           />
           <section
             className="consultant-detail-drawer"
@@ -728,7 +787,7 @@ export default function ConsultantInquiryListPage() {
                   <button
                     type="button"
                     aria-label="문의 상세 닫기"
-                    onClick={() => setSelectedInquiryId(null)}
+                    onClick={closeSelectedInquiry}
                   >
                     <span aria-hidden="true">×</span>
                   </button>
@@ -748,13 +807,6 @@ export default function ConsultantInquiryListPage() {
                       }));
                       setActiveBucket(getCounselorWorkBucket(update.status));
                     }}
-                    onOpenFullDetail={() =>
-                      navigate(createInquiryDetailPath(selectedInquiry.inquiryId), {
-                        state: {
-                          returnTo: `/consultant/inquiries${location.search}`,
-                        },
-                      })
-                    }
                   />
                 </div>
               </>
@@ -763,7 +815,7 @@ export default function ConsultantInquiryListPage() {
                 key={selectedInquiryId}
                 inquiryId={selectedInquiryId}
                 returnTo={`/consultant/inquiries${location.search}`}
-                onClose={() => setSelectedInquiryId(null)}
+                onClose={closeSelectedInquiry}
                 onRefreshWorkspace={() => {
                   listQuery.retry();
                   overviewQuery.retry();

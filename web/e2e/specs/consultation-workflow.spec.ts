@@ -347,7 +347,7 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
   ).toBeVisible();
   await expect(
     listFirstDetailPanel.getByRole("button", { name: "전체 기록 보기" }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   await expect(page).toHaveURL((url) => {
     return (
       url.pathname === "/consultant/inquiries" &&

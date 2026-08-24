@@ -4,13 +4,14 @@
 >
 > 작성자: 최지용 (Backend·DB)
 >
-> 기준 소스: `origin/main@957de30549fd2b347b2ef21aeb5b6515db23f667`
-> 판정: `G1_CANDIDATE_PASS / G2_CONDITIONAL_APPROVAL_APPLIED / G2_FINAL_ACK_PENDING / G3_BLOCKED`
+> 동결 기준선: `origin/main@64a0539d1ec816ac3ec4a77480dbecd68a7ae927`
+> 판정: `G1_CANDIDATE_PASS / G2_FROZEN / CONTRACT_CONFIRMED / G3_WAITING_FOR_MAIN_MERGE`
 
 ## 1. 이 문서의 목적
 
 P1-A는 실제 고객이 아닌 합성 계약고객 한 명으로 회원가입·계정연결 흐름을 만드는 후속 기능이다.
-이번 작업은 합성 Candidate가 안전한지 확인하고, 구현 전에 Mobile·PM이 검토할 API 계약안을 준비한 범위다.
+이번 작업은 합성 Candidate가 안전한지 확인하고, Mobile 호환성 ACK와 PM 최종
+승인을 반영해 G2 API 계약을 동결한 범위다.
 
 아직 다음 항목은 완료되지 않았다.
 
@@ -69,9 +70,9 @@ P1-B 카카오 로그인, 실제 고객 원장·개인정보, 중복 이메일 �
 
 ## 4. G2 API 계약 최종 검토안
 
-양정현(Mobile)의 Android 호환성 검토와 윤승혁(PM)의 조건부 정책 결정을
-반영했다. 아래 경로는 실제 OpenAPI에 `IN_REVIEW`로 반영하며, 두 담당자의
-최종 ACK 전까지 `CONFIRMED` 또는 `G2_FROZEN`으로 표시하지 않는다.
+양정현(Mobile)의 Android 호환성 ACK와 윤승혁(PM)의 최종 정책 승인을
+반영했다. 아래 신규 경로는 OpenAPI에서 `CONFIRMED`로 동결했지만 Runtime은
+아직 `NOT_IMPLEMENTED`다.
 
 | 순서 | Method·Path 제안 | 목적 | 인증 |
 |---|---|---|---|
@@ -174,7 +175,7 @@ P1-B 카카오 로그인, 실제 고객 원장·개인정보, 중복 이메일 �
 
 ## 10. 담당자 검토 반영 결과
 
-양정현(Mobile) 검토 반영:
+양정현(Mobile) 최종 ACK 반영:
 
 - 계약 확인→OTP→ID/PW 생성→로그인 Route는 구현 가능하다.
 - 아이디 찾기와 비밀번호 재설정도 같은 Challenge 규칙으로 구현 가능하다.
@@ -182,8 +183,11 @@ P1-B 카카오 로그인, 실제 고객 원장·개인정보, 중복 이메일 �
 - 기존 `LoginResponse`를 재사용한다.
 - `422` 필드 오류, `429` 재시도 초, 안전한 `409` 공개 코드를 제공한다.
 - 전체 이메일·OTP·claim/reset ticket을 영속 저장하지 않는다.
+- 최신 앱 빌드와 기존 기능 회귀가 통과했다.
+- 로그인 응답·`422`·`429` Mobile 표적 테스트 3건이 통과했다.
+- G2 계약 기준 Backend 추가 수정사항이 없음을 확인했다.
 
-윤승혁(PM) 조건부 결정 반영:
+윤승혁(PM) 최종 승인 반영:
 
 - Endpoint 이름과 단계 수를 승인했다.
 - OTP·Password·필수/선택 약관 값을 본 문서 5절대로 확정했다.
@@ -193,10 +197,11 @@ P1-B 카카오 로그인, 실제 고객 원장·개인정보, 중복 이메일 �
 
 ## 11. 다음 Gate
 
-1. 본 문서와 `IN_REVIEW` OpenAPI의 일치 여부를 Contract Test로 검증한다.
-2. 양정현과 윤승혁에게 수정된 경로·비노출 응답의 최종 ACK를 요청한다.
-3. 두 ACK를 받은 Commit에서만 `G2_FROZEN`·`CONFIRMED`로 승격한다.
-4. G2 동결 후 G3 Additive Model·Migration·Seed를 구현한다.
-5. 기존 Migration을 수정하지 않고 `visits.0005` HOLD도 유지한다.
+1. `CONFIRMED / NOT_IMPLEMENTED` 경계를 Contract·Backend Test로 검증한다.
+2. 계약 승격 Commit을 `jiyong`에 게시하고 PM의 `main` 병합을 요청한다.
+3. 승격 Commit이 `main`에 반영된 뒤 G3 Additive Model·Migration·Seed를
+   구현한다.
+4. 기존 Migration을 수정하지 않고 `visits.0005` HOLD도 유지한다.
 
-최종 ACK 전에는 Model·Migration·Seed·OTP Runtime을 선행 구현하지 않는다.
+승격 Commit이 `main`에 병합되기 전에는 Model·Migration·Seed·OTP Runtime을
+선행 구현하지 않는다.

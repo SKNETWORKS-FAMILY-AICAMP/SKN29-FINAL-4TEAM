@@ -38,9 +38,7 @@ html body
   background: transparent !important;
   background-image: none !important;
   box-shadow: none !important;
-  font-family:
-    "Segoe UI Variable Display", "Segoe UI", Pretendard, "Pretendard Variable",
-    "Noto Sans KR", system-ui, sans-serif !important;
+  font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif) !important;
   font-size: 27px !important;
   font-weight: 700 !important;
   font-style: normal !important;
@@ -225,8 +223,8 @@ html body
   h1 {
   margin: 0 !important;
   color: #111 !important;
-  font-size: clamp(40px, 3vw, 46px) !important;
-  font-weight: 300 !important;
+  font-size: clamp(34px, 2.55vw, 40px) !important;
+  font-weight: 700 !important;
   line-height: 1.14 !important;
   letter-spacing: -0.055em !important;
   white-space: nowrap;
@@ -841,6 +839,56 @@ html body
   -webkit-text-fill-color: #111 !important;
 }
 
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-info__panel--notices
+  > header
+  .counselor-dashboard-notices__more {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  margin: -4px -4px -4px auto;
+  padding: 4px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: var(--consultant-refresh-navy) !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  -webkit-text-fill-color: var(--consultant-refresh-navy) !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-notices__more
+  svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-width: 3;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-notices__more:hover {
+  background: #e2e2e2 !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-notices__more:focus-visible {
+  outline: 2px solid var(--consultant-refresh-navy) !important;
+  outline-offset: 2px;
+}
+
 /* Monochrome organization chart and employee directory. */
 
 html body
@@ -917,9 +965,11 @@ html body
   #root
   .consultant-dashboard-app
   .counselor-dashboard-org {
+  --counselor-dashboard-org-line: var(--consultant-refresh-navy);
+
   width: 100%;
   min-width: 0;
-  padding: 18px 24px 20px !important;
+  padding: 14px 24px 16px !important;
 }
 
 html body
@@ -951,23 +1001,61 @@ html body
 html body
   #root
   .consultant-dashboard-app
-  :is(
-    .counselor-dashboard-org__stem,
-    .counselor-dashboard-org__field-stem,
-    .counselor-dashboard-org__departments::before,
-    .counselor-dashboard-org__department:nth-child(-n + 2)::before
-  ) {
-  background: #999 !important;
-  background-color: #999 !important;
+  .counselor-dashboard-org__stem,
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-org__field-stem,
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-org__departments::before,
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-org__departments::after,
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-org__department::before {
+  background: var(--counselor-dashboard-org-line) !important;
+  background-color: var(--counselor-dashboard-org-line) !important;
   background-image: none !important;
 }
 
 html body
   #root
   .consultant-dashboard-app
-  .counselor-dashboard-org__departments::after {
+  .counselor-dashboard-org__stem,
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-org__field-stem {
+  width: 2px !important;
+  height: 10px !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-org__departments::before {
   display: none !important;
   content: none !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-org__departments::after {
+  display: block !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  z-index: 0;
+  width: 2px !important;
+  height: auto !important;
+  content: "" !important;
+  transform: translateX(-50%);
 }
 
 html body
@@ -976,13 +1064,15 @@ html body
   .counselor-dashboard-org__departments {
   width: min(100%, 430px);
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 10px 12px !important;
+  gap: 8px 12px !important;
+  padding-top: 0 !important;
 }
 
 html body
   #root
   .consultant-dashboard-app
   .counselor-dashboard-org__department {
+  z-index: 1;
   min-width: 0 !important;
   min-height: 62px;
   padding: 11px 12px !important;
@@ -993,6 +1083,68 @@ html body
   background-image: none !important;
   color: #111 !important;
   box-shadow: none !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-notices__item {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: inherit !important;
+  text-align: left;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-notices__item:hover {
+  background: #f0f0f0 !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-notices__item:focus-visible {
+  outline: 2px solid var(--consultant-refresh-navy) !important;
+  outline-offset: 3px;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-org__department::before {
+  top: 50% !important;
+  width: 7px !important;
+  height: 2px !important;
+  content: "" !important;
+  transform: translateY(-50%);
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-org__department:nth-child(odd)::before {
+  right: -7px !important;
+  left: auto !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-org__department:nth-child(even)::before {
+  right: auto !important;
+  left: -7px !important;
 }
 
 html body
@@ -3417,6 +3569,92 @@ html body
   }
 }
 
+/* Keep the current sidebar destination visible in both collapsed and expanded modes. */
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  #consultant-queue-sidebar
+  .consultant-work-tab {
+  position: relative;
+  isolation: isolate;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  #consultant-queue-sidebar
+  .consultant-work-tab
+  > * {
+  position: relative;
+  z-index: 1;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  #consultant-queue-sidebar
+  .consultant-work-tab:is(.is-active, [aria-selected="true"])::before {
+  position: absolute;
+  z-index: 0;
+  top: 4px;
+  right: auto;
+  bottom: auto;
+  left: 12px;
+  display: block !important;
+  width: 48px;
+  height: 48px;
+  content: "" !important;
+  pointer-events: none;
+  opacity: 1;
+  border-radius: 12px !important;
+  background: rgb(255 255 255 / 18%) !important;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
+  transition:
+    width var(--consultant-refresh-sidebar-duration) ease,
+    background-color 120ms ease;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  #consultant-queue-sidebar
+  .consultant-work-tab:focus-visible {
+  border-radius: 12px !important;
+  outline: 2px solid rgb(255 255 255 / 88%) !important;
+  outline-offset: -4px;
+}
+
+@media (min-width: 901px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar:is(:hover, :focus-within)
+    .consultant-work-tab:is(.is-active, [aria-selected="true"])::before {
+    width: calc(var(--consultant-refresh-sidebar-expanded) - 24px);
+  }
+}
+
+@media (max-width: 900px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab:is(.is-active, [aria-selected="true"]) {
+    border-radius: 12px !important;
+    background: rgb(255 255 255 / 18%) !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab:is(.is-active, [aria-selected="true"])::before {
+    display: none !important;
+    content: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html body
     #root
@@ -3430,7 +3668,12 @@ html body
     #root
     .simple-consultant-app.consultant-queue-app
     #consultant-queue-sidebar
-    :is(.consultant-sidebar-brand, .consultant-work-tab strong, .consultant-work-tab > b) {
+    :is(
+      .consultant-sidebar-brand,
+      .consultant-work-tab strong,
+      .consultant-work-tab > b,
+      .consultant-work-tab::before
+    ) {
     transition: none !important;
   }
 }

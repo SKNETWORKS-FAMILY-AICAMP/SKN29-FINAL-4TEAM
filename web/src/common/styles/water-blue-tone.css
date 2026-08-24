@@ -1107,10 +1107,7 @@ html body .v6-workspace :is(.v6-button--secondary, .visit-v13-actions button:not
   box-shadow: 0 4px 12px rgb(45 99 128 / 6%) !important;
 }
 
-/* 상담사 Web 전체 글꼴: Noto Sans KR(본고딕) */
-html body #root :is(.simple-consultant-app, .v6-workspace),
-html body #root :is(.simple-consultant-app, .v6-workspace) * {
-  font-family:
-    "Noto Sans KR", "Noto Sans CJK KR", "본고딕", "Malgun Gothic",
-    sans-serif !important;
+/* 상담사 Web 전체 글꼴 */
+html body #root :is(.simple-consultant-app, .v6-workspace) {
+  font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif) !important;
 }

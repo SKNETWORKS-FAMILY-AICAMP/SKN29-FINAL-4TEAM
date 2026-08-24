@@ -169,6 +169,38 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.getByRole("dialog")).toBeVisible();
   });
 
+  it("공지사항 카드의 더 보기 버튼으로 공지사항 페이지를 연다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(
+      screen.getByRole("button", { name: "공지사항 전체 보기" }),
+    );
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "공지사항" }),
+    ).toBeVisible();
+  });
+
+  it("공지사항 카드의 항목을 누르면 해당 공지 상세를 바로 연다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "긴급 문의 응대 절차 안내 상세 보기",
+      }),
+    );
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "공지사항 상세" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "긴급 문의 응대 절차 안내" }),
+    ).toBeVisible();
+    expect(screen.getByText("SYN-WEB-DASH-NOTICE-001")).toBeVisible();
+  });
+
   it("조직도에서 부서를 선택하면 직원 연락처 목록을 표시한다", async () => {
     const user = userEvent.setup();
     renderPage();
@@ -386,16 +418,17 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.queryByRole("button", { name: "상담 시작" })).not.toBeInTheDocument();
   });
 
-  it("문의 전체 기록으로 이동하면 상세 대시보드를 보여준다", async () => {
+  it("문의 상세 안에서 상담을 처리하고 별도 전체 기록 버튼은 표시하지 않는다", async () => {
     const user = userEvent.setup();
     renderPage();
 
     await openInquiry(user, "INQ-20260704-0013", "IN_PROGRESS");
-    await user.click(screen.getByRole("button", { name: "전체 기록 보기" }));
 
-    expect(await screen.findByRole("heading", { name: "문의 핵심 현황" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "고객 문의" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "최근 처리 이력" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeVisible();
+    expect(screen.getByRole("textbox", { name: /상담 기록/ })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "전체 기록 보기" }),
+    ).not.toBeInTheDocument();
   });
 
   it.skip("긴급·주의·일반 탭을 전환하면 해당 문의 10건만 보여준다", async () => {

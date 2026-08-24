@@ -37,6 +37,11 @@ describe("상담 Write Repository 경계", () => {
     const requester = vi.fn(async () => emptySuccess()) as ConsultationWriteRequester;
     const repository = createRemoteConsultationWriteRepository(requester);
 
+    await repository.claimConsultation(
+      "inquiry/1",
+      { state_version: 2 },
+      context,
+    );
     await repository.start("inquiry/1", { state_version: 3 }, context);
     await repository.saveSummary(
       "inquiry/1",
@@ -51,12 +56,16 @@ describe("상담 Write Repository 경계", () => {
     );
 
     expect(requester.mock.calls.map(([path, options]) => [path, options.method])).toEqual([
+      ["/inquiries/inquiry%2F1/claim-consultation", "POST"],
       ["/inquiries/inquiry%2F1/start-consultation", "POST"],
       ["/inquiries/inquiry%2F1/consultation-summary", "PATCH"],
       ["/inquiries/inquiry%2F1/consultation-summary/confirm", "POST"],
       ["/inquiries/inquiry%2F1/complete-consultation", "POST"],
     ]);
-    expect(requester.mock.calls[0][1].requestContext).toBe(context);
+    expect(requester.mock.calls[0][1]).toMatchObject({
+      body: { state_version: 2 },
+      requestContext: context,
+    });
   });
 });
 

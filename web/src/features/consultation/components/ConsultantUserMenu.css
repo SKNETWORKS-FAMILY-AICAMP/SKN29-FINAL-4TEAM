@@ -22,8 +22,7 @@
   background: transparent !important;
   background-image: none !important;
   box-shadow: none !important;
-  font-family:
-    Pretendard, "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif !important;
+  font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif) !important;
   font-size: 14px !important;
   line-height: 1.4 !important;
   white-space: nowrap !important;

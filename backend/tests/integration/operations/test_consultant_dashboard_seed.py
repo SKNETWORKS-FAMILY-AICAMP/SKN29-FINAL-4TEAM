@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+import json
 from collections import Counter
+from datetime import datetime, timedelta
+from io import StringIO
 from uuid import UUID, uuid4
+from zoneinfo import ZoneInfo
 
 import pytest
+from django.core.management import call_command
+from django.core.management.base import CommandError
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
@@ -76,6 +82,59 @@ def test_dashboard_seed_is_idempotent_and_preserves_unrelated_rows():
     assert StaffDirectoryEntry.objects.filter(
         user__username__startswith="SYN-WEB-DASH-"
     ).count() == 12
+
+
+def test_dashboard_seed_accepts_a_replay_stable_inquiry_reference_time():
+    reference_at = datetime(
+        2026,
+        8,
+        24,
+        14,
+        30,
+        tzinfo=ZoneInfo("Asia/Seoul"),
+    )
+
+    first = ConsultantDashboardSeedService(
+        inquiry_reference_at=reference_at
+    ).run()
+    first_inquiry = Inquiry.objects.get(
+        scenario_code="SYN-WEB-DASH-NEW-001"
+    )
+    second = ConsultantDashboardSeedService(
+        inquiry_reference_at=reference_at
+    ).run()
+
+    assert first.inquiry_reference_at == reference_at.isoformat()
+    assert first_inquiry.created_at == reference_at - timedelta(minutes=3)
+    assert second.updated_count == 0
+    assert second.unchanged_count > 0
+
+
+def test_dashboard_seed_command_parses_an_explicit_reference_time():
+    output = StringIO()
+
+    call_command(
+        "seed_consultant_dashboard",
+        dry_run=True,
+        reference_at="2026-08-24T14:30:00+09:00",
+        stdout=output,
+    )
+
+    payload = json.loads(output.getvalue())
+    assert payload["dry_run"] is True
+    assert payload["inquiry_reference_at"] == (
+        "2026-08-24T14:30:00+09:00"
+    )
+    assert not Inquiry.objects.filter(
+        scenario_code__startswith="SYN-WEB-DASH-"
+    ).exists()
+
+    with pytest.raises(CommandError):
+        call_command(
+            "seed_consultant_dashboard",
+            dry_run=True,
+            reference_at="not-a-date-time",
+        )
 
 
 def test_dashboard_seed_dry_run_rolls_back_all_owned_rows():
@@ -191,4 +250,51 @@ def test_dashboard_api_masks_assignment_and_rejects_other_roles_and_queries():
 
     client.force_authenticate(customer)
     forbidden_response = client.get("/api/v1/consultant/dashboard")
+    assert forbidden_response.status_code == 403
+
+
+def test_dashboard_notice_detail_returns_only_currently_published_notice():
+    ConsultantDashboardSeedService().run()
+    consultant = User.objects.get(username="DEMO-CONSULTANT-001")
+    customer = User.objects.get(username="SYN-WEB-DASH-CUSTOMER-001")
+    notice = DashboardNotice.objects.order_by("display_order").first()
+    assert notice is not None
+    client = APIClient()
+    client.force_authenticate(consultant)
+    correlation_id = uuid4()
+
+    response = client.get(
+        f"/api/v1/consultant/notices/{notice.public_id}",
+        HTTP_X_CORRELATION_ID=str(correlation_id),
+    )
+
+    assert response.status_code == 200
+    assert response["X-Correlation-ID"] == str(correlation_id)
+    assert response.json()["data"] == {
+        "notice_id": str(notice.public_id),
+        "notice_code": notice.notice_code,
+        "category_code": notice.category_code,
+        "category": notice.get_category_code_display(),
+        "title": notice.title,
+        "content": notice.body,
+        "department": notice.department_name,
+        "published_on": notice.published_on.isoformat(),
+    }
+
+    query_response = client.get(
+        f"/api/v1/consultant/notices/{notice.public_id}?preview=true"
+    )
+    assert query_response.status_code == 422
+
+    notice.is_published = False
+    notice.save(update_fields=["is_published", "updated_at"])
+    concealed_response = client.get(
+        f"/api/v1/consultant/notices/{notice.public_id}"
+    )
+    assert concealed_response.status_code == 404
+
+    client.force_authenticate(customer)
+    forbidden_response = client.get(
+        f"/api/v1/consultant/notices/{notice.public_id}"
+    )
     assert forbidden_response.status_code == 403

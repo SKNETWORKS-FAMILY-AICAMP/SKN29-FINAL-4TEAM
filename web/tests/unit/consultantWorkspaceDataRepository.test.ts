@@ -5,10 +5,15 @@ import type { ApiResponse } from "../../src/common/api/apiResponse";
 import type {
   ConsultantInquiryDetailDto,
   ConsultantInquiryListDataDto,
+  UnassignedConsultationQueueDataDto,
 } from "../../src/features/consultation/api/consultantWorkspaceRemoteTypes";
-import { CONSULTANT_QUEUE_INQUIRIES } from "../fixtures/consultantWorkspaceMock";
+import {
+  CONSULTANT_QUEUE_INQUIRIES,
+  UNASSIGNED_CONSULTANT_INQUIRIES,
+} from "../fixtures/consultantWorkspaceMock";
 import {
   buildConsultantInquiryListPath,
+  buildUnassignedConsultationQueuePath,
   createMockConsultantWorkspaceDataRepository,
   createRemoteConsultantWorkspaceDataRepository,
   type ConsultantApiRequester,
@@ -53,6 +58,34 @@ describe("상담사 실제 API 전환 Repository", () => {
     expect(url.searchParams.get("size")).toBe("10");
   });
 
+  it("미배정 대기열 전용 조회 조건만 별도 API 주소에 넣는다", () => {
+    const path = buildUnassignedConsultationQueuePath({
+      q: "누수",
+      riskLevel: ["caution", "danger"],
+      priority: ["HIGH", "URGENT"],
+      from: "2026-08-20",
+      to: "2026-08-24",
+      sort: "WAITING_DESC",
+      page: 2,
+      size: 10,
+    });
+    const url = new URL(path, "http://localhost");
+
+    expect(url.pathname).toBe("/inquiries/unassigned-consultations");
+    expect(url.searchParams.get("q")).toBe("누수");
+    expect(url.searchParams.getAll("risk_level")).toEqual([
+      "caution",
+      "danger",
+    ]);
+    expect(url.searchParams.getAll("priority")).toEqual(["HIGH", "URGENT"]);
+    expect(url.searchParams.get("from")).toBe("2026-08-20");
+    expect(url.searchParams.get("to")).toBe("2026-08-24");
+    expect(url.searchParams.get("sort")).toBe("WAITING_DESC");
+    expect(url.searchParams.get("page")).toBe("2");
+    expect(url.searchParams.get("size")).toBe("10");
+    expect(url.searchParams.has("status")).toBe(false);
+  });
+
   it("Remote 목록 응답을 화면용 이름으로 바꾸고 correlation id를 보존한다", async () => {
     const dto: ConsultantInquiryListDataDto = {
       items: [
@@ -90,6 +123,64 @@ describe("상담사 실제 API 전환 Repository", () => {
     });
   });
 
+  it("Remote 미배정 대기열을 별도 화면 모델로 바꾸고 집계값을 만들지 않는다", async () => {
+    const dto: UnassignedConsultationQueueDataDto = {
+      items: [
+        {
+          inquiry_id: "b7df3cd0-c9d6-42bd-b93e-a70ee24c6f22",
+          inquiry_code: "INQ-002",
+          status: "CONSULTATION_REQUIRED",
+          state_version: 3,
+          risk_level: "caution",
+          priority: "HIGH",
+          symptom_summary: "출수량이 줄었어요",
+          customer_display_name_masked: "합성고객 0*",
+          product_model: "WPUJAC104DWH",
+          current_assignee_type: "NONE",
+          received_at: "2026-08-23T04:10:00Z",
+          updated_at: "2026-08-23T04:20:00Z",
+          waiting_seconds: 600,
+          allowed_actions: [
+            {
+              code: "CLAIM_CONSULTATION",
+              label: "상담 배정받기",
+              operation_id: "claimConsultation",
+              style: "PRIMARY",
+              requires_confirmation: false,
+              confirmation_message: null,
+            },
+          ],
+        },
+      ],
+      page_info: { page: 1, size: 20, total: 1 },
+    };
+    const requester = vi.fn(async () => successResponse(dto)) as ConsultantApiRequester;
+    const repository = createRemoteConsultantWorkspaceDataRepository(requester);
+
+    const result = await repository.listUnassignedConsultations({
+      page: 1,
+      size: 20,
+    });
+
+    expect(requester).toHaveBeenCalledWith(
+      "/inquiries/unassigned-consultations?page=1&size=20",
+    );
+    expect(result.correlationId).toBe("corr-test");
+    expect(result.data).not.toHaveProperty("statusCounts");
+    expect(result.data.items[0]).toMatchObject({
+      inquiryId: dto.items[0].inquiry_id,
+      status: "CONSULTATION_REQUIRED",
+      currentAssigneeType: "NONE",
+      productModel: "WPUJAC104DWH",
+      allowedActions: [
+        {
+          code: "CLAIM_CONSULTATION",
+          operationId: "claimConsultation",
+        },
+      ],
+    });
+  });
+
   it("Remote 실패를 Mock 성공으로 바꾸지 않는다", async () => {
     const expected = new Error("backend blocked");
     const requester = vi.fn(async () => {
@@ -112,6 +203,43 @@ describe("상담사 실제 API 전환 Repository", () => {
     expect(detail.data.customer.displayName).toBe(inquiry.customerDisplayName);
     expect(detail.data).not.toHaveProperty("serviceAddress");
     expect(detail.data.customer).not.toHaveProperty("serviceAddress");
+  });
+
+  it("명시적 Mock 미배정 대기열은 배정 목록과 겹치지 않는 전용 합성 문의를 쓴다", async () => {
+    const repository = createMockConsultantWorkspaceDataRepository(
+      "DESIGN_SCENARIOS",
+    );
+
+    const queue = await repository.listUnassignedConsultations({
+      page: 1,
+      size: 3,
+    });
+
+    expect(queue.data.items.length).toBeGreaterThan(0);
+    expect(queue.data.items.length).toBeLessThanOrEqual(3);
+    expect(queue.data.items[0]).toMatchObject({
+      status: "CONSULTATION_REQUIRED",
+      currentAssigneeType: "NONE",
+      allowedActions: [
+        {
+          code: "CLAIM_CONSULTATION",
+          operationId: "claimConsultation",
+        },
+      ],
+    });
+    expect(queue.data.items[0]).not.toHaveProperty("customerPhone");
+    expect(queue.data).not.toHaveProperty("statusCounts");
+    expect(UNASSIGNED_CONSULTANT_INQUIRIES).toHaveLength(3);
+    expect(
+      queue.data.items.some((unassigned) =>
+        CONSULTANT_QUEUE_INQUIRIES.some(
+          (assigned) => assigned.inquiryId === unassigned.inquiryId,
+        ),
+      ),
+    ).toBe(false);
+    expect(
+      UNASSIGNED_CONSULTANT_INQUIRIES.map((item) => item.manualModel),
+    ).toEqual(["WPUJAC104DWH", "WPUIAC425SNW", "WPUIAC606SNW"]);
   });
 
   it("디자인 Mock 데이터셋은 상태별 다건 문의를 명시적으로 제공한다", async () => {

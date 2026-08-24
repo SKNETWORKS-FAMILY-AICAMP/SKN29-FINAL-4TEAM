@@ -33,6 +33,10 @@ from apps.subscriptions.models import CustomerSubscription
 SEED_PREFIX = "SYN-WEB-DASH"
 DEMO_CONSULTANT_USERNAME = "DEMO-CONSULTANT-001"
 BUSINESS_TIMEZONE = ZoneInfo("Asia/Seoul")
+DEFAULT_INQUIRY_REFERENCE_AT = timezone.make_aware(
+    datetime(2026, 8, 18, 9, 0),
+    BUSINESS_TIMEZONE,
+)
 
 CONSULTANT_DIRECTORY = (
     ("김하윤", "고객케어팀", "팀장", "02-0000-9501", "hayoon.kim"),
@@ -162,6 +166,7 @@ class ConsultantDashboardSeedResult:
     """Serializable result for one local dashboard seed execution."""
 
     dry_run: bool
+    inquiry_reference_at: str
     created_count: int
     updated_count: int
     unchanged_count: int
@@ -178,8 +183,14 @@ class ConsultantDashboardSeedService:
         self,
         *,
         repository: SyntheticImportRepository | None = None,
+        inquiry_reference_at: datetime | None = None,
     ) -> None:
         self.repository = repository or SyntheticImportRepository()
+        self.inquiry_reference_at = (
+            inquiry_reference_at or DEFAULT_INQUIRY_REFERENCE_AT
+        )
+        if timezone.is_naive(self.inquiry_reference_at):
+            raise ValueError("inquiry_reference_at must include a timezone.")
         self.actions: list[str] = []
 
     def run(self, *, dry_run: bool = False) -> ConsultantDashboardSeedResult:
@@ -196,6 +207,7 @@ class ConsultantDashboardSeedService:
             counts = Counter(self.actions)
             result = ConsultantDashboardSeedResult(
                 dry_run=dry_run,
+                inquiry_reference_at=self.inquiry_reference_at.isoformat(),
                 created_count=counts["CREATED"],
                 updated_count=counts["UPDATED"],
                 unchanged_count=counts["UNCHANGED"],
@@ -435,7 +447,7 @@ class ConsultantDashboardSeedService:
         actor: User,
         subscriptions: list[CustomerSubscription],
     ) -> None:
-        base_time = self._aware(2026, 8, 18, 9, 0)
+        base_time = self.inquiry_reference_at
         for bucket_order, (bucket, status, state_version) in enumerate(BUCKETS):
             for sequence, subscription in enumerate(subscriptions, start=1):
                 risk, risk_index = self._risk(sequence)

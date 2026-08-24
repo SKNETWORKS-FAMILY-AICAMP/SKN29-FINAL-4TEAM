@@ -1,4 +1,4 @@
-"""P1-A G2 review contract policy tests."""
+"""P1-A G2 frozen contract policy tests."""
 
 from __future__ import annotations
 
@@ -14,6 +14,17 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 API_ROOT = REPO_ROOT / "contracts" / "api"
 P1_PATHS = API_ROOT / "paths" / "p1-auth.yaml"
 AUTH_SCHEMA_ROOT = API_ROOT / "components" / "schemas" / "auth"
+P1A_OPERATION_PATHS = (
+    "/auth/contract-verification/challenges",
+    "/auth/contract-verification/challenges/{challenge_id}/verify",
+    "/auth/signup",
+    "/auth/login",
+    "/auth/account-recovery/username/challenges",
+    "/auth/account-recovery/username/challenges/{challenge_id}/verify",
+    "/auth/password-reset/challenges",
+    "/auth/password-reset/challenges/{challenge_id}/verify",
+    "/auth/password-reset/confirm",
+)
 
 
 class UniqueKeyLoader(yaml.SafeLoader):
@@ -45,6 +56,16 @@ def test_p1_auth_schemas_are_valid_draft_2020_12() -> None:
         Draft202012Validator.check_schema(_yaml(path))
 
 
+def test_all_p1a_operations_are_frozen_but_not_implemented() -> None:
+    contract = _yaml(P1_PATHS)
+
+    assert contract["x-p1a-policy"]["contract_status"] == "CONFIRMED"
+    for path in P1A_OPERATION_PATHS:
+        operation = contract[path]["post"]
+        assert operation["x-contract-status"] == "CONFIRMED"
+        assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
+
+
 def test_challenge_creation_conceals_candidate_existence() -> None:
     contract = _yaml(P1_PATHS)
     challenge_paths = (
@@ -55,8 +76,6 @@ def test_challenge_creation_conceals_candidate_existence() -> None:
 
     for path in challenge_paths:
         operation = contract[path]["post"]
-        assert operation["x-contract-status"] == "IN_REVIEW"
-        assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
         assert "202" in operation["responses"]
         assert "404" not in operation["responses"]
 

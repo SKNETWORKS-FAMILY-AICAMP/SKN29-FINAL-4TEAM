@@ -15,7 +15,9 @@ export const ROUTE_PATHS = {
 } as const;
 
 export function createInquiryDetailPath(inquiryId: InquiryId): string {
-  return `/consultant/inquiries/${encodeURIComponent(inquiryId)}`;
+  return `${ROUTE_PATHS.consultantInquiryList}?inquiryId=${encodeURIComponent(
+    inquiryId,
+  )}`;
 }
 
 export function createVisitTransitionPath(inquiryId: InquiryId): string {

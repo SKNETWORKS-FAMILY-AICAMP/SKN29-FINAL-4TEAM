@@ -47,6 +47,33 @@ G2_OPERATIONS = {
     ("/visits/{visit_id}/confirm", "post"): "confirmVisit",
 }
 
+P1A_FROZEN_OPERATIONS = {
+    ("/auth/contract-verification/challenges", "post"): (
+        "createContractVerificationChallenge"
+    ),
+    (
+        "/auth/contract-verification/challenges/{challenge_id}/verify",
+        "post",
+    ): "verifyContractVerificationChallenge",
+    ("/auth/signup", "post"): "signupContractCustomer",
+    ("/auth/login", "post"): "loginWithPassword",
+    ("/auth/account-recovery/username/challenges", "post"): (
+        "createUsernameRecoveryChallenge"
+    ),
+    (
+        "/auth/account-recovery/username/challenges/{challenge_id}/verify",
+        "post",
+    ): "verifyUsernameRecoveryChallenge",
+    ("/auth/password-reset/challenges", "post"): (
+        "createPasswordResetChallenge"
+    ),
+    (
+        "/auth/password-reset/challenges/{challenge_id}/verify",
+        "post",
+    ): "verifyPasswordResetChallenge",
+    ("/auth/password-reset/confirm", "post"): "confirmPasswordReset",
+}
+
 WRITE_G2_OPERATIONS = {
     key: operation_id
     for key, operation_id in G2_OPERATIONS.items()
@@ -228,8 +255,8 @@ def test_g2_operation_inventory_crosswalk_and_runtime_boundary():
     }
 
     assert root["info"]["version"] == "0.9.0"
-    assert len(operations) == 49
-    assert len({item["operationId"] for item in operations.values()}) == 49
+    assert len(operations) == 59
+    assert len({item["operationId"] for item in operations.values()}) == 59
     assert set(crosswalk_operations) == set(G2_OPERATIONS)
     assert crosswalk["contract"]["included_decisions"] == [
         "DEC-001",
@@ -278,6 +305,13 @@ def test_g2_operation_inventory_crosswalk_and_runtime_boundary():
         assert actual_rules == normalize_rule_ids(
             crosswalk_item["transition_rule"]
         )
+
+    for key, operation_id in P1A_FROZEN_OPERATIONS.items():
+        operation = operations[key]
+        assert operation["operationId"] == operation_id
+        assert operation["x-contract-status"] == "CONFIRMED"
+        assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
+        assert key not in crosswalk_operations
 
 
 def test_update_visit_schedule_includes_revisit_transition_tr_inq_028():
