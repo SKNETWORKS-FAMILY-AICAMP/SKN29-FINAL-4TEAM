@@ -2,6 +2,7 @@ import { appEnv, type MockDataset } from "../../../app/config/env";
 import { ApiClientError } from "../../../common/api/apiError";
 import type { ApiResponse } from "../../../common/api/apiResponse";
 import { requestApi } from "../../../common/api/httpClient";
+import { maskCustomerPhone } from "../../../common/privacy/customerPrivacy";
 import {
   CONSULTANT_QUEUE_INQUIRIES,
   REMOTE_PARITY_CONSULTANT_INQUIRIES,
@@ -85,6 +86,13 @@ export function buildConsultantInquiryListPath(
   const queryString = params.toString();
   return `/inquiries${queryString ? `?${queryString}` : ""}`;
 }
+
+const USAGE_GUIDANCE_DISPLAY_LABELS = {
+  NORMAL: "정상 사용 가능",
+  PARTIAL_STOP: "일부 기능 사용 중단",
+  TOTAL_STOP: "제품 사용 중단",
+  PENDING_CONSULTATION: "상담 확인 필요",
+} as const;
 
 function getMockUnassignedInquiries(
   dataset: MockDataset = appEnv.mockDataset,
@@ -295,9 +303,11 @@ export function createMockConsultantWorkspaceDataRepository(
           is_synthetic: true,
           display_name: inquiry.customerDisplayName,
           phone: inquiry.customerPhone,
+          phone_masked: maskCustomerPhone(inquiry.customerPhone),
         },
         product_and_care: {
           product_model: inquiry.manualModel,
+          product_model_name: inquiry.manualModel,
           subscription_status: "ACTIVE",
           management_type: inquiry.managementType,
           recent_care_date: inquiry.lastCareDate.slice(0, 10),
@@ -308,6 +318,8 @@ export function createMockConsultantWorkspaceDataRepository(
         },
         guidance_and_actions: {
           usage_guidance_status: inquiry.usageStatus,
+          usage_guidance_display_label:
+            USAGE_GUIDANCE_DISPLAY_LABELS[inquiry.usageStatus],
           usage_guidance_message: inquiry.usageMessage,
           restricted_functions: inquiry.restrictedFunctions,
         },

@@ -38,20 +38,16 @@ function visitIdFromResource(resource: unknown): string | null {
   return typeof visitId === "string" ? visitId : null;
 }
 
-function visitIdFromDetail(visit: unknown): string | null {
-  if (!visit || typeof visit !== "object") return null;
-  const record = visit as Record<string, unknown>;
-  const value = record.visit_id ?? record.public_id ?? record.id;
-  return typeof value === "string" ? value : null;
+function visitIdFromDetail(
+  visit: ConsultantInquiryDetailViewModel["visit"],
+): string | null {
+  return visit?.visitId ?? null;
 }
 
-function technicianIdFromDetail(visit: unknown): string {
-  if (!visit || typeof visit !== "object") return "";
-  const record = visit as Record<string, unknown>;
-  const schedule = record.schedule;
-  if (!schedule || typeof schedule !== "object") return "";
-  const technicianId = (schedule as Record<string, unknown>).synthetic_technician_id;
-  return typeof technicianId === "string" ? technicianId : "";
+function technicianIdFromDetail(
+  visit: ConsultantInquiryDetailViewModel["visit"],
+): string {
+  return visit?.schedule.syntheticTechnicianId ?? "";
 }
 
 export default function RemoteVisitTransitionPanel({

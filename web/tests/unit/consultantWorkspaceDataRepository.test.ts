@@ -278,25 +278,34 @@ describe("상담사 실제 API 전환 Repository", () => {
         is_synthetic: true,
         display_name: "합성 고객 001",
         phone: "010-****-0001",
+        phone_masked: "010-****-0001",
       },
       product_and_care: {
         product_model: "SYN-WP-01",
+        product_model_name: "합성 시연용 정수기",
         subscription_status: "ACTIVE",
         management_type: "VISIT_CARE",
         recent_care_date: "2026-08-01",
       },
       symptom_and_questionnaire: {
         symptom_summary: "누수가 있어요",
-        answers: [],
+        answers: [
+          {
+            question_code: "SYN-Q-01",
+            question_text: "누수가 계속 발생하나요?",
+            answer: "네, 계속 발생합니다.",
+          },
+        ],
       },
       guidance_and_actions: {
         usage_guidance_status: "PENDING_CONSULTATION",
+        usage_guidance_display_label: "상담 확인 필요",
         usage_guidance_message: null,
         restricted_functions: [],
       },
       consultation: {
         consultation_id: "30000000-0000-4000-8000-000000000301",
-        result_code: "COMPLETED_NO_VISIT",
+        result_code: "VISIT_REQUIRED",
         summary: {
           ai_draft_summary: "AI 초안",
           edited_summary: "상담사 수정 요약",
@@ -308,7 +317,23 @@ describe("상담사 실제 API 전환 Repository", () => {
         customer_guidance: "정상 사용 안내",
         usage_guidance_status: "NORMAL",
       },
-      visit: null,
+      visit: {
+        visit_id: "40000000-0000-4000-8000-000000000401",
+        inquiry_id: "b7df3cd0-c9d6-42bd-b93e-a70ee24c6f21",
+        schedule: {
+          preferred_date: "2026-08-11",
+          confirmed_date: "2026-08-12",
+          schedule_status: "CONFIRMED",
+          synthetic_technician_id:
+            "50000000-0000-4000-8000-000000000501",
+        },
+        technician: {
+          is_synthetic: true,
+          technician_id: "50000000-0000-4000-8000-000000000501",
+          display_name: "합성 기사 001",
+          phone: "010-0000-0501",
+        },
+      },
       state_history: [],
       workflow: {
         status: "CONSULTATION_REQUIRED",
@@ -336,9 +361,26 @@ describe("상담사 실제 API 전환 Repository", () => {
     );
     expect(result.data.productAndCare).toEqual({
       productModel: "SYN-WP-01",
+      productModelName: "합성 시연용 정수기",
       subscriptionStatus: "ACTIVE",
       managementType: "VISIT_CARE",
       recentCareDate: "2026-08-01",
+    });
+    expect(result.data.customer.phoneMasked).toBe("010-****-0001");
+    expect(result.data.symptomAndQuestionnaire.answers[0]).toMatchObject({
+      questionCode: "SYN-Q-01",
+      questionText: "누수가 계속 발생하나요?",
+    });
+    expect(result.data.guidanceAndActions.usageGuidanceDisplayLabel).toBe(
+      "상담 확인 필요",
+    );
+    expect(result.data.visit).toMatchObject({
+      visitId: "40000000-0000-4000-8000-000000000401",
+      schedule: {
+        confirmedDate: "2026-08-12",
+        scheduleStatus: "CONFIRMED",
+      },
+      technician: { displayName: "합성 기사 001" },
     });
     expect(result.data.workflow.allowedActions[0]).toMatchObject({
       code: "START_CONSULTATION",
@@ -347,7 +389,7 @@ describe("상담사 실제 API 전환 Repository", () => {
     });
     expect(result.data.consultation).toMatchObject({
       consultationId: "30000000-0000-4000-8000-000000000301",
-      resultCode: "COMPLETED_NO_VISIT",
+      resultCode: "VISIT_REQUIRED",
       summary: {
         aiDraftSummary: "AI 초안",
         editedSummary: "상담사 수정 요약",

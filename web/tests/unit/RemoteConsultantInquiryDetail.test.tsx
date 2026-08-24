@@ -19,20 +19,28 @@ function createDetail(
     customer: {
       isSynthetic: true,
       displayName: "합성고객 01",
-      phone: "010-0000-0101",
+      phoneMasked: "010-****-0101",
     },
     productAndCare: {
       productModel: "SYN-WP-01",
+      productModelName: "합성 시연용 정수기",
       subscriptionStatus: "ACTIVE",
       managementType: "VISIT_CARE",
       recentCareDate: null,
     },
     symptomAndQuestionnaire: {
       symptomSummary: "출수량이 감소함",
-      answers: [{ questionCode: "SYN-Q-01", answer: "필터 교체 전에도 동일" }],
+      answers: [
+        {
+          questionCode: "SYN-Q-01",
+          questionText: "필터 교체 후에도 출수량이 줄었나요?",
+          answer: "필터 교체 전에도 동일",
+        },
+      ],
     },
     guidanceAndActions: {
       usageGuidanceStatus: "PENDING_CONSULTATION",
+      usageGuidanceDisplayLabel: "상담 확인 필요",
       usageGuidanceMessage: null,
       restrictedFunctions: [],
     },
@@ -95,6 +103,7 @@ describe("Remote 상담사 문의 상세", () => {
         inquiry={createDetail({
           productAndCare: {
             productModel: "SYN-WP-01",
+            productModelName: "합성 시연용 정수기",
             subscriptionStatus: "ACTIVE",
             managementType: "VISIT_CARE",
             recentCareDate: "2026-08-01",
@@ -115,6 +124,7 @@ describe("Remote 상담사 문의 상세", () => {
         inquiry={createDetail({
           productAndCare: {
             productModel: "SYN-WP-01",
+            productModelName: "합성 시연용 정수기",
             subscriptionStatus: "ACTIVE",
             managementType: "VISIT_CARE",
             recentCareDate: "2026-02-31",
@@ -135,6 +145,7 @@ describe("Remote 상담사 문의 상세", () => {
         inquiry={createDetail({
           guidanceAndActions: {
             usageGuidanceStatus: "TOTAL_STOP",
+            usageGuidanceDisplayLabel: "제품 사용 중단",
             usageGuidanceMessage: "급수 밸브를 잠그고 상담을 기다려 주세요.",
             restrictedFunctions: ["냉수 출수"],
           },
@@ -142,19 +153,25 @@ describe("Remote 상담사 문의 상세", () => {
       />,
     );
 
-    expect(screen.getByText("제품 전체 사용 중지")).toBeInTheDocument();
+    expect(screen.getByText("제품 사용 중단")).toBeInTheDocument();
     expect(screen.queryByText("TOTAL_STOP")).not.toBeInTheDocument();
     expect(
       screen.getByText("급수 밸브를 잠그고 상담을 기다려 주세요."),
     ).toBeInTheDocument();
     expect(screen.getByText("냉수 출수")).toBeInTheDocument();
+    expect(screen.getByText("010-****-0101")).toBeInTheDocument();
+    expect(screen.getByText("합성 시연용 정수기")).toBeInTheDocument();
+    expect(
+      screen.getByText("필터 교체 후에도 출수량이 줄었나요?"),
+    ).toBeInTheDocument();
   });
 
   it("consultation·visit null을 불필요로 해석하지 않는다", () => {
     render(<RemoteConsultantInquiryDetail inquiry={createDetail()} />);
 
     expect(screen.getByText("상담 기록이 아직 제공되지 않았습니다.")).toBeInTheDocument();
-    expect(screen.getByText("방문 기록이 아직 제공되지 않았습니다.")).toBeInTheDocument();
+    expect(screen.getByText("방문 필요로 확정되지 않음")).toBeInTheDocument();
+    expect(screen.getByText("방문 정보 없음")).toBeInTheDocument();
   });
 
   it("실행 UI가 없을 때도 Backend allowed action을 임의 버튼으로 만들지 않는다", () => {
@@ -199,6 +216,55 @@ describe("Remote 상담사 문의 상세", () => {
     expect(
       screen.getByTestId("consultation-detail-customer-guidance"),
     ).toHaveTextContent("정상 사용 가능 안내");
+  });
+
+  it("방문 필요 결과와 최신 방문 일정·기사 정보를 함께 표시한다", () => {
+    render(
+      <RemoteConsultantInquiryDetail
+        inquiry={createDetail({
+          consultation: {
+            consultationId: "30000000-0000-4000-8000-000000000301",
+            resultCode: "VISIT_REQUIRED",
+            summary: {
+              aiDraftSummary: null,
+              editedSummary: null,
+              confirmedSummary: null,
+              confirmedAt: null,
+            },
+            consultationNote: null,
+            additionalCheck: null,
+            customerGuidance: null,
+            usageGuidanceStatus: "PARTIAL_STOP",
+          },
+          visit: {
+            visitId: "40000000-0000-4000-8000-000000000401",
+            inquiryId: "10000000-0000-4000-8000-000000000101",
+            schedule: {
+              preferredDate: "2026-08-25",
+              confirmedDate: "2026-08-26",
+              scheduleStatus: "CONFIRMED",
+              syntheticTechnicianId:
+                "50000000-0000-4000-8000-000000000501",
+            },
+            technician: {
+              isSynthetic: true,
+              technicianId: "50000000-0000-4000-8000-000000000501",
+              displayName: "합성 기사 01",
+              phone: "010-0000-0501",
+            },
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText("방문 필요")).toBeInTheDocument();
+    expect(screen.getByText("방문 정보 등록됨")).toBeInTheDocument();
+    expect(screen.getByText("방문 일정 확정")).toBeInTheDocument();
+    expect(screen.getByText("합성 기사 01")).toBeInTheDocument();
+    expect(screen.getByText("2026. 8. 26.")).toHaveAttribute(
+      "datetime",
+      "2026-08-26",
+    );
   });
 
   it("Section 오류는 다른 상세 정보와 함께 부분 오류로 표시한다", () => {
