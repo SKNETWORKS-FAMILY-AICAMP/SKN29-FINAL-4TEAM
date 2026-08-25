@@ -7,6 +7,7 @@ import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import LoadingState from "../../common/components/feedback/LoadingState";
 import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
+import ConsultantHeaderBrand from "../../features/consultation/components/ConsultantHeaderBrand";
 import ConsultantUserMenu from "../../features/consultation/components/ConsultantUserMenu";
 import type { CounselorWorkBucket } from "../../features/consultation/model/consultantWorkspaceTypes";
 import {
@@ -215,6 +216,7 @@ export default function ConsultantNoticePage() {
     <div className="simple-consultant-app consultant-queue-app consultant-notice-app">
       <main className="simple-consultant-main consultant-queue-main">
         <header className="simple-topbar consultant-main-header consultant-unified-header">
+          <ConsultantHeaderBrand />
           <ConsultantUserMenu className="simple-user" />
         </header>
 
