@@ -4,13 +4,14 @@
 > 수신자: 김은진 — Data·QA 담당
 > 작성일: 2026-08-25 KST
 > 기준 Branch: `dongyoon`
-> 기준 HEAD: `23d1603f4fb7ed978c4bd0f653fd56ca80121e0c`
-> 상태: `AI_EVALUATION_CONTRACT_V2_DECISION_PROPOSED`
-> 구현 상태: `NOT_STARTED`
+> 작업 기준 HEAD: `39e595e4c423da2b6a2e645a4163a9115f694352`
+> 변경 Commit: `PENDING_USER_COMMIT_APPROVAL`
+> 상태: `IMPLEMENTED_PENDING_COMMIT_AND_DATA_QA_ACK`
+> 구현 상태: `PARTIAL` — 계약·공통 Scorer·연결 Gate 표적 PASS, Gold v2·Corpus v3 실데이터 실행은 `NOT_RUN`
 
 ## 한 줄 요약
 
-**Gold는 의미 단위 Evidence Group만 정답으로 보유하고, Child는 Registry가 연결하며, 사용 상태·상담 조건·No-Evidence·Policy Block을 분리한 공통 Scorer로 Full B1과 Playground를 동일하게 채점한다.**
+**Gold에는 정답의 의미만 담고 실제 검색 조각은 Corpus가 연결하며, 근거가 없거나 정책상 차단된 경우까지 Full B1과 Playground에서 같은 기준으로 평가하겠습니다.**
 
 ## 1. 결정
 
@@ -23,7 +24,8 @@
 | Gold Dataset | `2.0.0-draft.1` |
 | Evaluation Contract | `evidence_group_policy_v2` |
 | 신규 Corpus | 기존 Full Corpus v2를 보존하고 `Full Corpus v3 draft` 생성 |
-| 기존 v1 Dataset·Runner·Report | 수정하지 않고 역사적 결과로 보존 |
+| 기존 v1 Dataset·Report | 수정하지 않고 역사적 결과로 보존 |
+| 기존 v1 Runner | 출력 Shape·채점 의미는 보존하고 계산부만 공통 Legacy Adapter로 위임 |
 | Backend↔AI 공개 계약 `4.0.0` | 변경하지 않음. 아래 필드는 평가 내부 전용 |
 
 현재 Full B1은 `Evidence ID + document_id + page_refs`를 비교하지만 Playground는
@@ -47,7 +49,9 @@
   "evidence_match_policy": "ANY",
   "expected_risk_level": "general",
   "expected_usage_guidance_status": "NORMAL",
-  "expected_consultation_requirement": "CONDITIONAL"
+  "expected_consultation_requirement": "CONDITIONAL",
+  "consultation_basis_codes": ["SOURCE_CONDITION_PENDING"],
+  "consultation_condition_ids": ["COND-...-001"]
 }
 ```
 
@@ -68,8 +72,9 @@
 현재 Gold의 `CONSULTATION_ONLY`는 공개 AI `4.0.0` 사용 안내 상태에 없는 값이므로
 v2에서는 사용하지 않는다. 공개 응답의 `requires_consultation`은
 `expected_consultation_requirement=REQUIRED`일 때만 `true`로 대응한다.
-`CONDITIONAL`의 실제 조건은 Evidence Group의 `consultation_conditions` 계보를
-통해 검수하고 Retrieval 점수에는 포함하지 않는다.
+`CONDITIONAL`의 실제 조건은 `consultation_condition_ids`가 Evidence Group의
+`consultation_conditions` 계보를 참조하도록 검수하고 Retrieval 점수에는
+포함하지 않는다.
 
 ## 3. 필수·보조 Evidence와 `ANY/ALL/NONE`
 
@@ -154,9 +159,12 @@ Group ID 한 건만 넣는다. 어느 Child가 검색돼도 통과하되 둘 다
 
 ```text
 ai/evaluation/evidence_scoring_v2.py
-├─ ai/scripts/run_full_corpus_baseline_v2.py
+├─ ai/scripts/run_full_corpus_baseline_v1.py (v1 Legacy Adapter)
 └─ ai/app/experiments/playground.py
 ```
+
+Gold v2 실데이터 Runner는 Dataset·Corpus v3가 생긴 뒤 이 Scorer를 호출하는 얇은
+실행기로 추가한다. 현재 존재하지 않는 v2 Runner를 구현 완료로 간주하지 않는다.
 
 공통 출력에는 최소 다음을 포함한다.
 
@@ -172,36 +180,45 @@ ai/evaluation/evidence_scoring_v2.py
 - `scoring_contract_version`
 - `passed`
 
-Playground는 다음 제한을 적용한다.
+현재 Playground 연결은 다음 제한을 적용한다.
 
-1. 공식 채점은 `gold_case_id`를 명시한 실행만 허용한다.
-2. 질문 문자열 자동 Gold 매칭은 제거한다.
-3. 임의 질문은 `NOT_SCORED`로 표시한다.
-4. Top-K, 제품 필터, Corpus Hash, Embedding Revision, Threshold가 Full B1
-   Profile과 다르면 `NOT_COMPARABLE`로 표시한다.
+1. 기존 v1 Gold를 제품·질문으로 자동 매칭하지만 결과는 `DRAFT_SCORED`일 뿐
+   공식 Metric이 아니다.
+2. 임의 질문은 `NOT_SCORED`로 표시한다.
+3. Top-K가 5가 아니거나 제품 필터를 끄면 `NOT_COMPARABLE`로 표시하고,
+   `retrieval_pass`와 내부 Metric의 모든 PASS Boolean을 `null`로 노출한다.
+4. Corpus·Embedding·Threshold는 Playground Manifest와 Profile에 기록하며
+   `official_metrics_allowed=false`를 유지한다.
 5. `document_id + page_refs` 일치는 Gold PASS가 아니라 Lineage Diagnostic이다.
-6. TEST Split의 기대 근거는 Playground에 노출하지 않는다.
-7. Draft Gold는 `DRAFT_SCORED`이며 공식 Metric을 허용하지 않는다.
+6. Gold v2의 `gold_case_id` 명시 실행과 TEST 기대값 비노출은 v2 Runner·API
+   연결 시 별도 Gate로 구현한다.
 
 비교 가능한 기본 Retrieval Profile은 Exact Product Filter, `Top-K=5`, Threshold
 `0.4`, BGE-M3 고정 Revision·1024 Dimension을 사용한다. Profile이 다르면 같은
 Gold를 사용해도 공식 비교 결과로 합치지 않는다.
 
-## 7. 변경 파일과 소유권
+## 7. 반영 파일·후속 파일과 소유권
 
-### 이동윤 / AI
+### 이동윤 / AI — 현재 반영
 
 - 신규 `ai/evaluation/schemas/gold_evaluation_case_v2.schema.json`
-- 신규 `ai/evaluation/datasets/gold/rag_gold_v2.jsonl`
-- 신규 `ai/evaluation/datasets/gold/rag_gold_v2_manifest.json`
+- 신규 `ai/evaluation/schemas/evidence_group_registry_v2.schema.json`
+- 신규 `ai/evaluation/schemas/gold_v2_evidence_group_contract.schema.json`
+- 신규 `ai/evaluation/contracts/gold_v2_evidence_group_contract.json`
 - 신규 `ai/evaluation/evidence_scoring_v2.py`
-- 신규 `ai/scripts/build_gold_evaluation_v2.py`
 - 신규 `ai/scripts/validate_gold_evaluation_v2.py`
 - 신규 `ai/scripts/validate_gold_corpus_compatibility_v2.py`
-- 신규 `ai/scripts/run_full_corpus_baseline_v2.py`
-- 신규 `ai/configs/experiments/full_corpus_baseline_v2.yaml`
+- 변경 `ai/scripts/run_full_corpus_baseline_v1.py`
 - 변경 `ai/app/experiments/playground.py`
 - 대응 AI Unit Test
+
+### 이동윤 / AI — Data 회신 후 추가
+
+- `ai/evaluation/datasets/gold/rag_gold_v2.jsonl`
+- `ai/evaluation/datasets/gold/rag_gold_v2_manifest.json`
+- 필요 시 `ai/scripts/build_gold_evaluation_v2.py`
+- `ai/scripts/run_full_corpus_baseline_v2.py`
+- `ai/configs/experiments/full_corpus_baseline_v2.yaml`
 
 Playground Route·HTML은 공유 Interface 경로이므로 관련 소유자와 편집자·검증
 순서를 먼저 합의한다. 기존 v1 Runner와 과거 Report를 v2 의미로 덮어쓰지 않는다.
@@ -236,30 +253,48 @@ Full B1 전에 다음을 모두 통과해야 한다.
 12. Builder 재실행 Byte·Hash 일치
 13. `TWO_PERSON_APPROVED` 전 공식 Metric 비공개
 
-예정 표적 명령은 다음과 같다.
+현재 실행한 표적 명령은 다음과 같다.
 
 ```powershell
 .\ai\.venv\Scripts\python.exe -m pytest `
-  ai\tests\unit\test_gold_evaluation_dataset_v2.py `
-  ai\tests\unit\test_gold_corpus_compatibility_v2.py `
   ai\tests\unit\test_evidence_scoring_v2.py `
-  ai\tests\unit\test_full_corpus_baseline_v2.py `
-  ai\tests\unit\test_experiment_playground_v1.py -q
+  ai\tests\unit\test_gold_corpus_compatibility_v2.py `
+  ai\tests\unit\test_gold_evaluation_dataset_v2.py `
+  ai\tests\unit\test_gold_v2_evidence_group_contract.py `
+  ai\tests\unit\test_full_corpus_baseline_v1.py `
+  ai\tests\unit\test_experiment_playground_v0.py `
+  -q -p no:cacheprovider
 
-.\ai\.venv\Scripts\python.exe -m pytest ai\tests\unit -q
-.\ai\.venv\Scripts\python.exe -B -m unittest discover -s data\tools\tests -v
+.\ai\.venv\Scripts\python.exe -m pytest ai\tests\unit -q -p no:cacheprovider
 ```
 
-현재는 기준 결정 문서 작성만 완료했다. 신규 Schema·Dataset·Corpus·Scorer 구현과
-위 테스트는 모두 `NOT_RUN`이며, 본 문서만으로 `TWO_PERSON_APPROVED`, Full B1
-PASS 또는 운영 반영을 선언하지 않는다.
+현재 Gold v2 Schema, Case Validator, 공통 Scorer, Gold–Corpus Compatibility
+Gate와 P004·P005·COLD·HOT ID 계약은 코드로 반영했다. 기존 Full B1과
+Playground의 v1 채점도 같은 Scorer 진입점으로 통일해 표적 회귀를 통과했다.
+다만 Gold v2 Dataset과 Full Corpus v3가 아직 없으므로 Full B1 v2 실데이터 실행,
+공식 Metric, `TWO_PERSON_APPROVED`, 운영 반영은 모두 `NOT_RUN`이다.
 
 ## 9. 진행 순서
 
-1. AI가 Gold v2 Schema와 공통 Scorer 입출력 계약을 코드로 고정한다.
+1. AI가 Gold v2 Schema와 공통 Scorer 입출력 계약을 코드로 고정한다. — `PASS`
 2. Data/QA가 그 계약에 맞춰 Full Corpus v3 후보를 생성한다.
 3. AI가 승인 Case만 Gold v2로 이전하고 Compatibility Gate를 실행한다.
-4. Full B1과 Playground Parity 표적 테스트를 실행한다.
+4. Full B1과 Playground Parity 표적 테스트를 실행한다. — v1 `PASS`, v2 `NOT_RUN`
 5. Case별 2인 서명과 Dataset·Corpus Hash를 고정한다.
 6. 같은 승인 Hash로 Full B1을 실행하고 결과 범위를 판정한다.
 
+## 10. 코드 반영 스냅샷
+
+구현 결과와 Data·QA가 사용할 입력 형식은 아래 회신문서를 SSOT로 사용한다.
+
+- `docs/handoff/20260825_이동윤_to_김은진_gold-v2_code-contract_회신.md`
+- `ai/evaluation/schemas/gold_evaluation_case_v2.schema.json`
+- `ai/evaluation/evidence_scoring_v2.py`
+- `ai/scripts/validate_gold_evaluation_v2.py`
+- `ai/scripts/validate_gold_corpus_compatibility_v2.py`
+- `ai/evaluation/contracts/gold_v2_evidence_group_contract.json`
+
+표적 회귀는 `78 passed, 30 subtests passed`, AI 전체 Unit은
+`548 passed, 4 warnings, 37 subtests passed`다. 실제 Gold v2·Corpus v3 입력에
+대한 Compatibility와 Full B1은 입력 생성 후 별도 실행한다. 기존 경고 4건은
+`jsonschema.RefResolver` 폐기 예정 경고다.

@@ -11,6 +11,7 @@ from typing import Any
 
 import numpy as np
 
+from ...evaluation.evidence_scoring_v2 import score_gold_case
 from ai.scripts.run_full_corpus_baseline_v1 import (
     EmbeddingProvider,
     LocalBgeM3Provider,
@@ -234,6 +235,7 @@ class ExperimentPlaygroundEngine:
         ]
         threshold = float(self.profile["retrieval"]["score_threshold"])
         ranked: list[dict[str, Any]] = []
+        ranked_for_scoring: list[dict[str, Any]] = []
         if candidate_indices:
             scores = self.document_vectors[candidate_indices] @ query_vector
             for local_index in np.argsort(-scores):
@@ -241,6 +243,7 @@ class ExperimentPlaygroundEngine:
                 if score < threshold:
                     continue
                 chunk = self.corpus_rows[candidate_indices[int(local_index)]]
+                ranked_for_scoring.append({"chunk": chunk, "score": score})
                 ranked.append({
                     "rank": len(ranked) + 1,
                     "chunk_id": chunk["chunk_id"],
@@ -265,16 +268,40 @@ class ExperimentPlaygroundEngine:
         )
         expected = matched_gold["expected_evidence"] if matched_gold else []
         retrieval_pass = None
+        gold_scoring: dict[str, Any] | None = None
+        exposed_gold_scoring: dict[str, Any] | None = None
+        scoring_status = "NOT_SCORED"
         if matched_gold is not None:
-            if matched_gold["expected_no_evidence"]:
-                retrieval_pass = not ranked
-            else:
-                retrieval_pass = any(
-                    result["document_id"] == evidence["document_id"]
-                    and bool(set(result["page_refs"]).intersection(evidence["page_refs"]))
-                    for result in ranked
-                    for evidence in expected
-                )
+            gold_scoring = score_gold_case(
+                {**matched_gold, "expected_execution_path": "LOCAL_DENSE_QUERY"},
+                ranked_for_scoring,
+                actual_execution_path="LOCAL_DENSE_QUERY",
+                vector_query_count=1,
+                evaluation_top_k=5,
+            )
+            scoring_status = (
+                "DRAFT_SCORED"
+                if top_k == 5 and product_filter
+                else "NOT_COMPARABLE"
+            )
+            retrieval_pass = (
+                gold_scoring["passed"]
+                if scoring_status == "DRAFT_SCORED"
+                else None
+            )
+            exposed_gold_scoring = dict(gold_scoring)
+            if scoring_status == "NOT_COMPARABLE":
+                for pass_field in (
+                    "passed",
+                    "semantic_passed",
+                    "execution_contract_passed",
+                    "no_evidence_passed",
+                    "no_evidence_success",
+                    "policy_block_success",
+                    "answerability_gate_passed",
+                ):
+                    if pass_field in exposed_gold_scoring:
+                        exposed_gold_scoring[pass_field] = None
 
         wrong_product_hits = sum(
             result["exact_sales_code"] != product_model_code for result in ranked
@@ -303,6 +330,13 @@ class ExperimentPlaygroundEngine:
                 "review_status": matched_gold["review_status"] if matched_gold else None,
                 "expected_evidence": expected,
                 "retrieval_pass": retrieval_pass,
+                "scoring_status": scoring_status,
+                "scoring_contract_version": (
+                    gold_scoring["scoring_contract_version"]
+                    if gold_scoring is not None
+                    else None
+                ),
+                "metrics": exposed_gold_scoring,
             },
             "generation": {
                 "status": "NOT_IMPLEMENTED_V0",

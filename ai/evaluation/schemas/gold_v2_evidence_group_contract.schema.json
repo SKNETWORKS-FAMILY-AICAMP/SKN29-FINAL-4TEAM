@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GoldV2EvidenceGroupContract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "status",
+    "exact_sales_code",
+    "document_id",
+    "rules",
+    "groups"
+  ],
+  "properties": {
+    "contract_version": {"const": "2.0.0-draft.1"},
+    "status": {"const": "AI_OWNER_DECISION_DATA_QA_ACK_PENDING"},
+    "exact_sales_code": {"const": "WPUJAC104DWH"},
+    "document_id": {"const": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"},
+    "rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gold_identity_unit",
+        "group_variant_policy",
+        "gold_child_ids_allowed",
+        "page_ids_allowed_as_gold_identity",
+        "context_only_counts_as_hit",
+        "case_labels_override_group_defaults"
+      ],
+      "properties": {
+        "gold_identity_unit": {"const": "EVIDENCE_GROUP"},
+        "group_variant_policy": {
+          "const": "ANY_REGISTERED_SEARCH_CANDIDATE_CHILD"
+        },
+        "gold_child_ids_allowed": {"const": false},
+        "page_ids_allowed_as_gold_identity": {"const": false},
+        "context_only_counts_as_hit": {"const": false},
+        "case_labels_override_group_defaults": {"const": true}
+      }
+    },
+    "groups": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema_version",
+          "evidence_group_id",
+          "topic_code",
+          "exact_sales_code",
+          "document_id",
+          "page_refs",
+          "child_ids",
+          "source_variant_ids",
+          "consultation_conditions",
+          "mapping_action",
+          "supersedes_group_id",
+          "activation_gates"
+        ],
+        "properties": {
+          "schema_version": {"const": "2.0.0-draft.1"},
+          "evidence_group_id": {
+            "type": "string",
+            "pattern": "^EVD-WPUJAC104DWH-[A-Z0-9-]+-001$"
+          },
+          "topic_code": {
+            "type": "string",
+            "pattern": "^[A-Z0-9_]+$"
+          },
+          "exact_sales_code": {"const": "WPUJAC104DWH"},
+          "document_id": {
+            "const": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+          },
+          "page_refs": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "integer", "minimum": 1}
+          },
+          "child_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^CHILD-WPUJAC104DWH-P[0-9]{3}-[A-Z0-9-]+-001$"
+            }
+          },
+          "source_variant_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "consultation_conditions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "condition_id",
+                "trigger_type",
+                "source_child_ids",
+                "source_page_refs"
+              ],
+              "properties": {
+                "condition_id": {
+                  "type": "string",
+                  "pattern": "^COND-[A-Z0-9-]+-[0-9]{3}$"
+                },
+                "trigger_type": {
+                  "enum": ["PERSISTENCE", "RECURRENCE", "AFTER_CHECK"]
+                },
+                "source_child_ids": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {"type": "string", "minLength": 1}
+                },
+                "source_page_refs": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {"type": "integer", "minimum": 1}
+                }
+              }
+            }
+          },
+          "mapping_action": {
+            "enum": [
+              "CREATE_CHILD_AND_GROUP",
+              "CREATE_GROUP_REMAP_EXISTING_CHILD",
+              "REUSE_EXISTING_GROUP"
+            ]
+          },
+          "supersedes_group_id": {
+            "type": ["string", "null"],
+            "pattern": "^EVD-WPUJAC104DWH-[A-Z0-9-]+-001$"
+          },
+          "activation_gates": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "DATA_QA_SOURCE_SPAN_VERIFIED",
+                "CHILD_HASH_REGENERATED",
+                "CHILD_GROUP_ID_REMAPPED",
+                "CORPUS_V3_LINKED"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
