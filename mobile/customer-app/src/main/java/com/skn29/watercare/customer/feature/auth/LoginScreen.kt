@@ -452,14 +452,23 @@ backgroundRes = R.drawable.water_background_customer,
         if (!signupMode && !usernameRecoveryMode && !passwordResetMode) {
             state.error?.let {
                 ErrorCard(
-                    customerLoginErrorMessage(it),
-                    onRetry = {
-                        if (username.isNotBlank() || password.isNotBlank()) {
-                            viewModel.login(username, password)
+                    message = it,
+                    onRetry =
+                        if (
+                            username.isNotBlank() &&
+                            password.isNotBlank()
+                        ) {
+                            {
+                                viewModel.login(
+                                    username =
+                                        username,
+                                    password =
+                                        password,
+                                )
+                            }
                         } else {
-                            viewModel.demoLogin()
-                        }
-                    },
+                            null
+                        },
                 )
             }
         }

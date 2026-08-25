@@ -83,6 +83,125 @@ class GuidanceViewModelTest {
         }
 
     @Test
+    fun aiRuntimeFailure_doesNotRemainLoading() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val repository =
+                SequencedGuidanceRepository(
+                    mutableListOf(
+                        ApiResult.Failure(
+                            code =
+                                "AI_RUNTIME_UNAVAILABLE",
+                            message =
+                                "AI runtime unavailable",
+                            httpStatus = 503,
+                            retryable = true,
+                        )
+                    )
+                )
+
+            val viewModel =
+                GuidanceViewModel(
+                    inquiryId =
+                        TEST_INQUIRY_ID,
+                    scenario =
+                        MockScenario.NORMAL,
+                    repository =
+                        repository,
+                )
+
+            advanceUntilIdle()
+
+            assertTrue(
+                viewModel.state.value is
+                    GuidanceUiState.AiFailure
+            )
+
+            assertTrue(
+                viewModel.state.value !is
+                    GuidanceUiState.Loading
+            )
+        }
+
+    @Test
+    fun guidanceNetworkFailure_doesNotRemainLoading() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val repository =
+                SequencedGuidanceRepository(
+                    mutableListOf(
+                        ApiResult.Failure(
+                            code =
+                                "NETWORK_ERROR",
+                            message =
+                                "network unavailable",
+                            retryable = true,
+                        )
+                    )
+                )
+
+            val viewModel =
+                GuidanceViewModel(
+                    inquiryId =
+                        TEST_INQUIRY_ID,
+                    scenario =
+                        MockScenario.NORMAL,
+                    repository =
+                        repository,
+                )
+
+            advanceUntilIdle()
+
+            assertTrue(
+                viewModel.state.value is
+                    GuidanceUiState.NetworkFailure
+            )
+
+            assertTrue(
+                viewModel.state.value !is
+                    GuidanceUiState.Loading
+            )
+        }
+
+    @Test
+    fun guidanceServer500_doesNotRemainLoading() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val repository =
+                SequencedGuidanceRepository(
+                    mutableListOf(
+                        ApiResult.Failure(
+                            code =
+                                "INTERNAL_SERVER_ERROR",
+                            message =
+                                "server failure",
+                            httpStatus = 500,
+                            retryable = true,
+                        )
+                    )
+                )
+
+            val viewModel =
+                GuidanceViewModel(
+                    inquiryId =
+                        TEST_INQUIRY_ID,
+                    scenario =
+                        MockScenario.NORMAL,
+                    repository =
+                        repository,
+                )
+
+            advanceUntilIdle()
+
+            assertTrue(
+                viewModel.state.value is
+                    GuidanceUiState.Error
+            )
+
+            assertTrue(
+                viewModel.state.value !is
+                    GuidanceUiState.Loading
+            )
+        }
+
+    @Test
     fun rapidDoubleConsultationRequest_callsWriteOnce() =
         runTest(mainDispatcherRule.dispatcher) {
             var snapshotCalls = 0

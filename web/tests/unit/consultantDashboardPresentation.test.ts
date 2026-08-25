@@ -4,12 +4,12 @@ import { getConsultantDashboardDate } from "../../src/features/consultation/mode
 import { getConsultantDisplayName } from "../../src/features/consultation/model/consultantDisplayName";
 
 describe("consultant dashboard presentation", () => {
-  it("서울 날짜를 고정된 대시보드 형식으로 표시한다", () => {
+  it("서울 날짜와 시간을 고정된 대시보드 형식으로 표시한다", () => {
     expect(
       getConsultantDashboardDate(new Date("2026-08-19T15:30:00.000Z")),
     ).toEqual({
-      dateTime: "2026-08-20",
-      label: "2026. 08. 20. (목)",
+      dateTime: "2026-08-20T00:30",
+      label: "2026. 08. 20. (목) 00:30",
     });
   });
 

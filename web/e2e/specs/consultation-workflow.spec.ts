@@ -1,6 +1,12 @@
 import { resolve } from "node:path";
 
-import { expect, test, type Page, type Response } from "@playwright/test";
+import {
+  expect,
+  test,
+  type Locator,
+  type Page,
+  type Response,
+} from "@playwright/test";
 
 import {
   readBackendFixture,
@@ -14,6 +20,45 @@ import {
 
 const missingInquiryId = "00000000-0000-4000-8000-000000000000";
 let fixture: WebConsultationE2EFixture;
+
+const USAGE_GUIDANCE_DISPLAY_LABELS = {
+  NORMAL: "정상 사용 가능",
+  PARTIAL_STOP: "일부 기능 사용 중단",
+  TOTAL_STOP: "제품 사용 중단",
+  PENDING_CONSULTATION: "상담 확인 필요",
+} as const;
+
+const EXPECTED_CUSTOMER_DISPLAY_NAME = "제갈지용";
+const EXPECTED_CUSTOMER_PHONE_MASKED = "010-****-5678";
+const EXPECTED_QUESTIONNAIRE = [
+  {
+    questionCode: "followup-occurrence-time",
+    questionText: "증상은 언제부터 시작됐나요?",
+    answer: "오늘",
+  },
+  {
+    questionCode: "followup-target-water-type",
+    questionText: "어떤 출수에서 증상이 발생하나요?",
+    answer: "정수",
+  },
+  {
+    questionCode: "followup-occurrence-condition",
+    questionText: "증상은 언제 또는 어떤 조건에서 발생하나요?",
+    answer: "출수 버튼을 누를 때",
+  },
+  {
+    questionCode: "followup-actions-taken",
+    questionText: "이미 확인하거나 조치해 본 내용이 있나요?",
+    answer: "필터 상태 확인",
+  },
+] as const;
+
+interface InitialDetailPresentation {
+  productModel: string;
+  productModelName: string;
+  usageGuidanceStatus: keyof typeof USAGE_GUIDANCE_DISPLAY_LABELS;
+  usageGuidanceDisplayLabel: string;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -31,7 +76,8 @@ function isDetailResponse(response: Response, inquiryId: string): boolean {
 async function expectInitialDetailContract(
   response: Response,
   activeFixture: WebConsultationE2EFixture,
-): Promise<void> {
+  recordMissingFieldFailures = true,
+): Promise<InitialDetailPresentation> {
   expect(response.status()).toBe(200);
   const payload: unknown = await response.json();
   if (!isRecord(payload) || !isRecord(payload.data)) {
@@ -59,6 +105,160 @@ async function expectInitialDetailContract(
       )
     : [];
   expect(actionCodes).toEqual([...activeFixture.allowedActions]);
+
+  if (
+    !isRecord(data.product_and_care) ||
+    typeof data.product_and_care.product_model !== "string" ||
+    data.product_and_care.product_model.trim().length === 0 ||
+    typeof data.product_and_care.product_model_name !== "string" ||
+    data.product_and_care.product_model_name.trim().length === 0 ||
+    !isRecord(data.guidance_and_actions)
+  ) {
+    throw new Error(
+      "상담 통합 상세의 제품·AI 안내 Projection이 올바르지 않습니다.",
+    );
+  }
+
+  const customerDisplayName =
+    typeof data.customer.display_name === "string"
+      ? data.customer.display_name
+      : null;
+  const phoneMasked =
+    typeof data.customer.phone_masked === "string"
+      ? data.customer.phone_masked
+      : null;
+  if (recordMissingFieldFailures) {
+    expect.soft(
+      customerDisplayName,
+      "상담 상세 API의 합성 고객 이름이 예상값과 달라서는 안 됩니다.",
+    ).toBe(EXPECTED_CUSTOMER_DISPLAY_NAME);
+    expect.soft(
+      phoneMasked,
+      "상담 상세 API의 마스킹 연락처가 예상값과 달라서는 안 됩니다.",
+    ).toBe(EXPECTED_CUSTOMER_PHONE_MASKED);
+  }
+
+  const answers =
+    isRecord(data.symptom_and_questionnaire) &&
+    Array.isArray(data.symptom_and_questionnaire.answers)
+      ? data.symptom_and_questionnaire.answers
+      : [];
+  const questionnaire = answers.flatMap((answer) =>
+    isRecord(answer) &&
+    typeof answer.question_code === "string" &&
+    typeof answer.question_text === "string" &&
+    typeof answer.answer === "string"
+      ? [
+          {
+            questionCode: answer.question_code,
+            questionText: answer.question_text,
+            answer: answer.answer,
+          },
+        ]
+      : [],
+  );
+  if (recordMissingFieldFailures) {
+    expect.soft(
+      questionnaire,
+      "상담 상세 API의 문진 질문·답변 4건이 예상값과 일치해야 합니다.",
+    ).toEqual(EXPECTED_QUESTIONNAIRE);
+  }
+
+  const usageGuidanceStatus = data.guidance_and_actions
+    .usage_guidance_status;
+  if (
+    typeof usageGuidanceStatus !== "string" ||
+    !(usageGuidanceStatus in USAGE_GUIDANCE_DISPLAY_LABELS) ||
+    typeof data.guidance_and_actions.usage_guidance_display_label !==
+      "string" ||
+    data.guidance_and_actions.usage_guidance_display_label !==
+      USAGE_GUIDANCE_DISPLAY_LABELS[
+        usageGuidanceStatus as keyof typeof USAGE_GUIDANCE_DISPLAY_LABELS
+      ]
+  ) {
+    throw new Error("AI 안내 상태 코드와 한글 표시명이 일치하지 않습니다.");
+  }
+  if (data.visit !== null) {
+    throw new Error("상담 완료 Fixture의 최초 상세에 방문 정보가 없어야 합니다.");
+  }
+
+  for (const key of ["evidence", "official_evidence", "public_evidence"]) {
+    if (key in data || key in data.guidance_and_actions) {
+      throw new Error(
+        "계약에 없는 공식 Evidence가 상담 상세 응답에 포함되었습니다.",
+      );
+    }
+  }
+
+  return {
+    productModel: data.product_and_care.product_model,
+    productModelName: data.product_and_care.product_model_name,
+    usageGuidanceStatus:
+      usageGuidanceStatus as keyof typeof USAGE_GUIDANCE_DISPLAY_LABELS,
+    usageGuidanceDisplayLabel:
+      data.guidance_and_actions.usage_guidance_display_label,
+  };
+}
+
+async function expectInitialDetailPresentation(
+  detailPanel: Locator,
+  expected: InitialDetailPresentation,
+): Promise<void> {
+  const customerSection = detailPanel
+    .getByRole("heading", { name: "고객 정보", exact: true })
+    .locator("..");
+  await expect(
+    customerSection.getByText(EXPECTED_CUSTOMER_DISPLAY_NAME, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    customerSection.getByText(EXPECTED_CUSTOMER_PHONE_MASKED, { exact: true }),
+  ).toBeVisible();
+
+  const productSection = detailPanel
+    .getByRole("heading", { name: "제품·관리 정보", exact: true })
+    .locator("..");
+  await expect(
+    productSection.getByText(expected.productModelName, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    productSection.getByText(expected.productModel, { exact: true }),
+  ).toBeVisible();
+
+  const questionnaireSection = detailPanel
+    .getByRole("heading", { name: "증상·문진", exact: true })
+    .locator("..");
+  for (const item of EXPECTED_QUESTIONNAIRE) {
+    await expect(
+      questionnaireSection.getByText(item.questionText, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      questionnaireSection.getByText(item.answer, { exact: true }),
+    ).toBeVisible();
+  }
+
+  const guidanceSection = detailPanel
+    .getByRole("heading", { name: "사용 안내", exact: true })
+    .locator("..");
+  await expect(
+    guidanceSection.getByText(expected.usageGuidanceDisplayLabel, {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    guidanceSection.getByText(expected.usageGuidanceStatus, { exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    guidanceSection.getByText("공개 근거 미제공 / 상담 검토 필요", {
+      exact: true,
+    }),
+  ).toBeVisible();
+
+  const consultationAndVisitSection = detailPanel
+    .getByRole("heading", { name: "상담·방문 정보", exact: true })
+    .locator("..");
+  await expect(
+    consultationAndVisitSection.getByText("방문 정보 없음", { exact: true }),
+  ).toBeVisible();
 }
 
 async function expectCompletedDetailContract(
@@ -341,7 +541,14 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
   await fixtureCard.click();
   const listFirstDetailPanel = page.getByRole("dialog");
   await expect(listFirstDetailPanel).toBeVisible();
-  await expectInitialDetailContract(await initialDetailResponse, fixture);
+  const initialDetailPresentation = await expectInitialDetailContract(
+    await initialDetailResponse,
+    fixture,
+  );
+  await expectInitialDetailPresentation(
+    listFirstDetailPanel,
+    initialDetailPresentation,
+  );
   await expect(
     listFirstDetailPanel.locator('[data-action-code="START_CONSULTATION"]'),
   ).toBeVisible();
@@ -372,7 +579,11 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
   await recentInquiry.click();
   const firstDetailPanel = page.getByRole("dialog");
   await expect(firstDetailPanel).toBeVisible();
-  await expectInitialDetailContract(await dashboardDetailResponse, fixture);
+  await expectInitialDetailContract(
+    await dashboardDetailResponse,
+    fixture,
+    false,
+  );
   await expect(
     firstDetailPanel.locator('[data-action-code="START_CONSULTATION"]'),
   ).toBeVisible();

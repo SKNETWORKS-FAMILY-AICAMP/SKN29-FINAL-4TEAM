@@ -1124,6 +1124,7 @@ html body
   #root
   .consultant-dashboard-app
   .counselor-dashboard-org__department::before {
+  position: absolute !important;
   top: 50% !important;
   width: 7px !important;
   height: 2px !important;
@@ -3635,6 +3636,221 @@ html body
   }
 }
 
+/* Keep the current dashboard tools readable while the desktop rail is expanded. */
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-info__panel--contacts
+  > header {
+  gap: 12px;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-info__panel--contacts
+  > header
+  h2 {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-info__panel--contacts
+  .counselor-dashboard-contact-tools {
+  min-width: 0;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-info__panel--contacts
+  .counselor-dashboard-contact-tools
+  label {
+  width: min(100%, 190px) !important;
+  min-width: 0;
+}
+
+/* The desktop workspace uses a side rail; smaller screens keep the same menu
+   destinations in one horizontally scrollable row. */
+
+@media (max-width: 900px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    .consultant-queue-main {
+    display: grid !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 64px 116px minmax(560px, 1fr) !important;
+    gap: 0 !important;
+    padding: 0 14px 18px !important;
+    overflow: visible !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    .consultant-main-header {
+    width: 100% !important;
+    height: 64px !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar {
+    position: relative !important;
+    z-index: 30 !important;
+    display: grid !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 116px !important;
+    min-height: 116px !important;
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 52px 64px !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-sidebar-brand {
+    display: flex !important;
+    width: 100% !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tabs {
+    display: flex !important;
+    width: 100% !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 4px !important;
+    padding: 4px 8px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: thin;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tabs
+    :is(
+      .consultant-work-tab,
+      .consultant-work-tab:hover,
+      .consultant-work-tab.is-active,
+      .consultant-work-tab.is-active:hover
+    ) {
+    display: flex !important;
+    width: auto !important;
+    min-width: 132px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px !important;
+    border-radius: 10px !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab
+    strong {
+    display: block !important;
+    max-width: none !important;
+    font-size: 15px !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab__icon {
+    display: block !important;
+    width: 20px !important;
+    height: 20px !important;
+    margin-right: 9px !important;
+    flex: 0 0 20px;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab
+    > b {
+    opacity: 1 !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+    .consultant-queue-main {
+    grid-template-rows: 64px 116px 226px minmax(0, 1fr) !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-summary {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-dashboard-info {
+    grid-column: 1 !important;
+    grid-row: 4 !important;
+  }
+}
+
 @media (max-width: 900px) {
   html body
     #root
@@ -3678,142 +3894,355 @@ html body
   }
 }
 
-/* Consultant workspace top navigation. */
+/* Dashboard hero: greeting on the dark header and metrics across the boundary. */
 
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  .consultant-queue-main {
-  display: grid !important;
+@media (min-width: 901px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+    .consultant-queue-main {
+    grid-template-rows: 72px 226px minmax(0, 1fr) !important;
+    gap: 0 !important;
+  }
+
+  html body
+    #root
+  .consultant-dashboard-app
+  .counselor-home-summary {
+  position: relative !important;
+  display: block !important;
   width: 100% !important;
-  max-width: none !important;
-  height: 100dvh !important;
-  min-height: 650px;
-  grid-template-columns: minmax(0, 1fr) !important;
-  grid-template-rows: 72px minmax(0, 1fr) !important;
-  gap: 16px 0 !important;
-  padding: 0 24px 24px !important;
-  transition: none !important;
-}
+  height: 226px !important;
+  min-height: 226px !important;
+  margin: 0 !important;
+    padding: 30px 48px 82px !important;
+    overflow: visible !important;
+    box-sizing: border-box;
+    background: var(--consultant-refresh-navy) !important;
+    background-color: var(--consultant-refresh-navy) !important;
+    background-image: none !important;
+  }
 
-@supports selector(.consultant-queue-main:has(> #consultant-queue-sidebar)) {
   html body
     #root
-    .simple-consultant-app.consultant-queue-app
-    .consultant-queue-main:has(> #consultant-queue-sidebar),
+    .consultant-dashboard-app
+    .counselor-home-summary__intro {
+    display: grid !important;
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    grid-template-rows: auto auto !important;
+    align-items: center;
+    column-gap: 40px;
+    row-gap: 7px;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+  }
+
   html body
     #root
-    .simple-consultant-app.consultant-queue-app
-    .consultant-queue-main:has(
-      > #consultant-queue-sidebar:is(:hover, :focus-within)
-    ) {
-    grid-template-columns: minmax(0, 1fr) !important;
-    transition: none !important;
+    .consultant-dashboard-app
+    .counselor-home-summary__intro
+    h1 {
+    grid-column: 1;
+    grid-row: 1;
+    color: #fff !important;
+    font-size: clamp(27px, 2.35vw, 32px) !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.045em !important;
+    -webkit-text-fill-color: #fff !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-summary__greeting-subline {
+    grid-column: 1;
+    grid-row: 2;
+    margin: 0 !important;
+    color: rgb(255 255 255 / 70%) !important;
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+    letter-spacing: -0.02em !important;
+    -webkit-text-fill-color: rgb(255 255 255 / 70%) !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-summary__date {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: center;
+    justify-self: end;
+    margin: 0 !important;
+    color: rgb(255 255 255 / 76%) !important;
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+    letter-spacing: -0.015em !important;
+    -webkit-text-fill-color: rgb(255 255 255 / 76%) !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-metrics {
+    position: absolute !important;
+    z-index: 2;
+    right: 48px;
+    bottom: -59px;
+    left: 48px;
+    display: grid !important;
+    width: auto !important;
+    height: 118px !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    :is(.counselor-home-metric, .counselor-home-metric.is-active) {
+    width: 100% !important;
+    height: 118px !important;
+    min-height: 118px !important;
+    padding: 19px 22px 17px 40px !important;
+    border: 1px solid #e1e4e8 !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    background-color: #fff !important;
+    box-shadow: 0 14px 34px rgb(17 28 51 / 14%) !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-metric:hover {
+    background: #fafafa !important;
+    background-color: #fafafa !important;
+    box-shadow: 0 16px 36px rgb(17 28 51 / 17%) !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-metric::before {
+    top: 50%;
+    left: 18px;
+    width: 4px;
+    height: 56px;
+    transform: translateY(-50%);
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-dashboard-info {
+    box-sizing: border-box;
+    padding-top: 74px !important;
   }
 }
 
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
-  .consultant-queue-main {
-  grid-template-rows: 72px 164px minmax(0, 1fr) !important;
+@media (max-width: 900px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+    .consultant-queue-main {
+    grid-template-rows: 64px 56px 0 226px minmax(0, 1fr) !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-summary {
+    position: relative !important;
+    display: block !important;
+    width: calc(100% + 28px) !important;
+    height: 226px !important;
+    min-height: 226px !important;
+    margin: 0 -14px !important;
+    padding: 24px 20px 76px !important;
+    overflow: visible !important;
+    box-sizing: border-box;
+    background: var(--consultant-refresh-navy) !important;
+    background-color: var(--consultant-refresh-navy) !important;
+    background-image: none !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-summary__intro {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    grid-template-rows: auto auto !important;
+    align-items: center;
+    column-gap: 20px;
+    row-gap: 6px;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-summary__intro
+    h1 {
+    grid-column: 1;
+    grid-row: 1;
+    color: #fff !important;
+    font-size: clamp(23px, 4vw, 29px) !important;
+    -webkit-text-fill-color: #fff !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-summary__greeting-subline {
+    grid-column: 1;
+    grid-row: 2;
+    margin: 0 !important;
+    color: rgb(255 255 255 / 70%) !important;
+    font-size: 14px !important;
+    -webkit-text-fill-color: rgb(255 255 255 / 70%) !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-summary__date {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: center;
+    justify-self: end;
+    margin: 0 !important;
+    color: rgb(255 255 255 / 76%) !important;
+    font-size: 13px !important;
+    -webkit-text-fill-color: rgb(255 255 255 / 76%) !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-metrics {
+    position: absolute !important;
+    z-index: 2;
+    right: 16px;
+    bottom: -52px;
+    left: 16px;
+    display: grid !important;
+    width: auto !important;
+    height: 104px !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    :is(.counselor-home-metric, .counselor-home-metric.is-active) {
+    width: 100% !important;
+    height: 104px !important;
+    min-height: 104px !important;
+    padding: 14px 10px 13px 27px !important;
+    border: 1px solid #e1e4e8 !important;
+    border-radius: 9px !important;
+    background: #fff !important;
+    box-shadow: 0 12px 28px rgb(17 28 51 / 14%) !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-metric::before {
+    left: 12px;
+    width: 3px;
+    height: 42px;
+    transform: translateY(-50%);
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-metric
+    > span {
+    font-size: 11px !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-metric
+    > strong {
+    font-size: 30px !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-dashboard-info {
+    box-sizing: border-box;
+    padding-top: 66px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-summary {
+    padding-top: 20px !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-summary__intro {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto auto auto !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-summary__date {
+    grid-column: 1;
+    grid-row: 3;
+    justify-self: end;
+    margin-top: 8px !important;
+  }
+}
+
+/* Dashboard spacing and readability refinements. */
+
+html body #root .consultant-dashboard-app {
+  height: auto !important;
+  min-height: 100dvh !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
 }
 
 html body
   #root
   .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar,
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar:is(:hover, :focus-within) {
-  position: relative !important;
-  z-index: 30 !important;
-  display: flex !important;
-  width: calc(100% + 48px) !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  height: 72px !important;
-  min-height: 72px !important;
-  max-height: 72px !important;
-  grid-column: 1 !important;
-  grid-row: 1 !important;
-  align-items: center !important;
-  gap: 26px !important;
-  margin: 0 -24px !important;
-  padding: 0 230px 0 28px !important;
-  overflow: hidden !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  outline: 0 !important;
-  background: var(--consultant-refresh-navy) !important;
-  background-color: var(--consultant-refresh-navy) !important;
-  background-image: none !important;
-  box-shadow: none !important;
-  transform: none !important;
-  transition: none !important;
-}
-
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar::before,
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar::after,
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
   #consultant-queue-sidebar
-  .consultant-work-tabs::before,
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar
-  .consultant-work-tabs::after,
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar
-  .consultant-work-tab::before,
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar
-  .consultant-work-tab::after {
-  display: none !important;
-  content: none !important;
-}
-
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar
-  .consultant-sidebar-brand,
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar:is(:hover, :focus-within)
-  .consultant-sidebar-brand {
-  display: inline-flex !important;
-  width: auto !important;
-  min-width: max-content !important;
-  height: 72px !important;
-  flex: 0 0 auto !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  background-image: none !important;
-  box-shadow: none !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  transform: none !important;
-  transition: none !important;
+  .consultant-work-tab
+  strong {
+  font-size: 17px !important;
 }
 
 html body
@@ -3822,463 +4251,307 @@ html body
   #consultant-queue-sidebar
   .consultant-sidebar-brand
   .simple-brand__wordmark {
-  font-size: 24px !important;
-}
-
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar
-  .consultant-work-tabs {
-  display: flex !important;
-  width: auto !important;
-  min-width: 0 !important;
-  height: 72px !important;
-  min-height: 72px !important;
-  flex: 1 1 auto !important;
-  grid-template-columns: none !important;
-  grid-template-rows: none !important;
-  grid-auto-rows: auto !important;
-  align-items: stretch !important;
-  align-content: normal !important;
-  gap: 4px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  box-shadow: none !important;
-  scrollbar-width: none;
-  transition: none !important;
-}
-
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar
-  .consultant-work-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar
-  .consultant-work-tabs
-  :is(
-    .consultant-work-tab,
-    .consultant-work-tab:hover,
-    .consultant-work-tab:active,
-    .consultant-work-tab:focus,
-    .consultant-work-tab:focus-visible,
-    .consultant-work-tab.is-active,
-    .consultant-work-tab.is-active:hover
-  ) {
-  position: relative !important;
-  display: inline-flex !important;
-  width: auto !important;
-  min-width: max-content !important;
-  max-width: none !important;
-  height: 72px !important;
-  min-height: 72px !important;
-  max-height: 72px !important;
-  flex: 0 0 auto !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 7px !important;
-  margin: 0 !important;
-  padding: 0 12px !important;
-  border: 0 !important;
-  border-radius: 10px !important;
-  outline-offset: -5px !important;
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-  box-shadow: none !important;
-  color: rgb(255 255 255 / 72%) !important;
-  text-align: center !important;
-  text-decoration: none !important;
-  filter: none !important;
-  opacity: 1 !important;
-  transform: none !important;
-  transition: none !important;
-  -webkit-text-fill-color: rgb(255 255 255 / 72%) !important;
-}
-
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar
-  .consultant-work-tabs
-  :is(
-    .consultant-work-tab.is-active,
-    .consultant-work-tab.is-active:hover,
-    .consultant-work-tab[aria-selected="true"],
-    .consultant-work-tab[aria-selected="true"]:hover
-  ) {
-  background: rgb(255 255 255 / 14%) !important;
-  background-color: rgb(255 255 255 / 14%) !important;
-  color: #fff !important;
-  -webkit-text-fill-color: #fff !important;
-}
-
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar
-  .consultant-work-tab
-  > span {
-  display: inline-flex !important;
-  min-width: 0 !important;
-  align-items: center !important;
-}
-
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar
-  .consultant-work-tab
-  strong,
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar:is(:hover, :focus-within)
-  .consultant-work-tab
-  strong {
-  display: inline !important;
   overflow: visible !important;
-  max-width: none !important;
-  color: inherit !important;
-  font-size: 13px !important;
-  font-weight: 700 !important;
-  line-height: 1 !important;
-  opacity: 1 !important;
-  text-overflow: clip !important;
-  white-space: nowrap !important;
-  transform: none !important;
-  transition: none !important;
-  -webkit-text-fill-color: currentcolor !important;
-}
-
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar
-  .consultant-work-tab
-  > b,
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar:is(:hover, :focus-within)
-  .consultant-work-tab
-  > b {
-  display: inline-grid !important;
-  width: auto !important;
-  min-width: 20px !important;
-  height: 20px !important;
-  flex: 0 0 auto !important;
-  place-items: center !important;
-  margin: 0 !important;
-  padding: 0 5px !important;
-  border: 0 !important;
-  border-radius: 999px !important;
-  background: rgb(255 255 255 / 14%) !important;
-  color: inherit !important;
-  font-size: 10px !important;
-  font-weight: 700 !important;
-  line-height: 1 !important;
-  box-shadow: none !important;
-  opacity: 1 !important;
-  transform: none !important;
-  transition: none !important;
-  -webkit-text-fill-color: currentcolor !important;
-}
-
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  .consultant-main-header {
-  position: relative !important;
-  z-index: 40 !important;
-  display: flex !important;
-  width: max-content !important;
-  min-width: 0 !important;
-  height: 72px !important;
-  min-height: 72px !important;
-  max-height: 72px !important;
-  grid-column: 1 !important;
-  grid-row: 1 !important;
-  align-items: center !important;
-  justify-self: end !important;
-  justify-content: flex-end !important;
-  margin: 0 !important;
-  padding: 0 4px 0 18px !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: var(--consultant-refresh-navy) !important;
-  background-color: var(--consultant-refresh-navy) !important;
-  background-image: none !important;
-  box-shadow: none !important;
-  transform: none !important;
-  transition: none !important;
-}
-
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  .consultant-main-header
-  .consultant-user-menu {
-  gap: 10px !important;
-  color: #fff !important;
-}
-
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  .consultant-main-header
-  :is(.consultant-user-menu__name, .consultant-user-menu__sign-out),
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  .consultant-main-header
-  .consultant-user-menu__sign-out:hover {
-  color: #fff !important;
-  transform: none !important;
-  transition: none !important;
-}
-
-html body
-  #root
-  .simple-consultant-app.consultant-queue-app
-  .consultant-main-header
-  .consultant-user-menu__divider {
-  background: rgb(255 255 255 / 34%) !important;
+  padding-bottom: 1px;
+  line-height: 1.18 !important;
 }
 
 html body
   #root
   .consultant-dashboard-app
   .counselor-home-summary {
-  grid-column: 1 !important;
-  grid-row: 2 !important;
+  border-top: 0 !important;
 }
 
-html body
-  #root
-  .consultant-dashboard-app
-  .counselor-dashboard-info {
-  grid-column: 1 !important;
-  grid-row: 3 !important;
-}
-
-html body
-  #root
-  :is(
-    .consultant-inquiry-list-app .consultant-queue-panel,
-    .consultant-notice-app .consultant-notice-panel,
-    .phone-inquiry-entry-app .phone-inquiry-entry-panel
-  ) {
-  grid-column: 1 !important;
-  grid-row: 2 !important;
-}
-
-@media (max-width: 1180px) {
+@media (min-width: 901px) {
   html body
     #root
-    .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar {
-    gap: 18px !important;
-    padding-right: 205px !important;
-    padding-left: 22px !important;
+    .consultant-dashboard-app
+    .counselor-home-summary {
+    padding-top: 78px !important;
   }
 
   html body
     #root
-    .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar
-    .consultant-sidebar-brand
-    .simple-brand__wordmark {
-    font-size: 21px !important;
+    .consultant-dashboard-app
+    .counselor-home-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
 
-  html body
-    #root
-    .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar
-    .consultant-work-tabs
-    .consultant-work-tab {
-    padding-right: 9px !important;
-    padding-left: 9px !important;
-  }
-
-  html body
-    #root
-    .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar
-    .consultant-work-tab
-    strong {
-    font-size: 12px !important;
-  }
-}
-
-@media (max-width: 900px) {
-  html body
-    #root
-    .simple-consultant-app.consultant-queue-app
-    .consultant-queue-main,
   html body
     #root
     .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
     .consultant-queue-main {
     height: auto !important;
     min-height: 100dvh !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    grid-template-rows: 64px 56px 12px minmax(0, 1fr) !important;
-    gap: 0 !important;
-    padding: 0 14px 16px !important;
-  }
-
-  html body
-    #root
-    .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
-    .consultant-queue-main {
-    grid-template-rows: 64px 56px 12px auto minmax(0, 1fr) !important;
-  }
-
-  html body
-    #root
-    .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar,
-  html body
-    #root
-    .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar:is(:hover, :focus-within) {
-    display: contents !important;
-  }
-
-  html body
-    #root
-    .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar
-    .consultant-sidebar-brand,
-  html body
-    #root
-    .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar:is(:hover, :focus-within)
-    .consultant-sidebar-brand {
-    z-index: 30 !important;
-    width: calc(100% + 28px) !important;
-    height: 64px !important;
-    grid-column: 1 !important;
-    grid-row: 1 !important;
-    margin: 0 -14px !important;
-    padding: 0 178px 0 18px !important;
-    background: var(--consultant-refresh-navy) !important;
-  }
-
-  html body
-    #root
-    .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar
-    .consultant-work-tabs {
-    z-index: 29 !important;
-    width: calc(100% + 28px) !important;
-    height: 56px !important;
-    min-height: 56px !important;
-    grid-column: 1 !important;
-    grid-row: 2 !important;
-    gap: 2px !important;
-    margin: 0 -14px !important;
-    padding: 0 12px !important;
-    background: var(--consultant-refresh-navy) !important;
-  }
-
-  html body
-    #root
-    .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar
-    .consultant-work-tabs
-    :is(
-      .consultant-work-tab,
-      .consultant-work-tab:hover,
-      .consultant-work-tab:active,
-      .consultant-work-tab:focus,
-      .consultant-work-tab:focus-visible,
-      .consultant-work-tab.is-active,
-      .consultant-work-tab.is-active:hover
-    ) {
-    height: 56px !important;
-    min-height: 56px !important;
-    max-height: 56px !important;
-    padding: 0 10px !important;
-  }
-
-  html body
-    #root
-    .simple-consultant-app.consultant-queue-app
-    .consultant-main-header {
-    height: 64px !important;
-    min-height: 64px !important;
-    max-height: 64px !important;
-    grid-row: 1 !important;
-    padding-right: 4px !important;
+    grid-template-rows: 72px 226px auto !important;
+    overflow: visible !important;
   }
 
   html body
     #root
     .consultant-dashboard-app
-    .counselor-home-summary {
-    grid-column: 1 !important;
-    grid-row: 4 !important;
+    .counselor-home-summary__date {
+    font-size: 22px !important;
+    white-space: nowrap;
   }
 
   html body
     #root
     .consultant-dashboard-app
     .counselor-dashboard-info {
-    grid-column: 1 !important;
-    grid-row: 5 !important;
+    min-height: 534px !important;
+    overflow: visible !important;
   }
 
   html body
     #root
+    .consultant-dashboard-app
     :is(
-      .consultant-inquiry-list-app .consultant-queue-panel,
-      .consultant-notice-app .consultant-notice-panel,
-      .phone-inquiry-entry-app .phone-inquiry-entry-panel
+      .counselor-dashboard-info__panel--recent,
+      .counselor-dashboard-info__panel--notices,
+      .counselor-dashboard-info__panel--contacts
     ) {
-    grid-column: 1 !important;
-    grid-row: 4 !important;
+    height: auto !important;
+    min-height: 460px !important;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 1180px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab
+    strong {
+    font-size: 16px !important;
+  }
+}
+
+@media (min-width: 1181px) {
   html body
     #root
     .simple-consultant-app.consultant-queue-app
     #consultant-queue-sidebar
     .consultant-sidebar-brand
     .simple-brand__wordmark {
-    font-size: 19px !important;
+    font-size: 23px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
 
   html body
     #root
-    .simple-consultant-app.consultant-queue-app
-    .consultant-main-header
-    .consultant-user-menu__name {
-    display: none !important;
+    .consultant-dashboard-app
+    .counselor-home-summary__date {
+    font-size: 20px !important;
+    line-height: 1.35 !important;
+    white-space: nowrap;
   }
 
   html body
     #root
+    .consultant-dashboard-app
+    .counselor-dashboard-info {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    :is(
+      .counselor-dashboard-info__panel--recent,
+      .counselor-dashboard-info__panel--notices,
+      .counselor-dashboard-info__panel--contacts
+    ) {
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
+
+@media (max-width: 600px) {
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-home-metrics {
+    bottom: -108px !important;
+    height: 216px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 104px) !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-dashboard-info {
+    padding-top: 124px !important;
+  }
+}
+
+/* Dashboard compact scrollable information panels. */
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  #consultant-queue-sidebar
+  .consultant-work-tabs
+  > .consultant-work-tab::after {
+  display: none !important;
+  content: none !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  #consultant-queue-sidebar
+  .consultant-work-tabs
+  > .consultant-work-tab
+  + .consultant-work-tab
+  > span::before {
+  display: none !important;
+  content: none !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  #consultant-queue-sidebar:is(:hover, :focus-within)
+  .consultant-work-tab
+  strong {
+  font-size: 17px !important;
+}
+
+@media (max-width: 1180px) {
+  html body
+    #root
     .simple-consultant-app.consultant-queue-app
-    .consultant-main-header
-    .consultant-user-menu__divider {
-    display: none !important;
+    #consultant-queue-sidebar:is(:hover, :focus-within)
+    .consultant-work-tab
+    strong {
+    font-size: 16px !important;
+  }
+}
+
+@media (min-width: 901px) {
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-dashboard-info {
+    min-height: 414px !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    :is(
+      .counselor-dashboard-info__panel--recent,
+      .counselor-dashboard-info__panel--notices,
+      .counselor-dashboard-info__panel--contacts
+    ) {
+    height: 340px !important;
+    min-height: 340px !important;
+    max-height: 340px !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    :is(
+      .counselor-dashboard-info__panel--recent,
+      .counselor-dashboard-info__panel--notices
+    ) {
+    display: flex !important;
+    flex-direction: column;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    :is(.counselor-dashboard-recent, .counselor-dashboard-notices) {
+    min-height: 0;
+    flex: 1 1 0;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-color: var(--consultant-refresh-navy) transparent;
+    scrollbar-width: thin;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-dashboard-notices
+    li {
+    min-height: 52px;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    :is(.counselor-dashboard-recent, .counselor-dashboard-notices)::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    :is(.counselor-dashboard-recent, .counselor-dashboard-notices)::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    :is(.counselor-dashboard-recent, .counselor-dashboard-notices)::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: var(--consultant-refresh-navy);
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    :is(.counselor-dashboard-org, .counselor-dashboard-contact-table-wrap) {
+    box-sizing: border-box;
+    height: 278px;
+    min-height: 0 !important;
+    max-height: 278px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: var(--consultant-refresh-navy) transparent;
+    scrollbar-width: thin;
+  }
+}
+
+/* Final compact-screen row placement after the dashboard hero refinements. */
+
+@media (max-width: 900px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    .consultant-queue-main {
+    grid-template-rows: 64px 116px minmax(560px, 1fr) !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.simple-consultant-app.consultant-queue-app
+    .consultant-main-header {
+    height: 64px !important;
+    min-height: 64px !important;
+    max-height: 64px !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+    .consultant-queue-main {
+    grid-template-rows: 64px 116px 226px minmax(0, 1fr) !important;
   }
 }

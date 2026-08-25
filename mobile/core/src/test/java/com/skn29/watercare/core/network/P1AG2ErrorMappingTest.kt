@@ -137,4 +137,152 @@ class P1AG2ErrorMappingTest {
         assertTrue(failure.retryable)
         assertEquals(30, failure.retryAfterSeconds)
     }
+    @Test
+    fun authVerification401_preservesBackendUserMessage() =
+        runBlocking {
+            val message =
+                "인증정보를 확인할 수 없습니다. 처음부터 다시 시도해 주세요."
+
+            val body =
+                """
+                {
+                  "success": false,
+                  "data": null,
+                  "error": {
+                    "code": "AUTH_VERIFICATION_FAILED",
+                    "message": "$message",
+                    "details": {}
+                  }
+                }
+                """.trimIndent()
+
+            val result =
+                safeApiCall<SessionResponse>(
+                    json
+                ) {
+                    Response.error(
+                        401,
+                        body.toResponseBody(),
+                    )
+                }
+
+            assertTrue(
+                result is ApiResult.Failure
+            )
+
+            val failure =
+                result as ApiResult.Failure
+
+            assertEquals(
+                "AUTH_VERIFICATION_FAILED",
+                failure.code,
+            )
+            assertEquals(
+                message,
+                failure.message,
+            )
+            assertEquals(
+                401,
+                failure.httpStatus,
+            )
+        }
+
+    @Test
+    fun identifierUnavailable409_preservesBackendUserMessage() =
+        runBlocking {
+            val message =
+                "사용할 수 없는 아이디입니다. 다른 아이디를 입력해 주세요."
+
+            val body =
+                """
+                {
+                  "success": false,
+                  "data": null,
+                  "error": {
+                    "code": "AUTH_IDENTIFIER_UNAVAILABLE",
+                    "message": "$message",
+                    "details": {}
+                  }
+                }
+                """.trimIndent()
+
+            val result =
+                safeApiCall<SessionResponse>(
+                    json
+                ) {
+                    Response.error(
+                        409,
+                        body.toResponseBody(),
+                    )
+                }
+
+            assertTrue(
+                result is ApiResult.Failure
+            )
+
+            val failure =
+                result as ApiResult.Failure
+
+            assertEquals(
+                "AUTH_IDENTIFIER_UNAVAILABLE",
+                failure.code,
+            )
+            assertEquals(
+                message,
+                failure.message,
+            )
+            assertEquals(
+                409,
+                failure.httpStatus,
+            )
+        }
+
+    @Test
+    fun nonAuth401_stillUsesSessionExpiredMessage() =
+        runBlocking {
+            val body =
+                """
+                {
+                  "success": false,
+                  "data": null,
+                  "error": {
+                    "code": "RESOURCE_UNAUTHORIZED",
+                    "message": "internal detail",
+                    "details": {}
+                  }
+                }
+                """.trimIndent()
+
+            val result =
+                safeApiCall<SessionResponse>(
+                    json
+                ) {
+                    Response.error(
+                        401,
+                        body.toResponseBody(),
+                    )
+                }
+
+            assertTrue(
+                result is ApiResult.Failure
+            )
+
+            val failure =
+                result as ApiResult.Failure
+
+            assertEquals(
+                401,
+                failure.httpStatus,
+            )
+
+            assertTrue(
+                failure.message.isNotBlank()
+            )
+
+            assertTrue(
+                failure.message !=
+                    "internal detail"
+            )
+        }
+
 }
