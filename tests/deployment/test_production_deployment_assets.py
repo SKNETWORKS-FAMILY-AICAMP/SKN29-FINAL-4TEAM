@@ -147,6 +147,7 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertNotIn("WATERBRIDGE_RUNTIME_ENV_FILE", text)
         self.assertIn("validate_backend_runtime.py", deploy)
         self.assertIn("validate_ai_readonly_runtime.py", deploy)
+        self.assertIn("--env PYTHONPATH=/workspace/backend", deploy)
         self.assertIn("BACKEND_TO_AI_SOCKET_PASS", deploy)
 
     def test_backend_image_is_non_root_locked_and_collects_static(self) -> None:
@@ -189,6 +190,29 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("complete_lineage=53", ai)
         self.assertIn("default_transaction_read_only", ai)
         self.assertNotIn("print(dsn", ai)
+        for stage in (
+            "DJANGO_SETUP",
+            "DATABASE_CONNECTION",
+            "POSTGRES_VERSION",
+            "PGVECTOR_VERSION",
+            "MIGRATION_MARKERS",
+            "EVIDENCE_0014",
+            "VISITS_0005_HOLD",
+            "MIGRATION_PLAN",
+        ):
+            self.assertIn(stage, backend)
+        self.assertIn(
+            'f"reason={stage} error_type={type(exc).__name__}"', backend
+        )
+        self.assertNotIn("print(exc", backend)
+
+    def test_ssm_failures_always_emit_deploy_and_rollback_results(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertEqual(workflow.count("aws ssm get-command-invocation"), 2)
+        self.assertIn("SSM_DEPLOY_WAITER_FAILED status=%s", workflow)
+        self.assertIn("SSM_ROLLBACK_WAITER_FAILED status=%s", workflow)
+        self.assertIn('[[ "$status" == "Success" ]]', workflow)
+        self.assertIn('[[ "$rollback_status" == "Success" ]]', workflow)
 
     def test_host_scripts_do_not_print_or_copy_secret_values(self) -> None:
         deploy = DEPLOY.read_text(encoding="utf-8")
