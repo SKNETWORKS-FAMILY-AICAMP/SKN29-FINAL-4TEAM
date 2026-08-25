@@ -151,7 +151,7 @@ def test_mcp_pipeline_uses_backend_model_code_unchanged(monkeypatch):
     search_service = _SearchService([_chunk()])
     monkeypatch.setattr(
         pipeline_router_module,
-        "McpEvidenceSearchService",
+        "_create_mcp_evidence_search_service",
         lambda: search_service,
     )
     router = PipelineRouter(
@@ -202,7 +202,7 @@ def test_mcp_unapproved_iac606_leak_code_applies_safety_before_retrieval(
     llm = _LLM()
     monkeypatch.setattr(
         pipeline_router_module,
-        "McpEvidenceSearchService",
+        "_create_mcp_evidence_search_service",
         lambda: search_service,
     )
 
@@ -247,7 +247,7 @@ def test_mcp_context_timeout_stops_before_search_and_provider(monkeypatch):
     correlation_id = uuid4()
     monkeypatch.setattr(
         pipeline_router_module,
-        "McpEvidenceSearchService",
+        "_create_mcp_evidence_search_service",
         lambda: search_created.append(True),
     )
 
@@ -290,7 +290,7 @@ def test_mcp_no_evidence_and_cross_model_evidence_fail_closed(monkeypatch):
     empty_search = _SearchService([])
     monkeypatch.setattr(
         pipeline_router_module,
-        "McpEvidenceSearchService",
+        "_create_mcp_evidence_search_service",
         lambda: empty_search,
     )
     empty_router = PipelineRouter(
@@ -313,7 +313,7 @@ def test_mcp_no_evidence_and_cross_model_evidence_fail_closed(monkeypatch):
     wrong_search = _SearchService([_chunk("WPUIAC606SNW")])
     monkeypatch.setattr(
         pipeline_router_module,
-        "McpEvidenceSearchService",
+        "_create_mcp_evidence_search_service",
         lambda: wrong_search,
     )
     wrong_router = PipelineRouter(
@@ -335,3 +335,86 @@ def test_mcp_no_evidence_and_cross_model_evidence_fail_closed(monkeypatch):
         "CHILD-WPUIAC606SNW-TEST"
     ]
     assert wrong.reliability_runtime.harness_runtime.handoff is not None
+
+
+
+def test_mcp_multi_agent_combined_path_uses_backend_context_and_mcp_evidence(
+    monkeypatch,
+):
+    monkeypatch.setenv(
+        "AI_RETRIEVAL_TRANSPORT",
+        "mcp",
+    )
+
+    inquiry_id = uuid4()
+    correlation_id = uuid4()
+
+    backend_query = (
+        "\uc5b4\uc81c\ubd80\ud130 "
+        "\ub0c9\uc218 \ubc84\ud2bc\uc744 "
+        "\ub204\ub974\uba74 \ubb3c\uc774 "
+        "\uc878\uc878 \ub098\uc635\ub2c8\ub2e4. "
+        "\uc804\uc6d0\uc744 \uaecd\ub2e4 "
+        "\ucf30\uc5b4\uc694."
+    )
+
+    context_service = _ContextService(
+        _resolved(
+            inquiry_id,
+            correlation_id,
+            model_code="WPUJAC104DWH",
+            state_version=1,
+            customer_query=backend_query,
+            selected_symptoms=["LOW_FLOW"],
+        )
+    )
+
+    search_service = _SearchService(
+        [_chunk("WPUJAC104DWH")]
+    )
+
+    llm = _LLM()
+
+    monkeypatch.setattr(
+        pipeline_router_module,
+        "_create_mcp_evidence_search_service",
+        lambda: search_service,
+    )
+
+    result = PipelineRouter(
+        search_service=None,
+        llm_client=llm,
+        mcp_context_service=context_service,
+    ).run_pipeline(
+        inquiry_id=inquiry_id,
+        correlation_id=correlation_id,
+        ai_request_id="mcp-multi-agent-combined",
+        state_version=1,
+        raw_symptom="BODY_VALUE_MUST_NOT_WIN",
+        model_code="WPUJAC104DWH",
+        runtime_name="multi_agent",
+    )
+
+    response = result.to_analysis_result()
+
+    assert result.runtime_name == "multi_agent"
+    assert result.context.model_code == "WPUJAC104DWH"
+
+    # Backend MCP Context must override the caller body.
+    assert result.context.raw_symptom == backend_query
+    assert len(context_service.calls) == 1
+
+    # Retrieval must follow the exact Backend product identity.
+    assert len(search_service.queries) == 1
+    assert search_service.queries[0].model_code == (
+        "WPUJAC104DWH"
+    )
+    assert search_service.queries[0].product_generation == "D"
+
+    # Evidence must survive into the Multi-Agent path.
+    assert result.context.evidence_references
+    assert result.multi_agent_metadata is not None
+
+    # Care Decision / generation must complete successfully.
+    assert llm.calls == 1
+    assert response.status.value == "SUCCEEDED"

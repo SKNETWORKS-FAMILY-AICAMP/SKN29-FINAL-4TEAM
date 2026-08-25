@@ -11,12 +11,8 @@ from ...common.timeout import (
     PipelineStageTimeoutError,
     get_stage_timeout_policy,
 )
-from ...integrations.mcp.search_service import (
-    McpEvidenceFailureKind,
-    McpEvidenceSearchError,
-)
 from ...integrations.llm import GuidanceLLMClient
-from ...retrieval import RetrievalOutcome
+from ...retrieval import RetrievalOutcome, RetrievalToolError
 from ...schemas import AiStage, RiskLevel, UsageGuidance, UsageGuidanceStatus
 from ..stages import execute_generation_stage, execute_retrieval_stage, execute_validation_stage
 from .evidence_capture import GuardedEvidenceSearchService
@@ -107,7 +103,7 @@ class ReliabilityRuntime:
                         generation_retry_performed=generation_retry_performed,
                         timeout_stage=exc.stage,
                     )
-                except McpEvidenceSearchError as exc:
+                except RetrievalToolError as exc:
                     return self._tool_failure_result(
                         ctx=ctx,
                         product=product,
@@ -402,15 +398,19 @@ class ReliabilityRuntime:
         )
 
     @staticmethod
-    def _mcp_tool_failure(exc: McpEvidenceSearchError) -> McpToolFailure:
-        kind_map = {
-            McpEvidenceFailureKind.TIMEOUT: McpToolFailureKind.TIMEOUT,
-            McpEvidenceFailureKind.UNAVAILABLE: McpToolFailureKind.UNAVAILABLE,
-            McpEvidenceFailureKind.INVALID_RESPONSE: McpToolFailureKind.INVALID_RESPONSE,
-            McpEvidenceFailureKind.EXECUTION_ERROR: McpToolFailureKind.EXECUTION_ERROR,
-        }
+    def _mcp_tool_failure(exc: RetrievalToolError) -> McpToolFailure:
+        raw_kind = getattr(exc, "kind", None)
+        kind_value = getattr(raw_kind, "value", raw_kind)
+
+        try:
+            kind = McpToolFailureKind(kind_value)
+        except (TypeError, ValueError):
+            kind = McpToolFailureKind.EXECUTION_ERROR
+
         return McpToolFailure(
             tool_name=McpToolName.SEARCH_OFFICIAL_EVIDENCE,
-            kind=kind_map[exc.kind],
-            retryable=exc.retryable,
+            kind=kind,
+            retryable=bool(
+                getattr(exc, "retryable", False)
+            ),
         )
