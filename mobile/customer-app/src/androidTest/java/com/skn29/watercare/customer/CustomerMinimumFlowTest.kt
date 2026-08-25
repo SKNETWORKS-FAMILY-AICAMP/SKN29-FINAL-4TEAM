@@ -264,6 +264,85 @@ class CustomerMinimumFlowTest {
         }
     @Test
     @OptIn(ExperimentalTestApi::class)
+    fun mobileG3_iac425AndIac606_disableIntakeOnCustomerUi() =
+        runManualComposeUiTest {
+            val blockedModels = listOf(
+                "WPUIAC425SNW",
+                "WPUIAC606SNW",
+            )
+
+            blockedModels.forEach { modelCode ->
+                var intakeStarted = false
+
+                setContent {
+                    val baseState =
+                        sampleHomeState(
+                            activeInquiry = null,
+                        )
+                    val baseHome =
+                        requireNotNull(baseState.home)
+
+                    WaterCareTheme {
+                        CustomerHomeContent(
+                            state =
+                                baseState.copy(
+                                    offlinePreview = false,
+                                    customerCareMode =
+                                        CustomerCareMode.REMOTE,
+                                    backendAvailable = true,
+                                    home =
+                                        baseHome.copy(
+                                            product =
+                                                baseHome.product.copy(
+                                                    modelCode = modelCode,
+                                                    modelName = modelCode,
+                                                ),
+                                            activeInquiry = null,
+                                        ),
+                                    intakeAvailable = false,
+                                    intakeUnavailableReason =
+                                        "이 정수기는 현재 문의 기능을 이용할 수 없어요.",
+                                ),
+                            onStartIntake = {
+                                intakeStarted = true
+                            },
+                            onOpenGuidance = { _, _ -> },
+                            onRetry = {},
+                            onLogout = {},
+                        )
+                    }
+                }
+
+                waitForIdle()
+
+                onNodeWithTag("customerProblemCheck")
+                    .performScrollTo()
+                    .assertIsDisplayed()
+
+                onNodeWithText(
+                    "이 정수기는 현재 문의 기능을 이용할 수 없어요."
+                )
+                    .performScrollTo()
+                    .assertIsDisplayed()
+
+                onNodeWithTag("problemCheckArrow")
+                    .assertDoesNotExistCompat()
+
+                onNodeWithText("물이 약해요")
+                    .assertDoesNotExistCompat()
+
+                onNodeWithText("누수가 보여요")
+                    .assertDoesNotExistCompat()
+
+                assertTrue(
+                    "$modelCode must not enter intake UI",
+                    !intakeStarted,
+                )
+            }
+        }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
     fun homeLoading_showsCustomerFriendlyProgress() =
         runManualComposeUiTest {
             setContent {

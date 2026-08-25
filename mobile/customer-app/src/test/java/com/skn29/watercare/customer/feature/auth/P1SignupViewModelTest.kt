@@ -45,17 +45,27 @@ class P1SignupViewModelTest {
             advanceUntilIdle()
 
             viewModel.startSignupVerification(
-                customerNumber = "  CUSTOMER-001  ",
-                contractNumber = "  CONTRACT-001  ",
+                name = "  테스트 고객  ",
+                email = "  TEST.USER@EXAMPLE.COM  ",
+                username = "water.user",
+                password = "Password1234",
             )
             advanceUntilIdle()
 
             assertEquals(
-                "CUSTOMER-001",
+                "테스트 고객",
+                p1.lastChallengeRequest?.name,
+            )
+            assertEquals(
+                "test.user@example.com",
+                p1.lastChallengeRequest?.email,
+            )
+            assertEquals(
+                null,
                 p1.lastChallengeRequest?.customerNumber,
             )
             assertEquals(
-                "CONTRACT-001",
+                null,
                 p1.lastChallengeRequest?.contractNumber,
             )
             assertNotNull(p1.lastChallengeIdempotencyKey)
@@ -95,8 +105,10 @@ class P1SignupViewModelTest {
             advanceUntilIdle()
 
             viewModel.startSignupVerification(
-                customerNumber = "CUSTOMER-001",
-                contractNumber = "CONTRACT-001",
+                name = "테스트 고객",
+                email = "test.user@example.com",
+                username = "water.user",
+                password = "Password1234",
             )
             advanceUntilIdle()
 
@@ -116,12 +128,12 @@ class P1SignupViewModelTest {
             assertFalse(stateText.contains(challengeId))
             assertFalse(stateText.contains(claimTicket))
             assertFalse(stateText.contains("123456"))
-            assertFalse(stateText.contains("CUSTOMER-001"))
-            assertFalse(stateText.contains("CONTRACT-001"))
+            assertFalse(stateText.contains("테스트 고객"))
+            assertFalse(stateText.contains("test.user@example.com"))
         }
 
     @Test
-    fun completeSignup_usesClaimTicketAndAuthenticatesCustomer() =
+    fun completeSignup_returnsCustomerToLogin() =
         runTest(mainDispatcherRule.dispatcher) {
             val claimTicket = "CLAIM_TICKET_FOR_SIGNUP_12345678901234567890"
             val p1 = FakeP1AuthRepository(
@@ -150,14 +162,45 @@ class P1SignupViewModelTest {
             )
             advanceUntilIdle()
 
-            assertEquals(claimTicket, p1.lastSignupRequest?.claimTicket)
-            assertEquals("water.user", p1.lastSignupRequest?.username)
+            assertEquals(
+                claimTicket,
+                p1.lastSignupRequest?.claimTicket,
+            )
+            assertEquals(
+                "테스트 고객",
+                p1.lastSignupRequest?.name,
+            )
+            assertEquals(
+                "test.user@example.com",
+                p1.lastSignupRequest?.email,
+            )
+            assertEquals(
+                "water.user",
+                p1.lastSignupRequest?.username,
+            )
             assertEquals("Password1234", p1.lastSignupRequest?.password)
             assertEquals(consents, p1.lastSignupRequest?.consents)
             assertNotNull(p1.lastSignupIdempotencyKey)
 
-            assertTrue(viewModel.state.value.authenticated)
-            assertFalse(viewModel.state.value.offlinePreview)
+            assertFalse(
+                viewModel.state.value.authenticated
+            )
+            assertFalse(
+                viewModel.state.value.offlinePreview
+            )
+            assertEquals(
+                "water.user",
+                viewModel.state.value
+                    .signupCompletedUsername,
+            )
+
+            viewModel.consumeSignupCompletion()
+
+            assertEquals(
+                null,
+                viewModel.state.value
+                    .signupCompletedUsername,
+            )
 
             val stateText = viewModel.state.value.toString()
             assertFalse(stateText.contains(claimTicket))
@@ -203,7 +246,14 @@ class P1SignupViewModelTest {
 
             assertEquals(2, p1.signupIdempotencyKeys.size)
             assertEquals(firstKey, p1.signupIdempotencyKeys[1])
-            assertTrue(viewModel.state.value.authenticated)
+            assertFalse(
+                viewModel.state.value.authenticated
+            )
+            assertEquals(
+                "water.user",
+                viewModel.state.value
+                    .signupCompletedUsername,
+            )
         }
 
     @Test
@@ -238,12 +288,107 @@ class P1SignupViewModelTest {
             assertEquals(0, p1.signupCalls)
         }
 
+
+    @Test
+    fun invalidSignupEmail_isRejectedBeforeChallengeApiCall() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val p1 = FakeP1AuthRepository()
+            val viewModel = newViewModel(p1)
+
+            advanceUntilIdle()
+
+            viewModel.startSignupVerification(
+                name = "테스트 고객",
+                email = "invalid-email",
+                username = "water.user",
+                password = "Password1234",
+            )
+
+            advanceUntilIdle()
+
+            assertEquals(
+                listOf(
+                    "올바른 이메일 주소를 입력해 주세요."
+                ),
+                viewModel.state.value
+                    .fieldErrors["email"],
+            )
+
+            assertEquals(
+                null,
+                p1.lastChallengeRequest,
+            )
+
+            assertEquals(
+                SignupStage.IDLE,
+                viewModel.state.value.signupStage,
+            )
+        }
+
+    @Test
+    fun duplicateSignupEmail_fromBackend_isExposedAsEmailFieldError() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val p1 =
+                FakeP1AuthRepository(
+                    challengeResult =
+                        ApiResult.Failure(
+                            code =
+                                "EMAIL_ALREADY_EXISTS",
+                            message =
+                                "입력값을 확인해 주세요.",
+                            httpStatus = 422,
+                            fieldErrors =
+                                mapOf(
+                                    "email" to
+                                        listOf(
+                                            "이미 사용 중인 이메일입니다."
+                                        )
+                                ),
+                        )
+                )
+
+            val viewModel =
+                newViewModel(p1)
+
+            advanceUntilIdle()
+
+            viewModel.startSignupVerification(
+                name = "테스트 고객",
+                email =
+                    "already.used@example.com",
+                username = "water.user",
+                password = "Password1234",
+            )
+
+            advanceUntilIdle()
+
+            assertEquals(
+                listOf(
+                    "이미 사용 중인 이메일입니다."
+                ),
+                viewModel.state.value
+                    .fieldErrors["email"],
+            )
+
+            assertEquals(
+                SignupStage.IDLE,
+                viewModel.state.value.signupStage,
+            )
+
+            assertEquals(
+                "already.used@example.com",
+                p1.lastChallengeRequest?.email,
+            )
+        }
+
     private suspend fun TestScope.prepareVerifiedSignup(
         viewModel: AuthViewModel,
     ) {
         viewModel.startSignupVerification(
-            customerNumber = "CUSTOMER-001",
-            contractNumber = "CONTRACT-001",
+            name = "테스트 고객",
+            email = "test.user@example.com",
+            username = "water.user",
+            password = "Password1234",
         )
         advanceUntilIdle()
 
