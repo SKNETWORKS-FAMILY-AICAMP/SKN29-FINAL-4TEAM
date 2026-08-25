@@ -34,6 +34,8 @@ class CustomerProfile(TimestampedModel, SoftDeleteModel):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
+        null=True,
+        blank=True,
         related_name="customer_profile",
         db_column="user_id",
     )

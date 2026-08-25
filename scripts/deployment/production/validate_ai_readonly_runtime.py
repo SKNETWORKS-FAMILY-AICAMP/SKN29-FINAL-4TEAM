@@ -26,18 +26,22 @@ FORBIDDEN_TABLES = (
 
 
 def main() -> int:
+    stage = "ENVIRONMENT"
     try:
         dsn = os.environ["AI_VECTOR_DSN"]
         if os.environ.get("AI_VECTOR_TABLE_NAME") != VIEW_NAME:
             raise RuntimeError("unexpected AI view")
 
+        stage = "DATABASE_CONNECTION"
         with (
             psycopg.connect(dsn, connect_timeout=5) as connection,
             connection.cursor() as cursor,
         ):
+            stage = "POSTGRES_VERSION"
             cursor.execute("SHOW server_version_num")
             if cursor.fetchone() != ("160014",):
                 raise RuntimeError("unexpected PostgreSQL version")
+            stage = "PGVECTOR_VERSION"
             cursor.execute(
                 "SELECT extversion FROM pg_extension WHERE extname = 'vector'"
             )
@@ -45,14 +49,17 @@ def main() -> int:
             pgvector_version = None if pgvector_row is None else pgvector_row[0]
             if pgvector_version not in SUPPORTED_PGVECTOR_VERSIONS:
                 raise RuntimeError("unexpected pgvector version")
+            stage = "TRANSACTION_READ_ONLY"
             cursor.execute("SHOW default_transaction_read_only")
             if cursor.fetchone() != ("on",):
                 raise RuntimeError("AI transaction is not read-only")
+            stage = "PUBLIC_SCHEMA_PRIVILEGE"
             cursor.execute(
                 "SELECT has_schema_privilege(current_user, 'public', 'CREATE')"
             )
             if cursor.fetchone() != (False,):
                 raise RuntimeError("AI role can create in public schema")
+            stage = "VIEW_PRIVILEGE_BOUNDARY"
             cursor.execute(
                 """
                 SELECT c.relkind,
@@ -70,6 +77,7 @@ def main() -> int:
             if cursor.fetchone() != ("v", True, False, False, False, False):
                 raise RuntimeError("AI view privilege boundary mismatch")
 
+            stage = "BASE_TABLE_BOUNDARY"
             for table_name in FORBIDDEN_TABLES:
                 cursor.execute("SELECT to_regclass(%s)", (f"public.{table_name}",))
                 if cursor.fetchone()[0] is None:
@@ -82,6 +90,7 @@ def main() -> int:
                     if cursor.fetchone() != (False,):
                         raise RuntimeError("AI role can access a base table")
 
+            stage = "VIEW_COUNTS_AND_LINEAGE"
             cursor.execute(
                 sql.SQL(
                     """
@@ -101,6 +110,7 @@ def main() -> int:
                 raise RuntimeError(
                     "AI view count, vector dimension, or lineage mismatch"
                 )
+            stage = "MODEL_DISTRIBUTION"
             cursor.execute(
                 sql.SQL(
                     "SELECT model_code, COUNT(*) FROM {} GROUP BY model_code ORDER BY model_code"
@@ -108,8 +118,12 @@ def main() -> int:
             )
             if dict(cursor.fetchall()) != EXPECTED_MODEL_COUNTS:
                 raise RuntimeError("AI view model distribution mismatch")
-    except Exception:
+    except Exception as exc:
         print("AI_READONLY_RUNTIME_PREFLIGHT_FAILED", file=sys.stderr)
+        print(
+            f"reason={stage} error_type={type(exc).__name__}",
+            file=sys.stderr,
+        )
         return 1
 
     print("AI_READONLY_RUNTIME_PREFLIGHT_PASS")

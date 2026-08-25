@@ -1,0 +1,204 @@
+name: Neo4j JSONL Lineage QA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neo4j-lineage-qa-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NEO4J_QA_IMAGE: neo4j:2026.07.1
+
+jobs:
+  verify-lineage:
+    name: Verify disposable Neo4j JSONL lineage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13.13"
+          cache: pip
+          cache-dependency-path: ai/requirements-linux.lock
+
+      - name: Install locked minimal QA dependencies
+        run: >-
+          python -m pip install
+          --disable-pip-version-check
+          httpx==0.28.1 numpy==2.5.2 pytest==9.0.3
+
+      - name: Initialize isolated QA metadata
+        id: metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_id="neo4j-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          container_name="waterbridge-${run_id}"
+          password="$(openssl rand -hex 32)"
+          raw_nonce="$(openssl rand -hex 32)"
+          nonce_sha256="$(printf '%s' "$raw_nonce" | sha256sum | awk '{print $1}')"
+          artifact_dir=".runtime/neo4j-lineage/${run_id}"
+          echo "::add-mask::$password"
+          {
+            echo "NEO4J_QA_USERNAME=neo4j"
+            echo "NEO4J_QA_PASSWORD=$password"
+            echo "NEO4J_QA_RUN_ID=$run_id"
+            echo "NEO4J_QA_TARGET_ID=$container_name"
+            echo "NEO4J_QA_TARGET_NONCE_SHA256=$nonce_sha256"
+            echo "NEO4J_QA_CONTAINER=$container_name"
+            echo "NEO4J_QA_ARTIFACT_DIR=$artifact_dir"
+          } >> "$GITHUB_ENV"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "container_name=$container_name" >> "$GITHUB_OUTPUT"
+          echo "artifact_dir=$artifact_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Start authenticated disposable Neo4j
+        id: neo4j
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull "$NEO4J_QA_IMAGE"
+          image_reference="$(docker image inspect "$NEO4J_QA_IMAGE" --format '{{index .RepoDigests 0}}')"
+          image_digest="${image_reference#*@}"
+          if [[ ! "$image_digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo 'Neo4j Repo Digest is missing or invalid.' >&2
+            exit 1
+          fi
+          docker run --detach --rm \
+            --name "$NEO4J_QA_CONTAINER" \
+            --label "waterbridge.neo4j.qa.run_id=$NEO4J_QA_RUN_ID" \
+            --publish 127.0.0.1::7474 \
+            --env "NEO4J_AUTH=$NEO4J_QA_USERNAME/$NEO4J_QA_PASSWORD" \
+            "$image_reference" >/dev/null
+          published="$(docker port "$NEO4J_QA_CONTAINER" 7474/tcp | head -n 1)"
+          if [[ ! "$published" =~ ^127\.0\.0\.1:[0-9]+$ ]]; then
+            echo 'Neo4j Query API was not bound to an ephemeral loopback port.' >&2
+            exit 1
+          fi
+          {
+            echo "NEO4J_QA_ENDPOINT=http://$published"
+            echo "NEO4J_QA_IMAGE_DIGEST=$image_digest"
+          } >> "$GITHUB_ENV"
+          echo "image_digest=$image_digest" >> "$GITHUB_OUTPUT"
+
+      - name: Create and verify Infra target marker
+        run: python scripts/deployment/prepare_neo4j_lineage_qa.py --timeout-seconds 90
+
+      - name: Run actual wrong-relationship integration tests
+        id: integration
+        env:
+          AI_NEO4J_LINEAGE_E2E: "1"
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$NEO4J_QA_ARTIFACT_DIR"
+          python -m pytest \
+            ai/tests/integration/test_neo4j_evidence_lineage_runtime.py \
+            -q -p no:cacheprovider -rA \
+            --junitxml="$RUNNER_TEMP/neo4j-integration-junit.xml" \
+            | tee "$RUNNER_TEMP/neo4j-integration.log"
+          grep -Eq '3 passed([,[:space:]]|$)' "$RUNNER_TEMP/neo4j-integration.log"
+          if grep -Eq '[0-9]+ skipped|[0-9]+ failed|[0-9]+ errors?' "$RUNNER_TEMP/neo4j-integration.log"; then
+            echo 'Neo4j integration gate reported skipped, failed, or errored tests.' >&2
+            exit 1
+          fi
+
+      - name: Generate application evidence
+        id: runner
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          python -m ai.scripts.run_neo4j_evidence_lineage_lab \
+            --output-dir "$NEO4J_QA_ARTIFACT_DIR" \
+            --generated-at "$(date --iso-8601=seconds)" \
+            --run-id "$NEO4J_QA_RUN_ID" \
+            --profile qa_ephemeral_loopback \
+            --endpoint "$NEO4J_QA_ENDPOINT" \
+            --neo4j-image "$NEO4J_QA_IMAGE" \
+            --neo4j-image-digest "$NEO4J_QA_IMAGE_DIGEST" \
+            | tee "$RUNNER_TEMP/neo4j-runner.log"
+          runner_exit=${PIPESTATUS[0]}
+          set -e
+          echo "runner_exit=$runner_exit" >> "$GITHUB_OUTPUT"
+          if [[ "$runner_exit" -ne 2 ]]; then
+            echo "Expected QA runner exit 2 before Infra finalization; got $runner_exit." >&2
+            exit 1
+          fi
+
+      - name: Remove the exact QA container and anonymous volumes
+        id: cleanup
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p "$NEO4J_QA_ARTIFACT_DIR"
+          mapfile -t volume_names < <(
+            docker inspect "$NEO4J_QA_CONTAINER" \
+              --format '{{range .Mounts}}{{if eq .Type "volume"}}{{println .Name}}{{end}}{{end}}' \
+              2>/dev/null || true
+          )
+          docker rm --force "$NEO4J_QA_CONTAINER" >/dev/null 2>&1 || true
+          for volume_name in "${volume_names[@]}"; do
+            [[ -n "$volume_name" ]] || continue
+            docker volume rm "$volume_name" >/dev/null 2>&1 || true
+          done
+          container_count="$(docker ps --all --quiet \
+            --filter "label=waterbridge.neo4j.qa.run_id=$NEO4J_QA_RUN_ID" | wc -l | tr -d ' ')"
+          volume_count=0
+          for volume_name in "${volume_names[@]}"; do
+            [[ -n "$volume_name" ]] || continue
+            if docker volume inspect "$volume_name" >/dev/null 2>&1; then
+              volume_count=$((volume_count + 1))
+            fi
+          done
+          status=PASS
+          if [[ "$container_count" -ne 0 || "$volume_count" -ne 0 ]]; then
+            status=FAIL
+          fi
+          jq -n \
+            --arg status "$status" \
+            --arg run_id "$NEO4J_QA_RUN_ID" \
+            --arg git_sha "$(git rev-parse HEAD)" \
+            --arg image_repo_digest "${NEO4J_QA_IMAGE_DIGEST:-NOT_AVAILABLE}" \
+            --argjson container_count "$container_count" \
+            --argjson anonymous_volume_count "$volume_count" \
+            '{
+              schema_version: "1.0.0",
+              status: $status,
+              run_id: $run_id,
+              git_sha: $git_sha,
+              image_repo_digest: $image_repo_digest,
+              container_count: $container_count,
+              anonymous_volume_count: $anonymous_volume_count
+            }' > "$NEO4J_QA_ARTIFACT_DIR/infra_cleanup_evidence.json"
+          [[ "$status" == PASS ]]
+
+      - name: Build external submission manifest
+        if: ${{ always() }}
+        run: >-
+          python scripts/deployment/finalize_neo4j_lineage_qa.py
+          --artifact-dir "$NEO4J_QA_ARTIFACT_DIR"
+          --run-id "$NEO4J_QA_RUN_ID"
+          --git-sha "$(git rev-parse HEAD)"
+          --image-digest "$NEO4J_QA_IMAGE_DIGEST"
+          --ci-run-id "$GITHUB_RUN_ID"
+          --ci-run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+      - name: Upload sanitized Neo4j QA evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: neo4j-lineage-${{ steps.metadata.outputs.run_id }}
+          path: ${{ steps.metadata.outputs.artifact_dir }}
+          if-no-files-found: error
+          retention-days: 7

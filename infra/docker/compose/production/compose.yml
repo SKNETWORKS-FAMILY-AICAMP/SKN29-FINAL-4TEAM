@@ -89,6 +89,7 @@ services:
       AI_ENV: production
       AI_OTEL_ENABLED: "true"
       AI_ENABLE_EXPERIMENT_PLAYGROUND: "false"
+      PGSSLROOTCERT: /run/secrets/rds-ca.pem
       OTEL_SERVICE_NAME: waterbridge-ai
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://trace-store:4318/v1/traces
       HF_HOME: /home/waterbridge/.cache/huggingface
@@ -101,6 +102,7 @@ services:
       - /tmp:size=256m,mode=1777
     volumes:
       - ai_model_cache:/home/waterbridge/.cache
+      - "${RDS_CA_HOST_PATH:?RDS_CA_HOST_PATH is required}:/run/secrets/rds-ca.pem:ro"
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -120,6 +122,7 @@ services:
         condition: service_healthy
     networks:
       - internal
+      - egress
 
   trace-store:
     image: grafana/tempo:3.0.3@sha256:05321ebf1f191fde34282b3dc86e68f511d489133df7963cd1670a2e1e11b33c
@@ -154,6 +157,7 @@ services:
       start_period: 20s
     networks:
       - internal
+      - egress
 
 networks:
   edge:
@@ -161,6 +165,8 @@ networks:
   internal:
     driver: bridge
     internal: true
+  egress:
+    driver: bridge
 
 volumes:
   ai_model_cache:

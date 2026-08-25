@@ -1,4 +1,4 @@
-# 2026-07-27 재현 검증 기준 직접 의존성입니다.
+# 2026-08-24 재현 검증 기준 직접 의존성입니다.
 Django==5.2.16
 djangorestframework==3.17.1
 djangorestframework-simplejwt==5.5.1
@@ -8,3 +8,4 @@ pgvector==0.5.0
 PyYAML==6.0.3
 httpx==0.28.1
 jsonschema==4.26.0
+cryptography==50.0.0

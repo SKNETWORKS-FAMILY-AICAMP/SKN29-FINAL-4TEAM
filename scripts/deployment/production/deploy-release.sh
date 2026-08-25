@@ -141,11 +141,28 @@ expected_services=(ai backend trace-store web)
   echo "DEPLOYMENT_FAILED: compose service boundary is not web/backend/ai/trace-store" >&2
   exit 1
 }
-if compose config | grep -Eiq '(^|[[:space:]])postgres(ql)?([:[:space:]]|$)'; then
+if compose config --images | grep -Eiq '(^|[/:@_-])postgres(ql)?([/:@_.-]|$)'; then
   echo "DEPLOYMENT_FAILED: production compose must not contain PostgreSQL" >&2
   exit 1
 fi
 
+ecr_registry=""
+for image_key in WEB_IMAGE BACKEND_IMAGE AI_IMAGE; do
+  image_ref="$(sed -n "s/^${image_key}=//p" "$release_env")"
+  image_registry="${image_ref%%/*}"
+  [[ "$image_ref" == */* && "$image_registry" =~ ^[0-9]{12}\.dkr\.ecr\.[a-z0-9-]+\.amazonaws\.com$ ]] || {
+    echo "DEPLOYMENT_FAILED: ${image_key} is not an approved ECR image reference" >&2
+    exit 1
+  }
+  if [[ -z "$ecr_registry" ]]; then
+    ecr_registry="$image_registry"
+  elif [[ "$image_registry" != "$ecr_registry" ]]; then
+    echo "DEPLOYMENT_FAILED: application images must use one ECR registry" >&2
+    exit 1
+  fi
+done
+
+docker_config_dir=""
 previous_target=""
 if [[ -L "${base_dir}/current" ]]; then
   previous_target="$(readlink -f "${base_dir}/current")"
@@ -162,9 +179,18 @@ rollback() {
   else
     compose stop || true
   fi
+  if [[ -n "$docker_config_dir" && "$docker_config_dir" == "${base_dir}/shared/docker-config."* ]]; then
+    rm -rf -- "$docker_config_dir"
+  fi
   exit "$exit_code"
 }
 trap rollback ERR
+
+docker_config_dir="$(mktemp -d "${base_dir}/shared/docker-config.XXXXXX")"
+chmod 0700 "$docker_config_dir"
+export DOCKER_CONFIG="$docker_config_dir"
+aws ecr get-login-password --region "$aws_region" \
+  | docker login --username AWS --password-stdin "$ecr_registry" >/dev/null
 
 compose pull
 compose run --rm --no-deps trace-store \
@@ -172,6 +198,7 @@ compose run --rm --no-deps trace-store \
   -config.expand-env=true \
   -config.verify=true
 compose run --rm --no-deps \
+  --env PYTHONPATH=/workspace/backend \
   --volume "${payload_dir}/scripts/deployment/production/validate_backend_runtime.py:/tmp/validate_backend_runtime.py:ro" \
   backend python /tmp/validate_backend_runtime.py
 compose run --rm --no-deps \
@@ -250,6 +277,9 @@ fi
 ln -sfn "$payload_dir" "${base_dir}/current.next"
 mv -Tf "${base_dir}/current.next" "${base_dir}/current"
 
+rm -rf -- "$docker_config_dir"
+docker_config_dir=""
+unset DOCKER_CONFIG
 trap - ERR
 printf 'DEPLOYMENT_RUNTIME_PASS\n'
 printf 'release_sha=%s\n' "$release_sha"
