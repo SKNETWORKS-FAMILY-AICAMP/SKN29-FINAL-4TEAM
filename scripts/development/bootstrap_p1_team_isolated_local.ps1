@@ -12,6 +12,8 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+$postgresPortWasSpecified = $PSBoundParameters.ContainsKey('PostgresPort')
+
 $repositoryRoot = [System.IO.Path]::GetFullPath(
     (Join-Path $PSScriptRoot '..\..')
 )
@@ -25,6 +27,12 @@ if (-not $RuntimeRoot.StartsWith(
     [System.StringComparison]::OrdinalIgnoreCase
 )) {
     throw 'RuntimeRoot must stay inside the repository workspace.'
+}
+
+if ([string]::IsNullOrWhiteSpace($ApprovedCustomerInput)) {
+    $ApprovedCustomerInput = Join-Path (
+        $repositoryRoot
+    ) 'backend\.runtime\p1-approved-customers.json'
 }
 
 if (-not $BackendPython) {
@@ -64,6 +72,7 @@ $volumeName = 'waterbridge-p1-team-isolated-postgres-data'
 $targetDatabase = 'waterbridge_p1_team_isolated'
 $profileName = 'p1-team-isolated'
 $holdConfirmation = 'visits.0005=P1_HOLD_EXCLUDED'
+$expectedPostgresImage = 'pgvector/pgvector:0.8.6-pg16-bookworm'
 
 $managedEnvironmentNames = @(
     'POSTGRES_DB', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_HOST',
@@ -150,6 +159,116 @@ function Set-EnvironmentEntry {
     )
 }
 
+function Get-EnvironmentEntry {
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$Name
+    )
+
+    $pattern = '^' + [regex]::Escape($Name) + '=(.*)$'
+    foreach ($line in Get-Content -LiteralPath $Path -Encoding UTF8) {
+        if ($line -match $pattern) {
+            return $Matches[1]
+        }
+    }
+    throw "Required Runtime entry is missing: $Name"
+}
+
+function Test-LoopbackPortAvailable {
+    param([Parameter(Mandatory)][int]$Port)
+
+    $listener = [System.Net.Sockets.TcpListener]::new(
+        [System.Net.IPAddress]::Loopback,
+        $Port
+    )
+    try {
+        $listener.Start()
+        return $true
+    }
+    catch [System.Net.Sockets.SocketException] {
+        return $false
+    }
+    finally {
+        $listener.Stop()
+    }
+}
+
+function Find-AvailablePostgresPort {
+    param([Parameter(Mandatory)][int]$PreferredPort)
+
+    if (Test-LoopbackPortAvailable -Port $PreferredPort) {
+        return $PreferredPort
+    }
+    if ($postgresPortWasSpecified) {
+        throw "The requested PostgreSQL port is already in use: $PreferredPort"
+    }
+    foreach ($candidate in (($PreferredPort + 1)..55545)) {
+        if (Test-LoopbackPortAvailable -Port $candidate) {
+            return $candidate
+        }
+    }
+    throw 'No free loopback PostgreSQL port was found in 55445..55545.'
+}
+
+function Protect-ApprovedCustomerInput {
+    param([Parameter(Mandatory)][string]$Path)
+
+    $identity = "${env:USERDOMAIN}\${env:USERNAME}"
+    & icacls.exe $Path '/inheritance:r' '/grant:r' "${identity}:F" | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Failed to restrict approved customer input file permissions.'
+    }
+}
+
+function Get-PostgresContainerContract {
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][int]$ExpectedPort
+    )
+
+    $output = @(& docker inspect $Name 2>&1)
+    if ($LASTEXITCODE -ne 0) {
+        throw 'The isolated PostgreSQL container could not be inspected.'
+    }
+    try {
+        $inspect = @(($output -join "`n") | ConvertFrom-Json)[0]
+    }
+    catch {
+        throw 'Docker inspect did not return the expected JSON contract.'
+    }
+    $bindings = @($inspect.HostConfig.PortBindings.'5432/tcp')
+    $binding = if ($bindings.Count -eq 1) { $bindings[0] } else { $null }
+    $volumeMounts = @(
+        $inspect.Mounts |
+            Where-Object { $_.Destination -eq '/var/lib/postgresql/data' }
+    )
+    $labels = $inspect.Config.Labels
+    if (
+        $inspect.Name.TrimStart('/') -ne $Name -or
+        $inspect.Config.Image -ne $expectedPostgresImage -or
+        $labels.'com.docker.compose.project' -ne $composeProject -or
+        $labels.'waterbridge.environment' -ne 'p1-team-isolated' -or
+        $labels.'waterbridge.data-classification' -ne (
+            'approved-test-synthetic-only'
+        ) -or
+        $null -eq $binding -or
+        $binding.HostIp -ne '127.0.0.1' -or
+        [int]$binding.HostPort -ne $ExpectedPort -or
+        $volumeMounts.Count -ne 1 -or
+        $volumeMounts[0].Name -ne $volumeName
+    ) {
+        throw 'The isolated PostgreSQL container contract does not match.'
+    }
+    return [pscustomobject]@{
+        container_name = $Name
+        image = $inspect.Config.Image
+        image_id = $inspect.Image
+        host_binding = "127.0.0.1:$ExpectedPort"
+        volume = $volumeName
+        compose_project = $composeProject
+    }
+}
+
 function New-RuntimeSecret {
     $bytes = [byte[]]::new(48)
     $generator = [System.Security.Cryptography.RandomNumberGenerator]::Create()
@@ -204,6 +323,10 @@ else {
     ''
 }
 $dockerReady = [bool](Get-Command docker -ErrorAction SilentlyContinue)
+$approvedInputPlanPath = 'backend/.runtime/p1-approved-customers.json'
+$approvedInputPlanPresent = Test-Path -LiteralPath (
+    [System.IO.Path]::GetFullPath($ApprovedCustomerInput)
+) -PathType Leaf
 $preflight = [ordered]@{
     status = if ($Apply) { 'APPLY_REQUESTED' } else { 'PLAN_READY' }
     mutates_local_environment = [bool]$Apply
@@ -215,9 +338,18 @@ $preflight = [ordered]@{
     docker_cli = if ($dockerReady) { 'READY' } else { 'BLOCKED' }
     runtime_root = '.runtime/p1-team-isolated'
     target_database = $targetDatabase
-    postgres_port = $PostgresPort
+    postgres_port = if ($postgresPortWasSpecified) {
+        $PostgresPort
+    }
+    else {
+        'AUTO_START_55445'
+    }
     compose_project = $composeProject
+    container = $containerName
+    image = $expectedPostgresImage
     volume = $volumeName
+    approved_customer_input = $approvedInputPlanPath
+    approved_customer_input_present = $approvedInputPlanPresent
     approved_customer_input_required = -not $ReuseLocalRuntime
     visits_0005 = 'P1_HOLD_EXCLUDED'
     ai_runtime_8001 = 'OUT_OF_SCOPE'
@@ -265,6 +397,7 @@ $volumeExists = $volumeNames -contains $volumeName
 $initializeRuntime = -not (Test-Path -LiteralPath $RuntimeRoot)
 $bootstrapPending = $initializeRuntime
 $approvedInput = $null
+$effectivePostgresPort = $PostgresPort
 
 if (-not $initializeRuntime) {
     if (-not $ReuseLocalRuntime) {
@@ -282,6 +415,18 @@ if (-not $initializeRuntime) {
     }
     if (-not $volumeExists) {
         throw 'Runtime files exist but the matching isolated Volume is missing.'
+    }
+    $recordedPostgresPort = Get-EnvironmentEntry `
+        -Path $adminEnvironment -Name 'POSTGRES_PORT'
+    if ($recordedPostgresPort -notmatch '^\d{4,5}$') {
+        throw 'Existing P1 Runtime has an invalid recorded PostgreSQL port.'
+    }
+    $effectivePostgresPort = [int]$recordedPostgresPort
+    if (
+        $postgresPortWasSpecified -and
+        $PostgresPort -ne $effectivePostgresPort
+    ) {
+        throw 'Requested PostgreSQL port differs from the existing Runtime.'
     }
     $recordedSourceSha = (
         Get-Content -LiteralPath $sourceShaPath -Raw -Encoding UTF8
@@ -304,10 +449,12 @@ else {
             'Do not delete or reuse it automatically.'
         )
     }
+    $effectivePostgresPort = Find-AvailablePostgresPort `
+        -PreferredPort $PostgresPort
     & $runtimeInitializer -RuntimeRoot $RuntimeRoot | Out-Null
     New-Item -ItemType Directory -Path $evidenceRoot -Force | Out-Null
     Set-EnvironmentEntry -Path $adminEnvironment -Name 'POSTGRES_PORT' `
-        -Value ([string]$PostgresPort)
+        -Value ([string]$effectivePostgresPort)
     [System.IO.File]::WriteAllLines(
         $djangoEnvironment,
         @(
@@ -315,7 +462,7 @@ else {
             "DJANGO_SECRET_KEY=$(New-RuntimeSecret)",
             'DJANGO_DEBUG=true',
             'DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,[::1]',
-            'DJANGO_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173',
+            'DJANGO_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174',
             'DJANGO_TIME_ZONE=Asia/Seoul',
             'DJANGO_LOG_LEVEL=INFO',
             'AI_SERVICE_BASE_URL=http://127.0.0.1:8001',
@@ -354,10 +501,11 @@ volumes:
 }
 
 if ($bootstrapPending) {
-    if ([string]::IsNullOrWhiteSpace($ApprovedCustomerInput)) {
+    if (-not (Test-Path -LiteralPath $ApprovedCustomerInput -PathType Leaf)) {
         throw (
-            'ApprovedCustomerInput is required for a new or incomplete ' +
-            'P1 Bootstrap.'
+            'Approved customer input is missing: ' +
+            'backend/.runtime/p1-approved-customers.json. ' +
+            'Receive it through the approved protected channel; never Git.'
         )
     }
     $approvedInput = [System.IO.Path]::GetFullPath($ApprovedCustomerInput)
@@ -373,9 +521,7 @@ if ($bootstrapPending) {
     )) {
         throw 'ApprovedCustomerInput must stay under backend/.runtime.'
     }
-    # 실패한 최초 실행은 전용 Volume을 보존한 채 사용 가능한 Port로 재개한다.
-    Set-EnvironmentEntry -Path $adminEnvironment -Name 'POSTGRES_PORT' `
-        -Value ([string]$PostgresPort)
+    Protect-ApprovedCustomerInput -Path $approvedInput
 }
 
 New-Item -ItemType Directory -Path $evidenceRoot -Force | Out-Null
@@ -405,6 +551,8 @@ try {
     if (-not $databaseHealthy) {
         throw 'The isolated P1 PostgreSQL container did not become healthy.'
     }
+    $containerContract = Get-PostgresContainerContract `
+        -Name $containerName -ExpectedPort $effectivePostgresPort
 
     if ($bootstrapPending) {
         . $environmentLoader -RuntimeRoot $RuntimeRoot -Role Admin | Out-Null
@@ -569,8 +717,19 @@ try {
             'PRESERVED'
         }
         ai_runtime_8001 = 'OUT_OF_SCOPE'
-        postgres_port = $PostgresPort
+        postgres_port = $effectivePostgresPort
+        container = $containerContract.container_name
+        postgres_image = $containerContract.image
+        postgres_image_id = $containerContract.image_id
+        postgres_host_binding = $containerContract.host_binding
         volume = $volumeName
+        compose_project = $containerContract.compose_project
+        approved_customer_input_acl = if ($bootstrapPending) {
+            'CURRENT_USER_ONLY'
+        }
+        else {
+            'NOT_RECHECKED_ON_REUSE'
+        }
         reuse = -not $bootstrapPending
         resumed_incomplete_runtime = (-not $initializeRuntime -and $bootstrapPending)
         otp_worker = 'START_SEPARATELY'
