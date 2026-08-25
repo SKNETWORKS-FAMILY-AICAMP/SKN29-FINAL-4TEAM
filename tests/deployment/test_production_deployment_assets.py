@@ -191,6 +191,7 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertNotIn("print(dsn", ai)
 
     def test_host_scripts_do_not_print_or_copy_secret_values(self) -> None:
+        deploy = DEPLOY.read_text(encoding="utf-8")
         combined = "\n".join(
             path.read_text(encoding="utf-8") for path in (BOOTSTRAP, DEPLOY, ROLLBACK)
         )
@@ -199,6 +200,10 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertNotIn("docker compose down -v", combined)
         self.assertIn("without deleting volumes", combined)
         self.assertIn("NO_PREVIOUS_RELEASE_NEW_SERVICES_STOPPED", combined)
+        self.assertIn("aws ecr get-login-password", deploy)
+        self.assertIn("docker login --username AWS --password-stdin", deploy)
+        self.assertIn('export DOCKER_CONFIG="$docker_config_dir"', deploy)
+        self.assertIn('rm -rf -- "$docker_config_dir"', deploy)
 
     def test_deployment_is_sha_locked_and_serialized(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
