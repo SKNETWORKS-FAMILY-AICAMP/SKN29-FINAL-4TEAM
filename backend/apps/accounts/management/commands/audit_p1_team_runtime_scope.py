@@ -9,6 +9,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
+from django.db.models import Count, F, Q
 
 from apps.accounts.models import (
     ContractEmailContact,
@@ -25,6 +26,10 @@ from apps.visits.models import Visit
 
 PRESERVE_PREFIX = "SYN-P1-TEAM-CUSTOMER-"
 EXPECTED_PRESERVE_COUNT = 6
+EXPECTED_PRODUCT_MODEL_CODE = "WPUJAC104DWH"
+EXPECTED_CONSULTANT_USERNAME = "DEMO-CONSULTANT-001"
+EXPECTED_CONSULTANT_EMPLOYEE_NO = "DEMO-EMP-CNS-001"
+EXPECTED_CONSULTANT_NAME = "합성 상담사 001"
 
 
 def _safe_output_path(value: str) -> Path:
@@ -48,9 +53,18 @@ class Command(BaseCommand):
     def add_arguments(self, parser) -> None:
         parser.add_argument("--json", action="store_true")
         parser.add_argument("--output-file")
+        parser.add_argument(
+            "--operational",
+            action="store_true",
+            help=(
+                "P1 고객의 OTP 가입 계정과 그 고객 소유 문의만 허용합니다. "
+                "기본값은 가입 전 고객 User와 문의가 모두 0인 Baseline입니다."
+            ),
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         del args
+        operational = bool(options["operational"])
         preserve = CustomerProfile.objects.filter(
             customer_no__startswith=PRESERVE_PREFIX,
         ).order_by("customer_no")
@@ -77,18 +91,128 @@ class Command(BaseCommand):
             is_active=True,
             is_primary=True,
         ).count()
+        preserve_all_contact_count = ContractEmailContact.objects.filter(
+            customer_id__in=preserve_ids,
+        ).count()
         preserve_subscription_count = CustomerSubscription.objects.filter(
             customer_id__in=preserve_ids,
             status_code=CustomerSubscription.Status.ACTIVE,
+            product_model__model_code=EXPECTED_PRODUCT_MODEL_CODE,
         ).count()
-        if preserve_contact_count != EXPECTED_PRESERVE_COUNT:
+        preserve_all_subscription_count = CustomerSubscription.objects.filter(
+            customer_id__in=preserve_ids,
+        ).count()
+        per_customer = preserve.annotate(
+            active_primary_contact_count=Count(
+                "contract_email_contacts",
+                filter=Q(
+                    contract_email_contacts__is_active=True,
+                    contract_email_contacts__is_primary=True,
+                ),
+                distinct=True,
+            ),
+            active_jac_subscription_count=Count(
+                "subscriptions",
+                filter=Q(
+                    subscriptions__status_code=CustomerSubscription.Status.ACTIVE,
+                    subscriptions__product_model__model_code=(
+                        EXPECTED_PRODUCT_MODEL_CODE
+                    ),
+                ),
+                distinct=True,
+            ),
+        )
+        if (
+            preserve_contact_count != EXPECTED_PRESERVE_COUNT
+            or preserve_all_contact_count != EXPECTED_PRESERVE_COUNT
+            or per_customer.exclude(active_primary_contact_count=1).exists()
+        ):
             blockers.append("P1_TEAM_ACTIVE_PRIMARY_CONTACT_NOT_6")
-        if preserve_subscription_count != EXPECTED_PRESERVE_COUNT:
+        if (
+            preserve_subscription_count != EXPECTED_PRESERVE_COUNT
+            or preserve_all_subscription_count != EXPECTED_PRESERVE_COUNT
+            or per_customer.exclude(active_jac_subscription_count=1).exists()
+        ):
             blockers.append("P1_TEAM_ACTIVE_SUBSCRIPTION_NOT_6")
 
-        inquiry_ids = list(Inquiry.objects.values_list("id", flat=True))
+        if remove_customers.exists():
+            blockers.append("NON_P1_CUSTOMER_PRESENT")
+
+        consultants = User.objects.filter(role_code=User.Role.CONSULTANT)
+        exact_consultants = consultants.filter(
+            username=EXPECTED_CONSULTANT_USERNAME,
+            full_name=EXPECTED_CONSULTANT_NAME,
+            employee_no=EXPECTED_CONSULTANT_EMPLOYEE_NO,
+            is_active=True,
+            is_synthetic=True,
+            is_staff=False,
+            is_superuser=False,
+        )
+        if consultants.count() != 1 or exact_consultants.count() != 1:
+            blockers.append("P1_TEAM_CONSULTANT_IDENTITY_NOT_EXACT_1")
+
+        linked_p1_user_ids = set(
+            preserve.exclude(user_id=None).values_list("user_id", flat=True)
+        )
+        linked_p1_user_ids.update(
+            CustomerAccountLink.objects.filter(
+                customer_id__in=preserve_ids,
+                is_active=True,
+            ).values_list("user_id", flat=True)
+        )
+        customer_users = User.objects.filter(role_code=User.Role.CUSTOMER)
+        invalid_p1_customer_users = User.objects.filter(
+            id__in=linked_p1_user_ids,
+        ).exclude(
+            role_code=User.Role.CUSTOMER,
+            is_active=True,
+            is_synthetic=True,
+            employee_no__isnull=True,
+        )
+        foreign_customer_users = customer_users.exclude(id__in=linked_p1_user_ids)
+        technician_user_count = User.objects.filter(
+            role_code=User.Role.TECHNICIAN
+        ).count()
+        operator_user_count = User.objects.filter(
+            role_code=User.Role.OPERATOR
+        ).count()
+        if operational:
+            if invalid_p1_customer_users.exists() or foreign_customer_users.exists():
+                blockers.append("NON_P1_OR_INVALID_CUSTOMER_USER_PRESENT")
+        elif customer_users.exists():
+            blockers.append("P1_TEAM_BASELINE_CUSTOMER_USER_PRESENT")
+        if technician_user_count:
+            blockers.append("P1_TEAM_TECHNICIAN_USER_PRESENT")
+        if operator_user_count:
+            blockers.append("P1_TEAM_OPERATOR_USER_PRESENT")
+
+        inquiries = Inquiry.objects.all()
+        p1_owned_inquiries = inquiries.filter(
+            subscription__customer_id__in=preserve_ids,
+            initiated_by_id=F("subscription__customer__user_id"),
+            initiated_by__role_code=User.Role.CUSTOMER,
+            initiated_by__is_active=True,
+            initiated_by__is_synthetic=True,
+        )
+        p1_inquiry_ids = list(p1_owned_inquiries.values_list("id", flat=True))
+        non_p1_inquiry_ids = list(
+            inquiries.exclude(id__in=p1_inquiry_ids).values_list("id", flat=True)
+        )
+        inquiry_ids = p1_inquiry_ids + non_p1_inquiry_ids
+        if non_p1_inquiry_ids:
+            blockers.append("NON_P1_INQUIRY_PRESENT")
+        if not operational and p1_inquiry_ids:
+            blockers.append("P1_TEAM_BASELINE_INQUIRY_PRESENT")
+
+        user_role_counts = {
+            role: User.objects.filter(role_code=role).count()
+            for role in User.Role.values
+        }
         result = {
-            "mode": "PLAN_ONLY_READ_ONLY",
+            "mode": (
+                "OPERATIONAL_READ_ONLY" if operational else "PLAN_ONLY_READ_ONLY"
+            ),
+            "runtime_phase": "OPERATIONAL" if operational else "BASELINE",
             "database_name": connection.settings_dict.get("NAME", ""),
             "source_database_mutated": False,
             "isolated_database_required": True,
@@ -101,10 +225,10 @@ class Command(BaseCommand):
                     customer_id__in=preserve_ids,
                     is_active=True,
                 ).count(),
-                "consultant_users": User.objects.filter(
-                    role_code=User.Role.CONSULTANT,
-                    is_active=True,
-                ).count(),
+                "consultant_users": consultants.filter(is_active=True).count(),
+                "exact_consultant_users": exact_consultants.count(),
+                "user_role_counts": user_role_counts,
+                "p1_linked_customer_users": len(linked_p1_user_ids),
             },
             "delete_candidates": {
                 "customers": remove_customers.count(),
@@ -121,6 +245,11 @@ class Command(BaseCommand):
                 "ai_runs": AIRun.objects.filter(
                     inquiry_id__in=inquiry_ids,
                 ).count(),
+            },
+            "runtime": {
+                "p1_owned_inquiries": len(p1_inquiry_ids),
+                "non_p1_inquiries": len(non_p1_inquiry_ids),
+                "operational_p1_inquiries_allowed": operational,
             },
             "blockers": sorted(set(blockers)),
             "ready_for_isolated_rebuild": not blockers,
