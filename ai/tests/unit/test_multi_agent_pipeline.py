@@ -160,7 +160,10 @@ def test_default_runtime_remains_single_rag():
 
 def test_multi_agent_danger_routes_without_retrieval_or_llm():
     llm = FakeGuidanceLLMClient()
-    result = PipelineRouter(search_service=None, llm_client=llm).run_pipeline(
+    result = PipelineRouter(
+        search_service=UnexpectedSearchService(),
+        llm_client=llm,
+    ).run_pipeline(
         inquiry_id=INQUIRY_ID,
         correlation_id=CORRELATION_ID,
         ai_request_id="ai-req-multi-danger",
@@ -174,6 +177,8 @@ def test_multi_agent_danger_routes_without_retrieval_or_llm():
     assert result.runtime_name == "multi_agent"
     assert response.safety_assessment.risk_level.value == "danger"
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
+    assert response.missing_fields == []
+    assert response.followup_questions == []
     assert response.evidence_references == []
     assert llm.calls == 0
     assert [item.reason_code for item in result.multi_agent_metadata.handoffs] == [
