@@ -11,6 +11,13 @@ class RetrievalOutcome(str, Enum):
     NO_MATCH = "NO_MATCH"
 
 
+class RetrievalToolError(RuntimeError):
+    """Sanitized external retrieval-tool failure marker."""
+
+    kind: object
+    retryable: bool
+
+
 class RetrievalConfigurationError(RuntimeError):
     """Vector Store 검색을 시작하는 데 필요한 설정이 없다."""
 
@@ -33,5 +40,6 @@ class RetrievalExecutionError(RuntimeError):
 __all__ = [
     "RetrievalConfigurationError",
     "RetrievalExecutionError",
+    "RetrievalToolError",
     "RetrievalOutcome",
 ]

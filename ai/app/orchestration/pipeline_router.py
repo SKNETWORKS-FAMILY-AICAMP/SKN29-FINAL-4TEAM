@@ -1,23 +1,16 @@
 """파이프라인 라우터 모듈."""
 
+from __future__ import annotations
+
 import os
 from hashlib import sha256
 from threading import Lock
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 from uuid import UUID
 
 from ..integrations.embedding.embedding_client import BgeM3EmbeddingClient
 from ..integrations.llm import GuidanceLLMClient
 from ..integrations.backend import BackendContextFailureKind
-from ..integrations.mcp.context_service import (
-    McpBackendContextError,
-    McpBackendContextService,
-    McpBackendContextToolName,
-)
-from ..integrations.mcp.search_service import (
-    McpEvidenceSearchError,
-    McpEvidenceSearchService,
-)
 from ..integrations.vector_store.vector_store import PgVectorStore
 from ..retrieval.search.vector_search import VectorSearchService
 from ..retrieval.indexing.index_manifest import IndexManifest
@@ -44,12 +37,34 @@ from .stages.structuring_stage import execute_structuring_stage
 from ..common.timeout import CancellationToken
 from ..schemas import TraceContext
 
+if TYPE_CHECKING:
+    from ..integrations.mcp.context_service import (
+        McpBackendContextError,
+        McpBackendContextService,
+    )
+
 
 _AUTO_SEARCH_SERVICE = object()
 _AUTO_MCP_CONTEXT_SERVICE = object()
 _SEARCH_SERVICE_LOCK = Lock()
 _SEARCH_SERVICE_CACHE_KEY: tuple[str, ...] | None = None
 _SEARCH_SERVICE_CACHE: VectorSearchService | None = None
+
+
+def _create_mcp_backend_context_service():
+    from ..integrations.mcp.context_service import (
+        McpBackendContextService,
+    )
+
+    return McpBackendContextService()
+
+
+def _create_mcp_evidence_search_service():
+    from ..integrations.mcp.search_service import (
+        McpEvidenceSearchService,
+    )
+
+    return McpEvidenceSearchService()
 
 
 def _configured_search_service() -> VectorSearchService | None:
@@ -209,10 +224,20 @@ class PipelineRouter:
             )
 
         if retrieval_transport == "mcp":
+            from ..integrations.mcp.context_service import (
+                McpBackendContextError,
+                McpBackendContextToolName,
+            )
+            from ..integrations.mcp.search_service import (
+                McpEvidenceSearchError,
+            )
+
             try:
                 context_service = self.mcp_context_service
                 if context_service is _AUTO_MCP_CONTEXT_SERVICE:
-                    context_service = McpBackendContextService()
+                    context_service = (
+                        _create_mcp_backend_context_service()
+                    )
                 if context_service is None:
                     raise McpBackendContextError(
                         tool_name=(
@@ -298,7 +323,7 @@ class PipelineRouter:
         )
 
         base_search_service = (
-            McpEvidenceSearchService()
+            _create_mcp_evidence_search_service()
             if retrieval_transport == "mcp"
             else self.search_service
         )
@@ -326,28 +351,37 @@ class PipelineRouter:
                 retrieval_configuration_error=retrieval_configuration_error,
                 llm_client=self.llm_client,
             )
-        try:
-            pipeline_result = pipeline.run(ctx, cancellation_token=token)
-        except McpEvidenceSearchError as exc:
-            failure = McpToolFailure(
-                tool_name=McpToolName.SEARCH_OFFICIAL_EVIDENCE,
-                kind=McpToolFailureKind(exc.kind.value),
-                retryable=exc.retryable,
-            )
-            reliability = self.reliability_runtime.run(
-                ctx=ctx,
-                product=product_context,
-                evidence_capture=guarded_search_service,
-                search_service=runtime_search_service,
-                llm_client=self.llm_client,
+        if retrieval_transport == "mcp":
+            try:
+                pipeline_result = pipeline.run(
+                    ctx,
+                    cancellation_token=token,
+                )
+            except McpEvidenceSearchError as exc:
+                failure = McpToolFailure(
+                    tool_name=McpToolName.SEARCH_OFFICIAL_EVIDENCE,
+                    kind=McpToolFailureKind(exc.kind.value),
+                    retryable=exc.retryable,
+                )
+                reliability = self.reliability_runtime.run(
+                    ctx=ctx,
+                    product=product_context,
+                    evidence_capture=guarded_search_service,
+                    search_service=runtime_search_service,
+                    llm_client=self.llm_client,
+                    cancellation_token=token,
+                    tool_failure=failure,
+                )
+                return PipelineResult(
+                    success=False,
+                    context=ctx,
+                    runtime_name=selected_runtime,
+                    reliability_runtime=reliability,
+                )
+        else:
+            pipeline_result = pipeline.run(
+                ctx,
                 cancellation_token=token,
-                tool_failure=failure,
-            )
-            return PipelineResult(
-                success=False,
-                context=ctx,
-                runtime_name=selected_runtime,
-                reliability_runtime=reliability,
             )
 
         pipeline_result.reliability_runtime = self.reliability_runtime.run(
