@@ -133,7 +133,7 @@ class P1SignupViewModelTest {
         }
 
     @Test
-    fun completeSignup_usesClaimTicketAndAuthenticatesCustomer() =
+    fun completeSignup_returnsCustomerToLogin() =
         runTest(mainDispatcherRule.dispatcher) {
             val claimTicket = "CLAIM_TICKET_FOR_SIGNUP_12345678901234567890"
             val p1 = FakeP1AuthRepository(
@@ -182,8 +182,25 @@ class P1SignupViewModelTest {
             assertEquals(consents, p1.lastSignupRequest?.consents)
             assertNotNull(p1.lastSignupIdempotencyKey)
 
-            assertTrue(viewModel.state.value.authenticated)
-            assertFalse(viewModel.state.value.offlinePreview)
+            assertFalse(
+                viewModel.state.value.authenticated
+            )
+            assertFalse(
+                viewModel.state.value.offlinePreview
+            )
+            assertEquals(
+                "water.user",
+                viewModel.state.value
+                    .signupCompletedUsername,
+            )
+
+            viewModel.consumeSignupCompletion()
+
+            assertEquals(
+                null,
+                viewModel.state.value
+                    .signupCompletedUsername,
+            )
 
             val stateText = viewModel.state.value.toString()
             assertFalse(stateText.contains(claimTicket))
@@ -229,7 +246,14 @@ class P1SignupViewModelTest {
 
             assertEquals(2, p1.signupIdempotencyKeys.size)
             assertEquals(firstKey, p1.signupIdempotencyKeys[1])
-            assertTrue(viewModel.state.value.authenticated)
+            assertFalse(
+                viewModel.state.value.authenticated
+            )
+            assertEquals(
+                "water.user",
+                viewModel.state.value
+                    .signupCompletedUsername,
+            )
         }
 
     @Test

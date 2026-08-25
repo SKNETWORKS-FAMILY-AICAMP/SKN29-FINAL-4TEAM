@@ -51,6 +51,7 @@ data class AuthUiState(
     val retryAfterSeconds: Int? = null,
     val signupStage: SignupStage = SignupStage.IDLE,
     val signupMessage: String? = null,
+    val signupCompletedUsername: String? = null,
     val challengeExpiresInSeconds: Int? = null,
     val resendAfterSeconds: Int? = null,
     val usernameRecoveryStage: UsernameRecoveryStage =
@@ -505,13 +506,23 @@ class AuthViewModel(
                             retryAfterSeconds = null,
                         )
                     } else {
+                        // signup() success stores the returned session.
+                        // This UX intentionally returns to login, so clear it.
+                        authRepository.logout()
+
                         _state.value = _state.value.copy(
                             submitting = false,
-                            authenticated = true,
+                            authenticated = false,
                             offlinePreview = false,
                             error = null,
                             fieldErrors = emptyMap(),
                             retryAfterSeconds = null,
+                            signupStage = SignupStage.IDLE,
+                            signupMessage = null,
+                            challengeExpiresInSeconds = null,
+                            resendAfterSeconds = null,
+                            signupCompletedUsername =
+                                normalizedUsername,
                         )
                     }
                 }
@@ -526,6 +537,20 @@ class AuthViewModel(
                 }
             }
         }
+    }
+
+    fun consumeSignupCompletion() {
+        if (
+            _state.value.signupCompletedUsername ==
+                null
+        ) {
+            return
+        }
+
+        _state.value =
+            _state.value.copy(
+                signupCompletedUsername = null,
+            )
     }
 
     fun startPasswordReset(
