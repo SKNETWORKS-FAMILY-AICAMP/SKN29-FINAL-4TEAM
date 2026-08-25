@@ -104,6 +104,141 @@ class RemoteIntakeCustomerCareRepositoryTest {
     }
 
     @Test
+    fun submitNotFound_retryCreatesFreshInquiryOperation() =
+        runBlocking {
+            val inquiryRepository =
+                RecordingInquiryRepository(
+                    submitResults =
+                        mutableListOf(
+                            ApiResult.Failure(
+                                code =
+                                    "RESOURCE_NOT_FOUND",
+                                message =
+                                    "inquiry not found",
+                                httpStatus = 404,
+                                retryable = false,
+                            )
+                        )
+                )
+
+            val repository =
+                RemoteIntakeCustomerCareRepository(
+                    inquiryRepository =
+                        inquiryRepository,
+                    subscriptionRepository =
+                        FailingSubscriptionRepository(),
+                    customerInquiryRepository =
+                        StubCustomerInquiryRepository(),
+                )
+
+            val request = sampleRequest()
+
+            val first =
+                repository.submitIntake(request)
+
+            val second =
+                repository.submitIntake(request)
+
+            assertTrue(
+                first is ApiResult.Failure
+            )
+            assertTrue(
+                second is ApiResult.Success<*>
+            )
+
+            assertEquals(
+                2,
+                inquiryRepository.createCalls,
+            )
+            assertEquals(
+                2,
+                inquiryRepository.submitCalls,
+            )
+
+            assertNotEquals(
+                inquiryRepository.createKeys[0],
+                inquiryRepository.createKeys[1],
+            )
+
+            assertNotEquals(
+                inquiryRepository.submitKeys[0],
+                inquiryRepository.submitKeys[1],
+            )
+        }
+
+    @Test
+    fun cancelledInquiry_retryCreatesFreshInquiryOperation() =
+        runBlocking {
+            val inquiryRepository =
+                RecordingInquiryRepository(
+                    submitResults =
+                        mutableListOf(
+                            ApiResult.Failure(
+                                code =
+                                    "STATE-CONFLICT-01",
+                                message =
+                                    "inquiry cancelled",
+                                httpStatus = 409,
+                                retryable = false,
+                                conflict =
+                                    StateConflictSnapshot(
+                                        currentStatus =
+                                            "CANCELLED",
+                                        currentStateVersion =
+                                            2,
+                                        allowedActions =
+                                            emptyList(),
+                                    ),
+                            )
+                        )
+                )
+
+            val repository =
+                RemoteIntakeCustomerCareRepository(
+                    inquiryRepository =
+                        inquiryRepository,
+                    subscriptionRepository =
+                        FailingSubscriptionRepository(),
+                    customerInquiryRepository =
+                        StubCustomerInquiryRepository(),
+                )
+
+            val request = sampleRequest()
+
+            val first =
+                repository.submitIntake(request)
+
+            val second =
+                repository.submitIntake(request)
+
+            assertTrue(
+                first is ApiResult.Failure
+            )
+            assertTrue(
+                second is ApiResult.Success<*>
+            )
+
+            assertEquals(
+                2,
+                inquiryRepository.createCalls,
+            )
+            assertEquals(
+                2,
+                inquiryRepository.submitCalls,
+            )
+
+            assertNotEquals(
+                inquiryRepository.createKeys[0],
+                inquiryRepository.createKeys[1],
+            )
+
+            assertNotEquals(
+                inquiryRepository.submitKeys[0],
+                inquiryRepository.submitKeys[1],
+            )
+        }
+
+    @Test
     fun guidance_delegatesToCustomerInquiryRepository_withoutFixtureFallback() = runBlocking {
         val guidanceRepository = StubCustomerInquiryRepository(
             guidanceResult = ApiResult.Success(sampleGuidance()),
@@ -178,6 +313,9 @@ class RemoteIntakeCustomerCareRepositoryTest {
         private val failCreateCount: Int = 0,
         private val failSubmitCount: Int = 0,
         private val staleConflictCount: Int = 0,
+        private val submitResults:
+            MutableList<ApiResult<SubmitSymptomResponse>> =
+                mutableListOf(),
     ) : InquiryRepository {
         val createKeys = mutableListOf<String>()
         val submitKeys = mutableListOf<String>()
@@ -224,6 +362,10 @@ class RemoteIntakeCustomerCareRepositoryTest {
             submitCalls += 1
             submitKeys += idempotencyKey
             submittedStateVersions += stateVersion
+
+            if (submitResults.isNotEmpty()) {
+                return submitResults.removeAt(0)
+            }
 
             if (submitCalls <= failSubmitCount) {
                 return ApiResult.Failure(

@@ -238,7 +238,7 @@ internal fun P1UsernameRecoverySection(
                 )
 
                 Text(
-                    text = "보안을 위해 아이디 일부만 표시됩니다.",
+                    text = "가입한 아이디입니다.",
                     modifier = Modifier.fillMaxWidth(),
                     style = MaterialTheme.typography.bodySmall,
                     color = palette.textMuted,
@@ -262,7 +262,7 @@ internal fun P1UsernameRecoverySection(
             state.fieldErrors.isEmpty()
         ) {
             Text(
-                text = "요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.",
+                text = state.error,
                 modifier = Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,

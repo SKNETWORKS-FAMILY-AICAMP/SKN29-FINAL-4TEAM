@@ -78,6 +78,36 @@ class NetworkFactory(
         if (value.endsWith('/')) value else "$value/"
 }
 
+internal fun userFacingApiErrorMessage(
+    status: Int,
+    code: String?,
+    serverMessage: String?,
+): String {
+    val normalizedCode =
+        code
+            ?.trim()
+            ?.uppercase()
+
+    val normalizedMessage =
+        serverMessage
+            ?.trim()
+            ?.takeIf(String::isNotEmpty)
+
+    if (
+        normalizedCode
+            ?.startsWith("AUTH_") ==
+        true &&
+        normalizedMessage != null
+    ) {
+        return normalizedMessage
+    }
+
+    return ApiErrorMapper.userMessage(
+        status = status,
+        serverMessage = normalizedMessage,
+    )
+}
+
 suspend fun <T> safeApiCall(
     json: Json,
     call: suspend () -> Response<ApiEnvelope<T>>,
@@ -108,7 +138,13 @@ suspend fun <T> safeApiCall(
 
         ApiResult.Failure(
             code = error?.code ?: "HTTP_$status",
-            message = ApiErrorMapper.userMessage(status, error?.message),
+            message =
+                userFacingApiErrorMessage(
+                    status = status,
+                    code = error?.code,
+                    serverMessage =
+                        error?.message,
+                ),
             details = error?.details?.toString(),
             httpStatus = status,
             retryable = status == 408 || status == 429 || status >= 500,

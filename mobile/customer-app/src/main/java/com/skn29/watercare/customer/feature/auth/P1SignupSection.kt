@@ -545,7 +545,7 @@ internal fun P1SignupSection(
             state.fieldErrors.isEmpty()
         ) {
             Text(
-                text = "요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.",
+                text = state.error,
                 modifier = Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
