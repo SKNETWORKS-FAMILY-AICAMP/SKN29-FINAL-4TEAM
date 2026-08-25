@@ -17,6 +17,8 @@ const INQUIRY_IDS = [
   parseInquiryId("00000000-0000-4000-8000-000000000002"),
   parseInquiryId("00000000-0000-4000-8000-000000000003"),
   parseInquiryId("00000000-0000-4000-8000-000000000004"),
+  parseInquiryId("00000000-0000-4000-8000-000000000005"),
+  parseInquiryId("00000000-0000-4000-8000-000000000006"),
 ] as const;
 
 function createStorage(): RecentConsultantInquiryIdStorage & {
@@ -32,7 +34,7 @@ function createStorage(): RecentConsultantInquiryIdStorage & {
 }
 
 describe("recentConsultantInquiryIds", () => {
-  it("최신 문의를 맨 앞에 두고 중복을 제거하며 최대 세 건만 유지한다", () => {
+  it("최신 문의를 맨 앞에 두고 중복을 제거하며 최대 다섯 건만 유지한다", () => {
     const storage = createStorage();
 
     INQUIRY_IDS.forEach((inquiryId) =>
@@ -40,16 +42,20 @@ describe("recentConsultantInquiryIds", () => {
     );
 
     expect(readRecentConsultantInquiryIds(CONSULTANT_A, storage)).toEqual([
+      INQUIRY_IDS[5],
+      INQUIRY_IDS[4],
       INQUIRY_IDS[3],
       INQUIRY_IDS[2],
       INQUIRY_IDS[1],
     ]);
-    expect(MAX_RECENT_CONSULTANT_INQUIRY_IDS).toBe(3);
+    expect(MAX_RECENT_CONSULTANT_INQUIRY_IDS).toBe(5);
 
     rememberRecentConsultantInquiryId(CONSULTANT_A, INQUIRY_IDS[2], storage);
 
     expect(readRecentConsultantInquiryIds(CONSULTANT_A, storage)).toEqual([
       INQUIRY_IDS[2],
+      INQUIRY_IDS[5],
+      INQUIRY_IDS[4],
       INQUIRY_IDS[3],
       INQUIRY_IDS[1],
     ]);

@@ -4,6 +4,9 @@ const CONSULTANT_DASHBOARD_DATE_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
   month: "2-digit",
   day: "2-digit",
   weekday: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
 });
 
 export function getConsultantDashboardDate(date: Date) {
@@ -13,7 +16,7 @@ export function getConsultantDashboardDate(date: Date) {
   );
 
   return {
-    dateTime: `${values.year}-${values.month}-${values.day}`,
-    label: `${values.year}. ${values.month}. ${values.day}. (${values.weekday})`,
+    dateTime: `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`,
+    label: `${values.year}. ${values.month}. ${values.day}. (${values.weekday}) ${values.hour}:${values.minute}`,
   };
 }
