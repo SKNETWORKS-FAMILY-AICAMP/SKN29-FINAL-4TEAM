@@ -4581,3 +4581,85 @@ html body
     grid-template-rows: 64px 116px 226px minmax(0, 1fr) !important;
   }
 }
+
+/* Let dashboard lists show all five items and use the page scrollbar. */
+
+html:has(body #root .consultant-dashboard-app) {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+html body.compact-consultant-body:has(#root .consultant-dashboard-app) {
+  height: auto !important;
+  min-height: 100dvh !important;
+  overflow: visible !important;
+}
+
+html body #root .consultant-dashboard-app {
+  height: auto !important;
+  min-height: 100dvh !important;
+  overflow: visible !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+  .consultant-queue-main {
+  height: auto !important;
+  min-height: 100dvh !important;
+  overflow: visible !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  .counselor-dashboard-info {
+  height: auto !important;
+  min-height: 0 !important;
+  align-items: start;
+  overflow: visible !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  :is(
+    .counselor-dashboard-info__panel--recent,
+    .counselor-dashboard-info__panel--notices
+  ) {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  :is(.counselor-dashboard-recent, .counselor-dashboard-notices) {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  flex: none !important;
+  overflow: visible !important;
+  overscroll-behavior: auto;
+  scrollbar-width: auto;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
+  :is(.counselor-dashboard-recent, .counselor-dashboard-notices)::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+    .consultant-queue-main {
+    grid-template-rows: 64px 116px 226px auto !important;
+  }
+}

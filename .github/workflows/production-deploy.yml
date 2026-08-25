@@ -147,6 +147,17 @@ jobs:
             DJANGO_ALLOWED_HOSTS=localhost \
             DJANGO_CORS_ALLOWED_ORIGINS=https://localhost \
             AI_SERVICE_BASE_URL=http://127.0.0.1:8001 \
+            CONTRACT_EMAIL_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+            CONTRACT_EMAIL_HMAC_KEY=AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE= \
+            CONTRACT_EMAIL_KEY_VERSION=ci-v1 \
+            P1_AUTH_HMAC_SECRET=ci-p1-auth-secret-at-least-32-bytes \
+            P1_AUTH_OTP_ENCRYPTION_KEY=AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI= \
+            P1_AUTH_EMAIL_REDIRECT_TO=ci-inbox@example.invalid \
+            DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend \
+            DJANGO_EMAIL_HOST=smtp.invalid \
+            DJANGO_EMAIL_HOST_USER=ci-smtp-user \
+            DJANGO_EMAIL_HOST_PASSWORD=ci-smtp-password \
+            DJANGO_DEFAULT_FROM_EMAIL=no-reply@example.invalid \
             POSTGRES_DB=ci_production_config_check \
             POSTGRES_USER=ci_production_config_check \
             POSTGRES_PASSWORD=ci-production-config-check-only \

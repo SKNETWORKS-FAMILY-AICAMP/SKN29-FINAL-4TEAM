@@ -205,6 +205,20 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
     ) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("DJANGO_SECRET_KEY=ci-production-config-check-only", workflow)
+        for key in (
+            "CONTRACT_EMAIL_ENCRYPTION_KEY",
+            "CONTRACT_EMAIL_HMAC_KEY",
+            "CONTRACT_EMAIL_KEY_VERSION",
+            "P1_AUTH_HMAC_SECRET",
+            "P1_AUTH_OTP_ENCRYPTION_KEY",
+            "P1_AUTH_EMAIL_REDIRECT_TO",
+            "DJANGO_EMAIL_BACKEND",
+            "DJANGO_EMAIL_HOST",
+            "DJANGO_EMAIL_HOST_USER",
+            "DJANGO_EMAIL_HOST_PASSWORD",
+            "DJANGO_DEFAULT_FROM_EMAIL",
+        ):
+            self.assertIn(f"{key}=", workflow)
         self.assertIn("POSTGRES_SSLMODE=verify-full", workflow)
         self.assertIn(
             "POSTGRES_SSLROOTCERT=/etc/ssl/certs/ca-certificates.crt",
