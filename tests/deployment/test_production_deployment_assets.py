@@ -67,7 +67,7 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         compose = COMPOSE.read_text(encoding="utf-8")
         deploy = DEPLOY.read_text(encoding="utf-8")
         self.assertIn("backend: s3", text)
-        self.assertIn("prefix: tempo", text)
+        self.assertIn("prefix: tempo/", text)
         self.assertGreaterEqual(text.count("block_retention: 336h"), 2)
         self.assertIn("path: /var/tempo/wal", text)
         self.assertIn("live_store:", text)
@@ -157,11 +157,33 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
             ':/run/secrets/rds-ca.pem:ro"'
         )
         self.assertEqual(text.count(ca_mount), 2)
-        ai_service = text.split("  ai:\n", maxsplit=1)[1].split(
-            "  trace-store:\n", maxsplit=1
+        ai_service = text.split("\n  ai:\n", maxsplit=1)[1].split(
+            "\n  trace-store:\n", maxsplit=1
         )[0]
         self.assertIn("PGSSLROOTCERT: /run/secrets/rds-ca.pem", ai_service)
         self.assertIn(ca_mount, ai_service)
+
+    def test_ai_and_trace_store_have_private_outbound_egress(self) -> None:
+        text = COMPOSE.read_text(encoding="utf-8")
+        ai_service = text.split("\n  ai:\n", maxsplit=1)[1].split(
+            "\n  trace-store:\n", maxsplit=1
+        )[0]
+        trace_store = text.split("\n  trace-store:\n", maxsplit=1)[1].split(
+            "\nnetworks:\n", maxsplit=1
+        )[0]
+        network_definitions = text.split("\nnetworks:\n", maxsplit=1)[1].split(
+            "\nvolumes:\n", maxsplit=1
+        )[0]
+
+        for service in (ai_service, trace_store):
+            self.assertIn("      - internal", service)
+            self.assertIn("      - egress", service)
+            self.assertNotRegex(service, r"(?m)^    ports:$")
+        self.assertIn(
+            "  internal:\n    driver: bridge\n    internal: true",
+            network_definitions,
+        )
+        self.assertIn("  egress:\n    driver: bridge", network_definitions)
 
     def test_backend_image_is_non_root_locked_and_collects_static(self) -> None:
         dockerfile = (ROOT / "backend/Dockerfile").read_text(encoding="utf-8")
@@ -214,10 +236,27 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
             "MIGRATION_PLAN",
         ):
             self.assertIn(stage, backend)
+        for stage in (
+            "ENVIRONMENT",
+            "DATABASE_CONNECTION",
+            "POSTGRES_VERSION",
+            "PGVECTOR_VERSION",
+            "TRANSACTION_READ_ONLY",
+            "PUBLIC_SCHEMA_PRIVILEGE",
+            "VIEW_PRIVILEGE_BOUNDARY",
+            "BASE_TABLE_BOUNDARY",
+            "VIEW_COUNTS_AND_LINEAGE",
+            "MODEL_DISTRIBUTION",
+        ):
+            self.assertIn(stage, ai)
         self.assertIn(
             'f"reason={stage} error_type={type(exc).__name__}"', backend
         )
+        self.assertIn(
+            'f"reason={stage} error_type={type(exc).__name__}"', ai
+        )
         self.assertNotIn("print(exc", backend)
+        self.assertNotIn("print(exc", ai)
 
     def test_ssm_failures_always_emit_deploy_and_rollback_results(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")

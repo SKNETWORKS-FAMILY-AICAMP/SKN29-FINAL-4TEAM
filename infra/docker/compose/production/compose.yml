@@ -122,6 +122,7 @@ services:
         condition: service_healthy
     networks:
       - internal
+      - egress
 
   trace-store:
     image: grafana/tempo:3.0.3@sha256:05321ebf1f191fde34282b3dc86e68f511d489133df7963cd1670a2e1e11b33c
@@ -156,6 +157,7 @@ services:
       start_period: 20s
     networks:
       - internal
+      - egress
 
 networks:
   edge:
@@ -163,6 +165,8 @@ networks:
   internal:
     driver: bridge
     internal: true
+  egress:
+    driver: bridge
 
 volumes:
   ai_model_cache:

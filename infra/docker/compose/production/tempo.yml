@@ -24,7 +24,7 @@ storage:
       path: /var/tempo/wal
     s3:
       bucket: ${TEMPO_S3_BUCKET}
-      prefix: tempo
+      prefix: tempo/
       endpoint: s3.${AWS_REGION}.amazonaws.com
       region: ${AWS_REGION}
 
