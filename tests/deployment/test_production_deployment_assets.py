@@ -199,6 +199,17 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("DJANGO_ALLOWED_HOSTS", dockerfile)
         self.assertIn("headers={'Host': host}", dockerfile)
         self.assertIn("context: backend", workflow)
+        self.assertIn(
+            "COPY --from=state_machine_contracts . "
+            "/workspace/contracts/state-machine/",
+            dockerfile,
+        )
+        self.assertIn("load_state_machine_contract()", dockerfile)
+        self.assertIn(
+            "state_machine_contracts=contracts/state-machine",
+            workflow,
+        )
+        self.assertIn("BACKEND_STATE_MACHINE_CONTRACT_PASS", workflow)
 
     def test_gunicorn_config_gate_uses_verify_full_without_runtime_secrets(
         self,
@@ -272,11 +283,15 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertNotIn("print(exc", backend)
         self.assertNotIn("print(exc", ai)
 
-    def test_ssm_failures_always_emit_deploy_and_rollback_results(self) -> None:
+    def test_ssm_polling_waits_for_terminal_deploy_and_rollback_results(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertEqual(workflow.count("aws ssm get-command-invocation"), 2)
-        self.assertIn("SSM_DEPLOY_WAITER_FAILED status=%s", workflow)
-        self.assertIn("SSM_ROLLBACK_WAITER_FAILED status=%s", workflow)
+        self.assertNotIn("aws ssm wait command-executed", workflow)
+        self.assertIn("deadline=$((SECONDS + 1200))", workflow)
+        self.assertIn("deadline=$((SECONDS + 600))", workflow)
+        self.assertEqual(workflow.count("Pending|InProgress|Delayed|Cancelling"), 2)
+        self.assertIn("SSM_DEPLOY_POLL_TIMEOUT seconds=1200", workflow)
+        self.assertIn("SSM_ROLLBACK_POLL_TIMEOUT seconds=600", workflow)
         self.assertIn('[[ "$status" == "Success" ]]', workflow)
         self.assertIn('[[ "$rollback_status" == "Success" ]]', workflow)
 

@@ -80,6 +80,8 @@ jobs:
           }
           grep -Fq 'requirements/production.txt' backend/Dockerfile
           grep -Fq 'collectstatic' backend/Dockerfile
+          grep -Fq 'COPY --from=state_machine_contracts . /workspace/contracts/state-machine/' backend/Dockerfile
+          grep -Fq 'load_state_machine_contract()' backend/Dockerfile
           grep -Fq 'ai/requirements-linux.lock' ai/Dockerfile
           grep -Fq 'VITE_USE_MOCK_API=false' web/Dockerfile
           grep -Fq 'VITE_ENABLE_DESIGN_MOCK_FALLBACK=false' web/Dockerfile
@@ -330,6 +332,8 @@ jobs:
         with:
           context: backend
           file: backend/Dockerfile
+          build-contexts: |
+            state_machine_contracts=contracts/state-machine
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_BACKEND_REPOSITORY }}:${{ env.RELEASE_SHA }}
           platforms: linux/amd64
@@ -377,6 +381,8 @@ jobs:
             --entrypoint nginx "$web_ref" -t
           docker run --rm --entrypoint python "$backend_ref" \
             -c "import os; assert os.getuid() != 0"
+          docker run --rm --entrypoint python "$backend_ref" \
+            -c "from apps.workflow.contracts import load_state_machine_contract; load_state_machine_contract(); print('BACKEND_STATE_MACHINE_CONTRACT_PASS')"
           docker run --rm --entrypoint gunicorn "$backend_ref" --version
           docker run --rm --entrypoint python "$ai_ref" \
             -c "import os; assert os.getuid() != 0"
@@ -466,22 +472,39 @@ jobs:
             --query 'Command.CommandId' \
             --output text)"
           echo "command_id=${command_id}" >> "$GITHUB_OUTPUT"
-          wait_rc=0
-          aws ssm wait command-executed \
-            --command-id "$command_id" \
-            --instance-id "$EC2_INSTANCE_ID" || wait_rc=$?
-          invocation="$(aws ssm get-command-invocation \
-            --command-id "$command_id" \
-            --instance-id "$EC2_INSTANCE_ID" \
-            --output json)"
+          poll_ssm_deploy() {
+            local deadline invocation poll_status
+            deadline=$((SECONDS + 1200))
+            while (( SECONDS < deadline )); do
+              if invocation="$(aws ssm get-command-invocation \
+                --command-id "$command_id" \
+                --instance-id "$EC2_INSTANCE_ID" \
+                --output json 2>/dev/null)"; then
+                poll_status="$(jq -r '.Status' <<<"$invocation")"
+                case "$poll_status" in
+                  Success|Failed|Cancelled|TimedOut)
+                    printf '%s' "$invocation"
+                    return 0
+                    ;;
+                  Pending|InProgress|Delayed|Cancelling)
+                    ;;
+                  *)
+                    printf 'SSM_DEPLOY_UNKNOWN_STATUS status=%s\n' "$poll_status" >&2
+                    return 1
+                    ;;
+                esac
+              fi
+              sleep 10
+            done
+            printf 'SSM_DEPLOY_POLL_TIMEOUT seconds=1200\n' >&2
+            return 1
+          }
+          invocation="$(poll_ssm_deploy)"
           status="$(jq -r '.Status' <<<"$invocation")"
           stdout="$(jq -r '.StandardOutputContent' <<<"$invocation")"
           stderr="$(jq -r '.StandardErrorContent' <<<"$invocation")"
           printf '%s\n' "$stdout"
           [[ -z "$stderr" ]] || printf '%s\n' "$stderr" >&2
-          if [[ "$wait_rc" -ne 0 ]]; then
-            printf 'SSM_DEPLOY_WAITER_FAILED status=%s\n' "$status" >&2
-          fi
           [[ "$status" == "Success" ]]
           grep -q '^DEPLOYMENT_RUNTIME_PASS$' <<<"$stdout"
 
@@ -511,22 +534,39 @@ jobs:
             --parameters "$commands_json" \
             --query 'Command.CommandId' \
             --output text)"
-          rollback_wait_rc=0
-          aws ssm wait command-executed \
-            --command-id "$rollback_id" \
-            --instance-id "$EC2_INSTANCE_ID" || rollback_wait_rc=$?
-          rollback_invocation="$(aws ssm get-command-invocation \
-            --command-id "$rollback_id" \
-            --instance-id "$EC2_INSTANCE_ID" \
-            --output json)"
+          poll_ssm_rollback() {
+            local deadline invocation poll_status
+            deadline=$((SECONDS + 600))
+            while (( SECONDS < deadline )); do
+              if invocation="$(aws ssm get-command-invocation \
+                --command-id "$rollback_id" \
+                --instance-id "$EC2_INSTANCE_ID" \
+                --output json 2>/dev/null)"; then
+                poll_status="$(jq -r '.Status' <<<"$invocation")"
+                case "$poll_status" in
+                  Success|Failed|Cancelled|TimedOut)
+                    printf '%s' "$invocation"
+                    return 0
+                    ;;
+                  Pending|InProgress|Delayed|Cancelling)
+                    ;;
+                  *)
+                    printf 'SSM_ROLLBACK_UNKNOWN_STATUS status=%s\n' "$poll_status" >&2
+                    return 1
+                    ;;
+                esac
+              fi
+              sleep 10
+            done
+            printf 'SSM_ROLLBACK_POLL_TIMEOUT seconds=600\n' >&2
+            return 1
+          }
+          rollback_invocation="$(poll_ssm_rollback)"
           rollback_status="$(jq -r '.Status' <<<"$rollback_invocation")"
           rollback_stdout="$(jq -r '.StandardOutputContent' <<<"$rollback_invocation")"
           rollback_stderr="$(jq -r '.StandardErrorContent' <<<"$rollback_invocation")"
           printf '%s\n' "$rollback_stdout"
           [[ -z "$rollback_stderr" ]] || printf '%s\n' "$rollback_stderr" >&2
-          if [[ "$rollback_wait_rc" -ne 0 ]]; then
-            printf 'SSM_ROLLBACK_WAITER_FAILED status=%s\n' "$rollback_status" >&2
-          fi
           [[ "$rollback_status" == "Success" ]]
 
       - name: Record deployment result

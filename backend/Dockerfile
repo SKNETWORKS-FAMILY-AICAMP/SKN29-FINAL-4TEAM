@@ -28,8 +28,11 @@ COPY common/ ./common/
 COPY config/ ./config/
 COPY integrations/ ./integrations/
 COPY manage.py ./manage.py
+COPY --from=state_machine_contracts . /workspace/contracts/state-machine/
 
-RUN DJANGO_SETTINGS_MODULE=config.settings.test python -c \
+RUN python -c \
+    "from apps.workflow.contracts import load_state_machine_contract; load_state_machine_contract(); print('BACKEND_STATE_MACHINE_CONTRACT_PASS')" \
+    && DJANGO_SETTINGS_MODULE=config.settings.test python -c \
     "import django; django.setup(); from django.conf import settings; settings.STATIC_ROOT='/workspace/backend/staticfiles'; from django.core.management import call_command; call_command('collectstatic', interactive=False, verbosity=0)" \
     && chown -R waterbridge:waterbridge /workspace/backend/staticfiles
 
