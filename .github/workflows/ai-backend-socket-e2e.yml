@@ -1,6 +1,7 @@
 name: AI Backend Socket E2E Linux Gate
 
 on:
+  workflow_call:
   workflow_dispatch:
   push:
     branches:

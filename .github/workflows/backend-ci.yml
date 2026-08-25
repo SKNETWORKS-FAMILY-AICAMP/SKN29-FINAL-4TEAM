@@ -1,23 +1,18 @@
 name: Backend CI
 
 on:
+  workflow_call:
+    inputs:
+      force_full:
+        description: Run every Backend shard regardless of changed paths
+        required: false
+        default: true
+        type: boolean
   workflow_dispatch:
   pull_request:
-    paths:
-      - "backend/**"
-      - "contracts/**"
-      - "data/**"
-      - "scripts/development/**"
-      - ".github/workflows/backend-ci.yml"
   push:
     branches:
       - main
-    paths:
-      - "backend/**"
-      - "contracts/**"
-      - "data/**"
-      - "scripts/development/**"
-      - ".github/workflows/backend-ci.yml"
 
 permissions:
   contents: read
@@ -27,11 +22,64 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify-backend:
-    name: Verify Backend baseline
+  classify-backend:
+    name: Classify Backend CI scope
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 5
+    outputs:
+      run_heavy: ${{ steps.scope.outputs.run_heavy }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      - id: scope
+        name: Classify changed paths
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          FORCE_FULL: ${{ inputs.force_full || github.event_name == 'workflow_dispatch' }}
+        run: |
+          set -euo pipefail
+          arguments=(
+            --event-name "$EVENT_NAME"
+            --before-sha "$BEFORE_SHA"
+            --base-sha "$BASE_SHA"
+            --head-sha "$HEAD_SHA"
+          )
+          if [[ "$FORCE_FULL" == "true" ]]; then
+            arguments+=(--force-full)
+          fi
+          run_heavy="$(python -B scripts/testing/classify_backend_ci_changes.py "${arguments[@]}")"
+          [[ "$run_heavy" == "true" || "$run_heavy" == "false" ]]
+          echo "run_heavy=${run_heavy}" >> "$GITHUB_OUTPUT"
+
+      - id: matrix
+        name: Load the complete Backend shard matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          matrix="$(python -B scripts/testing/classify_backend_ci_changes.py --print-matrix)"
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify Backend shard ownership and workflow policy
+        run: >-
+          python -B -m unittest
+          tests.deployment.test_backend_ci_workflow -v
+
+  backend-tests:
+    name: Backend ${{ matrix.name }} shard
+    needs: classify-backend
+    if: ${{ needs.classify-backend.outputs.run_heavy == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.classify-backend.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -56,5 +104,48 @@ jobs:
       - name: Bootstrap Backend environment
         run: python scripts/development/bootstrap.py --service backend
 
-      - name: Run Backend full environment gate
-        run: python scripts/development/check_environment.py --service backend --full
+      - name: Run Backend environment and migration preflight
+        if: ${{ matrix.preflight }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/development/check_environment.py --service backend
+          backend/.venv/bin/python backend/manage.py makemigrations \
+            --check --dry-run --settings=config.settings.test
+          [[ -z "$(git ls-files -- backend/.venv)" ]]
+          git check-ignore -q backend/.venv/pyvenv.cfg
+
+      - name: Run Backend shard
+        working-directory: backend
+        shell: bash
+        run: >-
+          .venv/bin/python -m pytest
+          ${{ matrix.targets }}
+          -q -p no:cacheprovider --durations=20
+
+  verify-backend:
+    name: Verify Backend baseline
+    needs:
+      - classify-backend
+      - backend-tests
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify scope and shard results
+        shell: bash
+        env:
+          CLASSIFY_RESULT: ${{ needs.classify-backend.result }}
+          RUN_HEAVY: ${{ needs.classify-backend.outputs.run_heavy }}
+          SHARD_RESULT: ${{ needs.backend-tests.result }}
+        run: |
+          set -euo pipefail
+          [[ "$CLASSIFY_RESULT" == "success" ]]
+          if [[ "$RUN_HEAVY" == "true" ]]; then
+            [[ "$SHARD_RESULT" == "success" ]]
+            echo "All Backend test shards passed."
+          else
+            [[ "$RUN_HEAVY" == "false" ]]
+            [[ "$SHARD_RESULT" == "skipped" ]]
+            echo "Backend heavy gate was not required for this change."
+          fi

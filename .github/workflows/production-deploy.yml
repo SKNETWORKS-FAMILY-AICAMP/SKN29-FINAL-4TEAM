@@ -1,11 +1,9 @@
 name: Production Deploy
 
 on:
-  workflow_run:
-    workflows:
-      - AI Backend Socket E2E Linux Gate
-    types:
-      - completed
+  push:
+    tags:
+      - "v*.*.*"
 
 permissions:
   actions: read
@@ -17,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+  RELEASE_SHA: ${{ github.sha }}
   AWS_REGION: ${{ vars.AWS_REGION }}
   AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
   EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
@@ -28,20 +26,34 @@ env:
 jobs:
   source-guard:
     name: Verify release source and container boundaries
-    if: >-
-      github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.head_branch == 'main' &&
-      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
         with:
           ref: ${{ env.RELEASE_SHA }}
+          fetch-depth: 0
 
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13.13"
+
+      - name: Verify stable SemVer tag and main ancestry
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "Production release tag must be stable SemVer: ${RELEASE_TAG}" >&2
+            exit 1
+          }
+          [[ "$(git rev-parse HEAD)" == "$RELEASE_SHA" ]]
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          git merge-base --is-ancestor "$RELEASE_SHA" origin/main || {
+            echo "Production release commit is not contained in origin/main." >&2
+            exit 1
+          }
 
       - name: Reject placeholder images and mutable runtime inputs
         shell: bash
@@ -88,13 +100,23 @@ jobs:
       - name: Run deployment asset tests
         run: >-
           python -B -m unittest
-          tests.deployment.test_production_deployment_assets -v
+          tests.deployment.test_production_deployment_assets
+          tests.deployment.test_backend_ci_workflow
+          tests.deployment.test_data_ci_workflow
+          -v
 
   backend-gate:
-    name: Re-run Backend full gate
+    name: Re-run optimized Backend full gate
+    needs: source-guard
+    uses: ./.github/workflows/backend-ci.yml
+    with:
+      force_full: true
+
+  backend-production-config-gate:
+    name: Verify Backend production config
     needs: source-guard
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
         with:
@@ -139,8 +161,11 @@ jobs:
             --timeout 60 \
             --check-config \
             config.wsgi:application
-      - name: Run Backend full environment gate
-        run: python scripts/development/check_environment.py --service backend --full
+
+  socket-e2e-gate:
+    name: Re-run AI Backend Socket E2E gate
+    needs: source-guard
+    uses: ./.github/workflows/ai-backend-socket-e2e.yml
 
   web-gate:
     name: Re-run Web production gate
@@ -208,6 +233,8 @@ jobs:
     name: Build and publish immutable images
     needs:
       - backend-gate
+      - backend-production-config-gate
+      - socket-e2e-gate
       - web-gate
       - contract-data-gate
     runs-on: ubuntu-24.04
