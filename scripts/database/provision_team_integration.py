@@ -1,4 +1,4 @@
-"""TEAM_INTEGRATION PostgreSQL DB·Role·권한을 안전하게 구성한다.
+"""허용된 로컬 PostgreSQL DB·Role·권한 프로필을 안전하게 구성한다.
 
 기본 실행은 비변경 Plan이다. 실제 변경은 ``--apply``와 정확한 DB명
 확인을 함께 제공한 경우에만 수행한다. 비밀번호·Host·DSN은 어떤 JSON
@@ -14,6 +14,7 @@ import sys
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 
 import psycopg
@@ -33,12 +34,9 @@ from config.env import (  # noqa: E402
 )
 
 
-TARGET_DATABASE = "waterbridge_team_integration"
 ADMIN_DATABASE = "postgres"
-OBJECT_MARKER = "waterbridge:team-integration:v1"
 AI_READONLY_VIEW = "backend_ai_rag_chunks_v1"
 AI_READONLY_VIEW_REGCLASS = f"public.{AI_READONLY_VIEW}"
-ADVISORY_LOCK_KEY = 870_429_001
 TEAM_ENV_PATH = BACKEND_DIR / ".env.team-integration"
 PROTECTED_DATABASES = frozenset(
     {"waterbridge", "watercare", "postgres", "template0", "template1"}
@@ -58,28 +56,91 @@ class RoleSpec:
     password_key: str
 
 
-ROLE_SPECS = (
-    RoleSpec(
-        "migrator",
-        "waterbridge_ti_migrator",
-        "TEAM_INTEGRATION_MIGRATOR_PASSWORD",
-    ),
-    RoleSpec(
-        "runtime",
-        "waterbridge_ti_runtime",
-        "TEAM_INTEGRATION_RUNTIME_PASSWORD",
-    ),
-    RoleSpec(
-        "readonly",
-        "waterbridge_ti_readonly",
-        "TEAM_INTEGRATION_READONLY_PASSWORD",
-    ),
-    RoleSpec(
-        "ai_readonly",
-        "waterbridge_ti_ai_readonly",
-        "TEAM_INTEGRATION_AI_PASSWORD",
+@dataclass(frozen=True)
+class ProvisionProfile:
+    """임의 DB명을 받지 않고 코드 검토된 구성만 허용한다."""
+
+    name: str
+    scope: str
+    target_database: str
+    object_marker: str
+    advisory_lock_key: int
+    role_specs: tuple[RoleSpec, ...]
+    local_host_only: bool = False
+
+
+TEAM_INTEGRATION_PROFILE = ProvisionProfile(
+    name="team-integration",
+    scope="TEAM_INTEGRATION",
+    target_database="waterbridge_team_integration",
+    object_marker="waterbridge:team-integration:v1",
+    advisory_lock_key=870_429_001,
+    role_specs=(
+        RoleSpec(
+            "migrator",
+            "waterbridge_ti_migrator",
+            "TEAM_INTEGRATION_MIGRATOR_PASSWORD",
+        ),
+        RoleSpec(
+            "runtime",
+            "waterbridge_ti_runtime",
+            "TEAM_INTEGRATION_RUNTIME_PASSWORD",
+        ),
+        RoleSpec(
+            "readonly",
+            "waterbridge_ti_readonly",
+            "TEAM_INTEGRATION_READONLY_PASSWORD",
+        ),
+        RoleSpec(
+            "ai_readonly",
+            "waterbridge_ti_ai_readonly",
+            "TEAM_INTEGRATION_AI_PASSWORD",
+        ),
     ),
 )
+P1_TEAM_ISOLATED_PROFILE = ProvisionProfile(
+    name="p1-team-isolated",
+    scope="P1_TEAM_ISOLATED",
+    target_database="waterbridge_p1_team_isolated",
+    object_marker="waterbridge:p1-team-isolated:v1",
+    advisory_lock_key=870_429_011,
+    role_specs=(
+        RoleSpec(
+            "migrator",
+            "waterbridge_p1_migrator",
+            "TEAM_INTEGRATION_MIGRATOR_PASSWORD",
+        ),
+        RoleSpec(
+            "runtime",
+            "waterbridge_p1_runtime",
+            "TEAM_INTEGRATION_RUNTIME_PASSWORD",
+        ),
+        RoleSpec(
+            "readonly",
+            "waterbridge_p1_readonly",
+            "TEAM_INTEGRATION_READONLY_PASSWORD",
+        ),
+        RoleSpec(
+            "ai_readonly",
+            "waterbridge_p1_ai_readonly",
+            "TEAM_INTEGRATION_AI_PASSWORD",
+        ),
+    ),
+    local_host_only=True,
+)
+PROFILES = MappingProxyType(
+    {
+        profile.name: profile
+        for profile in (TEAM_INTEGRATION_PROFILE, P1_TEAM_ISOLATED_PROFILE)
+    }
+)
+DEFAULT_PROFILE = TEAM_INTEGRATION_PROFILE
+
+# 기존 직접 호출·테스트 호환을 유지하는 기본 프로필 별칭이다.
+TARGET_DATABASE = DEFAULT_PROFILE.target_database
+OBJECT_MARKER = DEFAULT_PROFILE.object_marker
+ADVISORY_LOCK_KEY = DEFAULT_PROFILE.advisory_lock_key
+ROLE_SPECS = DEFAULT_PROFILE.role_specs
 
 
 class ProvisioningError(RuntimeError):
@@ -120,7 +181,11 @@ def build_configuration(
     apply: bool,
     confirmed_database: str | None,
     rotate_passwords: bool,
+    profile: ProvisionProfile = DEFAULT_PROFILE,
 ) -> dict[str, Any]:
+    if PROFILES.get(profile.name) != profile:
+        raise ProvisioningError("profile_not_allowed")
+
     missing_admin = tuple(
         key for key in REQUIRED_ADMIN_KEYS if not environ.get(key, "").strip()
     )
@@ -130,10 +195,10 @@ def build_configuration(
             missing_keys=missing_admin,
         )
 
-    if TARGET_DATABASE in PROTECTED_DATABASES:
+    if profile.target_database in PROTECTED_DATABASES:
         raise ProvisioningError("protected_target_database")
 
-    if apply and confirmed_database != TARGET_DATABASE:
+    if apply and confirmed_database != profile.target_database:
         raise ProvisioningError("database_confirmation_required")
     if rotate_passwords and not apply:
         raise ProvisioningError("password_rotation_requires_apply")
@@ -141,7 +206,7 @@ def build_configuration(
     if apply:
         missing_passwords = tuple(
             role.password_key
-            for role in ROLE_SPECS
+            for role in profile.role_specs
             if not environ.get(role.password_key, "").strip()
             or _is_placeholder(environ.get(role.password_key, ""))
         )
@@ -151,12 +216,16 @@ def build_configuration(
                 missing_keys=missing_passwords,
             )
         role_password_values = tuple(
-            environ[role.password_key] for role in ROLE_SPECS
+            environ[role.password_key] for role in profile.role_specs
         )
         if len(set(role_password_values)) != len(role_password_values):
             raise ProvisioningError("duplicate_role_passwords")
         if environ["POSTGRES_PASSWORD"] in role_password_values:
             raise ProvisioningError("role_password_matches_admin")
+
+    host = environ["POSTGRES_HOST"].strip()
+    if profile.local_host_only and not _is_local_host(host):
+        raise ProvisioningError("local_host_required")
 
     try:
         connection_options = build_postgres_connection_options(
@@ -169,7 +238,6 @@ def build_configuration(
             missing_keys=exc.missing_keys,
         ) from None
 
-    host = environ["POSTGRES_HOST"].strip()
     if not _is_local_host(host):
         if connection_options.get("sslmode") != "verify-full":
             raise ProvisioningError("remote_verify_full_required")
@@ -190,10 +258,11 @@ def build_configuration(
         },
         "role_passwords": {
             role.name: environ.get(role.password_key, "")
-            for role in ROLE_SPECS
+            for role in profile.role_specs
         },
         "remote": not _is_local_host(host),
         "rotate_passwords": rotate_passwords,
+        "profile": profile,
     }
 
 
@@ -228,10 +297,11 @@ def _ensure_role(
     password: str,
     *,
     rotate_password: bool,
+    profile: ProvisionProfile = DEFAULT_PROFILE,
 ) -> str:
     row = _role_row(cursor, role.name)
     if row is not None:
-        _assert_existing_role_policy(row)
+        _assert_existing_role_policy(row, profile=profile)
         if rotate_password:
             cursor.execute(
                 sql.SQL("ALTER ROLE {} PASSWORD {}").format(
@@ -255,13 +325,17 @@ def _ensure_role(
     cursor.execute(
         sql.SQL("COMMENT ON ROLE {} IS {}").format(
             sql.Identifier(role.name),
-            sql.Literal(OBJECT_MARKER),
+            sql.Literal(profile.object_marker),
         )
     )
     return "CREATED"
 
 
-def _assert_existing_role_policy(row: tuple[Any, ...]) -> None:
+def _assert_existing_role_policy(
+    row: tuple[Any, ...],
+    *,
+    profile: ProvisionProfile = DEFAULT_PROFILE,
+) -> None:
     safe_attributes = (
         row[0] is True
         and all(value is False for value in row[1:6])
@@ -269,13 +343,17 @@ def _assert_existing_role_policy(row: tuple[Any, ...]) -> None:
     no_memberships = row[7] == 0
     if (
         not safe_attributes
-        or row[6] != OBJECT_MARKER
+        or row[6] != profile.object_marker
         or not no_memberships
     ):
         raise ProvisioningError("existing_role_policy_mismatch")
 
 
-def _database_row(cursor: Any) -> tuple[Any, ...] | None:
+def _database_row(
+    cursor: Any,
+    *,
+    profile: ProvisionProfile = DEFAULT_PROFILE,
+) -> tuple[Any, ...] | None:
     cursor.execute(
         """
         SELECT
@@ -284,7 +362,7 @@ def _database_row(cursor: Any) -> tuple[Any, ...] | None:
         FROM pg_database
         WHERE datname = %s
         """,
-        (TARGET_DATABASE,),
+        (profile.target_database,),
     )
     return cursor.fetchone()
 
@@ -316,10 +394,15 @@ def _preflight_admin(cursor: Any) -> str:
     return owner
 
 
-def _ensure_database(cursor: Any, owner: str) -> str:
-    row = _database_row(cursor)
+def _ensure_database(
+    cursor: Any,
+    owner: str,
+    *,
+    profile: ProvisionProfile = DEFAULT_PROFILE,
+) -> str:
+    row = _database_row(cursor, profile=profile)
     if row is not None:
-        _assert_existing_database_policy(row, owner)
+        _assert_existing_database_policy(row, owner, profile=profile)
         return "EXISTS"
 
     cursor.execute(
@@ -327,14 +410,14 @@ def _ensure_database(cursor: Any, owner: str) -> str:
             "CREATE DATABASE {} WITH OWNER {} TEMPLATE template0 "
             "ENCODING 'UTF8'"
         ).format(
-            sql.Identifier(TARGET_DATABASE),
+            sql.Identifier(profile.target_database),
             sql.Identifier(owner),
         )
     )
     cursor.execute(
         sql.SQL("COMMENT ON DATABASE {} IS {}").format(
-            sql.Identifier(TARGET_DATABASE),
-            sql.Literal(OBJECT_MARKER),
+            sql.Identifier(profile.target_database),
+            sql.Literal(profile.object_marker),
         )
     )
     return "CREATED"
@@ -343,27 +426,42 @@ def _ensure_database(cursor: Any, owner: str) -> str:
 def _assert_existing_database_policy(
     row: tuple[Any, ...],
     owner: str,
+    *,
+    profile: ProvisionProfile = DEFAULT_PROFILE,
 ) -> None:
-    if row[0] != owner or row[1] != OBJECT_MARKER:
+    if row[0] != owner or row[1] != profile.object_marker:
         raise ProvisioningError("existing_database_policy_mismatch")
 
 
-def _preflight_existing_objects(cursor: Any, owner: str) -> None:
+def _preflight_existing_objects(
+    cursor: Any,
+    owner: str,
+    *,
+    profile: ProvisionProfile = DEFAULT_PROFILE,
+) -> None:
     """Mutation 전에 모든 동명 객체의 표식·정책을 한 번에 검증한다."""
 
-    for role in ROLE_SPECS:
+    for role in profile.role_specs:
         row = _role_row(cursor, role.name)
         if row is not None:
-            _assert_existing_role_policy(row)
-    database_row = _database_row(cursor)
+            _assert_existing_role_policy(row, profile=profile)
+    database_row = _database_row(cursor, profile=profile)
     if database_row is not None:
-        _assert_existing_database_policy(database_row, owner)
+        _assert_existing_database_policy(
+            database_row,
+            owner,
+            profile=profile,
+        )
 
 
-def _grant_default_privileges(cursor: Any) -> None:
+def _grant_default_privileges(
+    cursor: Any,
+    *,
+    profile: ProvisionProfile = DEFAULT_PROFILE,
+) -> None:
     """Migrator 자신의 향후 객체에 최소권한 Default ACL을 설정한다."""
 
-    roles = {role.label: role.name for role in ROLE_SPECS}
+    roles = {role.label: role.name for role in profile.role_specs}
     default_statements = (
         (
             "GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {}",
@@ -405,13 +503,17 @@ def _grant_default_privileges(cursor: Any) -> None:
         )
 
 
-def _grant_roles(cursor: Any) -> None:
-    roles = {role.label: role.name for role in ROLE_SPECS}
+def _grant_roles(
+    cursor: Any,
+    *,
+    profile: ProvisionProfile = DEFAULT_PROFILE,
+) -> None:
+    roles = {role.label: role.name for role in profile.role_specs}
 
     cursor.execute("CREATE EXTENSION IF NOT EXISTS vector")
     cursor.execute(
         sql.SQL("REVOKE ALL ON DATABASE {} FROM PUBLIC").format(
-            sql.Identifier(TARGET_DATABASE)
+            sql.Identifier(profile.target_database)
         )
     )
     cursor.execute("REVOKE CREATE ON SCHEMA public FROM PUBLIC")
@@ -419,7 +521,7 @@ def _grant_roles(cursor: Any) -> None:
     for role_name in roles.values():
         cursor.execute(
             sql.SQL("REVOKE ALL PRIVILEGES ON DATABASE {} FROM {}").format(
-                sql.Identifier(TARGET_DATABASE),
+                sql.Identifier(profile.target_database),
                 sql.Identifier(role_name),
             )
         )
@@ -430,7 +532,7 @@ def _grant_roles(cursor: Any) -> None:
         )
         cursor.execute(
             sql.SQL("GRANT CONNECT ON DATABASE {} TO {}").format(
-                sql.Identifier(TARGET_DATABASE),
+                sql.Identifier(profile.target_database),
                 sql.Identifier(role_name),
             )
         )
@@ -527,7 +629,7 @@ def _grant_roles(cursor: Any) -> None:
                 "SET default_transaction_read_only TO 'on'"
             ).format(
                 sql.Identifier(readonly_role),
-                sql.Identifier(TARGET_DATABASE),
+                sql.Identifier(profile.target_database),
             )
         )
 
@@ -539,46 +641,58 @@ def provision(
 ) -> dict[str, Any]:
     admin_options = configuration["admin_connection"]
     role_passwords = configuration["role_passwords"]
+    profile: ProvisionProfile = configuration["profile"]
     role_status: dict[str, str] = {}
 
     with connect(**admin_options, autocommit=True) as connection:
         with connection.cursor() as cursor:
             cursor.execute(
                 "SELECT pg_try_advisory_lock(%s)",
-                (ADVISORY_LOCK_KEY,),
+                (profile.advisory_lock_key,),
             )
             if cursor.fetchone()[0] is not True:
                 raise ProvisioningError("provisioning_lock_unavailable")
             try:
                 owner = _preflight_admin(cursor)
-                _preflight_existing_objects(cursor, owner)
+                _preflight_existing_objects(
+                    cursor,
+                    owner,
+                    profile=profile,
+                )
                 cursor.execute("BEGIN")
                 try:
-                    for role in ROLE_SPECS:
+                    for role in profile.role_specs:
                         role_status[role.label] = _ensure_role(
                             cursor,
                             role,
                             role_passwords[role.name],
                             rotate_password=configuration["rotate_passwords"],
+                            profile=profile,
                         )
                 except Exception:
                     cursor.execute("ROLLBACK")
                     raise
                 else:
                     cursor.execute("COMMIT")
-                database_status = _ensure_database(cursor, owner)
+                database_status = _ensure_database(
+                    cursor,
+                    owner,
+                    profile=profile,
+                )
             finally:
                 cursor.execute(
                     "SELECT pg_advisory_unlock(%s)",
-                    (ADVISORY_LOCK_KEY,),
+                    (profile.advisory_lock_key,),
                 )
 
-    target_options = {**admin_options, "dbname": TARGET_DATABASE}
+    target_options = {**admin_options, "dbname": profile.target_database}
     with connect(**target_options) as connection:
         with connection.cursor() as cursor:
-            _grant_roles(cursor)
+            _grant_roles(cursor, profile=profile)
 
-    migrator = next(role for role in ROLE_SPECS if role.label == "migrator")
+    migrator = next(
+        role for role in profile.role_specs if role.label == "migrator"
+    )
     migrator_options = {
         **target_options,
         "user": migrator.name,
@@ -586,12 +700,12 @@ def provision(
     }
     with connect(**migrator_options) as connection:
         with connection.cursor() as cursor:
-            _grant_default_privileges(cursor)
+            _grant_default_privileges(cursor, profile=profile)
 
     return {
         "status": "APPLIED",
-        "scope": "TEAM_INTEGRATION",
-        "target_database": TARGET_DATABASE,
+        "scope": profile.scope,
+        "target_database": profile.target_database,
         "database": database_status,
         "roles": role_status,
         "next_action": (
@@ -608,6 +722,7 @@ def run(
     confirmed_database: str | None,
     rotate_passwords: bool = False,
     connect: Callable[..., Any] = psycopg.connect,
+    profile: ProvisionProfile = DEFAULT_PROFILE,
 ) -> tuple[dict[str, Any], int]:
     try:
         configuration = build_configuration(
@@ -615,6 +730,7 @@ def run(
             apply=apply,
             confirmed_database=confirmed_database,
             rotate_passwords=rotate_passwords,
+            profile=profile,
         )
     except ProvisioningError as exc:
         return (
@@ -631,15 +747,21 @@ def run(
         return (
             {
                 "status": "PLAN_READY",
-                "scope": "TEAM_INTEGRATION",
-                "target_database": TARGET_DATABASE,
+                "scope": profile.scope,
+                "target_database": profile.target_database,
                 "remote": configuration["remote"],
                 "roles": {
-                    role.label: role.name for role in ROLE_SPECS
+                    role.label: role.name for role in profile.role_specs
                 },
                 "mutates_database": False,
                 "apply_requirement": (
-                    f"--apply --confirm-database {TARGET_DATABASE}"
+                    (
+                        ""
+                        if profile == DEFAULT_PROFILE
+                        else f"--profile {profile.name} "
+                    )
+                    + "--apply --confirm-database "
+                    + profile.target_database
                 ),
             },
             0,
@@ -673,6 +795,12 @@ def run(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "--profile",
+        choices=tuple(PROFILES),
+        default=DEFAULT_PROFILE.name,
+        help="코드에 명시된 Provisioning 프로필만 허용한다.",
+    )
+    parser.add_argument(
         "--apply",
         action="store_true",
         help="DB·Role·Grant를 실제 적용한다. 기본은 Plan이다.",
@@ -694,6 +822,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     arguments = parse_args()
+    profile = PROFILES[arguments.profile]
     load_backend_env()
     load_env_file(TEAM_ENV_PATH)
     result, exit_code = run(
@@ -701,6 +830,7 @@ def main() -> int:
         apply=arguments.apply,
         confirmed_database=arguments.confirm_database,
         rotate_passwords=arguments.rotate_passwords,
+        profile=profile,
     )
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")

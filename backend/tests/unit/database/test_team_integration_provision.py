@@ -69,6 +69,137 @@ def test_default_plan_never_connects_or_mutates(provision_module: ModuleType):
     assert result["status"] == "PLAN_READY"
     assert result["mutates_database"] is False
     assert result["target_database"] == "waterbridge_team_integration"
+    assert result["apply_requirement"] == (
+        "--apply --confirm-database waterbridge_team_integration"
+    )
+
+
+def test_p1_profile_plan_is_local_scoped_and_uses_dedicated_roles(
+    provision_module: ModuleType,
+):
+    profile = provision_module.PROFILES["p1-team-isolated"]
+
+    result, exit_code = provision_module.run(
+        VALID_ENV,
+        apply=False,
+        confirmed_database=None,
+        connect=lambda **_kwargs: pytest.fail("plan must not connect"),
+        profile=profile,
+    )
+
+    assert exit_code == 0
+    assert result == {
+        "status": "PLAN_READY",
+        "scope": "P1_TEAM_ISOLATED",
+        "target_database": "waterbridge_p1_team_isolated",
+        "remote": False,
+        "roles": {
+            "migrator": "waterbridge_p1_migrator",
+            "runtime": "waterbridge_p1_runtime",
+            "readonly": "waterbridge_p1_readonly",
+            "ai_readonly": "waterbridge_p1_ai_readonly",
+        },
+        "mutates_database": False,
+        "apply_requirement": (
+            "--profile p1-team-isolated --apply "
+            "--confirm-database waterbridge_p1_team_isolated"
+        ),
+    }
+    assert profile.object_marker == "waterbridge:p1-team-isolated:v1"
+
+
+def test_profile_registry_rejects_arbitrary_database_profiles(
+    provision_module: ModuleType,
+):
+    assert set(provision_module.PROFILES) == {
+        "team-integration",
+        "p1-team-isolated",
+    }
+
+    arbitrary_profile = provision_module.ProvisionProfile(
+        name="arbitrary",
+        scope="ARBITRARY",
+        target_database="arbitrary_database",
+        object_marker="arbitrary-marker",
+        advisory_lock_key=1,
+        role_specs=provision_module.ROLE_SPECS,
+    )
+    result, exit_code = provision_module.run(
+        VALID_ENV,
+        apply=False,
+        confirmed_database=None,
+        connect=lambda **_kwargs: pytest.fail("invalid plan must not connect"),
+        profile=arbitrary_profile,
+    )
+
+    assert exit_code == 2
+    assert result["reason"] == "profile_not_allowed"
+
+
+def test_p1_apply_requires_exact_isolated_database_confirmation(
+    provision_module: ModuleType,
+):
+    profile = provision_module.PROFILES["p1-team-isolated"]
+
+    result, exit_code = provision_module.run(
+        VALID_ENV,
+        apply=True,
+        confirmed_database="waterbridge_team_integration",
+        connect=lambda **_kwargs: pytest.fail("invalid apply must not connect"),
+        profile=profile,
+    )
+
+    assert exit_code == 2
+    assert result["reason"] == "database_confirmation_required"
+
+
+def test_p1_profile_refuses_remote_host_even_with_verified_tls(
+    provision_module: ModuleType,
+):
+    profile = provision_module.PROFILES["p1-team-isolated"]
+    result, exit_code = provision_module.run(
+        {
+            **VALID_ENV,
+            "POSTGRES_HOST": "database.internal",
+            "POSTGRES_SSLMODE": "verify-full",
+            "POSTGRES_SSLROOTCERT": str(TEST_CA_PATH),
+        },
+        apply=False,
+        confirmed_database=None,
+        connect=lambda **_kwargs: pytest.fail("invalid plan must not connect"),
+        profile=profile,
+    )
+
+    assert exit_code == 2
+    assert result["reason"] == "local_host_required"
+
+
+def test_p1_profile_uses_its_own_marker_for_existing_objects(
+    provision_module: ModuleType,
+):
+    profile = provision_module.PROFILES["p1-team-isolated"]
+    safe_role_row = (
+        True,
+        False,
+        False,
+        False,
+        False,
+        False,
+        profile.object_marker,
+        0,
+    )
+
+    provision_module._assert_existing_role_policy(
+        safe_role_row,
+        profile=profile,
+    )
+    with pytest.raises(provision_module.ProvisioningError) as exc_info:
+        provision_module._assert_existing_role_policy(
+            (*safe_role_row[:6], provision_module.OBJECT_MARKER, 0),
+            profile=profile,
+        )
+
+    assert exc_info.value.reason == "existing_role_policy_mismatch"
 
 
 def test_apply_requires_exact_database_confirmation(

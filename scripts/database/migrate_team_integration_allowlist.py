@@ -27,8 +27,25 @@ if str(BACKEND_DIR) not in sys.path:
 
 MigrationKey = tuple[str, str]
 
-TARGET_DATABASE = "waterbridge_team_integration"
-MIGRATOR_ROLE = "waterbridge_ti_migrator"
+DEFAULT_PROFILE = "team-integration"
+LOCAL_DATABASE_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
+MIGRATION_PROFILES: dict[str, dict[str, Any]] = {
+    DEFAULT_PROFILE: {
+        "database": "waterbridge_team_integration",
+        "migrator_role": "waterbridge_ti_migrator",
+        "local_only": False,
+        "scope": "TEAM_INTEGRATION_MIGRATION_ALLOWLIST",
+    },
+    "p1-team-isolated": {
+        "database": "waterbridge_p1_team_isolated",
+        "migrator_role": "waterbridge_p1_migrator",
+        "local_only": True,
+        "scope": "P1_TEAM_ISOLATED_MIGRATION_ALLOWLIST",
+    },
+}
+# 기존 호출자와 문서가 참조하는 기본 상수는 그대로 유지한다.
+TARGET_DATABASE = str(MIGRATION_PROFILES[DEFAULT_PROFILE]["database"])
+MIGRATOR_ROLE = str(MIGRATION_PROFILES[DEFAULT_PROFILE]["migrator_role"])
 FORBIDDEN_MIGRATION: MigrationKey = (
     "visits",
     "0005_replace_visit_result_assignment_fk",
@@ -77,6 +94,16 @@ class AllowlistError(RuntimeError):
         super().__init__(f"TEAM_INTEGRATION migration blocked: {reason}")
         self.reason = reason
         self.nodes = tuple(sorted(set(nodes)))
+
+
+def _resolve_profile(
+    profile: dict[str, Any] | None,
+) -> tuple[str, dict[str, Any]]:
+    selected_profile = profile or MIGRATION_PROFILES[DEFAULT_PROFILE]
+    for name, candidate in MIGRATION_PROFILES.items():
+        if candidate is selected_profile:
+            return name, candidate
+    raise AllowlistError("migration_profile_invalid")
 
 
 def _node_list(nodes: set[MigrationKey] | tuple[MigrationKey, ...]) -> list[str]:
@@ -136,7 +163,14 @@ def build_plan(
     *,
     database_name: str,
     database_user: str,
+    profile: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    selected_profile_name, selected_profile = _resolve_profile(profile)
+    if database_name != selected_profile["database"]:
+        raise AllowlistError("target_database_mismatch")
+    if database_user != selected_profile["migrator_role"]:
+        raise AllowlistError("migrator_role_required")
+
     graph = executor.loader.graph
     closure = approved_closure(graph)
     applied = set(executor.loader.applied_migrations)
@@ -173,7 +207,8 @@ def build_plan(
     ordered_targets = _ordered_targets(executor)
     return {
         "status": "PLAN_READY" if remaining else "ALREADY_APPLIED",
-        "scope": "TEAM_INTEGRATION_MIGRATION_ALLOWLIST",
+        "scope": selected_profile["scope"],
+        "profile": selected_profile_name,
         "mutates_database": False,
         "database": {
             "name": database_name,
@@ -276,7 +311,7 @@ def apply_allowlist(
             raise AllowlistError("post_apply_verification_failed")
         return {
             "status": "ALREADY_APPLIED_AND_VERIFIED",
-            "scope": "TEAM_INTEGRATION_MIGRATION_ALLOWLIST",
+            "scope": initial_plan["scope"],
             "verification": verification,
             "next_action": (
                 "Rerun provision_team_integration.py to reconcile grants."
@@ -291,7 +326,7 @@ def apply_allowlist(
         raise AllowlistError("post_apply_verification_failed")
     return {
         "status": "APPLIED_AND_VERIFIED",
-        "scope": "TEAM_INTEGRATION_MIGRATION_ALLOWLIST",
+        "scope": initial_plan["scope"],
         "verification": verification,
         "next_action": (
             "Rerun provision_team_integration.py to reconcile grants."
@@ -329,8 +364,10 @@ def _source_state() -> dict[str, Any]:
 def _validate_apply_request(
     arguments: argparse.Namespace,
     source_state: dict[str, Any],
+    profile: dict[str, Any] | None = None,
 ) -> None:
-    if arguments.confirm_database != TARGET_DATABASE:
+    _, selected_profile = _resolve_profile(profile)
+    if arguments.confirm_database != selected_profile["database"]:
         raise AllowlistError("database_confirmation_required")
     if arguments.confirm_hold != HOLD_CONFIRMATION:
         raise AllowlistError("hold_confirmation_required")
@@ -340,15 +377,25 @@ def _validate_apply_request(
         raise AllowlistError("clean_worktree_required")
 
 
-def _database_identity(connection: Any) -> tuple[str, str]:
+def _database_identity(
+    connection: Any,
+    profile: dict[str, Any] | None = None,
+) -> tuple[str, str]:
+    _, selected_profile = _resolve_profile(profile)
     if connection.vendor != "postgresql":
         raise AllowlistError("postgresql_required")
+    if selected_profile["local_only"]:
+        database_host = str(
+            connection.settings_dict.get("HOST", "")
+        ).strip().lower()
+        if database_host not in LOCAL_DATABASE_HOSTS:
+            raise AllowlistError("local_database_host_required")
     with connection.cursor() as cursor:
         cursor.execute("SELECT current_database(), current_user")
         database_name, database_user = cursor.fetchone()
-    if database_name != TARGET_DATABASE:
+    if database_name != selected_profile["database"]:
         raise AllowlistError("target_database_mismatch")
-    if database_user != MIGRATOR_ROLE:
+    if database_user != selected_profile["migrator_role"]:
         raise AllowlistError("migrator_role_required")
     return database_name, database_user
 
@@ -375,6 +422,12 @@ def _migration_lock(connection: Any):
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "--profile",
+        choices=tuple(MIGRATION_PROFILES),
+        default=DEFAULT_PROFILE,
+        help="승인된 DB·Role·Host 경계를 선택한다.",
+    )
+    parser.add_argument(
         "--apply",
         action="store_true",
         help="승인 Allowlist를 실제 적용한다. 기본은 Plan-only다.",
@@ -392,11 +445,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     arguments = parse_args()
+    profile = MIGRATION_PROFILES[arguments.profile]
     source_state: dict[str, Any] | None = None
     try:
         source_state = _source_state()
         if arguments.apply:
-            _validate_apply_request(arguments, source_state)
+            _validate_apply_request(arguments, source_state, profile)
 
         os.environ["DJANGO_SETTINGS_MODULE"] = arguments.settings
         from config.env import load_backend_env
@@ -410,7 +464,7 @@ def main() -> int:
         from django.db import connection
         from django.db.migrations.executor import MigrationExecutor
 
-        database_name, database_user = _database_identity(connection)
+        database_name, database_user = _database_identity(connection, profile)
 
         def executor_factory() -> MigrationExecutor:
             return MigrationExecutor(connection)
@@ -420,6 +474,7 @@ def main() -> int:
                 executor_factory(),
                 database_name=database_name,
                 database_user=database_user,
+                profile=profile,
             )
             initial_plan["source"] = source_state
             result = initial_plan
@@ -439,6 +494,7 @@ def main() -> int:
                     executor_factory(),
                     database_name=database_name,
                     database_user=database_user,
+                    profile=profile,
                 )
                 result = apply_allowlist(
                     executor_factory,
@@ -453,7 +509,8 @@ def main() -> int:
     except AllowlistError as exc:
         result = {
             "status": "BLOCKED",
-            "scope": "TEAM_INTEGRATION_MIGRATION_ALLOWLIST",
+            "scope": profile["scope"],
+            "profile": arguments.profile,
             "reason": exc.reason,
             "nodes": _node_list(set(exc.nodes)),
             "source": source_state,
@@ -463,7 +520,8 @@ def main() -> int:
     except Exception as exc:  # noqa: BLE001 - Secret-free CLI 결과
         result = {
             "status": "FAILED",
-            "scope": "TEAM_INTEGRATION_MIGRATION_ALLOWLIST",
+            "scope": profile["scope"],
+            "profile": arguments.profile,
             "error_type": type(exc).__name__,
             "message": "실행에 실패했습니다. 연결 정보는 출력하지 않습니다.",
         }
