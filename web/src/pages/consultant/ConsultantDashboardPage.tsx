@@ -144,6 +144,7 @@ const WORK_FOCUS_OPTIONS: readonly {
 ];
 
 const VISIT_TECHNICIAN_DIRECTORY = "방문기사 연락처";
+const MAX_DASHBOARD_NOTICE_ITEMS = 5;
 
 function getWaitingMinutes(inquiry: DashboardInquiryListItem) {
   return Math.max(0, Math.floor(inquiry.waitingSeconds / 60));
@@ -621,7 +622,7 @@ export default function ConsultantDashboardPage() {
   };
 
   const openInquiryList = (
-    bucket: "ALL" | "NEW" | "IN_PROGRESS",
+    bucket: "ALL" | "NEW" | "IN_PROGRESS" | "COMPLETED",
     query = "",
   ) => {
     const params = new URLSearchParams({ bucket });
@@ -634,6 +635,8 @@ export default function ConsultantDashboardPage() {
     selectedContactDepartment === VISIT_TECHNICIAN_DIRECTORY;
   const dashboardConsultants = dashboardData?.consultants ?? [];
   const dashboardTechnicians = dashboardData?.technicians ?? [];
+  const dashboardNotices =
+    dashboardData?.notices.slice(0, MAX_DASHBOARD_NOTICE_ITEMS) ?? [];
   const dashboardDepartments = [
     ...new Set(dashboardConsultants.map((consultant) => consultant.department)),
   ];
@@ -724,6 +727,15 @@ export default function ConsultantDashboardPage() {
             >
               <span>처리 중인 문의</span>
               <strong>{dashboardData?.summary.inProgress ?? "—"}</strong>
+            </button>
+            <button
+              type="button"
+              className="counselor-home-metric counselor-home-metric--completed"
+              disabled={dashboardLoadState !== "ready"}
+              onClick={() => openInquiryList("COMPLETED")}
+            >
+              <span>처리 완료된 문의</span>
+              <strong>{dashboardData?.summary.completed ?? "—"}</strong>
             </button>
           </div>
         </section>
@@ -824,14 +836,14 @@ export default function ConsultantDashboardPage() {
                 description="로컬 합성 Dashboard Runtime 상태를 확인해 주세요."
                 onRetry={retryDashboard}
               />
-            ) : (dashboardData?.notices.length ?? 0) === 0 ? (
+            ) : dashboardNotices.length === 0 ? (
               <EmptyState
                 title="등록된 공지사항이 없습니다."
                 description="새 공지가 등록되면 이 영역에 표시됩니다."
               />
             ) : (
               <ul className="counselor-dashboard-notices">
-                {dashboardData?.notices.map((notice) => (
+                {dashboardNotices.map((notice) => (
                   <li key={notice.noticeId}>
                     <button
                       type="button"

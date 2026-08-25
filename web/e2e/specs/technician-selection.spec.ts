@@ -1,6 +1,12 @@
 import { resolve } from "node:path";
 
-import { expect, test, type Page, type Response } from "@playwright/test";
+import {
+  expect,
+  test,
+  type Locator,
+  type Page,
+  type Response,
+} from "@playwright/test";
 
 import {
   readBackendFixture,
@@ -13,6 +19,22 @@ import {
 } from "../support/privacy.js";
 
 let fixture: WebConsultationE2EFixture;
+
+const VISIT_SCHEDULE_STATUS_LABELS: Readonly<Record<string, string>> = {
+  ASSIGNING: "기사 배정 중",
+  SCHEDULING: "일정 조율 중",
+  CONFIRMED: "방문 일정 확정",
+  IN_PROGRESS: "방문 진행 중",
+  COMPLETED: "방문 완료",
+  FOLLOW_UP_REQUIRED: "추가 방문 필요",
+  CANCELLED: "방문 취소",
+};
+
+interface VisitDetailPresentation {
+  scheduleStatusLabel: string;
+  preferredDate: string;
+  technicianDisplayName: string;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -123,6 +145,89 @@ async function assertScheduledTechnician(
   }
   expect(schedule.synthetic_technician_id).toBe(expectedTechnicianId);
   expect(technician.technician_id).toBe(expectedTechnicianId);
+}
+
+function formatContractDate(value: string): string {
+  const matched = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!matched) {
+    throw new Error("방문 상세의 고객 희망일 형식이 올바르지 않습니다.");
+  }
+  return `${Number(matched[1])}. ${Number(matched[2])}. ${Number(matched[3])}.`;
+}
+
+async function readVisitDetailPresentation(
+  response: Response,
+  expected: {
+    inquiryId: string;
+    preferredDate: string;
+    technicianId: string;
+  },
+): Promise<VisitDetailPresentation> {
+  expect(response.status()).toBe(200);
+  const payload: unknown = await response.json();
+  if (
+    !isRecord(payload) ||
+    !isRecord(payload.data) ||
+    !isRecord(payload.data.visit)
+  ) {
+    throw new Error("방문 생성 후 상담 통합 상세 Projection이 올바르지 않습니다.");
+  }
+
+  const visit = payload.data.visit;
+  if (!isRecord(visit.schedule) || !isRecord(visit.technician)) {
+    throw new Error("방문 생성 후 상담 통합 상세 Projection이 올바르지 않습니다.");
+  }
+  const schedule = visit.schedule;
+  const technician = visit.technician;
+  if (
+    visit.inquiry_id !== expected.inquiryId ||
+    schedule.preferred_date !== expected.preferredDate ||
+    schedule.synthetic_technician_id !== expected.technicianId ||
+    typeof schedule.schedule_status !== "string" ||
+    !(schedule.schedule_status in VISIT_SCHEDULE_STATUS_LABELS) ||
+    technician.technician_id !== expected.technicianId ||
+    typeof technician.display_name !== "string" ||
+    technician.display_name.trim().length === 0
+  ) {
+    throw new Error("방문 일정·담당 기사 상세가 저장 결과와 일치하지 않습니다.");
+  }
+
+  return {
+    scheduleStatusLabel:
+      VISIT_SCHEDULE_STATUS_LABELS[schedule.schedule_status],
+    preferredDate: schedule.preferred_date,
+    technicianDisplayName: technician.display_name,
+  };
+}
+
+async function expectVisitDetailPresentation(
+  detailPanel: Locator,
+  expected: VisitDetailPresentation,
+): Promise<void> {
+  const consultationAndVisitSection = detailPanel
+    .getByRole("heading", { name: "상담·방문 정보", exact: true })
+    .locator("..");
+  await expect(
+    consultationAndVisitSection.getByText("방문 정보 등록됨", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    consultationAndVisitSection.getByText(expected.scheduleStatusLabel, {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    consultationAndVisitSection.getByText(
+      formatContractDate(expected.preferredDate),
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(
+    consultationAndVisitSection.getByText(expected.technicianDisplayName, {
+      exact: true,
+    }),
+  ).toBeVisible();
 }
 
 function futureLocalDate(daysFromToday: number): string {
@@ -316,6 +421,32 @@ test("별도 공식 Fixture로 Dashboard 합성 기사를 선택해 방문 일�
     confirmed_date: null,
   });
   await assertScheduledTechnician(await scheduleResponse, technicianId);
+
+  await page.goto(
+    `/consultant/inquiries?bucket=IN_PROGRESS&q=${encodeURIComponent(fixture.inquiryCode)}`,
+  );
+  const scheduledFixtureCard = page.getByTestId(
+    `consultant-inquiry-${fixture.inquiryId}`,
+  );
+  await expect(scheduledFixtureCard).toBeVisible();
+  const scheduledDetailResponse = page.waitForResponse((response) =>
+    isInquiryDetailResponse(response, fixture.inquiryId),
+  );
+  await scheduledFixtureCard.click();
+  const scheduledDetailPanel = page.getByRole("dialog");
+  await expect(scheduledDetailPanel).toBeVisible();
+  const visitDetailPresentation = await readVisitDetailPresentation(
+    await scheduledDetailResponse,
+    {
+      inquiryId: fixture.inquiryId,
+      preferredDate,
+      technicianId,
+    },
+  );
+  await expectVisitDetailPresentation(
+    scheduledDetailPanel,
+    visitDetailPresentation,
+  );
 
   await attachMaskedEvidenceScreenshot(page, testInfo);
 });

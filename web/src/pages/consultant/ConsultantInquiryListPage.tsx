@@ -534,7 +534,11 @@ export default function ConsultantInquiryListPage() {
 
         <section
           id="consultant-queue-panel"
-          className="consultant-queue-panel"
+          className={`consultant-queue-panel${
+            activeBucket === "ALL" || activeBucket === "NEW"
+              ? " consultant-queue-panel--with-unassigned"
+              : ""
+          }`}
           role="tabpanel"
           aria-label={getBucketLabel(activeBucket)}
         >

@@ -71,7 +71,7 @@ describe("ConsultantDashboardPage", () => {
     clearRecentConsultantInquiryIds(CONSULTANT_USER.id);
   });
 
-  it("첫 화면은 개인 업무 요약과 세 가지 업무 탭을 함께 보여준다", () => {
+  it("첫 화면은 개인 업무 요약과 네 가지 업무 카드를 함께 보여준다", () => {
     renderPage();
 
     expect(
@@ -82,13 +82,18 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.getByText("오늘도 좋은 하루 되세요 😊")).toBeVisible();
     expect(
       screen
-        .getByText(/^\d{4}\. \d{2}\. \d{2}\. \([일월화수목금토]\)$/)
+        .getByText(
+          /^\d{4}\. \d{2}\. \d{2}\. \([일월화수목금토]\) \d{2}:\d{2}$/,
+        )
         .getAttribute("datetime"),
-    ).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    ).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
     const workSummary = within(screen.getByLabelText("업무 요약"));
     expect(workSummary.getByRole("button", { name: /전체 문의 수90/ })).toBeVisible();
     expect(workSummary.getByRole("button", { name: /새 문의30/ })).toBeVisible();
     expect(workSummary.getByRole("button", { name: /처리 중인 문의30/ })).toBeVisible();
+    expect(
+      workSummary.getByRole("button", { name: /처리 완료된 문의30/ }),
+    ).toBeVisible();
     expect(workSummary.queryByText("전날 대비")).not.toBeInTheDocument();
     expect(workSummary.queryByText("AI 검토")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "최근 본 문의" })).toBeVisible();
@@ -99,8 +104,8 @@ describe("ConsultantDashboardPage", () => {
     const noticePanel = within(
       screen.getByRole("heading", { name: "공지사항" }).closest("article")!,
     );
-    expect(noticePanel.getAllByRole("listitem")).toHaveLength(6);
-    ["긴급", "이벤트", "시스템", "근무", "복지", "교육"].forEach(
+    expect(noticePanel.getAllByRole("listitem")).toHaveLength(5);
+    ["긴급", "이벤트", "시스템", "근무", "복지"].forEach(
       (category) => expect(noticePanel.getByText(category)).toBeVisible(),
     );
     expect(
@@ -272,6 +277,7 @@ describe("ConsultantDashboardPage", () => {
     [/전체 문의 수90/, /전체 문의/],
     [/새 문의30/, /새 문의/],
     [/처리 중인 문의30/, /처리 중인 문의/],
+    [/처리 완료된 문의30/, /처리 완료된 문의/],
   ])("업무 요약 카드 %s가 해당 문의 메뉴로 이동한다", async (card, menu) => {
     const user = userEvent.setup();
     renderPage();
@@ -304,6 +310,7 @@ describe("ConsultantDashboardPage", () => {
       /전체 문의 수90/,
       /새 문의30/,
       /처리 중인 문의30/,
+      /처리 완료된 문의30/,
     ]) {
       await user.click(workSummary.getByRole("button", { name: cardName }));
       expect(

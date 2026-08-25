@@ -454,3 +454,65 @@ html body
     font-weight: 700;
   }
 }
+
+/* Keep the inquiry list on the left and the unassigned queue on the right. */
+@media (min-width: 1024px) {
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-queue-panel--with-unassigned {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 0.42fr) !important;
+    grid-template-rows: minmax(0, 1fr) auto !important;
+    gap: 0 12px !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-queue-panel--with-unassigned
+    > .consultant-risk-columns {
+    min-width: 0;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-queue-panel--with-unassigned
+    .consultant-category-filters {
+    grid-template-columns: minmax(220px, 1fr) minmax(130px, 180px) !important;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-queue-panel--with-unassigned
+    > .unassigned-consultation-queue {
+    box-sizing: border-box;
+    min-width: 0;
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    grid-column: 2 !important;
+    grid-row: 1 / 3 !important;
+    align-content: start;
+    overflow-y: auto;
+    border-bottom: 0;
+    border-left: 1px solid #dce7ed;
+    border-radius: 12px 0 0 12px;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-queue-panel--with-unassigned
+    > .unassigned-consultation-queue
+    .unassigned-consultation-queue__items {
+    grid-template-columns: minmax(0, 1fr) !important;
+    overflow-x: hidden;
+  }
+
+  html body
+    .simple-consultant-app.consultant-queue-app.consultant-inquiry-list-app
+    .consultant-queue-panel--with-unassigned
+    > .common-pagination {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+  }
+}
