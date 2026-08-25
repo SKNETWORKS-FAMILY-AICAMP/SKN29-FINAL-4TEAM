@@ -1,5 +1,22 @@
 # Contracts Changelog
 
+## 2026-08-25 — 합성 상담사 ID/PW 로그인 Runtime
+
+### Changed
+
+- 기존 `POST /auth/login`의 일반 ID/PW 계약을 합성 계약고객뿐 아니라
+  활성 합성 상담사에도 적용하고 `x-runtime-status=IMPLEMENTED`로 승격했다.
+- 상담사 계정·역할·아이디 존재 여부를 구분하지 않고 기존 공통
+  `AUTH_LOGIN_FAILED` 401과 로그인 Rate Limit을 그대로 사용한다.
+
+### Boundary
+
+- 합성·활성·사번 보유 `CONSULTANT`만 추가 허용하며 운영 계정, 방문기사와
+  운영자 역할은 이번 변경으로 허용하지 않는다.
+- 비밀번호는 Git·명령 인자·문서에 저장하지 않고 로컬 환경변수에서만 읽는다.
+- 나머지 P1-A OTP 회원가입·계정복구 Operation의 계약 게시 상태는 이번
+  변경으로 승격하지 않는다.
+
 ## 2026-08-24 — P1-A 회원가입·계정연결 G2 동결 계약
 
 ### Added

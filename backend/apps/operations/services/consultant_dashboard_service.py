@@ -17,6 +17,7 @@ from apps.operations.models import (
     InquiryDashboardProfile,
     StaffDirectoryEntry,
 )
+from common.privacy import mask_person_name, mask_phone
 
 
 STATUS_BUCKETS = {
@@ -167,13 +168,6 @@ class ConsultantDashboardService:
             profile.warranty_ends_on,
             today=today,
         )
-        address = " ".join(
-            part.strip()
-            for part in (customer.address_line1, customer.address_line2)
-            if part and part.strip()
-        )
-        if not address:
-            address = (subscription.installation_address or "").strip()
         return {
             "inquiry_id": inquiry.public_id,
             "inquiry_code": inquiry.inquiry_code,
@@ -183,9 +177,11 @@ class ConsultantDashboardService:
             "priority": inquiry.priority_code,
             "title": profile.title,
             "detail": inquiry.raw_text.strip()[:4000],
-            "contact": customer.phone,
-            "address": address,
-            "customer_name": customer.customer_name,
+            "contact": mask_phone(customer.phone),
+            # Preserve the confirmed DTO shape while suppressing list-level
+            # address disclosure.
+            "address": "",
+            "customer_name": mask_person_name(customer.customer_name),
             "customer_code": customer.customer_no,
             "product_name": subscription.product_model.model_name,
             "product_code": subscription.product_model.model_code,

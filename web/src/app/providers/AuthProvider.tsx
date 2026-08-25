@@ -12,6 +12,7 @@ import {
   DEMO_USER_CODES,
   getCurrentUser,
   loginWithDemoCode,
+  loginWithPassword,
   refreshAuthSession,
   revokeRefreshToken,
 } from "../../features/auth/api/authApi";
@@ -206,6 +207,31 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
     }
   }, []);
 
+  const signInWithPassword = useCallback(
+    async (username: string, password: string) => {
+      if (appEnv.useMockApi) {
+        throw new Error("ID/PW 로그인은 Backend 연결 모드에서만 사용할 수 있습니다.");
+      }
+      setIsLoading(true);
+      try {
+        const session = await loginWithPassword(username, password);
+        authSessionStore.setSession(session);
+        try {
+          const hydratedSession = await hydrateRemoteSessionUser();
+          setUser(hydratedSession.user);
+          return hydratedSession.user;
+        } catch (error) {
+          authSessionStore.clear();
+          setUser(null);
+          throw error;
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
   const signOut = useCallback(async () => {
     const refreshToken = authSessionStore.getSession()?.refreshToken;
     try {
@@ -224,9 +250,10 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       isAuthenticated: Boolean(user?.isActive),
       isLoading,
       signInAs,
+      signInWithPassword,
       signOut,
     }),
-    [isLoading, signInAs, signOut, user],
+    [isLoading, signInAs, signInWithPassword, signOut, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

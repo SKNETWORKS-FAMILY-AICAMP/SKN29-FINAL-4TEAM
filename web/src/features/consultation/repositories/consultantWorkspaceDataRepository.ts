@@ -2,7 +2,10 @@ import { appEnv, type MockDataset } from "../../../app/config/env";
 import { ApiClientError } from "../../../common/api/apiError";
 import type { ApiResponse } from "../../../common/api/apiResponse";
 import { requestApi } from "../../../common/api/httpClient";
-import { maskCustomerPhone } from "../../../common/privacy/customerPrivacy";
+import {
+  maskCustomerName,
+  maskCustomerPhone,
+} from "../../../common/privacy/customerPrivacy";
 import {
   CONSULTANT_QUEUE_INQUIRIES,
   REMOTE_PARITY_CONSULTANT_INQUIRIES,
@@ -193,7 +196,7 @@ function toMockListItem(inquiry: CounselorInquiry) {
     risk_level: inquiry.riskLevel.toLowerCase() as "general" | "caution" | "danger",
     priority: inquiry.priority,
     symptom_summary: inquiry.customerMessage,
-    customer_display_name_masked: inquiry.customerDisplayName,
+    customer_display_name_masked: maskCustomerName(inquiry.customerDisplayName),
     product_model: inquiry.manualModel,
     current_assignee_type: "CONSULTANT" as const,
     received_at: inquiry.createdAt,

@@ -1,3 +1,21 @@
+const SYNTHETIC_SUFFIX_PATTERN = /\s*(\([^)]*합성[^)]*\))\s*$/;
+
+export function maskCustomerName(value: string): string {
+  const normalized = value.trim();
+  if (!normalized) return "";
+
+  const suffixMatch = normalized.match(SYNTHETIC_SUFFIX_PATTERN);
+  const suffix = suffixMatch?.[1] ? ` ${suffixMatch[1]}` : "";
+  const name = suffixMatch
+    ? normalized.slice(0, suffixMatch.index).trim()
+    : normalized;
+
+  if (!name) return suffix.trim();
+  if (name.length === 1) return `*${suffix}`;
+  if (name.length === 2) return `${name[0]}*${suffix}`;
+  return `${name[0]}${"*".repeat(name.length - 2)}${name.at(-1)}${suffix}`;
+}
+
 export function maskCustomerPhone(value: string): string {
   const suffixMatch = value.match(/\s*(\([^)]*\))\s*$/);
   const suffix = suffixMatch?.[1] ? ` ${suffixMatch[1]}` : "";

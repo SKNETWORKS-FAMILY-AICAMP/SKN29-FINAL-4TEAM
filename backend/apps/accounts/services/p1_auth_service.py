@@ -10,7 +10,7 @@ from uuid import UUID
 from django.conf import settings
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import IntegrityError, transaction
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
 from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken,
@@ -938,10 +938,18 @@ class P1AuthService:
                 .filter(
                     username__iexact=username,
                     is_active=True,
-                    role_code=User.Role.CUSTOMER,
                     is_synthetic=True,
-                    customer_account_links__is_active=True,
-                    customer_profile__deleted_at__isnull=True,
+                )
+                .filter(
+                    Q(
+                        role_code=User.Role.CUSTOMER,
+                        customer_account_links__is_active=True,
+                        customer_profile__deleted_at__isnull=True,
+                    )
+                    | Q(
+                        role_code=User.Role.CONSULTANT,
+                        employee_no__isnull=False,
+                    )
                 )
                 .first()
             )

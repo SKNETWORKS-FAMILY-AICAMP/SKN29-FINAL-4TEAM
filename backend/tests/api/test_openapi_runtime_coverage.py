@@ -44,6 +44,8 @@ P1A_FROZEN_OPERATIONS = {
     ("/auth/password-reset/confirm", "post"): "confirmPasswordReset",
 }
 
+P1A_IMPLEMENTED_OPERATIONS = {("/auth/login", "post")}
+
 EXPECTED_OPERATIONS = {
     ("/health", "get"): {
         "operation_id": "getProvisionalHealth",
@@ -527,7 +529,11 @@ def test_openapi_operation_inventory_separates_runtime_and_p1a_frozen():
         operation = operations[key]
         assert operation["operationId"] == operation_id
         assert operation["x-contract-status"] == "CONFIRMED"
-        assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
+        assert operation["x-runtime-status"] == (
+            "IMPLEMENTED"
+            if key in P1A_IMPLEMENTED_OPERATIONS
+            else "NOT_IMPLEMENTED"
+        )
 
 
 def test_forty_seven_operations_resolve_to_expected_runtime_views():

@@ -201,8 +201,10 @@ def test_dashboard_api_returns_database_projection_for_assigned_consultant():
     first = data["inquiries"][0]
     assert first["title"]
     assert first["detail"]
-    assert first["contact"].startswith("010-0001-")
-    assert "합성" in first["address"]
+    assert first["contact"].startswith("010-****-")
+    assert first["address"] == ""
+    assert first["customer_name"].endswith(" (합성)")
+    assert "*" in first["customer_name"]
     assert first["customer_code"].startswith("SYN-WEB-DASH-CUSTOMER-")
     assert first["product_code"].startswith("SYN-WEB-WP-")
 
