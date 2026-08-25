@@ -1,0 +1,541 @@
+{
+  "candidates": [
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-001",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-COLD-LOCK-001",
+          "page_refs": [
+            43
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "NORMAL",
+      "proposed_risk_level": "general",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 냉수 선택이 안 됨 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-001"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-002",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001",
+          "page_refs": [
+            43
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "PARTIAL_STOP",
+      "proposed_risk_level": "caution",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 냉수가 차갑지 않음 (제품 고장인 경우) 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-002"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-003",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "page_refs": [
+            43
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "NORMAL",
+      "proposed_risk_level": "general",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 냉수가 차갑지 않음 (제품 고장이 아닌 경우) 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-003"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-004",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P044-DEFROST-NOISE-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-DEFROST-NOISE-001",
+          "page_refs": [
+            44
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "NORMAL",
+      "proposed_risk_level": "general",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 탈빙 소음 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-004"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-005",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P046-HOT-STEAM-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-HOT-STEAM-001",
+          "page_refs": [
+            46
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "PARTIAL_STOP",
+      "proposed_risk_level": "caution",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 온수 사용 중 스팀 분사 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-005"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-006",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-HOT-WATER-INTERRUPTION-001",
+          "page_refs": [
+            46
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "NORMAL",
+      "proposed_risk_level": "general",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 온수 사용 중 물 끊김 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-006"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-007",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+          "page_refs": [
+            46
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "TOTAL_STOP",
+      "proposed_risk_level": "danger",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 온수 출수 중 중단 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-007"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-008",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-ICE-MAKING-NOISE-001",
+          "page_refs": [
+            44
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "NORMAL",
+      "proposed_risk_level": "general",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 제빙수 공급 및 순환 소리 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-008"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-009",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P046-ICE-QUALITY-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-ICE-QUALITY-001",
+          "page_refs": [
+            46
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "NORMAL",
+      "proposed_risk_level": "general",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 얼음이 깨지거나 단단하지 않음 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-009"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-010",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P005-LEAK-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-LEAK-001",
+          "page_refs": [
+            5
+          ],
+          "section_id": "IAC425-SECTION-SAFETY",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        },
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P045-LEAK-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-LEAK-001",
+          "page_refs": [
+            45
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "TOTAL_STOP",
+      "proposed_risk_level": "danger",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 누수 안전조치 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-010"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-011",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-LOW-FLOW-001",
+          "page_refs": [
+            44
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "PENDING_CONSULTATION",
+      "proposed_risk_level": "general",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 출수량이 적을 경우 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-011"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-012",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-NO-HOT-WATER-001",
+          "page_refs": [
+            46
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "PARTIAL_STOP",
+      "proposed_risk_level": "caution",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 온수가 나오지 않음 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-012"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-013",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-NO-ICE-001",
+          "page_refs": [
+            45
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "PARTIAL_STOP",
+      "proposed_risk_level": "caution",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 얼음이 나오지 않음 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-013"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-014",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-NO-WATER-001",
+          "page_refs": [
+            44
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "PARTIAL_STOP",
+      "proposed_risk_level": "caution",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 물이 나오지 않음 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-014"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-015",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-NOISE-NORMAL-001",
+          "page_refs": [
+            43
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "PENDING_CONSULTATION",
+      "proposed_risk_level": "general",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 소음 발생 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-015"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-016",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P043-NOISE-VENTILATION-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-NOISE-VENTILATION-001",
+          "page_refs": [
+            43
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "NORMAL",
+      "proposed_risk_level": "general",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 소음이 큼 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-016"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-017",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P045-PARTICLES-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-PARTICLES-001",
+          "page_refs": [
+            45
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "PENDING_CONSULTATION",
+      "proposed_risk_level": "general",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 정수된 물에 미세한 입자 발생 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-017"
+    },
+    {
+      "candidate_id": "RAGV2-IAC425-CAND-018",
+      "expected_evidence_variants": [
+        {
+          "child_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001",
+          "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+          "evidence_unit_id": "EVD-WPUIAC425SNW-TASTE-ODOR-001",
+          "page_refs": [
+            45
+          ],
+          "section_id": "IAC425-SECTION-TROUBLESHOOTING",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ],
+      "expected_no_evidence": false,
+      "forbidden_model_codes": [
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "human_review_status": "HUMAN_REVIEW_PENDING",
+      "merge_status": "AI_OWNER_AND_SECOND_REVIEWER_APPROVAL_REQUIRED",
+      "product_model_code": "WPUIAC425SNW",
+      "proposed_guidance_policy": "NORMAL",
+      "proposed_risk_level": "general",
+      "proposed_split": "DEV",
+      "query": "WPU-IAC425에서 불쾌한 맛과 냄새 발생 증상이 있을 때 확인할 내용을 알려주세요.",
+      "query_variant_type": "DIRECT",
+      "source_case_id": "RAG3-POS-018"
+    }
+  ],
+  "generated_at": "2026-08-23T00:00:00+09:00",
+  "schema_version": "1.0.0",
+  "source_evaluation_sha256": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1",
+  "source_gold_dataset_sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A",
+  "status": "IAC425_GOLD_CANDIDATES_READY"
+}

@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0.0",
+  "status": "FULL_CORPUS_V2_DATA_HANDOFF_PLANNED",
+  "generated_at": "2026-08-23T00:00:00+09:00",
+  "source_commit": "e99cf78faa58a40f2cec49281119c437b594e470",
+  "inputs": {
+    "baseline_corpus": {
+      "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+      "sha256": "4B0890BC079207C8F9AA9DB1208D371F295BD53537A9B692FA6B7D686333FABC"
+    },
+    "gold_dataset": {
+      "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+      "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A"
+    },
+    "manual_pages": {
+      "path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+      "sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F"
+    },
+    "children": {
+      "path": "data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
+      "sha256": "B4BA15C045D7C4EAF1E4CF90DFF83EC9FA2C236F9CFCDAD85467A42F1921EB78"
+    },
+    "parents": {
+      "path": "data/processed/structured/rag/expansion/rag_parent_pages_3model_v1.jsonl",
+      "sha256": "EB58882ED9EC996C7665FE6C3C472A6B25273D278D79799F6F15A98AF9B1578E"
+    },
+    "evidence_groups": {
+      "path": "data/processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl",
+      "sha256": "CCD797DB8C87B9B90EFD88EBE16BE5AC4D80008BC75E0CCE46B3854F70C3143D"
+    },
+    "jac104_evidence_registry": {
+      "path": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+      "sha256": "40A1B328F86FF6E57A3EFD1F5EBD63051DCDE06AB32E0A08CC6C6D5BE638F61F"
+    },
+    "three_model_evaluation": {
+      "path": "data/config/rag/three_model_evaluation_cases.json",
+      "sha256": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1"
+    }
+  },
+  "replacement": {
+    "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+    "exact_sales_code": "WPUJAC104DWH",
+    "pages": {
+      "5": [
+        {"classification": "PRESERVATION", "line_start": 1, "line_end": 4, "record_id": "PRESERVE-WPUJAC104DWH-P005-L001-L004"},
+        {"classification": "CHILD", "line_start": 5, "line_end": 7, "record_id": "CHILD-WPUJAC104DWH-P005-LEAK-001"},
+        {"classification": "PRESERVATION", "line_start": 8, "line_end": 21, "record_id": "PRESERVE-WPUJAC104DWH-P005-L008-L021"},
+        {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 22, "line_end": 22, "record_id": "PAGE_NUMBER"}
+      ],
+      "7": [
+        {"classification": "PRESERVATION", "line_start": 1, "line_end": 11, "record_id": "PRESERVE-WPUJAC104DWH-P007-L001-L011"},
+        {"classification": "CHILD", "line_start": 12, "line_end": 14, "record_id": "CHILD-WPUJAC104DWH-P007-LEAK-001"},
+        {"classification": "PRESERVATION", "line_start": 15, "line_end": 31, "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"},
+        {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 32, "line_end": 32, "record_id": "PAGE_NUMBER"}
+      ],
+      "37": [
+        {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 1, "line_end": 4, "record_id": "SECTION_AND_TABLE_HEADER"},
+        {"classification": "CHILD", "line_start": 5, "line_end": 15, "record_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"},
+        {"classification": "CHILD", "line_start": 16, "line_end": 20, "record_id": "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001"},
+        {"classification": "CHILD", "line_start": 21, "line_end": 29, "record_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001"},
+        {"classification": "CHILD", "line_start": 30, "line_end": 40, "record_id": "CHILD-WPUJAC104DWH-P037-NOISE-001"},
+        {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 41, "line_end": 41, "record_id": "PAGE_NUMBER"}
+      ],
+      "38": [
+        {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 1, "line_end": 1, "record_id": "TABLE_HEADER"},
+        {"classification": "CHILD", "line_start": 2, "line_end": 4, "record_id": "CHILD-WPUJAC104DWH-P038-LEAK-001"},
+        {"classification": "CHILD", "line_start": 5, "line_end": 11, "record_id": "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001"},
+        {"classification": "PRESERVATION", "line_start": 12, "line_end": 18, "record_id": "PRESERVE-WPUJAC104DWH-P038-L012-L018"},
+        {"classification": "CHILD", "line_start": 19, "line_end": 28, "record_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"},
+        {"classification": "CHILD", "line_start": 29, "line_end": 35, "record_id": "CHILD-WPUJAC104DWH-P038-HOT-STEAM-001"},
+        {"classification": "CHILD", "line_start": 36, "line_end": 38, "record_id": "CHILD-WPUJAC104DWH-P038-HOT-INTERRUPTION-001"},
+        {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 39, "line_end": 39, "record_id": "PAGE_NUMBER"}
+      ],
+      "39": [
+        {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 1, "line_end": 1, "record_id": "TABLE_HEADER"},
+        {"classification": "CHILD", "line_start": 2, "line_end": 11, "record_id": "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001"},
+        {"classification": "CHILD", "line_start": 12, "line_end": 18, "record_id": "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"},
+        {"classification": "CHILD", "line_start": 19, "line_end": 25, "record_id": "CHILD-WPUJAC104DWH-P039-HOT-MODULE-CHECK-001"},
+        {"classification": "CHILD", "line_start": 26, "line_end": 30, "record_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001"},
+        {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 31, "line_end": 31, "record_id": "PAGE_NUMBER"}
+      ]
+    }
+  }
+}

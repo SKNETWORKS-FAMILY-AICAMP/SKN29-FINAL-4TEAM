@@ -95,6 +95,7 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("Sid: AllowEc2TempoObjects", text)
         self.assertIn("Sid: AllowEc2ReleaseReads", text)
         self.assertIn('Condition.Bool["aws:SecureTransport"]', bootstrap)
+        self.assertIn('(.Filter.Prefix // .Prefix) == "tempo/"', bootstrap)
 
     def test_web_container_is_remote_only_and_spa_safe(self) -> None:
         dockerfile = (ROOT / "web/Dockerfile").read_text(encoding="utf-8")

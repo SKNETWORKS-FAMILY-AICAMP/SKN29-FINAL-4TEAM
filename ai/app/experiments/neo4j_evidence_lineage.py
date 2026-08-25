@@ -88,11 +88,90 @@ FORBIDDEN_SOURCE_FIELDS = {
     "prompt",
 }
 
+LAB_LOOPBACK_PROFILE = "lab_loopback"
+QA_EPHEMERAL_LOOPBACK_PROFILE = "qa_ephemeral_loopback"
+SUPPORTED_NEO4J_PROFILES = {
+    LAB_LOOPBACK_PROFILE,
+    QA_EPHEMERAL_LOOPBACK_PROFILE,
+}
+QA_NODE_LABEL = "WaterbridgeQaLineage"
+QA_TARGET_LABEL = "WaterbridgeQaTarget"
+RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}")
+TARGET_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}")
+SHA256_PATTERN = re.compile(r"[A-Fa-f0-9]{64}")
+IMAGE_DIGEST_PATTERN = re.compile(r"sha256:[A-Fa-f0-9]{64}")
+_TARGET_VERIFICATION_CAPABILITY = object()
+
 JsonScalar = str | int | float | bool | None
 
 
 class Neo4jEvidenceLineageError(RuntimeError):
     """독립 Graph LAB 입력·실행·정합성 실패."""
+
+
+def _validated_run_id(value: str) -> str:
+    if RUN_ID_PATTERN.fullmatch(value) is None:
+        raise Neo4jEvidenceLineageError("Neo4j QA run_id 형식이 올바르지 않습니다.")
+    return value
+
+
+def _validated_image_digest(value: str) -> str:
+    if IMAGE_DIGEST_PATTERN.fullmatch(value) is None:
+        raise Neo4jEvidenceLineageError(
+            "Neo4j 이미지 Digest는 sha256 형식이어야 합니다."
+        )
+    return value.casefold()
+
+
+@dataclass(frozen=True, slots=True)
+class Neo4jQaTargetIdentity:
+    """Infra가 컨테이너 초기화 단계에서 독립 생성한 QA 대상 표식."""
+
+    target_id: str
+    run_id: str
+    nonce_sha256: str
+    database: str
+    image_digest: str
+
+    def __post_init__(self) -> None:
+        if TARGET_ID_PATTERN.fullmatch(self.target_id) is None:
+            raise Neo4jEvidenceLineageError(
+                "Neo4j QA target_id 형식이 올바르지 않습니다."
+            )
+        _validated_run_id(self.run_id)
+        if SHA256_PATTERN.fullmatch(self.nonce_sha256) is None:
+            raise Neo4jEvidenceLineageError(
+                "Neo4j QA nonce SHA-256 형식이 올바르지 않습니다."
+            )
+        if self.database != "neo4j":
+            raise Neo4jEvidenceLineageError(
+                "Neo4j QA는 전용 컨테이너의 neo4j Database만 허용합니다."
+            )
+        _validated_image_digest(self.image_digest)
+
+    def expected_marker(self) -> dict[str, str]:
+        return {
+            "target_id": self.target_id,
+            "run_id": self.run_id,
+            "nonce_sha256": self.nonce_sha256.casefold(),
+            "database": self.database,
+            "image_digest": self.image_digest.casefold(),
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class _Neo4jTargetVerification:
+    """적재 직전 읽기 전용 대상 검증 결과."""
+
+    profile: str
+    run_id: str
+    database: str
+    marker_validated: bool
+    unexpected_node_count: int
+    relationship_count: int
+    executor_identity: int
+    expected_marker_sha256: str | None
+    _capability: object
 
 
 @dataclass(frozen=True, slots=True)
@@ -161,10 +240,68 @@ class EvidenceLineageGraph:
             for relationship in RELATIONSHIP_TYPES
         }
 
+    def canonical_nodes(self) -> list[dict[str, Any]]:
+        return sorted(
+            (
+                {
+                    "kind": node.label,
+                    "id": node.node_id,
+                    "properties": node.as_row(),
+                }
+                for node in self.nodes
+            ),
+            key=lambda row: (
+                str(row["kind"]),
+                str(row["id"]),
+                json.dumps(
+                    row["properties"],
+                    ensure_ascii=True,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ),
+            ),
+        )
+
+    def canonical_relationships(self) -> list[dict[str, Any]]:
+        return sorted(
+            (
+                {
+                    "source_kind": edge.source_label,
+                    "source_id": edge.source_id,
+                    "relationship": edge.relationship,
+                    "target_kind": edge.target_label,
+                    "target_id": edge.target_id,
+                    "properties": dict(edge.properties),
+                }
+                for edge in self.edges
+            ),
+            key=lambda row: (
+                str(row["source_kind"]),
+                str(row["source_id"]),
+                str(row["relationship"]),
+                str(row["target_kind"]),
+                str(row["target_id"]),
+                json.dumps(
+                    row["properties"],
+                    ensure_ascii=True,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ),
+            ),
+        )
+
+    def canonical_snapshot(self) -> dict[str, Any]:
+        return {
+            "nodes": self.canonical_nodes(),
+            "relationships": self.canonical_relationships(),
+        }
+
     def projection_payload(self) -> dict[str, Any]:
         return {
-            "schema_version": "1.0.0",
-            "scope": "LAB_ONLY",
+            "schema_version": "2.0.0",
+            "scope": "JSONL_BASED_LINEAGE_QA",
+            "input_source": "REPOSITORY_JSONL_ONLY",
+            "rds_connected": False,
             "production_runtime_connected": False,
             "public_runtime_activation": "HOLD",
             "source_status": "DATA_READY_AI_REVERIFY_REQUIRED",
@@ -198,12 +335,16 @@ class Neo4jQueryExecutor(Protocol):
 
 
 class Neo4jHttpQueryClient:
-    """Loopback Neo4j Query API v2만 허용하는 LAB Client."""
+    """공용 Endpoint를 거부하는 Loopback Neo4j Query API v2 Client."""
 
     def __init__(
         self,
         endpoint: str,
         *,
+        profile: str = LAB_LOOPBACK_PROFILE,
+        database: str = "neo4j",
+        username: str | None = None,
+        password: str | None = None,
         http_client: httpx.Client | None = None,
     ) -> None:
         normalized = endpoint.rstrip("/")
@@ -218,10 +359,38 @@ class Neo4jHttpQueryClient:
             or parsed.path not in {"", "/"}
         ):
             raise Neo4jEvidenceLineageError(
-                "Neo4j LAB Query API는 인증을 끈 Loopback Endpoint만 허용합니다."
+                "Neo4j Query API는 전용 컨테이너의 HTTP Loopback Endpoint만 허용합니다."
             )
+        if profile not in SUPPORTED_NEO4J_PROFILES:
+            raise Neo4jEvidenceLineageError("지원하지 않는 Neo4j 실행 Profile입니다.")
+        if database != "neo4j":
+            raise Neo4jEvidenceLineageError(
+                "Neo4j QA는 전용 컨테이너의 neo4j Database만 허용합니다."
+            )
+        if profile == LAB_LOOPBACK_PROFILE:
+            if username is not None or password is not None:
+                raise Neo4jEvidenceLineageError(
+                    "Neo4j LAB Profile에는 인증 정보를 전달하지 않습니다."
+                )
+            auth: httpx.Auth | None = None
+            endpoint_class = "LAB_LOOPBACK_QUERY_API_V2_AUTH_DISABLED"
+        else:
+            if not username or not password:
+                raise Neo4jEvidenceLineageError(
+                    "Neo4j QA Profile에는 Basic 인증 Secret이 필요합니다."
+                )
+            auth = httpx.BasicAuth(username, password)
+            endpoint_class = "QA_EPHEMERAL_LOOPBACK_QUERY_API_V2_BASIC_AUTH"
         self.endpoint = normalized
-        self._client = http_client or httpx.Client(timeout=10.0)
+        self.profile = profile
+        self.database = database
+        self.endpoint_class = endpoint_class
+        self._auth = auth
+        self._client = http_client or httpx.Client(
+            timeout=10.0,
+            follow_redirects=False,
+            trust_env=False,
+        )
         self._owns_client = http_client is None
 
     def query(
@@ -232,13 +401,14 @@ class Neo4jHttpQueryClient:
         compact_statement = " ".join(statement.split())
         try:
             response = self._client.post(
-                f"{self.endpoint}/db/neo4j/query/v2",
+                f"{self.endpoint}/db/{self.database}/query/v2",
                 headers={"Accept": "application/json", "Content-Type": "application/json"},
+                auth=self._auth,
                 json={
                     "statement": compact_statement,
                     "parameters": dict(parameters or {}),
                     "maxExecutionTime": 10,
-                    "txMetadata": {"appName": "waterbridge-neo4j-lineage-lab"},
+                    "txMetadata": {"appName": "waterbridge-neo4j-lineage-qa"},
                 },
             )
             response.raise_for_status()
@@ -642,25 +812,179 @@ def build_evidence_lineage_graph(
     )
 
 
-def load_graph_into_neo4j(
+def _single_int(rows: list[dict[str, Any]], key: str) -> int:
+    if len(rows) != 1 or key not in rows[0]:
+        raise Neo4jEvidenceLineageError(
+            "Neo4j QA Count Query 응답 형식이 올바르지 않습니다."
+        )
+    value = rows[0][key]
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        raise Neo4jEvidenceLineageError(
+            "Neo4j QA Count Query 응답 값이 올바르지 않습니다."
+        )
+    return value
+
+
+def _qa_marker_matches(
+    rows: list[dict[str, Any]],
+    target_identity: Neo4jQaTargetIdentity,
+) -> bool:
+    if len(rows) != 1:
+        return False
+    marker = rows[0]
+    labels = marker.get("labels")
+    actual_marker = {
+        "target_id": marker.get("target_id"),
+        "run_id": marker.get("run_id"),
+        "nonce_sha256": str(marker.get("nonce_sha256", "")).casefold(),
+        "database": marker.get("database"),
+        "image_digest": str(marker.get("image_digest", "")).casefold(),
+    }
+    return labels == [QA_TARGET_LABEL] and (
+        actual_marker == target_identity.expected_marker()
+    )
+
+
+def _query_qa_marker(executor: Neo4jQueryExecutor) -> list[dict[str, Any]]:
+    return executor.query(
+        f"MATCH (marker:{QA_TARGET_LABEL}) "
+        "RETURN labels(marker) AS labels, marker.target_id AS target_id, "
+        "marker.run_id AS run_id, marker.nonce_sha256 AS nonce_sha256, "
+        "marker.database AS database, marker.image_digest AS image_digest"
+    )
+
+
+def _assert_target_verification(
+    executor: Neo4jQueryExecutor,
+    verification: _Neo4jTargetVerification,
+) -> None:
+    if (
+        verification._capability is not _TARGET_VERIFICATION_CAPABILITY
+        or verification.executor_identity != id(executor)
+        or verification.profile not in SUPPORTED_NEO4J_PROFILES
+        or verification.database != "neo4j"
+        or verification.unexpected_node_count != 0
+        or verification.relationship_count != 0
+        or getattr(executor, "profile", verification.profile)
+        != verification.profile
+        or str(getattr(executor, "database", verification.database))
+        != verification.database
+    ):
+        raise Neo4jEvidenceLineageError("Neo4j 대상 검증 capability가 올바르지 않습니다.")
+
+
+def preflight_neo4j_target(
+    executor: Neo4jQueryExecutor,
+    *,
+    profile: str,
+    run_id: str,
+    target_identity: Neo4jQaTargetIdentity | None = None,
+) -> _Neo4jTargetVerification:
+    """어떤 Graph도 쓰기 전에 전용·빈 대상임을 fail-closed로 확인한다."""
+
+    _validated_run_id(run_id)
+    if profile not in SUPPORTED_NEO4J_PROFILES:
+        raise Neo4jEvidenceLineageError("지원하지 않는 Neo4j 실행 Profile입니다.")
+    executor_profile = getattr(executor, "profile", profile)
+    database = str(getattr(executor, "database", "neo4j"))
+    if executor_profile != profile or database != "neo4j":
+        raise Neo4jEvidenceLineageError(
+            "Neo4j Client와 대상 검증 Profile이 일치하지 않습니다."
+        )
+
+    marker_validated = False
+    if profile == LAB_LOOPBACK_PROFILE:
+        if target_identity is not None:
+            raise Neo4jEvidenceLineageError(
+                "Neo4j LAB Profile에는 QA 대상 표식을 전달하지 않습니다."
+            )
+        unexpected_node_count = _single_int(
+            executor.query("MATCH (n) RETURN count(n) AS unexpected_node_count"),
+            "unexpected_node_count",
+        )
+    else:
+        if target_identity is None or target_identity.run_id != run_id:
+            raise Neo4jEvidenceLineageError(
+                "Neo4j QA 대상 표식이 없거나 run_id가 일치하지 않습니다."
+            )
+        marker_rows = _query_qa_marker(executor)
+        if not _qa_marker_matches(marker_rows, target_identity):
+            raise Neo4jEvidenceLineageError(
+                "Neo4j QA 대상 표식이 실행 계약과 일치하지 않습니다."
+            )
+        marker_validated = True
+        unexpected_node_count = _single_int(
+            executor.query(
+                f"MATCH (n) WHERE NOT n:{QA_TARGET_LABEL} "
+                "RETURN count(n) AS unexpected_node_count"
+            ),
+            "unexpected_node_count",
+        )
+
+    relationship_count = _single_int(
+        executor.query("MATCH ()-[rel]->() RETURN count(rel) AS relationship_count"),
+        "relationship_count",
+    )
+    if unexpected_node_count != 0 or relationship_count != 0:
+        raise Neo4jEvidenceLineageError(
+            "Neo4j QA 대상에 예상 밖 Graph가 있어 적재를 거부합니다."
+        )
+    return _Neo4jTargetVerification(
+        profile=profile,
+        run_id=run_id,
+        database=database,
+        marker_validated=marker_validated,
+        unexpected_node_count=unexpected_node_count,
+        relationship_count=relationship_count,
+        executor_identity=id(executor),
+        expected_marker_sha256=(
+            canonical_json_sha256(target_identity.expected_marker())
+            if target_identity is not None
+            else None
+        ),
+        _capability=_TARGET_VERIFICATION_CAPABILITY,
+    )
+
+
+def _load_verified_graph_into_neo4j(
     graph: EvidenceLineageGraph,
     executor: Neo4jQueryExecutor,
+    *,
+    verification: _Neo4jTargetVerification,
 ) -> None:
-    """Disposable LAB DB를 비우고 Parameterized Cypher로 Projection을 적재한다."""
+    """검증된 빈 일회성 DB에 run 범위 Projection만 적재한다."""
 
-    executor.query("MATCH (n) DETACH DELETE n RETURN count(n) AS deleted")
+    _assert_target_verification(executor, verification)
+    run_id = _validated_run_id(verification.run_id)
+    if (
+        verification.profile == QA_EPHEMERAL_LOOPBACK_PROFILE
+        and not verification.marker_validated
+    ):
+        raise Neo4jEvidenceLineageError("Neo4j QA 대상 표식 검증이 완료되지 않았습니다.")
+
     for label in NODE_LABELS:
-        constraint_name = f"neo4j_lineage_{label.casefold()}_id"
-        executor.query(
-            f"CREATE CONSTRAINT {constraint_name} IF NOT EXISTS "
-            f"FOR (n:{label}) REQUIRE n.id IS UNIQUE"
+        rows = [
+            {
+                **node.as_row(),
+                "qa_run_id": run_id,
+                "qa_kind": label,
+                "qa_key": f"{run_id}:{label}:{node.node_id}",
+            }
+            for node in graph.nodes
+            if node.label == label
+        ]
+        loaded = _single_int(
+            executor.query(
+                f"UNWIND $rows AS row CREATE (n:{QA_NODE_LABEL}:{label}) "
+                "SET n = row RETURN count(n) AS loaded",
+                {"rows": rows},
+            ),
+            "loaded",
         )
-        rows = [node.as_row() for node in graph.nodes if node.label == label]
-        executor.query(
-            f"UNWIND $rows AS row MERGE (n:{label} {{id: row.id}}) "
-            "SET n += row RETURN count(n) AS loaded",
-            {"rows": rows},
-        )
+        if loaded != len(rows):
+            raise Neo4jEvidenceLineageError(
+                "Neo4j QA Node 적재 건수가 Projection과 다릅니다."
+            )
 
     for relationship in RELATIONSHIP_TYPES:
         matching = [
@@ -671,21 +995,186 @@ def load_graph_into_neo4j(
             grouped[(edge.source_label, edge.target_label)].append(edge)
         for (source_label, target_label), edges in sorted(grouped.items()):
             rows = [edge.as_row() for edge in edges]
-            executor.query(
-                f"UNWIND $rows AS row MATCH (source:{source_label} {{id: row.source_id}}) "
-                f"MATCH (target:{target_label} {{id: row.target_id}}) "
-                f"MERGE (source)-[rel:{relationship}]->(target) "
-                "SET rel += row.properties RETURN count(rel) AS loaded",
-                {"rows": rows},
+            loaded = _single_int(
+                executor.query(
+                    f"UNWIND $rows AS row MATCH (source:{QA_NODE_LABEL}:{source_label} "
+                    "{qa_run_id: $run_id, id: row.source_id}) "
+                    f"MATCH (target:{QA_NODE_LABEL}:{target_label} "
+                    "{qa_run_id: $run_id, id: row.target_id}) "
+                    f"CREATE (source)-[rel:{relationship}]->(target) "
+                    "SET rel = row.properties, rel.qa_run_id = $run_id "
+                    "RETURN count(rel) AS loaded",
+                    {"rows": rows, "run_id": run_id},
+                ),
+                "loaded",
             )
+            if loaded != len(rows):
+                raise Neo4jEvidenceLineageError(
+                    "Neo4j QA Relationship 적재 건수가 Projection과 다릅니다."
+                )
+
+
+def load_graph_into_neo4j(
+    graph: EvidenceLineageGraph,
+    executor: Neo4jQueryExecutor,
+    *,
+    profile: str,
+    run_id: str,
+    target_identity: Neo4jQaTargetIdentity | None = None,
+) -> _Neo4jTargetVerification:
+    """대상 preflight와 Graph 적재를 하나의 fail-closed mutation API로 묶는다."""
+
+    verification = preflight_neo4j_target(
+        executor,
+        profile=profile,
+        run_id=run_id,
+        target_identity=target_identity,
+    )
+    try:
+        _load_verified_graph_into_neo4j(
+            graph,
+            executor,
+            verification=verification,
+        )
+    except Exception:
+        cleanup_graph_run(
+            executor,
+            verification=verification,
+            target_identity=target_identity,
+        )
+        raise
+    return verification
+
+
+def _canonical_actual_nodes(
+    rows: list[dict[str, Any]],
+    *,
+    run_id: str,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    normalized: list[dict[str, Any]] = []
+    issues: list[str] = []
+    for row in rows:
+        kind = row.get("kind")
+        node_id = row.get("id")
+        labels = row.get("labels")
+        properties = row.get("properties")
+        if (
+            kind not in NODE_LABELS
+            or not isinstance(node_id, str)
+            or not isinstance(labels, list)
+            or set(labels) != {QA_NODE_LABEL, kind}
+            or not isinstance(properties, dict)
+        ):
+            issues.append("NODE_NAMESPACE_METADATA_MISMATCH")
+            continue
+        safe_properties = dict(properties)
+        internal = {
+            "qa_run_id": safe_properties.pop("qa_run_id", None),
+            "qa_kind": safe_properties.pop("qa_kind", None),
+            "qa_key": safe_properties.pop("qa_key", None),
+        }
+        if internal != {
+            "qa_run_id": run_id,
+            "qa_kind": kind,
+            "qa_key": f"{run_id}:{kind}:{node_id}",
+        }:
+            issues.append("NODE_NAMESPACE_METADATA_MISMATCH")
+        normalized.append(
+            {"kind": kind, "id": node_id, "properties": safe_properties}
+        )
+    return (
+        sorted(
+            normalized,
+            key=lambda row: (
+                row["kind"],
+                row["id"],
+                json.dumps(
+                    row["properties"],
+                    ensure_ascii=True,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ),
+            ),
+        ),
+        issues,
+    )
+
+
+def _canonical_actual_relationships(
+    rows: list[dict[str, Any]],
+    *,
+    run_id: str,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    normalized: list[dict[str, Any]] = []
+    issues: list[str] = []
+    for row in rows:
+        source_kind = row.get("source_kind")
+        source_id = row.get("source_id")
+        relationship = row.get("relationship")
+        target_kind = row.get("target_kind")
+        target_id = row.get("target_id")
+        properties = row.get("properties")
+        if (
+            source_kind not in NODE_LABELS
+            or target_kind not in NODE_LABELS
+            or relationship not in RELATIONSHIP_TYPES
+            or not isinstance(source_id, str)
+            or not isinstance(target_id, str)
+            or not isinstance(properties, dict)
+        ):
+            issues.append("RELATIONSHIP_NAMESPACE_METADATA_MISMATCH")
+            continue
+        safe_properties = dict(properties)
+        if safe_properties.pop("qa_run_id", None) != run_id:
+            issues.append("RELATIONSHIP_NAMESPACE_METADATA_MISMATCH")
+        normalized.append(
+            {
+                "source_kind": source_kind,
+                "source_id": source_id,
+                "relationship": relationship,
+                "target_kind": target_kind,
+                "target_id": target_id,
+                "properties": safe_properties,
+            }
+        )
+    return (
+        sorted(
+            normalized,
+            key=lambda row: (
+                row["source_kind"],
+                row["source_id"],
+                row["relationship"],
+                row["target_kind"],
+                row["target_id"],
+                json.dumps(
+                    row["properties"],
+                    ensure_ascii=True,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ),
+            ),
+        ),
+        issues,
+    )
+
+
+def _has_duplicate_identities(
+    rows: list[dict[str, Any]],
+    fields: tuple[str, ...],
+) -> bool:
+    identities = [tuple(str(row[field]) for field in fields) for row in rows]
+    return len(identities) != len(set(identities))
 
 
 def verify_graph_in_neo4j(
     graph: EvidenceLineageGraph,
     executor: Neo4jQueryExecutor,
+    *,
+    run_id: str,
 ) -> dict[str, Any]:
-    """실제 Neo4j 결과를 Projection 기대값과 대조한다."""
+    """실제 Neo4j의 ID·속성·관계 전수 Snapshot을 Projection과 대조한다."""
 
+    _validated_run_id(run_id)
     component_rows = executor.query(
         "CALL dbms.components() YIELD name, versions, edition "
         "RETURN name, versions[0] AS version, edition"
@@ -696,42 +1185,172 @@ def verify_graph_in_neo4j(
     if len(kernel_rows) != 1:
         raise Neo4jEvidenceLineageError("Neo4j Component Identity를 확인하지 못했습니다.")
     kernel = kernel_rows[0]
-    node_rows = executor.query(
-        "MATCH (n) RETURN labels(n)[0] AS label, count(n) AS count ORDER BY label"
+    raw_node_rows = executor.query(
+        f"MATCH (n:{QA_NODE_LABEL} {{qa_run_id: $run_id}}) "
+        "RETURN labels(n) AS labels, n.qa_kind AS kind, n.id AS id, "
+        "properties(n) AS properties ORDER BY kind, id",
+        {"run_id": run_id},
     )
-    relationship_rows = executor.query(
-        "MATCH ()-[r]->() RETURN type(r) AS relationship, count(r) AS count "
-        "ORDER BY relationship"
+    raw_relationship_rows = executor.query(
+        f"MATCH (source:{QA_NODE_LABEL} {{qa_run_id: $run_id}})"
+        "-[rel]->"
+        f"(target:{QA_NODE_LABEL} {{qa_run_id: $run_id}}) "
+        "WHERE rel.qa_run_id = $run_id "
+        "RETURN source.qa_kind AS source_kind, source.id AS source_id, "
+        "type(rel) AS relationship, target.qa_kind AS target_kind, "
+        "target.id AS target_id, properties(rel) AS properties "
+        "ORDER BY source_kind, source_id, relationship, target_kind, target_id",
+        {"run_id": run_id},
     )
-    orphan_rows = executor.query(
-        "MATCH (c:EvidenceChunk) "
-        "WHERE NOT EXISTS { MATCH (:ParentPage)-[:HAS_CHILD]->(c) } "
-        "OR NOT EXISTS { MATCH (c)-[:MEMBER_OF]->(:EvidenceGroup) } "
-        "RETURN count(c) AS orphan_chunk_count"
+    cross_namespace_count = _single_int(
+        executor.query(
+            f"MATCH (node:{QA_NODE_LABEL} {{qa_run_id: $run_id}})-[rel]-(other) "
+            f"WHERE NOT other:{QA_NODE_LABEL} "
+            "OR coalesce(other.qa_run_id, '') <> $run_id "
+            "OR coalesce(rel.qa_run_id, '') <> $run_id "
+            "RETURN count(DISTINCT rel) AS cross_namespace_relationship_count",
+            {"run_id": run_id},
+        ),
+        "cross_namespace_relationship_count",
     )
-    cross_model_rows = executor.query(
-        "MATCH (p:Product)-[:HAS_DOCUMENT]->(:Document)-[:HAS_PARENT_PAGE]->"
-        "(:ParentPage)-[:HAS_CHILD]->(c:EvidenceChunk) "
-        "WHERE p.model_code <> c.model_code "
-        "RETURN count(c) AS cross_model_path_count"
+    orphan_count = _single_int(
+        executor.query(
+            f"MATCH (c:{QA_NODE_LABEL}:EvidenceChunk {{qa_run_id: $run_id}}) "
+            "WHERE NOT EXISTS { "
+            f"MATCH (:{QA_NODE_LABEL}:ParentPage {{qa_run_id: $run_id}})"
+            "-[:HAS_CHILD {qa_run_id: $run_id}]->(c) } "
+            "OR NOT EXISTS { MATCH (c)-[:MEMBER_OF {qa_run_id: $run_id}]->"
+            f"(:{QA_NODE_LABEL}:EvidenceGroup {{qa_run_id: $run_id}}) }} "
+            "RETURN count(c) AS orphan_chunk_count",
+            {"run_id": run_id},
+        ),
+        "orphan_chunk_count",
+    )
+    cross_model_count = _single_int(
+        executor.query(
+            f"MATCH (p:{QA_NODE_LABEL}:Product {{qa_run_id: $run_id}})"
+            "-[:HAS_DOCUMENT {qa_run_id: $run_id}]->"
+            f"(:{QA_NODE_LABEL}:Document {{qa_run_id: $run_id}})"
+            "-[:HAS_PARENT_PAGE {qa_run_id: $run_id}]->"
+            f"(:{QA_NODE_LABEL}:ParentPage {{qa_run_id: $run_id}})"
+            "-[:HAS_CHILD {qa_run_id: $run_id}]->"
+            f"(c:{QA_NODE_LABEL}:EvidenceChunk {{qa_run_id: $run_id}}) "
+            "WHERE p.model_code <> c.model_code "
+            "RETURN count(c) AS cross_model_path_count",
+            {"run_id": run_id},
+        ),
+        "cross_model_path_count",
     )
     visual_rows = executor.query(
-        "MATCH (p:Product)-[r:COVERS_TOPIC]->(t:Topic) "
+        f"MATCH (p:{QA_NODE_LABEL}:Product {{qa_run_id: $run_id}})"
+        "-[rel:COVERS_TOPIC {qa_run_id: $run_id}]->"
+        f"(t:{QA_NODE_LABEL}:Topic {{qa_run_id: $run_id}}) "
         "RETURN p.model_code AS model_code, t.topic_code AS topic_code, "
-        "r.evidence_group_count AS evidence_group_count "
-        "ORDER BY model_code, topic_code"
+        "rel.evidence_group_count AS evidence_group_count "
+        "ORDER BY model_code, topic_code",
+        {"run_id": run_id},
     )
+
+    actual_nodes, node_metadata_issues = _canonical_actual_nodes(
+        raw_node_rows,
+        run_id=run_id,
+    )
+    actual_relationships, relationship_metadata_issues = (
+        _canonical_actual_relationships(raw_relationship_rows, run_id=run_id)
+    )
+    expected_nodes = graph.canonical_nodes()
+    expected_relationships = graph.canonical_relationships()
+    expected_node_identities = [
+        {"kind": row["kind"], "id": row["id"]} for row in expected_nodes
+    ]
+    actual_node_identities = [
+        {"kind": row["kind"], "id": row["id"]} for row in actual_nodes
+    ]
+    relationship_identity_fields = (
+        "source_kind",
+        "source_id",
+        "relationship",
+        "target_kind",
+        "target_id",
+    )
+    expected_relationship_identities = [
+        {field: row[field] for field in relationship_identity_fields}
+        for row in expected_relationships
+    ]
+    actual_relationship_identities = [
+        {field: row[field] for field in relationship_identity_fields}
+        for row in actual_relationships
+    ]
+    expected_snapshot = {
+        "nodes": expected_nodes,
+        "relationships": expected_relationships,
+    }
+    actual_snapshot = {
+        "nodes": actual_nodes,
+        "relationships": actual_relationships,
+    }
+
+    actual_node_counts = {
+        label: sum(row["kind"] == label for row in actual_nodes)
+        for label in NODE_LABELS
+    }
+    actual_relationship_counts = {
+        relationship: sum(
+            row["relationship"] == relationship for row in actual_relationships
+        )
+        for relationship in RELATIONSHIP_TYPES
+    }
+    expected_visual_rows = sorted(
+        (
+            {
+                "model_code": edge.source_id,
+                "topic_code": edge.target_id,
+                "evidence_group_count": edge.properties["evidence_group_count"],
+            }
+            for edge in graph.edges
+            if edge.relationship == "COVERS_TOPIC"
+        ),
+        key=lambda row: (row["model_code"], row["topic_code"]),
+    )
+    actual_visual_rows = sorted(
+        visual_rows,
+        key=lambda row: (str(row.get("model_code")), str(row.get("topic_code"))),
+    )
+
+    issues = [*node_metadata_issues, *relationship_metadata_issues]
+    if actual_node_counts != graph.node_counts():
+        issues.append("NODE_COUNT_MISMATCH")
+    if actual_relationship_counts != graph.relationship_counts():
+        issues.append("RELATIONSHIP_COUNT_MISMATCH")
+    if _has_duplicate_identities(actual_nodes, ("kind", "id")):
+        issues.append("DUPLICATE_NODE_IDENTITY")
+    if _has_duplicate_identities(actual_relationships, relationship_identity_fields):
+        issues.append("DUPLICATE_RELATIONSHIP_IDENTITY")
+    if actual_node_identities != expected_node_identities:
+        issues.append("NODE_IDENTITY_SET_MISMATCH")
+    if actual_relationship_identities != expected_relationship_identities:
+        issues.append("RELATIONSHIP_IDENTITY_SET_MISMATCH")
+    if actual_snapshot != expected_snapshot:
+        issues.append("GRAPH_SNAPSHOT_SHA256_MISMATCH")
+    if cross_namespace_count != 0:
+        issues.append("CROSS_NAMESPACE_RELATIONSHIP_PRESENT")
+    if orphan_count != 0:
+        issues.append("ORPHAN_CHUNK_PRESENT")
+    if cross_model_count != 0:
+        issues.append("CROSS_MODEL_PATH_PRESENT")
+    if actual_visual_rows != expected_visual_rows:
+        issues.append("VISUAL_SUMMARY_RESULT_SET_MISMATCH")
+
     visual_query_results: list[dict[str, Any]] = []
     visual_query_issues: list[str] = []
     for preset in build_visual_query_presets(graph):
-        preset_rows = executor.query(preset.statement)
+        preset_rows = executor.query(preset.statement, {"run_id": run_id})
         expected_row_count = int(preset.expected_result["row_count"])
         actual_row_count = len(preset_rows)
         status = "PASS" if actual_row_count == expected_row_count else "FAIL"
         if status == "FAIL":
-            visual_query_issues.append(
-                f"VISUAL_QUERY_ROW_COUNT_MISMATCH:{preset.query_id}"
-            )
+            issue = f"VISUAL_QUERY_ROW_COUNT_MISMATCH:{preset.query_id}"
+            visual_query_issues.append(issue)
         visual_query_results.append(
             {
                 "query_id": preset.query_id,
@@ -740,45 +1359,71 @@ def verify_graph_in_neo4j(
                 "actual_row_count": actual_row_count,
             }
         )
-
-    actual_node_counts = {
-        str(row["label"]): int(row["count"]) for row in node_rows
-    }
-    actual_relationship_counts = {
-        str(row["relationship"]): int(row["count"])
-        for row in relationship_rows
-    }
-    orphan_count = int(orphan_rows[0]["orphan_chunk_count"])
-    cross_model_count = int(cross_model_rows[0]["cross_model_path_count"])
-    expected_visual_count = graph.relationship_counts()["COVERS_TOPIC"]
-    issues: list[str] = []
-    if actual_node_counts != graph.node_counts():
-        issues.append("NODE_COUNT_MISMATCH")
-    if actual_relationship_counts != graph.relationship_counts():
-        issues.append("RELATIONSHIP_COUNT_MISMATCH")
-    if orphan_count != 0:
-        issues.append("ORPHAN_CHUNK_PRESENT")
-    if cross_model_count != 0:
-        issues.append("CROSS_MODEL_PATH_PRESENT")
-    if len(visual_rows) != expected_visual_count:
-        issues.append("VISUAL_SUMMARY_COUNT_MISMATCH")
     issues.extend(visual_query_issues)
+    issues = list(dict.fromkeys(issues))
+
     return {
         "database_validation": "PASS" if not issues else "FAIL",
         "neo4j": {
             "name": str(kernel["name"]),
             "version": str(kernel["version"]),
             "edition": str(kernel["edition"]),
-            "endpoint_class": "LOOPBACK_QUERY_API_V2_AUTH_DISABLED",
+            "database": str(getattr(executor, "database", "neo4j")),
+            "endpoint_class": str(
+                getattr(executor, "endpoint_class", "TEST_EXECUTOR")
+            ),
         },
         "node_counts": actual_node_counts,
         "relationship_counts": actual_relationship_counts,
+        "graph_identity_validation": {
+            "status": "PASS" if actual_snapshot == expected_snapshot else "FAIL",
+            "nodes": {
+                "expected_count": len(expected_nodes),
+                "actual_count": len(actual_nodes),
+                "expected_identity_sha256": canonical_json_sha256(
+                    expected_node_identities
+                ),
+                "actual_identity_sha256": canonical_json_sha256(
+                    actual_node_identities
+                ),
+                "expected_snapshot_sha256": canonical_json_sha256(expected_nodes),
+                "actual_snapshot_sha256": canonical_json_sha256(actual_nodes),
+                "match": actual_nodes == expected_nodes,
+            },
+            "relationships": {
+                "expected_count": len(expected_relationships),
+                "actual_count": len(actual_relationships),
+                "expected_identity_sha256": canonical_json_sha256(
+                    expected_relationship_identities
+                ),
+                "actual_identity_sha256": canonical_json_sha256(
+                    actual_relationship_identities
+                ),
+                "expected_snapshot_sha256": canonical_json_sha256(
+                    expected_relationships
+                ),
+                "actual_snapshot_sha256": canonical_json_sha256(
+                    actual_relationships
+                ),
+                "match": actual_relationships == expected_relationships,
+            },
+            "snapshot": {
+                "expected_sha256": canonical_json_sha256(expected_snapshot),
+                "actual_sha256": canonical_json_sha256(actual_snapshot),
+                "match": actual_snapshot == expected_snapshot,
+            },
+        },
         "orphan_chunk_count": orphan_count,
         "cross_model_path_count": cross_model_count,
+        "cross_namespace_relationship_count": cross_namespace_count,
         "visual_summary": {
-            "row_count": len(visual_rows),
-            "result_set_sha256": canonical_json_sha256(visual_rows),
-            "rows": visual_rows,
+            "row_count": len(actual_visual_rows),
+            "expected_result_set_sha256": canonical_json_sha256(
+                expected_visual_rows
+            ),
+            "actual_result_set_sha256": canonical_json_sha256(actual_visual_rows),
+            "match": actual_visual_rows == expected_visual_rows,
+            "rows": actual_visual_rows,
         },
         "visual_query_validation": {
             "status": "PASS" if not visual_query_issues else "FAIL",
@@ -786,6 +1431,119 @@ def verify_graph_in_neo4j(
             "results": visual_query_results,
         },
         "issues": issues,
+    }
+
+
+def cleanup_graph_run(
+    executor: Neo4jQueryExecutor,
+    *,
+    verification: _Neo4jTargetVerification,
+    target_identity: Neo4jQaTargetIdentity | None = None,
+) -> dict[str, Any]:
+    """다른 namespace를 건드리지 않고 현재 run Graph만 정리·확인한다."""
+
+    _assert_target_verification(executor, verification)
+    run_id = _validated_run_id(verification.run_id)
+    profile = verification.profile
+    if profile == QA_EPHEMERAL_LOOPBACK_PROFILE:
+        if (
+            target_identity is None
+            or target_identity.run_id != run_id
+            or verification.expected_marker_sha256
+            != canonical_json_sha256(target_identity.expected_marker())
+        ):
+            raise Neo4jEvidenceLineageError(
+                "Neo4j QA 정리 대상 표식 capability가 일치하지 않습니다."
+            )
+    elif target_identity is not None:
+        raise Neo4jEvidenceLineageError(
+            "Neo4j LAB 정리에는 QA 대상 표식을 전달하지 않습니다."
+        )
+    cross_namespace_count = _single_int(
+        executor.query(
+            f"MATCH (node:{QA_NODE_LABEL} {{qa_run_id: $run_id}})-[rel]-(other) "
+            f"WHERE NOT other:{QA_NODE_LABEL} "
+            "OR coalesce(other.qa_run_id, '') <> $run_id "
+            "RETURN count(DISTINCT rel) AS cross_namespace_relationship_count",
+            {"run_id": run_id},
+        ),
+        "cross_namespace_relationship_count",
+    )
+    if cross_namespace_count != 0:
+        raise Neo4jEvidenceLineageError(
+            "Neo4j QA run 밖의 관계가 있어 자동 삭제를 거부합니다."
+        )
+    deleted_node_count = _single_int(
+        executor.query(
+            f"MATCH (node:{QA_NODE_LABEL} {{qa_run_id: $run_id}}) "
+            "DETACH DELETE node RETURN count(node) AS deleted_node_count",
+            {"run_id": run_id},
+        ),
+        "deleted_node_count",
+    )
+    residual_node_count = _single_int(
+        executor.query(
+            f"MATCH (node:{QA_NODE_LABEL} {{qa_run_id: $run_id}}) "
+            "RETURN count(node) AS residual_node_count",
+            {"run_id": run_id},
+        ),
+        "residual_node_count",
+    )
+    residual_relationship_count = _single_int(
+        executor.query(
+            "MATCH ()-[rel]->() WHERE rel.qa_run_id = $run_id "
+            "RETURN count(rel) AS residual_relationship_count",
+            {"run_id": run_id},
+        ),
+        "residual_relationship_count",
+    )
+    if profile == QA_EPHEMERAL_LOOPBACK_PROFILE:
+        unexpected_node_statement = (
+            f"MATCH (n) WHERE NOT n:{QA_TARGET_LABEL} "
+            "RETURN count(n) AS unexpected_node_count"
+        )
+    else:
+        unexpected_node_statement = (
+            "MATCH (n) RETURN count(n) AS unexpected_node_count"
+        )
+    unexpected_node_count = _single_int(
+        executor.query(unexpected_node_statement),
+        "unexpected_node_count",
+    )
+    unexpected_relationship_count = _single_int(
+        executor.query(
+            "MATCH ()-[rel]->() RETURN count(rel) AS unexpected_relationship_count"
+        ),
+        "unexpected_relationship_count",
+    )
+    if target_identity is not None:
+        marker_validated_after_cleanup = _qa_marker_matches(
+            _query_qa_marker(executor),
+            target_identity,
+        )
+    else:
+        marker_validated_after_cleanup = True
+    cleanup_status = (
+        "PASS"
+        if residual_node_count == 0
+        and residual_relationship_count == 0
+        and unexpected_node_count == 0
+        and unexpected_relationship_count == 0
+        and marker_validated_after_cleanup
+        else "FAIL"
+    )
+    return {
+        "status": cleanup_status,
+        "scope": "QA_RUN_ONLY",
+        "deleted_node_count": deleted_node_count,
+        "residual_node_count": residual_node_count,
+        "residual_relationship_count": residual_relationship_count,
+        "unexpected_node_count_excluding_target_marker": unexpected_node_count,
+        "unexpected_relationship_count": unexpected_relationship_count,
+        "target_marker_validation": (
+            "PASS" if marker_validated_after_cleanup else "FAIL"
+        ),
+        "container_cleanup": "NOT_RUN_INFRA_OWNED",
     }
 
 
@@ -831,9 +1589,9 @@ def render_lineage_svg(report: Mapping[str, Any]) -> str:
         "</defs>",
         '<rect width="100%" height="100%" fill="#07111F"/>',
         '<text x="70" y="62" fill="#F7FAFC" font-family="Segoe UI, sans-serif" '
-        'font-size="30" font-weight="700">Neo4j Evidence Lineage Lab</text>',
+        'font-size="30" font-weight="700">Neo4j Evidence Lineage QA</text>',
         '<text x="70" y="96" fill="#93A4BA" font-family="Segoe UI, sans-serif" '
-        'font-size="16">LAB_ONLY · Query API validated · Production runtime disconnected</text>',
+        'font-size="16">JSONL input · Query API validated · Production runtime disconnected</text>',
         '<text x="250" y="128" text-anchor="middle" fill="#8DA2BD" '
         'font-family="Segoe UI, sans-serif" font-size="15">PRODUCT</text>',
         '<text x="1120" y="128" text-anchor="middle" fill="#8DA2BD" '
@@ -896,7 +1654,9 @@ def render_lineage_svg(report: Mapping[str, Any]) -> str:
 
 
 VISUAL_BROWSER_QUERY = (
-    "MATCH (p:Product)-[r:COVERS_TOPIC]->(t:Topic) "
+    f"MATCH (p:{QA_NODE_LABEL}:Product {{qa_run_id: $run_id}})"
+    "-[r:COVERS_TOPIC {qa_run_id: $run_id}]->"
+    f"(t:{QA_NODE_LABEL}:Topic {{qa_run_id: $run_id}}) "
     "RETURN p, r, t ORDER BY p.model_code, t.topic_code"
 )
 
@@ -959,10 +1719,13 @@ def build_visual_query_presets(
                     "드릴다운한다."
                 ),
                 statement=(
-                    f"MATCH path=(p:Product {{model_code: '{model_code}'}})"
+                    f"MATCH path=(p:{QA_NODE_LABEL}:Product "
+                    f"{{qa_run_id: $run_id, model_code: '{model_code}'}})"
                     "-[:HAS_DOCUMENT]->(:Document)-[:HAS_PARENT_PAGE]->"
                     "(:ParentPage)-[:HAS_CHILD]->(:EvidenceChunk)"
                     "-[:MEMBER_OF]->(:EvidenceGroup)-[:ABOUT]->(:Topic) "
+                    "WHERE all(node IN nodes(path) WHERE node.qa_run_id = $run_id) "
+                    "AND all(rel IN relationships(path) WHERE rel.qa_run_id = $run_id) "
                     "RETURN path"
                 ),
                 expected_result={
@@ -996,11 +1759,15 @@ def build_visual_query_presets(
                     "확인한다."
                 ),
                 statement=(
-                    "MATCH path=(p:Product)-[:HAS_DOCUMENT]->(:Document)"
+                    f"MATCH path=(p:{QA_NODE_LABEL}:Product "
+                    "{qa_run_id: $run_id})-[:HAS_DOCUMENT]->(:Document)"
                     "-[:HAS_PARENT_PAGE]->(:ParentPage)-[:HAS_CHILD]->"
                     "(:EvidenceChunk)-[:MEMBER_OF]->"
                     "(g:EvidenceGroup)-[:ABOUT]->(:Topic) "
-                    "WHERE g.requires_consultation = true RETURN path"
+                    "WHERE g.requires_consultation = true "
+                    "AND all(node IN nodes(path) WHERE node.qa_run_id = $run_id) "
+                    "AND all(rel IN relationships(path) WHERE rel.qa_run_id = $run_id) "
+                    "RETURN path"
                 ),
                 expected_result={
                     "evidence_group_count": len(consultation_group_ids),
@@ -1016,9 +1783,14 @@ def build_visual_query_presets(
                     "탐지한다."
                 ),
                 statement=(
-                    "MATCH (c:EvidenceChunk) "
-                    "OPTIONAL MATCH (parent:ParentPage)-[:HAS_CHILD]->(c) "
-                    "OPTIONAL MATCH (c)-[:MEMBER_OF]->(group:EvidenceGroup) "
+                    f"MATCH (c:{QA_NODE_LABEL}:EvidenceChunk "
+                    "{qa_run_id: $run_id}) "
+                    f"OPTIONAL MATCH (parent:{QA_NODE_LABEL}:ParentPage "
+                    "{qa_run_id: $run_id})"
+                    "-[:HAS_CHILD {qa_run_id: $run_id}]->(c) "
+                    "OPTIONAL MATCH (c)-[:MEMBER_OF {qa_run_id: $run_id}]->"
+                    f"(group:{QA_NODE_LABEL}:EvidenceGroup "
+                    "{qa_run_id: $run_id}) "
                     "WITH c, parent, group "
                     "WHERE parent IS NULL OR group IS NULL "
                     "OR c.model_code <> parent.model_code "
@@ -1034,6 +1806,8 @@ def build_visual_query_presets(
 
 def render_visual_query_bundle(
     presets: tuple[VisualQueryPreset, ...],
+    *,
+    run_id: str | None = None,
 ) -> str:
     """Neo4j Browser에 하나씩 붙여 넣을 수 있는 정제 Query Bundle."""
 
@@ -1041,9 +1815,11 @@ def render_visual_query_bundle(
         raise Neo4jEvidenceLineageError("시각 Query Preset이 없습니다.")
     lines = [
         "// Neo4j Evidence Lineage Visual Validation",
-        "// LAB_ONLY / production runtime disconnected",
+        "// JSONL_BASED_LINEAGE_QA / production runtime disconnected",
         "",
     ]
+    if run_id is not None:
+        lines.extend([f":param run_id => '{_validated_run_id(run_id)}';", ""])
     for preset in presets:
         lines.extend(
             [
@@ -1069,15 +1845,20 @@ __all__ = [
     "EvidenceLineageGraph",
     "GraphEdge",
     "GraphNode",
+    "LAB_LOOPBACK_PROFILE",
     "Neo4jEvidenceLineageError",
     "Neo4jHttpQueryClient",
+    "Neo4jQaTargetIdentity",
     "Neo4jQueryExecutor",
+    "QA_EPHEMERAL_LOOPBACK_PROFILE",
     "VISUAL_BROWSER_QUERY",
     "VisualQueryPreset",
     "build_evidence_lineage_graph",
     "build_visual_query_presets",
     "canonical_json_sha256",
+    "cleanup_graph_run",
     "load_graph_into_neo4j",
+    "preflight_neo4j_target",
     "render_lineage_svg",
     "render_visual_query_bundle",
     "verify_graph_in_neo4j",

@@ -1,0 +1,470 @@
+{
+  "schema_version": "1.0.0",
+  "status": "GOLD_POST_QUERY_LABEL_PRIMARY_REVIEW_COMPLETED_HUMAN_SIGNOFF_PENDING",
+  "source_dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A",
+    "record_count": 60
+  },
+  "revalidation_packet": {
+    "path": "data/processed/validation/rag_experiments/gold_v1_post_query_label_revalidation_packet.json",
+    "sha256": "65665EF4C91F14724A09DC17BE083DD31172B0DC4886074074A3C27FD7EDDD32"
+  },
+  "reviewer": {
+    "role": "DATA_QA_PRIMARY_REVIEWER",
+    "display_name": "김은진",
+    "reviewer_id": null,
+    "signoff_status": "PENDING"
+  },
+  "summary": {
+    "reviewed_records": 60,
+    "human_decision_records": 8,
+    "ai_resolution_records": 18,
+    "packet_supported_records": 33,
+    "query_rejection_records": 1,
+    "unresolved_primary_records": 0,
+    "primary_human_action_required_records": 0,
+    "human_signoff_status": "PENDING",
+    "second_review_status": "PENDING",
+    "gold_source_modified": false
+  },
+  "decisions": [
+    {
+      "sequence": 1,
+      "case_id": "RAGV2-GOLD-0001",
+      "decision_code": "0001-LA",
+      "decision": "KEEP_CURRENT_LABELS",
+      "proposal_disposition": "REJECTED_BY_PRIMARY_REVIEWER",
+      "recorded_date": "2026-08-24",
+      "confirmed_by_primary_reviewer": true,
+      "approved_labels": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": [
+          "EVD-WPUJAC104DWH-NO-WATER-001"
+        ],
+        "expected_risk_level": "caution",
+        "expected_guidance_policy": "PARTIAL_STOP"
+      },
+      "note": "0001-LA 결정에 따라 현재 Gold 라벨을 유지한다. AI의 PENDING_CONSULTATION 변경 제안은 1차 검수에서 채택하지 않았으며 두 번째 검수와 사람 서명은 계속 PENDING이다."
+    },
+    {
+      "sequence": 2,
+      "case_id": "RAGV2-GOLD-0016",
+      "decision_code": "0016-LB",
+      "decision": "APPROVE_PROPOSED_LABEL_CHANGE",
+      "proposal_disposition": "APPROVED_BY_PRIMARY_REVIEWER",
+      "recorded_date": "2026-08-24",
+      "confirmed_by_primary_reviewer": true,
+      "approved_labels": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": [
+          "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001"
+        ],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "PENDING_CONSULTATION"
+      },
+      "note": "전원 정상 상태에서 2시간이 지난 뒤에도 냉수가 차갑지 않은 조건은 AI가 기본 근거를 안내할 수 있으나 매뉴얼상 냉각부 점검 상담이 필요하다. 0016-LB에 따라 상담 전환 제안을 승인했으며 두 번째 검수와 사람 서명은 계속 PENDING이다."
+    },
+    {
+      "sequence": 3,
+      "case_id": "RAGV2-GOLD-0041",
+      "decision_code": "0041-H-A",
+      "decision": "CONFIRM_SOURCE_AND_KEEP_CURRENT_LABELS",
+      "proposal_disposition": "NOT_APPLICABLE",
+      "recorded_date": "2026-08-24",
+      "confirmed_by_primary_reviewer": true,
+      "approved_labels": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": [
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"
+        ],
+        "expected_risk_level": "danger",
+        "expected_guidance_policy": "TOTAL_STOP"
+      },
+      "source_visual_confirmation": {
+        "page": 5,
+        "status": "CONFIRMED_BY_PRIMARY_REVIEWER"
+      },
+      "note": "0041-H-A 결정에 따라 공식 매뉴얼 P005 원본 화면이 제품 주변 물 고임, 전원 차단과 감전 위험 의미를 뒷받침하는 것으로 확인하고 현재 라벨을 유지한다. 두 번째 검수와 사람 서명은 계속 PENDING이다."
+    },
+    {
+      "sequence": 4,
+      "case_id": "RAGV2-GOLD-0042",
+      "decision_code": "0042-H-A",
+      "decision": "CONFIRM_SOURCE_AND_KEEP_CURRENT_LABELS",
+      "proposal_disposition": "NOT_APPLICABLE",
+      "recorded_date": "2026-08-24",
+      "confirmed_by_primary_reviewer": true,
+      "approved_labels": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": [
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"
+        ],
+        "expected_risk_level": "danger",
+        "expected_guidance_policy": "TOTAL_STOP"
+      },
+      "source_visual_confirmation": {
+        "page": 5,
+        "status": "CONFIRMED_BY_PRIMARY_REVIEWER"
+      },
+      "note": "0042-H-A 결정에 따라 공식 매뉴얼 P005 원본 화면이 타는 냄새 등 이상 징후의 전원 차단·상담 전환과 감전·화재 위험을 뒷받침하는 것으로 확인하고 현재 라벨을 유지한다. 두 번째 검수와 사람 서명은 계속 PENDING이다."
+    },
+    {
+      "sequence": 5,
+      "case_id": "RAGV2-GOLD-0043",
+      "decision_code": "0043-H-A",
+      "decision": "CONFIRM_SOURCE_AND_KEEP_CURRENT_LABELS",
+      "proposal_disposition": "NOT_APPLICABLE",
+      "recorded_date": "2026-08-24",
+      "confirmed_by_primary_reviewer": true,
+      "approved_query": "플러그 주변이 젖어 있고 전원 코드가 뜨거워요. 지금 어떻게 해야 하나요?",
+      "approved_labels": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": [
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P003"
+        ],
+        "expected_risk_level": "danger",
+        "expected_guidance_policy": "TOTAL_STOP"
+      },
+      "source_visual_confirmation": {
+        "page": 3,
+        "status": "CONFIRMED_BY_PRIMARY_REVIEWER"
+      },
+      "note": "0043-H-A 결정에 따라 안전 개연성을 교정한 질문을 기준으로 공식 매뉴얼 P003이 플러그 주변 물기와 전원 코드 이상 위험을 뒷받침하는 것으로 확인하고 현재 라벨을 유지한다. 두 번째 검수와 사람 서명은 계속 PENDING이다."
+    },
+    {
+      "sequence": 6,
+      "case_id": "RAGV2-GOLD-0045",
+      "decision_code": "0045-H-A",
+      "decision": "APPROVE_PROPOSED_EVIDENCE_CHANGE",
+      "proposal_disposition": "APPROVED_BY_PRIMARY_REVIEWER",
+      "recorded_date": "2026-08-24",
+      "confirmed_by_primary_reviewer": true,
+      "approved_labels": {
+        "evidence_match_policy": "ALL",
+        "evidence_unit_ids": [
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004",
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"
+        ],
+        "expected_risk_level": "danger",
+        "expected_guidance_policy": "TOTAL_STOP"
+      },
+      "source_visual_confirmation": {
+        "pages": [4, 5],
+        "status": "CONFIRMED_BY_PRIMARY_REVIEWER"
+      },
+      "note": "0045-H-A 결정에 따라 P004의 제품 내부 물 유입 위험과 P005의 사고 후 차단·상담 조치를 모두 필수 근거로 요구한다. 현재 위험도와 안내 정책은 유지하며 두 번째 검수와 사람 서명은 계속 PENDING이다."
+    },
+    {
+      "sequence": 7,
+      "case_id": "RAGV2-GOLD-0049",
+      "decision_code": "0049-H-B",
+      "decision": "APPROVE_QUERY_AND_EVIDENCE_CHANGE",
+      "proposal_disposition": "APPROVED_BY_PRIMARY_REVIEWER",
+      "recorded_date": "2026-08-24",
+      "confirmed_by_primary_reviewer": true,
+      "approved_query": "정수기 옆에서 살충제를 뿌린 뒤 정수기에서 타는 냄새가 나요. 어떻게 해야 하나요?",
+      "approved_labels": {
+        "evidence_match_policy": "ALL",
+        "evidence_unit_ids": [
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004",
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"
+        ],
+        "expected_risk_level": "danger",
+        "expected_guidance_policy": "TOTAL_STOP"
+      },
+      "source_visual_confirmation": {
+        "pages": [4, 5],
+        "status": "CONFIRMED_BY_PRIMARY_REVIEWER"
+      },
+      "note": "0049-H-B 결정에 따라 질문을 정수기에서 타는 냄새가 나는 상황으로 명확히 교정하고 P004의 살충제 사용 위험과 P005의 사고 후 차단·상담 조치를 모두 필수 근거로 요구한다. 두 번째 검수와 사람 서명은 계속 PENDING이다."
+    },
+    {
+      "sequence": 8,
+      "case_id": "RAGV2-GOLD-0051",
+      "decision_code": "0051-N-A",
+      "decision": "CONFIRM_NO_EVIDENCE",
+      "proposal_disposition": "NOT_APPLICABLE",
+      "recorded_date": "2026-08-24",
+      "confirmed_by_primary_reviewer": true,
+      "approved_labels": {
+        "expected_no_evidence": true,
+        "evidence_match_policy": "NONE",
+        "evidence_unit_ids": [],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "CONSULTATION_ONLY"
+      },
+      "corpus_absence_confirmation": {
+        "corpus_path": "data/processed/structured/rag/experimental/full_corpus_chunks_v2.jsonl",
+        "search_candidate_count": 111,
+        "status": "CONFIRMED_BY_PRIMARY_REVIEWER"
+      },
+      "note": "0051-N-A 결정에 따라 월 렌탈료와 제휴카드 할인 금액은 현재 111건 Corpus에 직접 답이 없는 것으로 확인한다. 전기요금·유상 서비스 요금 문구는 질문의 답으로 간주하지 않으며 두 번째 검수와 사람 서명은 계속 PENDING이다."
+    }
+  ],
+  "ai_resolutions": [
+    {
+      "sequence": 1,
+      "case_id": "RAGV2-GOLD-0017",
+      "resolution": "APPLY_PROPOSED_LABEL_CHANGE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": ["EVD-WPUJAC104DWH-NOISE-001"],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "PENDING_CONSULTATION"
+      },
+      "basis": "과도한 방열팬 소음에는 기본 점검 안내가 가능하지만 매뉴얼이 상담 전환을 요구한다."
+    },
+    {
+      "sequence": 2,
+      "case_id": "RAGV2-GOLD-0028",
+      "resolution": "APPLY_PROPOSED_LABEL_CHANGE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": ["EVD-WPUJAC104DWH-LOW-FLOW-001"],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "PENDING_CONSULTATION"
+      },
+      "basis": "서비스 조치를 직접 요구하는 저유량 질문이며 매뉴얼은 자가 점검 후 지속 시 상담을 안내한다."
+    },
+    {
+      "sequence": 3,
+      "case_id": "RAGV2-GOLD-0033",
+      "resolution": "APPLY_PROPOSED_LABEL_CHANGE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": ["EVD-WPUJAC104DWH-NOISE-001"],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "PENDING_CONSULTATION"
+      },
+      "basis": "너무 큰 소리와 고장 여부를 묻는 질문은 정상 작동음 설명만으로 끝내지 않고 상담 조건을 적용한다."
+    },
+    {
+      "sequence": 4,
+      "case_id": "RAGV2-GOLD-0039",
+      "resolution": "APPLY_PROPOSED_LABEL_CHANGE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "query_variant_type": "DIRECT",
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": ["EVD-WPUJAC104DWH-NO-WATER-001"],
+        "expected_risk_level": "caution",
+        "expected_guidance_policy": "PARTIAL_STOP"
+      },
+      "basis": "작동 소리는 별도 이상 소음이 아니라 버튼 입력의 상황 설명이므로 무출수 Evidence 하나만 요구한다."
+    },
+    {
+      "sequence": 5,
+      "case_id": "RAGV2-GOLD-0047",
+      "resolution": "APPLY_PROPOSED_LABEL_CHANGE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": ["MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P006"],
+        "expected_risk_level": "caution",
+        "expected_guidance_policy": "PARTIAL_STOP"
+      },
+      "basis": "사고 후 전면 중단이 아니라 아이의 접촉을 예방하는 질문이므로 온수 기능에 한정한 주의·사용 제한을 적용한다."
+    },
+    {
+      "sequence": 6,
+      "case_id": "RAGV2-GOLD-0044",
+      "resolution": "KEEP_CURRENT_LABELS_FROM_CONFIRMED_SOURCE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": ["MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"],
+        "expected_risk_level": "danger",
+        "expected_guidance_policy": "TOTAL_STOP"
+      },
+      "basis": "0041·0042에서 사람이 확인한 동일 P005가 연기와 매캐한 냄새의 즉시 중단·상담 전환을 직접 지원한다."
+    },
+    {
+      "sequence": 7,
+      "case_id": "RAGV2-GOLD-0046",
+      "resolution": "KEEP_CURRENT_LABELS_FROM_CONFIRMED_SOURCE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": ["MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"],
+        "expected_risk_level": "danger",
+        "expected_guidance_policy": "TOTAL_STOP"
+      },
+      "basis": "사람이 확인한 동일 P005가 제품 주변 물 고임과 누수의 급수·전원 차단 및 감전 위험을 직접 지원한다."
+    },
+    {
+      "sequence": 8,
+      "case_id": "RAGV2-GOLD-0048",
+      "resolution": "KEEP_CURRENT_LABELS_FROM_CONFIRMED_SOURCE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": ["MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"],
+        "expected_risk_level": "danger",
+        "expected_guidance_policy": "TOTAL_STOP"
+      },
+      "basis": "사람이 확인한 동일 P005가 제품 주변 물 고임 상태의 계속 사용을 허용하지 않고 즉시 차단하도록 지원한다."
+    },
+    {
+      "sequence": 9,
+      "case_id": "RAGV2-GOLD-0050",
+      "resolution": "KEEP_CURRENT_LABELS_FROM_CONFIRMED_SOURCE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": ["MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"],
+        "expected_risk_level": "danger",
+        "expected_guidance_policy": "TOTAL_STOP"
+      },
+      "basis": "사람이 확인한 동일 P005가 타는 냄새와 연기의 즉시 급수·전원 차단 및 상담 전환을 직접 지원한다."
+    },
+    {
+      "sequence": 10,
+      "case_id": "RAGV2-GOLD-0052",
+      "resolution": "KEEP_NO_EVIDENCE_AFTER_QUERY_NARROWING",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_query": "교체용 필터의 현재 판매 가격은 얼마인가요?",
+      "resolved_labels": {
+        "expected_no_evidence": true,
+        "evidence_match_policy": "NONE",
+        "evidence_unit_ids": [],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "CONSULTATION_ONLY"
+      },
+      "basis": "P028의 구매 경로와 겹치는 구매 의사를 제거했다. 현재 판매 가격은 111건 Corpus에 없다."
+    },
+    {
+      "sequence": 11,
+      "case_id": "RAGV2-GOLD-0053",
+      "resolution": "KEEP_NO_EVIDENCE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "expected_no_evidence": true,
+        "evidence_match_policy": "NONE",
+        "evidence_unit_ids": [],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "CONSULTATION_ONLY"
+      },
+      "basis": "정적 제품 매뉴얼 Corpus에는 방문기사의 실시간 도착 예정 정보가 없다."
+    },
+    {
+      "sequence": 12,
+      "case_id": "RAGV2-GOLD-0054",
+      "resolution": "KEEP_NO_EVIDENCE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "expected_no_evidence": true,
+        "evidence_match_policy": "NONE",
+        "evidence_unit_ids": [],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "CONSULTATION_ONLY"
+      },
+      "basis": "Corpus의 색상 문구는 표시등 색상뿐이며 구매 가능한 외관 색상 목록은 없다."
+    },
+    {
+      "sequence": 13,
+      "case_id": "RAGV2-GOLD-0055",
+      "resolution": "KEEP_NO_EVIDENCE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "expected_no_evidence": true,
+        "evidence_match_policy": "NONE",
+        "evidence_unit_ids": [],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "CONSULTATION_ONLY"
+      },
+      "basis": "모델 미확인 외부 FAQ는 검증된 제품별 Corpus 근거로 사용할 수 없다."
+    },
+    {
+      "sequence": 14,
+      "case_id": "RAGV2-GOLD-0056",
+      "resolution": "KEEP_CROSS_PRODUCT_NO_EVIDENCE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "expected_no_evidence": true,
+        "evidence_match_policy": "NONE",
+        "evidence_unit_ids": [],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "CONSULTATION_ONLY"
+      },
+      "basis": "JAC104에는 제빙 기능이 없으며 IAC425 얼음 문서는 금지된 교차 제품 근거다."
+    },
+    {
+      "sequence": 15,
+      "case_id": "RAGV2-GOLD-0057",
+      "resolution": "KEEP_CROSS_PRODUCT_NO_EVIDENCE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "expected_no_evidence": true,
+        "evidence_match_policy": "NONE",
+        "evidence_unit_ids": [],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "CONSULTATION_ONLY"
+      },
+      "basis": "얼음 저장고 문구는 IAC425에만 존재하며 JAC104 질문에 사용할 수 없는 교차 제품 근거다."
+    },
+    {
+      "sequence": 16,
+      "case_id": "RAGV2-GOLD-0058",
+      "resolution": "KEEP_CROSS_PRODUCT_NO_EVIDENCE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "expected_no_evidence": true,
+        "evidence_match_policy": "NONE",
+        "evidence_unit_ids": [],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "CONSULTATION_ONLY"
+      },
+      "basis": "JAC104에는 얼음 크기·제빙량 설정이 없고 IAC425 문서는 금지된 교차 제품 근거다."
+    },
+    {
+      "sequence": 17,
+      "case_id": "RAGV2-GOLD-0059",
+      "resolution": "KEEP_BLOCKED_MODEL_NO_EVIDENCE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "expected_no_evidence": true,
+        "evidence_match_policy": "NONE",
+        "evidence_unit_ids": [],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "CONSULTATION_ONLY"
+      },
+      "basis": "금지 모델 WPU-IAC506의 정확 모델 Corpus가 없고 JAC104·IAC425 문서는 모두 금지 근거다."
+    },
+    {
+      "sequence": 18,
+      "case_id": "RAGV2-GOLD-0060",
+      "resolution": "KEEP_CROSS_GENERATION_NO_EVIDENCE",
+      "confirmed_by_primary_reviewer": false,
+      "human_signoff_status": "PENDING",
+      "resolved_labels": {
+        "expected_no_evidence": true,
+        "evidence_match_policy": "NONE",
+        "evidence_unit_ids": [],
+        "expected_risk_level": "general",
+        "expected_guidance_policy": "CONSULTATION_ONLY"
+      },
+      "basis": "WPUJAC104SWH 정확 세대 Corpus가 없고 D세대·IAC425 문서는 모두 금지 근거다."
+    }
+  ]
+}

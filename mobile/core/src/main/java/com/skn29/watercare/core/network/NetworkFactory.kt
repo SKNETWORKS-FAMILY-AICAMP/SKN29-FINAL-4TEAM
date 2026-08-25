@@ -98,6 +98,14 @@ suspend fun <T> safeApiCall(
             }
         val error = body?.error ?: parsed?.error
         val status = response.code()
+
+        val retryAfterSeconds =
+            response.headers()["Retry-After"]
+                ?.trim()
+                ?.toIntOrNull()
+                ?: (error?.details?.get("retry_after_seconds") as? JsonPrimitive)
+                    ?.intOrNull
+
         ApiResult.Failure(
             code = error?.code ?: "HTTP_$status",
             message = ApiErrorMapper.userMessage(status, error?.message),
@@ -106,6 +114,16 @@ suspend fun <T> safeApiCall(
             retryable = status == 408 || status == 429 || status >= 500,
             conflict = if (status == 409) {
                 extractConflict(error?.details, parsed?.data)
+            } else {
+                null
+            },
+            fieldErrors = if (status == 422) {
+                extractFieldErrors(error?.details)
+            } else {
+                emptyMap()
+            },
+            retryAfterSeconds = if (status == 429) {
+                retryAfterSeconds
             } else {
                 null
             },
@@ -124,6 +142,37 @@ suspend fun <T> safeApiCall(
         message = "응답을 안전하게 처리하지 못했습니다. 다시 시도하거나 상담을 이용해 주세요.",
         details = exception.message,
     )
+}
+
+internal fun extractFieldErrors(
+    details: Map<String, JsonElement>?,
+): Map<String, List<String>> {
+    if (details == null) return emptyMap()
+
+    val fields =
+        (details["fields"] as? JsonObject)
+            ?: JsonObject(details)
+
+    return fields
+        .mapValues { (_, value) ->
+            when (value) {
+                is JsonArray -> value.mapNotNull { item ->
+                    (item as? JsonPrimitive)
+                        ?.contentOrNull
+                        ?.trim()
+                        ?.takeIf(String::isNotEmpty)
+                }
+
+                is JsonPrimitive -> listOfNotNull(
+                    value.contentOrNull
+                        ?.trim()
+                        ?.takeIf(String::isNotEmpty)
+                )
+
+                else -> emptyList()
+            }
+        }
+        .filterValues { errors -> errors.isNotEmpty() }
 }
 
 internal fun extractConflict(

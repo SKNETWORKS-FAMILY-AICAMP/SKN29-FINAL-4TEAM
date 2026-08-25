@@ -1,0 +1,2887 @@
+{
+  "generated_at": "2026-08-24T00:00:00+09:00",
+  "reviews": [
+    {
+      "approved_query": "정수기에서 물이 안 나와요. 빨리 고쳐주세요.",
+      "assistant_assessment": "CHANGE_PROPOSED",
+      "assistant_reason": "확정 질문의 의미와 원본 Gold 라벨 사이에 수정이 필요한 차이가 확인됐다.",
+      "case_id": "RAGV2-GOLD-0001",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PARTIAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "caution",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [
+        {
+          "current_value": "PARTIAL_STOP",
+          "evidence_basis": [
+            "EVD-WPUJAC104DWH-NO-WATER-001"
+          ],
+          "field": "expected_guidance_policy",
+          "proposed_value": "PENDING_CONSULTATION",
+          "reason": "확정 질문이 자가 점검보다 빠른 수리 요청을 명시하므로 상담 전환 의도를 반영한다."
+        }
+      ],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "PROPOSED_LABEL_CHANGE_DECISION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "무출수 원인을 필터 수명, 단수, 연결 호스 꺾임으로 구분하고 조건별 안전 조치와 상담 전환을 안내합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "냉수가 미지근해요. 해결 방법 알려주세요.",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0002",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "다량 출수, 냉수 기능 꺼짐, 방열팬 먼지와 냉각부 고장을 순서대로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기에서 평소와 다른 소리가 나는데 고장 아닌가요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0003",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "방열팬, 밸브, 컴프레서, 열교환 탱크에서 발생하는 정상 작동음을 설명하고 과도한 소음은 상담으로 전환합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 밑에서 물이 새는 것 같아요. 지금 어떻게 해야 하나요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0004",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+            "page_refs": [
+              5,
+              7,
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "누수 발생 시 급수와 전원을 차단하고 즉시 상담으로 전환하는 안전 우선 조치입니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+          "page_refs": [
+            5,
+            7,
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 물에서 이상한 맛과 냄새가 나요. 이거 문제있는거 아닌가요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0005",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+            "page_refs": [
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PARTIAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "caution",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "장기 부재 기간과 설치·미사용 조건에 따라 통수, 상담 점검, 필터 교체를 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+          "page_refs": [
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "일주일 전부터 정수기 물이 예전보다 잘 안 나와요. 해결 방법 알려주세요!",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0006",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+            "page_refs": [
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "동시 수전 사용, 필터 수명, 순간 온수 특성, 설치 수압을 낮은 출수량의 원인으로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "page_refs": [
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "온수를 받는데 김이 나고 물이 튀어요",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0007",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+            "page_refs": [
+              38,
+              39
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PENDING_CONSULTATION",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "순간 온수의 정상 현상과 잠금·재연결 확인, 히터 또는 모듈 고장 의심 상황, 음용 금지 조건을 함께 관리합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+          "page_refs": [
+            38,
+            39
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기에서 물이 안 나와요. 어떻게 해야 하나요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0008",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PARTIAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "caution",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "무출수 원인을 필터 수명, 단수, 연결 호스 꺾임으로 구분하고 조건별 안전 조치와 상담 전환을 안내합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "냉수가 시원하지 않고 미지근해요. 어디를 확인해야 하나요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0009",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "다량 출수, 냉수 기능 꺼짐, 방열팬 먼지와 냉각부 고장을 순서대로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기에서 소리가 나는데 정상인가요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0010",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "방열팬, 밸브, 컴프레서, 열교환 탱크에서 발생하는 정상 작동음을 설명하고 과도한 소음은 상담으로 전환합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 밑에 물이 흥건해요. 누수가 의심됩니다.",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0011",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+            "page_refs": [
+              5,
+              7,
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "누수 발생 시 급수와 전원을 차단하고 즉시 상담으로 전환하는 안전 우선 조치입니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+          "page_refs": [
+            5,
+            7,
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "물맛이나 냄새가 이상한데 무엇부터 확인하면 될까요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0012",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+            "page_refs": [
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PARTIAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "caution",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "장기 부재 기간과 설치·미사용 조건에 따라 통수, 상담 점검, 필터 교체를 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+          "page_refs": [
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "차가운 물이 너무 쫄쫄 나와요. 제품에 문제있는거 아닌가요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0013",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+            "page_refs": [
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "동시 수전 사용, 필터 수명, 순간 온수 특성, 설치 수압을 낮은 출수량의 원인으로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "page_refs": [
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "온수를 받을 때 뜨거운 물이나 김이 튀는데 계속 사용해도 괜찮을까요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0014",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+            "page_refs": [
+              38,
+              39
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PENDING_CONSULTATION",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "순간 온수의 정상 현상과 잠금·재연결 확인, 히터 또는 모듈 고장 의심 상황, 음용 금지 조건을 함께 관리합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+          "page_refs": [
+            38,
+            39
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "필터를 교체했는데도 물이 안 나와요. 어떻게 해야 하나요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0015",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PARTIAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "caution",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "무출수 원인을 필터 수명, 단수, 연결 호스 꺾임으로 구분하고 조건별 안전 조치와 상담 전환을 안내합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "전원은 들어오는데 두 시간이 지나도 냉수가 차갑지 않아요. 어떻게 해야 하나요?",
+      "assistant_assessment": "CHANGE_PROPOSED",
+      "assistant_reason": "확정 질문의 의미와 원본 Gold 라벨 사이에 수정이 필요한 차이가 확인됐다.",
+      "case_id": "RAGV2-GOLD-0016",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [
+        {
+          "current_value": "NORMAL",
+          "evidence_basis": [
+            "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001"
+          ],
+          "field": "expected_guidance_policy",
+          "proposed_value": "PENDING_CONSULTATION",
+          "reason": "전원 정상 상태에서 2시간이 지나도 냉수가 차갑지 않으면 매뉴얼이 상담을 안내한다."
+        }
+      ],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "PROPOSED_LABEL_CHANGE_DECISION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "다량 출수, 냉수 기능 꺼짐, 방열팬 먼지와 냉각부 고장을 순서대로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "방열팬 쪽에서 너무 큰 소리가 나요. 고장일까요?",
+      "assistant_assessment": "CHANGE_PROPOSED",
+      "assistant_reason": "확정 질문의 의미와 원본 Gold 라벨 사이에 수정이 필요한 차이가 확인됐다.",
+      "case_id": "RAGV2-GOLD-0017",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [
+        {
+          "current_value": "NORMAL",
+          "evidence_basis": [
+            "EVD-WPUJAC104DWH-NOISE-001"
+          ],
+          "field": "expected_guidance_policy",
+          "proposed_value": "PENDING_CONSULTATION",
+          "reason": "확정 질문은 정상 팬 소리가 아니라 너무 큰 소리를 명시하며 매뉴얼의 상담 조건에 해당한다."
+        }
+      ],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "PROPOSED_LABEL_CHANGE_DECISION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "방열팬, 밸브, 컴프레서, 열교환 탱크에서 발생하는 정상 작동음을 설명하고 과도한 소음은 상담으로 전환합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 안쪽에서 물이 흘러나와요. 빠른 조치법을 알려주세요.",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0018",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+            "page_refs": [
+              5,
+              7,
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "누수 발생 시 급수와 전원을 차단하고 즉시 상담으로 전환하는 안전 우선 조치입니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+          "page_refs": [
+            5,
+            7,
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "오랜만에 정수기를 사용했는데 물에서 비린 맛과 냄새가 나요. 어떻게 해야 하나요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0019",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+            "page_refs": [
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PARTIAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "caution",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "장기 부재 기간과 설치·미사용 조건에 따라 통수, 상담 점검, 필터 교체를 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+          "page_refs": [
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "안내받은 대로 정수기 아래쪽 밸브를 확인했는데 열려 있어요. 그런데도 물이 잘 안 나와요.",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0020",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+            "page_refs": [
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "DIRECT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "동시 수전 사용, 필터 수명, 순간 온수 특성, 설치 수압을 낮은 출수량의 원인으로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "page_refs": [
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 밑이 계속 축축해져요. 어디서 물이 새는지 모르겠어요.",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0021",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+            "page_refs": [
+              5,
+              7,
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "COLLOQUIAL"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "누수 발생 시 급수와 전원을 차단하고 즉시 상담으로 전환하는 안전 우선 조치입니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+          "page_refs": [
+            5,
+            7,
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "냉수가 계속 미지근한데 이유가 뭔가요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0022",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "COLLOQUIAL"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "다량 출수, 냉수 기능 꺼짐, 방열팬 먼지와 냉각부 고장을 순서대로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 물이 갑자기 졸졸 나와요. 어디를 확인해야 하나요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0023",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+            "page_refs": [
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "COLLOQUIAL"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "동시 수전 사용, 필터 수명, 순간 온수 특성, 설치 수압을 낮은 출수량의 원인으로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "page_refs": [
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "물에서 비린내 같은 게 나는데 먹어도 되는건가요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0024",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+            "page_refs": [
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PARTIAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "caution",
+        "query_variant_type": "COLLOQUIAL"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "장기 부재 기간과 설치·미사용 조건에 따라 통수, 상담 점검, 필터 교체를 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+          "page_refs": [
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "버튼을 눌러도 물이 한 방울도 안 나와요. 뭘 확인해야 하나요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0025",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PARTIAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "caution",
+        "query_variant_type": "COLLOQUIAL"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "무출수 원인을 필터 수명, 단수, 연결 호스 꺾임으로 구분하고 조건별 안전 조치와 상담 전환을 안내합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기가 윙윙거리는데 고장 난 건가요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0026",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "COLLOQUIAL"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "방열팬, 밸브, 컴프레서, 열교환 탱크에서 발생하는 정상 작동음을 설명하고 과도한 소음은 상담으로 전환합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 아래 바닥에 물이 흥건해졌어요. 뭘 먼저 해야 하죠?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0027",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+            "page_refs": [
+              5,
+              7,
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "COLLOQUIAL"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "누수 발생 시 급수와 전원을 차단하고 즉시 상담으로 전환하는 안전 우선 조치입니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+          "page_refs": [
+            5,
+            7,
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "예전보다 물 나오는 힘이 확 약해졌어요. 어떻게 조치해 주실 건가요?",
+      "assistant_assessment": "CHANGE_PROPOSED",
+      "assistant_reason": "확정 질문의 의미와 원본 Gold 라벨 사이에 수정이 필요한 차이가 확인됐다.",
+      "case_id": "RAGV2-GOLD-0028",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+            "page_refs": [
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "COLLOQUIAL"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [
+        {
+          "current_value": "NORMAL",
+          "evidence_basis": [
+            "EVD-WPUJAC104DWH-LOW-FLOW-001"
+          ],
+          "field": "expected_guidance_policy",
+          "proposed_value": "PENDING_CONSULTATION",
+          "reason": "확정 질문이 저유량 자가 점검이 아니라 서비스 주체의 조치를 직접 요구한다."
+        }
+      ],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "PROPOSED_LABEL_CHANGE_DECISION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "동시 수전 사용, 필터 수명, 순간 온수 특성, 설치 수압을 낮은 출수량의 원인으로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "page_refs": [
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "온수를 받을 때 김이 나고 물이 튀어서 무서워요. 계속 써도 되나요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0029",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+            "page_refs": [
+              38,
+              39
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PENDING_CONSULTATION",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "COLLOQUIAL"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "순간 온수의 정상 현상과 잠금·재연결 확인, 히터 또는 모듈 고장 의심 상황, 음용 금지 조건을 함께 관리합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+          "page_refs": [
+            38,
+            39
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "찬물 버튼을 눌렀는데 그냥 미지근한 물이 나와요. 왜 그런가요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0030",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "COLLOQUIAL"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "다량 출수, 냉수 기능 꺼짐, 방열팬 먼지와 냉각부 고장을 순서대로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 물이 안 나와여 어떡게 해요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0031",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PARTIAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "caution",
+        "query_variant_type": "TYPO_ABBREVIATION"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "무출수 원인을 필터 수명, 단수, 연결 호스 꺾임으로 구분하고 조건별 안전 조치와 상담 전환을 안내합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "냉수라면서 하나도 안 차가운데 어케 해요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0032",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "TYPO_ABBREVIATION"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "다량 출수, 냉수 기능 꺼짐, 방열팬 먼지와 냉각부 고장을 순서대로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 소리가 넘 커여 고장인가요?",
+      "assistant_assessment": "CHANGE_PROPOSED",
+      "assistant_reason": "확정 질문의 의미와 원본 Gold 라벨 사이에 수정이 필요한 차이가 확인됐다.",
+      "case_id": "RAGV2-GOLD-0033",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "TYPO_ABBREVIATION"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [
+        {
+          "current_value": "NORMAL",
+          "evidence_basis": [
+            "EVD-WPUJAC104DWH-NOISE-001"
+          ],
+          "field": "expected_guidance_policy",
+          "proposed_value": "PENDING_CONSULTATION",
+          "reason": "확정 질문의 핵심은 단순 작동음이 아니라 매우 큰 소리와 고장 여부이며 매뉴얼은 과도한 소음을 상담으로 전환한다."
+        }
+      ],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "PROPOSED_LABEL_CHANGE_DECISION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "방열팬, 밸브, 컴프레서, 열교환 탱크에서 발생하는 정상 작동음을 설명하고 과도한 소음은 상담으로 전환합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 밑에서 물이 세요 어떻해요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0034",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+            "page_refs": [
+              5,
+              7,
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "TYPO_ABBREVIATION"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "누수 발생 시 급수와 전원을 차단하고 즉시 상담으로 전환하는 안전 우선 조치입니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+          "page_refs": [
+            5,
+            7,
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 물 나오는 양이 갑자기 적어졋어요 뭐가 문제인가요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0035",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+            "page_refs": [
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "TYPO_ABBREVIATION"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "NORMAL",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "동시 수전 사용, 필터 수명, 순간 온수 특성, 설치 수압을 낮은 출수량의 원인으로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "page_refs": [
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "냉수가 미지근한 데다가 물도 조금씩만 나와요. 어떻게 해야 하나요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0036",
+      "current_labels": {
+        "evidence_match_policy": "ALL",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          },
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+            "page_refs": [
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "NORMAL",
+        "expected_no_evidence": false,
+        "expected_risk_level": "general",
+        "query_variant_type": "COMPOUND"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "COMPOUND_ALL_EVIDENCE_CONFIRMATION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "MEDIUM",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "다량 출수, 냉수 기능 꺼짐, 방열팬 먼지와 냉각부 고장을 순서대로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        },
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "동시 수전 사용, 필터 수명, 순간 온수 특성, 설치 수압을 낮은 출수량의 원인으로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "page_refs": [
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 아래로 물이 새고 평소보다 큰 소리도 나요. 지금 어떻게 해야 하는지 알려주세요.",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0037",
+      "current_labels": {
+        "evidence_match_policy": "ALL",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+            "page_refs": [
+              5,
+              7,
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          },
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "COMPOUND"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "COMPOUND_ALL_EVIDENCE_CONFIRMATION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "MEDIUM",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "누수 발생 시 급수와 전원을 차단하고 즉시 상담으로 전환하는 안전 우선 조치입니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+          "page_refs": [
+            5,
+            7,
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        },
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "방열팬, 밸브, 컴프레서, 열교환 탱크에서 발생하는 정상 작동음을 설명하고 과도한 소음은 상담으로 전환합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 물에서 불쾌한 냄새가 나고 나오는 양도 줄었어요. 마셔도 되는거 맞아요?",
+      "assistant_assessment": "SUPPORTED",
+      "assistant_reason": "확정 질문을 기준으로 Evidence 의미, 정책, 위험도와 안내 정책을 다시 대조했으며 변경 사유를 찾지 못했다.",
+      "case_id": "RAGV2-GOLD-0038",
+      "current_labels": {
+        "evidence_match_policy": "ALL",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+            "page_refs": [
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          },
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+            "page_refs": [
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PARTIAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "caution",
+        "query_variant_type": "COMPOUND"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "COMPOUND_ALL_EVIDENCE_CONFIRMATION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "MEDIUM",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "장기 부재 기간과 설치·미사용 조건에 따라 통수, 상담 점검, 필터 교체를 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+          "page_refs": [
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        },
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "동시 수전 사용, 필터 수명, 순간 온수 특성, 설치 수압을 낮은 출수량의 원인으로 구분합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "page_refs": [
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "버튼을 누르면 작동 소리는 나는데 물이 안 나와요. 뭘 확인해야 하나요?",
+      "assistant_assessment": "CHANGE_PROPOSED",
+      "assistant_reason": "확정 질문의 의미와 원본 Gold 라벨 사이에 수정이 필요한 차이가 확인됐다.",
+      "case_id": "RAGV2-GOLD-0039",
+      "current_labels": {
+        "evidence_match_policy": "ALL",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          },
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+            "page_refs": [
+              37
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "PARTIAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "caution",
+        "query_variant_type": "COMPOUND"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [
+        {
+          "current_value": "COMPOUND",
+          "evidence_basis": [
+            "EVD-WPUJAC104DWH-NO-WATER-001"
+          ],
+          "field": "query_variant_type",
+          "proposed_value": "DIRECT",
+          "reason": "작동 소리는 별도 이상 증상이 아니라 버튼 입력에 대한 상황 설명으로 확정됐다."
+        },
+        {
+          "current_value": {
+            "evidence_unit_ids": [
+              "EVD-WPUJAC104DWH-NO-WATER-001",
+              "EVD-WPUJAC104DWH-NOISE-001"
+            ],
+            "policy": "ALL"
+          },
+          "evidence_basis": [
+            "EVD-WPUJAC104DWH-NO-WATER-001"
+          ],
+          "field": "expected_evidence/evidence_match_policy",
+          "proposed_value": {
+            "evidence_unit_ids": [
+              "EVD-WPUJAC104DWH-NO-WATER-001"
+            ],
+            "policy": "ANY"
+          },
+          "reason": "질문이 요구하는 답은 무출수 점검이며 소음 Evidence를 반드시 만족시킬 이유가 없어졌다."
+        }
+      ],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "PROPOSED_LABEL_CHANGE_DECISION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "무출수 원인을 필터 수명, 단수, 연결 호스 꺾임으로 구분하고 조건별 안전 조치와 상담 전환을 안내합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        },
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "방열팬, 밸브, 컴프레서, 열교환 탱크에서 발생하는 정상 작동음을 설명하고 과도한 소음은 상담으로 전환합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-NOISE-001",
+          "page_refs": [
+            37
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": null,
+      "assistant_assessment": "REJECT_PROPOSED",
+      "assistant_reason": "1차 검수자가 질문 제외를 제안했다. 원본 삭제나 평가 제외는 두 번째 검수자와 AI 담당자 승인 전까지 확정하지 않는다.",
+      "case_id": "RAGV2-GOLD-0040",
+      "current_labels": {
+        "evidence_match_policy": "ALL",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+            "page_refs": [
+              38,
+              39
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          },
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+            "page_refs": [
+              5,
+              7,
+              38
+            ],
+            "section_id": "JAC104-SECTION-TROUBLESHOOTING"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "COMPOUND"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "QUERY_REJECTION_PROPOSED",
+      "required_human_checks": [
+        "QUERY_REJECTION_DECISION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "순간 온수의 정상 현상과 잠금·재연결 확인, 히터 또는 모듈 고장 의심 상황, 음용 금지 조건을 함께 관리합니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+          "page_refs": [
+            38,
+            39
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        },
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": "누수 발생 시 급수와 전원을 차단하고 즉시 상담으로 전환하는 안전 우선 조치입니다.",
+          "evidence_unit_id": "EVD-WPUJAC104DWH-LEAK-001",
+          "page_refs": [
+            5,
+            7,
+            38
+          ],
+          "section_id": "JAC104-SECTION-TROUBLESHOOTING",
+          "source_kind": "EVIDENCE_REGISTRY",
+          "source_locator": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
+          "verification_status": "TEXT_AND_VISUAL_VERIFIED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 아래 바닥과 전원선 주변이 물에 젖어 있어요. 이거 위험한 거 아닌가요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "안전 질문의 근거와 조치 강도는 매뉴얼 원본 화면을 사람이 직접 대조해야 확정할 수 있다.",
+      "case_id": "RAGV2-GOLD-0041",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+            "page_refs": [
+              5
+            ],
+            "section_id": "JAC104-SECTION-SAFETY"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "SAFETY"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "ORIGINAL_PAGE_VISUAL_CONFIRMATION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": null,
+          "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+          "page_refs": [
+            5
+          ],
+          "section_id": "JAC104-SECTION-SAFETY",
+          "source_kind": "MANUAL_PAGE",
+          "source_locator": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+          "verification_status": "TEXT_EXTRACTED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 뒤에서 타는 냄새가 나고 불꽃도 튀었어요. 지금 어떻게 해야 하나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "안전 질문의 근거와 조치 강도는 매뉴얼 원본 화면을 사람이 직접 대조해야 확정할 수 있다.",
+      "case_id": "RAGV2-GOLD-0042",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+            "page_refs": [
+              5
+            ],
+            "section_id": "JAC104-SECTION-SAFETY"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "SAFETY"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "ORIGINAL_PAGE_VISUAL_CONFIRMATION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": null,
+          "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+          "page_refs": [
+            5
+          ],
+          "section_id": "JAC104-SECTION-SAFETY",
+          "source_kind": "MANUAL_PAGE",
+          "source_locator": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+          "verification_status": "TEXT_EXTRACTED"
+        }
+      ]
+    },
+    {
+      "approved_query": "플러그 주변이 젖어 있고 전원 코드가 뜨거워요. 지금 어떻게 해야 하나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "안전 질문의 근거와 조치 강도는 매뉴얼 원본 화면을 사람이 직접 대조해야 확정할 수 있다.",
+      "case_id": "RAGV2-GOLD-0043",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P003",
+            "page_refs": [
+              3
+            ],
+            "section_id": "JAC104-SECTION-SAFETY"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "SAFETY"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "ORIGINAL_PAGE_VISUAL_CONFIRMATION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": null,
+          "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P003",
+          "page_refs": [
+            3
+          ],
+          "section_id": "JAC104-SECTION-SAFETY",
+          "source_kind": "MANUAL_PAGE",
+          "source_locator": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+          "verification_status": "TEXT_EXTRACTED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기에서 연기가 나고 매캐한 냄새가 나요. 전원을 꺼야 하나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "안전 질문의 근거와 조치 강도는 매뉴얼 원본 화면을 사람이 직접 대조해야 확정할 수 있다.",
+      "case_id": "RAGV2-GOLD-0044",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+            "page_refs": [
+              5
+            ],
+            "section_id": "JAC104-SECTION-SAFETY"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "SAFETY"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "ORIGINAL_PAGE_VISUAL_CONFIRMATION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": null,
+          "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+          "page_refs": [
+            5
+          ],
+          "section_id": "JAC104-SECTION-SAFETY",
+          "source_kind": "MANUAL_PAGE",
+          "source_locator": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+          "verification_status": "TEXT_EXTRACTED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 안에 물이 들어간 것 같은데 전원이 켜져 있어요. 어떻게 해야 하나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "안전 질문의 근거와 조치 강도는 매뉴얼 원본 화면을 사람이 직접 대조해야 확정할 수 있다.",
+      "case_id": "RAGV2-GOLD-0045",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004",
+            "page_refs": [
+              4
+            ],
+            "section_id": "JAC104-SECTION-SAFETY"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "SAFETY"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [
+        {
+          "current_value": {
+            "evidence_unit_ids": [
+              "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004"
+            ],
+            "policy": "ANY"
+          },
+          "evidence_basis": [
+            "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004",
+            "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"
+          ],
+          "field": "expected_evidence/evidence_match_policy",
+          "proposed_value": {
+            "evidence_unit_ids": [
+              "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004",
+              "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"
+            ],
+            "policy": "ALL"
+          },
+          "reason": "1차 검수자의 0045-B 결정을 반영한 조건부 제안이다. P004의 물 유입 위험과 P005의 사고 후 조치를 원본 화면에서 함께 확인해야 한다."
+        }
+      ],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "ORIGINAL_PAGE_VISUAL_CONFIRMATION",
+        "CONDITIONAL_EVIDENCE_CHANGE_DECISION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": null,
+          "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004",
+          "page_refs": [
+            4
+          ],
+          "section_id": "JAC104-SECTION-SAFETY",
+          "source_kind": "MANUAL_PAGE",
+          "source_locator": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+          "verification_status": "TEXT_EXTRACTED"
+        }
+      ]
+    },
+    {
+      "approved_query": "콘센트 주변에 물이 고여 있고 정수기에서도 물이 새요. 지금 어떻게 해야 하나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "안전 질문의 근거와 조치 강도는 매뉴얼 원본 화면을 사람이 직접 대조해야 확정할 수 있다.",
+      "case_id": "RAGV2-GOLD-0046",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+            "page_refs": [
+              5
+            ],
+            "section_id": "JAC104-SECTION-SAFETY"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "SAFETY"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "ORIGINAL_PAGE_VISUAL_CONFIRMATION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": null,
+          "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+          "page_refs": [
+            5
+          ],
+          "section_id": "JAC104-SECTION-SAFETY",
+          "source_kind": "MANUAL_PAGE",
+          "source_locator": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+          "verification_status": "TEXT_EXTRACTED"
+        }
+      ]
+    },
+    {
+      "approved_query": "아이가 온수 출수구에 손을 댈까 걱정돼요. 어떻게 안전하게 사용해야 하나요?",
+      "assistant_assessment": "CHANGE_PROPOSED",
+      "assistant_reason": "확정 질문의 의미와 원본 Gold 라벨 사이에 수정이 필요한 차이가 확인됐다.",
+      "case_id": "RAGV2-GOLD-0047",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P006",
+            "page_refs": [
+              6,
+              7
+            ],
+            "section_id": "JAC104-SECTION-SAFETY"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "SAFETY"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [
+        {
+          "current_value": {
+            "guidance": "TOTAL_STOP",
+            "risk": "danger"
+          },
+          "evidence_basis": [
+            "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P006"
+          ],
+          "field": "expected_risk_level/expected_guidance_policy",
+          "proposed_value": {
+            "guidance": "PARTIAL_STOP",
+            "risk": "caution"
+          },
+          "reason": "확정 질문은 사고 발생 후 전면 중단 상황이 아니라 아이의 접촉을 예방하는 사용법 질문이다. 화상 주의는 유지하고 온수 기능에 한정한 사용 제한으로 낮춘다."
+        }
+      ],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "PROPOSED_LABEL_CHANGE_DECISION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": null,
+          "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P006",
+          "page_refs": [
+            6,
+            7
+          ],
+          "section_id": "JAC104-SECTION-SAFETY",
+          "source_kind": "MANUAL_PAGE",
+          "source_locator": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+          "verification_status": "TEXT_EXTRACTED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 주변에 물이 고여 있는데 계속 사용해도 될까요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "안전 질문의 근거와 조치 강도는 매뉴얼 원본 화면을 사람이 직접 대조해야 확정할 수 있다.",
+      "case_id": "RAGV2-GOLD-0048",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+            "page_refs": [
+              5
+            ],
+            "section_id": "JAC104-SECTION-SAFETY"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "SAFETY"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "ORIGINAL_PAGE_VISUAL_CONFIRMATION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": null,
+          "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+          "page_refs": [
+            5
+          ],
+          "section_id": "JAC104-SECTION-SAFETY",
+          "source_kind": "MANUAL_PAGE",
+          "source_locator": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+          "verification_status": "TEXT_EXTRACTED"
+        }
+      ]
+    },
+    {
+      "approved_query": "정수기 옆에서 살충제를 뿌린 뒤 정수기에서 타는 냄새가 나요. 어떻게 해야 하나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "안전 질문의 근거와 조치 강도는 매뉴얼 원본 화면을 사람이 직접 대조해야 확정할 수 있다.",
+      "case_id": "RAGV2-GOLD-0049",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004",
+            "page_refs": [
+              4
+            ],
+            "section_id": "JAC104-SECTION-SAFETY"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "SAFETY"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [
+        {
+          "current_value": {
+            "evidence_unit_ids": [
+              "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004"
+            ],
+            "policy": "ANY"
+          },
+          "evidence_basis": [
+            "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004",
+            "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"
+          ],
+          "field": "expected_evidence/evidence_match_policy",
+          "proposed_value": {
+            "evidence_unit_ids": [
+              "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004",
+              "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"
+            ],
+            "policy": "ALL"
+          },
+          "reason": "0049-H-B로 질문을 정수기에서 타는 냄새가 나는 상황으로 명확히 교정했다. P004의 살충제 사용 위험과 P005의 사고 후 조치를 모두 요구한다."
+        }
+      ],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "ORIGINAL_PAGE_VISUAL_CONFIRMATION",
+        "CONDITIONAL_EVIDENCE_CHANGE_DECISION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": null,
+          "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004",
+          "page_refs": [
+            4
+          ],
+          "section_id": "JAC104-SECTION-SAFETY",
+          "source_kind": "MANUAL_PAGE",
+          "source_locator": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+          "verification_status": "TEXT_EXTRACTED"
+        }
+      ]
+    },
+    {
+      "approved_query": "전원 플러그를 다시 꽂았더니 타는 냄새와 연기가 나요. 어떻게 해야 하나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "안전 질문의 근거와 조치 강도는 매뉴얼 원본 화면을 사람이 직접 대조해야 확정할 수 있다.",
+      "case_id": "RAGV2-GOLD-0050",
+      "current_labels": {
+        "evidence_match_policy": "ANY",
+        "expected_evidence": [
+          {
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+            "page_refs": [
+              5
+            ],
+            "section_id": "JAC104-SECTION-SAFETY"
+          }
+        ],
+        "expected_guidance_policy": "TOTAL_STOP",
+        "expected_no_evidence": false,
+        "expected_risk_level": "danger",
+        "query_variant_type": "SAFETY"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "ORIGINAL_PAGE_VISUAL_CONFIRMATION",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": [
+        {
+          "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+          "evidence_summary": null,
+          "evidence_unit_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+          "page_refs": [
+            5
+          ],
+          "section_id": "JAC104-SECTION-SAFETY",
+          "source_kind": "MANUAL_PAGE",
+          "source_locator": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+          "verification_status": "TEXT_EXTRACTED"
+        }
+      ]
+    },
+    {
+      "approved_query": "이 정수기 월 렌탈료랑 제휴카드 할인 금액이 궁금해요.",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "검색 Corpus 전체에 답이 없다는 판정은 자동 검사가 아니라 사람이 질문 의미와 검색 범위를 확인해야 한다.",
+      "case_id": "RAGV2-GOLD-0051",
+      "current_labels": {
+        "evidence_match_policy": "NONE",
+        "expected_evidence": [],
+        "expected_guidance_policy": "CONSULTATION_ONLY",
+        "expected_no_evidence": true,
+        "expected_risk_level": "general",
+        "query_variant_type": "NO_EVIDENCE"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "NO_EVIDENCE_CORPUS_ABSENCE",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": []
+    },
+    {
+      "approved_query": "교체용 필터의 현재 판매 가격은 얼마인가요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "검색 Corpus 전체에 답이 없다는 판정은 자동 검사가 아니라 사람이 질문 의미와 검색 범위를 확인해야 한다.",
+      "case_id": "RAGV2-GOLD-0052",
+      "current_labels": {
+        "evidence_match_policy": "NONE",
+        "expected_evidence": [],
+        "expected_guidance_policy": "CONSULTATION_ONLY",
+        "expected_no_evidence": true,
+        "expected_risk_level": "general",
+        "query_variant_type": "NO_EVIDENCE"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "NO_EVIDENCE_CORPUS_ABSENCE",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": []
+    },
+    {
+      "approved_query": "오늘 방문 예정인 기사님이 몇 시쯤 도착하나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "검색 Corpus 전체에 답이 없다는 판정은 자동 검사가 아니라 사람이 질문 의미와 검색 범위를 확인해야 한다.",
+      "case_id": "RAGV2-GOLD-0053",
+      "current_labels": {
+        "evidence_match_policy": "NONE",
+        "expected_evidence": [],
+        "expected_guidance_policy": "CONSULTATION_ONLY",
+        "expected_no_evidence": true,
+        "expected_risk_level": "general",
+        "query_variant_type": "NO_EVIDENCE"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "NO_EVIDENCE_CORPUS_ABSENCE",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": []
+    },
+    {
+      "approved_query": "이 정수기는 어떤 색상으로 구매할 수 있나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "검색 Corpus 전체에 답이 없다는 판정은 자동 검사가 아니라 사람이 질문 의미와 검색 범위를 확인해야 한다.",
+      "case_id": "RAGV2-GOLD-0054",
+      "current_labels": {
+        "evidence_match_policy": "NONE",
+        "expected_evidence": [],
+        "expected_guidance_policy": "CONSULTATION_ONLY",
+        "expected_no_evidence": true,
+        "expected_risk_level": "general",
+        "query_variant_type": "NO_EVIDENCE"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "NO_EVIDENCE_CORPUS_ABSENCE",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": []
+    },
+    {
+      "approved_query": "정수기 모델은 잘 모르겠고 인터넷 FAQ만 봤는데, 그 내용대로 누수 조치를 해도 될까요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "검색 Corpus 전체에 답이 없다는 판정은 자동 검사가 아니라 사람이 질문 의미와 검색 범위를 확인해야 한다.",
+      "case_id": "RAGV2-GOLD-0055",
+      "current_labels": {
+        "evidence_match_policy": "NONE",
+        "expected_evidence": [],
+        "expected_guidance_policy": "CONSULTATION_ONLY",
+        "expected_no_evidence": true,
+        "expected_risk_level": "general",
+        "query_variant_type": "NO_EVIDENCE"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": true,
+      "proposed_changes": [],
+      "query_decision": "PROPOSED_QUERY_APPROVED",
+      "required_human_checks": [
+        "NO_EVIDENCE_CORPUS_ABSENCE",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": []
+    },
+    {
+      "approved_query": "이 정수기에서 얼음이 안 나와요. 제빙 기능은 어디서 켜나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "검색 Corpus 전체에 답이 없다는 판정은 자동 검사가 아니라 사람이 질문 의미와 검색 범위를 확인해야 한다.",
+      "case_id": "RAGV2-GOLD-0056",
+      "current_labels": {
+        "evidence_match_policy": "NONE",
+        "expected_evidence": [],
+        "expected_guidance_policy": "CONSULTATION_ONLY",
+        "expected_no_evidence": true,
+        "expected_risk_level": "general",
+        "query_variant_type": "CROSS_PRODUCT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "NO_EVIDENCE_CORPUS_ABSENCE",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": []
+    },
+    {
+      "approved_query": "이 정수기 얼음 저장고는 어떻게 분리해서 청소하나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "검색 Corpus 전체에 답이 없다는 판정은 자동 검사가 아니라 사람이 질문 의미와 검색 범위를 확인해야 한다.",
+      "case_id": "RAGV2-GOLD-0057",
+      "current_labels": {
+        "evidence_match_policy": "NONE",
+        "expected_evidence": [],
+        "expected_guidance_policy": "CONSULTATION_ONLY",
+        "expected_no_evidence": true,
+        "expected_risk_level": "general",
+        "query_variant_type": "CROSS_PRODUCT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "NO_EVIDENCE_CORPUS_ABSENCE",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": []
+    },
+    {
+      "approved_query": "이 정수기는 얼음 크기랑 제빙량을 어떻게 설정하나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "검색 Corpus 전체에 답이 없다는 판정은 자동 검사가 아니라 사람이 질문 의미와 검색 범위를 확인해야 한다.",
+      "case_id": "RAGV2-GOLD-0058",
+      "current_labels": {
+        "evidence_match_policy": "NONE",
+        "expected_evidence": [],
+        "expected_guidance_policy": "CONSULTATION_ONLY",
+        "expected_no_evidence": true,
+        "expected_risk_level": "general",
+        "query_variant_type": "CROSS_PRODUCT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "NO_EVIDENCE_CORPUS_ABSENCE",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": []
+    },
+    {
+      "approved_query": "이 정수기 필터는 어떻게 교체하나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "검색 Corpus 전체에 답이 없다는 판정은 자동 검사가 아니라 사람이 질문 의미와 검색 범위를 확인해야 한다.",
+      "case_id": "RAGV2-GOLD-0059",
+      "current_labels": {
+        "evidence_match_policy": "NONE",
+        "expected_evidence": [],
+        "expected_guidance_policy": "CONSULTATION_ONLY",
+        "expected_no_evidence": true,
+        "expected_risk_level": "general",
+        "query_variant_type": "CROSS_PRODUCT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "NO_EVIDENCE_CORPUS_ABSENCE",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": []
+    },
+    {
+      "approved_query": "이 정수기 냉수가 미지근한데 어떻게 확인해야 하나요?",
+      "assistant_assessment": "SOURCE_CHECK_REQUIRED",
+      "assistant_reason": "검색 Corpus 전체에 답이 없다는 판정은 자동 검사가 아니라 사람이 질문 의미와 검색 범위를 확인해야 한다.",
+      "case_id": "RAGV2-GOLD-0060",
+      "current_labels": {
+        "evidence_match_policy": "NONE",
+        "expected_evidence": [],
+        "expected_guidance_policy": "CONSULTATION_ONLY",
+        "expected_no_evidence": true,
+        "expected_risk_level": "general",
+        "query_variant_type": "CROSS_PRODUCT"
+      },
+      "human_signoff_status": "PENDING",
+      "intent_change": false,
+      "proposed_changes": [],
+      "query_decision": "WORDING_CHANGE_APPROVED",
+      "required_human_checks": [
+        "NO_EVIDENCE_CORPUS_ABSENCE",
+        "RISK_AND_GUIDANCE_APPROPRIATENESS",
+        "RECORD_SECOND_REVIEWER_DECISION_AND_REVIEWED_AT"
+      ],
+      "review_priority": "HIGH",
+      "source_review_context": []
+    }
+  ],
+  "schema_version": "1.0.0",
+  "source_dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "record_count": 60,
+    "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A"
+  },
+  "source_query_proposals": {
+    "path": "data/config/rag/gold_v1_query_rewrite_proposals.json",
+    "sha256": "97F4548FFEC0268B54AC5BFB12431CF061E6340D4AEFDF0DF2FF8C02228AF398"
+  },
+  "source_query_review": {
+    "path": "data/processed/validation/rag_experiments/gold_v1_query_human_review_working.json",
+    "sha256": "B44A0B1644FE70ECC2FE674006D44AF44F2A588BB03378F3D61432E5B800921D",
+    "status": "GOLD_QUERY_PRIMARY_REVIEW_COMPLETED_HUMAN_SIGNOFF_PENDING"
+  },
+  "status": "GOLD_POST_QUERY_LABEL_REVALIDATION_READY_HUMAN_SIGNOFF_PENDING",
+  "summary": {
+    "assessment_counts": {
+      "CHANGE_PROPOSED": 7,
+      "REJECT_PROPOSED": 1,
+      "SOURCE_CHECK_REQUIRED": 19,
+      "SUPPORTED": 33
+    },
+    "automatic_gold_update": false,
+    "human_signed_records": 0,
+    "human_signoff_status": "PENDING",
+    "reviewed_records": 60
+  }
+}

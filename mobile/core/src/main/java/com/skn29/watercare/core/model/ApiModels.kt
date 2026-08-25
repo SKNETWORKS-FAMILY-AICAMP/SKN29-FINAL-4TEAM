@@ -39,5 +39,7 @@ sealed interface ApiResult<out T> {
         val httpStatus: Int? = null,
         val retryable: Boolean = false,
         val conflict: StateConflictSnapshot? = null,
+        val fieldErrors: Map<String, List<String>> = emptyMap(),
+        val retryAfterSeconds: Int? = null,
     ) : ApiResult<Nothing>
 }

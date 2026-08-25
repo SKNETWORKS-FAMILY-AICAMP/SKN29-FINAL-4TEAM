@@ -17,6 +17,16 @@ import com.skn29.watercare.core.model.CustomerInquiryQuestionsDto
 import com.skn29.watercare.core.model.CustomerInquiryGuidanceDto
 import com.skn29.watercare.core.model.CustomerInquirySnapshotDto
 import com.skn29.watercare.core.model.DemoLoginRequest
+import com.skn29.watercare.core.model.P1ChallengeAccepted
+import com.skn29.watercare.core.model.P1ChallengeRequest
+import com.skn29.watercare.core.model.P1ClaimTicket
+import com.skn29.watercare.core.model.P1OtpVerificationRequest
+import com.skn29.watercare.core.model.P1PasswordLoginRequest
+import com.skn29.watercare.core.model.P1PasswordResetConfirmRequest
+import com.skn29.watercare.core.model.P1PasswordResetResult
+import com.skn29.watercare.core.model.P1PasswordResetTicket
+import com.skn29.watercare.core.model.P1SignupRequest
+import com.skn29.watercare.core.model.P1UsernameRecoveryResult
 import com.skn29.watercare.core.model.InquiryResponse
 import com.skn29.watercare.core.model.LogoutResponse
 import com.skn29.watercare.core.model.RefreshTokenRequest
@@ -51,6 +61,64 @@ interface WaterCareApi {
 
     @POST("api/v1/auth/demo-login")
     suspend fun demoLogin(@Body body: DemoLoginRequest): Response<ApiEnvelope<SessionResponse>>
+
+    // -------------------------------------------------------
+    // P1-A G2 CONFIRMED AUTH
+    // Backend Runtime is implemented separately in G3.
+    // -------------------------------------------------------
+
+    @POST("api/v1/auth/contract-verification/challenges")
+    suspend fun createContractVerificationChallenge(
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: P1ChallengeRequest,
+    ): Response<ApiEnvelope<P1ChallengeAccepted>>
+
+    @POST("api/v1/auth/contract-verification/challenges/{challenge_id}/verify")
+    suspend fun verifyContractVerificationChallenge(
+        @Path("challenge_id") challengeId: String,
+        @Body body: P1OtpVerificationRequest,
+    ): Response<ApiEnvelope<P1ClaimTicket>>
+
+    @POST("api/v1/auth/signup")
+    suspend fun signupContractCustomer(
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: P1SignupRequest,
+    ): Response<ApiEnvelope<SessionResponse>>
+
+    @POST("api/v1/auth/login")
+    suspend fun loginWithPassword(
+        @Body body: P1PasswordLoginRequest,
+    ): Response<ApiEnvelope<SessionResponse>>
+
+    @POST("api/v1/auth/account-recovery/username/challenges")
+    suspend fun createUsernameRecoveryChallenge(
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: P1ChallengeRequest,
+    ): Response<ApiEnvelope<P1ChallengeAccepted>>
+
+    @POST("api/v1/auth/account-recovery/username/challenges/{challenge_id}/verify")
+    suspend fun verifyUsernameRecoveryChallenge(
+        @Path("challenge_id") challengeId: String,
+        @Body body: P1OtpVerificationRequest,
+    ): Response<ApiEnvelope<P1UsernameRecoveryResult>>
+
+    @POST("api/v1/auth/password-reset/challenges")
+    suspend fun createPasswordResetChallenge(
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: P1ChallengeRequest,
+    ): Response<ApiEnvelope<P1ChallengeAccepted>>
+
+    @POST("api/v1/auth/password-reset/challenges/{challenge_id}/verify")
+    suspend fun verifyPasswordResetChallenge(
+        @Path("challenge_id") challengeId: String,
+        @Body body: P1OtpVerificationRequest,
+    ): Response<ApiEnvelope<P1PasswordResetTicket>>
+
+    @POST("api/v1/auth/password-reset/confirm")
+    suspend fun confirmPasswordReset(
+        @Header("Idempotency-Key") idempotencyKey: String,
+        @Body body: P1PasswordResetConfirmRequest,
+    ): Response<ApiEnvelope<P1PasswordResetResult>>
 
     @POST("api/v1/auth/refresh")
     suspend fun refresh(@Body body: RefreshTokenRequest): Response<ApiEnvelope<SessionResponse>>

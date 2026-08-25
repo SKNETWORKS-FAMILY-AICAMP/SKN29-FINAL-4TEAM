@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0.0",
+  "status": "HUMAN_PRIMARY_REVIEW_PAUSED_FOR_QUERY_REWRITE",
+  "source_dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+    "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A",
+    "record_count": 60
+  },
+  "reviewer": {
+    "role": "DATA_QA_PRIMARY_REVIEWER",
+    "display_name": "김은진",
+    "reviewer_id": null,
+    "signoff_status": "PENDING"
+  },
+  "summary": {
+    "decided_records": 2,
+    "remaining_records": 58,
+    "conditional_records": 2,
+    "human_signoff_status": "PENDING",
+    "gold_source_modified": false,
+    "pause_reason": "60건 질문 자연성 검수와 문구 확정 후 Evidence 결정을 다시 검증해야 한다."
+  },
+  "decisions": [
+    {
+      "sequence": 1,
+      "case_id": "RAGV2-GOLD-0045",
+      "selected_option": "0045-B",
+      "decision": "CHANGE_PROPOSED",
+      "decision_scope": "CONDITIONAL_ON_CURRENT_QUERY",
+      "confirmed_by_primary_reviewer": true,
+      "recorded_date": "2026-08-23",
+      "current_value": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": [
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004"
+        ]
+      },
+      "proposed_value": {
+        "evidence_match_policy": "ALL",
+        "evidence_unit_ids": [
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004",
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"
+        ]
+      },
+      "unchanged_labels": {
+        "expected_risk_level": "danger",
+        "expected_guidance_policy": "TOTAL_STOP"
+      },
+      "basis": [
+        "P004 내부 26~27행은 제품 내부 물 유입 금지와 화재·감전 위험을 설명한다.",
+        "P005 내부 5~7행은 물 유출·고임 시 원수 밸브 잠금, 플러그 분리와 상담 전환을 설명한다.",
+        "위험 원인과 사후 안전 조치를 모두 필수 근거로 요구한다."
+      ]
+    },
+    {
+      "sequence": 2,
+      "case_id": "RAGV2-GOLD-0049",
+      "selected_option": "0049-B",
+      "decision": "CHANGE_PROPOSED",
+      "decision_scope": "CONDITIONAL_ON_CURRENT_QUERY",
+      "confirmed_by_primary_reviewer": true,
+      "recorded_date": "2026-08-23",
+      "current_value": {
+        "evidence_match_policy": "ANY",
+        "evidence_unit_ids": [
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004"
+        ]
+      },
+      "proposed_value": {
+        "evidence_match_policy": "ALL",
+        "evidence_unit_ids": [
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004",
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005"
+        ]
+      },
+      "unchanged_labels": {
+        "expected_risk_level": "danger",
+        "expected_guidance_policy": "TOTAL_STOP"
+      },
+      "basis": [
+        "P004 내부 24~25행은 운전 중 가연성 스프레이 사용 금지와 화재·고장 위험을 설명한다.",
+        "P005 내부 12~14행은 이상한 소리, 타는 냄새와 연기 발생 시 원수 밸브 잠금, 플러그 분리와 상담 전환을 설명한다.",
+        "금지 행동과 발생 후 안전 조치를 모두 필수 근거로 요구한다."
+      ]
+    }
+  ]
+}
