@@ -69,7 +69,7 @@ html body
   .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app
   .consultant-unified-header,
 html body .v6-workspace .consultant-unified-header {
-  justify-content: flex-end !important;
+  justify-content: space-between !important;
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
@@ -78,6 +78,77 @@ html body .v6-workspace .consultant-unified-header {
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-unified-header
+  .consultant-header-brand,
+html body .v6-workspace .consultant-unified-header .consultant-header-brand {
+  display: inline-flex !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  align-items: center !important;
+  justify-self: start !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body
+  .simple-consultant-app.consultant-queue-app
+  .consultant-unified-header
+  .consultant-header-brand
+  .simple-brand__wordmark,
+html body
+  .v6-workspace
+  .consultant-unified-header
+  .consultant-header-brand
+  .simple-brand__wordmark {
+  display: inline-flex !important;
+  width: auto !important;
+  height: auto !important;
+  align-items: baseline !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif) !important;
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.04em !important;
+  white-space: nowrap !important;
+}
+
+html body
+  .consultant-unified-header
+  .consultant-header-brand
+  .simple-brand__wordmark
+  > span {
+  display: inline !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font: inherit !important;
+}
+
+html body
+  .consultant-unified-header
+  .consultant-header-brand
+  .simple-brand__wordmark-water {
+  color: #5170ff !important;
+  -webkit-text-fill-color: #5170ff !important;
+}
+
+html body
+  .consultant-unified-header
+  .consultant-header-brand
+  .simple-brand__wordmark-bridge {
+  color: #2592b8 !important;
+  -webkit-text-fill-color: #2592b8 !important;
 }
 
 html body

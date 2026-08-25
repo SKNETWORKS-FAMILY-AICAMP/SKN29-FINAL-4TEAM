@@ -141,17 +141,6 @@ export default function ConsultantQueueSidebar({
 
   return (
     <aside id="consultant-queue-sidebar" className="consultant-sidebar">
-      <a
-        className="simple-brand consultant-sidebar-brand"
-        href="/"
-        aria-label="Water Bridge 홈으로 이동"
-      >
-        <span className="simple-brand__wordmark" aria-hidden="true">
-          <span className="simple-brand__wordmark-water">Water</span>
-          <span className="simple-brand__wordmark-bridge">Bridge</span>
-        </span>
-      </a>
-
       <nav
         className="consultant-work-tabs"
         aria-label="상담사 메뉴"

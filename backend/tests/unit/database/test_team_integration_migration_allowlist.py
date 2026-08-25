@@ -54,6 +54,193 @@ def executor_for(graph, applied=()):
     return executor
 
 
+def connection_for(
+    *,
+    database_name: str,
+    database_user: str,
+    host: str,
+):
+    class Cursor:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return None
+
+        def execute(self, _statement):
+            return None
+
+        def fetchone(self):
+            return database_name, database_user
+
+    return SimpleNamespace(
+        vendor="postgresql",
+        settings_dict={"HOST": host},
+        cursor=lambda: Cursor(),
+    )
+
+
+def test_named_profiles_preserve_default_and_add_local_p1_scope(
+    allowlist_module: ModuleType,
+):
+    default = allowlist_module.MIGRATION_PROFILES["team-integration"]
+    p1 = allowlist_module.MIGRATION_PROFILES["p1-team-isolated"]
+
+    assert allowlist_module.DEFAULT_PROFILE == "team-integration"
+    assert default == {
+        "database": "waterbridge_team_integration",
+        "migrator_role": "waterbridge_ti_migrator",
+        "local_only": False,
+        "scope": "TEAM_INTEGRATION_MIGRATION_ALLOWLIST",
+    }
+    assert p1 == {
+        "database": "waterbridge_p1_team_isolated",
+        "migrator_role": "waterbridge_p1_migrator",
+        "local_only": True,
+        "scope": "P1_TEAM_ISOLATED_MIGRATION_ALLOWLIST",
+    }
+    assert allowlist_module.TARGET_DATABASE == default["database"]
+    assert allowlist_module.MIGRATOR_ROLE == default["migrator_role"]
+
+
+def test_cli_defaults_to_team_integration_profile(
+    allowlist_module: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setattr(allowlist_module.sys, "argv", ["migration-allowlist"])
+
+    assert allowlist_module.parse_args().profile == "team-integration"
+
+
+def test_internal_api_rejects_unnamed_migration_profile(
+    allowlist_module: ModuleType,
+):
+    with pytest.raises(allowlist_module.AllowlistError) as exc_info:
+        allowlist_module._resolve_profile(
+            {
+                "database": "unapproved_database",
+                "migrator_role": "unapproved_role",
+                "local_only": False,
+                "scope": "UNAPPROVED",
+            }
+        )
+
+    assert exc_info.value.reason == "migration_profile_invalid"
+
+
+@pytest.mark.parametrize("host", ["127.0.0.1", "localhost", "::1"])
+def test_p1_profile_accepts_only_exact_database_role_and_local_host(
+    allowlist_module: ModuleType,
+    host: str,
+):
+    profile = allowlist_module.MIGRATION_PROFILES["p1-team-isolated"]
+    connection = connection_for(
+        database_name="waterbridge_p1_team_isolated",
+        database_user="waterbridge_p1_migrator",
+        host=host,
+    )
+
+    assert allowlist_module._database_identity(connection, profile) == (
+        "waterbridge_p1_team_isolated",
+        "waterbridge_p1_migrator",
+    )
+
+
+@pytest.mark.parametrize("host", ["", "10.0.0.10", "db.example.internal"])
+def test_p1_profile_blocks_nonlocal_or_implicit_database_host(
+    allowlist_module: ModuleType,
+    host: str,
+):
+    profile = allowlist_module.MIGRATION_PROFILES["p1-team-isolated"]
+    connection = connection_for(
+        database_name="waterbridge_p1_team_isolated",
+        database_user="waterbridge_p1_migrator",
+        host=host,
+    )
+
+    with pytest.raises(allowlist_module.AllowlistError) as exc_info:
+        allowlist_module._database_identity(connection, profile)
+
+    assert exc_info.value.reason == "local_database_host_required"
+
+
+@pytest.mark.parametrize(
+    "database_name, database_user, expected_reason",
+    [
+        (
+            "waterbridge_team_integration",
+            "waterbridge_p1_migrator",
+            "target_database_mismatch",
+        ),
+        (
+            "waterbridge_p1_team_isolated",
+            "waterbridge_ti_migrator",
+            "migrator_role_required",
+        ),
+    ],
+)
+def test_p1_profile_blocks_wrong_database_or_migrator(
+    allowlist_module: ModuleType,
+    database_name: str,
+    database_user: str,
+    expected_reason: str,
+):
+    profile = allowlist_module.MIGRATION_PROFILES["p1-team-isolated"]
+    connection = connection_for(
+        database_name=database_name,
+        database_user=database_user,
+        host="127.0.0.1",
+    )
+
+    with pytest.raises(allowlist_module.AllowlistError) as exc_info:
+        allowlist_module._database_identity(connection, profile)
+
+    assert exc_info.value.reason == expected_reason
+
+
+def test_p1_profile_plan_reuses_allowlist_and_excludes_visits_0005(
+    allowlist_module: ModuleType,
+    migration_graph,
+):
+    profile = allowlist_module.MIGRATION_PROFILES["p1-team-isolated"]
+    plan = allowlist_module.build_plan(
+        executor_for(migration_graph),
+        database_name="waterbridge_p1_team_isolated",
+        database_user="waterbridge_p1_migrator",
+        profile=profile,
+    )
+
+    assert plan["profile"] == "p1-team-isolated"
+    assert plan["scope"] == "P1_TEAM_ISOLATED_MIGRATION_ALLOWLIST"
+    assert plan["database"] == {
+        "name": "waterbridge_p1_team_isolated",
+        "user": "waterbridge_p1_migrator",
+    }
+    assert all("visits.0005" not in node for node in plan["remaining_plan"])
+    assert plan["expected_final"]["visits.0005"] == "NOT_APPLIED_P1_HOLD"
+
+
+def test_p1_apply_requires_exact_p1_database_confirmation(
+    allowlist_module: ModuleType,
+):
+    profile = allowlist_module.MIGRATION_PROFILES["p1-team-isolated"]
+    source_state = {"sha": "a" * 40, "clean": True}
+    arguments = argparse.Namespace(
+        confirm_database="waterbridge_team_integration",
+        confirm_hold=allowlist_module.HOLD_CONFIRMATION,
+        confirm_source_sha=source_state["sha"],
+    )
+
+    with pytest.raises(allowlist_module.AllowlistError) as exc_info:
+        allowlist_module._validate_apply_request(
+            arguments,
+            source_state,
+            profile,
+        )
+
+    assert exc_info.value.reason == "database_confirmation_required"
+
+
 def test_current_graph_matches_explicit_allowlist_and_excludes_visits_0005(
     allowlist_module: ModuleType,
     migration_graph,
