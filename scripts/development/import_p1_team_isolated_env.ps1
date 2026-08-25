@@ -90,6 +90,20 @@ foreach ($requiredName in $requiredRuntime) {
     }
 }
 
+foreach ($entry in $roles.GetEnumerator()) {
+    $roleSecret = if ($Role -eq 'Admin') {
+        [string]$entry.Value
+    }
+    else {
+        $null
+    }
+    [Environment]::SetEnvironmentVariable(
+        [string]$entry.Key,
+        $roleSecret,
+        'Process'
+    )
+}
+
 $roleMap = @{
     Admin = @('postgres', $admin.POSTGRES_USER, $admin.POSTGRES_PASSWORD)
     Migrator = @(

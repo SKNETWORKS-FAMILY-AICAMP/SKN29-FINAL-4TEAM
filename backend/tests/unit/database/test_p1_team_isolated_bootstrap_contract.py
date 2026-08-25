@@ -123,6 +123,8 @@ def test_runtime_consumers_load_same_db_and_stable_django_environment():
 
     assert "runtime.env" in loader
     assert "DJANGO_SECRET_KEY" in loader
+    assert "$Role -eq 'Admin'" in loader
+    assert "TEAM_INTEGRATION_MIGRATOR_PASSWORD" in loader
     assert "waterbridge_p1_migrator" in loader
     assert "waterbridge_p1_runtime" in loader
     assert "RuntimeRoot must stay inside the repository workspace." in loader
