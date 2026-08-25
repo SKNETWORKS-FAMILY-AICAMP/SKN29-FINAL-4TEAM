@@ -117,7 +117,20 @@ jobs:
             colorama==0.4.6 tzdata==2026.3
           python scripts/development/bootstrap.py --service backend
           backend/.venv/bin/python -m pip check
-          backend/.venv/bin/gunicorn \
+          env \
+            DJANGO_SECRET_KEY=ci-production-config-check-only \
+            DJANGO_TIME_ZONE=UTC \
+            DJANGO_ALLOWED_HOSTS=localhost \
+            DJANGO_CORS_ALLOWED_ORIGINS=https://localhost \
+            AI_SERVICE_BASE_URL=http://127.0.0.1:8001 \
+            POSTGRES_DB=ci_production_config_check \
+            POSTGRES_USER=ci_production_config_check \
+            POSTGRES_PASSWORD=ci-production-config-check-only \
+            POSTGRES_HOST=localhost \
+            POSTGRES_PORT=5432 \
+            POSTGRES_SSLMODE=verify-full \
+            POSTGRES_SSLROOTCERT=/etc/ssl/certs/ca-certificates.crt \
+            backend/.venv/bin/gunicorn \
             --chdir backend \
             --worker-class sync \
             --workers 2 \
