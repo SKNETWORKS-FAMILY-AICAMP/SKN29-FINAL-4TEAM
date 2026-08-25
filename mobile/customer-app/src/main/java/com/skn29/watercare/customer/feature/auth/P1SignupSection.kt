@@ -339,26 +339,29 @@ internal fun P1SignupSection(
                 }
 
                 val otpVerificationFailed =
-                    state.error != null ||
-                        state.fieldErrors["otp_code"]
-                            .isNullOrEmpty()
-                            .not()
+                    state.fieldErrors["otp_code"]
+                        .isNullOrEmpty()
+                        .not()
 
-                // 잘못된 OTP 1회 입력만으로 Challenge를 폐기하지 않는다.
-                // Backend가 허용하는 범위에서는 같은 Challenge로 다시 검증하고,
-                // OTP 만료 또는 서버 Retry-After가 있을 때만 재전송 모드로 전환한다.
-                val shouldResend =
+                val challengeNeedsReplacement =
                     otpExpiresRemaining <= 0 ||
                         state.retryAfterSeconds != null
 
-                if (
-                    resendRemaining > 0 &&
-                    shouldResend
-                ) {
+                if (resendRemaining > 0) {
                     Text(
                         text =
-                            "재전송은 " +
-                                "${resendRemaining}초 후 가능합니다.",
+                            "\uC778\uC99D\uBC88\uD638\uB97C \uBC1B\uC9C0 \uBABB\uD588\uB2E4\uBA74 " +
+                                "${resendRemaining}\uCD08 \uD6C4 \uC7AC\uC804\uC1A1\uD560 \uC218 \uC788\uC5B4\uC694.",
+                        style =
+                            MaterialTheme
+                                .typography
+                                .bodySmall,
+                        color = palette.textMuted,
+                    )
+                } else {
+                    Text(
+                        text =
+                            "\uC778\uC99D\uBC88\uD638\uAC00 \uC624\uC9C0 \uC54A\uC558\uB2E4\uBA74 \uC7AC\uC804\uC1A1\uD574 \uC8FC\uC138\uC694.",
                         style =
                             MaterialTheme
                                 .typography
@@ -370,21 +373,29 @@ internal fun P1SignupSection(
                 P1AuthField(
                     value = otpCode,
                     onValueChange = { value ->
-                        otpCode =
+                        val nextValue =
                             value
                                 .filter(Char::isDigit)
                                 .take(6)
+
+                        if (nextValue != otpCode) {
+                            viewModel
+                                .clearSignupOtpFeedback()
+                        }
+
+                        otpCode = nextValue
                     },
                     modifier =
                         Modifier.fillMaxWidth(),
                     label = {
-                        Text("인증번호 6자리")
+                        Text(
+                            "\uC778\uC99D\uBC88\uD638 6\uC790\uB9AC"
+                        )
                     },
                     singleLine = true,
                     enabled =
                         !state.submitting &&
-                            !shouldResend &&
-                            otpExpiresRemaining > 0,
+                            !challengeNeedsReplacement,
                     isError =
                         otpVerificationFailed,
                     keyboardOptions =
@@ -404,47 +415,50 @@ internal fun P1SignupSection(
 
                 ReferenceGlassButton(
                     text =
-                        when {
-                            !shouldResend ->
-                                "인증 확인"
-
-                            resendRemaining > 0 ->
-                                "인증번호 재전송 " +
-                                    "${resendRemaining}초"
-
-                            else ->
-                                "인증번호 재전송"
-                        },
+                        "\uC778\uC99D \uD655\uC778",
                     palette = palette,
                     onClick = {
-                        if (shouldResend) {
-                            otpCode = ""
-
-                            viewModel
-                                .resendSignupVerification()
-                        } else {
-                            viewModel
-                                .verifySignupOtp(
-                                    otpCode
-                                )
-                        }
+                        viewModel
+                            .verifySignupOtp(
+                                otpCode
+                            )
                     },
                     enabled =
                         !state.submitting &&
                             state.backendAvailable ==
                                 true &&
-                            if (shouldResend) {
-                                resendRemaining <= 0
-                            } else {
-                                otpCode.length == 6 &&
-                                    otpExpiresRemaining > 0
-                            },
+                            !challengeNeedsReplacement &&
+                            otpCode.length == 6,
                     accent = true,
                     modifier =
                         Modifier.fillMaxWidth(),
                 )
-            }
 
+                ReferenceGlassButton(
+                    text =
+                        if (resendRemaining > 0) {
+                            "\uC778\uC99D\uBC88\uD638 \uC7AC\uC804\uC1A1 " +
+                                "${resendRemaining}\uCD08"
+                        } else {
+                            "\uC778\uC99D\uBC88\uD638 \uC7AC\uC804\uC1A1"
+                        },
+                    palette = palette,
+                    onClick = {
+                        otpCode = ""
+
+                        viewModel
+                            .resendSignupVerification()
+                    },
+                    enabled =
+                        !state.submitting &&
+                            state.backendAvailable ==
+                                true &&
+                            resendRemaining <= 0,
+                    accent = false,
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                )
+            }
             SignupStage.ACCOUNT_REQUIRED -> {
                 state.signupMessage?.let { message ->
                     Text(
