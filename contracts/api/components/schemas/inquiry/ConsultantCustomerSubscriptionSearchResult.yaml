@@ -31,7 +31,7 @@ properties:
           type: string
           minLength: 1
           maxLength: 80
-          description: 합성 고객 표시명
+          description: 원문이 아닌 화면 표시용 마스킹 합성 고객명
         phone_masked:
           type: string
           maxLength: 30

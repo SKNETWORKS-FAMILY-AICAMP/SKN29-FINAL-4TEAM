@@ -12,6 +12,7 @@ from apps.inquiries.models import Inquiry, SymptomEntry
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
 from apps.workflow.models import IdempotencyRecord, TransitionHistory
+from common.privacy import mask_person_name
 
 
 pytestmark = pytest.mark.django_db
@@ -116,9 +117,10 @@ def test_search_returns_only_masked_synthetic_active_subscriptions():
     assert by_name.data["data"]["returned_count"] == 1
     assert by_phone.data["data"]["returned_count"] == 1
     item = by_name.data["data"]["items"][0]
+    expected_display_name = mask_person_name(active.customer.customer_name)
     assert item == {
         "customer_id": str(active.customer.public_id),
-        "customer_display_name": active.customer.customer_name,
+        "customer_display_name": expected_display_name,
         "phone_masked": "010-****-0011",
         "subscription_id": str(active.public_id),
         "subscription_status": "ACTIVE",
@@ -127,6 +129,9 @@ def test_search_returns_only_masked_synthetic_active_subscriptions():
         "product_model_code": active.product_model.model_code,
         "product_name": active.product_model.model_name,
     }
+    assert expected_display_name != active.customer.customer_name
+    assert active.customer.customer_name not in str(by_name.data)
+    assert active.customer.customer_name not in str(by_phone.data)
     assert active.customer.phone not in str(by_name.data)
 
 
