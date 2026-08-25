@@ -7,12 +7,14 @@ on:
       - "contracts/**"
       - "scripts/contracts/**"
       - "tests/contract/**"
+      - "tests/deployment/test_data_ci_workflow.py"
       - ".github/workflows/contracts-ci.yml"
   push:
     paths:
       - "contracts/**"
       - "scripts/contracts/**"
       - "tests/contract/**"
+      - "tests/deployment/test_data_ci_workflow.py"
       - ".github/workflows/contracts-ci.yml"
 
 permissions:
@@ -39,6 +41,11 @@ jobs:
           python -m pip install
           --constraint backend/requirements/constraints-py313.txt
           PyYAML==6.0.3 jsonschema==4.26.0 pytest==9.1.1
+
+      - name: Verify Data and Contract CI ownership
+        run: >-
+          python -B -m unittest
+          tests.deployment.test_data_ci_workflow -v
 
       - name: Validate state machine
         run: python -B scripts/contracts/validate_state_machine.py

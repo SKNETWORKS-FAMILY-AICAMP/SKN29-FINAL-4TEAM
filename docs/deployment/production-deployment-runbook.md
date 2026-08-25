@@ -38,13 +38,20 @@ to `127.0.0.1:18080`. Bootstrap does not rewrite an unknown Nginx configuration.
 Back up and validate the owner-approved host change with `nginx -t` before the
 first automated deployment.
 
-## 3. Automatic deployment
+## 3. Stable SemVer tag deployment
 
-`Production Deploy` starts only after the exact main SHA passes the existing
-`AI Backend Socket E2E Linux Gate`. It then re-runs the Backend, Web, Contract,
-and Data gates at the same SHA. The AI Linux unit suite runs in a non-root
-Docker `qa` stage built from the same locked dependency layer as the runtime
-image; only the fixed release SHA is exposed to the test metadata helper.
+`Production Deploy` starts only when a stable SemVer tag such as `v1.2.3` is
+pushed. Pre-release or non-SemVer tags are rejected, and the tagged commit must
+already be contained in `origin/main`. Ordinary `main` pushes never start a
+production deployment.
+
+The release workflow calls the reusable Backend three-shard gate and
+`AI Backend Socket E2E Linux Gate`, then runs the Web, Contract, and Data gates
+at the same tagged SHA. The separate Backend production-config gate keeps the
+Gunicorn and `verify-full` TLS checks without repeating the full Backend pytest
+suite. The AI Linux unit suite runs in a non-root Docker `qa` stage built from
+the same locked dependency layer as the runtime image; only the fixed release
+SHA is exposed to the test metadata helper.
 
 The workflow stops before AWS mutation when any Dockerfile is still a placeholder.
 After all gates pass it:
