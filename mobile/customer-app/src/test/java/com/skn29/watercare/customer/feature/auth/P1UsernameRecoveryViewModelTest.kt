@@ -42,17 +42,25 @@ class P1UsernameRecoveryViewModelTest {
             advanceUntilIdle()
 
             viewModel.startUsernameRecovery(
-                customerNumber = "  CUSTOMER-001  ",
-                contractNumber = "  CONTRACT-001  ",
+                name = "  테스트 고객  ",
+                email = "  TEST.USER@EXAMPLE.COM  ",
             )
             advanceUntilIdle()
 
             assertEquals(
-                "CUSTOMER-001",
+                "테스트 고객",
+                p1.lastRecoveryChallengeRequest?.name,
+            )
+            assertEquals(
+                "test.user@example.com",
+                p1.lastRecoveryChallengeRequest?.email,
+            )
+            assertEquals(
+                null,
                 p1.lastRecoveryChallengeRequest?.customerNumber,
             )
             assertEquals(
-                "CONTRACT-001",
+                null,
                 p1.lastRecoveryChallengeRequest?.contractNumber,
             )
             assertNotNull(p1.lastRecoveryIdempotencyKey)
@@ -100,8 +108,8 @@ class P1UsernameRecoveryViewModelTest {
             advanceUntilIdle()
 
             viewModel.startUsernameRecovery(
-                customerNumber = "CUSTOMER-001",
-                contractNumber = "CONTRACT-001",
+                name = "테스트 고객",
+                email = "test.user@example.com",
             )
             advanceUntilIdle()
 
@@ -130,8 +138,8 @@ class P1UsernameRecoveryViewModelTest {
 
             assertFalse(stateText.contains(challengeId))
             assertFalse(stateText.contains("123456"))
-            assertFalse(stateText.contains("CUSTOMER-001"))
-            assertFalse(stateText.contains("CONTRACT-001"))
+            assertFalse(stateText.contains("테스트 고객"))
+            assertFalse(stateText.contains("test.user@example.com"))
         }
 
     @Test
@@ -143,8 +151,8 @@ class P1UsernameRecoveryViewModelTest {
             advanceUntilIdle()
 
             viewModel.startUsernameRecovery(
-                customerNumber = "CUSTOMER-001",
-                contractNumber = "CONTRACT-001",
+                name = "테스트 고객",
+                email = "test.user@example.com",
             )
             advanceUntilIdle()
 
@@ -176,8 +184,8 @@ class P1UsernameRecoveryViewModelTest {
             advanceUntilIdle()
 
             viewModel.startUsernameRecovery(
-                customerNumber = "CUSTOMER-001",
-                contractNumber = "CONTRACT-001",
+                name = "테스트 고객",
+                email = "test.user@example.com",
             )
             advanceUntilIdle()
 
@@ -200,8 +208,8 @@ class P1UsernameRecoveryViewModelTest {
             advanceUntilIdle()
 
             viewModel.startUsernameRecovery(
-                customerNumber = "CUSTOMER-001",
-                contractNumber = "CONTRACT-001",
+                name = "테스트 고객",
+                email = "test.user@example.com",
             )
             advanceUntilIdle()
 
@@ -222,6 +230,42 @@ class P1UsernameRecoveryViewModelTest {
             assertTrue(
                 viewModel.state.value.error
                     ?.contains("다시 시작") == true
+            )
+        }
+
+
+    @Test
+    fun invalidUsernameRecoveryEmail_isRejectedBeforeApiCall() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val p1 = FakeP1AuthRepository()
+            val viewModel = newViewModel(p1)
+
+            advanceUntilIdle()
+
+            viewModel.startUsernameRecovery(
+                name = "테스트 고객",
+                email = "wrong-email",
+            )
+
+            advanceUntilIdle()
+
+            assertEquals(
+                listOf(
+                    "올바른 이메일 주소를 입력해 주세요."
+                ),
+                viewModel.state.value
+                    .fieldErrors["email"],
+            )
+
+            assertEquals(
+                null,
+                p1.lastRecoveryChallengeRequest,
+            )
+
+            assertEquals(
+                UsernameRecoveryStage.IDLE,
+                viewModel.state.value
+                    .usernameRecoveryStage,
             )
         }
 

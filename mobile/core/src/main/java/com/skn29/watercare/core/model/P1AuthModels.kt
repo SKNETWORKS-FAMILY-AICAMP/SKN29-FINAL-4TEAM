@@ -14,12 +14,21 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class P1ChallengeRequest(
     @SerialName("customer_number")
-    val customerNumber: String,
+    val customerNumber: String? = null,
     @SerialName("contract_number")
-    val contractNumber: String,
+    val contractNumber: String? = null,
+    val name: String? = null,
+    val username: String? = null,
+    val email: String? = null,
 ) {
     override fun toString(): String =
-        "P1ChallengeRequest(customerNumber=<redacted>, contractNumber=<redacted>)"
+        "P1ChallengeRequest(" +
+            "customerNumber=<redacted>, " +
+            "contractNumber=<redacted>, " +
+            "name=<redacted>, " +
+            "username=<redacted>, " +
+            "email=<redacted>" +
+            ")"
 }
 
 @Serializable
@@ -64,6 +73,8 @@ data class P1ConsentRequest(
 data class P1SignupRequest(
     @SerialName("claim_ticket")
     val claimTicket: String,
+    val name: String,
+    val email: String,
     val username: String,
     val password: String,
     val consents: List<P1ConsentRequest>,
@@ -71,6 +82,8 @@ data class P1SignupRequest(
     override fun toString(): String =
         "P1SignupRequest(" +
             "claimTicket=<redacted>, " +
+            "name=<redacted>, " +
+            "email=<redacted>, " +
             "username=<redacted>, " +
             "password=<redacted>, " +
             "consents=${consents.size}" +

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,8 +42,8 @@ internal fun P1SignupSection(
 
     // 인증/계약/OTP/비밀번호는 영속 저장하지 않고
     // 현재 Compose 생명주기 메모리에서만 유지한다.
-    var customerNumber by remember { mutableStateOf("") }
-    var contractNumber by remember { mutableStateOf("") }
+    var signupName by remember { mutableStateOf("") }
+    var signupEmail by remember { mutableStateOf("") }
     var otpCode by remember { mutableStateOf("") }
     var signupUsername by remember { mutableStateOf("") }
     var signupPassword by remember { mutableStateOf("") }
@@ -54,80 +53,189 @@ internal fun P1SignupSection(
     var marketingAgreed by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .p1AuthFormContainer(),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Text(
             text = "회원가입",
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.headlineSmall,
         )
 
         when (state.signupStage) {
             SignupStage.IDLE -> {
                 Text(
-                    text = "고객번호와 계약번호를 확인한 뒤 인증을 진행합니다.",
-                    style = MaterialTheme.typography.bodySmall,
+                    text =
+                        "회원가입 정보를 입력한 뒤 이메일 인증을 진행합니다.",
+                    style =
+                        MaterialTheme.typography
+                            .bodySmall,
                     color = palette.textMuted,
                 )
 
-                OutlinedTextField(
-                    value = customerNumber,
-                    onValueChange = { customerNumber = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("고객번호") },
+                P1AuthField(
+                    value = signupName,
+                    onValueChange = {
+                        signupName = it
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    label = {
+                        Text("이름")
+                    },
                     singleLine = true,
                     enabled = !state.submitting,
                     isError =
-                        state.fieldErrors["customer_number"]
+                        state.fieldErrors["name"]
                             .isNullOrEmpty()
                             .not(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next,
-                    ),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType =
+                                KeyboardType.Text,
+                            imeAction =
+                                ImeAction.Next,
+                        ),
                 )
 
                 FieldError(
-                    state.fieldErrors["customer_number"]
+                    state.fieldErrors["name"]
                         ?.firstOrNull()
                 )
 
-                OutlinedTextField(
-                    value = contractNumber,
-                    onValueChange = { contractNumber = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("계약번호") },
+                P1AuthField(
+                    value = signupEmail,
+                    onValueChange = {
+                        signupEmail = it
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    label = {
+                        Text("이메일")
+                    },
+                    placeholder = {
+                        Text(
+                            "name@example.com"
+                        )
+                    },
                     singleLine = true,
                     enabled = !state.submitting,
                     isError =
-                        state.fieldErrors["contract_number"]
+                        state.fieldErrors["email"]
                             .isNullOrEmpty()
                             .not(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done,
-                    ),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType =
+                                KeyboardType.Email,
+                            imeAction =
+                                ImeAction.Next,
+                        ),
                 )
 
                 FieldError(
-                    state.fieldErrors["contract_number"]
+                    state.fieldErrors["email"]
+                        ?.firstOrNull()
+                )
+
+                P1AuthField(
+                    value = signupUsername,
+                    onValueChange = {
+                        signupUsername = it
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    label = {
+                        Text("아이디")
+                    },
+                    supportingText = {
+                        Text(
+                            "4~150자, 영문·숫자·.·_·- 사용"
+                        )
+                    },
+                    singleLine = true,
+                    enabled = !state.submitting,
+                    isError =
+                        state.fieldErrors["username"]
+                            .isNullOrEmpty()
+                            .not(),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType =
+                                KeyboardType.Text,
+                            imeAction =
+                                ImeAction.Next,
+                        ),
+                )
+
+                FieldError(
+                    state.fieldErrors["username"]
+                        ?.firstOrNull()
+                )
+
+                P1AuthField(
+                    value = signupPassword,
+                    onValueChange = {
+                        signupPassword = it
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    label = {
+                        Text("비밀번호")
+                    },
+                    supportingText = {
+                        Text(
+                            "12~64자, 영문과 숫자를 포함해 주세요."
+                        )
+                    },
+                    singleLine = true,
+                    enabled = !state.submitting,
+                    isError =
+                        state.fieldErrors["password"]
+                            .isNullOrEmpty()
+                            .not(),
+                    visualTransformation =
+                        PasswordVisualTransformation(),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType =
+                                KeyboardType.Password,
+                            imeAction =
+                                ImeAction.Done,
+                        ),
+                )
+
+                FieldError(
+                    state.fieldErrors["password"]
                         ?.firstOrNull()
                 )
 
                 ReferenceGlassButton(
-                    text = "인증번호 받기",
+                    text =
+                        "이메일 인증번호 받기",
                     palette = palette,
                     onClick = {
-                        viewModel.startSignupVerification(
-                            customerNumber = customerNumber,
-                            contractNumber = contractNumber,
-                        )
+                        viewModel
+                            .startSignupVerification(
+                                name =
+                                    signupName,
+                                email =
+                                    signupEmail,
+                                username =
+                                    signupUsername,
+                                password =
+                                    signupPassword,
+                            )
                     },
                     enabled =
                         !state.submitting &&
-                            state.backendAvailable == true,
+                            state.backendAvailable ==
+                                true,
                     accent = true,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier.fillMaxWidth(),
                 )
             }
 
@@ -155,7 +263,7 @@ internal fun P1SignupSection(
                     )
                 }
 
-                OutlinedTextField(
+                P1AuthField(
                     value = otpCode,
                     onValueChange = { value ->
                         otpCode =
@@ -204,53 +312,13 @@ internal fun P1SignupSection(
                     )
                 }
 
-                OutlinedTextField(
-                    value = signupUsername,
-                    onValueChange = { signupUsername = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("사용할 아이디") },
-                    singleLine = true,
-                    enabled = !state.submitting,
-                    isError =
-                        state.fieldErrors["username"]
-                            .isNullOrEmpty()
-                            .not(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next,
-                    ),
-                )
-
-                FieldError(
-                    state.fieldErrors["username"]
-                        ?.firstOrNull()
-                )
-
-                OutlinedTextField(
-                    value = signupPassword,
-                    onValueChange = { signupPassword = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("사용할 비밀번호") },
-                    supportingText = {
-                        Text("12~64자, 영문과 숫자를 포함해 주세요.")
-                    },
-                    singleLine = true,
-                    enabled = !state.submitting,
-                    isError =
-                        state.fieldErrors["password"]
-                            .isNullOrEmpty()
-                            .not(),
-                    visualTransformation =
-                        PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done,
-                    ),
-                )
-
-                FieldError(
-                    state.fieldErrors["password"]
-                        ?.firstOrNull()
+                Text(
+                    text =
+                        "이메일 인증이 완료되었습니다. 약관을 확인하고 회원가입을 완료해 주세요.",
+                    style =
+                        MaterialTheme.typography
+                            .bodySmall,
+                    color = palette.textMuted,
                 )
 
                 ConsentRow(
