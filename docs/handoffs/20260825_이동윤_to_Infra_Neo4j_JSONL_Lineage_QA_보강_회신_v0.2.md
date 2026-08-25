@@ -128,3 +128,30 @@ Hostname Allowlist, CA 전달 계약을 갖춘 세 번째 Profile을 별도 승�
 유지한다. 또한 해당 실행은 보강 중인 Dirty Worktree의 중간 후보라 최종 판정이
 `PARTIAL`이다. 코드 Commit 후 Infra Job의 Clean HEAD에서 같은 묶음을 재생성하고
 외부 Submission Manifest까지 생성해야 정식 QA Artifact로 제출할 수 있다.
+
+## Infra 반영 상태 — 김은진, 2026-08-25
+
+- 상태: `WORKFLOW_IMPLEMENTED / ACTUAL_GITHUB_RUN_NOT_RUN`
+- 운영 배포와 분리된 수동 `workflow_dispatch` 전용 Workflow로 반영했다.
+- Job마다 임시 Basic 인증값과 Target Marker를 생성하므로 Repository Secret의
+  실제 값을 추가하거나 문서화하지 않는다.
+- Neo4j는 Digest를 확인한 뒤 Loopback 임시 Port에만 연결하는 `--rm` Container로
+  실행하며 운영 Compose 4개 Service에는 추가하지 않는다.
+- 동일 Job에서 실제 오류 관계 통합 3건과 정상 Runner를 실행하고, Runner 종료 코드
+  `2`만 Infra Finalization 대상으로 허용한다.
+- `always()` 단계가 정확한 QA Container와 해당 Container의 익명 Volume만 정리하고
+  Container·Volume `0/0`을 검증한다.
+- AI Artifact의 파일별 SHA-256, Application·Git·Graph Cleanup PASS와 Infra Cleanup
+  PASS가 모두 확인된 경우에만 외부 Submission Manifest를 생성한다.
+- 구현 파일:
+  - `.github/workflows/neo4j-lineage-qa.yml`
+  - `scripts/deployment/prepare_neo4j_lineage_qa.py`
+  - `scripts/deployment/finalize_neo4j_lineage_qa.py`
+  - `tests/deployment/test_neo4j_lineage_qa_assets.py`
+- 로컬 정적·회귀 검증:
+  - Neo4j Infra Asset 표적: `6 passed`
+  - 전체 Deployment Test: `19 passed`
+  - Neo4j·Runner AI Unit: `22 passed`
+- GitHub-hosted Runner의 실제 Container 실행과 외부 Artifact 생성은 아직 실행하지
+  않았으므로 정식 상태는 계속 `NOT_RUN`이다. Workflow Dispatch 성공 Run이 생성된
+  뒤에만 `VERIFIED` 또는 제출 `READY`로 승격한다.

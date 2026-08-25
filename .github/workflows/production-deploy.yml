@@ -86,7 +86,9 @@ jobs:
           fi
 
       - name: Run deployment asset tests
-        run: python -B -m unittest discover -s tests/deployment -v
+        run: >-
+          python -B -m unittest
+          tests.deployment.test_production_deployment_assets -v
 
   backend-gate:
     name: Re-run Backend full gate

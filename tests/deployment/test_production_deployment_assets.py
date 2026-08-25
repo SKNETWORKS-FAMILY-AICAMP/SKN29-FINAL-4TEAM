@@ -31,6 +31,8 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         deploy = DEPLOY.read_text(encoding="utf-8")
         self.assertIn("compose config --services | sort", deploy)
         self.assertIn("expected_services=(ai backend trace-store web)", deploy)
+        self.assertIn("compose config --images", deploy)
+        self.assertNotIn("if compose config | grep", deploy)
 
     def test_application_images_are_digest_addressed(self) -> None:
         text = COMPOSE.read_text(encoding="utf-8")
@@ -203,6 +205,10 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("cancel-in-progress: false", text)
         self.assertIn("github.event.workflow_run.head_sha", text)
         self.assertIn("ref: ${{ env.RELEASE_SHA }}", text)
+        self.assertIn(
+            "tests.deployment.test_production_deployment_assets -v", text
+        )
+        self.assertNotIn("discover -s tests/deployment", text)
         self.assertIn("environment: production", text)
         self.assertIn("OBSERVABILITY_PARTIAL", text)
         self.assertIn("final non-root USER", text)
