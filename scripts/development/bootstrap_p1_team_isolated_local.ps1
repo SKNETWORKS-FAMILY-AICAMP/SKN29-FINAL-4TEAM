@@ -258,9 +258,11 @@ $volumeNames = @(
     }
 )
 $volumeExists = $volumeNames -contains $volumeName
-$newRuntime = -not (Test-Path -LiteralPath $RuntimeRoot)
+$initializeRuntime = -not (Test-Path -LiteralPath $RuntimeRoot)
+$bootstrapPending = $initializeRuntime
+$approvedInput = $null
 
-if (-not $newRuntime) {
+if (-not $initializeRuntime) {
     if (-not $ReuseLocalRuntime) {
         throw 'P1 Runtime already exists. Use -ReuseLocalRuntime explicitly.'
     }
@@ -286,6 +288,7 @@ if (-not $newRuntime) {
     if ($recordedSourceSha -ne $sourceSha -or $recordedBranch -ne $branch) {
         throw 'Existing P1 Runtime source identity differs. Use a new RuntimeRoot.'
     }
+    $bootstrapPending = -not (Test-Path -LiteralPath $statusPath -PathType Leaf)
 }
 else {
     if ($ReuseLocalRuntime) {
@@ -297,23 +300,6 @@ else {
             'Do not delete or reuse it automatically.'
         )
     }
-    if ([string]::IsNullOrWhiteSpace($ApprovedCustomerInput)) {
-        throw 'ApprovedCustomerInput is required for the first Apply.'
-    }
-    $approvedInput = [System.IO.Path]::GetFullPath($ApprovedCustomerInput)
-    Assert-File $approvedInput
-    $approvedInputPrefix = (
-        [System.IO.Path]::GetFullPath(
-            (Join-Path $repositoryRoot 'backend\.runtime')
-        ).TrimEnd('\') + '\'
-    )
-    if (-not $approvedInput.StartsWith(
-        $approvedInputPrefix,
-        [System.StringComparison]::OrdinalIgnoreCase
-    )) {
-        throw 'ApprovedCustomerInput must stay under backend/.runtime.'
-    }
-
     & $runtimeInitializer -RuntimeRoot $RuntimeRoot | Out-Null
     New-Item -ItemType Directory -Path $evidenceRoot -Force | Out-Null
     Set-EnvironmentEntry -Path $adminEnvironment -Name 'POSTGRES_PORT' `
@@ -363,6 +349,31 @@ volumes:
     )
 }
 
+if ($bootstrapPending) {
+    if ([string]::IsNullOrWhiteSpace($ApprovedCustomerInput)) {
+        throw (
+            'ApprovedCustomerInput is required for a new or incomplete ' +
+            'P1 Bootstrap.'
+        )
+    }
+    $approvedInput = [System.IO.Path]::GetFullPath($ApprovedCustomerInput)
+    Assert-File $approvedInput
+    $approvedInputPrefix = (
+        [System.IO.Path]::GetFullPath(
+            (Join-Path $repositoryRoot 'backend\.runtime')
+        ).TrimEnd('\') + '\'
+    )
+    if (-not $approvedInput.StartsWith(
+        $approvedInputPrefix,
+        [System.StringComparison]::OrdinalIgnoreCase
+    )) {
+        throw 'ApprovedCustomerInput must stay under backend/.runtime.'
+    }
+    # 실패한 최초 실행은 전용 Volume을 보존한 채 사용 가능한 Port로 재개한다.
+    Set-EnvironmentEntry -Path $adminEnvironment -Name 'POSTGRES_PORT' `
+        -Value ([string]$PostgresPort)
+}
+
 New-Item -ItemType Directory -Path $evidenceRoot -Force | Out-Null
 $composeArguments = @(
     'compose',
@@ -391,7 +402,7 @@ try {
         throw 'The isolated P1 PostgreSQL container did not become healthy.'
     }
 
-    if ($newRuntime) {
+    if ($bootstrapPending) {
         . $environmentLoader -RuntimeRoot $RuntimeRoot -Role Admin | Out-Null
         Invoke-Checked -Command $backendPython -Arguments @(
             '-B', $provisioner,
@@ -477,7 +488,7 @@ try {
     }
 
     $auditArguments = @($managePy, 'audit_p1_team_runtime_scope', '--json')
-    if (-not $newRuntime) {
+    if (-not $bootstrapPending) {
         $auditArguments += '--operational'
     }
     $audit = Invoke-JsonCommand -Command $backendPython `
@@ -493,12 +504,12 @@ try {
     ) {
         throw 'P1 isolated DB scope audit did not satisfy the baseline.'
     }
-    if ($newRuntime -and $audit.delete_candidates.inquiries -ne 0) {
+    if ($bootstrapPending -and $audit.delete_candidates.inquiries -ne 0) {
         throw 'A new P1 isolated DB must start with zero inquiries.'
     }
 
     $contractE2E = $null
-    if ($newRuntime) {
+    if ($bootstrapPending) {
         $contractE2E = Invoke-JsonCommand -Command $backendPython `
             -Arguments @(
                 $managePy, 'verify_p1_team_isolated_e2e'
@@ -541,17 +552,23 @@ try {
         active_subscriptions = 6
         consultant_users = 1
         inquiries = $audit.runtime.p1_owned_inquiries
-        auth_login_inquiry_contract = if ($newRuntime) {
+        auth_login_inquiry_contract = if ($bootstrapPending) {
             'PASS_ROLLBACK_PRESERVED'
         }
         else {
             'NOT_RERUN_ON_REUSE'
         }
-        inquiry_creation_without_ai = if ($newRuntime) { 'PASS' } else { 'PRESERVED' }
+        inquiry_creation_without_ai = if ($bootstrapPending) {
+            'PASS'
+        }
+        else {
+            'PRESERVED'
+        }
         ai_runtime_8001 = 'OUT_OF_SCOPE'
         postgres_port = $PostgresPort
         volume = $volumeName
-        reuse = -not $newRuntime
+        reuse = -not $bootstrapPending
+        resumed_incomplete_runtime = (-not $initializeRuntime -and $bootstrapPending)
         otp_worker = 'START_SEPARATELY'
         backend = 'START_SEPARATELY'
         secret_values_printed = $false

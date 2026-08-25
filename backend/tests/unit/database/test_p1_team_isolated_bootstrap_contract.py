@@ -105,10 +105,13 @@ def test_bootstrap_proves_replay_and_ai_free_draft_inquiry_contract():
 def test_reuse_never_reseeds_or_resets_runtime():
     content = _content(BOOTSTRAP)
 
-    assert "if ($newRuntime)" in content
+    assert "$bootstrapPending" in content
     assert "NOT_RERUN_ON_REUSE" in content
     assert "Existing P1 Runtime source identity differs" in content
     assert "Reuse was requested, but the P1 Runtime does not exist." in content
+    assert "new or incomplete" in content
+    assert "resumed_incomplete_runtime" in content
+    assert "docker volume rm" not in content.lower()
     assert "source-sha.txt" in content
     assert "source-branch.txt" in content
 
