@@ -141,7 +141,7 @@ expected_services=(ai backend trace-store web)
   echo "DEPLOYMENT_FAILED: compose service boundary is not web/backend/ai/trace-store" >&2
   exit 1
 }
-if compose config | grep -Eiq '(^|[[:space:]])postgres(ql)?([:[:space:]]|$)'; then
+if compose config --images | grep -Eiq '(^|[/:@_-])postgres(ql)?([/:@_.-]|$)'; then
   echo "DEPLOYMENT_FAILED: production compose must not contain PostgreSQL" >&2
   exit 1
 fi

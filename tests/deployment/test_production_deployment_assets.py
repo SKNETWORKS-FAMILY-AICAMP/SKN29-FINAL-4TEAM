@@ -31,6 +31,8 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         deploy = DEPLOY.read_text(encoding="utf-8")
         self.assertIn("compose config --services | sort", deploy)
         self.assertIn("expected_services=(ai backend trace-store web)", deploy)
+        self.assertIn("compose config --images", deploy)
+        self.assertNotIn("if compose config | grep", deploy)
 
     def test_application_images_are_digest_addressed(self) -> None:
         text = COMPOSE.read_text(encoding="utf-8")
