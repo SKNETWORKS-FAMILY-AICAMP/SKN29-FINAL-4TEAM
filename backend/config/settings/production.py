@@ -23,6 +23,17 @@ require_environment_variables(  # noqa: F405
     "DJANGO_ALLOWED_HOSTS",
     "DJANGO_CORS_ALLOWED_ORIGINS",
     "AI_SERVICE_BASE_URL",
+    "CONTRACT_EMAIL_ENCRYPTION_KEY",
+    "CONTRACT_EMAIL_HMAC_KEY",
+    "CONTRACT_EMAIL_KEY_VERSION",
+    "P1_AUTH_HMAC_SECRET",
+    "P1_AUTH_OTP_ENCRYPTION_KEY",
+    "P1_AUTH_EMAIL_REDIRECT_TO",
+    "DJANGO_EMAIL_BACKEND",
+    "DJANGO_EMAIL_HOST",
+    "DJANGO_EMAIL_HOST_USER",
+    "DJANGO_EMAIL_HOST_PASSWORD",
+    "DJANGO_DEFAULT_FROM_EMAIL",
     "POSTGRES_DB",
     "POSTGRES_USER",
     "POSTGRES_PASSWORD",
@@ -31,6 +42,12 @@ require_environment_variables(  # noqa: F405
     "POSTGRES_SSLMODE",
     "POSTGRES_SSLROOTCERT",
 )
+require_urlsafe_base64_32(  # noqa: F405
+    "CONTRACT_EMAIL_ENCRYPTION_KEY",
+    "CONTRACT_EMAIL_HMAC_KEY",
+    "P1_AUTH_OTP_ENCRYPTION_KEY",
+)
+require_minimum_secret_bytes("P1_AUTH_HMAC_SECRET")  # noqa: F405
 
 try:
     POSTGRES_PRODUCTION_OPTIONS = build_postgres_connection_options(

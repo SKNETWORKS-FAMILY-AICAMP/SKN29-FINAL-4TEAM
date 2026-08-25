@@ -1,5 +1,9 @@
 """앱, 미들웨어, DB, REST Framework 공통 설정."""
 
+import base64
+import binascii
+import hashlib
+import hmac
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -20,6 +24,20 @@ load_backend_env(
 
 DEVELOPMENT_SECRET_KEY = "development-only-not-for-deployment"
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", DEVELOPMENT_SECRET_KEY)
+
+
+def _local_derived_secret(label: str) -> str:
+    """로컬에서만 Django Secret으로부터 용도 분리 키를 유도한다."""
+
+    digest = hmac.new(
+        SECRET_KEY.encode("utf-8"),
+        label.encode("utf-8"),
+        hashlib.sha256,
+    ).digest()
+    return base64.urlsafe_b64encode(digest).decode("ascii")
+
+
+IS_LOCAL_SETTINGS = os.getenv("DJANGO_SETTINGS_MODULE") == "config.settings.local"
 DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
 ALLOWED_HOSTS = [
     host.strip()
@@ -41,6 +59,22 @@ AI_HANDOFF_INTERNAL_TOKEN = os.getenv("AI_HANDOFF_INTERNAL_TOKEN", "")
 AI_MODEL_PROVIDER = os.getenv("AI_MODEL_PROVIDER", "waterbridge-local")
 AI_MODEL_NAME = os.getenv("AI_MODEL_NAME", "single-rag-pipeline")
 AI_PROMPT_VERSION = os.getenv("AI_PROMPT_VERSION", "unknown")
+CONTRACT_EMAIL_ENCRYPTION_KEY = os.getenv(
+    "CONTRACT_EMAIL_ENCRYPTION_KEY",
+    _local_derived_secret("contract-email-encryption")
+    if IS_LOCAL_SETTINGS
+    else "",
+)
+CONTRACT_EMAIL_HMAC_KEY = os.getenv(
+    "CONTRACT_EMAIL_HMAC_KEY",
+    _local_derived_secret("contract-email-lookup")
+    if IS_LOCAL_SETTINGS
+    else "",
+)
+CONTRACT_EMAIL_KEY_VERSION = os.getenv(
+    "CONTRACT_EMAIL_KEY_VERSION",
+    "local-derived-v1" if IS_LOCAL_SETTINGS else "",
+)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -187,6 +221,31 @@ def require_environment_variables(*names: str) -> None:
         )
 
 
+def require_urlsafe_base64_32(*names: str) -> None:
+    invalid = []
+    for name in names:
+        try:
+            decoded = base64.urlsafe_b64decode(
+                os.getenv(name, "").encode("ascii")
+            )
+        except (binascii.Error, ValueError, UnicodeEncodeError):
+            decoded = b""
+        if len(decoded) != 32:
+            invalid.append(name)
+    if invalid:
+        raise ImproperlyConfigured(
+            "32-byte URL-safe base64 환경변수가 올바르지 않습니다: "
+            + ", ".join(sorted(invalid))
+        )
+
+
+def require_minimum_secret_bytes(name: str, minimum: int = 32) -> None:
+    if len(os.getenv(name, "").encode("utf-8")) < minimum:
+        raise ImproperlyConfigured(
+            f"{name}은 {minimum}-byte 이상이어야 합니다."
+        )
+
+
 def positive_int_env(name: str, default: int) -> int:
     raw_value = os.getenv(name)
     if raw_value in (None, ""):
@@ -202,6 +261,61 @@ def positive_int_env(name: str, default: int) -> int:
             f"{name}은 양의 정수여야 합니다."
         )
     return value
+
+
+P1_AUTH_HMAC_SECRET = os.getenv(
+    "P1_AUTH_HMAC_SECRET",
+    _local_derived_secret("p1-auth-hmac") if IS_LOCAL_SETTINGS else "",
+)
+P1_AUTH_OTP_ENCRYPTION_KEY = os.getenv(
+    "P1_AUTH_OTP_ENCRYPTION_KEY",
+    _local_derived_secret("p1-auth-otp-encryption")
+    if IS_LOCAL_SETTINGS
+    else "",
+)
+P1_AUTH_OTP_TTL_SECONDS = positive_int_env(
+    "P1_AUTH_OTP_TTL_SECONDS", 300
+)
+P1_AUTH_OTP_RESEND_SECONDS = positive_int_env(
+    "P1_AUTH_OTP_RESEND_SECONDS", 60
+)
+P1_AUTH_OTP_MAX_FAILURES = positive_int_env(
+    "P1_AUTH_OTP_MAX_FAILURES", 5
+)
+P1_AUTH_TICKET_TTL_SECONDS = positive_int_env(
+    "P1_AUTH_TICKET_TTL_SECONDS", 300
+)
+P1_AUTH_IDEMPOTENCY_REPLAY_TTL_SECONDS = positive_int_env(
+    "P1_AUTH_IDEMPOTENCY_REPLAY_TTL_SECONDS", 300
+)
+P1_AUTH_CHALLENGE_WINDOW_HOURS = positive_int_env(
+    "P1_AUTH_CHALLENGE_WINDOW_HOURS", 1
+)
+P1_AUTH_CHALLENGE_MAX_PER_WINDOW = positive_int_env(
+    "P1_AUTH_CHALLENGE_MAX_PER_WINDOW", 5
+)
+P1_AUTH_LOGIN_WINDOW_SECONDS = positive_int_env(
+    "P1_AUTH_LOGIN_WINDOW_SECONDS", 300
+)
+P1_AUTH_LOGIN_MAX_FAILURES = positive_int_env(
+    "P1_AUTH_LOGIN_MAX_FAILURES", 5
+)
+P1_AUTH_EMAIL_REDIRECT_TO = os.getenv("P1_AUTH_EMAIL_REDIRECT_TO", "")
+
+EMAIL_BACKEND = os.getenv(
+    "DJANGO_EMAIL_BACKEND",
+    "django.core.mail.backends.dummy.EmailBackend",
+)
+EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST", "")
+EMAIL_PORT = positive_int_env("DJANGO_EMAIL_PORT", 587)
+EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("DJANGO_EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.getenv("DJANGO_EMAIL_USE_TLS", "true").lower() == "true"
+EMAIL_TIMEOUT = positive_int_env("DJANGO_EMAIL_TIMEOUT_SECONDS", 10)
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DJANGO_DEFAULT_FROM_EMAIL",
+    "no-reply@waterbridge.invalid",
+)
 
 
 DEMO_LOGIN_ENABLED = (

@@ -28,6 +28,52 @@ REQUIRED_POSTGRES_ENV_KEYS = {
     "POSTGRES_PORT",
 }
 APPROVED_RUNTIME_SUPPORT_TABLES = {
+    "accounts_p1_auth_challenge_rate_bucket": (
+        "HMAC-only P1 OTP request serialization and rate-limit bucket "
+        "outside the immutable 32-table domain contract."
+    ),
+    "accounts_p1_auth_email_outbox": (
+        "Encrypted P1 OTP delivery outbox separating API response timing "
+        "from SMTP outside the immutable 32-table domain contract."
+    ),
+    "accounts_p1_auth_idempotency_lock": (
+        "HMAC-only P1 signup and password-reset concurrency lock outside "
+        "the immutable 32-table domain contract."
+    ),
+    "accounts_p1_auth_login_rate_bucket": (
+        "HMAC-only P1 concurrent login rate-limit bucket outside the "
+        "immutable 32-table domain contract."
+    ),
+    "accounts_p1_account_consent": (
+        "Versioned P1 customer signup consent ledger outside the immutable "
+        "32-table domain contract."
+    ),
+    "accounts_p1_auth_operation_receipt": (
+        "Non-sensitive idempotency receipt for P1 signup and password reset "
+        "outside the immutable 32-table domain contract."
+    ),
+    "accounts_p1_auth_otp_challenge": (
+        "HMAC-only P1 email OTP challenge state outside the immutable "
+        "32-table domain contract."
+    ),
+    "accounts_p1_auth_rate_limit_event": (
+        "HMAC-only shared login rate-limit ledger outside the immutable "
+        "32-table domain contract."
+    ),
+    "accounts_p1_auth_ticket": (
+        "HMAC-only single-use P1 claim and password-reset ticket ledger "
+        "outside the immutable 32-table domain contract."
+    ),
+    "accounts_contract_email_contact": (
+        "Encrypted synthetic contract-email delivery and HMAC lookup "
+        "foundation for P1-A account linking; runtime security support "
+        "outside the immutable 32-table domain contract."
+    ),
+    "accounts_customer_account_link": (
+        "Versioned synthetic User-to-contract-customer ownership bridge "
+        "for P1-A account linking; runtime security support outside the "
+        "immutable 32-table domain contract."
+    ),
     "knowledge_ai_chunk_crosswalk": (
         "Verified one-to-one AI canonical chunk to Backend evidence UUID "
         "mapping; runtime AI evidence support outside the immutable "
