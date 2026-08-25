@@ -150,6 +150,19 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("--env PYTHONPATH=/workspace/backend", deploy)
         self.assertIn("BACKEND_TO_AI_SOCKET_PASS", deploy)
 
+    def test_backend_and_ai_mount_the_rds_ca_read_only(self) -> None:
+        text = COMPOSE.read_text(encoding="utf-8")
+        ca_mount = (
+            '"${RDS_CA_HOST_PATH:?RDS_CA_HOST_PATH is required}'
+            ':/run/secrets/rds-ca.pem:ro"'
+        )
+        self.assertEqual(text.count(ca_mount), 2)
+        ai_service = text.split("  ai:\n", maxsplit=1)[1].split(
+            "  trace-store:\n", maxsplit=1
+        )[0]
+        self.assertIn("PGSSLROOTCERT: /run/secrets/rds-ca.pem", ai_service)
+        self.assertIn(ca_mount, ai_service)
+
     def test_backend_image_is_non_root_locked_and_collects_static(self) -> None:
         dockerfile = (ROOT / "backend/Dockerfile").read_text(encoding="utf-8")
         workflow = WORKFLOW.read_text(encoding="utf-8")
