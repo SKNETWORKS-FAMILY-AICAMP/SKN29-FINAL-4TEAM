@@ -382,6 +382,110 @@ class P1SignupViewModelTest {
         }
 
     @Test
+    fun wrongSignupOtp_canRetrySameChallengeWithoutResend() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val challengeId =
+                "123e4567-e89b-12d3-a456-426614174099"
+
+            val p1 =
+                FakeP1AuthRepository(
+                    challengeResult =
+                        ApiResult.Success(
+                            P1ChallengeAccepted(
+                                challengeId =
+                                    challengeId,
+                                expiresIn = 300,
+                                resendAfter = 60,
+                                message = "OTP sent.",
+                            )
+                        ),
+                    verifyResults =
+                        mutableListOf(
+                            ApiResult.Failure(
+                                code =
+                                    "AUTH_VERIFICATION_FAILED",
+                                message =
+                                    "verification failed",
+                                httpStatus = 401,
+                            ),
+                            ApiResult.Success(
+                                P1ClaimTicket(
+                                    claimTicket =
+                                        "RETRY_CLAIM_TICKET_12345678901234567890",
+                                    expiresIn = 300,
+                                )
+                            ),
+                        ),
+                )
+
+            val viewModel =
+                newViewModel(p1)
+
+            advanceUntilIdle()
+
+            viewModel.startSignupVerification(
+                name = "Test Customer",
+                email =
+                    "test.user@example.com",
+                username = "water.user",
+                password = "Password1234",
+            )
+
+            advanceUntilIdle()
+
+            viewModel.verifySignupOtp(
+                "000000"
+            )
+
+            advanceUntilIdle()
+
+            assertEquals(
+                SignupStage.OTP_REQUIRED,
+                viewModel.state.value
+                    .signupStage,
+            )
+
+            assertTrue(
+                viewModel.state.value
+                    .fieldErrors["otp_code"]
+                    .isNullOrEmpty()
+                    .not()
+            )
+
+            assertEquals(
+                null,
+                viewModel.state.value.error,
+            )
+
+            viewModel
+                .clearSignupOtpFeedback()
+
+            viewModel.verifySignupOtp(
+                "123456"
+            )
+
+            advanceUntilIdle()
+
+            assertEquals(
+                listOf(
+                    challengeId,
+                    challengeId,
+                ),
+                p1.verifiedChallengeIds,
+            )
+
+            assertEquals(
+                1,
+                p1.challengeCalls,
+            )
+
+            assertEquals(
+                SignupStage.ACCOUNT_REQUIRED,
+                viewModel.state.value
+                    .signupStage,
+            )
+        }
+    @Test
     fun resendSignupOtp_replacesOldChallengeAndVerifiesAgainstNewestOnly() =
         runTest(mainDispatcherRule.dispatcher) {
             val oldChallengeId =
