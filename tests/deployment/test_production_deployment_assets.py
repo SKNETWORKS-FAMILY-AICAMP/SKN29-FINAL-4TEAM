@@ -199,6 +199,17 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("DJANGO_ALLOWED_HOSTS", dockerfile)
         self.assertIn("headers={'Host': host}", dockerfile)
         self.assertIn("context: backend", workflow)
+        self.assertIn(
+            "COPY --from=state_machine_contracts . "
+            "/workspace/contracts/state-machine/",
+            dockerfile,
+        )
+        self.assertIn("load_state_machine_contract()", dockerfile)
+        self.assertIn(
+            "state_machine_contracts=contracts/state-machine",
+            workflow,
+        )
+        self.assertIn("BACKEND_STATE_MACHINE_CONTRACT_PASS", workflow)
 
     def test_gunicorn_config_gate_uses_verify_full_without_runtime_secrets(
         self,

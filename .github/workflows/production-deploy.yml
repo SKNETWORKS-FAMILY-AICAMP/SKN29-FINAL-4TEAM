@@ -80,6 +80,8 @@ jobs:
           }
           grep -Fq 'requirements/production.txt' backend/Dockerfile
           grep -Fq 'collectstatic' backend/Dockerfile
+          grep -Fq 'COPY --from=state_machine_contracts . /workspace/contracts/state-machine/' backend/Dockerfile
+          grep -Fq 'load_state_machine_contract()' backend/Dockerfile
           grep -Fq 'ai/requirements-linux.lock' ai/Dockerfile
           grep -Fq 'VITE_USE_MOCK_API=false' web/Dockerfile
           grep -Fq 'VITE_ENABLE_DESIGN_MOCK_FALLBACK=false' web/Dockerfile
@@ -330,6 +332,8 @@ jobs:
         with:
           context: backend
           file: backend/Dockerfile
+          build-contexts: |
+            state_machine_contracts=contracts/state-machine
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_BACKEND_REPOSITORY }}:${{ env.RELEASE_SHA }}
           platforms: linux/amd64
@@ -377,6 +381,8 @@ jobs:
             --entrypoint nginx "$web_ref" -t
           docker run --rm --entrypoint python "$backend_ref" \
             -c "import os; assert os.getuid() != 0"
+          docker run --rm --entrypoint python "$backend_ref" \
+            -c "from apps.workflow.contracts import load_state_machine_contract; load_state_machine_contract(); print('BACKEND_STATE_MACHINE_CONTRACT_PASS')"
           docker run --rm --entrypoint gunicorn "$backend_ref" --version
           docker run --rm --entrypoint python "$ai_ref" \
             -c "import os; assert os.getuid() != 0"
