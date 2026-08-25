@@ -1,0 +1,559 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waterbridge.local/schemas/gold_evaluation_case_v2.schema.json",
+  "title": "GoldEvaluationCaseV2",
+  "description": "Evidence Group 의미 단위와 실행 경로를 분리한 RAG 평가 Case 계약",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "case_id",
+    "dataset_version",
+    "evaluation_status",
+    "split",
+    "query_variant_type",
+    "query",
+    "product_model_code",
+    "expected_retrieval_outcome",
+    "expected_execution_path",
+    "required_evidence_group_ids",
+    "supporting_evidence_group_ids",
+    "evidence_match_policy",
+    "expected_risk_level",
+    "expected_usage_guidance_status",
+    "expected_consultation_requirement",
+    "consultation_basis_codes",
+    "consultation_condition_ids",
+    "forbidden_document_ids",
+    "forbidden_model_codes",
+    "source_query_origin",
+    "source_case_ids",
+    "label_generation",
+    "review_status",
+    "reviewer_ids",
+    "review_notes"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "2.0.0-draft.1"
+    },
+    "case_id": {
+      "type": "string",
+      "pattern": "^RAGV2-GOLD-[0-9]{4}$"
+    },
+    "dataset_version": {
+      "type": "string",
+      "const": "2.0.0-draft.1"
+    },
+    "evaluation_status": {
+      "type": "string",
+      "enum": ["ACTIVE", "EXCLUDED", "REJECTED"]
+    },
+    "split": {
+      "type": "string",
+      "enum": ["DEV", "TEST", "SAFETY"]
+    },
+    "query_variant_type": {
+      "type": "string",
+      "enum": [
+        "DIRECT",
+        "COLLOQUIAL",
+        "TYPO_ABBREVIATION",
+        "COMPOUND",
+        "SAFETY",
+        "NO_EVIDENCE",
+        "CROSS_PRODUCT"
+      ]
+    },
+    "query": {
+      "type": "string",
+      "minLength": 2
+    },
+    "product_model_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_retrieval_outcome": {
+      "type": "string",
+      "enum": ["EVIDENCE", "NO_EVIDENCE"]
+    },
+    "expected_execution_path": {
+      "type": "string",
+      "enum": [
+        "PGVECTOR_QUERY",
+        "POLICY_BLOCK_PRODUCT_MISMATCH",
+        "POLICY_BLOCK_UNSUPPORTED_MODEL",
+        "POLICY_BLOCK_UNSUPPORTED_CAPABILITY",
+        "POLICY_BLOCK_UNVERIFIED_SOURCE"
+      ]
+    },
+    "required_evidence_group_ids": {
+      "$ref": "#/$defs/evidenceGroupIds"
+    },
+    "supporting_evidence_group_ids": {
+      "$ref": "#/$defs/evidenceGroupIds"
+    },
+    "evidence_match_policy": {
+      "type": "string",
+      "enum": ["ANY", "ALL", "NONE"]
+    },
+    "expected_risk_level": {
+      "type": "string",
+      "enum": ["general", "caution", "danger"]
+    },
+    "expected_usage_guidance_status": {
+      "type": "string",
+      "enum": [
+        "NORMAL",
+        "PARTIAL_STOP",
+        "TOTAL_STOP",
+        "PENDING_CONSULTATION"
+      ]
+    },
+    "expected_consultation_requirement": {
+      "type": "string",
+      "enum": ["NONE", "CONDITIONAL", "REQUIRED"]
+    },
+    "consultation_basis_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "NONE",
+          "SOURCE_CONDITION_PENDING",
+          "SOURCE_CONDITION_MET",
+          "DANGER_SAFETY",
+          "NO_EVIDENCE",
+          "POLICY_BLOCK"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "consultation_condition_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^COND-[A-Z0-9-]+-[0-9]{3}$"
+      },
+      "uniqueItems": true
+    },
+    "forbidden_document_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "forbidden_model_codes": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "source_query_origin": {
+      "type": "string",
+      "enum": [
+        "EXISTING_RETRIEVAL_CASE",
+        "EXISTING_RAG_EVAL",
+        "EXISTING_SAFETY_CASE",
+        "EXISTING_STRUCTURING_CASE",
+        "EXISTING_FAQ",
+        "CURATED_VARIANT",
+        "CURATED_NEGATIVE"
+      ]
+    },
+    "source_case_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "label_generation": {
+      "type": "string",
+      "const": "ASSISTED_DRAFT_NOT_APPROVED"
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "UNREVIEWED_DRAFT",
+        "ONE_PERSON_REVIEWED",
+        "TWO_PERSON_APPROVED",
+        "REJECTED"
+      ]
+    },
+    "reviewer_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "maxItems": 2,
+      "uniqueItems": true
+    },
+    "review_notes": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "evidenceGroupIds": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "consultation_basis_codes": {
+            "contains": {
+              "enum": ["SOURCE_CONDITION_PENDING", "SOURCE_CONDITION_MET"]
+            }
+          }
+        },
+        "required": ["consultation_basis_codes"]
+      },
+      "then": {
+        "properties": {
+          "consultation_condition_ids": {"minItems": 1}
+        }
+      },
+      "else": {
+        "properties": {
+          "consultation_condition_ids": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "evaluation_status": {"const": "ACTIVE"}
+        },
+        "required": ["evaluation_status"]
+      },
+      "then": {
+        "properties": {
+          "review_status": {"not": {"const": "REJECTED"}}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "evaluation_status": {"const": "REJECTED"}
+        },
+        "required": ["evaluation_status"]
+      },
+      "then": {
+        "properties": {
+          "review_status": {"const": "REJECTED"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "expected_retrieval_outcome": {"const": "EVIDENCE"}
+        },
+        "required": ["expected_retrieval_outcome"]
+      },
+      "then": {
+        "properties": {
+          "expected_execution_path": {"const": "PGVECTOR_QUERY"},
+          "required_evidence_group_ids": {"minItems": 1},
+          "evidence_match_policy": {"enum": ["ANY", "ALL"]}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "expected_retrieval_outcome": {"const": "NO_EVIDENCE"}
+        },
+        "required": ["expected_retrieval_outcome"]
+      },
+      "then": {
+        "properties": {
+          "required_evidence_group_ids": {"maxItems": 0},
+          "supporting_evidence_group_ids": {"maxItems": 0},
+          "evidence_match_policy": {"const": "NONE"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "evidence_match_policy": {"const": "NONE"}
+        },
+        "required": ["evidence_match_policy"]
+      },
+      "then": {
+        "properties": {
+          "expected_retrieval_outcome": {"const": "NO_EVIDENCE"},
+          "required_evidence_group_ids": {"maxItems": 0},
+          "supporting_evidence_group_ids": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "expected_execution_path": {
+            "enum": [
+              "POLICY_BLOCK_PRODUCT_MISMATCH",
+              "POLICY_BLOCK_UNSUPPORTED_MODEL",
+              "POLICY_BLOCK_UNSUPPORTED_CAPABILITY",
+              "POLICY_BLOCK_UNVERIFIED_SOURCE"
+            ]
+          }
+        },
+        "required": ["expected_execution_path"]
+      },
+      "then": {
+        "properties": {
+          "expected_retrieval_outcome": {"const": "NO_EVIDENCE"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "consultation_basis_codes": {"contains": {"const": "NONE"}}
+        },
+        "required": ["consultation_basis_codes"]
+      },
+      "then": {
+        "properties": {
+          "consultation_basis_codes": {"maxItems": 1},
+          "expected_consultation_requirement": {"const": "NONE"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "consultation_basis_codes": {
+            "contains": {"const": "SOURCE_CONDITION_PENDING"}
+          }
+        },
+        "required": ["consultation_basis_codes"]
+      },
+      "then": {
+        "properties": {
+          "consultation_basis_codes": {"maxItems": 1},
+          "expected_consultation_requirement": {"const": "CONDITIONAL"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "consultation_basis_codes": {
+            "contains": {
+              "enum": [
+                "SOURCE_CONDITION_MET",
+                "DANGER_SAFETY",
+                "NO_EVIDENCE",
+                "POLICY_BLOCK"
+              ]
+            }
+          }
+        },
+        "required": ["consultation_basis_codes"]
+      },
+      "then": {
+        "properties": {
+          "expected_consultation_requirement": {"const": "REQUIRED"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "expected_retrieval_outcome": {"const": "NO_EVIDENCE"}
+        },
+        "required": ["expected_retrieval_outcome"]
+      },
+      "then": {
+        "properties": {
+          "consultation_basis_codes": {
+            "contains": {"enum": ["NO_EVIDENCE", "POLICY_BLOCK"]}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "expected_execution_path": {
+            "enum": [
+              "POLICY_BLOCK_PRODUCT_MISMATCH",
+              "POLICY_BLOCK_UNSUPPORTED_MODEL",
+              "POLICY_BLOCK_UNSUPPORTED_CAPABILITY",
+              "POLICY_BLOCK_UNVERIFIED_SOURCE"
+            ]
+          }
+        },
+        "required": ["expected_execution_path"]
+      },
+      "then": {
+        "properties": {
+          "consultation_basis_codes": {"contains": {"const": "POLICY_BLOCK"}}
+        }
+      }
+    },
+    {
+      "if": {
+        "anyOf": [
+          {
+            "properties": {
+              "expected_usage_guidance_status": {"const": "TOTAL_STOP"}
+            },
+            "required": ["expected_usage_guidance_status"]
+          },
+          {
+            "properties": {
+              "expected_risk_level": {"const": "danger"}
+            },
+            "required": ["expected_risk_level"]
+          }
+        ]
+      },
+      "then": {
+        "properties": {
+          "expected_consultation_requirement": {"const": "REQUIRED"},
+          "consultation_basis_codes": {"contains": {"const": "DANGER_SAFETY"}},
+          "expected_usage_guidance_status": {
+            "enum": ["PARTIAL_STOP", "TOTAL_STOP"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "expected_usage_guidance_status": {"const": "PENDING_CONSULTATION"}
+        },
+        "required": ["expected_usage_guidance_status"]
+      },
+      "then": {
+        "properties": {
+          "expected_consultation_requirement": {"const": "REQUIRED"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "consultation_basis_codes": {"contains": {"const": "NO_EVIDENCE"}}
+        },
+        "required": ["consultation_basis_codes"]
+      },
+      "then": {
+        "properties": {
+          "expected_retrieval_outcome": {"const": "NO_EVIDENCE"},
+          "expected_execution_path": {"const": "PGVECTOR_QUERY"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "consultation_basis_codes": {"contains": {"const": "POLICY_BLOCK"}}
+        },
+        "required": ["consultation_basis_codes"]
+      },
+      "then": {
+        "properties": {
+          "expected_execution_path": {
+            "enum": [
+              "POLICY_BLOCK_PRODUCT_MISMATCH",
+              "POLICY_BLOCK_UNSUPPORTED_MODEL",
+              "POLICY_BLOCK_UNSUPPORTED_CAPABILITY",
+              "POLICY_BLOCK_UNVERIFIED_SOURCE"
+            ]
+          },
+          "consultation_basis_codes": {
+            "not": {"contains": {"const": "NO_EVIDENCE"}}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "consultation_basis_codes": {"contains": {"const": "DANGER_SAFETY"}}
+        },
+        "required": ["consultation_basis_codes"]
+      },
+      "then": {
+        "properties": {
+          "expected_risk_level": {"const": "danger"},
+          "expected_usage_guidance_status": {
+            "enum": ["PARTIAL_STOP", "TOTAL_STOP"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "consultation_basis_codes": {
+            "contains": {
+              "enum": ["SOURCE_CONDITION_PENDING", "SOURCE_CONDITION_MET"]
+            }
+          }
+        },
+        "required": ["consultation_basis_codes"]
+      },
+      "then": {
+        "properties": {
+          "expected_retrieval_outcome": {"const": "EVIDENCE"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "expected_retrieval_outcome": {"const": "NO_EVIDENCE"},
+          "expected_execution_path": {"const": "PGVECTOR_QUERY"}
+        },
+        "required": ["expected_retrieval_outcome", "expected_execution_path"]
+      },
+      "then": {
+        "properties": {
+          "consultation_basis_codes": {
+            "contains": {"const": "NO_EVIDENCE"},
+            "not": {"contains": {"const": "POLICY_BLOCK"}}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "expected_retrieval_outcome": {"const": "EVIDENCE"}
+        },
+        "required": ["expected_retrieval_outcome"]
+      },
+      "then": {
+        "properties": {
+          "consultation_basis_codes": {
+            "not": {
+              "contains": {"enum": ["NO_EVIDENCE", "POLICY_BLOCK"]}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "expected_usage_guidance_status": {"const": "TOTAL_STOP"}
+        },
+        "required": ["expected_usage_guidance_status"]
+      },
+      "then": {
+        "properties": {
+          "expected_risk_level": {"const": "danger"}
+        }
+      }
+    }
+  ]
+}

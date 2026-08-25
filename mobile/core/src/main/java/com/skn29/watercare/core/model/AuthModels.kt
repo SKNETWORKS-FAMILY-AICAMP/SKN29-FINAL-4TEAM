@@ -31,6 +31,7 @@ data class UserData(
     @SerialName("display_name") val displayName: String,
     @SerialName("role_code") val roleCode: String,
     @SerialName("is_active") val isActive: Boolean,
+    val email: String? = null,
     @SerialName("customer_profile") val customerProfile: CustomerProfileData? = null,
     @SerialName("allowed_actions") val allowedActions: List<String> = emptyList(),
 )

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,72 +30,144 @@ internal fun P1PasswordResetSection(
     val palette = WaterBridgeCustomerPalette
 
     // 고객번호, 계약번호, OTP, 비밀번호는 현재 화면 메모리에서만 유지한다.
-    var customerNumber by remember { mutableStateOf("") }
-    var contractNumber by remember { mutableStateOf("") }
-    var otpCode by remember { mutableStateOf("") }
-    var newPassword by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var passwordMismatch by remember { mutableStateOf(false) }
+    var name by remember {
+        mutableStateOf("")
+    }
+    var username by remember {
+        mutableStateOf("")
+    }
+    var email by remember {
+        mutableStateOf("")
+    }
+    var otpCode by remember {
+        mutableStateOf("")
+    }
+    var newPassword by remember {
+        mutableStateOf("")
+    }
+    var confirmPassword by remember {
+        mutableStateOf("")
+    }
+    var passwordMismatch by remember {
+        mutableStateOf(false)
+    }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .p1AuthFormContainer(),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Text(
             text = "비밀번호 재설정",
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.SemiBold,
         )
 
         when (state.passwordResetStage) {
             PasswordResetStage.IDLE -> {
                 Text(
-                    text = "고객번호와 계약번호 확인 후 인증 절차를 진행합니다.",
-                    style = MaterialTheme.typography.bodySmall,
+                    text =
+                        "이름, 아이디, 가입할 때 등록한 이메일을 입력해 주세요.",
+                    style =
+                        MaterialTheme.typography
+                            .bodySmall,
                     color = palette.textMuted,
                 )
 
-                OutlinedTextField(
-                    value = customerNumber,
-                    onValueChange = { customerNumber = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("고객번호") },
+                P1AuthField(
+                    value = name,
+                    onValueChange = {
+                        name = it
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    label = {
+                        Text("이름")
+                    },
                     singleLine = true,
                     enabled = !state.submitting,
                     isError =
-                        state.fieldErrors["customer_number"]
+                        state.fieldErrors["name"]
                             .isNullOrEmpty()
                             .not(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next,
-                    ),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType =
+                                KeyboardType.Text,
+                            imeAction =
+                                ImeAction.Next,
+                        ),
                 )
 
                 ResetFieldError(
-                    state.fieldErrors["customer_number"]
+                    state.fieldErrors["name"]
                         ?.firstOrNull()
                 )
 
-                OutlinedTextField(
-                    value = contractNumber,
-                    onValueChange = { contractNumber = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("계약번호") },
+                P1AuthField(
+                    value = username,
+                    onValueChange = {
+                        username = it
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    label = {
+                        Text("아이디")
+                    },
                     singleLine = true,
                     enabled = !state.submitting,
                     isError =
-                        state.fieldErrors["contract_number"]
+                        state.fieldErrors["username"]
                             .isNullOrEmpty()
                             .not(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done,
-                    ),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType =
+                                KeyboardType.Text,
+                            imeAction =
+                                ImeAction.Next,
+                        ),
                 )
 
                 ResetFieldError(
-                    state.fieldErrors["contract_number"]
+                    state.fieldErrors["username"]
+                        ?.firstOrNull()
+                )
+
+                P1AuthField(
+                    value = email,
+                    onValueChange = {
+                        email = it
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    label = {
+                        Text("이메일")
+                    },
+                    placeholder = {
+                        Text(
+                            "name@example.com"
+                        )
+                    },
+                    singleLine = true,
+                    enabled = !state.submitting,
+                    isError =
+                        state.fieldErrors["email"]
+                            .isNullOrEmpty()
+                            .not(),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType =
+                                KeyboardType.Email,
+                            imeAction =
+                                ImeAction.Done,
+                        ),
+                )
+
+                ResetFieldError(
+                    state.fieldErrors["email"]
                         ?.firstOrNull()
                 )
 
@@ -104,16 +175,20 @@ internal fun P1PasswordResetSection(
                     text = "인증번호 받기",
                     palette = palette,
                     onClick = {
-                        viewModel.startPasswordReset(
-                            customerNumber = customerNumber,
-                            contractNumber = contractNumber,
-                        )
+                        viewModel
+                            .startPasswordReset(
+                                name = name,
+                                username = username,
+                                email = email,
+                            )
                     },
                     enabled =
                         !state.submitting &&
-                            state.backendAvailable == true,
+                            state.backendAvailable ==
+                                true,
                     accent = true,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier.fillMaxWidth(),
                 )
             }
 
@@ -141,7 +216,7 @@ internal fun P1PasswordResetSection(
                     )
                 }
 
-                OutlinedTextField(
+                P1AuthField(
                     value = otpCode,
                     onValueChange = { value ->
                         otpCode =
@@ -201,7 +276,7 @@ internal fun P1PasswordResetSection(
                         )
                     }
 
-                OutlinedTextField(
+                P1AuthField(
                     value = newPassword,
                     onValueChange = {
                         newPassword = it
@@ -232,7 +307,7 @@ internal fun P1PasswordResetSection(
                         ?.firstOrNull()
                 )
 
-                OutlinedTextField(
+                P1AuthField(
                     value = confirmPassword,
                     onValueChange = {
                         confirmPassword = it
@@ -315,7 +390,7 @@ internal fun P1PasswordResetSection(
             state.fieldErrors.isEmpty()
         ) {
             Text(
-                text = "요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.",
+                text = state.error,
                 modifier = Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,

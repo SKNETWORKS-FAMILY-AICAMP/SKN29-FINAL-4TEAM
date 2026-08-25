@@ -47,6 +47,7 @@ def api_exception_handler(exc, context):
             exc.message,
             details=exc.details,
             status_code=exc.status_code,
+            headers=exc.headers,
         )
 
     response = drf_exception_handler(exc, context)

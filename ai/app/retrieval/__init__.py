@@ -9,7 +9,12 @@ from .filters import (
 )
 from .indexing import ChunkLoader, IndexManifest
 from .models import RetrievalQuery, RetrievedChunk
-from .runtime import RetrievalConfigurationError, RetrievalExecutionError, RetrievalOutcome
+from .runtime import (
+    RetrievalConfigurationError,
+    RetrievalExecutionError,
+    RetrievalOutcome,
+    RetrievalToolError,
+)
 from .runtime_profile import (
     RUNTIME_PROFILE_ENV,
     RagRuntimeProfile,
@@ -30,6 +35,7 @@ __all__ = [
     "ChunkLoader",
     "RetrievalConfigurationError",
     "RetrievalExecutionError",
+    "RetrievalToolError",
     "RetrievalOutcome",
     "RUNTIME_PROFILE_ENV",
     "RagRuntimeProfile",

@@ -20,6 +20,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from ...common.timeout import CancellationToken
 from ...retrieval.models.retrieval_query import RetrievalQuery
+from ...retrieval.runtime import RetrievalToolError
 from ...retrieval.models.retrieved_chunk import RetrievedChunk
 from .client import WaterBridgeMCPClient
 from .models import SearchOfficialEvidenceReference
@@ -50,7 +51,7 @@ class McpEvidenceFailureKind(str, Enum):
     EXECUTION_ERROR = "EXECUTION_ERROR"
 
 
-class McpEvidenceSearchError(RuntimeError):
+class McpEvidenceSearchError(RetrievalToolError):
     """Sanitized exception crossing MCP -> orchestration."""
 
     def __init__(

@@ -50,7 +50,7 @@ class ConsultationHandoffService:
         correlation_id: UUID,
     ) -> ConsultationHandoffOutcome:
         inquiry = (
-            Inquiry.objects.select_for_update()
+            Inquiry.objects.select_for_update(of=("self",))
             .select_related(
                 "subscription__product_model",
                 "subscription__customer__user",
@@ -112,7 +112,11 @@ class ConsultationHandoffService:
         )
         ai_draft_summary = cls._build_ai_draft_summary(validated_data)
         customer = inquiry.subscription.customer
-        is_synthetic = bool(customer.is_synthetic and customer.user.is_synthetic)
+        is_synthetic = bool(
+            customer.is_synthetic
+            and customer.user_id is not None
+            and customer.user.is_synthetic
+        )
         handoff = ConsultationHandoffRepository.create(
             inquiry=inquiry,
             ai_run=ai_run,

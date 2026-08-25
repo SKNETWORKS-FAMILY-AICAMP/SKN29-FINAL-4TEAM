@@ -42,17 +42,30 @@ class P1PasswordResetViewModelTest {
             advanceUntilIdle()
 
             viewModel.startPasswordReset(
-                customerNumber = "  CUSTOMER-001  ",
-                contractNumber = "  CONTRACT-001  ",
+                name = "  테스트 고객  ",
+                username = "  water.user  ",
+                email = "  TEST.USER@EXAMPLE.COM  ",
             )
             advanceUntilIdle()
 
             assertEquals(
-                "CUSTOMER-001",
+                "테스트 고객",
+                p1.lastResetChallengeRequest?.name,
+            )
+            assertEquals(
+                "water.user",
+                p1.lastResetChallengeRequest?.username,
+            )
+            assertEquals(
+                "test.user@example.com",
+                p1.lastResetChallengeRequest?.email,
+            )
+            assertEquals(
+                null,
                 p1.lastResetChallengeRequest?.customerNumber,
             )
             assertEquals(
-                "CONTRACT-001",
+                null,
                 p1.lastResetChallengeRequest?.contractNumber,
             )
             assertNotNull(p1.lastResetChallengeIdempotencyKey)
@@ -103,8 +116,9 @@ class P1PasswordResetViewModelTest {
             advanceUntilIdle()
 
             viewModel.startPasswordReset(
-                customerNumber = "CUSTOMER-001",
-                contractNumber = "CONTRACT-001",
+                name = "테스트 고객",
+                username = "water.user",
+                email = "test.user@example.com",
             )
             advanceUntilIdle()
 
@@ -135,8 +149,9 @@ class P1PasswordResetViewModelTest {
             assertFalse(stateText.contains(resetTicket))
             assertFalse(stateText.contains(challengeId))
             assertFalse(stateText.contains("123456"))
-            assertFalse(stateText.contains("CUSTOMER-001"))
-            assertFalse(stateText.contains("CONTRACT-001"))
+            assertFalse(stateText.contains("테스트 고객"))
+            assertFalse(stateText.contains("water.user"))
+            assertFalse(stateText.contains("test.user@example.com"))
         }
 
     @Test
@@ -160,8 +175,9 @@ class P1PasswordResetViewModelTest {
             advanceUntilIdle()
 
             viewModel.startPasswordReset(
-                customerNumber = "CUSTOMER-001",
-                contractNumber = "CONTRACT-001",
+                name = "테스트 고객",
+                username = "water.user",
+                email = "test.user@example.com",
             )
             advanceUntilIdle()
 
@@ -218,8 +234,9 @@ class P1PasswordResetViewModelTest {
             advanceUntilIdle()
 
             viewModel.startPasswordReset(
-                customerNumber = "CUSTOMER-001",
-                contractNumber = "CONTRACT-001",
+                name = "테스트 고객",
+                username = "water.user",
+                email = "test.user@example.com",
             )
             advanceUntilIdle()
 
@@ -258,8 +275,9 @@ class P1PasswordResetViewModelTest {
             advanceUntilIdle()
 
             viewModel.startPasswordReset(
-                customerNumber = "CUSTOMER-001",
-                contractNumber = "CONTRACT-001",
+                name = "테스트 고객",
+                username = "water.user",
+                email = "test.user@example.com",
             )
             advanceUntilIdle()
 
@@ -287,8 +305,9 @@ class P1PasswordResetViewModelTest {
             advanceUntilIdle()
 
             viewModel.startPasswordReset(
-                customerNumber = "CUSTOMER-001",
-                contractNumber = "CONTRACT-001",
+                name = "테스트 고객",
+                username = "water.user",
+                email = "test.user@example.com",
             )
             advanceUntilIdle()
 
@@ -315,6 +334,43 @@ class P1PasswordResetViewModelTest {
             assertTrue(
                 viewModel.state.value.error
                     ?.contains("다시 진행") == true
+            )
+        }
+
+
+    @Test
+    fun invalidPasswordResetEmail_isRejectedBeforeApiCall() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val p1 = FakeP1AuthRepository()
+            val viewModel = newViewModel(p1)
+
+            advanceUntilIdle()
+
+            viewModel.startPasswordReset(
+                name = "테스트 고객",
+                username = "water.user",
+                email = "wrong-email",
+            )
+
+            advanceUntilIdle()
+
+            assertEquals(
+                listOf(
+                    "올바른 이메일 주소를 입력해 주세요."
+                ),
+                viewModel.state.value
+                    .fieldErrors["email"],
+            )
+
+            assertEquals(
+                null,
+                p1.lastResetChallengeRequest,
+            )
+
+            assertEquals(
+                PasswordResetStage.IDLE,
+                viewModel.state.value
+                    .passwordResetStage,
             )
         }
 

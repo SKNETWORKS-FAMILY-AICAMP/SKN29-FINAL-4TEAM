@@ -11,11 +11,11 @@
   "backend_sources": {
     "user_model": {
       "path": "backend/apps/accounts/models/user.py",
-      "sha256": "F6A8A7CDA2C412B5059A5B910D9283E0660E319F2167C73AF46CEC0CE0A10061"
+      "sha256": "6ECC193F9A7C888A81A0DB8E1DB0F63A2C14CB8F31AF175FB7206C3BD9BAFD63"
     },
     "customer_profile_model": {
       "path": "backend/apps/accounts/models/customer_profile.py",
-      "sha256": "F3406AF7D09268C85ECD9042D04CF5A5261F7993D2B4BEC95415C1326CAB578C"
+      "sha256": "2AAC87DFF333A317EFF843299B04417E066F5433FEAD041E4D597F54A78C7A5C"
     },
     "product_model": {
       "path": "backend/apps/products/models/product_model_registry.py",

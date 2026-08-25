@@ -51,8 +51,10 @@ data class AuthUiState(
     val retryAfterSeconds: Int? = null,
     val signupStage: SignupStage = SignupStage.IDLE,
     val signupMessage: String? = null,
+    val signupCompletedUsername: String? = null,
     val challengeExpiresInSeconds: Int? = null,
     val resendAfterSeconds: Int? = null,
+    val signupChallengeVersion: Int = 0,
     val usernameRecoveryStage: UsernameRecoveryStage =
         UsernameRecoveryStage.IDLE,
     val usernameRecoveryMessage: String? = null,
@@ -77,6 +79,8 @@ class AuthViewModel(
     private var signupChallengeId: String? = null
     private var signupClaimTicket: String? = null
     private var signupIdempotencyKey: String? = null
+    private var signupName: String? = null
+    private var signupEmail: String? = null
 
     // 아이디 찾기 OTP Challenge 역시 화면 상태나 영속 저장소에 노출하지 않는다.
     private var usernameRecoveryChallengeId: String? = null
@@ -100,87 +104,315 @@ class AuthViewModel(
     }
 
     fun startSignupVerification(
-        customerNumber: String,
-        contractNumber: String,
+        name: String,
+        email: String,
+        username: String,
+        password: String,
     ) {
         if (_state.value.submitting) return
 
-        val normalizedCustomerNumber = customerNumber.trim()
-        val normalizedContractNumber = contractNumber.trim()
+        val normalizedName = name.trim()
+        val normalizedEmail =
+            email.trim().lowercase()
+        val normalizedUsername =
+            username.trim()
 
-        val localErrors = buildMap<String, List<String>> {
-            if (normalizedCustomerNumber.isEmpty()) {
-                put("customer_number", listOf("고객번호를 입력해 주세요."))
-            } else if (normalizedCustomerNumber.length > 40) {
-                put("customer_number", listOf("고객번호는 40자 이하로 입력해 주세요."))
+        val emailPattern =
+            Regex("""^[^\s@]+@[^\s@]+\.[^\s@]+$""")
+
+        val usernamePattern =
+            Regex("""^[A-Za-z0-9._-]+$""")
+
+        val hasLetter =
+            password.any {
+                it in 'A'..'Z' ||
+                    it in 'a'..'z'
             }
 
-            if (normalizedContractNumber.isEmpty()) {
-                put("contract_number", listOf("계약번호를 입력해 주세요."))
-            } else if (normalizedContractNumber.length > 50) {
-                put("contract_number", listOf("계약번호는 50자 이하로 입력해 주세요."))
+        val hasDigit =
+            password.any(Char::isDigit)
+
+        val localErrors =
+            buildMap<String, List<String>> {
+                if (normalizedName.isEmpty()) {
+                    put(
+                        "name",
+                        listOf("이름을 입력해 주세요."),
+                    )
+                } else if (
+                    normalizedName.length > 100
+                ) {
+                    put(
+                        "name",
+                        listOf(
+                            "이름은 100자 이하로 입력해 주세요."
+                        ),
+                    )
+                }
+
+                if (normalizedEmail.isEmpty()) {
+                    put(
+                        "email",
+                        listOf("이메일을 입력해 주세요."),
+                    )
+                } else if (
+                    normalizedEmail.length > 254 ||
+                    !emailPattern.matches(
+                        normalizedEmail
+                    )
+                ) {
+                    put(
+                        "email",
+                        listOf(
+                            "올바른 이메일 주소를 입력해 주세요."
+                        ),
+                    )
+                }
+
+                when {
+                    normalizedUsername.isEmpty() ->
+                        put(
+                            "username",
+                            listOf(
+                                "아이디를 입력해 주세요."
+                            ),
+                        )
+
+                    normalizedUsername.length !in
+                        4..20 ->
+                        put(
+                            "username",
+                            listOf(
+                                "아이디는 4~20자로 입력해 주세요."
+                            ),
+                        )
+
+                    !usernamePattern.matches(
+                        normalizedUsername
+                    ) ->
+                        put(
+                            "username",
+                            listOf(
+                                "아이디는 영문, 숫자, ., _, -만 사용할 수 있습니다."
+                            ),
+                        )
+                }
+
+                if (
+                    password.length !in 12..20 ||
+                    !hasLetter ||
+                    !hasDigit
+                ) {
+                    put(
+                        "password",
+                        listOf(
+                            "비밀번호는 12~20자이며 영문과 숫자를 포함해야 합니다."
+                        ),
+                    )
+                }
             }
-        }
 
         if (localErrors.isNotEmpty()) {
-            _state.value = _state.value.copy(
-                error = null,
-                fieldErrors = localErrors,
-                retryAfterSeconds = null,
-            )
+            _state.value =
+                _state.value.copy(
+                    error = null,
+                    fieldErrors = localErrors,
+                    retryAfterSeconds = null,
+                )
             return
         }
 
         val repository = p1AuthRepository
+
         if (repository == null) {
-            _state.value = _state.value.copy(
-                error = "회원가입 기능을 사용할 수 없습니다.",
-                fieldErrors = emptyMap(),
-            )
+            _state.value =
+                _state.value.copy(
+                    error =
+                        "회원가입 기능을 사용할 수 없습니다.",
+                    fieldErrors = emptyMap(),
+                )
+            return
+        }
+
+        signupChallengeId = null
+        signupClaimTicket = null
+        signupIdempotencyKey = null
+
+        signupName = normalizedName
+        signupEmail = normalizedEmail
+
+        viewModelScope.launch {
+            _state.value =
+                _state.value.copy(
+                    submitting = true,
+                    error = null,
+                    fieldErrors = emptyMap(),
+                    retryAfterSeconds = null,
+                    signupStage =
+                        SignupStage.IDLE,
+                    signupMessage = null,
+                )
+
+            when (
+                val result =
+                    repository
+                        .createContractVerificationChallenge(
+                            request =
+                                P1ChallengeRequest(
+                                    name =
+                                        normalizedName,
+                                    email =
+                                        normalizedEmail,
+                                ),
+                            idempotencyKey =
+                                UUID.randomUUID()
+                                    .toString(),
+                        )
+            ) {
+                is ApiResult.Success -> {
+                    signupChallengeId =
+                        result.value.challengeId
+
+                    _state.value =
+                        _state.value.copy(
+                            submitting = false,
+                            signupStage =
+                                SignupStage
+                                    .OTP_REQUIRED,
+                            signupMessage =
+                                result.value.message,
+                            challengeExpiresInSeconds =
+                                result.value
+                                    .expiresIn,
+                            resendAfterSeconds =
+                                result.value
+                                    .resendAfter,
+                            signupChallengeVersion =
+                                _state.value
+                                    .signupChallengeVersion + 1,
+                            fieldErrors =
+                                emptyMap(),
+                            retryAfterSeconds =
+                                null,
+                        )
+                }
+
+                is ApiResult.Failure -> {
+                    _state.value =
+                        _state.value.copy(
+                            submitting = false,
+                            error =
+                                result.message,
+                            fieldErrors =
+                                result.fieldErrors,
+                            retryAfterSeconds =
+                                result
+                                    .retryAfterSeconds,
+                        )
+                }
+            }
+        }
+    }
+
+    fun resendSignupVerification() {
+        if (_state.value.submitting) return
+
+        if (
+            _state.value.signupStage !=
+            SignupStage.OTP_REQUIRED
+        ) {
+            return
+        }
+
+        val name = signupName
+        val email = signupEmail
+
+        if (
+            name.isNullOrBlank() ||
+            email.isNullOrBlank()
+        ) {
+            _state.value =
+                _state.value.copy(
+                    error =
+                        "인증 요청을 다시 시작해 주세요.",
+                    fieldErrors = emptyMap(),
+                )
+            return
+        }
+
+        val repository = p1AuthRepository
+
+        if (repository == null) {
+            _state.value =
+                _state.value.copy(
+                    error =
+                        "회원가입 기능을 사용할 수 없습니다.",
+                    fieldErrors = emptyMap(),
+                )
             return
         }
 
         viewModelScope.launch {
-            _state.value = _state.value.copy(
-                submitting = true,
-                error = null,
-                fieldErrors = emptyMap(),
-                retryAfterSeconds = null,
-                signupMessage = null,
-            )
+            _state.value =
+                _state.value.copy(
+                    submitting = true,
+                    error = null,
+                    fieldErrors = emptyMap(),
+                    retryAfterSeconds = null,
+                )
 
             when (
-                val result = repository.createContractVerificationChallenge(
-                    request = P1ChallengeRequest(
-                        customerNumber = normalizedCustomerNumber,
-                        contractNumber = normalizedContractNumber,
-                    ),
-                    idempotencyKey = UUID.randomUUID().toString(),
-                )
+                val result =
+                    repository
+                        .createContractVerificationChallenge(
+                            request =
+                                P1ChallengeRequest(
+                                    name = name,
+                                    email = email,
+                                ),
+                            idempotencyKey =
+                                UUID.randomUUID()
+                                    .toString(),
+                        )
             ) {
                 is ApiResult.Success -> {
-                    signupChallengeId = result.value.challengeId
-                    signupClaimTicket = null
-                    signupIdempotencyKey = null
+                    // Always replace the old challenge.
+                    // Future verification therefore uses
+                    // only the latest server challenge.
+                    signupChallengeId =
+                        result.value.challengeId
 
-                    _state.value = _state.value.copy(
-                        submitting = false,
-                        signupStage = SignupStage.OTP_REQUIRED,
-                        signupMessage = result.value.message,
-                        challengeExpiresInSeconds = result.value.expiresIn,
-                        resendAfterSeconds = result.value.resendAfter,
-                        fieldErrors = emptyMap(),
-                        retryAfterSeconds = null,
-                    )
+                    _state.value =
+                        _state.value.copy(
+                            submitting = false,
+                            signupStage =
+                                SignupStage
+                                    .OTP_REQUIRED,
+                            signupMessage =
+                                result.value.message,
+                            challengeExpiresInSeconds =
+                                result.value.expiresIn,
+                            resendAfterSeconds =
+                                result.value.resendAfter,
+                            signupChallengeVersion =
+                                _state.value
+                                    .signupChallengeVersion + 1,
+                            error = null,
+                            fieldErrors = emptyMap(),
+                            retryAfterSeconds = null,
+                        )
                 }
 
                 is ApiResult.Failure -> {
-                    _state.value = _state.value.copy(
-                        submitting = false,
-                        error = result.message,
-                        fieldErrors = result.fieldErrors,
-                        retryAfterSeconds = result.retryAfterSeconds,
-                    )
+                    _state.value =
+                        _state.value.copy(
+                            submitting = false,
+                            error = result.message,
+                            fieldErrors =
+                                result.fieldErrors,
+                            retryAfterSeconds =
+                                result.retryAfterSeconds,
+                        )
                 }
             }
         }
@@ -279,8 +511,8 @@ class AuthViewModel(
 
         val localErrors = buildMap<String, List<String>> {
             when {
-                normalizedUsername.length !in 4..150 ->
-                    put("username", listOf("아이디는 4~150자로 입력해 주세요."))
+                normalizedUsername.length !in 4..20 ->
+                    put("username", listOf("아이디는 4~20자로 입력해 주세요."))
 
                 !Regex("""[A-Za-z0-9._-]+""").matches(normalizedUsername) ->
                     put("username", listOf("아이디는 영문, 숫자, ., _, -만 사용할 수 있습니다."))
@@ -291,10 +523,10 @@ class AuthViewModel(
             }
             val hasDigit = password.any(Char::isDigit)
 
-            if (password.length !in 12..64 || !hasLetter || !hasDigit) {
+            if (password.length !in 12..20 || !hasLetter || !hasDigit) {
                 put(
                     "password",
-                    listOf("비밀번호는 12~64자이며 영문과 숫자를 포함해야 합니다."),
+                    listOf("비밀번호는 12~20자이며 영문과 숫자를 포함해야 합니다."),
                 )
             }
 
@@ -353,6 +585,10 @@ class AuthViewModel(
                 val result = repository.signup(
                     request = P1SignupRequest(
                         claimTicket = claimTicket,
+                        name = signupName
+                            ?: return@launch,
+                        email = signupEmail
+                            ?: return@launch,
                         username = normalizedUsername,
                         password = password,
                         consents = consents,
@@ -364,6 +600,8 @@ class AuthViewModel(
                     signupClaimTicket = null
                     signupChallengeId = null
                     signupIdempotencyKey = null
+                    signupName = null
+                    signupEmail = null
 
                     if (result.value.user.roleCode != "CUSTOMER") {
                         authRepository.logout()
@@ -376,13 +614,23 @@ class AuthViewModel(
                             retryAfterSeconds = null,
                         )
                     } else {
+                        // signup() success stores the returned session.
+                        // This UX intentionally returns to login, so clear it.
+                        authRepository.logout()
+
                         _state.value = _state.value.copy(
                             submitting = false,
-                            authenticated = true,
+                            authenticated = false,
                             offlinePreview = false,
                             error = null,
                             fieldErrors = emptyMap(),
                             retryAfterSeconds = null,
+                            signupStage = SignupStage.IDLE,
+                            signupMessage = null,
+                            challengeExpiresInSeconds = null,
+                            resendAfterSeconds = null,
+                            signupCompletedUsername =
+                                normalizedUsername,
                         )
                     }
                 }
@@ -399,115 +647,210 @@ class AuthViewModel(
         }
     }
 
+    fun consumeSignupCompletion() {
+        if (
+            _state.value.signupCompletedUsername ==
+                null
+        ) {
+            return
+        }
+
+        _state.value =
+            _state.value.copy(
+                signupCompletedUsername = null,
+            )
+    }
+
     fun startPasswordReset(
-        customerNumber: String,
-        contractNumber: String,
+        name: String,
+        username: String,
+        email: String,
     ) {
         if (_state.value.submitting) return
 
-        val normalizedCustomerNumber = customerNumber.trim()
-        val normalizedContractNumber = contractNumber.trim()
+        val normalizedName =
+            name.trim()
 
-        val localErrors = buildMap<String, List<String>> {
-            if (normalizedCustomerNumber.isEmpty()) {
-                put(
-                    "customer_number",
-                    listOf("고객번호를 입력해 주세요."),
-                )
-            } else if (normalizedCustomerNumber.length > 40) {
-                put(
-                    "customer_number",
-                    listOf("고객번호는 40자 이하로 입력해 주세요."),
-                )
-            }
+        val normalizedUsername =
+            username.trim()
 
-            if (normalizedContractNumber.isEmpty()) {
-                put(
-                    "contract_number",
-                    listOf("계약번호를 입력해 주세요."),
-                )
-            } else if (normalizedContractNumber.length > 50) {
-                put(
-                    "contract_number",
-                    listOf("계약번호는 50자 이하로 입력해 주세요."),
-                )
+        val normalizedEmail =
+            email.trim().lowercase()
+
+        val emailPattern =
+            Regex("""^[^\s@]+@[^\s@]+\.[^\s@]+$""")
+
+        val usernamePattern =
+            Regex("""^[A-Za-z0-9._-]+$""")
+
+        val localErrors =
+            buildMap<String, List<String>> {
+                if (normalizedName.isEmpty()) {
+                    put(
+                        "name",
+                        listOf(
+                            "이름을 입력해 주세요."
+                        ),
+                    )
+                } else if (
+                    normalizedName.length > 100
+                ) {
+                    put(
+                        "name",
+                        listOf(
+                            "이름은 100자 이하로 입력해 주세요."
+                        ),
+                    )
+                }
+
+                when {
+                    normalizedUsername.isEmpty() ->
+                        put(
+                            "username",
+                            listOf(
+                                "아이디를 입력해 주세요."
+                            ),
+                        )
+
+                    normalizedUsername.length !in
+                        4..150 ->
+                        put(
+                            "username",
+                            listOf(
+                                "아이디는 4~150자로 입력해 주세요."
+                            ),
+                        )
+
+                    !usernamePattern.matches(
+                        normalizedUsername
+                    ) ->
+                        put(
+                            "username",
+                            listOf(
+                                "아이디는 영문, 숫자, ., _, -만 사용할 수 있습니다."
+                            ),
+                        )
+                }
+
+                if (normalizedEmail.isEmpty()) {
+                    put(
+                        "email",
+                        listOf(
+                            "이메일을 입력해 주세요."
+                        ),
+                    )
+                } else if (
+                    normalizedEmail.length > 254 ||
+                    !emailPattern.matches(
+                        normalizedEmail
+                    )
+                ) {
+                    put(
+                        "email",
+                        listOf(
+                            "올바른 이메일 주소를 입력해 주세요."
+                        ),
+                    )
+                }
             }
-        }
 
         if (localErrors.isNotEmpty()) {
-            _state.value = _state.value.copy(
-                error = null,
-                fieldErrors = localErrors,
-                retryAfterSeconds = null,
-            )
+            _state.value =
+                _state.value.copy(
+                    error = null,
+                    fieldErrors = localErrors,
+                    retryAfterSeconds = null,
+                )
             return
         }
 
-        val repository = p1AuthRepository
+        val repository =
+            p1AuthRepository
+
         if (repository == null) {
-            _state.value = _state.value.copy(
-                error = "비밀번호 재설정 기능을 사용할 수 없습니다.",
-                fieldErrors = emptyMap(),
-            )
+            _state.value =
+                _state.value.copy(
+                    error =
+                        "비밀번호 재설정 기능을 사용할 수 없습니다.",
+                    fieldErrors = emptyMap(),
+                )
             return
         }
 
-        // 새로운 재설정 요청을 시작하면 이전 임시 인증정보는 폐기한다.
         passwordResetChallengeId = null
         passwordResetTicket = null
-        passwordResetConfirmIdempotencyKey = null
+        passwordResetConfirmIdempotencyKey =
+            null
 
         viewModelScope.launch {
-            _state.value = _state.value.copy(
-                submitting = true,
-                error = null,
-                fieldErrors = emptyMap(),
-                retryAfterSeconds = null,
-                passwordResetStage = PasswordResetStage.IDLE,
-                passwordResetMessage = null,
-                passwordResetTicketExpiresInSeconds = null,
-            )
+            _state.value =
+                _state.value.copy(
+                    submitting = true,
+                    error = null,
+                    fieldErrors = emptyMap(),
+                    retryAfterSeconds = null,
+                    passwordResetStage =
+                        PasswordResetStage.IDLE,
+                    passwordResetMessage = null,
+                    passwordResetTicketExpiresInSeconds =
+                        null,
+                )
 
             when (
                 val result =
-                    repository.createPasswordResetChallenge(
-                        request = P1ChallengeRequest(
-                            customerNumber =
-                                normalizedCustomerNumber,
-                            contractNumber =
-                                normalizedContractNumber,
-                        ),
-                        idempotencyKey =
-                            UUID.randomUUID().toString(),
-                    )
+                    repository
+                        .createPasswordResetChallenge(
+                            request =
+                                P1ChallengeRequest(
+                                    name =
+                                        normalizedName,
+                                    username =
+                                        normalizedUsername,
+                                    email =
+                                        normalizedEmail,
+                                ),
+                            idempotencyKey =
+                                UUID.randomUUID()
+                                    .toString(),
+                        )
             ) {
                 is ApiResult.Success -> {
                     passwordResetChallengeId =
                         result.value.challengeId
 
-                    _state.value = _state.value.copy(
-                        submitting = false,
-                        passwordResetStage =
-                            PasswordResetStage.OTP_REQUIRED,
-                        passwordResetMessage =
-                            result.value.message,
-                        challengeExpiresInSeconds =
-                            result.value.expiresIn,
-                        resendAfterSeconds =
-                            result.value.resendAfter,
-                        fieldErrors = emptyMap(),
-                        retryAfterSeconds = null,
-                    )
+                    _state.value =
+                        _state.value.copy(
+                            submitting = false,
+                            passwordResetStage =
+                                PasswordResetStage
+                                    .OTP_REQUIRED,
+                            passwordResetMessage =
+                                result.value.message,
+                            challengeExpiresInSeconds =
+                                result.value
+                                    .expiresIn,
+                            resendAfterSeconds =
+                                result.value
+                                    .resendAfter,
+                            fieldErrors =
+                                emptyMap(),
+                            retryAfterSeconds =
+                                null,
+                        )
                 }
 
                 is ApiResult.Failure -> {
-                    _state.value = _state.value.copy(
-                        submitting = false,
-                        error = result.message,
-                        fieldErrors = result.fieldErrors,
-                        retryAfterSeconds =
-                            result.retryAfterSeconds,
-                    )
+                    _state.value =
+                        _state.value.copy(
+                            submitting = false,
+                            error =
+                                result.message,
+                            fieldErrors =
+                                result.fieldErrors,
+                            retryAfterSeconds =
+                                result
+                                    .retryAfterSeconds,
+                        )
                 }
             }
         }
@@ -744,104 +1087,153 @@ class AuthViewModel(
     }
 
     fun startUsernameRecovery(
-        customerNumber: String,
-        contractNumber: String,
+        name: String,
+        email: String,
     ) {
         if (_state.value.submitting) return
 
-        val normalizedCustomerNumber = customerNumber.trim()
-        val normalizedContractNumber = contractNumber.trim()
+        val normalizedName =
+            name.trim()
 
-        val localErrors = buildMap<String, List<String>> {
-            if (normalizedCustomerNumber.isEmpty()) {
-                put(
-                    "customer_number",
-                    listOf("고객번호를 입력해 주세요."),
-                )
-            } else if (normalizedCustomerNumber.length > 40) {
-                put(
-                    "customer_number",
-                    listOf("고객번호는 40자 이하로 입력해 주세요."),
-                )
-            }
+        val normalizedEmail =
+            email.trim().lowercase()
 
-            if (normalizedContractNumber.isEmpty()) {
-                put(
-                    "contract_number",
-                    listOf("계약번호를 입력해 주세요."),
-                )
-            } else if (normalizedContractNumber.length > 50) {
-                put(
-                    "contract_number",
-                    listOf("계약번호는 50자 이하로 입력해 주세요."),
-                )
+        val emailPattern =
+            Regex("""^[^\s@]+@[^\s@]+\.[^\s@]+$""")
+
+        val localErrors =
+            buildMap<String, List<String>> {
+                if (normalizedName.isEmpty()) {
+                    put(
+                        "name",
+                        listOf(
+                            "이름을 입력해 주세요."
+                        ),
+                    )
+                } else if (
+                    normalizedName.length > 100
+                ) {
+                    put(
+                        "name",
+                        listOf(
+                            "이름은 100자 이하로 입력해 주세요."
+                        ),
+                    )
+                }
+
+                if (normalizedEmail.isEmpty()) {
+                    put(
+                        "email",
+                        listOf(
+                            "이메일을 입력해 주세요."
+                        ),
+                    )
+                } else if (
+                    normalizedEmail.length > 254 ||
+                    !emailPattern.matches(
+                        normalizedEmail
+                    )
+                ) {
+                    put(
+                        "email",
+                        listOf(
+                            "올바른 이메일 주소를 입력해 주세요."
+                        ),
+                    )
+                }
             }
-        }
 
         if (localErrors.isNotEmpty()) {
-            _state.value = _state.value.copy(
-                error = null,
-                fieldErrors = localErrors,
-                retryAfterSeconds = null,
-            )
+            _state.value =
+                _state.value.copy(
+                    error = null,
+                    fieldErrors = localErrors,
+                    retryAfterSeconds = null,
+                )
             return
         }
 
-        val repository = p1AuthRepository
+        val repository =
+            p1AuthRepository
+
         if (repository == null) {
-            _state.value = _state.value.copy(
-                error = "아이디 찾기 기능을 사용할 수 없습니다.",
-                fieldErrors = emptyMap(),
-            )
+            _state.value =
+                _state.value.copy(
+                    error =
+                        "아이디 찾기 기능을 사용할 수 없습니다.",
+                    fieldErrors = emptyMap(),
+                )
             return
         }
+
+        usernameRecoveryChallengeId = null
 
         viewModelScope.launch {
-            _state.value = _state.value.copy(
-                submitting = true,
-                error = null,
-                fieldErrors = emptyMap(),
-                retryAfterSeconds = null,
-                usernameRecoveryMessage = null,
-                recoveredMaskedUsername = null,
-            )
+            _state.value =
+                _state.value.copy(
+                    submitting = true,
+                    error = null,
+                    fieldErrors = emptyMap(),
+                    retryAfterSeconds = null,
+                    usernameRecoveryStage =
+                        UsernameRecoveryStage.IDLE,
+                    usernameRecoveryMessage = null,
+                    recoveredMaskedUsername = null,
+                )
 
             when (
-                val result = repository.createUsernameRecoveryChallenge(
-                    request = P1ChallengeRequest(
-                        customerNumber = normalizedCustomerNumber,
-                        contractNumber = normalizedContractNumber,
-                    ),
-                    idempotencyKey = UUID.randomUUID().toString(),
-                )
+                val result =
+                    repository
+                        .createUsernameRecoveryChallenge(
+                            request =
+                                P1ChallengeRequest(
+                                    name =
+                                        normalizedName,
+                                    email =
+                                        normalizedEmail,
+                                ),
+                            idempotencyKey =
+                                UUID.randomUUID()
+                                    .toString(),
+                        )
             ) {
                 is ApiResult.Success -> {
                     usernameRecoveryChallengeId =
                         result.value.challengeId
 
-                    _state.value = _state.value.copy(
-                        submitting = false,
-                        usernameRecoveryStage =
-                            UsernameRecoveryStage.OTP_REQUIRED,
-                        usernameRecoveryMessage =
-                            result.value.message,
-                        challengeExpiresInSeconds =
-                            result.value.expiresIn,
-                        resendAfterSeconds =
-                            result.value.resendAfter,
-                        fieldErrors = emptyMap(),
-                        retryAfterSeconds = null,
-                    )
+                    _state.value =
+                        _state.value.copy(
+                            submitting = false,
+                            usernameRecoveryStage =
+                                UsernameRecoveryStage
+                                    .OTP_REQUIRED,
+                            usernameRecoveryMessage =
+                                result.value.message,
+                            challengeExpiresInSeconds =
+                                result.value
+                                    .expiresIn,
+                            resendAfterSeconds =
+                                result.value
+                                    .resendAfter,
+                            fieldErrors =
+                                emptyMap(),
+                            retryAfterSeconds =
+                                null,
+                        )
                 }
 
                 is ApiResult.Failure -> {
-                    _state.value = _state.value.copy(
-                        submitting = false,
-                        error = result.message,
-                        fieldErrors = result.fieldErrors,
-                        retryAfterSeconds =
-                            result.retryAfterSeconds,
-                    )
+                    _state.value =
+                        _state.value.copy(
+                            submitting = false,
+                            error =
+                                result.message,
+                            fieldErrors =
+                                result.fieldErrors,
+                            retryAfterSeconds =
+                                result
+                                    .retryAfterSeconds,
+                        )
                 }
             }
         }
@@ -957,6 +1349,8 @@ class AuthViewModel(
         signupChallengeId = null
         signupClaimTicket = null
         signupIdempotencyKey = null
+        signupName = null
+        signupEmail = null
 
         _state.value = _state.value.copy(
             signupStage = SignupStage.IDLE,

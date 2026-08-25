@@ -36,7 +36,7 @@ SAFE_PUBLIC_DEFAULTS = {
     "DJANGO_TIME_ZONE": "Asia/Seoul",
     "DJANGO_LOG_LEVEL": "INFO",
     "DJANGO_LOG_FILE": ".runtime/logs/backend.jsonl",
-    "DJANGO_DEMO_LOGIN_ENABLED": "true",
+    "DJANGO_DEMO_LOGIN_ENABLED": "false",
     "JWT_ACCESS_TTL_MINUTES": "60",
     "JWT_REFRESH_TTL_HOURS": "168",
     "AI_SERVICE_BASE_URL": "http://127.0.0.1:8001",

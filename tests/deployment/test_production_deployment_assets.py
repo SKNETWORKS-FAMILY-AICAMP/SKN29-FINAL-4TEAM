@@ -67,7 +67,7 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         compose = COMPOSE.read_text(encoding="utf-8")
         deploy = DEPLOY.read_text(encoding="utf-8")
         self.assertIn("backend: s3", text)
-        self.assertIn("prefix: tempo", text)
+        self.assertIn("prefix: tempo/", text)
         self.assertGreaterEqual(text.count("block_retention: 336h"), 2)
         self.assertIn("path: /var/tempo/wal", text)
         self.assertIn("live_store:", text)
@@ -147,7 +147,43 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertNotIn("WATERBRIDGE_RUNTIME_ENV_FILE", text)
         self.assertIn("validate_backend_runtime.py", deploy)
         self.assertIn("validate_ai_readonly_runtime.py", deploy)
+        self.assertIn("--env PYTHONPATH=/workspace/backend", deploy)
         self.assertIn("BACKEND_TO_AI_SOCKET_PASS", deploy)
+
+    def test_backend_and_ai_mount_the_rds_ca_read_only(self) -> None:
+        text = COMPOSE.read_text(encoding="utf-8")
+        ca_mount = (
+            '"${RDS_CA_HOST_PATH:?RDS_CA_HOST_PATH is required}'
+            ':/run/secrets/rds-ca.pem:ro"'
+        )
+        self.assertEqual(text.count(ca_mount), 2)
+        ai_service = text.split("\n  ai:\n", maxsplit=1)[1].split(
+            "\n  trace-store:\n", maxsplit=1
+        )[0]
+        self.assertIn("PGSSLROOTCERT: /run/secrets/rds-ca.pem", ai_service)
+        self.assertIn(ca_mount, ai_service)
+
+    def test_ai_and_trace_store_have_private_outbound_egress(self) -> None:
+        text = COMPOSE.read_text(encoding="utf-8")
+        ai_service = text.split("\n  ai:\n", maxsplit=1)[1].split(
+            "\n  trace-store:\n", maxsplit=1
+        )[0]
+        trace_store = text.split("\n  trace-store:\n", maxsplit=1)[1].split(
+            "\nnetworks:\n", maxsplit=1
+        )[0]
+        network_definitions = text.split("\nnetworks:\n", maxsplit=1)[1].split(
+            "\nvolumes:\n", maxsplit=1
+        )[0]
+
+        for service in (ai_service, trace_store):
+            self.assertIn("      - internal", service)
+            self.assertIn("      - egress", service)
+            self.assertNotRegex(service, r"(?m)^    ports:$")
+        self.assertIn(
+            "  internal:\n    driver: bridge\n    internal: true",
+            network_definitions,
+        )
+        self.assertIn("  egress:\n    driver: bridge", network_definitions)
 
     def test_backend_image_is_non_root_locked_and_collects_static(self) -> None:
         dockerfile = (ROOT / "backend/Dockerfile").read_text(encoding="utf-8")
@@ -189,8 +225,49 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("complete_lineage=53", ai)
         self.assertIn("default_transaction_read_only", ai)
         self.assertNotIn("print(dsn", ai)
+        for stage in (
+            "DJANGO_SETUP",
+            "DATABASE_CONNECTION",
+            "POSTGRES_VERSION",
+            "PGVECTOR_VERSION",
+            "MIGRATION_MARKERS",
+            "EVIDENCE_0014",
+            "VISITS_0005_HOLD",
+            "MIGRATION_PLAN",
+        ):
+            self.assertIn(stage, backend)
+        for stage in (
+            "ENVIRONMENT",
+            "DATABASE_CONNECTION",
+            "POSTGRES_VERSION",
+            "PGVECTOR_VERSION",
+            "TRANSACTION_READ_ONLY",
+            "PUBLIC_SCHEMA_PRIVILEGE",
+            "VIEW_PRIVILEGE_BOUNDARY",
+            "BASE_TABLE_BOUNDARY",
+            "VIEW_COUNTS_AND_LINEAGE",
+            "MODEL_DISTRIBUTION",
+        ):
+            self.assertIn(stage, ai)
+        self.assertIn(
+            'f"reason={stage} error_type={type(exc).__name__}"', backend
+        )
+        self.assertIn(
+            'f"reason={stage} error_type={type(exc).__name__}"', ai
+        )
+        self.assertNotIn("print(exc", backend)
+        self.assertNotIn("print(exc", ai)
+
+    def test_ssm_failures_always_emit_deploy_and_rollback_results(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertEqual(workflow.count("aws ssm get-command-invocation"), 2)
+        self.assertIn("SSM_DEPLOY_WAITER_FAILED status=%s", workflow)
+        self.assertIn("SSM_ROLLBACK_WAITER_FAILED status=%s", workflow)
+        self.assertIn('[[ "$status" == "Success" ]]', workflow)
+        self.assertIn('[[ "$rollback_status" == "Success" ]]', workflow)
 
     def test_host_scripts_do_not_print_or_copy_secret_values(self) -> None:
+        deploy = DEPLOY.read_text(encoding="utf-8")
         combined = "\n".join(
             path.read_text(encoding="utf-8") for path in (BOOTSTRAP, DEPLOY, ROLLBACK)
         )
@@ -199,6 +276,10 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertNotIn("docker compose down -v", combined)
         self.assertIn("without deleting volumes", combined)
         self.assertIn("NO_PREVIOUS_RELEASE_NEW_SERVICES_STOPPED", combined)
+        self.assertIn("aws ecr get-login-password", deploy)
+        self.assertIn("docker login --username AWS --password-stdin", deploy)
+        self.assertIn('export DOCKER_CONFIG="$docker_config_dir"', deploy)
+        self.assertIn('rm -rf -- "$docker_config_dir"', deploy)
 
     def test_deployment_is_sha_locked_and_serialized(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")

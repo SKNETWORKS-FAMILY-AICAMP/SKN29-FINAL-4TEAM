@@ -12,6 +12,7 @@ EXPECTED_PENDING = {
 
 
 def main() -> int:
+    stage = "DJANGO_SETUP"
     try:
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
         import django
@@ -24,11 +25,16 @@ def main() -> int:
         from django.db import connection
         from django.db.migrations.executor import MigrationExecutor
 
+        stage = "DATABASE_CONNECTION"
+        connection.ensure_connection()
+
         with connection.cursor() as cursor:
+            stage = "POSTGRES_VERSION"
             cursor.execute("SHOW server_version_num")
             if cursor.fetchone() != ("160014",):
                 raise RuntimeError("unexpected PostgreSQL version")
 
+            stage = "PGVECTOR_VERSION"
             cursor.execute(
                 "SELECT extversion FROM pg_extension WHERE extname = 'vector'"
             )
@@ -37,6 +43,7 @@ def main() -> int:
             if not is_supported_pgvector_version(pgvector_version):
                 raise RuntimeError("unexpected pgvector version")
 
+            stage = "MIGRATION_MARKERS"
             cursor.execute(
                 """
                 SELECT app, name
@@ -51,13 +58,16 @@ def main() -> int:
                 "evidence",
                 "0014_decouple_ai_view_product_eligibility",
             ) not in applied:
+                stage = "EVIDENCE_0014"
                 raise RuntimeError("evidence.0014 is not applied")
             if (
                 "visits",
                 "0005_replace_visit_result_assignment_fk",
             ) in applied:
+                stage = "VISITS_0005_HOLD"
                 raise RuntimeError("visits.0005 P1 HOLD was applied")
 
+        stage = "MIGRATION_PLAN"
         executor = MigrationExecutor(connection)
         pending = {
             (migration.app_label, migration.name)
@@ -68,9 +78,14 @@ def main() -> int:
         }
         if pending != EXPECTED_PENDING:
             raise RuntimeError("unexpected migration plan")
+        stage = "CONNECTION_CLOSE"
         connection.close()
-    except Exception:
-        print("BACKEND_RUNTIME_PREFLIGHT_FAILED", file=sys.stderr)
+    except Exception as exc:
+        print(
+            "BACKEND_RUNTIME_PREFLIGHT_FAILED "
+            f"reason={stage} error_type={type(exc).__name__}",
+            file=sys.stderr,
+        )
         return 1
 
     print("BACKEND_RUNTIME_PREFLIGHT_PASS")

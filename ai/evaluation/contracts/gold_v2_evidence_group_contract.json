@@ -1,0 +1,274 @@
+{
+  "contract_version": "2.0.0-draft.1",
+  "status": "AI_OWNER_DECISION_DATA_QA_ACK_PENDING",
+  "exact_sales_code": "WPUJAC104DWH",
+  "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+  "rules": {
+    "gold_identity_unit": "EVIDENCE_GROUP",
+    "group_variant_policy": "ANY_REGISTERED_SEARCH_CANDIDATE_CHILD",
+    "gold_child_ids_allowed": false,
+    "page_ids_allowed_as_gold_identity": false,
+    "context_only_counts_as_hit": false,
+    "case_labels_override_group_defaults": true
+  },
+  "groups": [
+    {
+      "schema_version": "2.0.0-draft.1",
+      "evidence_group_id": "EVD-WPUJAC104DWH-SPRAY-FIRE-PREVENTION-001",
+      "topic_code": "SPRAY_FIRE_PREVENTION",
+      "exact_sales_code": "WPUJAC104DWH",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [4],
+      "child_ids": [
+        "CHILD-WPUJAC104DWH-P004-SPRAY-FIRE-PREVENTION-001"
+      ],
+      "source_variant_ids": [
+        "SPRAY-FIRE-PREVENTION-001-P004"
+      ],
+      "consultation_conditions": [],
+      "mapping_action": "CREATE_CHILD_AND_GROUP",
+      "supersedes_group_id": null,
+      "activation_gates": [
+        "DATA_QA_SOURCE_SPAN_VERIFIED",
+        "CHILD_HASH_REGENERATED",
+        "CORPUS_V3_LINKED"
+      ]
+    },
+    {
+      "schema_version": "2.0.0-draft.1",
+      "evidence_group_id": "EVD-WPUJAC104DWH-WATER-INGRESS-PREVENTION-001",
+      "topic_code": "WATER_INGRESS_PREVENTION",
+      "exact_sales_code": "WPUJAC104DWH",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [4],
+      "child_ids": [
+        "CHILD-WPUJAC104DWH-P004-WATER-INGRESS-PREVENTION-001"
+      ],
+      "source_variant_ids": [
+        "WATER-INGRESS-PREVENTION-001-P004"
+      ],
+      "consultation_conditions": [],
+      "mapping_action": "CREATE_CHILD_AND_GROUP",
+      "supersedes_group_id": null,
+      "activation_gates": [
+        "DATA_QA_SOURCE_SPAN_VERIFIED",
+        "CHILD_HASH_REGENERATED",
+        "CORPUS_V3_LINKED"
+      ]
+    },
+    {
+      "schema_version": "2.0.0-draft.1",
+      "evidence_group_id": "EVD-WPUJAC104DWH-LEAK-001",
+      "topic_code": "LEAK_RESPONSE",
+      "exact_sales_code": "WPUJAC104DWH",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [5, 7, 38],
+      "child_ids": [
+        "CHILD-WPUJAC104DWH-P005-LEAK-001",
+        "CHILD-WPUJAC104DWH-P007-LEAK-001",
+        "CHILD-WPUJAC104DWH-P038-LEAK-001"
+      ],
+      "source_variant_ids": [
+        "LEAK-001-P005",
+        "LEAK-001-P007",
+        "LEAK-001-P038"
+      ],
+      "consultation_conditions": [],
+      "mapping_action": "REUSE_EXISTING_GROUP",
+      "supersedes_group_id": null,
+      "activation_gates": [
+        "CORPUS_V3_LINKED"
+      ]
+    },
+    {
+      "schema_version": "2.0.0-draft.1",
+      "evidence_group_id": "EVD-WPUJAC104DWH-BURNING-ODOR-RESPONSE-001",
+      "topic_code": "BURNING_ODOR_RESPONSE",
+      "exact_sales_code": "WPUJAC104DWH",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [5],
+      "child_ids": [
+        "CHILD-WPUJAC104DWH-P005-BURNING-ODOR-RESPONSE-001"
+      ],
+      "source_variant_ids": [
+        "BURNING-ODOR-RESPONSE-001-P005"
+      ],
+      "consultation_conditions": [],
+      "mapping_action": "CREATE_CHILD_AND_GROUP",
+      "supersedes_group_id": null,
+      "activation_gates": [
+        "DATA_QA_SOURCE_SPAN_VERIFIED",
+        "CHILD_HASH_REGENERATED",
+        "CORPUS_V3_LINKED"
+      ]
+    },
+    {
+      "schema_version": "2.0.0-draft.1",
+      "evidence_group_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-NORMAL-001",
+      "topic_code": "COLD_TEMPERATURE_NORMAL_CHECK",
+      "exact_sales_code": "WPUJAC104DWH",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [37],
+      "child_ids": [
+        "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"
+      ],
+      "source_variant_ids": [
+        "COLD-TEMPERATURE-001-P037-NORMAL"
+      ],
+      "consultation_conditions": [],
+      "mapping_action": "CREATE_GROUP_REMAP_EXISTING_CHILD",
+      "supersedes_group_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+      "activation_gates": [
+        "CHILD_GROUP_ID_REMAPPED",
+        "CORPUS_V3_LINKED"
+      ]
+    },
+    {
+      "schema_version": "2.0.0-draft.1",
+      "evidence_group_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-FAULT-001",
+      "topic_code": "COLD_TEMPERATURE_FAULT",
+      "exact_sales_code": "WPUJAC104DWH",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [37],
+      "child_ids": [
+        "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001"
+      ],
+      "source_variant_ids": [
+        "COLD-TEMPERATURE-001-P037-FAULT"
+      ],
+      "consultation_conditions": [],
+      "mapping_action": "CREATE_GROUP_REMAP_EXISTING_CHILD",
+      "supersedes_group_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+      "activation_gates": [
+        "CHILD_GROUP_ID_REMAPPED",
+        "CORPUS_V3_LINKED"
+      ]
+    },
+    {
+      "schema_version": "2.0.0-draft.1",
+      "evidence_group_id": "EVD-WPUJAC104DWH-HOT-STEAM-001",
+      "topic_code": "HOT_STEAM",
+      "exact_sales_code": "WPUJAC104DWH",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [38],
+      "child_ids": [
+        "CHILD-WPUJAC104DWH-P038-HOT-STEAM-001"
+      ],
+      "source_variant_ids": [
+        "INSTANT-HOT-WATER-SAFETY-001-P038-STEAM"
+      ],
+      "consultation_conditions": [],
+      "mapping_action": "CREATE_GROUP_REMAP_EXISTING_CHILD",
+      "supersedes_group_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+      "activation_gates": [
+        "CHILD_GROUP_ID_REMAPPED",
+        "CORPUS_V3_LINKED"
+      ]
+    },
+    {
+      "schema_version": "2.0.0-draft.1",
+      "evidence_group_id": "EVD-WPUJAC104DWH-HOT-INTERRUPTION-001",
+      "topic_code": "HOT_INTERRUPTION",
+      "exact_sales_code": "WPUJAC104DWH",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [38],
+      "child_ids": [
+        "CHILD-WPUJAC104DWH-P038-HOT-INTERRUPTION-001"
+      ],
+      "source_variant_ids": [
+        "INSTANT-HOT-WATER-SAFETY-001-P038-INTERRUPTION"
+      ],
+      "consultation_conditions": [],
+      "mapping_action": "CREATE_GROUP_REMAP_EXISTING_CHILD",
+      "supersedes_group_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+      "activation_gates": [
+        "CHILD_GROUP_ID_REMAPPED",
+        "CORPUS_V3_LINKED"
+      ]
+    },
+    {
+      "schema_version": "2.0.0-draft.1",
+      "evidence_group_id": "EVD-WPUJAC104DWH-HOT-LUKEWARM-001",
+      "topic_code": "HOT_LUKEWARM",
+      "exact_sales_code": "WPUJAC104DWH",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [39],
+      "child_ids": [
+        "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001"
+      ],
+      "source_variant_ids": [
+        "INSTANT-HOT-WATER-SAFETY-001-P039-LUKEWARM"
+      ],
+      "consultation_conditions": [],
+      "mapping_action": "CREATE_GROUP_REMAP_EXISTING_CHILD",
+      "supersedes_group_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+      "activation_gates": [
+        "CHILD_GROUP_ID_REMAPPED",
+        "CORPUS_V3_LINKED"
+      ]
+    },
+    {
+      "schema_version": "2.0.0-draft.1",
+      "evidence_group_id": "EVD-WPUJAC104DWH-HOT-NO-OUTPUT-001",
+      "topic_code": "HOT_NO_OUTPUT",
+      "exact_sales_code": "WPUJAC104DWH",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [39],
+      "child_ids": [
+        "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"
+      ],
+      "source_variant_ids": [
+        "INSTANT-HOT-WATER-SAFETY-001-P039-NO-OUTPUT"
+      ],
+      "consultation_conditions": [],
+      "mapping_action": "CREATE_GROUP_REMAP_EXISTING_CHILD",
+      "supersedes_group_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+      "activation_gates": [
+        "CHILD_GROUP_ID_REMAPPED",
+        "CORPUS_V3_LINKED"
+      ]
+    },
+    {
+      "schema_version": "2.0.0-draft.1",
+      "evidence_group_id": "EVD-WPUJAC104DWH-HOT-MODULE-CHECK-001",
+      "topic_code": "HOT_MODULE_CHECK",
+      "exact_sales_code": "WPUJAC104DWH",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [39],
+      "child_ids": [
+        "CHILD-WPUJAC104DWH-P039-HOT-MODULE-CHECK-001"
+      ],
+      "source_variant_ids": [
+        "INSTANT-HOT-WATER-SAFETY-001-P039-MODULE-CHECK"
+      ],
+      "consultation_conditions": [],
+      "mapping_action": "CREATE_GROUP_REMAP_EXISTING_CHILD",
+      "supersedes_group_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+      "activation_gates": [
+        "CHILD_GROUP_ID_REMAPPED",
+        "CORPUS_V3_LINKED"
+      ]
+    },
+    {
+      "schema_version": "2.0.0-draft.1",
+      "evidence_group_id": "EVD-WPUJAC104DWH-HOT-CHECK-PROCESS-001",
+      "topic_code": "HOT_CHECK_PROCESS",
+      "exact_sales_code": "WPUJAC104DWH",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [39],
+      "child_ids": [
+        "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001"
+      ],
+      "source_variant_ids": [
+        "INSTANT-HOT-WATER-SAFETY-001-P039-CHECK-PROCESS"
+      ],
+      "consultation_conditions": [],
+      "mapping_action": "CREATE_GROUP_REMAP_EXISTING_CHILD",
+      "supersedes_group_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+      "activation_gates": [
+        "CHILD_GROUP_ID_REMAPPED",
+        "CORPUS_V3_LINKED"
+      ]
+    }
+  ]
+}

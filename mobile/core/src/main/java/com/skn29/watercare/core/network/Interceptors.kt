@@ -10,6 +10,49 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.Route
 
+internal fun isPublicAuthPath(
+    encodedPath: String,
+): Boolean {
+    val path =
+        encodedPath.trimEnd('/')
+
+    return when {
+        path ==
+            "/api/v1/auth/demo-login" ->
+            true
+
+        path ==
+            "/api/v1/auth/signup" ->
+            true
+
+        path ==
+            "/api/v1/auth/login" ->
+            true
+
+        path ==
+            "/api/v1/auth/refresh" ->
+            true
+
+        path.startsWith(
+            "/api/v1/auth/contract-verification/challenges"
+        ) ->
+            true
+
+        path.startsWith(
+            "/api/v1/auth/account-recovery/username/challenges"
+        ) ->
+            true
+
+        path.startsWith(
+            "/api/v1/auth/password-reset/"
+        ) ->
+            true
+
+        else ->
+            false
+    }
+}
+
 class CorrelationIdInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request().newBuilder()
@@ -19,12 +62,50 @@ class CorrelationIdInterceptor : Interceptor {
     }
 }
 
-class AuthInterceptor(private val tokenStore: TokenStore) : Interceptor {
-    override fun intercept(chain: Interceptor.Chain): Response {
-        val token = tokenStore.current()?.accessToken
-        val builder = chain.request().newBuilder()
-        if (!token.isNullOrBlank()) builder.header("Authorization", "Bearer $token")
-        return chain.proceed(builder.build())
+class AuthInterceptor(
+    private val tokenStore: TokenStore,
+) : Interceptor {
+    override fun intercept(
+        chain: Interceptor.Chain,
+    ): Response {
+        val original =
+            chain.request()
+
+        if (
+            isPublicAuthPath(
+                original.url.encodedPath
+            )
+        ) {
+            val publicRequest =
+                original
+                    .newBuilder()
+                    .removeHeader(
+                        "Authorization"
+                    )
+                    .build()
+
+            return chain.proceed(
+                publicRequest
+            )
+        }
+
+        val token =
+            tokenStore.current()
+                ?.accessToken
+
+        val builder =
+            original.newBuilder()
+
+        if (!token.isNullOrBlank()) {
+            builder.header(
+                "Authorization",
+                "Bearer $token",
+            )
+        }
+
+        return chain.proceed(
+            builder.build()
+        )
     }
 }
 
@@ -34,9 +115,29 @@ class TokenAuthenticator(
 ) : Authenticator {
     private val lock = Any()
 
-    override fun authenticate(route: Route?, response: Response): Request? {
-        if (responseCount(response) >= 2) return null
-        if (response.request.url.encodedPath.endsWith("/auth/refresh")) return null
+    override fun authenticate(
+        route: Route?,
+        response: Response,
+    ): Request? {
+        if (
+            isPublicAuthPath(
+                response.request.url.encodedPath
+            )
+        ) {
+            return null
+        }
+
+        if (responseCount(response) >= 2) {
+            return null
+        }
+
+        if (
+            response.request.url
+                .encodedPath
+                .endsWith("/auth/refresh")
+        ) {
+            return null
+        }
 
         val failedToken = response.request.header("Authorization")
             ?.removePrefix("Bearer ")

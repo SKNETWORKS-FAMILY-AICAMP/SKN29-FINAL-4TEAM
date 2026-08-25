@@ -34,6 +34,7 @@ class Neo4jLineageQaAssetTests(unittest.TestCase):
     def test_workflow_uses_disposable_loopback_authenticated_target(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("neo4j:2026.07.1", text)
+        self.assertIn("numpy==2.5.2", text)
         self.assertIn("docker run --detach --rm", text)
         self.assertIn("--publish 127.0.0.1::7474", text)
         self.assertIn('NEO4J_AUTH=$NEO4J_QA_USERNAME/$NEO4J_QA_PASSWORD', text)

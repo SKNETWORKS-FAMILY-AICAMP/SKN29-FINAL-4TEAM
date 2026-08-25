@@ -147,6 +147,94 @@ class CustomerHomeViewModelTest {
         }
 
     @Test
+    fun mobileG3_iac425AndIac606_generalAndLeak_areBlockedBeforeIntake() =
+        runTest(mainDispatcherRule.dispatcher) {
+            data class G3Case(
+                val label: String,
+                val modelCode: String,
+                val symptomCode: String,
+            )
+
+            val cases = listOf(
+                G3Case(
+                    label = "IAC425_GENERAL",
+                    modelCode = "WPUIAC425SNW",
+                    symptomCode = "LOW_FLOW",
+                ),
+                G3Case(
+                    label = "IAC425_LEAK",
+                    modelCode = "WPUIAC425SNW",
+                    symptomCode = "LEAK",
+                ),
+                G3Case(
+                    label = "IAC606_GENERAL",
+                    modelCode = "WPUIAC606SNW",
+                    symptomCode = "LOW_FLOW",
+                ),
+                G3Case(
+                    label = "IAC606_LEAK",
+                    modelCode = "WPUIAC606SNW",
+                    symptomCode = "LEAK",
+                ),
+            )
+
+            cases.forEach { case ->
+                assertTrue(
+                    "${case.label}: model must exist in Mobile catalog",
+                    CustomerModelCatalog.any {
+                        it.modelCode == case.modelCode
+                    },
+                )
+
+                val subscriptionId =
+                    "g3-${case.modelCode}-${case.symptomCode}"
+
+                val repository =
+                    FakeSubscriptionRepository(
+                        items = listOf(
+                            summary(
+                                id = subscriptionId,
+                                status = "ACTIVE",
+                                modelCode = case.modelCode,
+                            )
+                        ),
+                    )
+
+                val viewModel =
+                    createViewModel(
+                        config =
+                            CustomerCareRuntimeConfig.from(
+                                "REMOTE",
+                                "",
+                            ),
+                        offlinePreview = false,
+                        subscriptionRepository = repository,
+                    )
+
+                advanceUntilIdle()
+
+                val state = viewModel.state.value
+
+                assertEquals(
+                    case.modelCode,
+                    state.home?.product?.modelCode,
+                )
+                assertFalse(
+                    "${case.label}: intake must be blocked",
+                    state.intakeAvailable,
+                )
+                assertEquals(
+                    "이 정수기는 현재 문의 기능을 이용할 수 없어요.",
+                    state.intakeUnavailableReason,
+                )
+                assertEquals(
+                    listOf(subscriptionId),
+                    repository.detailCalls,
+                )
+            }
+        }
+
+    @Test
     fun subscriptionList401_isExposedAndDoesNotFallBackToFixture() =
         runTest(mainDispatcherRule.dispatcher) {
             val repository = FakeSubscriptionRepository(

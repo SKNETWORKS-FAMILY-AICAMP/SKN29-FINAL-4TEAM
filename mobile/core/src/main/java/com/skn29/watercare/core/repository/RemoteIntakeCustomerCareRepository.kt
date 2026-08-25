@@ -92,24 +92,56 @@ class RemoteIntakeCustomerCareRepository(
             )
         ) {
             is ApiResult.Failure -> {
-                submitResult.conflict
-                    ?.takeIf { conflict ->
-                        conflict.currentStatus == "DRAFT" &&
-                            conflict.currentStateVersion != null &&
-                            conflict.allowedActions.any { it.isRetrySubmitAction() }
-                    }
-                    ?.let { conflict ->
-                        synchronized(operationLock) {
-                            if (pendingOperations[fingerprint] === operation) {
-                                operation.createdInquiry = inquiry.copy(
-                                    statusCode = conflict.currentStatus ?: inquiry.statusCode,
-                                    stateVersion = conflict.currentStateVersion
-                                        ?: inquiry.stateVersion,
-                                    allowedActions = conflict.allowedActions,
-                                )
+                val conflict =
+                    submitResult.conflict
+
+                val retryableDraftConflict =
+                    conflict?.takeIf {
+                        it.currentStatus == "DRAFT" &&
+                            it.currentStateVersion != null &&
+                            it.allowedActions.any { action ->
+                                action.isRetrySubmitAction()
                             }
+                    }
+
+                if (retryableDraftConflict != null) {
+                    synchronized(operationLock) {
+                        if (
+                            pendingOperations[fingerprint] ===
+                            operation
+                        ) {
+                            operation.createdInquiry =
+                                inquiry.copy(
+                                    statusCode =
+                                        retryableDraftConflict
+                                            .currentStatus
+                                            ?: inquiry.statusCode,
+                                    stateVersion =
+                                        retryableDraftConflict
+                                            .currentStateVersion
+                                            ?: inquiry.stateVersion,
+                                    allowedActions =
+                                        retryableDraftConflict
+                                            .allowedActions,
+                                )
                         }
                     }
+                } else if (
+                    submitResult
+                        .invalidatesPendingInquiry()
+                ) {
+                    synchronized(operationLock) {
+                        if (
+                            pendingOperations[fingerprint] ===
+                            operation
+                        ) {
+                            pendingOperations.remove(
+                                fingerprint
+                            )
+                        }
+                    }
+                }
+
                 submitResult
             }
 
@@ -132,6 +164,22 @@ class RemoteIntakeCustomerCareRepository(
                 )
             }
         }
+    }
+
+    private fun ApiResult.Failure
+        .invalidatesPendingInquiry(): Boolean {
+        val currentStatus =
+            conflict
+                ?.currentStatus
+                ?.trim()
+                ?.uppercase()
+
+        return (
+            httpStatus == 404 ||
+                httpStatus == 410 ||
+                currentStatus == "CANCELLED" ||
+                currentStatus == "RESOLVED"
+        )
     }
 
     private fun SymptomIntakeRequest.fingerprint(): String = listOf(

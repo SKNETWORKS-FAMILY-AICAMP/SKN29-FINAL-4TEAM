@@ -6,13 +6,20 @@ from rest_framework.views import APIView
 
 from apps.accounts.api.serializers import (
     DemoLoginRequestSerializer,
+    P1ChallengeRequestSerializer,
+    P1OtpVerificationRequestSerializer,
+    P1PasswordLoginRequestSerializer,
+    P1PasswordResetConfirmRequestSerializer,
+    P1SignupRequestSerializer,
     RefreshTokenRequestSerializer,
 )
+from apps.accounts.models import P1AuthOtpChallenge
 from apps.accounts.services.account_service import AccountService
 from apps.accounts.services.authentication_service import (
     AuthenticationService,
     TokenPair,
 )
+from apps.accounts.services.p1_auth_service import P1AuthService
 from common.api.response import success_response
 
 
@@ -91,3 +98,110 @@ class MeView(APIView):
 
     def get(self, request):
         return success_response(AccountService.user_data(request.user))
+
+
+def _idempotency_key(request) -> str:
+    return request.headers.get("Idempotency-Key", "")
+
+
+def _no_store(response):
+    response["Cache-Control"] = "no-store"
+    response["Pragma"] = "no-cache"
+    return response
+
+
+class P1ChallengeCreateView(APIView):
+    permission_classes = [AllowAny]
+    purpose = ""
+
+    def post(self, request):
+        serializer = P1ChallengeRequestSerializer(
+            data=request.data,
+            context={"purpose": self.purpose},
+        )
+        serializer.is_valid(raise_exception=True)
+        data = P1AuthService.create_challenge(
+            purpose=self.purpose,
+            identity=dict(serializer.validated_data),
+            idempotency_key=_idempotency_key(request),
+        )
+        return _no_store(success_response(data, status_code=202))
+
+
+class ContractVerificationChallengeView(P1ChallengeCreateView):
+    purpose = P1AuthOtpChallenge.Purpose.SIGNUP
+
+
+class UsernameRecoveryChallengeView(P1ChallengeCreateView):
+    purpose = P1AuthOtpChallenge.Purpose.USERNAME_RECOVERY
+
+
+class PasswordResetChallengeView(P1ChallengeCreateView):
+    purpose = P1AuthOtpChallenge.Purpose.PASSWORD_RESET
+
+
+class P1OtpVerifyView(APIView):
+    permission_classes = [AllowAny]
+    verify_method = None
+
+    def post(self, request, challenge_id):
+        serializer = P1OtpVerificationRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = self.verify_method(
+            challenge_id=challenge_id,
+            otp_code=serializer.validated_data["otp_code"],
+        )
+        return _no_store(success_response(data))
+
+
+class ContractVerificationChallengeVerifyView(P1OtpVerifyView):
+    verify_method = P1AuthService.verify_signup_challenge
+
+
+class UsernameRecoveryChallengeVerifyView(P1OtpVerifyView):
+    verify_method = P1AuthService.verify_username_challenge
+
+
+class PasswordResetChallengeVerifyView(P1OtpVerifyView):
+    verify_method = P1AuthService.verify_password_reset_challenge
+
+
+class P1SignupView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = P1SignupRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = P1AuthService.signup(
+            **serializer.validated_data,
+            idempotency_key=_idempotency_key(request),
+            correlation_id=request.correlation_id,
+        )
+        data = _session_data(result.user, result.pair)
+        if result.idempotent_replay:
+            data["idempotent_replay"] = True
+        return _no_store(success_response(data, status_code=201))
+
+
+class P1PasswordLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = P1PasswordLoginRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user, pair = P1AuthService.login(**serializer.validated_data)
+        return _no_store(success_response(_session_data(user, pair)))
+
+
+class P1PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = P1PasswordResetConfirmRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = P1AuthService.confirm_password_reset(
+            **serializer.validated_data,
+            idempotency_key=_idempotency_key(request),
+            correlation_id=request.correlation_id,
+        )
+        return _no_store(success_response(data))
