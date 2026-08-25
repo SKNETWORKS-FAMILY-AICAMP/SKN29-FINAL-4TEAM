@@ -11,6 +11,75 @@ val localProperties = Properties().apply {
     if (file.exists()) file.inputStream().use(::load)
 }
 fun String.asBuildConfigString() = replace("\\", "\\\\").replace("\"", "\\\"")
+val waterbridgeVersionCode =
+    providers.gradleProperty("WATERBRIDGE_VERSION_CODE")
+        .orNull
+        ?.toIntOrNull()
+        ?: 2
+
+val waterbridgeVersionName =
+    providers.gradleProperty("WATERBRIDGE_VERSION_NAME")
+        .orNull
+        ?.trim()
+        ?.takeIf(String::isNotEmpty)
+        ?: "1.0.1"
+
+val awsBackendBaseUrl =
+    providers.gradleProperty("WATERBRIDGE_AWS_BACKEND_BASE_URL")
+        .orNull
+        ?.trim()
+        ?.takeIf(String::isNotEmpty)
+        ?: "https://waterbridge.site/"
+
+val localBackendBaseUrl =
+    localProperties
+        .getProperty(
+            "LOCAL_BACKEND_BASE_URL",
+            localProperties.getProperty(
+                "BACKEND_BASE_URL",
+                "http://127.0.0.1:8000/",
+            ),
+        )
+        .trim()
+
+val signingPropertiesFile =
+    rootProject.file("keystore.properties")
+
+val signingProperties =
+    Properties().apply {
+        if (signingPropertiesFile.exists()) {
+            signingPropertiesFile
+                .inputStream()
+                .use(::load)
+        }
+    }
+
+val releaseSigningReady =
+    listOf(
+        "storeFile",
+        "storePassword",
+        "keyAlias",
+        "keyPassword",
+    ).all { key ->
+        signingProperties
+            .getProperty(key)
+            ?.isNotBlank() == true
+    }
+
+val requestedAwsRelease =
+    gradle.startParameter.taskNames.any { task ->
+        task.contains(
+            "AwsRelease",
+            ignoreCase = true,
+        )
+    }
+
+if (requestedAwsRelease && !releaseSigningReady) {
+    throw GradleException(
+        "AWS Release signing is not configured. " +
+            "Create mobile/keystore.properties and provide the official JKS.",
+    )
+}
 
 val customerCareMode = localProperties
     .getProperty("CUSTOMER_CARE_MODE", "REMOTE")
@@ -36,16 +105,73 @@ android {
         applicationId = "com.skn29.watercare.customer"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0.0-rebuild"
+        versionCode = waterbridgeVersionCode
+        versionName = waterbridgeVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "BACKEND_BASE_URL", "\"${localProperties.getProperty("BACKEND_BASE_URL", "http://127.0.0.1:8000/").asBuildConfigString()}\"")
         buildConfigField("String", "CUSTOMER_CARE_MODE", "\"${customerCareMode.asBuildConfigString()}\"")
         buildConfigField("String", "E2E_CUSTOMER_CODE", "\"${e2eCustomerCode.asBuildConfigString()}\"")
         buildConfigField("String", "DEMO_SUBSCRIPTION_ID", "\"${demoSubscriptionId.asBuildConfigString()}\"")
         buildConfigField("boolean", "SHOW_DEVELOPER_TOOLS", showDeveloperTools.toString())
         buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${localProperties.getProperty("KAKAO_NATIVE_APP_KEY", "").asBuildConfigString()}\"")
     }
+    flavorDimensions += "backend"
+
+    productFlavors {
+        create("local") {
+            dimension = "backend"
+            applicationIdSuffix = ".local"
+            versionNameSuffix = "-local"
+
+            buildConfigField(
+                "String",
+                "BACKEND_BASE_URL",
+                "\"${localBackendBaseUrl.asBuildConfigString()}\"",
+            )
+        }
+
+        create("aws") {
+            dimension = "backend"
+
+            buildConfigField(
+                "String",
+                "BACKEND_BASE_URL",
+                "\"${awsBackendBaseUrl.asBuildConfigString()}\"",
+            )
+        }
+    }
+
+    signingConfigs {
+        if (releaseSigningReady) {
+            create("release") {
+                storeFile =
+                    rootProject.file(
+                        signingProperties.getProperty(
+                            "storeFile"
+                        )
+                    )
+                storePassword =
+                    signingProperties.getProperty(
+                        "storePassword"
+                    )
+                keyAlias =
+                    signingProperties.getProperty(
+                        "keyAlias"
+                    )
+                keyPassword =
+                    signingProperties.getProperty(
+                        "keyPassword"
+                    )
+            }
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            signingConfig =
+                signingConfigs.findByName("release")
+        }
+    }
+
     buildFeatures { compose = true; buildConfig = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     packaging { resources.excludes += setOf("/META-INF/{AL2.0,LGPL2.1}", "META-INF/LICENSE*", "META-INF/NOTICE*") }

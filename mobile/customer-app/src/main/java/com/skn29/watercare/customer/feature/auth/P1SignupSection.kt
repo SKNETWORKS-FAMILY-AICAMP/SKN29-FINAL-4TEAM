@@ -344,9 +344,12 @@ internal fun P1SignupSection(
                             .isNullOrEmpty()
                             .not()
 
+                // 잘못된 OTP 1회 입력만으로 Challenge를 폐기하지 않는다.
+                // Backend가 허용하는 범위에서는 같은 Challenge로 다시 검증하고,
+                // OTP 만료 또는 서버 Retry-After가 있을 때만 재전송 모드로 전환한다.
                 val shouldResend =
-                    otpVerificationFailed ||
-                        otpExpiresRemaining <= 0
+                    otpExpiresRemaining <= 0 ||
+                        state.retryAfterSeconds != null
 
                 if (
                     resendRemaining > 0 &&
