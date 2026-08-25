@@ -70,6 +70,14 @@ def test_current_graph_matches_explicit_allowlist_and_excludes_visits_0005(
         "0004_visit_runtime_fields",
     ) in allowlist_module.APPROVED_TARGETS
     assert (
+        "accounts",
+        "0008_p1_auth_email_outbox",
+    ) in closure
+    assert (
+        "accounts",
+        "0008_p1_auth_email_outbox",
+    ) in allowlist_module.APPROVED_TARGETS
+    assert (
         "operations",
         "0003_product_expansion_import_profile",
     ) in closure
@@ -105,6 +113,7 @@ def test_empty_database_plan_is_forward_only_and_has_explicit_target_order(
         allowlist_module.APPROVED_TARGETS
     )
     assert plan["expected_final"] == {
+        "accounts.0008": "APPLIED",
         "evidence.0014": "APPLIED",
         "operations.0003": "APPLIED",
         "visits.0004": "APPLIED",
@@ -233,6 +242,7 @@ def test_apply_runs_explicit_targets_and_verifies_exact_final_state(
         (target["app"], target["target"])
         for target in initial_plan["execution_targets"]
     ]
+    assert result["verification"]["accounts.0008"] == "APPLIED"
     assert result["verification"]["evidence.0014"] == "APPLIED"
     assert result["verification"]["operations.0003"] == "APPLIED"
     assert result["verification"]["visits.0004"] == "APPLIED"

@@ -11,6 +11,7 @@ from django.contrib.auth.base_user import (
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.db.models import Q
+from django.db.models.functions import Lower
 from django.utils import timezone
 
 from common.identifiers import validate_domain_id
@@ -121,6 +122,10 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampedModel):
     class Meta:
         db_table = "accounts_user"
         constraints = [
+            models.UniqueConstraint(
+                Lower("username"),
+                name="ux_accounts_user_username_ci",
+            ),
             models.CheckConstraint(
                 condition=Q(
                     role_code__in=[

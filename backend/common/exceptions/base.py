@@ -11,9 +11,11 @@ class BackendError(Exception):
         *,
         details: Any | None = None,
         status_code: int = 400,
+        headers: dict[str, str] | None = None,
     ) -> None:
         super().__init__(message)
         self.code = code
         self.message = message
         self.details = {} if details is None else details
         self.status_code = status_code
+        self.headers = {} if headers is None else headers

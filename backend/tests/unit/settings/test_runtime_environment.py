@@ -23,6 +23,23 @@ PRODUCTION_ENV = {
     "DJANGO_ALLOWED_HOSTS": "backend.internal",
     "DJANGO_CORS_ALLOWED_ORIGINS": "https://web.internal",
     "AI_SERVICE_BASE_URL": "https://ai.internal",
+    "CONTRACT_EMAIL_ENCRYPTION_KEY": (
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+    ),
+    "CONTRACT_EMAIL_HMAC_KEY": (
+        "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE="
+    ),
+    "CONTRACT_EMAIL_KEY_VERSION": "test-v1",
+    "P1_AUTH_HMAC_SECRET": "test-p1-auth-secret-at-least-32-bytes",
+    "P1_AUTH_OTP_ENCRYPTION_KEY": (
+        "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI="
+    ),
+    "P1_AUTH_EMAIL_REDIRECT_TO": "test-inbox@example.invalid",
+    "DJANGO_EMAIL_BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+    "DJANGO_EMAIL_HOST": "smtp.internal",
+    "DJANGO_EMAIL_HOST_USER": "smtp-user",
+    "DJANGO_EMAIL_HOST_PASSWORD": "smtp-secret",
+    "DJANGO_DEFAULT_FROM_EMAIL": "no-reply@example.invalid",
     "POSTGRES_DB": "waterbridge_team_integration",
     "POSTGRES_USER": "waterbridge_ti_runtime",
     "POSTGRES_PASSWORD": "must-not-appear",
@@ -94,6 +111,7 @@ def test_production_settings_reject_non_verified_tls():
     assert result.returncode != 0
     assert "must-not-appear" not in output
     assert "database.internal" not in output
+    assert "smtp-secret" not in output
 
 
 def test_production_settings_use_verify_full_ca():
