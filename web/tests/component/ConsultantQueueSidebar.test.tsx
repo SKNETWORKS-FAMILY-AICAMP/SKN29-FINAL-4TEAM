@@ -13,7 +13,7 @@ const BUCKET_COUNTS = {
 } as const;
 
 describe("ConsultantQueueSidebar", () => {
-  it("상담사 메뉴를 아이콘 없는 텍스트 탭으로 표시한다", () => {
+  it("상담사 메뉴를 아이콘이 있는 세로 탭으로 표시한다", () => {
     const { container } = render(
       <MemoryRouter>
         <ConsultantQueueSidebar
@@ -36,9 +36,9 @@ describe("ConsultantQueueSidebar", () => {
       "전화 문의 등록",
       "공지사항",
     ]);
-    expect(container.querySelectorAll("svg")).toHaveLength(0);
+    expect(container.querySelectorAll("svg")).toHaveLength(7);
     expect(container.querySelectorAll(".consultant-work-tab__icon")).toHaveLength(
-      0,
+      7,
     );
     expect(
       tabs.filter((tab) => tab.getAttribute("aria-selected") === "true"),

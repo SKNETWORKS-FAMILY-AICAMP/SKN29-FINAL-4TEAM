@@ -203,19 +203,31 @@ describe("ConsultantInquiryListPage", () => {
     renderPage();
 
     expect(screen.getByLabelText("미배정 상담 대기 목록")).toBeVisible();
+    expect(document.getElementById("consultant-queue-panel")).toHaveClass(
+      "consultant-queue-panel--with-unassigned",
+    );
 
     await user.click(getSidebarTabs().getByRole("tab", { name: /전체 문의90/ }));
     expect(screen.getByLabelText("미배정 상담 대기 목록")).toBeVisible();
+    expect(document.getElementById("consultant-queue-panel")).toHaveClass(
+      "consultant-queue-panel--with-unassigned",
+    );
 
     await user.click(getSidebarTabs().getByRole("tab", { name: /처리 중인 문의/ }));
     expect(
       screen.queryByLabelText("미배정 상담 대기 목록"),
     ).not.toBeInTheDocument();
+    expect(document.getElementById("consultant-queue-panel")).not.toHaveClass(
+      "consultant-queue-panel--with-unassigned",
+    );
 
     await user.click(getSidebarTabs().getByRole("tab", { name: /처리 완료된 문의/ }));
     expect(
       screen.queryByLabelText("미배정 상담 대기 목록"),
     ).not.toBeInTheDocument();
+    expect(document.getElementById("consultant-queue-panel")).not.toHaveClass(
+      "consultant-queue-panel--with-unassigned",
+    );
   });
 
   it("세 업무 탭의 건수는 상담사 문의 상태와 일치한다", () => {

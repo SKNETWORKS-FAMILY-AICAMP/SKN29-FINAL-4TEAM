@@ -13,6 +13,105 @@ const WORK_BUCKETS: readonly ConsultantInquiryBucket[] = [
   "COMPLETED",
 ];
 
+function WorkBucketIcon({ bucket }: { bucket: ConsultantInquiryBucket }) {
+  if (bucket === "ALL") {
+    return (
+      <svg
+        className="consultant-work-tab__icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path d="M5 5.5h14v4H5zM5 12h14v6.5H5z" />
+      </svg>
+    );
+  }
+
+  if (bucket === "NEW") {
+    return (
+      <svg
+        className="consultant-work-tab__icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path d="M4 6.5h16v11H4z" />
+        <path d="m4.8 7.3 7.2 5.4 7.2-5.4" />
+      </svg>
+    );
+  }
+
+  if (bucket === "IN_PROGRESS") {
+    return (
+      <svg
+        className="consultant-work-tab__icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <circle cx="12" cy="12" r="8" />
+        <path d="M12 8v4.8l3.2 2" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      className="consultant-work-tab__icon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <circle cx="12" cy="12" r="8" />
+      <path d="m8.6 12.2 2.2 2.3 4.8-5" />
+    </svg>
+  );
+}
+
+function PhoneInquiryIcon() {
+  return (
+    <svg
+      className="consultant-work-tab__icon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M7.2 4.5 9.7 8 8.2 9.7a13.2 13.2 0 0 0 6.1 6.1l1.7-1.5 3.5 2.5-.8 2.7c-.3.8-1.1 1.3-2 1.2C9.8 20 4 14.2 3.3 7.3c-.1-.9.4-1.7 1.2-2z" />
+      <path d="M14.5 5.5h5M17 3v5" />
+    </svg>
+  );
+}
+
+function DashboardIcon() {
+  return (
+    <svg
+      className="consultant-work-tab__icon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="3.5" width="7" height="4.5" rx="1.5" />
+      <rect x="13.5" y="10.5" width="7" height="10" rx="1.5" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+    </svg>
+  );
+}
+
+function NoticeIcon() {
+  return (
+    <svg
+      className="consultant-work-tab__icon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M6 4.5h12v15H6z" />
+      <path d="M9 8h6M9 11.5h6M9 15h4" />
+    </svg>
+  );
+}
+
 interface ConsultantQueueSidebarProps {
   activeBucket: ConsultantInquiryBucket | null;
   bucketCounts?: Readonly<Record<CounselorWorkBucket, number>>;
@@ -68,6 +167,7 @@ export default function ConsultantQueueSidebar({
           }`}
         >
           <span>
+            <DashboardIcon />
             <strong>업무 대시보드</strong>
           </span>
         </Link>
@@ -95,6 +195,7 @@ export default function ConsultantQueueSidebar({
             onClick={() => openBucket(bucket)}
           >
             <span>
+              <WorkBucketIcon bucket={bucket} />
               <strong>{bucket === "ALL" ? "전체 문의" : WORK_BUCKET_LABELS[bucket]}</strong>
             </span>
             {bucketCounts && (
@@ -119,6 +220,7 @@ export default function ConsultantQueueSidebar({
           }`}
         >
           <span>
+            <PhoneInquiryIcon />
             <strong>전화 문의 등록</strong>
           </span>
         </Link>
@@ -133,6 +235,7 @@ export default function ConsultantQueueSidebar({
           }`}
         >
           <span>
+            <NoticeIcon />
             <strong>공지사항</strong>
           </span>
         </Link>

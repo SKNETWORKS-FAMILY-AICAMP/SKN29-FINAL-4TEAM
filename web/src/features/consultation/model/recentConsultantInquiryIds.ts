@@ -9,7 +9,7 @@ export interface RecentConsultantInquiryIdStorage {
   removeItem(key: string): void;
 }
 
-export const MAX_RECENT_CONSULTANT_INQUIRY_IDS = 3;
+export const MAX_RECENT_CONSULTANT_INQUIRY_IDS = 5;
 
 const STORAGE_KEY_PREFIX = "waterbridge.consultant.recent-inquiry-ids.v1";
 

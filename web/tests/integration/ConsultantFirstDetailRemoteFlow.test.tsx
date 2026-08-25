@@ -293,6 +293,9 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     expect(
       screen.getByRole("button", { name: "처리 중인 문의3" }),
     ).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: "처리 완료된 문의2" }),
+    ).toBeEnabled();
     expect(screen.getByText("Backend에서 받은 상담사 공지")).toBeVisible();
 
     const contactSearch = screen.getByRole("searchbox", {
