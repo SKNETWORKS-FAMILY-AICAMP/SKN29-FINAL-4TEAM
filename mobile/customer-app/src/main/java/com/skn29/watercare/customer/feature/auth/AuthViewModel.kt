@@ -489,17 +489,58 @@ class AuthViewModel(
                 }
 
                 is ApiResult.Failure -> {
-                    _state.value = _state.value.copy(
-                        submitting = false,
-                        error = result.message,
-                        fieldErrors = result.fieldErrors,
-                        retryAfterSeconds = result.retryAfterSeconds,
-                    )
+                    val retryableOtpFailure =
+                        result.code ==
+                            "AUTH_VERIFICATION_FAILED" &&
+                            result.retryAfterSeconds == null
+
+                    _state.value =
+                        _state.value.copy(
+                            submitting = false,
+                            error =
+                                if (retryableOtpFailure) {
+                                    null
+                                } else {
+                                    result.message
+                                },
+                            fieldErrors =
+                                if (retryableOtpFailure) {
+                                    mapOf(
+                                        "otp_code" to
+                                            listOf(
+                                                "\uC778\uC99D\uBC88\uD638\uAC00 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC544\uC694. \uB2E4\uC2DC \uC785\uB825\uD574 \uC8FC\uC138\uC694."
+                                            )
+                                    )
+                                } else {
+                                    result.fieldErrors
+                                },
+                            retryAfterSeconds =
+                                result.retryAfterSeconds,
+                        )
                 }
             }
         }
     }
 
+
+    fun clearSignupOtpFeedback() {
+        val current = _state.value
+
+        if (
+            current.signupStage !=
+            SignupStage.OTP_REQUIRED
+        ) {
+            return
+        }
+
+        _state.value =
+            current.copy(
+                error = null,
+                fieldErrors =
+                    current.fieldErrors -
+                        "otp_code",
+            )
+    }
     fun completeSignup(
         username: String,
         password: String,

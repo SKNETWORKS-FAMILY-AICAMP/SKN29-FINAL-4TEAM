@@ -4,9 +4,9 @@ on:
   pull_request:
     paths:
       - "data/**"
-      - "scripts/contracts/**"
       - "scripts/data/**"
       - ".github/workflows/data-ci.yml"
+      - "tests/deployment/test_data_ci_workflow.py"
       - "contracts/state-machine/**"
       - "backend/apps/accounts/models/customer_profile.py"
       - "backend/apps/accounts/models/user.py"
@@ -31,9 +31,9 @@ on:
   push:
     paths:
       - "data/**"
-      - "scripts/contracts/**"
       - "scripts/data/**"
       - ".github/workflows/data-ci.yml"
+      - "tests/deployment/test_data_ci_workflow.py"
       - "contracts/state-machine/**"
       - "backend/apps/accounts/models/customer_profile.py"
       - "backend/apps/accounts/models/user.py"
@@ -82,11 +82,10 @@ jobs:
           --constraint backend/requirements/constraints-py313.txt
           PyYAML==6.0.3 jsonschema==4.26.0
 
-      - name: Validate approved state machine
-        run: python scripts/contracts/validate_state_machine.py
-
-      - name: Reject state machine diagram drift
-        run: python scripts/contracts/render_state_machine.py --check
+      - name: Verify Data and Contract CI ownership
+        run: >-
+          python -B -m unittest
+          tests.deployment.test_data_ci_workflow -v
 
       - name: Run Data unit tests
         run: python -B -m unittest discover -s data/tools/tests -v

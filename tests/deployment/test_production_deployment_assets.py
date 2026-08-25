@@ -283,12 +283,23 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
 
     def test_deployment_is_sha_locked_and_serialized(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn("cancel-in-progress: false", text)
-        self.assertIn("github.event.workflow_run.head_sha", text)
-        self.assertIn("ref: ${{ env.RELEASE_SHA }}", text)
-        self.assertIn(
-            "tests.deployment.test_production_deployment_assets -v", text
+        backend_ci = (ROOT / ".github/workflows/backend-ci.yml").read_text(
+            encoding="utf-8"
         )
+        socket_ci = (ROOT / ".github/workflows/ai-backend-socket-e2e.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("cancel-in-progress: false", text)
+        self.assertNotIn("workflow_run", text)
+        self.assertIn('      - "v*.*.*"', text)
+        self.assertIn("RELEASE_SHA: ${{ github.sha }}", text)
+        self.assertIn(r"^v[0-9]+\.[0-9]+\.[0-9]+$", text)
+        self.assertIn("git fetch --no-tags origin main:refs/remotes/origin/main", text)
+        self.assertIn('git merge-base --is-ancestor "$RELEASE_SHA" origin/main', text)
+        self.assertIn("ref: ${{ env.RELEASE_SHA }}", text)
+        self.assertIn("tests.deployment.test_production_deployment_assets", text)
+        self.assertIn("tests.deployment.test_backend_ci_workflow", text)
+        self.assertIn("tests.deployment.test_data_ci_workflow", text)
         self.assertNotIn("discover -s tests/deployment", text)
         self.assertIn("environment: production", text)
         self.assertIn("OBSERVABILITY_PARTIAL", text)
@@ -298,6 +309,11 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("target: qa", text)
         self.assertIn("build-args: RELEASE_SHA=${{ env.RELEASE_SHA }}", text)
         self.assertNotIn("ai-gate:", text)
+        self.assertIn("uses: ./.github/workflows/backend-ci.yml", text)
+        self.assertIn("uses: ./.github/workflows/ai-backend-socket-e2e.yml", text)
+        self.assertIn("backend-production-config-gate", text)
+        self.assertIn("workflow_call:", backend_ci)
+        self.assertIn("workflow_call:", socket_ci)
         self.assertIn("Verify published images are non-root and executable", text)
         self.assertIn(
             "data/(synthetic/fixtures|processed/structured/evidence)", text

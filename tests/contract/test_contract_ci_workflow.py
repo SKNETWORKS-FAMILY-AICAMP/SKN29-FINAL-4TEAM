@@ -15,6 +15,7 @@ EXPECTED_TRIGGER_PATHS = {
     "contracts/**",
     "scripts/contracts/**",
     "tests/contract/**",
+    "tests/deployment/test_data_ci_workflow.py",
     ".github/workflows/contracts-ci.yml",
 }
 

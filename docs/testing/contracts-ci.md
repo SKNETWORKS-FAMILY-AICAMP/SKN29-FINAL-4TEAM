@@ -23,8 +23,8 @@
 
 | 필수 Gate | 현재 자동화 | 판정 |
 |---|---|---|
-| `validate_state_machine.py` | Data CI·Contract CI | LOCAL PASS |
-| `render_state_machine.py --check` | Data CI·Contract CI | LOCAL PASS |
+| `validate_state_machine.py` | Contract CI | LOCAL PASS |
+| `render_state_machine.py --check` | Contract CI | LOCAL PASS |
 | `validate_codes.py` | Contract CI에 추가 | LOCAL PASS |
 | `validate_openapi.py` | Contract CI에 추가 | LOCAL PASS |
 | `validate_examples.py` | Contract CI에 추가 | LOCAL PASS |
@@ -122,7 +122,7 @@ jobs:
 3. Workflow 파일 자체가 Trigger 경로에 포함된 Branch 또는 PR에서 최초 실행을 확인한다. **완료**
 4. 7개 Step이 모두 실제 실행되고 Exit Code `0`인지 확인한다. **완료**
 5. 실패 로그가 State·Mermaid·Code·OpenAPI·Example·Crosswalk·Test별로 구분되는지 확인한다.
-6. Data CI의 State·Mermaid 중복은 Contract CI 원격 PASS와 병합 Gate 전환을 확인한 뒤 제거 여부를 결정한다.
+6. Data CI의 State·Mermaid 중복은 제거하고 Contract CI를 단일 소유자로 유지한다. **완료**
 7. CI를 삭제하거나 `continue-on-error`를 사용해 Gate를 약화하지 않는다.
 
 ## 5. 책임 경계
@@ -143,7 +143,7 @@ Contract CI가 실패하면 Step 이름, 대상 SHA, 재현 명령과 Exit Code�
 - 주요 계약 경로가 모두 Trigger 대상이다.
 - 7개 Gate가 별도 Step으로 자동 실행된다.
 - 실제 Branch 또는 PR Run이 전체 PASS한다. **완료**
-- Data CI와의 중복·장애 대응 책임이 확정된다.
+- State·Mermaid는 Contract CI가 단일 소유하며 장애 대응 책임이 확정된다.
 - Run URL과 대상 SHA가 기록된다.
 
 ### 2026-08-11 로컬 결과
