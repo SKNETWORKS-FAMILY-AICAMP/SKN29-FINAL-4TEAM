@@ -18,6 +18,7 @@ import type {
   ConsultantInquiryStatusDto,
 } from "../../features/consultation/api/consultantWorkspaceRemoteTypes";
 import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
+import ConsultantHeaderBrand from "../../features/consultation/components/ConsultantHeaderBrand";
 import ConsultantUserMenu from "../../features/consultation/components/ConsultantUserMenu";
 import { useConsultantInquiryListQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
 import type { CounselorWorkBucket } from "../../features/consultation/model/consultantWorkspaceTypes";
@@ -344,6 +345,7 @@ export default function PhoneInquiryCreatePage() {
     <div className="simple-consultant-app consultant-queue-app phone-inquiry-entry-app">
       <main className="simple-consultant-main consultant-queue-main">
         <header className="simple-topbar consultant-main-header phone-inquiry-main-header consultant-unified-header">
+          <ConsultantHeaderBrand />
           <ConsultantUserMenu className="simple-user" />
         </header>
 

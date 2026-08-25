@@ -3851,6 +3851,32 @@ html body
   }
 }
 
+/* The wordmark now belongs to the main header, so the sidebar starts with navigation. */
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  #consultant-queue-sidebar {
+  grid-template-rows: minmax(0, 1fr) !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  #consultant-queue-sidebar
+  .consultant-work-tabs {
+  grid-row: 1 !important;
+}
+
+@media (min-width: 901px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tabs {
+    align-content: center !important;
+  }
+}
+
 @media (max-width: 900px) {
   html body
     #root

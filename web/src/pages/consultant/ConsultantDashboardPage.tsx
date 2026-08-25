@@ -24,6 +24,7 @@ import {
 } from "../../entities/inquiry/inquiryIdentifiers";
 import CompactConsultationDesk from "../../features/consultation/components/CompactConsultationDesk";
 import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
+import ConsultantHeaderBrand from "../../features/consultation/components/ConsultantHeaderBrand";
 import ConsultantUserMenu from "../../features/consultation/components/ConsultantUserMenu";
 import RemoteConsultantFirstDetailPanel from "../../features/consultation/components/RemoteConsultantFirstDetailPanel";
 import useCounselorQueueFilters from "../../features/consultation/hooks/useCounselorQueueFilters";
@@ -671,6 +672,7 @@ export default function ConsultantDashboardPage() {
         </h1>
 
         <header className="simple-topbar consultant-main-header consultant-unified-header">
+          <ConsultantHeaderBrand />
           <ConsultantUserMenu className="simple-user" />
         </header>
 

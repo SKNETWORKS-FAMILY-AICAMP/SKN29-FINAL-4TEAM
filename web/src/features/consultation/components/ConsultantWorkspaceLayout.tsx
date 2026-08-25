@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import ConsultantHeaderBrand from "./ConsultantHeaderBrand";
 import ConsultantUserMenu from "./ConsultantUserMenu";
 
 interface ConsultantWorkspaceLayoutProps {
@@ -26,6 +27,7 @@ export default function ConsultantWorkspaceLayout({
       </a>
 
       <header className="v6-topbar consultant-unified-header">
+        <ConsultantHeaderBrand />
         <ConsultantUserMenu />
       </header>
 
