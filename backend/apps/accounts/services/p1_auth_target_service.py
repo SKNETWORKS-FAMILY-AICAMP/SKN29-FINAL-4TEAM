@@ -49,7 +49,10 @@ class P1AuthTargetService:
                 customer=customer,
                 is_active=True,
                 is_primary=True,
-                data_classification="synthetic",
+                data_classification__in=(
+                    ContractEmailContact.DataClassification.SYNTHETIC,
+                    ContractEmailContact.DataClassification.APPROVED_TEST_PII,
+                ),
             )
             .first()
         )

@@ -1,4 +1,4 @@
-"""P1-A 합성 계약 이메일 암호화·검색 HMAC 경계."""
+"""P1-A 계약 이메일 암호화·검색 HMAC 경계."""
 
 from __future__ import annotations
 
@@ -28,16 +28,23 @@ class ProtectedContractEmail:
     key_version: str
 
 
-def normalize_synthetic_contract_email(value: str) -> str:
-    """합성 계약 이메일을 결정적으로 정규화하고 실주소를 차단한다."""
+def normalize_contract_email(value: str) -> str:
+    """계약 이메일을 결정적으로 정규화한다."""
 
     normalized = normalize("NFKC", str(value)).strip().casefold()
     try:
         validate_email(normalized)
     except ValidationError as exc:
         raise ContractEmailProtectionError(
-            "합성 계약 이메일 형식이 올바르지 않습니다."
+            "계약 이메일 형식이 올바르지 않습니다."
         ) from exc
+    return normalized
+
+
+def normalize_synthetic_contract_email(value: str) -> str:
+    """기존 합성 Fixture 이메일을 정규화하고 실주소를 차단한다."""
+
+    normalized = normalize_contract_email(value)
     domain = normalized.rsplit("@", 1)[-1]
     if not domain.endswith(".invalid"):
         raise ContractEmailProtectionError(
@@ -97,18 +104,41 @@ class ContractEmailProtectionService:
             key_version=settings.CONTRACT_EMAIL_KEY_VERSION,
         )
 
-    def protect(self, email: str) -> ProtectedContractEmail:
-        normalized = normalize_synthetic_contract_email(email)
+    def _protect_normalized(self, normalized: str) -> ProtectedContractEmail:
         encoded = normalized.encode("utf-8")
         return ProtectedContractEmail(
             encrypted_email=self._fernet.encrypt(encoded).decode("ascii"),
-            email_lookup_hmac=hmac.new(
-                self._hmac_key,
-                encoded,
-                hashlib.sha256,
-            ).hexdigest(),
+            email_lookup_hmac=self._lookup_hmac_normalized(normalized),
             key_version=self._key_version,
         )
+
+    def _lookup_hmac_normalized(self, normalized: str) -> str:
+        return hmac.new(
+            self._hmac_key,
+            normalized.encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest()
+
+    def protect(self, email: str) -> ProtectedContractEmail:
+        """기존 합성 Fixture 이메일만 보호한다."""
+
+        normalized = normalize_synthetic_contract_email(email)
+        return self._protect_normalized(normalized)
+
+    def protect_approved_test(self, email: str) -> ProtectedContractEmail:
+        """PM 승인 로컬 E2E의 실제 시험 수신 주소를 보호한다."""
+
+        normalized = normalize_contract_email(email)
+        if normalized.rsplit("@", 1)[-1].endswith(".invalid"):
+            raise ContractEmailProtectionError(
+                "승인 시험 수신 주소는 실제 메일 수신이 가능해야 합니다."
+            )
+        return self._protect_normalized(normalized)
+
+    def lookup_hmac(self, email: str) -> str:
+        """평문을 저장하지 않고 입력 이메일의 비교용 HMAC만 만든다."""
+
+        return self._lookup_hmac_normalized(normalize_contract_email(email))
 
     def decrypt(self, encrypted_email: str) -> str:
         try:
@@ -122,10 +152,5 @@ class ContractEmailProtectionService:
             ) from exc
 
     def matches(self, email: str, expected_hmac: str) -> bool:
-        normalized = normalize_synthetic_contract_email(email)
-        actual = hmac.new(
-            self._hmac_key,
-            normalized.encode("utf-8"),
-            hashlib.sha256,
-        ).hexdigest()
+        actual = self.lookup_hmac(email)
         return hmac.compare_digest(actual, str(expected_hmac))
