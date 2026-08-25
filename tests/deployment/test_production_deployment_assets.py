@@ -31,6 +31,8 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         deploy = DEPLOY.read_text(encoding="utf-8")
         self.assertIn("compose config --services | sort", deploy)
         self.assertIn("expected_services=(ai backend trace-store web)", deploy)
+        self.assertIn("compose config --images", deploy)
+        self.assertNotIn("if compose config | grep", deploy)
 
     def test_application_images_are_digest_addressed(self) -> None:
         text = COMPOSE.read_text(encoding="utf-8")
@@ -161,6 +163,18 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("DJANGO_ALLOWED_HOSTS", dockerfile)
         self.assertIn("headers={'Host': host}", dockerfile)
         self.assertIn("context: backend", workflow)
+
+    def test_gunicorn_config_gate_uses_verify_full_without_runtime_secrets(
+        self,
+    ) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("DJANGO_SECRET_KEY=ci-production-config-check-only", workflow)
+        self.assertIn("POSTGRES_SSLMODE=verify-full", workflow)
+        self.assertIn(
+            "POSTGRES_SSLROOTCERT=/etc/ssl/certs/ca-certificates.crt",
+            workflow,
+        )
+        self.assertNotIn("secrets.", workflow)
 
     def test_runtime_preflights_enforce_approved_database_boundary(self) -> None:
         backend = BACKEND_PREFLIGHT.read_text(encoding="utf-8")
