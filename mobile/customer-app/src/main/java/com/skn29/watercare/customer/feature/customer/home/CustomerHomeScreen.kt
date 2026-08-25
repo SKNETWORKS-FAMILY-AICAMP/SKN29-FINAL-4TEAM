@@ -70,6 +70,29 @@ fun CustomerHomeScreen(
     )
 
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+
+    LaunchedEffect(
+        state.errorHttpStatus,
+        state.errorCode,
+        state.loggingOut,
+        offlinePreview,
+    ) {
+        val sessionExpired =
+            !offlinePreview &&
+                (
+                    state.errorHttpStatus == 401 ||
+                        state.errorCode ==
+                            "AUTHENTICATION_REQUIRED"
+                )
+
+        if (
+            sessionExpired &&
+            !state.loggingOut
+        ) {
+            viewModel.logout(onLogout)
+        }
+    }
     var selectionConfirmed by rememberSaveable(state.user?.id, offlinePreview) {
         mutableStateOf(false)
     }
@@ -219,13 +242,161 @@ fun CustomerHomeContent(
         careEnabled = !state.offlinePreview,
         onOpenCare = onOpenCare,
     ) {
-        if (state.loading) {
-            LoadingBlock("정수기 정보를 불러오고 있어요")
+        val initialLoading =
+            state.loading &&
+                state.home == null
+
+        val emptySubscription =
+            !state.loading &&
+                state.home == null &&
+                state.errorCode ==
+                    "SUBSCRIPTION_EMPTY"
+
+        val blockingError =
+            !state.loading &&
+                state.home == null &&
+                state.error != null &&
+                !emptySubscription
+
+        val missingHome =
+            !state.loading &&
+                state.home == null &&
+                state.error == null &&
+                !emptySubscription
+
+        if (initialLoading) {
+            LoadingBlock(
+                "정수기 정보를 불러오고 있어요"
+            )
         }
 
-        state.error?.let { message ->
+        if (emptySubscription) {
+            Column(
+                modifier =
+                    Modifier.fillMaxWidth(),
+                verticalArrangement =
+                    Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = "등록된 정수기가 없어요",
+                    style =
+                        MaterialTheme
+                            .typography
+                            .titleLarge,
+                    fontWeight =
+                        FontWeight.SemiBold,
+                )
+
+                Text(
+                    text =
+                        "구독 중인 정수기가 연결되면 홈에서 정수기 관리와 문의 기능을 이용할 수 있어요.",
+                    style =
+                        MaterialTheme
+                            .typography
+                            .bodyMedium,
+                    color = palette.textMuted,
+                )
+
+                ReferenceGlassButton(
+                    text = "다시 확인",
+                    palette = palette,
+                    onClick = onRetry,
+                    enabled =
+                        !state.loggingOut,
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                )
+
+                ReferenceGlassButton(
+                    text = "로그아웃",
+                    palette = palette,
+                    onClick = onLogout,
+                    enabled =
+                        !state.loggingOut,
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                )
+            }
+        }
+
+        if (blockingError) {
             ErrorCard(
-                message = customerHomeErrorMessage(message),
+                message =
+                    customerHomeErrorMessage(
+                        requireNotNull(
+                            state.error
+                        )
+                    ),
+                onRetry = onRetry,
+            )
+        }
+
+        if (missingHome) {
+            Column(
+                modifier =
+                    Modifier.fillMaxWidth(),
+                verticalArrangement =
+                    Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = "정수기 정보를 확인할 수 없어요",
+                    style =
+                        MaterialTheme
+                            .typography
+                            .titleLarge,
+                    fontWeight =
+                        FontWeight.SemiBold,
+                )
+
+                Text(
+                    text = "잠시 후 다시 확인해 주세요.",
+                    style =
+                        MaterialTheme
+                            .typography
+                            .bodyMedium,
+                    color = palette.textMuted,
+                )
+
+                ReferenceGlassButton(
+                    text = "다시 확인",
+                    palette = palette,
+                    onClick = onRetry,
+                    enabled =
+                        !state.loggingOut,
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                )
+            }
+        }
+
+        if (
+            state.loading &&
+            state.home != null
+        ) {
+            LoadingBlock(
+                "최신 정수기 정보를 확인하고 있어요"
+            )
+        }
+
+        if (
+            state.selectingSubscription &&
+            !state.loading &&
+            state.home != null
+        ) {
+            LoadingBlock(
+                "선택한 정수기를 불러오고 있어요"
+            )
+        }
+
+        if (
+            state.home != null &&
+            state.error != null
+        ) {
+            ErrorCard(
+                message =
+                    customerHomeErrorMessage(
+                        state.error
+                    ),
                 onRetry = onRetry,
             )
         }

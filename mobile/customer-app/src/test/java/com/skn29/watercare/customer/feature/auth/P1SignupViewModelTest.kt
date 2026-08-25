@@ -381,6 +381,218 @@ class P1SignupViewModelTest {
             )
         }
 
+    @Test
+    fun resendSignupOtp_replacesOldChallengeAndVerifiesAgainstNewestOnly() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val oldChallengeId =
+                "123e4567-e89b-12d3-a456-426614174001"
+
+            val newChallengeId =
+                "123e4567-e89b-12d3-a456-426614174002"
+
+            val p1 =
+                FakeP1AuthRepository(
+                    challengeResults =
+                        mutableListOf(
+                            ApiResult.Success(
+                                P1ChallengeAccepted(
+                                    challengeId =
+                                        oldChallengeId,
+                                    expiresIn = 300,
+                                    resendAfter = 60,
+                                    message =
+                                        "인증번호를 전송했습니다.",
+                                )
+                            ),
+                            ApiResult.Success(
+                                P1ChallengeAccepted(
+                                    challengeId =
+                                        newChallengeId,
+                                    expiresIn = 300,
+                                    resendAfter = 60,
+                                    message =
+                                        "새 인증번호를 전송했습니다.",
+                                )
+                            ),
+                        ),
+                    verifyResults =
+                        mutableListOf(
+                            ApiResult.Failure(
+                                code =
+                                    "AUTH_VERIFICATION_FAILED",
+                                message =
+                                    "인증정보를 확인할 수 없습니다.",
+                                httpStatus = 401,
+                            ),
+                            ApiResult.Success(
+                                P1ClaimTicket(
+                                    claimTicket =
+                                        "ROTATED_CLAIM_TICKET_12345678901234567890",
+                                    expiresIn = 300,
+                                )
+                            ),
+                        ),
+                )
+
+            val viewModel =
+                newViewModel(p1)
+
+            advanceUntilIdle()
+
+            viewModel.startSignupVerification(
+                name = "테스트 고객",
+                email =
+                    "test.user@example.com",
+                username = "water.user",
+                password = "Password1234",
+            )
+
+            advanceUntilIdle()
+
+            assertEquals(
+                1,
+                viewModel.state.value
+                    .signupChallengeVersion,
+            )
+
+            viewModel.verifySignupOtp(
+                "000000"
+            )
+
+            advanceUntilIdle()
+
+            assertEquals(
+                listOf(oldChallengeId),
+                p1.verifiedChallengeIds,
+            )
+
+            val firstKey =
+                p1.challengeIdempotencyKeys
+                    .single()
+
+            viewModel
+                .resendSignupVerification()
+
+            advanceUntilIdle()
+
+            assertEquals(
+                2,
+                p1.challengeCalls,
+            )
+
+            assertEquals(
+                2,
+                viewModel.state.value
+                    .signupChallengeVersion,
+            )
+
+            assertTrue(
+                firstKey !=
+                    p1.challengeIdempotencyKeys[1]
+            )
+
+            viewModel.verifySignupOtp(
+                "222222"
+            )
+
+            advanceUntilIdle()
+
+            assertEquals(
+                listOf(
+                    oldChallengeId,
+                    newChallengeId,
+                ),
+                p1.verifiedChallengeIds,
+            )
+
+            assertEquals(
+                newChallengeId,
+                p1.lastVerifiedChallengeId,
+            )
+
+            assertEquals(
+                SignupStage.ACCOUNT_REQUIRED,
+                viewModel.state.value
+                    .signupStage,
+            )
+        }
+
+    @Test
+    fun signupCredentialLengthLimits_rejectValuesOverTwentyLocally() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val usernameRepository =
+                FakeP1AuthRepository()
+
+            val usernameViewModel =
+                newViewModel(
+                    usernameRepository
+                )
+
+            advanceUntilIdle()
+
+            usernameViewModel
+                .startSignupVerification(
+                    name = "테스트 고객",
+                    email =
+                        "test.user@example.com",
+                    username =
+                        "a".repeat(21),
+                    password =
+                        "Password1234",
+                )
+
+            advanceUntilIdle()
+
+            assertTrue(
+                usernameViewModel.state.value
+                    .fieldErrors["username"]
+                    .isNullOrEmpty()
+                    .not()
+            )
+
+            assertEquals(
+                0,
+                usernameRepository
+                    .challengeCalls,
+            )
+
+            val passwordRepository =
+                FakeP1AuthRepository()
+
+            val passwordViewModel =
+                newViewModel(
+                    passwordRepository
+                )
+
+            advanceUntilIdle()
+
+            passwordViewModel
+                .startSignupVerification(
+                    name = "테스트 고객",
+                    email =
+                        "test.user@example.com",
+                    username =
+                        "water.user",
+                    password =
+                        "a".repeat(20) + "1",
+                )
+
+            advanceUntilIdle()
+
+            assertTrue(
+                passwordViewModel.state.value
+                    .fieldErrors["password"]
+                    .isNullOrEmpty()
+                    .not()
+            )
+
+            assertEquals(
+                0,
+                passwordRepository
+                    .challengeCalls,
+            )
+        }
+
     private suspend fun TestScope.prepareVerifiedSignup(
         viewModel: AuthViewModel,
     ) {
@@ -448,6 +660,12 @@ class P1SignupViewModelTest {
                     expiresIn = 300,
                 )
             ),
+        private val challengeResults:
+            MutableList<ApiResult<P1ChallengeAccepted>>? =
+                null,
+        private val verifyResults:
+            MutableList<ApiResult<P1ClaimTicket>>? =
+                null,
         private val signupResults: MutableList<ApiResult<SessionResponse>> =
             mutableListOf(ApiResult.Success(defaultSession())),
     ) : P1AuthRepository {
@@ -459,25 +677,67 @@ class P1SignupViewModelTest {
         var lastSignupRequest: P1SignupRequest? = null
         var lastSignupIdempotencyKey: String? = null
 
-        val signupIdempotencyKeys = mutableListOf<String>()
+        val challengeIdempotencyKeys =
+            mutableListOf<String>()
+
+        val verifiedChallengeIds =
+            mutableListOf<String>()
+
+        var challengeCalls = 0
+        var verifyCalls = 0
+
+        val signupIdempotencyKeys =
+            mutableListOf<String>()
+
         var signupCalls = 0
 
         override suspend fun createContractVerificationChallenge(
             request: P1ChallengeRequest,
             idempotencyKey: String,
         ): ApiResult<P1ChallengeAccepted> {
-            lastChallengeRequest = request
-            lastChallengeIdempotencyKey = idempotencyKey
-            return challengeResult
+            challengeCalls += 1
+
+            challengeIdempotencyKeys +=
+                idempotencyKey
+
+            lastChallengeRequest =
+                request
+
+            lastChallengeIdempotencyKey =
+                idempotencyKey
+
+            return if (
+                challengeResults != null &&
+                challengeResults.isNotEmpty()
+            ) {
+                challengeResults.removeAt(0)
+            } else {
+                challengeResult
+            }
         }
 
         override suspend fun verifyContractVerificationChallenge(
             challengeId: String,
             request: P1OtpVerificationRequest,
         ): ApiResult<P1ClaimTicket> {
-            lastVerifiedChallengeId = challengeId
+            verifyCalls += 1
+
+            verifiedChallengeIds +=
+                challengeId
+
+            lastVerifiedChallengeId =
+                challengeId
+
             lastOtpRequest = request
-            return verifyResult
+
+            return if (
+                verifyResults != null &&
+                verifyResults.isNotEmpty()
+            ) {
+                verifyResults.removeAt(0)
+            } else {
+                verifyResult
+            }
         }
 
         override suspend fun signup(

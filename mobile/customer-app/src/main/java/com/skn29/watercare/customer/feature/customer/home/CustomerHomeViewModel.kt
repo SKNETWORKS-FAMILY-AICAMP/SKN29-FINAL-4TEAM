@@ -269,7 +269,9 @@ class CustomerHomeViewModel(
         if (
             runtimeConfig.mode != CustomerCareMode.REMOTE ||
             _state.value.offlinePreview ||
+            _state.value.loading ||
             _state.value.selectingSubscription ||
+            _state.value.loggingOut ||
             subscriptionId == _state.value.selectedSubscriptionId
         ) {
             return

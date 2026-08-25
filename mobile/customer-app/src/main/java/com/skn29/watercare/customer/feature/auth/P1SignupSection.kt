@@ -9,7 +9,9 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -22,6 +24,7 @@ import com.skn29.watercare.core.model.P1ConsentCode
 import com.skn29.watercare.core.model.P1ConsentRequest
 import com.skn29.watercare.core.ui.components.ReferenceGlassButton
 import com.skn29.watercare.core.ui.components.WaterBridgeCustomerPalette
+import kotlinx.coroutines.delay
 
 /*
  * P1-A G2는 consent version을 필수 문자열로 정의하지만
@@ -152,7 +155,7 @@ internal fun P1SignupSection(
                     },
                     supportingText = {
                         Text(
-                            "4~150자, 영문·숫자·.·_·- 사용"
+                            "4~20자, 영문·숫자·.·_·- 사용"
                         )
                     },
                     singleLine = true,
@@ -187,7 +190,7 @@ internal fun P1SignupSection(
                     },
                     supportingText = {
                         Text(
-                            "12~64자, 영문과 숫자를 포함해 주세요."
+                            "12~20자, 영문과 숫자를 포함해 주세요."
                         )
                     },
                     singleLine = true,
@@ -240,25 +243,123 @@ internal fun P1SignupSection(
             }
 
             SignupStage.OTP_REQUIRED -> {
+                var resendRemaining by
+                    remember(
+                        state.signupChallengeVersion
+                    ) {
+                        mutableIntStateOf(
+                            state.resendAfterSeconds
+                                ?: 0
+                        )
+                    }
+
+                var otpExpiresRemaining by
+                    remember(
+                        state.signupChallengeVersion
+                    ) {
+                        mutableIntStateOf(
+                            state.challengeExpiresInSeconds
+                                ?: 0
+                        )
+                    }
+
+                LaunchedEffect(
+                    state.signupChallengeVersion
+                ) {
+                    resendRemaining =
+                        state.resendAfterSeconds
+                            ?: 0
+
+                    otpExpiresRemaining =
+                        state.challengeExpiresInSeconds
+                            ?: 0
+
+                    while (
+                        resendRemaining > 0 ||
+                        otpExpiresRemaining > 0
+                    ) {
+                        delay(1_000L)
+
+                        if (resendRemaining > 0) {
+                            resendRemaining -= 1
+                        }
+
+                        if (otpExpiresRemaining > 0) {
+                            otpExpiresRemaining -= 1
+                        }
+                    }
+                }
+
+                LaunchedEffect(
+                    state.retryAfterSeconds
+                ) {
+                    val retry =
+                        state.retryAfterSeconds
+                            ?: return@LaunchedEffect
+
+                    if (retry > resendRemaining) {
+                        resendRemaining = retry
+                    }
+                }
+
                 state.signupMessage?.let { message ->
                     Text(
                         text = message,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style =
+                            MaterialTheme
+                                .typography
+                                .bodyMedium,
                     )
                 }
 
-                state.challengeExpiresInSeconds?.let { seconds ->
+                if (otpExpiresRemaining > 0) {
                     Text(
-                        text = "인증번호 유효시간: ${seconds}초",
-                        style = MaterialTheme.typography.bodySmall,
+                        text =
+                            "인증번호 유효시간: " +
+                                "${otpExpiresRemaining}초",
+                        style =
+                            MaterialTheme
+                                .typography
+                                .bodySmall,
                         color = palette.textMuted,
                     )
+                } else {
+                    Text(
+                        text =
+                            "인증번호가 만료되었어요. 새 인증번호를 받아 주세요.",
+                        style =
+                            MaterialTheme
+                                .typography
+                                .bodySmall,
+                        color =
+                            MaterialTheme
+                                .colorScheme
+                                .error,
+                    )
                 }
 
-                state.resendAfterSeconds?.let { seconds ->
+                val otpVerificationFailed =
+                    state.error != null ||
+                        state.fieldErrors["otp_code"]
+                            .isNullOrEmpty()
+                            .not()
+
+                val shouldResend =
+                    otpVerificationFailed ||
+                        otpExpiresRemaining <= 0
+
+                if (
+                    resendRemaining > 0 &&
+                    shouldResend
+                ) {
                     Text(
-                        text = "재전송은 ${seconds}초 후 가능합니다.",
-                        style = MaterialTheme.typography.bodySmall,
+                        text =
+                            "재전송은 " +
+                                "${resendRemaining}초 후 가능합니다.",
+                        style =
+                            MaterialTheme
+                                .typography
+                                .bodySmall,
                         color = palette.textMuted,
                     )
                 }
@@ -271,18 +372,26 @@ internal fun P1SignupSection(
                                 .filter(Char::isDigit)
                                 .take(6)
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("인증번호 6자리") },
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    label = {
+                        Text("인증번호 6자리")
+                    },
                     singleLine = true,
-                    enabled = !state.submitting,
+                    enabled =
+                        !state.submitting &&
+                            !shouldResend &&
+                            otpExpiresRemaining > 0,
                     isError =
-                        state.fieldErrors["otp_code"]
-                            .isNullOrEmpty()
-                            .not(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.NumberPassword,
-                        imeAction = ImeAction.Done,
-                    ),
+                        otpVerificationFailed,
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType =
+                                KeyboardType
+                                    .NumberPassword,
+                            imeAction =
+                                ImeAction.Done,
+                        ),
                 )
 
                 FieldError(
@@ -291,16 +400,45 @@ internal fun P1SignupSection(
                 )
 
                 ReferenceGlassButton(
-                    text = "인증 확인",
+                    text =
+                        when {
+                            !shouldResend ->
+                                "인증 확인"
+
+                            resendRemaining > 0 ->
+                                "인증번호 재전송 " +
+                                    "${resendRemaining}초"
+
+                            else ->
+                                "인증번호 재전송"
+                        },
                     palette = palette,
                     onClick = {
-                        viewModel.verifySignupOtp(otpCode)
+                        if (shouldResend) {
+                            otpCode = ""
+
+                            viewModel
+                                .resendSignupVerification()
+                        } else {
+                            viewModel
+                                .verifySignupOtp(
+                                    otpCode
+                                )
+                        }
                     },
                     enabled =
                         !state.submitting &&
-                            state.backendAvailable == true,
+                            state.backendAvailable ==
+                                true &&
+                            if (shouldResend) {
+                                resendRemaining <= 0
+                            } else {
+                                otpCode.length == 6 &&
+                                    otpExpiresRemaining > 0
+                            },
                     accent = true,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier.fillMaxWidth(),
                 )
             }
 

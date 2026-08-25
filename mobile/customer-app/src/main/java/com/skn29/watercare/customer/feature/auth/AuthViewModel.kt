@@ -54,6 +54,7 @@ data class AuthUiState(
     val signupCompletedUsername: String? = null,
     val challengeExpiresInSeconds: Int? = null,
     val resendAfterSeconds: Int? = null,
+    val signupChallengeVersion: Int = 0,
     val usernameRecoveryStage: UsernameRecoveryStage =
         UsernameRecoveryStage.IDLE,
     val usernameRecoveryMessage: String? = null,
@@ -178,11 +179,11 @@ class AuthViewModel(
                         )
 
                     normalizedUsername.length !in
-                        4..150 ->
+                        4..20 ->
                         put(
                             "username",
                             listOf(
-                                "아이디는 4~150자로 입력해 주세요."
+                                "아이디는 4~20자로 입력해 주세요."
                             ),
                         )
 
@@ -198,14 +199,14 @@ class AuthViewModel(
                 }
 
                 if (
-                    password.length !in 12..64 ||
+                    password.length !in 12..20 ||
                     !hasLetter ||
                     !hasDigit
                 ) {
                     put(
                         "password",
                         listOf(
-                            "비밀번호는 12~64자이며 영문과 숫자를 포함해야 합니다."
+                            "비밀번호는 12~20자이며 영문과 숫자를 포함해야 합니다."
                         ),
                     )
                 }
@@ -286,6 +287,9 @@ class AuthViewModel(
                             resendAfterSeconds =
                                 result.value
                                     .resendAfter,
+                            signupChallengeVersion =
+                                _state.value
+                                    .signupChallengeVersion + 1,
                             fieldErrors =
                                 emptyMap(),
                             retryAfterSeconds =
@@ -304,6 +308,110 @@ class AuthViewModel(
                             retryAfterSeconds =
                                 result
                                     .retryAfterSeconds,
+                        )
+                }
+            }
+        }
+    }
+
+    fun resendSignupVerification() {
+        if (_state.value.submitting) return
+
+        if (
+            _state.value.signupStage !=
+            SignupStage.OTP_REQUIRED
+        ) {
+            return
+        }
+
+        val name = signupName
+        val email = signupEmail
+
+        if (
+            name.isNullOrBlank() ||
+            email.isNullOrBlank()
+        ) {
+            _state.value =
+                _state.value.copy(
+                    error =
+                        "인증 요청을 다시 시작해 주세요.",
+                    fieldErrors = emptyMap(),
+                )
+            return
+        }
+
+        val repository = p1AuthRepository
+
+        if (repository == null) {
+            _state.value =
+                _state.value.copy(
+                    error =
+                        "회원가입 기능을 사용할 수 없습니다.",
+                    fieldErrors = emptyMap(),
+                )
+            return
+        }
+
+        viewModelScope.launch {
+            _state.value =
+                _state.value.copy(
+                    submitting = true,
+                    error = null,
+                    fieldErrors = emptyMap(),
+                    retryAfterSeconds = null,
+                )
+
+            when (
+                val result =
+                    repository
+                        .createContractVerificationChallenge(
+                            request =
+                                P1ChallengeRequest(
+                                    name = name,
+                                    email = email,
+                                ),
+                            idempotencyKey =
+                                UUID.randomUUID()
+                                    .toString(),
+                        )
+            ) {
+                is ApiResult.Success -> {
+                    // Always replace the old challenge.
+                    // Future verification therefore uses
+                    // only the latest server challenge.
+                    signupChallengeId =
+                        result.value.challengeId
+
+                    _state.value =
+                        _state.value.copy(
+                            submitting = false,
+                            signupStage =
+                                SignupStage
+                                    .OTP_REQUIRED,
+                            signupMessage =
+                                result.value.message,
+                            challengeExpiresInSeconds =
+                                result.value.expiresIn,
+                            resendAfterSeconds =
+                                result.value.resendAfter,
+                            signupChallengeVersion =
+                                _state.value
+                                    .signupChallengeVersion + 1,
+                            error = null,
+                            fieldErrors = emptyMap(),
+                            retryAfterSeconds = null,
+                        )
+                }
+
+                is ApiResult.Failure -> {
+                    _state.value =
+                        _state.value.copy(
+                            submitting = false,
+                            error = result.message,
+                            fieldErrors =
+                                result.fieldErrors,
+                            retryAfterSeconds =
+                                result.retryAfterSeconds,
                         )
                 }
             }
@@ -403,8 +511,8 @@ class AuthViewModel(
 
         val localErrors = buildMap<String, List<String>> {
             when {
-                normalizedUsername.length !in 4..150 ->
-                    put("username", listOf("아이디는 4~150자로 입력해 주세요."))
+                normalizedUsername.length !in 4..20 ->
+                    put("username", listOf("아이디는 4~20자로 입력해 주세요."))
 
                 !Regex("""[A-Za-z0-9._-]+""").matches(normalizedUsername) ->
                     put("username", listOf("아이디는 영문, 숫자, ., _, -만 사용할 수 있습니다."))
@@ -415,10 +523,10 @@ class AuthViewModel(
             }
             val hasDigit = password.any(Char::isDigit)
 
-            if (password.length !in 12..64 || !hasLetter || !hasDigit) {
+            if (password.length !in 12..20 || !hasLetter || !hasDigit) {
                 put(
                     "password",
-                    listOf("비밀번호는 12~64자이며 영문과 숫자를 포함해야 합니다."),
+                    listOf("비밀번호는 12~20자이며 영문과 숫자를 포함해야 합니다."),
                 )
             }
 
