@@ -1,9 +1,16 @@
-name: Production Deploy
+name: Production Deploy Trusted Implementation
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  workflow_call:
+    inputs:
+      release_sha:
+        description: Commit SHA selected by the release tag event.
+        required: true
+        type: string
+      release_tag:
+        description: Stable SemVer release tag selected by the tag event.
+        required: true
+        type: string
 
 permissions:
   actions: read
@@ -15,7 +22,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RELEASE_SHA: ${{ github.sha }}
+  RELEASE_SHA: ${{ inputs.release_sha }}
   AWS_REGION: ${{ vars.AWS_REGION }}
   AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
   EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
@@ -41,9 +48,21 @@ jobs:
       - name: Verify stable SemVer tag and main ancestry
         shell: bash
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          CALLER_EVENT: ${{ github.event_name }}
+          CALLER_REF: ${{ github.ref }}
+          CALLER_REF_NAME: ${{ github.ref_name }}
+          CALLER_REF_TYPE: ${{ github.ref_type }}
+          CALLER_REPOSITORY: ${{ github.repository }}
+          CALLER_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
+          [[ "$CALLER_REPOSITORY" == "SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM" ]]
+          [[ "$CALLER_EVENT" == "push" ]]
+          [[ "$CALLER_REF_TYPE" == "tag" ]]
+          [[ "$CALLER_REF" == "refs/tags/${RELEASE_TAG}" ]]
+          [[ "$CALLER_REF_NAME" == "$RELEASE_TAG" ]]
+          [[ "$CALLER_SHA" == "$RELEASE_SHA" ]]
           [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
             echo "Production release tag must be stable SemVer: ${RELEASE_TAG}" >&2
             exit 1
@@ -103,6 +122,7 @@ jobs:
         run: >-
           python -B -m unittest
           tests.deployment.test_production_deployment_assets
+          tests.deployment.test_github_oidc_trust
           tests.deployment.test_backend_ci_workflow
           tests.deployment.test_data_ci_workflow
           -v
