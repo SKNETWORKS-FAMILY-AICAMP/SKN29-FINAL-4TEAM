@@ -205,6 +205,10 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("cancel-in-progress: false", text)
         self.assertIn("github.event.workflow_run.head_sha", text)
         self.assertIn("ref: ${{ env.RELEASE_SHA }}", text)
+        self.assertIn(
+            "tests.deployment.test_production_deployment_assets -v", text
+        )
+        self.assertNotIn("discover -s tests/deployment", text)
         self.assertIn("environment: production", text)
         self.assertIn("OBSERVABILITY_PARTIAL", text)
         self.assertIn("final non-root USER", text)
