@@ -154,6 +154,28 @@ def test_handoff_persists_before_consultation_without_changing_inquiry_state():
 
 
 @override_settings(AI_HANDOFF_INTERNAL_TOKEN=TOKEN)
+def test_unlinked_customer_handoff_uses_conservative_classification():
+    """A nullable customer user must not crash or be assumed synthetic."""
+
+    inquiry, _ai_run, correlation_id, ai_request_id = create_fixture()
+    customer = inquiry.subscription.customer
+    customer.user = None
+    customer.save(update_fields=["user", "updated_at"])
+
+    response = post_handoff(
+        inquiry=inquiry,
+        correlation_id=correlation_id,
+        ai_request_id=ai_request_id,
+    )
+
+    assert response.status_code == 201
+    assert (
+        ConsultationHandoff.objects.get(inquiry=inquiry).data_classification
+        == ConsultationHandoff.DataClassification.OPERATIONAL
+    )
+
+
+@override_settings(AI_HANDOFF_INTERNAL_TOKEN=TOKEN)
 def test_same_payload_replays_and_changed_payload_conflicts():
     inquiry, _ai_run, correlation_id, ai_request_id = create_fixture()
     payload = handoff_payload(inquiry, correlation_id, ai_request_id)
