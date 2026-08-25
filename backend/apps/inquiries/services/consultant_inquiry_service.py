@@ -24,6 +24,7 @@ from apps.workflow.engine.allowed_action_resolver import (
     AllowedActionContext,
     AllowedActionResolver,
 )
+from common.privacy import mask_person_name, mask_phone
 
 
 BUSINESS_TIMEZONE = ZoneInfo("Asia/Seoul")
@@ -301,10 +302,7 @@ class ConsultantInquiryService:
 
     @staticmethod
     def _mask_name(value: str) -> str:
-        normalized = ConsultantInquiryService._display_name(value)
-        if len(normalized) <= 1:
-            return "*"
-        return f"{normalized[:-1]}*"
+        return mask_person_name(value)
 
     @staticmethod
     def _display_name(value: str) -> str:
@@ -312,18 +310,7 @@ class ConsultantInquiryService:
 
     @staticmethod
     def _mask_phone(value: str) -> str:
-        digits = "".join(
-            character for character in value if character.isdigit()
-        )
-        if not digits:
-            return ""
-        if len(digits) == 11:
-            return f"{digits[:3]}-****-{digits[-4:]}"
-        if len(digits) == 10:
-            return f"{digits[:3]}-***-{digits[-4:]}"
-        if len(digits) <= 4:
-            return "*" * len(digits)
-        return f"{'*' * (len(digits) - 4)}{digits[-4:]}"
+        return mask_phone(value)
 
     @staticmethod
     def _usage_guidance_display_label(status: str | None) -> str | None:
