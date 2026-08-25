@@ -198,6 +198,7 @@ compose run --rm --no-deps trace-store \
   -config.expand-env=true \
   -config.verify=true
 compose run --rm --no-deps \
+  --env PYTHONPATH=/workspace/backend \
   --volume "${payload_dir}/scripts/deployment/production/validate_backend_runtime.py:/tmp/validate_backend_runtime.py:ro" \
   backend python /tmp/validate_backend_runtime.py
 compose run --rm --no-deps \
