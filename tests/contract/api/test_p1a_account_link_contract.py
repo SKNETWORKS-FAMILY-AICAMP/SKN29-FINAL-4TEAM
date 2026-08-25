@@ -56,14 +56,18 @@ def test_p1_auth_schemas_are_valid_draft_2020_12() -> None:
         Draft202012Validator.check_schema(_yaml(path))
 
 
-def test_all_p1a_operations_are_frozen_but_not_implemented() -> None:
+def test_p1a_operations_keep_frozen_contract_and_explicit_runtime_status() -> None:
     contract = _yaml(P1_PATHS)
 
     assert contract["x-p1a-policy"]["contract_status"] == "CONFIRMED"
     for path in P1A_OPERATION_PATHS:
         operation = contract[path]["post"]
         assert operation["x-contract-status"] == "CONFIRMED"
-        assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
+        assert operation["x-runtime-status"] == (
+            "IMPLEMENTED"
+            if path == "/auth/login"
+            else "NOT_IMPLEMENTED"
+        )
 
 
 def test_challenge_creation_conceals_candidate_existence() -> None:

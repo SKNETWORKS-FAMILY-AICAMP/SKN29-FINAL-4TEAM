@@ -14,6 +14,10 @@ export interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   signInAs: (role: AppRole) => Promise<void>;
+  signInWithPassword: (
+    username: string,
+    password: string,
+  ) => Promise<AuthenticatedUser>;
   signOut: () => Promise<void>;
 }
 
@@ -26,4 +30,3 @@ export function useAuth() {
   }
   return value;
 }
-
