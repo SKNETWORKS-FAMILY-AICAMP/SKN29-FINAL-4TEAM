@@ -162,6 +162,18 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("headers={'Host': host}", dockerfile)
         self.assertIn("context: backend", workflow)
 
+    def test_gunicorn_config_gate_uses_verify_full_without_runtime_secrets(
+        self,
+    ) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("DJANGO_SECRET_KEY=ci-production-config-check-only", workflow)
+        self.assertIn("POSTGRES_SSLMODE=verify-full", workflow)
+        self.assertIn(
+            "POSTGRES_SSLROOTCERT=/etc/ssl/certs/ca-certificates.crt",
+            workflow,
+        )
+        self.assertNotIn("secrets.", workflow)
+
     def test_runtime_preflights_enforce_approved_database_boundary(self) -> None:
         backend = BACKEND_PREFLIGHT.read_text(encoding="utf-8")
         ai = AI_PREFLIGHT.read_text(encoding="utf-8")
