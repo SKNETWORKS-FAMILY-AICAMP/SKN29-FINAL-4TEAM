@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
-import math
 import os
 import platform
 import subprocess
@@ -19,6 +18,7 @@ from typing import Any, Protocol
 import numpy as np
 
 from ai.evaluation.file_integrity import file_sha256
+from ai.evaluation.evidence_scoring_v2 import score_gold_case
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -247,95 +247,38 @@ def _metrics(
     product_model_code: str,
     evidence_match_policy: str,
 ) -> dict[str, Any]:
-    if evidence_match_policy not in {"ANY", "ALL", "NONE"}:
-        raise ValueError(f"지원하지 않는 Evidence Match Policy: {evidence_match_policy}")
-    if evidence_match_policy == "NONE":
-        if expected or not expected_no_evidence:
-            raise ValueError("NONE Policy는 빈 expected_evidence와 expected_no_evidence=true가 필요합니다.")
-    elif not expected or expected_no_evidence:
-        raise ValueError(
-            f"{evidence_match_policy} Policy는 expected_evidence와 "
-            "expected_no_evidence=false가 필요합니다."
-        )
-
-    expected_by_id = {unit["evidence_unit_id"]: unit for unit in expected}
-    if len(expected_by_id) != len(expected):
-        raise ValueError("expected_evidence의 evidence_unit_id는 고유해야 합니다.")
-    required_ids = set(expected_by_id)
-    covered_by_rank: list[set[str]] = []
-    covered_ids: set[str] = set()
-    for item in ranked:
-        chunk = item["chunk"]
-        chunk_evidence_ids = set(chunk.get("evidence_unit_ids", []))
-        matched_ids = {
-            evidence_id
-            for evidence_id, unit in expected_by_id.items()
-            if evidence_id in chunk_evidence_ids
-            and chunk["document_id"] == unit["document_id"]
-            and bool(set(chunk["page_refs"]).intersection(unit["page_refs"]))
-        }
-        covered_by_rank.append(matched_ids)
-        covered_ids.update(matched_ids)
-
-    first_matched_rank = next(
-        (rank for rank, matched_ids in enumerate(covered_by_rank, 1) if matched_ids),
-        None,
+    scored = score_gold_case(
+        {
+            "product_model_code": product_model_code,
+            "expected_evidence": expected,
+            "expected_no_evidence": expected_no_evidence,
+            "evidence_match_policy": evidence_match_policy,
+            "expected_execution_path": "LOCAL_DENSE_QUERY",
+        },
+        ranked,
+        actual_execution_path="LOCAL_DENSE_QUERY",
+        vector_query_count=1,
+        evaluation_top_k=5,
     )
-
-    def covered_through(k: int) -> set[str]:
-        return set().union(*covered_by_rank[:k]) if covered_by_rank[:k] else set()
-
-    def hit(k: int) -> float:
-        if evidence_match_policy == "NONE":
-            return 0.0
-        covered = covered_through(k)
-        if evidence_match_policy == "ANY":
-            return float(bool(covered))
-        return float(required_ids.issubset(covered))
-
-    if evidence_match_policy == "ANY":
-        completion_rank = first_matched_rank
-        ndcg_at_5 = (
-            1.0 / math.log2(completion_rank + 1)
-            if completion_rank is not None and completion_rank <= 5
-            else 0.0
-        )
-    elif evidence_match_policy == "ALL":
-        completion_rank = next(
-            (
-                rank
-                for rank in range(1, len(covered_by_rank) + 1)
-                if required_ids.issubset(covered_through(rank))
-            ),
-            None,
-        )
-        # D-01은 ALL Hit·MRR만 확정한다. Multi-evidence nDCG는 별도 합의 전 제외한다.
-        ndcg_at_5 = None
-    else:
-        completion_rank = None
-        ndcg_at_5 = 0.0
-
-    wrong_product_hits = sum(
-        item["chunk"]["exact_sales_code"] != product_model_code for item in ranked[:5]
+    # v1 Report의 역사적 Shape는 보존하고 계산만 공통 Scorer에 위임한다.
+    historical_keys = (
+        "evidence_match_policy",
+        "required_evidence_unit_ids",
+        "covered_evidence_unit_ids",
+        "hit_at_1",
+        "hit_at_3",
+        "hit_at_5",
+        "mrr",
+        "ndcg_at_5",
+        "first_matched_rank",
+        "evidence_completion_rank",
+        "first_relevant_rank",
+        "wrong_product_hit_count",
+        "no_evidence_retrieval_empty",
+        "no_evidence_passed",
+        "answerability_gate_passed",
     )
-    retrieval_empty = bool(expected_no_evidence and not ranked)
-    return {
-        "evidence_match_policy": evidence_match_policy,
-        "required_evidence_unit_ids": sorted(required_ids),
-        "covered_evidence_unit_ids": sorted(covered_ids),
-        "hit_at_1": hit(1),
-        "hit_at_3": hit(3),
-        "hit_at_5": hit(5),
-        "mrr": 1.0 / completion_rank if completion_rank else 0.0,
-        "ndcg_at_5": ndcg_at_5,
-        "first_matched_rank": first_matched_rank,
-        "evidence_completion_rank": completion_rank,
-        "first_relevant_rank": completion_rank,
-        "wrong_product_hit_count": wrong_product_hits,
-        "no_evidence_retrieval_empty": retrieval_empty,
-        "no_evidence_passed": retrieval_empty,
-        "answerability_gate_passed": None,
-    }
+    return {key: scored[key] for key in historical_keys}
 
 
 def run_baseline(
