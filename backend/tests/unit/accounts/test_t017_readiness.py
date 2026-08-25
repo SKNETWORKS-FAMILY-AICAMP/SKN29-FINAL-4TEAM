@@ -43,7 +43,7 @@ def test_current_t017_owner_implementation_is_ready_for_team_review():
     )
     assert result["evidence"]["accounts_app_registered"] is True
     assert result["evidence"]["account_model_class_count"] == 15
-    assert result["evidence"]["account_migration_count"] == 8
+    assert result["evidence"]["account_migration_count"] == 9
     assert result["evidence"]["authentication_class_configured"] is True
     assert result["evidence"]["auth_routes_registered"] is True
     assert result["owner_blockers"] == []

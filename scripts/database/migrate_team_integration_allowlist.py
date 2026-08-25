@@ -37,7 +37,7 @@ HOLD_CONFIRMATION = "visits.0005=P1_HOLD_EXCLUDED"
 ADVISORY_LOCK_KEY = 870_429_002
 
 EXPECTED_GRAPH_LEAVES: tuple[MigrationKey, ...] = (
-    ("accounts", "0008_p1_auth_email_outbox"),
+    ("accounts", "0009_approved_test_contract_email"),
     ("admin", "0003_logentry_add_action_flag_choices"),
     ("audit", "0005_airun_analyze_symptom_task"),
     ("auth", "0012_alter_user_first_name_max_length"),
@@ -192,7 +192,7 @@ def build_plan(
         "remaining_plan": _node_sequence(remaining),
         "applied_count": len(applied),
         "expected_final": {
-            "accounts.0008": "APPLIED",
+            "accounts.0009": "APPLIED",
             "evidence.0014": "APPLIED",
             "operations.0003": "APPLIED",
             "visits.0004": "APPLIED",
@@ -223,9 +223,9 @@ def verify_final(executor: Any) -> dict[str, Any]:
 
     return {
         "status": "VERIFIED" if not blockers else "BLOCKED",
-        "accounts.0008": (
+        "accounts.0009": (
             "APPLIED"
-            if ("accounts", "0008_p1_auth_email_outbox") in applied
+            if ("accounts", "0009_approved_test_contract_email") in applied
             else "MISSING"
         ),
         "evidence.0014": (

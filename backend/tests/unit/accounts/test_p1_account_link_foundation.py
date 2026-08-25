@@ -21,6 +21,7 @@ from apps.accounts.models import (
 from apps.accounts.services.contract_email_protection import (
     ContractEmailProtectionError,
     ContractEmailProtectionService,
+    normalize_contract_email,
     normalize_synthetic_contract_email,
 )
 from apps.products.models import ProductModel
@@ -90,6 +91,28 @@ def test_contract_email_protection_rejects_real_or_invalid_addresses():
             normalize_synthetic_contract_email(address)
 
 
+def test_approved_test_email_requires_explicit_protection_path():
+    service = _protection_service()
+
+    with pytest.raises(ContractEmailProtectionError):
+        service.protect("approved-recipient@example.com")
+
+    protected = service.protect_approved_test(
+        "  APPROVED-RECIPIENT@example.com  "
+    )
+
+    assert normalize_contract_email(" APPROVED-RECIPIENT@example.com ") == (
+        "approved-recipient@example.com"
+    )
+    assert service.decrypt(protected.encrypted_email) == (
+        "approved-recipient@example.com"
+    )
+    assert service.matches(
+        "approved-recipient@example.com",
+        protected.email_lookup_hmac,
+    )
+
+
 def test_contract_email_model_rejects_plaintext_storage():
     customer = CustomerProfile.objects.create(
         user=None,
@@ -104,6 +127,35 @@ def test_contract_email_model_rejects_plaintext_storage():
         key_version="test-v1",
         is_active=True,
         is_primary=True,
+    )
+
+    with pytest.raises(ValidationError):
+        contact.full_clean()
+
+
+def test_contract_email_model_rejects_mismatched_classification_policy():
+    customer = CustomerProfile.objects.create(
+        user=None,
+        customer_no="SYN-PRE-SIGNUP-APPROVED-POLICY",
+        customer_name="Synthetic approved policy customer",
+        is_synthetic=True,
+    )
+    protected = _protection_service().protect_approved_test(
+        "approved-policy@example.com"
+    )
+    contact = ContractEmailContact(
+        customer=customer,
+        encrypted_email=protected.encrypted_email,
+        email_lookup_hmac=protected.email_lookup_hmac,
+        key_version=protected.key_version,
+        is_active=True,
+        is_primary=True,
+        delivery_policy=(
+            ContractEmailContact.DeliveryPolicy.RUNTIME_REDIRECT_ONLY
+        ),
+        data_classification=(
+            ContractEmailContact.DataClassification.APPROVED_TEST_PII
+        ),
     )
 
     with pytest.raises(ValidationError):
@@ -258,3 +310,86 @@ def test_p1_fixture_seed_rejects_precreated_user_and_rolls_back():
     assert ContractEmailContact.objects.count() == 0
     assert CustomerSubscription.objects.count() == 0
     assert ProductModel.objects.count() == 0
+
+
+def test_pm_approved_six_customer_seed_is_local_protected_and_idempotent(
+    settings,
+):
+    settings.DEBUG = True
+    runtime_root = settings.BASE_DIR / ".runtime"
+    runtime_root.mkdir(parents=True, exist_ok=True)
+    input_path = runtime_root / "test-approved-six.json"
+    input_path.write_text(
+        json.dumps(
+            [
+                {
+                    "name": f"합성 승인 고객 {index}",
+                    "phone": f"010-9000-{index:04d}",
+                    "email": f"approved-{index}@example.com",
+                }
+                for index in range(1, 7)
+            ],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    try:
+        first_stdout = StringIO()
+        call_command(
+            "seed_p1_approved_test_customers",
+            "--input-file",
+            str(input_path),
+            "--pm-approved-local-e2e",
+            "--json",
+            stdout=first_stdout,
+        )
+        second_stdout = StringIO()
+        call_command(
+            "seed_p1_approved_test_customers",
+            "--input-file",
+            str(input_path),
+            "--pm-approved-local-e2e",
+            "--json",
+            stdout=second_stdout,
+        )
+    finally:
+        input_path.unlink(missing_ok=True)
+
+    first_result = json.loads(first_stdout.getvalue())
+    second_result = json.loads(second_stdout.getvalue())
+    contacts = list(
+        ContractEmailContact.objects.filter(
+            data_classification=(
+                ContractEmailContact.DataClassification.APPROVED_TEST_PII
+            )
+        )
+    )
+    serialized_contacts = json.dumps(
+        [
+            {
+                "encrypted_email": contact.encrypted_email,
+                "email_lookup_hmac": contact.email_lookup_hmac,
+            }
+            for contact in contacts
+        ]
+    )
+
+    assert first_result["status"] == "APPLIED"
+    assert first_result["approved_customers"] == 6
+    assert first_result["candidate_users"] == 0
+    assert first_result["candidate_account_links"] == 0
+    assert second_result["customers_created"] == 0
+    assert second_result["contacts_created"] == 0
+    assert second_result["subscriptions_created"] == 0
+    assert len(contacts) == 6
+    assert CustomerProfile.objects.filter(
+        customer_no__startswith="SYN-P1-TEAM-CUSTOMER-"
+    ).count() == 6
+    assert CustomerSubscription.objects.filter(
+        contract_no__startswith="SYN-P1-TEAM-CONTRACT-",
+        status_code=CustomerSubscription.Status.ACTIVE,
+    ).count() == 6
+    assert User.objects.count() == 0
+    assert CustomerAccountLink.objects.count() == 0
+    for index in range(1, 7):
+        assert f"approved-{index}@example.com" not in serialized_contacts
