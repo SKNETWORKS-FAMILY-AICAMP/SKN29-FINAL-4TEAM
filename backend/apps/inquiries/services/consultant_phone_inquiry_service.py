@@ -25,6 +25,7 @@ from apps.workflow.services.transition_history_service import (
     TransitionHistoryService,
 )
 from common.exceptions.business import BusinessError
+from common.privacy import mask_person_name, mask_phone
 
 
 REGISTER_PHONE_INQUIRY_OPERATION_ID = "registerConsultantPhoneInquiry"
@@ -212,10 +213,8 @@ class ConsultantPhoneInquiryService:
         product = subscription.product_model
         return {
             "customer_id": customer.public_id,
-            "customer_display_name": customer.customer_name.strip()[:80],
-            "phone_masked": ConsultantPhoneInquiryService._mask_phone(
-                customer.phone
-            ),
+            "customer_display_name": mask_person_name(customer.customer_name),
+            "phone_masked": mask_phone(customer.phone),
             "subscription_id": subscription.public_id,
             "subscription_status": subscription.status_code,
             "management_type_code": subscription.management_type_code,
@@ -226,13 +225,4 @@ class ConsultantPhoneInquiryService:
 
     @staticmethod
     def _mask_phone(value: str) -> str:
-        digits = "".join(character for character in value if character.isdigit())
-        if not digits:
-            return ""
-        if len(digits) == 11:
-            return f"{digits[:3]}-****-{digits[-4:]}"
-        if len(digits) == 10:
-            return f"{digits[:3]}-***-{digits[-4:]}"
-        if len(digits) <= 4:
-            return "*" * len(digits)
-        return f"{'*' * (len(digits) - 4)}{digits[-4:]}"
+        return mask_phone(value)

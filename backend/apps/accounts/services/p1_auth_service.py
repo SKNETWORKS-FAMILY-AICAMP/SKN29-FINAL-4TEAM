@@ -10,7 +10,7 @@ from uuid import UUID
 from django.conf import settings
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import IntegrityError, transaction
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
 from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken,
@@ -138,7 +138,10 @@ class P1AuthService:
         contacts = ContractEmailContact.objects.filter(
             is_active=True,
             is_primary=True,
-            data_classification="synthetic",
+            data_classification__in=(
+                ContractEmailContact.DataClassification.SYNTHETIC,
+                ContractEmailContact.DataClassification.APPROVED_TEST_PII,
+            ),
             customer__is_synthetic=True,
             customer__deleted_at__isnull=True,
         ).select_related("customer")
@@ -157,13 +160,15 @@ class P1AuthService:
             )
         else:
             try:
-                protected = ContractEmailProtectionService.from_settings().protect(
-                    identity["email"]
+                email_lookup_hmac = (
+                    ContractEmailProtectionService.from_settings().lookup_hmac(
+                        identity["email"]
+                    )
                 )
             except ContractEmailProtectionError:
                 return None
             contacts = contacts.filter(
-                email_lookup_hmac=protected.email_lookup_hmac,
+                email_lookup_hmac=email_lookup_hmac,
                 customer__customer_name=identity["name"],
             )
 
@@ -766,9 +771,9 @@ class P1AuthService:
                         raise cls._verification_failed()
                     if name or email:
                         try:
-                            protected_email = (
+                            email_lookup_hmac = (
                                 ContractEmailProtectionService.from_settings()
-                                .protect(email or "")
+                                .lookup_hmac(email or "")
                             )
                         except ContractEmailProtectionError:
                             raise cls._verification_failed() from None
@@ -779,7 +784,7 @@ class P1AuthService:
                             != crypto.normalize_text(name or "")
                             or not crypto.compare(
                                 current_target.contact.email_lookup_hmac,
-                                protected_email.email_lookup_hmac,
+                                email_lookup_hmac,
                             )
                         ):
                             raise cls._verification_failed()
@@ -933,10 +938,18 @@ class P1AuthService:
                 .filter(
                     username__iexact=username,
                     is_active=True,
-                    role_code=User.Role.CUSTOMER,
                     is_synthetic=True,
-                    customer_account_links__is_active=True,
-                    customer_profile__deleted_at__isnull=True,
+                )
+                .filter(
+                    Q(
+                        role_code=User.Role.CUSTOMER,
+                        customer_account_links__is_active=True,
+                        customer_profile__deleted_at__isnull=True,
+                    )
+                    | Q(
+                        role_code=User.Role.CONSULTANT,
+                        employee_no__isnull=False,
+                    )
                 )
                 .first()
             )

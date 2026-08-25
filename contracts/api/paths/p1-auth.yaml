@@ -1,6 +1,7 @@
 # P1-A 합성 계약고객 회원가입·계정연결 계약
 x-p1a-policy:
   scope: SYNTHETIC_CONTRACT_CUSTOMER_ONLY
+  password_login_scope: SYNTHETIC_CUSTOMER_AND_CONSULTANT
   contract_status: CONFIRMED
   otp_ttl_seconds: 300
   otp_resend_after_seconds: 60
@@ -132,9 +133,11 @@ x-p1a-policy:
   post:
     operationId: loginWithPassword
     summary: WaterBridge ID/PW 일반 로그인
-    description: 사용자명 또는 계정 존재 여부를 구분하지 않는 공통 401을 사용한다.
+    description: |
+      합성 계약고객과 활성 합성 상담사의 ID/PW 로그인을 제공한다.
+      사용자명·계정·역할 존재 여부를 구분하지 않는 공통 401을 사용한다.
     x-contract-status: CONFIRMED
-    x-runtime-status: NOT_IMPLEMENTED
+    x-runtime-status: IMPLEMENTED
     security: []
     requestBody:
       required: true

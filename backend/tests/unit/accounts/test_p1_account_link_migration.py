@@ -15,7 +15,7 @@ pytestmark = pytest.mark.django_db(transaction=True)
 
 MIGRATE_FROM = ("accounts", "0005_account_lifecycle_and_audit")
 MIGRATE_TO = ("accounts", "0006_p1_account_link_foundation")
-MIGRATE_LATEST = ("accounts", "0008_p1_auth_email_outbox")
+MIGRATE_LATEST = ("accounts", "0009_approved_test_contract_email")
 
 
 def _cleanup(apps) -> None:

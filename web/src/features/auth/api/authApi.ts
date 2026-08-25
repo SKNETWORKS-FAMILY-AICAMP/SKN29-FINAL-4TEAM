@@ -30,6 +30,21 @@ export async function loginWithDemoCode(
   return mapLoginResponse(response.data);
 }
 
+export async function loginWithPassword(
+  username: string,
+  password: string,
+): Promise<AuthSession> {
+  const response = await requestApi<LoginResponseDto>("/auth/login", {
+    method: "POST",
+    auth: "none",
+    body: { username, password },
+  });
+  if (!response.data) {
+    throw new Error("로그인 응답에 세션 정보가 없습니다.");
+  }
+  return mapLoginResponse(response.data);
+}
+
 export async function refreshAuthSession(
   refreshToken: string,
 ): Promise<AuthSession> {

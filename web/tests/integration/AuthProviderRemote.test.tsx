@@ -22,6 +22,7 @@ vi.mock("../../src/features/auth/api/authApi", () => ({
   },
   getCurrentUser: vi.fn(),
   loginWithDemoCode: vi.fn(),
+  loginWithPassword: vi.fn(),
   refreshAuthSession: vi.fn(),
   revokeRefreshToken: vi.fn(),
 }));
@@ -31,6 +32,7 @@ import { useAuth } from "../../src/app/providers/authContext";
 import {
   getCurrentUser,
   loginWithDemoCode,
+  loginWithPassword,
 } from "../../src/features/auth/api/authApi";
 import {
   authSessionStore,
@@ -58,13 +60,19 @@ const LOGIN_SESSION: AuthSession = {
 };
 
 function RemoteAuthHarness() {
-  const { isLoading, signInAs, user } = useAuth();
+  const { isLoading, signInAs, signInWithPassword, user } = useAuth();
 
   return (
     <>
       <p>{isLoading ? "인증 확인 중" : (user?.displayName ?? "로그인 필요")}</p>
       <button type="button" onClick={() => void signInAs("CONSULTANT")}>
-        로그인
+        데모 로그인
+      </button>
+      <button
+        type="button"
+        onClick={() => void signInWithPassword("consultant", "safe-password")}
+      >
+        비밀번호 로그인
       </button>
     </>
   );
@@ -74,6 +82,7 @@ describe("AuthProvider 원격 사용자 동기화", () => {
   beforeEach(() => {
     authSessionStore.clear();
     vi.mocked(loginWithDemoCode).mockResolvedValue(LOGIN_SESSION);
+    vi.mocked(loginWithPassword).mockResolvedValue(LOGIN_SESSION);
     vi.mocked(getCurrentUser).mockResolvedValue(CURRENT_USER);
   });
 
@@ -90,7 +99,7 @@ describe("AuthProvider 원격 사용자 동기화", () => {
       </AuthProvider>,
     );
 
-    await user.click(screen.getByRole("button", { name: "로그인" }));
+    await user.click(screen.getByRole("button", { name: "데모 로그인" }));
 
     expect(await screen.findByText("/me 응답 상담사")).toBeVisible();
     expect(loginWithDemoCode).toHaveBeenCalledWith("DEMO-CONSULTANT-001");
@@ -100,6 +109,24 @@ describe("AuthProvider 원격 사용자 동기화", () => {
       refreshToken: LOGIN_SESSION.refreshToken,
       user: CURRENT_USER,
     });
+  });
+
+  it("ID/PW 세션도 토큰 저장 후 /me 사용자로 확정한다", async () => {
+    const user = userEvent.setup();
+    render(
+      <AuthProvider>
+        <RemoteAuthHarness />
+      </AuthProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "비밀번호 로그인" }));
+
+    expect(await screen.findByText("/me 응답 상담사")).toBeVisible();
+    expect(loginWithPassword).toHaveBeenCalledWith(
+      "consultant",
+      "safe-password",
+    );
+    expect(getCurrentUser).toHaveBeenCalledTimes(1);
   });
 
   it("저장된 원격 세션도 토큰을 유지하며 /me 사용자로 다시 동기화한다", async () => {

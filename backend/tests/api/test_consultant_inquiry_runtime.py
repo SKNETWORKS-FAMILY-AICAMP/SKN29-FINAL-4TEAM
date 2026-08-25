@@ -288,7 +288,7 @@ def test_consultant_list_returns_only_assigned_synthetic_projection(
     assert item["inquiry_id"] == str(visible.public_id)
     assert item["risk_level"] == "caution"
     assert item["priority"] == "HIGH"
-    assert item["customer_display_name_masked"] == "합성고객 0*"
+    assert item["customer_display_name_masked"] == "합*****3"
     assert item["product_model"] == visible.subscription.product_model.model_code
     assert item["current_assignee_type"] == "CONSULTANT"
     assert item["waiting_seconds"] >= 0

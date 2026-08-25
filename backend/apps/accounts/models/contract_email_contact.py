@@ -27,6 +27,17 @@ class ContractEmailContact(TimestampedModel):
             "RUNTIME_REDIRECT_ONLY",
             "시험 Runtime Redirect 전용",
         )
+        APPROVED_TEST_RECIPIENT = (
+            "APPROVED_TEST_RECIPIENT",
+            "PM 승인 로컬 시험 수신자",
+        )
+
+    class DataClassification(models.TextChoices):
+        SYNTHETIC = "synthetic", "합성 데이터"
+        APPROVED_TEST_PII = (
+            "approved_test_pii",
+            "PM 승인 로컬 시험 개인정보",
+        )
 
     id = models.BigAutoField(primary_key=True)
     public_id = models.UUIDField(
@@ -59,7 +70,8 @@ class ContractEmailContact(TimestampedModel):
     )
     data_classification = models.CharField(
         max_length=20,
-        default="synthetic",
+        choices=DataClassification.choices,
+        default=DataClassification.SYNTHETIC,
         editable=False,
     )
 
@@ -81,8 +93,17 @@ class ContractEmailContact(TimestampedModel):
                 name="ck_contract_email_primary_active",
             ),
             models.CheckConstraint(
-                condition=Q(data_classification="synthetic"),
-                name="ck_contract_email_synthetic_only",
+                condition=(
+                    Q(
+                        data_classification="synthetic",
+                        delivery_policy="RUNTIME_REDIRECT_ONLY",
+                    )
+                    | Q(
+                        data_classification="approved_test_pii",
+                        delivery_policy="APPROVED_TEST_RECIPIENT",
+                    )
+                ),
+                name="ck_contract_email_class_policy",
             ),
         ]
         indexes = [
@@ -109,6 +130,24 @@ class ContractEmailContact(TimestampedModel):
         if self.is_primary and not self.is_active:
             raise ValidationError(
                 {"is_primary": "대표 연락처는 활성 상태여야 합니다."}
+            )
+        valid_policy_pair = (
+            self.data_classification == self.DataClassification.SYNTHETIC
+            and self.delivery_policy
+            == self.DeliveryPolicy.RUNTIME_REDIRECT_ONLY
+        ) or (
+            self.data_classification
+            == self.DataClassification.APPROVED_TEST_PII
+            and self.delivery_policy
+            == self.DeliveryPolicy.APPROVED_TEST_RECIPIENT
+        )
+        if not valid_policy_pair:
+            raise ValidationError(
+                {
+                    "delivery_policy": (
+                        "이메일 데이터 분류와 발송 정책 조합이 올바르지 않습니다."
+                    )
+                }
             )
 
     def __str__(self) -> str:

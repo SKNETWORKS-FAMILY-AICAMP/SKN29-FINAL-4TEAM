@@ -36,8 +36,16 @@ function getSafeReturnTo(state: unknown, role: AppRole) {
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isLoading, signInAs, user } = useAuth();
+  const {
+    isAuthenticated,
+    isLoading,
+    signInAs,
+    signInWithPassword,
+    user,
+  } = useAuth();
   const [role, setRole] = useState<AppRole>("CONSULTANT");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
 
   if (isAuthenticated && user) {
@@ -49,7 +57,7 @@ export default function LoginPage() {
     );
   }
 
-  const handleSubmit = async (event: FormEvent) => {
+  const handleDemoSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setLoginError(null);
     try {
@@ -57,6 +65,20 @@ export default function LoginPage() {
       navigate(getSafeReturnTo(location.state, role), { replace: true });
     } catch {
       setLoginError("로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    }
+  };
+
+  const handlePasswordSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setLoginError(null);
+    try {
+      const authenticatedUser = await signInWithPassword(username, password);
+      setPassword("");
+      navigate(getSafeReturnTo(location.state, authenticatedUser.roleCode), {
+        replace: true,
+      });
+    } catch {
+      setLoginError("아이디 또는 비밀번호를 확인해 주세요.");
     }
   };
 
@@ -68,11 +90,39 @@ export default function LoginPage() {
         <p>
           {appEnv.useMockApi
             ? "인증 API 연결 전 사용하는 합성 계정 로그인입니다. 실제 비밀번호와 개인정보를 입력하지 마세요."
-            : "백엔드 데모 인증 API로 로그인합니다. 실제 비밀번호와 개인정보를 입력하지 마세요."}
+            : "Backend에 준비된 합성 상담사 계정으로 로그인합니다. 운영 계정이나 실제 개인정보는 입력하지 마세요."}
         </p>
-        <form onSubmit={handleSubmit}>
+        {!appEnv.useMockApi && (
+          <form onSubmit={handlePasswordSubmit}>
+            <label>
+              아이디
+              <input
+                name="username"
+                autoComplete="username"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                required
+              />
+            </label>
+            <label>
+              비밀번호
+              <input
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+            </label>
+            <button type="submit" disabled={isLoading}>
+              {isLoading ? "로그인 중…" : "ID/PW로 로그인"}
+            </button>
+          </form>
+        )}
+        <form onSubmit={handleDemoSubmit}>
           <label>
-            역할
+            테스트 역할
             <select
               value={role}
               onChange={(event) => setRole(event.target.value as AppRole)}
@@ -91,8 +141,8 @@ export default function LoginPage() {
                 ? "Mock 계정으로 로그인"
                 : "API 데모 계정으로 로그인"}
           </button>
-          {loginError && <p role="alert">{loginError}</p>}
         </form>
+        {loginError && <p role="alert">{loginError}</p>}
       </section>
     </main>
   );

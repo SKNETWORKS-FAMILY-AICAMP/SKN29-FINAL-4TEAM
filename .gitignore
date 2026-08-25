@@ -60,3 +60,6 @@ db.sqlite3
 ai/tests/.tmp/
 docs/individual/dongyoon/walkthrough.md
 docs/individual/dongyoon/인계/
+mobile/keystore.properties
+mobile/signing/*.jks
+mobile/signing/*.keystore

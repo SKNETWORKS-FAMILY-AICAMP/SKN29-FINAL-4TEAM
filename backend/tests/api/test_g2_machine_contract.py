@@ -74,6 +74,8 @@ P1A_FROZEN_OPERATIONS = {
     ("/auth/password-reset/confirm", "post"): "confirmPasswordReset",
 }
 
+P1A_IMPLEMENTED_OPERATIONS = {("/auth/login", "post")}
+
 WRITE_G2_OPERATIONS = {
     key: operation_id
     for key, operation_id in G2_OPERATIONS.items()
@@ -310,7 +312,11 @@ def test_g2_operation_inventory_crosswalk_and_runtime_boundary():
         operation = operations[key]
         assert operation["operationId"] == operation_id
         assert operation["x-contract-status"] == "CONFIRMED"
-        assert operation["x-runtime-status"] == "NOT_IMPLEMENTED"
+        assert operation["x-runtime-status"] == (
+            "IMPLEMENTED"
+            if key in P1A_IMPLEMENTED_OPERATIONS
+            else "NOT_IMPLEMENTED"
+        )
         assert key not in crosswalk_operations
 
 

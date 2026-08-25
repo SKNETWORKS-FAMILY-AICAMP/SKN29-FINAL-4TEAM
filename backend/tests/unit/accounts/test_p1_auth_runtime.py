@@ -32,6 +32,9 @@ from apps.subscriptions.models import CustomerSubscription
 from apps.accounts.services.p1_auth_email_outbox_service import (
     P1AuthEmailOutboxService,
 )
+from apps.accounts.services.contract_email_protection import (
+    ContractEmailProtectionService,
+)
 
 
 pytestmark = pytest.mark.django_db
@@ -65,6 +68,30 @@ CONSENTS = [
 
 def _seed() -> None:
     call_command("seed_p1_account_link_fixture", verbosity=0)
+
+
+def _convert_seed_contact_to_approved_test(email: str) -> ContractEmailContact:
+    contact = ContractEmailContact.objects.get(
+        customer__customer_no=CUSTOMER_NUMBER
+    )
+    protected = (
+        ContractEmailProtectionService.from_settings().protect_approved_test(
+            email
+        )
+    )
+    contact.encrypted_email = protected.encrypted_email
+    contact.email_lookup_hmac = protected.email_lookup_hmac
+    contact.key_version = protected.key_version
+    contact.delivery_policy = (
+        ContractEmailContact.DeliveryPolicy.APPROVED_TEST_RECIPIENT
+    )
+    contact.data_classification = (
+        ContractEmailContact.DataClassification.APPROVED_TEST_PII
+    )
+    contact.source_system = "PM_APPROVED_LOCAL_E2E_TEST"
+    contact.full_clean()
+    contact.save()
+    return contact
 
 
 def _challenge(
@@ -193,6 +220,59 @@ def test_contract_challenge_conceals_existence_and_never_returns_otp(
         status=P1AuthEmailOutbox.Status.SUPPRESSED,
         encrypted_otp="",
     ).count() == 1
+
+
+def test_approved_test_contact_delivers_to_decrypted_recipient_in_debug(
+    client,
+    django_capture_on_commit_callbacks,
+    settings,
+):
+    approved_email = "approved-recipient@example.com"
+    settings.DEBUG = True
+    _seed()
+    _convert_seed_contact_to_approved_test(approved_email)
+
+    with django_capture_on_commit_callbacks(execute=True):
+        challenge = _challenge(
+            client,
+            "/api/v1/auth/contract-verification/challenges",
+            payload={"name": CUSTOMER_NAME, "email": approved_email},
+        )
+    _process_outbox()
+
+    assert challenge.status_code == 202
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].to == [approved_email]
+    assert approved_email not in challenge.content.decode("utf-8")
+    assert P1AuthEmailOutbox.objects.get().status == (
+        P1AuthEmailOutbox.Status.SENT
+    )
+
+
+def test_approved_test_contact_delivery_fails_closed_outside_debug(
+    client,
+    django_capture_on_commit_callbacks,
+    settings,
+):
+    approved_email = "approved-recipient@example.com"
+    settings.DEBUG = False
+    _seed()
+    _convert_seed_contact_to_approved_test(approved_email)
+
+    with django_capture_on_commit_callbacks(execute=True):
+        challenge = _challenge(
+            client,
+            "/api/v1/auth/contract-verification/challenges",
+            payload={"name": CUSTOMER_NAME, "email": approved_email},
+        )
+    _process_outbox()
+    outbox = P1AuthEmailOutbox.objects.get()
+
+    assert challenge.status_code == 202
+    assert len(mail.outbox) == 0
+    assert outbox.status == P1AuthEmailOutbox.Status.PENDING
+    assert outbox.attempt_count == 1
+    assert outbox.last_error_code == "DELIVERY_FAILED"
 
 
 def test_signup_creates_real_password_account_link_consents_and_session(
