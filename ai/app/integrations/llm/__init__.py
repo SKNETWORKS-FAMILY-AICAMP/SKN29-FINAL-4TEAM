@@ -1,5 +1,10 @@
 """LLM Provider Adapter 공개 경계."""
 
+from .consultation_summary_client import (
+    ConsultationContextLLMClient,
+    ConsultationContextLLMResponse,
+    OpenAIResponsesConsultationContextClient,
+)
 from .llm_client import (
     GuidanceLLMClient,
     GuidanceLLMResponse,
@@ -13,6 +18,8 @@ from .llm_client import (
 )
 
 __all__ = [
+    "ConsultationContextLLMClient",
+    "ConsultationContextLLMResponse",
     "GuidanceLLMClient",
     "GuidanceLLMResponse",
     "LLMConfigurationError",
@@ -22,4 +29,5 @@ __all__ = [
     "LLMRefusalError",
     "LLMUsage",
     "OpenAIResponsesLLMClient",
+    "OpenAIResponsesConsultationContextClient",
 ]

@@ -1,0 +1,56 @@
+{
+  "profile_id": "full_corpus_retrieval_v3",
+  "profile_version": "3.0.0-draft.1",
+  "status": "LOCAL_DENSE_DIAGNOSTIC_WITH_RUNTIME_PRE_SEARCH_POLICY",
+  "official_comparison_baseline": false,
+  "dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v2.jsonl",
+    "manifest_path": "ai/evaluation/datasets/gold/rag_gold_v2_manifest.json",
+    "schema_path": "ai/evaluation/schemas/gold_evaluation_case_v2.schema.json",
+    "splits": ["DEV", "TEST", "SAFETY"]
+  },
+  "evidence_groups": {
+    "preferred_path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2.jsonl",
+    "preferred_manifest_path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2_manifest.json",
+    "fallback_path": "data/processed/structured/evidence/full_corpus_v3_evidence_groups.jsonl"
+  },
+  "children": {
+    "path": "data/processed/structured/rag/experimental/full_corpus_v3_children.jsonl"
+  },
+  "corpus": {
+    "path": "data/processed/structured/rag/experimental/full_corpus_chunks_v3.jsonl",
+    "handoff_manifest_path": "data/processed/metadata/full_corpus_v3_handoff_manifest.json",
+    "search_scope": "CHILD_ONLY_37_OF_132_SEARCH_CANDIDATES",
+    "product_filter": "EXACT_PRODUCT_FILTER"
+  },
+  "embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "device": "cpu",
+    "normalize_embeddings": true,
+    "local_files_only": true
+  },
+  "retrieval": {
+    "engine": "numpy_dense_cosine_exact",
+    "top_k": 5,
+    "score_threshold": 0.4,
+    "filter_mode": "EXACT_PRODUCT_FILTER",
+    "allowed_record_types": ["CHILD"],
+    "runtime_policy_profile": "mvp",
+    "product_generation_by_model": {
+      "WPUJAC104DWH": "D",
+      "WPU-IAC506": "IAC506",
+      "WPUJAC104SWH": "S"
+    },
+    "vector_query_execution_path": "LOCAL_DENSE_QUERY"
+  },
+  "output_directory": "ai/evaluation/reports/experiments/full_corpus_retrieval_v3",
+  "publication_limits": [
+    "CHILD만 1차 검색하고 SOURCE_PAGE는 Child 적중 후 문맥 확장에만 사용한다.",
+    "Runtime 사전 Policy와 Query-only 확장을 실행하지만 Vector ranking은 Local NumPy 진단이다.",
+    "LOCAL_DENSE_QUERY는 PGVECTOR_QUERY Runtime 실행 증거가 아니다.",
+    "review_status=TWO_PERSON_APPROVED 전 결과는 공식 Gold 성능으로 발표하지 않는다.",
+    "Full Corpus v3와 기존 Gold v1·Corpus 원본은 수정하지 않는다."
+  ]
+}

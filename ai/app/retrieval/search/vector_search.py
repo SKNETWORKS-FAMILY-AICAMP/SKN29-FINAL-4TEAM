@@ -8,7 +8,9 @@ from ..models.retrieval_query import RetrievalQuery
 from ..models.retrieved_chunk import RetrievedChunk
 from ..filters.document_policy_filter import DocumentPolicyFilter
 from ..filters.product_filter import ProductFilter
+from ..filters.scope_filter import SearchCandidateFilter
 from ..indexing.index_manifest import IndexManifest
+from ..query.query_expander import QueryExpansionDecision, RetrievalQueryExpander
 from ..verification.faq_usage_validator import FaqUsageValidator
 from ..verification.answerability_capability_gate import (
     AnswerabilityCapabilityGate,
@@ -32,6 +34,7 @@ class VectorSearchService:
         answerability_gate: AnswerabilityCapabilityGate | None = None,
         model_capability_gate: ModelCapabilityGate | None = None,
         product_filter: ProductFilter | None = None,
+        query_expander: RetrievalQueryExpander | None = None,
     ):
         self.embedding_client = embedding_client
         self.vector_store = vector_store
@@ -39,6 +42,7 @@ class VectorSearchService:
         self.answerability_gate = answerability_gate or AnswerabilityCapabilityGate()
         self.model_capability_gate = model_capability_gate or ModelCapabilityGate()
         self.product_filter = product_filter or ProductFilter()
+        self.query_expander = query_expander or RetrievalQueryExpander()
         if index_manifest is not None:
             if getattr(embedding_client, "model_name", None) != index_manifest.model_name:
                 raise RuntimeError("Embedding 모델과 Index Manifest 모델이 일치하지 않습니다.")
@@ -48,6 +52,8 @@ class VectorSearchService:
                 raise RuntimeError("Embedding 차원과 Index Manifest 차원이 일치하지 않습니다.")
 
     def _is_valid_result(self, chunk: RetrievedChunk, requested_model: str) -> bool:
+        if not SearchCandidateFilter().is_valid_chunk(chunk):
+            return False
         if not self.product_filter.is_valid_chunk(
             chunk,
             requested_model=requested_model,
@@ -105,7 +111,8 @@ class VectorSearchService:
             return []
         if not FaqUsageValidator().allows_query(query.query_text):
             return []
-        vector = self.embedding_client.embed_query(query.query_text)
+        expansion = self.expand_query(query)
+        vector = self.embedding_client.embed_query(expansion.expanded_query)
         token.raise_if_cancelled()
         chunks = self.vector_store.search(
             vector,
@@ -119,6 +126,14 @@ class VectorSearchService:
             for chunk in chunks
             if self._is_valid_result(chunk, requested_model=query.model_code)
         ]
+
+    def expand_query(self, query: RetrievalQuery) -> QueryExpansionDecision:
+        """Policy 판정에 사용한 원문은 유지하고 Embedding 입력만 확장한다."""
+
+        return self.query_expander.expand(
+            query.query_text,
+            model_code=query.model_code or "",
+        )
 
     def evaluate_answerability(self, query: RetrievalQuery) -> AnswerabilityDecision:
         """검색 전에 적용한 Gate 결정을 평가·진단 코드와 공유한다."""

@@ -2,9 +2,10 @@
 """Full Corpus v3와 Gold v2의 로컬 BGE-M3 Dense 검색 진단 실행기.
 
 이 실행기는 실제 로컬 임베딩과 NumPy Cosine ranking을 수행하지만 pgvector를
-호출하지 않는다. 따라서 검색 Case의 관측 경로는 항상
-``LOCAL_DENSE_QUERY``이며, Gold의 기대 경로 ``PGVECTOR_QUERY``를 가장하지
-않는다. Evidence Group의 의미 Hit와 실행 경로 계약은 별도 필드로 보고한다.
+호출하지 않는다. 검색 허용 Case의 관측 경로는 ``LOCAL_DENSE_QUERY``이며,
+Gold의 기대 경로 ``PGVECTOR_QUERY``를 가장하지 않는다. Profile이 명시적으로
+요청하면 운영과 같은 사전 Policy Gate와 Query-only 확장을 실행한다.
+Evidence Group의 의미 Hit와 실행 경로 계약은 별도 필드로 보고한다.
 """
 
 from __future__ import annotations
@@ -23,6 +24,15 @@ from typing import Any, Protocol
 
 import numpy as np
 
+from ai.app.retrieval.models.retrieval_query import RetrievalQuery
+from ai.app.retrieval.runtime_profile import (
+    load_runtime_retrieval_policy,
+    resolve_rag_runtime_profile,
+)
+from ai.app.retrieval.search.vector_search import VectorSearchService
+from ai.app.retrieval.verification.answerability_capability_gate import (
+    AnswerabilityCapabilityGate,
+)
 from ai.evaluation.evidence_scoring_v2 import score_gold_case
 from ai.evaluation.file_integrity import file_sha256
 from ai.scripts.validate_gold_corpus_compatibility_v2 import (
@@ -41,6 +51,7 @@ POLICY_BLOCK_PATHS = frozenset(
         "POLICY_BLOCK_PRODUCT_MISMATCH",
         "POLICY_BLOCK_UNSUPPORTED_MODEL",
         "POLICY_BLOCK_UNSUPPORTED_CAPABILITY",
+        "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE",
         "POLICY_BLOCK_UNVERIFIED_SOURCE",
     }
 )
@@ -53,6 +64,22 @@ class EmbeddingProvider(Protocol):
     def embed_documents(self, texts: list[str]) -> np.ndarray: ...
 
     def embed_queries(self, texts: list[str]) -> np.ndarray: ...
+
+
+class _PolicyOnlyEmbedding:
+    """Policy·Query 확장만 재사용할 때 실수로 Embedding 실행을 차단한다."""
+
+    dimension = 1024
+
+    def embed_query(self, text: str) -> list[float]:  # pragma: no cover - guard
+        raise AssertionError("Policy-only Service는 Embedding을 실행할 수 없습니다.")
+
+
+class _PolicyOnlyStore:
+    """Policy·Query 확장만 재사용할 때 실수로 DB 실행을 차단한다."""
+
+    def search(self, *args: Any, **kwargs: Any) -> list[Any]:  # pragma: no cover - guard
+        raise AssertionError("Policy-only Service는 Vector Store를 실행할 수 없습니다.")
 
 
 class LocalBgeM3Provider:
@@ -169,6 +196,43 @@ def _git_facts() -> dict[str, Any]:
         "working_tree_clean": status == "" if status is not None else None,
         "changed_path_count": len(status.splitlines()) if status else 0,
     }
+
+
+def _runtime_policy_service(profile: dict[str, Any]) -> VectorSearchService | None:
+    """Allowlisted Runtime Profile의 실제 검색 전 Gate를 평가기에 연결한다."""
+
+    profile_name = profile.get("retrieval", {}).get("runtime_policy_profile")
+    if profile_name is None:
+        return None
+    runtime_profile = resolve_rag_runtime_profile(str(profile_name))
+    runtime_policy = load_runtime_retrieval_policy(runtime_profile)
+    return VectorSearchService(
+        _PolicyOnlyEmbedding(),
+        _PolicyOnlyStore(),
+        answerability_gate=AnswerabilityCapabilityGate(
+            definition=runtime_policy.answerability_gate
+        ),
+    )
+
+
+def _case_retrieval_query(
+    profile: dict[str, Any],
+    case: dict[str, Any],
+) -> RetrievalQuery:
+    generation_map = profile.get("retrieval", {}).get(
+        "product_generation_by_model", {}
+    )
+    generation = (
+        generation_map.get(case["product_model_code"], "D")
+        if isinstance(generation_map, dict)
+        else "D"
+    )
+    return RetrievalQuery(
+        query_text=case["query"],
+        model_code=case["product_model_code"],
+        product_generation=str(generation),
+        top_k=int(profile["retrieval"]["top_k"]),
+    )
 
 
 def _select_registry_path(profile: dict[str, Any]) -> tuple[Path, str]:
@@ -511,6 +575,52 @@ def build_preflight_report(
         },
     )
 
+    runtime_policy_profile = profile.get("retrieval", {}).get(
+        "runtime_policy_profile"
+    )
+    generation_map = profile.get("retrieval", {}).get(
+        "product_generation_by_model", {}
+    )
+    runtime_policy_issues: list[str] = []
+    runtime_policy_id: str | None = None
+    query_expansion_policy_id: str | None = None
+    if runtime_policy_profile is not None:
+        if not isinstance(generation_map, dict):
+            runtime_policy_issues.append(
+                "product_generation_by_model은 Object여야 합니다."
+            )
+        else:
+            missing_generations = sorted(
+                {
+                    str(row["product_model_code"])
+                    for row in active_rows
+                    if row["product_model_code"] not in generation_map
+                }
+            )
+            if missing_generations:
+                runtime_policy_issues.append(
+                    "제품 세대 Mapping이 없습니다: " + ", ".join(missing_generations)
+                )
+        try:
+            policy_service = _runtime_policy_service(profile)
+            if policy_service is None:  # pragma: no cover - guarded by profile value.
+                raise ValueError("Runtime Policy Service가 생성되지 않았습니다.")
+            runtime_policy_id = policy_service.answerability_gate.policy_id
+            query_expansion_policy_id = policy_service.query_expander.policy_id
+        except (KeyError, OSError, TypeError, ValueError, RuntimeError) as exc:
+            runtime_policy_issues.append(str(exc))
+    add_check(
+        "runtime_pre_search_policy",
+        not runtime_policy_issues,
+        {
+            "configured": runtime_policy_profile is not None,
+            "runtime_policy_profile": runtime_policy_profile,
+            "runtime_policy_id": runtime_policy_id,
+            "query_expansion_policy_id": query_expansion_policy_id,
+            "issues": runtime_policy_issues,
+        },
+    )
+
     missing_modules = (
         []
         if embedding_provider_supplied
@@ -577,7 +687,11 @@ def build_preflight_report(
         "official_metrics_allowed": False,
         "official_metrics_blockers": [
             "LOCAL_DENSE_QUERY_IS_NOT_PGVECTOR_QUERY",
-            *(["POLICY_BLOCK_RUNTIME_NOT_EXECUTED"] if has_policy_cases else []),
+            *(
+                ["POLICY_BLOCK_RUNTIME_NOT_EXECUTED"]
+                if has_policy_cases and runtime_policy_profile is None
+                else []
+            ),
             *([] if pending_active == 0 else ["HUMAN_REVIEW_PENDING"]),
         ],
     }
@@ -730,6 +844,28 @@ def run_baseline(
         raise ValueError(
             f"Embedding Provider Dimension 불일치: expected={dimension}, actual={provider.dimension}"
         )
+    policy_service = _runtime_policy_service(profile)
+    retrieval_query_by_case = {
+        case["case_id"]: _case_retrieval_query(profile, case)
+        for case in dataset_rows
+    }
+    observed_pre_search_path_by_case = (
+        {
+            case_id: policy_service.execution_path(query)
+            for case_id, query in retrieval_query_by_case.items()
+        }
+        if policy_service is not None
+        else {}
+    )
+    expansion_by_case = (
+        {
+            case_id: policy_service.expand_query(query)
+            for case_id, query in retrieval_query_by_case.items()
+            if observed_pre_search_path_by_case[case_id] == PGVECTOR_QUERY
+        }
+        if policy_service is not None
+        else {}
+    )
 
     started_at = datetime.now(timezone.utc)
     started_clock = time.perf_counter()
@@ -743,11 +879,26 @@ def run_baseline(
         raise ValueError("문서 Embedding 행 수가 Corpus와 다릅니다.")
 
     query_cases = [
-        row for row in dataset_rows if row["expected_execution_path"] == PGVECTOR_QUERY
+        row
+        for row in dataset_rows
+        if (
+            observed_pre_search_path_by_case.get(
+                row["case_id"], row["expected_execution_path"]
+            )
+            == PGVECTOR_QUERY
+        )
+    ]
+    query_inputs = [
+        (
+            expansion_by_case[row["case_id"]].expanded_query
+            if row["case_id"] in expansion_by_case
+            else row["query"]
+        )
+        for row in query_cases
     ]
     query_started = time.perf_counter()
     query_vectors = _normalise(
-        np.asarray(provider.embed_queries([row["query"] for row in query_cases])),
+        np.asarray(provider.embed_queries(query_inputs)),
         dimension=dimension,
     )
     query_embedding_seconds = time.perf_counter() - query_started
@@ -765,7 +916,14 @@ def run_baseline(
     for case in dataset_rows:
         case_started = time.perf_counter()
         expected_path = case["expected_execution_path"]
-        if expected_path in POLICY_BLOCK_PATHS:
+        observed_pre_search_path = observed_pre_search_path_by_case.get(case["case_id"])
+        if policy_service is not None and observed_pre_search_path != PGVECTOR_QUERY:
+            ranked = []
+            actual_path = str(observed_pre_search_path)
+            vector_query_count = 0
+            policy_execution_source = "VectorSearchService.execution_path"
+            policy_block_status = "EXECUTED_RUNTIME_POLICY"
+        elif policy_service is None and expected_path in POLICY_BLOCK_PATHS:
             ranked: list[dict[str, Any]] = []
             # 이 Runner는 Runtime Policy Evaluator를 호출하지 않는다. Gold의 기대
             # 경로를 관측값으로 복사하면 self-fulfilling PASS가 되므로 명시적인
@@ -817,6 +975,21 @@ def run_baseline(
                 "vector_query_count": vector_query_count,
                 "policy_execution_source": policy_execution_source,
                 "policy_block_status": policy_block_status,
+                "query_expansion_policy_id": (
+                    policy_service.query_expander.policy_id
+                    if policy_service is not None
+                    else None
+                ),
+                "query_expansion_applied": (
+                    expansion_by_case[case["case_id"]].applied
+                    if case["case_id"] in expansion_by_case
+                    else False
+                ),
+                "query_expansion_rule_ids": (
+                    list(expansion_by_case[case["case_id"]].applied_rule_ids)
+                    if case["case_id"] in expansion_by_case
+                    else []
+                ),
                 "required_evidence_group_ids": case["required_evidence_group_ids"],
                 "supporting_evidence_group_ids": case["supporting_evidence_group_ids"],
                 "ranked_result_count": len(ranked),
@@ -892,7 +1065,11 @@ def run_baseline(
             "policy_block_case_count": summary["policy_block_case_count"],
             "policy_block_passed_count": summary["policy_block_passed_count"],
             "policy_block_runtime_status": (
-                "NOT_RUN_RUNTIME_POLICY"
+                (
+                    "EXECUTED_RUNTIME_POLICY"
+                    if policy_service is not None
+                    else "NOT_RUN_RUNTIME_POLICY"
+                )
                 if summary["policy_block_case_count"]
                 else "NOT_APPLICABLE"
             ),
@@ -911,6 +1088,9 @@ def run_baseline(
         "eligible_candidate_count": len(corpus_rows),
         "embedded_candidate_count": len(document_vectors),
         "embedded_query_count": len(query_cases),
+        "query_expansion_applied_count": sum(
+            decision.applied for decision in expansion_by_case.values()
+        ),
         "active_case_count": len(dataset_rows),
         "policy_block_case_count": summary["policy_block_case_count"],
         "case_result_count": len(results),
@@ -960,7 +1140,19 @@ def run_baseline(
         "retrieval": {
             **profile["retrieval"],
             "vector_query_actual_execution_path": LOCAL_DENSE_QUERY,
-            "policy_block_execution": "NOT_RUN_RUNTIME_POLICY",
+            "policy_block_execution": (
+                "EXECUTED_RUNTIME_POLICY"
+                if policy_service is not None
+                else "NOT_RUN_RUNTIME_POLICY"
+            ),
+            "query_expansion_policy_id": (
+                policy_service.query_expander.policy_id
+                if policy_service is not None
+                else None
+            ),
+            "query_expansion_applied_count": sum(
+                decision.applied for decision in expansion_by_case.values()
+            ),
         },
         "runtime": {
             "python": platform.python_version(),
