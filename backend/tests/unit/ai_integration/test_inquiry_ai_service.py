@@ -221,6 +221,7 @@ def test_safe_result_is_persisted_but_held_without_verified_evidence():
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
     guidance = Guidance.objects.get(inquiry=inquiry)
     assert guidance.items.count() == 2
+    assert guidance.review_status_code == "CONFIRMED"
 
     inquiry.refresh_from_db()
     assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
@@ -389,6 +390,7 @@ def test_no_evidence_result_routes_to_consultation_required():
     assert inquiry.evidence_mode == Inquiry.EvidenceMode.NO_EVIDENCE
     assert inquiry.requires_fallback is True
     assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
+    assert Guidance.objects.get(inquiry=inquiry).review_status_code == "REJECTED"
     http_client.close()
 
 
@@ -456,6 +458,7 @@ def test_product_runtime_hold_applies_product_validation_failed_once():
     )
     assert inquiry.requires_fallback is True
     assert inquiry.evidence_ids == []
+    assert Guidance.objects.get(inquiry=inquiry).review_status_code == "REJECTED"
 
     history = TransitionHistory.objects.get(inquiry=inquiry)
     assert history.event_code == "PRODUCT_VALIDATION_FAILED"
@@ -580,6 +583,7 @@ def test_other_contract_v4_fallback_stays_fail_closed_without_state_event():
     assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
     assert inquiry.state_version == 2
     assert inquiry.requires_fallback is True
+    assert Guidance.objects.get(inquiry=inquiry).review_status_code == "REJECTED"
     assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
     http_client.close()
 
@@ -626,6 +630,8 @@ def test_followup_questions_are_saved_without_advancing_state():
 
 def test_registered_danger_rules_apply_consultation_required_transition():
     inquiry = create_inquiry(10)
+    correlation_id = uuid4()
+    ai_request_id = uuid4()
 
     def danger(response: dict, request: dict) -> dict:
         example_path = (
@@ -649,7 +655,12 @@ def test_registered_danger_rules_apply_consultation_required_transition():
         return danger_response
 
     client, http_client, _calls = make_client(transform=danger)
-    outcome = analyze(inquiry, client)
+    outcome = analyze(
+        inquiry,
+        client,
+        correlation_id=correlation_id,
+        ai_request_id=ai_request_id,
+    )
 
     assert outcome.event_candidate == "DANGER_DETECTED"
     assert outcome.event_applied == "DANGER_DETECTED"
@@ -663,6 +674,22 @@ def test_registered_danger_rules_apply_consultation_required_transition():
     history = TransitionHistory.objects.get(inquiry=inquiry)
     assert history.event_code == "DANGER_DETECTED"
     assert history.state_version == 3
+    consultation = Consultation.objects.get(inquiry=inquiry)
+    assert consultation.status == Consultation.Status.WAITING
+    assert consultation.consultant is None
+    assert consultation.state_version == 3
+    assert consultation.correlation_id == correlation_id
+    assert consultation.idempotency_key == f"ai-danger-{ai_request_id}"
+
+    run = AIRun.objects.get(public_id=outcome.ai_run_id)
+    replay = InquiryAIService._replay_or_conflict(
+        run,
+        input_digest=run.input_sha256,
+        request_payload=run.input_payload,
+        validator=AIContractValidator(),
+    )
+    assert replay.idempotent_replay is True
+    assert Consultation.objects.filter(inquiry=inquiry).count() == 1
     http_client.close()
 
 

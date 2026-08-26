@@ -134,6 +134,10 @@ class CustomerInquiryRepository:
 
         trusted_guidance = (
             Guidance.objects.filter(
+                # A schema-valid AI draft is not automatically customer-safe.
+                # Caution guidance remains PENDING for PRE_SEND review, while
+                # fallback/no-evidence drafts are REJECTED by Backend policy.
+                review_status_code__in=("APPROVED", "CONFIRMED"),
                 generated_by_ai_run__task_type_code__in=(
                     AIRun.TaskType.ANALYZE_SYMPTOM,
                     AIRun.TaskType.GENERATE_GUIDANCE,
