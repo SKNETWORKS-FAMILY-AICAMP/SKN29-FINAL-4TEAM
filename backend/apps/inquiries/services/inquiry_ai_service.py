@@ -956,6 +956,16 @@ class InquiryAIService:
             )
             item.full_clean()
             item.save()
+        if guidance.review_status_code == GuidanceReviewPolicy.PENDING:
+            from apps.inquiries.services.human_review_service import (
+                HumanReviewService,
+            )
+
+            HumanReviewService.create_pending(
+                guidance=guidance,
+                ai_request_id=run.idempotency_key,
+                source_inquiry_state_version=inquiry.state_version,
+            )
         return guidance
 
     @staticmethod

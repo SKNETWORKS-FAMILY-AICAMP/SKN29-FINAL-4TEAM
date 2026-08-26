@@ -26,6 +26,9 @@ from apps.inquiries.api.serializers import (
     CustomerInquirySnapshotSerializer,
     InquiryResponseSerializer,
     InternalAIInquiryContextDataSerializer,
+    HumanReviewDataSerializer,
+    HumanReviewDecisionRequestSerializer,
+    HumanReviewListDataSerializer,
     FinalizeInquiryRequestSerializer,
     RegisterConsultantPhoneInquiryResultSerializer,
     RegisterConsultantPhoneInquirySerializer,
@@ -72,6 +75,7 @@ from apps.inquiries.services.inquiry_transition_service import (
 from apps.inquiries.services.internal_ai_context_service import (
     InternalAIContextService,
 )
+from apps.inquiries.services.human_review_service import HumanReviewService
 from apps.inquiries.services.resolution_service import ResolutionService
 from common.api.response import success_response
 from common.permissions import HasValidAIInternalToken
@@ -151,6 +155,58 @@ class InternalAIInquiryContextView(APIView):
         )
         return success_response(
             InternalAIInquiryContextDataSerializer(data).data
+        )
+
+
+@extend_schema(exclude=True)
+class HumanReviewListView(APIView):
+    """Return privacy-minimized pending reviews visible to a consultant."""
+
+    permission_classes = [IsAuthenticated, IsConsultant]
+
+    def get(self, request):
+        reject_unknown_query_parameters(request, set())
+        data = HumanReviewService.list_pending(actor=request.user)
+        return success_response(HumanReviewListDataSerializer(data).data)
+
+
+@extend_schema(exclude=True)
+class HumanReviewDetailView(APIView):
+    """Return one visible review without customer raw text or internal errors."""
+
+    permission_classes = [IsAuthenticated, IsConsultant]
+
+    def get(self, request, review_id: UUID):
+        reject_unknown_query_parameters(request, set())
+        data = HumanReviewService.retrieve(
+            actor=request.user,
+            review_public_id=review_id,
+        )
+        return success_response(HumanReviewDataSerializer(data).data)
+
+
+@extend_schema(exclude=True)
+class HumanReviewDecisionView(APIView):
+    """Apply one versioned and idempotent consultant review decision."""
+
+    permission_classes = [IsAuthenticated, IsConsultant]
+
+    def post(self, request, review_id: UUID):
+        reject_unknown_query_parameters(request, set())
+        idempotency_key = require_idempotency_key(request)
+        correlation_id = require_correlation_id(request)
+        serializer = HumanReviewDecisionRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        outcome = HumanReviewService.decide(
+            actor=request.user,
+            review_public_id=review_id,
+            validated_data=serializer.validated_data,
+            idempotency_key=idempotency_key,
+            correlation_id=correlation_id,
+        )
+        return success_response(
+            HumanReviewDataSerializer(outcome.data).data,
+            status_code=outcome.status_code,
         )
 
 
