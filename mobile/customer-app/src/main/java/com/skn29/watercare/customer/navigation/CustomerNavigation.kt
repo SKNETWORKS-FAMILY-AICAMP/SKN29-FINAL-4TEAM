@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.MockScenario
+import com.skn29.watercare.core.model.SymptomTopic
 import com.skn29.watercare.customer.feature.auth.LoginScreen
 import com.skn29.watercare.customer.feature.customer.care.CareHistoryScreen
 import com.skn29.watercare.customer.feature.customer.care.CarePrecheckScreen
@@ -110,6 +111,16 @@ fun CustomerNavigation() {
                         CustomerRoute.intake(
                             subscriptionId = subscriptionId,
                             fixturePreview = offlinePreview,
+                        )
+                    )
+                },
+                onStartIntakePreset = { subscriptionId, topic, rawText ->
+                    navController.navigate(
+                        CustomerRoute.intake(
+                            subscriptionId = subscriptionId,
+                            fixturePreview = offlinePreview,
+                            initialTopic = topic.name,
+                            initialRawText = rawText,
                         )
                     )
                 },
@@ -229,6 +240,14 @@ fun CustomerNavigation() {
                     type = NavType.BoolType
                     defaultValue = false
                 },
+                navArgument("initialTopic") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
+                navArgument("initialRawText") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
             ),
         ) { entry ->
             val fixturePreview =
@@ -236,11 +255,28 @@ fun CustomerNavigation() {
                     ?.getBoolean("fixturePreview")
                     ?: false
 
+            val initialTopic =
+                entry.arguments
+                    ?.getString("initialTopic")
+                    ?.takeIf(String::isNotBlank)
+                    ?.let { value ->
+                        runCatching {
+                            SymptomTopic.valueOf(value)
+                        }.getOrNull()
+                    }
+
+            val initialRawText =
+                entry.arguments
+                    ?.getString("initialRawText")
+                    .orEmpty()
+
             SymptomIntakeScreen(
                 subscriptionId =
                     entry.arguments
                         ?.getString("subscriptionId")
                         .orEmpty(),
+                initialTopic = initialTopic,
+                initialRawText = initialRawText,
                 onBack = {
                     navController.popBackStack()
                 },

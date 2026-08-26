@@ -59,6 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.skn29.watercare.core.model.CustomerHomeData
+import com.skn29.watercare.core.model.SymptomTopic
 import com.skn29.watercare.core.model.isP0SupportedActiveSubscription
 import com.skn29.watercare.core.ui.components.CustomerReferencePalette
 import com.skn29.watercare.core.ui.components.ReferenceGlassButton
@@ -83,6 +84,13 @@ fun CustomerVisualProductHero(
     intakeAvailable: Boolean = false,
     intakeUnavailableReason: String? = null,
     onStartIntake: (String) -> Unit = {},
+    onStartIntakePreset: (
+        String,
+        SymptomTopic,
+        String,
+    ) -> Unit = { subscriptionId, _, _ ->
+        onStartIntake(subscriptionId)
+    },
     onOpenInquiry: (String) -> Unit = {},
     onOpenCare: () -> Unit = {},
 ) {
@@ -263,6 +271,8 @@ fun CustomerVisualProductHero(
             hasActiveInquiry =
                 hasActiveInquiry,
             onStartIntake = onStartIntake,
+            onStartIntakePreset =
+                onStartIntakePreset,
             onOpenInquiry = onOpenInquiry,
         )
     }
@@ -455,20 +465,7 @@ private fun FinalDashboardFilterSummary(
             }
         }
 
-        TextButton(
-            onClick = onOpenCare,
-            modifier =
-                Modifier.testTag(
-                    "openFilterCare"
-                ),
-        ) {
-            Text(
-                text = "필터 상태 자세히 보기 ›",
-                color = palette.accent,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-    }
+            }
 }
 
 @Composable
@@ -481,6 +478,11 @@ private fun FinalDashboardProblemCheck(
     previewMode: Boolean,
     hasActiveInquiry: Boolean,
     onStartIntake: (String) -> Unit,
+    onStartIntakePreset: (
+        String,
+        SymptomTopic,
+        String,
+    ) -> Unit,
     onOpenInquiry: (String) -> Unit,
 ) {
     val palette = CustomerReferencePalette
@@ -709,8 +711,10 @@ private fun FinalDashboardProblemCheck(
                 FinalProblemChip(
                     text = "물이 약해요",
                     onClick = {
-                        onStartIntake(
-                            home.subscriptionId
+                        onStartIntakePreset(
+                            home.subscriptionId,
+                            SymptomTopic.LOW_FLOW,
+                            "",
                         )
                     },
                     modifier =
@@ -720,8 +724,10 @@ private fun FinalDashboardProblemCheck(
                 FinalProblemChip(
                     text = "물맛이 이상해요",
                     onClick = {
-                        onStartIntake(
-                            home.subscriptionId
+                        onStartIntakePreset(
+                            home.subscriptionId,
+                            SymptomTopic.TASTE_ODOR,
+                            "",
                         )
                     },
                     modifier =
@@ -737,8 +743,10 @@ private fun FinalDashboardProblemCheck(
                 FinalProblemChip(
                     text = "소리가 나요",
                     onClick = {
-                        onStartIntake(
-                            home.subscriptionId
+                        onStartIntakePreset(
+                            home.subscriptionId,
+                            SymptomTopic.OTHER,
+                            "",
                         )
                     },
                     modifier =
@@ -748,8 +756,10 @@ private fun FinalDashboardProblemCheck(
                 FinalProblemChip(
                     text = "누수가 보여요",
                     onClick = {
-                        onStartIntake(
-                            home.subscriptionId
+                        onStartIntakePreset(
+                            home.subscriptionId,
+                            SymptomTopic.LEAK,
+                            "",
                         )
                     },
                     modifier =
@@ -870,32 +880,14 @@ fun FinalCustomerCareOverviewCard(
             vertical = 14.dp,
         ),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement =
-                Arrangement.SpaceBetween,
-            verticalAlignment =
-                Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "케어 관리 현황",
-                style =
-                    MaterialTheme.typography
-                        .titleMedium,
-                color = palette.textStrong,
-                fontWeight = FontWeight.Bold,
-            )
-
-            TextButton(
-                onClick = onOpenCare,
-            ) {
-                Text(
-                    text = "관리 보기 ›",
-                    color = palette.accent,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-        }
+        Text(
+            text = "케어 관리 현황",
+            style =
+                MaterialTheme.typography
+                    .titleMedium,
+            color = palette.textStrong,
+            fontWeight = FontWeight.Bold,
+        )
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -984,7 +976,6 @@ private fun FinalCareStatusTile(
             color = palette.textStrong,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            maxLines = 2,
         )
     }
 }
@@ -1006,9 +997,7 @@ fun FinalCustomerCareHelpBanner(
                     alpha = 0.20f
                 )
             )
-            .clickable(
-                onClick = onOpenCare
-            )
+
             .padding(
                 horizontal = 16.dp,
                 vertical = 14.dp,
@@ -1049,14 +1038,6 @@ fun FinalCustomerCareHelpBanner(
                 )
             }
 
-            Text(
-                text = "›",
-                style =
-                    MaterialTheme.typography
-                        .headlineSmall,
-                color = palette.accent,
-                fontWeight = FontWeight.Black,
-            )
         }
     }
 }

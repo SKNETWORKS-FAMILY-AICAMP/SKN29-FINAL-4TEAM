@@ -11,7 +11,9 @@ object CustomerRoute {
 
     const val INTAKE =
         "intake/{subscriptionId}" +
-            "?fixturePreview={fixturePreview}"
+            "?fixturePreview={fixturePreview}" +
+            "&initialTopic={initialTopic}" +
+            "&initialRawText={initialRawText}"
 
     const val FOLLOW_UP =
         "follow-up/{inquiryId}/{scenario}" +
@@ -40,6 +42,8 @@ object CustomerRoute {
     fun intake(
         subscriptionId: String,
         fixturePreview: Boolean = false,
+        initialTopic: String = "",
+        initialRawText: String = "",
     ) =
         buildString {
             append("intake/")
@@ -53,6 +57,22 @@ object CustomerRoute {
             )
             append(
                 fixturePreview
+            )
+            append(
+                "&initialTopic="
+            )
+            append(
+                Uri.encode(
+                    initialTopic
+                )
+            )
+            append(
+                "&initialRawText="
+            )
+            append(
+                Uri.encode(
+                    initialRawText
+                )
             )
         }
 

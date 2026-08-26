@@ -26,6 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.config.CustomerCareMode
 import com.skn29.watercare.core.model.MockScenario
+import com.skn29.watercare.core.model.SymptomTopic
 import com.skn29.watercare.core.repository.FakeCustomerCareRepository
 import com.skn29.watercare.core.ui.components.CustomerReferencePalette
 import com.skn29.watercare.core.ui.components.ErrorCard
@@ -41,6 +42,13 @@ import kotlinx.coroutines.delay
 fun CustomerHomeScreen(
     offlinePreview: Boolean,
     onStartIntake: (subscriptionId: String) -> Unit,
+    onStartIntakePreset: (
+        subscriptionId: String,
+        topic: SymptomTopic,
+        rawText: String,
+    ) -> Unit = { subscriptionId, _, _ ->
+        onStartIntake(subscriptionId)
+    },
     onOpenFollowUp: (inquiryId: String, scenario: MockScenario) -> Unit,
     onOpenGuidance: (inquiryId: String, scenario: MockScenario) -> Unit,
     onOpenCare: () -> Unit,
@@ -171,6 +179,8 @@ fun CustomerHomeScreen(
         state = state,
         displayModelCode = displayModelCode,
         onStartIntake = onStartIntake,
+        onStartIntakePreset =
+            onStartIntakePreset,
         onOpenGuidance = { inquiryId, scenario ->
             val useRemoteFollowUpResolver =
                 !offlinePreview &&
@@ -217,7 +227,7 @@ fun CustomerHomeScreen(
         onLogout = {
             viewModel.logout(onLogout)
         },
-        showDeveloperTools = BuildConfig.SHOW_DEVELOPER_TOOLS,
+        showDeveloperTools = false,
     )
 }
 
@@ -226,6 +236,13 @@ fun CustomerHomeContent(
     state: CustomerHomeUiState,
     displayModelCode: String? = null,
     onStartIntake: (subscriptionId: String) -> Unit,
+    onStartIntakePreset: (
+        subscriptionId: String,
+        topic: SymptomTopic,
+        rawText: String,
+    ) -> Unit = { subscriptionId, _, _ ->
+        onStartIntake(subscriptionId)
+    },
     onOpenGuidance: (inquiryId: String, scenario: MockScenario) -> Unit,
     onRetry: () -> Unit,
     onLogout: () -> Unit,
@@ -449,6 +466,8 @@ fun CustomerHomeContent(
                         state.intakeUnavailableReason
                     },
                 onStartIntake = onStartIntake,
+                onStartIntakePreset =
+                    onStartIntakePreset,
                 onOpenInquiry = { inquiryId ->
                     onOpenGuidance(
                         inquiryId,

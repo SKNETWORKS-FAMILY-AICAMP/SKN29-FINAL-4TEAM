@@ -111,33 +111,29 @@ class AuthViewModel(
     ) {
         if (_state.value.submitting) return
 
-        val normalizedName = name.trim()
+        val normalizedName =
+            name.trim()
+
         val normalizedEmail =
             email.trim().lowercase()
-        val normalizedUsername =
-            username.trim()
 
         val emailPattern =
             Regex("""^[^\s@]+@[^\s@]+\.[^\s@]+$""")
 
-        val usernamePattern =
-            Regex("""^[A-Za-z0-9._-]+$""")
-
-        val hasLetter =
-            password.any {
-                it in 'A'..'Z' ||
-                    it in 'a'..'z'
-            }
-
-        val hasDigit =
-            password.any(Char::isDigit)
+        // Challenge API contract uses only name + email.
+        // Username/password are collected and validated after OTP verification.
+        @Suppress("UNUSED_VARIABLE")
+        val deferredAccountFields =
+            username to password
 
         val localErrors =
             buildMap<String, List<String>> {
                 if (normalizedName.isEmpty()) {
                     put(
                         "name",
-                        listOf("이름을 입력해 주세요."),
+                        listOf(
+                            "\uC774\uB984\uC744 \uC785\uB825\uD574 \uC8FC\uC138\uC694."
+                        ),
                     )
                 } else if (
                     normalizedName.length > 100
@@ -145,7 +141,7 @@ class AuthViewModel(
                     put(
                         "name",
                         listOf(
-                            "이름은 100자 이하로 입력해 주세요."
+                            "\uC774\uB984\uC740 100\uC790 \uC774\uD558\uB85C \uC785\uB825\uD574 \uC8FC\uC138\uC694."
                         ),
                     )
                 }
@@ -153,7 +149,9 @@ class AuthViewModel(
                 if (normalizedEmail.isEmpty()) {
                     put(
                         "email",
-                        listOf("이메일을 입력해 주세요."),
+                        listOf(
+                            "\uC774\uBA54\uC77C\uC744 \uC785\uB825\uD574 \uC8FC\uC138\uC694."
+                        ),
                     )
                 } else if (
                     normalizedEmail.length > 254 ||
@@ -164,49 +162,7 @@ class AuthViewModel(
                     put(
                         "email",
                         listOf(
-                            "올바른 이메일 주소를 입력해 주세요."
-                        ),
-                    )
-                }
-
-                when {
-                    normalizedUsername.isEmpty() ->
-                        put(
-                            "username",
-                            listOf(
-                                "아이디를 입력해 주세요."
-                            ),
-                        )
-
-                    normalizedUsername.length !in
-                        4..20 ->
-                        put(
-                            "username",
-                            listOf(
-                                "아이디는 4~20자로 입력해 주세요."
-                            ),
-                        )
-
-                    !usernamePattern.matches(
-                        normalizedUsername
-                    ) ->
-                        put(
-                            "username",
-                            listOf(
-                                "아이디는 영문, 숫자, ., _, -만 사용할 수 있습니다."
-                            ),
-                        )
-                }
-
-                if (
-                    password.length !in 12..20 ||
-                    !hasLetter ||
-                    !hasDigit
-                ) {
-                    put(
-                        "password",
-                        listOf(
-                            "비밀번호는 12~20자이며 영문과 숫자를 포함해야 합니다."
+                            "\uC62C\uBC14\uB978 \uC774\uBA54\uC77C \uC8FC\uC18C\uB97C \uC785\uB825\uD574 \uC8FC\uC138\uC694."
                         ),
                     )
                 }
@@ -222,13 +178,14 @@ class AuthViewModel(
             return
         }
 
-        val repository = p1AuthRepository
+        val repository =
+            p1AuthRepository
 
         if (repository == null) {
             _state.value =
                 _state.value.copy(
                     error =
-                        "회원가입 기능을 사용할 수 없습니다.",
+                        "\uD68C\uC6D0\uAC00\uC785 \uAE30\uB2A5\uC744 \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.",
                     fieldErrors = emptyMap(),
                 )
             return
@@ -238,8 +195,11 @@ class AuthViewModel(
         signupClaimTicket = null
         signupIdempotencyKey = null
 
-        signupName = normalizedName
-        signupEmail = normalizedEmail
+        signupName =
+            normalizedName
+
+        signupEmail =
+            normalizedEmail
 
         viewModelScope.launch {
             _state.value =
@@ -280,7 +240,7 @@ class AuthViewModel(
                                 SignupStage
                                     .OTP_REQUIRED,
                             signupMessage =
-                                result.value.message,
+                                "인증번호 입력 단계입니다. 이메일을 확인해 주세요. 메일 도착까지 시간이 걸릴 수 있습니다.",
                             challengeExpiresInSeconds =
                                 result.value
                                     .expiresIn,
@@ -313,7 +273,6 @@ class AuthViewModel(
             }
         }
     }
-
     fun resendSignupVerification() {
         if (_state.value.submitting) return
 
@@ -389,7 +348,7 @@ class AuthViewModel(
                                 SignupStage
                                     .OTP_REQUIRED,
                             signupMessage =
-                                result.value.message,
+                                "인증번호 입력 단계입니다. 이메일을 확인해 주세요. 메일 도착까지 시간이 걸릴 수 있습니다.",
                             challengeExpiresInSeconds =
                                 result.value.expiresIn,
                             resendAfterSeconds =
@@ -866,7 +825,7 @@ class AuthViewModel(
                                 PasswordResetStage
                                     .OTP_REQUIRED,
                             passwordResetMessage =
-                                result.value.message,
+                                "인증번호 입력 단계입니다. 이메일을 확인해 주세요. 메일 도착까지 시간이 걸릴 수 있습니다.",
                             challengeExpiresInSeconds =
                                 result.value
                                     .expiresIn,
@@ -1249,7 +1208,7 @@ class AuthViewModel(
                                 UsernameRecoveryStage
                                     .OTP_REQUIRED,
                             usernameRecoveryMessage =
-                                result.value.message,
+                                "인증번호 입력 단계입니다. 이메일을 확인해 주세요. 메일 도착까지 시간이 걸릴 수 있습니다.",
                             challengeExpiresInSeconds =
                                 result.value
                                     .expiresIn,
@@ -1534,4 +1493,5 @@ class AuthViewModel(
     fun startOfflinePreview() {
         _state.value = _state.value.copy(authenticated = true, offlinePreview = true, error = null)
     }
+
 }
