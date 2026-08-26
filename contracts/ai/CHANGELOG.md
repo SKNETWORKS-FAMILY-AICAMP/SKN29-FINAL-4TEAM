@@ -1,5 +1,13 @@
 # AI Contract Changelog
 
+## 4.0.0 Routing clarification - 2026-08-26
+
+- 공개 Schema 필드 추가 없이 danger, caution 검토 초안, general 자동 안내,
+  Fail-closed 상담의 판독 순서와 조건을 명시
+- 추가 문진 대기는 `CUSTOMER_INPUT_PENDING`으로 기존 흐름을 보존
+- Danger 근거를 Safety Rule 본문 정합성으로, Replay 무호출을 Backend 결합
+  검증 책임으로 명확화
+
 ## 4.0.0 - 2026-08-21
 
 - `SymptomAnalysisResponse.model_code`를 필수 필드로 추가해 요청 제품과 응답

@@ -4,6 +4,7 @@ from ...schemas import RiskLevel, SafetyAssessment, UsageGuidance, UsageGuidance
 from ...safety.prohibited_action_guard import ProhibitedActionGuard
 from .guidance_message_guard import GuidanceMessageGuard
 from .prohibited_phrase_validator import ProhibitedPhraseValidator
+from .safety_rule_alignment_validator import SafetyRuleAlignmentValidator
 
 
 class UsageGuidanceValidator:
@@ -13,6 +14,7 @@ class UsageGuidanceValidator:
         self._phrase_validator = ProhibitedPhraseValidator()
         self._action_guard = ProhibitedActionGuard()
         self._message_guard = GuidanceMessageGuard()
+        self._rule_alignment_validator = SafetyRuleAlignmentValidator()
 
     def validate(
         self,
@@ -26,6 +28,7 @@ class UsageGuidanceValidator:
         if not has_evidence and safety.risk_level != RiskLevel.DANGER:
             if guidance.guidance_status != UsageGuidanceStatus.PENDING_CONSULTATION:
                 raise ValueError("근거가 없으면 PENDING_CONSULTATION이어야 합니다.")
+        self._rule_alignment_validator.validate(safety, guidance)
         self._message_guard.validate_safety_semantics(
             guidance.message,
             guidance.guidance_status,

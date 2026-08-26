@@ -14,6 +14,10 @@ from ..schemas import (
 from .agents.contracts import MultiAgentRunMetadata
 from .harness.runtime import ReliabilityRuntimeResult
 from .pipeline_context import PipelineContext
+from ..validation.routing import (
+    ResponseRoutingDisposition,
+    ResponseRoutingPolicy,
+)
 
 
 class PipelineResult(BaseModel):
@@ -32,6 +36,11 @@ class PipelineResult(BaseModel):
         None,
         exclude=True,
         description="Harness/HITL/Handoff 내부 실행 결과. 공개 AI 응답에는 포함하지 않음",
+    )
+    routing_disposition: ResponseRoutingDisposition | None = Field(
+        None,
+        exclude=True,
+        description="기존 공개 응답 필드로 파생한 내부 전달 판정",
     )
 
     def to_analysis_result(self) -> SymptomAnalysisResult:
@@ -61,7 +70,7 @@ class PipelineResult(BaseModel):
             if is_no_evidence_fallback
             else AiStage.VALIDATING if is_reliability_fallback else None
         )
-        return SymptomAnalysisResult(
+        analysis_result = SymptomAnalysisResult(
             inquiry_id=ctx.trace_context.inquiry_id,
             correlation_id=ctx.trace_context.correlation_id,
             ai_request_id=ctx.trace_context.ai_request_id,
@@ -78,6 +87,17 @@ class PipelineResult(BaseModel):
             usage_guidance=ctx.usage_guidance,
             evidence_references=ctx.evidence_references,
         )
+        accepted_evidence_chunk_ids = None
+        if self.reliability_runtime is not None:
+            accepted_evidence_chunk_ids = (
+                self.reliability_runtime.harness_runtime.harness.verification
+                .accepted_evidence_chunk_ids
+            )
+        analysis_result, self.routing_disposition = ResponseRoutingPolicy().apply(
+            analysis_result,
+            accepted_evidence_chunk_ids=accepted_evidence_chunk_ids,
+        )
+        return analysis_result
 
     def _resolve_fallback_reason_code(
         self,
