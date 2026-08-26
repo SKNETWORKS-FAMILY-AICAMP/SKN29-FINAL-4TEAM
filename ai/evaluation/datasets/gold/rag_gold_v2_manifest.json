@@ -1,6 +1,6 @@
 {
   "dataset_id": "RAG-GOLD-V2",
-  "dataset_version": "2.0.0-draft.1",
+  "dataset_version": "2.0.0-draft.2",
   "status": "DRAFT_REVIEW_REQUIRED",
   "generated_at": "2026-08-26T00:00:00+09:00",
   "official_metrics_publishable": false,
@@ -9,19 +9,19 @@
     "records": 60,
     "active_records": 55,
     "excluded_records": 5,
-    "sha256": "1987ED6EDFE18BDE6038DC350EA84CCD6B3752837F6AE0CD510AAB83EE1ED00D"
+    "sha256": "E8D005132440AB0C1F3388BBBE425080F7212AB60C1CC12E436AFA0F5D6F9382"
   },
   "schema": {
     "path": "ai/evaluation/schemas/gold_evaluation_case_v2.schema.json",
-    "sha256": "46974E4E4D0D124B7B32C2320E7DB5E988F8E790FB73E656648813D42A51A289"
+    "sha256": "015499C4D0690D961B137CE975C5BEAB27794D433431A8A3F796BBBA40772611"
   },
   "iac425_candidates": {
     "path": "ai/evaluation/datasets/candidates/iac425_gold_v2_candidates.jsonl",
     "records": 18,
     "included_in_gold_records": 0,
-    "sha256": "11AAF6B8BDCDBC74AE9649745E2E5EB761ADF23C81544A5C4165F10F64321EE4",
+    "sha256": "16A63E7B5543569977589CC1E2F3A89B177A67A5A8274ADB5E5A78E9B9556A36",
     "manifest_path": "ai/evaluation/datasets/candidates/iac425_gold_v2_candidates_manifest.json",
-    "manifest_sha256": "79DE27D8BD0BD29DE1FC66C2594CC0AC096F54B902220FC2D273D3E1F8682CA9",
+    "manifest_sha256": "5F3B4C92FC2F6E198A00930412B5819CEB1CEEB2C306DA668464A4D36CBF5DE0",
     "official_metrics_publishable": false
   },
   "distribution": {
@@ -48,7 +48,8 @@
       "NO_EVIDENCE": 10
     },
     "expected_execution_path": {
-      "PGVECTOR_QUERY": 54,
+      "PGVECTOR_QUERY": 50,
+      "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE": 4,
       "POLICY_BLOCK_UNSUPPORTED_CAPABILITY": 3,
       "POLICY_BLOCK_UNSUPPORTED_MODEL": 2,
       "POLICY_BLOCK_UNVERIFIED_SOURCE": 1

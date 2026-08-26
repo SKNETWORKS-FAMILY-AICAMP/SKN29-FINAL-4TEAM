@@ -15,6 +15,33 @@ retrieval_params:
   top_k: 5
   score_threshold: 0.4  # 최소 코사인 유사도 점수
 
+# 고객 원문과 Gold 문장은 보존하고 Embedding 입력에만 공식 증상 용어를 보조한다.
+# 완전 미출수 표현은 LOW-FLOW로 확장하지 않아 NO-WATER 의미를 침범하지 않는다.
+query_expansion:
+  policy_id: "RUNTIME_QUERY_EXPANSION_V1"
+  max_expanded_length: 4096
+  rules:
+    - rule_id: "QUERY-LOW-FLOW-001"
+      model_codes:
+        - "WPUJAC104DWH"
+        - "WPUIAC425SNW"
+      trigger_phrases:
+        - "쫄쫄"
+        - "졸졸"
+        - "물이 잘 안 나"
+        - "출수량이 적"
+        - "출수 속도가 느"
+      excluded_phrases:
+        - "한 방울도 안 나"
+        - "아예 안 나"
+        - "전혀 안 나"
+        - "물이 나오지 않"
+        - "출수가 안 되"
+        - "출수되지 않"
+      expansion_terms:
+        - "출수량이 적을 경우"
+        - "출수 속도가 느림"
+
 metadata_filters:
   allowed_generations:
     - "D"  # MVP 대상 세대 (S세대 등 이전 세대 검색 포함 금지)
@@ -66,10 +93,18 @@ answerability_capability_gate:
       category: "FULL_PRODUCT_CATALOG"
       any_term_groups:
         - ["색상", "컬러"]
-        - ["선택", "옵션", "주문", "종류", "판매", "모두", "전체"]
-        - ["외관", "제품", "모델"]
+        - ["선택", "옵션", "주문", "종류", "판매", "구매", "구입", "모두", "전체"]
+        - ["외관", "제품", "모델", "정수기"]
       excluded_terms: ["청소", "닦", "얼룩", "변색", "표시등", "표시창", "버튼"]
       reason: "사용설명서만으로 판매 색상·옵션의 전체 목록을 보장할 수 없음"
+
+    - rule_id: "GATE-VISIT-SCHEDULE-001"
+      category: "DYNAMIC_SERVICE_SCHEDULE"
+      any_term_groups:
+        - ["기사", "방문 기사", "서비스 기사", "엔지니어"]
+        - ["몇 시", "도착", "언제 오", "방문 시간", "예정 시간"]
+      excluded_terms: ["기사 방문이 필요", "방문이 필요한", "방문을 요청"]
+      reason: "정적 사용설명서로 실시간 기사 방문·도착 일정을 확인할 수 없음"
 
 # 3모델은 AI_RAG_RUNTIME_PROFILE=three_model_integration을 명시한 공식 통합검증
 # Process에서만 선택한다. 기본 Profile은 계속 mvp이며 Public Runtime 활성화는 HOLD다.

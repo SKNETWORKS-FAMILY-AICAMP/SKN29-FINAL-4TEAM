@@ -15,6 +15,7 @@ from ai.app.retrieval.filters.evidence_applicability_gate import (
 )
 from ai.app.retrieval.filters.evidence_topic_filter import EvidenceTopicFilter
 from ai.app.retrieval.filters.product_filter import ProductFilter
+from ai.app.retrieval.filters.scope_filter import SearchCandidateFilter
 from ai.app.retrieval.indexing.chunk_loader import ChunkLoader
 from ai.app.retrieval.indexing.index_manifest import IndexManifest
 from ai.app.retrieval.models.retrieval_query import RetrievalQuery
@@ -98,6 +99,8 @@ def test_chunk_loader_reads_verified_common_data():
     assert all(chunk.source_hash for chunk in chunks)
     assert all(chunk.verification_status == "official_verified" for chunk in chunks)
     assert all(chunk.topic_code for chunk in chunks)
+    assert all(chunk.record_type == "CHILD" for chunk in chunks)
+    assert all(chunk.retrieval_role == "SEARCH_CANDIDATE" for chunk in chunks)
     hot_water = next(chunk for chunk in chunks if chunk.chunk_id.endswith("HOT-WATER-SAFETY-001"))
     assert hot_water.page_refs == [38, 39]
 
@@ -381,6 +384,7 @@ def test_answerability_gate_blocks_target_gold_cases():
     expected_decisions = [
         ("0051", "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE", "GATE-COMMERCIAL-001"),
         ("0052", "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE", "GATE-PART-PRICE-001"),
+        ("0053", "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE", "GATE-VISIT-SCHEDULE-001"),
         ("0054", "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE", "GATE-PRODUCT-CATALOG-001"),
         ("0056", "POLICY_BLOCK_UNSUPPORTED_CAPABILITY", "GATE-JAC104-ICE-001"),
         ("0057", "POLICY_BLOCK_UNSUPPORTED_CAPABILITY", "GATE-JAC104-ICE-001"),
@@ -391,7 +395,7 @@ def test_answerability_gate_blocks_target_gold_cases():
         row["case_id"]: row
         for row in (
             json.loads(line)
-            for line in Path("ai/evaluation/datasets/gold/rag_gold_v1.jsonl")
+            for line in Path("ai/evaluation/datasets/gold/rag_gold_v2.jsonl")
             .read_text(encoding="utf-8")
             .splitlines()
         )
@@ -414,18 +418,18 @@ def test_answerability_gate_blocks_target_gold_cases():
         assert decision.rule_id == expected_rule_id
 
 
-def test_answerability_gate_keeps_positive_and_empty_result_controls_searchable():
+def test_answerability_gate_keeps_manual_questions_searchable():
     cases = {
         row["case_id"]: row
         for row in (
             json.loads(line)
-            for line in Path("ai/evaluation/datasets/gold/rag_gold_v1.jsonl")
+            for line in Path("ai/evaluation/datasets/gold/rag_gold_v2.jsonl")
             .read_text(encoding="utf-8")
             .splitlines()
         )
     }
     gate = AnswerabilityCapabilityGate()
-    for case_suffix in ["0001", "0013", "0023", "0031", "0053"]:
+    for case_suffix in ["0001", "0013", "0023", "0031"]:
         case = cases[f"RAGV2-GOLD-{case_suffix}"]
         decision = gate.evaluate(
             query_text=case["query"],
@@ -456,6 +460,184 @@ def test_answerability_gate_blocks_before_embedding_and_vector_query():
 
     assert service.execution_path(query) == "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE"
     assert service.search(query) == []
+
+
+def test_gold_v2_policy_cases_match_real_runtime_entry_path():
+    cases = [
+        json.loads(line)
+        for line in Path("ai/evaluation/datasets/gold/rag_gold_v2.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if json.loads(line)["expected_execution_path"].startswith("POLICY_BLOCK_")
+    ]
+    service = VectorSearchService(object(), object())
+
+    assert len(cases) == 10
+    for case in cases:
+        query = RetrievalQuery(
+            query_text=case["query"],
+            model_code=case["product_model_code"],
+        )
+        assert service.execution_path(query) == case["expected_execution_path"], (
+            case["case_id"],
+            service.execution_path(query),
+            case["expected_execution_path"],
+        )
+
+
+def test_visit_schedule_gate_blocks_before_embedding_and_vector_query():
+    class FailingEmbedding:
+        dimension = 1024
+
+        def embed_query(self, text):
+            raise AssertionError("실시간 방문 일정 질의는 임베딩하지 않아야 합니다.")
+
+    class FailingStore:
+        def search(self, *args, **kwargs):
+            raise AssertionError("실시간 방문 일정 질의는 DB를 조회하지 않아야 합니다.")
+
+    service = VectorSearchService(FailingEmbedding(), FailingStore())
+    query = RetrievalQuery(
+        query_text="오늘 방문 예정인 기사님이 몇 시쯤 도착하나요?",
+        model_code="WPUJAC104DWH",
+    )
+
+    assert service.execution_path(query) == "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE"
+    assert service.search(query) == []
+
+
+def test_low_flow_query_expansion_changes_only_embedding_input():
+    embedded_queries: list[str] = []
+
+    class CapturingEmbedding:
+        dimension = 1024
+
+        def embed_query(self, text):
+            embedded_queries.append(text)
+            return [0.0] * 1024
+
+    class EmptyStore:
+        def search(self, *args, **kwargs):
+            return []
+
+    service = VectorSearchService(CapturingEmbedding(), EmptyStore())
+    query = RetrievalQuery(
+        query_text="정수기 물이 갑자기 졸졸 나와요. 어디를 확인해야 하나요?",
+        model_code="WPUJAC104DWH",
+    )
+    decision = service.expand_query(query)
+
+    assert query.query_text == decision.original_query
+    assert decision.applied_rule_ids == ("QUERY-LOW-FLOW-001",)
+    assert decision.appended_terms == ("출수량이 적을 경우", "출수 속도가 느림")
+    assert service.search(query) == []
+    assert embedded_queries == [decision.expanded_query]
+    assert embedded_queries[0].endswith("출수량이 적을 경우 출수 속도가 느림")
+
+
+@pytest.mark.parametrize(
+    "query_text",
+    (
+        "정수기에서 물이 한 방울도 안 나와요.",
+        "정수기 물이 아예 안 나옵니다.",
+        "정수기에서 물이 전혀 안 나와요.",
+        "필터를 바꿨는데도 물이 나오지 않아요.",
+    ),
+)
+def test_low_flow_query_expansion_does_not_capture_no_water(query_text):
+    service = VectorSearchService(object(), object())
+    decision = service.expand_query(
+        RetrievalQuery(query_text=query_text, model_code="WPUJAC104DWH")
+    )
+
+    assert decision.applied is False
+    assert decision.expanded_query == query_text
+
+
+def test_search_candidate_filter_rejects_context_and_preservation_records():
+    base = RetrievedChunk(
+        chunk_id="CHILD-001",
+        document_title="공식 매뉴얼",
+        manual_model="WPUJAC104DWH",
+        model_code="WPUJAC104DWH",
+        product_generation="D",
+        content="공식 근거",
+        similarity_score=0.9,
+        verification_status="official_verified",
+        allowed_use=True,
+    )
+    candidate = base.model_copy(
+        update={"record_type": "CHILD", "retrieval_role": "SEARCH_CANDIDATE"}
+    )
+    source_page = base.model_copy(
+        update={
+            "chunk_id": "SOURCE-001",
+            "record_type": "SOURCE_PAGE",
+            "retrieval_role": "SEARCH_CANDIDATE",
+        }
+    )
+    preservation = base.model_copy(
+        update={
+            "chunk_id": "PRESERVE-001",
+            "record_type": "PRESERVATION",
+            "retrieval_role": "SEARCH_CANDIDATE",
+        }
+    )
+    context = base.model_copy(
+        update={
+            "chunk_id": "PARENT-001",
+            "record_type": "PARENT",
+            "retrieval_role": "CONTEXT_ONLY",
+        }
+    )
+
+    assert SearchCandidateFilter.is_valid_chunk(candidate) is True
+    assert SearchCandidateFilter.is_valid_chunk(base) is True
+    assert SearchCandidateFilter.is_valid_chunk(source_page) is False
+    assert SearchCandidateFilter.is_valid_chunk(preservation) is False
+    assert SearchCandidateFilter.is_valid_chunk(context) is False
+
+
+def test_pgvector_filters_typed_non_child_rows_before_scoring(monkeypatch):
+    from ai.app.integrations.vector_store.vector_store import PgVectorStore
+
+    executed_sql: list[str] = []
+
+    class FakeCursor:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, traceback):
+            return False
+
+        def execute(self, sql, params=None):
+            executed_sql.append(sql)
+
+        def fetchall(self):
+            return []
+
+    class FakeConnection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, traceback):
+            return False
+
+        def cursor(self):
+            return FakeCursor()
+
+    monkeypatch.setattr(psycopg, "connect", lambda *args, **kwargs: FakeConnection())
+    store = PgVectorStore("postgresql://unused")
+
+    assert store.search(
+        [0.0] * 1024,
+        model_code="WPUJAC104DWH",
+        product_generation="D",
+        top_k=5,
+    ) == []
+    search_sql = next(sql for sql in executed_sql if "SELECT chunk_id" in sql)
+    assert "LOWER(metadata->>'record_type') = 'child'" in search_sql
+    assert "metadata->>'retrieval_role' = 'SEARCH_CANDIDATE'" in search_sql
 
 
 def test_schema_initialization_requires_explicit_disposable_confirmation():

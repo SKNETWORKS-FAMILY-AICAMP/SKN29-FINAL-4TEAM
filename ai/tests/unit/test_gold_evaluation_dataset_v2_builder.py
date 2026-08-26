@@ -180,8 +180,11 @@ class GoldEvaluationDatasetV2BuilderTest(unittest.TestCase):
             "RAGV2-GOLD-0054",
         ):
             case = self.by_id[case_id]
-            self.assertEqual(case["expected_execution_path"], "PGVECTOR_QUERY")
-            self.assertEqual(case["consultation_basis_codes"], ["NO_EVIDENCE"])
+            self.assertEqual(
+                case["expected_execution_path"],
+                "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE",
+            )
+            self.assertEqual(case["consultation_basis_codes"], ["POLICY_BLOCK"])
 
         case_0055 = self.by_id["RAGV2-GOLD-0055"]
         self.assertEqual(case_0055["evaluation_status"], "ACTIVE")

@@ -1,0 +1,17 @@
+{
+  "profile_id": "full_corpus_retrieval_v3",
+  "device": "cpu",
+  "document_embedding_seconds": 15.496067,
+  "query_embedding_seconds": 3.905291,
+  "retrieval_seconds": 0.015393,
+  "total_seconds": 19.417551,
+  "document_count": 37,
+  "source_corpus_record_count": 132,
+  "eligible_candidate_count": 37,
+  "embedded_candidate_count": 37,
+  "embedded_query_count": 45,
+  "query_expansion_applied_count": 3,
+  "active_case_count": 55,
+  "policy_block_case_count": 10,
+  "case_result_count": 55
+}

@@ -76,9 +76,9 @@ def _positive_case(
     evaluation_status: str = "ACTIVE",
 ) -> dict[str, object]:
     return {
-        "schema_version": "2.0.0-draft.1",
+        "schema_version": "2.0.0-draft.2",
         "case_id": case_id,
-        "dataset_version": "2.0.0-draft.1",
+        "dataset_version": "2.0.0-draft.2",
         "evaluation_status": evaluation_status,
         "split": "DEV",
         "query_variant_type": "DIRECT",
@@ -113,9 +113,9 @@ def _no_evidence_case(
 ) -> dict[str, object]:
     policy_block = execution_path.startswith("POLICY_BLOCK_")
     return {
-        "schema_version": "2.0.0-draft.1",
+        "schema_version": "2.0.0-draft.2",
         "case_id": case_id,
-        "dataset_version": "2.0.0-draft.1",
+        "dataset_version": "2.0.0-draft.2",
         "evaluation_status": "ACTIVE",
         "split": "TEST",
         "query_variant_type": "NO_EVIDENCE",
@@ -486,6 +486,96 @@ class FullCorpusBaselineV2Tests(unittest.TestCase):
             sum(row["metrics"]["non_child_hit_count"] for row in results.values()),
             0,
         )
+
+    def test_runtime_policy_and_query_expansion_are_executed_before_dense_search(
+        self,
+    ) -> None:
+        cases = [
+            _positive_case(
+                "RAGV2-GOLD-9101",
+                "정수기 물이 갑자기 졸졸 나와요.",
+            ),
+            _no_evidence_case(
+                "RAGV2-GOLD-9102",
+                "오늘 방문 예정인 기사님이 몇 시쯤 도착하나요?",
+                execution_path="POLICY_BLOCK_OUT_OF_MANUAL_SCOPE",
+            ),
+        ]
+        _write_jsonl(self.gold_path, cases)
+        _write_json(
+            self.gold_manifest_path,
+            {
+                "dataset": {
+                    "path": self.gold_path.as_posix(),
+                    "records": len(cases),
+                    "sha256": file_sha256(self.gold_path),
+                }
+            },
+        )
+        profile = copy.deepcopy(self.profile)
+        profile["profile_id"] = "full_corpus_retrieval_v3_unit"
+        profile["retrieval"].update(
+            {
+                "allowed_record_types": ["CHILD"],
+                "runtime_policy_profile": "mvp",
+                "product_generation_by_model": {"WPUJAC104DWH": "D"},
+            }
+        )
+        profile_path = self.root / "runtime_policy_profile.json"
+        output_directory = self.root / "runtime_policy_output"
+        _write_json(profile_path, profile)
+
+        child_rows = [
+            row for row in self.corpus_rows if row["record_type"] == "CHILD"
+        ]
+        child_index = next(
+            index for index, row in enumerate(child_rows) if row["chunk_id"] == CHILD_ID
+        )
+        expanded_query = (
+            "정수기 물이 갑자기 졸졸 나와요. "
+            "출수량이 적을 경우 출수 속도가 느림"
+        )
+        provider = DeterministicEmbeddingProvider(
+            corpus_rows=child_rows,
+            query_target_by_text={expanded_query: child_index},
+        )
+
+        manifest = run_baseline(
+            profile_path,
+            output_directory,
+            embedding_provider=provider,
+            allow_review_pending=True,
+        )
+
+        self.assertEqual(provider.query_inputs, [expanded_query])
+        self.assertNotIn(
+            "POLICY_BLOCK_RUNTIME_NOT_EXECUTED",
+            manifest["official_metrics_blockers"],
+        )
+        self.assertEqual(
+            manifest["retrieval"]["policy_block_execution"],
+            "EXECUTED_RUNTIME_POLICY",
+        )
+        self.assertEqual(
+            manifest["retrieval"]["query_expansion_applied_count"], 1
+        )
+        results = {
+            row["case_id"]: row
+            for row in _load_jsonl(output_directory / "case_results.jsonl")
+        }
+        positive = results["RAGV2-GOLD-9101"]
+        self.assertTrue(positive["query_expansion_applied"])
+        self.assertEqual(
+            positive["query_expansion_rule_ids"], ["QUERY-LOW-FLOW-001"]
+        )
+        policy = results["RAGV2-GOLD-9102"]
+        self.assertEqual(
+            policy["actual_execution_path"],
+            "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE",
+        )
+        self.assertEqual(policy["vector_query_count"], 0)
+        self.assertEqual(policy["policy_block_status"], "EXECUTED_RUNTIME_POLICY")
+        self.assertTrue(policy["metrics"]["policy_block_success"])
 
     def test_explicit_record_type_allowlist_is_fail_closed(self) -> None:
         invalid_values = (

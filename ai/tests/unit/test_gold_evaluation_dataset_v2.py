@@ -22,9 +22,9 @@ SCHEMA_PATH = (
 
 def _valid_case() -> dict[str, object]:
     return {
-        "schema_version": "2.0.0-draft.1",
+        "schema_version": "2.0.0-draft.2",
         "case_id": "RAGV2-GOLD-0001",
-        "dataset_version": "2.0.0-draft.1",
+        "dataset_version": "2.0.0-draft.2",
         "evaluation_status": "ACTIVE",
         "split": "DEV",
         "query_variant_type": "DIRECT",
