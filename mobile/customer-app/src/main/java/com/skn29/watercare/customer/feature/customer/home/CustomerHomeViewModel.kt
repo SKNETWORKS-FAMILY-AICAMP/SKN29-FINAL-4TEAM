@@ -56,8 +56,23 @@ class CustomerHomeViewModel(
 
             val offlinePreview = _state.value.offlinePreview
             val runtimeState = resolveRuntimeState(offlinePreview)
-            val health = if (offlinePreview) null else backendStatusRepository.health()
-            val user = if (offlinePreview) null else authRepository.me()
+            val localFixture =
+                runtimeConfig.mode ==
+                    CustomerCareMode.FAKE
+
+            val health =
+                if (offlinePreview || localFixture) {
+                    null
+                } else {
+                    backendStatusRepository.health()
+                }
+
+            val user =
+                if (offlinePreview || localFixture) {
+                    null
+                } else {
+                    authRepository.me()
+                }
 
             if (
                 runtimeConfig.mode == CustomerCareMode.REMOTE &&
@@ -247,8 +262,15 @@ class CustomerHomeViewModel(
             selectedSubscriptionId = homeData?.subscriptionId,
             user = user.successValue(),
             backendAvailable =
-                if (_state.value.offlinePreview) false
-                else health is ApiResult.Success<*>,
+                when {
+                    runtimeConfig.mode ==
+                        CustomerCareMode.FAKE -> true
+
+                    _state.value.offlinePreview -> false
+
+                    else ->
+                        health is ApiResult.Success<*>
+                },
             dataSourceLabel = runtimeState.dataSourceLabel,
             intakeAvailable =
                 runtimeState.intakeAvailable &&

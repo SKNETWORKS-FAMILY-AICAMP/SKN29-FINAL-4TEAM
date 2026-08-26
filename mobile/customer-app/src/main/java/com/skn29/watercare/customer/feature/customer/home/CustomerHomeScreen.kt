@@ -1,5 +1,12 @@
 package com.skn29.watercare.customer.feature.customer.home
 
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
+import com.skn29.watercare.customer.feature.customer.guidance.InquiryCancelRuntime
+import com.skn29.watercare.customer.feature.customer.guidance.CancelInquiryUiState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.AlertDialog
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
@@ -25,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.config.CustomerCareMode
+import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.SymptomTopic
 import com.skn29.watercare.core.repository.FakeCustomerCareRepository
@@ -133,8 +141,14 @@ fun CustomerHomeScreen(
 
     val selectableSubscriptionCount = state.subscriptions.size
     val shouldShowSubscriptionSelection =
-        !offlinePreview &&
-            state.customerCareMode == CustomerCareMode.REMOTE &&
+        (
+            BuildConfig.DEVELOPER_APP ||
+                (
+                    !offlinePreview &&
+                        state.customerCareMode ==
+                            CustomerCareMode.REMOTE
+                )
+            ) &&
             selectableSubscriptionCount > 0 &&
             !selectionConfirmed
 
@@ -218,6 +232,12 @@ fun CustomerHomeScreen(
                 )
             }
         },
+        onContinueQuestionnaire = { inquiryId ->
+            onOpenFollowUp(
+                inquiryId,
+                MockScenario.NORMAL,
+            )
+        },
         onRetry = viewModel::load,
         onOpenCare = onOpenCare,
         onChangeProduct = {
@@ -244,6 +264,7 @@ fun CustomerHomeContent(
         onStartIntake(subscriptionId)
     },
     onOpenGuidance: (inquiryId: String, scenario: MockScenario) -> Unit,
+    onContinueQuestionnaire: (inquiryId: String) -> Unit = {},
     onRetry: () -> Unit,
     onLogout: () -> Unit,
     onOpenCare: () -> Unit = {},
@@ -444,6 +465,65 @@ fun CustomerHomeContent(
                 remoteInquiryForSelectedProduct?.statusCode
                     ?: home.activeInquiry?.statusCode
 
+            val cancelScope =
+                rememberCoroutineScope()
+
+            val showCancelDialog =
+                remember {
+                    mutableStateOf(false)
+                }
+
+            val cancelInProgress =
+                remember {
+                    mutableStateOf(false)
+                }
+
+            val cancelError =
+                remember {
+                    mutableStateOf<String?>(
+                        null
+                    )
+                }
+
+            val cancelAvailable =
+                !previewMode &&
+                    remoteInquiryForSelectedProduct
+                        ?.let { snapshot ->
+                            val status =
+                                snapshot.statusCode
+                                    .trim()
+                                    .uppercase()
+
+                            status in setOf(
+                                "DRAFT",
+                                "QUESTIONNAIRE_IN_PROGRESS",
+                            ) &&
+                                snapshot.stateVersion >= 1 &&
+                                snapshot.allowedActions.any {
+                                    action ->
+                                    action.normalizedCode ==
+                                        InquiryActionLabels
+                                            .CANCEL_INQUIRY
+                                }
+                        } == true
+
+            val followUpAvailable =
+                !previewMode &&
+                    remoteInquiryForSelectedProduct
+                        ?.let { snapshot ->
+                            snapshot.statusCode
+                                .trim()
+                                .uppercase() ==
+                                "QUESTIONNAIRE_IN_PROGRESS" &&
+                                snapshot.stateVersion >= 1 &&
+                                snapshot.allowedActions.any {
+                                    action ->
+                                    action.normalizedCode ==
+                                        InquiryActionLabels
+                                            .SUBMIT_ANSWERS
+                                }
+                        } == true
+
             CustomerVisualProductHero(
                 home = home,
                 displayModel = displayModel,
@@ -478,17 +558,190 @@ fun CustomerHomeContent(
             )
 
             FinalCustomerCareOverviewCard(
-                home = home,
                 activeInquiryStatusCode =
                     if (previewMode) null
                     else activeInquiryStatusCode,
+                cancelAvailable =
+                    cancelAvailable &&
+                        !cancelInProgress.value,
+                followUpAvailable =
+                    followUpAvailable &&
+                        !cancelInProgress.value,
+                onContinueQuestionnaire = {
+                    activeInquiryId
+                        ?.takeIf(String::isNotBlank)
+                        ?.let { inquiryId ->
+                            onContinueQuestionnaire(
+                                inquiryId
+                            )
+                        }
+                },
+                onCancelInquiry = {
+                    if (
+                        cancelAvailable &&
+                        !cancelInProgress.value
+                    ) {
+                        showCancelDialog.value =
+                            true
+                    }
+                },
                 previewMode = previewMode,
-                onOpenCare = onOpenCare,
             )
 
-            FinalCustomerCareHelpBanner(
-                onOpenCare = onOpenCare,
-            )
+            if (
+                showCancelDialog.value &&
+                cancelAvailable &&
+                !cancelInProgress.value
+            ) {
+                AlertDialog(
+                    onDismissRequest = {
+                        showCancelDialog.value =
+                            false
+                    },
+                    title = {
+                        Text(
+                            "접수를 취소할까요?"
+                        )
+                    },
+                    text = {
+                        Text(
+                            "취소 후에는 현재 문의 흐름을 계속 진행할 수 없습니다."
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                val snapshot =
+                                    remoteInquiryForSelectedProduct
+
+                                if (
+                                    snapshot != null &&
+                                    cancelAvailable
+                                ) {
+                                    showCancelDialog.value =
+                                        false
+
+                                    cancelInProgress.value =
+                                        true
+
+                                    cancelError.value =
+                                        null
+
+                                    val runtime =
+                                        InquiryCancelRuntime(
+                                            inquiryId =
+                                                snapshot
+                                                    .inquiryId,
+                                            repository =
+                                                WaterCareCore
+                                                    .inquiryRepository,
+                                            scope =
+                                                cancelScope,
+                                            onAuthExpired = {
+                                                onLogout()
+                                            },
+                                        )
+
+                                    runtime.cancelInquiry(
+                                        stateVersion =
+                                            snapshot
+                                                .stateVersion,
+                                    )
+
+                                    cancelScope.launch {
+                                        val terminal =
+                                            runtime.state
+                                                .first {
+                                                    current ->
+                                                    current !=
+                                                        CancelInquiryUiState.Idle &&
+                                                        current !=
+                                                        CancelInquiryUiState.Cancelling
+                                                }
+
+                                        cancelInProgress.value =
+                                            false
+
+                                        when (terminal) {
+                                            is CancelInquiryUiState.Success -> {
+                                                onRetry()
+                                            }
+
+                                            is CancelInquiryUiState.Conflict -> {
+                                                cancelError.value =
+                                                    terminal.message
+
+                                                onRetry()
+                                            }
+
+                                            is CancelInquiryUiState.Error -> {
+                                                cancelError.value =
+                                                    terminal.message
+                                            }
+
+                                            else -> Unit
+                                        }
+                                    }
+                                }
+                            },
+                            modifier =
+                                Modifier.testTag(
+                                    "confirmHomeCancelInquiry"
+                                ),
+                        ) {
+                            Text(
+                                "접수 취소"
+                            )
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                showCancelDialog.value =
+                                    false
+                            },
+                            modifier =
+                                Modifier.testTag(
+                                    "dismissHomeCancelInquiry"
+                                ),
+                        ) {
+                            Text(
+                                "돌아가기"
+                            )
+                        }
+                    },
+                )
+            }
+
+            cancelError.value
+                ?.let { message ->
+                    AlertDialog(
+                        onDismissRequest = {
+                            cancelError.value =
+                                null
+                        },
+                        title = {
+                            Text(
+                                "접수 취소를 확인해주세요"
+                            )
+                        },
+                        text = {
+                            Text(message)
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    cancelError.value =
+                                        null
+                                },
+                            ) {
+                                Text(
+                                    "확인"
+                                )
+                            }
+                        },
+                    )
+                }
 
             if (
                 state.backendAvailable != true ||
