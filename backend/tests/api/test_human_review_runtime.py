@@ -11,6 +11,9 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
 from apps.inquiries.models import Guidance, GuidanceItem, HumanReview, Inquiry
+from apps.inquiries.repositories.human_review_repository import (
+    HumanReviewRepository,
+)
 from apps.inquiries.services.human_review_service import HumanReviewService
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
@@ -324,6 +327,15 @@ def test_two_consultants_on_unassigned_review_produce_one_decision():
     assert IdempotencyRecord.objects.filter(
         operation_id="decideHumanReview"
     ).count() == 1
+
+
+def test_decision_lock_targets_only_the_human_review_ledger_row():
+    consultant = create_user(55, role=User.Role.CONSULTANT)
+
+    queryset = HumanReviewRepository._lock_visible_queryset(consultant)
+
+    assert queryset.query.select_for_update is True
+    assert queryset.query.select_for_update_of == ("self",)
 
 
 def test_role_headers_payload_and_assigned_other_are_fail_closed():

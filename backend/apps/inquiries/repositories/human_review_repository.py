@@ -58,8 +58,19 @@ class HumanReviewRepository:
         review_public_id: UUID,
     ) -> HumanReview | None:
         return (
-            cls.visible_to(actor)
-            .select_for_update()
+            cls._lock_visible_queryset(actor)
             .filter(public_id=review_public_id)
             .first()
         )
+
+    @classmethod
+    def _lock_visible_queryset(cls, actor: Any) -> QuerySet[HumanReview]:
+        """Lock only the ledger row, not nullable projection joins.
+
+        ``visible_to`` joins the optional published Guidance for the response
+        projection. PostgreSQL rejects an unscoped ``FOR UPDATE`` on that
+        nullable outer join, so the decision transaction explicitly locks the
+        HumanReview row itself.
+        """
+
+        return cls.visible_to(actor).select_for_update(of=("self",))
