@@ -1,0 +1,19 @@
+name: Production Deploy
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  actions: read
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Run trusted production deployment
+    uses: SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/.github/workflows/production-deploy.yml@main
+    with:
+      release_sha: ${{ github.sha }}
+      release_tag: ${{ github.ref_name }}

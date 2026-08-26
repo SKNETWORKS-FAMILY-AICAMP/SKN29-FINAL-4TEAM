@@ -129,6 +129,38 @@ def test_danger_with_normal_guidance_escalates():
     assert any(issue.code.value == "SAFETY_CONFLICT" for issue in result.verification.issues)
 
 
+def test_approved_danger_partial_stop_rule_passes():
+    safety = SafetyAssessment(
+        risk_level=RiskLevel.DANGER,
+        priority=SafetyPriority.PRIORITY_CONSULTATION,
+        requires_consultation=True,
+        matched_safety_rule_ids=["SAFETY-HOT-WATER-HEATER-001"],
+        detected_risks=["온수 히터·순간온수 모듈 고장 및 음용 제한"],
+        safety_reason="test",
+    )
+    guidance = UsageGuidance(
+        guidance_status=UsageGuidanceStatus.PARTIAL_STOP,
+        message="위험 신호가 감지되어 온수 기능 사용 제한이 필요합니다.",
+        restricted_functions=["온수 출수 및 음용 중지"],
+        next_actions=["전문 상담 및 기사 점검을 요청하세요."],
+    )
+
+    result = HarnessRunner().run(
+        product=_product(),
+        evidence_chunks=[],
+        safety_assessment=safety,
+        guidance=guidance,
+    )
+
+    assert result.decision == HarnessDecision.PASS
+    assert result.verification.passed is True
+    assert result.verification.safety_valid is True
+    assert not any(
+        issue.code.value == "SAFETY_CONFLICT"
+        for issue in result.verification.issues
+    )
+
+
 def test_timeout_maps_to_ai_processing_timeout():
     result = HarnessRunner().run(
         product=_product(),
