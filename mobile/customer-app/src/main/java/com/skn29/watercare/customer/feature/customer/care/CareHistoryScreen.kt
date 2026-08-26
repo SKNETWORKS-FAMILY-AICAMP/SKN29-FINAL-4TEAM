@@ -3,6 +3,7 @@ package com.skn29.watercare.customer.feature.customer.care
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.slideInVertically
@@ -12,10 +13,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -108,6 +111,10 @@ fun CareHistoryContent(
         mutableIntStateOf(0)
     }
 
+    var showCreateConfirmation by remember {
+        mutableStateOf(false)
+    }
+
     LaunchedEffect(
         state.items.map {
             it.careRecordId
@@ -119,6 +126,39 @@ fun CareHistoryContent(
             delay(55)
             visibleHistoryCount = index + 1
         }
+    }
+
+    if (showCreateConfirmation) {
+        AlertDialog(
+            onDismissRequest = {
+                showCreateConfirmation = false
+            },
+            title = {
+                Text("케어 이력 등록")
+            },
+            text = {
+                Text("선택한 관리 유형과 날짜로 케어 이력을 등록할까요?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showCreateConfirmation = false
+                        onCreate()
+                    },
+                ) {
+                    Text("등록")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showCreateConfirmation = false
+                    },
+                ) {
+                    Text("취소")
+                }
+            },
+        )
     }
 
     WaterCareScreen(
@@ -311,7 +351,9 @@ fun CareHistoryContent(
                         } else {
                             "케어 이력 등록하기"
                         },
-                    onClick = onCreate,
+                    onClick = {
+                        showCreateConfirmation = true
+                    },
                     enabled =
                         !state.isCreating &&
                             state

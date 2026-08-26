@@ -52,7 +52,6 @@ import com.skn29.watercare.core.ui.theme.GlassFillStrong
 import com.skn29.watercare.core.ui.theme.Water100
 import com.skn29.watercare.core.ui.theme.Water300
 import com.skn29.watercare.core.ui.theme.Water700
-import com.skn29.watercare.customer.BuildConfig
 import com.skn29.watercare.customer.R
 import com.skn29.watercare.customer.common.VmFactory
 import com.skn29.watercare.customer.feature.shared.SectionCard
@@ -61,6 +60,8 @@ import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 @Composable
 fun SymptomIntakeScreen(
     subscriptionId: String,
+    initialTopic: SymptomTopic? = null,
+    initialRawText: String = "",
     onBack: () -> Unit,
     onCompleted: (IntakeSubmission) -> Unit,
     onAuthExpired: () -> Unit,
@@ -75,6 +76,16 @@ fun SymptomIntakeScreen(
         }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(
+        initialTopic,
+        initialRawText,
+    ) {
+        viewModel.applyInitialPreset(
+            topic = initialTopic,
+            rawText = initialRawText,
+        )
+    }
 
     LaunchedEffect(state.completed) {
         state.completed?.let {
@@ -169,7 +180,13 @@ fun SymptomIntakeContent(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                SymptomTopic.entries.forEach { topic ->
+                listOf(
+                    SymptomTopic.LOW_FLOW,
+                    SymptomTopic.TASTE_ODOR,
+                    SymptomTopic.OTHER,
+                    SymptomTopic.LEAK,
+                    SymptomTopic.TEMPERATURE,
+                ).forEach { topic ->
                     LiquidFilterChip(
                         selected = topic in state.selectedSymptoms,
                         onClick = { onToggleSymptom(topic) },
@@ -210,29 +227,6 @@ fun SymptomIntakeContent(
             shape = RoundedCornerShape(18.dp),
             colors = liquidTextFieldColors(),
         )
-
-        if (BuildConfig.SHOW_DEVELOPER_TOOLS) {
-            SectionCard("개발 검증") {
-                Text(
-                    "개발 빌드에서만 표시되는 검증 옵션입니다.",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    LiquidFilterChip(
-                        selected = state.forcedScenario == null,
-                        onClick = { onScenarioChange(null) },
-                        label = "자동",
-                    )
-                    MockScenario.entries.forEach { scenario ->
-                        LiquidFilterChip(
-                            selected = state.forcedScenario == scenario,
-                            onClick = { onScenarioChange(scenario) },
-                            label = scenario.name,
-                        )
-                    }
-                }
-            }
-        }
 
         state.globalError
             ?.takeIf { state.errorKind != IntakeErrorKind.AUTH_EXPIRED }
@@ -289,11 +283,11 @@ fun SymptomIntakeContent(
 private fun customerSymptomLabel(
     topic: SymptomTopic,
 ): String = when (topic) {
-    SymptomTopic.LOW_FLOW -> "출수량이 적거나 약해요"
-    SymptomTopic.TASTE_ODOR -> "물맛이나 냄새가 이상해요"
-    SymptomTopic.LEAK -> "물이 새요"
+    SymptomTopic.LOW_FLOW -> "물이 약해요"
+    SymptomTopic.TASTE_ODOR -> "물맛이 이상해요"
+    SymptomTopic.LEAK -> "누수가 보여요"
     SymptomTopic.TEMPERATURE -> "냉수·온수 온도가 이상해요"
-    SymptomTopic.OTHER -> "기타"
+    SymptomTopic.OTHER -> "소리가 나요"
 }
 
 private fun customerIntakeErrorMessage(
@@ -326,8 +320,7 @@ private fun LiquidFilterChip(
 ) {
     val selectionScale by animateFloatAsState(
         targetValue =
-            if (selected) 1.13f
-            else 1f,
+            1f,
         animationSpec = spring(
             dampingRatio =
                 Spring.DampingRatioMediumBouncy,

@@ -32,6 +32,41 @@ class SymptomIntakeViewModel(
     private val _state = MutableStateFlow(savedStateHandle.restoreDraft())
     val state: StateFlow<SymptomIntakeUiState> = _state.asStateFlow()
 
+    fun applyInitialPreset(
+        topic: SymptomTopic?,
+        rawText: String,
+    ) {
+        if (
+            topic == null &&
+            rawText.isBlank()
+        ) {
+            return
+        }
+
+        val current = _state.value
+        if (
+            current.selectedSymptoms.isNotEmpty() ||
+            current.rawText.isNotBlank()
+        ) {
+            return
+        }
+
+        updateInput {
+            copy(
+                selectedSymptoms =
+                    if (topic == null) {
+                        emptySet()
+                    } else {
+                        setOf(topic)
+                    },
+                rawText =
+                    rawText
+                        .trim()
+                        .take(5000),
+            )
+        }
+    }
+
     fun toggleSymptom(topic: SymptomTopic) = updateInput {
         copy(
             selectedSymptoms = if (topic in selectedSymptoms) {

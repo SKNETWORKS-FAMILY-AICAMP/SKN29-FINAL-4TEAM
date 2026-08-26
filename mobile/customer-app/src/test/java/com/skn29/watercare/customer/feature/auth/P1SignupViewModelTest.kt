@@ -47,8 +47,8 @@ class P1SignupViewModelTest {
             viewModel.startSignupVerification(
                 name = "  테스트 고객  ",
                 email = "  TEST.USER@EXAMPLE.COM  ",
-                username = "water.user",
-                password = "Password1234",
+                username = "",
+                password = "",
             )
             advanceUntilIdle()
 
@@ -624,79 +624,49 @@ class P1SignupViewModelTest {
     @Test
     fun signupCredentialLengthLimits_rejectValuesOverTwentyLocally() =
         runTest(mainDispatcherRule.dispatcher) {
-            val usernameRepository =
+            val p1 =
                 FakeP1AuthRepository()
 
-            val usernameViewModel =
-                newViewModel(
-                    usernameRepository
-                )
+            val viewModel =
+                newViewModel(p1)
 
             advanceUntilIdle()
 
-            usernameViewModel
-                .startSignupVerification(
-                    name = "테스트 고객",
-                    email =
-                        "test.user@example.com",
-                    username =
-                        "a".repeat(21),
-                    password =
-                        "Password1234",
-                )
+            // Username/password validation happens after OTP.
+            prepareVerifiedSignup(viewModel)
+
+            viewModel.completeSignup(
+                username =
+                    "abcdefghijklmnopqrstu",
+                password =
+                    "Password1234567890123",
+                consents =
+                    requiredConsents(),
+            )
 
             advanceUntilIdle()
 
-            assertTrue(
-                usernameViewModel.state.value
-                    .fieldErrors["username"]
-                    .isNullOrEmpty()
-                    .not()
+            assertEquals(
+                listOf(
+                    "\uC544\uC774\uB514\uB294 4~20\uC790\uB85C \uC785\uB825\uD574 \uC8FC\uC138\uC694."
+                ),
+                viewModel.state.value
+                    .fieldErrors["username"],
+            )
+
+            assertEquals(
+                listOf(
+                    "\uBE44\uBC00\uBC88\uD638\uB294 12~20\uC790\uC774\uBA70 \uC601\uBB38\uACFC \uC22B\uC790\uB97C \uD3EC\uD568\uD574\uC57C \uD569\uB2C8\uB2E4."
+                ),
+                viewModel.state.value
+                    .fieldErrors["password"],
             )
 
             assertEquals(
                 0,
-                usernameRepository
-                    .challengeCalls,
-            )
-
-            val passwordRepository =
-                FakeP1AuthRepository()
-
-            val passwordViewModel =
-                newViewModel(
-                    passwordRepository
-                )
-
-            advanceUntilIdle()
-
-            passwordViewModel
-                .startSignupVerification(
-                    name = "테스트 고객",
-                    email =
-                        "test.user@example.com",
-                    username =
-                        "water.user",
-                    password =
-                        "a".repeat(20) + "1",
-                )
-
-            advanceUntilIdle()
-
-            assertTrue(
-                passwordViewModel.state.value
-                    .fieldErrors["password"]
-                    .isNullOrEmpty()
-                    .not()
-            )
-
-            assertEquals(
-                0,
-                passwordRepository
-                    .challengeCalls,
+                p1.signupCalls,
             )
         }
-
     private suspend fun TestScope.prepareVerifiedSignup(
         viewModel: AuthViewModel,
     ) {
