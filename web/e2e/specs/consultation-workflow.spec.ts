@@ -205,7 +205,10 @@ async function expectInitialDetailPresentation(
   expected: InitialDetailPresentation,
 ): Promise<void> {
   const customerSection = detailPanel
-    .getByRole("heading", { name: "고객 정보", exact: true })
+    .getByRole("heading", {
+      name: EXPECTED_CUSTOMER_DISPLAY_NAME,
+      exact: true,
+    })
     .locator("..");
   await expect(
     customerSection.getByText(EXPECTED_CUSTOMER_DISPLAY_NAME, { exact: true }),
@@ -218,14 +221,14 @@ async function expectInitialDetailPresentation(
     .getByRole("heading", { name: "제품·관리 정보", exact: true })
     .locator("..");
   await expect(
-    productSection.getByText(expected.productModelName, { exact: true }),
+    detailPanel.getByText(expected.productModelName, { exact: true }),
   ).toBeVisible();
   await expect(
     productSection.getByText(expected.productModel, { exact: true }),
   ).toBeVisible();
 
   const questionnaireSection = detailPanel
-    .getByRole("heading", { name: "증상·문진", exact: true })
+    .getByRole("heading", { name: "고객 증상과 답변", exact: true })
     .locator("..");
   for (const item of EXPECTED_QUESTIONNAIRE) {
     await expect(
@@ -237,7 +240,7 @@ async function expectInitialDetailPresentation(
   }
 
   const guidanceSection = detailPanel
-    .getByRole("heading", { name: "사용 안내", exact: true })
+    .getByRole("heading", { name: "고객에게 안내할 내용", exact: true })
     .locator("..");
   await expect(
     guidanceSection.getByText(expected.usageGuidanceDisplayLabel, {
@@ -248,17 +251,14 @@ async function expectInitialDetailPresentation(
     guidanceSection.getByText(expected.usageGuidanceStatus, { exact: true }),
   ).toHaveCount(0);
   await expect(
-    guidanceSection.getByText("공개 근거 미제공 / 상담 검토 필요", {
+    guidanceSection.getByText("공식 근거는 아직 제공되지 않았습니다.", {
       exact: true,
     }),
   ).toBeVisible();
 
-  const consultationAndVisitSection = detailPanel
-    .getByRole("heading", { name: "상담·방문 정보", exact: true })
-    .locator("..");
   await expect(
-    consultationAndVisitSection.getByText("방문 정보 없음", { exact: true }),
-  ).toBeVisible();
+    detailPanel.getByRole("heading", { name: "방문 정보", exact: true }),
+  ).toHaveCount(0);
 }
 
 async function expectCompletedDetailContract(
@@ -657,16 +657,16 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     .getByLabel("상담 기록", { exact: true })
     .fill(consultationNote);
   await firstDetailPanel
-    .getByLabel("고객 안내", { exact: true })
+    .getByLabel("고객 안내 내용", { exact: true })
     .fill(customerGuidance);
   await firstDetailPanel
-    .getByLabel("확정 요약", { exact: true })
+    .getByLabel("상담 요약 수정본", { exact: true })
     .fill(confirmedSummary);
   await firstDetailPanel
     .getByLabel("방문 필요 여부")
     .selectOption("NOT_REQUIRED");
   await firstDetailPanel
-    .getByLabel("사용 안내 상태")
+    .getByLabel("제품 사용 상태")
     .selectOption("NORMAL");
   await firstDetailPanel
     .getByRole("checkbox", { name: "상담 요약 검토·확정" })
@@ -747,7 +747,7 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     firstDetailPanel.getByLabel("방문 필요 여부"),
   ).toHaveValue("NOT_REQUIRED");
   await expect(
-    firstDetailPanel.getByLabel("사용 안내 상태"),
+    firstDetailPanel.getByLabel("제품 사용 상태"),
   ).toHaveValue("NORMAL");
   await expect(
     firstDetailPanel.getByRole("checkbox", {

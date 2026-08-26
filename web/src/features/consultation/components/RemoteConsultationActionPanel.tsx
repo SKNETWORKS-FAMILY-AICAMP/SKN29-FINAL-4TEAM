@@ -2,6 +2,10 @@ import { useMemo } from "react";
 
 import { useConsultationForm } from "../hooks/useConsultationForm";
 import { useSaveConsultation } from "../hooks/useSaveConsultation";
+import {
+  normalizeCounselorStatus,
+  STATUS_LABELS,
+} from "../model/consultantWorkspaceModel";
 import type { CounselorActionCode, CounselorAllowedAction } from "../model/consultantWorkspaceTypes";
 import type { ConsultantInquiryDetailViewModel } from "../model/consultantWorkspaceRemoteMapper";
 
@@ -67,6 +71,8 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
   const showSummaryForm = save.allowedActions.some(
     (action) => action.code === "UPDATE_CONSULTATION_SUMMARY",
   );
+  const currentStatusLabel =
+    STATUS_LABELS[normalizeCounselorStatus(save.currentStatus)];
 
   const handleAction = async (action: CounselorAllowedAction) => {
     if (action.code === "VISIT_REVIEW_REQUIRED" || action.code === "VISIT_NEEDED") {
@@ -75,6 +81,14 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
     }
     if (["VISIT_NOT_NEEDED", "UPDATE_VISIT_SCHEDULE", "CONFIRM_VISIT"].includes(action.code)) {
       onOpenVisit();
+      return;
+    }
+    if (
+      action.requiresConfirmation &&
+      !window.confirm(
+        action.confirmationMessage ?? `${action.label} 작업을 진행하시겠습니까?`,
+      )
+    ) {
       return;
     }
     if (!form.validate(action.code)) return;
@@ -93,18 +107,17 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
   };
 
   return (
-    <aside className="v6-action-panel" aria-label="상담 처리 작업">
+    <aside
+      className="v6-action-panel"
+      aria-label="상담 처리 작업"
+      data-testid="consultation-current-status"
+      data-workflow-status={save.currentStatus}
+      data-state-version={save.stateVersion}
+    >
       <div className="v6-action-panel__head">
-        <small>COUNSEL DESK · REMOTE</small>
-        <h3>상담 처리</h3>
-        <p>{inquiry.inquiryCode} · stateVersion {save.stateVersion}</p>
-        <small
-          data-testid="consultation-current-status"
-          data-workflow-status={save.currentStatus}
-          data-state-version={save.stateVersion}
-        >
-          currentStatus {save.currentStatus}
-        </small>
+        <small>현재 할 일</small>
+        <h3>상담 기록 및 완료</h3>
+        <p>현재 상태 · {currentStatusLabel}</p>
       </div>
       {showSummaryForm && (
         <form
@@ -112,59 +125,100 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
           onSubmit={(event) => event.preventDefault()}
           noValidate
         >
-          {([
-            ["consultationNote", "상담 기록"],
-            ["additionalCheck", "추가 확인사항"],
-            ["customerGuidance", "고객 안내"],
-            ["summaryRevision", "확정 요약"],
-          ] as const).map(([field, label]) => (
-            <label className="v6-form-field" key={field}>
-              {label}
+          <section className="v6-action-form-section">
+            <h4>상담 내용</h4>
+            {([
+              ["consultationNote", "상담 기록"],
+              ["customerGuidance", "고객 안내 내용"],
+            ] as const).map(([field, label]) => (
+              <label className="v6-form-field" key={field}>
+                {label}
+                <textarea
+                  data-testid={`consultation-field-${field}`}
+                  name={field}
+                  value={form.values[field]}
+                  onChange={(event) =>
+                    form.updateField(field, event.target.value)
+                  }
+                />
+                {form.fieldErrors[field] && <span className="v6-field-error">{form.fieldErrors[field]}</span>}
+              </label>
+            ))}
+          </section>
+          <details className="v6-action-form-details">
+            <summary>추가 확인사항 입력</summary>
+            <label className="v6-form-field">
+              추가 확인사항
               <textarea
-                data-testid={`consultation-field-${field}`}
-                name={field}
-                value={form.values[field]}
+                data-testid="consultation-field-additionalCheck"
+                name="additionalCheck"
+                value={form.values.additionalCheck}
                 onChange={(event) =>
-                  form.updateField(field, event.target.value)
+                  form.updateField("additionalCheck", event.target.value)
                 }
               />
-              {form.fieldErrors[field] && <span className="v6-field-error">{form.fieldErrors[field]}</span>}
+              {form.fieldErrors.additionalCheck && (
+                <span className="v6-field-error">
+                  {form.fieldErrors.additionalCheck}
+                </span>
+              )}
             </label>
-          ))}
-          <label className="v6-form-field">
-            <span>
-              <input
-                type="checkbox"
-                checked={form.values.summaryConfirmed}
+          </details>
+          <section className="v6-action-form-section">
+            <h4>상담 요약 확인</h4>
+            <label className="v6-form-field">
+              상담 요약 수정본
+              <textarea
+                data-testid="consultation-field-summaryRevision"
+                name="summaryRevision"
+                value={form.values.summaryRevision}
                 onChange={(event) =>
-                  form.updateField("summaryConfirmed", event.target.checked)
+                  form.updateField("summaryRevision", event.target.value)
                 }
               />
-              상담 요약 검토·확정
-            </span>
-            {form.fieldErrors.summaryConfirmed && (
-              <span className="v6-field-error">
-                {form.fieldErrors.summaryConfirmed}
+              {form.fieldErrors.summaryRevision && (
+                <span className="v6-field-error">
+                  {form.fieldErrors.summaryRevision}
+                </span>
+              )}
+            </label>
+            <label className="v6-form-field">
+              <span>
+                <input
+                  type="checkbox"
+                  checked={form.values.summaryConfirmed}
+                  onChange={(event) =>
+                    form.updateField("summaryConfirmed", event.target.checked)
+                  }
+                />
+                상담 요약 검토·확정
               </span>
-            )}
-          </label>
-          <label className="v6-form-field">
-            방문 필요 여부
-            <select value={form.values.visitRequired} onChange={(event) => form.updateField("visitRequired", event.target.value as typeof form.values.visitRequired)}>
-              <option value="UNDECIDED">미결정</option>
-              <option value="REQUIRED">방문 필요</option>
-              <option value="NOT_REQUIRED">방문 불필요</option>
-            </select>
-          </label>
-          <label className="v6-form-field">
-            사용 안내 상태
-            <select value={form.values.usageStatus} onChange={(event) => form.updateField("usageStatus", event.target.value as typeof form.values.usageStatus)}>
-              <option value="NORMAL">정상 사용</option>
-              <option value="PARTIAL_STOP">부분 사용 중지</option>
-              <option value="TOTAL_STOP">전체 사용 중지</option>
-              <option value="PENDING_CONSULTATION">상담 확인 전 보류</option>
-            </select>
-          </label>
+              {form.fieldErrors.summaryConfirmed && (
+                <span className="v6-field-error">
+                  {form.fieldErrors.summaryConfirmed}
+                </span>
+              )}
+            </label>
+          </section>
+          <div className="v6-action-form-decisions">
+            <label className="v6-form-field">
+              방문 필요 여부
+              <select value={form.values.visitRequired} onChange={(event) => form.updateField("visitRequired", event.target.value as typeof form.values.visitRequired)}>
+                <option value="UNDECIDED">미결정</option>
+                <option value="REQUIRED">방문 필요</option>
+                <option value="NOT_REQUIRED">방문 불필요</option>
+              </select>
+            </label>
+            <label className="v6-form-field">
+              제품 사용 상태
+              <select value={form.values.usageStatus} onChange={(event) => form.updateField("usageStatus", event.target.value as typeof form.values.usageStatus)}>
+                <option value="NORMAL">정상 사용 가능</option>
+                <option value="PARTIAL_STOP">일부 기능 사용 중단</option>
+                <option value="TOTAL_STOP">제품 사용 중단</option>
+                <option value="PENDING_CONSULTATION">상담 확인 필요</option>
+              </select>
+            </label>
+          </div>
         </form>
       )}
       <div className="v6-action-buttons">
@@ -177,12 +231,6 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
       {save.success && (
         <p className="v6-action-message is-success" role="status">
           {save.success.message}
-          <small>
-            상태 {save.success.status} · 상태 버전 {save.success.stateVersion}
-            {save.success.correlationId
-              ? ` · 확인 번호: ${save.success.correlationId}`
-              : ""}
-          </small>
         </p>
       )}
       {save.error && (
@@ -197,7 +245,12 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
         </p>
       )}
       {save.error?.kind === "CONFLICT" && (
-        <button className="v6-button v6-button--secondary v6-button--full" type="button" onClick={onRefresh}>최신 상태 다시 불러오기</button>
+        <>
+          <p className="v6-action-conflict-note">
+            작성 중인 내용은 유지했습니다. 최신 상태를 확인한 뒤 다시 진행해 주세요.
+          </p>
+          <button className="v6-button v6-button--secondary v6-button--full" type="button" onClick={onRefresh}>최신 상태 다시 불러오기</button>
+        </>
       )}
     </aside>
   );

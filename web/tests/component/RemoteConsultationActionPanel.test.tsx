@@ -121,7 +121,10 @@ describe("Remote 상담 처리 Panel", () => {
     );
 
     await user.type(screen.getByLabelText("상담 기록"), "고객 상태 확인");
-    await user.type(screen.getByLabelText("확정 요약"), "필터 체결 안내 완료");
+    await user.type(
+      screen.getByLabelText("상담 요약 수정본"),
+      "필터 체결 안내 완료",
+    );
     await user.click(screen.getByRole("checkbox", { name: "상담 요약 검토·확정" }));
 
     expect(
@@ -137,7 +140,9 @@ describe("Remote 상담 처리 Panel", () => {
     );
 
     expect(screen.getByLabelText("상담 기록")).toHaveValue("고객 상태 확인");
-    expect(screen.getByLabelText("확정 요약")).toHaveValue("필터 체결 안내 완료");
+    expect(screen.getByLabelText("상담 요약 수정본")).toHaveValue(
+      "필터 체결 안내 완료",
+    );
     expect(
       screen.getByRole("checkbox", { name: "상담 요약 검토·확정" }),
     ).toBeChecked();
@@ -217,12 +222,14 @@ describe("Remote 상담 처리 Panel", () => {
     );
 
     expect(screen.getByLabelText("상담 기록")).toHaveValue("저장된 상담 기록");
-    expect(screen.getByLabelText("확정 요약")).toHaveValue("확정 상담 요약");
+    expect(screen.getByLabelText("상담 요약 수정본")).toHaveValue(
+      "확정 상담 요약",
+    );
     expect(
       screen.getByRole("checkbox", { name: "상담 요약 검토·확정" }),
     ).toBeChecked();
     expect(screen.getByLabelText("방문 필요 여부")).toHaveValue("NOT_REQUIRED");
-    expect(screen.getByLabelText("사용 안내 상태")).toHaveValue("NORMAL");
+    expect(screen.getByLabelText("제품 사용 상태")).toHaveValue("NORMAL");
     expect(screen.queryByLabelText("상담 결과")).not.toBeInTheDocument();
   });
 
@@ -258,7 +265,10 @@ describe("Remote 상담 처리 Panel", () => {
 
     expect(screen.queryByLabelText("상담 결과")).not.toBeInTheDocument();
     await user.type(screen.getByLabelText("상담 기록"), "고객 상태 확인");
-    await user.type(screen.getByLabelText("고객 안내"), "전체 사용 중지를 안내함");
+    await user.type(
+      screen.getByLabelText("고객 안내 내용"),
+      "전체 사용 중지를 안내함",
+    );
     await user.selectOptions(screen.getByLabelText("방문 필요 여부"), "NOT_REQUIRED");
     await user.click(
       screen.getByRole("checkbox", { name: "상담 요약 검토·확정" }),
@@ -276,7 +286,7 @@ describe("Remote 상담 처리 Panel", () => {
     );
   });
 
-  it("처리 성공과 오류의 확인 번호를 상담사에게 표시한다", () => {
+  it("정상 성공은 업무 결과만, 오류는 확인 번호와 함께 표시한다", () => {
     hookMocks.success = {
       allowedActions: [],
       correlationId: "corr-action-success",
@@ -294,9 +304,12 @@ describe("Remote 상담 처리 Panel", () => {
     );
 
     expect(screen.getByRole("status")).toHaveTextContent(
-      "확인 번호: corr-action-success",
+      "상담 요약을 저장했습니다.",
     );
-    expect(screen.getByRole("status")).toHaveTextContent("상태 버전 8");
+    expect(screen.getByRole("status")).not.toHaveTextContent(
+      "corr-action-success",
+    );
+    expect(screen.getByRole("status")).not.toHaveTextContent("상태 버전");
 
     hookMocks.success = null;
     hookMocks.error = {
@@ -314,6 +327,25 @@ describe("Remote 상담 처리 Panel", () => {
 
     expect(screen.getByRole("alert")).toHaveTextContent(
       "확인 번호: corr-action-conflict",
+    );
+  });
+
+  it("Backend 내부 상태와 버전은 화면 문구로 노출하지 않는다", () => {
+    render(
+      <RemoteConsultationActionPanel
+        inquiry={createDetail()}
+        onOpenVisit={vi.fn()}
+        onRefresh={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("현재 상태 · 상담 진행 중")).toBeInTheDocument();
+    expect(screen.queryByText(/COUNSEL DESK/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/currentStatus/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/stateVersion/)).not.toBeInTheDocument();
+    expect(screen.getByTestId("consultation-current-status")).toHaveAttribute(
+      "data-workflow-status",
+      "CONSULTATION_IN_PROGRESS",
     );
   });
 });
