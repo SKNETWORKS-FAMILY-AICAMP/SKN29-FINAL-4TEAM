@@ -829,56 +829,120 @@ private fun FinalProblemChip(
 
 @Composable
 fun FinalCustomerCareOverviewCard(
-    home: CustomerHomeData,
     activeInquiryStatusCode: String?,
+    cancelAvailable: Boolean = false,
+    followUpAvailable: Boolean = false,
+    onContinueQuestionnaire: () -> Unit = {},
+    onCancelInquiry: () -> Unit = {},
     previewMode: Boolean = false,
-    onOpenCare: () -> Unit,
 ) {
     val palette = CustomerReferencePalette
 
-    val requestText =
-        when (
-            activeInquiryStatusCode
-                ?.trim()
-                ?.uppercase()
-                .orEmpty()
-        ) {
+    val normalizedStatus =
+        activeInquiryStatusCode
+            ?.trim()
+            ?.uppercase()
+            .orEmpty()
+
+    val requestHeadline =
+        when (normalizedStatus) {
             "" ->
-                "접수된 요청이 없어요"
-            "DRAFT",
+                "진행 중인 요청이 없어요"
+
+            "DRAFT" ->
+                "접수 준비 중"
+
             "QUESTIONNAIRE_IN_PROGRESS" ->
-                "문진 작성 중이에요"
+                "접수 완료 · 추가 문진 작성 중"
+
             "AI_GUIDANCE" ->
-                "해결 방법이 준비됐어요"
-            "COMPLETION_PENDING" ->
-                "처리 결과 확인 필요"
-            "RESOLVED" ->
-                "처리 완료"
+                "문진 완료 · 해결 안내 확인"
+
+            "CONSULTATION_REQUIRED" ->
+                "상담 요청 접수"
+
+            "CONSULTATION_IN_PROGRESS" ->
+                "상담 진행 중"
+
+            "VISIT_REVIEW_PENDING" ->
+                "방문 케어 필요 여부 확인 중"
+
+            "VISIT_SCHEDULING" ->
+                "방문 일정 조율 중"
+
+            "VISIT_SCHEDULED" ->
+                "방문 케어 예정"
+
+            "REVISIT_REQUIRED" ->
+                "추가 방문 케어 준비 중"
+
             "REOPENED" ->
                 "후속 상담 준비 중"
-            "CONSULTATION_REQUIRED",
-            "CONSULTATION_IN_PROGRESS",
+
+            "COMPLETION_PENDING" ->
+                "처리 결과 확인 중"
+
+            "RESOLVED" ->
+                "처리 완료"
+
+            "CANCELLED" ->
+                "접수 취소 완료"
+
+            else ->
+                "진행 상태 확인 중"
+        }
+
+    val requestDetail =
+        when (normalizedStatus) {
+            "" ->
+                "문제가 있으면 위의 문진 작성에서 바로 접수할 수 있어요."
+
+            "DRAFT" ->
+                "작성하던 문의를 이어서 완료해주세요."
+
+            "QUESTIONNAIRE_IN_PROGRESS" ->
+                "접수된 문의에 추가 확인이 필요해요."
+
+            "AI_GUIDANCE" ->
+                "문진이 완료되어 해결 안내를 확인할 수 있어요."
+
+            "CONSULTATION_REQUIRED" ->
+                "상담 연결을 준비하고 있어요."
+
+            "CONSULTATION_IN_PROGRESS" ->
+                "상담원이 현재 문의를 확인하고 있어요."
+
             "VISIT_REVIEW_PENDING",
             "VISIT_SCHEDULING",
             "VISIT_SCHEDULED",
-            "COMPLETION_PENDING",
-            "REVISIT_REQUIRED",
-            "REOPENED" ->
-                "요청을 처리하고 있어요"
+            "REVISIT_REQUIRED" ->
+                "방문 케어 처리 상태를 확인해주세요."
+
+            "COMPLETION_PENDING" ->
+                "마지막 처리 결과를 확인하고 있어요."
+
+            "RESOLVED" ->
+                "해당 문의 처리가 완료됐어요."
+
+            "CANCELLED" ->
+                "해당 문의 접수가 취소됐어요."
+
             else ->
-                "진행 상태를 확인해보세요"
+                "최신 접수 상태를 확인하고 있어요."
         }
 
     CustomerCleanCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag(
-                "customerCareOverview"
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .testTag(
+                    "customerCareOverview"
+                ),
+        contentPadding =
+            PaddingValues(
+                horizontal = 16.dp,
+                vertical = 16.dp,
             ),
-        contentPadding = PaddingValues(
-            horizontal = 15.dp,
-            vertical = 14.dp,
-        ),
     ) {
         Text(
             text = "케어 관리 현황",
@@ -889,45 +953,264 @@ fun FinalCustomerCareOverviewCard(
             fontWeight = FontWeight.Bold,
         )
 
+        Text(
+            text = "현재 요청",
+            style =
+                MaterialTheme.typography
+                    .labelMedium,
+            color = palette.textMuted,
+            fontWeight = FontWeight.SemiBold,
+        )
+
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .testTag(
+                        "careWorkflowHeadline"
+                    ),
+            verticalAlignment =
+                Alignment.CenterVertically,
+            horizontalArrangement =
+                Arrangement.spacedBy(9.dp),
+        ) {
+            Box(
+                modifier =
+                    Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(
+                            when {
+                                normalizedStatus ==
+                                    "CANCELLED" ->
+                                    palette.textMuted
+
+                                normalizedStatus
+                                    .isBlank() ->
+                                    palette.accentSoft
+
+                                else ->
+                                    palette.accent
+                            }
+                        ),
+            )
+
+            Text(
+                text =
+                    if (previewMode) {
+                        "진행 중인 요청이 없어요"
+                    } else {
+                        requestHeadline
+                    },
+                modifier = Modifier.weight(1f),
+                style =
+                    MaterialTheme.typography
+                        .titleSmall,
+                color = palette.textStrong,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+
+        FinalCareProgressRow(
+            statusCode =
+                if (previewMode) {
+                    null
+                } else {
+                    normalizedStatus
+                },
+        )
+
+        Text(
+            text =
+                if (previewMode) {
+                    "실제 문의를 접수하면 진행 상태가 여기에 표시돼요."
+                } else {
+                    requestDetail
+                },
+            modifier = Modifier.fillMaxWidth(),
+            style =
+                MaterialTheme.typography
+                    .bodySmall,
+            color = palette.textMuted,
+        )
+
+        if (
+            !previewMode &&
+            (followUpAvailable ||
+                cancelAvailable)
+        ) {
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth(),
+                horizontalArrangement =
+                    Arrangement.spacedBy(8.dp),
+            ) {
+                if (followUpAvailable) {
+                    TextButton(
+                        onClick =
+                            onContinueQuestionnaire,
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .testTag(
+                                    "homeContinueQuestionnaire"
+                                ),
+                    ) {
+                        Text(
+                            text =
+                                "추가 문진 작성",
+                            fontWeight =
+                                FontWeight.Bold,
+                        )
+                    }
+                }
+
+                if (cancelAvailable) {
+                    TextButton(
+                        onClick =
+                            onCancelInquiry,
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .testTag(
+                                    "homeCancelInquiryAction"
+                                ),
+                    ) {
+                        Text(
+                            text = "접수 취소",
+                            color =
+                                MaterialTheme
+                                    .colorScheme
+                                    .error,
+                            fontWeight =
+                                FontWeight.Bold,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FinalCareProgressRow(
+    statusCode: String?,
+) {
+    val palette = CustomerReferencePalette
+
+    val normalized =
+        statusCode
+            ?.trim()
+            ?.uppercase()
+            .orEmpty()
+
+    val step =
+        when (normalized) {
+            "" ->
+                0
+
+            "DRAFT" ->
+                1
+
+            "QUESTIONNAIRE_IN_PROGRESS",
+            "AI_GUIDANCE" ->
+                2
+
+            "CONSULTATION_REQUIRED",
+            "CONSULTATION_IN_PROGRESS",
+            "VISIT_REVIEW_PENDING",
+            "VISIT_SCHEDULING",
+            "VISIT_SCHEDULED",
+            "REVISIT_REQUIRED",
+            "REOPENED" ->
+                3
+
+            "COMPLETION_PENDING",
+            "RESOLVED" ->
+                4
+
+            "CANCELLED" ->
+                1
+
+            else ->
+                1
+        }
+
+    val labels =
+        listOf(
+            "접수",
+            "문진·안내",
+            "상담·방문",
+            "완료",
+        )
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement =
+            Arrangement.spacedBy(7.dp),
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement =
-                Arrangement.spacedBy(8.dp),
+                Arrangement.spacedBy(4.dp),
         ) {
-            FinalCareStatusTile(
-                title = "다음 케어",
-                value =
-                    if (previewMode) {
-                        "미리보기"
-                    } else {
-                        home.nextCareOn
-                            ?: "확인 중"
-                    },
-                modifier = Modifier.weight(1f),
-            )
+            labels.indices.forEach { index ->
+                Box(
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .height(7.dp)
+                            .clip(
+                                RoundedCornerShape(
+                                    999.dp
+                                )
+                            )
+                            .background(
+                                if (index < step) {
+                                    palette.accent
+                                } else {
+                                    palette
+                                        .accentSoft
+                                        .copy(
+                                            alpha =
+                                                0.28f
+                                        )
+                                }
+                            ),
+                )
+            }
+        }
 
-            FinalCareStatusTile(
-                title = "신청 현황",
-                value =
-                    if (previewMode) {
-                        "구독 없음"
-                    } else {
-                        requestText
-                    },
-                modifier = Modifier.weight(1f),
-            )
-
-            FinalCareStatusTile(
-                title = "최근 케어",
-                value =
-                    if (previewMode) {
-                        "미리보기"
-                    } else {
-                        home.lastCareOn
-                            ?: "확인 중"
-                    },
-                modifier = Modifier.weight(1f),
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            labels.forEachIndexed {
+                    index,
+                    label,
+                ->
+                Text(
+                    text = label,
+                    modifier =
+                        Modifier.weight(1f),
+                    textAlign =
+                        TextAlign.Center,
+                    style =
+                        MaterialTheme.typography
+                            .labelSmall,
+                    color =
+                        if (index < step) {
+                            palette.accent
+                        } else {
+                            palette.textMuted
+                        },
+                    fontWeight =
+                        if (index < step) {
+                            FontWeight.Bold
+                        } else {
+                            FontWeight.Normal
+                        },
+                )
+            }
         }
     }
 }
