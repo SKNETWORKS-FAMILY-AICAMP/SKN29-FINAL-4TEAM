@@ -17,6 +17,7 @@ BOOTSTRAP = ROOT / "scripts/deployment/production/bootstrap-host.sh"
 WORKFLOW = ROOT / ".github/workflows/production-deploy.yml"
 RELEASE_WORKFLOW = ROOT / ".github/workflows/production-release.yml"
 BOOTSTRAP_WORKFLOW = ROOT / ".github/workflows/production-bootstrap.yml"
+OIDC_SMOKE_WORKFLOW = ROOT / ".github/workflows/aws-oidc-smoke.yml"
 BACKEND_PREFLIGHT = ROOT / "scripts/deployment/production/validate_backend_runtime.py"
 AI_PREFLIGHT = ROOT / "scripts/deployment/production/validate_ai_readonly_runtime.py"
 OIDC_TRUST = ROOT / "scripts/deployment/production/validate_github_oidc_trust.py"
@@ -296,6 +297,75 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("SSM_ROLLBACK_POLL_TIMEOUT seconds=600", workflow)
         self.assertIn('[[ "$status" == "Success" ]]', workflow)
         self.assertIn('[[ "$rollback_status" == "Success" ]]', workflow)
+
+    def test_bootstrap_and_oidc_polling_collect_terminal_output(self) -> None:
+        cases = (
+            (
+                BOOTSTRAP_WORKFLOW,
+                600,
+                "SSM_BOOTSTRAP_POLL_TIMEOUT seconds=600",
+                "HOST_BOOTSTRAP_PASS",
+            ),
+            (
+                OIDC_SMOKE_WORKFLOW,
+                120,
+                "SSM_OIDC_POLL_TIMEOUT seconds=120",
+                "AWS_OIDC_SSM_PATH_PASS",
+            ),
+        )
+        for path, timeout, timeout_marker, success_marker in cases:
+            with self.subTest(workflow=path.name):
+                text = path.read_text(encoding="utf-8")
+                self.assertNotIn("aws ssm wait command-executed", text)
+                self.assertIn(f"deadline=$((SECONDS + {timeout}))", text)
+                self.assertIn("Success|Failed|Cancelled|TimedOut", text)
+                self.assertIn("Pending|InProgress|Delayed|Cancelling", text)
+                self.assertIn("sleep 5", text)
+                self.assertIn(timeout_marker, text)
+                self.assertIn('.StandardOutputContent // ""', text)
+                self.assertIn('.StandardErrorContent // ""', text)
+                self.assertIn('[[ "$status" == "Success" ]]', text)
+                self.assertIn(f"grep -q '^{success_marker}$'", text)
+
+    def test_remote_ssm_inputs_are_validated_and_shell_escaped(self) -> None:
+        bootstrap = BOOTSTRAP_WORKFLOW.read_text(encoding="utf-8")
+        deploy = WORKFLOW.read_text(encoding="utf-8")
+        bucket_pattern = "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
+
+        self.assertIn(bucket_pattern, bootstrap)
+        self.assertIn(bucket_pattern, deploy)
+        self.assertIn('[[ "$value" =~ ^/[A-Za-z0-9._/-]+$ ]]', bootstrap)
+        self.assertIn('realpath -m -- "$value"', bootstrap)
+        self.assertNotIn("REQUESTED_BUCKET//[[:space:]]", bootstrap)
+        self.assertGreaterEqual(bootstrap.count("printf -v"), 4)
+        self.assertGreaterEqual(deploy.count("printf -v"), 6)
+        self.assertGreaterEqual(bootstrap.count("%q"), 10)
+        self.assertGreaterEqual(deploy.count("%q"), 12)
+        for text in (bootstrap, deploy):
+            self.assertNotIn('("aws s3 cp s3://" + $bucket', text)
+
+    def test_production_aws_credentials_are_version_and_account_locked(
+        self,
+    ) -> None:
+        bootstrap = BOOTSTRAP_WORKFLOW.read_text(encoding="utf-8")
+        deploy = WORKFLOW.read_text(encoding="utf-8")
+        oidc = OIDC_SMOKE_WORKFLOW.read_text(encoding="utf-8")
+        combined = "\n".join((bootstrap, deploy, oidc))
+
+        self.assertEqual(
+            combined.count("aws-actions/configure-aws-credentials@v6.2.3"),
+            4,
+        )
+        self.assertNotIn("aws-actions/configure-aws-credentials@v5", combined)
+        for text in (bootstrap, deploy, oidc):
+            self.assertIn("AWS_ACCOUNT_ID", text)
+            self.assertIn("allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}", text)
+            self.assertIn("role-session-name:", text)
+        self.assertEqual(deploy.count("role-session-name:"), 2)
+        self.assertIn("runs-on: ubuntu-24.04", oidc)
+        self.assertNotIn("runs-on: ubuntu-latest", oidc)
+        self.assertIn('expected_role_name="${AWS_ROLE_ARN##*/}"', oidc)
+        self.assertNotIn("WaterBridgeGitHubDeployRole", oidc)
 
     def test_host_scripts_do_not_print_or_copy_secret_values(self) -> None:
         deploy = DEPLOY.read_text(encoding="utf-8")

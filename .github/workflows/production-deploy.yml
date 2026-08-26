@@ -25,6 +25,7 @@ env:
   RELEASE_SHA: ${{ inputs.release_sha }}
   AWS_REGION: ${{ vars.AWS_REGION }}
   AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
   EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
   ECR_WEB_REPOSITORY: ${{ vars.ECR_WEB_REPOSITORY }}
   ECR_BACKEND_REPOSITORY: ${{ vars.ECR_BACKEND_REPOSITORY }}
@@ -288,17 +289,35 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for key in AWS_REGION AWS_ROLE_ARN EC2_INSTANCE_ID ECR_WEB_REPOSITORY ECR_BACKEND_REPOSITORY ECR_AI_REPOSITORY; do
+          for key in AWS_REGION AWS_ROLE_ARN AWS_ACCOUNT_ID EC2_INSTANCE_ID ECR_WEB_REPOSITORY ECR_BACKEND_REPOSITORY ECR_AI_REPOSITORY; do
             if [[ -z "${!key:-}" ]]; then
               echo "Required repository variable is missing: ${key}" >&2
               exit 1
             fi
           done
+          [[ "$AWS_ACCOUNT_ID" =~ ^[0-9]{12}$ ]] || {
+            echo "AWS_ACCOUNT_ID must contain exactly 12 digits." >&2
+            exit 1
+          }
+          [[ "$AWS_REGION" =~ ^[a-z]{2}-[a-z]+-[0-9]+$ ]] || {
+            echo "AWS_REGION is not a canonical AWS region." >&2
+            exit 1
+          }
+          [[ "$EC2_INSTANCE_ID" =~ ^i-[0-9a-f]{8,17}$ ]] || {
+            echo "EC2_INSTANCE_ID must be a complete EC2 instance ID." >&2
+            exit 1
+          }
+          [[ "$AWS_ROLE_ARN" =~ ^arn:aws:iam::${AWS_ACCOUNT_ID}:role/[A-Za-z0-9+=,.@_/-]+$ ]] || {
+            echo "AWS_ROLE_ARN must belong to the configured AWS account." >&2
+            exit 1
+          }
 
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6.2.3
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+          allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
+          role-session-name: waterbridge-build-${{ github.run_id }}
 
       - uses: aws-actions/amazon-ecr-login@v2
         id: login-ecr
@@ -318,6 +337,12 @@ jobs:
             echo "Production Bootstrap must create or connect storage before deployment." >&2
             exit 1
           }
+          [[ "$bucket" =~ ^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$ ]] &&
+            [[ "$bucket" != *..* ]] &&
+            [[ ! "$bucket" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] || {
+              echo "Production storage bucket name is invalid." >&2
+              exit 1
+            }
           echo "bucket=${bucket}" >> "$GITHUB_OUTPUT"
 
       - name: Build AI Linux unit-test target
@@ -461,10 +486,12 @@ jobs:
         with:
           python-version: "3.13.13"
 
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6.2.3
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+          allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
+          role-session-name: waterbridge-deploy-${{ github.run_id }}
 
       - name: Deploy the immutable release on EC2
         id: deploy
@@ -473,16 +500,25 @@ jobs:
           STORAGE_BUCKET: ${{ needs.build-and-publish.outputs.storage_bucket }}
         run: |
           set -euo pipefail
+          deploy_source="s3://${STORAGE_BUCKET}/releases/${RELEASE_SHA}/deploy-release.sh"
+          deploy_target="/opt/waterbridge/shared/deploy-release.sh"
+          printf -v copy_command 'aws s3 cp %q %q --only-show-errors' \
+            "$deploy_source" "$deploy_target"
+          printf -v chmod_command 'chmod 0750 %q' "$deploy_target"
+          printf -v deploy_command '%q %q %q %q %q %q %q' \
+            "$deploy_target" "$RELEASE_SHA" "$STORAGE_BUCKET" "$AWS_REGION" \
+            "/etc/waterbridge/backend.env" "/etc/waterbridge/ai.env" \
+            "/etc/waterbridge/certs/rds-ca.pem"
           commands_json="$(jq -cn \
-            --arg bucket "$STORAGE_BUCKET" \
-            --arg sha "$RELEASE_SHA" \
-            --arg region "$AWS_REGION" \
+            --arg copy_command "$copy_command" \
+            --arg chmod_command "$chmod_command" \
+            --arg deploy_command "$deploy_command" \
             '{commands:[
               "set -euo pipefail",
               "install -d -m 0750 /opt/waterbridge/shared",
-              ("aws s3 cp s3://" + $bucket + "/releases/" + $sha + "/deploy-release.sh /opt/waterbridge/shared/deploy-release.sh --only-show-errors"),
-              "chmod 0750 /opt/waterbridge/shared/deploy-release.sh",
-              ("/opt/waterbridge/shared/deploy-release.sh " + $sha + " " + $bucket + " " + $region + " /etc/waterbridge/backend.env /etc/waterbridge/ai.env /etc/waterbridge/certs/rds-ca.pem")
+              $copy_command,
+              $chmod_command,
+              $deploy_command
             ]}')"
           command_id="$(aws ssm send-command \
             --instance-ids "$EC2_INSTANCE_ID" \
@@ -538,14 +574,21 @@ jobs:
           STORAGE_BUCKET: ${{ needs.build-and-publish.outputs.storage_bucket }}
         run: |
           set -euo pipefail
+          rollback_source="s3://${STORAGE_BUCKET}/releases/${RELEASE_SHA}/rollback-release.sh"
+          rollback_target="/opt/waterbridge/shared/rollback-release.sh"
+          printf -v copy_command 'aws s3 cp %q %q --only-show-errors' \
+            "$rollback_source" "$rollback_target"
+          printf -v chmod_command 'chmod 0750 %q' "$rollback_target"
+          printf -v rollback_command '%q' "$rollback_target"
           commands_json="$(jq -cn \
-            --arg bucket "$STORAGE_BUCKET" \
-            --arg sha "$RELEASE_SHA" \
+            --arg copy_command "$copy_command" \
+            --arg chmod_command "$chmod_command" \
+            --arg rollback_command "$rollback_command" \
             '{commands:[
               "set -euo pipefail",
-              ("aws s3 cp s3://" + $bucket + "/releases/" + $sha + "/rollback-release.sh /opt/waterbridge/shared/rollback-release.sh --only-show-errors"),
-              "chmod 0750 /opt/waterbridge/shared/rollback-release.sh",
-              "/opt/waterbridge/shared/rollback-release.sh"
+              $copy_command,
+              $chmod_command,
+              $rollback_command
             ]}')"
           rollback_id="$(aws ssm send-command \
             --instance-ids "$EC2_INSTANCE_ID" \

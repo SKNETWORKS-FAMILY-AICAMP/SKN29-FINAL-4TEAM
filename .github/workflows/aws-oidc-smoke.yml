@@ -14,7 +14,7 @@ concurrency:
 jobs:
   verify-aws-oidc:
     name: Verify AWS OIDC, ECR, and SSM
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
       AWS_REGION: ${{ vars.AWS_REGION }}
@@ -29,6 +29,7 @@ jobs:
       - name: Validate repository variables
         shell: bash
         run: |
+          set -euo pipefail
           if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
             echo 'This smoke test must run from the main branch.' >&2
             exit 1
@@ -61,8 +62,18 @@ jobs:
             exit 1
           fi
 
-          if [[ ! "$EC2_INSTANCE_ID" =~ ^i-[0-9a-f]+$ ]]; then
+          if [[ ! "$AWS_REGION" =~ ^[a-z]{2}-[a-z]+-[0-9]+$ ]]; then
+            echo 'AWS_REGION is not a canonical AWS region.' >&2
+            exit 1
+          fi
+
+          if [[ ! "$EC2_INSTANCE_ID" =~ ^i-[0-9a-f]{8,17}$ ]]; then
             echo 'EC2_INSTANCE_ID must be a complete EC2 instance ID.' >&2
+            exit 1
+          fi
+
+          if [[ ! "$AWS_ROLE_ARN" =~ ^arn:aws:iam::${AWS_ACCOUNT_ID}:role/[A-Za-z0-9+=,.@_/-]+$ ]]; then
+            echo 'AWS_ROLE_ARN must belong to the configured AWS account.' >&2
             exit 1
           fi
 
@@ -77,15 +88,18 @@ jobs:
       - name: Verify assumed AWS account and role
         shell: bash
         run: |
+          set -euo pipefail
           actual_account="$(aws sts get-caller-identity --query Account --output text)"
           actual_arn="$(aws sts get-caller-identity --query Arn --output text)"
+          expected_role_name="${AWS_ROLE_ARN##*/}"
+          expected_role_prefix="arn:aws:sts::${AWS_ACCOUNT_ID}:assumed-role/${expected_role_name}/"
 
           if [[ "$actual_account" != "$AWS_ACCOUNT_ID" ]]; then
             echo 'OIDC assumed an unexpected AWS account.' >&2
             exit 1
           fi
 
-          if [[ "$actual_arn" != *":assumed-role/WaterBridgeGitHubDeployRole/"* ]]; then
+          if [[ "$actual_arn" != "${expected_role_prefix}"* ]]; then
             echo 'OIDC assumed an unexpected IAM role.' >&2
             exit 1
           fi
@@ -113,30 +127,54 @@ jobs:
       - name: Verify SSM command path
         shell: bash
         run: |
+          set -euo pipefail
+          commands_json="$(jq -cn \
+            --arg command "printf '%s\\n' AWS_OIDC_SSM_PATH_PASS" \
+            '{commands:[$command]}')"
           command_id="$(aws ssm send-command \
             --region "$AWS_REGION" \
             --instance-ids "$EC2_INSTANCE_ID" \
             --document-name AWS-RunShellScript \
             --comment 'WaterBridge GitHub OIDC smoke test' \
-            --parameters 'commands=["true"]' \
+            --parameters "$commands_json" \
             --query Command.CommandId \
             --output text)"
 
-          aws ssm wait command-executed \
-            --region "$AWS_REGION" \
-            --command-id "$command_id" \
-            --instance-id "$EC2_INSTANCE_ID"
-
-          status="$(aws ssm get-command-invocation \
-            --region "$AWS_REGION" \
-            --command-id "$command_id" \
-            --instance-id "$EC2_INSTANCE_ID" \
-            --query Status \
-            --output text)"
-
-          if [[ "$status" != "Success" ]]; then
-            echo "SSM smoke command failed with status: $status" >&2
-            exit 1
-          fi
+          poll_ssm_oidc() {
+            local deadline invocation poll_status
+            deadline=$((SECONDS + 120))
+            while (( SECONDS < deadline )); do
+              if invocation="$(aws ssm get-command-invocation \
+                --region "$AWS_REGION" \
+                --command-id "$command_id" \
+                --instance-id "$EC2_INSTANCE_ID" \
+                --output json 2>/dev/null)"; then
+                poll_status="$(jq -r '.Status' <<<"$invocation")"
+                case "$poll_status" in
+                  Success|Failed|Cancelled|TimedOut)
+                    printf '%s' "$invocation"
+                    return 0
+                    ;;
+                  Pending|InProgress|Delayed|Cancelling)
+                    ;;
+                  *)
+                    printf 'SSM_OIDC_UNKNOWN_STATUS status=%s\n' "$poll_status" >&2
+                    return 1
+                    ;;
+                esac
+              fi
+              sleep 5
+            done
+            printf 'SSM_OIDC_POLL_TIMEOUT seconds=120\n' >&2
+            return 1
+          }
+          invocation="$(poll_ssm_oidc)"
+          status="$(jq -r '.Status' <<<"$invocation")"
+          stdout="$(jq -r '.StandardOutputContent // ""' <<<"$invocation")"
+          stderr="$(jq -r '.StandardErrorContent // ""' <<<"$invocation")"
+          printf '%s\n' "$stdout"
+          [[ -z "$stderr" ]] || printf '%s\n' "$stderr" >&2
+          [[ "$status" == "Success" ]]
+          grep -q '^AWS_OIDC_SSM_PATH_PASS$' <<<"$stdout"
 
           echo 'EC2 SSM command path verified.'
