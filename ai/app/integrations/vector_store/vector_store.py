@@ -56,6 +56,19 @@ class PgVectorStore:
                   AND product_generation = %s
                   AND verification_status = 'official_verified'
                   AND allowed_use = TRUE
+                  AND (
+                      (
+                          metadata->>'record_type' IS NULL
+                          AND (
+                              metadata->>'retrieval_role' IS NULL
+                              OR metadata->>'retrieval_role' = 'SEARCH_CANDIDATE'
+                          )
+                      )
+                      OR (
+                          LOWER(metadata->>'record_type') = 'child'
+                          AND metadata->>'retrieval_role' = 'SEARCH_CANDIDATE'
+                      )
+                  )
             ) AS ranked
             WHERE similarity_score >= %s
             ORDER BY similarity_score DESC, chunk_id

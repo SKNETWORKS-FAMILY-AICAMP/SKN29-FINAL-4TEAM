@@ -95,6 +95,8 @@ class ChunkLoader:
             source_hash=raw["source_file_sha256"],
             safe_actions=raw.get("safe_actions", []),
             topic_code=raw.get("topic_code"),
+            record_type="CHILD",
+            retrieval_role="SEARCH_CANDIDATE",
             dataset_profile=self.dataset_profile,
             runtime_eligible=True,
         )
@@ -142,6 +144,7 @@ class ChunkLoader:
             evidence_group_id=raw["evidence_group_id"],
             source_variant_id=raw["source_variant_id"],
             parent_id=raw["parent_id"],
+            record_type="CHILD",
             retrieval_role=raw["retrieval_role"],
             dataset_profile=self.dataset_profile,
             runtime_eligible=False,

@@ -30,6 +30,7 @@ class RetrievedChunk(BaseModel):
     evidence_group_id: Optional[str] = Field(None, description="동일 의미 근거 Group 식별자")
     source_variant_id: Optional[str] = Field(None, description="근거 Group 내부 Source Variant 식별자")
     parent_id: Optional[str] = Field(None, description="검색 Child가 참조하는 Parent 식별자")
+    record_type: Optional[str] = Field(None, description="CHILD·SOURCE_PAGE·PRESERVATION 레코드 유형")
     retrieval_role: Optional[str] = Field(None, description="인계 데이터 검색 역할")
     dataset_profile: Optional[str] = Field(None, description="적재 데이터 Consumer Profile")
     runtime_eligible: bool = Field(True, description="공식 Runtime 활성화 가능 여부")

@@ -13,6 +13,7 @@ model_capability_gate:
     - "WPUIAC425SNW"
     - "WPUIAC506SNW"
     - "WPU-IAC506"
+    - "WPUJAC104SWH"
     - "WPUIAC606SNW"
 
   controls:

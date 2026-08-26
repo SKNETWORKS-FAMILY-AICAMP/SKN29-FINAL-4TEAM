@@ -1,6 +1,6 @@
 {
   "dataset_id": "RAG-GOLD-V2-IAC425-CANDIDATE-DIAGNOSTIC",
-  "dataset_version": "2.0.0-draft.1",
+  "dataset_version": "2.0.0-draft.2",
   "status": "HUMAN_REVIEW_PENDING_NOT_IN_MAIN_GOLD",
   "generated_at": "2026-08-26T00:00:00+09:00",
   "official_metrics_publishable": false,
@@ -9,11 +9,11 @@
     "path": "ai/evaluation/datasets/candidates/iac425_gold_v2_candidates.jsonl",
     "records": 18,
     "active_records": 18,
-    "sha256": "11AAF6B8BDCDBC74AE9649745E2E5EB761ADF23C81544A5C4165F10F64321EE4"
+    "sha256": "16A63E7B5543569977589CC1E2F3A89B177A67A5A8274ADB5E5A78E9B9556A36"
   },
   "schema": {
     "path": "ai/evaluation/schemas/gold_evaluation_case_v2.schema.json",
-    "sha256": "46974E4E4D0D124B7B32C2320E7DB5E988F8E790FB73E656648813D42A51A289"
+    "sha256": "015499C4D0690D961B137CE975C5BEAB27794D433431A8A3F796BBBA40772611"
   },
   "evidence_group_registry": {
     "path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2.jsonl",
