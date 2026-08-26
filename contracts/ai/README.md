@@ -46,6 +46,31 @@ Backend는 `failure_stage`만으로 제품 미승인이나 업무 Event를 추�
 AI는 증상 구조화·안전 평가·사용 안내·근거 참조 또는 요약 초안만 반환한다.
 업무 상태·권한·최종 EvidenceCard·DB 기록은 Backend가 담당한다.
 
+## 응답 필드 기반 Routing
+
+공개 응답 Schema는 `4.0.0`을 유지한다. 별도 Routing 필드를 추가하지 않고
+Backend는 아래 순서와 조건으로 전달 경로를 판정한다.
+
+| 우선순위 | 공개 응답 조건 | Routing 판정 | 고객 공개 |
+| ---: | --- | --- | --- |
+| 1 | `status=FALLBACK` | `FAIL_CLOSED_CONSULTATION` | 금지 |
+| 2 | `risk_level=danger`, 유효 Rule ID, `requires_consultation=true`, 추가 질문 없음 | `DANGER_HANDOFF` | 승인 Safety 안내만 허용 |
+| 3 | Evidence 없음, `PENDING_CONSULTATION`, 추가 질문 존재 | `CUSTOMER_INPUT_PENDING` | 질문만 허용 |
+| 4 | `status=SUCCEEDED`, `risk_level=caution`, 검증 Evidence 존재, `PARTIAL_STOP` | `PRE_SEND_HUMAN_REVIEW` | 검토 승인 전 금지 |
+| 5 | `status=SUCCEEDED`, `risk_level=general`, 검증 Evidence 존재, 상담 불필요, 추가 질문 없음, `NORMAL` | `AUTO_GUIDANCE` | 허용 |
+
+Danger의 근거는 `matched_safety_rule_ids`와 해당 Rule의 제한 기능·다음 행동
+정합성이다. Danger는 Vector·LLM보다 우선하므로 `evidence_references=[]`가 정상일
+수 있다. Caution의 `usage_guidance`는 고객 답변이 아니라 검토용 초안이다.
+
+`AI-FAILED-01`·`AI-TIMEOUT-01` Provider/검색 오류도 응답 본문을 공개하지 않고
+`FAIL_CLOSED_CONSULTATION`으로 처리한다. AI는 Routing 제안만 반환하며 고객 공개,
+문의 상태 변경, Review 저장과 DB 기록은 Backend 책임이다.
+
+동일 `ai_request_id` Replay는 Backend가 저장된 `AIRun`을 먼저 확인해 AI 호출
+전에 반환한다. 따라서 Replay의 추가 Vector·Provider 호출 기대값은 각각 0이며,
+AI 단위 결과가 아니라 Backend 결합 검증으로 확정한다.
+
 ## 오류 계약
 
 `common/AIErrorResponse.schema.json`을 사용한다.

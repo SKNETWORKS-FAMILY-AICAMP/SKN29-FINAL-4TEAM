@@ -23,6 +23,7 @@ from ai.app.orchestration.pipeline_router import PipelineRouter
 from ai.app.orchestration.pipelines.multi_agent_pipeline import MultiAgentPipeline
 from ai.app.retrieval import RetrievedChunk, RetrievalOutcome
 from ai.app.schemas import RiskLevel, TraceContext, UsageGuidanceStatus
+from ai.app.validation.routing import ResponseRoutingDisposition
 
 
 INQUIRY_ID = "018f2f9b-7c30-7981-b541-1a987c88b601"
@@ -64,7 +65,11 @@ class EvidenceSearchService:
 
 
 class TasteEvidenceSearchService:
+    def __init__(self):
+        self.calls = 0
+
     def search(self, *args, **kwargs):
+        self.calls += 1
         return [
             RetrievedChunk(
                 chunk_id="RAG-WPUJAC104DWH-TASTE-ODOR-001",
@@ -235,6 +240,7 @@ def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence
     assert result.multi_agent_metadata.awaiting_customer_input is True
     assert response.status.value == "SUCCEEDED"
     assert response.failure_stage is None
+    assert str(response.correlation_id) == CORRELATION_ID
     assert response.followup_questions
     assert response.evidence_references == []
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
@@ -243,6 +249,9 @@ def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence
     assert HandoffReason.MORE_INFORMATION_REQUIRED in {
         item.reason_code for item in result.multi_agent_metadata.handoffs
     }
+    assert result.routing_disposition == (
+        ResponseRoutingDisposition.CUSTOMER_INPUT_PENDING
+    )
     assert raw_symptom not in json.dumps(
         result.multi_agent_metadata.model_dump(mode="json"),
         ensure_ascii=False,
@@ -263,6 +272,7 @@ def test_multi_agent_earthy_taste_waits_for_context_before_evidence_handoff():
     assert result.multi_agent_metadata.awaiting_customer_input is True
     assert response.status.value == "SUCCEEDED"
     assert response.failure_stage is None
+    assert str(response.correlation_id) == CORRELATION_ID
     assert response.followup_questions
     assert response.evidence_references == []
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
@@ -303,8 +313,9 @@ def test_multi_agent_earthy_taste_non_applicable_context_becomes_no_evidence():
 
 def test_multi_agent_earthy_taste_within_ten_days_uses_applicable_evidence():
     llm = TasteGuidanceLLMClient()
+    search_service = TasteEvidenceSearchService()
     result = _run_multi_agent(
-        search_service=TasteEvidenceSearchService(),
+        search_service=search_service,
         raw_symptom="물에서 흙맛이 나는 것 같아요",
         previous_answers=[
             {"question_id": "followup-occurrence-time", "answer_text": "오늘부터"},
@@ -320,14 +331,17 @@ def test_multi_agent_earthy_taste_within_ten_days_uses_applicable_evidence():
     response = result.to_analysis_result()
 
     assert llm.calls == 1
+    assert search_service.calls == 1
     assert result.context.retrieval_outcome == RetrievalOutcome.AVAILABLE
     assert response.status.value == "SUCCEEDED"
     assert response.failure_stage is None
+    assert str(response.correlation_id) == CORRELATION_ID
     assert len(response.evidence_references) == 1
     assert llm.requests[0].symptom_summary.endswith("10일 이내 부재 후")
     assert HandoffReason.EVIDENCE_READY in {
         item.reason_code for item in result.multi_agent_metadata.handoffs
     }
+    assert result.routing_disposition == ResponseRoutingDisposition.AUTO_GUIDANCE
 
 
 def test_answered_questions_then_empty_retrieval_becomes_no_evidence():

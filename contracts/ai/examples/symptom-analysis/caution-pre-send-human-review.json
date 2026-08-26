@@ -1,0 +1,64 @@
+{
+  "request": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b206",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c006",
+    "ai_request_id": "ai-req-20260826-caution-review",
+    "state_version": 2,
+    "raw_symptom": "냉수 출수량이 줄고 물이 미지근하게 나옵니다.",
+    "model_code": "WPUJAC104DWH",
+    "selected_symptoms": ["출수량 저하", "온도 이상"],
+    "previous_answers": []
+  },
+  "response": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b206",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c006",
+    "ai_request_id": "ai-req-20260826-caution-review",
+    "state_version": 2,
+    "model_code": "WPUJAC104DWH",
+    "status": "SUCCEEDED",
+    "fallback_reason_code": null,
+    "failure_stage": null,
+    "retry_count": 0,
+    "structured_symptom": {
+      "symptom_type": "출수량 저하",
+      "occurrence_time": "오늘부터",
+      "target_water_type": "냉수",
+      "occurrence_condition": "냉수 버튼을 누를 때 출수량 저하",
+      "error_code": null,
+      "accompanying_symptoms": ["온도 이상"],
+      "actions_taken": ["전원 상태 확인"]
+    },
+    "missing_fields": [],
+    "followup_questions": [],
+    "safety_assessment": {
+      "risk_level": "caution",
+      "priority": "consultation_recommended",
+      "requires_consultation": false,
+      "matched_safety_rule_ids": ["SAFETY-TEMP-ABNORMAL-001"],
+      "detected_risks": ["냉수 온도 및 출수량 이상"],
+      "safety_reason": "일부 기능 이상이 감지되어 검토 후 안내가 필요합니다."
+    },
+    "usage_guidance": {
+      "guidance_status": "PARTIAL_STOP",
+      "message": "냉수 출수량과 온도 상태를 공식 안내에 따라 점검하는 초안입니다.",
+      "restricted_functions": ["해당 기능(냉수/온수) 한정 확인 필요"],
+      "next_actions": [
+        "필터 교체 주기 및 전원 램프 상태를 확인하세요.",
+        "자가조치 안내에 따라 점검해 보세요."
+      ]
+    },
+    "evidence_references": [
+      {
+        "document_title": "WPU-JAC104D 사용설명서",
+        "document_version": "REV.00",
+        "page": 37,
+        "page_refs": [37],
+        "chunk_id": "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001",
+        "official_url": "https://www.skintellixservice.com/web/easy/easyMain.do?inputBasicKeyword=WPUJAC104DWH&tabIndex=3",
+        "summary": "냉수 온도와 출수량 이상을 확인하는 공식 점검 범위입니다.",
+        "similarity_score": 0.92,
+        "verification_status": "official_verified"
+      }
+    ]
+  }
+}

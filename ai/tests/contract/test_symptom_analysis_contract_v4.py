@@ -23,6 +23,7 @@ REQUEST_SCHEMA_PATH = "requests/SymptomAnalysisRequest.schema.json"
 RESPONSE_SCHEMA_PATH = "responses/SymptomAnalysisResponse.schema.json"
 EXAMPLE_PATHS = (
     "examples/symptom-analysis/general-guidance.json",
+    "examples/symptom-analysis/caution-pre-send-human-review.json",
     "examples/symptom-analysis/danger-detected.json",
     "examples/symptom-analysis/no-evidence.json",
     "examples/symptom-analysis/runtime-product-not-approved.json",
