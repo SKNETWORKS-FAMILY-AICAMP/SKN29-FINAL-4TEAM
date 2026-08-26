@@ -86,6 +86,7 @@ async function searchAndSelectCandidate(user: ReturnType<typeof userEvent.setup>
   await user.type(screen.getByRole("combobox", { name: "고객명 또는 연락처 *" }), "0001");
   const option = await screen.findByRole("option", { name: /합성 전화 고객 1/ });
   expect(option).toHaveTextContent("010-****-0001");
+  expect(option).toHaveTextContent("제품 모델 WPUJAC104DWH · 이용 중");
   expect(option).not.toHaveTextContent("010-1234-0001");
   await user.click(option);
 }
@@ -142,9 +143,20 @@ describe("PhoneInquiryCreatePage", () => {
 
     await searchAndSelectCandidate(user);
 
-    const selected = screen.getByRole("region", { name: "선택한 고객과 구독" });
+    const selected = screen.getByRole("region", { name: "고객 정보" });
     expect(within(selected).getByText("합성 전화 고객 1")).toBeInTheDocument();
     expect(within(selected).getByText("초소형 직수 정수기")).toBeInTheDocument();
+    expect(within(selected).getByText("방문 관리")).toBeInTheDocument();
+    expect(within(selected).queryByText("VISIT_CARE")).not.toBeInTheDocument();
+    expect(screen.queryByText("긴급도 *")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "전화 문의 등록" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("신규 접수")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("고객과 구독을 먼저 확인해 주세요"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByLabelText("상담 내용")).toBeDisabled();
 
     const [searchUrl, searchOptions] = fetchMock.mock.calls[0];
     expect(String(searchUrl)).toBe(
@@ -163,7 +175,6 @@ describe("PhoneInquiryCreatePage", () => {
     await searchAndSelectCandidate(user);
 
     await user.selectOptions(screen.getByLabelText("대표 증상 *"), "LEAK");
-    await user.click(screen.getByLabelText("높음"));
     await user.type(
       screen.getByLabelText(/문의 내용/),
       "전화로 접수한 누수 문의입니다.",
@@ -172,17 +183,20 @@ describe("PhoneInquiryCreatePage", () => {
 
     const status = await screen.findByRole("status");
     expect(status).toHaveTextContent("INQ-20260812-0001");
-    expect(screen.getByRole("link", { name: "상담 기록 계속" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "문의 상세 보기" })).toHaveAttribute(
       "href",
       `/consultant/inquiries?inquiryId=${CREATED_INQUIRY_ID}`,
     );
+    expect(screen.getByRole("button", { name: "새 문의 등록" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "입력 초기화" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "전화 문의 등록" })).not.toBeInTheDocument();
 
     const [, registerOptions] = fetchMock.mock.calls[1];
     expect(JSON.parse(String(registerOptions?.body))).toEqual({
       subscription_id: CANDIDATE.subscription_id,
       raw_text: "전화로 접수한 누수 문의입니다.",
       representative_symptom_code: "LEAK",
-      priority_code: "HIGH",
+      priority_code: "NORMAL",
     });
     const headers = new Headers(registerOptions?.headers);
     expect(headers.get("X-Correlation-ID")).toBeTruthy();
@@ -211,8 +225,29 @@ describe("PhoneInquiryCreatePage", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "선택한 구독이 더 이상 유효하지 않습니다",
     );
-    expect(screen.queryByRole("region", { name: "선택한 고객과 구독" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "고객 정보" })).not.toBeInTheDocument();
     expect(screen.getByLabelText(/문의 내용/)).toHaveValue("선택 무효 확인용 문의");
+    expect(screen.getByRole("button", { name: "전화 문의 등록" })).toBeDisabled();
+  });
+
+  it("등록 후 새 문의 등록을 누르면 고객 선택과 입력값을 초기화한다", async () => {
+    vi.stubGlobal("fetch", createSuccessfulFetchMock());
+    const user = userEvent.setup();
+    renderPage();
+    await searchAndSelectCandidate(user);
+
+    await user.selectOptions(screen.getByLabelText("대표 증상 *"), "LEAK");
+    await user.type(
+      screen.getByLabelText(/문의 내용/),
+      "초기화 확인용 상담 기록",
+    );
+    await user.click(screen.getByRole("button", { name: "전화 문의 등록" }));
+    await user.click(await screen.findByRole("button", { name: "새 문의 등록" }));
+
+    expect(screen.queryByRole("region", { name: "고객 정보" })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "고객명 또는 연락처 *" })).toHaveValue("");
+    expect(screen.getByLabelText("대표 증상 *")).toHaveValue("");
+    expect(screen.getByLabelText(/문의 내용/)).toHaveValue("");
     expect(screen.getByRole("button", { name: "전화 문의 등록" })).toBeDisabled();
   });
 });

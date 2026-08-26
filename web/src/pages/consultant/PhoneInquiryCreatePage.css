@@ -65,16 +65,14 @@ html body .phone-inquiry-entry-app .phone-inquiry-entry-panel {
 
 .phone-inquiry-card-head {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+  align-items: center;
   padding-bottom: 16px;
   border-bottom: 1px solid #edf0f4;
 }
 
 .phone-inquiry-card-head h2,
 .phone-inquiry-guide-card h2 {
-  margin: 4px 0 0;
+  margin: 0;
   color: #263142;
   font-size: 17px;
 }
@@ -149,6 +147,11 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
   justify-self: end;
 }
 
+.phone-inquiry-details > label > .phone-inquiry-field-note {
+  justify-self: start;
+  line-height: 1.5;
+}
+
 .phone-inquiry-candidate-panel {
   position: absolute;
   z-index: 10;
@@ -209,6 +212,12 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
   white-space: nowrap;
 }
 
+.phone-inquiry-candidate-panel b {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
 .phone-inquiry-candidate-panel small {
   color: #7c8798;
   font-size: 10px;
@@ -235,9 +244,9 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
 
 .phone-inquiry-selected-card {
   display: grid;
-  grid-template-columns: minmax(140px, 0.7fr) minmax(260px, 1.3fr) auto;
+  grid-template-columns: minmax(112px, 0.45fr) minmax(0, 1.55fr) auto;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
   margin-top: 18px;
   padding: 15px;
   border: 1px solid #b9dfd1;
@@ -269,8 +278,11 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
 
 .phone-inquiry-selected-card dl {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns:
+    max-content
+    minmax(105px, 1fr)
+    minmax(72px, auto);
+  gap: 8px;
   margin: 0;
 }
 
@@ -280,11 +292,16 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
 
 .phone-inquiry-selected-card dd {
   margin: 3px 0 0;
-  overflow: hidden;
   color: #3e514a;
   font-size: 11px;
   font-weight: 650;
-  text-overflow: ellipsis;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.phone-inquiry-selected-card dl > div:first-child dd {
+  overflow: visible;
+  text-overflow: clip;
   white-space: nowrap;
 }
 
@@ -300,7 +317,7 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
 
 .phone-inquiry-details {
   display: grid;
-  grid-template-columns: minmax(180px, 0.7fr) minmax(260px, 1.3fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   margin: 18px 0 0;
   padding: 0;
@@ -323,6 +340,36 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
 .phone-inquiry-field--wide,
 .phone-inquiry-priority {
   grid-column: 1 / -1;
+}
+
+.phone-inquiry-select-control {
+  position: relative;
+  display: block;
+}
+
+html body .phone-inquiry-entry-app .phone-inquiry-select-control select {
+  padding-right: 42px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.phone-inquiry-select-control svg {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: #3f4a5c;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  pointer-events: none;
+}
+
+.phone-inquiry-select-control:hover svg {
+  stroke: #202a39;
 }
 
 .phone-inquiry-priority {
@@ -384,18 +431,25 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
 }
 
 .phone-inquiry-save-notice {
-  display: flex;
+  display: grid;
   align-items: center;
-  justify-content: space-between;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   border: 1px solid #b9dfd1;
   background: #f0faf6;
   color: #2e6753;
 }
 
-.phone-inquiry-save-notice a {
-  color: #315dc5;
-  font-weight: 700;
+.phone-inquiry-save-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phone-inquiry-save-actions .phone-inquiry-button {
+  display: inline-grid;
+  place-items: center;
+  text-decoration: none;
 }
 
 .phone-inquiry-submit-error {
@@ -558,5 +612,13 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
   .phone-inquiry-priority,
   .phone-inquiry-details > legend {
     grid-column: 1;
+  }
+
+  .phone-inquiry-save-notice {
+    grid-template-columns: 1fr;
+  }
+
+  .phone-inquiry-save-actions {
+    flex-wrap: wrap;
   }
 }

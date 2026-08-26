@@ -330,7 +330,7 @@ describe("Remote 상담 처리 Panel", () => {
     );
   });
 
-  it("Backend 내부 상태와 버전은 화면 문구로 노출하지 않는다", () => {
+  it("상담 처리용 내부 상태와 버전은 화면 문구로 노출하지 않는다", () => {
     render(
       <RemoteConsultationActionPanel
         inquiry={createDetail()}
@@ -339,7 +339,8 @@ describe("Remote 상담 처리 Panel", () => {
       />,
     );
 
-    expect(screen.getByText("현재 상태 · 상담 진행 중")).toBeInTheDocument();
+    expect(screen.queryByText("현재 할 일")).not.toBeInTheDocument();
+    expect(screen.queryByText(/현재 상태 ·/)).not.toBeInTheDocument();
     expect(screen.queryByText(/COUNSEL DESK/)).not.toBeInTheDocument();
     expect(screen.queryByText(/currentStatus/)).not.toBeInTheDocument();
     expect(screen.queryByText(/stateVersion/)).not.toBeInTheDocument();

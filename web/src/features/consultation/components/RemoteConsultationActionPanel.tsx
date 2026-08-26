@@ -2,11 +2,8 @@ import { useMemo } from "react";
 
 import { useConsultationForm } from "../hooks/useConsultationForm";
 import { useSaveConsultation } from "../hooks/useSaveConsultation";
-import {
-  normalizeCounselorStatus,
-  STATUS_LABELS,
-} from "../model/consultantWorkspaceModel";
-import type { CounselorActionCode, CounselorAllowedAction } from "../model/consultantWorkspaceTypes";
+import { isRemoteConsultationActionCode } from "../model/remoteConsultationActions";
+import type { CounselorAllowedAction } from "../model/consultantWorkspaceTypes";
 import type { ConsultantInquiryDetailViewModel } from "../model/consultantWorkspaceRemoteMapper";
 
 interface Props {
@@ -15,18 +12,11 @@ interface Props {
   onRefresh: () => void;
 }
 
-const ACTION_CODES = new Set<CounselorActionCode>([
-  "START_CONSULTATION", "UPDATE_CONSULTATION_SUMMARY",
-  "CONFIRM_CONSULTATION_SUMMARY", "CONSULTATION_COMPLETED",
-  "VISIT_REVIEW_REQUIRED", "VISIT_NEEDED", "VISIT_NOT_NEEDED",
-  "UPDATE_VISIT_SCHEDULE", "CONFIRM_VISIT",
-]);
-
 export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, onRefresh }: Props) {
   const actions = useMemo<CounselorAllowedAction[]>(
     () => inquiry.workflow.allowedActions.flatMap((action) =>
-      ACTION_CODES.has(action.code as CounselorActionCode)
-        ? [{ ...action, code: action.code as CounselorActionCode }]
+      isRemoteConsultationActionCode(action.code)
+        ? [{ ...action, code: action.code }]
         : [],
     ),
     [inquiry.workflow.allowedActions],
@@ -71,8 +61,10 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
   const showSummaryForm = save.allowedActions.some(
     (action) => action.code === "UPDATE_CONSULTATION_SUMMARY",
   );
-  const currentStatusLabel =
-    STATUS_LABELS[normalizeCounselorStatus(save.currentStatus)];
+  const isStartOnly =
+    !showSummaryForm &&
+    save.allowedActions.length === 1 &&
+    save.allowedActions[0]?.code === "START_CONSULTATION";
 
   const handleAction = async (action: CounselorAllowedAction) => {
     if (action.code === "VISIT_REVIEW_REQUIRED" || action.code === "VISIT_NEEDED") {
@@ -108,17 +100,12 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
 
   return (
     <aside
-      className="v6-action-panel"
+      className={`v6-action-panel${isStartOnly ? " is-start-only" : ""}`}
       aria-label="상담 처리 작업"
       data-testid="consultation-current-status"
       data-workflow-status={save.currentStatus}
       data-state-version={save.stateVersion}
     >
-      <div className="v6-action-panel__head">
-        <small>현재 할 일</small>
-        <h3>상담 기록 및 완료</h3>
-        <p>현재 상태 · {currentStatusLabel}</p>
-      </div>
       {showSummaryForm && (
         <form
           data-e2e-sensitive="true"
@@ -182,16 +169,18 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
                 </span>
               )}
             </label>
-            <label className="v6-form-field">
+            <label className="v6-summary-confirmation">
+              <input
+                type="checkbox"
+                aria-label="상담 요약 검토·확정"
+                checked={form.values.summaryConfirmed}
+                onChange={(event) =>
+                  form.updateField("summaryConfirmed", event.target.checked)
+                }
+              />
               <span>
-                <input
-                  type="checkbox"
-                  checked={form.values.summaryConfirmed}
-                  onChange={(event) =>
-                    form.updateField("summaryConfirmed", event.target.checked)
-                  }
-                />
-                상담 요약 검토·확정
+                <strong>상담 요약 확인 완료</strong>
+                <small>위 상담 요약을 검토했다면 체크해 주세요.</small>
               </span>
               {form.fieldErrors.summaryConfirmed && (
                 <span className="v6-field-error">

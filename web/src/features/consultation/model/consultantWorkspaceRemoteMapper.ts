@@ -182,6 +182,7 @@ const MANAGEMENT_TYPE_LABELS: Readonly<Record<string, string>> = {
   VISIT_CARE: "방문 관리",
   SELF: "자가 관리",
   SELF_CARE: "자가 관리",
+  SELF_MANAGED: "자가 관리",
 };
 
 const SUBSCRIPTION_STATUS_LABELS: Readonly<Record<string, string>> = {

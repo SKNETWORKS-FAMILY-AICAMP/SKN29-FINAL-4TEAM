@@ -2279,6 +2279,13 @@ html body
 html body
   #root
   .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__workspace.is-single-column {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
   :is(
     .remote-inquiry-detail__overview,
     .remote-inquiry-detail__section,
@@ -2352,6 +2359,15 @@ html body
   border-color: #e4bf82;
   background: #fff7e7;
   color: #80530d;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__badge.is-risk-general {
+  border-color: #c8c8c8;
+  background: #f1f1f1;
+  color: #4e4e4e;
 }
 
 html body
@@ -2772,6 +2788,18 @@ html body
 html body
   #root
   .simple-consultant-app.consultant-queue-app
+  .v6-action-panel.is-start-only {
+  position: static !important;
+  max-height: none;
+  padding: 0 !important;
+  overflow: visible;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
   .v6-action-panel__head {
   padding-bottom: 12px;
   border-bottom: 1px solid var(--consultant-refresh-navy) !important;
@@ -2808,7 +2836,7 @@ html body
   form {
   display: grid;
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 0;
 }
 
 html body
@@ -2902,6 +2930,61 @@ html body
   :is(select, input:not([type="checkbox"]):not([type="radio"])) {
   min-height: 38px;
   padding: 0 10px;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-summary-confirmation {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid #c8c8c8;
+  border-radius: 7px;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-summary-confirmation
+  > input[type="checkbox"] {
+  width: 16px !important;
+  height: 16px !important;
+  margin: 2px 0 0 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-summary-confirmation
+  > span {
+  display: grid;
+  gap: 3px;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-summary-confirmation
+  strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-summary-confirmation
+  small {
+  color: #666;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.45;
 }
 
 html body
@@ -5304,4 +5387,152 @@ html body
   .consultant-queue-panel--with-unassigned
   > .unassigned-consultation-queue {
   border-radius: var(--consultant-refresh-surface-radius) !important;
+}
+
+/* Keep the full consultant menu visible as a compact 3 + 4 grid on narrow screens. */
+
+@media (max-width: 760px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tabs {
+    display: grid !important;
+    width: 100% !important;
+    height: 116px !important;
+    min-height: 116px !important;
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 52px) !important;
+    gap: 4px !important;
+    padding: 4px !important;
+    overflow: hidden !important;
+    scrollbar-width: none;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tabs
+    > .consultant-work-tab:nth-child(-n + 3) {
+    grid-row: 1 !important;
+    grid-column: span 4 !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tabs
+    > .consultant-work-tab:nth-child(n + 4) {
+    grid-row: 2 !important;
+    grid-column: span 3 !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tabs
+    > :is(
+      .consultant-work-tab,
+      .consultant-work-tab:hover,
+      .consultant-work-tab.is-active,
+      .consultant-work-tab.is-active:hover
+    ) {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    max-height: 52px !important;
+    align-items: center;
+    justify-content: center;
+    gap: 4px !important;
+    padding: 0 7px !important;
+    overflow: hidden !important;
+    border-radius: 8px !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab
+    > span {
+    display: flex !important;
+    min-width: 0;
+    flex: 0 1 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab__icon {
+    display: block !important;
+    width: 15px !important;
+    height: 15px !important;
+    margin: 0 !important;
+    flex: 0 0 15px;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab
+    strong {
+    display: block !important;
+    overflow: hidden;
+    max-width: none !important;
+    color: #fff !important;
+    font-size: clamp(10px, 2.5vw, 12px) !important;
+    font-weight: 600 !important;
+    line-height: 1.15;
+    opacity: 1 !important;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: normal;
+    transform: none !important;
+    -webkit-text-fill-color: #fff !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab
+    > b,
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab:is(
+      :hover,
+      .is-active,
+      [aria-selected="true"]
+    )
+    > b {
+    display: grid !important;
+    width: 23px !important;
+    height: 23px !important;
+    min-width: 23px !important;
+    margin: 0 !important;
+    flex: 0 0 23px;
+    place-items: center;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: rgb(255 255 255 / 17%) !important;
+    color: #fff !important;
+    font-size: 10px !important;
+    font-weight: 650 !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+    -webkit-text-fill-color: #fff !important;
+  }
 }
