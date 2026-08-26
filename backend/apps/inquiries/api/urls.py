@@ -14,6 +14,9 @@ from apps.inquiries.api.views import (
     CustomerInquiryQuestionsView,
     CustomerInquirySnapshotView,
     InternalAIInquiryContextView,
+    HumanReviewDecisionView,
+    HumanReviewDetailView,
+    HumanReviewListView,
     RegisterConsultantPhoneInquiryView,
     FinalizeInquiryView,
     ReportUnresolvedView,
@@ -66,6 +69,21 @@ urlpatterns = [
         "inquiries",
         CreateInquiryView.as_view(),
         name="inquiry-create",
+    ),
+    path(
+        "inquiries/human-reviews",
+        HumanReviewListView.as_view(),
+        name="human-review-list",
+    ),
+    path(
+        "inquiries/human-reviews/<uuid:review_id>",
+        HumanReviewDetailView.as_view(),
+        name="human-review-detail",
+    ),
+    path(
+        "inquiries/human-reviews/<uuid:review_id>/decision",
+        HumanReviewDecisionView.as_view(),
+        name="human-review-decision",
     ),
     path(
         "inquiries/unassigned-consultations",

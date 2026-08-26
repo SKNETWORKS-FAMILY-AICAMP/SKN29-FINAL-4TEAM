@@ -13,7 +13,7 @@ NEW_TARGET = [
     ("inquiries", "0011_split_followup_question_metadata_and_answers")
 ]
 LATEST_TARGET = [
-    ("inquiries", "0014_allow_approved_partial_stop_danger")
+    ("inquiries", "0015_humanreview")
 ]
 
 

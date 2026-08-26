@@ -227,7 +227,7 @@ def test_guidance_item_empty_migration_rolls_back_and_reapplies(request):
     target_0008 = [("inquiries", "0008_guidance")]
     target_0009 = [("inquiries", "0009_guidanceitem")]
     latest_target = [
-        ("inquiries", "0014_allow_approved_partial_stop_danger")
+        ("inquiries", "0015_humanreview")
     ]
 
     request.addfinalizer(

@@ -1,138 +1,149 @@
-import pytest
+from pathlib import Path
 
-from pydantic import BaseModel
+ROOT = Path.cwd()
+VERIFIER = ROOT / "ai/app/orchestration/harness/verifier.py"
+TESTS = ROOT / "ai/tests/unit/harness/test_harness_runner.py"
 
-from ai.app.orchestration.harness import (
-    HarnessDecision,
-    HarnessErrorCode,
-    HarnessRetryState,
-    HarnessRunner,
-    ProductContext,
-    ProductFamily,
-)
-from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk
-from ai.app.safety.rule_loader import SafetyRuleLoader
-from ai.app.schemas import RiskLevel, SafetyAssessment, SafetyPriority, UsageGuidance, UsageGuidanceStatus
+for path in (VERIFIER, TESTS):
+    if not path.exists():
+        raise SystemExit(f"[ERROR] repo root에서 실행하세요. 파일 없음: {path}")
 
+verifier = VERIFIER.read_text(encoding="utf-8")
+tests = TESTS.read_text(encoding="utf-8")
 
-class OutputSchema(BaseModel):
-    message: str
+if "SafetyRuleAlignmentValidator().validate(" in verifier:
+    raise SystemExit("[INFO] Harness alignment fix가 이미 적용되어 있습니다.")
 
+old_imports = '''from ...retrieval.models.retrieved_chunk import RetrievedChunk
+from ...safety.rule_loader import SafetyRuleLoader
+from ...schemas import RiskLevel, SafetyAssessment, UsageGuidance, UsageGuidanceStatus
+'''
+new_imports = '''from ...retrieval.models.retrieved_chunk import RetrievedChunk
+from ...schemas import RiskLevel, SafetyAssessment, UsageGuidance
+from ...validation.safety import SafetyRuleAlignmentValidator
+'''
+if old_imports not in verifier:
+    raise SystemExit("[ERROR] verifier import block이 최신 main 예상 형태와 다릅니다.")
+verifier = verifier.replace(old_imports, new_imports, 1)
 
-def _chunk(model_code: str = "WPU-IAC425") -> RetrievedChunk:
-    return RetrievedChunk(
-        chunk_id="e1",
-        document_title="official manual",
-        manual_model=model_code,
-        model_code=model_code,
-        content="official evidence",
-        similarity_score=0.9,
+old_safety_block = '''    @staticmethod
+    def _safety_is_consistent(
+        safety_assessment: SafetyAssessment | None,
+        guidance: UsageGuidance | None,
+    ) -> bool:
+        if safety_assessment is None or guidance is None:
+            return True
+        if safety_assessment.risk_level == RiskLevel.DANGER:
+            if guidance.guidance_status == UsageGuidanceStatus.NORMAL:
+                return False
+            if guidance.guidance_status in {
+                UsageGuidanceStatus.TOTAL_STOP,
+                UsageGuidanceStatus.PENDING_CONSULTATION,
+            }:
+                return True
+            if guidance.guidance_status == UsageGuidanceStatus.PARTIAL_STOP:
+                return HarnessVerifier._danger_partial_stop_is_approved(
+                    safety_assessment
+                )
+            return False
+        return True
+
+    @staticmethod
+    def _danger_partial_stop_is_approved(
+        safety_assessment: SafetyAssessment,
+    ) -> bool:
+        if not safety_assessment.requires_consultation:
+            return False
+
+        matched_rule_ids = set(safety_assessment.matched_safety_rule_ids)
+        if not matched_rule_ids:
+            return False
+
+        rules = SafetyRuleLoader().get_safety_rules().get("rules", {})
+        # UsageGuidanceClassifier와 동일하게 safety_rules.yaml의 선언 순서에서
+        # 첫 번째로 매칭되는 승인 Rule을 기준으로 Safety 정합성을 판정한다.
+        for rule_def in rules.values():
+            if rule_def.get("rule_id") not in matched_rule_ids:
+                continue
+            return (
+                rule_def.get("risk_level") == RiskLevel.DANGER.value
+                and rule_def.get("usage_guidance_status")
+                == UsageGuidanceStatus.PARTIAL_STOP.value
+                and rule_def.get("requires_consultation") is True
+            )
+        return False
+
+'''
+new_safety_block = '''    @staticmethod
+    def _safety_is_consistent(
+        safety_assessment: SafetyAssessment | None,
+        guidance: UsageGuidance | None,
+    ) -> bool:
+        if safety_assessment is None or guidance is None:
+            return True
+        try:
+            SafetyRuleAlignmentValidator().validate(
+                safety_assessment,
+                guidance,
+            )
+        except ValueError:
+            return False
+        return True
+
+'''
+if old_safety_block not in verifier:
+    raise SystemExit("[ERROR] verifier safety block이 최신 main 예상 형태와 다릅니다.")
+verifier = verifier.replace(old_safety_block, new_safety_block, 1)
+
+if "import pytest\n" not in tests:
+    tests = tests.replace(
+        "from pydantic import BaseModel\n",
+        "import pytest\n\nfrom pydantic import BaseModel\n",
+        1,
     )
 
-
-def _product() -> ProductContext:
-    return ProductContext(
-        model_code="WPU-IAC425",
-        product_family=ProductFamily.ICE_WATER_PURIFIER,
-        supported_functions={"cold_water", "hot_water", "ice", "ice_water"},
+if "from ai.app.safety.rule_loader import SafetyRuleLoader\n" not in tests:
+    tests = tests.replace(
+        "from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk\n",
+        "from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk\n"
+        "from ai.app.safety.rule_loader import SafetyRuleLoader\n",
+        1,
     )
 
-
-def _safety(danger: bool = False) -> SafetyAssessment:
-    return SafetyAssessment(
-        risk_level=RiskLevel.DANGER if danger else RiskLevel.GENERAL,
-        priority=SafetyPriority.PRIORITY_CONSULTATION if danger else SafetyPriority.GENERAL_GUIDANCE,
-        requires_consultation=danger,
-        matched_safety_rule_ids=["SAFETY-WATER-001"] if danger else [],
-        detected_risks=["누수"] if danger else [],
+old_exact_test = '''def test_approved_danger_partial_stop_rule_passes():
+    safety = SafetyAssessment(
+        risk_level=RiskLevel.DANGER,
+        priority=SafetyPriority.PRIORITY_CONSULTATION,
+        requires_consultation=True,
+        matched_safety_rule_ids=["SAFETY-HOT-WATER-HEATER-001"],
+        detected_risks=["온수 히터·순간온수 모듈 고장 및 음용 제한"],
         safety_reason="test",
     )
-
-
-def _guidance(status: UsageGuidanceStatus = UsageGuidanceStatus.NORMAL) -> UsageGuidance:
-    return UsageGuidance(guidance_status=status, message="안내", next_actions=["확인"])
-
-
-def test_pass_when_all_gates_match():
-    result = HarnessRunner().run(
-        product=_product(),
-        evidence_chunks=[_chunk()],
-        safety_assessment=_safety(),
-        guidance=_guidance(),
-        output_payload={"message": "ok"},
-        output_schema=OutputSchema,
+    guidance = UsageGuidance(
+        guidance_status=UsageGuidanceStatus.PARTIAL_STOP,
+        message="위험 신호가 감지되어 온수 기능 사용 제한이 필요합니다.",
+        restricted_functions=["온수 출수 및 음용 중지"],
+        next_actions=["전문 상담 및 기사 점검을 요청하세요."],
     )
-    assert result.decision == HarnessDecision.PASS
-    assert result.verification.passed is True
 
-
-def test_no_evidence_escalates_without_retrieval_retry():
     result = HarnessRunner().run(
         product=_product(),
         evidence_chunks=[],
-        safety_assessment=_safety(),
-        guidance=_guidance(UsageGuidanceStatus.PENDING_CONSULTATION),
+        safety_assessment=safety,
+        guidance=guidance,
     )
 
-    assert result.decision == HarnessDecision.ESCALATE
-    assert result.should_retry is False
-    assert result.should_escalate is True
-    assert result.retry_state.retrieval_retries == 0
-    no_evidence = [
-        issue
+    assert result.decision == HarnessDecision.PASS
+    assert result.verification.passed is True
+    assert result.verification.safety_valid is True
+    assert not any(
+        issue.code.value == "SAFETY_CONFLICT"
         for issue in result.verification.issues
-        if issue.code.value == "NO_EVIDENCE"
-    ]
-    assert len(no_evidence) == 1
-    assert no_evidence[0].retryable is False
-
-
-def test_wrong_model_requests_one_retrieval_retry_then_no_evidence_escalation():
-    first = HarnessRunner().run(
-        product=_product(),
-        evidence_chunks=[_chunk("WPU-IAC606")],
-        safety_assessment=_safety(),
-        guidance=_guidance(),
     )
-    assert first.decision == HarnessDecision.RETRY_RETRIEVAL
-    assert first.retry_state.retrieval_retries == 1
-
-    second = HarnessRunner().run(
-        product=_product(),
-        evidence_chunks=[_chunk("WPU-IAC606")],
-        safety_assessment=_safety(),
-        guidance=_guidance(),
-        retry_state=first.retry_state,
-    )
-    assert second.decision == HarnessDecision.ESCALATE
-    assert second.error_code == HarnessErrorCode.NO_EVIDENCE
 
 
-def test_invalid_schema_requests_generation_retry():
-    result = HarnessRunner().run(
-        product=_product(),
-        evidence_chunks=[_chunk()],
-        safety_assessment=_safety(),
-        guidance=_guidance(),
-        output_payload={"wrong": "shape"},
-        output_schema=OutputSchema,
-    )
-    assert result.decision == HarnessDecision.RETRY_GENERATION
-    assert result.retry_state.generation_retries == 1
-
-
-def test_danger_with_normal_guidance_escalates():
-    result = HarnessRunner().run(
-        product=_product(),
-        evidence_chunks=[_chunk()],
-        safety_assessment=_safety(danger=True),
-        guidance=_guidance(UsageGuidanceStatus.NORMAL),
-    )
-    assert result.decision == HarnessDecision.ESCALATE
-    assert any(issue.code.value == "SAFETY_CONFLICT" for issue in result.verification.issues)
-
-
-def test_approved_danger_partial_stop_rule_passes():
+'''
+new_tests = '''def test_approved_danger_partial_stop_rule_passes():
     safety = SafetyAssessment(
         risk_level=RiskLevel.DANGER,
         priority=SafetyPriority.PRIORITY_CONSULTATION,
@@ -392,81 +403,16 @@ def test_danger_alignment_is_independent_of_yaml_rule_order(monkeypatch):
     assert reordered_result.verification.safety_valid is True
 
 
-def test_timeout_maps_to_ai_processing_timeout():
-    result = HarnessRunner().run(
-        product=_product(),
-        evidence_chunks=[],
-        safety_assessment=None,
-        guidance=None,
-        timed_out=True,
-    )
-    assert result.decision == HarnessDecision.ESCALATE
-    assert result.error_code == HarnessErrorCode.AI_PROCESSING_TIMEOUT
+'''
+if old_exact_test not in tests:
+    raise SystemExit("[ERROR] 기존 heater PARTIAL_STOP 테스트가 최신 main 예상 형태와 다릅니다.")
+tests = tests.replace(old_exact_test, new_tests, 1)
 
+VERIFIER.write_text(verifier, encoding="utf-8")
+TESTS.write_text(tests, encoding="utf-8")
 
-def test_retryable_mcp_evidence_search_failure_retries_once_then_escalates():
-    from ai.app.orchestration.harness import McpToolFailure, McpToolFailureKind, McpToolName
-
-    failure = McpToolFailure(
-        tool_name=McpToolName.SEARCH_OFFICIAL_EVIDENCE,
-        kind=McpToolFailureKind.TIMEOUT,
-        retryable=True,
-    )
-    runner = HarnessRunner()
-    first = runner.run(
-        product=_product(),
-        evidence_chunks=[],
-        safety_assessment=_safety(),
-        guidance=_guidance(),
-        tool_failure=failure,
-    )
-    assert first.decision == HarnessDecision.RETRY_RETRIEVAL
-    assert first.retry_state.retrieval_retries == 1
-    assert any(issue.code.value == "MCP_TOOL_FAILURE" for issue in first.verification.issues)
-
-    second = runner.run(
-        product=_product(),
-        evidence_chunks=[],
-        safety_assessment=_safety(),
-        guidance=_guidance(),
-        retry_state=first.retry_state,
-        tool_failure=failure,
-    )
-    assert second.decision == HarnessDecision.ESCALATE
-    assert second.error_code == HarnessErrorCode.MCP_TOOL_FAILURE
-
-
-def test_non_retrieval_mcp_tool_failure_escalates_without_retry():
-    from ai.app.orchestration.harness import McpToolFailure, McpToolFailureKind, McpToolName
-
-    result = HarnessRunner().run(
-        product=_product(),
-        evidence_chunks=[],
-        safety_assessment=_safety(),
-        guidance=_guidance(),
-        tool_failure=McpToolFailure(
-            tool_name=McpToolName.LOOKUP_PRODUCT_CONTEXT,
-            kind=McpToolFailureKind.UNAVAILABLE,
-            retryable=True,
-        ),
-    )
-
-    assert result.decision == HarnessDecision.ESCALATE
-    assert result.should_retry is False
-    assert result.retry_state.retrieval_retries == 0
-
-
-def test_mcp_tool_failure_contract_rejects_raw_internal_error_fields():
-    import pytest
-    from pydantic import ValidationError
-    from ai.app.orchestration.harness import McpToolFailure, McpToolFailureKind, McpToolName
-
-    with pytest.raises(ValidationError):
-        McpToolFailure.model_validate(
-            {
-                "tool_name": McpToolName.SEARCH_OFFICIAL_EVIDENCE,
-                "kind": McpToolFailureKind.EXECUTION_ERROR,
-                "retryable": False,
-                "raw_error": "postgres password=super-secret stacktrace",
-            }
-        )
+print("[OK] modified:")
+print(" - ai/app/orchestration/harness/verifier.py")
+print(" - ai/tests/unit/harness/test_harness_runner.py")
+print()
+print("다음으로 git diff --check 및 Harness 표적 테스트를 실행하세요.")

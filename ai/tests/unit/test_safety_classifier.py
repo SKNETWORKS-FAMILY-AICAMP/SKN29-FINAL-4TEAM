@@ -320,6 +320,27 @@ def test_explicitly_negated_fire_risk_keeps_hot_water_heater_partial_stop(
     assert guidance.guidance_status == UsageGuidanceStatus.PARTIAL_STOP
 
 
+@pytest.mark.parametrize(
+    "raw_text",
+    [
+        "온수 히터 고장은 아닙니다. 냉수가 약하게 나옵니다.",
+        "온수 히터 이상은 없습니다. 출수량만 줄었습니다.",
+        "온수 히터는 정상입니다. 필터를 확인하고 싶습니다.",
+        "순간온수 모듈은 정상입니다. 소음만 확인해 주세요.",
+    ],
+)
+def test_explicitly_negated_hot_water_heater_is_not_danger(
+    risk_classifier,
+    raw_text,
+):
+    assessment = risk_classifier.classify(raw_text)
+
+    assert "SAFETY-HOT-WATER-HEATER-001" not in (
+        assessment.matched_safety_rule_ids
+    )
+    assert assessment.risk_level != RiskLevel.DANGER
+
+
 def test_prohibited_action_guard_blocks_disassembly():
     with pytest.raises(ValueError, match="직접 분해"):
         ProhibitedActionGuard().validate(["정수기 커버를 분해하세요."])

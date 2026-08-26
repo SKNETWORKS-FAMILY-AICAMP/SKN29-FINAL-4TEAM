@@ -63,7 +63,7 @@ EXPECTED_GRAPH_LEAVES: tuple[MigrationKey, ...] = (
     ("consultations", "0003_consultationhandoff"),
     ("contenttypes", "0002_remove_content_type_name"),
     ("evidence", "0014_decouple_ai_view_product_eligibility"),
-    ("inquiries", "0014_allow_approved_partial_stop_danger"),
+    ("inquiries", "0015_humanreview"),
     ("operations", "0003_product_expansion_import_profile"),
     ("products", "0001_initial"),
     ("questionnaires", "0003_questionnaire_answers_allow_blank"),
@@ -229,6 +229,7 @@ def build_plan(
         "expected_final": {
             "accounts.0009": "APPLIED",
             "evidence.0014": "APPLIED",
+            "inquiries.0015": "APPLIED",
             "operations.0003": "APPLIED",
             "visits.0004": "APPLIED",
             "visits.0005": "NOT_APPLIED_P1_HOLD",
@@ -270,6 +271,11 @@ def verify_final(executor: Any) -> dict[str, Any]:
                 "0014_decouple_ai_view_product_eligibility",
             )
             in applied
+            else "MISSING"
+        ),
+        "inquiries.0015": (
+            "APPLIED"
+            if ("inquiries", "0015_humanreview") in applied
             else "MISSING"
         ),
         "operations.0003": (

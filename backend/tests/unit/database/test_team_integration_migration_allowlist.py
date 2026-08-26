@@ -282,11 +282,11 @@ def test_current_graph_matches_explicit_allowlist_and_excludes_visits_0005(
     ) in allowlist_module.APPROVED_TARGETS
     assert (
         "inquiries",
-        "0014_allow_approved_partial_stop_danger",
+        "0015_humanreview",
     ) in closure
     assert (
         "inquiries",
-        "0014_allow_approved_partial_stop_danger",
+        "0015_humanreview",
     ) in allowlist_module.APPROVED_TARGETS
 
 
@@ -310,6 +310,7 @@ def test_empty_database_plan_is_forward_only_and_has_explicit_target_order(
     assert plan["expected_final"] == {
         "accounts.0009": "APPLIED",
         "evidence.0014": "APPLIED",
+        "inquiries.0015": "APPLIED",
         "operations.0003": "APPLIED",
         "visits.0004": "APPLIED",
         "visits.0005": "NOT_APPLIED_P1_HOLD",
@@ -439,6 +440,7 @@ def test_apply_runs_explicit_targets_and_verifies_exact_final_state(
     ]
     assert result["verification"]["accounts.0009"] == "APPLIED"
     assert result["verification"]["evidence.0014"] == "APPLIED"
+    assert result["verification"]["inquiries.0015"] == "APPLIED"
     assert result["verification"]["operations.0003"] == "APPLIED"
     assert result["verification"]["visits.0004"] == "APPLIED"
     assert (
