@@ -1,6 +1,10 @@
 """Danger 출력과 승인 Safety Rule 본문 정합성을 검증한다."""
 
 from ...safety.rule_loader import SafetyRuleLoader
+from ...safety.rule_precedence import (
+    merge_rule_list_field,
+    select_effective_safety_rules,
+)
 from ...schemas import (
     RiskLevel,
     SafetyAssessment,
@@ -38,27 +42,31 @@ class SafetyRuleAlignmentValidator:
         unknown_rule_ids = matched_rule_ids.difference(configured_rule_ids)
         if unknown_rule_ids:
             raise ValueError("danger 결과에 승인되지 않은 Safety Rule ID가 있습니다.")
-        matched_rule = next(
-            (
-                rule
-                for rule in configured_rules
-                if rule.get("rule_id") in matched_rule_ids
-            ),
-            None,
+        matched_rules = select_effective_safety_rules(
+            self._loader.get_safety_rules()["rules"],
+            safety.matched_safety_rule_ids,
+            risk_level=RiskLevel.DANGER,
         )
-        if matched_rule is None:
+        if not matched_rules:
             raise ValueError("danger 결과의 Safety Rule ID가 승인 설정에 없습니다.")
-        if matched_rule.get("risk_level") != RiskLevel.DANGER.value:
-            raise ValueError("danger 결과가 danger Safety Rule과 연결되지 않았습니다.")
-        if matched_rule.get("requires_consultation") is not True:
+        if any(
+            rule.get("requires_consultation") is not True
+            for rule in matched_rules
+        ):
             raise ValueError("danger Safety Rule은 상담 연결을 요구해야 합니다.")
 
-        expected_priority = SafetyPriority(matched_rule["priority"])
+        expected_priority = SafetyPriority(matched_rules[0]["priority"])
         expected_status = UsageGuidanceStatus(
-            matched_rule["usage_guidance_status"]
+            matched_rules[0]["usage_guidance_status"]
         )
-        expected_restrictions = list(matched_rule.get("restricted_functions", []))
-        expected_actions = list(matched_rule.get("next_actions", []))
+        expected_restrictions = merge_rule_list_field(
+            matched_rules,
+            "restricted_functions",
+        )
+        expected_actions = merge_rule_list_field(
+            matched_rules,
+            "next_actions",
+        )
         if safety.priority != expected_priority:
             raise ValueError("danger 우선순위가 승인 Safety Rule과 다릅니다.")
         if guidance.guidance_status != expected_status:

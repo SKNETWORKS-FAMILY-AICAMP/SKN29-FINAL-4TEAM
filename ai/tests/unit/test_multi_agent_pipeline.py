@@ -193,6 +193,79 @@ def test_multi_agent_danger_routes_without_retrieval_or_llm():
     ]
 
 
+@pytest.mark.parametrize(
+    (
+        "case_id",
+        "raw_symptom",
+        "expected_status",
+        "expected_rule_ids",
+    ),
+    [
+        (
+            "HOT-WATER-HEATER-ONLY",
+            "온수 히터 고장으로 온수는 음용하지 말아야 합니다.",
+            UsageGuidanceStatus.PARTIAL_STOP,
+            {"SAFETY-HOT-WATER-HEATER-001"},
+        ),
+        (
+            "HOT-WATER-HEATER-WITH-LEAK",
+            "온수 히터 고장과 누수가 함께 발생했습니다.",
+            UsageGuidanceStatus.TOTAL_STOP,
+            {"SAFETY-HOT-WATER-HEATER-001", "SAFETY-LEAK-001"},
+        ),
+        (
+            "HOT-WATER-HEATER-WITH-ELECTRICAL-RISK",
+            "온수 히터 고장 중에 스파크가 발생했습니다.",
+            UsageGuidanceStatus.TOTAL_STOP,
+            {
+                "SAFETY-HOT-WATER-HEATER-001",
+                "SAFETY-ELECTRICAL-001",
+            },
+        ),
+        (
+            "HOT-WATER-HEATER-WITH-FIRE-RISK",
+            "온수 히터 고장과 화재 위험이 함께 있습니다.",
+            UsageGuidanceStatus.TOTAL_STOP,
+            {
+                "SAFETY-HOT-WATER-HEATER-001",
+                "SAFETY-ELECTRICAL-001",
+            },
+        ),
+    ],
+)
+def test_multi_agent_applies_total_stop_precedence_for_composite_danger(
+    case_id,
+    raw_symptom,
+    expected_status,
+    expected_rule_ids,
+):
+    llm = FakeGuidanceLLMClient()
+    result = _run_multi_agent(
+        search_service=UnexpectedSearchService(),
+        raw_symptom=raw_symptom,
+        llm_client=llm,
+    )
+    response = result.to_analysis_result()
+
+    assert case_id.startswith("HOT-WATER-HEATER-")
+    assert response.safety_assessment.risk_level == RiskLevel.DANGER
+    assert response.safety_assessment.requires_consultation is True
+    assert set(response.safety_assessment.matched_safety_rule_ids) == (
+        expected_rule_ids
+    )
+    assert response.usage_guidance.guidance_status == expected_status
+    assert llm.calls == 0
+
+    if expected_status == UsageGuidanceStatus.PARTIAL_STOP:
+        assert response.usage_guidance.restricted_functions == [
+            "온수 출수 및 음용 중지"
+        ]
+        assert response.usage_guidance.next_actions == [
+            "온수 기능 사용과 온수 음용을 중단하세요.",
+            "제품을 직접 분해하지 말고 전문 상담 및 기사 점검을 요청하세요.",
+        ]
+
+
 def test_multi_agent_evidence_path_matches_single_rag_public_contract():
     single = PipelineRouter(
         search_service=EvidenceSearchService(),
