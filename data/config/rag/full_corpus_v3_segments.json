@@ -1,0 +1,182 @@
+{
+  "schema_version": "1.0.0",
+  "status": "FULL_CORPUS_V3_DATA_HANDOFF_PLANNED",
+  "generated_at": "2026-08-26T00:00:00+09:00",
+  "source_commit": "7ea17f55082d7f63ad4497476b33f45b5b6735f6",
+  "inputs": {
+    "baseline_corpus": {
+      "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+      "sha256": "4B0890BC079207C8F9AA9DB1208D371F295BD53537A9B692FA6B7D686333FABC"
+    },
+    "gold_dataset": {
+      "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+      "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A"
+    },
+    "jac_manual_pages": {
+      "path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+      "sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F"
+    },
+    "iac425_manual_pages": {
+      "path": "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
+      "sha256": "97DE9C6AB06DB5C9C1AC90F2C4B3773A9971AC410093B1FB8B62BABD49F87BE2"
+    },
+    "existing_children": {
+      "path": "data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
+      "sha256": "B4BA15C045D7C4EAF1E4CF90DFF83EC9FA2C236F9CFCDAD85467A42F1921EB78"
+    },
+    "existing_groups": {
+      "path": "data/processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl",
+      "sha256": "CCD797DB8C87B9B90EFD88EBE16BE5AC4D80008BC75E0CCE46B3854F70C3143D"
+    },
+    "gold_v2_group_contract": {
+      "path": "ai/evaluation/contracts/gold_v2_evidence_group_contract.json",
+      "sha256": "D1EE28FCCAAC1ABFEB1BD9BB6344D0A750F5990C66FEDFCCE0B771D98EC28AD1"
+    },
+    "source_span_review": {
+      "path": "data/processed/validation/rag_experiments/full_corpus_v3_source_span_human_review.json",
+      "sha256": "6AC6F519707401A49AF584F4481A31BEE5EC29EA9E3B9B2F13E4476B29D2CC50"
+    }
+  },
+  "child_group_remaps": {
+    "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-NORMAL-001",
+    "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-FAULT-001",
+    "CHILD-WPUJAC104DWH-P038-HOT-STEAM-001": "EVD-WPUJAC104DWH-HOT-STEAM-001",
+    "CHILD-WPUJAC104DWH-P038-HOT-INTERRUPTION-001": "EVD-WPUJAC104DWH-HOT-INTERRUPTION-001",
+    "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001": "EVD-WPUJAC104DWH-HOT-LUKEWARM-001",
+    "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001": "EVD-WPUJAC104DWH-HOT-NO-OUTPUT-001",
+    "CHILD-WPUJAC104DWH-P039-HOT-MODULE-CHECK-001": "EVD-WPUJAC104DWH-HOT-MODULE-CHECK-001",
+    "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001": "EVD-WPUJAC104DWH-HOT-CHECK-PROCESS-001"
+  },
+  "new_children": {
+    "CHILD-WPUJAC104DWH-P004-SPRAY-FIRE-PREVENTION-001": {
+      "evidence_group_id": "EVD-WPUJAC104DWH-SPRAY-FIRE-PREVENTION-001",
+      "source_variant_id": "SPRAY-FIRE-PREVENTION-001-P004",
+      "row_label": "살충제·가연성 스프레이 화재 예방",
+      "risk_level": "danger",
+      "safe_actions": ["운전 중에 살충제나 가연성 스프레이를 뿌리지 않습니다."],
+      "requires_consultation": false,
+      "consultation_conditions": []
+    },
+    "CHILD-WPUJAC104DWH-P004-WATER-INGRESS-PREVENTION-001": {
+      "evidence_group_id": "EVD-WPUJAC104DWH-WATER-INGRESS-PREVENTION-001",
+      "source_variant_id": "WATER-INGRESS-PREVENTION-001-P004",
+      "row_label": "제품 내부 물 유입 예방",
+      "risk_level": "danger",
+      "safe_actions": ["제품 내부에 물이 들어가지 않도록 합니다."],
+      "requires_consultation": false,
+      "consultation_conditions": []
+    },
+    "CHILD-WPUJAC104DWH-P005-BURNING-ODOR-RESPONSE-001": {
+      "evidence_group_id": "EVD-WPUJAC104DWH-BURNING-ODOR-RESPONSE-001",
+      "source_variant_id": "BURNING-ODOR-RESPONSE-001-P005",
+      "row_label": "타는 냄새·연기 발생 후 중단 조치",
+      "risk_level": "danger",
+      "safe_actions": [
+        "즉시 원수 밸브를 잠급니다.",
+        "전원 플러그를 뺍니다.",
+        "고객상담센터에 연락합니다."
+      ],
+      "requires_consultation": true,
+      "consultation_conditions": ["타는 냄새·연기 등 화재 위험 징후가 발생하면 즉시 상담으로 전환합니다."]
+    }
+  },
+  "replacements": [
+    {
+      "exact_sales_code": "WPUJAC104DWH",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "manual_input": "jac_manual_pages",
+      "pages": {
+        "4": [
+          {"classification": "PRESERVATION", "line_start": 1, "line_end": 23, "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"},
+          {"classification": "CHILD", "line_start": 24, "line_end": 25, "record_id": "CHILD-WPUJAC104DWH-P004-SPRAY-FIRE-PREVENTION-001"},
+          {"classification": "CHILD", "line_start": 26, "line_end": 27, "record_id": "CHILD-WPUJAC104DWH-P004-WATER-INGRESS-PREVENTION-001"},
+          {"classification": "PRESERVATION", "line_start": 28, "line_end": 29, "record_id": "PRESERVE-WPUJAC104DWH-P004-L028-L029"},
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 30, "line_end": 30, "record_id": "PAGE_NUMBER"}
+        ],
+        "5": [
+          {"classification": "PRESERVATION", "line_start": 1, "line_end": 4, "record_id": "PRESERVE-WPUJAC104DWH-P005-L001-L004"},
+          {"classification": "CHILD", "line_start": 5, "line_end": 7, "record_id": "CHILD-WPUJAC104DWH-P005-LEAK-001"},
+          {"classification": "PRESERVATION", "line_start": 8, "line_end": 11, "record_id": "PRESERVE-WPUJAC104DWH-P005-L008-L011"},
+          {"classification": "CHILD", "line_start": 12, "line_end": 14, "record_id": "CHILD-WPUJAC104DWH-P005-BURNING-ODOR-RESPONSE-001"},
+          {"classification": "PRESERVATION", "line_start": 15, "line_end": 21, "record_id": "PRESERVE-WPUJAC104DWH-P005-L015-L021"},
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 22, "line_end": 22, "record_id": "PAGE_NUMBER"}
+        ],
+        "7": [
+          {"classification": "PRESERVATION", "line_start": 1, "line_end": 11, "record_id": "PRESERVE-WPUJAC104DWH-P007-L001-L011"},
+          {"classification": "CHILD", "line_start": 12, "line_end": 14, "record_id": "CHILD-WPUJAC104DWH-P007-LEAK-001"},
+          {"classification": "PRESERVATION", "line_start": 15, "line_end": 31, "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"},
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 32, "line_end": 32, "record_id": "PAGE_NUMBER"}
+        ],
+        "37": [
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 1, "line_end": 4, "record_id": "SECTION_AND_TABLE_HEADER"},
+          {"classification": "CHILD", "line_start": 5, "line_end": 15, "record_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"},
+          {"classification": "CHILD", "line_start": 16, "line_end": 20, "record_id": "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001"},
+          {"classification": "CHILD", "line_start": 21, "line_end": 29, "record_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001"},
+          {"classification": "CHILD", "line_start": 30, "line_end": 40, "record_id": "CHILD-WPUJAC104DWH-P037-NOISE-001"},
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 41, "line_end": 41, "record_id": "PAGE_NUMBER"}
+        ],
+        "38": [
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 1, "line_end": 1, "record_id": "TABLE_HEADER"},
+          {"classification": "CHILD", "line_start": 2, "line_end": 4, "record_id": "CHILD-WPUJAC104DWH-P038-LEAK-001"},
+          {"classification": "CHILD", "line_start": 5, "line_end": 11, "record_id": "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001"},
+          {"classification": "PRESERVATION", "line_start": 12, "line_end": 18, "record_id": "PRESERVE-WPUJAC104DWH-P038-L012-L018"},
+          {"classification": "CHILD", "line_start": 19, "line_end": 28, "record_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"},
+          {"classification": "CHILD", "line_start": 29, "line_end": 35, "record_id": "CHILD-WPUJAC104DWH-P038-HOT-STEAM-001"},
+          {"classification": "CHILD", "line_start": 36, "line_end": 38, "record_id": "CHILD-WPUJAC104DWH-P038-HOT-INTERRUPTION-001"},
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 39, "line_end": 39, "record_id": "PAGE_NUMBER"}
+        ],
+        "39": [
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 1, "line_end": 1, "record_id": "TABLE_HEADER"},
+          {"classification": "CHILD", "line_start": 2, "line_end": 11, "record_id": "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001"},
+          {"classification": "CHILD", "line_start": 12, "line_end": 18, "record_id": "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"},
+          {"classification": "CHILD", "line_start": 19, "line_end": 25, "record_id": "CHILD-WPUJAC104DWH-P039-HOT-MODULE-CHECK-001"},
+          {"classification": "CHILD", "line_start": 26, "line_end": 30, "record_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001"},
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 31, "line_end": 31, "record_id": "PAGE_NUMBER"}
+        ]
+      }
+    },
+    {
+      "exact_sales_code": "WPUIAC425SNW",
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "manual_input": "iac425_manual_pages",
+      "pages": {
+        "5": [
+          {"classification": "PRESERVATION", "line_start": 1, "line_end": 1, "record_id": "PRESERVE-WPUIAC425SNW-P005-L001-L001"},
+          {"classification": "CHILD", "line_start": 2, "line_end": 4, "record_id": "CHILD-WPUIAC425SNW-P005-LEAK-001"},
+          {"classification": "PRESERVATION", "line_start": 5, "line_end": 31, "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"}
+        ],
+        "43": [
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 1, "line_end": 3, "record_id": "SECTION_AND_TABLE_HEADER"},
+          {"classification": "CHILD", "line_start": 4, "line_end": 7, "record_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001"},
+          {"classification": "CHILD", "line_start": 8, "line_end": 17, "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001"},
+          {"classification": "CHILD", "line_start": 18, "line_end": 23, "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001"},
+          {"classification": "CHILD", "line_start": 24, "line_end": 37, "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"},
+          {"classification": "CHILD", "line_start": 38, "line_end": 43, "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-VENTILATION-001"},
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 44, "line_end": 44, "record_id": "SECTION_FOOTER"}
+        ],
+        "44": [
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 1, "line_end": 1, "record_id": "TABLE_HEADER"},
+          {"classification": "CHILD", "line_start": 2, "line_end": 9, "record_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001"},
+          {"classification": "CHILD", "line_start": 10, "line_end": 14, "record_id": "CHILD-WPUIAC425SNW-P044-DEFROST-NOISE-001"},
+          {"classification": "CHILD", "line_start": 15, "line_end": 28, "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"},
+          {"classification": "CHILD", "line_start": 29, "line_end": 41, "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"}
+        ],
+        "45": [
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 1, "line_end": 1, "record_id": "TABLE_HEADER"},
+          {"classification": "CHILD", "line_start": 2, "line_end": 17, "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"},
+          {"classification": "CHILD", "line_start": 18, "line_end": 22, "record_id": "CHILD-WPUIAC425SNW-P045-LEAK-001"},
+          {"classification": "CHILD", "line_start": 23, "line_end": 34, "record_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001"},
+          {"classification": "CHILD", "line_start": 35, "line_end": 40, "record_id": "CHILD-WPUIAC425SNW-P045-PARTICLES-001"}
+        ],
+        "46": [
+          {"classification": "NON_SEARCHABLE_STRUCTURE", "line_start": 1, "line_end": 1, "record_id": "TABLE_HEADER"},
+          {"classification": "CHILD", "line_start": 2, "line_end": 5, "record_id": "CHILD-WPUIAC425SNW-P046-ICE-QUALITY-001"},
+          {"classification": "CHILD", "line_start": 6, "line_end": 12, "record_id": "CHILD-WPUIAC425SNW-P046-HOT-STEAM-001"},
+          {"classification": "CHILD", "line_start": 13, "line_end": 19, "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001"},
+          {"classification": "CHILD", "line_start": 20, "line_end": 28, "record_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001"},
+          {"classification": "CHILD", "line_start": 29, "line_end": 39, "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001"}
+        ]
+      }
+    }
+  ]
+}

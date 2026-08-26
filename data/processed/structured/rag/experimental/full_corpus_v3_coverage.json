@@ -1,0 +1,2435 @@
+{
+  "generated_at": "2026-08-26T00:00:00+09:00",
+  "pages": [
+    {
+      "assignments": [
+        {
+          "classification": "PRESERVATION",
+          "line_number": 1,
+          "line_sha256": "9839383EA31329FF9858241147CE4D6338C955741BFC5958925840FBDC6CBF15",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 2,
+          "line_sha256": "28604B507FB664C942379D69CBF10256BF4ABDC9338EEE95D2CCC10E87561B85",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 3,
+          "line_sha256": "A6755D8428F9130A935299154965AD2D0305D799B32B90D893FC347CDB5E9D93",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 4,
+          "line_sha256": "2AD16FFAC8A99E6A4DE574E4818A6DE08D9704C672BFAE73EC286591FB3F000E",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 5,
+          "line_sha256": "B4637CBEB620167917FAAD055693A8F370C3B038955DCFD9AFD66DD40D212576",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 6,
+          "line_sha256": "057DFB91FB1D717C5CFAF529AF1FA152FD90276A40F3FB915BF69CE624596610",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 7,
+          "line_sha256": "A22B09B7737BB27038CDCDB6DC937F93F11B1B179CCCF93934FBE2C88E4D0C3D",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 8,
+          "line_sha256": "B6BE5BD0B70C1C3367A1E0451BC7D084C6D007B823D6B91696565743A442F429",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 9,
+          "line_sha256": "A320EB9A7275712979D2EE6EC8B3BA8581F298B414E0FF5D407E9F60FDEE69A9",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 10,
+          "line_sha256": "2B46C85079DB05F1270C6A57310A16DFF098BB26671BD0166AAFA0F6A4165F1B",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 11,
+          "line_sha256": "429815332214E2B0E7BBD5A44F20E52DD795FE47B4186F126F5C646E5745B134",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 12,
+          "line_sha256": "7E0CAF28AC2E32FBDC2DF17D6FB33B7C23C17D98AB8842331033A706AA0A97AE",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 13,
+          "line_sha256": "647CB4AB03C44F2C1F8AB86A578517523889C26969D9FDA75E1EB6FD730AB786",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 14,
+          "line_sha256": "5D35FB9FF1746E0C5DFA5022B10E890FCC9EE7F2E20DE4DD4D8CC3E7F6062B15",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 15,
+          "line_sha256": "D17C0EB5E122B50A3723146EE9F884BBEB7319705BB4D92C5B24B706A6B0DCC6",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 16,
+          "line_sha256": "8F85EE7A1C6A6D54A9FCFE87F557381EEF7C1210EC87258CCDA50251BFA105E9",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 17,
+          "line_sha256": "15D1FB3DDA641B5A21D2319F82626A12F793727095E360EDBB360D6C9DC03D3C",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 18,
+          "line_sha256": "69DCB403F67EA4AD3C09E1F24542DDE6019479F7A0A18B46DDF3FB188EDAB525",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 19,
+          "line_sha256": "ACDC211F38A4EFF9CC83792AAEE50885130C8992B6A34E1470B126381AFA13E8",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 20,
+          "line_sha256": "4CD566BE30C066BC1D0B07607BA63096CC60327D6CEBBDE015559EA0E9DC9B31",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 21,
+          "line_sha256": "8AABAEF6CDA06A9488ABD5321484BE97D340CC02C2213034D2CCB6D77CE4473F",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 22,
+          "line_sha256": "4B4E6F5E48758E2374F6E47B1AF3CCBD88C813D41B7B84FE27B5718DC767ADC7",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 23,
+          "line_sha256": "94FBAB315D2D57EE83B7368063DFFCC1AD11E68891D6A0BA12327E44CEC5DE11",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L001-L023"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 24,
+          "line_sha256": "1B5456AC5BA6B5B5C5DF0D9004BE1941141AC0F34B8394E500D5FD1ACBB28F02",
+          "record_id": "CHILD-WPUJAC104DWH-P004-SPRAY-FIRE-PREVENTION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 25,
+          "line_sha256": "D49323C11E06069F9F856DBE50EC614B4027D8606990F308552A3A18207492D2",
+          "record_id": "CHILD-WPUJAC104DWH-P004-SPRAY-FIRE-PREVENTION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 26,
+          "line_sha256": "9A85324BE0FE3FDACC520F1831FF9C3BC9E23D8993885A8AE3F2D35008D6816B",
+          "record_id": "CHILD-WPUJAC104DWH-P004-WATER-INGRESS-PREVENTION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 27,
+          "line_sha256": "D2CA4EAAEA75F92BE8418F5281B303AC3434D21A2D5B1E0195FF3133E5D8DFFB",
+          "record_id": "CHILD-WPUJAC104DWH-P004-WATER-INGRESS-PREVENTION-001"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 28,
+          "line_sha256": "6FEB3D5E89D4ADD33B7AF4442DB20DB942558F3D37841395FB9C5F39BE1BD0E1",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L028-L029"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 29,
+          "line_sha256": "B7E1277FAD84A652904583CA4FD462728EF4999FCA473219C092BFD059F940FE",
+          "record_id": "PRESERVE-WPUJAC104DWH-P004-L028-L029"
+        },
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 30,
+          "line_sha256": "4B227777D4DD1FC61C6F884F48641D02B4D121D3FD328CB08B5531FCACDABF8A",
+          "record_id": "PAGE_NUMBER"
+        }
+      ],
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "exact_sales_code": "WPUJAC104DWH",
+      "page": 4,
+      "total_lines": 30
+    },
+    {
+      "assignments": [
+        {
+          "classification": "PRESERVATION",
+          "line_number": 1,
+          "line_sha256": "9F17706A7F26E6E089B94902947C7B9D155F4AFAD000CFBBA8A8991786BBB21B",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L001-L004"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 2,
+          "line_sha256": "50705B00072D1B710BEC38F61F9539F3F354358A6ADCAEC2CA7EB41E9E3E421F",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L001-L004"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 3,
+          "line_sha256": "F9221730943F36538437ABB494D48281578181E93D2B1002B6E386344DE2E608",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L001-L004"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 4,
+          "line_sha256": "03C66C486784663ED19ACDB207D579D48D3373872254F94C2B709AA6132EBA9C",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L001-L004"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 5,
+          "line_sha256": "D64C5BE7434972CC3F48EBABEBD425F36E4F90DD88747A2EC80904E166195503",
+          "record_id": "CHILD-WPUJAC104DWH-P005-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 6,
+          "line_sha256": "ABF48EBB898B9AB35A9969A951A731C6D76E382238681C651B88906793946CD4",
+          "record_id": "CHILD-WPUJAC104DWH-P005-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 7,
+          "line_sha256": "1B32B91FA63C0AC425436A368712E095C8461FAB872D0EBCAE29E345A4A64ADB",
+          "record_id": "CHILD-WPUJAC104DWH-P005-LEAK-001"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 8,
+          "line_sha256": "4AA69A4C3932EFDDF003EB46C2F8E799E103CF87EB133BE3A169D71067459A02",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L008-L011"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 9,
+          "line_sha256": "D2CA4EAAEA75F92BE8418F5281B303AC3434D21A2D5B1E0195FF3133E5D8DFFB",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L008-L011"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 10,
+          "line_sha256": "77B900DE047D80C7B57EF93F47EB41AC4F7F1D700754E1AC784689E1E33F1EB1",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L008-L011"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 11,
+          "line_sha256": "B1588048367DB12927977CD827FD9207181AD01EA4088E002DA0605EF4B6BD40",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L008-L011"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 12,
+          "line_sha256": "B351E1A308F8ADF2D15656F4248B0407C55E95624BC8B3E5B62EAD25C1238BE6",
+          "record_id": "CHILD-WPUJAC104DWH-P005-BURNING-ODOR-RESPONSE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 13,
+          "line_sha256": "0415F617887989AF1D5886EEF71E0784E40B774C06E7D05D3A78DA04DA07B7E5",
+          "record_id": "CHILD-WPUJAC104DWH-P005-BURNING-ODOR-RESPONSE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 14,
+          "line_sha256": "4B1818A30220E937F997AC4FBAF2B76AA155D45EB401D13C6389257293C51057",
+          "record_id": "CHILD-WPUJAC104DWH-P005-BURNING-ODOR-RESPONSE-001"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 15,
+          "line_sha256": "94F3DD668271CC78D8498F0D8F2E18E60084D96506EC726D749AC57DFB8C1CAA",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L015-L021"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 16,
+          "line_sha256": "7CF0805FAF419BC204A56E51A6B167EA333ADB5575A82164C9B3FD5CA884264E",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L015-L021"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 17,
+          "line_sha256": "5C4754AB1BAACAD661569BD607E6053D7A3B011EC527002B8B3F5C4EA7B6F5AF",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L015-L021"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 18,
+          "line_sha256": "7546EA468F21E813DF878FE5DA3BFDE133A83087D502F8F9DD841EAFEB609FD8",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L015-L021"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 19,
+          "line_sha256": "A3A5A47813D3027D263C2BC06A83D413F4FC70C191FECD29E44F9C239224983B",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L015-L021"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 20,
+          "line_sha256": "F8F9B07049947D9F727D3AA3617B69EDE0BDFEF5EFC78415E899427B4A2D8BAF",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L015-L021"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 21,
+          "line_sha256": "2F78B91C83401F8EF81F26BEE1286E380A4660DFAC18481E7CB90F04FF173340",
+          "record_id": "PRESERVE-WPUJAC104DWH-P005-L015-L021"
+        },
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 22,
+          "line_sha256": "EF2D127DE37B942BAAD06145E54B0C619A1F22327B2EBBCFBEC78F5564AFE39D",
+          "record_id": "PAGE_NUMBER"
+        }
+      ],
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "exact_sales_code": "WPUJAC104DWH",
+      "page": 5,
+      "total_lines": 22
+    },
+    {
+      "assignments": [
+        {
+          "classification": "PRESERVATION",
+          "line_number": 1,
+          "line_sha256": "5DA2B0025E3D9FF9E621540BCE4068B40D2A15D9F7E7823FA4F787A4C447FCFB",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L001-L011"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 2,
+          "line_sha256": "9C94AD3861B8F50BD051962F6900859BA30607EBB918CBC5C4188F6597A3399C",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L001-L011"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 3,
+          "line_sha256": "142FE7C7303E48872EB8C2DBD99E08B074FCF9815602900FD1ABE54E6B7D44E1",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L001-L011"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 4,
+          "line_sha256": "E5E11D8D491B77C53EDFB08ECE77D8CD28D4B9C969D7D5FE6C793607452B4871",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L001-L011"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 5,
+          "line_sha256": "ACEA15FAA82B72D80A1C4CEDDF779C497671F9B91056EC16C3C5C94FDDFB5039",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L001-L011"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 6,
+          "line_sha256": "2A4CEEBE54A27D111F8CCDFC245C48F55178A1337DE5470419B1A41A38C5F83F",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L001-L011"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 7,
+          "line_sha256": "4DDB21F8A042CFB3DE184A4A1106EDB985A95BC5A8EAA89E8B915FCDACC758CA",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L001-L011"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 8,
+          "line_sha256": "8FC75C74D40CC51B538FE58C373AF7A1EA2C298178EB9D44222DA357FB97DEA2",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L001-L011"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 9,
+          "line_sha256": "848EE498B0C73C558990721ED73810C1B357E73C0343576C87335B8D66A6FFC3",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L001-L011"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 10,
+          "line_sha256": "3A82D5093A826A84DC2A5661C49A920C458B3E6F0C032AEF7D05483CDBAF5D4F",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L001-L011"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 11,
+          "line_sha256": "905BCBAEA8587A76D3865B7057830CEA68A37C948A5316C9E1BC7FD89654346A",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L001-L011"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 12,
+          "line_sha256": "FA944C3A8AF26F32614BEC354A07B2C6151938EA399FE703D493743F645CA7C2",
+          "record_id": "CHILD-WPUJAC104DWH-P007-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 13,
+          "line_sha256": "E070EEB38CFD0A705A447827AFDBA6464C74D294331D2DFD3ABD8EDBBF9A4A92",
+          "record_id": "CHILD-WPUJAC104DWH-P007-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 14,
+          "line_sha256": "1B32B91FA63C0AC425436A368712E095C8461FAB872D0EBCAE29E345A4A64ADB",
+          "record_id": "CHILD-WPUJAC104DWH-P007-LEAK-001"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 15,
+          "line_sha256": "B82AC3B02068A69A0EFDC1B1C1C0B229BE3887BC992E2069C38C497BCE3EBDE3",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 16,
+          "line_sha256": "64CB936703B1154625839DDC8CC9E004AACC0460E8849F4EE62B2064EF7A4D56",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 17,
+          "line_sha256": "FAC10FB8E8D41DE99648F836C1463E620F5AF6505E1FEDA90503AE2AED0A8BA8",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 18,
+          "line_sha256": "1257B1056060699444574E55CBD46F050D095CC44572A7BD487D2717FB729715",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 19,
+          "line_sha256": "FF1818211431470CB1882A288070617779A689ECA31E2CE1BE152EBFFB0FFB9A",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 20,
+          "line_sha256": "63F92D707AC64F798A20070FB05622C027E24FE6CD5695E43382A0CE6E6BBCD2",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 21,
+          "line_sha256": "3F8AED6237AF3C0EEF23DA7874094F8E856028A08756575121650514E16212D1",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 22,
+          "line_sha256": "923E0C79B17B7FC94D8FEFE69E42F6F1AC2D314228BE6C817DBDFB35B1907CED",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 23,
+          "line_sha256": "A15CCADBA36CB4CE78C2BEFA779A8878EEE3D85BF8C1289DB4CA271024FC514C",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 24,
+          "line_sha256": "AEEB15B4B087A953FF45FADA3B90B04EBD43C7DD649934C56AFDC19897FB884F",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 25,
+          "line_sha256": "C9643061B45B099546E9F84AD8FEEF8526D6A4554F7D09879870CC5B9CA6EB11",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 26,
+          "line_sha256": "C2A3317E0EADF6AF7F721A0BD2F045A4198B8E7BF65F70DB5ED61D4FB4AB8506",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 27,
+          "line_sha256": "BD6BC8338147F20095C271FCD9613A18FE58FEFAD5D992DCE459B421A9E25507",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 28,
+          "line_sha256": "8861BFD41BC1BADD0B42665A3F1214920E1FB7A6980799C63EB786BBF37301CB",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 29,
+          "line_sha256": "09C97DEA5F1F9173297F293B14BBEC2B2AF5F606027FEA7EB7BC77F674BF6868",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 30,
+          "line_sha256": "6814055048E30DD028156513948835195E7A5A658B14FFAE83D3B8F5C2D59BD8",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 31,
+          "line_sha256": "E61ADA63BEC583E5F67AD0838810A9607FBFBCC7AB64E2B0966BBB6DBC9912FD",
+          "record_id": "PRESERVE-WPUJAC104DWH-P007-L015-L031"
+        },
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 32,
+          "line_sha256": "7902699BE42C8A8E46FBBB4501726517E86B22C56A189F7625A6DA49081B2451",
+          "record_id": "PAGE_NUMBER"
+        }
+      ],
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "exact_sales_code": "WPUJAC104DWH",
+      "page": 7,
+      "total_lines": 32
+    },
+    {
+      "assignments": [
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 1,
+          "line_sha256": "395099EBA2FA10C4DC932DD7BDEA5AE16D1012AAAF7238E30F96B3556BBE36A7",
+          "record_id": "SECTION_AND_TABLE_HEADER"
+        },
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 2,
+          "line_sha256": "1042184AF2AD1B922216694CF813FF10AEF4E458BC4F6D1B3CC6CDAD50E0EE09",
+          "record_id": "SECTION_AND_TABLE_HEADER"
+        },
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 3,
+          "line_sha256": "EBFBB80808C81BF3568508C0132BA2A735FA6C95EFB924542335F37991EB650D",
+          "record_id": "SECTION_AND_TABLE_HEADER"
+        },
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 4,
+          "line_sha256": "CA24A1B495E30D77CCD5EF5093315DEDBB82AC76CAC9C561F3608BD598B457E4",
+          "record_id": "SECTION_AND_TABLE_HEADER"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 5,
+          "line_sha256": "942AAC59675526151F43DA180FFFD42E50BB4391E60E09C27C1C60CFC02B92FA",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 6,
+          "line_sha256": "99C6A7779F535A0246DA49567AF7438019AE3E61A210C397D265C089C41FD9C9",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 7,
+          "line_sha256": "3989FA744A1AAFE860C0FB662FA4DC10E28A23910C3FE411C4EE118CC4E803C5",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 8,
+          "line_sha256": "76838F61AC7D53004CC749C6DBE37FEAE9A0B6965EAF9BF1228E4CB0D9E22F5F",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 9,
+          "line_sha256": "378D8C57ECD5FA089F6BBFE50E61C3B76953D15A136E03871CB895EE331AF81C",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 10,
+          "line_sha256": "B88990AF7D2A2F2B9FA2EC1C793801D219F991F7481057D37E7FD0D9DA585944",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 11,
+          "line_sha256": "B7DC0C9CB2B52DB8FF4AE9AD886C2E57EF6436F1380B99076C2200595B635DD6",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 12,
+          "line_sha256": "841343E666607CD8D2F6001263C43C7C2A9EC7396CD6DC4FE9EF661E6EE001C6",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 13,
+          "line_sha256": "F1966FE631A630C8E4F91E20AF7D102EC362868457D305C9FE772F2D0A191BD8",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 14,
+          "line_sha256": "19BF87349BF367F126704B19519AF470877B0BFB3035F43CBA097A8B20024C97",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 15,
+          "line_sha256": "51AE2DD5BEC7C412B7C3BE9D18A31010125AA98B9512C813CAD0F70FCB60D9AE",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 16,
+          "line_sha256": "777E1F4004F8CE359A0B237776A20227AFCCFBCDCB7FF599FF9FCC9354B41128",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 17,
+          "line_sha256": "378D8C57ECD5FA089F6BBFE50E61C3B76953D15A136E03871CB895EE331AF81C",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 18,
+          "line_sha256": "7A1347CB10DC24381997CF1EF6346D6FF9AD114C3D5A0F0FD559520AAE55672C",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 19,
+          "line_sha256": "B1F6DD91B026ABC9D69749886E0B46F425646B953FA5C2548FC3EC23EE051ACA",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 20,
+          "line_sha256": "CD255AEA09F3ED6AB23CE3551C53495E33D3AEF86761586DD98ABF8827CF796B",
+          "record_id": "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 21,
+          "line_sha256": "0F5332F6258196885BCDB9BA856CA9AC52A5B9388E8B92017096F30E0B34A29E",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 22,
+          "line_sha256": "2F38DF82CF8809FDDAA5A9359A233A1F6BBC2F8432E436857E09471AD7A00A14",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 23,
+          "line_sha256": "CDF8F79CE232A9D050D40EE5C78DFFD30880B98BBD04623308819D91768A15BF",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 24,
+          "line_sha256": "2C75F8AE60BEEF98D58278771E409AD162E2985C6B36F07E03A5F821504279A5",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 25,
+          "line_sha256": "AC49AAE6F9D742DA4F568B9B1D7400D6B81C20DD51156CB782CDB773A3A960FE",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 26,
+          "line_sha256": "50EA70A950A5D250C0BDB45ECBFA1005B6A739EDE6D5217BCDE1B3CEDEDE8FF3",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 27,
+          "line_sha256": "BD15F6D62D91A0AC6C3AA346A89162F390D81880721F33152A637524B67325FA",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 28,
+          "line_sha256": "A3D265C1823919CE752C8CA6C842525D6E0ACD61CF527D0A499F1CE39101901F",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 29,
+          "line_sha256": "A444BB8F3C6AB33A592A5D8DE110F9E3E6B4E220DAE3CED4C5714FDC2F8C4EEB",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 30,
+          "line_sha256": "C7D47BD55DAC4E7B579D0BF09ADE28FEBDA602CBC9964B9C004E96BB19848467",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 31,
+          "line_sha256": "06E8CDF577A9D7DE6E2556FEEEF5AA522E2FE00981B821C7FD76352124A1DFBB",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 32,
+          "line_sha256": "B4A5B6BB8FAE5A9647BC49A42A79DB022AEB48AF90D5C5E818D721AB0946C9DB",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 33,
+          "line_sha256": "62A063970D2A7CA7BFDF892D14DFD63983FF5D9971F9AA3A555445CD1FEDF74B",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 34,
+          "line_sha256": "AB4D9BF93216472A1C53B324913C5CAC36D1275CE96C7D51526AC0F4D3D5A74E",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 35,
+          "line_sha256": "A77A87DD0261609337C3DED259735848E75255F5EE535051FDBF17EB921F8D07",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 36,
+          "line_sha256": "6FC694FECB91B2FCB222D029B639308B1C4256D82956F3421D7716FE4F02B36C",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 37,
+          "line_sha256": "443610D54F41E13CABFC40141A0270E54D2AF23EED97AF34C9FD5AA3AB95C008",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 38,
+          "line_sha256": "618652EB7C1075746240322FDB34D8E25C0203C26B8EB1CD4636519F40C3BF89",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 39,
+          "line_sha256": "A9536FFF4C623DBCE40FAF89A5C23E7D920E458C6E6AE32FBB9D346DDB620477",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 40,
+          "line_sha256": "DA9210490BC430AF24A07CB6DE0952DE6BE1C7BCD65AD2C739A5FF3E9BF6867B",
+          "record_id": "CHILD-WPUJAC104DWH-P037-NOISE-001"
+        },
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 41,
+          "line_sha256": "7A61B53701BEFDAE0EEEFFAECC73F14E20B537BB0F8B91AD7C2936DC63562B25",
+          "record_id": "PAGE_NUMBER"
+        }
+      ],
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "exact_sales_code": "WPUJAC104DWH",
+      "page": 37,
+      "total_lines": 41
+    },
+    {
+      "assignments": [
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 1,
+          "line_sha256": "CA24A1B495E30D77CCD5EF5093315DEDBB82AC76CAC9C561F3608BD598B457E4",
+          "record_id": "TABLE_HEADER"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 2,
+          "line_sha256": "3F5DF3432B847A660E41639DA9C86819307F9522B44C350EE16D2ECFC735F9AC",
+          "record_id": "CHILD-WPUJAC104DWH-P038-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 3,
+          "line_sha256": "E84776571CB7E43C72A58D29DAF71526297B8D899BD8F3714E8EB54F31D0D38E",
+          "record_id": "CHILD-WPUJAC104DWH-P038-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 4,
+          "line_sha256": "F6AFC9F6F4F5005941DB6D3E0AEB9CD1B075B9A3B0769FC719884D39BEBE7097",
+          "record_id": "CHILD-WPUJAC104DWH-P038-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 5,
+          "line_sha256": "C9DEA72FED8BB18C6C51522FA484C2AAAC439310EB949CA680BF85799EC7BDC2",
+          "record_id": "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 6,
+          "line_sha256": "B4FF345735681D7DF130887FF7C7F02989650F020A4377EAF0B5076693B17100",
+          "record_id": "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 7,
+          "line_sha256": "1096781761456B8E1FBCE7AA9C192ACCA1DA90225FA0168B18564B3CEDAB1D07",
+          "record_id": "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 8,
+          "line_sha256": "79B6203FFA596CD2603777CE15E48FBA2B6B715292B37A84C3781906AF511C35",
+          "record_id": "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 9,
+          "line_sha256": "5857E6D600DD6EAC65D5BDA5B8F5612CA814CCF7F0A383DFF7A9E2FC61023B01",
+          "record_id": "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 10,
+          "line_sha256": "67B61587B9E48F04F5C029FCC597918236CAD4879BAFB72DBEBBB844D835A11E",
+          "record_id": "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 11,
+          "line_sha256": "DA5671BAA3B8B7F4D52F6C49DA1DF057D0BF35B55AD99B4C13349928E6A0CB3E",
+          "record_id": "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 12,
+          "line_sha256": "29A67960F1C6B0CE6A27B1095A46624FA5C9E483C93338A5631BFC0984C2CD63",
+          "record_id": "PRESERVE-WPUJAC104DWH-P038-L012-L018"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 13,
+          "line_sha256": "66A1BE6262A49B4D907BFB2112475A605D24AC4109ACAC2B6F48CB88DAF54645",
+          "record_id": "PRESERVE-WPUJAC104DWH-P038-L012-L018"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 14,
+          "line_sha256": "AC601EDEDD84658BFB6A097D9BDD70AB15AD5E988CC3FAE876719BDB1F6DC0FE",
+          "record_id": "PRESERVE-WPUJAC104DWH-P038-L012-L018"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 15,
+          "line_sha256": "D1ED303C97C689D5CC6C5B692C4D8B348E661F3773C71488799788869858A8E6",
+          "record_id": "PRESERVE-WPUJAC104DWH-P038-L012-L018"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 16,
+          "line_sha256": "8FB63E75F26E504CB74D3387066A22E94E4BE3BA952FF3B9CDB5F9620D0E8CDB",
+          "record_id": "PRESERVE-WPUJAC104DWH-P038-L012-L018"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 17,
+          "line_sha256": "534F4204B958F57924C528941E9AA227A7C92E737488F4C7C7EC15CABCEAC8B6",
+          "record_id": "PRESERVE-WPUJAC104DWH-P038-L012-L018"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 18,
+          "line_sha256": "5566F6AA884A67AC29E52080A7EC0CD240426BE1101DA6DC981E571552637825",
+          "record_id": "PRESERVE-WPUJAC104DWH-P038-L012-L018"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 19,
+          "line_sha256": "6B1068E778528F91EB640A34E277E7353D06DECAF1A09512BBDF80F73043E573",
+          "record_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 20,
+          "line_sha256": "A9FD269116C9E448231EB9BFB6A4D238313BC62C5A79F33C6953C7CDF5D73C88",
+          "record_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 21,
+          "line_sha256": "0C77669C3C7C27E5076A44A5065789247CC45D9F6E54368F362A9EAE2DA208F7",
+          "record_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 22,
+          "line_sha256": "0F5332F6258196885BCDB9BA856CA9AC52A5B9388E8B92017096F30E0B34A29E",
+          "record_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 23,
+          "line_sha256": "9353411C2FC99630171C2E4300A6DFB0E9DEE07B554CE13DECA7BBF8E76D7DD9",
+          "record_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 24,
+          "line_sha256": "0BED67DB290BDBDBDFEB06B16F989F5184EB662F173E2D8EAFFD09E6CEEB7705",
+          "record_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 25,
+          "line_sha256": "88A86682EAF72BDEF8CBD82673E45D440C00290046FD1622FFA064378BF9B5B3",
+          "record_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 26,
+          "line_sha256": "7D716820689DE34293B8BA560FB8BBAE6EED35EDC8DA3F743430672BD99469E6",
+          "record_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 27,
+          "line_sha256": "2646578FDE595540CA7A6FBE7D00884CB5BB518C1201288E09B626233DF1E71D",
+          "record_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 28,
+          "line_sha256": "A91657E4E653C592FA1FCBB79E542831C7268068A3344E85393D601858019CEC",
+          "record_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 29,
+          "line_sha256": "E26700ABBEEB326E38B8D307C7E245C3D962C59E17E6819ED0C7A468BEC8B285",
+          "record_id": "CHILD-WPUJAC104DWH-P038-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 30,
+          "line_sha256": "ADD4A9FE3FE07590A932A35C942DD74B7D07A3C1AA082FFF29D2A53C285F0A81",
+          "record_id": "CHILD-WPUJAC104DWH-P038-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 31,
+          "line_sha256": "F1D1D637A4A444228F53CC129786FAE062097B9D16AFEB7C5F8439919165E5D7",
+          "record_id": "CHILD-WPUJAC104DWH-P038-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 32,
+          "line_sha256": "E5C2C34487438FF416F15A3D9DC240C03EC748C4B9DCCA7ACED390A28538E71A",
+          "record_id": "CHILD-WPUJAC104DWH-P038-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 33,
+          "line_sha256": "EDF3B91E30FAFF3FFF54319CAB1BB296511C5C0F21D5C4E2FF75622B948591B4",
+          "record_id": "CHILD-WPUJAC104DWH-P038-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 34,
+          "line_sha256": "F9AAD3F03E68DE26811C79630ED25B399F7F3211592533C7995E695892451082",
+          "record_id": "CHILD-WPUJAC104DWH-P038-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 35,
+          "line_sha256": "0E6C040F9ED93E5F69372B68CBD3653DC4551713238990CE91422F119D5BC791",
+          "record_id": "CHILD-WPUJAC104DWH-P038-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 36,
+          "line_sha256": "F361744B8EBB5AEE0BD53A49A4872AA56D5CD355F5F119FDC532499A228F0154",
+          "record_id": "CHILD-WPUJAC104DWH-P038-HOT-INTERRUPTION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 37,
+          "line_sha256": "F7B9091D85BFCF53B05F2079CCC557BAFB13D578216DCC75E75EA51FCBA3D2FE",
+          "record_id": "CHILD-WPUJAC104DWH-P038-HOT-INTERRUPTION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 38,
+          "line_sha256": "A7E0AD74834B96A6B5D28D23E3AB05993069158C031E2ACCAE110A521AF8134C",
+          "record_id": "CHILD-WPUJAC104DWH-P038-HOT-INTERRUPTION-001"
+        },
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 39,
+          "line_sha256": "AEA92132C4CBEB263E6AC2BF6C183B5D81737F179F21EFDC5863739672F0F470",
+          "record_id": "PAGE_NUMBER"
+        }
+      ],
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "exact_sales_code": "WPUJAC104DWH",
+      "page": 38,
+      "total_lines": 39
+    },
+    {
+      "assignments": [
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 1,
+          "line_sha256": "CA24A1B495E30D77CCD5EF5093315DEDBB82AC76CAC9C561F3608BD598B457E4",
+          "record_id": "TABLE_HEADER"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 2,
+          "line_sha256": "31E848F5534F09DB0188CA2D62E2E45D682A5B230906975E9F6DCB4BF2B8A88D",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 3,
+          "line_sha256": "D845EEE7FDCDA7AAA75E519D5457174D93842347BEAC99991411F4AAD0917527",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 4,
+          "line_sha256": "E282973EBC034B822516608ACFF562B0C580E75672D91A3E7A9E1DC5601E6BDB",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 5,
+          "line_sha256": "0C009758A2D080EAE0FC7611AF64F8D375CD60C984EE43244A3B7D3CECE6FDBC",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 6,
+          "line_sha256": "16DDA01CE5BB9FF2B3D1DAEB707C842532F20B00559C7B2A6384CD24BFA56A6B",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 7,
+          "line_sha256": "2B30A1DA8E4802711CDB73DA3023FDECA6F8820A49B715D3BD53F7F0ED2DA547",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 8,
+          "line_sha256": "FE45A55A067608C8CD8E47F68F01AB691CD40D2D385BC753423D5EDE160783C8",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 9,
+          "line_sha256": "5B5757D0DEDD46E94E6559C8484DD954572EDA83DBA5D97A0FF53E9F8F3866AF",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 10,
+          "line_sha256": "0E6B22833A45477F51B254AD6C9621CA69F5DE1250ADF9794736AE7B88A53615",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 11,
+          "line_sha256": "D3CBB0ED550A7DE180BA1FACFBD5A0BA60676C11EDAB0921137036ED8E6BDA30",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 12,
+          "line_sha256": "26D3BD985F6C73C6E4E7B348C7AC8963039CDB1DB528760AB909ABF960876E11",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 13,
+          "line_sha256": "CA0D2218423756880D1469F1C6E785D70D9E4C62B228CA0FD876461295EC81E1",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 14,
+          "line_sha256": "EB1BF540DFFC25C43CE5992021570A0BEA1296D87D1FACDB40CD9819C05BA992",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 15,
+          "line_sha256": "8B507B6EF89BA358FE8CF1C453A88D015F94641E4C4AD4AE91065A7F33D82B5B",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 16,
+          "line_sha256": "672B3642290E0A4BEF50A04FD774F5EDACB741B6FA505E3F90172320BAC23E9E",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 17,
+          "line_sha256": "5814B5F1BF060D1A4E4A8B0CA99C88EF304F6AF2EBB70F4D1A7135C67DE3569A",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 18,
+          "line_sha256": "9B0A69E6710AB7EBC3A91DCD65E507222AC661529DDB70A310A1A95F73C4068D",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 19,
+          "line_sha256": "DEA4420E9EF12EC0A7563B08F8E3508665E1BCB5A06E5854D03F145327F83DAB",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-MODULE-CHECK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 20,
+          "line_sha256": "936EB79B0D4EC86C78450861B1C65C8A803029DB49F7C4D0D8A5E75C96ACBCFD",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-MODULE-CHECK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 21,
+          "line_sha256": "705A068CF3FFD260D3ACD9D8615BAF9AD5E9D70A433F7480D835AC004580A433",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-MODULE-CHECK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 22,
+          "line_sha256": "8DF15254CD0F3E14098BFB86CF25624C99BE31C07E487F16A0F28D4707BAC9AE",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-MODULE-CHECK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 23,
+          "line_sha256": "3109AC1D7E840B04015076DE0DBB95539023B45F967146AF07C1B50D3B0577E7",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-MODULE-CHECK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 24,
+          "line_sha256": "5B2BAAC952A2F41B4106E0E3F22D7ED00E28EFB3E3AA0CF64A3933517325A604",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-MODULE-CHECK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 25,
+          "line_sha256": "F9AAD3F03E68DE26811C79630ED25B399F7F3211592533C7995E695892451082",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-MODULE-CHECK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 26,
+          "line_sha256": "08B5D4D12AB11B877E5FAFEC87A46EF126D0031E4E2ED21AD5D01F3F14152D82",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 27,
+          "line_sha256": "EE447E14C45102DFB712337FBB9BA2FCE21102946ABF896274F012D145CB76EC",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 28,
+          "line_sha256": "838B15BD0A1B852EC77BE00849EED81B7FE961EED87E4348E94FD9F4BF87B2E0",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 29,
+          "line_sha256": "DE3656395496D9739C82CC134E6C70226FC5CA20538C3197042797A2EF87B0DB",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 30,
+          "line_sha256": "F9AAD3F03E68DE26811C79630ED25B399F7F3211592533C7995E695892451082",
+          "record_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001"
+        },
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 31,
+          "line_sha256": "0B918943DF0962BC7A1824C0555A389347B4FEBDC7CF9D1254406D80CE44E3F9",
+          "record_id": "PAGE_NUMBER"
+        }
+      ],
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "exact_sales_code": "WPUJAC104DWH",
+      "page": 39,
+      "total_lines": 31
+    },
+    {
+      "assignments": [
+        {
+          "classification": "PRESERVATION",
+          "line_number": 1,
+          "line_sha256": "03C66C486784663ED19ACDB207D579D48D3373872254F94C2B709AA6132EBA9C",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L001-L001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 2,
+          "line_sha256": "972D088BED0D9F9B43A42EF344F5E268D1875B69255F4D9D8F74F9968968E6C8",
+          "record_id": "CHILD-WPUIAC425SNW-P005-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 3,
+          "line_sha256": "8C8B906857753EAB841228E1E787CEA1E54728197A4578824A609BCE1242B18B",
+          "record_id": "CHILD-WPUIAC425SNW-P005-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 4,
+          "line_sha256": "1B32B91FA63C0AC425436A368712E095C8461FAB872D0EBCAE29E345A4A64ADB",
+          "record_id": "CHILD-WPUIAC425SNW-P005-LEAK-001"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 5,
+          "line_sha256": "4AA69A4C3932EFDDF003EB46C2F8E799E103CF87EB133BE3A169D71067459A02",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 6,
+          "line_sha256": "D2CA4EAAEA75F92BE8418F5281B303AC3434D21A2D5B1E0195FF3133E5D8DFFB",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 7,
+          "line_sha256": "77B900DE047D80C7B57EF93F47EB41AC4F7F1D700754E1AC784689E1E33F1EB1",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 8,
+          "line_sha256": "B1588048367DB12927977CD827FD9207181AD01EA4088E002DA0605EF4B6BD40",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 9,
+          "line_sha256": "BC5CF37A87236694F54243EF3045DFD76DECBF9BBE361B0D0665D76D8929D094",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 10,
+          "line_sha256": "03D8EC2BBAA45E78B79D2C4E061AC04E2807CC5F5B3AA0091F4FBDB6FF89A9F2",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 11,
+          "line_sha256": "4B1818A30220E937F997AC4FBAF2B76AA155D45EB401D13C6389257293C51057",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 12,
+          "line_sha256": "94F3DD668271CC78D8498F0D8F2E18E60084D96506EC726D749AC57DFB8C1CAA",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 13,
+          "line_sha256": "7CF0805FAF419BC204A56E51A6B167EA333ADB5575A82164C9B3FD5CA884264E",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 14,
+          "line_sha256": "5C4754AB1BAACAD661569BD607E6053D7A3B011EC527002B8B3F5C4EA7B6F5AF",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 15,
+          "line_sha256": "86D8FAB36E8DB4F80B932B5AFDEAA9FF29635C83C699EA3DD7F9FB5D648E7135",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 16,
+          "line_sha256": "4B1818A30220E937F997AC4FBAF2B76AA155D45EB401D13C6389257293C51057",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 17,
+          "line_sha256": "F517DDE7A2FABAE725EBDA8CC72C2B37FA999DEEACA5AAAAAD172F811E70948E",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 18,
+          "line_sha256": "A221AB5ACBDB450E931304349951CF3A2C89DFB222DADF25F27905EB3727A093",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 19,
+          "line_sha256": "9FA53F909265006B9842169E5DF7FDE4A98F02048FF1B22E4B1C57143E11B428",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 20,
+          "line_sha256": "18BAA23D4B4A64857BD93EA0EE20198418EBA40E4B5A72A2A037C24284FC2A7B",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 21,
+          "line_sha256": "EAF259806E6DFFF779E65CBB9A19369922594D84DD55F89B6F7FCD0E098CF862",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 22,
+          "line_sha256": "3B6BFF31374369D83DAE9828B70292F69BB9998790E950AEF2017E8255FEDB5E",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 23,
+          "line_sha256": "D7FCA5D3965B0F97735E1EE3897447B6145449B2EBDA219EB566412D23921DBC",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 24,
+          "line_sha256": "C40465EA5C14E011D635F406EDDBD672870FAEA04AA4640D3B8ED61A4C58B229",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 25,
+          "line_sha256": "C023722BEBBF98A786616A26A1B3EC24A1EF089DF7CED8F06A22FAD49BD3DC86",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 26,
+          "line_sha256": "DB3113B1D6854AEDA37FDEC2DEF43C4FD41B0D04CEAB73ECA4450D0065E196C8",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 27,
+          "line_sha256": "307FA222DC0347D43712E0BB9FF1FEE33A761F891AC9FB254DB3C6642E104C67",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 28,
+          "line_sha256": "96B94ACC96D899F75219A7A9D97C0FE48B34211A221984934CDFA63E09A5955A",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 29,
+          "line_sha256": "452DCA2B5F3F2C22D81F77E828AA4D741274BD89BC31358735E9CDD16262AF2A",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 30,
+          "line_sha256": "B673C6D04AABD4D47BF7C93E53A712A182B8285EB2213301D8B00FE3F3DE6212",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        },
+        {
+          "classification": "PRESERVATION",
+          "line_number": 31,
+          "line_sha256": "DB458ACC7135F7750B8AA3943E2C52D75955F22F3354891B23631FAA843F62CE",
+          "record_id": "PRESERVE-WPUIAC425SNW-P005-L005-L031"
+        }
+      ],
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "exact_sales_code": "WPUIAC425SNW",
+      "page": 5,
+      "total_lines": 31
+    },
+    {
+      "assignments": [
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 1,
+          "line_sha256": "E578EC866A21D2647B3B6B47F0101C9E41913AAFA52C7BF5EB94E1F6C3FF99F5",
+          "record_id": "SECTION_AND_TABLE_HEADER"
+        },
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 2,
+          "line_sha256": "8FD08DAC9AF095DA102B15DFD170DE4587FB9549100183385EFD5FF6770043F8",
+          "record_id": "SECTION_AND_TABLE_HEADER"
+        },
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 3,
+          "line_sha256": "CA24A1B495E30D77CCD5EF5093315DEDBB82AC76CAC9C561F3608BD598B457E4",
+          "record_id": "SECTION_AND_TABLE_HEADER"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 4,
+          "line_sha256": "EAC164DD5FF612E13BFF0A51FC20019F4CDD800C303BFBD5DA090778A99D4816",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 5,
+          "line_sha256": "F1966FE631A630C8E4F91E20AF7D102EC362868457D305C9FE772F2D0A191BD8",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 6,
+          "line_sha256": "42505FDBFBB81CEFE8ADEE2B37EC8B0BAA562D732A282845CB8B3EB45ED2C858",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 7,
+          "line_sha256": "9F5D004B89C162DA41259193F38F1BB10C08C3B8A9DCD713AC8D931BCAAFDE07",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 8,
+          "line_sha256": "378D8C57ECD5FA089F6BBFE50E61C3B76953D15A136E03871CB895EE331AF81C",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 9,
+          "line_sha256": "B7DC0C9CB2B52DB8FF4AE9AD886C2E57EF6436F1380B99076C2200595B635DD6",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 10,
+          "line_sha256": "942AAC59675526151F43DA180FFFD42E50BB4391E60E09C27C1C60CFC02B92FA",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 11,
+          "line_sha256": "5FB79F0E779D7FA967EAD8DEAD9A3B9D192854541D0E7C1729261BCBE97CAD11",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 12,
+          "line_sha256": "76838F61AC7D53004CC749C6DBE37FEAE9A0B6965EAF9BF1228E4CB0D9E22F5F",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 13,
+          "line_sha256": "B88990AF7D2A2F2B9FA2EC1C793801D219F991F7481057D37E7FD0D9DA585944",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 14,
+          "line_sha256": "841343E666607CD8D2F6001263C43C7C2A9EC7396CD6DC4FE9EF661E6EE001C6",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 15,
+          "line_sha256": "F1966FE631A630C8E4F91E20AF7D102EC362868457D305C9FE772F2D0A191BD8",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 16,
+          "line_sha256": "19BF87349BF367F126704B19519AF470877B0BFB3035F43CBA097A8B20024C97",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 17,
+          "line_sha256": "51AE2DD5BEC7C412B7C3BE9D18A31010125AA98B9512C813CAD0F70FCB60D9AE",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 18,
+          "line_sha256": "378D8C57ECD5FA089F6BBFE50E61C3B76953D15A136E03871CB895EE331AF81C",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 19,
+          "line_sha256": "B1F6DD91B026ABC9D69749886E0B46F425646B953FA5C2548FC3EC23EE051ACA",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 20,
+          "line_sha256": "777E1F4004F8CE359A0B237776A20227AFCCFBCDCB7FF599FF9FCC9354B41128",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 21,
+          "line_sha256": "015B35AB0B2D9169C05BAE6280587307E75E54F8DDE5CE6DE7365FF5F6DF9003",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 22,
+          "line_sha256": "D8105029F154B8EFCC873E20124198A908FAAD219BB1C7CD3C31E56F164F9694",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 23,
+          "line_sha256": "F6AFC9F6F4F5005941DB6D3E0AEB9CD1B075B9A3B0769FC719884D39BEBE7097",
+          "record_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 24,
+          "line_sha256": "A77A87DD0261609337C3DED259735848E75255F5EE535051FDBF17EB921F8D07",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 25,
+          "line_sha256": "F563E528AD4CE5245C7659C78B3ED3368590CEA46E9C1787F4F54DF4D5497C3D",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 26,
+          "line_sha256": "0395A0779E233709EB026FF2299D6FD6ECD2EEBD243C1C4AA3CE362FDC8D0738",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 27,
+          "line_sha256": "B4EF296C0BCD7B5BEA5E20E798C63D807D980D1D134C576F56802958A38B34F6",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 28,
+          "line_sha256": "31A89ABBE990F751B8437AB1137093CF3CAE6B026F128F26A3EFD366770A883D",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 29,
+          "line_sha256": "BB7391008E68A7EBD4F90846AAB5392D12AA709ED1B83159331D13173C256EA0",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 30,
+          "line_sha256": "5903A2A776E01057339511741D21B0E60334350374D81623699811EAABBA3D2B",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 31,
+          "line_sha256": "AB4D9BF93216472A1C53B324913C5CAC36D1275CE96C7D51526AC0F4D3D5A74E",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 32,
+          "line_sha256": "981F63A8589CCAAAD5BA899FF4AC2C4D161E327A96523136762D828A131BEBA4",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 33,
+          "line_sha256": "35A7E4E4EE4EF5BFC1A857F04062A91C60C73EC85D36DB6528AF5B363FCF0A78",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 34,
+          "line_sha256": "528C9E97EE9F19F8EDEB3B6381873B7546ECC453A11BF7967DBEA8E4D7C36DF7",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 35,
+          "line_sha256": "DD7FBE7A38DDEBA19EF20917C28C22E496E647C45756A5D2425CEE38EEEC440F",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 36,
+          "line_sha256": "56BAB2B3F36AF4C99C43C347276E271BED96FE83D06279D0827C7D6316E93B57",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 37,
+          "line_sha256": "9B0A69E6710AB7EBC3A91DCD65E507222AC661529DDB70A310A1A95F73C4068D",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 38,
+          "line_sha256": "FCC5D10EF67195C69F43A4C3C7668B616799F8FE680A2D160665B01F24D95DDD",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-VENTILATION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 39,
+          "line_sha256": "08AD936EA6345125B455462B5EE48BF372647A98E828E6E2305A279239026205",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-VENTILATION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 40,
+          "line_sha256": "C4B7ABDD6C5A4BA736D87BEE6939FA64204FC3F1ACBB1C8A0F4B2A4F81C0C8E7",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-VENTILATION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 41,
+          "line_sha256": "EE971D0B28F636E38C1B7854D8D781F8892BACB4639CCDF4CD36557AFA396A08",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-VENTILATION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 42,
+          "line_sha256": "0A66B6FC2EA67BA3E66EA914ABC88B65AB9762CADFC7386198DCF370B13CD8AB",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-VENTILATION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 43,
+          "line_sha256": "A4D2F8711D3F744AE8E8B835D2C15B63A480B29F6DA4F5D9FFF082B78D0ECE77",
+          "record_id": "CHILD-WPUIAC425SNW-P043-NOISE-VENTILATION-001"
+        },
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 44,
+          "line_sha256": "395099EBA2FA10C4DC932DD7BDEA5AE16D1012AAAF7238E30F96B3556BBE36A7",
+          "record_id": "SECTION_FOOTER"
+        }
+      ],
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "exact_sales_code": "WPUIAC425SNW",
+      "page": 43,
+      "total_lines": 44
+    },
+    {
+      "assignments": [
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 1,
+          "line_sha256": "CA24A1B495E30D77CCD5EF5093315DEDBB82AC76CAC9C561F3608BD598B457E4",
+          "record_id": "TABLE_HEADER"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 2,
+          "line_sha256": "FCC5D10EF67195C69F43A4C3C7668B616799F8FE680A2D160665B01F24D95DDD",
+          "record_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 3,
+          "line_sha256": "89B468DCF2842F63A783E470690F1E2444D66BA3DDA4DBD292178A34A56B3850",
+          "record_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 4,
+          "line_sha256": "4DDD2A8230352F28D1A3C74279E0331CE852ADA7A0896718C21D758F3C94FF6D",
+          "record_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 5,
+          "line_sha256": "498806800387D412B518CEBD9629BD1A60652DDD4FE124C55CD2EEA0D74AFC9C",
+          "record_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 6,
+          "line_sha256": "B8305363DA4EAB81537D71DC66EF95A47EF5BE9CC0651FC43DED5CD822CB5F3B",
+          "record_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 7,
+          "line_sha256": "3290AFDA8D16F904915C61ED3B4EDE68C8EC866940F442276EF4768FAC09856C",
+          "record_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 8,
+          "line_sha256": "30F417981E498917FA06B726C048ABC7E8917EBE293CD41796DF161C680DDE06",
+          "record_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 9,
+          "line_sha256": "E4328E2E2DF4659974F61AC2E89AA571FEA4497E5914B0746CDCD8497A2653A8",
+          "record_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 10,
+          "line_sha256": "FCC5D10EF67195C69F43A4C3C7668B616799F8FE680A2D160665B01F24D95DDD",
+          "record_id": "CHILD-WPUIAC425SNW-P044-DEFROST-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 11,
+          "line_sha256": "17A7EF5F26015125F023541462BBA8DA14188870CA2D5F3B1D865171052DFA2D",
+          "record_id": "CHILD-WPUIAC425SNW-P044-DEFROST-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 12,
+          "line_sha256": "30F417981E498917FA06B726C048ABC7E8917EBE293CD41796DF161C680DDE06",
+          "record_id": "CHILD-WPUIAC425SNW-P044-DEFROST-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 13,
+          "line_sha256": "C0BFD09A01E1EA715D0AD6E3ECB81D9DC61107F593AD4F037EA8A01796543486",
+          "record_id": "CHILD-WPUIAC425SNW-P044-DEFROST-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 14,
+          "line_sha256": "18DBE6468C386754D11F5AA3C692E0682B4EC9B52BD6A23F05671A85B41C5F75",
+          "record_id": "CHILD-WPUIAC425SNW-P044-DEFROST-NOISE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 15,
+          "line_sha256": "86955AE1CA46DBF09E4B6E908B1B2C282691344A9C89FDCB3B5DB6C8E59ABEE2",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 16,
+          "line_sha256": "8886E18FFC2EDA074CADD07E814B5598A8EF6444A69323367C556409D570B53B",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 17,
+          "line_sha256": "B01E103E521E4DD953C6E297053038CAA8DF15C06B4A628242449DCC60BD1A39",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 18,
+          "line_sha256": "04BB5BF075B5F35C8EC078C609405483732C89CB8E8252D44028BAB70773A8C5",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 19,
+          "line_sha256": "EE6D92FE0B8409CDED0579C0B87159E624819AD0002289D024D9D22D5B60C3CD",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 20,
+          "line_sha256": "0F5332F6258196885BCDB9BA856CA9AC52A5B9388E8B92017096F30E0B34A29E",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 21,
+          "line_sha256": "74E02812C9C391BBCCE4B3CA123A92A396FA32DF139E80DA8B282522C98FA8CE",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 22,
+          "line_sha256": "4AA1FF0FBD9C0D1A13E51EA906610E7E1B156E30F1EF2B70C2491E425FBF9387",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 23,
+          "line_sha256": "6449D64BE54ADDB19AFF185D1E6C056196C368692BC21C0FE203F4D8E52A77E7",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 24,
+          "line_sha256": "5A9D10F15849FE85406ADBF748830096F1C0392A2A0C9FCE523401EBFDE98329",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 25,
+          "line_sha256": "48413C201319FE3D20ECE13A602C0ACC87F4639D5CD11AF8E90BBF1AB6B23A86",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 26,
+          "line_sha256": "C07866446B3278919A7EE5E9A12E5D008C4B50B30D81E17319CA89167B4C47EF",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 27,
+          "line_sha256": "A3D265C1823919CE752C8CA6C842525D6E0ACD61CF527D0A499F1CE39101901F",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 28,
+          "line_sha256": "A444BB8F3C6AB33A592A5D8DE110F9E3E6B4E220DAE3CED4C5714FDC2F8C4EEB",
+          "record_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 29,
+          "line_sha256": "76E097ECF990ECEBBA0426ADFA0390EC83718954F6804C724394684A3FE41624",
+          "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 30,
+          "line_sha256": "BF922AA4761AD6DCCDB658BE44234028BAC0B0AB3F2727B675DEC3C16910CA8A",
+          "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 31,
+          "line_sha256": "5E7113C915956A8E565AEED5D22BC94BF11D8B1ECB70786C1B18DDFAF9BF717A",
+          "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 32,
+          "line_sha256": "A9FD269116C9E448231EB9BFB6A4D238313BC62C5A79F33C6953C7CDF5D73C88",
+          "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 33,
+          "line_sha256": "0C77669C3C7C27E5076A44A5065789247CC45D9F6E54368F362A9EAE2DA208F7",
+          "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 34,
+          "line_sha256": "0F5332F6258196885BCDB9BA856CA9AC52A5B9388E8B92017096F30E0B34A29E",
+          "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 35,
+          "line_sha256": "85621303BA909FCB103B91199C4A5AB858B68AD1209D4246D4DD651E6597204C",
+          "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 36,
+          "line_sha256": "53A01A978E181A9A282B38B9490748AB61644DED4475B297D46E0CC1444E1D53",
+          "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 37,
+          "line_sha256": "F6AFC9F6F4F5005941DB6D3E0AEB9CD1B075B9A3B0769FC719884D39BEBE7097",
+          "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 38,
+          "line_sha256": "CF247A2116805AB5705189BFA552F06E0843A0DF6B78A51BE5F7480A7DCF6EFD",
+          "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 39,
+          "line_sha256": "7D716820689DE34293B8BA560FB8BBAE6EED35EDC8DA3F743430672BD99469E6",
+          "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 40,
+          "line_sha256": "2646578FDE595540CA7A6FBE7D00884CB5BB518C1201288E09B626233DF1E71D",
+          "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 41,
+          "line_sha256": "A91657E4E653C592FA1FCBB79E542831C7268068A3344E85393D601858019CEC",
+          "record_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+        }
+      ],
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "exact_sales_code": "WPUIAC425SNW",
+      "page": 44,
+      "total_lines": 41
+    },
+    {
+      "assignments": [
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 1,
+          "line_sha256": "CA24A1B495E30D77CCD5EF5093315DEDBB82AC76CAC9C561F3608BD598B457E4",
+          "record_id": "TABLE_HEADER"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 2,
+          "line_sha256": "6C0E57A8DCD0A89E8E5944BB5701E3A7C912A49464307AAFFF38B20CC0FDA724",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 3,
+          "line_sha256": "B7DC0C9CB2B52DB8FF4AE9AD886C2E57EF6436F1380B99076C2200595B635DD6",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 4,
+          "line_sha256": "F250A5FE901AD94F24358AE46767E5D88AA3E531297939B92119966DC9C32CAD",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 5,
+          "line_sha256": "A518299ECDE4886730CA9AB5DA8F6FDE10361C5BD4F5FF9FA33567A5228F908C",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 6,
+          "line_sha256": "D4E2B2B5E29A7AB8CFEDFBB15070CBE3153AF52EC177DD5EAD6A7085527746B6",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 7,
+          "line_sha256": "E5F05876EA62573C710DA63B6B309E0588E8907B1E06D9E725CB7DB5B66990A9",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 8,
+          "line_sha256": "FC8F03F937C890CCCCFCCEA8AA95F12F9625B5AA20DD729D222B717C1EB7B5F7",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 9,
+          "line_sha256": "608F2279E121FB4739AA67101A7B48CF5EAB129DBB7B030B070162D74514F7BD",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 10,
+          "line_sha256": "4DD9DA6361CD7D2F09DCB38B7592E411DEE2A7AFB8E82CF8E4B9F88BAE76880B",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 11,
+          "line_sha256": "33D45A4B04F57B26A38DA7B08C27EDF56C46E370AE9DCAB8DF29AE9381F9EB40",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 12,
+          "line_sha256": "1E47C6C0603B921CBF866B7F1F64A1022E286050E5B924770C54B73E2C338FF0",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 13,
+          "line_sha256": "C5662C3DA1E5CFE1BAB949BB9A0B7033752121ED6CDD0D1E788F9F3C95F77767",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 14,
+          "line_sha256": "EE971D0B28F636E38C1B7854D8D781F8892BACB4639CCDF4CD36557AFA396A08",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 15,
+          "line_sha256": "0A66B6FC2EA67BA3E66EA914ABC88B65AB9762CADFC7386198DCF370B13CD8AB",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 16,
+          "line_sha256": "6E452AA40F72C259683FFD3F502C0D09C92BACAFBD14660CEF328465CF726C23",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 17,
+          "line_sha256": "0A7D6FFCD899F9004D44459B0EF4E9C6B3F06A70BFBE4B455208F0EA52A42196",
+          "record_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 18,
+          "line_sha256": "0D7DF5EAD2F50DA87D5F59B8E8CA3A51246078A0A82395D1DDD29AEACBDF65F8",
+          "record_id": "CHILD-WPUIAC425SNW-P045-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 19,
+          "line_sha256": "3F5DF3432B847A660E41639DA9C86819307F9522B44C350EE16D2ECFC735F9AC",
+          "record_id": "CHILD-WPUIAC425SNW-P045-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 20,
+          "line_sha256": "17EF377753A685A4725B654655D743C338753CB91F0288B8D7B9252F99C06DD6",
+          "record_id": "CHILD-WPUIAC425SNW-P045-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 21,
+          "line_sha256": "E6FEEC36FEB038892ACE456E2FE02DAEC6D14C94DEB909DD545EFF0DAA8AC27E",
+          "record_id": "CHILD-WPUIAC425SNW-P045-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 22,
+          "line_sha256": "CA5C3F8B692A8923BAAE0A7503C2667916EC8BB138AB98DB04065163CFB25A67",
+          "record_id": "CHILD-WPUIAC425SNW-P045-LEAK-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 23,
+          "line_sha256": "79B6203FFA596CD2603777CE15E48FBA2B6B715292B37A84C3781906AF511C35",
+          "record_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 24,
+          "line_sha256": "C9DEA72FED8BB18C6C51522FA484C2AAAC439310EB949CA680BF85799EC7BDC2",
+          "record_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 25,
+          "line_sha256": "BE9217505459DE0CA79BF72538BCB84D66400A8314518EDC7E855992014B6B70",
+          "record_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 26,
+          "line_sha256": "FC5D020FF77C84773943909C0DD132E9757EDEA7464EA8AFA6AD68C1103AEA89",
+          "record_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 27,
+          "line_sha256": "D0EEF7DE8F8E89C409F75E6FB6288FBC2AD5225CCF4E0DD50CF30B868577B0A0",
+          "record_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 28,
+          "line_sha256": "BE236BF68067BB561DA38E00FBF8D4B4EB78A7F8331D8653174F13F3468425DC",
+          "record_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 29,
+          "line_sha256": "5C47957F80CCE8552A215B965627D384B60A187CEB9DD39BB1C58357ED53DC10",
+          "record_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 30,
+          "line_sha256": "32A558502E3D893C15F94EA963211F788B6E50A2C992081A3F4B06CD878CB0E6",
+          "record_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 31,
+          "line_sha256": "50D44D72B0E63428B3CF98298DA5E76C5A5BA847C19A563C4B596E704F7803E6",
+          "record_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 32,
+          "line_sha256": "67B61587B9E48F04F5C029FCC597918236CAD4879BAFB72DBEBBB844D835A11E",
+          "record_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 33,
+          "line_sha256": "DA5671BAA3B8B7F4D52F6C49DA1DF057D0BF35B55AD99B4C13349928E6A0CB3E",
+          "record_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 34,
+          "line_sha256": "ED2743628BF42DC5746226BF89A8799BFE688280D5C5245197DBD04E238E4103",
+          "record_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 35,
+          "line_sha256": "AC601EDEDD84658BFB6A097D9BDD70AB15AD5E988CC3FAE876719BDB1F6DC0FE",
+          "record_id": "CHILD-WPUIAC425SNW-P045-PARTICLES-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 36,
+          "line_sha256": "8FB63E75F26E504CB74D3387066A22E94E4BE3BA952FF3B9CDB5F9620D0E8CDB",
+          "record_id": "CHILD-WPUIAC425SNW-P045-PARTICLES-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 37,
+          "line_sha256": "0D1AC0BE822D00258EE56C03C0C76DE2BE74C0688FC614FE65D3E9AB0D52BF67",
+          "record_id": "CHILD-WPUIAC425SNW-P045-PARTICLES-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 38,
+          "line_sha256": "96A088AF0131A822BF68FE04D86B49EAD91AFDF4813E32EED378CA2B3197D00D",
+          "record_id": "CHILD-WPUIAC425SNW-P045-PARTICLES-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 39,
+          "line_sha256": "CC48B826275E79D5E3225FBD71AE19D327383EF9616FB618AD2E7AEBD01123BA",
+          "record_id": "CHILD-WPUIAC425SNW-P045-PARTICLES-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 40,
+          "line_sha256": "0F4579C51A7B7CF1A59BEDB9EC5825E7ECA6678ECE79E8CB6A08C42C2CF8A7DB",
+          "record_id": "CHILD-WPUIAC425SNW-P045-PARTICLES-001"
+        }
+      ],
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "exact_sales_code": "WPUIAC425SNW",
+      "page": 45,
+      "total_lines": 40
+    },
+    {
+      "assignments": [
+        {
+          "classification": "NON_SEARCHABLE_STRUCTURE",
+          "line_number": 1,
+          "line_sha256": "CA24A1B495E30D77CCD5EF5093315DEDBB82AC76CAC9C561F3608BD598B457E4",
+          "record_id": "TABLE_HEADER"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 2,
+          "line_sha256": "7EEDF9ACC2D224339E8DB65049525B7A3A384AA22D4372023A3FAF119BE919E7",
+          "record_id": "CHILD-WPUIAC425SNW-P046-ICE-QUALITY-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 3,
+          "line_sha256": "E349ECEBB5678DE60C8A2E8FEF88E7231FC483CA07B7930992928EAD29B3FCCB",
+          "record_id": "CHILD-WPUIAC425SNW-P046-ICE-QUALITY-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 4,
+          "line_sha256": "88BD3BEA95BECDFF8AA323A9B35EB6CF74B5C5FA21BB3A862AF9E29218C50E1B",
+          "record_id": "CHILD-WPUIAC425SNW-P046-ICE-QUALITY-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 5,
+          "line_sha256": "82A1D65EC1E1C9D830616C4142C97CE8B61073A4D88F08BA632785BE52AF854D",
+          "record_id": "CHILD-WPUIAC425SNW-P046-ICE-QUALITY-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 6,
+          "line_sha256": "ADD4A9FE3FE07590A932A35C942DD74B7D07A3C1AA082FFF29D2A53C285F0A81",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 7,
+          "line_sha256": "E5C2C34487438FF416F15A3D9DC240C03EC748C4B9DCCA7ACED390A28538E71A",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 8,
+          "line_sha256": "E26700ABBEEB326E38B8D307C7E245C3D962C59E17E6819ED0C7A468BEC8B285",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 9,
+          "line_sha256": "15603668DF607DC47F6AEA2BD65446C6E2341EE54BB7FD4411E55CACF17D6B72",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 10,
+          "line_sha256": "1012FF9670DBD11520625A0AF11692366BF53FBEA4AE1491B6E8DA4E80D9735F",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 11,
+          "line_sha256": "BAD357E33244099092DE97172A69CC66083F032D38388971709B46631FF63F7A",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 12,
+          "line_sha256": "853F444FDB172212993AF6D61086E11E28E67E099262E3621E8635B2EF1319DE",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-STEAM-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 13,
+          "line_sha256": "8D0C20740C1D7DEC0B2CAFA8F6BB3B36AB2F97697B85F1640CEA3CCE72314BA2",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 14,
+          "line_sha256": "47E79E7540CDA03BC406353037118E7BE9636B2BC6746388B85C8197F7B2A131",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 15,
+          "line_sha256": "A8B2542620AAD609670506ED13D83C40A6359BE337174073F171C86DC1E17F91",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 16,
+          "line_sha256": "315E7B75EA305D0C62EAC351CD5D443F67BC345606FF874549E9EE4C3E3D46BF",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 17,
+          "line_sha256": "E48B9117461F0B6680C850911700C933CAC4869E569525D9859B9D1E131EC05C",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 18,
+          "line_sha256": "D6A0C4B439EAEF6A2D901D05BC55D5DEAAC19E1C20A11A4E03E330676563F2B7",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 19,
+          "line_sha256": "3AC071DF50AEDEED16B0F513AD3B011994F2BECF87886DF3D4C2F5FBA011018D",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 20,
+          "line_sha256": "8B507B6EF89BA358FE8CF1C453A88D015F94641E4C4AD4AE91065A7F33D82B5B",
+          "record_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 21,
+          "line_sha256": "26D3BD985F6C73C6E4E7B348C7AC8963039CDB1DB528760AB909ABF960876E11",
+          "record_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 22,
+          "line_sha256": "D68AB47AE5BF0E4E7F3D4800CF58DCD9616E309508CF494402C4819512BD9223",
+          "record_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 23,
+          "line_sha256": "0F7EB696D0E26B36CDEEDB0C89DDF4AEAD69FC0F61A14C77A541105EDF1282ED",
+          "record_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 24,
+          "line_sha256": "F13C31C9FF23B7A96D7432EBC13B3FCD14699F39D050F5C98FC20B6534CE13AF",
+          "record_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 25,
+          "line_sha256": "0A7D6FFCD899F9004D44459B0EF4E9C6B3F06A70BFBE4B455208F0EA52A42196",
+          "record_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 26,
+          "line_sha256": "16DDA01CE5BB9FF2B3D1DAEB707C842532F20B00559C7B2A6384CD24BFA56A6B",
+          "record_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 27,
+          "line_sha256": "5814B5F1BF060D1A4E4A8B0CA99C88EF304F6AF2EBB70F4D1A7135C67DE3569A",
+          "record_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 28,
+          "line_sha256": "9B0A69E6710AB7EBC3A91DCD65E507222AC661529DDB70A310A1A95F73C4068D",
+          "record_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 29,
+          "line_sha256": "25AC968D7D989B0051BFCA512E8FBF43136FEED24D71411B07484D5F35BA06DF",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 30,
+          "line_sha256": "32C27CDB93A2BCEC6D6CE143C0A03CC4563F64F7C051AA10B327D82DE6FF1C00",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 31,
+          "line_sha256": "26C50008316FD0D603E58ABAAC8946404C31614962B3472937CF50571BFDD381",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 32,
+          "line_sha256": "56A28DDE8358999AB99C8C3B9D7106EF0F658B0AF948E4B2CC65420EEDDF5F0D",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 33,
+          "line_sha256": "DEBB3557064EC1908F9D021B47E093DC4864D4B1000D22F28306F09E2D560AEB",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 34,
+          "line_sha256": "D6A0C4B439EAEF6A2D901D05BC55D5DEAAC19E1C20A11A4E03E330676563F2B7",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 35,
+          "line_sha256": "3AC071DF50AEDEED16B0F513AD3B011994F2BECF87886DF3D4C2F5FBA011018D",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 36,
+          "line_sha256": "2AA8B6E80B7F9BD615324D6E52C3D48240AA22C915F5BD386FD6540F52704647",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 37,
+          "line_sha256": "064CFD5016FFF0317969C19DFA4D707EC54225DFC85EF2D225B5C2A19033A4FA",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 38,
+          "line_sha256": "850C658254965BBFEBBFB62CF86AFCB01E6FB7521211DA8755EED5A5977DCA28",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001"
+        },
+        {
+          "classification": "CHILD",
+          "line_number": 39,
+          "line_sha256": "D3E58670FE91B3B55074D9371FFA25C67C4D92F0539A1B8458CF700AA9D83ED1",
+          "record_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001"
+        }
+      ],
+      "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "exact_sales_code": "WPUIAC425SNW",
+      "page": 46,
+      "total_lines": 39
+    }
+  ],
+  "schema_version": "1.0.0",
+  "status": "FULL_CORPUS_V3_DATA_HANDOFF_READY"
+}

@@ -1,0 +1,129 @@
+{
+  "checks": [
+    {
+      "check_id": "SCHEMA",
+      "detail": [],
+      "status": "PASS"
+    },
+    {
+      "check_id": "FIXED_COUNTS",
+      "detail": {
+        "context_parents": 11,
+        "evidence_groups": 34,
+        "products": {
+          "WPUIAC425SNW": 68,
+          "WPUJAC104DWH": 64
+        },
+        "record_types": {
+          "CHILD": 37,
+          "PRESERVATION": 10,
+          "SOURCE_PAGE": 85
+        },
+        "registry_children": 37,
+        "search_candidates": 132
+      },
+      "status": "PASS"
+    },
+    {
+      "check_id": "ID_AND_INDEX_UNIQUENESS",
+      "detail": "Corpus index contiguous; Parent, Child, Group IDs unique",
+      "status": "PASS"
+    },
+    {
+      "check_id": "TEXT_HASHES",
+      "detail": [],
+      "status": "PASS"
+    },
+    {
+      "check_id": "LINE_COVERAGE",
+      "detail": [],
+      "status": "PASS"
+    },
+    {
+      "check_id": "GROUP_CHILD_CORPUS_LINEAGE",
+      "detail": {
+        "lineage": [],
+        "preservation": []
+      },
+      "status": "PASS"
+    },
+    {
+      "check_id": "AI_GROUP_CONTRACT_ACK",
+      "detail": {
+        "contract_groups": 12,
+        "mismatches": []
+      },
+      "status": "PASS"
+    },
+    {
+      "check_id": "IAC425_GROUP_CHILD_LINKS",
+      "detail": {
+        "children": 19,
+        "evidence_groups": 18,
+        "linked_children": 19
+      },
+      "status": "PASS"
+    },
+    {
+      "check_id": "HUMAN_SOURCE_SPAN_DECISIONS",
+      "detail": {
+        "decision_codes": [
+          "1-A",
+          "2-A",
+          "3-A",
+          "4-A"
+        ],
+        "failures": []
+      },
+      "status": "PASS"
+    },
+    {
+      "check_id": "GOLD_QUERY_COPY",
+      "detail": [],
+      "status": "PASS"
+    },
+    {
+      "check_id": "PINNED_INPUTS_AND_V2_PRESERVATION",
+      "detail": [],
+      "status": "PASS"
+    },
+    {
+      "check_id": "MANIFEST_OUTPUT_HASHES",
+      "detail": [],
+      "status": "PASS"
+    },
+    {
+      "check_id": "PRODUCT_DOCUMENT_ISOLATION",
+      "detail": {
+        "WPUIAC425SNW": [
+          "MAN-SKMAGIC-WPU-IAC425-REV02"
+        ],
+        "WPUJAC104DWH": [
+          "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+        ]
+      },
+      "status": "PASS"
+    },
+    {
+      "check_id": "NO_LOCAL_ABSOLUTE_PATH",
+      "detail": [],
+      "status": "PASS"
+    }
+  ],
+  "counts": {
+    "children": 37,
+    "context_only_parents": 11,
+    "errors": 0,
+    "evidence_groups": 34,
+    "iac425_children": 19,
+    "iac425_evidence_groups": 18,
+    "search_candidates": 132,
+    "source_span_decisions": 4
+  },
+  "errors": [],
+  "generated_at": "2026-08-26T00:00:00+09:00",
+  "gold_signoff_status": "HUMAN_SIGNOFF_PENDING",
+  "promotion_status": "NOT_APPROVED",
+  "schema_version": "1.0.0",
+  "status": "PASS"
+}
