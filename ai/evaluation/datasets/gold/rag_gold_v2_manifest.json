@@ -1,0 +1,115 @@
+{
+  "dataset_id": "RAG-GOLD-V2",
+  "dataset_version": "2.0.0-draft.1",
+  "status": "DRAFT_REVIEW_REQUIRED",
+  "generated_at": "2026-08-26T00:00:00+09:00",
+  "official_metrics_publishable": false,
+  "dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v2.jsonl",
+    "records": 60,
+    "active_records": 55,
+    "excluded_records": 5,
+    "sha256": "1987ED6EDFE18BDE6038DC350EA84CCD6B3752837F6AE0CD510AAB83EE1ED00D"
+  },
+  "schema": {
+    "path": "ai/evaluation/schemas/gold_evaluation_case_v2.schema.json",
+    "sha256": "46974E4E4D0D124B7B32C2320E7DB5E988F8E790FB73E656648813D42A51A289"
+  },
+  "iac425_candidates": {
+    "path": "ai/evaluation/datasets/candidates/iac425_gold_v2_candidates.jsonl",
+    "records": 18,
+    "included_in_gold_records": 0,
+    "sha256": "11AAF6B8BDCDBC74AE9649745E2E5EB761ADF23C81544A5C4165F10F64321EE4",
+    "manifest_path": "ai/evaluation/datasets/candidates/iac425_gold_v2_candidates_manifest.json",
+    "manifest_sha256": "79DE27D8BD0BD29DE1FC66C2594CC0AC096F54B902220FC2D273D3E1F8682CA9",
+    "official_metrics_publishable": false
+  },
+  "distribution": {
+    "evaluation_status": {
+      "ACTIVE": 55,
+      "EXCLUDED": 5
+    },
+    "query_variant_type": {
+      "COLLOQUIAL": 10,
+      "COMPOUND": 4,
+      "CROSS_PRODUCT": 5,
+      "DIRECT": 21,
+      "NO_EVIDENCE": 5,
+      "SAFETY": 10,
+      "TYPO_ABBREVIATION": 5
+    },
+    "split": {
+      "DEV": 35,
+      "SAFETY": 10,
+      "TEST": 15
+    },
+    "expected_retrieval_outcome": {
+      "EVIDENCE": 50,
+      "NO_EVIDENCE": 10
+    },
+    "expected_execution_path": {
+      "PGVECTOR_QUERY": 54,
+      "POLICY_BLOCK_UNSUPPORTED_CAPABILITY": 3,
+      "POLICY_BLOCK_UNSUPPORTED_MODEL": 2,
+      "POLICY_BLOCK_UNVERIFIED_SOURCE": 1
+    },
+    "review_status": {
+      "UNREVIEWED_DRAFT": 60
+    }
+  },
+  "excluded_case_ids": [
+    "RAGV2-GOLD-0017",
+    "RAGV2-GOLD-0033",
+    "RAGV2-GOLD-0040",
+    "RAGV2-GOLD-0043",
+    "RAGV2-GOLD-0047"
+  ],
+  "condition_contract": {
+    "registry_path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2.jsonl",
+    "condition_ids": [
+      "COND-WPUJAC104DWH-NO-WATER-AFTER-FILTER-001",
+      "COND-WPUJAC104DWH-COLD-AFTER-2H-001",
+      "COND-WPUJAC104DWH-LOW-FLOW-AFTER-FILTER-001",
+      "COND-WPUJAC104DWH-HOT-STEAM-PERSISTS-001"
+    ],
+    "noise_severity_status": "EXCLUDED_PENDING_TRIGGER_SCHEMA"
+  },
+  "source_files": [
+    {
+      "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+      "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A"
+    },
+    {
+      "path": "data/processed/validation/rag_experiments/gold_v1_post_query_label_revalidation_packet.json",
+      "sha256": "65665EF4C91F14724A09DC17BE083DD31172B0DC4886074074A3C27FD7EDDD32"
+    },
+    {
+      "path": "data/config/rag/iac425_gold_candidates.json",
+      "sha256": "3C5BF1A8ED9EC9DCF4A3644159605E387B5C6698F92D6AB9AD17FC9E88B67B72"
+    },
+    {
+      "path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2.jsonl",
+      "sha256": "7E7F4BC9354825B46E4FDC83283A5C9C89846A1F8E88B3322798C1AFE7BAE7DE"
+    },
+    {
+      "path": "data/processed/structured/rag/experimental/full_corpus_v3_children.jsonl",
+      "sha256": "02B4CD0CB140D5FE8485D374BC3E1B7124044E4F5B6ECF72B4A8E528AF5550F5"
+    },
+    {
+      "path": "data/processed/structured/rag/experimental/full_corpus_chunks_v3.jsonl",
+      "sha256": "B92B72E70BD3DCDD0B82EAAA04B707992932E75BEB46748A7369DFDC0F4D9BA8"
+    }
+  ],
+  "approval_policy": {
+    "required_reviewer_count": 2,
+    "current_approved_active_records": 0,
+    "automatic_label_approval": false,
+    "official_metric_use": "BLOCKED",
+    "note": "ACTIVE는 Draft 평가 대상이며 사람 2인 승인과 동일하지 않음"
+  },
+  "provenance": {
+    "full_corpus_v3_data_commit": "15577db51795eec63f2eab9dc34d5ef23b7c9bf1",
+    "query_source": "post-query revalidation packet approved_query",
+    "case_id_policy": "PRESERVE_RAGV2_GOLD_0001_TO_0060"
+  }
+}

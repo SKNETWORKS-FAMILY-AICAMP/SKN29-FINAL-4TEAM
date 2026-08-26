@@ -1,0 +1,339 @@
+{
+  "preflight_id": "FULL-CORPUS-V3-LOCAL-DENSE-PREFLIGHT",
+  "status": "READY",
+  "generated_at": "2026-08-26T03:24:24.340607+00:00",
+  "profile": {
+    "path": "ai/configs/experiments/full_corpus_baseline_v2_iac425_candidates_child_only.yaml",
+    "sha256": "357B4AE5000A3F9FBD30A241B0C3C29D6602AED9D9A2A406194FED7A270966C7"
+  },
+  "registry": {
+    "path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2.jsonl",
+    "source": "EVALUATION_REGISTRY",
+    "sha256": "7E7F4BC9354825B46E4FDC83283A5C9C89846A1F8E88B3322798C1AFE7BAE7DE"
+  },
+  "checks": [
+    {
+      "name": "dataset_exists",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "path": "ai/evaluation/datasets/candidates/iac425_gold_v2_candidates.jsonl"
+      }
+    },
+    {
+      "name": "dataset_manifest_exists",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "path": "ai/evaluation/datasets/candidates/iac425_gold_v2_candidates_manifest.json"
+      }
+    },
+    {
+      "name": "gold_schema_exists",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "path": "ai/evaluation/schemas/gold_evaluation_case_v2.schema.json"
+      }
+    },
+    {
+      "name": "evidence_groups_exists",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2.jsonl"
+      }
+    },
+    {
+      "name": "children_exists",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "path": "data/processed/structured/rag/experimental/full_corpus_v3_children.jsonl"
+      }
+    },
+    {
+      "name": "corpus_exists",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "path": "data/processed/structured/rag/experimental/full_corpus_chunks_v3.jsonl"
+      }
+    },
+    {
+      "name": "handoff_manifest_exists",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "path": "data/processed/metadata/full_corpus_v3_handoff_manifest.json"
+      }
+    },
+    {
+      "name": "evidence_group_registry_manifest_exists",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2_manifest.json"
+      }
+    },
+    {
+      "name": "evidence_group_source_registry_exists",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "path": "data/processed/structured/evidence/full_corpus_v3_evidence_groups.jsonl"
+      }
+    },
+    {
+      "name": "dataset_manifest_hash",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "records": 18,
+        "manifest_records": 18
+      }
+    },
+    {
+      "name": "dataset_manifest_count",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "records": 18,
+        "manifest_records": 18
+      }
+    },
+    {
+      "name": "corpus_handoff_hash",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "records": 132,
+        "expected_records": 132
+      }
+    },
+    {
+      "name": "corpus_handoff_count",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "records": 132,
+        "expected_records": 132
+      }
+    },
+    {
+      "name": "children_handoff_hash",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "records": 37,
+        "expected_records": 37
+      }
+    },
+    {
+      "name": "children_handoff_count",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "records": 37,
+        "expected_records": 37
+      }
+    },
+    {
+      "name": "evidence_group_registry_integrity",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "records": 34,
+        "expected_records": 34,
+        "source": "EVALUATION_REGISTRY",
+        "manifest": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2_manifest.json"
+      }
+    },
+    {
+      "name": "evidence_group_registry_source_integrity",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "applicable": true,
+        "source_file_count": 3
+      }
+    },
+    {
+      "name": "corpus_search_candidate_contract",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "records": 132,
+        "record_types": {
+          "CHILD": 37,
+          "PRESERVATION": 10,
+          "SOURCE_PAGE": 85
+        }
+      }
+    },
+    {
+      "name": "retrieval_allowed_record_types",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "configured": true,
+        "mode": "EXPLICIT_ALLOWLIST",
+        "allowed_record_types": [
+          "CHILD"
+        ],
+        "observed_record_types": [
+          "CHILD",
+          "PRESERVATION",
+          "SOURCE_PAGE"
+        ],
+        "source_corpus_record_count": 132,
+        "eligible_candidate_count": 37,
+        "planned_embedded_candidate_count": 37,
+        "source_record_type_counts": {
+          "CHILD": 37,
+          "PRESERVATION": 10,
+          "SOURCE_PAGE": 85
+        },
+        "eligible_record_type_counts": {
+          "CHILD": 37
+        },
+        "issues": []
+      }
+    },
+    {
+      "name": "gold_v2_contract",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "status": "STRUCTURAL_PASS_HUMAN_REVIEW_PENDING",
+        "errors": 0,
+        "warnings": 1,
+        "records_found": 18,
+        "active_records": 18,
+        "approved_active_records": 0,
+        "review_pending_active_records": 18,
+        "evaluation_status_counts": {
+          "ACTIVE": 18
+        },
+        "retrieval_outcome_counts": {
+          "EVIDENCE": 18
+        },
+        "execution_path_counts": {
+          "PGVECTOR_QUERY": 18
+        }
+      }
+    },
+    {
+      "name": "gold_human_review_gate",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "review_pending_active_records": 18,
+        "allow_review_pending": true,
+        "official_metrics_allowed": false
+      }
+    },
+    {
+      "name": "gold_corpus_compatibility",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "status": "PASS",
+        "counts": {
+          "gold_rows": 18,
+          "evidence_group_rows": 34,
+          "child_rows": 37,
+          "corpus_rows": 132,
+          "active_cases": 18,
+          "active_evidence_cases": 18,
+          "active_no_evidence_cases": 0,
+          "referenced_required_groups": 18,
+          "referenced_supporting_groups": 0,
+          "linked_required_groups": 18,
+          "linked_supporting_groups": 0,
+          "linked_evidence_groups": 34,
+          "linked_group_children": 37,
+          "referenced_conditions": 6,
+          "registered_conditions": 10,
+          "errors": 0
+        },
+        "error_code_counts": {}
+      }
+    },
+    {
+      "name": "active_case_selection",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "dataset_records": 18,
+        "active_records": 18,
+        "excluded_or_rejected_records": 0,
+        "splits": [
+          "DEV",
+          "SAFETY",
+          "TEST"
+        ]
+      }
+    },
+    {
+      "name": "embedding_runtime_dependencies",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "missing_modules": []
+      }
+    },
+    {
+      "name": "embedding_model_snapshot",
+      "passed": true,
+      "blocking": true,
+      "detail": {
+        "model": "BAAI/bge-m3",
+        "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+        "required": true,
+        "available": true
+      }
+    }
+  ],
+  "blockers": [],
+  "counts": {
+    "dataset_records": 18,
+    "active_records": 18,
+    "corpus_search_candidates": 132,
+    "corpus_source_records": 132,
+    "corpus_eligible_candidates": 37,
+    "corpus_planned_embedded_candidates": 37,
+    "evidence_groups": 34,
+    "children": 37
+  },
+  "retrieval_scope": {
+    "configured": true,
+    "mode": "EXPLICIT_ALLOWLIST",
+    "allowed_record_types": [
+      "CHILD"
+    ],
+    "observed_record_types": [
+      "CHILD",
+      "PRESERVATION",
+      "SOURCE_PAGE"
+    ],
+    "source_corpus_record_count": 132,
+    "eligible_candidate_count": 37,
+    "planned_embedded_candidate_count": 37,
+    "source_record_type_counts": {
+      "CHILD": 37,
+      "PRESERVATION": 10,
+      "SOURCE_PAGE": 85
+    },
+    "eligible_record_type_counts": {
+      "CHILD": 37
+    },
+    "issues": []
+  },
+  "official": false,
+  "official_metrics_allowed": false,
+  "official_metrics_blockers": [
+    "LOCAL_DENSE_QUERY_IS_NOT_PGVECTOR_QUERY",
+    "HUMAN_REVIEW_PENDING"
+  ]
+}

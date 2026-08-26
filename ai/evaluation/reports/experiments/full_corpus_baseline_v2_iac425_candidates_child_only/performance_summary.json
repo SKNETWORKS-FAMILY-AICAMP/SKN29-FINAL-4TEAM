@@ -1,0 +1,16 @@
+{
+  "profile_id": "full_corpus_baseline_v2_iac425_candidates_child_only",
+  "device": "cpu",
+  "document_embedding_seconds": 22.107207,
+  "query_embedding_seconds": 1.622891,
+  "retrieval_seconds": 0.004212,
+  "total_seconds": 23.73454,
+  "document_count": 37,
+  "source_corpus_record_count": 132,
+  "eligible_candidate_count": 37,
+  "embedded_candidate_count": 37,
+  "embedded_query_count": 18,
+  "active_case_count": 18,
+  "policy_block_case_count": 0,
+  "case_result_count": 18
+}

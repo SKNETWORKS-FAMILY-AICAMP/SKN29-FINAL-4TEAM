@@ -1,0 +1,66 @@
+{
+  "activation_gate": "TWO_PERSON_APPROVED_REQUIRED",
+  "build_status": "PASS",
+  "condition_ids": [
+    "COND-WPUIAC425SNW-COLD-AFTER-2H-001",
+    "COND-WPUIAC425SNW-HOT-STEAM-PERSISTENCE-001",
+    "COND-WPUIAC425SNW-LOW-FLOW-AFTER-FILTER-001",
+    "COND-WPUIAC425SNW-NO-HOT-AFTER-UNLOCK-001",
+    "COND-WPUIAC425SNW-NO-WATER-AFTER-FILTER-001",
+    "COND-WPUIAC425SNW-PARTICLES-PERSISTENCE-001",
+    "COND-WPUJAC104DWH-COLD-AFTER-2H-001",
+    "COND-WPUJAC104DWH-HOT-STEAM-PERSISTS-001",
+    "COND-WPUJAC104DWH-LOW-FLOW-AFTER-FILTER-001",
+    "COND-WPUJAC104DWH-NO-WATER-AFTER-FILTER-001"
+  ],
+  "contract": {
+    "path": "ai/evaluation/contracts/full_corpus_v3_consultation_conditions_v1.json",
+    "sha256": "CA6EB3ECAB3F190C5F44E75F0B03578E67310C49BA6299843D8F0B4D1FE85A71"
+  },
+  "excluded_condition_families": [
+    {
+      "action": "DO_NOT_REGISTER",
+      "family": "NOISE_SEVERITY",
+      "reason_code": "TRIGGER_ENUM_NOT_SUPPORTED"
+    }
+  ],
+  "generated_at": "2026-08-26T00:00:00+09:00",
+  "output": {
+    "condition_count": 10,
+    "condition_group_count": 10,
+    "condition_groups_by_product": {
+      "WPUIAC425SNW": 6,
+      "WPUJAC104DWH": 4
+    },
+    "conditions_by_product": {
+      "WPUIAC425SNW": 6,
+      "WPUJAC104DWH": 4
+    },
+    "group_count": 34,
+    "path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2.jsonl",
+    "sha256": "7E7F4BC9354825B46E4FDC83283A5C9C89846A1F8E88B3322798C1AFE7BAE7DE"
+  },
+  "overlay_id": "full_corpus_v3_consultation_conditions_v1",
+  "promotion_status": "NOT_APPROVED",
+  "publication_scope": "AI_EVALUATION_OVERLAY_NOT_CANONICAL_DATA",
+  "schema": {
+    "path": "ai/evaluation/schemas/evidence_group_registry_v2.schema.json",
+    "sha256": "EE65C2BDF0BFE1506F555A0B46DB6D6FC09D23A25FF48A4630D5E53B0242522D"
+  },
+  "schema_version": "1.0.0",
+  "source_files": {
+    "children": {
+      "path": "data/processed/structured/rag/experimental/full_corpus_v3_children.jsonl",
+      "sha256": "02B4CD0CB140D5FE8485D374BC3E1B7124044E4F5B6ECF72B4A8E528AF5550F5"
+    },
+    "corpus": {
+      "path": "data/processed/structured/rag/experimental/full_corpus_chunks_v3.jsonl",
+      "sha256": "B92B72E70BD3DCDD0B82EAAA04B707992932E75BEB46748A7369DFDC0F4D9BA8"
+    },
+    "evidence_groups": {
+      "path": "data/processed/structured/evidence/full_corpus_v3_evidence_groups.jsonl",
+      "sha256": "F16EF48EC8CEB4C810E66D92B2084546479CF21A9D08E6BCC45164DDEED4977E"
+    }
+  },
+  "status": "HUMAN_SIGNOFF_PENDING"
+}
