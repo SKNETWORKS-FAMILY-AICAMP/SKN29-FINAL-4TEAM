@@ -1,0 +1,42 @@
+{
+  "dataset_id": "RAG-GOLD-V2-IAC425-CANDIDATE-DIAGNOSTIC",
+  "dataset_version": "2.0.0-draft.1",
+  "status": "HUMAN_REVIEW_PENDING_NOT_IN_MAIN_GOLD",
+  "generated_at": "2026-08-26T00:00:00+09:00",
+  "official_metrics_publishable": false,
+  "included_in_main_gold_records": 0,
+  "dataset": {
+    "path": "ai/evaluation/datasets/candidates/iac425_gold_v2_candidates.jsonl",
+    "records": 18,
+    "active_records": 18,
+    "sha256": "11AAF6B8BDCDBC74AE9649745E2E5EB761ADF23C81544A5C4165F10F64321EE4"
+  },
+  "schema": {
+    "path": "ai/evaluation/schemas/gold_evaluation_case_v2.schema.json",
+    "sha256": "46974E4E4D0D124B7B32C2320E7DB5E988F8E790FB73E656648813D42A51A289"
+  },
+  "evidence_group_registry": {
+    "path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2.jsonl",
+    "sha256": "7E7F4BC9354825B46E4FDC83283A5C9C89846A1F8E88B3322798C1AFE7BAE7DE"
+  },
+  "condition_ids": [
+    "COND-WPUIAC425SNW-COLD-AFTER-2H-001",
+    "COND-WPUIAC425SNW-HOT-STEAM-PERSISTENCE-001",
+    "COND-WPUIAC425SNW-LOW-FLOW-AFTER-FILTER-001",
+    "COND-WPUIAC425SNW-NO-HOT-AFTER-UNLOCK-001",
+    "COND-WPUIAC425SNW-NO-WATER-AFTER-FILTER-001",
+    "COND-WPUIAC425SNW-PARTICLES-PERSISTENCE-001"
+  ],
+  "source": {
+    "path": "data/config/rag/iac425_gold_candidates.json",
+    "sha256": "3C5BF1A8ED9EC9DCF4A3644159605E387B5C6698F92D6AB9AD17FC9E88B67B72"
+  },
+  "review_policy": {
+    "required_reviewer_count": 2,
+    "current_approved_active_records": 0,
+    "automatic_label_approval": false,
+    "main_gold_merge": "BLOCKED",
+    "official_metric_use": "BLOCKED",
+    "diagnostic_use": "READY_AFTER_STRUCTURAL_AND_COMPATIBILITY_QA"
+  }
+}

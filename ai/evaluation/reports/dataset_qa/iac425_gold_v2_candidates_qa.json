@@ -1,0 +1,47 @@
+{
+  "qa_id": "GOLD-EVALUATION-V2-QA",
+  "schema_version": "2.0.0-draft.1",
+  "dataset_version": "2.0.0-draft.1",
+  "status": "STRUCTURAL_PASS_HUMAN_REVIEW_PENDING",
+  "generated_at": "2026-08-26T03:36:32.129858+00:00",
+  "dataset": {
+    "path": "ai/evaluation/datasets/candidates/iac425_gold_v2_candidates.jsonl",
+    "record_count": 18
+  },
+  "schema": {
+    "path": "ai/evaluation/schemas/gold_evaluation_case_v2.schema.json"
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 1,
+    "records_found": 18,
+    "active_records": 18,
+    "approved_active_records": 0,
+    "review_pending_active_records": 18,
+    "evaluation_status_counts": {
+      "ACTIVE": 18
+    },
+    "retrieval_outcome_counts": {
+      "EVIDENCE": 18
+    },
+    "execution_path_counts": {
+      "PGVECTOR_QUERY": 18
+    }
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "HUMAN_REVIEW_PENDING",
+      "pending_active_records": 18,
+      "approved_active_records": 0,
+      "message": "2인 검수 전 ACTIVE Case는 Draft 평가에만 사용"
+    }
+  ],
+  "decision": {
+    "case_contract": "READY",
+    "gold_corpus_compatibility": "NOT_CHECKED_BY_THIS_VALIDATOR",
+    "draft_evaluation_use": "READY",
+    "official_metric_use": "BLOCKED",
+    "automatic_label_approval": "PROHIBITED"
+  }
+}
