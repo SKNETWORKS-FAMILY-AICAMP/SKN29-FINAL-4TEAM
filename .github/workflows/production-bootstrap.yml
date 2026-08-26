@@ -49,10 +49,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13.13"
+
       - name: Validate repository variables
         shell: bash
         run: |
           set -euo pipefail
+          [[ "$GITHUB_REF" == "refs/heads/main" ]] || {
+            echo "Production Bootstrap must run from the main branch." >&2
+            exit 1
+          }
           for key in AWS_REGION AWS_ROLE_ARN EC2_INSTANCE_ID; do
             if [[ -z "${!key:-}" ]]; then
               echo "Required repository variable is missing: ${key}" >&2
@@ -64,6 +72,29 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate reusable GitHub OIDC trust boundary
+        shell: bash
+        env:
+          REPOSITORY_ID: ${{ github.repository_id }}
+          REPOSITORY_OWNER_ID: ${{ github.repository_owner_id }}
+        run: |
+          set -euo pipefail
+          account_id="$(aws sts get-caller-identity --query Account --output text)"
+          role_name="${AWS_ROLE_ARN##*/}"
+          policy_file="$RUNNER_TEMP/github-oidc-trust.json"
+          aws iam get-role \
+            --role-name "$role_name" \
+            --query 'Role.AssumeRolePolicyDocument' \
+            --output json > "$policy_file"
+          python -B \
+            scripts/deployment/production/validate_github_oidc_trust.py \
+            validate \
+            --account-id "$account_id" \
+            --repository "$GITHUB_REPOSITORY" \
+            --repository-id "$REPOSITORY_ID" \
+            --repository-owner-id "$REPOSITORY_OWNER_ID" \
+            --policy-file "$policy_file"
 
       - name: Resolve EC2 instance role
         id: ec2-role

@@ -46,6 +46,7 @@ def test_bootstrap_defaults_to_non_mutating_plan_and_dedicated_runtime():
     assert "waterbridge-p1-team-isolated-postgres-data" in content
     assert "waterbridge-p1-team-isolated-postgres" in content
     assert "approved-test-synthetic-only" in content
+    assert "pgvector/pgvector:0.8.6-pg16-bookworm" in content
     assert "AI_SERVICE_BASE_URL=http://127.0.0.1:8001" in content
     assert "ai_runtime_8001 = 'OUT_OF_SCOPE'" in content
 
@@ -58,12 +59,40 @@ def test_bootstrap_fail_closes_source_volume_and_secret_boundaries():
     assert "Apply requires a clean worktree" in content
     assert "RuntimeRoot must stay inside the repository workspace." in content
     assert "ApprovedCustomerInput must stay under backend/.runtime." in content
+    assert "backend\\.runtime\\p1-approved-customers.json" in content
+    assert "Protect-ApprovedCustomerInput" in content
+    assert "icacls.exe" in content
     assert "Do not delete or reuse it automatically." in content
     assert "secret_values_printed = $false" in content
     assert "docker volume rm" not in lowered
     assert "down -v" not in lowered
     assert "drop database" not in lowered
     assert "drop role" not in lowered
+
+
+def test_bootstrap_autoselects_new_port_and_reuses_recorded_port():
+    content = _content(BOOTSTRAP)
+
+    assert "Find-AvailablePostgresPort" in content
+    assert "Test-LoopbackPortAvailable" in content
+    assert "AUTO_START_55445" in content
+    assert "Get-EnvironmentEntry" in content
+    assert "Requested PostgreSQL port differs from the existing Runtime." in content
+    assert "postgres_port = $effectivePostgresPort" in content
+
+
+def test_bootstrap_verifies_exact_docker_contract_and_web_origins():
+    content = _content(BOOTSTRAP)
+
+    assert "Get-PostgresContainerContract" in content
+    assert "$inspect.Config.Image -ne $expectedPostgresImage" in content
+    assert "$binding.HostIp -ne '127.0.0.1'" in content
+    assert "$volumeMounts[0].Name -ne $volumeName" in content
+    assert "The isolated PostgreSQL container contract does not match." in content
+    assert "http://localhost:5174" in content
+    assert "http://127.0.0.1:5174" in content
+    assert "postgres_image = $containerContract.image" in content
+    assert "postgres_host_binding = $containerContract.host_binding" in content
 
 
 def test_bootstrap_uses_profiles_hold_gate_and_minimum_seed_order():
@@ -109,7 +138,8 @@ def test_reuse_never_reseeds_or_resets_runtime():
     assert "NOT_RERUN_ON_REUSE" in content
     assert "Existing P1 Runtime source identity differs" in content
     assert "Reuse was requested, but the P1 Runtime does not exist." in content
-    assert "new or incomplete" in content
+    assert "Approved customer input is missing" in content
+    assert "Receive it through the approved protected channel; never Git." in content
     assert "resumed_incomplete_runtime" in content
     assert "docker volume rm" not in content.lower()
     assert "source-sha.txt" in content

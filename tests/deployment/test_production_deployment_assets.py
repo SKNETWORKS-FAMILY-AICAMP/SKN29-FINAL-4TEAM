@@ -15,9 +15,11 @@ DEPLOY = ROOT / "scripts/deployment/production/deploy-release.sh"
 ROLLBACK = ROOT / "scripts/deployment/production/rollback-release.sh"
 BOOTSTRAP = ROOT / "scripts/deployment/production/bootstrap-host.sh"
 WORKFLOW = ROOT / ".github/workflows/production-deploy.yml"
+RELEASE_WORKFLOW = ROOT / ".github/workflows/production-release.yml"
 BOOTSTRAP_WORKFLOW = ROOT / ".github/workflows/production-bootstrap.yml"
 BACKEND_PREFLIGHT = ROOT / "scripts/deployment/production/validate_backend_runtime.py"
 AI_PREFLIGHT = ROOT / "scripts/deployment/production/validate_ai_readonly_runtime.py"
+OIDC_TRUST = ROOT / "scripts/deployment/production/validate_github_oidc_trust.py"
 
 
 class ProductionDeploymentAssetTests(unittest.TestCase):
@@ -199,6 +201,17 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("DJANGO_ALLOWED_HOSTS", dockerfile)
         self.assertIn("headers={'Host': host}", dockerfile)
         self.assertIn("context: backend", workflow)
+        self.assertIn(
+            "COPY --from=state_machine_contracts . "
+            "/workspace/contracts/state-machine/",
+            dockerfile,
+        )
+        self.assertIn("load_state_machine_contract()", dockerfile)
+        self.assertIn(
+            "state_machine_contracts=contracts/state-machine",
+            workflow,
+        )
+        self.assertIn("BACKEND_STATE_MACHINE_CONTRACT_PASS", workflow)
 
     def test_gunicorn_config_gate_uses_verify_full_without_runtime_secrets(
         self,
@@ -272,11 +285,15 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertNotIn("print(exc", backend)
         self.assertNotIn("print(exc", ai)
 
-    def test_ssm_failures_always_emit_deploy_and_rollback_results(self) -> None:
+    def test_ssm_polling_waits_for_terminal_deploy_and_rollback_results(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertEqual(workflow.count("aws ssm get-command-invocation"), 2)
-        self.assertIn("SSM_DEPLOY_WAITER_FAILED status=%s", workflow)
-        self.assertIn("SSM_ROLLBACK_WAITER_FAILED status=%s", workflow)
+        self.assertNotIn("aws ssm wait command-executed", workflow)
+        self.assertIn("deadline=$((SECONDS + 1200))", workflow)
+        self.assertIn("deadline=$((SECONDS + 600))", workflow)
+        self.assertEqual(workflow.count("Pending|InProgress|Delayed|Cancelling"), 2)
+        self.assertIn("SSM_DEPLOY_POLL_TIMEOUT seconds=1200", workflow)
+        self.assertIn("SSM_ROLLBACK_POLL_TIMEOUT seconds=600", workflow)
         self.assertIn('[[ "$status" == "Success" ]]', workflow)
         self.assertIn('[[ "$rollback_status" == "Success" ]]', workflow)
 
@@ -297,6 +314,7 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
 
     def test_deployment_is_sha_locked_and_serialized(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
+        release = RELEASE_WORKFLOW.read_text(encoding="utf-8")
         backend_ci = (ROOT / ".github/workflows/backend-ci.yml").read_text(
             encoding="utf-8"
         )
@@ -305,13 +323,25 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         )
         self.assertIn("cancel-in-progress: false", text)
         self.assertNotIn("workflow_run", text)
-        self.assertIn('      - "v*.*.*"', text)
-        self.assertIn("RELEASE_SHA: ${{ github.sha }}", text)
+        self.assertIn('      - "v*.*.*"', release)
+        self.assertIn("workflow_call:", text)
+        self.assertIn("RELEASE_SHA: ${{ inputs.release_sha }}", text)
+        self.assertIn("release_sha: ${{ github.sha }}", release)
+        self.assertIn("release_tag: ${{ github.ref_name }}", release)
+        self.assertIn(
+            "SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/"
+            ".github/workflows/production-deploy.yml@main",
+            release,
+        )
+        self.assertIn('[[ "$CALLER_EVENT" == "push" ]]', text)
+        self.assertIn('[[ "$CALLER_REF_TYPE" == "tag" ]]', text)
+        self.assertIn('[[ "$CALLER_SHA" == "$RELEASE_SHA" ]]', text)
         self.assertIn(r"^v[0-9]+\.[0-9]+\.[0-9]+$", text)
         self.assertIn("git fetch --no-tags origin main:refs/remotes/origin/main", text)
         self.assertIn('git merge-base --is-ancestor "$RELEASE_SHA" origin/main', text)
         self.assertIn("ref: ${{ env.RELEASE_SHA }}", text)
         self.assertIn("tests.deployment.test_production_deployment_assets", text)
+        self.assertIn("tests.deployment.test_github_oidc_trust", text)
         self.assertIn("tests.deployment.test_backend_ci_workflow", text)
         self.assertIn("tests.deployment.test_data_ci_workflow", text)
         self.assertNotIn("discover -s tests/deployment", text)
@@ -332,6 +362,28 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn(
             "data/(synthetic/fixtures|processed/structured/evidence)", text
         )
+
+    def test_bootstrap_validates_reusable_semver_oidc_trust(self) -> None:
+        bootstrap = BOOTSTRAP_WORKFLOW.read_text(encoding="utf-8")
+        trust = OIDC_TRUST.read_text(encoding="utf-8")
+        self.assertIn("Production Bootstrap must run from the main branch", bootstrap)
+        self.assertIn("aws iam get-role", bootstrap)
+        self.assertIn("validate_github_oidc_trust.py", bootstrap)
+        self.assertIn("GITHUB_REPOSITORY", bootstrap)
+        self.assertIn("github.repository_id", bootstrap)
+        self.assertIn("github.repository_owner_id", bootstrap)
+        self.assertIn("GitHubActionsProductionEnvironment", trust)
+        self.assertIn("ENVIRONMENT_CLAIM: PRODUCTION_ENVIRONMENT", trust)
+        self.assertNotIn("StringLike", trust)
+        self.assertIn("JOB_WORKFLOW_REF_CLAIM", trust)
+        self.assertIn("@refs/heads/main", trust)
+        self.assertNotRegex(trust, r"refs/tags/v\d+\.\d+\.\d+")
+        environment_workflows = [
+            path.name
+            for path in (ROOT / ".github/workflows").glob("*.yml")
+            if "environment: production" in path.read_text(encoding="utf-8")
+        ]
+        self.assertEqual(environment_workflows, ["production-deploy.yml"])
 
 
 if __name__ == "__main__":

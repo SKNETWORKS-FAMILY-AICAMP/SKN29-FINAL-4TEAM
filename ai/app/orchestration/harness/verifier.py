@@ -7,6 +7,7 @@ from typing import Any, Type
 from pydantic import BaseModel, ValidationError
 
 from ...retrieval.models.retrieved_chunk import RetrievedChunk
+from ...safety.rule_loader import SafetyRuleLoader
 from ...schemas import RiskLevel, SafetyAssessment, UsageGuidance, UsageGuidanceStatus
 from .product_match import ProductContext, ProductMatchVerifier
 from .tool_failure import McpToolFailure
@@ -231,11 +232,44 @@ class HarnessVerifier:
         if safety_assessment is None or guidance is None:
             return True
         if safety_assessment.risk_level == RiskLevel.DANGER:
-            return guidance.guidance_status in {
+            if guidance.guidance_status == UsageGuidanceStatus.NORMAL:
+                return False
+            if guidance.guidance_status in {
                 UsageGuidanceStatus.TOTAL_STOP,
                 UsageGuidanceStatus.PENDING_CONSULTATION,
-            }
+            }:
+                return True
+            if guidance.guidance_status == UsageGuidanceStatus.PARTIAL_STOP:
+                return HarnessVerifier._danger_partial_stop_is_approved(
+                    safety_assessment
+                )
+            return False
         return True
+
+    @staticmethod
+    def _danger_partial_stop_is_approved(
+        safety_assessment: SafetyAssessment,
+    ) -> bool:
+        if not safety_assessment.requires_consultation:
+            return False
+
+        matched_rule_ids = set(safety_assessment.matched_safety_rule_ids)
+        if not matched_rule_ids:
+            return False
+
+        rules = SafetyRuleLoader().get_safety_rules().get("rules", {})
+        # UsageGuidanceClassifier와 동일하게 safety_rules.yaml의 선언 순서에서
+        # 첫 번째로 매칭되는 승인 Rule을 기준으로 Safety 정합성을 판정한다.
+        for rule_def in rules.values():
+            if rule_def.get("rule_id") not in matched_rule_ids:
+                continue
+            return (
+                rule_def.get("risk_level") == RiskLevel.DANGER.value
+                and rule_def.get("usage_guidance_status")
+                == UsageGuidanceStatus.PARTIAL_STOP.value
+                and rule_def.get("requires_consultation") is True
+            )
+        return False
 
     @staticmethod
     def _schema_is_valid(
