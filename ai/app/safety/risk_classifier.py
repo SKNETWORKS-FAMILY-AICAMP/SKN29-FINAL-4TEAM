@@ -3,6 +3,7 @@
 import re
 from typing import List, Optional
 from ..schemas import RiskLevel, SafetyAssessment
+from .rule_precedence import select_effective_safety_rule
 from .rule_loader import SafetyRuleLoader
 
 
@@ -16,6 +17,7 @@ class RiskClassifier:
     _NEGATED_DANGER_PATTERNS = _NEGATED_LEAK_PATTERNS + (
         r"연기(?:는|가)?\s*(?:안\s*나|없)",
         r"스파크(?:는|가)?\s*(?:안\s*튀|없)",
+        r"화재(?:\s*위험)?(?:은|는|이|가)?\s*(?:아니(?:에요|예요|고|라|며)?|없(?:어요|습니다|고)?)",
     )
     _LEAK_SELECTED_SIGNAL_ALIASES = frozenset(
         {"symptom_leak", "leak", "누수", "제품 누수"}
@@ -69,6 +71,20 @@ class RiskClassifier:
                         highest_priority = rule_def.get("priority", "consultation_recommended")
                         requires_consultation = rule_def.get("requires_consultation", False)
                     break
+
+        if highest_risk == RiskLevel.DANGER:
+            effective_rule = select_effective_safety_rule(
+                self.rules_config,
+                matched_rule_ids,
+                risk_level=RiskLevel.DANGER,
+            )
+            if effective_rule is not None:
+                highest_priority = effective_rule.get(
+                    "priority",
+                    "priority_consultation",
+                )
+            # Danger는 선택된 Rule의 선언 순서와 관계없이 항상 상담 연결한다.
+            requires_consultation = True
 
         if not detected_risks:
             safety_reason = "명시적 위험 키워드가 감지되지 않았습니다. 일반 증상 조치 가이드를 제공합니다."

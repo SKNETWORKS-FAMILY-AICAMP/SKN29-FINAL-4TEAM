@@ -41,6 +41,7 @@ rules:
       - "찌릿"
       - "감전"
       - "타는 냄새"
+      - "화재"
     restricted_functions:
       - "제품 전체 기능 사용 중지"
     next_actions:

@@ -1,10 +1,24 @@
 """안전 분류기 및 가드레일 단위 테스트."""
 
+from copy import deepcopy
+
 import pytest
 from ai.app.schemas import RiskLevel, SafetyPriority, UsageGuidanceStatus
 from ai.app.safety import RiskClassifier, UsageGuidanceClassifier
 from ai.app.safety import ProhibitedActionGuard
-from ai.app.validation.safety import ProhibitedPhraseValidator
+from ai.app.safety.rule_loader import SafetyRuleLoader
+from ai.app.validation.safety import (
+    ProhibitedPhraseValidator,
+    SafetyRuleAlignmentValidator,
+)
+
+
+class StaticSafetyRuleLoader:
+    def __init__(self, config):
+        self._config = config
+
+    def get_safety_rules(self):
+        return self._config
 
 
 @pytest.fixture
@@ -206,6 +220,104 @@ def test_hot_water_heater_danger_cases_require_partial_stop_and_consultation(
     assert "SAFETY-ELECTRICAL-001" not in assessment.matched_safety_rule_ids
     assert guidance.guidance_status == UsageGuidanceStatus.PARTIAL_STOP
     assert guidance.restricted_functions == ["온수 출수 및 음용 중지"]
+    assert guidance.next_actions == [
+        "온수 기능 사용과 온수 음용을 중단하세요.",
+        "제품을 직접 분해하지 말고 전문 상담 및 기사 점검을 요청하세요.",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("case_id", "raw_text", "expected_total_stop_rule_id"),
+    [
+        (
+            "HOT-WATER-HEATER-WITH-LEAK",
+            "온수 히터 고장과 누수가 함께 발생했습니다.",
+            "SAFETY-LEAK-001",
+        ),
+        (
+            "HOT-WATER-HEATER-WITH-ELECTRICAL-RISK",
+            "온수 히터 고장 중에 스파크가 발생했습니다.",
+            "SAFETY-ELECTRICAL-001",
+        ),
+        (
+            "HOT-WATER-HEATER-WITH-FIRE-RISK",
+            "온수 히터 고장과 화재 위험이 함께 있습니다.",
+            "SAFETY-ELECTRICAL-001",
+        ),
+    ],
+)
+def test_hot_water_heater_with_more_restrictive_danger_uses_total_stop(
+    risk_classifier,
+    guidance_classifier,
+    case_id,
+    raw_text,
+    expected_total_stop_rule_id,
+):
+    assessment = risk_classifier.classify(raw_text)
+    guidance = guidance_classifier.determine_guidance(
+        assessment,
+        raw_text,
+        has_evidence=False,
+    )
+
+    assert case_id.startswith("HOT-WATER-HEATER-WITH-")
+    assert assessment.risk_level == RiskLevel.DANGER
+    assert assessment.requires_consultation is True
+    assert "SAFETY-HOT-WATER-HEATER-001" in assessment.matched_safety_rule_ids
+    assert expected_total_stop_rule_id in assessment.matched_safety_rule_ids
+    assert guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
+    SafetyRuleAlignmentValidator().validate(assessment, guidance)
+
+
+def test_total_stop_precedence_does_not_depend_on_rule_declaration_order():
+    config = deepcopy(SafetyRuleLoader().get_safety_rules())
+    rules = config["rules"]
+    config["rules"] = {
+        "hot_water_heater_danger": rules["hot_water_heater_danger"],
+        "leak_danger": rules["leak_danger"],
+    }
+    loader = StaticSafetyRuleLoader(config)
+    risk_classifier = RiskClassifier(loader)
+    guidance_classifier = UsageGuidanceClassifier(loader)
+    raw_text = "온수 히터 고장과 누수가 함께 발생했습니다."
+
+    assessment = risk_classifier.classify(raw_text)
+    guidance = guidance_classifier.determine_guidance(
+        assessment,
+        raw_text,
+        has_evidence=False,
+    )
+
+    assert assessment.matched_safety_rule_ids == [
+        "SAFETY-HOT-WATER-HEATER-001",
+        "SAFETY-LEAK-001",
+    ]
+    assert assessment.requires_consultation is True
+    assert guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
+    assert guidance.restricted_functions == rules["leak_danger"][
+        "restricted_functions"
+    ]
+    SafetyRuleAlignmentValidator(loader).validate(assessment, guidance)
+
+
+def test_explicitly_negated_fire_risk_keeps_hot_water_heater_partial_stop(
+    risk_classifier,
+    guidance_classifier,
+):
+    raw_text = "온수 히터 고장이지만 화재 위험은 없습니다."
+
+    assessment = risk_classifier.classify(raw_text)
+    guidance = guidance_classifier.determine_guidance(
+        assessment,
+        raw_text,
+        has_evidence=False,
+    )
+
+    assert assessment.matched_safety_rule_ids == [
+        "SAFETY-HOT-WATER-HEATER-001"
+    ]
+    assert assessment.requires_consultation is True
+    assert guidance.guidance_status == UsageGuidanceStatus.PARTIAL_STOP
 
 
 def test_prohibited_action_guard_blocks_disassembly():
