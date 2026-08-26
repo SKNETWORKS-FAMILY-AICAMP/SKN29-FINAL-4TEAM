@@ -119,13 +119,13 @@ describe("ConsultantInquiryListPage", () => {
     expect(screen.queryByRole("textbox", { name: /상담 기록/ })).not.toBeInTheDocument();
   });
 
-  it("모든 문의 행을 제목·상태별 경과 시간·고객명 순서로 10건씩 표시한다", async () => {
+  it("모든 문의 행을 제목·상태별 경과 시간·고객명 순서로 5건씩 표시한다", async () => {
     const user = userEvent.setup();
     renderPage();
 
     const assertRows = (unit: "분" | "시간" | "일") => {
       const inquiryRows = screen.getAllByRole("button", { name: /상세 열기/ });
-      expect(inquiryRows).toHaveLength(10);
+      expect(inquiryRows).toHaveLength(5);
 
       inquiryRows.forEach((row) => {
         const [subject, receivedAt, customer] = Array.from(row.children);
@@ -357,7 +357,7 @@ describe("ConsultantInquiryListPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("전체·긴급·주의·일반 탭을 전환하면 한 페이지에 문의 10건만 보여준다", async () => {
+  it("전체·긴급·주의·일반 탭을 전환하면 한 페이지에 문의 5건만 보여준다", async () => {
     const user = userEvent.setup();
     renderPage();
 
@@ -404,7 +404,7 @@ describe("ConsultantInquiryListPage", () => {
         "button",
         { name: /상세 열기/ },
       ),
-    ).toHaveLength(10);
+    ).toHaveLength(5);
     expect(
       screen.queryByRole("button", { name: "긴급 문의 상태 필터" }),
     ).not.toBeInTheDocument();
@@ -418,7 +418,7 @@ describe("ConsultantInquiryListPage", () => {
     await user.keyboard("{ArrowRight}");
     expect(dangerTab).toHaveAttribute("aria-selected", "true");
     await waitFor(() =>
-      expect(getRiskPanel("danger").getAllByRole("button", { name: /상세 열기/ })).toHaveLength(10),
+      expect(getRiskPanel("danger").getAllByRole("button", { name: /상세 열기/ })).toHaveLength(5),
     );
 
     await user.click(cautionTab);
@@ -428,7 +428,7 @@ describe("ConsultantInquiryListPage", () => {
         "button",
         { name: /상세 열기/ },
       ),
-    ).toHaveLength(10);
+    ).toHaveLength(5);
 
     await user.click(generalTab);
     expect(generalTab).toHaveAttribute("aria-selected", "true");
@@ -437,7 +437,7 @@ describe("ConsultantInquiryListPage", () => {
         "button",
         { name: /상세 열기/ },
       ),
-    ).toHaveLength(10);
+    ).toHaveLength(5);
   });
 
   it("API가 없는 대·중·소 분류는 숨기고 검색과 정렬은 유지한다", () => {

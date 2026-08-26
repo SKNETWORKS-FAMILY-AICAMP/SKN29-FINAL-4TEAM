@@ -137,13 +137,9 @@ export default function RemoteConsultantFirstDetailPanel({
     <>
       <header className="consultant-detail-drawer__head">
         <div>
-          <small>
-            {inquiry ? `문의번호 ${inquiry.inquiryCode}` : "문의 상세"}
-          </small>
           <h2 id="consultant-detail-title">
             문의 상세·상담 처리
           </h2>
-          <p>고객 상황을 확인하고 상담 기록을 남겨 주세요.</p>
         </div>
         <button type="button" aria-label="문의 상세 닫기" onClick={onClose}>
           <span aria-hidden="true">×</span>

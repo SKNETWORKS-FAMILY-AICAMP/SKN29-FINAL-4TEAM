@@ -7,10 +7,10 @@ import {
   formatWorkspaceDateTime,
   normalizeCounselorRisk,
   normalizeCounselorStatus,
-  PRIORITY_LABELS,
   RISK_LABELS,
   STATUS_LABELS,
 } from "../model/consultantWorkspaceModel";
+import { hasRemoteConsultationAction } from "../model/remoteConsultationActions";
 import RemoteConsultationActionPanel from "./RemoteConsultationActionPanel";
 
 interface RemoteConsultantInquiryDetailProps {
@@ -154,11 +154,13 @@ export default function RemoteConsultantInquiryDetail({
     normalizeCounselorStatus(inquiry.workflow.status)
   ];
   const riskLabel = RISK_LABELS[normalizedRisk];
-  const priorityLabel = PRIORITY_LABELS[inquiry.priority] ?? "미확인";
   const productName =
     inquiry.productAndCare?.productModelName ?? "제품 정보 확인 필요";
   const hasConsultationHistory =
     inquiry.consultation !== null || inquiry.stateHistory.length > 0;
+  const showActionPanel = Boolean(
+    onOpenVisit && onRefresh && hasRemoteConsultationAction(inquiry),
+  );
 
   return (
     <div className="remote-inquiry-detail" aria-label="상담 문의 상세">
@@ -178,19 +180,11 @@ export default function RemoteConsultantInquiryDetail({
       >
         <div className="remote-inquiry-detail__badges" aria-label="문의 상태 요약">
           <span className={`remote-inquiry-detail__badge is-risk-${normalizedRisk.toLowerCase()}`}>
-            안전 위험도 · {riskLabel}
-          </span>
-          <span className={`remote-inquiry-detail__badge is-priority-${inquiry.priority.toLowerCase()}`}>
-            처리 우선순위 · {priorityLabel}
+            {riskLabel} 문의
           </span>
           <span className="remote-inquiry-detail__badge is-status">
             {statusLabel}
           </span>
-          {inquiry.customer.isSynthetic && (
-            <span className="remote-inquiry-detail__badge is-synthetic">
-              합성 테스트
-            </span>
-          )}
         </div>
         <h2 id="remote-inquiry-customer-title">
           {inquiry.customer.displayName}
@@ -221,8 +215,36 @@ export default function RemoteConsultantInquiryDetail({
         </dl>
       </section>
 
-      <div className="remote-inquiry-detail__workspace">
+      <div
+        className={`remote-inquiry-detail__workspace${
+          showActionPanel ? "" : " is-single-column"
+        }`}
+      >
         <div className="remote-inquiry-detail__content">
+          <section
+            className="remote-inquiry-detail__section"
+            data-e2e-sensitive="true"
+          >
+            <h2>고객 증상과 답변</h2>
+            <p className="remote-inquiry-detail__symptom-detail">
+              {inquiry.symptomAndQuestionnaire.symptomSummary}
+            </p>
+            {inquiry.symptomAndQuestionnaire.answers.length > 0 ? (
+              <dl className="remote-inquiry-detail__answers">
+                {inquiry.symptomAndQuestionnaire.answers.map((answer) => (
+                  <div key={answer.questionCode}>
+                    <dt>{answer.questionText}</dt>
+                    <dd>{answer.answer}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p className="remote-inquiry-detail__empty-copy">
+                등록된 문진 답변이 없습니다.
+              </p>
+            )}
+          </section>
+
           <section
             className={`remote-inquiry-detail__section remote-inquiry-detail__section--guidance is-risk-${normalizedRisk.toLowerCase()}`}
             data-e2e-sensitive="true"
@@ -253,30 +275,6 @@ export default function RemoteConsultantInquiryDetail({
             <p className="remote-inquiry-detail__evidence-empty">
               공식 근거는 아직 제공되지 않았습니다.
             </p>
-          </section>
-
-          <section
-            className="remote-inquiry-detail__section"
-            data-e2e-sensitive="true"
-          >
-            <h2>고객 증상과 답변</h2>
-            <p className="remote-inquiry-detail__symptom-detail">
-              {inquiry.symptomAndQuestionnaire.symptomSummary}
-            </p>
-            {inquiry.symptomAndQuestionnaire.answers.length > 0 ? (
-              <dl className="remote-inquiry-detail__answers">
-                {inquiry.symptomAndQuestionnaire.answers.map((answer) => (
-                  <div key={answer.questionCode}>
-                    <dt>{answer.questionText}</dt>
-                    <dd>{answer.answer}</dd>
-                  </div>
-                ))}
-              </dl>
-            ) : (
-              <p className="remote-inquiry-detail__empty-copy">
-                등록된 문진 답변이 없습니다.
-              </p>
-            )}
           </section>
 
           <section
@@ -464,7 +462,7 @@ export default function RemoteConsultantInquiryDetail({
           )}
         </div>
 
-        {onOpenVisit && onRefresh && (
+        {showActionPanel && onOpenVisit && onRefresh && (
           <RemoteConsultationActionPanel
             inquiry={inquiry}
             onOpenVisit={onOpenVisit}

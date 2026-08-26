@@ -701,15 +701,16 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     await user.click(await screen.findByRole("button", { name: "상담 완료" }));
 
     await waitFor(() =>
-      expect(screen.getByTestId("consultation-current-status")).toHaveAttribute(
-        "data-workflow-status",
-        "COMPLETION_PENDING",
+      expect(remoteMocks.requestApi).toHaveBeenCalledWith(
+        expect.stringContaining("complete-consultation"),
+        expect.objectContaining({
+          body: expect.objectContaining({ state_version: 7 }),
+        }),
       ),
     );
-    expect(screen.getByTestId("consultation-current-status")).toHaveAttribute(
-      "data-state-version",
-      "8",
-    );
+    expect(
+      screen.queryByTestId("consultation-current-status"),
+    ).not.toBeInTheDocument();
 
     const expectedCalls = [
       ["claim-consultation", 3],
@@ -759,13 +760,14 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       ).not.toBeInTheDocument();
       [
         "합성 고객 01",
-        "고객에게 안내할 내용",
         "고객 증상과 답변",
+        "고객에게 안내할 내용",
         "제품·관리 정보",
-        "상담 기록 및 완료",
       ].forEach((heading) =>
         expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument(),
       );
+      expect(screen.queryByText("현재 할 일")).not.toBeInTheDocument();
+      expect(screen.queryByText(/현재 상태 ·/)).not.toBeInTheDocument();
       expect(screen.getByText("제품 사용 중단")).toBeInTheDocument();
       expect(screen.queryByText("TOTAL_STOP")).not.toBeInTheDocument();
       expect(remoteMocks.getInquiryDetail).toHaveBeenCalledWith(INQUIRY_ID);

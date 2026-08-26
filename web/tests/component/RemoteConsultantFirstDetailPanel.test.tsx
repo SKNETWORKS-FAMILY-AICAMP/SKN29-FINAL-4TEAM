@@ -143,13 +143,18 @@ describe("Remote 첫 문의 상세 패널", () => {
     expect(screen.queryByText("조회 확인 번호: corr-detail")).not.toBeInTheDocument();
     [
       "합성 고객 01",
-      "고객에게 안내할 내용",
       "고객 증상과 답변",
+      "고객에게 안내할 내용",
       "제품·관리 정보",
-      "상담 기록 및 완료",
     ].forEach((heading) =>
       expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument(),
     );
+    expect(screen.queryByText(/문의번호/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("고객 상황을 확인하고 상담 기록을 남겨 주세요."),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("현재 할 일")).not.toBeInTheDocument();
+    expect(screen.queryByText(/현재 상태 ·/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Backend가 제공한/)).not.toBeInTheDocument();
     expect(screen.queryByText(/stateVersion/)).not.toBeInTheDocument();
     expect(

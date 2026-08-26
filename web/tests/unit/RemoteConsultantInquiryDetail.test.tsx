@@ -74,13 +74,14 @@ describe("Remote 상담사 문의 상세", () => {
       screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
     ).toEqual([
       "합성고객 01",
-      "고객에게 안내할 내용",
       "고객 증상과 답변",
+      "고객에게 안내할 내용",
       "제품·관리 정보",
     ]);
     expect(screen.getByText("상담 대기")).toBeInTheDocument();
-    expect(screen.getByText("안전 위험도 · 주의")).toBeInTheDocument();
-    expect(screen.getByText("처리 우선순위 · 낮음")).toBeInTheDocument();
+    expect(screen.getByText("주의 문의")).toHaveClass("is-risk-caution");
+    expect(screen.queryByText(/처리 우선순위/)).not.toBeInTheDocument();
+    expect(screen.queryByText("합성 테스트")).not.toBeInTheDocument();
     expect(screen.queryByText("CONSULTATION_REQUIRED")).not.toBeInTheDocument();
   });
 
@@ -90,7 +91,7 @@ describe("Remote 상담사 문의 상세", () => {
     );
 
     expect(screen.queryByText("LOW")).not.toBeInTheDocument();
-    expect(screen.getByText("처리 우선순위 · 낮음")).toBeInTheDocument();
+    expect(screen.queryByText(/처리 우선순위/)).not.toBeInTheDocument();
     expect(screen.getByText("방문 관리")).toBeInTheDocument();
     expect(screen.getByText("관리 이력 없음")).toBeInTheDocument();
     expect(
@@ -182,6 +183,23 @@ describe("Remote 상담사 문의 상세", () => {
       screen.getByText("필터 교체 후에도 출수량이 줄었나요?"),
     ).toBeInTheDocument();
   });
+
+  it.each([
+    ["danger", "긴급 문의", "is-risk-danger"],
+    ["caution", "주의 문의", "is-risk-caution"],
+    ["general", "일반 문의", "is-risk-general"],
+  ] as const)(
+    "위험도 %s를 문의 종류와 전용 색상 class로 표시한다",
+    (riskLevel, label, className) => {
+      render(
+        <RemoteConsultantInquiryDetail
+          inquiry={createDetail({ riskLevel })}
+        />,
+      );
+
+      expect(screen.getByText(label)).toHaveClass(className);
+    },
+  );
 
   it("consultation·visit null을 불필요로 해석하지 않는다", () => {
     render(<RemoteConsultantInquiryDetail inquiry={createDetail()} />);
@@ -308,5 +326,27 @@ describe("Remote 상담사 문의 상세", () => {
       "제품 정보를 불러오지 못했습니다.",
     );
     expect(screen.getByText("합성고객 01")).toBeInTheDocument();
+  });
+
+  it("처리 완료되어 가능한 작업이 없으면 빈 상담 처리 카드를 표시하지 않는다", () => {
+    const { container } = render(
+      <RemoteConsultantInquiryDetail
+        inquiry={createDetail({
+          status: "RESOLVED",
+          workflow: {
+            status: "RESOLVED",
+            stateVersion: 8,
+            allowedActions: [],
+          },
+        })}
+        onOpenVisit={() => undefined}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(screen.queryByLabelText("상담 처리 작업")).not.toBeInTheDocument();
+    expect(
+      container.querySelector(".remote-inquiry-detail__workspace"),
+    ).toHaveClass("is-single-column");
   });
 });

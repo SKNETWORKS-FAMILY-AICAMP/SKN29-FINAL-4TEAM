@@ -79,7 +79,7 @@ export default function LoginPage() {
         replace: true,
       });
     } catch {
-      setLoginError("아이디 또는 비밀번호를 확인해 주세요.");
+      setLoginError("사번 또는 비밀번호를 확인해 주세요.");
     }
   };
 
@@ -105,7 +105,7 @@ export default function LoginPage() {
               onSubmit={handlePasswordSubmit}
             >
               <label>
-                아이디
+                사번
                 <input
                   name="username"
                   autoComplete="username"
@@ -126,7 +126,7 @@ export default function LoginPage() {
                 />
               </label>
               <button type="submit" disabled={isLoading}>
-                {isLoading ? "로그인 중…" : "ID/PW로 로그인"}
+                {isLoading ? "로그인 중…" : "사번/비밀번호로 로그인"}
               </button>
             </form>
           )}

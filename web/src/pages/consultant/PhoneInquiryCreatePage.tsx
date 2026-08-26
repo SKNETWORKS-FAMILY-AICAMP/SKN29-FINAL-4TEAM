@@ -26,6 +26,7 @@ import {
   consultantWorkspaceDataRepository,
   createMockConsultantInquiryListViewModel,
 } from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
+import { getManagementTypeLabel } from "../../features/consultation/model/consultantWorkspaceRemoteMapper";
 import {
   phoneInquiryRemoteRepository,
   type CustomerSubscriptionCandidateDto,
@@ -44,6 +45,8 @@ import "./PhoneInquiryCreatePage.css";
 
 const SEARCH_DELAY_MS = 300;
 const PHONE_LIKE_PATTERN = /^[0-9\s()+-]+$/;
+// The current Backend contract still requires priority_code after the UI choice is removed.
+const DEFAULT_PHONE_INQUIRY_PRIORITY: PhoneInquiryPriorityCode = "NORMAL";
 
 const SIDEBAR_BUCKET_STATUSES: Record<
   CounselorWorkBucket,
@@ -76,17 +79,9 @@ const SYMPTOM_LABELS: Readonly<Record<PhoneInquirySymptomCode, string>> = {
   OTHER: "기타",
 };
 
-const PRIORITY_LABELS: Readonly<Record<PhoneInquiryPriorityCode, string>> = {
-  LOW: "낮음",
-  NORMAL: "보통",
-  HIGH: "높음",
-  URGENT: "긴급",
-};
-
 interface PhoneInquiryFormState {
   rawText: string;
   symptomCode: PhoneInquirySymptomCode | "";
-  priorityCode: PhoneInquiryPriorityCode;
 }
 
 type SearchState = "IDLE" | "LOADING" | "RESULTS" | "EMPTY" | "ERROR";
@@ -94,7 +89,6 @@ type SearchState = "IDLE" | "LOADING" | "RESULTS" | "EMPTY" | "ERROR";
 const INITIAL_FORM: PhoneInquiryFormState = {
   rawText: "",
   symptomCode: "",
-  priorityCode: "NORMAL",
 };
 
 function isEligibleSearchQuery(value: string): boolean {
@@ -301,7 +295,7 @@ export default function PhoneInquiryCreatePage() {
       subscription_id: selectedCandidate.subscription_id,
       raw_text: form.rawText.trim(),
       representative_symptom_code: form.symptomCode,
-      priority_code: form.priorityCode,
+      priority_code: DEFAULT_PHONE_INQUIRY_PRIORITY,
     };
     const signature = JSON.stringify(body);
     const idempotencyKey = operationTrackerRef.current.begin(signature);
@@ -364,11 +358,7 @@ export default function PhoneInquiryCreatePage() {
           <div className="phone-inquiry-entry-layout">
             <form className="phone-inquiry-form-card" onSubmit={submitPhoneInquiry}>
               <header className="phone-inquiry-card-head">
-                <div>
-                  <span>신규 접수</span>
-                  <h2>고객과 구독을 먼저 확인해 주세요</h2>
-                </div>
-                <small>필수 항목 *</small>
+                <h2>전화 문의 등록</h2>
               </header>
 
               <div className="phone-inquiry-customer-search">
@@ -450,7 +440,9 @@ export default function PhoneInquiryCreatePage() {
                             </span>
                             <span>
                               <b>{candidate.product_name}</b>
-                              <small>{candidate.product_model_code} · 활성 구독</small>
+                              <small>
+                                제품 모델 {candidate.product_model_code} · 이용 중
+                              </small>
                             </span>
                           </button>
                         ))}
@@ -465,24 +457,28 @@ export default function PhoneInquiryCreatePage() {
               </div>
 
               {selectedCandidate && (
-                <section className="phone-inquiry-selected-card" aria-label="선택한 고객과 구독">
+                <section className="phone-inquiry-selected-card" aria-label="고객 정보">
                   <div>
-                    <span>선택 완료</span>
+                    <span>고객 정보</span>
                     <strong>{selectedCandidate.customer_display_name}</strong>
                     <small>{selectedCandidate.phone_masked}</small>
                   </div>
                   <dl>
                     <div>
-                      <dt>제품</dt>
+                      <dt>제품명</dt>
                       <dd>{selectedCandidate.product_name}</dd>
                     </div>
                     <div>
-                      <dt>모델</dt>
+                      <dt>제품 모델</dt>
                       <dd>{selectedCandidate.product_model_code}</dd>
                     </div>
                     <div>
                       <dt>관리 유형</dt>
-                      <dd>{selectedCandidate.management_type_code}</dd>
+                      <dd>
+                        {getManagementTypeLabel(
+                          selectedCandidate.management_type_code,
+                        )}
+                      </dd>
                     </div>
                   </dl>
                   <button type="button" onClick={resetSelection}>다른 고객 선택</button>
@@ -494,37 +490,24 @@ export default function PhoneInquiryCreatePage() {
 
                 <label>
                   <span>대표 증상 *</span>
-                  <select
-                    required
-                    value={form.symptomCode}
-                    onChange={(event) =>
-                      updateForm("symptomCode", event.target.value as PhoneInquirySymptomCode | "")
-                    }
-                  >
-                    <option value="">대표 증상 선택</option>
-                    {(Object.entries(SYMPTOM_LABELS) as readonly [PhoneInquirySymptomCode, string][]).map(
-                      ([code, label]) => <option key={code} value={code}>{label}</option>,
-                    )}
-                  </select>
+                  <span className="phone-inquiry-select-control">
+                    <select
+                      required
+                      value={form.symptomCode}
+                      onChange={(event) =>
+                        updateForm("symptomCode", event.target.value as PhoneInquirySymptomCode | "")
+                      }
+                    >
+                      <option value="">대표 증상을 선택해 주세요</option>
+                      {(Object.entries(SYMPTOM_LABELS) as readonly [PhoneInquirySymptomCode, string][]).map(
+                        ([code, label]) => <option key={code} value={code}>{label}</option>,
+                      )}
+                    </select>
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                      <path d="m7 9.5 5 5 5-5" />
+                    </svg>
+                  </span>
                 </label>
-
-                <fieldset className="phone-inquiry-priority">
-                  <legend>긴급도 *</legend>
-                  {(Object.entries(PRIORITY_LABELS) as readonly [PhoneInquiryPriorityCode, string][]).map(
-                    ([code, label]) => (
-                      <label key={code}>
-                        <input
-                          type="radio"
-                          name="phone-inquiry-priority"
-                          value={code}
-                          checked={form.priorityCode === code}
-                          onChange={() => updateForm("priorityCode", code)}
-                        />
-                        <span>{label}</span>
-                      </label>
-                    ),
-                  )}
-                </fieldset>
 
                 <label className="phone-inquiry-field--wide">
                   <span>문의 내용 *</span>
@@ -539,42 +522,76 @@ export default function PhoneInquiryCreatePage() {
                   />
                   <small>{form.rawText.length.toLocaleString()} / 5,000</small>
                 </label>
+
+                <label className="phone-inquiry-field--wide">
+                  <span>상담 내용</span>
+                  <textarea
+                    aria-label="상담 내용"
+                    aria-describedby="phone-consultation-note-help"
+                    disabled
+                    rows={5}
+                    placeholder="상담 기록 저장 기능 연결 후 입력할 수 있습니다."
+                  />
+                  <small
+                    id="phone-consultation-note-help"
+                    className="phone-inquiry-field-note"
+                  >
+                    현재 Backend 등록 API에는 상담 내용을 별도로 저장하는 항목이
+                    없어 비활성화되어 있습니다.
+                  </small>
+                </label>
               </fieldset>
 
               {submitError && <div className="phone-inquiry-submit-error" role="alert">{submitError}</div>}
               {registeredInquiry && (
-                <div className="phone-inquiry-save-notice" role="status">
-                  <div>
+                <div className="phone-inquiry-save-notice">
+                  <div role="status">
                     <strong>{registeredInquiry.inquiry_code}</strong>
-                    <span> 전화 문의가 등록되었습니다.</span>
+                    <span> 전화 문의가 새 문의로 등록되었습니다.</span>
                   </div>
-                  <Link to={createInquiryDetailPath(parseInquiryId(registeredInquiry.inquiry_id))}>
-                    상담 기록 계속
-                  </Link>
+                  <div className="phone-inquiry-save-actions">
+                    <button
+                      type="button"
+                      className="phone-inquiry-button phone-inquiry-button--secondary"
+                      onClick={resetSelection}
+                    >
+                      새 문의 등록
+                    </button>
+                    <Link
+                      className="phone-inquiry-button phone-inquiry-button--primary"
+                      to={createInquiryDetailPath(
+                        parseInquiryId(registeredInquiry.inquiry_id),
+                      )}
+                    >
+                      문의 상세 보기
+                    </Link>
+                  </div>
                 </div>
               )}
 
-              <footer className="phone-inquiry-form-actions">
-                <button
-                  type="button"
-                  className="phone-inquiry-button phone-inquiry-button--secondary"
-                  onClick={resetSelection}
-                >
-                  입력 초기화
-                </button>
-                <button
-                  type="submit"
-                  className="phone-inquiry-button phone-inquiry-button--primary"
-                  disabled={
-                    !selectedCandidate ||
-                    !form.symptomCode ||
-                    !form.rawText.trim() ||
-                    isSubmitting
-                  }
-                >
-                  {isSubmitting ? "등록 중..." : "전화 문의 등록"}
-                </button>
-              </footer>
+              {!registeredInquiry && (
+                <footer className="phone-inquiry-form-actions">
+                  <button
+                    type="button"
+                    className="phone-inquiry-button phone-inquiry-button--secondary"
+                    onClick={resetSelection}
+                  >
+                    입력 초기화
+                  </button>
+                  <button
+                    type="submit"
+                    className="phone-inquiry-button phone-inquiry-button--primary"
+                    disabled={
+                      !selectedCandidate ||
+                      !form.symptomCode ||
+                      !form.rawText.trim() ||
+                      isSubmitting
+                    }
+                  >
+                    {isSubmitting ? "등록 중..." : "전화 문의 등록"}
+                  </button>
+                </footer>
+              )}
             </form>
 
             <aside className="phone-inquiry-guide-card" aria-label="전화 문의 등록 안내">
@@ -585,7 +602,7 @@ export default function PhoneInquiryCreatePage() {
               <ol>
                 <li>검색 결과에서 문의 대상 고객과 제품을 선택합니다.</li>
                 <li>연락처는 서버가 제공한 마스킹 값만 확인합니다.</li>
-                <li>등록 후 생성된 문의에서 상담 기록을 이어갑니다.</li>
+                <li>등록 후 생성된 새 문의의 상세 화면에서 처리를 이어갑니다.</li>
               </ol>
               <p>전화번호 원문과 문의 내용은 브라우저 LocalStorage에 저장하지 않습니다.</p>
             </aside>
