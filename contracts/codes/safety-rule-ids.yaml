@@ -1,5 +1,6 @@
-version: 1.1.0
+version: 1.2.0
 status: TEAM_APPROVED
+policy_extension_status: OWNER_PROPOSED_PM_MERGE_REQUIRED
 owner: BACKEND_DATABASE
 description: >-
   Backend가 DANGER_DETECTED 적용 전에 검증하는 Canonical Safety Rule ID
@@ -40,11 +41,17 @@ rules:
     hold_reason: BACKEND_DANGER_TOTAL_STOP_POLICY_CONFLICT
   - rule_id: SAFETY-HOT-WATER-HEATER-001
     active: true
+    applicability_policy: RUNTIME_APPROVED_PRODUCTS
     risk_level: danger
     requires_consultation: true
     default_guidance_status: PARTIAL_STOP
     allowed_guidance_statuses: [PARTIAL_STOP, TOTAL_STOP]
     danger_event_enabled: true
+    negated_expressions:
+      - 온수 히터 고장은 아닙니다
+      - 온수 히터 이상은 없습니다
+      - 온수 히터는 정상입니다
+      - 순간온수 모듈은 정상입니다
     restricted_functions:
       - 온수 출수 및 음용 중지
     next_actions:

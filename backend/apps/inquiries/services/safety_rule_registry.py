@@ -22,8 +22,9 @@ ALLOWED_GUIDANCE_STATUSES = {
     "PENDING_CONSULTATION",
 }
 ACTIVE_REGISTRY_STATUSES = {"OWNER_BASELINE", "TEAM_APPROVED"}
-SUPPORTED_REGISTRY_VERSIONS = {"1.0.0", "1.1.0"}
+SUPPORTED_REGISTRY_VERSIONS = {"1.0.0", "1.1.0", "1.2.0"}
 DANGER_GUIDANCE_STATUSES = {"PARTIAL_STOP", "TOTAL_STOP"}
+ALLOWED_APPLICABILITY_POLICIES = {"RUNTIME_APPROVED_PRODUCTS"}
 
 
 class SafetyRuleRegistryError(RuntimeError):
@@ -90,6 +91,22 @@ def load_safety_rule_registry() -> dict[str, dict[str, Any]]:
         ):
             raise SafetyRuleRegistryError(
                 f"{rule_id}: approved partial-stop rules require exact guidance."
+            )
+        applicability_policy = rule.get("applicability_policy")
+        if applicability_policy is not None and (
+            applicability_policy not in ALLOWED_APPLICABILITY_POLICIES
+        ):
+            raise SafetyRuleRegistryError(
+                f"{rule_id}: the applicability policy is invalid."
+            )
+        if rule_id == "SAFETY-HOT-WATER-HEATER-001" and (
+            applicability_policy != "RUNTIME_APPROVED_PRODUCTS"
+            or not _is_non_empty_string_list(
+                rule.get("negated_expressions")
+            )
+        ):
+            raise SafetyRuleRegistryError(
+                f"{rule_id}: product applicability and negation rules are required."
             )
         registry[rule_id] = rule
     if not isinstance(codes, list) or codes != list(registry):

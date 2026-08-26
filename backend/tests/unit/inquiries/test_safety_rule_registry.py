@@ -118,6 +118,15 @@ def test_approved_hot_water_heater_contract_matches_ai_rule():
         == registry_rule["restricted_functions"]
     )
     assert ai_rule["next_actions"] == registry_rule["next_actions"]
+    assert (
+        ai_rule["applicability_policy"]
+        == registry_rule["applicability_policy"]
+        == "RUNTIME_APPROVED_PRODUCTS"
+    )
+    assert (
+        ai_rule["negated_expressions"]
+        == registry_rule["negated_expressions"]
+    )
 
 
 @pytest.mark.parametrize(
