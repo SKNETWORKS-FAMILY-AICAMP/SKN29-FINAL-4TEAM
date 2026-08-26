@@ -207,12 +207,24 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
             "/workspace/contracts/state-machine/",
             dockerfile,
         )
+        self.assertIn(
+            "COPY --from=api_contracts action-operation-crosswalk.yaml "
+            "/workspace/contracts/api/action-operation-crosswalk.yaml",
+            dockerfile,
+        )
         self.assertIn("load_state_machine_contract()", dockerfile)
+        self.assertIn(
+            "load_yaml_mapping("
+            "Path('/workspace/contracts/api/action-operation-crosswalk.yaml')"
+            ")",
+            dockerfile,
+        )
         self.assertIn(
             "state_machine_contracts=contracts/state-machine",
             workflow,
         )
-        self.assertIn("BACKEND_STATE_MACHINE_CONTRACT_PASS", workflow)
+        self.assertIn("api_contracts=contracts/api", workflow)
+        self.assertIn("BACKEND_RUNTIME_CONTRACTS_PASS", workflow)
 
     def test_gunicorn_config_gate_uses_verify_full_without_runtime_secrets(
         self,
