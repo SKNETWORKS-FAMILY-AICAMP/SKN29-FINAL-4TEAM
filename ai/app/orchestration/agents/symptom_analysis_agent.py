@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ...common.timeout import CancellationToken, get_stage_timeout_policy
-from ...schemas import AiStage
+from ...schemas import AiStage, RiskLevel
 from ..pipeline_context import PipelineContext
 from ..stages import (
     execute_missing_fields_stage,
@@ -30,7 +30,17 @@ class SymptomAnalysisAgent:
     def run(self, ctx: PipelineContext) -> SymptomAgentOutput:
         self._run_stage(AiStage.STRUCTURING, execute_structuring_stage, ctx)
         self._run_stage(AiStage.SAFETY_CHECK, execute_safety_check_stage, ctx)
-        self._run_stage(AiStage.CHECKING_MISSING_FIELDS, execute_missing_fields_stage, ctx)
+        if ctx.safety_assessment is None:
+            raise RuntimeError("질문 생성 전에 안전 평가가 필요합니다.")
+        if ctx.safety_assessment.risk_level == RiskLevel.DANGER:
+            ctx.missing_fields = []
+            ctx.followup_questions = []
+        else:
+            self._run_stage(
+                AiStage.CHECKING_MISSING_FIELDS,
+                execute_missing_fields_stage,
+                ctx,
+            )
         return self._output(ctx)
 
     def review_evidence_feedback(self, ctx: PipelineContext) -> SymptomAgentOutput:

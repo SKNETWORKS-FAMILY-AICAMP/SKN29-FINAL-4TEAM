@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FullCorpusV3SourceSpanHumanReview",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "review_date",
+    "reviewer_name",
+    "reviewer_role",
+    "source_inventory_id",
+    "document_id",
+    "source_file_sha256",
+    "extracted_pages_path",
+    "extracted_pages_sha256",
+    "decisions",
+    "gold_signoff_status"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "status": {"const": "DATA_QA_SOURCE_SPAN_VERIFIED"},
+    "review_date": {"type": "string", "format": "date"},
+    "reviewer_name": {"const": "김은진"},
+    "reviewer_role": {"const": "DATA_QA_PRIMARY_REVIEWER"},
+    "source_inventory_id": {"const": "SRC-JAC104D-MANUAL"},
+    "document_id": {"const": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"},
+    "source_file_sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+    "extracted_pages_path": {"type": "string", "pattern": "^data/"},
+    "extracted_pages_sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+    "decisions": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "decision_code",
+          "page",
+          "line_start",
+          "line_end",
+          "raw_span_sha256",
+          "classification",
+          "child_id",
+          "evidence_group_id",
+          "decision",
+          "scope_limit"
+        ],
+        "properties": {
+          "decision_code": {"enum": ["1-A", "2-A", "3-A", "4-A"]},
+          "page": {"enum": [4, 5]},
+          "line_start": {"type": "integer", "minimum": 1},
+          "line_end": {"type": "integer", "minimum": 1},
+          "raw_span_sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+          "classification": {"const": "CHILD"},
+          "child_id": {"type": "string", "minLength": 1},
+          "evidence_group_id": {"type": "string", "pattern": "^EVD-[A-Z0-9-]+-[0-9]{3}$"},
+          "decision": {"enum": ["SEPARATE_SEARCH_CARD", "EQUIVALENT_GROUP_VARIANT"]},
+          "scope_limit": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "gold_signoff_status": {"const": "HUMAN_SIGNOFF_PENDING"}
+  }
+}

@@ -125,6 +125,7 @@ def create_ai_guidance(
     sequence: int,
     *,
     guidance_version: int = 1,
+    review_status: str = "APPROVED",
     payload: dict | None = None,
     run_status: str = AIRun.Status.SUCCEEDED,
     schema_status: str = AIRun.SchemaValidationStatus.PASSED,
@@ -173,7 +174,7 @@ def create_ai_guidance(
     guidance = Guidance.objects.create(
         inquiry=inquiry,
         guidance_version=guidance_version,
-        review_status_code="PENDING",
+        review_status_code=review_status,
         title="AI 사용 안내 초안",
         summary_text=summary,
         safety_notice="상태가 악화되면 상담을 요청해 주세요.",
@@ -572,6 +573,32 @@ def test_customer_guidance_rejects_provisional_guidance_before_state_event():
     assert response.json()["error"]["details"]["current_status"] == (
         Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
     )
+
+
+def test_customer_guidance_never_exposes_pending_caution_draft():
+    owner = create_user(157)
+    inquiry = create_inquiry(owner, 157)
+    payload = guidance_payload(message="상담사 검토 전 AI 초안")
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        status_code=Inquiry.Status.AI_GUIDANCE,
+        state_version=3,
+        risk_level_code=Inquiry.RiskLevel.CAUTION,
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
+    )
+    create_ai_guidance(
+        inquiry,
+        157,
+        payload=payload,
+        review_status="PENDING",
+    )
+
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
+    )
+
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "AI_GUIDANCE_NOT_READY"
+    assert "상담사 검토 전 AI 초안" not in str(response.json())
 
 
 def test_customer_guidance_rejects_evidence_verification_fallback():

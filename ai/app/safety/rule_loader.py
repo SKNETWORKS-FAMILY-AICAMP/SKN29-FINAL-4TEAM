@@ -67,6 +67,21 @@ class SafetyRuleLoader:
             status = UsageGuidanceStatus(rule["usage_guidance_status"])
             if rule["risk_level"] == RiskLevel.DANGER.value and status == UsageGuidanceStatus.NORMAL:
                 raise ValueError(f"안전 규칙 {rule_key}: danger와 NORMAL을 함께 사용할 수 없습니다.")
+            applicability_policy = rule.get("applicability_policy")
+            if applicability_policy is not None and (
+                applicability_policy != "RUNTIME_APPROVED_PRODUCTS"
+            ):
+                raise ValueError(
+                    f"안전 규칙 {rule_key}: 적용 범위 정책이 잘못되었습니다."
+                )
+            negated_expressions = rule.get("negated_expressions", [])
+            if not isinstance(negated_expressions, list) or any(
+                not isinstance(expression, str) or not expression.strip()
+                for expression in negated_expressions
+            ):
+                raise ValueError(
+                    f"안전 규칙 {rule_key}: 부정 표현 목록이 잘못되었습니다."
+                )
 
         required_no_evidence = {
             "default_risk_level",

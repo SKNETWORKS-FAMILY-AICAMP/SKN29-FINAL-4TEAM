@@ -143,78 +143,6 @@ internal fun P1SignupSection(
                         ?.firstOrNull()
                 )
 
-                P1AuthField(
-                    value = signupUsername,
-                    onValueChange = {
-                        signupUsername = it
-                    },
-                    modifier =
-                        Modifier.fillMaxWidth(),
-                    label = {
-                        Text("아이디")
-                    },
-                    supportingText = {
-                        Text(
-                            "4~20자, 영문·숫자·.·_·- 사용"
-                        )
-                    },
-                    singleLine = true,
-                    enabled = !state.submitting,
-                    isError =
-                        state.fieldErrors["username"]
-                            .isNullOrEmpty()
-                            .not(),
-                    keyboardOptions =
-                        KeyboardOptions(
-                            keyboardType =
-                                KeyboardType.Text,
-                            imeAction =
-                                ImeAction.Next,
-                        ),
-                )
-
-                FieldError(
-                    state.fieldErrors["username"]
-                        ?.firstOrNull()
-                )
-
-                P1AuthField(
-                    value = signupPassword,
-                    onValueChange = {
-                        signupPassword = it
-                    },
-                    modifier =
-                        Modifier.fillMaxWidth(),
-                    label = {
-                        Text("비밀번호")
-                    },
-                    supportingText = {
-                        Text(
-                            "12~20자, 영문과 숫자를 포함해 주세요."
-                        )
-                    },
-                    singleLine = true,
-                    enabled = !state.submitting,
-                    isError =
-                        state.fieldErrors["password"]
-                            .isNullOrEmpty()
-                            .not(),
-                    visualTransformation =
-                        PasswordVisualTransformation(),
-                    keyboardOptions =
-                        KeyboardOptions(
-                            keyboardType =
-                                KeyboardType.Password,
-                            imeAction =
-                                ImeAction.Done,
-                        ),
-                )
-
-                FieldError(
-                    state.fieldErrors["password"]
-                        ?.firstOrNull()
-                )
-
                 ReferenceGlassButton(
                     text =
                         "이메일 인증번호 받기",
@@ -476,6 +404,83 @@ internal fun P1SignupSection(
                     color = palette.textMuted,
                 )
 
+                P1AuthField(
+                    value = signupUsername,
+                    onValueChange = { value ->
+                        signupUsername =
+                            value.take(20)
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    label = {
+                        Text(
+                            "\uC544\uC774\uB514"
+                        )
+                    },
+                    supportingText = {
+                        Text(
+                            "4~20\uC790, \uC601\uBB38\u00B7\uC22B\uC790\u00B7.\u00B7_\u00B7- \uC0AC\uC6A9"
+                        )
+                    },
+                    singleLine = true,
+                    enabled = !state.submitting,
+                    isError =
+                        state.fieldErrors["username"]
+                            .isNullOrEmpty()
+                            .not(),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType =
+                                KeyboardType.Text,
+                            imeAction =
+                                ImeAction.Next,
+                        ),
+                )
+
+                FieldError(
+                    state.fieldErrors["username"]
+                        ?.firstOrNull()
+                )
+
+                P1AuthField(
+                    value = signupPassword,
+                    onValueChange = { value ->
+                        signupPassword =
+                            value.take(20)
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    label = {
+                        Text(
+                            "\uBE44\uBC00\uBC88\uD638"
+                        )
+                    },
+                    supportingText = {
+                        Text(
+                            "12~20\uC790, \uC601\uBB38\uACFC \uC22B\uC790\uB97C \uD3EC\uD568\uD574 \uC8FC\uC138\uC694."
+                        )
+                    },
+                    singleLine = true,
+                    enabled = !state.submitting,
+                    isError =
+                        state.fieldErrors["password"]
+                            .isNullOrEmpty()
+                            .not(),
+                    visualTransformation =
+                        PasswordVisualTransformation(),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType =
+                                KeyboardType.Password,
+                            imeAction =
+                                ImeAction.Done,
+                        ),
+                )
+
+                FieldError(
+                    state.fieldErrors["password"]
+                        ?.firstOrNull()
+                )
                 ConsentRow(
                     checked = termsAgreed,
                     onCheckedChange = { termsAgreed = it },

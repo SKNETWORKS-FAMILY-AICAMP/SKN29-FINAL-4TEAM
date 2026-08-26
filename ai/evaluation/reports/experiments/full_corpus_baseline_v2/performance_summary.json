@@ -1,0 +1,16 @@
+{
+  "profile_id": "full_corpus_baseline_v2",
+  "device": "cpu",
+  "document_embedding_seconds": 246.281796,
+  "query_embedding_seconds": 4.033902,
+  "retrieval_seconds": 0.017346,
+  "total_seconds": 250.333684,
+  "document_count": 132,
+  "source_corpus_record_count": 132,
+  "eligible_candidate_count": 132,
+  "embedded_candidate_count": 132,
+  "embedded_query_count": 49,
+  "active_case_count": 55,
+  "policy_block_case_count": 6,
+  "case_result_count": 55
+}

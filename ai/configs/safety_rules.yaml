@@ -41,6 +41,7 @@ rules:
       - "찌릿"
       - "감전"
       - "타는 냄새"
+      - "화재"
     restricted_functions:
       - "제품 전체 기능 사용 중지"
     next_actions:
@@ -70,6 +71,7 @@ rules:
   hot_water_heater_danger:
     rule_id: "SAFETY-HOT-WATER-HEATER-001"
     name: "온수 히터·순간온수 모듈 고장 및 음용 제한"
+    applicability_policy: "RUNTIME_APPROVED_PRODUCTS"
     risk_level: "danger"
     usage_guidance_status: "PARTIAL_STOP"
     requires_consultation: true
@@ -85,6 +87,11 @@ rules:
       - "온수를 음용하지"
       - "온수 마시지"
       - "온수를 마시지"
+    negated_expressions:
+      - "온수 히터 고장은 아닙니다"
+      - "온수 히터 이상은 없습니다"
+      - "온수 히터는 정상입니다"
+      - "순간온수 모듈은 정상입니다"
     restricted_functions:
       - "온수 출수 및 음용 중지"
     next_actions:

@@ -2,8 +2,9 @@
 
 from typing import Optional
 from ..schemas import RiskLevel, SafetyAssessment, UsageGuidance, UsageGuidanceStatus
-from .rule_loader import SafetyRuleLoader
 from .no_evidence_policy import NoEvidencePolicy
+from .rule_loader import SafetyRuleLoader
+from .rule_precedence import merge_rule_list_field, select_effective_safety_rules
 
 
 class UsageGuidanceClassifier:
@@ -33,19 +34,30 @@ class UsageGuidanceClassifier:
             next_actions = ["원수 공급 밸브(원수 밸브)를 잠그세요.", "전원 플러그를 뽑고 사용을 즉시 중단하세요.", "전문 기사 방문 점검을 신청하세요."]
 
             # 명시적 세부 규칙 매칭 확인
-            matched_rule_ids = set(
-                safety_assessment.matched_safety_rule_ids
+            effective_rules = select_effective_safety_rules(
+                self.rules_config,
+                safety_assessment.matched_safety_rule_ids,
+                risk_level=RiskLevel.DANGER,
             )
             # RiskClassifier가 부정 표현을 제거해 확정한 Rule ID만 신뢰한다.
             # 원문 키워드를 다시 검사하면 "누수는 아님" 같은 문장이 오탐된다.
-            for rule_def in self.rules_config.values():
-                if rule_def.get("rule_id") in matched_rule_ids:
-                    status = UsageGuidanceStatus(
-                        rule_def.get("usage_guidance_status", "TOTAL_STOP")
+            # 여러 Rule이 매칭되면 YAML 선언 순서가 아니라 명시적 제한 범위
+            # 우선순위(TOTAL_STOP > PARTIAL_STOP)로 최종 안내를 선택한다.
+            if effective_rules:
+                status = UsageGuidanceStatus(
+                    effective_rules[0].get(
+                        "usage_guidance_status",
+                        "TOTAL_STOP",
                     )
-                    restricted_funcs = rule_def.get("restricted_functions", restricted_funcs)
-                    next_actions = rule_def.get("next_actions", next_actions)
-                    break
+                )
+                restricted_funcs = merge_rule_list_field(
+                    effective_rules,
+                    "restricted_functions",
+                ) or restricted_funcs
+                next_actions = merge_rule_list_field(
+                    effective_rules,
+                    "next_actions",
+                ) or next_actions
 
             return UsageGuidance(
                 guidance_status=status,

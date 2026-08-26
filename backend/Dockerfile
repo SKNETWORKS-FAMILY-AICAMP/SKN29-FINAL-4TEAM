@@ -29,9 +29,10 @@ COPY config/ ./config/
 COPY integrations/ ./integrations/
 COPY manage.py ./manage.py
 COPY --from=state_machine_contracts . /workspace/contracts/state-machine/
+COPY --from=api_contracts action-operation-crosswalk.yaml /workspace/contracts/api/action-operation-crosswalk.yaml
 
 RUN python -c \
-    "from apps.workflow.contracts import load_state_machine_contract; load_state_machine_contract(); print('BACKEND_STATE_MACHINE_CONTRACT_PASS')" \
+    "from pathlib import Path; from apps.workflow.contracts import load_state_machine_contract; from apps.workflow.contracts.state_machine_loader import load_yaml_mapping; load_state_machine_contract(); load_yaml_mapping(Path('/workspace/contracts/api/action-operation-crosswalk.yaml')); print('BACKEND_RUNTIME_CONTRACTS_PASS')" \
     && DJANGO_SETTINGS_MODULE=config.settings.test python -c \
     "import django; django.setup(); from django.conf import settings; settings.STATIC_ROOT='/workspace/backend/staticfiles'; from django.core.management import call_command; call_command('collectstatic', interactive=False, verbosity=0)" \
     && chown -R waterbridge:waterbridge /workspace/backend/staticfiles

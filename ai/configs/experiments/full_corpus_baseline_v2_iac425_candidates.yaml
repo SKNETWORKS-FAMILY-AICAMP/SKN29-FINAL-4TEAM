@@ -1,0 +1,49 @@
+{
+  "profile_id": "full_corpus_baseline_v2_iac425_candidates",
+  "profile_version": "2.0.0-draft.1",
+  "status": "LOCAL_DENSE_DIAGNOSTIC_IAC425_CANDIDATES",
+  "official_comparison_baseline": false,
+  "dataset": {
+    "path": "ai/evaluation/datasets/candidates/iac425_gold_v2_candidates.jsonl",
+    "manifest_path": "ai/evaluation/datasets/candidates/iac425_gold_v2_candidates_manifest.json",
+    "schema_path": "ai/evaluation/schemas/gold_evaluation_case_v2.schema.json",
+    "splits": ["DEV", "TEST", "SAFETY"]
+  },
+  "evidence_groups": {
+    "preferred_path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2.jsonl",
+    "preferred_manifest_path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2_manifest.json",
+    "fallback_path": "data/processed/structured/evidence/full_corpus_v3_evidence_groups.jsonl"
+  },
+  "children": {
+    "path": "data/processed/structured/rag/experimental/full_corpus_v3_children.jsonl"
+  },
+  "corpus": {
+    "path": "data/processed/structured/rag/experimental/full_corpus_chunks_v3.jsonl",
+    "handoff_manifest_path": "data/processed/metadata/full_corpus_v3_handoff_manifest.json",
+    "search_scope": "ALL_132_SEARCH_CANDIDATES",
+    "product_filter": "EXACT_PRODUCT_FILTER"
+  },
+  "embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "device": "cpu",
+    "normalize_embeddings": true,
+    "local_files_only": true
+  },
+  "retrieval": {
+    "engine": "numpy_dense_cosine_exact",
+    "top_k": 5,
+    "score_threshold": 0.4,
+    "filter_mode": "EXACT_PRODUCT_FILTER",
+    "vector_query_execution_path": "LOCAL_DENSE_QUERY"
+  },
+  "output_directory": "ai/evaluation/reports/experiments/full_corpus_baseline_v2_iac425_candidates",
+  "publication_limits": [
+    "IAC425 18건은 HUMAN_REVIEW_PENDING 후보이며 메인 Gold가 아니다.",
+    "LOCAL_DENSE_QUERY는 PGVECTOR_QUERY Runtime 실행 증거가 아니다.",
+    "semantic metric과 execution_contract_passed를 분리해 해석한다.",
+    "Source Page와 Preservation이 Top-K에 들어오면 invalid hit 진단을 보존한다.",
+    "Full Corpus v3와 기존 Gold·Corpus 원본을 수정하지 않는다."
+  ]
+}

@@ -23,6 +23,7 @@ from ai.app.orchestration.pipeline_router import PipelineRouter
 from ai.app.orchestration.pipelines.multi_agent_pipeline import MultiAgentPipeline
 from ai.app.retrieval import RetrievedChunk, RetrievalOutcome
 from ai.app.schemas import RiskLevel, TraceContext, UsageGuidanceStatus
+from ai.app.validation.routing import ResponseRoutingDisposition
 
 
 INQUIRY_ID = "018f2f9b-7c30-7981-b541-1a987c88b601"
@@ -64,7 +65,11 @@ class EvidenceSearchService:
 
 
 class TasteEvidenceSearchService:
+    def __init__(self):
+        self.calls = 0
+
     def search(self, *args, **kwargs):
+        self.calls += 1
         return [
             RetrievedChunk(
                 chunk_id="RAG-WPUJAC104DWH-TASTE-ODOR-001",
@@ -160,7 +165,10 @@ def test_default_runtime_remains_single_rag():
 
 def test_multi_agent_danger_routes_without_retrieval_or_llm():
     llm = FakeGuidanceLLMClient()
-    result = PipelineRouter(search_service=None, llm_client=llm).run_pipeline(
+    result = PipelineRouter(
+        search_service=UnexpectedSearchService(),
+        llm_client=llm,
+    ).run_pipeline(
         inquiry_id=INQUIRY_ID,
         correlation_id=CORRELATION_ID,
         ai_request_id="ai-req-multi-danger",
@@ -174,6 +182,8 @@ def test_multi_agent_danger_routes_without_retrieval_or_llm():
     assert result.runtime_name == "multi_agent"
     assert response.safety_assessment.risk_level.value == "danger"
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
+    assert response.missing_fields == []
+    assert response.followup_questions == []
     assert response.evidence_references == []
     assert llm.calls == 0
     assert [item.reason_code for item in result.multi_agent_metadata.handoffs] == [
@@ -181,6 +191,79 @@ def test_multi_agent_danger_routes_without_retrieval_or_llm():
         HandoffReason.DANGER_PRIORITY,
         HandoffReason.CARE_DECISION_READY,
     ]
+
+
+@pytest.mark.parametrize(
+    (
+        "case_id",
+        "raw_symptom",
+        "expected_status",
+        "expected_rule_ids",
+    ),
+    [
+        (
+            "HOT-WATER-HEATER-ONLY",
+            "온수 히터 고장으로 온수는 음용하지 말아야 합니다.",
+            UsageGuidanceStatus.PARTIAL_STOP,
+            {"SAFETY-HOT-WATER-HEATER-001"},
+        ),
+        (
+            "HOT-WATER-HEATER-WITH-LEAK",
+            "온수 히터 고장과 누수가 함께 발생했습니다.",
+            UsageGuidanceStatus.TOTAL_STOP,
+            {"SAFETY-HOT-WATER-HEATER-001", "SAFETY-LEAK-001"},
+        ),
+        (
+            "HOT-WATER-HEATER-WITH-ELECTRICAL-RISK",
+            "온수 히터 고장 중에 스파크가 발생했습니다.",
+            UsageGuidanceStatus.TOTAL_STOP,
+            {
+                "SAFETY-HOT-WATER-HEATER-001",
+                "SAFETY-ELECTRICAL-001",
+            },
+        ),
+        (
+            "HOT-WATER-HEATER-WITH-FIRE-RISK",
+            "온수 히터 고장과 화재 위험이 함께 있습니다.",
+            UsageGuidanceStatus.TOTAL_STOP,
+            {
+                "SAFETY-HOT-WATER-HEATER-001",
+                "SAFETY-ELECTRICAL-001",
+            },
+        ),
+    ],
+)
+def test_multi_agent_applies_total_stop_precedence_for_composite_danger(
+    case_id,
+    raw_symptom,
+    expected_status,
+    expected_rule_ids,
+):
+    llm = FakeGuidanceLLMClient()
+    result = _run_multi_agent(
+        search_service=UnexpectedSearchService(),
+        raw_symptom=raw_symptom,
+        llm_client=llm,
+    )
+    response = result.to_analysis_result()
+
+    assert case_id.startswith("HOT-WATER-HEATER-")
+    assert response.safety_assessment.risk_level == RiskLevel.DANGER
+    assert response.safety_assessment.requires_consultation is True
+    assert set(response.safety_assessment.matched_safety_rule_ids) == (
+        expected_rule_ids
+    )
+    assert response.usage_guidance.guidance_status == expected_status
+    assert llm.calls == 0
+
+    if expected_status == UsageGuidanceStatus.PARTIAL_STOP:
+        assert response.usage_guidance.restricted_functions == [
+            "온수 출수 및 음용 중지"
+        ]
+        assert response.usage_guidance.next_actions == [
+            "온수 기능 사용과 온수 음용을 중단하세요.",
+            "제품을 직접 분해하지 말고 전문 상담 및 기사 점검을 요청하세요.",
+        ]
 
 
 def test_multi_agent_evidence_path_matches_single_rag_public_contract():
@@ -230,6 +313,7 @@ def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence
     assert result.multi_agent_metadata.awaiting_customer_input is True
     assert response.status.value == "SUCCEEDED"
     assert response.failure_stage is None
+    assert str(response.correlation_id) == CORRELATION_ID
     assert response.followup_questions
     assert response.evidence_references == []
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
@@ -238,6 +322,9 @@ def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence
     assert HandoffReason.MORE_INFORMATION_REQUIRED in {
         item.reason_code for item in result.multi_agent_metadata.handoffs
     }
+    assert result.routing_disposition == (
+        ResponseRoutingDisposition.CUSTOMER_INPUT_PENDING
+    )
     assert raw_symptom not in json.dumps(
         result.multi_agent_metadata.model_dump(mode="json"),
         ensure_ascii=False,
@@ -258,6 +345,7 @@ def test_multi_agent_earthy_taste_waits_for_context_before_evidence_handoff():
     assert result.multi_agent_metadata.awaiting_customer_input is True
     assert response.status.value == "SUCCEEDED"
     assert response.failure_stage is None
+    assert str(response.correlation_id) == CORRELATION_ID
     assert response.followup_questions
     assert response.evidence_references == []
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
@@ -298,8 +386,9 @@ def test_multi_agent_earthy_taste_non_applicable_context_becomes_no_evidence():
 
 def test_multi_agent_earthy_taste_within_ten_days_uses_applicable_evidence():
     llm = TasteGuidanceLLMClient()
+    search_service = TasteEvidenceSearchService()
     result = _run_multi_agent(
-        search_service=TasteEvidenceSearchService(),
+        search_service=search_service,
         raw_symptom="물에서 흙맛이 나는 것 같아요",
         previous_answers=[
             {"question_id": "followup-occurrence-time", "answer_text": "오늘부터"},
@@ -315,14 +404,17 @@ def test_multi_agent_earthy_taste_within_ten_days_uses_applicable_evidence():
     response = result.to_analysis_result()
 
     assert llm.calls == 1
+    assert search_service.calls == 1
     assert result.context.retrieval_outcome == RetrievalOutcome.AVAILABLE
     assert response.status.value == "SUCCEEDED"
     assert response.failure_stage is None
+    assert str(response.correlation_id) == CORRELATION_ID
     assert len(response.evidence_references) == 1
     assert llm.requests[0].symptom_summary.endswith("10일 이내 부재 후")
     assert HandoffReason.EVIDENCE_READY in {
         item.reason_code for item in result.multi_agent_metadata.handoffs
     }
+    assert result.routing_disposition == ResponseRoutingDisposition.AUTO_GUIDANCE
 
 
 def test_answered_questions_then_empty_retrieval_becomes_no_evidence():

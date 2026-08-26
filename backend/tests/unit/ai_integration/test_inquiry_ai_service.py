@@ -221,6 +221,7 @@ def test_safe_result_is_persisted_but_held_without_verified_evidence():
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
     guidance = Guidance.objects.get(inquiry=inquiry)
     assert guidance.items.count() == 2
+    assert guidance.review_status_code == "CONFIRMED"
 
     inquiry.refresh_from_db()
     assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
@@ -389,6 +390,7 @@ def test_no_evidence_result_routes_to_consultation_required():
     assert inquiry.evidence_mode == Inquiry.EvidenceMode.NO_EVIDENCE
     assert inquiry.requires_fallback is True
     assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
+    assert Guidance.objects.get(inquiry=inquiry).review_status_code == "REJECTED"
     http_client.close()
 
 
@@ -456,6 +458,7 @@ def test_product_runtime_hold_applies_product_validation_failed_once():
     )
     assert inquiry.requires_fallback is True
     assert inquiry.evidence_ids == []
+    assert Guidance.objects.get(inquiry=inquiry).review_status_code == "REJECTED"
 
     history = TransitionHistory.objects.get(inquiry=inquiry)
     assert history.event_code == "PRODUCT_VALIDATION_FAILED"
@@ -580,6 +583,7 @@ def test_other_contract_v4_fallback_stays_fail_closed_without_state_event():
     assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
     assert inquiry.state_version == 2
     assert inquiry.requires_fallback is True
+    assert Guidance.objects.get(inquiry=inquiry).review_status_code == "REJECTED"
     assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
     http_client.close()
 
@@ -626,6 +630,8 @@ def test_followup_questions_are_saved_without_advancing_state():
 
 def test_registered_danger_rules_apply_consultation_required_transition():
     inquiry = create_inquiry(10)
+    correlation_id = uuid4()
+    ai_request_id = uuid4()
 
     def danger(response: dict, request: dict) -> dict:
         example_path = (
@@ -649,7 +655,12 @@ def test_registered_danger_rules_apply_consultation_required_transition():
         return danger_response
 
     client, http_client, _calls = make_client(transform=danger)
-    outcome = analyze(inquiry, client)
+    outcome = analyze(
+        inquiry,
+        client,
+        correlation_id=correlation_id,
+        ai_request_id=ai_request_id,
+    )
 
     assert outcome.event_candidate == "DANGER_DETECTED"
     assert outcome.event_applied == "DANGER_DETECTED"
@@ -663,6 +674,71 @@ def test_registered_danger_rules_apply_consultation_required_transition():
     history = TransitionHistory.objects.get(inquiry=inquiry)
     assert history.event_code == "DANGER_DETECTED"
     assert history.state_version == 3
+    consultation = Consultation.objects.get(inquiry=inquiry)
+    assert consultation.status == Consultation.Status.WAITING
+    assert consultation.consultant is None
+    assert consultation.state_version == 3
+    assert consultation.correlation_id == correlation_id
+    assert consultation.idempotency_key == f"ai-danger-{ai_request_id}"
+
+    run = AIRun.objects.get(public_id=outcome.ai_run_id)
+    replay = InquiryAIService._replay_or_conflict(
+        run,
+        input_digest=run.input_sha256,
+        request_payload=run.input_payload,
+        validator=AIContractValidator(),
+    )
+    assert replay.idempotent_replay is True
+    assert Consultation.objects.filter(inquiry=inquiry).count() == 1
+    http_client.close()
+
+
+def test_hot_water_heater_partial_stop_is_persisted_and_escalated():
+    inquiry = create_inquiry(110)
+
+    def hot_water_heater(response: dict, _request: dict) -> dict:
+        response["safety_assessment"].update(
+            {
+                "risk_level": "danger",
+                "priority": "priority_consultation",
+                "requires_consultation": True,
+                "matched_safety_rule_ids": [
+                    "SAFETY-HOT-WATER-HEATER-001"
+                ],
+                "detected_risks": ["온수 히터 이상"],
+                "safety_reason": "승인된 온수 히터 위험 Rule이 감지되었습니다.",
+            }
+        )
+        response["usage_guidance"].update(
+            {
+                "guidance_status": "PARTIAL_STOP",
+                "message": "온수 사용을 중단하고 상담을 연결합니다.",
+                "restricted_functions": ["온수 출수 및 음용 중지"],
+                "next_actions": [
+                    "온수 기능 사용과 온수 음용을 중단하세요.",
+                    "제품을 직접 분해하지 말고 전문 상담 및 기사 점검을 요청하세요.",
+                ],
+            }
+        )
+        response["evidence_references"] = []
+        return response
+
+    client, http_client, _calls = make_client(transform=hot_water_heater)
+
+    outcome = analyze(inquiry, client)
+
+    assert outcome.event_candidate == "DANGER_DETECTED"
+    assert outcome.event_applied == "DANGER_DETECTED"
+    assessment = SymptomAssessment.objects.get(inquiry=inquiry)
+    assert assessment.risk_level_code == SymptomAssessment.RiskLevel.DANGER
+    assert assessment.usage_guidance_status == "PARTIAL_STOP"
+    assert assessment.rule_result["matched_safety_rule_ids"] == [
+        "SAFETY-HOT-WATER-HEATER-001"
+    ]
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.usage_guidance_status == "PARTIAL_STOP"
+    assert Consultation.objects.filter(inquiry=inquiry).count() == 1
     http_client.close()
 
 

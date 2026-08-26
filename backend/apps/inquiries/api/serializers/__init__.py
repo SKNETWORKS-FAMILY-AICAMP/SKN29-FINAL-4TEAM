@@ -35,6 +35,11 @@ from apps.inquiries.api.serializers.inquiry_response import (
 from apps.inquiries.api.serializers.internal_ai_context import (
     InternalAIInquiryContextDataSerializer,
 )
+from apps.inquiries.api.serializers.human_review import (
+    HumanReviewDataSerializer,
+    HumanReviewDecisionRequestSerializer,
+    HumanReviewListDataSerializer,
+)
 from apps.inquiries.api.serializers.request_consultation import (
     RequestConsultationResponseSerializer,
     RequestConsultationSerializer,
@@ -74,6 +79,9 @@ __all__ = [
     "CustomerInquirySnapshotSerializer",
     "InquiryResponseSerializer",
     "InternalAIInquiryContextDataSerializer",
+    "HumanReviewDataSerializer",
+    "HumanReviewDecisionRequestSerializer",
+    "HumanReviewListDataSerializer",
     "RegisterConsultantPhoneInquiryResultSerializer",
     "RegisterConsultantPhoneInquirySerializer",
     "RequestConsultationResponseSerializer",

@@ -9,6 +9,9 @@ from django.db import models
 from django.db.models import F, Q
 
 from apps.common_codes.db_expressions import IsJSONObject
+from apps.inquiries.services.safety_rule_registry import (
+    danger_assessment_is_valid,
+)
 from common.models.base import TimestampedModel
 
 
@@ -97,10 +100,20 @@ class SymptomAssessment(TimestampedModel):
             models.CheckConstraint(
                 condition=(
                     ~Q(risk_level_code="danger")
-                    | Q(
-                        usage_guidance_status__isnull=False,
-                        usage_guidance_status="TOTAL_STOP",
-                        requires_consultation=True,
+                    | (
+                        Q(
+                            usage_guidance_status__isnull=False,
+                            usage_guidance_status="TOTAL_STOP",
+                            requires_consultation=True,
+                        )
+                        | Q(
+                            usage_guidance_status__isnull=False,
+                            usage_guidance_status="PARTIAL_STOP",
+                            requires_consultation=True,
+                            rule_result__matched_safety_rule_ids=[
+                                "SAFETY-HOT-WATER-HEATER-001"
+                            ],
+                        )
                     )
                 ),
                 name="ck_assessment_danger_safety",
@@ -183,14 +196,33 @@ class SymptomAssessment(TimestampedModel):
             errors["rule_result"] = "rule_result must be a JSON object."
 
         if self.risk_level_code == self.RiskLevel.DANGER:
-            if (
+            is_total_stop = (
                 self.usage_guidance_status
-                != self.UsageGuidanceStatus.TOTAL_STOP
-                or not self.requires_consultation
-            ):
+                == self.UsageGuidanceStatus.TOTAL_STOP
+                and self.requires_consultation
+            )
+            partial_payload = {
+                "safety_assessment": {
+                    **self.rule_result,
+                    "risk_level": self.RiskLevel.DANGER,
+                    "requires_consultation": self.requires_consultation,
+                },
+                "usage_guidance": {
+                    "guidance_status": self.usage_guidance_status,
+                },
+            }
+            is_approved_partial_stop = (
+                self.usage_guidance_status
+                == self.UsageGuidanceStatus.PARTIAL_STOP
+                and danger_assessment_is_valid(
+                    partial_payload,
+                    require_guidance_details=False,
+                )
+            )
+            if not is_total_stop and not is_approved_partial_stop:
                 errors["risk_level_code"] = (
-                    "A danger assessment requires TOTAL_STOP guidance "
-                    "and consultation."
+                    "A danger assessment requires consultation and either "
+                    "TOTAL_STOP or an approved Rule-specific PARTIAL_STOP."
                 )
         elif self.risk_level_code == self.RiskLevel.CAUTION:
             if self.usage_guidance_status not in {
