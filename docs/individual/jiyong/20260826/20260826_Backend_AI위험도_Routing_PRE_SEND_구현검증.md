@@ -74,75 +74,79 @@ Repository 필터와 Service 재검사를 함께 적용했으므로, 다른 조�
 - 기존 WAITING·ASSIGNED 상담이 있으면 중복 생성하지 않음
 - 동일 AI 결과 Replay에서도 Consultation은 1건 유지
 
-## 5. DB·Migration 영향
+## 5. 2026-08-26 Safety 후속 정합화
 
-- 신규 테이블·컬럼·인덱스: 없음
-- 신규 Migration: 없음
-- 기존 `Guidance.review_status_code`와 `Consultation`을 재사용
-- `visits.0005`: 변경·적용하지 않음
-- 팀 공용 DB·RDS·보존 Volume: 접근하지 않음
+- 온수 히터 Rule의 적용 범위를 `RUNTIME_APPROVED_PRODUCTS`로 명시했습니다.
+- "온수 히터 고장은 아닙니다" 같은 명시적 부정문은 히터 고장으로 탐지하지 않습니다.
+- 부정문 뒤에 실제 누수·증기·점화 위험 문장이 있으면 해당 위험 Rule은 계속 탐지합니다.
+- 기존 danger `TOTAL_STOP`, 복합 Rule 우선순위, 일반 안내 동작은 바꾸지 않았습니다.
+- 정책 확장은 `OWNER_PROPOSED_PM_MERGE_REQUIRED`로 표시해 PM 병합 전 확정으로 과장하지 않습니다.
 
-기존 DB에 남아 있는 과거 `PENDING` Guidance는 자동으로 승인 처리하지 않습니다.
-잘못된 고객 노출보다 안전한 비공개를 우선하며, 필요하면 별도 승인된 Backfill 정책으로 처리해야 합니다.
+## 6. HITL Backend·DB 구현
 
-## 6. 검증 결과
+### 6.1 상태와 저장 경계
 
-### 6.1 표적 검증
+`HumanReview`는 Inquiry 상태를 재사용하지 않는 별도 원장입니다.
 
-- Guidance Routing·AI 저장·고객 조회: `67 passed`
-- danger 상담 대기 생성과 Replay 중복 방지: PASS
-- caution PENDING 초안 고객 비노출: PASS
+- `PENDING`: 상담사 결정 대기
+- `APPROVED`: AI 초안을 그대로 승인
+- `MODIFIED`: 상담사가 안전 문구를 수정해 새 Guidance 버전 발행
+- `REJECTED`: 초안을 고객에게 공개하지 않고 반려
+- `RESUME_FAILED`: 결정 후 AI Resume 실패를 제한된 사유 코드로 기록
 
-### 6.2 관련 상담·Handoff 회귀
+원장에는 원문 Prompt·고객 증상 원문·전화·주소·계약번호·내부 오류 원문을 저장하지 않습니다.
+Inquiry의 `status_code`와 `state_version`도 HITL 결정 때문에 임의로 바꾸지 않습니다.
 
-- 상담사 API·AI Handoff·Inquiry 단위 범위: 고유 테스트 `242 passed`
-- 테스트 임시 폴더 권한 충돌 5건은 정상 권한의 격리 경로에서 재실행해 모두 PASS
+### 6.2 상담사 Runtime
 
-### 6.3 전체 Backend 회귀
+- `GET /api/v1/inquiries/human-reviews`: 본인 배정 또는 미배정 합성 Review 목록
+- `GET /api/v1/inquiries/human-reviews/{review_id}`: 최소 안전 Projection 상세
+- `POST /api/v1/inquiries/human-reviews/{review_id}/decision`: 승인·수정·반려
 
-- `1567 passed`
-- `41 skipped`
-- 실패: `0`
+결정은 상담사 권한, `Idempotency-Key`, `X-Correlation-ID`, Review 버전을 요구합니다.
+행잠금과 멱등 원장을 같은 Transaction에서 사용하므로 동시 결정은 한 건만 성공하고
+나머지는 409가 됩니다. 동일 Key·동일 Payload는 저장 없이 Replay하고, 다른 Payload는
+`DUPLICATE-EVENT-01`로 차단합니다.
 
-Skip은 PostgreSQL 전용 락·카탈로그 검증 또는 실제 AI Socket 환경값이 필요한 기존 조건입니다.
-이번 변경은 스키마를 바꾸지 않으며 SQLite 테스트 DB에서 전체 회귀를 통과했습니다.
+공용 DTO·소비 연결 승인이 아직 없으므로 세 API는 Public OpenAPI에서 제외했습니다.
+Web·Mobile이 임의 연결할 수 있다는 뜻이 아니며 PM 계약 동결 뒤 별도 공개해야 합니다.
 
-### 6.4 정적·구성 검사
+## 7. DB·Migration 영향
 
-- Django system check: PASS
-- `makemigrations --check --dry-run`: `No changes detected`
-- `pip check`: PASS
-- `git diff --check`: PASS
+- 신규 테이블: `support_human_review`
+- 신규 Migration: `inquiries.0015_humanreview`
+- Allowlist: Inquiries Leaf를 0015로 갱신
+- T-005: 불변 32개 도메인 계약 밖 승인 Runtime 지원 테이블로 별도 등록
+- `visits.0005`: 계속 미적용 P1 HOLD
+- 기존 Migration·공용 State Machine·Data 파일: 수정하지 않음
 
-## 7. 이번 단계에서 의도적으로 구현하지 않은 것
+## 8. 작성자 검증
 
-다음 항목은 Backend 코드를 임의로 우회하면 Actor·Audit 의미가 틀어지므로 보류했습니다.
+| 범위 | 결과 |
+| --- | --- |
+| AI Safety 표적 | 53 passed |
+| Backend Safety Registry | 10 passed |
+| HumanReview API·권한·Replay·제약 | 9 passed |
+| T-005 구현준비도·Schema 회귀 | 43 passed |
+| AI 회귀(A2A·실환경 Vector Gate 제외) | 585 passed, 13 skipped, 37 subtests passed |
+| Backend 전체 회귀 | 1588 passed, 41 skipped, 0 failed |
+| Django Check·Migration Drift | PASS / No changes detected |
 
-1. 상담사 Pending Review 목록·상세·결정 API
-2. `APPROVE_AI_GUIDANCE` 또는 `ESCALATE_TO_CONSULTANT` 상태 전이
-3. 수정 승인과 AI Resume
-4. 일반 MCP·Provider·Schema 실패용 신규 State Event
-5. `danger + PARTIAL_STOP` 정책 변경
+격리 PostgreSQL 16.14·pgvector 0.8.6에서는 승인 Target 18개와 의존 Closure 98개만
+적용했습니다. `inquiries.0015=APPLIED`, `visits.0005=NOT_APPLIED`를 확인했고,
+동시 결정은 `1x200 + 1x409`, Replay 추가 멱등 행은 0건이었습니다.
 
-기존 `SAFE_GUIDANCE_READY`는 SYSTEM 이벤트이고 `REQUEST_CONSULTATION`은 CUSTOMER 이벤트입니다.
-상담사 결정에 둘을 재사용하면 실제 실행자와 감사 기록이 달라집니다.
+AI 전체 수집은 현재 가상환경의 A2A 패키지 미설치로 별도 차단됐습니다. 또한 실제 AI
+Vector Gate는 보호된 `AI_VECTOR_DSN`이 필요한 실환경 검증이므로 위 585건에 포함하지
+않았습니다. 이를 PASS로 확대하지 않습니다.
 
-## 8. 다음 공동 작업의 선행 조건
+## 9. 아직 완료로 판정하지 않는 범위
 
-1. 이동윤 작업자가 확정 AI 응답 필드와 Routing 결과를 main에 반영
-2. 윤승혁(PM)이 상담사 검토용 additive Event와 Actor·전이 의미를 동결
-3. 이후 Backend가 Review 결정 API, `select_for_update`, 멱등 Replay, 동시 결정 409를 구현
-4. 한예나가 Pending Review Web 화면을 연결
-5. 양정현이 고객의 검토 중·긴급 연결·일반 안내 상태를 연결
-6. 김은진이 PostgreSQL 동시성·Replay·권한을 독립 검증
+1. 이동윤: 영속 Checkpointer와 실제 HTTP Resume·재시작 복구
+2. 윤승혁(PM): Public HITL API·DTO·소비 연결 및 Event 의미 승인
+3. 한예나·양정현: 승인 후 Web·Mobile 화면 연결
+4. 김은진: PostgreSQL 권한·동시성·Replay·민감정보 독립 QA
+5. RDS: 최종 main 기준 Plan·PM 승인·Migrator 적용
 
-## 9. 결론
-
-Backend 단독으로 안전하게 가능한 범위는 완료했습니다.
-
-- 긴급 문의는 고객 동작 없이 Web 상담 대기열에 들어갈 DB 행을 만듭니다.
-- 주의 AI 초안은 고객에게 먼저 보이지 않습니다.
-- 일반 안내는 기존 공식 Evidence·안전 Gate를 계속 사용합니다.
-- 공용 State Machine과 타 담당자 영역은 변경하지 않았습니다.
-
-상담사의 실제 승인·상담 전환까지 포함한 HITL 완성 판정은 신규 공용 Event 계약 이후에만 가능합니다.
+따라서 이번 결과는 `Backend_DB_LOCAL_IMPLEMENTED`입니다. 전체 HITL E2E, 독립 QA,
+PM WBS 완료 또는 RDS 적용 완료를 의미하지 않습니다.
