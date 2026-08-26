@@ -18,7 +18,10 @@ from apps.workflow.models import TransitionHistory
 
 
 pytestmark = pytest.mark.django_db
-INQUIRY_LATEST = ("inquiries", "0013_inquiry_priority_code")
+INQUIRY_LATEST = (
+    "inquiries",
+    "0014_allow_approved_partial_stop_danger",
+)
 LATEST_SCHEMA = [
     ("workflow", "0005_status_history_contract_names_indexes"),
     INQUIRY_LATEST,

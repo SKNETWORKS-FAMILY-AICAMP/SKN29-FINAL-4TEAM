@@ -693,6 +693,55 @@ def test_registered_danger_rules_apply_consultation_required_transition():
     http_client.close()
 
 
+def test_hot_water_heater_partial_stop_is_persisted_and_escalated():
+    inquiry = create_inquiry(110)
+
+    def hot_water_heater(response: dict, _request: dict) -> dict:
+        response["safety_assessment"].update(
+            {
+                "risk_level": "danger",
+                "priority": "priority_consultation",
+                "requires_consultation": True,
+                "matched_safety_rule_ids": [
+                    "SAFETY-HOT-WATER-HEATER-001"
+                ],
+                "detected_risks": ["온수 히터 이상"],
+                "safety_reason": "승인된 온수 히터 위험 Rule이 감지되었습니다.",
+            }
+        )
+        response["usage_guidance"].update(
+            {
+                "guidance_status": "PARTIAL_STOP",
+                "message": "온수 사용을 중단하고 상담을 연결합니다.",
+                "restricted_functions": ["온수 출수 및 음용 중지"],
+                "next_actions": [
+                    "온수 기능 사용과 온수 음용을 중단하세요.",
+                    "제품을 직접 분해하지 말고 전문 상담 및 기사 점검을 요청하세요.",
+                ],
+            }
+        )
+        response["evidence_references"] = []
+        return response
+
+    client, http_client, _calls = make_client(transform=hot_water_heater)
+
+    outcome = analyze(inquiry, client)
+
+    assert outcome.event_candidate == "DANGER_DETECTED"
+    assert outcome.event_applied == "DANGER_DETECTED"
+    assessment = SymptomAssessment.objects.get(inquiry=inquiry)
+    assert assessment.risk_level_code == SymptomAssessment.RiskLevel.DANGER
+    assert assessment.usage_guidance_status == "PARTIAL_STOP"
+    assert assessment.rule_result["matched_safety_rule_ids"] == [
+        "SAFETY-HOT-WATER-HEATER-001"
+    ]
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.usage_guidance_status == "PARTIAL_STOP"
+    assert Consultation.objects.filter(inquiry=inquiry).count() == 1
+    http_client.close()
+
+
 def test_selected_answer_is_forwarded_and_same_question_is_not_recreated():
     inquiry = create_inquiry(12)
     question = InquiryQA.objects.create(

@@ -6,6 +6,9 @@ from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
 
+from apps.inquiries.services.safety_rule_registry import (
+    danger_assessment_validation_errors,
+)
 from integrations.ai.exceptions import (
     AIIdentifierMismatchError,
     AIResponseValidationError,
@@ -136,15 +139,10 @@ def map_success_response(
             "RUNTIME_PRODUCT_NOT_APPROVED: 제품 Echo, 근거 미조회, "
             "상담 필요와 안전 안내 상태가 필요합니다."
         )
-    if is_danger and (
-        not safety["requires_consultation"]
-        # Backend persistence currently enforces the stricter TOTAL_STOP
-        # invariant.  PARTIAL_STOP remains fail-closed until PM resolves the
-        # AI/State/DB policy conflict.
-        or guidance["guidance_status"] != "TOTAL_STOP"
-    ):
-        errors.append(
-            "danger: 상담 필요와 TOTAL_STOP 상태가 필요합니다."
+    if is_danger:
+        errors.extend(
+            f"danger: {error}"
+            for error in danger_assessment_validation_errors(payload)
         )
     if errors:
         raise AIResponseValidationError(

@@ -314,7 +314,9 @@ def test_database_catalog_contains_action_result_contract_objects():
 def test_action_result_empty_migration_rolls_back_and_reapplies(request):
     target_0009 = [("inquiries", "0009_guidanceitem")]
     target_0010 = [("inquiries", "0010_customeractionresult")]
-    latest_target = [("inquiries", "0013_inquiry_priority_code")]
+    latest_target = [
+        ("inquiries", "0014_allow_approved_partial_stop_danger")
+    ]
 
     request.addfinalizer(
         lambda: MigrationExecutor(connection).migrate(latest_target)

@@ -199,6 +199,19 @@ def test_assessment_declares_historical_indexes_and_safe_constraints():
             },
         ),
         (17, {"assessed_by_type_code": "AI"}),
+        (
+            18,
+            {
+                "risk_level_code": "danger",
+                "usage_guidance_status": "PARTIAL_STOP",
+                "requires_consultation": True,
+                "rule_result": {
+                    "matched_safety_rule_ids": [
+                        "SAFETY-HOT-WATER-001"
+                    ]
+                },
+            },
+        ),
     ],
 )
 def test_database_checks_reject_contract_mismatches(
@@ -240,6 +253,50 @@ def test_danger_accepts_only_the_approved_safety_combination():
 
     assert assessment.risk_level_code == "danger"
     assert assessment.requires_consultation is True
+
+
+def test_danger_accepts_approved_hot_water_heater_partial_stop():
+    assessment = SymptomAssessment(
+        **assessment_values(
+            31,
+            risk_level_code=SymptomAssessment.RiskLevel.DANGER,
+            usage_guidance_status=(
+                SymptomAssessment.UsageGuidanceStatus.PARTIAL_STOP
+            ),
+            requires_consultation=True,
+            rule_result={
+                "matched_safety_rule_ids": [
+                    "SAFETY-HOT-WATER-HEATER-001"
+                ]
+            },
+        )
+    )
+
+    assessment.full_clean()
+    assessment.save()
+
+    assert assessment.usage_guidance_status == "PARTIAL_STOP"
+
+
+def test_model_rejects_unapproved_danger_partial_stop_rule():
+    assessment = SymptomAssessment(
+        **assessment_values(
+            32,
+            risk_level_code=SymptomAssessment.RiskLevel.DANGER,
+            usage_guidance_status=(
+                SymptomAssessment.UsageGuidanceStatus.PARTIAL_STOP
+            ),
+            requires_consultation=True,
+            rule_result={
+                "matched_safety_rule_ids": ["SAFETY-HOT-WATER-001"]
+            },
+        )
+    )
+
+    with pytest.raises(ValidationError) as exc_info:
+        assessment.full_clean()
+
+    assert "risk_level_code" in exc_info.value.message_dict
 
 
 def test_ai_assessment_requires_validated_risk_run_on_same_inquiry():

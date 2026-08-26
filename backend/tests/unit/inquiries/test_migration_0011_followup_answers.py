@@ -12,7 +12,9 @@ OLD_TARGET = [("inquiries", "0010_customeractionresult")]
 NEW_TARGET = [
     ("inquiries", "0011_split_followup_question_metadata_and_answers")
 ]
-LATEST_TARGET = [("inquiries", "0013_inquiry_priority_code")]
+LATEST_TARGET = [
+    ("inquiries", "0014_allow_approved_partial_stop_danger")
+]
 
 
 @pytest.mark.django_db(transaction=True)

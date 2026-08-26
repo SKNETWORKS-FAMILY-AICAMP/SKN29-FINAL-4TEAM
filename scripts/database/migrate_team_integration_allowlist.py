@@ -63,7 +63,7 @@ EXPECTED_GRAPH_LEAVES: tuple[MigrationKey, ...] = (
     ("consultations", "0003_consultationhandoff"),
     ("contenttypes", "0002_remove_content_type_name"),
     ("evidence", "0014_decouple_ai_view_product_eligibility"),
-    ("inquiries", "0013_inquiry_priority_code"),
+    ("inquiries", "0014_allow_approved_partial_stop_danger"),
     ("operations", "0003_product_expansion_import_profile"),
     ("products", "0001_initial"),
     ("questionnaires", "0003_questionnaire_answers_allow_blank"),

@@ -280,6 +280,14 @@ def test_current_graph_matches_explicit_allowlist_and_excludes_visits_0005(
         "evidence",
         "0014_decouple_ai_view_product_eligibility",
     ) in allowlist_module.APPROVED_TARGETS
+    assert (
+        "inquiries",
+        "0014_allow_approved_partial_stop_danger",
+    ) in closure
+    assert (
+        "inquiries",
+        "0014_allow_approved_partial_stop_danger",
+    ) in allowlist_module.APPROVED_TARGETS
 
 
 def test_empty_database_plan_is_forward_only_and_has_explicit_target_order(
