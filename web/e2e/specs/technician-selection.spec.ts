@@ -205,7 +205,7 @@ async function expectVisitDetailPresentation(
   expected: VisitDetailPresentation,
 ): Promise<void> {
   const consultationAndVisitSection = detailPanel
-    .getByRole("heading", { name: "상담·방문 정보", exact: true })
+    .getByRole("heading", { name: "방문 정보", exact: true })
     .locator("..");
   await expect(
     consultationAndVisitSection.getByText("방문 정보 등록됨", {
@@ -303,16 +303,16 @@ test("별도 공식 Fixture로 Dashboard 합성 기사를 선택해 방문 일�
     .getByLabel("상담 기록", { exact: true })
     .fill(consultationNote);
   await firstDetailPanel
-    .getByLabel("고객 안내", { exact: true })
+    .getByLabel("고객 안내 내용", { exact: true })
     .fill(customerGuidance);
   await firstDetailPanel
-    .getByLabel("확정 요약", { exact: true })
+    .getByLabel("상담 요약 수정본", { exact: true })
     .fill(confirmedSummary);
   await firstDetailPanel
     .getByLabel("방문 필요 여부")
     .selectOption("REQUIRED");
   await firstDetailPanel
-    .getByLabel("사용 안내 상태")
+    .getByLabel("제품 사용 상태")
     .selectOption("PARTIAL_STOP");
   await firstDetailPanel
     .getByRole("checkbox", { name: "상담 요약 검토·확정" })
