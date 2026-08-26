@@ -8,6 +8,7 @@ import {
 } from "react";
 import { Link } from "react-router-dom";
 
+import { appEnv } from "../../app/config/env";
 import { createInquiryDetailPath } from "../../app/router/routePaths";
 import { ApiClientError } from "../../common/api/apiError";
 import { IdempotencyOperationTracker } from "../../common/api/idempotencyOperation";
@@ -151,6 +152,7 @@ export default function PhoneInquiryCreatePage() {
         ),
     );
   const useSidebarDesignMockFallback =
+    appEnv.enableDesignMockFallback &&
     import.meta.env.DEV &&
     consultantWorkspaceDataRepository.dataSource === "REMOTE" &&
     (sidebarQuery.status === "error" || remoteSidebarHasEmptyBucket);

@@ -9,9 +9,6 @@ import "./LoginPage.css";
 
 const STAFF_ROLES: readonly { code: AppRole; label: string }[] = [
   { code: "CONSULTANT", label: "상담사" },
-  { code: "OPERATOR", label: "운영 담당자" },
-  { code: "TECHNICIAN", label: "방문 기사" },
-  { code: "CUSTOMER", label: "고객" },
 ];
 
 function getRoleHome(role: AppRole) {
@@ -87,7 +84,7 @@ export default function LoginPage() {
     <main className="system-page consultant-login-page">
       <section
         className="system-card consultant-login-card"
-        aria-labelledby="login-title"
+        aria-label="상담사 로그인"
       >
         <header className="consultant-login-card__brand">
           <span className="consultant-login-card__wordmark" aria-hidden="true">
@@ -97,8 +94,6 @@ export default function LoginPage() {
         </header>
 
         <div className="consultant-login-card__content">
-          <h1 id="login-title">Water Bridge 로그인</h1>
-
           {!appEnv.useMockApi && (
             <form
               className="consultant-login-form"

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { describe, expect, it } from "vitest";
@@ -47,9 +47,17 @@ describe("App Router Guard", () => {
   it("인증되지 않은 사용자는 요청 경로 대신 로그인 화면으로 이동한다", async () => {
     renderRoute("/consultant/inquiries", null);
 
-    expect(
-      await screen.findByRole("heading", { name: "Water Bridge 로그인" }),
-    ).toBeInTheDocument();
+    const loginRegion = await screen.findByRole("region", {
+      name: "상담사 로그인",
+    });
+    expect(within(loginRegion).queryByText("Water Bridge 로그인")).not.toBeInTheDocument();
+
+    const roleSelect = within(loginRegion).getByRole("combobox", {
+      name: "테스트 역할",
+    });
+    const roleOptions = within(roleSelect).getAllByRole("option");
+    expect(roleOptions).toHaveLength(1);
+    expect(roleOptions[0]).toHaveTextContent("상담사");
   });
 
   it("Mock 상담사 로그인 후 원래 요청한 상담 경로로 돌아간다", async () => {
