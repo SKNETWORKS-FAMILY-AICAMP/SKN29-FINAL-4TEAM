@@ -69,6 +69,14 @@ def _example(name: str) -> dict[str, Any]:
     return _load(EXAMPLE_ROOT / name)
 
 
+def _request_schema(
+    schema: dict[str, Any],
+    *,
+    version: int,
+) -> dict[str, Any]:
+    return schema["$defs"][f"v{version}Request"]
+
+
 def _nested_keys(value: Any) -> set[str]:
     if isinstance(value, dict):
         return set(value) | {
@@ -142,7 +150,12 @@ def test_schema_is_valid_draft_2020_12_handoff_contract_v2(
     assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
     assert schema["$id"] == "ConsultationHandoffRequest.schema.json"
     assert schema["x-contract-version"] == "2.0.0"
-    assert schema["additionalProperties"] is False
+    assert schema["oneOf"] == [
+        {"$ref": "#/$defs/v1Request"},
+        {"$ref": "#/$defs/v2Request"},
+    ]
+    assert _request_schema(schema, version=1)["additionalProperties"] is False
+    assert _request_schema(schema, version=2)["additionalProperties"] is False
 
 
 @pytest.mark.parametrize("example_name", EXAMPLE_NAMES)
@@ -159,6 +172,159 @@ def test_v1_example_matches_current_internal_handoff_result() -> None:
     internal = ConsultationHandoffResult.model_validate(payload)
 
     assert internal.model_dump(mode="json", exclude_none=True) == payload
+
+
+def test_v1_and_v2_constraints_are_structurally_isolated(
+    schema: dict[str, Any],
+) -> None:
+    v1 = _request_schema(schema, version=1)
+    v2 = _request_schema(schema, version=2)
+    v1_properties = v1["properties"]
+    v2_properties = v2["properties"]
+
+    assert set(v1["required"]) == {
+        "inquiry_id",
+        "correlation_id",
+        "ai_request_id",
+        "model_code",
+        "product_family",
+        "customer_symptom_summary",
+        "safety_level",
+        "safety_requires_consultation",
+        "escalation_reason",
+    }
+    assert {
+        "questionnaire_answers",
+        "self_help_actions",
+        "evidence",
+        "safety_notes",
+        "consultant_priority_checks",
+        "source_chunk_ids",
+    }.isdisjoint(v1["required"])
+    assert set(v2["required"]) == set(v2_properties)
+
+    expected_v2_max_items = {
+        "questionnaire_answers": 30,
+        "self_help_actions": 20,
+        "evidence": 10,
+        "safety_notes": 20,
+        "consultant_priority_checks": 30,
+        "source_chunk_ids": 10,
+    }
+    for field_name, expected_max_items in expected_v2_max_items.items():
+        assert "maxItems" not in v1_properties[field_name]
+        assert v2_properties[field_name]["maxItems"] == expected_max_items
+
+    assert "enum" not in v1_properties["safety_level"]
+    assert v1_properties["safety_level"]["maxLength"] == 50
+    assert set(v2_properties["safety_level"]["enum"]) == {
+        "general",
+        "caution",
+        "danger",
+        "unknown",
+    }
+    assert "page" not in schema["$defs"]["v1Evidence"]["required"]
+    assert "page" in schema["$defs"]["v2Evidence"]["required"]
+
+
+def test_v1_accepts_legacy_optional_defaults_and_open_safety_value(
+    validator: Draft202012Validator,
+) -> None:
+    payload = _example("v1-request.json")
+    for field_name in (
+        "questionnaire_answers",
+        "self_help_actions",
+        "evidence",
+        "safety_notes",
+        "consultant_priority_checks",
+        "source_chunk_ids",
+    ):
+        del payload[field_name]
+    payload["safety_level"] = "legacy_review_required"
+
+    validator.validate(payload)
+    internal = ConsultationHandoffResult.model_validate(payload)
+
+    assert internal.safety_level == "legacy_review_required"
+    assert internal.questionnaire_answers == []
+    assert internal.self_help_actions == []
+    assert internal.evidence == []
+    assert internal.safety_notes == []
+    assert internal.consultant_priority_checks == []
+    assert internal.source_chunk_ids == []
+
+
+def test_v1_accepts_evidence_without_page(
+    validator: Draft202012Validator,
+) -> None:
+    payload = _example("v1-request.json")
+    payload["evidence"] = [
+        {
+            "chunk_id": "legacy-chunk-001",
+            "document_title": "기존 상담 근거",
+            "summary": "기존 Backend에서는 page가 없어도 허용됩니다.",
+        }
+    ]
+    payload["source_chunk_ids"] = ["legacy-chunk-001"]
+
+    validator.validate(payload)
+    internal = ConsultationHandoffResult.model_validate(payload)
+
+    assert internal.evidence[0].page is None
+
+
+def test_v1_accepts_existing_unbounded_list_counts(
+    validator: Draft202012Validator,
+) -> None:
+    payload = _example("v1-request.json")
+    payload["questionnaire_answers"] = [
+        {"field_name": f"field-{index}", "answer": f"answer-{index}"}
+        for index in range(31)
+    ]
+    payload["self_help_actions"] = [f"action-{index}" for index in range(21)]
+    payload["evidence"] = [
+        {
+            "chunk_id": f"legacy-chunk-{index:03d}",
+            "document_title": f"기존 근거 {index}",
+            "summary": f"기존 근거 요약 {index}",
+        }
+        for index in range(11)
+    ]
+    payload["safety_notes"] = [f"note-{index}" for index in range(21)]
+    payload["consultant_priority_checks"] = [
+        f"priority-{index}" for index in range(31)
+    ]
+    payload["source_chunk_ids"] = [
+        item["chunk_id"] for item in payload["evidence"]
+    ]
+
+    validator.validate(payload)
+    internal = ConsultationHandoffResult.model_validate(payload)
+
+    assert len(internal.questionnaire_answers) == 31
+    assert len(internal.self_help_actions) == 21
+    assert len(internal.evidence) == 11
+    assert len(internal.safety_notes) == 21
+    assert len(internal.consultant_priority_checks) == 31
+    assert len(internal.source_chunk_ids) == 11
+
+
+def test_version_discriminator_does_not_reclassify_payloads(
+    validator: Draft202012Validator,
+) -> None:
+    explicit_v1 = _example("v1-request.json")
+    explicit_v1["schema_version"] = "1.0.0"
+    validator.validate(explicit_v1)
+
+    v1_labeled_as_v2 = deepcopy(explicit_v1)
+    v1_labeled_as_v2["schema_version"] = "2.0.0"
+    with pytest.raises(JsonSchemaValidationError):
+        validator.validate(v1_labeled_as_v2)
+
+    v2_labeled_as_v1 = _example("v2-succeeded-request.json")
+    v2_labeled_as_v1["schema_version"] = "1.0.0"
+    with pytest.raises(JsonSchemaValidationError):
+        validator.validate(v2_labeled_as_v1)
 
 
 @pytest.mark.parametrize("example_name", V2_EXAMPLE_NAMES)
@@ -184,7 +350,8 @@ def test_v2_base_handoff_fields_match_current_internal_result(
 
 
 def test_external_enums_match_agent_contracts(schema: dict[str, Any]) -> None:
-    external_routes = set(schema["properties"]["routing_reason"]["enum"])
+    v2_properties = _request_schema(schema, version=2)["properties"]
+    external_routes = set(v2_properties["routing_reason"]["enum"])
     internal_handoff_routes = {
         item.value
         for item in ContextRoutingReason
@@ -323,6 +490,90 @@ def test_backend_error_retry_matrix_is_exact(schema: dict[str, Any]) -> None:
     assert set(retry["retryable_transport_failures"]) == {"NETWORK", "TIMEOUT"}
     assert retry["default_4xx_retryable"] is False
     assert retry["payload_mutation_after_rejection"] is False
+
+
+def test_v2_rejects_constraints_that_remain_open_in_v1(
+    validator: Draft202012Validator,
+) -> None:
+    invalid_documents: list[dict[str, Any]] = []
+    base = _example("v2-succeeded-request.json")
+
+    questionnaire_over_limit = deepcopy(base)
+    questionnaire_over_limit["questionnaire_answers"] = [
+        {"field_name": f"field-{index}", "answer": f"answer-{index}"}
+        for index in range(31)
+    ]
+    invalid_documents.append(questionnaire_over_limit)
+
+    actions_over_limit = deepcopy(base)
+    actions_over_limit["self_help_actions"] = [
+        f"action-{index}" for index in range(21)
+    ]
+    invalid_documents.append(actions_over_limit)
+
+    evidence_over_limit = deepcopy(base)
+    evidence_over_limit["evidence"] = [
+        {
+            "chunk_id": f"v2-chunk-{index:03d}",
+            "document_title": f"v2 근거 {index}",
+            "page": index + 1,
+            "summary": f"v2 근거 요약 {index}",
+        }
+        for index in range(11)
+    ]
+    invalid_documents.append(evidence_over_limit)
+
+    safety_notes_over_limit = deepcopy(base)
+    safety_notes_over_limit["safety_notes"] = [
+        f"note-{index}" for index in range(21)
+    ]
+    invalid_documents.append(safety_notes_over_limit)
+
+    priority_checks_over_limit = deepcopy(base)
+    priority_checks_over_limit["consultant_priority_checks"] = [
+        f"priority-{index}" for index in range(31)
+    ]
+    invalid_documents.append(priority_checks_over_limit)
+
+    source_ids_over_limit = deepcopy(base)
+    source_ids_over_limit["source_chunk_ids"] = [
+        f"v2-source-{index:03d}" for index in range(11)
+    ]
+    invalid_documents.append(source_ids_over_limit)
+
+    open_safety_value = deepcopy(base)
+    open_safety_value["safety_level"] = "legacy_review_required"
+    invalid_documents.append(open_safety_value)
+
+    missing_evidence_page = deepcopy(base)
+    del missing_evidence_page["evidence"][0]["page"]
+    invalid_documents.append(missing_evidence_page)
+
+    for document in invalid_documents:
+        with pytest.raises(JsonSchemaValidationError):
+            validator.validate(document)
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    (
+        "questionnaire_answers",
+        "self_help_actions",
+        "evidence",
+        "safety_notes",
+        "consultant_priority_checks",
+        "source_chunk_ids",
+    ),
+)
+def test_v2_requires_lists_that_remain_optional_in_v1(
+    field_name: str,
+    validator: Draft202012Validator,
+) -> None:
+    payload = _example("v2-succeeded-request.json")
+    del payload[field_name]
+
+    with pytest.raises(JsonSchemaValidationError):
+        validator.validate(payload)
 
 
 def test_schema_rejects_pre_send_and_invalid_status_fallback_combinations(

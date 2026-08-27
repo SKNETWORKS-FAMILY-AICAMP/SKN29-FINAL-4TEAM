@@ -13,6 +13,23 @@ Envelope 계약이다. 기계 판독 SSOT는
 - 같은 `ai_request_id`로 저장된 v1 payload를 v2 payload로 바꾸어 재전송하지
   않는다.
 
+### v1 호환 범위와 v2 강화 범위
+
+v2의 강화 규칙은 기존 v1 요청에 적용하지 않는다. 두 버전은 최상위 공통
+제약을 공유하지 않는 독립 객체 Schema로 검증한다.
+
+| 항목 | 기존 v1 | v2 |
+| --- | --- | --- |
+| 배열 필드 6종 | 생략 가능, Backend가 빈 배열로 정규화 | 모두 필수 |
+| 문진·도움 행동·근거·안전 메모·우선 확인·Chunk ID 개수 | 기존 계약대로 최대 개수 제한 없음 | 각각 `30/20/10/20/30/10` |
+| `safety_level` | 비어 있지 않은 50자 이하 문자열 | `general`, `caution`, `danger`, `unknown` |
+| `evidence[].page` | 키 생략 또는 `null` 허용 | 키는 필수, 값은 `null` 허용 |
+
+배열 항목 자체의 문자열 길이, UUID 형식, 알 수 없는 필드 금지와 Evidence
+Chunk 결속은 기존 v1에서도 유지한다. 이 호환 범위는 현재 AI
+`ConsultationHandoffResult`와 Backend v1 Serializer가 정상 처리하던 요청을
+새 v2 제한 때문에 거절하지 않기 위한 경계다.
+
 ## Handoff 분기와 합성 결과
 
 | `routing_reason` | `context_synthesis.status` | `fallback_reason` |

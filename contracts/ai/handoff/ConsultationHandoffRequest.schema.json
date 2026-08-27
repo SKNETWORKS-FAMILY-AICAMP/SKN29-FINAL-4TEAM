@@ -88,157 +88,14 @@
     "default_4xx_retryable": false,
     "payload_mutation_after_rejection": false
   },
-  "type": "object",
-  "required": [
-    "inquiry_id",
-    "correlation_id",
-    "ai_request_id",
-    "model_code",
-    "product_family",
-    "customer_symptom_summary",
-    "questionnaire_answers",
-    "self_help_actions",
-    "evidence",
-    "safety_level",
-    "safety_requires_consultation",
-    "safety_notes",
-    "escalation_reason",
-    "consultant_priority_checks",
-    "source_chunk_ids"
-  ],
-  "additionalProperties": false,
-  "properties": {
-    "schema_version": {
-      "type": "string",
-      "enum": [
-        "1.0.0",
-        "2.0.0"
-      ],
-      "description": "v1 legacy 요청은 생략 시 Backend가 1.0.0으로 정규화한다. v2는 2.0.0을 반드시 명시한다."
+  "oneOf": [
+    {
+      "$ref": "#/$defs/v1Request"
     },
-    "inquiry_id": {
-      "type": "string",
-      "format": "uuid",
-      "description": "Backend Public Inquiry UUID"
-    },
-    "correlation_id": {
-      "type": "string",
-      "format": "uuid"
-    },
-    "ai_request_id": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 100
-    },
-    "state_version": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "원래 AI 분석 요청의 Inquiry state_version"
-    },
-    "model_code": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 100
-    },
-    "product_family": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 100
-    },
-    "routing_reason": {
-      "type": "string",
-      "enum": [
-        "DANGER_HANDOFF",
-        "FAIL_CLOSED_CONSULTATION",
-        "HARNESS_ESCALATE"
-      ],
-      "description": "실제로 확정된 Handoff 분기. PRE_SEND_HUMAN_REVIEW는 허용하지 않는다."
-    },
-    "customer_symptom_summary": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 2000
-    },
-    "questionnaire_answers": {
-      "type": "array",
-      "maxItems": 30,
-      "items": {
-        "$ref": "#/$defs/questionnaireAnswer"
-      }
-    },
-    "self_help_actions": {
-      "type": "array",
-      "maxItems": 20,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 1000
-      }
-    },
-    "evidence": {
-      "type": "array",
-      "maxItems": 10,
-      "items": {
-        "$ref": "#/$defs/evidence"
-      }
-    },
-    "safety_level": {
-      "type": "string",
-      "enum": [
-        "general",
-        "caution",
-        "danger",
-        "unknown"
-      ]
-    },
-    "safety_requires_consultation": {
-      "type": "boolean"
-    },
-    "safety_notes": {
-      "type": "array",
-      "maxItems": 20,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 1000
-      }
-    },
-    "escalation_reason": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 500
-    },
-    "consultant_priority_checks": {
-      "type": "array",
-      "maxItems": 30,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 1000
-      }
-    },
-    "source_chunk_ids": {
-      "type": "array",
-      "maxItems": 10,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 200
-      }
-    },
-    "context_synthesis": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "#/$defs/contextSynthesis"
-        }
-      ],
-      "description": "알려진 합성 실패는 FALLBACK 객체로 전달하고, 예상하지 못한 합성 또는 Mapper 실패만 null로 축소한다."
+    {
+      "$ref": "#/$defs/v2Request"
     }
-  },
+  ],
   "$defs": {
     "questionnaireAnswer": {
       "type": "object",
@@ -260,7 +117,40 @@
         }
       }
     },
-    "evidence": {
+    "v1Evidence": {
+      "type": "object",
+      "required": [
+        "chunk_id",
+        "document_title",
+        "summary"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "chunk_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "document_title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      }
+    },
+    "v2Evidence": {
       "type": "object",
       "required": [
         "chunk_id",
@@ -481,149 +371,343 @@
           }
         }
       ]
-    }
-  },
-  "oneOf": [
-    {
-      "title": "Legacy v1 request",
-      "description": "현재 AI Client가 보내는 무버전 payload. Backend에서 schema_version=1.0.0으로 정규화한다.",
-      "allOf": [
-        {
-          "anyOf": [
-            {
-              "not": {
-                "required": [
-                  "schema_version"
-                ]
-              }
-            },
-            {
-              "properties": {
-                "schema_version": {
-                  "const": "1.0.0"
-                }
-              },
-              "required": [
-                "schema_version"
-              ]
-            }
-          ]
-        },
-        {
-          "not": {
-            "anyOf": [
-              {
-                "required": [
-                  "state_version"
-                ]
-              },
-              {
-                "required": [
-                  "routing_reason"
-                ]
-              },
-              {
-                "required": [
-                  "context_synthesis"
-                ]
-              }
-            ]
-          }
-        }
-      ]
     },
-    {
-      "title": "Version 2 request",
+    "v1Request": {
+      "title": "Legacy v1 request",
+      "description": "현재 AI Client와 Backend Serializer가 허용하는 기존 Handoff payload. schema_version 생략 시 Backend가 1.0.0으로 정규화한다.",
+      "type": "object",
       "required": [
-        "schema_version",
-        "state_version",
-        "routing_reason",
-        "context_synthesis"
+        "inquiry_id",
+        "correlation_id",
+        "ai_request_id",
+        "model_code",
+        "product_family",
+        "customer_symptom_summary",
+        "safety_level",
+        "safety_requires_consultation",
+        "escalation_reason"
       ],
+      "additionalProperties": false,
       "properties": {
         "schema_version": {
-          "const": "2.0.0"
-        }
-      }
-    }
-  ],
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "schema_version": {
-            "const": "2.0.0"
-          },
-          "routing_reason": {
-            "const": "DANGER_HANDOFF"
-          },
-          "context_synthesis": {
-            "type": "object"
+          "type": "string",
+          "const": "1.0.0",
+          "description": "생략 가능하며 Backend가 1.0.0으로 정규화한다."
+        },
+        "inquiry_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Backend Public Inquiry UUID"
+        },
+        "correlation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ai_request_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "model_code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "product_family": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "customer_symptom_summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "questionnaire_answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/questionnaireAnswer"
           }
         },
-        "required": [
-          "schema_version",
-          "routing_reason",
-          "context_synthesis"
-        ]
+        "self_help_actions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/v1Evidence"
+          }
+        },
+        "safety_level": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "safety_requires_consultation": {
+          "type": "boolean"
+        },
+        "safety_notes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "escalation_reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "consultant_priority_checks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "source_chunk_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      }
+    },
+    "v2Request": {
+      "title": "Version 2 request",
+      "description": "명시적 버전과 상태 결속, Handoff 분기 및 맥락 합성을 포함하는 강화된 Handoff payload.",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "inquiry_id",
+        "correlation_id",
+        "ai_request_id",
+        "state_version",
+        "model_code",
+        "product_family",
+        "routing_reason",
+        "customer_symptom_summary",
+        "questionnaire_answers",
+        "self_help_actions",
+        "evidence",
+        "safety_level",
+        "safety_requires_consultation",
+        "safety_notes",
+        "escalation_reason",
+        "consultant_priority_checks",
+        "source_chunk_ids",
+        "context_synthesis"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "2.0.0"
+        },
+        "inquiry_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Backend Public Inquiry UUID"
+        },
+        "correlation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ai_request_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "state_version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "원래 AI 분석 요청의 Inquiry state_version"
+        },
+        "model_code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "product_family": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "routing_reason": {
+          "type": "string",
+          "enum": [
+            "DANGER_HANDOFF",
+            "FAIL_CLOSED_CONSULTATION",
+            "HARNESS_ESCALATE"
+          ],
+          "description": "실제로 확정된 Handoff 분기. PRE_SEND_HUMAN_REVIEW는 허용하지 않는다."
+        },
+        "customer_symptom_summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "questionnaire_answers": {
+          "type": "array",
+          "maxItems": 30,
+          "items": {
+            "$ref": "#/$defs/questionnaireAnswer"
+          }
+        },
+        "self_help_actions": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/$defs/v2Evidence"
+          }
+        },
+        "safety_level": {
+          "type": "string",
+          "enum": [
+            "general",
+            "caution",
+            "danger",
+            "unknown"
+          ]
+        },
+        "safety_requires_consultation": {
+          "type": "boolean"
+        },
+        "safety_notes": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "escalation_reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "consultant_priority_checks": {
+          "type": "array",
+          "maxItems": 30,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "source_chunk_ids": {
+          "type": "array",
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "context_synthesis": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/contextSynthesis"
+            }
+          ],
+          "description": "알려진 합성 실패는 FALLBACK 객체로 전달하고, 예상하지 못한 합성 또는 Mapper 실패만 null로 축소한다."
+        }
       },
-      "then": {
-        "properties": {
-          "context_synthesis": {
+      "allOf": [
+        {
+          "if": {
             "properties": {
-              "status": {
-                "const": "FALLBACK"
+              "routing_reason": {
+                "const": "DANGER_HANDOFF"
               },
-              "fallback_reason": {
-                "const": "DANGER_BYPASS"
+              "context_synthesis": {
+                "type": "object"
               }
             },
             "required": [
-              "status",
-              "fallback_reason"
-            ]
-          }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "schema_version": {
-            "const": "2.0.0"
-          },
-          "routing_reason": {
-            "enum": [
-              "FAIL_CLOSED_CONSULTATION",
-              "HARNESS_ESCALATE"
+              "routing_reason",
+              "context_synthesis"
             ]
           },
-          "context_synthesis": {
-            "type": "object"
+          "then": {
+            "properties": {
+              "context_synthesis": {
+                "properties": {
+                  "status": {
+                    "const": "FALLBACK"
+                  },
+                  "fallback_reason": {
+                    "const": "DANGER_BYPASS"
+                  }
+                },
+                "required": [
+                  "status",
+                  "fallback_reason"
+                ]
+              }
+            }
           }
         },
-        "required": [
-          "schema_version",
-          "routing_reason",
-          "context_synthesis"
-        ]
-      },
-      "then": {
-        "properties": {
-          "context_synthesis": {
-            "not": {
-              "properties": {
-                "fallback_reason": {
-                  "const": "DANGER_BYPASS"
-                }
+        {
+          "if": {
+            "properties": {
+              "routing_reason": {
+                "enum": [
+                  "FAIL_CLOSED_CONSULTATION",
+                  "HARNESS_ESCALATE"
+                ]
               },
-              "required": [
-                "fallback_reason"
-              ]
+              "context_synthesis": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "routing_reason",
+              "context_synthesis"
+            ]
+          },
+          "then": {
+            "properties": {
+              "context_synthesis": {
+                "not": {
+                  "properties": {
+                    "fallback_reason": {
+                      "const": "DANGER_BYPASS"
+                    }
+                  },
+                  "required": [
+                    "fallback_reason"
+                  ]
+                }
+              }
             }
           }
         }
-      }
+      ]
     }
-  ]
+  }
 }

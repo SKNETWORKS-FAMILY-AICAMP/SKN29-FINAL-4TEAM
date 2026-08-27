@@ -30,6 +30,10 @@ AI 분석이 끝난 뒤 실제 상담 Handoff가 확정된 경우에만 별도 �
   `HARNESS_ESCALATE`
 - 금지 분기: 최초 검토 시작점인 `PRE_SEND_HUMAN_REVIEW`
 
+v1과 v2는 독립 객체 Schema다. v1의 선택 배열, 최대 개수 제한 없는 기존 목록,
+50자 이하 자유 `safety_level`, 선택적 Evidence `page`를 그대로 허용하며, 배열
+필수화·개수 상한·안전 수준 Enum·Evidence `page` 필수화는 v2에만 적용한다.
+
 `HARNESS_ESCALATE` 권위는 HTTP `error.code`가 아니라 같은
 `AIRun.validated_output_payload`의 `fallback_reason_code`와 `failure_stage`
 조합으로 검증한다. 상세 Crosswalk, Human Review 거절 결속, Handoff 전송
