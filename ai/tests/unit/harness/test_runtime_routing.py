@@ -256,7 +256,7 @@ def test_rejected_review_calls_context_synthesis_with_only_harness_accepted_evid
     assert len(context_agent.calls) == 1
     synthesis_input = context_agent.calls[0]
     assert [item.chunk_id for item in synthesis_input.evidence] == ["jac104-1"]
-    assert synthesis_input.safety_requires_consultation is True
+    assert synthesis_input.safety_requires_consultation is False
     assert resolved.handoff is not None
     assert resolved.handoff.context_synthesis is not None
     assert resolved.handoff.source_chunk_ids == ["jac104-1"]
@@ -326,3 +326,62 @@ def test_danger_handoff_calls_context_synthesis_after_handoff_is_forced():
     assert context_agent.calls[0].routing_reason.value == "DANGER_HANDOFF"
     assert routed.handoff is not None
     assert routed.handoff.context_synthesis is not None
+
+
+def test_timeout_handoff_preserves_unknown_safety_without_forcing_consultation():
+    context_agent = _RecordingContextSynthesisAgent()
+    runner = HarnessRunner(context_synthesis_agent=context_agent)
+
+    result = runner.run_runtime(
+        ctx=_ctx(),
+        product=_product(),
+        evidence_chunks=[],
+        safety_assessment=None,
+        guidance=None,
+        timed_out=True,
+    )
+
+    assert result.harness.decision == HarnessDecision.ESCALATE
+    assert len(context_agent.calls) == 1
+    synthesis_input = context_agent.calls[0]
+    assert synthesis_input.routing_reason.value == "HARNESS_ESCALATE"
+    assert synthesis_input.safety_level == "unknown"
+    assert synthesis_input.safety_requires_consultation is False
+    assert synthesis_input.matched_safety_rule_ids == []
+    assert result.handoff is not None
+    assert result.handoff.safety_requires_consultation is False
+    assert result.handoff.context_synthesis is not None
+
+
+def test_mcp_failure_handoff_does_not_turn_system_failure_into_safety_risk():
+    from ai.app.orchestration.harness import (
+        McpToolFailure,
+        McpToolFailureKind,
+        McpToolName,
+    )
+
+    context_agent = _RecordingContextSynthesisAgent()
+    runner = HarnessRunner(context_synthesis_agent=context_agent)
+
+    result = runner.run_runtime(
+        ctx=_ctx(),
+        product=_product(),
+        evidence_chunks=[],
+        safety_assessment=None,
+        guidance=None,
+        tool_failure=McpToolFailure(
+            tool_name=McpToolName.GET_INQUIRY_CONTEXT,
+            kind=McpToolFailureKind.EXECUTION_ERROR,
+            retryable=False,
+        ),
+    )
+
+    assert result.harness.decision == HarnessDecision.ESCALATE
+    assert len(context_agent.calls) == 1
+    synthesis_input = context_agent.calls[0]
+    assert synthesis_input.routing_reason.value == "HARNESS_ESCALATE"
+    assert synthesis_input.safety_level == "unknown"
+    assert synthesis_input.safety_requires_consultation is False
+    assert result.handoff is not None
+    assert result.handoff.safety_requires_consultation is False
+    assert result.handoff.context_synthesis is not None

@@ -3,9 +3,24 @@ name: AI Backend Socket E2E Linux Gate
 on:
   workflow_call:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - "ai/**"
+      - "backend/**"
+      - "contracts/**"
+      - "data/**"
+      - "scripts/development/**"
+      - ".github/workflows/ai-backend-socket-e2e.yml"
   push:
     branches:
       - main
+    paths:
+      - "ai/**"
+      - "backend/**"
+      - "contracts/**"
+      - "data/**"
+      - "scripts/development/**"
+      - ".github/workflows/ai-backend-socket-e2e.yml"
 
 permissions:
   contents: read

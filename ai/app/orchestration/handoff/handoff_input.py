@@ -52,7 +52,6 @@ class ConsultationHandoffInput(BaseModel):
         product_family: str,
         escalation_reason: str,
         accepted_evidence_chunk_ids: list[str] | None = None,
-        force_consultation_required: bool = False,
     ) -> "ConsultationHandoffInput":
         symptom = getattr(ctx, "structured_symptom", None)
         symptom_parts: list[str] = []
@@ -77,7 +76,12 @@ class ConsultationHandoffInput(BaseModel):
             if not isinstance(item, dict):
                 continue
             field_name = str(item.get("field_name") or item.get("target_field") or item.get("question_id") or "answer")
-            value = item.get("answer") or item.get("value") or item.get("selected_option")
+            value = (
+                item.get("answer_text")
+                or item.get("answer")
+                or item.get("value")
+                or item.get("selected_option")
+            )
             if value is None:
                 continue
             answers.append(HandoffQuestionnaireAnswer(field_name=field_name, answer=str(value)))
@@ -100,17 +104,17 @@ class ConsultationHandoffInput(BaseModel):
 
         safety = getattr(ctx, "safety_assessment", None)
         safety_level = getattr(getattr(safety, "risk_level", None), "value", None) or "unknown"
-        safety_requires_consultation = (
-            bool(getattr(safety, "requires_consultation", False))
-            or force_consultation_required
+        safety_requires_consultation = bool(
+            getattr(safety, "requires_consultation", False)
         )
         safety_notes = list(getattr(safety, "detected_risks", []) or [])
         safety_reason = getattr(safety, "safety_reason", None)
         if safety_reason:
             safety_notes.append(safety_reason)
 
-        guidance = getattr(ctx, "usage_guidance", None)
-        actions = list(getattr(guidance, "next_actions", []) or [])
+        # 기존 Backend 계약 필드명은 유지하되, 값은 고객이 실제 수행한 조치만 담는다.
+        # usage_guidance.next_actions는 앞으로 할 행동이므로 수행 이력으로 사용하지 않는다.
+        actions = list(getattr(symptom, "actions_taken", []) or [])
         priority_checks = [item.reason for item in (getattr(ctx, "missing_fields", []) or [])]
 
         trace = ctx.trace_context

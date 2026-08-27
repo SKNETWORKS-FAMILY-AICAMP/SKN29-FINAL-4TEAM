@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from enum import Enum
-from types import SimpleNamespace
 from typing import Any, Type
 
 from opentelemetry import trace
@@ -38,24 +37,6 @@ from .verifier import HarnessVerifier
 
 
 _HARNESS_TRACER = trace.get_tracer("waterbridge.ai.harness", "1.0.0")
-
-
-class _ConsultationSynthesisContextView:
-    """Delegate PipelineContext fields while marking actual handoff as consultation-required."""
-
-    def __init__(self, ctx: Any) -> None:
-        self._ctx = ctx
-        safety = getattr(ctx, "safety_assessment", None)
-        self.safety_assessment = SimpleNamespace(
-            risk_level=getattr(safety, "risk_level", None),
-            requires_consultation=True,
-            matched_safety_rule_ids=list(getattr(safety, "matched_safety_rule_ids", []) or []),
-            detected_risks=list(getattr(safety, "detected_risks", []) or []),
-            safety_reason=getattr(safety, "safety_reason", None),
-        )
-
-    def __getattr__(self, name: str) -> Any:
-        return getattr(self._ctx, name)
 
 
 class HarnessErrorCode(str, Enum):
@@ -538,7 +519,6 @@ class HarnessRunner:
             product_family=product.product_family.value,
             escalation_reason=reason,
             accepted_evidence_chunk_ids=accepted_ids,
-            force_consultation_required=True,
         )
         context_synthesis = self._synthesize_handoff_context(
             ctx=ctx,
@@ -569,7 +549,7 @@ class HarnessRunner:
         ]
         try:
             synthesis_input = ConsultationContextSynthesisInput.from_pipeline_context(
-                ctx=_ConsultationSynthesisContextView(ctx),
+                ctx=ctx,
                 product_family=product.product_family.value,
                 runtime_product_approved=product.runtime_approved,
                 routing_reason=self._context_routing_reason(ctx, reason),

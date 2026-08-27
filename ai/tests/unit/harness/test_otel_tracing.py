@@ -251,4 +251,17 @@ def test_span_attributes_are_metadata_only(monkeypatch):
         "waterbridge.handoff.self_help_action_count",
         "waterbridge.handoff.source_chunk_count",
         "waterbridge.handoff.redaction.enabled",
+        "waterbridge.handoff.context_synthesis.present",
+        "waterbridge.handoff.context_synthesis.status",
     }
+    
+    assert (
+        handoff_span.attributes[
+            "waterbridge.handoff.context_synthesis.present"
+        ]
+        is True
+    )
+
+    assert handoff_span.attributes[
+        "waterbridge.handoff.context_synthesis.status"
+    ] in {"SUCCEEDED", "FALLBACK"}

@@ -1090,3 +1090,30 @@ def test_openai_adapter_classifies_authentication_failure_as_configuration():
 
     with pytest.raises(LLMConfigurationError):
         client.synthesize_context(prepared.request, timeout_seconds=1.0)
+
+
+def test_non_danger_system_failure_allows_safety_consultation_false():
+    payload = synthesis_input().model_dump(mode="python")
+    payload.update(
+        routing_reason=ContextRoutingReason.HARNESS_ESCALATE,
+        safety_level="unknown",
+        safety_requires_consultation=False,
+        matched_safety_rule_ids=[],
+    )
+
+    result = ConsultationContextSynthesisInput.model_validate(payload)
+
+    assert result.routing_reason == ContextRoutingReason.HARNESS_ESCALATE
+    assert result.safety_level == "unknown"
+    assert result.safety_requires_consultation is False
+
+
+def test_danger_handoff_requires_safety_consultation_true():
+    payload = synthesis_input(safety_level="danger").model_dump(mode="python")
+    payload["safety_requires_consultation"] = False
+
+    with pytest.raises(
+        ValidationError,
+        match="Safety 상담 필요 true",
+    ):
+        ConsultationContextSynthesisInput.model_validate(payload)

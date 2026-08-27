@@ -549,6 +549,38 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
             "data/(synthetic/fixtures|processed/structured/evidence)", text
         )
 
+    def test_socket_gate_filters_unrelated_changes_but_release_remains_full(self) -> None:
+        production = WORKFLOW.read_text(encoding="utf-8")
+        socket = (ROOT / ".github/workflows/ai-backend-socket-e2e.yml").read_text(
+            encoding="utf-8"
+        )
+        relevant_paths = (
+            "ai/**",
+            "backend/**",
+            "contracts/**",
+            "data/**",
+            "scripts/development/**",
+            ".github/workflows/ai-backend-socket-e2e.yml",
+        )
+
+        self.assertIn("workflow_call:\n", socket)
+        self.assertIn("workflow_dispatch:\n", socket)
+        self.assertIn("pull_request:\n    paths:\n", socket)
+        self.assertIn("push:\n    branches:\n      - main\n    paths:\n", socket)
+        for path in relevant_paths:
+            self.assertEqual(socket.count(f'      - "{path}"'), 2)
+
+        self.assertNotIn("paths-ignore:", socket)
+        self.assertNotIn(".github/workflows/production-deploy.yml", socket)
+        self.assertRegex(
+            production,
+            r"(?ms)^  socket-e2e-gate:\n"
+            r"    name: Re-run AI Backend Socket E2E gate\n"
+            r"    needs: source-guard\n"
+            r"    uses: \./\.github/workflows/ai-backend-socket-e2e\.yml\n",
+        )
+        self.assertIn("      - socket-e2e-gate", production)
+
     def test_bootstrap_validates_reusable_semver_oidc_trust(self) -> None:
         bootstrap = BOOTSTRAP_WORKFLOW.read_text(encoding="utf-8")
         trust = OIDC_TRUST.read_text(encoding="utf-8")
