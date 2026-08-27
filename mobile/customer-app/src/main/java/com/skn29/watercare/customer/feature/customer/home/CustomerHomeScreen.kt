@@ -141,14 +141,9 @@ fun CustomerHomeScreen(
 
     val selectableSubscriptionCount = state.subscriptions.size
     val shouldShowSubscriptionSelection =
-        (
-            BuildConfig.DEVELOPER_APP ||
-                (
-                    !offlinePreview &&
-                        state.customerCareMode ==
-                            CustomerCareMode.REMOTE
-                )
-            ) &&
+        !offlinePreview &&
+            state.customerCareMode ==
+                CustomerCareMode.REMOTE &&
             selectableSubscriptionCount > 0 &&
             !selectionConfirmed
 
