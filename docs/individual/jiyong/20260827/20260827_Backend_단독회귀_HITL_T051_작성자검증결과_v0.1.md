@@ -2,12 +2,14 @@
 
 ## 1. 결론
 
-- 작업 기준선: `jiyong=origin/main@5885861e8637316d028dc85d14f5337f53b2f93e`
+- 최신 보완 기준선: `jiyong=origin/main@7d5b5b71609c2aff951528bd9a08b1e524097d96`
+- 독립 QA 재현 기준: `main@3dce9b83473a345ad5086de9d0b8ff0c6209a841`
 - T-021 Commit: `6bd8bf1311faf2fd4cf0a2271cd4bb012b6478ae`
 - HITL Commit: `e88cb8b7e57aa488681fd0028ec4557838047cde`
-- 차이: 배포 작업이 반영된 최신 main과 동일한 기준선에서 충돌 없이 작성했다.
-- 이번 결과: 승인된 Backend·DB 단독 범위에서 결함 3건 보완 및 작성자 검증 완료
-- Git 상태: 속성별 Commit을 분리했으며 main 병합·AWS 배포는 하지 않음
+- 이번 결과: 기존 3건 보완에 더해 T-023 PostgreSQL nullable Outer Join
+  Row Lock 결함을 최신 main에서도 재현하고 수정했다.
+- 범위: Repository Lock Query, T-023 회귀 Test, 본 개발문서만 변경했다.
+- Git 상태: `jiyong`에만 반영하며 main 병합·AWS 배포는 하지 않는다.
 
 이번 결과는 독립 QA나 WBS 완료 판정이 아니다. AWS OTP·배포, 실제 AI Resume,
 Web·Mobile 소비 연결, RDS·공용 DB 변경은 범위에서 제외했다.
@@ -51,7 +53,29 @@ MODIFY 입력을 고객 공개 계약과 같은 3,000자·1,000자로 제한했�
 서비스와 DB 쓰기 전에 `422 VALIDATION_ERROR`로 거부되며 HumanReview 상태·버전,
 Guidance, 멱등 레코드가 바뀌지 않음을 검증했다.
 
+### 2.4 T-023 PostgreSQL Row Lock 범위 교정
+
+`select_for_update()`가 nullable `assigned_user`·`consultant`·`technician` 관계를
+`select_related()`로 Outer Join한 전체 Query를 잠그려 해 PostgreSQL이 아래 오류를
+반환했다.
+
+```text
+FOR UPDATE cannot be applied to the nullable side of an outer join
+```
+
+SQLite는 실제 Row Lock을 수행하지 않아 이 결함을 발견하지 못한다. Inquiry,
+Consultation, Visit에서 실제로 상태·버전이 변경되는 본체 Row만 잠그도록 네 Query에
+`select_for_update(of=("self",))`를 적용했다. 관련 사용자 정보는 기존처럼 함께
+조회하지만 User·Profile Row를 불필요하게 잠그지 않는다.
+
+Completed 처리 Row는 DB lifecycle Constraint상 담당자가 필수다. nullable 경계는
+정상 상태인 미배정 WAITING Consultation과 ASSIGNING Visit을 추가한 회귀로 고정했고,
+최신 완료 처리 선택 순서 `-completed_at`, `-id`도 유지했다.
+
 ## 3. 수정 파일
+
+아래 앞 7개는 이 문서가 기존에 기록한 T-021·HITL Commit 범위다. 이번 T-023
+Commit의 실제 변경 대상은 마지막 Repository·Test와 본 문서뿐이다.
 
 | 파일 | 변경 내용 |
 |---|---|
@@ -62,52 +86,49 @@ Guidance, 멱등 레코드가 바뀌지 않음을 검증했다.
 | `backend/tests/api/test_customer_inquiry_read_runtime.py` | MODIFY 후 고객 재조회 E2E |
 | `backend/apps/inquiries/api/serializers/human_review.py` | MODIFY 공개 길이를 고객 계약과 일치 |
 | `backend/tests/api/test_human_review_runtime.py` | 초과 길이 422·무기록 경계 검증 |
+| `backend/apps/inquiries/repositories/resolution_repository.py` | 네 Row Lock을 본체 Row로 제한 |
+| `backend/tests/api/test_t023_resolution_runtime.py` | nullable 관계·동시 Replay·409·Rollback 회귀 |
 
 ## 4. 검증 결과
 
 | 검증 | 결과 |
 |---|---|
-| 최종 수정 대상 SQLite 표적 | `61 passed` |
-| 수정 대상 격리 PostgreSQL 표적 | `58 passed` |
-| 문의·케어·HITL 확대 SQLite | `151 passed / 3 skipped` |
-| 케어·HITL 확대 격리 PostgreSQL | `81 passed / 0 skipped` |
-| OpenAPI·Runtime Coverage·계약 | `15 passed` |
+| T-023 SQLite | `14 passed / 2 PostgreSQL-only skipped` |
+| T-023 격리 PostgreSQL | `16 passed / 0 failed / 0 skipped` |
+| T-019~T-023·HITL 확대 PostgreSQL | `263 passed / 0 failed / 0 skipped` |
+| T-021·HumanReview 핵심 PostgreSQL | `65 passed / 0 failed / 0 skipped` |
+| 전체 Backend SQLite | `1610 passed / 43 expected skipped / 0 failed` |
+| Web G4 `tmp_path` 환경 분리 재검증 | `6 passed` |
 | Django System Check | `0 issues` |
 | Migration drift | `No changes detected` |
-| Migration Allowlist 단위 테스트 | `26 passed` |
 | `git diff --check` | PASS |
 
 격리 PostgreSQL은 `PostgreSQL 16 / pgvector 0.8.6` 일회용 컨테이너로만
 사용했고 기존 P1·OTP 컨테이너는 건드리지 않았다. 검증 후 격리 컨테이너는
 종료·자동 제거했다.
 
-PostgreSQL 표적 검증은 `--nomigrations`로 현재 Model Schema를 생성했다.
-따라서 Row Lock·Replay·Constraint의 작성자 Runtime 증거이며, 공식 Migration
-Allowlist 적용 증거로 확대 해석하지 않는다. `visits.0005`도 적용하지 않았다.
+PostgreSQL 표적 검증은 `--nomigrations`로 현재 Model Schema를 생성했다. 따라서
+Row Lock·Replay·409·Rollback의 작성자 Runtime 증거이며, 공식 Migration Allowlist
+적용 증거로 확대 해석하지 않는다. 기존 DB·Volume은 변경하지 않았고
+`visits.0005`도 적용하지 않았다.
+
+동시 Finalize 검증은 다음을 확인했다.
+
+- 같은 Key·같은 Payload: `200` 2건, 실제 쓰기 1건, Replay 1건
+- 서로 다른 Key·같은 버전: `200` 1건, `409 STATE-CONFLICT-01` 1건
+- 두 경우 모두 Finalize History와 IdempotencyRecord는 1건만 생성
+- 강제 응답 직렬화 실패 전후 Domain·History·Idempotency 총 Row 수 변화 0건
 
 ## 5. 전체 Backend 회귀 해석
 
-공식 실행 위치인 `backend`에서 전체 테스트를 실행한 결과는 다음과 같다.
+공식 실행 위치인 `backend`에서 전체 테스트를 실행했다. 최초 샌드박스 실행은
+`test_web_g4_db_evidence.py`의 `tmp_path` 생성 전에 Windows ACL이 pytest 임시폴더
+접근을 막아 5개 Setup Error와 Session cleanup Error가 발생했다. 제품 Assertion에는
+진입하지 못한 환경 오류였다.
 
-- 본 테스트: `1595 passed / 41 skipped / 10 errors`
-- 오류 원인: Windows Python 3.13이 pytest 임시폴더를 `0700`으로 만들 때
-  현재 사용자까지 차단되는 ACL 환경 문제
-- 애플리케이션 Assertion 실패: 0건
-- 오류가 난 두 파일 전체를 Windows 호환 임시폴더 권한으로 재실행:
-  `13 passed`
-
-오류 대상은 아래 두 파일의 `tmp_path` 사용 Case였다.
-
-- `tests/unit/inquiries/test_web_g4_db_evidence.py`
-- `tests/unit/care/test_approved_care_cycle_rule_loader.py`
-
-재실행 명령은 `backend` 폴더에서 두 파일을 명시한 `python -m pytest ... -q`
-형태로 수행했다. 우회는 애플리케이션 코드가 아니라 테스트 프로세스의 임시폴더
-생성 권한에만 적용했다.
-
-즉, 오류 10건은 코드 회귀가 아니라 Test Fixture 생성 전 임시폴더 접근 실패다.
-다만 단일 명령의 완전한 Exit 0으로 기록하지 않고, 본 실행과 오류 대상 재실행을
-분리한 작성자 증거로 남긴다.
+같은 파일을 권한이 정상인 격리 임시경로에서 실행해 `6 passed`를 확인했다. 이어
+전체 Suite를 같은 조건으로 한 번에 재실행해 `1610 passed / 43 skipped`, Exit 0을
+확인했다. Skip은 PostgreSQL Row Lock·Constraint와 실제 Socket 등 환경 전용이다.
 
 저장소 루트에서 pytest를 실행하면 일회성 보정 스크립트까지 수집돼 강제 종료된다.
 Backend 전체 회귀는 반드시 `backend/pyproject.toml`이 적용되는 `backend` 폴더에서
@@ -141,7 +162,9 @@ Backend 전체 회귀는 반드시 `backend/pyproject.toml`이 적용되는 `bac
 ## 8. 다음 단계
 
 1. PM이 잔여 상태·Actor·공개 계약을 결정한다.
-2. 현재 로컬 변경을 검토한 뒤 별도 승인으로 Commit·main 병합한다.
-3. 병합 SHA에서 김은진이 실제 Migration을 쓰는 독립 PostgreSQL QA를 수행한다.
-4. AI Resume는 이동윤, Web·Mobile 소비는 각 Frontend 담당자가 연결한다.
-5. T-051은 측정 조건과 완료 기준 확정 후 별도 Slice로 수행한다.
+2. 현재 T-023 수정 Commit을 main에 병합한다.
+3. 병합된 단일 SHA에서 김은진이 독립 PostgreSQL QA를 재수행한다.
+4. 독립 QA는 실제 Migration Allowlist, `visits.0005` HOLD, T-023 16건,
+   확대 263건, T-021·HumanReview 65건과 무기록 경계를 확인한다.
+5. AI Resume는 이동윤, Web·Mobile 소비는 각 Frontend 담당자가 연결한다.
+6. T-051은 측정 조건과 완료 기준 확정 후 별도 Slice로 수행한다.

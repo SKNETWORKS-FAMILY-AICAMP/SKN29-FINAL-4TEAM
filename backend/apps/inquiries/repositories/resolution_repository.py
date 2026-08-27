@@ -28,7 +28,7 @@ class ResolutionRepository:
     @staticmethod
     def lock_staff_inquiry(*, inquiry_public_id: UUID) -> Inquiry | None:
         return (
-            Inquiry.objects.select_for_update()
+            Inquiry.objects.select_for_update(of=("self",))
             .select_related(
                 "subscription__customer__user",
                 "assigned_user",
@@ -44,7 +44,7 @@ class ResolutionRepository:
         actor: Any,
     ) -> Inquiry | None:
         return (
-            Inquiry.objects.select_for_update()
+            Inquiry.objects.select_for_update(of=("self",))
             .select_related(
                 "subscription__customer__user",
                 "assigned_user",
@@ -60,7 +60,7 @@ class ResolutionRepository:
     @staticmethod
     def lock_completed_handling(inquiry: Inquiry) -> CompletedHandling | None:
         consultation = (
-            Consultation.objects.select_for_update()
+            Consultation.objects.select_for_update(of=("self",))
             .select_related("consultant")
             .filter(
                 inquiry=inquiry,
@@ -71,7 +71,7 @@ class ResolutionRepository:
             .first()
         )
         visit = (
-            Visit.objects.select_for_update()
+            Visit.objects.select_for_update(of=("self",))
             .select_related("technician")
             .filter(
                 inquiry=inquiry,

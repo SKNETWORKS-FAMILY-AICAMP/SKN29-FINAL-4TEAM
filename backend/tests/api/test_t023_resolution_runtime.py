@@ -1,15 +1,21 @@
 """Runtime tests for T-023 feedback, finalization, and reopen actions."""
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
+from threading import Barrier, local
 from unittest.mock import patch
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
+from django.db import connection, connections
 from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.consultations.models import Consultation
 from apps.inquiries.models import FollowupConfirmation, Inquiry
+from apps.inquiries.repositories.resolution_repository import (
+    ResolutionRepository,
+)
 from apps.visits.models import Visit
 from apps.workflow.models import IdempotencyRecord, TransitionHistory
 from tests.api.test_consultation_visit_runtime import (
@@ -100,6 +106,220 @@ def feedback_body(*, version: int = 7, **overrides):
     }
     body.update(overrides)
     return body
+
+
+def resolution_runtime_row_counts():
+    return {
+        "inquiries": Inquiry.objects.count(),
+        "consultations": Consultation.objects.count(),
+        "visits": Visit.objects.count(),
+        "followups": FollowupConfirmation.objects.count(),
+        "histories": TransitionHistory.objects.count(),
+        "idempotency_records": IdempotencyRecord.objects.count(),
+    }
+
+
+def concurrent_finalize(
+    *,
+    actor_id: int,
+    inquiry_id: UUID,
+    state_version: int,
+    key: str,
+    barrier: Barrier,
+) -> tuple[int, dict]:
+    connections.close_all()
+    try:
+        actor = User.objects.get(pk=actor_id)
+        barrier.wait(timeout=10)
+        response = client_for(actor).post(
+            f"/api/v1/inquiries/{inquiry_id}/finalize",
+            {"state_version": state_version},
+            format="json",
+            HTTP_IDEMPOTENCY_KEY=key,
+            HTTP_X_CORRELATION_ID=str(uuid4()),
+        )
+        return response.status_code, response.json()
+    finally:
+        connections.close_all()
+
+
+def staff_lock_barrier(barrier: Barrier):
+    """Force both PostgreSQL requests to contend for the inquiry row lock."""
+
+    original = ResolutionRepository.lock_staff_inquiry
+    thread_state = local()
+
+    def synchronized_lock(*args, **kwargs):
+        if not getattr(thread_state, "lock_attempted", False):
+            thread_state.lock_attempted = True
+            barrier.wait(timeout=10)
+        return original(*args, **kwargs)
+
+    return patch.object(
+        ResolutionRepository,
+        "lock_staff_inquiry",
+        side_effect=synchronized_lock,
+    )
+
+
+@pytest.mark.parametrize(
+    "handling_source",
+    ["CONSULTATION", "VISIT"],
+)
+def test_completed_handling_lock_ignores_unassigned_open_rows(
+    handling_source,
+):
+    if handling_source == "CONSULTATION":
+        _customer, consultant, inquiry, _consultation = (
+            prepare_consultation_completion(310)
+        )
+        Consultation.objects.create(
+            consultation_code="T023-CONS-UNASSIGNED-310",
+            inquiry=inquiry,
+            sequence=2,
+            consultant=None,
+            status=Consultation.Status.WAITING,
+            outcome=Consultation.Outcome.PENDING,
+            state_version=7,
+            idempotency_key="t023-cons-unassigned-310",
+            correlation_id=uuid4(),
+            data_classification=(
+                Consultation.DataClassification.SYNTHETIC
+            ),
+        )
+        expected_handler = consultant
+    else:
+        _customer, _consultant, technician, inquiry, _consultation = (
+            prepare_visit_completion(311)
+        )
+        Visit.objects.create(
+            visit_code="T023-VISIT-UNASSIGNED-311",
+            inquiry=inquiry,
+            technician=None,
+            status=Visit.Status.ASSIGNING,
+            requested_at=timezone.now(),
+            state_version=7,
+            idempotency_key="t023-visit-unassigned-311",
+            correlation_id=uuid4(),
+            data_classification=Visit.DataClassification.SYNTHETIC,
+        )
+        expected_handler = technician
+
+    handling = ResolutionRepository.lock_completed_handling(inquiry)
+
+    assert handling is not None
+    assert handling.source_code == handling_source
+    assert handling.handler == expected_handler
+
+
+@pytest.mark.django_db(transaction=True)
+def test_postgresql_concurrent_finalize_same_key_is_one_write_and_one_replay():
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL row-lock verification only")
+
+    customer, consultant, inquiry, _consultation = (
+        prepare_consultation_completion(312)
+    )
+    feedback = post_action(
+        client_for(customer),
+        inquiry,
+        "resolution-feedback",
+        feedback_body(),
+        key="t023-concurrent-finalize-feedback",
+    )
+    assert feedback.status_code == 200
+
+    request_barrier = Barrier(2)
+    lock_barrier = Barrier(2)
+    with staff_lock_barrier(lock_barrier), ThreadPoolExecutor(
+        max_workers=2
+    ) as executor:
+        futures = [
+            executor.submit(
+                concurrent_finalize,
+                actor_id=consultant.pk,
+                inquiry_id=inquiry.public_id,
+                state_version=8,
+                key="t023-concurrent-finalize-same-key",
+                barrier=request_barrier,
+            )
+            for _ in range(2)
+        ]
+        results = [future.result(timeout=30) for future in futures]
+
+    assert sorted(status for status, _payload in results) == [200, 200]
+    assert sorted(
+        payload["data"]["idempotent_replay"]
+        for _status, payload in results
+    ) == [False, True]
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.RESOLVED
+    assert inquiry.state_version == 9
+    assert TransitionHistory.objects.filter(
+        inquiry=inquiry,
+        event_code="FINALIZE_INQUIRY",
+    ).count() == 1
+    assert IdempotencyRecord.objects.filter(
+        actor=consultant,
+        operation_id="finalizeInquiry",
+        idempotency_key="t023-concurrent-finalize-same-key",
+    ).count() == 1
+
+
+@pytest.mark.django_db(transaction=True)
+def test_postgresql_concurrent_finalize_new_keys_have_one_version_winner():
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL row-lock verification only")
+
+    customer, consultant, inquiry, _consultation = (
+        prepare_consultation_completion(313)
+    )
+    feedback = post_action(
+        client_for(customer),
+        inquiry,
+        "resolution-feedback",
+        feedback_body(),
+        key="t023-concurrent-conflict-feedback",
+    )
+    assert feedback.status_code == 200
+
+    request_barrier = Barrier(2)
+    lock_barrier = Barrier(2)
+    keys = (
+        "t023-concurrent-finalize-key-a",
+        "t023-concurrent-finalize-key-b",
+    )
+    with staff_lock_barrier(lock_barrier), ThreadPoolExecutor(
+        max_workers=2
+    ) as executor:
+        futures = [
+            executor.submit(
+                concurrent_finalize,
+                actor_id=consultant.pk,
+                inquiry_id=inquiry.public_id,
+                state_version=8,
+                key=key,
+                barrier=request_barrier,
+            )
+            for key in keys
+        ]
+        results = [future.result(timeout=30) for future in futures]
+
+    assert sorted(status for status, _payload in results) == [200, 409]
+    conflict = next(payload for status, payload in results if status == 409)
+    assert conflict["error"]["code"] == "STATE-CONFLICT-01"
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.RESOLVED
+    assert inquiry.state_version == 9
+    assert TransitionHistory.objects.filter(
+        inquiry=inquiry,
+        event_code="FINALIZE_INQUIRY",
+    ).count() == 1
+    assert IdempotencyRecord.objects.filter(
+        actor=consultant,
+        operation_id="finalizeInquiry",
+        idempotency_key__in=keys,
+    ).count() == 1
 
 
 def test_resolved_feedback_then_last_consultant_finalizes_with_replay():
@@ -433,6 +653,7 @@ def test_missing_headers_and_response_contract_failure_have_no_side_effects():
     customer, _consultant, inquiry, _source = (
         prepare_consultation_completion(309)
     )
+    before_counts = resolution_runtime_row_counts()
     client = client_for(customer)
     missing_key = client.post(
         f"/api/v1/inquiries/{inquiry.public_id}/resolution-feedback",
@@ -466,3 +687,4 @@ def test_missing_headers_and_response_contract_failure_have_no_side_effects():
     assert IdempotencyRecord.objects.filter(
         operation_id="submitResolutionFeedback"
     ).count() == 0
+    assert resolution_runtime_row_counts() == before_counts
