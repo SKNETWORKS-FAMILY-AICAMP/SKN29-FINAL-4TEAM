@@ -102,6 +102,9 @@ fun GuidanceScreen(
         }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val workflowSnapshot by
+        viewModel.workflowSnapshot
+            .collectAsStateWithLifecycle()
     val authExpired by
         viewModel.authExpired.collectAsStateWithLifecycle()
 
@@ -133,6 +136,9 @@ fun GuidanceScreen(
     val resolutionState by
         resolutionViewModel.state
             .collectAsStateWithLifecycle()
+    val resolutionWorkflowSnapshot by
+        resolutionViewModel.workflowSnapshot
+            .collectAsStateWithLifecycle()
     val resolutionAuthExpired by
         resolutionViewModel.authExpired
             .collectAsStateWithLifecycle()
@@ -156,28 +162,43 @@ fun GuidanceScreen(
         submittedStatusCode != null &&
             submittedStateVersion != null
 
+    val liveWorkflowSnapshot =
+        listOfNotNull(
+            workflowSnapshot,
+            resolutionWorkflowSnapshot,
+        ).maxByOrNull { it.stateVersion }
+
     val effectiveStateVersion =
-        if (hasSubmittedWorkflowSnapshot) {
-            submittedStateVersion
-        } else {
-            preferredGuidance?.stateVersion
-        }
+        liveWorkflowSnapshot?.stateVersion
+            ?: if (hasSubmittedWorkflowSnapshot) {
+                submittedStateVersion
+            } else {
+                preferredGuidance?.stateVersion
+            }
 
     val effectiveAllowedActions =
-        if (hasSubmittedWorkflowSnapshot) {
-            submittedAllowedActions
-        } else {
-            preferredGuidance
-                ?.allowedActions
-                .orEmpty()
-        }
+        liveWorkflowSnapshot?.allowedActions
+            ?: if (hasSubmittedWorkflowSnapshot) {
+                submittedAllowedActions
+            } else {
+                preferredGuidance
+                    ?.allowedActions
+                    .orEmpty()
+            }
 
     val effectiveStatusCode =
-        if (hasSubmittedWorkflowSnapshot) {
-            submittedStatusCode
-        } else {
-            preferredGuidance?.statusCode
-        }
+        liveWorkflowSnapshot?.statusCode
+            ?: if (hasSubmittedWorkflowSnapshot) {
+                submittedStatusCode
+            } else {
+                preferredGuidance?.statusCode
+            }
+
+    val consultationResult =
+        (
+            state as?
+                GuidanceUiState.ConsultationResult
+        )?.result
 
     val showResolutionFirst =
         effectiveStatusCode
@@ -186,10 +207,8 @@ fun GuidanceScreen(
             "COMPLETION_PENDING"
 
     val progressStatusCode =
-        if (hasSubmittedWorkflowSnapshot) {
-            effectiveStatusCode
-        } else {
-            when (state) {
+        effectiveStatusCode
+            ?: when (state) {
                 GuidanceUiState.Loading,
                 is GuidanceUiState.NotReady ->
                     "AI_GUIDANCE"
@@ -197,7 +216,6 @@ fun GuidanceScreen(
                 else ->
                     preferredGuidance?.statusCode
             }
-        }
 
     WaterCareScreen(title = "맞춤 해결 안내", onBack = onBack) {
         if (showResolutionFirst) {
@@ -205,6 +223,7 @@ fun GuidanceScreen(
                 statusCode = effectiveStatusCode,
                 stateVersion = effectiveStateVersion,
                 allowedActions = effectiveAllowedActions,
+                consultationResult = consultationResult,
                 state = resolutionState,
                 onResolved =
                     resolutionViewModel::markResolved,
@@ -357,6 +376,15 @@ fun GuidanceScreen(
                         onRetry = viewModel::load,
                     )
                 }
+
+            is GuidanceUiState.ConsultationResult ->
+                Unit
+
+            is GuidanceUiState.ConsultationResultNotReady ->
+                ErrorCard(
+                    current.message,
+                    viewModel::load,
+                )
 
             is GuidanceUiState.NoEvidence ->
                 GuidanceResultReveal {
@@ -563,6 +591,7 @@ fun GuidanceScreen(
                 statusCode = effectiveStatusCode,
                 stateVersion = effectiveStateVersion,
                 allowedActions = effectiveAllowedActions,
+                consultationResult = consultationResult,
                 state = resolutionState,
                 onResolved =
                     resolutionViewModel::markResolved,

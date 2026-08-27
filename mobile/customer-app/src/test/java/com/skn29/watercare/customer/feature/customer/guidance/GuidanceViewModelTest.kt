@@ -279,6 +279,9 @@ class GuidanceViewModelTest {
 
             advanceUntilIdle()
 
+            // init? ?? Snapshot ??? double-click ???? ????.
+            snapshotCalls = 0
+
             viewModel.requestConsultation()
             viewModel.requestConsultation()
 

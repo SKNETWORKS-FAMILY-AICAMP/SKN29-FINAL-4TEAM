@@ -8,6 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import com.skn29.watercare.core.model.AllowedAction
+import com.skn29.watercare.core.model.CustomerInquiryConsultationResult
+import com.skn29.watercare.core.model.KoreanDateTimeFormatter
 import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
@@ -20,6 +22,8 @@ fun CustomerResolutionSection(
     statusCode: String?,
     stateVersion: Int?,
     allowedActions: List<AllowedAction>,
+    consultationResult:
+        CustomerInquiryConsultationResult? = null,
     state: CustomerResolutionUiState,
     onResolved: () -> Unit,
     onUnresolved: () -> Unit,
@@ -52,7 +56,37 @@ fun CustomerResolutionSection(
     SectionCard("상담 처리 결과") {
         when (state) {
             CustomerResolutionUiState.Idle -> {
-                LiquidGlassPill("고객 확인 필요")
+                if (consultationResult != null) {
+                    LiquidGlassPill(
+                        consultationResult.resultDisplayLabel
+                    )
+
+                    Text(
+                        consultationResult.customerGuidance,
+                        style =
+                            MaterialTheme.typography
+                                .titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+
+                    Text(
+                        "?? ??: " +
+                            consultationResult
+                                .usageGuidanceDisplayLabel
+                    )
+
+                    Text(
+                        "?? ??: " +
+                            KoreanDateTimeFormatter.format(
+                                consultationResult.completedAt
+                            ),
+                        style =
+                            MaterialTheme.typography.bodySmall,
+                    )
+                } else {
+                    LiquidGlassPill("?? ?? ??")
+                }
+
                 Text(
                     "상담 또는 방문 처리가 완료됐어요.",
                     style =

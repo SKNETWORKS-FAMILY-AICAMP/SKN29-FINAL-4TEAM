@@ -15,6 +15,7 @@ import com.skn29.watercare.core.model.CancelInquiryResponse
 import com.skn29.watercare.core.model.CreateInquiryRequest
 import com.skn29.watercare.core.model.CustomerInquiryQuestionsDto
 import com.skn29.watercare.core.model.CustomerInquiryGuidanceDto
+import com.skn29.watercare.core.model.CustomerInquiryConsultationResultDto
 import com.skn29.watercare.core.model.CustomerInquirySnapshotDto
 import com.skn29.watercare.core.model.DemoLoginRequest
 import com.skn29.watercare.core.model.P1ChallengeAccepted
@@ -196,6 +197,11 @@ interface WaterCareApi {
     suspend fun customerInquiryGuidance(
         @Path("inquiryId") inquiryId: String,
     ): Response<ApiEnvelope<CustomerInquiryGuidanceDto>>
+
+    @GET("api/v1/me/inquiries/{inquiryId}/consultation-result")
+    suspend fun customerInquiryConsultationResult(
+        @Path("inquiryId") inquiryId: String,
+    ): Response<ApiEnvelope<CustomerInquiryConsultationResultDto>>
 
     @POST("api/v1/inquiries/{inquiryId}/answers")
     suspend fun submitFollowUpAnswers(

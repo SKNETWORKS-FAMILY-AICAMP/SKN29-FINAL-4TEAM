@@ -2,6 +2,7 @@ package com.skn29.watercare.core.repository
 
 import com.skn29.watercare.core.model.ApiResult
 import com.skn29.watercare.core.model.CustomerInquiryQuestions
+import com.skn29.watercare.core.model.CustomerInquiryConsultationResult
 import com.skn29.watercare.core.model.CustomerInquirySnapshot
 import com.skn29.watercare.core.model.FollowUpAnswer
 import com.skn29.watercare.core.model.GuidanceData
@@ -34,6 +35,15 @@ interface CustomerInquiryRepository {
             message = "안전 안내 조회 기능을 사용할 수 없습니다.",
             retryable = false,
         )
+    suspend fun consultationResult(
+        inquiryId: String,
+    ): ApiResult<CustomerInquiryConsultationResult> =
+        ApiResult.Failure(
+            code = "CONSULTATION_RESULT_ROUTE_UNAVAILABLE",
+            message = "상담 처리 결과 조회 기능을 사용할 수 없습니다.",
+            retryable = false,
+        )
+
     suspend fun questions(inquiryId: String): ApiResult<CustomerInquiryQuestions>
     suspend fun submitAnswers(
         inquiryId: String,
@@ -119,6 +129,38 @@ class RemoteCustomerInquiryRepository(
         ) {
             result.copy(
                 message = "AI 안내를 준비하고 있습니다. 잠시 후 다시 확인해 주세요.",
+                retryable = true,
+            )
+        } else {
+            result
+        }
+    }
+
+    override suspend fun consultationResult(
+        inquiryId: String,
+    ): ApiResult<CustomerInquiryConsultationResult> {
+        val normalizedInquiryId = inquiryId.trim()
+        if (normalizedInquiryId.isEmpty()) {
+            return ApiResult.Failure(
+                code = "CLIENT_VALIDATION_ERROR",
+                message = "문의 식별자를 확인해 주세요.",
+                retryable = false,
+            )
+        }
+
+        val result = safeApiCall(json) {
+            api.customerInquiryConsultationResult(
+                normalizedInquiryId
+            )
+        }.mapSuccess { it.toDomain() }
+
+        return if (
+            result is ApiResult.Failure &&
+            result.httpStatus == 409 &&
+            result.code == "CONSULTATION_RESULT_NOT_READY"
+        ) {
+            result.copy(
+                message = "상담 처리 결과를 준비하고 있어요. 잠시 후 다시 확인해 주세요.",
                 retryable = true,
             )
         } else {

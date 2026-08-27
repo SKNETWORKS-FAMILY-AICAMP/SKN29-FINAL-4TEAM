@@ -25,6 +25,22 @@ data class CustomerInquirySnapshotDto(
 )
 
 @Serializable
+data class CustomerInquiryConsultationResultDto(
+    @SerialName("inquiry_id") val inquiryId: String,
+    @SerialName("status_code") val statusCode: String,
+    @SerialName("state_version") val stateVersion: Int,
+    @SerialName("result_code") val resultCode: String,
+    @SerialName("result_display_label") val resultDisplayLabel: String,
+    @SerialName("customer_guidance") val customerGuidance: String,
+    @SerialName("usage_guidance_status") val usageGuidanceStatus: String,
+    @SerialName("usage_guidance_display_label")
+    val usageGuidanceDisplayLabel: String,
+    @SerialName("completed_at") val completedAt: String,
+    @SerialName("allowed_actions")
+    val allowedActions: List<AllowedAction> = emptyList(),
+)
+
+@Serializable
 data class CustomerInquiryQuestionOptionDto(
     val value: String,
     val label: String,
@@ -110,6 +126,19 @@ data class CustomerInquirySnapshot(
     val updatedAtRfc3339: String,
 )
 
+data class CustomerInquiryConsultationResult(
+    val inquiryId: String,
+    val statusCode: String,
+    val stateVersion: Int,
+    val resultCode: String,
+    val resultDisplayLabel: String,
+    val customerGuidance: String,
+    val usageGuidanceStatus: String,
+    val usageGuidanceDisplayLabel: String,
+    val completedAt: String,
+    val allowedActions: List<AllowedAction>,
+)
+
 data class CustomerInquiryQuestionOption(
     val value: String,
     val label: String,
@@ -178,6 +207,21 @@ fun CustomerInquirySnapshotDto.toDomain(): CustomerInquirySnapshot =
         productModelCode = product.modelCode,
         allowedActions = allowedActions,
         updatedAtRfc3339 = updatedAt,
+    )
+
+fun CustomerInquiryConsultationResultDto.toDomain():
+    CustomerInquiryConsultationResult =
+    CustomerInquiryConsultationResult(
+        inquiryId = inquiryId,
+        statusCode = statusCode,
+        stateVersion = stateVersion,
+        resultCode = resultCode,
+        resultDisplayLabel = resultDisplayLabel,
+        customerGuidance = customerGuidance,
+        usageGuidanceStatus = usageGuidanceStatus,
+        usageGuidanceDisplayLabel = usageGuidanceDisplayLabel,
+        completedAt = completedAt,
+        allowedActions = allowedActions,
     )
 
 fun CustomerInquiryQuestionsDto.toDomain(): CustomerInquiryQuestions =

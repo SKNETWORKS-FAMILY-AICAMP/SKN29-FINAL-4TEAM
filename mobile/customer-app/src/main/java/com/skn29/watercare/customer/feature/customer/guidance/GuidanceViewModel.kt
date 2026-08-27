@@ -30,6 +30,12 @@ class GuidanceViewModel(
     private val _state = MutableStateFlow<GuidanceUiState>(GuidanceUiState.Loading)
     val state: StateFlow<GuidanceUiState> = _state.asStateFlow()
 
+    private val _workflowSnapshot =
+        MutableStateFlow<CustomerWorkflowUiSnapshot?>(null)
+    val workflowSnapshot:
+        StateFlow<CustomerWorkflowUiSnapshot?> =
+        _workflowSnapshot.asStateFlow()
+
     private val _authExpired =
         MutableStateFlow(false)
     val authExpired: StateFlow<Boolean> =
@@ -72,33 +78,200 @@ class GuidanceViewModel(
     fun load() {
         viewModelScope.launch {
             _state.value = GuidanceUiState.Loading
-            _state.value = when (val result = repository.getGuidance(inquiryId, scenario)) {
-                is ApiResult.Success -> {
-                    val mapped = GuidanceMapper.map(result.value)
-                    if (mapped.riskLevel ==
-                        com.skn29.watercare.core.model.RiskLevel.UNKNOWN
-                    ) GuidanceUiState.NoEvidence(mapped)
-                    else GuidanceUiState.Content(mapped)
+
+            val remote = customerInquiryRepository
+
+            // Follow-up ????? loadFollowUp()? ?? Snapshot?
+            // ?? ????? ??? ?? Snapshot? ?? ???? ???.
+            if (remote == null || followUpEnabled) {
+                _state.value = loadGuidanceState()
+                return@launch
+            }
+
+            when (
+                val snapshotResult =
+                    remote.snapshot(inquiryId)
+            ) {
+                is ApiResult.Failure -> {
+                    registerAuthExpiry(snapshotResult)
+                    _state.value =
+                        when {
+                            snapshotResult.code ==
+                                "NETWORK_ERROR" ->
+                                GuidanceUiState
+                                    .NetworkFailure(
+                                        snapshotResult.message,
+                                        snapshotResult.retryable,
+                                    )
+
+                            else ->
+                                GuidanceUiState.Error(
+                                    snapshotResult.message,
+                                    snapshotResult.retryable,
+                                )
+                        }
                 }
-                is ApiResult.Failure -> when {
-                    result.httpStatus == 401 -> {
-                        _authExpired.value = true
-                        GuidanceUiState.Error(
-                            message = "로그인이 만료되었습니다. 다시 로그인해 주세요.",
-                            retryable = false,
-                        )
-                    }
-                    result.code == "AI_GUIDANCE_NOT_READY" &&
-                        result.httpStatus == 409 ->
-                        GuidanceUiState.NotReady(result.message)
-                    result.code.startsWith("AI_") ->
-                        GuidanceUiState.AiFailure(result.message, result.retryable)
-                    result.code == "NETWORK_ERROR" ->
-                        GuidanceUiState.NetworkFailure(result.message, result.retryable)
-                    else -> GuidanceUiState.Error(result.message, result.retryable)
+
+                is ApiResult.Success -> {
+                    val latest = snapshotResult.value
+                    replaceWorkflowSnapshot(latest)
+
+                    _state.value =
+                        if (
+                            latest.statusCode
+                                .trim()
+                                .uppercase() ==
+                            "COMPLETION_PENDING"
+                        ) {
+                            loadConsultationResultState(
+                                remote
+                            )
+                        } else {
+                            loadGuidanceState()
+                        }
                 }
             }
         }
+    }
+
+    private suspend fun loadConsultationResultState(
+        remote: CustomerInquiryRepository,
+    ): GuidanceUiState =
+        when (
+            val result =
+                remote.consultationResult(inquiryId)
+        ) {
+            is ApiResult.Success -> {
+                if (
+                    result.value.inquiryId != inquiryId
+                ) {
+                    GuidanceUiState.Error(
+                        message =
+                            "?? ?? ??? ?? ??? ???? ????.",
+                        retryable = true,
+                    )
+                } else {
+                    replaceWorkflowResult(
+                        result.value
+                    )
+                    GuidanceUiState
+                        .ConsultationResult(
+                            result.value
+                        )
+                }
+            }
+
+            is ApiResult.Failure -> {
+                registerAuthExpiry(result)
+
+                when {
+                    result.httpStatus == 409 ->
+                        GuidanceUiState
+                            .ConsultationResultNotReady(
+                                result.message
+                            )
+
+                    result.code == "NETWORK_ERROR" ->
+                        GuidanceUiState
+                            .NetworkFailure(
+                                result.message,
+                                result.retryable,
+                            )
+
+                    else ->
+                        GuidanceUiState.Error(
+                            result.message,
+                            result.retryable,
+                        )
+                }
+            }
+        }
+
+    private suspend fun loadGuidanceState():
+        GuidanceUiState =
+        when (
+            val result =
+                repository.getGuidance(
+                    inquiryId,
+                    scenario,
+                )
+        ) {
+            is ApiResult.Success -> {
+                val mapped =
+                    GuidanceMapper.map(
+                        result.value
+                    )
+
+                if (
+                    mapped.riskLevel ==
+                    com.skn29.watercare.core
+                        .model.RiskLevel.UNKNOWN
+                ) {
+                    GuidanceUiState
+                        .NoEvidence(mapped)
+                } else {
+                    GuidanceUiState
+                        .Content(mapped)
+                }
+            }
+
+            is ApiResult.Failure ->
+                when {
+                    result.httpStatus == 401 -> {
+                        _authExpired.value = true
+                        GuidanceUiState.Error(
+                            message =
+                                "???? ???????. ?? ???? ???.",
+                            retryable = false,
+                        )
+                    }
+
+                    result.code ==
+                        "AI_GUIDANCE_NOT_READY" &&
+                        result.httpStatus == 409 ->
+                        GuidanceUiState
+                            .NotReady(
+                                result.message
+                            )
+
+                    result.code
+                        .startsWith("AI_") ->
+                        GuidanceUiState
+                            .AiFailure(
+                                result.message,
+                                result.retryable,
+                            )
+
+                    result.code ==
+                        "NETWORK_ERROR" ->
+                        GuidanceUiState
+                            .NetworkFailure(
+                                result.message,
+                                result.retryable,
+                            )
+
+                    else ->
+                        GuidanceUiState.Error(
+                            result.message,
+                            result.retryable,
+                        )
+                }
+        }
+
+    private fun replaceWorkflowSnapshot(
+        snapshot: CustomerInquirySnapshot,
+    ) {
+        _workflowSnapshot.value =
+            snapshot.toWorkflowUiSnapshot()
+    }
+
+    private fun replaceWorkflowResult(
+        result:
+            com.skn29.watercare.core.model
+                .CustomerInquiryConsultationResult,
+    ) {
+        _workflowSnapshot.value =
+            result.toWorkflowUiSnapshot()
     }
 
     fun loadFollowUp() {
@@ -279,6 +452,7 @@ class GuidanceViewModel(
             is ApiResult.Success -> {
                 val latest = refreshed.value
                 replaceFollowUpSnapshot(latest)
+                replaceWorkflowSnapshot(latest)
 
                 _consultationState.value =
                     ConsultationRequestUiState.Success(
@@ -325,6 +499,7 @@ class GuidanceViewModel(
             is ApiResult.Success -> {
                 val latest = refreshed.value
                 replaceFollowUpSnapshot(latest)
+                replaceWorkflowSnapshot(latest)
 
                 if (
                     failure.code ==

@@ -38,6 +38,12 @@ class CustomerResolutionViewModel(
     val state: StateFlow<CustomerResolutionUiState> =
         _state.asStateFlow()
 
+    private val _workflowSnapshot =
+        MutableStateFlow<CustomerWorkflowUiSnapshot?>(null)
+    val workflowSnapshot:
+        StateFlow<CustomerWorkflowUiSnapshot?> =
+        _workflowSnapshot.asStateFlow()
+
     private val _authExpired = MutableStateFlow(false)
     val authExpired: StateFlow<Boolean> =
         _authExpired.asStateFlow()
@@ -91,6 +97,9 @@ class CustomerResolutionViewModel(
 
                 is ApiResult.Success -> {
                     val latest = snapshot.value
+                    _workflowSnapshot.value =
+                        latest.toWorkflowUiSnapshot()
+
                     val allowed =
                         latest.allowedActions.any {
                             it.normalizedCode ==
@@ -129,13 +138,18 @@ class CustomerResolutionViewModel(
                         }
 
                     when (result) {
-                        is ApiResult.Success ->
+                        is ApiResult.Success -> {
+                            _workflowSnapshot.value =
+                                result.value
+                                    .toWorkflowUiSnapshot()
+
                             _state.value =
                                 CustomerResolutionUiState
                                     .Success(
                                         result.value,
                                         actionCode,
                                     )
+                        }
 
                         is ApiResult.Failure ->
                             applyFailure(
@@ -148,7 +162,7 @@ class CustomerResolutionViewModel(
         }
     }
 
-    private fun applyFailure(
+    private suspend fun applyFailure(
         failure: ApiResult.Failure,
         actionCode: String,
     ) {
@@ -156,16 +170,36 @@ class CustomerResolutionViewModel(
             _authExpired.value = true
         }
 
+        if (failure.httpStatus == 409) {
+            when (
+                val refreshed =
+                    repository.snapshot(inquiryId)
+            ) {
+                is ApiResult.Success ->
+                    _workflowSnapshot.value =
+                        refreshed.value
+                            .toWorkflowUiSnapshot()
+
+                is ApiResult.Failure -> Unit
+            }
+        }
+
         _state.value =
             CustomerResolutionUiState.Error(
                 message =
                     when {
                         failure.httpStatus == 409 ->
-                            "문의 상태가 변경됐어요. 최신 상태를 확인한 뒤 다시 시도해주세요."
-                        failure.code == "NETWORK_ERROR" ->
-                            "인터넷 연결을 확인한 뒤 다시 시도해주세요."
+                            "?? ??? ?? ???? ?????. ?? ??? ?? ??????."
+
+                        failure.httpStatus == 422 ->
+                            "?? ?? ??? ???? ???. ?? ?? ??? ??? ? ?? ??????."
+
+                        failure.code ==
+                            "NETWORK_ERROR" ->
+                            "??? ??? ??? ? ?? ??????."
+
                         else ->
-                            "처리 결과를 저장하지 못했어요. 잠시 후 다시 시도해주세요."
+                            "?? ??? ???? ????. ?? ? ?? ??????."
                     },
                 retryable =
                     failure.retryable ||
