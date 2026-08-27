@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 from uuid import UUID
 
 from ai.app.orchestration.handoff import (
@@ -74,3 +75,48 @@ def test_handoff_attaches_internal_context_synthesis():
 
     assert result.context_synthesis == synthesis
     assert result.customer_symptom_summary == "얼음이 나오지 않음"
+
+
+def test_handoff_input_reads_answer_text_and_actual_actions_not_future_guidance():
+    ctx = SimpleNamespace(
+        trace_context=SimpleNamespace(
+            inquiry_id=UUID("018f2f9b-7c30-7981-b541-1a987c88b201"),
+            correlation_id=UUID("018f2f9b-7c30-7981-b541-1a987c88e001"),
+            ai_request_id="ai-req-handoff-context-001",
+        ),
+        model_code="WPU-IAC425",
+        structured_symptom=SimpleNamespace(
+            symptom_type="얼음이 나오지 않음",
+            occurrence_time=None,
+            target_water_type=None,
+            occurrence_condition=None,
+            error_code=None,
+            accompanying_symptoms=[],
+            actions_taken=["고객이 이미 전원을 재부팅함"],
+        ),
+        previous_answers=[
+            {
+                "question_id": "followup-time",
+                "answer_text": "오늘 아침부터",
+            }
+        ],
+        evidence_references=[],
+        safety_assessment=None,
+        usage_guidance=SimpleNamespace(
+            next_actions=["아직 수행하지 않은 필터 교체"]
+        ),
+        missing_fields=[],
+    )
+
+    result = ConsultationHandoffInput.from_pipeline_context(
+        ctx=ctx,
+        product_family="ICE_WATER_PURIFIER",
+        escalation_reason="AI_PROCESSING_TIMEOUT",
+        accepted_evidence_chunk_ids=[],
+    )
+
+    assert result.questionnaire_answers[0].answer == "오늘 아침부터"
+    assert result.proposed_self_help_actions == ["고객이 이미 전원을 재부팅함"]
+    assert "아직 수행하지 않은 필터 교체" not in result.model_dump_json()
+    assert result.safety_level == "unknown"
+    assert result.safety_requires_consultation is False
