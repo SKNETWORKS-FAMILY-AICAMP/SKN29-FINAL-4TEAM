@@ -1,0 +1,64 @@
+{
+  "schema_version": "2.0.0",
+  "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b303",
+  "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88e303",
+  "ai_request_id": "ai-handoff-v2-danger-001",
+  "state_version": 2,
+  "model_code": "WPUJAC104DWH",
+  "product_family": "DIRECT_WATER_PURIFIER",
+  "routing_reason": "DANGER_HANDOFF",
+  "customer_symptom_summary": "제품 하부 누수와 전원선 주변의 타는 냄새가 함께 보고됐습니다.",
+  "questionnaire_answers": [],
+  "self_help_actions": [],
+  "evidence": [],
+  "safety_level": "danger",
+  "safety_requires_consultation": true,
+  "safety_notes": [
+    "감전 또는 화재 위험이 있어 사용을 즉시 중단해야 합니다."
+  ],
+  "escalation_reason": "DANGER_PRIORITY",
+  "consultant_priority_checks": [
+    "전원 분리와 원수 밸브 차단 여부를 먼저 확인합니다.",
+    "고객이 직접 분해하거나 수리하지 않도록 안내합니다."
+  ],
+  "source_chunk_ids": [],
+  "context_synthesis": {
+    "status": "FALLBACK",
+    "fallback_reason": "DANGER_BYPASS",
+    "brief": {
+      "safety_constraints": [
+        {
+          "text": "제품 사용을 즉시 중단하고 안전하게 전원을 분리하도록 안내합니다."
+        },
+        {
+          "text": "누수 부위나 전원부를 직접 분해하거나 수리하지 않도록 안내합니다."
+        }
+      ],
+      "issue_summary": {
+        "text": "누수와 전기 이상 징후가 함께 보고되어 즉시 상담 연결이 필요한 위험 상황입니다."
+      },
+      "customer_reported_facts": [
+        {
+          "text": "제품 하부에서 물이 새고 전원선 주변에서 타는 냄새가 난다고 보고했습니다."
+        }
+      ],
+      "attempted_actions_and_outcomes": [],
+      "unresolved_questions": [
+        {
+          "text": "현재 전원이 분리됐는지와 누수가 계속되는지는 확인되지 않았습니다."
+        }
+      ],
+      "evidence_based_findings": [],
+      "consultant_priority_checks": [
+        {
+          "text": "고객의 안전 확보 여부를 가장 먼저 확인합니다."
+        }
+      ],
+      "uncertainty_notes": [
+        {
+          "text": "Danger 경로에서는 Provider 호출 없이 결정론적 안전 맥락만 사용했습니다."
+        }
+      ]
+    }
+  }
+}

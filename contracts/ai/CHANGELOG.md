@@ -1,5 +1,20 @@
 # AI Contract Changelog
 
+## Consultation Handoff Envelope 2.0.0 - 2026-08-27
+
+- 기존 무버전 v1 Handoff 요청과 명시적 `schema_version=2.0.0` 요청을 함께
+  검증하는 `ConsultationHandoffRequest` Draft 2020-12 Schema 추가
+- v2에 원래 분석 요청의 `state_version`, 실제 Handoff `routing_reason`,
+  외부 공개용 nullable `context_synthesis`를 필수로 추가
+- `PRE_SEND_HUMAN_REVIEW`를 금지하고 Danger·Fail-closed·Harness의
+  상태/Fallback 조합을 Schema로 고정
+- AI 내부 `source_ids`와 Provider 메타데이터를 외부 Brief에서 제거하고,
+  Evidence Chunk 결속 규칙을 명시
+- `HARNESS_ESCALATE` 권위를 `AIRun.validated_output_payload`의
+  `fallback_reason_code × failure_stage` Crosswalk로 고정
+- Human Review 거절 결속과 Backend 오류별 bounded retry 정책을 계약
+  Metadata 및 예시로 추가
+
 ## 4.0.0 Routing clarification - 2026-08-26
 
 - 공개 Schema 필드 추가 없이 danger, caution 검토 초안, general 자동 안내,

@@ -1,0 +1,88 @@
+{
+  "schema_version": "2.0.0",
+  "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b302",
+  "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88e302",
+  "ai_request_id": "ai-handoff-v2-success-001",
+  "state_version": 4,
+  "model_code": "WPUJAC104DWH",
+  "product_family": "DIRECT_WATER_PURIFIER",
+  "routing_reason": "HARNESS_ESCALATE",
+  "customer_symptom_summary": "냉수 출수량이 간헐적으로 줄어드는 증상이 확인됐습니다.",
+  "questionnaire_answers": [
+    {
+      "field_name": "occurrence_condition",
+      "answer": "냉수를 연속으로 사용할 때 주로 발생합니다."
+    }
+  ],
+  "self_help_actions": [
+    "고객이 출수 버튼을 다시 눌러 증상 재현 여부를 확인했습니다."
+  ],
+  "evidence": [
+    {
+      "chunk_id": "WPUJAC104DWH-MANUAL-042-001",
+      "document_title": "WPUJAC104DWH 사용설명서",
+      "page": 42,
+      "summary": "출수량 이상이 반복되면 사용 환경을 확인하고 전문 상담을 요청하도록 안내합니다."
+    }
+  ],
+  "safety_level": "caution",
+  "safety_requires_consultation": true,
+  "safety_notes": [
+    "검증 단계에서 MCP Tool 실패가 발생해 자동 안내를 확정하지 않았습니다."
+  ],
+  "escalation_reason": "MCP_TOOL_FAILURE",
+  "consultant_priority_checks": [
+    "냉수 연속 사용 시 증상 재현 여부를 확인합니다.",
+    "설치 환경의 급수 상태를 확인합니다."
+  ],
+  "source_chunk_ids": [
+    "WPUJAC104DWH-MANUAL-042-001"
+  ],
+  "context_synthesis": {
+    "status": "SUCCEEDED",
+    "fallback_reason": null,
+    "brief": {
+      "safety_constraints": [
+        {
+          "text": "검증이 끝나기 전에는 임의 분해나 내부 부품 점검을 안내하지 않습니다."
+        }
+      ],
+      "issue_summary": {
+        "text": "냉수 연속 사용 중 출수량 저하가 반복되며 자동 안내 검증을 완료하지 못했습니다."
+      },
+      "customer_reported_facts": [
+        {
+          "text": "냉수를 연속으로 사용할 때 출수량 저하가 주로 발생한다고 답했습니다."
+        }
+      ],
+      "attempted_actions_and_outcomes": [
+        {
+          "text": "출수 버튼을 다시 눌러 확인했지만 증상이 간헐적으로 반복됐습니다."
+        }
+      ],
+      "unresolved_questions": [
+        {
+          "text": "설치 장소의 급수 압력과 다른 출수 기능 상태는 확인되지 않았습니다."
+        }
+      ],
+      "evidence_based_findings": [
+        {
+          "text": "공식 설명서는 출수량 이상이 반복되면 사용 환경 확인과 전문 상담을 권고합니다.",
+          "source_chunk_ids": [
+            "WPUJAC104DWH-MANUAL-042-001"
+          ]
+        }
+      ],
+      "consultant_priority_checks": [
+        {
+          "text": "냉수 연속 사용 조건과 급수 상태를 먼저 확인합니다."
+        }
+      ],
+      "uncertainty_notes": [
+        {
+          "text": "MCP Tool 실패 때문에 자동 안내 적합성은 확정되지 않았습니다."
+        }
+      ]
+    }
+  }
+}

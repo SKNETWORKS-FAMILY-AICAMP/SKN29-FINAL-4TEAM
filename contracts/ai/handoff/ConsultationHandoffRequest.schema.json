@@ -1,0 +1,629 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ConsultationHandoffRequest.schema.json",
+  "x-contract-version": "2.0.0",
+  "title": "ConsultationHandoffRequest",
+  "description": "AI가 Backend 내부 API로 전달하는 상담 Handoff 요청. 기존 무버전 v1 payload와 명시적 v2 envelope를 함께 검증한다.",
+  "x-legacy-v1-default-schema-version": "1.0.0",
+  "x-runtime-invariants": [
+    "source_chunk_ids must equal evidence[].chunk_id in the same order and contain no duplicates",
+    "context_synthesis.brief.evidence_based_findings[].source_chunk_ids must be a subset of top-level source_chunk_ids",
+    "all v2 identity fields must match the same authoritative AIRun",
+    "the same ai_request_id must never be upgraded from a stored v1 payload to v2"
+  ],
+  "x-authoritative-airun-crosswalk": {
+    "HARNESS_ESCALATE": {
+      "source": "AIRun.validated_output_payload",
+      "source_fields": [
+        "fallback_reason_code",
+        "failure_stage"
+      ],
+      "allowed_pairs": [
+        {
+          "fallback_reason_code": "MCP_TOOL_FAILURE",
+          "failure_stage": "VALIDATING"
+        },
+        {
+          "fallback_reason_code": "OUTPUT_SCHEMA_INVALID",
+          "failure_stage": "VALIDATING"
+        },
+        {
+          "fallback_reason_code": "UNSPECIFIED_FALLBACK",
+          "failure_stage": "VALIDATING"
+        }
+      ],
+      "backend_policy": "LEDGER_ONLY_UNTIL_BACKEND_CONSULTATION"
+    }
+  },
+  "x-human-review-rejection-crosswalk": {
+    "required_values": {
+      "HumanReview.status_code": "REJECTED",
+      "HumanReview.decision_code": "REJECT",
+      "request.routing_reason": "FAIL_CLOSED_CONSULTATION"
+    },
+    "identity_bindings": [
+      {
+        "left": "HumanReview.inquiry_id",
+        "right": "request.inquiry_id"
+      },
+      {
+        "left": "HumanReview.guidance.inquiry_id",
+        "right": "request.inquiry_id"
+      },
+      {
+        "left": "HumanReview.source_ai_request_id",
+        "right": "request.ai_request_id"
+      },
+      {
+        "left": "HumanReview.source_inquiry_state_version",
+        "right": "request.state_version"
+      }
+    ],
+    "automatic_inquiry_transition": false,
+    "automatic_consultation_creation": false
+  },
+  "x-backend-error-retry-policy": {
+    "maximum_attempts": 2,
+    "retryable_error_codes": [
+      "AI_HANDOFF_NOT_READY"
+    ],
+    "non_retryable_error_codes": [
+      "AI_HANDOFF_STALE",
+      "AI_HANDOFF_EVIDENCE_REJECTED",
+      "DUPLICATE-EVENT-01",
+      "VALIDATION_ERROR",
+      "FORBIDDEN"
+    ],
+    "retryable_http_statuses": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "retryable_transport_failures": [
+      "NETWORK",
+      "TIMEOUT"
+    ],
+    "default_4xx_retryable": false,
+    "payload_mutation_after_rejection": false
+  },
+  "type": "object",
+  "required": [
+    "inquiry_id",
+    "correlation_id",
+    "ai_request_id",
+    "model_code",
+    "product_family",
+    "customer_symptom_summary",
+    "questionnaire_answers",
+    "self_help_actions",
+    "evidence",
+    "safety_level",
+    "safety_requires_consultation",
+    "safety_notes",
+    "escalation_reason",
+    "consultant_priority_checks",
+    "source_chunk_ids"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "1.0.0",
+        "2.0.0"
+      ],
+      "description": "v1 legacy 요청은 생략 시 Backend가 1.0.0으로 정규화한다. v2는 2.0.0을 반드시 명시한다."
+    },
+    "inquiry_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Backend Public Inquiry UUID"
+    },
+    "correlation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "ai_request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "state_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "원래 AI 분석 요청의 Inquiry state_version"
+    },
+    "model_code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "product_family": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "routing_reason": {
+      "type": "string",
+      "enum": [
+        "DANGER_HANDOFF",
+        "FAIL_CLOSED_CONSULTATION",
+        "HARNESS_ESCALATE"
+      ],
+      "description": "실제로 확정된 Handoff 분기. PRE_SEND_HUMAN_REVIEW는 허용하지 않는다."
+    },
+    "customer_symptom_summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "questionnaire_answers": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "$ref": "#/$defs/questionnaireAnswer"
+      }
+    },
+    "self_help_actions": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "$ref": "#/$defs/evidence"
+      }
+    },
+    "safety_level": {
+      "type": "string",
+      "enum": [
+        "general",
+        "caution",
+        "danger",
+        "unknown"
+      ]
+    },
+    "safety_requires_consultation": {
+      "type": "boolean"
+    },
+    "safety_notes": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      }
+    },
+    "escalation_reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "consultant_priority_checks": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      }
+    },
+    "source_chunk_ids": {
+      "type": "array",
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "context_synthesis": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/contextSynthesis"
+        }
+      ],
+      "description": "알려진 합성 실패는 FALLBACK 객체로 전달하고, 예상하지 못한 합성 또는 Mapper 실패만 null로 축소한다."
+    }
+  },
+  "$defs": {
+    "questionnaireAnswer": {
+      "type": "object",
+      "required": [
+        "field_name",
+        "answer"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "field_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "answer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "chunk_id",
+        "document_title",
+        "page",
+        "summary"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "chunk_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "document_title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      }
+    },
+    "briefStatement": {
+      "type": "object",
+      "required": [
+        "text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      }
+    },
+    "evidenceBriefStatement": {
+      "type": "object",
+      "required": [
+        "text",
+        "source_chunk_ids"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "source_chunk_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      }
+    },
+    "contextBrief": {
+      "type": "object",
+      "required": [
+        "safety_constraints",
+        "issue_summary",
+        "customer_reported_facts",
+        "attempted_actions_and_outcomes",
+        "unresolved_questions",
+        "evidence_based_findings",
+        "consultant_priority_checks",
+        "uncertainty_notes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "safety_constraints": {
+          "type": "array",
+          "maxItems": 70,
+          "items": {
+            "$ref": "#/$defs/briefStatement"
+          }
+        },
+        "issue_summary": {
+          "$ref": "#/$defs/briefStatement"
+        },
+        "customer_reported_facts": {
+          "type": "array",
+          "maxItems": 60,
+          "items": {
+            "$ref": "#/$defs/briefStatement"
+          }
+        },
+        "attempted_actions_and_outcomes": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "$ref": "#/$defs/briefStatement"
+          }
+        },
+        "unresolved_questions": {
+          "type": "array",
+          "maxItems": 30,
+          "items": {
+            "$ref": "#/$defs/briefStatement"
+          }
+        },
+        "evidence_based_findings": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/$defs/evidenceBriefStatement"
+          }
+        },
+        "consultant_priority_checks": {
+          "type": "array",
+          "maxItems": 30,
+          "items": {
+            "$ref": "#/$defs/briefStatement"
+          }
+        },
+        "uncertainty_notes": {
+          "type": "array",
+          "maxItems": 80,
+          "items": {
+            "$ref": "#/$defs/briefStatement"
+          }
+        }
+      }
+    },
+    "contextSynthesis": {
+      "type": "object",
+      "required": [
+        "status",
+        "fallback_reason",
+        "brief"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "SUCCEEDED",
+            "FALLBACK"
+          ]
+        },
+        "fallback_reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "CONFIGURATION",
+            "PROVIDER_TIMEOUT",
+            "PROVIDER_UNAVAILABLE",
+            "OUTPUT_INVALID",
+            "REFUSED",
+            "DANGER_BYPASS",
+            "INPUT_TOO_LARGE",
+            "INPUT_NOT_ELIGIBLE",
+            "SAFETY_NOT_VERIFIED",
+            "RUNTIME_PRODUCT_NOT_APPROVED",
+            null
+          ]
+        },
+        "brief": {
+          "$ref": "#/$defs/contextBrief"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "SUCCEEDED"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "fallback_reason": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "FALLBACK"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "fallback_reason": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "title": "Legacy v1 request",
+      "description": "현재 AI Client가 보내는 무버전 payload. Backend에서 schema_version=1.0.0으로 정규화한다.",
+      "allOf": [
+        {
+          "anyOf": [
+            {
+              "not": {
+                "required": [
+                  "schema_version"
+                ]
+              }
+            },
+            {
+              "properties": {
+                "schema_version": {
+                  "const": "1.0.0"
+                }
+              },
+              "required": [
+                "schema_version"
+              ]
+            }
+          ]
+        },
+        {
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "state_version"
+                ]
+              },
+              {
+                "required": [
+                  "routing_reason"
+                ]
+              },
+              {
+                "required": [
+                  "context_synthesis"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Version 2 request",
+      "required": [
+        "schema_version",
+        "state_version",
+        "routing_reason",
+        "context_synthesis"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "2.0.0"
+        }
+      }
+    }
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": "2.0.0"
+          },
+          "routing_reason": {
+            "const": "DANGER_HANDOFF"
+          },
+          "context_synthesis": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "schema_version",
+          "routing_reason",
+          "context_synthesis"
+        ]
+      },
+      "then": {
+        "properties": {
+          "context_synthesis": {
+            "properties": {
+              "status": {
+                "const": "FALLBACK"
+              },
+              "fallback_reason": {
+                "const": "DANGER_BYPASS"
+              }
+            },
+            "required": [
+              "status",
+              "fallback_reason"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": "2.0.0"
+          },
+          "routing_reason": {
+            "enum": [
+              "FAIL_CLOSED_CONSULTATION",
+              "HARNESS_ESCALATE"
+            ]
+          },
+          "context_synthesis": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "schema_version",
+          "routing_reason",
+          "context_synthesis"
+        ]
+      },
+      "then": {
+        "properties": {
+          "context_synthesis": {
+            "not": {
+              "properties": {
+                "fallback_reason": {
+                  "const": "DANGER_BYPASS"
+                }
+              },
+              "required": [
+                "fallback_reason"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

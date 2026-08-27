@@ -25,6 +25,7 @@ from ai.app.schemas.technician_report import TechnicianReportRequest, Technician
 from ai.app.schemas.common import ModelMetadata, ProcessingTrace, ValidationResult, AiStage
 from ai.app.schemas.symptom import MissingField, FollowUpQuestion
 from ai.app.orchestration.pipeline_context import PipelineContext
+from ai.app.orchestration.handoff import ConsultationHandoffResult
 
 
 def test_pydantic_common_schemas():
@@ -297,7 +298,12 @@ def test_all_ai_contract_schemas_are_versioned_and_well_formed():
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
         Draft202012Validator.check_schema(schema)
         assert schema["$id"]
-        assert schema["x-contract-version"] == "4.0.0"
+        expected_version = (
+            "2.0.0"
+            if schema_path.parent.name == "handoff"
+            else "4.0.0"
+        )
+        assert schema["x-contract-version"] == expected_version
 
 
 @pytest.mark.parametrize(
@@ -393,6 +399,9 @@ def test_every_ai_contract_has_runtime_valid_and_extra_field_parity():
     technician_example = json.loads(
         (contract_root / "examples/technician-report/report-example.json").read_text(encoding="utf-8")
     )
+    handoff_example = json.loads(
+        (contract_root / "examples/handoff/v1-request.json").read_text(encoding="utf-8")
+    )
     response = symptom_example["response"]
     matrix = {
         "common/AIErrorResponse.schema.json": (ApiErrorResponse, error_example["error_response"]),
@@ -415,6 +424,7 @@ def test_every_ai_contract_has_runtime_valid_and_extra_field_parity():
         "common/ValidationResult.schema.json": (ValidationResult, {
             "is_valid": True, "schema_valid": True, "grounding_valid": True, "safety_valid": True, "violations": [],
         }),
+        "handoff/ConsultationHandoffRequest.schema.json": (ConsultationHandoffResult, handoff_example),
         "requests/ConsultationSummaryRequest.schema.json": (ConsultationSummaryRequest, consultation_example["request"]),
         "requests/SymptomAnalysisRequest.schema.json": (SymptomAnalysisApiRequest, symptom_example["request"]),
         "requests/TechnicianReportRequest.schema.json": (TechnicianReportRequest, technician_example["request"]),
