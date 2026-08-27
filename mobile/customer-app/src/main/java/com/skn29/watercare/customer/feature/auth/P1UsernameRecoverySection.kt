@@ -25,6 +25,7 @@ internal fun P1UsernameRecoverySection(
     viewModel: AuthViewModel,
     state: AuthUiState,
     onBackToLogin: () -> Unit,
+    onOpenPasswordReset: () -> Unit,
 ) {
     val palette = WaterBridgeCustomerPalette
 
@@ -244,6 +245,30 @@ internal fun P1UsernameRecoverySection(
                     color = palette.textMuted,
                     textAlign = TextAlign.Center,
                 )
+
+                ReferenceGlassButton(
+                    text = "비밀번호 찾기",
+                    palette = palette,
+                    onClick = {
+                        viewModel.cancelUsernameRecovery()
+                        onOpenPasswordReset()
+                    },
+                    enabled = !state.submitting,
+                    accent = false,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                ReferenceGlassButton(
+                    text = "로그인으로 가기",
+                    palette = palette,
+                    onClick = {
+                        viewModel.cancelUsernameRecovery()
+                        onBackToLogin()
+                    },
+                    enabled = !state.submitting,
+                    accent = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
 
@@ -270,17 +295,22 @@ internal fun P1UsernameRecoverySection(
             )
         }
 
-        ReferenceGlassButton(
-            text = "로그인으로 돌아가기",
-            palette = palette,
-            onClick = {
-                viewModel.cancelUsernameRecovery()
-                onBackToLogin()
-            },
-            enabled = !state.submitting,
-            accent = false,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        if (
+            state.usernameRecoveryStage !=
+                UsernameRecoveryStage.RESULT
+        ) {
+            ReferenceGlassButton(
+                text = "로그인으로 돌아가기",
+                palette = palette,
+                onClick = {
+                    viewModel.cancelUsernameRecovery()
+                    onBackToLogin()
+                },
+                enabled = !state.submitting,
+                accent = false,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 
