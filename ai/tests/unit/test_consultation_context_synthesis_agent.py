@@ -536,7 +536,12 @@ def test_runtime_unapproved_product_bypasses_provider_and_keeps_handoff_brief():
             "safety_level": "danger",
             "matched_safety_rule_ids": [],
         },
-        {"safety_requires_consultation": False},
+        {
+            "routing_reason": ContextRoutingReason.DANGER_HANDOFF,
+            "safety_level": "danger",
+            "safety_requires_consultation": False,
+            "matched_safety_rule_ids": ["SAFETY-LEAK-ELECTRIC-001"],
+        },
     ],
 )
 def test_routing_and_safety_cross_field_mismatch_is_rejected(updates):
@@ -549,7 +554,13 @@ def test_routing_and_safety_cross_field_mismatch_is_rejected(updates):
 
 def test_unknown_safety_bypasses_provider_without_coercion_to_caution():
     payload = synthesis_input(include_evidence=False).model_dump(mode="python")
-    payload["safety_level"] = "unknown"
+    payload.update(
+        {
+            "routing_reason": ContextRoutingReason.HARNESS_ESCALATE,
+            "safety_level": "unknown",
+            "safety_requires_consultation": False,
+        }
+    )
     source = ConsultationContextSynthesisInput.model_validate(payload)
     client = DynamicClient()
 
@@ -561,6 +572,23 @@ def test_unknown_safety_bypasses_provider_without_coercion_to_caution():
         result.fallback_reason
         == ContextSynthesisFallbackReason.SAFETY_NOT_VERIFIED
     )
+
+
+def test_fail_closed_allows_safety_consultation_false():
+    payload = synthesis_input().model_dump(mode="python")
+    payload.update(
+        {
+            "routing_reason": ContextRoutingReason.FAIL_CLOSED_CONSULTATION,
+            "safety_level": "general",
+            "safety_requires_consultation": False,
+            "matched_safety_rule_ids": [],
+        }
+    )
+
+    source = ConsultationContextSynthesisInput.model_validate(payload)
+
+    assert source.safety_requires_consultation is False
+    assert source.routing_reason == ContextRoutingReason.FAIL_CLOSED_CONSULTATION
 
 
 def test_pre_send_human_review_allows_safety_consultation_false():

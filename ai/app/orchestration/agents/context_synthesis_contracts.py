@@ -179,17 +179,12 @@ class ConsultationContextSynthesisInput(_ContextSynthesisContract):
             set(self.matched_safety_rule_ids)
         ):
             raise ValueError("matched_safety_rule_ids는 중복될 수 없습니다.")
-        if (
-            not self.safety_requires_consultation
-            and self.routing_reason != ContextRoutingReason.PRE_SEND_HUMAN_REVIEW
-        ):
-            raise ValueError(
-                "상담 필요 false는 PRE_SEND_HUMAN_REVIEW에서만 허용됩니다."
-            )
         is_danger = self.safety_level == "danger"
         is_danger_route = self.routing_reason == ContextRoutingReason.DANGER_HANDOFF
         if is_danger != is_danger_route:
             raise ValueError("danger Safety와 DANGER_HANDOFF 분기는 서로 일치해야 합니다.")
+        if is_danger and not self.safety_requires_consultation:
+            raise ValueError("danger 상담 이관에는 Safety 상담 필요 판정이 필요합니다.")
         if is_danger and not self.matched_safety_rule_ids:
             raise ValueError("danger 상담 이관에는 승인된 Safety Rule ID가 필요합니다.")
         return self
