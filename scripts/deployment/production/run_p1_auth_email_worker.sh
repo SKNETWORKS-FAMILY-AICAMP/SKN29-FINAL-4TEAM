@@ -3,6 +3,7 @@ set -euo pipefail
 
 base_dir=/opt/waterbridge
 release_pointer="${base_dir}/shared/p1-auth-email-worker.release"
+supervisor_lock=/run/lock/waterbridge-p1-auth-email-worker.lock
 
 fail() {
   printf 'P1_AUTH_EMAIL_WORKER_FAILED: %s\n' "$1" >&2
@@ -59,6 +60,15 @@ for value in sys.argv[1:]:
         pass' $pids >/dev/null 2>&1 || true
 }
 
+wait_for_worker_exit() {
+  local attempt
+  for attempt in {1..20}; do
+    [[ -z "$(worker_pids 2>/dev/null || true)" ]] && return 0
+    sleep 0.25
+  done
+  return 1
+}
+
 if [[ "${1:-}" == "--check" ]]; then
   read -r -a running_pids <<<"$(worker_pids)"
   [[ "${#running_pids[@]}" -eq 1 ]] \
@@ -79,7 +89,14 @@ cleanup() {
   exit "$exit_code"
 }
 
-[[ -z "$(worker_pids)" ]] || fail "duplicate worker process is already running"
+exec 9>"$supervisor_lock"
+flock -n 9 || fail "another worker supervisor is active"
+
+if [[ -n "$(worker_pids)" ]]; then
+  stop_worker
+  wait_for_worker_exit || fail "stale worker process could not be stopped"
+  printf 'P1_AUTH_EMAIL_WORKER_STALE_PROCESS_CLEANED\n'
+fi
 trap cleanup EXIT TERM INT
 
 printf 'P1_AUTH_EMAIL_WORKER_START\n'

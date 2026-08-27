@@ -86,7 +86,15 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
             "process_p1_auth_email_outbox --poll-seconds 2",
             runner,
         )
-        self.assertIn("duplicate worker process", runner)
+        self.assertIn(
+            "supervisor_lock=/run/lock/waterbridge-p1-auth-email-worker.lock",
+            runner,
+        )
+        self.assertIn("flock -n 9", runner)
+        self.assertIn("another worker supervisor is active", runner)
+        self.assertIn("wait_for_worker_exit", runner)
+        self.assertIn("stale worker process could not be stopped", runner)
+        self.assertIn("P1_AUTH_EMAIL_WORKER_STALE_PROCESS_CLEANED", runner)
         self.assertIn("P1_AUTH_EMAIL_WORKER_PROCESS_PASS", runner)
         self.assertIn('raw.split(b"\\0")', runner)
         self.assertNotIn('raw.split(b"\\\\0")', runner)
