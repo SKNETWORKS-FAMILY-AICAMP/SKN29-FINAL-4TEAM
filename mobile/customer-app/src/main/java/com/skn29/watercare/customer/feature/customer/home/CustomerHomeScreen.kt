@@ -32,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.config.CustomerCareMode
+import com.skn29.watercare.core.model.AllowedAction
 import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.SymptomTopic
@@ -58,7 +59,13 @@ fun CustomerHomeScreen(
         onStartIntake(subscriptionId)
     },
     onOpenFollowUp: (inquiryId: String, scenario: MockScenario) -> Unit,
-    onOpenGuidance: (inquiryId: String, scenario: MockScenario) -> Unit,
+    onOpenGuidance: (
+        inquiryId: String,
+        scenario: MockScenario,
+        statusCode: String?,
+        stateVersion: Int?,
+        allowedActions: List<AllowedAction>,
+    ) -> Unit,
     onOpenCare: () -> Unit,
     onLogout: () -> Unit,
 ) {
@@ -196,11 +203,14 @@ fun CustomerHomeScreen(
                     WaterCareCore.customerCareRuntimeConfig.mode ==
                         CustomerCareMode.REMOTE
 
-            val activeStatus =
+            val activeSnapshot =
                 state.activeInquiry
                     ?.takeIf {
                         it.inquiryId == inquiryId
                     }
+
+            val activeStatus =
+                activeSnapshot
                     ?.statusCode
                     ?.trim()
                     ?.uppercase()
@@ -224,6 +234,11 @@ fun CustomerHomeScreen(
                 onOpenGuidance(
                     inquiryId,
                     scenario,
+                    activeSnapshot?.statusCode,
+                    activeSnapshot?.stateVersion,
+                    activeSnapshot
+                        ?.allowedActions
+                        .orEmpty(),
                 )
             }
         },

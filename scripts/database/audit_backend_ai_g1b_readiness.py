@@ -50,6 +50,7 @@ REQUIRED_MIGRATIONS = (
     "0012_expand_ai_crosswalk_canonical_id",
     "0013_expand_backend_ai_rag_lineage_metadata",
     "0014_decouple_ai_view_product_eligibility",
+    "0015_project_child_record_type_in_ai_view",
 )
 EXPECTED_VIEW = "public.backend_ai_rag_chunks_v1"
 EXPECTED_VIEW_COLUMNS = (
@@ -104,6 +105,7 @@ LINEAGE_METADATA_KEYS = (
     "source_variant_id",
     "parent_id",
     "retrieval_role",
+    "record_type",
 )
 # 이전 Audit 소비자가 참조하는 이름은 우선 버전 Alias로 보존한다.
 EXPECTED_PGVECTOR_VERSION = PREFERRED_PGVECTOR_VERSION
@@ -374,6 +376,7 @@ def collect_snapshot(
                         "NULLIF(metadata ->> 'source_variant_id', '') "
                         "IS NOT NULL AND "
                         "NULLIF(metadata ->> 'parent_id', '') IS NOT NULL AND "
+                        "LOWER(metadata ->> 'record_type') = 'child' AND "
                         "metadata ->> 'retrieval_role' = "
                         "'SEARCH_CANDIDATE') "
                         "FROM public.backend_ai_rag_chunks_v1",

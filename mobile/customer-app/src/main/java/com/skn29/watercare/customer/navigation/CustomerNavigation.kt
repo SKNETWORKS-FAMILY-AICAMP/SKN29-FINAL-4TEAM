@@ -132,11 +132,20 @@ fun CustomerNavigation() {
                         )
                     )
                 },
-                onOpenGuidance = { inquiryId, scenario ->
+                onOpenGuidance = {
+                        inquiryId,
+                        scenario,
+                        statusCode,
+                        stateVersion,
+                        allowedActions,
+                    ->
                     navController.navigate(
                         CustomerRoute.guidance(
                             inquiryId = inquiryId,
                             scenario = scenario.name,
+                            statusCode = statusCode,
+                            stateVersion = stateVersion,
+                            allowedActions = allowedActions,
                             fixturePreview = offlinePreview,
                         )
                     )
