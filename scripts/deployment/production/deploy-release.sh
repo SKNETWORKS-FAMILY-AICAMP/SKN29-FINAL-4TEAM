@@ -7,9 +7,14 @@ aws_region="${3:?AWS region is required}"
 backend_env_file="${4:-/etc/waterbridge/backend.env}"
 ai_env_file="${5:-/etc/waterbridge/ai.env}"
 rds_ca_file="${6:-/etc/waterbridge/certs/rds-ca.pem}"
+backend_email_auth_secret_id="${7:?Backend email auth Secret ID is required}"
 
 [[ "$release_sha" =~ ^[0-9a-f]{40}$ ]] || {
   echo "DEPLOYMENT_FAILED: release SHA must be 40 lowercase hexadecimal characters" >&2
+  exit 1
+}
+[[ "$backend_email_auth_secret_id" =~ ^waterbridge/[A-Za-z0-9/_+=.@-]{1,480}$ ]] || {
+  echo "DEPLOYMENT_FAILED: Backend email auth Secret ID is invalid" >&2
   exit 1
 }
 
@@ -21,6 +26,8 @@ checksum_path="${archive_path}.sha256"
 compose_file="${payload_dir}/infra/docker/compose/production/compose.yml"
 release_env="${payload_dir}/release.env"
 lock_file="${base_dir}/shared/deploy.lock"
+worker_pointer="${base_dir}/shared/p1-auth-email-worker.release"
+worker_service=waterbridge-p1-auth-email-worker.service
 
 mkdir -p "$release_dir" "${base_dir}/shared"
 chmod 0750 "$base_dir" "${base_dir}/releases" "${base_dir}/shared" "$release_dir"
@@ -70,6 +77,20 @@ tar -xzf "$archive_path" -C "$payload_dir"
   echo "DEPLOYMENT_FAILED: non-secret release.env is missing" >&2
   exit 1
 }
+secret_sync_script="${payload_dir}/scripts/deployment/production/sync_backend_email_auth_secret.py"
+worker_preflight_script="${payload_dir}/scripts/deployment/production/validate_p1_auth_email_worker_runtime.py"
+worker_runner_source="${payload_dir}/scripts/deployment/production/run_p1_auth_email_worker.sh"
+worker_unit_source="${payload_dir}/infra/systemd/${worker_service}"
+for required_asset in \
+  "$secret_sync_script" \
+  "$worker_preflight_script" \
+  "$worker_runner_source" \
+  "$worker_unit_source"; do
+  [[ -f "$required_asset" ]] || {
+    echo "DEPLOYMENT_FAILED: required OTP worker asset is missing" >&2
+    exit 1
+  }
+done
 [[ -f "$backend_env_file" && -f "$ai_env_file" && -s "$rds_ca_file" ]] || {
   echo "DEPLOYMENT_FAILED: protected service env or RDS CA is unavailable" >&2
   exit 1
@@ -103,6 +124,11 @@ required_ai_keys=(
   EMBEDDING_MODEL_NAME
   EMBEDDING_DIMENSION
   AI_HANDOFF_INTERNAL_TOKEN
+)
+required_otp_keys=(
+  P1_AUTH_RUNTIME_ENVIRONMENT
+  P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED
+  P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS
 )
 for key in "${required_backend_keys[@]}"; do
   grep -Eq "^[[:space:]]*${key}=.+$" "$backend_env_file" || {
@@ -168,6 +194,46 @@ if [[ -L "${base_dir}/current" ]]; then
   previous_target="$(readlink -f "${base_dir}/current")"
 fi
 
+deactivate_worker() {
+  systemctl stop "$worker_service" >/dev/null 2>&1 || true
+  rm -f -- "$worker_pointer"
+}
+
+activate_worker_release() {
+  local target="$1"
+  local runner="${target}/scripts/deployment/production/run_p1_auth_email_worker.sh"
+  local unit="${target}/infra/systemd/${worker_service}"
+  [[ "$target" =~ ^/opt/waterbridge/releases/[0-9a-f]{40}/payload$ ]] || return 1
+  [[ -f "$runner" && -f "$unit" ]] || return 1
+  install -o root -g root -m 0750 \
+    "$runner" "${base_dir}/shared/run-p1-auth-email-worker.sh"
+  install -o root -g root -m 0644 \
+    "$unit" "/etc/systemd/system/${worker_service}"
+  ln -sfn "$target" "${worker_pointer}.next"
+  mv -Tf "${worker_pointer}.next" "$worker_pointer"
+  systemctl daemon-reload
+  systemctl enable "$worker_service" >/dev/null
+  systemctl restart "$worker_service"
+  sleep 2
+  systemctl is-active --quiet "$worker_service"
+  sleep 5
+  systemctl is-active --quiet "$worker_service"
+  "${base_dir}/shared/run-p1-auth-email-worker.sh" --check
+  printf 'P1_AUTH_EMAIL_WORKER_SYSTEMD_PASS\n'
+}
+
+restore_previous_worker() {
+  if [[ -n "$previous_target" \
+      && -f "${previous_target}/scripts/deployment/production/run_p1_auth_email_worker.sh" \
+      && -f "${previous_target}/infra/systemd/${worker_service}" ]]; then
+    if ! activate_worker_release "$previous_target"; then
+      deactivate_worker
+    fi
+  else
+    deactivate_worker
+  fi
+}
+
 rollback() {
   local exit_code=$?
   trap - ERR
@@ -176,8 +242,16 @@ rollback() {
     local previous_env="${previous_target}/release.env"
     local previous_compose="${previous_target}/infra/docker/compose/production/compose.yml"
     docker compose --env-file "$previous_env" -f "$previous_compose" up -d --wait --no-build --remove-orphans || true
+    ln -sfn "$previous_target" "${base_dir}/current.rollback"
+    mv -Tf "${base_dir}/current.rollback" "${base_dir}/current"
+    restore_previous_worker
   else
+    deactivate_worker
     compose stop || true
+    if [[ -L "${base_dir}/current" \
+        && "$(readlink -f "${base_dir}/current")" == "$payload_dir" ]]; then
+      rm -f -- "${base_dir}/current"
+    fi
   fi
   if [[ -n "$docker_config_dir" && "$docker_config_dir" == "${base_dir}/shared/docker-config."* ]]; then
     rm -rf -- "$docker_config_dir"
@@ -193,6 +267,38 @@ aws ecr get-login-password --region "$aws_region" \
   | docker login --username AWS --password-stdin "$ecr_registry" >/dev/null
 
 compose pull
+if ! compose run --rm --no-deps --entrypoint python backend -c \
+  "from pathlib import Path
+settings_text = (Path('/workspace/backend/config/settings/base.py').read_text() + Path('/workspace/backend/config/settings/production.py').read_text())
+service_text = Path('/workspace/backend/apps/accounts/services/p1_auth_email_service.py').read_text()
+required = ('P1_AUTH_RUNTIME_ENVIRONMENT', 'P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED', 'P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS')
+assert all(name in settings_text for name in required)
+assert all(name in service_text for name in required)
+route_text = ''.join(path.read_text(errors='ignore') for path in Path('/workspace/backend/apps').rglob('*.py'))
+assert all(f'SKN-{index:03d}' in route_text and f'SYN-P1-TEAM-CONTRACT-{index:03d}' in route_text for index in range(1, 7))
+print('BACKEND_OWNER_GATE_PASS')"; then
+  echo "BACKEND_OWNER_WAIT" >&2
+  false
+fi
+
+python3 "$secret_sync_script" \
+  --secret-id "$backend_email_auth_secret_id" \
+  --region "$aws_region" \
+  --backend-env-file "$backend_env_file"
+for key in "${required_otp_keys[@]}"; do
+  grep -Eq "^[[:space:]]*${key}=.+$" "$backend_env_file" || {
+    echo "DEPLOYMENT_FAILED: required OTP runtime key is missing: ${key}" >&2
+    false
+  }
+done
+grep -Eq '^[[:space:]]*P1_AUTH_RUNTIME_ENVIRONMENT=AWS_NONPROD[[:space:]]*$' "$backend_env_file" || {
+  echo "DEPLOYMENT_FAILED: P1 auth runtime environment is invalid" >&2
+  false
+}
+grep -Eq '^[[:space:]]*P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED=true[[:space:]]*$' "$backend_env_file" || {
+  echo "DEPLOYMENT_FAILED: approved recipient delivery is not enabled" >&2
+  false
+}
 compose run --rm --no-deps trace-store \
   -config.file=/etc/tempo/tempo.yml \
   -config.expand-env=true \
@@ -204,6 +310,10 @@ compose run --rm --no-deps \
 compose run --rm --no-deps \
   --volume "${payload_dir}/scripts/deployment/production/validate_ai_readonly_runtime.py:/tmp/validate_ai_readonly_runtime.py:ro" \
   ai python /tmp/validate_ai_readonly_runtime.py
+compose run --rm --no-deps \
+  --env PYTHONPATH=/workspace/backend \
+  --volume "${worker_preflight_script}:/tmp/validate_p1_auth_email_worker_runtime.py:ro" \
+  backend python /tmp/validate_p1_auth_email_worker_runtime.py
 compose up -d --wait --no-build --remove-orphans
 
 compose exec -T backend python -c \
@@ -270,6 +380,8 @@ grep -Eiq '^X-Correlation-ID:[[:space:]]*[0-9a-f-]+[[:space:]]*$' "$health_heade
     false
   }
 
+activate_worker_release "$payload_dir"
+
 if [[ -n "$previous_target" && "$previous_target" != "$payload_dir" ]]; then
   ln -sfn "$previous_target" "${base_dir}/previous.next"
   mv -Tf "${base_dir}/previous.next" "${base_dir}/previous"
@@ -283,4 +395,5 @@ unset DOCKER_CONFIG
 trap - ERR
 printf 'DEPLOYMENT_RUNTIME_PASS\n'
 printf 'release_sha=%s\n' "$release_sha"
+printf 'p1_auth_email_worker=SYSTEMD_ACTIVE_PROCESS_1\n'
 printf 'observability=OBSERVABILITY_PARTIAL\n'

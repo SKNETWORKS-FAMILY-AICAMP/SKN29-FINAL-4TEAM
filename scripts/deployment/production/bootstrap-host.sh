@@ -16,7 +16,7 @@ require_command() {
   command -v "$1" >/dev/null 2>&1 || fail "required command is missing: $1"
 }
 
-for command_name in aws docker nginx curl tar sha256sum flock; do
+for command_name in aws docker nginx curl tar sha256sum flock python3 systemctl install; do
   require_command "$command_name"
 done
 
@@ -88,6 +88,7 @@ grep -Fq "127.0.0.1:${web_host_port}" "$nginx_dump" \
 
 printf 'HOST_BOOTSTRAP_PASS\n'
 printf 'docker_compose=available\n'
+printf 'systemd=available\n'
 printf 'nginx_config=valid\n'
 printf 'backend_env=protected\n'
 printf 'ai_env=protected_readonly_boundary\n'
