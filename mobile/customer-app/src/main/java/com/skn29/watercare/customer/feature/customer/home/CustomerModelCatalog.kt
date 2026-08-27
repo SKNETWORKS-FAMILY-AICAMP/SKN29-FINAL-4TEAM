@@ -37,6 +37,7 @@ data class CustomerModelVisualSpec(
     val softAccent: Color,
     val badgeIconRes: Int,
     val mascotKind: CustomerModelMascotKind,
+    val productImageRes: Int? = null,
 )
 
 data class CustomerModelSelection(
@@ -52,6 +53,7 @@ val CustomerModelCatalog = listOf(
         softAccent = Color(0xFFDFF2FF),
         badgeIconRes = R.drawable.ref_filter,
         mascotKind = CustomerModelMascotKind.DROP,
+        productImageRes = R.drawable.product_wpujac104dwh,
     ),
     CustomerModelVisualSpec(
         modelCode = "WPUIAC425SNW",
@@ -60,6 +62,7 @@ val CustomerModelCatalog = listOf(
         softAccent = Color(0xFFE9FBFF),
         badgeIconRes = R.drawable.ref_dispense,
         mascotKind = CustomerModelMascotKind.ICE,
+        productImageRes = R.drawable.product_wpuiac425snw,
     ),
     CustomerModelVisualSpec(
         modelCode = "WPUIAC606SNW",
@@ -68,6 +71,7 @@ val CustomerModelCatalog = listOf(
         softAccent = Color(0xFFE9FBF2),
         badgeIconRes = R.drawable.ref_care,
         mascotKind = CustomerModelMascotKind.CARE,
+        productImageRes = R.drawable.product_wpuiac606snw,
     ),
 )
 
@@ -94,6 +98,7 @@ fun customerModelVisualSpec(
                 ?.trim()
                 ?.takeIf(String::isNotEmpty)
                 ?: CustomerModelCatalog.first().modelName,
+            productImageRes = null,
         )
 }
 
@@ -189,36 +194,56 @@ fun CustomerModelMascot(
             }
         }
 
-        when (model.mascotKind) {
-            CustomerModelMascotKind.DROP -> {
-                Image(
-                    painter = painterResource(
-                        R.drawable.mascot_customer
+        val productImage =
+            model.productImageRes
+
+        if (productImage != null) {
+            Image(
+                painter =
+                    painterResource(
+                        productImage
                     ),
-                    contentDescription = model.modelName,
-                    modifier = Modifier
+                contentDescription =
+                    model.modelName,
+                modifier =
+                    Modifier
                         .fillMaxSize()
-                        .padding(10.dp),
-                    contentScale = ContentScale.Fit,
-                )
-            }
+                        .padding(6.dp),
+                contentScale =
+                    ContentScale.Fit,
+            )
+        } else {
+            when (model.mascotKind) {
+                CustomerModelMascotKind.DROP -> {
+                    Image(
+                        painter = painterResource(
+                            R.drawable.mascot_customer
+                        ),
+                        contentDescription = model.modelName,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(10.dp),
+                        contentScale = ContentScale.Fit,
+                    )
+                }
 
-            CustomerModelMascotKind.ICE -> {
-                IceModelCharacter(
-                    accent = model.accent,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(22.dp),
-                )
-            }
+                CustomerModelMascotKind.ICE -> {
+                    IceModelCharacter(
+                        accent = model.accent,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(22.dp),
+                    )
+                }
 
-            CustomerModelMascotKind.CARE -> {
-                CareModelCharacter(
-                    accent = model.accent,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp),
-                )
+                CustomerModelMascotKind.CARE -> {
+                    CareModelCharacter(
+                        accent = model.accent,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(20.dp),
+                    )
+                }
             }
         }
 

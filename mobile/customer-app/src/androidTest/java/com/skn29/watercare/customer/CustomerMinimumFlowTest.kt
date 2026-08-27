@@ -10,10 +10,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.junit4.ComposeTestRule
@@ -29,6 +31,7 @@ import com.skn29.watercare.core.model.GuidanceDisplayModel
 import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.MockScenario
 import com.skn29.watercare.core.model.ProductSummary
+import com.skn29.watercare.core.model.SymptomTopic
 import com.skn29.watercare.core.model.RiskLevel
 import com.skn29.watercare.core.model.UsageGuidanceStatus
 import com.skn29.watercare.core.ui.theme.WaterCareTheme
@@ -171,6 +174,215 @@ class CustomerMinimumFlowTest {
             .performScrollTo()
             .assertIsDisplayed()
     }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun lowFlowQuickAction_withoutActiveInquiry_selectsLowFlowAndSubmitsDetail() =
+        runManualComposeUiTest {
+            var receivedPreset:
+                SymptomTopic? = null
+
+            var submitted = false
+
+            var submittedSymptoms:
+                Set<SymptomTopic> =
+                emptySet()
+
+            var submittedRawText = ""
+
+            setContent {
+                var showIntake by remember {
+                    mutableStateOf(false)
+                }
+
+                var intakeState by remember {
+                    mutableStateOf(
+                        SymptomIntakeUiState()
+                    )
+                }
+
+                WaterCareTheme {
+                    if (showIntake) {
+                        SymptomIntakeContent(
+                            state = intakeState,
+                            onBack = {
+                                showIntake = false
+                            },
+                            onEntryModeChange = {
+                                value ->
+                                intakeState =
+                                    intakeState.copy(
+                                        entryMode =
+                                            value,
+                                    )
+                            },
+                            onToggleSymptom = {
+                                topic ->
+                                val current =
+                                    intakeState
+                                        .selectedSymptoms
+
+                                intakeState =
+                                    intakeState.copy(
+                                        selectedSymptoms =
+                                            if (
+                                                topic in
+                                                    current
+                                            ) {
+                                                current -
+                                                    topic
+                                            } else {
+                                                current +
+                                                    topic
+                                            },
+                                    )
+                            },
+                            onRawTextChange = {
+                                value ->
+                                intakeState =
+                                    intakeState.copy(
+                                        rawText =
+                                            value,
+                                    )
+                            },
+                            onOccurrenceConditionChange = {
+                                value ->
+                                intakeState =
+                                    intakeState.copy(
+                                        occurrenceCondition =
+                                            value,
+                                    )
+                            },
+                            onDisplayTextChange = {
+                                value ->
+                                intakeState =
+                                    intakeState.copy(
+                                        displayText =
+                                            value,
+                                    )
+                            },
+                            onScenarioChange = {
+                                value ->
+                                intakeState =
+                                    intakeState.copy(
+                                        forcedScenario =
+                                            value,
+                                    )
+                            },
+                            onRetry = {},
+                            onSubmit = {
+                                submitted = true
+
+                                submittedSymptoms =
+                                    intakeState
+                                        .selectedSymptoms
+
+                                submittedRawText =
+                                    intakeState.rawText
+                            },
+                        )
+                    } else {
+                        val homeState =
+                            sampleHomeState(
+                                activeInquiry = null,
+                            ).copy(
+                                offlinePreview = false,
+                                customerCareMode =
+                                    CustomerCareMode
+                                        .REMOTE,
+                                backendAvailable = true,
+                                intakeAvailable = true,
+                            )
+
+                        CustomerHomeContent(
+                            state = homeState,
+                            onStartIntake = {
+                                showIntake = true
+                            },
+                            onStartIntakePreset = {
+                                    _,
+                                    topic,
+                                    _,
+                                ->
+                                receivedPreset =
+                                    topic
+
+                                intakeState =
+                                    SymptomIntakeUiState(
+                                        selectedSymptoms =
+                                            setOf(topic),
+                                        rawText = "",
+                                    )
+
+                                showIntake = true
+                            },
+                            onOpenGuidance =
+                                { _, _ -> },
+                            onRetry = {},
+                            onLogout = {},
+                        )
+                    }
+                }
+            }
+
+            waitForIdle()
+
+            onNodeWithText(
+                "물이 약해요"
+            )
+                .performScrollTo()
+                .assertIsDisplayed()
+                .performClick()
+
+            waitForIdle()
+
+            assertTrue(
+                "빠른 버튼은 LOW_FLOW를 전달해야 합니다.",
+                receivedPreset ==
+                    SymptomTopic.LOW_FLOW,
+            )
+
+            onNodeWithText(
+                "물이 약해요"
+            )
+                .assertIsDisplayed()
+                .assertIsSelected()
+
+            onNodeWithTag("rawText")
+                .performScrollTo()
+                .assertIsDisplayed()
+                .performTextInput(
+                    "어제부터 물이 평소보다 약하게 나와요"
+                )
+
+            waitForIdle()
+
+            onNodeWithTag(
+                "submitIntake"
+            )
+                .performScrollTo()
+                .assertIsDisplayed()
+                .performClick()
+
+            waitForIdle()
+
+            assertTrue(
+                "접수 버튼이 submit callback을 실행해야 합니다.",
+                submitted,
+            )
+
+            assertTrue(
+                "접수 시 LOW_FLOW가 유지되어야 합니다.",
+                SymptomTopic.LOW_FLOW in
+                    submittedSymptoms,
+            )
+
+            assertTrue(
+                "입력한 상세 내용이 접수 데이터에 유지되어야 합니다.",
+                submittedRawText ==
+                    "어제부터 물이 평소보다 약하게 나와요",
+            )
+        }
 
     @Test
     @OptIn(ExperimentalTestApi::class)
