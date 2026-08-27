@@ -1,6 +1,7 @@
-# 이동윤 → 윤승혁: Consultation Context Synthesis Runtime 연결 요청
+# 이동윤 → 윤승혁: Consultation Context Synthesis Runtime 연결 요청 및 진행 상태
 
 > 작성일: 2026-08-26  
+> 정정일: 2026-08-27
 > 송신: 이동윤 — Multi-Agent Core·RAG·Generation·Evaluation  
 > 수신: 윤승혁 — Reliability·Harness·HITL·Handoff  
 > 시작 기준: `dongyoon@7cbc9bf0c062a36901903e1feee7f10fd2f4d4d2`
@@ -11,9 +12,10 @@
 
 ## 결론
 
-상담사 전달용 맥락을 출처 보존형 브리프로 가공하는 독립 Agent 후보와 Unit
-계약은 `PASS`지만, Harness·Consultation Handoff·Backend 저장 호출 경로에는
-연결하지 않았으므로 Runtime 상태는 `PARTIAL / NOT_CONNECTED`다.
+상담사 전달용 맥락을 출처 보존형 브리프로 가공하는 독립 Agent와 Harness·
+Consultation Handoff 내부 연결은 구현됐다. `context_synthesis`는 AI 내부 Handoff
+결과에만 포함되고 Backend Client의 기존 계약 Allowlist에서 제외되므로, 현재
+상태는 `PARTIAL / AI_INTERNAL_CONNECTED / BACKEND_NOT_CONNECTED`다.
 
 ## 구현된 경계
 
@@ -25,8 +27,9 @@
   Evidence, Safety 결과와 상담 우선 확인 항목만 허용한다.
 - Evidence의 `chunk_id + summary_sha256`가 입력 Binding과 정확히 일치하지 않으면
   입력을 거부해 전달 후 본문 변조를 탐지한다. 다만 이 Binding은 자기일관성
-  검증이며 same-run Harness 승인 Provenance는 아직 `NOT_CONNECTED`다. 검색 점수·
-  Vector·Prompt·고객 원문·내부 오류는 입력과 Provider 요청에서 제외한다.
+  검증이며, Runtime 연결에서는 같은 실행의 Harness
+  `accepted_evidence_chunk_ids`와 일치하는 Evidence만 합성 입력에 전달한다. 검색
+  점수·Vector·Prompt·고객 원문·내부 오류는 입력과 Provider 요청에서 제외한다.
 - LLM은 새 문장을 작성하지 않고 비식별 Source ID의 선택·정렬·그룹화만 한다.
   최종 문장은 로컬에서 원 출처를 그대로 조립하므로 진단·자가조치·상태 전환을
   새로 만들 수 없다.
@@ -59,7 +62,7 @@
 | `AUTO_GUIDANCE` | 호출 0회 | 호출 0회 | 기존 자동 안내 유지 |
 | `CUSTOMER_INPUT_PENDING` | 호출 0회 | 호출 0회 | 기존 추가 입력 대기 유지 |
 | `DANGER_HANDOFF` | 호출 | 호출 0회 | 결정론적 Safety-first 브리프 후 기존 Handoff 즉시 실행 |
-| `PRE_SEND_HUMAN_REVIEW` | 호출 | 조건 충족 시 최대 1회 | 성공·Fallback 모두 기존 Human Review/Handoff 유지 |
+| `PRE_SEND_HUMAN_REVIEW` | 호출 0회 | 호출 0회 | 기존 HITL만 시작하며 실제 Handoff 확정 전 합성하지 않음 |
 | `FAIL_CLOSED_CONSULTATION` | 호출 | 승인 제품·검증된 Safety일 때만 최대 1회 | 성공·Fallback 모두 기존 Handoff 유지 |
 | `HARNESS_ESCALATE` | 호출 | 승인 제품·검증된 Safety일 때만 최대 1회 | 성공·Fallback 모두 기존 Escalate/Handoff 유지 |
 
@@ -67,22 +70,29 @@
 Product Context에서 명시적으로 전달해야 한다. Agent 실패가 기존 상담 이관을
 막거나 고객 자동 안내로 되돌아가면 안 된다.
 
+`safety_requires_consultation`은 Safety Agent의 실제 판정으로 유지한다. Danger는
+`true`와 승인된 Safety Rule ID를 요구하지만, Timeout·MCP·Harness 실패에 의한
+`HARNESS_ESCALATE`와 `FAIL_CLOSED_CONSULTATION`은 Safety가 `false/unknown`이어도
+허용한다. 상담 이관 여부와 Safety 상담 필요 여부를 같은 값으로 강제하지 않는다.
+
 ## 현재 결합 Gap
 
-윤승혁 소유 경로는 이번 변경에서 수정하지 않았다. 현재
-`ai/app/orchestration/handoff/handoff_input.py`를 읽기 전용으로 확인한 결과,
-다음 의미 차이를 Runtime 연결 전에 해소해야 한다.
+AI 내부 Runtime 연결 이후에도 다음 의미 차이와 외부 계약 Gap이 남아 있다.
 
 1. 기존 Handoff 입력은 문진에서 `answer/value/selected_option`만 읽으므로 현재
    Pipeline의 `answer_text`가 누락될 수 있다.
 2. 기존 Handoff 입력은 고객이 실제 수행한 `StructuredSymptom.actions_taken`이
    아니라 향후 안내 후보인 `UsageGuidance.next_actions`를 self-help action으로
    사용한다.
-3. Backend `ConsultationHandoffRequestSerializer`는 알 수 없는 필드를 거부한다.
+3. 현재 연결 코드는 실제 Safety 판정과 별도로 모든 Handoff 입력의
+   `safety_requires_consultation`을 `true`로 강제한다. 이동윤 소유 입력 계약은
+   실제 Safety 값을 허용하도록 정정했으며, 윤승혁 소유 Runtime Adapter도 강제
+   변환을 제거해야 한다.
+4. Backend `ConsultationHandoffRequestSerializer`는 알 수 없는 필드를 거부한다.
    새 구조화 브리프를 전송하려면 윤승혁·최지용이 AI Handoff DTO와 Backend
    Serializer/저장 계약을 함께 확정해야 한다. 승인 없이 임의 필드를 추가하거나
    기존 문자열에 JSON을 숨겨 넣지 않는다.
-4. 현재 AI Handoff Input/Result와 Backend Handoff Serializer에는
+5. 현재 AI Handoff Input/Result와 Backend Handoff Serializer에는
    `state_version`이 없다. 합성 결과에 보존된 값을 동일 Inquiry의 stale 요청
    차단에 사용할지 윤승혁·최지용이 계약으로 확정해야 한다.
 
@@ -142,6 +152,27 @@ Product Context에서 명시적으로 전달해야 한다. Agent 실패가 기�
 | 실제 OpenAI Provider 실행 | `NOT_RUN` |
 | Backend 동일 Inquiry 저장·Replay | `NOT_RUN` |
 | Web 상담사 소비 E2E | `NOT_RUN` |
+
+### 2026-08-27 이동윤 계약 정정 검증
+
+- 기준 Branch·HEAD: `dongyoon@6427755ac13d9e0e41a046f83f399e0e80928d59`
+- `ConsultationContextSynthesisInput`은 Danger에만
+  `safety_requires_consultation=true`와 Safety Rule ID를 강제한다.
+  `HARNESS_ESCALATE`와 `FAIL_CLOSED_CONSULTATION`은 실제 Safety 판정이
+  `false/unknown`이어도 허용한다.
+- Agent 표적: `43 passed` — `PASS`
+- Harness/Handoff 연결 표적: `18 passed` — `PASS`
+- AI 전체 Unit: `1 failed, 662 passed, 4 warnings, 41 subtests passed` —
+  `PARTIAL`
+- 단독 재현:
+  `ai/tests/unit/harness/test_otel_tracing.py::test_span_attributes_are_metadata_only`
+  — `FAIL`
+- 실패 원인: Production Handoff Span에 추가된
+  `waterbridge.handoff.context_synthesis.present`와
+  `waterbridge.handoff.context_synthesis.status`가 윤승혁 소유 OTel 메타데이터
+  Allowlist 테스트 기대값에 반영되지 않았다. Production 속성의 허용 여부를
+  윤승혁이 검수하고 테스트를 갱신한 뒤 전체 Unit을 재실행해야 한다.
+- 실제 Provider·Backend 저장/Replay·Web 소비: `NOT_RUN`
 
 회신 형식:
 
