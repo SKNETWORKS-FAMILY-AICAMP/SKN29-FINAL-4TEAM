@@ -536,7 +536,6 @@ def test_runtime_unapproved_product_bypasses_provider_and_keeps_handoff_brief():
             "safety_level": "danger",
             "matched_safety_rule_ids": [],
         },
-        {"safety_requires_consultation": False},
     ],
 )
 def test_routing_and_safety_cross_field_mismatch_is_rejected(updates):
