@@ -103,8 +103,10 @@ jobs:
           grep -Fq 'collectstatic' backend/Dockerfile
           grep -Fq 'COPY --from=state_machine_contracts . /workspace/contracts/state-machine/' backend/Dockerfile
           grep -Fq 'COPY --from=api_contracts action-operation-crosswalk.yaml /workspace/contracts/api/action-operation-crosswalk.yaml' backend/Dockerfile
+          grep -Fq 'COPY --from=ai_contracts . /workspace/contracts/ai/' backend/Dockerfile
           grep -Fq 'load_state_machine_contract()' backend/Dockerfile
           grep -Fq "load_yaml_mapping(Path('/workspace/contracts/api/action-operation-crosswalk.yaml'))" backend/Dockerfile
+          grep -Fq 'AIContractValidator()' backend/Dockerfile
           grep -Fq 'ai/requirements-linux.lock' ai/Dockerfile
           grep -Fq 'VITE_USE_MOCK_API=false' web/Dockerfile
           grep -Fq 'VITE_ENABLE_DESIGN_MOCK_FALLBACK=false' web/Dockerfile
@@ -423,6 +425,7 @@ jobs:
           build-contexts: |
             state_machine_contracts=contracts/state-machine
             api_contracts=contracts/api
+            ai_contracts=contracts/ai
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_BACKEND_REPOSITORY }}:${{ env.RELEASE_SHA }}
           platforms: linux/amd64
@@ -471,7 +474,7 @@ jobs:
           docker run --rm --entrypoint python "$backend_ref" \
             -c "import os; assert os.getuid() != 0"
           docker run --rm --entrypoint python "$backend_ref" \
-            -c "from pathlib import Path; from apps.workflow.contracts import load_state_machine_contract; from apps.workflow.contracts.state_machine_loader import load_yaml_mapping; load_state_machine_contract(); load_yaml_mapping(Path('/workspace/contracts/api/action-operation-crosswalk.yaml')); print('BACKEND_RUNTIME_CONTRACTS_PASS')"
+            -c "from pathlib import Path; from apps.workflow.contracts import load_state_machine_contract; from apps.workflow.contracts.state_machine_loader import load_yaml_mapping; from integrations.ai.schema_validator import AIContractValidator; load_state_machine_contract(); load_yaml_mapping(Path('/workspace/contracts/api/action-operation-crosswalk.yaml')); AIContractValidator(); print('BACKEND_RUNTIME_CONTRACTS_PASS'); print('BACKEND_AI_CONTRACTS_PASS')"
           docker run --rm --entrypoint gunicorn "$backend_ref" --version
           docker run --rm --entrypoint python "$ai_ref" \
             -c "import os; assert os.getuid() != 0"
