@@ -3,14 +3,32 @@
 from __future__ import annotations
 
 from enum import Enum
+from types import SimpleNamespace
 from typing import Any, Type
 
 from opentelemetry import trace
 from pydantic import BaseModel, ConfigDict
 
+from ...common.timeout import PipelineCancelledError
+from ...integrations.llm.consultation_summary_client import (
+    OpenAIResponsesConsultationContextClient,
+)
+from ...integrations.llm.llm_client import LLMConfigurationError
 from ...retrieval.models.retrieved_chunk import RetrievedChunk
 from ...schemas import SafetyAssessment, UsageGuidance
-from ..handoff import ConsultationHandoffAgent, ConsultationHandoffInput, ConsultationHandoffResult
+from ..agents.consultation_context_synthesis_agent import (
+    ConsultationContextSynthesisAgent,
+)
+from ..agents.context_synthesis_contracts import (
+    ConsultationContextSynthesisInput,
+    ContextRoutingReason,
+)
+from ..handoff import (
+    ConsultationHandoffAgent,
+    ConsultationHandoffInput,
+    ConsultationHandoffResult,
+    HandoffContextSynthesis,
+)
 from ..hitl import HumanReviewExecutionResult, HumanReviewRequest, HumanReviewResume, HumanReviewWorkflow
 from .product_match import ProductContext
 from .retry_policy import HarnessRetryPolicy, HarnessRetryState
@@ -20,6 +38,24 @@ from .verifier import HarnessVerifier
 
 
 _HARNESS_TRACER = trace.get_tracer("waterbridge.ai.harness", "1.0.0")
+
+
+class _ConsultationSynthesisContextView:
+    """Delegate PipelineContext fields while marking actual handoff as consultation-required."""
+
+    def __init__(self, ctx: Any) -> None:
+        self._ctx = ctx
+        safety = getattr(ctx, "safety_assessment", None)
+        self.safety_assessment = SimpleNamespace(
+            risk_level=getattr(safety, "risk_level", None),
+            requires_consultation=True,
+            matched_safety_rule_ids=list(getattr(safety, "matched_safety_rule_ids", []) or []),
+            detected_risks=list(getattr(safety, "detected_risks", []) or []),
+            safety_reason=getattr(safety, "safety_reason", None),
+        )
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._ctx, name)
 
 
 class HarnessErrorCode(str, Enum):
@@ -64,11 +100,15 @@ class HarnessRunner:
         retry_policy: HarnessRetryPolicy | None = None,
         hitl_workflow: HumanReviewWorkflow | None = None,
         handoff_agent: ConsultationHandoffAgent | None = None,
+        context_synthesis_agent: ConsultationContextSynthesisAgent | None = None,
     ) -> None:
         self.verifier = verifier or HarnessVerifier()
         self.retry_policy = retry_policy or HarnessRetryPolicy()
         self.hitl_workflow = hitl_workflow or HumanReviewWorkflow()
         self.handoff_agent = handoff_agent or ConsultationHandoffAgent()
+        self.context_synthesis_agent = (
+            context_synthesis_agent or self._default_context_synthesis_agent()
+        )
 
     def run(
         self,
@@ -355,6 +395,9 @@ class HarnessRunner:
                         ctx=ctx,
                         product=product,
                         reason="HUMAN_REVIEW_WITHOUT_GUIDANCE",
+                        accepted_evidence_chunk_ids=(
+                            harness.verification.accepted_evidence_chunk_ids
+                        ),
                     ),
                 )
             trace = ctx.trace_context
@@ -382,6 +425,9 @@ class HarnessRunner:
                     ctx=ctx,
                     product=product,
                     reason=self._escalation_reason(harness),
+                    accepted_evidence_chunk_ids=(
+                        harness.verification.accepted_evidence_chunk_ids
+                    ),
                 ),
             )
 
@@ -392,6 +438,9 @@ class HarnessRunner:
                     ctx=ctx,
                     product=product,
                     reason=force_handoff_reason,
+                    accepted_evidence_chunk_ids=(
+                        harness.verification.accepted_evidence_chunk_ids
+                    ),
                 ),
             )
 
@@ -471,6 +520,7 @@ class HarnessRunner:
                 ctx=ctx,
                 product=product,
                 reason="HUMAN_REVIEW_REJECTED",
+                accepted_evidence_chunk_ids=self._review_evidence_chunk_ids(interrupted),
             ),
         )
 
@@ -480,13 +530,96 @@ class HarnessRunner:
         ctx: Any,
         product: ProductContext,
         reason: str,
+        accepted_evidence_chunk_ids: list[str] | None = None,
     ) -> ConsultationHandoffResult:
+        accepted_ids = list(dict.fromkeys(accepted_evidence_chunk_ids or []))
         handoff_input = ConsultationHandoffInput.from_pipeline_context(
             ctx=ctx,
             product_family=product.product_family.value,
             escalation_reason=reason,
+            accepted_evidence_chunk_ids=accepted_ids,
+            force_consultation_required=True,
         )
-        return self.handoff_agent.run(handoff_input)
+        context_synthesis = self._synthesize_handoff_context(
+            ctx=ctx,
+            product=product,
+            reason=reason,
+            accepted_evidence_chunk_ids=accepted_ids,
+        )
+        return self.handoff_agent.run(
+            handoff_input,
+            context_synthesis=context_synthesis,
+        )
+
+    def _synthesize_handoff_context(
+        self,
+        *,
+        ctx: Any,
+        product: ProductContext,
+        reason: str,
+        accepted_evidence_chunk_ids: list[str],
+    ) -> HandoffContextSynthesis | None:
+        """Best-effort context synthesis; synthesis failure must not block handoff."""
+
+        accepted_ids = set(accepted_evidence_chunk_ids)
+        accepted_evidence = [
+            item
+            for item in (getattr(ctx, "evidence_references", []) or [])
+            if getattr(item, "chunk_id", None) in accepted_ids
+        ]
+        try:
+            synthesis_input = ConsultationContextSynthesisInput.from_pipeline_context(
+                ctx=_ConsultationSynthesisContextView(ctx),
+                product_family=product.product_family.value,
+                runtime_product_approved=product.runtime_approved,
+                routing_reason=self._context_routing_reason(ctx, reason),
+                escalation_reason=reason,
+                accepted_evidence=accepted_evidence,
+            )
+            output = self.context_synthesis_agent.run(synthesis_input)
+            return HandoffContextSynthesis.from_agent_output(output)
+        except PipelineCancelledError:
+            raise
+        except Exception:
+            # Context synthesis is supplementary; keep the existing handoff path.
+            return None
+
+    @staticmethod
+    def _context_routing_reason(ctx: Any, reason: str) -> ContextRoutingReason:
+        safety = getattr(ctx, "safety_assessment", None)
+        risk_level = getattr(getattr(safety, "risk_level", None), "value", None)
+        if risk_level == "danger":
+            return ContextRoutingReason.DANGER_HANDOFF
+        if reason in {
+            "HUMAN_REVIEW_REJECTED",
+            "HUMAN_REVIEW_WITHOUT_GUIDANCE",
+        }:
+            return ContextRoutingReason.FAIL_CLOSED_CONSULTATION
+        return ContextRoutingReason.HARNESS_ESCALATE
+
+    @staticmethod
+    def _review_evidence_chunk_ids(
+        interrupted: HumanReviewExecutionResult,
+    ) -> list[str]:
+        payload = interrupted.interrupt_payload
+        if not isinstance(payload, dict):
+            return []
+        values = payload.get("evidence_chunk_ids", [])
+        if not isinstance(values, list):
+            return []
+        return [
+            value
+            for value in values
+            if isinstance(value, str) and value.strip()
+        ]
+
+    @staticmethod
+    def _default_context_synthesis_agent() -> ConsultationContextSynthesisAgent:
+        try:
+            llm_client = OpenAIResponsesConsultationContextClient.from_environment()
+        except (LLMConfigurationError, TypeError, ValueError):
+            llm_client = None
+        return ConsultationContextSynthesisAgent(llm_client=llm_client)
 
     @staticmethod
     def _exhausted_error_code(verification: VerificationResult) -> HarnessErrorCode:

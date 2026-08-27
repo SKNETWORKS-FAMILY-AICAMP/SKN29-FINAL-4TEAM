@@ -36,6 +36,23 @@ RETRY_DELAY_SECONDS = 0.75
 
 _TRUE_VALUES = frozenset({"1", "true", "yes", "on"})
 _RETRYABLE_STATUS_CODES = frozenset({409, 429, 500, 502, 503, 504})
+_BACKEND_HANDOFF_FIELDS = {
+    "inquiry_id",
+    "correlation_id",
+    "ai_request_id",
+    "model_code",
+    "product_family",
+    "customer_symptom_summary",
+    "questionnaire_answers",
+    "self_help_actions",
+    "evidence",
+    "safety_level",
+    "safety_requires_consultation",
+    "safety_notes",
+    "escalation_reason",
+    "consultant_priority_checks",
+    "source_chunk_ids",
+}
 _PHONE = re.compile(
     r"(?<!\d)(?:01[016789])[- ]?\d{3,4}[- ]?\d{4}(?!\d)"
 )
@@ -227,7 +244,10 @@ def _publish_untraced(
             failure_kind=HandoffPublishFailureKind.CONFIGURATION,
         )
 
-    payload = handoff.model_dump(mode="json")
+    payload = handoff.model_dump(
+        mode="json",
+        include=_BACKEND_HANDOFF_FIELDS,
+    )
     if _contains_direct_contact_pii(payload):
         return HandoffPublishResult(
             status=HandoffPublishStatus.FAILED,

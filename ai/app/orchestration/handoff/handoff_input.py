@@ -51,6 +51,8 @@ class ConsultationHandoffInput(BaseModel):
         ctx: Any,
         product_family: str,
         escalation_reason: str,
+        accepted_evidence_chunk_ids: list[str] | None = None,
+        force_consultation_required: bool = False,
     ) -> "ConsultationHandoffInput":
         symptom = getattr(ctx, "structured_symptom", None)
         symptom_parts: list[str] = []
@@ -80,6 +82,11 @@ class ConsultationHandoffInput(BaseModel):
                 continue
             answers.append(HandoffQuestionnaireAnswer(field_name=field_name, answer=str(value)))
 
+        accepted_ids = (
+            set(accepted_evidence_chunk_ids)
+            if accepted_evidence_chunk_ids is not None
+            else None
+        )
         evidence = [
             HandoffEvidence(
                 chunk_id=item.chunk_id,
@@ -88,11 +95,15 @@ class ConsultationHandoffInput(BaseModel):
                 summary=item.summary,
             )
             for item in (getattr(ctx, "evidence_references", []) or [])
+            if accepted_ids is None or item.chunk_id in accepted_ids
         ]
 
         safety = getattr(ctx, "safety_assessment", None)
         safety_level = getattr(getattr(safety, "risk_level", None), "value", None) or "unknown"
-        safety_requires_consultation = bool(getattr(safety, "requires_consultation", False))
+        safety_requires_consultation = (
+            bool(getattr(safety, "requires_consultation", False))
+            or force_consultation_required
+        )
         safety_notes = list(getattr(safety, "detected_risks", []) or [])
         safety_reason = getattr(safety, "safety_reason", None)
         if safety_reason:

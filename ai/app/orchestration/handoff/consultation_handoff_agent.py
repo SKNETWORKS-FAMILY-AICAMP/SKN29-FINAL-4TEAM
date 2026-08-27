@@ -7,7 +7,7 @@ import re
 from opentelemetry import trace
 
 from .handoff_input import ConsultationHandoffInput, HandoffQuestionnaireAnswer
-from .handoff_result import ConsultationHandoffResult
+from .handoff_result import ConsultationHandoffResult, HandoffContextSynthesis
 
 
 _PHONE = re.compile(r"(?<!\d)(?:01[016789])[- ]?\d{3,4}[- ]?\d{4}(?!\d)")
@@ -20,7 +20,12 @@ _HANDOFF_TRACER = trace.get_tracer("waterbridge.ai.handoff", "1.0.0")
 class ConsultationHandoffAgent:
     """Transform only supplied runtime facts into a counselor-facing structure."""
 
-    def run(self, handoff: ConsultationHandoffInput) -> ConsultationHandoffResult:
+    def run(
+        self,
+        handoff: ConsultationHandoffInput,
+        *,
+        context_synthesis: HandoffContextSynthesis | None = None,
+    ) -> ConsultationHandoffResult:
         with _HANDOFF_TRACER.start_as_current_span(
             "waterbridge.handoff.create"
         ) as span:
@@ -56,7 +61,10 @@ class ConsultationHandoffAgent:
                 "waterbridge.handoff.self_help_action_count",
                 len(handoff.proposed_self_help_actions),
             )
-            result = self._run_untraced(handoff)
+            result = self._run_untraced(
+                handoff,
+                context_synthesis=context_synthesis,
+            )
             span.set_attribute(
                 "waterbridge.handoff.source_chunk_count",
                 len(result.source_chunk_ids),
@@ -65,11 +73,22 @@ class ConsultationHandoffAgent:
                 "waterbridge.handoff.redaction.enabled",
                 True,
             )
+            span.set_attribute(
+                "waterbridge.handoff.context_synthesis.present",
+                result.context_synthesis is not None,
+            )
+            if result.context_synthesis is not None:
+                span.set_attribute(
+                    "waterbridge.handoff.context_synthesis.status",
+                    result.context_synthesis.status,
+                )
             return result
 
     def _run_untraced(
         self,
         handoff: ConsultationHandoffInput,
+        *,
+        context_synthesis: HandoffContextSynthesis | None = None,
     ) -> ConsultationHandoffResult:
         answers = [
             HandoffQuestionnaireAnswer(
@@ -99,6 +118,7 @@ class ConsultationHandoffAgent:
             escalation_reason=self._redact(handoff.escalation_reason),
             consultant_priority_checks=priority_checks,
             source_chunk_ids=[item.chunk_id for item in handoff.evidence],
+            context_synthesis=context_synthesis,
         )
 
     @staticmethod

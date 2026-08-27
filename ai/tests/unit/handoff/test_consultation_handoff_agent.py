@@ -1,6 +1,12 @@
 from uuid import UUID
 
-from ai.app.orchestration.handoff import ConsultationHandoffAgent, ConsultationHandoffInput, HandoffEvidence, HandoffQuestionnaireAnswer
+from ai.app.orchestration.handoff import (
+    ConsultationHandoffAgent,
+    ConsultationHandoffInput,
+    HandoffContextSynthesis,
+    HandoffEvidence,
+    HandoffQuestionnaireAnswer,
+)
 
 
 def _input() -> ConsultationHandoffInput:
@@ -45,3 +51,26 @@ def test_handoff_redacts_contact_information_without_generating_new_fact():
     assert result.questionnaire_answers[0].answer == "[REDACTED_PHONE]"
     assert "진단" not in result.customer_symptom_summary
     assert result.consultant_priority_checks == source.consultant_priority_checks
+
+
+def test_handoff_attaches_internal_context_synthesis():
+    synthesis = HandoffContextSynthesis(
+        status="FALLBACK",
+        routing_reason="HARNESS_ESCALATE",
+        brief={"summary": "상담사 내부 맥락"},
+        fallback_reason="CONFIGURATION",
+        should_use_deterministic_handoff=True,
+        provider_called=False,
+        model_name=None,
+        prompt_version="consultation_summary/v1",
+        tokens_used=None,
+        latency_ms=None,
+    )
+
+    result = ConsultationHandoffAgent().run(
+        _input(),
+        context_synthesis=synthesis,
+    )
+
+    assert result.context_synthesis == synthesis
+    assert result.customer_symptom_summary == "얼음이 나오지 않음"

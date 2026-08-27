@@ -17,7 +17,10 @@ from ai.app.integrations.backend.handoff_client import (
     RETRY_DELAY_SECONDS,
     publish_consultation_handoff,
 )
-from ai.app.orchestration.handoff import ConsultationHandoffResult
+from ai.app.orchestration.handoff import (
+    ConsultationHandoffResult,
+    HandoffContextSynthesis,
+)
 
 
 TOKEN = "unit-test-handoff-secret"
@@ -26,6 +29,7 @@ TOKEN = "unit-test-handoff-secret"
 def _handoff(
     *,
     symptom_summary: str = "출수량 저하가 확인되어 상담이 필요합니다.",
+    context_synthesis: HandoffContextSynthesis | None = None,
 ) -> ConsultationHandoffResult:
     return ConsultationHandoffResult(
         inquiry_id=UUID("018f2f9b-7c30-7981-b541-1a987c88b201"),
@@ -43,6 +47,22 @@ def _handoff(
         escalation_reason="NO_EVIDENCE",
         consultant_priority_checks=["출수 환경 확인"],
         source_chunk_ids=[],
+        context_synthesis=context_synthesis,
+    )
+
+
+def _context_synthesis() -> HandoffContextSynthesis:
+    return HandoffContextSynthesis(
+        status="FALLBACK",
+        routing_reason="HARNESS_ESCALATE",
+        brief={"summary": "내부 상담 맥락"},
+        fallback_reason="CONFIGURATION",
+        should_use_deterministic_handoff=True,
+        provider_called=False,
+        model_name=None,
+        prompt_version="consultation_summary/v1",
+        tokens_used=None,
+        latency_ms=None,
     )
 
 
@@ -67,7 +87,7 @@ def test_publish_sends_backend_contract_headers_and_payload(monkeypatch):
         transport=httpx.MockTransport(handler)
     ) as client:
         result = publish_consultation_handoff(
-            _handoff(),
+            _handoff(context_synthesis=_context_synthesis()),
             http_client=client,
             sleep_fn=sleeps.append,
         )
@@ -89,6 +109,7 @@ def test_publish_sends_backend_contract_headers_and_payload(monkeypatch):
     assert seen["payload"]["model_code"] == "WPUJAC104DWH"
     assert "system_prompt" not in seen["payload"]
     assert "raw_output_text" not in seen["payload"]
+    assert "context_synthesis" not in seen["payload"]
     assert sleeps == [INITIAL_DELAY_SECONDS]
     assert TOKEN not in repr(result)
 

@@ -2,12 +2,13 @@
 
 from .consultation_handoff_agent import ConsultationHandoffAgent
 from .handoff_input import ConsultationHandoffInput, HandoffEvidence, HandoffQuestionnaireAnswer
-from .handoff_result import ConsultationHandoffResult
+from .handoff_result import ConsultationHandoffResult, HandoffContextSynthesis
 
 __all__ = [
     "ConsultationHandoffAgent",
     "ConsultationHandoffInput",
     "ConsultationHandoffResult",
+    "HandoffContextSynthesis",
     "HandoffEvidence",
     "HandoffQuestionnaireAnswer",
 ]
