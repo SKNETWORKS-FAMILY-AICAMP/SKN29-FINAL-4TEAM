@@ -15,9 +15,12 @@ DEPLOY = ROOT / "scripts/deployment/production/deploy-release.sh"
 ROLLBACK = ROOT / "scripts/deployment/production/rollback-release.sh"
 BOOTSTRAP = ROOT / "scripts/deployment/production/bootstrap-host.sh"
 WORKFLOW = ROOT / ".github/workflows/production-deploy.yml"
+RELEASE_WORKFLOW = ROOT / ".github/workflows/production-release.yml"
 BOOTSTRAP_WORKFLOW = ROOT / ".github/workflows/production-bootstrap.yml"
+OIDC_SMOKE_WORKFLOW = ROOT / ".github/workflows/aws-oidc-smoke.yml"
 BACKEND_PREFLIGHT = ROOT / "scripts/deployment/production/validate_backend_runtime.py"
 AI_PREFLIGHT = ROOT / "scripts/deployment/production/validate_ai_readonly_runtime.py"
+OIDC_TRUST = ROOT / "scripts/deployment/production/validate_github_oidc_trust.py"
 
 
 class ProductionDeploymentAssetTests(unittest.TestCase):
@@ -199,12 +202,49 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("DJANGO_ALLOWED_HOSTS", dockerfile)
         self.assertIn("headers={'Host': host}", dockerfile)
         self.assertIn("context: backend", workflow)
+        self.assertIn(
+            "COPY --from=state_machine_contracts . "
+            "/workspace/contracts/state-machine/",
+            dockerfile,
+        )
+        self.assertIn(
+            "COPY --from=api_contracts action-operation-crosswalk.yaml "
+            "/workspace/contracts/api/action-operation-crosswalk.yaml",
+            dockerfile,
+        )
+        self.assertIn("load_state_machine_contract()", dockerfile)
+        self.assertIn(
+            "load_yaml_mapping("
+            "Path('/workspace/contracts/api/action-operation-crosswalk.yaml')"
+            ")",
+            dockerfile,
+        )
+        self.assertIn(
+            "state_machine_contracts=contracts/state-machine",
+            workflow,
+        )
+        self.assertIn("api_contracts=contracts/api", workflow)
+        self.assertIn("BACKEND_RUNTIME_CONTRACTS_PASS", workflow)
 
     def test_gunicorn_config_gate_uses_verify_full_without_runtime_secrets(
         self,
     ) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("DJANGO_SECRET_KEY=ci-production-config-check-only", workflow)
+        for key in (
+            "CONTRACT_EMAIL_ENCRYPTION_KEY",
+            "CONTRACT_EMAIL_HMAC_KEY",
+            "CONTRACT_EMAIL_KEY_VERSION",
+            "P1_AUTH_HMAC_SECRET",
+            "P1_AUTH_OTP_ENCRYPTION_KEY",
+            "P1_AUTH_EMAIL_REDIRECT_TO",
+            "DJANGO_EMAIL_BACKEND",
+            "DJANGO_EMAIL_HOST",
+            "DJANGO_EMAIL_HOST_USER",
+            "DJANGO_EMAIL_HOST_PASSWORD",
+            "DJANGO_DEFAULT_FROM_EMAIL",
+        ):
+            self.assertIn(f"{key}=", workflow)
         self.assertIn("POSTGRES_SSLMODE=verify-full", workflow)
         self.assertIn(
             "POSTGRES_SSLROOTCERT=/etc/ssl/certs/ca-certificates.crt",
@@ -258,13 +298,86 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertNotIn("print(exc", backend)
         self.assertNotIn("print(exc", ai)
 
-    def test_ssm_failures_always_emit_deploy_and_rollback_results(self) -> None:
+    def test_ssm_polling_waits_for_terminal_deploy_and_rollback_results(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertEqual(workflow.count("aws ssm get-command-invocation"), 2)
-        self.assertIn("SSM_DEPLOY_WAITER_FAILED status=%s", workflow)
-        self.assertIn("SSM_ROLLBACK_WAITER_FAILED status=%s", workflow)
+        self.assertNotIn("aws ssm wait command-executed", workflow)
+        self.assertIn("deadline=$((SECONDS + 1200))", workflow)
+        self.assertIn("deadline=$((SECONDS + 600))", workflow)
+        self.assertEqual(workflow.count("Pending|InProgress|Delayed|Cancelling"), 2)
+        self.assertIn("SSM_DEPLOY_POLL_TIMEOUT seconds=1200", workflow)
+        self.assertIn("SSM_ROLLBACK_POLL_TIMEOUT seconds=600", workflow)
         self.assertIn('[[ "$status" == "Success" ]]', workflow)
         self.assertIn('[[ "$rollback_status" == "Success" ]]', workflow)
+
+    def test_bootstrap_and_oidc_polling_collect_terminal_output(self) -> None:
+        cases = (
+            (
+                BOOTSTRAP_WORKFLOW,
+                600,
+                "SSM_BOOTSTRAP_POLL_TIMEOUT seconds=600",
+                "HOST_BOOTSTRAP_PASS",
+            ),
+            (
+                OIDC_SMOKE_WORKFLOW,
+                120,
+                "SSM_OIDC_POLL_TIMEOUT seconds=120",
+                "AWS_OIDC_SSM_PATH_PASS",
+            ),
+        )
+        for path, timeout, timeout_marker, success_marker in cases:
+            with self.subTest(workflow=path.name):
+                text = path.read_text(encoding="utf-8")
+                self.assertNotIn("aws ssm wait command-executed", text)
+                self.assertIn(f"deadline=$((SECONDS + {timeout}))", text)
+                self.assertIn("Success|Failed|Cancelled|TimedOut", text)
+                self.assertIn("Pending|InProgress|Delayed|Cancelling", text)
+                self.assertIn("sleep 5", text)
+                self.assertIn(timeout_marker, text)
+                self.assertIn('.StandardOutputContent // ""', text)
+                self.assertIn('.StandardErrorContent // ""', text)
+                self.assertIn('[[ "$status" == "Success" ]]', text)
+                self.assertIn(f"grep -q '^{success_marker}$'", text)
+
+    def test_remote_ssm_inputs_are_validated_and_shell_escaped(self) -> None:
+        bootstrap = BOOTSTRAP_WORKFLOW.read_text(encoding="utf-8")
+        deploy = WORKFLOW.read_text(encoding="utf-8")
+        bucket_pattern = "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
+
+        self.assertIn(bucket_pattern, bootstrap)
+        self.assertIn(bucket_pattern, deploy)
+        self.assertIn('[[ "$value" =~ ^/[A-Za-z0-9._/-]+$ ]]', bootstrap)
+        self.assertIn('realpath -m -- "$value"', bootstrap)
+        self.assertNotIn("REQUESTED_BUCKET//[[:space:]]", bootstrap)
+        self.assertGreaterEqual(bootstrap.count("printf -v"), 4)
+        self.assertGreaterEqual(deploy.count("printf -v"), 6)
+        self.assertGreaterEqual(bootstrap.count("%q"), 10)
+        self.assertGreaterEqual(deploy.count("%q"), 12)
+        for text in (bootstrap, deploy):
+            self.assertNotIn('("aws s3 cp s3://" + $bucket', text)
+
+    def test_production_aws_credentials_are_version_and_account_locked(
+        self,
+    ) -> None:
+        bootstrap = BOOTSTRAP_WORKFLOW.read_text(encoding="utf-8")
+        deploy = WORKFLOW.read_text(encoding="utf-8")
+        oidc = OIDC_SMOKE_WORKFLOW.read_text(encoding="utf-8")
+        combined = "\n".join((bootstrap, deploy, oidc))
+
+        self.assertEqual(
+            combined.count("aws-actions/configure-aws-credentials@v6.2.3"),
+            4,
+        )
+        self.assertNotIn("aws-actions/configure-aws-credentials@v5", combined)
+        for text in (bootstrap, deploy, oidc):
+            self.assertIn("AWS_ACCOUNT_ID", text)
+            self.assertIn("allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}", text)
+            self.assertIn("role-session-name:", text)
+        self.assertEqual(deploy.count("role-session-name:"), 2)
+        self.assertIn("runs-on: ubuntu-24.04", oidc)
+        self.assertNotIn("runs-on: ubuntu-latest", oidc)
+        self.assertIn('expected_role_name="${AWS_ROLE_ARN##*/}"', oidc)
+        self.assertNotIn("WaterBridgeGitHubDeployRole", oidc)
 
     def test_host_scripts_do_not_print_or_copy_secret_values(self) -> None:
         deploy = DEPLOY.read_text(encoding="utf-8")
@@ -283,6 +396,7 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
 
     def test_deployment_is_sha_locked_and_serialized(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
+        release = RELEASE_WORKFLOW.read_text(encoding="utf-8")
         backend_ci = (ROOT / ".github/workflows/backend-ci.yml").read_text(
             encoding="utf-8"
         )
@@ -291,13 +405,25 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         )
         self.assertIn("cancel-in-progress: false", text)
         self.assertNotIn("workflow_run", text)
-        self.assertIn('      - "v*.*.*"', text)
-        self.assertIn("RELEASE_SHA: ${{ github.sha }}", text)
+        self.assertIn('      - "v*.*.*"', release)
+        self.assertIn("workflow_call:", text)
+        self.assertIn("RELEASE_SHA: ${{ inputs.release_sha }}", text)
+        self.assertIn("release_sha: ${{ github.sha }}", release)
+        self.assertIn("release_tag: ${{ github.ref_name }}", release)
+        self.assertIn(
+            "SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/"
+            ".github/workflows/production-deploy.yml@main",
+            release,
+        )
+        self.assertIn('[[ "$CALLER_EVENT" == "push" ]]', text)
+        self.assertIn('[[ "$CALLER_REF_TYPE" == "tag" ]]', text)
+        self.assertIn('[[ "$CALLER_SHA" == "$RELEASE_SHA" ]]', text)
         self.assertIn(r"^v[0-9]+\.[0-9]+\.[0-9]+$", text)
         self.assertIn("git fetch --no-tags origin main:refs/remotes/origin/main", text)
         self.assertIn('git merge-base --is-ancestor "$RELEASE_SHA" origin/main', text)
         self.assertIn("ref: ${{ env.RELEASE_SHA }}", text)
         self.assertIn("tests.deployment.test_production_deployment_assets", text)
+        self.assertIn("tests.deployment.test_github_oidc_trust", text)
         self.assertIn("tests.deployment.test_backend_ci_workflow", text)
         self.assertIn("tests.deployment.test_data_ci_workflow", text)
         self.assertNotIn("discover -s tests/deployment", text)
@@ -318,6 +444,28 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn(
             "data/(synthetic/fixtures|processed/structured/evidence)", text
         )
+
+    def test_bootstrap_validates_reusable_semver_oidc_trust(self) -> None:
+        bootstrap = BOOTSTRAP_WORKFLOW.read_text(encoding="utf-8")
+        trust = OIDC_TRUST.read_text(encoding="utf-8")
+        self.assertIn("Production Bootstrap must run from the main branch", bootstrap)
+        self.assertIn("aws iam get-role", bootstrap)
+        self.assertIn("validate_github_oidc_trust.py", bootstrap)
+        self.assertIn("GITHUB_REPOSITORY", bootstrap)
+        self.assertIn("github.repository_id", bootstrap)
+        self.assertIn("github.repository_owner_id", bootstrap)
+        self.assertIn("GitHubActionsProductionEnvironment", trust)
+        self.assertIn("ENVIRONMENT_CLAIM: PRODUCTION_ENVIRONMENT", trust)
+        self.assertNotIn("StringLike", trust)
+        self.assertIn("JOB_WORKFLOW_REF_CLAIM", trust)
+        self.assertIn("@refs/heads/main", trust)
+        self.assertNotRegex(trust, r"refs/tags/v\d+\.\d+\.\d+")
+        environment_workflows = [
+            path.name
+            for path in (ROOT / ".github/workflows").glob("*.yml")
+            if "environment: production" in path.read_text(encoding="utf-8")
+        ]
+        self.assertEqual(environment_workflows, ["production-deploy.yml"])
 
 
 if __name__ == "__main__":

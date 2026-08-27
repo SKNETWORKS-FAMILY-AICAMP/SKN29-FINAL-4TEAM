@@ -18,6 +18,9 @@ from django.db.models import Max, Prefetch
 from django.utils import timezone
 
 from apps.audit.models import AIRetrievalHit, AIRetrievalRun, AIRun
+from apps.consultations.repositories.consultation_repository import (
+    ConsultationRepository,
+)
 from apps.evidence.models import AIChunkCrosswalk, EvidenceLink
 from apps.inquiries.models import (
     Guidance,
@@ -27,6 +30,9 @@ from apps.inquiries.models import (
     SymptomAssessment,
 )
 from apps.inquiries.repositories.inquiry_repository import InquiryRepository
+from apps.inquiries.services.guidance_review_policy import (
+    GuidanceReviewPolicy,
+)
 from apps.inquiries.services.safety_rule_registry import (
     danger_assessment_is_valid,
 )
@@ -927,7 +933,7 @@ class InquiryAIService:
         guidance = Guidance(
             inquiry=inquiry,
             guidance_version=next_version,
-            review_status_code="PENDING",
+            review_status_code=GuidanceReviewPolicy.initial_status(result),
             title="AI 사용 안내 초안",
             summary_text=guidance_payload["message"],
             safety_notice=safety["safety_reason"],
@@ -950,6 +956,16 @@ class InquiryAIService:
             )
             item.full_clean()
             item.save()
+        if guidance.review_status_code == GuidanceReviewPolicy.PENDING:
+            from apps.inquiries.services.human_review_service import (
+                HumanReviewService,
+            )
+
+            HumanReviewService.create_pending(
+                guidance=guidance,
+                ai_request_id=run.idempotency_key,
+                source_inquiry_state_version=inquiry.state_version,
+            )
         return guidance
 
     @staticmethod
@@ -1094,6 +1110,20 @@ class InquiryAIService:
             correlation_id=UUID(result.payload["correlation_id"]),
             ai_request_id=result.payload["ai_request_id"],
         )
+        if event == "DANGER_DETECTED":
+            # Danger is the one approved path that does not wait for a
+            # customer action. Keep the queue row in the same transaction as
+            # the Inquiry transition so Web never observes a half-applied
+            # emergency handoff.
+            ConsultationRepository.request(
+                inquiry=inquiry,
+                state_version=inquiry.state_version,
+                idempotency_key=(
+                    f"ai-danger-{result.payload['ai_request_id']}"
+                ),
+                correlation_id=UUID(result.payload["correlation_id"]),
+                current=ConsultationRepository.lock_latest(inquiry),
+            )
         return event, None
 
     @classmethod

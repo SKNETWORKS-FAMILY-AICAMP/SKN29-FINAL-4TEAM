@@ -73,28 +73,41 @@ describe("Remote 상담사 문의 상세", () => {
     expect(
       screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
     ).toEqual([
-      "고객 정보",
+      "합성고객 01",
+      "고객 증상과 답변",
+      "고객에게 안내할 내용",
       "제품·관리 정보",
-      "증상·문진",
-      "사용 안내",
-      "상담·방문 정보",
-      "현재 가능한 작업",
-      "문의 정보",
     ]);
+    expect(screen.getByText("상담 대기")).toBeInTheDocument();
+    expect(screen.getByText("주의 문의")).toHaveClass("is-risk-caution");
+    expect(screen.queryByText(/처리 우선순위/)).not.toBeInTheDocument();
+    expect(screen.queryByText("합성 테스트")).not.toBeInTheDocument();
+    expect(screen.queryByText("CONSULTATION_REQUIRED")).not.toBeInTheDocument();
   });
 
   it("최근 관리일 null은 관리 이력 없음으로 표시하고 날짜 요소를 만들지 않는다", () => {
-    const { container } = render(
+    render(
       <RemoteConsultantInquiryDetail inquiry={createDetail()} />,
     );
 
-    expect(screen.getByText("LOW")).toBeInTheDocument();
+    expect(screen.queryByText("LOW")).not.toBeInTheDocument();
+    expect(screen.queryByText(/처리 우선순위/)).not.toBeInTheDocument();
     expect(screen.getByText("방문 관리")).toBeInTheDocument();
     expect(screen.getByText("관리 이력 없음")).toBeInTheDocument();
-    expect(container.querySelector("time")).not.toBeInTheDocument();
-    expect(screen.getByText("제한 정보 미제공")).toBeInTheDocument();
-    expect(screen.getByText("AI 안내 미제공 / 상담 검토 필요")).toBeInTheDocument();
-    expect(screen.getByText("공개 근거 미제공 / 상담 검토 필요")).toBeInTheDocument();
+    expect(
+      screen.getByText("관리 이력 없음").closest("dd")?.querySelector("time"),
+    ).toBeNull();
+    expect(
+      screen.getByText("현재 제공된 제한 기능 정보가 없습니다."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "AI 안내가 없습니다. 고객 증상과 상담 지침을 직접 확인해 주세요.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("공식 근거는 아직 제공되지 않았습니다."),
+    ).toBeInTheDocument();
   });
 
   it("담당 문의의 안전 Projection 최근 관리일을 날짜 이동 없이 표시한다", () => {
@@ -135,7 +148,12 @@ describe("Remote 상담사 문의 상세", () => {
 
     expect(screen.getByText("최근 관리일 확인 필요")).toBeInTheDocument();
     expect(screen.queryByText("2026-02-31")).not.toBeInTheDocument();
-    expect(container.querySelector("time")).not.toBeInTheDocument();
+    expect(
+      screen
+        .getByText("최근 관리일 확인 필요")
+        .closest("dd")
+        ?.querySelector("time"),
+    ).toBeNull();
     expect(container.innerHTML).not.toContain("2026-02-31");
   });
 
@@ -166,22 +184,42 @@ describe("Remote 상담사 문의 상세", () => {
     ).toBeInTheDocument();
   });
 
+  it.each([
+    ["danger", "긴급 문의", "is-risk-danger"],
+    ["caution", "주의 문의", "is-risk-caution"],
+    ["general", "일반 문의", "is-risk-general"],
+  ] as const)(
+    "위험도 %s를 문의 종류와 전용 색상 class로 표시한다",
+    (riskLevel, label, className) => {
+      render(
+        <RemoteConsultantInquiryDetail
+          inquiry={createDetail({ riskLevel })}
+        />,
+      );
+
+      expect(screen.getByText(label)).toHaveClass(className);
+    },
+  );
+
   it("consultation·visit null을 불필요로 해석하지 않는다", () => {
     render(<RemoteConsultantInquiryDetail inquiry={createDetail()} />);
 
-    expect(screen.getByText("상담 기록이 아직 제공되지 않았습니다.")).toBeInTheDocument();
-    expect(screen.getByText("방문 필요로 확정되지 않음")).toBeInTheDocument();
-    expect(screen.getByText("방문 정보 없음")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "방문 정보" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("이전 상담 기록·처리 이력"),
+    ).not.toBeInTheDocument();
   });
 
   it("실행 UI가 없을 때도 Backend allowed action을 임의 버튼으로 만들지 않는다", () => {
     render(<RemoteConsultantInquiryDetail inquiry={createDetail()} />);
 
-    expect(screen.getByText("상담 시작")).toBeInTheDocument();
+    expect(screen.queryByText("상담 시작")).not.toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
     expect(
-      screen.getByText("Backend가 반환한 allowed_actions만 실행 버튼으로 제공합니다."),
-    ).toBeInTheDocument();
+      screen.queryByText(/allowed_actions/),
+    ).not.toBeInTheDocument();
   });
 
   it("재조회된 상담 기록과 확정 요약을 표시한다", () => {
@@ -206,7 +244,8 @@ describe("Remote 상담사 문의 상세", () => {
       />,
     );
 
-    expect(screen.getByText("COMPLETED_NO_VISIT")).toBeInTheDocument();
+    expect(screen.getByText("방문 없이 상담 완료")).toBeInTheDocument();
+    expect(screen.queryByText("COMPLETED_NO_VISIT")).not.toBeInTheDocument();
     expect(screen.getByTestId("consultation-detail-confirmed-summary")).toHaveTextContent(
       "확정된 상담 요약",
     );
@@ -287,5 +326,27 @@ describe("Remote 상담사 문의 상세", () => {
       "제품 정보를 불러오지 못했습니다.",
     );
     expect(screen.getByText("합성고객 01")).toBeInTheDocument();
+  });
+
+  it("처리 완료되어 가능한 작업이 없으면 빈 상담 처리 카드를 표시하지 않는다", () => {
+    const { container } = render(
+      <RemoteConsultantInquiryDetail
+        inquiry={createDetail({
+          status: "RESOLVED",
+          workflow: {
+            status: "RESOLVED",
+            stateVersion: 8,
+            allowedActions: [],
+          },
+        })}
+        onOpenVisit={() => undefined}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(screen.queryByLabelText("상담 처리 작업")).not.toBeInTheDocument();
+    expect(
+      container.querySelector(".remote-inquiry-detail__workspace"),
+    ).toHaveClass("is-single-column");
   });
 });

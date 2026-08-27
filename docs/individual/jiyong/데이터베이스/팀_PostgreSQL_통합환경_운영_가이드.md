@@ -75,21 +75,21 @@ Connection Timeout, DNS·CA 불일치, Credential 미주입은 코드 실패가 
 
 | 순서 | App | Target |
 | ---: | --- | --- |
-| 1 | contenttypes | `0002_remove_content_type_name` |
-| 2 | auth | `0012_alter_user_first_name_max_length` |
-| 3 | token_blacklist | `0013_alter_blacklistedtoken_options_and_more` |
-| 4 | products | `0001_initial` |
-| 5 | subscriptions | `0002_add_synthetic_projection_fields` |
+| 1 | products | `0001_initial` |
+| 2 | contenttypes | `0002_remove_content_type_name` |
+| 3 | auth | `0012_alter_user_first_name_max_length` |
+| 4 | subscriptions | `0002_add_synthetic_projection_fields` |
+| 5 | token_blacklist | `0013_alter_blacklistedtoken_options_and_more` |
 | 6 | care | `0002_add_imported_care_fields` |
-| 7 | operations | `0002_consultant_dashboard_projection` |
-| 8 | accounts | `0005_account_lifecycle_and_audit` |
-| 9 | admin | `0003_logentry_add_action_flag_choices` |
-| 10 | audit | `0005_airun_analyze_symptom_task` |
-| 11 | common_codes | `0002_common_code` |
-| 12 | consultations | `0002_consultation_runtime_fields` |
-| 13 | evidence | `0011_cast_chunk_embedding_vector_dimensions` |
-| 14 | inquiries | `0013_inquiry_priority_code` |
-| 15 | questionnaires | `0002_postgresql_inquiry_subscription_fk` |
+| 7 | accounts | `0009_approved_test_contract_email` |
+| 8 | admin | `0003_logentry_add_action_flag_choices` |
+| 9 | audit | `0005_airun_analyze_symptom_task` |
+| 10 | common_codes | `0002_common_code` |
+| 11 | consultations | `0003_consultationhandoff` |
+| 12 | evidence | `0014_decouple_ai_view_product_eligibility` |
+| 13 | inquiries | `0015_humanreview` |
+| 14 | operations | `0003_product_expansion_import_profile` |
+| 15 | questionnaires | `0003_questionnaire_answers_allow_blank` |
 | 16 | sessions | `0001_initial` |
 | 17 | visits | `0004_visit_runtime_fields` |
 | 18 | workflow | `0005_status_history_contract_names_indexes` |
@@ -138,7 +138,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command '& {
 전체 승인 Closure, 예상 외 Migration 0, 남은 승인 Plan 0과 아래 상태를 재검증한다.
 
 ```ini
-operations.0002=APPLIED
+accounts.0009=APPLIED
+consultations.0003=APPLIED
+evidence.0014=APPLIED
+inquiries.0015=APPLIED
+operations.0003=APPLIED
+questionnaires.0003=APPLIED
 visits.0004=APPLIED
 visits.0005=NOT_APPLIED_P1_HOLD
 approved_targets=APPLIED
@@ -174,6 +179,26 @@ Volume은 종료 후 삭제했다. 이 결과는 AWS RDS 적용 승인이나 독
 `0002_consultant_dashboard_projection`이다. Allowlist와 최종 검증 출력도 이 Target을
 명시하며 `visits.0005` 제외 경계는 바꾸지 않았다. 작성자 표적 테스트는 13건 모두
 통과했다. 공용 PostgreSQL 적용은 PM 승인과 QA 실행 전까지 HOLD다.
+
+### 8.5 2026-08-26 `inquiries.0015` HumanReview 정합화
+
+상담사 HITL 결정 원장 `support_human_review`를 추가한 최신 Graph의 Inquiries Leaf는
+`0015_humanreview`다. Allowlist는 현재 18개 App Target과 98개 의존 Closure를
+검증하며 `visits.0005`가 Closure 또는 적용 이력에 있으면 계속 중단한다.
+
+작성자 격리 PostgreSQL 16.14·pgvector 0.8.6 검증 결과는 다음과 같다.
+
+```ini
+approved_app_targets=18
+approved_dependency_closure=98
+inquiries.0015=APPLIED
+visits.0005=NOT_APPLIED_P1_HOLD
+human_review_concurrent_decision=ONE_200_ONE_409
+human_review_replay_duplicate_rows=0
+```
+
+이는 로컬 구현 검증 결과이며 RDS 적용 승인이 아니다. RDS에서는 최종 main SHA로
+Plan을 다시 계산하고 PM 승인 뒤 Migrator만 적용해야 한다.
 
 ## 9. 2026-08-21 Web G4 DB 증거 수집
 

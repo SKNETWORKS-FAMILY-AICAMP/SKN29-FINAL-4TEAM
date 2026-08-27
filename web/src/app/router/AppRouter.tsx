@@ -14,9 +14,11 @@ import ConsultantInquiryListPage from "../../pages/consultant/ConsultantInquiryL
 import ConsultantNoticePage from "../../pages/consultant/ConsultantNoticePage";
 import PhoneInquiryCreatePage from "../../pages/consultant/PhoneInquiryCreatePage";
 import VisitTransitionPage from "../../pages/consultant/VisitTransitionPage";
+import LandingPage from "../../pages/landing/LandingPage";
 import ErrorPage from "../../pages/system/ErrorPage";
 import ForbiddenPage from "../../pages/system/ForbiddenPage";
 import NotFoundPage from "../../pages/system/NotFoundPage";
+import LoadingState from "../../common/components/feedback/LoadingState";
 import AdminLayout from "../layouts/AdminLayout";
 import AuthLayout from "../layouts/AuthLayout";
 import ConsultantLayout from "../layouts/ConsultantLayout";
@@ -27,11 +29,15 @@ import AuthGuard from "./guards/AuthGuard";
 import RoleGuard from "./guards/RoleGuard";
 import { createInquiryDetailPath, ROUTE_PATHS } from "./routePaths";
 
-function HomeRedirect() {
-  const { isAuthenticated, user } = useAuth();
+function HomeRoute() {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return <LoadingState title="로그인 상태를 확인하고 있습니다." />;
+  }
 
   if (!isAuthenticated || !user) {
-    return <Navigate to={ROUTE_PATHS.login} replace />;
+    return <LandingPage />;
   }
   if (user.roleCode === "CONSULTANT") {
     return <Navigate to={ROUTE_PATHS.consultantDashboard} replace />;
@@ -62,7 +68,7 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route element={<RootLayout />}>
-        <Route path={ROUTE_PATHS.home} element={<HomeRedirect />} />
+        <Route path={ROUTE_PATHS.home} element={<HomeRoute />} />
 
         <Route element={<AuthLayout />}>
           <Route path={ROUTE_PATHS.login} element={<LoginPage />} />

@@ -73,7 +73,7 @@ adb reverse tcp:8000 tcp:8000
 
 echo Installing customer app...
 pushd mobile
-call gradlew.bat :customer-app:installDebug
+call gradlew.bat :customer-app:installLocalDebug
 if errorlevel 1 (
     echo [WARN] Mobile install failed.
     popd
@@ -82,7 +82,7 @@ if errorlevel 1 (
 popd
 
 echo Opening customer app...
-adb shell am start -n com.skn29.watercare.customer/.MainActivity
+adb shell am start -n com.skn29.watercare.customer.local/com.skn29.watercare.customer.MainActivity
 
 :DONE
 echo.

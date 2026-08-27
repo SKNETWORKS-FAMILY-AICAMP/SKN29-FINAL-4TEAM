@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FullCorpusV3Coverage",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "status", "generated_at", "pages"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "status": {"const": "FULL_CORPUS_V3_DATA_HANDOFF_READY"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "pages": {
+      "type": "array",
+      "minItems": 11,
+      "maxItems": 11,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["exact_sales_code", "document_id", "page", "total_lines", "assignments"],
+        "properties": {
+          "exact_sales_code": {"enum": ["WPUJAC104DWH", "WPUIAC425SNW"]},
+          "document_id": {"type": "string", "minLength": 1},
+          "page": {"type": "integer", "minimum": 1},
+          "total_lines": {"type": "integer", "minimum": 1},
+          "assignments": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["line_number", "classification", "record_id", "line_sha256"],
+              "properties": {
+                "line_number": {"type": "integer", "minimum": 1},
+                "classification": {"enum": ["CHILD", "PRESERVATION", "NON_SEARCHABLE_STRUCTURE"]},
+                "record_id": {"type": "string", "minLength": 1},
+                "line_sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

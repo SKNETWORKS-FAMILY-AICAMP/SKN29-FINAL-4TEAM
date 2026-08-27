@@ -686,11 +686,11 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       "고객과 출수 상태를 확인했습니다.",
     );
     await user.type(
-      screen.getByLabelText("고객 안내"),
+      screen.getByLabelText("고객 안내 내용"),
       "필터 상태를 확인하고 정상 사용을 안내했습니다.",
     );
     await user.type(
-      screen.getByLabelText("확정 요약"),
+      screen.getByLabelText("상담 요약 수정본"),
       "출수량 저하 상담 요약",
     );
     await user.click(screen.getByRole("checkbox", { name: "상담 요약 검토·확정" }));
@@ -701,15 +701,16 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     await user.click(await screen.findByRole("button", { name: "상담 완료" }));
 
     await waitFor(() =>
-      expect(screen.getByTestId("consultation-current-status")).toHaveAttribute(
-        "data-workflow-status",
-        "COMPLETION_PENDING",
+      expect(remoteMocks.requestApi).toHaveBeenCalledWith(
+        expect.stringContaining("complete-consultation"),
+        expect.objectContaining({
+          body: expect.objectContaining({ state_version: 7 }),
+        }),
       ),
     );
-    expect(screen.getByTestId("consultation-current-status")).toHaveAttribute(
-      "data-state-version",
-      "8",
-    );
+    expect(
+      screen.queryByTestId("consultation-current-status"),
+    ).not.toBeInTheDocument();
 
     const expectedCalls = [
       ["claim-consultation", 3],
@@ -752,23 +753,21 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
 
       expect(screen.getByLabelText("현재 경로")).toHaveTextContent(expectedPath);
       expect(await screen.findByRole("dialog")).toBeVisible();
-      expect(screen.getByLabelText("실제 API 문의 상세")).toBeInTheDocument();
+      expect(screen.getByLabelText("상담 문의 상세")).toBeInTheDocument();
       expect(screen.getByLabelText("상담 처리 작업")).toBeInTheDocument();
       expect(
         screen.queryByRole("button", { name: "전체 기록 보기" }),
       ).not.toBeInTheDocument();
       [
-        "고객 정보",
+        "합성 고객 01",
+        "고객 증상과 답변",
+        "고객에게 안내할 내용",
         "제품·관리 정보",
-        "증상·문진",
-        "사용 안내",
-        "상담·방문 정보",
-        "현재 가능한 작업",
-        "상담 처리",
-        "문의 정보",
       ].forEach((heading) =>
         expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument(),
       );
+      expect(screen.queryByText("현재 할 일")).not.toBeInTheDocument();
+      expect(screen.queryByText(/현재 상태 ·/)).not.toBeInTheDocument();
       expect(screen.getByText("제품 사용 중단")).toBeInTheDocument();
       expect(screen.queryByText("TOTAL_STOP")).not.toBeInTheDocument();
       expect(remoteMocks.getInquiryDetail).toHaveBeenCalledWith(INQUIRY_ID);

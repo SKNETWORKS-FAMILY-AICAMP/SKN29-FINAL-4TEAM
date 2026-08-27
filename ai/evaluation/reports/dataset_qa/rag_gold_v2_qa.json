@@ -1,0 +1,53 @@
+{
+  "qa_id": "GOLD-EVALUATION-V2-QA",
+  "schema_version": "2.0.0-draft.1",
+  "dataset_version": "2.0.0-draft.1",
+  "status": "STRUCTURAL_PASS_HUMAN_REVIEW_PENDING",
+  "generated_at": "2026-08-26T06:00:07.717868+00:00",
+  "dataset": {
+    "path": "ai/evaluation/datasets/gold/rag_gold_v2.jsonl",
+    "record_count": 60
+  },
+  "schema": {
+    "path": "ai/evaluation/schemas/gold_evaluation_case_v2.schema.json"
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 1,
+    "records_found": 60,
+    "active_records": 55,
+    "approved_active_records": 0,
+    "review_pending_active_records": 55,
+    "evaluation_status_counts": {
+      "ACTIVE": 55,
+      "EXCLUDED": 5
+    },
+    "retrieval_outcome_counts": {
+      "EVIDENCE": 50,
+      "NO_EVIDENCE": 10
+    },
+    "execution_path_counts": {
+      "PGVECTOR_QUERY": 50,
+      "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE": 4,
+      "POLICY_BLOCK_UNSUPPORTED_CAPABILITY": 3,
+      "POLICY_BLOCK_UNSUPPORTED_MODEL": 2,
+      "POLICY_BLOCK_UNVERIFIED_SOURCE": 1
+    }
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "HUMAN_REVIEW_PENDING",
+      "pending_active_records": 55,
+      "approved_active_records": 0,
+      "message": "2인 검수 전 ACTIVE Case는 Draft 평가에만 사용"
+    }
+  ],
+  "decision": {
+    "case_contract": "READY",
+    "gold_corpus_compatibility": "NOT_CHECKED_BY_THIS_VALIDATOR",
+    "draft_evaluation_use": "READY",
+    "official_metric_use": "BLOCKED",
+    "automatic_label_approval": "PROHIBITED"
+  }
+}

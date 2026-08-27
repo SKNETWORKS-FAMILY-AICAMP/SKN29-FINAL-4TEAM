@@ -136,23 +136,27 @@ describe("Remote 첫 문의 상세 패널", () => {
     });
 
     expect(
-      await screen.findByLabelText("실제 API 문의 상세"),
+      await screen.findByLabelText("상담 문의 상세"),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("상담 처리 작업")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "상담 시작" })).toBeInTheDocument();
-    expect(screen.getByText("조회 확인 번호: corr-detail")).toBeInTheDocument();
+    expect(screen.queryByText("조회 확인 번호: corr-detail")).not.toBeInTheDocument();
     [
-      "고객 정보",
+      "합성 고객 01",
+      "고객 증상과 답변",
+      "고객에게 안내할 내용",
       "제품·관리 정보",
-      "증상·문진",
-      "사용 안내",
-      "상담·방문 정보",
-      "현재 가능한 작업",
-      "상담 처리",
-      "문의 정보",
     ].forEach((heading) =>
       expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument(),
     );
+    expect(screen.queryByText(/문의번호/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("고객 상황을 확인하고 상담 기록을 남겨 주세요."),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("현재 할 일")).not.toBeInTheDocument();
+    expect(screen.queryByText(/현재 상태 ·/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Backend가 제공한/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/stateVersion/)).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "전체 기록 보기" }),
     ).not.toBeInTheDocument();
@@ -175,7 +179,7 @@ describe("Remote 첫 문의 상세 패널", () => {
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("이 문의에 접근할 권한이 없습니다.");
     expect(alert).toHaveTextContent("확인 번호: corr-forbidden");
-    expect(screen.queryByLabelText("실제 API 문의 상세")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("상담 문의 상세")).not.toBeInTheDocument();
   });
 
   it("404는 문의 존재 여부와 배정 여부를 구분하지 않는 동일 문구로 표시한다", async () => {
@@ -227,7 +231,7 @@ describe("Remote 첫 문의 상세 패널", () => {
     );
 
     expect(
-      await screen.findByLabelText("실제 API 문의 상세"),
+      await screen.findByLabelText("상담 문의 상세"),
     ).toBeInTheDocument();
     expect(getInquiryDetail).toHaveBeenCalledTimes(2);
   });

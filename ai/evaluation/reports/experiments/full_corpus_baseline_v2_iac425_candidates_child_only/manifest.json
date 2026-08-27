@@ -1,0 +1,90 @@
+{
+  "profile_id": "full_corpus_baseline_v2_iac425_candidates_child_only",
+  "profile_version": "2.0.0-draft.1",
+  "run_status": "LOCAL_DENSE_DIAGNOSTIC_COMPLETE",
+  "started_at": "2026-08-26T03:24:32.281018+00:00",
+  "completed_at": "2026-08-26T03:24:56.015572+00:00",
+  "execution_seconds": 23.73454,
+  "official": false,
+  "official_metrics_allowed": false,
+  "official_metrics_blockers": [
+    "LOCAL_DENSE_QUERY_IS_NOT_PGVECTOR_QUERY",
+    "HUMAN_REVIEW_PENDING"
+  ],
+  "dataset": {
+    "path": "ai/evaluation/datasets/candidates/iac425_gold_v2_candidates.jsonl",
+    "sha256": "11AAF6B8BDCDBC74AE9649745E2E5EB761ADF23C81544A5C4165F10F64321EE4",
+    "records": 18,
+    "active_records": 18,
+    "splits": [
+      "DEV",
+      "SAFETY",
+      "TEST"
+    ]
+  },
+  "evidence_groups": {
+    "path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2.jsonl",
+    "source": "EVALUATION_REGISTRY",
+    "sha256": "7E7F4BC9354825B46E4FDC83283A5C9C89846A1F8E88B3322798C1AFE7BAE7DE",
+    "records": 34
+  },
+  "corpus": {
+    "path": "data/processed/structured/rag/experimental/full_corpus_chunks_v3.jsonl",
+    "sha256": "B92B72E70BD3DCDD0B82EAAA04B707992932E75BEB46748A7369DFDC0F4D9BA8",
+    "search_candidates": 132,
+    "source_records": 132,
+    "source_search_candidates": 132,
+    "eligible_search_candidates": 37,
+    "embedded_candidates": 37,
+    "allowed_record_types": [
+      "CHILD"
+    ],
+    "record_type_counts": {
+      "CHILD": 37,
+      "PRESERVATION": 10,
+      "SOURCE_PAGE": 85
+    },
+    "eligible_record_type_counts": {
+      "CHILD": 37
+    }
+  },
+  "embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "device": "cpu",
+    "normalize_embeddings": true,
+    "local_files_only": true
+  },
+  "retrieval": {
+    "engine": "numpy_dense_cosine_exact",
+    "top_k": 5,
+    "score_threshold": 0.4,
+    "filter_mode": "EXACT_PRODUCT_FILTER",
+    "allowed_record_types": [
+      "CHILD"
+    ],
+    "vector_query_execution_path": "LOCAL_DENSE_QUERY",
+    "vector_query_actual_execution_path": "LOCAL_DENSE_QUERY",
+    "policy_block_execution": "NOT_RUN_RUNTIME_POLICY"
+  },
+  "runtime": {
+    "python": "3.13.13",
+    "os": "Windows 11",
+    "machine": "AMD64",
+    "provider_class": "LocalBgeM3Provider"
+  },
+  "git": {
+    "commit_sha": "da56c2c6978a03cc797fc5cdd7c545352a3a454f",
+    "branch": "dongyoon",
+    "working_tree_clean": false,
+    "changed_path_count": 23
+  },
+  "publication_limits": [
+    "IAC425 18건은 HUMAN_REVIEW_PENDING 후보이며 메인 Gold가 아니다.",
+    "CHILD-only 결과는 mixed 132-record 결과의 원인 진단용 Ablation이며 공식 Baseline을 대체하지 않는다.",
+    "LOCAL_DENSE_QUERY는 PGVECTOR_QUERY Runtime 실행 증거가 아니다.",
+    "semantic metric과 execution_contract_passed를 분리해 해석한다.",
+    "Full Corpus v3와 기존 Gold·Corpus 원본을 수정하지 않는다."
+  ]
+}

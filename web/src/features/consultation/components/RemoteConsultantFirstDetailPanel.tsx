@@ -124,20 +124,12 @@ export default function RemoteConsultantFirstDetailPanel({
     }
 
     return (
-      <>
-        {detailQuery.correlationId && (
-          <div className="remote-first-detail-toolbar">
-            <small>조회 확인 번호: {detailQuery.correlationId}</small>
-          </div>
-        )}
-
-        <RemoteConsultantInquiryDetail
-          key={inquiryId}
-          inquiry={inquiry}
-          onOpenVisit={openVisit}
-          onRefresh={refreshDetailAndWorkspace}
-        />
-      </>
+      <RemoteConsultantInquiryDetail
+        key={inquiryId}
+        inquiry={inquiry}
+        onOpenVisit={openVisit}
+        onRefresh={refreshDetailAndWorkspace}
+      />
     );
   };
 
@@ -145,13 +137,9 @@ export default function RemoteConsultantFirstDetailPanel({
     <>
       <header className="consultant-detail-drawer__head">
         <div>
-          <small>{inquiry?.inquiryCode ?? "REMOTE DETAIL"}</small>
           <h2 id="consultant-detail-title">
-            {inquiry
-              ? `${inquiry.customer.displayName} · ${inquiry.symptomAndQuestionnaire.symptomSummary}`
-              : "문의 상세·상담 처리"}
+            문의 상세·상담 처리
           </h2>
-          <p>Backend가 제공한 상세 정보와 허용 작업을 이 패널에서 처리합니다.</p>
         </div>
         <button type="button" aria-label="문의 상세 닫기" onClick={onClose}>
           <span aria-hidden="true">×</span>

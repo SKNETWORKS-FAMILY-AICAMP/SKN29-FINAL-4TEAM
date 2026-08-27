@@ -36,7 +36,7 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "2.0.0-draft.1"
+      "const": "2.0.0-draft.2"
     },
     "case_id": {
       "type": "string",
@@ -44,7 +44,7 @@
     },
     "dataset_version": {
       "type": "string",
-      "const": "2.0.0-draft.1"
+      "const": "2.0.0-draft.2"
     },
     "evaluation_status": {
       "type": "string",
@@ -85,6 +85,7 @@
         "POLICY_BLOCK_PRODUCT_MISMATCH",
         "POLICY_BLOCK_UNSUPPORTED_MODEL",
         "POLICY_BLOCK_UNSUPPORTED_CAPABILITY",
+        "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE",
         "POLICY_BLOCK_UNVERIFIED_SOURCE"
       ]
     },
@@ -299,6 +300,7 @@
               "POLICY_BLOCK_PRODUCT_MISMATCH",
               "POLICY_BLOCK_UNSUPPORTED_MODEL",
               "POLICY_BLOCK_UNSUPPORTED_CAPABILITY",
+              "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE",
               "POLICY_BLOCK_UNVERIFIED_SOURCE"
             ]
           }
@@ -386,6 +388,7 @@
               "POLICY_BLOCK_PRODUCT_MISMATCH",
               "POLICY_BLOCK_UNSUPPORTED_MODEL",
               "POLICY_BLOCK_UNSUPPORTED_CAPABILITY",
+              "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE",
               "POLICY_BLOCK_UNVERIFIED_SOURCE"
             ]
           }
@@ -466,6 +469,7 @@
               "POLICY_BLOCK_PRODUCT_MISMATCH",
               "POLICY_BLOCK_UNSUPPORTED_MODEL",
               "POLICY_BLOCK_UNSUPPORTED_CAPABILITY",
+              "POLICY_BLOCK_OUT_OF_MANUAL_SCOPE",
               "POLICY_BLOCK_UNVERIFIED_SOURCE"
             ]
           },

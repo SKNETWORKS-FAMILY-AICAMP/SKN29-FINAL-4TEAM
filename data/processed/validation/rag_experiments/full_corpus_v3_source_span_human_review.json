@@ -1,0 +1,63 @@
+{
+  "decisions": [
+    {
+      "child_id": "CHILD-WPUJAC104DWH-P004-SPRAY-FIRE-PREVENTION-001",
+      "classification": "CHILD",
+      "decision": "SEPARATE_SEARCH_CARD",
+      "decision_code": "1-A",
+      "evidence_group_id": "EVD-WPUJAC104DWH-SPRAY-FIRE-PREVENTION-001",
+      "line_end": 25,
+      "line_start": 24,
+      "page": 4,
+      "raw_span_sha256": "07543187DCAC01B2095CB6FBDC2C748B020D1E840771FD22E82F731A4C1C2B35",
+      "scope_limit": "사고 후 조치가 아니라 운전 중 살충제·가연성 스프레이 사용 예방 근거로만 사용한다."
+    },
+    {
+      "child_id": "CHILD-WPUJAC104DWH-P004-WATER-INGRESS-PREVENTION-001",
+      "classification": "CHILD",
+      "decision": "SEPARATE_SEARCH_CARD",
+      "decision_code": "2-A",
+      "evidence_group_id": "EVD-WPUJAC104DWH-WATER-INGRESS-PREVENTION-001",
+      "line_end": 27,
+      "line_start": 26,
+      "page": 4,
+      "raw_span_sha256": "8C4672B65ABD6F89D400F6E14E556EB75D4F388F02F2F0973CCD3E54C2704C8A",
+      "scope_limit": "제품 내부 물 유입 예방 근거이며 이미 물이 들어간 뒤의 대응 근거로 단독 사용하지 않는다."
+    },
+    {
+      "child_id": "CHILD-WPUJAC104DWH-P005-LEAK-001",
+      "classification": "CHILD",
+      "decision": "EQUIVALENT_GROUP_VARIANT",
+      "decision_code": "3-A",
+      "evidence_group_id": "EVD-WPUJAC104DWH-LEAK-001",
+      "line_end": 7,
+      "line_start": 5,
+      "page": 5,
+      "raw_span_sha256": "EEE3BD9D27E3684DAC11F8DFA6516591E618DBD140549D02204D0B4C5FCAA76E",
+      "scope_limit": "P005·P007·P038은 누수 차단·전원 분리·상담이라는 같은 의미의 대체 Variant이며 한 Group으로 한 번만 채점한다."
+    },
+    {
+      "child_id": "CHILD-WPUJAC104DWH-P005-BURNING-ODOR-RESPONSE-001",
+      "classification": "CHILD",
+      "decision": "SEPARATE_SEARCH_CARD",
+      "decision_code": "4-A",
+      "evidence_group_id": "EVD-WPUJAC104DWH-BURNING-ODOR-RESPONSE-001",
+      "line_end": 14,
+      "line_start": 12,
+      "page": 5,
+      "raw_span_sha256": "CE767A2C0D23DAC085FFCF2970B7369B0810223EEB8B77E31BB49C1F398DB3F2",
+      "scope_limit": "일반 작동음이 아니라 타는 냄새·연기 등 화재 위험 징후가 있는 경우의 즉시 중단 근거로 사용한다."
+    }
+  ],
+  "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+  "extracted_pages_path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+  "extracted_pages_sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F",
+  "gold_signoff_status": "HUMAN_SIGNOFF_PENDING",
+  "review_date": "2026-08-26",
+  "reviewer_name": "김은진",
+  "reviewer_role": "DATA_QA_PRIMARY_REVIEWER",
+  "schema_version": "1.0.0",
+  "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+  "source_inventory_id": "SRC-JAC104D-MANUAL",
+  "status": "DATA_QA_SOURCE_SPAN_VERIFIED"
+}

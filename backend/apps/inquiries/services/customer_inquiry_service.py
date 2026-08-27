@@ -44,6 +44,7 @@ class CustomerInquiryService:
             Inquiry.Status.RESOLVED,
         }
     )
+    PUBLIC_GUIDANCE_REVIEW_STATUSES = frozenset({"APPROVED", "CONFIRMED"})
 
     @classmethod
     def latest_active_for_customer(cls, *, actor: Any) -> dict[str, Any]:
@@ -157,6 +158,11 @@ class CustomerInquiryService:
             raise cls._guidance_not_ready(inquiry, allowed_actions)
         guidance = next(iter(inquiry.customer_guidance_versions), None)
         if guidance is None:
+            raise cls._guidance_not_ready(inquiry, allowed_actions)
+        if (
+            guidance.review_status_code
+            not in cls.PUBLIC_GUIDANCE_REVIEW_STATUSES
+        ):
             raise cls._guidance_not_ready(inquiry, allowed_actions)
 
         ai_run = guidance.generated_by_ai_run

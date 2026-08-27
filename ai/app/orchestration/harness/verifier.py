@@ -7,7 +7,8 @@ from typing import Any, Type
 from pydantic import BaseModel, ValidationError
 
 from ...retrieval.models.retrieved_chunk import RetrievedChunk
-from ...schemas import RiskLevel, SafetyAssessment, UsageGuidance, UsageGuidanceStatus
+from ...schemas import RiskLevel, SafetyAssessment, UsageGuidance
+from ...validation.safety import SafetyRuleAlignmentValidator
 from .product_match import ProductContext, ProductMatchVerifier
 from .tool_failure import McpToolFailure
 from .verification_result import (
@@ -230,11 +231,13 @@ class HarnessVerifier:
     ) -> bool:
         if safety_assessment is None or guidance is None:
             return True
-        if safety_assessment.risk_level == RiskLevel.DANGER:
-            return guidance.guidance_status in {
-                UsageGuidanceStatus.TOTAL_STOP,
-                UsageGuidanceStatus.PENDING_CONSULTATION,
-            }
+        try:
+            SafetyRuleAlignmentValidator().validate(
+                safety_assessment,
+                guidance,
+            )
+        except ValueError:
+            return False
         return True
 
     @staticmethod

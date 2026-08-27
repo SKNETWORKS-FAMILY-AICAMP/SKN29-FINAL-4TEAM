@@ -1,0 +1,3 @@
+아래 비식별 Source Registry만 사용해 상담사 검토용 맥락 브리프 후보를 생성해 주세요.
+{consultation_context_synthesis_request_json}
+

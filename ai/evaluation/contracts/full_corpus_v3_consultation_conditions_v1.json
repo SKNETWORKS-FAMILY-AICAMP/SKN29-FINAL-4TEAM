@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0.0",
+  "overlay_id": "full_corpus_v3_consultation_conditions_v1",
+  "generated_at": "2026-08-26T00:00:00+09:00",
+  "status": "HUMAN_SIGNOFF_PENDING",
+  "publication_scope": "AI_EVALUATION_OVERLAY_NOT_CANONICAL_DATA",
+  "source_files": {
+    "evidence_groups": {
+      "path": "data/processed/structured/evidence/full_corpus_v3_evidence_groups.jsonl",
+      "sha256": "F16EF48EC8CEB4C810E66D92B2084546479CF21A9D08E6BCC45164DDEED4977E"
+    },
+    "children": {
+      "path": "data/processed/structured/rag/experimental/full_corpus_v3_children.jsonl",
+      "sha256": "02B4CD0CB140D5FE8485D374BC3E1B7124044E4F5B6ECF72B4A8E528AF5550F5"
+    },
+    "corpus": {
+      "path": "data/processed/structured/rag/experimental/full_corpus_chunks_v3.jsonl",
+      "sha256": "B92B72E70BD3DCDD0B82EAAA04B707992932E75BEB46748A7369DFDC0F4D9BA8"
+    }
+  },
+  "schema": {
+    "path": "ai/evaluation/schemas/evidence_group_registry_v2.schema.json",
+    "sha256": "EE65C2BDF0BFE1506F555A0B46DB6D6FC09D23A25FF48A4630D5E53B0242522D"
+  },
+  "output": {
+    "registry_path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2.jsonl",
+    "manifest_path": "ai/evaluation/datasets/gold/full_corpus_v3_evidence_groups_gold_v2_manifest.json",
+    "expected_group_count": 34,
+    "expected_condition_count": 10
+  },
+  "condition_policy": {
+    "source_condition_binding": "EXACT_UTF8_SHA256",
+    "lineage_policy": "GROUP_CHILD_PAGE_CORPUS_EXACT",
+    "merge_policy": "APPEND_TO_CANONICAL_GROUP_CONSULTATION_CONDITIONS",
+    "review_status": "AI_PROPOSED_PENDING_HUMAN_SIGNOFF"
+  },
+  "conditions": [
+    {
+      "condition_id": "COND-WPUJAC104DWH-NO-WATER-AFTER-FILTER-001",
+      "condition_semantics_code": "NO_WATER_AFTER_FILTER_CHANGE",
+      "evidence_group_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+      "trigger_type": "AFTER_CHECK",
+      "source_child_ids": [
+        "CHILD-WPUJAC104DWH-P037-NO-WATER-001"
+      ],
+      "source_page_refs": [37],
+      "source_condition_sha256": "0A933E608F79BE22796CA967ED20E142F500C86531D151C4C5DFDC5188BF8E13",
+      "gold_pending_basis_code": "SOURCE_CONDITION_PENDING",
+      "gold_met_basis_code": "SOURCE_CONDITION_MET",
+      "review_status": "AI_PROPOSED_PENDING_HUMAN_SIGNOFF"
+    },
+    {
+      "condition_id": "COND-WPUJAC104DWH-COLD-AFTER-2H-001",
+      "condition_semantics_code": "COLD_NOT_COLD_AFTER_TWO_HOURS",
+      "evidence_group_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-FAULT-001",
+      "trigger_type": "AFTER_CHECK",
+      "source_child_ids": [
+        "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001"
+      ],
+      "source_page_refs": [37],
+      "source_condition_sha256": "8DCA8062AA76C8357F642D01704B1749073A066334456EA3CF9EF77DFDD60570",
+      "gold_pending_basis_code": "SOURCE_CONDITION_PENDING",
+      "gold_met_basis_code": "SOURCE_CONDITION_MET",
+      "review_status": "AI_PROPOSED_PENDING_HUMAN_SIGNOFF"
+    },
+    {
+      "condition_id": "COND-WPUJAC104DWH-LOW-FLOW-AFTER-FILTER-001",
+      "condition_semantics_code": "LOW_FLOW_AFTER_FILTER_CHANGE",
+      "evidence_group_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+      "trigger_type": "AFTER_CHECK",
+      "source_child_ids": [
+        "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+      ],
+      "source_page_refs": [38],
+      "source_condition_sha256": "32CFFB94D2C61D5BCEC020B0729BBBB5ABD9929F354CE472A352967B5CC90706",
+      "gold_pending_basis_code": "SOURCE_CONDITION_PENDING",
+      "gold_met_basis_code": "SOURCE_CONDITION_MET",
+      "review_status": "AI_PROPOSED_PENDING_HUMAN_SIGNOFF"
+    },
+    {
+      "condition_id": "COND-WPUJAC104DWH-HOT-STEAM-PERSISTS-001",
+      "condition_semantics_code": "HOT_STEAM_PERSISTS",
+      "evidence_group_id": "EVD-WPUJAC104DWH-HOT-STEAM-001",
+      "trigger_type": "PERSISTENCE",
+      "source_child_ids": [
+        "CHILD-WPUJAC104DWH-P038-HOT-STEAM-001"
+      ],
+      "source_page_refs": [38],
+      "source_condition_sha256": "11293076785AA20FA6C546A12F7D01EDD6B190381ED2EE49B68BBC9761A31F51",
+      "gold_pending_basis_code": "SOURCE_CONDITION_PENDING",
+      "gold_met_basis_code": "SOURCE_CONDITION_MET",
+      "review_status": "AI_PROPOSED_PENDING_HUMAN_SIGNOFF"
+    },
+    {
+      "condition_id": "COND-WPUIAC425SNW-COLD-AFTER-2H-001",
+      "condition_semantics_code": "COLD_NOT_COLD_AFTER_TWO_HOURS",
+      "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001",
+      "trigger_type": "AFTER_CHECK",
+      "source_child_ids": [
+        "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001"
+      ],
+      "source_page_refs": [43],
+      "source_condition_sha256": "124647EE129A5F5AC19D50483A42ACE87EEDE5CDE776B457C1C5E15A5E28F232",
+      "gold_pending_basis_code": "SOURCE_CONDITION_PENDING",
+      "gold_met_basis_code": "SOURCE_CONDITION_MET",
+      "review_status": "AI_PROPOSED_PENDING_HUMAN_SIGNOFF"
+    },
+    {
+      "condition_id": "COND-WPUIAC425SNW-HOT-STEAM-PERSISTENCE-001",
+      "condition_semantics_code": "HOT_STEAM_PERSISTS",
+      "evidence_group_id": "EVD-WPUIAC425SNW-HOT-STEAM-001",
+      "trigger_type": "PERSISTENCE",
+      "source_child_ids": [
+        "CHILD-WPUIAC425SNW-P046-HOT-STEAM-001"
+      ],
+      "source_page_refs": [46],
+      "source_condition_sha256": "BAD357E33244099092DE97172A69CC66083F032D38388971709B46631FF63F7A",
+      "gold_pending_basis_code": "SOURCE_CONDITION_PENDING",
+      "gold_met_basis_code": "SOURCE_CONDITION_MET",
+      "review_status": "AI_PROPOSED_PENDING_HUMAN_SIGNOFF"
+    },
+    {
+      "condition_id": "COND-WPUIAC425SNW-LOW-FLOW-AFTER-FILTER-001",
+      "condition_semantics_code": "LOW_FLOW_AFTER_FILTER_CHANGE",
+      "evidence_group_id": "EVD-WPUIAC425SNW-LOW-FLOW-001",
+      "trigger_type": "AFTER_CHECK",
+      "source_child_ids": [
+        "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001"
+      ],
+      "source_page_refs": [44],
+      "source_condition_sha256": "0594729AEA4146ECF4D427A35D8E2CE4AFE2B706FC671D53D828B68817631721",
+      "gold_pending_basis_code": "SOURCE_CONDITION_PENDING",
+      "gold_met_basis_code": "SOURCE_CONDITION_MET",
+      "review_status": "AI_PROPOSED_PENDING_HUMAN_SIGNOFF"
+    },
+    {
+      "condition_id": "COND-WPUIAC425SNW-NO-HOT-AFTER-UNLOCK-001",
+      "condition_semantics_code": "NO_HOT_WATER_AFTER_UNLOCK",
+      "evidence_group_id": "EVD-WPUIAC425SNW-NO-HOT-WATER-001",
+      "trigger_type": "AFTER_CHECK",
+      "source_child_ids": [
+        "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001"
+      ],
+      "source_page_refs": [46],
+      "source_condition_sha256": "4BB6F84A6FC689652AAD60934959EB3706DE3328CC2B508324E1F1F04A338311",
+      "gold_pending_basis_code": "SOURCE_CONDITION_PENDING",
+      "gold_met_basis_code": "SOURCE_CONDITION_MET",
+      "review_status": "AI_PROPOSED_PENDING_HUMAN_SIGNOFF"
+    },
+    {
+      "condition_id": "COND-WPUIAC425SNW-NO-WATER-AFTER-FILTER-001",
+      "condition_semantics_code": "NO_WATER_AFTER_FILTER_CHANGE",
+      "evidence_group_id": "EVD-WPUIAC425SNW-NO-WATER-001",
+      "trigger_type": "AFTER_CHECK",
+      "source_child_ids": [
+        "CHILD-WPUIAC425SNW-P044-NO-WATER-001"
+      ],
+      "source_page_refs": [44],
+      "source_condition_sha256": "C9DDC3546FA5DDACE7370E3DDCCF00C671874E35B0DB360566436F3CDBE83808",
+      "gold_pending_basis_code": "SOURCE_CONDITION_PENDING",
+      "gold_met_basis_code": "SOURCE_CONDITION_MET",
+      "review_status": "AI_PROPOSED_PENDING_HUMAN_SIGNOFF"
+    },
+    {
+      "condition_id": "COND-WPUIAC425SNW-PARTICLES-PERSISTENCE-001",
+      "condition_semantics_code": "PARTICLES_PERSIST",
+      "evidence_group_id": "EVD-WPUIAC425SNW-PARTICLES-001",
+      "trigger_type": "PERSISTENCE",
+      "source_child_ids": [
+        "CHILD-WPUIAC425SNW-P045-PARTICLES-001"
+      ],
+      "source_page_refs": [45],
+      "source_condition_sha256": "0F4579C51A7B7CF1A59BEDB9EC5825E7ECA6678ECE79E8CB6A08C42C2CF8A7DB",
+      "gold_pending_basis_code": "SOURCE_CONDITION_PENDING",
+      "gold_met_basis_code": "SOURCE_CONDITION_MET",
+      "review_status": "AI_PROPOSED_PENDING_HUMAN_SIGNOFF"
+    }
+  ],
+  "excluded_condition_families": [
+    {
+      "family": "NOISE_SEVERITY",
+      "reason_code": "TRIGGER_ENUM_NOT_SUPPORTED",
+      "action": "DO_NOT_REGISTER"
+    }
+  ]
+}

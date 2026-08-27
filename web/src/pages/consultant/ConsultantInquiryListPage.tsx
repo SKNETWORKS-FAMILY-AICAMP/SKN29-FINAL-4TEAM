@@ -84,7 +84,7 @@ const BUCKET_STATUSES: Record<
 };
 
 type RiskSectionId = "all" | ConsultantRiskLevelDto;
-const INQUIRY_LIST_PAGE_SIZE = 10;
+const INQUIRY_LIST_PAGE_SIZE = 5;
 
 const RISK_SECTIONS: readonly {
   id: RiskSectionId;

@@ -1,0 +1,117 @@
+{
+  "counts": {
+    "by_product": {
+      "WPUIAC425SNW": 68,
+      "WPUJAC104DWH": 64
+    },
+    "by_record_type": {
+      "CHILD": 37,
+      "PRESERVATION": 10,
+      "SOURCE_PAGE": 85
+    },
+    "context_only_parents": 11,
+    "evidence_groups": 34,
+    "iac425_children": 19,
+    "iac425_evidence_groups": 18,
+    "registry_children": 37,
+    "search_candidates": 132
+  },
+  "generated_at": "2026-08-26T00:00:00+09:00",
+  "gold_signoff_status": "HUMAN_SIGNOFF_PENDING",
+  "inputs": {
+    "baseline_corpus": {
+      "path": "ai/evaluation/corpora/full_corpus_chunks_v1.jsonl",
+      "sha256": "4B0890BC079207C8F9AA9DB1208D371F295BD53537A9B692FA6B7D686333FABC"
+    },
+    "existing_children": {
+      "path": "data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
+      "sha256": "B4BA15C045D7C4EAF1E4CF90DFF83EC9FA2C236F9CFCDAD85467A42F1921EB78"
+    },
+    "existing_groups": {
+      "path": "data/processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl",
+      "sha256": "CCD797DB8C87B9B90EFD88EBE16BE5AC4D80008BC75E0CCE46B3854F70C3143D"
+    },
+    "gold_dataset": {
+      "path": "ai/evaluation/datasets/gold/rag_gold_v1.jsonl",
+      "sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A"
+    },
+    "gold_v2_group_contract": {
+      "path": "ai/evaluation/contracts/gold_v2_evidence_group_contract.json",
+      "sha256": "D1EE28FCCAAC1ABFEB1BD9BB6344D0A750F5990C66FEDFCCE0B771D98EC28AD1"
+    },
+    "iac425_manual_pages": {
+      "path": "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
+      "sha256": "97DE9C6AB06DB5C9C1AC90F2C4B3773A9971AC410093B1FB8B62BABD49F87BE2"
+    },
+    "jac_manual_pages": {
+      "path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+      "sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F"
+    },
+    "source_span_review": {
+      "path": "data/processed/validation/rag_experiments/full_corpus_v3_source_span_human_review.json",
+      "sha256": "6AC6F519707401A49AF584F4481A31BEE5EC29EA9E3B9B2F13E4476B29D2CC50"
+    }
+  },
+  "outputs": {
+    "children": {
+      "path": "data/processed/structured/rag/experimental/full_corpus_v3_children.jsonl",
+      "record_count": 37,
+      "sha256": "02B4CD0CB140D5FE8485D374BC3E1B7124044E4F5B6ECF72B4A8E528AF5550F5"
+    },
+    "context_parents": {
+      "path": "data/processed/structured/rag/experimental/full_corpus_v3_context_parents.jsonl",
+      "record_count": 11,
+      "sha256": "16774B82CAE5A7D88D36FFA21A47F1758824275F8B06BB7F38630EEEE6F4616D"
+    },
+    "corpus": {
+      "path": "data/processed/structured/rag/experimental/full_corpus_chunks_v3.jsonl",
+      "record_count": 132,
+      "sha256": "B92B72E70BD3DCDD0B82EAAA04B707992932E75BEB46748A7369DFDC0F4D9BA8"
+    },
+    "coverage": {
+      "path": "data/processed/structured/rag/experimental/full_corpus_v3_coverage.json",
+      "record_count": 11,
+      "sha256": "D2757EE56A6F214F84E451FC158A6DF4BA5500030E5DF0DD5088A1C957E2F7CC"
+    },
+    "evidence_groups": {
+      "path": "data/processed/structured/evidence/full_corpus_v3_evidence_groups.jsonl",
+      "record_count": 34,
+      "sha256": "F16EF48EC8CEB4C810E66D92B2084546479CF21A9D08E6BCC45164DDEED4977E"
+    }
+  },
+  "preserved_baselines": {
+    "full_corpus_v1_sha256": "4B0890BC079207C8F9AA9DB1208D371F295BD53537A9B692FA6B7D686333FABC",
+    "full_corpus_v2_sha256": "2D4A022A8FEABD376C9F5D42E7D28BA8E18571274D19A05794D066B7113D6FC6",
+    "gold_v1_sha256": "9B52AF026B7C8F21AC4D59ECD4D0F2E1A528E78448225EBE1F5E542A71A8E54A"
+  },
+  "publication_limits": [
+    "기존 Full Corpus v1·v2와 Gold v1 원본은 수정하지 않는다.",
+    "Source Span 승인은 Gold Case의 TWO_PERSON_APPROVED를 뜻하지 않는다.",
+    "Gold v2 병합과 Full B1 v2 실행은 AI 담당자의 후속 Gate다.",
+    "운영 청킹 Profile 또는 AI Runner 연결 완료를 주장하지 않는다."
+  ],
+  "schema_version": "1.0.0",
+  "schemas": {
+    "ai/evaluation/schemas/evidence_group_registry_v2.schema.json": "EE65C2BDF0BFE1506F555A0B46DB6D6FC09D23A25FF48A4630D5E53B0242522D",
+    "data/schemas/config/fullCorpusV3SourceReview.schema.json": "29C76523DBD01FDF31A3B9C8CF004D12A78B531A95538A123881CF905A491570",
+    "data/schemas/processed/fullCorpusV3Chunk.schema.json": "97FA807799DD5EBD59132E0A65682156CC8DDAC69621FF3DE6DA502117811F10",
+    "data/schemas/processed/fullCorpusV3Coverage.schema.json": "B9BEB63E2F02E4F762B8F7158C7EA22B9C734D9EEB157DB6718BE410FF24F2C0",
+    "data/schemas/processed/ragChildChunk.schema.json": "EB22280F515E3B3390F56B916E643D1BF505DA17190AE80D9CE45AD915B40C00",
+    "data/schemas/processed/ragParentPage.schema.json": "298BBC34415D5552F689A2543C60BE61160B41D919040385D7E9F9C327EB4603"
+  },
+  "source_commit": "7ea17f55082d7f63ad4497476b33f45b5b6735f6",
+  "source_inventory": [
+    {
+      "path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+      "sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F",
+      "source_inventory_id": "SRC-JAC104D-MANUAL"
+    },
+    {
+      "path": "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
+      "sha256": "97DE9C6AB06DB5C9C1AC90F2C4B3773A9971AC410093B1FB8B62BABD49F87BE2",
+      "source_inventory_id": "SRC-IAC425-MANUAL"
+    }
+  ],
+  "source_span_review_status": "DATA_QA_SOURCE_SPAN_VERIFIED",
+  "status": "FULL_CORPUS_V3_DATA_HANDOFF_READY"
+}

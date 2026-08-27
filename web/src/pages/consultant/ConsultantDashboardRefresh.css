@@ -1731,8 +1731,24 @@ html body
   #root
   .consultant-inquiry-list-app
   .consultant-risk-section--all
-  .v6-queue-item.consultant-list-item::before {
-  background: #2f9d68 !important;
+  .v6-queue-item.consultant-list-item--risk-danger::before {
+  background: #e5484d !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-section--all
+  .v6-queue-item.consultant-list-item--risk-caution::before {
+  background: #df9126 !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-risk-section--all
+  .v6-queue-item.consultant-list-item--risk-general::before {
+  background: #7a8794 !important;
 }
 
 html body
@@ -2263,13 +2279,200 @@ html body
 html body
   #root
   .simple-consultant-app.consultant-queue-app
-  :is(.remote-inquiry-detail__section, .remote-inquiry-detail__errors, .v6-action-panel) {
+  .remote-inquiry-detail__workspace.is-single-column {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  :is(
+    .remote-inquiry-detail__overview,
+    .remote-inquiry-detail__section,
+    .remote-inquiry-detail__history,
+    .remote-inquiry-detail__errors,
+    .v6-action-panel
+  ) {
   padding: 16px !important;
   border: 1px solid #d2d2d2 !important;
   border-radius: var(--consultant-refresh-surface-radius) !important;
   background: var(--consultant-refresh-surface) !important;
   background-image: none !important;
   box-shadow: none !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__overview {
+  padding: 18px 20px !important;
+  background: #fff !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__badge {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid #c8c8c8;
+  border-radius: 999px;
+  background: #f5f5f5;
+  color: #333;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__badge.is-risk-danger,
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__badge.is-priority-urgent {
+  border-color: #ddaaa6;
+  background: #fff0ef;
+  color: #9b2925;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__badge.is-risk-caution,
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__badge.is-priority-high {
+  border-color: #e4bf82;
+  background: #fff7e7;
+  color: #80530d;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__badge.is-risk-general {
+  border-color: #c8c8c8;
+  background: #f1f1f1;
+  color: #4e4e4e;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__badge.is-status {
+  border-color: var(--consultant-refresh-navy);
+  background: var(--consultant-refresh-navy);
+  color: #fff;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__badge.is-synthetic {
+  border-color: #c6d2df;
+  background: #eef3f8;
+  color: #435268;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__overview
+  h2 {
+  margin: 0;
+  color: #111 !important;
+  font-size: 22px;
+  font-weight: 700 !important;
+  -webkit-text-fill-color: #111 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__symptom-summary {
+  margin: 7px 0 0;
+  color: #222 !important;
+  font-size: 15px;
+  font-weight: 500 !important;
+  line-height: 1.55;
+  -webkit-text-fill-color: #222 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__overview-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0 0;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__overview-meta
+  > div {
+  min-width: 0;
+  padding-top: 10px;
+  border-top: 1px solid #d6d6d6;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__overview-meta
+  dt {
+  color: #666 !important;
+  font-size: 10px;
+  -webkit-text-fill-color: #666 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__overview-meta
+  dd {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+  color: #111 !important;
+  font-size: 12px;
+  font-weight: 500 !important;
+  -webkit-text-fill-color: #111 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__workspace {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 370px);
+  align-items: start;
+  gap: 12px;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__content {
+  display: grid;
+  min-width: 0;
+  gap: 12px;
 }
 
 html body
@@ -2287,6 +2490,88 @@ html body
   font-size: 15px;
   font-weight: 500 !important;
   -webkit-text-fill-color: #111 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__section-kicker {
+  display: block;
+  margin-bottom: 5px;
+  color: #8b302c;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__section--guidance {
+  border-left: 4px solid var(--consultant-refresh-navy) !important;
+  background: #f8fafc !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__section--guidance.is-risk-danger {
+  border-color: #bd4a45 !important;
+  background: #fff8f7 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__section--guidance.is-risk-caution {
+  border-color: #d29a3d !important;
+  background: #fffbf2 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__guidance-status {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: #fff;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__guidance-status
+  p {
+  margin: 3px 0 0;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__evidence-empty,
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__empty-copy {
+  margin: 12px 0 0 !important;
+  color: #777 !important;
+  font-size: 11px !important;
+  -webkit-text-fill-color: #777 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__symptom-detail {
+  margin: 0;
+  padding: 11px 12px;
+  border-left: 3px solid var(--consultant-refresh-navy);
+  background: #fff;
+  font-size: 13px !important;
+  font-weight: 500 !important;
 }
 
 html body
@@ -2357,6 +2642,10 @@ html body
   .remote-inquiry-detail__answers
   > div {
   margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid #d5d5d5;
+  border-radius: 7px;
+  background: #fff;
 }
 
 html body
@@ -2364,7 +2653,95 @@ html body
   .simple-consultant-app.consultant-queue-app
   .remote-inquiry-detail__answers
   dd {
-  margin: 2px 0 0;
+  margin: 4px 0 0;
+  font-weight: 500 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__history {
+  overflow: hidden;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__history
+  summary {
+  display: flex;
+  min-height: 24px;
+  align-items: center;
+  justify-content: space-between;
+  color: #222;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  list-style: none;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__history
+  summary::-webkit-details-marker {
+  display: none;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__history
+  summary::after {
+  content: "+";
+  color: var(--consultant-refresh-navy);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__history[open]
+  summary::after {
+  content: "−";
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__history-list {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__history-list
+  li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  background: #fff;
+  color: #333;
+  font-size: 11px;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .remote-inquiry-detail__history-list
+  small {
+  flex: 0 0 auto;
+  color: #777;
+  font-size: 10px;
 }
 
 html body
@@ -2402,7 +2779,22 @@ html body
   #root
   .simple-consultant-app.consultant-queue-app
   .v6-action-panel {
+  position: sticky !important;
+  top: 0;
+  max-height: calc(100dvh - 190px);
+  overflow-y: auto;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-action-panel.is-start-only {
   position: static !important;
+  max-height: none;
+  padding: 0 !important;
+  overflow: visible;
+  border: 0 !important;
+  background: transparent !important;
 }
 
 html body
@@ -2444,7 +2836,67 @@ html body
   form {
   display: grid;
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 0;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-action-form-section {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-action-form-section
+  h4 {
+  margin: 0;
+  color: #222;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-action-form-details {
+  padding: 9px 10px;
+  border: 1px solid #d4d4d4;
+  border-radius: 7px;
+  background: #fff;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-action-form-details
+  summary {
+  cursor: pointer;
+  color: #444;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-action-form-details[open]
+  .v6-form-field {
+  margin-top: 10px;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-action-form-decisions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
 html body
@@ -2478,6 +2930,61 @@ html body
   :is(select, input:not([type="checkbox"]):not([type="radio"])) {
   min-height: 38px;
   padding: 0 10px;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-summary-confirmation {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid #c8c8c8;
+  border-radius: 7px;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-summary-confirmation
+  > input[type="checkbox"] {
+  width: 16px !important;
+  height: 16px !important;
+  margin: 2px 0 0 !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-summary-confirmation
+  > span {
+  display: grid;
+  gap: 3px;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-summary-confirmation
+  strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-summary-confirmation
+  small {
+  color: #666;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.45;
 }
 
 html body
@@ -2605,6 +3112,35 @@ html body
   -webkit-text-fill-color: #704a17 !important;
 }
 
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .v6-action-conflict-note {
+  margin: 9px 0;
+  color: #704a17 !important;
+  font-size: 11px;
+  line-height: 1.5;
+  -webkit-text-fill-color: #704a17 !important;
+}
+
+@media (max-width: 900px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    .remote-inquiry-detail__workspace {
+    grid-template-columns: 1fr;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    .v6-action-panel {
+    position: static !important;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
 @media (max-width: 760px) {
   html body
     #root
@@ -2618,6 +3154,17 @@ html body
     #root
     .simple-consultant-app.consultant-queue-app
     .inquiry-v13-remote-summary {
+    grid-template-columns: 1fr;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    .remote-inquiry-detail__overview-meta,
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    .v6-action-form-decisions {
     grid-template-columns: 1fr;
   }
 }
@@ -3550,8 +4097,13 @@ html body
     #consultant-queue-sidebar
     .consultant-work-tab
     > b {
+    border: 0 !important;
+    background: rgb(255 255 255 / 17%) !important;
+    color: #fff !important;
     opacity: 0;
+    box-shadow: none !important;
     transition: opacity 120ms ease;
+    -webkit-text-fill-color: #fff !important;
   }
 
   html body
@@ -4661,5 +5213,326 @@ html body
     .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
     .consultant-queue-main {
     grid-template-rows: 64px 116px 226px auto !important;
+  }
+}
+
+/* Keep hover expansion stable while navigating between consultant pages. */
+
+@media (min-width: 901px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    .consultant-queue-main:has(
+      > #consultant-queue-sidebar.is-pointer-expanded
+    ) {
+    grid-template-columns:
+      var(--consultant-refresh-sidebar-expanded)
+      minmax(0, 1fr) !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar {
+    position: sticky !important;
+    top: max(40px, calc((100dvh - 780px) / 2)) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: min(780px, calc(100dvh - 80px)) !important;
+    min-height: min(780px, calc(100dvh - 80px)) !important;
+    max-height: min(780px, calc(100dvh - 80px)) !important;
+    margin: 0 !important;
+    align-self: start;
+    box-shadow: 8px 0 22px rgb(0 0 0 / 10%) !important;
+    transform: none !important;
+    transition: box-shadow var(--consultant-refresh-sidebar-duration) ease !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar:is(
+      :hover,
+      :focus-within,
+      .is-pointer-expanded
+    ) {
+    box-shadow: 8px 0 22px rgb(0 0 0 / 10%) !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tabs {
+    align-content: center !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar.is-pointer-expanded
+    .consultant-work-tab
+    strong {
+    max-width: 144px;
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar.is-pointer-expanded
+    .consultant-work-tab
+    > b {
+    opacity: 1;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar.is-pointer-expanded
+    .consultant-work-tab:is(.is-active, [aria-selected="true"])::before {
+    width: calc(var(--consultant-refresh-sidebar-expanded) - 24px);
+  }
+}
+
+/* Keep the three dashboard information panels at the notice-panel height. */
+
+@media (min-width: 901px) {
+  html body
+    #root
+    .consultant-dashboard-app
+    .counselor-dashboard-info {
+    --counselor-dashboard-panel-fixed-height: 377px;
+
+    align-items: start;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    :is(
+      .counselor-dashboard-info__panel--recent,
+      .counselor-dashboard-info__panel--notices,
+      .counselor-dashboard-info__panel--contacts
+    ) {
+    box-sizing: border-box;
+    height: var(--counselor-dashboard-panel-fixed-height) !important;
+    min-height: var(--counselor-dashboard-panel-fixed-height) !important;
+    max-height: var(--counselor-dashboard-panel-fixed-height) !important;
+    overflow: hidden !important;
+  }
+
+  html body
+    #root
+    .consultant-dashboard-app
+    :is(
+      .counselor-dashboard-info__panel--recent,
+      .counselor-dashboard-info__panel--notices,
+      .counselor-dashboard-info__panel--contacts
+    )
+    > header {
+    height: 63px !important;
+    min-height: 63px !important;
+    flex: 0 0 63px;
+  }
+}
+
+/* Separate the inquiry list and unassigned queue into rounded outer cards. */
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-queue-panel--with-unassigned {
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-queue-panel--with-unassigned
+  > .consultant-risk-columns {
+  overflow: hidden !important;
+  border-radius:
+    var(--consultant-refresh-surface-radius)
+    var(--consultant-refresh-surface-radius) 0 0 !important;
+  background: var(--consultant-refresh-surface) !important;
+  background-color: var(--consultant-refresh-surface) !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-queue-panel--with-unassigned
+  > .common-pagination {
+  border-radius:
+    0 0 var(--consultant-refresh-surface-radius)
+    var(--consultant-refresh-surface-radius) !important;
+  background: var(--consultant-refresh-surface) !important;
+  background-color: var(--consultant-refresh-surface) !important;
+}
+
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-queue-panel--with-unassigned:not(:has(> .common-pagination))
+  > .consultant-risk-columns,
+html body
+  #root
+  .consultant-inquiry-list-app
+  .consultant-queue-panel--with-unassigned
+  > .unassigned-consultation-queue {
+  border-radius: var(--consultant-refresh-surface-radius) !important;
+}
+
+/* Keep the full consultant menu visible as a compact 3 + 4 grid on narrow screens. */
+
+@media (max-width: 760px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tabs {
+    display: grid !important;
+    width: 100% !important;
+    height: 116px !important;
+    min-height: 116px !important;
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 52px) !important;
+    gap: 4px !important;
+    padding: 4px !important;
+    overflow: hidden !important;
+    scrollbar-width: none;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tabs
+    > .consultant-work-tab:nth-child(-n + 3) {
+    grid-row: 1 !important;
+    grid-column: span 4 !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tabs
+    > .consultant-work-tab:nth-child(n + 4) {
+    grid-row: 2 !important;
+    grid-column: span 3 !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tabs
+    > :is(
+      .consultant-work-tab,
+      .consultant-work-tab:hover,
+      .consultant-work-tab.is-active,
+      .consultant-work-tab.is-active:hover
+    ) {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    max-height: 52px !important;
+    align-items: center;
+    justify-content: center;
+    gap: 4px !important;
+    padding: 0 7px !important;
+    overflow: hidden !important;
+    border-radius: 8px !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab
+    > span {
+    display: flex !important;
+    min-width: 0;
+    flex: 0 1 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab__icon {
+    display: block !important;
+    width: 15px !important;
+    height: 15px !important;
+    margin: 0 !important;
+    flex: 0 0 15px;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab
+    strong {
+    display: block !important;
+    overflow: hidden;
+    max-width: none !important;
+    color: #fff !important;
+    font-size: clamp(10px, 2.5vw, 12px) !important;
+    font-weight: 600 !important;
+    line-height: 1.15;
+    opacity: 1 !important;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: normal;
+    transform: none !important;
+    -webkit-text-fill-color: #fff !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab
+    > b,
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-work-tab:is(
+      :hover,
+      .is-active,
+      [aria-selected="true"]
+    )
+    > b {
+    display: grid !important;
+    width: 23px !important;
+    height: 23px !important;
+    min-width: 23px !important;
+    margin: 0 !important;
+    flex: 0 0 23px;
+    place-items: center;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: rgb(255 255 255 / 17%) !important;
+    color: #fff !important;
+    font-size: 10px !important;
+    font-weight: 650 !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+    -webkit-text-fill-color: #fff !important;
   }
 }

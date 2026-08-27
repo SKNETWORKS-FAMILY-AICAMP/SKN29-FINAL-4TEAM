@@ -13,6 +13,7 @@ from integrations.ai.client import AIClient
 from integrations.ai.exceptions import (
     AIIdentifierMismatchError,
     AIRequestValidationError,
+    AIResponseValidationError,
     AIServiceResponseError,
     AITimeoutError,
 )
@@ -43,6 +44,26 @@ def success_payload(request: dict) -> dict:
         / "examples"
         / "symptom-analysis"
         / "general-guidance.json"
+    )
+    payload = json.loads(example_path.read_text(encoding="utf-8"))["response"]
+    for field in (
+        "inquiry_id",
+        "correlation_id",
+        "ai_request_id",
+        "state_version",
+    ):
+        payload[field] = request[field]
+    if "model_code" in payload:
+        payload["model_code"] = request["model_code"]
+    return payload
+
+
+def danger_payload(request: dict) -> dict:
+    example_path = (
+        DEFAULT_CONTRACT_ROOT
+        / "examples"
+        / "symptom-analysis"
+        / "danger-detected.json"
     )
     payload = json.loads(example_path.read_text(encoding="utf-8"))["response"]
     for field in (
@@ -185,6 +206,62 @@ def test_success_mapper_classifies_safe_and_no_evidence_results():
     )
     assert no_evidence.event_candidate == "NO_EVIDENCE"
     assert no_evidence.is_no_evidence is True
+
+
+def test_success_mapper_accepts_approved_hot_water_heater_partial_stop():
+    request = request_payload()
+    response = danger_payload(request)
+    response["safety_assessment"]["matched_safety_rule_ids"] = [
+        "SAFETY-HOT-WATER-HEATER-001"
+    ]
+    response["usage_guidance"] = {
+        "guidance_status": "PARTIAL_STOP",
+        "message": "온수 기능 사용을 중단하고 상담을 연결합니다.",
+        "restricted_functions": ["온수 출수 및 음용 중지"],
+        "next_actions": [
+            "온수 기능 사용과 온수 음용을 중단하세요.",
+            "제품을 직접 분해하지 말고 전문 상담 및 기사 점검을 요청하세요.",
+        ],
+    }
+
+    result = map_success_response(response, expected_request=request)
+
+    assert result.event_candidate == "DANGER_DETECTED"
+    assert result.usage_guidance_status == "PARTIAL_STOP"
+
+
+def test_success_mapper_rejects_unapproved_partial_stop_guidance_content():
+    request = request_payload()
+    response = danger_payload(request)
+    response["safety_assessment"]["matched_safety_rule_ids"] = [
+        "SAFETY-HOT-WATER-HEATER-001"
+    ]
+    response["usage_guidance"] = {
+        "guidance_status": "PARTIAL_STOP",
+        "message": "온수 기능 사용을 중단하고 상담을 연결합니다.",
+        "restricted_functions": [],
+        "next_actions": ["임의 조치"],
+    }
+
+    with pytest.raises(AIResponseValidationError):
+        map_success_response(response, expected_request=request)
+
+
+def test_success_mapper_requires_total_stop_for_mixed_danger_rules():
+    request = request_payload()
+    response = danger_payload(request)
+    response["safety_assessment"]["matched_safety_rule_ids"].append(
+        "SAFETY-HOT-WATER-HEATER-001"
+    )
+
+    result = map_success_response(response, expected_request=request)
+
+    assert result.event_candidate == "DANGER_DETECTED"
+    assert result.usage_guidance_status == "TOTAL_STOP"
+
+    response["usage_guidance"]["guidance_status"] = "PARTIAL_STOP"
+    with pytest.raises(AIResponseValidationError):
+        map_success_response(response, expected_request=request)
 
 
 def test_success_mapper_uses_reason_not_stage_for_product_validation_event():

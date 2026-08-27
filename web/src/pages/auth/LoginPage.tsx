@@ -5,12 +5,10 @@ import { useAuth, type AppRole } from "../../app/providers/authContext";
 import { appEnv } from "../../app/config/env";
 import { ROUTE_PATHS } from "../../app/router/routePaths";
 import "../system/SystemPage.css";
+import "./LoginPage.css";
 
 const STAFF_ROLES: readonly { code: AppRole; label: string }[] = [
   { code: "CONSULTANT", label: "상담사" },
-  { code: "OPERATOR", label: "운영 담당자" },
-  { code: "TECHNICIAN", label: "방문 기사" },
-  { code: "CUSTOMER", label: "고객" },
 ];
 
 function getRoleHome(role: AppRole) {
@@ -78,71 +76,94 @@ export default function LoginPage() {
         replace: true,
       });
     } catch {
-      setLoginError("아이디 또는 비밀번호를 확인해 주세요.");
+      setLoginError("사번 또는 비밀번호를 확인해 주세요.");
     }
   };
 
   return (
-    <main className="system-page">
-      <section className="system-card" aria-labelledby="login-title">
-        <small>DEMO AUTH · {appEnv.useMockApi ? "MOCK" : "API"}</small>
-        <h1 id="login-title">Water Bridge 로그인</h1>
-        <p>
-          {appEnv.useMockApi
-            ? "인증 API 연결 전 사용하는 합성 계정 로그인입니다. 실제 비밀번호와 개인정보를 입력하지 마세요."
-            : "Backend에 준비된 합성 상담사 계정으로 로그인합니다. 운영 계정이나 실제 개인정보는 입력하지 마세요."}
-        </p>
-        {!appEnv.useMockApi && (
-          <form onSubmit={handlePasswordSubmit}>
+    <main className="system-page consultant-login-page">
+      <section
+        className="system-card consultant-login-card"
+        aria-label="상담사 로그인"
+      >
+        <header className="consultant-login-card__brand">
+          <span className="consultant-login-card__wordmark" aria-hidden="true">
+            <span>Water</span>
+            <span>Bridge</span>
+          </span>
+        </header>
+
+        <div className="consultant-login-card__content">
+          {!appEnv.useMockApi && (
+            <form
+              className="consultant-login-form"
+              onSubmit={handlePasswordSubmit}
+            >
+              <label>
+                사번
+                <input
+                  name="username"
+                  autoComplete="username"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                비밀번호
+                <input
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                />
+              </label>
+              <button type="submit" disabled={isLoading}>
+                {isLoading ? "로그인 중…" : "사번/비밀번호로 로그인"}
+              </button>
+            </form>
+          )}
+
+          {!appEnv.useMockApi && (
+            <div className="consultant-login-card__divider" aria-hidden="true">
+              <span>테스트 계정</span>
+            </div>
+          )}
+
+          <form
+            className="consultant-login-form consultant-login-form--demo"
+            onSubmit={handleDemoSubmit}
+          >
             <label>
-              아이디
-              <input
-                name="username"
-                autoComplete="username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                required
-              />
-            </label>
-            <label>
-              비밀번호
-              <input
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-              />
+              테스트 역할
+              <select
+                value={role}
+                onChange={(event) => setRole(event.target.value as AppRole)}
+              >
+                {STAFF_ROLES.map((item) => (
+                  <option key={item.code} value={item.code}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
             </label>
             <button type="submit" disabled={isLoading}>
-              {isLoading ? "로그인 중…" : "ID/PW로 로그인"}
+              {isLoading
+                ? "로그인 중…"
+                : appEnv.useMockApi
+                  ? "Mock 계정으로 로그인"
+                  : "API 데모 계정으로 로그인"}
             </button>
           </form>
-        )}
-        <form onSubmit={handleDemoSubmit}>
-          <label>
-            테스트 역할
-            <select
-              value={role}
-              onChange={(event) => setRole(event.target.value as AppRole)}
-            >
-              {STAFF_ROLES.map((item) => (
-                <option key={item.code} value={item.code}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="submit" disabled={isLoading}>
-            {isLoading
-              ? "로그인 중…"
-              : appEnv.useMockApi
-                ? "Mock 계정으로 로그인"
-                : "API 데모 계정으로 로그인"}
-          </button>
-        </form>
-        {loginError && <p role="alert">{loginError}</p>}
+
+          {loginError && (
+            <p className="consultant-login-card__alert" role="alert">
+              {loginError}
+            </p>
+          )}
+        </div>
       </section>
     </main>
   );

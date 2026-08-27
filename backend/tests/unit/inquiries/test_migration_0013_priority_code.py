@@ -14,6 +14,9 @@ from apps.subscriptions.models import CustomerSubscription
 
 OLD_TARGET = [("inquiries", "0012_alter_inquiry_options")]
 NEW_TARGET = [("inquiries", "0013_inquiry_priority_code")]
+LATEST_TARGET = [
+    ("inquiries", "0015_humanreview")
+]
 
 
 @pytest.mark.django_db(transaction=True)
@@ -22,7 +25,7 @@ def test_0012_to_0013_backfills_normal_and_enforces_priority_constraint(
 ):
     MigrationExecutor(connection).migrate(NEW_TARGET)
     request.addfinalizer(
-        lambda: MigrationExecutor(connection).migrate(NEW_TARGET)
+        lambda: MigrationExecutor(connection).migrate(LATEST_TARGET)
     )
     user = User.objects.create_user(
         username="CONS04-MIGRATION-CUSTOMER",
@@ -88,4 +91,4 @@ def test_0012_to_0013_backfills_normal_and_enforces_priority_constraint(
         }
         assert ReversedInquiry.objects.filter(pk=inquiry.pk).exists()
     finally:
-        MigrationExecutor(connection).migrate(NEW_TARGET)
+        MigrationExecutor(connection).migrate(LATEST_TARGET)

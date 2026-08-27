@@ -359,6 +359,11 @@
       "sha256": "22D48B89A1845B208C542DA7C368F45AF0D3531719F5C4616F1EE2A5AFD49C9E"
     },
     {
+      "path": "processed/metadata/full_corpus_v3_handoff_manifest.json",
+      "size_bytes": 5399,
+      "sha256": "234E1397B82DFCBCF7592B0066B884B477213D1EAC460CB4013865CB7A9E3203"
+    },
+    {
       "path": "processed/metadata/model_document_lineage.csv",
       "size_bytes": 502,
       "sha256": "FF7BD65A961F39E3260C9EF98CE559E986D9C61B6091CC8096311532AA755E14"
@@ -409,6 +414,11 @@
       "path": "schemas/config/datasetVocabulary.schema.json",
       "size_bytes": 1652,
       "sha256": "2AFDF9CC83615876E214FACA45ACF6BA2E712F7B4DB6ED8EF6C39521877CA6EF"
+    },
+    {
+      "path": "schemas/config/fullCorpusV3SourceReview.schema.json",
+      "size_bytes": 2291,
+      "sha256": "29C76523DBD01FDF31A3B9C8CF004D12A78B531A95538A123881CF905A491570"
     },
     {
       "path": "schemas/config/goldPostQueryLabelRevalidationPacket.schema.json",
@@ -519,6 +529,16 @@
       "path": "schemas/processed/fullCorpusV2Coverage.schema.json",
       "size_bytes": 1442,
       "sha256": "0C729FCC3C17FEB70B91ADAF27C75B1EBF49826C441DB84845DDAD9616763012"
+    },
+    {
+      "path": "schemas/processed/fullCorpusV3Chunk.schema.json",
+      "size_bytes": 2100,
+      "sha256": "97FA807799DD5EBD59132E0A65682156CC8DDAC69621FF3DE6DA502117811F10"
+    },
+    {
+      "path": "schemas/processed/fullCorpusV3Coverage.schema.json",
+      "size_bytes": 1619,
+      "sha256": "B9BEB63E2F02E4F762B8F7158C7EA22B9C734D9EEB157DB6718BE410FF24F2C0"
     },
     {
       "path": "schemas/processed/manualPage.schema.json",
@@ -723,6 +743,11 @@
       "sha256": "A7376C770DE05AEEE42656CFA326F5EE64A7CF5CAC6F8CEDC81DB81DB383241E"
     },
     {
+      "path": "tools/rag_experiments/build_full_corpus_v3_handoff.py",
+      "size_bytes": 27589,
+      "sha256": "0EA26E087E9B128BCB15F674D1EBFC8181FF2DF5AA365B8F1E537A73ACDD7856"
+    },
+    {
       "path": "tools/rag_experiments/build_gold_query_label_revalidation.py",
       "size_bytes": 13345,
       "sha256": "2C4D6B19112103E577DBB7A8E02A7D00317D0EA29252874C570B53EA48252472"
@@ -751,6 +776,11 @@
       "path": "tools/rag_experiments/qa_full_corpus_v2_review.py",
       "size_bytes": 11498,
       "sha256": "D15B07772F5F8C36F763ACF0EC4D3A48FF3D7FEF9B6A14A272EB4BDBBB5390E2"
+    },
+    {
+      "path": "tools/rag_experiments/qa_full_corpus_v3_handoff.py",
+      "size_bytes": 17956,
+      "sha256": "7E676048BE63F8DA94EEAD72CE8EBD194306DD1B070A14FE56086D8C877CFF8F"
     },
     {
       "path": "tools/rag_experiments/qa_iac425_pages.py",
@@ -801,6 +831,11 @@
       "path": "tools/tests/test_full_corpus_v2_review.py",
       "size_bytes": 5213,
       "sha256": "10314DFFC7C7890D55BFCB7D8A857516086A1173EC1AE347C1C374FC26CB0B10"
+    },
+    {
+      "path": "tools/tests/test_full_corpus_v3_handoff.py",
+      "size_bytes": 4519,
+      "sha256": "76FAD83166B4378775213111CD0435603B52502C9E985189A874C205809897DC"
     },
     {
       "path": "tools/tests/test_gold_post_query_label_revalidation.py",
@@ -958,6 +993,11 @@
       "path": "config/rag/full_corpus_v2_segments.json",
       "size_bytes": 5491,
       "sha256": "02732E7AEB09F6E024EFA28DB5852E0C8870FD933EF794C89B5BA3DECE693E7E"
+    },
+    {
+      "path": "config/rag/full_corpus_v3_segments.json",
+      "size_bytes": 12633,
+      "sha256": "4D76774F9256EE8722393B02F79AD6842CEA1B9C9F83773E6963165EA9173DFD"
     },
     {
       "path": "config/rag/gold_v1_query_rewrite_proposals.json",
@@ -1139,6 +1179,16 @@
       "sha256": "3C0996A249C17039F31204A699B4A6FD6129B73A206C81F089C3B0031DF4A9DF"
     },
     {
+      "path": "processed/validation/rag_experiments/full_corpus_v3_qa.json",
+      "size_bytes": 2751,
+      "sha256": "116548B2746225D86664DE405291E0900E965BBA2BB41BE17C251C028BDC6F2E"
+    },
+    {
+      "path": "processed/validation/rag_experiments/full_corpus_v3_source_span_human_review.json",
+      "size_bytes": 2902,
+      "sha256": "6AC6F519707401A49AF584F4481A31BEE5EC29EA9E3B9B2F13E4476B29D2CC50"
+    },
+    {
       "path": "processed/validation/rag_experiments/gold_v1_post_query_label_human_review_working.json",
       "size_bytes": 19851,
       "sha256": "618D99DAFCC72A6B75C9FD6BB80DFEA2710148A961CAC711CBBB7585DBC87042"
@@ -1306,8 +1356,8 @@
     "canonical_drift_files": 0
   },
   "toolchain": {
-    "python_files": 50,
-    "python_lines": 11678,
+    "python_files": 53,
+    "python_lines": 13002,
     "max_wrapper_lines": 10,
     "max_module_lines": 1939
   },

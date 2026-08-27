@@ -93,6 +93,47 @@ def test_danger_path_passes_harness_without_evidence_or_retrieval_retry():
     assert reliability.harness_runtime.handoff is not None
     assert reliability.harness_runtime.handoff.escalation_reason == "DANGER_PRIORITY"
 
+
+def test_multi_agent_hot_water_heater_partial_stop_passes_harness_without_fallback():
+    result = PipelineRouter(search_service=None).run_pipeline(
+        inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b406",
+        correlation_id="018f2f9b-7c30-7981-b541-1a987c88e406",
+        ai_request_id="ai-req-harness-hot-water-heater-001",
+        state_version=1,
+        raw_symptom="온수 히터 고장으로 온수는 음용하지 말라고 표시됩니다.",
+        model_code="WPUJAC104DWH",
+        runtime_name="multi_agent",
+    )
+
+    reliability = result.reliability_runtime
+    response = result.to_analysis_result()
+
+    assert result.runtime_name == "multi_agent"
+    assert reliability is not None
+    assert reliability.harness_runtime.harness.decision == HarnessDecision.PASS
+    assert reliability.harness_runtime.harness.verification.safety_valid is True
+    assert not any(
+        issue.code.value == "SAFETY_CONFLICT"
+        for issue in reliability.harness_runtime.harness.verification.issues
+    )
+    assert response.status.value == "SUCCEEDED"
+    assert response.fallback_reason_code is None
+    assert response.failure_stage is None
+    assert response.safety_assessment.risk_level.value == "danger"
+    assert response.safety_assessment.requires_consultation is True
+    assert (
+        "SAFETY-HOT-WATER-HEATER-001"
+        in response.safety_assessment.matched_safety_rule_ids
+    )
+    assert (
+        response.usage_guidance.guidance_status
+        == UsageGuidanceStatus.PARTIAL_STOP
+    )
+    assert response.usage_guidance.restricted_functions == [
+        "온수 출수 및 음용 중지"
+    ]
+
+
 def test_cross_product_evidence_is_blocked_before_llm_then_escalates_after_one_retry():
     search_service = CrossProductSearchService()
     result = PipelineRouter(

@@ -1,3 +1,9 @@
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
@@ -12,6 +18,8 @@ const WORK_BUCKETS: readonly ConsultantInquiryBucket[] = [
   "IN_PROGRESS",
   "COMPLETED",
 ];
+
+let isSidebarPointerExpanded = false;
 
 function WorkBucketIcon({ bucket }: { bucket: ConsultantInquiryBucket }) {
   if (bucket === "ALL") {
@@ -130,6 +138,72 @@ export default function ConsultantQueueSidebar({
   onBucketChange,
 }: ConsultantQueueSidebarProps) {
   const navigate = useNavigate();
+  const sidebarRef = useRef<HTMLElement>(null);
+  const [isPointerExpanded, setIsPointerExpanded] = useState(
+    () => isSidebarPointerExpanded,
+  );
+
+  const expandForPointer = () => {
+    isSidebarPointerExpanded = true;
+    setIsPointerExpanded(true);
+  };
+
+  const collapseForPointer = (event: ReactPointerEvent<HTMLElement>) => {
+    isSidebarPointerExpanded = false;
+    setIsPointerExpanded(false);
+
+    const focusedElement = document.activeElement;
+    if (
+      focusedElement instanceof HTMLElement &&
+      event.currentTarget.contains(focusedElement) &&
+      !focusedElement.matches(":focus-visible")
+    ) {
+      focusedElement.blur();
+    }
+  };
+
+  useEffect(() => {
+    if (!isPointerExpanded) {
+      return;
+    }
+
+    const collapseWhenPointerMovesOutside = (event: PointerEvent) => {
+      const sidebar = sidebarRef.current;
+
+      if (
+        !sidebar ||
+        (event.target instanceof Node && sidebar.contains(event.target))
+      ) {
+        return;
+      }
+
+      isSidebarPointerExpanded = false;
+      setIsPointerExpanded(false);
+
+      const focusedElement = document.activeElement;
+      if (
+        focusedElement instanceof HTMLElement &&
+        sidebar.contains(focusedElement) &&
+        !focusedElement.matches(":focus-visible")
+      ) {
+        focusedElement.blur();
+      }
+    };
+
+    document.addEventListener(
+      "pointermove",
+      collapseWhenPointerMovesOutside,
+      true,
+    );
+
+    return () => {
+      document.removeEventListener(
+        "pointermove",
+        collapseWhenPointerMovesOutside,
+        true,
+      );
+    };
+  }, [isPointerExpanded]);
 
   const openBucket = (bucket: ConsultantInquiryBucket) => {
     if (onBucketChange) {
@@ -140,7 +214,15 @@ export default function ConsultantQueueSidebar({
   };
 
   return (
-    <aside id="consultant-queue-sidebar" className="consultant-sidebar">
+    <aside
+      ref={sidebarRef}
+      id="consultant-queue-sidebar"
+      className={`consultant-sidebar${
+        isPointerExpanded ? " is-pointer-expanded" : ""
+      }`}
+      onPointerEnter={expandForPointer}
+      onPointerLeave={collapseForPointer}
+    >
       <nav
         className="consultant-work-tabs"
         aria-label="상담사 메뉴"

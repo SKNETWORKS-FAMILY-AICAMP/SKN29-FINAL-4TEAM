@@ -226,7 +226,9 @@ def test_database_catalog_contains_guidance_item_constraints():
 def test_guidance_item_empty_migration_rolls_back_and_reapplies(request):
     target_0008 = [("inquiries", "0008_guidance")]
     target_0009 = [("inquiries", "0009_guidanceitem")]
-    latest_target = [("inquiries", "0013_inquiry_priority_code")]
+    latest_target = [
+        ("inquiries", "0015_humanreview")
+    ]
 
     request.addfinalizer(
         lambda: MigrationExecutor(connection).migrate(latest_target)

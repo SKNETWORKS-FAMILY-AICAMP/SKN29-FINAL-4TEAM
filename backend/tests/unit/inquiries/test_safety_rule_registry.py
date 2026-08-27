@@ -3,10 +3,22 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from pathlib import Path
+
+import pytest
+import yaml
 
 from apps.inquiries.services.safety_rule_registry import (
     danger_assessment_is_valid,
     load_safety_rule_registry,
+)
+
+
+AI_SAFETY_RULES_PATH = (
+    Path(__file__).resolve().parents[4]
+    / "ai"
+    / "configs"
+    / "safety_rules.yaml"
 )
 
 
@@ -32,6 +44,7 @@ def test_shared_registry_loads_unique_known_rules():
         "SAFETY-LEAK-001",
         "SAFETY-ELECTRICAL-001",
         "SAFETY-HOT-WATER-001",
+        "SAFETY-HOT-WATER-HEATER-001",
         "SAFETY-TEMP-ABNORMAL-001",
     }
 
@@ -49,11 +62,110 @@ def test_unknown_or_mixed_rule_ids_fail_closed():
     assert danger_assessment_is_valid(payload) is False
 
 
-def test_hot_water_partial_stop_policy_conflict_remains_blocked():
+def test_unapproved_generic_hot_water_partial_stop_remains_blocked():
     payload = danger_payload()
     payload["safety_assessment"]["matched_safety_rule_ids"] = [
         "SAFETY-HOT-WATER-001"
     ]
+    payload["usage_guidance"]["guidance_status"] = "PARTIAL_STOP"
+
+    assert danger_assessment_is_valid(payload) is False
+
+
+def test_approved_hot_water_heater_partial_stop_is_valid():
+    payload = danger_payload()
+    payload["safety_assessment"]["matched_safety_rule_ids"] = [
+        "SAFETY-HOT-WATER-HEATER-001"
+    ]
+    payload["usage_guidance"] = {
+        "guidance_status": "PARTIAL_STOP",
+        "restricted_functions": ["온수 출수 및 음용 중지"],
+        "next_actions": [
+            "온수 기능 사용과 온수 음용을 중단하세요.",
+            "제품을 직접 분해하지 말고 전문 상담 및 기사 점검을 요청하세요.",
+        ],
+    }
+
+    assert danger_assessment_is_valid(payload) is True
+
+
+def test_approved_hot_water_heater_contract_matches_ai_rule():
+    """Keep the approved Backend boundary aligned with the AI-owned rule."""
+
+    registry_rule = load_safety_rule_registry()[
+        "SAFETY-HOT-WATER-HEATER-001"
+    ]
+    ai_payload = yaml.safe_load(
+        AI_SAFETY_RULES_PATH.read_text(encoding="utf-8")
+    )
+    ai_rule = next(
+        rule
+        for rule in ai_payload["rules"].values()
+        if rule.get("rule_id") == "SAFETY-HOT-WATER-HEATER-001"
+    )
+
+    assert ai_rule["risk_level"] == registry_rule["risk_level"]
+    assert (
+        ai_rule["usage_guidance_status"]
+        == registry_rule["default_guidance_status"]
+    )
+    assert (
+        ai_rule["requires_consultation"]
+        is registry_rule["requires_consultation"]
+    )
+    assert (
+        ai_rule["restricted_functions"]
+        == registry_rule["restricted_functions"]
+    )
+    assert ai_rule["next_actions"] == registry_rule["next_actions"]
+    assert (
+        ai_rule["applicability_policy"]
+        == registry_rule["applicability_policy"]
+        == "RUNTIME_APPROVED_PRODUCTS"
+    )
+    assert (
+        ai_rule["negated_expressions"]
+        == registry_rule["negated_expressions"]
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "invalid_value"),
+    [
+        ("restricted_functions", []),
+        ("next_actions", ["임의 조치"]),
+    ],
+)
+def test_hot_water_heater_partial_stop_requires_exact_guidance(
+    field,
+    invalid_value,
+):
+    payload = danger_payload()
+    payload["safety_assessment"]["matched_safety_rule_ids"] = [
+        "SAFETY-HOT-WATER-HEATER-001"
+    ]
+    payload["usage_guidance"] = {
+        "guidance_status": "PARTIAL_STOP",
+        "restricted_functions": ["온수 출수 및 음용 중지"],
+        "next_actions": [
+            "온수 기능 사용과 온수 음용을 중단하세요.",
+            "제품을 직접 분해하지 말고 전문 상담 및 기사 점검을 요청하세요.",
+        ],
+    }
+    payload["usage_guidance"][field] = invalid_value
+
+    assert danger_assessment_is_valid(payload) is False
+
+
+def test_total_stop_rule_overrides_hot_water_heater_partial_stop():
+    payload = danger_payload()
+    payload["safety_assessment"]["matched_safety_rule_ids"] = [
+        "SAFETY-HOT-WATER-HEATER-001",
+        "SAFETY-LEAK-001",
+    ]
+
+    assert danger_assessment_is_valid(payload) is True
+
     payload["usage_guidance"]["guidance_status"] = "PARTIAL_STOP"
 
     assert danger_assessment_is_valid(payload) is False

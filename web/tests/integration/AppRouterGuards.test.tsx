@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { describe, expect, it } from "vitest";
@@ -44,12 +44,68 @@ function renderRoute(
 }
 
 describe("App Router Guard", () => {
+  it("인증되지 않은 사용자는 홈에서 랜딩 페이지를 확인한다", async () => {
+    renderRoute("/", null);
+
+    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent(
+      /앱의.*문의.*상담사의.*다음 행동.*됩니다/,
+    );
+    expect(screen.getByTestId("router-location")).toHaveTextContent(/^\/$/);
+    expect(
+      screen.queryByRole("region", { name: "상담사 로그인" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("랜딩 페이지의 로그인 버튼은 로그인 화면으로 이동한다", async () => {
+    const user = userEvent.setup();
+    renderRoute("/", null);
+
+    await user.click(
+      await screen.findByRole("link", { name: "로그인 하기" }),
+    );
+
+    expect(
+      await screen.findByRole("region", { name: "상담사 로그인" }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("router-location")).toHaveTextContent("/login");
+  });
+
+  it("인증된 상담사가 홈에 접근하면 기존 상담사 대시보드로 이동한다", async () => {
+    renderRoute("/", createUser("CONSULTANT"));
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "테스트 CONSULTANT님 반갑습니다!",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("router-location")).toHaveTextContent(
+      "/consultant/dashboard",
+    );
+  });
+
+  it("인증된 운영 담당자가 홈에 접근하면 기존 운영 대시보드로 이동한다", async () => {
+    renderRoute("/", createUser("OPERATOR"));
+
+    expect(
+      await screen.findByRole("heading", { name: "운영 대시보드" }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("router-location")).toHaveTextContent("/admin");
+  });
+
   it("인증되지 않은 사용자는 요청 경로 대신 로그인 화면으로 이동한다", async () => {
     renderRoute("/consultant/inquiries", null);
 
-    expect(
-      await screen.findByRole("heading", { name: "Water Bridge 로그인" }),
-    ).toBeInTheDocument();
+    const loginRegion = await screen.findByRole("region", {
+      name: "상담사 로그인",
+    });
+    expect(within(loginRegion).queryByText("Water Bridge 로그인")).not.toBeInTheDocument();
+
+    const roleSelect = within(loginRegion).getByRole("combobox", {
+      name: "테스트 역할",
+    });
+    const roleOptions = within(roleSelect).getAllByRole("option");
+    expect(roleOptions).toHaveLength(1);
+    expect(roleOptions[0]).toHaveTextContent("상담사");
   });
 
   it("Mock 상담사 로그인 후 원래 요청한 상담 경로로 돌아간다", async () => {
