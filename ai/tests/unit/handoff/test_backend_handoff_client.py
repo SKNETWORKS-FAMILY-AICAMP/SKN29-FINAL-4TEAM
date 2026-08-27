@@ -6,6 +6,7 @@ import json
 from uuid import UUID
 
 import httpx
+import pytest
 
 from ai.app.integrations.backend.handoff_client import (
     BACKEND_BASE_URL_ENV,
@@ -30,11 +31,15 @@ def _handoff(
     *,
     symptom_summary: str = "출수량 저하가 확인되어 상담이 필요합니다.",
     context_synthesis: HandoffContextSynthesis | None = None,
+    state_version: int | None = 4,
+    routing_reason: str | None = "HARNESS_ESCALATE",
 ) -> ConsultationHandoffResult:
     return ConsultationHandoffResult(
         inquiry_id=UUID("018f2f9b-7c30-7981-b541-1a987c88b201"),
         correlation_id=UUID("018f2f9b-7c30-7981-b541-1a987c88e001"),
         ai_request_id="ai-handoff-unit-001",
+        state_version=state_version,
+        routing_reason=routing_reason,
         model_code="WPUJAC104DWH",
         product_family="DIRECT_WATER_PURIFIER",
         customer_symptom_summary=symptom_summary,
@@ -55,7 +60,19 @@ def _context_synthesis() -> HandoffContextSynthesis:
     return HandoffContextSynthesis(
         status="FALLBACK",
         routing_reason="HARNESS_ESCALATE",
-        brief={"summary": "내부 상담 맥락"},
+        brief={
+            "safety_constraints": [],
+            "issue_summary": {
+                "text": "출수량 저하 상담 확인이 필요합니다.",
+                "source_ids": ["issue-001"],
+            },
+            "customer_reported_facts": [],
+            "attempted_actions_and_outcomes": [],
+            "unresolved_questions": [],
+            "evidence_based_findings": [],
+            "consultant_priority_checks": [],
+            "uncertainty_notes": [],
+        },
         fallback_reason="CONFIGURATION",
         should_use_deterministic_handoff=True,
         provider_called=False,
@@ -107,9 +124,32 @@ def test_publish_sends_backend_contract_headers_and_payload(monkeypatch):
         == "018f2f9b-7c30-7981-b541-1a987c88e001"
     )
     assert seen["payload"]["model_code"] == "WPUJAC104DWH"
+    assert seen["payload"]["schema_version"] == "2.0.0"
+    assert seen["payload"]["state_version"] == 4
+    assert seen["payload"]["routing_reason"] == "HARNESS_ESCALATE"
     assert "system_prompt" not in seen["payload"]
     assert "raw_output_text" not in seen["payload"]
-    assert "context_synthesis" not in seen["payload"]
+    assert seen["payload"]["context_synthesis"] == {
+        "status": "FALLBACK",
+        "fallback_reason": "CONFIGURATION",
+        "brief": {
+            "safety_constraints": [],
+            "issue_summary": {
+                "text": "출수량 저하 상담 확인이 필요합니다."
+            },
+            "customer_reported_facts": [],
+            "attempted_actions_and_outcomes": [],
+            "unresolved_questions": [],
+            "evidence_based_findings": [],
+            "consultant_priority_checks": [],
+            "uncertainty_notes": [],
+        },
+    }
+    assert "source_ids" not in json.dumps(
+        seen["payload"],
+        ensure_ascii=False,
+    )
+    assert "provider_called" not in seen["payload"]["context_synthesis"]
     assert sleeps == [INITIAL_DELAY_SECONDS]
     assert TOKEN not in repr(result)
 
@@ -122,7 +162,13 @@ def test_publish_retries_once_for_airun_finalization_conflict(monkeypatch):
 
     def handler(request: httpx.Request) -> httpx.Response:
         calls.append(request)
-        return httpx.Response(next(statuses))
+        status = next(statuses)
+        if status == 409:
+            return httpx.Response(
+                status,
+                json={"error": {"code": "AI_HANDOFF_NOT_READY"}},
+            )
+        return httpx.Response(status)
 
     with httpx.Client(
         transport=httpx.MockTransport(handler)
@@ -137,17 +183,62 @@ def test_publish_retries_once_for_airun_finalization_conflict(monkeypatch):
     assert result.attempts == 2
     assert result.status_code == 201
     assert len(calls) == 2
+    assert calls[0].content == calls[1].content
     assert sleeps == [INITIAL_DELAY_SECONDS, RETRY_DELAY_SECONDS]
 
 
-def test_publish_does_not_retry_permanent_backend_rejection(monkeypatch):
+def test_publish_does_not_retry_stale_or_unknown_conflict(monkeypatch):
+    _enable(monkeypatch)
+
+    for error_code in ("AI_HANDOFF_STALE", "STATE-CONFLICT-01", None):
+        calls = 0
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal calls
+            calls += 1
+            if error_code is None:
+                return httpx.Response(409, text="conflict")
+            return httpx.Response(
+                409,
+                json={"error": {"code": error_code}},
+            )
+
+        with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+            result = publish_consultation_handoff(
+                _handoff(),
+                http_client=client,
+                sleep_fn=lambda _seconds: None,
+            )
+
+        assert result.status == HandoffPublishStatus.FAILED
+        assert result.attempts == 1
+        assert result.status_code == 409
+        assert calls == 1
+
+
+@pytest.mark.parametrize(
+    ("status_code", "error_code"),
+    (
+        (403, "FORBIDDEN"),
+        (422, "VALIDATION_ERROR"),
+        (422, "AI_HANDOFF_EVIDENCE_REJECTED"),
+    ),
+)
+def test_publish_does_not_retry_permanent_backend_rejection(
+    monkeypatch,
+    status_code,
+    error_code,
+):
     _enable(monkeypatch)
     calls = 0
 
     def handler(request: httpx.Request) -> httpx.Response:
         nonlocal calls
         calls += 1
-        return httpx.Response(403)
+        return httpx.Response(
+            status_code,
+            json={"error": {"code": error_code}},
+        )
 
     with httpx.Client(
         transport=httpx.MockTransport(handler)
@@ -160,11 +251,60 @@ def test_publish_does_not_retry_permanent_backend_rejection(monkeypatch):
 
     assert result.status == HandoffPublishStatus.FAILED
     assert result.attempts == 1
-    assert result.status_code == 403
+    assert result.status_code == status_code
     assert result.failure_kind == (
         HandoffPublishFailureKind.BACKEND_REJECTED
     )
     assert calls == 1
+
+
+@pytest.mark.parametrize("status_code", (429, 500, 502, 503, 504))
+def test_publish_retries_transient_http_status_once(monkeypatch, status_code):
+    _enable(monkeypatch)
+    statuses = iter((status_code, 201))
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        return httpx.Response(next(statuses))
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = publish_consultation_handoff(
+            _handoff(),
+            http_client=client,
+            sleep_fn=lambda _seconds: None,
+        )
+
+    assert result.status == HandoffPublishStatus.DELIVERED
+    assert result.attempts == 2
+    assert calls == 2
+
+
+@pytest.mark.parametrize("failure", ("timeout", "network"))
+def test_publish_retries_transport_failure_once(monkeypatch, failure):
+    _enable(monkeypatch)
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        if calls == 1 and failure == "timeout":
+            raise httpx.ReadTimeout("timed out", request=request)
+        if calls == 1:
+            raise httpx.ConnectError("network unavailable", request=request)
+        return httpx.Response(201)
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = publish_consultation_handoff(
+            _handoff(),
+            http_client=client,
+            sleep_fn=lambda _seconds: None,
+        )
+
+    assert result.status == HandoffPublishStatus.DELIVERED
+    assert result.attempts == 2
+    assert calls == 2
 
 
 def test_publish_fails_closed_before_network_when_pii_remains(monkeypatch):
@@ -208,6 +348,28 @@ def test_publish_missing_configuration_preserves_caller(monkeypatch):
     assert result.failure_kind == (
         HandoffPublishFailureKind.CONFIGURATION
     )
+
+
+def test_publish_invalid_v2_base_does_not_call_backend(monkeypatch):
+    _enable(monkeypatch)
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        return httpx.Response(201)
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = publish_consultation_handoff(
+            _handoff(state_version=None, routing_reason=None),
+            http_client=client,
+            sleep_fn=lambda _seconds: None,
+        )
+
+    assert result.status == HandoffPublishStatus.FAILED
+    assert result.attempts == 0
+    assert result.failure_kind == HandoffPublishFailureKind.PAYLOAD_INVALID
+    assert calls == 0
 
 
 def test_publish_disabled_is_noop(monkeypatch):

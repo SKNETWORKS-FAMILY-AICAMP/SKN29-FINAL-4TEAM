@@ -32,6 +32,8 @@ class ConsultationHandoffInput(BaseModel):
     inquiry_id: UUID
     correlation_id: UUID
     ai_request_id: str = Field(..., min_length=1, max_length=100)
+    state_version: int | None = Field(default=None, ge=1)
+    routing_reason: str | None = Field(default=None, min_length=1, max_length=100)
     model_code: str = Field(..., min_length=1, max_length=100)
     product_family: str = Field(..., min_length=1, max_length=100)
     symptom_summary: str = Field(..., min_length=1, max_length=2000)
@@ -52,6 +54,7 @@ class ConsultationHandoffInput(BaseModel):
         product_family: str,
         escalation_reason: str,
         accepted_evidence_chunk_ids: list[str] | None = None,
+        routing_reason: str | None = None,
     ) -> "ConsultationHandoffInput":
         symptom = getattr(ctx, "structured_symptom", None)
         symptom_parts: list[str] = []
@@ -122,6 +125,8 @@ class ConsultationHandoffInput(BaseModel):
             inquiry_id=trace.inquiry_id,
             correlation_id=trace.correlation_id,
             ai_request_id=trace.ai_request_id,
+            state_version=getattr(trace, "state_version", None),
+            routing_reason=routing_reason,
             model_code=ctx.model_code,
             product_family=product_family,
             symptom_summary=" | ".join(symptom_parts),

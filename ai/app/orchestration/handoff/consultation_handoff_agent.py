@@ -106,6 +106,8 @@ class ConsultationHandoffAgent:
             inquiry_id=handoff.inquiry_id,
             correlation_id=handoff.correlation_id,
             ai_request_id=handoff.ai_request_id,
+            state_version=handoff.state_version,
+            routing_reason=handoff.routing_reason,
             model_code=handoff.model_code,
             product_family=handoff.product_family,
             customer_symptom_summary=symptom_summary,
