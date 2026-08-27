@@ -274,6 +274,14 @@ def test_unapproved_iac_general_and_leak_never_reach_vector_or_provider(
     assert reliability.harness_runtime.handoff is not None
     assert reliability.harness_runtime.handoff.model_code == model_code
     assert reliability.harness_runtime.handoff.product_family == "ICE_WATER_PURIFIER"
+    assert (
+        reliability.harness_runtime.handoff.escalation_reason
+        == "RUNTIME_PRODUCT_NOT_APPROVED"
+    )
+    assert (
+        reliability.harness_runtime.handoff.routing_reason
+        == "FAIL_CLOSED_CONSULTATION"
+    )
     public_result = result.to_analysis_result()
     assert public_result.model_code == model_code
     assert str(public_result.correlation_id) == correlation_id
