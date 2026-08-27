@@ -9,6 +9,9 @@
 - 로컬 PostgreSQL은 `operations.0002` 적용, `visits.0005` 미적용 HOLD 상태여야
   합니다.
 - Demo 계정·제품·구독 Seed가 준비돼 있어야 합니다.
+- 상담사 비밀번호는 소스나 Fixture에 넣지 않고 실행 프로세스의
+  `E2E_CONSULTANT_PASSWORD` 환경변수로만 전달해야 합니다. 사번은 Fixture의
+  `assigned_consultant` 값을 사용합니다.
 - 실제 고객 DB, 공용 DB, RDS에서는 실행하지 않습니다.
 
 Playwright의 `globalSetup`이 실행마다 새로운 `run_id`를 만들고 다음 Backend 명령의
@@ -24,14 +27,25 @@ python manage.py create_web_consultation_e2e_fixture `
 
 이미 Backend가 JSON 파일을 만들었다면 `E2E_FIXTURE_JSON_PATH`로 경로만 전달할 수
 있습니다. 이 모드는 로컬 관리 명령과 로컬 Migration 검사를 실행하지 않습니다.
-JSON 문자열, Token, 비밀번호는 환경변수나 로그에 넣지 않습니다.
+Fixture JSON 문자열과 Token은 환경변수나 로그에 넣지 않습니다. 상담사 비밀번호는
+Playwright 실행 프로세스에만 잠시 전달하고 실행 직후 제거합니다.
 
 ## 실행
 
 ```powershell
 Set-Location .\web
 npm run test:e2e:install
-npm run test:e2e
+$secureE2ePassword = Read-Host "합성 상담사 비밀번호" -AsSecureString
+$e2eCredential = [System.Management.Automation.PSCredential]::new(
+  "fixture-consultant",
+  $secureE2ePassword
+)
+$env:E2E_CONSULTANT_PASSWORD = $e2eCredential.GetNetworkCredential().Password
+try {
+  npm run test:e2e
+} finally {
+  Remove-Item Env:E2E_CONSULTANT_PASSWORD -ErrorAction SilentlyContinue
+}
 ```
 
 기본 정책은 `workers=1`, `retries=0`입니다. 정상 흐름은 로그인 → 상담 시작 → 상담

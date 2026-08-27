@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import re
+from collections.abc import Mapping
 from typing import Any
 
 from rest_framework import serializers
@@ -84,11 +85,31 @@ class CarePrecheckAnswersMixin:
         return value
 
 
-class StartCarePrecheckRequestSerializer(serializers.Serializer):
+class RejectUnknownFieldsMixin:
+    """Keep DRF request validation aligned with additionalProperties=false."""
+
+    def to_internal_value(self, data):
+        if isinstance(data, Mapping):
+            unknown = sorted(set(data) - set(self.fields))
+            if unknown:
+                raise serializers.ValidationError(
+                    {
+                        field: ["This field is not allowed."]
+                        for field in unknown
+                    }
+                )
+        return super().to_internal_value(data)
+
+
+class StartCarePrecheckRequestSerializer(
+    RejectUnknownFieldsMixin,
+    serializers.Serializer,
+):
     subscription_id = serializers.UUIDField()
 
 
 class SaveCarePrecheckRequestSerializer(
+    RejectUnknownFieldsMixin,
     CarePrecheckAnswersMixin,
     serializers.Serializer,
 ):
@@ -97,6 +118,7 @@ class SaveCarePrecheckRequestSerializer(
 
 
 class SubmitCarePrecheckRequestSerializer(
+    RejectUnknownFieldsMixin,
     CarePrecheckAnswersMixin,
     serializers.Serializer,
 ):

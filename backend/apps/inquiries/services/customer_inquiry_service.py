@@ -187,12 +187,19 @@ class CustomerInquiryService:
         risk_level = safety.get("risk_level")
         requires_consultation = safety.get("requires_consultation")
         usage_status = usage.get("guidance_status")
-        usage_message = usage.get("message")
+        # The approved Guidance row is the customer-facing source of truth.
+        # A HumanReview MODIFY decision creates a new approved Guidance while
+        # preserving the original AI payload for audit purposes. Reading the
+        # message/actions from that old payload would leak the rejected draft.
+        usage_message = guidance.summary_text
         restricted_functions = cls._validated_public_string_list(
             usage.get("restricted_functions")
         )
         safe_actions = cls._validated_public_string_list(
-            usage.get("next_actions")
+            [
+                item.instruction_text
+                for item in getattr(guidance, "customer_public_items", ())
+            ]
         )
         symptom_summary = inquiry.raw_text.strip()[:2000]
         if (

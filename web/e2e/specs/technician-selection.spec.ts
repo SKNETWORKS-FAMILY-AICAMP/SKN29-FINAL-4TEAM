@@ -4,7 +4,6 @@ import {
   expect,
   test,
   type Locator,
-  type Page,
   type Response,
 } from "@playwright/test";
 
@@ -12,6 +11,7 @@ import {
   readBackendFixture,
   type WebConsultationE2EFixture,
 } from "../support/backendFixture.js";
+import { loginToConsultantFixture } from "../support/consultantPasswordLogin.js";
 import {
   attachMaskedEvidenceScreenshot,
   attachMaskedFailureScreenshot,
@@ -58,26 +58,6 @@ function isApiResponse(
   path: string,
 ): boolean {
   return response.request().method() === method && response.url().endsWith(path);
-}
-
-async function loginToFixture(
-  page: Page,
-  activeFixture: WebConsultationE2EFixture,
-): Promise<void> {
-  const listPath = `/consultant/inquiries?bucket=NEW&q=${encodeURIComponent(activeFixture.inquiryCode)}`;
-  await page.goto(listPath);
-  await expect(page).toHaveURL(/\/login$/);
-  await page.getByLabel("역할").selectOption("CONSULTANT");
-  await page
-    .getByRole("button", { name: "API 데모 계정으로 로그인" })
-    .click();
-  await expect(page).toHaveURL((url) => {
-    return (
-      url.pathname === "/consultant/inquiries" &&
-      url.searchParams.get("bucket") === "NEW" &&
-      url.searchParams.get("q") === activeFixture.inquiryCode
-    );
-  });
 }
 
 async function readDashboardTechnicianId(response: Response): Promise<string> {
@@ -272,7 +252,7 @@ test("별도 공식 Fixture로 Dashboard 합성 기사를 선택해 방문 일�
   const confirmedSummary = `E2E 방문 필요 확정 ${fixture.runId}`;
   const preferredDate = futureLocalDate(7);
 
-  await loginToFixture(page, fixture);
+  await loginToConsultantFixture(page, fixture);
   const fixtureCard = page.getByTestId(
     `consultant-inquiry-${fixture.inquiryId}`,
   );

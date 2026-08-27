@@ -18,6 +18,17 @@ export default defineConfig({
           ),
         ),
       },
+      {
+        find: "../model/consultantNoticeMock",
+        replacement: normalizePath(
+          fileURLToPath(
+            new URL(
+              "./tests/fixtures/consultantNoticeMock.ts",
+              import.meta.url,
+            ),
+          ),
+        ),
+      },
     ],
   },
   define: {

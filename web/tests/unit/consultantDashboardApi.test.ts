@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import * as httpClient from "../../src/common/api/httpClient";
 import {
+  canUseConsultantNoticeMock,
   fetchConsultantNoticeDetail,
   fetchSyntheticConsultantDashboardData,
   mapSyntheticConsultantDashboardDto,
@@ -71,6 +72,12 @@ const DASHBOARD_DTO = {
 afterEach(() => vi.restoreAllMocks());
 
 describe("로컬 합성 상담사 Dashboard API", () => {
+  it("Mock은 개발 환경에서 명시적으로 켠 경우에만 허용한다", () => {
+    expect(canUseConsultantNoticeMock(true, true)).toBe(true);
+    expect(canUseConsultantNoticeMock(false, true)).toBe(false);
+    expect(canUseConsultantNoticeMock(true, false)).toBe(false);
+  });
+
   it("정확한 Runtime 경로를 호출하고 다섯 응답 영역을 매핑한다", async () => {
     const request = vi
       .spyOn(httpClient, "requestApi")
@@ -101,6 +108,17 @@ describe("로컬 합성 상담사 Dashboard API", () => {
         data_classification: "production",
       }),
     ).toThrow("로컬 합성 데이터만");
+  });
+
+  it("Dashboard 200 응답에 data가 없으면 빈 화면 데이터로 바꾸지 않는다", async () => {
+    vi.spyOn(httpClient, "requestApi").mockResolvedValue({
+      data: null,
+      status: 200,
+    });
+
+    await expect(fetchSyntheticConsultantDashboardData()).rejects.toThrow(
+      "Dashboard 응답에 데이터가 없습니다",
+    );
   });
 
   it("Dashboard notice_id로 공지 상세 API를 호출하고 화면 모델로 변환한다", async () => {

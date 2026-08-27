@@ -379,6 +379,58 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("Dashboard API 401은 로그인 만료 안내로 구분한다", async () => {
+    remoteMocks.getDashboard.mockRejectedValue(
+      new ApiClientError({
+        kind: "UNAUTHORIZED",
+        status: 401,
+        code: "UNAUTHORIZED",
+        message: "unauthorized",
+      }),
+    );
+
+    renderPage("dashboard");
+
+    expect(
+      await screen.findByText(
+        "로그인이 만료되어 공지를 불러올 수 없습니다.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.getByText(
+        "로그인이 만료되어 직원 연락처를 불러올 수 없습니다.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.getAllByRole("button", { name: "로그인 화면으로" }),
+    ).toHaveLength(2);
+  });
+
+  it("Dashboard API 500은 Backend 서버 오류 안내로 구분한다", async () => {
+    remoteMocks.getDashboard.mockRejectedValue(
+      new ApiClientError({
+        kind: "SERVER_ERROR",
+        status: 500,
+        code: "INTERNAL_SERVER_ERROR",
+        message: "server error",
+      }),
+    );
+
+    renderPage("dashboard");
+
+    expect(
+      await screen.findByText(
+        "대시보드 공지 서버에 일시적인 오류가 발생했습니다.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.getByText("직원 연락처 서버에 일시적인 오류가 발생했습니다."),
+    ).toBeVisible();
+    expect(
+      screen.getAllByRole("button", { name: "다시 시도" }),
+    ).toHaveLength(2);
+  });
+
   it("미배정 상담을 가져오면 내 목록을 갱신하고 그 문의 상세를 연다", async () => {
     const user = userEvent.setup();
     remoteMocks.listUnassignedConsultations.mockResolvedValue({

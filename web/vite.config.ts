@@ -11,6 +11,11 @@ export default defineConfig(({ mode }) => {
       new URL("./tests/fixtures/consultantWorkspaceMock.ts", import.meta.url),
     ),
   )
+  const developmentNoticeMockModule = normalizePath(
+    fileURLToPath(
+      new URL("./tests/fixtures/consultantNoticeMock.ts", import.meta.url),
+    ),
+  )
 
   return {
     plugins: [react()],
@@ -22,6 +27,10 @@ export default defineConfig(({ mode }) => {
               {
                 find: "../model/consultantWorkspaceMock",
                 replacement: developmentMockModule,
+              },
+              {
+                find: "../model/consultantNoticeMock",
+                replacement: developmentNoticeMockModule,
               },
             ],
     },

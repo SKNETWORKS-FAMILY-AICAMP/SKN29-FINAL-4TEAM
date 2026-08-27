@@ -345,6 +345,63 @@ def test_owner_role_query_and_answer_validation_fail_closed():
     assert QuestionnaireSession.objects.get(public_id=session_id).state_version == 1
 
 
+def test_start_save_and_submit_reject_unknown_body_fields_without_writes():
+    owner = create_customer(81)
+    subscription = create_subscription(owner, 81)
+    client = authenticated_client(owner)
+
+    unknown_start = client.post(
+        "/api/v1/me/questionnaire-sessions",
+        {
+            "subscription_id": str(subscription.public_id),
+            "unexpected": True,
+        },
+        format="json",
+        HTTP_IDEMPOTENCY_KEY="t021-unknown-start",
+    )
+
+    assert unknown_start.status_code == 422
+    assert unknown_start.json()["error"]["code"] == "VALIDATION_ERROR"
+    assert QuestionnaireSession.objects.count() == 0
+    assert IdempotencyRecord.objects.count() == 0
+
+    started = start_session(client, subscription, key="t021-strict-start")
+    session_id = started.json()["data"]["questionnaire_session_id"]
+
+    unknown_save = client.patch(
+        f"/api/v1/me/questionnaire-sessions/{session_id}",
+        {
+            "state_version": 1,
+            "answers": {"WATER_FLOW": "LOW"},
+            "unexpected": True,
+        },
+        format="json",
+        HTTP_IDEMPOTENCY_KEY="t021-unknown-save",
+    )
+    unknown_submit = client.post(
+        f"/api/v1/me/questionnaire-sessions/{session_id}/submit",
+        {
+            "state_version": 1,
+            "answers": {"WATER_FLOW": "LOW"},
+            "unexpected": True,
+        },
+        format="json",
+        HTTP_IDEMPOTENCY_KEY="t021-unknown-submit",
+    )
+
+    for response in (unknown_save, unknown_submit):
+        assert response.status_code == 422
+        assert response.json()["error"]["code"] == "VALIDATION_ERROR"
+
+    session = QuestionnaireSession.objects.get(public_id=session_id)
+    assert session.status_code == QuestionnaireSession.Status.UNANSWERED
+    assert session.state_version == 1
+    assert session.answers_payload == {}
+    assert not IdempotencyRecord.objects.filter(
+        idempotency_key__in=("t021-unknown-save", "t021-unknown-submit")
+    ).exists()
+
+
 def test_submitted_session_links_to_exactly_one_new_inquiry_and_replays():
     owner = create_customer(9)
     subscription = create_subscription(owner, 9)

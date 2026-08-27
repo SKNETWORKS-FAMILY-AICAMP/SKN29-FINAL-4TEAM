@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
+import { ROUTE_PATHS } from "../../app/router/routePaths";
 import { ApiClientError } from "../../common/api/apiError";
 import EmptyState from "../../common/components/feedback/EmptyState";
 import ErrorState from "../../common/components/feedback/ErrorState";
@@ -31,13 +32,18 @@ import "./ConsultantWorkDashboard.css";
 import "./ConsultantNoticePage.css";
 
 type NoticeCategoryFilter = "ALL" | ConsultantNoticeCategoryCode;
+type NoticeFailureState =
+  | "unauthorized"
+  | "forbidden"
+  | "server_error"
+  | "error";
+type NoticePageLoadState = "loading" | "ready" | NoticeFailureState;
 type NoticeDetailLoadState =
   | "idle"
   | "loading"
   | "ready"
   | "not_found"
-  | "forbidden"
-  | "error";
+  | NoticeFailureState;
 
 interface NoticeDetailResult {
   requestKey: string;
@@ -69,11 +75,20 @@ function matchesQuery(notice: ConsultantNotice, query: string) {
     .includes(query);
 }
 
+function getNoticeFailureState(error: unknown): NoticeFailureState {
+  if (!(error instanceof ApiClientError)) return "error";
+  if (error.status === 401) return "unauthorized";
+  if (error.status === 403) return "forbidden";
+  if (error.status !== undefined && error.status >= 500) return "server_error";
+  return "error";
+}
+
 export default function ConsultantNoticePage() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState<ConsultantNoticePageData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
+  const [pageLoadState, setPageLoadState] =
+    useState<NoticePageLoadState>("loading");
   const [retryCount, setRetryCount] = useState(0);
   const [categoryFilter, setCategoryFilter] =
     useState<NoticeCategoryFilter>("ALL");
@@ -109,12 +124,12 @@ export default function ConsultantNoticePage() {
       (result) => {
         if (!active) return;
         setData(result);
-        setIsLoading(false);
+        setPageLoadState("ready");
       },
-      () => {
+      (error: unknown) => {
         if (!active) return;
-        setLoadError(true);
-        setIsLoading(false);
+        setData(null);
+        setPageLoadState(getNoticeFailureState(error));
       },
     );
 
@@ -166,7 +181,7 @@ export default function ConsultantNoticePage() {
         setDetailResult({
           requestKey,
           notice: null,
-          status: "error",
+          status: getNoticeFailureState(error),
           correlationId,
         });
       },
@@ -304,12 +319,31 @@ export default function ConsultantNoticePage() {
                 actionLabel="공지사항 목록으로"
                 onAction={returnToNoticeList}
               />
+            ) : isDetailRequested && detailLoadState === "unauthorized" ? (
+              <ForbiddenState
+                title="로그인이 만료되어 공지사항을 볼 수 없습니다."
+                description="다시 로그인한 뒤 공지사항을 확인해 주세요."
+                actionLabel="로그인 화면으로"
+                onAction={() => navigate(ROUTE_PATHS.login)}
+              />
             ) : isDetailRequested && detailLoadState === "not_found" ? (
               <EmptyState
                 title="해당 공지사항을 찾을 수 없습니다."
                 description="게시되지 않았거나 삭제된 공지사항일 수 있습니다."
                 actionLabel="공지사항 목록으로"
                 onAction={returnToNoticeList}
+              />
+            ) : isDetailRequested && detailLoadState === "server_error" ? (
+              <ErrorState
+                title="공지사항 서버에 일시적인 오류가 발생했습니다."
+                description={
+                  detailCorrelationId
+                    ? `잠시 후 다시 시도해 주세요. 확인 번호: ${detailCorrelationId}`
+                    : "잠시 후 다시 시도해 주세요."
+                }
+                onRetry={() => {
+                  setDetailRetryCount((count) => count + 1);
+                }}
               />
             ) : isDetailRequested && detailLoadState === "error" ? (
               <ErrorState
@@ -361,18 +395,38 @@ export default function ConsultantNoticePage() {
                   </div>
                 </article>
               ) : null
-            ) : isLoading ? (
+            ) : pageLoadState === "loading" ? (
               <LoadingState
                 title="공지사항을 불러오고 있습니다."
                 description="잠시만 기다려 주세요."
               />
-            ) : loadError ? (
+            ) : pageLoadState === "unauthorized" ? (
+              <ForbiddenState
+                title="로그인이 만료되어 공지사항을 불러올 수 없습니다."
+                description="다시 로그인한 뒤 공지사항을 확인해 주세요."
+                actionLabel="로그인 화면으로"
+                onAction={() => navigate(ROUTE_PATHS.login)}
+              />
+            ) : pageLoadState === "forbidden" ? (
+              <ForbiddenState
+                title="공지사항을 볼 권한이 없습니다."
+                description="상담사 계정과 활성 상태를 확인해 주세요."
+              />
+            ) : pageLoadState === "server_error" ? (
               <ErrorState
-                title="공지사항을 불러오지 못했습니다."
+                title="공지사항 서버에 일시적인 오류가 발생했습니다."
                 description="잠시 후 다시 시도해 주세요."
                 onRetry={() => {
-                  setIsLoading(true);
-                  setLoadError(false);
+                  setPageLoadState("loading");
+                  setRetryCount((count) => count + 1);
+                }}
+              />
+            ) : pageLoadState === "error" ? (
+              <ErrorState
+                title="공지사항을 불러오지 못했습니다."
+                description="네트워크 연결을 확인한 뒤 다시 시도해 주세요."
+                onRetry={() => {
+                  setPageLoadState("loading");
                   setRetryCount((count) => count + 1);
                 }}
               />
