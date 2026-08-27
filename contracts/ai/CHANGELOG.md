@@ -1,5 +1,18 @@
 # AI Contract Changelog
 
+## Consultation Handoff 2.0.0 v1 compatibility correction - 2026-08-27
+
+- Contract Freeze 전 검수에서 발견된 v1 호환성 축소를 수정하고, v1과 v2를
+  각각 `v1Request`, `v2Request` 독립 객체 Schema로 분리
+- 기존 v1의 선택 배열, 최대 개수 제한 없는 목록, 50자 이하 자유
+  `safety_level`, 선택적 Evidence `page`를 유지
+- 배열 필수화, 목록 개수 상한, 안전 수준 Enum과 Evidence `page` 필수화는
+  v2에만 적용
+- 기존 v1 경계값 허용과 같은 입력의 v2 거절을 함께 확인하는 Contract 회귀
+  테스트 추가
+- 이 수정본은 Backend 구현 시작 전 재검수할 Contract 후보이며, Runtime 활성
+  또는 Backend 구현 완료를 의미하지 않음
+
 ## Consultation Handoff Envelope 2.0.0 - 2026-08-27
 
 - 기존 무버전 v1 Handoff 요청과 명시적 `schema_version=2.0.0` 요청을 함께
