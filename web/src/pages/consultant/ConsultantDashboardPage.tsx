@@ -62,11 +62,11 @@ import {
   consultantWorkspaceDataRepository,
   createMockConsultantInquiryListViewModel,
 } from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
-import { getSyntheticConsultantDashboardData } from "../../features/notice/api/consultantNoticeApi";
 import {
-  MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA,
-  type SyntheticConsultantDashboardData,
-} from "../../features/notice/model/consultantNotice";
+  getDevelopmentConsultantDashboardData,
+  getSyntheticConsultantDashboardData,
+} from "../../features/notice/api/consultantNoticeApi";
+import type { SyntheticConsultantDashboardData } from "../../features/notice/model/consultantNotice";
 import "./ConsultantDashboardPage.css";
 import "./ConsultantDashboardTheme.css";
 import "./ConsultantInquiryPearlTheme.css";
@@ -107,6 +107,13 @@ const RISK_SECTIONS: readonly {
 type RiskSectionStatusFilter = "ALL" | ConsultantInquiryStatusDto;
 type WorkFocus = "ALL" | "NEW" | "IN_PROGRESS";
 type RecentInquiryLoadState = "loading" | "ready" | "error";
+type DashboardLoadState =
+  | "loading"
+  | "ready"
+  | "unauthorized"
+  | "forbidden"
+  | "server_error"
+  | "error";
 type DashboardInquiryListItem = Omit<
   ConsultantInquiryListItemViewModel,
   "status" | "allowedActions"
@@ -146,6 +153,15 @@ const WORK_FOCUS_OPTIONS: readonly {
 
 const VISIT_TECHNICIAN_DIRECTORY = "방문기사 연락처";
 const MAX_DASHBOARD_NOTICE_ITEMS = 5;
+const DEVELOPMENT_DASHBOARD_DATA = getDevelopmentConsultantDashboardData();
+
+function getDashboardLoadState(error: unknown): DashboardLoadState {
+  if (!(error instanceof ApiClientError)) return "error";
+  if (error.status === 401) return "unauthorized";
+  if (error.status === 403) return "forbidden";
+  if (error.status !== undefined && error.status >= 500) return "server_error";
+  return "error";
+}
 
 function getWaitingMinutes(inquiry: DashboardInquiryListItem) {
   return Math.max(0, Math.floor(inquiry.waitingSeconds / 60));
@@ -232,11 +248,12 @@ export default function ConsultantDashboardPage() {
   const [contactQuery, setContactQuery] = useState("");
   const [dashboardData, setDashboardData] =
     useState<SyntheticConsultantDashboardData | null>(() =>
-      appEnv.useMockApi ? MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA : null,
+      DEVELOPMENT_DASHBOARD_DATA,
     );
-  const [dashboardLoadState, setDashboardLoadState] = useState<
-    "loading" | "ready" | "error" | "forbidden"
-  >(() => (appEnv.useMockApi ? "ready" : "loading"));
+  const [dashboardLoadState, setDashboardLoadState] =
+    useState<DashboardLoadState>(() =>
+      DEVELOPMENT_DASHBOARD_DATA ? "ready" : "loading",
+    );
   const [dashboardRetryCount, setDashboardRetryCount] = useState(0);
   const [recentInquiryIds, setRecentInquiryIds] = useState<readonly InquiryId[]>(
     () =>
@@ -270,7 +287,7 @@ export default function ConsultantDashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (appEnv.useMockApi) return;
+    if (DEVELOPMENT_DASHBOARD_DATA) return;
     let active = true;
 
     getSyntheticConsultantDashboardData().then(
@@ -282,11 +299,7 @@ export default function ConsultantDashboardPage() {
       (error: unknown) => {
         if (!active) return;
         setDashboardData(null);
-        setDashboardLoadState(
-          error instanceof ApiClientError && error.status === 403
-            ? "forbidden"
-            : "error",
-        );
+        setDashboardLoadState(getDashboardLoadState(error));
       },
     );
 
@@ -825,17 +838,30 @@ export default function ConsultantDashboardPage() {
             {dashboardLoadState === "loading" ? (
               <LoadingState
                 title="대시보드 공지를 불러오고 있습니다."
-                description="로컬 합성 Runtime 응답을 확인하고 있습니다."
+                description="Backend에서 최신 공지 정보를 확인하고 있습니다."
+              />
+            ) : dashboardLoadState === "unauthorized" ? (
+              <ForbiddenState
+                title="로그인이 만료되어 공지를 불러올 수 없습니다."
+                description="다시 로그인한 뒤 대시보드를 확인해 주세요."
+                actionLabel="로그인 화면으로"
+                onAction={() => navigate(ROUTE_PATHS.login)}
               />
             ) : dashboardLoadState === "forbidden" ? (
               <ForbiddenState
                 title="대시보드 공지를 볼 권한이 없습니다."
                 description="상담사 계정과 활성 상태를 확인해 주세요."
               />
+            ) : dashboardLoadState === "server_error" ? (
+              <ErrorState
+                title="대시보드 공지 서버에 일시적인 오류가 발생했습니다."
+                description="잠시 후 다시 시도해 주세요."
+                onRetry={retryDashboard}
+              />
             ) : dashboardLoadState === "error" ? (
               <ErrorState
                 title="대시보드 공지를 불러오지 못했습니다."
-                description="로컬 합성 Dashboard Runtime 상태를 확인해 주세요."
+                description="네트워크 연결을 확인한 뒤 다시 시도해 주세요."
                 onRetry={retryDashboard}
               />
             ) : dashboardNotices.length === 0 ? (
@@ -916,24 +942,37 @@ export default function ConsultantDashboardPage() {
             {dashboardLoadState === "loading" ? (
               <LoadingState
                 title="직원 연락처를 불러오고 있습니다."
-                description="로컬 합성 Runtime 응답을 확인하고 있습니다."
+                description="Backend에서 최신 직원 정보를 확인하고 있습니다."
+              />
+            ) : dashboardLoadState === "unauthorized" ? (
+              <ForbiddenState
+                title="로그인이 만료되어 직원 연락처를 불러올 수 없습니다."
+                description="다시 로그인한 뒤 대시보드를 확인해 주세요."
+                actionLabel="로그인 화면으로"
+                onAction={() => navigate(ROUTE_PATHS.login)}
               />
             ) : dashboardLoadState === "forbidden" ? (
               <ForbiddenState
                 title="직원 연락처를 볼 권한이 없습니다."
                 description="상담사 계정과 활성 상태를 확인해 주세요."
               />
+            ) : dashboardLoadState === "server_error" ? (
+              <ErrorState
+                title="직원 연락처 서버에 일시적인 오류가 발생했습니다."
+                description="잠시 후 다시 시도해 주세요."
+                onRetry={retryDashboard}
+              />
             ) : dashboardLoadState === "error" ? (
               <ErrorState
                 title="직원 연락처를 불러오지 못했습니다."
-                description="로컬 합성 Dashboard Runtime 상태를 확인해 주세요."
+                description="네트워크 연결을 확인한 뒤 다시 시도해 주세요."
                 onRetry={retryDashboard}
               />
             ) : dashboardConsultants.length === 0 &&
               dashboardTechnicians.length === 0 ? (
               <EmptyState
                 title="표시할 직원 연락처가 없습니다."
-                description="Dashboard Runtime에 등록된 합성 연락처가 없습니다."
+                description="Backend에 등록된 직원 연락처가 없습니다."
               />
             ) : showContactTable ? (
               <div className="counselor-dashboard-contact-table-wrap">

@@ -99,29 +99,20 @@ describe("App Router Guard", () => {
       name: "상담사 로그인",
     });
     expect(within(loginRegion).queryByText("Water Bridge 로그인")).not.toBeInTheDocument();
-
-    const roleSelect = within(loginRegion).getByRole("combobox", {
-      name: "테스트 역할",
-    });
-    const roleOptions = within(roleSelect).getAllByRole("option");
-    expect(roleOptions).toHaveLength(1);
-    expect(roleOptions[0]).toHaveTextContent("상담사");
-  });
-
-  it("Mock 상담사 로그인 후 원래 요청한 상담 경로로 돌아간다", async () => {
-    const user = userEvent.setup();
-    renderRoute("/consultant/inquiries?bucket=NEW&q=누수", null);
-
-    await user.click(
-      await screen.findByRole("button", { name: "Mock 계정으로 로그인" }),
-    );
-
+    expect(within(loginRegion).getByRole("textbox", { name: "사번" })).toBeVisible();
+    expect(within(loginRegion).getByLabelText("비밀번호")).toBeVisible();
     expect(
-      await screen.findByRole("heading", { name: "고객 문의" }),
-    ).toBeInTheDocument();
-    expect(screen.getByTestId("router-location")).toHaveTextContent(
-      "/consultant/inquiries?bucket=NEW&q=누수",
-    );
+      within(loginRegion).getByRole("button", {
+        name: "사번/비밀번호로 로그인",
+      }),
+    ).toBeVisible();
+    expect(within(loginRegion).queryByText("테스트 계정")).not.toBeInTheDocument();
+    expect(within(loginRegion).queryByText("테스트 역할")).not.toBeInTheDocument();
+    expect(
+      within(loginRegion).queryByRole("button", {
+        name: /(?:API 데모|Mock) 계정으로 로그인/,
+      }),
+    ).not.toBeInTheDocument();
   });
 
   it("운영 담당자가 상담사 경로에 접근하면 403 화면으로 이동한다", async () => {

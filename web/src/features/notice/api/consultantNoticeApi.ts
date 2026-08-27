@@ -3,13 +3,15 @@ import { ApiClientError } from "../../../common/api/apiError";
 import { requestApi } from "../../../common/api/httpClient";
 import {
   CONSULTANT_NOTICE_CATEGORY_LABELS,
-  MOCK_CONSULTANT_NOTICE_PAGE_DATA,
-  MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA,
   type ConsultantNotice,
   type ConsultantNoticeCategoryCode,
   type ConsultantNoticePageData,
   type SyntheticConsultantDashboardData,
 } from "../model/consultantNotice";
+import {
+  MOCK_CONSULTANT_NOTICE_PAGE_DATA,
+  MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA,
+} from "../model/consultantNoticeMock";
 
 interface ConsultantDashboardSummaryDto {
   total: number;
@@ -153,11 +155,6 @@ export function mapSyntheticConsultantDashboardDto(
 }
 
 export async function fetchSyntheticConsultantDashboardData(): Promise<SyntheticConsultantDashboardData> {
-  if (!import.meta.env.DEV) {
-    throw new Error(
-      "상담사 Dashboard Runtime은 로컬 합성 Web G4에서만 사용할 수 있습니다.",
-    );
-  }
   const response = await requestApi<ConsultantDashboardDto>(
     "/consultant/dashboard",
   );
@@ -167,15 +164,28 @@ export async function fetchSyntheticConsultantDashboardData(): Promise<Synthetic
   return mapSyntheticConsultantDashboardDto(response.data);
 }
 
+export function canUseConsultantNoticeMock(
+  useMockApi = appEnv.useMockApi,
+  isDevelopment = import.meta.env.DEV,
+) {
+  return isDevelopment && useMockApi;
+}
+
+export function getDevelopmentConsultantDashboardData(): SyntheticConsultantDashboardData | null {
+  return canUseConsultantNoticeMock()
+    ? MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA
+    : null;
+}
+
 export async function getSyntheticConsultantDashboardData(): Promise<SyntheticConsultantDashboardData> {
-  if (appEnv.useMockApi) {
-    return MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA;
-  }
+  const developmentMock = getDevelopmentConsultantDashboardData();
+  if (developmentMock) return developmentMock;
+
   return fetchSyntheticConsultantDashboardData();
 }
 
 export async function getConsultantNoticePageData(): Promise<ConsultantNoticePageData> {
-  if (appEnv.useMockApi) {
+  if (canUseConsultantNoticeMock()) {
     return MOCK_CONSULTANT_NOTICE_PAGE_DATA;
   }
 
@@ -189,11 +199,6 @@ export async function getConsultantNoticePageData(): Promise<ConsultantNoticePag
 export async function fetchConsultantNoticeDetail(
   noticeId: string,
 ): Promise<ConsultantNotice> {
-  if (!import.meta.env.DEV) {
-    throw new Error(
-      "상담사 공지 상세 Runtime은 로컬 합성 Web G4에서만 사용할 수 있습니다.",
-    );
-  }
   const response = await requestApi<ConsultantDashboardNoticeDto>(
     `/consultant/notices/${encodeURIComponent(noticeId)}`,
   );
@@ -206,7 +211,7 @@ export async function fetchConsultantNoticeDetail(
 export async function getConsultantNoticeDetail(
   noticeId: string,
 ): Promise<ConsultantNotice> {
-  if (!appEnv.useMockApi) {
+  if (!canUseConsultantNoticeMock()) {
     return fetchConsultantNoticeDetail(noticeId);
   }
 

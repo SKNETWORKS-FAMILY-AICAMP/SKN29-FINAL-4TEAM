@@ -12,6 +12,7 @@ import {
   readBackendFixture,
   type WebConsultationE2EFixture,
 } from "../support/backendFixture.js";
+import { loginToConsultantFixture } from "../support/consultantPasswordLogin.js";
 import {
   attachMaskedEvidenceScreenshot,
   attachMaskedFailureScreenshot,
@@ -298,26 +299,6 @@ async function expectCompletedDetailContract(
   );
 }
 
-async function loginToFixture(
-  page: Page,
-  activeFixture: WebConsultationE2EFixture,
-): Promise<void> {
-  const listPath = `/consultant/inquiries?bucket=NEW&q=${encodeURIComponent(activeFixture.inquiryCode)}`;
-  await page.goto(listPath);
-  await expect(page).toHaveURL(/\/login$/);
-  await page.getByLabel("역할").selectOption("CONSULTANT");
-  await page
-    .getByRole("button", { name: "API 데모 계정으로 로그인" })
-    .click();
-  await expect(page).toHaveURL((url) => {
-    return (
-      url.pathname === "/consultant/inquiries" &&
-      url.searchParams.get("bucket") === "NEW" &&
-      url.searchParams.get("q") === activeFixture.inquiryCode
-    );
-  });
-}
-
 async function authenticatedBrowserRequest(
   page: Page,
   input: {
@@ -530,7 +511,7 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
   const consultationNote = `E2E 상담 기록 ${fixture.runId}`;
   const customerGuidance = `E2E 고객 안내 ${fixture.runId}`;
   const confirmedSummary = `E2E 확정 요약 ${fixture.runId}`;
-  await loginToFixture(page, fixture);
+  await loginToConsultantFixture(page, fixture);
   const fixtureCard = page.getByTestId(
     `consultant-inquiry-${fixture.inquiryId}`,
   );
